@@ -100,7 +100,7 @@ function AppearanceField({ value, onChange }: { value: EntityAppearance | undefi
         <datalist id="dl-rig-species">{Object.keys(RACES).map((s) => <option key={s} value={s} />)}</datalist>
       </label>
       <MonsterPartsFields
-        monster={a.monster} colors={a.colors} sex={a.sex} build={a.build} parts={a.parts} tenue={a.tenue} eyes={a.eyes}
+        monster={a.monster} colors={a.colors} sex={a.sex} build={a.build} parts={a.parts} tenue={a.tenue} eyes={a.eyes} features={a.features}
         onMonster={(p) => patch({ monster: { ...(a.monster ?? {}), ...p } })}
         onColors={(p) => patch({ colors: { ...(a.colors ?? {}), ...p } })}
         onSex={(s) => patch({ sex: s })}
@@ -108,6 +108,7 @@ function AppearanceField({ value, onChange }: { value: EntityAppearance | undefi
         onParts={(p) => patch({ parts: { ...(a.parts ?? {}), ...p } })}
         onTenue={(c) => patch({ tenue: c })}
         onEyes={(p) => patch({ eyes: { ...(a.eyes ?? {}), ...p } })}
+        onFeatures={(f) => patch({ features: f.length ? f : undefined })}
       />
     </div>
   );

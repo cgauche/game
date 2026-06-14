@@ -323,10 +323,11 @@ export function spawnEnemy(
   // conservés). Sans aucun override, `appearance` reste indéfini → rendu dérivé du nom inchangé.
   const a = opts?.appearance;
   if (a?.species) c.species = a.species; // espèce/race d'auteur → rig en combat comme en exploration
-  if (a && (a.species || a.monster || a.colors || a.parts || a.eyes || a.sex || a.build !== undefined || a.seed !== undefined)) {
+  if (a && (a.species || a.monster || a.features || a.colors || a.parts || a.eyes || a.sex || a.build !== undefined || a.seed !== undefined)) {
     c.appearance = riggedAppearance(c.name, a.seed ?? hashSeed(id), {
       species: a.species,
       monster: a.monster,
+      features: a.features,
       colors: a.colors,
       parts: a.parts,
       sex: a.sex,

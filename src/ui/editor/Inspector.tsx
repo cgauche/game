@@ -542,6 +542,8 @@ function EntityPanel({
               onTenue={(c) => updateSel({ appearance: { ...ent.appearance, tenue: c } })}
               eyes={ent.appearance?.eyes}
               onEyes={(patch) => updateSel({ appearance: { ...ent.appearance, eyes: { ...(ent.appearance?.eyes ?? {}), ...patch } } })}
+              features={ent.appearance?.features}
+              onFeatures={(f) => updateSel({ appearance: { ...ent.appearance, features: f.length ? f : undefined } })}
             />
           </Fold>
           <Fold title="Rôle (dialogue, marchand)">

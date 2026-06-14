@@ -92,6 +92,9 @@ export interface EntityAppearance {
   /** Yeux personnalisés (clés du catalogue `EYE_OPTIONS` : chat/caprin/reptilien/noir/rouge/
    *  verre) — remplacés EN PLACE sur l'orbite du visage. Vide = yeux normaux. */
   eyes?: { G?: string; D?: string };
+  /** Traits de corps ADDITIFS — clés du catalogue d'éléments (`parts/elements.ts` : queue, cornes,
+   *  oreilles-pointues, crocs, écailles…). N'importe quel PNJ peut en porter (perso. réutilisable). */
+  features?: string[];
 }
 
 export interface SceneEntity {

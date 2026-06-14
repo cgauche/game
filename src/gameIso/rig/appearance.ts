@@ -15,6 +15,7 @@ export interface Appearance {
   eyes?: { G?: string; D?: string };               // remplacement d'œil EN PLACE (art centré, cf. parts/eyes.ts)
   parts?: Partial<Record<Slot, number>>;           // overrides éditeur
   monster?: MonsterParts;                          // parts monstrueux par slot (mutant modulaire)
+  features?: string[];                             // CLÉS du catalogue d'éléments (parts/elements.ts) — traits ADDITIFS (queue, cornes, crocs…)
   colors?: Palette;                                // personnalisation couleur (peau/cheveux/vêtements)
   seed?: number;
 }

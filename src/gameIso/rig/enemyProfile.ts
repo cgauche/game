@@ -79,6 +79,7 @@ export interface RiggedOpts {
   gabarit?: string; // carrure imposée (def créature : Rat ogre → brute-bras-longs)
   /** yeux personnalisés (CLÉS du catalogue EYE_OPTIONS, donnée éditeur) → art résolu ici. */
   eyes?: { G?: string; D?: string };
+  features?: string[]; // traits ADDITIFS (clés du catalogue d'éléments)
 }
 const eyeArt = (k?: string): string | undefined => (k ? EYE_OPTIONS[k]?.art : undefined);
 export function riggedAppearance(name: string, seed: number, opts: RiggedOpts = {}): Appearance {
@@ -88,7 +89,7 @@ export function riggedAppearance(name: string, seed: number, opts: RiggedOpts = 
   const eyes = opts.eyes && (eyeArt(opts.eyes.G) || eyeArt(opts.eyes.D))
     ? { ...(eyeArt(opts.eyes.G) ? { G: eyeArt(opts.eyes.G) } : {}), ...(eyeArt(opts.eyes.D) ? { D: eyeArt(opts.eyes.D) } : {}) }
     : undefined;
-  return { species: opts.species ?? detectSpecies(n), sex, build, seed, monster: opts.monster, colors: opts.colors, parts: opts.parts, gabarit: opts.gabarit, eyes };
+  return { species: opts.species ?? detectSpecies(n), sex, build, seed, monster: opts.monster, features: opts.features, colors: opts.colors, parts: opts.parts, gabarit: opts.gabarit, eyes };
 }
 
 /** Synthèse d'items d'armure depuis les PA par localisation (matériau via palier). */
@@ -124,6 +125,7 @@ function rigFieldsFrom(a: EntityAppearance): Partial<Appearance> {
   if (a.build !== undefined) out.build = a.build;
   if (a.seed !== undefined) out.seed = a.seed;
   if (a.monster) out.monster = a.monster;
+  if (a.features) out.features = a.features;
   if (a.colors) out.colors = a.colors;
   if (a.parts) out.parts = a.parts;
   if (a.eyes) out.eyes = eyesArtFromKeys(a.eyes);
@@ -177,7 +179,7 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
 export function entityRigProfile(
   name: string,
   seed: number,
-  opts?: { species?: string; tenue?: string; monster?: MonsterParts; weapon?: string; colors?: import('./palette').Palette; parts?: Appearance['parts']; sex?: 'M' | 'F'; build?: number; eyes?: { G?: string; D?: string } },
+  opts?: { species?: string; tenue?: string; monster?: MonsterParts; features?: string[]; weapon?: string; colors?: import('./palette').Palette; parts?: Appearance['parts']; sex?: 'M' | 'F'; build?: number; eyes?: { G?: string; D?: string } },
 ): EnemyRigProfile | null {
   if (classifyEnemy(name) === 'creature') return null;
   const n = norm(name);
@@ -188,7 +190,8 @@ export function entityRigProfile(
   const perso = d?.perso; // surcharges propres à la créature (espèces non-canoniques)
   const monster = opts?.monster ?? cd?.monster ?? perso?.monster; // override scène → record → auto skaven/…
   const appearance: Appearance = riggedAppearance(name, seed, {
-    species, monster, colors: opts?.colors ?? cd?.colors ?? perso?.colors ?? race.colors,
+    species, monster, features: opts?.features ?? cd?.features,
+    colors: opts?.colors ?? cd?.colors ?? perso?.colors ?? race.colors,
     parts: opts?.parts ?? cd?.parts ?? perso?.parts ?? race.parts,
     sex: opts?.sex ?? cd?.sex ?? perso?.sex ?? race.sex, build: opts?.build ?? cd?.build,
     eyes: opts?.eyes ?? cd?.eyes ?? perso?.eyes,

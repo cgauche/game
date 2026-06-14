@@ -8,6 +8,7 @@ import { EYE_OPTIONS } from '../../gameIso/rig/parts/eyes';
 import { ColorPalettePickers, MONSTER_COLOR_SLOTS } from '../ColorPalettePickers';
 import { HAIRSTYLES } from '../../gameIso/rig/parts/generated/hairstyles';
 import { tenueNames } from '../../gameIso/rig/parts/career';
+import { elementsOf } from '../../gameIso/rig/parts/elements';
 import type { MonsterPartsSel, ColorsSel } from '../../state/scene';
 
 /** Armes équipables proposées (une par forme/groupe — affichées par le rig). */
@@ -22,6 +23,7 @@ export function MonsterPartsFields({
   parts,
   tenue,
   eyes,
+  features,
   onMonster,
   onWeapon,
   onColors,
@@ -30,6 +32,7 @@ export function MonsterPartsFields({
   onParts,
   onTenue,
   onEyes,
+  onFeatures,
 }: {
   monster?: MonsterPartsSel;
   weapon?: string;
@@ -39,6 +42,8 @@ export function MonsterPartsFields({
   parts?: { cheveux?: number; visage?: number };
   tenue?: string;
   eyes?: { G?: string; D?: string };
+  /** Traits ADDITIFS choisis (clés du catalogue d'éléments). */
+  features?: string[];
   onMonster: (patch: Partial<MonsterPartsSel>) => void;
   /** Optionnel : si absent, le sélecteur « Arme équipée » est masqué (ex. apparence de créature —
    *  l'arme vient des Traits, pas de l'apparence). */
@@ -49,6 +54,8 @@ export function MonsterPartsFields({
   onParts?: (patch: { cheveux?: number; visage?: number }) => void;
   onTenue?: (c: string | undefined) => void;
   onEyes?: (patch: { G?: string; D?: string }) => void;
+  /** Optionnel : si absent, le picker « Traits » est masqué. */
+  onFeatures?: (f: string[]) => void;
 }) {
   return (
     <>
@@ -126,6 +133,21 @@ export function MonsterPartsFields({
             ))}
           </select>
         </label>
+      )}
+      {onFeatures && (
+        <div className="ed-field">
+          <span>Traits du corps (catalogue partagé)</span>
+          {elementsOf('trait').map((e) => {
+            const on = (features ?? []).includes(e.key);
+            return (
+              <label key={e.key} className="ed-check">
+                <input type="checkbox" checked={on}
+                  onChange={() => onFeatures(on ? (features ?? []).filter((k) => k !== e.key) : [...(features ?? []), e.key])} />
+                <span>{e.label}</span>
+              </label>
+            );
+          })}
+        </div>
       )}
       <label className="ed-field">
         Tenue

@@ -120,7 +120,7 @@ export function pickBackend(subject: TokenSubject, view: 'iso' | 'top' = 'iso'):
   const seed = ent.appearance?.seed ?? hashSeed(ent.id);
   const prof =
     ent.kind === 'personnage'
-      ? entityRigProfile(ent.ref ?? ent.label ?? 'Villageois', seed, { species: ent.appearance?.species, tenue: ent.appearance?.tenue, monster: ent.appearance?.monster, weapon: ent.weapon, colors: ent.appearance?.colors, parts: ent.appearance?.parts, sex: ent.appearance?.sex, build: ent.appearance?.build, eyes: ent.appearance?.eyes })
+      ? entityRigProfile(ent.ref ?? ent.label ?? 'Villageois', seed, { species: ent.appearance?.species, tenue: ent.appearance?.tenue, monster: ent.appearance?.monster, features: ent.appearance?.features, weapon: ent.weapon, colors: ent.appearance?.colors, parts: ent.appearance?.parts, sex: ent.appearance?.sex, build: ent.appearance?.build, eyes: ent.appearance?.eyes })
       : null;
   if (prof) {
     if (top) {

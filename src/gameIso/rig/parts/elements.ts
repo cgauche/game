@@ -109,3 +109,10 @@ export const APPEARANCE_ELEMENTS: Record<string, AppearanceElement> = {
 export function feat(...keys: string[]): RaceFeature[] {
   return keys.flatMap((k) => APPEARANCE_ELEMENTS[k]?.overlays ?? []);
 }
+
+/** Clés + libellés d'une catégorie — pour les pickers de l'éditeur (multi pour 'trait'). */
+export function elementsOf(category: ElementCategory): { key: string; label: string }[] {
+  return Object.entries(APPEARANCE_ELEMENTS)
+    .filter(([, e]) => e.category === category)
+    .map(([key, e]) => ({ key, label: e.label }));
+}

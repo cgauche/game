@@ -10,6 +10,7 @@ import { addPose, type Pose } from './poses';
 import type { Appearance } from './appearance';
 import { resolveParts } from './parts/resolve';
 import { applyEyes, eyesArtFromKeys } from './parts/eyes';
+import { feat as catalogFeatures } from './parts/elements';
 import { pickView } from './parts/types';
 import { monsterInjection } from './parts/monstrous';
 import { HEADS, ARMS, LEGS } from './parts/monster';
@@ -205,6 +206,13 @@ export function resolveRig(
     if (feat.view && feat.view !== view) continue;
     const part = featureToPart(feat, scaleOf[feat.bone]);
     boneParts[feat.bone].push({ svg: part.svg, layer: part.layer });
+  }
+  // Traits ADDITIFS d'INSTANCE — `appearance.features` (clés du catalogue) : n'importe quel PNJ pioche
+  // des traits réutilisables (queue, cornes, crocs…) par-dessus sa race/def. Cœur de la perso (B1b).
+  for (const f of catalogFeatures(...(appearance.features ?? []))) {
+    if (f.view && f.view !== view) continue;
+    const part = featureToPart(f, scaleOf[f.bone]);
+    boneParts[f.bone].push({ svg: part.svg, layer: part.layer });
   }
 
   // PALETTE : résout les tokens @peau/@cheveux/@vet1/@vet2/@cuir/@metal de chaque part.
