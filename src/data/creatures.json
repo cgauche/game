@@ -417,6 +417,9 @@
     "source": {
       "book": "LDB",
       "page": 314
+    },
+    "appearance": {
+      "species": "Araignée"
     }
   },
   {
@@ -456,6 +459,9 @@
     "source": {
       "book": "LDB",
       "page": 314
+    },
+    "appearance": {
+      "species": "Cheval"
     }
   },
   {
@@ -501,6 +507,9 @@
     "source": {
       "book": "LDB",
       "page": 315
+    },
+    "appearance": {
+      "species": "Chien"
     }
   },
   {
@@ -545,6 +554,9 @@
     "source": {
       "book": "LDB",
       "page": 315
+    },
+    "appearance": {
+      "species": "Loup"
     }
   },
   {
@@ -591,6 +603,9 @@
     "source": {
       "book": "LDB",
       "page": 315
+    },
+    "appearance": {
+      "species": "Ours"
     }
   },
   {
@@ -630,6 +645,9 @@
     "source": {
       "book": "LDB",
       "page": 316
+    },
+    "appearance": {
+      "species": "Pigeon"
     }
   },
   {
@@ -674,6 +692,9 @@
     "source": {
       "book": "LDB",
       "page": 316
+    },
+    "appearance": {
+      "species": "Rat géant"
     }
   },
   {
@@ -720,6 +741,9 @@
     "source": {
       "book": "LDB",
       "page": 316
+    },
+    "appearance": {
+      "species": "Sanglier"
     }
   },
   {
@@ -763,6 +787,9 @@
     "source": {
       "book": "LDB",
       "page": 317
+    },
+    "appearance": {
+      "species": "Serpent"
     }
   },
   {
@@ -810,6 +837,9 @@
     "source": {
       "book": "LDB",
       "page": 317
+    },
+    "appearance": {
+      "species": "Basilic"
     }
   },
   {
@@ -856,6 +886,9 @@
     "source": {
       "book": "LDB",
       "page": 318
+    },
+    "appearance": {
+      "species": "Bête des marais"
     }
   },
   {
@@ -896,6 +929,9 @@
     "source": {
       "book": "LDB",
       "page": 318
+    },
+    "appearance": {
+      "species": "Griffon"
     }
   },
   {
@@ -948,6 +984,9 @@
     "source": {
       "book": "LDB",
       "page": 319
+    },
+    "appearance": {
+      "species": "Dragon"
     }
   },
   {
@@ -1081,6 +1120,9 @@
     "source": {
       "book": "LDB",
       "page": 320
+    },
+    "appearance": {
+      "species": "Griffon"
     }
   },
   {
@@ -1127,6 +1169,9 @@
     "source": {
       "book": "LDB",
       "page": 321
+    },
+    "appearance": {
+      "species": "Hippogriffe"
     }
   },
   {
@@ -1173,6 +1218,9 @@
     "source": {
       "book": "LDB",
       "page": 321
+    },
+    "appearance": {
+      "species": "Hydre"
     }
   },
   {
@@ -1220,6 +1268,9 @@
     "source": {
       "book": "LDB",
       "page": 322
+    },
+    "appearance": {
+      "species": "Jabberslythe"
     }
   },
   {
@@ -1264,6 +1315,9 @@
     "source": {
       "book": "LDB",
       "page": 322
+    },
+    "appearance": {
+      "species": "Manticore"
     }
   },
   {
@@ -1301,6 +1355,9 @@
     "source": {
       "book": "LDB",
       "page": 323
+    },
+    "appearance": {
+      "species": "Pégase"
     }
   },
   {
@@ -1342,6 +1399,9 @@
     "source": {
       "book": "LDB",
       "page": 323
+    },
+    "appearance": {
+      "species": "Pieuvre"
     }
   },
   {
@@ -1386,6 +1446,9 @@
     "source": {
       "book": "LDB",
       "page": 323
+    },
+    "appearance": {
+      "species": "Squig"
     }
   },
   {
@@ -1485,6 +1548,9 @@
     "source": {
       "book": "LDB",
       "page": 325
+    },
+    "appearance": {
+      "species": "Dragon"
     }
   },
   {
@@ -1666,6 +1732,9 @@
     "source": {
       "book": "LDB",
       "page": 327
+    },
+    "appearance": {
+      "species": "Banshee"
     }
   },
   {
@@ -1717,6 +1786,9 @@
     "source": {
       "book": "LDB",
       "page": 327
+    },
+    "appearance": {
+      "species": "Varghulf"
     }
   },
   {
@@ -1760,6 +1832,9 @@
     "source": {
       "book": "LDB",
       "page": 328
+    },
+    "appearance": {
+      "species": "Fantôme"
     }
   },
   {
@@ -1850,6 +1925,9 @@
     "source": {
       "book": "LDB",
       "page": 328
+    },
+    "appearance": {
+      "species": "Loup"
     }
   },
   {
@@ -1893,6 +1971,9 @@
     "source": {
       "book": "LDB",
       "page": 329
+    },
+    "appearance": {
+      "species": "Spectre"
     }
   },
   {
@@ -2657,6 +2738,9 @@
     "source": {
       "book": "LDB",
       "page": 336
+    },
+    "appearance": {
+      "species": "Slenderthigh Whiptongue"
     }
   },
   {
@@ -2702,6 +2786,9 @@
     "source": {
       "book": "LDB",
       "page": 336
+    },
+    "appearance": {
+      "species": "Fr'hough Mournbreath"
     }
   },
   {
@@ -2840,6 +2927,97 @@
     "appearance": {
       "species": "Vermine de choc",
       "tenue": "Vermine de choc"
+    }
+  },
+  {
+    "label": "Destrier (cheval de guerre lourd)",
+    "title": null,
+    "folder": "Montures de guerre",
+    "char": {
+      "M": 4,
+      "CC": 35,
+      "CT": null,
+      "F": 50,
+      "E": 50,
+      "I": 20,
+      "Ag": 20,
+      "Dex": null,
+      "Int": 10,
+      "FM": 10,
+      "Soc": 30,
+      "B": 32
+    },
+    "traits": [
+      "Arme +8",
+      "Dressé (Cavalerie de choc, Dompté, Guerre, Monture)",
+      "Foulée",
+      "Nerveux",
+      "Taille (Grande)"
+    ],
+    "optionals": [
+      "Champion",
+      "Coriace",
+      "Élite",
+      "Endurant",
+      "Intelligent",
+      "Se cabrer"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Le destrier est un cheval de guerre lourd, dressé pour porter un chevalier en armure et charger en formation. Plus massif et plus discipliné que le cheval de selle, il ignore le fracas de la bataille et fonce droit sur les rangs ennemis.",
+    "source": {
+      "book": "AA",
+      "page": 29
+    },
+    "appearance": {
+      "species": "Cheval"
+    }
+  },
+  {
+    "label": "Demigriffon adulte",
+    "title": null,
+    "folder": "Montures de guerre",
+    "char": {
+      "M": 7,
+      "CC": 55,
+      "CT": null,
+      "F": 55,
+      "E": 45,
+      "I": 40,
+      "Ag": 55,
+      "Dex": null,
+      "Int": 15,
+      "FM": 45,
+      "Soc": 15,
+      "B": 34
+    },
+    "traits": [
+      "Armure (Pattes arrières 1, Tête, Corps et Pattes avant 3)",
+      "Belliqueux",
+      "Bestial",
+      "Dressé (Cavalerie de choc, Dompté, Guerre, Monture)",
+      "Foulée",
+      "Taille (Grande)",
+      "Vision nocturne",
+      "Arme (Serres) +9",
+      "Morsure +9"
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [
+      "barde"
+    ],
+    "spells": [],
+    "desc": "Version aguerrie du demigriffon décrit dans le Livre de Base : une bête qui a servi de monture et connu les réalités de la guerre. Au sein des ordres de chevalerie du cercle intérieur, les plus valeureux montent ces créatures féroces, qui frappent de leurs serres et de leur bec tandis que leur cavalier porte des coups de hallebarde de cavalerie.",
+    "source": {
+      "book": "AA",
+      "page": 109
+    },
+    "appearance": {
+      "species": "Griffon"
     }
   }
 ]
