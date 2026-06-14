@@ -62,9 +62,10 @@ export const SORCELLERIE: SpellSpec[] = [
   {
     label: 'Menace rampante',
     // « Chaque cible se retrouve Engagée par une nuée de rats/araignées/serpents géants (Trait
-    //   Nuée). Vous pouvez déplacer une nuée (Test d'Emprise sur les animaux). » — invocation de
-    //   nuées hostiles : non modélisée (en attente du moteur d'invocation) : arbitré.
-    ops: [{ op: 'narrative', text: 'Menace rampante : chaque cible est Engagée par une nuée (rats/araignées/serpents géants + Trait Nuée) ; pour votre Action, un Test d’Emprise sur les animaux envoie une nuée sur une autre cible — arbitrage MJ.' }],
+    //   Nuée). Vous pouvez déplacer une nuée (Test d'Emprise sur les animaux). » — nuée alliée
+    //   invoquée (moteur d'invocation : Rat géant + Trait Nuée) ; le déplacement de la nuée reste journalisé.
+    ops: [{ op: 'narrative', text: 'Menace rampante : pour votre Action, un Test d’Emprise sur les animaux envoie une nuée sur une autre cible à portée — arbitrage MJ.' }],
+    summon: { ref: 'Rat géant', count: 1, addTraits: ['Nuée'], allyOfCaster: true },
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 49 — Sorcellerie « Menace rampante »',

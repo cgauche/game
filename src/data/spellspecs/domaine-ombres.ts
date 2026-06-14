@@ -27,8 +27,10 @@ export const DOMAINE_OMBRES: SpellSpec[] = [
     label: "Destrier d'Ombre",
     // « Vous invoquez un destrier fantomatique (règles d'un cheval de monte ; hors lumière du soleil :
     //   Éthéré, Infravision, Magique, Insensible à la douleur, Furtif, Foulée, Peur 1, Protection
-    //   (9+)). » — invocation d'une monture : non modélisée (en attente du moteur d'invocation) : arbitré.
-    ops: [{ op: 'narrative', text: 'Destrier d’Ombre : invoque une monture fantomatique (cheval de monte ; la nuit, gagne Éthéré/Infravision/Magique/Furtif/Peur 1/Protection 9+) jusqu’au lever du soleil — arbitrage MJ.' }],
+    //   (9+)). » — monture alliée invoquée (moteur d'invocation : Cheval + Magique/Peur 1) ; les
+    //   Traits conditionnels « la nuit » et la chevauchée restent journalisés.
+    ops: [{ op: 'narrative', text: 'Destrier d’Ombre : chevauchez-le (règles de monture) ; la nuit, il gagne aussi Éthéré/Infravision/Insensible à la douleur/Furtif/Foulée/Protection 9+ — arbitrage MJ.' }],
+    summon: { ref: 'Cheval', count: 1, addTraits: ['Magique', 'Peur 1'], allyOfCaster: true },
     durationRounds: null, // « Jusqu'au prochain lever de soleil »
     curated: true,
     source: "LDB 48 — Domaine des Ombres « Destrier d'Ombre »",
