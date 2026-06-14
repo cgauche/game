@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, CELL, diamondPath, type Dims } from './iso';
+import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, CELL, LEVEL_H, screenToTileAtZ, diamondPath, type Dims } from './iso';
 
 describe('rotTile / unrotTile', () => {
   const dims: Dims = { w: 5, h: 3 };
@@ -103,6 +103,80 @@ describe('depth rot-aware', () => {
       const byDepth = [...tiles].sort((a, b) => a.d - b.d).map((t) => t.cy);
       for (let i = 1; i < byDepth.length; i++) expect(byDepth[i]).toBeGreaterThanOrEqual(byDepth[i - 1]);
     }
+  });
+});
+
+describe('projection multi-niveaux (élévation z)', () => {
+  const ROTS = [0, 1, 2, 3] as const;
+  const VIEWS = ['iso', 'top'] as const;
+
+  it('z = 0 est rétro-compatible (tileCenter/depth inchangés)', () => {
+    const dims: Dims = { w: 5, h: 4 };
+    for (let x = 0; x < dims.w; x++)
+      for (let y = 0; y < dims.h; y++) {
+        expect(tileCenter(x, y, dims, 0)).toEqual(tileCenter(x, y, dims));
+        expect(depth(x, y, dims, 0)).toBe(depth(x, y, dims));
+      }
+  });
+
+  it('un niveau plus haut soulève la tuile à l’écran de z·LEVEL_H (cx inchangé)', () => {
+    const dims: Dims = { w: 5, h: 4 };
+    const base = tileCenter(2, 1, dims, 0);
+    for (const z of [1, 2, 3]) {
+      const lifted = tileCenter(2, 1, dims, z);
+      expect(lifted.cx).toBe(base.cx);
+      expect(lifted.cy).toBe(base.cy - z * LEVEL_H);
+    }
+  });
+
+  it('depth : tout étage haut se dessine APRÈS tout étage bas', () => {
+    for (const view of VIEWS)
+      for (const rot of ROTS) {
+        const dims: Dims = { w: 5, h: 5, rot, view };
+        let maxLow = -Infinity;
+        let minHigh = Infinity;
+        for (let x = 0; x < dims.w; x++)
+          for (let y = 0; y < dims.h; y++) {
+            maxLow = Math.max(maxLow, depth(x, y, dims, 0));
+            minHigh = Math.min(minHigh, depth(x, y, dims, 1));
+          }
+        expect(minHigh).toBeGreaterThan(maxLow);
+      }
+  });
+
+  it('depth : l’ordre intra-niveau est préservé (même tri qu’à z=0)', () => {
+    const dims: Dims = { w: 5, h: 5 };
+    const cells: { x: number; y: number }[] = [];
+    for (let x = 0; x < dims.w; x++) for (let y = 0; y < dims.h; y++) cells.push({ x, y });
+    for (const z of [0, 2, 5])
+      for (const a of cells)
+        for (const b of cells) {
+          const base = Math.sign(depth(a.x, a.y, dims, 0) - depth(b.x, b.y, dims, 0));
+          const lifted = Math.sign(depth(a.x, a.y, dims, z) - depth(b.x, b.y, dims, z));
+          expect(lifted).toBe(base);
+        }
+  });
+
+  it('screenToTileAtZ inverse tileCenter au niveau donné (iso + top, 4 rotations)', () => {
+    for (const view of VIEWS)
+      for (const rot of ROTS)
+        for (const z of [0, 1, 2]) {
+          const dims: Dims = { w: 6, h: 4, rot, view };
+          for (let x = 0; x < dims.w; x++)
+            for (let y = 0; y < dims.h; y++) {
+              const { cx, cy } = tileCenter(x, y, dims, z);
+              expect(screenToTileAtZ(cx, cy, dims, z)).toEqual({ x, y });
+            }
+        }
+  });
+
+  it('screenToTileAtZ au niveau 0 = screenToTile (rétro-compat)', () => {
+    const dims: Dims = { w: 6, h: 4 };
+    for (let x = 0; x < dims.w; x++)
+      for (let y = 0; y < dims.h; y++) {
+        const { cx, cy } = tileCenter(x, y, dims);
+        expect(screenToTileAtZ(cx, cy, dims, 0)).toEqual(screenToTile(cx, cy, dims));
+      }
   });
 });
 

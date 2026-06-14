@@ -7,6 +7,10 @@ export const TW = 64; // largeur d'un losange (pleine)
 export const TH = 32; // hauteur d'un losange (pleine)
 export const SPRITE_HEADROOM = 160; // place au-dessus des tuiles pour les sprites hauts
 export const CELL = 56; // côté d'une case carrée (vue du dessus)
+export const LEVEL_H = 96; // hauteur écran (px) d'un étage : un niveau z>0 est dessiné soulevé d'autant
+/** Poids de profondeur d'un étage : un niveau z+1 se dessine TOUJOURS après (au-dessus de) tout
+ *  le niveau z (les scènes font au plus quelques dizaines de cases → base ≪ LEVEL_DEPTH). */
+const LEVEL_DEPTH = 1_000_000;
 
 /** Marge à gauche pour que la tuile la plus à gauche reste visible (dimensions effectives). */
 export function originX(dims: Dims) {
@@ -64,15 +68,18 @@ export function unrotTile(x: number, y: number, dims: Dims): { x: number; y: num
   }
 }
 
-/** Centre écran d'une tuile (x,y), en tenant compte de la rotation caméra et de la projection. */
-export function tileCenter(x: number, y: number, dims: Dims): { cx: number; cy: number } {
+/** Centre écran d'une tuile (x,y), en tenant compte de la rotation caméra, de la projection et de
+ *  l'élévation `z` (niveau d'étage) : un niveau plus haut est soulevé de `z·LEVEL_H` px (cy plus
+ *  petit), cx inchangé. z=0 (défaut) = comportement plan-sol historique. */
+export function tileCenter(x: number, y: number, dims: Dims, z = 0): { cx: number; cy: number } {
   const r = rotTile(x, y, dims);
+  const lift = z * LEVEL_H;
   if (dims.view === 'top') {
-    return { cx: originX(dims) + r.x * CELL, cy: originY() + r.y * CELL };
+    return { cx: originX(dims) + r.x * CELL, cy: originY() + r.y * CELL - lift };
   }
   return {
     cx: originX(dims) + (r.x - r.y) * (TW / 2),
-    cy: originY() + (r.x + r.y) * (TH / 2),
+    cy: originY() + (r.x + r.y) * (TH / 2) - lift,
   };
 }
 
@@ -102,6 +109,13 @@ export function screenToTile(px: number, py: number, dims: Dims): { x: number; y
   const rx = Math.round((a + b) / 2);
   const ry = Math.round((b - a) / 2);
   return unrotTile(rx, ry, dims);
+}
+
+/** Inverse de `tileCenter` POUR UN NIVEAU DONNÉ `z` : ré-applique l'élévation (le point écran a été
+ *  soulevé de z·LEVEL_H) avant l'inversion plan-sol. Le picking 3D itère z du haut vers le bas et
+ *  retient la 1re tuile occupée. z=0 (défaut) ≡ screenToTile. */
+export function screenToTileAtZ(px: number, py: number, dims: Dims, z = 0): { x: number; y: number } {
+  return screenToTile(px, py + z * LEVEL_H, dims);
 }
 
 /** Les 4 sommets (et le centre) d'une tuile — source unique de la géométrie, partagée par
@@ -136,11 +150,13 @@ export function diamondPath(x: number, y: number, dims: Dims): string {
   return `M${top[0]},${top[1]} L${right[0]},${right[1]} L${bot[0]},${bot[1]} L${left[0]},${left[1]} Z`;
 }
 
-/** Profondeur de tri (plus grand = devant), dans l'orientation courante.
- *  iso : diagonale écran (r.x+r.y) ; top : par rangée écran (r.y prime, r.x départage).
- *  `dims` optionnel : absent ⇒ rot 0 (rétro-compat des appelants non encore migrés). */
-export function depth(x: number, y: number, dims?: Dims) {
+/** Profondeur de tri (plus grand = devant), dans l'orientation courante, niveau `z` compris.
+ *  iso : diagonale écran (r.x+r.y) ; top : par rangée écran (r.y prime, r.x départage). Un niveau
+ *  z+1 ajoute LEVEL_DEPTH → il se dessine TOUJOURS après tout le niveau z (ordre intra-niveau
+ *  préservé). `dims` optionnel : absent ⇒ rot 0 (rétro-compat des appelants non encore migrés).
+ *  z=0 (défaut) = comportement plan-sol historique. */
+export function depth(x: number, y: number, dims?: Dims, z = 0) {
   const r = dims ? rotTile(x, y, dims) : { x, y };
-  if (dims?.view === 'top') return r.y * (dims.w + dims.h) + r.x;
-  return r.x + r.y;
+  const base = dims?.view === 'top' ? r.y * (dims.w + dims.h) + r.x : r.x + r.y;
+  return base + z * LEVEL_DEPTH;
 }
