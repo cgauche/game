@@ -14,7 +14,7 @@ import { EYE_OPTIONS, eyesArtFromKeys } from './parts/eyes';
 import type { MonsterParts } from './parts/monstrous';
 import { hashSeed } from '../appearance';
 import { norm } from '../../lib/normalize';
-import { bipedDef, bipedSpeciesMatch, creaturePlanMatch } from './creatures';
+import { bipedDef, bipedSpeciesMatch, creaturePlanMatch, defByName } from './creatures';
 import { isSwarm } from './bodyPlan';
 import { findCreature } from '../../data';
 import type { EntityAppearance } from '../../state/scene';
@@ -40,6 +40,17 @@ export interface EnemyRigProfile {
  *  non-bipède (rigué OU monolithique) → 'creature' ; sinon humanoïde → 'rig'. */
 export function classifyEnemy(name: string): 'rig' | 'creature' {
   return creaturePlanMatch(name) || isSwarm(name) ? 'creature' : 'rig'; // nuée (trait) = non-bipède
+}
+
+const SWARM_TRAIT = /^Nu[eé]e\b/i;
+/** Classe de rendu DATA-DRIVEN (de-POC P5) : trait Nuée (essaim, donnée) ou espèce CANONIQUE
+ *  explicite (lookup EXACT `defByName`) → plus de match flou sur un nom libre. Repli sur le
+ *  name-match `classifyEnemy` UNIQUEMENT pour les entités/spawns sans espèce explicite (voie en
+ *  cours de retrait : une fois l'espèce posée partout, ce repli — et le matcher — disparaissent). */
+export function classifyBy(species: string | undefined, traits: string[] | undefined, name: string): 'rig' | 'creature' {
+  if (traits?.some((t) => SWARM_TRAIT.test(t))) return 'creature';
+  if (species) { const d = defByName(species); return d && d.plan !== 'biped' ? 'creature' : 'rig'; }
+  return classifyEnemy(name);
 }
 
 /** Espèce de rig détectée du nom (sinon Humain) : `bipedSpeciesMatch` route par name+aliases,
@@ -123,7 +134,8 @@ function rigFieldsFrom(a: EntityAppearance): Partial<Appearance> {
  * via AnimatedPlanToken, plus aucun sprite monolithique). PURE et déterministe (seed dérivé de l'id).
  */
 export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
-  if (classifyEnemy(c.name) === 'creature') return null;
+  if (classifyBy(c.species, c.traits, c.name) === 'creature') return null; // espèce explicite (data) → repli nom
+
   const n = norm(c.name);
   const seed = hashSeed(c.id);
   const cd = findCreature(c.name)?.appearance; // apparence par défaut UNIFIÉE du record créature
@@ -164,9 +176,10 @@ export function entityRigProfile(
   seed: number,
   opts?: { species?: string; tenue?: string; monster?: MonsterParts; features?: string[]; weapon?: string; colors?: import('./palette').Palette; parts?: Appearance['parts']; sex?: 'M' | 'F'; build?: number; eyes?: { G?: string; D?: string } },
 ): EnemyRigProfile | null {
-  if (classifyEnemy(name) === 'creature') return null;
+  const rec = findCreature(name);
+  if (classifyBy(opts?.species ?? rec?.appearance?.species, rec?.traits, name) === 'creature') return null; // espèce explicite (data) → repli nom
   const n = norm(name);
-  const cd = findCreature(name)?.appearance; // apparence par défaut UNIFIÉE du record créature
+  const cd = rec?.appearance; // apparence par défaut UNIFIÉE du record créature
   const species = opts?.species ?? cd?.species ?? detectSpecies(n); // override d'auteur sinon record sinon déduit du nom
   const d = bipedDef(species);
   const race = raceById(d?.race ?? baseSpeciesOf(species)); // défauts d'apparence partagés (canon)

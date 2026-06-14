@@ -45,6 +45,18 @@ const BIPED_BY_NAME: Record<string, CreatureDef> = Object.fromEntries(BIPED.map(
 /** Def bipède canonique par nom (lookup direct), ou undefined. */
 export function bipedDef(name: string): CreatureDef | undefined { return BIPED_BY_NAME[name]; }
 
+/** Def par espèce CANONIQUE (lookup EXACT par `name`, tous plans) — la résolution data-driven
+ *  (de-POC) : une entité porte son espèce explicite → on lit sa def sans match flou sur un nom libre. */
+const DEF_BY_NAME: Record<string, CreatureDef> = Object.fromEntries(CREATURES.map((c) => [c.name, c]));
+export function defByName(species: string): CreatureDef | undefined { return DEF_BY_NAME[species]; }
+/** Échelle de token d'une espèce canonique (lookup exact) — bipède via race, non-bipède via props. */
+export function speciesScale(species: string): number {
+  const d = DEF_BY_NAME[species];
+  if (!d) return 1;
+  if (d.plan === 'biped') return d.perso?.scale ?? raceById(d.race ?? baseSpeciesOf(species)).scale ?? 1;
+  return (d.quad ?? d.serpent ?? d.spider ?? d.bird ?? d.octopus ?? d.spectre ?? d.squig ?? d.hulk ?? d.jabber)?.sl ?? 1;
+}
+
 // Bipèdes triés par PRIORITÉ (plus bas = testé d'abord), comme les non-bipèdes : la résolution
 // passe par `matchIn` (nom + `aliases`, limite de mot) — plus aucune regex `match` à la main.
 // L'ordre désambiguïse les chevauchements (« rat ogre » → Rat ogre/Skaven avant Ogre ; « elfe

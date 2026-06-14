@@ -5,7 +5,7 @@ import { isOutOfAction } from '../engine/conditions';
 import { AnimatedRigToken } from './AnimatedRigToken';
 import { AmbientRigToken } from './AmbientRigToken';
 import { AnimatedPlanToken } from './AnimatedPlanToken';
-import { enemyRigProfile, entityRigProfile, classifyEnemy } from './rig/enemyProfile';
+import { enemyRigProfile, entityRigProfile, classifyBy } from './rig/enemyProfile';
 import { bodyPlanOf } from './rig/bodyPlan';
 import { bipedSpeciesScale, creatureSpeciesScale } from './rig/creatures';
 import { eyesArtFromKeys } from './rig/parts/eyes';
@@ -88,7 +88,7 @@ export function pickBackend(subject: TokenSubject, view: 'iso' | 'top' = 'iso'):
     // On décide par le PLAN CORPOREL (humanoïde vs créature), PAS par le camp. `kind==='hero'` est
     // surchargé (PJ bipède OU acteur allié — cheval libre compris) : router sur kind dessinerait un
     // cheval allié comme un humanoïde. Donc : nom humanoïde → rig ; créature → gabarit animé (plan).
-    if (classifyEnemy(c.name) === 'rig') {
+    if (classifyBy(c.species, c.traits, c.name) === 'rig') {
       const prof = c.kind === 'hero' ? null : enemyRigProfile(c);
       if (top) {
         const appearance = combatantAppearance(prof?.appearance ?? c.appearance ?? defaultAppearance(c), c);
