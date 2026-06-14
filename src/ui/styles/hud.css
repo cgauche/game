@@ -482,17 +482,14 @@
 .mrl-row.bad .mrl-text { color: var(--danger-soft); }
 .mrl-row.ok .mrl-text { color: var(--ok-bright); }
 
-/* Cascade séquentielle (jets de nuit/voyage) : les jets s'EMPILENT (validés restent visibles). */
-.cascade-note { font-size: 13px; color: var(--muted); margin: 6px 0; }
-.cascade-log { list-style: none; margin: 6px 0; padding: 5px 8px; display: flex; flex-direction: column; gap: 2px;
-  font-size: 11.5px; color: var(--muted); border-radius: 6px; background: rgba(255,255,255,0.03); max-height: 18vh; overflow-y: auto; }
+/* Cascade séquentielle (jets de nuit/voyage) sur la coquille de jet : les jets VALIDÉS s'empilent
+   en lecture seule (slot `extra` de RollFlowShell), au-dessus de l'étape courante. */
+.cascade-log { list-style: none; margin: 0 0 8px; padding: 5px 8px; display: flex; flex-direction: column; gap: 2px;
+  font-size: 11.5px; color: var(--muted); border-radius: 6px; background: rgba(255,255,255,0.03); max-height: 16vh; overflow-y: auto; }
 .cascade-log li::before { content: '· '; opacity: 0.6; }
-.cascade-stack { display: flex; flex-direction: column; gap: 8px; max-height: 52vh; overflow-y: auto; margin: 8px 0; padding-right: 2px; }
-.cascade-step { border-left: 2px solid transparent; padding-left: 8px; transition: opacity 0.15s; }
-.cascade-step.is-done { opacity: 0.62; }
-.cascade-step.is-current { border-left-color: var(--blood-bright, #c0392b); }
-.cascade-step-label { font-size: 12.5px; font-weight: 600; color: var(--ink-bright, #e8e2d6); margin-bottom: 2px; }
-.cascade-step.is-done .cascade-step-label { font-weight: 500; color: var(--muted); }
+.cascade-done { opacity: 0.6; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.cascade-step-label { font-size: 12.5px; font-weight: 500; color: var(--muted); margin: 0 0 2px; }
+.cascade-step-label.is-current { font-weight: 700; color: var(--ink-bright, #e8e2d6); margin-top: 4px; }
 
 /* Barre de Test ÉTENDU (DR cumulé vers la cible) (#23). */
 .dr-bar { display: flex; align-items: center; gap: 10px; margin: 8px 0; }

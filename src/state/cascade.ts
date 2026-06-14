@@ -88,18 +88,15 @@ export function advanceCascade(get: Get, set: Set): PendingCascade | null {
   const cur = p.participants[p.cursor];
   if (cur && cur.target != null && !cur.result) return null; // jet requis d'abord
   let steps = p.participants;
-  let log = p.log;
-  if (cur) {
-    const r = commitStep(get, set, steps, p.cursor);
-    steps = r.steps;
-    log = [...log, ...r.journal];
-  }
+  // La conséquence d'une étape vit sur l'ÉTAPE (`outcome`, affichée dans la pile) — pas dupliquée
+  // dans `log` (réservé aux notes hors-jet : entretien). Évite le doublon « X contracte… » écran/journal.
+  if (cur) steps = commitStep(get, set, steps, p.cursor).steps;
   const next = p.cursor + 1;
   if (next >= steps.length) {
     set({ pendingCascade: null });
-    return { ...p, participants: steps, log };
+    return { ...p, participants: steps, log: p.log };
   }
-  set({ pendingCascade: { ...p, participants: steps, log, cursor: next } });
+  set({ pendingCascade: { ...p, participants: steps, cursor: next } });
   return null;
 }
 
