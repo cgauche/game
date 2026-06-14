@@ -29,7 +29,8 @@ import { partyBest } from '../engine/skills';
 import { hasHealSkill } from '../engine/healing';
 import { isOutOfAction, addCondition, removeCondition, loseWounds } from '../engine/conditions';
 import { restRecovery, restResistVal, applyRecoveryDay, needsRecoveryRoll, recoveryTarget, type RestRoll } from '../engine/rest';
-import { rollContraction, DISEASE_DEFS, contagiousDiseases, applyDiseaseBlesse, applyDiseaseGangrene, applyDiseasePersist, activeMalaiseCount } from '../engine/disease';
+import { rollContraction, DISEASE_DEFS, contagiousDiseases, contractionDue, applyContraction, applyDiseaseBlesse, applyDiseaseGangrene, applyDiseasePersist, activeMalaiseCount } from '../engine/disease';
+import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import { applyFractureEnd } from '../engine/trauma';
 import type { DeferredUpkeepTest } from './upkeep';
 import { weatherExposure, exposureTestCount, exposureNight, expireExposureEffects, partyHasTent, applyExposureFailure, exposureTarget, type ExposureSeverity } from '../engine/exposure';
@@ -170,8 +171,8 @@ export function sleepParty(
   return entries;
 }
 
-/** Contagion de promiscuité (LDB 20 l.185, 1 Test de Contraction par jour) — partagé par la nuit
- *  EAGER (sleepParty) et la cascade INTERACTIVE (buildNightCascade), source unique. */
+/** Contagion de promiscuité (LDB 20 l.185, 1 Test de Contraction par jour) — chemin EAGER (sleepParty,
+ *  multi-jours), roule le Test. La cascade utilise `collectContagion` (jet différé en étape). */
 function runContagion(party: Combatant[], n: number, rng: RNG): { actorId: string; dz: string; log: string[] }[] {
   const out: { actorId: string; dz: string; log: string[] }[] = [];
   for (const sick of party) {
@@ -183,6 +184,28 @@ function runContagion(party: Combatant[], n: number, rng: RNG): { actorId: strin
           const log = rollContraction(other, dz.name, restResistVal(other), def?.contractDifficulty ?? 'accessible', rng);
           if (log.length) out.push({ actorId: other.id, dz: dz.name, log });
         }
+      }
+    }
+  }
+  return out;
+}
+
+/** Un Test de Contraction d'entretien différé (contagion de promiscuité OU tambouille piètre). */
+interface ContagionSpec { heroId: string; diseaseName: string; difficulty: Difficulty; resVal: number; }
+
+/** RECENSE les Tests de Contraction de promiscuité DÛS (sans les rouler) — pour la cascade de nuit :
+ *  chaque héros sain résiste à la maladie contagieuse d'un compagnon (1 jet par paire, dédoublonné). */
+function collectContagion(party: Combatant[]): ContagionSpec[] {
+  const out: ContagionSpec[] = [];
+  const seen = new Set<string>();
+  for (const sick of party) {
+    for (const dz of contagiousDiseases(sick)) {
+      for (const other of party) {
+        if (other === sick || other.dead) continue;
+        const key = `${other.id}:${dz.name}`;
+        if (seen.has(key) || !contractionDue(other, dz.name)) continue;
+        seen.add(key);
+        out.push({ heroId: other.id, diseaseName: dz.name, difficulty: DISEASE_DEFS[dz.name]?.contractDifficulty ?? 'accessible', resVal: restResistVal(other) });
       }
     }
   }
@@ -289,6 +312,11 @@ registerCascadeApplier('diseasePersist', (_get, _set, step, hero) => {
   return { journal };
 });
 
+registerCascadeApplier('contagion', (_get, _set, step, hero) => {
+  if (!hero || !step.result) return;
+  return { journal: applyContraction(hero, String(step.meta?.diseaseName ?? ''), step.result.success, battleRng()) };
+});
+
 /** Valeur de Calme d'un héros (LDB 21 : FM effective + avances de Calme) — cible du jet de cauchemars. */
 function calmeVal(c: Combatant): number {
   return effectiveChar(c, 'FM') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('calme'))?.advances ?? 0);
@@ -296,7 +324,7 @@ function calmeVal(c: Combatant): number {
 
 /** Icône d'étape de cascade par `kind` de Test d'entretien différé. */
 const UPKEEP_STEP_ICON: Record<string, string> = {
-  faim: '🍽️', diseaseBlesse: '🦠', diseaseGangrene: '🦠', diseasePersist: '🦠', traumaFracture: '🦴',
+  faim: '🍽️', diseaseBlesse: '🦠', diseaseGangrene: '🦠', diseasePersist: '🦠', traumaFracture: '🦴', contagion: '🤒',
 };
 
 /**
@@ -306,9 +334,8 @@ const UPKEEP_STEP_ICON: Record<string, string> = {
  * récupération (Résistance +20), cauchemars (Calme +40). Réutilise les primitives pures (zéro
  * duplication vs sleepParty). Renvoie les étapes + le journal eager + l'horloge avant/après.
  */
-export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fedDaily?: boolean } = {}): { steps: CascadeStep[]; log: string[]; slept: { from: number; to: number } } {
+export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fedDaily?: boolean; extraContagion?: ContagionSpec[] } = {}): { steps: CascadeStep[]; log: string[]; slept: { from: number; to: number } } {
   const party = get().party;
-  const rng = battleRng();
   const log: string[] = [];
   const from = get().gameTime;
   // La nuit passe — une journée de repos se termine à l'AUBE.
@@ -336,6 +363,13 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     if (!h || h.dead) continue;
     steps.push({ id: `${t.kind}-${t.heroId}-${steps.length}`, kind: t.kind, actorId: t.heroId, label: t.label, icon: UPKEEP_STEP_ICON[t.kind] ?? '🎲',
       rollLabel: 'Résistance', base: t.base, target: t.target, result: null, interactive: true, meta: t.meta });
+  }
+  // CONTAGION (promiscuité l.185 + tambouille piètre) → un jet de Résistance influençable par héros exposé.
+  for (const c of [...collectContagion(party), ...(opts.extraContagion ?? [])]) {
+    const h = party.find((x) => x.id === c.heroId);
+    if (!h || h.dead) continue;
+    steps.push({ id: `contagion-${c.heroId}-${steps.length}`, kind: 'contagion', actorId: c.heroId, label: `Contagion — ${h.name} (${c.diseaseName})`, icon: '🤒',
+      rollLabel: 'Résistance', base: c.resVal, target: c.resVal + DIFFICULTY_MODIFIERS[c.difficulty], result: null, interactive: true, meta: { diseaseName: c.diseaseName } });
   }
   // Campement : Exposition (intempéries) — abri de fortune (STEP) → insère les jets d'Exposition.
   const campers = party.filter((h) => !h.dead && p.perHero[h.id]?.lodging === 'dehors');
@@ -378,8 +412,6 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     }
   }
 
-  // Contagion (eager witness) — partagé avec la nuit eager.
-  for (const c of runContagion(party, 1, rng)) log.push(...c.log);
 
   set({ party: [...get().party], journal: [...get().journal.slice(-40), '— Le groupe dort jusqu’à l’aube —', ...log] });
   bus.emit(EVT.SCENE_DIRTY);
@@ -494,43 +526,46 @@ export function restSleep(get: Get, set: Set): void {
     set((s: GameState) => ({ money: moneySub(s.money, cost)! }));
   }
 
-  const pre: NightEntry[] = [];
-  // 2. Pitance AVANT la nuit (un héros nourri n'est plus affamé pour la récupération).
+  // 2. Pitance AVANT la nuit (un héros nourri n'est plus affamé). La tambouille PIÈTRE (ch.66 l.51,
+  //    10 %) expose à un Test de Résistance vs Courante Galopante — DIFFÉRÉ en étape de cascade.
+  const extraContagion: ContagionSpec[] = [];
   for (const h of party) {
     const cfg = p.perHero[h.id];
     if (!cfg || h.dead) continue;
     if (cfg.food === 'repas' || cfg.food === 'maison') {
       feedFromMeal(h);
-      // Nourriture PIÈTRE (ch.66 l.51) : « 10 % d'exposition à la Courante galopante ».
-      if (cfg.food === 'repas' && p.quality === 'pietre' && rng.int(1, 100) <= 10) {
-        const log = rollContraction(h, 'Courante Galopante', restResistVal(h), DISEASE_DEFS['Courante Galopante']?.contractDifficulty ?? 'accessible', rng);
-        pre.push({ actorId: h.id, icon: '🤢', label: 'Tambouille douteuse', text: log.join(' ') || 'Le repas passe mal…', tone: 'bad' });
+      if (cfg.food === 'repas' && p.quality === 'pietre' && rng.int(1, 100) <= 10 && contractionDue(h, 'Courante Galopante')) {
+        extraContagion.push({ heroId: h.id, diseaseName: 'Courante Galopante', difficulty: DISEASE_DEFS['Courante Galopante']?.contractDifficulty ?? 'accessible', resVal: restResistVal(h) });
       }
     }
     // 'ration' : consommée par l'entretien quotidien (#T3) ; 'rien' : la Faim suivra son cours.
   }
 
-  const preLog = pre.map((e) => e.text ?? e.label);
-
-  // 3a. NUIT UNIQUE → CASCADE séquentielle influençable : chaque jet subi (abri, Exposition,
-  //     récupération, cauchemars) est une ÉTAPE qu'on lance, influence (Chance/Résilience) puis
-  //     VERROUILLE avant la suivante — une défaillance impacte la suite (escalade/abri). Le report
-  //     de voyage du jour a déjà été lu en phase RÉGLAGES (RestModal) ; on enchaîne sur la nuit.
+  // 3a. NUIT UNIQUE → CASCADE séquentielle influençable : CHAQUE jet subi (faim, maladie, convalescence,
+  //     contagion, abri, Exposition, récupération, cauchemars) est une ÉTAPE qu'on lance, influence
+  //     (Chance/Résilience) puis VERROUILLE avant la suivante. AUCUN jet pré-résolu. Le report de
+  //     voyage du jour a déjà été lu en phase RÉGLAGES (RestModal).
   if (p.days === 1) {
-    const { steps, log } = buildNightCascade(get, set, p);
+    const { steps, log } = buildNightCascade(get, set, p, { extraContagion });
     set({ pendingRest: null });
     if (steps.length) {
       const title = p.places.auberge ? 'Nuit à l’auberge' : p.places.maison ? 'Nuit chez soi' : 'Campement';
-      startCascade(get, set, { title, icon: '🌙', purpose: p.travelHalt ? 'travel' : 'night', travelHalt: p.travelHalt, steps, log: [...preLog, ...log] });
+      startCascade(get, set, { title, icon: '🌙', purpose: p.travelHalt ? 'travel' : 'night', travelHalt: p.travelHalt, steps, log });
     } else {
-      // Rien à influencer (PB pleins, pas de campement) — on a déjà dormi : on enchaîne.
-      for (const l of preLog) get().log(l);
+      for (const l of log) get().log(l); // rien à influencer (PB pleins, pas de campement) — déjà dormi
       if (p.travelHalt) continueTravelAfterNight(get, set);
     }
     return;
   }
 
   // 3b. Repos de PLUSIEURS jours → résolution EAGER (on ne relance pas N nuits × M jets) : bilan lu.
+  const pre: NightEntry[] = [];
+  for (const c of extraContagion) { // tambouille piètre roulée d'office (multi-jours)
+    const h = party.find((x) => x.id === c.heroId);
+    if (!h) continue;
+    const cl = applyContraction(h, c.diseaseName, rollTest(c.resVal, c.difficulty, rng).success, rng);
+    pre.push({ actorId: c.heroId, icon: '🤢', label: 'Tambouille douteuse', text: cl.join(' ') || 'Le repas passe mal…', tone: 'bad' });
+  }
   const from = get().gameTime;
   const entries = sleepParty(get, set, p.days, {
     beforeRecovery: (out) => {

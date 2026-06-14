@@ -113,9 +113,7 @@ export function applyFaimTest(c: Combatant, success: boolean, be: number, rng: R
       damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (l.422)
       log.push(`${c.name} dépérit : −10 à toutes les autres Caractéristiques, ${damage} Blessure(s) (la faim ignore l'armure).`);
     }
-  } else {
-    log.push(`${c.name} supporte la faim (Test de Résistance réussi).`);
-  }
+  } // réussite : aucune conséquence (le jet a déjà été montré dans l'étape — pas de bruit de journal)
   c.hunger = h;
   return { log, damage };
 }

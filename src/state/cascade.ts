@@ -70,7 +70,8 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number): { step
   const out = cascadeAppliers[step.kind]?.(get, set, step, hero, { steps, index: i });
   const journal = out?.journal ?? [];
   for (const l of journal) get().log(l);
-  let next = steps.map((x, k) => (k === i ? { ...x, committed: true } : x));
+  // L'étape VALIDÉE garde sa conséquence (`outcome`) pour rester LISIBLE dans la pile à l'écran.
+  let next = steps.map((x, k) => (k === i ? { ...x, committed: true, outcome: journal } : x));
   if (out?.insert?.length) next = [...next.slice(0, i + 1), ...out.insert, ...next.slice(i + 1)];
   return { steps: next, journal };
 }

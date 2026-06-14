@@ -210,6 +210,28 @@ function hasSymptom(dz: Disease, kind: DiseaseSymptomKind): boolean {
  * `c.diseases`, renvoie le journal. Sert au post-critique (Très Facile +60, l.72) ET à la Chirurgie
  * (Accessible +20, talent Chirurgie / l.365). Réussite ou maladie déjà présente → rien.
  */
+/** Un Test de Contraction de `diseaseName` tomberait-il pour `c` ? (Non si déjà porteur ou immunisé.)
+ *  Sépare la DÉCISION du jet (pour différer en cascade) de sa résolution. */
+export function contractionDue(c: Combatant, diseaseName: string): boolean {
+  if ((c.diseases ?? []).some((d) => d.name === diseaseName)) return false;
+  return !(c.diseaseImmunities ?? []).includes(diseaseName); // Vérole Urticante (l.97) : pas deux fois
+}
+
+/** Applique le RÉSULTAT d'un Test de Contraction DIFFÉRÉ : échec → contracte la maladie. Mute `c.diseases`. */
+export function applyContraction(c: Combatant, diseaseName: string, success: boolean, rng: RNG = defaultRNG): string[] {
+  if (success || !contractionDue(c, diseaseName)) return [];
+  const dz = contractDisease(diseaseName, rng);
+  if (!dz) return [];
+  c.diseases = [...(c.diseases ?? []), dz];
+  return [`${c.name} contracte : ${diseaseName}.`];
+}
+
+/**
+ * Test de CONTRACTION d'une maladie (LDB 20) : un Test de Résistance `difficulty` raté la fait contracter
+ * (dédoublonnée par nom). `resistVal` = Résistance effective, passée par l'appelant (cycle évité). Mute
+ * `c.diseases`, renvoie le journal. Sert au post-critique (Très Facile +60, l.72) ET à la Chirurgie
+ * (Accessible +20, talent Chirurgie / l.365). Réussite ou maladie déjà présente → rien.
+ */
 export function rollContraction(
   c: Combatant,
   diseaseName: string,
@@ -217,14 +239,8 @@ export function rollContraction(
   difficulty: Difficulty,
   rng: RNG = defaultRNG,
 ): string[] {
-  if ((c.diseases ?? []).some((d) => d.name === diseaseName)) return [];
-  // Vérole Urticante (l.97) : « vous ne pouvez pas l'attraper une seconde fois ».
-  if ((c.diseaseImmunities ?? []).includes(diseaseName)) return [];
-  if (rollTest(resistVal, difficulty, rng).success) return [];
-  const dz = contractDisease(diseaseName, rng);
-  if (!dz) return [];
-  c.diseases = [...(c.diseases ?? []), dz];
-  return [`${c.name} contracte : ${diseaseName} (Test de Résistance raté).`];
+  if (!contractionDue(c, diseaseName)) return [];
+  return applyContraction(c, diseaseName, rollTest(resistVal, difficulty, rng).success, rng);
 }
 
 /** Maladies ACTIVES portant le symptôme « malaise » (l.152) — chacune impose un Exténué « collant »

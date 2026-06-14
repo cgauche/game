@@ -597,6 +597,8 @@ export interface CascadeStep extends RollParticipant {
   text?: string;
   /** Étape déjà validée (conséquence appliquée). */
   committed?: boolean;
+  /** Conséquence appliquée à la validation (journal) — gardée pour rester lisible dans la pile. */
+  outcome?: string[];
 }
 /**
  * CASCADE séquentielle influençable (régime choisi par l'utilisateur pour les jets de NUIT et de

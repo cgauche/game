@@ -121,7 +121,7 @@ export function fractureEndDifficulty(severity: string): Difficulty {
  * (et `criticalWounds` décrémenté) par `tickTraumaRecovery`. Partagé eager ⊥ cascade — zéro duplication.
  */
 export function applyFractureEnd(c: Combatant, success: boolean, severity: string, location: string, label: string): string[] {
-  if (success) return [`${c.name} : ${label} ressoudée proprement (Résistance réussie).`];
+  if (success) return [`${c.name} : ${label} ressoudée proprement.`];
   const seq = fractureSequela({ kind: 'fracture', severity, location, label } as Trauma);
   if (!seq) return [];
   c.traumas = [...(c.traumas ?? []), seq];
