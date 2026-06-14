@@ -15,6 +15,8 @@ import type {
   PendingReload, PendingStateRecovery, PendingTest, PendingAppraise, PendingBargain, PendingHeal,
   PendingCorruption, PendingAttack, PendingDefense, PendingCast, PendingDisengage,
   PendingCounterspell, CounterParticipant, PendingExtendedTest, ExtendedTestRound,
+  PendingForceDoor, ForceDoorParticipant,
+  PendingCastOpposition, OppositionParticipant,
 } from './store';
 import type { PendingActivity } from './interludeFlow';
 import type { Combatant } from '../engine/types';
@@ -34,7 +36,7 @@ import { rollTest, resolveOpposed, isDoubleRoll, type TestResult, evaluateTest, 
 import { resolveRun } from '../engine/movement';
 import { testValue } from '../engine/skills';
 import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR, resolveCounterspell, counterspellOutcomeFrom, castTestOf, castingValue } from '../engine/magic';
-import { effectiveChar } from '../engine/characteristics';
+import { effectiveChar, bonus } from '../engine/characteristics';
 import {
   resolvePeurTest, resolveTerreurTest, resolveCalmeSimple, resolveFrenzyEntry, calmeValue, CIBLE_TYPES,
 } from '../engine/psychology';
@@ -301,6 +303,42 @@ export const FLOWS = {
     caps: { forced: true },
     bonus: {
       derive: (_s, r) => (r.result ? { result: { ...r.result, sl: r.result.sl + 1 } } : null),
+    },
+  }),
+
+  /**
+   * Enfoncer une porte À PLUSIEURS (EDO Appendice 2, « Portes ») — flux multi PARALLÈLE (même
+   * fabrique que le Contre-sort, métier = DÉGÂTS sur objet) : chaque héros frappe indépendamment
+   * (Test de Corps à corps (Bagarre)), dégâts = max(0, DR + Bonus de Force − BE) ; objets : PAS de
+   * minimum 1 (l.92). Le cumul des dégâts vs B vit dans `forceDoorConfirm` (store).
+   */
+  forceDoor: makeRollFlow<PendingForceDoor, ForceDoorParticipant>({
+    key: 'pendingForceDoor',
+    multi: { slots: (p) => p.participants, idOf: (r) => r.id, replace: (p, parts) => ({ ...p, participants: parts }) },
+    rolled: (r) => !!r.result,
+    actor: (s, r) => actorIn(s, r.id),
+    resolve: (s, r, actor, _get, forced, p) => {
+      if (!actor || !p) return null;
+      const value = testValue(actor, 'Corps à corps'); // Bagarre (CC + avances)
+      const bf = bonus(effectiveChar(actor, 'F'));
+      if (forced) {
+        // Résilience « Je ne faillirai pas ! » : DR maximal (dé 01) → dégâts max (LDB 17 l.73).
+        const sl = evaluateTest(1, value).sl;
+        return { result: { roll: 1, target: value, sl, damage: Math.max(0, sl + bf - p.doorBE) } };
+      }
+      const t = rollTest(value, 'intermediaire', battleRng());
+      return { result: { roll: t.roll, target: t.target, sl: t.sl, damage: Math.max(0, t.sl + bf - p.doorBE) } };
+    },
+    failed: (r) => !!r.result && r.result.roll > r.result.target, // d100 propre raté → Chance
+    caps: { forced: true },
+    bonus: {
+      // Chance « +1 DR » : +1 au DR → +1 dégât (avant réduction par le BE).
+      derive: (s, r, actor, p) => {
+        if (!r.result || !p) return null;
+        const bf = bonus(effectiveChar(actor, 'F'));
+        const sl = r.result.sl + 1;
+        return { result: { ...r.result, sl, damage: Math.max(0, sl + bf - p.doorBE) } };
+      },
     },
   }),
 

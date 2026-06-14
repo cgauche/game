@@ -3,7 +3,7 @@
  * monnaie — types PURS, sans logique, extraits de store.ts pour le garder navigable.
  * Le store les ré-exporte (les imports existants `from './store'` restent valides).
  */
-import type { Difficulty, HitLocation, Weapon } from '../engine/types';
+import type { CharKey, Difficulty, HitLocation, Weapon } from '../engine/types';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import type { Pt } from './path';
 import type { Effect } from './scene';
@@ -475,6 +475,10 @@ export interface PendingCast {
   /** Lancé DEPUIS le grimoire porté (sort non mémorisé de son Domaine, LDB 47 l.34) :
    *  le NI est DOUBLÉ à la résolution (et le livre s'expose aux dégâts/au vol — narratif). */
   grimoire?: boolean;
+  /** OPPOSITION de la cible RÉSOLUE (issue figée du flux `castOpposition`) : par cible, indique si
+   *  le Sort a été RÉSISTÉ et la MARGE de DR (écart) pour les échelles `perSL`. Lu par `applyCast`
+   *  qui saute les ops d'une cible résistante et passe la marge en `ctx.sl`. */
+  opposedOutcome?: Record<string, { resisted: boolean; margin: number }>;
 }
 
 /** Un héros qui tente le Contre-sort : participant du flux MULTI (son propre jet + influence). */
@@ -490,10 +494,53 @@ export interface CounterParticipant extends RollParticipant {
  *  DR net). « Laisser passer » = aucun Contre-sort → le sort se résout tel quel. */
 export interface PendingCounterspell extends MultiPending<CounterParticipant> {}
 
+/** Issue du Test d'OPPOSITION d'UNE cible contre l'incantation figée (résist FM/Int ou contact Bagarre). */
+export interface OppositionOutcome {
+  /** Le Test opposé de la cible (FM / Intelligence / Corps à corps (Bagarre)). */
+  oppose: TestResult;
+  /** La cible l'emporte → le Sort est RÉSISTÉ. */
+  resisted: boolean;
+  /** Marge de DR (incantation − opposition) quand le LANCEUR l'emporte (échelle `perSL` des ops). */
+  margin: number;
+}
+/** Une cible qui OPPOSE son Test à l'incantation : participant du flux MULTI (son jet + influence). */
+export interface OppositionParticipant extends RollParticipant {
+  result: OppositionOutcome | null;
+}
+/** Le Sort déclare une OPPOSITION (`spec.opposed`) : chaque cible oppose son Test (FM/Int/Bagarre) à
+ *  l'incantation FIGÉE (`pendingCast.result`), avec son propre cycle Chance/Pacte/Résilience. L'agrégat
+ *  (`oppositionConfirm`) écrit `pendingCast.opposedOutcome` par cible, puis `castConfirm` applique
+ *  (cible résistante → aucune op ; sinon ops à la marge). « Réaction type défense » : cible IA = rangée
+ *  témoin (jet auto + révélée dans la modale) ; cible héros = rangée interactive. */
+export interface PendingCastOpposition extends MultiPending<OppositionParticipant> {
+  kind: 'resist' | 'contact';
+  skill?: string;
+  char?: CharKey;
+}
+
 /** Un Round d'un Test Étendu : le jet de CE Round (slot du flux multi SÉQUENTIEL). */
 export interface ExtendedTestRound extends RollParticipant {
   result: { roll: number; sl: number; success: boolean } | null;
 }
+/** Un héros qui frappe la porte : participant du flux MULTI PARALLÈLE (son propre jet + dégâts). */
+export interface ForceDoorParticipant extends RollParticipant {
+  /** Jet de Corps à corps (Bagarre) de CE héros + dégâts infligés à la porte, ou null = pas lancé. */
+  result: { roll: number; target: number; sl: number; damage: number } | null;
+}
+/** Enfoncer une porte À PLUSIEURS (EDO Appendice 2, « Portes ») — flux multi PARALLÈLE : la porte est
+ *  un OBJET (BE = Bonus d'Endurance, B = Blessures). Chaque héros frappe INDÉPENDAMMENT (Test de
+ *  Corps à corps (Bagarre)), dégâts = max(0, DR + Bonus de Force − BE) — objets : PAS de minimum 1
+ *  (l.92). Chacun son cycle Chance/+1 DR/Pacte/Résilience. La porte cède quand B ≤ 0 ; sinon un
+ *  nouveau Round s'ouvre (chacun re-frappe). Hors combat comme en combat (acteurs via `actorIn`). */
+export interface PendingForceDoor extends MultiPending<ForceDoorParticipant> {
+  label: string; // « Porte de la cave »
+  doorBE: number; // Bonus d'Endurance de l'objet
+  doorB: number; // Blessures restantes (cède à ≤ 0)
+  doorBmax: number; // Blessures initiales (jauge)
+  /** Flag de scène posé quand la porte cède (ouverture en jeu) — optionnel. */
+  flag?: string;
+}
+
 /** Test Étendu (LDB 12 l.197-211 : « atteindre un certain DR … les DR obtenus à chaque Round sont
  *  additionnés jusqu'à atteindre une valeur cible … Si le DR total passe en dessous de 0, recommencer
  *  depuis le début »). Flux multi SÉQUENTIEL : un Round à la fois (chacun son cycle Chance/Pacte/

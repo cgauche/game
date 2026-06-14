@@ -38,6 +38,8 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'counterspellForceSuccess', 'counterspellSetForcedRoll', 'counterspellConfirm', 'counterspellCancel',
   'extendedTestRoll', 'extendedTestReroll', 'extendedTestBonusSL', 'extendedTestDarkPact',
   'extendedTestForceSuccess', 'extendedTestSetForcedRoll', 'extendedTestNext', 'extendedTestCancel',
+  'forceDoorRoll', 'forceDoorReroll', 'forceDoorBonusSL', 'forceDoorDarkPact',
+  'forceDoorForceSuccess', 'forceDoorSetForcedRoll', 'forceDoorConfirm', 'forceDoorCancel',
   // désengagement
   'disengageConfirmA', 'disengageRoll', 'disengageReroll', 'disengageBonusSL',
   'disengageDarkPact', 'disengageForceSuccess', 'disengageConfirm', 'disengageFlee',

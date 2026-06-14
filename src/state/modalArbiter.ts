@@ -48,6 +48,9 @@ export const MODAL_DEFS = [
   // Contre-sort à PLUSIEURS (réaction au Sort ennemi figé dans pendingCast) : PRIORITAIRE sur `cast`
   // (les deux pendings coexistent) → la modale de réaction prend la main. Moment partagé → tous.
   { key: 'counterspell', when: (s) => !!s.pendingCounterspell, owner: () => '*' },
+  // Enfoncer une porte à plusieurs (EDO Appendice 2) : action de GROUPE — modale chez tous, chacun
+  // ne pilote que ses héros (gating per-participant côté UI + netOwnership).
+  { key: 'forceDoor', when: (s) => !!s.pendingForceDoor, owner: () => '*' },
   {
     key: 'cast',
     // Surincantation : choix des cibles en cours sur la CARTE → la modale s'efface.

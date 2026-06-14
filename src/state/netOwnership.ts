@@ -66,7 +66,7 @@ export function intentAllowedFor(s: GameState, seat: number, action: string, arg
   // Flux MULTI (Contre-sort à plusieurs / Test Étendu) : le JET d'un participant est piloté par le
   // propriétaire de CE héros (1ᵉʳ arg = son id). Les décisions de GROUPE (Confirm/Cancel/Next) restent
   // ouvertes ('*' via le owner de la modale ci-dessous : moment partagé).
-  if (/^(counterspell|extendedTest)(Roll|Reroll|BonusSL|DarkPact|ForceSuccess|SetForcedRoll)$/.test(action)) {
+  if (/^(counterspell|extendedTest|forceDoor)(Roll|Reroll|BonusSL|DarkPact|ForceSuccess|SetForcedRoll)$/.test(action)) {
     return seatOwns(s, seat, typeof args[0] === 'string' ? args[0] : undefined);
   }
   const owner = modalOwnerOf(s);

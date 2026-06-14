@@ -106,7 +106,7 @@ import type {
   Money, PendingVictory, PendingLoot, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
   PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingRun, PendingApproach, PendingFocus,
   PendingPsych, PendingFrenzy, RevealEntry, PendingFumble, PendingDeviation, PendingBladeTrap, PendingRenounce, PendingDefense,
-  PendingDisengage, PendingCast, PendingCounterspell, CounterParticipant, PendingExtendedTest, PendingHeal, PendingCorruption,
+  PendingDisengage, PendingCast, PendingCounterspell, CounterParticipant, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingCorruption,
 } from './pendings';
 import {
   PendingEncounterPsych,
@@ -280,9 +280,12 @@ export interface GameState {
   /** Contre-sort à PLUSIEURS (réaction au Sort d'un ENNEMI figé dans `pendingCast`) : héros
    *  contre-lanceurs, chacun son jet (flux multi `FLOWS.counterspell`). Null = pas de réaction. */
   pendingCounterspell: PendingCounterspell | null;
-  /** Test Étendu en cours (LDB 12 : DR cumulé vers une cible, ex. enfoncer une porte DR 20) : flux
-   *  multi SÉQUENTIEL — un Round à la fois (`FLOWS.extendedTest`), cumul dans `extendedTestNext`. */
+  /** Test Étendu en cours (LDB 12 : DR cumulé vers une cible, ex. crochetage) : flux multi
+   *  SÉQUENTIEL — un Round à la fois (`FLOWS.extendedTest`), cumul dans `extendedTestNext`. */
   pendingExtendedTest: PendingExtendedTest | null;
+  /** Enfoncer une porte à PLUSIEURS (EDO Appendice 2 : objet BE/B) : flux multi PARALLÈLE — chaque
+   *  héros frappe (`FLOWS.forceDoor`), cumul des dégâts vs B dans `forceDoorConfirm`. */
+  pendingForceDoor: PendingForceDoor | null;
   /** Tir ENNEMI télégraphié : réticule « qui l'adversaire vise », montré ~0,7 s AVANT le tir. */
   enemyAim: { fromId: string; toId: string; melee?: boolean } | null;
   /** Coût/gain (Action/Mouvement/Avantage) de l'intention SOUS LA SOURIS (desktop) — alimente le
@@ -639,6 +642,17 @@ export interface GameState {
   /** Cumule le DR du Round courant (LDB 12 l.200) ; total < 0 → recommence ; total ≥ cible → réussite. */
   extendedTestNext: () => void;
   extendedTestCancel: () => void;
+  /** Enfoncer une porte à PLUSIEURS (EDO Appendice 2) : ouvre le flux (objet BE/B) ; chacun frappe. */
+  startForceDoor: (opts: { label: string; doorBE: number; doorB: number; heroIds: string[]; flag?: string }) => void;
+  forceDoorRoll: (pid: string) => void;
+  forceDoorReroll: (pid: string) => void;
+  forceDoorBonusSL: (pid: string) => void;
+  forceDoorDarkPact: (pid: string) => void;
+  forceDoorForceSuccess: (pid: string) => void;
+  forceDoorSetForcedRoll: (pid: string, roll: number) => void;
+  /** Applique les dégâts du Round (somme) ; porte à ≤ 0 B → cède (flag posé) ; sinon nouveau Round. */
+  forceDoorConfirm: () => void;
+  forceDoorCancel: () => void;
   /** Incantation HORS COMBAT (couture D) : un héros lanceur cible self/allié ; sorts non-offensifs. */
   oocCastSpell: (casterId: string, label: string, targetId: string, fromGrimoire?: boolean) => void;
   battleFocusSpell: (label: string) => void;
@@ -932,6 +946,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingCast: null,
   pendingCounterspell: null,
   pendingExtendedTest: null,
+  pendingForceDoor: null,
   pendingHeal: null,
   medic: null,
   pendingRest: null,
@@ -1743,6 +1758,34 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingExtendedTest: { ...p, total, rounds: [...p.rounds, { id: `round-${p.rounds.length + 1}`, interactive: true, result: null }] } });
   },
   extendedTestCancel: () => { set({ pendingExtendedTest: null }); },
+  // Enfoncer une porte à plusieurs (EDO Appendice 2) : flux multi PARALLÈLE (objet BE/B).
+  startForceDoor: (opts) => {
+    set({ pendingForceDoor: { label: opts.label, doorBE: opts.doorBE, doorB: opts.doorB, doorBmax: opts.doorB, flag: opts.flag,
+      participants: opts.heroIds.map((id) => ({ id, interactive: true, result: null })) } });
+  },
+  forceDoorRoll: (pid) => FLOWS.forceDoor.roll(get, set, pid),
+  forceDoorReroll: (pid) => FLOWS.forceDoor.reroll(get, set, pid),
+  forceDoorBonusSL: (pid) => FLOWS.forceDoor.bonusSL(get, set, pid),
+  forceDoorDarkPact: (pid) => FLOWS.forceDoor.darkPact(get, set, pid),
+  forceDoorForceSuccess: (pid) => FLOWS.forceDoor.forceSuccess(get, set, pid),
+  forceDoorSetForcedRoll: (pid, roll) => FLOWS.forceDoor.setForcedRoll(get, set, roll, pid),
+  forceDoorConfirm: () => {
+    const p = get().pendingForceDoor;
+    if (!p) return;
+    // Dégâts du Round = somme des coups (chacun déjà réduit par le BE à la résolution). Objets : pas de min 1.
+    const dmg = p.participants.reduce((s, x) => s + (x.result?.damage ?? 0), 0);
+    const doorB = p.doorB - dmg;
+    if (doorB <= 0) {
+      set({ pendingForceDoor: null });
+      get().log(`${p.label} cède ! (${dmg} dégât${dmg > 1 ? 's' : ''})`);
+      if (p.flag) set({ flags: { ...get().flags, [p.flag]: true } }); // ouverture en jeu (porte d'éditeur)
+    } else {
+      // La porte tient : un nouveau Round s'ouvre (chacun re-frappe — jets remis à zéro).
+      set({ pendingForceDoor: { ...p, doorB, participants: p.participants.map((x) => ({ ...x, result: null, rerolled: false, forced: false })) } });
+      get().log(`${p.label} : ${dmg} dégât${dmg > 1 ? 's' : ''}, reste ${doorB} Blessure${doorB > 1 ? 's' : ''}.`);
+    }
+  },
+  forceDoorCancel: () => { set({ pendingForceDoor: null }); },
   /** Ouvre une incantation HORS COMBAT (couture D) : un héros lanceur du groupe cible self/allié.
    *  Réservé aux sorts NON-offensifs — les Projectiles magiques exigent une cible ennemie (combat). */
   oocCastSpell: (casterId, label, targetId, fromGrimoire) => {
