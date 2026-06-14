@@ -65,6 +65,11 @@ export function exposureTestCount(severity: ExposureSeverity, sheltered: boolean
  * Applique les échecs en cascade (RAW l.415). Renvoie les jets et le journal.
  */
 export function exposureNight(c: Combatant, count: number, resVal: number, rng: RNG): { rolls: ExposureRoll[]; log: string[]; failures: number; wounds: number } {
+  // Protection magique contre les intempéries (Peau de loup d'hiver, Protection contre la pluie) :
+  // aucune Exposition tant que l'effet dure (op `weatherWard`).
+  if ((c.activeEffects ?? []).some((e) => e.weatherImmune)) {
+    return { rolls: [], log: [`${c.name} ignore le froid et les intempéries (protection magique).`], failures: 0, wounds: 0 };
+  }
   const rolls: ExposureRoll[] = [];
   const log: string[] = [];
   let failures = 0;

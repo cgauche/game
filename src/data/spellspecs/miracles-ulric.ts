@@ -70,9 +70,9 @@ export const MIRACLES_ULRIC: SpellSpec[] = [
   {
     label: "Peau de loup d'hiver",
     // « Les cibles ne subissent aucune pénalité automatique due au froid et aux conditions
-    //   hivernales (bien qu'elles ressentent toujours douleur et inconfort). » — endurance au froid :
-    //   arbitré.
-    ops: [{ op: 'narrative', text: 'Peau de loup d’hiver : pour la durée (heures), les cibles ne subissent aucune pénalité due au froid ou aux conditions hivernales — arbitrage MJ.' }],
+    //   hivernales (bien qu'elles ressentent toujours douleur et inconfort). » — immunité à
+    //   l'EXPOSITION météo (op weatherWard, lue par engine/exposure) ; la sensation reste narrative.
+    ops: [{ op: 'weatherWard' }],
     durationRounds: null, // « (Bonus de Sociabilité) heures »
     curated: true,
     source: "LDB 42 — Miracles d'Ulric « Peau de loup d'hiver »",

@@ -63,7 +63,15 @@ export const MAGIE_MINEURE: SpellSpec[] = [
   N('Lumière', 'Lumière : lueur de torche (modulable de bougie à lanterne) émanant de vous.'),
   N('Murmures', 'Murmures : projette votre voix vers un point à portée, sans Ligne de Vue.', { bonusOf: 'FM' }),
   N('Pas léger', 'Pas léger : votre passage ne laisse aucune trace organique (−20 implicite au Pistage adverse — arbitrage MJ).'),
-  N('Protection contre la pluie', 'Protection contre la pluie : vous restez au sec sous toute précipitation.'),
+  {
+    label: 'Protection contre la pluie',
+    // « Vous n'êtes pas affecté par les précipitations (pluie, grêle, grésil, neige). » — immunité à
+    //   l'EXPOSITION due aux précipitations (op weatherWard, lue par engine/exposure).
+    ops: [{ op: 'weatherWard' }],
+    durationRounds: null, // « (Bonus d'Endurance) heures »
+    curated: true,
+    source: 'LDB 47 p.240-242 « Protection contre la pluie »',
+  },
   N("Purification de l'eau", 'Purification de l’eau : purifie l’eau d’un récipient (poisons/polluants non magiques éliminés).'),
   {
     label: 'Putréfaction',

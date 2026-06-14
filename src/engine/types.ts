@@ -228,6 +228,9 @@ export interface ActiveEffect {
   suffocates?: boolean;
   /** « N'a pas besoin de respirer et ignore les règles de suffocation » (B. de Souffle, LDB 41). */
   noBreath?: boolean;
+  /** Immunité à l'EXPOSITION météo (froid/pluie/neige/tempête — Peau de loup d'hiver d'Ulric,
+   *  Protection contre la pluie) : `exposureNight` est sauté tant que l'effet dure. */
+  weatherImmune?: boolean;
   /** Bouclier anti-flèches (LDB 47 — L11) : les projectiles ORGANIQUES (flèches, carreaux,
    *  javelots) entrant dans la zone de `radiusMeters` autour du porteur sont détruits. */
   arrowWard?: { radiusMeters: number };

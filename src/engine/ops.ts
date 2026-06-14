@@ -185,6 +185,9 @@ export type GameOp =
   | { op: 'martyr' }
   /** « N'a pas besoin de respirer et ignore les règles de suffocation » (B. de Souffle, LDB 41). */
   | { op: 'noBreath' }
+  /** Immunité à l'EXPOSITION météo (froid/pluie/neige/tempête) tant que le Sort dure — Peau de loup
+   *  d'hiver (Ulric), Protection contre la pluie. Lu par `exposureNight` (engine/exposure). */
+  | { op: 'weatherWard' }
   /** Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). */
   | { op: 'narrative'; text: string };
 
@@ -581,6 +584,17 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           noBreath: true,
         });
         lines.push(`${target.name} n'a plus besoin de respirer (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'weatherWard': {
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          weatherImmune: true,
+        });
+        lines.push(`${target.name} est protégé des intempéries (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'castWard': {
