@@ -14,8 +14,8 @@ import { EYE_OPTIONS, eyesArtFromKeys } from './parts/eyes';
 import type { MonsterParts } from './parts/monstrous';
 import { hashSeed } from '../appearance';
 import { norm } from '../../lib/normalize';
-import { bipedDef, bipedSpeciesMatch, creaturePlanMatch, defByName } from './creatures';
-import { isSwarm } from './bodyPlan';
+import { bipedDef, bipedSpeciesMatch } from './creatures';
+import { resolveRender } from './bodyPlan';
 import { findCreature } from '../../data';
 import type { EntityAppearance } from '../../state/scene';
 import { raceById } from './races';
@@ -35,22 +35,16 @@ export interface EnemyRigProfile {
   equip: EquipCtx;
 }
 
-/** Classifieur cosmétique : 'rig' (humanoïde → rig bipède) ou 'creature' (non-humanoïde →
- *  gabarit quad/ailé/serpentin/… ou sprite monolithique). 100 % registry-driven : un def
- *  non-bipède (rigué OU monolithique) → 'creature' ; sinon humanoïde → 'rig'. */
+/** Classe de rendu d'un NOM (sans espèce explicite) — délègue au résolveur unique `resolveRender`
+ *  (repli name-match). 'rig' (humanoïde → rig bipède) ou 'creature' (gabarit quad/ailé/… / nuée). */
 export function classifyEnemy(name: string): 'rig' | 'creature' {
-  return creaturePlanMatch(name) || isSwarm(name) ? 'creature' : 'rig'; // nuée (trait) = non-bipède
+  return resolveRender(undefined, findCreature(name)?.traits, name).kind === 'plan' ? 'creature' : 'rig';
 }
 
-const SWARM_TRAIT = /^Nu[eé]e\b/i;
-/** Classe de rendu DATA-DRIVEN (de-POC P5) : trait Nuée (essaim, donnée) ou espèce CANONIQUE
- *  explicite (lookup EXACT `defByName`) → plus de match flou sur un nom libre. Repli sur le
- *  name-match `classifyEnemy` UNIQUEMENT pour les entités/spawns sans espèce explicite (voie en
- *  cours de retrait : une fois l'espèce posée partout, ce repli — et le matcher — disparaissent). */
+/** Classe de rendu DATA-DRIVEN (de-POC P5) — délègue au résolveur unique `resolveRender` : trait
+ *  Nuée ou espèce CANONIQUE explicite (lookup exact) ; repli name-match si l'espèce est absente. */
 export function classifyBy(species: string | undefined, traits: string[] | undefined, name: string): 'rig' | 'creature' {
-  if (traits?.some((t) => SWARM_TRAIT.test(t))) return 'creature';
-  if (species) { const d = defByName(species); return d && d.plan !== 'biped' ? 'creature' : 'rig'; }
-  return classifyEnemy(name);
+  return resolveRender(species, traits, name).kind === 'plan' ? 'creature' : 'rig';
 }
 
 /** Espèce de rig détectée du nom (sinon Humain) : `bipedSpeciesMatch` route par name+aliases,

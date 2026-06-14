@@ -33,7 +33,7 @@ const COUVERT_AILLEURS = new Map<string, string>([
   // Profil dérivé au spawn — state/spawn.ts
   ['Armure', 'PA plats au spawn (armourFromTraits)'],
   ['Taille', 'catégorie de Taille au spawn (sizeFromTraits) + sous-système Taille'],
-  ['Nuée', 'swarmFromTraits (×5 PB, +10 CC, immunité psy, Frappe Mortelle…)'],
+  // 'Nuée' est désormais une DEF du registre (flag `swarm`, lue par `isSwarm`) → couverture unique par la def.
   // Psychologie — engine/psychology.ts (parsePsychTraits)
   ['Peur', 'causesPeur (parsePsychTraits)'],
   ['Terreur', 'causesTerreur (parsePsychTraits)'],

@@ -13,15 +13,13 @@ import type { Appearance } from './appearance';
 import type { EquipCtx } from './parts/equipment';
 import { bonesToSvg } from './renderBones';
 import { PLAN_LIST } from './plans/_registry.generated';
-import { creaturePlanMatch, creatureMatch } from './creatures';
+import { creaturePlanMatch, creatureMatch, defByName, speciesScale, bipedSpeciesMatch, bipedSpeciesScale, creatureSpeciesScale } from './creatures';
 import { findCreature } from '../../data';
+import { isSwarm } from '../../engine/traits/dispatch';
 
-/** Une nuée = trait « Nuée » (Essaim/Swarm, LDB 85) sur le record — pilote le RENDU (gabarit `swarm`)
- *  et la classification, indépendamment du nom (le trait, pas « Nuée de … »). */
-const SWARM_TRAIT = /^Nu[eé]e\b/i;
-export function isSwarm(name: string): boolean {
-  return !!findCreature(name)?.traits?.some((t) => SWARM_TRAIT.test(t));
-}
+/** Essaim depuis un NOM (lookup record → traits) — repli pour les chemins qui n'ont que le nom.
+ *  La détection canonique est `isSwarm(traits)` (registre des Traits) ; ici on résout les traits. */
+const isSwarmName = (name: string): boolean => isSwarm(findCreature(name)?.traits);
 
 /** Identifiant de gabarit — chaîne libre dérivée des `plans/defs/` (data-driven : chaque plan
  *  déclare son `id`). Le monolithique n'est PAS un BodyPlan (fallback legacy hors registre). */
@@ -76,6 +74,36 @@ export function planById(id: BodyPlanId): BodyPlan {
  * humanoïde nommé ou générique non couvert par un def rigué).
  */
 export function bodyPlanOf(name: string): BodyPlanId | 'monolithic' {
-  if (isSwarm(name)) return 'swarm';        // trait Nuée → gabarit d'amas (avant le match par nom)
-  return creaturePlanMatch(name) ?? 'biped';
+  return resolveRender(undefined, findCreature(name)?.traits, name).plan; // délègue au résolveur unique
+}
+
+/** Résolution de rendu UNIFIÉE et DATA-DRIVEN (de-POC P5) : classe (rig/gabarit), id de gabarit,
+ *  espèce canonique et échelle de token — depuis l'ESPÈCE EXPLICITE (lookup exact) + le trait Nuée.
+ *  `name` n'est qu'un REPLI transitoire (entités/spawns sans espèce explicite) retiré en 5d avec le
+ *  matcher flou. UNE source pour pickBackend / usePlanAnim / CreaturePreview / MountedToken. */
+export interface RenderResolution {
+  kind: 'rig' | 'plan';
+  plan: BodyPlanId | 'monolithic';
+  species: string;
+  scale: number;
+}
+export function resolveRender(species: string | undefined, traits: string[] | undefined, name: string): RenderResolution {
+  if (isSwarm(traits)) {
+    const sp = species || PLANS.swarm?.speciesNames()[0] || '';
+    return { kind: 'plan', plan: 'swarm', species: sp, scale: species ? speciesScale(species) : creatureSpeciesScale(name) };
+  }
+  if (species) {
+    const d = defByName(species);
+    if (d && d.plan !== 'biped') return { kind: 'plan', plan: d.plan, species, scale: speciesScale(species) };
+    return { kind: 'rig', plan: 'biped', species, scale: speciesScale(species) };
+  }
+  // Repli name-match (transitoire — retiré en 5d) : nuée → 'swarm' ; non-bipède → son plan ; sinon rig.
+  const swarm = isSwarmName(name);
+  const nbPlan = creaturePlanMatch(name);
+  if (swarm || nbPlan) {
+    const plan = swarm ? 'swarm' : nbPlan!;
+    const sp = creatureMatch(name)?.name ?? (plan !== 'monolithic' ? PLANS[plan]?.speciesNames()[0] : '') ?? '';
+    return { kind: 'plan', plan, species: sp, scale: creatureSpeciesScale(name) };
+  }
+  return { kind: 'rig', plan: 'biped', species: bipedSpeciesMatch(name) ?? 'Humain', scale: bipedSpeciesScale(name) };
 }

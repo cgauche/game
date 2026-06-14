@@ -78,6 +78,9 @@ export interface TraitDef {
   fly?: boolean;
   /** Bond : Charge/Course → Mouvement ×2, ignore terrains et personnages traversés. */
   leap?: boolean;
+  /** Nuée (Essaim, LDB 85) : la créature est un AMAS → rendu par le gabarit « swarm » + ×5 PB / +10 CC
+   *  au spawn (cf. applySwarmBuild). Source UNIQUE de la détection d'essaim (plus de regex éparpillée). */
+  swarm?: boolean;
   /** Foulée : Mouvement de Course ×1,5. */
   stride?: boolean;
   /** Vision nocturne / Infravision : voit dans l'obscurité (annule la pénalité d'obscurité). */

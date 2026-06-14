@@ -11,7 +11,7 @@ import { emptyArmour } from '../engine/items';
 import { maxWounds, bonus } from '../engine/characteristics';
 import { parseSizeLabel, resizeBySteps, SIZE_ORDER, SizeCategory } from '../engine/size';
 import { parsePsychTraits } from '../engine/psychology';
-import { traitCharMods, traitMovementMod, traitBonusWoundsBE, isMindless, mutationsAtSpawn } from '../engine/traits/dispatch';
+import { traitCharMods, traitMovementMod, traitBonusWoundsBE, isMindless, mutationsAtSpawn, isSwarm } from '../engine/traits/dispatch';
 import { rollMutation, mutationByLabel } from '../data/mutations';
 import { makeRNG } from '../engine/dice';
 import { groupsFor } from '../engine/groups';
@@ -129,11 +129,6 @@ export function entitySize(ent: { ref?: string; statblock?: CustomStatblock }): 
   return (traits && sizeFromTraits(traits)) || undefined;
 }
 
-/** La créature est-elle une Nuée (Trait Essaim, LDB 85 l.199-200) ? */
-export function swarmFromTraits(traits: string[]): boolean {
-  return traits.some((t) => /^Nu[eé]e\b/i.test(t));
-}
-
 /** Nuée au spawn (LDB 85 l.200) : ×5 PB (« cinq fois plus de PB qu'une créature type ») + 10 CC sur
  *  les PB/carac. déjà calculés. Le B mono-créature du bestiaire reste, c'est lui qu'on multiplie. */
 function applySwarmBuild(chars: Characteristics, wounds: number): { chars: Characteristics; wounds: number } {
@@ -225,7 +220,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   const profileChanged = !!extras?.randomChars || (optSize != null && optSize !== baseSize);
   let wounds = typeof creature.char.B === 'number' && !profileChanged ? creature.char.B : maxWounds(chars, size);
   if (traitBonusWoundsBE(optionals)) wounds += bonus(chars.E); // Endurant facultatif : +BE Blessures (LDB 85)
-  const swarm = swarmFromTraits(traits);
+  const swarm = isSwarm(traits);
   if (swarm) ({ chars, wounds } = applySwarmBuild(chars, wounds)); // ×5 PB + 10 CC (la nuée = 5 créatures)
   const movement = (typeof creature.char.M === 'number' ? creature.char.M : 4) + traitMovementMod(optionals);
   return {
@@ -274,7 +269,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
   // Endurant (LDB 85 p.339) : +Bonus d'Endurance Blessures (sur la formule — un B explicite du
   // statbloc est réputé final, comme au bestiaire).
   if ((typeof sb.char.B !== 'number' || sb.randomChars) && traitBonusWoundsBE(sb.traits)) wounds += Math.floor(chars.E / 10);
-  const swarm = swarmFromTraits(sb.traits ?? []);
+  const swarm = isSwarm(sb.traits ?? []);
   if (swarm) ({ chars, wounds } = applySwarmBuild(chars, wounds)); // Nuée : ×5 PB + 10 CC (l.200)
   const movement = (typeof sb.char.M === 'number' ? (sb.char.M as number) : 4) + traitMovementMod(sb.traits);
   return {

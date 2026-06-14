@@ -215,6 +215,12 @@ export function hasLeap(traits: string[] | undefined): boolean {
   return resolveTraits(traits).some((r) => r.def.leap);
 }
 
+/** Nuée / Essaim (LDB 85) : SOURCE UNIQUE de la détection d'amas — pilote le gabarit « swarm » et le
+ *  build ×5 PB. Remplace les regex `/^Nu[eé]e\b/i` éparpillées (rendu/classification/spawn). */
+export function isSwarm(traits: string[] | undefined): boolean {
+  return resolveTraits(traits).some((r) => r.def.swarm);
+}
+
 /** Foulée (LDB 85 p.339) : Course ×1,5. */
 export function hasStride(traits: string[] | undefined): boolean {
   return resolveTraits(traits).some((r) => r.def.stride);
