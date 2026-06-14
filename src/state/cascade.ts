@@ -199,3 +199,31 @@ export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[]): C
   }
   return cur;
 }
+
+/** Un groupe de conséquences déjà calculées (lignes prêtes à afficher) — brique d'entrée pour
+ *  rapatrier les conséquences d'un jet INLINE dans la modale. */
+export interface ConsequenceGroup {
+  kind: string;
+  label: string;
+  lines: string[];
+  icon?: string;
+  actorId?: string;
+}
+
+/** Construit une SÉQUENCE d'étapes d'AFFICHAGE à partir de groupes de conséquences (imparfaite/colère,
+ *  critique, Assommante…) — pour les montrer INLINE plutôt qu'en RevealModal séparée. Les groupes
+ *  vides sont ignorés (pas de bruit). Les mutations restent appliquées par le moteur ; ces étapes ne
+ *  font qu'AFFICHER (applier muet → `commitStep` préserve l'`outcome` pré-posé). */
+export function buildConsequenceSteps(groups: ConsequenceGroup[]): CascadeStep[] {
+  return groups
+    .filter((g) => g.lines.length > 0)
+    .map((g, i): CascadeStep => ({
+      id: `cons-${g.kind}-${i}`,
+      kind: g.kind,
+      actorId: g.actorId,
+      icon: g.icon,
+      label: g.label,
+      outcome: g.lines,
+      interactive: true,
+    }));
+}

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { startCascade, registerCascadeApplier, stepInteraction, stepReady } from './cascade';
+import { startCascade, registerCascadeApplier, stepInteraction, stepReady, buildConsequenceSteps } from './cascade';
 import type { CascadeStep } from './pendings';
 
 /**
@@ -183,5 +183,18 @@ describe('Cascade séquentielle influençable', () => {
     const committed = useGame.getState().pendingCascade!.participants[0];
     expect(committed.committed).toBe(true);
     expect(committed.outcome).toEqual(['Sonné appliqué (Assommante)']); // contenu pré-posé NON effacé
+  });
+
+  it('buildConsequenceSteps : groupes non vides → étapes d’affichage (outcome pré-posé), vides ignorés', () => {
+    const steps = buildConsequenceSteps([
+      { kind: 'miscast', label: 'Imparfaite', icon: '💥', lines: ['Le Vent se déchaîne.', 'L’incantateur perd 3 PB.'], actorId: 'x' },
+      { kind: 'effet', label: 'Effets', lines: [] }, // vide → ignoré
+      { kind: 'effet', label: 'Effets', icon: '✨', lines: ['Cible Aveuglée 2 rounds.'] },
+    ]);
+    expect(steps.map((s) => s.kind)).toEqual(['miscast', 'effet']);
+    expect(steps[0].outcome).toEqual(['Le Vent se déchaîne.', 'L’incantateur perd 3 PB.']);
+    expect(stepInteraction(steps[0])).toBe('affichage'); // ni target ni options
+    expect(steps[0].actorId).toBe('x');
+    expect(steps[1].outcome).toEqual(['Cible Aveuglée 2 rounds.']);
   });
 });
