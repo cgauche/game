@@ -135,7 +135,7 @@ import { campaign, campaignWorldMap } from '../scenes/campaign';
 import { dayIndex, runDailyUpkeep } from './upkeep';
 import * as travelFlow from './travelFlow';
 
-export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'test' | 'interlude' | 'coop' | 'compendium';
+export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'test' | 'interlude' | 'coop' | 'compendium' | 'dataEditor';
 
 /** Registre des scènes (pour les transitions de campagne). */
 const sceneRegistry: Record<string, Scene> = {};
