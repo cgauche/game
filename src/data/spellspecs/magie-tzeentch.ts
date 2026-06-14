@@ -124,11 +124,13 @@ export const MAGIE_TZEENTCH: SpellSpec[] = [
     label: 'Parole de Tzeentch',
     // « Test opposé d'Intelligence : la Cible perdante gagne 1 État Sonné (+1 par DR d'écart) ;
     //   Maladresse → Inconscient + Corruption. Une fois les États retirés, Test de Résistance (+20)
-    //   ou +1 Corruption. » — le Sonné est mécanique ; l'échelle au Test opposé et les suites restent
-    //   journalisées.
+    //   ou +1 Corruption. » — l'opposition d'Intelligence est un MULTIJET dans la modale (`opposed`) :
+    //   la Cible perdante gagne 1 Sonné + 1 par DR d'ÉCART (échelle sur la marge). Les suites
+    //   (Maladresse → Inconscient/Corruption, Résistance à la fin) restent journalisées.
+    opposed: { kind: 'resist', char: 'Int' },
     ops: [
-      { op: 'condition', name: 'Sonné' },
-      { op: 'narrative', text: 'Parole de Tzeentch : Test opposé d’Intelligence — la Cible perdante gagne +1 Sonné par DR d’écart (Maladresse → Inconscient + Corruption) ; une fois remise, elle teste Résistance (+20) ou gagne +1 Corruption (Maladresse → Mutation mentale) — arbitrage MJ.' },
+      { op: 'condition', name: 'Sonné', value: 1, valuePerSL: { every: 1, amount: 1 } },
+      { op: 'narrative', text: 'Parole de Tzeentch : sur une Maladresse, la Cible passe Inconscient + Corruption ; une fois remise, elle teste Résistance (+20) ou gagne +1 Corruption (Maladresse → Mutation mentale) — arbitrage MJ.' },
     ],
     durationRounds: { bonusOf: 'Int' },
     curated: true,

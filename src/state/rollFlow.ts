@@ -237,7 +237,9 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       ...(opts?.touch ? touch(get()) : {}),
     } as Partial<GameState>) };
   };
-  // Rangée TÉMOIN d'un multi (lecture seule, façon MultiRollList) : pas de jet/Résilience joueur.
+  // Rangée TÉMOIN d'un multi (façon MultiRollList) : pas d'INFLUENCE joueur (Résilience). Son jet
+  // INITIAL est tout de même résolu (auto-roulé à l'ouverture par l'`openX` — ex. cible IA d'une
+  // incantation opposée) ; c'est l'UI (boutons masqués) + les gardes de point qui la rendent passive.
   const passive = (slot: Slot) => !!spec.multi && (slot as Partial<RollParticipant>).interactive === false;
   const reresolveOf = (s: GameState, slot: Slot, actor: Combatant, get: Get, p: P) =>
     spec.reresolve ? spec.reresolve(s, slot, actor, get, p) : spec.resolve(s, slot, actor, get, undefined, p);
@@ -245,7 +247,8 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
     picker: spec.caps?.picker as RollFlowHandlers['picker'],
     roll(get, set, pid) {
       const s = get(); const p = pendingOf(s); if (!p) return;
-      const loc = locate(set, get, p, pid); if (!loc || passive(loc.slot)) return;
+      // PAS de garde `passive` : le jet INITIAL d'un témoin doit être résolu (auto-roll IA à l'ouverture).
+      const loc = locate(set, get, p, pid); if (!loc) return;
       opRoll(spec.rolled(loc.slot), () => spec.resolve(s, loc.slot, spec.actor(s, loc.slot, p), get, undefined, p), loc.commit);
     },
     reroll(get, set, pid) {

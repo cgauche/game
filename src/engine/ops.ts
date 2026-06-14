@@ -150,8 +150,9 @@ export type GameOp =
   /** Guérit `count` (+échelle DR) Blessures critiques de convalescence — jamais une amputation
    *  (Larmes de Shallya, LDB 42). */
   | { op: 'cureCriticalWound'; count?: number; countPerSL?: PerSL }
-  /** PB réduits à 0 + Inconscient (Châtiment, Tonnerre et foudre — LDB 40). */
-  | { op: 'reduceToZero' }
+  /** PB réduits à 0 + Inconscient (Châtiment, Tonnerre et foudre — LDB 40). `onlyGroups` : gaté par
+   *  Groupe (Fauche-démon → cible Démoniaque seulement). */
+  | { op: 'reduceToZero'; onlyGroups?: string[] }
   /** « Ne subit aucune pénalité causée par les États » (Endurance de l'anachorète, LDB 42) —
    *  drapeau d'effet actif lu par combatTestPenalty/testStatePenalty. */
   | { op: 'ignoreStatePenalties' }
@@ -558,6 +559,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'reduceToZero': {
+        if (!groupGate(o.onlyGroups)) break; // Fauche-démon : n'annihile qu'une cible Démoniaque
         target.wounds.current = 0;
         addCondition(target, 'Inconscient');
         lines.push(`${target.name} : Blessures réduites à 0 (Inconscient).`);

@@ -42,10 +42,13 @@ export const DOMAINE_LUMIERE: SpellSpec[] = [
   {
     label: 'Fauche-démon',
     // « Le Test d'Incantation est opposé par la cible (Test de FM). Si vous l'emportez, vous
-    //   annihilez une cible Démoniaque… quiconque regardait reçoit +DR Aveuglé. » — bannissement
-    //   par Test opposé d'incantation (non modélisé) + cône d'aveuglement aux témoins : arbitré.
+    //   annihilez une cible Démoniaque… quiconque regardait reçoit +DR Aveuglé. » — l'opposition
+    //   FM est un MULTIJET dans la modale (`opposed`) : si le lanceur l'emporte, la cible Démoniaque
+    //   est annihilée (reduceToZero gaté Démon) ; le cône d'aveuglement des témoins reste journalisé.
+    opposed: { kind: 'resist', char: 'FM' },
     ops: [
-      { op: 'narrative', text: 'Fauche-démon : Test d’Incantation opposé à la FM de la cible ; réussite → la cible Démoniaque est annihilée et les témoins (hors Magie des Arcanes (Lumière)) reçoivent +DR Aveuglé — arbitrage MJ.' },
+      { op: 'reduceToZero', onlyGroups: ['Démon'] },
+      { op: 'narrative', text: 'Fauche-démon : les témoins (hors Magie des Arcanes (Lumière)) reçoivent +DR Aveuglé — arbitrage MJ.' },
     ],
     durationRounds: null,
     curated: true,

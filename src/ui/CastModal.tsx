@@ -4,6 +4,7 @@ import { overcastTargetCandidates, previewCast } from '../state/combatFlow';
 import { findSpell } from '../data/index';
 import { spellSpecFor } from '../data/spellspecs';
 import { conjureFormOptions } from '../engine/conjuredWeapons';
+import { testValue } from '../engine/skills';
 import { HIT_LOCATION_LABELS } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
@@ -11,6 +12,7 @@ import { CharFrame } from './CharFrame';
 import { RollFlowShell } from './RollFlowShell';
 import { RollPanel } from './RollPanel';
 import { VsHeader } from './VsHeader';
+import { ParticipantRow } from './ParticipantRow';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 
@@ -44,6 +46,14 @@ export function CastModal() {
   const setForcedRoll = useGame((s) => s.castSetForcedRoll);
   const confirm = useGame((s) => s.castConfirm);
   const cancel = useGame((s) => s.castCancel);
+  // Opposition de la cible (multijet DANS cette modale) : chaque cible oppose son Test (FM/Int/Bagarre).
+  const pcs = useGame((s) => s.pendingCastOpposition);
+  const oppRoll = useGame((s) => s.oppositionRoll);
+  const oppReroll = useGame((s) => s.oppositionReroll);
+  const oppBonusSL = useGame((s) => s.oppositionBonusSL);
+  const oppDarkPact = useGame((s) => s.oppositionDarkPact);
+  const oppForce = useGame((s) => s.oppositionForceSuccess);
+  const oppConfirm = useGame((s) => s.oppositionConfirm);
   if (!pc) return null;
   const pool = battle?.combatants ?? party; // même modale en combat (file) et hors combat (groupe)
   const caster = pool.find((c) => c.id === pc.casterId);
@@ -243,6 +253,41 @@ export function CastModal() {
               </div>
             </div>
           )}
+          {/* OPPOSITION de la cible (Fauche-démon → FM, Parole de Tzeentch → Int) : rangées DANS la
+              modale d'incantation (cible IA = témoin auto-roulée, cible héros = interactive). */}
+          {pcs && (
+            <div className="cs-rows">
+              <span className="mini-title">🛡️ Opposition — la cible oppose son {pcs.kind === 'contact' ? 'Corps à corps (Bagarre)' : (pcs.char ?? pcs.skill)}</span>
+              {pcs.participants.map((part) => {
+                const actor = pool.find((c) => c.id === part.id);
+                if (!actor) return null;
+                const r = part.result;
+                const lab = pcs.char ?? pcs.skill ?? 'Opposition';
+                const row = r
+                  ? { combatant: actor, d: { label: lab, base: r.oppose.target, modifier: 0, target: r.oppose.target, roll: r.oppose.roll, success: r.oppose.success, sl: r.oppose.sl } }
+                  : { combatant: actor, pending: { label: lab, base: testValue(actor, pcs.skill, pcs.char), mods: [] } };
+                return (
+                  <ParticipantRow
+                    key={part.id}
+                    actor={actor}
+                    row={row}
+                    rolled={!!r}
+                    interactive={!!part.interactive}
+                    rollLabel="🛡️ Résister"
+                    onRoll={() => oppRoll(part.id)}
+                    rerollable={!!r && canReroll(!r.resisted, !!part.rerolled)}
+                    onReroll={() => oppReroll(part.id)}
+                    onBonusSL={() => oppBonusSL(part.id)}
+                    darkPactable={actor.kind === 'hero' && !!r && !r.resisted}
+                    onDarkPact={() => oppDarkPact(part.id)}
+                    onForce={() => oppForce(part.id)}
+                    forceShow={!!r && !r.resisted}
+                    extra={r && <div className={`cs-outcome ${r.resisted ? 'ok-text' : 'muted'}`}>{r.resisted ? '✅ Résiste !' : `subit · marge DR ${r.margin}`}</div>}
+                  />
+                );
+              })}
+            </div>
+          )}
         </>
       )}
       forcedRoll={forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined}
@@ -259,7 +304,7 @@ export function CastModal() {
       forceShow={!!res && !res.cast}
       confirmLabel={placeable ? '📍 Poser la zone' : 'Appliquer'}
       confirmTitle={placeable ? "La modale s'efface — clique une case du champ de bataille pour déposer la zone" : undefined}
-      onConfirm={placeable ? () => placeZone(true) : confirm}
+      onConfirm={pcs ? oppConfirm : placeable ? () => placeZone(true) : confirm}
     />
   );
 }

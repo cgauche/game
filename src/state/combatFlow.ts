@@ -5,7 +5,7 @@
  */
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { LootGear } from './pendings';
+import type { LootGear, PendingCast } from './pendings';
 import { Combatant, ItemInstance, HitLocation, Weapon, DIFFICULTY_MODIFIERS, HIT_LOCATION_LABELS } from '../engine/types';
 import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
@@ -2237,6 +2237,24 @@ export function routeEnemyCast(get: Get, set: SetFn): void {
   }
 }
 
+/** Ouvre le multijet d'OPPOSITION d'un Sort `spec.opposed` (Fauche-démon → FM, Parole de Tzeentch →
+ *  Int) : chaque cible (vivante) oppose son Test à l'incantation FIGÉE, DANS la modale de cast.
+ *  Cible IA = rangée TÉMOIN (jet auto-roulé ici) ; cible héros = interactive. Renvoie false (→ le Sort
+ *  s'applique normalement) si le Sort n'oppose pas ou s'il n'y a aucune cible. GARDE `pendingCast`. */
+export function openCastOpposition(get: Get, set: SetFn, pc: PendingCast, targets: Combatant[]): boolean {
+  const spell = effectiveSpellOf(pc);
+  const opposed = spell ? spellSpecFor(spell).opposed : undefined;
+  if (!opposed) return false;
+  const participants = targets
+    .filter((t) => !isOutOfAction(t))
+    .map((t) => ({ id: t.id, interactive: t.kind === 'hero', result: null }));
+  if (!participants.length) return false;
+  set({ pendingCastOpposition: { participants, kind: opposed.kind, skill: opposed.skill, char: opposed.char } });
+  // Cibles IA (témoin) : jet auto-roulé immédiatement (révélé dans la modale, jamais caché).
+  for (const p of participants) if (!p.interactive) get().oppositionRoll(p.id);
+  return true;
+}
+
 /** Rayon INITIAL d'un sort de ZONE en mètres (spec curée prioritaire sur le champ Cible —
  *  même précédence que l'application). `null` = pas un sort de ZdE chiffrable. */
 export function zoneRadiusMeters(spell: NonNullable<ReturnType<typeof findSpell>>, caster: Combatant): number | null {
@@ -2527,7 +2545,7 @@ export function applyCast(
   missile: boolean,
   focusedNI0: boolean,
   critChoice?: CastCritChoice,
-  extras?: { durationMult?: number; extraTargets?: Combatant[]; conjureForm?: ConjureForm },
+  extras?: { durationMult?: number; extraTargets?: Combatant[]; conjureForm?: ConjureForm; opposedOutcome?: Record<string, { resisted: boolean; margin: number }> },
 ) {
   const battle = get().battle; // null = incantation HORS COMBAT (couture D) : même applyCast, sortie journal
   const durationMult = Math.max(1, extras?.durationMult ?? 1);
@@ -2720,13 +2738,17 @@ export function applyCast(
       if (durationMult > 1 && baseClockMin != null) logLines.push(`Surincantation : durée ×${durationMult}.`);
       for (const t of [target, ...extraTargets]) {
         if (t !== target) logLines.push(`${spell.label} s'étend aussi à ${t.name} (Surincantation).`);
+        // OPPOSITION (spec.opposed) résolue dans la modale : une cible qui l'a emporté RÉSISTE (aucune
+        // op) ; sinon les ops portent sur la MARGE de DR (l'écart de l'opposition → échelles `perSL`).
+        const opp = extras?.opposedOutcome?.[t.id];
+        if (opp?.resisted) { logLines.push(`${t.name} résiste à ${spell.label} (Test opposé).`); continue; }
         logLines.push(
           ...applyOps(t, spec.ops, {
             rng: battleRng(),
             caster,
             label: spell.label,
             now: get().gameTime,
-            sl: res.sl,
+            sl: opp ? opp.margin : res.sl,
             defaultDurationRounds: rounds ?? COMBAT_PERSIST,
             ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
             ...(extras?.conjureForm ? { conjureForm: extras.conjureForm } : {}),
@@ -2814,6 +2836,8 @@ export function applyCast(
   // Attributs de Domaine (LDB 48 — L14) : riders post-lancement d'un Sort « issu du Domaine ».
   if (res.cast) {
     for (const t of [target, ...extraTargets]) {
+      // Une cible qui a EMPORTÉ l'opposition (spec.opposed) résiste au Sort entier : pas de rider de Domaine.
+      if (extras?.opposedOutcome?.[t.id]?.resisted) continue;
       logLines.push(...domainOnHitRiders(caster, t, spell, t.kind !== caster.kind));
     }
     // Cieux (l.87) : le Sort « se dirige vers toutes les autres cibles dans les 2 mètres » de la
