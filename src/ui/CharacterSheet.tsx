@@ -4,7 +4,8 @@ import { bestDetector } from '../state/merchantFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { useModalA11y } from './Modal';
 import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem } from '../engine/items';
-import { CHAR_KEYS, CharKey, HitLocation, ItemInstance, Combatant, Weapon } from '../engine/types';
+import { CHAR_KEYS, CHAR_LABELS, CharKey, HitLocation, ItemInstance, Combatant, Weapon } from '../engine/types';
+import { effectiveChar } from '../engine/characteristics';
 import { buildAdvancementView } from '../state/advancement';
 import { hasHealSkill, isHealable } from '../engine/healing';
 import { itemUse } from '../engine/consumables';
@@ -77,6 +78,52 @@ const SHORT: Record<CharKey, string> = {
   Soc: 'Soc',
 };
 
+/** Description courte d'un effet actif (buff de carac, Trait/Talent accordé, enchantement…). */
+function describeEffect(e: NonNullable<Combatant['activeEffects']>[number]): string {
+  if (e.char) return `${e.bonus >= 0 ? '+' : ''}${e.bonus} ${CHAR_LABELS[e.char]}`;
+  if (e.grantedTrait) return `Trait ${e.grantedTrait}`;
+  if (e.grantedTalent) return `Talent ${e.grantedTalent}`;
+  if (e.apAll) return `+${e.apAll} PA (toutes Localisations)`;
+  if (e.weaponEnchant) return 'Arme enchantée';
+  if (e.weatherImmune) return 'Immunisé aux intempéries';
+  if (e.suffocates) return 'Suffoque (−1 PB/Round)';
+  if (e.noBreath) return 'Respiration superflue';
+  if (e.ignoreStatePenalties) return 'Ignore les pénalités d’État';
+  if (e.condPerRound) return `${e.condPerRound.name} chaque Round`;
+  if (e.grantedFortune) return `+${e.grantedFortune} Chance (le temps du Sort)`;
+  if (e.grantedFate) return `+${e.grantedFate} Destin (le temps du Sort)`;
+  return e.label;
+}
+
+/** Panneau « Effets actifs » : buffs/débuffs de Sort, Traits accordés, contrecoups d'incantation —
+ *  surface tout ce qui modifie la fiche (métamorphose, bénédictions, enchantements…). */
+function ActiveEffectsPanel({ hero }: { hero: Combatant }) {
+  const fx = hero.activeEffects ?? [];
+  const cp = hero.castPenalties ?? [];
+  if (!fx.length && !cp.length) return null;
+  const dur = (e: { roundsLeft?: number; untilTime?: number }) =>
+    e.roundsLeft != null && e.roundsLeft < 9999 ? ` · ${e.roundsLeft} R` : e.untilTime != null ? ' · durée' : '';
+  return (
+    <>
+      <div className="mini-title">Effets actifs</div>
+      <div className="sheet-effects">
+        {fx.map((e, i) => (
+          <div className="skill-line" key={`e${i}`}>
+            <span className="sk-name">{e.label}</span>
+            <span className="sk-val">{describeEffect(e)}{dur(e)}</span>
+          </div>
+        ))}
+        {cp.map((p, i) => (
+          <div className="skill-line" key={`c${i}`}>
+            <span className="sk-name">{p.label}</span>
+            <span className="sk-val warn-text">{p.blocked ? 'Incantation bloquée' : p.maxZeroDR ? 'Prière plafonnée à 0 DR' : `${p.mod} ${p.skill}`}{dur(p)}</span>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
 type SheetTab = 'combat' | 'competences' | 'sac' | 'sorts' | 'avancement';
 const TAB_LABELS: Record<SheetTab, string> = {
   combat: 'Combat',
@@ -87,7 +134,9 @@ const TAB_LABELS: Record<SheetTab, string> = {
 };
 
 export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: () => void }) {
-  const hero = useGame((s) => s.party.find((h) => h.id === heroId));
+  // EN COMBAT, lire la copie de bataille (qui porte les effets actifs vivants — buffs, métamorphose,
+  // dégâts…) plutôt que l'original du groupe ; hors combat, le groupe. → la fiche reflète l'état réel.
+  const hero = useGame((s) => s.battle?.combatants.find((h) => h.id === heroId) ?? s.party.find((h) => h.id === heroId));
   const [tab, setTab] = useState<SheetTab>('combat');
   const boxRef = useRef<HTMLDivElement>(null);
   useModalA11y(boxRef, onClose); // dialogue au markup spécifique (header à onglets) → hook a11y partagé
@@ -324,13 +373,19 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
         )}
         <div className="mini-title">Caractéristiques</div>
         <div className="char-stats sheet-stats">
-          {CHAR_KEYS.map((k) => (
-            <div className="stat" key={k}>
-              <span className="stat-label">{SHORT[k]}</span>
-              <span className="stat-val">{hero.characteristics[k]}</span>
-            </div>
-          ))}
+          {CHAR_KEYS.map((k) => {
+            const base = hero.characteristics[k] ?? 0;
+            const eff = effectiveChar(hero, k);
+            const cls = eff > base ? ' ok-text' : eff < base ? ' warn-text' : '';
+            return (
+              <div className="stat" key={k} title={eff !== base ? `Base ${base} (${eff > base ? '+' : ''}${eff - base} de modificateurs actifs)` : undefined}>
+                <span className="stat-label">{SHORT[k]}</span>
+                <span className={`stat-val${cls}`}>{eff}</span>
+              </div>
+            );
+          })}
         </div>
+        <ActiveEffectsPanel hero={hero} />
       </>)}
 
       {section === 'combat' && <EquipmentPanel hero={hero} />}
@@ -341,9 +396,9 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
         <div className="skill-grid">
           {hero.skills.length === 0 && <span className="muted">Aucune.</span>}
           {hero.skills.map((s, i) => {
-            const val = (hero.characteristics[s.characteristic] ?? 0) + s.advances;
+            const val = effectiveChar(hero, s.characteristic) + s.advances;
             return (
-              <div className="skill-line" key={i} title={`${s.characteristic} ${hero.characteristics[s.characteristic]} + ${s.advances}`}>
+              <div className="skill-line" key={i} title={`${s.characteristic} ${effectiveChar(hero, s.characteristic)} + ${s.advances}`}>
                 <span className="sk-name">
                   <CodexRef category="skills" label={s.name}>
                     {s.name}
