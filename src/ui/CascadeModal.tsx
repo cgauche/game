@@ -2,32 +2,16 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
-import { RollPanel } from './RollPanel';
-import type { CascadeStep } from '../state/pendings';
+import { MultiRollList } from './MultiRollList';
+import type { NightEntry } from '../state/restFlow';
 import type { Combatant } from '../engine/types';
 
-/** Une étape DÉJÀ validée, empilée en lecture seule au-dessus de l'étape courante (jet verrouillé
- *  + conséquence). Même panneau de jet (`RollPanel`) que le flot de base. */
-function DoneStep({ step, actor }: { step: CascadeStep; actor: Combatant }) {
-  const res = step.result;
-  if (!res) return null;
-  const base = step.base ?? step.target ?? 0;
-  return (
-    <div className="cascade-done">
-      <div className="cascade-step-label">{step.icon ?? '🎲'} {step.label}</div>
-      <RollPanel rows={[{ combatant: actor, d: { label: step.rollLabel ?? 'Jet', base, modifier: (step.target ?? base) - base, target: step.target ?? base, roll: res.roll, success: res.success, sl: res.sl } }]} />
-      <div className={`cs-outcome ${res.success ? 'ok-text' : 'muted'}`}>
-        {res.success ? `réussite (+${res.sl} DR)` : `échec (${res.sl} DR)`}{step.outcome?.length ? ` · ${step.outcome.join(' ')}` : ''}
-      </div>
-    </div>
-  );
-}
-
 /**
- * CASCADE séquentielle influençable (jets de NUIT / VOYAGE) — sur la COQUILLE de jet partagée
- * (`RollFlowShell`, comme Psychologie/Attaque) : l'étape COURANTE est un jet standard (Lancer →
- * Chance/+1 DR/Pacte/Résilience → « Valider »). Les jets DÉJÀ validés s'EMPILENT en lecture seule
- * au-dessus (slot `extra`) — on voit la chaîne se construire ; une défaillance impacte la suite.
+ * CASCADE séquentielle influençable (jets de NUIT / VOYAGE) — COMPOSE les deux briques existantes,
+ * sans rien réinventer : l'étape COURANTE est un jet standard du flot de base (`RollFlowShell` :
+ * Lancer → Chance/+1 DR/Pacte/Résilience → « Valider ») ; les jets DÉJÀ validés s'EMPILENT au-dessus
+ * via le BILAN partagé (`MultiRollList`, l'ancien écran de nuit) — portraits, lignes de jet, notes.
+ * Une défaillance impacte la suite (escalade d'Exposition, abri → jets).
  */
 export function CascadeModal() {
   const battle = useGame((s) => s.battle);
@@ -53,31 +37,29 @@ export function CascadeModal() {
   const isLast = p.cursor + 1 >= p.participants.length;
   const base = cur.base ?? cur.target ?? 0;
 
+  // BILAN des étapes déjà validées + notes d'entretien → entrées du bilan partagé (MultiRollList).
+  const done: NightEntry[] = p.log.map((l) => ({ icon: '📆', label: l, tone: 'info' as const }));
+  for (const s of p.participants.slice(0, p.cursor)) {
+    if (!s.result) continue;
+    const b = s.base ?? s.target ?? 0;
+    done.push({ actorId: s.actorId, icon: s.icon, label: s.label ?? 'Jet', tone: s.result.success ? 'ok' : 'bad',
+      d: { label: s.rollLabel ?? 'Jet', base: b, modifier: (s.target ?? b) - b, target: s.target ?? b, roll: s.result.roll, success: s.result.success, sl: s.result.sl } });
+    if (s.outcome?.length) done.push({ actorId: s.actorId, icon: '↳', label: s.outcome.join(' '), tone: s.result.success ? 'ok' : 'bad' });
+  }
+
   return (
     <RollFlowShell
       title={`${p.icon ?? '🎲'} ${p.title}`}
-      subtitle={<>étape {p.cursor + 1} / {p.participants.length}</>}
-      extra={
-        <>
-          {p.log.length > 0 && (
-            <ul className="cascade-log">{p.log.slice(-4).map((l, i) => <li key={i}>{l}</li>)}</ul>
-          )}
-          {p.participants.slice(0, p.cursor).map((s) => {
-            const a = s.actorId ? pool.find((c) => c.id === s.actorId) : undefined;
-            return a ? <DoneStep key={s.id} step={s} actor={a} /> : null;
-          })}
-          <div className="cascade-step-label is-current">{cur.icon ?? '🎲'} {cur.label}</div>
-        </>
-      }
+      subtitle={<>{cur.icon ?? '🎲'} {cur.label} · étape {p.cursor + 1} / {p.participants.length}</>}
+      extra={done.length ? <MultiRollList entries={done} /> : undefined}
       rolled={curRolled}
       rollLabel="🎲 Lancer"
       onRoll={() => roll(cur.id)}
       onCancel={cancel}
       cancelLabel="Renoncer"
       cancelAfterRoll
-      breakdown={res ? { label: cur.rollLabel ?? 'Jet', base, modifier: (cur.target ?? base) - base, target: cur.target ?? base, roll: res.roll, success: res.success, sl: res.sl } : undefined}
+      rows={res ? [{ combatant: actor, d: { label: cur.rollLabel ?? 'Jet', base, modifier: (cur.target ?? base) - base, target: cur.target ?? base, roll: res.roll, success: res.success, sl: res.sl } }] : undefined}
       pending={!res && cur.target != null ? { label: cur.rollLabel ?? 'Jet', base, mods: cur.base != null && cur.target !== cur.base ? [{ label: 'difficulté', value: cur.target - cur.base }] : [] } : undefined}
-      outcome={res ? <div className={`cs-outcome ${res.success ? 'ok-text' : 'muted'}`}>{res.success ? `réussite (+${res.sl} DR)` : `échec (${res.sl} DR)`}</div> : undefined}
       fortune={actor.fortune ?? 0}
       freeReroll={freeRerollOf(actor)}
       rerollable={!!res && canReroll(failed, !!cur.rerolled)}
