@@ -243,14 +243,14 @@ registerCascadeApplier('recovery', (_get, _set, step, hero) => {
   else j.push(`${hero.name} ne récupère aucune Blessure cette nuit.`);
   if (wokeUp) j.push(`${hero.name} reprend connaissance.`);
   return { journal: j };
-});
+}, (ok, n) => (ok ? `${n} récupère des Blessures.` : `${n} ne récupère pas de Blessures cette nuit.`));
 
 registerCascadeApplier('nightmare', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   if (step.result.success) return { journal: [`${hero.name} dort d'un sommeil sans rêve.`] };
   addCondition(hero, 'Exténué'); // LDB 21 l.92 : Calme +40 raté → Exténué
   return { journal: [`${hero.name} est en proie à de terribles cauchemars (Calme +40 raté) → Exténué.`] };
-});
+}, (ok, n) => (ok ? `${n} dort d'un sommeil sans rêve.` : `${n} est en proie aux cauchemars → Exténué.`));
 
 registerCascadeApplier('shelter', (get, _set, step, hero) => {
   if (!step.result) return;
@@ -263,7 +263,7 @@ registerCascadeApplier('shelter', (get, _set, step, hero) => {
     journal: [sheltered ? `${hero?.name ?? 'Le groupe'} dresse un abri — le camp tient la nuit.` : 'Aucun abri ne protège du temps.'],
     insert,
   };
-});
+}, (ok) => (ok ? `L'abri tient la nuit.` : `Aucun abri ne protège du temps.`));
 
 registerCascadeApplier('exposure', (_get, _set, step, hero, ctx) => {
   if (!hero || !step.result) return;
@@ -272,34 +272,34 @@ registerCascadeApplier('exposure', (_get, _set, step, hero, ctx) => {
   const priorFails = ctx.steps.slice(0, ctx.index)
     .filter((s) => s.kind === 'exposure' && s.actorId === hero.id && s.result && !s.result.success).length;
   return { journal: applyExposureFailure(hero, priorFails + 1, battleRng()).log };
-});
+}, (ok, n) => (ok ? `${n} endure le froid sans dommage.` : `${n} souffre du froid.`));
 
 registerCascadeApplier('forcedMarch', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   return { journal: [applyForcedMarch(hero, step.result.success).line] }; // l.224 : échec → +Exténué
-});
+}, (ok, n) => (ok ? `${n} tient l'allure.` : `${n} s'épuise → Exténué.`));
 
 registerCascadeApplier('faim', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   const r = applyFaimTest(hero, step.result.success, bonus(effectiveChar(hero, 'E')), battleRng());
   if (r.damage > 0) loseWounds(hero, r.damage); // 1d10 ignore les PA (l.422)
   return { journal: r.log };
-});
+}, (ok, n) => (ok ? `${n} supporte la faim.` : `${n} souffre de la faim.`));
 
 registerCascadeApplier('traumaFracture', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   return { journal: applyFractureEnd(hero, step.result.success, String(step.meta?.severity ?? 'mineur'), String(step.meta?.location ?? ''), String(step.meta?.traumaLabel ?? 'Fracture')) };
-});
+}, (ok) => (ok ? `La fracture ressoude proprement.` : `La fracture laisse une séquelle permanente.`));
 
 registerCascadeApplier('diseaseBlesse', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   return { journal: applyDiseaseBlesse(hero, step.result.success, battleRng()) }; // échec → Blessure Purulente (l.110)
-});
+}, (ok, n) => (ok ? `${n} évite l'aggravation.` : `${n} développe une Blessure Purulente.`));
 
 registerCascadeApplier('diseaseGangrene', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   return { journal: applyDiseaseGangrene(hero, String(step.meta?.diseaseName ?? ''), step.result.success, Number(step.meta?.resistVal ?? 0)) };
-});
+}, (ok, n) => (ok ? `${n} contient la gangrène.` : `${n} : la gangrène progresse.`));
 
 registerCascadeApplier('diseasePersist', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
@@ -310,12 +310,12 @@ registerCascadeApplier('diseasePersist', (_get, _set, step, hero) => {
   if (delta < 0) removeCondition(hero, 'Exténué', -delta);
   else if (delta > 0) addCondition(hero, 'Exténué', delta);
   return { journal };
-});
+}, (ok, n) => (ok ? `${n} guérit de sa maladie.` : `${n} : la maladie persiste.`));
 
 registerCascadeApplier('contagion', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   return { journal: applyContraction(hero, String(step.meta?.diseaseName ?? ''), step.result.success, battleRng()) };
-});
+}, (ok, n) => (ok ? `${n} résiste à la contagion.` : `${n} contracte la maladie.`));
 
 /** Valeur de Calme d'un héros (LDB 21 : FM effective + avances de Calme) — cible du jet de cauchemars. */
 function calmeVal(c: Combatant): number {

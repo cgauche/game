@@ -38,13 +38,24 @@ export type CascadeApplier = (
   ctx: { steps: CascadeStep[]; index: number },
 ) => { journal?: string[]; insert?: CascadeStep[] } | void;
 
-/** Registre des conséquences par `kind` — source unique extensible (+1 entrée par nature d'étape).
- *  Peuplé par les modules de domaine (restFlow, travelFlow) à leur chargement et par les tests. */
-export const cascadeAppliers: Record<string, CascadeApplier> = {};
+/** Issue COURTE d'un kind pour la modale (préview AVANT validation, ex. « X récupère des Blessures »,
+ *  « X contracte la maladie ») — la CONSÉQUENCE, pas « X réussit ». Co-localisée avec l'`apply` (qui
+ *  produit la ligne chiffrée au journal à la validation), donc ajouter un kind ne touche JAMAIS l'UI. */
+export type CascadeDescriber = (success: boolean, name: string) => string;
 
-/** Enregistre (ou remplace) la conséquence d'un `kind` d'étape de cascade. */
-export function registerCascadeApplier(kind: string, fn: CascadeApplier): void {
-  cascadeAppliers[kind] = fn;
+/** Une entrée de registre : la conséquence appliquée (`apply`) + son libellé d'issue (`describe`). */
+export interface CascadeKind {
+  apply: CascadeApplier;
+  describe?: CascadeDescriber;
+}
+
+/** Registre par `kind` — source unique extensible (+1 entrée par nature d'étape : `apply` + `describe`).
+ *  Peuplé par les modules de domaine (restFlow, travelFlow) à leur chargement et par les tests. */
+export const cascadeAppliers: Record<string, CascadeKind> = {};
+
+/** Enregistre (ou remplace) la conséquence d'un `kind` d'étape de cascade (+ son issue de modale). */
+export function registerCascadeApplier(kind: string, apply: CascadeApplier, describe?: CascadeDescriber): void {
+  cascadeAppliers[kind] = { apply, describe };
 }
 
 /** Ouvre une cascade interactive (≥ 1 étape influençable). Le curseur démarre sur la 1ʳᵉ étape. */
@@ -67,7 +78,7 @@ export function startCascade(
 function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number): { steps: CascadeStep[]; journal: string[] } {
   const step = steps[i];
   const hero = step.actorId ? actorIn(get(), step.actorId) : undefined;
-  const out = cascadeAppliers[step.kind]?.(get, set, step, hero, { steps, index: i });
+  const out = cascadeAppliers[step.kind]?.apply(get, set, step, hero, { steps, index: i });
   const journal = out?.journal ?? [];
   for (const l of journal) get().log(l);
   // L'étape VALIDÉE garde sa conséquence (`outcome`) pour rester LISIBLE dans la pile à l'écran.

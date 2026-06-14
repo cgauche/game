@@ -4,7 +4,8 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
 import { RollPanel, type RollRowData } from './RollPanel';
 import { JournalLine } from './NarratedLine';
-import { ev } from '../state/combatLog';
+import { ev, type CombatEventKind } from '../state/combatLog';
+import { cascadeAppliers } from '../state/cascade';
 import type { CascadeStep, CascadeRoll } from '../state/pendings';
 import type { Combatant } from '../engine/types';
 
@@ -38,20 +39,29 @@ export function CascadeModal() {
   const failed = !!res && !res.success;
   const isLast = p.cursor + 1 >= p.participants.length;
 
+  // Libellé de rangée = la COMPÉTENCE lancée (« Résistance », « Calme »…), comme Défense affiche
+  // « Attaque »/« Parade » — pas le texte de l'étape (le but vit dans le sous-titre). L'icône
+  // distingue deux « Résistance » dans la pile figée (Exposition 🥶 vs Marche forcée 🥾 vs Contagion 🤒).
+  const rowLabel = (s: CascadeStep) => `${s.icon ?? ''} ${s.rollLabel ?? 'Jet'}`.trim();
   const breakdown = (s: CascadeStep, r: CascadeRoll) => {
     const b = s.base ?? s.target ?? 0;
-    return { label: s.label ?? s.rollLabel ?? 'Jet', base: b, modifier: (s.target ?? b) - b, target: s.target ?? b, roll: r.roll, success: r.success, sl: r.sl };
+    return { label: rowLabel(s), base: b, modifier: (s.target ?? b) - b, target: s.target ?? b, roll: r.roll, success: r.success, sl: r.sl };
   };
   const pendingOf = (s: CascadeStep) => {
     const b = s.base ?? s.target ?? 0;
-    return { label: s.label ?? s.rollLabel ?? 'Jet', base: b, mods: s.base != null && s.target != null && s.target !== s.base ? [{ label: 'difficulté', value: s.target - s.base }] : [] };
+    return { label: rowLabel(s), base: b, mods: s.base != null && s.target != null && s.target !== s.base ? [{ label: 'difficulté', value: s.target - s.base }] : [] };
   };
   // Lignes des étapes DÉJÀ validées (figées), avec portrait — comme la ligne attaquant de Défense.
   const doneRows: RollRowData[] = p.participants.slice(0, p.cursor)
     .map((s): RollRowData | null => { const a = actorOf(s); return a && s.result ? { combatant: a, d: breakdown(s, s.result) } : null; })
     .filter((r): r is RollRowData => r !== null);
   const curPending: RollRowData = { combatant: actor, pending: pendingOf(cur) };
-  const outcomeText = res ? (res.success ? `${actor.name} réussit.` : `${actor.name} échoue.`) : '';
+  // Issue = la CONSÉQUENCE (« contracte la maladie », « récupère des Blessures »), pas « X réussit » :
+  // comme Défense écrit « Touché — Tête · 3 Blessures ». Fournie par le registre du `kind` (co-localisée
+  // avec l'applier) — PAS un switch dans l'UI : ajouter un kind ne touche pas cette modale. Le détail
+  // chiffré part au journal à « Continuer ». Repli générique si le kind ne décrit pas son issue.
+  const ocText = res ? (cascadeAppliers[cur.kind]?.describe?.(res.success, actor.name) ?? (res.success ? `${actor.name} réussit.` : `${actor.name} échoue.`)) : null;
+  const ocEv: CombatEventKind = res?.success ? 'heal' : 'condition';
 
   return (
     <RollFlowShell
@@ -63,7 +73,7 @@ export function CascadeModal() {
       setup={<RollPanel rows={[...doneRows, curPending]} />}
       /* Post-jet : mêmes lignes, la courante désormais lancée (vainqueur non pertinent ici). */
       rows={res ? [...doneRows, { combatant: actor, d: breakdown(cur, res) }] : undefined}
-      outcome={res ? <JournalLine className="rm-journal" event={ev('info', outcomeText, actor.id)} combatants={pool} /> : undefined}
+      outcome={ocText ? <JournalLine className="rm-journal" event={ev(ocEv, ocText, actor.id)} combatants={pool} /> : undefined}
       fortune={actor.fortune ?? 0}
       freeReroll={freeRerollOf(actor)}
       rerollable={!!res && canReroll(failed, !!cur.rerolled)}
