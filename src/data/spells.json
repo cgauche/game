@@ -2814,6 +2814,132 @@
     }
   },
   {
+    "label": "Commander la Légion",
+    "type": "Invocation",
+    "subType": "Myrmidia",
+    "cn": null,
+    "range": "Voir texte",
+    "target": "Un allié au choix",
+    "duration": "Instantané",
+    "desc": "Myrmidia transmet vos ordres sur tout le champ de bataille. Vous pouvez donner un ordre à n'importe quel allié dans votre ligne de vue. L'ordre doit être pertinent pour mener une lutte armée ou une stratégie en cours. Tout Test de Commandement que vous effectuez en conséquence bénéficie d'un bonus de +10.",
+    "source": {
+      "book": "AA",
+      "page": 79
+    }
+  },
+  {
+    "label": "Terrifier l'Ennemi",
+    "type": "Invocation",
+    "subType": "Myrmidia",
+    "cn": null,
+    "range": "Vous",
+    "target": "Vous",
+    "duration": "1 round",
+    "desc": "Vous incarnez Myrmidia sous son aspect le plus furieux. Vous gagnez le Trait de créature Terreur 1.",
+    "source": {
+      "book": "AA",
+      "page": 79
+    }
+  },
+  {
+    "label": "En Bon Ordre",
+    "type": "Invocation",
+    "subType": "Myrmidia",
+    "cn": null,
+    "range": "Vous",
+    "target": "ZdE (Force Mentale) mètres",
+    "duration": "(Bonus de Force Mentale) Rounds",
+    "desc": "Sachant que la situation est désespérée, vous priez pour que vos forces ne subissent pas une déroute désastreuse. Tant que le Miracle est actif, n'importe lequel de vos alliés peut rompre le combat sans permettre à l'ennemi de gagner 1 Avantage et de porter une attaque gratuite (voir Fuite).",
+    "source": {
+      "book": "AA",
+      "page": 79
+    }
+  },
+  {
+    "label": "Connais Ton Ennemi",
+    "type": "Invocation",
+    "subType": "Myrmidia",
+    "cn": null,
+    "range": "(Force Mentale) mètres",
+    "target": 1,
+    "duration": "Instantané",
+    "desc": "Vous implorez Myrmidia pour qu'elle vous indique les forces et les faiblesses d'un ennemi à proximité. Le MJ doit vous permettre de consulter le profil, les Traits, les Compétences et les Talents de la cible.",
+    "source": {
+      "book": "AA",
+      "page": 79
+    }
+  },
+  {
+    "label": "En Terrain Dangereux",
+    "type": "Invocation",
+    "subType": "Myrmidia",
+    "cn": null,
+    "range": "Vous",
+    "target": "ZdE (Force Mentale) mètres",
+    "duration": "(Bonus de Force Mentale) Rounds",
+    "desc": "Sachant que la victoire ne peut être obtenue que si vos forces tiennent leur position, vous invoquez Myrmidia pour qu'elle ôte toute idée de retraite de l'esprit de vos alliés. Tant que le Miracle est actif, vos alliés ne reçoivent pas d'État Brisé.",
+    "source": {
+      "book": "AA",
+      "page": 79
+    }
+  },
+  {
+    "label": "Frappe Rapide",
+    "type": "Invocation",
+    "subType": "Myrmidia",
+    "cn": null,
+    "range": "Vous",
+    "target": "Vous",
+    "duration": "3 rounds",
+    "desc": "Imprégné de la puissance de Myrmidia, vous bénéficiez de réflexes supérieurs et vous pouvez anticiper les actions de votre adversaire. Tant que le Miracle est actif, au début de chaque Round, vous pouvez tenter un Test d'Initiative Intermédiaire (+0) pour gagner une attaque gratuite immédiate en dehors de l'ordre normal du Tour. Cette attaque est résolue avec l'arme que vous tenez dans votre main principale.",
+    "source": {
+      "book": "AA",
+      "page": 79
+    }
+  },
+  {
+    "label": "Dévotion de la Vierge Guerrière",
+    "type": "Invocation",
+    "subType": "Myrmidia",
+    "cn": null,
+    "range": "Vous",
+    "target": "ZdE (Force Mentale) mètres",
+    "duration": "4 rounds",
+    "desc": "Les prières que vous psalmodiez emplissent les cœurs des fidèles de la vaillance des plus braves vierges guerrières de la déesse. Tous les myrmidéens à portée gagnent +1 rang du Talent Sans peur (Ennemi). Cet ennemi peut être soit un individu en particulier, soit une espèce en particulier.",
+    "source": {
+      "book": "AA",
+      "page": 79
+    }
+  },
+  {
+    "label": "Prouesses Martiales",
+    "type": "Invocation",
+    "subType": "Myrmidia",
+    "cn": null,
+    "range": "Vous",
+    "target": "ZdE (Force Mentale) mètres",
+    "duration": "4 rounds",
+    "desc": "Vous insufflez en vos alliés le talent aux armes de Myrmidia. Tant que le Miracle est actif, tous les alliés à portée bénéficient d'un bonus de +10 à leur CC et à leur CT.",
+    "source": {
+      "book": "AA",
+      "page": 79
+    }
+  },
+  {
+    "label": "Fureur Vengeresse",
+    "type": "Invocation",
+    "subType": "Myrmidia",
+    "cn": null,
+    "range": "Vous",
+    "target": "Vous",
+    "duration": "6 rounds",
+    "desc": "Vous êtes empli de l'indignation vertueuse de Myrmidia. Tant que le Miracle est actif, vous devez Charger et attaquer l'ennemi impénitent le plus proche. Vous pouvez relancer tous les jets de Compétence Corps à Corps que vous effectuez tant que le Miracle est actif.",
+    "source": {
+      "book": "AA",
+      "page": 79
+    }
+  },
+  {
     "label": "Grâce de Ranald",
     "type": "Invocation",
     "subType": "Ranald",

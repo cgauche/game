@@ -52,6 +52,10 @@ export const QUALITY_DESC: Record<string, string> = {
   'Laid': 'Sans esthétique : jusqu’à −10 aux Tests de Sociabilité associés.', // 60 l.84
   'Peu Fiable': "−1 DR à un Test raté avec l'objet ; pour une armure, pénalités de port doublées.", // 60 l.87
   'Volumineux': '+1 Encombrement (1 même porté pour vêtements/armures) ; pénalités de Fatigue doublées.', // 60 l.90
+  // Nouvelles qualités d'arme — Aux Armes p.89
+  'Taillade': "Blessures béantes : une Blessure Critique infligée avec cette arme ajoute un État Hémorragique (+1 par Indice d'Avantages dépensés).", // AA p.89
+  'Déséquilibrée': "Poids concentré dans la tête, inefficace en parade : −1 DR quand cette arme oppose une attaque.", // AA p.89
+  'Déstabilisante': "Après une touche, peut dépenser 2 Avantages et un Test opposé Force/Athlétisme pour mettre l'adversaire À Terre.", // AA p.89
   // Magie — ADE II
   'De plaies atroces': 'Magique : les Dégâts prennent le plus haut du DR ou du dé des unités (comme Dévastatrice).', // ADE2 « Un peu de magie » l.228
 };

@@ -539,6 +539,21 @@
     }
   },
   {
+    "label": "Commandant d'équipe",
+    "max": "Bonus d'Initiative",
+    "test": "Projectiles pour les tirs avec une arme dotée du Défaut Arme d'équipe",
+    "desc": "Un Personnage doté de ce Talent a l'habitude de gérer des équipes maniant des armes de siège et des pièces d'artillerie. Le Personnage peut effectuer un Test de Commandement Intermédiaire (+0) pour aider une équipe qui utilise une arme possédant le Défaut Arme d'équipe à portée de voix. Si le Personnage réussit le Test, les membres de l'équipe peuvent ensuite utiliser le score de Compétence Projectiles du Personnage quand ils tirent avec l'arme.",
+    "addSkill": null,
+    "addTalent": null,
+    "addCharacteristic": null,
+    "specs": [],
+    "rand": null,
+    "source": {
+      "book": "AA",
+      "page": 140
+    }
+  },
+  {
     "label": "Costaud",
     "max": "Bonus de Force",
     "test": "Tests de Force quand vous soulevez",

@@ -51,6 +51,14 @@ export interface QualityDef {
     opposed: { attacker: CharKey; defender: CharKey; defenderSkill?: string };
     condition: string;
   };
+  /** Taillade (Aux Armes p.89) : si l'arme inflige une Blessure Critique, la cible subit en plus
+   *  cet État (Hémorragique). Appliqué par combatFlow au point de résolution du Critique. */
+  onCritCondition?: string;
+  /** Déstabilisante (Aux Armes p.89) : après une touche, l'attaquant peut dépenser `advantageCost`
+   *  Avantages pour un Test opposé (`char` + `skill` des deux côtés) ; s'il l'emporte, la cible subit
+   *  `condition` (À Terre). Simplification documentée : déclenché d'office quand l'attaquant a les
+   *  Avantages requis — comme Assommante s'applique sans choix (combatFlow). */
+  onHitKnockdown?: { advantageCost: number; char: CharKey; skill?: string; condition: string };
   /** Encombrement : délta dû à l'artisanat (Léger -1 / Volumineux +1, LDB 60 l.56/91). */
   encDelta?: number;
   /** +X DR à un Test RATÉ utilisant l'objet (Pratique +1 / Peu Fiable -1, LDB 60 l.59/88). En mêlée

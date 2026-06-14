@@ -54,10 +54,28 @@ describe('dispatch — Incassable', () => {
   });
 });
 
+describe('Aux Armes p.89 — qualités de mêlée câblées', () => {
+  it('Déséquilibrée : -1 DR à la parade quand c’est l’arme du DÉFENSEUR (sans effet sur l’arme de l’attaquant)', () => {
+    expect(parryDRAdjust(w(['Déséquilibrée']), w([]))).toBe(-1);
+    expect(parryDRAdjust(w(['Défensive']), w(['Déséquilibrée']))).toBe(1);
+  });
+  it('Taillade : ajoute un État Hémorragique sur Critique (onCritCondition)', () => {
+    expect(QUALITIES['Taillade'].onCritCondition).toBe('Hémorragique');
+  });
+  it('Déstabilisante : dépense d’Avantages + Test opposé Force → À Terre (onHitKnockdown)', () => {
+    const kd = QUALITIES['Déstabilisante'].onHitKnockdown!;
+    expect(kd.advantageCost).toBe(2);
+    expect(kd.condition).toBe('À Terre');
+    expect(kd.char).toBe('F');
+    expect(kd.skill).toBe('Athlétisme');
+  });
+});
+
 describe('registry — entrées attendues', () => {
   it('contient les qualités d’arme implémentées', () => {
     for (const k of ['Précise', 'Perforante', 'Pointue', 'Empaleuse', 'Défensive', 'À Enroulement', 'Pistolet', 'Incassable', 'Inoffensive', 'Dévastatrice', 'Percutante',
-      'Léger', 'Pratique', 'Raffiné', 'Solide', 'Bâclé', 'Laid', 'Peu Fiable', 'Volumineux']) {
+      'Léger', 'Pratique', 'Raffiné', 'Solide', 'Bâclé', 'Laid', 'Peu Fiable', 'Volumineux',
+      'Taillade', 'Déséquilibrée', 'Déstabilisante']) { // Aux Armes p.89 — câblées (onCritCondition / defenderParryDR / onHitKnockdown)
       expect(QUALITIES[k]).toBeTruthy();
     }
   });
@@ -68,7 +86,12 @@ describe('parité — toute qualité d’ARME des données est connue (registre 
   // CONSCIENCE — c'est le garde-fou anti-empilement. (Vide depuis l'intégration des 10 dernières
   // qualités d'arme : À Répétition, Immobilisante, Perturbante, Piège-lame, Protectrice, Rapide,
   // Dangereuse, Épuisante, Imprécise, Lente.)
-  const NON_DANS_REGISTRE = new Set<string>([]);
+  const NON_DANS_REGISTRE = new Set<string>([
+    // Aux Armes — qualités d'artillerie/zone : règles d'équipe, de volée et de tir de zone non
+    // modélisées dans le moteur tactique (siège/structure laissé de côté). Desc verbatim, arbitrage MJ.
+    // (Les qualités de mêlée Taillade/Déséquilibrée/Déstabilisante sont DÉSORMAIS câblées au registre.)
+    'Salve', "Arme d'équipe", 'Tir de zone',
+  ]);
   it('chaque Atout/Défaut d’arme de qualities.json est dans QUALITIES ou dans l’allowlist', () => {
     const path = fileURLToPath(new URL('../../data/qualities.json', import.meta.url));
     const raw = JSON.parse(readFileSync(path, 'utf8')) as unknown;

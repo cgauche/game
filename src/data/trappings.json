@@ -6614,5 +6614,1343 @@
       "book": "EDOC",
       "page": 27
     }
+  },
+  {
+    "label": "Pavois",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Base",
+    "enc": 4,
+    "availability": "Rare",
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+2",
+    "qualities": [
+      "Défensive",
+      "Protectrice 5"
+    ],
+    "desc": "Le pavois s'emploie de deux manières. En grand bouclier — mauvaise idée vu sa lourde structure de bois et de cuir : il confère alors les Atouts et Défauts d'un grand bouclier (Protectrice 3, Défensive, Inoffensive) et acquiert Épuisante et Lente, pour un Encombrement de 4 et +BF+2 Dégâts. Mais il est conçu comme couvert portatif : l'installer coûte 2 Actions et le manieur indique la direction couverte. S'il reste à 1 mètre maximum derrière le pavois, ce dernier le protège de toute attaque de projectiles venant de la direction indiquée (Protectrice 5, Défensive). Contre un assaut au corps à corps, le pavois ne protège que si l'attaque vient de la direction indiquée, et seulement au premier Round de combat.",
+    "price": {
+      "gold": 3,
+      "silver": 15,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 92
+    }
+  },
+  {
+    "label": "Filet lesté",
+    "prefix": "(2M)",
+    "type": "melee",
+    "subType": "Parade",
+    "enc": 1,
+    "availability": "Rare",
+    "reach": "Courte",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+0",
+    "qualities": [
+      "À Enroulement",
+      "Défensive",
+      "Immobilisante",
+      "Inoffensive",
+      "Lente",
+      "Protectrice 1"
+    ],
+    "desc": "Un filet lesté est encombrant et peu maniable, mais peut beaucoup gêner un opposant pour se battre s'il est utilisé au bon moment. Quand vous effectuez un Test pour savoir si un adversaire s'empêtre dans un filet lesté, le filet a une Force de 55.",
+    "price": {
+      "gold": 1,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 95
+    }
+  },
+  {
+    "label": "Baliste",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Armes de siège",
+    "enc": 20,
+    "availability": "Limitée",
+    "reach": 150,
+    "loc": null,
+    "pa": null,
+    "damage": "+12",
+    "qualities": [
+      "Pointue",
+      "Recharge 3",
+      "Arme d'équipe 2"
+    ],
+    "desc": "Arbalète géante projetant des carreaux à pointe de fer capables de fendre un homme en deux ou de percer du bois massif. Se manie avec Projectiles (Arbalète) ; en tir individuel à la Capacité de Tir, elle perd ses Atouts mais conserve ses Défauts.",
+    "price": {
+      "gold": 30,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 122
+    }
+  },
+  {
+    "label": "Catapulte (petite)",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Armes de siège",
+    "enc": 25,
+    "availability": "Limitée",
+    "reach": 75,
+    "loc": null,
+    "pa": null,
+    "damage": "+10",
+    "qualities": [
+      "Imprécise",
+      "Recharge 3",
+      "Arme d'équipe 2"
+    ],
+    "desc": "Arme à tir indirect lançant rochers, bombes ou bombes incendiaires en arc élevé pour s'écraser sur les cibles. Se manie avec Projectiles (Catapulte).",
+    "price": {
+      "gold": 20,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 122
+    }
+  },
+  {
+    "label": "Catapulte (moyenne)",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Armes de siège",
+    "enc": 40,
+    "availability": "Limitée",
+    "reach": 100,
+    "loc": null,
+    "pa": null,
+    "damage": "+15",
+    "qualities": [
+      "Imprécise",
+      "Recharge 3",
+      "Arme d'équipe 3"
+    ],
+    "desc": "Arme à tir indirect lançant rochers, bombes ou bombes incendiaires en arc élevé pour s'écraser sur les cibles. Se manie avec Projectiles (Catapulte).",
+    "price": {
+      "gold": 40,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 122
+    }
+  },
+  {
+    "label": "Catapulte (grande)",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Armes de siège",
+    "enc": 65,
+    "availability": "Limitée",
+    "reach": 175,
+    "loc": null,
+    "pa": null,
+    "damage": "+18",
+    "qualities": [
+      "Imprécise",
+      "Recharge 4",
+      "Arme d'équipe 4"
+    ],
+    "desc": "Arme à tir indirect lançant rochers, bombes ou bombes incendiaires en arc élevé pour s'écraser sur les cibles. Se manie avec Projectiles (Catapulte).",
+    "price": {
+      "gold": 60,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 122
+    }
+  },
+  {
+    "label": "Batterie tonnerre de feu",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Armes de siège",
+    "enc": 75,
+    "availability": "Exotique",
+    "reach": 185,
+    "loc": null,
+    "pa": null,
+    "damage": "+12",
+    "qualities": [
+      "À Explosion 5",
+      "Dangereuse",
+      "Imprécise",
+      "Recharge 6",
+      "Salve 9",
+      "Arme d'équipe 3"
+    ],
+    "desc": "Pièce d'artillerie à canons multiples crachant une volée de projectiles (Atout Salve). Dévastatrice mais peu fiable. Se manie avec Projectiles (Ingénierie). Recharger n'augmente l'Indice de Salve que de 1 par cycle de Recharge.",
+    "price": {
+      "gold": 500,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 123
+    }
+  },
+  {
+    "label": "Canon à répétition",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Armes de siège",
+    "enc": 5,
+    "availability": "Exotique",
+    "reach": 50,
+    "loc": null,
+    "pa": null,
+    "damage": "+9",
+    "qualities": [
+      "Dangereuse",
+      "Recharge 4",
+      "Salve 7"
+    ],
+    "desc": "Arme à poudre noire tirant plusieurs coups avant rechargement (Atout Salve). Se manie avec Projectiles (Ingénierie).",
+    "price": {
+      "gold": 10,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 123
+    }
+  },
+  {
+    "label": "Canon à répétition feu d'enfer",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Armes de siège",
+    "enc": 85,
+    "availability": "Exotique",
+    "reach": 100,
+    "loc": null,
+    "pa": null,
+    "damage": "+10",
+    "qualities": [
+      "Dangereuse",
+      "Recharge 4",
+      "Salve 9",
+      "Arme d'équipe 3"
+    ],
+    "desc": "Variante impériale du canon orgue : barillet de neuf canons disposés en trois rangées de trois, tirant trois fois avant rechargement. Notoirement peu fiable, il a tendance à s'enrayer ou pire aux moments cruciaux. Se manie avec Projectiles (Ingénierie). Recharger n'augmente l'Indice de Salve que de 1 par cycle de Recharge.",
+    "price": {
+      "gold": 500,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 123
+    }
+  },
+  {
+    "label": "Canon (petit)",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Armes de siège",
+    "enc": 30,
+    "availability": "Limitée",
+    "reach": 50,
+    "loc": null,
+    "pa": null,
+    "damage": "+10",
+    "qualities": [
+      "Dangereuse",
+      "Recharge 4",
+      "Arme d'équipe 2"
+    ],
+    "desc": "Pièce d'artillerie à poudre noire tirant un lourd boulet. Se manie avec Projectiles (Poudre noire ou Ingénierie).",
+    "price": {
+      "gold": 40,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 123
+    }
+  },
+  {
+    "label": "Canon (moyen)",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Armes de siège",
+    "enc": 50,
+    "availability": "Exotique",
+    "reach": 75,
+    "loc": null,
+    "pa": null,
+    "damage": "+14",
+    "qualities": [
+      "Dangereuse",
+      "Recharge 6",
+      "Arme d'équipe 3"
+    ],
+    "desc": "Pièce d'artillerie à poudre noire tirant un lourd boulet. Se manie avec Projectiles (Poudre noire ou Ingénierie).",
+    "price": {
+      "gold": 100,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 123
+    }
+  },
+  {
+    "label": "Canon (grand)",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Armes de siège",
+    "enc": 75,
+    "availability": "Exotique",
+    "reach": 150,
+    "loc": null,
+    "pa": null,
+    "damage": "+16",
+    "qualities": [
+      "Dangereuse",
+      "Recharge 8",
+      "Arme d'équipe 4"
+    ],
+    "desc": "Pièce d'artillerie à poudre noire tirant un lourd boulet. Se manie avec Projectiles (Poudre noire ou Ingénierie).",
+    "price": {
+      "gold": 250,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 123
+    }
+  },
+  {
+    "label": "Mortier",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Armes de siège",
+    "enc": 50,
+    "availability": "Exotique",
+    "reach": 100,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [
+      "Recharge 4",
+      "Arme d'équipe 3"
+    ],
+    "desc": "Équivalent à poudre noire de la catapulte : tire un lourd boulet ou une bombe en arc élevé, surtout lors des sièges pour projeter des explosifs par-dessus les murs. Tir indirect, Dégâts selon la munition employée. Se manie avec Projectiles (Ingénierie).",
+    "price": {
+      "gold": 50,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 123
+    }
+  },
+  {
+    "label": "Pierrier",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Armes de siège",
+    "enc": 5,
+    "availability": "Rare",
+    "reach": 30,
+    "loc": null,
+    "pa": null,
+    "damage": "+14",
+    "qualities": [
+      "Dangereuse",
+      "Recharge 4"
+    ],
+    "desc": "Équivalent massif du tromblon, normalement monté sur un pivot ou un trépied en raison de son poids.",
+    "price": {
+      "gold": 20,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 123
+    }
+  },
+  {
+    "label": "Demi-lance de cavalerie",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Cavalerie",
+    "enc": 2,
+    "availability": "Limitée",
+    "reach": "Longue",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+5",
+    "qualities": [
+      "Empaleuse",
+      "Percutante"
+    ],
+    "desc": "Comme la lance de cavalerie mais plus courte et légère, conçue pour la charge montée. Considérée comme une arme improvisée lors d'un Round où vous n'avez pas Chargé.",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 90
+    }
+  },
+  {
+    "label": "Sabre",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Cavalerie",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": "Moyenne",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+4",
+    "qualities": [
+      "Taillade (1A)"
+    ],
+    "desc": "Semblable au cimeterre mais un peu plus long et droit. À pied avec Corps à corps (Base) son Atout Taillade (1A) devient Taillade (2A) ; avec Corps à corps (Escrime) il conserve Taillade (1A).",
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 90
+    }
+  },
+  {
+    "label": "Épée de cour",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Escrime",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": "Courte",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+2",
+    "qualities": [
+      "Empaleuse",
+      "Précise",
+      "Rapide"
+    ],
+    "desc": "Version plus légère du fleuret, surtout employée lors des tournois sportifs ou des duels au premier sang. Les modèles à pointe boutonnée et lame émoussée servent d'armes de sport et ont le Défaut Inoffensive.",
+    "price": {
+      "gold": 4,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 90
+    }
+  },
+  {
+    "label": "Gaffe",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Bagarre",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "Courte",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+4",
+    "qualities": [
+      "Déstabilisante",
+      "Inoffensive"
+    ],
+    "desc": "Outil de docker à crochet utilisé pour décharger et caler les cargaisons, redoutable s'il est manié dans l'intention de blesser.",
+    "price": {
+      "gold": 0,
+      "silver": 6,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 90
+    }
+  },
+  {
+    "label": "Gantelet à pointes",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Bagarre",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": "Personnelle",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+3",
+    "qualities": [
+      "Déséquilibrée",
+      "Empaleuse"
+    ],
+    "desc": "Peut être acheté comme partie d'une armure de plates pour un bras (ajoutez son prix à celui de l'armure, sans Encombrement supplémentaire).",
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 90
+    }
+  },
+  {
+    "label": "Gantelet verrouillé",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Bagarre",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": "Personnelle",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+2",
+    "qualities": [
+      "Inoffensive"
+    ],
+    "desc": "Plaques d'acier couvrant le poing, maintenues fermées par une vis ou un loquet. Le porteur ne lâche pas l'objet tenu dans cette main même quand les circonstances l'y obligeraient ; il subit alors -20 à tous ses Tests avec cet objet (1 Round minimum) ; un second événement contraignant le lui fait néanmoins lâcher. Achetable comme partie d'une armure de plates pour un bras.",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 90
+    }
+  },
+  {
+    "label": "Lacet étrangleur",
+    "prefix": "(2M)",
+    "type": "melee",
+    "subType": "Bagarre",
+    "enc": 0,
+    "availability": "Rare",
+    "reach": "Personnelle",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+2",
+    "qualities": [
+      "Déséquilibrée",
+      "Immobilisante",
+      "Inoffensive",
+      "Lente"
+    ],
+    "desc": "Longueur de corde ou de fil passée autour du cou de l'adversaire et serrée au maximum. Fabricable dans un relais de poste ou en milieu urbain (Test étendu de Métier, total 5 DR).",
+    "price": {
+      "gold": 0,
+      "silver": 1,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 90
+    }
+  },
+  {
+    "label": "Cape",
+    "prefix": null,
+    "type": "melee",
+    "subType": "Parade",
+    "enc": 1,
+    "availability": "Commune",
+    "reach": "Courte",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+0",
+    "qualities": [
+      "Défensive",
+      "Immobilisante",
+      "Inoffensive"
+    ],
+    "desc": "Cape de tissu épais enroulée autour du bras pour distraire l'adversaire ou détourner ses coups, voire le jeter sur lui pour l'empêtrer. Peu adaptée à l'entrave : pour un Test d'empêtrement, la cape compte une Force de 25.",
+    "price": {
+      "gold": 0,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 95
+    }
+  },
+  {
+    "label": "Ahlspiess",
+    "prefix": "(2M)",
+    "type": "melee",
+    "subType": "Armes d'hast",
+    "enc": 2,
+    "availability": "Limitée",
+    "reach": "Très longue",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+3",
+    "qualities": [
+      "Empaleuse",
+      "Perforante"
+    ],
+    "desc": "Long pic fin monté sur un manche de lance : peu de coupe, mais perfore mieux les armures.",
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 96
+    }
+  },
+  {
+    "label": "Attrape-coquin",
+    "prefix": "(2M)",
+    "type": "melee",
+    "subType": "Armes d'hast",
+    "enc": 3,
+    "availability": "Rare",
+    "reach": "Longue",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+2",
+    "qualities": [
+      "Défensive",
+      "Immobilisante"
+    ],
+    "desc": "Arme d'hast à tête semi-circulaire hérissée de petits pics, permettant d'attraper une personne par le cou. Souvent maniée par les skavens et hobgobelins. Les modèles à ressort coûtent 4 CO et donnent +20 aux Tests de Force pour empêtrer.",
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 96
+    }
+  },
+  {
+    "label": "Hache d'armes",
+    "prefix": "(2M)",
+    "type": "melee",
+    "subType": "Armes d'hast",
+    "enc": 3,
+    "availability": "Limitée",
+    "reach": "Longue",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+4",
+    "qualities": [
+      "Taille",
+      "Empaleuse",
+      "Assommante",
+      "Défensive"
+    ],
+    "desc": "Tête combinant un pic d'estoc, une lame de hache pour trancher et un marteau pour les coups contondants : choisissez Taille, Empaleuse ou Assommante avant le jet d'attaque.",
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 96
+    }
+  },
+  {
+    "label": "Pertuisane/Fauchard",
+    "prefix": "(2M)",
+    "type": "melee",
+    "subType": "Armes d'hast",
+    "enc": 3,
+    "availability": "Limitée",
+    "reach": "Longue",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+4",
+    "qualities": [
+      "Défensive",
+      "Empaleuse",
+      "Taillade (2A)"
+    ],
+    "desc": "Pertuisanes (lame épaisse en feuille d'arbre) et fauchards (lame de coupe ou d'épée) fonctionnent pareil : un peu moins d'allonge que la lance pour des coups tranchants plus puissants. Choisissez Empaleuse ou Taillade (2A).",
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 96
+    }
+  },
+  {
+    "label": "Serpe de guerre",
+    "prefix": "(2M)",
+    "type": "melee",
+    "subType": "Armes d'hast",
+    "enc": 3,
+    "availability": "Limitée",
+    "reach": "Longue",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+4",
+    "qualities": [
+      "Défensive",
+      "Taille",
+      "Déstabilisante"
+    ],
+    "desc": "Dérivée d'un outil agricole, dotée d'une lame en crochet servant à attraper les adversaires ou à les hacher. Choisissez Taille ou Déstabilisante.",
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 96
+    }
+  },
+  {
+    "label": "Zweihänder flamberge",
+    "prefix": "(2M)",
+    "type": "melee",
+    "subType": "Deux mains",
+    "enc": 3,
+    "availability": "Exotique",
+    "reach": "Longue",
+    "loc": null,
+    "pa": null,
+    "damage": "+BF+5",
+    "qualities": [
+      "Dévastatrice",
+      "Taille",
+      "Taillade (2A)"
+    ],
+    "desc": "Zweihänder à lame ondulée et dentelée (flamberge), dont les blessures tranchantes sont plus profondes.",
+    "price": {
+      "gold": 30,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 96
+    }
+  },
+  {
+    "label": "Bâton pointu",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Munitions",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "Moitié de l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": "-2",
+    "qualities": [
+      "Dangereuse",
+      "Imprécise",
+      "Inoffensive"
+    ],
+    "desc": "Munition de fortune pour arc à court de flèches. Procurable en milieu boisé (Test étendu de Survie en extérieur, total 10 DR) ; mal taillée, elle a tendance à provoquer des Maladresses.",
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 97
+    }
+  },
+  {
+    "label": "Flèche barbelée",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Munitions",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": "Comme l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [
+      "Empaleuse",
+      "Taillade (1A)"
+    ],
+    "desc": "Tête à barbelures infligeant de vilaines blessures par entaille et des dommages supplémentaires si elle n'est pas retirée avec précaution. Vendue par 12.",
+    "price": {
+      "gold": 0,
+      "silver": 8,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 97
+    }
+  },
+  {
+    "label": "Flèche bodkin",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Munitions",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": "Comme l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [
+      "Empaleuse",
+      "Perforante"
+    ],
+    "desc": "Robuste pointe en pic conçue pour perforer les armures. Vendue par 12.",
+    "price": {
+      "gold": 0,
+      "silver": 8,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 97
+    }
+  },
+  {
+    "label": "Bille de plomb",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Munitions",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "-10",
+    "loc": null,
+    "pa": null,
+    "damage": "+1",
+    "qualities": [
+      "Assommante"
+    ],
+    "desc": "Munition de fronde en plomb. Vendue par 12.",
+    "price": {
+      "gold": 0,
+      "silver": 4,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 97
+    }
+  },
+  {
+    "label": "Caillou",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Munitions",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "-10",
+    "loc": null,
+    "pa": null,
+    "damage": "-2",
+    "qualities": [
+      "Imprécise",
+      "Inoffensive"
+    ],
+    "desc": "Munition de fortune pour fronde. Procurable dans un lieu approprié (Test étendu de Survie en extérieur Facile, ou de Perception, total 5 DR).",
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 97
+    }
+  },
+  {
+    "label": "Arquebuse à double canon",
+    "prefix": "(2M)",
+    "type": "ranged",
+    "subType": "Poudre noire",
+    "enc": 3,
+    "availability": "Exotique",
+    "reach": 50,
+    "loc": null,
+    "pa": null,
+    "damage": "+9",
+    "qualities": [
+      "À répétition 2",
+      "Dangereuse",
+      "Recharge 4"
+    ],
+    "desc": "Deux canons et deux gâchettes ; la plupart sont accompagnées d'un appareil rechargeant les deux canons à la fois pour tirer plus souvent.",
+    "price": {
+      "gold": 7,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 100
+    }
+  },
+  {
+    "label": "Arquebuse à mèche",
+    "prefix": "(2M)",
+    "type": "ranged",
+    "subType": "Poudre noire",
+    "enc": 2,
+    "availability": "Rare",
+    "reach": 50,
+    "loc": null,
+    "pa": null,
+    "damage": "+8",
+    "qualities": [
+      "Dangereuse",
+      "Recharge 4"
+    ],
+    "desc": "Modèle ancien d'arquebuse. Avant usage, dépensez une Action pour allumer la mèche ; allumée, elle brûle longtemps sauf si la pluie ou le vent l'éteint.",
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 100
+    }
+  },
+  {
+    "label": "Hache-arquebuse",
+    "prefix": "(2M)",
+    "type": "ranged",
+    "subType": "Poudre noire",
+    "enc": 1,
+    "availability": "Exotique",
+    "reach": 30,
+    "loc": null,
+    "pa": null,
+    "damage": "+9",
+    "qualities": [
+      "Dangereuse",
+      "Imprécise",
+      "Recharge 4"
+    ],
+    "desc": "Combine une arquebuse et une hache. Maniée comme hache alors qu'elle est chargée, une Maladresse décharge l'arme dans le corps de l'utilisateur.",
+    "price": {
+      "gold": 8,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 100
+    }
+  },
+  {
+    "label": "Hallebarde-arquebuse",
+    "prefix": "(2M)",
+    "type": "ranged",
+    "subType": "Poudre noire",
+    "enc": 3,
+    "availability": "Exotique",
+    "reach": 30,
+    "loc": null,
+    "pa": null,
+    "damage": "+9",
+    "qualities": [
+      "Dangereuse",
+      "Imprécise",
+      "Recharge 4"
+    ],
+    "desc": "Hallebarde au canon d'arme à feu intégré dans la hampe. Maniée comme hallebarde alors qu'elle est chargée, une Maladresse décharge l'arme sur quiconque se tient juste derrière l'utilisateur.",
+    "price": {
+      "gold": 10,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 100
+    }
+  },
+  {
+    "label": "Haquebute",
+    "prefix": "(2M)",
+    "type": "ranged",
+    "subType": "Poudre noire",
+    "enc": 3,
+    "availability": "Exotique",
+    "reach": 40,
+    "loc": null,
+    "pa": null,
+    "damage": "+9",
+    "qualities": [
+      "Dangereuse",
+      "Imprécise",
+      "Recharge 5"
+    ],
+    "desc": "Canon à échelle réduite, modèle très ancien souvent dépourvu de mire ou de gâchette. Les exemplaires encore en usage sont de gros calibre, utiles là où les modèles modernes manquent de puissance.",
+    "price": {
+      "gold": 5,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 100
+    }
+  },
+  {
+    "label": "Pistolet patte de griffon",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Poudre noire",
+    "enc": 1,
+    "availability": "Exotique",
+    "reach": 10,
+    "loc": null,
+    "pa": null,
+    "damage": "+7",
+    "qualities": [
+      "Imprécise",
+      "Recharge 6",
+      "Tir de zone 5"
+    ],
+    "desc": "Conçu pour tirer sur un groupe d'ennemis en formation serrée : une seule gâchette décharge les six canons, et recharger demande six munitions et autant de poudre.",
+    "price": {
+      "gold": 20,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 100
+    }
+  },
+  {
+    "label": "Tromblon à mèche",
+    "prefix": "(2M)",
+    "type": "ranged",
+    "subType": "Poudre noire",
+    "enc": 1,
+    "availability": "Rare",
+    "reach": 20,
+    "loc": null,
+    "pa": null,
+    "damage": "+7",
+    "qualities": [
+      "Dangereuse",
+      "Recharge 3",
+      "Tir de zone 3"
+    ],
+    "desc": "Modèle ancien de tromblon, avec les mêmes inconvénients que l'arquebuse à mèche.",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 100
+    }
+  },
+  {
+    "label": "Canne-pistolet",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Poudre noire",
+    "enc": 1,
+    "availability": "Exotique",
+    "reach": 10,
+    "loc": null,
+    "pa": null,
+    "damage": "+8",
+    "qualities": [
+      "Dangereuse",
+      "Imprécise",
+      "Recharge 6"
+    ],
+    "desc": "Pistolet à canon court dissimulé dans un bâton de marche ou une canne. Très difficile à repérer (Perception Difficile -20, ou Très Difficile -30 pour qui connaît mal les armes à poudre noire).",
+    "price": {
+      "gold": 15,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 100
+    }
+  },
+  {
+    "label": "Mortier à main",
+    "prefix": "(2M)",
+    "type": "ranged",
+    "subType": "Poudre noire",
+    "enc": 3,
+    "availability": "Exotique",
+    "reach": 30,
+    "loc": null,
+    "pa": null,
+    "damage": "+7",
+    "qualities": [
+      "Dangereuse",
+      "Imprécise",
+      "Recharge 2"
+    ],
+    "desc": "Mortier à échelle réduite ressemblant à un tromblon court et trapu, conçu pour lancer bombes et gros objets. Une Maladresse en rechargeant fait exploser l'arme.",
+    "price": {
+      "gold": 50,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 100
+    }
+  },
+  {
+    "label": "Poivrière",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Poudre noire",
+    "enc": 1,
+    "availability": "Rare",
+    "reach": 10,
+    "loc": null,
+    "pa": null,
+    "damage": "+8",
+    "qualities": [
+      "À répétition 4",
+      "Dangereuse",
+      "Pistolet",
+      "Recharge 4"
+    ],
+    "desc": "Forme plus simple du pistolet à répétition : quatre canons préchargés devant un unique mécanisme de tir, tournés/réamorcés entre chaque coup. L'utilisateur doit avoir sa seconde main libre, sinon l'arme perd l'Atout À répétition.",
+    "price": {
+      "gold": 12,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 100
+    }
+  },
+  {
+    "label": "Balle de gros calibre et poudre",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Munitions",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": "Comme l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": "+2",
+    "qualities": [
+      "Empaleuse",
+      "Percutante",
+      "Perforante"
+    ],
+    "desc": "Petits boulets de canon chargés dans les armes à grand canon (haquebute, mortier à main). Le tireur et quiconque à 2 mètres ou moins doivent réussir un Test de Résistance Intermédiaire (+0) sous peine de recevoir un État Assourdi. Vendue par 12.",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 102
+    }
+  },
+  {
+    "label": "Bombe explosive",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Munitions",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": "Comme l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": "+5",
+    "qualities": [
+      "Dangereuse",
+      "À Explosion 5",
+      "Percutante"
+    ],
+    "desc": "Engin explosif rempli de poudre noire, de poix ou de goudron, lancé à la main ou chargé dans un mortier à main pour aller plus loin.",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 102
+    }
+  },
+  {
+    "label": "Cartouche en papier",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Munitions",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": "Comme l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": "+1",
+    "qualities": [
+      "Empaleuse",
+      "Perforante"
+    ],
+    "desc": "Balle et dose de poudre préemballées dans du papier pour un rechargement plus régulier. Vendue par 12.",
+    "price": {
+      "gold": 0,
+      "silver": 5,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 102
+    }
+  },
+  {
+    "label": "Cartouche et poudre de précision",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Munitions",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "Comme l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": "+1",
+    "qualities": [
+      "Empaleuse",
+      "Perforante",
+      "Précise"
+    ],
+    "desc": "Cartouche soigneusement calibrée pour le tir de précision.",
+    "price": {
+      "gold": 0,
+      "silver": 3,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 102
+    }
+  },
+  {
+    "label": "Ferraille et poudre",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Munitions",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "Moitié de l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": "-1",
+    "qualities": [
+      "Infecté",
+      "Tir de zone +3"
+    ],
+    "desc": "Débris métalliques sales tirés en gerbe par un tromblon ou un mortier à main. Les blessures qu'elle inflige risquent l'infection.",
+    "price": {
+      "gold": 0,
+      "silver": 2,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 102
+    }
+  },
+  {
+    "label": "Grappin (munition)",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Munitions",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": "Moitié de l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": "+2",
+    "qualities": [
+      "Perforante",
+      "Recharge +2"
+    ],
+    "desc": "Harpon à crochet tiré par une arme à poudre noire de gros calibre, relié à une corde.",
+    "price": {
+      "gold": 2,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 102
+    }
+  },
+  {
+    "label": "Poudre imprégnée d'Aqshy",
+    "prefix": null,
+    "type": "ranged",
+    "subType": "Munitions",
+    "enc": 0,
+    "availability": "Exotique",
+    "reach": "+10",
+    "loc": null,
+    "pa": null,
+    "damage": "+2",
+    "qualities": [
+      "Empaleuse",
+      "Perforante"
+    ],
+    "desc": "Poudre noire imprégnée de magie du Feu (Aqshy) par les Collèges de Magie, plus puissante et de plus longue portée. Vendue par 12.",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "AA",
+      "page": 102
+    }
   }
 ]

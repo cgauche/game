@@ -1127,6 +1127,15 @@ export function applyAttackResult(
         target.wounds.current = Math.max(0, target.wounds.current - fb);
         critLog.push(`Frappe blessante : ${target.name} perd ${fb} Blessure(s) de plus.`);
       }
+      // Taillade (Aux Armes p.89) : une Blessure Critique infligée par une arme de Taillade ajoute
+      // un État Hémorragique, en plus de tous les effets du Coup Critique.
+      if (res.critical && !lethal) {
+        for (const { def } of resolveQualities(weapon)) {
+          if (!def.onCritCondition) continue;
+          addCondition(target, def.onCritCondition);
+          critLog.push(`${target.name} : ${def.onCritCondition} (${def.key}).`);
+        }
+      }
       if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore); // mort directe ou pause Destin
     }
     // 0 PB → À Terre (LDB 18 l.28) : TOUJOURS quand on tombe à 0, EN PLUS du Critique éventuel (l'overkill
@@ -1356,6 +1365,28 @@ export function applyAttackResult(
     addCondition(target, 'Empêtré');
     const cond = target.conditions.find((c) => c.name === 'Empêtré'); if (cond) cond.sourceId = attacker.id;
     log.push(ev('condition', `${target.name} est Empêtré (${weapon.name} — Immobilisante).`, target.id));
+  }
+  // Déstabilisante (Aux Armes p.89) : après une touche, l'attaquant dépense des Avantages pour un
+  // Test opposé Force/Athlétisme ; s'il l'emporte, la cible est mise À Terre. Simplification : auto-
+  // déclenché quand l'attaquant a les Avantages requis (comme Assommante s'applique sans choix).
+  if (res.hit && weapon.type === 'melee' && !isOutOfAction(target)) {
+    for (const { def } of resolveQualities(weapon)) {
+      const kd = def.onHitKnockdown;
+      if (!kd || (attacker.advantage ?? 0) < kd.advantageCost || hasCondition(target, kd.condition)) continue;
+      attacker.advantage = (attacker.advantage ?? 0) - kd.advantageCost;
+      const aSk = kd.skill ? (attacker.skills.find((s) => s.name.toLowerCase().startsWith(kd.skill!.toLowerCase()))?.advances ?? 0) : 0;
+      const dSk = kd.skill ? (target.skills.find((s) => s.name.toLowerCase().startsWith(kd.skill!.toLowerCase()))?.advances ?? 0) : 0;
+      const won = opposedTest(effectiveChar(attacker, kd.char) + aSk, effectiveChar(target, kd.char) + dSk, battleRng()).winner === 'attacker';
+      if (won) {
+        addCondition(target, kd.condition);
+        const dline = `${target.name} est ${kd.condition} (${def.key}, ${kd.advantageCost} Avantages).`;
+        log.push(ev('condition', dline, target.id));
+        if (target.kind === 'hero' || attacker.kind === 'hero')
+          pushReveal(set, { kind: 'assommante', title: def.key, lines: [dline], subjectId: target.id, severity: 'minor' });
+      } else {
+        log.push(ev('detail', `${attacker.name} cherche à renverser ${target.name} (${def.key}, ${kd.advantageCost} Avantages) — sans succès.`, target.id));
+      }
+    }
   }
   // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
   // → Test de Calme Difficile (−20) ou perte des DR accumulés + Imparfaite Mineure.
