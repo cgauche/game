@@ -256,7 +256,8 @@ export function makeRollFlow<P extends PendingBase>(spec: RollFlowSpec<P>): Roll
 // ── Multi-participants : N jets dans une modale, chacun son cycle d'influence (cf. spec
 //    docs/superpowers/specs/2026-06-14-multi-roll-modal-design.md). Réutilise les opérations ci-dessus. ──
 
-/** État d'UN jet dans un groupe (mêmes drapeaux d'influence que le mono). */
+/** État d'UN jet dans un groupe (mêmes drapeaux d'influence que le mono). Les flux concrets
+ *  l'ÉTENDENT pour porter leur résultat (ex. `CounterParticipant` ajoute `counter`). */
 export interface RollParticipant extends PendingBase {
   /** Combattant qui lance ce jet. */
   id: string;
@@ -267,8 +268,8 @@ export interface RollParticipant extends PendingBase {
 }
 
 /** Le pending d'un flux multi porte le tableau de participants (+ son contexte figé propre). */
-export interface MultiPending {
-  participants: RollParticipant[];
+export interface MultiPending<Part extends RollParticipant = RollParticipant> {
+  participants: Part[];
 }
 
 /**
@@ -276,38 +277,40 @@ export interface MultiPending {
  * reçoit le participant ET son acteur ; tout le reste (Chance/Pacte/Résilience/relance) vient des
  * opérations partagées. `aggregate` (métier de groupe) vit dans le store comme les `xConfirm`.
  */
-export interface MultiRollFlowSpec<P extends MultiPending> {
+export interface MultiRollFlowSpec<P extends MultiPending<Part>, Part extends RollParticipant = RollParticipant> {
   key: keyof GameState & string;
   /** Le participant a-t-il lancé ? */
-  rolled: (part: RollParticipant) => boolean;
+  rolled: (part: Part) => boolean;
   /** Acteur d'un participant (qui dépense Chance/Résilience). */
-  actor: (s: GameState, p: P, part: RollParticipant) => Combatant | undefined;
-  resolve: (s: GameState, p: P, part: RollParticipant, actor: Combatant | undefined, get: Get, forced?: ForcedResolve) => Partial<RollParticipant> | null;
-  reresolve?: (s: GameState, p: P, part: RollParticipant, actor: Combatant, get: Get) => Partial<RollParticipant> | null;
-  failed: (part: RollParticipant) => boolean;
-  bonus?: { guard?: (part: RollParticipant) => boolean; derive: (s: GameState, p: P, part: RollParticipant, actor: Combatant) => Partial<RollParticipant> | null };
-  caps?: { forced?: boolean; picker?: (part: RollParticipant, actor: Combatant | undefined) => ForcedPick | null };
+  actor: (s: GameState, p: P, part: Part) => Combatant | undefined;
+  resolve: (s: GameState, p: P, part: Part, actor: Combatant | undefined, get: Get, forced?: ForcedResolve) => Partial<Part> | null;
+  reresolve?: (s: GameState, p: P, part: Part, actor: Combatant, get: Get) => Partial<Part> | null;
+  failed: (part: Part) => boolean;
+  bonus?: { guard?: (part: Part) => boolean; derive: (s: GameState, p: P, part: Part, actor: Combatant) => Partial<Part> | null };
+  caps?: { forced?: boolean; picker?: (part: Part, actor: Combatant | undefined) => ForcedPick | null };
   touch?: (s: GameState) => Partial<GameState>;
 }
 
 /** Handlers d'un flux multi : mêmes verbes que le mono, mais ciblant un PARTICIPANT par `id`. */
-export interface MultiRollFlowHandlers {
+export interface MultiRollFlowHandlers<Part extends RollParticipant = RollParticipant> {
   roll: (get: Get, set: Set, pid: string) => void;
   reroll: (get: Get, set: Set, pid: string) => void;
   bonusSL: (get: Get, set: Set, pid: string) => void;
   forceSuccess: (get: Get, set: Set, pid: string) => void;
   setForcedRoll: (get: Get, set: Set, pid: string, roll: number) => void;
-  picker?: (part: RollParticipant, actor: Combatant | undefined) => ForcedPick | null;
+  picker?: (part: Part, actor: Combatant | undefined) => ForcedPick | null;
   cancel: (get: Get, set: Set) => void;
   darkPact: (get: Get, set: Set, pid: string) => void;
 }
 
-export function makeMultiRollFlow<P extends MultiPending>(spec: MultiRollFlowSpec<P>): MultiRollFlowHandlers {
+export function makeMultiRollFlow<P extends MultiPending<Part>, Part extends RollParticipant = RollParticipant>(
+  spec: MultiRollFlowSpec<P, Part>,
+): MultiRollFlowHandlers<Part> {
   const pendingOf = (s: GameState) => s[spec.key] as P | null | undefined;
   const touch = spec.touch ?? touchActors;
   const partOf = (p: P, pid: string) => p.participants.find((x) => x.id === pid);
   // commit MULTI : le slot est `participants[pid]` → on remplace ce participant dans le tableau.
-  const commitOf = (set: Set, get: Get, p: P, pid: string): Commit<RollParticipant> => (patch, opts) =>
+  const commitOf = (set: Set, get: Get, p: P, pid: string): Commit<Part> => (patch, opts) =>
     set({
       [spec.key]: {
         ...p,

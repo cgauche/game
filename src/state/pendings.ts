@@ -11,9 +11,10 @@ import type { TestResult, OpposedResult } from '../engine/tests';
 import type { AttackResult } from '../engine/combat';
 import type { CriticalResolved } from '../engine/critical';
 import type { OupsResolved } from '../engine/oups';
-import type { CastResult, MissileResult, FocusResult } from '../engine/magic';
+import type { CastResult, MissileResult, FocusResult, CounterspellOutcome } from '../engine/magic';
 import type { HealMode } from '../engine/healing';
 import type { PsychType } from '../engine/psychology';
+import type { RollParticipant, MultiPending } from './rollFlow';
 
 export interface Money {
   gold: number;
@@ -474,6 +475,27 @@ export interface PendingCast {
   /** Lancé DEPUIS le grimoire porté (sort non mémorisé de son Domaine, LDB 47 l.34) :
    *  le NI est DOUBLÉ à la résolution (et le livre s'expose aux dégâts/au vol — narratif). */
   grimoire?: boolean;
+}
+
+/** Un héros qui tente le Contre-sort : participant du flux MULTI (son propre jet + influence). */
+export interface CounterParticipant extends RollParticipant {
+  /** Résultat du Test opposé de Langue (Magick) de CE héros, ou null = pas encore lancé. */
+  result: CounterspellOutcome | null;
+}
+/** Contre-sort à PLUSIEURS (LDB 46 l.201-202/207 : chaque dissipateur lance SÉPARÉMENT) — flux
+ *  multi-participants « réaction type défense » : le jet d'incantation ENNEMI est figé (`cast`),
+ *  chaque héros éligible oppose son Langue (Magick) avec son propre cycle Chance/Pacte/Résilience.
+ *  Issue agrégée à l'application : dissipé si UN héros gagne ; sinon le sort se résout au meilleur DR
+ *  net. « Laisser passer » = aucun Contre-sort. Le tour de l'IA est suspendu tant qu'il est non-null. */
+export interface PendingCounterspell extends MultiPending<CounterParticipant> {
+  casterId: string; // lanceur ENNEMI
+  targetId: string; // cible du sort (pour re-dériver l'effet si non dissipé)
+  spellLabel: string;
+  missile: boolean;
+  focused: boolean;
+  grimoire?: boolean;
+  /** Jet d'incantation ENNEMI, FIGÉ (= l'« attaquant » de chaque Test opposé). */
+  cast: CastResult & Partial<MissileResult>;
 }
 
 /** Soin de Guérison en attente (LDB 09-Compétences) : flux modale — « Lancer » (healRoll) → Chance
