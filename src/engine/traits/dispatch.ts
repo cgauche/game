@@ -6,6 +6,7 @@
  */
 import type { CharKey, Combatant } from '../types';
 import { TRAITS, TraitDef } from './registry';
+import { parseStatEntry } from '../statEntry';
 
 const KEY_BY_LOWER = new Map(Object.keys(TRAITS).map((k) => [k.toLowerCase(), k]));
 
@@ -18,13 +19,13 @@ export interface ParsedTrait {
   arg?: string;
 }
 
-/** Normalise une chaîne de trait : retire parenthèse et Indice, matche la clé (casse ignorée). */
+/** Normalise une chaîne de trait via le parseur PARTAGÉ `parseStatEntry`, puis matche la clé du
+ *  registre (casse ignorée). L'Indice = valeur non signée de fin (« Démoniaque 8+ », « Vol 100 »),
+ *  sinon le bonus signé (« Arme +7 ») pour les traits d'attaque. */
 export function parseTrait(raw: string): ParsedTrait | null {
-  const arg = raw.match(/\(([^)]*)\)/)?.[1]?.trim();
-  const indice = raw.match(/(\d+)\s*\+?\s*(?:\(|$)/)?.[1];
-  const label = raw.replace(/\s*\([^)]*\)/g, '').replace(/\s*\d+\s*\+?\s*$/, '').trim();
-  const key = KEY_BY_LOWER.get(label.toLowerCase());
-  return key ? { key, indice: indice != null ? parseInt(indice, 10) : undefined, arg } : null;
+  const p = parseStatEntry(raw);
+  const key = KEY_BY_LOWER.get(p.name.toLowerCase());
+  return key ? { key, indice: p.indice ?? p.bonus, arg: p.arg } : null;
 }
 
 export interface ResolvedTrait {

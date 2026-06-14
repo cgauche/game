@@ -13,6 +13,7 @@ import {
   stars, locations, books, levelsForCareer,
 } from '../../data';
 import { CULTS } from '../../engine/cults/registry';
+import { statName } from '../../engine/statEntry';
 
 export type CodexGroup = 'Personnage' | 'Compétences' | 'Équipement' | 'Effets' | 'Magie' | 'Monde';
 
@@ -78,24 +79,9 @@ const join = (...parts: (string | null | undefined)[]): string | undefined => {
 /** Famille d'une race/variante : « Humains (Reiklander) » → « Humains ». */
 const family = (label: string): string => label.split(' (')[0].trim();
 
-/** Décompose une entité paramétrée → base (lookup) + libellé complet (affiché, Indices inclus).
- *  « 8 Tentacules +8 » → { lookup:'Tentacules', show:'8 Tentacules +8' } ;
- *  « Chevaucher (Cheval) 58 » → { lookup:'Chevaucher', show:'Chevaucher (Cheval) 58' }. */
-function splitRef(raw: string): { lookup: string; show: string } {
-  const show = raw.trim();
-  const lookup = show
-    .replace(/^\d+\s+/, '') // Indice de nombre en tête (« 8 Tentacules »)
-    .replace(/\s+[+-]?\d+\s*$/, '') // valeur/Indice en fin (« +8 », « 58 »)
-    .replace(/\s*\([^)]*\)\s*/g, ' ') // spécialisation entre parenthèses (lookup sur la base)
-    .replace(/\s+/g, ' ')
-    .trim();
-  return { lookup: lookup || show, show };
-}
-
-const refRow = (category: string, raw: string): CodexRow => {
-  const { lookup, show } = splitRef(raw);
-  return { t: 'ref', category, label: lookup, show };
-};
+/** Lien cross-réf : nom canonique pour le lookup (via le parseur PARTAGÉ `parseStatEntry` —
+ *  « 8 Tentacules +8 » → « Tentacules »), libellé complet conservé pour l'affichage + l'instance. */
+const refRow = (category: string, raw: string): CodexRow => ({ t: 'ref', category, label: statName(raw), show: raw.trim() });
 const refRows = (category: string, items?: string[] | null): CodexRow[] => (items ?? []).map((s) => refRow(category, s));
 const kvRows = (pairs: [string, unknown][]): CodexRow[] =>
   pairs
