@@ -13,10 +13,11 @@ export const DOMAINE_BETE: SpellSpec[] = [
   {
     label: 'Forme bestiale',
     // « …choisissez une nouvelle forme parmi les Bêtes du Reikland. Remplacez vos F, E, Ag et Dex par
-    //   celles de la créature, recalculez vos PB, gagnez ses Traits sauf Bestial… Vous ne pouvez pas
-    //   parler (donc pas d'incantation). » — métamorphose à remplacement de Caractéristiques : non
-    //   modélisée (le moteur ne substitue pas un statbloc au héros) : arbitré.
-    ops: [{ op: 'narrative', text: 'Forme bestiale : vous prenez la forme d’une Bête du Reikland (F/E/Ag/Dex remplacées, PB recalculés, Traits de la créature sauf Bestial ; +1 Trait facultatif par +2 DR ; vous ne pouvez ni parler ni incanter) — arbitrage MJ.' }],
+    //   celles de la créature, recalculez vos PB, gagnez ses Traits sauf Bestial. » — MÉTAMORPHOSE
+    //   mécanique (engine/polymorph) : forme par DÉFAUT l'Ours (forte) ; le choix parmi les Bêtes du
+    //   Reikland, le +1 Trait facultatif par +2 DR et la perte de la parole restent journalisés.
+    ops: [{ op: 'narrative', text: 'Forme bestiale : choisissez votre forme parmi les Bêtes du Reikland (ici l’Ours par défaut) ; +1 Trait facultatif par +2 DR — arbitrage MJ.' }],
+    polymorph: { ref: 'Ours' },
     durationRounds: null, // « (Force Mentale) minutes »
     curated: true,
     source: 'LDB 48 — Domaine de la Bête « Forme bestiale »',

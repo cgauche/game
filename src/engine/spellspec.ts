@@ -88,6 +88,10 @@ export interface SpellSpec {
     allyOfCaster?: boolean;
     despawnIfCasterDown?: boolean;
   };
+  /** MÉTAMORPHOSE en créature (Forme bestiale, LDB 48) : `ref` = créature du bestiaire dont les
+   *  F/E/Ag/Dex et Traits (sauf Bestial) remplacent ceux de la cible le temps du Sort. Résolu par
+   *  `engine/polymorph.polymorphOps` (charMod différentiel + grantTrait, auto-restitués). */
+  polymorph?: { ref: string };
   /** Vrai pour une entrée du registre (sinon : repli regex sur la desc). */
   curated: boolean;
   /** Citation source (desc spells.json, LDB chap/ligne) pour les entrées curées. */

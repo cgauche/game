@@ -78,6 +78,7 @@ import {
 import { applyOps, resolveFormula, COMBAT_PERSIST } from '../engine/ops';
 import { spellSpecFor } from '../data/spellspecs';
 import { applySummon, purgeExpiredSummons } from './summonFlow';
+import { polymorphOps } from '../engine/polymorph';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
 import { eligibleTalent, canCastFromGrimoire } from '../engine/grimoire';
@@ -477,12 +478,12 @@ export function previewAttack(
 }
 
 /** Ligne ADVERSE du panneau de jet pré-rempli (modale d'attaque) : ce que le joueur est en droit
- *  de savoir de la défense à venir — la compétence probable (« défendra : Parade ») et ses
+ *  de savoir de la défense à venir — la compétence probable (« Parade » / « Esquive ») et ses
  *  bonus/malus visibles (Avantage, États, Sur la défensive…), SANS la valeur de compétence ni
  *  l'encaissé. Compétence = meilleure défense (`bestDefenseMode`) ; Bestial → Esquive seule. */
 export function previewDefense(defender: Combatant): { label: string; mods: ModLine[] } {
   const mode = bestDefenseMode(defender);
-  return { label: `défendra : ${DEFENSE_LABEL[mode]}`, mods: defenseModifiers(defender, mode, 0, defender.weapons[0]) };
+  return { label: DEFENSE_LABEL[mode], mods: defenseModifiers(defender, mode, 0, defender.weapons[0]) };
 }
 
 /** Pré-jet d'INCANTATION pour le panneau de jet (même rôle que previewAttack/previewDefense) : valeur
@@ -2690,6 +2691,13 @@ export function applyCast(
             onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
           }),
         );
+        // Métamorphose (Forme bestiale, LDB 48) : remplace F/E/Ag/Dex + accorde les Traits de la
+        // créature (engine/polymorph → charMod différentiel + grantTrait, auto-restitués à l'expiration).
+        if (spec.polymorph) logLines.push(...applyOps(t, polymorphOps(t, spec.polymorph.ref), {
+          rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
+          defaultDurationRounds: rounds ?? COMBAT_PERSIST,
+          ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
+        }));
       }
       // POUSSÉE (Jalon 2.6 — « Toutes les créatures à BFM mètres sont repoussées de BFM
       // mètres », LDB 47 p.244) : recul en ligne (direction lanceur→cible) jusqu'à
