@@ -20,8 +20,12 @@ const caster = (over: Partial<Combatant> = {}): Combatant =>
 const scene = (): Scene =>
   ({ id: 's', name: 's', dimensions: { w: 14, h: 14 }, ambiance: 'exterieur', tiles: new Array(14 * 14).fill('herbe'), entities: [], buildings: [], dialogues: [], triggers: [], encounters: [] } as unknown as Scene);
 
-const battle = (combatants: Combatant[], round = 1): any =>
-  ({ combatants, order: combatants.map((c) => c.id), turn: 0, round, log: [], zones: [], over: false });
+const battle = (combatants: Combatant[], round = 1): any => {
+  const order = combatants.map((c) => c.id);
+  // En début de combat réel, `order` et `baseOrder` partagent la MÊME référence (régression : une
+  // insertion d'invocation ne doit pas frapper le tableau deux fois).
+  return { combatants, order, baseOrder: order, turn: 0, round, log: [], zones: [], over: false };
+};
 
 function harness(c: Combatant, b: any) {
   let state: any = { battle: b, scene: scene() };
@@ -38,6 +42,9 @@ describe('applySummon', () => {
     expect(summons.every((s: Combatant) => s.kind === 'hero')).toBe(true); // camp du lanceur héros
     expect(summons.every((s: Combatant) => s.summon!.byId === 'necro' && s.summon!.despawnIfSummonerDown)).toBe(true);
     expect(h.state().battle.order).toContain(summons[0].id); // dans l'initiative
+    const order = h.state().battle.order;
+    expect(new Set(order).size).toBe(order.length); // AUCUN doublon (order ≠ baseOrder dédoublés)
+    expect(h.state().battle.baseOrder).not.toBe(h.state().battle.order); // dédoublés à l'insertion
     expect(lines.join(' ')).toMatch(/invoque 6/);
   });
 

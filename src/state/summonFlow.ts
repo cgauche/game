@@ -72,7 +72,10 @@ export function applySummon(get: Get, set: SetFn, caster: Combatant, summon: Sum
   // Camp : allié = même `kind` que le lanceur (contrôlé/IA selon son camp) ; hostile = camp opposé.
   const kind: Combatant['kind'] = hostile ? (caster.kind === 'hero' ? 'enemy' : 'hero') : caster.kind;
   const tiles = freeTilesNear(scene, battle, caster.pos, count);
-  battle.baseOrder = battle.baseOrder ?? [...battle.order];
+  // `baseOrder` (ordre canonique restauré à chaque Round) peut être LE MÊME tableau que `order` en
+  // début de combat : il faut le dédoubler, sinon les deux `insertAfter` ci-dessous frapperaient le
+  // même tableau et l'id serait inséré DEUX fois (doublon dans l'initiative → clés React en double).
+  if (!battle.baseOrder || battle.baseOrder === battle.order) battle.baseOrder = [...battle.order];
   const placed: Combatant[] = [];
   for (let i = 0; i < count; i++) {
     const pos = tiles[i];
