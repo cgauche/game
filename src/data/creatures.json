@@ -35,8 +35,9 @@
       "book": "LDB",
       "page": 311
     },
-    "species": "Humain",
-    "tenue": "Soldat"
+    "appearance": {
+      "species": "Humain"
+    }
   },
   {
     "label": "Nain",
@@ -77,8 +78,9 @@
       "book": "LDB",
       "page": 311
     },
-    "species": "Nain",
-    "tenue": "Soldat"
+    "appearance": {
+      "species": "Nain"
+    }
   },
   {
     "label": "Halfling",
@@ -116,8 +118,9 @@
       "book": "LDB",
       "page": 311
     },
-    "species": "Halfling",
-    "tenue": "Soldat"
+    "appearance": {
+      "species": "Halfling"
+    }
   },
   {
     "label": "Elfe (haut et sylvain)",
@@ -161,8 +164,9 @@
       "book": "LDB",
       "page": 311
     },
-    "species": "Haut-Elfe",
-    "tenue": "Soldat"
+    "appearance": {
+      "species": "Haut-Elfe"
+    }
   },
   {
     "label": "Ogre",
@@ -204,8 +208,10 @@
       "book": "LDB",
       "page": 312
     },
-    "species": "Ogre",
-    "tenue": "Ogre"
+    "appearance": {
+      "species": "Ogre",
+      "tenue": "Ogre"
+    }
   },
   {
     "label": "Bella la Noire",
@@ -245,8 +251,9 @@
       "book": "LDB",
       "page": 313
     },
-    "species": "Humain",
-    "tenue": "Soldat"
+    "appearance": {
+      "species": "Humain"
+    }
   },
   {
     "label": "Pol Dankels",
@@ -284,8 +291,9 @@
       "book": "LDB",
       "page": 313
     },
-    "species": "Humain",
-    "tenue": "Soldat"
+    "appearance": {
+      "species": "Humain"
+    }
   },
   {
     "label": "Eusapia Balacañon",
@@ -362,8 +370,9 @@
       "book": "MSR",
       "page": 48
     },
-    "species": "Humain",
-    "tenue": "Soldat"
+    "appearance": {
+      "species": "Humain"
+    }
   },
   {
     "label": "Araignée géante",
@@ -980,8 +989,10 @@
       "book": "LDB",
       "page": 319
     },
-    "species": "Fimir",
-    "tenue": "Nu"
+    "appearance": {
+      "species": "Fimir",
+      "tenue": "Nu"
+    }
   },
   {
     "label": "Géant",
@@ -1027,8 +1038,10 @@
       "book": "LDB",
       "page": 320
     },
-    "species": "Géant",
-    "tenue": "Nu"
+    "appearance": {
+      "species": "Géant",
+      "tenue": "Nu"
+    }
   },
   {
     "label": "Griffon",
@@ -1427,8 +1440,10 @@
       "book": "LDB",
       "page": 324
     },
-    "species": "Troll",
-    "tenue": "Nu"
+    "appearance": {
+      "species": "Troll",
+      "tenue": "Nu"
+    }
   },
   {
     "label": "Vouivre",
@@ -1513,8 +1528,10 @@
       "book": "LDB",
       "page": 325
     },
-    "species": "Orc",
-    "tenue": "Mendiant"
+    "appearance": {
+      "species": "Orc",
+      "tenue": "Mendiant"
+    }
   },
   {
     "label": "Gobelin",
@@ -1558,8 +1575,10 @@
       "book": "LDB",
       "page": 326
     },
-    "species": "Gobelin",
-    "tenue": "Mendiant"
+    "appearance": {
+      "species": "Gobelin",
+      "tenue": "Mendiant"
+    }
   },
   {
     "label": "Snotling",
@@ -1600,8 +1619,10 @@
       "book": "LDB",
       "page": 326
     },
-    "species": "Snotling",
-    "tenue": "Nu"
+    "appearance": {
+      "species": "Snotling",
+      "tenue": "Nu"
+    }
   },
   {
     "label": "Banshee",
@@ -1779,8 +1800,10 @@
       "book": "LDB",
       "page": 328
     },
-    "species": "Goule",
-    "tenue": "Nu"
+    "appearance": {
+      "species": "Goule",
+      "tenue": "Nu"
+    }
   },
   {
     "label": "Loup funeste",
@@ -1914,8 +1937,10 @@
       "book": "LDB",
       "page": 329
     },
-    "species": "Squelette",
-    "tenue": "Squelette"
+    "appearance": {
+      "species": "Squelette",
+      "tenue": "Squelette"
+    }
   },
   {
     "label": "Vampire",
@@ -1971,8 +1996,10 @@
       "book": "LDB",
       "page": 330
     },
-    "species": "Vampire",
-    "tenue": "Vampire"
+    "appearance": {
+      "species": "Vampire",
+      "tenue": "Vampire"
+    }
   },
   {
     "label": "Zombie",
@@ -2019,8 +2046,10 @@
       "book": "LDB",
       "page": 330
     },
-    "species": "Zombie",
-    "tenue": "Mendiant"
+    "appearance": {
+      "species": "Zombie",
+      "tenue": "Mendiant"
+    }
   },
   {
     "label": "Chamane-Brey",
@@ -2065,8 +2094,10 @@
       "book": "LDB",
       "page": 331
     },
-    "species": "Chamane-Brey",
-    "tenue": "Chamane-Bray"
+    "appearance": {
+      "species": "Chamane-Brey",
+      "tenue": "Chamane-Bray"
+    }
   },
   {
     "label": "Gor",
@@ -2113,8 +2144,10 @@
       "book": "LDB",
       "page": 332
     },
-    "species": "Gor",
-    "tenue": "Nu"
+    "appearance": {
+      "species": "Gor",
+      "tenue": "Nu"
+    }
   },
   {
     "label": "Minotaure",
@@ -2160,8 +2193,10 @@
       "book": "LDB",
       "page": 332
     },
-    "species": "Minotaure",
-    "tenue": "Nu"
+    "appearance": {
+      "species": "Minotaure",
+      "tenue": "Nu"
+    }
   },
   {
     "label": "Ungor",
@@ -2205,8 +2240,10 @@
       "book": "LDB",
       "page": 332
     },
-    "species": "Ungor",
-    "tenue": "Nu"
+    "appearance": {
+      "species": "Ungor",
+      "tenue": "Nu"
+    }
   },
   {
     "label": "Cultiste",
@@ -2244,8 +2281,10 @@
       "book": "LDB",
       "page": 333
     },
-    "species": "Humain",
-    "tenue": "Cultiste"
+    "appearance": {
+      "species": "Humain",
+      "tenue": "Cultiste"
+    }
   },
   {
     "label": "Mutant",
@@ -2283,8 +2322,10 @@
       "book": "LDB",
       "page": 333
     },
-    "species": "Humain",
-    "tenue": "Mendiant"
+    "appearance": {
+      "species": "Humain",
+      "tenue": "Mendiant"
+    }
   },
   {
     "label": "Guerrier du Chaos",
@@ -2328,8 +2369,10 @@
       "book": "LDB",
       "page": 334
     },
-    "species": "Guerrier du Chaos",
-    "tenue": "Guerrier du Chaos"
+    "appearance": {
+      "species": "Guerrier du Chaos",
+      "tenue": "Guerrier du Chaos"
+    }
   },
   {
     "label": "Sanguinaire de Khorne",
@@ -2372,8 +2415,10 @@
       "book": "LDB",
       "page": 335
     },
-    "species": "Démon",
-    "tenue": "Sanguinaire"
+    "appearance": {
+      "species": "Démon",
+      "tenue": "Sanguinaire"
+    }
   },
   {
     "label": "Démonette de Slaanesh",
@@ -2413,8 +2458,10 @@
       "book": "LDB",
       "page": 335
     },
-    "species": "Démonette",
-    "tenue": "Démonette"
+    "appearance": {
+      "species": "Démonette",
+      "tenue": "Démonette"
+    }
   },
   {
     "label": "Furie du Chaos",
@@ -2464,8 +2511,10 @@
       "book": "EDO",
       "page": 84
     },
-    "species": "Furie du Chaos",
-    "tenue": "Nu"
+    "appearance": {
+      "species": "Furie du Chaos",
+      "tenue": "Nu"
+    }
   },
   {
     "label": "Horreur rose",
@@ -2513,8 +2562,10 @@
       "book": "EDO",
       "page": 85
     },
-    "species": "Horreur rose",
-    "tenue": "Nu"
+    "appearance": {
+      "species": "Horreur rose",
+      "tenue": "Nu"
+    }
   },
   {
     "label": "Horreur bleue",
@@ -2560,8 +2611,10 @@
       "book": "EDO",
       "page": 85
     },
-    "species": "Horreur bleue",
-    "tenue": "Nu"
+    "appearance": {
+      "species": "Horreur bleue",
+      "tenue": "Nu"
+    }
   },
   {
     "label": "Slenderthigh Whiptongue",
@@ -2691,8 +2744,10 @@
       "book": "LDB",
       "page": 337
     },
-    "species": "Skaven",
-    "tenue": "Skaven"
+    "appearance": {
+      "species": "Skaven",
+      "tenue": "Skaven"
+    }
   },
   {
     "label": "Rat ogre",
@@ -2739,8 +2794,10 @@
       "book": "LDB",
       "page": 337
     },
-    "species": "Rat ogre",
-    "tenue": "Rat ogre"
+    "appearance": {
+      "species": "Rat ogre",
+      "tenue": "Rat ogre"
+    }
   },
   {
     "label": "Vermine de choc",
@@ -2780,7 +2837,9 @@
       "book": "LDB",
       "page": 337
     },
-    "species": "Vermine de choc",
-    "tenue": "Vermine de choc"
+    "appearance": {
+      "species": "Vermine de choc",
+      "tenue": "Vermine de choc"
+    }
   }
 ]

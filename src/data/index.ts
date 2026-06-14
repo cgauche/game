@@ -3,6 +3,7 @@
  * écran 'dataEditor'). Les *.json de ce dossier sont la SOURCE CANONIQUE ; `scripts/build-data.ts`
  * n'est plus qu'un IMPORTEUR ponctuel (re-seed depuis Source/all-data.json à la demande).
  */
+import type { EntityAppearance } from '../state/scene';
 import characteristicsJson from './characteristics.json';
 import speciesJson from './species.json';
 import classesJson from './classes.json';
@@ -122,12 +123,11 @@ export interface CreatureData {
   spells: string[];
   desc: string | null;
   source: { book: string; page: number };
-  /** Espèce d'apparence EXPLICITE (clé `CreatureDef`, bipèdes) — remplace le match-par-nom POC du rig
-   *  (plan P1). Figée depuis la résolution actuelle ; le rig la lit, repli sur le nom si absente. */
-  species?: string;
-  /** Tenue d'apparence EXPLICITE (bipèdes) — remplace le match-par-nom POC `ROLE_CAREERS`
-   *  (plan P1). Figée depuis la résolution actuelle ; le rig la lit (source unique de la tenue). */
-  tenue?: string;
+  /** Apparence par défaut UNIFIÉE (plan P2) — UN seul bloc éditable porté par l'enregistrement :
+   *  espèce, tenue, parts monstrueux, couleurs, coiffure, sexe/carrure, yeux. Le rig la lit comme
+   *  couche de défaut (sous une éventuelle surcharge de scène). Même format que `EntityAppearance`
+   *  (éditeur de scène) → une SEULE structure d'apparence dans toute l'app. */
+  appearance?: EntityAppearance;
 }
 export interface EtatData {
   label: string;

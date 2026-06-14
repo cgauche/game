@@ -232,7 +232,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
     id,
     name: creature.label,
     kind: 'enemy',
-    ...(creature.species ? { species: creature.species } : {}), // apparence EXPLICITE (P1a) → le rig la lit au lieu du match-par-nom
+    ...(creature.appearance?.species ? { species: creature.appearance.species } : {}), // espèce du record (P2) → le rig la lit ; le reste de l'apparence par défaut est lu par enemyRigProfile via findCreature
     characteristics: chars,
     wounds: { current: wounds, max: wounds, base: wounds },
     advantage: 0,

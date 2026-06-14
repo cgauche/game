@@ -10,6 +10,9 @@ import { datasetArray, setDataset, type DatasetKey } from '../../data/overrides'
 import { serializeDataset } from '../../data/serialize';
 import * as fs from '../../data/fsPersist';
 import { inferFields, type FieldDesc } from './editFields';
+import { MonsterPartsFields } from '../editor/MonsterPartsFields';
+import { RACES } from '../../gameIso/rig/races';
+import type { EntityAppearance } from '../../state/scene';
 
 /** Catégorie Codex → dataset éditable. `gods` (cultes générés) absent = non éditable en v1. */
 const CATEGORY_DATASET: Record<string, DatasetKey> = {
@@ -40,7 +43,13 @@ export function CodexEdit({ categoryKey, label, onClose }: { categoryKey: string
   useEffect(() => { fs.restoreDataDir().then((r) => { if (r) { setDir(r.handle); setNeedsGrant(!r.granted); } }); }, []);
   useEffect(() => { setEntry(structuredClone(arr[index] ?? {})); setDirty(false); setMsg(''); }, [index, dsKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fields = useMemo(() => inferFields(arr as Record<string, unknown>[]), [arr]);
+  // L'apparence des créatures a son éditeur dédié (MonsterPartsFields) — on la sort du formulaire
+  // générique (sinon rendue en JSON brut). Les autres datasets gardent le formulaire inféré.
+  const isCreature = categoryKey === 'creatures';
+  const fields = useMemo(
+    () => inferFields(arr as Record<string, unknown>[]).filter((f) => !(isCreature && f.key === 'appearance')),
+    [arr, isCreature],
+  );
   const edit = (key: string, v: unknown) => { setEntry((e) => ({ ...e, [key]: v })); setDirty(true); };
 
   const save = async () => {
@@ -68,8 +77,38 @@ export function CodexEdit({ categoryKey, label, onClose }: { categoryKey: string
         <button className="btn small btn-primary" disabled={!dirty} onClick={save}>Enregistrer{dirty ? ' •' : ''}</button>
       </div>
       <div className="codex-edit-form">
+        {isCreature && <AppearanceField value={entry.appearance as EntityAppearance | undefined} onChange={(v) => edit('appearance', v)} />}
         {fields.map((f) => <Field key={f.key} field={f} value={entry[f.key]} onChange={(v) => edit(f.key, v)} />)}
       </div>
+    </div>
+  );
+}
+
+/** Éditeur d'apparence par défaut d'une créature (bloc `appearance` UNIFIÉ) — réutilise la brique
+ *  partagée `MonsterPartsFields` (espèce + parts/couleurs/coiffure/tenue/yeux). Édite le VRAI record
+ *  `creatures.json` ; le rig le lit comme couche de défaut → l'apparence en jeu reflète l'édition. */
+function AppearanceField({ value, onChange }: { value: EntityAppearance | undefined; onChange: (v: EntityAppearance) => void }) {
+  const a = value ?? {};
+  const patch = (p: Partial<EntityAppearance>) => onChange({ ...a, ...p });
+  return (
+    <div className="ed-field ed-appearance">
+      <span>apparence par défaut (rig) — éditée sur le record, reflétée en jeu</span>
+      <label className="ed-subfield">
+        Espèce
+        <input value={a.species ?? ''} list="dl-rig-species" placeholder="(déduite du nom)"
+          onChange={(e) => patch({ species: e.target.value || undefined })} />
+        <datalist id="dl-rig-species">{Object.keys(RACES).map((s) => <option key={s} value={s} />)}</datalist>
+      </label>
+      <MonsterPartsFields
+        monster={a.monster} colors={a.colors} sex={a.sex} build={a.build} parts={a.parts} tenue={a.tenue} eyes={a.eyes}
+        onMonster={(p) => patch({ monster: { ...(a.monster ?? {}), ...p } })}
+        onColors={(p) => patch({ colors: { ...(a.colors ?? {}), ...p } })}
+        onSex={(s) => patch({ sex: s })}
+        onBuild={(b) => patch({ build: b })}
+        onParts={(p) => patch({ parts: { ...(a.parts ?? {}), ...p } })}
+        onTenue={(c) => patch({ tenue: c })}
+        onEyes={(p) => patch({ eyes: { ...(a.eyes ?? {}), ...p } })}
+      />
     </div>
   );
 }

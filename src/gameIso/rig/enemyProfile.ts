@@ -16,6 +16,7 @@ import { hashSeed } from '../appearance';
 import { norm } from '../../lib/normalize';
 import { bipedDef, bipedSpeciesMatch, creaturePlanMatch } from './creatures';
 import { findCreature } from '../../data';
+import type { EntityAppearance } from '../../state/scene';
 import { raceById } from './races';
 import { baseSpeciesOf } from './skeletons';
 
@@ -106,11 +107,26 @@ function synthArmour(ap: ArmourPoints): ItemInstance[] {
 }
 
 /** Superpose les champs DÉFINIS de `over` sur `base` (un undefined ne masque pas le défaut). */
-function overlayDefined(base: Appearance, over: Appearance): Appearance {
+function overlayDefined(base: Appearance, over: Partial<Appearance>): Appearance {
   const out: Appearance = { ...base };
   for (const k of Object.keys(over) as (keyof Appearance)[]) {
     if (over[k] !== undefined) (out as unknown as Record<string, unknown>)[k] = over[k];
   }
+  return out;
+}
+
+/** Apparence d'éditeur (EntityAppearance, record créature) → champs rig DÉFINIS seulement (yeux clés→art).
+ *  Sert de couche de défaut superposable (overlayDefined) sans masquer les défauts de race non spécifiés. */
+function rigFieldsFrom(a: EntityAppearance): Partial<Appearance> {
+  const out: Partial<Appearance> = {};
+  if (a.species) out.species = a.species;
+  if (a.sex) out.sex = a.sex;
+  if (a.build !== undefined) out.build = a.build;
+  if (a.seed !== undefined) out.seed = a.seed;
+  if (a.monster) out.monster = a.monster;
+  if (a.colors) out.colors = a.colors;
+  if (a.parts) out.parts = a.parts;
+  if (a.eyes) out.eyes = eyesArtFromKeys(a.eyes);
   return out;
 }
 
@@ -122,22 +138,24 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   if (classifyEnemy(c.name) === 'creature') return null;
   const n = norm(c.name);
   const seed = hashSeed(c.id);
-  const species = c.species ?? detectSpecies(n);
+  const cd = findCreature(c.name)?.appearance; // apparence par défaut UNIFIÉE du record créature (P2)
+  const species = c.species ?? cd?.species ?? detectSpecies(n);
   const d = bipedDef(species); // def bipède canonique (porte le perso éventuel + override race/gabarit)
   const race = raceById(d?.race ?? baseSpeciesOf(species)); // défauts d'apparence partagés (canon)
   const perso = d?.perso; // surcharges propres à la créature (espèces non-canoniques)
   const sex: 'M' | 'F' = perso?.sex ?? race.sex ?? (seed % 7 < 2 ? 'F' : 'M'); // ~28 % F sinon
   const build = +(0.35 + ((Math.floor(seed / 7) % 41) / 100)).toFixed(2); // 0.35..0.75
   const autoMon = perso?.monster;
-  // Défauts de race/seed PUIS superposition de l'override d'auteur (champs définis seulement) :
-  // un override partiel (ex. seed re-tiré, sexe forcé) conserve coiffure/couleurs/gabarit canoniques.
+  // Empilement d'apparence : défauts de race/seed → apparence par DÉFAUT du record créature (éditeur)
+  // → surcharge d'INSTANCE de scène (c.appearance). Chaque couche ne pose que ses champs définis.
   const def: Appearance = { species, sex, build, seed, parts: perso?.parts ?? race.parts, colors: perso?.colors ?? race.colors, gabarit: perso?.gabarit ?? d?.gabarit, eyes: eyesArtFromKeys(perso?.eyes) };
-  const baseApp: Appearance = c.appearance ? overlayDefined(def, c.appearance) : def;
+  const withCreature: Appearance = cd ? overlayDefined(def, rigFieldsFrom(cd)) : def;
+  const baseApp: Appearance = c.appearance ? overlayDefined(withCreature, c.appearance) : withCreature;
   const appearance: Appearance = autoMon && !baseApp.monster ? { ...baseApp, monster: autoMon } : baseApp;
-  // Tenue DATA-DRIVEN : explicite sur le Combatant (`c.career`, la carrière de jeu sert de tenue
-  // par défaut) → fiche bestiaire (`findCreature(name).tenue`) → défaut de la def (perso/race, pour
-  // les espèces hors bestiaire) → Soldat. Plus de name-match `ROLE_CAREERS` (POC retiré).
-  const tenue = c.career ?? findCreature(c.name)?.tenue ?? perso?.tenue ?? race.tenue ?? 'Soldat';
+  // Tenue DATA-DRIVEN : carrière de jeu du Combatant (`c.career`, sert de tenue par défaut) → apparence
+  // du record (`appearance.tenue`) → défaut de la def (perso/race) → Nu (corps nu : pas d'habit imposé,
+  // l'auteur l'habille en donnée). Plus de name-match ni de défaut « Soldat » arbitraire.
+  const tenue = c.career ?? cd?.tenue ?? perso?.tenue ?? race.tenue ?? 'Nu';
 
   // Équipement : l'inventaire du combattant prime ; sinon armure synthétisée des PA.
   const base = equipFromCombatant(c);
@@ -163,22 +181,24 @@ export function entityRigProfile(
 ): EnemyRigProfile | null {
   if (classifyEnemy(name) === 'creature') return null;
   const n = norm(name);
-  const species = opts?.species ?? detectSpecies(n); // override d'auteur (Nain/Halfling…) sinon déduit du nom
+  const cd = findCreature(name)?.appearance; // apparence par défaut UNIFIÉE du record créature (P2)
+  const species = opts?.species ?? cd?.species ?? detectSpecies(n); // override d'auteur sinon record sinon déduit du nom
   const d = bipedDef(species);
   const race = raceById(d?.race ?? baseSpeciesOf(species)); // défauts d'apparence partagés (canon)
   const perso = d?.perso; // surcharges propres à la créature (espèces non-canoniques)
-  const monster = opts?.monster ?? perso?.monster; // auto skaven/… si non précisé
+  const monster = opts?.monster ?? cd?.monster ?? perso?.monster; // override scène → record → auto skaven/…
   const appearance: Appearance = riggedAppearance(name, seed, {
-    species, monster, colors: opts?.colors ?? perso?.colors ?? race.colors,
-    parts: opts?.parts ?? perso?.parts ?? race.parts,
-    sex: opts?.sex ?? perso?.sex ?? race.sex, build: opts?.build, eyes: opts?.eyes ?? perso?.eyes,
+    species, monster, colors: opts?.colors ?? cd?.colors ?? perso?.colors ?? race.colors,
+    parts: opts?.parts ?? cd?.parts ?? perso?.parts ?? race.parts,
+    sex: opts?.sex ?? cd?.sex ?? perso?.sex ?? race.sex, build: opts?.build ?? cd?.build,
+    eyes: opts?.eyes ?? cd?.eyes ?? perso?.eyes,
     gabarit: perso?.gabarit ?? d?.gabarit,
   });
   // Pas de calques dérivés du nom (POC `isMutant` retiré) : une entité d'ambiance « mutée » déclare
   // ses parts/overlays dans SA donnée d'apparence (monster parts), pas via une regex sur le nom.
   return {
     appearance,
-    tenue: opts?.tenue ?? findCreature(name)?.tenue ?? perso?.tenue ?? race.tenue ?? 'Soldat',
+    tenue: opts?.tenue ?? cd?.tenue ?? perso?.tenue ?? race.tenue ?? 'Nu',
     equip: { weapons: opts?.weapon ? [weaponFromLabel(opts.weapon)] : [], armour: [] },
   };
 }

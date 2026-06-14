@@ -40,7 +40,9 @@ export function MonsterPartsFields({
   tenue?: string;
   eyes?: { G?: string; D?: string };
   onMonster: (patch: Partial<MonsterPartsSel>) => void;
-  onWeapon: (w: string | undefined) => void;
+  /** Optionnel : si absent, le sélecteur « Arme équipée » est masqué (ex. apparence de créature —
+   *  l'arme vient des Traits, pas de l'apparence). */
+  onWeapon?: (w: string | undefined) => void;
   onColors: (patch: Partial<ColorsSel>) => void;
   onSex?: (s: 'M' | 'F') => void;
   onBuild?: (b: number) => void;
@@ -114,15 +116,17 @@ export function MonsterPartsFields({
           </label>
         ))}
       </div>
-      <label className="ed-field">
-        Arme équipée
-        <select value={weapon ?? ''} onChange={(e) => onWeapon(e.target.value || undefined)}>
-          <option value="">— aucune —</option>
-          {EDITOR_WEAPONS.map((w) => (
-            <option key={w} value={w}>{w}</option>
-          ))}
-        </select>
-      </label>
+      {onWeapon && (
+        <label className="ed-field">
+          Arme équipée
+          <select value={weapon ?? ''} onChange={(e) => onWeapon(e.target.value || undefined)}>
+            <option value="">— aucune —</option>
+            {EDITOR_WEAPONS.map((w) => (
+              <option key={w} value={w}>{w}</option>
+            ))}
+          </select>
+        </label>
+      )}
       <label className="ed-field">
         Tenue
         <select value={tenue ?? ''} onChange={(e) => onTenue?.(e.target.value || undefined)}>
