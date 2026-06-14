@@ -4,9 +4,10 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
 import { RollPanel, type RollRowData } from './RollPanel';
+import { OptionChooser } from './OptionChooser';
 import { JournalLine } from './NarratedLine';
 import { ev, type CombatEventKind } from '../state/combatLog';
-import { cascadeAppliers } from '../state/cascade';
+import { cascadeAppliers, stepInteraction } from '../state/cascade';
 import type { CascadeStep, CascadeRoll } from '../state/pendings';
 import type { Combatant } from '../engine/types';
 
@@ -29,6 +30,7 @@ export function CascadeModal() {
   const darkPact = useGame((s) => s.cascadeDarkPact);
   const force = useGame((s) => s.cascadeForceSuccess);
   const next = useGame((s) => s.cascadeNext);
+  const choose = useGame((s) => s.cascadeChoose); // étape « choix » : pose l'option retenue
   const resolveAll = useGame((s) => s.cascadeResolveAll); // « Tout lancer » → bilan
   const finish = useGame((s) => s.cascadeFinish); // « Terminer » du bilan
 
@@ -54,17 +56,22 @@ export function CascadeModal() {
   // l'affiche telle quelle. Tant qu'elle n'est pas validée (étape courante post-jet), repli sur
   // l'issue GÉNÉRIQUE du registre (la valeur dépend du jet FINAL, figé à la validation).
   const noteFor = (s: CascadeStep): ReactNode => {
-    if (!s.result) return undefined;
     const a = actorOf(s);
+    // Jet : lignes de l'applier (`outcome`) ou repli générique du registre. Affichage/choix : contenu
+    // pré-posé dans `outcome` (la conséquence à montrer telle quelle). Sinon : rien à noter.
     const lines = s.outcome?.length
       ? s.outcome
-      : [cascadeAppliers[s.kind]?.describe?.(s.result.success, a?.name ?? '') ?? (s.result.success ? `${a?.name ?? ''} réussit.` : `${a?.name ?? ''} échoue.`)];
-    const k: CombatEventKind = s.result.success ? 'heal' : 'condition';
+      : (s.result ? [cascadeAppliers[s.kind]?.describe?.(s.result.success, a?.name ?? '') ?? (s.result.success ? `${a?.name ?? ''} réussit.` : `${a?.name ?? ''} échoue.`)] : undefined);
+    if (!lines) return undefined;
+    // Ton : succès→soin (vert), échec→état (rouge), affichage sans jet→neutre (info).
+    const k: CombatEventKind = s.result ? (s.result.success ? 'heal' : 'condition') : 'info';
     return <>{lines.map((l, i) => <JournalLine key={i} event={ev(k, l, s.actorId)} combatants={pool} />)}</>;
   };
   const rowOf = (s: CascadeStep): RollRowData | null => {
     const a = actorOf(s);
-    return s.result ? { combatant: a, d: breakdown(s, s.result), note: noteFor(s) } : null;
+    if (s.result) return { combatant: a, d: breakdown(s, s.result), note: noteFor(s) }; // jet validé
+    if (s.outcome?.length) return { combatant: a, note: noteFor(s) }; // affichage/choix validé : note seule
+    return null;
   };
 
   // BILAN « Tout lancer » : curseur EN FIN — toutes les étapes résolues, chaque conséquence visible.
@@ -89,15 +96,66 @@ export function CascadeModal() {
 
   const cur = p.participants[p.cursor];
   if (!cur) return null;
+  const interaction = stepInteraction(cur);
+  const isLast = p.cursor + 1 >= p.participants.length;
+  // Étapes DÉJÀ validées (figées), avec portrait ET conséquence (note) — pile persistante (tous types).
+  const doneRows = p.participants.slice(0, p.cursor).map(rowOf).filter((r): r is RollRowData => r !== null);
+
+  // AFFICHAGE : conséquence pure (contenu pré-posé dans `outcome`) — pas de jet, pas d'influence.
+  if (interaction === 'affichage') {
+    return (
+      <RollFlowShell
+        title={`${p.icon ?? '🎲'} ${p.title}`}
+        subtitle={<><strong>{cur.icon ?? 'ℹ️'} {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
+        rolled
+        onRoll={() => {}}
+        rows={[...doneRows, { combatant: actorOf(cur), note: noteFor(cur) }]}
+        fortune={0}
+        rerollable={false}
+        onReroll={() => {}}
+        confirmLabel={isLast ? 'Terminer' : 'Continuer'}
+        onConfirm={() => next()}
+        disableEscClose
+      />
+    );
+  }
+
+  // CHOIX : le joueur tranche (l'option pilote la conséquence) — pas de jet, pas d'influence.
+  if (interaction === 'choix') {
+    return (
+      <RollFlowShell
+        title={`${p.icon ?? '🎲'} ${p.title}`}
+        subtitle={<><strong>{cur.icon ?? '🤔'} {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
+        rolled
+        onRoll={() => {}}
+        rows={doneRows.length ? doneRows : undefined}
+        postRollExtra={
+          <OptionChooser
+            layout="grid"
+            groupLabel={cur.label}
+            options={(cur.options ?? []).map((o) => ({
+              key: o.key, label: o.label, title: o.detail,
+              selected: cur.chosen === o.key, primary: cur.chosen === o.key,
+              onSelect: () => choose(cur.id, o.key),
+            }))}
+          />
+        }
+        fortune={0}
+        rerollable={false}
+        onReroll={() => {}}
+        confirmLabel={isLast ? 'Terminer' : 'Continuer'}
+        onConfirm={() => next()}
+        disableEscClose
+      />
+    );
+  }
+
+  // JET : étape influençable (comportement historique) — requiert l'acteur.
   const actor = actorOf(cur);
   if (!actor) return null;
   const res = cur.result;
   const rolled = cur.target == null ? true : !!res;
   const failed = !!res && !res.success;
-  const isLast = p.cursor + 1 >= p.participants.length;
-
-  // Étapes DÉJÀ validées (figées), avec portrait ET conséquence (note) — pile persistante.
-  const doneRows = p.participants.slice(0, p.cursor).map(rowOf).filter((r): r is RollRowData => r !== null);
   const curPending: RollRowData = { combatant: actor, pending: pendingOf(cur) };
   // Issue de l'étape COURANTE = case journal proéminente (les figées gardent leur note compacte).
   const ocText = res ? (cascadeAppliers[cur.kind]?.describe?.(res.success, actor.name) ?? (res.success ? `${actor.name} réussit.` : `${actor.name} échoue.`)) : null;

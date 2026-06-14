@@ -34,7 +34,7 @@ export function RollPanel({
   /** DR net du Test opposé — badge sous les lignes. */
   netSL?: number;
 }) {
-  const shown = rows.filter((r) => r.d || r.pending);
+  const shown = rows.filter((r) => r.d || r.pending || r.note);
   if (!shown.length) return null;
   const withPortraits = shown.some((r) => r.combatant);
   return (
@@ -48,7 +48,9 @@ export function RollPanel({
             <span className="rr-port">{r.combatant && <TeamPortrait combatant={r.combatant} size={28} />}</span>
           )}
           <div className="rr-main">
-            <div className="rr-line">{r.d ? <RollLine d={r.d} /> : <PendingRollLine p={r.pending!} />}</div>
+            {(r.d || r.pending) && (
+              <div className="rr-line">{r.d ? <RollLine d={r.d} /> : <PendingRollLine p={r.pending!} />}</div>
+            )}
             {r.note && <div className="rr-note">{r.note}</div>}
           </div>
         </div>

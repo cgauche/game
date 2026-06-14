@@ -169,4 +169,19 @@ describe('Cascade séquentielle influençable', () => {
     useGame.getState().cascadeFinish();
     expect(useGame.getState().pendingCascade).toBeNull();
   });
+
+  it('étape « affichage » : contenu pré-posé (outcome) PRÉSERVÉ par un applier muet', () => {
+    const h = hero();
+    registerCascadeApplier('reveal', () => {}); // applier MUET (mutation seule, aucun journal)
+    registerCascadeApplier('note', (_g, _s) => { applied.push({ kind: 'note', success: true }); return {}; });
+    const steps: CascadeStep[] = [
+      { id: 'r', kind: 'reveal', actorId: h.id, outcome: ['Sonné appliqué (Assommante)'], interactive: true }, // affichage
+      { id: 'd', kind: 'note', actorId: h.id, interactive: true },
+    ];
+    startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps });
+    useGame.getState().cascadeNext(); // valide l'affichage → figé, avance sur 'd'
+    const committed = useGame.getState().pendingCascade!.participants[0];
+    expect(committed.committed).toBe(true);
+    expect(committed.outcome).toEqual(['Sonné appliqué (Assommante)']); // contenu pré-posé NON effacé
+  });
 });
