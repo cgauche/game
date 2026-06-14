@@ -14,6 +14,14 @@ import type { EquipCtx } from './parts/equipment';
 import { bonesToSvg } from './renderBones';
 import { PLAN_LIST } from './plans/_registry.generated';
 import { creaturePlanMatch, creatureMatch } from './creatures';
+import { findCreature } from '../../data';
+
+/** Une nuée = trait « Nuée » (Essaim/Swarm, LDB 85) sur le record — pilote le RENDU (gabarit `swarm`)
+ *  et la classification, indépendamment du nom (le trait, pas « Nuée de … »). */
+const SWARM_TRAIT = /^Nu[eé]e\b/i;
+export function isSwarm(name: string): boolean {
+  return !!findCreature(name)?.traits?.some((t) => SWARM_TRAIT.test(t));
+}
 
 /** Identifiant de gabarit — chaîne libre dérivée des `plans/defs/` (data-driven : chaque plan
  *  déclare son `id`). Le monolithique n'est PAS un BodyPlan (fallback legacy hors registre). */
@@ -68,5 +76,6 @@ export function planById(id: BodyPlanId): BodyPlan {
  * humanoïde nommé ou générique non couvert par un def rigué).
  */
 export function bodyPlanOf(name: string): BodyPlanId | 'monolithic' {
+  if (isSwarm(name)) return 'swarm';        // trait Nuée → gabarit d'amas (avant le match par nom)
   return creaturePlanMatch(name) ?? 'biped';
 }

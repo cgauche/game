@@ -15,6 +15,7 @@ import type { MonsterParts } from './parts/monstrous';
 import { hashSeed } from '../appearance';
 import { norm } from '../../lib/normalize';
 import { bipedDef, bipedSpeciesMatch, creaturePlanMatch } from './creatures';
+import { isSwarm } from './bodyPlan';
 import { findCreature } from '../../data';
 import type { EntityAppearance } from '../../state/scene';
 import { raceById } from './races';
@@ -52,7 +53,7 @@ export interface EnemyRigProfile {
  *  gabarit quad/ailé/serpentin/… ou sprite monolithique). 100 % registry-driven : un def
  *  non-bipède (rigué OU monolithique) → 'creature' ; sinon humanoïde → 'rig'. */
 export function classifyEnemy(name: string): 'rig' | 'creature' {
-  return creaturePlanMatch(name) ? 'creature' : 'rig';
+  return creaturePlanMatch(name) || isSwarm(name) ? 'creature' : 'rig'; // nuée (trait) = non-bipède
 }
 
 /** Espèce de rig détectée du nom (sinon Humain). Dérivé du registre : chaque espèce bipède

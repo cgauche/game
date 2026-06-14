@@ -11,6 +11,7 @@ import { plan as e6 } from './defs/quadruped';
 import { plan as e7 } from './defs/serpentine';
 import { plan as e8 } from './defs/spectral';
 import { plan as e9 } from './defs/squig';
-import { plan as e10 } from './defs/winged';
+import { plan as e10 } from './defs/swarm';
+import { plan as e11 } from './defs/winged';
 
-export const PLAN_LIST: BodyPlan[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10];
+export const PLAN_LIST: BodyPlan[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11];
