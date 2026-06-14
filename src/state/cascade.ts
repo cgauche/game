@@ -111,12 +111,13 @@ export function advanceCascade(get: Get, set: Set): PendingCascade | null {
   return null;
 }
 
-/** « Renoncer » d'une cascade : RÉSOUT d'office les étapes restantes (RNG, sans influence) — on ne
- *  peut pas « dé-dormir » : les conséquences subies s'appliquent quand même. Renvoie la cascade
- *  finalisée (suite propre au `purpose`). */
-export function finishCascadeRest(get: Get, set: Set): PendingCascade | null {
+/** « Tout lancer » : RÉSOUT d'office les étapes restantes (RNG, sans influence) — on ne peut pas
+ *  « dé-dormir », les conséquences subies s'appliquent quand même — puis place le curseur EN FIN
+ *  (`cursor === participants.length`) = état BILAN. La modale RESTE ouverte pour montrer TOUTES les
+ *  conséquences ; c'est `finalizeCascade` (« Terminer ») qui ferme et enchaîne la suite. */
+export function resolveRemainingCascade(get: Get, set: Set): void {
   const p = get().pendingCascade;
-  if (!p) return null;
+  if (!p) return;
   let steps = p.participants;
   let log = p.log;
   for (let i = p.cursor; i < steps.length; i++) {
@@ -130,8 +131,16 @@ export function finishCascadeRest(get: Get, set: Set): PendingCascade | null {
     steps = r.steps;
     log = [...log, ...r.journal];
   }
+  set({ pendingCascade: { ...p, participants: steps, cursor: steps.length, log } });
+}
+
+/** « Terminer » du BILAN (curseur en fin) : ferme la cascade et RENVOIE la cascade finalisée (suite
+ *  propre au `purpose` — reprise de voyage… — gérée par le store). */
+export function finalizeCascade(get: Get, set: Set): PendingCascade | null {
+  const p = get().pendingCascade;
+  if (!p) return null;
   set({ pendingCascade: null });
-  return { ...p, participants: steps, log };
+  return p;
 }
 
 /**

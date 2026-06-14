@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { Combatant } from '../engine/types';
 import type { RollBreakdown } from '../engine/combat';
 import { RollLine, PendingRollLine, type PendingRoll } from './RollLine';
@@ -17,6 +18,9 @@ export interface RollRowData {
   combatant?: Combatant;
   d?: RollBreakdown;
   pending?: PendingRoll;
+  /** Issue/conséquence de CETTE ligne, rendue sous le jet (cascade séquentielle : chaque étape
+   *  validée garde son issue visible quand on enchaîne — « on ne perd pas les conséquences »). */
+  note?: ReactNode;
 }
 
 export function RollPanel({
@@ -43,7 +47,10 @@ export function RollPanel({
           {withPortraits && (
             <span className="rr-port">{r.combatant && <TeamPortrait combatant={r.combatant} size={28} />}</span>
           )}
-          <div className="rr-line">{r.d ? <RollLine d={r.d} /> : <PendingRollLine p={r.pending!} />}</div>
+          <div className="rr-main">
+            <div className="rr-line">{r.d ? <RollLine d={r.d} /> : <PendingRollLine p={r.pending!} />}</div>
+            {r.note && <div className="rr-note">{r.note}</div>}
+          </div>
         </div>
       ))}
       {winnerIndex != null && netSL != null && (

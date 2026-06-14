@@ -276,9 +276,22 @@
   display: flex;
   justify-content: center;
 }
+.rr-main {
+  flex: 1;
+  min-width: 0;
+}
 .rr-line {
   flex: 1;
   min-width: 0;
+}
+/* Cascade : conséquence d'une étape sous sa ligne de jet — reste visible en enchaînant les jets. */
+.rr-note {
+  margin-top: 3px;
+  font-size: 12px;
+  line-height: 1.3;
+}
+.rr-note .jr-line {
+  margin: 0;
 }
 /* Test opposé post-jet : la ligne GAGNANTE est accentuée (or), la perdante atténuée. */
 .rr-win .rm-roll {

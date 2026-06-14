@@ -81,14 +81,17 @@ describe('Cascade séquentielle influençable', () => {
     expect(useGame.getState().pendingCascade!.cursor).toBe(1); // on enchaîne sur la 1ʳᵉ insérée
   });
 
-  it('« Renoncer » résout d’office les étapes restantes (on ne peut pas dé-dormir)', () => {
+  it('« Tout lancer » résout d’office les étapes restantes puis montre le BILAN avant fermeture', () => {
     useGame.getState().seedRng(9);
     const h = hero();
     startCascade(useGame.getState, useGame.setState, {
       title: 'Nuit', purpose: 'test', steps: [step('s1', h.id), step('s2', h.id), step('s3', h.id)],
     });
-    useGame.getState().cascadeCancel(); // auto-résout s1..s3
+    useGame.getState().cascadeResolveAll(); // auto-résout s1..s3
     expect(applied).toHaveLength(3); // toutes les conséquences se sont appliquées
+    // BILAN : la modale reste ouverte (curseur EN FIN) pour voir les conséquences — pas encore fermée.
+    expect(useGame.getState().pendingCascade!.cursor).toBe(3);
+    useGame.getState().cascadeFinish(); // « Terminer » ferme
     expect(useGame.getState().pendingCascade).toBeNull();
   });
 

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
@@ -11,10 +12,12 @@ import type { Combatant } from '../engine/types';
 
 /**
  * CASCADE de jets SÉQUENTIELS (nuit / voyage) — c'est LA coquille de jet partagée `RollFlowShell`,
- * paramétrée comme `DefenseModal` : plusieurs LIGNES de jet avec portraits (`RollPanel rows`), les
- * étapes déjà validées FIGÉES, l'étape COURANTE active (pending → résultat) avec son cycle Chance/
- * +1 DR/Pacte/Résilience. « Continuer » enchaîne sur le jet suivant. Aucun affichage différent d'une
- * autre modale. Nuit SUBIE → pas d'« Annuler » (comme TestModal/CorruptionModal).
+ * paramétrée comme `DefenseModal` : plusieurs LIGNES de jet avec portraits (`RollPanel rows`). Chaque
+ * étape validée reste FIGÉE avec son jet ET sa CONSÉQUENCE (note de ligne) — on ne perd pas les
+ * conséquences en enchaînant. L'étape COURANTE est active (pending → résultat) avec son cycle Chance/
+ * +1 DR/Pacte/Résilience ; « Continuer » enchaîne. « Tout lancer » résout d'un coup le reste puis
+ * affiche le BILAN (curseur EN FIN) — la modale reste ouverte, « Terminer » ferme. Cascade SUBIE →
+ * pas d'« Annuler » / pas d'Échap.
  */
 export function CascadeModal() {
   const battle = useGame((s) => s.battle);
@@ -26,19 +29,12 @@ export function CascadeModal() {
   const darkPact = useGame((s) => s.cascadeDarkPact);
   const force = useGame((s) => s.cascadeForceSuccess);
   const next = useGame((s) => s.cascadeNext);
-  const resolveAll = useGame((s) => s.cascadeCancel); // « Tout lancer » : résout d'un coup les jets restants
+  const resolveAll = useGame((s) => s.cascadeResolveAll); // « Tout lancer » → bilan
+  const finish = useGame((s) => s.cascadeFinish); // « Terminer » du bilan
 
   if (!p) return null;
-  const cur = p.participants[p.cursor];
-  if (!cur) return null;
   const pool: Combatant[] = battle?.combatants ?? party;
   const actorOf = (s: CascadeStep) => (s.actorId ? pool.find((c) => c.id === s.actorId) : undefined);
-  const actor = actorOf(cur);
-  if (!actor) return null;
-  const res = cur.result;
-  const rolled = cur.target == null ? true : !!res;
-  const failed = !!res && !res.success;
-  const isLast = p.cursor + 1 >= p.participants.length;
 
   // Libellé de rangée = la COMPÉTENCE lancée (« Résistance », « Calme »…), comme Défense affiche
   // « Attaque »/« Parade » — pas le texte de l'étape (le but vit dans le sous-titre). L'icône
@@ -52,15 +48,58 @@ export function CascadeModal() {
     const b = s.base ?? s.target ?? 0;
     return { label: rowLabel(s), base: b, mods: s.base != null && s.target != null && s.target !== s.base ? [{ label: 'difficulté', value: s.target - s.base }] : [] };
   };
-  // Lignes des étapes DÉJÀ validées (figées), avec portrait — comme la ligne attaquant de Défense.
-  const doneRows: RollRowData[] = p.participants.slice(0, p.cursor)
-    .map((s): RollRowData | null => { const a = actorOf(s); return a && s.result ? { combatant: a, d: breakdown(s, s.result) } : null; })
-    .filter((r): r is RollRowData => r !== null);
+  // Conséquence (issue style journal) d'une étape — rendue sous le jet, elle PERSISTE quand on
+  // enchaîne (« on ne perd pas les conséquences »). Une étape VALIDÉE porte sa conséquence RÉELLE
+  // chiffrée dans `outcome` (lignes de l'applier : « récupère 8 PB », « contracte : Vérole… ») → on
+  // l'affiche telle quelle. Tant qu'elle n'est pas validée (étape courante post-jet), repli sur
+  // l'issue GÉNÉRIQUE du registre (la valeur dépend du jet FINAL, figé à la validation).
+  const noteFor = (s: CascadeStep): ReactNode => {
+    if (!s.result) return undefined;
+    const a = actorOf(s);
+    const lines = s.outcome?.length
+      ? s.outcome
+      : [cascadeAppliers[s.kind]?.describe?.(s.result.success, a?.name ?? '') ?? (s.result.success ? `${a?.name ?? ''} réussit.` : `${a?.name ?? ''} échoue.`)];
+    const k: CombatEventKind = s.result.success ? 'heal' : 'condition';
+    return <>{lines.map((l, i) => <JournalLine key={i} event={ev(k, l, s.actorId)} combatants={pool} />)}</>;
+  };
+  const rowOf = (s: CascadeStep): RollRowData | null => {
+    const a = actorOf(s);
+    return s.result ? { combatant: a, d: breakdown(s, s.result), note: noteFor(s) } : null;
+  };
+
+  // BILAN « Tout lancer » : curseur EN FIN — toutes les étapes résolues, chaque conséquence visible.
+  // Un seul bouton « Terminer » (ferme + enchaîne la suite). Pas d'influence (jets déjà subis).
+  if (p.cursor >= p.participants.length) {
+    const allRows = p.participants.map(rowOf).filter((r): r is RollRowData => r !== null);
+    return (
+      <RollFlowShell
+        title={`${p.icon ?? '🎲'} ${p.title}`}
+        subtitle={<>Bilan · {p.participants.length} jet{p.participants.length > 1 ? 's' : ''}</>}
+        rolled
+        onRoll={() => {}}
+        rows={allRows}
+        fortune={0}
+        rerollable={false}
+        onReroll={() => {}}
+        confirmLabel="Terminer"
+        onConfirm={() => finish()}
+      />
+    );
+  }
+
+  const cur = p.participants[p.cursor];
+  if (!cur) return null;
+  const actor = actorOf(cur);
+  if (!actor) return null;
+  const res = cur.result;
+  const rolled = cur.target == null ? true : !!res;
+  const failed = !!res && !res.success;
+  const isLast = p.cursor + 1 >= p.participants.length;
+
+  // Étapes DÉJÀ validées (figées), avec portrait ET conséquence (note) — pile persistante.
+  const doneRows = p.participants.slice(0, p.cursor).map(rowOf).filter((r): r is RollRowData => r !== null);
   const curPending: RollRowData = { combatant: actor, pending: pendingOf(cur) };
-  // Issue = la CONSÉQUENCE (« contracte la maladie », « récupère des Blessures »), pas « X réussit » :
-  // comme Défense écrit « Touché — Tête · 3 Blessures ». Fournie par le registre du `kind` (co-localisée
-  // avec l'applier) — PAS un switch dans l'UI : ajouter un kind ne touche pas cette modale. Le détail
-  // chiffré part au journal à « Continuer ». Repli générique si le kind ne décrit pas son issue.
+  // Issue de l'étape COURANTE = case journal proéminente (les figées gardent leur note compacte).
   const ocText = res ? (cascadeAppliers[cur.kind]?.describe?.(res.success, actor.name) ?? (res.success ? `${actor.name} réussit.` : `${actor.name} échoue.`)) : null;
   const ocEv: CombatEventKind = res?.success ? 'heal' : 'condition';
 
@@ -70,9 +109,9 @@ export function CascadeModal() {
       subtitle={<><strong>{cur.icon ?? '🎲'} {cur.label}</strong>{p.participants.length > 1 ? ` · jet ${p.cursor + 1}/${p.participants.length}` : ''}</>}
       rolled={rolled}
       onRoll={() => roll(cur.id)}
-      /* Pré-jet : panneau multi-lignes (validées figées + courante en attente) — comme Défense. */
+      /* Pré-jet : panneau multi-lignes (validées figées + leur conséquence + courante en attente). */
       setup={<RollPanel rows={[...doneRows, curPending]} />}
-      /* Post-jet : mêmes lignes, la courante désormais lancée (vainqueur non pertinent ici). */
+      /* Post-jet : mêmes lignes, la courante désormais lancée (sa conséquence = la case journal ci-dessous). */
       rows={res ? [...doneRows, { combatant: actor, d: breakdown(cur, res) }] : undefined}
       outcome={ocText ? <JournalLine className="rm-journal" event={ev(ocEv, ocText, actor.id)} combatants={pool} /> : undefined}
       fortune={actor.fortune ?? 0}
@@ -87,9 +126,9 @@ export function CascadeModal() {
       forceShow={rolled && !res?.success}
       confirmLabel={isLast ? 'Terminer' : 'Continuer'}
       onConfirm={() => next()}
-      /* « Tout lancer » : tant qu'il reste >1 jet, résout d'un coup les étapes restantes (RNG, sans
-         influence) — slot secondaire partagé du shell (comme « Subir » de Défense). Pas d'Échap : la
-         cascade est SUBIE, on ne ferme pas — le bouton est une action explicite, pas une sortie. */
+      /* « Tout lancer » : tant qu'il reste >1 jet, résout d'un coup le reste (RNG, sans influence) PUIS
+         montre le bilan — slot secondaire partagé du shell (comme « Subir » de Défense). Pas d'Échap :
+         la cascade est SUBIE, on ne ferme pas — le bouton est une action explicite, pas une sortie. */
       onCancel={!isLast ? () => resolveAll() : undefined}
       cancelLabel="🎲 Tout lancer"
       cancelTitle="Résoudre d'un coup tous les jets restants (sans influence)"

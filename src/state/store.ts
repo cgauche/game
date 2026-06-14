@@ -136,7 +136,7 @@ import { bus, EVT } from './bus';
 import { campaign, campaignWorldMap } from '../scenes/campaign';
 import { dayIndex, runDailyUpkeep } from './upkeep';
 import * as travelFlow from './travelFlow';
-import { advanceCascade, finishCascadeRest } from './cascade';
+import { advanceCascade, resolveRemainingCascade, finalizeCascade } from './cascade';
 
 export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'test' | 'interlude' | 'coop' | 'compendium';
 
@@ -677,8 +677,11 @@ export interface GameState {
   /** « Étape suivante » : valide l'étape courante (conséquence + insertions), avance ; à la fin,
    *  finalise selon `purpose` (reprise de voyage…). */
   cascadeNext: () => void;
-  /** « Renoncer » : résout d'office les étapes restantes (on ne peut pas dé-dormir) puis finalise. */
-  cascadeCancel: () => void;
+  /** « Tout lancer » : résout d'office les étapes restantes (on ne peut pas dé-dormir), puis place le
+   *  curseur EN FIN = BILAN — la modale RESTE ouverte pour voir toutes les conséquences. */
+  cascadeResolveAll: () => void;
+  /** « Terminer » du bilan : ferme la cascade et enchaîne la suite (reprise de voyage…). */
+  cascadeFinish: () => void;
   /** Incantation OPPOSÉE (`FLOWS.castOpposition`) : chaque CIBLE oppose son Test (FM/Int) — son jet
    *  + cycle Chance/+1 DR/Pacte/Résilience (ciblé par `pid`). Cible IA = rangée témoin auto-roulée. */
   oppositionRoll: (pid: string) => void;
@@ -1847,8 +1850,9 @@ export const useGame = create<GameState>((set, get) => ({
     const done = advanceCascade(get, set);
     if (done?.purpose === 'travel' && done.travelHalt) travelFlow.continueTravelAfterNight(get, set);
   },
-  cascadeCancel: () => {
-    const done = finishCascadeRest(get, set);
+  cascadeResolveAll: () => resolveRemainingCascade(get, set), // → BILAN (la modale reste ouverte)
+  cascadeFinish: () => {
+    const done = finalizeCascade(get, set);
     if (done?.purpose === 'travel' && done.travelHalt) travelFlow.continueTravelAfterNight(get, set);
   },
   // Incantation OPPOSÉE (multijet `FLOWS.castOpposition`) : chaque cible oppose son Test ; cible IA

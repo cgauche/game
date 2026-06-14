@@ -42,7 +42,7 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'forceDoorForceSuccess', 'forceDoorSetForcedRoll', 'forceDoorConfirm', 'forceDoorCancel',
   // Cascade séquentielle (jets de nuit / voyage influençables)
   'cascadeRoll', 'cascadeReroll', 'cascadeBonusSL', 'cascadeDarkPact',
-  'cascadeForceSuccess', 'cascadeSetForcedRoll', 'cascadeNext', 'cascadeCancel',
+  'cascadeForceSuccess', 'cascadeSetForcedRoll', 'cascadeNext', 'cascadeResolveAll', 'cascadeFinish',
   // désengagement
   'disengageConfirmA', 'disengageRoll', 'disengageReroll', 'disengageBonusSL',
   'disengageDarkPact', 'disengageForceSuccess', 'disengageConfirm', 'disengageFlee',
