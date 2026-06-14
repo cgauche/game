@@ -24,8 +24,13 @@ beforeEach(() => {
 });
 
 describe('couverture de curation', () => {
-  it('TOUS les sorts (243) sont curés — plus aucun repli regex', () => {
-    for (const s of spells) expect(spellSpecFor(s).curated, `${s.label} (${s.type} / ${s.subType ?? '—'})`).toBe(true);
+  it('TOUS les sorts OFFICIELS (243) sont curés — plus aucun repli regex', () => {
+    // Les sorts homebrew fan (source.book = frenchy.bzh) sont EXEMPTS : ils assument le repli regex
+    // (fallbackSpec sur leur Effet), comme tout sort non curé. La curation ne couvre que l'officiel.
+    for (const s of spells) {
+      if (s.source?.book === 'frenchy.bzh') continue;
+      expect(spellSpecFor(s).curated, `${s.label} (${s.type} / ${s.subType ?? '—'})`).toBe(true);
+    }
   });
 
   it('labels en double : « Enchevêtrement » résolu par type (Arcane vs miracle de Taal, tous deux curés)', () => {

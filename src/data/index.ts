@@ -16,6 +16,9 @@ import traitsJson from './traits.json';
 import qualitiesJson from './qualities.json';
 import trappingsJson from './trappings.json';
 import creaturesJson from './creatures.json';
+import frenchyCreaturesJson from './frenchy-creatures.json';
+import frenchyTraitsJson from './frenchy-traits.json';
+import frenchySpellsJson from './frenchy-spells.json';
 import spellsJson from './spells.json';
 import eyesJson from './eyes.json';
 import hairsJson from './hairs.json';
@@ -229,11 +232,17 @@ export const careerLevels = careerLevelsJson as CareerLevelData[];
 export const skills = skillsJson as SkillData[];
 export const talents = talentsJson as TalentData[];
 export const etats = etatsJson as EtatData[];
-export const traits = traitsJson as TraitData[];
+// Traits officiels (build:data) + traits homebrew curés « frenchy.bzh » (mergés ici pour survivre à
+// build:data qui ne réécrit que traits.json) — Aura de Dhar/Mort, Charnier, Attrayante, Blablater…
+export const traits = [...(traitsJson as TraitData[]), ...(frenchyTraitsJson as TraitData[])];
 export const qualities = qualitiesJson as any[];
 export const trappings = trappingsJson as TrappingData[];
-export const creatures = creaturesJson as CreatureData[];
-export const spells = spellsJson as SpellData[];
+// Bestiaire officiel (généré par build:data) + complément fan « frenchy.bzh » (dataset curé
+// par scripts/frenchy/, mergé ICI pour survivre à build:data qui ne réécrit que creatures.json).
+export const creatures = [...(creaturesJson as CreatureData[]), ...(frenchyCreaturesJson as CreatureData[])];
+// Sorts officiels (build:data) + sorts homebrew « frenchy.bzh » des casters (Magie Mineure/Arcanes,
+// Bénédictions, Miracles…) — mergés ici pour survivre à build:data ; le nom listé par une créature résout.
+export const spells = [...(spellsJson as SpellData[]), ...(frenchySpellsJson as SpellData[])];
 export const eyes = eyesJson as DetailColorData[];
 export const hairs = hairsJson as DetailColorData[];
 export const details = detailsJson as DetailsData;

@@ -1,0 +1,32 @@
+[
+  {
+    "label": "Aura de Dhar",
+    "prefix": null,
+    "suffix": null,
+    "desc": "La créature est enveloppée d'effluves de Dhar. Les sorciers et démons alliés à moins de 10 mètres bénéficient d'un Bonus de +1 DR à leurs Tests de Focalisation et de Langue (Magick) — le porteur de l'Aura compris.",
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 296
+    }
+  },
+  {
+    "label": "Aura de Mort",
+    "prefix": null,
+    "suffix": null,
+    "desc": "Dans un rayon de 70 mètres, les sorts de Nécromancie et de Shyish bénéficient d'un Bonus de +1 DR aux Tests réussis de Langue (Magick) et de Focalisation ; les sorts de Ghyran, Hysh et Azyr subissent un Malus de -10 à ces mêmes Tests.",
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 560
+    }
+  },
+  {
+    "label": "Charnier",
+    "prefix": null,
+    "suffix": null,
+    "desc": "Si la créature est vaincue, 3D10 Zombies sortent de sa carcasse et attaquent les êtres vivants les plus proches.",
+    "source": {
+      "book": "frenchy.bzh",
+      "page": 560
+    }
+  }
+]

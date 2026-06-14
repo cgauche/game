@@ -1,0 +1,2259 @@
+{
+  "_README": "GÉNÉRÉ par scripts/frenchy/build-term-map.mjs — frenchy.bzh → notre VF. Ne pas éditer à la main.",
+  "skills": {
+    "Art": {
+      "ours": "Art",
+      "official": "Art",
+      "vo": "Art",
+      "status": "ok"
+    },
+    "Artisanat": {
+      "ours": "Métier",
+      "official": "Métier",
+      "vo": "Trade",
+      "status": "ok"
+    },
+    "Athlétisme": {
+      "ours": "Athlétisme",
+      "official": "Athlétisme",
+      "vo": "Athletics",
+      "status": "ok"
+    },
+    "Augure": {
+      "ours": null,
+      "official": null,
+      "vo": "Augury",
+      "status": "gap-no-official"
+    },
+    "Aviron": {
+      "ours": "Ramer",
+      "official": "Ramer",
+      "vo": "Row",
+      "status": "ok"
+    },
+    "Beuverie": {
+      "ours": "Résistance à l'alcool",
+      "official": "Résistance à l’Alcool",
+      "vo": "Consume Alcohol",
+      "status": "ok"
+    },
+    "Bibliothèque": {
+      "ours": "Recherche",
+      "official": "Recherche",
+      "vo": "Research",
+      "status": "ok"
+    },
+    "Calme": {
+      "ours": "Calme",
+      "official": "Calme",
+      "vo": "Cool",
+      "status": "ok"
+    },
+    "Charme": {
+      "ours": "Charme",
+      "official": "Charme",
+      "vo": "Charm",
+      "status": "ok"
+    },
+    "Commandement": {
+      "ours": "Commandement",
+      "official": "Commandement",
+      "vo": "Leadership",
+      "status": "ok"
+    },
+    "Conduite d’Attelage": {
+      "ours": "Conduite d'attelage",
+      "official": "Conduite d’Attelage",
+      "vo": "Drive",
+      "status": "ok"
+    },
+    "Crochetage": {
+      "ours": "Crochetage",
+      "official": "Crochetage",
+      "vo": "Pick Lock",
+      "status": "ok"
+    },
+    "Discrétion": {
+      "ours": "Discrétion",
+      "official": "Discrétion",
+      "vo": "Stealth",
+      "status": "ok"
+    },
+    "Distraction": {
+      "ours": "Divertissement",
+      "official": "Divertissement",
+      "vo": "Entertain",
+      "status": "ok"
+    },
+    "Dressage": {
+      "ours": "Dressage",
+      "official": "Dressage",
+      "vo": "Animal Training",
+      "status": "ok"
+    },
+    "Emprise sur Animaux": {
+      "ours": "Emprise sur les animaux",
+      "official": "Emprise sur les Animaux",
+      "vo": "Charm Animal",
+      "status": "ok"
+    },
+    "Équitation": {
+      "ours": "Chevaucher",
+      "official": "Chevaucher",
+      "vo": "Ride",
+      "status": "ok"
+    },
+    "Escalade": {
+      "ours": "Escalade",
+      "official": "Escalade",
+      "vo": "Climb",
+      "status": "ok"
+    },
+    "Escamotage": {
+      "ours": "Escamotage",
+      "official": "Escamotage",
+      "vo": "Sleight of  Hand",
+      "status": "ok"
+    },
+    "Esquive": {
+      "ours": "Esquive",
+      "official": "Esquive",
+      "vo": "Dodge",
+      "status": "ok"
+    },
+    "Évaluation": {
+      "ours": "Évaluation",
+      "official": "Évaluation",
+      "vo": "Evaluate",
+      "status": "ok"
+    },
+    "Focalisation": {
+      "ours": "Focalisation",
+      "official": "Focalisation",
+      "vo": "Channelling",
+      "status": "ok"
+    },
+    "Hypnose": {
+      "ours": null,
+      "official": null,
+      "vo": "Hypnotism",
+      "status": "gap-no-official"
+    },
+    "Intimidation": {
+      "ours": "Intimidation",
+      "official": "Intimidation",
+      "vo": "Intimidate",
+      "status": "ok"
+    },
+    "Intuition": {
+      "ours": "Intuition",
+      "official": "Intuition",
+      "vo": "Intuition",
+      "status": "ok"
+    },
+    "Langue": {
+      "ours": "Langue",
+      "official": "Langue",
+      "vo": "Language",
+      "status": "ok"
+    },
+    "Marchandage": {
+      "ours": "Marchandage",
+      "official": "Marchandage",
+      "vo": "Haggle",
+      "status": "ok"
+    },
+    "Mêlée": {
+      "ours": "Corps à corps",
+      "official": "Corps à Corps",
+      "vo": "Melee",
+      "status": "ok"
+    },
+    "Musique": {
+      "ours": "Musicien",
+      "official": "Musicien",
+      "vo": "Play",
+      "status": "ok"
+    },
+    "Natation": {
+      "ours": "Natation",
+      "official": "Natation",
+      "vo": "Swim",
+      "status": "ok"
+    },
+    "Navigation": {
+      "ours": "Voile",
+      "official": "Voile",
+      "vo": "Sail",
+      "status": "ok"
+    },
+    "Orientation": {
+      "ours": "Orientation",
+      "official": "Orientation",
+      "vo": "Navigation",
+      "status": "ok"
+    },
+    "Pari / Jeu": {
+      "ours": "Pari",
+      "official": "Pari",
+      "vo": "Gamble",
+      "status": "ok"
+    },
+    "Perception": {
+      "ours": "Perception",
+      "official": "Perception",
+      "vo": "Perception",
+      "status": "ok"
+    },
+    "Performance": {
+      "ours": "Représentation",
+      "official": "Représentation",
+      "vo": "Perform",
+      "status": "ok"
+    },
+    "Piégeage": {
+      "ours": "Piégeage",
+      "official": "Piégeage",
+      "vo": "Set Trap",
+      "status": "ok"
+    },
+    "Pistage": {
+      "ours": "Pistage",
+      "official": "Pistage",
+      "vo": "Track",
+      "status": "ok"
+    },
+    "Pot-de-Vin": {
+      "ours": "Subornation",
+      "official": "Subornation",
+      "vo": "Bribery",
+      "status": "ok"
+    },
+    "Prière": {
+      "ours": "Prière",
+      "official": "Prière",
+      "vo": "Pray",
+      "status": "ok"
+    },
+    "Psychométrie": {
+      "ours": null,
+      "official": null,
+      "vo": "Psychometry",
+      "status": "gap-no-official"
+    },
+    "Ragots": {
+      "ours": "Ragot",
+      "official": "Ragot",
+      "vo": "Gossip",
+      "status": "ok"
+    },
+    "Résistance": {
+      "ours": "Résistance",
+      "official": "Résistance",
+      "vo": "Endurance",
+      "status": "ok"
+    },
+    "Savoir": {
+      "ours": "Savoir",
+      "official": "Savoir",
+      "vo": "Lore",
+      "status": "ok"
+    },
+    "Signes Secrets": {
+      "ours": "Signes secrets",
+      "official": "Signes Secrets",
+      "vo": "Secret Signs",
+      "status": "ok"
+    },
+    "Soins": {
+      "ours": "Guérison",
+      "official": "Guérison",
+      "vo": "Heal",
+      "status": "ok"
+    },
+    "Soins Animaux": {
+      "ours": "Soin aux animaux",
+      "official": "Soins aux Animaux",
+      "vo": "Animal Care",
+      "status": "drift"
+    },
+    "Survie": {
+      "ours": "Survie en extérieur",
+      "official": "Survie en Extérieur",
+      "vo": "Outdoor Survival",
+      "status": "ok"
+    },
+    "Tir": {
+      "ours": "Projectiles",
+      "official": "Projectiles",
+      "vo": "Ranged",
+      "status": "ok"
+    }
+  },
+  "talents": {
+    "Adresse": {
+      "ours": "Doigts de fée",
+      "official": "Doigts de Fée",
+      "vo": "Nimble Fingered",
+      "status": "ok"
+    },
+    "Affabulateur": {
+      "ours": "Menteur",
+      "official": "Menteur",
+      "vo": "Cat-Tongued",
+      "status": "ok"
+    },
+    "Affinité Animale": {
+      "ours": "Affinité avec les animaux",
+      "official": "Affinité Animale",
+      "vo": "Animal Affinity",
+      "status": "drift"
+    },
+    "Ambidextrie": {
+      "ours": "Ambidextre",
+      "official": "Ambidextrie",
+      "vo": "Ambidextrous",
+      "status": "drift"
+    },
+    "Arpenteur": {
+      "ours": "Bon marcheur",
+      "official": "Bon Marcheur",
+      "vo": "Strider (Terrain)",
+      "status": "ok"
+    },
+    "Artisan": {
+      "ours": null,
+      "official": "Artisan",
+      "vo": "Craftsman (Trade)",
+      "status": "gap-missing-in-ours"
+    },
+    "Assaut Féroce": {
+      "ours": "Assaut féroce",
+      "official": "Assaut Féroce",
+      "vo": "Furious Assault",
+      "status": "ok"
+    },
+    "Assistant Animal": {
+      "ours": null,
+      "official": null,
+      "vo": "Animal Assistant",
+      "status": "gap-no-official"
+    },
+    "Assistant Magique": {
+      "ours": null,
+      "official": null,
+      "vo": "Magical Assistant",
+      "status": "gap-no-official"
+    },
+    "Assistant Modèle": {
+      "ours": "Coopératif",
+      "official": "Coopératif",
+      "vo": "Supportive",
+      "status": "ok"
+    },
+    "Attaque à Deux Armes": {
+      "ours": "Maniement de deux armes",
+      "official": "Maniement de Deux Armes",
+      "vo": "Dual Wielder",
+      "status": "ok"
+    },
+    "Attaque Caudale": {
+      "ours": null,
+      "official": null,
+      "vo": "Tail Fighting",
+      "status": "gap-no-official"
+    },
+    "Attaque Résolue": {
+      "ours": "Déterminé",
+      "official": "Déterminé",
+      "vo": "Resolute",
+      "status": "ok"
+    },
+    "Attaque Soignée": {
+      "ours": "Frappe précise",
+      "official": "Frappe Précise",
+      "vo": "Careful Strike",
+      "status": "ok"
+    },
+    "Attrayant": {
+      "ours": "Attirant",
+      "official": "Attirant",
+      "vo": "Attractive",
+      "status": "ok"
+    },
+    "Aura Magique": {
+      "ours": null,
+      "official": null,
+      "vo": "Suffused with (Wind of  Magic)",
+      "status": "gap-no-official"
+    },
+    "Autorité": {
+      "ours": "Présence imposante",
+      "official": "Présence Imposante",
+      "vo": "Commanding Presence",
+      "status": "ok"
+    },
+    "Baratineur": {
+      "ours": "Baratiner",
+      "official": "Baratineur",
+      "vo": "Blather",
+      "status": "drift"
+    },
+    "Bénédiction": {
+      "ours": "Béni",
+      "official": "Béni",
+      "vo": "Bless",
+      "status": "ok"
+    },
+    "Bénédiction d’Isha": {
+      "ours": null,
+      "official": null,
+      "vo": "Blessed by Isha",
+      "status": "gap-no-official"
+    },
+    "Bénédiction de Lileath": {
+      "ours": null,
+      "official": null,
+      "vo": "Lileath’s Blessing",
+      "status": "gap-no-official"
+    },
+    "Bénédiction de Tzeentch": {
+      "ours": null,
+      "official": null,
+      "vo": "Tzeentch Blessing",
+      "status": "gap-no-official"
+    },
+    "Bibliovore": {
+      "ours": "Lecture rapide",
+      "official": "Lecture Rapide",
+      "vo": "Speed-Reader",
+      "status": "ok"
+    },
+    "Bon Nageur": {
+      "ours": "Nageur endurant",
+      "official": "Nageur Endurant",
+      "vo": "Strong Swimmer",
+      "status": "ok"
+    },
+    "Bourlingueur": {
+      "ours": "Voyageur aguerri",
+      "official": "Voyageur Aguerri",
+      "vo": "Seasoned Traveller",
+      "status": "ok"
+    },
+    "Bricoleur": {
+      "ours": "Bricoleur",
+      "official": "Bricoleur",
+      "vo": "Tinker",
+      "status": "ok"
+    },
+    "Caboteur": {
+      "ours": "Guide fluvial",
+      "official": "Guide Fluvial",
+      "vo": "River Guide",
+      "status": "ok"
+    },
+    "Calcul Mental": {
+      "ours": "Doué en calcul",
+      "official": "Doué en Calcul",
+      "vo": "Super Numerate",
+      "status": "ok"
+    },
+    "Cavalier Chevronné": {
+      "ours": "Cavalier émérite",
+      "official": "Cavalier Émérite",
+      "vo": "Rough Rider",
+      "status": "ok"
+    },
+    "Chance": {
+      "ours": "Chanceux",
+      "official": "Chanceux",
+      "vo": "Luck",
+      "status": "ok"
+    },
+    "Chantre": {
+      "ours": null,
+      "official": null,
+      "vo": "Cantor",
+      "status": "gap-no-official"
+    },
+    "Chants Marins": {
+      "ours": null,
+      "official": null,
+      "vo": "Chanty",
+      "status": "gap-no-official"
+    },
+    "Charge Berserk": {
+      "ours": "Charge berserk",
+      "official": "Charge Berserk",
+      "vo": "Berserk Charge",
+      "status": "ok"
+    },
+    "Charmant": {
+      "ours": "Affable",
+      "official": "Affable",
+      "vo": "Suave",
+      "status": "ok"
+    },
+    "Chat de Gouttière": {
+      "ours": "Chat de gouttière",
+      "official": "Chat de Gouttière",
+      "vo": "Alley Cat",
+      "status": "ok"
+    },
+    "Chef de Guerre": {
+      "ours": "Seigneur de guerre",
+      "official": "Seigneur de Guerre",
+      "vo": "War Leader",
+      "status": "ok"
+    },
+    "Chirurgie": {
+      "ours": "Chirurgie",
+      "official": "Chirurgie",
+      "vo": "Surgery",
+      "status": "ok"
+    },
+    "Chtonien": {
+      "ours": "Rat d'égout",
+      "official": "Rat d’Égout",
+      "vo": "Tunnel Rat",
+      "status": "ok"
+    },
+    "Coeur Pur": {
+      "ours": "Âme pure",
+      "official": "Âme Pure",
+      "vo": "Pure Soul",
+      "status": "ok"
+    },
+    "Coeur Vaillant": {
+      "ours": "Cœur vaillant",
+      "official": "Coeur Vaillant",
+      "vo": "Stout-Hearted",
+      "status": "ok"
+    },
+    "Combat Rapproché": {
+      "ours": "Combattant au contact",
+      "official": "Combat au Contact",
+      "vo": "In-Fighter",
+      "status": "drift"
+    },
+    "Combattant des Tunnels": {
+      "ours": "Combattant en espace clos",
+      "official": "Combattant en Espace Clos",
+      "vo": "Enclosed Fighter",
+      "status": "ok"
+    },
+    "Commerçant": {
+      "ours": "Négociateur",
+      "official": "Négociateur",
+      "vo": "Dealmaker",
+      "status": "ok"
+    },
+    "Contorsioniste": {
+      "ours": "Contorsionniste",
+      "official": "Contorsioniste",
+      "vo": "Contorsionist",
+      "status": "drift"
+    },
+    "Contradicteur": {
+      "ours": "Ergoteur",
+      "official": "Ergoteur",
+      "vo": "Argumentative",
+      "status": "ok"
+    },
+    "Contre-Attaque": {
+      "ours": "Frappe réactive",
+      "official": "Frappe Réactive",
+      "vo": "Reaction Strike",
+      "status": "ok"
+    },
+    "Corruption Contrôlée": {
+      "ours": null,
+      "official": null,
+      "vo": "Controlled Corruption",
+      "status": "gap-no-official"
+    },
+    "Corruption Volontaire": {
+      "ours": null,
+      "official": null,
+      "vo": "Wilful Corruption",
+      "status": "gap-no-official"
+    },
+    "Costaud": {
+      "ours": "Costaud",
+      "official": "Costaud",
+      "vo": "Sturdy",
+      "status": "ok"
+    },
+    "Coup Assommant": {
+      "ours": "Frappe assommante",
+      "official": "Frappe Assommante",
+      "vo": "Strike to Stun",
+      "status": "ok"
+    },
+    "Coup Bas": {
+      "ours": "Combat déloyal",
+      "official": "Combat Déloyal",
+      "vo": "Dirty Fighting",
+      "status": "ok"
+    },
+    "Coup Mortel": {
+      "ours": "Frappe blessante",
+      "official": "Frappe Blessante",
+      "vo": "Strike to Injure",
+      "status": "ok"
+    },
+    "Coup Puissant": {
+      "ours": "Coup puissant",
+      "official": "Coup Puissant",
+      "vo": "Strike Mighty Blow",
+      "status": "ok"
+    },
+    "Criminel": {
+      "ours": "Criminel",
+      "official": "Criminel",
+      "vo": "Criminal",
+      "status": "ok"
+    },
+    "Désarmer": {
+      "ours": "Désarmer",
+      "official": "Désarmer",
+      "vo": "Disarm",
+      "status": "ok"
+    },
+    "Destinée": {
+      "ours": "Destinée",
+      "official": "Destinée",
+      "vo": "Doomed",
+      "status": "ok"
+    },
+    "Détection d’Objet Magique": {
+      "ours": "Détection d'artefact",
+      "official": "Détection d’Artefact",
+      "vo": "Detect Artefact",
+      "status": "ok"
+    },
+    "Déterminé": {
+      "ours": "Obstiné",
+      "official": "Obstiné",
+      "vo": "Strong-Minded",
+      "status": "ok"
+    },
+    "Diction Instinctive": {
+      "ours": "Diction instinctive",
+      "official": "Diction Instinctive",
+      "vo": "Instinctive Diction",
+      "status": "ok"
+    },
+    "Disciple du Changement": {
+      "ours": null,
+      "official": null,
+      "vo": "Disciple of  Change",
+      "status": "gap-no-official"
+    },
+    "Discours Enflammé": {
+      "ours": "Ferveur ardente",
+      "official": "Ferveur Ardente",
+      "vo": "Impassioned Zeal",
+      "status": "ok"
+    },
+    "Distraire l’Adversaire": {
+      "ours": "Distraire",
+      "official": "Distraire",
+      "vo": "Distract",
+      "status": "ok"
+    },
+    "Dos Solide": {
+      "ours": "Infatigable",
+      "official": "Infatigable",
+      "vo": "Strong Back",
+      "status": "ok"
+    },
+    "Double Vie": {
+      "ours": null,
+      "official": null,
+      "vo": "Double Life",
+      "status": "gap-no-official"
+    },
+    "Effraction": {
+      "ours": "Effraction",
+      "official": "Effraction",
+      "vo": "Break and Enter",
+      "status": "ok"
+    },
+    "Effrayant": {
+      "ours": "Effrayant",
+      "official": "Effrayant",
+      "vo": "Frightening",
+      "status": "ok"
+    },
+    "Escroc": {
+      "ours": "Escroquer",
+      "official": "Escroc",
+      "vo": "Embezzle",
+      "status": "drift"
+    },
+    "Étiquette": {
+      "ours": "Savoir-vivre",
+      "official": "Savoir-Vivre",
+      "vo": "Etiquette",
+      "status": "ok"
+    },
+    "Feinte": {
+      "ours": "Feinte",
+      "official": "Feinte",
+      "vo": "Feint",
+      "status": "ok"
+    },
+    "Fêtard": {
+      "ours": "Noctambule",
+      "official": "Noctambule",
+      "vo": "Carouser",
+      "status": "ok"
+    },
+    "Filature": {
+      "ours": "Discret",
+      "official": "Discret",
+      "vo": "Shadow",
+      "status": "ok"
+    },
+    "Formation Militaire": {
+      "ours": "Coude-à-coude",
+      "official": "Coude à Coude",
+      "vo": "Drilled",
+      "status": "ok"
+    },
+    "Fouette, Cocher !": {
+      "ours": "Claquer le fouet",
+      "official": "Claque le Fouet",
+      "vo": "Crack the Whip",
+      "status": "drift"
+    },
+    "Franc-Tireur": {
+      "ours": "Tireur de précision",
+      "official": "Tireur de Précision",
+      "vo": "Marksman",
+      "status": "ok"
+    },
+    "Frénésie": {
+      "ours": "Frénésie",
+      "official": "Frénésie",
+      "vo": "Frenzy",
+      "status": "ok"
+    },
+    "Fuite": {
+      "ours": "Fuite !",
+      "official": "Fuite",
+      "vo": "Flee !",
+      "status": "ok"
+    },
+    "Fusilier": {
+      "ours": null,
+      "official": "Fusilier",
+      "vo": "Gunner",
+      "status": "gap-missing-in-ours"
+    },
+    "Futé": {
+      "ours": "Perspicace",
+      "official": "Perspicace",
+      "vo": "Savvy",
+      "status": "ok"
+    },
+    "Geste Vif": {
+      "ours": "Mains agiles",
+      "official": "Mains Agiles",
+      "vo": "Fast Hands",
+      "status": "ok"
+    },
+    "Grand Dupeur": {
+      "ours": "Maître en déguisement",
+      "official": "Maître en Déguisement",
+      "vo": "Master of  Disguise",
+      "status": "ok"
+    },
+    "Grand Orateur": {
+      "ours": "Grand orateur",
+      "official": "Grand Orateur",
+      "vo": "Master Orator",
+      "status": "ok"
+    },
+    "Grande Taille": {
+      "ours": "Massif",
+      "official": "Grande Taille",
+      "vo": "Large",
+      "status": "drift"
+    },
+    "Grégaire": {
+      "ours": "Sociable",
+      "official": "Sociable",
+      "vo": "Gregarious",
+      "status": "ok"
+    },
+    "Grimpeur": {
+      "ours": "Grimpeur",
+      "official": "Grimpeur",
+      "vo": "Scale Sheer Surface",
+      "status": "ok"
+    },
+    "Guerrier-Né": {
+      "ours": "Guerrier né",
+      "official": "Guerrier-Né",
+      "vo": "Warrior-Born",
+      "status": "ok"
+    },
+    "Haine": {
+      "ours": "Haine",
+      "official": "Haine",
+      "vo": "Hatred",
+      "status": "ok"
+    },
+    "Harmonie de l’AEthyr": {
+      "ours": "Harmonisation aethyrique",
+      "official": "Harmonie AEthyrique",
+      "vo": "AEthyric Attunement",
+      "status": "drift"
+    },
+    "Haute Magie": {
+      "ours": null,
+      "official": null,
+      "vo": "High Magic",
+      "status": "gap-no-official"
+    },
+    "Identification d’Arcaniste": {
+      "ours": "Perception de la magie",
+      "official": "Perception de la Magie",
+      "vo": "Magical Sense",
+      "status": "ok"
+    },
+    "Identité Secrète": {
+      "ours": "Identité secrète",
+      "official": "Identité Secrète",
+      "vo": "Secret Identity",
+      "status": "ok"
+    },
+    "Imitation": {
+      "ours": "Imitation",
+      "official": "Imitation",
+      "vo": "Mimic",
+      "status": "ok"
+    },
+    "Imperturbable": {
+      "ours": "Imperturbable",
+      "official": "Imperturbable",
+      "vo": "Coolheaded",
+      "status": "ok"
+    },
+    "Impitoyable": {
+      "ours": "Impitoyable",
+      "official": "Impitoyable",
+      "vo": "Relentless",
+      "status": "ok"
+    },
+    "Implacable": {
+      "ours": "Endurci",
+      "official": "Endurci",
+      "vo": "Implacable",
+      "status": "ok"
+    },
+    "Inébranlable": {
+      "ours": "Inébranlable",
+      "official": "Inébranlable",
+      "vo": "Unshakable",
+      "status": "ok"
+    },
+    "Insignifiant": {
+      "ours": "Insignifiant",
+      "official": "Insignifiant",
+      "vo": "Beneath Notice",
+      "status": "ok"
+    },
+    "Intrépide": {
+      "ours": "Sans peur",
+      "official": "Sans Peur",
+      "vo": "Fearless (Enemy)",
+      "status": "ok"
+    },
+    "Intrigant": {
+      "ours": "Intrigant",
+      "official": "Intrigant",
+      "vo": "Schemer",
+      "status": "ok"
+    },
+    "Invocation": {
+      "ours": "Invocation",
+      "official": "Invocation",
+      "vo": "Invoke",
+      "status": "ok"
+    },
+    "Jambes Puissantes": {
+      "ours": "Bonnes jambes",
+      "official": "Bonnes Jambes",
+      "vo": "Strong Legs",
+      "status": "ok"
+    },
+    "Jeu de Jambe": {
+      "ours": "Pas de côté",
+      "official": "Pas de Côté",
+      "vo": "Step Aside",
+      "status": "ok"
+    },
+    "Linguistique": {
+      "ours": "Linguistique",
+      "official": "Linguistique",
+      "vo": "Linguistics",
+      "status": "ok"
+    },
+    "Lire & Écrire": {
+      "ours": "Lire/Écrire",
+      "official": "Lire & Écrire",
+      "vo": "Read & Write",
+      "status": "ok"
+    },
+    "Lire sur les Lèvres": {
+      "ours": "Lire sur les lèvres",
+      "official": "Lire sur les Lèvres",
+      "vo": "Lip Reading",
+      "status": "ok"
+    },
+    "Mage de Guerre": {
+      "ours": "Mage de guerre",
+      "official": "Mage de Guerre",
+      "vo": "War Wizard",
+      "status": "ok"
+    },
+    "Magie des Arcanes (Collège à Préciser)": {
+      "ours": "Magie des Arcanes",
+      "official": "Magie des Arcanes (Collège à Préciser)",
+      "vo": "Arcane Magic",
+      "status": "ok"
+    },
+    "Magie du Chaos": {
+      "ours": "Magie du Chaos",
+      "official": "Magie du Chaos",
+      "vo": "Chaos Magic",
+      "status": "ok"
+    },
+    "Magie Mineure": {
+      "ours": "Magie mineure",
+      "official": "Magie Mineure",
+      "vo": "Petty Magic",
+      "status": "ok"
+    },
+    "Magnum Opus": {
+      "ours": "Magnum Opus",
+      "official": "Magnum Opus",
+      "vo": "Magnum Opus",
+      "status": "ok"
+    },
+    "Maître Artisan": {
+      "ours": "Travailleur qualifié",
+      "official": "Travailleur Qualifié",
+      "vo": "Master Tradesman (Trade)",
+      "status": "ok"
+    },
+    "Manoeuvre au Bouclier": {
+      "ours": "Porte-Bouclier",
+      "official": "Porte-Bouclier",
+      "vo": "Shieldsman",
+      "status": "ok"
+    },
+    "Médecine de Guerre": {
+      "ours": "Pansement de fortune",
+      "official": "Pansement de Fortune",
+      "vo": "Field Dressing",
+      "status": "ok"
+    },
+    "Mémoire d’Éléphant": {
+      "ours": "Tour des souvenirs",
+      "official": "Tour des Souvenirs",
+      "vo": "Tower of  Memories",
+      "status": "ok"
+    },
+    "Menaçant": {
+      "ours": "Menaçant",
+      "official": "Menaçant",
+      "vo": "Menacing",
+      "status": "ok"
+    },
+    "Mendicité": {
+      "ours": "Faire la manche",
+      "official": "Faire la Manche",
+      "vo": "Panhandle",
+      "status": "ok"
+    },
+    "Nanti": {
+      "ours": "Nanti",
+      "official": "Nanti",
+      "vo": "Wealthy",
+      "status": "ok"
+    },
+    "Numismatique": {
+      "ours": "Numismate",
+      "official": "Numismatique",
+      "vo": "Numismatics",
+      "status": "drift"
+    },
+    "Oeil du Chasseur": {
+      "ours": "Œil du chasseur",
+      "official": "Oeil du Chasseur",
+      "vo": "Hunter’s Eye",
+      "status": "ok"
+    },
+    "Officier de Siège": {
+      "ours": null,
+      "official": "Officier de Siège",
+      "vo": "Crew Commander",
+      "status": "gap-missing-in-ours"
+    },
+    "Orateur": {
+      "ours": "Orateur",
+      "official": "Orateur",
+      "vo": "Public Speaking",
+      "status": "ok"
+    },
+    "Orientation": {
+      "ours": "Sens de l'orientation",
+      "official": "Orientation",
+      "vo": "Orientation",
+      "status": "drift"
+    },
+    "Ouverture Forcée": {
+      "ours": "Battement",
+      "official": "Battement",
+      "vo": "Beat Blade",
+      "status": "ok"
+    },
+    "Pêcheur": {
+      "ours": "Pêcheur",
+      "official": "Pêcheur",
+      "vo": "Fisherman",
+      "status": "ok"
+    },
+    "Pénitent": {
+      "ours": "Flagellant",
+      "official": "Flagellant",
+      "vo": "Flagellant",
+      "status": "ok"
+    },
+    "Petite Taille": {
+      "ours": "Petit",
+      "official": "Petite Taille",
+      "vo": "Small",
+      "status": "drift"
+    },
+    "Pharmacopée": {
+      "ours": "Pharmacologie",
+      "official": "Pharmacologie",
+      "vo": "Pharmacist",
+      "status": "ok"
+    },
+    "Pied Marin": {
+      "ours": "Pied marin",
+      "official": "Pied Marin",
+      "vo": "Sea Legs",
+      "status": "ok"
+    },
+    "Préparation Magistrale": {
+      "ours": "Concocter",
+      "official": "Concocter",
+      "vo": "Concoct",
+      "status": "ok"
+    },
+    "Prévoyant": {
+      "ours": "Prévoyant",
+      "official": "Prévoyant",
+      "vo": "Well-Prepared",
+      "status": "ok"
+    },
+    "Rage de Bataille": {
+      "ours": "Contrôle de la Frénésie",
+      "official": "Contrôle de la Frénésie",
+      "vo": "Battle Rage",
+      "status": "ok"
+    },
+    "Rat de Bibliothèque": {
+      "ours": "Studieux",
+      "official": "Studieux",
+      "vo": "Bookish",
+      "status": "ok"
+    },
+    "Recharge Rapide": {
+      "ours": "Artilleur",
+      "official": "Artilleur",
+      "vo": "Rapid Reload",
+      "status": "ok"
+    },
+    "Réflexes de Combat": {
+      "ours": "Combat instinctif",
+      "official": "Combat Instinctif",
+      "vo": "Combat Reflexes",
+      "status": "ok"
+    },
+    "Réflexes Éclairs": {
+      "ours": "Réflexes foudroyants",
+      "official": "Réflexes Éclairs",
+      "vo": "Lightning Reflexes",
+      "status": "drift"
+    },
+    "Renversement": {
+      "ours": "Renversement",
+      "official": "Renversement",
+      "vo": "Reversal",
+      "status": "ok"
+    },
+    "Résistance": {
+      "ours": "Résistance",
+      "official": "Résistance",
+      "vo": "Resistance",
+      "status": "ok"
+    },
+    "Résistance à la Magie": {
+      "ours": "Résistance à la Magie",
+      "official": "Résistance à la Magie",
+      "vo": "Magic Resistance",
+      "status": "ok"
+    },
+    "Respectable": {
+      "ours": "Caïd",
+      "official": "Caïd",
+      "vo": "Kingpin",
+      "status": "ok"
+    },
+    "Rétablissement": {
+      "ours": "Saut carpé",
+      "official": "Saut Carpé",
+      "vo": "Jump Up",
+      "status": "ok"
+    },
+    "Riposte": {
+      "ours": "Riposte",
+      "official": "Riposte",
+      "vo": "Riposte",
+      "status": "ok"
+    },
+    "Robuste": {
+      "ours": "Robuste",
+      "official": "Robuste",
+      "vo": "Robust",
+      "status": "ok"
+    },
+    "Sainte Colère": {
+      "ours": "Haine sacrée",
+      "official": "Haine Sacrée",
+      "vo": "Holy Hatred",
+      "status": "ok"
+    },
+    "Sang Bleu": {
+      "ours": "Noblesse",
+      "official": "Noblesse",
+      "vo": "Noble Blood",
+      "status": "ok"
+    },
+    "Sang Neuf": {
+      "ours": null,
+      "official": null,
+      "vo": "Young Blood",
+      "status": "gap-no-official"
+    },
+    "Savant": {
+      "ours": "Savant",
+      "official": "Savant",
+      "vo": "Savant",
+      "status": "ok"
+    },
+    "Seconde Vue": {
+      "ours": "Seconde vue",
+      "official": "Seconde Vue",
+      "vo": "Second Sight",
+      "status": "ok"
+    },
+    "Sens Aiguisé": {
+      "ours": "Sens aiguisé",
+      "official": "Sens Aiguisé",
+      "vo": "Acute Sense",
+      "status": "ok"
+    },
+    "Sens Artistique": {
+      "ours": "Artiste",
+      "official": "Artiste",
+      "vo": "Artistic",
+      "status": "ok"
+    },
+    "Sens des Ennuis": {
+      "ours": "Flairer les ennuis",
+      "official": "Flairer les Ennuis",
+      "vo": "Nose for Trouble",
+      "status": "ok"
+    },
+    "Seul Maître à Bord": {
+      "ours": null,
+      "official": null,
+      "vo": "Master and Commander",
+      "status": "gap-no-official"
+    },
+    "Sixième Sens": {
+      "ours": "Sixième sens",
+      "official": "Sixième Sens",
+      "vo": "Sixth Sense",
+      "status": "ok"
+    },
+    "Sniper": {
+      "ours": "Tireur embusqué",
+      "official": "Tireur Embusqué",
+      "vo": "Sniper",
+      "status": "ok"
+    },
+    "Solide": {
+      "ours": "Dur à cuire",
+      "official": "Dur à Cuire",
+      "vo": "Hardy",
+      "status": "ok"
+    },
+    "Sort Supplémentaire": {
+      "ours": null,
+      "official": null,
+      "vo": "Extra Spell",
+      "status": "gap-no-official"
+    },
+    "Soudoyeur": {
+      "ours": "Suborneur",
+      "official": "Suborneur",
+      "vo": "Briber",
+      "status": "ok"
+    },
+    "Souplesse du Chat": {
+      "ours": "Souplesse féline",
+      "official": "Souplesse Féline",
+      "vo": "Catfall",
+      "status": "ok"
+    },
+    "Source d’Inspiration": {
+      "ours": "Exaltant",
+      "official": "Exaltant",
+      "vo": "Inspiring",
+      "status": "ok"
+    },
+    "Sorcellerie": {
+      "ours": "Sorcier !",
+      "official": "Sorcier !",
+      "vo": "Witch !",
+      "status": "ok"
+    },
+    "Sprinteur": {
+      "ours": "Sprinter",
+      "official": "Sprinteur",
+      "vo": "Sprinter",
+      "status": "drift"
+    },
+    "Tenace": {
+      "ours": "Persévérant",
+      "official": "Persévérant",
+      "vo": "Tenacious",
+      "status": "ok"
+    },
+    "Tête Dure": {
+      "ours": "Mâchoires d'acier",
+      "official": "Mâchoires d’Acier",
+      "vo": "Iron Jaw",
+      "status": "ok"
+    },
+    "Timonier": {
+      "ours": "Marinier",
+      "official": "Marinier",
+      "vo": "Waterman",
+      "status": "ok"
+    },
+    "Tir Efficace": {
+      "ours": "Tir sûr",
+      "official": "Tir Sûr",
+      "vo": "Accurate Shot",
+      "status": "ok"
+    },
+    "Tir Précis": {
+      "ours": "Tireur d'élite",
+      "official": "Tireur d’Élite",
+      "vo": "Sharpshooter",
+      "status": "ok"
+    },
+    "Tir Puissant": {
+      "ours": "Tir précis",
+      "official": "Tir Précis",
+      "vo": "Sure Shot",
+      "status": "ok"
+    },
+    "Tir Rapide": {
+      "ours": "Tir rapide",
+      "official": "Tir Rapide",
+      "vo": "Fast Shot",
+      "status": "ok"
+    },
+    "Tireur d’Élite": {
+      "ours": "Tir mortel",
+      "official": "Tir Mortel",
+      "vo": "Deadeye Shot",
+      "status": "ok"
+    },
+    "Trappeur": {
+      "ours": "Trappeur",
+      "official": "Trappeur",
+      "vo": "Trapper",
+      "status": "ok"
+    },
+    "Très Fort": {
+      "ours": "Très fort",
+      "official": "Très Fort",
+      "vo": "Very Strong",
+      "status": "ok"
+    },
+    "Très Endurant": {
+      "ours": "Très résistant",
+      "official": "Très Résistant",
+      "vo": "Very Resilient",
+      "status": "ok"
+    },
+    "Tricheur aux Cartes": {
+      "ours": "Tricheur",
+      "official": "Tricheur",
+      "vo": "Cardsharp",
+      "status": "ok"
+    },
+    "Tricheur aux Dés": {
+      "ours": "Maîtrise des dés",
+      "official": "Maîtrise des Dés",
+      "vo": "Diceman",
+      "status": "ok"
+    },
+    "Tueur": {
+      "ours": "Tueur",
+      "official": "Tueur",
+      "vo": "Slayer",
+      "status": "ok"
+    },
+    "Uranai": {
+      "ours": null,
+      "official": null,
+      "vo": "Uncouth Uranai",
+      "status": "gap-no-official"
+    },
+    "Vagabond": {
+      "ours": "Nomade",
+      "official": "Nomade",
+      "vo": "Rover",
+      "status": "ok"
+    },
+    "Véloce": {
+      "ours": "Véloce",
+      "official": "Véloce",
+      "vo": "Fleet-Footed",
+      "status": "ok"
+    },
+    "Ventre Creux": {
+      "ours": "Brouet",
+      "official": "Brouet",
+      "vo": "Stone Soup",
+      "status": "ok"
+    },
+    "Vétéran": {
+      "ours": "Maîtrise du combat",
+      "official": "Maîtrise du Combat",
+      "vo": "Combat Master",
+      "status": "ok"
+    },
+    "Vice": {
+      "ours": null,
+      "official": null,
+      "vo": "Vice",
+      "status": "gap-no-official"
+    },
+    "Vieux Loup de Mer": {
+      "ours": "Loup de mer",
+      "official": "Vieux Loup de Mer",
+      "vo": "Old Salt",
+      "status": "drift"
+    },
+    "Vif": {
+      "ours": "Vivacité",
+      "official": "Vivacité",
+      "vo": "Sharp",
+      "status": "ok"
+    },
+    "Vigie": {
+      "ours": "Pilote",
+      "official": "Pilote",
+      "vo": "Pilot",
+      "status": "ok"
+    },
+    "Vigilant": {
+      "ours": "Vigilance",
+      "official": "Vigilant",
+      "vo": "Combat Aware",
+      "status": "drift"
+    },
+    "Vision Nocturne": {
+      "ours": "Vision nocturne",
+      "official": "Vision Nocturne",
+      "vo": "Night Vision",
+      "status": "ok"
+    },
+    "Vision Sacrée": {
+      "ours": "Visions sacrées",
+      "official": "Vision Sacrée",
+      "vo": "Holy Visions",
+      "status": "drift"
+    },
+    "Voix Mélodieuse": {
+      "ours": "Oreille absolue",
+      "official": "Oreille Absolue",
+      "vo": "Perfect Pitch",
+      "status": "ok"
+    },
+    "Volonté de Fer": {
+      "ours": "Volonté de fer",
+      "official": "Volonté de Fer",
+      "vo": "Iron Will",
+      "status": "ok"
+    },
+    "Voltige": {
+      "ours": "Acrobaties équestres",
+      "official": "Acrobaties Équestres",
+      "vo": "Trick Riding",
+      "status": "ok"
+    }
+  },
+  "traits": {
+    "Affamé": {
+      "ours": "Affamé",
+      "official": "Affamé",
+      "vo": "Hungry",
+      "status": "ok"
+    },
+    "Amorphe": {
+      "ours": null,
+      "official": "Amorphe",
+      "vo": "Amorphous",
+      "status": "gap-missing-in-ours"
+    },
+    "Amphibie": {
+      "ours": "Amphibie",
+      "official": "Amphibie",
+      "vo": "Amphibious",
+      "status": "ok"
+    },
+    "Animosité (Type)": {
+      "ours": "Animosité",
+      "official": "Animosité (Cible)",
+      "vo": "Animosity (Target)",
+      "status": "ok"
+    },
+    "Arboricole": {
+      "ours": "Arboricole",
+      "official": "Arboricole",
+      "vo": "Arboreal",
+      "status": "ok"
+    },
+    "ArmeouMêlée (X)": {
+      "ours": "Arme",
+      "official": "Arme (Indice)",
+      "vo": "Weapon (Rating)",
+      "status": "ok"
+    },
+    "Armure (X)": {
+      "ours": "Armure",
+      "official": "Armure (Indice)",
+      "vo": "Armour  (Rating)",
+      "status": "ok"
+    },
+    "Arpenteur": {
+      "ours": "Foulée",
+      "official": "Foulée",
+      "vo": "Stride",
+      "status": "ok"
+    },
+    "Attaquant Immobile": {
+      "ours": null,
+      "official": null,
+      "vo": "Stationary Attacker",
+      "status": "gap-no-official"
+    },
+    "Attaque Caudale (X)": {
+      "ours": "Attaque caudale",
+      "official": "Attaque Caudale (Indice)",
+      "vo": "Tail Attack (Rating)",
+      "status": "ok"
+    },
+    "Attaque Magique": {
+      "ours": "Magique",
+      "official": "Magique",
+      "vo": "Magical",
+      "status": "ok"
+    },
+    "Aura de Feu": {
+      "ours": null,
+      "official": null,
+      "vo": "Wake of  Fire",
+      "status": "gap-no-official"
+    },
+    "Aura de Glace": {
+      "ours": null,
+      "official": null,
+      "vo": "Freezing Aura",
+      "status": "gap-no-official"
+    },
+    "Belliqueux": {
+      "ours": "Belliqueux",
+      "official": "Belliqueux",
+      "vo": "Belligerent",
+      "status": "ok"
+    },
+    "Béni (Divinité)": {
+      "ours": "Béni",
+      "official": "Béni (Divers)",
+      "vo": "Blessed (Various)",
+      "status": "ok"
+    },
+    "Bestial": {
+      "ours": "Bestial",
+      "official": "Bestial",
+      "vo": "Bestial",
+      "status": "ok"
+    },
+    "Bond": {
+      "ours": "Bond",
+      "official": "Bond",
+      "vo": "Bounce",
+      "status": "ok"
+    },
+    "Brute": {
+      "ours": "Brutal",
+      "official": "Brutal",
+      "vo": "Brute",
+      "status": "ok"
+    },
+    "Caméléon": {
+      "ours": null,
+      "official": null,
+      "vo": "Chamaleon",
+      "status": "gap-no-official"
+    },
+    "Champion": {
+      "ours": "Champion",
+      "official": "Champion",
+      "vo": "Champion",
+      "status": "ok"
+    },
+    "Change-Forme": {
+      "ours": null,
+      "official": "Métamorphe",
+      "vo": "Shapeshifter",
+      "status": "gap-missing-in-ours"
+    },
+    "Change-Peau": {
+      "ours": null,
+      "official": "Voleur de Chair",
+      "vo": "Fleshthief",
+      "status": "gap-missing-in-ours"
+    },
+    "Combustion": {
+      "ours": null,
+      "official": null,
+      "vo": "Font of  Flame",
+      "status": "gap-no-official"
+    },
+    "Compagnon Animal": {
+      "ours": null,
+      "official": null,
+      "vo": "Companion",
+      "status": "gap-no-official"
+    },
+    "Constricteur": {
+      "ours": "Constricteur",
+      "official": "Constricteur",
+      "vo": "Constrictor",
+      "status": "ok"
+    },
+    "Contagieux (Maladie)": {
+      "ours": null,
+      "official": "Contagieux (Maladie)",
+      "vo": "Blighted (Type)",
+      "status": "gap-missing-in-ours"
+    },
+    "Coriace": {
+      "ours": "Coriace",
+      "official": "Coriace",
+      "vo": "Tough",
+      "status": "ok"
+    },
+    "Cornes (X)": {
+      "ours": "Cornes",
+      "official": "Cornes (Aspect) (Indice)",
+      "vo": "Horns (Rating) (Feature)",
+      "status": "ok"
+    },
+    "Corruption (Niveau)": {
+      "ours": "Corruption",
+      "official": "Corruption (Degré)",
+      "vo": "Corruption (Strength)",
+      "status": "ok"
+    },
+    "Craintif": {
+      "ours": "Nerveux",
+      "official": "Nerveux",
+      "vo": "Skittish",
+      "status": "ok"
+    },
+    "Créature Artificielle": {
+      "ours": "Fabriqué",
+      "official": "Fabriqué",
+      "vo": "Construct",
+      "status": "ok"
+    },
+    "Créature Démonique (X)": {
+      "ours": "Démoniaque",
+      "official": "Démoniaque (Indice)",
+      "vo": "Daemonic (Target)",
+      "status": "ok"
+    },
+    "Créature d’Eau Douce": {
+      "ours": null,
+      "official": "Aquatique",
+      "vo": "Aquatic",
+      "status": "gap-missing-in-ours"
+    },
+    "Créature des Marais": {
+      "ours": "Limicole",
+      "official": "Limicole",
+      "vo": "Swamp-Strider",
+      "status": "ok"
+    },
+    "Créature Éthérée": {
+      "ours": "Éthéré",
+      "official": "Éthéré",
+      "vo": "Ethereal",
+      "status": "ok"
+    },
+    "Créature Magique": {
+      "ours": "Magique",
+      "official": "Magique",
+      "vo": "Magical",
+      "status": "ok"
+    },
+    "Créature Marine": {
+      "ours": null,
+      "official": null,
+      "vo": "Marine Creature",
+      "status": "gap-no-official"
+    },
+    "Créature Vampirique": {
+      "ours": "Vampirique",
+      "official": "Vampirique",
+      "vo": "Vampiric",
+      "status": "ok"
+    },
+    "Décérébré": {
+      "ours": null,
+      "official": "Décérébré",
+      "vo": "Mindless",
+      "status": "gap-missing-in-ours"
+    },
+    "Démon-Portail": {
+      "ours": null,
+      "official": null,
+      "vo": "Living Gate",
+      "status": "gap-no-official"
+    },
+    "Déplacement Lent": {
+      "ours": null,
+      "official": "Rampant",
+      "vo": "Creeping",
+      "status": "gap-missing-in-ours"
+    },
+    "Confusion": {
+      "ours": null,
+      "official": null,
+      "vo": "Easily Confused",
+      "status": "gap-no-official"
+    },
+    "Dissipation d’AEthyr": {
+      "ours": null,
+      "official": null,
+      "vo": "Null",
+      "status": "gap-no-official"
+    },
+    "Dressage (Type)": {
+      "ours": "Dressé",
+      "official": "Dressé (Compétences Spécifiques)",
+      "vo": "Trained (Trained Skills)",
+      "status": "ok"
+    },
+    "Élite": {
+      "ours": "Élite",
+      "official": "Élite",
+      "vo": "Elite",
+      "status": "ok"
+    },
+    "Étreinte Glaciale": {
+      "ours": "Étreinte glaciale",
+      "official": "Étreinte Glaciale",
+      "vo": "Chill Grasp",
+      "status": "ok"
+    },
+    "Feu de Malepierre": {
+      "ours": null,
+      "official": null,
+      "vo": "Balefire Brazier",
+      "status": "gap-no-official"
+    },
+    "Feu de Tzeentch": {
+      "ours": "Feu de Tzeentch",
+      "official": "Feu de Tzeentch",
+      "vo": "Tzeentch’s Fire",
+      "status": "ok"
+    },
+    "Fission": {
+      "ours": "Dédoublement",
+      "official": "Dédoublement",
+      "vo": "Split",
+      "status": "ok"
+    },
+    "Fouisseur (X)": {
+      "ours": null,
+      "official": "Fouissement",
+      "vo": "Burrow (Rating)",
+      "status": "gap-missing-in-ours"
+    },
+    "Fourbe": {
+      "ours": "Rusé",
+      "official": "Rusé",
+      "vo": "Cunning",
+      "status": "ok"
+    },
+    "Frayeur (Type)": {
+      "ours": "Effrayé",
+      "official": "Effrayé (Cible)",
+      "vo": "Afraid (Target)",
+      "status": "ok"
+    },
+    "Frénésie": {
+      "ours": "Frénésie",
+      "official": "Frénésie",
+      "vo": "Frenzy",
+      "status": "ok"
+    },
+    "Froid Étourdissant": {
+      "ours": null,
+      "official": null,
+      "vo": "Paralysing Chill",
+      "status": "gap-no-official"
+    },
+    "Fureur": {
+      "ours": "Rage",
+      "official": "Rage",
+      "vo": "Fury",
+      "status": "ok"
+    },
+    "Furtif": {
+      "ours": "Furtif",
+      "official": "Furtif",
+      "vo": "Stealthy",
+      "status": "ok"
+    },
+    "Gobeur": {
+      "ours": null,
+      "official": "Engloutir",
+      "vo": "Engulf",
+      "status": "gap-missing-in-ours"
+    },
+    "Haine (Type)": {
+      "ours": "Haine",
+      "official": "Haine (Cible)",
+      "vo": "Hatred (Target)",
+      "status": "ok"
+    },
+    "Hallucinogène": {
+      "ours": null,
+      "official": "Hallucinogène",
+      "vo": "Hallucinogen",
+      "status": "gap-missing-in-ours"
+    },
+    "Hématophage": {
+      "ours": null,
+      "official": "S’Accrocher pour se Nourrir",
+      "vo": "Attach & Feed",
+      "status": "gap-missing-in-ours"
+    },
+    "Horreur Métamorphe": {
+      "ours": null,
+      "official": "Horreur Métamorphe",
+      "vo": "Formless Horror",
+      "status": "gap-missing-in-ours"
+    },
+    "Hurlement Sépulcral": {
+      "ours": "Hurlement fantomatique",
+      "official": "Hurlement Fantomatique",
+      "vo": "Ghostly Howl",
+      "status": "ok"
+    },
+    "Immunité (Type)": {
+      "ours": "Immunité",
+      "official": "Immunité (Type)",
+      "vo": "Immunity (Type)",
+      "status": "ok"
+    },
+    "Immunité Psychologique": {
+      "ours": "Immunité Psychologique",
+      "official": "Immunité Psychologique",
+      "vo": "Immunity to Psychology",
+      "status": "ok"
+    },
+    "Incorporel": {
+      "ours": null,
+      "official": null,
+      "vo": "Incorporeal",
+      "status": "gap-no-official"
+    },
+    "Infecté": {
+      "ours": "Infecté",
+      "official": "Infecté",
+      "vo": "Infected",
+      "status": "ok"
+    },
+    "Infestation": {
+      "ours": "Parasité",
+      "official": "Parasité",
+      "vo": "Infestation",
+      "status": "ok"
+    },
+    "Inflammable": {
+      "ours": null,
+      "official": null,
+      "vo": "Flammable",
+      "status": "gap-no-official"
+    },
+    "Infravision": {
+      "ours": "Infravision",
+      "official": "Infravision",
+      "vo": "Dark Vision",
+      "status": "ok"
+    },
+    "Insensible à la Douleur": {
+      "ours": "Insensible à la douleur",
+      "official": "Insensible à la Douleur",
+      "vo": "Painless",
+      "status": "ok"
+    },
+    "Instabilité": {
+      "ours": "Instable",
+      "official": "Instable",
+      "vo": "Unstable",
+      "status": "ok"
+    },
+    "Invisibilité": {
+      "ours": null,
+      "official": null,
+      "vo": "Invisibility",
+      "status": "gap-no-official"
+    },
+    "Irréductible": {
+      "ours": "Increvable",
+      "official": "Increvable",
+      "vo": "Die Hard",
+      "status": "ok"
+    },
+    "Langue Protractile (X)": {
+      "ours": "Langue préhensile",
+      "official": "Langue Préhensile (Indice) (Portée)",
+      "vo": "Tongue Attack (Rating) (Range)",
+      "status": "ok"
+    },
+    "Leader": {
+      "ours": "Meneur",
+      "official": "Meneur",
+      "vo": "Leader",
+      "status": "ok"
+    },
+    "Lunatique": {
+      "ours": null,
+      "official": "Capricieux",
+      "vo": "Capricious",
+      "status": "gap-missing-in-ours"
+    },
+    "Mâchoire Extensible": {
+      "ours": null,
+      "official": null,
+      "vo": "Distendable Jaws",
+      "status": "gap-no-official"
+    },
+    "Mage / Sorcier (Domaine)": {
+      "ours": "Lanceur de Sorts",
+      "official": "Lanceur de Sort (Divers)",
+      "vo": "Spellcaster (Various)",
+      "status": "drift"
+    },
+    "Maladie (Type)": {
+      "ours": "Maladie",
+      "official": "Maladie (Type)",
+      "vo": "Disease (Type)",
+      "status": "ok"
+    },
+    "Malin": {
+      "ours": "Intelligent",
+      "official": "Intelligent",
+      "vo": "Clever",
+      "status": "ok"
+    },
+    "Marque des Anciens": {
+      "ours": null,
+      "official": null,
+      "vo": "Mark of  the Old Ones",
+      "status": "gap-no-official"
+    },
+    "Marque de Khorne": {
+      "ours": null,
+      "official": null,
+      "vo": "Mark of  Khorne",
+      "status": "gap-no-official"
+    },
+    "Marque de Nurgle": {
+      "ours": null,
+      "official": null,
+      "vo": "Mark of  Nurgle",
+      "status": "gap-no-official"
+    },
+    "Marque de Tzeentch": {
+      "ours": "Marque de Tzeentch",
+      "official": "Marque de Tzeentch",
+      "vo": "Mark of  Tzeentch",
+      "status": "ok"
+    },
+    "Massif": {
+      "ours": "Grand",
+      "official": "Grand",
+      "vo": "Big",
+      "status": "ok"
+    },
+    "Menace  (X)": {
+      "ours": null,
+      "official": "Redoutable (Indice)",
+      "vo": "Grim (Rating)",
+      "status": "gap-missing-in-ours"
+    },
+    "Messager": {
+      "ours": null,
+      "official": null,
+      "vo": "Messenger",
+      "status": "gap-no-official"
+    },
+    "Miracles (Divinité)": {
+      "ours": "Miracles",
+      "official": "Miracles (Divers)",
+      "vo": "Miracles (Various)",
+      "status": "ok"
+    },
+    "Morsure (X)": {
+      "ours": "Morsure",
+      "official": "Morsure (Indice)",
+      "vo": "Bite (Rating)",
+      "status": "ok"
+    },
+    "Mort-Vivant": {
+      "ours": "Mort-vivant",
+      "official": "Mort-Vivant",
+      "vo": "Undead",
+      "status": "ok"
+    },
+    "Mutation Mentale": {
+      "ours": "Corruption mentale",
+      "official": "Corruption Mentale",
+      "vo": "Mental Corruption",
+      "status": "ok"
+    },
+    "Mutation Physique": {
+      "ours": "Mutation",
+      "official": "Mutation",
+      "vo": "Mutation",
+      "status": "ok"
+    },
+    "Némésis Peaux-Vertes": {
+      "ours": null,
+      "official": null,
+      "vo": "Orc & Goblin Nemesis",
+      "status": "gap-no-official"
+    },
+    "Nuée": {
+      "ours": "Nuée",
+      "official": "Nuée",
+      "vo": "Swarm",
+      "status": "ok"
+    },
+    "Oeil de Fimir": {
+      "ours": null,
+      "official": null,
+      "vo": "Bale Eye",
+      "status": "gap-no-official"
+    },
+    "Peur (X)": {
+      "ours": "Peur",
+      "official": "Peur (Indice)",
+      "vo": "Fear (Rating)",
+      "status": "ok"
+    },
+    "Phagocyte": {
+      "ours": null,
+      "official": "Absorption",
+      "vo": "Absorb",
+      "status": "gap-missing-in-ours"
+    },
+    "Préjugé (Type)": {
+      "ours": "Préjugé",
+      "official": "Préjugé (Cible)",
+      "vo": "Prejudice (Target)",
+      "status": "ok"
+    },
+    "Protection (X)": {
+      "ours": "Protection",
+      "official": "Protection (Indice)",
+      "vo": "Ward (Rating)",
+      "status": "ok"
+    },
+    "Rapetissement": {
+      "ours": null,
+      "official": null,
+      "vo": "Reducible",
+      "status": "gap-no-official"
+    },
+    "Rapide": {
+      "ours": "Rapide",
+      "official": "Rapide",
+      "vo": "Fast",
+      "status": "ok"
+    },
+    "Regard Clairvoyant": {
+      "ours": null,
+      "official": "Regard Clairvoyant",
+      "vo": "Piercing Gaze",
+      "status": "gap-missing-in-ours"
+    },
+    "Regard Pétrifiant": {
+      "ours": "Regard pétrifiant",
+      "official": "Regard Pétrifiant",
+      "vo": "Petrifying Gaze",
+      "status": "ok"
+    },
+    "Regard Vampirique": {
+      "ours": null,
+      "official": null,
+      "vo": "Vampiric Gaze",
+      "status": "gap-no-official"
+    },
+    "Régénération": {
+      "ours": "Régénération",
+      "official": "Régénération",
+      "vo": "Regenerate",
+      "status": "ok"
+    },
+    "Renouvellement Dentaire": {
+      "ours": null,
+      "official": null,
+      "vo": "Replaceable Teeth",
+      "status": "gap-no-official"
+    },
+    "Reptation": {
+      "ours": "Grimpant",
+      "official": "Grimpant",
+      "vo": "Wallcrawler",
+      "status": "ok"
+    },
+    "Résistance à la Magie (X)": {
+      "ours": "Résistance à la Magie",
+      "official": "Résistance à la Magie (Indice)",
+      "vo": "Magic Resistance (Rating)",
+      "status": "ok"
+    },
+    "Ruade": {
+      "ours": "Se cabrer",
+      "official": "Se Cabrer",
+      "vo": "Rear",
+      "status": "ok"
+    },
+    "Salive Anesthésiante": {
+      "ours": null,
+      "official": "Salive Analgésique",
+      "vo": "Analgesic Saliva",
+      "status": "gap-missing-in-ours"
+    },
+    "Salive Anticoagulante": {
+      "ours": null,
+      "official": "Salive Anticoagulante",
+      "vo": "Anticoagulant Saliva",
+      "status": "gap-missing-in-ours"
+    },
+    "Sang Acide": {
+      "ours": "Sang corrosif",
+      "official": "Sang Corrosif",
+      "vo": "Corrosive Blood",
+      "status": "ok"
+    },
+    "Sang Froid": {
+      "ours": "À sang-froid",
+      "official": "À Sang Froid",
+      "vo": "Cold-Blooded",
+      "status": "ok"
+    },
+    "Sens Partagés": {
+      "ours": null,
+      "official": null,
+      "vo": "Sensory Sharing",
+      "status": "gap-no-official"
+    },
+    "Sensible à l’AEthyr": {
+      "ours": null,
+      "official": null,
+      "vo": "Attuned to Magic",
+      "status": "gap-no-official"
+    },
+    "Sensible à la Chaleur": {
+      "ours": null,
+      "official": null,
+      "vo": "Vulnerable to Heat",
+      "status": "gap-no-official"
+    },
+    "Sensible au Froid": {
+      "ours": null,
+      "official": null,
+      "vo": "Vulnerable to Cold",
+      "status": "gap-no-official"
+    },
+    "Siphon d’AEthyr": {
+      "ours": null,
+      "official": null,
+      "vo": "Spell Syphon",
+      "status": "gap-no-official"
+    },
+    "Solide": {
+      "ours": "Endurant",
+      "official": "Endurant",
+      "vo": "Hardy",
+      "status": "ok"
+    },
+    "Sort Aléatoire": {
+      "ours": null,
+      "official": null,
+      "vo": "Random Caster",
+      "status": "gap-no-official"
+    },
+    "Souffle (X)": {
+      "ours": "Souffle",
+      "official": "Souffle (Indice) (Type)",
+      "vo": "Breath (Rating) (Type)",
+      "status": "ok"
+    },
+    "Souffle de Dhar": {
+      "ours": null,
+      "official": null,
+      "vo": "Breath (Rating) (Warpfire)",
+      "status": "gap-no-official"
+    },
+    "Souffle de Soufre": {
+      "ours": null,
+      "official": null,
+      "vo": "Breath (Rating) (Brimstone Fire)",
+      "status": "gap-no-official"
+    },
+    "Stupide": {
+      "ours": "Stupide",
+      "official": "Stupide",
+      "vo": "Stupid",
+      "status": "ok"
+    },
+    "Taille (Type)": {
+      "ours": "Taille",
+      "official": "Taille (Divers)",
+      "vo": "Size (Various)",
+      "status": "ok"
+    },
+    "Télépathie": {
+      "ours": null,
+      "official": null,
+      "vo": "Telepathy",
+      "status": "gap-no-official"
+    },
+    "Télépathie Animale": {
+      "ours": null,
+      "official": null,
+      "vo": "Animal Telepathy",
+      "status": "gap-no-official"
+    },
+    "Tentacules # (X)": {
+      "ours": "Tentacules",
+      "official": "# Tentacules (Indice)",
+      "vo": "# Tentacles (Rating)",
+      "status": "ok"
+    },
+    "Terreur (X)": {
+      "ours": "Terreur",
+      "official": "Terreur (Indice)",
+      "vo": "Terror  (Rating)",
+      "status": "ok"
+    },
+    "Territorial": {
+      "ours": "Territorial",
+      "official": "Territorial",
+      "vo": "Territorial",
+      "status": "ok"
+    },
+    "Tir (X)": {
+      "ours": "À distance",
+      "official": "À Distance (Indice) (Portée",
+      "vo": "Ranged (Rating) (Range)",
+      "status": "ok"
+    },
+    "Toile (X)": {
+      "ours": "Toile",
+      "official": "Toile (Indice)",
+      "vo": "Web (Rating)",
+      "status": "ok"
+    },
+    "Traqueur": {
+      "ours": "Pisteur",
+      "official": "Pisteur",
+      "vo": "Tracker",
+      "status": "ok"
+    },
+    "Trouble": {
+      "ours": "Perturbant",
+      "official": "Perturbant",
+      "vo": "Distracting",
+      "status": "ok"
+    },
+    "Venin (X)": {
+      "ours": "Venin",
+      "official": "Venin (Difficulté)",
+      "vo": "Venom (Difficulty)",
+      "status": "ok"
+    },
+    "Vigor Mortis": {
+      "ours": null,
+      "official": null,
+      "vo": "Vigor Mortis",
+      "status": "gap-no-official"
+    },
+    "Vision Nocturne": {
+      "ours": "Vision nocturne",
+      "official": "Vision Nocturne",
+      "vo": "Night Vision",
+      "status": "ok"
+    },
+    "Vol (X)": {
+      "ours": "Vol",
+      "official": "Vol (Indice)",
+      "vo": "Flight (Rating)",
+      "status": "ok"
+    },
+    "Vomi": {
+      "ours": "Vomissement",
+      "official": "Vomissement",
+      "vo": "Vomit",
+      "status": "ok"
+    }
+  }
+}
