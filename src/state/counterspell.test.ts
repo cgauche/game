@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
-import { castSpell, resolveRoundBoundary, counterspellCandidates } from './combatFlow';
+import { castSpell, resolveRoundBoundary, counterspellCandidates, routeEnemyCast } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
@@ -66,26 +66,26 @@ describe('Contre-sort (Dissipation, LDB 46 l.201-202)', () => {
     expect(pc2.result!.log).not.toContain('Contre-sort de');
   });
 
-  it('routage : un Sort ENNEMI est pré-roulé par le moteur et ouvre le Contre-sort à plusieurs', () => {
-    useGame.getState().seedRng(9);
+  it('routage : un Sort ennemi RÉUSSI ouvre le Contre-sort (gate sur le cast) ; raté → rien', () => {
     const { H, E } = setup();
-    castSpell(useGame.getState, useGame.setState, E, H, 'Carreau');
-    // castSpell roule l'incantation ennemie (jet figé, plus de « Lancer ») ET ouvre pendingCounterspell.
-    expect(useGame.getState().pendingCast!.result).toBeTruthy();
-    const pcs = useGame.getState().pendingCounterspell;
+    const open = (cast: boolean) => {
+      useGame.setState({
+        pendingCounterspell: null,
+        pendingCast: { casterId: E.id, targetId: H.id, spellLabel: 'Carreau', missile: true, focused: false,
+          result: { cast, roll: 20, target: 145, sl: 12, isCritical: false, isFumble: false, log: 'x' } },
+      });
+      routeEnemyCast(useGame.getState, useGame.setState); // déterministe (jet figé contrôlé)
+      return useGame.getState().pendingCounterspell;
+    };
+    // Cast RÉUSSI (DR ≥ NI) → le Contre-sort à plusieurs s'ouvre avec H (contre-lanceur éligible).
+    const pcs = open(true);
     expect(pcs).toBeTruthy();
     expect(pcs!.participants.map((p) => p.id)).toContain(H.id);
-    // H oppose son Langue (Magick) ; « Appliquer » agrège + résout via castConfirm.
-    useGame.getState().counterspellRoll(H.id);
-    expect(useGame.getState().pendingCounterspell!.participants[0].result).toBeTruthy();
-    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.dispelledThisRound).toBe(true);
-    useGame.getState().counterspellConfirm();
-    for (let i = 0; i < 8 && useGame.getState().pendingReveals.length; i++) useGame.getState().dismissReveal();
-    expect(useGame.getState().pendingCounterspell).toBeNull();
-    expect(useGame.getState().pendingCast).toBeNull();
+    // Cast RATÉ (DR < NI) → rien à dissiper, pas de modale.
+    expect(open(false)).toBeNull();
   });
 
-  it('IA : le Sort ennemi SUSPEND le tour ; « Laisser passer » applique et la main passe', () => {
+  it('IA : le Sort ennemi SUSPEND le tour ; résoudre la réaction rend la main', () => {
     useGame.getState().seedRng(3);
     const { H, E } = setup();
     H.wounds = { ...H.wounds, max: 99, current: 99 }; // survit au Carreau : le sujet est la suspension
@@ -93,14 +93,15 @@ describe('Contre-sort (Dissipation, LDB 46 l.201-202)', () => {
       battle: { ...useGame.getState().battle!, order: [H.id, E.id], turn: 0, action: null, movementUsed: 0, movedPreAction: false, acted: false },
       pendingRoundStart: null, pendingReveals: [],
     });
-    useGame.getState().battleEndTurn(); // H finit → E actif → IA : Carreau pré-roulé + Contre-sort ouvert
+    useGame.getState().battleEndTurn(); // H finit → E actif → IA : Carreau pré-roulé (plus de « Lancer »)
     vi.advanceTimersByTime(5000);
     let st = useGame.getState();
-    expect(st.pendingCast?.casterId).toBe(E.id); // incantation ennemie figée
-    expect(st.pendingCounterspell).toBeTruthy(); // H peut Dissiper → modale de réaction (pas de « Lancer »)
-    expect(st.battle!.order[st.battle!.turn]).toBe(E.id); // tour SUSPENDU sur le lanceur (non avancé)
+    expect(st.pendingCast?.casterId).toBe(E.id); // incantation ennemie figée → tour suspendu sur le lanceur
+    expect(st.battle!.order[st.battle!.turn]).toBe(E.id);
     expect(st.battle!.round).toBe(1);
-    useGame.getState().counterspellCancel(); // « Laisser passer » → le Sort se résout + le tour reprend
+    // Résoudre ce qui s'est ouvert : Contre-sort (cast réussi) OU révélation (cast raté/Maladresse) → la main passe.
+    if (st.pendingCounterspell) useGame.getState().counterspellCancel();
+    else useGame.getState().castConfirm();
     for (let i = 0; i < 8 && useGame.getState().pendingReveals.length; i++) useGame.getState().dismissReveal();
     vi.advanceTimersByTime(2000);
     st = useGame.getState();

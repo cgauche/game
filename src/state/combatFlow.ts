@@ -2217,9 +2217,10 @@ export function castSpell(
 }
 
 /** Après le jet (figé) d'un Sort ENNEMI : ouvre le Contre-sort à plusieurs si au moins un héros peut
- *  Dissiper (LDB 46 l.201-202 ; pas une Prière, pas un Critique non-Projectile « inéluctable »).
- *  Sinon : on laisse `pendingCast` (pré-roulé) — la modale `cast` l'affiche en révélation. */
-function routeEnemyCast(get: Get, set: SetFn): void {
+ *  Dissiper (LDB 46 l.201-202 ; cast RÉUSSI, pas une Prière, pas un Critique non-Projectile
+ *  « inéluctable »). Sinon : on laisse `pendingCast` (pré-roulé) — la modale `cast` l'affiche en
+ *  révélation. Exporté pour tester le routage de façon DÉTERMINISTE (jet figé contrôlé). */
+export function routeEnemyCast(get: Get, set: SetFn): void {
   const pc = get().pendingCast;
   const battle = get().battle;
   if (!pc?.result || !battle) return;
@@ -2227,7 +2228,9 @@ function routeEnemyCast(get: Get, set: SetFn): void {
   const target = battle.combatants.find((c) => c.id === pc.targetId);
   const spell = effectiveSpellOf(pc);
   if (!caster || !target || !spell) return;
-  const dispellable = isDispellableSpell(spell) && !(pc.result.isCritical && !pc.missile);
+  // Seul un Sort qui ABOUTIT se dissipe (cast réussi, DR ≥ NI) ; pas une Prière ; pas un Critique
+  // non-Projectile « inéluctable » (défaut IA, LDB 46 l.59) — comme l'ancien bloc CastModal.
+  const dispellable = pc.result.cast && isDispellableSpell(spell) && !(pc.result.isCritical && !pc.missile);
   const heroes = dispellable ? counterspellCandidates(battle, get().scene, caster, target).filter((c) => c.kind === 'hero') : [];
   if (heroes.length) {
     set({ pendingCounterspell: { participants: heroes.map((h) => ({ id: h.id, interactive: true, result: null })) } });

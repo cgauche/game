@@ -1,4 +1,5 @@
 import { useGame } from '../state/store';
+import { ownsLocally } from '../state/netFlow';
 import { castingValue } from '../engine/magic';
 import { canReroll } from '../engine/fortune';
 import { findSpell } from '../data/index';
@@ -33,6 +34,10 @@ export function CounterspellModal() {
   if (!caster || !spell) return null;
   const cast = pc.result;
   const dispelled = pcs.participants.some((p) => p.result?.dispelled);
+  // COOP : chacun ne pilote (Lancer + influence) QUE ses propres héros ; les rangées des héros
+  // distants sont en lecture seule (leur jet apparaît quand LEUR propriétaire le lance, via snapshot).
+  const net = useGame((s) => s.net);
+  const owns = (id: string) => net.mode === 'local' || ownsLocally(useGame.getState(), id);
 
   return (
     <Modal title="🛡️ Contre-sort" variant="roll" onClose={cancel}>
@@ -60,6 +65,7 @@ export function CounterspellModal() {
               actor={actor}
               row={row}
               rolled={!!res}
+              interactive={owns(part.id)}
               rollLabel="🛡️ Contre-sort"
               onRoll={() => roll(part.id)}
               rerollable={!!res && canReroll(!res.counter.success, !!part.rerolled)}
