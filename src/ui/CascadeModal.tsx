@@ -2,16 +2,18 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
-import { MultiRollList } from './MultiRollList';
-import type { NightEntry } from '../state/restFlow';
+import { RollPanel, type RollRowData } from './RollPanel';
+import { JournalLine } from './NarratedLine';
+import { ev } from '../state/combatLog';
+import type { CascadeStep, CascadeRoll } from '../state/pendings';
 import type { Combatant } from '../engine/types';
 
 /**
- * CASCADE séquentielle influençable (jets de NUIT / VOYAGE) — COMPOSE les deux briques existantes,
- * sans rien réinventer : l'étape COURANTE est un jet standard du flot de base (`RollFlowShell` :
- * Lancer → Chance/+1 DR/Pacte/Résilience → « Valider ») ; les jets DÉJÀ validés s'EMPILENT au-dessus
- * via le BILAN partagé (`MultiRollList`, l'ancien écran de nuit) — portraits, lignes de jet, notes.
- * Une défaillance impacte la suite (escalade d'Exposition, abri → jets).
+ * CASCADE de jets SÉQUENTIELS (nuit / voyage) — c'est LA coquille de jet partagée `RollFlowShell`,
+ * paramétrée comme `DefenseModal` : plusieurs LIGNES de jet avec portraits (`RollPanel rows`), les
+ * étapes déjà validées FIGÉES, l'étape COURANTE active (pending → résultat) avec son cycle Chance/
+ * +1 DR/Pacte/Résilience. « Continuer » enchaîne sur le jet suivant. Aucun affichage différent d'une
+ * autre modale. Nuit SUBIE → pas d'« Annuler » (comme TestModal/CorruptionModal).
  */
 export function CascadeModal() {
   const battle = useGame((s) => s.battle);
@@ -23,43 +25,45 @@ export function CascadeModal() {
   const darkPact = useGame((s) => s.cascadeDarkPact);
   const force = useGame((s) => s.cascadeForceSuccess);
   const next = useGame((s) => s.cascadeNext);
-  const cancel = useGame((s) => s.cascadeCancel);
 
   if (!p) return null;
   const cur = p.participants[p.cursor];
   if (!cur) return null;
   const pool: Combatant[] = battle?.combatants ?? party;
-  const actor = cur.actorId ? pool.find((c) => c.id === cur.actorId) : undefined;
+  const actorOf = (s: CascadeStep) => (s.actorId ? pool.find((c) => c.id === s.actorId) : undefined);
+  const actor = actorOf(cur);
   if (!actor) return null;
   const res = cur.result;
-  const curRolled = cur.target == null ? true : !!res;
+  const rolled = cur.target == null ? true : !!res;
   const failed = !!res && !res.success;
   const isLast = p.cursor + 1 >= p.participants.length;
-  const base = cur.base ?? cur.target ?? 0;
 
-  // BILAN des étapes déjà validées + notes d'entretien → entrées du bilan partagé (MultiRollList).
-  const done: NightEntry[] = p.log.map((l) => ({ icon: '📆', label: l, tone: 'info' as const }));
-  for (const s of p.participants.slice(0, p.cursor)) {
-    if (!s.result) continue;
+  const breakdown = (s: CascadeStep, r: CascadeRoll) => {
     const b = s.base ?? s.target ?? 0;
-    done.push({ actorId: s.actorId, icon: s.icon, label: s.label ?? 'Jet', tone: s.result.success ? 'ok' : 'bad',
-      d: { label: s.rollLabel ?? 'Jet', base: b, modifier: (s.target ?? b) - b, target: s.target ?? b, roll: s.result.roll, success: s.result.success, sl: s.result.sl } });
-    if (s.outcome?.length) done.push({ actorId: s.actorId, icon: '↳', label: s.outcome.join(' '), tone: s.result.success ? 'ok' : 'bad' });
-  }
+    return { label: s.label ?? s.rollLabel ?? 'Jet', base: b, modifier: (s.target ?? b) - b, target: s.target ?? b, roll: r.roll, success: r.success, sl: r.sl };
+  };
+  const pendingOf = (s: CascadeStep) => {
+    const b = s.base ?? s.target ?? 0;
+    return { label: s.label ?? s.rollLabel ?? 'Jet', base: b, mods: s.base != null && s.target != null && s.target !== s.base ? [{ label: 'difficulté', value: s.target - s.base }] : [] };
+  };
+  // Lignes des étapes DÉJÀ validées (figées), avec portrait — comme la ligne attaquant de Défense.
+  const doneRows: RollRowData[] = p.participants.slice(0, p.cursor)
+    .map((s): RollRowData | null => { const a = actorOf(s); return a && s.result ? { combatant: a, d: breakdown(s, s.result) } : null; })
+    .filter((r): r is RollRowData => r !== null);
+  const curPending: RollRowData = { combatant: actor, pending: pendingOf(cur) };
+  const outcomeText = res ? (res.success ? `${actor.name} réussit.` : `${actor.name} échoue.`) : '';
 
   return (
     <RollFlowShell
       title={`${p.icon ?? '🎲'} ${p.title}`}
-      subtitle={<>{cur.icon ?? '🎲'} {cur.label} · étape {p.cursor + 1} / {p.participants.length}</>}
-      extra={done.length ? <MultiRollList entries={done} /> : undefined}
-      rolled={curRolled}
-      rollLabel="🎲 Lancer"
+      subtitle={<><strong>{cur.icon ?? '🎲'} {cur.label}</strong>{p.participants.length > 1 ? ` · jet ${p.cursor + 1}/${p.participants.length}` : ''}</>}
+      rolled={rolled}
       onRoll={() => roll(cur.id)}
-      onCancel={cancel}
-      cancelLabel="Renoncer"
-      cancelAfterRoll
-      rows={res ? [{ combatant: actor, d: { label: cur.rollLabel ?? 'Jet', base, modifier: (cur.target ?? base) - base, target: cur.target ?? base, roll: res.roll, success: res.success, sl: res.sl } }] : undefined}
-      pending={!res && cur.target != null ? { label: cur.rollLabel ?? 'Jet', base, mods: cur.base != null && cur.target !== cur.base ? [{ label: 'difficulté', value: cur.target - cur.base }] : [] } : undefined}
+      /* Pré-jet : panneau multi-lignes (validées figées + courante en attente) — comme Défense. */
+      setup={<RollPanel rows={[...doneRows, curPending]} />}
+      /* Post-jet : mêmes lignes, la courante désormais lancée (vainqueur non pertinent ici). */
+      rows={res ? [...doneRows, { combatant: actor, d: breakdown(cur, res) }] : undefined}
+      outcome={res ? <JournalLine className="rm-journal" event={ev('info', outcomeText, actor.id)} combatants={pool} /> : undefined}
       fortune={actor.fortune ?? 0}
       freeReroll={freeRerollOf(actor)}
       rerollable={!!res && canReroll(failed, !!cur.rerolled)}
@@ -69,8 +73,8 @@ export function CascadeModal() {
       onDarkPact={() => darkPact(cur.id)}
       resilience={actor.resilience ?? 0}
       onForce={() => force(cur.id)}
-      forceShow={curRolled}
-      confirmLabel={isLast ? '✅ Valider · Terminer' : '✅ Valider →'}
+      forceShow={rolled && !res?.success}
+      confirmLabel={isLast ? 'Terminer' : 'Continuer'}
       onConfirm={() => next()}
     />
   );
