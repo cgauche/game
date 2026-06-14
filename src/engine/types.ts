@@ -173,9 +173,12 @@ export interface ActiveEffect {
    *  « (Bonus de FM) heures », « Jusqu'au lever du soleil »…) : purgé par la cascade #T3
    *  (`purgeClockEffects`) ; `roundsLeft` reste à COMBAT_PERSIST en attendant. */
   untilTime?: number;
-  /** État RÉCURRENT (« la cible gagne 1 État X par Round ») : ré-appliqué à chaque fin de
-   *  Round tant que l'effet dure (sorts à État récurrent — specs curées). */
-  condPerRound?: { name: string; value: number };
+  /** Ops RÉCURRENTES re-jouées à CHAQUE fin de Round tant que l'effet dure (op `perRound` — sorts
+   *  multi-Rounds : 1 État X par Round, 1 Ration par Round de « Récolte de Rhya », etc.). Les valeurs
+   *  sont déjà résolues à l'incantation (littérales) — `endOfRound` les ré-applique via `applyOps`
+   *  sans avoir besoin du lanceur. La durée (donc le nombre de répétitions) suit `roundsLeft`, qui
+   *  intègre la Surincantation de Durée (LDB 47). */
+  opsPerRound?: import('./ops').GameOp[];
   /** PA temporisés à TOUTES les localisations (Armure Aethyrique : « +1 PA à toutes les
    *  Localisations ») — lus par effectiveArmourAt à la mitigation des Dégâts. */
   apAll?: number;

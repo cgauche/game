@@ -1,8 +1,8 @@
 /**
  * Miracles de Rhya (déesse de la terre, de la fertilité et de la guérison) — LDB 43, 6 miracles.
- * Curation B4 : « Caresse de Rhya » soigne, « Secours de Rhya » retire un État ; abri, communion
- * avec la terre, récolte et union restent narratifs (Miracles de fertilité hors combat).
- * Aucune op nouvelle.
+ * Curation B4 : « Caresse de Rhya » soigne, « Secours de Rhya » retire un État, « Récolte de Rhya »
+ * produit des Rations (op `giveTrapping`, système de provisions/Faim) ; abri, communion avec la
+ * terre et union restent narratifs (Miracles de fertilité hors combat).
  */
 import { SpellSpec } from '../../engine/spellspec';
 
@@ -41,8 +41,11 @@ export const MIRACLES_RHYA: SpellSpec[] = [
   {
     label: 'Récolte de Rhya',
     // « Par round actif, vous faites pousser de quoi nourrir 1 personne (champignons en grotte,
-    //   fruits/légumes en extérieur). » — fertilité : arbitré.
-    ops: [{ op: 'narrative', text: 'Récolte de Rhya : à chaque round où le Miracle est actif, des fruits/légumes/champignons comestibles poussent là où vous touchez (de quoi nourrir 1 personne) — arbitrage MJ.' }],
+    //   fruits/légumes en extérieur). » — MÉCANISÉ : effet RÉCURRENT (op `perRound`) qui produit
+    //   1 Ration (1 jour) à CHAQUE Round où le Miracle reste actif (système de provisions/Faim).
+    //   Durée de base 1 Round, ÉTENDUE par la Surincantation de Durée (LDB 47) → autant de Rations
+    //   que de Rounds tenus. Déterministe — rien à arbitrer.
+    ops: [{ op: 'perRound', ops: [{ op: 'giveTrapping', trapping: 'Ration (1 jour)' }] }],
     durationRounds: 1,
     curated: true,
     source: 'LDB 43 — Miracles de Rhya « Récolte de Rhya »',

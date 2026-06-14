@@ -1,7 +1,8 @@
 /**
  * Miracles de Manann (dieu de la mer) — LDB 42, 6 miracles. Curation B4 : les malédictions de
- * noyade infligent des États et la Suffocation ; les Miracles de navigation (encalminer/propulser
- * un navire, marcher sur l'eau, nourrir par la pêche) restent narratifs. Aucune op nouvelle.
+ * noyade infligent des États et la Suffocation ; « Générosité de Manann » produit des Rations
+ * (op `giveTrapping`, système de provisions/Faim) ; les Miracles de navigation (encalminer/propulser
+ * un navire, marcher sur l'eau) restent narratifs.
  */
 import { SpellSpec } from '../../engine/spellspec';
 
@@ -18,8 +19,12 @@ export const MIRACLES_MANANN: SpellSpec[] = [
   {
     label: 'Générosité de Manann',
     // « Vous attrapez assez de poisson pour nourrir 1 personne (2 en mer), +1 par +2 DR. » —
-    //   subsistance : arbitré.
-    ops: [{ op: 'narrative', text: 'Générosité de Manann : vous pêchez de quoi nourrir 1 personne (2 en pleine mer), +1 personne par +2 DR — arbitrage MJ.' }],
+    //   subsistance MÉCANISÉE : 1 Ration (1 jour) +1 par +2 DR (système de provisions/Faim) ; le
+    //   doublement « en pleine mer » reste journalisé (contexte hors état du combat).
+    ops: [
+      { op: 'giveTrapping', trapping: 'Ration (1 jour)', perSL: { every: 2, amount: 1 } },
+      { op: 'narrative', text: 'Générosité de Manann : en pleine mer, la prise nourrit le double (Rations × 2) — arbitrage MJ.' },
+    ],
     durationRounds: null,
     curated: true,
     source: 'LDB 42 — Miracles de Manann « Générosité de Manann »',

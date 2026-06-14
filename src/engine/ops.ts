@@ -22,7 +22,7 @@ import { groupMatch } from './groups';
 import { grantTrait } from './grantedTraits';
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { cureCriticalWounds } from './trauma';
-import { damageLeatherArmour } from './items';
+import { damageLeatherArmour, itemFromTrapping, customTrapping } from './items';
 import { suppressPsychTraits } from './psychology';
 import {
   ActiveEffect,
@@ -188,6 +188,17 @@ export type GameOp =
   /** Immunité à l'EXPOSITION météo (froid/pluie/neige/tempête) tant que le Sort dure — Peau de loup
    *  d'hiver (Ulric), Protection contre la pluie. Lu par `exposureNight` (engine/exposure). */
   | { op: 'weatherWard' }
+  /** Crée un objet (`trapping`) dans l'inventaire de la cible — nom RÉEL de la base → objet à stats,
+   *  nom inconnu → objet CUSTOM (misc). Même vocabulaire que l'Effet de scène `giveTrapping`.
+   *  Alimente tout sort qui DONNE du matériel : Rations (Générosité de Manann, Récolte de Rhya →
+   *  système de provisions/Faim), etc. `count`/`perSL` : « +1 par +2 DR ». */
+  | { op: 'giveTrapping'; trapping: string; count?: number; perSL?: PerSL }
+  /** Effet RÉCURRENT multi-Rounds : pose un effet actif porteur qui re-joue `ops` à CHAQUE fin de
+   *  Round tant que le sort dure (`ctx.defaultDurationRounds`, Surincantation de Durée incluse —
+   *  LDB 47). Généralise l'ancien « État par Round » : 1 Ration/Round (Récolte de Rhya), 1 État
+   *  X/Round (malédictions). Les `ops` internes sont résolues MAINTENANT (valeurs littérales) puis
+   *  ré-appliquées telles quelles — pas de dépendance au lanceur à chaque tick. */
+  | { op: 'perRound'; ops: GameOp[] }
   /** Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). */
   | { op: 'narrative'; text: string };
 
@@ -217,6 +228,19 @@ export const COMBAT_PERSIST = 9999;
 
 /** Applique un effet actif sans cumul : un seul bonus (le meilleur) ET une seule
  *  pénalité (la pire) coexistent par caractéristique (Livre de base l.168). */
+/** Pose un effet actif porteur d'ops RÉCURRENTES (re-jouées chaque fin de Round par `endOfRound`).
+ *  Durée = celle du sort (`ctx.defaultDurationRounds`), Surincantation de Durée incluse. Les `ops`
+ *  doivent être round-safe (valeurs littérales) — pas de résolution de formule/`perSL` au tick. */
+function pushPerRound(target: Combatant, ops: GameOp[], ctx: OpsCtx): void {
+  target.activeEffects = target.activeEffects ?? [];
+  target.activeEffects.push({
+    label: ctx.label ?? 'Effet', bonus: 0,
+    roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+    ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+    opsPerRound: ops,
+  });
+}
+
 export function applyActiveEffect(target: Combatant, effect: ActiveEffect) {
   target.activeEffects = target.activeEffects ?? [];
   // On ne dédoublonne qu'entre effets de MÊME signe (bonus vs pénalité séparés) :
@@ -285,14 +309,9 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         if (o.unlessCondition && hasCondition(target, o.unlessCondition)) break;
         const v = Math.max(1, resolveFormula(o.value ?? 1, ref, rng) + slBonus(ctx.sl, o.valuePerSL));
         if (o.perRound) {
-          // État récurrent : porté par un effet actif, ré-appliqué chaque fin de Round.
-          target.activeEffects = target.activeEffects ?? [];
-          target.activeEffects.push({
-            label: ctx.label ?? 'Effet', bonus: 0,
-            roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-            ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
-            condPerRound: { name: o.name, value: v },
-          });
+          // État récurrent = cas particulier de l'effet récurrent général (op `perRound`) : la
+          // valeur est figée maintenant, l'op `condition` littérale est re-jouée chaque fin de Round.
+          pushPerRound(target, [{ op: 'condition', name: o.name, value: v }], ctx);
           lines.push(`${target.name} subira ${v} État ${o.name} par Round (${ctx.label ?? 'sort'}).`);
         } else if (o.durationRounds != null) {
           const rounds = Math.max(1, resolveFormula(o.durationRounds, ref, rng));
@@ -595,6 +614,17 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           weatherImmune: true,
         });
         lines.push(`${target.name} est protégé des intempéries (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'giveTrapping': {
+        const n = Math.max(1, (o.count ?? 1) + slBonus(ctx.sl, o.perSL));
+        target.items = target.items ?? [];
+        for (let i = 0; i < n; i++) target.items.push(itemFromTrapping(o.trapping) ?? customTrapping(o.trapping));
+        lines.push(`${target.name} obtient ${n > 1 ? `${n}× ` : ''}${o.trapping} (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'perRound': {
+        pushPerRound(target, o.ops, ctx);
         break;
       }
       case 'castWard': {

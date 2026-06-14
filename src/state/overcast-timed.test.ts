@@ -68,6 +68,20 @@ describe('États récurrents (« un par Round »)', () => {
     expect(v2).toBeGreaterThanOrEqual(v1); // ré-appliqué au Round 2 (dernier de l'effet)
     expect(c.activeEffects?.length ?? 0).toBe(0); // l'effet porteur expiré
   });
+
+  it('op perRound : Récolte de Rhya produit 1 Ration par Round actif (durée étendue par Surincantation)', () => {
+    const c = pair().ally;
+    c.items = [];
+    // Durée 1 Round portée à 3 par Surincantation de Durée → 3 Rations (1 par Round actif).
+    applyOps(c, [{ op: 'perRound', ops: [{ op: 'giveTrapping', trapping: 'Ration (1 jour)' }] }],
+      { label: 'Récolte de Rhya', defaultDurationRounds: 3 });
+    expect((c.items ?? []).filter((it) => /^ration/i.test(it.name)).length).toBe(0); // rien à l'incantation
+    endOfRound(c, makeRNG(1));
+    endOfRound(c, makeRNG(1));
+    endOfRound(c, makeRNG(1));
+    expect((c.items ?? []).filter((it) => /^ration/i.test(it.name)).length).toBe(3);
+    expect(c.activeEffects?.length ?? 0).toBe(0); // effet porteur dissipé après 3 Rounds
+  });
 });
 
 /** Combattant minimal posé en (x,0) pour les listes de cibles. */

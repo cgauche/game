@@ -89,7 +89,13 @@ function describeEffect(e: NonNullable<Combatant['activeEffects']>[number]): str
   if (e.suffocates) return 'Suffoque (−1 PB/Round)';
   if (e.noBreath) return 'Respiration superflue';
   if (e.ignoreStatePenalties) return 'Ignore les pénalités d’État';
-  if (e.condPerRound) return `${e.condPerRound.name} chaque Round`;
+  if (e.opsPerRound?.length) {
+    const cond = e.opsPerRound.find((o) => o.op === 'condition');
+    if (cond && cond.op === 'condition') return `${cond.name} chaque Round`;
+    const give = e.opsPerRound.find((o) => o.op === 'giveTrapping');
+    if (give && give.op === 'giveTrapping') return `${give.trapping} chaque Round`;
+    return 'Effet récurrent chaque Round';
+  }
   if (e.grantedFortune) return `+${e.grantedFortune} Chance (le temps du Sort)`;
   if (e.grantedFate) return `+${e.grantedFate} Destin (le temps du Sort)`;
   return e.label;

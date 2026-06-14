@@ -12,6 +12,7 @@ import { dropExpiredGrantedTraits } from './grantedTraits';
 import { dropExpiredGrantedResources } from './grantedResources';
 import { restoreSuppressedPsych } from './psychology';
 import { hasActiveFlag } from './activeFlags';
+import { applyOps } from './ops'; // cycle runtime (ops→conditions) : applyOps n'est appelé qu'au tick, jamais à l'init du module
 
 /** Nombre de pions (cumul) d'un État donné. */
 export const stacks = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name)?.value ?? 0;
@@ -203,12 +204,13 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
       log.push(`${c.name} : un État ${n} se dissipe.`);
     }
   }
-  // États RÉCURRENTS (« un par Round ») portés par un effet actif de sort — ré-appliqués
-  // tant que l'effet dure (AVANT le décrément : l'effet agit aussi son dernier Round).
-  for (const e of c.activeEffects ?? []) {
-    if (!e.condPerRound || e.roundsLeft <= 0) continue;
-    addCondition(c, e.condPerRound.name, e.condPerRound.value);
-    log.push(`${c.name} reçoit ${e.condPerRound.value} État ${e.condPerRound.name} (${e.label}).`);
+  // Effets RÉCURRENTS portés par un effet actif de sort (op `perRound`) — re-joués tant que l'effet
+  // dure (AVANT le décrément : il agit aussi son dernier Round). 1 État X/Round, 1 Ration de
+  // « Récolte de Rhya »/Round… Le nombre de répétitions suit roundsLeft (Surincantation de Durée
+  // comprise). Snapshot de la liste : les ops récurrentes n'ajoutent pas d'effet actif (cas littéraux).
+  for (const e of [...(c.activeEffects ?? [])]) {
+    if (!e.opsPerRound || e.roundsLeft <= 0) continue;
+    applyOps(c, e.opsPerRound, { label: e.label, rng }).forEach((l) => log.push(l));
   }
   // Effets magiques temporisés (Bénédictions, Sorts de bonus).
   if (c.activeEffects?.length) {
