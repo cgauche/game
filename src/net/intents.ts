@@ -42,7 +42,7 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'forceDoorForceSuccess', 'forceDoorSetForcedRoll', 'forceDoorConfirm', 'forceDoorCancel',
   // Cascade séquentielle (jets de nuit / voyage influençables)
   'cascadeRoll', 'cascadeReroll', 'cascadeBonusSL', 'cascadeDarkPact',
-  'cascadeForceSuccess', 'cascadeSetForcedRoll', 'cascadeNext', 'cascadeResolveAll', 'cascadeFinish',
+  'cascadeForceSuccess', 'cascadeSetForcedRoll', 'cascadeNext', 'cascadeResolveAll', 'cascadeFinish', 'cascadeChoose',
   // désengagement
   'disengageConfirmA', 'disengageRoll', 'disengageReroll', 'disengageBonusSL',
   'disengageDarkPact', 'disengageForceSuccess', 'disengageConfirm', 'disengageFlee',
@@ -71,7 +71,7 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'roundStartPromote', 'confirmRoundStart', 'roundStartReady', 'renounceResolve', 'corruptionRoll',
   'corruptionReroll', 'corruptionBonusSL', 'corruptionDarkPact', 'resolveCorruption',
   // (dismissVictory volontairement ABSENT : un invité passe par victoryReady — l'hôte ferme à l'unanimité.)
-  'bladeTrapResolve', 'victoryReady', 'assignVictoryGear', 'raiseHand',
+  'bladeTrapResolve', 'knockdownResolve', 'victoryReady', 'assignVictoryGear', 'raiseHand',
 ]);
 
 /** Composition du groupe (écran d'équipe coop) : un invité remplit/retire SES emplacements.
