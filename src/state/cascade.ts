@@ -151,11 +151,14 @@ export function resolveRemainingCascade(get: Get, set: Set): void {
   let log = p.log;
   for (let i = p.cursor; i < steps.length; i++) {
     const st = steps[i];
-    if (st.target != null && !st.result) {
-      const t = rollTest(st.target, 'intermediaire', battleRng());
-      const result: CascadeRoll = { roll: t.roll, target: st.target, sl: t.sl, success: t.success };
+    if (stepInteraction(st) === 'jet' && !st.result) {
+      const t = rollTest(st.target!, 'intermediaire', battleRng());
+      const result: CascadeRoll = { roll: t.roll, target: st.target!, sl: t.sl, success: t.success };
       steps = steps.map((x, k) => (k === i ? { ...x, result } : x));
-    }
+    } else if (stepInteraction(st) === 'choix' && st.chosen == null) {
+      const key = st.defaultChoice ?? st.options![0]?.key;
+      if (key != null) steps = steps.map((x, k) => (k === i ? { ...x, chosen: key } : x));
+    } // affichage : rien à résoudre avant la conséquence
     const r = commitStep(get, set, steps, i);
     steps = r.steps;
     log = [...log, ...r.journal];
@@ -181,11 +184,14 @@ export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[]): C
   let cur = steps;
   for (let i = 0; i < cur.length; i++) {
     const st = cur[i];
-    if (st.target != null && !st.result) {
-      const t = rollTest(st.target, 'intermediaire', battleRng());
-      const result: CascadeRoll = { roll: t.roll, target: st.target, sl: t.sl, success: t.success };
+    if (stepInteraction(st) === 'jet' && !st.result) {
+      const t = rollTest(st.target!, 'intermediaire', battleRng());
+      const result: CascadeRoll = { roll: t.roll, target: st.target!, sl: t.sl, success: t.success };
       cur = cur.map((x, k) => (k === i ? { ...x, result } : x));
-    }
+    } else if (stepInteraction(st) === 'choix' && st.chosen == null) {
+      const key = st.defaultChoice ?? st.options![0]?.key;
+      if (key != null) cur = cur.map((x, k) => (k === i ? { ...x, chosen: key } : x));
+    } // affichage : rien à résoudre avant la conséquence
     cur = commitStep(get, set, cur, i).steps;
   }
   return cur;

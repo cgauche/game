@@ -150,4 +150,23 @@ describe('Cascade séquentielle influençable', () => {
     expect(applied).toEqual([{ kind: 'note', success: true }]);
     expect(useGame.getState().pendingCascade).toBeNull();
   });
+
+  it('« Tout lancer » résout une séquence MIXTE (jet roulé, choix par défaut, affichage) → bilan', () => {
+    useGame.getState().seedRng(7);
+    const h = hero();
+    registerCascadeApplier('pick', (_g, _s, step) => { applied.push({ kind: 'pick', success: step.chosen === 'a' }); return {}; });
+    registerCascadeApplier('note', (_g, _s) => { applied.push({ kind: 'note', success: true }); return {}; });
+    const steps: CascadeStep[] = [
+      step('s1', h.id), // jet (tally)
+      { id: 'c', kind: 'pick', actorId: h.id, options: [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }], interactive: true }, // défaut = 'a'
+      { id: 'd', kind: 'note', actorId: h.id, interactive: true }, // affichage
+    ];
+    startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps });
+    useGame.getState().cascadeResolveAll();
+    expect(applied.map((a) => a.kind)).toEqual(['tally', 'pick', 'note']);
+    expect(applied[1]).toEqual({ kind: 'pick', success: true }); // défaut = 1ʳᵉ option 'a'
+    expect(useGame.getState().pendingCascade!.cursor).toBe(3); // bilan (curseur en fin)
+    useGame.getState().cascadeFinish();
+    expect(useGame.getState().pendingCascade).toBeNull();
+  });
 });
