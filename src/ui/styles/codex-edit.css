@@ -1,0 +1,35 @@
+/* Édition DEV dans le Compendium (panneau détail) — composé sur les primitives .ed-field/.ed-check. */
+.codex-detail-actions { display: flex; justify-content: flex-end; margin-bottom: 0.5rem; }
+
+.codex-edit { display: flex; flex-direction: column; gap: 0.7rem; }
+.codex-edit-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--line, #3a322c);
+}
+.codex-edit-form { display: flex; flex-direction: column; gap: 0.7rem; }
+.codex-edit-form .ed-field { display: flex; flex-direction: column; gap: 0.2rem; }
+.codex-edit-form .ed-field > span { font-size: 0.8rem; color: var(--muted, #9a8f80); }
+.codex-edit-form input, .codex-edit-form textarea { width: 100%; box-sizing: border-box; }
+.codex-edit-form textarea { resize: vertical; font-family: inherit; }
+
+.de-spacer { flex: 1; }
+.de-ok { color: var(--ok, #6fbf73); font-size: 0.85rem; }
+.de-warn { color: var(--danger-soft, #d8a657); font-size: 0.85rem; }
+.de-msg { color: var(--muted, #9a8f80); font-size: 0.85rem; }
+.de-hint { font-style: italic; color: var(--muted, #9a8f80); font-size: 0.75rem; }
+.de-invalid { outline: 1px solid var(--danger, #c0413b); }
+
+.de-source { display: flex; gap: 0.5rem; }
+.de-source input:first-child { flex: 1; }
+.de-source input:last-child { width: 80px; }
+
+.de-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 0.4rem; }
+.de-cell { display: flex; flex-direction: column; gap: 1px; }
+.de-cell span { font-size: 0.72rem; color: var(--muted, #9a8f80); }
+
+.de-reflrow { display: flex; gap: 0.4rem; align-items: center; }
+.de-reflrow input { flex: 1; }

@@ -1,8 +1,7 @@
 /**
- * Inférence de formulaire DEPUIS la donnée elle-même (pas de schéma à maintenir par dataset → un
- * nouveau dataset s'édite tout seul). Le « field-schema » n'est que des métadonnées de RENDU : il
- * décrit comment afficher un champ, il n'introduit AUCUNE structure de données intermédiaire — on
- * édite les vrais objets de `src/data`.
+ * Inférence de formulaire DEPUIS la donnée (pas de schéma par dataset → un nouveau dataset s'édite
+ * tout seul). Métadonnées de RENDU uniquement : décrit comment afficher un champ, sans introduire de
+ * structure intermédiaire — on édite les vrais objets de `src/data`. Consommé par `CodexEdit`.
  */
 export type FieldKind = 'text' | 'textarea' | 'number' | 'checkbox' | 'stringList' | 'source' | 'recordNumber' | 'json';
 
@@ -43,17 +42,4 @@ export function inferFields(entries: Record<string, unknown>[]): FieldDesc[] {
     }
     return { key, kind: kindOf(key, sample), nullable: sawNull || sample === undefined };
   });
-}
-
-/** Valeur par défaut d'un champ neuf (entrée ajoutée). */
-export function defaultFor(kind: FieldKind): unknown {
-  switch (kind) {
-    case 'number': return 0;
-    case 'checkbox': return false;
-    case 'stringList': return [];
-    case 'source': return { book: '', page: 0 };
-    case 'recordNumber': return {};
-    case 'json': return null;
-    default: return '';
-  }
 }

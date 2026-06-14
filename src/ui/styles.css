@@ -14,4 +14,4 @@
 @import './styles/editor.css'; /* éditeur de niveau v2 (rail, inspecteur docké, dock Logique, effets) */
 @import './styles/house-rules.css'; /* panneau des règles optionnelles (généré depuis le registre) */
 @import './styles/compendium.css'; /* Codex : écran de référence (browse + recherche) + popover CodexRef */
-@import './styles/data-editor.css'; /* éditeur de données DEV (écran 'dataEditor') */
+@import './styles/codex-edit.css'; /* édition DEV des données dans le Compendium */

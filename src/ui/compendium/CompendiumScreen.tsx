@@ -10,6 +10,7 @@ import { useGame } from '../../state/store';
 import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, type CodexGroup, type CodexItem } from './registry';
 import { filterItems } from './search';
 import { CodexEntry } from './CodexEntry';
+import { CodexEdit, editableDataset } from './CodexEdit';
 
 export function CompendiumScreen() {
   const setScreen = useGame((s) => s.setScreen);
@@ -22,6 +23,7 @@ export function CompendiumScreen() {
   const [catKey, setCatKey] = useState<string>(initialCat.key);
   const [picked, setPicked] = useState<string | null>(focus?.label ?? null);
   const [q, setQ] = useState('');
+  const [editing, setEditing] = useState(false);
 
   // Un clic de cross-référence (ou une ouverture externe) change `compendiumFocus` alors que
   // l'écran est DÉJÀ monté → on s'y déplace (les initialiseurs useState ne re-lisent pas le focus).
@@ -42,6 +44,8 @@ export function CompendiumScreen() {
   const selected = list.find((it) => it.label === picked) ?? list[0] ?? null;
   // Instance paramétrée du lien d'ouverture (« 8 Tentacules +8 ») — seulement sur l'entrée ciblée.
   const instance = selected && focus?.instance && selected.label === focus.label ? focus.instance : undefined;
+  // Revenir en mode lecture dès qu'on change d'entrée ou de catégorie (édition DEV ponctuelle).
+  useEffect(() => setEditing(false), [selected?.label, cat?.key]);
 
   // Hiérarchie (Axe 3) : groupe les entrées si la catégorie en porte (famille/classe/dossier/parent).
   const grouped = useMemo(() => {
@@ -127,7 +131,16 @@ export function CompendiumScreen() {
         </aside>
 
         <section className="codex-detail panel">
-          {selected && <CodexEntry item={selected} instance={instance} />}
+          {selected && import.meta.env.DEV && cat && editableDataset(cat.key) && (
+            <div className="codex-detail-actions">
+              <button className="btn small" onClick={() => setEditing((v) => !v)}>
+                {editing ? '↩︎ Voir la fiche' : '✏️ Éditer (DEV)'}
+              </button>
+            </div>
+          )}
+          {selected && editing && import.meta.env.DEV && cat && editableDataset(cat.key)
+            ? <CodexEdit categoryKey={cat.key} label={selected.label} onClose={() => setEditing(false)} />
+            : selected && <CodexEntry item={selected} instance={instance} />}
         </section>
       </div>
     </div>

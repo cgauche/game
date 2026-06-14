@@ -43,11 +43,6 @@ export function MainMenu() {
           <button className="btn btn-test" onClick={() => setScreen('test')}>
             🧪 Scénarios de test
           </button>
-          {import.meta.env.DEV && (
-            <button className="btn" onClick={() => setScreen('dataEditor')} title="Éditer la base de données du jeu (DEV)">
-              🗄️ Éditeur de données
-            </button>
-          )}
           <a className="btn menu-link" href="galeries.html" target="_blank" rel="noopener">
             🎨 Galeries d'art
           </a>
