@@ -4,5 +4,4 @@ export const creature: CreatureDef = {
   name: "Squelette",
   plan: 'biped',
   matchPriority: 20,
-  match: "squelette",
 };

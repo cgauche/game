@@ -4,5 +4,5 @@ export const creature: CreatureDef = {
   name: "Goule",
   plan: 'biped',
   matchPriority: 22,
-  match: "goule|ghoul",
+  aliases: ['ghoul'],
 };

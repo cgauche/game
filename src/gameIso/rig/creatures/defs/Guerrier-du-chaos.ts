@@ -5,5 +5,5 @@ export const creature: CreatureDef = {
   name: 'Guerrier du Chaos',
   plan: 'biped',
   matchPriority: 30,
-  match: 'guerrier du chaos|chaos warrior|guerrier chaotique|elu du chaos|chevalier du chaos|champion du chaos',
+  aliases: ['chaos warrior', 'guerrier chaotique', 'elu du chaos', 'chevalier du chaos', 'champion du chaos'],
 };

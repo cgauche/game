@@ -21,11 +21,13 @@ import { baseSpeciesOf } from '../skeletons';
 export { CREATURES };
 export type { CreatureDef, CreatureBodyPlan, CreaturePerso } from './types';
 
-/** Définition dont la CLÉ (nom) ou un ALIAS matche le nom donné (limite de mot). PUR. */
+/** Définition dont la CLÉ (nom) ou un ALIAS matche le nom donné (limite de mot). PUR.
+ *  `aliasOnly` (rare) retire le nom des déclencheurs : seuls les alias matchent (cf. « Démon »). */
 function matchIn(defs: CreatureDef[], name: string): CreatureDef | undefined {
   const n = norm(name);
   for (const d of defs) {
-    for (const pat of [norm(d.name), ...(d.aliases ?? [])]) {
+    const pats = d.aliasOnly ? (d.aliases ?? []) : [norm(d.name), ...(d.aliases ?? [])];
+    for (const pat of pats) {
       if (new RegExp(`\\b${pat}\\b`).test(n)) return d;
     }
   }
@@ -43,18 +45,14 @@ const BIPED_BY_NAME: Record<string, CreatureDef> = Object.fromEntries(BIPED.map(
 /** Def bipède canonique par nom (lookup direct), ou undefined. */
 export function bipedDef(name: string): CreatureDef | undefined { return BIPED_BY_NAME[name]; }
 
-// Matchers bipèdes triés par PRIORITÉ (plus bas = testé d'abord) — chaque def porte sa regex
-// EXACTE `match` (reprise de l'ancien detectSpecies). L'ordre désambiguïse les chevauchements
-// (« rat ogre » → Skaven avant Ogre ; « elfe sylvain » avant l'elfe générique).
-const BIPED_MATCHERS = BIPED
-  .filter((c) => c.match)
-  .map((c) => ({ name: c.name, re: new RegExp(c.match!), pr: c.matchPriority ?? 100 }))
-  .sort((a, b) => a.pr - b.pr);
-/** Nom → espèce bipède (regex+priorité), ou undefined (→ Humain par défaut chez l'appelant). */
+// Bipèdes triés par PRIORITÉ (plus bas = testé d'abord), comme les non-bipèdes : la résolution
+// passe par `matchIn` (nom + `aliases`, limite de mot) — plus aucune regex `match` à la main.
+// L'ordre désambiguïse les chevauchements (« rat ogre » → Rat ogre/Skaven avant Ogre ; « elfe
+// sylvain » avant l'elfe générique). Tri STABLE → l'ordre du registre départage les ex æquo.
+const BIPED_BY_PRIORITY = [...BIPED].sort((a, b) => (a.matchPriority ?? 100) - (b.matchPriority ?? 100));
+/** Nom → espèce bipède (nom/alias + priorité), ou undefined (→ Humain par défaut chez l'appelant). */
 export function bipedSpeciesMatch(name: string): string | undefined {
-  const n = norm(name);
-  for (const m of BIPED_MATCHERS) if (m.re.test(n)) return m.name;
-  return undefined;
+  return matchIn(BIPED_BY_PRIORITY, name)?.name;
 }
 /** Échelle de token d'un bipède (Géant = grand) — à multiplier au scale du token en jeu. Défaut 1.
  *  Résout l'espèce (regex+priorité), puis échelle = perso.scale ?? race.scale ?? 1. */

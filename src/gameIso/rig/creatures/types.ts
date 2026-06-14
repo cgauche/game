@@ -53,12 +53,13 @@ export interface CreatureDef {
   plan: CreatureBodyPlan;
   /** Synonymes de nom (accents retirés) — routage par nom (limite de mot) dérivé de cette liste. */
   aliases?: string[];
-  /** Regex EXACTE de matching (source), alternative aux `aliases` quand il faut un contrôle fin
-   *  (préfixe `\bnain`, mot entier `\brat\b`, alternatives…). Reprend les patterns de l'ancien
-   *  detectSpecies. Si absent, le matching se fait sur nom+aliases (limite de mot). */
-  match?: string;
+  /** Si vrai, le NOM de la def ne sert PAS de déclencheur de match : seuls les `aliases` le font.
+   *  Réservé aux defs dont le nom canonique est trop générique pour être un trigger fidèle
+   *  (« Démon » → ne doit matcher que « sanguinaire »/« khorne », pas le mot « démon » nu). */
+  aliasOnly?: boolean;
   /** Priorité de matching (plus BAS = testé en premier). Désambiguïse les chevauchements
-   *  de nom : « rat ogre » → Skaven avant Ogre, Minotaure avant Homme-bête, etc. Défaut 100. */
+   *  de nom : « rat ogre » → Rat ogre/Skaven avant Ogre, Minotaure avant Homme-bête, etc.
+   *  Défaut 100. Bipèdes ET non-bipèdes sont triés par cette valeur avant le match nom+alias. */
   matchPriority?: number;
   /** Props de rendu du gabarit quad/ailé (requis si plan = quadruped | winged). */
   quad?: QuadProps;

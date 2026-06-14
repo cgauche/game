@@ -13,7 +13,7 @@ export const creature: CreatureDef = {
   name: 'Démonette',
   plan: 'biped',
   matchPriority: 39, // proche de Démon (38) ; « demonette »/« slaanesh » ne chevauchent pas Khorne
-  match: 'demonette|slaanesh',
+  aliases: ['slaanesh'],
   perso: {
     career: 'Démonette',
     sex: 'F',

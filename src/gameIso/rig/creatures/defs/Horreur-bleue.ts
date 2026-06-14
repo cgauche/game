@@ -7,7 +7,7 @@ export const creature: CreatureDef = {
   name: 'Horreur bleue',
   plan: 'biped',
   matchPriority: 35, // AVANT la rose (36) — « horreur bleue » contient « horreur »
-  match: 'horreurs? bleues?',
+  aliases: ['horreur bleues', 'horreurs bleue', 'horreurs bleues'], // « horreur bleue » = le nom
   perso: {
     career: 'Nu',
     gabarit: 'gremlin',

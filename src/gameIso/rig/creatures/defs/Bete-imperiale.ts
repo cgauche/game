@@ -9,7 +9,6 @@ export const creature: CreatureDef = {
   name: 'Bête Impériale',
   plan: 'biped',
   matchPriority: 22,
-  match: 'b[eê]te imp[ée]riale',
   race: 'Homme-bête',
   perso: {
     gabarit: 'gremlin',

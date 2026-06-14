@@ -9,7 +9,7 @@ export const creature: CreatureDef = {
   name: 'Chamane-Brey',
   plan: 'biped',
   matchPriority: 24, // avant Gor (25) — « bray » contient parfois « gor » dans la phrase
-  match: 'chamane.?br[ae]y|\\bbr[ae]y\\b',
+  aliases: ['chamane bray', 'chamane-bray', 'chamanebray', 'chamane brey', 'chamanebrey', 'bray', 'brey'],
   race: 'Homme-bête',
   perso: {
     career: 'Chamane-Bray',

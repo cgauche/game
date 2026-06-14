@@ -4,5 +4,5 @@ export const creature: CreatureDef = {
   name: "Orc",
   plan: 'biped',
   matchPriority: 36,
-  match: "\\borc\\b|\\borque\\b|peau.?verte",
+  aliases: ['orque', 'peau verte', 'peau-verte', 'peauverte'], // « orc » = le nom (limite de mot)
 };

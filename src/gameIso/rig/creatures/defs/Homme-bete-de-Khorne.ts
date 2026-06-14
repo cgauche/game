@@ -15,7 +15,7 @@ export const creature: CreatureDef = {
   name: 'Homme-bête de Khorne',
   plan: 'biped',
   matchPriority: 21, // avant Homme-bête (30) ; « de khorne » requis → ne vole pas le Sanguinaire
-  match: 'homme.?b[eê]te de khorne|b[eê]te de khorne',
+  aliases: ['homme bete de khorne', 'hommebete de khorne', 'bete de khorne'], // « homme-bete de khorne » = le nom
   race: 'Homme-bête',
   perso: {
     colors: { peau: '#6e2a20', cheveux: '#38140e' }, // fourrure rouge sombre

@@ -8,7 +8,7 @@ export const creature: CreatureDef = {
   name: 'Prophète gris',
   plan: 'biped',
   matchPriority: 12, // avant le def Skaven générique
-  match: 'prophete.?gris',
+  aliases: ['prophete-gris', 'prophetegris'], // « prophete gris » = le nom
   race: 'Skaven',
   perso: {
     career: 'Prophète gris',

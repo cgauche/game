@@ -6,7 +6,7 @@ export const creature: CreatureDef = {
   name: "Coureur d'égout",
   plan: 'biped',
   matchPriority: 12,
-  match: 'coureur d.?egout|coureur nocturne',
+  aliases: ['coureur degout', 'coureur d egout', 'coureur d-egout', 'coureur nocturne'],
   race: 'Skaven',
   perso: {
     career: "Coureur d'égout",

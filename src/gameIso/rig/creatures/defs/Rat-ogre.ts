@@ -26,7 +26,7 @@ export const creature: CreatureDef = {
   name: 'Rat ogre',
   plan: 'biped',
   matchPriority: 10, // AVANT le def Skaven générique
-  match: 'rat.?ogre',
+  aliases: ['rat-ogre', 'ratogre'], // « rat ogre » = le nom
   race: 'Skaven',
   perso: {
     // MORPHO ici (chair cousue, fourrure, épines, griffes) ; son ÉQUIPEMENT (pagne-tablier

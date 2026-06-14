@@ -8,7 +8,7 @@ export const creature: CreatureDef = {
   name: 'Homme-bête à tête de vache',
   plan: 'biped',
   matchPriority: 22, // avant Homme-bête (30)
-  match: 't[eê]te de vache|homme.?vache',
+  aliases: ['tete de vache', 'homme vache', 'homme-vache', 'hommevache'],
   race: 'Homme-bête',
   perso: {
     head: 'vache',

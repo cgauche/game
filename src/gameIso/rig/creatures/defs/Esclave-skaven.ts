@@ -6,7 +6,7 @@ export const creature: CreatureDef = {
   name: 'Esclave skaven',
   plan: 'biped',
   matchPriority: 12,
-  match: 'esclave.?skaven|skaven.?esclave|skavenesclave',
+  aliases: ['esclave-skaven', 'esclaveskaven', 'skaven esclave', 'skaven-esclave', 'skavenesclave'],
   race: 'Skaven',
   perso: {
     career: 'Esclave skaven',

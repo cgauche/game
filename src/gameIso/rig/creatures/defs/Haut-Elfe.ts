@@ -4,5 +4,5 @@ export const creature: CreatureDef = {
   name: "Haut-Elfe",
   plan: 'biped',
   matchPriority: 14,
-  match: "haut.?elfe|\\belfe",
+  aliases: ['haut elfe', 'hautelfe', 'elfe'], // « haut-elfe » = le nom ; « elfe » nu → Haut-Elfe générique
 };

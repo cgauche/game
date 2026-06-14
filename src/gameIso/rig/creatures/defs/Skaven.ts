@@ -6,5 +6,5 @@ export const creature: CreatureDef = {
   name: "Skaven",
   plan: 'biped',
   matchPriority: 18,
-  match: "skaven|homme.?rat|\\brat\\b|guerrier des clans",
+  aliases: ['homme rat', 'homme-rat', 'hommerat', 'rat', 'guerrier des clans'], // « skaven » = le nom
 };

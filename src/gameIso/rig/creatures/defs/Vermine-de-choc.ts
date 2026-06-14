@@ -6,7 +6,7 @@ export const creature: CreatureDef = {
   name: 'Vermine de choc',
   plan: 'biped',
   matchPriority: 12, // avant le def Skaven générique
-  match: 'vermine',
+  aliases: ['vermine'], // « vermine de choc » = le nom ; « vermine » nu suffit (élite skavenne)
   race: 'Skaven',
   perso: {
     career: 'Vermine de choc',

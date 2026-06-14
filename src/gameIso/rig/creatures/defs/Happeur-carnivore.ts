@@ -8,7 +8,7 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: 'Happeur carnivore',
   plan: 'avian',
-  match: 'happeur',
+  aliases: ['happeur'],
   bird: {
     sl: 1.15, girth: 1.05, theropod: true, tailLen: 1.1,
     stored: { corps: '#556032', corpsO: '#2e3519', corpsH: '#cfba8c', cuir: '#8a7a4e' },

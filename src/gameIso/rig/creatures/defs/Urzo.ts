@@ -10,8 +10,8 @@ export const creature: CreatureDef = {
   name: 'Urzo',
   plan: 'biped',
   matchPriority: 20,
-  match: '\\burzo\\b',
-  race: 'Homme-bête',
+  race: 'Homme-bête', // « urzo » = le nom (limite de mot)
+
   perso: {
     gabarit: 'brute',
     scale: 1.25, // presque ogre (+ trait Taille (Grande) au statbloc)

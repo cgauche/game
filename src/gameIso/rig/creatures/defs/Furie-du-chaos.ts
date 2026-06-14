@@ -15,7 +15,7 @@ export const creature: CreatureDef = {
   name: 'Furie du Chaos',
   plan: 'biped',
   matchPriority: 37, // avant Démon (38) — « furie » seul suffit
-  match: 'furie',
+  aliases: ['furie'],
   perso: {
     career: 'Nu',
     gabarit: 'elance-voute',

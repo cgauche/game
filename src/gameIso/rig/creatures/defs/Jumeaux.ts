@@ -9,8 +9,8 @@ export const creature: CreatureDef = {
   name: 'Jumeaux',
   plan: 'biped',
   matchPriority: 23,
-  match: '\\bjumeaux\\b',
-  race: 'Homme-bête',
+  race: 'Homme-bête', // « jumeaux » (pluriel) = le nom ; « jumeau » nu désignerait des humains
+
   perso: {
     gabarit: 'gremlin', // dégingandé à grosse tête — la hargne minuscule
     scale: 0.62,
