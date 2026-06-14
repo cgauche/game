@@ -247,6 +247,10 @@ export interface ActiveEffect {
   /** « N'a pas besoin de manger ou de boire » (Graisse de la terre, LDB 48) : exempte de la Faim —
    *  `dailyFoodUpkeep` saute la consommation de ration et l'aggravation tant que l'effet dure. */
   noHunger?: boolean;
+  /** Modificateur GLOBAL à TOUS les Tests du porteur (Malédiction de malchance : −10 ; bénédictions
+   *  futures : +N) — STACKE par-dessus la pénalité d'État (≠ État, donc non soumis au non-cumul ni à
+   *  `ignoreStatePenalties`). Lu par `combatTestPenalty`/`testStatePenalty` (engine/conditions). */
+  testMod?: number;
   /** Immunité à l'EXPOSITION météo (froid/pluie/neige/tempête — Peau de loup d'hiver d'Ulric,
    *  Protection contre la pluie) : `exposureNight` est sauté tant que l'effet dure. */
   weatherImmune?: boolean;

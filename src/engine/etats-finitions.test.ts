@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { addCondition, testStatePenalty, endOfRound, hasCondition, bleedDeathRoll, recoveredStacks } from './conditions';
+import { addCondition, testStatePenalty, combatTestPenalty, endOfRound, hasCondition, bleedDeathRoll, recoveredStacks } from './conditions';
+import { applyOps } from './ops';
 import { makeRNG } from './dice';
 import type { RNG } from './dice';
 import type { Combatant } from './types';
@@ -18,6 +19,18 @@ describe('Finitions d\'États (LDB 16)', () => {
     expect(testStatePenalty(C({ conditions: [{ name: 'À Terre', value: 1 }] }), 'Athlétisme')).toBe(-20);
     expect(testStatePenalty(C({ conditions: [{ name: 'Empêtré', value: 1 }] }), 'Esquive')).toBe(-10);
     expect(testStatePenalty(C({ conditions: [{ name: 'À Terre', value: 1 }] }), 'Charme')).toBe(0); // Charme ≠ déplacement
+  });
+
+  it('testMod (Malédiction de malchance −10) : stacke par-dessus l\'État, hors non-cumul/ignoreState', () => {
+    const c = C({ conditions: [] });
+    applyOps(c, [{ op: 'testMod', amount: -10 }], { label: 'Malédiction de malchance', defaultDurationRounds: 9999 });
+    expect(testStatePenalty(c)).toBe(-10); // tests hors combat
+    expect(combatTestPenalty(c)).toBe(-10); // tests de combat
+    addCondition(c, 'Sonné'); // État −10 → STACKE avec le −10 du Sort (sources distinctes)
+    expect(combatTestPenalty(c)).toBe(-20);
+    // « ne subit aucune pénalité d'État » (Endurance de l'anachorète) n'efface PAS le malus de Sort.
+    c.activeEffects!.push({ label: 'Anachorète', bonus: 0, roundsLeft: 9999, ignoreStatePenalties: true });
+    expect(combatTestPenalty(c)).toBe(-10); // l'État est effacé, le −10 du Sort demeure
   });
 
   it('Empoisonné : Test de Résistance en fin de Round retire l\'État, puis 1 Exténué (l.70-72)', () => {

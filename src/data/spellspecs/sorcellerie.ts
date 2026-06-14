@@ -2,8 +2,8 @@
  * Sorcellerie (Magie des Sorcières) — LDB 49, 6 sorts. Curation B4. La Sorcellerie est faite de
  * malédictions à fort arbitrage (dégradations, hantises, poupées vaudou, malchance) qui opèrent
  * surtout hors du cadre tactique : elles restent donc largement `narrative` (rien d'inventé,
- * règle 2). Seuls les États de combat nets sont mécanisés. Aucune op nouvelle.
- * « Menace rampante » invoque une nuée : restera narrative jusqu'au moteur d'invocation.
+ * règle 2). Les États de combat nets ET le malus global « −10 à tous les Tests » (Malédiction de
+ * malchance → op `testMod`) sont mécanisés. « Menace rampante » invoque une nuée (op `summon`).
  */
 import { SpellSpec } from '../../engine/spellspec';
 
@@ -39,9 +39,13 @@ export const SORCELLERIE: SpellSpec[] = [
   },
   {
     label: 'Malédiction de malchance',
-    // « La cible subit −10 à tous ses Tests et ne peut pas dépenser de Points de Chance. » — malus
-    //   global persistant (jours) + blocage de la Chance : non exprimable en une op simple : arbitré.
-    ops: [{ op: 'narrative', text: 'Malédiction de malchance : pour la durée (jours), la cible subit −10 à tous ses Tests et ne peut plus dépenser de Points de Chance — arbitrage MJ.' }],
+    // « La cible subit −10 à tous ses Tests et ne peut pas dépenser de Points de Chance. » — le malus
+    //   GLOBAL est mécanisé (op testMod, stacke par-dessus les États) ; le blocage de la Chance reste
+    //   journalisé (ressource de joueur, sans objet sur une cible pilotée par l'IA).
+    ops: [
+      { op: 'testMod', amount: -10 },
+      { op: 'narrative', text: 'Malédiction de malchance : la cible ne peut plus dépenser de Points de Chance tant que le Sort dure — arbitrage MJ.' },
+    ],
     durationRounds: null, // « (Bonus de Force Mentale) jours »
     curated: true,
     source: 'LDB 49 — Sorcellerie « Malédiction de malchance »',

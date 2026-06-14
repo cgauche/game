@@ -71,6 +71,13 @@ export function hasCondition(c: Combatant, name: string): boolean {
  * (Exténué×3 = -30). Aveuglé/Brisé/Empoisonné/Sonné = -10 ; Exténué = -10/point.
  * (À Terre/Assourdi/Empêtré ne touchent que les Tests de déplacement/audition.)
  */
+/** Modificateur GLOBAL de Test porté par les effets actifs (Malédiction de malchance −10, etc.) —
+ *  SOMMÉ (sources distinctes qui stackent), appliqué PAR-DESSUS la pénalité d'État (≠ État : ni
+ *  non-cumul l.20, ni effacé par `ignoreStatePenalties`). */
+export function effectTestMod(c: Combatant): number {
+  return (c.activeEffects ?? []).reduce((s, e) => s + (e.testMod ?? 0), 0);
+}
+
 export function combatTestPenalty(c: Combatant): number {
   const cand: number[] = [];
   // Endurance de l'anachorète (LDB 42) : « ne subit aucune pénalité causée par les États » —
@@ -85,7 +92,8 @@ export function combatTestPenalty(c: Combatant): number {
   }
   // Aura d'une créature Perturbante (LDB 85 p.341) : −20 à tous les Tests (non cumulable — flag).
   if (c.perturbed) cand.push(-20);
-  return cand.length ? Math.min(...cand) : 0;
+  const state = cand.length ? Math.min(...cand) : 0;
+  return state + effectTestMod(c); // modificateur de Sort (Malédiction de malchance) : STACKE avec l'État
 }
 
 /**
@@ -98,9 +106,10 @@ export function combatTestPenalty(c: Combatant): number {
 const BRISE_EXEMPT = /athl[ée]tisme|discr[ée]tion/i; // course / dissimulation (LDB 16 l.55)
 const MOVEMENT_SKILL = /athl[ée]tisme|esquive|escalade|acrobat|[ée]quitation|nage/i; // Tests « impliquant un déplacement »
 export function testStatePenalty(c: Combatant, skill?: string): number {
-  if (!c.conditions?.length) return 0;
-  // Endurance de l'anachorète (LDB 42) : aucune pénalité d'État pour la durée.
-  if (hasActiveFlag(c, 'ignoreStatePenalties')) return 0;
+  const effMod = effectTestMod(c); // modificateur de Sort (stacke, hors non-cumul d'État)
+  if (!c.conditions?.length) return effMod;
+  // Endurance de l'anachorète (LDB 42) : aucune pénalité d'État pour la durée (le modificateur de Sort reste).
+  if (hasActiveFlag(c, 'ignoreStatePenalties')) return effMod;
   const cand: number[] = [];
   if (hasCondition(c, 'Empoisonné')) cand.push(-10);
   if (hasCondition(c, 'Sonné')) cand.push(-10);
@@ -112,7 +121,7 @@ export function testStatePenalty(c: Combatant, skill?: string): number {
     if (hasCondition(c, 'À Terre')) cand.push(-20);
     if (hasCondition(c, 'Empêtré')) cand.push(-10);
   }
-  return cand.length ? Math.min(...cand) : 0;
+  return (cand.length ? Math.min(...cand) : 0) + effMod;
 }
 
 /**

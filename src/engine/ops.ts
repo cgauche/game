@@ -192,6 +192,9 @@ export type GameOp =
   /** « N'a pas besoin de manger ou de boire » (Graisse de la terre, LDB 48) : exempte de la Faim
    *  (système de provisions) tant que le Sort dure. Lu par `dailyFoodUpkeep` (engine/provisions). */
   | { op: 'noHunger' }
+  /** Modificateur GLOBAL à TOUS les Tests du porteur (Malédiction de malchance : −10) — porté par un
+   *  effet actif, STACKE par-dessus les pénalités d'État. Lu par `combat/testStatePenalty`. */
+  | { op: 'testMod'; amount: number }
   /** Immunité à l'EXPOSITION météo (froid/pluie/neige/tempête) tant que le Sort dure — Peau de loup
    *  d'hiver (Ulric), Protection contre la pluie. Lu par `exposureNight` (engine/exposure). */
   | { op: 'weatherWard' }
@@ -635,6 +638,17 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           noHunger: true,
         });
         lines.push(`${target.name} n'a plus besoin de manger ni de boire (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'testMod': {
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          testMod: o.amount,
+        });
+        lines.push(`${target.name} : ${o.amount >= 0 ? '+' : ''}${o.amount} à tous les Tests (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'noBreath': {
