@@ -18,19 +18,22 @@ export function CodexRef({
   label,
   children,
   className,
+  hideIfUnknown = false,
 }: {
   category: string;
   label: string;
   /** Texte affiché si différent du libellé d'entrée (ex. libellé avec spécialisation). */
   children?: ReactNode;
   className?: string;
+  /** Pour un déclencheur-icône (ℹ️) : ne rien rendre si l'entrée est inconnue (pas d'icône morte). */
+  hideIfUnknown?: boolean;
 }) {
   const openCodex = useGame((s) => s.openCodex);
   const item = codexLookup(category, label);
   const text = children ?? label;
 
-  // Pas de fiche connue → libellé simple (jamais d'enrobage vide / mort).
-  if (!item) return <span className={className}>{text}</span>;
+  // Pas de fiche connue : icône-déclencheur → rien ; libellé → texte simple (jamais d'enrobage mort).
+  if (!item) return hideIfUnknown ? null : <span className={className}>{text}</span>;
 
   const body = item.desc ? clamp(item.html ? stripHtml(item.desc) : item.desc) : null;
 

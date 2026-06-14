@@ -19,6 +19,7 @@ import { CharFrame } from './CharFrame';
 import { previewResourceDelta, cleaveTargets, dualStrikeTargets, placingZoneOf } from '../state/combatFlow';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { ActiveFrame } from './ActiveFrame';
+import { CodexRef } from './compendium/CodexRef';
 
 const bleedStacks = (c: Combatant) => c.conditions.find((x) => x.name === 'Hémorragique')?.value ?? 0;
 
@@ -310,10 +311,11 @@ export function ActionBar() {
             const meta = `📏 ${spell.range} · ⏳ ${spell.duration} · 🎯 ${tgtLabel}`;
             return (
               <div key={label} className="ab-spell-row">
-                <button className={`btn btn-sm ${selected ? 'btn-primary' : ''}`} onClick={() => selectSpell(label)} title={`${spell.desc}\n\n${meta}`}>
+                <button className={`btn btn-sm ${selected ? 'btn-primary' : ''}`} onClick={() => selectSpell(label)}>
                   {spell.label} <span className="bp-spell-ni">({ni})</span>
                   <span className="ab-spell-meta">{meta}</span>
                 </button>
+                <CodexRef category="spells" label={label} className="ab-codex-info">ℹ️</CodexRef>
                 {canFocus && (
                   <button className="btn btn-sm" onClick={() => focusSpell(label)} title="Test étendu de Focalisation">
                     Focaliser{focusDr != null ? ` (${focusDr}/${spell.cn})` : ''}
@@ -385,7 +387,8 @@ export function ActionBar() {
           )}
           {!frenzied && usableGroups.map((g) => (
             <div key={g.name} className="ab-spell-row">
-              <button className="btn btn-sm" disabled={battle.acted || stunned || broken} onClick={() => useItem(g.uids[0])} title={g.desc}>🧪 {g.name}{g.uids.length > 1 ? ` ×${g.uids.length}` : ''}</button>
+              <button className="btn btn-sm" disabled={battle.acted || stunned || broken} onClick={() => useItem(g.uids[0])}>🧪 {g.name}{g.uids.length > 1 ? ` ×${g.uids.length}` : ''}</button>
+              <CodexRef category="trappings" label={g.name} className="ab-codex-info" hideIfUnknown>ℹ️</CodexRef>
             </div>
           ))}
           {!frenzied && groundItems.map((g) => (
@@ -414,7 +417,8 @@ export function ActionBar() {
         <div className="ab-spells">
           {ammoChoices.map((a) => (
             <div key={a.uid} className="ab-spell-row">
-              <button className={`btn btn-sm ${active.ammoUid === a.uid ? 'btn-primary' : ''}`} onClick={() => selectAmmo(a.uid)} title={(a.qualities ?? []).join(', ')}>🏹 {a.name} ×{a.qty}</button>
+              <button className={`btn btn-sm ${active.ammoUid === a.uid ? 'btn-primary' : ''}`} onClick={() => selectAmmo(a.uid)}>🏹 {a.name} ×{a.qty}</button>
+              <CodexRef category="trappings" label={a.name} className="ab-codex-info" hideIfUnknown>ℹ️</CodexRef>
             </div>
           ))}
         </div>

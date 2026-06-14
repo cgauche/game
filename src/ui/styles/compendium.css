@@ -227,6 +227,20 @@
   margin-right: auto;
 }
 
+/* déclencheur-icône ℹ️ (ActionBar : à côté d'un bouton d'action) */
+.codex-ref.ab-codex-info {
+  border-bottom: none;
+  flex-shrink: 0;
+  font-size: 13px;
+  opacity: 0.55;
+  padding: 0 2px;
+  align-self: center;
+}
+.codex-ref.ab-codex-info:hover,
+.codex-ref.ab-codex-info:focus-visible {
+  opacity: 1;
+}
+
 @media (max-width: 900px) {
   .screen.codex {
     height: auto;
