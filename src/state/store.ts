@@ -106,7 +106,7 @@ import type {
   Money, PendingVictory, PendingLoot, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
   PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingRun, PendingApproach, PendingFocus,
   PendingPsych, PendingFrenzy, RevealEntry, PendingFumble, PendingDeviation, PendingBladeTrap, PendingRenounce, PendingDefense,
-  PendingDisengage, PendingCast, PendingCounterspell, CounterParticipant, PendingHeal, PendingCorruption,
+  PendingDisengage, PendingCast, PendingCounterspell, CounterParticipant, PendingExtendedTest, PendingHeal, PendingCorruption,
 } from './pendings';
 import {
   PendingEncounterPsych,
@@ -280,6 +280,9 @@ export interface GameState {
   /** Contre-sort à PLUSIEURS (réaction au Sort d'un ENNEMI figé dans `pendingCast`) : héros
    *  contre-lanceurs, chacun son jet (flux multi `FLOWS.counterspell`). Null = pas de réaction. */
   pendingCounterspell: PendingCounterspell | null;
+  /** Test Étendu en cours (LDB 12 : DR cumulé vers une cible, ex. enfoncer une porte DR 20) : flux
+   *  multi SÉQUENTIEL — un Round à la fois (`FLOWS.extendedTest`), cumul dans `extendedTestNext`. */
+  pendingExtendedTest: PendingExtendedTest | null;
   /** Tir ENNEMI télégraphié : réticule « qui l'adversaire vise », montré ~0,7 s AVANT le tir. */
   enemyAim: { fromId: string; toId: string; melee?: boolean } | null;
   /** Coût/gain (Action/Mouvement/Avantage) de l'intention SOUS LA SOURIS (desktop) — alimente le
@@ -627,6 +630,17 @@ export interface GameState {
   counterspellConfirm: () => void;
   /** « Laisser passer » : aucun Contre-sort retenu → le Sort se résout tel quel (castConfirm). */
   counterspellCancel: () => void;
+  /** Test Étendu SÉQUENTIEL (LDB 12) : ouvre le flux (ex. porte DR 20) ; un Round à la fois. */
+  startExtendedTest: (opts: { actorId: string; label: string; skillLabel: string; target: number; targetDR: number }) => void;
+  extendedTestRoll: (pid: string) => void;
+  extendedTestReroll: (pid: string) => void;
+  extendedTestBonusSL: (pid: string) => void;
+  extendedTestDarkPact: (pid: string) => void;
+  extendedTestForceSuccess: (pid: string) => void;
+  extendedTestSetForcedRoll: (pid: string, roll: number) => void;
+  /** Cumule le DR du Round courant (LDB 12 l.200) ; total < 0 → recommence ; total ≥ cible → réussite. */
+  extendedTestNext: () => void;
+  extendedTestCancel: () => void;
   /** Incantation HORS COMBAT (couture D) : un héros lanceur cible self/allié ; sorts non-offensifs. */
   oocCastSpell: (casterId: string, label: string, targetId: string, fromGrimoire?: boolean) => void;
   battleFocusSpell: (label: string) => void;
@@ -919,6 +933,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingInteract: null,
   pendingCast: null,
   pendingCounterspell: null,
+  pendingExtendedTest: null,
   pendingHeal: null,
   medic: null,
   pendingRest: null,
@@ -1710,6 +1725,33 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingCounterspell: null });
     get().castConfirm(); // « Laisser passer » : le Sort se résout tel quel
   },
+  // Test Étendu SÉQUENTIEL (LDB 12) : chaque Round est un slot du flux multi (fabrique UNIQUE).
+  startExtendedTest: (opts) => {
+    set({ pendingExtendedTest: { ...opts, total: 0, rounds: [{ id: 'round-1', interactive: true, result: null }] } });
+  },
+  extendedTestRoll: (pid) => FLOWS.extendedTest.roll(get, set, pid),
+  extendedTestReroll: (pid) => FLOWS.extendedTest.reroll(get, set, pid),
+  extendedTestBonusSL: (pid) => FLOWS.extendedTest.bonusSL(get, set, pid),
+  extendedTestDarkPact: (pid) => FLOWS.extendedTest.darkPact(get, set, pid),
+  extendedTestForceSuccess: (pid) => FLOWS.extendedTest.forceSuccess(get, set, pid),
+  extendedTestSetForcedRoll: (pid, roll) => FLOWS.extendedTest.setForcedRoll(get, set, roll, pid),
+  extendedTestNext: () => {
+    const p = get().pendingExtendedTest;
+    if (!p) return;
+    const cur = p.rounds[p.rounds.length - 1];
+    if (!cur?.result) return; // le Round courant doit avoir été lancé
+    // Cumul (LDB 12 l.200) : « les DR obtenus à chaque Round sont additionnés jusqu'à atteindre une
+    // valeur cible. Si le DR total passe en dessous de 0, vous pouvez recommencer depuis le début. »
+    let total = p.total + cur.result.sl;
+    if (total < 0) total = 0;
+    if (total >= p.targetDR) {
+      set({ pendingExtendedTest: null });
+      get().log(`${p.label} : réussi (DR cumulé ${total} / ${p.targetDR}).`);
+      return;
+    }
+    set({ pendingExtendedTest: { ...p, total, rounds: [...p.rounds, { id: `round-${p.rounds.length + 1}`, interactive: true, result: null }] } });
+  },
+  extendedTestCancel: () => { set({ pendingExtendedTest: null }); },
   /** Ouvre une incantation HORS COMBAT (couture D) : un héros lanceur du groupe cible self/allié.
    *  Réservé aux sorts NON-offensifs — les Projectiles magiques exigent une cible ennemie (combat). */
   oocCastSpell: (casterId, label, targetId, fromGrimoire) => {

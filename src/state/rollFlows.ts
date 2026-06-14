@@ -14,7 +14,7 @@ import type {
   PendingTrample, PendingRun, PendingFocus, PendingPsych, PendingFrenzy, PendingApproach,
   PendingReload, PendingStateRecovery, PendingTest, PendingAppraise, PendingBargain, PendingHeal,
   PendingCorruption, PendingAttack, PendingDefense, PendingCast, PendingDisengage,
-  PendingCounterspell, CounterParticipant,
+  PendingCounterspell, CounterParticipant, PendingExtendedTest, ExtendedTestRound,
 } from './store';
 import type { PendingActivity } from './interludeFlow';
 import type { Combatant } from '../engine/types';
@@ -272,6 +272,35 @@ export const FLOWS = {
         const counterT: TestResult = { ...cur.counter, sl: cur.counter.sl + 1 };
         return { result: counterspellOutcomeFrom(actor, counterT, castTestOf(pcCast)) };
       },
+    },
+  }),
+
+  /**
+   * Test Étendu (LDB 12 l.197-211) — flux multi SÉQUENTIEL : un Round à la fois, chacun son cycle
+   * Chance/+1 DR/Pacte/Résilience. Ici `resolve` ne fait QUE le jet du Round ; le CUMUL du DR (et la
+   * dépendance au total des Rounds précédents) vit dans `extendedTestNext` (store). Même fabrique
+   * que le Contre-sort PARALLÈLE — seule la progression (un slot après l'autre) change.
+   */
+  extendedTest: makeRollFlow<PendingExtendedTest, ExtendedTestRound>({
+    key: 'pendingExtendedTest',
+    multi: { slots: (p) => p.rounds, idOf: (r) => r.id, replace: (p, rounds) => ({ ...p, rounds }) },
+    rolled: (r) => !!r.result,
+    actor: (s, _r, p) => (p ? actorIn(s, p.actorId) : undefined),
+    resolve: (s, _r, _actor, _get, forced, p) => {
+      if (!p) return null;
+      if (forced) {
+        // Résilience « Je ne faillirai pas ! » : Round garanti réussi (dé 01 → DR max), LDB 17 l.73.
+        const e = evaluateTest(1, p.target);
+        return { result: { roll: 1, sl: e.sl, success: true } };
+      }
+      // Cible déjà ajustée à la difficulté → Test « +0 » sur `p.target`.
+      const t = rollTest(p.target, 'intermediaire', battleRng());
+      return { result: { roll: t.roll, sl: t.sl, success: t.success } };
+    },
+    failed: (r) => !!r.result && !r.result.success,
+    caps: { forced: true },
+    bonus: {
+      derive: (_s, r) => (r.result ? { result: { ...r.result, sl: r.result.sl + 1 } } : null),
     },
   }),
 

@@ -14,7 +14,7 @@ import type { OupsResolved } from '../engine/oups';
 import type { CastResult, MissileResult, FocusResult, CounterspellOutcome } from '../engine/magic';
 import type { HealMode } from '../engine/healing';
 import type { PsychType } from '../engine/psychology';
-import type { RollParticipant, MultiPending } from './rollFlow';
+import type { RollParticipant, MultiPending, PendingBase } from './rollFlow';
 
 export interface Money {
   gold: number;
@@ -489,6 +489,26 @@ export interface CounterParticipant extends RollParticipant {
  *  réutilise `castConfirm` (issue agrégée : dissipé si UN gagne ; sinon le sort se résout au meilleur
  *  DR net). « Laisser passer » = aucun Contre-sort → le sort se résout tel quel. */
 export interface PendingCounterspell extends MultiPending<CounterParticipant> {}
+
+/** Un Round d'un Test Étendu : le jet de CE Round (slot du flux multi SÉQUENTIEL). */
+export interface ExtendedTestRound extends RollParticipant {
+  result: { roll: number; sl: number; success: boolean } | null;
+}
+/** Test Étendu (LDB 12 l.197-211 : « atteindre un certain DR … les DR obtenus à chaque Round sont
+ *  additionnés jusqu'à atteindre une valeur cible … Si le DR total passe en dessous de 0, recommencer
+ *  depuis le début »). Flux multi SÉQUENTIEL : un Round à la fois (chacun son cycle Chance/Pacte/
+ *  Résilience), le DR de chaque Round CUMULÉ — la réussite d'un Round DÉPEND du total des précédents.
+ *  Ex. enfoncer une porte renforcée (DR cible 20). Le câblage par Round vit dans `FLOWS.extendedTest`,
+ *  la progression (cumul + Round suivant + réussite) dans `extendedTestNext`. */
+export interface PendingExtendedTest extends PendingBase {
+  actorId: string; // qui effectue le Test (solo)
+  label: string; // « Enfoncer la porte »
+  skillLabel: string; // « Force » / « Athlétisme » (affichage)
+  target: number; // cible effective d'UN Round (difficulté déjà appliquée)
+  targetDR: number; // DR CUMULÉ à atteindre (LDB 12 : « une valeur cible »)
+  total: number; // DR cumulé courant (dépend des Rounds précédents → c'est ce qui rend le flux SÉQUENTIEL)
+  rounds: ExtendedTestRound[];
+}
 
 /** Soin de Guérison en attente (LDB 09-Compétences) : flux modale — « Lancer » (healRoll) → Chance
  *  (relance / +1 DR) → Résilience → « Appliquer » (healConfirm). Soigneur/cible résolus par `actorIn`
