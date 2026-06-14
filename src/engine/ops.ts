@@ -22,9 +22,9 @@ import { groupMatch } from './groups';
 import { grantTrait } from './grantedTraits';
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { cureCriticalWounds } from './trauma';
-import { damageLeatherArmour, itemFromTrapping, customTrapping, recomputeLoadout, newUid } from './items';
+import { damageLeatherArmour, itemFromTrapping, customTrapping, newUid } from './items';
 import { suppressPsychTraits } from './psychology';
-import { ConjureForm, conjureFormOptions } from './conjuredWeapons';
+import { ConjureForm, conjureFormOptions, equipConjuredWeapon } from './conjuredWeapons';
 import {
   ActiveEffect,
   ArmourBypass,
@@ -198,9 +198,9 @@ export type GameOp =
   /** Invoque une arme MAGIQUE temporaire (Arme aethyrique : Dégâts = BFM ; Faux de Shyish : Arme
    *  d'hast, BFM+3 ; Épée ardente de Rhuin : Dégâts +6, Percutante). `damage` (résolue vs lanceur)
    *  + `damagePlus` (offset constant) donnent la composante chiffrée ; `plusBF` y ajoute le Bonus de
-   *  Force (défaut : Dégâts FIXES, sans BF — conforme aux armes invoquées). L'arme passe en tête de
-   *  `c.weapons` (arme directrice) tant que le Sort dure (engine/items.recomputeLoadout) puis
-   *  disparaît à l'expiration. `onHitConditions` : États infligés à la touche (Épée ardente → En flammes). */
+   *  Force (défaut : Dégâts FIXES, sans BF — conforme aux armes invoquées). L'objet invoqué est posé
+   *  dans un SET d'armes DÉDIÉ actif (engine/conjuredWeapons.equipConjuredWeapon) puis retiré à
+   *  l'expiration. `onHitConditions` : États infligés à la touche (Épée ardente → En flammes). */
   | { op: 'conjureWeapon'; name: string; damage: Formula; damagePlus?: number; plusBF?: boolean;
       qualities?: string[]; subType?: string; reach?: string; hands?: 1 | 2;
       onHitConditions?: { name: string; value?: number }[];
@@ -662,20 +662,20 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           hands: form ? (tpl?.hands ?? 1) : (o.hands ?? 1),
           qualities: [...(o.qualities ?? [])], // Atouts du Sort (Magique, Percutante) — PAS ceux du gabarit
           enc: 0,
-          equipped: false, // tenue d'office via le marqueur `conjured` (recomputeLoadout), hors loadout
+          equipped: false, // hors Set I/II auto : l'objet vit dans son SET dédié (equipConjuredWeapon)
           conjured: true,
         };
-        target.items = target.items ?? [];
-        target.items.push(item);
+        // SET d'armes DÉDIÉ rendu actif (réutilise les loadouts) — le joueur peut rebasculer sur ses
+        // armes ; à l'expiration, le set d'origine est restauré (engine/conjuredWeapons).
+        const conjuredSet = equipConjuredWeapon(target, item);
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? o.name, bonus: 0,
           roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
           ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
-          conjuredItemUid: item.uid,
+          conjuredSet,
           ...(o.onHitConditions?.length ? { weaponEnchant: { requiresWeapon: o.name, onHitConditions: o.onHitConditions } } : {}),
         });
-        recomputeLoadout(target); // l'objet invoqué entre en tête de c.weapons (arme directrice)
         lines.push(`${target.name} invoque ${item.name} (Dégâts ${dmg}${item.qualities.length ? `, ${item.qualities.join(', ')}` : ''}) (${ctx.label ?? 'sort'}).`);
         break;
       }

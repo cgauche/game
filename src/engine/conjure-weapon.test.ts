@@ -42,13 +42,18 @@ describe('conjureWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)',
     expect(c.weapons[0].damage).toBe('+4'); // Dégâts toujours = BFM (le gabarit ne donne que le profil)
   });
 
-  it('disparaît (objet + arme) à l’expiration du Sort', () => {
+  it('vit dans un SET dédié actif, retiré à l’expiration (set + objet + restauration)', () => {
     const c = mage();
     applyOps(c, [{ op: 'conjureWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, qualities: ['Magique'] }],
       { label: 'Arme aethyrique', defaultDurationRounds: 1 });
+    const conjuredSet = (c.loadouts ?? []).find((l) => l.name === 'Arme invoquée');
+    expect(conjuredSet).toBeTruthy(); // SET dédié créé…
+    expect(c.activeLoadoutId).toBe(conjuredSet!.id); // …et actif
     expect(c.weapons.some((w) => w.name === 'Arme aethyrique')).toBe(true);
     endOfRound(c); // 1 Round → expire
-    expect(c.items?.some((it) => it.conjured)).toBeFalsy(); // objet retiré de l'inventaire
+    expect(c.items?.some((it) => it.conjured)).toBeFalsy(); // objet retiré
+    expect((c.loadouts ?? []).some((l) => l.name === 'Arme invoquée')).toBe(false); // set retiré
+    expect(c.activeLoadoutId).not.toBe(conjuredSet!.id); // set d'origine réactivé
     expect(c.weapons.some((w) => w.name === 'Arme aethyrique')).toBe(false);
   });
 });

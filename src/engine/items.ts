@@ -239,16 +239,6 @@ export function recomputeLoadout(c: Combatant): void {
   // Mains nues toujours disponibles en dernier recours (stats canoniques du trapping, LDB 62 l.75).
   weapons.push(unarmedWeapon());
 
-  // Armes INVOQUÉES temporaires (op `conjureWeapon` — Arme aethyrique, Faux de Shyish, Épée ardente) :
-  // un objet `conjured` ORDINAIRE posé en inventaire, converti par le MÊME `toWeapon` que les armes
-  // tenues (zéro arme synthétique) et placé en TÊTE (arme directrice = c.weapons[0]) tant que le Sort
-  // dure ; `dropExpiredConjuredWeapons` retire l'objet à l'expiration.
-  for (const it of items) {
-    if (!it.conjured) continue;
-    const w = toWeapon(it, 'main');
-    if (w) weapons.unshift(w);
-  }
-
   const armour = wornArmourPoints(items);
   // Mutations de Corruption (LDB 19) : PA NATURELS additifs (Peau d'acier +2 partout,
   // Écailles épineuses +1 partout, Cornes asymétriques +1 Tête) — par-dessus l'armure portée.

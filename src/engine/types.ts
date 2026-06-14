@@ -186,10 +186,10 @@ export interface ActiveEffect {
    *  exacte posée dans `c.traits`, retirée (une instance) à l'expiration (engine/grantedTraits). */
   grantedTrait?: string;
   /** Arme INVOQUÉE temporaire (op `conjureWeapon` — Arme aethyrique, Faux de Shyish, Épée ardente) :
-   *  uid de l'`ItemInstance` `conjured` posée en inventaire. À l'expiration, `dropExpiredConjuredWeapons`
-   *  retire CET objet et recompose le loadout (engine/conjuredWeapons). L'arme elle-même est un objet
-   *  ordinaire (RÉUTILISE items/loadout) — pas une arme synthétique parallèle. */
-  conjuredItemUid?: string;
+   *  l'objet `conjured` est posé dans un SET d'armes DÉDIÉ (réutilise le système de loadouts) rendu
+   *  actif. À l'expiration, `dropExpiredConjuredWeapons` retire l'objet ET le set, et réactive le set
+   *  d'origine (`restoreLoadoutId`). Pas d'arme synthétique ni d'injection parallèle. */
+  conjuredSet?: { itemUid: string; loadoutId: string; restoreLoadoutId?: string };
   /** Talent ACCORDÉ par cet effet (op `grantTalent` — Flambeau de Vertu : Sans peur…) : lu par
    *  `combatFeatures/dispatch.featuresOf` tant que l'effet dure (PAS posé dans `c.talents` —
    *  la fiche/avancement ne voient que les talents possédés). */

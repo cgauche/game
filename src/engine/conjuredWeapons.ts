@@ -6,16 +6,37 @@
  * réutilise donc entièrement la base d'armes (`itemFromTrapping`) et le loadout : seuls les Dégâts
  * (= BFM…) et l'Atout Magique sont surchargés par le Sort.
  */
-import { Combatant } from './types';
-import { recomputeLoadout, itemFromTrapping } from './items';
+import { Combatant, ItemInstance } from './types';
+import { recomputeLoadout, itemFromTrapping, ensureDefaultLoadout, newLoadoutId } from './items';
 import { trappings } from '../data';
 
-/** Retire les objets invoqués des effets expirés (par uid) et recompose le loadout — l'arme
- *  directrice redevient l'arme réellement équipée / les Mains nues. Pur ; mute `c`. */
-export function dropExpiredConjuredWeapons(c: Combatant, expired: { conjuredItemUid?: string }[]): void {
-  const uids = expired.map((e) => e.conjuredItemUid).filter((u): u is string => !!u);
-  if (!uids.length) return;
-  c.items = (c.items ?? []).filter((it) => !uids.includes(it.uid));
+type ConjuredSet = NonNullable<NonNullable<Combatant['activeEffects']>[number]['conjuredSet']>;
+
+/** Pose l'objet invoqué dans un SET d'armes DÉDIÉ (« Arme invoquée ») et l'active — l'arme devient
+ *  l'arme du set actif, convertie par `recomputeLoadout` comme toute arme tenue (zéro injection
+ *  parallèle). Garantit d'abord les sets réels (Set I/II) pour une restauration propre. Mute `c`. */
+export function equipConjuredWeapon(c: Combatant, item: ItemInstance): ConjuredSet {
+  c.items = c.items ?? [];
+  c.items.push(item);
+  ensureDefaultLoadout(c); // sets réels présents → restoreLoadoutId pointe un vrai set
+  const restoreLoadoutId = c.activeLoadoutId;
+  const loadoutId = newLoadoutId();
+  c.loadouts = [...(c.loadouts ?? []), { id: loadoutId, name: 'Arme invoquée', main: item.uid }];
+  c.activeLoadoutId = loadoutId;
+  recomputeLoadout(c);
+  return { itemUid: item.uid, loadoutId, ...(restoreLoadoutId ? { restoreLoadoutId } : {}) };
+}
+
+/** À l'expiration : retire l'objet invoqué ET son set, et réactive le set d'origine (ou le 1ᵉʳ
+ *  restant). Recompose le loadout. Pur ; mute `c`. */
+export function dropExpiredConjuredWeapons(c: Combatant, expired: { conjuredSet?: ConjuredSet }[]): void {
+  const sets = expired.map((e) => e.conjuredSet).filter((s): s is ConjuredSet => !!s);
+  if (!sets.length) return;
+  for (const s of sets) {
+    c.items = (c.items ?? []).filter((it) => it.uid !== s.itemUid);
+    c.loadouts = (c.loadouts ?? []).filter((lo) => lo.id !== s.loadoutId);
+    if (c.activeLoadoutId === s.loadoutId) c.activeLoadoutId = s.restoreLoadoutId ?? c.loadouts?.[0]?.id;
+  }
   recomputeLoadout(c);
 }
 
