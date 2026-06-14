@@ -35,7 +35,8 @@
       "book": "LDB",
       "page": 311
     },
-    "species": "Humain"
+    "species": "Humain",
+    "career": "Soldat"
   },
   {
     "label": "Nain",
@@ -76,7 +77,8 @@
       "book": "LDB",
       "page": 311
     },
-    "species": "Nain"
+    "species": "Nain",
+    "career": "Soldat"
   },
   {
     "label": "Halfling",
@@ -114,7 +116,8 @@
       "book": "LDB",
       "page": 311
     },
-    "species": "Halfling"
+    "species": "Halfling",
+    "career": "Soldat"
   },
   {
     "label": "Elfe (haut et sylvain)",
@@ -158,7 +161,8 @@
       "book": "LDB",
       "page": 311
     },
-    "species": "Haut-Elfe"
+    "species": "Haut-Elfe",
+    "career": "Soldat"
   },
   {
     "label": "Ogre",
@@ -200,7 +204,8 @@
       "book": "LDB",
       "page": 312
     },
-    "species": "Ogre"
+    "species": "Ogre",
+    "career": "Ogre"
   },
   {
     "label": "Bella la Noire",
@@ -240,7 +245,8 @@
       "book": "LDB",
       "page": 313
     },
-    "species": "Humain"
+    "species": "Humain",
+    "career": "Soldat"
   },
   {
     "label": "Pol Dankels",
@@ -278,7 +284,8 @@
       "book": "LDB",
       "page": 313
     },
-    "species": "Humain"
+    "species": "Humain",
+    "career": "Soldat"
   },
   {
     "label": "Eusapia Balacañon",
@@ -355,7 +362,8 @@
       "book": "MSR",
       "page": 48
     },
-    "species": "Humain"
+    "species": "Humain",
+    "career": "Soldat"
   },
   {
     "label": "Araignée géante",
@@ -972,7 +980,8 @@
       "book": "LDB",
       "page": 319
     },
-    "species": "Fimir"
+    "species": "Fimir",
+    "career": "Nu"
   },
   {
     "label": "Géant",
@@ -1018,7 +1027,8 @@
       "book": "LDB",
       "page": 320
     },
-    "species": "Géant"
+    "species": "Géant",
+    "career": "Nu"
   },
   {
     "label": "Griffon",
@@ -1417,7 +1427,8 @@
       "book": "LDB",
       "page": 324
     },
-    "species": "Troll"
+    "species": "Troll",
+    "career": "Nu"
   },
   {
     "label": "Vouivre",
@@ -1502,7 +1513,8 @@
       "book": "LDB",
       "page": 325
     },
-    "species": "Orc"
+    "species": "Orc",
+    "career": "Mendiant"
   },
   {
     "label": "Gobelin",
@@ -1546,7 +1558,8 @@
       "book": "LDB",
       "page": 326
     },
-    "species": "Gobelin"
+    "species": "Gobelin",
+    "career": "Mendiant"
   },
   {
     "label": "Snotling",
@@ -1587,7 +1600,8 @@
       "book": "LDB",
       "page": 326
     },
-    "species": "Snotling"
+    "species": "Snotling",
+    "career": "Nu"
   },
   {
     "label": "Banshee",
@@ -1765,7 +1779,8 @@
       "book": "LDB",
       "page": 328
     },
-    "species": "Goule"
+    "species": "Goule",
+    "career": "Nu"
   },
   {
     "label": "Loup funeste",
@@ -1899,7 +1914,8 @@
       "book": "LDB",
       "page": 329
     },
-    "species": "Squelette"
+    "species": "Squelette",
+    "career": "Squelette"
   },
   {
     "label": "Vampire",
@@ -1955,7 +1971,8 @@
       "book": "LDB",
       "page": 330
     },
-    "species": "Vampire"
+    "species": "Vampire",
+    "career": "Vampire"
   },
   {
     "label": "Zombie",
@@ -2002,7 +2019,8 @@
       "book": "LDB",
       "page": 330
     },
-    "species": "Zombie"
+    "species": "Zombie",
+    "career": "Mendiant"
   },
   {
     "label": "Chamane-Brey",
@@ -2047,7 +2065,8 @@
       "book": "LDB",
       "page": 331
     },
-    "species": "Chamane-Brey"
+    "species": "Chamane-Brey",
+    "career": "Chamane-Bray"
   },
   {
     "label": "Gor",
@@ -2094,7 +2113,8 @@
       "book": "LDB",
       "page": 332
     },
-    "species": "Gor"
+    "species": "Gor",
+    "career": "Nu"
   },
   {
     "label": "Minotaure",
@@ -2140,7 +2160,8 @@
       "book": "LDB",
       "page": 332
     },
-    "species": "Minotaure"
+    "species": "Minotaure",
+    "career": "Nu"
   },
   {
     "label": "Ungor",
@@ -2184,7 +2205,8 @@
       "book": "LDB",
       "page": 332
     },
-    "species": "Ungor"
+    "species": "Ungor",
+    "career": "Nu"
   },
   {
     "label": "Cultiste",
@@ -2222,7 +2244,8 @@
       "book": "LDB",
       "page": 333
     },
-    "species": "Humain"
+    "species": "Humain",
+    "career": "Cultiste"
   },
   {
     "label": "Mutant",
@@ -2259,7 +2282,8 @@
       "book": "LDB",
       "page": 333
     },
-    "species": "Humain"
+    "species": "Humain",
+    "career": "Mendiant"
   },
   {
     "label": "Guerrier du Chaos",
@@ -2303,7 +2327,8 @@
       "book": "LDB",
       "page": 334
     },
-    "species": "Guerrier du Chaos"
+    "species": "Guerrier du Chaos",
+    "career": "Guerrier du Chaos"
   },
   {
     "label": "Sanguinaire de Khorne",
@@ -2346,7 +2371,8 @@
       "book": "LDB",
       "page": 335
     },
-    "species": "Démon"
+    "species": "Démon",
+    "career": "Sanguinaire"
   },
   {
     "label": "Démonette de Slaanesh",
@@ -2386,7 +2412,8 @@
       "book": "LDB",
       "page": 335
     },
-    "species": "Démonette"
+    "species": "Démonette",
+    "career": "Démonette"
   },
   {
     "label": "Furie du Chaos",
@@ -2436,7 +2463,8 @@
       "book": "EDO",
       "page": 84
     },
-    "species": "Furie du Chaos"
+    "species": "Furie du Chaos",
+    "career": "Nu"
   },
   {
     "label": "Horreur rose",
@@ -2484,7 +2512,8 @@
       "book": "EDO",
       "page": 85
     },
-    "species": "Horreur rose"
+    "species": "Horreur rose",
+    "career": "Nu"
   },
   {
     "label": "Horreur bleue",
@@ -2530,7 +2559,8 @@
       "book": "EDO",
       "page": 85
     },
-    "species": "Horreur bleue"
+    "species": "Horreur bleue",
+    "career": "Nu"
   },
   {
     "label": "Slenderthigh Whiptongue",
@@ -2660,7 +2690,8 @@
       "book": "LDB",
       "page": 337
     },
-    "species": "Skaven"
+    "species": "Skaven",
+    "career": "Skaven"
   },
   {
     "label": "Rat ogre",
@@ -2707,7 +2738,8 @@
       "book": "LDB",
       "page": 337
     },
-    "species": "Rat ogre"
+    "species": "Rat ogre",
+    "career": "Rat ogre"
   },
   {
     "label": "Vermine de choc",
@@ -2747,6 +2779,7 @@
       "book": "LDB",
       "page": 337
     },
-    "species": "Vermine de choc"
+    "species": "Vermine de choc",
+    "career": "Vermine de choc"
   }
 ]

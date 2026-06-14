@@ -17,6 +17,7 @@ import type { MonsterParts } from './parts/monstrous';
 import { hashSeed } from '../appearance';
 import { norm } from '../../lib/normalize';
 import { bipedDef, bipedSpeciesMatch, creaturePlanMatch } from './creatures';
+import { findCreature } from '../../data';
 import { raceById } from './races';
 import { baseSpeciesOf } from './skeletons';
 
@@ -49,25 +50,6 @@ export interface EnemyRigProfile {
  * Patterns de rôles humanoïdes à peau humaine, mappés vers une carrière (pour la
  * tenue). Ordre = priorité. Le 1er match gagne pour la carrière.
  */
-const ROLE_CAREERS: [RegExp, string][] = [
-  [/flagellant|zelote|zealot|penitent|fanatique flagell/, 'Flagellant'],
-  [/repurgateur|chasseur de sorcier|witch ?hunter/, 'Répurgateur'],
-  // AVANT « sorcier » générique : les lanceurs du Chaos portent la robe de culte, pas celle
-  // de magister (Compagnon T1 ch.9 : magus/sorciers de la Main pourpre).
-  [/sorcier du chaos|sorciere du chaos|magus|demonologue/, 'Cultiste'],
-  [/sorcier|magister|necromancien|hierophante|mage|enchanteur|invocateur/, 'Sorcier'],
-  [/cultiste|sectateur|adepte|fanatique|illumine|hereux|heretique/, 'Cultiste'],
-  [/pretre|prelat|moine|prieur|abbe|hierophante|sceur|soeur|nonne|clerc/, 'Nonne'],
-  [/noble|courtisan|aristocrate|seigneur|baron|comte|dame|patricien|bourgeois/, 'Noble'],
-  [/repurg/, 'Répurgateur'],
-  [/voleur|coupe-jarret|coupe jarret|larron|cambrioleur|detrousseur|tire-laine/, 'Voleur'],
-  [/bandit|brigand|pillard|racaille|spadassin|sbire|homme de main|deserteur|hors-la-loi|maraudeur|coupe-gorge/, 'Voleur'],
-  [/soldat|garde|milicien|mercenaire|sergent|capitaine|garnison|reitre|hallebardier|piquier|arbaletrier|archer|homme d.?armes|guerrier/, 'Soldat'],
-  [/batelier|marin|matelot|gabarier|passeur/, 'Batelier'],
-  [/mendiant|gueux|paysan|rustre|vagabond|miserable|manant|villageois|habitant|quidam/, 'Mendiant'],
-  [/mutant/, 'Mendiant'],
-];
-
 /** Classifieur cosmétique : 'rig' (humanoïde → rig bipède) ou 'creature' (non-humanoïde →
  *  gabarit quad/ailé/serpentin/… ou sprite monolithique). 100 % registry-driven : un def
  *  non-bipède (rigué OU monolithique) → 'creature' ; sinon humanoïde → 'rig'. */
@@ -86,12 +68,6 @@ function detectSpecies(n: string): string {
 // désormais de sa RACE (canonique, partagée — cf. `raceById(baseSpeciesOf(species))`), surchargés
 // par les éventuelles surcharges propres à la créature (`def.perso`, pour les espèces
 // non-canoniques repliées sur une race partagée : Fimir/Géant/Liche/Démonette).
-
-/** Carrière (→ tenue) mappée du nom. */
-function detectCareer(n: string): string {
-  for (const [re, career] of ROLE_CAREERS) if (re.test(n)) return career;
-  return 'Soldat';
-}
 
 /** Apparence rig dérivée (espèce/sexe/carrure du nom+seed) + parts monstrueux.
  *  Source UNIQUE pour combat (spawn) et exploration (entité) → modèles identiques. */
@@ -161,13 +137,13 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   const def: Appearance = { species, sex, build, seed, parts: perso?.parts ?? race.parts, colors: perso?.colors ?? race.colors, gabarit: perso?.gabarit ?? d?.gabarit, eyes: eyesArtFromKeys(perso?.eyes) };
   const baseApp: Appearance = c.appearance ? overlayDefined(def, c.appearance) : def;
   const appearance: Appearance = autoMon && !baseApp.monster ? { ...baseApp, monster: autoMon } : baseApp;
-  // Un mutant HUMAIN (parts greffés sur un Humain, ou nom « mutant ») porte des hardes
-  // (Mendiant). Une ESPÈCE monstrueuse (Skaven…) garde sa carrière/tenue (guerrier→Soldat).
-  // NOTE : « chaos » seul exclu — « guerrier/élu/champion/chevalier du chaos » ont leur race dédiée.
   const isMutant = /mutant|chaos spawn|mutant.?du.?chaos|corrompu|difforme|abomination/.test(n);
   const hasMonster = !!(appearance.monster && Object.keys(appearance.monster).length);
-  const isHumanMutant = isMutant || (hasMonster && species === 'Humain');
-  const career = c.career ?? (isHumanMutant ? 'Mendiant' : (perso?.career ?? race.career ?? detectCareer(n)));
+  // Tenue DATA-DRIVEN : explicite sur le Combatant → fiche bestiaire (`findCreature(name).career`) →
+  // défaut de la def (perso/race, pour les espèces hors bestiaire) → Soldat. Plus de name-match
+  // `ROLE_CAREERS` ni d'exception mutant→Mendiant en dur (POC retirés) : un mutant qui doit porter des
+  // hardes le déclare dans SA donnée (career), pas via une règle codée.
+  const career = c.career ?? findCreature(c.name)?.career ?? perso?.career ?? race.career ?? 'Soldat';
 
   // Équipement : l'inventaire du combattant prime ; sinon armure synthétisée des PA.
   const base = equipFromCombatant(c);
@@ -210,7 +186,7 @@ export function entityRigProfile(
   const isMutant = /mutant|chaos spawn|mutant.?du.?chaos|corrompu|difforme|abomination/.test(n);
   return {
     appearance,
-    career: opts?.career ?? perso?.career ?? race.career ?? detectCareer(n),
+    career: opts?.career ?? findCreature(name)?.career ?? perso?.career ?? race.career ?? 'Soldat',
     equip: { weapons: opts?.weapon ? [weaponFromLabel(opts.weapon)] : [], armour: [] },
     overlays: isMutant && !hasMonster ? randomMutationOverlays(seed) : undefined,
   };
