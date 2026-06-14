@@ -236,6 +236,13 @@ export function recomputeLoadout(c: Combatant): void {
   if ((c.mutations ?? []).some((m) => m.label === 'Cornes asymétriques')) {
     weapons.push({ name: 'Cornes', type: 'melee', damage: '+BF', qualities: [], subType: 'Base', hands: 1, hand: 'main', uid: 'nat-cornes' });
   }
+  // Armes NATURELLES accordées par un Sort (op `grantNaturalWeapon` — Dent et griffe : Morsure/Arme ;
+  // Incarnation de Wyssan) : attaques ADDITIONNELLES tant que l'effet dure (retirées au recompute
+  // d'expiration, dropExpiredGrantedWeapons). Même injection que Tentacule/Cornes.
+  for (const e of c.activeEffects ?? []) {
+    if (e.naturalWeapon) weapons.push({ ...e.naturalWeapon, hand: 'main' });
+  }
+
   // Mains nues toujours disponibles en dernier recours (stats canoniques du trapping, LDB 62 l.75).
   weapons.push(unarmedWeapon());
 

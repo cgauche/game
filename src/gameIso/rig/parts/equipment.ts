@@ -72,7 +72,11 @@ const ART_BY_GROUP: Record<string, string> = {
   fronde: 'fronde', lancer: 'javelot', entraves: 'fouet', explosifs: 'bombe',
 };
 
+/** Attaques NATURELLES (corps) : aucune arme tenue n'est dessinée (la part du corps fait foi). */
+const NATURAL_ATTACK = /^(morsure|griffes?|serres?|tentacules?|bec|dard|cornes?|queue|pi[ée]tinement|crachat|poings?|mains nues)\b/i;
+
 export function weaponFamily(w: Weapon): string {
+  if (NATURAL_ATTACK.test(w.name)) return ''; // pas d'objet en main (Morsure/Griffe accordées par un Sort)
   // Silhouette de rendu forcée (arme invoquée nommée « Arme aethyrique » mais dessinée comme la
   // forme choisie) : un libellé catalogue → son slug de forme. Prioritaire sur le nom.
   if (w.form) {

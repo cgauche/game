@@ -22,8 +22,9 @@ import { groupMatch } from './groups';
 import { grantTrait } from './grantedTraits';
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { cureCriticalWounds } from './trauma';
-import { damageLeatherArmour, itemFromTrapping, customTrapping, newUid } from './items';
+import { damageLeatherArmour, itemFromTrapping, customTrapping, newUid, recomputeLoadout } from './items';
 import { suppressPsychTraits } from './psychology';
+import { norm } from '../lib/normalize';
 import { ConjureForm, conjureFormOptions, equipConjuredWeapon } from './conjuredWeapons';
 import {
   ActiveEffect,
@@ -35,6 +36,7 @@ import {
   DIFFICULTY_LABELS,
   HIT_LOCATION_LABELS,
   ItemInstance,
+  Weapon,
 } from './types';
 
 // ---------------------------------------------------------------------------
@@ -216,6 +218,10 @@ export type GameOp =
       /** Forme LIBRE (Arme aethyrique) : le lanceur choisit l'arme → `ctx.conjureForm` clone le profil
        *  (Groupe/allonge/mains) d'une arme RÉELLE de la base ; sinon stats fixes du Sort. */
       chooseForm?: boolean }
+  /** Accorde une ARME NATURELLE (Dent et griffe : Morsure BF+3 / Arme BF+4 ; Incarnation de Wyssan) :
+   *  attaque ADDITIONNELLE de mêlée injectée dans `c.weapons` (recomputeLoadout), retirée à
+   *  l'expiration. Dégâts SB-relatifs par défaut (`+BF+`+damage), `qualities` (Magique…) portés. */
+  | { op: 'grantNaturalWeapon'; name: string; damage: Formula; damagePlus?: number; plusBF?: boolean; qualities?: string[] }
   /** Effet RÉCURRENT multi-Rounds : pose un effet actif porteur qui re-joue `ops` à CHAQUE fin de
    *  Round tant que le sort dure (`ctx.defaultDurationRounds`, Surincantation de Durée incluse —
    *  LDB 47). Généralise l'ancien « État par Round » : 1 Ration/Round (Récolte de Rhya), 1 État
@@ -662,6 +668,24 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       }
       case 'perRound': {
         pushPerRound(target, o.ops, ctx);
+        break;
+      }
+      case 'grantNaturalWeapon': {
+        const n = Math.max(0, resolveFormula(o.damage, ref, rng) + (o.damagePlus ?? 0));
+        const plusBF = o.plusBF !== false; // attaques naturelles = SB-relatives par défaut
+        const weapon: Weapon = {
+          name: o.name, type: 'melee', damage: plusBF ? `+BF+${n}` : `+${n}`,
+          qualities: [...(o.qualities ?? [])], hands: 1, uid: `nat-${norm(o.name)}-${newUid()}`,
+        };
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? o.name, bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          naturalWeapon: weapon,
+        });
+        recomputeLoadout(target);
+        lines.push(`${target.name} gagne l'attaque naturelle ${o.name} (Dégâts ${weapon.damage}${weapon.qualities.length ? `, ${weapon.qualities.join(', ')}` : ''}) (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'conjureWeapon': {

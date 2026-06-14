@@ -22,9 +22,12 @@ export const MIRACLES_TAAL: SpellSpec[] = [
   },
   {
     label: 'Dent et griffe',
-    // « Gagnez les Traits Morsure (BF+3) et Arme (BF+4) ; ces attaques sont Magiques. » — armes
-    //   naturelles à offset de Bonus de Force (non exprimables par l'op grantTrait) : arbitré.
-    ops: [{ op: 'narrative', text: 'Dent et griffe : vous gagnez les Traits Morsure (Bonus de Force +3) et Arme (Bonus de Force +4), attaques Magiques — arbitrage MJ.' }],
+    // « Gagnez les Traits Morsure (BF+3) et Arme (BF+4) ; ces attaques sont Magiques. » — deux armes
+    //   naturelles ADDITIONNELLES Magiques, Dégâts SB-relatifs (op grantNaturalWeapon).
+    ops: [
+      { op: 'grantNaturalWeapon', name: 'Morsure', damage: 3, qualities: ['Magique'] },
+      { op: 'grantNaturalWeapon', name: 'Griffe', damage: 4, qualities: ['Magique'] },
+    ],
     durationRounds: { bonusOf: 'Soc' },
     curated: true,
     source: 'LDB 42 — Miracles de Taal « Dent et griffe »',

@@ -34,7 +34,9 @@ export const DOMAINE_BETE: SpellSpec[] = [
       { op: 'grantTrait', trait: 'Magique' },
       { op: 'grantTrait', trait: 'Belliqueux' },
       { op: 'apAll', amount: 2 }, // Armure 2
-      { op: 'narrative', text: 'Incarnation de Wyssan : gagnez aussi Arboricole, Grand (Taille), Arme (BF+2) et Morsure (BF+1) ; vous ne pouvez plus utiliser vos Compétences Langue ou Savoir — arbitrage MJ.' },
+      { op: 'grantNaturalWeapon', name: 'Griffe', damage: 2 }, // Arme (BF+2)
+      { op: 'grantNaturalWeapon', name: 'Morsure', damage: 1 }, // Morsure (BF+1)
+      { op: 'narrative', text: 'Incarnation de Wyssan : gagnez aussi Arboricole et Grand (Taille) ; vous ne pouvez plus utiliser vos Compétences Langue ou Savoir — arbitrage MJ.' },
     ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,

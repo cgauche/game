@@ -27,17 +27,20 @@ export function equipConjuredWeapon(c: Combatant, item: ItemInstance): ConjuredS
   return { itemUid: item.uid, loadoutId, ...(restoreLoadoutId ? { restoreLoadoutId } : {}) };
 }
 
-/** À l'expiration : retire l'objet invoqué ET son set, et réactive le set d'origine (ou le 1ᵉʳ
- *  restant). Recompose le loadout. Pur ; mute `c`. */
-export function dropExpiredConjuredWeapons(c: Combatant, expired: { conjuredSet?: ConjuredSet }[]): void {
+/** À l'expiration d'effets accordant des armes : (a) arme INVOQUÉE → retire l'objet ET son set et
+ *  réactive le set d'origine ; (b) arme NATURELLE accordée (op grantNaturalWeapon) → simple recompute
+ *  (l'effet porteur a déjà été retiré). Recompose le loadout si besoin. Pur ; mute `c`. */
+export function dropExpiredGrantedWeapons(
+  c: Combatant,
+  expired: { conjuredSet?: ConjuredSet; naturalWeapon?: unknown }[],
+): void {
   const sets = expired.map((e) => e.conjuredSet).filter((s): s is ConjuredSet => !!s);
-  if (!sets.length) return;
   for (const s of sets) {
     c.items = (c.items ?? []).filter((it) => it.uid !== s.itemUid);
     c.loadouts = (c.loadouts ?? []).filter((lo) => lo.id !== s.loadoutId);
     if (c.activeLoadoutId === s.loadoutId) c.activeLoadoutId = s.restoreLoadoutId ?? c.loadouts?.[0]?.id;
   }
-  recomputeLoadout(c);
+  if (sets.length || expired.some((e) => e.naturalWeapon)) recomputeLoadout(c);
 }
 
 /** FORME d'arme invoquée à forme libre (Arme aethyrique : « n'importe quelle forme, n'importe quelle

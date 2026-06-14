@@ -191,9 +191,13 @@ export interface ActiveEffect {
   grantedTrait?: string;
   /** Arme INVOQUÉE temporaire (op `conjureWeapon` — Arme aethyrique, Faux de Shyish, Épée ardente) :
    *  l'objet `conjured` est posé dans un SET d'armes DÉDIÉ (réutilise le système de loadouts) rendu
-   *  actif. À l'expiration, `dropExpiredConjuredWeapons` retire l'objet ET le set, et réactive le set
+   *  actif. À l'expiration, `dropExpiredGrantedWeapons` retire l'objet ET le set, et réactive le set
    *  d'origine (`restoreLoadoutId`). Pas d'arme synthétique ni d'injection parallèle. */
   conjuredSet?: { itemUid: string; loadoutId: string; restoreLoadoutId?: string };
+  /** Arme NATURELLE accordée par un Sort (Dent et griffe : Morsure/Arme ; Incarnation de Wyssan) —
+   *  attaque ADDITIONNELLE injectée dans `c.weapons` par recomputeLoadout (même patron que Tentacule/
+   *  Cornes), retirée à l'expiration. Dégâts SB-relatifs (« +BF+N ») et Atouts portés par l'arme. */
+  naturalWeapon?: Weapon;
   /** Talent ACCORDÉ par cet effet (op `grantTalent` — Flambeau de Vertu : Sans peur…) : lu par
    *  `combatFeatures/dispatch.featuresOf` tant que l'effet dure (PAS posé dans `c.talents` —
    *  la fiche/avancement ne voient que les talents possédés). */

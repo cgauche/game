@@ -66,6 +66,24 @@ describe('conjureWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)',
   });
 });
 
+describe('grantNaturalWeapon — armes naturelles accordées (Dent et griffe)', () => {
+  it('attaque ADDITIONNELLE Magique, Dégâts SB-relatifs (+BF+N), retirée à l’expiration', () => {
+    const c = mage();
+    applyOps(c, [
+      { op: 'grantNaturalWeapon', name: 'Morsure', damage: 3, qualities: ['Magique'] },
+      { op: 'grantNaturalWeapon', name: 'Griffe', damage: 4, qualities: ['Magique'] },
+    ], { label: 'Dent et griffe', defaultDurationRounds: 1 });
+    const bite = c.weapons.find((w) => w.name === 'Morsure');
+    const claw = c.weapons.find((w) => w.name === 'Griffe');
+    expect(bite?.damage).toBe('+BF+3');
+    expect(claw?.damage).toBe('+BF+4');
+    expect(bite?.qualities).toContain('Magique');
+    expect(c.weapons.some((w) => w.name === 'Mains nues')).toBe(true); // ADDITIONNELLE (mains nues conservées)
+    endOfRound(c); // 1 Round → expire
+    expect(c.weapons.some((w) => w.name === 'Morsure' || w.name === 'Griffe')).toBe(false);
+  });
+});
+
 describe('conjureWeapon — variantes de domaine (stats fixes du Sort)', () => {
   it('Faux de Shyish : Armes d’hast à 2 mains, Dégâts = BFM+3', () => {
     const c = mage(); // BFM 4
