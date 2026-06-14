@@ -288,13 +288,6 @@ export function ActionBar() {
   const canHeal = isHero && hasHealSkill(active) && !battle.acted && !stunned && !frenzied;
   const healTargets = canHeal ? healableTargets(active, battle.combatants.filter((c) => c.kind === 'hero'), { adjacency: true }) : [];
 
-  // Catégories repliables : on n'affiche le bouton conteneur que si ≥1 enfant existe.
-  const hasMvt = canStandUp || (engaged && !frenzied) || mounted || !!mountCandidate;
-  const hasTir = !!rangedW && !frenzied;
-  const hasObjets = !frenzied && (usableGroups.length > 0 || groundItems.length > 0);
-  // « Spécial » regroupe TOUT le situationnel (déplacement, tir, objets, Frénésie, Piétiner, Tentacule).
-  const hasSpecial = hasMvt || hasTir || hasObjets || canFrenzy || canTrample || canTentacle;
-
   return (
     <div className="action-bar">
       {hasSpells && battle.action === 'cast' && !pendingCast && (
@@ -340,77 +333,6 @@ export function ActionBar() {
               ))}
             </div>
           ))}
-        </div>
-      )}
-      {battle.action === 'mvt' && (
-        <div className="ab-spells">
-          {/* « Spécial » : toutes les manœuvres situationnelles regroupées (déplacement, tir, objets, rares). */}
-          {canStandUp && (
-            <div className="ab-spell-row">
-              <button className="btn btn-sm" onClick={standUp} title="Se relever de l'État À Terre — utilise le Mouvement">🧍 Se relever</button>
-            </div>
-          )}
-          {engaged && !frenzied && (
-            <div className="ab-spell-row">
-              <button className="btn btn-sm" disabled={battle.acted && !canFreeDisengage} onClick={disengage} title="Quitter le corps à corps (Esquive si Action dispo, sinon sacrifice d'Avantage)">🚪 Se désengager</button>
-            </div>
-          )}
-          {mountCandidate && (
-            <div className="ab-spell-row">
-              <button className="btn btn-sm" disabled={moveStarted || broken} onClick={mountUp} title="Enfourcher cette monture (combat monté) — coûte le Mouvement (pas de jet → pas une Action)">🐎 Monter sur {mountCandidate.name}</button>
-            </div>
-          )}
-          {mounted && (
-            <div className="ab-spell-row">
-              <button className="btn btn-sm" disabled={moveStarted || broken} onClick={dismount} title="Descendre de sa monture (à pied, case libre adjacente) — coûte le Mouvement (pas de jet → pas une Action)">🥾 Descendre de monture</button>
-            </div>
-          )}
-          {rangedW && !frenzied && (
-            <div className="ab-spell-row">
-              <button className="btn btn-sm" disabled={battle.acted || stunned || active.aiming} onClick={aim} title="Viser : +20 (Accessible) au prochain tir — coûte l'Action">🎯 {active.aiming ? 'En joue ✓' : 'Viser'}</button>
-            </div>
-          )}
-          {canPush && (
-            <div className="ab-spell-row">
-              <button className="btn btn-sm" onClick={togglePushback} title="Perturbante : la prochaine attaque réussie repousse d'1 m par DR au lieu de causer des Dégâts">↩️ {active.pushbackMode ? 'Repousser ✓' : 'Repousser'}</button>
-            </div>
-          )}
-          {needsReload && !frenzied && (
-            <div className="ab-spell-row">
-              <button className="btn btn-sm" disabled={battle.acted || stunned || broken} onClick={reload} title="Recharger (Test étendu de Projectiles — coûte l'Action)">🔄 Recharger{active.reloadProgress ? ` (${active.reloadProgress}/${rangedW!.reload} DR)` : ''}</button>
-            </div>
-          )}
-          {ammoChoices.length > 1 && !frenzied && (
-            <div className="ab-spell-row">
-              <button className="btn btn-sm" onClick={() => selectAction('ammo')} title="Choisir la munition à tirer">🏹 Munition</button>
-            </div>
-          )}
-          {!frenzied && usableGroups.map((g) => (
-            <div key={g.name} className="ab-spell-row">
-              <button className="btn btn-sm" disabled={battle.acted || stunned || broken} onClick={() => useItem(g.uids[0])}>🧪 {g.name}{g.uids.length > 1 ? ` ×${g.uids.length}` : ''}</button>
-              <CodexRef category="trappings" label={g.name} className="ab-codex-info" hideIfUnknown>ℹ️</CodexRef>
-            </div>
-          ))}
-          {!frenzied && groundItems.map((g) => (
-            <div key={`${g.entityId}:${g.key}`} className="ab-spell-row">
-              <button className="btn btn-sm" disabled={battle.acted || stunned || broken} onClick={() => pickup(g.entityId, g.key)} title="Ramasser cet objet au sol (coûte l'Action)">✋ {g.label}</button>
-            </div>
-          ))}
-          {canFrenzy && (
-            <div className="ab-spell-row">
-              <button className="btn btn-sm" onClick={frenzy} title="Entrer en Frénésie : Test de Force Mentale — coûte l'Action">🐗 Frénésie</button>
-            </div>
-          )}
-          {canTrample && (
-            <div className="ab-spell-row">
-              <button className="btn btn-sm" onClick={() => selectAction('trample')} title="Piétiner un adversaire adjacent plus petit : action gratuite à 1 Avantage">🐾 Piétiner</button>
-            </div>
-          )}
-          {canTentacle && (
-            <div className="ab-spell-row">
-              <button className="btn btn-sm" onClick={() => selectAction('tentacle')} title="Frapper du tentacule un adversaire au contact : Attaque gratuite, 1/tour — Empêtré sur Dégâts">🐙 Tentacule</button>
-            </div>
-          )}
         </div>
       )}
       {battle.action === 'ammo' && (
@@ -555,17 +477,72 @@ export function ActionBar() {
               </button>
             )}
 
-            {/* ── Spécial : TOUTES les manœuvres situationnelles regroupées ── */}
-            {hasSpecial && (
-              <button
-                className={`ab-slot ${battle.action === 'mvt' || battle.action === 'ammo' || battle.action === 'trample' || battle.action === 'tentacle' ? 'on' : ''}`}
-                onClick={() => selectAction(battle.action === 'mvt' || battle.action === 'ammo' || battle.action === 'trample' || battle.action === 'tentacle' ? null : 'mvt')}
-                title="Manœuvres situationnelles : Charger, Courir, Se relever, Se désengager, Viser/Recharger, Objets, Frénésie, Piétiner…"
-              >
-                <span className="ab-ico">⭐</span>
-                <span className="ab-lbl">Spécial ▾</span>
+            {/* ── Manœuvres situationnelles : slots DIRECTS (plus de catégorie « Spécial ») ── */}
+            {canStandUp && (
+              <button className="ab-slot" onClick={standUp} title="Se relever de l'État À Terre — utilise le Mouvement">
+                <span className="ab-ico">🧍</span><span className="ab-lbl">Se relever</span>
               </button>
             )}
+            {engaged && !frenzied && (
+              <button className="ab-slot" disabled={battle.acted && !canFreeDisengage} onClick={disengage} title="Quitter le corps à corps (Esquive si Action dispo, sinon sacrifice d'Avantage)">
+                <span className="ab-ico">🚪</span><span className="ab-lbl">Se désengager</span>
+              </button>
+            )}
+            {mountCandidate && (
+              <button className="ab-slot" disabled={moveStarted || broken} onClick={mountUp} title={`Enfourcher ${mountCandidate.name} (combat monté) — coûte le Mouvement`}>
+                <span className="ab-ico">🐎</span><span className="ab-lbl">Monter</span>
+              </button>
+            )}
+            {mounted && (
+              <button className="ab-slot" disabled={moveStarted || broken} onClick={dismount} title="Descendre de sa monture — coûte le Mouvement">
+                <span className="ab-ico">🥾</span><span className="ab-lbl">Descendre</span>
+              </button>
+            )}
+            {rangedW && !frenzied && (
+              <button className="ab-slot" disabled={battle.acted || stunned || active.aiming} onClick={aim} title="Viser : +20 (Accessible) au prochain tir — coûte l'Action">
+                <span className="ab-ico">🎯</span><span className="ab-lbl">{active.aiming ? 'En joue ✓' : 'Viser'}</span>
+              </button>
+            )}
+            {canPush && (
+              <button className="ab-slot" onClick={togglePushback} title="Perturbante : la prochaine attaque réussie repousse d'1 m par DR au lieu de causer des Dégâts">
+                <span className="ab-ico">↩️</span><span className="ab-lbl">{active.pushbackMode ? 'Repousser ✓' : 'Repousser'}</span>
+              </button>
+            )}
+            {needsReload && !frenzied && (
+              <button className="ab-slot" disabled={battle.acted || stunned || broken} onClick={reload} title="Recharger (Test étendu de Projectiles — coûte l'Action)">
+                <span className="ab-ico">🔄</span><span className="ab-lbl">Recharger{active.reloadProgress ? ` (${active.reloadProgress}/${rangedW!.reload})` : ''}</span>
+              </button>
+            )}
+            {ammoChoices.length > 1 && !frenzied && (
+              <button className={`ab-slot ${battle.action === 'ammo' ? 'on' : ''}`} onClick={() => selectAction(battle.action === 'ammo' ? null : 'ammo')} title="Choisir la munition à tirer">
+                <span className="ab-ico">🏹</span><span className="ab-lbl">Munition ▾</span>
+              </button>
+            )}
+            {canFrenzy && (
+              <button className="ab-slot" onClick={frenzy} title="Entrer en Frénésie : Test de Force Mentale — coûte l'Action">
+                <span className="ab-ico">🐗</span><span className="ab-lbl">Frénésie</span>
+              </button>
+            )}
+            {canTrample && (
+              <button className={`ab-slot ${battle.action === 'trample' ? 'on' : ''}`} onClick={() => selectAction(battle.action === 'trample' ? null : 'trample')} title="Piétiner un adversaire adjacent plus petit : action gratuite à 1 Avantage">
+                <span className="ab-ico">🐾</span><span className="ab-lbl">Piétiner</span>
+              </button>
+            )}
+            {canTentacle && (
+              <button className={`ab-slot ${battle.action === 'tentacle' ? 'on' : ''}`} onClick={() => selectAction(battle.action === 'tentacle' ? null : 'tentacle')} title="Frapper du tentacule un adversaire au contact : Attaque gratuite, 1/tour — Empêtré sur Dégâts">
+                <span className="ab-ico">🐙</span><span className="ab-lbl">Tentacule</span>
+              </button>
+            )}
+            {!frenzied && usableGroups.map((g) => (
+              <button key={g.name} className="ab-slot" disabled={battle.acted || stunned || broken} onClick={() => useItem(g.uids[0])} title={g.desc || `Utiliser ${g.name}`}>
+                <span className="ab-ico">🧪</span><span className="ab-lbl">{g.name}{g.uids.length > 1 ? ` ×${g.uids.length}` : ''}</span>
+              </button>
+            ))}
+            {!frenzied && groundItems.map((g) => (
+              <button key={`${g.entityId}:${g.key}`} className="ab-slot" disabled={battle.acted || stunned || broken} onClick={() => pickup(g.entityId, g.key)} title="Ramasser cet objet au sol (coûte l'Action)">
+                <span className="ab-ico">✋</span><span className="ab-lbl">{g.label}</span>
+              </button>
+            ))}
 
             {/* ── Alerte visible (Détermination) ── */}
             {removableConditions.length > 0 && (

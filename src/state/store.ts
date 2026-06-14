@@ -160,7 +160,7 @@ export interface BattleState {
   /** Mode d'action À BOUTON en cours (panneau ouvert). Le déplacement et l'attaque n'ont PAS de mode :
    *  ils sont implicites au clic (sol/ennemi) quand `action === null` — cf. battleClickTile/Entity.
    *  'teleport' = ciblage de case d'une Téléportation (op de sort) en attente. */
-  action: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'tentacle' | 'heal' | 'mvt' | 'tir' | 'objets' | 'teleport' | null;
+  action: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'tentacle' | 'heal' | 'teleport' | null;
   /** Sort sélectionné pour l'action d'incantation en cours. */
   selectedSpell: string | null;
   reachable: Map<string, number>;
@@ -508,7 +508,7 @@ export interface GameState {
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
   seedRng: (seed: number) => void;
   startCombat: (encounterId: string, onVictory?: Effect[], opts?: { noSurprise?: boolean }) => void;
-  battleSelectAction: (a: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'tentacle' | 'heal' | 'mvt' | 'tir' | 'objets' | null) => void;
+  battleSelectAction: (a: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'tentacle' | 'heal' | null) => void;
   /** Guérison (LDB 09-Compétences) — ouvre la modale de soin EN COMBAT (soi/allié adjacent). */
   battleHeal: (targetId: string, mode: HealMode) => void;
   /** INFIRMERIE (hors combat, state/medicFlow) : modale de soins persistante — patients, actes
@@ -1396,11 +1396,10 @@ export const useGame = create<GameState>((set, get) => ({
       get().log(`${active.name} est Brisé : il ne peut que fuir ou puiser dans sa Détermination.`);
       return;
     }
-    // Sonné : pas d'Action (attaque/incantation/soin) ; déplacement (clic-sol), Détermination et l'ouverture
-    // des conteneurs (Mouvement/Tir/Objets, simples panneaux dont les feuilles portent leur propre `disabled`)
-    // restent possibles (la Détermination ne coûte pas l'Action et peut retirer le Sonné, LDB ch.17 l.62-66).
-    const containerMode = a === 'mvt' || a === 'tir' || a === 'objets';
-    if (a !== 'resolve' && !containerMode && a !== null && !canTakeAction(active)) return;
+    // Sonné : pas d'Action (attaque/incantation/soin). La Détermination ('resolve') ne coûte pas l'Action
+    // et peut retirer le Sonné (LDB ch.17 l.62-66) ; les manœuvres situationnelles gratuites (Se relever,
+    // Se désengager…) sont des slots DIRECTS qui n'appellent pas battleSelectAction → elles passent ce garde.
+    if (a !== 'resolve' && a !== null && !canTakeAction(active)) return;
     // Quitter le mode incantation oublie le sort sélectionné. Le déplacement et l'attaque n'ont PLUS de
     // mode : ils sont implicites au clic (battleClickTile/battleClickEntity) — le reachable stocké ne
     // porte que les budgets spéciaux (Course, post-Désengagement), on ne le touche pas ici.

@@ -286,7 +286,7 @@ export function IsoStage() {
     if (mode !== 'battle' || !battle || battle.over) return new Set();
     // Mode incantation : grisage hors-LdV du SORT (LDB 46 l.170), indépendant de l'arme portée.
     if (battle.action === 'cast' && battle.selectedSpell) return castOutOfSightTargetIds(useGame.getState);
-    if (battle.acted || (battle.action !== null && battle.action !== 'tir')) return new Set();
+    if (battle.acted || battle.action !== null) return new Set();
     return outOfSightTargetIds(useGame.getState);
   }, [scene, mode, battle]);
 
