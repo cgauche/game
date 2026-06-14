@@ -27,9 +27,11 @@ import { battleRng } from './battleRng';
 import { rollTest } from '../engine/tests';
 import { partyBest } from '../engine/skills';
 import { hasHealSkill } from '../engine/healing';
-import { isOutOfAction, addCondition, loseWounds } from '../engine/conditions';
+import { isOutOfAction, addCondition, removeCondition, loseWounds } from '../engine/conditions';
 import { restRecovery, restResistVal, applyRecoveryDay, needsRecoveryRoll, recoveryTarget, type RestRoll } from '../engine/rest';
-import { rollContraction, DISEASE_DEFS, contagiousDiseases } from '../engine/disease';
+import { rollContraction, DISEASE_DEFS, contagiousDiseases, applyDiseaseBlesse, applyDiseaseGangrene, applyDiseasePersist, activeMalaiseCount } from '../engine/disease';
+import { applyFractureEnd } from '../engine/trauma';
+import type { DeferredUpkeepTest } from './upkeep';
 import { weatherExposure, exposureTestCount, exposureNight, expireExposureEffects, partyHasTent, applyExposureFailure, exposureTarget, type ExposureSeverity } from '../engine/exposure';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { forcedMarchTarget, applyForcedMarch } from '../engine/travel';
@@ -261,10 +263,41 @@ registerCascadeApplier('faim', (_get, _set, step, hero) => {
   return { journal: r.log };
 });
 
+registerCascadeApplier('traumaFracture', (_get, _set, step, hero) => {
+  if (!hero || !step.result) return;
+  return { journal: applyFractureEnd(hero, step.result.success, String(step.meta?.severity ?? 'mineur'), String(step.meta?.location ?? ''), String(step.meta?.traumaLabel ?? 'Fracture')) };
+});
+
+registerCascadeApplier('diseaseBlesse', (_get, _set, step, hero) => {
+  if (!hero || !step.result) return;
+  return { journal: applyDiseaseBlesse(hero, step.result.success, battleRng()) }; // échec → Blessure Purulente (l.110)
+});
+
+registerCascadeApplier('diseaseGangrene', (_get, _set, step, hero) => {
+  if (!hero || !step.result) return;
+  return { journal: applyDiseaseGangrene(hero, String(step.meta?.diseaseName ?? ''), step.result.success, Number(step.meta?.resistVal ?? 0)) };
+});
+
+registerCascadeApplier('diseasePersist', (_get, _set, step, hero) => {
+  if (!hero || !step.result) return;
+  const before = activeMalaiseCount(hero);
+  const journal = applyDiseasePersist(hero, String(step.meta?.diseaseName ?? ''), step.result.success, step.result.sl, battleRng());
+  // Réconcilie l'Exténué « collant » du malaise (l.153 : maladie guérie → −1) — différé avec le Test.
+  const delta = activeMalaiseCount(hero) - before;
+  if (delta < 0) removeCondition(hero, 'Exténué', -delta);
+  else if (delta > 0) addCondition(hero, 'Exténué', delta);
+  return { journal };
+});
+
 /** Valeur de Calme d'un héros (LDB 21 : FM effective + avances de Calme) — cible du jet de cauchemars. */
 function calmeVal(c: Combatant): number {
   return effectiveChar(c, 'FM') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('calme'))?.advances ?? 0);
 }
+
+/** Icône d'étape de cascade par `kind` de Test d'entretien différé. */
+const UPKEEP_STEP_ICON: Record<string, string> = {
+  faim: '🍽️', diseaseBlesse: '🦠', diseaseGangrene: '🦠', diseasePersist: '🦠', traumaFracture: '🦴',
+};
 
 /**
  * Construit la cascade d'UNE nuit (single-night INTERACTIVE) : avance l'horloge à l'aube, applique
@@ -282,13 +315,12 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   const toDawn = minutesUntilNext(from, DAWN_MINUTE);
   set({ gameTime: from + (toDawn === 0 ? MINUTES_PER_DAY : toDawn) });
   bus.emit(EVT.TIME_ADVANCED, { minutes: get().gameTime - from });
-  // Entretien quotidien (#T3) — la partie SANS jet est eager (rations consommées, maladies/
-  // convalescence) ; le Test de FAIM (l.422) est DIFFÉRÉ en étape influençable (sinon il serait
-  // pré-résolu dans le journal AVANT que le joueur n'agisse).
+  // Entretien quotidien (#T3) — la partie SANS jet est eager (rations consommées, jours décomptés) ;
+  // TOUT Test de Résistance (Faim l.422, maladie l.110/135/162, convalescence l.300) est DIFFÉRÉ en
+  // étape influençable (sinon il serait pré-résolu dans le journal AVANT que le joueur n'agisse).
   const caredFor = party.some((h) => hasHealSkill(h) && !h.dead && !isOutOfAction(h));
-  const faimSpecs: { heroId: string; resVal: number; penalty: number }[] = [];
-  log.push(...runDailyUpkeep(get, set, { caredFor, fedDaily: opts.fedDaily,
-    onFaimDue: (heroId, resVal, penalty) => faimSpecs.push({ heroId, resVal, penalty }) }));
+  const deferred: DeferredUpkeepTest[] = [];
+  log.push(...runDailyUpkeep(get, set, { caredFor, fedDaily: opts.fedDaily, onDeferTest: (t) => deferred.push(t) }));
 
   const steps: CascadeStep[] = [];
   // MARCHE FORCÉE de la journée de voyage (l.224) : un jet par héros — la chaîne ouvre la cascade.
@@ -298,12 +330,12 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     steps.push({ id: `march-${id}`, kind: 'forcedMarch', actorId: id, label: `Marche forcée — ${h.name}`, icon: '🥾',
       rollLabel: 'Résistance', base: forcedMarchTarget(h), target: forcedMarchTarget(h), result: null, interactive: true });
   }
-  // FAIM (l.422) : un Test de Résistance influençable par héros affamé dont le Test tombe ce jour.
-  for (const f of faimSpecs) {
-    const h = party.find((x) => x.id === f.heroId);
+  // Tests d'entretien DIFFÉRÉS (faim, maladie, convalescence) → étapes influençables, dans l'ordre collecté.
+  for (const t of deferred) {
+    const h = party.find((x) => x.id === t.heroId);
     if (!h || h.dead) continue;
-    steps.push({ id: `faim-${f.heroId}`, kind: 'faim', actorId: f.heroId, label: `Faim — ${h.name}`, icon: '🍽️',
-      rollLabel: 'Résistance', base: f.resVal, target: f.resVal + f.penalty, result: null, interactive: true });
+    steps.push({ id: `${t.kind}-${t.heroId}-${steps.length}`, kind: t.kind, actorId: t.heroId, label: t.label, icon: UPKEEP_STEP_ICON[t.kind] ?? '🎲',
+      rollLabel: 'Résistance', base: t.base, target: t.target, result: null, interactive: true, meta: t.meta });
   }
   // Campement : Exposition (intempéries) — abri de fortune (STEP) → insère les jets d'Exposition.
   const campers = party.filter((h) => !h.dead && p.perHero[h.id]?.lodging === 'dehors');

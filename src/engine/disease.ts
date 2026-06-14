@@ -20,7 +20,7 @@
  *  - toxine (l.172)    : Test de Résistance Très Facile (+60) journalier (conséquence létale laissée au-delà
  *                        du MVP — texte source tronqué, on n'invente pas).
  */
-import { Combatant, CharKey, Difficulty } from './types';
+import { Combatant, CharKey, Difficulty, UpkeepDeferTest } from './types';
 import { RNG, defaultRNG, roll } from './dice';
 import { rollTest } from './tests';
 
@@ -78,6 +78,9 @@ export interface Disease {
   /** Bénédiction de Convalescence reçue (LDB 41 : « une fois par maladie et par personne ») —
    *  approximation : une fois par maladie. */
   convalescenceBlessed?: boolean;
+  /** Cascade de nuit : le Test « persistant » de fin de durée est DIFFÉRÉ (étape influençable) ; la
+   *  maladie reste en attente de résolution jusqu'à la validation de l'étape (`applyDiseasePersist`). */
+  endTestPending?: boolean;
 }
 
 function rollDice(dc: Dice, rng: RNG): number {
@@ -266,6 +269,52 @@ export function contagiousDiseases(c: Combatant): Disease[] {
   return (c.diseases ?? []).filter((d) => d.phase === 'active' && d.symptoms.some((sy) => sy.kind === 'touxEternuements'));
 }
 
+/** Contracte une maladie « instantanée » (depuis un autre symptôme, l.32) si pas déjà présente.
+ *  Mute `c.diseases` directement (appelé HORS itération — par les applicateurs de cascade). */
+export function contractDiseaseOnce(c: Combatant, name: string, rng: RNG = defaultRNG): string[] {
+  if ((c.diseases ?? []).some((d) => d.name === name)) return [];
+  const dz = contractDisease(name, rng, { incubation: 0 });
+  if (!dz) return [];
+  c.diseases = [...(c.diseases ?? []), dz];
+  return [`${c.name} développe : ${name}.`];
+}
+
+/** Conséquence d'un Test de symptôme « blessé » DIFFÉRÉ (l.110) : échec → Blessure Purulente. */
+export function applyDiseaseBlesse(c: Combatant, success: boolean, rng: RNG = defaultRNG): string[] {
+  return success ? [] : contractDiseaseOnce(c, 'Blessure Purulente', rng);
+}
+
+/** Conséquence d'un Test de Gangrène DIFFÉRÉ (l.135+) : échec → +1 échec ; au-delà du BE → Localisation perdue. */
+export function applyDiseaseGangrene(c: Combatant, diseaseName: string, success: boolean, resistVal: number): string[] {
+  if (success) return [];
+  const dz = (c.diseases ?? []).find((d) => d.name === diseaseName && d.phase === 'active');
+  if (!dz) return [];
+  dz.gangreneFails = (dz.gangreneFails ?? 0) + 1;
+  const be = Math.floor(resistVal / 10); // BE ≈ Endurance/10 (resistVal = E + avances)
+  if (dz.gangreneFails > be) {
+    dz.gangreneLost = true;
+    return [`${c.name} : la Gangrène a gagné — la Localisation atteinte est inutilisable (Amputation requise).`];
+  }
+  return [`${c.name} : la Gangrène progresse (${dz.gangreneFails} échec(s)).`];
+}
+
+/** Conséquence du Test « persistant » de fin de durée DIFFÉRÉ (l.162) : réussite → guérison ;
+ *  DR ≤ −6 → Infection du Sang ; ≤ −2 → Blessure Purulente ; sinon → +1d10 jours. La maladie en
+ *  attente (`endTestPending`) est retirée (ou prolongée). Mute `c.diseases`. */
+export function applyDiseasePersist(c: Combatant, diseaseName: string, success: boolean, sl: number, rng: RNG = defaultRNG): string[] {
+  const dz = (c.diseases ?? []).find((d) => d.name === diseaseName && d.endTestPending);
+  if (!dz) return [];
+  dz.endTestPending = undefined;
+  const log: string[] = [];
+  const remove = () => { c.diseases = (c.diseases ?? []).filter((d) => d !== dz); };
+  const cure = () => { remove(); log.push(`${c.name} guérit de : ${dz.name}.`); if (DISEASE_DEFS[dz.name]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), dz.name]; };
+  if (success) cure();
+  else if (sl <= -6) { remove(); log.push(`${c.name} : ${dz.name} dégénère (échec stupéfiant).`); log.push(...contractDiseaseOnce(c, 'Infection du Sang', rng)); }
+  else if (sl <= -2) { remove(); log.push(`${c.name} : ${dz.name} s'infecte (échec).`); log.push(...contractDiseaseOnce(c, 'Blessure Purulente', rng)); }
+  else { const extra = roll(1, 10, rng); dz.daysLeft = extra; log.push(`${c.name} : ${dz.name} persiste (+${extra} jours).`); }
+  return log;
+}
+
 /**
  * Décompte de `days` jours de maladie pour `c` (appelé jour par jour par le repos). Mute `c.diseases`,
  * renvoie le journal. `resistVal` = Résistance effective (passée par l'appelant, cycle évité). Par jour :
@@ -273,8 +322,13 @@ export function contagiousDiseases(c: Combatant): Disease[] {
  *  - active : symptôme « blessé » → Test de Résistance Accessible (+20) ou Blessure Purulente (l.110) ;
  *             symptôme « toxine » → Test de Résistance Très Facile (+60) journalier (l.172, conséquence non modélisée) ;
  *             −1 jour ; à 0 → résolution du symptôme « persistant » (l.162), sinon guérison naturelle.
+ *
+ * `defer` (CASCADE de nuit, journée unique) : les Tests de Résistance (blessé/gangrène/persistant)
+ * sont COLLECTÉS en étapes influençables au lieu d'être roulés ici ; l'état avance (incubation/durée),
+ * la maladie en fin de durée reste `endTestPending` jusqu'à la validation de son étape. Les
+ * conséquences vivent dans `applyDiseaseBlesse/Gangrene/Persist` (réutilisées par la cascade).
  */
-export function tickDisease(c: Combatant, days: number, rng: RNG = defaultRNG, resistVal = 0): string[] {
+export function tickDisease(c: Combatant, days: number, rng: RNG = defaultRNG, resistVal = 0, defer?: UpkeepDeferTest): string[] {
   if (!c.diseases?.length || days <= 0) return [];
   const log: string[] = [];
   // On boucle jour par jour ; les nouvelles maladies (Blessure Purulente / Infection du Sang) sont
@@ -305,16 +359,17 @@ export function tickDisease(c: Combatant, days: number, rng: RNG = defaultRNG, r
       }
       // active
       if (hasSymptom(dz, 'blesse')) {
-        const res = rollTest(resistVal, 'accessible', rng); // l.110 : Résistance Accessible (+20)
-        if (!res.success) contractOnce('Blessure Purulente');
+        if (defer) defer({ kind: 'diseaseBlesse', label: `Symptôme « blessé » — ${c.name} (${dz.name})`, base: resistVal, difficulty: 'accessible', meta: { diseaseName: dz.name } });
+        else { const res = rollTest(resistVal, 'accessible', rng); if (!res.success) contractOnce('Blessure Purulente'); } // l.110
       }
-      if (hasSymptom(dz, 'toxine')) {
-        rollTest(resistVal, 'tresFacile', rng); // l.172 : Résistance Très Facile (+60) journalier (conséquence non modélisée)
+      if (hasSymptom(dz, 'toxine') && !defer) {
+        rollTest(resistVal, 'tresFacile', rng); // l.172 : conséquence non modélisée → pas d'étape de cascade
       }
       // Gangrène (l.135+) : Test de Résistance Accessible (+20) journalier ; plus d'échecs que le
       // Bonus d'Endurance → la Localisation est PERDUE (règles d'Amputation — journalisé, MJ/Chirurgie).
       if (hasSymptom(dz, 'gangrene') && !dz.gangreneLost) {
-        if (!rollTest(resistVal, 'accessible', rng).success) {
+        if (defer) defer({ kind: 'diseaseGangrene', label: `Gangrène — ${c.name}`, base: resistVal, difficulty: 'accessible', meta: { diseaseName: dz.name, resistVal } });
+        else if (!rollTest(resistVal, 'accessible', rng).success) {
           dz.gangreneFails = (dz.gangreneFails ?? 0) + 1;
           const be = Math.floor(resistVal / 10); // approximation BE ≈ Endurance/10 (resistVal = E + avances)
           if (dz.gangreneFails > be) {
@@ -328,23 +383,29 @@ export function tickDisease(c: Combatant, days: number, rng: RNG = defaultRNG, r
         survivors.push(dz);
         continue;
       }
-      // Fin de Durée — résolution.
+      // Fin de Durée — résolution (DIFFÉRÉE en cascade : la maladie reste en attente).
       if (dz.persistDifficulty) {
-        const res = rollTest(resistVal, dz.persistDifficulty, rng); // l.162
-        if (res.success) {
-          log.push(`${c.name} guérit de : ${dz.name}.`);
-          if (DISEASE_DEFS[dz.name]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), dz.name]; // Vérole Urticante (l.97)
-        } else if (res.sl <= -6) {
-          log.push(`${c.name} : ${dz.name} dégénère (échec stupéfiant).`);
-          contractOnce('Infection du Sang');
-        } else if (res.sl <= -2) {
-          log.push(`${c.name} : ${dz.name} s'infecte (échec).`);
-          contractOnce('Blessure Purulente');
-        } else {
-          const extra = roll(1, 10, rng); // échec minime → +1d10 jours (l.163)
-          dz.daysLeft = extra;
-          log.push(`${c.name} : ${dz.name} persiste (+${extra} jours).`);
+        if (defer) {
+          dz.endTestPending = true;
+          defer({ kind: 'diseasePersist', label: `Fin de « ${dz.name} » — ${c.name}`, base: resistVal, difficulty: dz.persistDifficulty, meta: { diseaseName: dz.name } });
           survivors.push(dz);
+        } else {
+          const res = rollTest(resistVal, dz.persistDifficulty, rng); // l.162
+          if (res.success) {
+            log.push(`${c.name} guérit de : ${dz.name}.`);
+            if (DISEASE_DEFS[dz.name]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), dz.name]; // Vérole Urticante (l.97)
+          } else if (res.sl <= -6) {
+            log.push(`${c.name} : ${dz.name} dégénère (échec stupéfiant).`);
+            contractOnce('Infection du Sang');
+          } else if (res.sl <= -2) {
+            log.push(`${c.name} : ${dz.name} s'infecte (échec).`);
+            contractOnce('Blessure Purulente');
+          } else {
+            const extra = roll(1, 10, rng); // échec minime → +1d10 jours (l.163)
+            dz.daysLeft = extra;
+            log.push(`${c.name} : ${dz.name} persiste (+${extra} jours).`);
+            survivors.push(dz);
+          }
         }
       } else {
         log.push(`${c.name} guérit de : ${dz.name}.`);

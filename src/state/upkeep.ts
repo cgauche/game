@@ -28,6 +28,7 @@ import { dailyFoodUpkeep, feedFromMeal } from '../engine/provisions';
 import { testValue } from '../engine/skills';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { loseWounds } from '../engine/conditions';
+import { DIFFICULTY_MODIFIERS, type UpkeepDeferTest } from '../engine/types';
 import { dailyDiseaseUpkeep, restResistVal } from '../engine/rest';
 import { dropExpiredGrantedTraits } from '../engine/grantedTraits';
 import { dropExpiredGrantedResources } from '../engine/grantedResources';
@@ -77,7 +78,17 @@ export function purgeClockEffects(get: Get, set: Set): string[] {
  *  advanceTime, le repos (`opts.caredFor` = un soignant Guérison veille le groupe) et le voyage.
  *  RENVOIE les lignes du bilan : chaque appelant les AFFICHE (révélation témoin / bilan de nuit /
  *  recap de voyage) — le journal seul ne suffit pas (personne ne le lit). */
-export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; fedDaily?: boolean; onFaimDue?: (heroId: string, resVal: number, penalty: number) => void } = {}): string[] {
+/** Un Test de Résistance d'entretien DIFFÉRÉ, prêt à devenir une étape de cascade de nuit. */
+export interface DeferredUpkeepTest {
+  heroId: string;
+  kind: string;
+  label: string;
+  base: number;
+  target: number;
+  meta?: Record<string, number | string | boolean>;
+}
+
+export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; fedDaily?: boolean; onDeferTest?: (t: DeferredUpkeepTest) => void } = {}): string[] {
   // Dissipations d'effets d'horloge : au FRANCHISSEMENT de jour, elles font partie du rapport
   // visible (hors franchissement — rythme combat — le journal et les icônes d'État suffisent).
   const purged = purgeClockEffects(get, set);
@@ -93,18 +104,21 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
       // Période NOURRIE (interlude « Entre deux aventures » : gîte et couvert payés par l'Argent
       // à gaspiller, LDB 23) : chaque jour est un repas — la Faim ne s'installe jamais.
       if (opts.fedDaily) feedFromMeal(h);
-      // 1. Nourriture (LDB 18 l.417-422). `onFaimDue` (cascade de nuit) : le Test de Faim est
-      //    DIFFÉRÉ en étape influençable au lieu d'être roulé ici (sinon témoin pré-résolu).
-      const resVal = testValue(h, 'Résistance', 'E');
-      const r = dailyFoodUpkeep(h, resVal, bonus(effectiveChar(h, 'E')), battleRng(),
-        opts.onFaimDue ? (penalty) => opts.onFaimDue!(h.id, resVal, penalty) : undefined);
+      // `onDeferTest` (cascade de nuit) : TOUT Test de Résistance d'entretien (Faim, maladie,
+      //  convalescence) est DIFFÉRÉ en étape influençable au lieu d'être roulé ici (sinon témoin
+      //  pré-résolu). Le wrapper calcule la cible (base + difficulté + pénalité) et ajoute le héros.
+      const defer: UpkeepDeferTest | undefined = opts.onDeferTest
+        ? (spec) => opts.onDeferTest!({ heroId: h.id, kind: spec.kind, label: spec.label, base: spec.base, target: spec.base + DIFFICULTY_MODIFIERS[spec.difficulty] + (spec.penalty ?? 0), meta: spec.meta })
+        : undefined;
+      // 1. Nourriture (LDB 18 l.417-422).
+      const r = dailyFoodUpkeep(h, testValue(h, 'Résistance', 'E'), bonus(effectiveChar(h, 'E')), battleRng(), defer);
       if (r.rationConsumed) rations++;
       if (r.damage > 0) loseWounds(h, r.damage);
       lines.push(...r.log);
       // 2. Maladies (LDB 20 — jours calendaires, #T3).
-      lines.push(...dailyDiseaseUpkeep(h, battleRng(), opts.caredFor));
+      lines.push(...dailyDiseaseUpkeep(h, battleRng(), opts.caredFor, defer));
       // 3. Convalescence des Blessures critiques (LDB 18 — jours calendaires, #T3).
-      lines.push(...tickTraumaRecovery(h, 1, battleRng(), restResistVal(h)));
+      lines.push(...tickTraumaRecovery(h, 1, battleRng(), restResistVal(h), defer));
     }
   }
   if (rations > 0) lines.unshift(`Le groupe entame ses provisions (${rations} ration${rations > 1 ? 's' : ''}).`);

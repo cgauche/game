@@ -24,7 +24,7 @@
  * (pur) car la réconciliation de l'Exténué « collant » du malaise importe `conditions` — interdit
  * dans `disease.ts` (cycle d'import via characteristics).
  */
-import { Combatant } from './types';
+import { Combatant, UpkeepDeferTest } from './types';
 import { RNG, defaultRNG } from './dice';
 import { rollTest } from './tests';
 import { effectiveChar, bonus } from './characteristics';
@@ -53,10 +53,10 @@ export function restResistVal(c: Combatant): number {
  * l'Exténué « collant » du malaise (l.153 : apparition d'une maladie → +1 ; guérison → −1).
  * Mute `c`, renvoie le journal.
  */
-export function dailyDiseaseUpkeep(c: Combatant, rng: RNG = defaultRNG, caredFor = false): string[] {
+export function dailyDiseaseUpkeep(c: Combatant, rng: RNG = defaultRNG, caredFor = false, defer?: UpkeepDeferTest): string[] {
   if (c.dead || !c.diseases?.length) return [];
   const malaiseStart = activeMalaiseCount(c);
-  const log = tickDisease(c, 1, rng, restResistVal(c));
+  const log = tickDisease(c, 1, rng, restResistVal(c), defer);
   if (caredFor) {
     for (const dz of c.diseases ?? []) {
       if (dz.phase === 'active' && dz.daysLeft > 1) dz.daysLeft -= 1;

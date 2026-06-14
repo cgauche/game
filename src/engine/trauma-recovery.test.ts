@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { traumaFromKind, traumaRecoveryDays, tickTraumaRecovery, treatTrauma, hasTreatableTrauma, traumaSkillPenalty, hasSurgeryTrauma, removeSurgicalTrauma } from './trauma';
+import { traumaFromKind, traumaRecoveryDays, tickTraumaRecovery, applyFractureEnd, treatTrauma, hasTreatableTrauma, traumaSkillPenalty, hasSurgeryTrauma, removeSurgicalTrauma } from './trauma';
 import { testValue } from './skills';
 import type { Combatant } from './types';
 import type { RNG } from './dice';
@@ -50,6 +50,21 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
     expect(c.traumas![0].dodgePenalty).toBe(-10);
     tickTraumaRecovery(c, 10); // reste 0 → guéri
     expect(c.traumas!.length).toBe(0);
+  });
+
+  it('tickTraumaRecovery(defer) : DIFFÈRE le Test de fin de fracture ; applyFractureEnd applique la séquelle', () => {
+    const t = traumaFromKind('fracture', 'mineur', 'jambeD', { be: 28 });
+    t.recoveryDays = 1; // résolution au prochain tick
+    const c = C({ traumas: [t], criticalWounds: 1 });
+    const collected: { kind: string; meta?: Record<string, unknown> }[] = [];
+    tickTraumaRecovery(c, 1, undefined, 30, (spec) => collected.push(spec));
+    expect(collected[0]?.kind).toBe('traumaFracture'); // Test de fin DIFFÉRÉ en étape
+    expect(c.traumas!.length).toBe(0); // la fracture est retirée (résolution déférée)
+    expect(c.criticalWounds).toBe(0);
+    // Échec à la validation → séquelle permanente ajoutée.
+    const log = applyFractureEnd(c, false, String(collected[0].meta!.severity), String(collected[0].meta!.location), String(collected[0].meta!.traumaLabel));
+    expect(c.traumas!.length).toBe(1);
+    expect(log.join(' ')).toMatch(/mal ressoudée/);
   });
 
   it('fracture : Test de Résistance de fin RATÉ → séquelle permanente (−5 Ag) (l.300)', () => {

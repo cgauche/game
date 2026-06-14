@@ -631,6 +631,18 @@ export const DIFFICULTY_MODIFIERS: Record<Difficulty, number> = {
   tresDifficile: -30,
 };
 
+/** Spec d'un Test de Résistance d'entretien DIFFÉRÉ (cascade de nuit influençable) : le moteur le
+ *  COLLECTE au lieu de le rouler (`state/upkeep` calcule la cible et en fait une étape de cascade,
+ *  résolue par l'applicateur de `kind`). Garde l'invariante « si y'a un jet, y'a une étape ». */
+export type UpkeepDeferTest = (spec: {
+  kind: string;
+  label: string;
+  base: number;
+  difficulty: Difficulty;
+  penalty?: number;
+  meta?: Record<string, number | string | boolean>;
+}) => void;
+
 export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   tresFacile: 'Très facile (+60)',
   facile: 'Facile (+40)',

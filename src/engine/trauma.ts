@@ -8,7 +8,7 @@
  * Bras/Tête et Amputations : effet de combat journalisé (latéralité non modélisée ; amputation =
  * post-combat/Chirurgie → Jalon 5). Le trauma est enregistré (label+note) même sans effet modélisé.
  */
-import { Combatant, CharKey, HitLocation, Trauma, Difficulty } from './types';
+import { Combatant, CharKey, HitLocation, Trauma, Difficulty, UpkeepDeferTest } from './types';
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
 import { isPainless } from './traits/dispatch';
@@ -109,6 +109,25 @@ function fractureSequela(t: Trauma): Trauma | null {
   return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, charPenalty: { Ag: pen }, note: `${pen} permanent en Agilité (os mal ressoudé).` };
 }
 
+/** Difficulté du Test de fin de fracture (LDB 18 l.300/309) selon la sévérité. */
+export function fractureEndDifficulty(severity: string): Difficulty {
+  return severity === 'majeur' ? 'intermediaire' : 'accessible';
+}
+
+/**
+ * Applique le RÉSULTAT du Test de fin de fracture (séparé du jet pour différer/influencer en cascade) :
+ * un échec laisse une SÉQUELLE permanente (−5/−10 Ag, l.300/309), une réussite ressoude proprement.
+ * Mute `c.traumas` (ajoute la séquelle) ; renvoie le journal. La fracture résolue a déjà été retirée
+ * (et `criticalWounds` décrémenté) par `tickTraumaRecovery`. Partagé eager ⊥ cascade — zéro duplication.
+ */
+export function applyFractureEnd(c: Combatant, success: boolean, severity: string, location: string, label: string): string[] {
+  if (success) return [`${c.name} : ${label} ressoudée proprement (Résistance réussie).`];
+  const seq = fractureSequela({ kind: 'fracture', severity, location, label } as Trauma);
+  if (!seq) return [];
+  c.traumas = [...(c.traumas ?? []), seq];
+  return [`${c.name} : ${label} mal ressoudée — séquelle permanente.`];
+}
+
 /**
  * Convalescence : décompte `days` jours sur chaque trauma à durée. Étapes (LDB 18) :
  *  - déchirure majeure → rémission partielle (−20→−10) au passage de la mi-durée (l.326) ;
@@ -118,34 +137,37 @@ function fractureSequela(t: Trauma): Trauma | null {
  * `resistVal` = valeur de Résistance effective de `c` (passée par l'appelant pour éviter le cycle d'import).
  * Pur ; mute `c`, renvoie le journal.
  */
-export function tickTraumaRecovery(c: Combatant, days: number, rng: RNG = defaultRNG, resistVal = 0): string[] {
+export function tickTraumaRecovery(c: Combatant, days: number, rng: RNG = defaultRNG, resistVal = 0, defer?: UpkeepDeferTest): string[] {
   if (!c.traumas?.length || days <= 0) return [];
   const log: string[] = [];
   const remaining: Trauma[] = [];
-  const sequelae: Trauma[] = [];
+  const fractureTests: { severity: string; location: string; label: string }[] = [];
   for (const t of c.traumas) {
     if (t.recoveryDays == null) { remaining.push(t); continue; }
     const left = t.recoveryDays - days;
-    if (left <= 0) {
-      if (t.kind === 'fracture' && !t.fractureSet) {
-        const diff: Difficulty = t.severity === 'majeur' ? 'intermediaire' : 'accessible'; // l.300/309
-        const res = rollTest(resistVal, diff, rng);
-        if (!res.success) {
-          const seq = fractureSequela(t);
-          if (seq) { sequelae.push(seq); log.push(`${c.name} : ${t.label} mal ressoudée — séquelle permanente.`); }
-        } else log.push(`${c.name} : ${t.label} ressoudée proprement (Résistance réussie).`);
-      } else {
-        log.push(`${c.name} guérit de : ${t.label} (${t.location}).`);
-      }
-      if (c.criticalWounds) c.criticalWounds = Math.max(0, c.criticalWounds - 1);
-    } else {
+    if (left > 0) {
       const next = { ...t, recoveryDays: left };
       const msg = downgradeTornMuscle(next, left);
       if (msg) log.push(`${c.name} : ${msg}`);
       remaining.push(next);
+      continue;
+    }
+    // Résolu : la fracture/déchirure est retirée, la Blessure critique décomptée (l.317).
+    if (c.criticalWounds) c.criticalWounds = Math.max(0, c.criticalWounds - 1);
+    if (t.kind === 'fracture' && !t.fractureSet) fractureTests.push({ severity: t.severity ?? 'mineur', location: t.location ?? '', label: t.label });
+    else log.push(`${c.name} guérit de : ${t.label} (${t.location}).`);
+  }
+  c.traumas = remaining;
+  // Test de fin de fracture (l.300/309) : DIFFÉRÉ en étape de cascade si `defer`, sinon roulé ici.
+  for (const f of fractureTests) {
+    if (defer) {
+      defer({ kind: 'traumaFracture', label: `Convalescence — ${f.label}`, base: resistVal, difficulty: fractureEndDifficulty(f.severity),
+        meta: { severity: f.severity, location: f.location, traumaLabel: f.label } });
+    } else {
+      const res = rollTest(resistVal, fractureEndDifficulty(f.severity), rng);
+      log.push(...applyFractureEnd(c, res.success, f.severity, f.location, f.label));
     }
   }
-  c.traumas = [...remaining, ...sequelae];
   return log;
 }
 

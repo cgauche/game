@@ -120,9 +120,11 @@ describe('dailyFoodUpkeep — rations (LDB p.302) et faim (LDB 18 l.422)', () =>
   it('deferTest (cascade de nuit) : un Test de Faim DÛ est DIFFÉRÉ, pas roulé ici', () => {
     const c = hero({ rations: 0 });
     dailyFoodUpkeep(c, 30, 3, fixed(95)); // jeûne j1 (pas de Test)
-    let deferred: number | null = null;
-    const r = dailyFoodUpkeep(c, 30, 3, fixed(95), (penalty) => { deferred = penalty; }); // j2 : Test DÛ → différé
-    expect(deferred).toBe(0); // 1ᵉʳ Test → pénalité 0
+    let kind = '';
+    let penalty = -1;
+    const r = dailyFoodUpkeep(c, 30, 3, fixed(95), (spec) => { kind = spec.kind; penalty = spec.penalty ?? -1; }); // j2 : Test DÛ → différé
+    expect(kind).toBe('faim');
+    expect(penalty).toBe(0); // 1ᵉʳ Test → pénalité 0
     expect(r.log).toEqual([]); // RIEN de pré-résolu (pas de « ÉCHEC » dans le journal)
     expect(c.hunger?.tests).toBe(0); // le Test n'est pas encore compté (appliqué à la validation)
     expect(c.hunger?.days).toBe(2); // la faim a bien progressé d'un jour

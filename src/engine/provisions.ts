@@ -27,7 +27,7 @@
  * de Résistance (`resVal`) et le Bonus d'Endurance (`be`) sont passés par l'appelant, qui applique
  * lui-même les dégâts (via `loseWounds`).
  */
-import { Combatant, CharKey, ItemInstance } from './types';
+import { Combatant, CharKey, ItemInstance, UpkeepDeferTest } from './types';
 import { RNG, defaultRNG, d10 } from './dice';
 import { rollTest } from './tests';
 import { hasActiveFlag } from './activeFlags';
@@ -126,7 +126,7 @@ export function applyFaimTest(c: Combatant, success: boolean, be: number, rng: R
  * avec la pénalité cumulative (−10 × Tests déjà tentés, l.418) pour qu'il devienne une ÉTAPE
  * influençable (résolue par `applyFaimTest`). Sans `deferTest` (contextes eager), le jet est roulé ici.
  */
-export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: RNG = defaultRNG, deferTest?: (penalty: number) => void): FoodUpkeepResult {
+export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: RNG = defaultRNG, deferTest?: UpkeepDeferTest): FoodUpkeepResult {
   const res: FoodUpkeepResult = { ate: false, rationConsumed: false, damage: 0, log: [] };
   if (c.dead) return res;
   // Sustentation magique (Graisse de la terre, LDB 48 : « n'a pas besoin de manger ou de boire ») :
@@ -167,7 +167,7 @@ export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: R
     if (deferTest) {
       // Cascade de nuit : le Test devient une ÉTAPE influençable (résolue par `applyFaimTest`).
       c.hunger = h; // days++ enregistré ; tests/échecs appliqués à la validation de l'étape
-      deferTest(penalty);
+      deferTest({ kind: 'faim', label: `Faim — ${c.name}`, base: resVal, difficulty: 'intermediaire', penalty });
       return res;
     }
     const t = rollTest(resVal, 'intermediaire', rng, penalty);

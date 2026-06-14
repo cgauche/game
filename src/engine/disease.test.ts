@@ -8,6 +8,8 @@ import {
   diseaseBlesseCount,
   diseaseCharPenalties,
   rollContraction,
+  applyDiseaseBlesse,
+  applyDiseasePersist,
 } from './disease';
 
 /** RNG scripté : renvoie les valeurs dans l'ordre (déjà dans les bornes attendues). */
@@ -59,6 +61,20 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
     tickDisease(c, 1, seq([50, 5, 99]), 1);
     expect(c.diseases!.map((d) => d.name)).toEqual(['Blessure Purulente']);
     expect(c.diseases![0].phase).toBe('active'); // contractée « instantanément » (l.32)
+  });
+
+  it('tickDisease(defer) : DIFFÈRE les Tests (blessé + persistant), n’en roule AUCUN, résolus par les applicateurs', () => {
+    const c = sick({ diseases: [contractDisease('Infection Mineure', seq([]), { incubation: 0, duration: 1 })!] });
+    const kinds: string[] = [];
+    // seq([]) : si un seul jet était tiré, il renverrait undefined — la cascade ne DOIT rien rouler.
+    const log = tickDisease(c, 1, seq([]), 80, (spec) => kinds.push(spec.kind));
+    expect(kinds.sort()).toEqual(['diseaseBlesse', 'diseasePersist']);
+    expect(c.diseases![0].endTestPending).toBe(true); // la maladie attend la validation de son étape
+    expect(log.some((l) => /guérit|persiste|Purulente|Gangrène/.test(l))).toBe(false); // RIEN pré-résolu
+    // Résolution à la validation des étapes : blessé réussi (no-op), persistant réussi → guérison.
+    applyDiseaseBlesse(c, true, seq([]));
+    applyDiseasePersist(c, 'Infection Mineure', true, 2, seq([]));
+    expect(c.diseases!.length).toBe(0);
   });
 
   it('persistant échec stupéfiant (−6) → Infection du Sang', () => {
