@@ -62,6 +62,20 @@ function setup(worldMap: WorldMap, party: Combatant[] = [hero({ items: [ration('
   useGame.getState().loadProject([sceneA(), sceneB()], 'lieu-a-scene', worldMap);
 }
 
+/** Dort à une halte de nuit : « Dormir » puis déroule la CASCADE séquentielle (lance + valide chaque
+ *  jet) s'il y en a une — sinon (rien à influencer) la route a déjà repris. La fin de cascade reprend
+ *  le voyage (purpose 'travel'). Remplace l'ancien restSleep→bilan→restContinue. */
+function sleepThroughHalt(): void {
+  useGame.getState().restSleep();
+  let guard = 0;
+  while (useGame.getState().pendingCascade && guard++ < 60) {
+    const p = useGame.getState().pendingCascade!;
+    const cur = p.participants[p.cursor];
+    if (cur.target != null && !cur.result) useGame.getState().cascadeRoll(cur.id);
+    useGame.getState().cascadeNext();
+  }
+}
+
 beforeEach(() => {
   seedBattleRng(1);
 });
@@ -88,9 +102,7 @@ describe('startTravel — à pied', () => {
     expect(st.scene?.id).toBe('lieu-a-scene'); // toujours en route
     expect(st.pendingRest?.phase).toBe('setup');
     expect(st.pendingRest?.places.auberge).toBeFalsy();
-    useGame.getState().restSleep();
-    expect(useGame.getState().pendingRest?.phase).toBe('bilan');
-    useGame.getState().restContinue(); // « Reprendre la route » au matin
+    sleepThroughHalt(); // « Dormir » → cascade (ou reprise directe) → la route repart au matin
     st = useGame.getState();
     expect(st.scene?.id).toBe('lieu-b-scene');
     // Jour 1 : 6 h de marche (24 km) + nuit jusqu'à l'aube ; jour 2 : 1 h 30 (6 km) → > 17 h au total.
@@ -108,9 +120,8 @@ describe('startTravel — à pied', () => {
     expect(p.places.auberge).toBe(true);
     expect(p.perHero[useGame.getState().party[0].id].lodging).toBe('privee'); // défaut auberge
     const before = toBrass(useGame.getState().money);
-    useGame.getState().restSleep();
+    sleepThroughHalt();
     expect(toBrass(useGame.getState().money)).toBe(before - 120 - 12); // chambre 10 pa + repas 1 pa
-    useGame.getState().restContinue();
     expect(useGame.getState().scene?.id).toBe('lieu-b-scene');
   });
 
@@ -239,10 +250,9 @@ describe('nourriture en voyage (LDB 18 l.417-422)', () => {
   it('sans rations, un long voyage affame le groupe (compteur de faim) et bloque la récup nocturne', () => {
     setup(map({ km: 72 }), [hero({ items: [], wounds: { current: 5, max: 12 } })]); // 3 jours pleins à M4
     useGame.getState().startTravel('r1', 'pied');
-    // Chaque nuit : halte (modale de Repos) → dormir → reprendre la route au matin.
-    for (let n = 0; n < 4 && useGame.getState().pendingRest; n++) {
-      useGame.getState().restSleep();
-      useGame.getState().restContinue();
+    // Chaque nuit : halte (modale de Repos) → dormir (cascade) → reprendre la route au matin.
+    for (let n = 0; n < 6 && useGame.getState().pendingRest; n++) {
+      sleepThroughHalt();
     }
     const st = useGame.getState();
     expect(st.scene?.id).toBe('lieu-b-scene');

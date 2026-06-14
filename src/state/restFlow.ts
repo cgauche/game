@@ -21,15 +21,19 @@
  *  - Faim (LDB 18 l.417-422) : un héros sans pitance ne récupère pas (engine/provisions).
  */
 import type { Combatant } from '../engine/types';
+import type { RNG } from '../engine/dice';
 import type { RollBreakdown } from '../engine/combat';
 import { battleRng } from './battleRng';
 import { rollTest } from '../engine/tests';
 import { partyBest } from '../engine/skills';
 import { hasHealSkill } from '../engine/healing';
-import { isOutOfAction } from '../engine/conditions';
-import { restRecovery, restResistVal, type RestRoll } from '../engine/rest';
+import { isOutOfAction, addCondition } from '../engine/conditions';
+import { restRecovery, restResistVal, applyRecoveryDay, needsRecoveryRoll, recoveryTarget, type RestRoll } from '../engine/rest';
 import { rollContraction, DISEASE_DEFS, contagiousDiseases } from '../engine/disease';
-import { weatherExposure, exposureTestCount, exposureNight, expireExposureEffects, partyHasTent, type ExposureSeverity } from '../engine/exposure';
+import { weatherExposure, exposureTestCount, exposureNight, expireExposureEffects, partyHasTent, applyExposureFailure, exposureTarget, type ExposureSeverity } from '../engine/exposure';
+import { effectiveChar } from '../engine/characteristics';
+import { registerCascadeApplier, startCascade } from './cascade';
+import type { CascadeStep } from './pendings';
 import { isRation, feedFromMeal } from '../engine/provisions';
 import { toBrass, fromBrass, canAfford, subtract as moneySub, formatMoney, type Money } from '../engine/money';
 import { minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
@@ -149,6 +153,21 @@ export function sleepParty(
   }
 
   // Contagion de promiscuité (chambrée/campement — LDB 20 l.185, 1 Test de Contraction par jour).
+  for (const c of runContagion(party, n, rng)) {
+    entries.push({ actorId: c.actorId, icon: '🤒', label: `Contagion (${c.dz})`, text: c.log.join(' '), tone: 'bad' });
+    journal.push(...c.log);
+  }
+
+  const title = n > 1 ? `— Le groupe se repose ${n} jours —` : '— Le groupe dort jusqu’à l’aube —';
+  set({ party: [...get().party], journal: [...get().journal.slice(-40), title, ...journal] });
+  bus.emit(EVT.SCENE_DIRTY);
+  return entries;
+}
+
+/** Contagion de promiscuité (LDB 20 l.185, 1 Test de Contraction par jour) — partagé par la nuit
+ *  EAGER (sleepParty) et la cascade INTERACTIVE (buildNightCascade), source unique. */
+function runContagion(party: Combatant[], n: number, rng: RNG): { actorId: string; dz: string; log: string[] }[] {
+  const out: { actorId: string; dz: string; log: string[] }[] = [];
   for (const sick of party) {
     for (const dz of contagiousDiseases(sick)) {
       for (const other of party) {
@@ -156,19 +175,149 @@ export function sleepParty(
         const def = DISEASE_DEFS[dz.name];
         for (let d = 0; d < n; d++) {
           const log = rollContraction(other, dz.name, restResistVal(other), def?.contractDifficulty ?? 'accessible', rng);
-          if (log.length) {
-            entries.push({ actorId: other.id, icon: '🤒', label: `Contagion (${dz.name})`, text: log.join(' '), tone: 'bad' });
-            journal.push(...log);
-          }
+          if (log.length) out.push({ actorId: other.id, dz: dz.name, log });
         }
       }
     }
   }
+  return out;
+}
 
-  const title = n > 1 ? `— Le groupe se repose ${n} jours —` : '— Le groupe dort jusqu’à l’aube —';
-  set({ party: [...get().party], journal: [...get().journal.slice(-40), title, ...journal] });
+// ── CASCADE de NUIT (régime SÉQUENTIEL influençable, cf. cascade.ts) : chaque jet subi devient une
+//    ÉTAPE (Lancer → Chance/Résilience → Valider, qui VERROUILLE le jet avant le suivant). La
+//    CONSÉQUENCE par `kind` réutilise les primitives PURES (applyRecoveryDay, applyExposureFailure…)
+//    — zéro duplication de formule vs la nuit eager (sleepParty/restRecovery). Une défaillance
+//    impacte la suite (escalade Exposition, abri → nombre de jets) → c'est pourquoi c'est séquentiel.
+
+/** Jets d'Exposition au froid pour les campeurs (`count` par campeur) — insérés par l'abri. */
+function buildExposureSteps(party: Combatant[], camperIds: string[], count: number): CascadeStep[] {
+  const steps: CascadeStep[] = [];
+  for (const id of camperIds) {
+    const h = party.find((x) => x.id === id);
+    if (!h) continue;
+    const resVal = restResistVal(h);
+    for (let i = 0; i < count; i++) {
+      steps.push({ id: `expo-${id}-${i}`, kind: 'exposure', actorId: id, label: `Exposition — ${h.name}`, icon: '🥶',
+        rollLabel: 'Résistance', base: resVal, target: exposureTarget(h, resVal), result: null, interactive: true });
+    }
+  }
+  return steps;
+}
+
+registerCascadeApplier('recovery', (_get, _set, step, hero) => {
+  if (!hero || !step.result) return;
+  const before = hero.wounds.current;
+  const { wokeUp } = applyRecoveryDay(hero, { sl: step.result.sl, success: step.result.success });
+  const j: string[] = [];
+  const healed = hero.wounds.current - before;
+  if (healed > 0) j.push(`${hero.name} récupère ${healed} PB.`);
+  else j.push(`${hero.name} ne récupère aucune Blessure cette nuit.`);
+  if (wokeUp) j.push(`${hero.name} reprend connaissance.`);
+  return { journal: j };
+});
+
+registerCascadeApplier('nightmare', (_get, _set, step, hero) => {
+  if (!hero || !step.result) return;
+  if (step.result.success) return { journal: [`${hero.name} dort d'un sommeil sans rêve.`] };
+  addCondition(hero, 'Exténué'); // LDB 21 l.92 : Calme +40 raté → Exténué
+  return { journal: [`${hero.name} est en proie à de terribles cauchemars (Calme +40 raté) → Exténué.`] };
+});
+
+registerCascadeApplier('shelter', (get, _set, step, hero) => {
+  if (!step.result) return;
+  const sheltered = step.result.success; // Survie en extérieur réussie → abri qui tient (ch.09 l.559)
+  const severity = (step.meta?.severity ?? 'difficile') as ExposureSeverity;
+  const camperIds = String(step.meta?.campers ?? '').split(',').filter(Boolean);
+  const count = exposureTestCount(severity, sheltered);
+  const insert = count > 0 ? buildExposureSteps(get().party, camperIds, count) : [];
+  return {
+    journal: [sheltered ? `${hero?.name ?? 'Le groupe'} dresse un abri — le camp tient la nuit.` : 'Aucun abri ne protège du temps.'],
+    insert,
+  };
+});
+
+registerCascadeApplier('exposure', (_get, _set, step, hero, ctx) => {
+  if (!hero || !step.result) return;
+  if (step.result.success) return { journal: [`${hero.name} endure le froid sans dommage.`] };
+  // Escalade CUMULATIVE (l.415) : compte les échecs d'Exposition DÉJÀ validés de CE héros.
+  const priorFails = ctx.steps.slice(0, ctx.index)
+    .filter((s) => s.kind === 'exposure' && s.actorId === hero.id && s.result && !s.result.success).length;
+  return { journal: applyExposureFailure(hero, priorFails + 1, battleRng()).log };
+});
+
+/** Valeur de Calme d'un héros (LDB 21 : FM effective + avances de Calme) — cible du jet de cauchemars. */
+function calmeVal(c: Combatant): number {
+  return effectiveChar(c, 'FM') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('calme'))?.advances ?? 0);
+}
+
+/**
+ * Construit la cascade d'UNE nuit (single-night INTERACTIVE) : avance l'horloge à l'aube, applique
+ * l'entretien quotidien + la contagion + la récupération SANS jet (PB plein/affamé) en EAGER (journal),
+ * et DIFFÈRE en ÉTAPES influençables : abri de fortune (→ insère l'Exposition), Exposition (escalade),
+ * récupération (Résistance +20), cauchemars (Calme +40). Réutilise les primitives pures (zéro
+ * duplication vs sleepParty). Renvoie les étapes + le journal eager + l'horloge avant/après.
+ */
+export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fedDaily?: boolean } = {}): { steps: CascadeStep[]; log: string[]; slept: { from: number; to: number } } {
+  const party = get().party;
+  const rng = battleRng();
+  const log: string[] = [];
+  const from = get().gameTime;
+  // La nuit passe — une journée de repos se termine à l'AUBE.
+  const toDawn = minutesUntilNext(from, DAWN_MINUTE);
+  set({ gameTime: from + (toDawn === 0 ? MINUTES_PER_DAY : toDawn) });
+  bus.emit(EVT.TIME_ADVANCED, { minutes: get().gameTime - from });
+  // Entretien quotidien (#T3) — eager (rations/faim, maladies, convalescence).
+  const caredFor = party.some((h) => hasHealSkill(h) && !h.dead && !isOutOfAction(h));
+  log.push(...runDailyUpkeep(get, set, { caredFor, fedDaily: opts.fedDaily }));
+
+  const steps: CascadeStep[] = [];
+  // Campement : Exposition (intempéries) — abri de fortune (STEP) → insère les jets d'Exposition.
+  const campers = party.filter((h) => !h.dead && p.perHero[h.id]?.lodging === 'dehors');
+  const severity = weatherExposure(get().scene?.weather);
+  if (campers.length && severity !== 'clement') {
+    const camperIds = campers.map((h) => h.id);
+    if (partyHasTent(party)) {
+      log.push('La tente est montée — le groupe dort à l’abri.');
+      const count = exposureTestCount(severity, true); // tente : extrême = 2 Tests, difficile = 0
+      if (count > 0) steps.push(...buildExposureSteps(party, camperIds, count));
+    } else {
+      const best = partyBest(party.filter((h) => !h.dead), 'Survie en extérieur');
+      if (best) {
+        steps.push({ id: 'abri', kind: 'shelter', actorId: best.actor.id, label: 'Abri de fortune', icon: '⛺',
+          rollLabel: 'Survie en extérieur', base: best.value, target: best.value, result: null, interactive: true,
+          meta: { severity, campers: camperIds.join(',') } });
+      } else {
+        const count = exposureTestCount(severity, false);
+        if (count > 0) steps.push(...buildExposureSteps(party, camperIds, count));
+      }
+    }
+    for (const h of campers) expireExposureEffects(h, get().gameTime + MINUTES_PER_DAY); // dissipation après 24 h au chaud
+  }
+
+  // Récupération + cauchemars : un jet = une étape ; sans jet (PB plein/affamé/instable) → eager.
+  for (const h of party) {
+    if (h.dead) continue;
+    if (needsRecoveryRoll(h)) {
+      steps.push({ id: `recov-${h.id}`, kind: 'recovery', actorId: h.id, label: `Récupération — ${h.name}`, icon: '🛌',
+        rollLabel: 'Résistance', base: restResistVal(h), target: recoveryTarget(h), result: null, interactive: true });
+    } else {
+      const before = h.wounds.current;
+      const { wokeUp } = applyRecoveryDay(h, null);
+      if (h.wounds.current - before > 0) log.push(`${h.name} récupère ${h.wounds.current - before} PB.`);
+      if (wokeUp) log.push(`${h.name} reprend connaissance.`);
+    }
+    if (h.nightmares) {
+      steps.push({ id: `nm-${h.id}`, kind: 'nightmare', actorId: h.id, label: `Cauchemars — ${h.name}`, icon: '😱',
+        rollLabel: 'Calme', base: calmeVal(h), target: calmeVal(h) + 40, result: null, interactive: true });
+    }
+  }
+
+  // Contagion (eager witness) — partagé avec la nuit eager.
+  for (const c of runContagion(party, 1, rng)) log.push(...c.log);
+
+  set({ party: [...get().party], journal: [...get().journal.slice(-40), '— Le groupe dort jusqu’à l’aube —', ...log] });
   bus.emit(EVT.SCENE_DIRTY);
-  return entries;
+  return { steps, log, slept: { from, to: get().gameTime } };
 }
 
 /** Prix RAW (LDB ch.66 p.304), en sous de cuivre — piètre = ½. */
@@ -295,8 +444,28 @@ export function restSleep(get: Get, set: Set): void {
     // 'ration' : consommée par l'entretien quotidien (#T3) ; 'rien' : la Faim suivra son cours.
   }
 
+  const preLog = pre.map((e) => e.text ?? e.label);
+
+  // 3a. NUIT UNIQUE → CASCADE séquentielle influençable : chaque jet subi (abri, Exposition,
+  //     récupération, cauchemars) est une ÉTAPE qu'on lance, influence (Chance/Résilience) puis
+  //     VERROUILLE avant la suivante — une défaillance impacte la suite (escalade/abri). Le report
+  //     de voyage du jour a déjà été lu en phase RÉGLAGES (RestModal) ; on enchaîne sur la nuit.
+  if (p.days === 1) {
+    const { steps, log } = buildNightCascade(get, set, p);
+    set({ pendingRest: null });
+    if (steps.length) {
+      const title = p.places.auberge ? 'Nuit à l’auberge' : p.places.maison ? 'Nuit chez soi' : 'Campement';
+      startCascade(get, set, { title, icon: '🌙', purpose: p.travelHalt ? 'travel' : 'night', travelHalt: p.travelHalt, steps, log: [...preLog, ...log] });
+    } else {
+      // Rien à influencer (PB pleins, pas de campement) — on a déjà dormi : on enchaîne.
+      for (const l of preLog) get().log(l);
+      if (p.travelHalt) continueTravelAfterNight(get, set);
+    }
+    return;
+  }
+
+  // 3b. Repos de PLUSIEURS jours → résolution EAGER (on ne relance pas N nuits × M jets) : bilan lu.
   const from = get().gameTime;
-  // 3. La nuit (moteur unique) — avec l'Exposition du campement juste avant la récupération.
   const entries = sleepParty(get, set, p.days, {
     beforeRecovery: (out) => {
       const campers = party.filter((h) => !h.dead && p.perHero[h.id]?.lodging === 'dehors');

@@ -26,12 +26,16 @@ import { battleRng } from './battleRng';
  * Conséquence d'une étape, appliquée à la VALIDATION. Mute le héros (via get/set), renvoie les lignes
  * de journal et d'éventuelles étapes à INSÉRER juste après l'étape courante (dépendance). Vit dans le
  * registre — pas dans le pending (coop). `step.result` est garanti non-null si `step.target != null`.
+ * `ctx` donne les étapes DÉJÀ jouées (`ctx.steps[0..index-1]` committées) : une escalade cumulative
+ * (Exposition au froid : 1ᵉʳ échec → −10 CT/Ag/Dex, 2ᵉ → reste, 3ᵉ → Blessures) lit le nombre
+ * d'échecs précédents de CE héros — c'est cette dépendance qui rend la séquence séquentielle.
  */
 export type CascadeApplier = (
   get: Get,
   set: Set,
   step: CascadeStep,
   hero: Combatant | undefined,
+  ctx: { steps: CascadeStep[]; index: number },
 ) => { journal?: string[]; insert?: CascadeStep[] } | void;
 
 /** Registre des conséquences par `kind` — source unique extensible (+1 entrée par nature d'étape).
@@ -63,7 +67,7 @@ export function startCascade(
 function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number): { steps: CascadeStep[]; journal: string[] } {
   const step = steps[i];
   const hero = step.actorId ? actorIn(get(), step.actorId) : undefined;
-  const out = cascadeAppliers[step.kind]?.(get, set, step, hero);
+  const out = cascadeAppliers[step.kind]?.(get, set, step, hero, { steps, index: i });
   const journal = out?.journal ?? [];
   for (const l of journal) get().log(l);
   let next = steps.map((x, k) => (k === i ? { ...x, committed: true } : x));

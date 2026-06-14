@@ -1,7 +1,9 @@
 /**
  * Modale de REPOS (state/restFlow) : offre par lieu/zone, choix PAR HÉROS (couchage + pitance,
- * orthogonaux), coût RAW (LDB ch.66), Exposition d'un campement (LDB 18 l.408-415), bilan
- * globalisé (multi-jets). Le moteur de nuit `sleepParty` est testé par rest.test / upkeep-cascade.
+ * orthogonaux), coût RAW (LDB ch.66), Exposition d'un campement (LDB 18 l.408-415). Une NUIT UNIQUE
+ * passe désormais par la CASCADE séquentielle influençable (chaque jet = une étape, verrouillée à
+ * « Valider » avant le suivant) ; le moteur de nuit `sleepParty` (multi-jours/eager) reste testé par
+ * rest.test / upkeep-cascade.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
@@ -13,6 +15,40 @@ import { toBrass } from '../engine/money';
 import type { Combatant, ItemInstance } from '../engine/types';
 
 const ration = (uid: string): ItemInstance => ({ uid, name: 'Ration', kind: 'misc', qualities: [], enc: 0, equipped: false });
+
+/** Déroule la cascade de nuit (lance + valide chaque étape) jusqu'à la fin ; renvoie les `kind` vus
+ *  (les étapes INSÉRÉES en cours de route — Exposition après l'abri — y figurent). */
+function walkCascade(): string[] {
+  const kinds: string[] = [];
+  let guard = 0;
+  while (useGame.getState().pendingCascade && guard++ < 60) {
+    const p = useGame.getState().pendingCascade!;
+    const cur = p.participants[p.cursor];
+    kinds.push(cur.kind);
+    if (cur.target != null && !cur.result) useGame.getState().cascadeRoll(cur.id);
+    useGame.getState().cascadeNext();
+  }
+  return kinds;
+}
+
+/** Force l'abri de fortune à ÉCHOUER (pour exercer l'Exposition) : verrouille un échec sur l'étape
+ *  courante avant de la valider. Renvoie les `kind` de la suite. */
+function walkCascadeAbriFails(): string[] {
+  const kinds: string[] = [];
+  let guard = 0;
+  while (useGame.getState().pendingCascade && guard++ < 60) {
+    const p = useGame.getState().pendingCascade!;
+    const cur = p.participants[p.cursor];
+    kinds.push(cur.kind);
+    if (cur.target != null && !cur.result) {
+      // Échec garanti : dé 100 (raté), DR négatif — l'abri ne protège pas.
+      const parts = p.participants.map((s) => (s.id === cur.id ? { ...s, result: { roll: 100, target: cur.target!, sl: -5, success: false } } : s));
+      useGame.setState({ pendingCascade: { ...p, participants: parts } });
+    }
+    useGame.getState().cascadeNext();
+  }
+  return kinds;
+}
 
 const hero = (p: Partial<Combatant> = {}): Combatant =>
   ({
@@ -45,10 +81,13 @@ describe('openRest / choix par héros', () => {
     // Coût : 1 chambre privée (couvre 2, ici 1 occupant) 10 pa + 1 repas 1 pa = 132 sc.
     useGame.getState().restSleep();
     expect(toBrass(useGame.getState().money)).toBe(480 - 120 - 12);
-    expect(useGame.getState().pendingRest?.phase).toBe('bilan');
-    expect(useGame.getState().pendingRest?.slept).toBeTruthy(); // le temps écoulé est AFFICHÉ
-    useGame.getState().restContinue();
+    // Nuit UNIQUE → CASCADE (plus de bilan) : météo clémente → seulement les jets de récupération.
     expect(useGame.getState().pendingRest).toBeNull();
+    const cas = useGame.getState().pendingCascade!;
+    expect(cas.participants.length).toBe(2); // 2 héros à soigner (8/12 PB)
+    expect(cas.participants.every((s) => s.kind === 'recovery')).toBe(true);
+    walkCascade();
+    expect(useGame.getState().pendingCascade).toBeNull(); // cascade terminée
   });
 
   it('chambres regroupées par 2 (RAW : « convient à 2 invités ») : 2 héros en privée = 1 chambre (10 pa)', () => {
@@ -69,31 +108,36 @@ describe('openRest / choix par héros', () => {
       useGame.getState().restSet(id, { lodging: 'dehors' });
       useGame.getState().restSet(id, { food: 'rien' });
     }
-    useGame.getState().restSleep(); // gratuit → dort
-    expect(useGame.getState().pendingRest?.phase).toBe('bilan');
+    useGame.getState().restSleep(); // gratuit → dort (cascade, plus de bilan)
+    expect(useGame.getState().pendingRest).toBeNull();
+    expect(useGame.getState().pendingCascade).toBeTruthy();
     expect(toBrass(useGame.getState().money)).toBe(5);
   });
 
-  it('campement sous la pluie SANS tente ni Survie : Tests d’Exposition au bilan', () => {
+  it('campement sous la pluie sans tente : ABRI raté → l’Exposition est INSÉRÉE (2 Tests/campeur)', () => {
     const sc = emptyScene(10, 10);
-    sc.weather = 'pluie'; // difficile → 2 Tests/nuit (1 par 4 h)
+    sc.weather = 'pluie'; // difficile → 2 Tests/nuit si pas d'abri
     useGame.setState({ scene: sc });
     useGame.getState().openRest({ places: { camp: true } });
     useGame.getState().restSleep();
-    const entries = useGame.getState().pendingRest?.results ?? [];
-    expect(entries.filter((e) => e.label.startsWith('Exposition') && e.d).length).toBe(2 * 2); // 2 héros × 2 Tests
+    const cas = useGame.getState().pendingCascade!;
+    expect(cas.participants[0].kind).toBe('shelter'); // l'abri de fortune ouvre la séquence
+    // L'Exposition n'existe PAS encore : elle est INSÉRÉE quand l'abri est validé (dépendance).
+    expect(cas.participants.some((s) => s.kind === 'exposure')).toBe(false);
+    const kinds = walkCascadeAbriFails(); // abri raté → campement exposé
+    expect(kinds.filter((k) => k === 'exposure').length).toBe(2 * 2); // 2 héros × 2 Tests
   });
 
-  it('avec une TENTE dans le paquetage : pas d’Exposition par nuit difficile', () => {
+  it('avec une TENTE dans le paquetage : pas d’Exposition par nuit difficile (note de campement au journal)', () => {
     const sc = emptyScene(10, 10);
     sc.weather = 'pluie';
     useGame.setState({ scene: sc });
     useGame.getState().party[1].items!.push({ uid: 't', name: 'Tente', kind: 'misc', qualities: [], enc: 2, equipped: false } as ItemInstance);
     useGame.getState().openRest({ places: { camp: true } });
     useGame.getState().restSleep();
-    const entries = useGame.getState().pendingRest?.results ?? [];
-    expect(entries.some((e) => e.label === 'Campement')).toBe(true); // tente montée
-    expect(entries.some((e) => e.label.startsWith('Exposition'))).toBe(false);
+    const cas = useGame.getState().pendingCascade!;
+    expect(cas.participants.some((s) => s.kind === 'exposure')).toBe(false); // tente → 0 Test difficile
+    expect(cas.log.some((l) => /tente/i.test(l))).toBe(true); // « La tente est montée… »
   });
 });
 
