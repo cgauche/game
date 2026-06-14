@@ -14,6 +14,7 @@ import type {
   PendingTrample, PendingRun, PendingFocus, PendingPsych, PendingFrenzy, PendingApproach,
   PendingReload, PendingStateRecovery, PendingTest, PendingAppraise, PendingBargain, PendingHeal,
   PendingCorruption, PendingAttack, PendingDefense, PendingCast, PendingDisengage,
+  PendingCounterspell, CounterParticipant,
 } from './store';
 import type { PendingActivity } from './interludeFlow';
 import type { Combatant } from '../engine/types';
@@ -32,7 +33,7 @@ import { talentReverseFailed, talentTestDR, runMovementBonus } from '../engine/c
 import { rollTest, resolveOpposed, isDoubleRoll, type TestResult, evaluateTest, maxForcedRoll } from '../engine/tests';
 import { resolveRun } from '../engine/movement';
 import { testValue } from '../engine/skills';
-import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR } from '../engine/magic';
+import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR, resolveCounterspell, counterspellOutcomeFrom, castTestOf, castingValue } from '../engine/magic';
 import { effectiveChar } from '../engine/characteristics';
 import {
   resolvePeurTest, resolveTerreurTest, resolveCalmeSimple, resolveFrenzyEntry, calmeValue, CIBLE_TYPES,
@@ -224,6 +225,52 @@ export const FLOWS = {
         const spell = effectiveSpellOf(p);
         if (!target || !spell) return null;
         return { result: rederiveCastSL(actor, target, spell, p.result!, p.missile, p.focused, 1) };
+      },
+    },
+  }),
+
+  /**
+   * Contre-sort à PLUSIEURS (Dissipation, LDB 46 l.201-202/207) — flux MULTI : le jet d'incantation
+   * ENNEMI est figé (`p.cast`) ; chaque héros choisi oppose son Langue (Magick), avec son PROPRE
+   * cycle Chance/+1 DR/Pacte/Résilience. `resolve` consomme l'essai du Round (l.202). L'agrégat
+   * (dissipé si UN gagne, sinon meilleur DR net) vit dans `counterspellConfirm` (store).
+   */
+  counterspell: makeRollFlow<PendingCounterspell, CounterParticipant>({
+    key: 'pendingCounterspell',
+    // PARALLÈLE : chaque participant est un héros contre-lanceur (slot indépendant).
+    multi: { slots: (p) => p.participants, idOf: (part) => part.id, replace: (p, parts) => ({ ...p, participants: parts }) },
+    rolled: (part) => !!part.result,
+    actor: (s, part) => actorIn(s, part.id),
+    // Le jet d'incantation ENNEMI vit dans `pendingCast` (figé) ; le participant oppose son Langue
+    // (Magick). Jet NORMAL (RNG) ou Résilience (`forced`).
+    resolve: (s, part, actor, _get, forced) => {
+      const pcCast = s.pendingCast?.result;
+      if (!actor || !pcCast) return null;
+      const castT = castTestOf(pcCast);
+      actor.dispelledThisRound = true; // « un seul Sort chaque Round » (l.202) — consommé même raté
+      if (forced) {
+        // Résilience « Je ne faillirai pas ! » : le Contre-sort l'emporte (dissipe). Rien à forcer si déjà dissipé.
+        const cur = part.result;
+        if (cur?.dispelled) return null;
+        const value = castingValue(actor, 'Langue', 'Magick');
+        const roll = cur ? cur.counter.roll : 1; // 01 = jet propre garanti (LDB 17 l.73)
+        const sl = Math.max(cur?.counter.sl ?? 1, castT.sl + 1, 1);
+        const counterT: TestResult = { roll, target: value, success: true, sl, isDouble: isDoubleRoll(roll) };
+        return { result: counterspellOutcomeFrom(actor, counterT, castT) };
+      }
+      return { result: resolveCounterspell(actor, castT, battleRng()) };
+    },
+    // Jet propre RATÉ (d100 du contre-lanceur > sa cible) → relançable par la Chance (LDB 12).
+    failed: (part) => !!part.result && !part.result.counter.success,
+    caps: { forced: true }, // Résilience GLOBALE (pas de choix du dé : un Contre-sort gagnant suffit)
+    bonus: {
+      // Chance « +1 DR » : améliore le DR du Contre-sort, peut basculer l'opposition (LDB 17 l.26).
+      derive: (s, part, actor) => {
+        const pcCast = s.pendingCast?.result;
+        const cur = part.result;
+        if (!cur || !pcCast) return null;
+        const counterT: TestResult = { ...cur.counter, sl: cur.counter.sl + 1 };
+        return { result: counterspellOutcomeFrom(actor, counterT, castTestOf(pcCast)) };
       },
     },
   }),

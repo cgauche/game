@@ -482,21 +482,13 @@ export interface CounterParticipant extends RollParticipant {
   /** Résultat du Test opposé de Langue (Magick) de CE héros, ou null = pas encore lancé. */
   result: CounterspellOutcome | null;
 }
-/** Contre-sort à PLUSIEURS (LDB 46 l.201-202/207 : chaque dissipateur lance SÉPARÉMENT) — flux
- *  multi-participants « réaction type défense » : le jet d'incantation ENNEMI est figé (`cast`),
- *  chaque héros éligible oppose son Langue (Magick) avec son propre cycle Chance/Pacte/Résilience.
- *  Issue agrégée à l'application : dissipé si UN héros gagne ; sinon le sort se résout au meilleur DR
- *  net. « Laisser passer » = aucun Contre-sort. Le tour de l'IA est suspendu tant qu'il est non-null. */
-export interface PendingCounterspell extends MultiPending<CounterParticipant> {
-  casterId: string; // lanceur ENNEMI
-  targetId: string; // cible du sort (pour re-dériver l'effet si non dissipé)
-  spellLabel: string;
-  missile: boolean;
-  focused: boolean;
-  grimoire?: boolean;
-  /** Jet d'incantation ENNEMI, FIGÉ (= l'« attaquant » de chaque Test opposé). */
-  cast: CastResult & Partial<MissileResult>;
-}
+/** Contre-sort à PLUSIEURS (Dissipation, LDB 46 l.201-202/207 : chaque dissipateur lance SÉPARÉMENT)
+ *  — flux multi-participants « réaction type défense ». Le jet d'incantation ENNEMI vit dans
+ *  `pendingCast` (figé, suspend l'IA) ; ce pending ne porte QUE les héros contre-lanceurs, chacun
+ *  opposant son Langue (Magick) avec son propre cycle Chance/+1 DR/Pacte/Résilience. L'application
+ *  réutilise `castConfirm` (issue agrégée : dissipé si UN gagne ; sinon le sort se résout au meilleur
+ *  DR net). « Laisser passer » = aucun Contre-sort → le sort se résout tel quel. */
+export interface PendingCounterspell extends MultiPending<CounterParticipant> {}
 
 /** Soin de Guérison en attente (LDB 09-Compétences) : flux modale — « Lancer » (healRoll) → Chance
  *  (relance / +1 DR) → Résilience → « Appliquer » (healConfirm). Soigneur/cible résolus par `actorIn`

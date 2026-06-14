@@ -452,11 +452,16 @@ export function isDispellableSpell(spell: SpellLike): boolean {
  * (l.199, −1 DR/PA) et +1 DR par Talent lié réussi (LDB 10 l.20 — Diction instinctive).
  * Égalité du Test opposé : personne ne gagne → pas de dissipation, DR net 0 appliqué au NI.
  */
-export function resolveCounterspell(counter: Combatant, castT: TestResult, rng: RNG = defaultRNG): CounterspellOutcome {
-  const value = castingValue(counter, 'Langue', 'Magick');
-  const t = rollTest(value, 'intermediaire', rng);
-  const adj = t.success ? castTestTalentDR(counter, 'Langue (Magick)') - armourCastDRPenalty(counter) : 0;
-  const counterT = adj ? { ...t, sl: t.sl + adj } : t;
+/** Reconstruit le Test d'Incantation FIGÉ d'un résultat d'incantation, pour l'opposition du
+ *  Contre-sort (LDB 46 l.202 : « le lanceur tient le rôle attaquant »). Source unique. */
+export function castTestOf(res: Pick<CastResult, 'roll' | 'target' | 'sl'>): TestResult {
+  return { roll: res.roll, target: res.target, success: res.roll <= res.target, sl: res.sl, isDouble: res.roll === 100 || res.roll % 11 === 0 };
+}
+
+/** Issue d'un Contre-sort à partir d'un jet de contre-lanceur DÉJÀ obtenu (`counterT`, DR déjà
+ *  ajusté) opposé au Test d'Incantation figé. Source UNIQUE de l'opposition + du journal — partagée
+ *  par le jet RNG (`resolveCounterspell`), la Chance « +1 DR », et la Résilience (dé forcé). */
+export function counterspellOutcomeFrom(counter: Combatant, counterT: TestResult, castT: TestResult): CounterspellOutcome {
   const opp = resolveOpposed(castT, counterT); // le lanceur tient le rôle « attaquant »
   const dispelled = opp.winner === 'defender';
   const net = castT.sl - counterT.sl;
@@ -468,6 +473,14 @@ export function resolveCounterspell(counter: Combatant, castT: TestResult, rng: 
       ? `Contre-sort de ${counter.name} (🎲 ${counterT.roll}/${counterT.target}, DR ${counterT.sl}) : le Sort est DISSIPÉ.`
       : `Contre-sort de ${counter.name} (🎲 ${counterT.roll}/${counterT.target}, DR ${counterT.sl}) : insuffisant — l'incantation se résout à DR ${net}.`,
   };
+}
+
+export function resolveCounterspell(counter: Combatant, castT: TestResult, rng: RNG = defaultRNG): CounterspellOutcome {
+  const value = castingValue(counter, 'Langue', 'Magick');
+  const t = rollTest(value, 'intermediaire', rng);
+  const adj = t.success ? castTestTalentDR(counter, 'Langue (Magick)') - armourCastDRPenalty(counter) : 0;
+  const counterT = adj ? { ...t, sl: t.sl + adj } : t;
+  return counterspellOutcomeFrom(counter, counterT, castT);
 }
 
 export interface MissileResult extends CastResult {

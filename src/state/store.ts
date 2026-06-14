@@ -19,7 +19,7 @@ import {
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, aiOvercastPlan,
   castSightBlocked, spellSightOf, castZoneSpell, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone,
-  counterspellCandidates, applyCounterspell,
+  counterspellCandidates, applyCounterspell, applyCounterspellOutcome,
   maybeOpenHeroPsych, displaceSmaller, applySurprise, resolveBladeTrap,
   displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget,
 } from './combatFlow';
@@ -106,7 +106,7 @@ import type {
   Money, PendingVictory, PendingLoot, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
   PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingRun, PendingApproach, PendingFocus,
   PendingPsych, PendingFrenzy, RevealEntry, PendingFumble, PendingDeviation, PendingBladeTrap, PendingRenounce, PendingDefense,
-  PendingDisengage, PendingCast, PendingHeal, PendingCorruption,
+  PendingDisengage, PendingCast, PendingCounterspell, CounterParticipant, PendingHeal, PendingCorruption,
 } from './pendings';
 import {
   PendingEncounterPsych,
@@ -277,6 +277,9 @@ export interface GameState {
   /** Déplacement-puis-fouille : id du décor interactif visé, déclenché à l'arrivée adjacente (P5). */
   pendingInteract: string | null;
   pendingCast: PendingCast | null;
+  /** Contre-sort à PLUSIEURS (réaction au Sort d'un ENNEMI figé dans `pendingCast`) : héros
+   *  contre-lanceurs, chacun son jet (flux multi `FLOWS.counterspell`). Null = pas de réaction. */
+  pendingCounterspell: PendingCounterspell | null;
   /** Tir ENNEMI télégraphié : réticule « qui l'adversaire vise », montré ~0,7 s AVANT le tir. */
   enemyAim: { fromId: string; toId: string; melee?: boolean } | null;
   /** Coût/gain (Action/Mouvement/Avantage) de l'intention SOUS LA SOURIS (desktop) — alimente le
@@ -612,6 +615,18 @@ export interface GameState {
   castPlaceZone: (on: boolean) => void;
   castConfirm: () => void;
   castCancel: () => void;
+  /** Contre-sort à PLUSIEURS (flux multi `FLOWS.counterspell`) : chaque héros contre-lanceur a son
+   *  jet + son cycle Chance/+1 DR/Pacte/Résilience (ciblé par `pid`). */
+  counterspellRoll: (pid: string) => void;
+  counterspellReroll: (pid: string) => void;
+  counterspellBonusSL: (pid: string) => void;
+  counterspellDarkPact: (pid: string) => void;
+  counterspellForceSuccess: (pid: string) => void;
+  counterspellSetForcedRoll: (pid: string, roll: number) => void;
+  /** « Appliquer » : agrège (dissipé si UN gagne ; sinon le Sort se résout au meilleur DR net) → castConfirm. */
+  counterspellConfirm: () => void;
+  /** « Laisser passer » : aucun Contre-sort retenu → le Sort se résout tel quel (castConfirm). */
+  counterspellCancel: () => void;
   /** Incantation HORS COMBAT (couture D) : un héros lanceur cible self/allié ; sorts non-offensifs. */
   oocCastSpell: (casterId: string, label: string, targetId: string, fromGrimoire?: boolean) => void;
   battleFocusSpell: (label: string) => void;
@@ -903,6 +918,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingDisengage: null,
   pendingInteract: null,
   pendingCast: null,
+  pendingCounterspell: null,
   pendingHeal: null,
   medic: null,
   pendingRest: null,
@@ -1334,7 +1350,7 @@ export const useGame = create<GameState>((set, get) => ({
     // Ouverture = pause de début du Round 1 (pendingRoundStart) : champ visible, ordre d'Initiative dans la
     // frise, pré-emption « agir en premier » (Chance, #12a) — IA gelée. Un seul bouton « Commencer le combat »
     // (pas de phase « plan d'ensemble » séparée : c'était redondant avec la pause de Round).
-    set({ battle, mode: 'battle', pendingRoundStart: { round: battle.round }, pendingVictory: null, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingDeviation: null, pendingBladeTrap: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, enemyAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingEncounterPsych: null, pendingFrenzy: null, pendingFumble: null });
+    set({ battle, mode: 'battle', pendingRoundStart: { round: battle.round }, pendingVictory: null, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingDeviation: null, pendingBladeTrap: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, pendingCounterspell: null, enemyAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingEncounterPsych: null, pendingFrenzy: null, pendingFumble: null });
     get().faceAtCombatStart();
     bus.emit(EVT.SCENE_DIRTY);
   },
@@ -1667,6 +1683,32 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingCast: null });
     // Modale d'un lanceur ENNEMI fermée sans appliquer : reprendre le tour suspendu (anti soft-lock).
     if (caster?.kind === 'enemy' && get().battle) resumeEnemyTurn(get, set);
+  },
+  // Contre-sort à plusieurs (flux multi) : chaque verbe cible un participant via `pid` (fabrique unique).
+  counterspellRoll: (pid) => FLOWS.counterspell.roll(get, set, pid),
+  counterspellReroll: (pid) => FLOWS.counterspell.reroll(get, set, pid),
+  counterspellBonusSL: (pid) => FLOWS.counterspell.bonusSL(get, set, pid),
+  counterspellDarkPact: (pid) => FLOWS.counterspell.darkPact(get, set, pid),
+  counterspellForceSuccess: (pid) => FLOWS.counterspell.forceSuccess(get, set, pid),
+  counterspellSetForcedRoll: (pid, roll) => FLOWS.counterspell.setForcedRoll(get, set, roll, pid),
+  counterspellConfirm: () => {
+    const pcs = get().pendingCounterspell;
+    if (!pcs) return;
+    const rolled = pcs.participants.filter((p): p is CounterParticipant & { result: NonNullable<CounterParticipant['result']> } => !!p.result);
+    // Dissipé si UN héros gagne ; sinon le MEILLEUR DR de Contre-sort réduit l'incantation (LDB 46 l.207).
+    const disp = rolled.find((p) => p.result.dispelled);
+    const best = disp ?? (rolled.length ? rolled.reduce((b, p) => (p.result.counter.sl > b.result.counter.sl ? p : b)) : undefined);
+    set({ pendingCounterspell: null });
+    if (best) {
+      const counter = actorIn(get(), best.id);
+      if (counter) applyCounterspellOutcome(get, set, counter, best.result); // mute `pendingCast.result`
+    }
+    get().castConfirm(); // applique le Sort (dissipé ou au DR net) + reprend le tour de l'IA
+  },
+  counterspellCancel: () => {
+    if (!get().pendingCounterspell) return;
+    set({ pendingCounterspell: null });
+    get().castConfirm(); // « Laisser passer » : le Sort se résout tel quel
   },
   /** Ouvre une incantation HORS COMBAT (couture D) : un héros lanceur du groupe cible self/allié.
    *  Réservé aux sorts NON-offensifs — les Projectiles magiques exigent une cible ennemie (combat). */

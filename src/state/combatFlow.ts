@@ -69,11 +69,13 @@ import {
   knowsCastingSkill,
   isDispellableSpell,
   resolveCounterspell,
+  castTestOf,
   rederiveCastSL,
   parseSpellDamage,
   zdeDiameterMeters,
   type CastResult,
   type MissileResult,
+  type CounterspellOutcome,
 } from '../engine/magic';
 import { applyOps, resolveFormula, COMBAT_PERSIST } from '../engine/ops';
 import { spellSpecFor } from '../data/spellspecs';
@@ -2436,25 +2438,21 @@ export function counterspellCandidates(
   });
 }
 
-/** Applique un Contre-sort de `counter` au `pendingCast` FIGÉ (résultat déjà jeté) : Test opposé de
- *  Langue (Magick) (LDB 46 l.201-202) — dissipé si le contre-lanceur gagne, sinon l'incantation se
- *  re-détermine au DR NET. Marque l'essai du Round et re-dérive le résultat (Projectile compris) ;
- *  la Surincantation est re-planifiée (IA) ou remise à zéro (héros — le budget a changé). */
-export function applyCounterspell(get: Get, set: SetFn, counter: Combatant): boolean {
+/** Applique une issue de Contre-sort DÉJÀ obtenue (`out`) au `pendingCast` FIGÉ : dissipé → le Sort
+ *  échoue ; sinon l'incantation se re-détermine au DR NET (Projectile compris) et la Surincantation
+ *  de l'IA est re-planifiée. SOURCE UNIQUE de l'application — partagée par le Contre-sort SOLO
+ *  (IA, `applyCounterspell`) et le Contre-sort à PLUSIEURS (chaque héros a son jet déjà influencé,
+ *  `counterspellConfirm`). N'effectue PAS le jet (déjà fait) ni la consommation d'essai (à l'appelant). */
+export function applyCounterspellOutcome(get: Get, set: SetFn, counter: Combatant, out: CounterspellOutcome): boolean {
   const pc = get().pendingCast;
   if (!pc?.result || pc.result.dispelled) return false;
   const caster = get().battle?.combatants.find((c) => c.id === pc.casterId);
   const target = get().battle?.combatants.find((c) => c.id === pc.targetId);
   const spell = effectiveSpellOf(pc);
-  if (!caster || !target || !spell || !isDispellableSpell(spell)) return false;
-  if (counter.kind === caster.kind || counter.dispelledThisRound) return false;
-  counter.dispelledThisRound = true; // l'essai est consommé même s'il échoue (LDB 46 l.202)
+  if (!caster || !target || !spell) return false;
   const res = pc.result;
-  // Le Test d'Incantation du lanceur, reconstruit tel que figé (même convention que rederiveCastSL).
-  const castT = { roll: res.roll, target: res.target, success: res.roll <= res.target, sl: res.sl, isDouble: res.roll === 100 || res.roll % 11 === 0 };
-  const out = resolveCounterspell(counter, castT, battleRng());
-  // Zone NON POSÉE (flux « jet puis pose ») : pas de cible désignée — re-dériver le jet PUR (les
-  // Dégâts par cible seront dérivés du DR net à la pose), jamais un Projectile contre l'ancre.
+  // Zone NON POSÉE (flux « jet puis pose ») : re-dériver le jet PUR (Dégâts par cible dérivés du DR
+  // net à la pose), jamais un Projectile contre l'ancre.
   const unplacedZone = !!pc.zone && !pc.zone.center;
   let next: typeof pc.result;
   if (out.dispelled) {
@@ -2471,6 +2469,20 @@ export function applyCounterspell(get: Get, set: SetFn, counter: Combatant): boo
   const b = get().battle;
   if (b) set({ battle: { ...b, log: [...b.log, ev('info', out.log, counter.id, caster.id)] } });
   return true;
+}
+
+/** Contre-sort SOLO (IA auto-dissipe le Sort d'un héros) : roule le Test opposé de Langue (Magick)
+ *  (LDB 46 l.201-202) puis applique l'issue. Marque l'essai du Round (consommé même raté, l.202). */
+export function applyCounterspell(get: Get, set: SetFn, counter: Combatant): boolean {
+  const pc = get().pendingCast;
+  if (!pc?.result || pc.result.dispelled) return false;
+  const caster = get().battle?.combatants.find((c) => c.id === pc.casterId);
+  const spell = effectiveSpellOf(pc);
+  if (!caster || !spell || !isDispellableSpell(spell)) return false;
+  if (counter.kind === caster.kind || counter.dispelledThisRound) return false;
+  counter.dispelledThisRound = true; // l'essai est consommé même s'il échoue (LDB 46 l.202)
+  const out = resolveCounterspell(counter, castTestOf(pc.result), battleRng());
+  return applyCounterspellOutcome(get, set, counter, out);
 }
 
 /** Choix du lanceur sur une Incantation CRITIQUE (LDB 46 l.52-59). */

@@ -62,27 +62,34 @@ export interface ForcedPick {
   critable?: boolean;
 }
 
-export interface RollFlowSpec<P extends PendingBase> {
+export interface RollFlowSpec<P extends PendingBase, Slot extends PendingBase = P> {
   /** Clé du pending dans le store (ex. `'pendingTrample'`). */
   key: keyof GameState & string;
-  /** Le jet a-t-il déjà été lancé ? (`p.result != null` / `p.roll != null`). */
-  rolled: (p: P) => boolean;
-  /** L'acteur qui dépense Chance/Résilience. `undefined` → l'action de dépense est ignorée. */
-  actor: (s: GameState, p: P) => Combatant | undefined;
   /**
-   * Patch du pending qui pose le jet (appelle le moteur + RNG). `null` → abandon silencieux
+   * MULTI (N jets dans une modale) : énumère les SLOTS de jet du pending, leur id, et les ré-injecte.
+   * ABSENT ⇒ MONO : le pending EST le slot unique (`pid` ignoré par les handlers). Une SEULE fabrique
+   * pour les deux — le mono est le cas dégénéré N=1 (plus de `makeMultiRollFlow` recopié).
+   */
+  multi?: { slots: (p: P) => Slot[]; idOf: (slot: Slot) => string; replace: (p: P, slots: Slot[]) => P };
+  /** Le jet a-t-il déjà été lancé ? (`slot.result != null` / `slot.roll != null`). */
+  rolled: (slot: Slot) => boolean;
+  /** L'acteur qui dépense Chance/Résilience. `undefined` → l'action de dépense est ignorée. */
+  actor: (s: GameState, slot: Slot, p: P) => Combatant | undefined;
+  /**
+   * Patch du SLOT qui pose le jet (appelle le moteur + RNG). `null` → abandon silencieux
    * (précondition manquante : cible disparue, sort introuvable…) — AVANT toute dépense de point.
    * `actor` peut être `undefined` au premier jet (certains flux n'en ont pas besoin pour lancer).
-   * `get` : accès au store pour les résolveurs qui lisent l'environnement (resolveAttack).
-   * `forced` (5ᵉ arg, seulement si `caps.forced`) : Résilience — cf. `ForcedResolve`. Absent → jet normal.
+   * `get` : accès au store pour les résolveurs qui lisent l'environnement (resolveAttack). `forced`
+   * (seulement si `caps.forced`) : Résilience — cf. `ForcedResolve`. Absent → jet normal. `p` (dernier
+   * arg) : le pending parent, pour un flux multi qui lit un contexte partagé (MONO : `slot === p`).
    */
-  resolve: (s: GameState, p: P, actor: Combatant | undefined, get: Get, forced?: ForcedResolve) => Partial<P> | null;
+  resolve: (s: GameState, slot: Slot, actor: Combatant | undefined, get: Get, forced?: ForcedResolve, p?: P) => Partial<Slot> | null;
   /** Patch de RELANCE (défaut : `resolve`) — utile en Test opposé où l'adversaire garde son jet figé. */
-  reresolve?: (s: GameState, p: P, actor: Combatant, get: Get) => Partial<P> | null;
+  reresolve?: (s: GameState, slot: Slot, actor: Combatant, get: Get, p?: P) => Partial<Slot> | null;
   /** Jet « propre raté » → relançable par la Chance (LDB 12 : d100 raté, 1× max). */
-  failed: (p: P) => boolean;
+  failed: (slot: Slot) => boolean;
   /** Chance « +1 DR » (absent → le flux ne l'offre pas). `guard` → cas interdits (ex. Test binaire). */
-  bonus?: { guard?: (p: P) => boolean; derive: (s: GameState, p: P, actor: Combatant) => Partial<P> | null };
+  bonus?: { guard?: (slot: Slot) => boolean; derive: (s: GameState, slot: Slot, actor: Combatant, p?: P) => Partial<Slot> | null };
   /**
    * Traits déclaratifs du flux. `forced` : ce flux offre la Résilience (LDB 17 l.73, GLOBALE),
    * résolue DANS `resolve(…, forced)` — un seul résolveur porte les trois cas (jet normal,
@@ -91,33 +98,31 @@ export interface RollFlowSpec<P extends PendingBase> {
    * marchandage, évaluation…). Plus aucune dérive `force`/`forceRoll` séparée — cf. `ForcedResolve`.
    *
    * `picker` : sélecteur PARTAGÉ du dé choisi (UI `ForcedDie` → `ForcedRollPicker`). Pure, il lit la
-   * forme du résultat du flux (que `resolve` connaît déjà) et rend les props du picker ou `null`
-   * (masqué). Centralise la visibilité (`p.forced` + résultat « pickable ») et les props {roll,
-   * target, critable} — fini le câblage recopié dans chaque modale.
+   * forme du résultat du flux (que `resolve` connaît déjà) et rend les props du picker ou `null`.
    */
   caps?: {
     forced?: boolean;
-    picker?: (p: P, actor: Combatant | undefined) => ForcedPick | null;
+    picker?: (slot: Slot, actor: Combatant | undefined) => ForcedPick | null;
   };
   /** Patch de re-rendu après mutation en place de l'acteur. Défaut : `touchActors` (combat ⇄ groupe). */
   touch?: (s: GameState) => Partial<GameState>;
 }
 
 export interface RollFlowHandlers {
-  roll: (get: Get, set: Set) => void;
-  reroll: (get: Get, set: Set) => void;
-  bonusSL: (get: Get, set: Set) => void;
-  forceSuccess: (get: Get, set: Set) => void;
+  /** `pid` : id du slot ciblé (MULTI). Absent ⇒ MONO (le pending est le slot unique). */
+  roll: (get: Get, set: Set, pid?: string) => void;
+  reroll: (get: Get, set: Set, pid?: string) => void;
+  bonusSL: (get: Get, set: Set, pid?: string) => void;
+  forceSuccess: (get: Get, set: Set, pid?: string) => void;
   /** Choix du dé d'un Test forcé (no-op sans `caps.forced` ou avant `forceSuccess`). */
-  setForcedRoll: (get: Get, set: Set, roll: number) => void;
+  setForcedRoll: (get: Get, set: Set, roll: number, pid?: string) => void;
   /** Sélecteur du dé choisi pour le picker partagé (cf. `caps.picker`) — absent si le flux n'en a pas.
-   *  `p` est le pending CONCRET du flux (typé côté `caps.picker`) ; `any` ici car les handlers ne
-   *  portent pas le paramètre générique `P` — l'appelant (`ForcedDie`) le re-type. */
-  picker?: (p: any, actor: Combatant | undefined) => ForcedPick | null;
+   *  `slot` est le pending/participant CONCRET ; `any` ici (les handlers ne portent pas `Slot`). */
+  picker?: (slot: any, actor: Combatant | undefined) => ForcedPick | null;
   cancel: (get: Get, set: Set) => void;
   /** Sombre Pacte (LDB 19 l.16/41) : +1 Point de Corruption pour RELANCER un Test raté —
    *  autorisé même après la relance de Chance, répétable (chaque usage corrompt). Héros only. */
-  darkPact: (get: Get, set: Set) => void;
+  darkPact: (get: Get, set: Set, pid?: string) => void;
 }
 
 /**
@@ -205,56 +210,84 @@ function opDarkPact<P extends PendingBase>(
   commit(patch, { touch: true });
 }
 
-export function makeRollFlow<P extends PendingBase>(spec: RollFlowSpec<P>): RollFlowHandlers {
+/**
+ * Fabrique UNIQUE des flux de jet (mono ET multi). `locate(p, pid)` trouve le SLOT ciblé + un
+ * `commit` qui ré-injecte le patch au bon endroit : MONO → le slot EST le pending (`pid` ignoré) ;
+ * MULTI → `participants[pid]` (ou le 1er), ré-inséré via la lentille `spec.multi`. Le câblage des
+ * 7 verbes est écrit UNE fois — plus de `makeMultiRollFlow` qui recopiait la structure.
+ */
+export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P>(spec: RollFlowSpec<P, Slot>): RollFlowHandlers {
   const pendingOf = (s: GameState) => s[spec.key] as P | null | undefined;
   const touch = spec.touch ?? touchActors;
-  // commit MONO : le slot EST le pending → on écrit `s[key]`.
-  const commitOf = (set: Set, get: Get, p: P): Commit<P> => (patch, opts) =>
-    set({
-      [spec.key]: { ...p, ...patch, ...(opts?.rerolled ? { rerolled: true } : {}), ...(opts?.forced ? { forced: true } : {}) },
+  const locate = (set: Set, get: Get, p: P, pid?: string): { slot: Slot; commit: Commit<Slot> } | null => {
+    if (!spec.multi) {
+      const slot = p as unknown as Slot;
+      return { slot, commit: (patch, opts) => set({
+        [spec.key]: { ...slot, ...patch, ...(opts?.rerolled ? { rerolled: true } : {}), ...(opts?.forced ? { forced: true } : {}) },
+        ...(opts?.touch ? touch(get()) : {}),
+      } as Partial<GameState>) };
+    }
+    const slots = spec.multi.slots(p);
+    const slot = pid != null ? slots.find((x) => spec.multi!.idOf(x) === pid) : slots[0];
+    if (!slot) return null;
+    return { slot, commit: (patch, opts) => set({
+      [spec.key]: spec.multi!.replace(p, slots.map((x) => x === slot
+        ? { ...x, ...patch, ...(opts?.rerolled ? { rerolled: true } : {}), ...(opts?.forced ? { forced: true } : {}) }
+        : x)),
       ...(opts?.touch ? touch(get()) : {}),
-    } as Partial<GameState>);
+    } as Partial<GameState>) };
+  };
+  // Rangée TÉMOIN d'un multi (lecture seule, façon MultiRollList) : pas de jet/Résilience joueur.
+  const passive = (slot: Slot) => !!spec.multi && (slot as Partial<RollParticipant>).interactive === false;
+  const reresolveOf = (s: GameState, slot: Slot, actor: Combatant, get: Get, p: P) =>
+    spec.reresolve ? spec.reresolve(s, slot, actor, get, p) : spec.resolve(s, slot, actor, get, undefined, p);
   return {
-    picker: spec.caps?.picker,
-    roll(get, set) {
+    picker: spec.caps?.picker as RollFlowHandlers['picker'],
+    roll(get, set, pid) {
       const s = get(); const p = pendingOf(s); if (!p) return;
-      opRoll(spec.rolled(p), () => spec.resolve(s, p, spec.actor(s, p), get), commitOf(set, get, p));
+      const loc = locate(set, get, p, pid); if (!loc || passive(loc.slot)) return;
+      opRoll(spec.rolled(loc.slot), () => spec.resolve(s, loc.slot, spec.actor(s, loc.slot, p), get, undefined, p), loc.commit);
     },
-    reroll(get, set) {
+    reroll(get, set, pid) {
       const s = get(); const p = pendingOf(s); if (!p) return;
-      const actor = spec.actor(s, p);
-      opReroll(p, actor, spec.rolled(p), spec.failed(p), () => (spec.reresolve ?? spec.resolve)(s, p, actor!, get), get, commitOf(set, get, p));
+      const loc = locate(set, get, p, pid); if (!loc) return;
+      const actor = spec.actor(s, loc.slot, p);
+      opReroll(loc.slot, actor, spec.rolled(loc.slot), spec.failed(loc.slot), () => reresolveOf(s, loc.slot, actor!, get, p), get, loc.commit);
     },
-    bonusSL(get, set) {
+    bonusSL(get, set, pid) {
       if (!spec.bonus) return;
       const s = get(); const p = pendingOf(s); if (!p) return;
-      const actor = spec.actor(s, p);
-      const allowed = !spec.bonus.guard || spec.bonus.guard(p);
-      opBonusSL(actor, spec.rolled(p), allowed, () => spec.bonus!.derive(s, p, actor!), commitOf(set, get, p));
+      const loc = locate(set, get, p, pid); if (!loc) return;
+      const actor = spec.actor(s, loc.slot, p);
+      const allowed = !spec.bonus.guard || spec.bonus.guard(loc.slot);
+      opBonusSL(actor, spec.rolled(loc.slot), allowed, () => spec.bonus!.derive(s, loc.slot, actor!, p), loc.commit);
     },
-    forceSuccess(get, set) {
+    forceSuccess(get, set, pid) {
       if (!spec.caps?.forced) return;
       const s = get(); const p = pendingOf(s); if (!p) return;
-      opForceSuccess(spec.actor(s, p), () => spec.resolve(s, p, spec.actor(s, p), get, {}), commitOf(set, get, p));
+      const loc = locate(set, get, p, pid); if (!loc || passive(loc.slot)) return;
+      opForceSuccess(spec.actor(s, loc.slot, p), () => spec.resolve(s, loc.slot, spec.actor(s, loc.slot, p), get, {}, p), loc.commit);
     },
-    setForcedRoll(get, set, roll) {
+    setForcedRoll(get, set, roll, pid) {
       if (!spec.caps?.forced) return;
       const s = get(); const p = pendingOf(s); if (!p) return;
-      opSetForcedRoll(p, spec.actor(s, p), roll, (r) => spec.resolve(s, p, spec.actor(s, p), get, { roll: r }), commitOf(set, get, p));
+      const loc = locate(set, get, p, pid); if (!loc) return;
+      opSetForcedRoll(loc.slot, spec.actor(s, loc.slot, p), roll, (r) => spec.resolve(s, loc.slot, spec.actor(s, loc.slot, p), get, { roll: r }, p), loc.commit);
     },
     cancel(_get, set) {
       set({ [spec.key]: null } as Partial<GameState>);
     },
-    darkPact(get, set) {
+    darkPact(get, set, pid) {
       const s = get(); const p = pendingOf(s); if (!p) return;
-      const actor = spec.actor(s, p);
-      opDarkPact(actor, spec.rolled(p), spec.failed(p), () => (spec.reresolve ?? spec.resolve)(s, p, actor!, get), get, set, commitOf(set, get, p));
+      const loc = locate(set, get, p, pid); if (!loc) return;
+      const actor = spec.actor(s, loc.slot, p);
+      opDarkPact(actor, spec.rolled(loc.slot), spec.failed(loc.slot), () => reresolveOf(s, loc.slot, actor!, get, p), get, set, loc.commit);
     },
   };
 }
 
-// ── Multi-participants : N jets dans une modale, chacun son cycle d'influence (cf. spec
-//    docs/superpowers/specs/2026-06-14-multi-roll-modal-design.md). Réutilise les opérations ci-dessus. ──
+// ── Multi-participants : types des SLOTS d'un flux multi (le câblage vit dans `makeRollFlow` via
+//    `spec.multi`). Cf. docs/superpowers/specs/2026-06-14-multi-roll-modal-design.md. ──
 
 /** État d'UN jet dans un groupe (mêmes drapeaux d'influence que le mono). Les flux concrets
  *  l'ÉTENDENT pour porter leur résultat (ex. `CounterParticipant` ajoute `counter`). */
@@ -267,94 +300,10 @@ export interface RollParticipant extends PendingBase {
   interactive?: boolean;
 }
 
-/** Le pending d'un flux multi porte le tableau de participants (+ son contexte figé propre). */
-export interface MultiPending<Part extends RollParticipant = RollParticipant> {
+/** Le pending d'un flux multi (parallèle ou séquentiel) porte SES slots. Le câblage vit dans
+ *  `makeRollFlow` via `spec.multi = { slots: (p) => p.participants, idOf, replace }`. Étend
+ *  `PendingBase` pour satisfaire la contrainte de la fabrique (ses drapeaux d'influence restent
+ *  inutilisés au niveau conteneur — l'influence vit sur chaque participant). */
+export interface MultiPending<Part extends RollParticipant = RollParticipant> extends PendingBase {
   participants: Part[];
-}
-
-/**
- * Spec d'un flux MULTI : même contrat que `RollFlowSpec` mais résolu PAR participant. `resolve`
- * reçoit le participant ET son acteur ; tout le reste (Chance/Pacte/Résilience/relance) vient des
- * opérations partagées. `aggregate` (métier de groupe) vit dans le store comme les `xConfirm`.
- */
-export interface MultiRollFlowSpec<P extends MultiPending<Part>, Part extends RollParticipant = RollParticipant> {
-  key: keyof GameState & string;
-  /** Le participant a-t-il lancé ? */
-  rolled: (part: Part) => boolean;
-  /** Acteur d'un participant (qui dépense Chance/Résilience). */
-  actor: (s: GameState, p: P, part: Part) => Combatant | undefined;
-  resolve: (s: GameState, p: P, part: Part, actor: Combatant | undefined, get: Get, forced?: ForcedResolve) => Partial<Part> | null;
-  reresolve?: (s: GameState, p: P, part: Part, actor: Combatant, get: Get) => Partial<Part> | null;
-  failed: (part: Part) => boolean;
-  bonus?: { guard?: (part: Part) => boolean; derive: (s: GameState, p: P, part: Part, actor: Combatant) => Partial<Part> | null };
-  caps?: { forced?: boolean; picker?: (part: Part, actor: Combatant | undefined) => ForcedPick | null };
-  touch?: (s: GameState) => Partial<GameState>;
-}
-
-/** Handlers d'un flux multi : mêmes verbes que le mono, mais ciblant un PARTICIPANT par `id`. */
-export interface MultiRollFlowHandlers<Part extends RollParticipant = RollParticipant> {
-  roll: (get: Get, set: Set, pid: string) => void;
-  reroll: (get: Get, set: Set, pid: string) => void;
-  bonusSL: (get: Get, set: Set, pid: string) => void;
-  forceSuccess: (get: Get, set: Set, pid: string) => void;
-  setForcedRoll: (get: Get, set: Set, pid: string, roll: number) => void;
-  picker?: (part: Part, actor: Combatant | undefined) => ForcedPick | null;
-  cancel: (get: Get, set: Set) => void;
-  darkPact: (get: Get, set: Set, pid: string) => void;
-}
-
-export function makeMultiRollFlow<P extends MultiPending<Part>, Part extends RollParticipant = RollParticipant>(
-  spec: MultiRollFlowSpec<P, Part>,
-): MultiRollFlowHandlers<Part> {
-  const pendingOf = (s: GameState) => s[spec.key] as P | null | undefined;
-  const touch = spec.touch ?? touchActors;
-  const partOf = (p: P, pid: string) => p.participants.find((x) => x.id === pid);
-  // commit MULTI : le slot est `participants[pid]` → on remplace ce participant dans le tableau.
-  const commitOf = (set: Set, get: Get, p: P, pid: string): Commit<Part> => (patch, opts) =>
-    set({
-      [spec.key]: {
-        ...p,
-        participants: p.participants.map((x) =>
-          x.id === pid ? { ...x, ...patch, ...(opts?.rerolled ? { rerolled: true } : {}), ...(opts?.forced ? { forced: true } : {}) } : x,
-        ),
-      },
-      ...(opts?.touch ? touch(get()) : {}),
-    } as Partial<GameState>);
-  return {
-    picker: spec.caps?.picker,
-    roll(get, set, pid) {
-      const s = get(); const p = pendingOf(s); const part = p && partOf(p, pid); if (!p || !part || !part.interactive) return;
-      opRoll(spec.rolled(part), () => spec.resolve(s, p, part, spec.actor(s, p, part), get), commitOf(set, get, p, pid));
-    },
-    reroll(get, set, pid) {
-      const s = get(); const p = pendingOf(s); const part = p && partOf(p, pid); if (!p || !part) return;
-      const actor = spec.actor(s, p, part);
-      opReroll(part, actor, spec.rolled(part), spec.failed(part), () => (spec.reresolve ?? spec.resolve)(s, p, part, actor!, get), get, commitOf(set, get, p, pid));
-    },
-    bonusSL(get, set, pid) {
-      if (!spec.bonus) return;
-      const s = get(); const p = pendingOf(s); const part = p && partOf(p, pid); if (!p || !part) return;
-      const actor = spec.actor(s, p, part);
-      const allowed = !spec.bonus.guard || spec.bonus.guard(part);
-      opBonusSL(actor, spec.rolled(part), allowed, () => spec.bonus!.derive(s, p, part, actor!), commitOf(set, get, p, pid));
-    },
-    forceSuccess(get, set, pid) {
-      if (!spec.caps?.forced) return;
-      const s = get(); const p = pendingOf(s); const part = p && partOf(p, pid); if (!p || !part) return;
-      opForceSuccess(spec.actor(s, p, part), () => spec.resolve(s, p, part, spec.actor(s, p, part), get, {}), commitOf(set, get, p, pid));
-    },
-    setForcedRoll(get, set, pid, roll) {
-      if (!spec.caps?.forced) return;
-      const s = get(); const p = pendingOf(s); const part = p && partOf(p, pid); if (!p || !part) return;
-      opSetForcedRoll(part, spec.actor(s, p, part), roll, (r) => spec.resolve(s, p, part, spec.actor(s, p, part), get, { roll: r }), commitOf(set, get, p, pid));
-    },
-    cancel(_get, set) {
-      set({ [spec.key]: null } as Partial<GameState>);
-    },
-    darkPact(get, set, pid) {
-      const s = get(); const p = pendingOf(s); const part = p && partOf(p, pid); if (!p || !part) return;
-      const actor = spec.actor(s, p, part);
-      opDarkPact(actor, spec.rolled(part), spec.failed(part), () => (spec.reresolve ?? spec.resolve)(s, p, part, actor!, get), get, set, commitOf(set, get, p, pid));
-    },
-  };
 }
