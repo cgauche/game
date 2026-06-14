@@ -4,7 +4,7 @@
  *   <PhpstormProjects>/cgauche.github.io/jeu/   →  https://cgauche.github.io/jeu/
  *
  * Usage :
- *   node scripts/deploy/deploy.mjs            # build:data + build + copie
+ *   node scripts/deploy/deploy.mjs            # build (Vite) + copie
  *   node scripts/deploy/deploy.mjs --no-build # copie le dist/ existant seulement
  *   node scripts/deploy/deploy.mjs --push     # + git add/commit/push le repo prod
  *
@@ -30,8 +30,8 @@ if (!existsSync(prodRepo)) {
 }
 
 if (!args.includes('--no-build')) {
-  console.log('▶ npm run build:data && npm run build …');
-  execSync('npm run build:data && npm run build', { cwd: gameRoot, stdio: 'inherit' });
+  console.log('▶ npm run build …');
+  execSync('npm run build', { cwd: gameRoot, stdio: 'inherit' });
 }
 if (!existsSync(dist)) {
   console.error('✗ dist/ absent — lance le build (sans --no-build).');

@@ -6,7 +6,6 @@
   "type": "module",
   "scripts": {
     "gen": "node scripts/gen-registry.mjs",
-    "build:data": "tsx scripts/build-data.ts",
     "dev": "vite",
     "build": "npm run gen && tsc -b && vite build",
     "preview": "vite preview",

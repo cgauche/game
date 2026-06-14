@@ -32,9 +32,11 @@ règles de **Warhammer Fantasy Roleplay 4ᵉ édition**. On contrôle un groupe 
 
 ```bash
 npm install
-npm run build:data   # (re)génère src/data/*.json depuis Source/all-data.json
 npm run dev          # serveur de développement
 ```
+
+`src/data/*.json` sont la source app-owned (commitée, éditée dans le Compendium) — il n'y a plus de
+migration `build:data` depuis `all-data.json` (elle écrasait les données curées).
 
 Autres scripts : `npm test` (tests du moteur), `npm run build` (build de production),
 `npm run typecheck`.
@@ -42,9 +44,8 @@ Autres scripts : `npm test` (tests du moteur), `npm run build` (build de product
 ## Architecture
 
 ```
-scripts/build-data.ts   Pipeline : Source/ -> src/data (filtré LDB/ADE1/ADE2)
 src/engine/             Règles WFRP4 (pur TS, testé)
-src/data/               Notre base générée (ne pas éditer à la main)
+src/data/               Base app-owned (JSON commité, éditable dans le Compendium)
 src/state/              Schéma de Scène, store Zustand, pathfinding, bus
 src/game/               Scène Phaser (exploration + combat tactique)
 src/ui/                 Interface React (menus, créateur, HUD, éditeur)

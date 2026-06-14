@@ -15,9 +15,7 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
-      # build:data régénère src/data/*.json (entrées de compilation TS) depuis
-      # Source/all-data.json — doit précéder typecheck et build.
-      - run: npm run build:data
+      # src/data/*.json sont la SOURCE app-owned (commitée) — plus de régénération build:data.
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
