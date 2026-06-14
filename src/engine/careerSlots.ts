@@ -23,6 +23,11 @@ import { Combatant } from './types';
 import { bonus } from './characteristics';
 import { findTalent, findSkill, spells, CareerLevelData } from '../data';
 import { CULT_KEYS } from './cults/registry';
+import { splitLabel } from './statEntry';
+
+// `splitLabel` (split nom↔spécialisation) est la primitive UNIQUE de `statEntry` — ré-exportée ici
+// pour ses nombreux importeurs historiques (advancement/talentEffects/draft…). Plus de copie locale.
+export { splitLabel };
 
 /** Une possibilité concrète ou ouverte couverte par un slot. */
 export interface SlotOption {
@@ -107,12 +112,6 @@ export function wildcardSpecs(name: string): string[] {
 /** Libellé concret d'un talent/compétence : « Nom » ou « Nom (Spec) ». */
 export function concreteLabel(name: string, spec?: string): string {
   return spec ? `${name} (${spec})` : name;
-}
-
-/** Décompose un libellé concret en (name, spec). */
-export function splitLabel(label: string): { name: string; spec?: string } {
-  const m = label.match(/^(.*?)\s*\(([^)]*)\)\s*$/);
-  return m ? { name: m[1].trim(), spec: m[2].trim() } : { name: label.trim() };
 }
 
 /** Le libellé est-il encore « au choix » (non résolu) ? */

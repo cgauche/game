@@ -50,13 +50,6 @@ const SKILL_CHAR: Record<string, CharKey> = {
   Sociabilité: 'Soc',
 };
 
-/** Sépare « Corps à corps (Base) » → { name:'Corps à corps', spec:'Base' }. */
-export function parseSkillRef(s: string): { name: string; spec?: string } {
-  const m = s.match(/^(.*?)\s*\(([^)]*)\)\s*$/);
-  if (m) return { name: m[1].trim(), spec: m[2].trim() };
-  return { name: s.trim() };
-}
-
 /** Caractéristique d'une Compétence (skills.json) — LDB 09 : valeur de Test = Caractéristique + avances. */
 export function skillCharacteristic(name: string): CharKey {
   const data = findSkill(name);
@@ -431,7 +424,7 @@ const ARMOUR_LOC_MAP: Record<string, HitLocation[]> = {
 export function deriveArmour(trappingNames: string[]): ArmourPoints {
   const ap = emptyArmour();
   for (const name of trappingNames) {
-    const t = findTrapping(parseSkillRef(name).name);
+    const t = findTrapping(splitLabel(name).name);
     if (!t || t.type !== 'armor' || !t.pa || !t.loc) continue;
     for (const part of t.loc.split(',').map((s) => s.trim())) {
       const locs = ARMOUR_LOC_MAP[part];
@@ -444,7 +437,7 @@ export function deriveArmour(trappingNames: string[]): ArmourPoints {
 export function deriveWeapons(trappingNames: string[], _chars: Characteristics): Weapon[] {
   const weapons: Weapon[] = [];
   for (const name of trappingNames) {
-    const t = findTrapping(parseSkillRef(name).name);
+    const t = findTrapping(splitLabel(name).name);
     if (!t || (t.type !== 'melee' && t.type !== 'ranged')) continue;
     weapons.push({
       name: t.label,

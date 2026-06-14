@@ -3,7 +3,8 @@
  * personnalisé d'une scène. Sert au combat tactique.
  */
 import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints, BodyShape, SkillInstance, TalentInstance } from '../engine/types';
-import { parseSkillRef, skillCharacteristic } from '../engine/character';
+import { skillCharacteristic } from '../engine/character';
+import { parseStatEntry } from '../engine/statEntry';
 import { findCreature, CreatureData } from '../data';
 import { CustomStatblock, EntityAppearance } from './scene';
 import { emptyArmour } from '../engine/items';
@@ -63,24 +64,27 @@ const NATURAL_WEAPON = new Set([
  * une étiquette naturelle (→ weaponFamily renvoie '' = aucune arme dessinée).
  */
 export function weaponFromTrait(t: string): Weapon | null {
-  let m: RegExpMatchArray | null;
-  if ((m = t.match(/^À distance(?:\s*\(([^)]+)\))?\s*\+(\d+)(?:\s*\((\d+)\))?/i))) {
-    const type = m[1]?.trim();
-    const w: Weapon = { name: type && !NATURAL_WEAPON.has(normTrait(type)) ? type : 'Attaque à distance', type: 'ranged', damage: `+${m[2]}`, qualities: [] };
-    if (m[3]) w.range = Number(m[3]);
+  const p = parseStatEntry(t); // parseur UNIQUE : type=(arg), Dégâts=(bonus), portée=(range num.), compte en tête écarté
+  const dmg = p.bonus != null ? (p.bonus < 0 ? `${p.bonus}` : `+${p.bonus}`) : null;
+  if (/^À distance$/i.test(p.name)) {
+    if (dmg == null) return null; // « À distance » sans Indice de Dégâts : pas une arme jouable (RAW)
+    const type = p.arg;
+    const w: Weapon = { name: type && !NATURAL_WEAPON.has(normTrait(type)) ? type : 'Attaque à distance', type: 'ranged', damage: dmg, qualities: [] };
+    if (p.range != null) w.range = p.range;
     return w;
   }
-  if ((m = t.match(/^Arme(?:\s*\(([^)]+)\))?\s*(?:\+(\d+))?/i))) {
-    const type = m[1]?.trim();
-    const damage = m[2] ? `+${m[2]}` : '+BF';
+  if (/^Arme$/i.test(p.name)) {
+    const type = p.arg;
+    const damage = dmg ?? '+BF';
     if (type && NATURAL_WEAPON.has(normTrait(type))) return { name: type, type: 'melee', damage, qualities: [] };
     return { name: type ?? 'Arme', type: 'melee', damage, qualities: [] };
   }
-  // Compte EN TÊTE toléré (« 8 Tentacules +9 » — « # Tentacules », LDB 85 l.354) : l'arme reste UNE
-  // (l'Action d'attaque) ; la multiplicité joue sur les Attaques GRATUITES (aiCreatureFreeAttacks).
-  if ((m = t.match(/^(?:\d+\s+)?(Morsure|Griffes?|Tentacules?|Bec|Dard|Cornes?|Queue|Pi[ée]tinement|Crachat)\s*\+?(\d+)?/i))) {
-    const ranged = /crachat/i.test(m[1]);
-    return { name: m[1], type: ranged ? 'ranged' : 'melee', damage: m[2] ? `+${m[2]}` : '+BF', qualities: [] };
+  // Attaque naturelle (« Morsure +9 », « 8 Tentacules +9 ») : l'arme reste UNE (l'Action d'attaque) ;
+  // la multiplicité du compte joue sur les Attaques GRATUITES (aiCreatureFreeAttacks), LDB 85 l.354.
+  const nat = p.name.match(/^(Morsure|Griffes?|Tentacules?|Bec|Dard|Cornes?|Queue|Pi[ée]tinement|Crachat)\b/i);
+  if (nat) {
+    const ranged = /crachat/i.test(nat[1]);
+    return { name: nat[1], type: ranged ? 'ranged' : 'melee', damage: dmg ?? '+BF', qualities: [] };
   }
   return null;
 }
@@ -170,11 +174,10 @@ function randomizeChars(chars: Characteristics, id: string): Characteristics {
 export function skillsFromBook(list: string[] | undefined, printedChars: Characteristics): SkillInstance[] {
   const out: SkillInstance[] = [];
   for (const raw of list ?? []) {
-    const m = raw.trim().match(/^(.+?)\s+(\d+)\s*$/);
-    if (!m) continue;
-    const { name, spec } = parseSkillRef(m[1]);
-    const characteristic = skillCharacteristic(name);
-    out.push({ name, spec, characteristic, advances: Math.max(0, Number(m[2]) - printedChars[characteristic]) });
+    const p = parseStatEntry(raw); // « Langue (Magick) 63 » → name/arg/indice en un seul passage
+    if (p.indice == null) continue; // entrée sans valeur chiffrée : ignorée (rien d'inventé)
+    const characteristic = skillCharacteristic(p.name);
+    out.push({ name: p.name, spec: p.arg, characteristic, advances: Math.max(0, p.indice - printedChars[characteristic]) });
   }
   return out;
 }

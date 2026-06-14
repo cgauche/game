@@ -37,14 +37,14 @@ export function parseStatEntry(raw: string): StatEntry {
     s = cm[2];
   }
 
-  // 2) Première parenthèse : portée si purement numérique, sinon spec/type/cible.
-  const pm = s.match(/\(([^)]*)\)/);
-  if (pm) {
+  // 2) Parenthèses : purement numérique → portée, sinon spec/type/cible. Les deux PEUVENT coexister
+  //    (« À distance (Arbalète) +9 (60) ») ; la 1re de chaque sorte l'emporte.
+  for (const pm of s.matchAll(/\(([^)]*)\)/g)) {
     const inside = pm[1].trim();
-    if (/^\d+$/.test(inside)) out.range = parseInt(inside, 10);
-    else if (inside) out.arg = inside;
-    s = s.replace(/\s*\([^)]*\)\s*/, ' ').trim();
+    if (/^\d+$/.test(inside)) { if (out.range == null) out.range = parseInt(inside, 10); }
+    else if (inside && out.arg == null) out.arg = inside;
   }
+  s = s.replace(/\s*\([^)]*\)\s*/g, ' ').trim();
 
   // 3) Bonus SIGNÉ (« +7 », « -2 ») n'importe où.
   const bm = s.match(/([+-]\d+)/);
@@ -66,3 +66,11 @@ export function parseStatEntry(raw: string): StatEntry {
 
 /** Nom canonique seul (raccourci pour les lookups Codex/registre). */
 export const statName = (raw: string): string => parseStatEntry(raw).name;
+
+/** Décompose un libellé concret « Nom (Spec) » → { name, spec } via le parseur unifié (compte/
+ *  bonus/indice/portée éventuels écartés). Source UNIQUE du split nom↔spécialisation (carrières,
+ *  compétences/talents de statbloc) — remplace les anciens `splitLabel`/`parseSkillRef` recopiés. */
+export function splitLabel(raw: string): { name: string; spec?: string } {
+  const p = parseStatEntry(raw);
+  return p.arg ? { name: p.name, spec: p.arg } : { name: p.name };
+}
