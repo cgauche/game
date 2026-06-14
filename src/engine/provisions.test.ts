@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Characteristics, Combatant, ItemInstance } from './types';
 import { makeRNG, RNG } from './dice';
-import { dailyFoodUpkeep, isStarving, hungerCharPenalties, rationCount, isRation } from './provisions';
+import { dailyFoodUpkeep, applyFaimTest, isStarving, hungerCharPenalties, rationCount, isRation } from './provisions';
 import { effectiveChar } from './characteristics';
 import { restRecovery } from './rest';
 import { addCondition, stacks } from './conditions';
@@ -115,6 +115,34 @@ describe('dailyFoodUpkeep — rations (LDB p.302) et faim (LDB 18 l.422)', () =>
     expect(isRation({ name: 'Ration' })).toBe(true);
     expect(isRation({ name: 'Rations (1 jour)' })).toBe(true);
     expect(isRation({ name: 'Rationnel' })).toBe(false);
+  });
+
+  it('deferTest (cascade de nuit) : un Test de Faim DÛ est DIFFÉRÉ, pas roulé ici', () => {
+    const c = hero({ rations: 0 });
+    dailyFoodUpkeep(c, 30, 3, fixed(95)); // jeûne j1 (pas de Test)
+    let deferred: number | null = null;
+    const r = dailyFoodUpkeep(c, 30, 3, fixed(95), (penalty) => { deferred = penalty; }); // j2 : Test DÛ → différé
+    expect(deferred).toBe(0); // 1ᵉʳ Test → pénalité 0
+    expect(r.log).toEqual([]); // RIEN de pré-résolu (pas de « ÉCHEC » dans le journal)
+    expect(c.hunger?.tests).toBe(0); // le Test n'est pas encore compté (appliqué à la validation)
+    expect(c.hunger?.days).toBe(2); // la faim a bien progressé d'un jour
+  });
+
+  it('applyFaimTest : verrouiller un échec compte le Test + applique les pénalités (l.422)', () => {
+    const c = hero({ rations: 0, E: 30 });
+    c.hunger = { days: 2, tests: 0, failures: 0 };
+    const r1 = applyFaimTest(c, false, 3, fixed(95)); // 1ᵉʳ échec → −10 F/E
+    expect(c.hunger?.tests).toBe(1);
+    expect(c.hunger?.failures).toBe(1);
+    expect(r1.damage).toBe(0);
+    expect(effectiveChar(c, 'F')).toBe(20);
+    const r2 = applyFaimTest(c, false, 3, fixed(95)); // 2ᵉ échec → −10 autres + 1d10 − BE
+    expect(c.hunger?.failures).toBe(2);
+    expect(r2.damage).toBe(7); // d10 forcé 10 − BE 3
+    // Réussite : compte le Test, aucune pénalité.
+    const r3 = applyFaimTest(c, true, 3, fixed(1));
+    expect(c.hunger?.tests).toBe(3);
+    expect(r3.damage).toBe(0);
   });
 });
 

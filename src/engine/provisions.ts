@@ -95,7 +95,38 @@ export interface FoodUpkeepResult {
  * compteur de faim). `resVal` = valeur du Test de Résistance ; `be` = Bonus d'Endurance — passés
  * par l'appelant (cycle d'import, cf. en-tête). L'appelant applique `damage` via `loseWounds`.
  */
-export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: RNG = defaultRNG): FoodUpkeepResult {
+/**
+ * Applique le RÉSULTAT d'un Test de Faim DIFFÉRÉ (différé/influençable en cascade de nuit) : compte
+ * le Test (l.418), et sur un échec applique les pénalités (l.422 : 1ᵉʳ → −10 F/E ; 2ᵉ+ → −10 autres
+ * + 1d10 Dégâts réduits du BE, min 1). Mute `c.hunger` ; renvoie le journal + les Dégâts à appliquer
+ * (via `loseWounds` par l'appelant). Partagé avec `dailyFoodUpkeep` (roll eager) — zéro duplication.
+ */
+export function applyFaimTest(c: Combatant, success: boolean, be: number, rng: RNG = defaultRNG): { log: string[]; damage: number } {
+  const h: HungerState = c.hunger ?? { days: 0, tests: 0, failures: 0 };
+  h.tests += 1;
+  const log: string[] = [];
+  let damage = 0;
+  if (!success) {
+    h.failures += 1;
+    if (h.failures === 1) log.push(`${c.name} est affamé : −10 en Force et en Endurance.`);
+    else {
+      damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (l.422)
+      log.push(`${c.name} dépérit : −10 à toutes les autres Caractéristiques, ${damage} Blessure(s) (la faim ignore l'armure).`);
+    }
+  } else {
+    log.push(`${c.name} supporte la faim (Test de Résistance réussi).`);
+  }
+  c.hunger = h;
+  return { log, damage };
+}
+
+/**
+ * `dailyFoodUpkeep` : mange une ration (ou couvre la journée), sinon installe la faim. `deferTest`
+ * (cascade de nuit) : si un Test de Faim TOMBE ce jour, on NE le roule PAS — on appelle `deferTest`
+ * avec la pénalité cumulative (−10 × Tests déjà tentés, l.418) pour qu'il devienne une ÉTAPE
+ * influençable (résolue par `applyFaimTest`). Sans `deferTest` (contextes eager), le jet est roulé ici.
+ */
+export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: RNG = defaultRNG, deferTest?: (penalty: number) => void): FoodUpkeepResult {
   const res: FoodUpkeepResult = { ate: false, rationConsumed: false, damage: 0, log: [] };
   if (c.dead) return res;
   // Sustentation magique (Graisse de la terre, LDB 48 : « n'a pas besoin de manger ou de boire ») :
@@ -132,7 +163,14 @@ export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: R
   h.days += 1;
   const interval = brouet ? 3 : 2;
   if (h.days % interval === 0) {
-    const t = rollTest(resVal, 'intermediaire', rng, -10 * h.tests);
+    const penalty = -10 * h.tests || 0; // l.418 : chaque Test est plus dur (cumulatif ; évite −0)
+    if (deferTest) {
+      // Cascade de nuit : le Test devient une ÉTAPE influençable (résolue par `applyFaimTest`).
+      c.hunger = h; // days++ enregistré ; tests/échecs appliqués à la validation de l'étape
+      deferTest(penalty);
+      return res;
+    }
+    const t = rollTest(resVal, 'intermediaire', rng, penalty);
     h.tests += 1;
     res.log.push(
       `${c.name} — Faim : Test de Résistance${h.tests > 1 ? ` (−${(h.tests - 1) * 10})` : ''} : 🎲 ${t.roll}/${t.target} → ${t.success ? 'il tient bon' : 'ÉCHEC'}.`,

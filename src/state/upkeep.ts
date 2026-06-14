@@ -77,7 +77,7 @@ export function purgeClockEffects(get: Get, set: Set): string[] {
  *  advanceTime, le repos (`opts.caredFor` = un soignant Guérison veille le groupe) et le voyage.
  *  RENVOIE les lignes du bilan : chaque appelant les AFFICHE (révélation témoin / bilan de nuit /
  *  recap de voyage) — le journal seul ne suffit pas (personne ne le lit). */
-export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; fedDaily?: boolean } = {}): string[] {
+export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; fedDaily?: boolean; onFaimDue?: (heroId: string, resVal: number, penalty: number) => void } = {}): string[] {
   // Dissipations d'effets d'horloge : au FRANCHISSEMENT de jour, elles font partie du rapport
   // visible (hors franchissement — rythme combat — le journal et les icônes d'État suffisent).
   const purged = purgeClockEffects(get, set);
@@ -93,8 +93,11 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
       // Période NOURRIE (interlude « Entre deux aventures » : gîte et couvert payés par l'Argent
       // à gaspiller, LDB 23) : chaque jour est un repas — la Faim ne s'installe jamais.
       if (opts.fedDaily) feedFromMeal(h);
-      // 1. Nourriture (LDB 18 l.417-422).
-      const r = dailyFoodUpkeep(h, testValue(h, 'Résistance', 'E'), bonus(effectiveChar(h, 'E')), battleRng());
+      // 1. Nourriture (LDB 18 l.417-422). `onFaimDue` (cascade de nuit) : le Test de Faim est
+      //    DIFFÉRÉ en étape influençable au lieu d'être roulé ici (sinon témoin pré-résolu).
+      const resVal = testValue(h, 'Résistance', 'E');
+      const r = dailyFoodUpkeep(h, resVal, bonus(effectiveChar(h, 'E')), battleRng(),
+        opts.onFaimDue ? (penalty) => opts.onFaimDue!(h.id, resVal, penalty) : undefined);
       if (r.rationConsumed) rations++;
       if (r.damage > 0) loseWounds(h, r.damage);
       lines.push(...r.log);

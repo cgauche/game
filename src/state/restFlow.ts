@@ -27,15 +27,15 @@ import { battleRng } from './battleRng';
 import { rollTest } from '../engine/tests';
 import { partyBest } from '../engine/skills';
 import { hasHealSkill } from '../engine/healing';
-import { isOutOfAction, addCondition } from '../engine/conditions';
+import { isOutOfAction, addCondition, loseWounds } from '../engine/conditions';
 import { restRecovery, restResistVal, applyRecoveryDay, needsRecoveryRoll, recoveryTarget, type RestRoll } from '../engine/rest';
 import { rollContraction, DISEASE_DEFS, contagiousDiseases } from '../engine/disease';
 import { weatherExposure, exposureTestCount, exposureNight, expireExposureEffects, partyHasTent, applyExposureFailure, exposureTarget, type ExposureSeverity } from '../engine/exposure';
-import { effectiveChar } from '../engine/characteristics';
+import { effectiveChar, bonus } from '../engine/characteristics';
 import { forcedMarchTarget, applyForcedMarch } from '../engine/travel';
 import { registerCascadeApplier, startCascade } from './cascade';
 import type { CascadeStep } from './pendings';
-import { isRation, feedFromMeal } from '../engine/provisions';
+import { isRation, feedFromMeal, applyFaimTest } from '../engine/provisions';
 import { toBrass, fromBrass, canAfford, subtract as moneySub, formatMoney, type Money } from '../engine/money';
 import { minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
 import { runDailyUpkeep } from './upkeep';
@@ -254,6 +254,13 @@ registerCascadeApplier('forcedMarch', (_get, _set, step, hero) => {
   return { journal: [applyForcedMarch(hero, step.result.success).line] }; // l.224 : échec → +Exténué
 });
 
+registerCascadeApplier('faim', (_get, _set, step, hero) => {
+  if (!hero || !step.result) return;
+  const r = applyFaimTest(hero, step.result.success, bonus(effectiveChar(hero, 'E')), battleRng());
+  if (r.damage > 0) loseWounds(hero, r.damage); // 1d10 ignore les PA (l.422)
+  return { journal: r.log };
+});
+
 /** Valeur de Calme d'un héros (LDB 21 : FM effective + avances de Calme) — cible du jet de cauchemars. */
 function calmeVal(c: Combatant): number {
   return effectiveChar(c, 'FM') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('calme'))?.advances ?? 0);
@@ -275,9 +282,13 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   const toDawn = minutesUntilNext(from, DAWN_MINUTE);
   set({ gameTime: from + (toDawn === 0 ? MINUTES_PER_DAY : toDawn) });
   bus.emit(EVT.TIME_ADVANCED, { minutes: get().gameTime - from });
-  // Entretien quotidien (#T3) — eager (rations/faim, maladies, convalescence).
+  // Entretien quotidien (#T3) — la partie SANS jet est eager (rations consommées, maladies/
+  // convalescence) ; le Test de FAIM (l.422) est DIFFÉRÉ en étape influençable (sinon il serait
+  // pré-résolu dans le journal AVANT que le joueur n'agisse).
   const caredFor = party.some((h) => hasHealSkill(h) && !h.dead && !isOutOfAction(h));
-  log.push(...runDailyUpkeep(get, set, { caredFor, fedDaily: opts.fedDaily }));
+  const faimSpecs: { heroId: string; resVal: number; penalty: number }[] = [];
+  log.push(...runDailyUpkeep(get, set, { caredFor, fedDaily: opts.fedDaily,
+    onFaimDue: (heroId, resVal, penalty) => faimSpecs.push({ heroId, resVal, penalty }) }));
 
   const steps: CascadeStep[] = [];
   // MARCHE FORCÉE de la journée de voyage (l.224) : un jet par héros — la chaîne ouvre la cascade.
@@ -286,6 +297,13 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     if (!h || h.dead) continue;
     steps.push({ id: `march-${id}`, kind: 'forcedMarch', actorId: id, label: `Marche forcée — ${h.name}`, icon: '🥾',
       rollLabel: 'Résistance', base: forcedMarchTarget(h), target: forcedMarchTarget(h), result: null, interactive: true });
+  }
+  // FAIM (l.422) : un Test de Résistance influençable par héros affamé dont le Test tombe ce jour.
+  for (const f of faimSpecs) {
+    const h = party.find((x) => x.id === f.heroId);
+    if (!h || h.dead) continue;
+    steps.push({ id: `faim-${f.heroId}`, kind: 'faim', actorId: f.heroId, label: `Faim — ${h.name}`, icon: '🍽️',
+      rollLabel: 'Résistance', base: f.resVal, target: f.resVal + f.penalty, result: null, interactive: true });
   }
   // Campement : Exposition (intempéries) — abri de fortune (STEP) → insère les jets d'Exposition.
   const campers = party.filter((h) => !h.dead && p.perHero[h.id]?.lodging === 'dehors');
