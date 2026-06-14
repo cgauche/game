@@ -12,7 +12,7 @@ import { maxWounds, bonus } from '../engine/characteristics';
 import { parseSizeLabel, resizeBySteps, SIZE_ORDER, SizeCategory } from '../engine/size';
 import { parsePsychTraits } from '../engine/psychology';
 import { traitCharMods, traitMovementMod, traitBonusWoundsBE, isMindless, mutationsAtSpawn } from '../engine/traits/dispatch';
-import { rollMutation } from '../data/mutations';
+import { rollMutation, mutationByLabel } from '../data/mutations';
 import { makeRNG } from '../engine/dice';
 import { groupsFor } from '../engine/groups';
 import { norm as normTrait } from '../lib/normalize';
@@ -144,10 +144,12 @@ function applySwarmBuild(chars: Characteristics, wounds: number): { chars: Chara
 /** Mutation / Corruption mentale (LDB 85 p.339-340) : tirage sur les Tableaux des Corruptions au
  *  spawn — graine STABLE dérivée de l'id (déterministe, rejouable). */
 function spawnMutations(traits: string[] | undefined, id: string) {
-  const kinds = mutationsAtSpawn(traits);
-  if (!kinds.length) return {};
+  const specs = mutationsAtSpawn(traits);
+  if (!specs.length) return {};
   const rng = makeRNG(hashSeed(`mut:${id}`));
-  return { mutations: kinds.map((k) => rollMutation(k, rng)) };
+  // Mutation EXPLICITE (label, ex. « Cornes asymétriques » : tell figé en donnée) sinon tirage.
+  const mutations = specs.map((s) => (s.label ? mutationByLabel(s.label) : null) ?? rollMutation(s.kind, rng));
+  return { mutations };
 }
 
 /** Caractéristiques aléatoires (LDB 78 : « soustrayez -10 et ajoutez 2d10. Une Caractéristique de 30

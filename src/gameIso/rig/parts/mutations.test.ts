@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { LABELS_PHYSIQUES, LABELS_MENTALES } from '../../../data/mutations';
-import { MUTATION_VISUALS, mutKey, mutationOverlaysFor, mutationAppearance, randomMutationOverlays } from './mutations';
+import { MUTATION_VISUALS, mutKey, mutationOverlaysFor, mutationAppearance } from './mutations';
 import { resolveRig } from '../composeRig';
 import type { Mutation } from '../../../engine/corruption';
 import type { Appearance } from '../appearance';
@@ -68,15 +68,6 @@ describe('registre des visuels de mutation (LDB 19)', () => {
     expect(mutationAppearance(APP, [mut('Visage inversé')]).faceFlip).toBe(true);
     expect(mutationAppearance(APP, [mut('Tentacule épais')])).toBe(APP);
     expect(mutationAppearance(APP, undefined)).toBe(APP);
-  });
-
-  it('randomMutationOverlays : déterministe, cornes toujours présentes (tell mutant)', () => {
-    expect(randomMutationOverlays(42)).toEqual(randomMutationOverlays(42));
-    for (const seed of [0, 1, 7, 42, 1234]) {
-      const ovs = randomMutationOverlays(seed);
-      expect(ovs.some((o) => o.svg.includes('data-mut="cornes-asymetriques"'))).toBe(true);
-      expect(ovs.length).toBeGreaterThanOrEqual(2);
-    }
   });
 });
 

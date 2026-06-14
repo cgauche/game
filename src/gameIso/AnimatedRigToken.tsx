@@ -19,7 +19,7 @@ export function AnimatedRigToken({ combatant, profile, pos }: { combatant: Comba
       appearance={combatantAppearance(profile?.appearance ?? combatant.appearance ?? defaultAppearance(combatant), combatant)}
       equip={profile?.equip ?? equipFromCombatant(combatant)}
       career={profile?.tenue ?? combatant.career}
-      overlays={[...(profile?.overlays ?? []), ...combatantOverlays(combatant)]}
+      overlays={combatantOverlays(combatant)}
       pos={pos}
       ground={groundStateOf(combatant)}
     />

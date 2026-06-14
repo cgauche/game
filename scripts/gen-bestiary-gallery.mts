@@ -57,7 +57,7 @@ function creatureFrames(name: string): { samples: ResolvedBone[][]; dur: number 
   if (!prof) return { samples: [[]], dur };
   const N = 8;
   const samples = Array.from({ length: N }, (_, i) =>
-    scaleBones(resolveRig(prof.appearance, prof.equip, addPose({}, sampleClip(CLIPS.idle, (i / (N - 1)) * dur).pose), prof.tenue, 'front', prof.overlays), z));
+    scaleBones(resolveRig(prof.appearance, prof.equip, addPose({}, sampleClip(CLIPS.idle, (i / (N - 1)) * dur).pose), prof.tenue, 'front', []), z));
   return { samples, dur };
 }
 

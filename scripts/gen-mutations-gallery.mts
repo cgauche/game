@@ -9,8 +9,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
-import { mutationOverlaysFor, mutationAppearance, randomMutationOverlays } from '../src/gameIso/rig/parts/mutations';
+import { mutationOverlaysFor, mutationAppearance } from '../src/gameIso/rig/parts/mutations';
 import { combatantOverlays, combatantAppearance } from '../src/gameIso/rig/parts/combatantVisuals';
+import { creatureToCombatant } from '../src/state/spawn';
+import { findCreature } from '../src/data';
 import { EYE_OPTIONS } from '../src/gameIso/rig/parts/eyes';
 import { LABELS_PHYSIQUES } from '../src/data/mutations';
 import type { Mutation } from '../src/engine/corruption';
@@ -63,9 +65,14 @@ section('Sur armure équipée (épée en main)', [
   'Tentacule épais', 'Doigts distendus', 'Pattes d’animaux', 'Cornes asymétriques',
 ].map((l) => mutCell(l, SOLDAT)));
 
-// 4) Mutants ennemis : visuels tirés au seed du même registre (chemin enemyProfile).
-section('Mutants ennemis — tirage déterministe au seed', [0, 1, 7, 42, 1234, 77].map((seed) =>
-  cell(`Mutant seed ${seed}`, { ...APP, seed }, randomMutationOverlays(seed), { bg: '#2a1d22', tint: '#e9b' })));
+// 4) Mutants ennemis : visuels DATA-DRIVEN du bestiaire (trait « Mutation (Cornes asymétriques) » =
+// tell garanti + trait « Mutation » = tirage), chemin réel spawn→combatantOverlays. Plus de tirage
+// d'overlays dans le rendu (POC isMutant/randomMutationOverlays retiré).
+const mutantDef = findCreature('Mutant')!;
+section('Mutants ennemis — mutation DATA-DRIVEN (cornes garanties + tirage par id)', ['a', 'b', 'c', 'd', 'e', 'f'].map((k) => {
+  const c = creatureToCombatant(mutantDef, `gal-mut-${k}`, { x: 0, y: 0 });
+  return cell(`Mutant ${k}`, combatantAppearance(APP, c), combatantOverlays(c), { bg: '#2a1d22', tint: '#e9b' });
+}));
 
 // 5) Amputations & prothèses (LDB 18/73, injuries.ts) : séquelle nue puis prothèse portée.
 const trauma = (over: Partial<Trauma>): Trauma => ({ label: 'x', location: 'tete', note: '', ...over });

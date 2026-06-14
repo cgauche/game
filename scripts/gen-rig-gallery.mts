@@ -69,7 +69,7 @@ function enemyCell(name: string, view: 'front' | 'back' | 'profile' = 'front') {
     React.createElement('svg', { viewBox: '0 0 120 150', width: 110, height: 138 },
       React.createElement('defs', { dangerouslySetInnerHTML: { __html: DEFS } }),
       React.createElement('rect', { x: 0, y: 0, width: 120, height: 150, fill: '#2a1d22' }),
-      React.createElement(RigSprite, { appearance: p.appearance, equip: p.equip, career: p.tenue, overlays: p.overlays, view }),
+      React.createElement(RigSprite, { appearance: p.appearance, equip: p.equip, career: p.tenue, overlays: [], view }),
     ),
   );
   const label = view === 'front' ? name : `${name} ${view}`;
@@ -91,7 +91,7 @@ function ambientCell(name: string, animKey: string, label: string) {
     React.createElement('svg', { viewBox: '0 0 120 150', width: 110, height: 138 },
       React.createElement('defs', { dangerouslySetInnerHTML: { __html: DEFS } }),
       React.createElement('rect', { x: 0, y: 0, width: 120, height: 150, fill: '#22291d' }),
-      React.createElement(RigSprite, { appearance: p.appearance, equip: p.equip, career: p.tenue, overlays: p.overlays, pose }),
+      React.createElement(RigSprite, { appearance: p.appearance, equip: p.equip, career: p.tenue, overlays: [], pose }),
     ),
   );
   return `<figure style="margin:0;text-align:center"><div>${svg}</div><figcaption style="color:#be9;font:11px sans-serif">${label}</figcaption></figure>`;

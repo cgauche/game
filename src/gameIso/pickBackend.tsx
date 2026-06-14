@@ -94,8 +94,7 @@ export function pickBackend(subject: TokenSubject, view: 'iso' | 'top' = 'iso'):
         const appearance = combatantAppearance(prof?.appearance ?? c.appearance ?? defaultAppearance(c), c);
         const equip = prof?.equip ?? equipFromCombatant(c);
         const tenue = prof?.tenue ?? c.career;
-        const overlays = [...(prof?.overlays ?? []), ...combatantOverlays(c)];
-        const f = faceFrame(appearance, equip, tenue, overlays);
+        const f = faceFrame(appearance, equip, tenue, combatantOverlays(c));
         return { backend: 'rig', id: c.id, speciesScale: bipedSpeciesScale(c.name), portraitBox: f.box, flat: true, body: f.body };
       }
       return { backend: 'rig', id: c.id, speciesScale: bipedSpeciesScale(c.name), portraitBox: FACE_BOX, flat: false, body: <AnimatedRigToken combatant={c} profile={prof ?? undefined} pos={c.pos} /> };
@@ -125,7 +124,7 @@ export function pickBackend(subject: TokenSubject, view: 'iso' | 'top' = 'iso'):
       : null;
   if (prof) {
     if (top) {
-      const f = faceFrame(prof.appearance, prof.equip, prof.tenue, prof.overlays ?? []);
+      const f = faceFrame(prof.appearance, prof.equip, prof.tenue, []);
       return { backend: 'rig', id, speciesScale: bipedSpeciesScale(ent.ref ?? ent.label ?? ''), portraitBox: f.box, flat: true, body: f.body };
     }
     return { backend: 'rig', id, speciesScale: bipedSpeciesScale(ent.ref ?? ent.label ?? ''), portraitBox: FACE_BOX, flat: false, body: <AmbientRigToken profile={prof} anim={ent.anim ?? ''} id={id} facing={ent.facing} pos={ent.pos} /> };

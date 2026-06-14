@@ -71,11 +71,13 @@ export function traitBonusWoundsBE(traits: string[] | undefined): boolean {
   return resolveTraits(traits).some((r) => r.def.bonusWoundsBE);
 }
 
-/** Mutation / Corruption mentale (LDB 85) : tirages de mutation à effectuer au spawn. */
-export function mutationsAtSpawn(traits: string[] | undefined): ('physique' | 'mentale')[] {
+/** Mutation / Corruption mentale (LDB 85) : mutations à appliquer au spawn. `label` (argument du
+ *  trait, « Mutation (Cornes asymétriques) ») = mutation EXPLICITE figée ; absent = tirage sur le
+ *  Tableau `kind`. */
+export function mutationsAtSpawn(traits: string[] | undefined): { kind: 'physique' | 'mentale'; label?: string }[] {
   return resolveTraits(traits)
     .filter((r) => r.def.mutationAtSpawn)
-    .map((r) => r.def.mutationAtSpawn!);
+    .map((r) => ({ kind: r.def.mutationAtSpawn!, label: r.arg }));
 }
 
 // ── Mathématique de combat ────────────────────────────────────────────────────────────────────────

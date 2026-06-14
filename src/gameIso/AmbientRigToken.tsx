@@ -13,7 +13,6 @@ export function AmbientRigToken({ profile, anim, id = 'ambient', facing, pos }: 
       appearance={profile.appearance}
       equip={profile.equip}
       career={profile.tenue}
-      overlays={profile.overlays}
       ambientAnim={anim}
       facing={facing}
       pos={pos}

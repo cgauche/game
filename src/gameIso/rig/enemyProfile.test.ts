@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { classifyEnemy, enemyRigProfile, entityRigProfile } from './enemyProfile';
+import { combatantOverlays } from './parts/combatantVisuals';
 import { raceById } from './races';
 import { bipedDef } from './creatures';
 import { baseSpeciesOf } from './skeletons';
@@ -131,21 +132,27 @@ describe('enemyRigProfile', () => {
     expect(p.equip.armour).toContain(item); // l'inventaire prime sur la synthèse
   });
 
-  it('mutation : Mutant a des calques ; Guerrier du Chaos (race) et Bandit non', () => {
-    expect((enemyRigProfile(mkEnemy('Mutant'))!.overlays ?? []).length).toBeGreaterThanOrEqual(1);
-    // Le Guerrier du Chaos tient son identité de sa RACE (cornes + plastron sombre = features),
-    // pas de calques de mutation aléatoires.
-    expect((enemyRigProfile(mkEnemy('Guerrier du Chaos'))!.overlays ?? []).length).toBe(0);
-    expect((enemyRigProfile(mkEnemy('Bandit'))!.overlays ?? []).length).toBe(0);
+  it('mutation visuelle = DONNÉE (c.mutations), plus jamais le nom (POC isMutant retiré)', () => {
+    // enemyRigProfile ne fabrique plus AUCUN calque depuis le nom : un combattant nommé « Mutant »
+    // SANS mutations dans sa donnée n'a pas de calque (le profil ne porte plus de champ overlays).
+    expect(enemyRigProfile(mkEnemy('Mutant'))).not.toHaveProperty('overlays');
+    // Le visuel de mutation vient des mutations RÉELLES du combattant (combatantOverlays), donnée pure :
+    const mute = mkEnemy('Humain', { mutations: [{ label: 'Cornes asymétriques', kind: 'physique', roll: 81 }] });
+    expect(combatantOverlays(mute).some((o) => o.svg.includes('data-mut="cornes-asymetriques"'))).toBe(true);
+    // Sans mutation dans la donnée → aucun calque (Guerrier du Chaos tient son identité de sa RACE).
+    expect(combatantOverlays(mkEnemy('Guerrier du Chaos')).length).toBe(0);
+    expect(combatantOverlays(mkEnemy('Bandit')).length).toBe(0);
   });
 });
 
 describe('entityRigProfile (entité de scène, ambiance hors combat)', () => {
-  it('humanoïde → profil sans équipement de combat', () => {
+  it('humanoïde → profil sans équipement de combat (et plus d’overlays dérivés du nom)', () => {
     const p = entityRigProfile('Mutant', 42)!;
     expect(p).not.toBeNull();
     expect(p.equip.weapons).toEqual([]);
-    expect((p.overlays ?? []).length).toBeGreaterThanOrEqual(1); // mutant → calques
+    // Le profil ne porte plus de calques dérivés du nom (POC isMutant retiré) : l'ambiance mutée
+    // déclare ses parts dans sa donnée d'apparence (monster), pas via une regex.
+    expect(p).not.toHaveProperty('overlays');
   });
   it('villageois → Humain ; tenue portée en DONNÉE (plus d’inférence du nom)', () => {
     const p = entityRigProfile('Villageois', 1)!;

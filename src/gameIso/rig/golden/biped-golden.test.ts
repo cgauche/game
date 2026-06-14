@@ -18,7 +18,7 @@ describe('golden master — rendu bipède (anti-régression migration gabarit/ra
     for (const view of VIEWS) {
       it(`${name} / ${view} stable`, () => {
         const prof = entityRigProfile(name, 7);
-        const svg = prof ? bonesToSvg(resolveRig(prof.appearance, prof.equip, {}, prof.tenue, view, prof.overlays)) : '∅';
+        const svg = prof ? bonesToSvg(resolveRig(prof.appearance, prof.equip, {}, prof.tenue, view, [])) : '∅';
         expect(svg).toMatchSnapshot();
       });
     }

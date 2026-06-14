@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from './composeRig';
 import { enemyRigProfile } from './enemyProfile';
+import { combatantAppearance, combatantOverlays } from './parts/combatantVisuals';
 import type { Combatant, Weapon, ArmourPoints } from '../../engine/types';
 
 const noArmour: ArmourPoints = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
@@ -19,9 +20,10 @@ function mkEnemy(name: string, over: Partial<Combatant> = {}): Combatant {
 
 function render(c: Combatant, view: 'front' | 'back' | 'profile' = 'front') {
   const p = enemyRigProfile(c)!;
+  // Chemin RÉEL de prod : les visuels d'état (mutations/blessures/traits) viennent du combattant.
   return renderToStaticMarkup(
     React.createElement(RigSprite, {
-      appearance: p.appearance, equip: p.equip, career: p.tenue, overlays: p.overlays, view,
+      appearance: combatantAppearance(p.appearance, c), equip: p.equip, career: p.tenue, overlays: combatantOverlays(c), view,
     }),
   );
 }
@@ -32,8 +34,10 @@ describe('rendu rig ennemi (F1)', () => {
     expect(svg).toContain('data-bone="arme"');
   });
 
-  it('un Mutant riggé porte un calque de mutation visible', () => {
-    const svg = render(mkEnemy('Mutant'));
+  it('un Mutant riggé porte un calque de mutation visible (data-driven, c.mutations)', () => {
+    // Tell DATA-DRIVEN : ses mutations réelles (au spawn, le trait « Mutation (Cornes asymétriques) »
+    // les pose) → combatantOverlays. Plus d'inférence du nom.
+    const svg = render(mkEnemy('Mutant', { mutations: [{ label: 'Cornes asymétriques', kind: 'physique', roll: 81 }] }));
     expect(svg).toContain('data-mut=');
   });
 

@@ -8,10 +8,8 @@
 import type { Combatant, ItemInstance, ArmourPoints, HitLocation } from '../../engine/types';
 import type { Appearance } from './appearance';
 import type { EquipCtx } from './parts/equipment';
-import type { RigOverlay } from './bones';
 import { equipFromCombatant } from './parts/equipment';
 import { weaponGroupKey } from './parts/weaponGroup';
-import { randomMutationOverlays } from './parts/mutations';
 import { EYE_OPTIONS, eyesArtFromKeys } from './parts/eyes';
 import type { MonsterParts } from './parts/monstrous';
 import { hashSeed } from '../appearance';
@@ -33,7 +31,6 @@ export interface EnemyRigProfile {
   appearance: Appearance;
   tenue: string;
   equip: EquipCtx;
-  overlays?: RigOverlay[];
 }
 
 /**
@@ -137,13 +134,9 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   const def: Appearance = { species, sex, build, seed, parts: perso?.parts ?? race.parts, colors: perso?.colors ?? race.colors, gabarit: perso?.gabarit ?? d?.gabarit, eyes: eyesArtFromKeys(perso?.eyes) };
   const baseApp: Appearance = c.appearance ? overlayDefined(def, c.appearance) : def;
   const appearance: Appearance = autoMon && !baseApp.monster ? { ...baseApp, monster: autoMon } : baseApp;
-  const isMutant = /mutant|chaos spawn|mutant.?du.?chaos|corrompu|difforme|abomination/.test(n);
-  const hasMonster = !!(appearance.monster && Object.keys(appearance.monster).length);
   // Tenue DATA-DRIVEN : explicite sur le Combatant (`c.career`, la carrière de jeu sert de tenue
   // par défaut) → fiche bestiaire (`findCreature(name).tenue`) → défaut de la def (perso/race, pour
-  // les espèces hors bestiaire) → Soldat. Plus de name-match `ROLE_CAREERS` ni d'exception
-  // mutant→Mendiant en dur (POC retirés) : un mutant qui doit porter des hardes le déclare dans SA
-  // donnée (tenue), pas via une règle codée.
+  // les espèces hors bestiaire) → Soldat. Plus de name-match `ROLE_CAREERS` (POC retiré).
   const tenue = c.career ?? findCreature(c.name)?.tenue ?? perso?.tenue ?? race.tenue ?? 'Soldat';
 
   // Équipement : l'inventaire du combattant prime ; sinon armure synthétisée des PA.
@@ -151,10 +144,11 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   const armour = base.armour.length ? base.armour : synthArmour(c.armour);
   const equip: EquipCtx = { weapons: base.weapons, armour, shield: base.shield };
 
-  // Calques de mutation aléatoires SEULEMENT si pas de parts monstrueux explicites.
-  const overlays = isMutant && !hasMonster ? randomMutationOverlays(seed) : undefined;
-
-  return { appearance, tenue, equip, overlays };
+  // Les calques de mutation NE viennent PAS du nom (POC `isMutant`/`randomMutationOverlays` retiré) :
+  // ils sont dérivés des mutations RÉELLES du combattant (`combatantOverlays(c.mutations)`, appliqué
+  // par AnimatedRigToken) — donnée, pas regex. Un mutant déclare son tell dans SA donnée (trait
+  // « Mutation (Cornes asymétriques) » → c.mutations au spawn).
+  return { appearance, tenue, equip };
 }
 
 /**
@@ -180,15 +174,11 @@ export function entityRigProfile(
     sex: opts?.sex ?? perso?.sex ?? race.sex, build: opts?.build, eyes: opts?.eyes ?? perso?.eyes,
     gabarit: perso?.gabarit ?? d?.gabarit,
   });
-  // Calques de mutation aléatoires SEULEMENT si aucun part monstrueux explicite
-  // n'est choisi (sinon on respecte le « mutant construit » à la main).
-  const hasMonster = !!(monster && Object.keys(monster).length);
-  // NOTE : « chaos » seul exclu — « guerrier/élu/champion/chevalier du chaos » ont leur race dédiée.
-  const isMutant = /mutant|chaos spawn|mutant.?du.?chaos|corrompu|difforme|abomination/.test(n);
+  // Pas de calques dérivés du nom (POC `isMutant` retiré) : une entité d'ambiance « mutée » déclare
+  // ses parts/overlays dans SA donnée d'apparence (monster parts), pas via une regex sur le nom.
   return {
     appearance,
     tenue: opts?.tenue ?? findCreature(name)?.tenue ?? perso?.tenue ?? race.tenue ?? 'Soldat',
     equip: { weapons: opts?.weapon ? [weaponFromLabel(opts.weapon)] : [], armour: [] },
-    overlays: isMutant && !hasMonster ? randomMutationOverlays(seed) : undefined,
   };
 }

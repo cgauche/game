@@ -28,7 +28,7 @@ export function MountedToken({ mount, rider }: { mount: Combatant; rider: Combat
   const appearance = combatantAppearance(prof?.appearance ?? rider.appearance ?? defaultAppearance(rider), rider);
   const equip = prof?.equip ?? equipFromCombatant(rider);
   const tenue = prof?.tenue ?? rider.career;
-  const overlays = [...(prof?.overlays ?? []), ...combatantOverlays(rider)];
+  const overlays = combatantOverlays(rider);
   // Animation vivante du cavalier (attaque/parade/touché via le bus, ciblées par rider.id) —
   // en mode ASSIS : clips MONTÉS (lance couchée, taille à cheval), gestes sans bassin/jambes,
   // pas de clip de marche (la monture marche pour deux).

@@ -78,7 +78,9 @@ describe('dispatch — parsing et prédicats (LDB 85)', () => {
     expect(traitSeesInDark(['Vision nocturne'])).toBe(true);
     expect(traitSeesInDark(['Infravision'])).toBe(true);
     expect(hasStealthAgBonus(['Furtif'])).toBe(true);
-    expect(mutationsAtSpawn(['Mutation', 'Corruption mentale'])).toEqual(['physique', 'mentale']);
+    expect(mutationsAtSpawn(['Mutation', 'Corruption mentale'])).toEqual([{ kind: 'physique', label: undefined }, { kind: 'mentale', label: undefined }]);
+    // Mutation EXPLICITE (tell figé en donnée) : l'argument du trait porte le label.
+    expect(mutationsAtSpawn(['Mutation (Cornes asymétriques)'])).toEqual([{ kind: 'physique', label: 'Cornes asymétriques' }]);
   });
 });
 

@@ -227,24 +227,3 @@ export function mutationAppearance(a: Appearance, mutations?: Mutation[]): Appea
     ...(eyeG ? { eyes: { ...a.eyes, G: eyeG } } : {}),
   };
 }
-
-// Pool des visuels à calques pour le tirage ennemi — hors cornes (déjà garanties) et hors
-// halo de Beauté surnaturelle (lit « saint », pas « mutant » : réservé aux mutations réelles).
-const POOL: RigOverlay[][] = Object.entries(MUTATION_VISUALS)
-  .filter(([k, v]) => v?.overlays && k !== mutKey('Cornes asymétriques') && k !== mutKey('Beauté surnaturelle'))
-  .map(([, v]) => v!.overlays!);
-
-/** Visuel d'un ennemi « mutant » sans donnée de mutations : cornes toujours (tell de
- *  silhouette) + 1-2 visuels du pool, déterministe au seed. */
-export function randomMutationOverlays(seed: number): RigOverlay[] {
-  const out: RigOverlay[] = [...MUTATION_VISUALS[mutKey('Cornes asymétriques')]!.overlays!];
-  const extraCount = 1 + (seed % 2);
-  const picked = new Set<number>();
-  for (let i = 0; i < extraCount; i++) {
-    const idx = (seed + i * 5) % POOL.length;
-    if (picked.has(idx)) continue;
-    picked.add(idx);
-    out.push(...POOL[idx]);
-  }
-  return out;
-}

@@ -77,3 +77,14 @@ export function rollMutation(kind: 'physique' | 'mentale', rng: RNG): Mutation {
   const row = findTableEntry(table, roll);
   return { label: row.label, kind, roll, ...(row.fx ?? {}) };
 }
+
+/** Mutation EXPLICITE par son label (tell figé en DONNÉE, sans tirage — ex. trait
+ *  « Mutation (Cornes asymétriques) »). Cherche dans les deux Tableaux. `null` si inconnu. */
+export function mutationByLabel(label: string): Mutation | null {
+  const key = label.trim().toLowerCase().replace(/[’']/g, "'");
+  for (const kind of ['physique', 'mentale'] as const) {
+    const row = TABLES[kind].find((r) => r.label.toLowerCase().replace(/[’']/g, "'") === key);
+    if (row) return { label: row.label, kind, roll: row.min, ...(row.fx ?? {}) };
+  }
+  return null;
+}
