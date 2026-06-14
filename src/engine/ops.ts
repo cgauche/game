@@ -128,7 +128,7 @@ export type GameOp =
    *  actif ») : posé dans `c.traits` (vu par TOUS les consommateurs — dispatch, psy, IA,
    *  déplacement), retiré à l'expiration de l'ActiveEffect porteur. `indice` : Indice du trait
    *  (« Peur 1 », « Vol (Agilité) » → valeur du lanceur), `indicePerSL` : « +1 par +3 DR ». */
-  | { op: 'grantTrait'; trait: string; indice?: Formula; indicePerSL?: PerSL }
+  | { op: 'grantTrait'; trait: string; indice?: Formula; indicePerSL?: PerSL; onlyGroups?: string[] }
   /** Talent TEMPORISÉ (Jalon 2.6 — « +1 Talent Sans peur tant que le Sort est actif ») : porté
    *  par l'ActiveEffect, lu par le registre `combatFeatures` (featuresOf) — PAS posé dans
    *  `c.talents` (fiche/avancement intacts). Seuls les talents AVEC def mécanique ont un effet. */
@@ -486,6 +486,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'grantTrait': {
+        if (!groupGate(o.onlyGroups)) break; // « les Mort-vivant/Démoniaque gagnent Instable » (Bannissement)
         const ind = o.indice != null ? resolveFormula(o.indice, ref, rng) + slBonus(ctx.sl, o.indicePerSL) : null;
         const traitStr = ind != null ? `${o.trait} ${ind}` : o.trait;
         grantTrait(target, traitStr);

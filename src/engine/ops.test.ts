@@ -69,6 +69,16 @@ describe('applyOps — opérations unitaires', () => {
     expect((c.items ?? []).some((it) => it.name === 'Babiole onirique XYZ')).toBe(true);
   });
 
+  it('grantTrait onlyGroups (Bannissement) : Instable n’atteint que Mort-vivant/Démon', () => {
+    const undead = hero({ groups: ['Mort-vivant'] });
+    const human = hero({ groups: ['Humain'] });
+    const op = { op: 'grantTrait' as const, trait: 'Instable', onlyGroups: ['Mort-vivant', 'Démon'] };
+    applyOps(undead, [op]);
+    applyOps(human, [op]);
+    expect((undead.traits ?? []).includes('Instable')).toBe(true);
+    expect((human.traits ?? []).includes('Instable')).toBe(false); // gate de Groupe : non affecté
+  });
+
   it('condition : ajout avec valeur en formule (Bonus de FM du référent caster)', () => {
     const caster = hero({ id: 'c', name: 'Lanceur', characteristics: { ...hero().characteristics, FM: 52 } });
     const c = hero();

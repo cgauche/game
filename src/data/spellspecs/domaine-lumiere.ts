@@ -13,10 +13,12 @@ export const DOMAINE_LUMIERE: SpellSpec[] = [
     label: 'Bannissement',
     // « …toutes les créatures dans la ZdE dont l'Endurance est inférieure à votre Force Mentale.
     //   Les cibles Mort-vivant ou Démoniaque gagnent le Trait Instable. Si elles possèdent déjà
-    //   Instable, elles sont réduites à 0 PB. » — gate E<FM + ciblage par Trait + branche
-    //   « déjà Instable » : entièrement arbitré (aucun de ces gates n'est exprimable en op simple).
+    //   Instable, elles sont réduites à 0 PB. » — le Trait Instable est accordé aux cibles
+    //   Mort-vivant/Démoniaque (op grantTrait + onlyGroups) ; le gate « E < votre FM » et la branche
+    //   « déjà Instable → 0 PB » restent journalisés (non exprimables en op simple).
     ops: [
-      { op: 'narrative', text: 'Bannissement : dans la ZdE, les créatures d’Endurance < votre FM et de Trait Mort-vivant/Démoniaque gagnent Instable ; celles déjà Instable sont réduites à 0 PB — arbitrage MJ.' },
+      { op: 'grantTrait', trait: 'Instable', onlyGroups: ['Mort-vivant', 'Démon'] },
+      { op: 'narrative', text: 'Bannissement : seules les cibles d’Endurance < votre FM sont affectées ; une cible Mort-vivant/Démoniaque qui possédait DÉJÀ Instable est réduite à 0 PB — arbitrage MJ.' },
     ],
     durationRounds: null,
     curated: true,
