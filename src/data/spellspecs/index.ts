@@ -20,6 +20,8 @@ import { DOMAINE_MORT } from './domaine-mort';
 import { DOMAINE_VIE } from './domaine-vie';
 import { MAGIE_NATURELLE } from './magie-naturelle';
 import { NECROMANCIE } from './necromancie';
+import { MAGIE_CHAOS } from './magie-chaos';
+import { MAGIE_TZEENTCH } from './magie-tzeentch';
 import { MAGIE_MINEURE } from './magie-mineure';
 import { ARCANES_COMMUNS } from './arcanes-communs';
 import { MIRACLES_SIGMAR } from './miracles-sigmar';
@@ -36,7 +38,7 @@ import { MIRACLES_VERENA } from './miracles-verena';
 const ALL: SpellSpec[] = [
   ...BENEDICTIONS, ...DOMAINE_FEU, ...DOMAINE_OMBRES, ...DOMAINE_METAL, ...DOMAINE_LUMIERE,
   ...DOMAINE_CIEUX, ...DOMAINE_GUEULE, ...DOMAINE_BETE, ...SORCELLERIE, ...DEMONOLOGIE,
-  ...DOMAINE_MORT, ...DOMAINE_VIE, ...MAGIE_NATURELLE, ...NECROMANCIE,
+  ...DOMAINE_MORT, ...DOMAINE_VIE, ...MAGIE_NATURELLE, ...NECROMANCIE, ...MAGIE_CHAOS, ...MAGIE_TZEENTCH,
   ...MAGIE_MINEURE, ...ARCANES_COMMUNS, ...MIRACLES_SIGMAR, ...MIRACLES_SHALLYA, ...MIRACLES_MORR,
   ...MIRACLES_MYRMIDIA, ...MIRACLES_MANANN, ...MIRACLES_RANALD, ...MIRACLES_RHYA, ...MIRACLES_TAAL,
   ...MIRACLES_ULRIC, ...MIRACLES_VERENA,

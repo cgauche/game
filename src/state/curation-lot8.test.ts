@@ -24,15 +24,8 @@ beforeEach(() => {
 });
 
 describe('couverture de curation', () => {
-  it('Magie mineure, Arcanes communs, Domaines Feu/Lumière, Miracles Sigmar+Shallya : tous curés', () => {
-    const curedArcaneDomains = ['Feu', 'Lumière', 'Cieux', 'Métal', 'Ombres', 'Gueule', 'Bête', 'Sorcellerie', 'Démonologie', 'Mort', 'Vie', 'Magie naturelle', 'Nécromancie'];
-    const curedCults = ['Sigmar', 'Shallya', 'Morr', 'Myrmidia', 'Manann', 'Ranald', 'Rhya', 'Taal', 'Ulric', 'Verena'];
-    for (const s of spells) {
-      const fam = s.type === 'Magie mineure' || (s.type === 'Magie des Arcanes' && s.subType == null)
-        || (s.type === 'Magie des Arcanes' && curedArcaneDomains.includes(s.subType ?? ''))
-        || (s.type === 'Invocation' && curedCults.includes(s.subType ?? ''));
-      if (fam) expect(spellSpecFor(s).curated, s.label).toBe(true);
-    }
+  it('TOUS les sorts (243) sont curés — plus aucun repli regex', () => {
+    for (const s of spells) expect(spellSpecFor(s).curated, `${s.label} (${s.type} / ${s.subType ?? '—'})`).toBe(true);
   });
 
   it('labels en double : « Enchevêtrement » résolu par type (Arcane vs miracle de Taal, tous deux curés)', () => {
