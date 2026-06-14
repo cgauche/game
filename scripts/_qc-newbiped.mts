@@ -16,7 +16,7 @@ NAMES.forEach(([name, weapon], r) => {
   cells.push(`<text x="6" y="${30 + r * CH + CH / 2}" font-size="14" fill="#d8a93b" font-family="sans-serif">${name}</text>`);
   if (!prof) { cells.push(`<text x="120" y="${30 + r * CH + 40}" font-size="12" fill="#e06a4a">NON-RIG</text>`); return; }
   VIEWS.forEach((view, i) => {
-    const inner = bonesToSvg(resolveRig(prof.appearance, prof.equip, {}, prof.career, view));
+    const inner = bonesToSvg(resolveRig(prof.appearance, prof.equip, {}, prof.tenue, view));
     const x = 110 + i * CW, y = 30 + r * CH, cx = (CW - 6) / 2;
     cells.push(`<g transform="translate(${x},${y})"><rect width="${CW - 6}" height="${CH - 10}" fill="#2b3142"/><g transform="translate(${cx - 60 * SC},${FEET - 150 * SC}) scale(${SC})">${inner}</g><text x="${cx}" y="${CH - 12}" text-anchor="middle" font-size="11" fill="#cdd" font-family="sans-serif">${view}</text></g>`);
   });

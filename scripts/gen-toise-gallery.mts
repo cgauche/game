@@ -36,7 +36,7 @@ function restBones(name: string): ResolvedBone[] {
   }
   const prof = entityRigProfile(name, 7);
   if (!prof) return [];
-  return resolveRig(prof.appearance, prof.equip, {}, prof.career, 'front', prof.overlays);
+  return resolveRig(prof.appearance, prof.equip, {}, prof.tenue, 'front', prof.overlays);
 }
 
 const HUMAN_REF = bonesToSvg(restBones('Humain'));

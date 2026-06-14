@@ -86,9 +86,9 @@ export interface EntityAppearance {
   /** Espèce/race CHOISIE — découple l'apparence du nom (label/ref) : 'Nains', 'Halflings',
    *  'Elfes'… (canonicalisée par `baseSpeciesOf`). Vide = dérivée du nom. */
   species?: string;
-  /** Tenue (carrière) CHOISIE — découple l'habit du nom : un PNJ peut porter n'importe
+  /** Tenue CHOISIE — découple l'habit du nom : un PNJ peut porter n'importe
    *  quelle tenue (Mendiant, Soldat, Skaven, Nu…). Vide = dérivée du nom/espèce. */
-  career?: string;
+  tenue?: string;
   /** Yeux personnalisés (clés du catalogue `EYE_OPTIONS` : chat/caprin/reptilien/noir/rouge/
    *  verre) — remplacés EN PLACE sur l'orbite du visage. Vide = yeux normaux. */
   eyes?: { G?: string; D?: string };

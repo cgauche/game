@@ -25,7 +25,7 @@ describe('golden — rendu COMBAT (spawn→enemyRigProfile) du bestiaire bipède
     if (!prof) continue; // non-bipède → chemin plan (couvert par creature-render-golden)
     for (const view of VIEWS)
       it(`${cr.label} / ${view}`, () => {
-        expect(bonesToSvg(resolveRig(prof.appearance, prof.equip, {}, prof.career, view, prof.overlays ?? []))).toMatchSnapshot();
+        expect(bonesToSvg(resolveRig(prof.appearance, prof.equip, {}, prof.tenue, view, prof.overlays ?? []))).toMatchSnapshot();
       });
   }
 });

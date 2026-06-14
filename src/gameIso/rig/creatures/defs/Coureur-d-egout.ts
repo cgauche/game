@@ -9,7 +9,7 @@ export const creature: CreatureDef = {
   aliases: ['coureur degout', 'coureur d egout', 'coureur d-egout', 'coureur nocturne'],
   race: 'Skaven',
   perso: {
-    career: "Coureur d'égout",
+    tenue: "Coureur d'égout",
     colors: { peau: '#46403a', cheveux: '#1c1813' }, // fourrure brun-noir
   },
 };

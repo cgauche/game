@@ -22,7 +22,7 @@ NAMES.forEach(([name, weapon], r) => {
   cells.push(`<text x="6" y="${30 + r * CH + CH / 2}" font-size="15" fill="#d8a93b" font-family="sans-serif">${name}</text>`);
   if (!prof) { cells.push(`<text x="160" y="${30 + r * CH + 40}" font-size="14" fill="#e06a4a">NON-RIG</text>`); return; }
   VIEWS.forEach((view, i) => {
-    const inner = bonesToSvg(resolveRig(prof.appearance, prof.equip, {}, prof.career, view));
+    const inner = bonesToSvg(resolveRig(prof.appearance, prof.equip, {}, prof.tenue, view));
     const x = 150 + i * CW, y = 30 + r * CH;
     const cx = (CW - 6) / 2;
     cells.push(`<g transform="translate(${x},${y})"><rect width="${CW - 6}" height="${CH - 10}" fill="#2b3142"/><line x1="${cx}" y1="0" x2="${cx}" y2="${CH - 10}" stroke="#e06a4a" stroke-width="1" opacity="0.5"/><line x1="0" y1="${FEET}" x2="${CW - 6}" y2="${FEET}" stroke="#e06a4a" stroke-width="0.5" opacity="0.4"/><g transform="translate(${cx - 60 * SC},${FEET - 150 * SC}) scale(${SC})">${inner}</g><text x="${cx}" y="${CH - 14}" text-anchor="middle" font-size="13" fill="#cdd" font-family="sans-serif">${view}</text></g>`);

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { resolveParts } from './resolve';
-import { careerTenueFor } from './career';
+import { tenueFor } from './career';
 import { armourPart } from './equipment';
 import { pickView } from './types';
 import type { EquipCtx } from './equipment';
@@ -13,14 +13,14 @@ const plastron: ItemInstance = { uid: '1', name: 'Plastron', kind: 'armor', qual
 describe('resolveParts — priorité', () => {
   it('sans rien : torse = tenue de la carrière (par-carrière)', () => {
     const r = resolveParts('Humain', 'M', 'Soldat', empty, {}, 1);
-    expect(r.torse?.svg).toBe(pickView(careerTenueFor('Soldat').torse, 'front'));
+    expect(r.torse?.svg).toBe(pickView(tenueFor('Soldat').torse, 'front'));
   });
 
   it('armure équipée sur le corps PRIME sur la tenue de carrière', () => {
     const equip: EquipCtx = { weapons: [], armour: [plastron] };
     const r = resolveParts('Humain', 'M', 'Soldat', equip, {}, 1);
     expect(r.torse?.svg).toBe(pickView(armourPart(plastron, 'torse'), 'front'));
-    expect(r.torse?.svg).not.toBe(pickView(careerTenueFor('Soldat').torse, 'front'));
+    expect(r.torse?.svg).not.toBe(pickView(tenueFor('Soldat').torse, 'front'));
   });
 
   it('arme et bouclier suivent l’équipement', () => {

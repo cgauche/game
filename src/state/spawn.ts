@@ -332,8 +332,9 @@ export function spawnEnemy(
       eyes: a.eyes,
     });
   }
-  // Tenue/carrière éditée (libellé) → portée par le rig en combat comme en exploration.
-  if (a?.career) c.career = a.career;
+  // Tenue éditée (libellé) → portée par le rig (via Combatant.career, qui sert de tenue) en
+  // combat comme en exploration.
+  if (a?.tenue) c.career = a.tenue;
   if (opts?.weapon) {
     c.weapons = [weaponFromLabel(opts.weapon), ...c.weapons];
   }

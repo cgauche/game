@@ -27,7 +27,7 @@ export function MountedToken({ mount, rider }: { mount: Combatant; rider: Combat
   const prof = rider.kind === 'hero' ? null : enemyRigProfile(rider);
   const appearance = combatantAppearance(prof?.appearance ?? rider.appearance ?? defaultAppearance(rider), rider);
   const equip = prof?.equip ?? equipFromCombatant(rider);
-  const career = prof?.career ?? rider.career;
+  const tenue = prof?.tenue ?? rider.career;
   const overlays = [...(prof?.overlays ?? []), ...combatantOverlays(rider)];
   // Animation vivante du cavalier (attaque/parade/touché via le bus, ciblées par rider.id) —
   // en mode ASSIS : clips MONTÉS (lance couchée, taille à cheval), gestes sans bassin/jambes,
@@ -42,7 +42,7 @@ export function MountedToken({ mount, rider }: { mount: Combatant; rider: Combat
   // (idle/attaque) par-dessus. On n'utilise PAS la prise d'arme à pied (riderA.holdPose).
   const mainWeapon = equip.weapons?.find((w) => !isShield(w)) ?? equip.weapons?.[0];
   const riderPose = addPose(mountedRest(view, mainWeapon), riderA.pose);
-  const riderBones = resolveRig(appearance, equip, riderPose, career, view, overlays, mountA.mirror);
+  const riderBones = resolveRig(appearance, equip, riderPose, tenue, view, overlays, mountA.mirror);
   // k (échelle relative dans la boîte monture) : DÉRIVÉ de la chaîne d'échelles monde — le
   // cavalier garde SA taille de rendu en selle (échelle cavalier ÷ échelle monture, art × Taille).
   // Fin de l'ex-RIDE_SCALE 0.78 codé en dur : un cheval recalibré ou une autre monture (loup

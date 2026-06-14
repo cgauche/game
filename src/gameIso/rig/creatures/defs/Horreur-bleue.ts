@@ -9,7 +9,7 @@ export const creature: CreatureDef = {
   matchPriority: 35, // AVANT la rose (36) — « horreur bleue » contient « horreur »
   aliases: ['horreur bleues', 'horreurs bleue', 'horreurs bleues'], // « horreur bleue » = le nom
   perso: {
-    career: 'Nu',
+    tenue: 'Nu',
     gabarit: 'gremlin',
     scale: 0.8, // moitié moins massive que la rose
     monster: { tete: 'horreur', griffes: true },

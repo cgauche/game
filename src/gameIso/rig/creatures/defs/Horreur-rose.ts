@@ -19,7 +19,7 @@ export const creature: CreatureDef = {
   matchPriority: 36, // APRÈS Horreur bleue (35) : « horreur » nu retombe sur la rose
   aliases: ['horreur roses', 'horreurs rose', 'horreurs roses', 'couineur', 'couineurs', 'horreur', 'horreurs'], // « horreur rose » = le nom ; « horreur » nu → rose
   perso: {
-    career: 'Nu',
+    tenue: 'Nu',
     gabarit: 'gremlin', // dégingandé à grosse tête — la gueule domine la silhouette
     scale: 1.15,
     monster: { tete: 'horreur', griffes: true },

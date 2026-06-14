@@ -12,7 +12,7 @@ export const creature: CreatureDef = {
   aliases: ['chamane bray', 'chamane-bray', 'chamanebray', 'chamane brey', 'chamanebrey', 'bray', 'brey'],
   race: 'Homme-bête',
   perso: {
-    career: 'Chamane-Bray',
+    tenue: 'Chamane-Bray',
     features: [
       { bone: 'tete', svg: OV_CORNES_GOR, layer: -2 },
     ],

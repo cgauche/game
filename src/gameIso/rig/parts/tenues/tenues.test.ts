@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { TENUES, TENUE_NUE, CAREER_TENUE_DEFS } from './index';
 import { TENUE_DEFS } from './_registry.generated';
 import { pickView } from '../types';
-import { careerTenueFor, tenuePaletteFor } from '../career';
+import { tenueFor, tenuePaletteFor } from '../career';
 
 describe('registre des tenues (auto-découverte defs/)', () => {
   it('dérive TENUES des fichiers defs/ : 8 archétypes de classe + Nu (+ tenues de carrière career:true)', () => {
@@ -12,9 +12,9 @@ describe('registre des tenues (auto-découverte defs/)', () => {
     expect(TENUE_DEFS.filter((d) => !d.career).length).toBe(9);
   });
 
-  it("une tenue de CARRIÈRE déposée en defs/ (career:true) est consommée par careerTenueFor — un fichier, zéro édition d'existant", () => {
+  it("une tenue de CARRIÈRE déposée en defs/ (career:true) est consommée par tenueFor — un fichier, zéro édition d'existant", () => {
     expect(CAREER_TENUE_DEFS['Guerrier du Chaos']).toBeDefined();
-    const t = careerTenueFor('Guerrier du Chaos');
+    const t = tenueFor('Guerrier du Chaos');
     expect(pickView(t.tete, 'profile')).toContain('@metal'); // heaume cornu, vue dédiée
     expect(tenuePaletteFor('Guerrier du Chaos').metal).toBe('#3a3a46'); // palette du def
   });
@@ -30,11 +30,11 @@ describe('registre des tenues (auto-découverte defs/)', () => {
     expect(pickView(TENUE_NUE.torse, 'front')).toContain('@peau');
   });
 
-  it('careerTenueFor("Nu") renvoie le corps nu', () => {
-    expect(careerTenueFor('Nu')).toBe(TENUE_NUE);
+  it('tenueFor("Nu") renvoie le corps nu', () => {
+    expect(tenueFor('Nu')).toBe(TENUE_NUE);
   });
 
-  it('careerTenueFor(carrière inconnue) retombe sur un archétype de classe (Citadins)', () => {
-    expect(careerTenueFor('Carrière imaginaire')).toBe(TENUES.Citadins);
+  it('tenueFor(carrière inconnue) retombe sur un archétype de classe (Citadins)', () => {
+    expect(tenueFor('Carrière imaginaire')).toBe(TENUES.Citadins);
   });
 });

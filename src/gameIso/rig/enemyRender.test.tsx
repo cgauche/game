@@ -21,7 +21,7 @@ function render(c: Combatant, view: 'front' | 'back' | 'profile' = 'front') {
   const p = enemyRigProfile(c)!;
   return renderToStaticMarkup(
     React.createElement(RigSprite, {
-      appearance: p.appearance, equip: p.equip, career: p.career, overlays: p.overlays, view,
+      appearance: p.appearance, equip: p.equip, career: p.tenue, overlays: p.overlays, view,
     }),
   );
 }

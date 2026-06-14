@@ -3,7 +3,7 @@ import { pickView, type Part, type PartArt } from './types';
 import type { View } from '../facing';
 import { cosmeticPart } from './cosmetic';
 import { genericPart } from './generic';
-import { careerTenueFor } from './career';
+import { tenueFor } from './career';
 import { CAREER_TENUE_BAREFOOT } from './tenues';
 import { armourPart, weaponPart, shieldPart, isShield, type EquipCtx } from './equipment';
 
@@ -111,16 +111,16 @@ const CLAWFOOT: PartArt = {
 export function resolveParts(
   species: string,
   sex: 'M' | 'F',
-  career: string | undefined,
+  tenueLabel: string | undefined,
   equip: EquipCtx,
   overrides: Partial<Record<Slot, number>>,
   seed: number,
   view: View = 'front',
 ): Record<Slot, Part | null> {
-  const tenue = careerTenueFor(career);
+  const tenue = tenueFor(tenueLabel);
   // Corps non chaussé : 'Nu'/'Squelette' + tenues de MONSTRE (flag bareFoot du def) — pieds
   // griffus et substitutions dos/profil en chair plutôt qu'en botte/tissu.
-  const bareFoot = career === 'Nu' || career === 'Squelette' || CAREER_TENUE_BAREFOOT.has(career ?? '');
+  const bareFoot = tenueLabel === 'Nu' || tenueLabel === 'Squelette' || CAREER_TENUE_BAREFOOT.has(tenueLabel ?? '');
   const out = {} as Record<Slot, Part | null>;
   const P = (art: PartArt | null | undefined): Part => ({ svg: pickView(art, view) });
 

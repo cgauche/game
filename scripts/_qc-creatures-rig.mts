@@ -37,7 +37,7 @@ function creatureBones(name: string): ResolvedBone[] {
   }
   const prof = entityRigProfile(name, 7);
   if (!prof) return [];
-  return scaleBones(resolveRig(prof.appearance, prof.equip, addPose({}, sampleClip(CLIPS.idle, 0).pose), prof.career, 'front', prof.overlays), z);
+  return scaleBones(resolveRig(prof.appearance, prof.equip, addPose({}, sampleClip(CLIPS.idle, 0).pose), prof.tenue, 'front', prof.overlays), z);
 }
 
 mkdirSync('public/qc/creatures-rig', { recursive: true });

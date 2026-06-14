@@ -23,10 +23,10 @@ export type BodyPlanId = string;
  *  attaque/mort étalée). Décidé par l'animation (usePlanAnim) — l'art change, pas que l'angle. */
 export type WingState = 'folded' | 'spread';
 
-/** Options de résolution communes (le bipède lit appearance/equip/career ; tous lisent colors). */
+/** Options de résolution communes (le bipède lit appearance/equip/tenue ; tous lisent colors). */
 export interface ResolveOpts {
   colors?: Palette;
-  career?: string;
+  tenue?: string;
   appearance?: Appearance;
   equip?: EquipCtx;
   /** Gabarit AILÉ seulement : état des ailes (défaut 'folded' — une bête posée replie). */

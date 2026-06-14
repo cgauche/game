@@ -39,7 +39,7 @@ const WING = CREATURES.filter((c) => c.plan === 'winged');
 const BIPED = CREATURES.filter((c) => c.plan === 'biped');
 
 /** Def bipède par NOM d'espèce — dérivée des fichiers defs. Les défauts d'apparence
- *  (career/monster/sex/parts/colors) vivent désormais sur la Race (cf. `raceById`) ;
+ *  (tenue/monster/sex/parts/colors) vivent désormais sur la Race (cf. `raceById`) ;
  *  les surcharges propres à une créature non-canonique vivent sur `def.perso`. */
 const BIPED_BY_NAME: Record<string, CreatureDef> = Object.fromEntries(BIPED.map((c) => [c.name, c]));
 /** Def bipède canonique par nom (lookup direct), ou undefined. */

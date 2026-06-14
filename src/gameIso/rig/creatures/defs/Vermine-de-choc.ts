@@ -9,7 +9,7 @@ export const creature: CreatureDef = {
   aliases: ['vermine'], // « vermine de choc » = le nom ; « vermine » nu suffit (élite skavenne)
   race: 'Skaven',
   perso: {
-    career: 'Vermine de choc',
+    tenue: 'Vermine de choc',
     scale: 1.1, // « plus grands, plus forts… que les guerriers des clans » (LDB 84)
     colors: { peau: '#2e2a26', cheveux: '#15110e' }, // fourrure noire
   },

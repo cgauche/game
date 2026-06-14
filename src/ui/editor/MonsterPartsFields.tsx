@@ -7,7 +7,7 @@ import { MONSTER_HEAD_OPTIONS, MONSTER_ARM_OPTIONS, MONSTER_LEG_OPTIONS } from '
 import { EYE_OPTIONS } from '../../gameIso/rig/parts/eyes';
 import { ColorPalettePickers, MONSTER_COLOR_SLOTS } from '../ColorPalettePickers';
 import { HAIRSTYLES } from '../../gameIso/rig/parts/generated/hairstyles';
-import { tenueCareerNames } from '../../gameIso/rig/parts/career';
+import { tenueNames } from '../../gameIso/rig/parts/career';
 import type { MonsterPartsSel, ColorsSel } from '../../state/scene';
 
 /** Armes équipables proposées (une par forme/groupe — affichées par le rig). */
@@ -20,7 +20,7 @@ export function MonsterPartsFields({
   sex,
   build,
   parts,
-  career,
+  tenue,
   eyes,
   onMonster,
   onWeapon,
@@ -28,7 +28,7 @@ export function MonsterPartsFields({
   onSex,
   onBuild,
   onParts,
-  onCareer,
+  onTenue,
   onEyes,
 }: {
   monster?: MonsterPartsSel;
@@ -37,7 +37,7 @@ export function MonsterPartsFields({
   sex?: 'M' | 'F';
   build?: number;
   parts?: { cheveux?: number; visage?: number };
-  career?: string;
+  tenue?: string;
   eyes?: { G?: string; D?: string };
   onMonster: (patch: Partial<MonsterPartsSel>) => void;
   onWeapon: (w: string | undefined) => void;
@@ -45,7 +45,7 @@ export function MonsterPartsFields({
   onSex?: (s: 'M' | 'F') => void;
   onBuild?: (b: number) => void;
   onParts?: (patch: { cheveux?: number; visage?: number }) => void;
-  onCareer?: (c: string | undefined) => void;
+  onTenue?: (c: string | undefined) => void;
   onEyes?: (patch: { G?: string; D?: string }) => void;
 }) {
   return (
@@ -124,10 +124,10 @@ export function MonsterPartsFields({
         </select>
       </label>
       <label className="ed-field">
-        Tenue (carrière)
-        <select value={career ?? ''} onChange={(e) => onCareer?.(e.target.value || undefined)}>
+        Tenue
+        <select value={tenue ?? ''} onChange={(e) => onTenue?.(e.target.value || undefined)}>
           <option value="">— par défaut (selon le nom) —</option>
-          {tenueCareerNames().map((c) => (
+          {tenueNames().map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
         </select>

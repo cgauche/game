@@ -20,8 +20,8 @@ let frozen = 0;
 for (const c of creatures) {
   const prof = entityRigProfile(String(c.label), 7); // seed fixe (la carrière ne dépend pas du seed)
   if (!prof) continue; // non-bipède
-  if (c.career !== prof.career) {
-    c.career = prof.career;
+  if (c.tenue !== prof.tenue) {
+    c.tenue = prof.tenue;
     frozen++;
   }
 }

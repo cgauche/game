@@ -33,7 +33,7 @@ function riderBox(name: string, view: View, weapon?: string) {
   // FIDÉLITÉ JEU = MountedToken : pose MONTÉE dédiée + delta du clip vivant (idle figé ici).
   const mainWeapon = p.equip.weapons?.find((w) => !isShield(w)) ?? p.equip.weapons?.[0];
   const idle = sampleClip(CLIPS.idle, 0).pose;
-  return resolveRig(p.appearance, p.equip, addPose(mountedRest(view, mainWeapon), idle), p.career, view, p.overlays);
+  return resolveRig(p.appearance, p.equip, addPose(mountedRest(view, mainWeapon), idle), p.tenue, view, p.overlays);
 }
 function frame(body: string, S: number, label = ''): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">`

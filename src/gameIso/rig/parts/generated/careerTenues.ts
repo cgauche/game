@@ -1408,12 +1408,12 @@ const MANUAL: Record<string, TenueSlots> = {
 /** Tenue par carrière exposée au moteur : auto + overrides manuels, fusionnés PAR SLOT.
  *  Un override manuel peut ne fournir QUE certains slots (p.ex. juste `tete`) ; les autres
  *  restent ceux de l'auto. Le slot manuel l'emporte sur l'auto. */
-export const GENERATED_CAREER_TENUES: Record<string, TenueSlots> = (() => {
+export const TENUE_MODELS: Record<string, TenueSlots> = (() => {
   const out: Record<string, TenueSlots> = {};
-  for (const [career, slots] of Object.entries(GENERATED_CAREER_TENUES_AUTO)) out[career] = { ...slots };
-  for (const [career, slots] of Object.entries(MANUAL)) out[career] = { ...(out[career] ?? {}), ...slots };
-  // Tenues de carrière DÉPOSÉES en defs/ (tenues/defs/<Nom>.ts, flag career:true) — la voie
+  for (const [tenue, slots] of Object.entries(GENERATED_CAREER_TENUES_AUTO)) out[tenue] = { ...slots };
+  for (const [tenue, slots] of Object.entries(MANUAL)) out[tenue] = { ...(out[tenue] ?? {}), ...slots };
+  // Tenues DÉPOSÉES en defs/ (tenues/defs/<Nom>.ts, flag career:true) — la voie
   // CANONIQUE pour un nouvel humanoïde habillé : un fichier, zéro édition d'existant. PRIORITAIRE.
-  for (const [career, slots] of Object.entries(CAREER_TENUE_DEFS)) out[career] = { ...(out[career] ?? {}), ...slots };
+  for (const [tenue, slots] of Object.entries(CAREER_TENUE_DEFS)) out[tenue] = { ...(out[tenue] ?? {}), ...slots };
   return out;
 })();

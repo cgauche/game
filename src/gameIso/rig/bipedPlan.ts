@@ -15,7 +15,7 @@ const EMPTY_EQUIP: EquipCtx = { weapons: [], armour: [] };
 function resolveBiped(species: string, view: View, pose: Record<string, number>, opts?: ResolveOpts): ResolvedBone[] {
   const appearance: Appearance = opts?.appearance ?? { ...DEFAULT_APPEARANCE, species, colors: opts?.colors };
   const equip: EquipCtx = opts?.equip ?? EMPTY_EQUIP;
-  return resolveRig(appearance, equip, pose, opts?.career, view);
+  return resolveRig(appearance, equip, pose, opts?.tenue, view);
 }
 
 // Pose de mort bipède (alignée sur CORPSE_POSE de RigToken : membres au sol).

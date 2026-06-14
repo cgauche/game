@@ -13,7 +13,7 @@ const cells: string[] = [];
 NAMES.forEach((name, i) => {
   const prof = entityRigProfile(name, hashSeed(name))!;
   const sc = BASE * bipedSpeciesScale(name);
-  const inner = bonesToSvg(resolveRig(prof.appearance, prof.equip, {}, prof.career, 'front'));
+  const inner = bonesToSvg(resolveRig(prof.appearance, prof.equip, {}, prof.tenue, 'front'));
   const cx = 130 + i * SLOT;
   cells.push(`<g transform="translate(${cx - 60 * sc},${GROUND - 150 * sc}) scale(${sc})">${inner}</g>`);
   cells.push(`<text x="${cx}" y="${GROUND + 20}" text-anchor="middle" font-size="13" fill="#cdd" font-family="sans-serif">${name} (x${bipedSpeciesScale(name)})</text>`);

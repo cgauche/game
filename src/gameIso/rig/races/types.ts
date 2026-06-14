@@ -29,7 +29,7 @@ export interface RaceDef {
   features?: RaceFeature[];     // traits de corps (gut, barbe, queue, cornes…)
   pose?: Record<string, number>;// posture de repos (ex-SPECIES_POSE), front + profil
   // Défauts d'espèce (ex-BipedConfig des defs créature) :
-  career?: string;              // tenue par défaut
+  tenue?: string;              // tenue par défaut
   colors?: Palette;             // surcharges de palette
   sex?: 'M' | 'F';              // sexe forcé
   parts?: { cheveux?: number; visage?: number }; // coiffure/visage épinglés

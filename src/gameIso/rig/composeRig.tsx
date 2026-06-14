@@ -42,12 +42,12 @@ export interface ResolvedBone {
   parts: { svg: string; layer: number; mirror?: boolean }[];
 }
 
-/** (apparence, équipement, pose, carrière?) → os résolus, triés z croissant (peintre). PUR. */
+/** (apparence, équipement, pose, tenue?) → os résolus, triés z croissant (peintre). PUR. */
 export function resolveRig(
   appearance: Appearance,
   equip: EquipCtx,
   pose: Pose,
-  career?: string,
+  tenue?: string,
   view: View = 'front',
   overlays: RigOverlay[] = [],
   mirror = false,
@@ -78,7 +78,7 @@ export function resolveRig(
   // droit (un dos voûté ne se montre pas pile de face en 2D).
   const speciesPose = view === 'profile' ? race.pose ?? {} : {};
   const world = worldTransforms(sk, addPose(speciesPose, addPose(viewPose, pose)));
-  const parts = resolveParts(appearance.species, appearance.sex, career, equip, appearance.parts ?? {}, appearance.seed ?? 1, view);
+  const parts = resolveParts(appearance.species, appearance.sex, tenue, equip, appearance.parts ?? {}, appearance.seed ?? 1, view);
   // Yeux personnalisés (œil de verre, Œil énorme, yeux d'animaux…) : remplacés EN PLACE
   // sur l'orbite marquée du visage (cf. parts/eyes.ts — no-op sans marqueur). Les yeux de
   // RACE (Vampire rougeoyant) servent de défaut, l'apparence (mutation/blessure) prime.
@@ -222,10 +222,10 @@ export function resolveRig(
   const skinHeadKey = appearance.monster?.tete ?? bDef?.perso?.head ?? race.head; // greffe de peau depuis la tête (monster, def OU race)
   const headSkin = !speciesHasSkin && skinHeadKey ? SKIN_FROM_HEAD[skinHeadKey] : undefined;
   const overrides: Palette = { ...(headSkin ? { peau: headSkin } : {}), ...appearance.colors };
-  // Défauts empilés : ESPÈCE (peau/cheveux/yeux par espèce:sexe) → CARRIÈRE (tenue) → surcharges.
-  // Palette de tenue : carrière dédiée OU archétype de classe en repli (tenuePaletteFor) →
-  // les carrières SANS tenue dédiée héritent/recolorent comme les autres (cohérence).
-  const stored = { ...(speciesPalette ?? {}), ...tenuePaletteFor(career) };
+  // Défauts empilés : ESPÈCE (peau/cheveux/yeux par espèce:sexe) → TENUE → surcharges.
+  // Palette de tenue : tenue dédiée OU archétype de classe en repli (tenuePaletteFor) →
+  // les tenues SANS art dédié héritent/recolorent comme les autres (cohérence).
+  const stored = { ...(speciesPalette ?? {}), ...tenuePaletteFor(tenue) };
   const tmap = buildTokenMap(stored, overrides);
   for (const id of BONE_IDS) boneParts[id] = boneParts[id].map((p) => ({ ...p, svg: applyTokenMap(p.svg, tmap) }));
 
@@ -255,6 +255,7 @@ export function RigSprite({ appearance, equip, pose = {}, career, view = 'front'
   appearance: Appearance;
   equip: EquipCtx;
   pose?: Pose;
+  /** Libellé de TENUE à porter (la carrière de jeu d'un héros sert de tenue par défaut). */
   career?: string;
   view?: View;
   overlays?: RigOverlay[];

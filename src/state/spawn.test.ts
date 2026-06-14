@@ -181,8 +181,8 @@ describe('spawnEnemy — transport de l’apparence/carrière éditée vers le C
     expect(c.appearance).toMatchObject({ seed: 12345, sex: 'F', build: 0.7 });
   });
 
-  it('carrière éditée (tenue) → portée par Combatant.career', () => {
-    const c = spawnEnemy('Mutant', undefined, 'e1', at, { appearance: { career: 'Soldat' } });
+  it('tenue éditée → portée par Combatant.career', () => {
+    const c = spawnEnemy('Mutant', undefined, 'e1', at, { appearance: { tenue: 'Soldat' } });
     expect(c.career).toBe('Soldat');
   });
 

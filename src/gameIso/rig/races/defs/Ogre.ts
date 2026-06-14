@@ -4,7 +4,7 @@ export const race: RaceDef = {
   id: 'Ogre',
   gabarit: 'brute',
   palette: { peau: "#c9966a", peauO: "#9a6c48", peauH: "#e0b48a", cheveux: "#3a281a", cheveuxO: "#241810", cheveuxH: "#4c3624" },
-  career: 'Ogre', // tenue dédiée du registre (plaque-bedaine + cuirs) — « Nu » = corps seul
+  tenue: 'Ogre', // tenue dédiée du registre (plaque-bedaine + cuirs) — « Nu » = corps seul
   head: 'ogre',
   features: [
     // La PANSE est de la MORPHOLOGIE (corps nu), pas de la tenue : elle reste sur la race.

@@ -36,7 +36,7 @@
       "page": 311
     },
     "species": "Humain",
-    "career": "Soldat"
+    "tenue": "Soldat"
   },
   {
     "label": "Nain",
@@ -78,7 +78,7 @@
       "page": 311
     },
     "species": "Nain",
-    "career": "Soldat"
+    "tenue": "Soldat"
   },
   {
     "label": "Halfling",
@@ -117,7 +117,7 @@
       "page": 311
     },
     "species": "Halfling",
-    "career": "Soldat"
+    "tenue": "Soldat"
   },
   {
     "label": "Elfe (haut et sylvain)",
@@ -162,7 +162,7 @@
       "page": 311
     },
     "species": "Haut-Elfe",
-    "career": "Soldat"
+    "tenue": "Soldat"
   },
   {
     "label": "Ogre",
@@ -205,7 +205,7 @@
       "page": 312
     },
     "species": "Ogre",
-    "career": "Ogre"
+    "tenue": "Ogre"
   },
   {
     "label": "Bella la Noire",
@@ -246,7 +246,7 @@
       "page": 313
     },
     "species": "Humain",
-    "career": "Soldat"
+    "tenue": "Soldat"
   },
   {
     "label": "Pol Dankels",
@@ -285,7 +285,7 @@
       "page": 313
     },
     "species": "Humain",
-    "career": "Soldat"
+    "tenue": "Soldat"
   },
   {
     "label": "Eusapia Balacañon",
@@ -363,7 +363,7 @@
       "page": 48
     },
     "species": "Humain",
-    "career": "Soldat"
+    "tenue": "Soldat"
   },
   {
     "label": "Araignée géante",
@@ -981,7 +981,7 @@
       "page": 319
     },
     "species": "Fimir",
-    "career": "Nu"
+    "tenue": "Nu"
   },
   {
     "label": "Géant",
@@ -1028,7 +1028,7 @@
       "page": 320
     },
     "species": "Géant",
-    "career": "Nu"
+    "tenue": "Nu"
   },
   {
     "label": "Griffon",
@@ -1428,7 +1428,7 @@
       "page": 324
     },
     "species": "Troll",
-    "career": "Nu"
+    "tenue": "Nu"
   },
   {
     "label": "Vouivre",
@@ -1514,7 +1514,7 @@
       "page": 325
     },
     "species": "Orc",
-    "career": "Mendiant"
+    "tenue": "Mendiant"
   },
   {
     "label": "Gobelin",
@@ -1559,7 +1559,7 @@
       "page": 326
     },
     "species": "Gobelin",
-    "career": "Mendiant"
+    "tenue": "Mendiant"
   },
   {
     "label": "Snotling",
@@ -1601,7 +1601,7 @@
       "page": 326
     },
     "species": "Snotling",
-    "career": "Nu"
+    "tenue": "Nu"
   },
   {
     "label": "Banshee",
@@ -1780,7 +1780,7 @@
       "page": 328
     },
     "species": "Goule",
-    "career": "Nu"
+    "tenue": "Nu"
   },
   {
     "label": "Loup funeste",
@@ -1915,7 +1915,7 @@
       "page": 329
     },
     "species": "Squelette",
-    "career": "Squelette"
+    "tenue": "Squelette"
   },
   {
     "label": "Vampire",
@@ -1972,7 +1972,7 @@
       "page": 330
     },
     "species": "Vampire",
-    "career": "Vampire"
+    "tenue": "Vampire"
   },
   {
     "label": "Zombie",
@@ -2020,7 +2020,7 @@
       "page": 330
     },
     "species": "Zombie",
-    "career": "Mendiant"
+    "tenue": "Mendiant"
   },
   {
     "label": "Chamane-Brey",
@@ -2066,7 +2066,7 @@
       "page": 331
     },
     "species": "Chamane-Brey",
-    "career": "Chamane-Bray"
+    "tenue": "Chamane-Bray"
   },
   {
     "label": "Gor",
@@ -2114,7 +2114,7 @@
       "page": 332
     },
     "species": "Gor",
-    "career": "Nu"
+    "tenue": "Nu"
   },
   {
     "label": "Minotaure",
@@ -2161,7 +2161,7 @@
       "page": 332
     },
     "species": "Minotaure",
-    "career": "Nu"
+    "tenue": "Nu"
   },
   {
     "label": "Ungor",
@@ -2206,7 +2206,7 @@
       "page": 332
     },
     "species": "Ungor",
-    "career": "Nu"
+    "tenue": "Nu"
   },
   {
     "label": "Cultiste",
@@ -2245,7 +2245,7 @@
       "page": 333
     },
     "species": "Humain",
-    "career": "Cultiste"
+    "tenue": "Cultiste"
   },
   {
     "label": "Mutant",
@@ -2283,7 +2283,7 @@
       "page": 333
     },
     "species": "Humain",
-    "career": "Mendiant"
+    "tenue": "Mendiant"
   },
   {
     "label": "Guerrier du Chaos",
@@ -2328,7 +2328,7 @@
       "page": 334
     },
     "species": "Guerrier du Chaos",
-    "career": "Guerrier du Chaos"
+    "tenue": "Guerrier du Chaos"
   },
   {
     "label": "Sanguinaire de Khorne",
@@ -2372,7 +2372,7 @@
       "page": 335
     },
     "species": "Démon",
-    "career": "Sanguinaire"
+    "tenue": "Sanguinaire"
   },
   {
     "label": "Démonette de Slaanesh",
@@ -2413,7 +2413,7 @@
       "page": 335
     },
     "species": "Démonette",
-    "career": "Démonette"
+    "tenue": "Démonette"
   },
   {
     "label": "Furie du Chaos",
@@ -2464,7 +2464,7 @@
       "page": 84
     },
     "species": "Furie du Chaos",
-    "career": "Nu"
+    "tenue": "Nu"
   },
   {
     "label": "Horreur rose",
@@ -2513,7 +2513,7 @@
       "page": 85
     },
     "species": "Horreur rose",
-    "career": "Nu"
+    "tenue": "Nu"
   },
   {
     "label": "Horreur bleue",
@@ -2560,7 +2560,7 @@
       "page": 85
     },
     "species": "Horreur bleue",
-    "career": "Nu"
+    "tenue": "Nu"
   },
   {
     "label": "Slenderthigh Whiptongue",
@@ -2691,7 +2691,7 @@
       "page": 337
     },
     "species": "Skaven",
-    "career": "Skaven"
+    "tenue": "Skaven"
   },
   {
     "label": "Rat ogre",
@@ -2739,7 +2739,7 @@
       "page": 337
     },
     "species": "Rat ogre",
-    "career": "Rat ogre"
+    "tenue": "Rat ogre"
   },
   {
     "label": "Vermine de choc",
@@ -2780,6 +2780,6 @@
       "page": 337
     },
     "species": "Vermine de choc",
-    "career": "Vermine de choc"
+    "tenue": "Vermine de choc"
   }
 ]

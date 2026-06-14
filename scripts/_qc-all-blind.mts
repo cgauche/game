@@ -43,7 +43,7 @@ const ENTRIES: Entry[] = [
 function svgFor(e: Entry, view: View, idx: number): { svg: string; sl: number } {
   if (e.plan === 'biped') {
     const prof = entityRigProfile(e.name, hashSeed(e.name + idx), e.weapon ? { weapon: e.weapon } : {})!;
-    return { svg: bonesToSvg(resolveRig(prof.appearance, prof.equip, {}, prof.career, view)), sl: 1 };
+    return { svg: bonesToSvg(resolveRig(prof.appearance, prof.equip, {}, prof.tenue, view)), sl: 1 };
   }
   if (e.plan === 'quad') {
     return { svg: bonesToSvg(resolveQuad(e.name, view)), sl: QUAD_SPECIES[e.name].sl };

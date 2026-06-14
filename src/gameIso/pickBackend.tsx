@@ -53,8 +53,8 @@ const CREATURE_BOX = '22 14 80 80';
  * l'os `tete` RÉSOLU (centré sur LE visage de chaque race — Nain/Ogre/… quelle que soit sa taille).
  * Math PURE, partagée par le pion-portrait de la carte (BodyToken flat) ET la vignette HUD (RigPortrait).
  */
-function faceFrame(appearance: Appearance, equip: EquipCtx, career: string | undefined, overlays: RigOverlay[]): { body: ReactNode; box: string } {
-  const bones = resolveRig(appearance, equip, {}, career, 'front', overlays);
+function faceFrame(appearance: Appearance, equip: EquipCtx, tenue: string | undefined, overlays: RigOverlay[]): { body: ReactNode; box: string } {
+  const bones = resolveRig(appearance, equip, {}, tenue, 'front', overlays);
   const tete = bones.find((b) => b.id === 'tete');
   const m = tete?.matrix ?? [1, 0, 0, 1, 60, 54];
   const sy = tete?.scale[1] ?? 1;
@@ -62,7 +62,7 @@ function faceFrame(appearance: Appearance, equip: EquipCtx, career: string | und
   const cy = m[5] + 10 * sy; // le visage est dessiné SOUS l'origine de l'os tete (crâne) → on descend le cadre
   const S = 46 * Math.max(0.9, sy); // cadre proportionnel à la taille de la tête (Ogre > Nain)
   return {
-    body: <RigSprite appearance={appearance} equip={equip} career={career} view="front" overlays={overlays} />,
+    body: <RigSprite appearance={appearance} equip={equip} career={tenue} view="front" overlays={overlays} />,
     box: `${(cx - S / 2).toFixed(1)} ${(cy - S / 2).toFixed(1)} ${S.toFixed(1)} ${S.toFixed(1)}`,
   };
 }
@@ -93,9 +93,9 @@ export function pickBackend(subject: TokenSubject, view: 'iso' | 'top' = 'iso'):
       if (top) {
         const appearance = combatantAppearance(prof?.appearance ?? c.appearance ?? defaultAppearance(c), c);
         const equip = prof?.equip ?? equipFromCombatant(c);
-        const career = prof?.career ?? c.career;
+        const tenue = prof?.tenue ?? c.career;
         const overlays = [...(prof?.overlays ?? []), ...combatantOverlays(c)];
-        const f = faceFrame(appearance, equip, career, overlays);
+        const f = faceFrame(appearance, equip, tenue, overlays);
         return { backend: 'rig', id: c.id, speciesScale: bipedSpeciesScale(c.name), portraitBox: f.box, flat: true, body: f.body };
       }
       return { backend: 'rig', id: c.id, speciesScale: bipedSpeciesScale(c.name), portraitBox: FACE_BOX, flat: false, body: <AnimatedRigToken combatant={c} profile={prof ?? undefined} pos={c.pos} /> };
@@ -121,11 +121,11 @@ export function pickBackend(subject: TokenSubject, view: 'iso' | 'top' = 'iso'):
   const seed = ent.appearance?.seed ?? hashSeed(ent.id);
   const prof =
     ent.kind === 'personnage'
-      ? entityRigProfile(ent.ref ?? ent.label ?? 'Villageois', seed, { species: ent.appearance?.species, career: ent.appearance?.career, monster: ent.appearance?.monster, weapon: ent.weapon, colors: ent.appearance?.colors, parts: ent.appearance?.parts, sex: ent.appearance?.sex, build: ent.appearance?.build, eyes: ent.appearance?.eyes })
+      ? entityRigProfile(ent.ref ?? ent.label ?? 'Villageois', seed, { species: ent.appearance?.species, tenue: ent.appearance?.tenue, monster: ent.appearance?.monster, weapon: ent.weapon, colors: ent.appearance?.colors, parts: ent.appearance?.parts, sex: ent.appearance?.sex, build: ent.appearance?.build, eyes: ent.appearance?.eyes })
       : null;
   if (prof) {
     if (top) {
-      const f = faceFrame(prof.appearance, prof.equip, prof.career, prof.overlays ?? []);
+      const f = faceFrame(prof.appearance, prof.equip, prof.tenue, prof.overlays ?? []);
       return { backend: 'rig', id, speciesScale: bipedSpeciesScale(ent.ref ?? ent.label ?? ''), portraitBox: f.box, flat: true, body: f.body };
     }
     return { backend: 'rig', id, speciesScale: bipedSpeciesScale(ent.ref ?? ent.label ?? ''), portraitBox: FACE_BOX, flat: false, body: <AmbientRigToken profile={prof} anim={ent.anim ?? ''} id={id} facing={ent.facing} pos={ent.pos} /> };

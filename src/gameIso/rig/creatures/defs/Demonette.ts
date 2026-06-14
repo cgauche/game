@@ -15,7 +15,7 @@ export const creature: CreatureDef = {
   matchPriority: 39, // proche de Démon (38) ; « demonette »/« slaanesh » ne chevauchent pas Khorne
   aliases: ['slaanesh'],
   perso: {
-    career: 'Démonette',
+    tenue: 'Démonette',
     sex: 'F',
     monster: { brasG: 'griffe', brasD: 'griffe', jambes: 'chevre' },
     eyes: { G: 'noir', D: 'noir' },

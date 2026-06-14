@@ -8,7 +8,7 @@
  */
 import type { StoredPalette } from '../../palette';
 
-export const CAREER_PALETTES: Record<string, StoredPalette> = {
+export const TENUE_PALETTES: Record<string, StoredPalette> = {
   "Agitateur": { vet1O: "#23283a", vet2: "#8a7d52", vet2O: "#7a6f48", vet1: "#3a3f55", vet2H: "#cabf90", cuirO: "#3a352a", vet1H: "#4a5068", cuir: "#5a5446", metal: "#7a3a2a", metalO: "#4a2018", metalH: "#9a5040", peau: "#d6cda0" },
   "Artisan": { vet1O: "#3a2614", metalH: "#caa64a", peau: "#caa882", cuirO: "#4a3420", vet1: "#5a3c22", metal: "#2a3038", cuir: "#8a6a40", vet1H: "#9a7a4c" },
   "Bourgeois": { metalH: "#d8c070", cuirO: "#3a2614", cuir: "#6a4a2a", vet1O: "#3a4720", metal: "#c9a23a", metalO: "#6e5212", vet1H: "#8a9a4a", vet2: "#b8a05a", vet2O: "#7a6630", vet1: "#5a6a32", vet2H: "#e8e0d0" },

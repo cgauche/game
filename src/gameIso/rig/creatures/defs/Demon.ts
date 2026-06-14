@@ -13,7 +13,7 @@ export const creature: CreatureDef = {
   aliasOnly: true, // « démon » nu est trop générique → seuls « sanguinaire »/« khorne » déclenchent
   aliases: ['sanguinaire', 'khorne'],
   perso: {
-    career: 'Sanguinaire',
+    tenue: 'Sanguinaire',
     features: [
       { bone: 'mainG', svg: OV_GRIFFES },
       { bone: 'mainD', svg: OV_GRIFFES },

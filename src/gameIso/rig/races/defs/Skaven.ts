@@ -6,7 +6,7 @@ export const race: RaceDef = {
   gabarit: 'elance-voute',
   palette: { peau: "#6f6354", peauO: "#4c4338", peauH: "#8c7f6c", cheveux: "#2a2018", cheveuxO: "#161009", cheveuxH: "#3a2c1e" },
   pose: { torse: 15, cou: 11, tete: -9, epauleG: 4, epauleD: 4 },
-  career: 'Skaven',
+  tenue: 'Skaven',
   head: 'rat',
   // Longue queue rose en S — tell de silhouette du Skaven (derrière le bassin).
   features: [

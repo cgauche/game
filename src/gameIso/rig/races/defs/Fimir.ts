@@ -8,7 +8,7 @@ export const race: RaceDef = {
   id: 'Fimir',
   gabarit: 'brute',
   palette: { peau: "#6b7a52", cheveux: "#3a281a", cheveuxO: "#241810", cheveuxH: "#4c3624" }, // chair gris-vert de vase (ombres dérivées)
-  career: 'Nu',
+  tenue: 'Nu',
   head: 'cyclope',
   // Queue traînante derrière le bassin ; cuir ÉCAILLEUX (textures.ts) : le démon des marais
   // est reptilien — écailles imbriquées sur torse, épaules et cuisses (tokens @peau).

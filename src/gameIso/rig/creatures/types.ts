@@ -28,7 +28,7 @@ export type CreatureBodyPlan =
  *  Réservé aux espèces NON-canoniques qui se replient sur une race partagée via baseSpeciesOf
  *  (Fimir→Ogre, Géant/Liche/Démonette→Humain) : leur config distincte vit ici, pas sur la race. */
 export interface CreaturePerso {
-  career?: string;
+  tenue?: string;
   monster?: MonsterParts;
   sex?: 'M' | 'F';
   parts?: { cheveux?: number; visage?: number };
@@ -63,7 +63,7 @@ export interface CreatureDef {
   matchPriority?: number;
   /** Props de rendu du gabarit quad/ailé (requis si plan = quadruped | winged). */
   quad?: QuadProps;
-  /** Race d'apparence (défauts career/monster/sex/parts/colors/scale). Défaut = baseSpeciesOf(name).
+  /** Race d'apparence (défauts tenue/monster/sex/parts/colors/scale). Défaut = baseSpeciesOf(name).
    *  À ne préciser que pour forcer une race autre que celle dérivée du nom. */
   race?: string;
   /** Gabarit (carrure) explicite, rare — sinon hérité de la race (ou du perso). */

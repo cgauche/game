@@ -74,10 +74,10 @@ describe('registre de créatures (auto-collecté depuis defs/)', () => {
   });
 
   it('défauts d\'apparence bipède portés par la Race', () => {
-    expect(raceById('Skaven').career).toBe('Skaven');
+    expect(raceById('Skaven').tenue).toBe('Skaven');
     expect(raceById('Vampire').sex).toBe('M');
     expect(raceById('Goule').head).toBe('goule');
-    expect(raceById('Nain').career).toBeUndefined(); // humanoïde simple : pas de défaut de tenue
+    expect(raceById('Nain').tenue).toBeUndefined(); // humanoïde simple : pas de défaut de tenue
   });
 
   it('routage par clé/alias à limite de mot', () => {

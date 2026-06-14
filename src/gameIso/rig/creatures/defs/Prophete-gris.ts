@@ -11,7 +11,7 @@ export const creature: CreatureDef = {
   aliases: ['prophete-gris', 'prophetegris'], // « prophete gris » = le nom
   race: 'Skaven',
   perso: {
-    career: 'Prophète gris',
+    tenue: 'Prophète gris',
     features: [{ bone: 'tete', svg: OV_CORNES_CAPRIN, layer: -2 }], // cornes derrière le crâne
     colors: { peau: '#b3aca0', cheveux: '#8a8478' }, // fourrure grise
   },

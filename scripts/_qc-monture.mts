@@ -35,7 +35,7 @@ const RIDING_POSE: Record<string, number> = { bassin: -6, torse: 8, tete: -6, cu
 function riderBones(name: string, view: View, riding: boolean): ResolvedBone[] {
   const p = entityRigProfile(name, 7)!;
   const pose = riding ? addPose({}, RIDING_POSE) : addPose({}, sampleClip(CLIPS.idle, 0).pose);
-  return resolveRig(p.appearance, p.equip, pose, p.career, view, p.overlays);
+  return resolveRig(p.appearance, p.equip, pose, p.tenue, view, p.overlays);
 }
 
 /** Place des os via la géométrie BodyToken (pieds en (ax,ay), échelle s) — identique à l'IsoStage. */

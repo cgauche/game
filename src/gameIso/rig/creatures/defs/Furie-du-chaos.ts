@@ -17,7 +17,7 @@ export const creature: CreatureDef = {
   matchPriority: 37, // avant Démon (38) — « furie » seul suffit
   aliases: ['furie'],
   perso: {
-    career: 'Nu',
+    tenue: 'Nu',
     gabarit: 'elance-voute',
     monster: { tete: 'chien', ailes: 'cuir', griffes: true, queue: true },
     colors: { peau: '#3a2c22' }, // fourrure sombre (les ailes-cuir @peauO suivent)

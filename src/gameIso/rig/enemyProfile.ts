@@ -1,6 +1,6 @@
 /**
  * Profil de rendu RIG d'un combattant ennemi/PNJ humanoïde — COSMÉTIQUE (l'engine
- * n'en dépend jamais). Transforme un Combatant en (apparence, carrière, équipement,
+ * n'en dépend jamais). Transforme un Combatant en (apparence, tenue, équipement,
  * calques de mutation) pour le rendre via le rig au lieu du sprite monolithique.
  *
  * Décisions : voir docs/superpowers/specs/2026-06-05-F1-ennemis-rig-design.md
@@ -31,7 +31,7 @@ export function weaponFromLabel(label: string): import('../../engine/types').Wea
 
 export interface EnemyRigProfile {
   appearance: Appearance;
-  career: string;
+  tenue: string;
   equip: EquipCtx;
   overlays?: RigOverlay[];
 }
@@ -64,7 +64,7 @@ function detectSpecies(n: string): string {
   return bipedSpeciesMatch(n) ?? 'Humain';
 }
 
-// Les défauts d'apparence (career / monster / sex / parts / colors / scale) d'un bipède viennent
+// Les défauts d'apparence (tenue / monster / sex / parts / colors / scale) d'un bipède viennent
 // désormais de sa RACE (canonique, partagée — cf. `raceById(baseSpeciesOf(species))`), surchargés
 // par les éventuelles surcharges propres à la créature (`def.perso`, pour les espèces
 // non-canoniques repliées sur une race partagée : Fimir/Géant/Liche/Démonette).
@@ -139,11 +139,12 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   const appearance: Appearance = autoMon && !baseApp.monster ? { ...baseApp, monster: autoMon } : baseApp;
   const isMutant = /mutant|chaos spawn|mutant.?du.?chaos|corrompu|difforme|abomination/.test(n);
   const hasMonster = !!(appearance.monster && Object.keys(appearance.monster).length);
-  // Tenue DATA-DRIVEN : explicite sur le Combatant → fiche bestiaire (`findCreature(name).career`) →
-  // défaut de la def (perso/race, pour les espèces hors bestiaire) → Soldat. Plus de name-match
-  // `ROLE_CAREERS` ni d'exception mutant→Mendiant en dur (POC retirés) : un mutant qui doit porter des
-  // hardes le déclare dans SA donnée (career), pas via une règle codée.
-  const career = c.career ?? findCreature(c.name)?.career ?? perso?.career ?? race.career ?? 'Soldat';
+  // Tenue DATA-DRIVEN : explicite sur le Combatant (`c.career`, la carrière de jeu sert de tenue
+  // par défaut) → fiche bestiaire (`findCreature(name).tenue`) → défaut de la def (perso/race, pour
+  // les espèces hors bestiaire) → Soldat. Plus de name-match `ROLE_CAREERS` ni d'exception
+  // mutant→Mendiant en dur (POC retirés) : un mutant qui doit porter des hardes le déclare dans SA
+  // donnée (tenue), pas via une règle codée.
+  const tenue = c.career ?? findCreature(c.name)?.tenue ?? perso?.tenue ?? race.tenue ?? 'Soldat';
 
   // Équipement : l'inventaire du combattant prime ; sinon armure synthétisée des PA.
   const base = equipFromCombatant(c);
@@ -153,7 +154,7 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   // Calques de mutation aléatoires SEULEMENT si pas de parts monstrueux explicites.
   const overlays = isMutant && !hasMonster ? randomMutationOverlays(seed) : undefined;
 
-  return { appearance, career, equip, overlays };
+  return { appearance, tenue, equip, overlays };
 }
 
 /**
@@ -164,7 +165,7 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
 export function entityRigProfile(
   name: string,
   seed: number,
-  opts?: { species?: string; career?: string; monster?: MonsterParts; weapon?: string; colors?: import('./palette').Palette; parts?: Appearance['parts']; sex?: 'M' | 'F'; build?: number; eyes?: { G?: string; D?: string } },
+  opts?: { species?: string; tenue?: string; monster?: MonsterParts; weapon?: string; colors?: import('./palette').Palette; parts?: Appearance['parts']; sex?: 'M' | 'F'; build?: number; eyes?: { G?: string; D?: string } },
 ): EnemyRigProfile | null {
   if (classifyEnemy(name) === 'creature') return null;
   const n = norm(name);
@@ -186,7 +187,7 @@ export function entityRigProfile(
   const isMutant = /mutant|chaos spawn|mutant.?du.?chaos|corrompu|difforme|abomination/.test(n);
   return {
     appearance,
-    career: opts?.career ?? findCreature(name)?.career ?? perso?.career ?? race.career ?? 'Soldat',
+    tenue: opts?.tenue ?? findCreature(name)?.tenue ?? perso?.tenue ?? race.tenue ?? 'Soldat',
     equip: { weapons: opts?.weapon ? [weaponFromLabel(opts.weapon)] : [], armour: [] },
     overlays: isMutant && !hasMonster ? randomMutationOverlays(seed) : undefined,
   };

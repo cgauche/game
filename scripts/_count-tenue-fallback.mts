@@ -1,8 +1,8 @@
 import careers from '../src/data/careers.json';
-import { GENERATED_CAREER_TENUES } from '../src/gameIso/rig/parts/generated/careerTenues';
+import { TENUE_MODELS } from '../src/gameIso/rig/parts/generated/careerTenues';
 import { TENUES } from '../src/gameIso/rig/parts/tenues';
 
-const gen = new Set(Object.keys(GENERATED_CAREER_TENUES).filter((k) => Object.keys((GENERATED_CAREER_TENUES as Record<string, object>)[k]).length));
+const gen = new Set(Object.keys(TENUE_MODELS).filter((k) => Object.keys((TENUE_MODELS as Record<string, object>)[k]).length));
 const all = (careers as { label: string; class: string }[]);
 const fallback = all.filter((c) => !gen.has(c.label));
 const byClass: Record<string, number> = {};

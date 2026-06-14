@@ -23,7 +23,7 @@ const SEED = 7;
 function renderSvg(name: string, view: View): string {
   if (classifyEnemy(name) === 'rig') {
     const p = entityRigProfile(name, SEED);
-    return p ? bonesToSvg(resolveRig(p.appearance, p.equip, {}, p.career, view, p.overlays ?? [])) : '∅rig';
+    return p ? bonesToSvg(resolveRig(p.appearance, p.equip, {}, p.tenue, view, p.overlays ?? [])) : '∅rig';
   }
   const plan = planById(bodyPlanOf(name));
   if (!plan) return '∅monolithic';

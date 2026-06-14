@@ -9,7 +9,7 @@ export const creature: CreatureDef = {
   aliases: ['esclave-skaven', 'esclaveskaven', 'skaven esclave', 'skaven-esclave', 'skavenesclave'],
   race: 'Skaven',
   perso: {
-    career: 'Esclave skaven',
+    tenue: 'Esclave skaven',
     gabarit: 'decharne', // affamé — carrure émaciée plutôt que celle du guerrier
     colors: { peau: '#7d7263', cheveux: '#3a3228' }, // fourrure terne
   },

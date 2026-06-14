@@ -31,7 +31,7 @@ export const creature: CreatureDef = {
   perso: {
     // MORPHO ici (chair cousue, fourrure, épines, griffes) ; son ÉQUIPEMENT (pagne-tablier
     // sanglé par les Molder) = tenue de carrière « Rat ogre » (registre, bareFoot).
-    career: 'Rat ogre',
+    tenue: 'Rat ogre',
     gabarit: 'brute-bras-longs',
     sex: 'M',
     colors: { peau: '#b5876e', cheveux: '#3c362c' }, // chair rosée cousue + fourrure sombre

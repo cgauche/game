@@ -1384,7 +1384,7 @@
      "dialogueId": "dlg-hub",
      "appearance": {
       "species": "Humains (Reiklander)",
-      "career": "Répurgateur",
+      "tenue": "Répurgateur",
       "sex": "M",
       "build": 0.62
      },
@@ -1405,7 +1405,7 @@
      },
      "appearance": {
       "species": "Humains (Reiklander)",
-      "career": "Apothicaire",
+      "tenue": "Apothicaire",
       "sex": "M",
       "build": 0.46
      }
@@ -1425,7 +1425,7 @@
      },
      "appearance": {
       "species": "Nains",
-      "career": "Artisan",
+      "tenue": "Artisan",
       "sex": "M",
       "build": 0.7
      },
@@ -1443,7 +1443,7 @@
      "dialogueId": "dlg-garde",
      "appearance": {
       "species": "Humains (Reiklander)",
-      "career": "Soldat",
+      "tenue": "Soldat",
       "sex": "M",
       "build": 0.58
      },
@@ -1461,7 +1461,7 @@
      "dialogueId": "dlg-rumeurs",
      "anim": "standing",
      "appearance": {
-      "career": "Mendiant",
+      "tenue": "Mendiant",
       "sex": "F"
      }
     },
@@ -1475,7 +1475,7 @@
      "label": "Villageois",
      "anim": "standing",
      "appearance": {
-      "career": "Mendiant"
+      "tenue": "Mendiant"
      }
     },
     {
@@ -1489,7 +1489,7 @@
      "anim": "cowering",
      "facing": "E",
      "appearance": {
-      "career": "Bourgeois"
+      "tenue": "Bourgeois"
      }
     },
     {
@@ -2558,7 +2558,7 @@
       "archetype": "taverniere"
      },
      "appearance": {
-      "career": "Bourgeois",
+      "tenue": "Bourgeois",
       "sex": "F",
       "build": 0.55
      }
@@ -2575,7 +2575,7 @@
      "facing": "E",
      "appearance": {
       "species": "Nains",
-      "career": "Batelier"
+      "tenue": "Batelier"
      }
     },
     {
@@ -2589,7 +2589,7 @@
      "anim": "standing",
      "facing": "O",
      "appearance": {
-      "career": "Mendiant"
+      "tenue": "Mendiant"
      }
     },
     {
@@ -2978,7 +2978,7 @@
      "dialogueId": "dlg-frere",
      "appearance": {
       "species": "Humains (Reiklander)",
-      "career": "Prêtre",
+      "tenue": "Prêtre",
       "sex": "M",
       "build": 0.5
      }
@@ -9685,7 +9685,7 @@
      },
      "ref": "Humain",
      "appearance": {
-      "career": "Mendiant",
+      "tenue": "Mendiant",
       "build": 0.72
      },
      "weapon": "Épée bâtarde",
@@ -11699,7 +11699,7 @@
      "anim": "cowering",
      "appearance": {
       "species": "Halflings",
-      "career": "Mendiant",
+      "tenue": "Mendiant",
       "sex": "M"
      }
     },
@@ -17243,7 +17243,7 @@
      },
      "ref": "Humain",
      "appearance": {
-      "career": "Voleur",
+      "tenue": "Voleur",
       "sex": "F"
      },
      "weapon": "Arc",
@@ -17261,7 +17261,7 @@
      },
      "ref": "Humain",
      "appearance": {
-      "career": "Voleur"
+      "tenue": "Voleur"
      },
      "weapon": "Épée bâtarde",
      "label": "Spadassin de Bella",

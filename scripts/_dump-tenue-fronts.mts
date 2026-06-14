@@ -4,10 +4,10 @@
  * de génération des vues dos/profil des tenues. Lancer : npx tsx scripts/_dump-tenue-fronts.mts
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { GENERATED_CAREER_TENUES } from '../src/gameIso/rig/parts/generated/careerTenues';
+import { TENUE_MODELS } from '../src/gameIso/rig/parts/generated/careerTenues';
 
 const out: Record<string, { torse?: string; tete?: string }> = {};
-for (const [career, set] of Object.entries(GENERATED_CAREER_TENUES)) {
+for (const [career, set] of Object.entries(TENUE_MODELS)) {
   const e: { torse?: string; tete?: string } = {};
   const torse = (set as Record<string, unknown>).torse;
   const tete = (set as Record<string, unknown>).tete;

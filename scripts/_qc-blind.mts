@@ -39,7 +39,7 @@ TRUTH.forEach(([name, weapon], idx) => {
   cells.push(`<text x="${ox + 8}" y="${oy + 18}" font-size="15" fill="#e8c25a" font-family="sans-serif" font-weight="bold">#${idx + 1}</text>`);
   if (!prof) { cells.push(`<text x="${ox + 40}" y="${oy + 60}" font-size="12" fill="#e06a4a">NON-RIG</text>`); return; }
   VIEWS.forEach((view, i) => {
-    const inner = bonesToSvg(resolveRig(prof.appearance, prof.equip, {}, prof.career, view));
+    const inner = bonesToSvg(resolveRig(prof.appearance, prof.equip, {}, prof.tenue, view));
     const sx = ox + i * SUB + SUB / 2;
     cells.push(`<g transform="translate(${sx - 60 * SC},${oy + FEET - 150 * SC}) scale(${SC})">${inner}</g>`);
   });

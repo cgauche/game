@@ -102,11 +102,14 @@ describe('enemyRigProfile', () => {
     }
   });
 
-  it('carrière mappée pour la tenue', () => {
-    expect(enemyRigProfile(mkEnemy('Flagellant'))!.career).toBe('Flagellant');
-    expect(enemyRigProfile(mkEnemy('Bandit'))!.career).toBe('Voleur');
-    expect(enemyRigProfile(mkEnemy('Garde'))!.career).toBe('Soldat');
-    expect(enemyRigProfile(mkEnemy('Noble dépravé'))!.career).toBe('Noble');
+  it('tenue DATA-DRIVEN : carrière explicite du combattant (plus d’inférence du nom)', () => {
+    // La tenue vient de la DONNÉE — la carrière du combattant (alimentée par `appearance.tenue`
+    // au spawn, cf. spawnEnemy), PAS d'une regex sur le nom (POC ROLE_CAREERS retiré, 47ec0b6).
+    expect(enemyRigProfile(mkEnemy('Cultiste', { career: 'Flagellant' }))!.tenue).toBe('Flagellant');
+    expect(enemyRigProfile(mkEnemy('Voyou', { career: 'Voleur' }))!.tenue).toBe('Voleur');
+    // Sans donnée de tenue, un humanoïde quelconque retombe sur le défaut (Soldat) : le nom
+    // « Flagellant » ne suffit plus à inférer la tenue.
+    expect(enemyRigProfile(mkEnemy('Flagellant'))!.tenue).toBe('Soldat');
   });
 
   it('armure synthétisée depuis les PA quand pas d’inventaire', () => {
@@ -144,10 +147,12 @@ describe('entityRigProfile (entité de scène, ambiance hors combat)', () => {
     expect(p.equip.weapons).toEqual([]);
     expect((p.overlays ?? []).length).toBeGreaterThanOrEqual(1); // mutant → calques
   });
-  it('villageois → Humain, tenue de mendiant (peuple)', () => {
+  it('villageois → Humain ; tenue portée en DONNÉE (plus d’inférence du nom)', () => {
     const p = entityRigProfile('Villageois', 1)!;
     expect(p.appearance.species).toBe('Humain');
-    expect(p.career).toBe('Mendiant');
+    expect(p.tenue).toBe('Soldat'); // défaut : la tenue ne se déduit plus du nom (POC retiré)
+    // L'ambiance porte sa tenue via `appearance.tenue` (pickBackend → opts.tenue) — honorée telle quelle.
+    expect(entityRigProfile('Villageois', 1, { tenue: 'Mendiant' })!.tenue).toBe('Mendiant');
   });
   it('non-humanoïde → null (garde le sprite créature)', () => {
     expect(entityRigProfile('Rat géant', 1)).toBeNull();

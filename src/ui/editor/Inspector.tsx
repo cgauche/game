@@ -532,14 +532,14 @@ function EntityPanel({
               sex={ent.appearance?.sex}
               build={ent.appearance?.build}
               parts={ent.appearance?.parts}
-              career={ent.appearance?.career}
+              tenue={ent.appearance?.tenue}
               onMonster={(patch) => updateSel({ appearance: { ...ent.appearance, monster: { ...(ent.appearance?.monster ?? {}), ...patch } } })}
               onWeapon={(w) => updateSel({ weapon: w })}
               onColors={(patch) => updateSel({ appearance: { ...ent.appearance, colors: { ...(ent.appearance?.colors ?? {}), ...patch } } })}
               onSex={(s) => updateSel({ appearance: { ...ent.appearance, sex: s } })}
               onBuild={(b) => updateSel({ appearance: { ...ent.appearance, build: b } })}
               onParts={(patch) => updateSel({ appearance: { ...ent.appearance, parts: { ...(ent.appearance?.parts ?? {}), ...patch } } })}
-              onCareer={(c) => updateSel({ appearance: { ...ent.appearance, career: c } })}
+              onTenue={(c) => updateSel({ appearance: { ...ent.appearance, tenue: c } })}
               eyes={ent.appearance?.eyes}
               onEyes={(patch) => updateSel({ appearance: { ...ent.appearance, eyes: { ...(ent.appearance?.eyes ?? {}), ...patch } } })}
             />

@@ -125,9 +125,9 @@ export interface CreatureData {
   /** Espèce d'apparence EXPLICITE (clé `CreatureDef`, bipèdes) — remplace le match-par-nom POC du rig
    *  (plan P1). Figée depuis la résolution actuelle ; le rig la lit, repli sur le nom si absente. */
   species?: string;
-  /** Carrière d'apparence EXPLICITE (→ tenue, bipèdes) — remplace le match-par-nom POC `ROLE_CAREERS`
+  /** Tenue d'apparence EXPLICITE (bipèdes) — remplace le match-par-nom POC `ROLE_CAREERS`
    *  (plan P1). Figée depuis la résolution actuelle ; le rig la lit (source unique de la tenue). */
-  career?: string;
+  tenue?: string;
 }
 export interface EtatData {
   label: string;

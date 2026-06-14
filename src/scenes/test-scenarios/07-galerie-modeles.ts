@@ -63,7 +63,7 @@ newSection();
 
 // 2) Toutes les carrières — rig humain + vêtements de la carrière (Moyenne, 1×1).
 for (const c of careers) {
-  place({ id: `car-${n++}`, kind: 'personnage', ref: 'Humain', label: `Carrière — ${c.label}`, appearance: { career: c.label }, weapon: 'Épée bâtarde' }, 1);
+  place({ id: `car-${n++}`, kind: 'personnage', ref: 'Humain', label: `Carrière — ${c.label}`, appearance: { tenue: c.label }, weapon: 'Épée bâtarde' }, 1);
 }
 newSection();
 
