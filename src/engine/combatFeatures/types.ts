@@ -1,5 +1,9 @@
 import type { Combatant } from '../types';
 
+/** Famille d'incantation conférée par un Talent de lanceur (LDB 10) — pilote l'apprentissage
+ *  des sorts (grimoire.ts). Source UNIQUE du type, partagée avec `CasterTalent`. */
+export type CastingKind = 'mineure' | 'arcane' | 'invocation' | 'beni' | 'chaos';
+
 /** Contexte lecture seule d'un hook de capacité (level = times du talent / Indice du trait). */
 export interface CombatFeatureCtx {
   combatant: Combatant;
@@ -102,4 +106,12 @@ export interface CombatFeature {
   /** Négociateur (LDB 60 l.12) : un Marchandage GAGNÉ réduit le prix de 20 % (au lieu de 10 %) même
    *  sans Succès Stupéfiant (DR net ≥ 6). Lu par merchantFlow lors de la conclusion du Marchandage. */
   bargainBonus?: boolean;
+  // ── Incantation (apprentissage des sorts — grimoire.ts) ──────────────────────
+  /** Talent de lanceur (LDB 10) : famille d'incantation qu'il ouvre (Magie mineure → 'mineure',
+   *  Magie des Arcanes → 'arcane', Invocation → 'invocation', Béni → 'beni', Magie du Chaos → 'chaos').
+   *  La spécialisation (Domaine/Culte) est portée par `ctx.spec`. Remplace le name-match de grimoire. */
+  castingKind?: CastingKind;
+  /** Béni (LDB 41 l.14) : « reçoit les SIX Bénédictions de son culte » à l'acquisition (octroi
+   *  automatique, pas un achat à 0 PX). Lu par talentEffects à l'acquisition. */
+  grantsCultBlessings?: boolean;
 }

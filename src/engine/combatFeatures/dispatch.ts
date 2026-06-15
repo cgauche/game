@@ -7,7 +7,14 @@ import type { Combatant, Weapon } from '../types';
 import { COMBAT_FEATURES } from './registry';
 import { featureKey } from './normalize';
 import { groupMatch } from '../groups';
-import type { CombatFeature, CombatFeatureCtx } from './types';
+import { splitLabel } from '../statEntry';
+import type { CombatFeature, CombatFeatureCtx, CastingKind } from './types';
+
+/** Famille d'incantation d'un LIBELLÉ de Talent (« Magie mineure », « Béni (Sigmar) ») via le registre,
+ *  ou undefined. Pour les consommateurs qui ont un NOM, pas un Combattant (création / Avancement). */
+export function castingKindOf(talentLabel: string): CastingKind | undefined {
+  return COMBAT_FEATURES[splitLabel(talentLabel).name]?.castingKind;
+}
 
 /** Capacités du registre présentes sur le combattant : talents POSSÉDÉS (niveau = times) +
  *  talents ACCORDÉS par un effet actif de sort (op `grantTalent`, niveau 1 tant que l'effet

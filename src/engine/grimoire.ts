@@ -22,26 +22,24 @@ import { Combatant } from './types';
 import { bonus, effectiveChar } from './characteristics';
 import { spells, type SpellData } from '../data';
 import { blessingsOf } from './cults/registry'; // Bénédictions par culte : registre defs/ (plus de record en dur)
+import { featuresOf } from './combatFeatures/dispatch';
+import type { CastingKind } from './combatFeatures/types';
 
 export interface CasterTalent {
-  kind: 'mineure' | 'arcane' | 'invocation' | 'beni' | 'chaos';
+  kind: CastingKind;
   /** Domaine (Feu, Ombres, Nécromancie…) ou Culte (Sigmar…), si spécialisé. */
   spec?: string;
 }
 
-/** Talents de lanceur du héros — specs extraites du NOM complet (« Invocation (Sigmar) »). */
+/** Talents de lanceur du héros — lus du REGISTRE de talents (castingKind), specs = `ctx.spec`
+ *  (« Invocation (Sigmar) » → 'Sigmar'). Plus de name-match : ajouter un Talent de lanceur = une def. */
 export function casterTalents(c: Combatant): CasterTalent[] {
   const out: CasterTalent[] = [];
-  for (const t of c.talents) {
-    const m = t.name.match(/^(Magie mineure|Magie des Arcanes|Invocation|Béni|Magie du Chaos)(?:\s*\(([^)]+)\))?$/);
-    if (!m) continue;
-    const kind = m[1] === 'Magie mineure' ? 'mineure'
-      : m[1] === 'Magie des Arcanes' ? 'arcane'
-      : m[1] === 'Invocation' ? 'invocation'
-      : m[1] === 'Béni' ? 'beni' : 'chaos';
+  for (const { def, ctx } of featuresOf(c)) {
+    if (!def.castingKind) continue;
     // « (Au choix) » (libellé générique des carrières) = non encore spécialisé → joker.
-    const spec = m[2]?.trim();
-    out.push({ kind, spec: spec && !/^au choix$/i.test(spec) ? spec : undefined });
+    const spec = ctx.spec;
+    out.push({ kind: def.castingKind, spec: spec && !/^au choix$/i.test(spec) ? spec : undefined });
   }
   return out;
 }

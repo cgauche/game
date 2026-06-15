@@ -30,6 +30,7 @@ import { bonus, maxWounds } from './characteristics';
 import { findTalent } from '../data';
 import { splitLabel, concreteLabel } from './careerSlots';
 import { blessingsOf } from './cults/registry';
+import { COMBAT_FEATURES } from './combatFeatures/registry';
 
 /** `addCharacteristic` d'un talent (libellé long des données), sinon null. */
 function addCharOf(talentLabel: string): string | null {
@@ -59,10 +60,10 @@ export function applyTalentAcquisition(hero: Combatant, talentLabel: string): vo
   if (addCharOf(talentLabel) === 'Mouvement') hero.movement += 1;
   // Béni (Culte) — LDB 10/41 : « reçoit les SIX Bénédictions de son culte » → octroi AUTOMATIQUE
   // à l'acquisition (création + achat PX), pas un achat à 0 PX par clic. Un « Béni » au culte non
-  // résolu (« Au choix ») n'octroie rien — la mémorisation passe alors par l'onglet Avancement.
-  const beni = talentLabel.match(/^Béni\s*\(([^)]+)\)\s*$/);
-  if (beni && !/au choix/i.test(beni[1])) {
-    const six = blessingsOf(beni[1].trim()).filter((b) => !(hero.spells ?? []).includes(b));
+  // résolu (« Au choix ») n'octroie rien. Le signal vient du REGISTRE (grantsCultBlessings), plus de name-match.
+  const { name, spec } = splitLabel(talentLabel);
+  if (COMBAT_FEATURES[name]?.grantsCultBlessings && spec && !/au choix/i.test(spec)) {
+    const six = blessingsOf(spec).filter((b) => !(hero.spells ?? []).includes(b));
     if (six.length) hero.spells = [...(hero.spells ?? []), ...six];
   }
 }

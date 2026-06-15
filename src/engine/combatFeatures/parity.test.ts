@@ -30,11 +30,9 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Vision nocturne', "annule la pénalité d'obscurité (combatFlow.seesInDark)"],
   ['Frénésie', 'capacité de Frénésie (psychology.isFrenzyCapable + flux frenzy)'],
   ['Diction instinctive', 'pas d’Imparfaite sur double réussi de Langue (Magick) (applyCast)'],
-  ['Magie des Arcanes', 'apprentissage des sorts (grimoire.ts — hors périmètre sorts)'],
-  ['Magie mineure', 'apprentissage des sorts (grimoire.ts — hors périmètre sorts)'],
-  ['Magie du Chaos', 'apprentissage des sorts (grimoire.ts — hors périmètre sorts)'],
-  ['Béni', 'Bénédictions de la divinité (grimoire/spellspecs — hors périmètre sorts)'],
-  ['Invocation', 'Miracles du culte (grimoire/spellspecs — hors périmètre sorts)'],
+  // Magie mineure/des Arcanes/du Chaos, Invocation, Béni : désormais des DEFS (castingKind →
+  // grimoire.casterTalents ; Béni grantsCultBlessings → talentEffects). L'apprentissage des sorts
+  // reste dans grimoire, mais la FAMILLE du Talent est lue du registre (plus de name-match).
   ['Bénédiction de Tzeentch', 'Sort unique offert (grimoire.ts — hors périmètre sorts)'],
 ]);
 

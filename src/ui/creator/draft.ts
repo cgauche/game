@@ -35,6 +35,7 @@ import {
 import { createHero, resolveSpeciesTalents } from '../../engine/character';
 import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLevelOu, talentMaxReached, wildcardSpecs } from '../../engine/careerSlots';
 import { careerSkillAdditions, talentCharBonus } from '../../engine/talentEffects';
+import { castingKindOf } from '../../engine/combatFeatures/dispatch';
 import { bonus } from '../../engine/characteristics';
 import { findSpecies, careers, careersForSpecies, species as allSpecies, levelsForCareer, SpeciesData, CareerLevelData } from '../../data';
 import type { Appearance } from '../../gameIso/rig/appearance';
@@ -277,7 +278,7 @@ export function talentEntryChoices(entry: string): string[] | null {
  *  gratuites + talents « +5 FM » appliqués, même pipeline que createHero) — 0 sans le Talent. */
 export function pettySpellQuota(d: CreatorDraft): number {
   const all = [...resolvedSpeciesTalents(d), ...(d.careerTalent ? [d.careerTalent] : [])];
-  if (!all.some((t) => splitLabel(t).name === 'Magie mineure')) return 0;
+  if (!all.some((t) => castingKindOf(t) === 'mineure')) return 0;
   let fm = draftChars(d).FM + (d.charAdvancesAlloc.FM ?? 0);
   for (const t of all) if (talentCharBonus(t) === 'FM') fm += 5;
   return bonus(fm);

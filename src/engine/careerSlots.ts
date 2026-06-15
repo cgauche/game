@@ -23,6 +23,7 @@ import { Combatant } from './types';
 import { bonus } from './characteristics';
 import { findTalent, findSkill, spells, CareerLevelData } from '../data';
 import { CULT_KEYS } from './cults/registry';
+import { COMBAT_FEATURES } from './combatFeatures/registry';
 import { splitLabel } from './statEntry';
 
 // `splitLabel` (split nom↔spécialisation) est la primitive UNIQUE de `statEntry` — ré-exportée ici
@@ -103,7 +104,7 @@ export function parseEntry(raw: string): SlotOption[] {
 export function wildcardSpecs(name: string): string[] {
   const skill = findSkill(name);
   if (skill?.specs?.length) return skill.specs;
-  if (name === 'Béni') return CULT_KEYS; // les Bénédictions ne sont pas taguées par domaine → le culte
+  if (COMBAT_FEATURES[name]?.grantsCultBlessings) return CULT_KEYS; // Béni → cultes (signal du registre, plus de name-match)
   const fromSpells = [...new Set(spells.filter((s) => s.type === name && s.subType).map((s) => s.subType as string))].sort();
   if (fromSpells.length) return fromSpells;
   return findTalent(name)?.specs ?? [];
