@@ -44,6 +44,9 @@ const ALL: SpellSpec[] = [
   ...MIRACLES_ULRIC, ...MIRACLES_VERENA,
 ];
 
+/** Toutes les specs curées de la base (preuve de complétude du système Flow/EffectOp, badges UI). */
+export const ALL_SPELL_SPECS: SpellSpec[] = ALL;
+
 /** Spec curée d'un sort, si elle existe (type optionnel pour les labels en double). */
 export function curatedSpec(label: string, type?: string): SpellSpec | undefined {
   const candidates = ALL.filter((s) => s.label === label);

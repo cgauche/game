@@ -4,7 +4,7 @@ import type { LootGear, CascadeStep } from './pendings';
 import { Combatant, ItemInstance, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { battleRng } from './battleRng';
 import { d10, rollExpr, defaultRNG } from '../engine/dice';
-import { applyOps } from '../engine/ops';
+import { applyOps, type GameOp, type OpsCtx } from '../engine/ops';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { eligibleTalent } from '../engine/grimoire';
 import { effectiveChar } from '../engine/characteristics';
@@ -299,6 +299,39 @@ export function runFlow(get: Get, set: SetFn, flow: Flow, label = 'Effet'): void
     }
   }
   flush();
+}
+
+/** Pont ops → Flow d'un sort : enveloppe sa liste de `GameOp` en un EffectOp `do`. PROUVE que tout
+ *  sort (ses effets) est représentable dans le système Flow/EffectOp — `on` = cible (`target`) ou lanceur. */
+export function opsToFlow(ops: GameOp[], on: 'target' | 'caster' = 'target'): Flow {
+  return { kind: 'seq', steps: [{ kind: 'do', effect: { type: 'ops', on, ops } }] };
+}
+
+/** Exécute le Flow d'un sort contre une CIBLE (et le lanceur pour les feuilles `on:'caster'`), appliquant
+ *  chaque feuille EffectOp via `applyOps` avec le contexte d'incantation (caster/sl/durée/Corruption…).
+ *  SOURCE UNIQUE d'exécution des effets de sort : tout sort — existant (`opsToFlow(spec.ops)`) ou custom
+ *  (Flow authoré) — passe par ici. Renvoie le journal. Le `test` interactif du Flow n'a pas cours en
+ *  résolution synchrone de sort (la cible jette dans l'op mécanique `test`) → branche RÉUSSITE par défaut. */
+export function runSpellFlow(target: Combatant, caster: Combatant | undefined, flow: Flow, ctx: OpsCtx): string[] {
+  const lines: string[] = [];
+  const walk = (f: Flow): void => {
+    switch (f.kind) {
+      case 'seq': f.steps.forEach(walk); break;
+      case 'do':
+        if (f.effect.type === 'ops') {
+          const unit = f.effect.on === 'caster' ? caster : target;
+          if (unit) lines.push(...applyOps(unit, f.effect.ops, ctx));
+        }
+        break;
+      case 'if':
+        if (evalCondition(f.cond, { flags: {}, gameTime: ctx.now ?? 0, party: [target] })) walk(f.then);
+        else if (f.else) walk(f.else);
+        break;
+      case 'test': walk(f.success); break;
+    }
+  };
+  walk(flow);
+  return lines;
 }
 
 export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {

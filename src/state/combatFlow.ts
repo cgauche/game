@@ -147,7 +147,7 @@ export function activeCombatant(battle: BattleState): Combatant | undefined {
 
 // --- Effets de scène/campagne extraits → combatEffects.ts (baril) ---
 export * from './combatEffects';
-import { pushReveal, pushCombatStep, applyEffects, gearFromEffects } from './combatEffects';
+import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, runSpellFlow, opsToFlow } from './combatEffects';
 import { startCascade, registerCascadeApplier } from './cascade';
 
 /** Le défenseur choisit sa meilleure réaction : Parade (Corps à corps) ou Esquive
@@ -2800,7 +2800,7 @@ export function applyCast(
       if (missileSpec.curated && missileSpec.ops.length) {
         const rounds = missileSpec.durationRounds != null ? resolveFormula(missileSpec.durationRounds, caster, battleRng()) : null;
         const clockMin = rounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
-        logLines.push(...applyOps(t, missileSpec.ops, {
+        logLines.push(...runSpellFlow(t, caster, opsToFlow(missileSpec.ops), {
           rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
           defaultDurationRounds: rounds ?? COMBAT_PERSIST,
           ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
@@ -2897,7 +2897,8 @@ export function applyCast(
         const opp = extras?.opposedOutcome?.[t.id];
         if (opp?.resisted) { logLines.push(`${t.name} résiste à ${spell.label} (Test opposé).`); continue; }
         logLines.push(
-          ...applyOps(t, spec.ops, {
+          // Tout sort passe par le système Flow/EffectOp : `opsToFlow(spec.ops)` → `runSpellFlow` → applyOps.
+          ...runSpellFlow(t, caster, opsToFlow(spec.ops), {
             rng: battleRng(),
             caster,
             label: spell.label,
@@ -3026,7 +3027,7 @@ export function applyCast(
     if (castSpec.casterOps?.length) {
       const baseRounds = castSpec.durationRounds != null ? resolveFormula(castSpec.durationRounds, caster, battleRng()) : null;
       const clockMin = baseRounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
-      logLines.push(...applyOps(caster, castSpec.casterOps, {
+      logLines.push(...runSpellFlow(caster, caster, opsToFlow(castSpec.casterOps), {
         rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
         defaultDurationRounds: baseRounds ?? COMBAT_PERSIST,
         ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
