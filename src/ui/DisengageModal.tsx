@@ -9,6 +9,7 @@ import { TableRollLine } from './RollLine';
 import { VsHeader } from './VsHeader';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
+import { describeDisengage, describeDisengageFlee } from '../state/flowOutcomes';
 import { Modal } from './Modal';
 import { testBreakdown } from './breakdown';
 
@@ -38,16 +39,9 @@ export function DisengageModal() {
   if (!mover || !foe) return null;
   const fortune = mover.fortune ?? 0;
   const rerollable = pd.phase === 'esquive' && canReroll(!pd.def?.success, !!pd.rerolled);
-  const outcome =
-    pd.result === 'success'
-      ? 'Désengagé ! (+1 Avantage)'
-      : pd.result === 'tie'
-        ? 'Échange neutre — reste au contact'
-        : "Échec — l'adversaire gagne l'Avantage";
+  const outcome = describeDisengage(pd);
   const f = pd.fuir;
-  const fleeOutcome = f
-    ? `Fuite ! ${f.hit ? `Coup encaissé (${f.woundsLost} Blessure${f.woundsLost > 1 ? 's' : ''})${f.broken ? `, ${f.broken} État${f.broken > 1 ? 's' : ''} Brisé` : ''}. ` : 'Coup esquivé. '}Cours te mettre à l'abri.`
-    : '';
+  const fleeOutcome = describeDisengageFlee(pd);
 
   return (
     <Modal title="Se désengager" onClose={pd.phase === 'choice' ? cancel : undefined}>

@@ -6,6 +6,7 @@ import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
+import { describeApproach } from '../state/flowOutcomes';
 
 /**
  * Modale d'APPROCHE d'une source de Peur (LDB 21 l.29) : « incapable de vous rapprocher … à moins de
@@ -43,7 +44,7 @@ export function ApproachModal() {
       outcome={r && (
         <JournalLine
           className="rm-journal"
-          event={ev('fear', r.success ? 'Le cran tient : il peut approcher ce Tour.' : 'La Peur le cloue : aucune approche ce Tour.', c.id, src?.id)}
+          event={ev('fear', describeApproach(pa), c.id, src?.id)}
           combatants={battle.combatants}
         />
       )}

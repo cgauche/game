@@ -7,6 +7,7 @@ import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
+import { describeFocus } from '../state/flowOutcomes';
 import { DrBar } from './DrBar';
 
 /**
@@ -51,7 +52,7 @@ export function FocusModal() {
       outcome={r && (
         <JournalLine
           className="rm-journal"
-          event={ev('focus', `${r.log} → ${prev + r.dr}/${ni} DR${prev + r.dr >= ni ? ' (NI 0 atteint !)' : ''}`, caster.id)}
+          event={ev('focus', describeFocus(pf, prev, ni), caster.id)}
           combatants={battle?.combatants ?? party}
         />
       )}

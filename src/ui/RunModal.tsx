@@ -6,6 +6,7 @@ import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
+import { describeRun } from '../state/flowOutcomes';
 
 /**
  * Modale de Course (LDB 15-Déplacement l.79-82) : « Lancer » jette le Test d'Athlétisme (+20),
@@ -44,7 +45,7 @@ export function RunModal() {
       outcome={r && (
         <JournalLine
           className="rm-journal"
-          event={ev('move', `${r.success ? 'Course !' : 'Course poussive'} → +${r.bonusCases} cases (Marche + Course + DR).`, c.id)}
+          event={ev('move', describeRun(pr), c.id)}
           combatants={battle.combatants}
         />
       )}
