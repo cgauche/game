@@ -23,8 +23,9 @@ const Rf = (y: number) => Math.round(15 + (y - PY0) / 3);
 
 type Side4 = 'N' | 'E' | 'S' | 'W';
 
-function build(): { tiles0: Terrain[]; tiles1: Terrain[]; walls: WallSeg[]; stairs: NonNullable<Scene['stairs']> } {
+function build(): { tiles0: Terrain[]; elev0: number[]; tiles1: Terrain[]; walls: WallSeg[]; stairs: NonNullable<Scene['stairs']> } {
   const tiles0 = new Array(W * H).fill('dalle') as Terrain[];
+  const elev0 = new Array(W * H).fill(0) as number[];
   const tiles1 = new Array(W * H).fill('vide') as Terrain[];
   const walls: WallSeg[] = [];
   const seen = new Set<string>();
@@ -32,6 +33,9 @@ function build(): { tiles0: Terrain[]; tiles1: Terrain[]; walls: WallSeg[]; stai
 
   const fill = (t: Terrain[], x0: number, y0: number, x1: number, y1: number, v: Terrain) => {
     for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (inGrid(x, y)) t[idx(x, y)] = v;
+  };
+  const elevRect = (x0: number, y0: number, x1: number, y1: number, v: number) => {
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (inGrid(x, y)) elev0[idx(x, y)] = v;
   };
   /** Mur sur arête (N/E/S/W → canonique N/E), dédupliqué. */
   const wall = (x: number, y: number, side: Side4, z: number, door?: boolean) => {
@@ -56,14 +60,12 @@ function build(): { tiles0: Terrain[]; tiles1: Terrain[]; walls: WallSeg[]; stai
   // ───────────────────────── REZ-DE-CHAUSSÉE (z=0) ─────────────────────────
   // Réserve de décors au fond (derrière la scène).
   fill(tiles0, 1, 0, 21, 0, 'plancher');
-  // SCÈNE (planches) + coulisses de part et d'autre. PAS d'élévation : le décalage vertical désaxait le
-  // jeton de sa case (jeton sous le surlignage, « passe derrière le mur ») → la scène/fosse sont juste
-  // distinguées par leur PLANCHER (planches), à plat. (L'élévation reste une capacité du moteur, mais
-  // tant que les surlignages/profondeur ne la suivent pas, on ne l'utilise pas ici.)
-  fill(tiles0, 5, 1, 17, 4, 'planches');
+  // SCÈNE SURÉLEVÉE (planches, +0.4) + coulisses. L'élévation REND le relief ET soulève le jeton — les
+  // surlignages/profondeur la suivent désormais (cf. liftAt dans IsoStage), donc le jeton reste sur sa case.
+  fill(tiles0, 5, 1, 17, 4, 'planches'); elevRect(5, 1, 17, 4, 0.4);
   fill(tiles0, 1, 1, 4, 4, 'dalle'); fill(tiles0, 18, 1, 21, 4, 'dalle'); // coulisses (wings)
-  // FOSSE d'orchestre (planches) sous l'avant-scène.
-  fill(tiles0, 6, 5, 16, 5, 'planches');
+  // FOSSE d'orchestre EN CONTREBAS (planches, -0.4) sous l'avant-scène.
+  fill(tiles0, 6, 5, 16, 5, 'planches'); elevRect(6, 5, 16, 5, -0.4);
   fill(tiles0, 1, 5, 5, 5, 'dalle'); fill(tiles0, 17, 5, 21, 5, 'dalle');
   // PARTERRE en éventail (parquet) + salles latérales (loges d'artistes, vestiaires).
   for (let y = PY0; y <= PY1; y++) {
@@ -132,14 +134,14 @@ function build(): { tiles0: Terrain[]; tiles1: Terrain[]; walls: WallSeg[]; stai
   // marchables aux DEUX niveaux (foyer en bas, galerie en haut) sinon la volée ne mène nulle part.
   for (const [sx, sy] of [[5, 20], [17, 20]] as const) stairs.push({ from: { x: sx, y: sy, z: 0 }, to: { x: sx, y: sy, z: 1 } });
 
-  return { tiles0, tiles1, walls, stairs };
+  return { tiles0, elev0, tiles1, walls, stairs };
 }
 
 /** Le Théâtre Staatsoper en DONNÉE (géométrie seule), éditable dans l'éditeur de niveau. */
 export function buildOperaFloorplan(): Scene {
-  const { tiles0, tiles1, walls, stairs } = build();
+  const { tiles0, elev0, tiles1, walls, stairs } = build();
   const levels: Level[] = [
-    { z: 0, tiles: tiles0 },
+    { z: 0, tiles: tiles0, elev: elev0 },
     { z: 1, tiles: tiles1 },
   ];
   return {

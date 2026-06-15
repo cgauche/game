@@ -250,6 +250,11 @@ export function IsoStage() {
   // ne sont pas dessinés du tout — pas de fantôme (qui brouillait : « choses transparentes / murs absents du
   // plan »). Les escaliers reliant cet étage restent visibles pour indiquer où changer de niveau.
 
+  // LIFT vertical d'une case : son étage z + son ÉLÉVATION locale (scène surélevée / fosse). Sert au
+  // JETON (qui monte/descend avec son sol) ET aux SURLIGNAGES de case → le halo SUIT le jeton (sinon le
+  // jeton paraît hors de sa case sur un sol surélevé/en contrebas). `diamondPath(x,y,dims,liftAt(...))`.
+  const liftAt = (x: number, y: number, z = 0) => z + (scene ? elevAt(scene, Math.round(x), Math.round(y), z) : 0);
+
   const floorObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
     if (!scene) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
@@ -648,12 +653,12 @@ export function IsoStage() {
     if (activeC?.pos) {
       const ap = walkPosOf(activeC.id, activeC.pos.x, activeC.pos.y); // le halo SUIT le token qui glisse
       highlights.push(
-        <path key="active" d={diamondPath(ap.x, ap.y, dims)} fill="none" stroke="#ffe066" strokeWidth={3} />,
+        <path key="active" d={diamondPath(ap.x, ap.y, dims, liftAt(ap.x, ap.y, (activeC.pos as { z?: number }).z ?? 0))} fill="none" stroke="#ffe066" strokeWidth={3} />,
       );
     }
   }
   if (mode === 'exploration' && !dialogue)
-    highlights.push(<path key="party-pos" d={diamondPath(partyPos.x, partyPos.y, dims)} fill="none" stroke="#ffe066" strokeWidth={1.5} opacity={0.5} />);
+    highlights.push(<path key="party-pos" d={diamondPath(partyPos.x, partyPos.y, dims, liftAt(partyPos.x, partyPos.y, partyPos.z ?? 0))} fill="none" stroke="#ffe066" strokeWidth={1.5} opacity={0.5} />);
 
   // --- Objets triés par profondeur (murs, arbres, entités, tokens) ---
   type Obj = { d: number; el: JSX.Element };
@@ -669,10 +674,7 @@ export function IsoStage() {
   // token()/tokenNode() : adaptateurs minces vers la coquille partagée BodyToken (positionnement
   // unique). token() = corps SVG string ; tokenNode() = enfant React (rig) dont la mort est déjà
   // bakée (CORPSE_POSE / pose effondrée) → pas de bascule externe (bakedDeath).
-  // Pieds d'un token : l'étage z + l'élévation LOCALE de sa case (scène surélevée / fosse). tileCenter
-  // soulève d'un z fractionnaire → le pion monte/descend avec son sol ; la PROFONDEUR (tri) reste à z
-  // entier (calculée par l'appelant), l'élévation est purement positionnelle.
-  const feetZ = (x: number, y: number, z = 0) => z + elevAt(scene, Math.round(x), Math.round(y), z);
+  const feetZ = liftAt; // pieds d'un token = lift de sa case (cf. liftAt, partagé avec les surlignages)
 
   const token = (id: string, x: number, y: number, inner: string, scale: number, ringColor?: string, dim?: boolean, fx?: string, walking?: boolean, bakedDeath?: boolean, z = 0) => (
     <BodyToken key={id} x={x} y={y} z={feetZ(x, y, z)} dims={dims} scale={scale} ring={ringColor} dim={dim} walking={walking} fx={fx} bakedDeath={bakedDeath}>

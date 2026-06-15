@@ -19,11 +19,11 @@ describe('plan de l’Opéra — géométrie', () => {
     expect(s.levels[1].tiles).toHaveLength(s.dimensions.w * s.dimensions.h);
   });
 
-  it('SCÈNE et FOSSE distinguées par leur plancher (planches), À PLAT — pas d’élévation (jeton sur sa case)', () => {
+  it('SCÈNE surélevée (élévation > 0) et FOSSE en contrebas (< 0) — relief restauré', () => {
     expect(tileAt(s, 11, 2, 0)).toBe('planches'); // scène
+    expect(elevAt(s, 11, 2, 0)).toBeGreaterThan(0); // surélevée
     expect(tileAt(s, 11, 5, 0)).toBe('planches'); // fosse
-    expect(elevAt(s, 11, 2, 0)).toBe(0); // AUCUN décalage vertical (sinon le jeton sort de sa case)
-    expect(elevAt(s, 11, 5, 0)).toBe(0);
+    expect(elevAt(s, 11, 5, 0)).toBeLessThan(0); // en contrebas
   });
 
   it('PARTERRE en ÉVENTAIL : plus étroit près de la scène que vers le fond', () => {
