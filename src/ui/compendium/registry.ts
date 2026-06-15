@@ -10,7 +10,7 @@
 import {
   species, careers, characteristics, classes, skills, talents,
   qualities, trappings, etats, creatures, traits, spells,
-  stars, locations, books, levelsForCareer,
+  stars, locations, books, levelsForCareer, skillRefLabel,
 } from '../../data';
 import { CULTS } from '../../engine/cults/registry';
 import { statName } from '../../engine/statEntry';
@@ -220,7 +220,7 @@ export const CODEX: CodexCategory[] = [
         { title: 'Caractéristiques', layout: 'grid', rows: kvRows(Object.entries(c.char)) },
         chips('Traits', 'traits', traitLabels(c.traits)),
         chips('Traits optionnels', 'traits', c.optionals),
-        chips('Compétences', 'skills', c.skills),
+        chips('Compétences', 'skills', c.skills.map(skillRefLabel)), // SkillRef[] → libellés « Calme 58 »
         chips('Talents', 'talents', c.talents),
         chips('Sorts', 'spells', c.spells),
         chips('Possessions', 'trappings', c.trappings),

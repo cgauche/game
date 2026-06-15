@@ -5,7 +5,7 @@
 import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints, BodyShape, SkillInstance, TalentInstance } from '../engine/types';
 import { skillCharacteristic } from '../engine/character';
 import { parseStatEntry, type TraitInstance, type TraitList } from '../engine/statEntry';
-import { findCreature, CreatureData } from '../data';
+import { findCreature, findSkillById, CreatureData, type SkillRef } from '../data';
 import { CustomStatblock, EntityAppearance } from './scene';
 import { emptyArmour } from '../engine/items';
 import { maxWounds, bonus } from '../engine/characteristics';
@@ -164,11 +164,21 @@ function randomizeChars(chars: Characteristics, id: string): Characteristics {
  *  Balacañon, MSR Compagnon p.48) → avances = valeur − Caractéristique de la Compétence (inverse
  *  de LDB 09 : Test = Caractéristique + avances). Les avances se calculent sur le profil IMPRIMÉ —
  *  un profil retouché ensuite (carac. aléatoires LDB 78, Taille) garde les mêmes avances.
- *  Entrée sans valeur chiffrée : ignorée (rien d'inventé). */
-export function skillsFromBook(list: string[] | undefined, printedChars: Characteristics): SkillInstance[] {
+ *  Entrée sans valeur chiffrée : ignorée (rien d'inventé).
+ *
+ *  Accepte DEUX formes : `SkillRef` STRUCTURÉ (bestiaire migré — id stable + valeur imprimée, plus
+ *  de parsing) ou chaîne legacy d'un statbloc d'éditeur (« Langue (Magick) 63 ») parsée à la volée. */
+export function skillsFromBook(list: (string | SkillRef)[] | undefined, printedChars: Characteristics): SkillInstance[] {
   const out: SkillInstance[] = [];
   for (const raw of list ?? []) {
-    const p = parseStatEntry(raw); // « Langue (Magick) 63 » → name/arg/indice en un seul passage
+    if (typeof raw === 'object') {
+      const sk = findSkillById(raw.skillId);
+      if (!sk) continue; // référence inconnue (catalogue) : ignorée (rien d'inventé)
+      const ch = skillCharacteristic(sk.label);
+      out.push({ name: sk.label, spec: raw.spec, characteristic: ch, advances: Math.max(0, raw.value - printedChars[ch]) });
+      continue;
+    }
+    const p = parseStatEntry(raw); // statbloc legacy : « Langue (Magick) 63 » → name/arg/indice en un passage
     if (p.indice == null) continue; // entrée sans valeur chiffrée : ignorée (rien d'inventé)
     const characteristic = skillCharacteristic(p.name);
     out.push({ name: p.name, spec: p.arg, characteristic, advances: Math.max(0, p.indice - printedChars[characteristic]) });

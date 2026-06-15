@@ -132,7 +132,9 @@ export interface CreatureData {
    *  Union transitoire : chaînes legacy tolérées et normalisées par `asTrait` à la consommation. */
   traits: import('../engine/statEntry').TraitList;
   optionals: string[];
-  skills: string[];
+  /** Compétences STRUCTURÉES (`SkillRef` par id stable + valeur de Test imprimée) — fin du parsing
+   *  de chaînes « Calme 58 ». Le bestiaire stocke des refs ; `skillRefLabel` reformate à l'affichage. */
+  skills: SkillRef[];
   talents: string[];
   trappings: string[];
   spells: string[];
@@ -324,6 +326,19 @@ const SKILL_BY_ID = new Map(skills.map((s) => [s.id, s]));
 /** Résout une Compétence par son `id` STABLE (référence structurée — fin du lookup par libellé parsé). */
 export function findSkillById(id: string): SkillData | undefined {
   return SKILL_BY_ID.get(id);
+}
+/** Référence STRUCTURÉE à une Compétence (par `id` stable) + sa valeur de Test IMPRIMÉE et une
+ *  spécialisation éventuelle — remplace les chaînes parsées « Calme 58 » dans la donnée du bestiaire. */
+export interface SkillRef {
+  skillId: string;
+  value: number;
+  spec?: string;
+}
+/** Libellé d'affichage d'une `SkillRef` : « Langue (Magick) 63 » — repli sur l'id si la Compétence
+ *  a disparu du catalogue. Source UNIQUE du formatage (statbloc éditeur, Codex, chips). */
+export function skillRefLabel(ref: SkillRef): string {
+  const n = findSkillById(ref.skillId)?.label ?? ref.skillId;
+  return n + (ref.spec ? ` (${ref.spec})` : '') + ` ${ref.value}`;
 }
 export function findTalent(label: string): TalentData | undefined {
   return talents.find((t) => t.label === label);

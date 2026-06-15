@@ -10,7 +10,7 @@
  */
 import { CustomStatblock } from '../../state/scene';
 import { CHAR_KEYS, CHAR_LABELS, CharKey } from '../../engine/types';
-import { creatures, findCreature } from '../../data';
+import { creatures, findCreature, skillRefLabel } from '../../data';
 import { woundsForSize, resizeBySteps, stepSize, SIZE_LABEL, SIZE_ORDER } from '../../engine/size';
 import { bonus } from '../../engine/characteristics';
 import { sizeFromTraits } from '../../state/spawn';
@@ -34,7 +34,8 @@ function cloneFromCreature(label: string): CustomStatblock | null {
     char,
     traits: traitLabels(c.traits), // statbloc éditeur = chaînes éditables (CreatureData structuré → libellés)
     // PNJ nommés (Eusapia…) : compétences/talents/sorts de la donnée embarqués dans le clone.
-    ...(c.skills.length ? { skills: [...c.skills] } : {}),
+    // CustomStatblock.skills RESTE string[] (l'éditeur édite des chaînes) → on formate les SkillRef.
+    ...(c.skills.length ? { skills: (c.skills ?? []).map(skillRefLabel) } : {}),
     ...(c.talents.length ? { talents: [...c.talents] } : {}),
     ...(c.spells.length ? { spells: [...c.spells] } : {}),
   };
