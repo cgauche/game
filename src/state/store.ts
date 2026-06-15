@@ -14,13 +14,13 @@ import {
   applyEffects, applyEffectsLoot, runFlow, assignGearAt, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, attackWardGate,
   effectiveSpellOf, finishPlayerAction,
-  applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn, resumeSuspendedAI, resolveDeviation,
+  applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn, resumeSuspendedAI,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, aiOvercastPlan,
   castSightBlocked, spellSightOf, castZoneSpell, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone,
   counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition,
-  maybeOpenHeroPsych, displaceSmaller, applySurprise, resolveBladeTrap, resolveKnockdown,
+  maybeOpenHeroPsych, displaceSmaller, applySurprise, resolveKnockdown,
   displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
@@ -106,7 +106,7 @@ import type { MerchantState, MerchantStocks } from './merchantFlow';
 import type {
   Money, PendingVictory, PendingLoot, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
   PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingRun, PendingApproach, PendingFocus,
-  PendingPsych, PendingFrenzy, RevealEntry, PendingFumble, PendingDeviation, PendingBladeTrap, PendingKnockdown, PendingRenounce, PendingDefense,
+  PendingPsych, PendingFrenzy, RevealEntry, PendingFumble, PendingKnockdown, PendingRenounce, PendingDefense,
   PendingDisengage, PendingCast, PendingCounterspell, CounterParticipant, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingCorruption,
   PendingCastOpposition, OppositionParticipant, PendingCascade, ScheduledEffect,
 } from './pendings';
@@ -273,10 +273,6 @@ export interface GameState {
   /** « Se libérer » (Empêtré) / « se rouler » (En flammes) en cours — modale interactive (LDB 16). */
   pendingStateRecovery: PendingStateRecovery | null;
   pendingDefense: PendingDefense | null;
-  /** Déviation Critique d'un héros en attente (choix Dévier/Subir, LDB 63 l.63-66). */
-  pendingDeviation: PendingDeviation | null;
-  /** Piège-lame (LDB 62 l.292-294) : choix du héros défenseur — Coup Critique ou piéger la lame. */
-  pendingBladeTrap: PendingBladeTrap | null;
   /** Déstabilisante (Aux Armes p.89) : choix du héros attaquant — dépenser des Avantages pour renverser. */
   pendingKnockdown: PendingKnockdown | null;
   /** « Je te renie ! » (LDB 17 l.71) : choix subir la mutation / la refuser (1 Résilience). */
@@ -847,10 +843,6 @@ export interface GameState {
   defenseDarkPact: () => void;
   defenseConfirm: () => void;
   defenseCancel: () => void;
-  /** Déviation Critique (LDB 63 l.63-66) : « Dévier » (sacrifie 1 PA, ignore le Critique) ou « Subir ». */
-  deviationApply: (deviate: boolean) => void;
-  /** Piège-lame (LDB 62 l.292-294) : résout le choix (true = piéger la lame, false = Coup Critique). */
-  bladeTrapResolve: (trap: boolean) => void;
   /** Déstabilisante (Aux Armes p.89) : résout le choix (true = dépenser les Avantages et tenter le renversement). */
   knockdownResolve: (accept: boolean) => void;
   /** « Je te renie ! » (LDB 17 l.71) : résout le choix (true = refuser la mutation, 1 Résilience). */
@@ -990,8 +982,6 @@ export const useGame = create<GameState>((set, get) => ({
   pendingReload: null,
   pendingStateRecovery: null,
   pendingDefense: null,
-  pendingDeviation: null,
-  pendingBladeTrap: null,
   pendingKnockdown: null,
   pendingRenounce: null,
   pendingMountTarget: null,
@@ -1440,7 +1430,7 @@ export const useGame = create<GameState>((set, get) => ({
     // Ouverture = pause de début du Round 1 (pendingRoundStart) : champ visible, ordre d'Initiative dans la
     // frise, pré-emption « agir en premier » (Chance, #12a) — IA gelée. Un seul bouton « Commencer le combat »
     // (pas de phase « plan d'ensemble » séparée : c'était redondant avec la pause de Round).
-    set({ battle, mode: 'battle', pendingRoundStart: { round: battle.round }, pendingVictory: null, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingDeviation: null, pendingBladeTrap: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, pendingCounterspell: null, enemyAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingEncounterPsych: null, pendingFrenzy: null, pendingFumble: null });
+    set({ battle, mode: 'battle', pendingRoundStart: { round: battle.round }, pendingVictory: null, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, pendingCounterspell: null, enemyAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingEncounterPsych: null, pendingFrenzy: null, pendingFumble: null });
     get().faceAtCombatStart();
     bus.emit(EVT.SCENE_DIRTY);
   },
@@ -3126,7 +3116,7 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingDefense: null }); // null AVANT la reprise → ré-entrance/double-advance impossibles
     if (attacker && defender) {
       const suspended = applyAttackResult(get, set, attacker, defender, pd.weapon, pd.result);
-      if (suspended) return; // Déviation Critique du héros : deviationApply rejouera autoCleave/Piétinement/fumble/reprise
+      if (suspended) return; // Déviation Critique du héros : l'étape 'deviation' (resolveDeviation) rejouera autoCleave/Piétinement/fumble/reprise
       if (pd.free) {
         set({ battle: { ...get().battle!, acted: pd.prevActed ?? get().battle!.acted } }); // attaque gratuite : ne consomme pas l'Action
         applyFreeAttackEffects(get, attacker, defender, pd.freeKind ?? '', pd.result); // À Terre (Attaque caudale)…
@@ -3154,7 +3144,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (attacker && defender) {
       const res = resolveMeleePassive(attacker, defender, pd.weapon, pd.atk, pd.location ?? undefined);
       const suspended = applyAttackResult(get, set, attacker, defender, pd.weapon, res);
-      if (suspended) return; // Déviation Critique du héros (même après « Subir » : la déviation d'armure est un choix distinct) — deviationApply reprend
+      if (suspended) return; // Déviation Critique du héros (même après « Subir » : la déviation d'armure est un choix distinct) — l'étape 'deviation' (resolveDeviation) reprend
       if (pd.free) {
         set({ battle: { ...get().battle!, acted: pd.prevActed ?? get().battle!.acted } }); // attaque gratuite : ne consomme pas l'Action
         applyFreeAttackEffects(get, attacker, defender, pd.freeKind ?? '', res); // À Terre (Attaque caudale)…
@@ -3166,24 +3156,8 @@ export const useGame = create<GameState>((set, get) => ({
     if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return;
     resumeEnemyTurn(get, set);
   },
-  // « Dévier » (deviate=true) ou « Subir » (false) le Coup Critique d'un héros (LDB 63 l.63-66).
-  // Rappelle applyAttackResult avec la décision (early-return de suspension sauté → application UNE
-  // seule fois) puis REJOUE les post-étapes que le caller avait sautées à la suspension, dans l'ordre
-  // exact de defenseConfirm/doAttack : balayage → Piétinement → Maladresse défenseur (auto-gated) → reprise IA.
-  bladeTrapResolve: (trap: boolean) => {
-    const pbt = get().pendingBladeTrap;
-    if (!pbt) return;
-    set({ pendingBladeTrap: null });
-    resolveBladeTrap(get, set, pbt, trap, { resume: true }); // modale autonome : reprend l'IA elle-même
-  },
   knockdownResolve: (accept: boolean) => resolveKnockdown(get, set, accept),
   renounceResolve: (renounce: boolean) => resolveRenounce(get, set, renounce),
-  deviationApply: (deviate: boolean) => {
-    const pdv = get().pendingDeviation;
-    if (!pdv) return;
-    set({ pendingDeviation: null }); // null AVANT la reprise → ré-entrance/double-advance impossibles
-    resolveDeviation(get, set, pdv, deviate, { resume: true }); // modale autonome : reprend l'IA elle-même
-  },
 
   // ── Combat monté : Monter / Descendre (LDB 14 l.212-225) ──
   // Enfourcher/descendre ne demande AUCUN jet (Chevaucher sans Test si l'on a la Compétence, LDB 09 l.99)

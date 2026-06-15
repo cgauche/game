@@ -33,7 +33,6 @@ function reset() {
     pendingTest: null,
     pendingAttack: null,
     pendingDefense: null,
-    pendingDeviation: null,
     pendingDisengage: null,
     pendingCast: null,
     pendingHeal: null,
@@ -126,7 +125,7 @@ describe('Boucle de jeu (store)', () => {
 
   // ── Déviation Critique côté JOUEUR (LDB 63 l.63-66) : suspend re-entrant + choix Dévier/Subir ──
   // Un héros encaisse un Coup Critique à une localisation armurée → applyAttackResult SUSPEND
-  // (pendingDeviation, AUCUN effet de bord) ; la décision rejoue l'application UNE seule fois.
+  // (étape de séquence 'deviation', AUCUN effet de bord) ; la décision rejoue l'application UNE seule fois.
   function mkDeviationSetup() {
     seedBattleRng(424242); // table des Critiques déterministe (branche « Subir »)
     const chars = { CC: 40, CT: 30, F: 40, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
@@ -164,7 +163,6 @@ describe('Boucle de jeu (store)', () => {
     expect(dev).toBeTruthy();
     expect(dev!.deviation?.targetId).toBe('h1');
     expect(dev!.reveal?.kind).toBe('critical'); // panneau riche porté par l'étape
-    expect(useGame.getState().pendingDeviation).toBeNull(); // plus de modale séparée
     // Avant le choix : ni Blessure, ni Critique, ni PA consommée (early-return propre).
     const h = useGame.getState().battle!.combatants.find((c) => c.id === 'h1')!;
     expect(h.wounds.current).toBe(15);
@@ -2433,7 +2431,6 @@ describe('Nouvelle partie / scénario — reset complet de l’état (anti-déri
       dialogue: { dialogue: { id: 'd', start: 'n', nodes: [{ id: 'n', text: '', choices: [] }] }, nodeId: 'n' } as any,
       pendingFateSave: { heroId: 'mort', source: 'slow' } as any,
       pendingFumble: { combatantId: 'mort', weapon: {}, result: {} } as any,
-      pendingDeviation: { x: 1 } as any,
       pendingCast: { x: 1 } as any,
       pendingRoundStart: { round: 7 },
       flags: { vieuxFlag: true },
@@ -2463,7 +2460,6 @@ describe('Nouvelle partie / scénario — reset complet de l’état (anti-déri
     expect(st.previousScene).toBeNull();
     expect(st.pendingFateSave).toBeNull();
     expect(st.pendingFumble).toBeNull();
-    expect(st.pendingDeviation).toBeNull();
     expect(st.pendingCast).toBeNull();
     expect(st.pendingRoundStart).toBeNull();
     // Préservés / dérivés bien appliqués :

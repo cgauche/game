@@ -67,11 +67,11 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'encounterPsychRoll', 'encounterPsychReroll', 'encounterPsychDarkPact',
   'encounterPsychForceSuccess', 'encounterPsychConfirm', 'encounterPsychResolve',
   'dismissReveal', 'fateNegate', 'fateSurvive', 'fateAccept', 'fumbleRoll', 'fumbleConfirm',
-  'deviationApply', 'cleaveAttack', 'cleaveEnd', 'dualStrikeAttack', 'dualStrikeSkip',
+  'cleaveAttack', 'cleaveEnd', 'dualStrikeAttack', 'dualStrikeSkip',
   'roundStartPromote', 'confirmRoundStart', 'roundStartReady', 'renounceResolve', 'corruptionRoll',
   'corruptionReroll', 'corruptionBonusSL', 'corruptionDarkPact', 'resolveCorruption',
   // (dismissVictory volontairement ABSENT : un invité passe par victoryReady — l'hôte ferme à l'unanimité.)
-  'bladeTrapResolve', 'knockdownResolve', 'victoryReady', 'assignVictoryGear', 'raiseHand',
+  'knockdownResolve', 'victoryReady', 'assignVictoryGear', 'raiseHand',
 ]);
 
 /** Composition du groupe (écran d'équipe coop) : un invité remplit/retire SES emplacements.

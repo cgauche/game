@@ -51,7 +51,7 @@ const offendersOf = (body: string): string[] => {
 };
 
 // Les RÉSOLVEURS de modale (le jet différé lui-même) : convention de suffixe.
-// `*Resolve` : résolveurs aussi (psychResolve, bladeTrapResolve, encounterPsychResolve).
+// `*Resolve` : résolveurs aussi (psychResolve, knockdownResolve, encounterPsychResolve).
 const RESOLVER = /(Roll|Reroll|BonusSL|ForceSuccess|SetForcedRoll|Confirm|Cancel|DarkPact|SurgeryPass|Resolve)$/;
 
 /**
@@ -66,7 +66,6 @@ const JUSTIFIED: Record<string, string> = {
   disengageConfirmA: 'option « Sacrifier l’Avantage » de la modale de Désengagement (aucun jet de héros : choix acquitté)',
   disengageFlee: 'option « Fuir » de la modale : attaque dans le dos SUBIE, résultat poussé en révélation (backstab)',
   dismissReveal: 'acquittement de la file de révélation (le jet a DÉJÀ été montré)',
-  deviationApply: 'résolveur de la modale de Déviation Critique (résultat déjà décidé, le tirage de table est une conséquence)',
   medicAct: 'infirmerie : ouvre pendingHeal (modale) — l’acte payant ne tire pas lui-même',
   startDisengage: 'OUVRE pendingDisengage : le jet du foe est tiré et FIGÉ pour la modale (pattern Défense — montré dans la ligne adverse)',
   resolveDualSecond: '2ᵉ frappe du Maniement : jet IMPOSÉ (d100 inversé) AFFICHÉ dans la modale d’attaque (dualSecond)',

@@ -79,7 +79,6 @@ describe('Conséquences d’attaque en révélation (store)', () => {
     expect(suspended).toBe(true);
     const dev = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'deviation');
     expect(dev?.reveal?.kind).toBe('critical'); // panneau riche porté par l'étape
-    expect(useGame.getState().pendingDeviation).toBeNull(); // plus de modale séparée
 
     // (2) « Subir » applique CE Critique.
     const cwBefore = heroNow().criticalWounds ?? 0;

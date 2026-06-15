@@ -1088,7 +1088,7 @@ export function applyAttackResult(
   }
   // Déviation Critique (LDB 63 l.63-66) : un HÉROS subit un Coup Critique à une localisation où il
   // porte de la PA → on SUSPEND pour son choix Dévier/Subir (modale). AUCUN effet de bord ici ; la
-  // résolution (deviationApply) rappelle cette fonction avec `deviated` défini (early-return sauté →
+  // résolution (étape 'deviation', resolveDeviation) rappelle cette fonction avec `deviated` défini (early-return sauté →
   // application UNE seule fois). Les sous-attaques (balayage/Piétinement) passent `deviated` explicite
   // pour résoudre instantanément (pas de modale imbriquée). Les sorts (applyCast) gèrent leurs Critiques
   // à part : ils n'atteignent jamais cette fonction, donc pas de garde « arme » nécessaire.
@@ -2140,11 +2140,10 @@ export function aiMaybeSpecialAction(get: Get, set: SetFn, enemy: Combatant): bo
  *  OPPOSÉE). File initialisée au 1er appel (Morsure/Attaque caudale des traits, PUIS Piétinement de
  *  Taille — les Indices d'abord), puis poursuivie après chaque modale de défense résolue. Retourne
  *  true si une modale s'est ouverte (tour SUSPENDU). */
-/** Résout une Déviation Critique (corps de `deviationApply`, sans la lecture du pending) — partagé par
- *  la modale autonome (`deviationApply`, `resume:true`) ET l'étape de séquence (applier 'deviation',
- *  `resume:false` : la reprise de l'IA est gérée par la FERMETURE de la séquence). « Subir » applique le
- *  Critique pré-tiré (`dev.crit`) tel quel ; « Dévier » l'ignore (−1 PA). */
-export function resolveDeviation(get: Get, set: SetFn, dev: PendingDeviation, deviate: boolean, opts: { resume: boolean }): void {
+/** Résout une Déviation Critique — invoquée par l'applier de l'étape de séquence 'deviation' (la reprise
+ *  de l'IA est gérée par la FERMETURE de la séquence, pas ici). « Subir » applique le Critique pré-tiré
+ *  (`dev.crit`) tel quel ; « Dévier » l'ignore (−1 PA). */
+export function resolveDeviation(get: Get, set: SetFn, dev: PendingDeviation, deviate: boolean): void {
   const battle = get().battle;
   if (!battle) return;
   const attacker = battle.combatants.find((c) => c.id === dev.attackerId);
@@ -2158,10 +2157,6 @@ export function resolveDeviation(get: Get, set: SetFn, dev: PendingDeviation, de
       return; // la reprise suivra la modale de Maladresse (resumeAfter)
     }
   }
-  if (opts.resume && dev.resumeAfter) {
-    if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return; // attaques gratuites de créature (file)
-    resumeEnemyTurn(get, set);
-  }
 }
 
 /** Applier de l'étape de CHOIX « déviation » (folding P3a) : « Subir » applique le Critique pré-tiré,
@@ -2169,7 +2164,7 @@ export function resolveDeviation(get: Get, set: SetFn, dev: PendingDeviation, de
  *  (`cascadeNext`/`cascadeFinish` → `resumeSuspendedAI`). Le reste de l'attaque re-déclenché par
  *  resolveDeviation APPEND ses conséquences à la séquence (préservées par le liveMerge de commitStep). */
 registerCascadeApplier('deviation', (get, set, step) => {
-  if (step.deviation) resolveDeviation(get, set, step.deviation, step.chosen === 'devier', { resume: false });
+  if (step.deviation) resolveDeviation(get, set, step.deviation, step.chosen === 'devier');
 });
 
 export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): boolean {
@@ -3237,10 +3232,9 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
 /** Résolution du choix Piège-lame (LDB 62 l.292-294). `trap=false` → Coup Critique normal (LDB 14 l.7) ;
  *  `trap=true` → Test opposé de Force (+DR de la défense) : victoire = désarme, Succès Stupéfiant (DR
  *  net ≥ 6) = brise la lame sauf Incassable (sauvegarde Solide), échec = l'adversaire se libère. */
-/** Résout un Piège-lame (sans la lecture du pending) — partagé par la modale autonome
- *  (`bladeTrapResolve`, `resume:true`) ET l'étape de séquence (applier 'bladeTrap', `resume:false` :
- *  la reprise de l'IA part de la fermeture de séquence). */
-export function resolveBladeTrap(get: Get, set: SetFn, pbt: PendingBladeTrap, trap: boolean, opts: { resume: boolean }): void {
+/** Résout un Piège-lame — invoqué par l'applier de l'étape de séquence 'bladeTrap' (la reprise de l'IA
+ *  part de la fermeture de séquence, pas ici). */
+export function resolveBladeTrap(get: Get, set: SetFn, pbt: PendingBladeTrap, trap: boolean): void {
   const battle = get().battle;
   if (!battle) return;
   const defender = battle.combatants.find((c) => c.id === pbt.defenderId);
@@ -3280,14 +3274,13 @@ export function resolveBladeTrap(get: Get, set: SetFn, pbt: PendingBladeTrap, tr
     pushReveal(set, { kind: 'assommante', title: 'Piège-lame', lines: [...lines], subjectId: attacker.id, actorId: defender.id, weapon: pbt.parryWeaponName, severity: 'minor' });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
-  if (opts.resume) resumeEnemyTurn(get, set); // sinon : reprise par la fermeture de séquence
 }
 
 /** Applier de l'étape de CHOIX « piège-lame » (folding P3b) : « Piéger » tente le Test opposé de Force,
  *  « Coup Critique » inflige le critique normal. Le RÉSULTAT (kind 'assommante') route lui-même dans la
  *  séquence (P2) ; `resume:false` → reprise par la fermeture de séquence. */
 registerCascadeApplier('bladeTrap', (get, set, step) => {
-  if (step.bladeTrap) resolveBladeTrap(get, set, step.bladeTrap, step.chosen === 'trap', { resume: false });
+  if (step.bladeTrap) resolveBladeTrap(get, set, step.bladeTrap, step.chosen === 'trap');
 });
 
 /** Déstabilisante (Aux Armes p.89) : résout le choix du héros de renverser (dépense d'Avantages +
@@ -3324,7 +3317,7 @@ export function resolveKnockdown(get: Get, set: SetFn, accept: boolean): void {
  *  attackThenAdvance juste après doAttack). No-op si le combat est terminé. */
 export function resumeEnemyTurn(get: Get, set: SetFn): void {
   const b = get().battle;
-  if (!b || b.over || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingKnockdown || get().pendingCascade || get().pendingReveals.length) return;
+  if (!b || b.over || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingKnockdown || get().pendingCascade || get().pendingReveals.length) return;
   setTimeout(() => advanceTurn(get, set), TEMPO.enemyAdvance);
 }
 
@@ -3347,7 +3340,7 @@ export function advanceTurn(get: Get, set: SetFn) {
   // Pause de début de Round (PERSONNE n'est actif, turn -1) : un advanceTurn retardataire (timer
   // d'IA en vol) ne doit pas ré-incrémenter le tour SOUS la pause — confirmRoundStart le posera.
   if (get().pendingRoundStart) return;
-  if (!battle || battle.over || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingKnockdown || get().pendingCascade || get().pendingReveals.length) return;
+  if (!battle || battle.over || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingKnockdown || get().pendingCascade || get().pendingReveals.length) return;
   // La Charge ne vaut que pour le tour où elle a lieu (Cornes LDB 85, Épuisante LDB 63 l.16-17) :
   // consommée au passage au combattant suivant (filet de sécurité, l'IA la consomme aussi en chemin).
   const prevActive = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
@@ -3554,7 +3547,7 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
 /** IA simple : si le combattant actif est un ennemi, il agit puis passe la main. */
 export function maybeRunEnemyTurn(get: Get, set: SetFn) {
   const battle = get().battle;
-  if (!battle || battle.over || get().pendingRoundStart || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingKnockdown || get().pendingCascade || get().pendingReveals.length) return;
+  if (!battle || battle.over || get().pendingRoundStart || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingKnockdown || get().pendingCascade || get().pendingReveals.length) return;
   const active = activeCombatant(battle);
   if (!active || active.kind !== 'enemy' || isOutOfAction(active)) return;
   setTimeout(() => runEnemyAI(get, set, active.id), TEMPO.turnHandoff);

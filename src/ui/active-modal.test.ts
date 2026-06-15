@@ -37,8 +37,8 @@ describe('pickActiveModalKey — priorité des modales de combat', () => {
     ).toBe('fateSave');
   });
 
-  it('la Maladresse passe avant la Déviation', () => {
-    expect(pickActiveModalKey({ pendingFumble: {}, pendingDeviation: {}, pendingCleave: {} })).toBe('fumble');
+  it('la Maladresse passe avant l’Abattre', () => {
+    expect(pickActiveModalKey({ pendingFumble: {}, pendingKnockdown: {} })).toBe('fumble');
   });
 
   it('Frappe Mortelle / 2ᵉ frappe (Deux armes) ne sont PLUS des modales (ciblage carte, TargetPrompt)', () => {
