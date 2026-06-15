@@ -18,8 +18,8 @@
  *                              → 1d10 + DR Blessures ignorant BE et PA. Attaque MAGIQUE.
  *  - Venin (Difficulté)      : PAS une attaque — Atout : sur PB infligés, la cible subit Empoisonné.
  */
-import { asTrait } from './traits/dispatch';
-import type { TraitInstance, TraitList } from './statEntry';
+import { asTrait, formatTrait } from './traits/dispatch';
+import type { TraitList } from './statEntry';
 
 /** Type d'attaque naturelle (geste + règle distincts). */
 export type AttackKind = 'arme' | 'morsure' | 'caudale' | 'cornes' | 'souffle' | 'vomi' | 'tentacules' | 'etreinte' | 'regard' | 'langue' | 'hurlement';
@@ -87,20 +87,11 @@ const RULES: Record<string, { kind: AttackKind; base: AttackBase }> = {
   Arme: { kind: 'arme', base: { trigger: 'action', avantage: 0 } },
 };
 
-/** Libellé canonique d'une attaque reconstruit depuis l'instance (la donnée structurée n'a plus de
- *  chaîne brute) : « Morsure +10 », « 8 Tentacules +9 », « Souffle +15 (Feu) ». L'Indice de Dégâts
- *  s'affiche signé (c'est un bonus). */
-function attackLabel(t: TraitInstance): string {
-  let s = t.count != null ? `${t.count} ${t.key}` : t.key;
-  if (t.value != null) s += ` +${t.value}`;
-  if (t.arg) s += ` (${t.arg})`;
-  return s;
-}
-
 /** Attaques naturelles d'une créature à partir de ses traits, avec leurs RÈGLES RAW (ordre préservé).
  *  La clé canonique (`asTrait`) sélectionne la règle ; compte/Dégâts/type sont lus de l'instance
  *  (« 8 Tentacules +9 » → compte 8, Dégâts 9 ; « Souffle +15 (Feu) » → Dégâts 15, type Feu — LDB 85
- *  l.354). Aucun parsing quand la donnée est déjà structurée. */
+ *  l.354) ; le libellé d'affichage est reconstruit par `formatTrait` (signe « + » des Dégâts). Aucun
+ *  parsing quand la donnée est déjà structurée. */
 export function creatureAttacks(traits: TraitList): CreatureAttack[] {
   const out: CreatureAttack[] = [];
   for (const x of traits) {
@@ -108,7 +99,7 @@ export function creatureAttacks(traits: TraitList): CreatureAttack[] {
     const rule = RULES[inst.key];
     if (!rule) continue;
     const type = inst.arg && !/divers|au choix/i.test(inst.arg) ? inst.arg : undefined;
-    out.push({ kind: rule.kind, label: attackLabel(inst), bonus: inst.value ?? 0, type, ...(inst.count != null ? { count: inst.count } : {}), ...rule.base });
+    out.push({ kind: rule.kind, label: formatTrait(inst), bonus: inst.value ?? 0, type, ...(inst.count != null ? { count: inst.count } : {}), ...rule.base });
   }
   return out;
 }

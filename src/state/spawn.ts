@@ -195,7 +195,9 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   const optionals = extras?.optionals ?? [];
   // Traits FACULTATIFS (LDB 76 l.49 : « Traits de créature courants que vous pouvez ajouter si vous
   // créez votre propre version ») : fusionnés AVANT toutes les dérivations (armes, armure, psy, nuée…).
-  const traits = [...creature.traits, ...optionals];
+  // STRUCTURÉS une fois ici (`asTrait`) → le Combattant porte des `TraitInstance` ; le runtime
+  // (rendu/combat) les lit sans re-parser de chaîne « en permanence » (de-POC).
+  const traits = [...creature.traits, ...optionals].map(asTrait);
   // « – » du Schéma des Profils (LDB 76) = caractéristique INEXISTANTE → 0 (Int/FM nulles = Fabriqué,
   // auto-réussite via isMindless ; CT nulle = pas d'arme à distance dans la donnée). Pas de 30 inventé.
   let chars = charsFrom(creature.char, 0);
@@ -289,7 +291,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
     ...spawnMutations(sb.traits, id), // Mutation / Corruption mentale : tirage au spawn (LDB 85)
     ...(sb.spells?.length ? { spells: [...sb.spells] } : {}), // sorts d'auteur → l'IA incante (combatFlow)
     groups: groupsFor({ extras: sb.groups }), // extras manuels (Sigmarite…) — espèce/carrière non portées par le statbloc (P3)
-    traits: sb.traits, // conservés → attaques gratuites de créature en combat
+    traits: (sb.traits ?? []).map(asTrait), // structurés → attaques gratuites + lecture sans re-parsing
     skills,
     talents,
     movement,

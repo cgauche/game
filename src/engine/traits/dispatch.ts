@@ -47,13 +47,26 @@ export function parseTraitInstance(raw: string): TraitInstance {
   return t;
 }
 
-/** Rendu lisible d'un trait structuré (inverse de l'import) — inspecteur / Codex / éditeur. */
+/** Traits dont la valeur est un BONUS de Dégâts signé (« Morsure +9 », « À distance +8 ») — affichés
+ *  « +N » et, pour les attaques typées, « Nom +N (Type) » (l'ordre du livre). Les autres traits à
+ *  Indice gardent « Nom (Spec) N » (« Immunité (Poison) »), les sauvegardes « Nom N+ » (« Démoniaque 8+ »). */
+const PLUS_DISPLAY = new Set([
+  'Arme', 'À distance', 'Morsure', 'Attaque caudale', 'Cornes', 'Souffle', 'Vomissement',
+  'Langue préhensile', 'Hurlement fantomatique', 'Regard pétrifiant', 'Tentacules', 'Étreinte glaciale',
+]);
+
+/** Rendu lisible et FIDÈLE d'un trait structuré (inverse exact de `parseTraitInstance` pour l'affichage)
+ *  — inspecteur / Codex / éditeur / libellé d'attaque. Restitue le signe « + » des Dégâts et le « + »
+ *  de seuil des sauvegardes, sinon l'Indice nu. */
 export function formatTrait(t: TraitInstance): string {
-  let s = t.count != null ? `${t.count} ${t.key}` : t.key;
-  if (t.arg) s += ` (${t.arg})`;
-  if (t.value != null) s += ` ${t.value}`;
-  if (t.range != null) s += ` (${t.range})`;
-  return s;
+  const head = t.count != null ? `${t.count} ${t.key}` : t.key;
+  const isAttack = PLUS_DISPLAY.has(t.key);
+  const ward = !isAttack && !!TRAITS[t.key]?.wardSave;
+  const val = t.value == null ? '' : isAttack ? ` +${t.value}` : ward ? ` ${t.value}+` : ` ${t.value}`;
+  const arg = t.arg ? ` (${t.arg})` : '';
+  const range = t.range != null ? ` (${t.range})` : '';
+  // Attaques : « Nom +Dégâts (Type) [(portée)] » ; autres : « Nom (Spec) Indice ».
+  return isAttack ? `${head}${val}${arg}${range}` : `${head}${arg}${val}${range}`;
 }
 
 /** Normalise un élément de `TraitList` en `TraitInstance` : chaîne (test/legacy) → parse UNE fois ;

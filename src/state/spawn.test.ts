@@ -65,7 +65,7 @@ describe('creatureToCombatant — fidélité du profil du bestiaire (LDB 76/78)'
     const c = creatureToCombatant(findCreature('Loup')!, 'e1', at, {
       optionals: ['Haine (Sigmarites)', 'À distance +8 (50)'],
     });
-    expect(c.traits).toContain('Haine (Sigmarites)');
+    expect(c.traits).toContainEqual({ key: 'Haine', arg: 'Sigmarites' }); // traits STRUCTURÉS au spawn (de-POC)
     expect(c.weapons.some((w) => w.type === 'ranged' && w.damage === '+8')).toBe(true);
     expect(c.psychTraits?.some((p) => p.type === 'haine')).toBe(true);
   });
