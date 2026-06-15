@@ -14,7 +14,7 @@ import {
   applyEffects, applyEffectsLoot, assignGearAt, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, attackWardGate,
   effectiveSpellOf, finishPlayerAction,
-  applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn,
+  applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn, resumeSuspendedAI,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, aiOvercastPlan,
@@ -1861,11 +1861,13 @@ export const useGame = create<GameState>((set, get) => ({
   cascadeNext: () => {
     const done = advanceCascade(get, set);
     if (done?.purpose === 'travel' && done.travelHalt) travelFlow.continueTravelAfterNight(get, set);
+    else if (done?.purpose === 'combat') resumeSuspendedAI(get, set); // séquence de conséquences close → reprendre l'IA
   },
   cascadeResolveAll: () => resolveRemainingCascade(get, set), // → BILAN (la modale reste ouverte)
   cascadeFinish: () => {
     const done = finalizeCascade(get, set);
     if (done?.purpose === 'travel' && done.travelHalt) travelFlow.continueTravelAfterNight(get, set);
+    else if (done?.purpose === 'combat') resumeSuspendedAI(get, set); // bilan clos → reprendre l'IA suspendue
   },
   // Incantation OPPOSÉE (multijet `FLOWS.castOpposition`) : chaque cible oppose son Test ; cible IA
   // = rangée témoin (jet auto-roulé à l'ouverture, cf. openCastOpposition). Mêmes 6 verbes que les autres flux.
@@ -2922,16 +2924,7 @@ export const useGame = create<GameState>((set, get) => ({
   dualStrikeSkip: () => set({ pendingDualStrike: null }), // « peut viser » = optionnel : pas de 2ᵉ → pas d'Avantage (LDB 10 l.638)
   dismissReveal: () => {
     set((s) => ({ pendingReveals: s.pendingReveals.slice(1) }));
-    // File vidée alors qu'un tour d'IA était suspendu par les révélations → reprendre l'avancement.
-    const { battle, pendingReveals, pendingFateSave, pendingFumble } = get();
-    if (battle && !battle.over && !pendingReveals.length && !pendingFateSave && !pendingFumble) {
-      const active = activeCombatant(battle);
-      if (active && active.kind === 'enemy' && !isOutOfAction(active)) {
-        // Ennemi ayant déjà agi (révélation d'attaque) → fin de tour ; sinon début de tour (entretien) → lancer l'IA.
-        if (battle.acted) resumeEnemyTurn(get, set);
-        else maybeRunEnemyTurn(get, set);
-      }
-    }
+    resumeSuspendedAI(get, set); // file vidée alors qu'un tour d'IA était suspendu → reprendre l'avancement
   },
   battleTrample: (targetId) => {
     if (combatBusy(get())) return; // flux différé en cours : hotbar inerte

@@ -1,6 +1,6 @@
 import type { GameState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { LootGear } from './pendings';
+import type { LootGear, CascadeStep } from './pendings';
 import { Combatant, ItemInstance, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { battleRng } from './battleRng';
 import { d10, rollExpr } from '../engine/dice';
@@ -34,8 +34,43 @@ import { touchActors } from './combatOrParty';
  * (`checkTriggers`) et la file de révélations témoins (`pushReveal`). Extrait de combatFlow
  * (baril : ré-exporté par `./combatFlow`). Module FEUILLE — n'importe RIEN de combatFlow.
  */
-/** Empile une révélation témoin (montre le dé d'un jet subi/sur table) en queue de file FIFO. */
+/** Conséquences d'ATTAQUE rapatriées INLINE dans la séquence (au lieu d'une RevealModal séparée) :
+ *  Coup Critique (panneau riche), Assommante, Coup dans le dos. Les autres révélations (fin de Round,
+ *  mutation, Calme, effet d'auteur) restent en file témoin. */
+const COMBAT_SEQ_KINDS: ReadonlySet<RevealEntry['kind']> = new Set(['critical', 'assommante', 'backstab']);
+const SEQ_ICON: Partial<Record<RevealEntry['kind'], string>> = { critical: '💥', assommante: '🌟', backstab: '🗡️' };
+
+/** Une révélation de conséquence d'attaque → étape d'AFFICHAGE de la séquence. Le Critique garde son
+ *  panneau DÉTAILLÉ via la charge riche `reveal` ; les autres montrent leurs lignes. `actorId` = le
+ *  CONCERNÉ (victime → propriétaire de la modale en coop). */
+function revealToStep(entry: RevealEntry, index: number): CascadeStep {
+  const isCrit = entry.kind === 'critical';
+  return {
+    id: `cons-${entry.kind}-${index}`,
+    kind: entry.kind,
+    actorId: entry.subjectId,
+    icon: SEQ_ICON[entry.kind] ?? '⚔️',
+    label: entry.title,
+    outcome: entry.lines,
+    reveal: isCrit ? entry : undefined,
+    interactive: true,
+  };
+}
+
+/** Empile une révélation : conséquence d'attaque → étape INLINE de la séquence de combat (append à
+ *  celle en cours, sinon démarre) ; sinon → file de révélation témoin FIFO. */
 export function pushReveal(set: SetFn, entry: RevealEntry): void {
+  if (COMBAT_SEQ_KINDS.has(entry.kind)) {
+    set((s: GameState) => {
+      const c = s.pendingCascade;
+      const active = c && c.purpose === 'combat' && c.cursor < c.participants.length ? c : null;
+      const step = revealToStep(entry, active ? active.participants.length : 0);
+      return active
+        ? { pendingCascade: { ...active, participants: [...active.participants, step] } }
+        : { pendingCascade: { title: 'Conséquences', icon: '⚔️', purpose: 'combat', cursor: 0, log: [], participants: [step] } };
+    });
+    return;
+  }
   set((s: GameState) => ({ pendingReveals: [...s.pendingReveals, entry] }));
 }
 

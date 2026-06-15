@@ -11,7 +11,7 @@ describe('Conséquences d’attaque en révélation (store)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
-    useGame.setState({ pendingReveals: [], battle: null });
+    useGame.setState({ pendingReveals: [], pendingCascade: null, battle: null });
   });
   afterEach(() => {
     vi.clearAllTimers();
@@ -29,18 +29,22 @@ describe('Conséquences d’attaque en révélation (store)', () => {
     return { b, hero: b.combatants.find((c) => c.kind === 'hero')!, enemy: b.combatants.find((c) => c.kind === 'enemy')! };
   }
 
-  it('un Coup Critique pousse une révélation « Coup Critique » (avec dé)', () => {
+  it('un Coup Critique ouvre une séquence de conséquence « Coup Critique » (panneau riche)', () => {
     useGame.getState().seedRng(2);
     const { hero, enemy } = battle();
-    useGame.setState({ pendingReveals: [] });
+    useGame.setState({ pendingReveals: [], pendingCascade: null });
     const res: AttackResult = {
       hit: true, attackerRoll: 33, netSL: 2, critical: true, advantageTo: 'attacker',
       defenderDefeated: false, woundsLost: 3, location: 'corps', log: 'touche !',
     } as AttackResult;
     applyAttackResult(useGame.getState, useGame.setState, hero, enemy, hero.weapons[0], res);
-    const crit = useGame.getState().pendingReveals.find((r) => r.kind === 'critical');
+    const c = useGame.getState().pendingCascade;
+    expect(c?.purpose).toBe('combat');
+    const crit = c?.participants.find((s) => s.kind === 'critical');
     expect(crit).toBeTruthy();
-    expect(typeof crit!.dice).toBe('number');
+    expect(crit!.reveal?.kind).toBe('critical'); // charge riche → panneau CriticalBody inline
+    expect(typeof crit!.reveal?.dice).toBe('number');
+    expect(useGame.getState().pendingReveals.find((r) => r.kind === 'critical')).toBeFalsy(); // plus en file témoin
   });
 
   it('l’avancement de tour est GELÉ tant qu’une révélation est en attente', () => {

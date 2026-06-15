@@ -3261,8 +3261,22 @@ export function resolveKnockdown(get: Get, set: SetFn, accept: boolean): void {
  *  attackThenAdvance juste après doAttack). No-op si le combat est terminé. */
 export function resumeEnemyTurn(get: Get, set: SetFn): void {
   const b = get().battle;
-  if (!b || b.over || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingKnockdown || get().pendingReveals.length) return;
+  if (!b || b.over || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingKnockdown || get().pendingCascade || get().pendingReveals.length) return;
   setTimeout(() => advanceTurn(get, set), TEMPO.enemyAdvance);
+}
+
+/** Reprend un tour d'IA SUSPENDU par une modale bloquante (révélations OU séquence de conséquences de
+ *  combat) une fois qu'elle est CLOSE — appelée par `dismissReveal` (file vidée) et par la fin d'une
+ *  séquence de combat (`cascadeNext`/`cascadeFinish`). Garde alignée sur celle de `resumeEnemyTurn`. */
+export function resumeSuspendedAI(get: Get, set: SetFn): void {
+  const { battle, pendingReveals, pendingCascade, pendingFateSave, pendingFumble } = get();
+  if (!battle || battle.over || pendingReveals.length || pendingCascade || pendingFateSave || pendingFumble) return;
+  const active = activeCombatant(battle);
+  if (active && active.kind === 'enemy' && !isOutOfAction(active)) {
+    // Ennemi ayant déjà agi (conséquence d'attaque) → fin de tour ; sinon début de tour (entretien) → IA.
+    if (battle.acted) resumeEnemyTurn(get, set);
+    else maybeRunEnemyTurn(get, set);
+  }
 }
 
 export function advanceTurn(get: Get, set: SetFn) {
@@ -3270,7 +3284,7 @@ export function advanceTurn(get: Get, set: SetFn) {
   // Pause de début de Round (PERSONNE n'est actif, turn -1) : un advanceTurn retardataire (timer
   // d'IA en vol) ne doit pas ré-incrémenter le tour SOUS la pause — confirmRoundStart le posera.
   if (get().pendingRoundStart) return;
-  if (!battle || battle.over || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingKnockdown || get().pendingReveals.length) return;
+  if (!battle || battle.over || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingKnockdown || get().pendingCascade || get().pendingReveals.length) return;
   // La Charge ne vaut que pour le tour où elle a lieu (Cornes LDB 85, Épuisante LDB 63 l.16-17) :
   // consommée au passage au combattant suivant (filet de sécurité, l'IA la consomme aussi en chemin).
   const prevActive = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
@@ -3477,7 +3491,7 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
 /** IA simple : si le combattant actif est un ennemi, il agit puis passe la main. */
 export function maybeRunEnemyTurn(get: Get, set: SetFn) {
   const battle = get().battle;
-  if (!battle || battle.over || get().pendingRoundStart || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingKnockdown || get().pendingReveals.length) return;
+  if (!battle || battle.over || get().pendingRoundStart || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingDeviation || get().pendingBladeTrap || get().pendingKnockdown || get().pendingCascade || get().pendingReveals.length) return;
   const active = activeCombatant(battle);
   if (!active || active.kind !== 'enemy' || isOutOfAction(active)) return;
   setTimeout(() => runEnemyAI(get, set, active.id), TEMPO.turnHandoff);
@@ -3633,7 +3647,7 @@ export function collectHeroPsych(get: Get, c: Combatant): { kind: PsychType; sou
  *  (LDB 21). No-op si une autre modale/révélation est en cours. */
 export function maybeOpenHeroPsych(get: Get, set: SetFn): void {
   const battle = get().battle;
-  if (!battle || battle.over || get().pendingPsych || get().pendingReveals.length || get().pendingFateSave || get().pendingFumble) return;
+  if (!battle || battle.over || get().pendingPsych || get().pendingCascade || get().pendingReveals.length || get().pendingFateSave || get().pendingFumble) return;
   const active = activeCombatant(battle);
   if (!active || active.kind !== 'hero' || isOutOfAction(active)) return;
   endFrenzyIfDone(get, set, active); // une Frénésie finie (plus d'ennemi / Sonné) sort le héros (Exténué) avant tout test

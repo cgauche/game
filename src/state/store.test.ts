@@ -40,6 +40,7 @@ function reset() {
     pendingFateSave: null,
     pendingReload: null,
     pendingReveals: [],
+    pendingCascade: null,
     pendingLoot: null,
     pendingAppraise: null,
     document: null,

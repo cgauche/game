@@ -25,7 +25,7 @@ describe('routage des révélations (spec coop §4bis)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     seedBattleRng(7);
-    useGame.setState({ pendingReveals: [], battle: null });
+    useGame.setState({ pendingReveals: [], pendingCascade: null, battle: null });
   });
 
   it('Critique ennemi↔ennemi → AUCUNE modale (journal seul)', () => {
@@ -33,25 +33,28 @@ describe('routage des révélations (spec coop §4bis)', () => {
     applyCriticalToTarget(mkEnemy('e1'), 'corps', true, 0, log, useGame.setState, undefined,
       { attackerId: 'e2', attackerKind: 'enemy' });
     expect(useGame.getState().pendingReveals).toHaveLength(0);
+    expect(useGame.getState().pendingCascade).toBeNull();
     expect(log.length).toBeGreaterThan(0); // le détail vit dans le journal
   });
 
-  it('un HÉROS inflige le Critique à un ennemi → modale (gravité grave)', () => {
+  it('un HÉROS inflige le Critique à un ennemi → séquence inline (panneau grave)', () => {
     const log: string[] = [];
     applyCriticalToTarget(mkEnemy('e1'), 'corps', true, 0, log, useGame.setState, undefined,
       { attackerId: 'h1', attackerKind: 'hero' });
-    const r = useGame.getState().pendingReveals;
-    expect(r).toHaveLength(1);
-    expect(r[0].severity).toBe('grave');
+    const crit = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'critical');
+    expect(crit).toBeTruthy();
+    expect(crit!.reveal?.severity).toBe('grave');
+    expect(useGame.getState().pendingReveals).toHaveLength(0); // plus en file témoin
   });
 
-  it('un HÉROS subit le Critique → modale (gravité grave)', () => {
+  it('un HÉROS subit le Critique → séquence inline (panneau grave)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(3) });
     const log: string[] = [];
     applyCriticalToTarget(hero, 'corps', true, 0, log, useGame.setState, undefined,
       { attackerId: 'e1', attackerKind: 'enemy' });
-    expect(useGame.getState().pendingReveals).toHaveLength(1);
-    expect(useGame.getState().pendingReveals[0].severity).toBe('grave');
+    const crit = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'critical');
+    expect(crit).toBeTruthy();
+    expect(crit!.reveal?.severity).toBe('grave');
   });
 });
 
@@ -60,7 +63,7 @@ describe('entretien de fin de Round — partition héros/ennemis (spec coop §4b
     vi.useFakeTimers();
     seedBattleRng(7);
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
-    useGame.setState({ party: [hero], battle: null, pendingReveals: [], pendingRoundStart: null });
+    useGame.setState({ party: [hero], battle: null, pendingReveals: [], pendingCascade: null, pendingRoundStart: null });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     useGame.getState().confirmRoundStart();
