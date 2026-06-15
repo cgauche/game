@@ -50,6 +50,8 @@ export function DefenseModal() {
   const segVal = (mode: 'parade' | 'esquive') =>
     optionValue(defenseValue(defender, mode, chosenParry), defenseModifiers(defender, mode, 0, mode === 'parade' ? chosenParry : undefined));
   const forcedDie = FLOWS.defense.picker?.(pd, defender); // dé choisi (source unique : caps.picker)
+  // `pd.modes` (tir) limite les réactions proposées ; absent = mêlée (Parade + Esquive). Filtre seul.
+  const allowMode = (m: 'parade' | 'esquive') => !pd.modes || pd.modes.includes(m);
   // Issue courte (1 ligne) — les noms vivent déjà dans les lignes du panneau.
   const outcome = res
     ? res.critical
@@ -81,8 +83,8 @@ export function DefenseModal() {
               layout="seg"
               groupLabel="Réaction"
               options={[
-                { key: 'parade', label: 'Parade', value: segVal('parade'), selected: pd.mode === 'parade', title: 'Parer avec son arme (Corps à corps)', onSelect: () => setMode('parade') },
-                { key: 'esquive', label: 'Esquive', value: segVal('esquive'), selected: pd.mode === 'esquive', title: 'Esquiver (Agilité)', onSelect: () => setMode('esquive') },
+                ...(allowMode('parade') ? [{ key: 'parade', label: 'Parade', value: segVal('parade'), selected: pd.mode === 'parade', title: 'Parer avec son arme (Corps à corps)', onSelect: () => setMode('parade') }] : []),
+                ...(allowMode('esquive') ? [{ key: 'esquive', label: 'Esquive', value: segVal('esquive'), selected: pd.mode === 'esquive', title: 'Esquiver (Agilité)', onSelect: () => setMode('esquive') }] : []),
               ]}
             />
             {pd.mode === 'parade' && parryPickable.length >= 2 && (

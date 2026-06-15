@@ -431,6 +431,11 @@ export interface PendingDefense {
   mode: 'parade' | 'esquive'; // réaction choisie (défaut = bestDefenseMode)
   /** Arme de parade choisie (uid d'ItemInstance) ; absent = main principale (weapons[0]). */
   parryWeaponUid?: string;
+  /** TIR défendu (RAW LDB 14 l.62/70, 62 l.307) : modes de réaction AUTORISÉS — limite le segmented
+   *  control de la modale (ex. Esquive seule à Bout Portant, Parade seule avec bouclier Protectrice 2+).
+   *  Absent = mêlée (Parade/Esquive libres). `distanceTiles` sert au breakdown Projectiles (finishRanged). */
+  modes?: ('parade' | 'esquive')[];
+  distanceTiles?: number;
   def: TestResult | null; // null = pas encore défendu ; écrasé par Chance
   result: AttackResult | null; // calculé par finishMelee après « Défendre »
   /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */

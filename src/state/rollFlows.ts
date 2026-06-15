@@ -20,7 +20,7 @@ import type {
   PendingCascade, CascadeStep,
 } from './store';
 import type { PendingActivity } from './interludeFlow';
-import type { Combatant } from '../engine/types';
+import type { Combatant, Weapon } from '../engine/types';
 import { makeRollFlow } from './rollFlow';
 import { battleRng } from './battleRng';
 import { actorIn, touchActors } from './combatOrParty';
@@ -30,7 +30,7 @@ import {
 } from './combatFlow';
 import { mountMovement, mountedDodgePenalty } from './mount';
 import { sceneCombatModifiers } from './sceneRules';
-import { resolveTrample, rederivePassiveAttack, finishMelee, rollMeleeDefender, type AttackResult } from '../engine/combat';
+import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, type AttackResult } from '../engine/combat';
 import { reverseRoll } from '../engine/combat';
 import { talentReverseFailed, talentTestDR, runMovementBonus } from '../engine/combatFeatures/dispatch';
 import { rollTest, resolveOpposed, isDoubleRoll, type TestResult, evaluateTest, maxForcedRoll } from '../engine/tests';
@@ -65,6 +65,15 @@ function rederiveAttack(attacker: Combatant, target: Combatant, p: PendingAttack
     return finishMelee(attacker, target, weapon, atk2, def, bestDefenseMode(target), p.location ?? undefined);
   }
   return rederivePassiveAttack(attacker, target, weapon, atk2, weapon.type === 'ranged' ? 'ranged' : 'melee', p.location ?? undefined);
+}
+
+/** Résout le résultat d'une défense réactive : TIR DÉFENDU (`finishRanged`, opposition RAW à distance —
+ *  Protectrice 2+/Bout Portant/tireur Engagé) OU mêlée (`finishMelee`), selon le type d'arme FIGÉE de
+ *  l'attaquant. `p.distanceTiles` sert au breakdown Projectiles ; `parry` = arme de parade choisie. */
+function finishDefenseResult(attacker: Combatant, defender: Combatant, p: PendingDefense, def: TestResult, dodgeMod = 0, parry?: Weapon): AttackResult {
+  return p.weapon.type === 'ranged'
+    ? finishRanged(attacker, defender, p.weapon, p.atk, def, p.mode, p.distanceTiles, p.location ?? undefined, [], parry, dodgeMod)
+    : finishMelee(attacker, defender, p.weapon, p.atk, def, p.mode, p.location ?? undefined, [], dodgeMod, undefined, parry);
 }
 
 export const FLOWS = {
@@ -146,17 +155,17 @@ export const FLOWS = {
           if (forced.roll > maxForcedRoll(p.def.target)) return null;
           const sl = Math.max(evaluateTest(forced.roll, p.def.target).sl, p.atk.sl + 1, 1);
           const def2: TestResult = { roll: forced.roll, target: p.def.target, success: true, sl, isDouble: isDoubleRoll(forced.roll) };
-          return { def: def2, result: finishMelee(attacker, actor, p.weapon, p.atk, def2, p.mode, p.location ?? undefined) };
+          return { def: def2, result: finishDefenseResult(attacker, actor, p, def2) };
         }
         // Dé PAR DÉFAUT : Test opposé « vous l'emportez avec au moins DR +1 » (LDB 17 l.73).
         const def2: TestResult = { roll: dd.roll, target: dd.target, success: true, sl: Math.max(dd.sl, p.atk.sl + 1, 1), isDouble: isDoubleRoll(dd.roll) };
-        return { def: def2, result: finishMelee(attacker, actor, p.weapon, p.atk, def2, p.mode, p.location ?? undefined) };
+        return { def: def2, result: finishDefenseResult(attacker, actor, p, def2) };
       }
       // Neige −20 + cavalier −20 (LDB 14 l.115-116/225) ; Rapide : −10 à la parade d'une arme non-Rapide (LDB 62 l.320).
       const dodgeMod = (s.scene ? sceneCombatModifiers(s.scene, s.gameTime).dodgeMod : 0) + mountedDodgePenalty(actor);
       const parry = p.parryWeaponUid ? actor.weapons.find((w) => w.uid === p.parryWeaponUid) : undefined;
       const def = rollMeleeDefender(actor, p.mode, battleRng(), dodgeMod, parry, p.weapon);
-      return { def, result: finishMelee(attacker, actor, p.weapon, p.atk, def, p.mode, p.location ?? undefined, [], dodgeMod, undefined, parry) };
+      return { def, result: finishDefenseResult(attacker, actor, p, def, dodgeMod, parry) };
     },
     failed: (p) => !!p.result && !p.def?.success,
     bonus: {
@@ -167,7 +176,7 @@ export const FLOWS = {
         const dd = p.result!.defenderDetail!;
         const def2: TestResult = { roll: dd.roll, target: dd.target, success: dd.success, sl: dd.sl + 1, isDouble: isDoubleRoll(dd.roll) };
         const parry = p.parryWeaponUid ? actor.weapons.find((w) => w.uid === p.parryWeaponUid) : undefined;
-        return { def: def2, result: finishMelee(attacker, actor, p.weapon, p.atk, def2, p.mode, p.location ?? undefined, [], 0, undefined, parry) };
+        return { def: def2, result: finishDefenseResult(attacker, actor, p, def2, 0, parry) };
       },
     },
   }),

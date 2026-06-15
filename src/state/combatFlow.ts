@@ -19,6 +19,8 @@ import {
   resolveMelee,
   resolveRanged,
   bestRangedDefense,
+  rangedDefenseModes,
+  rollRangedAttacker,
   defenseValue,
   combatValue,
   attackModifiers,
@@ -1631,6 +1633,25 @@ export function maybeOpenDefense(
   free?: { kind: string; prevActed: boolean },
 ): boolean {
   if (attacker.kind !== 'enemy' || target.kind !== 'hero') return false;
+  // TIR sur un héros : ouvre la défense réactive UNIQUEMENT si le RAW l'autorise (Protectrice 2+ en
+  // Ligne de Vue LDB 62 l.307 / Bout Portant LDB 14 l.62 / tireur Engagé LDB 14 l.70). Vide = tir non
+  // opposable → résolution simple (resolveAttack). LoS acquise : l'IA ne tire que si elle voit (doAttack).
+  if (weapon?.type === 'ranged') {
+    const dist = combatDistance(attacker, target);
+    const modes = rangedDefenseModes(attacker, target, weapon, dist, true);
+    if (!modes.length) return false;
+    const { env } = attackEnv(get, attacker, target, weapon);
+    const atk = rollRangedAttacker(attacker, target, weapon, battleRng(), dist, undefined, env); // tir figé
+    const best = bestRangedDefense(attacker, target, weapon, dist);
+    set({
+      pendingDefense: {
+        attackerId: attacker.id, defenderId: target.id, weapon, location: null, atk,
+        mode: best?.mode ?? modes[0], parryWeaponUid: best?.parryWeapon?.uid, modes, distanceTiles: dist, def: null, result: null,
+        ...(free ? { free: true, freeKind: free.kind, prevActed: free.prevActed } : {}),
+      },
+    });
+    return true;
+  }
   if (weapon?.type !== 'melee') return false;
   if (combatDistance(attacker, target) > reachTiles(weapon)) return false; // Allonge incluse (RAW-3)
   if (cannotDefend(target)) return false; // Surpris → résolution instantanée (LDB États l.132)

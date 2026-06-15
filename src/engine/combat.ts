@@ -692,6 +692,42 @@ export function resolveRanged(
   return applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon), atk.isDouble && atk.success, location); // Imprécise : −1 DR (LDB 63 l.19)
 }
 
+/** Jet d'attaque FIGÉ d'un TIR (Test de Projectiles, mods de portée/Taille/État inclus) — mirror de
+ *  `rollMeleeAttacker` pour la défense réactive : l'IA fige son tir, le héros oppose ensuite sa défense. */
+export function rollRangedAttacker(
+  attacker: Combatant,
+  defender: Combatant,
+  weapon: Weapon,
+  rng: RNG = defaultRNG,
+  distanceTiles?: number,
+  location?: HitLocation,
+  env: ModLine[] = [],
+): TestResult {
+  const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env });
+  return rollTest(combatValue(attacker, 'ranged', weapon), 'intermediaire', rng, combineMods(mods));
+}
+
+/** Test OPPOSÉ d'un TIR DÉFENDU (RAW Protectrice 2+/Bout Portant/tireur Engagé) à partir des jets
+ *  d'attaque/défense DÉJÀ obtenus — mirror de `finishMelee` pour le tir : construit le breakdown
+ *  « Projectiles » (mods de portée) puis délègue au cœur partagé `combineOpposed`. */
+export function finishRanged(
+  attacker: Combatant,
+  defender: Combatant,
+  weapon: Weapon,
+  atk: TestResult,
+  def: TestResult,
+  defenseMode: 'parade' | 'esquive',
+  distanceTiles?: number,
+  location?: HitLocation,
+  env: ModLine[] = [],
+  parryWeapon?: Weapon,
+  dodgeMod = 0,
+): AttackResult {
+  const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env });
+  const atkBd = bd('Projectiles', combatValue(attacker, 'ranged', weapon), atk, mods);
+  return combineOpposed(attacker, defender, weapon, atk, def, defenseMode, atkBd, { location, parryWeapon, dodgeMod });
+}
+
 /**
  * Touche « accidentelle » de Projectiles sur un allié intercalé (Tir dans la mêlée, LDB
  * `14 - _GoBack.md` l.136) : un tir qui aurait touché sans la pénalité de −20 dévie et frappe un
