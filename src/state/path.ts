@@ -6,9 +6,18 @@ import type { Combatant } from '../engine/types';
 export interface Pt {
   x: number;
   y: number;
+  /** Étage (niveau de scène). Absent = sol (z=0). La traversée verticale passe par les escaliers. */
+  z?: number;
 }
 
-const key = (x: number, y: number) => `${x},${y}`;
+const pz = (p: Pt) => p.z ?? 0;
+/** Construit une position en omettant `z` quand il vaut 0 → un résultat au sol est byte-identique à
+ *  l'ancien `{x,y}` (non-régression ; même esprit que la clé z=0 sans suffixe). */
+const pt = (x: number, y: number, z = 0): Pt => (z ? { x, y, z } : { x, y });
+/** Clé de case. CONVENTION : z=0 omet le suffixe (« x,y ») → byte-identique aux ensembles `blocked`
+ *  2D que bâtissent les appelants (occupied(), héros au sol) ; z>0 → « x,y,z » distinct. Une seule
+ *  fonction de clé partout (pas de double schéma). */
+const key = (x: number, y: number, z = 0) => (z ? `${x},${y},${z}` : `${x},${y}`);
 const NEIGHBORS = [
   [1, 0],
   [-1, 0],
@@ -16,16 +25,39 @@ const NEIGHBORS = [
   [0, -1],
 ];
 
+/** Index des escaliers : clé de case → cases reliées (bidirectionnel). Seuls points de franchissement
+ *  vertical ; vide si la scène n'a pas de `stairs` (toutes les scènes mono-niveau). */
+function stairLinks(scene: Scene): Map<string, Pt[]> {
+  const m = new Map<string, Pt[]>();
+  const add = (a: { x: number; y: number; z: number }, b: { x: number; y: number; z: number }) => {
+    const k = key(a.x, a.y, a.z);
+    const arr = m.get(k) ?? [];
+    arr.push({ x: b.x, y: b.y, z: b.z });
+    m.set(k, arr);
+  };
+  for (const s of scene.stairs ?? []) { add(s.from, s.to); add(s.to, s.from); }
+  return m;
+}
+
+/** Voisins marchables d'une case : 4-adjacence du MÊME étage + transitions d'escalier vers z±1. */
+function neighborsOf(p: Pt, links: Map<string, Pt[]>): Pt[] {
+  const z = pz(p);
+  const out: Pt[] = NEIGHBORS.map(([dx, dy]) => ({ x: p.x + dx, y: p.y + dy, z }));
+  const stairs = links.get(key(p.x, p.y, z));
+  if (stairs) out.push(...stairs);
+  return out;
+}
+
 /**
- * L'empreinte N×N ancrée en (x, y) (coin NO) tient-elle ? Toutes ses tuiles doivent être walkable
- * (terrain/bâtiment) ET non bloquées. Pour `foot=1`, vérifie juste la tuile (comportement historique).
+ * L'empreinte N×N ancrée en (x, y, z) (coin NO) tient-elle ? Toutes ses tuiles (au même étage)
+ * doivent être walkable (terrain/bâtiment) ET non bloquées. Pour `foot=1`, vérifie juste la tuile.
  * Permet à une grande créature de NE PAS se faufiler dans un couloir d'1 tuile (LDB 15 l.55).
  */
-function footFits(scene: Scene, x: number, y: number, foot: number, blocked: Set<string>): boolean {
-  if (foot <= 1) return isWalkable(scene, x, y) && !blocked.has(key(x, y));
+function footFits(scene: Scene, x: number, y: number, z: number, foot: number, blocked: Set<string>): boolean {
+  if (foot <= 1) return isWalkable(scene, x, y, z) && !blocked.has(key(x, y, z));
   for (let dy = 0; dy < foot; dy++)
     for (let dx = 0; dx < foot; dx++) {
-      if (!isWalkable(scene, x + dx, y + dy) || blocked.has(key(x + dx, y + dy))) return false;
+      if (!isWalkable(scene, x + dx, y + dy, z) || blocked.has(key(x + dx, y + dy, z))) return false;
     }
   return true;
 }
@@ -35,20 +67,21 @@ function footFits(scene: Scene, x: number, y: number, foot: number, blocked: Set
  * cases occupées par `blocked`. Retourne une map clé→distance.
  */
 export function reachable(scene: Scene, start: Pt, range: number, blocked: Set<string>, foot = 1): Map<string, number> {
+  const links = stairLinks(scene);
   const dist = new Map<string, number>();
-  dist.set(key(start.x, start.y), 0);
-  let frontier: Pt[] = [start];
+  const sz = pz(start);
+  dist.set(key(start.x, start.y, sz), 0);
+  let frontier: Pt[] = [{ x: start.x, y: start.y, z: sz }];
   for (let step = 0; step < range; step++) {
     const next: Pt[] = [];
     for (const p of frontier) {
-      for (const [dx, dy] of NEIGHBORS) {
-        const nx = p.x + dx;
-        const ny = p.y + dy;
-        const k = key(nx, ny);
+      for (const n of neighborsOf(p, links)) {
+        const nz = pz(n);
+        const k = key(n.x, n.y, nz);
         if (dist.has(k)) continue;
-        if (!footFits(scene, nx, ny, foot, blocked)) continue; // l'empreinte entière doit tenir (LDB 15 l.55)
+        if (!footFits(scene, n.x, n.y, nz, foot, blocked)) continue; // l'empreinte entière doit tenir (LDB 15 l.55)
         dist.set(k, step + 1);
-        next.push({ x: nx, y: ny });
+        next.push(n);
       }
     }
     frontier = next;
@@ -63,14 +96,15 @@ export function reachable(scene: Scene, start: Pt, range: number, blocked: Set<s
  */
 export function flyReachable(scene: Scene, start: Pt, range: number, blocked: Set<string>, foot = 1): Map<string, number> {
   const dist = new Map<string, number>();
-  dist.set(key(start.x, start.y), 0);
+  const sz = pz(start); // le vol reste à l'étage du voltigeur (l'atterrissage doit y tenir)
+  dist.set(key(start.x, start.y, sz), 0);
   for (let dy = -range; dy <= range; dy++)
     for (let dx = -range; dx <= range; dx++) {
       if (!dx && !dy) continue;
       const nx = start.x + dx;
       const ny = start.y + dy;
-      if (!footFits(scene, nx, ny, foot, blocked)) continue; // l'atterrissage doit tenir
-      dist.set(key(nx, ny), Math.max(Math.abs(dx), Math.abs(dy)));
+      if (!footFits(scene, nx, ny, sz, foot, blocked)) continue; // l'atterrissage doit tenir
+      dist.set(key(nx, ny, sz), Math.max(Math.abs(dx), Math.abs(dy)));
     }
   return dist;
 }
@@ -98,18 +132,19 @@ export function pushAway(
 ): { dest: Pt; pushed: number; collided: boolean } {
   const sx = Math.sign(target.x - from.x);
   const sy = Math.sign(target.y - from.y);
+  const tz = pz(target); // la poussée glisse au même étage que la cible
   if ((!sx && !sy) || tiles <= 0) return { dest: { ...target }, pushed: 0, collided: false };
-  let cur = { ...target };
+  let cur = { x: target.x, y: target.y };
   let pushed = 0;
   for (let i = 0; i < tiles; i++) {
     const next = { x: cur.x + sx, y: cur.y + sy };
-    if (!isWalkable(scene, next.x, next.y) || blocked.has(key(next.x, next.y))) {
-      return { dest: cur, pushed, collided: true };
+    if (!isWalkable(scene, next.x, next.y, tz) || blocked.has(key(next.x, next.y, tz))) {
+      return { dest: pt(cur.x, cur.y, tz), pushed, collided: true };
     }
     cur = next;
     pushed++;
   }
-  return { dest: cur, pushed, collided: false };
+  return { dest: pt(cur.x, cur.y, tz), pushed, collided: false };
 }
 
 /** Cases atteignables pour une FUITE (LDB 15-Déplacement l.109 : « dans la direction OPPOSÉE à celle de
@@ -127,33 +162,34 @@ export function fleeReachable(scene: Scene, from: Pt, foe: Pt, range: number, bl
 
 /** Plus court chemin (BFS) de `start` à `goal`, ou null. */
 export function pathTo(scene: Scene, start: Pt, goal: Pt, blocked: Set<string>, foot = 1): Pt[] | null {
+  const links = stairLinks(scene);
+  const gz = pz(goal);
   const came = new Map<string, string | null>();
-  came.set(key(start.x, start.y), null);
-  const queue: Pt[] = [start];
+  came.set(key(start.x, start.y, pz(start)), null);
+  const queue: Pt[] = [{ x: start.x, y: start.y, z: pz(start) }];
   while (queue.length) {
     const p = queue.shift()!;
-    if (p.x === goal.x && p.y === goal.y) {
+    if (p.x === goal.x && p.y === goal.y && pz(p) === gz) {
       const path: Pt[] = [];
-      let cur: string | null = key(p.x, p.y);
+      let cur: string | null = key(p.x, p.y, pz(p));
       while (cur) {
-        const [x, y] = cur.split(',').map(Number);
-        path.unshift({ x, y });
+        const [x, y, z = 0] = cur.split(',').map(Number);
+        path.unshift(pt(x, y, z));
         cur = came.get(cur) ?? null;
       }
       return path;
     }
-    for (const [dx, dy] of NEIGHBORS) {
-      const nx = p.x + dx;
-      const ny = p.y + dy;
-      const k = key(nx, ny);
+    for (const n of neighborsOf(p, links)) {
+      const nz = pz(n);
+      const k = key(n.x, n.y, nz);
       if (came.has(k)) continue;
-      const isGoal = nx === goal.x && ny === goal.y;
+      const isGoal = n.x === goal.x && n.y === goal.y && nz === gz;
       // Empreinte > 1 : chaque pas (arrivée incluse) doit tenir entièrement. 1×1 : la cible peut être
       // une case occupée (on s'arrête au contact d'un ennemi), comportement historique.
-      if (foot > 1) { if (!footFits(scene, nx, ny, foot, blocked)) continue; }
-      else if (!isGoal && (!isWalkable(scene, nx, ny) || blocked.has(k))) continue;
-      came.set(k, key(p.x, p.y));
-      queue.push({ x: nx, y: ny });
+      if (foot > 1) { if (!footFits(scene, n.x, n.y, nz, foot, blocked)) continue; }
+      else if (!isGoal && (!isWalkable(scene, n.x, n.y, nz) || blocked.has(k))) continue;
+      came.set(k, key(p.x, p.y, pz(p)));
+      queue.push(n);
     }
   }
   return null;
