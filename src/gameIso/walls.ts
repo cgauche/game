@@ -1,4 +1,4 @@
-import { tileCenter, depth, type Dims } from './iso';
+import { tileCenter, tileEdge, depth, type Dims } from './iso';
 import type { Scene, WallSeg } from '../state/scene';
 
 /** Hauteur écran (px) d'une cloison dressée sur une arête. */
@@ -6,19 +6,14 @@ export const WALL_H = 54;
 
 type P = { cx: number; cy: number };
 
-/** Les 2 extrémités-écran (au sol) de l'arête d'un mur. Un COIN de grille (gx,gy) se projette comme le
- *  centre d'une tuile décalée d'un demi : `tileCenter(gx-0.5, gy-0.5)` (rotation/vue/étage z gérés par
- *  tileCenter). E = arête entre (x,y) et (x+1,y) → coins (x+1,y) et (x+1,y+1) ; N = entre (x,y) et
- *  (x,y-1) → coins (x,y) et (x+1,y). */
+/** Les 2 extrémités-écran (au sol) de l'arête d'un mur. Arêtes CARDINALES N/E via la primitive PARTAGÉE
+ *  `tileEdge` (même géométrie que jupes/escaliers → rotation cohérente). Diagonales `\`/`/` : tracées de
+ *  coin à coin opposé de la case (les coins de grille via tileCenter, rotation gérée). */
 function edgeEnds(w: WallSeg, dims: Dims): [P, P] {
   const z = w.z ?? 0;
+  if (w.side === 'N' || w.side === 'E') return tileEdge(w.x, w.y, w.side, dims, z);
   const gc = (gx: number, gy: number) => tileCenter(gx - 0.5, gy - 0.5, dims, z);
-  switch (w.side) {
-    case 'E': return [gc(w.x + 1, w.y), gc(w.x + 1, w.y + 1)]; // arête droite
-    case 'N': return [gc(w.x, w.y), gc(w.x + 1, w.y)]; // arête haute
-    case '\\': return [gc(w.x, w.y), gc(w.x + 1, w.y + 1)]; // diagonale NO→SE
-    default: return [gc(w.x + 1, w.y), gc(w.x, w.y + 1)]; // '/' diagonale NE→SO
-  }
+  return w.side === '\\' ? [gc(w.x, w.y), gc(w.x + 1, w.y + 1)] : [gc(w.x + 1, w.y), gc(w.x, w.y + 1)]; // '/' = NE→SO
 }
 
 /** Profondeur de tri d'un mur : du côté de la tuile la plus PROCHE de la caméra (occlusion correcte). */

@@ -1,7 +1,7 @@
 import { Scene, tileAt, elevAt } from '../state/scene';
 import { terrainPriority } from '../state/terrain';
 import { terrainGradient } from './catalog/terrain';
-import { Dims, diamondCorners, tileCenter } from './iso';
+import { Dims, diamondCorners, tileCenter, tileEdge } from './iso';
 
 export type EdgeDir = 'N' | 'E' | 'S' | 'O';
 const NEIGHBOURS: Record<EdgeDir, [number, number]> = {
@@ -37,30 +37,20 @@ export interface Skirt {
   lit: boolean; // face avant (vers la caméra) → éclairée ; arrière → sombre (déduit du z écran)
 }
 
-/** Coins de GRILLE d'une arête MONDE par direction (partagés avec la case voisine). À projeter par
- *  tileCenter(gx-0.5, gy-0.5) → ROTATION-CORRECT (≠ coins d'écran top/right/… qui ne tournent pas). */
-const EDGE_GRID: Record<EdgeDir, [[number, number], [number, number]]> = {
-  N: [[0, 0], [1, 0]],
-  E: [[1, 0], [1, 1]],
-  S: [[1, 1], [0, 1]],
-  O: [[0, 1], [0, 0]],
-};
-
 /** Jupes de dénivelé de la case (x,y) : une paroi par arête où la case est PLUS HAUTE que sa voisine
- *  (la case haute porte toujours la paroi — plateau surélevé ET rebord de fosse). Géométrie sur les COINS
- *  DE GRILLE (projetés avec la rotation caméra) ; éclairage déduit de la position ÉCRAN → suit la rotation. */
+ *  (la case haute porte toujours la paroi — plateau surélevé ET rebord de fosse). Géométrie via la
+ *  primitive PARTAGÉE `tileEdge` (même source que murs/escaliers → rotation cohérente) ; éclairage déduit
+ *  de la position ÉCRAN de l'arête → suit la rotation. */
 export function elevSkirt(scene: Scene, x: number, y: number, dims: Dims, z = 0): Skirt[] {
   const self = elevAt(scene, x, y, z);
   const out: Skirt[] = [];
-  const gc = (gx: number, gy: number, lift: number) => tileCenter(x - 0.5 + gx, y - 0.5 + gy, dims, lift);
   const ctr = tileCenter(x, y, dims, z + self); // centre case (sol haut) pour le test avant/arrière
   for (const dir of ['N', 'E', 'S', 'O'] as EdgeDir[]) {
     const [dx, dy] = NEIGHBOURS[dir];
     const nb = elevAt(scene, x + dx, y + dy, z);
     if (self <= nb) continue; // pas de chute de ce côté
-    const [[ax, ay], [bx, by]] = EDGE_GRID[dir];
-    const hiA = gc(ax, ay, z + self), hiB = gc(bx, by, z + self); // arête au sol haut
-    const loA = gc(ax, ay, z + nb), loB = gc(bx, by, z + nb); // même arête, au sol bas
+    const [hiA, hiB] = tileEdge(x, y, dir, dims, z + self); // arête au sol haut
+    const [loA, loB] = tileEdge(x, y, dir, dims, z + nb); // même arête, au sol bas
     const lit = (hiA.cy + hiB.cy) / 2 >= ctr.cy; // l'arête est DEVANT (plus bas à l'écran) → face avant
     out.push({ dir, drop: self - nb, lit, points: [[hiA.cx, hiA.cy], [hiB.cx, hiB.cy], [loB.cx, loB.cy], [loA.cx, loA.cy]] });
   }

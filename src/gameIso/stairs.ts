@@ -1,4 +1,4 @@
-import { tileCenter, depth, LEVEL_H, TW, TH, CELL, type Dims } from './iso';
+import { tileCenter, depth, CELL, type Dims } from './iso';
 import type { Scene } from '../state/scene';
 
 /** Escalier en VUE DU DESSUS : un carré « gironné » (lignes de marches) + un chevron « monter » — un
@@ -29,21 +29,20 @@ export function stairSeg(s: NonNullable<Scene['stairs']>[number], dims: Dims): {
   const hi = Math.max(s.from.z, s.to.z);
   const x = s.from.x, y = s.from.y;
   const N = STEPS_PER_LEVEL * (hi - lo);
-  // La volée a du RUN : elle démarre une case EN AVANT (côté caméra, sol bas) et grimpe jusqu'à la case
-  // de l'escalier au sol HAUT → les marches s'étalent en diagonale (lisible) au lieu d'un puits vertical.
-  const p0 = tileCenter(x, y + 1, dims, lo); // pied de la volée (avant)
-  const p1 = tileCenter(x, y, dims, hi); // haut de la volée (case de l'escalier, étage du dessus)
-  const rise = (p0.cy - p1.cy) / N; // hauteur écran d'une marche
-  const halfW = TW * 0.32, halfD = TH * 0.16; // giron large, peu profond
+  // Volée à RUN, construite sur les COINS DE GRILLE (projetés AVEC la rotation, comme murs/jupes) → les
+  // marches TOURNENT avec la caméra. Elle grimpe de la case d'approche (monde y+1, sol bas) au fond de la
+  // case d'escalier (monde y, sol haut) ; chaque marche = giron (dessus) plein-largeur + contremarche.
+  const y0 = y + 1, y1 = y; // monde : avant (bas) → arrière (haut)
+  const gc = (gy: number, lift: number, side: -1 | 1) => tileCenter(x + side * 0.5, gy, dims, lift);
   let svg = '<g>';
-  for (let i = 0; i <= N; i++) {
-    const t = i / N;
-    const mx = p0.cx + (p1.cx - p0.cx) * t;
-    const my = p0.cy + (p1.cy - p0.cy) * t;
-    const tread = `${mx},${my - halfD} ${mx + halfW},${my} ${mx},${my + halfD} ${mx - halfW},${my}`;
-    const riser = `${mx - halfW},${my} ${mx},${my + halfD} ${mx + halfW},${my} ${mx + halfW},${my + rise} ${mx},${my + halfD + rise} ${mx - halfW},${my + rise}`;
-    svg += `<polygon points="${riser}" fill="#3c3120"/>` + // contremarche (face avant, sombre)
-      `<polygon points="${tread}" fill="#8a724f" stroke="#2a2217" stroke-width="0.6"/>`; // giron (dessus, clair)
+  for (let i = 0; i < N; i++) {
+    const tF = i / N, tB = (i + 1) / N;
+    const yF = y0 + (y1 - y0) * tF, yB = y0 + (y1 - y0) * tB; // avant / arrière de la marche
+    const liftT = lo + (hi - lo) * tB, liftP = lo + (hi - lo) * tF; // hauteur marche / marche précédente
+    const bl = gc(yB, liftT, -1), br = gc(yB, liftT, 1), fl = gc(yF, liftT, -1), fr = gc(yF, liftT, 1); // giron
+    const dl = gc(yF, liftP, -1), dr = gc(yF, liftP, 1); // pied de la contremarche
+    svg += `<polygon points="${fl.cx},${fl.cy} ${fr.cx},${fr.cy} ${dr.cx},${dr.cy} ${dl.cx},${dl.cy}" fill="#3c3120"/>` + // contremarche
+      `<polygon points="${bl.cx},${bl.cy} ${br.cx},${br.cy} ${fr.cx},${fr.cy} ${fl.cx},${fl.cy}" fill="#8a724f" stroke="#2a2217" stroke-width="0.6"/>`; // giron
   }
   svg += '</g>';
   // Ancrée au sol bas, juste devant son plancher (comme un mur) — rise dans l'espace de l'étage du dessus.
