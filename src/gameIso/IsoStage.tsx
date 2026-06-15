@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import './anim.css';
 import { useGame } from '../state/store';
-import { Scene as GameScene, tileAt, isWalkable } from '../state/scene';
+import { Scene as GameScene, tileAt, isWalkable, elevAt } from '../state/scene';
 import { sceneIsDark } from '../state/sceneRules';
 import { pathTo, type Pt } from '../state/path';
 import { planJump } from '../state/jumpMove';
@@ -535,7 +535,7 @@ export function IsoStage() {
           d: depth(ent.pos.x, ent.pos.y, d, ez),
           el: wrap(
             r.id,
-            <BodyToken key={r.id} x={ent.pos.x} y={ent.pos.y} z={ez} dims={d} scale={0.55} fx={ent.anim}>
+            <BodyToken key={r.id} x={ent.pos.x} y={ent.pos.y} z={ez + elevAt(scene, ent.pos.x, ent.pos.y, ez)} dims={d} scale={0.55} fx={ent.anim}>
               <g dangerouslySetInnerHTML={{ __html: entitySprite(ent) }} />
             </BodyToken>,
           ),
@@ -549,7 +549,7 @@ export function IsoStage() {
           d: depth(ex, ey, d, ez) + dBoost,
           el: wrap(
             r.id,
-            <BodyToken key={r.id} x={ex} y={ey} z={ez} dims={d} scale={base * r.speciesScale * sizeTokenScale(entitySize(ent))} bakedDeath flat={isTop} portraitBox={r.portraitBox} discR={discRfn(entitySize(ent))}>
+            <BodyToken key={r.id} x={ex} y={ey} z={ez + elevAt(scene, ent.pos.x, ent.pos.y, ez)} dims={d} scale={base * r.speciesScale * sizeTokenScale(entitySize(ent))} bakedDeath flat={isTop} portraitBox={r.portraitBox} discR={discRfn(entitySize(ent))}>
               {r.body}
             </BodyToken>,
           ),
@@ -638,15 +638,20 @@ export function IsoStage() {
   // token()/tokenNode() : adaptateurs minces vers la coquille partagée BodyToken (positionnement
   // unique). token() = corps SVG string ; tokenNode() = enfant React (rig) dont la mort est déjà
   // bakée (CORPSE_POSE / pose effondrée) → pas de bascule externe (bakedDeath).
+  // Pieds d'un token : l'étage z + l'élévation LOCALE de sa case (scène surélevée / fosse). tileCenter
+  // soulève d'un z fractionnaire → le pion monte/descend avec son sol ; la PROFONDEUR (tri) reste à z
+  // entier (calculée par l'appelant), l'élévation est purement positionnelle.
+  const feetZ = (x: number, y: number, z = 0) => z + elevAt(scene, Math.round(x), Math.round(y), z);
+
   const token = (id: string, x: number, y: number, inner: string, scale: number, ringColor?: string, dim?: boolean, fx?: string, walking?: boolean, bakedDeath?: boolean, z = 0) => (
-    <BodyToken key={id} x={x} y={y} z={z} dims={dims} scale={scale} ring={ringColor} dim={dim} walking={walking} fx={fx} bakedDeath={bakedDeath}>
+    <BodyToken key={id} x={x} y={y} z={feetZ(x, y, z)} dims={dims} scale={scale} ring={ringColor} dim={dim} walking={walking} fx={fx} bakedDeath={bakedDeath}>
       <g dangerouslySetInnerHTML={{ __html: inner }} />
     </BodyToken>
   );
 
   type TokenExtras = { hp?: { current: number; max: number }; icons?: string[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number; ghost?: boolean; cid?: string };
   const tokenNode = (id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean, walking?: boolean, extras?: TokenExtras, z = 0) => (
-    <BodyToken key={id} x={x} y={y} z={z} dims={dims} scale={scale} ring={ringColor} ringDash={extras?.ringDash} dim={dim} ghost={extras?.ghost} walking={walking} bakedDeath
+    <BodyToken key={id} x={x} y={y} z={feetZ(x, y, z)} dims={dims} scale={scale} ring={ringColor} ringDash={extras?.ringDash} dim={dim} ghost={extras?.ghost} walking={walking} bakedDeath
       hp={extras?.hp} icons={extras?.icons} iconsMore={extras?.iconsMore} veil={extras?.veil} active={extras?.active}
       flat={extras?.flat} portraitBox={extras?.portraitBox} discR={extras?.discR} cid={extras?.cid}>
       {child}
@@ -666,7 +671,7 @@ export function IsoStage() {
     if (ent.interact) {
       // Affordance : halo pulsé + onde « sonar » au sol, et étincelle dorée flottant AU-DESSUS du
       // décor fouillable — l'objet cliquable se repère de loin, sans texte (cf. anim.css).
-      const c = tileCenter(px, py, dims, ez);
+      const c = tileCenter(px, py, dims, feetZ(px, py, ez));
       objs.push({
         d: pd - 0.02, // juste sous le sprite
         el: (

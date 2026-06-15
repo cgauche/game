@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { emptyScene, isWalkable, tileAt, normalizeAmbiance, isIndoor } from './scene';
+import { emptyScene, isWalkable, tileAt, elevAt, normalizeAmbiance, isIndoor } from './scene';
 import { evalCondition } from './flow';
 import type { Scene } from './scene';
 
@@ -31,6 +31,34 @@ describe('scene + terrain registre', () => {
     const s = emptyScene(3, 3);
     expect(tileAt(s, -1, 0)).toBe('mur');
     expect(isWalkable(s, -1, 0)).toBe(false);
+  });
+});
+
+describe('élévation — décalage vertical sub-niveau par case (scène surélevée / fosse)', () => {
+  it('elevAt = 0 par défaut (pas de tableau elev)', () => {
+    const s = emptyScene(3, 3);
+    expect(elevAt(s, 1, 1)).toBe(0);
+  });
+  it('elevAt lit Level.elev[y*w+x] (surélévation + contrebas)', () => {
+    const s = emptyScene(3, 3);
+    s.levels[0].elev = new Array(9).fill(0);
+    s.levels[0].elev[1 * 3 + 1] = 0.4; // scène surélevée
+    s.levels[0].elev[2 * 3 + 0] = -0.5; // fosse
+    expect(elevAt(s, 1, 1)).toBe(0.4);
+    expect(elevAt(s, 0, 2)).toBe(-0.5);
+    expect(elevAt(s, 0, 0)).toBe(0);
+  });
+  it('elevAt hors-grille → 0 (pas de débordement)', () => {
+    const s = emptyScene(3, 3);
+    s.levels[0].elev = new Array(9).fill(0.3);
+    expect(elevAt(s, -1, 0)).toBe(0);
+    expect(elevAt(s, 3, 0)).toBe(0);
+  });
+  it('elevAt respecte le niveau z (étage manquant → 0)', () => {
+    const s = emptyScene(3, 3);
+    s.levels[0].elev = new Array(9).fill(0.2);
+    expect(elevAt(s, 1, 1, 0)).toBe(0.2);
+    expect(elevAt(s, 1, 1, 5)).toBe(0.2); // repli 1er niveau (comme tileAt)
   });
 });
 

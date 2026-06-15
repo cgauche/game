@@ -398,6 +398,11 @@ export interface EncounterDef {
 export interface Level {
   z: number;
   tiles: Terrain[];
+  /** Élévation par case, PARALLÈLE à `tiles` (même indexation y·w+x), en unités d'étage : 1 = un
+   *  plancher entier, 0.4 = scène surélevée, -0.5 = fosse d'orchestre en contrebas. Absent = tout au
+   *  ras du niveau (0). Purement VISUEL/positionnel : ne change ni la profondeur (étage z) ni la
+   *  marchabilité — un dénivelé léger est un gradin franchissable (les vraies chutes = effet `fall`). */
+  elev?: number[];
 }
 
 /** Aire d'une zone d'effet : rectangle (`rect`) ou disque de Chebyshev (`disc`, rayon en CASES). */
@@ -484,6 +489,15 @@ export function levelTiles(scene: Scene, z = 0): Terrain[] {
 export function tileAt(scene: Scene, x: number, y: number, z = 0): Terrain {
   if (x < 0 || y < 0 || x >= scene.dimensions.w || y >= scene.dimensions.h) return 'mur';
   return levelTiles(scene, z)[y * scene.dimensions.w + x] ?? 'sol';
+}
+
+/** Élévation (décalage vertical SUB-niveau, en unités d'étage : 1 = un plancher) de la case (x,y) du
+ *  niveau `z` : >0 surélevé (scène), <0 en contrebas (fosse). Hors-grille ou sans tableau `elev` → 0.
+ *  Repli sur le 1ᵉʳ niveau si `z` absent, comme `tileAt`. */
+export function elevAt(scene: Scene, x: number, y: number, z = 0): number {
+  if (x < 0 || y < 0 || x >= scene.dimensions.w || y >= scene.dimensions.h) return 0;
+  const lvl = scene.levels.find((l) => l.z === z) ?? scene.levels[0];
+  return lvl.elev?.[y * scene.dimensions.w + x] ?? 0;
 }
 
 export function isWalkable(scene: Scene, x: number, y: number, z = 0): boolean {
