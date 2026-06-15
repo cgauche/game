@@ -113,6 +113,9 @@ export interface TrappingData {
   price: { gold: number; silver: number; bronze: number };
   source: { book: string; page: number };
 }
+export type HarvestRarity = 'Commune' | 'Limitée' | 'Rare' | 'Exotique' | 'Unique';
+export type HarvestDanger = 'Inoffensive' | 'Inquiétante' | 'Menaçante' | 'Mortelle';
+
 export interface CreatureData {
   label: string;
   title: string | null;
@@ -131,6 +134,9 @@ export interface CreatureData {
    *  couche de défaut (sous une éventuelle surcharge de scène). Même format que `EntityAppearance`
    *  (éditeur de scène) → une SEULE structure d'apparence dans toute l'app. */
   appearance?: EntityAppearance;
+  /** Récolte « Précieuses Entrailles » (ZI) : rareté + dangerosité (→ coût par Enc des pièces,
+   *  cf. engine/harvest) et usages supposés des organes. Porté par la créature (pas de table //). */
+  harvest?: { rarity: HarvestRarity; danger: HarvestDanger; uses: string };
 }
 export interface EtatData {
   label: string;

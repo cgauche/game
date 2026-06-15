@@ -1080,6 +1080,11 @@
     "appearance": {
       "species": "Géant",
       "tenue": "Nu"
+    },
+    "harvest": {
+      "rarity": "Rare",
+      "danger": "Menaçante",
+      "uses": "Les ongles de pied de géant constituent des boucliers invincibles"
     }
   },
   {
@@ -1123,6 +1128,11 @@
     },
     "appearance": {
       "species": "Griffon"
+    },
+    "harvest": {
+      "rarity": "Rare",
+      "danger": "Inquiétante",
+      "uses": "Plumes porte-bonheur"
     }
   },
   {
@@ -1551,6 +1561,11 @@
     },
     "appearance": {
       "species": "Dragon"
+    },
+    "harvest": {
+      "rarity": "Rare",
+      "danger": "Menaçante",
+      "uses": "Le venin de sa queue serait capable de tuer n'importe quelle créature"
     }
   },
   {
@@ -21986,6 +22001,11 @@
     "source": {
       "book": "ZI",
       "page": 10
+    },
+    "harvest": {
+      "rarity": "Rare",
+      "danger": "Inquiétante",
+      "uses": "Cataplasme pour plus de longévité et de vitalité"
     }
   },
   {
@@ -22036,6 +22056,11 @@
     },
     "appearance": {
       "species": "Cheval"
+    },
+    "harvest": {
+      "rarity": "Unique",
+      "danger": "Menaçante",
+      "uses": "Aurait un goût unique conféré par Taal"
     }
   },
   {
@@ -22083,6 +22108,11 @@
     },
     "appearance": {
       "species": "Araignée"
+    },
+    "harvest": {
+      "rarity": "Limitée",
+      "danger": "Menaçante",
+      "uses": "Les filières peuvent être broyées pour former une colle particulièrement résistante"
     }
   },
   {
@@ -22132,6 +22162,11 @@
     },
     "appearance": {
       "species": "Araignée"
+    },
+    "harvest": {
+      "rarity": "Limitée",
+      "danger": "Menaçante",
+      "uses": "Ses glandes venimeuses produisent un poison indétectable"
     }
   },
   {
@@ -22264,6 +22299,11 @@
     },
     "appearance": {
       "species": "Loup"
+    },
+    "harvest": {
+      "rarity": "Limitée",
+      "danger": "Inquiétante",
+      "uses": "Une amulette confectionnée avec ses griffes permet d'éloigner les animaux plus faibles"
     }
   },
   {
@@ -22308,6 +22348,11 @@
     },
     "appearance": {
       "species": "Loup"
+    },
+    "harvest": {
+      "rarity": "Unique",
+      "danger": "Menaçante",
+      "uses": "Ingérer le foie d'un loup à deux têtes permet de doubler son espérance de vie"
     }
   },
   {
@@ -22359,6 +22404,11 @@
     },
     "appearance": {
       "species": "Sanglier"
+    },
+    "harvest": {
+      "rarity": "Limitée",
+      "danger": "Inquiétante",
+      "uses": "Son estomac peut être durci pour contenir n'importe quel liquide"
     }
   },
   {
@@ -22405,6 +22455,11 @@
     },
     "appearance": {
       "species": "Sanglier"
+    },
+    "harvest": {
+      "rarity": "Unique",
+      "danger": "Menaçante",
+      "uses": "Le sang d'un grand razorgor provoque un état de Frénésie"
     }
   },
   {
@@ -22456,6 +22511,11 @@
     },
     "appearance": {
       "species": "Serpent"
+    },
+    "harvest": {
+      "rarity": "Exotique",
+      "danger": "Menaçante",
+      "uses": "Les dents, les défenses et les cornes sont sublimes une fois polies"
     }
   },
   {
@@ -22507,6 +22567,11 @@
     },
     "appearance": {
       "species": "Ours"
+    },
+    "harvest": {
+      "rarity": "Limitée",
+      "danger": "Inquiétante",
+      "uses": "La queue d'un rhinox éloigne les mouches"
     }
   },
   {
@@ -22550,6 +22615,11 @@
     },
     "appearance": {
       "species": "Ours"
+    },
+    "harvest": {
+      "rarity": "Unique",
+      "danger": "Mortelle",
+      "uses": "La corne broyée d'un grand rhinox guérit tous les maux"
     }
   },
   {
@@ -22590,6 +22660,11 @@
     },
     "appearance": {
       "species": "Squig"
+    },
+    "harvest": {
+      "rarity": "Limitée",
+      "danger": "Inoffensive",
+      "uses": "Les crottes de squig sont un excellent engrais"
     }
   },
   {
@@ -22690,6 +22765,11 @@
     },
     "appearance": {
       "species": "Dragon"
+    },
+    "harvest": {
+      "rarity": "Exotique",
+      "danger": "Mortelle",
+      "uses": "Ses écailles permettent de fabriquer une cape qui rend son porteur impossible à pister"
     }
   },
   {
@@ -22746,6 +22826,11 @@
     },
     "appearance": {
       "species": "Dragon"
+    },
+    "harvest": {
+      "rarity": "Unique",
+      "danger": "Mortelle",
+      "uses": "Infinité d'usages pour les sorciers et les alchimistes"
     }
   },
   {
@@ -22856,6 +22941,11 @@
     "source": {
       "book": "ZI",
       "page": 38
+    },
+    "harvest": {
+      "rarity": "Unique",
+      "danger": "Inoffensive",
+      "uses": "On peut prédire l'avenir en jetant ses écailles dans l'eau"
     }
   },
   {
@@ -22909,6 +22999,11 @@
     "source": {
       "book": "ZI",
       "page": 40
+    },
+    "harvest": {
+      "rarity": "Exotique",
+      "danger": "Inquiétante",
+      "uses": "Boire dans leur crâne permet de voir et d'entendre les morts"
     }
   },
   {
@@ -23004,6 +23099,11 @@
     },
     "appearance": {
       "species": "Rat ogre"
+    },
+    "harvest": {
+      "rarity": "Exotique",
+      "danger": "Menaçante",
+      "uses": "Il est possible de prélever de la malepierre à partir de sa chair et de son sang"
     }
   },
   {
@@ -23155,6 +23255,11 @@
     "source": {
       "book": "ZI",
       "page": 44
+    },
+    "harvest": {
+      "rarity": "Limitée",
+      "danger": "Inquiétante",
+      "uses": "La gelée d'amibe est hautement inflammable"
     }
   },
   {
@@ -23260,6 +23365,11 @@
     },
     "appearance": {
       "species": "Serpent"
+    },
+    "harvest": {
+      "rarity": "Exotique",
+      "danger": "Inoffensive",
+      "uses": "On peut mélanger le venin des deux têtes pour guérir de n'importe quel poison"
     }
   },
   {
@@ -23314,6 +23424,11 @@
     },
     "appearance": {
       "species": "Troll"
+    },
+    "harvest": {
+      "rarity": "Rare",
+      "danger": "Inquiétante",
+      "uses": "Consommer sa chair permet de régénérer un membre"
     }
   },
   {
@@ -23370,6 +23485,11 @@
     },
     "appearance": {
       "species": "Troll"
+    },
+    "harvest": {
+      "rarity": "Rare",
+      "danger": "Menaçante",
+      "uses": "Le filet d'une sorcière peut capturer et dissiper n'importe quelle malédiction"
     }
   },
   {
@@ -23409,6 +23529,11 @@
     "source": {
       "book": "ZI",
       "page": 50
+    },
+    "harvest": {
+      "rarity": "Limitée",
+      "danger": "Inoffensive",
+      "uses": "Permet de créer une potion pour prendre l'apparence de quelqu'un d'autre"
     }
   },
   {
@@ -23456,6 +23581,11 @@
     "source": {
       "book": "ZI",
       "page": 54
+    },
+    "harvest": {
+      "rarity": "Unique",
+      "danger": "Mortelle",
+      "uses": "Les écailles d'une telle créature permettent de fabriquer une cape qui rend son porteur presque invisible"
     }
   },
   {
@@ -23500,6 +23630,11 @@
     },
     "appearance": {
       "species": "Pégase"
+    },
+    "harvest": {
+      "rarity": "Exotique",
+      "danger": "Menaçante",
+      "uses": "Un oreiller de plumes apporte un sommeil léger aux âmes fautives"
     }
   },
   {
@@ -23543,6 +23678,11 @@
     "source": {
       "book": "ZI",
       "page": 59
+    },
+    "harvest": {
+      "rarity": "Rare",
+      "danger": "Inquiétante",
+      "uses": "Une fois réduits en poudre, le bec et les serres arrêtent tout saignement"
     }
   },
   {
@@ -23589,6 +23729,11 @@
     "source": {
       "book": "ZI",
       "page": 60
+    },
+    "harvest": {
+      "rarity": "Exotique",
+      "danger": "Inquiétante",
+      "uses": "La lame d'une épée dont la poignée a été taillée dans son bois sera toujours tranchante"
     }
   },
   {
@@ -23632,6 +23777,11 @@
     "source": {
       "book": "ZI",
       "page": 62
+    },
+    "harvest": {
+      "rarity": "Exotique",
+      "danger": "Menaçante",
+      "uses": "Un cataplasme préparé à partir de ses yeux macérés permet de guérir la cécité"
     }
   },
   {
@@ -23673,6 +23823,11 @@
     "source": {
       "book": "ZI",
       "page": 62
+    },
+    "harvest": {
+      "rarity": "Rare",
+      "danger": "Inquiétante",
+      "uses": "Les flèches dont l'empennage est fait de ses plumes atteignent toujours leur cible"
     }
   },
   {
@@ -23720,6 +23875,11 @@
     "source": {
       "book": "ZI",
       "page": 63
+    },
+    "harvest": {
+      "rarity": "Exotique",
+      "danger": "Mortelle",
+      "uses": "Il est impossible de mentir quand on tient sa serre dans la main"
     }
   },
   {
@@ -23767,6 +23927,11 @@
     "source": {
       "book": "ZI",
       "page": 64
+    },
+    "harvest": {
+      "rarity": "Exotique",
+      "danger": "Menaçante",
+      "uses": "Ses yeux étourdissent quiconque croise son regard"
     }
   },
   {
@@ -23822,6 +23987,11 @@
     "source": {
       "book": "ZI",
       "page": 66
+    },
+    "harvest": {
+      "rarity": "Exotique",
+      "danger": "Mortelle",
+      "uses": "Sa fourrure inspire la crainte chez les animaux qui lui ressemblent"
     }
   },
   {
@@ -23874,6 +24044,11 @@
     "source": {
       "book": "ZI",
       "page": 67
+    },
+    "harvest": {
+      "rarity": "Unique",
+      "danger": "Mortelle",
+      "uses": "Vaincre une grande chimère est un excellent moyen de se faire connaître, en bien comme en mal"
     }
   },
   {
@@ -23984,6 +24159,11 @@
     "source": {
       "book": "ZI",
       "page": 71
+    },
+    "harvest": {
+      "rarity": "Exotique",
+      "danger": "Inquiétante",
+      "uses": "La malédiction d'un peau-de-loup peut être levée en écorchant vif une autre de ces créatures"
     }
   },
   {
@@ -24033,6 +24213,11 @@
     },
     "appearance": {
       "species": "Minotaure"
+    },
+    "harvest": {
+      "rarity": "Rare",
+      "danger": "Menaçante",
+      "uses": "La corne de taurus immunise contre le feu"
     }
   },
   {
@@ -24076,6 +24261,11 @@
     "source": {
       "book": "ZI",
       "page": 76
+    },
+    "harvest": {
+      "rarity": "Rare",
+      "danger": "Inquiétante",
+      "uses": "Son urine serait un répulsif pour les rats"
     }
   },
   {
@@ -24118,6 +24308,11 @@
     "source": {
       "book": "ZI",
       "page": 77
+    },
+    "harvest": {
+      "rarity": "Limitée",
+      "danger": "Inoffensive",
+      "uses": "On dit qu'un couteau fabriqué à partir de son bec peut couper n'importe quoi et ignore les PA des armures non-magiques"
     }
   },
   {
@@ -24168,6 +24363,11 @@
     },
     "appearance": {
       "species": "Serpent"
+    },
+    "harvest": {
+      "rarity": "Rare",
+      "danger": "Inquiétante",
+      "uses": "Sa peau permet de confectionner des vêtements raffinés"
     }
   },
   {
@@ -24217,6 +24417,11 @@
     "source": {
       "book": "ZI",
       "page": 80
+    },
+    "harvest": {
+      "rarity": "Exotique",
+      "danger": "Menaçante",
+      "uses": "Ses plaques seraient impénétrables"
     }
   },
   {
@@ -24263,6 +24468,11 @@
     "source": {
       "book": "ZI",
       "page": 81
+    },
+    "harvest": {
+      "rarity": "Rare",
+      "danger": "Inquiétante",
+      "uses": "Les pointes de flèche faites avec ses dents percent n'importe quelle armure"
     }
   },
   {
@@ -24312,6 +24522,11 @@
     "source": {
       "book": "ZI",
       "page": 78
+    },
+    "harvest": {
+      "rarity": "Exotique",
+      "danger": "Menaçante",
+      "uses": "Son rugissement serait un remède contre la couardise"
     }
   },
   {
@@ -24361,6 +24576,11 @@
     "source": {
       "book": "ZI",
       "page": 82
+    },
+    "harvest": {
+      "rarity": "Commune",
+      "danger": "Inquiétante",
+      "uses": "Sa fourrure est très prisée"
     }
   },
   {
@@ -24410,6 +24630,11 @@
     "source": {
       "book": "ZI",
       "page": 97
+    },
+    "harvest": {
+      "rarity": "Unique",
+      "danger": "Menaçante",
+      "uses": "Sa fourrure est un signe de la faveur d'Ulric"
     }
   },
   {
@@ -24457,6 +24682,11 @@
     },
     "appearance": {
       "species": "Griffon"
+    },
+    "harvest": {
+      "rarity": "Rare",
+      "danger": "Inquiétante",
+      "uses": "Plumes porte-bonheur"
     }
   },
   {
@@ -24502,6 +24732,454 @@
     },
     "appearance": {
       "species": "Dragon"
+    },
+    "harvest": {
+      "rarity": "Rare",
+      "danger": "Menaçante",
+      "uses": "Le venin de sa queue serait capable de tuer n'importe quelle créature"
+    }
+  },
+  {
+    "label": "Léviathan",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 4,
+      "CC": 65,
+      "CT": null,
+      "F": 60,
+      "E": 68,
+      "I": 30,
+      "Ag": 14,
+      "Dex": 10,
+      "Int": 10,
+      "FM": 44,
+      "Soc": 1,
+      "B": 176
+    },
+    "traits": [
+      "Armure 6",
+      "Foulée",
+      "Infravision",
+      "Rage",
+      "Redoutable",
+      "Taille (Monstrueuse)",
+      "Arme (Pinces) +12",
+      "Morsure +11"
+    ],
+    "optionals": [
+      "Insensible à la douleur",
+      "Résistance à la Magie"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les léviathans sont des créatures gigantesques, qui ressemblent à un croisement entre un énorme bernard-l'ermite et un homard, mesurant près de six mètres de large. Leur carapace est plus dure que l'acier trempé ; flèches et armes à feu de petite taille ne leur font même pas une égratignure. Leurs pinces sont aisément capables de couper un chevalier bretonnien et son destrier caparaçonné en deux. Comme ce sont des créatures des profondeurs, elles font rarement surface, mais elles sont extrêmement dangereuses pour tous les vaisseaux qu'elles croisent. Pour certains, elles sont les messagères du courroux de Manann.<br><br>Pinces perforatrices : les pinces d'un léviathan ont l'Atout Perforante.<br><br>Crustacé : un léviathan peut respirer sous l'eau, et s'y déplacer avec un Mouvement de 8.",
+    "source": {
+      "book": "ZI",
+      "page": 92
+    },
+    "harvest": {
+      "rarity": "Exotique",
+      "danger": "Mortelle",
+      "uses": "Les os sculptés de léviathan confèrent des pouvoirs surnaturels"
+    }
+  },
+  {
+    "label": "Il Potente Granchio",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 4,
+      "CC": 70,
+      "CT": null,
+      "F": 70,
+      "E": 73,
+      "I": 30,
+      "Ag": 14,
+      "Dex": 15,
+      "Int": 20,
+      "FM": 54,
+      "Soc": 1,
+      "B": 208
+    },
+    "traits": [
+      "Affamé",
+      "Armure 8",
+      "Foulée",
+      "Immunité Psychologique",
+      "Infravision",
+      "Insensible à la douleur",
+      "Redoutable 2",
+      "Taille (Monstrueuse)",
+      "Arme (Pince) +13",
+      "Morsure +12"
+    ],
+    "optionals": [],
+    "skills": [
+      "Corps à corps (Pinces) 80"
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Il Potente Granchio est un léviathan d'une taille et d'une malice exceptionnelles, célèbre pour avoir démantelé un vaisseau avant de repêcher ses marins un à un pour les dévorer.<br><br>Pinces encore plus perforatrices : les pinces d'Il Potente Granchio ont les Atouts Perforante et Taille.<br><br>Crustacé : Il Potente Granchio peut respirer sous l'eau, et s'y déplacer avec un Mouvement de 8.",
+    "source": {
+      "book": "ZI",
+      "page": 92
+    },
+    "harvest": {
+      "rarity": "Unique",
+      "danger": "Mortelle",
+      "uses": "Sa carapace serait faite de pierres précieuses"
+    }
+  },
+  {
+    "label": "Sirène",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 2,
+      "CC": 35,
+      "CT": null,
+      "F": 49,
+      "E": 33,
+      "I": 42,
+      "Ag": 49,
+      "Dex": 35,
+      "Int": 30,
+      "FM": 52,
+      "Soc": 35,
+      "B": 15
+    },
+    "traits": [
+      "Amphibie",
+      "Infravision",
+      "Arme (Griffes) +7"
+    ],
+    "optionals": [
+      "Armure 1-3",
+      "Insensible à la douleur",
+      "Morsure",
+      "Perturbant",
+      "Peur 1-2",
+      "2 x Tentacules +5"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les sirènes ont, en dessous du torse, un corps de poisson, et au-dessus ressemblent à de magnifiques damoiselles humaines ou elfes, capables de séduire les marins grâce à leurs chants ensorceleurs. En réalité, elles sont d'apparence extrêmement variée : le bas de leur corps ressemble souvent à celui d'un poisson écailleux, mais certaines ont un corps de serpent, d'autres des tentacules de pieuvre. Si certaines ont une beauté presque sauvage, d'autres sont hideuses et bestiales, et ont des dents aussi pointues que celles des requins. Toutes sont armées de griffes acérées.<br><br>Chant de la sirène : quiconque entend une sirène chanter doit effectuer un Test de Force Mentale Complexe (-10). En cas d'échec, il est séduit et devient incapable d'entreprendre la moindre action, sauf pour se rapprocher de la source de la chanson, et compte comme s'il avait l'État Inconscient. S'il s'était préparé (oreilles bouchées à la cire), le Test devient Facile (+40). Si une victime séduite est attaquée, elle peut immédiatement effectuer un nouveau Test.<br><br>Née de l'eau : les sirènes peuvent respirer sous l'eau et s'y déplacer avec un Mouvement de 8.",
+    "source": {
+      "book": "ZI",
+      "page": 94
+    },
+    "harvest": {
+      "rarity": "Rare",
+      "danger": "Inquiétante",
+      "uses": "Une mèche de cheveux de sirène permet de respirer sous l'eau"
+    }
+  },
+  {
+    "label": "Wyrm des Mers",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 6,
+      "CC": 62,
+      "CT": null,
+      "F": 65,
+      "E": 60,
+      "I": 45,
+      "Ag": 26,
+      "Dex": null,
+      "Int": 15,
+      "FM": 38,
+      "Soc": 10,
+      "B": 84
+    },
+    "traits": [
+      "Affamé",
+      "Amphibie",
+      "Armure 3",
+      "Immunité Psychologique",
+      "Infravision",
+      "Insensible à la douleur",
+      "Redoutable 2",
+      "Régénération",
+      "Taille (Énorme)",
+      "Arme (Gueule bardée de crocs) +11",
+      "Attaque caudale +13",
+      "Morsure (Gueule bardée de crocs) +11"
+    ],
+    "optionals": [
+      "Infecté",
+      "Taille (Monstrueuse)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les wyrms des mers sont des êtres terriblement dangereux et incroyablement anciens. On dit qu'ils sont à moitié dragons et à moitié serpents de mer. Leur corps est couvert d'écailles verdâtres argentées et ressemble à celui d'anguilles particulièrement musclées, si ce n'est qu'ils ont quatre petits membres armés de griffes acérées. Ils se propulsent grâce à un mouvement ondulatoire qui leur procure une vitesse surprenante sous l'eau et une démarche preste sur terre. Leur appétit rend insignifiant celui des ogres, et leurs blessures guérissent à une vitesse alarmante.<br><br>Fléau des baleines : toutes les attaques que le wyrm des mers porte à l'aide de sa gueule bardée de crocs ont le Trait Venin (Complexe).",
+    "source": {
+      "book": "ZI",
+      "page": 95
+    },
+    "appearance": {
+      "species": "Serpent"
+    },
+    "harvest": {
+      "rarity": "Exotique",
+      "danger": "Menaçante",
+      "uses": "Toucher un wyrm des mers permet de dissiper toute illusion"
+    }
+  },
+  {
+    "label": "Dragon Barbelé",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 5,
+      "CC": 48,
+      "CT": 38,
+      "F": 62,
+      "E": 76,
+      "I": 34,
+      "Ag": 45,
+      "Dex": null,
+      "Int": 10,
+      "FM": 44,
+      "Soc": 5,
+      "B": 96
+    },
+    "traits": [
+      "Armure 5",
+      "Furtif",
+      "Grimpant",
+      "Infravision",
+      "Redoutable",
+      "Taille (Énorme)",
+      "Arme (Griffes recourbées) +11",
+      "Morsure +11"
+    ],
+    "optionals": [
+      "Corruption (Mineure)",
+      "Infecté",
+      "Protection 8+"
+    ],
+    "skills": [],
+    "talents": [
+      "Combattant en espace clos"
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les dragons barbelés sont d'énormes créatures ophidiennes qui règnent sur des cavernes sans lumière situées très loin de la surface. Ils passent leur vie à chasser inlassablement tout ce qu'ils peuvent se mettre sous la dent, causant des dégâts considérables lorsqu'ils pénètrent dans un karak. Leurs membres peuvent se plier dans des positions peu naturelles, sans doute pour mieux se contorsionner dans les passages étroits, et leur venin est tellement acide qu'il peut faire fondre la pierre.<br><br>Rage frénétique : lorsqu'un dragon barbelé est blessé au combat, il devient immédiatement sujet à une Frénésie impossible à calmer qui lui confère deux attaques de Corps à corps gratuites par Round.<br><br>Écailles rasoir : chaque fois qu'un dragon barbelé est attaqué par un adversaire Engagé avec lui, celui-ci subit 1d10 Blessures (réductibles par le Bonus d'Endurance et les Points d'Armure jusqu'à un minimum de 1).<br><br>Fonte des roches : la morsure d'un dragon barbelé a le Trait Venin et l'Atout Perforante.",
+    "source": {
+      "book": "ZI",
+      "page": 96
+    },
+    "appearance": {
+      "species": "Dragon"
+    },
+    "harvest": {
+      "rarity": "Exotique",
+      "danger": "Mortelle",
+      "uses": "Les plaies provoquées par ses écailles ne guérissent jamais"
+    }
+  },
+  {
+    "label": "Le Fantasma",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 5,
+      "CC": 58,
+      "CT": 48,
+      "F": 62,
+      "E": 76,
+      "I": 44,
+      "Ag": 63,
+      "Dex": null,
+      "Int": 35,
+      "FM": 44,
+      "Soc": 5,
+      "B": 96
+    },
+    "traits": [
+      "Armure 5",
+      "Furtif",
+      "Grimpant",
+      "Infravision",
+      "Protection 8+",
+      "Redoutable 2",
+      "Taille (Énorme)",
+      "Arme (Griffes recourbées) +11",
+      "Morsure +11",
+      "Souffle (Cauchemars) +12"
+    ],
+    "optionals": [],
+    "skills": [
+      "Corps à corps (Griffes recourbées) 73",
+      "Discrétion 68 (+6 DR grâce à Furtif)"
+    ],
+    "talents": [
+      "Combattant en espace clos",
+      "Discret 2",
+      "Frappe réactive"
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Le Fantasma est un dragon barbelé particulièrement rusé et malveillant, capable de projeter un gaz toxique provoquant des crises de terreur si intenses qu'il est possible d'en mourir.<br><br>Souffle cauchemardesque : toute Blessure infligée par le Souffle du fantasma ignore les Points d'Armure. Les cibles blessées doivent immédiatement faire un Test contre l'effet du Trait Terreur 2 basé sur la Résistance plutôt que sur le Calme. Même les cibles immunisées contre la Peur ou la Terreur doivent effectuer ce Test, car il ne s'agit pas d'un effet psychologique, mais de l'effet distordu d'un poison.<br><br>Écailles rasoir : chaque fois que le fantasma est attaqué par un adversaire Engagé avec lui, celui-ci subit 1d10 Blessures (réductibles jusqu'à un minimum de 1).<br><br>Fonte des roches : la morsure du fantasma a l'Atout Perforante et le Trait Venin.",
+    "source": {
+      "book": "ZI",
+      "page": 96
+    },
+    "appearance": {
+      "species": "Dragon"
+    },
+    "harvest": {
+      "rarity": "Unique",
+      "danger": "Mortelle",
+      "uses": "Le cœur d'un grand dragon barbelé est un rubis pur"
+    }
+  },
+  {
+    "label": "Chevalier Mort-Vivant (Revenant)",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 4,
+      "CC": 50,
+      "CT": 35,
+      "F": 45,
+      "E": 45,
+      "I": 38,
+      "Ag": 30,
+      "Dex": 20,
+      "Int": 35,
+      "FM": 50,
+      "Soc": 30,
+      "B": 17
+    },
+    "traits": [
+      "Armure 4",
+      "Immunité Psychologique",
+      "Infravision",
+      "Insensible à la douleur",
+      "Magique",
+      "Mort-vivant",
+      "Peur 2",
+      "Arme (Lame spectrale) +9"
+    ],
+    "optionals": [
+      "Champion",
+      "Endurant",
+      "Étreinte glaciale",
+      "Furtif",
+      "Instable",
+      "Rage",
+      "Territorial"
+    ],
+    "skills": [],
+    "talents": [
+      "Frappe blessante",
+      "Maîtrise du combat 2"
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Parfois, lorsqu'un héros particulièrement tenace meurt, il refuse de rester dans sa tombe et devient un revenant : un mort-vivant créé par sa détermination sans faille et maintenu en non-vie par une puissante magie. Les revenants sont toujours engoncés dans l'armure qu'ils portaient lorsqu'ils ont été enterrés ; il leur reste rarement beaucoup de chair, mais leurs yeux brillent d'une lueur sadique et leurs mouvements sont déterminés. Ils portent des lames imbibées de Dhar dont une simple égratignure s'avère bien souvent fatale.<br><br>Lame spectrale : les armes des revenants ont l'Atout Empaleuse. Lorsqu'un revenant inflige un Critique à l'aide de son arme spectrale, il effectue deux jets sur la Table des Blessures Critiques et inflige le plus haut des deux résultats. Si quelqu'un récupère l'arme d'un revenant, elle devient une arme simple Magique qui inflige +BF+5 Dégâts.",
+    "source": {
+      "book": "ZI",
+      "page": 97
+    },
+    "harvest": {
+      "rarity": "Rare",
+      "danger": "Inquiétante",
+      "uses": "Les os broyés de revenant permettent de ranimer temporairement n'importe quel cadavre"
+    }
+  },
+  {
+    "label": "Technomage du Clan Skryre",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 5,
+      "CC": 45,
+      "CT": 50,
+      "F": 40,
+      "E": 40,
+      "I": 50,
+      "Ag": 50,
+      "Dex": 30,
+      "Int": 60,
+      "FM": 45,
+      "Soc": 30,
+      "B": 16
+    },
+    "traits": [
+      "Armure 2",
+      "Vision nocturne",
+      "À distance (Malelame) +7 (48) ou À distance (Pistolet à malepierre) +9 (20)",
+      "Arme (Malelame) +10"
+    ],
+    "optionals": [
+      "Maladie (Fièvre du rongeur)",
+      "Mutation"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les technomages qui mènent le clan Skryre au combat mêlent la sorcellerie à la technologie skaven. Ils sont capables de créer des dispositifs pratiques et mortels, quoique hautement instables.<br><br>C'est moi que je l'ai fait-fait : le pistolet à malepierre du technomage n'a pas le Défaut Dangereuse.",
+    "source": {
+      "book": "ZI",
+      "page": 98
+    },
+    "appearance": {
+      "species": "Skaven"
+    }
+  },
+  {
+    "label": "« Prototype » du Clan Skryre",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 5,
+      "CC": 50,
+      "CT": 45,
+      "F": 65,
+      "E": 55,
+      "I": 45,
+      "Ag": 35,
+      "Dex": null,
+      "Int": 30,
+      "FM": 45,
+      "Soc": 10,
+      "B": 50
+    },
+    "traits": [
+      "Armure 2",
+      "Endurant",
+      "Infravision",
+      "Insensible à la douleur",
+      "Redoutable",
+      "Stupide",
+      "Taille (Grande)",
+      "À distance (Canon ratling) +11 (40)",
+      "Arme (Poing à pistons) +12"
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Le « Prototype » est un rat ogre modifié par le clan Skryre, pas encore au point pour une production à grande échelle.<br><br>Tirer-tuer : l'un des bras du prototype a été remplacé par un canon ratling amélioré pour être plus précis. Celui-ci n'a pas le Défaut Imprécise.<br><br>Massa-craser : l'autre bras du prototype est surmonté d'un dispositif dévastateur conçu pour écrabouiller roches et chairs à l'aide de pistons pneumatiques. Il a les Atouts Assommante et Percutante.",
+    "source": {
+      "book": "ZI",
+      "page": 98
+    },
+    "appearance": {
+      "species": "Rat ogre"
     }
   }
 ]
