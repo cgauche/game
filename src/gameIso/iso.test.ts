@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, CELL, LEVEL_H, screenToTileAtZ, diamondPath, diamondCorners, type Dims } from './iso';
+import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, floorDepth, CELL, LEVEL_H, screenToTileAtZ, diamondPath, diamondCorners, type Dims } from './iso';
 
 describe('rotTile / unrotTile', () => {
   const dims: Dims = { w: 5, h: 3 };
@@ -141,6 +141,20 @@ describe('projection multi-niveaux (élévation z)', () => {
             minHigh = Math.min(minHigh, depth(x, y, dims, 1));
           }
         expect(minHigh).toBeGreaterThan(maxLow);
+      }
+  });
+
+  it('floorDepth : le sol d’un étage passe sous ses objets et au-dessus de tout le niveau inférieur', () => {
+    for (const view of VIEWS)
+      for (const rot of ROTS) {
+        const dims: Dims = { w: 6, h: 6, rot, view };
+        for (let x = 0; x < dims.w; x++)
+          for (let y = 0; y < dims.h; y++) {
+            // sous tous les objets du MÊME niveau (tokens portent +0.5, props +0)
+            expect(floorDepth(dims, 1)).toBeLessThan(depth(x, y, dims, 1));
+            // au-dessus de TOUT le niveau inférieur, tokens (+0.5) compris
+            expect(floorDepth(dims, 1)).toBeGreaterThan(depth(x, y, dims, 0) + 0.5);
+          }
       }
   });
 

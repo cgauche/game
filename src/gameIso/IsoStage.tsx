@@ -27,6 +27,7 @@ import {
   stageSize,
   screenToTile,
   depth,
+  floorDepth,
 } from './iso';
 import {
   DEFS,
@@ -229,18 +230,21 @@ export function IsoStage() {
   // du budget de frame. On les fige tant que leurs vraies entrées (scène/rotation/vue/combat) n'ont
   // pas changé. Un pas de marche (setWalkTick) ne crée NI nouveau `battle` NI nouveau `partyPos` →
   // les memos tiennent ; un vrai déplacement (set({battle:{...}})/moveParty) en crée un → recalcul 1×.
-  const floorEls = useMemo<JSX.Element[]>(() => {
+  // Planchers fusionnés dans le tri de profondeur GLOBAL (objs) : chaque étage porte une profondeur de
+  // bande unique (floorDepth) le plaçant sous SES objets et au-dessus de tout le niveau inférieur — un
+  // sol haut SURPLOMBE ainsi les tokens du sol. Tuiles « vide » non rendues (on voit le dessous).
+  const floorObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
     if (!scene) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
-    const out: JSX.Element[] = [];
-    // Étages dessinés du bas vers le haut : un niveau z>0 est soulevé (diamondCorners z) et passe
-    // au-dessus du sol ; les tuiles « vide » d'un étage ne sont pas rendues (on voit le dessous).
-    for (const lvl of [...scene.levels].sort((a, b) => a.z - b.z))
+    const out: { d: number; el: JSX.Element }[] = [];
+    for (const lvl of [...scene.levels].sort((a, b) => a.z - b.z)) {
+      const fd = floorDepth(d, lvl.z);
       for (let y = 0; y < d.h; y++)
         for (let x = 0; x < d.w; x++) {
           const html = groundTile(scene, x, y, d, lvl.z);
-          if (html) out.push(<g key={`f${lvl.z}-${x}-${y}`} dangerouslySetInnerHTML={{ __html: html }} />);
+          if (html) out.push({ d: fd, el: <g key={`f${lvl.z}-${x}-${y}`} dangerouslySetInnerHTML={{ __html: html }} /> });
         }
+    }
     return out;
   }, [scene, shownRot, viewMode]);
 
@@ -604,6 +608,8 @@ export function IsoStage() {
       );
     }
   }
+  if (mode === 'exploration' && !dialogue)
+    highlights.push(<path key="party-pos" d={diamondPath(partyPos.x, partyPos.y, dims)} fill="none" stroke="#ffe066" strokeWidth={1.5} opacity={0.5} />);
 
   // --- Objets triés par profondeur (murs, arbres, entités, tokens) ---
   type Obj = { d: number; el: JSX.Element };
@@ -611,7 +617,10 @@ export function IsoStage() {
 
   // décor statique + bâtiments multi-tuiles : éléments memoïsés (cf. decorObjs/buildingObjs), juste
   // ré-insérés dans le tri de profondeur (leurs `el` gardent une réf stable → React saute le sous-arbre).
-  objs.push(...decorObjs, ...buildingObjs);
+  // Planchers (floorObjs) et surbrillances au sol participent au MÊME tri : un sol haut surplombe les
+  // tokens du bas, et les surbrillances (z=0) restent au-dessus du sol mais sous tout le reste.
+  objs.push(...floorObjs, ...decorObjs, ...buildingObjs);
+  objs.push({ d: floorDepth(dims, 0) + 0.25, el: <g key="ground-overlays">{highlights}</g> });
 
   // token()/tokenNode() : adaptateurs minces vers la coquille partagée BodyToken (positionnement
   // unique). token() = corps SVG string ; tokenNode() = enfant React (rig) dont la mort est déjà
@@ -989,11 +998,6 @@ export function IsoStage() {
     >
       <defs dangerouslySetInnerHTML={{ __html: DEFS + AMBIANCE_DEFS }} />
       <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.9 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: turning ? 'transform 0.13s ease-out, opacity 0.13s ease-out' : anyWalking ? 'opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out', opacity: turning ? 0.22 : 1 }}>
-        <g>{floorEls}</g>
-        <g>{highlights}</g>
-        {mode === 'exploration' && !dialogue && (
-          <path d={diamondPath(partyPos.x, partyPos.y, dims)} fill="none" stroke="#ffe066" strokeWidth={1.5} opacity={0.5} />
-        )}
         <g>{objs.map((o) => o.el)}</g>
         {/* Télégraphe ENNEMI (enemyAim) : réticule + ligne — PLEINE en mêlée, pointillée tir/sort. */}
         {targeting && (

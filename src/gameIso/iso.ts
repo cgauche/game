@@ -160,3 +160,12 @@ export function depth(x: number, y: number, dims?: Dims, z = 0) {
   const base = dims?.view === 'top' ? r.y * (dims.w + dims.h) + r.x : r.x + r.y;
   return base + z * LEVEL_DEPTH;
 }
+
+/** Profondeur de tri du PLANCHER d'un étage z : une seule valeur pour tout le sol du niveau, juste
+ *  SOUS le plus bas de ses objets (base 0) et bien AU-DESSUS de tout le niveau inférieur (≤ base+0.5,
+ *  ≪ LEVEL_DEPTH). Le sol z dessine ainsi par-dessus les tokens de z−1 (surplomb) sans jamais occulter
+ *  les tokens de son propre niveau (tri global unique ; les tuiles d'un même sol gardent l'ordre
+ *  arrière→avant par tri stable). z·LEVEL_DEPTH obtenu sans exposer LEVEL_DEPTH (la base se simplifie). */
+export function floorDepth(dims: Dims, z: number) {
+  return depth(0, 0, dims, z) - depth(0, 0, dims, 0) - 0.5;
+}
