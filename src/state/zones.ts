@@ -14,6 +14,7 @@ import type { Combatant } from '../engine/types';
 import type { RNG } from '../engine/dice';
 import { Formula, resolveFormula } from '../engine/ops';
 import { ZoneEffect, applyZoneEffect } from '../engine/zones';
+import type { ZoneArea, SceneEffectZone } from './scene';
 import { isOutOfAction } from '../engine/conditions';
 
 export interface BattleZone {
@@ -21,6 +22,8 @@ export interface BattleZone {
   tiles: Pt[];
   /** Rounds restants (décrément à la frontière de Round, dissipation à 0). */
   rounds: number;
+  /** Zone PERMANENTE (piège/hasard authoré dans la scène) : ignore le TTL — ne se dissipe jamais. */
+  permanent?: boolean;
   blocksLoS?: boolean;
   onCross?: ZoneEffect;
   perRound?: ZoneEffect;
@@ -42,6 +45,30 @@ export function discTiles(center: Pt, radiusTiles: number): Pt[] {
   return out;
 }
 
+/** Cases couvertes par une aire authorée (rectangle plein ou disque de Chebyshev). */
+export function zoneAreaTiles(area: ZoneArea): Pt[] {
+  if (area.kind === 'disc') return discTiles({ x: area.cx, y: area.cy }, Math.max(0, area.radius));
+  const out: Pt[] = [];
+  for (let y = area.y; y < area.y + area.h; y++)
+    for (let x = area.x; x < area.x + area.w; x++) out.push({ x, y });
+  return out;
+}
+
+/** Convertit les zones d'effet AUTHORÉES d'une scène en `BattleZone` PERMANENTES (semées dans
+ *  `battle.zones` au début du combat) — réutilise le runtime des zones de Sort (crossZones/
+ *  zonesRoundTick/losBlockingTiles). `rounds` est ignoré (permanent) mais posé à 1 pour le typage. */
+export function sceneZonesToBattle(zones: SceneEffectZone[] | undefined): BattleZone[] {
+  return (zones ?? []).map((z) => ({
+    label: z.label,
+    tiles: zoneAreaTiles(z.area),
+    rounds: 1,
+    permanent: true,
+    blocksLoS: z.blocksLoS,
+    onCross: z.onCross,
+    perRound: z.perRound,
+  }));
+}
+
 /** Cases d'un MUR (Mur de feu, LDB 47 : « épais de 1 mètre ») : segment PERPENDICULAIRE à l'axe
  *  lanceur→centre, centré sur `center`, de `lengthTiles` cases (épaisseur 1 case). Lanceur sur
  *  le centre (axe nul) : mur horizontal par défaut. */
@@ -56,11 +83,12 @@ export function wallTiles(from: Pt, center: Pt, lengthTiles: number): Pt[] {
   return out;
 }
 
-/** TTL : décrémente toutes les zones d'un Round, dissipe celles à 0. Retourne le journal. */
+/** TTL : décrémente les zones temporaires d'un Round, dissipe celles à 0. Les zones PERMANENTES
+ *  (pièges authorés) sont conservées telles quelles — pas de décompte, pas de dissipation. */
 export function decayZones(zones: BattleZone[] | undefined): { zones: BattleZone[]; log: string[] } {
-  const next = (zones ?? []).map((z) => ({ ...z, rounds: z.rounds - 1 }));
-  const log = next.filter((z) => z.rounds <= 0).map((z) => `${z.label} se dissipe.`);
-  return { zones: next.filter((z) => z.rounds > 0), log };
+  const next = (zones ?? []).map((z) => (z.permanent ? z : { ...z, rounds: z.rounds - 1 }));
+  const log = next.filter((z) => !z.permanent && z.rounds <= 0).map((z) => `${z.label} se dissipe.`);
+  return { zones: next.filter((z) => z.permanent || z.rounds > 0), log };
 }
 
 /** Traversée : applique l'`onCross` de chaque zone dont une case du CHEMIN fait partie —

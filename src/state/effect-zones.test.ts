@@ -1,0 +1,114 @@
+/**
+ * Zones d'effet AUTHORÉES (pièges/hasards posés dans l'éditeur). Réutilisent le runtime des zones de
+ * Sort : `sceneZonesToBattle` convertit `Scene.effectZones` → `BattleZone` PERMANENTES (pas de TTL),
+ * appliquées par `crossZones` (traversée) / `zonesRoundTick` (stationnement). `startCombat` les sème.
+ */
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import type { Combatant } from '../engine/types';
+import type { RNG } from '../engine/dice';
+import { makeRNG } from '../engine/dice';
+import { createHero } from '../engine/character';
+import { testScene } from '../scenes/test-fixture';
+import { useGame } from './store';
+import type { Scene } from './scene';
+import {
+  zoneAreaTiles, sceneZonesToBattle, decayZones, crossZones, zonesRoundTick, type BattleZone,
+} from './zones';
+
+const rng: RNG = { int: () => 5 } as RNG;
+
+function mk(over: Partial<Combatant> = {}): Combatant {
+  return {
+    id: 'c', name: 'Cobaye', kind: 'enemy', size: 'moyenne', advantage: 0,
+    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 40, Soc: 30 },
+    conditions: [], skills: [], talents: [], traits: [], groups: [],
+    weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+    movement: 4, wounds: { current: 12, max: 12 }, pos: { x: 5, y: 5 },
+    ...over,
+  } as unknown as Combatant;
+}
+
+describe('zoneAreaTiles — rect plein / disque de Chebyshev', () => {
+  it('rectangle : toutes les cases de la boîte', () => {
+    const t = zoneAreaTiles({ kind: 'rect', x: 2, y: 3, w: 2, h: 2 });
+    expect(t).toHaveLength(4);
+    expect(t).toContainEqual({ x: 2, y: 3 });
+    expect(t).toContainEqual({ x: 3, y: 4 });
+  });
+  it('disque rayon 1 → 3×3 cases', () => {
+    expect(zoneAreaTiles({ kind: 'disc', cx: 5, cy: 5, radius: 1 })).toHaveLength(9);
+  });
+});
+
+describe('sceneZonesToBattle — zones authorées → BattleZone PERMANENTES', () => {
+  it('porte tiles + onCross/perRound + permanent', () => {
+    const [z] = sceneZonesToBattle([
+      {
+        id: 'trap1', label: 'Pieux dissimulés', area: { kind: 'rect', x: 4, y: 4, w: 1, h: 1 },
+        onCross: { damage: { amount: 7, ignoreAP: true } },
+      },
+    ]);
+    expect(z.permanent).toBe(true);
+    expect(z.tiles).toEqual([{ x: 4, y: 4 }]);
+    expect(z.onCross?.damage?.amount).toBe(7);
+  });
+  it('liste absente → []', () => {
+    expect(sceneZonesToBattle(undefined)).toEqual([]);
+  });
+});
+
+describe('decayZones — les pièges authorés (permanent) ne se dissipent JAMAIS', () => {
+  it('la zone temporaire tombe, la permanente survit intacte', () => {
+    const { zones } = decayZones([
+      { label: 'Brasier', tiles: [{ x: 1, y: 1 }], rounds: 1 },
+      { label: 'Fosse à pieux', tiles: [{ x: 2, y: 2 }], rounds: 1, permanent: true, onCross: { damage: { amount: 5 } } },
+    ]);
+    expect(zones).toHaveLength(1);
+    expect(zones[0].label).toBe('Fosse à pieux');
+    expect(zones[0].rounds).toBe(1); // pas décrémenté
+  });
+});
+
+describe('runtime : un piège authoré frappe via le runtime des zones de Sort', () => {
+  const [trap] = sceneZonesToBattle([
+    {
+      id: 'acid', label: 'Flaque acide', area: { kind: 'disc', cx: 5, cy: 5, radius: 1 },
+      perRound: { damage: { amount: 8, ignoreAP: true } },
+      onCross: { damage: { amount: 8, ignoreAP: true }, conditions: [{ name: 'Empoisonné' }] },
+    },
+  ]);
+  it('stationner dedans (perRound) : 8 − BE 3 = 5 Blessures', () => {
+    const victim = mk({ id: 'v', pos: { x: 5, y: 5 } });
+    zonesRoundTick([trap as BattleZone], [victim], rng);
+    expect(victim.wounds.current).toBe(7);
+  });
+  it('traverser (onCross) : Dégâts + État Empoisonné', () => {
+    const victim = mk({ id: 'v2', pos: { x: 3, y: 5 } });
+    crossZones([trap as BattleZone], victim, [{ x: 4, y: 5 }, { x: 5, y: 5 }, { x: 6, y: 5 }], () => undefined, rng);
+    expect(victim.wounds.current).toBe(7);
+    expect(victim.conditions.some((c) => c.name === 'Empoisonné')).toBe(true);
+  });
+});
+
+describe('intégration : startCombat sème les pièges de la scène dans battle.zones', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null }); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  it('une scène avec effectZones → zone permanente dans le combat', () => {
+    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(1) });
+    const scene: Scene = {
+      ...testScene,
+      effectZones: [
+        { id: 'pit', label: 'Fosse à pieux', area: { kind: 'rect', x: 16, y: 11, w: 1, h: 1 }, onCross: { damage: { amount: 9, ignoreAP: true } } },
+      ],
+    };
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(scene);
+    useGame.getState().startCombat('enc-mutants');
+    const zones = useGame.getState().battle!.zones ?? [];
+    const pit = zones.find((z) => z.label === 'Fosse à pieux')!;
+    expect(pit).toBeTruthy();
+    expect(pit.permanent).toBe(true);
+    expect(pit.tiles).toEqual([{ x: 16, y: 11 }]);
+  });
+});

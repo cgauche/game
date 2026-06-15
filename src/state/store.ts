@@ -36,7 +36,7 @@ import { pickActiveModalKey } from './modalArbiter';
 const combatBusy = (s: Pick<GameState, 'pendingCleave' | 'pendingDualStrike' | 'pendingCast'>): boolean =>
   !!(pickActiveModalKey(s as never) || s.pendingCleave || s.pendingDualStrike || s.pendingCast);
 import { mountMovement, movementRemaining, canMove, mountUp, dismount, mountOf, mountableNear } from './mount';
-import type { BattleZone } from './zones';
+import { sceneZonesToBattle, type BattleZone } from './zones';
 import * as interludeFlow from './interludeFlow';
 import * as netFlow from './netFlow';
 import type { NetState } from './netFlow';
@@ -1427,6 +1427,8 @@ export const useGame = create<GameState>((set, get) => ({
       log: [ev('round', `Le combat commence ! (Round 1)`), ...evLines(surpriseLines, 'info')],
       over: null,
       onVictory: onVictory ?? enc.onVictory,
+      // Pièges/hasards authorés de la scène → zones de bataille PERMANENTES (même runtime que les sorts).
+      zones: sceneZonesToBattle(scene.effectZones),
     };
     // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.
     // Ouverture = pause de début du Round 1 (pendingRoundStart) : champ visible, ordre d'Initiative dans la

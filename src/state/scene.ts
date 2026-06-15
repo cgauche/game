@@ -7,6 +7,7 @@
  * Aucune scène n'est codée « en dur » : la campagne est de la donnée.
  */
 import { CharKey, Difficulty } from '../engine/types';
+import type { ZoneEffect } from '../engine/zones';
 import { toDate, type DayPhaseKey } from '../engine/clock';
 import type { Dir8 } from './dir8';
 import { terrainWalkable } from './terrain';
@@ -411,6 +412,23 @@ export interface Level {
   tiles: Terrain[];
 }
 
+/** Aire d'une zone d'effet : rectangle (`rect`) ou disque de Chebyshev (`disc`, rayon en CASES). */
+export type ZoneArea =
+  | { kind: 'rect'; x: number; y: number; w: number; h: number }
+  | { kind: 'disc'; cx: number; cy: number; radius: number };
+
+/** ZONE D'EFFET authorée (piège/hasard/aura environnementale). Payload = `ZoneEffect` partagé avec
+ *  les zones de Sort. `onCross` se déclenche à la TRAVERSÉE (une case du chemin est dans l'aire),
+ *  `perRound` au franchissement de Round pour qui STATIONNE dedans. Au moins l'un des deux. */
+export interface SceneEffectZone {
+  id: string;
+  label: string;
+  area: ZoneArea;
+  blocksLoS?: boolean;
+  onCross?: ZoneEffect;
+  perRound?: ZoneEffect;
+}
+
 export interface Scene {
   id: string;
   nom: string;
@@ -430,6 +448,12 @@ export interface Scene {
   /** Offre de repos PAR ZONE (prioritaire sur `rest` là où le groupe se tient) — « paramétrable
    *  sur la zone » : le quartier de l'auberge offre des chambres, la place du marché non. */
   restZones?: { rect: { x: number; y: number; w: number; h: number }; places: { auberge?: boolean; maison?: boolean; camp?: boolean }; quality?: 'normale' | 'pietre' }[];
+  /** ZONES D'EFFET posées sur la carte (éditeur) — PIÈGES / hasards / brasiers : tout combattant qui
+   *  TRAVERSE (`onCross` : pic, flaque acide, glyphe) ou STATIONNE (`perRound` : nuage de poison,
+   *  brasier) y subit l'effet (Dégâts/soin/États du `ZoneEffect`). Converties en `BattleZone`
+   *  PERMANENTES au début du combat — même runtime que les zones de Sort (Mur de feu, Grands feux).
+   *  `blocksLoS` masque la Ligne de Vue (fumée, ténèbres). Contenu 100 % donnée : aucune zone codée en dur. */
+  effectZones?: SceneEffectZone[];
   /** Musique de la scène — ids de pistes du registre audio (defs `music`). Champ absent/undefined
    *  = AUTOMATIQUE (intérieur/extérieur pour l'ambiance, piste de combat générique en combat) ;
    *  `null` = SILENCE forcé. Éditable dans l'éditeur (onglet Scène). */
