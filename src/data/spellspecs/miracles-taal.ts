@@ -28,8 +28,8 @@ export const MIRACLES_TAAL: SpellSpec[] = [
     label: 'Enchevêtrement',
     type: 'Invocation', // ≠ du Sort d'Arcane homonyme (désambiguïsation par type)
     // « Toutes les cibles dans la ZdE (BSoc m) gagnent l'État Empêtré. Pour chaque +2 DR, +rayon OU
-    //   +1 État Empêtré. Force d'entrave = votre Force Mentale. » — Empêtré échelonné au DR ; le rayon
-    //   et la Force de libération restent journalisés.
+    //   +1 État Empêtré. Force d'entrave = votre Force Mentale. » — Empêtré échelonné au DR ; la Force
+    //   d'entrave = FM est MODÉLISÉE via `condition.escapeStrength` (LDB 16 l.61) ; le choix de rayon reste journalisé.
     durationRounds: null, // Instantané (l'entrave persiste jusqu'à libération)
     curated: true,
     source: 'LDB 42 — Miracles de Taal « Enchevêtrement »',

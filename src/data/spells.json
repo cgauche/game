@@ -1810,11 +1810,8 @@
                 "valuePerSL": {
                   "every": 2,
                   "amount": 1
-                }
-              },
-              {
-                "op": "narrative",
-                "text": "Enchevêtrement : Force de l’entrave = Intelligence du lanceur (arbitrage MJ)."
+                },
+                "escapeStrength": { "charOf": "Int" }
               }
             ]
           }
@@ -8289,11 +8286,12 @@
                 "valuePerSL": {
                   "every": 2,
                   "amount": 1
-                }
+                },
+                "escapeStrength": { "charOf": "FM" }
               },
               {
                 "op": "narrative",
-                "text": "Enchevêtrement (Taal) : pour chaque +2 DR, vous pouvez plutôt étendre la zone de BSoc m ; la Force d’entrave pour se libérer égale votre Force Mentale — arbitrage MJ."
+                "text": "Enchevêtrement (Taal) : pour chaque +2 DR, vous pouvez plutôt étendre la zone de BSoc m (au lieu de l’Empêtré supplémentaire) — arbitrage MJ."
               }
             ]
           }
@@ -8938,8 +8936,8 @@
             "type": "ops",
             "on": "target",
             "ops": [
-              { "op": "condition", "name": "Empêtré", "value": 1, "valuePerSL": { "every": 2, "amount": 1 } },
-              { "op": "narrative", "text": "Toile surprise : pour chaque +2 DR, vous pouvez PLUTÔT étendre la zone de BSoc m (au lieu de l'Empêtré supplémentaire, lui modélisé) ; la Force d'entrave pour se libérer égale votre Force Mentale — arbitrage MJ." }
+              { "op": "condition", "name": "Empêtré", "value": 1, "valuePerSL": { "every": 2, "amount": 1 }, "escapeStrength": { "charOf": "FM" } },
+              { "op": "narrative", "text": "Toile surprise : pour chaque +2 DR, vous pouvez PLUTÔT étendre la zone de BSoc m (au lieu de l'Empêtré supplémentaire) — arbitrage MJ." }
             ]
           }
         }

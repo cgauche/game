@@ -25,31 +25,36 @@ export function recoveredStacks(dr: number, stacks: number, success: boolean): n
   return Math.min(stacks, 1 + Math.max(0, dr));
 }
 
-export function addCondition(c: Combatant, name: string, value = 1): void {
+export function addCondition(c: Combatant, name: string, value = 1, escapeStrength?: number): void {
   c.advantage = 0; // « Si vous subissez un État quel qu'il soit, vous perdez immédiatement tout Avantage » (LDB 16 l.15)
   const existing = c.conditions.find((x) => x.name === name);
   if (existing) {
     existing.value += value;
+    // Force d'évasion (Empêtré « se libérer » — LDB 16 l.61) : sur ré-application, on garde la PLUS
+    // CONTRAIGNANTE (max), pour qu'un Enchevêtrement ne soit pas affaibli par un État Empêtré « banal »
+    // qui s'empile par-dessus (et inversement, un sort plus fort durcit l'évasion).
+    if (escapeStrength != null) existing.escapeStrength = Math.max(existing.escapeStrength ?? 0, escapeStrength);
     // Un ajout NON temporisé sur un État à durée : la durée saute (l'État redevient régi
     // par ses règles normales — on n'écourte jamais un État au prétexte qu'un sort expirait).
     delete existing.roundsLeft;
   } else {
-    c.conditions.push({ name, value });
+    c.conditions.push({ name, value, ...(escapeStrength != null ? { escapeStrength } : {}) });
   }
 }
 
 /** Ajout d'un État À DURÉE (posé par un sort : « 1 État Sonné qui dure N Rounds », LDB).
  *  Sur un État déjà porté : temporisé → durée max conservée ; NON temporisé → inchangé
  *  (la durée du sort ne raccourcit pas un État permanent). */
-export function addTimedCondition(c: Combatant, name: string, value: number, rounds: number): void {
+export function addTimedCondition(c: Combatant, name: string, value: number, rounds: number, escapeStrength?: number): void {
   const existing = c.conditions.find((x) => x.name === name);
   if (existing) {
     c.advantage = 0;
     existing.value += value;
+    if (escapeStrength != null) existing.escapeStrength = Math.max(existing.escapeStrength ?? 0, escapeStrength);
     if (existing.roundsLeft != null) existing.roundsLeft = Math.max(existing.roundsLeft, rounds);
     // sinon : instance non temporisée — elle le reste.
   } else {
-    addCondition(c, name, value);
+    addCondition(c, name, value, escapeStrength);
     c.conditions.find((x) => x.name === name)!.roundsLeft = rounds;
   }
 }

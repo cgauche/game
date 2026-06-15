@@ -34,7 +34,8 @@ export const CREATURES_ZI: SpellSpec[] = [
     label: 'Toile surprise',
     type: 'Invocation',
     // « Fonctionne exactement comme le Miracle de Taal Enchevêtrement » (toile d'araignée) : ZdE →
-    //   État Empêtré (+1 par +2 DR) ; Force d'entrave pour se libérer = votre Force Mentale (MJ).
+    //   État Empêtré (+1 par +2 DR) ; Force d'entrave pour se libérer = votre Force Mentale
+    //   (MODÉLISÉE via `condition.escapeStrength`, LDB 16 l.61).
     durationRounds: null,
     zdeRadiusMeters: { bonusOf: 'Soc' },
     zdeExcludesCaster: true,

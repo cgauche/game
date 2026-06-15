@@ -2610,12 +2610,19 @@ export const useGame = create<GameState>((set, get) => ({
     if (!active || active.kind !== 'hero' || !canTakeAction(active)) return;
     const n = stacks(active, state);
     if (n <= 0) return; // pas porteur de l'État
-    // Empêtré : Test OPPOSÉ de Force contre la source vivante (LDB 16 l.61) ; sinon Test simple.
+    // Empêtré : Test OPPOSÉ de Force contre la « Force d'entrave » (LDB 16 l.61). Priorité à la Force
+    // FIGÉE par l'effet (escapeStrength — ex. Force Mentale du lanceur d'un Enchevêtrement, vaut même
+    // lanceur absent) ; sinon, Force de la source VIVANTE ; sinon, Test simple.
     let opposed = false, opponentValue: number | undefined, opponentName: string | undefined;
     if (state === 'Empêtré') {
-      const srcId = active.conditions.find((c) => c.name === 'Empêtré')?.sourceId;
+      const cond = active.conditions.find((c) => c.name === 'Empêtré');
+      const srcId = cond?.sourceId;
       const src = srcId ? battle.combatants.find((c) => c.id === srcId && !isOutOfAction(c)) : undefined;
-      if (src) { opposed = true; opponentValue = testValue(src, undefined, 'F'); opponentName = src.name; }
+      if (cond?.escapeStrength != null) {
+        opposed = true; opponentValue = cond.escapeStrength; opponentName = src?.name ?? 'l’entrave';
+      } else if (src) {
+        opposed = true; opponentValue = testValue(src, undefined, 'F'); opponentName = src.name;
+      }
     }
     const skillValue = state === 'Empêtré' ? testValue(active, undefined, 'F') : testValue(active, 'Athlétisme');
     set({

@@ -94,7 +94,14 @@ export type GameOp =
       /** Gates d'État (Sommeil, LDB 47 : « Si la cible possède un État À Terre, elle gagne
        *  Inconscient » / sinon « gagnant l'État À Terre ») : appliqué seulement si la cible
        *  porte (`onlyIfCondition`) / ne porte pas (`unlessCondition`) l'État nommé. */
-      onlyIfCondition?: string; unlessCondition?: string }
+      onlyIfCondition?: string; unlessCondition?: string;
+      /** Force d'évasion d'un État à Test opposé (Empêtré : « se libérer » contre cette Force, LDB 16
+       *  l.61) — résolue contre le RÉFÉRENT (`ctx.caster ?? target`) À L'APPLICATION et FIGÉE sur l'entrée
+       *  de condition. Ex. `{ charOf: 'FM' }` du lanceur (Enchevêtrement de Taal, Toile surprise : « la
+       *  Force d'entrave égale votre Force Mentale »), `{ charOf: 'Int' }` (Enchevêtrement des Arcanes),
+       *  ou un littéral (`60`). Absente ⇒ le flux de récupération garde son défaut (Force de la source
+       *  vivante, ou Test simple). */
+      escapeStrength?: Formula }
   /** Retrait d'États : `name` absent = au choix de la cible (1er État porté). */
   | { op: 'removeCondition'; name?: string; value?: Formula }
   /** Modificateur de caractéristique temporisé (ActiveEffect — meilleur bonus +
@@ -349,17 +356,21 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         if (o.onlyIfCondition && !hasCondition(target, o.onlyIfCondition)) break;
         if (o.unlessCondition && hasCondition(target, o.unlessCondition)) break;
         const v = Math.max(1, resolveFormula(o.value ?? 1, ref, rng) + slBonus(ctx.sl, o.valuePerSL));
+        // Force d'évasion (Empêtré « se libérer » — LDB 16 l.61) : résolue MAINTENANT contre le
+        // référent (le lanceur pour un sort) et FIGÉE sur l'entrée d'État → le flux de récupération
+        // l'opposera, même si le lanceur n'est plus en jeu.
+        const escape = o.escapeStrength != null ? Math.max(0, resolveFormula(o.escapeStrength, ref, rng)) : undefined;
         if (o.perRound) {
           // État récurrent = cas particulier de l'effet récurrent général (op `perRound`) : la
           // valeur est figée maintenant, l'op `condition` littérale est re-jouée chaque fin de Round.
-          pushPerRound(target, [{ op: 'condition', name: o.name, value: v }], ctx);
+          pushPerRound(target, [{ op: 'condition', name: o.name, value: v, ...(escape != null ? { escapeStrength: escape } : {}) }], ctx);
           lines.push(`${target.name} subira ${v} État ${o.name} par Round (${ctx.label ?? 'sort'}).`);
         } else if (o.durationRounds != null) {
           const rounds = Math.max(1, resolveFormula(o.durationRounds, ref, rng));
-          addTimedCondition(target, o.name, v, rounds);
+          addTimedCondition(target, o.name, v, rounds, escape);
           lines.push(`${target.name} reçoit ${v} État ${o.name} (${rounds} Round${rounds > 1 ? 's' : ''}).`);
         } else {
-          addCondition(target, o.name, v);
+          addCondition(target, o.name, v, escape);
           lines.push(`${target.name} reçoit ${v} État ${o.name}.`);
         }
         break;

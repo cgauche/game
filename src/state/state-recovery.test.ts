@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import type { Combatant } from '../engine/types';
 import { seedBattleRng } from './battleRng';
+import { applyOps } from '../engine/ops';
 
 function hero(p: Partial<Combatant>): Combatant {
   return {
@@ -90,6 +91,36 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
     const after = useGame.getState().battle!.combatants.find((c) => c.id === 'h')!;
     expect(after.conditions.find((c) => c.name === 'En flammes')?.value).toBe(1); // intact
     expect(useGame.getState().battle!.acted).toBe(true);
+  });
+
+  it('Empêtré de sort (escapeStrength) : Test OPPOSÉ contre la Force d’entrave FIGÉE (FM du lanceur)', () => {
+    // Lanceur : Force Mentale 55 → la Force d'entrave figée doit valoir 55 (charOf FM), pas sa Force.
+    const caster = enemy({ id: 'sorcier', name: 'Sorcier',
+      characteristics: { CC: 30, CT: 30, F: 25, E: 30, I: 30, Ag: 30, Dex: 30, Int: 40, FM: 55, Soc: 30 } as any });
+    const h = hero({ id: 'h', conditions: [] });
+    // L'op `condition` Empêtré avec escapeStrength = FM du lanceur (Enchevêtrement de Taal).
+    applyOps(h, [{ op: 'condition', name: 'Empêtré', value: 1, escapeStrength: { charOf: 'FM' } }], { caster });
+    expect(h.conditions.find((c) => c.name === 'Empêtré')?.escapeStrength).toBe(55);
+    setBattle([h], 'h'); // pas de source vivante dans le combat → sans escapeStrength, ce serait un Test simple
+    useGame.getState().battleRecoverState('Empêtré');
+    const sr = useGame.getState().pendingStateRecovery!;
+    expect(sr.opposed).toBe(true); // grâce à la Force d'entrave figée
+    expect(sr.opponentValue).toBe(55); // FM du lanceur, pas sa Force (25)
+  });
+
+  it('escapeStrength PRIORITAIRE sur la Force de la source vivante', () => {
+    // La source vivante a Force 80 ; l'entrave figée (sort) vaut FM 30 → c'est la valeur figée qui prime.
+    const caster = enemy({ id: 'src', name: 'Liane',
+      characteristics: { CC: 30, CT: 30, F: 80, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 } as any });
+    const h = hero({ id: 'h', conditions: [] });
+    applyOps(h, [{ op: 'condition', name: 'Empêtré', value: 1, escapeStrength: { charOf: 'FM' } }], { caster });
+    // L'op ne pose pas de sourceId — on simule une entrave dont la source serait aussi présente :
+    h.conditions.find((c) => c.name === 'Empêtré')!.sourceId = 'src';
+    setBattle([h, caster], 'h');
+    useGame.getState().battleRecoverState('Empêtré');
+    const sr = useGame.getState().pendingStateRecovery!;
+    expect(sr.opponentValue).toBe(30); // FM figée, PAS la Force 80 de la source vivante
+    expect(sr.opponentName).toBe('Liane'); // nom de la source si présente
   });
 
   it('cancel avant Appliquer : pas de coût d’Action', () => {

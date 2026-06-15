@@ -137,6 +137,10 @@ export interface ConditionInstance {
   value: number; // certains États s'empilent (ex. Hémorragique)
   /** Source de l'État (id du Combatant) — pour le Test opposé de « se libérer » d'un Empêtré (LDB 16 l.61). */
   sourceId?: string;
+  /** Force d'évasion FIGÉE d'un État à Test opposé (Empêtré « se libérer » — LDB 16 l.61) : posée par
+   *  l'op `condition.escapeStrength` (ex. Force Mentale du lanceur d'un Enchevêtrement). Si présente, le
+   *  flux de récupération l'oppose AU LIEU de la Force de la source vivante — vaut même lanceur absent. */
+  escapeStrength?: number;
   /** Durée en Rounds d'un État posé par un SORT (« 1 État Sonné qui dure 1d10 Rounds ») —
    *  décrémenté en fin de Round, l'État se dissipe à 0. Un ajout NON temporisé du même État
    *  efface la durée (l'État redevient régi par ses règles normales — on n'écourte jamais). */

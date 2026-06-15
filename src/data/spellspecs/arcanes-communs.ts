@@ -99,8 +99,8 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
     type: 'Magie des Arcanes', // ≠ du miracle de Taal homonyme (Invocation)
     // « Votre cible gagne un État Empêtré d'une Force égale à votre Intelligence.
     //   Pour chaque +2 DR, +1 État Empêtré. » (+1/+2 DR mécanique via `valuePerSL` ; la Force
-    //   de l'entrave = Int du lanceur reste journalisée — le Test de libération du jeu oppose
-    //   la Force de la SOURCE, LDB 16 l.61.)
+    //   d'entrave = Int du lanceur est MODÉLISÉE via `condition.escapeStrength` — le Test de
+    //   libération oppose cette Force figée, LDB 16 l.61.)
     durationRounds: null, // « jusqu'à ce que la cible se libère » (Spécial)
     curated: true,
     source: 'LDB 47 p.243 « Enchevêtrement »',
