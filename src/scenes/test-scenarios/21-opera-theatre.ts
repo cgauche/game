@@ -67,9 +67,30 @@ const ents: SceneEntity[] = [
   { id: 'bal-royale-g', kind: 'prop', ref: 'balustrade-loge', pos: { x: 6, y: 11 }, facing: 'N', z: 1 },
   { id: 'bal-royale-d', kind: 'prop', ref: 'balustrade-loge', pos: { x: 11, y: 11 }, facing: 'N', z: 1 },
   { id: 'fauteuil-royal', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 8, y: 12 }, z: 1 },
-  { id: 'comtesse', kind: 'personnage', ref: 'Villageois', label: 'Comtesse Emmanuelle', pos: { x: 9, y: 12 }, z: 1, facing: 'N' },
+  { id: 'comtesse', kind: 'personnage', ref: 'Villageois', label: 'Comtesse Emmanuelle', pos: { x: 9, y: 12 }, z: 1, facing: 'N', dialogueId: 'dlg-comtesse' },
   { id: 'app-royale-g', kind: 'prop', ref: 'applique-murale', pos: { x: 6, y: 12 }, z: 1 },
   { id: 'app-royale-d', kind: 'prop', ref: 'applique-murale', pos: { x: 11, y: 12 }, z: 1 },
+  // INTRIGUE n°1 (source 08 l.131) : « une grande plante en pot… le pot est rempli de poudre à canon,
+  // avec un détonateur caché », posée dans l'antichambre de la LOGE ROYALE (z1). Désamorçage = retirer
+  // le détonateur (l.166). Détection plus aisée pour qui connaît la Poudre noire.
+  {
+    id: 'plante-bombe', kind: 'prop', ref: 'plante-pot', pos: { x: 7, y: 11 }, z: 1,
+    interact: {
+      consume: false,
+      effects: [
+        {
+          type: 'test', skill: 'Perception', difficulty: 'complexe',
+          easierIf: { hasSkill: 'Projectiles (Poudre noire)', steps: 1 },
+          label: 'Examiner la plante en pot',
+          onSuccess: [
+            { type: 'journal', text: 'Sous le feuillage : le pot est bourré de poudre à canon, relié à un détonateur. Vous arrachez le détonateur — la bombe est neutralisée.' },
+            { type: 'setFlag', flag: 'bombeDesamorcee' },
+          ],
+          onFailure: [{ type: 'journal', text: 'Une grande plante en pot, sans rien de particulier.' }],
+        },
+      ],
+    },
+  },
 
   // Escaliers (props visuels) reliant le parterre aux loges — la traversée est portée en données par
   // `Scene.stairs` (cf. ci-dessous). Le groupe monte en cliquant une case de loge.
@@ -91,8 +112,48 @@ const scene: Scene = {
     { from: { x: 3, y: 9, z: 0 }, to: { x: 2, y: 9, z: 1 } }, // → loge gauche
   ],
   entities: ents,
-  dialogues: [],
-  triggers: [],
+  dialogues: [
+    {
+      id: 'dlg-comtesse',
+      start: 'n0',
+      nodes: [
+        {
+          id: 'n0',
+          speaker: 'Comtesse Emmanuelle',
+          text: 'La Comtesse Emmanuelle vous toise depuis sa loge. « On ne vous a pas conviés dans ma loge. Qu’est-ce qui peut bien valoir cette intrusion ? »',
+          choices: [
+            { text: '« Excellence, l’antichambre n’est peut-être pas sûre ce soir. »', next: 'n1' },
+            { text: 'S’incliner et se retirer.', effects: [{ type: 'endDialogue' }] },
+          ],
+        },
+        {
+          id: 'n1',
+          speaker: 'Comtesse Emmanuelle',
+          text: '« Pas sûre ? » Un sourire glacé. « Mes gardes en jugeront. Mais examinez donc, puisque vous y tenez — discrètement. »',
+          choices: [{ text: 'Remercier et examiner les lieux.', effects: [{ type: 'endDialogue' }] }],
+        },
+      ],
+    },
+  ],
+  triggers: [
+    {
+      // Entrer dans l'auditorium ARME l'intrigue (la plante est déjà en place, source 20h02) : la mèche
+      // brûle, l'explosion frappe l'antichambre sauf si on retire le détonateur (flag bombeDesamorcee).
+      id: 'armer-bombe',
+      rect: { x: 3, y: 6, w: 12, h: 4 },
+      once: true,
+      effects: [
+        { type: 'journal', text: 'Une âcre odeur de poudre flotte depuis la galerie des loges…' },
+        {
+          type: 'delayedEffect', afterMinutes: 60, cancelFlag: 'bombeDesamorcee',
+          effects: [
+            { type: 'journal', text: 'UNE EXPLOSION DÉCHIRE L’ANTICHAMBRE DE LA LOGE ROYALE !' },
+            { type: 'zoneBlast', center: { x: 8, y: 12 }, radius: 6, damage: '1d10+15', conditions: [{ name: 'En flammes' }] },
+          ],
+        },
+      ],
+    },
+  ],
   encounters: [],
   flags: {},
   startMessage:

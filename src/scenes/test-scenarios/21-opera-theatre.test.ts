@@ -1,7 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { validateScene } from '../../state/validateScene';
-import { isWalkable } from '../../state/scene';
+import { isWalkable, type Effect } from '../../state/scene';
 import { pathTo } from '../../state/path';
+import { useGame } from '../../state/store';
+import { applyEffects } from '../../state/combatEffects';
+import { createHero } from '../../engine/character';
+import { makeRNG } from '../../engine/dice';
 import { scenario } from './21-opera-theatre';
 
 /**
@@ -44,5 +48,40 @@ describe('Scénario « Opéra — Théâtre » : salle multi-niveaux valide', ()
     const path = pathTo(scene, { x: start.x, y: start.y, z: 0 }, { x: 8, y: 11, z: 1 }, new Set<string>());
     expect(path).not.toBeNull();
     expect(path!.some((p) => (p.z ?? 0) === 1)).toBe(true);
+  });
+});
+
+describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', () => {
+  const arm = scenario.scene.triggers.find((t) => t.id === 'armer-bombe')!;
+  const plante = scenario.scene.entities.find((e) => e.id === 'plante-bombe')!;
+  const detect = plante.interact!.effects[0] as Extract<Effect, { type: 'test' }>;
+
+  beforeEach(() => useGame.setState({ battle: null, flags: {}, scheduledEffects: [], gameTime: 20 * 60, partyPos: { x: 8, y: 12, z: 1 } }));
+  function lonePartyAt(wounds: number) {
+    const h = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    h.wounds = { current: wounds, max: wounds };
+    useGame.setState({ party: [h] });
+    return h;
+  }
+
+  it('la plante piégée est posée dans la loge royale (z1) et se détecte mieux avec la Poudre noire', () => {
+    expect(plante.z).toBe(1);
+    expect(detect.easierIf?.hasSkill).toBe('Projectiles (Poudre noire)');
+  });
+
+  it('entrer dans l’auditorium arme la mèche ; retirer le détonateur empêche l’explosion', () => {
+    const before = lonePartyAt(35).wounds.current;
+    applyEffects(useGame.getState, useGame.setState, arm.effects);
+    expect(useGame.getState().scheduledEffects).toHaveLength(1);
+    applyEffects(useGame.getState, useGame.setState, detect.onSuccess!); // désamorçage
+    useGame.getState().advanceTime(120);
+    expect(useGame.getState().party[0].wounds.current).toBe(before); // intacte
+  });
+
+  it('sans désamorçage, l’explosion frappe l’antichambre au bout de la mèche', () => {
+    const before = lonePartyAt(35).wounds.current;
+    applyEffects(useGame.getState, useGame.setState, arm.effects);
+    useGame.getState().advanceTime(60);
+    expect(useGame.getState().party[0].wounds.current).toBeLessThanOrEqual(before - 15);
   });
 });
