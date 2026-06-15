@@ -1510,5 +1510,320 @@
       "book": "LDB",
       "page": 116
     }
+  },
+  {
+    "label": "Cavalier Léger",
+    "class": "Guerriers",
+    "rand": {
+      "Humain": 25,
+      "Halfling": null,
+      "Nain": null,
+      "Haut Elfe": 33,
+      "Elfe Sylvain": 35,
+      "Middenheim": 29,
+      "Middenland": 25,
+      "Nordland": 24,
+      "Gnome": null,
+      "Ogre": null
+    },
+    "desc": "<i>Vous comptez sur votre vitesse pour trouver l'ennemi, distinguer vos alliés de ses éclaireurs et frapper sans prévenir là où il s'y attend le moins.</i><br><br>Comme elles comptent moins de cavalerie lourde que l'Empire, les armées de mercenaires tiléens se reposent sur des cavaliers rapides aux armes légères pour leur fournir une puissance de frappe mobile. Plutôt que de charger frontalement, tête baissée, sur les piques de l'ennemi, les cavaliers légers tiléens, appelés des stradioti dans leur langue, préfèrent frapper sur les flancs ou, idéalement, à l'arrière, là où le train de bagages de l'ennemi est une cible très tentante.<br><br>« On n'avait aucune chance, Monsieur. Ils sont sortis de nulle part. Avant même qu'on puisse se retourner, ils étaient parmi nous, à hurler leur cri de bataille effrayant en nous pourchassant. C'est vrai qu'on s'est enfui Monsieur, mais ce n'étaient pas des hommes, c'étaient des démons à cheval. »<br>– Gunther Friesheim, après la Déroute de Rifraffa",
+    "source": {
+      "book": "AA",
+      "page": 44
+    }
+  },
+  {
+    "label": "Chevalier Errant",
+    "class": "Guerriers",
+    "rand": {
+      "Humain": 26,
+      "Halfling": null,
+      "Nain": null,
+      "Haut Elfe": null,
+      "Elfe Sylvain": null,
+      "Middenheim": 30,
+      "Middenland": 26,
+      "Nordland": 25,
+      "Gnome": null,
+      "Ogre": null
+    },
+    "desc": "<i>Vous menez une vie de chevalier, mais sans avoir d'obligations envers un ordre de chevalerie et sans bénéficier de la protection.</i><br><br>Tous les chevaliers n'appartiennent pas nécessairement à un ordre. Certains sont adoubés par un noble de manière indépendante, d'autres se déclarent eux-mêmes chevaliers et d'autres encore quittent leur ordre (ou en sont expulsés…) pour suivre leur propre voie. Ces guerriers sont appelés des chevaliers « errants » et se battent pour l'argent, pour l'honneur ou pour leurs propres raisons. Certains sont des mercenaires endurcis ou même ne valent pas beaucoup mieux que des bandits. D'autres sont les champions des opprimés ou les héros de l'ombre altruistes du peuple.<br><br>Les chevaliers errants sont des gens aussi divers que leurs origines. Ils portent leurs propres couleurs, qui peuvent être un blason de famille s'ils sont nobles ou un blason qu'ils ont créé eux-mêmes. Ils ont souvent des armes et une armure excentriques, choisies en fonction de leurs préférences personnelles ou en fonction de ce qu'ils ont pu obtenir et entretenir. Les gens se méfient souvent des chevaliers errants, car aucun ordre ne peut se porter garant de leur bonne conduite, mais s'ils se comportent en héros, ils peuvent devenir populaires. La progression en dehors d'un ordre n'est pas structurée : généralement, un chevalier errant s'attire de plus en plus de serviteurs et finit par mener sa propre troupe de chevaliers. C'est par exemple ce qui s'est produit pour les Veneurs de Voland, une bande de chevaliers notoirement turbulents qui se battent comme mercenaires en Tilée, dans les Principautés Frontalières et dans l'Empire.",
+    "source": {
+      "book": "AA",
+      "page": 31
+    }
+  },
+  {
+    "label": "Chevalier du Soleil flamboyant",
+    "class": "Guerriers",
+    "rand": {
+      "Humain": 26,
+      "Halfling": null,
+      "Nain": null,
+      "Haut Elfe": null,
+      "Elfe Sylvain": null,
+      "Middenheim": 30,
+      "Middenland": 26,
+      "Nordland": 25,
+      "Gnome": null,
+      "Ogre": null
+    },
+    "desc": "<i>Vous incarnez les valeurs de Myrmidia et vous chevauchez à l'avant-garde de ses chevaliers templiers.</i><br><br>Les Chevaliers du Soleil flamboyant sont les templiers de Myrmidia et l'ordre le plus vaste de cette déesse dans l'Empire. Ils ont bonne réputation, mais une certaine méfiance plane souvent autour des chevaliers servant une déesse de la guerre souvent considérée comme étrangère à l'Empire. L'ordre privilégie les nobles prêts à déclarer ouvertement leur foi en Myrmidia et à s'élever au-dessus des rivalités internes mesquines du culte. C'est un ordre riche car un flux d'or constant venant de Tilée, d'Estalie ou d'expéditions dans des terres plus lointaines alimente ses coffres.<br><br>Les Soleils flamboyants sont connus pour leur étude de la stratégie et des tactiques, à la fois à la guerre et en combat singulier. Myrmidia apprécie les esprits curieux, l'inventivité et le fait de cultiver des connaissances diverses, c'est pourquoi ses chevaliers perfectionnent leur jugement, leur ingéniosité et leurs talents diplomatiques. Les commandeurs laissent souvent chaque chevalier choisir de manière indépendante comment aborder un ennemi ou une situation.<br><br>« Ma déesse est la patronne des stratèges. Si un seul chevalier a été affecté à la garde de son temple, c'est parce qu'un seul chevalier suffisait à cette tâche. Même si je me tiens seul devant vous, Myrmidia elle-même se tient derrière moi. Bien, lequel d'entre vous sera le premier à mourir ? »<br>– Cristobál Cardana, Chevalier du Soleil flamboyant",
+    "source": {
+      "book": "AA",
+      "page": 32
+    }
+  },
+  {
+    "label": "Chevalier du Loup Blanc",
+    "class": "Guerriers",
+    "rand": {
+      "Humain": 26,
+      "Halfling": null,
+      "Nain": null,
+      "Haut Elfe": null,
+      "Elfe Sylvain": null,
+      "Middenheim": 30,
+      "Middenland": 26,
+      "Nordland": 25,
+      "Gnome": null,
+      "Ogre": null
+    },
+    "desc": "<i>Vous incarnez la férocité et la force du dieu du combat, des loups et de l'hiver.</i><br><br>L'un des spectacles les plus évocateurs de la foi ulricaine est celui d'un chevalier en armure lourde à la chevelure et à la barbe hirsutes galopant héroïquement à la bataille en abattant un marteau de cavalerie. Les Chevaliers du Loup Blanc sont le plus grand ordre de templiers de l'Empire, chargés de protéger les sites sacrés d'Ulric partout où ils se trouvent.",
+    "source": {
+      "book": "AA",
+      "page": 34
+    }
+  },
+  {
+    "label": "Chevalier Panthère",
+    "class": "Guerriers",
+    "rand": {
+      "Humain": 26,
+      "Halfling": null,
+      "Nain": null,
+      "Haut Elfe": null,
+      "Elfe Sylvain": null,
+      "Middenheim": 30,
+      "Middenland": 26,
+      "Nordland": 25,
+      "Gnome": null,
+      "Ogre": null
+    },
+    "desc": "<i>Vous avez fait serment de garantir la loyauté envers l'Empire et de le défendre contre le Chaos.</i><br><br>Les Chevaliers Panthères sont l'ordre séculier le plus répandu dans l'Empire, et seule la Reiksguard les dépasse en puissance. Ils ne servent la cause d'aucune province en particulier et apportent un soutien militaire à tout général ou dirigeant qui mérite leur assistance.<br><br>L'ordre est renommé pour ses prouesses au combat, pour sa haine fanatique des mutants et pour un degré de finesse politique qui lui permet de rester en dehors de la plupart des querelles mesquines. C'est pourquoi il est devenu le symbole d'un Empire unifié.<br><br>« Les gens voient l'Empire, ses armées reluisantes, ses flottes, ses richesses, ses merveilles technologiques, et ils pensent qu'il est fort. Mais il est déchiré par d'innombrables divisions, gangrené par le Chaos et assailli de toutes parts par des ennemis terribles. L'Empire est faible, Mistof, c'est pourquoi nous devons être forts. »<br>– Chevalier commandeur Matilda du Talabecland",
+    "source": {
+      "book": "AA",
+      "page": 36
+    }
+  },
+  {
+    "label": "Prêtre de Myrmidia",
+    "class": "Guerriers",
+    "rand": {
+      "Humain": 30,
+      "Halfling": null,
+      "Nain": null,
+      "Haut Elfe": null,
+      "Elfe Sylvain": null,
+      "Middenheim": 35,
+      "Middenland": 30,
+      "Nordland": 29,
+      "Gnome": 30,
+      "Ogre": null
+    },
+    "desc": "<i>Vous prisez l'honneur, l'obéissance et l'excellence martiale et tactique, pour suivre l'exemple de votre déesse protectrice, Myrmidia.</i><br><br>Les prêtres de Myrmidia de l'Ordre de la Lance Vertueuse et de l'Ordre de la Furie aident à organiser les rassemblements du culte, à répandre ses enseignements et à mener ses cérémonies. Ils sont souvent recherchés comme conseillers par les généraux et les commandants de mercenaires, surtout en Tilée et en Estalie.<br><br>« Se transformer de manière rapide et percutante en assaut, la lance luisante de revanche, est l'objectif que devrait viser toute défense efficace. »<br>– Attribué à Allurian, -3325 CI<br><br>« Ne cherchez pas à dire à un Longue Barbe comment faire les choses. Dites-lui quoi faire et il sera son propre commandant bien mieux que n'importe qui d'autre. »<br>– Berndt Lance-de-lave, -1778 CI",
+    "source": {
+      "book": "AA",
+      "page": 78
+    }
+  },
+  {
+    "label": "Archer",
+    "class": "Guerriers",
+    "rand": {
+      "Humain": 34,
+      "Halfling": 44,
+      "Nain": null,
+      "Haut Elfe": 40,
+      "Elfe Sylvain": 45,
+      "Middenheim": 39,
+      "Middenland": 34,
+      "Nordland": 33,
+      "Gnome": null,
+      "Ogre": null
+    },
+    "desc": "<i>En alliant à égalité la force et l'habileté, vous apportez finesse et précision sur le champ de bataille.</i><br><br>Respectés pour leur Compétence et leur maîtrise du champ de bataille ou méprisés pour leur réticence à se mêler aux combats rapprochés, les archers sont fiers de se tenir éloignés de la racaille qui rejoint habituellement l'armée et s'en sentent même supérieurs. N'importe qui peut tenir une hallebarde ou tirer avec un pistolet, affirment-ils, mais des années d'entraînement sont nécessaires pour devenir un archer.<br><br>« Il faut huit jours pour entraîner un arquebusier, qu'ils disent ! Moi, il m'a fallu huit ans pour apprendre à bander un arc. »<br>– Ute Schuetz, des archers de Pfeildorf<br><br>« Ils prétendent que nous, les archers, ne sommes pas bons au corps-à-corps, mais je pourrais mettre à terre le plus grand combattant des fosses d'Altdorf, tant que nous démarrons assez loin l'un de l'autre. »<br>– Ned l'Empoté, des Coqs de combat de Lupin Croupe",
+    "source": {
+      "book": "AA",
+      "page": 10
+    }
+  },
+  {
+    "label": "Hallebardier",
+    "class": "Guerriers",
+    "rand": {
+      "Humain": 34,
+      "Halfling": 44,
+      "Nain": 45,
+      "Haut Elfe": null,
+      "Elfe Sylvain": null,
+      "Middenheim": 39,
+      "Middenland": 34,
+      "Nordland": 33,
+      "Gnome": null,
+      "Ogre": null
+    },
+    "desc": "<i>Réputé extrêmement fiable, vous êtes le pilier de l'infanterie, et ce n'est pas à prendre à la légère.</i><br><br>« Vous préférez une lance ou une hache ? »<br>« Oui. »<br>– Vieille plaisanterie de hallebardiers<br><br>Soutien de toutes les armées impériales, les hallebardiers se retrouvent dans les armées de tout l'Empire, et au-delà. Ils sont réputés fiables et endurants, et, arborant leurs armes imposantes massés en rangs serrés sur le champ de bataille, ils forment une vision redoutable. Le hallebardier puise son courage dans le combat en groupe d'unités très soudées, dans lesquelles ils bénéficient de l'allonge de la hallebarde sans trop souffrir de son manque de maniabilité.",
+    "source": {
+      "book": "AA",
+      "page": 14
+    }
+  },
+  {
+    "label": "Arquebusier",
+    "class": "Guerriers",
+    "rand": {
+      "Humain": 34,
+      "Halfling": 44,
+      "Nain": 45,
+      "Haut Elfe": null,
+      "Elfe Sylvain": null,
+      "Middenheim": 39,
+      "Middenland": 34,
+      "Nordland": 33,
+      "Gnome": null,
+      "Ogre": null
+    },
+    "desc": "<i>En utilisant une arme à feu, vous infligez à distance la mort à vos ennemis, ou du moins, vous leur insufflez la peur de Sigmar.</i><br><br>L'arquebusier est un nouveau venu dans l'Armée Impériale. Même s'ils sont présents depuis quelques centaines d'années, les autres corps militaires ne leur font pas complètement confiance. Malgré cela, grâce aux progrès technologiques, ils se révèlent de plus en plus efficaces sur le champ de bataille, et les régiments d'arquebusiers sont de plus en plus nombreux dans les Armées Impériales.<br><br>« Nous avions quelques archers nordlanders sur la gauche et les arquebusiers d'Altdorf sur notre droite alors que les peauxvertes avançaient. Je vous avoue sans fard que je craignais le pire. Au commandement, les archers ont envoyé leurs flèches et les arquebusiers ont fait feu. C'est à gauche que le plus de peaux-vertes sont tombés, c'est sûr. Mais ce sont ceux sur la droite qui se sont enfuis. »<br>– Holger Kass, 1er bataillon de hallebardiers de Bögenhafen",
+    "source": {
+      "book": "AA",
+      "page": 16
+    }
+  },
+  {
+    "label": "Joueur d'épée",
+    "class": "Guerriers",
+    "rand": {
+      "Humain": 34,
+      "Halfling": null,
+      "Nain": null,
+      "Haut Elfe": null,
+      "Elfe Sylvain": null,
+      "Middenheim": 39,
+      "Middenland": 34,
+      "Nordland": 33,
+      "Gnome": null,
+      "Ogre": null
+    },
+    "desc": "<i>Maniant avec habileté votre dangereuse zweihänder, vous êtes la crème des fantassins de l'Empire.</i><br><br>« Au nom de Sigmar et son Empire, je jure de servir mon capitaine et mon régiment, et de ne jamais reculer d'un pas face à un ennemi, pour ne souffrir aucun déshonneur, aucune honte, aucun mépris de mes semblables. »<br>– Serment des joueur d'épées de Carroburg<br><br>Ces joueurs d'épée forment l'élite emblématique de l'infanterie des Armées impériales, crainte de tous les fantassins de l'Empire. Ils délaissent le bouclier pour brandir d'énormes épées zweihänder, pour garantir des combats courts et mortels où qu'ils aillent. Leurs immenses épées à deux mains étant peu maniables, les joueurs d'épée se doivent d'être athlétiques et véloces. Pour les mêmes raisons, ils s'alignent en formations plus flexibles que les autres fantassins.",
+    "source": {
+      "book": "AA",
+      "page": 12
+    }
+  },
+  {
+    "label": "Piquier",
+    "class": "Guerriers",
+    "rand": {
+      "Humain": 34,
+      "Halfling": null,
+      "Nain": null,
+      "Haut Elfe": null,
+      "Elfe Sylvain": null,
+      "Middenheim": 39,
+      "Middenland": 34,
+      "Nordland": 33,
+      "Gnome": null,
+      "Ogre": null
+    },
+    "desc": "<i>La discipline et l'entraînement. Si vous gardez votre sang-froid et faites face à l'ennemi, aucune force sur un champ de bataille, pas même les chevaliers impériaux les plus lourds, ne peut arrêter une phalange de piquiers.</i><br><br>Toutes les villes et villages du Vieux Monde ont leur milice, un effectif d'habitants armés qui peut être rassemblé rapidement pour défendre les maisons et les champs ou se battre au service de son seigneur pendant quelques semaines. Cependant, leur manque de discipline et leur désir de rentrer chez eux, où ils ont une famille et un métier civil, limite l'utilité de ces hommes lors des longues campagnes ou face à des cavaliers avec armes et armure lourdes.<br><br>« Non, ils n'avaient pas l'air dangereux, on aurait plutôt dit un groupe de gosses de riches sortis parader dans leurs nouvelles armures. Ils étaient très tape-à-l'œil avec leurs joyaux et leur soie. On s'est dit qu'on allait s'amuser un peu, que c'était des cibles faciles. Oui ben, tout le monde peut faire une erreur. Pauvre capitaine Malvino, c'est la dernière qu'il a faite. »<br>– Entendu au Vieux Cochon flûtier, à Marienburg",
+    "source": {
+      "book": "AA",
+      "page": 48
+    }
+  },
+  {
+    "label": "Spécialiste de Siège",
+    "class": "Guerriers",
+    "rand": {
+      "Humain": 34,
+      "Halfling": 44,
+      "Nain": 45,
+      "Haut Elfe": 40,
+      "Elfe Sylvain": null,
+      "Middenheim": 39,
+      "Middenland": 34,
+      "Nordland": 33,
+      "Gnome": null,
+      "Ogre": null
+    },
+    "desc": "<i>Votre travail consiste à abattre les murailles des châteaux et à empêcher les autres d'en faire autant. Que d'autres pauvres idiots prennent d'assaut physiquement les murs ; vous les couvrirez, ou leur fournirez une voie d'accès plus subtile.</i><br><br>« En les voyant approcher, nos cœurs se sont serrés. Les hommes de Braganza n'avaient jamais été vaincus, ni n'avaient battu en retraite et on savait qu'on était condamné. Notre capitaine a commencé à nous expliquer qu'on était bien en sécurité derrière les murailles, jusqu'à ce qu'un carreau d'arbalète lui traverse la gorge. Personne ne voulait être le suivant. »<br>– Gunther Friesheim, sur la prise de Schloss Adlerberg<br><br>Assiéger des lieux fortifiés est une activité très courante un peu partout dans le Vieux Monde, mais cet art que les humains ont appris auprès des nains a pris sa forme la plus perfectionnée en Tilée. Même les nains admettent à contrecœur que les spécialistes de siège de ce pays sont « passables ».<br><br>« Les flèches ne servent à rien contre un château. Vous ne pouvez gagner qu'en utilisant du matériel lourd pour enfoncer les murailles. C'est pour cela que les nains sont bien plus doués pour la guerre de siège. Si vous êtes l'assiégeant, vous ne pouvez rien toucher d'utile avec des flèches. Si vous êtes à l'intérieur du château, vous pourriez penser que des tirs de flèches depuis les tours seraient efficaces, mais par quoi préférez-vous être touché : un bâton pointu ou un rocher de quinze kilos ? »<br>– Berndt Lance-de-lave, -1778 CI",
+    "source": {
+      "book": "AA",
+      "page": 46
+    }
+  },
+  {
+    "label": "Suiveur de Camp",
+    "class": "Itinérants",
+    "rand": {
+      "Humain": 38,
+      "Halfling": 49,
+      "Nain": 59,
+      "Haut Elfe": null,
+      "Elfe Sylvain": null,
+      "Middenheim": 45,
+      "Middenland": 38,
+      "Nordland": 37,
+      "Gnome": null,
+      "Ogre": null
+    },
+    "desc": "<i>Vous accompagnez les armées en campagne, à la recherche d'aventure, de protection ou simplement d'un angle d'attaque.</i><br><br>« Vous voulez acheter cette bague en or arrachée au doigt d'un Bretonnien mort ? Eh bien, non, elle n'est pas trop en or, et non, il n'était pas si bretonnien que ça... et non, il n'était pas si mort que ça non plus ».<br>– Felix Ramml, suiveur de camp<br><br>La logistique des manœuvres militaires peut être presque incompréhensible. Telles des villes mobiles, les armées du Vieux Monde dépendent de chaînes d'approvisionnement complexes et d'une organisation stricte pour demeurer approvisionnées. Une grande partie de ces tâches relève directement de la compétence de l'armée. Mais l'entreprise privée est toujours à la recherche du profit, de sorte qu'une grande partie d'une armée sera composée d'une bande éclectique de pique-assiettes, de colporteurs, d'entremetteurs, de commerçants, d'artisans et de charlatans. Beaucoup d'entre eux peuvent être décrits dans d'autres Carrières, mais ceux qui se consacrent à suivre les troupes, sans métier ou vocation spécifique, relèvent des suiveurs de camp.<br><br>« Ne soulignez pas son manque d'éducation et ses manières grossières. Ne rougissez pas de son bavardage peu sophistiqué. Après tout, elle a épousé un capitaine, et elle ne vaut pas mieux. Sans compter qu'elle vous étripera avec le couteau qu'elle dissimule dans son corsage ».<br>– Bavardage durant le bal des officiers",
+    "source": {
+      "book": "AA",
+      "page": 20
+    }
+  },
+  {
+    "label": "Cartographe",
+    "class": "Lettrés",
+    "rand": {
+      "Humain": 48,
+      "Halfling": 58,
+      "Nain": 66,
+      "Haut Elfe": 54,
+      "Elfe Sylvain": 56,
+      "Middenheim": 57,
+      "Middenland": 48,
+      "Nordland": 47,
+      "Gnome": null,
+      "Ogre": null
+    },
+    "desc": "<i>Vous êtes engagé pour effectuer des relevés et cartographier des lieux très éloignés les uns des autres. Plus la zone en a besoin, plus le travail risque d'être dangereux.</i><br><br>Il devient nécessaire de cartographier le monde de manière de plus en plus détaillée, au fur et à mesure qu'il devient complexe. Qu'il s'agisse d'explorer des terres largement inconnues pour y dresser des cartes générales de la région ou d'examiner avec précision de petites parcelles dans le cadre de conflits fonciers mineurs, les cartographes sont de plus en plus demandés.<br><br>« La nuit tombait, alors les gars et moi avons rampé dans la boue, traversé les lignes ennemies et éliminé quelques bêtes sur notre chemin. Lorsque nous sommes arrivés au poste, il n'y avait qu'un seul survivant, une plume à la main, recroquevillé sur un rocher. Nous lui avons dit que nous devions partir rapidement. Il a demandé vingt minutes de plus, car il devait terminer une série de relevés particulièrement délicats ».<br>– Holger Kass, 1er bataillon de hallebardiers de Bögenhafen",
+    "source": {
+      "book": "AA",
+      "page": 22
+    }
+  },
+  {
+    "label": "Artilleur",
+    "class": "Lettrés",
+    "rand": {
+      "Humain": 49,
+      "Halfling": 59,
+      "Nain": 69,
+      "Haut Elfe": null,
+      "Elfe Sylvain": null,
+      "Middenheim": 58,
+      "Middenland": 49,
+      "Nordland": 48,
+      "Gnome": null,
+      "Ogre": null
+    },
+    "desc": "<i>Vous introduisez les grosses armes à feu dans le combat. Vous entretenez, vous utilisez le matériel d'artillerie et vous connaissez les meilleurs moyens d'utiliser la poudre noire.</i><br><br>« Je n'ai pas remarqué la moindre odeur de fumier. En quoi est-ce pertinent ? »<br>– Ludmilla Krabbe, ancien artilleur, interrogée sur le vacarme durant la bataille<br><br>L'Empire est fier de son artillerie, réputée pour le spectacle impressionnant qui frappe de terreur le cœur de tous ses ennemis. Toutefois, les régiments d'artillerie ne détiennent pas le glamour des ordres de chevalerie ou des joueurs d'épée. C'est un dur labeur consistant à soulever de lourds poids, aller chercher, porter et entreprendre de pénibles excavations. Malgré cela, ils sont indispensables dans l'effort de guerre de l'Empire, et les artilleurs se considèrent eux-mêmes comme les héros de l'ombre des armées impériales.",
+    "source": {
+      "book": "AA",
+      "page": 18
+    }
   }
 ]

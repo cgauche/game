@@ -7937,5 +7937,1712 @@
       "Intelligence"
     ],
     "status": "Argent 2"
+  },
+  {
+    "label": "Cavalier",
+    "career": "Cavalier Léger",
+    "level": 1,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Corps à corps (Base)",
+      "Esquive",
+      "Guérison",
+      "Langue (Bataille)",
+      "Marchandage",
+      "Projectiles (Lancer)",
+      "Résistance",
+      "Soin aux animaux",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Claquer le fouet",
+      "Infatigable",
+      "Pansement de fortune",
+      "Savoir-vivre (Mercenaires)"
+    ],
+    "trappings": [
+      "Bouclier ou Bouclier (Targe)",
+      "Cheval de selle",
+      "Javelot",
+      "Selle et Harnais",
+      "Veste de cuir"
+    ],
+    "characteristics": [
+      "Agilité",
+      "Capacité de Combat",
+      "Endurance"
+    ],
+    "status": "Bronze 3"
+  },
+  {
+    "label": "Cavalier Léger",
+    "career": "Cavalier Léger",
+    "level": 2,
+    "skills": [
+      "Charme",
+      "Corps à corps (Cavalerie)",
+      "Pari",
+      "Projectiles (Arc)",
+      "Ragot",
+      "Résistance à l'alcool"
+    ],
+    "talents": [
+      "Cavalier émérite",
+      "Nomade",
+      "Sens de l'orientation",
+      "Vigilance"
+    ],
+    "trappings": [
+      "Cheval de guerre léger",
+      "Cotte de mailles",
+      "Heaume Ouvert"
+    ],
+    "characteristics": [
+      "Capacité de Tir"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Cavalier Léger Lancier",
+    "career": "Cavalier Léger",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Conduite d'attelage",
+      "Intuition",
+      "Savoir (Guerre)"
+    ],
+    "talents": [
+      "Acrobaties équestres",
+      "Combat instinctif",
+      "Rechargement rapide",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Chausses de Mailles",
+      "Ecuyer",
+      "Lance",
+      "Page"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Capitaine Cavalier Léger",
+    "career": "Cavalier Léger",
+    "level": 4,
+    "skills": [
+      "Projectiles (Poudre noire)",
+      "Savoir (Au choix)"
+    ],
+    "talents": [
+      "Exaltant",
+      "Négociateur",
+      "Présence imposante",
+      "Seigneur de guerre"
+    ],
+    "trappings": [
+      "Cheval de guerre",
+      "Flamboyant Clothing",
+      "Paire de pistolets avec Poudre noire et Munitions ou Arc avec Carquois de 10 flèches",
+      "Plastron d'acier"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Écuyer",
+    "career": "Chevalier Errant",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Chevaucher (Cheval)",
+      "Corps à corps (Cavalerie)",
+      "Emprise sur les animaux",
+      "Guérison",
+      "Métier (Maréchal-ferrant)",
+      "Ragot",
+      "Résistance à l'alcool",
+      "Soin aux animaux",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Cavalier émérite",
+      "Costaud",
+      "Guerrier né",
+      "Vigilance"
+    ],
+    "trappings": [
+      "Bouclier",
+      "Chemise de mailles",
+      "Cheval de selle",
+      "Outils professionnels (Maréchal-ferrant)",
+      "Selle et Harnais",
+      "Veste de cuir"
+    ],
+    "characteristics": [
+      "Agilité",
+      "Force",
+      "Initiative"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Chevalier Errant",
+    "career": "Chevalier Errant",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Charme",
+      "Corps à corps (Au choix)",
+      "Esquive",
+      "Intimidation",
+      "Intuition"
+    ],
+    "talents": [
+      "Brouet",
+      "Coup puissant",
+      "Savoir-vivre (Au choix)",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Arme (Au choix)",
+      "Armure de plates",
+      "Destrier",
+      "Heaume",
+      "Personal Heraldry",
+      "Selle et Harnais"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Capitaine Indépendant",
+    "career": "Chevalier Errant",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Marchandage",
+      "Pari",
+      "Savoir (Guerre)"
+    ],
+    "talents": [
+      "Cœur vaillant",
+      "Inébranlable",
+      "Maîtrise du combat",
+      "Seigneur de guerre"
+    ],
+    "trappings": [
+      "Caparaçon",
+      "Small Retinue of Followers"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Chevalier Commandant",
+    "career": "Chevalier Errant",
+    "level": 4,
+    "skills": [
+      "Langue (Bataille)",
+      "Savoir (Au choix)"
+    ],
+    "talents": [
+      "Chanceux",
+      "Désarmer",
+      "Exaltant",
+      "Volonté de fer"
+    ],
+    "trappings": [
+      "Ecuyer",
+      "Unité de Chevaliers"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Or 3"
+  },
+  {
+    "label": "Novice",
+    "career": "Chevalier du Soleil flamboyant",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Chevaucher (Cheval)",
+      "Corps à corps (Base)",
+      "Corps à corps (Cavalerie)",
+      "Emprise sur les animaux",
+      "Guérison",
+      "Langue (Classique)",
+      "Savoir (Au choix)",
+      "Savoir (Héraldique)",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Costaud",
+      "Guerrier né",
+      "Lire/Écrire",
+      "Noblesse"
+    ],
+    "trappings": [
+      "Bouclier",
+      "Chemise de mailles",
+      "Cheval de selle",
+      "Outils professionnels (Maréchal-ferrant)",
+      "Selle et Harnais",
+      "Symbole religieux (Myrmidia)",
+      "Veste de cuir"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Force",
+      "Initiative"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Chevalier du Soleil flamboyant",
+    "career": "Chevalier du Soleil flamboyant",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Corps à corps (Au choix)",
+      "Esquive",
+      "Intimidation",
+      "Langue (Bataille)",
+      "Résistance"
+    ],
+    "talents": [
+      "Frappe blessante",
+      "Porte-Bouclier",
+      "Savoir-vivre (Au choix)",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Arme (Au choix)",
+      "Armure de plates",
+      "Destrier",
+      "Heaume",
+      "Lance",
+      "Selle et Harnais"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Hochmeister",
+    "career": "Chevalier du Soleil flamboyant",
+    "level": 3,
+    "skills": [
+      "Charme",
+      "Commandement",
+      "Projectiles (Au choix)",
+      "Recherche"
+    ],
+    "talents": [
+      "Désarmer",
+      "Inébranlable",
+      "Sans peur (Au choix)",
+      "Seigneur de guerre"
+    ],
+    "trappings": [
+      "Caparaçon",
+      "Petite unité de Chevaliers du Soleil flamboyant"
+    ],
+    "characteristics": [
+      "Agilité"
+    ],
+    "status": "Or 2"
+  },
+  {
+    "label": "Chevalier du Cercle Intérieur",
+    "career": "Chevalier du Soleil flamboyant",
+    "level": 4,
+    "skills": [
+      "Savoir (Au choix)",
+      "Signes secrets (Soleil flamboyant)"
+    ],
+    "talents": [
+      "Coup puissant",
+      "Cœur vaillant",
+      "Exaltant",
+      "Nanti"
+    ],
+    "trappings": [
+      "Ecuyer",
+      "Grand heaume avec l'emblème du Soleil",
+      "Importante unité de Chevaliers du Soleil flamboyant"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Or 4"
+  },
+  {
+    "label": "Novice",
+    "career": "Chevalier du Loup Blanc",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Chevaucher (Cheval)",
+      "Corps à corps (Base)",
+      "Corps à corps (Cavalerie)",
+      "Emprise sur les animaux",
+      "Guérison",
+      "Métier (Maréchal-ferrant)",
+      "Savoir (Héraldique)",
+      "Soin aux animaux",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Cavalier émérite",
+      "Costaud",
+      "Dur à cuire",
+      "Guerrier né"
+    ],
+    "trappings": [
+      "Chemise de mailles",
+      "Cheval de selle",
+      "Marteau à bec-de-corbin",
+      "Outils professionnels (Maréchal-ferrant)",
+      "Selle et Harnais",
+      "Symbole religieux (Ulric)",
+      "Veste de cuir"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Force",
+      "Initiative"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Chevalier du Loup Blanc",
+    "career": "Chevalier du Loup Blanc",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Corps à corps (Au choix)",
+      "Esquive",
+      "Intimidation",
+      "Langue (Bataille)",
+      "Résistance"
+    ],
+    "talents": [
+      "Coup puissant",
+      "Frappe blessante",
+      "Menaçant",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Armure de plates",
+      "Cape en peau de loup",
+      "Destrier",
+      "Selle et Harnais"
+    ],
+    "characteristics": [
+      "Agilité"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Sergent Templier",
+    "career": "Chevalier du Loup Blanc",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Perception",
+      "Résistance à l'alcool",
+      "Savoir (Guerre)"
+    ],
+    "talents": [
+      "Assaut féroce",
+      "Inébranlable",
+      "Sans peur (Au choix)",
+      "Seigneur de guerre"
+    ],
+    "trappings": [
+      "Caparaçon",
+      "Petite unité de Chevaliers du Loup Blanc"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Or 2"
+  },
+  {
+    "label": "Commandant de compagnie (cercle intérieur)",
+    "career": "Chevalier du Loup Blanc",
+    "level": 4,
+    "skills": [
+      "Savoir (Au choix)",
+      "Signes secrets (Ulric)"
+    ],
+    "talents": [
+      "Endurci",
+      "Exaltant",
+      "Imperturbable",
+      "Volonté de fer"
+    ],
+    "trappings": [
+      "Compagnie de Chevaliers du Loup Blanc",
+      "Novice"
+    ],
+    "characteristics": [
+      "Endurance"
+    ],
+    "status": "Or 3"
+  },
+  {
+    "label": "Écuyer",
+    "career": "Chevalier Panthère",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Chevaucher (Cheval)",
+      "Corps à corps (Base)",
+      "Corps à corps (Cavalerie)",
+      "Emprise sur les animaux",
+      "Guérison",
+      "Métier (Maréchal-ferrant)",
+      "Savoir (Empire)",
+      "Savoir (Héraldique)",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Cavalier émérite",
+      "Costaud",
+      "Guerrier né",
+      "Savoir-vivre (Au choix)"
+    ],
+    "trappings": [
+      "Bouclier",
+      "Chemise de mailles",
+      "Cheval de selle",
+      "Outils professionnels (Maréchal-ferrant)",
+      "Selle et Harnais",
+      "Veste de cuir"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Force",
+      "Initiative"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Chevalier Panthère",
+    "career": "Chevalier Panthère",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Corps à corps (Au choix)",
+      "Esquive",
+      "Intimidation",
+      "Langue (Bataille)",
+      "Résistance"
+    ],
+    "talents": [
+      "Coup puissant",
+      "Imperturbable",
+      "Menaçant",
+      "Porte-Bouclier"
+    ],
+    "trappings": [
+      "Anneau ou Médaillon avec l'emblème de la Panthère",
+      "Armure de plates",
+      "Cape en peau de Panthère",
+      "Destrier",
+      "Epée",
+      "Grand heaume with Bestiol Crest",
+      "Lance",
+      "Selle et Harnais"
+    ],
+    "characteristics": [
+      "Agilité"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Chevalier Commandeur",
+    "career": "Chevalier Panthère",
+    "level": 3,
+    "skills": [
+      "Charme",
+      "Commandement",
+      "Langue (Au choix)",
+      "Savoir (Guerre)"
+    ],
+    "talents": [
+      "Cœur vaillant",
+      "Inébranlable",
+      "Sans peur (Chaos)",
+      "Seigneur de guerre"
+    ],
+    "trappings": [
+      "Caparaçon",
+      "Petite unité de Chevaliers Panthères"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Or 2"
+  },
+  {
+    "label": "Commandant de compagnie (cercle intérieur)",
+    "career": "Chevalier Panthère",
+    "level": 4,
+    "skills": [
+      "Savoir (Au choix)",
+      "Signes secrets (Chevaliers Panthères)"
+    ],
+    "talents": [
+      "Désarmer",
+      "Exaltant",
+      "Frappe blessante",
+      "Volonté de fer"
+    ],
+    "trappings": [
+      "Ecuyer",
+      "Importante unité de Chevaliers Panthères ou plusieurs petites unités de Chevaliers Panthères"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Or 4"
+  },
+  {
+    "label": "Premier Aigle",
+    "career": "Prêtre de Myrmidia",
+    "level": 1,
+    "skills": [
+      "Calme",
+      "Commandement",
+      "Corps à corps (Armes d'hast)",
+      "Corps à corps (Base)",
+      "Esquive",
+      "Langue (Bataille)",
+      "Perception",
+      "Prière",
+      "Savoir (Guerre)",
+      "Savoir (Théologie)"
+    ],
+    "talents": [
+      "Béni (Myrmidia)",
+      "Lire/Écrire",
+      "Savoir-vivre (Fidèles)",
+      "Vigilance"
+    ],
+    "trappings": [
+      "Icône de Myrmidia",
+      "Justaucorps de cuir",
+      "Lance",
+      "Livre Sacré de Myrmidia",
+      "Robes blanches"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Force Mentale",
+      "Intelligence"
+    ],
+    "status": "Argent 2"
+  },
+  {
+    "label": "Prêtre de Myrmidia",
+    "career": "Prêtre de Myrmidia",
+    "level": 2,
+    "skills": [
+      "Charme",
+      "Corps à corps (Au choix)",
+      "Divertissement (Discours)",
+      "Guérison",
+      "Intuition",
+      "Projectiles (Au choix)"
+    ],
+    "talents": [
+      "Coude-à-coude",
+      "Exaltant",
+      "Invocation (Myrmidia)",
+      "Porte-Bouclier"
+    ],
+    "trappings": [
+      "Bouclier",
+      "Heaume",
+      "Plastron"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Prêtre Sergent",
+    "career": "Prêtre de Myrmidia",
+    "level": 3,
+    "skills": [
+      "Corps à corps (Au choix)",
+      "Métier (Au choix)",
+      "Recherche",
+      "Savoir (Au choix)"
+    ],
+    "talents": [
+      "Cœur vaillant",
+      "Studieux",
+      "Visions sacrées",
+      "Âme pure"
+    ],
+    "trappings": [
+      "Armure de plates complète"
+    ],
+    "characteristics": [
+      "Agilité"
+    ],
+    "status": "Argent 4"
+  },
+  {
+    "label": "Prêtre Capitaine",
+    "career": "Prêtre de Myrmidia",
+    "level": 4,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Soin aux animaux"
+    ],
+    "talents": [
+      "Combat instinctif",
+      "Maîtrise du combat",
+      "Sans peur (Au choix)",
+      "Seigneur de guerre"
+    ],
+    "trappings": [
+      "Relique religieuse"
+    ],
+    "characteristics": [
+      "Force"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Tireur à l'arc",
+    "career": "Archer",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Discrétion (Rurale)",
+      "Escalade",
+      "Esquive",
+      "Langue (Bataille)",
+      "Musicien (Cor)",
+      "Perception",
+      "Projectiles (Arc)",
+      "Résistance",
+      "Résistance à l'alcool"
+    ],
+    "talents": [
+      "Guerrier né",
+      "Infatigable",
+      "Tir précis",
+      "Tir rapide"
+    ],
+    "trappings": [
+      "Arc",
+      "Flèche (10)",
+      "Pack",
+      "Quiver",
+      "Uniforme"
+    ],
+    "characteristics": [
+      "Agilité",
+      "Capacité de Tir",
+      "Initiative"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Archer",
+    "career": "Archer",
+    "level": 2,
+    "skills": [
+      "Corps à corps (Base)",
+      "Métier (Fletcher)",
+      "Pari",
+      "Pistage",
+      "Ragot",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Coude-à-coude",
+      "Savoir-vivre (Soldats)",
+      "Tir sûr",
+      "Tireur de précision"
+    ],
+    "trappings": [
+      "Arc de qualité",
+      "Epée",
+      "Headgear"
+    ],
+    "characteristics": [
+      "Force"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Sergent Archer",
+    "career": "Archer",
+    "level": 3,
+    "skills": [
+      "Calme",
+      "Chevaucher (Cheval)",
+      "Commandement",
+      "Orientation"
+    ],
+    "talents": [
+      "Inébranlable",
+      "Tireur d'élite",
+      "Tireur embusqué",
+      "Vigilance"
+    ],
+    "trappings": [
+      "Symbole de grade",
+      "Uniforme de qualité"
+    ],
+    "characteristics": [
+      "Endurance"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Capitaine Archer",
+    "career": "Archer",
+    "level": 4,
+    "skills": [
+      "Savoir (Guerre)",
+      "Signes secrets (Éclaireur)"
+    ],
+    "talents": [
+      "Cœur vaillant",
+      "Exaltant",
+      "Seigneur de guerre",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Cheval de guerre léger",
+      "Lettre de nomination",
+      "Selle et Harnais",
+      "Symbole de grade"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Recrue Hallebardier",
+    "career": "Hallebardier",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Calme",
+      "Corps à corps (Armes d'hast)",
+      "Corps à corps (Base)",
+      "Esquive",
+      "Langue (Bataille)",
+      "Musicien (Tambour)",
+      "Représentation (Parade)",
+      "Résistance",
+      "Résistance à l'alcool"
+    ],
+    "talents": [
+      "Coude-à-coude",
+      "Guerrier né",
+      "Infatigable",
+      "Maîtrise des dés"
+    ],
+    "trappings": [
+      "Hallebarde",
+      "Plastron de cuir",
+      "Uniforme"
+    ],
+    "characteristics": [
+      "Agilité",
+      "Capacité de Combat",
+      "Endurance"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Hallebardier",
+    "career": "Hallebardier",
+    "level": 2,
+    "skills": [
+      "Escalade",
+      "Intimidation",
+      "Pari",
+      "Perception",
+      "Ragot",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Combattant en espace clos",
+      "Coup puissant",
+      "Sans peur (Au choix)",
+      "Savoir-vivre (Soldats)"
+    ],
+    "trappings": [
+      "Hallebarde de qualité",
+      "Heaume",
+      "Plastron d'acier"
+    ],
+    "characteristics": [
+      "Force"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Sergent Hallebardier",
+    "career": "Hallebardier",
+    "level": 3,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Commandement",
+      "Intuition",
+      "Orientation"
+    ],
+    "talents": [
+      "Cœur vaillant",
+      "Inébranlable",
+      "Seigneur de guerre",
+      "Vigilance"
+    ],
+    "trappings": [
+      "Symbole de grade",
+      "Uniforme de qualité"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Capitaine Hallebardier",
+    "career": "Hallebardier",
+    "level": 4,
+    "skills": [
+      "Charme",
+      "Savoir (Guerre)"
+    ],
+    "talents": [
+      "Exaltant",
+      "Orateur",
+      "Présence imposante",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Cheval de guerre léger",
+      "Epée de qualité",
+      "Lettre de nomination",
+      "Selle et Harnais",
+      "Symbole de grade"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Recrue Arquebusier",
+    "career": "Arquebusier",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Calme",
+      "Corps à corps (Base)",
+      "Esquive",
+      "Langue (Bataille)",
+      "Musicien (Fifre)",
+      "Perception",
+      "Projectiles (Poudre noire)",
+      "Résistance",
+      "Résistance à l'alcool"
+    ],
+    "talents": [
+      "Artilleur",
+      "Tir précis",
+      "Tireur de précision",
+      "Tireur embusqué"
+    ],
+    "trappings": [
+      "Arquebuse",
+      "Uniforme"
+    ],
+    "characteristics": [
+      "Agilité",
+      "Capacité de Tir",
+      "Dextérité"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Arquebusier",
+    "career": "Arquebusier",
+    "level": 2,
+    "skills": [
+      "Escalade",
+      "Intuition",
+      "Métier (Armurier)",
+      "Pari",
+      "Ragot",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Coude-à-coude",
+      "Rechargement rapide",
+      "Savoir-vivre (Soldats)",
+      "Tir rapide"
+    ],
+    "trappings": [
+      "Arquebuse de qualité",
+      "Large Feathered Hat"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Sergent Arquebusier",
+    "career": "Arquebusier",
+    "level": 3,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Commandement",
+      "Orientation",
+      "Projectiles (Ingénierie)"
+    ],
+    "talents": [
+      "Inébranlable",
+      "Tir sûr",
+      "Tireur d'élite",
+      "Vigilance"
+    ],
+    "trappings": [
+      "Symbole de grade",
+      "Uniforme de qualité"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Capitaine Arquebusier",
+    "career": "Arquebusier",
+    "level": 4,
+    "skills": [
+      "Charme",
+      "Savoir (Guerre)"
+    ],
+    "talents": [
+      "Cœur vaillant",
+      "Exaltant",
+      "Seigneur de guerre",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Cheval de guerre léger",
+      "Lettre de nomination",
+      "Selle et Harnais",
+      "Symbole de grade"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Cadet Joueur d'épée",
+    "career": "Joueur d'épée",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Calme",
+      "Corps à corps (Base)",
+      "Corps à corps (À deux mains)",
+      "Esquive",
+      "Langue (Bataille)",
+      "Musicien (Tambour)",
+      "Ragot",
+      "Résistance",
+      "Résistance à l'alcool"
+    ],
+    "talents": [
+      "Coude-à-coude",
+      "Guerrier né",
+      "Imperturbable",
+      "Infatigable"
+    ],
+    "trappings": [
+      "Plastron d'acier",
+      "Uniforme",
+      "Zweihänder"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Force",
+      "Force Mentale"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Joueur d'épée",
+    "career": "Joueur d'épée",
+    "level": 2,
+    "skills": [
+      "Corps à corps (Au choix)",
+      "Intimidation",
+      "Pari",
+      "Perception",
+      "Savoir (Héraldique)",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Combat instinctif",
+      "Coup puissant",
+      "Sans peur (Au choix)",
+      "Savoir-vivre (Soldats)"
+    ],
+    "trappings": [
+      "Armure de plates",
+      "Large Feathered Hat"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 4"
+  },
+  {
+    "label": "Sergent Joueur d'épée",
+    "career": "Joueur d'épée",
+    "level": 3,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Commandement",
+      "Intuition",
+      "Orientation"
+    ],
+    "talents": [
+      "Combattant en espace clos",
+      "Inébranlable",
+      "Seigneur de guerre",
+      "Vigilance"
+    ],
+    "trappings": [
+      "Manual on the art of Zweihänder fighting",
+      "Symbole de grade",
+      "Zweihänder de qualité"
+    ],
+    "characteristics": [
+      "Endurance"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Capitaine Joueur d'épée",
+    "career": "Joueur d'épée",
+    "level": 4,
+    "skills": [
+      "Charme",
+      "Savoir (Guerre)"
+    ],
+    "talents": [
+      "Cœur vaillant",
+      "Exaltant",
+      "Orateur",
+      "Présence imposante"
+    ],
+    "trappings": [
+      "Cheval de guerre léger",
+      "Lettre de nomination",
+      "Selle et Harnais",
+      "Symbole de grade",
+      "Uniforme de qualité"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Or 2"
+  },
+  {
+    "label": "Recrue",
+    "career": "Piquier",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Corps à corps (Armes d'hast)",
+      "Corps à corps (Base)",
+      "Escalade",
+      "Esquive",
+      "Langue (Bataille)",
+      "Langue (Tiléen)",
+      "Pari",
+      "Résistance",
+      "Résistance à l'alcool"
+    ],
+    "talents": [
+      "Coude-à-coude",
+      "Frappe réactive",
+      "Guerrier né",
+      "Très fort"
+    ],
+    "trappings": [
+      "Calotte de cuir",
+      "Pique",
+      "Plastron de cuir",
+      "Uniform in Unit Colours"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Endurance",
+      "Force"
+    ],
+    "status": "Bronze 5"
+  },
+  {
+    "label": "Piquier",
+    "career": "Piquier",
+    "level": 2,
+    "skills": [
+      "Calme",
+      "Guérison",
+      "Intimidation",
+      "Ragot",
+      "Savoir (Guerre)",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Combattant en espace clos",
+      "Maîtrise des dés",
+      "Sans peur (Cavalerie)",
+      "Savoir-vivre (Mercenaires)"
+    ],
+    "trappings": [
+      "Cotte de mailles",
+      "Dés",
+      "Heaume Ouvert"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Chef de File",
+    "career": "Piquier",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Intuition",
+      "Marchandage",
+      "Perception"
+    ],
+    "talents": [
+      "Combat instinctif",
+      "Pansement de fortune",
+      "Robuste",
+      "Vigilance"
+    ],
+    "trappings": [
+      "Plastron d'acier",
+      "Symbole de grade"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Argent 4"
+  },
+  {
+    "label": "Capitaine d'étendard",
+    "career": "Piquier",
+    "level": 4,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Savoir (Loi)"
+    ],
+    "talents": [
+      "Exaltant",
+      "Inébranlable",
+      "Seigneur de guerre",
+      "Très résistant"
+    ],
+    "trappings": [
+      "Banner-Bearer",
+      "Brassards d'acier",
+      "Cheval de guerre léger",
+      "Jambières d'acier",
+      "Symbole de grade",
+      "Uniforme de qualité",
+      "Unit Banner"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Arbalétrier",
+    "career": "Spécialiste de Siège",
+    "level": 1,
+    "skills": [
+      "Athlétisme",
+      "Corps à corps (Base)",
+      "Escalade",
+      "Langue (Bataille)",
+      "Pari",
+      "Projectiles (Arbalète)",
+      "Ragot",
+      "Résistance",
+      "Résistance à l'alcool",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Infatigable",
+      "Rechargement rapide",
+      "Savoir-vivre (Mercenaires)",
+      "Tireur de précision"
+    ],
+    "trappings": [
+      "Arbalète",
+      "Calotte de cuir",
+      "Chapeau à plume",
+      "Munitions",
+      "Pavise",
+      "Veste de cuir"
+    ],
+    "characteristics": [
+      "Capacité de Combat",
+      "Capacité de Tir",
+      "Force"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Spécialiste de Siège",
+    "career": "Spécialiste de Siège",
+    "level": 2,
+    "skills": [
+      "Corps à corps (À deux mains)",
+      "Intuition",
+      "Métier (Mineur)",
+      "Perception",
+      "Piégeage",
+      "Savoir (Ingénierie)"
+    ],
+    "talents": [
+      "Combattant en espace clos",
+      "Dur à cuire",
+      "Rat d'égout",
+      "Sens de l'orientation"
+    ],
+    "trappings": [
+      "Pelle",
+      "Pioche à deux mains"
+    ],
+    "characteristics": [
+      "Agilité"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Sapeur",
+    "career": "Spécialiste de Siège",
+    "level": 3,
+    "skills": [
+      "Commandement",
+      "Métier (Explosifs)",
+      "Projectiles (Catapulte)",
+      "Projectiles (Explosifs)"
+    ],
+    "talents": [
+      "Artilleur",
+      "Inébranlable",
+      "Maître artisan (Explosifs)",
+      "Tir précis"
+    ],
+    "trappings": [
+      "Books of Ballistics Tables",
+      "Munitions",
+      "Outils professionnels (Ingénieur)",
+      "Pistolet",
+      "Plastron d'acier",
+      "Set of Six 60-second Fuses"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Maître de Siège",
+    "career": "Spécialiste de Siège",
+    "level": 4,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Savoir (Loi)"
+    ],
+    "talents": [
+      "Perspicace",
+      "Seigneur de guerre",
+      "Travailleur qualifié (Ingénieur)",
+      "Vigilance"
+    ],
+    "trappings": [
+      "Cheval de guerre léger",
+      "Pavilion Tent with Body Servant",
+      "Vêtements de qualité"
+    ],
+    "characteristics": [
+      "Sociabilité"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Ribaud",
+    "career": "Suiveur de Camp",
+    "level": 1,
+    "skills": [
+      "Charme",
+      "Corps à corps (Au choix)",
+      "Divertissement (Au choix)",
+      "Esquive",
+      "Marchandage",
+      "Perception",
+      "Ragot",
+      "Représentation (Danse)",
+      "Résistance à l'alcool",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Attirant",
+      "Baratiner",
+      "Combat déloyal",
+      "Insignifiant"
+    ],
+    "trappings": [
+      "Bed Roll",
+      "Pack"
+    ],
+    "characteristics": [
+      "Agilité",
+      "Capacité de Combat",
+      "Sociabilité"
+    ],
+    "status": "Bronze 1"
+  },
+  {
+    "label": "Suiveur de Camp",
+    "career": "Suiveur de Camp",
+    "level": 2,
+    "skills": [
+      "Athlétisme",
+      "Discrétion (Rurale)",
+      "Pari",
+      "Projectiles (Au choix)",
+      "Résistance",
+      "Subornation"
+    ],
+    "talents": [
+      "Brouet",
+      "Maîtrise des dés",
+      "Nomade",
+      "Savoir-vivre (Soldats)"
+    ],
+    "trappings": [
+      "Chapeau de qualité",
+      "Tente"
+    ],
+    "characteristics": [
+      "Intelligence"
+    ],
+    "status": "Bronze 4"
+  },
+  {
+    "label": "Pillard Chevronné",
+    "career": "Suiveur de Camp",
+    "level": 3,
+    "skills": [
+      "Calme",
+      "Intimidation",
+      "Intuition",
+      "Langue (Au choix)"
+    ],
+    "talents": [
+      "Costaud",
+      "Inébranlable",
+      "Très résistant",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Vêtements de qualité"
+    ],
+    "characteristics": [
+      "Initiative"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Chef de Camp",
+    "career": "Suiveur de Camp",
+    "level": 4,
+    "skills": [
+      "Commandement",
+      "Évaluation"
+    ],
+    "talents": [
+      "Cœur vaillant",
+      "Exaltant",
+      "Obstiné",
+      "Orateur"
+    ],
+    "trappings": [
+      "Cheval de selle",
+      "Ring of Camp Followers",
+      "Selle et Harnais"
+    ],
+    "characteristics": [
+      "Endurance"
+    ],
+    "status": "Argent 4"
+  },
+  {
+    "label": "Arpenteur",
+    "career": "Cartographe",
+    "level": 1,
+    "skills": [
+      "Art (Cartographie)",
+      "Corps à corps (Base)",
+      "Discrétion (Rurale)",
+      "Escalade",
+      "Métier (Cartographe)",
+      "Orientation",
+      "Perception",
+      "Savoir (Géographie)",
+      "Survie en extérieur",
+      "Évaluation"
+    ],
+    "talents": [
+      "Artiste (Au choix)",
+      "Lire/Écrire",
+      "Nomade",
+      "Sens de l'orientation"
+    ],
+    "trappings": [
+      "Nécessaire d'écriture",
+      "Parchemin de vélin"
+    ],
+    "characteristics": [
+      "Dextérité",
+      "Initiative",
+      "Intelligence"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Cartographe",
+    "career": "Cartographe",
+    "level": 2,
+    "skills": [
+      "Charme",
+      "Chevaucher (Cheval)",
+      "Marchandage",
+      "Ragot",
+      "Résistance",
+      "Savoir (Héraldique)"
+    ],
+    "talents": [
+      "Bon marcheur (Au choix)",
+      "Fuite !",
+      "Imperturbable",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Cheval",
+      "Selle et Harnais",
+      "Theodolite"
+    ],
+    "characteristics": [
+      "Agilité"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Cartographe Reconnu",
+    "career": "Cartographe",
+    "level": 3,
+    "skills": [
+      "Intuition",
+      "Langue (Guilde)",
+      "Recherche",
+      "Signes secrets (Guilde)"
+    ],
+    "talents": [
+      "Doigts de fée",
+      "Inébranlable",
+      "Savoir-vivre (Guildes)",
+      "Studieux"
+    ],
+    "trappings": [
+      "Licence de Guilde",
+      "Vêtements de qualité"
+    ],
+    "characteristics": [
+      "Capacité de Combat"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Maître Cartographe",
+    "career": "Cartographe",
+    "level": 4,
+    "skills": [
+      "Langue (Au choix)",
+      "Savoir (Au choix)"
+    ],
+    "talents": [
+      "Cœur vaillant",
+      "Magnum Opus",
+      "Négociateur",
+      "Travailleur qualifié (Cartographe)"
+    ],
+    "trappings": [
+      "Quality Theodolite",
+      "Study"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Or 1"
+  },
+  {
+    "label": "Apprenti Artilleur",
+    "career": "Artilleur",
+    "level": 1,
+    "skills": [
+      "Calme",
+      "Conduite d'attelage",
+      "Corps à corps (Base)",
+      "Langue (Bataille)",
+      "Orientation",
+      "Perception",
+      "Projectiles (Arbalète ou Poudre noire ou Catapulte ou Ingénierie)",
+      "Résistance",
+      "Soin aux animaux",
+      "Évaluation"
+    ],
+    "talents": [
+      "Guerrier né",
+      "Infatigable",
+      "Rechargement rapide",
+      "Tireur de précision"
+    ],
+    "trappings": [
+      "Leather Apron"
+    ],
+    "characteristics": [
+      "Capacité de Tir",
+      "Initiative",
+      "Intelligence"
+    ],
+    "status": "Argent 1"
+  },
+  {
+    "label": "Artilleur",
+    "career": "Artilleur",
+    "level": 2,
+    "skills": [
+      "Métier (Armurier ou Charpentier)",
+      "Pari",
+      "Projectiles (Arbalète ou Poudre noire ou Catapulte ou Ing��nierie)",
+      "Ragot",
+      "Résistance à l'alcool",
+      "Survie en extérieur"
+    ],
+    "talents": [
+      "Officier de Siège",
+      "Savoir-vivre (Soldats)",
+      "Sens de l'orientation",
+      "Tireur embusqué"
+    ],
+    "trappings": [
+      "Arme (Au choix)",
+      "Outils professionnels",
+      "Télescope",
+      "Uniforme"
+    ],
+    "characteristics": [
+      "Endurance"
+    ],
+    "status": "Argent 3"
+  },
+  {
+    "label": "Capitaine Artilleur",
+    "career": "Artilleur",
+    "level": 3,
+    "skills": [
+      "Chevaucher (Cheval)",
+      "Commandement",
+      "Intuition",
+      "Savoir (Artillerie)"
+    ],
+    "talents": [
+      "Bricoleur",
+      "Inébranlable",
+      "Lire/Écrire",
+      "Vigilance"
+    ],
+    "trappings": [
+      "Symbole de grade",
+      "Uniforme de qualité"
+    ],
+    "characteristics": [
+      "Force Mentale"
+    ],
+    "status": "Argent 5"
+  },
+  {
+    "label": "Maître Artilleur",
+    "career": "Artilleur",
+    "level": 4,
+    "skills": [
+      "Charme",
+      "Savoir (Guerre)"
+    ],
+    "talents": [
+      "Cœur vaillant",
+      "Exaltant",
+      "Orateur",
+      "Voyageur aguerri"
+    ],
+    "trappings": [
+      "Artillery piece",
+      "Carte",
+      "Cheval de guerre léger",
+      "Lettre de nomination",
+      "Limber",
+      "Selle et Harnais",
+      "Symbole de grade"
+    ],
+    "characteristics": [
+      "Agilité"
+    ],
+    "status": "Or 1"
   }
 ]
