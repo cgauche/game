@@ -510,14 +510,15 @@ export function IsoStage() {
     for (const ent of scene.entities) {
       if (ent.kind === 'heroStart' || ent.kind === 'prop') continue;
       if (ent.combat?.hiddenUntilCombat) continue; // ennemi d'embuscade : invisible avant le combat
-      if (covered(ent.pos.x, ent.pos.y)) continue;
+      const ez = ent.z ?? 0;
+      if (!ez && covered(ent.pos.x, ent.pos.y)) continue; // l'occlusion par décor ne vaut qu'au sol
       const r = pickBackend({ kind: 'sceneEntity', ent }, viewMode);
       if (r.backend === 'sprite') {
         out.push({
-          d: depth(ent.pos.x, ent.pos.y, d),
+          d: depth(ent.pos.x, ent.pos.y, d, ez),
           el: wrap(
             r.id,
-            <BodyToken key={r.id} x={ent.pos.x} y={ent.pos.y} dims={d} scale={0.55} fx={ent.anim}>
+            <BodyToken key={r.id} x={ent.pos.x} y={ent.pos.y} z={ez} dims={d} scale={0.55} fx={ent.anim}>
               <g dangerouslySetInnerHTML={{ __html: entitySprite(ent) }} />
             </BodyToken>,
           ),
@@ -528,10 +529,10 @@ export function IsoStage() {
         const off = (sizeFootprint(entitySize(ent)) - 1) / 2;
         const ex = ent.pos.x + off, ey = ent.pos.y + off;
         out.push({
-          d: depth(ex, ey, d) + dBoost,
+          d: depth(ex, ey, d, ez) + dBoost,
           el: wrap(
             r.id,
-            <BodyToken key={r.id} x={ex} y={ey} dims={d} scale={base * r.speciesScale * sizeTokenScale(entitySize(ent))} bakedDeath flat={isTop} portraitBox={r.portraitBox} discR={discRfn(entitySize(ent))}>
+            <BodyToken key={r.id} x={ex} y={ey} z={ez} dims={d} scale={base * r.speciesScale * sizeTokenScale(entitySize(ent))} bakedDeath flat={isTop} portraitBox={r.portraitBox} discR={discRfn(entitySize(ent))}>
               {r.body}
             </BodyToken>,
           ),
@@ -615,8 +616,8 @@ export function IsoStage() {
   // token()/tokenNode() : adaptateurs minces vers la coquille partagée BodyToken (positionnement
   // unique). token() = corps SVG string ; tokenNode() = enfant React (rig) dont la mort est déjà
   // bakée (CORPSE_POSE / pose effondrée) → pas de bascule externe (bakedDeath).
-  const token = (id: string, x: number, y: number, inner: string, scale: number, ringColor?: string, dim?: boolean, fx?: string, walking?: boolean, bakedDeath?: boolean) => (
-    <BodyToken key={id} x={x} y={y} dims={dims} scale={scale} ring={ringColor} dim={dim} walking={walking} fx={fx} bakedDeath={bakedDeath}>
+  const token = (id: string, x: number, y: number, inner: string, scale: number, ringColor?: string, dim?: boolean, fx?: string, walking?: boolean, bakedDeath?: boolean, z = 0) => (
+    <BodyToken key={id} x={x} y={y} z={z} dims={dims} scale={scale} ring={ringColor} dim={dim} walking={walking} fx={fx} bakedDeath={bakedDeath}>
       <g dangerouslySetInnerHTML={{ __html: inner }} />
     </BodyToken>
   );
@@ -636,13 +637,14 @@ export function IsoStage() {
   // agrandi au côté max, profondeur au coin le plus PROCHE (comme les bâtiments).
   for (const ent of scene.entities) {
     if (ent.kind !== 'prop') continue;
+    const ez = ent.z ?? 0;
     const fg = decorFootGeometry(ent.foot);
     const px = ent.pos.x + fg.offX, py = ent.pos.y + fg.offY;
-    const pd = depth(ent.pos.x + (ent.foot ? ent.foot.w - 1 : 0), ent.pos.y + (ent.foot ? ent.foot.h - 1 : 0), dims);
+    const pd = depth(ent.pos.x + (ent.foot ? ent.foot.w - 1 : 0), ent.pos.y + (ent.foot ? ent.foot.h - 1 : 0), dims, ez);
     if (ent.interact) {
       // Affordance : halo pulsé + onde « sonar » au sol, et étincelle dorée flottant AU-DESSUS du
       // décor fouillable — l'objet cliquable se repère de loin, sans texte (cf. anim.css).
-      const c = tileCenter(px, py, dims);
+      const c = tileCenter(px, py, dims, ez);
       objs.push({
         d: pd - 0.02, // juste sous le sprite
         el: (
@@ -664,7 +666,7 @@ export function IsoStage() {
         ),
       });
     }
-    objs.push({ d: pd, el: token(`e-${ent.id}`, px, py, entitySprite(ent), 0.55 * fg.scale, undefined, false, ent.anim) });
+    objs.push({ d: pd, el: token(`e-${ent.id}`, px, py, entitySprite(ent), 0.55 * fg.scale, undefined, false, ent.anim, false, false, ez) });
   }
 
   // Leader VISIBLE du groupe (#27b : si le principal est mort/à terre, le suivant debout) —

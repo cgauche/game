@@ -143,6 +143,12 @@ describe('editorState — pose', () => {
     const { scene, id } = placeEntity(emptyScene(10, 10), 'personnage', 'Loup', { x: 1, y: 1 });
     expect(scene.entities.find((e) => e.id === id)!.ref).toBe('Loup');
   });
+  it('placeEntity : pose sur l’étage courant (z), absent au sol', () => {
+    const ground = placeEntity(emptyScene(10, 10), 'prop', 'tonneau', { x: 1, y: 1 }, 0);
+    expect(ground.scene.entities.find((e) => e.id === ground.id)!.z).toBeUndefined();
+    const upper = placeEntity(emptyScene(10, 10), 'prop', 'tonneau', { x: 1, y: 1 }, 2);
+    expect(upper.scene.entities.find((e) => e.id === upper.id)!.z).toBe(2);
+  });
   it('addTrigger / addRestZone créent au bon endroit', () => {
     const t = addTrigger(emptyScene(10, 10), { x: 1, y: 1, w: 2, h: 2 });
     expect(t.scene.triggers[0].id).toBe(t.id);

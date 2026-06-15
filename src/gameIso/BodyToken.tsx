@@ -19,6 +19,7 @@ const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 export function BodyToken({
   x,
   y,
+  z = 0,
   dims,
   scale,
   children,
@@ -41,6 +42,8 @@ export function BodyToken({
 }: {
   x: number;
   y: number;
+  /** Étage (niveau de scène) : un z>0 soulève le token de z·LEVEL_H px. 0 = sol (défaut). */
+  z?: number;
   dims: Dims;
   scale: number;
   children: ReactNode;
@@ -72,7 +75,7 @@ export function BodyToken({
   /** Id du combattant exposé en `data-cid` (ciblage DOM des recettes Playwright). */
   cid?: string;
 }) {
-  const { cx, cy } = tileCenter(x, y, dims); // feetY = cy : pieds au centre de la tuile
+  const { cx, cy } = tileCenter(x, y, dims, z); // feetY = cy : pieds au centre de la tuile (étage z)
   const hpRatio = hp && hp.max > 0 ? clamp01(hp.current / hp.max) : null;
   const iconList = icons ?? [];
   const nIcons = iconList.length + (iconsMore > 0 ? 1 : 0);

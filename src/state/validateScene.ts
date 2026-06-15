@@ -82,9 +82,11 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
     dup(s.dialogues.map((d) => d.id), 'dialogue');
     dup(s.encounters.map((e) => e.id), 'encounter');
 
+    const levelZs = new Set(s.levels.map((l) => l.z));
     for (const e of s.entities) {
       if (e.dialogueId && !dlgIds.has(e.dialogueId)) add('error', 'entity', e.id, `${e.label ?? e.id} → dialogue inexistant « ${e.dialogueId} »`);
       if (!within(e.pos.x, e.pos.y)) add('warn', 'entity', e.id, `${e.label ?? e.id} hors carte (${e.pos.x},${e.pos.y})`);
+      if (e.z && !levelZs.has(e.z)) add('warn', 'entity', e.id, `${e.label ?? e.id} sur étage ${e.z} inexistant`);
     }
     for (const b of s.buildings ?? []) {
       if (b.interiorScene && !sceneIds.has(b.interiorScene)) add('error', 'building', b.id, `${b.label ?? b.id} → scène intérieure inexistante « ${b.interiorScene} »`);

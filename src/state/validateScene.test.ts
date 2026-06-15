@@ -21,6 +21,12 @@ describe('validateScene', () => {
     expect(w.some((x) => x.scope === 'entity' && x.refId === 'e-0' && /dialogue inexistant/.test(x.message))).toBe(true);
   });
 
+  it('entité sur un étage inexistant → avertissement', () => {
+    const s = base(); // un seul niveau z=0
+    s.entities.push({ id: 'e-z', kind: 'personnage', pos: { x: 1, y: 1 }, z: 2 });
+    expect(msgs(validateScene([s])).some((m) => /étage 2 inexistant/.test(m))).toBe(true);
+  });
+
   it('effet transition vers scène inconnue → erreur', () => {
     const s = base();
     s.triggers.push({ id: 't-0', rect: { x: 0, y: 0, w: 1, h: 1 }, effects: [{ type: 'transition', scene: 'nope' }] });

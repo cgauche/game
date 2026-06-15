@@ -109,9 +109,9 @@ export function EditorCanvas({
         }
         return;
       case 'entity': {
-        const existing = scene.entities.find((en) => en.pos.x === p.x && en.pos.y === p.y);
+        const existing = scene.entities.find((en) => en.pos.x === p.x && en.pos.y === p.y && (en.z ?? 0) === currentLevel);
         if (existing) return onSelect({ type: 'entity', id: existing.id });
-        const out = placeEntity(scene, tool.kind, tool.ref, p);
+        const out = placeEntity(scene, tool.kind, tool.ref, p, currentLevel);
         setScene(out.scene);
         onSelect({ type: 'entity', id: out.id });
         return;

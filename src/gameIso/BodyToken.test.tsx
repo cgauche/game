@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { BodyToken } from './BodyToken';
-import type { Dims } from './iso';
+import { tileCenter, LEVEL_H, type Dims } from './iso';
 
 const dims: Dims = { w: 5, h: 5, view: 'top' };
 
@@ -30,5 +30,28 @@ describe('BodyToken — mode flat (disque)', () => {
     );
     expect(html).toContain('translate(-36,-90)'); // -60*0.6 , -150*0.6
     expect(html).not.toContain('<clipPath');
+  });
+});
+
+describe('BodyToken — étage (z)', () => {
+  const isod: Dims = { w: 5, h: 5 }; // iso
+  const transOf = (html: string) => {
+    const m = html.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/);
+    if (!m) throw new Error('pas de transform translate(...px): ' + html.slice(0, 120));
+    return { cx: parseFloat(m[1]), cy: parseFloat(m[2]) };
+  };
+
+  it('soulève le token de z·LEVEL_H (cy plus petit, cx inchangé)', () => {
+    const h0 = renderToStaticMarkup(<svg><BodyToken x={2} y={2} dims={isod} scale={0.6}><g /></BodyToken></svg>);
+    const h1 = renderToStaticMarkup(<svg><BodyToken x={2} y={2} dims={isod} scale={0.6} z={1}><g /></BodyToken></svg>);
+    const t0 = transOf(h0), t1 = transOf(h1);
+    expect(t1.cx).toBe(t0.cx);
+    expect(t0.cy - t1.cy).toBe(LEVEL_H);
+  });
+
+  it('z=1 positionne le token via tileCenter(...,1)', () => {
+    const html = renderToStaticMarkup(<svg><BodyToken x={1} y={3} dims={isod} scale={0.6} z={1}><g /></BodyToken></svg>);
+    const { cx, cy } = tileCenter(1, 3, isod, 1);
+    expect(transOf(html)).toEqual({ cx, cy });
   });
 });

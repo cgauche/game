@@ -101,6 +101,9 @@ export interface SceneEntity {
   id: string;
   kind: EntityKind;
   pos: { x: number; y: number };
+  /** Étage (niveau de scène, cf. `levels`). 0 ou absent = sol ; >0 = posée sur un étage supérieur,
+   *  rendue soulevée de z·LEVEL_H px et triée par-dessus le niveau inférieur. */
+  z?: number;
   /** Orientation MONDE (8 directions) — éditable, projetée au rendu (project + camRot). */
   facing?: Dir8;
   label?: string;

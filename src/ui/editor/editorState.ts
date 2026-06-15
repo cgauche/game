@@ -209,11 +209,12 @@ export function removeLevel(scene: Scene, z: number): Scene {
 
 /** Pose une entité à p (id frais) — `ref` = décor/espèce précise (pose directe depuis le catalogue).
  *  Les props appliquent leurs défauts de catalogue (empreinte, interactif si fouillable). */
-export function placeEntity(scene: Scene, kind: EntityKind, ref: string | undefined, p: Pt): { scene: Scene; id: string } {
+export function placeEntity(scene: Scene, kind: EntityKind, ref: string | undefined, p: Pt, z = 0): { scene: Scene; id: string } {
   const id = nextEntityId(kind, scene.entities.map((e) => e.id));
   let ent: SceneEntity = { id, kind, pos: { ...p }, label: KIND_LABEL[kind] };
   if (ref && kind === 'prop') ent = { ...ent, ...propRefPatch(ref, false), label: PROPS[ref]?.label };
   else if (ref && kind === 'personnage' && ref !== 'Villageois') ent = { ...ent, ref, label: ref };
+  if (z) ent = { ...ent, z }; // pose sur l'étage courant ; sol (0) = champ absent
   return { scene: { ...scene, entities: [...scene.entities, ent] }, id };
 }
 

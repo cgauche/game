@@ -491,6 +491,16 @@ function EntityPanel({
             <option value="NO">Nord-Ouest</option>
           </select>
         </label>
+        {scene.levels.length > 1 && (
+          <label className="ed-field">
+            Étage
+            <select value={ent.z ?? 0} onChange={(e) => { const v = Number(e.target.value); updateSel({ z: v || undefined }); }}>
+              {[...scene.levels].sort((a, b) => a.z - b.z).map((l) => (
+                <option key={l.z} value={l.z}>{l.z === 0 ? 'Sol (0)' : `Étage ${l.z}`}</option>
+              ))}
+            </select>
+          </label>
+        )}
       </Fold>
       {ent.kind === 'personnage' && (
         <>
