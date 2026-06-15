@@ -9944,6 +9944,9 @@
       },
       {
         "talentId": "vivacite"
+      },
+      {
+        "talentId": "effraction"
       }
     ],
     "trappings": [],
@@ -12664,6 +12667,9 @@
       },
       {
         "talentId": "fuite"
+      },
+      {
+        "talentId": "effraction"
       }
     ],
     "trappings": [],
@@ -12806,6 +12812,9 @@
       },
       {
         "talentId": "mains-agiles"
+      },
+      {
+        "talentId": "effraction"
       }
     ],
     "trappings": [],
@@ -12924,6 +12933,9 @@
       },
       {
         "talentId": "fuite"
+      },
+      {
+        "talentId": "effraction"
       }
     ],
     "trappings": [],
@@ -13068,6 +13080,9 @@
       },
       {
         "talentId": "vision-nocturne"
+      },
+      {
+        "talentId": "effraction"
       }
     ],
     "trappings": [],
@@ -22344,6 +22359,9 @@
       },
       {
         "talentId": "brouet"
+      },
+      {
+        "talentId": "pas-de-cote"
       }
     ],
     "trappings": [],
@@ -25524,6 +25542,9 @@
       },
       {
         "talentId": "imperturbable"
+      },
+      {
+        "talentId": "vigilance"
       }
     ],
     "trappings": [],
@@ -25692,6 +25713,9 @@
       },
       {
         "talentId": "imperturbable"
+      },
+      {
+        "talentId": "vigilance"
       }
     ],
     "trappings": [],
@@ -34085,6 +34109,9 @@
       },
       {
         "talentId": "seconde-vue"
+      },
+      {
+        "talentId": "detection-d-artefact"
       }
     ],
     "trappings": [],
@@ -35122,6 +35149,9 @@
       },
       {
         "talentId": "combat-instinctif"
+      },
+      {
+        "talentId": "vigilance"
       }
     ],
     "trappings": [],
@@ -35299,6 +35329,9 @@
       },
       {
         "talentId": "exaltant"
+      },
+      {
+        "talentId": "vigilance"
       }
     ],
     "trappings": [],
@@ -36551,6 +36584,9 @@
       },
       {
         "talentId": "vision-nocturne"
+      },
+      {
+        "talentId": "vigilance"
       }
     ],
     "trappings": [],
@@ -36740,6 +36776,9 @@
       },
       {
         "talentId": "vision-nocturne"
+      },
+      {
+        "talentId": "vigilance"
       }
     ],
     "trappings": [],
