@@ -151,22 +151,25 @@ describe('Cascade séquentielle influençable', () => {
     expect(useGame.getState().pendingCascade).toBeNull();
   });
 
-  it('« Tout lancer » résout une séquence MIXTE (jet roulé, choix par défaut, affichage) → bilan', () => {
+  it('« Tout résoudre » résout les étapes auto mais S\'ARRÊTE sur un CHOIX (pas d\'auto-tranche)', () => {
     useGame.getState().seedRng(7);
     const h = hero();
     registerCascadeApplier('pick', (_g, _s, step) => { applied.push({ kind: 'pick', success: step.chosen === 'a' }); return {}; });
     registerCascadeApplier('note', (_g, _s) => { applied.push({ kind: 'note', success: true }); return {}; });
     const steps: CascadeStep[] = [
-      step('s1', h.id), // jet (tally)
-      { id: 'c', kind: 'pick', actorId: h.id, options: [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }], interactive: true }, // défaut = 'a'
-      { id: 'd', kind: 'note', actorId: h.id, interactive: true }, // affichage
+      step('s1', h.id), // jet (tally) — auto-résolu
+      { id: 'c', kind: 'pick', actorId: h.id, options: [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }], interactive: true }, // CHOIX → STOP
+      { id: 'd', kind: 'note', actorId: h.id, interactive: true }, // affichage (pas atteint tant que le choix n'est pas tranché)
     ];
     startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps });
     useGame.getState().cascadeResolveAll();
+    expect(applied.map((a) => a.kind)).toEqual(['tally']); // le jet est résolu, on S'ARRÊTE sur le choix
+    expect(useGame.getState().pendingCascade!.cursor).toBe(1); // curseur SUR le choix (le joueur doit trancher)
+    // Le joueur tranche → on enchaîne le reste.
+    useGame.getState().cascadeChoose('c', 'a');
+    useGame.getState().cascadeNext(); // valide le choix → affichage
+    useGame.getState().cascadeNext(); // valide l'affichage → fin
     expect(applied.map((a) => a.kind)).toEqual(['tally', 'pick', 'note']);
-    expect(applied[1]).toEqual({ kind: 'pick', success: true }); // défaut = 1ʳᵉ option 'a'
-    expect(useGame.getState().pendingCascade!.cursor).toBe(3); // bilan (curseur en fin)
-    useGame.getState().cascadeFinish();
     expect(useGame.getState().pendingCascade).toBeNull();
   });
 
@@ -196,5 +199,24 @@ describe('Cascade séquentielle influençable', () => {
     expect(stepInteraction(steps[0])).toBe('affichage'); // ni target ni options
     expect(steps[0].actorId).toBe('x');
     expect(steps[1].outcome).toEqual(['Cible Aveuglée 2 rounds.']);
+  });
+
+  it('liveMerge : un applier qui APPEND une étape (conséquence foldée) la préserve à la validation', () => {
+    const h = hero();
+    // Simule une conséquence FOLDÉE (déviation) : son applier re-déclenche le reste de l'attaque, qui
+    // APPEND une étape au pending (via set, comme pushReveal). advanceCascade doit la préserver.
+    registerCascadeApplier('trigger', (get, set) => {
+      const pc = get().pendingCascade!;
+      set({ pendingCascade: { ...pc, participants: [...pc.participants, { id: 'appended', kind: 'note', actorId: h.id, outcome: ['conséquence ajoutée'], interactive: true }] } });
+      return {};
+    });
+    registerCascadeApplier('note', (_g, _s) => { applied.push({ kind: 'note', success: true }); return {}; });
+    const trig: CascadeStep = { id: 't', kind: 'trigger', actorId: h.id, outcome: ['déclencheur'], interactive: true };
+    startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [trig] });
+    useGame.getState().cascadeNext(); // valide 'trigger' → APPEND 'appended' ; le pending NE se ferme PAS
+    const p = useGame.getState().pendingCascade;
+    expect(p).toBeTruthy(); // pas finalisé : l'étape appendée est conservée
+    expect(p!.participants.map((s) => s.id)).toEqual(['t', 'appended']);
+    expect(p!.cursor).toBe(1); // curseur sur l'étape appendée
   });
 });

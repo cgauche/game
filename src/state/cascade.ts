@@ -104,7 +104,7 @@ export function startCascade(
 
 /** Applique la conséquence d'une étape + ses insertions ; renvoie le tableau d'étapes mis à jour et
  *  les lignes de journal. Partagé par les deux pilotes (interactif et immédiat). */
-function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number): { steps: CascadeStep[]; journal: string[] } {
+function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMerge = false): { steps: CascadeStep[]; journal: string[] } {
   const step = steps[i];
   const hero = step.actorId ? actorIn(get(), step.actorId) : undefined;
   const out = cascadeAppliers[step.kind]?.apply(get, set, step, hero, { steps, index: i });
@@ -114,7 +114,14 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number): { step
   // étape d'AFFICHAGE porte son contenu d'avance (`outcome` pré-rempli) avec un applier muet → on le
   // PRÉSERVE (sinon le journal vide l'effacerait à la validation).
   const shown = journal.length ? journal : (step.outcome ?? []);
-  let next = steps.map((x, k) => (k === i ? { ...x, committed: true, outcome: shown } : x));
+  // Pilote INTERACTIF (`liveMerge`) : l'applier d'une conséquence de combat FOLDÉE (déviation) re-déclenche
+  // le reste de l'attaque, qui APPEND des étapes au pending (via pushReveal). On repart alors des
+  // participants COURANTS (post-applier) pour préserver ces appends — le pending est EN PHASE ici
+  // (advanceCascade). Les pilotes BATCH ne l'activent PAS (leur tableau local porte des jets/choix pas
+  // encore posés dans le pending).
+  const live = liveMerge ? get().pendingCascade?.participants : undefined;
+  const base = live && live.length >= steps.length && live[i]?.id === step.id ? live : steps;
+  let next = base.map((x, k) => (k === i ? { ...x, committed: true, outcome: shown } : x));
   if (out?.insert?.length) next = [...next.slice(0, i + 1), ...out.insert, ...next.slice(i + 1)];
   return { steps: next, journal };
 }
@@ -133,7 +140,7 @@ export function advanceCascade(get: Get, set: Set): PendingCascade | null {
   let steps = p.participants;
   // La conséquence d'une étape vit sur l'ÉTAPE (`outcome`, affichée dans la pile) — pas dupliquée
   // dans `log` (réservé aux notes hors-jet : entretien). Évite le doublon « X contracte… » écran/journal.
-  if (cur) steps = commitStep(get, set, steps, p.cursor).steps;
+  if (cur) steps = commitStep(get, set, steps, p.cursor, true).steps; // liveMerge : préserve les appends d'une conséquence foldée
   const next = p.cursor + 1;
   if (next >= steps.length) {
     set({ pendingCascade: null });
@@ -159,8 +166,9 @@ export function resolveRemainingCascade(get: Get, set: Set): void {
       const result: CascadeRoll = { roll: t.roll, target: st.target!, sl: t.sl, success: t.success };
       steps = steps.map((x, k) => (k === i ? { ...x, result } : x));
     } else if (stepInteraction(st) === 'choix' && st.chosen == null) {
-      const key = st.defaultChoice ?? st.options![0]?.key;
-      if (key != null) steps = steps.map((x, k) => (k === i ? { ...x, chosen: key } : x));
+      // « Tout résoudre » ne TRANCHE pas un CHOIX du joueur (dévier/subir, piéger…) : on s'arrête dessus.
+      set({ pendingCascade: { ...p, participants: steps, cursor: i, log } });
+      return;
     } // affichage : rien à résoudre avant la conséquence
     const r = commitStep(get, set, steps, i);
     steps = r.steps;
