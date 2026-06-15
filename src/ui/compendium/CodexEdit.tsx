@@ -12,6 +12,7 @@ import * as fs from '../../data/fsPersist';
 import { inferFields, type FieldDesc } from './editFields';
 import { MonsterPartsFields } from '../editor/MonsterPartsFields';
 import { FlowEditor } from '../editor/FlowEditor';
+import { JsonField } from '../editor/JsonField';
 import { RACES } from '../../gameIso/rig/races';
 import { CreaturePreview } from './CreaturePreview';
 import type { EntityAppearance } from '../../state/scene';
@@ -175,7 +176,7 @@ function Field({ field, value, onChange }: { field: FieldDesc; value: unknown; o
     const keys = Object.keys(rec);
     return <div className="ed-field"><span>{key}</span>{keys.length === 0 ? <em className="de-hint">vide</em> : <div className="de-grid">{keys.map((k) => <label key={k} className="de-cell"><span>{k}</span><input type="number" value={rec[k] ?? ''} onChange={(e) => onChange({ ...rec, [k]: e.target.value === '' ? null : Number(e.target.value) })} /></label>)}</div>}</div>;
   }
-  if (kind === 'json') return <JsonField field={field} value={value} onChange={onChange} />;
+  if (kind === 'json') return <JsonField label={field.key} value={value} onChange={onChange} />;
   return <label className="ed-field"><span>{key}</span><input value={(value as string) ?? ''} onChange={(e) => onChange(field.nullable && e.target.value === '' ? null : e.target.value)} /></label>;
 }
 
@@ -185,13 +186,3 @@ function RefDatalist({ ds }: { ds: DatasetKey }) {
   return <datalist id={`dl-${ds}`}>{labels.map((l) => <option key={l} value={l} />)}</datalist>;
 }
 
-function JsonField({ field, value, onChange }: { field: FieldDesc; value: unknown; onChange: (v: unknown) => void }) {
-  const [raw, setRaw] = useState(() => JSON.stringify(value ?? null, null, 2));
-  const [err, setErr] = useState(false);
-  return (
-    <label className="ed-field"><span>{field.key} <em className="de-hint">(JSON)</em></span>
-      <textarea rows={4} className={err ? 'de-invalid' : ''} value={raw}
-        onChange={(e) => { setRaw(e.target.value); try { onChange(JSON.parse(e.target.value)); setErr(false); } catch { setErr(true); } }} />
-    </label>
-  );
-}
