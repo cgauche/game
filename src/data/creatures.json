@@ -12383,6 +12383,10 @@
       },
       {
         "talentId": "artiste"
+      },
+      {
+        "talentId": "maitre-artisan",
+        "spec": "Au choix"
       }
     ],
     "trappings": [],
@@ -12537,6 +12541,10 @@
       },
       {
         "talentId": "artiste"
+      },
+      {
+        "talentId": "maitre-artisan",
+        "spec": "Au choix"
       }
     ],
     "trappings": [],
@@ -13675,6 +13683,10 @@
       },
       {
         "talentId": "brouet"
+      },
+      {
+        "talentId": "maitre-artisan",
+        "spec": "Au choix"
       }
     ],
     "trappings": [],
@@ -13856,6 +13868,10 @@
       },
       {
         "talentId": "brouet"
+      },
+      {
+        "talentId": "maitre-artisan",
+        "spec": "Au choix"
       }
     ],
     "trappings": [],
@@ -33017,6 +33033,10 @@
       },
       {
         "talentId": "nomade"
+      },
+      {
+        "talentId": "maitre-artisan",
+        "spec": "Ingénierie"
       }
     ],
     "trappings": [],
@@ -33196,8 +33216,8 @@
         "talentId": "magnum-opus"
       },
       {
-        "talentId": "travailleur-qualifie",
-        "spec": "Engingneurie"
+        "talentId": "maitre-artisan",
+        "spec": "Ingénierie"
       },
       {
         "talentId": "savant",
