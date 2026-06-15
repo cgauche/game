@@ -24411,5 +24411,97 @@
       "book": "ZI",
       "page": 97
     }
+  },
+  {
+    "label": "Griffon (Zoo Impérial)",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 6,
+      "CC": 50,
+      "CT": null,
+      "F": 50,
+      "E": 50,
+      "I": 45,
+      "Ag": 60,
+      "Dex": null,
+      "Int": 20,
+      "FM": 40,
+      "Soc": null,
+      "B": 80
+    },
+    "traits": [
+      "Armure 1",
+      "Bestial",
+      "Redoutable",
+      "Taille (Énorme)",
+      "Vision nocturne",
+      "Vol 80",
+      "Arme (Serres) +9",
+      "Morsure (Bec crochu) +9"
+    ],
+    "optionals": [
+      "Dressé (Dompté, Garder, Guerre, Magie, Monture)",
+      "Immunité psychologique",
+      "Remplacer Bestial par un bonus de +20 en Soc",
+      "Territorial"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Version ZI du griffon, plus complète que celle du Livre de Base. La tête, les pattes avant et les ailes de ces gros prédateurs rappellent celles de rapaces, tandis que leurs pattes arrière sont celles de chats sauvages. Créatures sacrées de l'Empire, impossibles à « dompter » mais réputées pour leur loyauté ; adversaires rusés qui préfèrent souvent mourir plutôt que subir une défaite.<br><br>Cri perçant : un griffon qui charge peut dépenser deux Avantages pour hurler sur ses ennemis (attaque gratuite). Tous les adversaires dans un rayon de (Bonus d'Endurance) mètres doivent réussir un Test de Force Mentale Difficile (-20) ou gagner un État Assommé.<br><br>Comme l'éclair : les serres ont l'Atout d'arme Rapide.",
+    "source": {
+      "book": "ZI",
+      "page": 20
+    },
+    "appearance": {
+      "species": "Griffon"
+    }
+  },
+  {
+    "label": "Vouivre (Zoo Impérial)",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 4,
+      "CC": 55,
+      "CT": null,
+      "F": 60,
+      "E": 55,
+      "I": 15,
+      "Ag": 45,
+      "Dex": null,
+      "Int": 10,
+      "FM": 50,
+      "Soc": null,
+      "B": 84
+    },
+    "traits": [
+      "Armure 2",
+      "Bestial",
+      "Taille (Énorme)",
+      "Vol 90",
+      "Arme (Crocs) +10 (Infecté)",
+      "Attaque caudale +12 (Venin)"
+    ],
+    "optionals": [
+      "Cornes",
+      "Dressé (Dompté, Garder, Guerre, Magie, Monture)",
+      "Redoutable",
+      "Souffle (Poison) +10"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Version ZI de la vouivre (wyvern), plus complète que celle du Livre de Base. Reptiles charognards ailés des Montagnes du Bord du Monde, qui ne ressemblent à des dragons que de loin : plus petits, sans pattes avant, solidement bâtis comme des taureaux à écailles. Les plus dangereux seigneurs de guerre orques en chevauchent parfois.<br><br>Malveillance de la vouivre : un ennemi qui gagne un État Surpris à cause d'une vouivre doit réussir un Test de Force Mentale ou succomber à la malédiction (-10 à tous ses Tests, incapable d'utiliser ses Points de Chance) jusqu'à ce que la vouivre meure ou que la cible ait subi 5 Blessures ou plus.",
+    "source": {
+      "book": "ZI",
+      "page": 34
+    },
+    "appearance": {
+      "species": "Dragon"
+    }
   }
 ]
