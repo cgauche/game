@@ -12,7 +12,8 @@ import type { Effect } from '../../state/scene';
  * trigger, effets d'interact, flag de désamorçage mal nommé…).
  */
 describe('Scénario « Opéra — Bombe » : le câblage en données compose', () => {
-  beforeEach(() => useGame.setState({ battle: null, flags: {}, scheduledEffects: [], gameTime: 20 * 60 }));
+  // partyPos dans l'antichambre (le souffle de zone cible le groupe à partyPos hors combat).
+  beforeEach(() => useGame.setState({ battle: null, flags: {}, scheduledEffects: [], gameTime: 20 * 60, partyPos: { x: 11, y: 6 } }));
 
   const armTrigger = scenario.scene.triggers.find((t) => t.id === 'armer-bombe')!;
   const plant = scenario.scene.entities.find((e) => e.id === 'plante')!;

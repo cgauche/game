@@ -60,8 +60,9 @@ scene.triggers.push({
       cancelFlag: 'bombeDesamorcee',
       effects: [
         { type: 'journal', text: 'UNE EXPLOSION DÉCHIRE L’ANTICHAMBRE !' },
-        { type: 'inflictDamage', target: 'party', amount: 15 },
-        { type: 'applyCondition', target: 'party', name: 'En flammes' },
+        // Souffle centré sur la plante piégée, assez large pour déchirer toute l'antichambre (RAW :
+        // « les parois de la loge, l'antichambre et les loges voisines ») ; dégâts tirés + En flammes.
+        { type: 'zoneBlast', center: { x: 11, y: 6 }, radius: 10, damage: '1d10+15', conditions: [{ name: 'En flammes' }] },
       ],
     },
   ],
