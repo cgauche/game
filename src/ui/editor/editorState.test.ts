@@ -100,11 +100,11 @@ describe('editorState — deleteSel', () => {
 describe('editorState — peinture', () => {
   it('paintTiles peint un carré 3×3 clampé', () => {
     const out = paintTiles(emptyScene(10, 10), { x: 0, y: 0 }, 'eau', 3);
-    expect(out.tiles.filter((t) => t === 'eau')).toHaveLength(4); // coin : 2×2 visibles
+    expect(out.levels[0].tiles.filter((t) => t === 'eau')).toHaveLength(4); // coin : 2×2 visibles
   });
   it('fillTerrainRect remplit le rectangle', () => {
     const out = fillTerrainRect(emptyScene(10, 10), { x: 2, y: 2, w: 3, h: 2 }, 'eau');
-    expect(out.tiles.filter((t) => t === 'eau')).toHaveLength(6);
+    expect(out.levels[0].tiles.filter((t) => t === 'eau')).toHaveLength(6);
   });
 });
 

@@ -12,7 +12,7 @@ const hero = (x: number): Combatant =>
 function scene(w: number, tiles?: Record<string, string>): Scene {
   const grid = new Array(w).fill('herbe');
   if (tiles) for (const [k, v] of Object.entries(tiles)) grid[Number(k.split(',')[0])] = v;
-  return { id: 's', name: 's', dimensions: { w, h: 1 }, ambiance: 'jour', tiles: grid, entities: [], buildings: [], dialogues: [], triggers: [], encounters: [] } as unknown as Scene;
+  return { id: 's', name: 's', dimensions: { w, h: 1 }, ambiance: 'jour', levels: [{ z: 0, tiles: grid }], entities: [], buildings: [], dialogues: [], triggers: [], encounters: [] } as unknown as Scene;
 }
 
 describe('IA — respecte la Ligne de Vue au tir (LDB 13 l.123)', () => {

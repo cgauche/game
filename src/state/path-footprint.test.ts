@@ -11,7 +11,7 @@ function scene(w: number, h: number, walls: string[] = []): Scene {
   }
   return {
     id: 's', name: 's', dimensions: { w, h }, ambiance: 'jour',
-    tiles, entities: [], buildings: [], dialogues: [], triggers: [], encounters: [],
+    levels: [{ z: 0, tiles }], entities: [], buildings: [], dialogues: [], triggers: [], encounters: [],
   } as unknown as Scene;
 }
 

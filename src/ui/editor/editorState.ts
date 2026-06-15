@@ -4,7 +4,7 @@
  * le canvas (peindre, poser, déplacer, redimensionner, supprimer, coller, points d'entrée).
  * Fonctions PURES (Scene → Scene) testables sans DOM — `Editor`/`EditorCanvas` ne font que les câbler.
  */
-import { Scene, SceneEntity, Terrain, EntityKind, BuildingFeature, EncounterMember } from '../../state/scene';
+import { Scene, SceneEntity, Terrain, EntityKind, BuildingFeature, EncounterMember, levelTiles } from '../../state/scene';
 import { nextEntityId } from '../../state/entityId';
 import { defaultDoor } from '../../state/buildings';
 import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
@@ -164,11 +164,16 @@ export function deleteSel(scene: Scene, sel: Sel): Scene {
   return scene;
 }
 
-/** Peint un carré de côté `brush` centré sur p (terrain). */
-export function paintTiles(scene: Scene, p: Pt, terrain: Terrain, brush: number): Scene {
+/** Réécrit les tuiles du niveau `z` (immuable) — base partagée des outils de terrain. */
+function withLevelTiles(scene: Scene, z: number, tiles: Terrain[]): Scene {
+  return { ...scene, levels: scene.levels.map((l) => (l.z === z ? { ...l, tiles } : l)) };
+}
+
+/** Peint un carré de côté `brush` centré sur p (terrain), sur le niveau `z` (défaut sol). */
+export function paintTiles(scene: Scene, p: Pt, terrain: Terrain, brush: number, z = 0): Scene {
   const { w, h } = scene.dimensions;
   if (p.x < 0 || p.y < 0 || p.x >= w || p.y >= h) return scene;
-  const tiles = [...scene.tiles];
+  const tiles = [...levelTiles(scene, z)];
   const r = Math.floor((brush - 1) / 2);
   for (let dy = -r; dy <= r; dy++)
     for (let dx = -r; dx <= r; dx++) {
@@ -176,16 +181,16 @@ export function paintTiles(scene: Scene, p: Pt, terrain: Terrain, brush: number)
         y = p.y + dy;
       if (x >= 0 && y >= 0 && x < w && y < h) tiles[y * w + x] = terrain;
     }
-  return { ...scene, tiles };
+  return withLevelTiles(scene, z, tiles);
 }
 
-/** Remplit un rectangle de terrain (sous-mode Rectangle). */
-export function fillTerrainRect(scene: Scene, rect: Rect, terrain: Terrain): Scene {
+/** Remplit un rectangle de terrain (sous-mode Rectangle), sur le niveau `z` (défaut sol). */
+export function fillTerrainRect(scene: Scene, rect: Rect, terrain: Terrain, z = 0): Scene {
   const { w, h } = scene.dimensions;
-  const tiles = [...scene.tiles];
+  const tiles = [...levelTiles(scene, z)];
   for (let y = rect.y; y < rect.y + rect.h; y++)
     for (let x = rect.x; x < rect.x + rect.w; x++) if (x >= 0 && y >= 0 && x < w && y < h) tiles[y * w + x] = terrain;
-  return { ...scene, tiles };
+  return withLevelTiles(scene, z, tiles);
 }
 
 /** Pose une entité à p (id frais) — `ref` = décor/espèce précise (pose directe depuis le catalogue).

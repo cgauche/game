@@ -21,7 +21,7 @@ function ent(over: Partial<SceneEntity> & Pick<SceneEntity, 'id'>): SceneEntity 
 function scene(entities: SceneEntity[]): Scene {
   return {
     id: 's', nom: 'S', description: '', dimensions: { w: 4, h: 4 },
-    tiles: Array(16).fill('herbe'), entities,
+    levels: [{ z: 0, tiles: Array(16).fill('herbe') }], entities,
     dialogues: [], triggers: [], encounters: [], flags: {},
   };
 }

@@ -38,7 +38,7 @@ function tireur(): Combatant {
 const W = 24, H = 12;
 const scene = arena({ id: 'test-ciblage', nom: 'Ciblage & Ligne de Vue', w: W, h: H, heroStart: { x: 2, y: 2 } });
 // Mur vertical en x=10 (rangées y=5..11) : les rangées hautes restent DÉGAGÉES (couloir de tir).
-for (let y = 5; y < H; y++) (scene.tiles as string[])[y * W + 10] = 'mur';
+for (let y = 5; y < H; y++) (scene.levels[0].tiles as string[])[y * W + 10] = 'mur';
 scene.startMessage =
   'Survolez les mannequins : proche = réticule + carte de visée ; derrière le mur = ⛔ LdV (tir ET sort) ; au fond = ⛔ hors de portée. Testez aussi Explosion (gabarit de zone) et Bouclier magique (sur soi).';
 setEncounters(scene, [

@@ -129,6 +129,15 @@ for (const s of scenes) {
   else if (/^arene-zone/.test(s.id)) s.rest = {}; // on ne bivouaque pas dans l'arène
 }
 
+// Multi-niveaux : le format Scene empile des étages (z=0 = sol). Les générateurs produisent une
+// grille `tiles` → on l'enveloppe dans `levels: [{ z:0, tiles }]`. `buildings` reste au sol.
+for (const s of scenes) {
+  if (s.tiles && !s.levels) {
+    s.levels = [{ z: 0, tiles: s.tiles }];
+    delete s.tiles;
+  }
+}
+
 const doc = { schema: 2, scenes, worldMap };
 const out = join(dirname(fileURLToPath(import.meta.url)), '../../src/scenes/arene/arene-projet.json');
 writeFileSync(out, JSON.stringify(doc, null, 1) + '\n');

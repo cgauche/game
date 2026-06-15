@@ -280,10 +280,13 @@ export function Editor() {
     }
   }
   function resize(w: number, h: number) {
-    const tiles: Terrain[] = new Array(w * h).fill('herbe');
-    for (let y = 0; y < Math.min(h, scene.dimensions.h); y++)
-      for (let x = 0; x < Math.min(w, scene.dimensions.w); x++) tiles[y * w + x] = tileAt(scene, x, y);
-    setScene({ ...scene, dimensions: { w, h }, tiles });
+    const levels = scene.levels.map((lvl) => {
+      const tiles: Terrain[] = new Array(w * h).fill('herbe');
+      for (let y = 0; y < Math.min(h, scene.dimensions.h); y++)
+        for (let x = 0; x < Math.min(w, scene.dimensions.w); x++) tiles[y * w + x] = tileAt(scene, x, y, lvl.z);
+      return { ...lvl, tiles };
+    });
+    setScene({ ...scene, dimensions: { w, h }, levels });
   }
 
   const { w, h } = scene.dimensions;

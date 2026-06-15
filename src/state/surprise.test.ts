@@ -7,7 +7,7 @@ import { hasCondition } from '../engine/conditions';
 import { useGame } from './store';
 import type { Combatant } from '../engine/types';
 
-const scene = () => ({ id: 's', nom: '', description: '', dimensions: { w: 10, h: 10 }, tiles: Array(100).fill('herbe'), entities: [], dialogues: [], triggers: [], encounters: [], flags: {} } as never);
+const scene = () => ({ id: 's', nom: '', description: '', dimensions: { w: 10, h: 10 }, levels: [{ z: 0, tiles: Array(100).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [], flags: {} } as never);
 const C = (over: Partial<Combatant>): Combatant =>
   ({ id: 'x', kind: 'hero', name: 'X', conditions: [], skills: [], characteristics: {}, wounds: { current: 10, max: 10 }, items: [], movement: 4, advantage: 0, ...over } as unknown as Combatant);
 

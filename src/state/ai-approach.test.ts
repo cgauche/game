@@ -9,7 +9,7 @@ import type { Combatant } from '../engine/types';
  * ne suffit pas à entrer au contact ; Course (Test d'Athlétisme, pas d'attaque) au-delà.
  */
 const scene = () =>
-  ({ id: 's', nom: '', description: '', dimensions: { w: 30, h: 21 }, tiles: Array(630).fill('herbe'), entities: [], dialogues: [], triggers: [], encounters: [], flags: {} } as never);
+  ({ id: 's', nom: '', description: '', dimensions: { w: 30, h: 21 }, levels: [{ z: 0, tiles: Array(630).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [], flags: {} } as never);
 
 const C = (kind: 'hero' | 'enemy', id: string, x: number, over: Partial<Combatant> = {}): Combatant =>
   ({

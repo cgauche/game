@@ -38,7 +38,7 @@ export function makeInteriorScene(opts: InteriorOpts): Scene {
     dimensions: { w, h },
     ambiance: opts.ambiance ?? 'interieur',
     startMessage: opts.startMessage,
-    tiles,
+    levels: [{ z: 0, tiles }],
     entryPoints: { entree: arrival },
     entities: [{ id: 'start', kind: 'heroStart', pos: arrival }],
     buildings: [],

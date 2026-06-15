@@ -27,7 +27,7 @@ export const testScene: Scene = {
   description: 'Scène neutre pour les tests de combat.',
   dimensions: { w: W, h: H },
   ambiance: 'exterieur',
-  tiles: new Array(W * H).fill('herbe') as Terrain[],
+  levels: [{ z: 0, tiles: new Array(W * H).fill('herbe') as Terrain[] }],
   entities: [{ id: 'start', kind: 'heroStart', pos: { x: 6, y: 10 } }, ...enc.entities],
   dialogues: [],
   triggers: [],

@@ -398,6 +398,12 @@ export interface EncounterDef {
   surprise?: 'party' | 'enemies';
 }
 
+/** Un étage de la scène : sa cote `z` (0 = sol) et sa grille de tuiles (w×h aplatie). */
+export interface Level {
+  z: number;
+  tiles: Terrain[];
+}
+
 export interface Scene {
   id: string;
   nom: string;
@@ -421,8 +427,12 @@ export interface Scene {
    *  = AUTOMATIQUE (intérieur/extérieur pour l'ambiance, piste de combat générique en combat) ;
    *  `null` = SILENCE forcé. Éditable dans l'éditeur (onglet Scène). */
   music?: { ambient?: string | null; combat?: string | null };
-  /** Grille aplatie de longueur w×h (ligne par ligne). */
-  tiles: Terrain[];
+  /** Étages de la scène (multi-niveaux). Au moins un niveau ; `z:0` = le sol. Chaque niveau a sa
+   *  propre grille aplatie de longueur w×h (ligne par ligne). Les niveaux z>0 sont des plateformes
+   *  en surplomb (loges, galeries) reliées par des escaliers (cf. `stairs`). */
+  levels: Level[];
+  /** Escaliers reliant deux cases de niveaux différents (seuls points de franchissement vertical). */
+  stairs?: { from: { x: number; y: number; z: number }; to: { x: number; y: number; z: number } }[];
   entities: SceneEntity[];
   /** Bâtiments multi-tuiles posés sur la grille (optionnel → [] par défaut). */
   buildings?: BuildingFeature[];
@@ -436,17 +446,22 @@ export interface Scene {
   startMessage?: string;
 }
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
-export function tileAt(scene: Scene, x: number, y: number): Terrain {
-  if (x < 0 || y < 0 || x >= scene.dimensions.w || y >= scene.dimensions.h) return 'mur';
-  return scene.tiles[y * scene.dimensions.w + x] ?? 'sol';
+/** Grille de tuiles d'un niveau (défaut z=0 = sol). Repli sur le 1ᵉʳ niveau si `z` absent. */
+export function levelTiles(scene: Scene, z = 0): Terrain[] {
+  return (scene.levels.find((l) => l.z === z) ?? scene.levels[0]).tiles;
 }
 
-export function isWalkable(scene: Scene, x: number, y: number): boolean {
-  if (buildingBlockedAt(scene, x, y)) return false;
+export function tileAt(scene: Scene, x: number, y: number, z = 0): Terrain {
+  if (x < 0 || y < 0 || x >= scene.dimensions.w || y >= scene.dimensions.h) return 'mur';
+  return levelTiles(scene, z)[y * scene.dimensions.w + x] ?? 'sol';
+}
+
+export function isWalkable(scene: Scene, x: number, y: number, z = 0): boolean {
+  if (z === 0 && buildingBlockedAt(scene, x, y)) return false; // les bâtiments sont au sol
   if (entityBlockedAt(scene, x, y)) return false; // empreinte multi-cases d'un décor (foot {w,h})
-  return terrainWalkable(tileAt(scene, x, y));
+  return terrainWalkable(tileAt(scene, x, y, z));
 }
 
 export function emptyScene(w = 20, h = 15): Scene {
@@ -456,7 +471,7 @@ export function emptyScene(w = 20, h = 15): Scene {
     description: '',
     dimensions: { w, h },
     ambiance: 'exterieur',
-    tiles: new Array(w * h).fill('herbe'),
+    levels: [{ z: 0, tiles: new Array(w * h).fill('herbe') }],
     entities: [],
     buildings: [],
     dialogues: [],

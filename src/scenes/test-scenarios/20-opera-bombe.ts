@@ -12,7 +12,7 @@ const W = 14, H = 10;
 const scene = arena({ id: 'test-opera-bombe', nom: 'Opéra — Antichambre piégée', w: W, h: H, terrain: 'sol', heroStart: { x: 7, y: 8 } });
 scene.ambiance = 'interieur';
 // Murs périmétriques, entrée ouverte au centre du mur du bas.
-const tiles = scene.tiles as string[];
+const tiles = scene.levels[0].tiles as string[];
 for (let x = 0; x < W; x++) { tiles[x] = 'mur'; if (x < 6 || x > 8) tiles[(H - 1) * W + x] = 'mur'; }
 for (let y = 0; y < H; y++) { tiles[y * W] = 'mur'; tiles[y * W + (W - 1)] = 'mur'; }
 

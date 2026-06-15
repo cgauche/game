@@ -138,7 +138,7 @@ function build(): Scene {
       "formes qui s'en repaissent. L'approche déclenche un dialogue, dont la fin lance le combat.",
     dimensions: { w: W, h: H },
     ambiance: 'exterieur',
-    tiles,
+    levels: [{ z: 0, tiles }],
     startMessage:
       'Au détour des arbres, une diligence renversée, des corps éparpillés… et des formes difformes ' +
       'penchées dessus, qui se relèvent en grognant.',

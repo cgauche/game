@@ -18,7 +18,7 @@ const caster = (over: Partial<Combatant> = {}): Combatant =>
   } as Combatant);
 
 const scene = (): Scene =>
-  ({ id: 's', name: 's', dimensions: { w: 14, h: 14 }, ambiance: 'exterieur', tiles: new Array(14 * 14).fill('herbe'), entities: [], buildings: [], dialogues: [], triggers: [], encounters: [] } as unknown as Scene);
+  ({ id: 's', name: 's', dimensions: { w: 14, h: 14 }, ambiance: 'exterieur', levels: [{ z: 0, tiles: new Array(14 * 14).fill('herbe') }], entities: [], buildings: [], dialogues: [], triggers: [], encounters: [] } as unknown as Scene);
 
 const battle = (combatants: Combatant[], round = 1): any => {
   const order = combatants.map((c) => c.id);

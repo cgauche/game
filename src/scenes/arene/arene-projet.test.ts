@@ -256,7 +256,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
 
   it('chaque zone est UNIQUE : terrains de base distincts (campagne démo)', () => {
     const zones = project.filter((s) => s.id.startsWith('arene-zone'));
-    const bases = zones.map((z) => baseTerrain(z.tiles)); // sol dominant de la zone
+    const bases = zones.map((z) => baseTerrain(z.levels[0].tiles)); // sol dominant de la zone
     expect(new Set(bases).size).toBeGreaterThanOrEqual(10); // ≥10 sols différents sur 13 zones
   });
 
@@ -265,7 +265,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     // sous-bois/eau (marais). On exige une masse structurelle ≥ périmètre minimal — preuve d'une enceinte
     // (et de structure interne), pas un empilement d'objets sur un sol vide.
     for (const sc of project.filter((s) => s.id.startsWith('arene-zone'))) {
-      const structural = sc.tiles.filter((t) => !terrainWalkable(t)).length;
+      const structural = sc.levels[0].tiles.filter((t) => !terrainWalkable(t)).length;
       const { w, h } = sc.dimensions;
       expect(structural, `${sc.id} doit être clôturé`).toBeGreaterThanOrEqual(w + h); // ~un demi-périmètre au moins
     }

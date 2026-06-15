@@ -13,7 +13,7 @@ describe('Batterie de scénarios de test', () => {
       const party = s.makeParty();
       expect(party.length).toBeGreaterThanOrEqual(1);
       expect(party.every((h) => h.kind === 'hero')).toBe(true);
-      expect(s.scene.tiles.length).toBe(s.scene.dimensions.w * s.scene.dimensions.h);
+      expect(s.scene.levels[0].tiles.length).toBe(s.scene.dimensions.w * s.scene.dimensions.h);
       if (s.autoCombat) expect(s.scene.encounters.find((e) => e.id === s.autoCombat)).toBeTruthy();
     },
   );

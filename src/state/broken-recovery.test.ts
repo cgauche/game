@@ -5,7 +5,7 @@ import { stacks } from '../engine/conditions';
 import type { Combatant } from '../engine/types';
 
 const scene = () =>
-  ({ id: 's', nom: '', description: '', dimensions: { w: 12, h: 12 }, tiles: Array(144).fill('herbe'), entities: [], dialogues: [], triggers: [], encounters: [], flags: {} } as never);
+  ({ id: 's', nom: '', description: '', dimensions: { w: 12, h: 12 }, levels: [{ z: 0, tiles: Array(144).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [], flags: {} } as never);
 
 const getFn = (battle: unknown, scn: unknown) => () => ({ battle, scene: scn } as never);
 
