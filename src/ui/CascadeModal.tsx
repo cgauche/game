@@ -143,8 +143,19 @@ export function CascadeModal() {
     );
   }
 
-  // CHOIX : le joueur tranche (l'option pilote la conséquence) — pas de jet, pas d'influence.
+  // CHOIX : le joueur tranche (l'option pilote la conséquence) — pas de jet, pas d'influence. Une
+  // DÉVIATION (P3a) porte le Critique pré-tiré (panneau riche `CriticalBody`) ; « Dévier » exige du PA.
   if (interaction === 'choix') {
+    const rev = cur.reveal;
+    const dev = cur.deviation;
+    let canDevier = true;
+    if (dev) {
+      const subj = pool.find((c) => c.id === dev.targetId);
+      const loc = dev.res.location ?? 'corps';
+      canDevier = (subj?.armour?.[loc] ?? 0) > 0;
+    }
+    const revActor = rev?.actorId ? pool.find((c) => c.id === rev.actorId) : undefined;
+    const revSubject = rev?.subjectId ? pool.find((c) => c.id === rev.subjectId) : undefined;
     return (
       <RollFlowShell
         title={`${p.icon ?? '🎲'} ${p.title}`}
@@ -153,15 +164,19 @@ export function CascadeModal() {
         onRoll={() => {}}
         rows={doneRows.length ? doneRows : undefined}
         postRollExtra={
-          <OptionChooser
-            layout="grid"
-            groupLabel={cur.label}
-            options={(cur.options ?? []).map((o) => ({
-              key: o.key, label: o.label, title: o.detail,
-              selected: cur.chosen === o.key, primary: cur.chosen === o.key,
-              onSelect: () => choose(cur.id, o.key),
-            }))}
-          />
+          <>
+            {rev?.kind === 'critical' && <CriticalBody entry={rev} actor={revActor} subject={revSubject} />}
+            <OptionChooser
+              layout="grid"
+              groupLabel={cur.label}
+              options={(cur.options ?? []).map((o) => ({
+                key: o.key, label: o.label, title: o.detail,
+                disabled: o.key === 'devier' && !canDevier,
+                selected: cur.chosen === o.key, primary: cur.chosen === o.key,
+                onSelect: () => choose(cur.id, o.key),
+              }))}
+            />
+          </>
         }
         fortune={0}
         rerollable={false}

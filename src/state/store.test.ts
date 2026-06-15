@@ -156,12 +156,14 @@ describe('Boucle de jeu (store)', () => {
     return { enemy, hero, weapon, res, suspended };
   }
 
-  it('Déviation Critique (héros) : applyAttackResult SUSPEND sans aucun effet de bord', () => {
+  it('Déviation Critique (héros) : applyAttackResult SUSPEND en posant une ÉTAPE DE CHOIX, sans effet de bord', () => {
     const { suspended } = mkDeviationSetup();
     expect(suspended).toBe(true);
-    const pdv = useGame.getState().pendingDeviation;
-    expect(pdv).not.toBeNull();
-    expect(pdv!.targetId).toBe('h1');
+    const dev = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'deviation');
+    expect(dev).toBeTruthy();
+    expect(dev!.deviation?.targetId).toBe('h1');
+    expect(dev!.reveal?.kind).toBe('critical'); // panneau riche porté par l'étape
+    expect(useGame.getState().pendingDeviation).toBeNull(); // plus de modale séparée
     // Avant le choix : ni Blessure, ni Critique, ni PA consommée (early-return propre).
     const h = useGame.getState().battle!.combatants.find((c) => c.id === 'h1')!;
     expect(h.wounds.current).toBe(15);
@@ -171,20 +173,20 @@ describe('Boucle de jeu (store)', () => {
 
   it('Déviation Critique (héros) : « Dévier » sacrifie 1 PA et IGNORE le Critique', () => {
     mkDeviationSetup();
-    useGame.getState().deviationApply(true);
+    useGame.getState().cascadeChoose('cons-deviation-h1', 'devier');
+    useGame.getState().cascadeNext(); // valide le choix → applier 'deviation' → resolveDeviation
     const h = useGame.getState().battle!.combatants.find((c) => c.id === 'h1')!;
     expect(h.armour.corps).toBe(2);          // 1 PA sacrifiée (LDB 63 l.63-66)
     expect(h.criticalWounds ?? 0).toBe(0);   // Coup Critique ignoré
-    expect(useGame.getState().pendingDeviation).toBeNull();
   });
 
   it('Déviation Critique (héros) : « Subir » encaisse le Critique (criticalWounds +1, PA intacte)', () => {
     mkDeviationSetup();
-    useGame.getState().deviationApply(false);
+    useGame.getState().cascadeChoose('cons-deviation-h1', 'subir');
+    useGame.getState().cascadeNext();
     const h = useGame.getState().battle!.combatants.find((c) => c.id === 'h1')!;
     expect(h.criticalWounds ?? 0).toBe(1);   // Coup Critique appliqué (table 18-Traumatisme)
     expect(h.armour.corps).toBe(3);          // PA intacte (rien dévié)
-    expect(useGame.getState().pendingDeviation).toBeNull();
   });
 
   // ── Phase C2a — qualité d'outil sur les Tests HORS COMBAT (Pratique/Peu Fiable/Bâclé) ──

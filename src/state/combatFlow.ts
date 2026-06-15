@@ -143,8 +143,8 @@ export function activeCombatant(battle: BattleState): Combatant | undefined {
 
 // --- Effets de scène/campagne extraits → combatEffects.ts (baril) ---
 export * from './combatEffects';
-import { pushReveal, applyEffects, gearFromEffects } from './combatEffects';
-import { startCascade } from './cascade';
+import { pushReveal, pushCombatStep, applyEffects, gearFromEffects } from './combatEffects';
+import { startCascade, registerCascadeApplier } from './cascade';
 
 /** Le défenseur choisit sa meilleure réaction : Parade (Corps à corps) ou Esquive
  *  (Agilité + avances, pénalité d'Encombrement incluse) — la plus haute valeur. */
@@ -1100,8 +1100,15 @@ export function applyAttackResult(
     const cloc = res.critLocation ?? critLocationRoll(battleRng(), target.bodyShape);
     const crit = rollCritical(target, cloc, battleRng(), overkill, hasActiveFlag(attacker, 'critRollTwice'));
     const reveal = previewCritEntry(target, crit, { attackerId: attacker.id, weapon: weapon?.name });
-    set({ pendingDeviation: { attackerId: attacker.id, targetId: target.id, weapon, res, crit, reveal, resumeAfter: true } });
-    return true; // suspendu — le caller NE doit PAS exécuter ses post-étapes (rejouées à la résolution)
+    // Folding P3a : le choix Dévier/Subir devient une ÉTAPE de la séquence (Critique riche + options),
+    // au lieu d'une modale `pendingDeviation` séparée. L'applier 'deviation' appelle resolveDeviation.
+    const dev: PendingDeviation = { attackerId: attacker.id, targetId: target.id, weapon, res, crit, reveal, resumeAfter: true };
+    pushCombatStep(set, {
+      id: `cons-deviation-${target.id}`, kind: 'deviation', actorId: target.id, icon: '💥',
+      label: 'Coup Critique — dévier ?', options: [{ key: 'devier', label: '🛡️ Dévier (−1 PA)' }, { key: 'subir', label: 'Subir' }],
+      defaultChoice: 'subir', deviation: dev, reveal, interactive: true,
+    });
+    return true; // suspendu — la résolution part de l'applier 'deviation' (resolveDeviation, resume:false)
   }
   const battle = get().battle!;
   attacker.aiming = false; // l'attaque consomme la visée (tir : +20 déjà appliqué ; mêlée : visée gâchée)
@@ -2143,6 +2150,14 @@ export function resolveDeviation(get: Get, set: SetFn, dev: PendingDeviation, de
     resumeEnemyTurn(get, set);
   }
 }
+
+/** Applier de l'étape de CHOIX « déviation » (folding P3a) : « Subir » applique le Critique pré-tiré,
+ *  « Dévier » l'ignore (−1 PA). `resume:false` → la reprise de l'IA part de la FERMETURE de séquence
+ *  (`cascadeNext`/`cascadeFinish` → `resumeSuspendedAI`). Le reste de l'attaque re-déclenché par
+ *  resolveDeviation APPEND ses conséquences à la séquence (préservées par le liveMerge de commitStep). */
+registerCascadeApplier('deviation', (get, set, step) => {
+  if (step.deviation) resolveDeviation(get, set, step.deviation, step.chosen === 'devier', { resume: false });
+});
 
 export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): boolean {
   if (enemy.kind !== 'enemy' || isOutOfAction(enemy)) { enemy.pendingFreeAttacks = undefined; return false; }

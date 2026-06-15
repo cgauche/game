@@ -60,41 +60,41 @@ describe('Conséquences d’attaque en révélation (store)', () => {
     expect(useGame.getState().pendingReveals).toEqual([]); // file vidée
   });
 
-  // Déviation Critique fusionnée : le Critique est PRÉ-TIRÉ et affiché SUR la modale de déviation (choix
-  // éclairé). « Subir » applique CE Critique sans 2ᵉ modale ; « Dévier » l'ignore (−1 PA).
-  it('Déviation Critique → « Subir » applique le Critique montré (sans 2ᵉ modale) ; « Dévier » l’ignore', () => {
+  // Déviation Critique FOLDÉE (P3a) : le Critique pré-tiré + le choix Dévier/Subir = une ÉTAPE de la
+  // séquence (panneau riche). « Subir » applique CE Critique ; « Dévier » l'ignore (−1 PA).
+  it('Déviation Critique → étape de CHOIX inline : « Subir » applique le Critique, « Dévier » l’ignore', () => {
     useGame.getState().seedRng(2);
     const { hero, enemy } = battle();
     const heroNow = () => useGame.getState().battle!.combatants.find((c) => c.kind === 'hero')!;
     hero.armour.corps = 3; // PA au corps → la déviation est possible
+    const devId = `cons-deviation-${hero.id}`;
     const res = {
       hit: true, attackerRoll: 33, netSL: 2, critical: true, advantageTo: 'attacker',
       defenderDefeated: false, woundsLost: 3, location: 'corps', log: 'touche !',
     } as AttackResult;
 
-    // (1) Le Critique sur le héros armé SUSPEND, en pré-affichant le Critique DANS la modale de déviation.
-    useGame.setState({ pendingReveals: [], pendingDeviation: null });
+    // (1) Le Critique sur le héros armé SUSPEND, en posant une ÉTAPE DE CHOIX (Critique pré-tiré + options).
+    useGame.setState({ pendingReveals: [], pendingCascade: null });
     const suspended = applyAttackResult(useGame.getState, useGame.setState, enemy, hero, enemy.weapons[0], res);
     expect(suspended).toBe(true);
-    const pdv = useGame.getState().pendingDeviation;
-    expect(pdv).toBeTruthy();
-    expect(pdv!.reveal.kind).toBe('critical'); // la révélation est portée par la modale de déviation
-    expect(useGame.getState().pendingReveals.find((r) => r.kind === 'critical')).toBeFalsy();
+    const dev = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'deviation');
+    expect(dev?.reveal?.kind).toBe('critical'); // panneau riche porté par l'étape
+    expect(useGame.getState().pendingDeviation).toBeNull(); // plus de modale séparée
 
-    // (2) « Subir » (deviate=false) applique CE Critique — sans pousser une 2ᵉ révélation.
+    // (2) « Subir » applique CE Critique.
     const cwBefore = heroNow().criticalWounds ?? 0;
-    useGame.getState().deviationApply(false);
+    useGame.getState().cascadeChoose(devId, 'subir');
+    useGame.getState().cascadeNext();
     expect(heroNow().criticalWounds ?? 0).toBeGreaterThan(cwBefore);
-    expect(useGame.getState().pendingReveals.find((r) => r.kind === 'critical')).toBeFalsy();
 
-    // (3) « Dévier » (deviate=true) ignore le Critique → aucune Blessure critique, aucune révélation.
+    // (3) « Dévier » ignore le Critique → aucune Blessure critique.
     const h = heroNow();
     h.wounds = { current: 20, max: 20, base: 20 } as never;
     h.criticalWounds = 0;
-    useGame.setState({ pendingReveals: [], pendingDeviation: null });
+    useGame.setState({ pendingReveals: [], pendingCascade: null });
     applyAttackResult(useGame.getState, useGame.setState, enemy, hero, enemy.weapons[0], res);
-    useGame.getState().deviationApply(true);
-    expect(useGame.getState().pendingReveals.find((r) => r.kind === 'critical')).toBeFalsy();
+    useGame.getState().cascadeChoose(devId, 'devier');
+    useGame.getState().cascadeNext();
     expect(heroNow().criticalWounds ?? 0).toBe(0); // pas de Blessure critique appliquée
   });
 });

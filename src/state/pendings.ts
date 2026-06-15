@@ -622,6 +622,9 @@ export interface CascadeStep extends RollParticipant {
   /** Charge RICHE d'une étape d'affichage (ex. Coup Critique : localisation/Blessures/Traumatismes/
    *  États) — rendue par le panneau détaillé partagé (`CriticalBody`) au lieu de simples lignes. */
   reveal?: RevealEntry;
+  /** Étape de CHOIX « déviation » (folding P3a) : porte le Critique pré-tiré + le contexte d'attaque
+   *  (JSON-sérialisable) ; l'applier appelle `resolveDeviation(step.deviation, chosen)`. */
+  deviation?: PendingDeviation;
   /** Étape « choix » : options présentées au joueur (l'option retenue pilote la conséquence). */
   options?: { key: string; label: string; detail?: string }[];
   /** Option retenue (clé) — analogue de `result` pour une étape « choix ». */
