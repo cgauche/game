@@ -68,4 +68,8 @@ describe('Opéra — props de théâtre', () => {
       expect(propSvg(id).length, id).toBeGreaterThan(120);
     }
   });
+  it('la plante en pot (réceptacle de la bombe) est enregistrée et rendue', () => {
+    expect(PROPS['plante-pot']).toBeDefined();
+    expect(propSvg('plante-pot').length).toBeGreaterThan(120);
+  });
 });
