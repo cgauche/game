@@ -4,7 +4,7 @@
  * le canvas (peindre, poser, déplacer, redimensionner, supprimer, coller, points d'entrée).
  * Fonctions PURES (Scene → Scene) testables sans DOM — `Editor`/`EditorCanvas` ne font que les câbler.
  */
-import { Scene, SceneEntity, Terrain, EntityKind, BuildingFeature, EncounterMember, levelTiles, Effect, TemporalCondition } from '../../state/scene';
+import { Scene, SceneEntity, Terrain, EntityKind, BuildingFeature, EncounterMember, levelTiles, Effect, TemporalCondition, WallSeg } from '../../state/scene';
 import { EMPTY_FLOW, flowFromEffects, flowEffects, type Condition } from '../../state/flow';
 export { flowEffects };
 import { nextEntityId } from '../../state/entityId';
@@ -26,7 +26,12 @@ export type Tool =
   | { mode: 'entry' }
   | { mode: 'encounter' }
   | { mode: 'stair' }
+  | { mode: 'wall'; paint: WallPaint }
+  | { mode: 'elev'; value: number }
   | { mode: 'erase' };
+
+/** Sous-mode de l'outil MURS : cloison pleine, porte (arête franchissable), ou diagonale en travers. */
+export type WallPaint = 'wall' | 'door' | 'diagBack' | 'diagFwd';
 
 /** Calques masquables du canvas (masquer débloque le clic sur ce qu'il y a dessous). */
 export type Layers = { triggers: boolean; spawns: boolean; buildings: boolean; entries: boolean; rest: boolean; effects: boolean };
@@ -241,6 +246,71 @@ export function addStair(scene: Scene, p: Pt, z: number): Scene {
 export function removeLevel(scene: Scene, z: number): Scene {
   if (z === 0 || scene.levels.length <= 1) return scene;
   return { ...scene, levels: scene.levels.filter((l) => l.z !== z) };
+}
+
+// ── Outil MURS (arêtes + portes + diagonales). Une cloison est stockée sous forme CANONIQUE N/E : le S
+//    d'une case = le N de la case du dessous, le O = le E de la case de gauche → chaque arête n'existe
+//    qu'une fois, quel que soit le côté cliqué. ──
+export type Edge4 = 'N' | 'E' | 'S' | 'O';
+
+/** Arête (case, side N/E/S/O) → forme CANONIQUE (case, N|E). */
+export function canonEdge(x: number, y: number, side: Edge4): { x: number; y: number; side: 'N' | 'E' } {
+  if (side === 'S') return { x, y: y + 1, side: 'N' };
+  if (side === 'O') return { x: x - 1, y, side: 'E' };
+  return { x, y, side };
+}
+
+/** État d'une arête : 'none' | 'wall' (pleine) | 'door' (franchissable), sur l'étage `z`. */
+export function edgeWallState(scene: Scene, x: number, y: number, side: Edge4, z = 0): 'none' | 'wall' | 'door' {
+  const e = canonEdge(x, y, side);
+  const w = (scene.walls ?? []).find((w) => w.x === e.x && w.y === e.y && w.side === e.side && (w.z ?? 0) === z);
+  return !w ? 'none' : w.door ? 'door' : 'wall';
+}
+
+/** Pose / change / retire l'arête à l'état `want`. Source unique de l'écriture d'une cloison cardinale. */
+export function setEdgeWall(scene: Scene, x: number, y: number, side: Edge4, z: number, want: 'none' | 'wall' | 'door'): Scene {
+  const e = canonEdge(x, y, side);
+  const others = (scene.walls ?? []).filter((w) => !(w.x === e.x && w.y === e.y && w.side === e.side && (w.z ?? 0) === z));
+  if (want === 'none') return { ...scene, walls: others.length ? others : undefined };
+  const seg: WallSeg = { x: e.x, y: e.y, side: e.side, ...(z ? { z } : {}), ...(want === 'door' ? { door: true } : {}) };
+  return { ...scene, walls: [...others, seg] };
+}
+
+/** Clic de l'outil : l'arête prend l'état `want`, ou disparaît si elle l'avait déjà (toggle). */
+export function toggleEdgeWall(scene: Scene, x: number, y: number, side: Edge4, z: number, want: 'wall' | 'door'): Scene {
+  return setEdgeWall(scene, x, y, side, z, edgeWallState(scene, x, y, side, z) === want ? 'none' : want);
+}
+
+/** Diagonale `\\`/`/` en travers de la case (x,y) — une seule par case : poser l'autre la REMPLACE,
+ *  re-cliquer la même l'enlève. */
+export function toggleDiagonalWall(scene: Scene, x: number, y: number, diag: '\\' | '/', z: number): Scene {
+  const isDiagHere = (w: WallSeg) => w.x === x && w.y === y && (w.z ?? 0) === z && (w.side === '\\' || w.side === '/');
+  const others = (scene.walls ?? []).filter((w) => !isDiagHere(w));
+  const had = (scene.walls ?? []).find((w) => w.x === x && w.y === y && (w.z ?? 0) === z && w.side === diag);
+  if (had) return { ...scene, walls: others.length ? others : undefined };
+  return { ...scene, walls: [...others, { x, y, side: diag, ...(z ? { z } : {}) }] };
+}
+
+/** Arête la plus proche du centre de la case, depuis l'offset (ox,oy) ∈ [-0.5,0.5] du pointeur. */
+export function nearestEdge(ox: number, oy: number): Edge4 {
+  const d: Record<Edge4, number> = { N: 0.5 + oy, S: 0.5 - oy, O: 0.5 + ox, E: 0.5 - ox };
+  return (['N', 'E', 'S', 'O'] as Edge4[]).reduce((a, b) => (d[b] < d[a] ? b : a));
+}
+
+/** Outil ÉLÉVATION : peint la valeur d'élévation (unités d'étage : +0.45 scène, -0.4 fosse, 0 plat) sur
+ *  un carré de côté `brush` centré sur p, au niveau `z`. Crée le tableau `elev` (rempli de 0) au besoin. */
+export function paintElev(scene: Scene, p: Pt, value: number, brush: number, z = 0): Scene {
+  const { w, h } = scene.dimensions;
+  if (p.x < 0 || p.y < 0 || p.x >= w || p.y >= h) return scene;
+  const lvl = scene.levels.find((l) => l.z === z) ?? scene.levels[0];
+  const elev = [...(lvl.elev ?? new Array(w * h).fill(0))];
+  const r = Math.floor((brush - 1) / 2);
+  for (let dy = -r; dy <= r; dy++)
+    for (let dx = -r; dx <= r; dx++) {
+      const x = p.x + dx, y = p.y + dy;
+      if (x >= 0 && y >= 0 && x < w && y < h) elev[y * w + x] = value;
+    }
+  return { ...scene, levels: scene.levels.map((l) => (l.z === lvl.z ? { ...l, elev } : l)) };
 }
 
 /** Pose une entité à p (id frais) — `ref` = décor/espèce précise (pose directe depuis le catalogue).

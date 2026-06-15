@@ -1,0 +1,93 @@
+import { describe, it, expect } from 'vitest';
+import { emptyScene } from '../../state/scene';
+import { wallBetween } from '../../state/scene';
+import { canonEdge, edgeWallState, toggleEdgeWall, toggleDiagonalWall, paintElev, nearestEdge } from './editorState';
+
+/**
+ * Outils éditeur MURS (arêtes + portes + diagonales) et ÉLÉVATION (scène surélevée / fosse). Mutations
+ * PURES — câblées au canvas par EditorCanvas. Les arêtes sont canonicalisées N/E (le S d'une case = le N
+ * de la suivante) pour ne stocker chaque cloison qu'une fois.
+ */
+describe('editorState — outil MURS (arêtes)', () => {
+  it('canonEdge : S→N de la case du dessous, O→E de la case de gauche, N/E inchangés', () => {
+    expect(canonEdge(2, 3, 'N')).toEqual({ x: 2, y: 3, side: 'N' });
+    expect(canonEdge(2, 3, 'E')).toEqual({ x: 2, y: 3, side: 'E' });
+    expect(canonEdge(2, 3, 'S')).toEqual({ x: 2, y: 4, side: 'N' });
+    expect(canonEdge(2, 3, 'O')).toEqual({ x: 1, y: 3, side: 'E' });
+  });
+
+  it('toggle pose un mur sur l’arête, re-toggle l’enlève', () => {
+    const s0 = emptyScene(5, 5);
+    const s1 = toggleEdgeWall(s0, 2, 2, 'E', 0, 'wall');
+    expect(edgeWallState(s1, 2, 2, 'E')).toBe('wall');
+    expect(wallBetween(s1, 2, 2, 3, 2)).toBe(true); // bloque le passage E
+    const s2 = toggleEdgeWall(s1, 2, 2, 'E', 0, 'wall');
+    expect(edgeWallState(s2, 2, 2, 'E')).toBe('none');
+    expect(s2.walls ?? []).toHaveLength(0);
+  });
+
+  it('le S d’une case et le N de la suivante désignent LA MÊME cloison (pas de doublon)', () => {
+    const s = toggleEdgeWall(emptyScene(5, 5), 2, 2, 'S', 0, 'wall');
+    expect(edgeWallState(s, 2, 3, 'N')).toBe('wall'); // même arête vue de l'autre case
+    expect(s.walls).toHaveLength(1);
+    expect(s.walls![0]).toMatchObject({ x: 2, y: 3, side: 'N' });
+  });
+
+  it('porte : pose une arête franchissable ; passe de mur→porte→rien', () => {
+    let s = toggleEdgeWall(emptyScene(5, 5), 1, 1, 'E', 0, 'door');
+    expect(edgeWallState(s, 1, 1, 'E')).toBe('door');
+    expect(wallBetween(s, 1, 1, 2, 1)).toBe(false); // une porte laisse passer
+    s = toggleEdgeWall(s, 1, 1, 'E', 0, 'wall'); // bascule vers mur plein (≠ want → set)
+    expect(edgeWallState(s, 1, 1, 'E')).toBe('wall');
+    s = toggleEdgeWall(s, 1, 1, 'E', 0, 'door'); // re-porte
+    expect(edgeWallState(s, 1, 1, 'E')).toBe('door');
+  });
+
+  it('z>0 conservé sur la cloison ; z=0 omis (convention)', () => {
+    const s = toggleEdgeWall(emptyScene(5, 5), 0, 0, 'E', 2, 'wall');
+    expect(s.walls![0]).toEqual({ x: 0, y: 0, side: 'E', z: 2 });
+    const g = toggleEdgeWall(emptyScene(5, 5), 0, 0, 'E', 0, 'wall');
+    expect(g.walls![0]).toEqual({ x: 0, y: 0, side: 'E' }); // pas de z:0
+  });
+});
+
+describe('editorState — outil MURS (diagonales)', () => {
+  it('pose une diagonale \\ dans la case, re-toggle l’enlève', () => {
+    const s = toggleDiagonalWall(emptyScene(5, 5), 3, 3, '\\', 0);
+    expect(s.walls![0]).toMatchObject({ x: 3, y: 3, side: '\\' });
+    expect(toggleDiagonalWall(s, 3, 3, '\\', 0).walls ?? []).toHaveLength(0);
+  });
+  it('basculer \\ → / remplace (une seule diagonale par case)', () => {
+    let s = toggleDiagonalWall(emptyScene(5, 5), 3, 3, '\\', 0);
+    s = toggleDiagonalWall(s, 3, 3, '/', 0);
+    expect(s.walls).toHaveLength(1);
+    expect(s.walls![0].side).toBe('/');
+  });
+});
+
+describe('editorState — outil ÉLÉVATION (peindre)', () => {
+  it('peint une valeur d’élévation sur la case (crée le tableau elev au besoin)', () => {
+    const s = paintElev(emptyScene(4, 4), { x: 1, y: 1 }, 0.45, 1, 0);
+    expect(s.levels[0].elev).toBeDefined();
+    expect(s.levels[0].elev![1 * 4 + 1]).toBe(0.45);
+    expect(s.levels[0].elev![0]).toBe(0); // ailleurs = 0
+  });
+  it('pinceau 3×3 peint un carré ; fosse = valeur négative', () => {
+    const s = paintElev(emptyScene(5, 5), { x: 2, y: 2 }, -0.4, 3, 0);
+    for (let y = 1; y <= 3; y++) for (let x = 1; x <= 3; x++) expect(s.levels[0].elev![y * 5 + x]).toBe(-0.4);
+    expect(s.levels[0].elev![0]).toBe(0);
+  });
+  it('hors-grille = no-op', () => {
+    const s0 = emptyScene(4, 4);
+    expect(paintElev(s0, { x: -1, y: 0 }, 0.5, 1, 0)).toBe(s0);
+  });
+});
+
+describe('editorState — nearestEdge (offset → arête)', () => {
+  it('choisit l’arête la plus proche du centre', () => {
+    expect(nearestEdge(0.45, 0)).toBe('E'); // vers la droite
+    expect(nearestEdge(-0.45, 0)).toBe('O');
+    expect(nearestEdge(0, -0.45)).toBe('N');
+    expect(nearestEdge(0, 0.45)).toBe('S');
+  });
+});

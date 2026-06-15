@@ -32,6 +32,8 @@ export function toolLabel(tool: Tool): string {
     case 'entry': return '⚑ Point d’entrée';
     case 'encounter': return '⚔️ Placer des ennemis';
     case 'stair': return '🪜 Escalier (vers l’étage au-dessus)';
+    case 'wall': return tool.paint === 'door' ? '🧱 Porte' : tool.paint === 'diagBack' || tool.paint === 'diagFwd' ? '🧱 Diagonale' : '🧱 Cloison';
+    case 'elev': return `⛰ Élévation ${tool.value > 0 ? '+' : ''}${tool.value}`;
     case 'erase': return '🧽 Gomme';
   }
 }

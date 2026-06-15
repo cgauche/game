@@ -118,6 +118,19 @@ export function screenToTileAtZ(px: number, py: number, dims: Dims, z = 0): { x:
   return screenToTile(px, py + z * LEVEL_H, dims);
 }
 
+/** Inverse de `tileCenter` SANS arrondi : coordonnées de tuile FRACTIONNAIRES (l'offset au centre d'une
+ *  case ∈ [-0.5,0.5] sert au picking d'ARÊTE de l'éditeur de murs). Dé-tourne en continu (unrotTile est
+ *  une transformée linéaire, valable sur des flottants). z = étage visé. */
+export function screenToTileF(px: number, py: number, dims: Dims, z = 0): { x: number; y: number } {
+  const qy = py + z * LEVEL_H;
+  if (dims.view === 'top') {
+    return unrotTile((px - originX(dims)) / CELL, (qy - originY()) / CELL, dims);
+  }
+  const a = (px - originX(dims)) / (TW / 2);
+  const b = (qy - originY()) / (TH / 2);
+  return unrotTile((a + b) / 2, (b - a) / 2, dims);
+}
+
 /** Les 4 sommets (et le centre) d'une tuile — source unique de la géométrie, partagée par
  *  diamondPath et le raccord d'arêtes (ground.ts). Losange (TW/TH) en iso ; carré (CELL) en
  *  vue du dessus, où top=NO, right=NE, bot=SE, left=SO (l'ordre compose avec groundTile/diamondPath). */

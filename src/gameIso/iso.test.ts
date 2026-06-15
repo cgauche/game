@@ -1,5 +1,24 @@
 import { describe, it, expect } from 'vitest';
-import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, floorDepth, CELL, LEVEL_H, screenToTileAtZ, diamondPath, diamondCorners, type Dims } from './iso';
+import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, floorDepth, CELL, LEVEL_H, screenToTileAtZ, screenToTileF, diamondPath, diamondCorners, type Dims } from './iso';
+
+describe('screenToTileF — picking FRACTIONNAIRE (arêtes éditeur)', () => {
+  for (const rot of [0, 1, 2, 3] as const) {
+    it(`centre d'une case → coords ~entières (rot ${rot})`, () => {
+      const dims: Dims = { w: 6, h: 4, rot };
+      const { cx, cy } = tileCenter(2, 1, dims);
+      const f = screenToTileF(cx, cy, dims);
+      expect(f.x).toBeCloseTo(2, 5);
+      expect(f.y).toBeCloseTo(1, 5);
+    });
+  }
+  it('point vers l’arête E (cx + un quart de losange) → x ≈ +0.35 du centre', () => {
+    const dims: Dims = { w: 6, h: 4 };
+    const { cx, cy } = tileCenter(2, 1, dims);
+    const f = screenToTileF(cx + 64 / 2 / 2, cy, dims); // +TW/4 vers la droite (arête E)
+    expect(f.x - 2).toBeGreaterThan(0.2);
+    expect(Math.abs(f.y - 1)).toBeLessThan(0.3);
+  });
+});
 
 describe('rotTile / unrotTile', () => {
   const dims: Dims = { w: 5, h: 3 };

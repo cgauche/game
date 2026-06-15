@@ -15,11 +15,13 @@ import type { Tool } from './editorState';
 
 const TERRAIN_IDS = Object.keys(TERRAINS);
 
-type Family = 'select' | 'tile' | 'personnage' | 'prop' | 'heroStart' | 'building' | 'zone' | 'entry' | 'encounter' | 'stair' | 'erase';
+type Family = 'select' | 'tile' | 'wall' | 'elev' | 'personnage' | 'prop' | 'heroStart' | 'building' | 'zone' | 'entry' | 'encounter' | 'stair' | 'erase';
 
 const RAIL: { key: Family; icon: string; label: string }[] = [
   { key: 'select', icon: '↖', label: 'Sélection / déplacer — clic = sélectionner, glisser = déplacer' },
   { key: 'tile', icon: '🖌', label: 'Peindre le terrain' },
+  { key: 'wall', icon: '🧱', label: 'Murs — cloison ou porte sur une arête, diagonale au centre de la case' },
+  { key: 'elev', icon: '⛰', label: 'Élévation — scène surélevée / fosse (peindre une hauteur)' },
   { key: 'personnage', icon: '🙂', label: 'Poser un personnage' },
   { key: 'prop', icon: '🌳', label: 'Poser un décor' },
   { key: 'heroStart', icon: '🏁', label: 'Départ des héros (case d’arrivée du groupe)' },
@@ -29,6 +31,24 @@ const RAIL: { key: Family; icon: string; label: string }[] = [
   { key: 'encounter', icon: '⚔️', label: 'Placer des ennemis (rencontre de combat)' },
   { key: 'stair', icon: '🪜', label: 'Escalier — relie cette case à l’étage au-dessus (traversée multi-niveaux)' },
   { key: 'erase', icon: '🧽', label: 'Gomme — efface les entités cliquées' },
+];
+
+/** Sous-modes de l'outil murs (rail contextuel). */
+const WALL_PAINTS: { paint: import('./editorState').WallPaint; icon: string; label: string }[] = [
+  { paint: 'wall', icon: '▮', label: 'Cloison' },
+  { paint: 'door', icon: '🚪', label: 'Porte' },
+  { paint: 'diagBack', icon: '◣', label: 'Diagonale ＼' },
+  { paint: 'diagFwd', icon: '◢', label: 'Diagonale ／' },
+];
+
+/** Presets d'élévation (unités d'étage). Plat efface l'élévation locale. */
+const ELEV_PRESETS: { value: number; label: string }[] = [
+  { value: 0, label: 'Plat' },
+  { value: 0.25, label: 'Estrade' },
+  { value: 0.45, label: 'Scène' },
+  { value: 0.7, label: 'Haute' },
+  { value: -0.4, label: 'Fosse' },
+  { value: -0.8, label: 'Cave' },
 ];
 
 /** Famille du rail correspondant à l'outil actif. */
@@ -76,6 +96,8 @@ export function Palette({
     switch (f) {
       case 'select': return setTool({ mode: 'select' });
       case 'tile': return setTool({ mode: 'tile', terrain: lastTerrain });
+      case 'wall': return setTool({ mode: 'wall', paint: 'wall' });
+      case 'elev': return setTool({ mode: 'elev', value: 0.45 });
       case 'personnage': return setTool({ mode: 'entity', kind: 'personnage' });
       case 'prop': return setTool({ mode: 'entity', kind: 'prop', ref: lastProp });
       case 'heroStart': return setTool({ mode: 'entity', kind: 'heroStart' });
@@ -145,6 +167,55 @@ export function Palette({
                 </button>
               ))}
             </div>
+          </>
+        )}
+
+        {family === 'wall' && tool.mode === 'wall' && (
+          <>
+            <div className="mini-title">Type de cloison</div>
+            <div className="row-flex">
+              {WALL_PAINTS.map((wp) => (
+                <button
+                  key={wp.paint}
+                  className={`btn small ${tool.paint === wp.paint ? 'btn-primary' : ''}`}
+                  title={wp.label}
+                  onClick={() => setTool({ mode: 'wall', paint: wp.paint })}
+                >
+                  {wp.icon} {wp.label}
+                </button>
+              ))}
+            </div>
+            <p className="hint">
+              {tool.paint === 'wall' || tool.paint === 'door'
+                ? 'Cliquez PRÈS d’une arête de case : l’arête surlignée prend la cloison/porte. Re-cliquer l’efface.'
+                : 'Cliquez une case : la diagonale se pose en travers (éventail / paroi courbe). Re-cliquer l’efface.'}
+            </p>
+          </>
+        )}
+
+        {family === 'elev' && tool.mode === 'elev' && (
+          <>
+            <div className="mini-title">Pinceau</div>
+            <div className="row-flex">
+              {[1, 3, 5].map((n) => (
+                <button key={n} className={`btn small ${brush === n ? 'btn-primary' : ''}`} onClick={() => setBrush(n)}>
+                  {n}×{n}
+                </button>
+              ))}
+            </div>
+            <div className="mini-title">Hauteur</div>
+            <div className="row-flex">
+              {ELEV_PRESETS.map((p) => (
+                <button key={p.label} className={`btn small ${tool.value === p.value ? 'btn-primary' : ''}`} onClick={() => setTool({ mode: 'elev', value: p.value })}>
+                  {p.label} <span className="chip">{p.value > 0 ? '+' : ''}{p.value}</span>
+                </button>
+              ))}
+            </div>
+            <label className="mini-title" style={{ display: 'block' }}>
+              Sur mesure
+              <input type="number" step={0.05} value={tool.value} onChange={(e) => setTool({ mode: 'elev', value: Number(e.target.value) })} style={{ width: '5rem', marginLeft: '0.5rem' }} />
+            </label>
+            <p className="hint">Peignez une hauteur sur les cases (scène surélevée, fosse d’orchestre). « Plat » remet à 0.</p>
           </>
         )}
 

@@ -7,19 +7,21 @@
  */
 import { useRef, useState } from 'react';
 import { Scene, tileAt } from '../../state/scene';
-import { Dims, diamondPath, tileCenter, screenToTileAtZ, stageSize, depth, TH } from '../../gameIso/iso';
+import { Dims, diamondPath, tileCenter, screenToTileAtZ, screenToTileF, stageSize, depth, TH } from '../../gameIso/iso';
 import { DEFS, terrainOverlay } from '../../gameIso/sprites';
 import { EntityToken } from '../../gameIso/EntityToken';
 import { footprintTiles } from '../../state/footprint';
 import { entitySize } from '../../state/spawn';
 import { groundTile } from '../../gameIso/ground';
+import { wallSegs } from '../../gameIso/walls';
 import { buildingObj } from '../../gameIso/BuildingSprite';
 import { perimeterTiles } from '../../state/buildings';
 import { ViewControls } from '../ViewControls';
 import type { useEditorView } from './useEditorView';
 import {
-  Tool, Layers, Sel, Rect, Pt, rectFrom, hitAt, selRect, moveSel, resizeSel, paintTiles, fillTerrainRect,
+  Tool, Layers, Sel, Rect, Pt, Edge4, rectFrom, hitAt, selRect, moveSel, resizeSel, paintTiles, fillTerrainRect,
   placeEntity, placeEntry, addTrigger, addRestZone, addEffectZone, effectZoneRect, addBuilding, addEnemyMember, addStair, eraseAt, sameSel,
+  toggleEdgeWall, toggleDiagonalWall, paintElev, nearestEdge, canonEdge,
 } from './editorState';
 
 export function EditorCanvas({
@@ -67,17 +69,32 @@ export function EditorCanvas({
   const dragStartRef = useRef<Pt | null>(null);
   const [dragRect, setDragRect] = useState<Rect | null>(null);
   const [painting, setPainting] = useState(false);
+  const [hoverEdge, setHoverEdge] = useState<{ x: number; y: number; side: 'N' | 'E' } | null>(null); // aperçu de l'arête sous le curseur (outil murs)
   const moveRef = useRef<{ from: Pt; moved: boolean } | null>(null);
   const resizeRef = useRef<{ moved: boolean } | null>(null);
 
-  /** Point écran → tuile (projection iso, comme le jeu). */
-  function isoTile(ev: React.PointerEvent): Pt {
+  /** Coordonnées écran locales (viewBox) d'un événement pointeur. */
+  function localXY(ev: React.PointerEvent): { x: number; y: number } {
     const svg = canvasRef.current!;
     const pt = svg.createSVGPoint();
     pt.x = ev.clientX;
     pt.y = ev.clientY;
     const loc = pt.matrixTransform(svg.getScreenCTM()!.inverse());
-    return screenToTileAtZ(loc.x, loc.y, dims, currentLevel); // picking vers l'étage en cours d'édition
+    return { x: loc.x, y: loc.y };
+  }
+
+  /** Point écran → tuile (projection iso, comme le jeu). */
+  function isoTile(ev: React.PointerEvent): Pt {
+    const { x, y } = localXY(ev);
+    return screenToTileAtZ(x, y, dims, currentLevel); // picking vers l'étage en cours d'édition
+  }
+
+  /** Point écran → case + ARÊTE la plus proche (outil murs) : offset fractionnaire au centre → nearestEdge. */
+  function wallHit(ev: React.PointerEvent): { p: Pt; side: Edge4 } {
+    const { x, y } = localXY(ev);
+    const f = screenToTileF(x, y, dims, currentLevel);
+    const px = Math.round(f.x), py = Math.round(f.y);
+    return { p: { x: px, y: py }, side: nearestEdge(f.x - px, f.y - py) };
   }
 
   function pointerDown(e: React.PointerEvent) {
@@ -137,6 +154,19 @@ export function EditorCanvas({
       case 'stair':
         setScene(addStair(scene, p, currentLevel)); // relie cette case à la même case de l'étage au-dessus
         return;
+      case 'wall': {
+        const wh = wallHit(e);
+        if (wh.p.x < 0 || wh.p.y < 0 || wh.p.x >= w || wh.p.y >= h) return;
+        if (tool.paint === 'diagBack') setScene(toggleDiagonalWall(scene, wh.p.x, wh.p.y, '\\', currentLevel));
+        else if (tool.paint === 'diagFwd') setScene(toggleDiagonalWall(scene, wh.p.x, wh.p.y, '/', currentLevel));
+        else setScene(toggleEdgeWall(scene, wh.p.x, wh.p.y, wh.side, currentLevel, tool.paint === 'door' ? 'door' : 'wall'));
+        return;
+      }
+      case 'elev':
+        pushSnapshot(); // 1 cran d'undo pour tout le trait
+        setPainting(true);
+        setSceneNoHistory(paintElev(scene, p, tool.value, brush, currentLevel));
+        return;
       case 'erase':
         setPainting(true);
         setScene(eraseAt(scene, p));
@@ -156,6 +186,11 @@ export function EditorCanvas({
     }
     const p = isoTile(e);
     onHover(p);
+    // Aperçu de l'arête ciblée (outil murs, sous-modes cloison/porte).
+    if (tool.mode === 'wall' && (tool.paint === 'wall' || tool.paint === 'door')) {
+      const wh = wallHit(e);
+      setHoverEdge(canonEdge(wh.p.x, wh.p.y, wh.side));
+    } else if (hoverEdge) setHoverEdge(null);
     if (resizeRef.current) {
       if (!resizeRef.current.moved) {
         pushSnapshot(); // 1 cran d'undo pour tout le geste de resize
@@ -177,6 +212,7 @@ export function EditorCanvas({
     if ((tool.mode === 'building' || tool.mode === 'zone' || (tool.mode === 'tile' && terrainRect)) && dragStartRef.current)
       setDragRect(rectFrom(dragStartRef.current, p));
     else if (painting && tool.mode === 'tile') setSceneNoHistory(paintTiles(scene, p, tool.terrain, brush, currentLevel));
+    else if (painting && tool.mode === 'elev') setSceneNoHistory(paintElev(scene, p, tool.value, brush, currentLevel));
     else if (painting && tool.mode === 'erase') setScene(eraseAt(scene, p));
   }
 
@@ -238,6 +274,7 @@ export function EditorCanvas({
             dragStartRef.current = null;
             setDragRect(null);
             setPainting(false);
+            setHoverEdge(null);
             moveRef.current = null;
             resizeRef.current = null;
           }}
@@ -306,10 +343,18 @@ export function EditorCanvas({
                   objs.push({ d: depth(en.pos.x, en.pos.y, dims) + 0.5, el: <EntityToken key={en.id} ent={en} dims={dims} /> });
                 }
               }
+              // Cloisons (murs/portes/diagonales) — mêmes segments texturés que le jeu, dans le tri global.
+              wallSegs(scene, dims).forEach((s, i) => objs.push({ d: s.d, el: <g key={`wall-${i}`} dangerouslySetInnerHTML={{ __html: s.svg }} /> }));
               objs.sort((a, b) => a.d - b.d);
               return objs.map((o) => o.el);
             })()}
           </g>
+          {hoverEdge && (() => {
+            // Arête candidate sous le curseur (outil murs) : segment doré entre les deux coins de grille.
+            const gc = (gx: number, gy: number) => tileCenter(gx - 0.5, gy - 0.5, dims, currentLevel);
+            const [a, b] = hoverEdge.side === 'N' ? [gc(hoverEdge.x, hoverEdge.y), gc(hoverEdge.x + 1, hoverEdge.y)] : [gc(hoverEdge.x + 1, hoverEdge.y), gc(hoverEdge.x + 1, hoverEdge.y + 1)];
+            return <line x1={a.cx} y1={a.cy} x2={b.cx} y2={b.cy} stroke="#ffe066" strokeWidth={4} strokeLinecap="round" opacity={0.9} pointerEvents="none" />;
+          })()}
           {layers.triggers && (
             <g pointerEvents="none">
               {scene.triggers.map((t) => {
