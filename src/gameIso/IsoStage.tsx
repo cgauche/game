@@ -154,12 +154,14 @@ export function IsoStage() {
   // `shownRot` = orientation AFFICHÉE, retardée pour masquer le ré-agencement sous le
   // creux d'opacité de la transition « dim-and-turn ».
   const camRot = useGame((s) => s.camRot);
+  const camEdge = useGame((s) => s.camEdge); // cran impair : vue « de face » (edge-on) — grille axis-alignée 3D
   const rotateCam = useGame((s) => s.rotateCam);
   const viewMode = useGame((s) => s.viewMode);
   const camPan = useGame((s) => s.camPan);
   const panCamBy = useGame((s) => s.panCamBy);
   const resetCamPan = useGame((s) => s.resetCamPan);
   const [shownRot, setShownRot] = useState<0 | 1 | 2 | 3>(camRot);
+  const [shownEdge, setShownEdge] = useState(camEdge);
   const [turning, setTurning] = useState(false);
   // Tuile survolée (tooltip + réticule de visée ; suivie dans tous les modes de ciblage).
   const [hover, setHover] = useState<Pt | null>(null);
@@ -174,18 +176,18 @@ export function IsoStage() {
   // Dépend de camRot SEUL (pas de shownRot) : sinon le swap de shownRot à mi-course
   // re-déclenche l'effet et son cleanup annule le timer qui rétablit `turning=false`
   // → la scène resterait sombre. `prevCamRot` filtre les re-rendus non liés.
-  const prevCamRot = useRef(camRot);
+  const prevCam = useRef({ rot: camRot, edge: camEdge });
   useEffect(() => {
-    if (prevCamRot.current === camRot) return;
-    prevCamRot.current = camRot;
+    if (prevCam.current.rot === camRot && prevCam.current.edge === camEdge) return;
+    prevCam.current = { rot: camRot, edge: camEdge };
     setTurning(true);
-    const t1 = window.setTimeout(() => setShownRot(camRot), 130); // swap au creux
+    const t1 = window.setTimeout(() => { setShownRot(camRot); setShownEdge(camEdge); }, 130); // swap au creux
     const t2 = window.setTimeout(() => setTurning(false), 260); // remontée
     return () => {
       window.clearTimeout(t1);
       window.clearTimeout(t2);
     };
-  }, [camRot]);
+  }, [camRot, camEdge]);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (useGame.getState().dialogue) return;
@@ -240,27 +242,30 @@ export function IsoStage() {
   // Planchers fusionnés dans le tri de profondeur GLOBAL (objs) : chaque étage porte une profondeur de
   // bande unique (floorDepth) le plaçant sous SES objets et au-dessus de tout le niveau inférieur — un
   // sol haut SURPLOMBE ainsi les tokens du sol. Tuiles « vide » non rendues (on voit le dessous).
-  // « Un étage à la fois » : l'étage ACTIF (celui du groupe, ou du combattant dont c'est le tour) se rend
-  // PLEIN, les autres en FANTÔME léger → on distingue enfin le sol, l'étage en surplomb et la fosse au
-  // lieu d'un magma de bois superposé. Override DEBUG : devtool `__wfrp.viewLevel(z)`.
+  // Étages CO-VISIBLES (cf. renderLevels) : on rend TOUS les étages, SOLIDES, fusionnés dans le tri de
+  // profondeur (z-aware) → un théâtre montre son parterre ET ses loges en surplomb dans un seul regard,
+  // pas de fantôme (rendu plein, pas estompé), pas de magma (tri propre). Override DEBUG `viewLevel(z)`
+  // isole un étage. Le PICKING reste sur l'étage ACTIF (activeZ) : on contrôle le groupe à son niveau.
   const viewZ = useSyncExternalStore(subscribeViewZ, getViewZ, getViewZ);
   const activePos = mode === 'battle' && battle ? (battle.combatants.find((c) => c.id === battle.order[battle.turn])?.pos as { z?: number } | undefined) : undefined;
   const activeZ = viewZ ?? (activePos?.z ?? partyPos.z ?? 0);
-  // « Un étage à la fois » : on ne REND QUE l'étage actif (celui du groupe / combattant actif). Les autres
-  // ne sont pas dessinés du tout — pas de fantôme (qui brouillait : « choses transparentes / murs absents du
-  // plan »). Les escaliers reliant cet étage restent visibles pour indiquer où changer de niveau.
 
   // LIFT vertical d'une case : son étage z + son ÉLÉVATION locale (scène surélevée / fosse). Sert au
   // JETON (qui monte/descend avec son sol) ET aux SURLIGNAGES de case → le halo SUIT le jeton (sinon le
   // jeton paraît hors de sa case sur un sol surélevé/en contrebas). `diamondPath(x,y,dims,liftAt(...))`.
   const liftAt = (x: number, y: number, z = 0) => z + (scene ? elevAt(scene, Math.round(x), Math.round(y), z) : 0);
 
+  // Étages à RENDRE : par défaut TOUS (co-visibles — un théâtre montre son parterre ET ses loges en
+  // surplomb dans le même regard), sauf override debug `viewLevel(z)` qui isole un seul étage. Les
+  // tuiles « vide » d'un étage haut ne dessinent rien → on voit l'étage du dessous au travers (la
+  // fosse de l'auditorium). Le tri de profondeur (z-aware) empile les étages correctement.
+  const renderLevels = useMemo(() => (scene ? (viewZ != null ? scene.levels.filter((l) => l.z === viewZ) : scene.levels) : []), [scene, viewZ]);
+
   const floorObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
     if (!scene) return [];
-    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
+    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
     const out: { d: number; el: JSX.Element }[] = [];
-    const lvl = scene.levels.find((l) => l.z === activeZ);
-    if (lvl) {
+    for (const lvl of renderLevels) {
       const fd = floorDepth(d, lvl.z);
       for (let y = 0; y < d.h; y++)
         for (let x = 0; x < d.w; x++) {
@@ -269,35 +274,37 @@ export function IsoStage() {
         }
     }
     return out;
-  }, [scene, shownRot, viewMode, activeZ]);
+  }, [scene, shownRot, viewMode, renderLevels]);
 
   // Murs sur arêtes (cloisons fines) : quads verticaux dressés sur les arêtes de case, fusionnés dans
   // le tri de profondeur global (un mur avant occulte ce qui est derrière ; les portes sont ajourées).
   const wallObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
     if (!scene?.walls?.length) return [];
-    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
-    // Seules les cloisons de l'étage ACTIF (fini la « fusion » rez+étage à l'écran).
-    return scene.walls.filter((w) => (w.z ?? 0) === activeZ).map((w, i) => {
+    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
+    const zs = new Set(renderLevels.map((l) => l.z));
+    // Cloisons des étages rendus (raised par leur z) → les murs des loges se dressent au-dessus du parterre.
+    return scene.walls.filter((w) => zs.has(w.z ?? 0)).map((w, i) => {
       const seg = wallSeg(w, d);
       return { d: seg.d, el: <g key={`wall-${i}`} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
     });
-  }, [scene, shownRot, viewMode, activeZ]);
+  }, [scene, shownRot, viewMode, renderLevels]);
 
   // ESCALIERS (Scene.stairs) — volées de marches STRUCTURELLES (comme les murs), pas des décors posés.
   // Pleine opacité si l'un des deux étages reliés est actif (l'escalier appartient aux deux).
   const stairObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
     if (!scene?.stairs?.length) return [];
-    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
-    // Volées reliant l'étage ACTIF (montent/descendent depuis lui) — pour voir où changer de niveau.
-    return scene.stairs.filter((s) => { const [lo, hi] = stairLevels(s); return activeZ === lo || activeZ === hi; }).map((s, i) => {
+    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
+    const zs = new Set(renderLevels.map((l) => l.z));
+    // Volées dont un des deux étages reliés est rendu (l'escalier appartient aux deux).
+    return scene.stairs.filter((s) => { const [lo, hi] = stairLevels(s); return zs.has(lo) || zs.has(hi); }).map((s, i) => {
       const seg = stairSeg(s, d);
       return { d: seg.d, el: <g key={`stair-${i}`} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
     });
-  }, [scene, shownRot, viewMode, activeZ]);
+  }, [scene, shownRot, viewMode, renderLevels]);
 
   const decorObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
     if (!scene) return [];
-    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
+    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
     // Tuiles occupées par un ACTEUR — pour estomper l'arbre/mur qui masquerait un personnage derrière.
     const actorTiles: { x: number; y: number }[] = [];
     if (mode === 'battle' && battle) {
@@ -325,7 +332,7 @@ export function IsoStage() {
 
   const buildingObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
     if (!scene) return [];
-    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
+    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
     const allies =
       mode === 'battle' && battle
         ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => c.pos!)
@@ -437,7 +444,7 @@ export function IsoStage() {
   // à la frame (peu coûteux) plus bas.
   const staticHighlights = useMemo<JSX.Element[]>(() => {
     if (!scene || mode !== 'battle' || !battle) return [];
-    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
+    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
     const hl: JSX.Element[] = [];
     const activeC = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
     // COOP : le tour du héros d'un AUTRE joueur s'affiche comme un tour ennemi — aucune affordance
@@ -541,7 +548,7 @@ export function IsoStage() {
   const entityObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
     if (!scene) return [];
     const inBattle = mode === 'battle' && !!battle;
-    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
+    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
     const isTop = viewMode === 'top';
     const discRfn = (sz: Combatant['size']) => (sizeFootprint(sz) * CELL) / 2 * 0.85;
     const out: { d: number; el: JSX.Element }[] = [];
@@ -563,7 +570,7 @@ export function IsoStage() {
       if (ent.kind === 'heroStart' || ent.kind === 'prop') continue;
       if (ent.combat?.hiddenUntilCombat) continue; // ennemi d'embuscade : invisible avant le combat
       const ez = ent.z ?? 0;
-      if (ez !== activeZ) continue; // un étage à la fois : on ne dessine que les entités de l'étage actif
+      if (viewZ != null && ez !== viewZ) continue; // override debug viewLevel(z) : isole un étage ; sinon co-visible
       if (!ez && covered(ent.pos.x, ent.pos.y)) continue; // l'occlusion par décor ne vaut qu'au sol
       const r = pickBackend({ kind: 'sceneEntity', ent }, viewMode);
       if (r.backend === 'sprite') {
@@ -593,10 +600,10 @@ export function IsoStage() {
       }
     }
     return out;
-  }, [scene, shownRot, viewMode, mode, battle, activeZ]);
+  }, [scene, shownRot, viewMode, mode, battle, viewZ]);
 
   if (!scene) return null;
-  const dims: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
+  const dims: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
   const size = stageSize(dims);
   // Vue du dessus : les acteurs deviennent des pions-portraits (disques). Rayon = empreinte × ½ case.
   const top = viewMode === 'top';
@@ -698,7 +705,7 @@ export function IsoStage() {
   for (const ent of scene.entities) {
     if (ent.kind !== 'prop') continue;
     const ez = ent.z ?? 0;
-    if (ez !== activeZ) continue; // un étage à la fois : décors de l'étage actif seulement
+    if (viewZ != null && ez !== viewZ) continue; // override debug viewLevel(z) : isole un étage ; sinon co-visible
     const fg = decorFootGeometry(ent.foot);
     const px = ent.pos.x + fg.offX, py = ent.pos.y + fg.offY;
     const pd = depth(ent.pos.x + (ent.foot ? ent.foot.w - 1 : 0), ent.pos.y + (ent.foot ? ent.foot.h - 1 : 0), dims, ez);
@@ -892,9 +899,10 @@ export function IsoStage() {
     const loc = pt.matrixTransform(svg.getScreenCTM()!.inverse());
     const gx = (loc.x - VW / 2) / zoom + VW / 2 - cam.x;
     const gy = (loc.y - VH / 2) / zoom + VH / 2 - cam.y;
-    // Picking « un étage à la fois » : on vise l'étage ACTIF (celui qu'on voit/contrôle) en PREMIER, puis
-    // les étages INFÉRIEURS seulement à travers un VIDE (on regarde dans le puits). On ne vise JAMAIS un
-    // étage au-dessus (estompé) → le clic porte sur le plan affiché, plus sur le plancher en surplomb.
+    // Picking au niveau CONTRÔLÉ : on vise l'étage ACTIF (celui du groupe) en PREMIER, puis les étages
+    // INFÉRIEURS seulement à travers un VIDE (on regarde dans le puits). On ne vise JAMAIS un étage au-
+    // dessus : les loges en surplomb sont VISIBLES (co-visible) mais non ciblables tant qu'on n'y monte
+    // pas → le clic porte sur le plan qu'on contrôle, pas sur le plancher en surplomb.
     for (const z of scene.levels.map((l) => l.z).filter((z) => z <= activeZ).sort((a, b) => b - a)) {
       const { x, y } = screenToTileAtZ(gx, gy, dims, z);
       if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) continue;
@@ -1091,7 +1099,7 @@ export function IsoStage() {
       onContextMenu={(e) => e.preventDefault()}
     >
       <defs dangerouslySetInnerHTML={{ __html: DEFS + AMBIANCE_DEFS }} />
-      <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.9 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: turning ? 'transform 0.13s ease-out, opacity 0.13s ease-out' : anyWalking ? 'opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out', opacity: turning ? 0.22 : 1 }}>
+      <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.9 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: turning ? 'opacity 0.13s ease-out' : anyWalking ? 'opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out', opacity: turning ? 0.22 : 1 }}>
         <g>{objs.map((o) => o.el)}</g>
         {/* Télégraphe ENNEMI (enemyAim) : réticule + ligne — PLEINE en mêlée, pointillée tir/sort. */}
         {targeting && (
