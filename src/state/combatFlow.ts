@@ -5,7 +5,7 @@
  */
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { LootGear, PendingCast } from './pendings';
+import type { LootGear, PendingCast, PendingDeviation } from './pendings';
 import { Combatant, ItemInstance, HitLocation, Weapon, DIFFICULTY_MODIFIERS, HIT_LOCATION_LABELS } from '../engine/types';
 import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
@@ -2120,6 +2120,30 @@ export function aiMaybeSpecialAction(get: Get, set: SetFn, enemy: Combatant): bo
  *  OPPOSÉE). File initialisée au 1er appel (Morsure/Attaque caudale des traits, PUIS Piétinement de
  *  Taille — les Indices d'abord), puis poursuivie après chaque modale de défense résolue. Retourne
  *  true si une modale s'est ouverte (tour SUSPENDU). */
+/** Résout une Déviation Critique (corps de `deviationApply`, sans la lecture du pending) — partagé par
+ *  la modale autonome (`deviationApply`, `resume:true`) ET l'étape de séquence (applier 'deviation',
+ *  `resume:false` : la reprise de l'IA est gérée par la FERMETURE de la séquence). « Subir » applique le
+ *  Critique pré-tiré (`dev.crit`) tel quel ; « Dévier » l'ignore (−1 PA). */
+export function resolveDeviation(get: Get, set: SetFn, dev: PendingDeviation, deviate: boolean, opts: { resume: boolean }): void {
+  const battle = get().battle;
+  if (!battle) return;
+  const attacker = battle.combatants.find((c) => c.id === dev.attackerId);
+  const target = battle.combatants.find((c) => c.id === dev.targetId);
+  if (attacker && target) {
+    applyAttackResult(get, set, attacker, target, dev.weapon, dev.res, deviate, deviate ? undefined : dev.crit);
+    autoCleave(get, set, attacker, target, dev.res); // balayage de l'ennemi plus grand sur les AUTRES héros
+    // Maladresse du défenseur héros (parade/esquive active ratée sur un double, LDB 14 l.48-51).
+    if (target.kind === 'hero' && defenderFumbled(dev.res, target.weapons[0]) && !isOutOfAction(target)) {
+      set({ pendingFumble: { combatantId: target.id, weapon: target.weapons[0], result: null, resumeAfter: true } });
+      return; // la reprise suivra la modale de Maladresse (resumeAfter)
+    }
+  }
+  if (opts.resume && dev.resumeAfter) {
+    if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return; // attaques gratuites de créature (file)
+    resumeEnemyTurn(get, set);
+  }
+}
+
 export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): boolean {
   if (enemy.kind !== 'enemy' || isOutOfAction(enemy)) { enemy.pendingFreeAttacks = undefined; return false; }
   const battle = get().battle;

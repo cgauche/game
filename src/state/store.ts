@@ -14,7 +14,7 @@ import {
   applyEffects, applyEffectsLoot, assignGearAt, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, attackWardGate,
   effectiveSpellOf, finishPlayerAction,
-  applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn, resumeSuspendedAI,
+  applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn, resumeSuspendedAI, resolveDeviation,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, aiOvercastPlan,
@@ -3166,27 +3166,10 @@ export const useGame = create<GameState>((set, get) => ({
   knockdownResolve: (accept: boolean) => resolveKnockdown(get, set, accept),
   renounceResolve: (renounce: boolean) => resolveRenounce(get, set, renounce),
   deviationApply: (deviate: boolean) => {
-    const { battle, pendingDeviation: pdv } = get();
-    if (!battle || !pdv) return;
-    const attacker = battle.combatants.find((c) => c.id === pdv.attackerId);
-    const target = battle.combatants.find((c) => c.id === pdv.targetId);
+    const pdv = get().pendingDeviation;
+    if (!pdv) return;
     set({ pendingDeviation: null }); // null AVANT la reprise → ré-entrance/double-advance impossibles
-    if (attacker && target) {
-      // « Subir » applique le Critique DÉJÀ montré (pdv.crit) sans re-tirer ni re-révéler ; « Dévier » l'ignore.
-      applyAttackResult(get, set, attacker, target, pdv.weapon, pdv.res, deviate, deviate ? undefined : pdv.crit);
-      autoCleave(get, set, attacker, target, pdv.res); // balayage de l'ennemi plus grand sur les AUTRES héros
-      // (attaques gratuites de créature : enchaînées à la reprise ci-dessous)
-      // Maladresse du défenseur héros (défense active ratée sur un double, LDB 14 l.48-51) : `defenderFumbled`
-      // est FAUX sans jet de défense (doAttack / « Subir » passif) → ne se déclenche que pour la parade/esquive active.
-      if (target.kind === 'hero' && defenderFumbled(pdv.res, target.weapons[0]) && !isOutOfAction(target)) {
-        set({ pendingFumble: { combatantId: target.id, weapon: target.weapons[0], result: null, resumeAfter: true } });
-        return; // la reprise de l'IA suivra la modale de Maladresse (resumeAfter)
-      }
-    }
-    if (pdv.resumeAfter) {
-      if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return; // attaques gratuites de créature (file)
-      resumeEnemyTurn(get, set);
-    }
+    resolveDeviation(get, set, pdv, deviate, { resume: true }); // modale autonome : reprend l'IA elle-même
   },
 
   // ── Combat monté : Monter / Descendre (LDB 14 l.212-225) ──
