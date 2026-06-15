@@ -22,6 +22,7 @@ import { hasActiveFlag, consumeActiveFlag } from '../engine/activeFlags';
 import { battleRng } from './battleRng';
 import { addCondition } from '../engine/conditions';
 import { gainCorruption } from './corruptionFlow';
+import { describeEncounterPsych } from './flowOutcomes';
 
 export interface PendingEncounterPsych {
   heroId: string;
@@ -132,18 +133,16 @@ export function encounterPsychConfirm(get: Get, set: Set): void {
   if (hero) {
     hero.psychState ??= [];
     const r = pe.result;
-    const log: string[] = [];
     if (pe.kind === 'terreur') {
-      if (!r.success && (r.brise ?? 0) > 0) { addCondition(hero, 'Brisé', r.brise!); log.push(`${hero.name} est terrifié par ${pe.sourceName} : ${r.brise} État(s) Brisé.`); }
+      if (!r.success && (r.brise ?? 0) > 0) addCondition(hero, 'Brisé', r.brise!);
       hero.psychState.push({ type: 'peur', sourceId: pe.sourceId, indice: r.success ? 0 : pe.indice, calmeDR: 0 }); // la Terreur devient une Peur (LDB 21 l.57)
     } else if (CIBLE_TYPES.has(pe.kind)) {
       hero.psychState.push({ type: pe.kind, cible: pe.cible, sourceId: pe.sourceId, active: !r.success });
-      log.push(r.success ? `${hero.name} maîtrise son ${pe.kind}.` : `${hero.name} est en proie à son ${pe.kind}${pe.cible ? ` (${pe.cible})` : ''}.`);
     } else {
       hero.psychState.push({ type: 'peur', sourceId: pe.sourceId, indice: pe.indice, calmeDR: r.success ? pe.indice : 0 });
-      log.push(r.success ? `${hero.name} surmonte sa peur de ${pe.sourceName}.` : `${hero.name} a peur de ${pe.sourceName}.`);
     }
-    set({ party: [...party], journal: log.length ? [...get().journal.slice(-40), ...log] : get().journal });
+    // Issue = source UNIQUE avec la popin (describeEncounterPsych).
+    set({ party: [...party], journal: [...get().journal.slice(-40), describeEncounterPsych(pe, hero.name)] });
   }
   openEncounterPsych(get, set); // enchaîne le héros suivant
 }

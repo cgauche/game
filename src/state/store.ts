@@ -138,7 +138,7 @@ import { campaign, campaignWorldMap } from '../scenes/campaign';
 import { dayIndex, runDailyUpkeep } from './upkeep';
 import * as travelFlow from './travelFlow';
 import { startCascade, advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice } from './cascade';
-import { describeTest } from './flowOutcomes';
+import { describeTest, describePsych } from './flowOutcomes';
 
 export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'test' | 'interlude' | 'coop' | 'compendium';
 
@@ -2006,7 +2006,6 @@ export const useGame = create<GameState>((set, get) => ({
     if (c) {
       c.psychState ??= [];
       const r = pp.result;
-      const log: string[] = [];
       if (CIBLE_TYPES.has(pp.kind)) {
         // Trait ciblé (Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie) : échec → affliction active
         // (effets de combat/Soc/contrainte) ; succès → marqueur inerte (résisté, pas de re-déclenchement).
@@ -2014,12 +2013,8 @@ export const useGame = create<GameState>((set, get) => ({
         if (!e) { e = { type: pp.kind, cible: pp.cible, sourceId: pp.sourceId }; c.psychState.push(e); }
         e.lastTestRound = battle.round;
         e.active = !r.success;
-        log.push(r.success ? `${c.name} maîtrise son ${pp.kind}.` : `${c.name} est en proie à son ${pp.kind}${pp.cible ? ` (${pp.cible})` : ''}.`);
       } else if (pp.kind === 'terreur') {
-        if (!r.success && (r.brise ?? 0) > 0) {
-          addCondition(c, 'Brisé', r.brise!);
-          log.push(`${c.name} est terrifié : ${r.brise} État(s) Brisé.`);
-        }
+        if (!r.success && (r.brise ?? 0) > 0) addCondition(c, 'Brisé', r.brise!);
         // La Terreur devient une Peur d'Indice équivalent (0 si réussie → inerte).
         c.psychState.push({ type: 'peur', sourceId: pp.sourceId, indice: r.success ? 0 : (r.devientPeur ?? pp.indice), calmeDR: 0, lastTestRound: battle.round });
       } else {
@@ -2027,9 +2022,9 @@ export const useGame = create<GameState>((set, get) => ({
         if (!e) { e = { type: 'peur', sourceId: pp.sourceId, indice: pp.indice, calmeDR: 0 }; c.psychState.push(e); }
         e.calmeDR = r.calmeDR ?? 0;
         e.lastTestRound = battle.round;
-        log.push(r.vaincue ? `${c.name} surmonte sa peur.` : `${c.name} reste sous l'emprise de la Peur (${e.calmeDR}/${pp.indice} DR).`);
       }
-      set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(log, 'fear', c.id)] } });
+      // Issue = source UNIQUE avec la popin (describePsych), au lieu d'une narration recalculée ici.
+      set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines([describePsych(pp, c.name)], 'fear', c.id)] } });
     }
     maybeOpenHeroPsych(get, set); // enchaîne le Test suivant s'il en reste, sinon ferme
   },

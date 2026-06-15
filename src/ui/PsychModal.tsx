@@ -7,6 +7,7 @@ import { RollFlowShell } from './RollFlowShell';
 import { VsHeader } from './VsHeader';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
+import { describePsych } from '../state/flowOutcomes';
 import { DrBar } from './DrBar';
 import { CIBLE_LABEL, calmeBreakdown, calmePending } from './psychLabels';
 
@@ -40,14 +41,6 @@ export function PsychModal() {
   // Dé choisi (« Je ne faillirai pas ! ») : source UNIQUE = `caps.picker` du flux (cf. rollFlows).
   const forcedDie = FLOWS.psych.picker?.(pp, c);
 
-  const outcomeText = !r
-    ? ''
-    : isCible
-      ? r.success ? `${c.name} garde son sang-froid.` : `${c.name} est en proie à son ${cl?.label.toLowerCase() ?? pp.kind}.`
-      : isTerreur
-        ? r.success ? `${c.name} garde son sang-froid.` : `${c.name} est terrifié : ${r.brise} État(s) Brisé, puis Peur ${pp.indice}.`
-        : r.vaincue ? `${c.name} surmonte sa peur.` : `${c.name} reste sous l'emprise de la Peur (${r.calmeDR}/${pp.indice} DR).`;
-
   return (
     <RollFlowShell
       title={cl ? `${cl.emoji} ${cl.label}${pp.cible ? ` (${pp.cible})` : ''}` : `${isTerreur ? '😱 Terreur' : '😨 Peur'} ${pp.indice}`}
@@ -65,7 +58,7 @@ export function PsychModal() {
       onRoll={roll}
       breakdown={r ? calmeBreakdown(calmeValue(c), r) : undefined}
       pending={calmePending(calmeValue(c))}
-      outcome={r ? <JournalLine className="rm-journal" event={ev('fear', outcomeText, c.id, source?.id)} combatants={battle.combatants} /> : undefined}
+      outcome={r ? <JournalLine className="rm-journal" event={ev('fear', describePsych(pp, c.name), c.id, source?.id)} combatants={battle.combatants} /> : undefined}
       determination={{ resolve: c.resolve ?? 0, onResolve: determine }}
       fortune={c.fortune ?? 0}
       freeReroll={freeRerollOf(c)}

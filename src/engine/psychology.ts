@@ -57,6 +57,17 @@ export interface PsychAffliction {
 /** Types de Traits psy CIBLÉS (résolution binaire de Calme, pilotés par un Groupe-Cible — LDB 21). */
 export const CIBLE_TYPES = new Set<PsychType>(['animosite', 'haine', 'prejuge', 'amour', 'camaraderie', 'phobie']);
 
+/** Libellés des Traits psy ciblés (LDB 21) — partagé par les modales psy (combat + rencontre) ET la
+ *  narration d'issue (state). Déplacé depuis ui/psychLabels pour que la couche state y accède. */
+export const CIBLE_LABEL: Record<string, { emoji: string; label: string }> = {
+  animosite: { emoji: '😤', label: 'Animosité' },
+  haine: { emoji: '😡', label: 'Haine' },
+  prejuge: { emoji: '🙄', label: 'Préjugé' },
+  amour: { emoji: '❤️', label: 'Amour' },
+  camaraderie: { emoji: '🤝', label: 'Camaraderie' },
+  phobie: { emoji: '🕷️', label: 'Phobie' },
+};
+
 /** Source de Peur/Terreur que `foe` représente pour `self` : combine la Taille (LDB 85) et l'Indice
  *  inspiré au statbloc (`causesPeur`/`causesTerreur`). Terreur prime ; sinon le plus haut Indice. Pur. */
 export function fearSourceFor(self: Combatant, foe: Combatant): { kind: 'peur' | 'terreur'; indice: number } | null {

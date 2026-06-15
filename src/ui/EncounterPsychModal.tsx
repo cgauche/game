@@ -6,6 +6,7 @@ import { RollFlowShell } from './RollFlowShell';
 import { VsHeader } from './VsHeader';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
+import { describeEncounterPsych } from '../state/flowOutcomes';
 import { CIBLE_LABEL, calmeBreakdown, calmePending } from './psychLabels';
 
 /**
@@ -35,14 +36,6 @@ export function EncounterPsychModal() {
   // Combattants pour colorer les noms : héros (allié) + la source nommée (ennemi).
   const lite = [...party.map((h) => ({ id: h.id, name: h.name, kind: 'hero' })), { id: pe.sourceId, name: pe.sourceName, kind: 'enemy' }];
 
-  const outcomeText = !r
-    ? ''
-    : isCible
-      ? r.success ? `${hero.name} maîtrise son ${cl?.label.toLowerCase() ?? pe.kind}.` : `${hero.name} est en proie à son ${cl?.label.toLowerCase() ?? pe.kind}.`
-      : isTerreur
-        ? r.success ? `${hero.name} garde son sang-froid.` : `${hero.name} est terrifié par ${pe.sourceName} : ${r.brise} État(s) Brisé.`
-        : r.success ? `${hero.name} surmonte sa peur de ${pe.sourceName}.` : `${hero.name} a peur de ${pe.sourceName}.`;
-
   return (
     <RollFlowShell
       title={cl ? `${cl.emoji} ${cl.label}${pe.cible ? ` (${pe.cible})` : ''}` : `${isTerreur ? '😱 Terreur' : '😨 Peur'} ${pe.indice}`}
@@ -53,7 +46,7 @@ export function EncounterPsychModal() {
       onRoll={roll}
       breakdown={r ? calmeBreakdown(calmeValue(hero), r) : undefined}
       pending={calmePending(calmeValue(hero))}
-      outcome={r ? <JournalLine className="rm-journal" event={ev('fear', outcomeText, hero.id, pe.sourceId)} combatants={lite} /> : undefined}
+      outcome={r ? <JournalLine className="rm-journal" event={ev('fear', describeEncounterPsych(pe, hero.name), hero.id, pe.sourceId)} combatants={lite} /> : undefined}
       determination={{ resolve: hero.resolve ?? 0, onResolve: determine }}
       fortune={hero.fortune ?? 0}
       freeReroll={freeRerollOf(hero)}
