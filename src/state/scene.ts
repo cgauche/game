@@ -270,6 +270,11 @@ export type Effect =
   /** Pose un État (Lot 3) sur un héros ou tout le groupe — En flammes, Empoisonné, Sonné, Aveuglé… ;
    *  `value` = intensité initiale (défaut 1). */
   | { type: 'applyCondition'; target: 'party' | 'hero'; heroId?: string; name: string; value?: number }
+  /** Souffle de ZONE (Lot 3) centré sur une case : tous les combattants à `radius` cases (Chebyshev)
+   *  — en combat par position, hors combat le groupe (à partyPos) — subissent `damage` (formule de
+   *  dés tirée PAR cible, ex. « 1d10+15 ») + les `conditions`. Bombe, grenade, piège de zone… Les
+   *  Blessures critiques sous 0 PB se composent en ajoutant un `inflictTrauma` (non auto ici). */
+  | { type: 'zoneBlast'; center: { x: number; y: number }; radius: number; damage: string; conditions?: { name: string; value?: number }[] }
   /** Points de Péché (LDB 40 l.30-36) : l'auteur/MJ sanctionne une infraction aux commandements du dieu
    *  d'un Bienheureux — 1 à 3 selon la gravité (l.36). Défaut : le premier héros sachant Prier. Le dé des
    *  unités d'un Test de Prière ≤ Péchés déclenche la Colère des dieux même sur Test réussi (l.45) ;

@@ -3,7 +3,7 @@ import type { Get, Set as SetFn } from './flowTypes';
 import type { LootGear } from './pendings';
 import { Combatant, ItemInstance, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { battleRng } from './battleRng';
-import { d10 } from '../engine/dice';
+import { d10, rollExpr } from '../engine/dice';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { eligibleTalent } from '../engine/grimoire';
 import { effectiveChar } from '../engine/characteristics';
@@ -505,6 +505,29 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
           set(touchActors(get()));
           get().log(`${targets.length === 1 ? targets[0].name : 'Le groupe'} : ${e.name}.`);
         }
+        break;
+      }
+      case 'zoneBlast': {
+        // Cibles dans le rayon (Chebyshev) : en combat par position de chaque combattant ; hors
+        // combat, le groupe entier est à partyPos. Dégâts TIRÉS par cible (révélés au journal).
+        const inBattle = !!get().battle;
+        const pool: Combatant[] = inBattle ? get().battle!.combatants : get().party;
+        const pp = get().partyPos;
+        const cheb = (p: { x: number; y: number }) => Math.max(Math.abs(p.x - e.center.x), Math.abs(p.y - e.center.y));
+        const targets = pool.filter((c) => {
+          if (c.dead || (!inBattle && c.kind !== 'hero')) return false;
+          const pos = inBattle ? (c as Combatant & { pos?: { x: number; y: number } }).pos : pp;
+          return !!pos && cheb(pos) <= e.radius;
+        });
+        if (!targets.length) break;
+        const lines = targets.map((c) => {
+          const dmg = Math.max(0, rollExpr(e.damage, battleRng()));
+          loseWounds(c, dmg);
+          for (const cond of e.conditions ?? []) addCondition(c, cond.name, cond.value ?? 1);
+          return `${c.name} ${dmg}${e.conditions?.length ? ` +${e.conditions.map((x) => x.name).join('/')}` : ''}`;
+        });
+        set(touchActors(get()));
+        get().log(`💥 Souffle (${e.damage}) : ${lines.join(' · ')}.`);
         break;
       }
       case 'openMerchant':

@@ -36,3 +36,17 @@ export const roll = (n: number, sides: number, rng: RNG = defaultRNG) => {
   for (let i = 0; i < n; i++) total += rng.int(1, sides);
   return total;
 };
+
+/** Évalue une expression de dés signée (« 1d10+15 », « 2d10 », « d10 », « 15 », « 1d6-1 ») → total
+ *  tiré. Termes additionnés ; « NdM » roule N dés à M faces (N implicite = 1). PUR (RNG injecté). */
+export function rollExpr(expr: string, rng: RNG = defaultRNG): number {
+  let total = 0;
+  const re = /([+-]?)\s*(?:(\d*)d(\d+)|(\d+))/gi;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(expr)) !== null) {
+    const sign = m[1] === '-' ? -1 : 1;
+    if (m[3] != null) total += sign * roll(m[2] ? parseInt(m[2], 10) : 1, parseInt(m[3], 10), rng);
+    else if (m[4] != null) total += sign * parseInt(m[4], 10);
+  }
+  return total;
+}

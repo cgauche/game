@@ -58,6 +58,7 @@ export const EFFECT_LABEL: Record<Effect['type'], string> = {
   inflictTrauma: 'Infliger une Blessure Critique (LDB 18)',
   inflictDamage: 'Infliger des dégâts (héros / groupe)',
   applyCondition: 'Poser un État (héros / groupe)',
+  zoneBlast: 'Souffle de zone (dégâts tirés + États, rayon)',
   giveSin: 'Points de Péché (prêtre fautif, LDB 40)',
   corruptionExposure: 'Influence corruptrice (Test, LDB 19)',
   giveCorruption: 'Points de Corruption directs (LDB 19)',
@@ -84,7 +85,7 @@ export const EFFECT_LABEL: Record<Effect['type'], string> = {
 export const EFFECT_GROUPS: [string, Effect['type'][]][] = [
   ['📜 Narration', ['journal', 'document', 'startDialogue', 'endDialogue', 'setFlag']],
   ['🎁 Récompenses', ['giveTrapping', 'giveMoney', 'giveXp', 'learnSpell', 'restoreFortune']],
-  ['☠️ Afflictions', ['inflictDamage', 'applyCondition', 'inflictDisease', 'inflictTrauma', 'inflictNightmares', 'giveCorruption', 'corruptionExposure', 'giveSin']],
+  ['☠️ Afflictions', ['inflictDamage', 'applyCondition', 'zoneBlast', 'inflictDisease', 'inflictTrauma', 'inflictNightmares', 'giveCorruption', 'corruptionExposure', 'giveSin']],
   ['🕰 Temps & repos', ['rest', 'mealParty', 'interlude', 'setTime', 'delayedEffect']],
   ['🚪 Navigation', ['transition', 'transitionBack', 'openWorldMap']],
   ['⚔️ Combat & social', ['startCombat', 'openMerchant', 'medicalAid']],
@@ -95,7 +96,7 @@ const EFFECT_ICON: Record<Effect['type'], string> = {
   journal: '📜', setFlag: '🚩', document: '📄', giveTrapping: '🎒', giveMoney: '🪙', giveXp: '✨',
   restoreFortune: '🍀', inflictNightmares: '😱', inflictDisease: '🤢', inflictTrauma: '🦴', giveSin: '⚖️',
   corruptionExposure: '🧿', giveCorruption: '🧬', learnSpell: '🪄', rest: '🌙', mealParty: '🍲',
-  inflictDamage: '💥', applyCondition: '🌀',
+  inflictDamage: '💥', applyCondition: '🌀', zoneBlast: '🧨',
   interlude: '📆', startCombat: '⚔️', transition: '🚪', transitionBack: '↩️', openWorldMap: '🗺️',
   startDialogue: '💬', openMerchant: '🛒', medicalAid: '🩺', test: '🎲', extendedTest: '🗝️', forceDoor: '🔨',
   setTime: '🕰', delayedEffect: '⏳', endDialogue: '✖️',
@@ -123,6 +124,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'inflictTrauma': return `${icon} Critique : ${e.kind ?? 'fracture'} (${e.location ?? '?'})`;
     case 'inflictDamage': return `${icon} ${e.amount ?? 0} dégât(s) → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}`;
     case 'applyCondition': return `${icon} État « ${e.name || '?'} »${e.value && e.value > 1 ? ` ×${e.value}` : ''} → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}`;
+    case 'zoneBlast': return `${icon} Souffle ${e.damage || '?'} rayon ${e.radius ?? 0} @(${e.center?.x ?? 0},${e.center?.y ?? 0})${e.conditions?.length ? ` +${e.conditions.map((c: any) => c.name).join('/')}` : ''}`;
     case 'giveSin': return `${icon} ${e.amount ?? 1} point(s) de Péché`;
     case 'corruptionExposure': return `${icon} Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ?? 'au choix'})`;
     case 'giveCorruption': return `${icon} ${e.amount ?? 1} point(s) de Corruption`;
@@ -201,6 +203,8 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'inflictDamage', target: 'party', amount: 5 };
     case 'applyCondition':
       return { type: 'applyCondition', target: 'party', name: etats[0]?.label ?? 'Sonné', value: 1 };
+    case 'zoneBlast':
+      return { type: 'zoneBlast', center: { x: 0, y: 0 }, radius: 2, damage: '1d10+15', conditions: [] };
     case 'giveSin':
       return { type: 'giveSin', amount: 1, heroId: '' };
     case 'corruptionExposure':
@@ -453,6 +457,19 @@ function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChange: (e:
                 <label className="dr">Intensité <input type="number" min={1} value={e.value ?? 1} onChange={(ev) => upd({ value: Number(ev.target.value) })} /></label>
               </>
             )}
+          </div>
+        )}
+        {effect.type === 'zoneBlast' && (
+          <div className="tf-row">
+            <label className="dr">Centre <input type="number" style={{ width: '3.2em' }} value={e.center?.x ?? 0} onChange={(ev) => upd({ center: { x: Number(ev.target.value), y: e.center?.y ?? 0 } })} />,<input type="number" style={{ width: '3.2em' }} value={e.center?.y ?? 0} onChange={(ev) => upd({ center: { x: e.center?.x ?? 0, y: Number(ev.target.value) } })} /></label>
+            <label className="dr">Rayon <input type="number" min={0} style={{ width: '3.2em' }} value={e.radius ?? 0} onChange={(ev) => upd({ radius: Number(ev.target.value) })} /></label>
+            <input placeholder="dégâts (ex. 1d10+15)" value={e.damage ?? ''} onChange={(ev) => upd({ damage: ev.target.value })} />
+            <select value={e.conditions?.[0]?.name ?? ''} onChange={(ev) => upd({ conditions: ev.target.value ? [{ name: ev.target.value }] : undefined })}>
+              <option value="">— État (option) —</option>
+              {etats.map((s) => (
+                <option key={s.label} value={s.label}>{s.label}</option>
+              ))}
+            </select>
           </div>
         )}
         {effect.type === 'startCombat' && (
