@@ -49,10 +49,13 @@ function charsFrom(src: Partial<Record<string, number | null>>, fallback = 30): 
 /**
  * Attaques NATURELLES (FR) : pas d'arme tenue par le rig (la « part » du corps fait
  * foi — griffes, morsure, tentacule…). Le rendu n'affiche donc pas d'objet en main.
+ * SOURCE UNIQUE (clé normalisée → { ranged? }) : sert et à filtrer le type « Arme (griffes) »
+ * et à reconnaître un trait d'attaque naturelle (« Morsure +9 ») — plus de regex dupliquée.
  */
-const NATURAL_WEAPON = new Set([
-  'morsure', 'griffes', 'griffe', 'poings', 'mains nues', 'tentacule', 'tentacules',
-  'bec', 'dard', 'corne', 'cornes', 'queue', 'pietinement', 'crachat',
+const NATURAL_WEAPON = new Map<string, { ranged?: boolean }>([
+  ['morsure', {}], ['griffes', {}], ['griffe', {}], ['poings', {}], ['mains nues', {}],
+  ['tentacule', {}], ['tentacules', {}], ['bec', {}], ['dard', {}], ['corne', {}], ['cornes', {}],
+  ['queue', {}], ['pietinement', {}], ['crachat', { ranged: true }],
 ]);
 
 /**
@@ -79,13 +82,12 @@ export function weaponFromTrait(t: string): Weapon | null {
     if (type && NATURAL_WEAPON.has(normTrait(type))) return { name: type, type: 'melee', damage, qualities: [] };
     return { name: type ?? 'Arme', type: 'melee', damage, qualities: [] };
   }
-  // Attaque naturelle (« Morsure +9 », « 8 Tentacules +9 ») : l'arme reste UNE (l'Action d'attaque) ;
-  // la multiplicité du compte joue sur les Attaques GRATUITES (aiCreatureFreeAttacks), LDB 85 l.354.
-  const nat = p.name.match(/^(Morsure|Griffes?|Tentacules?|Bec|Dard|Cornes?|Queue|Pi[ée]tinement|Crachat)\b/i);
-  if (nat) {
-    const ranged = /crachat/i.test(nat[1]);
-    return { name: nat[1], type: ranged ? 'ranged' : 'melee', damage: dmg ?? '+BF', qualities: [] };
-  }
+  // Attaque naturelle (« Morsure +9 », « 8 Tentacules +9 ») : le 1er mot du libellé est une arme
+  // naturelle CONNUE (source UNIQUE NATURAL_WEAPON, plus de regex). L'arme reste UNE (l'Action
+  // d'attaque) ; le compte joue sur les Attaques GRATUITES (aiCreatureFreeAttacks), LDB 85 l.354.
+  const word = p.name.split(/\s+/)[0];
+  const meta = NATURAL_WEAPON.get(normTrait(word));
+  if (meta) return { name: word, type: meta.ranged ? 'ranged' : 'melee', damage: dmg ?? '+BF', qualities: [] };
   return null;
 }
 
