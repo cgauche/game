@@ -45,6 +45,7 @@ import { BodyToken } from './BodyToken';
 import { pickBackend } from './pickBackend';
 import { MountedToken } from './MountedToken';
 import { groundTile } from './ground';
+import { wallSegs } from './walls';
 import { buildingObj } from './BuildingSprite';
 import { roofHidden } from '../state/buildings';
 import { walkXY, STEP_MS } from './walkPath';
@@ -250,6 +251,14 @@ export function IsoStage() {
         }
     }
     return out;
+  }, [scene, shownRot, viewMode]);
+
+  // Murs sur arêtes (cloisons fines) : quads verticaux dressés sur les arêtes de case, fusionnés dans
+  // le tri de profondeur global (un mur avant occulte ce qui est derrière ; les portes sont ajourées).
+  const wallObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
+    if (!scene?.walls?.length) return [];
+    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
+    return wallSegs(scene, d).map((w, i) => ({ d: w.d, el: <g key={`wall-${i}`} dangerouslySetInnerHTML={{ __html: w.svg }} /> }));
   }, [scene, shownRot, viewMode]);
 
   const decorObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
@@ -623,7 +632,7 @@ export function IsoStage() {
   // ré-insérés dans le tri de profondeur (leurs `el` gardent une réf stable → React saute le sous-arbre).
   // Planchers (floorObjs) et surbrillances au sol participent au MÊME tri : un sol haut surplombe les
   // tokens du bas, et les surbrillances (z=0) restent au-dessus du sol mais sous tout le reste.
-  objs.push(...floorObjs, ...decorObjs, ...buildingObjs);
+  objs.push(...floorObjs, ...wallObjs, ...decorObjs, ...buildingObjs);
   objs.push({ d: floorDepth(dims, 0) + 0.25, el: <g key="ground-overlays">{highlights}</g> });
 
   // token()/tokenNode() : adaptateurs minces vers la coquille partagée BodyToken (positionnement
