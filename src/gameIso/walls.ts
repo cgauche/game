@@ -14,26 +14,36 @@ function edgeEnds(w: WallSeg, dims: Dims): [{ cx: number; cy: number }, { cx: nu
   return w.side === 'E' ? [gc(w.x + 1, w.y), gc(w.x + 1, w.y + 1)] : [gc(w.x, w.y), gc(w.x + 1, w.y)];
 }
 
-/** SVG (quad vertical extrudé) + profondeur d'un segment de mur, pour le tri global de IsoStage. Une
- *  porte est dessinée plus basse et ajourée (linteau seul) → on voit qu'on peut passer. */
+/** Poteau vertical (montant) à une extrémité d'arête : posé aux deux bouts de chaque mur, les poteaux
+ *  des murs adjacents COÏNCIDENT → coins pleins et jambages de porte gratuits. */
+function post(p: { cx: number; cy: number }, h: number): string {
+  return `<rect x="${p.cx - 1.6}" y="${p.cy - h}" width="3.2" height="${h}" rx="0.6" fill="#43372650"/>` +
+    `<rect x="${p.cx - 1.6}" y="${p.cy - h}" width="3.2" height="${h}" fill="#3a2f22"/>`;
+}
+
+/** SVG (quad vertical extrudé + ombrage par côté + poteaux d'angle) + profondeur d'un segment de mur,
+ *  pour le tri global de IsoStage. Une PORTE est ajourée (ouverture basse) avec jambages et linteau. */
 export function wallSeg(w: WallSeg, dims: Dims): { d: number; svg: string } {
   const [a, b] = edgeEnds(w, dims);
-  const h = w.door ? WALL_H * 0.42 : WALL_H; // une porte : ouverture basse
-  const face = `${a.cx},${a.cy} ${b.cx},${b.cy} ${b.cx},${b.cy - h} ${a.cx},${a.cy - h}`;
-  const capH = h + 4;
-  const cap = `${a.cx},${a.cy - h} ${b.cx},${b.cy - h} ${b.cx},${b.cy - capH} ${a.cx},${a.cy - capH}`;
-  let svg: string;
+  // Ombrage par orientation (lumière en haut-gauche) : les faces N (tournées vers le bas-droit) sont
+  // un peu plus sombres que les faces E (bas-gauche) — donne du relief sans dégradé.
+  const faceFill = w.side === 'N' ? '#5e4d37' : '#6f5a40';
+  const capFill = w.side === 'N' ? '#7c6748' : '#8c7656';
+  const quad = (h0: number, h1: number) => `${a.cx},${a.cy - h0} ${b.cx},${b.cy - h0} ${b.cx},${b.cy - h1} ${a.cx},${a.cy - h1}`;
+  let body: string;
   if (w.door) {
-    // jambages + linteau (cadre de porte) : montants courts aux extrémités + traverse haute pleine hauteur
-    const lintelTop = WALL_H, lintelBot = WALL_H * 0.74;
-    const lintel = `${a.cx},${a.cy - lintelBot} ${b.cx},${b.cy - lintelBot} ${b.cx},${b.cy - lintelTop} ${a.cx},${a.cy - lintelTop}`;
-    svg = `<g><polygon points="${face}" fill="#4a3b2a" stroke="#2a2118" stroke-width="1"/>` +
-      `<polygon points="${cap}" fill="#6f5c40"/>` +
-      `<polygon points="${lintel}" fill="#5a4a34" stroke="#2a2118" stroke-width="1"/></g>`;
+    // Porte : ouverture basse (on voit derrière) + linteau plein en haut, encadrée par les poteaux.
+    const op = WALL_H * 0.5; // bas de l'ouverture (hauteur des montants courts)
+    const jamb = (p: { cx: number; cy: number }) => `<rect x="${p.cx - 1.4}" y="${p.cy - op}" width="2.8" height="${op}" fill="#4a3b2a"/>`;
+    body = `<polygon points="${quad(op, WALL_H)}" fill="#5a4a34" stroke="#2a2118" stroke-width="0.8"/>` + // linteau
+      jamb(a) + jamb(b) +
+      `<polygon points="${quad(WALL_H, WALL_H + 4)}" fill="${capFill}"/>`;
   } else {
-    svg = `<g><polygon points="${face}" fill="#6b5840" stroke="#3a2f22" stroke-width="1"/>` +
-      `<polygon points="${cap}" fill="#8a7654"/></g>`;
+    body = `<polygon points="${quad(0, WALL_H)}" fill="${faceFill}" stroke="#322a1f" stroke-width="0.8"/>` +
+      `<polygon points="${quad(WALL_H, WALL_H + 4)}" fill="${capFill}"/>` + // liseré/épaisseur en haut
+      `<polygon points="${quad(0, WALL_H * 0.18)}" fill="#00000022"/>`; // ombre basse (assise)
   }
+  const svg = `<g>${post(a, WALL_H)}${body}${post(b, WALL_H)}</g>`;
   // Profondeur : à l'arête, du côté de la tuile la plus PROCHE de la caméra (occlusion correcte) — la
   // tuile en aval de l'arête (E → (x+1,y) ; N → (x,y)). +0.45 : juste après le sol de cette tuile.
   const dz = w.z ?? 0;
