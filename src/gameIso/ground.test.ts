@@ -18,4 +18,11 @@ describe('edgeBlends (raccord d arêtes)', () => {
     const blends = edgeBlends(s, 1, 1); // voisins herbe (basse)
     expect(blends).toEqual([]);
   });
+  it('opère sur le NIVEAU demandé (z) — un étage a ses propres raccords', () => {
+    const s = emptyScene(3, 3);
+    s.levels.push({ z: 1, tiles: new Array(9).fill('herbe') });
+    s.levels[1].tiles[1 * 3 + 2] = 'pave'; // voisin E au niveau 1
+    expect(edgeBlends(s, 1, 1, 1)).toContainEqual({ dir: 'E', terrain: 'pave' });
+    expect(edgeBlends(s, 1, 1, 0)).toEqual([]); // niveau 0 inchangé (tout herbe)
+  });
 });

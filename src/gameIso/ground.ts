@@ -16,25 +16,26 @@ export interface EdgeBlend {
   terrain: string;
 }
 
-/** Voisins de plus haute précédence qui « débordent » sur la tuile (x,y). */
-export function edgeBlends(scene: Scene, x: number, y: number): EdgeBlend[] {
-  const self = terrainPriority(tileAt(scene, x, y));
+/** Voisins de plus haute précédence qui « débordent » sur la tuile (x,y) du niveau `z`. */
+export function edgeBlends(scene: Scene, x: number, y: number, z = 0): EdgeBlend[] {
+  const self = terrainPriority(tileAt(scene, x, y, z));
   const out: EdgeBlend[] = [];
   for (const dir of ['N', 'E', 'S', 'O'] as EdgeDir[]) {
     const [dx, dy] = NEIGHBOURS[dir];
-    const nt = tileAt(scene, x + dx, y + dy);
+    const nt = tileAt(scene, x + dx, y + dy, z);
     if (terrainPriority(nt) > self) out.push({ dir, terrain: nt });
   }
   return out;
 }
 
-/** SVG d'une tuile de sol : losange de base + wedges de transition. */
-export function groundTile(scene: Scene, x: number, y: number, dims: Dims): string {
-  const { cx, cy, top, right, bot, left } = diamondCorners(x, y, dims);
+/** SVG d'une tuile de sol du niveau `z` (défaut sol) : losange de base + wedges de transition,
+ *  soulevés de z·LEVEL_H si étage. */
+export function groundTile(scene: Scene, x: number, y: number, dims: Dims, z = 0): string {
+  const { cx, cy, top, right, bot, left } = diamondCorners(x, y, dims, z);
   const base = `<path d="M${top[0]},${top[1]} L${right[0]},${right[1]} L${bot[0]},${bot[1]} L${left[0]},${left[1]} Z" fill="url(#${terrainGradient(
-    tileAt(scene, x, y),
+    tileAt(scene, x, y, z),
   )})" stroke="rgba(0,0,0,0.16)"/>`;
-  const blends = edgeBlends(scene, x, y);
+  const blends = edgeBlends(scene, x, y, z);
   if (!blends.length) return base; // tuile sans voisin de plus haute précédence : pas de wedge
   // arête partagée par direction (paire de sommets), repliée vers le centre à 40 %
   const EDGE: Record<EdgeDir, [number, number][]> = {
