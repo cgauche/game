@@ -2,9 +2,10 @@ import type { ComponentProps } from 'react';
 import { useGame, movementRemaining } from '../../state/store';
 import { FLOWS } from '../../state/rollFlows';
 import { HitLocation, HIT_LOCATION_LABELS } from '../../engine/types';
-import { combatValue, crowdMod } from '../../engine/combat';
+import { combatValue, crowdMod, bestRangedDefense, DEFENSE_LABEL, defenseModifiers } from '../../engine/combat';
 import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
+import { combatDistance } from '../../state/footprint';
 import { firedWeapon, crowdEligible, previewAttack, previewDefense } from '../../state/combatFlow';
 import { attackModesFor } from '../../engine/combatFeatures/dispatch';
 import { CritLocationPicker } from '../ForcedRollPicker';
@@ -66,6 +67,19 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
   // Panneau pré-rempli (l'avant-jet = le résultat, pré-rempli) : MA ligne (score + mods) recalculée à
   // chaque changement d'option ; la ligne adverse via `previewDefense` (compétence + mods, sans valeur).
   const preview = !res ? previewAttack(useGame.getState, attacker, target, pa.location ?? undefined, { intoCrowd: pa.intoCrowd, heldGround: pa.heldGround, weaponUid: pa.weaponUid }) : null;
+  // Aperçu de la défense ADVERSE. À distance, le tir n'est PAS opposé par défaut (LDB 13 l.135) : on
+  // n'affiche une défense que si le RAW l'autorise (Protectrice 2+ / Bout Portant / tireur Engagé,
+  // `bestRangedDefense`), sinon « Sans défense » — fini le « Parade » fantôme. En mêlée : défense probable.
+  const defenderPreview = !res && preview && !preview.blocked && preview.inRange
+    ? weapon?.type === 'ranged'
+      ? (() => {
+          const rd = bestRangedDefense(attacker, target, weapon, combatDistance(attacker, target));
+          return rd
+            ? { label: DEFENSE_LABEL[rd.mode], mods: defenseModifiers(target, rd.mode, 0, rd.parryWeapon) }
+            : { label: 'Sans défense', mods: [] };
+        })()
+      : previewDefense(target)
+    : null;
   const forcedDie = FLOWS.attack.picker?.(pa, attacker); // dé choisi (source unique : caps.picker)
   // Issue COURTE (1 ligne, sans répéter les noms — le panneau dit déjà qui) à la place du log complet.
   const outcome = res
@@ -177,7 +191,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
                   mods: preview.mods,
                 },
               },
-              { combatant: target, pending: { ...previewDefense(target), hideValue: true } },
+              { combatant: target, pending: { ...(defenderPreview ?? previewDefense(target)), hideValue: true } },
             ]}
           />
         ))}
