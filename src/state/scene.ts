@@ -319,12 +319,13 @@ export type Effect =
 
 export interface DialogueChoice {
   text: string;
-  /** Condition de flag (cf. `condMet`) : un flag, `!flag`, ou plusieurs en ET (« v1,!v2 »). */
-  condition?: string;
+  /** Condition d'AFFICHAGE du choix (algèbre `Condition`, cf. `evalCondition`). Absente = toujours visible. */
+  when?: Condition;
   /** Prix de l'option (service payant : auberge, péage, pot-de-vin…). Le choix est RÉPÉTABLE mais
-   *  désactivé si on ne peut pas payer ; à la sélection, le montant est débité AVANT les effets. */
+   *  désactivé si on ne peut pas payer ; à la sélection, le montant est débité AVANT le flow. */
   cost?: { gold?: number; silver?: number; brass?: number };
-  effects?: Effect[];
+  /** LOGIQUE exécutée à la sélection : séquence d'effets + branches `if`/`test` (exécutée par `runFlow`). */
+  flow?: Flow;
   next?: string; // id du nœud suivant
 }
 

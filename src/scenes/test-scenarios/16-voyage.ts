@@ -1,3 +1,4 @@
+import { flowFromEffects } from '../../state/flow';
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { contractDisease } from '../../engine/disease';
@@ -55,9 +56,9 @@ village.dialogues = [
         text: 'Une table, une chope, un lit ? Tout se paie, mais tout est bon.',
         choices: [
           // Nuit = MODALE DE REPOS (chambres/repas PAR HÉROS, prix RAW dans la modale).
-          { text: '🛏️ Prendre des chambres pour la nuit.', effects: [{ type: 'rest', lodging: 'auberge' }] },
+          { text: '🛏️ Prendre des chambres pour la nuit.', flow: flowFromEffects([{ type: 'rest', lodging: 'auberge' }]) },
           // Repas de midi sans dormir (prix d'auteur) : remet la faim à zéro.
-          { text: '🍲 Juste un repas (4 sous).', cost: { brass: 4 }, effects: [{ type: 'mealParty' }] },
+          { text: '🍲 Juste un repas (4 sous).', cost: { brass: 4 }, flow: flowFromEffects([{ type: 'mealParty' }]) },
           { text: 'Une autre fois. (Partir)' },
         ],
       },

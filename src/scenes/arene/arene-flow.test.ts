@@ -4,12 +4,12 @@ import { join } from 'node:path';
 import { useGame } from '../../state/store';
 import { applyEffects, runFlow } from '../../state/combatFlow';
 import { type Scene } from '../../state/scene';
-import { evalCondition } from '../../state/flow';
+import { evalCondition, flowEffects, type Condition } from '../../state/flow';
 import { parseProject } from '../../state/worldMap';
 import { makeArenaParty } from '../../data/pregens';
 
-/** Évalue une condition de flag d'arène contre l'état VIVANT (source unique evalCondition). */
-const condOk = (expr: string) => evalCondition({ kind: 'flag', expr }, { flags: useGame.getState().flags, gameTime: 0 });
+/** Évalue la Condition `when` d'un choix contre l'état VIVANT (source unique evalCondition). */
+const condOk = (when: Condition) => evalCondition(when, { flags: useGame.getState().flags, gameTime: 0 });
 
 /**
  * Preuve que l'arène (données pures) tourne sur le MOTEUR EXISTANT, sans code applicatif :
@@ -61,7 +61,7 @@ describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () =
     const hub = useGame.getState().scene!;
     const dlgHub = hub.dialogues.find((d) => d.id === 'dlg-hub')!;
     const ruines = dlgHub.nodes.flatMap((n) => n.choices).find((c) => c.text.includes('Ruines'))!;
-    expect(condOk(ruines.condition!)).toBe(true); // zone1_clear && !zone2_clear
+    expect(condOk(ruines.when!)).toBe(true); // zone1_clear && !zone2_clear
   });
 
   it('ÉCHELLE COMPLÈTE : les 13 victoires enchaînées ouvrent chaque porte puis le titre de champion', () => {
@@ -71,8 +71,8 @@ describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () =
     const choices = dlgHub.nodes.flatMap((n) => n.choices);
     for (let n = 1; n <= 13; n++) {
       // la porte de la zone N est OUVERTE (condition satisfaite) avant sa victoire…
-      const porte = choices.find((c) => c.effects?.some((e) => e.type === 'transition' && e.scene === `arene-zone${n}`))!;
-      expect(condOk(porte.condition!), `porte zone${n} ouverte`).toBe(true);
+      const porte = choices.find((c) => c.flow && flowEffects(c.flow).some((e) => e.type === 'transition' && e.scene === `arene-zone${n}`))!;
+      expect(condOk(porte.when!), `porte zone${n} ouverte`).toBe(true);
       // … on applique la victoire de la zone (enc principal = enc-zoneN) → flag + retour Bourg
       const z = project.find((s) => s.id === `arene-zone${n}`)!;
       const enc = z.encounters.find((e) => e.id === `enc-zone${n}`)!;
@@ -80,11 +80,11 @@ describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () =
       expect(useGame.getState().flags[`zone${n}_clear`], `zone${n}_clear`).toBe(true);
       expect(useGame.getState().scene?.id).toBe('arene-hub');
       // … et la porte se REFERME (déjà nettoyée)
-      expect(condOk(porte.condition!), `porte zone${n} refermée`).toBe(false);
+      expect(condOk(porte.when!), `porte zone${n} refermée`).toBe(false);
     }
     // le titre de champion est désormais réclamable
-    const champion = choices.find((c) => (c.condition ?? '').includes('zone13_clear'))!;
-    expect(condOk(champion.condition!)).toBe(true);
+    const champion = choices.find((c) => (c.when?.kind === 'flag' ? c.when.expr : '').includes('zone13_clear'))!;
+    expect(condOk(champion.when!)).toBe(true);
   });
 
   it('INTÉRIEURS : marcher sur la porte de la taverne ENTRE, la sortie revient au Bourg (transitionBack)', () => {
@@ -108,8 +108,8 @@ describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () =
     applyEffects(useGame.getState, useGame.setState, bande.onVictory!);
     expect(useGame.getState().flags.contrat_foret_fait).toBe(true);
     const dlgHub = project.find((s) => s.id === 'arene-hub')!.dialogues.find((d) => d.id === 'dlg-hub')!;
-    const prime = dlgHub.nodes.flatMap((n) => n.choices).find((c) => (c.condition ?? '').includes('contrat_foret_fait'))!;
-    expect(condOk(prime.condition!)).toBe(true);
+    const prime = dlgHub.nodes.flatMap((n) => n.choices).find((c) => (c.when?.kind === 'flag' ? c.when.expr : '').includes('contrat_foret_fait'))!;
+    expect(condOk(prime.when!)).toBe(true);
   });
 
   it('CARTE DU MONDE : le Bourg est un lieu connu (bouton 🗺️) et ses routes partent vers les 3 expéditions', async () => {
@@ -140,7 +140,7 @@ describe('Médecin (PNJ) — soins payants (LDB 75), via l’infirmerie', () => 
   it('les 4 actes payants (Guérison/hémorragie/déchirure/Chirurgie) sont tarifés 4-6 pa ; le Médecin (Bourg) les offre TOUS', () => {
     const chapelle = project.find((s) => s.id === 'arene-int-chapelle')!;
     const dlgs = [hub.dialogues.find((d) => d.id === 'dlg-medecin')!, chapelle.dialogues.find((d) => d.id === 'dlg-frere')!];
-    const aids = dlgs.flatMap((d) => d.nodes.flatMap((n) => n.choices.flatMap((c) => (c.effects ?? []).filter((e) => e.type === 'medicalAid'))));
+    const aids = dlgs.flatMap((d) => d.nodes.flatMap((n) => n.choices.flatMap((c) => (c.flow ? flowEffects(c.flow) : []).filter((e) => e.type === 'medicalAid'))));
     const acts = aids.flatMap((e: any) => e.acts as { act: string; cost?: { silver?: number } }[]);
     expect(acts.every((a) => (a.cost?.silver ?? 0) >= 4 && (a.cost?.silver ?? 0) <= 6)).toBe(true); // 4-6 pistoles RAW
     const medecin = aids.find((e: any) => e.entityId === 'medecin') as any;

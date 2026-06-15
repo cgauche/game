@@ -1118,86 +1118,137 @@
         },
         {
          "text": "🔓 Crocheter le vieux coffre du maître (Test de Crochetage).",
-         "condition": "!coffre_pris",
-         "effects": [
-          {
-           "type": "test",
-           "skill": "Crochetage",
-           "difficulty": "intermediaire",
-           "label": "Crocheter le coffre",
-           "onSuccess": [
-            {
-             "type": "setFlag",
-             "flag": "coffre_pris"
-            },
-            {
-             "type": "giveMoney",
-             "gold": 5
-            },
-            {
-             "type": "journal",
-             "text": "Le coffre cède : 5 couronnes !"
+         "when": {
+          "kind": "flag",
+          "expr": "!coffre_pris"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "test",
+             "skill": "Crochetage",
+             "difficulty": "intermediaire",
+             "label": "Crocheter le coffre",
+             "onSuccess": [
+              {
+               "type": "setFlag",
+               "flag": "coffre_pris"
+              },
+              {
+               "type": "giveMoney",
+               "gold": 5
+              },
+              {
+               "type": "journal",
+               "text": "Le coffre cède : 5 couronnes !"
+              }
+             ],
+             "onFailure": [
+              {
+               "type": "journal",
+               "text": "Le mécanisme rouillé résiste — peut-être plus tard."
+              }
+             ]
             }
-           ],
-           "onFailure": [
-            {
-             "type": "journal",
-             "text": "Le mécanisme rouillé résiste — peut-être plus tard."
-            }
-           ]
-          }
-         ]
+           }
+          ]
+         }
         },
         {
          "text": "🏆 Réclamer ton titre de CHAMPION.",
-         "condition": "zone13_clear,!champion_fete",
-         "effects": [
-          {
-           "type": "setFlag",
-           "flag": "champion_fete"
-          },
-          {
-           "type": "giveXp",
-           "amount": 300
-          },
-          {
-           "type": "journal",
-           "text": "Le Maître s’incline, et tout le Bourg avec lui : « CHAMPION DE L’ARÈNE ! »"
-          },
-          {
-           "type": "document",
-           "title": "Titre de Champion de l’Arène",
-           "text": "Par la présente, le porteur est proclamé CHAMPION DE L’ARÈNE DU BOURG — vainqueur de la Cour, des Ruines, des Égouts, du Charnier, des Lices, du Marais, du Nid, de la Fosse, de la Caverne, du Nid de Vermine, du Cercle Maudit, du Sépulcre… et du Dragon des ténèbres lui-même. Que les tavernes lui servent à boire et que les routes s’écartent."
-          },
-          {
-           "type": "interlude",
-           "weeks": 2
-          },
-          {
-           "type": "endDialogue"
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "zone13_clear,!champion_fete"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "setFlag",
+             "flag": "champion_fete"
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "giveXp",
+             "amount": 300
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "Le Maître s’incline, et tout le Bourg avec lui : « CHAMPION DE L’ARÈNE ! »"
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "document",
+             "title": "Titre de Champion de l’Arène",
+             "text": "Par la présente, le porteur est proclamé CHAMPION DE L’ARÈNE DU BOURG — vainqueur de la Cour, des Ruines, des Égouts, du Charnier, des Lices, du Marais, du Nid, de la Fosse, de la Caverne, du Nid de Vermine, du Cercle Maudit, du Sépulcre… et du Dragon des ténèbres lui-même. Que les tavernes lui servent à boire et que les routes s’écartent."
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "interlude",
+             "weeks": 2
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "🏆 Savourer ta gloire de champion.",
-         "condition": "champion_fete",
-         "effects": [
-          {
-           "type": "journal",
-           "text": "Le maître s’incline : « CHAMPION DE L’ARÈNE ! »"
-          },
-          {
-           "type": "endDialogue"
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "champion_fete"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "Le maître s’incline : « CHAMPION DE L’ARÈNE ! »"
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "Plus tard.",
-         "effects": [
-          {
-           "type": "endDialogue"
-          }
-         ]
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
         }
        ]
       },
@@ -1208,133 +1259,250 @@
        "choices": [
         {
          "text": "⚔️ Entrer — La Cour (échauffement).",
-         "condition": "!zone1_clear",
-         "effects": [
-          {
-           "type": "transition",
-           "scene": "arene-zone1"
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "!zone1_clear"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "transition",
+             "scene": "arene-zone1"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "⚔️ Entrer — Les Ruines.",
-         "condition": "zone1_clear,!zone2_clear",
-         "effects": [
-          {
-           "type": "transition",
-           "scene": "arene-zone2"
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "zone1_clear,!zone2_clear"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "transition",
+             "scene": "arene-zone2"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "⚔️ Entrer — Les Égouts.",
-         "condition": "zone2_clear,!zone3_clear",
-         "effects": [
-          {
-           "type": "transition",
-           "scene": "arene-zone3"
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "zone2_clear,!zone3_clear"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "transition",
+             "scene": "arene-zone3"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "⚔️ Entrer — Le Charnier.",
-         "condition": "zone3_clear,!zone4_clear",
-         "effects": [
-          {
-           "type": "transition",
-           "scene": "arene-zone4"
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "zone3_clear,!zone4_clear"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "transition",
+             "scene": "arene-zone4"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "⚔️ Entrer — Les Lices.",
-         "condition": "zone4_clear,!zone5_clear",
-         "effects": [
-          {
-           "type": "transition",
-           "scene": "arene-zone5"
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "zone4_clear,!zone5_clear"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "transition",
+             "scene": "arene-zone5"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "⚔️ Entrer — Le Marais.",
-         "condition": "zone5_clear,!zone6_clear",
-         "effects": [
-          {
-           "type": "transition",
-           "scene": "arene-zone6"
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "zone5_clear,!zone6_clear"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "transition",
+             "scene": "arene-zone6"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "⚔️ Entrer — Le Nid.",
-         "condition": "zone6_clear,!zone7_clear",
-         "effects": [
-          {
-           "type": "transition",
-           "scene": "arene-zone7"
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "zone6_clear,!zone7_clear"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "transition",
+             "scene": "arene-zone7"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "⚔️ Entrer — La Fosse.",
-         "condition": "zone7_clear,!zone8_clear",
-         "effects": [
-          {
-           "type": "transition",
-           "scene": "arene-zone8"
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "zone7_clear,!zone8_clear"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "transition",
+             "scene": "arene-zone8"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "⚔️ Entrer — La Caverne du Troll.",
-         "condition": "zone8_clear,!zone9_clear",
-         "effects": [
-          {
-           "type": "transition",
-           "scene": "arene-zone9"
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "zone8_clear,!zone9_clear"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "transition",
+             "scene": "arene-zone9"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "⚔️ Entrer — Le Nid de Vermine.",
-         "condition": "zone9_clear,!zone10_clear",
-         "effects": [
-          {
-           "type": "transition",
-           "scene": "arene-zone10"
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "zone9_clear,!zone10_clear"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "transition",
+             "scene": "arene-zone10"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "⚔️ Entrer — Le Cercle Maudit.",
-         "condition": "zone10_clear,!zone11_clear",
-         "effects": [
-          {
-           "type": "transition",
-           "scene": "arene-zone11"
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "zone10_clear,!zone11_clear"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "transition",
+             "scene": "arene-zone11"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "⚔️ Entrer — Le Sépulcre.",
-         "condition": "zone11_clear,!zone12_clear",
-         "effects": [
-          {
-           "type": "transition",
-           "scene": "arene-zone12"
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "zone11_clear,!zone12_clear"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "transition",
+             "scene": "arene-zone12"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "⚔️ Entrer — L’Antre du Dragon.",
-         "condition": "zone12_clear,!zone13_clear",
-         "effects": [
-          {
-           "type": "transition",
-           "scene": "arene-zone13"
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "zone12_clear,!zone13_clear"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "transition",
+             "scene": "arene-zone13"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "↩ Revenir.",
@@ -1349,111 +1517,201 @@
        "choices": [
         {
          "text": "📜 La Vieille Futaie : des hommes-bêtes ont dressé un camp — et la bande de Bella la Noire détrousse les convois.",
-         "condition": "zone4_clear,!contrat_foret",
-         "effects": [
-          {
-           "type": "setFlag",
-           "flag": "contrat_foret"
-          },
-          {
-           "type": "journal",
-           "text": "Contrat accepté — ouvrez la carte du monde (🗺️) pour voyager. Méfie-toi : la futaie a des yeux."
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "zone4_clear,!contrat_foret"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "setFlag",
+             "flag": "contrat_foret"
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "Contrat accepté — ouvrez la carte du monde (🗺️) pour voyager. Méfie-toi : la futaie a des yeux."
+            }
+           }
+          ]
+         }
         },
         {
          "text": "💰 Toucher la prime — des hommes-bêtes ont dressé un camp — et la bande de Bella la Noire détrousse les convois.",
-         "condition": "contrat_foret_fait,!contrat_foret_paye",
-         "effects": [
-          {
-           "type": "setFlag",
-           "flag": "contrat_foret_paye"
-          },
-          {
-           "type": "giveMoney",
-           "gold": 3
-          },
-          {
-           "type": "giveXp",
-           "amount": 160
-          },
-          {
-           "type": "journal",
-           "text": "Le Maître compte les couronnes sans sourciller. « Du travail propre. »"
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "contrat_foret_fait,!contrat_foret_paye"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "setFlag",
+             "flag": "contrat_foret_paye"
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "giveMoney",
+             "gold": 3
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "giveXp",
+             "amount": 160
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "Le Maître compte les couronnes sans sourciller. « Du travail propre. »"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "📜 La Tourbière Noire : quelque chose de FABRIQUÉ y traîne les voyageurs sous l’eau.",
-         "condition": "zone6_clear,!contrat_marais",
-         "effects": [
-          {
-           "type": "setFlag",
-           "flag": "contrat_marais"
-          },
-          {
-           "type": "journal",
-           "text": "Contrat accepté — ouvrez la carte du monde (🗺️) pour voyager. Reste sur les pontons."
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "zone6_clear,!contrat_marais"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "setFlag",
+             "flag": "contrat_marais"
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "Contrat accepté — ouvrez la carte du monde (🗺️) pour voyager. Reste sur les pontons."
+            }
+           }
+          ]
+         }
         },
         {
          "text": "💰 Toucher la prime — quelque chose de FABRIQUÉ y traîne les voyageurs sous l’eau.",
-         "condition": "contrat_marais_fait,!contrat_marais_paye",
-         "effects": [
-          {
-           "type": "setFlag",
-           "flag": "contrat_marais_paye"
-          },
-          {
-           "type": "giveMoney",
-           "gold": 4
-          },
-          {
-           "type": "giveXp",
-           "amount": 200
-          },
-          {
-           "type": "journal",
-           "text": "Le Maître compte les couronnes sans sourciller. « Du travail propre. »"
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "contrat_marais_fait,!contrat_marais_paye"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "setFlag",
+             "flag": "contrat_marais_paye"
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "giveMoney",
+             "gold": 4
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "giveXp",
+             "amount": 200
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "Le Maître compte les couronnes sans sourciller. « Du travail propre. »"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "📜 Felsbach : le village ne répond plus depuis un mois. Brûle ce qui marche encore.",
-         "condition": "zone8_clear,!contrat_village",
-         "effects": [
-          {
-           "type": "setFlag",
-           "flag": "contrat_village"
-          },
-          {
-           "type": "journal",
-           "text": "Contrat accepté — ouvrez la carte du monde (🗺️) pour voyager. Ne bois pas l’eau du puits."
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "zone8_clear,!contrat_village"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "setFlag",
+             "flag": "contrat_village"
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "Contrat accepté — ouvrez la carte du monde (🗺️) pour voyager. Ne bois pas l’eau du puits."
+            }
+           }
+          ]
+         }
         },
         {
          "text": "💰 Toucher la prime — le village ne répond plus depuis un mois. Brûle ce qui marche encore.",
-         "condition": "contrat_village_fait,!contrat_village_paye",
-         "effects": [
-          {
-           "type": "setFlag",
-           "flag": "contrat_village_paye"
-          },
-          {
-           "type": "giveMoney",
-           "gold": 5
-          },
-          {
-           "type": "giveXp",
-           "amount": 240
-          },
-          {
-           "type": "journal",
-           "text": "Le Maître compte les couronnes sans sourciller. « Du travail propre. »"
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "contrat_village_fait,!contrat_village_paye"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "setFlag",
+             "flag": "contrat_village_paye"
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "giveMoney",
+             "gold": 5
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "giveXp",
+             "amount": 240
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "Le Maître compte les couronnes sans sourciller. « Du travail propre. »"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "↩ Revenir.",
@@ -1474,57 +1732,75 @@
        "choices": [
         {
          "text": "⚕️ Voir les remèdes et prothèses.",
-         "effects": [
-          {
-           "type": "openMerchant",
-           "entityId": "medecin"
-          }
-         ]
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "openMerchant",
+             "entityId": "medecin"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "🔪 Passer sur la table (actes payants).",
-         "effects": [
-          {
-           "type": "medicalAid",
-           "acts": [
-            {
-             "act": "wounds",
-             "cost": {
-              "silver": 4
-             }
-            },
-            {
-             "act": "bleed",
-             "cost": {
-              "silver": 4
-             }
-            },
-            {
-             "act": "trauma",
-             "cost": {
-              "silver": 5
-             }
-            },
-            {
-             "act": "surgery",
-             "cost": {
-              "silver": 6
-             }
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "medicalAid",
+             "acts": [
+              {
+               "act": "wounds",
+               "cost": {
+                "silver": 4
+               }
+              },
+              {
+               "act": "bleed",
+               "cost": {
+                "silver": 4
+               }
+              },
+              {
+               "act": "trauma",
+               "cost": {
+                "silver": 5
+               }
+              },
+              {
+               "act": "surgery",
+               "cost": {
+                "silver": 6
+               }
+              }
+             ],
+             "skill": 55,
+             "intBonus": 4,
+             "entityId": "medecin"
             }
-           ],
-           "skill": 55,
-           "intBonus": 4,
-           "entityId": "medecin"
-          }
-         ]
+           }
+          ]
+         }
         },
         {
          "text": "Plus tard.",
-         "effects": [
-          {
-           "type": "endDialogue"
-          }
-         ]
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
         }
        ]
       }
@@ -1541,20 +1817,32 @@
        "choices": [
         {
          "text": "🛒 Armes, armures et réparations.",
-         "effects": [
-          {
-           "type": "openMerchant",
-           "entityId": "forgeron"
-          }
-         ]
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "openMerchant",
+             "entityId": "forgeron"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "Plus tard.",
-         "effects": [
-          {
-           "type": "endDialogue"
-          }
-         ]
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
         }
        ]
       }
@@ -1575,11 +1863,17 @@
         },
         {
          "text": "Plus tard.",
-         "effects": [
-          {
-           "type": "endDialogue"
-          }
-         ]
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
         }
        ]
       },
@@ -1590,15 +1884,24 @@
        "choices": [
         {
          "text": "« Merci du conseil. »",
-         "effects": [
-          {
-           "type": "journal",
-           "text": "Le garde : hurlements nocturnes dans la Futaie, Felsbach éteint depuis un mois."
-          },
-          {
-           "type": "endDialogue"
-          }
-         ]
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "Le garde : hurlements nocturnes dans la Futaie, Felsbach éteint depuis un mois."
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "↩ Autre chose.",
@@ -1623,11 +1926,17 @@
         },
         {
          "text": "Plus tard.",
-         "effects": [
-          {
-           "type": "endDialogue"
-          }
-         ]
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
         }
        ]
       },
@@ -1638,15 +1947,24 @@
        "choices": [
         {
          "text": "« Intéressant… »",
-         "effects": [
-          {
-           "type": "journal",
-           "text": "Rumeur du lavoir : le coffre « sans valeur » du Maître, et la bénédiction de Frère Anselm avant le combat."
-          },
-          {
-           "type": "endDialogue"
-          }
-         ]
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "Rumeur du lavoir : le coffre « sans valeur » du Maître, et la bénédiction de Frère Anselm avant le combat."
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "↩ Autre chose.",
@@ -2600,36 +2918,57 @@
        "choices": [
         {
          "text": "🧺 Voir le garde-manger (rations, vivres, pintes).",
-         "effects": [
-          {
-           "type": "openMerchant",
-           "entityId": "taverniere"
-          }
-         ]
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "openMerchant",
+             "entityId": "taverniere"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "🍲 Repas chaud pour le groupe — 4 pa.",
          "cost": {
           "silver": 4
          },
-         "effects": [
-          {
-           "type": "mealParty"
-          },
-          {
-           "type": "journal",
-           "text": "Ragoût, pain noir et bière : le groupe est nourri pour la journée."
-          }
-         ]
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "mealParty"
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "Ragoût, pain noir et bière : le groupe est nourri pour la journée."
+            }
+           }
+          ]
+         }
         },
         {
          "text": "🛏️ Prendre des chambres pour la nuit.",
-         "effects": [
-          {
-           "type": "rest",
-           "lodging": "auberge"
-          }
-         ]
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "rest",
+             "lodging": "auberge"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "👂 Écouter la salle.",
@@ -2637,11 +2976,17 @@
         },
         {
          "text": "Plus tard.",
-         "effects": [
-          {
-           "type": "endDialogue"
-          }
-         ]
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
         }
        ]
       },
@@ -2671,15 +3016,24 @@
        "choices": [
         {
          "text": "« Bon à savoir. »",
-         "effects": [
-          {
-           "type": "journal",
-           "text": "Rumeur du Trophée : personne n’a passé la 13e porte — le Maître NOURRIT quelque chose là-dessous."
-          },
-          {
-           "type": "endDialogue"
-          }
-         ]
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "Rumeur du Trophée : personne n’a passé la 13e porte — le Maître NOURRIT quelque chose là-dessous."
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "↩ Une autre rumeur.",
@@ -2694,15 +3048,24 @@
        "choices": [
         {
          "text": "« Merci du tuyau. »",
-         "effects": [
-          {
-           "type": "journal",
-           "text": "Rumeur du Trophée : la diligence de Felsbach a disparu — la Futaie détrousse les convois."
-          },
-          {
-           "type": "endDialogue"
-          }
-         ]
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "Rumeur du Trophée : la diligence de Felsbach a disparu — la Futaie détrousse les convois."
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
         },
         {
          "text": "↩ Une autre rumeur.",
@@ -2998,105 +3361,147 @@
        "choices": [
         {
          "text": "⚕️ Recevoir des soins (actes payants).",
-         "effects": [
-          {
-           "type": "medicalAid",
-           "acts": [
-            {
-             "act": "wounds",
-             "cost": {
-              "silver": 5
-             }
-            },
-            {
-             "act": "bleed",
-             "cost": {
-              "silver": 5
-             }
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "medicalAid",
+             "acts": [
+              {
+               "act": "wounds",
+               "cost": {
+                "silver": 5
+               }
+              },
+              {
+               "act": "bleed",
+               "cost": {
+                "silver": 5
+               }
+              }
+             ],
+             "skill": 55,
+             "intBonus": 4,
+             "entityId": "frere"
             }
-           ],
-           "skill": 55,
-           "intBonus": 4,
-           "entityId": "frere"
-          }
-         ]
+           }
+          ]
+         }
         },
         {
          "text": "🙏 Recevoir la bénédiction du départ (retrouver la Chance).",
-         "condition": "!benediction_recue",
-         "effects": [
-          {
-           "type": "restoreFortune"
-          },
-          {
-           "type": "setFlag",
-           "flag": "benediction_recue"
-          },
-          {
-           "type": "journal",
-           "text": "Frère Anselm trace la comète sur vos fronts : la Chance vous revient."
-          }
-         ]
+         "when": {
+          "kind": "flag",
+          "expr": "!benediction_recue"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "restoreFortune"
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "setFlag",
+             "flag": "benediction_recue"
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "Frère Anselm trace la comète sur vos fronts : la Chance vous revient."
+            }
+           }
+          ]
+         }
         },
         {
          "text": "🪙 Faire un don au tronc — 1 co.",
          "cost": {
           "gold": 1
          },
-         "effects": [
-          {
-           "type": "journal",
-           "text": "La pièce sonne au fond du tronc. Frère Anselm hoche la tête, sincèrement ému."
-          }
-         ]
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "La pièce sonne au fond du tronc. Frère Anselm hoche la tête, sincèrement ému."
+            }
+           }
+          ]
+         }
         },
         {
          "text": "🕯️ Piller le tronc des offrandes (Test de Discrétion).",
-         "condition": "!tronc_pille",
-         "effects": [
-          {
-           "type": "test",
-           "skill": "Discrétion",
-           "difficulty": "difficile",
-           "label": "Piller le tronc sous l’œil de Sigmar",
-           "onSuccess": [
-            {
-             "type": "setFlag",
-             "flag": "tronc_pille"
-            },
-            {
-             "type": "giveMoney",
-             "silver": 30
-            },
-            {
-             "type": "journal",
-             "text": "Trente pistoles d’offrandes glissent dans votre poche. Personne n’a rien vu. Sauf, peut-être, Sigmar."
+         "when": {
+          "kind": "flag",
+          "expr": "!tronc_pille"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "test",
+             "skill": "Discrétion",
+             "difficulty": "difficile",
+             "label": "Piller le tronc sous l’œil de Sigmar",
+             "onSuccess": [
+              {
+               "type": "setFlag",
+               "flag": "tronc_pille"
+              },
+              {
+               "type": "giveMoney",
+               "silver": 30
+              },
+              {
+               "type": "journal",
+               "text": "Trente pistoles d’offrandes glissent dans votre poche. Personne n’a rien vu. Sauf, peut-être, Sigmar."
+              }
+             ],
+             "onFailure": [
+              {
+               "type": "setFlag",
+               "flag": "tronc_pille"
+              },
+              {
+               "type": "giveSin",
+               "amount": 1
+              },
+              {
+               "type": "journal",
+               "text": "Le tronc bascule avec fracas — le regard de Frère Anselm vous transperce. La honte (et le Péché) vous colle à la peau."
+              }
+             ]
             }
-           ],
-           "onFailure": [
-            {
-             "type": "setFlag",
-             "flag": "tronc_pille"
-            },
-            {
-             "type": "giveSin",
-             "amount": 1
-            },
-            {
-             "type": "journal",
-             "text": "Le tronc bascule avec fracas — le regard de Frère Anselm vous transperce. La honte (et le Péché) vous colle à la peau."
-            }
-           ]
-          }
-         ]
+           }
+          ]
+         }
         },
         {
          "text": "Plus tard.",
-         "effects": [
-          {
-           "type": "endDialogue"
-          }
-         ]
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
         }
        ]
       }
@@ -11327,50 +11732,65 @@
        "choices": [
         {
          "text": "🔓 Crocheter la cage (Test de Crochetage).",
-         "condition": "!prisonnier_libre",
-         "effects": [
-          {
-           "type": "test",
-           "skill": "Crochetage",
-           "difficulty": "accessible",
-           "label": "Crocheter la cage du garde-manger",
-           "onSuccess": [
-            {
-             "type": "setFlag",
-             "flag": "prisonnier_libre"
-            },
-            {
-             "type": "giveMoney",
-             "silver": 40
-            },
-            {
-             "type": "giveXp",
-             "amount": 50
-            },
-            {
-             "type": "journal",
-             "text": "Le colporteur halfling s’extrait de la cage, vous fourre sa bourse (40 pa) dans les mains et détale vers la surface."
-            },
-            {
-             "type": "endDialogue"
+         "when": {
+          "kind": "flag",
+          "expr": "!prisonnier_libre"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "test",
+             "skill": "Crochetage",
+             "difficulty": "accessible",
+             "label": "Crocheter la cage du garde-manger",
+             "onSuccess": [
+              {
+               "type": "setFlag",
+               "flag": "prisonnier_libre"
+              },
+              {
+               "type": "giveMoney",
+               "silver": 40
+              },
+              {
+               "type": "giveXp",
+               "amount": 50
+              },
+              {
+               "type": "journal",
+               "text": "Le colporteur halfling s’extrait de la cage, vous fourre sa bourse (40 pa) dans les mains et détale vers la surface."
+              },
+              {
+               "type": "endDialogue"
+              }
+             ],
+             "onFailure": [
+              {
+               "type": "journal",
+               "text": "La serrure est grossière mais voilée — le crochet ripe. Réessayez."
+              }
+             ]
             }
-           ],
-           "onFailure": [
-            {
-             "type": "journal",
-             "text": "La serrure est grossière mais voilée — le crochet ripe. Réessayez."
-            }
-           ]
-          }
-         ]
+           }
+          ]
+         }
         },
         {
          "text": "« On revient te chercher. » (Plus tard.)",
-         "effects": [
-          {
-           "type": "endDialogue"
-          }
-         ]
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
         }
        ]
       }

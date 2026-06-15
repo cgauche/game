@@ -21,7 +21,7 @@ export function DialogueBox() {
 
   const visible = node.choices
     .map((c, i) => ({ c, i }))
-    .filter(({ c }) => !c.condition || evalCondition({ kind: 'flag', expr: c.condition }, { flags, gameTime }));
+    .filter(({ c }) => !c.when || evalCondition(c.when, { flags, gameTime }));
 
   return (
     <div className="dialogue-box">

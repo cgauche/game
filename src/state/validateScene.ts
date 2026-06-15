@@ -119,7 +119,7 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       for (const n of d.nodes)
         for (const c of n.choices) {
           if (c.next && !nodeIds.has(c.next)) add('error', 'dialogue', d.id, `Dialogue « ${d.id} » : choix → « ${c.next} » inexistant`);
-          walkEffects(c.effects, (eff) => checkEffect(eff, d.id, 'dialogue'));
+          if (c.flow) walkEffects(flowEffects(c.flow), (eff) => checkEffect(eff, d.id, 'dialogue'));
         }
     }
     const entIds = new Set(s.entities.map((e) => e.id));

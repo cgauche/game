@@ -165,16 +165,16 @@ const scene: Scene = {
           speaker: 'Comtesse Emmanuelle',
           text: 'La Comtesse Emmanuelle vous toise depuis sa loge. « On ne vous a pas conviés dans ma loge. Qu’est-ce qui peut bien valoir cette intrusion ? »',
           choices: [
-            { text: '« Excellence — un attentat vous visait. Il est déjoué. »', condition: 'bombeDesamorcee', next: 'merci' },
-            { text: '« Excellence, l’antichambre n’est peut-être pas sûre ce soir. »', condition: '!bombeDesamorcee', next: 'n1' },
-            { text: 'S’incliner et se retirer.', effects: [{ type: 'endDialogue' }] },
+            { text: '« Excellence — un attentat vous visait. Il est déjoué. »', when: { kind: 'flag', expr: 'bombeDesamorcee' }, next: 'merci' },
+            { text: '« Excellence, l’antichambre n’est peut-être pas sûre ce soir. »', when: { kind: 'flag', expr: '!bombeDesamorcee' }, next: 'n1' },
+            { text: 'S’incliner et se retirer.', flow: flowFromEffects([{ type: 'endDialogue' }]) },
           ],
         },
         {
           id: 'n1',
           speaker: 'Comtesse Emmanuelle',
           text: '« Pas sûre ? » Un sourire glacé. « Mes gardes en jugeront. Mais examinez donc, puisque vous y tenez — discrètement. »',
-          choices: [{ text: 'Remercier et examiner les lieux.', effects: [{ type: 'endDialogue' }] }],
+          choices: [{ text: 'Remercier et examiner les lieux.', flow: flowFromEffects([{ type: 'endDialogue' }]) }],
         },
         {
           id: 'merci',
@@ -183,11 +183,11 @@ const scene: Scene = {
           choices: [
             {
               text: 'S’incliner et accepter.',
-              effects: [
+              flow: flowFromEffects([
                 { type: 'giveMoney', gold: 5 },
                 { type: 'setFlag', flag: 'faveurComtesse' },
                 { type: 'endDialogue' },
-              ],
+              ]),
             },
           ],
         },
@@ -202,13 +202,13 @@ const scene: Scene = {
           text: 'Deux jeunes gens nerveux, dissimulés près de la porte, manipulent un petit pot à feu et un chapelet de pétards. L’un d’eux blêmit en vous voyant approcher.',
           choices: [
             { text: '« Lâchez ça. Vous êtes en état d’arrestation. »', next: 'e1' },
-            { text: 'Les laisser filer.', effects: [{ type: 'journal', text: 'Vous détournez le regard ; les étudiants se fondent dans la foule.' }, { type: 'endDialogue' }] },
+            { text: 'Les laisser filer.', flow: flowFromEffects([{ type: 'journal', text: 'Vous détournez le regard ; les étudiants se fondent dans la foule.' }, { type: 'endDialogue' }]) },
           ],
         },
         {
           id: 'e1',
           text: '« On… on ne faisait rien ! » Ils refusent de se rendre et tentent de forcer le passage.',
-          choices: [{ text: 'Les maîtriser.', effects: [{ type: 'endDialogue' }, { type: 'startCombat', encounter: 'enc-etudiants' }] }],
+          choices: [{ text: 'Les maîtriser.', flow: flowFromEffects([{ type: 'endDialogue' }, { type: 'startCombat', encounter: 'enc-etudiants' }]) }],
         },
       ],
     },

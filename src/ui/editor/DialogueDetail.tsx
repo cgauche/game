@@ -6,6 +6,8 @@
  */
 import { useState } from 'react';
 import { Dialogue, DialogueNode, DialogueChoice } from '../../state/scene';
+import { flowFromEffects } from '../../state/flow';
+import { whenFlag, buildWhen, flowEffects } from './editorState';
 import { EffectList, Ctx } from './EffectList';
 
 export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue; onChange: (d: Dialogue) => void; ctx: Ctx }) {
@@ -103,8 +105,8 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                       {c.text ? `« ${c.text.slice(0, 38)}${c.text.length > 38 ? '…' : ''} »` : '(choix sans texte)'}
                       {c.next ? ` → ${c.next}` : ' → fin'}
                       {c.cost?.gold || c.cost?.silver || c.cost?.brass ? ' · 💰' : ''}
-                      {c.condition ? ' · si ' + c.condition : ''}
-                      {c.effects?.length ? ` · ${c.effects.length} effet(s)` : ''}
+                      {whenFlag(c.when) ? ' · si ' + whenFlag(c.when) : ''}
+                      {c.flow && flowEffects(c.flow).length ? ` · ${flowEffects(c.flow).length} effet(s)` : ''}
                     </span>
                     <span className="eff-actions" onClick={(e) => e.preventDefault()}>
                       <button className="btn small danger" title="Supprimer le choix" onClick={() => updNode({ choices: node.choices.filter((_, i) => i !== ci) })}>
@@ -126,7 +128,7 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                           ))}
                         </select>
                       </label>
-                      <input className="choice-cond" value={c.condition ?? ''} onChange={(e) => updChoice(ci, { condition: e.target.value || undefined })} placeholder="condition (flag, !flag)" />
+                      <input className="choice-cond" value={whenFlag(c.when)} onChange={(e) => updChoice(ci, { when: buildWhen(e.target.value) })} placeholder="condition (flag, !flag)" />
                       <span className="choice-cost" title="Coût de l’option (service payant : auberge, péage, pot-de-vin) — CO / pa / sc">
                         💰
                         {(['gold', 'silver', 'brass'] as const).map((k) => (
@@ -145,7 +147,7 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                         ))}
                       </span>
                     </div>
-                    <EffectList effects={c.effects ?? []} onChange={(eff) => updChoice(ci, { effects: eff })} ctx={ctx} />
+                    <EffectList effects={c.flow ? flowEffects(c.flow) : []} onChange={(eff) => updChoice(ci, { flow: eff.length ? flowFromEffects(eff) : undefined })} ctx={ctx} />
                   </div>
                 </details>
               ))}

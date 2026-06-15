@@ -93,7 +93,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
       for (const t of s.triggers) walk(flowEffects(t.flow));
       for (const e of s.encounters) walk(e.onVictory);
       for (const ent of s.entities) walk(ent.interact?.effects);
-      for (const d of s.dialogues) for (const n of d.nodes) for (const c of n.choices) walk(c.effects);
+      for (const d of s.dialogues) for (const n of d.nodes) for (const c of n.choices) walk(c.flow ? flowEffects(c.flow) : undefined);
     }
     for (const type of [
       'test', 'giveTrapping', 'giveMoney', 'giveXp', 'startCombat', 'transition', 'transitionBack',
@@ -153,7 +153,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
       for (const t of s.triggers) walk(flowEffects(t.flow));
       for (const e of s.encounters) walk(e.onVictory);
       for (const ent of s.entities) walk(ent.interact?.effects);
-      for (const d of s.dialogues) for (const n of d.nodes) for (const c of n.choices) walk(c.effects);
+      for (const d of s.dialogues) for (const n of d.nodes) for (const c of n.choices) walk(c.flow ? flowEffects(c.flow) : undefined);
     }
     expect(totalSb).toBeLessThanOrEqual(100 * 240);
     const z1 = project[0].encounters.find((e) => e.id === 'enc-zone1')!;
@@ -174,11 +174,11 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
   it('AUBERGE : dormir au Trophée ouvre la modale de Repos en contexte auberge (chambres/repas PAR HÉROS, prix RAW dans la modale)', () => {
     const taverne = project.find((s) => s.id === 'arene-int-taverne')!;
     const choices = taverne.dialogues.flatMap((d) => d.nodes.flatMap((n) => n.choices));
-    const sleeps = choices.filter((c) => c.effects?.some((e) => e.type === 'rest'));
+    const sleeps = choices.filter((c) => c.flow && flowEffects(c.flow).some((e) => e.type === 'rest'));
     expect(sleeps.length).toBeGreaterThanOrEqual(1);
     for (const c of sleeps) {
       expect(c.cost, 'plus de forfait sur le choix — les prix vivent dans la modale').toBeUndefined();
-      expect(c.effects!.some((e) => e.type === 'rest' && (e as { lodging?: string }).lodging === 'auberge'), 'contexte auberge').toBe(true);
+      expect(flowEffects(c.flow!).some((e) => e.type === 'rest' && (e as { lodging?: string }).lodging === 'auberge'), 'contexte auberge').toBe(true);
     }
     // L'offre de repos (bouton 🌙) : Bourg/taverne = auberge ; zones d'arène = repos interdit.
     expect(taverne.rest?.auberge).toBe(true);
@@ -240,7 +240,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     expect(ALL_ENEMIES.some((en) => (en.statblock?.traits ?? []).includes('Nuée'))).toBe(true); // Nuée = statbloc custom
     expect(ALL_ENEMIES.some((en) => en.ref === 'Spectre de cairn')).toBe(true); // créature Terreur
     const hub = project.find((s) => s.id === 'arene-hub')!;
-    const hasTest = hub.dialogues.some((d) => d.nodes.some((n) => n.choices.some((c) => c.effects?.some((ef) => ef.type === 'test'))));
+    const hasTest = hub.dialogues.some((d) => d.nodes.some((n) => n.choices.some((c) => c.flow && flowEffects(c.flow).some((ef) => ef.type === 'test'))));
     expect(hasTest).toBe(true); // Effet `test` (Crochetage) avec branches succès/échec
   });
 
@@ -308,9 +308,9 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     const hub = project.find((s) => s.id === 'arene-hub')!;
     const door = hub.dialogues.find((d) => d.id === 'dlg-hub')!;
     const choices = door.nodes.flatMap((n) => n.choices);
-    const doors = choices.filter((c) => c.effects?.some((e) => e.type === 'transition' && /^arene-zone\d+$/.test(e.scene)));
+    const doors = choices.filter((c) => c.flow && flowEffects(c.flow).some((e) => e.type === 'transition' && /^arene-zone\d+$/.test(e.scene)));
     expect(doors.length).toBe(13);
-    expect(doors.every((c) => /clear/.test(c.condition ?? ''))).toBe(true);
+    expect(doors.every((c) => /clear/.test(c.when?.kind === 'flag' ? c.when.expr : ''))).toBe(true);
   });
 
   it('les CONTRATS d’expédition : proposition gated progression, prime gated contrat_*_fait', () => {
@@ -318,8 +318,8 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     const dlg = hub.dialogues.find((d) => d.id === 'dlg-hub')!;
     const choices = dlg.nodes.flatMap((n) => n.choices);
     for (const key of ['foret', 'marais', 'village']) {
-      expect(choices.some((c) => (c.condition ?? '').includes(`!contrat_${key}`)), `proposition ${key}`).toBe(true);
-      expect(choices.some((c) => (c.condition ?? '').includes(`contrat_${key}_fait`)), `prime ${key}`).toBe(true);
+      expect(choices.some((c) => (c.when?.kind === 'flag' ? c.when.expr : '').includes(`!contrat_${key}`)), `proposition ${key}`).toBe(true);
+      expect(choices.some((c) => (c.when?.kind === 'flag' ? c.when.expr : '').includes(`contrat_${key}_fait`)), `prime ${key}`).toBe(true);
       // et une rencontre d'expédition pose bien le flag _fait
       const setters = project.flatMap((s) => s.encounters.flatMap((e) => e.onVictory ?? []));
       expect(setters.some((e) => e.type === 'setFlag' && e.flag === `contrat_${key}_fait`), `flag contrat_${key}_fait`).toBe(true);
@@ -329,9 +329,9 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
   it('FINALE de campagne : le titre de champion délivre un document ET un interlude (LDB 22-23)', () => {
     const hub = project.find((s) => s.id === 'arene-hub')!;
     const dlg = hub.dialogues.find((d) => d.id === 'dlg-hub')!;
-    const champion = dlg.nodes.flatMap((n) => n.choices).find((c) => (c.condition ?? '').includes('zone13_clear'))!;
+    const champion = dlg.nodes.flatMap((n) => n.choices).find((c) => (c.when?.kind === 'flag' ? c.when.expr : '').includes('zone13_clear'))!;
     expect(champion).toBeTruthy();
-    const types = (champion.effects ?? []).map((e) => e.type);
+    const types = (champion.flow ? flowEffects(champion.flow) : []).map((e) => e.type);
     expect(types).toEqual(expect.arrayContaining(['document', 'interlude', 'giveXp']));
   });
 

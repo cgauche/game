@@ -44,7 +44,7 @@ scene.dialogues = [
         text: 'Bonjour, voyageur. Cherchez-vous des remèdes… ou seulement à bavarder ?',
         choices: [
           // Effet openMerchant : ouvre la boutique de l'herboriste PUIS le dialogue se ferme (next absent).
-          { text: 'Montrez-moi vos marchandises.', effects: [{ type: 'openMerchant', entityId: 'herboriste' }] },
+          { text: 'Montrez-moi vos marchandises.', flow: flowFromEffects([{ type: 'openMerchant', entityId: 'herboriste' }]) },
           { text: 'Une autre fois. (Partir)' }, // next & effects absents → ferme le dialogue
         ],
       },

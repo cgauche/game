@@ -1,34 +1,34 @@
 /** Le Bourg de l'Arène (hub refondu, id conservé `arene-hub`) + ses deux intérieurs. */
-import { scene, P, NPC, hero, resetIds, fouille, flowOf } from './lib.mjs';
+import { scene, P, NPC, hero, resetIds, fouille, flowOf, flagWhen } from './lib.mjs';
 
 // ── Dialogues du Bourg ──────────────────────────────────────────────────────────────────────
 
 /** Porte d'une zone de l'échelle : visible quand la précédente est nettoyée, pas la suivante. */
 const porte = (n, nom) => ({
   text: `⚔️ Entrer — ${nom}.`,
-  condition: n === 1 ? '!zone1_clear' : `zone${n - 1}_clear,!zone${n}_clear`,
-  effects: [{ type: 'transition', scene: `arene-zone${n}` }],
+  when: flagWhen(n === 1 ? '!zone1_clear' : `zone${n - 1}_clear,!zone${n}_clear`),
+  flow: flowOf([{ type: 'transition', scene: `arene-zone${n}` }]),
 });
 
 /** Contrat d'expédition : proposition (gated progression) puis paiement au retour (flag _fait). */
 const contrat = (key, cond, propose, fait, gold, xp) => [
   {
     text: `📜 ${propose}`,
-    condition: `${cond},!contrat_${key}`,
-    effects: [
+    when: flagWhen(`${cond},!contrat_${key}`),
+    flow: flowOf([
       { type: 'setFlag', flag: `contrat_${key}` },
       { type: 'journal', text: `Contrat accepté — ouvrez la carte du monde (🗺️) pour voyager. ${fait}` },
-    ],
+    ]),
   },
   {
     text: `💰 Toucher la prime — ${propose.replace(/^.*?: /, '')}`,
-    condition: `contrat_${key}_fait,!contrat_${key}_paye`,
-    effects: [
+    when: flagWhen(`contrat_${key}_fait,!contrat_${key}_paye`),
+    flow: flowOf([
       { type: 'setFlag', flag: `contrat_${key}_paye` },
       { type: 'giveMoney', gold },
       { type: 'giveXp', amount: xp },
       { type: 'journal', text: 'Le Maître compte les couronnes sans sourciller. « Du travail propre. »' },
-    ],
+    ]),
   },
 ];
 
@@ -45,8 +45,8 @@ const dlgHub = {
         { text: '📜 Les contrats d’expédition.', next: 'contrats' },
         {
           text: '🔓 Crocheter le vieux coffre du maître (Test de Crochetage).',
-          condition: '!coffre_pris',
-          effects: [
+          when: flagWhen('!coffre_pris'),
+          flow: flowOf([
             {
               type: 'test',
               skill: 'Crochetage',
@@ -59,12 +59,12 @@ const dlgHub = {
               ],
               onFailure: [{ type: 'journal', text: 'Le mécanisme rouillé résiste — peut-être plus tard.' }],
             },
-          ],
+          ]),
         },
         {
           text: '🏆 Réclamer ton titre de CHAMPION.',
-          condition: 'zone13_clear,!champion_fete',
-          effects: [
+          when: flagWhen('zone13_clear,!champion_fete'),
+          flow: flowOf([
             { type: 'setFlag', flag: 'champion_fete' },
             { type: 'giveXp', amount: 300 },
             { type: 'journal', text: 'Le Maître s’incline, et tout le Bourg avec lui : « CHAMPION DE L’ARÈNE ! »' },
@@ -75,17 +75,17 @@ const dlgHub = {
             },
             { type: 'interlude', weeks: 2 },
             { type: 'endDialogue' },
-          ],
+          ]),
         },
         {
           text: '🏆 Savourer ta gloire de champion.',
-          condition: 'champion_fete',
-          effects: [
+          when: flagWhen('champion_fete'),
+          flow: flowOf([
             { type: 'journal', text: 'Le maître s’incline : « CHAMPION DE L’ARÈNE ! »' },
             { type: 'endDialogue' },
-          ],
+          ]),
         },
-        { text: 'Plus tard.', effects: [{ type: 'endDialogue' }] },
+        { text: 'Plus tard.', flow: flowOf([{ type: 'endDialogue' }]) },
       ],
     },
     {
@@ -132,11 +132,11 @@ const dlgMedecin = {
       speaker: 'Médecin',
       text: 'Encore vivant ? Bien. J’ai des potions, du faxtoryll pour les saignements, des membres de rechange… et la scie, si vraiment il faut OPÉRER.',
       choices: [
-        { text: '⚕️ Voir les remèdes et prothèses.', effects: [{ type: 'openMerchant', entityId: 'medecin' }] },
+        { text: '⚕️ Voir les remèdes et prothèses.', flow: flowOf([{ type: 'openMerchant', entityId: 'medecin' }]) },
         {
           text: '🔪 Passer sur la table (actes payants).',
           // « Une simple visite coûte 4-6 pistoles pour une aide médicale » (LDB 75 l.34) — tarif PAR ACTE.
-          effects: [{
+          flow: flowOf([{
             type: 'medicalAid',
             acts: [
               { act: 'wounds', cost: { silver: 4 } },
@@ -145,9 +145,9 @@ const dlgMedecin = {
               { act: 'surgery', cost: { silver: 6 } },
             ],
             skill: 55, intBonus: 4, entityId: 'medecin',
-          }],
+          }]),
         },
-        { text: 'Plus tard.', effects: [{ type: 'endDialogue' }] },
+        { text: 'Plus tard.', flow: flowOf([{ type: 'endDialogue' }]) },
       ],
     },
   ],
@@ -162,8 +162,8 @@ const dlgForgeron = {
       speaker: 'Forgeron',
       text: 'Le sable bouffe le fil des lames plus vite que les monstres. Montre-moi ton acier — je vends, je rachète, je RÉPARE.',
       choices: [
-        { text: '🛒 Armes, armures et réparations.', effects: [{ type: 'openMerchant', entityId: 'forgeron' }] },
-        { text: 'Plus tard.', effects: [{ type: 'endDialogue' }] },
+        { text: '🛒 Armes, armures et réparations.', flow: flowOf([{ type: 'openMerchant', entityId: 'forgeron' }]) },
+        { text: 'Plus tard.', flow: flowOf([{ type: 'endDialogue' }]) },
       ],
     },
   ],
@@ -179,7 +179,7 @@ const dlgGarde = {
       text: 'L’arène est au sud, derrière la porte. La route de l’est mène à la Futaie, à la Tourbière et à Felsbach — si tu tiens à tes jambes, voyage de jour et le ventre plein.',
       choices: [
         { text: '« Rien à signaler ? »', next: 'signalements' },
-        { text: 'Plus tard.', effects: [{ type: 'endDialogue' }] },
+        { text: 'Plus tard.', flow: flowOf([{ type: 'endDialogue' }]) },
       ],
     },
     {
@@ -187,7 +187,7 @@ const dlgGarde = {
       speaker: 'Garde du Bourg',
       text: 'Il hausse les épaules. « Des hurlements dans la Futaie, la nuit. Et plus une lumière à Felsbach depuis un mois. Si tu veux mon avis : reste du bon côté de la palissade. »',
       choices: [
-        { text: '« Merci du conseil. »', effects: [{ type: 'journal', text: 'Le garde : hurlements nocturnes dans la Futaie, Felsbach éteint depuis un mois.' }, { type: 'endDialogue' }] },
+        { text: '« Merci du conseil. »', flow: flowOf([{ type: 'journal', text: 'Le garde : hurlements nocturnes dans la Futaie, Felsbach éteint depuis un mois.' }, { type: 'endDialogue' }]) },
         { text: '↩ Autre chose.', next: 'accueil' },
       ],
     },
@@ -204,7 +204,7 @@ const dlgRumeurs = {
       text: 'Vous êtes les nouveaux gladiateurs ? On parie sur vous au lavoir. Enfin… certains.',
       choices: [
         { text: '« Qu’est-ce qui se raconte ? »', next: 'lavoir' },
-        { text: 'Plus tard.', effects: [{ type: 'endDialogue' }] },
+        { text: 'Plus tard.', flow: flowOf([{ type: 'endDialogue' }]) },
       ],
     },
     {
@@ -212,7 +212,7 @@ const dlgRumeurs = {
       speaker: 'Villageoise',
       text: 'Elle baisse la voix. « Le Maître garde un vieux coffre dont il a perdu la clef — il dit que c’est sans valeur, mais il dort dessus. Et passez voir Frère Anselm à la chapelle : il bénit ceux qui descendent sur le sable. »',
       choices: [
-        { text: '« Intéressant… »', effects: [{ type: 'journal', text: 'Rumeur du lavoir : le coffre « sans valeur » du Maître, et la bénédiction de Frère Anselm avant le combat.' }, { type: 'endDialogue' }] },
+        { text: '« Intéressant… »', flow: flowOf([{ type: 'journal', text: 'Rumeur du lavoir : le coffre « sans valeur » du Maître, et la bénédiction de Frère Anselm avant le combat.' }, { type: 'endDialogue' }]) },
         { text: '↩ Autre chose.', next: 'accueil' },
       ],
     },
@@ -370,21 +370,21 @@ const dlgTaverne = {
       speaker: 'Tavernière',
       text: 'Bienvenue au Trophée ! Table, chambre, et de quoi remplir les sacoches — la route ne nourrit personne, prenez des RATIONS avant de voyager.',
       choices: [
-        { text: '🧺 Voir le garde-manger (rations, vivres, pintes).', effects: [{ type: 'openMerchant', entityId: 'taverniere' }] },
+        { text: '🧺 Voir le garde-manger (rations, vivres, pintes).', flow: flowOf([{ type: 'openMerchant', entityId: 'taverniere' }]) },
         {
           // Repas de MIDI (sans dormir) : prix de groupe d'auteur — la nuit passe par la modale de Repos.
           text: '🍲 Repas chaud pour le groupe — 4 pa.',
           cost: { silver: 4 },
-          effects: [{ type: 'mealParty' }, { type: 'journal', text: 'Ragoût, pain noir et bière : le groupe est nourri pour la journée.' }],
+          flow: flowOf([{ type: 'mealParty' }, { type: 'journal', text: 'Ragoût, pain noir et bière : le groupe est nourri pour la journée.' }]),
         },
         {
           // Nuit au Trophée : la MODALE DE REPOS fait le reste (chambre/repas PAR HÉROS, prix RAW
           // dans la modale — plus de forfait sur le choix de dialogue).
           text: '🛏️ Prendre des chambres pour la nuit.',
-          effects: [{ type: 'rest', lodging: 'auberge' }],
+          flow: flowOf([{ type: 'rest', lodging: 'auberge' }]),
         },
         { text: '👂 Écouter la salle.', next: 'rumeurs' },
-        { text: 'Plus tard.', effects: [{ type: 'endDialogue' }] },
+        { text: 'Plus tard.', flow: flowOf([{ type: 'endDialogue' }]) },
       ],
     },
     {
@@ -402,7 +402,7 @@ const dlgTaverne = {
       speaker: 'Tavernière',
       text: 'Elle essuie une chope, l’œil en coin. « Personne n’a jamais passé la treizième porte. Et entre nous : le Maître fait descendre des carcasses ENTIÈRES là-dessous. On ne nourrit pas un trophée. »',
       choices: [
-        { text: '« Bon à savoir. »', effects: [{ type: 'journal', text: 'Rumeur du Trophée : personne n’a passé la 13e porte — le Maître NOURRIT quelque chose là-dessous.' }, { type: 'endDialogue' }] },
+        { text: '« Bon à savoir. »', flow: flowOf([{ type: 'journal', text: 'Rumeur du Trophée : personne n’a passé la 13e porte — le Maître NOURRIT quelque chose là-dessous.' }, { type: 'endDialogue' }]) },
         { text: '↩ Une autre rumeur.', next: 'rumeurs' },
       ],
     },
@@ -411,7 +411,7 @@ const dlgTaverne = {
       speaker: 'Tavernière',
       text: '« La diligence de Felsbach n’est jamais arrivée le mois dernier. Et les charognards qu’on croise en lisière de la Futaie… portent des cottes de voyageurs. Prenez des rations, et voyagez armés. »',
       choices: [
-        { text: '« Merci du tuyau. »', effects: [{ type: 'journal', text: 'Rumeur du Trophée : la diligence de Felsbach a disparu — la Futaie détrousse les convois.' }, { type: 'endDialogue' }] },
+        { text: '« Merci du tuyau. »', flow: flowOf([{ type: 'journal', text: 'Rumeur du Trophée : la diligence de Felsbach a disparu — la Futaie détrousse les convois.' }, { type: 'endDialogue' }]) },
         { text: '↩ Une autre rumeur.', next: 'rumeurs' },
       ],
     },
@@ -483,26 +483,26 @@ const dlgFrere = {
       choices: [
         {
           text: '⚕️ Recevoir des soins (actes payants).',
-          effects: [{ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }, { act: 'bleed', cost: { silver: 5 } }], skill: 55, intBonus: 4, entityId: 'frere' }],
+          flow: flowOf([{ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }, { act: 'bleed', cost: { silver: 5 } }], skill: 55, intBonus: 4, entityId: 'frere' }]),
         },
         {
           text: '🙏 Recevoir la bénédiction du départ (retrouver la Chance).',
-          condition: '!benediction_recue',
-          effects: [
+          when: flagWhen('!benediction_recue'),
+          flow: flowOf([
             { type: 'restoreFortune' },
             { type: 'setFlag', flag: 'benediction_recue' },
             { type: 'journal', text: 'Frère Anselm trace la comète sur vos fronts : la Chance vous revient.' },
-          ],
+          ]),
         },
         {
           text: '🪙 Faire un don au tronc — 1 co.',
           cost: { gold: 1 },
-          effects: [{ type: 'journal', text: 'La pièce sonne au fond du tronc. Frère Anselm hoche la tête, sincèrement ému.' }],
+          flow: flowOf([{ type: 'journal', text: 'La pièce sonne au fond du tronc. Frère Anselm hoche la tête, sincèrement ému.' }]),
         },
         {
           text: '🕯️ Piller le tronc des offrandes (Test de Discrétion).',
-          condition: '!tronc_pille',
-          effects: [
+          when: flagWhen('!tronc_pille'),
+          flow: flowOf([
             {
               type: 'test',
               skill: 'Discrétion',
@@ -519,9 +519,9 @@ const dlgFrere = {
                 { type: 'journal', text: 'Le tronc bascule avec fracas — le regard de Frère Anselm vous transperce. La honte (et le Péché) vous colle à la peau.' },
               ],
             },
-          ],
+          ]),
         },
-        { text: 'Plus tard.', effects: [{ type: 'endDialogue' }] },
+        { text: 'Plus tard.', flow: flowOf([{ type: 'endDialogue' }]) },
       ],
     },
   ],

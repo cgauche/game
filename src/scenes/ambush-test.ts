@@ -56,11 +56,11 @@ function build(): Scene {
           choices: [
             {
               text: 'Fondre sur les charognards avant qu’ils ne se ruent.',
-              effects: [
+              flow: flowFromEffects([
                 { type: 'journal', text: "Vous chargez — l'acier contre la chair corrompue." },
                 { type: 'endDialogue' },
                 { type: 'startCombat', encounter: 'enc-mutants' },
-              ],
+              ]),
             },
             { text: 'Reculer sans bruit vers le couvert…', next: 'a2' },
           ],
@@ -74,10 +74,10 @@ function build(): Scene {
           choices: [
             {
               text: 'Au combat !',
-              effects: [
+              flow: flowFromEffects([
                 { type: 'endDialogue' },
                 { type: 'startCombat', encounter: 'enc-mutants' },
-              ],
+              ]),
             },
           ],
         },

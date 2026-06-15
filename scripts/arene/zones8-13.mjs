@@ -1,5 +1,5 @@
 /** Zones 8-13 de l'échelle — le haut du tableau : Fosse, Caverne, Vermine, Cercle, Sépulcre, Dragon. */
-import { scene, P, NPC, hero, resetIds, fouille, fightTrigger, zoneVictory, DRAGON_DES_TENEBRES, flowOf } from './lib.mjs';
+import { scene, P, NPC, hero, resetIds, fouille, fightTrigger, zoneVictory, DRAGON_DES_TENEBRES, flowOf, flagWhen } from './lib.mjs';
 
 // ── Zone 8 — La Fosse (30×20, roche) : gouffres, harde du Chaos, gladiateur ALLIÉ ───────────
 
@@ -191,8 +191,8 @@ export function makeZone10() {
         choices: [
           {
             text: '🔓 Crocheter la cage (Test de Crochetage).',
-            condition: '!prisonnier_libre',
-            effects: [
+            when: flagWhen('!prisonnier_libre'),
+            flow: flowOf([
               {
                 type: 'test',
                 skill: 'Crochetage',
@@ -207,9 +207,9 @@ export function makeZone10() {
                 ],
                 onFailure: [{ type: 'journal', text: 'La serrure est grossière mais voilée — le crochet ripe. Réessayez.' }],
               },
-            ],
+            ]),
           },
-          { text: '« On revient te chercher. » (Plus tard.)', effects: [{ type: 'endDialogue' }] },
+          { text: '« On revient te chercher. » (Plus tard.)', flow: flowOf([{ type: 'endDialogue' }]) },
         ],
       },
     ],
