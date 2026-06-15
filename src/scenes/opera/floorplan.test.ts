@@ -1,13 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { buildOperaFloorplan } from './floorplan';
 import { tileAt, elevAt, wallBetween } from '../../state/scene';
-import { groundTile } from '../../gameIso/ground';
 import type { Dims } from '../../gameIso/iso';
 
 /**
  * Le plan de l'Opéra (Théâtre Staatsoper) est de la DONNÉE de géométrie produite par un générateur
- * (précédent de l'arène). Ces tests verrouillent la STRUCTURE attendue du plan : deux étages, scène
- * surélevée + fosse en contrebas, parterre en éventail à pans obliques, puits central vide à l'étage,
+ * (précédent de l'arène). Ces tests verrouillent la STRUCTURE attendue : deux étages, scène/fosse (à plat
+ * — l'élévation désaxait le jeton de sa case), parterre en éventail BLOQUANT, puits central vide à l'étage,
  * loge royale, escaliers. (La logique/contenu du scénario viendra séparément, en donnée d'éditeur.)
  */
 describe('plan de l’Opéra — géométrie', () => {
@@ -20,10 +19,11 @@ describe('plan de l’Opéra — géométrie', () => {
     expect(s.levels[1].tiles).toHaveLength(s.dimensions.w * s.dimensions.h);
   });
 
-  it('SCÈNE surélevée (élévation > 0) et FOSSE d’orchestre en contrebas (< 0)', () => {
-    expect(elevAt(s, 11, 2, 0)).toBeGreaterThan(0); // planches de scène
-    expect(tileAt(s, 11, 2, 0)).toBe('planches');
-    expect(elevAt(s, 11, 5, 0)).toBeLessThan(0); // fosse
+  it('SCÈNE et FOSSE distinguées par leur plancher (planches), À PLAT — pas d’élévation (jeton sur sa case)', () => {
+    expect(tileAt(s, 11, 2, 0)).toBe('planches'); // scène
+    expect(tileAt(s, 11, 5, 0)).toBe('planches'); // fosse
+    expect(elevAt(s, 11, 2, 0)).toBe(0); // AUCUN décalage vertical (sinon le jeton sort de sa case)
+    expect(elevAt(s, 11, 5, 0)).toBe(0);
   });
 
   it('PARTERRE en ÉVENTAIL : plus étroit près de la scène que vers le fond', () => {
@@ -51,11 +51,5 @@ describe('plan de l’Opéra — géométrie', () => {
     expect(tileAt(s, 11, 20, 1)).toBe('marbre');
     expect(s.stairs ?? []).toHaveLength(2);
     expect((s.stairs ?? [])[0]).toMatchObject({ from: { z: 0 }, to: { z: 1 } });
-  });
-
-  it('l’élévation PRODUIT des jupes au rendu (scène surélevée vue en relief)', () => {
-    // la rangée juste devant la scène (parterre au ras) borde la scène surélevée → jupe rendue
-    const svg = groundTile(s, 11, 4, d, 0); // dernière rangée de scène, bord avant
-    expect(svg).toContain('elev-skirt');
   });
 });
