@@ -38,6 +38,7 @@ import { addCondition, removeCondition, loseWounds, applyZeroWounds, stacks } fr
 import { grantTrait } from './grantedTraits';
 import { groupMatch } from './groups';
 import { bypassedAP } from './armourBypass';
+import { hasTraitKey } from './traits/dispatch';
 
 /** Domaine d'un sort (« issu du Domaine X ») : le subType d'un Sort d'Arcane, sinon null. */
 export function domainOf(spell: { type?: string; subType?: string | null }): string | null {
@@ -74,9 +75,9 @@ export function domainMissileMods(
 }
 
 const isUndead = (c: Combatant): boolean =>
-  groupMatch('Morts-vivants', c.groups ?? []) || (c.traits ?? []).some((t) => /mort[- ]vivant/i.test(t));
+  groupMatch('Morts-vivants', c.groups ?? []) || hasTraitKey(c.traits, 'Mort-vivant');
 const isDaemon = (c: Combatant): boolean =>
-  groupMatch('Démons', c.groups ?? []) || (c.traits ?? []).some((t) => /d[ée]moniaque/i.test(t));
+  groupMatch('Démons', c.groups ?? []) || hasTraitKey(c.traits, 'Démoniaque');
 /** « cible vivante » (Mort/Vie) : ni Mort-vivant ni Démon. */
 export const isLiving = (c: Combatant): boolean => !isUndead(c) && !isDaemon(c);
 

@@ -6,16 +6,38 @@
  */
 import type { CharKey, Combatant } from '../types';
 import { TRAITS, TraitDef } from './registry';
-import { parseStatEntry, type TraitInstance } from '../statEntry';
+import { parseStatEntry, type TraitInstance, type TraitList } from '../statEntry';
 
 const KEY_BY_LOWER = new Map(Object.keys(TRAITS).map((k) => [k.toLowerCase(), k]));
+
+/**
+ * Libellés canoniques des traits HORS registre `defs/` : attaques naturelles (lues par
+ * `creatureAttacks` / `spawn.weaponsFromTraits`) et marqueurs spéciaux (Venin, Lanceur de Sorts,
+ * Mort-vivant, Frénésie…). On les canonicalise ICI pour que `t.key === 'X'` soit FIABLE en aval
+ * malgré la casse hétérogène des livres (« Lanceur de sorts » → « Lanceur de Sorts »), au lieu de
+ * regex dispersées chez chaque consommateur. Ajouter une attaque naturelle = ajouter son libellé ici
+ * (et sa règle dans `creatureAttacks.RULES`). Doit rester aligné avec la liste de parité (parity.test).
+ */
+export const EXTRA_TRAIT_LABELS = [
+  // Attaques naturelles (creatureAttacks.RULES + spawn.weaponsFromTraits)
+  'Arme', 'À distance', 'Morsure', 'Attaque caudale', 'Cornes', 'Souffle', 'Vomissement',
+  'Langue préhensile', 'Hurlement fantomatique', 'Regard pétrifiant', 'Tentacules', 'Étreinte glaciale',
+  // Marqueurs spéciaux consommés ailleurs (psychologie / magie / domaines / groupes)
+  'Venin', 'Lanceur de Sorts', 'Mort-vivant', 'Frénésie', 'Constricteur', 'Vampirique',
+];
+
+/** Canonicalisation UNIQUE des clés de trait : registre `defs/` + libellés hors registre, casse ignorée. */
+const CANON_BY_LOWER = new Map<string, string>([
+  ...Object.keys(TRAITS).map((k) => [k.toLowerCase(), k] as const),
+  ...EXTRA_TRAIT_LABELS.map((k) => [k.toLowerCase(), k] as const),
+]);
 
 /** IMPORT (saisie éditeur / migration JSON) : chaîne de statbloc → trait STRUCTURÉ. La clé est
  *  canonicalisée sur le registre (« morsure » → « Morsure ») ; sinon le nom brut est conservé
  *  (« Arme », « À distance », « Griffes »). C'est le SEUL endroit qui parse — le runtime lit les champs. */
 export function parseTraitInstance(raw: string): TraitInstance {
   const p = parseStatEntry(raw);
-  const t: TraitInstance = { key: KEY_BY_LOWER.get(p.name.toLowerCase()) ?? p.name };
+  const t: TraitInstance = { key: CANON_BY_LOWER.get(p.name.toLowerCase()) ?? p.name };
   const value = p.bonus ?? p.indice;
   if (value != null) t.value = value;
   if (p.arg != null) t.arg = p.arg;
@@ -31,6 +53,12 @@ export function formatTrait(t: TraitInstance): string {
   if (t.value != null) s += ` ${t.value}`;
   if (t.range != null) s += ` (${t.range})`;
   return s;
+}
+
+/** Normalise un élément de `TraitList` en `TraitInstance` : chaîne (test/legacy) → parse UNE fois ;
+ *  déjà structuré → renvoyé tel quel (aucun parsing au runtime). SEUL point d'entrée des consommateurs. */
+export function asTrait(x: string | TraitInstance): TraitInstance {
+  return typeof x === 'string' ? parseTraitInstance(x) : x;
 }
 
 export interface ParsedTrait {
@@ -67,9 +95,16 @@ export function resolveTraits(traits: string[] | undefined): ResolvedTrait[] {
   return out;
 }
 
-/** La créature possède-t-elle le trait canonique `key` ? */
+/** La créature possède-t-elle le trait canonique `key` ? (registre `defs/` UNIQUEMENT). */
 export function hasTrait(traits: string[] | undefined, key: string): boolean {
   return resolveTraits(traits).some((r) => r.def.key === key);
+}
+
+/** La créature porte-t-elle un trait/attaque de clé canonique `key` (registre OU libellé hors registre :
+ *  Venin, Lanceur de Sorts, Cornes, Tentacules…) ? Remplace les regex `/^x\b/i` dispersées : la
+ *  canonicalisation a déjà eu lieu (`asTrait`), donc comparaison de clé STRICTE — plus de parsing ad hoc. */
+export function hasTraitKey(traits: TraitList | undefined, key: string): boolean {
+  return (traits ?? []).some((x) => asTrait(x).key === key);
 }
 
 const first = (traits: string[] | undefined, pred: (d: TraitDef) => boolean): ResolvedTrait | undefined =>

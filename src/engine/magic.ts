@@ -18,6 +18,7 @@
  */
 import { RNG, defaultRNG } from './dice';
 import { rollTest, resolveOpposed, isDoubleRoll, TestResult } from './tests';
+import { hasTraitKey } from './traits/dispatch';
 import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { reverseRoll, hitLocationByShape } from './combat';
 import { Formula, resolveFormula } from './ops';
@@ -162,7 +163,7 @@ export function focusSkillFor(c: Combatant, spell: SpellLike) {
  * sur la Caractéristique seule (castingValue, avances 0).
  */
 export function knowsCastingSkill(c: Combatant, skillName: string, spec?: string): boolean {
-  if (c.traits?.some((t) => /^lanceur de sorts\b/i.test(t))) return true;
+  if (hasTraitKey(c.traits, 'Lanceur de Sorts')) return true;
   return c.skills.some(
     (s) => s.name === skillName && (spec == null || s.spec === spec) && s.advances >= 1,
   );

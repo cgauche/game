@@ -18,7 +18,7 @@
  *                              → 1d10 + DR Blessures ignorant BE et PA. Attaque MAGIQUE.
  *  - Venin (Difficulté)      : PAS une attaque — Atout : sur PB infligés, la cible subit Empoisonné.
  */
-import { parseStatEntry } from './statEntry';
+import { parseTraitInstance } from './traits/dispatch';
 
 /** Type d'attaque naturelle (geste + règle distincts). */
 export type AttackKind = 'arme' | 'morsure' | 'caudale' | 'cornes' | 'souffle' | 'vomi' | 'tentacules' | 'etreinte' | 'regard' | 'langue' | 'hurlement';
@@ -67,45 +67,47 @@ export const ATTACK_LABEL: Record<AttackKind, string> = {
   hurlement: 'Hurlement fantomatique',
 };
 
-// Règle RAW par type (hors Dégâts/type, lus du libellé). Le 1er match du libellé gagne.
-const RULES: Array<{ re: RegExp; kind: AttackKind; base: Omit<CreatureAttack, 'kind' | 'label' | 'bonus' | 'type'> }> = [
-  [/^morsure\b/i, 'morsure', { trigger: 'free', avantage: 1 }],
-  [/^attaque caudale\b/i, 'caudale', { trigger: 'free', avantage: 1, prone: true }],
-  [/^cornes?\b/i, 'cornes', { trigger: 'charge', avantage: 0 }],
-  [/^souffle\b/i, 'souffle', { trigger: 'free', avantage: 2, aoe: true, magic: true }],
-  [/^vomi(ssement)?\b/i, 'vomi', { trigger: 'free', avantage: 3, aoe: true }], // Vomissement (Troll) : 3 Av, zone, corrosif + Sonné
-  [/^langue préhensile\b/i, 'langue', { trigger: 'free', avantage: 1, entangle: true }], // Jabberslythe : gratuite 1 Av, à distance, Indice + Empêtré
-  [/^hurlement fantomatique\b/i, 'hurlement', { trigger: 'free', avantage: 2, aoe: true }], // Banshee : gratuit, tous les Av (min 2), zone
-  [/^regard\b/i, 'regard', { trigger: 'action', avantage: 1 }], // Regard pétrifiant : Action, ≥1 Av (CT/Init, pétrifie)
-  [/^tentacules?\b/i, 'tentacules', { trigger: 'free', avantage: 0, entangle: true, perTentacle: true }],
-  [/^étreinte glaciale\b/i, 'etreinte', { trigger: 'action', avantage: 2, magic: true }],
-  [/^arme\b/i, 'arme', { trigger: 'action', avantage: 0 }],
-].map(([re, kind, base]) => ({ re: re as RegExp, kind: kind as AttackKind, base: base as CreatureAttack }));
+type AttackBase = Omit<CreatureAttack, 'kind' | 'label' | 'bonus' | 'type' | 'count'>;
+
+// Règle RAW par CLÉ CANONIQUE d'attaque (la clé est produite par `parseTraitInstance` → casse/pluriel
+// déjà normalisés ; plus de regex de préfixe). Ajouter une attaque naturelle = 1 entrée ici + son
+// libellé dans `EXTRA_TRAIT_LABELS` (dispatch). Dégâts/type/compte sont lus de l'instance, pas réécrits.
+const RULES: Record<string, { kind: AttackKind; base: AttackBase }> = {
+  Morsure: { kind: 'morsure', base: { trigger: 'free', avantage: 1 } },
+  'Attaque caudale': { kind: 'caudale', base: { trigger: 'free', avantage: 1, prone: true } },
+  Cornes: { kind: 'cornes', base: { trigger: 'charge', avantage: 0 } },
+  Souffle: { kind: 'souffle', base: { trigger: 'free', avantage: 2, aoe: true, magic: true } },
+  Vomissement: { kind: 'vomi', base: { trigger: 'free', avantage: 3, aoe: true } }, // Troll : 3 Av, zone, corrosif + Sonné
+  'Langue préhensile': { kind: 'langue', base: { trigger: 'free', avantage: 1, entangle: true } }, // Jabberslythe : gratuite 1 Av, à distance, Indice + Empêtré
+  'Hurlement fantomatique': { kind: 'hurlement', base: { trigger: 'free', avantage: 2, aoe: true } }, // Banshee : gratuit, tous les Av (min 2), zone
+  'Regard pétrifiant': { kind: 'regard', base: { trigger: 'action', avantage: 1 } }, // Action, ≥1 Av (CT/Init, pétrifie)
+  Tentacules: { kind: 'tentacules', base: { trigger: 'free', avantage: 0, entangle: true, perTentacle: true } },
+  'Étreinte glaciale': { kind: 'etreinte', base: { trigger: 'action', avantage: 2, magic: true } },
+  Arme: { kind: 'arme', base: { trigger: 'action', avantage: 0 } },
+};
 
 /** Attaques naturelles d'une créature à partir de ses traits, avec leurs RÈGLES RAW (ordre préservé).
- *  Démêle compte/Dégâts/type via le parseur UNIQUE `parseStatEntry` (« 8 Tentacules +9 » → compte 8,
- *  Dégâts 9 ; « Souffle +15 (Feu) » → Dégâts 15, type Feu — LDB 85 l.354). */
+ *  La clé canonique (`parseTraitInstance`) sélectionne la règle ; compte/Dégâts/type sont lus de
+ *  l'instance (« 8 Tentacules +9 » → compte 8, Dégâts 9 ; « Souffle +15 (Feu) » → Dégâts 15, type Feu
+ *  — LDB 85 l.354). */
 export function creatureAttacks(traits: string[]): CreatureAttack[] {
   const out: CreatureAttack[] = [];
   for (const t of traits) {
-    const p = parseStatEntry(t);
-    for (const { re, kind, base } of RULES) {
-      if (re.test(p.name)) {
-        const type = p.arg && !/divers|au choix/i.test(p.arg) ? p.arg : undefined;
-        out.push({ kind, label: t, bonus: p.bonus ?? p.indice ?? 0, type, ...(p.count != null ? { count: p.count } : {}), ...base });
-        break;
-      }
-    }
+    const inst = parseTraitInstance(t);
+    const rule = RULES[inst.key];
+    if (!rule) continue;
+    const type = inst.arg && !/divers|au choix/i.test(inst.arg) ? inst.arg : undefined;
+    out.push({ kind: rule.kind, label: t, bonus: inst.value ?? 0, type, ...(inst.count != null ? { count: inst.count } : {}), ...rule.base });
   }
   return out;
 }
 
 /** Atout Venin : les Attaques venimeuses infligent l'État Empoisonné sur PB (Difficulté de résistance
- *  par défaut Intermédiaire). Retourne la Difficulté écrite, ou 'intermediaire' si absente. */
+ *  par défaut Intermédiaire). Retourne la Difficulté écrite, ou 'Intermédiaire' si absente. */
 export function venomDifficulty(traits: string[]): string | null {
   for (const t of traits) {
-    const p = parseStatEntry(t);
-    if (/^venin\b/i.test(p.name)) return p.arg ?? 'Intermédiaire';
+    const inst = parseTraitInstance(t);
+    if (inst.key === 'Venin') return inst.arg ?? 'Intermédiaire';
   }
   return null;
 }

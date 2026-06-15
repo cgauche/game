@@ -78,6 +78,14 @@ export interface TraitInstance {
   range?: number;
 }
 
+/**
+ * Liste de traits portée par une créature/combattant. Union TRANSITOIRE pendant la migration de-POC :
+ * la donnée et les statblocs migrent vers `TraitInstance` (structuré, plus de parsing au runtime),
+ * mais les littéraux de test (« 'Morsure +9' ») restent des chaînes — `asTrait` les normalise une
+ * fois. Cible finale : `TraitInstance[]` partout dans la donnée ; les chaînes ne survivent qu'en test.
+ */
+export type TraitList = (string | TraitInstance)[];
+
 /** Nom canonique seul (raccourci pour les lookups Codex/registre). */
 export const statName = (raw: string): string => parseStatEntry(raw).name;
 

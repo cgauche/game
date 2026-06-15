@@ -12,6 +12,7 @@ import { findTrapping } from '../data';
 import { indiceOf } from './qualities/normalize';
 import { craftEncDelta } from './qualities/craftEconomy';
 import { hasQuality } from './qualities/dispatch';
+import { hasTraitKey } from './traits/dispatch';
 
 let uidCounter = 0;
 export function newUid(): string {
@@ -230,7 +231,7 @@ export function recomputeLoadout(c: Combatant): void {
   // Armes NATURELLES de mutation (LDB 19) : Arme de Créature, Dégâts = Bonus de Force (LDB p.338,
   // cf. note des Cornes asymétriques). Le Tentacule (trait Tentacules p.343) est AUSSI une Attaque
   // gratuite 1/tour (battleTentacle) ; ici il reste utilisable comme arme ordinaire.
-  if ((c.traits ?? []).some((t) => /^(\d+\s+)?tentacules?\b/i.test(t))) {
+  if (hasTraitKey(c.traits, 'Tentacules')) {
     weapons.push({ name: 'Tentacule', type: 'melee', damage: '+BF', qualities: [], subType: 'Base', hands: 1, hand: 'main', uid: 'nat-tentacule' });
   }
   if ((c.mutations ?? []).some((m) => m.label === 'Cornes asymétriques')) {

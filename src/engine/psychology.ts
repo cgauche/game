@@ -10,7 +10,7 @@ import { rollTest, evaluateTest } from './tests';
 import { effectiveChar } from './characteristics';
 import { SizeCategory, sizeGap } from './size';
 import { groupMatch } from './groups';
-import { bellicosePsychImmune } from './traits/dispatch';
+import { bellicosePsychImmune, hasTraitKey } from './traits/dispatch';
 import { fearImmuneVs } from './combatFeatures/dispatch';
 
 export type PsychType =
@@ -156,7 +156,7 @@ export function clearPsychOf(all: Combatant[], deadId: string): void {
 
 /** Le combattant peut-il entrer en Frénésie (LDB 21 l.31) ? Trait de créature OU Talent « Frénésie ». */
 export function isFrenzyCapable(c: Combatant): boolean {
-  return (c.traits ?? []).some((t) => /^Frénésie/i.test(t)) || (c.talents ?? []).some((t) => /^Frénésie/i.test(t.name));
+  return hasTraitKey(c.traits, 'Frénésie') || (c.talents ?? []).some((t) => /^Frénésie/i.test(t.name));
 }
 
 /** Test de Force Mentale pour entrer en Frénésie (LDB 21 l.32). Succès → on entre. */
