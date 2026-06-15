@@ -7952,5 +7952,684 @@
       "book": "AA",
       "page": 102
     }
+  },
+  {
+    "label": "Jezaïl à malepierre",
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "availability": "Exotique",
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 45
+    },
+    "desc": "La contrefaçon skaven du long fusil du Hochland. Utilisez le profil du long fusil, mais ajoutez-y le Défaut Dangereuse. De plus, les cibles qu'elle blesse doivent effectuer un Test de Corruption (Mineure), car ses balles sont incrustées de malepierre."
+  },
+  {
+    "label": "Canon ratling",
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "availability": "Exotique",
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 45
+    },
+    "desc": "Machine à tuer skaven à plusieurs canons. Il faut deux skavens pour s'en servir : un pour charger, l'autre pour la maintenir tant bien que mal. Arme à distance : +10 Dégâts, portée 40 mètres, Atouts À Poudre noire, Empaleuse, Explosion 3 et Perforante, Défauts Dangereuse et Imprécise. Ses balles étant incrustées de malepierre, les cibles blessées doivent effectuer un Test de Corruption (Mineure) Accessible (+20)."
+  },
+  {
+    "label": "Pistolet à malepierre",
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "availability": "Exotique",
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 45
+    },
+    "desc": "La version skaven des pistolets humains, « améliorée » selon leurs standards. Atouts À Poudre noire, Dévastatrice, Empaleuse, Perforante ; Défauts Dangereuse et Recharge 1. Ses balles étant incrustées de malepierre, les cibles qu'il blesse doivent effectuer un Test de Corruption (Mineure)."
+  },
+  {
+    "label": "Baiser de la Vouivre",
+    "type": "trapping",
+    "subType": "Drogues et poisons",
+    "enc": 0,
+    "availability": "Exotique",
+    "price": {
+      "gold": 12,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 105
+    },
+    "desc": "Puissant poison de contact extrait du dard d'une vouivre. Les personnes qui subissent une Blessure à cause d'une lame, flèche ou carreau recouvert de baiser de la vouivre doivent réussir un Test de Résistance, sous peine de recevoir immédiatement 5 Blessures supplémentaires qui ignorent l'Endurance et l'Armure. Une arme traitée doit être utilisée dans un délai de 2+1d10 Rounds avant que le poison ne s'évapore."
+  },
+  {
+    "label": "Boursoufleur",
+    "type": "trapping",
+    "subType": "Drogues et poisons",
+    "enc": 0,
+    "availability": "Rare",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 105
+    },
+    "desc": "Poison dérivé du venin d'arachnarok. Un simple contact provoque des boursouflures et fait fondre la chair. Une arme traitée doit être utilisée dans l'heure ; les lames recouvertes sont tachetées de vert, souvent de façon permanente. Quand une arme recouverte de boursoufleur inflige au moins 1 Blessure, elle applique automatiquement 1d10 Blessures supplémentaires. Quiconque en ingère doit faire un Test de Résistance Difficile (-20) ou subir immédiatement une Blessure Critique au torse."
+  },
+  {
+    "label": "Long Sommeil",
+    "type": "trapping",
+    "subType": "Drogues et poisons",
+    "enc": 0,
+    "availability": "Rare",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 105
+    },
+    "desc": "Venin distillé de mangeuse d'hommes de la Drakwald, presque impossible à détecter (-40 à toute tentative). Si une dose complète est ingérée, la victime doit réussir un Test de Résistance Difficile (-20). En cas d'échec, elle ressent juste une fatigue précoce, puis s'endort ; une fois endormie, il est presque impossible de la sauver et elle ne se réveillera jamais."
+  },
+  {
+    "label": "Sibilance",
+    "type": "trapping",
+    "subType": "Drogues et poisons",
+    "enc": 0,
+    "availability": "Rare",
+    "price": {
+      "gold": 1,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 105
+    },
+    "desc": "Poison difficile à détecter. Pendant six heures après l'ingestion, la victime se fatigue très facilement : toute tâche impliquant la moindre stimulation physique inflige l'État Exténué, et les activités qui en causent normalement un en appliquent deux. À la fin de chaque heure, un Test de Résistance Intermédiaire (+0) réussi stoppe l'aggravation."
+  },
+  {
+    "label": "Potion à deux têtes",
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Exotique",
+    "price": {
+      "gold": 4,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 106
+    },
+    "desc": "Préparée à partir du sang d'amphisbaena (dont chaque tête mord l'autre, rendant son sang un puissant antidote). Une préparation de sang d'amphisbaena confère un bonus de +40 pour résister aux effets de n'importe quel poison."
+  },
+  {
+    "label": "Remède de Lurek",
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Limitée",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 106
+    },
+    "desc": "Boisson immonde préparée à base de plantes des marais et de parties de créatures (sang de rhinox ou de loup), qui force l'organisme à évacuer l'alcool. Dans la minute, elle annule les pénalités de Caractéristique dues à des Tests de Résistance à l'alcool échoués ou à l'État Ivre. Le buveur subit alors un État Exténué pendant (10 − Bonus d'Endurance) heures."
+  },
+  {
+    "label": "Solvant à bézoard",
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Limitée",
+    "price": {
+      "gold": 0,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 106
+    },
+    "desc": "Mélange d'alcool conservé une nuit dans un estomac de chèvre. Inutile en l'état, mais il suffit d'y verser une goutte de n'importe quel poison pour en faire un antidote à cette substance précise. L'antidote n'est efficace que contre exactement le même poison issu de la même préparation."
+  },
+  {
+    "label": "Acide de troll",
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Rare",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 107
+    },
+    "desc": "Sécrétions caustiques du système digestif d'un troll (bile pure), vendues en fioles renforcées. Une seule flasque suffit pour traverser 8 points d'Encombrement d'Équipement et inflige +9 Dégâts de base. Utilisé comme arme de fortune, il possède l'Atout Perforante et le Défaut Dangereuse."
+  },
+  {
+    "label": "Bouclier de la forge",
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Rare",
+    "price": {
+      "gold": 18,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 107
+    },
+    "desc": "Onguent dérivé de la bave de gueule d'effroi, utilisé par les nains pour manipuler des matériaux brûlants. Un flacon confère 4 PA contre les Dégâts de feu de toutes sortes (y compris magiques) et immunise contre l'État En flammes, mais inflige -20 à l'Agilité et l'Initiative. Agit une heure (ou éliminé avant en frottant avec de l'alcool)."
+  },
+  {
+    "label": "Camouflarbre",
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Rare",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 107
+    },
+    "desc": "Onguent des elfes sylvains à base de chair de sangsue caméléon : étalé sur la peau, il prend lentement l'aspect de l'environnement. Recouvert entièrement, l'utilisateur bénéficie d'un bonus de +40 à tous les Tests de Discrétion basés sur la vue (+10 pour visage et mains seuls, un quart de dose). Son odeur nauséabonde le réserve aux proies à l'odorat peu développé."
+  },
+  {
+    "label": "Dernier souffle",
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Exotique",
+    "price": {
+      "gold": 15,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 107
+    },
+    "desc": "Potion à base d'os de revenant, versée dans la gorge d'un cadavre frais (moins d'un jour) pour le ramener brièvement à la vie. Il peut répondre à trois questions sans pouvoir mentir (comme le sort Dernières paroles), puis retrouve le repos. Si on lui pose une quatrième question, le cadavre se transforme en une chose du Bois mort et attaque tout le monde."
+  },
+  {
+    "label": "Esprit clair",
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Rare",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 107
+    },
+    "desc": "Potion rare à base de sang de cornu qui renforce l'esprit. Le consommateur gagne le Trait À sang-froid et peut inverser les Tests échoués basés sur la Force Mentale. S'il reçoit un État Surpris, il n'est pas perdu lors de la première occasion."
+  },
+  {
+    "label": "Feu de Carroburg",
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Rare",
+    "price": {
+      "gold": 1,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 108
+    },
+    "desc": "Potion à base de gelée d'amibe permettant de cracher du feu. L'utilisateur gagne le Trait Souffle +10 (Feu) qu'il peut activer une fois sans dépenser d'Avantage, après quoi les effets se dissipent. Immédiatement après, il doit faire un Test de Résistance Difficile (-20) ou subir un État En flammes."
+  },
+  {
+    "label": "Feu liquide",
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Rare",
+    "price": {
+      "gold": 6,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 108
+    },
+    "desc": "Sang de grand taurus traité, mis en fioles. Déversé, il prend feu et brûle sur n'importe quelle surface (même gelée ou marécageuse). Utilisé comme arme, il compte comme une bombe incendiaire, mais les États En flammes qui en résultent ne peuvent pas être annulés pendant 3 Rounds, même immergé."
+  },
+  {
+    "label": "Fléau de la sorcière",
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Rare",
+    "price": {
+      "gold": 36,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 108
+    },
+    "desc": "Potion de dents de gueule d'effroi broyées. L'utilisateur gagne le Trait Résistance à la Magie 3 (réduit de 3 le DR de tout sort l'affectant) pendant une heure. Chaque dose supplémentaire augmente de 1 la valeur et prolonge d'une heure, mais exige un Test de Résistance Intermédiaire (+0) ; un échec fait sécréter une bave toxique (1 État Empoisonné par Round, et à quiconque le touche) pendant dix Rounds."
+  },
+  {
+    "label": "Furie du preyton",
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Rare",
+    "price": {
+      "gold": 9,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 108
+    },
+    "desc": "Potion de bile de preyton. Quand une personne la boit, elle entre immédiatement dans un État de Frénésie qui dure 1d10 Rounds et ne peut pas être calmé avant ce délai."
+  },
+  {
+    "label": "Liqueur de serpent du prophète",
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Rare",
+    "price": {
+      "gold": 4,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 109
+    },
+    "desc": "Breuvage distillé avec un peu de venin d'amphisbaena, donnant des visions de passé et de futur (à la discrétion du MJ). L'utilisateur fait un Test de Résistance à l'alcool ; en cas de succès, il peut dépenser un point de Chance dans l'heure pour inverser les dés de n'importe quel Test échoué."
+  },
+  {
+    "label": "Malveillance",
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Rare",
+    "price": {
+      "gold": 27,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 109
+    },
+    "desc": "Sang de chimère mélangé d'ingrédients exotiques et de bière naine. Le buveur fait un Test de Résistance Complexe (-10) : en cas de succès, il obtient le Trait Sang corrosif pendant 3+DR Rounds ; en cas d'échec, il subit deux États Empoisonné. Toute créature Bestiale qui le mord et reçoit des Dégâts ne le mordra plus de ce combat."
+  },
+  {
+    "label": "Poudre de veine",
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Rare",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 109
+    },
+    "desc": "Mélange à base de serre de noctecorbe. En onguent, étalé sur une plaie, dissipe tous les États Hémorragique sans Test de Guérison. En potion, permet d'annuler un État Hémorragique à la fin de chaque Round pendant une heure. Une seconde dose pendant l'effet exige un Test de Résistance (+0) ou 1d10 Blessures + État Exténué. Empêche aussi les vampires de se nourrir du sang de l'utilisateur."
+  },
+  {
+    "label": "Protection du cerf",
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Rare",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 110
+    },
+    "desc": "Potion préparée à partir des organes (rein ou foie) d'un grand cerf. Bue AVANT toute exposition à un poison, elle immunise pendant une heure contre tous les États Empoisonné et tout autre effet d'un poison naturel ou surnaturel. Inutile contre un poison déjà ingéré. Sa préparation est punie de mort par les elfes sylvains."
+  },
+  {
+    "label": "Razorflamme",
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Rare",
+    "price": {
+      "gold": 1,
+      "silver": 10,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 110
+    },
+    "desc": "Naphte corrompu produit à partir de bile de razorgor. Les bombes incendiaires créées avec produisent des flammes surnaturelles qui consument l'esprit comme la chair et comptent comme une attaque Magique. En onguent étalé sur une arme puis enflammé, l'arme inflige un État En flammes à chaque coup et compte comme Magique pendant 1d10 Rounds. Possession passible du bûcher dans certaines provinces."
+  },
+  {
+    "label": "Sang-douleur",
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Rare",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 110
+    },
+    "desc": "Préparation crue de bile de squig. Confère le Trait Insensible à la douleur et permet d'ignorer les effets de la plupart des Blessures Critiques (sauf amputation) pendant une heure. Passé ce délai, toutes les blessures subies se font soudain sentir. N'empêche pas de subir une Blessure Critique ou d'en mourir, seulement d'en ignorer les effets."
+  },
+  {
+    "label": "Sang de la mer",
+    "type": "trapping",
+    "subType": "Herbes et potions",
+    "enc": 0,
+    "availability": "Rare",
+    "price": {
+      "gold": 18,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 110
+    },
+    "desc": "« Remède » tristement célèbre à base de sang extrait du foie d'un wyrm des mers. L'utilisateur subit immédiatement 3 États Empoisonné irrésistibles, récupère autant de Blessures que son Bonus d'Endurance et obtient le Trait Régénération. Le MJ choisit si la régénération agit plus vite que le poison ; quand tous les États Empoisonné sont dissipés, la Régénération disparaît."
+  },
+  {
+    "label": "Dague Funeste",
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "availability": "Exotique",
+    "price": {
+      "gold": 8,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 112
+    },
+    "desc": "Dague fabriquée à partir d'une serre de cockatrice, fragile mais suintant un poison mortel. Une victime qui subit au moins 1 Blessure reçoit immédiatement un État Empoisonné (Test de Résistance Complexe (-10) pour résister). À chaque utilisation, le MJ lance un d10 en secret : sur un 1, le poison s'épuise et la dague se brisera à la prochaine utilisation. Illégale dans toutes les provinces de l'Empire."
+  },
+  {
+    "label": "Armure de Plates du Léviathan",
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "availability": "Rare",
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 112
+    },
+    "desc": "Armure de plates forgée à partir des écailles ou de la carapace d'un léviathan. Très volumineuse mais étonnamment légère : elle pèse 1 point d'Encombrement de moins que l'armure de plates en métal classique. Fonctionne comme une armure de plates pour le reste."
+  },
+  {
+    "label": "Lame à poignée en bois de cerf",
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "availability": "Rare",
+    "price": {
+      "gold": 6,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 113
+    },
+    "desc": "Arme simple montée sur une poignée en ramure de grand cerf. Une telle épée ne se brisera jamais pendant la bataille tant que son utilisateur la manie. Si la ramure a été obtenue par la violence, l'épée inflige toujours un État Hémorragique à la fois à son utilisateur et à sa victime chaque fois qu'elle inflige une Blessure Critique."
+  },
+  {
+    "label": "Trempe au Sang de Dragon",
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "availability": "Exotique",
+    "price": {
+      "gold": 20,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 113
+    },
+    "desc": "Non une arme, mais du sang de dragon (1 Enc par point d'Enc de l'arme ; 20 CO/Enc) utilisé pour tremper une arme en métal pendant sa fabrication. L'arme gagne alors l'Atout Solide sans nécessiter de DR additionnel pendant sa création, car sa lame ne perdra jamais son tranchant."
+  },
+  {
+    "label": "Surin de l'aigle",
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "availability": "Rare",
+    "price": {
+      "gold": 8,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 113
+    },
+    "desc": "Dague façonnée par les forgerons nains à partir de la serre d'un grand aigle majestueux. Ces lames sont exceptionnelles ; leur principal intérêt secondaire est de contrarier les elfes sylvains d'Athel Loren."
+  },
+  {
+    "label": "Sève de trégara",
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "availability": "Rare",
+    "price": {
+      "gold": 4,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 114
+    },
+    "desc": "Munitions (6 par 1 Enc de composant). La sève durcissante d'un trégara couvre jusqu'à 6 carreaux ou flèches, qui doivent être tirés dans la journée. Les projectiles ainsi traités gagnent l'Atout Perforante."
+  },
+  {
+    "label": "Empennage de griffon",
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "availability": "Rare",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 114
+    },
+    "desc": "Munitions (12 par 1 Enc de composant). Flèches ou carreaux empennés de plumes de griffon par les maîtres-fléchiers d'Ostermark ; ils agissent comme des flèches elfiques."
+  },
+  {
+    "label": "Pointes barbelées",
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "availability": "Rare",
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 114
+    },
+    "desc": "Munitions (12 par 1 Enc de composant). Pointes faites d'écailles de dragon barbelé, incroyablement aiguisées (le tranchant se renouvelle quand il s'émousse). Les attaques avec ces munitions qui infligent au moins une Blessure appliquent également un État Hémorragique."
+  },
+  {
+    "label": "Broyeur d'os",
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "availability": "Exotique",
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 115
+    },
+    "desc": "Marteau de guerre magique dont la tête a été forgée avec des os de stégadon réduits en poudre, et dont le cri se fait entendre à chaque coup. S'il tue un ennemi, le son devient assourdissant : les créatures vivantes dans un rayon de 10 mètres (sauf l'utilisateur) doivent réussir un Test de Résistance Intermédiaire (+0) ou subir un État Assourdi et 1d10 Blessures qui ignorent l'armure (mais pas le Bonus d'Endurance)."
+  },
+  {
+    "label": "Silence",
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "availability": "Exotique",
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 115
+    },
+    "desc": "Arme simple (épée) ou dague magique dont la poignée creuse contient une mèche de cheveux de sirène. La lame gagne l'Atout Dévastatrice, mais l'utilisateur est incapable de parler ou de produire le moindre son tant qu'il la manie ; cela vaut aussi pour quiconque est blessé par cette arme. Si la mèche a été prise par la force, l'utilisateur ne peut pas utiliser le Talent Chanceux tant qu'il tient ou porte Silence."
+  },
+  {
+    "label": "Vision de Vie",
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "availability": "Exotique",
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 116
+    },
+    "desc": "Bouclier magique créé à partir de poudre de cadavres de revenant. Il confère à son porteur la capacité de voir les créatures mort-vivantes telles qu'elles étaient avant leur trépas, ce qui neutralise le Trait Peur du mort-vivant (sauf s'il le possédait déjà de son vivant). Ne permet ni de communiquer avec, ni de contrôler les morts-vivants."
+  },
+  {
+    "label": "Cape du Loup",
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "availability": "Exotique",
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 116
+    },
+    "desc": "Cape magique cousue dans la dépouille d'une chimère, d'apparence de peau de loup avec des écailles nacrées sous la fourrure. Son porteur provoque Peur 2 chez les loups, les lions, les chèvres et les chimères. Si d'autres exemplaires sont créés, l'effet porte sur les animaux composant la chimère en question."
+  },
+  {
+    "label": "Gants de l'étrangleur",
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "availability": "Exotique",
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 116
+    },
+    "desc": "Gants magiques cousus à partir des ligaments d'un géant. Pour les Tests opposés de Force et jets similaires uniquement, la Taille du porteur est supérieure d'une catégorie à sa Taille réelle. En contrepartie, ils compliquent l'identification des alliés dans le feu de l'action."
+  },
+  {
+    "label": "Dernière Gorgée",
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "availability": "Exotique",
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 117
+    },
+    "desc": "Tasse magique créée en liant Shyish au crâne d'une chose du Bois mort. En y buvant n'importe quel liquide, l'utilisateur perçoit, entend et peut communiquer avec les esprits et entités éthérées (qui le prennent pour un esprit) pendant une minute, prolongeable par d'autres gorgées. Risque : être hanté par des esprits de plus en plus malveillants."
+  },
+  {
+    "label": "Pierre Assoiffée",
+    "type": "trapping",
+    "subType": "Possessions diverses",
+    "availability": "Exotique",
+    "price": {
+      "gold": 0,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "ZI",
+      "page": 117
+    },
+    "desc": "Rubis magique (souvent enchâssé dans une bague ou amulette) prélevé sur un grand dragon barbelé, qui absorbe le sang versé dessus. En échange, il confère le Trait Protection 9+ pendant 1d10 Tours. Mais s'il est insatiable : si le porteur subit un État Hémorragique, un Test de Résistance (+0) raté fait s'agripper le rubis à sa peau comme une sangsue (l'État Hémorragique ne se lève qu'en arrachant la pierre par un Test de Force (+20))."
   }
 ]
