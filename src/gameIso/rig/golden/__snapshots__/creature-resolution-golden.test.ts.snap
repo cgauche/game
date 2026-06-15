@@ -9,10 +9,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Humain",
   },
   "? (Démons de Tzeentch)": {
-    "def": "Démon",
+    "def": "Horreur rose",
     "plan": "biped",
-    "scale": 1,
-    "species": "Démon",
+    "scale": 1.15,
+    "species": "Horreur rose",
   },
   "? (Ours)": {
     "def": "Ours",
@@ -687,10 +687,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Démon",
   },
   "Grand Incendiaire de Tzeentch": {
-    "def": "Démon",
-    "plan": "biped",
-    "scale": 1,
-    "species": "Démon",
+    "def": "Bête des marais",
+    "plan": "amorphous",
+    "scale": 1.1,
+    "species": "Bête des marais",
   },
   "Grand Inquisiteur": {
     "def": null,
@@ -843,10 +843,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": null,
   },
   "Horreur Rose de Tzeentch": {
-    "def": "Démon",
+    "def": "Horreur rose",
     "plan": "biped",
-    "scale": 1,
-    "species": "Démon",
+    "scale": 1.15,
+    "species": "Horreur rose",
   },
   "Horreur bleue": {
     "def": "Horreur bleue",
@@ -909,10 +909,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Démon",
   },
   "Héraut Exalté de Tzeentch": {
-    "def": "Démon",
+    "def": "Horreur rose",
     "plan": "biped",
-    "scale": 1,
-    "species": "Démon",
+    "scale": 1.15,
+    "species": "Horreur rose",
   },
   "Héraut de Khorne": {
     "def": "Démon",
@@ -933,16 +933,16 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Démon",
   },
   "Héraut de Tzeentch": {
-    "def": "Démon",
+    "def": "Horreur rose",
     "plan": "biped",
-    "scale": 1,
-    "species": "Démon",
+    "scale": 1.15,
+    "species": "Horreur rose",
   },
   "Incendiaire de Tzeentch": {
-    "def": "Démon",
-    "plan": "biped",
-    "scale": 1,
-    "species": "Démon",
+    "def": "Bête des marais",
+    "plan": "amorphous",
+    "scale": 1.1,
+    "species": "Bête des marais",
   },
   "Inquisiteur": {
     "def": null,
@@ -1737,16 +1737,16 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Vampire",
   },
   "Seigneur du Changement Exalté de Tzeentch": {
-    "def": "Démon",
+    "def": "Furie du Chaos",
     "plan": "biped",
     "scale": 1,
-    "species": "Démon",
+    "species": "Furie du Chaos",
   },
   "Seigneur du Changement de Tzeentch": {
-    "def": "Démon",
+    "def": "Furie du Chaos",
     "plan": "biped",
     "scale": 1,
-    "species": "Démon",
+    "species": "Furie du Chaos",
   },
   "Seigneur-Brigand": {
     "def": null,
