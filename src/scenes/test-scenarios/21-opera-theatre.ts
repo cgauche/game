@@ -1,6 +1,12 @@
 import { makePregens } from '../../data/pregens';
-import type { Scene, Terrain, SceneEntity } from '../../state/scene';
+import type { Scene, Terrain, SceneEntity, CustomStatblock } from '../../state/scene';
 import type { TestScenario } from './_shared';
+
+// Profil des deux étudiants saboteurs : de jeunes civils paniqués, vifs mais fragiles (pas de combattants).
+const ETUDIANT: CustomStatblock = {
+  name: 'Étudiant', char: { M: 4, CC: 32, CT: 38, F: 30, E: 30, I: 35, Ag: 38, Dex: 35, Int: 42, FM: 28, Soc: 35, B: 11 },
+  weaponDamage: '+BF+2', armour: 0,
+};
 
 /**
  * « Une nuit à l'Opéra » — le THÉÂTRE multi-niveaux (Lot C1). Le lieu central, 100 % en données
@@ -48,6 +54,10 @@ const ents: SceneEntity[] = [
   // Professeur Pakker et son épouse, assis près de l'allée centrale (source 08 l.158) — cible des
   // pétards des étudiants (intrigue n°2 : Glimbrin lui vole ses clés dans le brouhaha).
   { id: 'pakker', kind: 'personnage', ref: 'Villageois', label: 'Professeur Pakker', pos: { x: 8, y: 8 }, facing: 'N' },
+  // Les deux étudiants, repliés vers l'arrière de la salle près de la porte (source 08 l.158). On peut
+  // les surprendre et les arrêter (combat optionnel) — sinon ils lancent leurs pétards et filent.
+  { id: 'etudiant-1', kind: 'personnage', label: 'Étudiant nerveux', pos: { x: 5, y: 12 }, facing: 'S', dialogueId: 'dlg-etudiants', statblock: ETUDIANT },
+  { id: 'etudiant-2', kind: 'personnage', label: 'Étudiant fébrile', pos: { x: 6, y: 12 }, facing: 'S', statblock: ETUDIANT },
 
   // Lustre suspendu au-dessus du parterre (prop sur le vide z1 → flotte 96 px plus haut).
   { id: 'lustre', kind: 'prop', ref: 'lustre-opera', pos: { x: 8, y: 6 }, z: 1 },
@@ -137,6 +147,25 @@ const scene: Scene = {
         },
       ],
     },
+    {
+      id: 'dlg-etudiants',
+      start: 'e0',
+      nodes: [
+        {
+          id: 'e0',
+          text: 'Deux jeunes gens nerveux, dissimulés près de la porte, manipulent un petit pot à feu et un chapelet de pétards. L’un d’eux blêmit en vous voyant approcher.',
+          choices: [
+            { text: '« Lâchez ça. Vous êtes en état d’arrestation. »', next: 'e1' },
+            { text: 'Les laisser filer.', effects: [{ type: 'journal', text: 'Vous détournez le regard ; les étudiants se fondent dans la foule.' }, { type: 'endDialogue' }] },
+          ],
+        },
+        {
+          id: 'e1',
+          text: '« On… on ne faisait rien ! » Ils refusent de se rendre et tentent de forcer le passage.',
+          choices: [{ text: 'Les maîtriser.', effects: [{ type: 'endDialogue' }, { type: 'startCombat', encounter: 'enc-etudiants' }] }],
+        },
+      ],
+    },
   ],
   triggers: [
     {
@@ -185,7 +214,16 @@ const scene: Scene = {
       ],
     },
   ],
-  encounters: [],
+  encounters: [
+    {
+      id: 'enc-etudiants',
+      members: [{ entityId: 'etudiant-1' }, { entityId: 'etudiant-2' }],
+      onVictory: [
+        { type: 'journal', text: 'Les deux étudiants sont maîtrisés et remis à la garde — ils passeront la nuit en cellule.' },
+        { type: 'setFlag', flag: 'etudiantsArretes' },
+      ],
+    },
+  ],
   flags: {},
   startMessage:
     'Le grand théâtre de l\'Opéra d\'Altdorf. En bas, le parterre face à la scène ; au-dessus, la galerie de loges et la loge royale en surplomb où siège la Comtesse.',

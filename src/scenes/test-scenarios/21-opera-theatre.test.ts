@@ -104,6 +104,14 @@ describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', ()
     expect(useGame.getState().flags.glimbrinDejoue).toBe(true);
   });
 
+  it('confronter les étudiants offre un combat optionnel (les arrêter)', () => {
+    const enc = scenario.scene.encounters.find((e) => e.id === 'enc-etudiants')!;
+    expect(enc.members?.map((m) => m.entityId)).toEqual(['etudiant-1', 'etudiant-2']);
+    const dlg = scenario.scene.dialogues.find((d) => d.id === 'dlg-etudiants')!;
+    const fight = dlg.nodes.flatMap((n) => n.choices).flatMap((c) => c.effects ?? []);
+    expect(fight.some((e) => e.type === 'startCombat' && e.encounter === 'enc-etudiants')).toBe(true);
+  });
+
   it('sans désamorçage, l’explosion frappe l’antichambre au bout de la mèche', () => {
     const before = lonePartyAt(35).wounds.current;
     applyEffects(useGame.getState, useGame.setState, arm.effects);
