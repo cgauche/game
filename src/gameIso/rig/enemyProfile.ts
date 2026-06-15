@@ -42,7 +42,7 @@ export function classifyEnemy(name: string): 'rig' | 'creature' {
 
 /** Classe de rendu DATA-DRIVEN (de-POC P5) — délègue au résolveur unique `resolveRender` : trait
  *  Nuée ou espèce CANONIQUE explicite (lookup exact) ; repli name-match si l'espèce est absente. */
-export function classifyBy(species: string | undefined, traits: string[] | undefined, name: string): 'rig' | 'creature' {
+export function classifyBy(species: string | undefined, traits: import('../../engine/statEntry').TraitList | undefined, name: string): 'rig' | 'creature' {
   return resolveRender(species, traits, name).kind === 'plan' ? 'creature' : 'rig';
 }
 

@@ -90,7 +90,7 @@ export interface RenderResolution {
   species: string;
   scale: number;
 }
-export function resolveRender(species: string | undefined, traits: string[] | undefined, name: string): RenderResolution {
+export function resolveRender(species: string | undefined, traits: import('../../engine/statEntry').TraitList | undefined, name: string): RenderResolution {
   const swarmSp = PLANS.swarm?.speciesNames()[0] ?? '';
   if (isSwarm(traits)) {
     const sp = species || swarmSp;

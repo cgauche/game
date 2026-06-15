@@ -15,12 +15,14 @@ import { planById, bodyPlanOf, resolveByName, type BodyPlanId } from '../src/gam
 import { sizeTokenScale } from '../src/gameIso/sizeScale';
 import { parseSizeLabel, SIZE_LABEL, SIZE_ORDER, type SizeCategory } from '../src/engine/size';
 import { creatures } from '../src/data/index';
+import { asTrait } from '../src/engine/traits/dispatch';
+import type { TraitList } from '../src/engine/statEntry';
 
 /** Taille du statbloc (trait « Taille (X) », plage → borne haute), défaut Moyenne. */
-function sizeOf(traits: string[] | undefined): SizeCategory {
-  for (const t of traits ?? []) {
-    const m = t.match(/^Taille\s*\(([^)]+)\)/i);
-    if (m) { const s = parseSizeLabel(m[1]); if (s) return s; }
+function sizeOf(traits: TraitList | undefined): SizeCategory {
+  for (const x of traits ?? []) {
+    const t = asTrait(x);
+    if (t.key === 'Taille' && t.arg) { const s = parseSizeLabel(t.arg); if (s) return s; }
   }
   return 'moyenne';
 }

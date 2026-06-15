@@ -13,7 +13,7 @@
 import type { Combatant } from './types';
 import type { GameOp } from './ops';
 import { findCreature } from '../data';
-import { asTrait } from './traits/dispatch';
+import { asTrait, formatTrait } from './traits/dispatch';
 
 export function polymorphOps(target: Combatant, ref: string): GameOp[] {
   const cr = findCreature(ref);
@@ -27,8 +27,9 @@ export function polymorphOps(target: Combatant, ref: string): GameOp[] {
       if (diff !== 0) ops.push({ op: 'charMod', char: k, mod: diff });
     }
   }
-  // Tous les Traits standards SAUF Bestial (chaîne canon brute → grantTrait sans indice).
-  for (const t of cr.traits ?? []) if (asTrait(t).key !== 'Bestial') ops.push({ op: 'grantTrait', trait: t });
+  // Tous les Traits standards SAUF Bestial (grantTrait prend une chaîne ; instance structurée → libellé).
+  for (const t of cr.traits ?? [])
+    if (asTrait(t).key !== 'Bestial') ops.push({ op: 'grantTrait', trait: typeof t === 'string' ? t : formatTrait(t) });
   ops.push({
     op: 'narrative',
     text: `${target.name} prend la forme d'un(e) ${cr.label} (F/E/Ag/Dex et Traits de la créature, PB recalculés) ; elle ne peut ni parler ni incanter, et conserve les PB perdus en reprenant sa vraie forme — arbitrage MJ.`,

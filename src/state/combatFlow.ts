@@ -53,6 +53,7 @@ import {
   wardSaves, hasChampionDefense, webForce, hasCorrosiveBlood, banishedAtZero, gorgesOnKill,
   isStupid, hasRage, regenerates, isUnstable, isBestial, isTerritorial, hasPerturbingAura,
   traitSeesInDark, isColdBlooded, bellicosePsychImmune, magicResistanceOf, isNervous, immunityTypes, hasStealthAgBonus, flyMeters, runMultiplier,
+  hasTraitKey, asTrait,
 } from '../engine/traits/dispatch';
 import {
   isMagicMissile,
@@ -1223,15 +1224,17 @@ export function applyAttackResult(
   // Tests de Contraction post-combat (finalizeBattle, LDB 20 l.32/49). Rongeur Infecté → Fièvre du Rongeur.
   if (res.hit && res.woundsLost && target.kind === 'hero') {
     const atkTraits = attacker.traits ?? [];
-    if (atkTraits.some((t) => /^infecté/i.test(t))) {
+    if (hasTraitKey(atkTraits, 'Infecté')) {
       target.woundedByInfected = true;
       if (/rat|skaven|rongeur/i.test(attacker.name)) target.woundedByRodent = true;
     }
     // Munition Infecté (Aux Armes p.102 — ferraille/débris souillés) : exposition à l'infection.
     if (hasQuality(weapon, 'Infecté')) target.woundedByInfected = true;
-    for (const t of atkTraits) {
-      const m = t.match(/^Maladie\s*\(([^)]+)\)/i);
-      if (m && !(target.diseaseExposure ?? []).includes(m[1].trim())) target.diseaseExposure = [...(target.diseaseExposure ?? []), m[1].trim()];
+    for (const x of atkTraits) {
+      const t = asTrait(x);
+      if (t.key === 'Maladie' && t.arg && !(target.diseaseExposure ?? []).includes(t.arg)) {
+        target.diseaseExposure = [...(target.diseaseExposure ?? []), t.arg];
+      }
     }
   }
   // Nausée (LDB 20 l.170) : un Test de DÉPLACEMENT raté (Esquive) fait vomir → État Sonné.
@@ -1874,7 +1877,7 @@ export function applyFreeAttackEffects(get: Get, attacker: Combatant, target: Co
   if (!res.hit) return; // les effets se déclenchent sur une touche réussie
   const traits = attacker.traits ?? [];
   // Constricteur (Hydre/Pieuvre, LDB 85) : toute touche → Empêtré (+ Empoignade possible).
-  if (traits.some((t) => /^constricteur/i.test(t)) && !hasCondition(target, 'Empêtré')) {
+  if (hasTraitKey(traits, 'Constricteur') && !hasCondition(target, 'Empêtré')) {
     addCondition(target, 'Empêtré');
     const cond = target.conditions.find((c) => c.name === 'Empêtré'); if (cond) cond.sourceId = attacker.id; // source du Test opposé de Force (LDB 16 l.61)
     get().log(`${target.name} est Empêtré (Constricteur).`);
@@ -1889,7 +1892,7 @@ export function applyFreeAttackEffects(get: Get, attacker: Combatant, target: Co
     get().log(`${target.name} est Empêtré (Tentacules).`);
   }
   // Vampirique (Vampire/Varghulf, LDB 85) : Morsure infligeant des PB → l'attaquant récupère autant.
-  if (kind === 'morsure' && traits.some((t) => /^vampirique/i.test(t))) {
+  if (kind === 'morsure' && hasTraitKey(traits, 'Vampirique')) {
     attacker.wounds.current = Math.min(attacker.wounds.max, attacker.wounds.current + res.woundsLost);
     get().log(`${attacker.name} draine ${res.woundsLost} Blessure(s) (Vampirique).`);
   }
@@ -2046,7 +2049,7 @@ export function applyWail(get: Get, set: SetFn, attacker: Combatant): boolean {
   attacker.advantage = 0; // dépense TOUS les Avantages
   const radius = Math.max(1, Math.ceil(effectiveChar(attacker, 'I') / 2)); // Initiative mètres → cases (2 m)
   const living = battle.combatants.filter(
-    (c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && chebyshev(attacker.pos!, c.pos) <= radius && !(c.traits ?? []).some((t) => /mort-vivant/i.test(t)),
+    (c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && chebyshev(attacker.pos!, c.pos) <= radius && !hasTraitKey(c.traits, 'Mort-vivant'),
   );
   const lines = [`${attacker.name} pousse un Hurlement fantomatique !`];
   emitCreatureAttackAnim(attacker, 'hurlement');
@@ -3151,7 +3154,7 @@ export function finalizeBattle(get: Get, set: SetFn): void {
   // gain de Points selon le niveau et le DR (corruptionGain), puis seuil/mutation via gainCorruption.
   const degrees = battle.combatants
     .filter((c) => c.kind !== 'hero')
-    .flatMap((c) => (c.traits ?? []).map((t) => t.match(/^Corruption\s*\((Mineure|Modérée|Majeure)\)/i)?.[1]).filter(Boolean));
+    .flatMap((c) => (c.traits ?? []).map(asTrait).filter((t) => t.key === 'Corruption').map((t) => t.arg).filter(Boolean));
   if (degrees.length) {
     const rank = { mineure: 0, modérée: 1, majeure: 2 } as Record<string, number>;
     const worst = degrees.reduce((a, b) => (rank[b!.toLowerCase()] > rank[a!.toLowerCase()] ? b : a))!;
@@ -3855,7 +3858,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   // pas seule (le couple bouge au tour du cavalier). Sans le Trait Nerveux, elle peut consacrer SA propre
   // Action à attaquer un adversaire au contact ; sinon elle passe son tour.
   if (enemy.riderId) {
-    const nerveux = (enemy.traits ?? []).some((t) => /nerveux/i.test(t));
+    const nerveux = hasTraitKey(enemy.traits, 'Nerveux');
     const foe = nerveux || !canAct ? undefined
       : battle.combatants.find((c) => c.kind !== enemy.kind && !isOutOfAction(c) && !!c.pos && combatDistance(enemy, c) <= meleeReachTiles(enemy.weapons));
     if (foe) { attackThenAdvance(foe); return; }

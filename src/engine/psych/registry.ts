@@ -5,13 +5,20 @@
  */
 import type { PsychParse } from './types';
 import { PSYCH_DEFS } from './_registry.generated';
+import { formatTrait } from '../traits/dispatch';
+import type { TraitList } from '../statEntry';
 
 export type { PsychParse, PsychTraitDef } from './types';
 
 /** Parse les libellés de traits (creatures.json) en propriétés psy : Peur/Terreur/Immunité +
- *  traits ciblés (Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie/Effrayé). Itère le registre. */
-export function parsePsychTraits(traits: string[]): PsychParse {
+ *  traits ciblés (Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie/Effrayé). Itère le registre.
+ *  Accepte une `TraitList` : la chaîne legacy est lue telle quelle, l'instance structurée formatée
+ *  (les défs psy gardent leur propre lecture de libellé — phase « psych structuré » ultérieure). */
+export function parsePsychTraits(traits: TraitList): PsychParse {
   const out: PsychParse = {};
-  for (const t of traits) for (const def of PSYCH_DEFS) def.apply(t, out);
+  for (const x of traits) {
+    const t = typeof x === 'string' ? x : formatTrait(x);
+    for (const def of PSYCH_DEFS) def.apply(t, out);
+  }
   return out;
 }

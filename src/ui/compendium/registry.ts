@@ -14,6 +14,7 @@ import {
 } from '../../data';
 import { CULTS } from '../../engine/cults/registry';
 import { statName } from '../../engine/statEntry';
+import { traitLabels } from '../../engine/traits/dispatch';
 import { CHAR_KEYS, HIT_LOCATION_LABELS, type Combatant, type HitLocation } from '../../engine/types';
 import { SIZE_LABEL, effectiveSize } from '../../engine/size';
 import { costPerEnc } from '../../engine/harvest';
@@ -217,7 +218,7 @@ export const CODEX: CodexCategory[] = [
       meta: c.harvest ? facts(fact('Récolte (1 Enc)', formatMoney(costPerEnc(c.harvest)))) : undefined,
       sections: sections(
         { title: 'Caractéristiques', layout: 'grid', rows: kvRows(Object.entries(c.char)) },
-        chips('Traits', 'traits', c.traits),
+        chips('Traits', 'traits', traitLabels(c.traits)),
         chips('Traits optionnels', 'traits', c.optionals),
         chips('Compétences', 'skills', c.skills),
         chips('Talents', 'talents', c.talents),
@@ -287,7 +288,7 @@ export function combatantSections(c: Combatant): CodexSection[] {
     { title: 'Caractéristiques', layout: 'grid', rows: charRows },
     weaponRows.length ? { title: 'Armes', layout: 'list', rows: weaponRows } : null,
     worn.length ? { title: 'Armure', layout: 'list', rows: [{ t: 'text', text: worn.map((l) => `${HIT_LOCATION_LABELS[l]} ${c.armour![l]}`).join(' · ') }] } : null,
-    chips('Traits', 'traits', c.traits),
+    chips('Traits', 'traits', traitLabels(c.traits)),
     skillRows.length ? { title: 'Compétences', layout: 'chips', rows: skillRows } : null,
     chips('Talents', 'talents', (c.talents ?? []).map((t) => t.name)),
     chips('Sorts', 'spells', c.spells),

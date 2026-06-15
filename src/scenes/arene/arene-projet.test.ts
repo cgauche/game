@@ -6,6 +6,7 @@ import { validateScene } from '../../state/validateScene';
 import { parseProject } from '../../state/worldMap';
 import { isWalkable, type Scene } from '../../state/scene';
 import { findCreature, findTrapping } from '../../data';
+import { traitLabels } from '../../engine/traits/dispatch';
 import { MERCHANTS } from '../../state/merchants/index';
 import { entitySize } from '../../state/spawn';
 import { footprintTiles } from '../../state/footprint';
@@ -278,7 +279,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     const refs = new Set(ALL_ENEMIES.map((en) => en.ref).filter(Boolean));
     expect(refs.size).toBeGreaterThanOrEqual(30); // large vitrine (≥30 créatures distinctes)
     // Traits canoniques (LDB 85) portés par les créatures référencées.
-    const traitsOf = (ref?: string) => (ref ? findCreature(ref)?.traits ?? [] : []);
+    const traitsOf = (ref?: string): string[] => (ref ? traitLabels(findCreature(ref)?.traits) : []);
     const allTraits = [...refs].flatMap((r) => traitsOf(r as string));
     for (const trait of [/^Champion$/, /^Corruption \(/, /^Démoniaque/, /^Venin$/]) {
       expect(allTraits.some((t) => trait.test(t)), `Trait ${trait}`).toBe(true);

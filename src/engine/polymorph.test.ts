@@ -4,6 +4,7 @@ import { applyOps } from './ops';
 import { effectiveChar } from './characteristics';
 import { endOfRound } from './conditions';
 import { findCreature } from '../data';
+import { hasTraitKey } from './traits/dispatch';
 import type { Combatant } from './types';
 
 /**
@@ -28,7 +29,7 @@ describe('polymorphOps — Forme bestiale (Ours)', () => {
     expect(effectiveChar(c, 'E')).toBe(ours.char.E); // 45
     expect(effectiveChar(c, 'Ag')).toBe(ours.char.Ag); // 25
     expect(c.traits ?? []).toContain('Morsure +9'); // Trait de l'Ours accordé
-    expect((c.traits ?? []).some((t) => /^bestial/i.test(t))).toBe(false); // Bestial exclu
+    expect(hasTraitKey(c.traits, 'Bestial')).toBe(false); // Bestial exclu
   });
 
   it('reprend sa vraie forme à l’expiration (Caractéristiques restaurées, Traits retirés)', () => {

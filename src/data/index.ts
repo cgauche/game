@@ -121,7 +121,9 @@ export interface CreatureData {
   title: string | null;
   folder: string | null;
   char: Record<string, number | null>;
-  traits: string[];
+  /** Traits STRUCTURÉS (`TraitInstance`) — source app-owned migrée du parsing de chaînes (de-POC).
+   *  Union transitoire : chaînes legacy tolérées et normalisées par `asTrait` à la consommation. */
+  traits: import('../engine/statEntry').TraitList;
   optionals: string[];
   skills: string[];
   talents: string[];

@@ -9,6 +9,7 @@
  */
 import { CreatureData, spells } from '../../data';
 import { CHAR_KEYS } from '../../engine/types';
+import { traitLabels } from '../../engine/traits/dispatch';
 
 /** Traits Standard de créature (LDB 76 l.28-31, verbatim) : « Les Traits suivants sont ajoutés à
  *  la liste Facultative de toutes les créatures. » */
@@ -37,7 +38,7 @@ export function CreatureProfile({ creature }: { creature: CreatureData }) {
         </tbody>
       </table>
       <div className="creature-profile-traits">
-        <b>Traits :</b> {creature.traits.join(', ') || '—'}
+        <b>Traits :</b> {traitLabels(creature.traits).join(', ') || '—'}
       </div>
     </div>
   );

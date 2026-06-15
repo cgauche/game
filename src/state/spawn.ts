@@ -4,14 +4,14 @@
  */
 import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints, BodyShape, SkillInstance, TalentInstance } from '../engine/types';
 import { skillCharacteristic } from '../engine/character';
-import { parseStatEntry } from '../engine/statEntry';
+import { parseStatEntry, type TraitInstance, type TraitList } from '../engine/statEntry';
 import { findCreature, CreatureData } from '../data';
 import { CustomStatblock, EntityAppearance } from './scene';
 import { emptyArmour } from '../engine/items';
 import { maxWounds, bonus } from '../engine/characteristics';
 import { parseSizeLabel, resizeBySteps, SIZE_ORDER, SizeCategory } from '../engine/size';
 import { parsePsychTraits } from '../engine/psychology';
-import { traitCharMods, traitMovementMod, traitBonusWoundsBE, isMindless, mutationsAtSpawn, isSwarm, resolveTraits } from '../engine/traits/dispatch';
+import { traitCharMods, traitMovementMod, traitBonusWoundsBE, isMindless, mutationsAtSpawn, isSwarm, resolveTraits, asTrait } from '../engine/traits/dispatch';
 import { rollMutation, mutationByLabel } from '../data/mutations';
 import { makeRNG } from '../engine/dice';
 import { groupsFor } from '../engine/groups';
@@ -66,33 +66,33 @@ const NATURAL_WEAPON = new Map<string, { ranged?: boolean }>([
  * Le `name` = le TYPE quand il est manufacturé (→ le rig tient cette arme) ; sinon
  * une étiquette naturelle (→ weaponFamily renvoie '' = aucune arme dessinée).
  */
-export function weaponFromTrait(t: string): Weapon | null {
-  const p = parseStatEntry(t); // parseur UNIQUE : type=(arg), Dégâts=(bonus), portée=(range num.), compte en tête écarté
-  const dmg = p.bonus != null ? (p.bonus < 0 ? `${p.bonus}` : `+${p.bonus}`) : null;
-  if (/^À distance$/i.test(p.name)) {
+export function weaponFromTrait(x: string | TraitInstance): Weapon | null {
+  const t = asTrait(x); // structuré (passthrough, zéro parsing) ou chaîne legacy (parsée une fois)
+  const dmg = t.value != null ? (t.value < 0 ? `${t.value}` : `+${t.value}`) : null;
+  if (t.key === 'À distance') {
     if (dmg == null) return null; // « À distance » sans Indice de Dégâts : pas une arme jouable (RAW)
-    const type = p.arg;
+    const type = t.arg;
     const w: Weapon = { name: type && !NATURAL_WEAPON.has(normTrait(type)) ? type : 'Attaque à distance', type: 'ranged', damage: dmg, qualities: [] };
-    if (p.range != null) w.range = p.range;
+    if (t.range != null) w.range = t.range;
     return w;
   }
-  if (/^Arme$/i.test(p.name)) {
-    const type = p.arg;
+  if (t.key === 'Arme') {
+    const type = t.arg;
     const damage = dmg ?? '+BF';
     if (type && NATURAL_WEAPON.has(normTrait(type))) return { name: type, type: 'melee', damage, qualities: [] };
     return { name: type ?? 'Arme', type: 'melee', damage, qualities: [] };
   }
-  // Attaque naturelle (« Morsure +9 », « 8 Tentacules +9 ») : le 1er mot du libellé est une arme
-  // naturelle CONNUE (source UNIQUE NATURAL_WEAPON, plus de regex). L'arme reste UNE (l'Action
-  // d'attaque) ; le compte joue sur les Attaques GRATUITES (aiCreatureFreeAttacks), LDB 85 l.354.
-  const word = p.name.split(/\s+/)[0];
+  // Attaque naturelle (« Morsure +9 », « 8 Tentacules +9 ») : la clé est une arme naturelle CONNUE
+  // (source UNIQUE NATURAL_WEAPON). L'arme reste UNE (l'Action d'attaque) ; le compte joue sur les
+  // Attaques GRATUITES (aiCreatureFreeAttacks), LDB 85 l.354.
+  const word = t.key.split(/\s+/)[0];
   const meta = NATURAL_WEAPON.get(normTrait(word));
   if (meta) return { name: word, type: meta.ranged ? 'ranged' : 'melee', damage: dmg ?? '+BF', qualities: [] };
   return null;
 }
 
 /** Parse les traits d'arme d'une créature en armes jouables (mêlée + distance). */
-function weaponsFromTraits(traits: string[]): Weapon[] {
+function weaponsFromTraits(traits: TraitList): Weapon[] {
   const weapons: Weapon[] = [];
   for (const t of traits) {
     const w = weaponFromTrait(t);
@@ -104,7 +104,7 @@ function weaponsFromTraits(traits: string[]): Weapon[] {
 
 /** PA plats du trait « Armure (Indice) » (LDB 85, profils d'éditeur) — lus par le REGISTRE des
  *  Traits (Indice ou argument), plus de regex propre. 0 si absent. */
-function armourFromTraits(traits: string[]): ArmourPoints {
+function armourFromTraits(traits: TraitList): ArmourPoints {
   const r = resolveTraits(traits).find((x) => x.def.key === 'Armure');
   const n = r ? Number(r.indice ?? r.arg ?? 0) : 0;
   return emptyArmour(Number.isFinite(n) ? n : 0);
@@ -113,7 +113,7 @@ function armourFromTraits(traits: string[]): ArmourPoints {
 /** Catégorie de Taille depuis le trait « Taille (X) » (LDB 85) — lue par le REGISTRE des Traits
  *  (`resolveTraits` → arg), plus de regex propre. Une plage (« Taille (de Petite à Énorme) ») est
  *  résolue à sa borne haute par `parseSizeLabel`. null si absent ou argument non reconnu. */
-export function sizeFromTraits(traits: string[]): SizeCategory | null {
+export function sizeFromTraits(traits: TraitList): SizeCategory | null {
   const arg = resolveTraits(traits).find((r) => r.def.key === 'Taille')?.arg;
   return arg ? parseSizeLabel(arg) : null;
 }
@@ -135,7 +135,7 @@ function applySwarmBuild(chars: Characteristics, wounds: number): { chars: Chara
 
 /** Mutation / Corruption mentale (LDB 85 p.339-340) : tirage sur les Tableaux des Corruptions au
  *  spawn — graine STABLE dérivée de l'id (déterministe, rejouable). */
-function spawnMutations(traits: string[] | undefined, id: string) {
+function spawnMutations(traits: TraitList | undefined, id: string) {
   const specs = mutationsAtSpawn(traits);
   if (!specs.length) return {};
   const rng = makeRNG(hashSeed(`mut:${id}`));

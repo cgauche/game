@@ -415,9 +415,11 @@ export interface Combatant {
   /** Groupes d'appartenance + traits psy possédés (matching des Cibles — utilisés en P3). */
   groups?: string[];
   psychTraits?: import('./psychology').PsychTrait[];
-  /** Traits de créature (libellés canon) → attaques naturelles gratuites & règles dérivées
-   *  (Morsure, Attaque caudale, Souffle… cf. engine/creatureAttacks). Conservés au spawn. */
-  traits?: string[];
+  /** Traits de créature (STRUCTURÉS — `TraitInstance` : key/value/arg/count/range) → attaques
+   *  naturelles gratuites & règles dérivées (Morsure, Attaque caudale, Souffle… cf.
+   *  engine/creatureAttacks). Lus sans parsing via `resolveTraits`/`asTrait`. Conservés au spawn.
+   *  Union transitoire : les chaînes legacy/test restent acceptées (normalisées par `asTrait`). */
+  traits?: import('./statEntry').TraitList;
   /** Nuée (Trait Essaim, LDB 85 l.199-200) : ignore la Taille et la Psychologie, +40 au tir CONTRE
    *  elle, Frappe Mortelle sur toute touche, 1 PB/Round aux Engagés ; ×5 PB & +10 CC posés au spawn. */
   swarm?: boolean;

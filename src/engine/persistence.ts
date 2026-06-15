@@ -32,7 +32,7 @@ export function carryOverState(c: Combatant): {
   corruption?: number;
   mutations?: import('./corruption').Mutation[];
   damned?: boolean;
-  traits?: string[];
+  traits?: import('./statEntry').TraitList;
   psychTraits?: import('./psychology').PsychTrait[];
 } {
   return {
