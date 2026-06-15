@@ -10,6 +10,7 @@ import { repairCostBrass } from '../engine/repair';
 import { bargainBuyFactor, bargainSellFactor } from '../engine/bargain';
 import { craftPriceFactor } from '../engine/qualities/craftEconomy';
 import { partyBest } from '../engine/skills';
+import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { appraiseEstimate } from '../engine/appraisal';
 import { makeRNG } from '../engine/dice';
 import { rollStock, type Settlement, type CatalogItem } from '../engine/disponibilite';
@@ -328,7 +329,7 @@ export function startBargain(get: Get, set: Set, mode: 'buy' | 'sell'): void {
   if (mode === 'buy' ? m.bargainBuy : m.bargainSell) return; // 1 marchandage par MODE et par visite (achat ≠ vente)
   const arch = MERCHANTS[m.archetype];
   const best = partyBest(get().party, 'Marchandage', 'Soc'); if (!best) return;
-  const negotiator = (best.actor.talents ?? []).some((t) => t.name === 'Négociateur' && t.times > 0);
+  const negotiator = hasBargainBonus(best.actor); // Négociateur → registre de talents (plus de name-match)
   set({ pendingBargain: {
     playerId: best.actor.id, playerName: best.actor.name,
     merchantName: arch?.label ?? 'Marchand', merchantValue: arch?.bargainSkill ?? 40,

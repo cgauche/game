@@ -98,4 +98,8 @@ export interface CombatFeature {
   /** Inverse un Test RATÉ de la Compétence qui matche s'il devient réussi (Sociable → Ragot, Studieux →
    *  Recherche…). `capDR` plafonne le DR obtenu (Pansement de fortune +1). */
   reverseFailed?: { match: string; capDR?: number };
+  // ── Économie / social ──────────────────────────────────────────────────────
+  /** Négociateur (LDB 60 l.12) : un Marchandage GAGNÉ réduit le prix de 20 % (au lieu de 10 %) même
+   *  sans Succès Stupéfiant (DR net ≥ 6). Lu par merchantFlow lors de la conclusion du Marchandage. */
+  bargainBonus?: boolean;
 }

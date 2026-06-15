@@ -195,6 +195,12 @@ export function talentTestDR(c: Combatant, skillLabel: string | undefined): numb
   return featuresOf(c).reduce((s, { def, ctx }) => s + (def.testDR && low.includes(def.testDR.match) ? ctx.level : 0), 0);
 }
 
+/** Négociateur (LDB 60 l.12) : un Marchandage gagné réduit le prix de 20 % même sans Succès
+ *  Stupéfiant. Lu par merchantFlow à la conclusion (remplace le name-match `=== 'Négociateur'`). */
+export function hasBargainBonus(c: Combatant): boolean {
+  return featuresOf(c).some(({ def }) => def.bargainBonus);
+}
+
 /** Inversion d'un Test RATÉ de `skillLabel` (Sociable → Ragot…) : renvoie le plafond de DR
  *  éventuel (`capDR`), `null` si aucun talent ne s'applique. LDB 10. */
 export function talentReverseFailed(c: Combatant, skillLabel: string | undefined): { capDR?: number } | null {

@@ -26,7 +26,6 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Petit', 'Taille (Petite) appliquée par l’espèce (Halfling…)'],
   ['Massif', 'Taille appliquée par l’espèce (Ogre)'],
   ['Acrobaties équestres', "annule le −20 d'Esquive en selle (mount.mountedDodgePenalty)"],
-  ['Négociateur', 'Marchandage −20 % même sans Succès Stupéfiant (merchantFlow/bargain)'],
   ['Chirurgie', 'mode de soin chirurgical (healing/partyFlow : opérer fracture majeure/amputation)'],
   ['Vision nocturne', "annule la pénalité d'obscurité (combatFlow.seesInDark)"],
   ['Frénésie', 'capacité de Frénésie (psychology.isFrenzyCapable + flux frenzy)'],
