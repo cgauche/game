@@ -5,7 +5,6 @@ import { findSpell } from '../data/index';
 import { spellSpecFor } from '../data/spellspecs';
 import { conjureFormOptions } from '../engine/conjuredWeapons';
 import { testValue } from '../engine/skills';
-import { HIT_LOCATION_LABELS } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { CharFrame } from './CharFrame';
@@ -81,7 +80,7 @@ export function CastModal() {
     ? ''
     : res.cast
       ? pc.missile && res.hit
-        ? `Touché${res.location ? ` — ${HIT_LOCATION_LABELS[res.location]}` : ''}${res.woundsLost ? ` · ${res.woundsLost} Blessure${(res.woundsLost ?? 0) > 1 ? 's' : ''}` : ''}${res.defenderDefeated ? ' · hors de combat !' : ''}${res.isCritical ? ' · CRITIQUE' : ''}`
+        ? res.log // Projectile magique touché : LA ligne de journal du moteur (calcul des Dégâts inclus), pas une ligne condensée dupliquée
         : `Sort lancé !${res.isCritical ? ' (Critique)' : ''}`
       : res.isFumble
         ? 'Maladresse — Incantation Imparfaite / Colère des dieux'

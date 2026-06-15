@@ -79,15 +79,6 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
       ? (rangedDef ? { label: DEFENSE_LABEL[rangedDef.mode], mods: defenseModifiers(target, rangedDef.mode, 0, rangedDef.parryWeapon) } : undefined)
       : previewDefense(target);
   const forcedDie = FLOWS.attack.picker?.(pa, attacker); // dé choisi (source unique : caps.picker)
-  // Issue COURTE (1 ligne, sans répéter les noms — le panneau dit déjà qui) à la place du log complet.
-  const outcome = res
-    ? res.critical
-      ? `Coup Critique${res.critLocation || res.location ? ` — ${HIT_LOCATION_LABELS[(res.critLocation ?? res.location)!]}` : ''}${res.woundsLost ? ` · ${res.woundsLost} Blessure${res.woundsLost > 1 ? 's' : ''}` : ''}${res.defenderDefeated ? ' · hors de combat !' : ''}`
-      : res.hit
-        ? `Touché${res.location ? ` — ${HIT_LOCATION_LABELS[res.location]}` : ''}${res.woundsLost != null ? ` · ${res.woundsLost} Blessure${(res.woundsLost ?? 0) > 1 ? 's' : ''}` : ''}${res.defenderDefeated ? ' · hors de combat !' : ''}`
-        : `Attaque déjouée${res.advantageTo === 'defender' ? " — l'adversaire gagne l'Avantage" : ''}`
-    : '';
-
   return {
     title: 'Attaque',
     subtitle: null,
@@ -199,10 +190,12 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
     rows: res ? [{ combatant: attacker, d: res.attackerDetail }, ...(res.defenderDetail ? [{ combatant: target, d: res.defenderDetail }] : [])] : undefined,
     winnerIndex: res?.defenderDetail ? (res.hit ? 0 : 1) : undefined,
     netSL: res?.defenderDetail ? res.netSL : undefined,
+    // Issue = LA ligne de journal du moteur (`res.log` : « X touche Y (loc) : N − (BE+PA) = Z Blessures »),
+    // pas une ligne condensée dupliquée. Source unique, le calcul des Dégâts est visible dans la popin.
     outcome: res ? (
       <JournalLine
         className="rm-journal"
-        event={ev(res.critical ? 'crit' : res.hit ? 'damage' : 'attack', outcome, attacker.id, target.id)}
+        event={ev(res.critical ? 'crit' : res.hit ? 'damage' : 'attack', res.log, attacker.id, target.id)}
         combatants={battle.combatants}
       />
     ) : undefined,

@@ -1,7 +1,6 @@
 import { useGame } from '../state/store';
 import { FLOWS } from '../state/rollFlows';
 import { defenseValue, defenseModifiers, DEFENSE_LABEL, FREE_ATTACK_LABEL } from '../engine/combat';
-import { HIT_LOCATION_LABELS } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
@@ -52,16 +51,6 @@ export function DefenseModal() {
   const forcedDie = FLOWS.defense.picker?.(pd, defender); // dé choisi (source unique : caps.picker)
   // `pd.modes` (tir) limite les réactions proposées ; absent = mêlée (Parade + Esquive). Filtre seul.
   const allowMode = (m: 'parade' | 'esquive') => !pd.modes || pd.modes.includes(m);
-  // Issue courte (1 ligne) — les noms vivent déjà dans les lignes du panneau.
-  const outcome = res
-    ? res.critical
-      ? `Coup Critique subi${res.location ? ` — ${HIT_LOCATION_LABELS[res.location]}` : ''}${res.woundsLost ? ` · ${res.woundsLost} Blessure${res.woundsLost > 1 ? 's' : ''}` : ''}`
-      : res.hit
-        ? `Touché${res.location ? ` — ${HIT_LOCATION_LABELS[res.location]}` : ''}${res.woundsLost != null ? ` · ${res.woundsLost} Blessure${(res.woundsLost ?? 0) > 1 ? 's' : ''}` : ''}`
-        : pd.mode === 'parade'
-          ? 'Coup paré !'
-          : 'Coup esquivé !'
-    : '';
 
   return (
     <RollFlowShell
@@ -130,7 +119,7 @@ export function DefenseModal() {
       outcome={res && (
         <JournalLine
           className="rm-journal"
-          event={ev(res.critical ? 'crit' : res.hit ? 'damage' : pd.mode === 'parade' ? 'parry' : 'dodge', outcome, attacker.id, defender.id)}
+          event={ev(res.critical ? 'crit' : res.hit ? 'damage' : pd.mode === 'parade' ? 'parry' : 'dodge', res.log, attacker.id, defender.id)}
           combatants={battle.combatants}
         />
       )}
