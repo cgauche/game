@@ -3,8 +3,9 @@
  * Chaque sprite est dessiné dans une boîte locale 120×150, pieds en (60,150).
  * placeSprite() le positionne sur une tuile. DEFS regroupe tous les dégradés.
  */
-import { TW, TH, tileCenter, depth, diamondPath, Dims } from './iso';
+import { TW, TH, tileCenter, depth, diamondPath, isSquareView, Dims } from './iso';
 import { propSvg } from './catalog/decor';
+import type { Facing } from '../state/scene';
 
 const e = (cx: number, cy: number, r = 2) =>
   `<ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${r + 1}" fill="url(#g_eye)"/><circle cx="${cx}" cy="${cy}" r="${r * 0.55 + 0.4}" fill="#140a06"/>`;
@@ -40,8 +41,8 @@ export function terrainOverlay(id: string, x: number, y: number, dims: Dims): { 
 
 export function wallBlock(x: number, y: number, dims: Dims): string {
   const { cx, cy } = tileCenter(x, y, dims);
-  if (dims.view === 'top') {
-    // Vue du dessus : un mur vu de dessus = un bloc plein sur sa case (pas d'extrusion iso, qui
+  if (isSquareView(dims.view)) {
+    // Grille carrée : un mur vu de dessus = un bloc plein sur sa case (pas d'extrusion iso, qui
     // dessinait des faces orientées en losange → murs « mal orientés » sur la grille carrée).
     return `<path d="${diamondPath(x, y, dims)}" fill="#9b8e72" stroke="rgba(0,0,0,0.4)" stroke-width="1"/>`;
   }
@@ -88,6 +89,8 @@ export interface EntityViz {
   id: string;
   ref?: string;
   appearance?: { seed?: number };
+  /** Orientation d'auteur — utile aux props qui ont un AVANT/ARRIÈRE (sièges face à la scène). */
+  facing?: Facing;
 }
 
 /**
@@ -99,7 +102,7 @@ export interface EntityViz {
 export function entitySprite(ent: EntityViz): string {
   switch (ent.kind) {
     case 'prop':
-      return propSprite(ent.ref);
+      return propSprite(ent.ref, ent.facing);
     case 'personnage':
     case 'pnj':
       return pnjSprite();
@@ -107,8 +110,8 @@ export function entitySprite(ent: EntityViz): string {
       return '';
   }
 }
-export function propSprite(ref?: string): string {
-  return propSvg(ref ?? 'tonneau');
+export function propSprite(ref?: string, facing?: Facing): string {
+  return propSvg(ref ?? 'tonneau', facing);
 }
 
 // --- Définitions partagées (dégradés) -------------------------------------

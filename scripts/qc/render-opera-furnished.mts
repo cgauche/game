@@ -27,7 +27,7 @@ function placeProp(e: SceneEntity, d: Dims): { d: number; svg: string } {
   const px = e.pos.x + fg.offX, py = e.pos.y + fg.offY;
   const s = 0.55 * fg.scale;
   const { cx, cy } = tileCenter(px, py, d, z);
-  const inner = propSvg(e.ref ?? 'tonneau');
+  const inner = propSvg(e.ref ?? 'tonneau', e.facing); // honore l'orientation (sièges face scène = de dos)
   const svg = `<g transform="translate(${cx},${cy})"><g transform="translate(${-60 * s},${-150 * s}) scale(${s})">${inner}</g></g>`;
   const pd = depth(e.pos.x + (e.foot ? e.foot.w - 1 : 0), e.pos.y + (e.foot ? e.foot.h - 1 : 0), d, z);
   return { d: pd + 0.5, svg };
