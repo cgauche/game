@@ -879,13 +879,14 @@ export function IsoStage() {
     const loc = pt.matrixTransform(svg.getScreenCTM()!.inverse());
     const gx = (loc.x - VW / 2) / zoom + VW / 2 - cam.x;
     const gy = (loc.y - VH / 2) / zoom + VH / 2 - cam.y;
-    // Picking multi-niveaux : on teste les étages du HAUT vers le bas et on retient la 1re tuile
-    // RÉELLE (terrain présent, pas « vide ») sous le curseur — un plancher haut intercepte le clic
-    // avant le parterre (cohérent avec son rendu en surplomb). z=0 (sol plein) est le filet final.
-    for (const z of scene.levels.map((l) => l.z).sort((a, b) => b - a)) {
+    // Picking « un étage à la fois » : on vise l'étage ACTIF (celui qu'on voit/contrôle) en PREMIER, puis
+    // les étages INFÉRIEURS seulement à travers un VIDE (on regarde dans le puits). On ne vise JAMAIS un
+    // étage au-dessus (estompé) → le clic porte sur le plan affiché, plus sur le plancher en surplomb.
+    for (const z of scene.levels.map((l) => l.z).filter((z) => z <= activeZ).sort((a, b) => b - a)) {
       const { x, y } = screenToTileAtZ(gx, gy, dims, z);
       if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) continue;
-      if (z > 0) { const ter = tileAt(scene, x, y, z); if (!ter || ter === 'vide') continue; }
+      const ter = tileAt(scene, x, y, z);
+      if (!ter || ter === 'vide') continue; // pas de case réelle ici à cet étage → tenter celui du dessous
       return z ? { x, y, z } : { x, y };
     }
     return null;
@@ -952,6 +953,14 @@ export function IsoStage() {
       return;
     }
     st.setPendingInteract(null); // clic ailleurs : annule un déplacement-puis-fouille en attente
+    // ESCALIER : cliquer une marche CHANGE d'étage (la destination devient l'autre bout) — c'est le geste
+    // explicite pour monter/descendre, maintenant que le clic vise l'étage affiché et non plus le surplomb.
+    const stair = (sc.stairs ?? []).find((s) => (s.from.x === x && s.from.y === y && s.from.z === tz) || (s.to.x === x && s.to.y === y && s.to.z === tz));
+    if (stair) {
+      const dest = stair.from.x === x && stair.from.y === y && stair.from.z === tz ? stair.to : stair.from;
+      moveAlong(sc, st.partyPos, dest);
+      return;
+    }
     moveAlong(sc, st.partyPos, t);
   };
 
