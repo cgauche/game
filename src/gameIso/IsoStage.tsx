@@ -713,7 +713,8 @@ export function IsoStage() {
         ),
       });
     }
-    objs.push({ d: pd, el: token(`e-${ent.id}`, px, py, entitySprite(ent), 0.55 * fg.scale, undefined, false, ent.anim, false, false, ez) });
+    const propTok = token(`e-${ent.id}`, px, py, entitySprite(ent), 0.55 * fg.scale, undefined, false, ent.anim, false, false, ez);
+    objs.push({ d: pd, el: propOp < 1 ? <g key={`prop-${ent.id}`} opacity={propOp}>{propTok}</g> : propTok });
   }
 
   // Leader VISIBLE du groupe (#27b : si le principal est mort/à terre, le suivant debout) —
