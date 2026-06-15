@@ -144,6 +144,7 @@ export function activeCombatant(battle: BattleState): Combatant | undefined {
 // --- Effets de scène/campagne extraits → combatEffects.ts (baril) ---
 export * from './combatEffects';
 import { pushReveal, applyEffects, gearFromEffects } from './combatEffects';
+import { startCascade, buildConsequenceSteps } from './cascade';
 
 /** Le défenseur choisit sa meilleure réaction : Parade (Corps à corps) ou Esquive
  *  (Agilité + avances, pénalité d'Encombrement incluse) — la plus haute valeur. */
@@ -1448,7 +1449,7 @@ export function checkFocusInterruption(get: Get, set: SetFn, target: Combatant):
   if (!t.success) {
     lines.push(`${target.name} perd les ${target.focus.dr} DR focalisés sur ${target.focus.spell}.`);
     target.focus = undefined;
-    lines.push(...applyMiscast(get, set, target, 'mineure'));
+    lines.push(...applyMiscast(get, set, target, 'mineure', { suppressReveal: true })); // la révélation « Calme » ci-dessous porte déjà ces lignes
   }
   if (target.kind === 'hero')
     pushReveal(set, { kind: 'calme', title: 'Focalisation interrompue', dice: t.roll, lines: [...lines], subjectId: target.id, severity: 'minor' });
@@ -2166,7 +2167,7 @@ export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): b
  * LANCEUR les effets mécaniques modélisés (États, Blessures ignorant BE+PA,
  * réduction à 0 + Inconscient). Retourne les lignes de journal.
  */
-export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: MiscastSeverity): string[] {
+export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: MiscastSeverity, opts?: { suppressReveal?: boolean }): string[] {
   // Colère des dieux : +10 au jet par Point de Péché du lanceur (LDB 40 l.53).
   const sinPoints = severity === 'colere' ? caster.sinPoints ?? 0 : 0;
   const m = rollMiscast(severity, battleRng(), sinPoints);
@@ -2187,9 +2188,18 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
       onCorruption: caster.kind === 'hero' ? (n) => gainCorruption(get, set, caster, n) : undefined,
     }),
   );
-  // « Un jet = une modale » : le héros voit le dé de la table (Colère/Imparfaite) en révélation témoin.
-  if (caster.kind === 'hero')
-    pushReveal(set, { kind: 'miscast', title: severity === 'colere' ? 'Colère des dieux' : 'Incantation Imparfaite', dice: m.rolls[0], lines, subjectId: caster.id, severity: 'grave' });
+  // « Un jet = une modale » : le héros voit la conséquence (Colère/Imparfaite) INLINE dans la séquence
+  // partagée (étape d'affichage) — plus de RevealModal séparée. `suppressReveal` : la Focalisation
+  // interrompue (qui pousse déjà sa propre révélation « Calme » portant ces lignes) n'ouvre rien.
+  if (caster.kind === 'hero' && !opts?.suppressReveal) {
+    const colere = severity === 'colere';
+    startCascade(get, set, {
+      title: colere ? 'Colère des dieux' : 'Incantation Imparfaite',
+      icon: colere ? '⚡' : '💥',
+      purpose: 'combat',
+      steps: buildConsequenceSteps([{ kind: 'miscast', label: colere ? 'Colère des dieux' : 'Imparfaite', icon: colere ? '⚡' : '💥', lines, actorId: caster.id }]),
+    });
+  }
   return lines;
 }
 

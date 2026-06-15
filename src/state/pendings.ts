@@ -642,8 +642,9 @@ export interface PendingCascade extends MultiPending<CascadeStep> {
   cursor: number;
   /** Journal de la cascade (entretien, conséquences validées) — affiché sous l'étape courante. */
   log: string[];
-  /** Finalisation : 'night' (bilan de repos), 'travel' (halte → reprise), 'test' (autonome). */
-  purpose: 'night' | 'travel' | 'test';
+  /** Finalisation : 'night' (bilan de repos), 'travel' (halte → reprise), 'test' (autonome),
+   *  'combat' (conséquences d'un jet de combat — fermeture simple, pas de reprise). */
+  purpose: 'night' | 'travel' | 'test' | 'combat';
   /** HALTE de voyage : la finalisation REPREND la route (continueTravelAfterNight). */
   travelHalt?: boolean;
 }
