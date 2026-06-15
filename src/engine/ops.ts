@@ -267,6 +267,21 @@ export type GameOp =
    *  fraction (`num/den`, arrondi `round`, défaut plancher) des Blessures RÉELLEMENT infligées ce
    *  lancement (`ctx.woundsDealt`, jamais plus que les PB perdus par la cible). */
   | { op: 'lifeSteal'; num: number; den: number; round?: 'floor' | 'ceil' }
+  /** Modificateur (pénalité/bonus) à UNE Compétence nommée — GÉNÉRALISE les pénalités de séquelle
+   *  `skillPenalty` (Langue −100 « auto-échec parole ») ET `dodgePenalty` (Esquive −20, mobilité). Lu en
+   *  PASSIF par les helpers de trauma depuis `t.ops` (annulable par prothèse), et — si posé par un sort
+   *  via `applyOps` — par `ActiveEffect.skillMods` (testValue/defenseValue). Une op, n'importe quelle compétence. */
+  | { op: 'skillMod'; skill: string; mod: number }
+  /** Échelle MULTIPLICATIVE du Mouvement — GÉNÉRALISE le drapeau `movementHalved` (= 1/2). `num/den` = la
+   *  fraction appliquée à `c.movement` (amputation de jambe : 1/2). Trauma : lu par `traumaMovementHalved` ;
+   *  sort : `ActiveEffect.moveScale`. (`M` n'est pas une Caractéristique → op de mouvement dédiée.) */
+  | { op: 'moveScale'; num: number; den: number }
+  /** Plafond de mains d'arme maniables — GÉNÉRALISE `noTwoHanded` (hands:1 = pas d'arme à deux mains).
+   *  Une amputation de main/bras pose `maxWeaponHands:1`. Lu par `cannotWieldTwoHanded`/`recomputeLoadout`. */
+  | { op: 'maxWeaponHands'; hands: number }
+  /** Perte d'un organe sensoriel PAIRÉ (œil/oreille). Porté par une séquelle ; `escalateSensoryLoss`
+   *  compte les `senseLoss` par sens (2 du même → Cécité/Surdité). */
+  | { op: 'senseLoss'; sense: 'vue' | 'ouie' }
   /** Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). */
   | { op: 'narrative'; text: string };
 
@@ -877,6 +892,43 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           who.wounds.current = Math.min(who.wounds.max, who.wounds.current + healed);
           lines.push(`${who.name} draine ${healed} Blessure(s).`);
         }
+        break;
+      }
+      case 'skillMod': {
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          skillMods: { [o.skill]: o.mod },
+        });
+        lines.push(`${target.name} : ${o.mod >= 0 ? '+' : ''}${o.mod} aux Tests de ${o.skill} (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'moveScale': {
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          moveScale: { num: o.num, den: o.den },
+        });
+        lines.push(`${target.name} : Mouvement ×${o.num}/${o.den} (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'maxWeaponHands': {
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          maxWeaponHands: o.hands,
+        });
+        lines.push(`${target.name} : armes limitées à ${o.hands} main(s) (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'senseLoss': {
+        lines.push(`${target.name} perd ${o.sense === 'vue' ? 'un œil' : 'une oreille'} (${ctx.label ?? 'séquelle'}).`);
         break;
       }
       case 'narrative':

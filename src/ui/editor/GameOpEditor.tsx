@@ -68,6 +68,10 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   zone: '🌐 Zone persistante (mur / disque)',
   polymorph: '🦌 Métamorphose en créature',
   lifeSteal: '🩸 Vol de vie (drain de Blessures)',
+  skillMod: '🎯 Modif. d’une Compétence',
+  moveScale: '🦵 Échelle de Mouvement (×n/d)',
+  maxWeaponHands: '✋ Plafond de mains d’arme',
+  senseLoss: '👁️ Perte sensorielle (œil/oreille)',
   narrative: '📝 Effet narratif (texte libre)',
 };
 
@@ -82,6 +86,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['🌐 Zones', ['zone']],
   ['🩹 Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound']],
   ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound']],
+  ['🩼 Séquelles & mobilité', ['skillMod', 'moveScale', 'maxWeaponHands', 'senseLoss']],
   ['🎲 Contrôle', ['test']],
   ['📝 Narration', ['narrative']],
 ];
@@ -213,6 +218,10 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'zone': return { op: 'zone', shape: 'disc', radiusMeters: { bonusOf: 'FM' } };
     case 'polymorph': return { op: 'polymorph', ref: 'Ours' };
     case 'lifeSteal': return { op: 'lifeSteal', num: 1, den: 2, round: 'floor' };
+    case 'skillMod': return { op: 'skillMod', skill: 'Esquive', mod: -10 };
+    case 'moveScale': return { op: 'moveScale', num: 1, den: 2 };
+    case 'maxWeaponHands': return { op: 'maxWeaponHands', hands: 1 };
+    case 'senseLoss': return { op: 'senseLoss', sense: 'vue' };
     case 'narrative': return { op: 'narrative', text: '' };
     default: return { op: 'wounds', amount: 5 };
   }

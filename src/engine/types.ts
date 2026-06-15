@@ -278,6 +278,13 @@ export interface ActiveEffect {
   /** Points de Destin ACCORDÉS temporairement par un Sort (op `gainFate` — Troisième Signe d'Amul) :
    *  retirés à l'expiration s'ils n'ont pas été dépensés (cf. `grantedFortune`). */
   grantedFate?: number;
+  /** Modificateurs de Compétence nommée posés par cet effet (op `skillMod` — sort « −10 Esquive 3
+   *  rounds ») : lus par `traumaSkillPenalty`/`traumaDodgePenalty` en plus des ops de séquelle. */
+  skillMods?: Record<string, number>;
+  /** Échelle multiplicative du Mouvement (op `moveScale`) — lue par `traumaMovementHalved`/`effectiveMovement`. */
+  moveScale?: { num: number; den: number };
+  /** Plafond de mains d'arme maniables (op `maxWeaponHands`) — lu par `cannotWieldTwoHanded`. */
+  maxWeaponHands?: number;
 }
 
 /** Traumatisme (LDB 18-Traumatisme) — conséquence persistante d'une Blessure critique ou d'une
