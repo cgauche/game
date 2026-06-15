@@ -6,12 +6,11 @@
  *   · test (jet de compétence → RÉUSSITE / ÉCHEC)
  * chaque branche étant elle-même un Flow (récursif). SOURCE UNIQUE du branchement authoré : remplace
  * l'ancien `Effect.test` ET le round-trip plat `flowEffects`/`flowFromEffects`. La feuille `do`
- * réutilise `EffectFields` (privée de `test`, devenu un nœud Flow). Les conditions (`si`) réutilisent
- * les mêmes adaptateurs flag/horaire que le `when` d'un trigger — composition `all`/`any`/`not` à venir.
+ * réutilise `EffectFields` (privée de `test`, devenu un nœud Flow) ; le `si` réutilise `ConditionEditor`
+ * (algèbre flag/horaire/ET/OU/NON, partagé avec le `when` des triggers/dialogues).
  */
 import type { MouseEvent } from 'react';
-import { Flow, Condition, FlowTest, EMPTY_FLOW } from '../../state/flow';
-import { TemporalCondition } from '../../state/scene';
+import { Flow, FlowTest, EMPTY_FLOW } from '../../state/flow';
 import { DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
 import { isSocialTest } from '../../engine/skills';
 import {
@@ -24,25 +23,13 @@ import {
   effectSummary,
   closeDetails,
 } from './EffectList';
-import { whenFlag, whenWindow, buildWhen } from './editorState';
+import { ConditionEditor, condSummary } from './ConditionEditor';
 
 /** Normalise un Flow en liste de blocs éditables (un `seq` expose ses étapes ; sinon bloc unique). */
 function asSteps(flow: Flow): Flow[] {
   return flow.kind === 'seq' ? flow.steps : [flow];
 }
 const seqOf = (steps: Flow[]): Flow => ({ kind: 'seq', steps });
-
-/** Résumé court d'une Condition (rangée repliée du `si`). */
-function condSummary(c: Condition): string {
-  switch (c.kind) {
-    case 'always': return 'toujours';
-    case 'flag': return c.expr || '(flag ?)';
-    case 'time': return 'créneau horaire';
-    case 'all': return c.of.map(condSummary).join(' ET ');
-    case 'any': return c.of.map(condSummary).join(' OU ');
-    case 'not': return `NON(${condSummary(c.of)})`;
-  }
-}
 
 /** Résumé HUMAIN d'un nœud Flow (rangée repliée). */
 function nodeSummary(node: Flow, ctx: Ctx): string {
@@ -52,33 +39,6 @@ function nodeSummary(node: Flow, ctx: Ctx): string {
     case 'test': return `🎲 Test ${node.test.skill || node.test.characteristic || '?'} → ✓ / ✗`;
     case 'seq': return `▸ ${node.steps.length} bloc(s)`;
   }
-}
-
-/** Éditeur de la Condition d'un nœud `si` (flag + fenêtre horaire, comme le `when` d'un trigger). */
-function ConditionField({ cond, onChange }: { cond: Condition; onChange: (c: Condition) => void }) {
-  const flag = whenFlag(cond);
-  const win = whenWindow(cond);
-  const set = (nextFlag: string, nextWin?: TemporalCondition) => onChange(buildWhen(nextFlag, nextWin) ?? { kind: 'always' });
-  const setWin = (patch: Partial<TemporalCondition>) => {
-    const m = { ...(win ?? {}), ...patch };
-    const clean = Object.fromEntries(Object.entries(m).filter(([, v]) => v != null)) as TemporalCondition;
-    set(flag, Object.keys(clean).length ? clean : undefined);
-  };
-  const timeField = (key: 'afterHour' | 'afterMinute' | 'beforeHour' | 'beforeMinute', max: number, title: string) => (
-    <input
-      type="number" min={0} max={max} title={title} style={{ width: '3.2em' }}
-      value={win?.[key] ?? ''}
-      onChange={(e) => setWin({ [key]: e.target.value === '' ? undefined : Number(e.target.value) })}
-    />
-  );
-  return (
-    <div className="tf-row">
-      <input className="trig-cond" value={flag} onChange={(e) => set(e.target.value, win)} placeholder="condition (flag, !flag, « v1,!v2 » = ET)" />
-      <label className="ed-check" title="Fenêtre horaire (heure du jour, « avant » exclusif).">
-        ⏰ après {timeField('afterHour', 23, 'heure (0-23)')}:{timeField('afterMinute', 59, 'minute (0-59)')} avant {timeField('beforeHour', 23, 'heure (0-23)')}:{timeField('beforeMinute', 59, 'minute (0-59)')}
-      </label>
-    </div>
-  );
 }
 
 /** Éditeur du jet d'un nœud `test` (FlowTest : compétence/caractéristique, difficulté, DR, outil, groupes, easierIf). */
@@ -179,7 +139,7 @@ export function FlowEditor({ flow, onChange, ctx }: { flow: Flow; onChange: (f: 
           )}
           {node.kind === 'if' && (
             <div className="eff-body flow-branch">
-              <ConditionField cond={node.cond} onChange={(c) => updAt(i, { ...node, cond: c })} />
+              <ConditionEditor cond={node.cond} onChange={(c) => updAt(i, { ...node, cond: c })} />
               <div className="branch">
                 <span className="branch-label ok">ALORS :</span>
                 <FlowEditor flow={node.then} ctx={ctx} onChange={(f) => updAt(i, { ...node, then: f })} />

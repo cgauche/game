@@ -28,7 +28,8 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
 import { propRefPatch } from './propDefaults';
-import { KIND_LABEL, Sel, deleteSel, renameEntry, addMember, removeMember, patchMember, effectZoneRect, whenFlag, whenWindow, buildWhen, flowEffects } from './editorState';
+import { KIND_LABEL, Sel, deleteSel, renameEntry, addMember, removeMember, patchMember, effectZoneRect, flowEffects } from './editorState';
+import { WhenEditor } from './ConditionEditor';
 
 /** Section repliable de l'inspecteur (primitive .fold). */
 function Fold({ title, open, children }: { title: ReactNode; open?: boolean; children: ReactNode }) {
@@ -327,10 +328,10 @@ export function Inspector({
                     </label>
                   ))}
                 </div>
-                <label className="ed-field">
-                  Condition (flag ; « ! » pour nié)
-                  <input value={whenFlag(selT.when)} onChange={(e) => updateSelT({ when: buildWhen(e.target.value, whenWindow(selT.when)) })} />
-                </label>
+                <div className="ed-field">
+                  <span>Condition de déclenchement</span>
+                  <WhenEditor when={selT.when} onChange={(when) => updateSelT({ when })} />
+                </div>
                 <label className="ed-check">
                   <input type="checkbox" checked={selT.once ?? false} onChange={(e) => updateSelT({ once: e.target.checked })} /> Une seule fois
                 </label>

@@ -5,14 +5,15 @@
  * d'undo (fini le modèle copie locale + Annuler/Appliquer).
  */
 import { useRef } from 'react';
-import { Scene, Trigger, EncounterDef, Dialogue, Effect, TemporalCondition } from '../../state/scene';
-import { EMPTY_FLOW, type Condition, type Flow } from '../../state/flow';
+import { Scene, Trigger, EncounterDef, Dialogue, Effect } from '../../state/scene';
+import { EMPTY_FLOW } from '../../state/flow';
 import type { Warning } from '../../state/validateScene';
 import { nextEntityId } from '../../state/entityId';
 import { CreatureData } from '../../data';
-import { addEnemyMember, removeMember, patchMember, whenFlag, whenWindow, buildWhen, flowEffects } from './editorState';
+import { addEnemyMember, removeMember, patchMember, flowEffects } from './editorState';
 import { EffectList, effectCtxOf, Ctx } from './EffectList';
 import { FlowEditor } from './FlowEditor';
+import { WhenEditor, condSummary } from './ConditionEditor';
 import { DialogueDetail } from './DialogueDetail';
 import { ValidationPanel } from './ValidationPanel';
 
@@ -149,19 +150,6 @@ function TriggersTab({
 }) {
   const t = scene.triggers.find((x) => x.id === sel) ?? null;
   const upd = (patch: Partial<Trigger>) => setScene({ ...scene, triggers: scene.triggers.map((x) => (t && x.id === t.id ? { ...x, ...patch } : x)) });
-  /** MAJ de la fenêtre horaire (dans `when`), élaguée à `undefined` si plus aucune borne. */
-  const setTemporal = (patch: Partial<TemporalCondition>) => {
-    const m = { ...(whenWindow(t?.when) ?? {}), ...patch };
-    const clean = Object.fromEntries(Object.entries(m).filter(([, v]) => v != null)) as TemporalCondition;
-    upd({ when: buildWhen(whenFlag(t?.when), Object.keys(clean).length ? clean : undefined) });
-  };
-  const timeField = (key: 'afterHour' | 'afterMinute' | 'beforeHour' | 'beforeMinute', max: number, title: string) => (
-    <input
-      type="number" min={0} max={max} title={title} style={{ width: '3.2em' }}
-      value={whenWindow(t?.when)?.[key] ?? ''}
-      onChange={(e) => setTemporal({ [key]: e.target.value === '' ? undefined : Number(e.target.value) })}
-    />
-  );
   return (
     <div className="logic-split">
       <div className="logic-list">
@@ -169,7 +157,7 @@ function TriggersTab({
           <button key={x.id} className={`listrow insp-row${x.id === sel ? ' active' : ''}`} onClick={() => setSel(x.id)}>
             <span className="lr-name">
               <b>{x.id}</b> ({x.rect.x},{x.rect.y}) {x.rect.w}×{x.rect.h}
-              {whenFlag(x.when) ? ` · si ${whenFlag(x.when)}` : ''}
+              {condSummary(x.when) ? ` · si ${condSummary(x.when)}` : ''}
             </span>
             <span className="count">{flowEffects(x.flow).length}</span>
           </button>
@@ -214,15 +202,6 @@ function TriggersTab({
             <label className="ed-check">
               <input type="checkbox" checked={!!t.once} onChange={(e) => upd({ once: e.target.checked })} /> une fois
             </label>
-            <input
-              className="trig-cond"
-              value={whenFlag(t.when)}
-              onChange={(e) => upd({ when: buildWhen(e.target.value, whenWindow(t.when)) })}
-              placeholder="condition (flag, !flag)"
-            />
-            <label className="ed-check" title="Fenêtre horaire : le trigger ne se déclenche qu'en entrant dans la zone pendant ce créneau (before exclusif).">
-              ⏰ après {timeField('afterHour', 23, 'heure (0-23)')}:{timeField('afterMinute', 59, 'minute (0-59)')} avant {timeField('beforeHour', 23, 'heure (0-23)')}:{timeField('beforeMinute', 59, 'minute (0-59)')}
-            </label>
             <button
               className="btn small danger"
               onClick={() => {
@@ -233,6 +212,8 @@ function TriggersTab({
               Supprimer
             </button>
           </div>
+          <div className="mini-title" title="Le trigger ne se déclenche qu'en entrant dans la zone si la condition est vraie (flag, créneau horaire, ET/OU/NON).">Condition de déclenchement</div>
+          <WhenEditor when={t.when} onChange={(when) => upd({ when })} />
           <div className="mini-title">Au déclenchement (effets · conditions · tests)</div>
           <FlowEditor flow={t.flow} onChange={(flow) => upd({ flow })} ctx={ctx} />
         </div>

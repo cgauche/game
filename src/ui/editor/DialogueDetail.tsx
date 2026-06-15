@@ -7,9 +7,9 @@
 import { useState } from 'react';
 import { Dialogue, DialogueNode, DialogueChoice } from '../../state/scene';
 import { EMPTY_FLOW, type Flow } from '../../state/flow';
-import { whenFlag, buildWhen } from './editorState';
 import { Ctx } from './EffectList';
 import { FlowEditor } from './FlowEditor';
+import { WhenEditor, condSummary } from './ConditionEditor';
 
 /** Nombre de blocs de PREMIER niveau d'un Flow (badge du choix). */
 const flowLen = (flow?: Flow): number => (!flow ? 0 : flow.kind === 'seq' ? flow.steps.length : 1);
@@ -109,7 +109,7 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                       {c.text ? `« ${c.text.slice(0, 38)}${c.text.length > 38 ? '…' : ''} »` : '(choix sans texte)'}
                       {c.next ? ` → ${c.next}` : ' → fin'}
                       {c.cost?.gold || c.cost?.silver || c.cost?.brass ? ' · 💰' : ''}
-                      {whenFlag(c.when) ? ' · si ' + whenFlag(c.when) : ''}
+                      {condSummary(c.when) ? ' · si ' + condSummary(c.when) : ''}
                       {flowLen(c.flow) ? ` · ${flowLen(c.flow)} bloc(s)` : ''}
                     </span>
                     <span className="eff-actions" onClick={(e) => e.preventDefault()}>
@@ -132,7 +132,6 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                           ))}
                         </select>
                       </label>
-                      <input className="choice-cond" value={whenFlag(c.when)} onChange={(e) => updChoice(ci, { when: buildWhen(e.target.value) })} placeholder="condition (flag, !flag)" />
                       <span className="choice-cost" title="Coût de l’option (service payant : auberge, péage, pot-de-vin) — CO / pa / sc">
                         💰
                         {(['gold', 'silver', 'brass'] as const).map((k) => (
@@ -151,6 +150,9 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                         ))}
                       </span>
                     </div>
+                    <div className="mini-title" title="Le choix n'apparaît que si la condition est vraie (flag, créneau horaire, ET/OU/NON).">Affiché si</div>
+                    <WhenEditor when={c.when} onChange={(when) => updChoice(ci, { when })} />
+                    <div className="mini-title">À la sélection (effets · conditions · tests)</div>
                     <FlowEditor flow={c.flow ?? EMPTY_FLOW} ctx={ctx} onChange={(flow) => updChoice(ci, { flow: flowLen(flow) ? flow : undefined })} />
                   </div>
                 </details>
