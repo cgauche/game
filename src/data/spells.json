@@ -1811,7 +1811,9 @@
                   "every": 2,
                   "amount": 1
                 },
-                "escapeStrength": { "charOf": "Int" }
+                "escapeStrength": {
+                  "charOf": "Int"
+                }
               }
             ]
           }
@@ -2162,6 +2164,19 @@
               }
             ]
           }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "polymorph",
+                "ref": "Ours"
+              }
+            ]
+          }
         }
       ]
     },
@@ -2443,6 +2458,32 @@
               {
                 "op": "narrative",
                 "text": "Vol du Destin : pour votre Action, un Test d’Emprise sur les animaux (+20) déplace la volée sur une autre cible à portée — arbitrage MJ."
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "zone",
+                "shape": "disc",
+                "radiusMeters": {
+                  "bonusOf": "FM"
+                },
+                "perRound": {
+                  "damage": {
+                    "amount": 7
+                  },
+                  "conditions": [
+                    {
+                      "name": "Aveuglé"
+                    }
+                  ]
+                }
               }
             ]
           }
@@ -2926,6 +2967,39 @@
               }
             ]
           }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "zone",
+                "shape": "disc",
+                "radiusMeters": {
+                  "bonusOf": "FM"
+                },
+                "perRound": {
+                  "damage": {
+                    "amount": {
+                      "dice": {
+                        "n": 1,
+                        "sides": 10,
+                        "plus": 6
+                      }
+                    },
+                    "ignoreAP": true
+                  },
+                  "conditions": [
+                    {
+                      "name": "En flammes"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
         }
       ]
     },
@@ -3038,7 +3112,42 @@
     "desc": "Vous focalisez une traînée ardente d'Aqshy pour créer un mur de flammes. Le Mur de feu est large d'un nombre de mètres égal à votre Bonus de Force Mentale, et épais de 1 mètre. Pour chaque +2 DR, vous pouvez allonger la longueur du Mur de feu d'un nombre de mètres égal à votre Bonus de Force Mentale. Quiconque traverse le mur de feu gagne 1 État En flammes et subit une frappe avec un nombre de Dégâts égal à votre Bonus de Force Mentale, traitée comme un Projectile magique.",
     "effects": {
       "kind": "seq",
-      "steps": []
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "zone",
+                "shape": "wall",
+                "lengthMeters": {
+                  "bonusOf": "FM"
+                },
+                "lengthPerSL": {
+                  "every": 2,
+                  "metersFormula": {
+                    "bonusOf": "FM"
+                  }
+                },
+                "onCross": {
+                  "damage": {
+                    "amount": {
+                      "bonusOf": "FM"
+                    }
+                  },
+                  "conditions": [
+                    {
+                      "name": "En flammes"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
     },
     "source": {
       "book": "LDB",
@@ -3957,7 +4066,23 @@
     "desc": "Alors que vous tendez les mains, elles semblent desséchées, même squelettiques, drainant Shyish du corps de votre cible. C'est considéré comme un Projectile magique avec Dégâts +6 qui ignore le Bonus d'Endurance et les PA. Pour chaque tranche de 2 Points de Blessure infligés, vous pouvez récupérer 1 Point de Blessure.",
     "effects": {
       "kind": "seq",
-      "steps": []
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "lifeSteal",
+                "num": 1,
+                "den": 2,
+                "round": "floor"
+              }
+            ]
+          }
+        }
+      ]
     },
     "source": {
       "book": "LDB",
@@ -4199,6 +4324,21 @@
               }
             ]
           }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "lifeSteal",
+                "num": 1,
+                "den": 2,
+                "round": "ceil"
+              }
+            ]
+          }
         }
       ]
     },
@@ -4264,6 +4404,25 @@
               {
                 "op": "narrative",
                 "text": "Destrier d’Ombre : chevauchez-le (règles de monture) ; la nuit, il gagne aussi Éthéré/Infravision/Insensible à la douleur/Furtif/Foulée/Protection 9+ — arbitrage MJ."
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "summon",
+                "ref": "Cheval",
+                "count": 1,
+                "addTraits": [
+                  "Magique",
+                  "Peur 1"
+                ],
+                "allyOfCaster": true
               }
             ]
           }
@@ -4698,6 +4857,32 @@
               }
             ]
           }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "zone",
+                "shape": "disc",
+                "radiusMeters": {
+                  "bonusOf": "FM"
+                },
+                "onCross": {
+                  "conditions": [
+                    {
+                      "name": "Hémorragique"
+                    },
+                    {
+                      "name": "Empêtré"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
         }
       ]
     },
@@ -4794,6 +4979,29 @@
               {
                 "op": "narrative",
                 "text": "Sang de la Terre : seules les créatures en contact direct avec la terre (et vous, debout pieds nus) bénéficient du soin — arbitrage MJ."
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "zone",
+                "shape": "disc",
+                "radiusMeters": {
+                  "bonusOf": "FM"
+                },
+                "perRound": {
+                  "heal": {
+                    "amount": {
+                      "bonusOf": "FM"
+                    }
+                  }
+                }
               }
             ]
           }
@@ -5189,6 +5397,24 @@
               }
             ]
           }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "summon",
+                "ref": "Rat géant",
+                "count": 1,
+                "addTraits": [
+                  "Nuée"
+                ],
+                "allyOfCaster": true
+              }
+            ]
+          }
         }
       ]
     },
@@ -5291,6 +5517,22 @@
               {
                 "op": "narrative",
                 "text": "Manifestation de Démon mineur : Test opposé de Focalisation (Dhar)/Force Mentale — sur un succès il vous obéit puis disparaît ; sur un échec il se retourne contre vous (passez-le hostile) — arbitrage MJ."
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "summon",
+                "ref": "Sanguinaire de Khorne",
+                "count": 1,
+                "allyOfCaster": true,
+                "despawnIfCasterDown": true
               }
             ]
           }
@@ -5433,6 +5675,28 @@
               }
             ]
           }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "summon",
+                "ref": "Zombie",
+                "count": {
+                  "bonusOf": "FM"
+                },
+                "countPerSL": {
+                  "every": 1,
+                  "amount": 1
+                },
+                "allyOfCaster": true,
+                "despawnIfCasterDown": true
+              }
+            ]
+          }
         }
       ]
     },
@@ -5462,6 +5726,26 @@
               {
                 "op": "narrative",
                 "text": "Relever les morts : les squelettes entrent avec l’État À Terre et tiennent jusqu’au lever du soleil ; +(DR) squelettes supplémentaires par +2 DR — arbitrage MJ."
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "summon",
+                "ref": "Squelette",
+                "count": 1,
+                "countPerSL": {
+                  "every": 1,
+                  "amount": 1
+                },
+                "allyOfCaster": true,
+                "despawnIfCasterDown": true
               }
             ]
           }
@@ -5597,6 +5881,21 @@
               {
                 "op": "narrative",
                 "text": "Déchirer l’Aethyr : un démon mineur de plus traverse le portail à CHAQUE fin de Round (+1/round par +5 DR) ; les vivants voyant la faille testent Résistance (+0) ou gagnent +1 Corruption ; entrer dedans tue, sauf à dépenser un Point de Destin — arbitrage MJ."
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "summon",
+                "ref": "Sanguinaire de Khorne",
+                "count": 1,
+                "allyOfCaster": false
               }
             ]
           }
@@ -8287,7 +8586,9 @@
                   "every": 2,
                   "amount": 1
                 },
-                "escapeStrength": { "charOf": "FM" }
+                "escapeStrength": {
+                  "charOf": "FM"
+                }
               },
               {
                 "op": "narrative",
@@ -8360,6 +8661,21 @@
               {
                 "op": "narrative",
                 "text": "Roi de la Nature : le MJ choisit l’animal invoqué selon l’environnement (voir « Les bêtes du Reikland ») — ici un Loup par défaut."
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "summon",
+                "ref": "Loup",
+                "count": 1,
+                "allyOfCaster": true
               }
             ]
           }
@@ -8493,6 +8809,26 @@
               {
                 "op": "narrative",
                 "text": "Hurlement du loup : à la fin du Miracle, le loup blanc repart aux Terrains de Chasse d’Ulric dans un hurlement effrayant — arbitrage MJ."
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "summon",
+                "ref": "Loup",
+                "count": 1,
+                "addTraits": [
+                  "Frénésie",
+                  "Magique"
+                ],
+                "size": "grande",
+                "allyOfCaster": true
               }
             ]
           }
@@ -8873,11 +9209,22 @@
             "ops": [
               {
                 "op": "wounds",
-                "amount": { "dice": { "n": 1, "sides": 10 } },
-                "perSL": { "every": 1, "amount": 1 },
+                "amount": {
+                  "dice": {
+                    "n": 1,
+                    "sides": 10
+                  }
+                },
+                "perSL": {
+                  "every": 1,
+                  "amount": 1
+                },
                 "ignoreTB": false
               },
-              { "op": "condition", "name": "Empoisonné" }
+              {
+                "op": "condition",
+                "name": "Empoisonné"
+              }
             ]
           }
         }
@@ -8906,8 +9253,18 @@
             "type": "ops",
             "on": "target",
             "ops": [
-              { "op": "wounds", "amount": 1, "perSL": { "every": 2, "amount": 1 } },
-              { "op": "testMod", "amount": -10 }
+              {
+                "op": "wounds",
+                "amount": 1,
+                "perSL": {
+                  "every": 2,
+                  "amount": 1
+                }
+              },
+              {
+                "op": "testMod",
+                "amount": -10
+              }
             ]
           }
         }
@@ -8936,8 +9293,22 @@
             "type": "ops",
             "on": "target",
             "ops": [
-              { "op": "condition", "name": "Empêtré", "value": 1, "valuePerSL": { "every": 2, "amount": 1 }, "escapeStrength": { "charOf": "FM" } },
-              { "op": "narrative", "text": "Toile surprise : pour chaque +2 DR, vous pouvez PLUTÔT étendre la zone de BSoc m (au lieu de l'Empêtré supplémentaire) — arbitrage MJ." }
+              {
+                "op": "condition",
+                "name": "Empêtré",
+                "value": 1,
+                "valuePerSL": {
+                  "every": 2,
+                  "amount": 1
+                },
+                "escapeStrength": {
+                  "charOf": "FM"
+                }
+              },
+              {
+                "op": "narrative",
+                "text": "Toile surprise : pour chaque +2 DR, vous pouvez PLUTÔT étendre la zone de BSoc m (au lieu de l'Empêtré supplémentaire) — arbitrage MJ."
+              }
             ]
           }
         }

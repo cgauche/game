@@ -14,7 +14,6 @@ export const DOMAINE_MORT: SpellSpec[] = [
     // « Projectile magique avec Dégâts +6 qui ignore le Bonus d'Endurance et les PA. Pour chaque
     //   tranche de 2 Points de Blessure infligés, vous pouvez récupérer 1 Point de Blessure. » —
     //   Dégâts via le moteur missile (desc) ; vol de vie = ⌊dégâts/2⌋ rendu au lanceur.
-    lifeSteal: { num: 1, den: 2, round: 'floor' },
     durationRounds: null,
     curated: true,
     source: 'LDB 48 — Domaine de la Mort « Caresse de Laniph »',
@@ -69,7 +68,6 @@ export const DOMAINE_MORT: SpellSpec[] = [
     //   retirez tout État Exténué dont vous souffrez, et vous guérissez la moitié (arrondie au
     //   supérieur) des Blessures subies par la cible. » — Dégâts via le moteur missile ; Exténué à la
     //   touche (cible) ; retrait d'Exténué sur le LANCEUR (casterOps) ; vol de vie = ⌈dégâts/2⌉.
-    lifeSteal: { num: 1, den: 2, round: 'ceil' },
     durationRounds: null,
     curated: true,
     source: 'LDB 48 — Domaine de la Mort « Vol de vie »',

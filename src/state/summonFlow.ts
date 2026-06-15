@@ -14,17 +14,18 @@
 import type { Combatant } from '../engine/types';
 import type { BattleState } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { SpellSpec } from '../engine/spellspec';
 import { Pt } from './path';
 import { Scene, isWalkable } from './scene';
 import { occupied } from './combatGeometry';
 import { spawnEnemy } from './spawn';
 import { grantTrait } from '../engine/grantedTraits';
-import { resolveFormula, slBonus } from '../engine/ops';
+import { resolveFormula, slBonus, type GameOp } from '../engine/ops';
 import { isOutOfAction } from '../engine/conditions';
 import { RNG, defaultRNG } from '../engine/dice';
 
-type Summon = NonNullable<SpellSpec['summon']>;
+/** Descripteur d'invocation = la charge utile de l'op `summon` du Flow (donnée éditable du sort) ;
+ *  le discriminant `op` est superflu pour cette fonction dédiée → l'op complète s'assigne quand même. */
+type Summon = Omit<Extract<GameOp, { op: 'summon' }>, 'op'>;
 
 /** Cases walkable et LIBRES (toute empreinte exclue) autour de `center`, en anneaux croissants (≤8). */
 function freeTilesNear(scene: Scene, battle: BattleState, center: Pt, n: number): Pt[] {

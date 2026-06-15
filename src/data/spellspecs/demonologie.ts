@@ -30,7 +30,6 @@ export const DEMONOLOGIE: SpellSpec[] = [
     // « Un Démon Mineur apparaît. Test opposé de Focalisation (Dhar)/FM : succès → il exécute un
     //   ordre puis disparaît ; échec → il attaque. » — démon invoqué (moteur d'invocation : Sanguinaire
     //   de Khorne, allié le temps du Sort) ; l'issue du Test opposé (obéir vs se retourner) reste journalisée.
-    summon: { ref: 'Sanguinaire de Khorne', count: 1, allyOfCaster: true, despawnIfCasterDown: true },
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 50 — Démonologie « Manifestation de Démon mineur »',

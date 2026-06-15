@@ -11,7 +11,7 @@ import { makePregens } from '../data/pregens';
 import { spells, findSpell } from '../data';
 import { curatedSpec, spellSpecFor } from '../data/spellspecs';
 import { spellSupport } from '../engine/spellspec';
-import { spellOps } from './flow';
+import { spellEffectOps } from './flow';
 import { woundsFromHit } from '../engine/combat';
 import { effectiveArmourAt } from '../engine/characteristics';
 import { isMagicMissile, type CastResult, type MissileResult } from '../engine/magic';
@@ -44,8 +44,8 @@ describe('couverture de curation', () => {
   });
 
   it('spellSupport : classification mécanique / partiel / narratif', () => {
-    // Les EFFETS (ops) vivent sur `spell.effects` (Flow) → on les extrait par `spellOps(.., 'target')`.
-    const sup = (s: typeof spells[number], missile: boolean) => spellSupport(spellOps(s.effects, 'target'), spellSpecFor(s), missile);
+    // Les EFFETS (ops) vivent sur `spell.effects` (Flow) → on les extrait (target + caster) par `spellEffectOps`.
+    const sup = (s: typeof spells[number], missile: boolean) => spellSupport(spellEffectOps(s.effects), spellSpecFor(s), missile);
     const choc = spells.find((s) => s.label === 'Choc' && s.type === 'Magie mineure')!;
     expect(sup(choc, isMagicMissile(choc))).toBe('mecanique');
     const lumiere = findSpell('Lumière')!;

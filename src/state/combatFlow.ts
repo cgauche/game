@@ -81,10 +81,9 @@ import {
   type MissileResult,
   type CounterspellOutcome,
 } from '../engine/magic';
-import { applyOps, resolveFormula, COMBAT_PERSIST } from '../engine/ops';
+import { applyOps, resolveFormula, COMBAT_PERSIST, type GameOp } from '../engine/ops';
 import { spellSpecFor } from '../data/spellspecs';
 import { applySummon, purgeExpiredSummons } from './summonFlow';
-import { polymorphOps } from '../engine/polymorph';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
@@ -148,7 +147,7 @@ export function activeCombatant(battle: BattleState): Combatant | undefined {
 // --- Effets de scène/campagne extraits → combatEffects.ts (baril) ---
 export * from './combatEffects';
 import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, runSpellFlow } from './combatEffects';
-import { spellFlowFor, spellOps } from './flow';
+import { spellFlowFor, spellOps, type Flow } from './flow';
 import { startCascade, registerCascadeApplier } from './cascade';
 
 /** Le défenseur choisit sa meilleure réaction : Parade (Corps à corps) ou Esquive
@@ -2808,16 +2807,14 @@ export function applyCast(
           onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
         }));
       }
-      // Vol de vie (LDB 48 — Mort : Caresse de Laniph, Vol de vie) : le lanceur récupère une
-      // fraction des Blessures RÉELLEMENT infligées (jamais plus que les PB perdus par la cible).
-      if (missileSpec.lifeSteal && mres.woundsLost) {
+      // Vol de vie (LDB 48 — Mort : Caresse de Laniph, Vol de vie) : op `lifeSteal` du Flow (on:'caster')
+      // — le lanceur récupère une fraction des Blessures RÉELLEMENT infligées (`ctx.woundsDealt`, jamais
+      // plus que les PB perdus par la cible). Le missile ne joue pas le sous-Flow `caster`, on applique
+      // donc la/les op(s) lifeSteal directement avec les Blessures infligées en contexte.
+      if (mres.woundsLost) {
         const dealt = Math.min(mres.woundsLost, currentBefore);
-        const { num, den, round } = missileSpec.lifeSteal;
-        const healed = round === 'ceil' ? Math.ceil((dealt * num) / den) : Math.floor((dealt * num) / den);
-        if (healed > 0) {
-          caster.wounds.current = Math.min(caster.wounds.max, caster.wounds.current + healed);
-          logLines.push(`${caster.name} draine ${healed} Blessure(s) de ${t.name}.`);
-        }
+        const lifeStealOps = spellOps(spell.effects, 'caster').filter((o) => o.op === 'lifeSteal');
+        if (lifeStealOps.length) logLines.push(...applyOps(caster, lifeStealOps, { rng: battleRng(), caster, label: spell.label, woundsDealt: dealt }));
       }
       // Interruption de Focalisation : un Projectile magique blesse aussi un focaliseur (LDB 46 l.193).
       logLines.push(...checkFocusInterruption(get, set, t));
@@ -2912,13 +2909,9 @@ export function applyCast(
             onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
           }),
         );
-        // Métamorphose (Forme bestiale, LDB 48) : remplace F/E/Ag/Dex + accorde les Traits de la
-        // créature (engine/polymorph → charMod différentiel + grantTrait, auto-restitués à l'expiration).
-        if (spec.polymorph) logLines.push(...applyOps(t, polymorphOps(t, spec.polymorph.ref), {
-          rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
-          defaultDurationRounds: rounds ?? COMBAT_PERSIST,
-          ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
-        }));
+        // Métamorphose (Forme bestiale, LDB 48) : op `polymorph` du Flow (on:'target') — appliquée
+        // ci-dessus par runSpellFlow → applyOps (expansion charMod différentiel + grantTrait via
+        // engine/polymorph, auto-restitués à l'expiration). Plus de site dédié.
       }
       // POUSSÉE (Jalon 2.6 — « Toutes les créatures à BFM mètres sont repoussées de BFM
       // mètres », LDB 47 p.244) : recul en ligne (direction lanceur→cible) jusqu'à
@@ -3020,11 +3013,14 @@ export function applyCast(
     // Effets sur le LANCEUR (op casterOps — Vol de vie « retirez tout État Exténué dont vous
     // souffrez », buffs de soi d'un sort offensif) : appliqués une seule fois par lancement.
     const castSpec = spellSpecFor(spell);
-    // INVOCATION (champ summon — Nécromancie, Hurlement du loup, Manifestation de démon…) : la/les
-    // créature(s) entrent en combat près du lanceur et se dissipent à l'expiration (state/summonFlow).
-    if (castSpec.summon) {
-      const sumRounds = castSpec.durationRounds != null ? resolveFormula(castSpec.durationRounds, caster, battleRng()) : null;
-      logLines.push(...applySummon(get, set, caster, castSpec.summon, { sl: res.sl, rounds: sumRounds, label: spell.label, rng: battleRng() }));
+    // INVOCATION (op `summon` du Flow éditable — Nécromancie, Hurlement du loup, Manifestation de démon,
+    // Roi de la Nature…) : la/les créature(s) entrent en combat près du lanceur et se dissipent à
+    // l'expiration (state/summonFlow). Effet IMPUR du Flow résolu ici (grille/initiative) ; les feuilles
+    // `on:'caster'` sont par ailleurs jouées par runSpellFlow (où `summon` reste inerte → pas de doublon).
+    const sumRounds = castSpec.durationRounds != null ? resolveFormula(castSpec.durationRounds, caster, battleRng()) : null;
+    for (const sOp of spellOps(spell.effects, 'caster')) {
+      if (sOp.op !== 'summon') continue;
+      logLines.push(...applySummon(get, set, caster, sOp, { sl: res.sl, rounds: sumRounds, label: spell.label, rng: battleRng() }));
     }
     // Effets sur le LANCEUR (feuilles `on:'caster'` de `spell.effects` — Vol de vie « retirez tout État
     // Exténué dont vous souffrez », buffs de soi d'un sort offensif) : appliqués UNE seule fois par lancement.
@@ -3063,20 +3059,21 @@ export function castInfoIsPrayer(type: string): boolean {
   return type === 'Béni' || type === 'Invocation';
 }
 
-/** Pose la ZONE PERSISTANTE d'un sort (L11 — Mur de feu : mur perpendiculaire à l'axe
- *  lanceur→cible centré sur la cible ; Grands feux : disque autour de la cible). Durée = celle
- *  du sort (× Surincantation), formules résolues contre le LANCEUR. Hors combat : narratif. */
+/** Pose la ZONE PERSISTANTE d'un sort (op `zone` du Flow, on:'caster' — L11 Mur de feu : mur
+ *  perpendiculaire à l'axe lanceur→cible centré sur la cible ; Grands feux : disque autour de la
+ *  cible). Durée = celle du sort (`spec.durationRounds` × Surincantation), formules résolues contre
+ *  le LANCEUR. Effet IMPUR du Flow résolu ici (grille) ; hors combat : narratif. */
 function placeSpellZone(
   get: Get,
   caster: Combatant,
   target: Combatant,
-  spell: { label: string },
+  spell: { label: string; effects?: Flow },
   spec: ReturnType<typeof spellSpecFor>,
   sl: number,
   durationMult: number,
   logLines: string[],
 ): void {
-  const pz = spec.persistentZone;
+  const pz = spellOps(spell.effects, 'caster').find((o): o is Extract<GameOp, { op: 'zone' }> => o.op === 'zone');
   if (!pz) return;
   const battle = get().battle;
   if (!battle || !target.pos || !caster.pos) {

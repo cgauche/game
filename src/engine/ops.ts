@@ -26,6 +26,9 @@ import { damageLeatherArmour, itemFromTrapping, customTrapping, newUid, recomput
 import { suppressPsychTraits } from './psychology';
 import { norm } from '../lib/normalize';
 import { ConjureForm, conjureFormOptions, equipConjuredWeapon } from './conjuredWeapons';
+import { polymorphOps } from './polymorph';
+import type { SizeCategory } from './size';
+import type { ZoneEffect } from './zones';
 import {
   ActiveEffect,
   ArmourBypass,
@@ -239,6 +242,31 @@ export type GameOp =
    *  X/Round (malédictions). Les `ops` internes sont résolues MAINTENANT (valeurs littérales) puis
    *  ré-appliquées telles quelles — pas de dépendance au lanceur à chaque tick. */
   | { op: 'perRound'; ops: GameOp[] }
+  /** INVOCATION de créature(s) (Nécromancie « Réanimation/Relever les morts », Ulric « Hurlement du
+   *  loup », Démonologie « Manifestation », Taal « Roi de la Nature »…). Effet IMPUR (grille +
+   *  initiative) RÉSOLU par la couche state (`state/summonFlow.applySummon`) ; `applyOps` (moteur pur)
+   *  le laisse INERTE. `ref` = créature du bestiaire (forme libre) ; `count` (+`countPerSL`) = nombre ;
+   *  `addTraits`/`size` surchargent le statbloc (loup blanc = Loup + Frénésie + Grand) ; `allyOfCaster`
+   *  = camp du lanceur (défaut) sinon hostile (démons « hors de votre contrôle ») ; `despawnIfCasterDown`
+   *  = s'effondre si le lanceur tombe (minions liés au sorcier). */
+  | { op: 'summon'; ref: string; count: Formula; countPerSL?: PerSL; addTraits?: string[];
+      size?: SizeCategory; allyOfCaster?: boolean; despawnIfCasterDown?: boolean }
+  /** ZONE PERSISTANTE posée par le sort (Mur de feu, Grands feux d'U'Zhul, Vol du Destin). Effet IMPUR
+   *  (pose une zone dans la scène/bataille) RÉSOLU par la couche state (`state/combatEffects`) ; INERTE
+   *  dans `applyOps`. `shape` disc/wall ; `radiusMeters` (disque) ou `lengthMeters` (mur, +`lengthPerSL`
+   *  « +N m par +2 DR ») ; `blocksLoS` ; `onCross`/`perRound` = effets de zone (traversée / fin de Round). */
+  | { op: 'zone'; shape: 'disc' | 'wall'; radiusMeters?: Formula; lengthMeters?: Formula;
+      lengthPerSL?: { every: number; metersFormula: Formula }; blocksLoS?: boolean;
+      onCross?: ZoneEffect; perRound?: ZoneEffect }
+  /** MÉTAMORPHOSE en créature (Forme bestiale, LDB 48) : remplace F/E/Ag/Dex (charMod différentiel) et
+   *  accorde les Traits de la créature sauf Bestial (grantTrait), auto-restitués à l'expiration. `ref` =
+   *  créature du bestiaire (forme LIBRE — « les Bêtes du Reikland », pas l'Ours seul). Pure : expansée
+   *  par `polymorphOps` (engine/polymorph) puis ré-appliquée. */
+  | { op: 'polymorph'; ref: string }
+  /** VOL DE VIE (LDB 48 — Caresse de Laniph, Vol de vie) : le lanceur (`ctx.caster`) regagne une
+   *  fraction (`num/den`, arrondi `round`, défaut plancher) des Blessures RÉELLEMENT infligées ce
+   *  lancement (`ctx.woundsDealt`, jamais plus que les PB perdus par la cible). */
+  | { op: 'lifeSteal'; num: number; den: number; round?: 'floor' | 'ceil' }
   /** Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). */
   | { op: 'narrative'; text: string };
 
@@ -261,6 +289,9 @@ export interface OpsCtx {
   now?: number;
   /** DR du jet d'incantation — alimente les échelles « par +N DR » (`PerSL`) des ops. */
   sl?: number;
+  /** Blessures RÉELLEMENT infligées par le lancement courant (Projectile magique) — base du Vol de
+   *  vie (op `lifeSteal`). Posé par la résolution missile avant d'appliquer les ops du lanceur. */
+  woundsDealt?: number;
   /** Gain de Corruption AVEC seuil → mutation (corruptionFlow) ; sans contexte
    *  store, l'op `corruption` incrémente simplement le compteur. */
   onCorruption?: (n: number) => string[];
@@ -824,6 +855,28 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           martyrGuard: ctx.caster.id,
         });
         lines.push(`${ctx.caster.name} recevra les Dégâts subis par ${target.name} (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'summon':
+      case 'zone':
+        // Effets IMPURS (grille + initiative / zones de bataille) — résolus par la couche state au
+        // LANCEMENT du sort (combatFlow : applySummon / placeSpellZone), qui détient get/set et le
+        // lanceur. `applyOps` (moteur pur) les laisse INERTES (aucune grille à ce niveau).
+        break;
+      case 'polymorph':
+        // Métamorphose : développée en charMod différentiel + grantTrait (auto-restitués) — pure.
+        lines.push(...applyOps(target, polymorphOps(target, o.ref), ctx));
+        break;
+      case 'lifeSteal': {
+        const who = ctx.caster ?? target;
+        const dealt = Math.max(0, ctx.woundsDealt ?? 0);
+        const healed = (o.round ?? 'floor') === 'ceil'
+          ? Math.ceil((dealt * o.num) / o.den)
+          : Math.floor((dealt * o.num) / o.den);
+        if (healed > 0) {
+          who.wounds.current = Math.min(who.wounds.max, who.wounds.current + healed);
+          lines.push(`${who.name} draine ${healed} Blessure(s).`);
+        }
         break;
       }
       case 'narrative':

@@ -166,6 +166,13 @@ export function spellOps(flow: Flow | undefined, on: 'target' | 'caster'): impor
   return out;
 }
 
+/** TOUTES les ops EffectOp d'un Flow de sort (target + caster) — pour qualifier la mécanisation d'un
+ *  sort (`spellSupport`) sans privilégier une cible : un effet de lanceur (invocation, zone, vol de
+ *  vie) compte autant qu'un effet de cible. */
+export function spellEffectOps(flow: Flow | undefined): import('../engine/ops').GameOp[] {
+  return [...spellOps(flow, 'target'), ...spellOps(flow, 'caster')];
+}
+
 /** Sous-Flow d'un Flow de sort ne gardant que les nœuds adressant `on` (target/caster) — pour appliquer
  *  SÉPARÉMENT les effets de cible (par cible, missile/soutien) et ceux du lanceur (une fois). Préserve
  *  l'imbrication if/test : un nœud de structure est conservé si l'une de ses branches porte un effet

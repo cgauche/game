@@ -27,7 +27,6 @@ export const MIRACLES_ULRIC: SpellSpec[] = [
     label: 'Hurlement du loup',
     // « Un loup blanc — statistiques d'un Loup avec les Traits Frénésie, Magique et Taille (Grande) —
     //   combat vos ennemis pour la durée, puis repart. » — invocation d'un allié (moteur d'invocation).
-    summon: { ref: 'Loup', count: 1, addTraits: ['Frénésie', 'Magique'], size: 'grande', allyOfCaster: true },
     durationRounds: { bonusOf: 'Soc' },
     curated: true,
     source: "LDB 42 — Miracles d'Ulric « Hurlement du loup »",

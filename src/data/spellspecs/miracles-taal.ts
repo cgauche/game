@@ -46,7 +46,6 @@ export const MIRACLES_TAAL: SpellSpec[] = [
     label: 'Roi de la Nature',
     // « Taal répond avec un animal convenant à la zone, qui agira selon vos souhaits pour la durée. »
     //   — invocation d'un animal allié (le MJ choisit l'espèce selon l'environnement).
-    summon: { ref: 'Loup', count: 1, allyOfCaster: true },
     durationRounds: { bonusOf: 'Soc' },
     curated: true,
     source: 'LDB 42 — Miracles de Taal « Roi de la Nature »',

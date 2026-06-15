@@ -48,11 +48,6 @@ export const DOMAINE_FEU: SpellSpec[] = [
     //   brûler dans la Zone d'Effet pour la durée du Sort. Quiconque se trouve dans la Zone
     //   d'Effet au début d'un Round subit 1d10+6 Dégâts, qui ignorent les PA et gagne +1 État
     //   En flammes. » — zone persistante (L11) en disque (BFM) m autour de la cible.
-    persistentZone: {
-      shape: 'disc',
-      radiusMeters: { bonusOf: 'FM' },
-      perRound: { damage: { amount: { dice: { n: 1, sides: 10, plus: 6 } }, ignoreAP: true }, conditions: [{ name: 'En flammes' }] },
-    },
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: "LDB 47 p.247 « Grands feux d'U'Zhul »",
@@ -83,12 +78,6 @@ export const DOMAINE_FEU: SpellSpec[] = [
     //   gagne 1 État En flammes et subit une frappe avec un nombre de Dégâts égal à votre Bonus
     //   de Force Mentale, traitée comme un Projectile magique. » — zone persistante (L11) en MUR
     //   perpendiculaire à l'axe lanceur→cible, centré sur la cible (simplification de tracé).
-    persistentZone: {
-      shape: 'wall',
-      lengthMeters: { bonusOf: 'FM' },
-      lengthPerSL: { every: 2, metersFormula: { bonusOf: 'FM' } },
-      onCross: { damage: { amount: { bonusOf: 'FM' } }, conditions: [{ name: 'En flammes' }] },
-    },
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 47 p.248 « Mur de feu »',

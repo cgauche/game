@@ -23,7 +23,6 @@ export const DOMAINE_OMBRES: SpellSpec[] = [
     //   Éthéré, Infravision, Magique, Insensible à la douleur, Furtif, Foulée, Peur 1, Protection
     //   (9+)). » — monture alliée invoquée (moteur d'invocation : Cheval + Magique/Peur 1) ; les
     //   Traits conditionnels « la nuit » et la chevauchée restent journalisés.
-    summon: { ref: 'Cheval', count: 1, addTraits: ['Magique', 'Peur 1'], allyOfCaster: true },
     durationRounds: null, // « Jusqu'au prochain lever de soleil »
     curated: true,
     source: "LDB 48 — Domaine des Ombres « Destrier d'Ombre »",

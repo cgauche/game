@@ -1,0 +1,76 @@
+/**
+ * Preuve de complétude des EFFETS « lourds » remontés de la spec engine vers le Flow ÉDITABLE
+ * (`SpellData.effects`) sous forme d'ops génériques : `summon` / `zone` / `polymorph` / `lifeSteal`.
+ * Deux niveaux :
+ *  1. DONNÉE : chaque sort concerné porte bien l'op attendue dans son Flow (→ visible/éditable au
+ *     Compendium ; plus aucun champ `SpellSpec.summon/polymorph/lifeSteal/persistentZone`).
+ *  2. RÉSOLUTION au lancement : polymorph (métamorphose du lanceur) et lifeSteal (drain missile) sont
+ *     appliqués depuis le Flow. L'invocation (`summon`) est couverte de bout en bout par
+ *     `summon-flow.test.ts` ; on vérifie ici qu'elle vit dans le Flow.
+ */
+import { describe, it, expect } from 'vitest';
+import { useGame } from './store';
+import { applyCast } from './combatFlow';
+import { makePregens } from '../data/pregens';
+import { findSpell, findCreature } from '../data';
+import { spellEffectOps } from './flow';
+import { effectiveChar } from '../engine/characteristics';
+import type { CastResult, MissileResult } from '../engine/magic';
+import type { Combatant } from '../engine/types';
+
+const ok = (sl: number): CastResult => ({ cast: true, roll: 21, target: 70, sl, isCritical: false, isFumble: false, log: 'lancé' });
+
+const opOf = (label: string, op: string) => spellEffectOps(findSpell(label)!.effects).find((o) => o.op === op);
+
+describe('effets « lourds » présents dans le Flow éditable (données app-owned)', () => {
+  it('les 8 invocations portent une op `summon` (ref du bestiaire)', () => {
+    const summons: [string, string][] = [
+      ['Réanimation', 'Zombie'], ['Relever les morts', 'Squelette'], ['Manifestation de Démon mineur', 'Sanguinaire de Khorne'],
+      ["Déchirer l'Aethyr", 'Sanguinaire de Khorne'], ["Destrier d'Ombre", 'Cheval'], ['Menace rampante', 'Rat géant'],
+      ['Hurlement du loup', 'Loup'], ['Roi de la Nature', 'Loup'],
+    ];
+    for (const [label, ref] of summons) {
+      const op = opOf(label, 'summon') as { ref?: string } | undefined;
+      expect(op, label).toBeTruthy();
+      expect(op!.ref, label).toBe(ref);
+    }
+  });
+
+  it('les 5 sorts de zone portent une op `zone`, les 2 vols de vie une op `lifeSteal`, Forme bestiale une op `polymorph`', () => {
+    for (const label of ['Vol du Destin', "Grands feux d'U'Zhul", 'Mur de feu', "Forêt d'épines", 'Sang de la Terre']) {
+      expect(opOf(label, 'zone'), label).toBeTruthy();
+    }
+    for (const label of ['Caresse de Laniph', 'Vol de vie']) {
+      expect(opOf(label, 'lifeSteal'), label).toBeTruthy();
+    }
+    const poly = opOf('Forme bestiale', 'polymorph') as { ref?: string } | undefined;
+    expect(poly?.ref).toBe('Ours');
+  });
+});
+
+describe('résolution au lancement depuis le Flow', () => {
+  it('Forme bestiale : la métamorphose (op polymorph) remplace les Caractéristiques du lanceur', () => {
+    const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
+    useGame.setState({ party: [w] as Combatant[] });
+    const ours = findCreature('Ours')!;
+    expect(typeof ours.char.F).toBe('number');
+    applyCast(useGame.getState, useGame.setState, w, w, findSpell('Forme bestiale')!, ok(2), false, false);
+    const after = useGame.getState().party.find((h) => h.id === w.id)!;
+    // F/E/Ag/Dex atteignent la valeur de la créature (charMod différentiel auto-restitué à l'expiration).
+    expect(effectiveChar(after, 'F')).toBe(ours.char.F);
+    expect((after.activeEffects ?? []).some((e) => e.char != null)).toBe(true);
+  });
+
+  it('Vol de vie : l’op lifeSteal (on:caster) draine une fraction des Blessures infligées', () => {
+    const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
+    const cible = makePregens().find((h) => h.name === 'Sigmund Reikhardt')!;
+    w.wounds.current = w.wounds.max - 5;
+    cible.wounds.current = cible.wounds.max; // ≥ 3 PB encaissables
+    useGame.setState({ party: [w, cible] as Combatant[] });
+    const before = w.wounds.current;
+    const res: CastResult & Partial<MissileResult> = { ...ok(2), hit: true, location: 'corps', damage: 6, woundsLost: 3, defenderDefeated: false };
+    applyCast(useGame.getState, useGame.setState, w, cible, findSpell('Vol de vie')!, res, true, false);
+    // Vol de vie = 1/2 arrondi au supérieur → ceil(3/2) = 2 PB drainés.
+    expect(useGame.getState().party.find((h) => h.id === w.id)!.wounds.current).toBe(before + 2);
+  });
+});

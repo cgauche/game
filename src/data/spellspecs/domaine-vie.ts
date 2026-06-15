@@ -51,11 +51,6 @@ export const DOMAINE_VIE: SpellSpec[] = [
     //   d'Agilité Difficile (−20). Un échec → 1 État Hémorragique et un État Empêtré (Force = votre
     //   FM). » — zone de ronces persistante (disque BFM m) : États à la traversée ; le Test d'Agilité
     //   et la Force de l'entrave restent journalisés.
-    persistentZone: {
-      shape: 'disc',
-      radiusMeters: { bonusOf: 'FM' },
-      onCross: { conditions: [{ name: 'Hémorragique' }, { name: 'Empêtré' }] },
-    },
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: "LDB 48 — Domaine de la Vie « Forêt d'épines »",
@@ -80,11 +75,6 @@ export const DOMAINE_VIE: SpellSpec[] = [
     // « Toutes les créatures en contact direct avec la terre à l'intérieur de la ZdE guérissent d'un
     //   nombre de Blessures égal à votre Bonus de Force Mentale au début de chaque round. » — zone de
     //   soin persistante (disque BFM m, soin récurrent) ; le « pieds nus / contact direct » reste journalisé.
-    persistentZone: {
-      shape: 'disc',
-      radiusMeters: { bonusOf: 'FM' },
-      perRound: { heal: { amount: { bonusOf: 'FM' } } },
-    },
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 48 — Domaine de la Vie « Sang de la Terre »',

@@ -16,7 +16,6 @@ export const DOMAINE_BETE: SpellSpec[] = [
     //   celles de la créature, recalculez vos PB, gagnez ses Traits sauf Bestial. » — MÉTAMORPHOSE
     //   mécanique (engine/polymorph) : forme par DÉFAUT l'Ours (forte) ; le choix parmi les Bêtes du
     //   Reikland, le +1 Trait facultatif par +2 DR et la perte de la parole restent journalisés.
-    polymorph: { ref: 'Ours' },
     durationRounds: null, // « (Force Mentale) minutes »
     curated: true,
     source: 'LDB 48 — Domaine de la Bête « Forme bestiale »',
@@ -82,11 +81,6 @@ export const DOMAINE_BETE: SpellSpec[] = [
     //   à la fin du Round, et reste en jeu pour la durée. Toutes les créatures dans la ZdE gagnent +1
     //   État Aveuglé. » — zone persistante (disque BFM m) : Dégâts récurrents + Aveuglé ; le
     //   déplacement de la volée (Test d'Emprise sur les animaux) reste journalisé.
-    persistentZone: {
-      shape: 'disc',
-      radiusMeters: { bonusOf: 'FM' },
-      perRound: { damage: { amount: 7 }, conditions: [{ name: 'Aveuglé' }] },
-    },
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 48 — Domaine de la Bête « Vol du Destin »',

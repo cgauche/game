@@ -40,7 +40,6 @@ export const MAGIE_CHAOS: SpellSpec[] = [
     //   Résistance (+0) ou gagnent +1 Corruption ; entrer = mort (sauf Destin). +1 démon/round par
     //   +5 DR. » — invocation HOSTILE (1er démon) ; l'afflux continu et la Corruption restent
     //   journalisés.
-    summon: { ref: 'Sanguinaire de Khorne', count: 1, allyOfCaster: false },
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: "LDB 51 — Magie du Chaos « Déchirer l'Aethyr »",

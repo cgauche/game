@@ -32,7 +32,6 @@ export const NECROMANCIE: SpellSpec[] = [
     //   jusqu'au lever du soleil. +(BFM + DR) par +2 DR. » — invocation de morts-vivants contrôlés,
     //   liés au sorcier ; le choix zombie/squelette, l'État À Terre initial et la surincantation
     //   restent journalisés.
-    summon: { ref: 'Zombie', count: { bonusOf: 'FM' }, countPerSL: { every: 1, amount: 1 }, allyOfCaster: true, despawnIfCasterDown: true },
     durationRounds: null, // « Jusqu'au lever du soleil » (persiste ; lié au sorcier)
     curated: true,
     source: 'LDB 50 — Nécromancie « Réanimation »',
@@ -42,7 +41,6 @@ export const NECROMANCIE: SpellSpec[] = [
     // « (DR + 1) squelettes sortent du sol dans la ZdE, avec l'État À Terre, sous votre contrôle ; ils
     //   s'écroulent si vous mourez ou tombez Inconscient. Reste actif jusqu'au lever du soleil. +(DR)
     //   par +2 DR. » — invocation de squelettes contrôlés, liés au sorcier.
-    summon: { ref: 'Squelette', count: 1, countPerSL: { every: 1, amount: 1 }, allyOfCaster: true, despawnIfCasterDown: true },
     durationRounds: null, // « Jusqu'au lever du soleil »
     curated: true,
     source: 'LDB 50 — Nécromancie « Relever les morts »',

@@ -10,9 +10,12 @@
  */
 import { Formula, GameOp } from '../../engine/ops';
 import { CHAR_LABELS, CharKey } from '../../engine/types';
+import { SizeCategory, SIZE_LABEL } from '../../engine/size';
 import { etats } from '../../data';
 import { closeDetails } from './EffectList';
 import { JsonField } from './JsonField';
+
+const SIZES = Object.keys(SIZE_LABEL) as SizeCategory[];
 
 const CHARS = Object.keys(CHAR_LABELS) as CharKey[];
 
@@ -61,17 +64,22 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   martyr: '🌫️ Martyr (recevoir les Dégâts)',
   giveTrapping: '🎒 Donner un objet',
   perRound: '🔄 Effet récurrent (chaque Round)',
+  summon: '🐺 Invoquer une créature',
+  zone: '🌐 Zone persistante (mur / disque)',
+  polymorph: '🦌 Métamorphose en créature',
+  lifeSteal: '🩸 Vol de vie (drain de Blessures)',
   narrative: '📝 Effet narratif (texte libre)',
 };
 
 /** Menu « + op » : TOUTES les op du vocabulaire, groupées par intention d'auteur. */
 const OP_GROUPS: [string, GameOp['op'][]][] = [
-  ['💥 Dégâts & soin', ['wounds', 'heal', 'healCaster', 'reduceToZero']],
+  ['💥 Dégâts & soin', ['wounds', 'heal', 'healCaster', 'lifeSteal', 'reduceToZero']],
   ['🌀 États', ['condition', 'removeCondition']],
   ['📊 Buffs & caractéristiques', ['charMod', 'apAll', 'testMod', 'ignoreStatePenalties', 'freeReroll', 'critTwice']],
   ['✨ Ressources', ['gainFortune', 'gainFate', 'corruption']],
   ['🔮 Incantation & contrecoup', ['castPenalty', 'castWard', 'arrowWard', 'domeWard', 'attackWardFM']],
-  ['🐾 Invocation & armes', ['conjureWeapon', 'grantNaturalWeapon', 'grantTrait', 'grantTalent', 'enchantWeapon']],
+  ['🐾 Invocation & armes', ['summon', 'polymorph', 'conjureWeapon', 'grantNaturalWeapon', 'grantTrait', 'grantTalent', 'enchantWeapon']],
+  ['🌐 Zones', ['zone']],
   ['🩹 Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound']],
   ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound']],
   ['🎲 Contrôle', ['test']],
@@ -201,6 +209,10 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'martyr': return { op: 'martyr' };
     case 'giveTrapping': return { op: 'giveTrapping', trapping: 'Ration' };
     case 'perRound': return { op: 'perRound', ops: [] };
+    case 'summon': return { op: 'summon', ref: 'Loup', count: 1, allyOfCaster: true };
+    case 'zone': return { op: 'zone', shape: 'disc', radiusMeters: { bonusOf: 'FM' } };
+    case 'polymorph': return { op: 'polymorph', ref: 'Ours' };
+    case 'lifeSteal': return { op: 'lifeSteal', num: 1, den: 2, round: 'floor' };
     case 'narrative': return { op: 'narrative', text: '' };
     default: return { op: 'wounds', amount: 5 };
   }
@@ -252,6 +264,10 @@ export function opSummary(o: GameOp): string {
     case 'martyr': return `${L} reçoit les Dégâts`;
     case 'giveTrapping': return `${L} ${o.count && o.count > 1 ? `${o.count}× ` : ''}${o.trapping}`;
     case 'perRound': return `${L} ${o.ops.length} op(s) chaque Round`;
+    case 'summon': return `${L} ${formulaSummary(o.count)}× ${o.ref}${o.allyOfCaster === false ? ' (hostile)' : ''}`;
+    case 'zone': return `${L} ${o.shape === 'wall' ? `mur ${formulaSummary(o.lengthMeters ?? 2)} m` : `disque ${formulaSummary(o.radiusMeters ?? 2)} m`}`;
+    case 'polymorph': return `${L} ${o.ref}`;
+    case 'lifeSteal': return `${L} ${o.num}/${o.den} des Dégâts`;
     case 'narrative': return `${L} ${o.text ? `« ${o.text.length > 40 ? `${o.text.slice(0, 39)}…` : o.text}` + ' »' : '(vide)'}`;
     default: return `⚙️ ${(o as GameOp).op}`;
   }
@@ -265,6 +281,7 @@ export function opSummary(o: GameOp): string {
 const DEDICATED: ReadonlySet<GameOp['op']> = new Set([
   'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'apAll', 'testMod',
   'corruption', 'gainFortune', 'gainFate', 'grantTrait', 'grantTalent', 'narrative',
+  'summon', 'polymorph', 'lifeSteal',
 ]);
 
 function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void }) {
@@ -325,6 +342,40 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {op.op === 'grantTalent' && (
           <input placeholder="Talent (ex. Sang-froid)" value={o.talent ?? ''} onChange={(e) => upd({ talent: e.target.value })} />
+        )}
+        {op.op === 'summon' && (
+          <>
+            <input placeholder="Créature (nom du bestiaire)" value={o.ref ?? ''} onChange={(e) => upd({ ref: e.target.value })} />
+            <FormulaField label="Nombre" value={o.count ?? 1} min={1} onChange={(count) => upd({ count })} />
+            <label className="dr">Taille
+              <select value={o.size ?? ''} onChange={(e) => upd({ size: e.target.value || undefined })}>
+                <option value="">— d’origine —</option>
+                {SIZES.map((s) => <option key={s} value={s}>{SIZE_LABEL[s]}</option>)}
+              </select>
+            </label>
+            <input placeholder="Traits ajoutés (ex. Frénésie, Magique)" value={(o.addTraits ?? []).join(', ')}
+              onChange={(e) => { const a = e.target.value.split(',').map((t: string) => t.trim()).filter(Boolean); upd({ addTraits: a.length ? a : undefined }); }} />
+            <label className="dr"><input type="checkbox" checked={o.allyOfCaster !== false} onChange={(e) => upd({ allyOfCaster: e.target.checked ? true : false })} /> alliée du lanceur</label>
+            <label className="dr"><input type="checkbox" checked={!!o.despawnIfCasterDown} onChange={(e) => upd({ despawnIfCasterDown: e.target.checked || undefined })} /> se dissipe si le lanceur tombe</label>
+          </>
+        )}
+        {op.op === 'polymorph' && (
+          <input placeholder="Forme — créature du bestiaire (ex. Ours, Loup, Aigle)" value={o.ref ?? ''} onChange={(e) => upd({ ref: e.target.value })} />
+        )}
+        {op.op === 'lifeSteal' && (
+          <>
+            <label className="dr">Fraction
+              <input type="number" min={1} title="numérateur" value={o.num ?? 1} onChange={(e) => upd({ num: Math.max(1, Number(e.target.value) || 1) })} />
+              /
+              <input type="number" min={1} title="dénominateur" value={o.den ?? 2} onChange={(e) => upd({ den: Math.max(1, Number(e.target.value) || 1) })} />
+            </label>
+            <label className="dr">Arrondi
+              <select value={o.round ?? 'floor'} onChange={(e) => upd({ round: e.target.value })}>
+                <option value="floor">inférieur</option>
+                <option value="ceil">supérieur</option>
+              </select>
+            </label>
+          </>
         )}
         {op.op === 'narrative' && (
           <textarea placeholder="Texte journalisé (arbitrage MJ)" value={o.text ?? ''} onChange={(e) => upd({ text: e.target.value })} />

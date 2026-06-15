@@ -9,8 +9,7 @@
  * la couverture totale atteinte). La résolution (jet d'incantation, NI, Maladresse, Projectile
  * magique) reste dans engine/magic ; la spec ne décrit que les EFFETS d'un lancement réussi.
  */
-import { GameOp, Formula, PerSL } from './ops';
-import type { ZoneEffect } from './zones';
+import { GameOp, Formula } from './ops';
 
 export interface SpellSpec {
   label: string;
@@ -47,45 +46,10 @@ export interface SpellSpec {
    *  de la cible précédente égale à votre BFM, infligeant de nouveau les mêmes Dégâts. Il peut
    *  rebondir un nombre maximum de fois égal à votre BFM. » */
   chainOnKill?: { maxBounces: Formula; hopMeters: Formula };
-  /** ZONE PERSISTANTE posée par le sort (L11 — Mur de feu : « Quiconque traverse le mur » ;
-   *  Grands feux d'U'Zhul : « le feu continue de brûler dans la ZdE pour la durée […] au début
-   *  d'un Round ») : forme + effets, durée = celle du sort. Le mur est tracé PERPENDICULAIRE à
-   *  l'axe lanceur→cible, centré sur la cible (simplification : pas d'UI de tracé libre). */
-  persistentZone?: {
-    shape: 'disc' | 'wall';
-    /** Disque : rayon en mètres (« ZdE (BFM) mètres »). */
-    radiusMeters?: Formula;
-    /** Mur : longueur en mètres (« large d'un nombre de mètres égal à votre BFM »). */
-    lengthMeters?: Formula;
-    /** « Pour chaque +2 DR, vous pouvez allonger la longueur de BFM mètres » (Mur de feu). */
-    lengthPerSL?: { every: number; metersFormula: Formula };
-    blocksLoS?: boolean;
-    onCross?: ZoneEffect;
-    perRound?: ZoneEffect;
-  };
-  /** VOL DE VIE (LDB 48 — Mort : Caresse de Laniph, Vol de vie) : le lanceur récupère une fraction
-   *  des Blessures réellement infligées par le Projectile (`num/den`, arrondi). Consommé dans la
-   *  branche missile (engine/magic ne connaît pas le lanceur côté soin). */
-  lifeSteal?: { num: number; den: number; round: 'floor' | 'ceil' };
-  /** INVOCATION de créature(s) en combat (Nécromancie « Réanimation/Relever les morts », Ulric
-   *  « Hurlement du loup », Démonologie « Manifestation »…) : `ref` = créature du bestiaire ; `count`
-   *  (+`countPerSL`) = nombre invoqué ; `addTraits`/`size` surchargent le statbloc (loup blanc =
-   *  Loup + Frénésie + Grand) ; `allyOfCaster` = combat dans le camp du lanceur (sinon hostile —
-   *  démons « pas sous votre contrôle ») ; `despawnIfCasterDown` = s'effondre si le lanceur tombe
-   *  (minions morts-vivants). Résolu par state/summonFlow (hors combat : journalisé). */
-  summon?: {
-    ref: string;
-    count: Formula;
-    countPerSL?: PerSL;
-    addTraits?: string[];
-    size?: import('./size').SizeCategory;
-    allyOfCaster?: boolean;
-    despawnIfCasterDown?: boolean;
-  };
-  /** MÉTAMORPHOSE en créature (Forme bestiale, LDB 48) : `ref` = créature du bestiaire dont les
-   *  F/E/Ag/Dex et Traits (sauf Bestial) remplacent ceux de la cible le temps du Sort. Résolu par
-   *  `engine/polymorph.polymorphOps` (charMod différentiel + grantTrait, auto-restitués). */
-  polymorph?: { ref: string };
+  // EFFETS « lourds » (invocation, zone persistante, vol de vie, métamorphose) — RETIRÉS de la spec :
+  // ils vivent désormais dans la donnée éditable `SpellData.effects` (ops `summon`/`zone`/`lifeSteal`/
+  // `polymorph` du Flow), résolues par la couche state. La spec ne garde que la métadonnée de
+  // RÉSOLUTION (durée, ZdE, opposition, téléportation…).
   /** OPPOSITION de la cible (jet supplémentaire DANS la modale d'incantation — multijet, jamais
    *  auto-roulé). `resist` : « le Test d'Incantation est opposé par la cible » (Fauche-démon → FM,
    *  Parole de Tzeentch → Intelligence) ; `contact` : un Sort de Portée Contact frappe via un Test
@@ -121,8 +85,10 @@ export function spellSupport(
   // Les EFFETS (ops) vivent désormais sur la donnée app-owned (`SpellData.effects`, Flow éditable) ;
   // l'appelant les extrait du Flow (feuilles EffectOp) et les passe ici. La spec ne porte plus que les
   // MÉTADONNÉES de résolution (zone/téléportation/poussée/souffle…) qui qualifient aussi la mécanique.
+  // Les ops `summon`/`zone`/`lifeSteal`/`polymorph` (effets « lourds » remontés dans le Flow) sont
+  // non-narratives → déjà comptées par le filtre ci-dessous (plus de `spec.persistentZone`).
   const mech = ops.filter((o) => o.op !== 'narrative').length > 0 || missile || spec.zdeRadiusMeters != null
-    || spec.persistentZone != null || spec.breathAttack != null || spec.teleportMeters != null || spec.pushMeters != null;
+    || spec.breathAttack != null || spec.teleportMeters != null || spec.pushMeters != null;
   const narr = ops.some((o) => o.op === 'narrative') || (!spec.curated && ops.length === 0);
   if (mech && narr) return 'partiel';
   if (mech) return 'mecanique';
