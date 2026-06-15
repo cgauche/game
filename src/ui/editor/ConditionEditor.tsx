@@ -13,6 +13,9 @@ const KIND_OPTIONS: [Condition['kind'], string][] = [
   ['always', 'Toujours'],
   ['flag', 'Flag(s)'],
   ['time', 'Créneau horaire'],
+  ['hasItem', 'Possède un objet'],
+  ['money', 'Bourse ≥'],
+  ['partyDead', 'Héros mort'],
   ['all', 'TOUS (ET)'],
   ['any', 'AU MOINS UN (OU)'],
   ['not', 'NON'],
@@ -24,6 +27,8 @@ const winSummary = (w: TemporalCondition) => {
   const b = w.beforeHour != null ? `${pad(w.beforeHour)}:${pad(w.beforeMinute ?? 0)}` : null;
   return a && b ? `${a}–${b}` : a ? `dès ${a}` : b ? `avant ${b}` : 'créneau';
 };
+const moneyStr = (m: { gold?: number; silver?: number; brass?: number }) =>
+  [m.gold ? `${m.gold} CO` : '', m.silver ? `${m.silver} pa` : '', m.brass ? `${m.brass} sc` : ''].filter(Boolean).join(' ') || '0';
 
 /** Résumé HUMAIN compact d'une Condition (rangées repliées, listes). */
 export function condSummary(c: Condition | undefined): string {
@@ -32,6 +37,9 @@ export function condSummary(c: Condition | undefined): string {
     case 'always': return 'toujours';
     case 'flag': return c.expr || '(flag ?)';
     case 'time': return winSummary(c.window);
+    case 'hasItem': return `a « ${c.trapping || '?'} »${c.count && c.count > 1 ? ` ×${c.count}` : ''}`;
+    case 'money': return `bourse ≥ ${moneyStr(c.atLeast)}`;
+    case 'partyDead': return c.who === 'all' ? 'tout le groupe mort' : 'un héros mort';
     case 'all': return c.of.length ? c.of.map(condSummary).join(' ET ') : 'toujours';
     case 'any': return c.of.length ? c.of.map(condSummary).join(' OU ') : 'jamais';
     case 'not': return `NON(${condSummary(c.of)})`;
@@ -44,6 +52,9 @@ function recast(cond: Condition, kind: Condition['kind']): Condition {
     case 'always': return ALWAYS;
     case 'flag': return { kind: 'flag', expr: cond.kind === 'flag' ? cond.expr : '' };
     case 'time': return { kind: 'time', window: cond.kind === 'time' ? cond.window : {} };
+    case 'hasItem': return { kind: 'hasItem', trapping: cond.kind === 'hasItem' ? cond.trapping : '' };
+    case 'money': return { kind: 'money', atLeast: cond.kind === 'money' ? cond.atLeast : { gold: 1 } };
+    case 'partyDead': return { kind: 'partyDead', who: cond.kind === 'partyDead' ? cond.who : 'any' };
     case 'all': return { kind: 'all', of: cond.kind === 'all' || cond.kind === 'any' ? cond.of : cond.kind === 'always' ? [] : [cond] };
     case 'any': return { kind: 'any', of: cond.kind === 'all' || cond.kind === 'any' ? cond.of : cond.kind === 'always' ? [] : [cond] };
     case 'not': return { kind: 'not', of: cond.kind === 'not' ? cond.of : cond };
@@ -81,6 +92,28 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
         <input className="cond-flag" value={cond.expr} placeholder="flag, !flag2 (ET de drapeaux)" onChange={(e) => onChange({ kind: 'flag', expr: e.target.value })} />
       )}
       {cond.kind === 'time' && <TimeWindowFields window={cond.window} onChange={(window) => onChange({ kind: 'time', window })} />}
+      {cond.kind === 'hasItem' && (
+        <>
+          <input className="cond-flag" value={cond.trapping} placeholder="nom de l'objet (ex. Clé en fer)" onChange={(e) => onChange({ kind: 'hasItem', trapping: e.target.value, count: cond.count })} />
+          <label className="dr">×<input type="number" min={1} style={{ width: '3em' }} value={cond.count ?? 1} onChange={(e) => onChange({ kind: 'hasItem', trapping: cond.trapping, count: Math.max(1, Number(e.target.value) || 1) })} /></label>
+        </>
+      )}
+      {cond.kind === 'money' && (
+        <span className="cond-time">≥
+          {(['gold', 'silver', 'brass'] as const).map((k) => (
+            <label className="dr" key={k}>
+              {k === 'gold' ? 'CO' : k === 'silver' ? 'pa' : 'sc'}
+              <input type="number" min={0} style={{ width: '3.4em' }} value={cond.atLeast[k] ?? ''} onChange={(e) => onChange({ kind: 'money', atLeast: { ...cond.atLeast, [k]: e.target.value === '' ? undefined : Number(e.target.value) } })} />
+            </label>
+          ))}
+        </span>
+      )}
+      {cond.kind === 'partyDead' && (
+        <select className="cond-kind" value={cond.who} onChange={(e) => onChange({ kind: 'partyDead', who: e.target.value === 'all' ? 'all' : 'any' })}>
+          <option value="any">un héros au moins</option>
+          <option value="all">tout le groupe</option>
+        </select>
+      )}
       {(cond.kind === 'all' || cond.kind === 'any') && (
         <div className={`cond-children ${cond.kind}`}>
           {cond.of.map((c, i) => (

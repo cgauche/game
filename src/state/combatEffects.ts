@@ -25,7 +25,7 @@ import { feedFromMeal } from '../engine/provisions';
 import { findSpell } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
 import { Effect } from './scene';
-import { type Flow, type FlowTest, flowFromEffects, flowEffects, testFlow, evalCondition } from './flow';
+import { type Flow, type FlowTest, flowFromEffects, flowEffects, testFlow, evalCondition, conditionCtx } from './flow';
 import { inRect } from './combatGeometry';
 import { loseWounds, addCondition } from '../engine/conditions';
 import { touchActors } from './combatOrParty';
@@ -108,7 +108,7 @@ export function checkTriggers(get: Get, set: SetFn) {
   for (const t of scene.triggers) {
     if (flags[`__trigger_${t.id}`]) continue;
     if (!inRect(partyPos, t.rect)) continue;
-    if (t.when && !evalCondition(t.when, { flags, gameTime: get().gameTime })) continue;
+    if (t.when && !evalCondition(t.when, conditionCtx(get()))) continue;
     if (t.once) flags[`__trigger_${t.id}`] = true;
     set({ flags: { ...flags } });
     runFlow(get, set, t.flow, 'Découverte');
@@ -284,7 +284,7 @@ export function runFlow(get: Get, set: SetFn, flow: Flow, label = 'Effet'): void
       case 'seq': stack.unshift(...node.steps); break;
       case 'if': {
         flush();
-        const branch = evalCondition(node.cond, { flags: get().flags, gameTime: get().gameTime }) ? node.then : node.else;
+        const branch = evalCondition(node.cond, conditionCtx(get())) ? node.then : node.else;
         if (branch) stack.unshift(branch);
         break;
       }

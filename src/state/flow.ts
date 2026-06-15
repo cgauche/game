@@ -23,21 +23,33 @@ import type { CharKey, Difficulty } from '../engine/types';
 /** Algèbre CLOSE de Conditions (sérialisation-stable). `flag`/`time` reprennent la sémantique des
  *  anciens `condMet`/`temporalConditionMet` ; `all`/`any` composent ; `not` nie. Aucune condition
  *  qui MUTE l'état — purement interrogative. */
+/** Bourse (sous-ensemble de `Money`) — comparée en sous de bronze (1 CO = 240 sb, 1 pa = 12 sb). */
+export interface Purse { gold?: number; silver?: number; brass?: number }
+const brassValue = (m: Purse): number => (m.gold ?? 0) * 240 + (m.silver ?? 0) * 12 + (m.brass ?? 0);
+
 export type Condition =
   | { kind: 'always' }
   /** ET de drapeaux avec négation : « v1,!v2 » ⇔ flags.v1 && !flags.v2 (sémantique `condMet`). */
   | { kind: 'flag'; expr: string }
   /** Fenêtre horaire (heure-du-jour, `before` exclusif) — sémantique `temporalConditionMet`. */
   | { kind: 'time'; window: TemporalCondition }
+  /** Le GROUPE possède au moins `count` (défaut 1) exemplaire(s) de l'objet `trapping` (par nom). */
+  | { kind: 'hasItem'; trapping: string; count?: number }
+  /** La bourse du groupe vaut AU MOINS le seuil `atLeast` (comparaison en sous de bronze). */
+  | { kind: 'money'; atLeast: Purse }
+  /** État vital du groupe : `any` = au moins un héros mort, `all` = tous morts. */
+  | { kind: 'partyDead'; who: 'any' | 'all' }
   | { kind: 'all'; of: Condition[] }
   | { kind: 'any'; of: Condition[] }
   | { kind: 'not'; of: Condition };
 
-/** Contexte d'évaluation d'une Condition (lecture seule). Étendu plus tard (stats de groupe,
- *  inventaire, lieu) — toujours un ensemble CLOS. */
+/** Contexte d'évaluation d'une Condition (lecture seule) — ensemble CLOS : drapeaux, horloge, et état
+ *  VIVANT du groupe (mort/inventaire/bourse). `party`/`money` absents → les conditions d'état sont false. */
 export interface ConditionCtx {
   flags: Record<string, boolean>;
   gameTime: number;
+  party?: { dead?: boolean; items?: { name: string }[] }[];
+  money?: Purse;
 }
 
 /** Évalue une Condition — SOURCE UNIQUE de l'évaluation des conditions (triggers, choix de dialogue,
@@ -57,10 +69,26 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
       if (w.beforeHour != null && now >= w.beforeHour * 60 + (w.beforeMinute ?? 0)) return false;
       return true;
     }
+    case 'hasItem': {
+      const need = Math.max(1, cond.count ?? 1);
+      const have = (ctx.party ?? []).reduce((n, h) => n + (h.items ?? []).filter((it) => it.name === cond.trapping).length, 0);
+      return have >= need;
+    }
+    case 'money': return ctx.money ? brassValue(ctx.money) >= brassValue(cond.atLeast) : false;
+    case 'partyDead': {
+      const party = ctx.party ?? [];
+      return party.length > 0 && (cond.who === 'all' ? party.every((h) => h.dead) : party.some((h) => h.dead));
+    }
     case 'all': return cond.of.every((c) => evalCondition(c, ctx));
     case 'any': return cond.of.some((c) => evalCondition(c, ctx));
     case 'not': return !evalCondition(cond.of, ctx);
   }
+}
+
+/** Construit le contexte d'évaluation depuis l'état de jeu (drapeaux/horloge/groupe/bourse) — source
+ *  UNIQUE pour que tous les sites (triggers, `if`, choix de dialogue) lisent le MÊME état. */
+export function conditionCtx(s: { flags: Record<string, boolean>; gameTime: number; party?: ConditionCtx['party']; money?: Purse }): ConditionCtx {
+  return { flags: s.flags, gameTime: s.gameTime, party: s.party, money: s.money };
 }
 
 /** Spécification d'un jet de compétence/caractéristique différé (→ modale) — TOUT le métier du Test,

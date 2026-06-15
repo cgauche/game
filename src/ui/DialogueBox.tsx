@@ -1,5 +1,5 @@
 import { useGame } from '../state/store';
-import { evalCondition } from '../state/flow';
+import { evalCondition, conditionCtx } from '../state/flow';
 import { canAfford, formatMoney, toMoney } from '../engine/money';
 import { pickBackend } from '../gameIso/pickBackend';
 
@@ -8,6 +8,7 @@ export function DialogueBox() {
   const flags = useGame((s) => s.flags);
   const gameTime = useGame((s) => s.gameTime);
   const money = useGame((s) => s.money);
+  const party = useGame((s) => s.party);
   const scene = useGame((s) => s.scene);
   const choose = useGame((s) => s.chooseDialogue);
   if (!dialogue) return null;
@@ -21,7 +22,7 @@ export function DialogueBox() {
 
   const visible = node.choices
     .map((c, i) => ({ c, i }))
-    .filter(({ c }) => !c.when || evalCondition(c.when, { flags, gameTime }));
+    .filter(({ c }) => !c.when || evalCondition(c.when, conditionCtx({ flags, gameTime, party, money })));
 
   return (
     <div className="dialogue-box">
