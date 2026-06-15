@@ -3206,7 +3206,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Dur à cuire"
     ],
     "trappings": [],
@@ -3329,8 +3328,7 @@
       }
     ],
     "talents": [
-      "Talent VF",
-      "Assommer",
+      "Frappe assommante",
       "Coude-à-coude",
       "Dur à cuire"
     ],
@@ -3465,8 +3463,7 @@
       }
     ],
     "talents": [
-      "Talent VF",
-      "Assommer",
+      "Frappe assommante",
       "Savoir-vivre (Armée)",
       "Coude-à-coude",
       "Flairer les ennuis",
@@ -3614,9 +3611,8 @@
       }
     ],
     "talents": [
-      "Talent VF",
-      "Assommer",
-      "Conspirateur",
+      "Frappe assommante",
+      "Intrigant",
       "Désarmer",
       "Savoir-vivre (Armée)",
       "Coude-à-coude",
@@ -4190,7 +4186,6 @@
       }
     ],
     "talents": [
-      "Assaut Furieux",
       "Cœur vaillant",
       "Coup puissant",
       "Impitoyable",
@@ -4463,8 +4458,7 @@
     ],
     "talents": [
       "Cavalier émérite",
-      "Tireur de précision",
-      "Tête Froide"
+      "Tireur de précision"
     ],
     "trappings": [],
     "spells": [],
@@ -4607,8 +4601,7 @@
       "Savoir-vivre (Militaires)",
       "Claquer le fouet",
       "Tireur de précision",
-      "Flairer les ennuis",
-      "Tête Froide"
+      "Flairer les ennuis"
     ],
     "trappings": [],
     "spells": [],
@@ -4760,8 +4753,7 @@
       "Tireur de précision",
       "Sans peur (Bandits)",
       "Orateur",
-      "Flairer les ennuis",
-      "Tête Froide"
+      "Flairer les ennuis"
     ],
     "trappings": [],
     "spells": [],
@@ -5160,7 +5152,6 @@
       "Nageur endurant",
       "Voyageur aguerri",
       "Infatigable",
-      "Fusilier",
       "Marinier",
       "Pilote"
     ],
@@ -5316,7 +5307,6 @@
       "Nageur endurant",
       "Voyageur aguerri",
       "Infatigable",
-      "Fusilier",
       "Sans peur (Naufrageurs & Pirates Fluviaux)",
       "Menaçant",
       "Sens de l'orientation",
@@ -5436,9 +5426,7 @@
         "value": 0
       }
     ],
-    "talents": [
-      "Tête Froide"
-    ],
+    "talents": [],
     "trappings": [],
     "spells": [],
     "desc": null,
@@ -5575,8 +5563,7 @@
     ],
     "talents": [
       "Tireur de précision",
-      "Lire/Écrire",
-      "Tête Froide"
+      "Lire/Écrire"
     ],
     "trappings": [],
     "spells": [],
@@ -5727,8 +5714,7 @@
       "Tireur de précision",
       "Lire/Écrire",
       "Menaçant",
-      "Flairer les ennuis",
-      "Tête Froide"
+      "Flairer les ennuis"
     ],
     "trappings": [],
     "spells": [],
@@ -5886,14 +5872,13 @@
     ],
     "talents": [
       "Effrayant",
-      "Filature",
-      "Franc Tireur",
-      "Lire & Écrire",
+      "Discret",
+      "Tireur de précision",
+      "Lire/Écrire",
       "Menaçant",
-      "Sens des Ennuis",
-      "Sens de la Magie",
-      "Tête Froide",
-      "Volonté de Fer"
+      "Flairer les ennuis",
+      "Perception de la magie",
+      "Volonté de fer"
     ],
     "trappings": [],
     "spells": [],
@@ -7658,7 +7643,7 @@
       "Présence imposante",
       "Affable",
       "Négociateur",
-      "Conspirateur",
+      "Intrigant",
       "Grand orateur",
       "Sociable",
       "Insignifiant",
@@ -7789,7 +7774,6 @@
       }
     ],
     "talents": [
-      "Artisanat (Apothicaire)",
       "Lire/Écrire",
       "Pharmacologie"
     ],
@@ -7930,7 +7914,6 @@
       }
     ],
     "talents": [
-      "Artisanat (Apothicaire)",
       "Savoir-vivre (Lettrés)",
       "Perspicace",
       "Lire/Écrire",
@@ -8561,11 +8544,14 @@
       {
         "skillId": "pari",
         "value": 0
+      },
+      {
+        "skillId": "metier",
+        "value": 0
       }
     ],
     "talents": [
       "Doigts de fée",
-      "Artisanat",
       "Infatigable"
     ],
     "trappings": [],
@@ -8703,11 +8689,14 @@
       {
         "skillId": "pari",
         "value": 0
+      },
+      {
+        "skillId": "metier",
+        "value": 0
       }
     ],
     "talents": [
       "Doigts de fée",
-      "Artisanat",
       "Bricoleur",
       "Costaud",
       "Infatigable",
@@ -9472,7 +9461,6 @@
       }
     ],
     "talents": [
-      "Cambriolage",
       "Chat de gouttière",
       "Discret",
       "Insignifiant",
@@ -9721,7 +9709,7 @@
       }
     ],
     "talents": [
-      "Bénédictions (Sigmar)",
+      "Béni (Sigmar)",
       "Ferveur ardente",
       "Savoir-vivre (Cultes)",
       "Haine (Ennemis de Sigmar)",
@@ -9982,7 +9970,7 @@
       }
     ],
     "talents": [
-      "Bénédictions (Ulric)",
+      "Béni (Ulric)",
       "Ferveur ardente",
       "Savoir-vivre (Cultes)",
       "Haine (Ennemis d’Ulric)",
@@ -10249,7 +10237,7 @@
       }
     ],
     "talents": [
-      "Bénédictions (Verena)",
+      "Béni (Verena)",
       "Lecture rapide",
       "Savoir-vivre (Cultes)",
       "Invocation (Verena)",
@@ -11732,13 +11720,19 @@
       {
         "skillId": "resistance",
         "value": 0
+      },
+      {
+        "skillId": "metier",
+        "value": 0
+      },
+      {
+        "skillId": "subornation",
+        "value": 0
       }
     ],
     "talents": [
       "Doigts de fée",
-      "Artisan",
-      "Artiste",
-      "Pots-de-Vin"
+      "Artiste"
     ],
     "trappings": [],
     "spells": [],
@@ -11867,16 +11861,22 @@
       {
         "skillId": "resistance",
         "value": 0
+      },
+      {
+        "skillId": "metier",
+        "value": 0
+      },
+      {
+        "skillId": "subornation",
+        "value": 0
       }
     ],
     "talents": [
       "Doigts de fée",
-      "Artisan",
       "Bricoleur",
       "Négociateur",
       "Lire/Écrire",
-      "Artiste",
-      "Pots-de-Vin"
+      "Artiste"
     ],
     "trappings": [],
     "spells": [],
@@ -12002,7 +12002,6 @@
     ],
     "talents": [
       "Chat de gouttière",
-      "Cambriolage",
       "Fuite !"
     ],
     "trappings": [],
@@ -12132,7 +12131,6 @@
     "talents": [
       "Doigts de fée",
       "Chat de gouttière",
-      "Cambriolage",
       "Savoir-vivre (Criminels)",
       "Fuite !",
       "Mains agiles"
@@ -12249,7 +12247,6 @@
     ],
     "talents": [
       "Chat de gouttière",
-      "Cambriolage",
       "Fuite !"
     ],
     "trappings": [],
@@ -12382,7 +12379,6 @@
     "talents": [
       "Chat de gouttière",
       "Rat d'égout",
-      "Cambriolage",
       "Fuite !",
       "Lire/Écrire",
       "Vision nocturne"
@@ -12516,7 +12512,7 @@
       }
     ],
     "talents": [
-      "Bénédictions (Ranald)",
+      "Béni (Ranald)",
       "Affable",
       "Perspicace"
     ],
@@ -12948,7 +12944,6 @@
       }
     ],
     "talents": [
-      "Artisan (au choix)",
       "Infatigable",
       "Dur à cuire",
       "Très résistant",
@@ -13108,7 +13103,6 @@
     ],
     "talents": [
       "Doigts de fée",
-      "Artisan (au choix)",
       "Cœur vaillant",
       "Infatigable",
       "Orateur",
@@ -13244,11 +13238,14 @@
       {
         "skillId": "pari",
         "value": 0
+      },
+      {
+        "skillId": "metier",
+        "value": 0
       }
     ],
     "talents": [
       "Doigts de fée",
-      "Artisanat",
       "Infatigable"
     ],
     "trappings": [],
@@ -13386,11 +13383,14 @@
       {
         "skillId": "pari",
         "value": 0
+      },
+      {
+        "skillId": "metier",
+        "value": 0
       }
     ],
     "talents": [
       "Doigts de fée",
-      "Artisanat",
       "Bricoleur",
       "Costaud",
       "Infatigable",
@@ -14266,11 +14266,15 @@
       {
         "skillId": "orientation",
         "value": 0
+      },
+      {
+        "skillId": "metier",
+        "value": 0,
+        "spec": "Charpentier naval"
       }
     ],
     "talents": [
       "Bon marcheur (Marais)",
-      "Artisanat (Charpentier Naval)",
       "Sociable",
       "Pêcheur",
       "Savant (Rivières)",
@@ -14580,7 +14584,6 @@
     "talents": [
       "Doigts de fée",
       "Bon marcheur (Forêt)",
-      "Artisanat (Herboriste)",
       "Perspicace",
       "Nomade",
       "Vivacité"
@@ -15370,9 +15373,9 @@
       }
     ],
     "talents": [
-      "Arpenteur (Forêt ou Plaine)",
-      "Bénédiction",
-      "Visions Sacrées"
+      "Bon marcheur",
+      "Béni",
+      "Visions sacrées"
     ],
     "trappings": [],
     "spells": [
@@ -18283,7 +18286,6 @@
       }
     ],
     "talents": [
-      "Assaut Furieux",
       "Nageur endurant",
       "Combattant au contact",
       "Infatigable",
@@ -18919,7 +18921,12 @@
       "B": 28
     },
     "traits": [
-      "Arme +7"
+      "Arme +7",
+      "Nerveux",
+      "Dressé (Dompté)",
+      "Dressé (Monture)",
+      "Rusé",
+      "Taille (Grande)"
     ],
     "optionals": [],
     "skills": [
@@ -18987,12 +18994,7 @@
       "Bon marcheur (Plaine)",
       "Nomade",
       "Vivacité",
-      "Bon marcheur",
-      "Craintif",
-      "Dressage (Dompté)",
-      "Dressage (Monture)",
-      "Fourbe",
-      "Taille (Grande)"
+      "Bon marcheur"
     ],
     "trappings": [],
     "spells": [],
@@ -19024,7 +19026,13 @@
       "B": 34
     },
     "traits": [
-      "Arme +5"
+      "Arme +5",
+      "Coriace",
+      "Nerveux",
+      "Dressé (Dompté)",
+      "Dressé (Monture)",
+      "Rapide",
+      "Taille (Grande)"
     ],
     "optionals": [],
     "skills": [
@@ -19091,13 +19099,7 @@
       "Fuite !",
       "Sprinter",
       "Véloce",
-      "Bon marcheur",
-      "Coriace",
-      "Craintif",
-      "Dressage (Dompté)",
-      "Dressage (Monture)",
-      "Rapide",
-      "Taille (Grande)"
+      "Bon marcheur"
     ],
     "trappings": [],
     "spells": [],
@@ -19129,7 +19131,12 @@
       "B": 42
     },
     "traits": [
-      "Arme +10"
+      "Arme +10",
+      "Brutal",
+      "Coriace",
+      "Nerveux",
+      "Dressé (Dompté)",
+      "Taille (Grande)"
     ],
     "optionals": [],
     "skills": [
@@ -19192,12 +19199,7 @@
       "Infatigable",
       "Persévérant",
       "Bon marcheur",
-      "Brute",
-      "Coriace",
-      "Craintif",
-      "Dressage (Dompté)",
-      "Massif",
-      "Taille (Grande)"
+      "Massif"
     ],
     "trappings": [],
     "spells": [],
@@ -20078,7 +20080,7 @@
       }
     ],
     "talents": [
-      "Assommer",
+      "Frappe assommante",
       "Combattant au contact",
       "Combat déloyal",
       "Menaçant",
@@ -20197,8 +20199,7 @@
       }
     ],
     "talents": [
-      "Assaut Furieux",
-      "Assommer",
+      "Frappe assommante",
       "Frappe précise",
       "Combattant au contact",
       "Combat déloyal",
@@ -21048,7 +21049,6 @@
       "Chat de gouttière",
       "Combat déloyal",
       "Insignifiant",
-      "Jeu de Jambes",
       "Résistance (Maladie)",
       "Dur à cuire",
       "Très résistant",
@@ -21676,9 +21676,7 @@
         "value": 0
       }
     ],
-    "talents": [
-      "Dos"
-    ],
+    "talents": [],
     "trappings": [],
     "spells": [],
     "desc": null,
@@ -21710,7 +21708,8 @@
     },
     "traits": [
       "Armure 1",
-      "Arme +8"
+      "Arme +8",
+      "Arboricole"
     ],
     "optionals": [],
     "skills": [
@@ -21800,7 +21799,6 @@
       "Doigts de fée",
       "Costaud",
       "Infatigable",
-      "Arboricole",
       "Vision nocturne"
     ],
     "trappings": [],
@@ -22715,7 +22713,14 @@
       "Armure 4",
       "Arme +12",
       "Peur 2",
-      "Terreur 2"
+      "Terreur 2",
+      "Arboricole",
+      "Champion",
+      "Élite",
+      "Rage",
+      "Meneur",
+      "Intelligent",
+      "Redoutable 2"
     ],
     "optionals": [],
     "skills": [
@@ -22807,7 +22812,6 @@
       }
     ],
     "talents": [
-      "Assaut Furieux",
       "Combat déloyal",
       "Effrayant",
       "Endurci",
@@ -22817,13 +22821,6 @@
       "Dur à cuire",
       "Mâchoires d'acier",
       "Maîtrise du combat",
-      "Arboricole",
-      "Champion",
-      "Élite",
-      "Fureur",
-      "Leader",
-      "Malin",
-      "Menace 2",
       "Vision nocturne"
     ],
     "trappings": [],
@@ -22858,7 +22855,15 @@
     "traits": [
       "Armure 4",
       "Peur 3",
-      "Terreur 3"
+      "Terreur 3",
+      "Arboricole",
+      "Champion",
+      "Élite",
+      "Rage",
+      "Meneur",
+      "Intelligent",
+      "Redoutable 2",
+      "Taille (Grande)"
     ],
     "optionals": [],
     "skills": [
@@ -22950,7 +22955,6 @@
       }
     ],
     "talents": [
-      "Assaut Furieux",
       "Combat déloyal",
       "Effrayant",
       "Endurci",
@@ -22960,15 +22964,7 @@
       "Dur à cuire",
       "Mâchoires d'acier",
       "Maîtrise du combat",
-      "Arboricole",
-      "Champion",
-      "Élite",
-      "Fureur",
-      "Leader",
-      "Malin",
       "Massif",
-      "Menace 2",
-      "Taille (Grande)",
       "Vision nocturne"
     ],
     "trappings": [],
@@ -23305,7 +23301,10 @@
       "Armure 1",
       "Arme +7",
       "Peur 2",
-      "Terreur 2"
+      "Terreur 2",
+      "Arboricole",
+      "Rage",
+      "Redoutable 2"
     ],
     "optionals": [],
     "skills": [
@@ -23420,9 +23419,6 @@
       "Menaçant",
       "Seconde vue",
       "Perception de la magie",
-      "Arboricole",
-      "Fureur",
-      "Menace 2",
       "Vision nocturne"
     ],
     "trappings": [],
@@ -23991,9 +23987,8 @@
     "talents": [
       "Coup puissant",
       "Guerrier né",
-      "Sens du Combat",
+      "Combat instinctif",
       "Dur à cuire",
-      "Tête Froide",
       "Maîtrise du combat"
     ],
     "trappings": [],
@@ -24133,15 +24128,13 @@
       }
     ],
     "talents": [
-      "Assaut Furieux",
       "Seigneur de guerre",
       "Frappe blessante",
       "Coup puissant",
       "Guerrier né",
       "Impitoyable",
-      "Sens du Combat",
+      "Combat instinctif",
       "Dur à cuire",
-      "Tête Froide",
       "Maîtrise du combat"
     ],
     "trappings": [],
@@ -24419,12 +24412,12 @@
       }
     ],
     "talents": [
-      "Diction Instinctive",
-      "Harmonie de l’AEthyr",
-      "Lire & Écrire",
-      "Magie Mineure",
+      "Diction instinctive",
+      "Harmonisation aethyrique",
+      "Lire/Écrire",
+      "Magie mineure",
       "Magie des Arcanes (Divinité)",
-      "Seconde Vue"
+      "Seconde vue"
     ],
     "trappings": [],
     "spells": [
@@ -27189,9 +27182,7 @@
         "value": 0
       }
     ],
-    "talents": [
-      "Dos Solide"
-    ],
+    "talents": [],
     "trappings": [],
     "spells": [],
     "desc": null,
@@ -28181,7 +28172,7 @@
     ],
     "talents": [
       "Voyageur aguerri",
-      "Conspirateur",
+      "Intrigant",
       "Combat déloyal",
       "Savoir-vivre (Skavens)",
       "Insignifiant",
@@ -29051,12 +29042,16 @@
       {
         "skillId": "survie-en-exterieur",
         "value": 0
+      },
+      {
+        "skillId": "metier",
+        "value": 0,
+        "spec": "Ingénieur"
       }
     ],
     "talents": [
-      "Artisanat (Engingneurie)",
       "Bricoleur",
-      "Magie Skaven (Domaine de la Ruine)"
+      "Magie des Arcanes (Domaine de la Ruine)"
     ],
     "trappings": [],
     "spells": [
@@ -29215,14 +29210,17 @@
       {
         "skillId": "survie-en-exterieur",
         "value": 0
+      },
+      {
+        "skillId": "metier",
+        "value": 0,
+        "spec": "Ingénieur"
       }
     ],
     "talents": [
-      "Artisanat (Engingneurie)",
       "Bricoleur",
       "Tireur de précision",
-      "Fusilier",
-      "Magie Skaven (Domaine de la Ruine)",
+      "Magie des Arcanes (Domaine de la Ruine)",
       "Travailleur qualifié (Engingneurie)"
     ],
     "trappings": [],
@@ -29393,17 +29391,20 @@
       {
         "skillId": "survie-en-exterieur",
         "value": 0
+      },
+      {
+        "skillId": "metier",
+        "value": 0,
+        "spec": "Ingénieur"
       }
     ],
     "talents": [
-      "Artisanat (Engingneurie)",
       "Bricoleur",
       "Doué en calcul",
       "Savoir-vivre (skavens)",
       "Tireur de précision",
-      "Fusilier",
       "Lire/Écrire",
-      "Magie Skaven (Domaine de la Ruine)",
+      "Magie des Arcanes (Domaine de la Ruine)",
       "Travailleur qualifié (Engingneurie)",
       "Savant (Engingneurie)"
     ],
@@ -29446,7 +29447,11 @@
     },
     "traits": [
       "Armure 1",
-      "Arme +6"
+      "Arme +6",
+      "Brutal",
+      "Infecté",
+      "Maladie (Fièvre des Rongeurs)",
+      "Rapide"
     ],
     "optionals": [],
     "skills": [
@@ -29540,10 +29545,6 @@
     ],
     "talents": [
       "Discret",
-      "Brute",
-      "Infecté",
-      "Maladie (Fièvre des Rongeurs)",
-      "Rapide",
       "Vision nocturne"
     ],
     "trappings": [],
@@ -29695,7 +29696,7 @@
     ],
     "talents": [
       "Discret",
-      "Magie Skaven du Domaine des Ombres",
+      "Magie des Arcanes (Domaine des Ombres)",
       "Sprinter"
     ],
     "trappings": [],
@@ -29872,7 +29873,7 @@
       "Combattant au contact",
       "Discret",
       "Grimpeur",
-      "Magie Skaven du Domaine des Ombres",
+      "Magie des Arcanes (Domaine des Ombres)",
       "Sprinter",
       "Tir mortel"
     ],
@@ -29914,7 +29915,14 @@
     },
     "traits": [
       "Armure 2",
-      "Arme +3"
+      "Arme +3",
+      "Brutal",
+      "Champion",
+      "Élite",
+      "Infecté",
+      "Maladie (Fièvre des Rongeurs)",
+      "Intelligent",
+      "Rapide"
     ],
     "optionals": [],
     "skills": [
@@ -30058,17 +30066,10 @@
       "Discret",
       "Grimpeur",
       "Impitoyable",
-      "Magie Skaven du Domaine des Ombres",
+      "Magie des Arcanes (Domaine des Ombres)",
       "Sixième sens",
       "Sprinter",
       "Tir mortel",
-      "Brute",
-      "Champion",
-      "Élite",
-      "Infecté",
-      "Maladie (Fièvre des Rongeurs)",
-      "Malin",
-      "Rapide",
       "Vision nocturne"
     ],
     "trappings": [],
@@ -30325,7 +30326,7 @@
     "talents": [
       "Charge berserk",
       "Frénésie (à Volonté !)",
-      "Magie Skaven du Domaine de la Peste",
+      "Magie des Arcanes (Domaine de la Peste)",
       "Flagellant"
     ],
     "trappings": [],
@@ -30468,10 +30469,9 @@
       }
     ],
     "talents": [
-      "Assaut Furieux",
       "Charge berserk",
       "Frénésie (à Volonté !)",
-      "Magie Skaven du Domaine de la Peste",
+      "Magie des Arcanes (Domaine de la Peste)",
       "Menaçant",
       "Flagellant",
       "Dur à cuire"
@@ -30514,7 +30514,15 @@
     },
     "traits": [
       "Armure 2",
-      "Arme +9"
+      "Arme +9",
+      "Brutal",
+      "Coriace",
+      "Nerveux",
+      "Infecté",
+      "Meneur",
+      "Maladie (Fièvre des Rongeurs)",
+      "Intelligent",
+      "Rapide"
     ],
     "optionals": [],
     "skills": [
@@ -30610,25 +30618,16 @@
       }
     ],
     "talents": [
-      "Assaut Furieux",
       "Charge berserk",
       "Diction instinctive",
       "Frénésie (à Volonté !)",
       "Harmonisation aethyrique",
       "Mage de guerre",
-      "Magie Skaven du Domaine de la Peste",
+      "Magie des Arcanes (Domaine de la Peste)",
       "Menaçant",
       "Flagellant",
       "Seconde vue",
       "Dur à cuire",
-      "Brute",
-      "Coriace",
-      "Craintif",
-      "Infecté",
-      "Leader",
-      "Maladie (Fièvre des Rongeurs)",
-      "Malin",
-      "Rapide",
       "Vision nocturne"
     ],
     "trappings": [],
@@ -31045,11 +31044,15 @@
       {
         "skillId": "survie-en-exterieur",
         "value": 0
+      },
+      {
+        "skillId": "metier",
+        "value": 0,
+        "spec": "Ingénieur"
       }
     ],
     "talents": [
       "Doigts de fée",
-      "Artisan (Engingneur)",
       "Bricoleur",
       "Chirurgie",
       "Claquer le fouet",
@@ -31205,11 +31208,15 @@
       {
         "skillId": "survie-en-exterieur",
         "value": 0
+      },
+      {
+        "skillId": "metier",
+        "value": 0,
+        "spec": "Ingénieur"
       }
     ],
     "talents": [
       "Doigts de fée",
-      "Artisan (Engingneur)",
       "Bricoleur",
       "Chirurgie",
       "Claquer le fouet",
@@ -31652,7 +31659,6 @@
       }
     ],
     "talents": [
-      "Assaut Furieux",
       "Combattant au contact",
       "Combat déloyal",
       "Désarmer",
@@ -32045,11 +32051,10 @@
       }
     ],
     "talents": [
-      "Détection d’Objets Magiques",
+      "Perception de la magie",
       "Diction instinctive",
       "Effrayant",
       "Harmonisation aethyrique",
-      "Identification d’Arcanistes",
       "Lire/Écrire",
       "Mage de guerre",
       "Magie des Arcanes",
@@ -32185,7 +32190,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Insignifiant"
     ],
     "trappings": [],
@@ -32306,7 +32310,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Bon marcheur",
       "Nomade",
       "Vivacité"
@@ -32434,7 +32437,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Tireur de précision",
       "Tir sûr",
       "Tir rapide"
@@ -32562,7 +32564,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Coude-à-coude",
       "Guerrier né",
       "Porte-Bouclier"
@@ -32695,9 +32696,8 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Tireur de précision",
-      "Officier de Siège",
+      "Commandant d'équipe",
       "Artilleur"
     ],
     "trappings": [],
@@ -32729,7 +32729,11 @@
       "Soc": 20,
       "B": 12
     },
-    "traits": [],
+    "traits": [
+      "Animosité (Peaux-Vertes)",
+      "Effrayé (Elfes)",
+      "Infecté"
+    ],
     "optionals": [],
     "skills": [
       {
@@ -32797,13 +32801,9 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Coup puissant",
       "Frénésie",
       "Guerrier né",
-      "Animosité (Peaux- Vertes)",
-      "Frayeur (Elfes)",
-      "Infecté",
       "Vision nocturne"
     ],
     "trappings": [],
@@ -32904,7 +32904,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Charge berserk",
       "Frénésie",
       "Guerrier né"
@@ -33040,13 +33039,12 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Seigneur de guerre",
       "Coude-à-coude",
       "Guerrier né",
       "Inébranlable",
       "Porte-Bouclier",
-      "Sens du Combat"
+      "Combat instinctif"
     ],
     "trappings": [],
     "spells": [],
@@ -33194,7 +33192,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Voyageur aguerri",
       "Seigneur de guerre",
       "Cœur vaillant",
@@ -33203,7 +33200,7 @@
       "Inébranlable",
       "Porte-Bouclier",
       "Menaçant",
-      "Sens du Combat",
+      "Combat instinctif",
       "Exaltant"
     ],
     "trappings": [],
@@ -33344,7 +33341,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Diction instinctive",
       "Magie mineure",
       "Magie des Arcanes"
@@ -33511,7 +33507,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Diction instinctive",
       "Effrayant",
       "Magie mineure",
@@ -33555,7 +33550,14 @@
     },
     "traits": [
       "Arme +7",
-      "Peur 2"
+      "Peur 2",
+      "Animosité (Peaux-Vertes)",
+      "Rusé",
+      "Effrayé (Elfes)",
+      "Infecté",
+      "Meneur",
+      "Intelligent",
+      "Redoutable 2"
     ],
     "optionals": [],
     "skills": [
@@ -33681,7 +33683,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Détection d'artefact",
       "Diction instinctive",
       "Effrayant",
@@ -33691,13 +33692,6 @@
       "Magie des Arcanes",
       "Seconde vue",
       "Perception de la magie",
-      "Animosité (Peaux- Vertes)",
-      "Fourbe",
-      "Frayeur (Elfes)",
-      "Infecté",
-      "Leader",
-      "Malin",
-      "Menace 2",
       "Vision nocturne"
     ],
     "trappings": [],
@@ -33855,7 +33849,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Combat déloyal"
     ],
     "trappings": [],
@@ -33982,7 +33975,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Bon marcheur",
       "Nomade",
       "Vivacité"
@@ -34018,7 +34010,11 @@
     },
     "traits": [
       "Armure 1",
-      "Arme +8"
+      "Arme +8",
+      "Animosité (Peaux-Vertes)",
+      "Belliqueux",
+      "Infecté",
+      "Increvable"
     ],
     "optionals": [],
     "skills": [
@@ -34111,14 +34107,9 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Tireur de précision",
       "Tir sûr",
       "Tir rapide",
-      "Animosité (Peaux- Vertes)",
-      "Belliqueux",
-      "Infecté",
-      "Irréductible",
       "Vision nocturne"
     ],
     "trappings": [],
@@ -34241,7 +34232,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Coude-à-coude",
       "Guerrier né",
       "Porte-Bouclier"
@@ -34277,7 +34267,14 @@
     },
     "traits": [
       "Armure 5",
-      "Arme +9"
+      "Arme +9",
+      "Animosité (Peaux-Vertes)",
+      "Belliqueux",
+      "Brutal",
+      "Coriace",
+      "Infecté",
+      "Increvable",
+      "Rapide"
     ],
     "optionals": [],
     "skills": [
@@ -34370,21 +34367,13 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Seigneur de guerre",
       "Coude-à-coude",
       "Guerrier né",
       "Inébranlable",
       "Porte-Bouclier",
-      "Sens du Combat",
-      "Animosité (Peaux- Vertes)",
-      "Belliqueux",
-      "Brute",
-      "Coriace",
-      "Infecté",
-      "Irréductible",
+      "Combat instinctif",
       "Massif",
-      "Rapide",
       "Dur à cuire",
       "Vision nocturne"
     ],
@@ -34419,7 +34408,17 @@
     },
     "traits": [
       "Armure 5",
-      "Arme +10"
+      "Arme +10",
+      "Animosité (Peaux-Vertes)",
+      "Belliqueux",
+      "Brutal",
+      "Champion",
+      "Coriace",
+      "Élite",
+      "Infecté",
+      "Increvable",
+      "Meneur",
+      "Rapide"
     ],
     "optionals": [],
     "skills": [
@@ -34527,7 +34526,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Voyageur aguerri",
       "Cavalier émérite",
       "Seigneur de guerre",
@@ -34536,19 +34534,9 @@
       "Guerrier né",
       "Inébranlable",
       "Porte-Bouclier",
-      "Sens du Combat",
+      "Combat instinctif",
       "Exaltant",
-      "Animosité (Peaux- Vertes)",
-      "Belliqueux",
-      "Brute",
-      "Champion",
-      "Coriace",
-      "Élite",
-      "Infecté",
-      "Irréductible",
-      "Leader",
       "Massif",
-      "Rapide",
       "Dur à cuire",
       "Vision nocturne"
     ],
@@ -34698,7 +34686,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Diction instinctive",
       "Magie mineure",
       "Magie des Arcanes"
@@ -34740,7 +34727,14 @@
     },
     "traits": [
       "Arme +7",
-      "Peur 2"
+      "Peur 2",
+      "Animosité (Peaux-Vertes)",
+      "Belliqueux",
+      "Coriace",
+      "Rusé",
+      "Infecté",
+      "Increvable",
+      "Intelligent"
     ],
     "optionals": [],
     "skills": [
@@ -34847,20 +34841,12 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Diction instinctive",
       "Effrayant",
       "Magie mineure",
       "Magie des Arcanes",
       "Seconde vue",
       "Perception de la magie",
-      "Animosité (Peaux- Vertes)",
-      "Belliqueux",
-      "Coriace",
-      "Fourbe",
-      "Infecté",
-      "Irréductible",
-      "Malin",
       "Vision nocturne"
     ],
     "trappings": [],
@@ -35027,7 +35013,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Détection d'artefact",
       "Diction instinctive",
       "Effrayant",
@@ -35157,7 +35142,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Combat déloyal"
     ],
     "trappings": [],
@@ -35284,8 +35268,7 @@
       }
     ],
     "talents": [
-      "Talent VF",
-      "Assommer",
+      "Frappe assommante",
       "Combattant au contact",
       "Combat déloyal",
       "Guerrier né",
@@ -35416,9 +35399,7 @@
       }
     ],
     "talents": [
-      "Talent VF",
-      "Assaut Furieux",
-      "Assommer",
+      "Frappe assommante",
       "Combattant au contact",
       "Combat déloyal",
       "Frappe blessante",
@@ -35576,7 +35557,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Diction instinctive",
       "Magie mineure",
       "Magie des Arcanes"
@@ -35749,7 +35729,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Diction instinctive",
       "Magie mineure",
       "Magie des Arcanes",
@@ -35938,7 +35917,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Diction instinctive",
       "Harmonisation aethyrique",
       "Mage de guerre",
@@ -36328,7 +36306,15 @@
     },
     "traits": [
       "Armure 3",
-      "Terreur 2"
+      "Terreur 2",
+      "Bond",
+      "Dressé (Dompté)",
+      "Dressé (Monture)",
+      "Dressé (Guerre)",
+      "Dressé (Magie)",
+      "Infecté",
+      "Redoutable 2",
+      "Taille (Énorme)"
     ],
     "optionals": [],
     "skills": [
@@ -36388,7 +36374,6 @@
       }
     ],
     "talents": [
-      "Assaut Furieux",
       "Combattant au contact",
       "Combat déloyal",
       "Endurci",
@@ -36398,14 +36383,6 @@
       "Mâchoires d'acier",
       "Brouet",
       "Maîtrise du combat",
-      "Bond",
-      "Dressage (Dompté)",
-      "Dressage (Monture)",
-      "Dressage (Guerre)",
-      "Dressage (Magie)",
-      "Infecté",
-      "Menace 2",
-      "Taille (Énorme)",
       "Vision nocturne"
     ],
     "trappings": [],
@@ -37309,7 +37286,15 @@
     },
     "traits": [
       "Armure 1",
-      "Arme +10"
+      "Arme +10",
+      "Brutal",
+      "Coriace",
+      "Rusé",
+      "Infecté",
+      "Insensible à la douleur",
+      "Intelligent",
+      "Rapide",
+      "Venin"
     ],
     "optionals": [],
     "skills": [
@@ -37409,14 +37394,6 @@
       "Dur à cuire",
       "Nomade",
       "Brouet",
-      "Brute",
-      "Coriace",
-      "Fourbe",
-      "Infecté",
-      "Insensible à la Douleur",
-      "Malin",
-      "Rapide",
-      "Venin",
       "Vision nocturne"
     ],
     "trappings": [],
@@ -38006,7 +37983,7 @@
       }
     ],
     "talents": [
-      "Chat de Gouttière"
+      "Chat de gouttière"
     ],
     "trappings": [],
     "spells": [],
@@ -38762,7 +38739,6 @@
       }
     ],
     "talents": [
-      "Talent VF",
       "Bon marcheur (Environnement au choix)",
       "Nomade",
       "Vivacité"
@@ -39483,7 +39459,7 @@
     "optionals": [],
     "skills": [],
     "talents": [
-      "Acrobaties Équestres"
+      "Acrobaties équestres"
     ],
     "trappings": [],
     "spells": [],
@@ -39850,7 +39826,7 @@
     ],
     "talents": [
       "Charge berserk 3",
-      "Coup puissant 2*"
+      "Coup puissant"
     ],
     "trappings": [],
     "spells": [],
@@ -41005,7 +40981,7 @@
       }
     ],
     "talents": [
-      "Charge Berserk 3"
+      "Charge berserk"
     ],
     "trappings": [],
     "spells": [],
@@ -41608,8 +41584,8 @@
       }
     ],
     "talents": [
-      "Dur à Cuire",
-      "Tir précis 2*"
+      "Dur à cuire",
+      "Tir précis"
     ],
     "trappings": [
       "arc long avec des flèches à l'aspect sinistre",
