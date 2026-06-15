@@ -43,11 +43,12 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
   it('déchirure MAJEURE de jambe : rémission partielle (−20 → −10) à la mi-durée (l.326)', () => {
     const t = traumaFromKind('dechirure', 'majeur', 'jambeD', { be: 20 }); // total 2×(30−20)=20, mi = 10
     const c = C({ traumas: [t] });
-    expect(c.traumas![0].dodgePenalty).toBe(-20);
+    const esquiveMod = (tr: typeof t) => tr.ops?.flatMap((o) => (o.op === 'skillMod' && o.skill === 'esquive' ? [o.mod] : []))[0];
+    expect(esquiveMod(c.traumas![0])).toBe(-20);
     tickTraumaRecovery(c, 9); // reste 11 > 10 → toujours −20
-    expect(c.traumas![0].dodgePenalty).toBe(-20);
+    expect(esquiveMod(c.traumas![0])).toBe(-20);
     tickTraumaRecovery(c, 1); // reste 10 ≤ 10 → −10
-    expect(c.traumas![0].dodgePenalty).toBe(-10);
+    expect(esquiveMod(c.traumas![0])).toBe(-10);
     tickTraumaRecovery(c, 10); // reste 0 → guéri
     expect(c.traumas!.length).toBe(0);
   });
@@ -74,7 +75,7 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
     tickTraumaRecovery(c, 40, fail, 0);
     expect(c.traumas!.length).toBe(1); // la fracture part, mais une séquelle reste
     expect(c.traumas![0].label).toMatch(/mal ressoudée/);
-    expect(c.traumas![0].charPenalty?.Ag).toBe(-5);
+    expect(c.traumas![0].ops).toContainEqual({ op: 'charMod', char: 'Ag', mod: -5 });
     expect(c.traumas![0].recoveryDays).toBeUndefined(); // permanente
   });
 
@@ -116,7 +117,7 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
     const fail: RNG = { int: () => 95 };
     tickTraumaRecovery(c, 50, fail, 0); // fin de convalescence, Test raté
     const seq = c.traumas![0];
-    expect(seq.skillPenalty?.langue).toBe(-10); // majeure
+    expect(seq.ops).toContainEqual({ op: 'skillMod', skill: 'langue', mod: -10 }); // majeure
     expect(traumaSkillPenalty(c, 'Langue (Reikspiel)')).toBe(-10); // matché par préfixe
     expect(traumaSkillPenalty(c, 'Charme')).toBe(0);
     // testValue intègre la séquelle : Int 30 + 20 avances − 10 = 40.

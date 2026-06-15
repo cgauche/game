@@ -127,13 +127,13 @@ describe('câblages moteur', () => {
     expect(isPsychImmune(c)).toBe(false); // sans contexte d'adversaire, le trait est inerte
   });
   it('Insensible à la douleur : pénalités de Critique ignorées (hors amputations)', () => {
-    const t = { label: 'Déchirure musculaire (Majeure)', location: 'jambeG', charPenalty: { Ag: -10 } } as any;
+    const t = { label: 'Déchirure musculaire (Majeure)', location: 'jambeG', ops: [{ op: 'charMod', char: 'Ag', mod: -10 }] } as any;
     const douillet = mk({ traumas: [t] });
     const stoique = mk({ traumas: [t], traits: ['Insensible à la douleur'] });
     expect(traumaCharPenalties(douillet, 'Ag')).toEqual([-10]);
     expect(traumaCharPenalties(stoique, 'Ag')).toEqual([]);
     // … mais une AMPUTATION reste pénalisante (LDB 85 p.340).
-    const ampute = mk({ traumas: [{ label: 'Amputation (Doigt)', location: 'brasD', charPenalty: { CC: -5 } } as any], traits: ['Insensible à la douleur'] });
+    const ampute = mk({ traumas: [{ label: 'Amputation (Doigt)', location: 'brasD', ops: [{ op: 'charMod', char: 'CC', mod: -5 }] } as any], traits: ['Insensible à la douleur'] });
     expect(traumaCharPenalties(ampute, 'CC')).toEqual([-5]);
   });
 });

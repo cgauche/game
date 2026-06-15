@@ -12,11 +12,21 @@ import { Combatant, CharKey, HitLocation, Trauma, Difficulty, UpkeepDeferTest } 
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
 import { isPainless } from './traits/dispatch';
+import type { GameOp } from './ops';
 
 export type TraumaKind = 'dechirure' | 'fracture';
 export type TraumaSeverity = 'mineur' | 'majeur';
 
 const LEG: HitLocation[] = ['jambeG', 'jambeD'];
+
+/** Ops PASSIVES d'une séquelle (lecteur UNIQUE de `t.ops` — vocab GameOp partagé). */
+function traumaOps(t: Trauma): GameOp[] {
+  return t.ops ?? [];
+}
+/** Filtre typé d'une liste d'ops par type d'op (narrowing — `.char`/`.skill`/`.hands` accessibles). */
+function opsOfType<K extends GameOp['op']>(ops: GameOp[], op: K): Extract<GameOp, { op: K }>[] {
+  return ops.filter((o): o is Extract<GameOp, { op: K }> => o.op === op);
+}
 
 /**
  * Durée de convalescence d'un trauma en JOURS (LDB 18) : déchirure mineure 30−BE (l.317) ; déchirure
@@ -48,10 +58,11 @@ export function traumaFromKind(
     const onLeg = LEG.includes(location);
     // Jambe : −10 (mineure) / −20 (majeure) aux Tests de mobilité/Esquive (LDB 18 l.315/324).
     const dodge = severity === 'mineur' ? -10 : -20;
+    const ops: GameOp[] = onLeg ? [{ op: 'moveScale', num: 1, den: 2 }, { op: 'skillMod', skill: 'esquive', mod: dodge }] : [];
     return {
       label: `Déchirure musculaire (${sev})`,
       location,
-      ...(onLeg ? { movementHalved: true, dodgePenalty: dodge } : {}),
+      ...(ops.length ? { ops } : {}),
       ...staged,
       note: onLeg
         ? `Mouvement ÷2 + ${dodge} aux Tests de mobilité de la jambe. Guérison 30−BE jours.`
@@ -63,8 +74,7 @@ export function traumaFromKind(
     return {
       label: `Fracture (${sev})`,
       location,
-      movementHalved: true,
-      charPenalty: { F: -30, Ag: -30 },
+      ops: [{ op: 'moveScale', num: 1, den: 2 }, { op: 'charMod', char: 'F', mod: -30 }, { op: 'charMod', char: 'Ag', mod: -30 }],
       ...staged,
       note: '−30 Force et Agilité, Mouvement ÷2. Guérison 30+1d10 jours.',
     };
@@ -73,8 +83,7 @@ export function traumaFromKind(
     return {
       label: `Fracture (${sev})`,
       location,
-      movementHalved: true,
-      dodgePenalty: -20, // règle du Pied (l.369) : −20 aux Tests de mobilité, dont l'Esquive
+      ops: [{ op: 'moveScale', num: 1, den: 2 }, { op: 'skillMod', skill: 'esquive', mod: -20 }], // règle du Pied (l.369) : −20 mobilité/Esquive
       ...staged,
       note: 'Mouvement ÷2 + −20 aux Tests de mobilité/Esquive (règle du Pied). Guérison 30+1d10 jours.',
     };
@@ -92,9 +101,10 @@ export function traumaFromKind(
 /** Une déchirure musculaire MAJEURE de jambe guérit en DEUX temps (LDB 18 l.326) : après la 1ʳᵉ moitié
  *  (recoveryTotal/2), la pénalité de mobilité passe de −20 à −10 ; la 2ᵉ moitié achève la guérison. */
 function downgradeTornMuscle(t: Trauma, leftDays: number): string | null {
-  if (t.kind !== 'dechirure' || t.severity !== 'majeur' || t.dodgePenalty !== -20 || t.recoveryTotal == null) return null;
+  const esq = opsOfType(t.ops ?? [], 'skillMod').find((o) => o.skill === 'esquive');
+  if (t.kind !== 'dechirure' || t.severity !== 'majeur' || esq?.mod !== -20 || t.recoveryTotal == null) return null;
   if (leftDays > t.recoveryTotal / 2) return null; // pas encore à la mi-durée
-  t.dodgePenalty = -10; // rémission partielle (l.326)
+  esq.mod = -10; // rémission partielle (l.326)
   return `la déchirure (${t.location}) entre en rémission partielle (−10).`;
 }
 
@@ -105,8 +115,8 @@ function downgradeTornMuscle(t: Trauma, leftDays: number): string | null {
  */
 function fractureSequela(t: Trauma): Trauma | null {
   const pen = t.severity === 'majeur' ? -10 : -5;
-  if (t.location === 'tete') return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, skillPenalty: { langue: pen }, note: `${pen} permanent aux Tests de Langue (mâchoire mal ressoudée).` };
-  return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, charPenalty: { Ag: pen }, note: `${pen} permanent en Agilité (os mal ressoudé).` };
+  if (t.location === 'tete') return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, ops: [{ op: 'skillMod', skill: 'langue', mod: pen }], note: `${pen} permanent aux Tests de Langue (mâchoire mal ressoudée).` };
+  return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, ops: [{ op: 'charMod', char: 'Ag', mod: pen }], note: `${pen} permanent en Agilité (os mal ressoudé).` };
 }
 
 /** Difficulté du Test de fin de fracture (LDB 18 l.300/309) selon la sévérité. */
@@ -225,17 +235,21 @@ export function consolidateAmputations(c: Combatant): string[] {
     if (total >= 4) {
       if (grp.length > 1) log.push(`${c.name} : 4+ doigts perdus (${loc}) → règle de la main tranchée.`);
       if (!kept.some((t) => t.label?.startsWith('Main/bras amputé') && t.location === loc)) {
-        kept.push({ label: `Main/bras amputé (${loc})`, location: loc, noTwoHanded: true, ...(dominant ? { charPenalty: { CC: -20, CT: -20 } } : {}), prosthesis: [PROSTHESIS_MERVEILLE], note: `${total} doigts perdus (${loc}) → règle de la main (pas d'arme à 2 mains${dominant ? ', −20 Tests d’Arme' : ''}).` });
+        const ops: GameOp[] = [{ op: 'maxWeaponHands', hands: 1 }];
+        if (dominant) ops.push({ op: 'charMod', char: 'CC', mod: -20 }, { op: 'charMod', char: 'CT', mod: -20 });
+        kept.push({ label: `Main/bras amputé (${loc})`, location: loc, ops, prosthesis: [PROSTHESIS_MERVEILLE], note: `${total} doigts perdus (${loc}) → règle de la main (pas d'arme à 2 mains${dominant ? ', −20 Tests d’Arme' : ''}).` });
       }
     } else {
-      kept.push({ label: `Doigts amputés (${loc})`, location: loc, count: total, ...(dominant ? { charPenalty: { CC: -5 * total, CT: -5 * total } } : {}), prosthesis: [PROSTHESIS_MERVEILLE], note: `${total} doigt(s) (${loc}) → −${5 * total} aux Tests d'Arme (main principale).` });
+      const ops: GameOp[] = dominant ? [{ op: 'charMod', char: 'CC', mod: -5 * total }, { op: 'charMod', char: 'CT', mod: -5 * total }] : [];
+      kept.push({ label: `Doigts amputés (${loc})`, location: loc, count: total, ...(ops.length ? { ops } : {}), prosthesis: [PROSTHESIS_MERVEILLE], note: `${total} doigt(s) (${loc}) → −${5 * total} aux Tests d'Arme (main principale).` });
     }
   }
   const teeth = traumas.filter(isTeeth);
   if (teeth.length) {
     const total = teeth.reduce((s, t) => s + (t.count ?? 1), 0);
     const soc = -Math.floor(total / 2);
-    kept.push({ label: 'Dents perdues', location: 'tete', count: total, ...(soc < 0 ? { charPenalty: { Soc: soc } } : {}), prosthesis: [{ name: 'Dents en bois', cancels: 'all' }], note: `${total} dents perdues → ${soc} Sociabilité (−1 par paire). Prothèse : Dents en bois.` });
+    const ops: GameOp[] = soc < 0 ? [{ op: 'charMod', char: 'Soc', mod: soc }] : [];
+    kept.push({ label: 'Dents perdues', location: 'tete', count: total, ...(ops.length ? { ops } : {}), prosthesis: [{ name: 'Dents en bois', cancels: 'all' }], note: `${total} dents perdues → ${soc} Sociabilité (−1 par paire). Prothèse : Dents en bois.` });
   }
   c.traumas = kept;
   return log;
@@ -249,14 +263,15 @@ export function consolidateAmputations(c: Combatant): string[] {
  */
 export function escalateSensoryLoss(c: Combatant): string[] {
   const log: string[] = [];
-  const eyes = (c.traumas ?? []).filter((t) => t.sense === 'vue').length;
-  const ears = (c.traumas ?? []).filter((t) => t.sense === 'ouie').length;
+  const hasSense = (t: Trauma, s: 'vue' | 'ouie') => traumaOps(t).some((o) => o.op === 'senseLoss' && o.sense === s);
+  const eyes = (c.traumas ?? []).filter((t) => hasSense(t, 'vue')).length;
+  const ears = (c.traumas ?? []).filter((t) => hasSense(t, 'ouie')).length;
   if (eyes >= 2 && !(c.traumas ?? []).some((t) => t.label === 'Cécité')) {
-    c.traumas = [...(c.traumas ?? []), { label: 'Cécité', location: 'tete', charPenalty: { CC: -30, CT: -30 }, dodgePenalty: -30, skillPenalty: { chevaucher: -30 }, note: 'perte des DEUX yeux — −30 aux Tests liés à la vue (Arme, Esquive, Chevaucher).' }];
+    c.traumas = [...(c.traumas ?? []), { label: 'Cécité', location: 'tete', ops: [{ op: 'charMod', char: 'CC', mod: -30 }, { op: 'charMod', char: 'CT', mod: -30 }, { op: 'skillMod', skill: 'esquive', mod: -30 }, { op: 'skillMod', skill: 'chevaucher', mod: -30 }], note: 'perte des DEUX yeux — −30 aux Tests liés à la vue (Arme, Esquive, Chevaucher).' }];
     log.push(`${c.name} perd la vue (cécité) — −30 aux Tests liés à la vue.`);
   }
   if (ears >= 2 && !(c.traumas ?? []).some((t) => t.label === 'Surdité')) {
-    c.traumas = [...(c.traumas ?? []), { label: 'Surdité', location: 'tete', skillPenalty: { perception: -20 }, note: 'perte des DEUX oreilles — −20 aux Tests de Perception auditive.' }];
+    c.traumas = [...(c.traumas ?? []), { label: 'Surdité', location: 'tete', ops: [{ op: 'skillMod', skill: 'perception', mod: -20 }], note: 'perte des DEUX oreilles — −20 aux Tests de Perception auditive.' }];
     log.push(`${c.name} perd l'ouïe (surdité) — −20 Perception auditive.`);
   }
   return log;
@@ -269,7 +284,7 @@ export function escalateSensoryLoss(c: Combatant): string[] {
 export function cannotWieldTwoHanded(c: Combatant): boolean {
   // Crochet PORTÉ et ENTRAÎNÉ (400 PX, LDB 73) : rachète entièrement la pénalité « deux mains ».
   if ((c.items ?? []).some((i) => i.name === 'Crochet' && i.equipped && i.prosthesisTrained)) return false;
-  return (c.traumas ?? []).some((t) => t.noTwoHanded && !prosthesisCancels(c, t, 'all'));
+  return opsOfType(passiveOps(c), 'maxWeaponHands').some((o) => o.hands < 2);
 }
 
 /** La main `hand` est-elle PERDUE (amputation non compensée par une prothèse « tout », Merveille, LDB 73) ?
@@ -278,7 +293,7 @@ export function cannotWieldTwoHanded(c: Combatant): boolean {
  *  part, dérivée séparément.) */
 export function handAmputated(c: Combatant, hand: 'main' | 'off'): boolean {
   const loc = hand === 'main' ? 'brasD' : 'brasG';
-  return (c.traumas ?? []).some((t) => t.noTwoHanded && t.location === loc && !prosthesisCancels(c, t, 'all'));
+  return (c.traumas ?? []).some((t) => t.location === loc && !prosthesisCancels(c, t, 'all') && opsOfType(traumaOps(t), 'maxWeaponHands').some((o) => o.hands < 2));
 }
 
 /** Retire un trauma chirurgical (opération réussie) ; décrémente `criticalWounds`. Mute `c`, renvoie le journal.
@@ -359,48 +374,73 @@ function painlessIgnores(c: Combatant, t: Trauma): boolean {
   return isPainless(c.traits) && !/amputation|cécité|surdité/i.test(t.label);
 }
 
-/** Un trauma réduit-il le Mouvement de moitié ? (Détermination « ignorer modifs de critique » → non, LDB 17 l.64 ;
- *  une prothèse portée — Fausse jambe / Merveille — annule la séquelle de jambe, LDB 73.) */
+/**
+ * Toutes les ops PASSIVES actives sur `c`, TOUTES SOURCES confondues — POINT DE LECTURE UNIQUE pour que les
+ * MÊMES effets (`charMod`/`skillMod`/`moveScale`/`maxWeaponHands`/`senseLoss`) marchent quel que soit
+ * l'élément qui les porte (séquelle aujourd'hui ; trait/mutation/objet ensuite — tous éditables en données).
+ * Gating PAR NATURE d'op pour la source « séquelle » (LDB 17/18/73/85) :
+ *  - `maxWeaponHands` (membre perdu, STRUCTUREL) : annulé SEULEMENT par une prothèse 'all' (Merveille) — pas
+ *    par la Détermination (`ignoreCritMods`) ni l'Insensible à la douleur (ce n'est pas une douleur).
+ *  - `senseLoss` (organe perdu) : non annulable.
+ *  - `charMod`/`skillMod`/`moveScale` (douleur/mobilité) : ignorées par Détermination + Insensible, annulées
+ *    par prothèse ('movement' pour moveScale = Fausse jambe ; 'all' sinon).
+ * Trait/sort poussent leurs ops SANS gating prothèse (effets inconditionnels / temporisés).
+ */
+export function passiveOps(c: Combatant): GameOp[] {
+  const out: GameOp[] = [];
+  for (const t of c.traumas ?? []) {
+    const cancelAll = prosthesisCancels(c, t, 'all');
+    const cancelMove = prosthesisCancels(c, t, 'movement');
+    const painless = painlessIgnores(c, t);
+    for (const o of traumaOps(t)) {
+      if (o.op === 'maxWeaponHands') { if (!cancelAll) out.push(o); continue; }
+      if (o.op === 'senseLoss') { out.push(o); continue; }
+      if (c.ignoreCritMods || painless) continue;
+      if (o.op === 'moveScale') { if (!cancelMove) out.push(o); continue; }
+      if (!cancelAll) out.push(o);
+    }
+  }
+  // Extension : trait/mutation/objet porteront aussi des `ops` (données éditables) → poussés ICI sans gating.
+  // Sorts (ActiveEffect, ops posées par applyOps). Le charMod de sort reste lu par effectiveChar (e.char/e.bonus).
+  for (const e of c.activeEffects ?? []) {
+    if (e.skillMods) for (const [skill, mod] of Object.entries(e.skillMods)) out.push({ op: 'skillMod', skill, mod });
+    if (e.moveScale) out.push({ op: 'moveScale', num: e.moveScale.num, den: e.moveScale.den });
+    if (e.maxWeaponHands != null) out.push({ op: 'maxWeaponHands', hands: e.maxWeaponHands });
+  }
+  return out;
+}
+
+/** Le Mouvement est-il réduit de moitié (séquelle de jambe ou autre source `moveScale`) ? Lu par `effectiveMovement`. */
 export function traumaMovementHalved(c: Combatant): boolean {
-  if (c.ignoreCritMods) return false;
-  return (c.traumas ?? []).some((t) => t.movementHalved === true && !prosthesisCancels(c, t, 'movement') && !painlessIgnores(c, t));
+  return opsOfType(passiveOps(c), 'moveScale').length > 0;
 }
 
 /** Pénalités de Caractéristique dues aux traumatismes (valeurs négatives, pour le pool « pire pénalité »).
  *  Une prothèse qui annule TOUT (Nez doré, Œil de verre, Merveille…, LDB 73) lève la pénalité de sa séquelle. */
 export function traumaCharPenalties(c: Combatant, key: CharKey): number[] {
-  if (c.ignoreCritMods) return []; // Détermination : modificateurs de critique ignorés ce Round (LDB 17 l.64)
-  return (c.traumas ?? [])
-    .filter((t) => !prosthesisCancels(c, t, 'all') && !painlessIgnores(c, t))
-    .map((t) => t.charPenalty?.[key] ?? 0)
-    .filter((p) => p < 0);
+  // `passiveOps` applique déjà le gating séquelle (Détermination/Insensible/prothèse). Le charMod de SORT
+  // est lu à part par effectiveChar (e.char/e.bonus) → non émis par passiveOps, pas de double comptage.
+  return opsOfType(passiveOps(c), 'charMod').filter((o) => o.char === key).map((o) => o.mod).filter((p) => p < 0);
 }
 
 /** Pire pénalité de mobilité/Esquive due aux traumatismes de jambe (≤ 0 ; non-cumul, LDB l.20). Une prothèse
  *  qui annule TOUT (Merveille d'ingénierie, LDB 73) lève aussi l'Esquive (la Fausse jambe ne rend PAS l'Esquive
  *  sans 200 PX, non modélisé → son −20 subsiste). */
 export function traumaDodgePenalty(c: Combatant): number {
-  if (c.ignoreCritMods) return 0; // Détermination : modificateurs de critique ignorés ce Round (LDB 17 l.64)
-  const pens = (c.traumas ?? [])
-    .filter((t) => !prosthesisCancels(c, t, 'all') && !painlessIgnores(c, t))
-    .map((t) => t.dodgePenalty ?? 0)
-    .filter((p) => p < 0);
+  const pens = opsOfType(passiveOps(c), 'skillMod')
+    .filter((o) => o.skill.toLowerCase() === 'esquive' && o.mod < 0)
+    .map((o) => o.mod);
   return pens.length ? Math.min(...pens) : 0;
 }
 
 /** Pire pénalité permanente à une Compétence nommée due aux traumatismes (séquelle de fracture, LDB 18
  *  l.300/309 — ex. −5/−10 « Langue » après une fracture à la Tête). Non-cumul (l.20) ; ≤ 0. */
 export function traumaSkillPenalty(c: Combatant, skill?: string): number {
-  if (!skill || c.ignoreCritMods) return 0;
+  if (!skill) return 0;
   const low = skill.toLowerCase();
-  const pens = (c.traumas ?? [])
-    .filter((t) => !prosthesisCancels(c, t, 'all') && !painlessIgnores(c, t))
-    .map((t) => {
-      const sp = t.skillPenalty;
-      if (!sp) return 0;
-      const key = Object.keys(sp).find((k) => low === k || low.startsWith(k)); // « langue (reikspiel) » → « langue »
-      return key ? sp[key] : 0;
-    })
-    .filter((p) => p < 0);
+  // Esquive est porté par traumaDodgePenalty (defenseValue) → EXCLU ici pour préserver la séparation historique.
+  const pens = opsOfType(passiveOps(c), 'skillMod')
+    .filter((o) => { const sl = o.skill.toLowerCase(); return sl !== 'esquive' && (low === sl || low.startsWith(sl)) && o.mod < 0; }) // « langue (reikspiel) » → « langue »
+    .map((o) => o.mod);
   return pens.length ? Math.min(...pens) : 0;
 }

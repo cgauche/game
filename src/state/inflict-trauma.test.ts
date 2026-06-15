@@ -18,7 +18,7 @@ describe('Effet inflictTrauma', () => {
     ]);
     const h = useGame.getState().party[0];
     expect(h.traumas?.length).toBe(1);
-    expect(h.traumas![0].movementHalved).toBe(true); // règle du Pied (LDB 18 l.298)
+    expect(h.traumas![0].ops?.some((o) => o.op === 'moveScale')).toBe(true); // règle du Pied (LDB 18 l.298)
     expect(h.criticalWounds).toBe(1);
   });
   it('amputation au bras droit → séquelle permanente (main directrice)', () => {

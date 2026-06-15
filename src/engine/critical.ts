@@ -11,6 +11,7 @@ import { hitLocationByShape } from './combat';
 import { BodyShape, Combatant, Difficulty, HitLocation, Trauma, HIT_LOCATION_LABELS } from './types';
 import { CRITICAL_TABLES, CritEntry } from '../data/criticals';
 import { traumaFromKind } from './trauma';
+import type { GameOp } from './ops';
 
 /** Difficulté de l'« Amputation (X) » d'une note de critique → palier de Difficulté (LDB 18 l.331). */
 const AMPUTATION_DIFFICULTY: Record<string, Difficulty> = {
@@ -45,10 +46,10 @@ export function permanentAmputations(name: string, note: string, location: HitLo
   const out: Trauma[] = [];
   if (location === 'jambeG' || location === 'jambeD') {
     if (/orteil/.test(t)) {
-      out.push({ label: `Orteil(s) amputé(s) (${HIT_LOCATION_LABELS[location]})`, location, charPenalty: { Ag: -1, CC: -1 },
+      out.push({ label: `Orteil(s) amputé(s) (${HIT_LOCATION_LABELS[location]})`, location, ops: [{ op: 'charMod', char: 'Ag', mod: -1 }, { op: 'charMod', char: 'CC', mod: -1 }],
         note: '−1 Agilité et −1 CC par orteil perdu (séquelle permanente ; cumul non suivi).' });
     } else {
-      out.push({ label: `Membre inférieur amputé (${HIT_LOCATION_LABELS[location]})`, location, movementHalved: true, dodgePenalty: -20,
+      out.push({ label: `Membre inférieur amputé (${HIT_LOCATION_LABELS[location]})`, location, ops: [{ op: 'moveScale', num: 1, den: 2 }, { op: 'skillMod', skill: 'esquive', mod: -20 }],
         prosthesis: [MERVEILLE, { name: 'Fausse jambe', cancels: 'movement' }],
         note: 'Mouvement ÷2 + −20 mobilité (Esquive) — à pied seulement, une monture rétablit le déplacement. Prothèse : Fausse jambe / Merveille.' });
     }
@@ -58,11 +59,14 @@ export function permanentAmputations(name: string, note: string, location: HitLo
     const dominant = location === 'brasD'; // droitier
     if (/doigt/.test(t)) {
       // 1 doigt par critique (« Doigt sectionné » / « Main ouverte : perdez 1 doigt »). Cumulé par consolidateAmputations.
-      out.push({ label: `Doigts amputés (${HIT_LOCATION_LABELS[location]})`, location, count: 1, ...(dominant ? { charPenalty: { CC: -5, CT: -5 } } : {}),
+      const ops: GameOp[] = dominant ? [{ op: 'charMod', char: 'CC', mod: -5 }, { op: 'charMod', char: 'CT', mod: -5 }] : [];
+      out.push({ label: `Doigts amputés (${HIT_LOCATION_LABELS[location]})`, location, count: 1, ...(ops.length ? { ops } : {}),
         prosthesis: [MERVEILLE],
         note: `−5 aux Tests d'Arme par doigt perdu (main principale)${dominant ? '' : ' — main secondaire'}. Prothèse : Merveille.` });
     } else if (/\bmain\b|bras inutilisable/.test(t)) {
-      out.push({ label: `Main/bras amputé (${HIT_LOCATION_LABELS[location]})`, location, noTwoHanded: true, ...(dominant ? { charPenalty: { CC: -20, CT: -20 } } : {}),
+      const ops: GameOp[] = [{ op: 'maxWeaponHands', hands: 1 }];
+      if (dominant) ops.push({ op: 'charMod', char: 'CC', mod: -20 }, { op: 'charMod', char: 'CT', mod: -20 });
+      out.push({ label: `Main/bras amputé (${HIT_LOCATION_LABELS[location]})`, location, ops,
         prosthesis: [MERVEILLE],
         note: `pas d'arme à deux mains${dominant ? ' ; main PRINCIPALE perdue → −20 aux Tests d’Arme (main secondaire)' : ' (main secondaire)'}. Prothèse : Crochet (rachat PX) / Merveille.` });
     }
@@ -70,26 +74,27 @@ export function permanentAmputations(name: string, note: string, location: HitLo
   }
   if (location === 'tete') {
     if (/langue/.test(t)) {
-      out.push({ label: 'Langue amputée', location, skillPenalty: { langue: -100 }, // « auto-échec » de la parole
+      out.push({ label: 'Langue amputée', location, ops: [{ op: 'skillMod', skill: 'langue', mod: -100 }], // « auto-échec » de la parole
         note: 'sans langue, tout Test de Langue impliquant la parole échoue automatiquement.' });
     }
     if (/\bnez\b/.test(t)) {
-      out.push({ label: 'Nez amputé', location, charPenalty: { Soc: -20 }, prosthesis: [{ name: 'Nez doré', cancels: 'all' }],
+      out.push({ label: 'Nez amputé', location, ops: [{ op: 'charMod', char: 'Soc', mod: -20 }], prosthesis: [{ name: 'Nez doré', cancels: 'all' }],
         note: '−20 Sociabilité permanent (perte du nez). Prothèse : Nez doré.' });
     }
     if (/œil|oeil/.test(t)) {
-      out.push({ label: 'Œil perdu', location, charPenalty: { Soc: -5 }, sense: 'vue',
+      out.push({ label: 'Œil perdu', location, ops: [{ op: 'charMod', char: 'Soc', mod: -5 }, { op: 'senseLoss', sense: 'vue' }],
         prosthesis: [{ name: 'Cache-œil', cancels: 'all' }, { name: 'Œil de verre', cancels: 'all' }],
         note: '−5 Sociabilité (orbite vide visible) ; perte des DEUX yeux (−30 vue) non modélisée. Prothèse : Cache-œil / Œil de verre.' });
     }
     if (/oreille/.test(t)) {
-      out.push({ label: 'Oreille perdue', location, charPenalty: { Soc: -5 }, sense: 'ouie', prosthesis: [MERVEILLE],
+      out.push({ label: 'Oreille perdue', location, ops: [{ op: 'charMod', char: 'Soc', mod: -5 }, { op: 'senseLoss', sense: 'ouie' }], prosthesis: [MERVEILLE],
         note: '−5 Sociabilité par oreille perdue ; perte des DEUX oreilles (−20 ouïe) non modélisée. Prothèse : Merveille.' });
     }
     if (/dents?\b/.test(t)) {
       const n = /1d10/.test(t) ? d10(rng) : 1; // « 1d10 dents » (Bouche explosée/Mâchoire) ou 1 dent. Cumulé.
       const soc = -Math.floor(n / 2); // −1 Sociabilité par PAIRE (l.338) : 1 dent = 0, 3 dents = −1, 4 = −2…
-      out.push({ label: 'Dents perdues', location, count: n, ...(soc < 0 ? { charPenalty: { Soc: soc } } : {}), prosthesis: [{ name: 'Dents en bois', cancels: 'all' }],
+      const ops: GameOp[] = soc < 0 ? [{ op: 'charMod', char: 'Soc', mod: soc }] : [];
+      out.push({ label: 'Dents perdues', location, count: n, ...(ops.length ? { ops } : {}), prosthesis: [{ name: 'Dents en bois', cancels: 'all' }],
         note: `${n} dents perdues → −1 Sociabilité par paire (${soc} Soc). Prothèse : Dents en bois.` });
     }
     return out;

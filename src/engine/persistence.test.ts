@@ -62,6 +62,6 @@ describe('persistence — carryOverState', () => {
     const c = baseCombatant({ traumas: [traumaFromKind('fracture', 'mineur', 'jambeG')] });
     const s = carryOverState(c);
     expect(s.traumas.length).toBe(1);
-    expect(s.traumas[0].movementHalved).toBe(true);
+    expect(s.traumas[0].ops?.some((o) => o.op === 'moveScale')).toBe(true);
   });
 });

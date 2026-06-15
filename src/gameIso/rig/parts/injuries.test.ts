@@ -9,8 +9,8 @@ const t = (over: Partial<Trauma>): Trauma => ({ label: 'x', location: 'tete', no
 const item = (name: string, equipped = true): ItemInstance =>
   ({ uid: name, name, kind: 'misc', qualities: [], enc: 0, equipped }) as unknown as ItemInstance;
 
-const MAIN_D = t({ label: 'Main/bras amputé (brasD)', location: 'brasD', noTwoHanded: true });
-const JAMBE_G = t({ label: 'Membre inférieur amputé (jambeG)', location: 'jambeG', movementHalved: true });
+const MAIN_D = t({ label: 'Main/bras amputé (brasD)', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }] });
+const JAMBE_G = t({ label: 'Membre inférieur amputé (jambeG)', location: 'jambeG', ops: [{ op: 'moveScale', num: 1, den: 2 }] });
 
 describe('visuels des amputations/prothèses (injuries)', () => {
   it('sans trauma → rien', () => {

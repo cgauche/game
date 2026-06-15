@@ -54,7 +54,8 @@ describe('rollCritical — résolution d’une Blessure critique (LDB 18-Traumat
       const r = rollCritical(victim(), 'corps', makeRNG(s));
       const frac = r.traumas.find((t) => t.label.startsWith('Fracture'));
       if (frac) {
-        expect(frac.charPenalty).toEqual({ F: -30, Ag: -30 });
+        expect(frac.ops).toContainEqual({ op: 'charMod', char: 'F', mod: -30 });
+        expect(frac.ops).toContainEqual({ op: 'charMod', char: 'Ag', mod: -30 });
         return;
       }
     }
@@ -99,48 +100,51 @@ describe('rollCritical — amputation (LDB 18 l.328-333)', () => {
 describe('permanentAmputations — séquelles permanentes (LDB 18 l.335-370, tout le monde DROITIER)', () => {
   it('jambe : pied → Mouvement ÷2 + −20 Esquive ; orteil → −1 Ag/CC', () => {
     const [pied] = permanentAmputations('Pied sectionné', 'Amputation (Difficile).', 'jambeG');
-    expect(pied.movementHalved).toBe(true);
-    expect(pied.dodgePenalty).toBe(-20);
+    expect(pied.ops?.some((o) => o.op === 'moveScale')).toBe(true);
+    expect(pied.ops).toContainEqual({ op: 'skillMod', skill: 'esquive', mod: -20 });
     const [orteil] = permanentAmputations("Coupure à l'orteil", "perte d'un orteil — Amputation (Accessible).", 'jambeD');
-    expect(orteil.charPenalty).toEqual({ Ag: -1, CC: -1 });
+    expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'Ag', mod: -1 });
+    expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'CC', mod: -1 });
   });
   it('bras DROIT (dominant) main : pas d’arme à 2 mains + −20 CC/CT ; bras GAUCHE : juste pas de 2 mains', () => {
     const [mainD] = permanentAmputations('Main mutilée', 'Perte de la main — Amputation (Difficile).', 'brasD');
-    expect(mainD.noTwoHanded).toBe(true);
-    expect(mainD.charPenalty).toEqual({ CC: -20, CT: -20 });
+    expect(mainD.ops?.some((o) => o.op === 'maxWeaponHands')).toBe(true);
+    expect(mainD.ops).toContainEqual({ op: 'charMod', char: 'CC', mod: -20 });
+    expect(mainD.ops).toContainEqual({ op: 'charMod', char: 'CT', mod: -20 });
     const [mainG] = permanentAmputations('Main mutilée', 'Perte de la main — Amputation (Difficile).', 'brasG');
-    expect(mainG.noTwoHanded).toBe(true);
-    expect(mainG.charPenalty).toBeUndefined();
+    expect(mainG.ops?.some((o) => o.op === 'maxWeaponHands')).toBe(true);
+    expect(mainG.ops?.some((o) => o.op === 'charMod')).toBeFalsy();
   });
   it('bras : « Main ouverte » (perte d’un DOIGT) → doigt −5 CC/CT (droitier), pas la règle de la main', () => {
     const [doigt] = permanentAmputations('Main ouverte', 'Perdez 1 doigt — Amputation (Complexe).', 'brasD');
     expect(doigt.label).toMatch(/Doigt/);
-    expect(doigt.charPenalty).toEqual({ CC: -5, CT: -5 });
-    expect(doigt.noTwoHanded).toBeFalsy();
+    expect(doigt.ops).toContainEqual({ op: 'charMod', char: 'CC', mod: -5 });
+    expect(doigt.ops).toContainEqual({ op: 'charMod', char: 'CT', mod: -5 });
+    expect(doigt.ops?.some((o) => o.op === 'maxWeaponHands')).toBeFalsy();
   });
   it('tête : « Coup défigurant » cumule œil (−5 Soc) + nez (−20 Soc)', () => {
     const s = permanentAmputations('Coup défigurant', "Perte d'un œil et du nez — Amputation (Difficile).", 'tete');
     expect(s.map((x) => x.label).sort()).toEqual(['Nez amputé', 'Œil perdu']);
-    expect(s.find((x) => x.label === 'Nez amputé')!.charPenalty).toEqual({ Soc: -20 });
+    expect(s.find((x) => x.label === 'Nez amputé')!.ops).toContainEqual({ op: 'charMod', char: 'Soc', mod: -20 });
   });
   it('tête : « Mâchoire mutilée » cumule langue (parole échoue) + dents (1d10=4 → 2 paires → −2 Soc)', () => {
     const s = permanentAmputations('Mâchoire mutilée', 'perte de la langue et 1d10 dents — Amputation (Difficile).', 'tete', seq([4]));
-    expect(s.find((x) => x.label === 'Langue amputée')!.skillPenalty).toEqual({ langue: -100 });
+    expect(s.find((x) => x.label === 'Langue amputée')!.ops).toContainEqual({ op: 'skillMod', skill: 'langue', mod: -100 });
     const dents = s.find((x) => x.label === 'Dents perdues')!;
     expect(dents.count).toBe(4);
-    expect(dents.charPenalty).toEqual({ Soc: -2 }); // 4 dents = 2 paires
+    expect(dents.ops).toContainEqual({ op: 'charMod', char: 'Soc', mod: -2 }); // 4 dents = 2 paires
   });
   it('dents : 1 dent perdue = AUCUNE pénalité (il faut une paire, l.338)', () => {
     const s = permanentAmputations('Bouche explosée', "Perdez 1 dent — Amputation (Facile).", 'tete'); // pas « 1d10 » → 1 dent
     const dents = s.find((x) => x.label === 'Dents perdues')!;
     expect(dents.count).toBe(1);
-    expect(dents.charPenalty).toBeUndefined(); // floor(1/2) = 0 → pas de Soc
+    expect(dents.ops?.some((o) => o.op === 'charMod')).toBeFalsy(); // floor(1/2) = 0 → pas de Soc
   });
 
   it('rollCritical (jambe) : pose la plaie chirurgicale ET la séquelle permanente de mobilité', () => {
     const r = rollCritical(victim(30), 'jambeD', seq([95, 5])); // « Pied sectionné » (94-96), Résistance réussie
     expect(r.traumas.some((t) => t.needsSurgery)).toBe(true);
-    expect(r.traumas.some((t) => t.movementHalved && !t.needsSurgery)).toBe(true);
+    expect(r.traumas.some((t) => t.ops?.some((o) => o.op === 'moveScale') && !t.needsSurgery)).toBe(true);
   });
 
   it('la séquelle permanente survit à la Chirurgie (le membre reste absent)', () => {
@@ -150,7 +154,7 @@ describe('permanentAmputations — séquelles permanentes (LDB 18 l.335-370, tou
     c.criticalWounds = 1;
     removeSurgicalTrauma(c); // opère la plaie chirurgicale
     expect(c.traumas!.some((t) => t.needsSurgery)).toBe(false); // plaie réparée
-    expect(c.traumas!.some((t) => t.movementHalved)).toBe(true); // mobilité réduite à VIE
+    expect(c.traumas!.some((t) => t.ops?.some((o) => o.op === 'moveScale'))).toBe(true); // mobilité réduite à VIE
   });
 });
 

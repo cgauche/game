@@ -78,8 +78,8 @@ section('Mutants ennemis — mutation DATA-DRIVEN (cornes garanties + tirage par
 const trauma = (over: Partial<Trauma>): Trauma => ({ label: 'x', location: 'tete', note: '', ...over });
 const wounded = (traumas: Trauma[], prosthesis?: string): Combatant =>
   ({ id: 'g', name: 'G', kind: 'hero', traumas, items: prosthesis ? [{ uid: 'p', name: prosthesis, kind: 'misc', qualities: [], enc: 0, equipped: true }] : [] }) as unknown as Combatant;
-const MAIN_D = trauma({ label: 'Main/bras amputé (brasD)', location: 'brasD', noTwoHanded: true });
-const JAMBE_G = trauma({ label: 'Membre inférieur amputé (jambeG)', location: 'jambeG', movementHalved: true });
+const MAIN_D = trauma({ label: 'Main/bras amputé (brasD)', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }] });
+const JAMBE_G = trauma({ label: 'Membre inférieur amputé (jambeG)', location: 'jambeG', ops: [{ op: 'moveScale', num: 1, den: 2 }] });
 const INJ: { label: string; c: Combatant }[] = [
   { label: 'Main amputée (moignon)', c: wounded([MAIN_D]) },
   { label: 'Crochet porté', c: wounded([MAIN_D], 'Crochet') },

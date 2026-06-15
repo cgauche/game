@@ -65,7 +65,7 @@ describe('preventInfection — Cautériser (LDB 47) & cureCriticalWound — Larm
       traumas: [
         traumaFromKind('dechirure', 'mineur', 'jambeD', { be: 25 }),
         traumaFromKind('fracture', 'majeur', 'brasG', { be: 25, d10: 5 }),
-        { label: 'Main/bras amputé (brasD)', location: 'brasD', noTwoHanded: true, note: 'amputation' },
+        { label: 'Main/bras amputé (brasD)', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }], note: 'amputation' },
       ],
     });
     applyOps(c, [{ op: 'cureCriticalWound', count: 1, countPerSL: { every: 2, amount: 1 } }], { sl: 4 }); // 1 + 2 = 3 tentées

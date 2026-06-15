@@ -69,7 +69,7 @@ export function injuryOverlaysFor(c: Combatant): RigOverlay[] {
   const out: RigOverlay[] = [];
   for (const t of traumas) {
     // Main/bras : la prothèse portée remplace le poing, sinon moignon bandé.
-    if (t.noTwoHanded && (t.location === 'brasG' || t.location === 'brasD')) {
+    if (t.ops?.some((o) => o.op === 'maxWeaponHands') && (t.location === 'brasG' || t.location === 'brasD')) {
       const svg = worn(c, "Merveille d'ingénierie") ? MAIN_MECA : worn(c, 'Crochet') ? CROCHET : MOIGNON;
       out.push({ bone: handBone(t), svg, replace: true });
     }

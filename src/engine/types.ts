@@ -294,13 +294,13 @@ export interface ActiveEffect {
 export interface Trauma {
   label: string;
   location: HitLocation;
-  movementHalved?: boolean;
-  charPenalty?: Partial<Record<CharKey, number>>;
-  /** Pénalité (négative) aux Tests de mobilité/Esquive — trauma de jambe (LDB 18 l.298/315/369). */
-  dodgePenalty?: number;
-  /** Pénalité (négative) à une Compétence nommée (clé minuscule, ex. « langue ») — séquelle de fracture à la
-   *  Tête (−5/−10 aux Tests de Langue, LDB 18 l.300/309). Lue par `testValue`. */
-  skillPenalty?: Record<string, number>;
+  /** Effets PASSIFS de la séquelle — vocabulaire PARTAGÉ `GameOp` (de-POC : remplace charPenalty/
+   *  skillPenalty/dodgePenalty/movementHalved/noTwoHanded/sense). Lus EN DIRECT par les helpers de trauma
+   *  (`traumaCharPenalties`/`traumaSkillPenalty`/`traumaDodgePenalty`/`traumaMovementHalved`/
+   *  `cannotWieldTwoHanded`) avec annulation par prothèse : `charMod` (carac), `skillMod` (Esquive = ancien
+   *  dodgePenalty, Langue/Chevaucher/Perception…), `moveScale` (ancien movementHalved), `maxWeaponHands`
+   *  (ancien noTwoHanded), `senseLoss` (ancien sense). Éditables dans le Codex (GameOpEditor). */
+  ops?: import('./ops').GameOp[];
   note: string;
   /** Jours de convalescence restants (LDB 18 : déchirure 30−BE, fracture 30+1d10…). Décompté au repos ;
    *  à 0 le trauma (et ses pénalités) disparaît. Absent = trauma legacy/permanent (pas de décompte). */
@@ -324,16 +324,9 @@ export interface Trauma {
    *  complètement la perte… d'une jambe » ; Nez doré ; Œil de verre…) ; `'movement'` rétablit le déplacement
    *  seul (Fausse jambe : « ignorer 1 Point de Mouvement perdu » — l'Esquive demande 200 PX, non modélisé). */
   prosthesis?: { name: string; cancels: 'all' | 'movement' }[];
-  /** Main/bras amputé (LDB 18 l.352/335) : interdit le port d'une arme à DEUX mains. Levé par une prothèse
-   *  `cancels:'all'` (Merveille d'ingénierie). */
-  noTwoHanded?: boolean;
   /** Nombre d'éléments perdus pour une séquelle CUMULATIVE par comptage (LDB 18) : doigts (−5/doigt, 4+ →
    *  règle de la main, l.341/344) ou dents (−1 Soc/paire, l.338). Fusionné à chaque nouvelle perte. */
   count?: number;
-  /** Organe sensoriel PAIRÉ perdu (LDB 18) : 2 pertes du même sens → escalade (Cécité/Surdité). Porté
-   *  par la séquelle « Œil perdu » / « Oreille perdue » pour que `escalateSensoryLoss` compte par sens,
-   *  sans name-match sur le libellé. */
-  sense?: 'vue' | 'ouie';
 }
 
 export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';
