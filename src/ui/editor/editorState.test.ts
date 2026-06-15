@@ -7,6 +7,8 @@ import {
   deleteSel,
   paintTiles,
   fillTerrainRect,
+  addLevel,
+  removeLevel,
   placeEntity,
   placeEntry,
   renameEntry,
@@ -105,6 +107,28 @@ describe('editorState — peinture', () => {
   it('fillTerrainRect remplit le rectangle', () => {
     const out = fillTerrainRect(emptyScene(10, 10), { x: 2, y: 2, w: 3, h: 2 }, 'eau');
     expect(out.levels[0].tiles.filter((t) => t === 'eau')).toHaveLength(6);
+  });
+  it('peint sur le NIVEAU demandé (z)', () => {
+    const s = addLevel(emptyScene(4, 4), 1);
+    const out = fillTerrainRect(s, { x: 1, y: 1, w: 2, h: 2 }, 'plancher', 1);
+    expect(out.levels[1].tiles.filter((t) => t === 'plancher')).toHaveLength(4);
+    expect(out.levels[0].tiles.every((t) => t === 'herbe')).toBe(true); // sol intact
+  });
+});
+
+describe('editorState — étages (multi-niveaux)', () => {
+  it('addLevel ajoute un étage « vide », trié par z ; idempotent', () => {
+    const s1 = addLevel(emptyScene(4, 4), 1);
+    expect(s1.levels.map((l) => l.z)).toEqual([0, 1]);
+    expect(s1.levels[1].tiles.length).toBe(16);
+    expect(s1.levels[1].tiles.every((t) => t === 'vide')).toBe(true);
+    expect(addLevel(s1, 1)).toBe(s1); // no-op si déjà présent
+  });
+  it('removeLevel retire un étage mais protège le sol (z=0) et le dernier niveau', () => {
+    const s = addLevel(emptyScene(4, 4), 1);
+    expect(removeLevel(s, 1).levels.map((l) => l.z)).toEqual([0]);
+    expect(removeLevel(s, 0)).toBe(s); // sol protégé
+    expect(removeLevel(emptyScene(4, 4), 0).levels.length).toBe(1); // dernier protégé
   });
 });
 

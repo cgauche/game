@@ -193,6 +193,20 @@ export function fillTerrainRect(scene: Scene, rect: Rect, terrain: Terrain, z = 
   return withLevelTiles(scene, z, tiles);
 }
 
+/** Ajoute un étage à la cote `z` (grille « vide » = transparente, à construire), trié par z. No-op si
+ *  un étage `z` existe déjà. Source unique de l'ajout d'étage (éditeur multi-niveaux). */
+export function addLevel(scene: Scene, z: number): Scene {
+  if (scene.levels.some((l) => l.z === z)) return scene;
+  const tiles = new Array(scene.dimensions.w * scene.dimensions.h).fill('vide') as Terrain[];
+  return { ...scene, levels: [...scene.levels, { z, tiles }].sort((a, b) => a.z - b.z) };
+}
+
+/** Retire l'étage `z`. Le SOL (z=0) et le dernier étage sont protégés (jamais de scène sans niveau). */
+export function removeLevel(scene: Scene, z: number): Scene {
+  if (z === 0 || scene.levels.length <= 1) return scene;
+  return { ...scene, levels: scene.levels.filter((l) => l.z !== z) };
+}
+
 /** Pose une entité à p (id frais) — `ref` = décor/espèce précise (pose directe depuis le catalogue).
  *  Les props appliquent leurs défauts de catalogue (empreinte, interactif si fouillable). */
 export function placeEntity(scene: Scene, kind: EntityKind, ref: string | undefined, p: Pt): { scene: Scene; id: string } {
