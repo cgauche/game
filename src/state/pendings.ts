@@ -625,6 +625,9 @@ export interface CascadeStep extends RollParticipant {
   /** Étape de CHOIX « déviation » (folding P3a) : porte le Critique pré-tiré + le contexte d'attaque
    *  (JSON-sérialisable) ; l'applier appelle `resolveDeviation(step.deviation, chosen)`. */
   deviation?: PendingDeviation;
+  /** Étape de CHOIX « piège-lame » (folding P3b) : contexte du Test opposé ; l'applier appelle
+   *  `resolveBladeTrap(step.bladeTrap, chosen === 'trap')`. */
+  bladeTrap?: PendingBladeTrap;
   /** Étape « choix » : options présentées au joueur (l'option retenue pilote la conséquence). */
   options?: { key: string; label: string; detail?: string }[];
   /** Option retenue (clé) — analogue de `result` pour une étape « choix ». */

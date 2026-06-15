@@ -5,7 +5,7 @@
  */
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { LootGear, PendingCast, PendingDeviation } from './pendings';
+import type { LootGear, PendingCast, PendingDeviation, PendingBladeTrap } from './pendings';
 import { Combatant, ItemInstance, HitLocation, Weapon, DIFFICULTY_MODIFIERS, HIT_LOCATION_LABELS } from '../engine/types';
 import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
@@ -1174,7 +1174,20 @@ export function applyAttackResult(
     // avec une arme Piège-lame face à une lame peut choisir de PIÉGER à la place (LDB 62 l.292-294) → modale.
     if (dd.success && isDoubleRoll(dd.roll) && !isOutOfAction(attacker)) {
       if (target.kind === 'hero' && res.parryWeapon && hasBladeTrap(res.parryWeapon) && weaponHasBlade(weapon)) {
-        set({ pendingBladeTrap: { defenderId: target.id, attackerId: attacker.id, weapon, parryWeaponName: res.parryWeapon.name, defSL: dd.sl, roll: dd.roll } });
+        // Folding P3b : le choix Piéger/Critique devient une ÉTAPE de la séquence (texte + options),
+        // au lieu d'une modale `pendingBladeTrap` séparée. L'applier 'bladeTrap' appelle resolveBladeTrap.
+        const pbt: PendingBladeTrap = { defenderId: target.id, attackerId: attacker.id, weapon, parryWeaponName: res.parryWeapon.name, defSL: dd.sl, roll: dd.roll };
+        pushCombatStep(set, {
+          id: `cons-bladetrap-${target.id}`, kind: 'bladeTrap', actorId: target.id, icon: '🗡️',
+          label: 'Parade — piéger la lame ?',
+          options: [{ key: 'trap', label: '🗡️ Piéger la lame' }, { key: 'crit', label: '💥 Coup Critique' }],
+          defaultChoice: 'crit', bladeTrap: pbt,
+          outcome: [
+            `${target.name} place un Critique en parant avec ${res.parryWeapon.name} — la lame de ${attacker.name} (${weapon.name}) est à portée.`,
+            `Piéger : Test opposé de Force (+${dd.sl} DR). Succès → ${attacker.name} lâche sa lame (Stupéfiant → brisée).`,
+          ],
+          interactive: true,
+        });
       } else {
         critLog.push(`${target.name} place un Critique sur sa défense.`);
         applyOpposedCritical(get, set, attacker, dd.roll, { attackerId: target.id, weapon: res.parryWeapon?.name }, critLog);
@@ -3224,10 +3237,12 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
 /** Résolution du choix Piège-lame (LDB 62 l.292-294). `trap=false` → Coup Critique normal (LDB 14 l.7) ;
  *  `trap=true` → Test opposé de Force (+DR de la défense) : victoire = désarme, Succès Stupéfiant (DR
  *  net ≥ 6) = brise la lame sauf Incassable (sauvegarde Solide), échec = l'adversaire se libère. */
-export function resolveBladeTrap(get: Get, set: SetFn, trap: boolean): void {
-  const { battle, pendingBladeTrap: pbt } = get();
-  if (!battle || !pbt) return;
-  set({ pendingBladeTrap: null });
+/** Résout un Piège-lame (sans la lecture du pending) — partagé par la modale autonome
+ *  (`bladeTrapResolve`, `resume:true`) ET l'étape de séquence (applier 'bladeTrap', `resume:false` :
+ *  la reprise de l'IA part de la fermeture de séquence). */
+export function resolveBladeTrap(get: Get, set: SetFn, pbt: PendingBladeTrap, trap: boolean, opts: { resume: boolean }): void {
+  const battle = get().battle;
+  if (!battle) return;
   const defender = battle.combatants.find((c) => c.id === pbt.defenderId);
   const attacker = battle.combatants.find((c) => c.id === pbt.attackerId);
   if (!defender || !attacker) return;
@@ -3265,8 +3280,15 @@ export function resolveBladeTrap(get: Get, set: SetFn, trap: boolean): void {
     pushReveal(set, { kind: 'assommante', title: 'Piège-lame', lines: [...lines], subjectId: attacker.id, actorId: defender.id, weapon: pbt.parryWeaponName, severity: 'minor' });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
-  resumeEnemyTurn(get, set);
+  if (opts.resume) resumeEnemyTurn(get, set); // sinon : reprise par la fermeture de séquence
 }
+
+/** Applier de l'étape de CHOIX « piège-lame » (folding P3b) : « Piéger » tente le Test opposé de Force,
+ *  « Coup Critique » inflige le critique normal. Le RÉSULTAT (kind 'assommante') route lui-même dans la
+ *  séquence (P2) ; `resume:false` → reprise par la fermeture de séquence. */
+registerCascadeApplier('bladeTrap', (get, set, step) => {
+  if (step.bladeTrap) resolveBladeTrap(get, set, step.bladeTrap, step.chosen === 'trap', { resume: false });
+});
 
 /** Déstabilisante (Aux Armes p.89) : résout le choix du héros de renverser (dépense d'Avantages +
  *  Test opposé Force/Athlétisme → À Terre). `accept=false` : il renonce, rien n'est dépensé. */

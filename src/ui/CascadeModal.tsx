@@ -166,6 +166,7 @@ export function CascadeModal() {
         postRollExtra={
           <>
             {rev?.kind === 'critical' && <CriticalBody entry={rev} actor={revActor} subject={revSubject} />}
+            {!rev && cur.outcome?.length ? <div className="rm-log">{cur.outcome.map((l, i) => <p key={i}>{l}</p>)}</div> : null}
             <OptionChooser
               layout="grid"
               groupLabel={cur.label}

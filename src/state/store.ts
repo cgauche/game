@@ -3164,7 +3164,12 @@ export const useGame = create<GameState>((set, get) => ({
   // Rappelle applyAttackResult avec la décision (early-return de suspension sauté → application UNE
   // seule fois) puis REJOUE les post-étapes que le caller avait sautées à la suspension, dans l'ordre
   // exact de defenseConfirm/doAttack : balayage → Piétinement → Maladresse défenseur (auto-gated) → reprise IA.
-  bladeTrapResolve: (trap: boolean) => resolveBladeTrap(get, set, trap),
+  bladeTrapResolve: (trap: boolean) => {
+    const pbt = get().pendingBladeTrap;
+    if (!pbt) return;
+    set({ pendingBladeTrap: null });
+    resolveBladeTrap(get, set, pbt, trap, { resume: true }); // modale autonome : reprend l'IA elle-même
+  },
   knockdownResolve: (accept: boolean) => resolveKnockdown(get, set, accept),
   renounceResolve: (renounce: boolean) => resolveRenounce(get, set, renounce),
   deviationApply: (deviate: boolean) => {
