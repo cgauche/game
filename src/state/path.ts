@@ -48,6 +48,28 @@ function neighborsOf(p: Pt, links: Map<string, Pt[]>): Pt[] {
   return out;
 }
 
+/** Sauts (Saut, LDB 15 l.114-115) : atterrissages possibles en franchissant un GOUFFRE — des cases
+ *  non-marchables au même étage, en ligne droite — jusqu'à `jump` cases de distance. Une case
+ *  intermédiaire MARCHABLE interrompt (on s'y poserait au lieu de sauter par-dessus). Les sauts
+ *  retournés sont DÉJÀ validés (atterrissage praticable et libre). `foot>1` ne saute pas ; `jump<2`
+ *  = aucun saut (un pas d'1 case n'est jamais un saut). La portée libre (M/3 m) vs avec Test se
+ *  décide à la couche déplacement — ici on ne fait que l'atteignabilité géométrique. */
+function jumpNeighbors(scene: Scene, p: Pt, jump: number, blocked: Set<string>, foot: number): Pt[] {
+  if (jump < 2 || foot > 1) return [];
+  const z = pz(p);
+  const out: Pt[] = [];
+  for (const [dx, dy] of NEIGHBORS) {
+    for (let d = 2; d <= jump; d++) {
+      let overGap = true; // les cases 1..d-1 doivent toutes être un gouffre (non-marchables)
+      for (let k = 1; k < d; k++) if (isWalkable(scene, p.x + dx * k, p.y + dy * k, z)) { overGap = false; break; }
+      if (!overGap) break; // une case marchable interrompt : pas de saut plus loin dans cette direction
+      const lx = p.x + dx * d, ly = p.y + dy * d;
+      if (footFits(scene, lx, ly, z, foot, blocked)) out.push(z ? { x: lx, y: ly, z } : { x: lx, y: ly });
+    }
+  }
+  return out;
+}
+
 /**
  * L'empreinte N×N ancrée en (x, y, z) (coin NO) tient-elle ? Toutes ses tuiles (au même étage)
  * doivent être walkable (terrain/bâtiment) ET non bloquées. Pour `foot=1`, vérifie juste la tuile.
@@ -161,7 +183,7 @@ export function fleeReachable(scene: Scene, from: Pt, foe: Pt, range: number, bl
 }
 
 /** Plus court chemin (BFS) de `start` à `goal`, ou null. */
-export function pathTo(scene: Scene, start: Pt, goal: Pt, blocked: Set<string>, foot = 1): Pt[] | null {
+export function pathTo(scene: Scene, start: Pt, goal: Pt, blocked: Set<string>, foot = 1, jump = 0): Pt[] | null {
   const links = stairLinks(scene);
   const gz = pz(goal);
   const came = new Map<string, string | null>();
@@ -188,6 +210,14 @@ export function pathTo(scene: Scene, start: Pt, goal: Pt, blocked: Set<string>, 
       // une case occupée (on s'arrête au contact d'un ennemi), comportement historique.
       if (foot > 1) { if (!footFits(scene, n.x, n.y, nz, foot, blocked)) continue; }
       else if (!isGoal && (!isWalkable(scene, n.x, n.y, nz) || blocked.has(k))) continue;
+      came.set(k, key(p.x, p.y, pz(p)));
+      queue.push(n);
+    }
+    // Sauts par-dessus un gouffre : atterrissages déjà validés (praticables/libres) — n'altèrent jamais
+    // le déplacement à pied (jumpNeighbors=[] sans gouffre), donc gratis quand jump=0.
+    for (const n of jumpNeighbors(scene, p, jump, blocked, foot)) {
+      const k = key(n.x, n.y, pz(n));
+      if (came.has(k)) continue;
       came.set(k, key(p.x, p.y, pz(p)));
       queue.push(n);
     }
