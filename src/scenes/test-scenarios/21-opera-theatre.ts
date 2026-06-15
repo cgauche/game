@@ -159,6 +159,19 @@ const scene: Scene = {
             { type: 'setLight', level: 0.8 }, // l'éclat des pétards illumine brièvement toute la salle
             { type: 'zoneBlast', center: { x: 8, y: 8 }, radius: 1, damage: '2' },
             { type: 'journal', text: 'Une volée de pétards éclate sur le siège du professeur Pakker ! Le spectacle s’interrompt dans les cris — mais sans panique. Dans le brouhaha, une petite silhouette se faufile sous son fauteuil…' },
+            // Spot-check (intrigue n°2, source 08 l.162) : repérer Glimbrin le gnome qui vole les clés de
+            // l'École impériale d'artillerie sous la chaise. Difficile (-20) : le tumulte le couvre.
+            {
+              type: 'test', skill: 'Perception', difficulty: 'difficile', label: 'Repérer le voleur dans le brouhaha',
+              onSuccess: [
+                { type: 'journal', text: 'Vous surprenez un gnome glissé sous le fauteuil du professeur — il détale les mains vides. Les clés de l’École d’artillerie sont sauves.' },
+                { type: 'setFlag', flag: 'glimbrinDejoue' },
+              ],
+              onFailure: [
+                { type: 'journal', text: 'Plus tard, le professeur Pakker s’aperçoit avec effroi que les clés de l’École impériale d’artillerie ont disparu de sa poche…' },
+                { type: 'setFlag', flag: 'clesVolees' },
+              ],
+            },
           ],
         },
         { type: 'delayedEffect', afterMinutes: 11, effects: [{ type: 'setLight', level: 0.35 }] }, // la salle se rassoit dans la pénombre

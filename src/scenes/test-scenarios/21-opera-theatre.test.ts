@@ -93,6 +93,17 @@ describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', ()
     expect(useGame.getState().lightLevel).toBe(0.35);
   });
 
+  it('le spot-check Glimbrin (intrigue n°2) a ses deux issues (clés sauves / volées)', () => {
+    const petards = arm.effects.find((e): e is Extract<Effect, { type: 'delayedEffect' }> => e.type === 'delayedEffect' && e.afterMinutes === 10)!;
+    const spot = petards.effects.find((e): e is Extract<Effect, { type: 'test' }> => e.type === 'test')!;
+    expect(spot.skill).toBe('Perception');
+    lonePartyAt(35);
+    applyEffects(useGame.getState, useGame.setState, spot.onFailure!);
+    expect(useGame.getState().flags.clesVolees).toBe(true);
+    applyEffects(useGame.getState, useGame.setState, spot.onSuccess!);
+    expect(useGame.getState().flags.glimbrinDejoue).toBe(true);
+  });
+
   it('sans désamorçage, l’explosion frappe l’antichambre au bout de la mèche', () => {
     const before = lonePartyAt(35).wounds.current;
     applyEffects(useGame.getState, useGame.setState, arm.effects);
