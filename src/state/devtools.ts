@@ -147,13 +147,54 @@ export function buildApi() {
       };
     },
 
-    /** DEBUG affichage multi-niveaux : force l'étage mis en AVANT (les autres passent en fantôme).
+    /** DEBUG affichage multi-niveaux : force l'étage AFFICHÉ (les autres ne sont pas rendus).
      *  `__wfrp.viewLevel(1)` montre l'étage ; `__wfrp.viewLevel(0)` le rez ; `__wfrp.viewLevel(null)`
      *  = automatique (l'étage suit le groupe). Sans argument : renvoie l'override courant. */
     viewLevel: (z?: number | null) => {
       if (z === undefined) return { override: getViewZ(), note: 'null = auto (suit le groupe)' };
       setViewZ(z);
-      return `✅ étage mis en avant : ${z === null ? 'auto (suit le groupe)' : z}`;
+      return `✅ étage affiché : ${z === null ? 'auto (suit le groupe)' : z}`;
+    },
+
+    /** PLAN ASCII de l'étage (défaut = l'étage AFFICHÉ) — la DONNÉE rendue en box-drawing, à comparer
+     *  ligne pour ligne avec ce qui est à l'écran (vue du dessus). Tuiles : `.` parquet · `,` dalle ·
+     *  `M` marbre · `S` surélevé · `s` contrebas · `#` escalier · espace=vide. Arêtes : `-`/`|` mur ·
+     *  `:` porte · `/ \` diagonale. `console.log(__wfrp.ascii())` pour l'alignement monospace. */
+    ascii: (z?: number) => {
+      const s = g();
+      const sc = s.scene;
+      if (!sc) return '❌ aucune scène';
+      const zz = z ?? getViewZ() ?? (s.partyPos.z ?? 0);
+      const W = sc.dimensions.w, H = sc.dimensions.h;
+      const lvl = sc.levels.find((l) => l.z === zz) ?? sc.levels[0];
+      const tiles = lvl.tiles, elev = lvl.elev ?? [];
+      const wall = new Map<string, boolean>(), diag = new Map<string, string>(), stair = new Set<string>();
+      for (const w of sc.walls ?? []) {
+        if ((w.z ?? 0) !== zz) continue;
+        if (w.side === 'N' || w.side === 'E') wall.set(`${w.x},${w.y},${w.side}`, !!w.door);
+        else diag.set(`${w.x},${w.y}`, w.side);
+      }
+      for (const st of sc.stairs ?? []) if (st.from.z === zz || st.to.z === zz) stair.add(`${st.from.x},${st.from.y}`);
+      const cell = (x: number, y: number) => {
+        if (stair.has(`${x},${y}`)) return '#';
+        const d = diag.get(`${x},${y}`); if (d) return d;
+        const t = tiles[y * W + x], e = elev[y * W + x] ?? 0;
+        if (t === 'planches') return e > 0 ? 'S' : e < 0 ? 's' : 'P';
+        return t === 'plancher' ? '.' : t === 'dalle' ? ',' : t === 'marbre' ? 'M' : t === 'vide' ? ' ' : '?';
+      };
+      const rows: string[] = [];
+      for (let gy = 0; gy <= 2 * H; gy++) {
+        let line = '';
+        for (let gx = 0; gx <= 2 * W; gx++) {
+          const ox = gx % 2 === 1, oy = gy % 2 === 1;
+          if (ox && oy) line += cell((gx - 1) / 2, (gy - 1) / 2);
+          else if (!ox && !oy) line += '+';
+          else if (ox && !oy) { const wl = wall.get(`${(gx - 1) / 2},${gy / 2},N`); line += wl === undefined ? ' ' : wl ? ':' : '-'; }
+          else { const wl = wall.get(`${gx / 2 - 1},${(gy - 1) / 2},E`); line += wl === undefined ? ' ' : wl ? ':' : '|'; }
+        }
+        rows.push(line.replace(/\s+$/, ''));
+      }
+      return `étage z=${zz} (${W}×${H})\n` + rows.join('\n');
     },
 
     /** Navigue vers un écran (menu/party/creator/editor/test/coop/campaign). */
