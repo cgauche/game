@@ -125,6 +125,23 @@ export type Flow =
 /** Flow vide (séquence sans étape) — neutre, sûr comme valeur par défaut d'un consommateur. */
 export const EMPTY_FLOW: Flow = { kind: 'seq', steps: [] };
 
+/** DÉCLENCHEUR d'un effet « sur événement » — le pendant du « au lancement » des sorts. Partagé par
+ *  TOUT porteur d'effets déclenchés (Trait de créature, Atout d'arme…). `onHit` : après une touche
+ *  réussie (du porteur ou de l'arme) ; `onWoundLoss` : quand le porteur PERD des PB ; `onRoundStart` :
+ *  au début de son Round ; `onStartled` : magie / bruit fort ; `onKill` : adversaire mis hors de combat. */
+export type EffectTrigger = 'onHit' | 'onWoundLoss' | 'onRoundStart' | 'onStartled' | 'onKill';
+
+/** Effet DÉCLENCHÉ authoré (donnée éditable) : un Flow d'ops appliqué à `on` quand `trigger` se produit.
+ *  GÉNÉRIQUE — porté indifféremment par `TraitData.effects` (Toile, Sang corrosif…) ET `QualityData.effects`
+ *  (Atout d'arme : « à la touche, 1d10 + Empêtré »). Même vocabulaire que les sorts (réutilise
+ *  `runSpellFlow`/`applyOps`) → plus de handler en dur. `on` : le porteur lui-même (`self`), la victime
+ *  touchée (`victim`), ou les adversaires Engagés du porteur (`engaged`). */
+export interface TriggeredEffect {
+  trigger: EffectTrigger;
+  on: 'self' | 'victim' | 'engaged';
+  flow: Flow;
+}
+
 /** Enveloppe une liste d'`Effect` (ancien format) en un Flow `seq` de `do` — pont de migration des
  *  consommateurs (`Trigger.effects`, `DialogueChoice.effects`) vers le Flow, sans réécrire la donnée. */
 export function flowFromEffects(effects: Effect[] | undefined): Flow {

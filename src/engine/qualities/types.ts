@@ -96,8 +96,6 @@ export interface QualityDef {
   chargeGatedDamageAtouts?: boolean;
   /** À Répétition (Indice) (LDB 62 l.264-265) : chargeur de Indice munitions avant rechargement complet. */
   magazine?: boolean;
-  /** Immobilisante (LDB 62 l.289-290) : toute touche → État Empêtré (source = l'attaquant, Force). */
-  onHitEntangle?: boolean;
   /** Protectrice (Indice) (LDB 62 l.306-307) : Indice PA partout quand on OPPOSE l'attaque avec
    *  l'arme ; Indice ≥ 2 → peut aussi opposer les projectiles en Ligne de Vue. */
   parryAP?: boolean;

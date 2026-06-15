@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   traitCharMods, traitMovementMod, traitBonusWoundsBE, wardSaves, attacksAreMagical, isEtherial,
   banishedAtZero, hasChampionDefense, meleeHitPenalty, hasPerturbingAura, hasCorrosiveBlood,
-  webForce, magicResistanceOf, immunityTypes, isUnstable, isPainless, regenerates,
+  magicResistanceOf, immunityTypes, isUnstable, isPainless, regenerates,
   bellicosePsychImmune, isMindless, isBestial, isColdBlooded, gorgesOnKill, isStupid, hasRage,
   isNervous, isTerritorial, flyMeters, runMultiplier, traitSeesInDark, hasStealthAgBonus, mutationsAtSpawn,
 } from './dispatch';
@@ -51,7 +51,6 @@ describe('dispatch — parsing et prédicats (LDB 85)', () => {
     expect(meleeHitPenalty(['Parasité'])).toBe(-10);
     expect(hasPerturbingAura(['Perturbant'])).toBe(true);
     expect(hasCorrosiveBlood(['Sang corrosif'])).toBe(true);
-    expect(webForce(['Toile 40'])).toBe(40);
     expect(isUnstable(['Instable'])).toBe(true);
   });
   it('magie : Résistance à la Magie, Immunité (Poison)', () => {

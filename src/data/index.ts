@@ -194,6 +194,19 @@ export interface TraitData {
   prefix: string | null;
   desc: string;
   source: { book: string; page: number };
+  /** Effets MÉCANIQUES authorés (déclencheur → ops du Flow) — Traits « effet sur événement » (Toile,
+   *  Sang corrosif, Régénération…) appliqués par `state/triggeredEffects`, plus de handler en dur.
+   *  Type-only (le moteur reste pur : la donnée référence le Flow sans en dépendre à l'exécution). */
+  effects?: import('../state/flow').TriggeredEffect[];
+}
+/** Atout/Défaut d'arme (LDB 62-63) : libellé + desc VERBATIM + effets déclenchés authorés (mêmes
+ *  `TriggeredEffect` que les Traits — un Atout « à la touche : 1d10 + Empêtré » s'édite au Codex). */
+export interface QualityData {
+  label: string;
+  type: string;
+  subType: string | null;
+  desc: string;
+  effects?: import('../state/flow').TriggeredEffect[];
 }
 export interface SpellData {
   label: string;
@@ -294,7 +307,11 @@ export const etats = etatsJson as EtatData[];
 // qui ne réécrit que traits.json) : homebrew frenchy.bzh (Aura de Dhar/Mort, Charnier) + traits de
 // suppléments autorisés référencés par le bestiaire mais absents d'all-data.json (Redoutable, ZI).
 export const traits = [...(traitsJson as TraitData[]), ...(frenchyTraitsJson as TraitData[])];
-export const qualities = qualitiesJson as any[];
+/** Index des Traits par libellé canonique — lecture des `effects` au runtime (state/triggeredEffects). */
+export const traitByLabel: Map<string, TraitData> = new Map(traits.map((t) => [t.label, t]));
+export const qualities = qualitiesJson as QualityData[];
+/** Index des Atouts/Défauts par libellé — lecture des `effects` déclenchés au runtime (triggeredEffects). */
+export const qualityByLabel: Map<string, QualityData> = new Map(qualities.map((q) => [q.label, q]));
 export const trappings = trappingsJson as TrappingData[];
 // Bestiaire APP-OWNED : officiel + complément « frenchy.bzh » INTÉGRÉ directement dans creatures.json
 // (fusionné 2026-06-15, espèce explicite posée) — plus de dataset frenchy séparé à merger.

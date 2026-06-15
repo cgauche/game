@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   resolveQualities, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, strikesLast, canStrikeFirst,
-  dangerousNine, magazineSize, entanglesOnHit, protectriceAP, rangedOpposeWeapon, canPushback,
+  dangerousNine, magazineSize, protectriceAP, rangedOpposeWeapon, canPushback,
   hasBladeTrap, qualityDamageStep,
 } from './dispatch';
 import { woundsFromHit, finishMelee, rollMeleeDefender } from '../combat';
@@ -120,13 +120,6 @@ describe('À Répétition — chargeur (LDB 62 l.264-265)', () => {
   it('magazineSize lit l’Indice', () => {
     expect(magazineSize(w(['À Répétition 4', 'Recharge 5'], { type: 'ranged' }))).toBe(4);
     expect(magazineSize(w(['Recharge 2'], { type: 'ranged' }))).toBeUndefined();
-  });
-});
-
-describe('Immobilisante — Empêtré sur toute touche (LDB 62 l.289-290)', () => {
-  it('entanglesOnHit', () => {
-    expect(entanglesOnHit(w(['Immobilisante']))).toBe(true);
-    expect(entanglesOnHit(w([]))).toBe(false);
   });
 });
 

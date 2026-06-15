@@ -41,8 +41,6 @@ export interface TraitDef {
   perturbingAura?: boolean;
   /** Sang corrosif : quand elle perd des PB (mêlée), les Engagés subissent 1d10 PB (BE+PA, min 1). */
   corrosiveBlood?: boolean;
-  /** Toile (Indice) : toute touche réussie → État Empêtré (Force Indice). */
-  webOnHit?: boolean;
   /** Résistance à la Magie (Indice) : le DR des Sorts l'affectant est réduit d'Indice. */
   magicResistance?: boolean;
   /** Immunité (Type) : Dégâts du Type ignorés (y compris critiques). */

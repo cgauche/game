@@ -49,11 +49,12 @@ import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, cle
 import { gainAdvantage } from '../engine/advantage';
 import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, occupiesTile } from './footprint';
-import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, entanglesOnHit, magazineSize, hasBladeTrap, canPushback, strikesLast, isFirearmQuality } from '../engine/qualities/dispatch';
+import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSize, hasBladeTrap, canPushback, strikesLast, isFirearmQuality } from '../engine/qualities/dispatch';
+import { fireTriggers } from './triggeredEffects';
 import { hasStealAdvantage, shieldAdvantageLevel, hasRiposte, talentCritExtraWounds, hasSurpriseSave, talentMagicResistance, hasBraveheart, outnumberCountBonus, hasStunSave, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony } from '../engine/combatFeatures/dispatch';
 import { canStrikeFirst } from '../engine/qualities/dispatch';
 import {
-  wardSaves, hasChampionDefense, webForce, hasCorrosiveBlood, banishedAtZero, gorgesOnKill,
+  wardSaves, hasChampionDefense, hasCorrosiveBlood, banishedAtZero, gorgesOnKill,
   isStupid, hasRage, regenerates, isUnstable, isBestial, isTerritorial, hasPerturbingAura,
   traitSeesInDark, isColdBlooded, bellicosePsychImmune, magicResistanceOf, isNervous, immunityTypes, hasStealthAgBonus, flyMeters, runMultiplier,
   hasTraitKey, asTrait,
@@ -1220,13 +1221,6 @@ export function applyAttackResult(
       }
     }
   }
-  // Toile (Indice) (LDB 85 p.343) : toute touche réussie → État Empêtré (le Test de libération oppose
-  // la Force de la SOURCE — approximation de la « Force Indice » de la toile, documentée).
-  if (res.hit && webForce(attacker.traits) != null && !hasCondition(target, 'Empêtré')) {
-    addCondition(target, 'Empêtré');
-    const cond = target.conditions.find((c) => c.name === 'Empêtré'); if (cond) cond.sourceId = attacker.id;
-    critLog.push(`${target.name} est Empêtré (Toile).`);
-  }
   // Infecté / Maladie (Type) (LDB 85 p.340) : un héros BLESSÉ par la créature porteuse est exposé →
   // Tests de Contraction post-combat (finalizeBattle, LDB 20 l.32/49). Rongeur Infecté → Fièvre du Rongeur.
   if (res.hit && res.woundsLost && target.kind === 'hero') {
@@ -1393,13 +1387,10 @@ export function applyAttackResult(
       }
     }
   }
-  // Immobilisante (LDB 62 l.289-290) : toute touche réussie → État Empêtré, source = l'attaquant
-  // (le Test opposé de Force pour se libérer vise sa Force — LDB 16 l.61, comme Constricteur).
-  if (res.hit && entanglesOnHit(weapon) && !hasCondition(target, 'Empêtré')) {
-    addCondition(target, 'Empêtré');
-    const cond = target.conditions.find((c) => c.name === 'Empêtré'); if (cond) cond.sourceId = attacker.id;
-    log.push(ev('condition', `${target.name} est Empêtré (${weapon.name} — Immobilisante).`, target.id));
-  }
+  // Effets DÉCLENCHÉS « à la touche » authorés (donnée éditable) : Traits de l'attaquant (Toile…) ET
+  // Atouts de l'arme (Immobilisante, Atout custom « 1d10 + Empêtré »…). UN dispatcher générique
+  // (state/triggeredEffects) remplace les handlers en dur — Trait et Atout traités à l'identique.
+  if (res.hit) for (const line of fireTriggers(get, attacker, 'onHit', { victim: target, weapon, rng: battleRng() })) log.push(ev('condition', line, target.id));
   // Déstabilisante (Aux Armes p.89) : après une touche, l'attaquant PEUT dépenser des Avantages pour
   // un Test opposé Force/Athlétisme ; gagné, la cible est mise À Terre. HÉROS → choix en modale
   // (pendingKnockdown) ; IA → déclenché d'office quand elle a les Avantages requis.

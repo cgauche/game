@@ -140,11 +140,6 @@ export function magazineSize(w: QualityCarrier | undefined): number | undefined 
   return r ? r.indice ?? 1 : undefined;
 }
 
-/** Immobilisante (LDB 62 l.289-290) : toute touche inflige l'État Empêtré (source = l'attaquant). */
-export function entanglesOnHit(w: QualityCarrier | undefined): boolean {
-  return resolveQualities(w).some((r) => r.def.onHitEntangle);
-}
-
 /** Protectrice (Indice) : PA conférés à TOUTES les localisations quand on OPPOSE l'attaque avec
  *  cette arme (LDB 62 l.306). 0 si la qualité est absente. */
 export function protectriceAP(parryWeapon: QualityCarrier | undefined): number {

@@ -203,12 +203,6 @@ export function hasCorrosiveBlood(traits: TraitList | undefined): boolean {
   return resolveTraits(traits).some((r) => r.def.corrosiveBlood);
 }
 
-/** Toile (Indice) : Force de l'Empêtré infligé sur toute touche, ou null. */
-export function webForce(traits: TraitList | undefined): number | null {
-  const r = first(traits, (d) => !!d.webOnHit);
-  return r ? r.indice ?? 0 : null;
-}
-
 /** Résistance à la Magie (Indice) : réduction du DR des Sorts (défaut 1 si l'Indice manque). */
 export function magicResistanceOf(traits: TraitList | undefined): number {
   const r = first(traits, (d) => !!d.magicResistance);

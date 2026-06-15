@@ -16,7 +16,7 @@ import { JsonField } from '../editor/JsonField';
 import { RACES } from '../../gameIso/rig/races';
 import { CreaturePreview } from './CreaturePreview';
 import type { EntityAppearance } from '../../state/scene';
-import { type Flow, EMPTY_FLOW } from '../../state/flow';
+import { type Flow, EMPTY_FLOW, type TriggeredEffect, type EffectTrigger } from '../../state/flow';
 
 /** Catégorie Codex → dataset éditable. `gods` (cultes générés) absent = non éditable en v1. */
 const CATEGORY_DATASET: Record<string, DatasetKey> = {
@@ -52,11 +52,13 @@ export function CodexEdit({ categoryKey, label, onClose }: { categoryKey: string
   // formulaire inféré. Même patron que `appearance` : on filtre le champ et on rend l'éditeur spécialisé.
   const isCreature = categoryKey === 'creatures';
   const isSpell = categoryKey === 'spells';
+  // Porteurs d'effets DÉCLENCHÉS (mêmes `TriggeredEffect` éditables) : Traits ET Atouts d'arme.
+  const isTriggered = categoryKey === 'traits' || categoryKey === 'qualities';
   const fields = useMemo(
     () => inferFields(arr as Record<string, unknown>[]).filter(
-      (f) => !(isCreature && f.key === 'appearance') && !(isSpell && f.key === 'effects'),
+      (f) => !(isCreature && f.key === 'appearance') && !((isSpell || isTriggered) && f.key === 'effects'),
     ),
-    [arr, isCreature, isSpell],
+    [arr, isCreature, isSpell, isTriggered],
   );
   const edit = (key: string, v: unknown) => { setEntry((e) => ({ ...e, [key]: v })); setDirty(true); };
 
@@ -87,6 +89,7 @@ export function CodexEdit({ categoryKey, label, onClose }: { categoryKey: string
       <div className="codex-edit-form">
         {isCreature && <AppearanceField name={String(entry.label ?? label)} value={entry.appearance as EntityAppearance | undefined} onChange={(v) => edit('appearance', v)} />}
         {isSpell && <SpellEffectsField value={entry.effects as Flow | undefined} onChange={(v) => edit('effects', v)} />}
+        {isTriggered && <TriggeredEffectsField value={entry.effects as TriggeredEffect[] | undefined} onChange={(v) => edit('effects', v)} />}
         {fields.map((f) => <Field key={f.key} field={f} value={entry[f.key]} onChange={(v) => edit(f.key, v)} />)}
       </div>
     </div>
@@ -134,6 +137,53 @@ function SpellEffectsField({ value, onChange }: { value: Flow | undefined; onCha
     <div className="ed-field">
       <span>effets du sort (Flow éditable — effets mécaniques, conditions, tests)</span>
       <FlowEditor flow={value ?? EMPTY_FLOW} ctx={{ encounters: [], dialogues: [] }} onChange={onChange} />
+    </div>
+  );
+}
+
+const TRIGGER_LABEL: Record<EffectTrigger, string> = {
+  onHit: 'à la touche',
+  onWoundLoss: 'quand le porteur perd des PB',
+  onRoundStart: 'au début de son Round',
+  onStartled: 'magie / bruit fort',
+  onKill: 'quand il neutralise un adversaire',
+};
+const ON_LABEL: Record<TriggeredEffect['on'], string> = {
+  self: 'le porteur lui-même',
+  victim: 'la victime touchée',
+  engaged: 'ses adversaires Engagés',
+};
+
+/** Éditeur des EFFETS DÉCLENCHÉS (`TriggeredEffect[]`) — porté indifféremment par un Trait OU un Atout
+ *  d'arme. MÊME logique authorée que les sorts : une LISTE d'effets, chacun = un DÉCLENCHEUR (sur
+ *  événement) + une CIBLE + un `Flow` d'ops éditable (réutilise `FlowEditor`/`GameOpEditor`). Écrit le
+ *  record `traits.json`/`qualities.json` au save → `state/triggeredEffects` les applique en jeu. */
+function TriggeredEffectsField({ value, onChange }: { value: TriggeredEffect[] | undefined; onChange: (v: TriggeredEffect[]) => void }) {
+  const list = value ?? [];
+  const set = (i: number, patch: Partial<TriggeredEffect>) => onChange(list.map((e, j) => (j === i ? { ...e, ...patch } : e)));
+  const add = () => onChange([...list, { trigger: 'onHit', on: 'victim', flow: EMPTY_FLOW }]);
+  return (
+    <div className="ed-field">
+      <span>effets déclenchés (déclencheur → Flow d’ops, comme un sort)</span>
+      {list.map((eff, i) => (
+        <div className="ed-subfield trait-effect" key={i}>
+          <div className="tf-row">
+            <label className="dr">Déclencheur
+              <select value={eff.trigger} onChange={(e) => set(i, { trigger: e.target.value as EffectTrigger })}>
+                {(Object.keys(TRIGGER_LABEL) as EffectTrigger[]).map((t) => <option key={t} value={t}>{TRIGGER_LABEL[t]}</option>)}
+              </select>
+            </label>
+            <label className="dr">Cible
+              <select value={eff.on} onChange={(e) => set(i, { on: e.target.value as TriggeredEffect['on'] })}>
+                {(Object.keys(ON_LABEL) as TriggeredEffect['on'][]).map((o) => <option key={o} value={o}>{ON_LABEL[o]}</option>)}
+              </select>
+            </label>
+            <button className="btn small danger" title="Supprimer l’effet" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
+          </div>
+          <FlowEditor flow={eff.flow ?? EMPTY_FLOW} ctx={{ encounters: [], dialogues: [] }} onChange={(flow) => set(i, { flow })} />
+        </div>
+      ))}
+      <button className="btn small" onClick={add}>+ Effet de trait</button>
     </div>
   );
 }

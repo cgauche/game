@@ -757,7 +757,36 @@
     "source": {
       "book": "LDB",
       "page": 343
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "target",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "name": "Empêtré",
+                    "value": 1,
+                    "unlessCondition": "Empêtré",
+                    "escapeStrength": {
+                      "charOf": "F"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
   },
   {
     "label": "Vampirique",
