@@ -28,7 +28,7 @@ describe('Tranche verticale — la bombe compose en données (Lot 0 + Lot 3)', (
     type: 'delayedEffect',
     afterMinutes: 60,
     cancelFlag: 'bombeDesamorcee',
-    flow: flowFromEffects([{ type: 'inflictDamage', target: 'party', amount: 15 }]),
+    flow: flowFromEffects([{ type: 'ops', on: 'party', ops: [{ op: 'wounds', amount: 15 }] }]),
   };
 
   it('la mèche brûle puis explose : à 22h02 le groupe subit le souffle', () => {

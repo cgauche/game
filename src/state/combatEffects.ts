@@ -3,7 +3,8 @@ import type { Get, Set as SetFn } from './flowTypes';
 import type { LootGear, CascadeStep } from './pendings';
 import { Combatant, ItemInstance, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { battleRng } from './battleRng';
-import { d10, rollExpr } from '../engine/dice';
+import { d10, rollExpr, defaultRNG } from '../engine/dice';
+import { applyOps } from '../engine/ops';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { eligibleTalent } from '../engine/grimoire';
 import { effectiveChar } from '../engine/characteristics';
@@ -208,7 +209,7 @@ export function fireScheduledEffects(get: Get, set: SetFn) {
   }
 }
 
-/** Cibles d'un Effet hors combat (`inflictDamage`/`applyCondition`) : les héros vivants concernés,
+/** Cibles d'un EffectOp de scène (`ops` on=party/hero) : les héros vivants concernés,
  *  dans le bon ensemble (file de combat si en combat, sinon le groupe). `hero` = celui désigné par
  *  `heroId` (défaut : 1er vivant) ; `party` = tous les héros vivants. SOURCE UNIQUE (pas de dup). */
 function effectTargets(get: Get, target: 'party' | 'hero', heroId?: string): Combatant[] {
@@ -579,22 +580,16 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
         set((s: GameState) => ({ scheduledEffects: [...s.scheduledEffects, { executeAt, flow: e.flow, cancelFlag: e.cancelFlag }] }));
         break;
       }
-      case 'inflictDamage': {
-        const targets = effectTargets(get, e.target, e.heroId);
-        for (const c of targets) loseWounds(c, Math.max(0, e.amount));
-        if (targets.length) {
-          set(touchActors(get()));
-          get().log(`💥 ${targets.length === 1 ? targets[0].name : 'Le groupe'} subit ${e.amount} Blessure(s).`);
-        }
-        break;
-      }
-      case 'applyCondition': {
-        const targets = effectTargets(get, e.target, e.heroId);
-        for (const c of targets) addCondition(c, e.name, e.value ?? 1);
-        if (targets.length) {
-          set(touchActors(get()));
-          get().log(`${targets.length === 1 ? targets[0].name : 'Le groupe'} : ${e.name}.`);
-        }
+      case 'ops': {
+        // EffectOp : applique les GameOps (vocabulaire mécanique des sorts) à la cible de SCÈNE
+        // (`party`/`hero`). `caster`/`target` = contexte d'incantation, résolu par le flux de sort → ignoré ici.
+        const on = e.on ?? 'party';
+        if (on !== 'party' && on !== 'hero') break;
+        const targets = effectTargets(get, on, e.heroId);
+        if (!targets.length) break;
+        const lines = targets.flatMap((c) => applyOps(c, e.ops, { rng: defaultRNG }));
+        set(touchActors(get()));
+        lines.forEach((l) => get().log(l));
         break;
       }
       case 'zoneBlast': {

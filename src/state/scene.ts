@@ -253,10 +253,12 @@ export type Effect =
   /** Inflige des dégâts (Lot 3) à un héros (`hero` + `heroId`, défaut = 1er vivant) ou à TOUT le
    *  groupe (`party`) — piège, souffle scénarisé, tick… `amount` = Points de Blessure (0 PB → À Terre,
    *  géré par `loseWounds`). DÉTERMINISTE (pas de jet) → pas de modale. */
-  | { type: 'inflictDamage'; target: 'party' | 'hero'; heroId?: string; amount: number }
-  /** Pose un État (Lot 3) sur un héros ou tout le groupe — En flammes, Empoisonné, Sonné, Aveuglé… ;
-   *  `value` = intensité initiale (défaut 1). */
-  | { type: 'applyCondition'; target: 'party' | 'hero'; heroId?: string; name: string; value?: number }
+  /** EFFECTOP — pont UNIQUE entre la logique authorée (Flow) et le moteur mécanique des sorts : applique
+   *  des `GameOp` (Blessures/soin/État/charMod/Corruption/buffs… — vocabulaire PARTAGÉ avec les sorts,
+   *  `engine/ops`) à une cible. Un piège comme un sort lancent désormais les MÊMES ops. `on` = qui :
+   *  `party`/`hero` (scène, défaut `party`) ou `caster`/`target` (contexte d'incantation, résolu par le
+   *  flux de sort). Remplace `inflictDamage` (→ op `wounds`) et `applyCondition` (→ op `condition`). */
+  | { type: 'ops'; ops: import('../engine/ops').GameOp[]; on?: 'party' | 'hero' | 'caster' | 'target'; heroId?: string }
   /** Souffle de ZONE (Lot 3) centré sur une case : tous les combattants à `radius` cases (Chebyshev)
    *  — en combat par position, hors combat le groupe (à partyPos) — subissent `damage` (formule de
    *  dés tirée PAR cible, ex. « 1d10+15 ») + les `conditions`. Bombe, grenade, piège de zone… Les
