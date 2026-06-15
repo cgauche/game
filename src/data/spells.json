@@ -8866,7 +8866,24 @@
     "desc": "Le chamane prie la Déesse-araignée de frapper les ennemis de sa tribu d'une explosion de venin. Une masse bilieuse et verdâtre de poison bouillonnant vient frapper un point à portée et dans le champ de vision du chamane. Tout ce qui se trouve à (Bonus de Sociabilité) mètres du point ciblé est aspergé de poison mystique, reçoit 1d10 + DR Dégâts qui ignorent les Points d'Armure et subit un État Empoisonné.",
     "effects": {
       "kind": "seq",
-      "steps": []
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "wounds",
+                "amount": { "dice": { "n": 1, "sides": 10 } },
+                "perSL": { "every": 1, "amount": 1 },
+                "ignoreTB": false
+              },
+              { "op": "condition", "name": "Empoisonné" }
+            ]
+          }
+        }
+      ]
     },
     "source": {
       "book": "ZI",
@@ -8884,7 +8901,19 @@
     "desc": "D'un claquement de doigts, le chamane invoque une nuée d'araignées minuscules. Celles-ci sortent de sa robe souillée et se ruent sur ses ennemis pour les mordre pendant leur course. Toute créature qui se trouve dans la Zone d'Effet subit 1 Blessure qui ignore le Bonus d'Endurance et les PA. Chaque tranche de 2 DR ajoute 1 Blessure supplémentaire. Tout le long de la prière, toute créature qui se trouve dans la Zone d'Effet subit un malus de -10 à tous ses Tests : le déferlement d'araignées mystiques qui courent sur sa peau l'empêche de se concentrer.",
     "effects": {
       "kind": "seq",
-      "steps": []
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              { "op": "wounds", "amount": 1, "perSL": { "every": 2, "amount": 1 } },
+              { "op": "testMod", "amount": -10 }
+            ]
+          }
+        }
+      ]
     },
     "source": {
       "book": "ZI",
@@ -8902,7 +8931,19 @@
     "desc": "Fonctionne exactement de la même manière que le Miracle de Taal Enchevêtrement, si ce n'est qu'il prend la forme de masses de toile d'araignée argentée.",
     "effects": {
       "kind": "seq",
-      "steps": []
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              { "op": "condition", "name": "Empêtré", "value": 1, "valuePerSL": { "every": 2, "amount": 1 } },
+              { "op": "narrative", "text": "Toile surprise : pour chaque +2 DR, vous pouvez PLUTÔT étendre la zone de BSoc m (au lieu de l'Empêtré supplémentaire, lui modélisé) ; la Force d'entrave pour se libérer égale votre Force Mentale — arbitrage MJ." }
+            ]
+          }
+        }
+      ]
     },
     "source": {
       "book": "ZI",

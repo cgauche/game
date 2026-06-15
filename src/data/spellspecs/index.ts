@@ -34,8 +34,10 @@ import { MIRACLES_RHYA } from './miracles-rhya';
 import { MIRACLES_TAAL } from './miracles-taal';
 import { MIRACLES_ULRIC } from './miracles-ulric';
 import { MIRACLES_VERENA } from './miracles-verena';
+import { CREATURES_ZI } from './creatures-zi';
 
 const ALL: SpellSpec[] = [
+  ...CREATURES_ZI,
   ...BENEDICTIONS, ...DOMAINE_FEU, ...DOMAINE_OMBRES, ...DOMAINE_METAL, ...DOMAINE_LUMIERE,
   ...DOMAINE_CIEUX, ...DOMAINE_GUEULE, ...DOMAINE_BETE, ...SORCELLERIE, ...DEMONOLOGIE,
   ...DOMAINE_MORT, ...DOMAINE_VIE, ...MAGIE_NATURELLE, ...NECROMANCIE, ...MAGIE_CHAOS, ...MAGIE_TZEENTCH,
