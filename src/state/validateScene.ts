@@ -86,6 +86,13 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
     }
     for (const t of s.triggers) {
       if (!within(t.rect.x, t.rect.y) || !within(t.rect.x + t.rect.w - 1, t.rect.y + t.rect.h - 1)) add('warn', 'trigger', t.id, `Zone « ${t.id} » déborde de la carte`);
+      const tc = t.temporalCondition;
+      if (tc) {
+        for (const [k, v] of [['afterHour', tc.afterHour], ['beforeHour', tc.beforeHour]] as const)
+          if (v != null && (v < 0 || v > 23)) add('error', 'trigger', t.id, `Fenêtre horaire « ${t.id} » : ${k} ${v} hors 0-23`);
+        for (const [k, v] of [['afterMinute', tc.afterMinute], ['beforeMinute', tc.beforeMinute]] as const)
+          if (v != null && (v < 0 || v > 59)) add('error', 'trigger', t.id, `Fenêtre horaire « ${t.id} » : ${k} ${v} hors 0-59`);
+      }
       walkEffects(t.effects, (eff) => checkEffect(eff, t.id, 'trigger'));
     }
     for (const d of s.dialogues) {

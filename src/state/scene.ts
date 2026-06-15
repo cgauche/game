@@ -7,7 +7,7 @@
  * Aucune scène n'est codée « en dur » : la campagne est de la donnée.
  */
 import { CharKey, Difficulty } from '../engine/types';
-import type { DayPhaseKey } from '../engine/clock';
+import { toDate, type DayPhaseKey } from '../engine/clock';
 import type { Dir8 } from './dir8';
 import { terrainWalkable } from './terrain';
 import { buildingBlockedAt } from './buildings';
@@ -321,13 +321,37 @@ export interface Dialogue {
   nodes: DialogueNode[];
 }
 
+/** Fenêtre horaire d'un trigger (heure-du-jour, `before` EXCLUSIF). Champs absents = borne ouverte ;
+ *  objet vide = toujours vrai. Combinée en ET avec `rect`/`condition` : le déclencheur ne se produit
+ *  qu'en entrant dans la zone PENDANT cette fenêtre (spot-check « au bon endroit au bon moment »). */
+export interface TemporalCondition {
+  afterHour?: number;
+  afterMinute?: number;
+  beforeHour?: number;
+  beforeMinute?: number;
+}
+
 export interface Trigger {
   id: string;
   rect: { x: number; y: number; w: number; h: number };
   once?: boolean;
   /** Condition de flag (cf. `condMet`) : un flag, sa négation `!flag`, ou plusieurs en ET (« v1,!v2 »). */
   condition?: string;
+  /** Fenêtre horaire (cf. `temporalConditionMet`) — combinée en ET avec rect/condition. Évaluée à
+   *  l'ENTRÉE dans la zone (le temps avançant par actions discrètes ; un pur événement horaire sans
+   *  position = `delayedEffect`). */
+  temporalCondition?: TemporalCondition;
   effects: Effect[];
+}
+
+/** La fenêtre horaire `cond` est-elle satisfaite à l'instant `gameTime` (minutes depuis l'époque) ?
+ *  Compare la minute-du-jour ; `before` est EXCLUSIF. SOURCE UNIQUE (triggers). PUR. */
+export function temporalConditionMet(cond: TemporalCondition, gameTime: number): boolean {
+  const d = toDate(gameTime);
+  const now = d.hour * 60 + d.minute;
+  if (cond.afterHour != null && now < cond.afterHour * 60 + (cond.afterMinute ?? 0)) return false;
+  if (cond.beforeHour != null && now >= cond.beforeHour * 60 + (cond.beforeMinute ?? 0)) return false;
+  return true;
 }
 
 /** Évalue une condition de flag — SOURCE UNIQUE pour les triggers ET les choix de dialogue. Un flag

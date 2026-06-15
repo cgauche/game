@@ -147,6 +147,19 @@ function TriggersTab({
 }) {
   const t = scene.triggers.find((x) => x.id === sel) ?? null;
   const upd = (patch: Partial<Trigger>) => setScene({ ...scene, triggers: scene.triggers.map((x) => (t && x.id === t.id ? { ...x, ...patch } : x)) });
+  /** MAJ de la fenêtre horaire du trigger, élaguée à `undefined` si plus aucune borne. */
+  const setTemporal = (patch: Partial<NonNullable<Trigger['temporalCondition']>>) => {
+    const m = { ...(t?.temporalCondition ?? {}), ...patch };
+    const clean = Object.fromEntries(Object.entries(m).filter(([, v]) => v != null)) as NonNullable<Trigger['temporalCondition']>;
+    upd({ temporalCondition: Object.keys(clean).length ? clean : undefined });
+  };
+  const timeField = (key: 'afterHour' | 'afterMinute' | 'beforeHour' | 'beforeMinute', max: number, title: string) => (
+    <input
+      type="number" min={0} max={max} title={title} style={{ width: '3.2em' }}
+      value={t?.temporalCondition?.[key] ?? ''}
+      onChange={(e) => setTemporal({ [key]: e.target.value === '' ? undefined : Number(e.target.value) })}
+    />
+  );
   return (
     <div className="logic-split">
       <div className="logic-list">
@@ -205,6 +218,9 @@ function TriggersTab({
               onChange={(e) => upd({ condition: e.target.value || undefined })}
               placeholder="condition (flag, !flag)"
             />
+            <label className="ed-check" title="Fenêtre horaire : le trigger ne se déclenche qu'en entrant dans la zone pendant ce créneau (before exclusif).">
+              ⏰ après {timeField('afterHour', 23, 'heure (0-23)')}:{timeField('afterMinute', 59, 'minute (0-59)')} avant {timeField('beforeHour', 23, 'heure (0-23)')}:{timeField('beforeMinute', 59, 'minute (0-59)')}
+            </label>
             <button
               className="btn small danger"
               onClick={() => {

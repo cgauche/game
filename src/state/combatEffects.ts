@@ -22,7 +22,7 @@ import { TIME_COST } from '../engine/timeCost';
 import { feedFromMeal } from '../engine/provisions';
 import { findSpell } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
-import { Effect, condMet } from './scene';
+import { Effect, condMet, temporalConditionMet } from './scene';
 import { inRect } from './combatGeometry';
 import { loseWounds, addCondition } from '../engine/conditions';
 import { touchActors } from './combatOrParty';
@@ -59,6 +59,7 @@ export function checkTriggers(get: Get, set: SetFn) {
     if (flags[`__trigger_${t.id}`]) continue;
     if (!inRect(partyPos, t.rect)) continue;
     if (t.condition && !condMet(t.condition, flags)) continue;
+    if (t.temporalCondition && !temporalConditionMet(t.temporalCondition, get().gameTime)) continue;
     if (t.once) flags[`__trigger_${t.id}`] = true;
     applyEffectsLoot(get, set, t.effects, 'Découverte');
     set({ flags: { ...flags } });
