@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { useGame } from '../../state/store';
-import { applyEffects } from '../../state/combatFlow';
+import { applyEffects, runFlow } from '../../state/combatFlow';
 import { type Scene } from '../../state/scene';
 import { evalCondition } from '../../state/flow';
 import { parseProject } from '../../state/worldMap';
@@ -96,7 +96,7 @@ describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () =
     expect(useGame.getState().scene?.id).toBe('arene-int-taverne');
     // Sortie : le trigger transitionBack en bas de la salle ramène au Bourg.
     const sortie = useGame.getState().scene!.triggers.find((t) => t.id === 'sortie')!;
-    applyEffects(useGame.getState, useGame.setState, sortie.effects);
+    runFlow(useGame.getState, useGame.setState, sortie.flow);
     expect(useGame.getState().scene?.id).toBe('arene-hub');
   });
 

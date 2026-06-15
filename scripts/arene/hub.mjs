@@ -1,5 +1,5 @@
 /** Le Bourg de l'Arène (hub refondu, id conservé `arene-hub`) + ses deux intérieurs. */
-import { scene, P, NPC, hero, resetIds, fouille } from './lib.mjs';
+import { scene, P, NPC, hero, resetIds, fouille, flowOf } from './lib.mjs';
 
 // ── Dialogues du Bourg ──────────────────────────────────────────────────────────────────────
 
@@ -333,12 +333,12 @@ export function makeHub() {
       // Porte EST (la route) : franchir la porte ouvre la carte du monde — la sortie du Bourg
       // EST le voyage (#T2). Posé sur les tuiles de porte (x31), pas sur l'entryPoint `route`
       // (30,10) → pas de réouverture intempestive au retour de voyage.
-      { id: 'porte-route', rect: { x: 31, y: 10, w: 1, h: 2 }, effects: [{ type: 'openWorldMap' }] },
+      { id: 'porte-route', rect: { x: 31, y: 10, w: 1, h: 2 }, flow: flowOf([{ type: 'openWorldMap' }]) },
       // Porte SUD (l'arène) : on n'y entre que sur ordre du Maître — rappel in-world.
       {
         id: 'porte-arene-rappel',
         rect: { x: 15, y: 21, w: 2, h: 1 },
-        effects: [{ type: 'journal', text: 'Les portes de l’arène sont barrées de l’intérieur — elles ne s’ouvrent que sur ordre du Maître d’arène (place centrale).' }],
+        flow: flowOf([{ type: 'journal', text: 'Les portes de l’arène sont barrées de l’intérieur — elles ne s’ouvrent que sur ordre du Maître d’arène (place centrale).' }],),
       },
     ],
     encounters: [],
@@ -450,7 +450,7 @@ export function makeTaverne() {
       P(1, 1, 'crane-monstre', { label: 'LE Trophée' }),
     ],
     dialogues: [dlgTaverne],
-    triggers: [{ id: 'sortie', rect: { x: 6, y: 8, w: 1, h: 1 }, effects: [{ type: 'transitionBack' }] }],
+    triggers: [{ id: 'sortie', rect: { x: 6, y: 8, w: 1, h: 1 }, flow: flowOf([{ type: 'transitionBack' }]) }],
     encounters: [],
     entryPoints: { entree: { x: 6, y: 7 } },
     flags: {},
@@ -555,7 +555,7 @@ export function makeChapelle() {
       P(8, 8, 'coffre', { label: 'Tronc des offrandes' }),
     ],
     dialogues: [dlgFrere],
-    triggers: [{ id: 'sortie', rect: { x: 5, y: 9, w: 1, h: 1 }, effects: [{ type: 'transitionBack' }] }],
+    triggers: [{ id: 'sortie', rect: { x: 5, y: 9, w: 1, h: 1 }, flow: flowOf([{ type: 'transitionBack' }]) }],
     encounters: [],
     entryPoints: { entree: { x: 5, y: 8 } },
     flags: {},

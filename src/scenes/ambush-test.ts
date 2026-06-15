@@ -12,6 +12,7 @@
  * variante d'apparence + animation d'ambiance + zone-trigger + dialogue + rencontre).
  */
 import { Scene, Terrain, Dialogue } from '../state/scene';
+import { flowFromEffects } from '../state/flow';
 import { buildEncounter } from '../state/encounterAuthoring';
 
 const W = 20;
@@ -171,7 +172,7 @@ function build(): Scene {
         id: 'approche',
         rect: { x: 8, y: 6, w: 3, h: 2 },
         once: true,
-        effects: [{ type: 'startDialogue', dialogue: 'dlg-ambush' }],
+        flow: flowFromEffects([{ type: 'startDialogue', dialogue: 'dlg-ambush' }]),
       },
     ],
     encounters: [enc.encounter],

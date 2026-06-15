@@ -1,5 +1,5 @@
 /** Zones 8-13 de l'échelle — le haut du tableau : Fosse, Caverne, Vermine, Cercle, Sépulcre, Dragon. */
-import { scene, P, NPC, hero, resetIds, fouille, fightTrigger, zoneVictory, DRAGON_DES_TENEBRES } from './lib.mjs';
+import { scene, P, NPC, hero, resetIds, fouille, fightTrigger, zoneVictory, DRAGON_DES_TENEBRES, flowOf } from './lib.mjs';
 
 // ── Zone 8 — La Fosse (30×20, roche) : gouffres, harde du Chaos, gladiateur ALLIÉ ───────────
 
@@ -283,7 +283,7 @@ export function makeZone10() {
         id: 'voix-cage',
         rect: { x: 7, y: 9, w: 11, h: 3 },
         once: true,
-        effects: [{ type: 'startDialogue', dialogue: 'dlg-prisonnier' }],
+        flow: flowOf([{ type: 'startDialogue', dialogue: 'dlg-prisonnier' }]),
       },
       fightTrigger('enc-zone10', { x: 12, y: 9, w: 21, h: 13 }),
     ],
@@ -378,10 +378,10 @@ export function makeZone11() {
         id: 'souffle-idole',
         rect: { x: 13, y: 3, w: 8, h: 6 },
         once: true,
-        effects: [
+        flow: flowOf([
           { type: 'corruptionExposure', level: 'mineure', skill: 'Calme' },
           { type: 'journal', text: 'L’idole noire CHANTE dans vos crânes — une influence corruptrice à l’état pur.' },
-        ],
+        ]),
       },
       fightTrigger('enc-zone11', { x: 6, y: 1, w: 27, h: 20 }),
     ],
@@ -474,10 +474,10 @@ export function makeZone12() {
         id: 'nuit-sepulcre',
         rect: { x: 1, y: 14, w: 30, h: 4 },
         once: true,
-        effects: [
+        flow: flowOf([
           { type: 'setTime', phase: 'nuit' },
           { type: 'journal', text: 'La porte claque derrière vous. Dans le Sépulcre, il est TOUJOURS minuit.' },
-        ],
+        ]),
       },
       fightTrigger('enc-zone12', { x: 1, y: 1, w: 30, h: 12 }),
     ],

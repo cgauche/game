@@ -2,6 +2,7 @@ import { makePregens } from '../../data/pregens';
 import { parseAsciiRows } from '../../state/asciiMap';
 import type { Scene, SceneEntity, CustomStatblock } from '../../state/scene';
 import type { TestScenario } from './_shared';
+import { flowFromEffects } from '../../state/flow';
 
 // Profil des deux étudiants saboteurs : de jeunes civils paniqués, vifs mais fragiles (pas de combattants).
 const ETUDIANT: CustomStatblock = {
@@ -219,7 +220,7 @@ const scene: Scene = {
       id: 'armer-bombe',
       rect: { x: 4, y: 5, w: 13, h: 8 },
       once: true,
-      effects: [
+      flow: flowFromEffects([
         { type: 'journal', text: 'Les lumières de la salle baissent, le rideau se lève — la représentation commence.' },
         { type: 'setLight', level: 0.35 },
         { type: 'journal', text: 'Une âcre odeur de poudre flotte depuis la galerie des loges…' },
@@ -254,7 +255,7 @@ const scene: Scene = {
             { type: 'zoneBlast', center: { x: 10, y: 14 }, radius: 6, damage: '1d10+15', conditions: [{ name: 'En flammes' }] },
           ],
         },
-      ],
+      ]),
     },
   ],
   encounters: [

@@ -5,6 +5,7 @@
  * peut donc servir à plusieurs bâtiments.
  */
 import { Scene, Terrain } from '../state/scene';
+import { flowFromEffects } from '../state/flow';
 
 export interface InteriorOpts {
   id: string;
@@ -45,7 +46,7 @@ export function makeInteriorScene(opts: InteriorOpts): Scene {
     dialogues: [],
     triggers: [
       // marcher sur la porte du bas → retour à la scène précédente
-      { id: 'sortie', rect: { x: midX, y: h - 1, w: 1, h: 1 }, effects: [{ type: 'transitionBack' }] },
+      { id: 'sortie', rect: { x: midX, y: h - 1, w: 1, h: 1 }, flow: flowFromEffects([{ type: 'transitionBack' }]) },
     ],
     encounters: [],
     flags: {},

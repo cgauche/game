@@ -2,6 +2,7 @@ import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { Combatant } from '../../engine/types';
 import { arena } from './_shared';
+import { flowFromEffects } from '../../state/flow';
 import type { TestScenario } from './_shared';
 
 /** Soldat (Recrue = Argent 1) : Revenus corrects et banque « Investir » autorisée (LDB 23). */
@@ -44,11 +45,11 @@ scene.triggers = [
     id: 'interlude',
     rect: { x: 5, y: 3, w: 3, h: 3 },
     once: true,
-    effects: [
+    flow: flowFromEffects([
       { type: 'giveMoney', gold: 30 },
       { type: 'journal', text: 'Votre dernière aventure vous a rapporté 30 couronnes — dépensez-les bien, le reste s’évaporera.' },
       { type: 'interlude', weeks: 3 },
-    ],
+    ]),
   },
 ];
 

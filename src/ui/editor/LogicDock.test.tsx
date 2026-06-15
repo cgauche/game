@@ -1,3 +1,4 @@
+import { flowFromEffects } from '../../state/flow';
 import { describe, it, expect, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { emptyScene } from '../../state/scene';
@@ -48,7 +49,7 @@ describe('LogicDock — onglet Triggers (master-détail, édition LIVE)', () => 
   it('liste les triggers et édite le sélectionné (rect + condition + effets)', () => {
     const scene = emptyScene(10, 10);
     scene.triggers = [
-      { id: 'trig-porte', rect: { x: 1, y: 2, w: 3, h: 1 }, once: true, condition: 'cle', effects: [{ type: 'journal', text: 'La porte grince' }] },
+      { id: 'trig-porte', rect: { x: 1, y: 2, w: 3, h: 1 }, once: true, when: { kind: 'flag', expr: 'cle' }, flow: flowFromEffects([{ type: 'journal', text: 'La porte grince' }]) },
     ];
     const html = renderToStaticMarkup(dock({ scene, tab: 'triggers', trigSel: 'trig-porte' }));
     expect(html).toContain('trig-porte');

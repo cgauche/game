@@ -2,6 +2,7 @@ import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { itemFromTrapping, recomputeLoadout } from '../../engine/items';
 import { Combatant } from '../../engine/types';
+import { flowFromEffects } from '../../state/flow';
 import { arena } from './_shared';
 import type { TestScenario } from './_shared';
 
@@ -52,7 +53,7 @@ scene.dialogues = [
 ];
 scene.triggers = [
   // Bourse de départ (la nouvelle partie réinitialise l'argent à 0) — versée en s'avançant vers les échoppes.
-  { id: 'bourse', rect: { x: 3, y: 3, w: 8, h: 4 }, once: true, effects: [{ type: 'giveMoney', gold: 40 }, { type: 'journal', text: 'Vous disposez de 40 couronnes.' }] },
+  { id: 'bourse', rect: { x: 3, y: 3, w: 8, h: 4 }, once: true, flow: flowFromEffects([{ type: 'giveMoney', gold: 40 }, { type: 'journal', text: 'Vous disposez de 40 couronnes.' }]) },
 ];
 
 export const scenario: TestScenario = {

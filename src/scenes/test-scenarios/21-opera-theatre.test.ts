@@ -1,3 +1,4 @@
+import { flowEffects } from '../../state/flow';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { validateScene } from '../../state/validateScene';
 import { isWalkable, type Effect } from '../../state/scene';
@@ -78,14 +79,14 @@ describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', ()
 
   it('entrer dans l’auditorium baisse les lumières et programme la soirée (pétards + mèche)', () => {
     lonePartyAt(35);
-    applyEffects(useGame.getState, useGame.setState, arm.effects);
+    applyEffects(useGame.getState, useGame.setState, flowEffects(arm.flow));
     expect(useGame.getState().lightLevel).toBe(0.35); // les lumières baissent (mise en scène)
     expect(useGame.getState().scheduledEffects).toHaveLength(3); // pétards (10), retour lumière (11), bombe (60)
   });
 
   it('retirer le détonateur empêche l’explosion finale', () => {
     const before = lonePartyAt(35).wounds.current;
-    applyEffects(useGame.getState, useGame.setState, arm.effects);
+    applyEffects(useGame.getState, useGame.setState, flowEffects(arm.flow));
     applyEffects(useGame.getState, useGame.setState, detect.onSuccess!); // désamorçage
     useGame.getState().advanceTime(120);
     expect(useGame.getState().party[0].wounds.current).toBe(before); // intacte (pétards à l'écart, bombe annulée)
@@ -93,7 +94,7 @@ describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', ()
 
   it('les pétards (intrigue n°2) éclatent à 20h30 : flash puis pénombre rétablie', () => {
     lonePartyAt(35);
-    applyEffects(useGame.getState, useGame.setState, arm.effects);
+    applyEffects(useGame.getState, useGame.setState, flowEffects(arm.flow));
     useGame.getState().advanceTime(10); // 20h30 : la mèche éclaire, les pétards éclatent
     expect(useGame.getState().lightLevel).toBe(0.8); // flash
     useGame.getState().advanceTime(1); // la salle se rassoit
@@ -101,7 +102,7 @@ describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', ()
   });
 
   it('le spot-check Glimbrin (intrigue n°2) a ses deux issues (clés sauves / volées)', () => {
-    const petards = arm.effects.find((e): e is Extract<Effect, { type: 'delayedEffect' }> => e.type === 'delayedEffect' && e.afterMinutes === 10)!;
+    const petards = flowEffects(arm.flow).find((e): e is Extract<Effect, { type: 'delayedEffect' }> => e.type === 'delayedEffect' && e.afterMinutes === 10)!;
     const spot = petards.effects.find((e): e is Extract<Effect, { type: 'test' }> => e.type === 'test')!;
     expect(spot.skill).toBe('Perception');
     lonePartyAt(35);
@@ -123,7 +124,7 @@ describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', ()
     const xpIn = (effs: Effect[] | undefined) =>
       (effs ?? []).filter((e): e is Extract<Effect, { type: 'giveXp' }> => e.type === 'giveXp').reduce((n, e) => n + e.amount, 0);
     expect(xpIn(detect.onSuccess)).toBe(50); // bombe déjouée (l.275)
-    const petards = arm.effects.find((e): e is Extract<Effect, { type: 'delayedEffect' }> => e.type === 'delayedEffect' && e.afterMinutes === 10)!;
+    const petards = flowEffects(arm.flow).find((e): e is Extract<Effect, { type: 'delayedEffect' }> => e.type === 'delayedEffect' && e.afterMinutes === 10)!;
     const spot = petards.effects.find((e): e is Extract<Effect, { type: 'test' }> => e.type === 'test')!;
     expect(xpIn(spot.onSuccess)).toBe(15); // vol de clés empêché (l.297)
     expect(xpIn(scenario.scene.encounters.find((e) => e.id === 'enc-etudiants')!.onVictory)).toBe(10); // étudiants arrêtés (l.277)
@@ -139,7 +140,7 @@ describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', ()
 
   it('sans désamorçage, l’explosion frappe l’antichambre au bout de la mèche', () => {
     const before = lonePartyAt(35).wounds.current;
-    applyEffects(useGame.getState, useGame.setState, arm.effects);
+    applyEffects(useGame.getState, useGame.setState, flowEffects(arm.flow));
     useGame.getState().advanceTime(60);
     expect(useGame.getState().party[0].wounds.current).toBeLessThanOrEqual(before - 15);
   });

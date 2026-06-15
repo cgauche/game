@@ -5,11 +5,12 @@
  * d'undo (fini le modèle copie locale + Annuler/Appliquer).
  */
 import { useRef } from 'react';
-import { Scene, Trigger, EncounterDef, Dialogue } from '../../state/scene';
+import { Scene, Trigger, EncounterDef, Dialogue, Effect, TemporalCondition } from '../../state/scene';
+import { EMPTY_FLOW, flowFromEffects, type Condition, type Flow } from '../../state/flow';
 import type { Warning } from '../../state/validateScene';
 import { nextEntityId } from '../../state/entityId';
 import { CreatureData } from '../../data';
-import { addEnemyMember, removeMember, patchMember } from './editorState';
+import { addEnemyMember, removeMember, patchMember, whenFlag, whenWindow, buildWhen, flowEffects } from './editorState';
 import { EffectList, effectCtxOf, Ctx } from './EffectList';
 import { DialogueDetail } from './DialogueDetail';
 import { ValidationPanel } from './ValidationPanel';
@@ -147,16 +148,16 @@ function TriggersTab({
 }) {
   const t = scene.triggers.find((x) => x.id === sel) ?? null;
   const upd = (patch: Partial<Trigger>) => setScene({ ...scene, triggers: scene.triggers.map((x) => (t && x.id === t.id ? { ...x, ...patch } : x)) });
-  /** MAJ de la fenêtre horaire du trigger, élaguée à `undefined` si plus aucune borne. */
-  const setTemporal = (patch: Partial<NonNullable<Trigger['temporalCondition']>>) => {
-    const m = { ...(t?.temporalCondition ?? {}), ...patch };
-    const clean = Object.fromEntries(Object.entries(m).filter(([, v]) => v != null)) as NonNullable<Trigger['temporalCondition']>;
-    upd({ temporalCondition: Object.keys(clean).length ? clean : undefined });
+  /** MAJ de la fenêtre horaire (dans `when`), élaguée à `undefined` si plus aucune borne. */
+  const setTemporal = (patch: Partial<TemporalCondition>) => {
+    const m = { ...(whenWindow(t?.when) ?? {}), ...patch };
+    const clean = Object.fromEntries(Object.entries(m).filter(([, v]) => v != null)) as TemporalCondition;
+    upd({ when: buildWhen(whenFlag(t?.when), Object.keys(clean).length ? clean : undefined) });
   };
   const timeField = (key: 'afterHour' | 'afterMinute' | 'beforeHour' | 'beforeMinute', max: number, title: string) => (
     <input
       type="number" min={0} max={max} title={title} style={{ width: '3.2em' }}
-      value={t?.temporalCondition?.[key] ?? ''}
+      value={whenWindow(t?.when)?.[key] ?? ''}
       onChange={(e) => setTemporal({ [key]: e.target.value === '' ? undefined : Number(e.target.value) })}
     />
   );
@@ -167,16 +168,16 @@ function TriggersTab({
           <button key={x.id} className={`listrow insp-row${x.id === sel ? ' active' : ''}`} onClick={() => setSel(x.id)}>
             <span className="lr-name">
               <b>{x.id}</b> ({x.rect.x},{x.rect.y}) {x.rect.w}×{x.rect.h}
-              {x.condition ? ` · si ${x.condition}` : ''}
+              {whenFlag(x.when) ? ` · si ${whenFlag(x.when)}` : ''}
             </span>
-            <span className="count">{x.effects.length}</span>
+            <span className="count">{flowEffects(x.flow).length}</span>
           </button>
         ))}
         <button
           className="btn small"
           onClick={() => {
             const id = nextEntityId('trig', scene.triggers.map((x) => x.id));
-            setScene({ ...scene, triggers: [...scene.triggers, { id, rect: { x: 0, y: 0, w: 2, h: 2 }, once: true, effects: [] }] });
+            setScene({ ...scene, triggers: [...scene.triggers, { id, rect: { x: 0, y: 0, w: 2, h: 2 }, once: true, flow: EMPTY_FLOW }] });
             setSel(id);
           }}
         >
@@ -214,8 +215,8 @@ function TriggersTab({
             </label>
             <input
               className="trig-cond"
-              value={t.condition ?? ''}
-              onChange={(e) => upd({ condition: e.target.value || undefined })}
+              value={whenFlag(t.when)}
+              onChange={(e) => upd({ when: buildWhen(e.target.value, whenWindow(t.when)) })}
               placeholder="condition (flag, !flag)"
             />
             <label className="ed-check" title="Fenêtre horaire : le trigger ne se déclenche qu'en entrant dans la zone pendant ce créneau (before exclusif).">
@@ -232,7 +233,7 @@ function TriggersTab({
             </button>
           </div>
           <div className="mini-title">Effets au déclenchement</div>
-          <EffectList effects={t.effects} onChange={(eff) => upd({ effects: eff })} ctx={ctx} />
+          <EffectList effects={flowEffects(t.flow)} onChange={(eff) => upd({ flow: flowFromEffects(eff) })} ctx={ctx} />
         </div>
       ) : (
         <div className="logic-detail hint">Sélectionnez un trigger (liste ou carte) pour éditer ses effets.</div>

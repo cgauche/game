@@ -120,6 +120,20 @@ export function flattenFlow(flow: Flow, ctx: ConditionCtx): Effect[] {
   }
 }
 
+/** Effets `do` de PREMIER niveau d'un Flow (seq plat) — édition en liste + assertions (≡ ancien `effects`). */
+export function flowEffects(flow: Flow): Effect[] {
+  return flow.kind === 'do' ? [flow.effect] : flow.kind === 'seq' ? flow.steps.flatMap((s) => (s.kind === 'do' ? [s.effect] : [])) : [];
+}
+
+/** Visite toutes les fenêtres horaires d'une Condition (validation des bornes h/min). */
+export function walkConditionTimes(cond: Condition, cb: (w: TemporalCondition) => void): void {
+  switch (cond.kind) {
+    case 'time': cb(cond.window); break;
+    case 'all': case 'any': cond.of.forEach((c) => walkConditionTimes(c, cb)); break;
+    case 'not': walkConditionTimes(cond.of, cb); break;
+  }
+}
+
 /** Le Flow contient-il un nœud `test` (→ exécution interactive nécessaire, pas un simple aplatissage) ? */
 export function flowHasTest(flow: Flow): boolean {
   switch (flow.kind) {

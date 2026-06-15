@@ -1,3 +1,4 @@
+import { flowEffects } from '../../state/flow';
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -89,7 +90,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
       }
     };
     for (const s of project) {
-      for (const t of s.triggers) walk(t.effects);
+      for (const t of s.triggers) walk(flowEffects(t.flow));
       for (const e of s.encounters) walk(e.onVictory);
       for (const ent of s.entities) walk(ent.interact?.effects);
       for (const d of s.dialogues) for (const n of d.nodes) for (const c of n.choices) walk(c.effects);
@@ -149,7 +150,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
       }
     };
     for (const s of project) {
-      for (const t of s.triggers) walk(t.effects);
+      for (const t of s.triggers) walk(flowEffects(t.flow));
       for (const e of s.encounters) walk(e.onVictory);
       for (const ent of s.entities) walk(ent.interact?.effects);
       for (const d of s.dialogues) for (const n of d.nodes) for (const c of n.choices) walk(c.effects);

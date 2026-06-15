@@ -2,6 +2,7 @@ import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { itemFromTrapping, recomputeLoadout } from '../../engine/items';
 import { Combatant } from '../../engine/types';
+import { flowFromEffects } from '../../state/flow';
 import { arena } from './_shared';
 import type { TestScenario } from './_shared';
 
@@ -39,7 +40,7 @@ scene.startMessage = 'Un armurier tient échoppe. Parlez-lui pour acheter, vendr
 scene.entities.push({ id: 'armurier', kind: 'personnage', pos: { x: 10, y: 4 }, merchant: { archetype: 'armurier' } });
 // Bourse de départ : un trigger sur le chemin verse 50 CO (la nouvelle partie réinitialise l'argent à 0).
 scene.triggers = [
-  { id: 'bourse', rect: { x: 3, y: 3, w: 6, h: 3 }, once: true, effects: [{ type: 'giveMoney', gold: 50 }, { type: 'journal', text: 'Vous trouvez 50 couronnes dans votre bourse.' }] },
+  { id: 'bourse', rect: { x: 3, y: 3, w: 6, h: 3 }, once: true, flow: flowFromEffects([{ type: 'giveMoney', gold: 50 }, { type: 'journal', text: 'Vous trouvez 50 couronnes dans votre bourse.' }]) },
 ];
 
 export const scenario: TestScenario = {

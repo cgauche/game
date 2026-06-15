@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { checkTriggers } from './combatEffects';
+import { flowFromEffects } from './flow';
 import type { Scene, Trigger } from './scene';
 
 /** Intégration : `temporalCondition` doit gater le trigger dans `checkTriggers` — il ne se déclenche
@@ -13,8 +14,8 @@ const sceneWith = (trigger: Trigger): Scene => ({
 
 const spotTrigger: Trigger = {
   id: 'spot', rect: { x: 0, y: 0, w: 5, h: 5 }, once: false,
-  temporalCondition: { afterHour: 21, afterMinute: 30, beforeHour: 21, beforeMinute: 45 },
-  effects: [{ type: 'journal', text: 'TIC' }],
+  when: { kind: 'time', window: { afterHour: 21, afterMinute: 30, beforeHour: 21, beforeMinute: 45 } },
+  flow: flowFromEffects([{ type: 'journal', text: 'TIC' }]),
 };
 
 describe('temporalCondition — intégration checkTriggers (proximité ET fenêtre horaire)', () => {

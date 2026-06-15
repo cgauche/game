@@ -1,3 +1,4 @@
+import { flowFromEffects, EMPTY_FLOW } from '../state/flow';
 import { describe, it, expect } from 'vitest';
 import { validateScene, type Warning } from './validateScene';
 import { emptyScene } from './scene';
@@ -29,13 +30,13 @@ describe('validateScene', () => {
 
   it('effet transition vers scène inconnue → erreur', () => {
     const s = base();
-    s.triggers.push({ id: 't-0', rect: { x: 0, y: 0, w: 1, h: 1 }, effects: [{ type: 'transition', scene: 'nope' }] });
+    s.triggers.push({ id: 't-0', rect: { x: 0, y: 0, w: 1, h: 1 }, flow: flowFromEffects([{ type: 'transition', scene: 'nope' }]) });
     expect(msgs(validateScene([s])).some((m) => /scène inexistante/.test(m))).toBe(true);
   });
 
   it('trigger hors carte → avertissement', () => {
     const s = base();
-    s.triggers.push({ id: 't-1', rect: { x: 4, y: 4, w: 3, h: 3 }, effects: [] });
+    s.triggers.push({ id: 't-1', rect: { x: 4, y: 4, w: 3, h: 3 }, flow: flowFromEffects([]) });
     expect(msgs(validateScene([s])).some((m) => /déborde/.test(m))).toBe(true);
   });
 
@@ -90,14 +91,14 @@ describe('validateScene', () => {
     s.triggers.push({
       id: 't-2',
       rect: { x: 0, y: 0, w: 1, h: 1 },
-      effects: [{ type: 'test', onSuccess: [{ type: 'startDialogue', dialogue: 'absent' }] }],
+      flow: flowFromEffects([{ type: 'test', onSuccess: [{ type: 'startDialogue', dialogue: 'absent' }] }]),
     });
     expect(msgs(validateScene([s])).some((m) => /dialogue inexistant/.test(m))).toBe(true);
   });
 
   it('zoneBlast : formule de dégâts manquante → erreur ; centre hors carte → avertissement', () => {
     const s = base(); // 5×5
-    s.triggers.push({ id: 't-zb', rect: { x: 0, y: 0, w: 1, h: 1 }, effects: [{ type: 'zoneBlast', center: { x: 9, y: 9 }, radius: 2, damage: '' }] });
+    s.triggers.push({ id: 't-zb', rect: { x: 0, y: 0, w: 1, h: 1 }, flow: flowFromEffects([{ type: 'zoneBlast', center: { x: 9, y: 9 }, radius: 2, damage: '' }]) });
     const m = msgs(validateScene([s]));
     expect(m.some((x) => /formule de dégâts manquante/.test(x))).toBe(true);
     expect(m.some((x) => /centre.*hors de la carte/.test(x))).toBe(true);
@@ -105,7 +106,7 @@ describe('validateScene', () => {
 
   it('zoneBlast bien formé = 0 avertissement', () => {
     const s = base();
-    s.triggers.push({ id: 't-zb2', rect: { x: 0, y: 0, w: 1, h: 1 }, effects: [{ type: 'zoneBlast', center: { x: 2, y: 2 }, radius: 2, damage: '1d10+15' }] });
+    s.triggers.push({ id: 't-zb2', rect: { x: 0, y: 0, w: 1, h: 1 }, flow: flowFromEffects([{ type: 'zoneBlast', center: { x: 2, y: 2 }, radius: 2, damage: '1d10+15' }]) });
     expect(validateScene([s]).filter((w) => /zone/i.test(w.message))).toEqual([]);
   });
 

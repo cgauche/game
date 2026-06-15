@@ -1,6 +1,6 @@
 /** Expéditions de la carte du monde (#T2) — on y VOYAGE depuis le Bourg (rations, péripéties,
  *  embuscades), on en revient par la carte. Pas de retour-hub automatique : la route est le retour. */
-import { scene, P, NPC, hero, resetIds, fouille, fightTrigger } from './lib.mjs';
+import { scene, P, NPC, hero, resetIds, fouille, fightTrigger, flowOf } from './lib.mjs';
 
 // ── La Vieille Futaie (40×28) : harde en lisière + camp de Bella la Noire (PNJ nommée) ──────
 
@@ -321,7 +321,7 @@ export function makeVillage() {
         id: 'puits-maudit',
         rect: { x: 6, y: 8, w: 3, h: 3 },
         once: true,
-        effects: [
+        flow: flowOf([
           {
             type: 'test',
             skill: 'Résistance',
@@ -333,7 +333,7 @@ export function makeVillage() {
               { type: 'journal', text: 'Les miasmes du puits vous prennent à la gorge. Votre ventre gargouille déjà sinistrement…' },
             ],
           },
-        ],
+        ]),
       },
       fightTrigger('enc-village', { x: 9, y: 1, w: 24, h: 21 }),
     ],

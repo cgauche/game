@@ -1,6 +1,6 @@
 /** Zones 1-7 de l'échelle — refaites en GRAND (24×16 → 32×24), layouts structurés, fouilles,
  *  rencontres enrichies. Ids/flags conservés (`arene-zoneN`, `zoneN_clear`). */
-import { scene, P, hero, resetIds, fouille, fightTrigger, zoneVictory, NUEE_DE_RATS } from './lib.mjs';
+import { scene, P, hero, resetIds, fouille, fightTrigger, zoneVictory, NUEE_DE_RATS, flowOf } from './lib.mjs';
 
 // ── Zone 1 — La Cour (24×16, sable) : échauffement, tutoriel du couvert ────────────────────
 
@@ -225,7 +225,7 @@ export function makeZone3() {
         id: 'miasmes',
         rect: { x: 1, y: 7, w: 28, h: 1 },
         once: true,
-        effects: [
+        flow: flowOf([
           {
             type: 'test',
             skill: 'Résistance',
@@ -237,7 +237,7 @@ export function makeZone3() {
               { type: 'journal', text: 'Quelque chose se glisse dans vos poumons avec l’odeur… La Fièvre du Rongeur couve.' },
             ],
           },
-        ],
+        ]),
       },
       fightTrigger('enc-zone3', { x: 1, y: 1, w: 28, h: 6 }),
     ],
@@ -339,10 +339,10 @@ export function makeZone4() {
         id: 'crepuscule',
         rect: { x: 1, y: 14, w: 26, h: 4 },
         once: true,
-        effects: [
+        flow: flowOf([
           { type: 'setTime', phase: 'crepuscule' },
           { type: 'journal', text: 'Le jour décline sur le charnier — les ombres s’allongent entre les cryptes.' },
-        ],
+        ]),
       },
       fightTrigger('enc-zone4', { x: 1, y: 1, w: 26, h: 12 }),
     ],

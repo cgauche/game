@@ -24,6 +24,7 @@ import {
   sameSel,
   DEFAULT_LAYERS,
 } from './editorState';
+import { EMPTY_FLOW } from '../../state/flow';
 import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
 
 function sceneWith(): Scene {
@@ -32,7 +33,7 @@ function sceneWith(): Scene {
     { id: 'perso-0', kind: 'personnage', pos: { x: 2, y: 2 } },
     { id: 'enemy-0', kind: 'personnage', pos: { x: 1, y: 8 }, ref: 'Mutant', combat: { hiddenUntilCombat: true } },
   ];
-  s.triggers = [{ id: 'trig-0', rect: { x: 4, y: 4, w: 2, h: 2 }, once: true, effects: [] }];
+  s.triggers = [{ id: 'trig-0', rect: { x: 4, y: 4, w: 2, h: 2 }, once: true, flow: EMPTY_FLOW }];
   s.buildings = [{ id: 'b-0', type: 'maison', foot: { x: 6, y: 6, w: 3, h: 3 }, facing: 'S', reveal: 'cutaway', door: { x: 7, y: 8 }, params: {} }];
   s.encounters = [{ id: 'enc-0', members: [{ entityId: 'enemy-0' }] }];
   s.restZones = [{ rect: { x: 0, y: 5, w: 2, h: 2 }, places: { camp: true } }];

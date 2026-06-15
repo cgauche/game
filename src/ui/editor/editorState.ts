@@ -4,7 +4,9 @@
  * le canvas (peindre, poser, déplacer, redimensionner, supprimer, coller, points d'entrée).
  * Fonctions PURES (Scene → Scene) testables sans DOM — `Editor`/`EditorCanvas` ne font que les câbler.
  */
-import { Scene, SceneEntity, Terrain, EntityKind, BuildingFeature, EncounterMember, levelTiles } from '../../state/scene';
+import { Scene, SceneEntity, Terrain, EntityKind, BuildingFeature, EncounterMember, levelTiles, Effect, TemporalCondition } from '../../state/scene';
+import { EMPTY_FLOW, flowFromEffects, flowEffects, type Condition } from '../../state/flow';
+export { flowEffects };
 import { nextEntityId } from '../../state/entityId';
 import { defaultDoor } from '../../state/buildings';
 import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
@@ -275,10 +277,25 @@ export function renameEntry(scene: Scene, from: string, to: string): Scene {
   return { ...scene, entryPoints: entries };
 }
 
+// ── Adaptateurs trigger `when`(Condition) ↔ champs éditeur, et `flow`(plat) ↔ liste d'effets.
+//    L'éditeur n'auteure que les deux cas usuels (flag + fenêtre horaire, combinés en `all`) et un
+//    flow PLAT (seq de `do`) ; les branches `if`/`test` viendront avec l'éditeur de blocs. ──
+export const whenFlag = (when?: Condition): string =>
+  when?.kind === 'flag' ? when.expr : when?.kind === 'all' ? ((when.of.find((c) => c.kind === 'flag') as { expr: string } | undefined)?.expr ?? '') : '';
+export const whenWindow = (when?: Condition): TemporalCondition | undefined =>
+  when?.kind === 'time' ? when.window : when?.kind === 'all' ? (when.of.find((c) => c.kind === 'time') as { window: TemporalCondition } | undefined)?.window : undefined;
+export function buildWhen(flag: string, window?: TemporalCondition): Condition | undefined {
+  const parts: Condition[] = [];
+  if (flag.trim()) parts.push({ kind: 'flag', expr: flag.trim() });
+  if (window && Object.keys(window).length) parts.push({ kind: 'time', window });
+  return parts.length === 0 ? undefined : parts.length === 1 ? parts[0] : { kind: 'all', of: parts };
+}
+// `flowEffects` est ré-exporté depuis `state/flow` (cf. import en tête) — source unique, pas de copie.
+
 /** Crée un trigger sur `rect` (id frais). */
 export function addTrigger(scene: Scene, rect: Rect): { scene: Scene; id: string } {
   const id = nextEntityId('trig', scene.triggers.map((t) => t.id));
-  return { scene: { ...scene, triggers: [...scene.triggers, { id, rect, once: true, effects: [] }] }, id };
+  return { scene: { ...scene, triggers: [...scene.triggers, { id, rect, once: true, flow: EMPTY_FLOW }] }, id };
 }
 
 /** Crée une zone de repos sur `rect` (camp par défaut — lieux/qualité éditables dans l'inspecteur). */

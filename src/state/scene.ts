@@ -8,6 +8,7 @@
  */
 import { CharKey, Difficulty } from '../engine/types';
 import type { ZoneEffect } from '../engine/zones';
+import type { Flow, Condition } from './flow';
 import { type DayPhaseKey } from '../engine/clock';
 import type { Dir8 } from './dir8';
 import { terrainWalkable } from './terrain';
@@ -180,7 +181,9 @@ export type Effect =
       /** Aura détectée / Détection déjà tentée (Talent Détection d'artefact, LDB 10) / jour de la
        *  dernière Évaluation ratée — posés par la fenêtre de loot AVANT attribution, propagés sur
        *  l'ItemInstance à la remise. */
-      magicKnown?: boolean; detectTried?: boolean; appraiseTriedDay?: number }
+      magicKnown?: boolean; detectTried?: boolean; appraiseTriedDay?: number;
+      /** Valeur de marché propre posée sur l'instance (ex. pièces de monstre récoltées, ZI). */
+      price?: { gold?: number; silver?: number; brass?: number } }
   | { type: 'giveMoney'; gold?: number; silver?: number; brass?: number }
   /** Octroie des Points d'Expérience à TOUT le groupe (XP de session, identique pour tous). */
   | { type: 'giveXp'; amount: number }
@@ -352,13 +355,12 @@ export interface Trigger {
   id: string;
   rect: { x: number; y: number; w: number; h: number };
   once?: boolean;
-  /** Condition de flag (cf. `condMet`) : un flag, sa négation `!flag`, ou plusieurs en ET (« v1,!v2 »). */
-  condition?: string;
-  /** Fenêtre horaire (cf. `temporalConditionMet`) — combinée en ET avec rect/condition. Évaluée à
-   *  l'ENTRÉE dans la zone (le temps avançant par actions discrètes ; un pur événement horaire sans
-   *  position = `delayedEffect`). */
-  temporalCondition?: TemporalCondition;
-  effects: Effect[];
+  /** Condition d'ENTRÉE (algèbre `Condition`, cf. `evalCondition`) — combinée en ET avec le `rect` et
+   *  évaluée à l'entrée dans la zone. Absente = pas de garde (un pur événement horaire sans position =
+   *  `delayedEffect`). Remplace les anciens `condition`/`temporalCondition`. */
+  when?: Condition;
+  /** LOGIQUE exécutée à l'entrée : séquence d'effets + branches `if`/`test` (exécutée par `runFlow`). */
+  flow: Flow;
 }
 
 // Évaluation des conditions (flag/temporelle) : SOURCE UNIQUE `evalCondition` (src/state/flow.ts).

@@ -1,5 +1,6 @@
 import { makePregens } from '../../data/pregens';
 import { arena } from './_shared';
+import { flowFromEffects } from '../../state/flow';
 import type { TestScenario } from './_shared';
 
 /**
@@ -52,7 +53,7 @@ scene.triggers.push({
   id: 'armer-bombe',
   rect: { x: 1, y: 6, w: 12, h: 2 },
   once: true,
-  effects: [
+  flow: flowFromEffects([
     { type: 'journal', text: 'La loge est somptueuse… mais une âcre odeur de poudre flotte dans l’air.' },
     {
       type: 'delayedEffect',
@@ -65,7 +66,7 @@ scene.triggers.push({
         { type: 'zoneBlast', center: { x: 11, y: 6 }, radius: 10, damage: '1d10+15', conditions: [{ name: 'En flammes' }] },
       ],
     },
-  ],
+  ]),
 });
 
 export const scenario: TestScenario = {

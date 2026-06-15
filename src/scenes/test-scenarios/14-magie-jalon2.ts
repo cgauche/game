@@ -1,5 +1,6 @@
 import { makePregens } from '../../data/pregens';
 import { arena, setEncounters } from './_shared';
+import { flowFromEffects } from '../../state/flow';
 import type { TestScenario } from './_shared';
 import type { Combatant, CharKey } from '../../engine/types';
 
@@ -24,10 +25,10 @@ scene.triggers = [
     id: 'trg-corruption',
     rect: { x: 12, y: 2, w: 2, h: 6 },
     once: true,
-    effects: [
+    flow: flowFromEffects([
       { type: 'journal', text: 'Une malepierre suinte entre les pavés — l’air poisse (Influence corruptrice modérée).' },
       { type: 'corruptionExposure', level: 'moderee', skill: 'Résistance' },
-    ],
+    ]),
   },
 ];
 setEncounters(scene, [

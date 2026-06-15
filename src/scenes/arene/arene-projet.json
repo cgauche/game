@@ -202,12 +202,18 @@
       "h": 14
      },
      "once": true,
-     "effects": [
-      {
-       "type": "startCombat",
-       "encounter": "enc-zone1"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "startCombat",
+         "encounter": "enc-zone1"
+        }
+       }
+      ]
+     }
     }
    ],
    "encounters": [
@@ -1660,11 +1666,17 @@
       "w": 1,
       "h": 2
      },
-     "effects": [
-      {
-       "type": "openWorldMap"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "openWorldMap"
+        }
+       }
+      ]
+     }
     },
     {
      "id": "porte-arene-rappel",
@@ -1674,12 +1686,18 @@
       "w": 2,
       "h": 1
      },
-     "effects": [
-      {
-       "type": "journal",
-       "text": "Les portes de l’arène sont barrées de l’intérieur — elles ne s’ouvrent que sur ordre du Maître d’arène (place centrale)."
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "journal",
+         "text": "Les portes de l’arène sont barrées de l’intérieur — elles ne s’ouvrent que sur ordre du Maître d’arène (place centrale)."
+        }
+       }
+      ]
+     }
     }
    ],
    "encounters": [],
@@ -2704,11 +2722,17 @@
       "w": 1,
       "h": 1
      },
-     "effects": [
-      {
-       "type": "transitionBack"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "transitionBack"
+        }
+       }
+      ]
+     }
     }
    ],
    "encounters": [],
@@ -3088,11 +3112,17 @@
       "w": 1,
       "h": 1
      },
-     "effects": [
-      {
-       "type": "transitionBack"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "transitionBack"
+        }
+       }
+      ]
+     }
     }
    ],
    "encounters": [],
@@ -3487,12 +3517,18 @@
       "h": 8
      },
      "once": true,
-     "effects": [
-      {
-       "type": "startCombat",
-       "encounter": "enc-zone2"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "startCombat",
+         "encounter": "enc-zone2"
+        }
+       }
+      ]
+     }
     },
     {
      "id": "fight-enc-ruines-tresor",
@@ -3503,12 +3539,18 @@
       "h": 6
      },
      "once": true,
-     "effects": [
-      {
-       "type": "startCombat",
-       "encounter": "enc-ruines-tresor"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "startCombat",
+         "encounter": "enc-ruines-tresor"
+        }
+       }
+      ]
+     }
     }
    ],
    "encounters": [
@@ -4370,30 +4412,36 @@
       "h": 1
      },
      "once": true,
-     "effects": [
-      {
-       "type": "test",
-       "skill": "Résistance",
-       "difficulty": "facile",
-       "label": "Miasmes des égouts",
-       "onSuccess": [
-        {
-         "type": "journal",
-         "text": "L’air est irrespirable, mais vous gardez vos tripes — et votre santé."
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "test",
+         "skill": "Résistance",
+         "difficulty": "facile",
+         "label": "Miasmes des égouts",
+         "onSuccess": [
+          {
+           "type": "journal",
+           "text": "L’air est irrespirable, mais vous gardez vos tripes — et votre santé."
+          }
+         ],
+         "onFailure": [
+          {
+           "type": "inflictDisease",
+           "disease": "Fièvre du Rongeur"
+          },
+          {
+           "type": "journal",
+           "text": "Quelque chose se glisse dans vos poumons avec l’odeur… La Fièvre du Rongeur couve."
+          }
+         ]
         }
-       ],
-       "onFailure": [
-        {
-         "type": "inflictDisease",
-         "disease": "Fièvre du Rongeur"
-        },
-        {
-         "type": "journal",
-         "text": "Quelque chose se glisse dans vos poumons avec l’odeur… La Fièvre du Rongeur couve."
-        }
-       ]
-      }
-     ]
+       }
+      ]
+     }
     },
     {
      "id": "fight-enc-zone3",
@@ -4404,12 +4452,18 @@
       "h": 6
      },
      "once": true,
-     "effects": [
-      {
-       "type": "startCombat",
-       "encounter": "enc-zone3"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "startCombat",
+         "encounter": "enc-zone3"
+        }
+       }
+      ]
+     }
     }
    ],
    "encounters": [
@@ -5298,16 +5352,25 @@
       "h": 4
      },
      "once": true,
-     "effects": [
-      {
-       "type": "setTime",
-       "phase": "crepuscule"
-      },
-      {
-       "type": "journal",
-       "text": "Le jour décline sur le charnier — les ombres s’allongent entre les cryptes."
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "setTime",
+         "phase": "crepuscule"
+        }
+       },
+       {
+        "kind": "do",
+        "effect": {
+         "type": "journal",
+         "text": "Le jour décline sur le charnier — les ombres s’allongent entre les cryptes."
+        }
+       }
+      ]
+     }
     },
     {
      "id": "fight-enc-zone4",
@@ -5318,12 +5381,18 @@
       "h": 12
      },
      "once": true,
-     "effects": [
-      {
-       "type": "startCombat",
-       "encounter": "enc-zone4"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "startCombat",
+         "encounter": "enc-zone4"
+        }
+       }
+      ]
+     }
     }
    ],
    "encounters": [
@@ -6162,12 +6231,18 @@
       "h": 14
      },
      "once": true,
-     "effects": [
-      {
-       "type": "startCombat",
-       "encounter": "enc-zone5"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "startCombat",
+         "encounter": "enc-zone5"
+        }
+       }
+      ]
+     }
     }
    ],
    "encounters": [
@@ -7077,12 +7152,18 @@
       "h": 20
      },
      "once": true,
-     "effects": [
-      {
-       "type": "startCombat",
-       "encounter": "enc-zone6"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "startCombat",
+         "encounter": "enc-zone6"
+        }
+       }
+      ]
+     }
     }
    ],
    "encounters": [
@@ -8254,12 +8335,18 @@
       "h": 19
      },
      "once": true,
-     "effects": [
-      {
-       "type": "startCombat",
-       "encounter": "enc-zone7"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "startCombat",
+         "encounter": "enc-zone7"
+        }
+       }
+      ]
+     }
     }
    ],
    "encounters": [
@@ -9211,12 +9298,18 @@
       "h": 18
      },
      "once": true,
-     "effects": [
-      {
-       "type": "startCombat",
-       "encounter": "enc-zone8"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "startCombat",
+         "encounter": "enc-zone8"
+        }
+       }
+      ]
+     }
     }
    ],
    "encounters": [
@@ -10111,12 +10204,18 @@
       "h": 19
      },
      "once": true,
-     "effects": [
-      {
-       "type": "startCombat",
-       "encounter": "enc-zone9"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "startCombat",
+         "encounter": "enc-zone9"
+        }
+       }
+      ]
+     }
     },
     {
      "id": "fight-enc-caverne-ogre",
@@ -10127,12 +10226,18 @@
       "h": 8
      },
      "once": true,
-     "effects": [
-      {
-       "type": "startCombat",
-       "encounter": "enc-caverne-ogre"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "startCombat",
+         "encounter": "enc-caverne-ogre"
+        }
+       }
+      ]
+     }
     }
    ],
    "encounters": [
@@ -11282,12 +11387,18 @@
       "h": 3
      },
      "once": true,
-     "effects": [
-      {
-       "type": "startDialogue",
-       "dialogue": "dlg-prisonnier"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "startDialogue",
+         "dialogue": "dlg-prisonnier"
+        }
+       }
+      ]
+     }
     },
     {
      "id": "fight-enc-zone10",
@@ -11298,12 +11409,18 @@
       "h": 13
      },
      "once": true,
-     "effects": [
-      {
-       "type": "startCombat",
-       "encounter": "enc-zone10"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "startCombat",
+         "encounter": "enc-zone10"
+        }
+       }
+      ]
+     }
     }
    ],
    "encounters": [
@@ -12481,17 +12598,26 @@
       "h": 6
      },
      "once": true,
-     "effects": [
-      {
-       "type": "corruptionExposure",
-       "level": "mineure",
-       "skill": "Calme"
-      },
-      {
-       "type": "journal",
-       "text": "L’idole noire CHANTE dans vos crânes — une influence corruptrice à l’état pur."
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "corruptionExposure",
+         "level": "mineure",
+         "skill": "Calme"
+        }
+       },
+       {
+        "kind": "do",
+        "effect": {
+         "type": "journal",
+         "text": "L’idole noire CHANTE dans vos crânes — une influence corruptrice à l’état pur."
+        }
+       }
+      ]
+     }
     },
     {
      "id": "fight-enc-zone11",
@@ -12502,12 +12628,18 @@
       "h": 20
      },
      "once": true,
-     "effects": [
-      {
-       "type": "startCombat",
-       "encounter": "enc-zone11"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "startCombat",
+         "encounter": "enc-zone11"
+        }
+       }
+      ]
+     }
     }
    ],
    "encounters": [
@@ -13605,16 +13737,25 @@
       "h": 4
      },
      "once": true,
-     "effects": [
-      {
-       "type": "setTime",
-       "phase": "nuit"
-      },
-      {
-       "type": "journal",
-       "text": "La porte claque derrière vous. Dans le Sépulcre, il est TOUJOURS minuit."
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "setTime",
+         "phase": "nuit"
+        }
+       },
+       {
+        "kind": "do",
+        "effect": {
+         "type": "journal",
+         "text": "La porte claque derrière vous. Dans le Sépulcre, il est TOUJOURS minuit."
+        }
+       }
+      ]
+     }
     },
     {
      "id": "fight-enc-zone12",
@@ -13625,12 +13766,18 @@
       "h": 12
      },
      "once": true,
-     "effects": [
-      {
-       "type": "startCombat",
-       "encounter": "enc-zone12"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "startCombat",
+         "encounter": "enc-zone12"
+        }
+       }
+      ]
+     }
     }
    ],
    "encounters": [
@@ -14651,12 +14798,18 @@
       "h": 26
      },
      "once": true,
-     "effects": [
-      {
-       "type": "startCombat",
-       "encounter": "enc-zone13"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "startCombat",
+         "encounter": "enc-zone13"
+        }
+       }
+      ]
+     }
     }
    ],
    "encounters": [
@@ -16249,12 +16402,18 @@
       "h": 25
      },
      "once": true,
-     "effects": [
-      {
-       "type": "startCombat",
-       "encounter": "enc-foret-harde"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "startCombat",
+         "encounter": "enc-foret-harde"
+        }
+       }
+      ]
+     }
     },
     {
      "id": "fight-enc-foret-bande",
@@ -16265,12 +16424,18 @@
       "h": 10
      },
      "once": true,
-     "effects": [
-      {
-       "type": "startCombat",
-       "encounter": "enc-foret-bande"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "startCombat",
+         "encounter": "enc-foret-bande"
+        }
+       }
+      ]
+     }
     }
    ],
    "encounters": [
@@ -17743,12 +17908,18 @@
       "h": 16
      },
      "once": true,
-     "effects": [
-      {
-       "type": "startCombat",
-       "encounter": "enc-marais"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "startCombat",
+         "encounter": "enc-marais"
+        }
+       }
+      ]
+     }
     }
    ],
    "encounters": [
@@ -19079,30 +19250,36 @@
       "h": 3
      },
      "once": true,
-     "effects": [
-      {
-       "type": "test",
-       "skill": "Résistance",
-       "difficulty": "intermediaire",
-       "label": "Les remontées du puits maudit",
-       "onSuccess": [
-        {
-         "type": "journal",
-         "text": "L’odeur du puits vous plie en deux — mais rien ne s’accroche. Cette eau a TUÉ le village."
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "test",
+         "skill": "Résistance",
+         "difficulty": "intermediaire",
+         "label": "Les remontées du puits maudit",
+         "onSuccess": [
+          {
+           "type": "journal",
+           "text": "L’odeur du puits vous plie en deux — mais rien ne s’accroche. Cette eau a TUÉ le village."
+          }
+         ],
+         "onFailure": [
+          {
+           "type": "inflictDisease",
+           "disease": "Courante Galopante"
+          },
+          {
+           "type": "journal",
+           "text": "Les miasmes du puits vous prennent à la gorge. Votre ventre gargouille déjà sinistrement…"
+          }
+         ]
         }
-       ],
-       "onFailure": [
-        {
-         "type": "inflictDisease",
-         "disease": "Courante Galopante"
-        },
-        {
-         "type": "journal",
-         "text": "Les miasmes du puits vous prennent à la gorge. Votre ventre gargouille déjà sinistrement…"
-        }
-       ]
-      }
-     ]
+       }
+      ]
+     }
     },
     {
      "id": "fight-enc-village",
@@ -19113,12 +19290,18 @@
       "h": 21
      },
      "once": true,
-     "effects": [
-      {
-       "type": "startCombat",
-       "encounter": "enc-village"
-      }
-     ]
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "startCombat",
+         "encounter": "enc-village"
+        }
+       }
+      ]
+     }
     }
    ],
    "encounters": [

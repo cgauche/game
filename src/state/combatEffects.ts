@@ -106,12 +106,10 @@ export function checkTriggers(get: Get, set: SetFn) {
   for (const t of scene.triggers) {
     if (flags[`__trigger_${t.id}`]) continue;
     if (!inRect(partyPos, t.rect)) continue;
-    const condCtx = { flags, gameTime: get().gameTime };
-    if (t.condition && !evalCondition({ kind: 'flag', expr: t.condition }, condCtx)) continue;
-    if (t.temporalCondition && !evalCondition({ kind: 'time', window: t.temporalCondition }, condCtx)) continue;
+    if (t.when && !evalCondition(t.when, { flags, gameTime: get().gameTime })) continue;
     if (t.once) flags[`__trigger_${t.id}`] = true;
-    applyEffectsLoot(get, set, t.effects, 'Découverte');
     set({ flags: { ...flags } });
+    runFlow(get, set, t.flow, 'Découverte');
   }
 }
 
@@ -488,6 +486,7 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
         if (e.magicKnown) it.magicKnown = true; // aura détectée en fenêtre de loot → suit l'objet
         if (e.detectTried) it.detectTried = true;
         if (e.appraiseTriedDay != null) it.appraiseTriedDay = e.appraiseTriedDay;
+        if (e.price) it.price = { gold: e.price.gold ?? 0, silver: e.price.silver ?? 0, brass: e.price.brass ?? 0 };
         let who = '';
         set((s: GameState) => {
           if (!s.party.length) return {};

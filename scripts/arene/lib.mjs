@@ -80,9 +80,18 @@ export function hero(x, y) {
   return { id: 'start', kind: 'heroStart', pos: { x, y } };
 }
 
+/** Flow PLAT (séquence de `do`) à partir d'une liste d'Effets — forme attendue par `Trigger.flow`. */
+export function flowOf(effects) {
+  return { kind: 'seq', steps: effects.map((effect) => ({ kind: 'do', effect })) };
+}
+/** Condition d'entrée de flag (`Trigger.when`) à partir d'une expr « flag,!flag ». */
+export function flagWhen(expr) {
+  return { kind: 'flag', expr };
+}
+
 /** Trigger de combat standard (une fois) : entrer dans le rect lance la rencontre. */
 export function fightTrigger(encounter, rect, extra = {}) {
-  return { id: `fight-${encounter}`, rect, once: true, effects: [{ type: 'startCombat', encounter }], ...extra };
+  return { id: `fight-${encounter}`, rect, once: true, flow: flowOf([{ type: 'startCombat', encounter }]), ...extra };
 }
 
 /** onVictory standard d'une zone de l'échelle : bourse + PX + flag de porte + retour au Bourg.

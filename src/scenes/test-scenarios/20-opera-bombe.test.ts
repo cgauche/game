@@ -1,3 +1,4 @@
+import { flowEffects } from '../../state/flow';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from '../../state/store';
 import { applyEffects } from '../../state/combatEffects';
@@ -34,13 +35,13 @@ describe('Scénario « Opéra — Bombe » : le câblage en données compose', (
 
   it('entrer dans la loge arme la mèche (delayedEffect programmé)', () => {
     lonePartyAt(30);
-    applyEffects(useGame.getState, useGame.setState, armTrigger.effects);
+    applyEffects(useGame.getState, useGame.setState, flowEffects(armTrigger.flow));
     expect(useGame.getState().scheduledEffects).toHaveLength(1);
   });
 
   it('détecter la plante (branche RÉUSSITE) pose le flag de désamorçage → pas d’explosion', () => {
     const before = lonePartyAt(30).wounds.current;
-    applyEffects(useGame.getState, useGame.setState, armTrigger.effects);
+    applyEffects(useGame.getState, useGame.setState, flowEffects(armTrigger.flow));
     applyEffects(useGame.getState, useGame.setState, detectTest.onSuccess!);
     expect(useGame.getState().flags.bombeDesamorcee).toBe(true);
     useGame.getState().advanceTime(120);
@@ -50,7 +51,7 @@ describe('Scénario « Opéra — Bombe » : le câblage en données compose', (
 
   it('ne pas désamorcer → l’explosion frappe le groupe au bout de la mèche', () => {
     const before = lonePartyAt(30).wounds.current;
-    applyEffects(useGame.getState, useGame.setState, armTrigger.effects);
+    applyEffects(useGame.getState, useGame.setState, flowEffects(armTrigger.flow));
     useGame.getState().advanceTime(60); // franchit l'échéance
     expect(useGame.getState().party[0].wounds.current).toBeLessThanOrEqual(before - 15); // souffle (+ En flammes)
     expect(useGame.getState().scheduledEffects).toHaveLength(0);
