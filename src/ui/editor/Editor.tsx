@@ -19,7 +19,7 @@ import { downloadText } from '../../state/fileIo';
 import type { TestScenario } from '../../scenes/test-scenarios';
 import { WorldMap, parseProject } from '../../state/worldMap';
 import { nextEntityId } from '../../state/entityId';
-import { Tool, Sel, Pt, Layers, DEFAULT_LAYERS, deleteSel, moveSel, selPos, pasteEntity } from './editorState';
+import { Tool, Sel, Pt, Layers, DEFAULT_LAYERS, deleteSel, moveSel, selPos, pasteEntity, addLevel, removeLevel } from './editorState';
 
 /**
  * Éditeur de niveau v2 — SHELL d'orchestration : toolbar (Fichier/scènes/Tester), Palette
@@ -38,6 +38,7 @@ export function Editor() {
   const [sel, setSel] = useState<Sel>(null);
   const [layers, setLayers] = useState<Layers>(DEFAULT_LAYERS);
   const [brush, setBrush] = useState(1); // taille de pinceau terrain (1/3/5)
+  const [currentLevel, setCurrentLevel] = useState(0); // étage (z) en cours d'édition (multi-niveaux)
   const [terrainRect, setTerrainRect] = useState(false); // pinceau terrain en mode Rectangle
   const [encTarget, setEncTarget] = useState(''); // rencontre cible de l'outil ⚔️
   const [encRef, setEncRef] = useState(''); // créature à placer
@@ -350,7 +351,50 @@ export function Editor() {
           sel={sel}
           onSelect={selectFromCanvas}
           onHover={onHover}
+          currentLevel={currentLevel}
         />
+
+        <div className="ed-level-bar" title="Étages (multi-niveaux) : z=0 = sol, z>0 = surplombs (loges/galeries)">
+          <span className="ed-level-z">Étage {currentLevel}</span>
+          <button
+            className="btn small"
+            disabled={!scene.levels.some((l) => l.z < currentLevel)}
+            title="Étage inférieur"
+            onClick={() => setCurrentLevel(Math.max(...scene.levels.filter((l) => l.z < currentLevel).map((l) => l.z)))}
+          >
+            ▼
+          </button>
+          <button
+            className="btn small"
+            disabled={!scene.levels.some((l) => l.z > currentLevel)}
+            title="Étage supérieur"
+            onClick={() => setCurrentLevel(Math.min(...scene.levels.filter((l) => l.z > currentLevel).map((l) => l.z)))}
+          >
+            ▲
+          </button>
+          <button
+            className="btn small"
+            title="Ajouter un étage au-dessus"
+            onClick={() => {
+              const z = Math.max(...scene.levels.map((l) => l.z)) + 1;
+              setScene(addLevel(scene, z));
+              setCurrentLevel(z);
+            }}
+          >
+            ＋
+          </button>
+          <button
+            className="btn small danger"
+            disabled={currentLevel === 0}
+            title="Supprimer cet étage"
+            onClick={() => {
+              setScene(removeLevel(scene, currentLevel));
+              setCurrentLevel(0);
+            }}
+          >
+            －
+          </button>
+        </div>
 
         <Inspector
           scene={scene}

@@ -7,7 +7,7 @@
  */
 import { useRef, useState } from 'react';
 import { Scene, tileAt } from '../../state/scene';
-import { Dims, diamondPath, tileCenter, screenToTile, stageSize, depth, TH } from '../../gameIso/iso';
+import { Dims, diamondPath, tileCenter, screenToTileAtZ, stageSize, depth, TH } from '../../gameIso/iso';
 import { DEFS, terrainOverlay } from '../../gameIso/sprites';
 import { EntityToken } from '../../gameIso/EntityToken';
 import { footprintTiles } from '../../state/footprint';
@@ -38,6 +38,7 @@ export function EditorCanvas({
   sel,
   onSelect,
   onHover,
+  currentLevel,
 }: {
   scene: Scene;
   view: ReturnType<typeof useEditorView>;
@@ -55,6 +56,8 @@ export function EditorCanvas({
   sel: Sel;
   onSelect: (s: Sel) => void;
   onHover: (p: Pt) => void;
+  /** Étage en cours d'édition (z) : les outils de terrain peignent CE niveau, et le picking le vise. */
+  currentLevel: number;
 }) {
   const { rot, setRot, viewMode, setViewMode, view: vb, setView, zoomAt, spaceRef, panRef, canvasRef, stageRef } = view;
   const dims: Dims = { ...scene.dimensions, rot, view: viewMode };
@@ -74,7 +77,7 @@ export function EditorCanvas({
     pt.x = ev.clientX;
     pt.y = ev.clientY;
     const loc = pt.matrixTransform(svg.getScreenCTM()!.inverse());
-    return screenToTile(loc.x, loc.y, dims);
+    return screenToTileAtZ(loc.x, loc.y, dims, currentLevel); // picking vers l'étage en cours d'édition
   }
 
   function pointerDown(e: React.PointerEvent) {
@@ -102,7 +105,7 @@ export function EditorCanvas({
         } else {
           pushSnapshot(); // 1 cran d'undo pour tout le trait
           setPainting(true);
-          setSceneNoHistory(paintTiles(scene, p, tool.terrain, brush));
+          setSceneNoHistory(paintTiles(scene, p, tool.terrain, brush, currentLevel));
         }
         return;
       case 'entity': {
@@ -170,7 +173,7 @@ export function EditorCanvas({
     }
     if ((tool.mode === 'building' || tool.mode === 'zone' || (tool.mode === 'tile' && terrainRect)) && dragStartRef.current)
       setDragRect(rectFrom(dragStartRef.current, p));
-    else if (painting && tool.mode === 'tile') setSceneNoHistory(paintTiles(scene, p, tool.terrain, brush));
+    else if (painting && tool.mode === 'tile') setSceneNoHistory(paintTiles(scene, p, tool.terrain, brush, currentLevel));
     else if (painting && tool.mode === 'erase') setScene(eraseAt(scene, p));
   }
 
@@ -196,7 +199,7 @@ export function EditorCanvas({
           onSelect({ type: 'building', id: out.id });
         }
       } else if (tool.mode === 'tile' && terrainRect) {
-        setScene(fillTerrainRect(scene, rect, tool.terrain));
+        setScene(fillTerrainRect(scene, rect, tool.terrain, currentLevel));
       }
     }
     dragStartRef.current = null;
