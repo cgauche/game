@@ -1,13 +1,14 @@
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
-import { corruptionGain, EXPOSURE_LABELS } from '../engine/corruption';
+import { EXPOSURE_LABELS } from '../engine/corruption';
 import { testValue } from '../engine/skills';
 import { RollFlowShell } from './RollFlowShell';
 import { OptionChooser } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
+import { describeCorruption } from '../state/flowOutcomes';
 
 /**
  * Exposition à une Influence corruptrice (LDB 19 l.23-75) : Test de Résistance
@@ -36,14 +37,6 @@ export function CorruptionModal() {
   // Pré-jet (audit M6) : `pc.target` n'existe qu'après resolve → base réelle du Test affichée
   // AVANT le jet (même parité que les autres flux RollFlowShell).
   const base = hero ? testValue(hero, pc.skill) : 0;
-  const gain = rolled && !seuil ? corruptionGain(pc.level ?? 'mineure', !!pc.success, pc.sl ?? 0) : 0;
-  const outcomeText = seuil
-    ? pc.success
-      ? `${hero?.name ?? '?'} contient sa Corruption — pour cette fois.`
-      : `${hero?.name ?? '?'} échoue — une mutation menace de se développer…`
-    : gain === 0
-      ? `${hero?.name ?? '?'} repousse l'Influence corruptrice.`
-      : `${hero?.name ?? '?'} subit ${gain} Point${gain > 1 ? 's' : ''} de Corruption.`;
 
   return (
     <RollFlowShell
@@ -74,7 +67,7 @@ export function CorruptionModal() {
       }
       breakdown={rolled ? testBreakdown(`Test de ${pc.skill}`, base, { roll: pc.roll!, target: pc.target, sl: pc.sl, success: pc.success }, 'intermediaire') : undefined}
       pending={testPending(`Test de ${pc.skill}`, base, undefined, 'intermediaire')}
-      outcome={rolled && <JournalLine className="rm-journal" event={ev('info', outcomeText, pc.heroId)} combatants={pool} />}
+      outcome={rolled && <JournalLine className="rm-journal" event={ev('info', describeCorruption(pc, hero?.name ?? '?'), pc.heroId)} combatants={pool} />}
       fortune={hero?.fortune ?? 0}
       freeReroll={freeRerollOf(hero)}
       rerollable={rolled && canReroll(pc.roll! > (pc.target ?? 0), !!pc.rerolled)}

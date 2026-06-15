@@ -5,6 +5,7 @@ import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
+import { describeReload } from '../state/flowOutcomes';
 import { DrBar } from './DrBar';
 
 /** Vue pure de la modale de rechargement (testable sans store). */
@@ -31,7 +32,6 @@ export function ReloadModalView({
 }) {
   const rolled = pr.roll != null;
   const after = Math.max(0, pr.progressBefore + pr.sl);
-  const done = after >= pr.reload;
 
   return (
     <RollFlowShell
@@ -52,7 +52,7 @@ export function ReloadModalView({
       outcome={rolled && (
         <JournalLine
           className="rm-journal"
-          event={ev('reload', done ? `${pr.weaponName} rechargé ✓` : `${pr.actorName} recharge ${pr.weaponName} (${after}/${pr.reload} DR).`, pr.actorId)}
+          event={ev('reload', describeReload(pr, after), pr.actorId)}
         />
       )}
       fortune={fortune}

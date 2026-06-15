@@ -138,7 +138,7 @@ import { campaign, campaignWorldMap } from '../scenes/campaign';
 import { dayIndex, runDailyUpkeep } from './upkeep';
 import * as travelFlow from './travelFlow';
 import { startCascade, advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice } from './cascade';
-import { describeTest, describePsych } from './flowOutcomes';
+import { describeTest, describePsych, describeFrenzy, describeReload, describeStateRecovery } from './flowOutcomes';
 
 export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'test' | 'interlude' | 'coop' | 'compendium';
 
@@ -2058,9 +2058,8 @@ export const useGame = create<GameState>((set, get) => ({
     const c = battle.combatants.find((x) => x.id === pf.combatantId);
     set({ pendingFrenzy: null });
     if (!c) return;
-    const log = pf.result.success
-      ? [`${c.name} entre en Frénésie : +1 Bonus de Force, immunité psychologique, doit attaquer.`]
-      : [`${c.name} ne parvient pas à entrer en Frénésie (Test de Force Mentale échoué).`];
+    // Issue = source UNIQUE avec la popin (describeFrenzy).
+    const log = [describeFrenzy(pf, c.name)];
     if (pf.result.success) c.frenzied = true;
     set({ battle: { ...get().battle!, acted: true, action: null, log: [...battle.log, ...evLines(log, 'frenzy', c.id)] } });
     checkBattleOver(get, set);
@@ -2591,17 +2590,15 @@ export const useGame = create<GameState>((set, get) => ({
     // Rechargement rapide / Artilleur (LDB 10) : +niveau DR au Test de rechargement (sur un jet réussi).
     const reloadTalent = pr.success ? reloadDRBonus(a, a.weapons.find((x) => x.type === 'ranged')) : 0;
     const progress = Math.max(0, pr.progressBefore + pr.sl + reloadTalent); // Test étendu : cumul des DR, plancher 0 (recommence)
-    let log: string;
     if (progress >= pr.reload) {
       a.loaded = true;
       a.reloadProgress = 0;
       a.chambered = magazineSize(a.weapons.find((x) => x.type === 'ranged')); // À Répétition : chargeur rempli (LDB 62 l.264-265)
-      log = `${a.name} a rechargé ${pr.weaponName}.`;
     } else {
       a.reloadProgress = progress;
-      log = `${a.name} recharge ${pr.weaponName} (${progress}/${pr.reload} DR).`;
     }
-    set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('reload', log, a.id)] } });
+    // Issue = source UNIQUE avec la popin (describeReload) — `progress` inclut le bonus de Talent (réalisé à l'application).
+    set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('reload', describeReload(pr, progress), a.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
   reloadCancel: () => set({ pendingReload: null }), // avant le jet : aucun coût
@@ -2642,14 +2639,9 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingStateRecovery: null });
     if (!a) return;
     const removed = recoveredStacks(sr.netSL, stacks(a, sr.state), sr.success); // 1 + DR, borné
-    const lines: string[] = [];
-    if (removed > 0) {
-      removeCondition(a, sr.state, removed);
-      lines.push(sr.state === 'Empêtré'
-        ? `${a.name} se libère (${removed} État${removed > 1 ? 's' : ''} Empêtré retiré${removed > 1 ? 's' : ''}).`
-        : `${a.name} étouffe les flammes (${removed} État${removed > 1 ? 's' : ''} En flammes retiré${removed > 1 ? 's' : ''}).`);
-    } else lines.push(sr.state === 'Empêtré' ? `${a.name} ne parvient pas à se libérer.` : `${a.name} ne parvient pas à éteindre les flammes.`);
-    finishPlayerAction(get, set, lines, 'condition'); // consomme l'Action
+    if (removed > 0) removeCondition(a, sr.state, removed);
+    // Issue = source UNIQUE avec la popin (describeStateRecovery).
+    finishPlayerAction(get, set, [describeStateRecovery(sr, a.name)], 'condition'); // consomme l'Action
   },
   recoverCancel: () => set({ pendingStateRecovery: null }), // avant le jet : aucun coût
   battleSelectAmmo: (uid) => {

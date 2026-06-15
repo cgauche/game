@@ -1,11 +1,11 @@
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
-import { healWoundsDelta } from '../engine/healing';
 import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
+import { describeHeal } from '../state/flowOutcomes';
 import { ModalSubject } from './ModalSubject';
 
 /**
@@ -37,16 +37,6 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
 
   const wounds = ph.mode === 'wounds';
   const trauma = ph.mode === 'trauma';
-  const preview = wounds ? healWoundsDelta(ph.intBonus, ph.sl, ph.success) : null;
-  const outcomeText = ph.success
-    ? wounds
-      ? `${ph.targetName} récupère ${preview} PB.`
-      : trauma
-        ? `Convalescence de ${ph.targetName} raccourcie de ${1 + Math.max(0, ph.sl)} jour(s).`
-        : `${1 + Math.max(0, ph.sl)} pion(s) d'Hémorragie stoppé(s) sur ${ph.targetName}.`
-    : wounds && ph.intBonus + ph.sl < 0
-      ? `Le soin blesse ${ph.targetName} (${ph.intBonus + ph.sl} PB).`
-      : `Le soin de ${ph.targetName} reste sans effet.`;
   return (
     <RollFlowShell
       embedded={embedded}
@@ -63,7 +53,7 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
       onCancel={cancel}
       breakdown={rolled ? testBreakdown('Guérison', ph.skillValue, { roll: ph.roll!, target: ph.target, sl: ph.sl, success: ph.success }, ph.difficulty) : undefined}
       pending={testPending('Guérison', ph.skillValue, ph.target, ph.difficulty)}
-      outcome={rolled && <JournalLine className="rm-journal" event={ev('heal', outcomeText, ph.healerId, ph.targetId)} combatants={pool} />}
+      outcome={rolled && <JournalLine className="rm-journal" event={ev('heal', describeHeal(ph), ph.healerId, ph.targetId)} combatants={pool} />}
       fortune={fortune}
       freeReroll={freeRerollOf(healer)}
       rerollable={rolled && canReroll(ph.roll! > ph.target, !!ph.rerolled) && (fortune > 0 || freeRerollOf(healer))}

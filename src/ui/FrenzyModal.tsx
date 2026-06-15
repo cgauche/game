@@ -6,6 +6,7 @@ import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
+import { describeFrenzy } from '../state/flowOutcomes';
 
 /**
  * Modale d'entrée en Frénésie (LDB 21 l.32) : « Lancer » jette le Test de Force Mentale,
@@ -42,7 +43,7 @@ export function FrenzyModal() {
       outcome={r && (
         <JournalLine
           className="rm-journal"
-          event={ev('frenzy', r.success ? `${c.name} entre en Frénésie : +1 BF, immunité psy, attaque obligatoire.` : `${c.name} reste de marbre — le sang ne monte pas ce tour.`, c.id)}
+          event={ev('frenzy', describeFrenzy(pf, c.name), c.id)}
           combatants={battle.combatants}
         />
       )}

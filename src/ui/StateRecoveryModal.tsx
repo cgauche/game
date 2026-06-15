@@ -5,6 +5,7 @@ import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
+import { describeStateRecovery } from '../state/flowOutcomes';
 
 /** Vue pure de la modale « se libérer » (Empêtré) / « se rouler » (En flammes). Testable sans store. */
 export function StateRecoveryModalView({
@@ -29,7 +30,6 @@ export function StateRecoveryModalView({
   onCancel: () => void;
 }) {
   const rolled = sr.roll != null;
-  const removed = sr.success ? Math.min(sr.stacks, 1 + Math.max(0, sr.netSL)) : 0;
   const sub = sr.opposed
     ? `${sr.skillLabel} (opposé) contre ${sr.opponentName}`
     : `${sr.skillLabel}, cible ${sr.roll?.target ?? sr.skillValue}`;
@@ -59,7 +59,7 @@ export function StateRecoveryModalView({
       outcome={rolled && (
         <JournalLine
           className="rm-journal"
-          event={ev('condition', `${sr.actorName} ${sr.success ? `se dégage (${sr.netSL >= 0 ? '+' : ''}${sr.netSL} DR net) : ${removed} pion${removed > 1 ? 's' : ''} retiré${removed > 1 ? 's' : ''}` : 'n’y parvient pas — aucun pion retiré'}.`, sr.actorId)}
+          event={ev('condition', describeStateRecovery(sr, sr.actorName), sr.actorId)}
         />
       )}
       fortune={fortune}
