@@ -1,0 +1,479 @@
+[
+  {
+    "id": "Démon",
+    "gabarit": "elance",
+    "gabaritOverride": {
+      "sl": 1.06,
+      "legs": 1.06
+    },
+    "palette": {
+      "peau": "#9a201a",
+      "peauO": "#601010",
+      "peauH": "#c4382c",
+      "cheveux": "#1a1410",
+      "cheveuxO": "#0a0806",
+      "cheveuxH": "#2c2620"
+    },
+    "tenue": "Nu",
+    "head": "demon",
+    "legs": "chevre",
+    "featureKeys": [
+      "cornes-demon",
+      "muscles-torse"
+    ]
+  },
+  {
+    "id": "Elfe sylvain",
+    "gabarit": "elance",
+    "tenue": "Bourgeois",
+    "gabaritOverride": {
+      "sl": 1.05,
+      "st": 0.9
+    },
+    "palette": {
+      "peau": "#cdbd92",
+      "peauO": "#a89464",
+      "peauH": "#d8c9a0",
+      "cheveux": "#3c2e1a",
+      "cheveuxH": "#6b7a3a",
+      "cheveuxO": "#4a3a22"
+    },
+    "paletteF": {
+      "peau": "#d8c9a0",
+      "peauO": "#8a7a52",
+      "peauH": "#e2d2a8",
+      "cheveux": "#5a4a2c",
+      "cheveuxH": "#7a6642",
+      "cheveuxO": "#4a3c22"
+    },
+    "featureKeys": [
+      "oreilles-pointues"
+    ]
+  },
+  {
+    "id": "Fimir",
+    "gabarit": "brute",
+    "palette": {
+      "peau": "#6b7a52",
+      "cheveux": "#3a281a",
+      "cheveuxO": "#241810",
+      "cheveuxH": "#4c3624"
+    },
+    "tenue": "Nu",
+    "head": "cyclope",
+    "featureKeys": [
+      "queue",
+      "ecailles"
+    ]
+  },
+  {
+    "id": "Gnome",
+    "gabarit": "gnome"
+  },
+  {
+    "id": "Gobelin",
+    "gabarit": "gremlin",
+    "palette": {
+      "peau": "#4f7a33",
+      "peauO": "#365524",
+      "peauH": "#6e9a46",
+      "cheveux": "#283614",
+      "cheveuxO": "#16220c",
+      "cheveuxH": "#384a22"
+    },
+    "pose": {
+      "torse": 14,
+      "cou": 12,
+      "tete": -10,
+      "epauleG": 4,
+      "epauleD": 4
+    },
+    "tenue": "Mendiant",
+    "head": "gobelin",
+    "colors": {
+      "vet1": "#3a5a28",
+      "vet2": "#5a3f24",
+      "cuir": "#4a3320"
+    }
+  },
+  {
+    "id": "Goule",
+    "gabarit": "trapu-voute",
+    "gabaritOverride": {
+      "sl": 0.96,
+      "st": 0.92,
+      "legs": 0.9
+    },
+    "palette": {
+      "peau": "#9ca0a2",
+      "peauO": "#696d70",
+      "peauH": "#bcc0c2",
+      "cheveux": "#3a3e34",
+      "cheveuxO": "#22241e",
+      "cheveuxH": "#4e5246"
+    },
+    "pose": {
+      "torse": 24,
+      "cou": 18,
+      "tete": -14,
+      "epauleG": 8,
+      "epauleD": 8
+    },
+    "tenue": "Nu",
+    "head": "goule",
+    "featureKeys": [
+      "griffes"
+    ]
+  },
+  {
+    "id": "Guerrier du Chaos",
+    "gabarit": "trapu-massif",
+    "tenue": "Guerrier du Chaos",
+    "palette": {
+      "peau": "#b7a596",
+      "peauO": "#8c7b6e",
+      "peauH": "#cdbcab",
+      "cheveux": "#1a1410",
+      "cheveuxO": "#0a0806",
+      "cheveuxH": "#2c2620"
+    },
+    "colors": {
+      "vet1": "#2a2230",
+      "vet2": "#6a5420",
+      "cuir": "#140f12",
+      "metal": "#3a3a46"
+    },
+    "pose": {
+      "torse": 6,
+      "cou": 5,
+      "tete": -3
+    }
+  },
+  {
+    "id": "Halfling",
+    "gabarit": "halfling",
+    "tenue": "Bourgeois",
+    "palette": {
+      "peau": "#e2b48c",
+      "peauO": "#cf9a72",
+      "peauH": "#e89a86",
+      "cheveux": "#9c7048",
+      "cheveuxO": "#7a3e1c",
+      "cheveuxH": "#9c5828"
+    },
+    "paletteF": {
+      "peau": "#e2b48c",
+      "peauO": "#d49a72",
+      "cheveux": "#8a5a36",
+      "cheveuxO": "#5f2f15",
+      "cheveuxH": "#b06a32"
+    }
+  },
+  {
+    "id": "Haut-Elfe",
+    "gabarit": "elance",
+    "tenue": "Bourgeois",
+    "palette": {
+      "peau": "#c69a72",
+      "peauO": "#b98a64",
+      "cheveux": "#6b4a30",
+      "peauH": "#d9a87e",
+      "cheveuxH": "#e6cf86",
+      "cheveuxO": "#a98521"
+    },
+    "paletteF": {
+      "peau": "#ecc6a0",
+      "peauO": "#c79b75",
+      "cheveux": "#b88c38",
+      "cheveuxH": "#e6cd7e"
+    },
+    "featureKeys": [
+      "oreilles-pointues"
+    ]
+  },
+  {
+    "id": "Homme-bête",
+    "gabarit": "trapu-massif",
+    "gabaritOverride": {
+      "sl": 1.02,
+      "st": 1.35,
+      "legs": 0.92
+    },
+    "palette": {
+      "peau": "#6b4a32",
+      "peauO": "#4a3322",
+      "peauH": "#876040",
+      "cheveux": "#3a281a",
+      "cheveuxO": "#241810",
+      "cheveuxH": "#4c3624"
+    },
+    "pose": {
+      "torse": 14,
+      "cou": 12,
+      "tete": -9,
+      "epauleG": 5,
+      "epauleD": 5
+    },
+    "tenue": "Nu",
+    "head": "caprin",
+    "legs": "chevre",
+    "featureKeys": [
+      "queue",
+      "pelage"
+    ]
+  },
+  {
+    "id": "Humain",
+    "gabarit": "moyen",
+    "tenue": "Bourgeois",
+    "palette": {
+      "cheveux": "#5a4427",
+      "peauH": "#e2b48c",
+      "peau": "#cf9d72",
+      "peauO": "#b07a52",
+      "cheveuxO": "#4a3520",
+      "cheveuxH": "#6e5430"
+    },
+    "paletteF": {
+      "cheveux": "#7a5234",
+      "peauH": "#e2b48c",
+      "peau": "#d9a87e",
+      "peauO": "#b07a52",
+      "cheveuxO": "#5a3415",
+      "cheveuxH": "#9a6a2a"
+    }
+  },
+  {
+    "id": "Minotaure",
+    "gabarit": "brute",
+    "gabaritOverride": {
+      "sl": 1.32,
+      "legs": 0.9
+    },
+    "palette": {
+      "peau": "#6e4a2c",
+      "peauO": "#4a3220",
+      "peauH": "#c89a6e",
+      "cheveux": "#3a281a",
+      "cheveuxO": "#241810",
+      "cheveuxH": "#4c3624"
+    },
+    "tenue": "Nu",
+    "head": "taureau",
+    "legs": "chevre",
+    "featureKeys": [
+      "cornes-taureau",
+      "queue",
+      "pelage-massif"
+    ]
+  },
+  {
+    "id": "Nain",
+    "gabarit": "courtaud",
+    "tenue": "Artisan",
+    "palette": {
+      "cheveux": "#5a3a1e",
+      "peauO": "#d98e6a",
+      "peau": "#e0b48a",
+      "peauH": "#e9c39c",
+      "cheveuxO": "#54341a",
+      "cheveuxH": "#6a4423"
+    },
+    "paletteF": {
+      "cheveux": "#7a5230",
+      "peau": "#e0b48a",
+      "peauO": "#d6a87c",
+      "cheveuxO": "#5e3412",
+      "cheveuxH": "#9a5a22"
+    },
+    "featureKeys": [
+      "barbe-naine"
+    ]
+  },
+  {
+    "id": "Ogre",
+    "gabarit": "brute",
+    "palette": {
+      "peau": "#c9966a",
+      "peauO": "#9a6c48",
+      "peauH": "#e0b48a",
+      "cheveux": "#3a281a",
+      "cheveuxO": "#241810",
+      "cheveuxH": "#4c3624"
+    },
+    "tenue": "Ogre",
+    "head": "ogre",
+    "pose": {
+      "torse": 6,
+      "cou": 6,
+      "tete": -4
+    },
+    "featureKeys": [
+      "panse"
+    ]
+  },
+  {
+    "id": "Orc",
+    "gabarit": "trapu-massif",
+    "palette": {
+      "peau": "#4f7a36",
+      "peauO": "#365526",
+      "peauH": "#6a9a48",
+      "cheveux": "#2a3818",
+      "cheveuxO": "#18240e",
+      "cheveuxH": "#3a4c24"
+    },
+    "pose": {
+      "torse": 16,
+      "cou": 13,
+      "tete": -10,
+      "epauleG": 5,
+      "epauleD": 5
+    },
+    "tenue": "Mendiant",
+    "head": "orc",
+    "colors": {
+      "vet1": "#5a4a30",
+      "vet2": "#3a2a1c",
+      "cuir": "#5a3f24"
+    }
+  },
+  {
+    "id": "Skaven",
+    "gabarit": "elance-voute",
+    "palette": {
+      "peau": "#6f6354",
+      "peauO": "#4c4338",
+      "peauH": "#8c7f6c",
+      "cheveux": "#2a2018",
+      "cheveuxO": "#161009",
+      "cheveuxH": "#3a2c1e"
+    },
+    "pose": {
+      "torse": 15,
+      "cou": 11,
+      "tete": -9,
+      "epauleG": 4,
+      "epauleD": 4
+    },
+    "tenue": "Skaven",
+    "head": "rat",
+    "featureKeys": [
+      "queue-rat"
+    ]
+  },
+  {
+    "id": "Snotling",
+    "gabarit": "gremlin-mini",
+    "palette": {
+      "peau": "#4a7a3a",
+      "peauO": "#326028",
+      "peauH": "#669a4e",
+      "cheveux": "#283614",
+      "cheveuxO": "#16220c",
+      "cheveuxH": "#384a22"
+    },
+    "tenue": "Nu",
+    "head": "gobelin",
+    "featureKeys": [
+      "queue"
+    ]
+  },
+  {
+    "id": "Squelette",
+    "gabarit": "decharne",
+    "palette": {
+      "peau": "#d8ccab",
+      "peauO": "#a89c80",
+      "peauH": "#ece2c6",
+      "cheveux": "#8a8f9e",
+      "cheveuxO": "#5a5e68",
+      "cheveuxH": "#aab0bc"
+    },
+    "tenue": "Squelette",
+    "head": "crane"
+  },
+  {
+    "id": "Troll",
+    "gabarit": "brute-bras-longs",
+    "palette": {
+      "peau": "#4a6b34",
+      "peauO": "#324a22",
+      "peauH": "#658a48",
+      "cheveux": "#2a3818",
+      "cheveuxO": "#18240e",
+      "cheveuxH": "#3a4c24"
+    },
+    "pose": {
+      "torse": 18,
+      "cou": 16,
+      "tete": -12,
+      "epauleG": 6,
+      "epauleD": 6
+    },
+    "tenue": "Nu",
+    "head": "troll",
+    "featureKeys": [
+      "verrues"
+    ]
+  },
+  {
+    "id": "Vampire",
+    "gabarit": "elance",
+    "gabaritOverride": {
+      "sl": 1.04,
+      "st": 0.96,
+      "legs": 1
+    },
+    "palette": {
+      "peau": "#e8cdb6",
+      "peauO": "#c2a288",
+      "peauH": "#f4e2d0",
+      "cheveux": "#161214",
+      "cheveuxO": "#0a0808",
+      "cheveuxH": "#2c262a"
+    },
+    "tenue": "Vampire",
+    "dropHeadgear": true,
+    "sex": "M",
+    "parts": {
+      "cheveux": 1,
+      "visage": 0
+    },
+    "colors": {
+      "vet1": "#241018",
+      "vet2": "#6a0e18",
+      "cuir": "#1a0e12",
+      "metal": "#8a8f9e"
+    },
+    "eyes": {
+      "G": "rouge",
+      "D": "rouge"
+    },
+    "featureKeys": [
+      "crocs"
+    ]
+  },
+  {
+    "id": "Zombie",
+    "gabarit": "trapu-voute",
+    "palette": {
+      "peau": "#8e8a7a",
+      "peauO": "#605c4d",
+      "peauH": "#a8a390",
+      "cheveux": "#454c36",
+      "cheveuxO": "#2c3024",
+      "cheveuxH": "#5a6248"
+    },
+    "pose": {
+      "torse": 8,
+      "cou": 6,
+      "tete": -4
+    },
+    "tenue": "Mendiant",
+    "head": "pourri",
+    "featureKeys": [
+      "plaie"
+    ]
+  }
+]

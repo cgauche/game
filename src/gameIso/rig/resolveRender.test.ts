@@ -32,10 +32,13 @@ describe('resolveRender — résolution de rendu data-driven byte-identique au n
 
   it('bestiaire OFFICIEL : la voie EXPLICITE (espèce posée par 5b) reproduit le name-match', () => {
     // Byte-identité garantie sur le bestiaire officiel (5b a posé species = résolution par le nom).
-    // NB : les créatures frenchy.bzh ont une espèce AUTORITAIRE (fixée par l'import) qui peut
-    // CORRIGER un faux positif du matcher flou (ex. « Porte-Peste de Nurgle » : un alias matche à
-    // tort → classé créature, alors que l'espèce explicite est bipède) → divergence VOULUE, exclue ici.
-    for (const c of creaturesJson as { label: string; traits?: string[]; appearance?: { species?: string } }[]) {
+    // NB : les créatures frenchy.bzh ont une espèce AUTORITAIRE (fixée à l'import) qui peut CORRIGER
+    // un faux positif du matcher flou (ex. « Porte-Peste de Nurgle » : un alias matche à tort en
+    // créature, alors que l'espèce explicite « Démon » est bipède) → divergence VOULUE → on n'exige
+    // l'iso-résolution QUE sur le bestiaire officiel (frenchy.bzh exclu).
+    type Rec = { label: string; traits?: string[]; appearance?: { species?: string }; source?: { book?: string } };
+    const official = (creaturesJson as Rec[]).filter((c) => c.source?.book !== 'frenchy.bzh');
+    for (const c of official) {
       const r = resolveRender(c.appearance?.species, c.traits, c.label);
       const ref = current(c.label);
       expect({ kind: r.kind, plan: r.plan }, c.label).toEqual({ kind: ref.kind, plan: ref.plan });

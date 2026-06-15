@@ -1,7 +1,7 @@
 /**
  * Accès typé à NOTRE base de jeu — désormais APP-OWNED et ÉDITABLE (éditeur de données DEV in-app,
- * écran 'dataEditor'). Les *.json de ce dossier sont la SOURCE CANONIQUE ; `scripts/build-data.ts`
- * n'est plus qu'un IMPORTEUR ponctuel (re-seed depuis Source/all-data.json à la demande).
+ * écran 'dataEditor'). Les *.json de ce dossier sont la SOURCE CANONIQUE app-owned : la migration
+ * `build:data` (re-seed depuis Source/all-data.json) a été RETIRÉE — elle écrasait nos données curées.
  */
 import type { EntityAppearance } from '../state/scene';
 import characteristicsJson from './characteristics.json';
@@ -16,7 +16,6 @@ import traitsJson from './traits.json';
 import qualitiesJson from './qualities.json';
 import trappingsJson from './trappings.json';
 import creaturesJson from './creatures.json';
-import frenchyCreaturesJson from './frenchy-creatures.json';
 import frenchyTraitsJson from './frenchy-traits.json';
 import frenchySpellsJson from './frenchy-spells.json';
 import spellsJson from './spells.json';
@@ -27,6 +26,7 @@ import starsJson from './stars.json';
 import locationsJson from './locations.json';
 import booksJson from './books.json';
 import namesJson from './names.json';
+import raceAppearanceJson from './raceAppearance.json';
 import { CharKey } from '../engine/types';
 
 export interface SpeciesData {
@@ -217,6 +217,32 @@ export interface BookData {
   folder: string | null;
   desc: string | null;
 }
+/**
+ * Apparence de base d'une espèce de rig (Humain, Ogre, Skaven…) — éditable dans le Compendium.
+ * PAR RÉFÉRENCE : `featureKeys` (catalogue d'éléments, résolus par `feat()`), ids de gabarit/tête/
+ * jambes, libellé de tenue, couleurs. Les SVG/gabarits restent des registres CODE (résolus par le
+ * rig). Le rig (`raceById`) lit ce dataset comme SOURCE et le résout en `RaceDef`.
+ */
+export interface RaceAppearanceData {
+  id: string;
+  gabarit: string;
+  gabaritOverride?: Record<string, number>;
+  palette?: Record<string, string>;
+  paletteF?: Record<string, string>;
+  head?: string;
+  legs?: string;
+  armG?: string;
+  armD?: string;
+  dropHeadgear?: boolean;
+  featureKeys?: string[];
+  pose?: Record<string, number>;
+  tenue?: string;
+  colors?: Record<string, string>;
+  sex?: 'M' | 'F';
+  parts?: { cheveux?: number; visage?: number };
+  scale?: number;
+  eyes?: { G?: string; D?: string };
+}
 /** Banque de noms par race (clé : « Humain », « Nain »…) : prénoms M/F + noms de famille (LDB 05). */
 export interface NamePool {
   maleFirstNames: string[];
@@ -232,14 +258,15 @@ export const careerLevels = careerLevelsJson as CareerLevelData[];
 export const skills = skillsJson as SkillData[];
 export const talents = talentsJson as TalentData[];
 export const etats = etatsJson as EtatData[];
-// Traits officiels (build:data) + traits homebrew curés « frenchy.bzh » (mergés ici pour survivre à
-// build:data qui ne réécrit que traits.json) — Aura de Dhar/Mort, Charnier, Attrayante, Blablater…
+// Traits officiels (build:data) + traits curés hors-extraction (mergés ici pour survivre à build:data
+// qui ne réécrit que traits.json) : homebrew frenchy.bzh (Aura de Dhar/Mort, Charnier) + traits de
+// suppléments autorisés référencés par le bestiaire mais absents d'all-data.json (Redoutable, ZI).
 export const traits = [...(traitsJson as TraitData[]), ...(frenchyTraitsJson as TraitData[])];
 export const qualities = qualitiesJson as any[];
 export const trappings = trappingsJson as TrappingData[];
-// Bestiaire officiel (généré par build:data) + complément fan « frenchy.bzh » (dataset curé
-// par scripts/frenchy/, mergé ICI pour survivre à build:data qui ne réécrit que creatures.json).
-export const creatures = [...(creaturesJson as CreatureData[]), ...(frenchyCreaturesJson as CreatureData[])];
+// Bestiaire APP-OWNED : officiel + complément « frenchy.bzh » INTÉGRÉ directement dans creatures.json
+// (fusionné 2026-06-15, espèce explicite posée) — plus de dataset frenchy séparé à merger.
+export const creatures = creaturesJson as CreatureData[];
 // Sorts officiels (build:data) + sorts homebrew « frenchy.bzh » des casters (Magie Mineure/Arcanes,
 // Bénédictions, Miracles…) — mergés ici pour survivre à build:data ; le nom listé par une créature résout.
 export const spells = [...(spellsJson as SpellData[]), ...(frenchySpellsJson as SpellData[])];
@@ -247,6 +274,8 @@ export const eyes = eyesJson as DetailColorData[];
 export const hairs = hairsJson as DetailColorData[];
 export const details = detailsJson as DetailsData;
 export const stars = starsJson as StarData[];
+/** Apparences d'espèce de rig (app-owned, éditable) — SOURCE lue+résolue par `raceById` (rig). */
+export const raceAppearance = raceAppearanceJson as RaceAppearanceData[];
 export const locations = locationsJson as LocationData[];
 export const books = booksJson as BookData[];
 export const names = namesJson as Record<string, NamePool>;
