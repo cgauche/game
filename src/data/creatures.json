@@ -8409,11 +8409,11 @@
     "trappings": [],
     "spells": [
       "Culpabilité",
-      "Guérison",
+      "Bénédiction de Guérison",
       "Protection",
       "Soins",
       "Souffle",
-      "Ténacité",
+      "Bénédiction de Ténacité",
       "Résistance du Pénitent",
       "Apaisement",
       "Catharsis",
@@ -9718,17 +9718,17 @@
     ],
     "trappings": [],
     "spells": [
-      "Bataille",
-      "Courage",
+      "Bénédiction de Bataille",
+      "Bénédiction de Courage",
       "Justice",
       "Protection",
-      "Puissance",
+      "Bénédiction de Puissance",
       "Robustesse",
       "Modèle de Vertu",
       "Arrière, Sorcière !",
       "Marteau de Justice",
       "Sus à l’Ennemi !",
-      "Sanctuaire (DotR p.78)"
+      "Sanctuaire"
     ],
     "desc": null,
     "source": {
@@ -9979,14 +9979,14 @@
     ],
     "trappings": [],
     "spells": [
-      "Bataille",
-      "Courage",
-      "Puissance",
+      "Bénédiction de Bataille",
+      "Bénédiction de Courage",
+      "Bénédiction de Puissance",
       "Robustesse",
-      "Sauvagerie",
-      "Ténacité",
+      "Bénédiction de Sauvagerie",
+      "Bénédiction de Ténacité",
       "Blizzard",
-      "Fureur d’Ulric",
+      "Fureur d'Ulric",
       "Chaleur de la Fourrure",
       "Morsure d’Hiver",
       "Haine du Faible",
@@ -10246,15 +10246,14 @@
     ],
     "trappings": [],
     "spells": [
-      "Chance",
-      "Courage",
+      "Bénédiction de Chance",
+      "Bénédiction de Courage",
       "Culpabilité",
       "Justice",
       "Rapidité",
-      "Sagesse",
+      "Bénédiction de Sagesse",
       "Verena m’est témoin !",
       "Justice Aveugle",
-      "Fers de Vérité",
       "Épée de Justice",
       "La Vérité finit toujours par sortir",
       "Sagesse du Hibou"
@@ -12518,10 +12517,10 @@
     ],
     "trappings": [],
     "spells": [
-      "Chance",
-      "Charisme",
+      "Bénédiction de Chance",
+      "Bénédiction de Charisme",
       "Culpabilité",
-      "Finesse",
+      "Bénédiction de Finesse",
       "Protection",
       "Rapidité"
     ],
@@ -14944,9 +14943,9 @@
       "Enchevêtrement",
       "Bienveillance",
       "Nostrum",
-      "Ramanchage B&B",
-      "Fertilisation B&B",
-      "Bouillon Revigorant B&B"
+      "Ramanchage",
+      "Fertilisation",
+      "Bouillon Revigorant"
     ],
     "desc": null,
     "source": {
@@ -15241,7 +15240,7 @@
       "Projectile Mineur",
       "Faux- Semblant",
       "Nuée",
-      "Mauvais Oeil",
+      "Mauvais œil",
       "Terreur Nocturne",
       "Effigie Maudite",
       "Ruine"
@@ -15379,10 +15378,10 @@
     ],
     "trappings": [],
     "spells": [
-      "Charisme",
-      "Courage",
-      "Grâce",
-      "Guérison",
+      "Bénédiction de Charisme",
+      "Bénédiction de Courage",
+      "Bénédiction de Grâce",
+      "Bénédiction de Guérison",
       "Protection",
       "Soins"
     ],
@@ -15532,12 +15531,12 @@
     ],
     "trappings": [],
     "spells": [
-      "Chance",
-      "Charisme",
-      "Courage",
+      "Bénédiction de Chance",
+      "Bénédiction de Charisme",
+      "Bénédiction de Courage",
       "Culpabilité",
-      "Grâce",
-      "Guérison",
+      "Bénédiction de Grâce",
+      "Bénédiction de Guérison",
       "Protection",
       "Rapidité",
       "Soins"
@@ -15946,8 +15945,8 @@
     "trappings": [],
     "spells": [
       "Culpabilité",
-      "Grâce",
-      "Guérison",
+      "Bénédiction de Grâce",
+      "Bénédiction de Guérison",
       "Protection",
       "Soins",
       "Souffle"
@@ -16107,8 +16106,8 @@
     "trappings": [],
     "spells": [
       "Culpabilité",
-      "Grâce",
-      "Guérison",
+      "Bénédiction de Grâce",
+      "Bénédiction de Guérison",
       "Protection",
       "Soins",
       "Souffle",
@@ -16116,8 +16115,8 @@
       "Abri de Rhya",
       "Main de Rhya",
       "Union de Rhya",
-      "Abondance de Rhya AotE III",
-      "Dressage de Rhya AotE III"
+      "Abondance de Rhya",
+      "Dressage de Rhya"
     ],
     "desc": null,
     "source": {
@@ -16515,11 +16514,11 @@
     ],
     "trappings": [],
     "spells": [
-      "Bataille",
-      "Chasse",
+      "Bénédiction de Bataille",
+      "Bénédiction de La Chasse",
       "Culpabilité",
       "Robustesse",
-      "Sauvagerie",
+      "Bénédiction de Sauvagerie",
       "Souffle"
     ],
     "desc": null,
@@ -16675,18 +16674,18 @@
     ],
     "trappings": [],
     "spells": [
-      "Bataille",
-      "Chasse",
+      "Bénédiction de Bataille",
+      "Bénédiction de La Chasse",
       "Culpabilité",
       "Robustesse",
-      "Sauvagerie",
+      "Bénédiction de Sauvagerie",
       "Souffle",
       "Instinct Animal",
       "Saut de Cabri",
       "Seigneur de la Chasse",
-      "Bénédicité de Taal DSLF",
+      "Bénédicité de Taal",
       "Trêve de Taal DSFL",
-      "Les Voies de la Nature DSLF"
+      "Les Voies de la Nature"
     ],
     "desc": null,
     "source": {
@@ -24273,7 +24272,6 @@
       "Flamme",
       "Langue des Gors",
       "Espionnage",
-      "sur 268 630",
       "Ouverture",
       "Projectile Mineur",
       "Effrayant",
@@ -31865,7 +31863,7 @@
       "Immuno - Déficience",
       "Hébètement",
       "Bond Furtif",
-      "Avatar du Rat Cornu Dev Diary #18"
+      "Avatar du Rat Cornu"
     ],
     "desc": null,
     "source": {
@@ -32070,7 +32068,7 @@
       "Immuno - Déficience",
       "Hébètement",
       "Bond Furtif",
-      "Avatar du Rat Cornu Dev Diary #18"
+      "Avatar du Rat Cornu"
     ],
     "desc": null,
     "source": {
@@ -35747,8 +35745,8 @@
       "Enchevêtrement",
       "Projectile",
       "Bélier",
-      "Mauvais Oeil",
-      "Pierre de Souffrance B&B"
+      "Mauvais œil",
+      "Pierre de Souffrance"
     ],
     "desc": null,
     "source": {
@@ -35930,7 +35928,7 @@
     "trappings": [],
     "spells": [
       "Bruit",
-      "Brume Mystique Dev Diary #10",
+      "Brume Mystique",
       "Chuchotis",
       "Espionnage",
       "Feu Follet",
@@ -35939,11 +35937,11 @@
       "Enchevêtrement",
       "Projectile",
       "Bélier",
-      "Mauvais Oeil",
-      "Pierre de Souffrance B&B",
-      "Algues Cruelles Dev Diary #10",
-      "Vague Scélérate Dev Diary #10",
-      "Crue Mortelle Dev Diary #10"
+      "Mauvais œil",
+      "Pierre de Souffrance",
+      "Algues Cruelles",
+      "Vague Scélérate",
+      "Crue Mortelle"
     ],
     "desc": null,
     "source": {
@@ -36541,9 +36539,8 @@
       "Feu Follet",
       "Pourriture",
       "Projectile Mineur",
-      "Frénésie Artificielle WoM, p.26",
+      "Frénésie Artificielle",
       "Terrifiant",
-      "Réveil des Morts",
       "Réanimation"
     ],
     "desc": null,
@@ -36717,10 +36714,9 @@
       "Feu Follet",
       "Pourriture",
       "Projectile Mineur",
-      "Frénésie Artificielle WoM, p.26",
+      "Frénésie Artificielle",
       "Appel de Vanhel",
       "Terrifiant",
-      "Réveil des Morts",
       "Réanimation"
     ],
     "desc": null,
@@ -36912,18 +36908,15 @@
       "Feu Follet",
       "Pourriture",
       "Projectile Mineur",
-      "Vision dans l’Obscurité",
-      "Frénésie Artificielle WoM, p.26",
+      "Vision dans l'obscurité",
+      "Frénésie Artificielle",
       "Secousse",
       "Armure d’AEthyr",
       "Bouclier",
-      "Forme Spectrale EiR Companion",
+      "Forme Spectrale",
       "Appel de Vanhel",
       "Terrifiant",
-      "Réveil des Morts",
-      "Réanimation",
-      "Invitation à la Danse Macabre de Vanhel UA II",
-      "Invocation d’un Colosses Necrofex"
+      "Réanimation"
     ],
     "desc": null,
     "source": {
@@ -38952,14 +38945,13 @@
       "Sommeil",
       "Secousse",
       "Armure d’AEthyr",
-      "Mouchard PbtT Companion, p.110",
+      "Mouchard",
       "Entrave",
       "Bélier",
       "Faux- Semblant",
       "Télékinésie",
-      "Forme Spectrale EiR Companion",
+      "Forme Spectrale",
       "Appel de Vanhel",
-      "Réveil des Morts",
       "Réanimation"
     ],
     "desc": null,
@@ -39185,17 +39177,15 @@
       "Sommeil",
       "Secousse",
       "Armure d’AEthyr",
-      "Mouchard PbtT Companion, p.110",
+      "Mouchard",
       "Entrave",
       "Bélier",
       "Faux- Semblant",
       "Télékinésie",
-      "Forme Spectrale EiR Companion",
+      "Forme Spectrale",
       "Appel de Vanhel",
-      "Réveil des Morts",
       "Réanimation",
-      "Agression AEthyrique WoM, p.26",
-      "Invitation à la Danse Macabre de Vanhel UA II"
+      "Agression AEthyrique"
     ],
     "desc": null,
     "source": {
