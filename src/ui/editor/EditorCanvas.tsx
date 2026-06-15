@@ -19,7 +19,7 @@ import { ViewControls } from '../ViewControls';
 import type { useEditorView } from './useEditorView';
 import {
   Tool, Layers, Sel, Rect, Pt, rectFrom, hitAt, selRect, moveSel, resizeSel, paintTiles, fillTerrainRect,
-  placeEntity, placeEntry, addTrigger, addRestZone, addBuilding, addEnemyMember, eraseAt, sameSel,
+  placeEntity, placeEntry, addTrigger, addRestZone, addEffectZone, effectZoneRect, addBuilding, addEnemyMember, eraseAt, sameSel,
 } from './editorState';
 
 export function EditorCanvas({
@@ -192,6 +192,10 @@ export function EditorCanvas({
         const out = addRestZone(scene, rect);
         setScene(out.scene);
         onSelect({ type: 'restZone', idx: out.idx });
+      } else if (tool.mode === 'zone' && tool.zone === 'effect') {
+        const out = addEffectZone(scene, rect);
+        setScene(out.scene);
+        onSelect({ type: 'effectZone', idx: out.idx });
       } else if (tool.mode === 'building') {
         const out = addBuilding(scene, tool.type, rect);
         if (out) {
@@ -212,7 +216,7 @@ export function EditorCanvas({
   // Surlignage de la sélection : empreinte (entité), périmètre (bâtiment), rect (zones).
   const selEnt = sel?.type === 'entity' ? scene.entities.find((en) => en.id === sel.id) ?? null : null;
   const selBuilding = sel?.type === 'building' ? (scene.buildings ?? []).find((b) => b.id === sel.id) ?? null : null;
-  const zoneRect = sel?.type === 'trigger' || sel?.type === 'restZone' ? selRect(scene, sel) : null;
+  const zoneRect = sel?.type === 'trigger' || sel?.type === 'restZone' || sel?.type === 'effectZone' ? selRect(scene, sel) : null;
 
   return (
     <main className="editor-canvas-wrap">
@@ -351,6 +355,36 @@ export function EditorCanvas({
                     })}
                     <text x={cx} y={cy + TH / 4} textAnchor="middle" fontSize="12" pointerEvents="none">
                       ⛺
+                    </text>
+                  </g>
+                );
+              })}
+            </g>
+          )}
+          {layers.effects && (
+            <g pointerEvents="none">
+              {(scene.effectZones ?? []).map((z, zi) => {
+                const isSel = sel?.type === 'effectZone' && sel.idx === zi;
+                const r = effectZoneRect(z.area);
+                const { cx, cy } = tileCenter(r.x, r.y, dims);
+                return (
+                  <g key={`ez-${z.id}`}>
+                    {Array.from({ length: Math.max(0, r.w * r.h) }, (_, i) => {
+                      const x = r.x + (i % r.w);
+                      const y = r.y + Math.floor(i / r.w);
+                      return (
+                        <path
+                          key={i}
+                          d={diamondPath(x, y, dims)}
+                          fill={isSel ? 'rgba(226,100,30,0.35)' : 'rgba(226,100,30,0.15)'}
+                          stroke={isSel ? '#ffe066' : 'rgba(226,100,30,0.9)'}
+                          strokeWidth={isSel ? 2.5 : 1.5}
+                          strokeDasharray="3 2"
+                        />
+                      );
+                    })}
+                    <text x={cx} y={cy + TH / 4} textAnchor="middle" fontSize="12" pointerEvents="none">
+                      ⚠️
                     </text>
                   </g>
                 );

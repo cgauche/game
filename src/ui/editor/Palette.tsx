@@ -232,6 +232,9 @@ export function Palette({
               <button className={`pal-item${tool.zone === 'rest' ? ' active' : ''}`} onClick={() => setTool({ mode: 'zone', zone: 'rest' })}>
                 ⛺ Zone de repos — offre de repos locale (auberge/maison/camp)
               </button>
+              <button className={`pal-item${tool.zone === 'effect' ? ' active' : ''}`} onClick={() => setTool({ mode: 'zone', zone: 'effect' })}>
+                ⚠️ Piège / hasard — Dégâts ou États à la traversée / au stationnement
+              </button>
             </div>
             <p className="hint">Glissez sur la carte pour dessiner le rectangle. Effets / lieux de repos s'éditent ensuite ({tool.zone === 'trigger' ? 'panneau Logique' : 'inspecteur'}).</p>
           </>

@@ -15,6 +15,7 @@ const LAYER_LABEL: Record<keyof Layers, string> = {
   buildings: 'Bâtiments',
   entries: 'Entrées',
   rest: 'Repos',
+  effects: 'Pièges',
 };
 
 /** Libellé humain de l'outil actif. */

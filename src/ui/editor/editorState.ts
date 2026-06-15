@@ -20,20 +20,27 @@ export type Tool =
   | { mode: 'tile'; terrain: Terrain }
   | { mode: 'entity'; kind: EntityKind; ref?: string }
   | { mode: 'building'; type: string }
-  | { mode: 'zone'; zone: 'trigger' | 'rest' }
+  | { mode: 'zone'; zone: 'trigger' | 'rest' | 'effect' }
   | { mode: 'entry' }
   | { mode: 'encounter' }
   | { mode: 'erase' };
 
 /** Calques masquables du canvas (masquer débloque le clic sur ce qu'il y a dessous). */
-export type Layers = { triggers: boolean; spawns: boolean; buildings: boolean; entries: boolean; rest: boolean };
-export const DEFAULT_LAYERS: Layers = { triggers: true, spawns: true, buildings: true, entries: true, rest: true };
+export type Layers = { triggers: boolean; spawns: boolean; buildings: boolean; entries: boolean; rest: boolean; effects: boolean };
+export const DEFAULT_LAYERS: Layers = { triggers: true, spawns: true, buildings: true, entries: true, rest: true, effects: true };
 
 /** Sélection unifiée — une seule chose sélectionnée à la fois, sur la carte comme dans les panneaux. */
 export type Sel =
   | null
   | { type: 'entity' | 'building' | 'trigger' | 'entry'; id: string }
-  | { type: 'restZone'; idx: number };
+  | { type: 'restZone'; idx: number }
+  | { type: 'effectZone'; idx: number };
+
+/** Rect englobant l'aire d'une zone d'effet (disque → boîte). L'éditeur n'auteure que des rect. */
+export function effectZoneRect(area: import('../../state/scene').ZoneArea): Rect {
+  if (area.kind === 'disc') return { x: area.cx - area.radius, y: area.cy - area.radius, w: area.radius * 2 + 1, h: area.radius * 2 + 1 };
+  return { x: area.x, y: area.y, w: area.w, h: area.h };
+}
 
 export const KIND_LABEL: Record<EntityKind, string> = {
   heroStart: 'Départ héros',
@@ -52,6 +59,7 @@ const clamp = (v: number, max: number) => Math.max(0, Math.min(max - 1, v));
 export function sameSel(a: Sel, b: Sel): boolean {
   if (!a || !b || a.type !== b.type) return a === b;
   if (a.type === 'restZone' && b.type === 'restZone') return a.idx === b.idx;
+  if (a.type === 'effectZone' && b.type === 'effectZone') return a.idx === b.idx;
   return (a as { id: string }).id === (b as { id: string }).id;
 }
 
@@ -74,6 +82,10 @@ export function hitAt(scene: Scene, p: Pt, layers: Layers): Sel {
     const zi = (scene.restZones ?? []).findIndex((z) => inRect(p, z.rect));
     if (zi >= 0) return { type: 'restZone', idx: zi };
   }
+  if (layers.effects) {
+    const ei = (scene.effectZones ?? []).findIndex((z) => inRect(p, effectZoneRect(z.area)));
+    if (ei >= 0) return { type: 'effectZone', idx: ei };
+  }
   if (layers.buildings) {
     const b = (scene.buildings ?? []).find((b) => inRect(p, b.foot));
     if (b) return { type: 'building', id: b.id };
@@ -85,6 +97,7 @@ export function hitAt(scene: Scene, p: Pt, layers: Layers): Sel {
 export function selRect(scene: Scene, sel: Sel): Rect | null {
   if (sel?.type === 'trigger') return scene.triggers.find((t) => t.id === sel.id)?.rect ?? null;
   if (sel?.type === 'restZone') return scene.restZones?.[sel.idx]?.rect ?? null;
+  if (sel?.type === 'effectZone') { const z = scene.effectZones?.[sel.idx]; return z ? effectZoneRect(z.area) : null; }
   if (sel?.type === 'building') return (scene.buildings ?? []).find((b) => b.id === sel.id)?.foot ?? null;
   return null;
 }
@@ -121,6 +134,15 @@ export function moveSel(scene: Scene, sel: Sel, to: Pt): Scene {
         i === sel.idx ? { ...z, rect: { ...z.rect, x: clamp(to.x, w - z.rect.w + 1), y: clamp(to.y, h - z.rect.h + 1) } } : z,
       ),
     };
+  if (sel?.type === 'effectZone')
+    return {
+      ...scene,
+      effectZones: (scene.effectZones ?? []).map((z, i) => {
+        if (i !== sel.idx) return z;
+        const r = effectZoneRect(z.area);
+        return { ...z, area: { kind: 'rect', x: clamp(to.x, w - r.w + 1), y: clamp(to.y, h - r.h + 1), w: r.w, h: r.h } };
+      }),
+    };
   if (sel?.type === 'building')
     return {
       ...scene,
@@ -139,6 +161,7 @@ export function resizeSel(scene: Scene, sel: Sel, to: Pt): Scene {
   const next = rectFrom({ x: r.x, y: r.y }, { x: Math.max(r.x, clamp(to.x, w)), y: Math.max(r.y, clamp(to.y, h)) });
   if (sel?.type === 'trigger') return { ...scene, triggers: scene.triggers.map((t) => (t.id === sel.id ? { ...t, rect: next } : t)) };
   if (sel?.type === 'restZone') return { ...scene, restZones: (scene.restZones ?? []).map((z, i) => (i === sel.idx ? { ...z, rect: next } : z)) };
+  if (sel?.type === 'effectZone') return { ...scene, effectZones: (scene.effectZones ?? []).map((z, i) => (i === sel.idx ? { ...z, area: { kind: 'rect', ...next } } : z)) };
   return scene;
 }
 
@@ -156,6 +179,7 @@ export function deleteSel(scene: Scene, sel: Sel): Scene {
   if (sel?.type === 'trigger') return { ...scene, triggers: scene.triggers.filter((t) => t.id !== sel.id) };
   if (sel?.type === 'building') return { ...scene, buildings: (scene.buildings ?? []).filter((b) => b.id !== sel.id) };
   if (sel?.type === 'restZone') return { ...scene, restZones: (scene.restZones ?? []).filter((_, i) => i !== sel.idx) };
+  if (sel?.type === 'effectZone') return { ...scene, effectZones: (scene.effectZones ?? []).filter((_, i) => i !== sel.idx) };
   if (sel?.type === 'entry') {
     const entries = { ...scene.entryPoints };
     delete entries[sel.id];
@@ -251,6 +275,17 @@ export function addTrigger(scene: Scene, rect: Rect): { scene: Scene; id: string
 export function addRestZone(scene: Scene, rect: Rect): { scene: Scene; idx: number } {
   const zones = [...(scene.restZones ?? []), { rect, places: { camp: true } }];
   return { scene: { ...scene, restZones: zones }, idx: zones.length - 1 };
+}
+
+/** Crée une ZONE D'EFFET (piège) sur `rect` : Dégâts à la traversée par défaut — label/effet/déclencheur
+ *  éditables dans l'inspecteur. id frais pour le rendu/sélection. */
+export function addEffectZone(scene: Scene, rect: Rect): { scene: Scene; idx: number } {
+  const id = nextEntityId('zone', (scene.effectZones ?? []).map((z) => z.id));
+  const zones = [
+    ...(scene.effectZones ?? []),
+    { id, label: 'Piège', area: { kind: 'rect' as const, ...rect }, onCross: { damage: { amount: 5, ignoreAP: true } } },
+  ];
+  return { scene: { ...scene, effectZones: zones }, idx: zones.length - 1 };
 }
 
 /** Pose un bâtiment du catalogue sur `rect` (porte au Sud par défaut).

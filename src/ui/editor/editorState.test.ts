@@ -14,6 +14,8 @@ import {
   renameEntry,
   addTrigger,
   addRestZone,
+  addEffectZone,
+  effectZoneRect,
   addBuilding,
   addMember,
   addEnemyMember,
@@ -225,5 +227,36 @@ describe('editorState — selRect / sameSel', () => {
     expect(sameSel({ type: 'trigger', id: 'a' }, { type: 'trigger', id: 'b' })).toBe(false);
     expect(sameSel(null, null)).toBe(true);
     expect(sameSel(null, { type: 'entity', id: 'x' })).toBe(false);
+    expect(sameSel({ type: 'effectZone', idx: 1 }, { type: 'effectZone', idx: 1 })).toBe(true);
+    expect(sameSel({ type: 'effectZone', idx: 0 }, { type: 'effectZone', idx: 1 })).toBe(false);
+  });
+});
+
+describe('Zones d\'effet (pièges) — authoring éditeur', () => {
+  it('addEffectZone : rect + onCross Dégâts par défaut, id frais, sélectionnable', () => {
+    const s0 = sceneWith();
+    const { scene, idx } = addEffectZone(s0, { x: 3, y: 3, w: 2, h: 1 });
+    const z = scene.effectZones![idx];
+    expect(z.area).toEqual({ kind: 'rect', x: 3, y: 3, w: 2, h: 1 });
+    expect(z.onCross?.damage?.amount).toBeGreaterThan(0);
+    expect(z.id).toBeTruthy();
+    // hitAt trouve la zone sous une de ses cases
+    expect(hitAt(scene, { x: 4, y: 3 }, DEFAULT_LAYERS)).toEqual({ type: 'effectZone', idx });
+  });
+
+  it('selRect/moveSel/resizeSel/deleteSel sur une zone d\'effet', () => {
+    let scene = addEffectZone(sceneWith(), { x: 3, y: 3, w: 2, h: 2 }).scene;
+    const sel = { type: 'effectZone' as const, idx: 0 };
+    expect(selRect(scene, sel)).toEqual({ x: 3, y: 3, w: 2, h: 2 });
+    scene = moveSel(scene, sel, { x: 5, y: 5 });
+    expect(scene.effectZones![0].area).toMatchObject({ kind: 'rect', x: 5, y: 5, w: 2, h: 2 });
+    scene = resizeSel(scene, sel, { x: 7, y: 6 });
+    expect(scene.effectZones![0].area).toMatchObject({ w: 3, h: 2 });
+    scene = deleteSel(scene, sel);
+    expect(scene.effectZones).toHaveLength(0);
+  });
+
+  it('effectZoneRect : disque → boîte englobante', () => {
+    expect(effectZoneRect({ kind: 'disc', cx: 5, cy: 5, radius: 1 })).toEqual({ x: 4, y: 4, w: 3, h: 3 });
   });
 });

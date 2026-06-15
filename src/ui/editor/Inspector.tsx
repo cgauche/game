@@ -6,7 +6,8 @@
  * Composant de PRÉSENTATION : la scène et la sélection vivent dans Editor.
  */
 import { useState, type ReactNode } from 'react';
-import { Scene, SceneEntity, BuildingFeature, Trigger } from '../../state/scene';
+import { Scene, SceneEntity, BuildingFeature, Trigger, SceneEffectZone } from '../../state/scene';
+import type { ZoneEffect } from '../../engine/zones';
 import type { Settlement } from '../../engine/disponibilite';
 import { DEFS } from '../../gameIso/sprites';
 import { hashSeed } from '../../gameIso/appearance';
@@ -25,7 +26,7 @@ import { EffectList, effectCtxOf } from './EffectList';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
 import { propRefPatch } from './propDefaults';
-import { KIND_LABEL, Sel, deleteSel, renameEntry, addMember, removeMember, patchMember } from './editorState';
+import { KIND_LABEL, Sel, deleteSel, renameEntry, addMember, removeMember, patchMember, effectZoneRect } from './editorState';
 
 /** Section repliable de l'inspecteur (primitive .fold). */
 function Fold({ title, open, children }: { title: ReactNode; open?: boolean; children: ReactNode }) {
@@ -84,6 +85,11 @@ export function Inspector({
   const selB = sel?.type === 'building' ? (scene.buildings ?? []).find((b) => b.id === sel.id) ?? null : null;
   const selT = sel?.type === 'trigger' ? scene.triggers.find((t) => t.id === sel.id) ?? null : null;
   const zone = sel?.type === 'restZone' ? scene.restZones?.[sel.idx] ?? null : null;
+  const efz = sel?.type === 'effectZone' ? scene.effectZones?.[sel.idx] ?? null : null;
+  const setEfz = (z: SceneEffectZone) => {
+    if (sel?.type !== 'effectZone') return;
+    setScene({ ...scene, effectZones: (scene.effectZones ?? []).map((x, i) => (i === sel.idx ? z : x)) });
+  };
   const entry = sel?.type === 'entry' ? scene.entryPoints?.[sel.id] ?? null : null;
 
   const updateSel = (patch: Partial<SceneEntity>) =>
@@ -109,9 +115,11 @@ export function Inspector({
         ? `🟦 ${selT.id}`
         : zone
           ? '⛺ Zone de repos'
-          : entry
-            ? `⚑ ${sel?.type === 'entry' ? sel.id : ''}`
-            : null;
+          : efz
+            ? `⚠️ ${efz.label || 'Piège'}`
+            : entry
+              ? `⚑ ${sel?.type === 'entry' ? sel.id : ''}`
+              : null;
 
   return (
     <aside className="editor-inspector">
@@ -373,6 +381,77 @@ export function Inspector({
               </div>
             </>
           )}
+
+          {efz && sel?.type === 'effectZone' && (() => {
+            const r = effectZoneRect(efz.area);
+            const eff = efz.onCross ?? efz.perRound;
+            const dmg = typeof eff?.damage?.amount === 'number' ? eff.damage.amount : 0;
+            const ignoreAP = !!eff?.damage?.ignoreAP;
+            const condStr = (eff?.conditions ?? []).map((c) => c.name).join(', ');
+            const buildEff = (d: number, iap: boolean, cs: string): ZoneEffect => {
+              const conditions = cs.split(',').map((s) => s.trim()).filter(Boolean).map((name) => ({ name }));
+              const e: ZoneEffect = {};
+              if (d > 0) e.damage = { amount: d, ignoreAP: iap };
+              if (conditions.length) e.conditions = conditions;
+              return e;
+            };
+            const apply = (onCross: boolean, perRound: boolean, e: ZoneEffect) =>
+              setEfz({ ...efz, onCross: onCross ? e : undefined, perRound: perRound ? e : undefined });
+            return (
+              <>
+                <Fold title="Piège / zone d'effet" open>
+                  <p className="hint">Tout combattant qui TRAVERSE ou STATIONNE dans la zone y subit l'effet (en combat). Poignée au coin SE pour redimensionner.</p>
+                  <label className="ed-field">
+                    Nom
+                    <input value={efz.label} onChange={(e) => setEfz({ ...efz, label: e.target.value })} />
+                  </label>
+                  <div className="ed-dim">
+                    {(['x', 'y', 'w', 'h'] as const).map((k) => (
+                      <label key={k}>
+                        {k === 'w' ? 'L' : k === 'h' ? 'H' : k.toUpperCase()}
+                        <input
+                          type="number"
+                          min={k === 'w' || k === 'h' ? 1 : 0}
+                          value={r[k]}
+                          onChange={(e) => setEfz({ ...efz, area: { kind: 'rect', ...r, [k]: Math.max(k === 'w' || k === 'h' ? 1 : 0, Number(e.target.value)) } })}
+                        />
+                      </label>
+                    ))}
+                  </div>
+                  <div className="mini-title">Déclenchement</div>
+                  <label className="ed-check">
+                    <input type="checkbox" checked={!!efz.onCross} onChange={(e) => apply(e.target.checked, !!efz.perRound, buildEff(dmg, ignoreAP, condStr))} />
+                    🚶 À la traversée
+                  </label>
+                  <label className="ed-check">
+                    <input type="checkbox" checked={!!efz.perRound} onChange={(e) => apply(!!efz.onCross, e.target.checked, buildEff(dmg, ignoreAP, condStr))} />
+                    ⏱ Au stationnement (chaque round)
+                  </label>
+                  <label className="ed-field">
+                    Dégâts
+                    <input type="number" min={0} value={dmg} onChange={(e) => apply(!!efz.onCross || !efz.perRound, !!efz.perRound, buildEff(Math.max(0, Number(e.target.value)), ignoreAP, condStr))} />
+                  </label>
+                  <label className="ed-check">
+                    <input type="checkbox" checked={ignoreAP} onChange={(e) => apply(!!efz.onCross, !!efz.perRound, buildEff(dmg, e.target.checked, condStr))} />
+                    Ignore l'armure
+                  </label>
+                  <label className="ed-field">
+                    États infligés (séparés par des virgules)
+                    <input value={condStr} placeholder="Empoisonné, En flammes" onChange={(e) => apply(!!efz.onCross || !efz.perRound, !!efz.perRound, buildEff(dmg, ignoreAP, e.target.value))} />
+                  </label>
+                  <label className="ed-check">
+                    <input type="checkbox" checked={!!efz.blocksLoS} onChange={(e) => setEfz({ ...efz, blocksLoS: e.target.checked || undefined })} />
+                    🌫 Masque la ligne de vue (fumée, ténèbres)
+                  </label>
+                </Fold>
+                <div className="insp-actions">
+                  <button className="btn small danger" onClick={removeSel}>
+                    Supprimer
+                  </button>
+                </div>
+              </>
+            );
+          })()}
 
           {entry && sel?.type === 'entry' && (
             <>
