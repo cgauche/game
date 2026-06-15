@@ -5,18 +5,18 @@
  *  - l'éditeur de données in-app (preview live avant écriture disque) ;
  *  - la future couche de surcharges PAR CAMPAGNE (apply au chargement, reset à la sortie).
  *
- * Couvre les 18 datasets-tableaux. `details` (objet imbriqué) et `names` (record, CRLF importé) sont
+ * Couvre les 19 datasets-tableaux. `details` (objet imbriqué) et `names` (record, CRLF importé) sont
  * hors v1 — à ajouter ici quand ils auront un éditeur.
  */
 import {
   characteristics, species, classes, careers, careerLevels, skills, talents, etats, traits,
-  qualities, trappings, creatures, spells, eyes, hairs, stars, locations, books,
+  qualities, trappings, creatures, spells, eyes, hairs, stars, locations, books, raceAppearance,
 } from './index';
 
 /** Datasets-tableaux mutables (clé éditeur → MÊME référence d'array que l'export de la façade). */
 const ARRAYS = {
   characteristics, species, classes, careers, careerLevels, skills, talents, etats, traits,
-  qualities, trappings, creatures, spells, eyes, hairs, stars, locations, books,
+  qualities, trappings, creatures, spells, eyes, hairs, stars, locations, books, raceAppearance,
 } as const;
 
 export type DatasetKey = keyof typeof ARRAYS;
@@ -38,7 +38,7 @@ export function setDataset<K extends DatasetKey>(key: K, next: readonly (typeof 
   arr.splice(0, arr.length, ...(next as readonly unknown[]));
 }
 
-/** Réinitialise tous les datasets au seed d'origine (JSON build-data). */
+/** Réinitialise tous les datasets au seed d'origine (JSON app-owned chargé à l'init). */
 export function resetData(): void {
   for (const k of DATASET_KEYS) {
     const arr = ARRAYS[k] as unknown[];
