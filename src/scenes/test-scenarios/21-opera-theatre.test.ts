@@ -104,6 +104,16 @@ describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', ()
     expect(useGame.getState().flags.glimbrinDejoue).toBe(true);
   });
 
+  it('chaque intrigue résolue récompense les PX canoniques (50 / 15 / 10)', () => {
+    const xpIn = (effs: Effect[] | undefined) =>
+      (effs ?? []).filter((e): e is Extract<Effect, { type: 'giveXp' }> => e.type === 'giveXp').reduce((n, e) => n + e.amount, 0);
+    expect(xpIn(detect.onSuccess)).toBe(50); // bombe déjouée (l.275)
+    const petards = arm.effects.find((e): e is Extract<Effect, { type: 'delayedEffect' }> => e.type === 'delayedEffect' && e.afterMinutes === 10)!;
+    const spot = petards.effects.find((e): e is Extract<Effect, { type: 'test' }> => e.type === 'test')!;
+    expect(xpIn(spot.onSuccess)).toBe(15); // vol de clés empêché (l.297)
+    expect(xpIn(scenario.scene.encounters.find((e) => e.id === 'enc-etudiants')!.onVictory)).toBe(10); // étudiants arrêtés (l.277)
+  });
+
   it('confronter les étudiants offre un combat optionnel (les arrêter)', () => {
     const enc = scenario.scene.encounters.find((e) => e.id === 'enc-etudiants')!;
     expect(enc.members?.map((m) => m.entityId)).toEqual(['etudiant-1', 'etudiant-2']);

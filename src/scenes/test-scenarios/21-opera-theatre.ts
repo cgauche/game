@@ -98,6 +98,7 @@ const ents: SceneEntity[] = [
           onSuccess: [
             { type: 'journal', text: 'Sous le feuillage : le pot est bourré de poudre à canon, relié à un détonateur. Vous arrachez le détonateur — la bombe est neutralisée.' },
             { type: 'setFlag', flag: 'bombeDesamorcee' },
+            { type: 'giveXp', amount: 50 }, // déjouer le complot de la bombe de Dammenblatz (source 08 l.275)
           ],
           onFailure: [{ type: 'journal', text: 'Une grande plante en pot, sans rien de particulier.' }],
         },
@@ -195,6 +196,7 @@ const scene: Scene = {
               onSuccess: [
                 { type: 'journal', text: 'Vous surprenez un gnome glissé sous le fauteuil du professeur — il détale les mains vides. Les clés de l’École d’artillerie sont sauves.' },
                 { type: 'setFlag', flag: 'glimbrinDejoue' },
+                { type: 'giveXp', amount: 15 }, // empêcher le vol des clés du professeur Pakker (source 08 l.297)
               ],
               onFailure: [
                 { type: 'journal', text: 'Plus tard, le professeur Pakker s’aperçoit avec effroi que les clés de l’École impériale d’artillerie ont disparu de sa poche…' },
@@ -221,6 +223,7 @@ const scene: Scene = {
       onVictory: [
         { type: 'journal', text: 'Les deux étudiants sont maîtrisés et remis à la garde — ils passeront la nuit en cellule.' },
         { type: 'setFlag', flag: 'etudiantsArretes' },
+        { type: 'giveXp', amount: 10 }, // les étudiants en artillerie contrecarrés (source 08 l.277)
       ],
     },
   ],
