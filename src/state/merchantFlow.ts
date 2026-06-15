@@ -18,6 +18,7 @@ import { priceToMoney, subtract as moneySub, add as moneyAdd, canAfford, fromBra
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { findTrapping, trappings } from '../data/index';
 import { MERCHANTS } from './merchants/index';
+import { describeBargain } from './flowOutcomes';
 
 import type { Get, Set } from './flowTypes';
 
@@ -352,9 +353,8 @@ export function bargainConfirm(get: Get, set: Set): void {
     pendingBargain: null,
     merchant: s.merchant ? { ...s.merchant, ...patch, soured: s.merchant.soured || botch } : s.merchant,
   }));
-  if (botch) get().log('Marchandage raté de beaucoup : le marchand se méfie de votre monnaie (fini de marchander cette visite).');
-  else if (pb.mode === 'buy') get().log(won ? `Marchandage d’achat réussi (${drNet >= 6 || pb.negotiator ? '−20 %' : '−10 %'}).` : 'Marchandage d’achat échoué (prix plein).');
-  else get().log(won ? 'Marchandage de vente réussi (½ du prix listé).' : 'Marchandage de vente échoué (¼ du prix listé).');
+  // Verdict = source UNIQUE avec la popin (describeBargain).
+  get().log(describeBargain(pb) + '.');
 }
 
 /** Talent « Détection d'artefact » (LDB 10 l.310-312) : Test d'Intuition au toucher — succès =

@@ -5,6 +5,7 @@ import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
+import { describeBargain } from '../state/flowOutcomes';
 
 /** Vue pure de la modale de Marchandage (Test opposé, testable sans store). */
 export function BargainModalView({
@@ -29,20 +30,7 @@ export function BargainModalView({
   onCancel: () => void;
 }) {
   const rolled = pb.roll != null && pb.result != null;
-  const won = pb.result?.attackerWins ?? false;
-  const drNet = pb.result?.netSL ?? 0;
-  const discount = won ? (drNet >= 6 || pb.negotiator ? '−20 %' : '−10 %') : '—';
-  // « Rater de beaucoup » (LDB 60 l.12) = perdre l'opposé par un net DR ≥ 6 → le marchand se méfie.
-  const botch = !won && drNet >= 6;
-  const verdictText = botch
-    ? 'Raté de beaucoup — le marchand se méfie (fini de marchander)'
-    : won
-      ? pb.mode === 'buy'
-        ? `Gagné (${discount} à l’achat)`
-        : 'Gagné (½ du prix listé)'
-      : pb.mode === 'buy'
-        ? 'Perdu (prix plein)'
-        : 'Perdu (¼ du prix listé)';
+  const verdictText = describeBargain(pb);
 
   return (
     <RollFlowShell

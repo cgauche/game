@@ -5,6 +5,7 @@ import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
+import { describeAppraise } from '../state/flowOutcomes';
 
 /** Vue pure de la modale d'Évaluation (testable sans store). */
 export function AppraiseModalView({
@@ -48,9 +49,7 @@ export function AppraiseModalView({
       outcome={rolled && (
         <JournalLine
           className="rm-journal"
-          event={ev('info', detect
-            ? (pa.success ? `${pa.actorName} perçoit quelque chose en touchant ${pa.itemName}…` : `${pa.actorName} ne perçoit rien — l'artefact ne se laissera plus sonder.`)
-            : (pa.success ? `${pa.actorName} jauge ${pa.itemName} : révélé ✓.` : `${pa.actorName} n'en tire rien — ${pa.itemName} reste inchangé.`))}
+          event={ev('info', describeAppraise(pa))}
         />
       )}
       fortune={fortune}

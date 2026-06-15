@@ -3,6 +3,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown, testPending } from './breakdown';
+import { describeActivity } from '../state/flowOutcomes';
 import { DrBar } from './DrBar';
 
 /**
@@ -23,29 +24,6 @@ export function ActivityModal() {
   const actor = party.find((c) => c.id === pa.heroId);
   const rolled = pa.roll != null;
   const after = Math.max(0, (pa.drBefore ?? 0) + pa.sl);
-  const outcomeText = !rolled
-    ? ''
-    : pa.kind === 'craft'
-      ? after >= (pa.drTarget ?? 1)
-        ? 'L’ouvrage est achevé !'
-        : `L’ouvrage avance (${after}/${pa.drTarget} DR).`
-      : pa.kind === 'identify'
-        ? pa.success
-          ? pa.sl >= 4
-            ? 'L’artefact est identifié — ses Particularités sont révélées.'
-            : 'Nature magique cernée — les règles restent obscures (réétudiable).'
-          : pa.sl <= -4
-            ? 'Lourde méprise : de fausses certitudes s’installent…'
-            : 'Semaine d’étude infructueuse — vous en êtes conscient.'
-        : pa.kind === 'learn'
-          ? pa.success
-            ? 'Le Talent est acquis.'
-            : 'Échec — PX et argent du tuteur dépensés en vain (+10 à la prochaine tentative).'
-          : pa.success
-            ? 'Bonne semaine de travail — revenus pleins.'
-            : pa.sl <= -6
-              ? 'Très mauvaise semaine : rien gagné (Échec Stupéfiant).'
-              : 'Semaine médiocre : la moitié des revenus.';
   return (
     <RollFlowShell
       variant="test"
@@ -62,7 +40,7 @@ export function ActivityModal() {
       breakdown={rolled ? testBreakdown(pa.skillLabel, pa.skillValue, { roll: pa.roll!, target: pa.target, sl: pa.sl, success: pa.success }, pa.difficulty) : undefined}
       // Pré-jet : `pa.target` n'existe qu'après resolve (0 avant) → cible dérivée base+Difficulté.
       pending={testPending(pa.skillLabel, pa.skillValue, pa.roll != null ? pa.target : undefined, pa.difficulty)}
-      outcome={rolled && <p className="rm-journal">{outcomeText}</p>}
+      outcome={rolled && <p className="rm-journal">{describeActivity(pa)}</p>}
       fortune={actor?.fortune ?? 0}
       freeReroll={freeRerollOf(actor)}
       rerollable={rolled && pa.roll != null && canReroll(pa.roll > pa.target, !!pa.rerolled)}
