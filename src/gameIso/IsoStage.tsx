@@ -47,7 +47,7 @@ import { MountedToken } from './MountedToken';
 import { groundTile } from './ground';
 import { wallSeg } from './walls';
 import { stairSeg, stairLevels } from './stairs';
-import { getViewZ, subscribeViewZ, floorEmphasisOpacity } from './viewLevel';
+import { getViewZ, subscribeViewZ } from './viewLevel';
 import { buildingObj } from './BuildingSprite';
 import { roofHidden } from '../state/buildings';
 import { walkXY, STEP_MS } from './walkPath';
@@ -246,18 +246,21 @@ export function IsoStage() {
   const viewZ = useSyncExternalStore(subscribeViewZ, getViewZ, getViewZ);
   const activePos = mode === 'battle' && battle ? (battle.combatants.find((c) => c.id === battle.order[battle.turn])?.pos as { z?: number } | undefined) : undefined;
   const activeZ = viewZ ?? (activePos?.z ?? partyPos.z ?? 0);
+  // « Un étage à la fois » : on ne REND QUE l'étage actif (celui du groupe / combattant actif). Les autres
+  // ne sont pas dessinés du tout — pas de fantôme (qui brouillait : « choses transparentes / murs absents du
+  // plan »). Les escaliers reliant cet étage restent visibles pour indiquer où changer de niveau.
 
   const floorObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
     if (!scene) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
     const out: { d: number; el: JSX.Element }[] = [];
-    for (const lvl of [...scene.levels].sort((a, b) => a.z - b.z)) {
+    const lvl = scene.levels.find((l) => l.z === activeZ);
+    if (lvl) {
       const fd = floorDepth(d, lvl.z);
-      const op = floorEmphasisOpacity(lvl.z, activeZ);
       for (let y = 0; y < d.h; y++)
         for (let x = 0; x < d.w; x++) {
           const html = groundTile(scene, x, y, d, lvl.z);
-          if (html) out.push({ d: fd, el: <g key={`f${lvl.z}-${x}-${y}`} opacity={op} dangerouslySetInnerHTML={{ __html: html }} /> });
+          if (html) out.push({ d: fd, el: <g key={`f${lvl.z}-${x}-${y}`} dangerouslySetInnerHTML={{ __html: html }} /> });
         }
     }
     return out;
@@ -268,11 +271,10 @@ export function IsoStage() {
   const wallObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
     if (!scene?.walls?.length) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
-    // Gated par étage comme les sols : un mur d'un autre niveau passe en fantôme (plus de « fusion » des
-    // cloisons du rez et de l'étage).
-    return (scene.walls).map((w, i) => {
+    // Seules les cloisons de l'étage ACTIF (fini la « fusion » rez+étage à l'écran).
+    return scene.walls.filter((w) => (w.z ?? 0) === activeZ).map((w, i) => {
       const seg = wallSeg(w, d);
-      return { d: seg.d, el: <g key={`wall-${i}`} opacity={floorEmphasisOpacity(w.z ?? 0, activeZ)} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
+      return { d: seg.d, el: <g key={`wall-${i}`} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
     });
   }, [scene, shownRot, viewMode, activeZ]);
 
@@ -281,11 +283,10 @@ export function IsoStage() {
   const stairObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
     if (!scene?.stairs?.length) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
-    return scene.stairs.map((s, i) => {
+    // Volées reliant l'étage ACTIF (montent/descendent depuis lui) — pour voir où changer de niveau.
+    return scene.stairs.filter((s) => { const [lo, hi] = stairLevels(s); return activeZ === lo || activeZ === hi; }).map((s, i) => {
       const seg = stairSeg(s, d);
-      const [lo, hi] = stairLevels(s);
-      const op = activeZ === lo || activeZ === hi ? 1 : floorEmphasisOpacity(lo, activeZ);
-      return { d: seg.d, el: <g key={`stair-${i}`} opacity={op} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
+      return { d: seg.d, el: <g key={`stair-${i}`} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
     });
   }, [scene, shownRot, viewMode, activeZ]);
 
@@ -544,21 +545,20 @@ export function IsoStage() {
     // combattant occupe leur case (pas d'empilement de corps).
     const covered = (x: number, y: number) =>
       inBattle && battle!.combatants.some((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, c.size, x, y));
-    // Estompe l'entité selon son ÉTAGE (fantôme si pas l'étage actif) ET son rôle de figurant en combat.
-    const wrap = (key: string, el: JSX.Element, ez: number) => {
-      const op = floorEmphasisOpacity(ez, activeZ) * (inBattle ? 0.7 : 1);
-      return op < 1 ? (
-        <g key={`fig-${key}`} opacity={op} pointerEvents={inBattle ? 'none' : undefined}>
+    // Figurant en combat : estompé + non interactif (inchangé). L'étage est géré par le filtre ci-dessous.
+    const wrap = (key: string, el: JSX.Element) =>
+      inBattle ? (
+        <g key={`fig-${key}`} opacity={0.7} pointerEvents="none">
           {el}
         </g>
       ) : (
         el
       );
-    };
     for (const ent of scene.entities) {
       if (ent.kind === 'heroStart' || ent.kind === 'prop') continue;
       if (ent.combat?.hiddenUntilCombat) continue; // ennemi d'embuscade : invisible avant le combat
       const ez = ent.z ?? 0;
+      if (ez !== activeZ) continue; // un étage à la fois : on ne dessine que les entités de l'étage actif
       if (!ez && covered(ent.pos.x, ent.pos.y)) continue; // l'occlusion par décor ne vaut qu'au sol
       const r = pickBackend({ kind: 'sceneEntity', ent }, viewMode);
       if (r.backend === 'sprite') {
@@ -569,7 +569,6 @@ export function IsoStage() {
             <BodyToken key={r.id} x={ent.pos.x} y={ent.pos.y} z={ez + elevAt(scene, ent.pos.x, ent.pos.y, ez)} dims={d} scale={0.55} fx={ent.anim}>
               <g dangerouslySetInnerHTML={{ __html: entitySprite(ent) }} />
             </BodyToken>,
-            ez,
           ),
         });
       } else {
@@ -584,7 +583,6 @@ export function IsoStage() {
             <BodyToken key={r.id} x={ex} y={ey} z={ez + elevAt(scene, ent.pos.x, ent.pos.y, ez)} dims={d} scale={base * r.speciesScale * sizeTokenScale(entitySize(ent))} bakedDeath flat={isTop} portraitBox={r.portraitBox} discR={discRfn(entitySize(ent))}>
               {r.body}
             </BodyToken>,
-            ez,
           ),
         });
       }
@@ -698,11 +696,11 @@ export function IsoStage() {
   for (const ent of scene.entities) {
     if (ent.kind !== 'prop') continue;
     const ez = ent.z ?? 0;
-    const propOp = floorEmphasisOpacity(ez, activeZ); // fantôme si pas l'étage actif
+    if (ez !== activeZ) continue; // un étage à la fois : décors de l'étage actif seulement
     const fg = decorFootGeometry(ent.foot);
     const px = ent.pos.x + fg.offX, py = ent.pos.y + fg.offY;
     const pd = depth(ent.pos.x + (ent.foot ? ent.foot.w - 1 : 0), ent.pos.y + (ent.foot ? ent.foot.h - 1 : 0), dims, ez);
-    if (ent.interact && propOp === 1) { // affordance « fouille » seulement sur l'étage où l'on est
+    if (ent.interact) { // affordance « fouille » (l'étage est déjà filtré ci-dessus)
       // Affordance : halo pulsé + onde « sonar » au sol, et étincelle dorée flottant AU-DESSUS du
       // décor fouillable — l'objet cliquable se repère de loin, sans texte (cf. anim.css).
       const c = tileCenter(px, py, dims, feetZ(px, py, ez));
@@ -727,8 +725,7 @@ export function IsoStage() {
         ),
       });
     }
-    const propTok = token(`e-${ent.id}`, px, py, entitySprite(ent), 0.55 * fg.scale, undefined, false, ent.anim, false, false, ez);
-    objs.push({ d: pd, el: propOp < 1 ? <g key={`prop-${ent.id}`} opacity={propOp}>{propTok}</g> : propTok });
+    objs.push({ d: pd, el: token(`e-${ent.id}`, px, py, entitySprite(ent), 0.55 * fg.scale, undefined, false, ent.anim, false, false, ez) });
   }
 
   // Leader VISIBLE du groupe (#27b : si le principal est mort/à terre, le suivant debout) —
