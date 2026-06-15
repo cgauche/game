@@ -11,9 +11,11 @@ import { serializeDataset } from '../../data/serialize';
 import * as fs from '../../data/fsPersist';
 import { inferFields, type FieldDesc } from './editFields';
 import { MonsterPartsFields } from '../editor/MonsterPartsFields';
+import { FlowEditor } from '../editor/FlowEditor';
 import { RACES } from '../../gameIso/rig/races';
 import { CreaturePreview } from './CreaturePreview';
 import type { EntityAppearance } from '../../state/scene';
+import { type Flow, EMPTY_FLOW } from '../../state/flow';
 
 /** Catégorie Codex → dataset éditable. `gods` (cultes générés) absent = non éditable en v1. */
 const CATEGORY_DATASET: Record<string, DatasetKey> = {
@@ -44,12 +46,16 @@ export function CodexEdit({ categoryKey, label, onClose }: { categoryKey: string
   useEffect(() => { fs.restoreDataDir().then((r) => { if (r) { setDir(r.handle); setNeedsGrant(!r.granted); } }); }, []);
   useEffect(() => { setEntry(structuredClone(arr[index] ?? {})); setDirty(false); setMsg(''); }, [index, dsKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // L'apparence des créatures a son éditeur dédié (MonsterPartsFields) — on la sort du formulaire
-  // générique (sinon rendue en JSON brut). Les autres datasets gardent le formulaire inféré.
+  // L'apparence des créatures (MonsterPartsFields) ET les EFFETS d'un sort (FlowEditor) ont leur éditeur
+  // dédié — on les sort du formulaire générique (sinon rendus en JSON brut). Les autres champs gardent le
+  // formulaire inféré. Même patron que `appearance` : on filtre le champ et on rend l'éditeur spécialisé.
   const isCreature = categoryKey === 'creatures';
+  const isSpell = categoryKey === 'spells';
   const fields = useMemo(
-    () => inferFields(arr as Record<string, unknown>[]).filter((f) => !(isCreature && f.key === 'appearance')),
-    [arr, isCreature],
+    () => inferFields(arr as Record<string, unknown>[]).filter(
+      (f) => !(isCreature && f.key === 'appearance') && !(isSpell && f.key === 'effects'),
+    ),
+    [arr, isCreature, isSpell],
   );
   const edit = (key: string, v: unknown) => { setEntry((e) => ({ ...e, [key]: v })); setDirty(true); };
 
@@ -79,6 +85,7 @@ export function CodexEdit({ categoryKey, label, onClose }: { categoryKey: string
       </div>
       <div className="codex-edit-form">
         {isCreature && <AppearanceField name={String(entry.label ?? label)} value={entry.appearance as EntityAppearance | undefined} onChange={(v) => edit('appearance', v)} />}
+        {isSpell && <SpellEffectsField value={entry.effects as Flow | undefined} onChange={(v) => edit('effects', v)} />}
         {fields.map((f) => <Field key={f.key} field={f} value={entry[f.key]} onChange={(v) => edit(f.key, v)} />)}
       </div>
     </div>
@@ -112,6 +119,20 @@ function AppearanceField({ name, value, onChange }: { name: string; value: Entit
         onEyes={(p) => patch({ eyes: { ...(a.eyes ?? {}), ...p } })}
         onFeatures={(f) => patch({ features: f.length ? f : undefined })}
       />
+    </div>
+  );
+}
+
+/** Éditeur des EFFETS d'un sort (`SpellData.effects`) — le `Flow` ÉDITABLE (do/si/test, feuilles
+ *  EffectOp). Réutilise le `FlowEditor` de l'éditeur de scène (source UNIQUE de la logique authorée) :
+ *  pose des effets mécaniques `on:'target'`/`on:'caster'`, des branches conditionnelles, des Tests. Écrit
+ *  le record `spells.json` au save → l'incantation en jeu lit ces effets (runSpellFlow). `ctx` vide :
+ *  un sort n'a pas d'encounters/dialogues de scène (les transitions/dialogues n'ont pas cours ici). */
+function SpellEffectsField({ value, onChange }: { value: Flow | undefined; onChange: (v: Flow) => void }) {
+  return (
+    <div className="ed-field">
+      <span>effets du sort (Flow éditable — effets mécaniques, conditions, tests)</span>
+      <FlowEditor flow={value ?? EMPTY_FLOW} ctx={{ encounters: [], dialogues: [] }} onChange={onChange} />
     </div>
   );
 }

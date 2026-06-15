@@ -11,6 +11,7 @@ import { spells } from '../src/data';
 import { spellSpecFor } from '../src/data/spellspecs';
 import { spellSupport } from '../src/engine/spellspec';
 import { isMagicMissile } from '../src/engine/magic';
+import { spellOps } from '../src/state/flow';
 
 const ICON = { mecanique: '✅', partiel: '🟡', narratif: '📜' } as const;
 
@@ -39,15 +40,17 @@ for (const [group, list] of [...groups.entries()].sort(([a], [b]) => a.localeCom
   lines.push('|---|---|---|---|');
   for (const s of [...list].sort((a, b) => a.label.localeCompare(b.label, 'fr'))) {
     const spec = spellSpecFor(s);
-    const support = spellSupport(spec, isMagicMissile(s));
+    // Les EFFETS (ops) vivent sur `SpellData.effects` (Flow) ; on les extrait par cible.
+    const ops = [...spellOps(s.effects, 'target'), ...spellOps(s.effects, 'caster')];
+    const support = spellSupport(spellOps(s.effects, 'target'), spec, isMagicMissile(s));
     totals[support]++;
     if (spec.curated) totals.curated++;
-    const reste = spec.ops
+    const reste = ops
       .filter((o) => o.op === 'narrative')
       .map((o) => (o as { text: string }).text)
       .join(' ')
       .replace(/\|/g, '/');
-    const fallbackNote = !spec.curated && spec.ops.length === 0 ? 'Non curé : desc journalisée telle quelle.' : '';
+    const fallbackNote = !spec.curated && ops.length === 0 ? 'Non curé : desc journalisée telle quelle.' : '';
     lines.push(`| ${s.label} | ${ICON[support]} | ${spec.curated ? 'oui' : 'repli'} | ${reste || fallbackNote} |`);
   }
   lines.push('');

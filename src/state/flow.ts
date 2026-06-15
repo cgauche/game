@@ -153,6 +153,38 @@ export function flowEffects(flow: Flow): Effect[] {
   return flow.kind === 'do' ? [flow.effect] : flow.kind === 'seq' ? flow.steps.flatMap((s) => (s.kind === 'do' ? [s.effect] : [])) : [];
 }
 
+/** GameOps des feuilles EffectOp d'un Flow de sort, filtrées par cible (`target`/`caster`). SOURCE
+ *  UNIQUE de l'extraction des effets d'un sort depuis `SpellData.effects` : le cast flow applique un
+ *  sous-Flow (target vs caster) via `runSpellFlow`, mais les badges UI (`spellSupport`) ont besoin de
+ *  la liste d'ops. Visite récursive (les feuilles peuvent vivre sous if/test). `on` absent ⇒ `target`. */
+export function spellOps(flow: Flow | undefined, on: 'target' | 'caster'): import('../engine/ops').GameOp[] {
+  if (!flow) return [];
+  const out: import('../engine/ops').GameOp[] = [];
+  walkFlow(flow, (n) => {
+    if (n.kind === 'do' && n.effect.type === 'ops' && (n.effect.on ?? 'target') === on) out.push(...n.effect.ops);
+  });
+  return out;
+}
+
+/** Sous-Flow d'un Flow de sort ne gardant que les nœuds adressant `on` (target/caster) — pour appliquer
+ *  SÉPARÉMENT les effets de cible (par cible, missile/soutien) et ceux du lanceur (une fois). Préserve
+ *  l'imbrication if/test : un nœud de structure est conservé si l'une de ses branches porte un effet
+ *  `on`. Un `do` ops d'un AUTRE `on` devient un `seq` vide (neutre). `do` non-ops conservés sous `target`. */
+export function spellFlowFor(flow: Flow | undefined, on: 'target' | 'caster'): Flow {
+  if (!flow) return EMPTY_FLOW;
+  const keep = (f: Flow): Flow => {
+    switch (f.kind) {
+      case 'do':
+        if (f.effect.type === 'ops') return (f.effect.on ?? 'target') === on ? f : EMPTY_FLOW;
+        return on === 'target' ? f : EMPTY_FLOW; // effets non-ops (narration…) rattachés à la cible
+      case 'seq': return { kind: 'seq', steps: f.steps.map(keep) };
+      case 'if': return { kind: 'if', cond: f.cond, then: keep(f.then), ...(f.else ? { else: keep(f.else) } : {}) };
+      case 'test': return { kind: 'test', test: f.test, success: keep(f.success), fail: keep(f.fail) };
+    }
+  };
+  return keep(flow);
+}
+
 /** Visite toutes les fenêtres horaires d'une Condition (validation des bornes h/min). */
 export function walkConditionTimes(cond: Condition, cb: (w: TemporalCondition) => void): void {
   switch (cond.kind) {

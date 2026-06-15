@@ -147,7 +147,8 @@ export function activeCombatant(battle: BattleState): Combatant | undefined {
 
 // --- Effets de scène/campagne extraits → combatEffects.ts (baril) ---
 export * from './combatEffects';
-import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, runSpellFlow, opsToFlow } from './combatEffects';
+import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, runSpellFlow } from './combatEffects';
+import { spellFlowFor, spellOps } from './flow';
 import { startCascade, registerCascadeApplier } from './cascade';
 
 /** Le défenseur choisit sa meilleure réaction : Parade (Corps à corps) ou Esquive
@@ -2794,13 +2795,13 @@ export function applyCast(
       } else if (t.wounds.current <= 0) {
         applyZeroWounds(t);
       }
-      // Ops d'une spec CURÉE de Projectile (« Grands feux d'U'Zhul » : +2 En flammes, À Terre ;
-      // « Drain » : soigne le lanceur) — le repli regex n'en émet jamais ici (iso-POC : la
-      // branche missile du POC n'appliquait aucun effet parsé).
-      if (missileSpec.curated && missileSpec.ops.length) {
+      // Effets ADDITIONNELS d'un Projectile sur la cible (« Grands feux d'U'Zhul » : +2 En flammes, À
+      // Terre ; « Drain » : soigne le lanceur) — lus depuis `spell.effects` (Flow éditable, feuilles
+      // `on:'target'`). Réservé aux sorts CURÉS : un sort sans spec n'a pas d'effet missile parsé (iso-POC).
+      if (missileSpec.curated && spellOps(spell.effects, 'target').length) {
         const rounds = missileSpec.durationRounds != null ? resolveFormula(missileSpec.durationRounds, caster, battleRng()) : null;
         const clockMin = rounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
-        logLines.push(...runSpellFlow(t, caster, opsToFlow(missileSpec.ops), {
+        logLines.push(...runSpellFlow(t, caster, spellFlowFor(spell.effects, 'target'), {
           rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
           defaultDurationRounds: rounds ?? COMBAT_PERSIST,
           ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
@@ -2897,8 +2898,9 @@ export function applyCast(
         const opp = extras?.opposedOutcome?.[t.id];
         if (opp?.resisted) { logLines.push(`${t.name} résiste à ${spell.label} (Test opposé).`); continue; }
         logLines.push(
-          // Tout sort passe par le système Flow/EffectOp : `opsToFlow(spec.ops)` → `runSpellFlow` → applyOps.
-          ...runSpellFlow(t, caster, opsToFlow(spec.ops), {
+          // Tout sort passe par le système Flow/EffectOp : `spell.effects` (Flow éditable, feuilles
+          // `on:'target'`) → `runSpellFlow` → applyOps. Les feuilles `on:'caster'` sont appliquées à part.
+          ...runSpellFlow(t, caster, spellFlowFor(spell.effects, 'target'), {
             rng: battleRng(),
             caster,
             label: spell.label,
@@ -3024,10 +3026,12 @@ export function applyCast(
       const sumRounds = castSpec.durationRounds != null ? resolveFormula(castSpec.durationRounds, caster, battleRng()) : null;
       logLines.push(...applySummon(get, set, caster, castSpec.summon, { sl: res.sl, rounds: sumRounds, label: spell.label, rng: battleRng() }));
     }
-    if (castSpec.casterOps?.length) {
+    // Effets sur le LANCEUR (feuilles `on:'caster'` de `spell.effects` — Vol de vie « retirez tout État
+    // Exténué dont vous souffrez », buffs de soi d'un sort offensif) : appliqués UNE seule fois par lancement.
+    if (spellOps(spell.effects, 'caster').length) {
       const baseRounds = castSpec.durationRounds != null ? resolveFormula(castSpec.durationRounds, caster, battleRng()) : null;
       const clockMin = baseRounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
-      logLines.push(...runSpellFlow(caster, caster, opsToFlow(castSpec.casterOps), {
+      logLines.push(...runSpellFlow(caster, caster, spellFlowFor(spell.effects, 'caster'), {
         rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
         defaultDurationRounds: baseRounds ?? COMBAT_PERSIST,
         ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),

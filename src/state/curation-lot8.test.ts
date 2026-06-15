@@ -11,6 +11,7 @@ import { makePregens } from '../data/pregens';
 import { spells, findSpell } from '../data';
 import { curatedSpec, spellSpecFor } from '../data/spellspecs';
 import { spellSupport } from '../engine/spellspec';
+import { spellOps } from './flow';
 import { woundsFromHit } from '../engine/combat';
 import { effectiveArmourAt } from '../engine/characteristics';
 import { isMagicMissile, type CastResult, type MissileResult } from '../engine/magic';
@@ -43,16 +44,18 @@ describe('couverture de curation', () => {
   });
 
   it('spellSupport : classification mécanique / partiel / narratif', () => {
+    // Les EFFETS (ops) vivent sur `spell.effects` (Flow) → on les extrait par `spellOps(.., 'target')`.
+    const sup = (s: typeof spells[number], missile: boolean) => spellSupport(spellOps(s.effects, 'target'), spellSpecFor(s), missile);
     const choc = spells.find((s) => s.label === 'Choc' && s.type === 'Magie mineure')!;
-    expect(spellSupport(spellSpecFor(choc), isMagicMissile(choc))).toBe('mecanique');
+    expect(sup(choc, isMagicMissile(choc))).toBe('mecanique');
     const lumiere = findSpell('Lumière')!;
-    expect(spellSupport(spellSpecFor(lumiere), false)).toBe('narratif');
+    expect(sup(lumiere, false)).toBe('narratif');
     // Cautériser est devenu 100 % mécanique (op preventInfection, Jalon 2.6) — l'exemple
     // « partiel » est désormais Couronne de Flammes (grantTrait + volet talent journalisé).
     const cauteriser = findSpell('Cautériser')!;
-    expect(spellSupport(spellSpecFor(cauteriser), false)).toBe('mecanique');
+    expect(sup(cauteriser, false)).toBe('mecanique');
     const couronne = findSpell('Couronne de Flammes')!;
-    expect(spellSupport(spellSpecFor(couronne), false)).toBe('partiel');
+    expect(sup(couronne, false)).toBe('partiel');
   });
 });
 

@@ -13,6 +13,7 @@ import { isMagicMissile, isArcaneSpell } from '../engine/magic';
 import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine/grimoire';
 import { spellSupport } from '../engine/spellspec';
 import { spellSpecFor } from '../data/spellspecs';
+import { spellOps } from '../state/flow';
 import { careers, findSpell, findStar, spells as allSpells } from '../data';
 import { CodexRef } from './compendium/CodexRef';
 import { splitLabel } from '../engine/careerSlots';
@@ -251,7 +252,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
       <div className="spell-list">
         {spells.map((sp) => {
           const offensive = isMagicMissile(sp);
-          const support = spellSupport(spellSpecFor(sp), offensive);
+          const support = spellSupport(spellOps(sp.effects, 'target'), spellSpecFor(sp), offensive);
           return (
             <div className="spell-row" key={sp.label} title={support !== 'mecanique' ? '📜 Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé (cf. docs/sorts-implementation.md).' : undefined}>
               <span className="spell-name">
@@ -783,7 +784,7 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
           <AdvSection title="Sorts — mémorisation" count={learnable.length}>
             <div className="adv-grid">
               {learnable.map(({ spell, cost }) => {
-                const support = spellSupport(spellSpecFor(spell), isMagicMissile(spell));
+                const support = spellSupport(spellOps(spell.effects, 'target'), spellSpecFor(spell), isMagicMissile(spell));
                 return (
                 <div className="adv-row acquire" key={spell.label} title={spell.desc + (support !== 'mecanique' ? '\n\n📜 Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé.' : '')}>
                   <span className="adv-name">

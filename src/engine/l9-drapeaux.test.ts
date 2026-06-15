@@ -5,8 +5,11 @@ import { hasActiveFlag, consumeActiveFlag } from './activeFlags';
 import { applyOps } from './ops';
 import { addCondition, hasCondition, combatTestPenalty, testStatePenalty, endOfRound } from './conditions';
 import { rollCritical } from './critical';
-import { MIRACLES_SHALLYA } from '../data/spellspecs/miracles-shallya';
-import { BENEDICTIONS } from '../data/spellspecs/benedictions';
+import { findSpell } from '../data';
+import { spellOps } from '../state/flow';
+
+/** Ops `on:'target'` d'un sort par label (les EFFETS vivent sur `SpellData.effects`, plus sur la spec). */
+const opsOf = (label: string) => spellOps(findSpell(label)?.effects, 'target');
 
 /** RNG scripté : renvoie les valeurs dans l'ordre (padding 5). */
 function seq(values: number[]): RNG {
@@ -75,9 +78,8 @@ describe("Endurance de l'anachorète — « ne subit aucune pénalité causée p
     expect(c.activeEffects?.[0]).toMatchObject({ label: 'Endurance de l’anachorète', ignoreStatePenalties: true, roundsLeft: 3 });
     expect(lines.join(' ')).toMatch(/pénalité d'État|pénalités d'État/i);
   });
-  it('spec curée : Endurance de l’anachorète porte l’op (plus de narrative seul)', () => {
-    const spec = MIRACLES_SHALLYA.find((s) => s.label === "Endurance de l'anachorète")!;
-    expect(spec.ops.some((o) => o.op === 'ignoreStatePenalties')).toBe(true);
+  it('effets curés : Endurance de l’anachorète porte l’op (plus de narrative seul)', () => {
+    expect(opsOf("Endurance de l'anachorète").some((o) => o.op === 'ignoreStatePenalties')).toBe(true);
   });
 });
 
@@ -121,13 +123,11 @@ describe('Bénédiction de Sauvagerie — « deux lancers, choisissez le meilleu
     const r = rollCritical(mk(), 'corps', seq([85, 15]), 0, true);
     expect(r.roll).toBe(85);
   });
-  it('spec curée : Bénédiction de Sauvagerie porte l’op critTwice', () => {
-    const spec = BENEDICTIONS.find((s) => s.label === 'Bénédiction de Sauvagerie')!;
-    expect(spec.ops.some((o) => o.op === 'critTwice')).toBe(true);
+  it('effets curés : Bénédiction de Sauvagerie porte l’op critTwice', () => {
+    expect(opsOf('Bénédiction de Sauvagerie').some((o) => o.op === 'critTwice')).toBe(true);
   });
-  it('spec curée : Bénédiction de Chance porte l’op freeReroll', () => {
-    const spec = BENEDICTIONS.find((s) => s.label === 'Bénédiction de Chance')!;
-    expect(spec.ops.some((o) => o.op === 'freeReroll')).toBe(true);
+  it('effets curés : Bénédiction de Chance porte l’op freeReroll', () => {
+    expect(opsOf('Bénédiction de Chance').some((o) => o.op === 'freeReroll')).toBe(true);
   });
 });
 
@@ -159,9 +159,8 @@ describe('Baume pour un esprit blessé — « Tous les Traits Psychologiques son
     expect(c.activeEffects?.some((e) => e.suppressedPsych) ?? false).toBe(false);
     expect(lines.join(' ')).toMatch(/aucun Trait/i);
   });
-  it('spec curée : Baume porte l’op suppressPsych', () => {
-    const spec = MIRACLES_SHALLYA.find((s) => s.label === 'Baume pour un esprit blessé')!;
-    expect(spec.ops.some((o) => o.op === 'suppressPsych')).toBe(true);
+  it('effets curés : Baume porte l’op suppressPsych', () => {
+    expect(opsOf('Baume pour un esprit blessé').some((o) => o.op === 'suppressPsych')).toBe(true);
   });
 });
 

@@ -7,7 +7,8 @@ import { describe, it, expect } from 'vitest';
 import type { Combatant } from './types';
 import { spellSpecFor, curatedSpec } from '../data/spellspecs';
 import { applyOps, resolveFormula, COMBAT_PERSIST } from './ops';
-import { spells } from '../data';
+import { spells, type SpellData } from '../data';
+import { spellOps } from '../state/flow';
 
 function hero(p: Partial<Combatant> = {}): Combatant {
   return {
@@ -20,17 +21,19 @@ function hero(p: Partial<Combatant> = {}): Combatant {
   } as Combatant;
 }
 
-/** Applique la spec d'un sort comme applyCast le fait (durée résolue contre le lanceur). */
-function castVia(spec: ReturnType<typeof spellSpecFor>, caster: Combatant, target: Combatant): string[] {
+/** Applique les effets d'un sort comme applyCast le fait (ops `on:'target'` de `spell.effects`, durée
+ *  résolue contre le lanceur). Les effets vivent désormais sur la DONNÉE (Flow), plus sur la spec. */
+function castVia(spell: SpellData, caster: Combatant, target: Combatant): string[] {
+  const spec = spellSpecFor(spell);
   const rounds = spec.durationRounds != null ? resolveFormula(spec.durationRounds, caster) : null;
-  return applyOps(target, spec.ops, { caster, label: spec.label, defaultDurationRounds: rounds ?? COMBAT_PERSIST });
+  return applyOps(target, spellOps(spell.effects, 'target'), { caster, label: spec.label, defaultDurationRounds: rounds ?? COMBAT_PERSIST });
 }
 
 describe('specs curées — résolution', () => {
   it('Bénédiction de Guérison : op heal littérale (+1 PB)', () => {
     const spell = spells.find((s) => s.label === 'Bénédiction de Guérison')!;
     const target = hero();
-    castVia(spellSpecFor(spell), hero({ id: 'c' }), target);
+    castVia(spell, hero({ id: 'c' }), target);
     expect(target.wounds.current).toBe(7);
   });
 
@@ -38,13 +41,13 @@ describe('specs curées — résolution', () => {
     const spell = spells.find((s) => s.label === 'Caresse de Rhya')!;
     const caster = hero({ id: 'c' }); // Soc 42 → BSoc 4
     const target = hero();
-    castVia(spellSpecFor(spell), caster, target);
+    castVia(spell, caster, target);
     expect(target.wounds.current).toBe(10); // 6 + 4
   });
 
-  it('Écorce : +2 BE (charMod E +20) et −10 en Agilité/Dextérité', () => {
+  it('Écorce : +2 BE (charMod E +20) et −10 en Agilité/Dextérité — effets lus de spell.effects', () => {
     const spell = spells.find((s) => s.label === 'Écorce')!;
-    expect(spellSpecFor(spell).ops).toEqual([
+    expect(spellOps(spell.effects, 'target')).toEqual([
       { op: 'charMod', char: 'E', mod: 20 },
       { op: 'charMod', char: 'Ag', mod: -10 },
       { op: 'charMod', char: 'Dex', mod: -10 },

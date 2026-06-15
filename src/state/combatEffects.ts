@@ -301,16 +301,11 @@ export function runFlow(get: Get, set: SetFn, flow: Flow, label = 'Effet'): void
   flush();
 }
 
-/** Pont ops → Flow d'un sort : enveloppe sa liste de `GameOp` en un EffectOp `do`. PROUVE que tout
- *  sort (ses effets) est représentable dans le système Flow/EffectOp — `on` = cible (`target`) ou lanceur. */
-export function opsToFlow(ops: GameOp[], on: 'target' | 'caster' = 'target'): Flow {
-  return { kind: 'seq', steps: [{ kind: 'do', effect: { type: 'ops', on, ops } }] };
-}
-
 /** Exécute le Flow d'un sort contre une CIBLE (et le lanceur pour les feuilles `on:'caster'`), appliquant
  *  chaque feuille EffectOp via `applyOps` avec le contexte d'incantation (caster/sl/durée/Corruption…).
- *  SOURCE UNIQUE d'exécution des effets de sort : tout sort — existant (`opsToFlow(spec.ops)`) ou custom
- *  (Flow authoré) — passe par ici. Renvoie le journal. Le `test` interactif du Flow n'a pas cours en
+ *  SOURCE UNIQUE d'exécution des effets de sort : tout sort lit ses effets depuis `SpellData.effects`
+ *  (Flow ÉDITABLE, donnée app-owned) — le cast flow en extrait le sous-Flow `target`/`caster`
+ *  (`spellFlowFor`) et le passe ici. Renvoie le journal. Le `test` interactif du Flow n'a pas cours en
  *  résolution synchrone de sort (la cible jette dans l'op mécanique `test`) → branche RÉUSSITE par défaut. */
 export function runSpellFlow(target: Combatant, caster: Combatant | undefined, flow: Flow, ctx: OpsCtx): string[] {
   const lines: string[] = [];

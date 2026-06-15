@@ -10,9 +10,11 @@ import type { Combatant } from './types';
 import { suffocationTick } from './suffocation';
 import { inDeathCondition, hasCondition } from './conditions';
 import { applyOps } from './ops';
-import { BENEDICTIONS } from '../data/spellspecs/benedictions';
-import { DOMAINE_OMBRES } from '../data/spellspecs/domaine-ombres';
-import { DOMAINE_METAL } from '../data/spellspecs/domaine-metal';
+import { findSpell } from '../data';
+import { spellOps } from '../state/flow';
+
+/** Ops `on:'target'` d'un sort par label (les EFFETS vivent sur `SpellData.effects`, plus sur la spec). */
+const opsOf = (label: string) => spellOps(findSpell(label)?.effects, 'target');
 
 function mk(over: Partial<Combatant> = {}): Combatant {
   return {
@@ -65,23 +67,22 @@ describe('suffocationTick — Noyade et Suffocation (LDB 18 l.424-425)', () => {
   });
 });
 
-describe('Specs curées — suffocation', () => {
+describe('Effets curés — suffocation (lus de SpellData.effects)', () => {
   it('Bénédiction de Souffle porte l’op noBreath', () => {
-    const spec = BENEDICTIONS.find((s) => s.label === 'Bénédiction de Souffle')!;
-    expect(spec.ops.some((o) => o.op === 'noBreath')).toBe(true);
+    expect(opsOf('Bénédiction de Souffle').some((o) => o.op === 'noBreath')).toBe(true);
   });
   it('Ombres étrangleuses : Exténué + suffocation + incantation coupée (« ne peuvent pas parler »)', () => {
-    const spec = DOMAINE_OMBRES.find((s) => s.label === 'Ombres étrangleuses')!;
-    expect(spec.ops.some((o) => o.op === 'suffocate')).toBe(true);
-    expect(spec.ops.some((o) => o.op === 'condition' && o.name === 'Exténué')).toBe(true);
-    expect(spec.ops.some((o) => o.op === 'castPenalty' && o.blocked)).toBe(true);
+    const ops = opsOf('Ombres étrangleuses');
+    expect(ops.some((o) => o.op === 'suffocate')).toBe(true);
+    expect(ops.some((o) => o.op === 'condition' && o.name === 'Exténué')).toBe(true);
+    expect(ops.some((o) => o.op === 'castPenalty' && o.blocked)).toBe(true);
   });
   it('Transmutation de Chamon : États persistants + 1 PA + suffocation', () => {
-    const spec = DOMAINE_METAL.find((s) => s.label === 'Transmutation de Chamon')!;
-    expect(spec.ops.some((o) => o.op === 'suffocate')).toBe(true);
-    expect(spec.ops.some((o) => o.op === 'apAll')).toBe(true);
+    const ops = opsOf('Transmutation de Chamon');
+    expect(ops.some((o) => o.op === 'suffocate')).toBe(true);
+    expect(ops.some((o) => o.op === 'apAll')).toBe(true);
     for (const name of ['Aveuglé', 'Assourdi', 'Sonné']) {
-      expect(spec.ops.some((o) => o.op === 'condition' && o.name === name)).toBe(true);
+      expect(ops.some((o) => o.op === 'condition' && o.name === name)).toBe(true);
     }
   });
   it('op suffocate : pose l’effet porteur à la durée du sort', () => {
