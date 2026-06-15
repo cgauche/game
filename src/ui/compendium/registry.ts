@@ -16,6 +16,8 @@ import { CULTS } from '../../engine/cults/registry';
 import { statName } from '../../engine/statEntry';
 import { CHAR_KEYS, HIT_LOCATION_LABELS, type Combatant, type HitLocation } from '../../engine/types';
 import { SIZE_LABEL, effectiveSize } from '../../engine/size';
+import { costPerEnc } from '../../engine/harvest';
+import { formatMoney } from '../../engine/money';
 
 export type CodexGroup = 'Personnage' | 'Compétences' | 'Équipement' | 'Effets' | 'Magie' | 'Monde';
 
@@ -212,6 +214,7 @@ export const CODEX: CodexCategory[] = [
     key: 'creatures', label: 'Créatures', group: 'Monde',
     items: creatures.map((c) => ({
       label: c.label, sub: c.title ?? undefined, group: c.folder ?? undefined, desc: c.desc ?? undefined, html: true, source: src(c.source),
+      meta: c.harvest ? facts(fact('Récolte (1 Enc)', formatMoney(costPerEnc(c.harvest)))) : undefined,
       sections: sections(
         { title: 'Caractéristiques', layout: 'grid', rows: kvRows(Object.entries(c.char)) },
         chips('Traits', 'traits', c.traits),
@@ -220,6 +223,18 @@ export const CODEX: CodexCategory[] = [
         chips('Talents', 'talents', c.talents),
         chips('Sorts', 'spells', c.spells),
         chips('Possessions', 'trappings', c.trappings),
+        c.harvest
+          ? {
+              title: 'Récolte (Précieuses Entrailles)',
+              layout: 'list',
+              rows: [
+                { t: 'kv', k: 'Rareté', v: c.harvest.rarity },
+                { t: 'kv', k: 'Dangerosité', v: c.harvest.danger },
+                { t: 'kv', k: 'Valeur (1 Enc, conservé)', v: formatMoney(costPerEnc(c.harvest)) },
+                { t: 'text', text: c.harvest.uses },
+              ],
+            }
+          : null,
       ),
     })),
   },
