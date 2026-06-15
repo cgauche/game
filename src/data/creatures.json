@@ -21943,5 +21943,2473 @@
     "appearance": {
       "species": "Vampire"
     }
+  },
+  {
+    "label": "Grand Cerf",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 7,
+      "CC": 45,
+      "CT": null,
+      "F": 45,
+      "E": 40,
+      "I": 30,
+      "Ag": 30,
+      "Dex": null,
+      "Int": 20,
+      "FM": 40,
+      "Soc": null,
+      "B": 32
+    },
+    "traits": [
+      "Bestial",
+      "Foulée",
+      "Taille (Grande)",
+      "Vision nocturne",
+      "Arme (Bois) +8",
+      "Cornes (Bois) +8"
+    ],
+    "optionals": [
+      "Animosité (Serpents)",
+      "Béni (Taal)",
+      "Immunité (Poison)",
+      "Régénération"
+    ],
+    "skills": [
+      "Corps à corps (Bois) 55"
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les grands cerfs sont des créatures imposantes. Ils peuvent mesurer plus de trois mètres de long et près de deux mètres au garrot et peser plus de quatre cents kilos. Chacun arbore une paire de bois gigantesques dont le nombre de ramifications peut aller de six à quatorze, en fonction de l'individu. Chaque paire est unique, mais toutes sont immanquablement magnifiques, et assez acérées pour perforer une armure.<br><br>Les gens de Talabheim professent que les grands cerfs ont été désignés par Taal pour garder la Grande Forêt, et qu'ils lui servent d'yeux dans toutes les autres forêts du Vieux Monde. Tout le monde s'accorde à croire que les grands cerfs attaquent sans la moindre pitié quiconque ose souiller les régions boisées, ce qui en fait des ennemis jurés des hommes-bêtes.<br><br>Lames de Taal : lorsqu'un grand cerf se bat avec ses bois, ceux-ci ont les Atouts Empaleuse et Perforante.",
+    "source": {
+      "book": "ZI",
+      "page": 10
+    }
+  },
+  {
+    "label": "L'Ombre du Fleuve",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 9,
+      "CC": 55,
+      "CT": null,
+      "F": 55,
+      "E": 50,
+      "I": 40,
+      "Ag": 40,
+      "Dex": null,
+      "Int": 40,
+      "FM": 55,
+      "Soc": 60,
+      "B": 40
+    },
+    "traits": [
+      "Béni (Kurnous [Taal])",
+      "Foulée",
+      "Furtif",
+      "Immunité Psychologique",
+      "Infravision",
+      "Magique",
+      "Miracles (Kurnous [Taal])",
+      "Protection 7+",
+      "Redoutable",
+      "Taille (Grande)",
+      "Arme (Bois) +10",
+      "Cornes (Bois) +10"
+    ],
+    "optionals": [],
+    "skills": [
+      "Corps à corps (Bois) 75"
+    ],
+    "talents": [
+      "Affinité avec les animaux"
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les grands cerfs sont bien plus que de simples animaux. Ce sont des créatures transcendantes, les enfants de Kurnous, seigneur des lieux sauvages. Les grands cerfs sont des êtres magiques, la manifestation suprême de l'âme d'une forêt. Leur souffle est celui d'un chant lointain qui s'élève telle la vapeur ; d'innombrables fleurs bourgeonnent sous leurs pas. Partout où ils vont, tous les autres animaux s'inclinent devant eux en signe de révérence.<br><br>On dit que les grands cerfs sont totalement immunisés contre les effets des poisons naturels. C'est sans doute à cause de leur rivalité de longue date avec les ophidiens.<br><br>Lames de Kurnous : lorsque l'Ombre du fleuve se bat avec ses bois, ceux-ci ont les Atouts Empaleuse, Perforante et Rapide.",
+    "source": {
+      "book": "ZI",
+      "page": 11
+    },
+    "appearance": {
+      "species": "Cheval"
+    }
+  },
+  {
+    "label": "Arachnarok",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 5,
+      "CC": 50,
+      "CT": 35,
+      "F": 55,
+      "E": 45,
+      "I": 20,
+      "Ag": 40,
+      "Dex": 30,
+      "Int": 35,
+      "FM": 45,
+      "Soc": 10,
+      "B": 136
+    },
+    "traits": [
+      "Arboricole",
+      "Armure 3",
+      "Grimpant",
+      "Infravision",
+      "Taille (Monstrueuse)",
+      "Arme (Mandibules) +9",
+      "Morsure +9",
+      "Toile 50",
+      "Venin"
+    ],
+    "optionals": [
+      "Furtif",
+      "Immunité Psychologique",
+      "Sang corrosif"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les arachnaroks sont les titans des bois profonds, des prédateurs gigantesques. À en croire les Middenlanders, ce nom est tiré d'un conte norsque antique. Les arachnaroks sont apparemment plus grosses que des maisons, et rien, à part un barrage concentré de tirs de canons, ne pourrait les arrêter. Les récits qui vantent leur voracité sont légion. S'ils disent vrai, les arachnaroks sont tout à fait capables de dévorer des hardes entières d'hommes-bêtes, ou des créatures aussi immenses que des géants. Heureusement, elles sont aussi rares que des dragons, et bien peu affirment en avoir aperçu. Contrairement à la toile des autres araignées, celle des arachnaroks est imprégnée de leur poison.<br><br>Toile traître : lorsqu'un ennemi devient Empêtré dans la toile d'une arachnarok, il gagne aussi un État Empoisonné.",
+    "source": {
+      "book": "ZI",
+      "page": 12
+    },
+    "appearance": {
+      "species": "Araignée"
+    }
+  },
+  {
+    "label": "Mangeuse d'hommes de la Drakwald (Araignée Géante)",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 5,
+      "CC": 40,
+      "CT": 30,
+      "F": 25,
+      "E": 35,
+      "I": 20,
+      "Ag": 35,
+      "Dex": 30,
+      "Int": 20,
+      "FM": 35,
+      "Soc": null,
+      "B": 22
+    },
+    "traits": [
+      "Arboricole",
+      "Armure 1",
+      "Bestial",
+      "Grimpant",
+      "Taille (Grande)",
+      "Vision nocturne",
+      "Arme (Mandibules) +6",
+      "Morsure +6",
+      "Toile 40",
+      "Venin"
+    ],
+    "optionals": [
+      "Dressé (Dompté, Garder, Guerre, Magie, Monture)",
+      "Taille (Énorme)"
+    ],
+    "skills": [
+      "Discrétion (Rurale) 60"
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les araignées géantes qui tissent leur toile dans les forêts sont des prédateurs anormalement énormes, rusés et cruels. Leur corps mesure souvent près de deux mètres de long et pas moins de trois mètres de large si l'on compte leurs pattes. Elles tissent des toiles collantes et résistantes pour capturer leurs proies, qu'elles emballent dans d'épais cocons pour s'en repaître à loisir. Leurs mandibules ressemblent à des pinces, assez puissantes pour perforer l'acier, et sont enduites de toxines mortelles. De toutes les sous-espèces qui arpentent les forêts de l'Empire, aucune n'a une réputation plus épouvantable que la mangeuse d'hommes de la Drakwald, identifiable au cramoisi vif qui orne sa carapace brun sombre.<br><br>Lorsqu'elles font face à un adversaire particulièrement dangereux ou irritant, les araignées géantes se retirent souvent dans les arbres, d'où elles crachent leur soie collante sur leurs ennemis à l'aide de leur Capacité de Tir.<br><br>Rancunière : les mangeuses d'hommes de la Drakwald ont le Trait Haine (Anciens adversaires).",
+    "source": {
+      "book": "ZI",
+      "page": 12
+    },
+    "appearance": {
+      "species": "Araignée"
+    }
+  },
+  {
+    "label": "Gobelin des Forêts",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 4,
+      "CC": 25,
+      "CT": 35,
+      "F": 30,
+      "E": 30,
+      "I": 20,
+      "Ag": 35,
+      "Dex": 30,
+      "Int": 30,
+      "FM": 20,
+      "Soc": 20,
+      "B": 11
+    },
+    "traits": [
+      "Animosité (Peaux-vertes)",
+      "Arboricole",
+      "Armure 1",
+      "Effrayé (Elfes)",
+      "Vision nocturne",
+      "À distance (Arc court) +5 (20)",
+      "Arme (Lance de fortune) +6",
+      "Venin"
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [
+      "Acrobaties Équestres"
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les gobelins des forêts sont des couards traîtres et perfides. Ils sont particulièrement doués pour tendre des embuscades, et pour prendre la fuite lorsque la situation les dépasse. Ils frappent rapidement du haut de leurs redoutables montures, qui sont en général considérablement plus dangereuses qu'eux. Les gobelins des forêts sont extrêmement minces et agiles de leurs dix doigts. Ils ont la peau verte, un long nez pointu, et des dents acérées. Ils ont tendance à préférer les armes qui leur permettent de rester aussi loin de leurs ennemis que possible, comme les lances et les flèches, qu'ils trempent dans le venin de leur monture. Ils entretiennent une relation étrange et complexe avec les araignées géantes des bois profonds, qui leur servent à la fois de montures, d'animaux de compagnie, et de source de nourriture et de poison.<br><br>Bravoure d'emprunt : les gobelins des forêts rencontrés hors de leur tribu seront invariablement montés sur des araignées géantes. Les gobelins des forêts montés sur des araignées ignorent les effets de leur Trait Effrayé (Elfes).",
+    "source": {
+      "book": "ZI",
+      "page": 14
+    },
+    "appearance": {
+      "species": "Gobelin"
+    }
+  },
+  {
+    "label": "Chamane Gobelin des Forêts",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 4,
+      "CC": 35,
+      "CT": 45,
+      "F": 30,
+      "E": 40,
+      "I": 30,
+      "Ag": 35,
+      "Dex": 30,
+      "Int": 40,
+      "FM": 30,
+      "Soc": 30,
+      "B": 14
+    },
+    "traits": [
+      "Animosité (Peaux-vertes)",
+      "Arboricole",
+      "Béni (Déesse-araignée)",
+      "Immunité (Poison)",
+      "Insensible à la douleur",
+      "Miracles (Déesse-araignée)",
+      "Peur 1",
+      "Vision nocturne",
+      "Arme (Bâton de la Déesse-araignée) +8",
+      "Venin"
+    ],
+    "optionals": [],
+    "skills": [
+      "Prière 60"
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les chamanes gobelins des forêts se parent de myriades d'araignées (qui les mordent régulièrement), et consomment quotidiennement des substances hallucinogènes. Leur perception du monde est donc constamment voilée. S'il est attaqué, un chamane n'aura aucun problème à se concentrer sur le combat. Dans le cas contraire, il doit effectuer un Test de Force Mentale Facile (+40) au début de chacun de ses tours. En cas d'échec, il se met à baver, le regard dans le vide : il ne peut pas se déplacer ni entreprendre la moindre Action durant son tour.<br><br>Bénédictions de la Déesse-araignée : Bataille, Chance, Courage, Grâce, La Chasse, Sauvagerie.",
+    "source": {
+      "book": "ZI",
+      "page": 14
+    },
+    "appearance": {
+      "species": "Gobelin"
+    }
+  },
+  {
+    "label": "Grand Loup",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 4,
+      "CC": 35,
+      "CT": null,
+      "F": 45,
+      "E": 40,
+      "I": 35,
+      "Ag": 25,
+      "Dex": null,
+      "Int": 15,
+      "FM": 15,
+      "Soc": null,
+      "B": 13
+    },
+    "traits": [
+      "Armure 1",
+      "Bestial",
+      "Foulée",
+      "Pisteur",
+      "Territorial",
+      "Vision nocturne"
+    ],
+    "optionals": [
+      "Taille (Grande) ; remplacer Bestial, Dressé et Territorial par un bonus de +15 en Soc"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les loups géants sont des bêtes plus imposantes et plus féroces que n'importe quelle bête sauvage. Ils sont plus grands que les mieux bâtis des halflings, et chacune de leurs foulées est deux fois plus longue que celle d'un homme. Leurs yeux sont des flammes vacillantes jaunes ou vertes qui luisent au-dessus de crocs aussi longs que des couteaux de chasse. Et chacun est habité d'une faim insatiable. Ils sont rusés, bien plus que les hommes ne le pensent. Ils ont leur propre langue, et leur voix porte sur des distances incommensurables, ce qui leur permet de contourner, voire d'embusquer, ceux qui se risquent à les chasser. Ils sont assez intelligents pour créer de faux antres afin de perdre leurs ennemis, tout en camouflant leurs véritables repaires.<br><br>La meute fait la force : les loups géants qui sont en supériorité numérique par rapport à leurs ennemis gagnent un bonus de +10 à leur score de combat. Ce bonus est cumulatif avec d'autres bonus du même type.",
+    "source": {
+      "book": "ZI",
+      "page": 16
+    },
+    "appearance": {
+      "species": "Loup"
+    }
+  },
+  {
+    "label": "Raukos",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 4,
+      "CC": 55,
+      "CT": null,
+      "F": 45,
+      "E": 40,
+      "I": 35,
+      "Ag": 30,
+      "Dex": null,
+      "Int": 25,
+      "FM": 35,
+      "Soc": 20,
+      "B": 30
+    },
+    "traits": [
+      "Armure 1",
+      "Foulée",
+      "Pisteur",
+      "Taille (Grande)",
+      "Vision nocturne",
+      "Arme (Crocs) +8"
+    ],
+    "optionals": [],
+    "skills": [
+      "Corps à corps (Crocs) 75"
+    ],
+    "talents": [
+      "Frappe réactive (2)"
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Raukos est un loup géant à deux têtes, autrefois la vedette de l'arène d'un dresseur de monstres kislevite nommé Kapayev. Quand une tête dormait, l'autre veillait, alerte et agile. Il triompha de tous les monstres qu'on lui opposa, jusqu'au jour où il tua son maître endormi et disparut.<br><br>Une meute à lui seul : Raukos gagne une attaque gratuite par tour. De plus, il compte comme 2 créatures : pour être en supériorité numérique à 2 contre 1, ses adversaires doivent être 4 ; si Raukos se bat contre un seul adversaire, il est en supériorité numérique à 2 contre 1.",
+    "source": {
+      "book": "ZI",
+      "page": 16
+    },
+    "appearance": {
+      "species": "Loup"
+    }
+  },
+  {
+    "label": "Razorgor",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 7,
+      "CC": 45,
+      "CT": null,
+      "F": 55,
+      "E": 45,
+      "I": 33,
+      "Ag": 35,
+      "Dex": null,
+      "Int": 5,
+      "FM": 30,
+      "Soc": null,
+      "B": 32
+    },
+    "traits": [
+      "Armure 1",
+      "Bestial",
+      "Foulée",
+      "Frénésie",
+      "Perturbant",
+      "Taille (Grande)",
+      "Vision nocturne",
+      "Arme (Défenses) +10",
+      "Cornes (Défenses) +10"
+    ],
+    "optionals": [
+      "Attaque caudale +9",
+      "Corruption (Mineure)",
+      "Infecté",
+      "Mutation",
+      "Parasité",
+      "Taille (Énorme)",
+      "Territorial"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Aucune créature des forêts de l'Empire n'est aussi vorace, ni aussi infâme, que les terrifiants razorgors. S'ils ressemblent vaguement à des sangliers gigantesques à moitié dépecés, leur nature Chaotique ne fait aucun doute. Leur corps est couvert de touffes de crin sombre et dru, de protubérances osseuses, de cornes torses, de masses de muscles mal formés et bien souvent d'autres mutations disgracieuses. Des crocs irréguliers sont plantés dans leur bouche béante, et chaque razorgor possède au moins une paire de défenses capables d'éventrer un ours. Les razorgors sont incroyablement belliqueux et voraces. Ils attaquent tout ce qui bouge et se battent jusqu'à la mort de toute créature qu'ils rencontrent, qu'ils engloutissent ensuite tout entière : peau, chair, entrailles, sang et ossements. Les razorgors qui parviennent à rassasier leur feu intérieur deviendraient apparemment de plus en plus gros et robustes avec le temps.",
+    "source": {
+      "book": "ZI",
+      "page": 18
+    },
+    "appearance": {
+      "species": "Sanglier"
+    }
+  },
+  {
+    "label": "Le Vieux Dos-de-Pus",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 6,
+      "CC": 65,
+      "CT": null,
+      "F": 65,
+      "E": 55,
+      "I": 13,
+      "Ag": 35,
+      "Dex": null,
+      "Int": 20,
+      "FM": 40,
+      "Soc": 10,
+      "B": 100
+    },
+    "traits": [
+      "Armure 3",
+      "Endurant",
+      "Frénésie",
+      "Mutation (La bosse d'os)",
+      "Perturbant",
+      "Protection 8+",
+      "Taille (Énorme)",
+      "Vision nocturne",
+      "Arme (Défenses) +11",
+      "Cornes (Défenses) +11"
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [
+      "Maîtrise du combat 3"
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Le plus tristement célèbre de tous les razorgors de l'Empire est le Vieux Dos-de-pus du Hochland : un monstre gigantesque à la peau pâle dont le dos suppurant est orné d'une énorme bosse de muscles biscornus et d'os dentelés. Il a dévoré des chasseurs, des caravanes, des détachements entiers de patrouilleurs routiers et même un petit contingent de chevaliers de la Reiksguard envoyés pour l'occire.<br><br>La bosse d'os : des os à la fois souples et durs comme le fer se sont propagés depuis la bosse du Vieux Dos-de-pus sur tout son corps. Ceci l'a rendu plus lent, mais aussi incroyablement coriace.",
+    "source": {
+      "book": "ZI",
+      "page": 18
+    },
+    "appearance": {
+      "species": "Sanglier"
+    }
+  },
+  {
+    "label": "Gueule d'Effroi",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 3,
+      "CC": 45,
+      "CT": 30,
+      "F": 55,
+      "E": 55,
+      "I": 15,
+      "Ag": 20,
+      "Dex": null,
+      "Int": 15,
+      "FM": 35,
+      "Soc": null,
+      "B": 36
+    },
+    "traits": [
+      "Armure 3",
+      "Belliqueux",
+      "Bestial",
+      "Corruption (Mineure)",
+      "Fouissement 30",
+      "Infravision",
+      "Mutation",
+      "Taille (Grande)",
+      "Territorial",
+      "Arme (Gueule caverneuse) +10",
+      "Morsure (Gueule caverneuse) +10",
+      "Souffle (Bave gluante) +5"
+    ],
+    "optionals": [
+      "Cornes (Épines dorsales crochues) +9",
+      "Infecté",
+      "Sang corrosif",
+      "Taille (Énorme ou Monstrueuse)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les gueules d'effroi sont de gigantesques serpents (certains nains soutiennent que « vers » serait plus approprié) dont l'immense gueule circulaire est remplie de dents crochues recourbées vers l'intérieur. Leur corps est couvert d'écailles grises ou verdâtres, elles-mêmes enduites d'une bave gluante et nauséabonde qui leur permet de glisser dans la terre à très grande vitesse. Elles attaquent généralement leurs cibles par en dessous : elles émergent soudain du sol pour avaler toutes crues les créatures plus petites. Elles sont tout aussi capables de s'attaquer aux créatures plus grosses, auquel cas elles se taillent un chemin à travers chair et os pour les dévorer de l'intérieur. Ce sont des créatures des désolations du Chaos, et il n'en existe pas deux pareilles.<br><br>Bave gluante : les Blessures infligées ignorent les Points d'Armure. Pendant un nombre de Rounds égal au Bonus d'Endurance de la gueule d'effroi, les créatures touchées par cette substance doivent effectuer un Test d'Agilité Accessible (+20) chaque fois qu'elles veulent agir. En cas d'échec, elles glissent à cause de la substance et gagnent immédiatement l'État À Terre.<br><br>Avaler tout cru : lorsqu'une gueule d'effroi attaque une cible à l'aide de sa mâchoire, elle peut essayer de l'avaler. Pour cela, la cible doit être d'une Taille inférieure ou égale à la sienne, et subir soit un nombre de Blessures égal au double de son propre Bonus d'Endurance en une seule attaque, soit un Dégât Critique. Une fois ces conditions remplies, la gueule d'effroi fait un Test opposé de Force contre sa cible. En cas de réussite, la cible subit immédiatement un État Empêtré, plus un supplémentaire par tranche de 2 DR. La prochaine Action de la cible ne peut être qu'un Test opposé de Force pour échapper à la gueule d'effroi. Si elle ne parvient pas à se libérer, elle subit 10 Blessures et est avalée. Une fois avalée, la victime subit un État Empêtré ainsi que 10 Blessures (qui ignorent l'Armure) au début de chaque Round.",
+    "source": {
+      "book": "ZI",
+      "page": 22
+    },
+    "appearance": {
+      "species": "Serpent"
+    }
+  },
+  {
+    "label": "Rhinox",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 6,
+      "CC": 45,
+      "CT": null,
+      "F": 55,
+      "E": 50,
+      "I": 23,
+      "Ag": 30,
+      "Dex": null,
+      "Int": 10,
+      "FM": 10,
+      "Soc": null,
+      "B": 32
+    },
+    "traits": [
+      "Armure 2",
+      "Belliqueux",
+      "Bestial",
+      "Foulée",
+      "Taille (Grande)",
+      "Arme (Cornes nasales) +10",
+      "Cornes +10"
+    ],
+    "optionals": [
+      "Dressé (Trait)",
+      "Frénésie",
+      "Parasité",
+      "Territorial"
+    ],
+    "skills": [
+      "Corps à corps (Cornes nasales) 70"
+    ],
+    "talents": [
+      "Charge berserk 3",
+      "Coup puissant 2*"
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Dans les hauteurs des chaînes de montagnes du Vieux Monde errent des brutes hirsutes et irascibles. D'énormes bêtes à quatre pattes dont le lourd museau est surmonté d'immenses cornes : les rhinox. Leur amour du froid et leur nature belliqueuse, qui les pousse à charger sur-le-champ tout ce qui s'aventure à moins d'un jet de pierre d'eux, leur ont attiré les faveurs d'Ulric. Ce sont des créatures obstinées : elles ne dévient jamais de la trajectoire qu'elles ont choisie et attaquent tout ce qui n'a pas la même odeur qu'elles. Leur très mauvaise vue est compensée par un odorat extrêmement fin. Les ogres se servent parfois des rhinox comme de bêtes de somme.<br><br>Trop buté pour mourir : les rhinox ignorent les effets du premier Dégât Critique qu'ils subissent à chaque combat.",
+    "source": {
+      "book": "ZI",
+      "page": 28
+    },
+    "appearance": {
+      "species": "Ours"
+    }
+  },
+  {
+    "label": "Brise-Krag",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 7,
+      "CC": 55,
+      "CT": null,
+      "F": 65,
+      "E": 73,
+      "I": 30,
+      "Ag": 25,
+      "Dex": null,
+      "Int": 15,
+      "FM": 20,
+      "Soc": null,
+      "B": 88
+    },
+    "traits": [
+      "Armure 5",
+      "Belliqueux",
+      "Bestial",
+      "Foulée",
+      "Insensible à la douleur",
+      "Redoutable",
+      "Taille (Énorme)",
+      "Arme (Cornes nasales) +13*",
+      "Cornes +13*"
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Particulièrement craint et maudit, le hargneux Brise-Krag aurait enfoncé la porte d'un Karak à l'aide de son crâne dur comme du « gromil ». Malgré la prime considérable que le Haut Roi des nains a mise sur son crâne quasiment impénétrable, Brise-Krag arpente toujours les hauts vallons du Bord du Monde, où il piétine tout sur son passage.<br><br>Plus solide que la roche : l'Armure de Brise-Krag a l'Atout Impénétrable.<br><br>Trop buté pour mourir : Brise-Krag ignore les effets du premier Dégât Critique qu'il subit à chaque combat.",
+    "source": {
+      "book": "ZI",
+      "page": 28
+    },
+    "appearance": {
+      "species": "Ours"
+    }
+  },
+  {
+    "label": "Nuée de squigs des cavernes",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 4,
+      "CC": 55,
+      "CT": null,
+      "F": 50,
+      "E": 30,
+      "I": 10,
+      "Ag": 40,
+      "Dex": null,
+      "Int": 5,
+      "FM": 15,
+      "Soc": null,
+      "B": 60
+    },
+    "traits": [
+      "Bestial",
+      "Bond",
+      "Infecté",
+      "Infravision",
+      "Nuée*",
+      "Arme (Gueule pleine de crocs) +9"
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les squigs sont, en essence, des champignons ambulants dotés d'un très mauvais caractère, d'une paire d'yeux perçants et d'une mâchoire béante pleine de crocs aussi longs que des dagues. Ils seraient bien plus dangereux s'ils se montraient en plus doués de la moindre capacité de réflexion. L'apparence des squigs peut énormément varier et beaucoup semblent capables de s'adapter à leur environnement. Ceux qui hantent les cauchemars des soldats impériaux sont les squigs des cavernes, qui surgissent de grottes ténébreuses enfouies sous les Montagnes du Bord du Monde, et dont les couleurs vont de l'orange vif au rouge profond.",
+    "source": {
+      "book": "ZI",
+      "page": 30
+    },
+    "appearance": {
+      "species": "Squig"
+    }
+  },
+  {
+    "label": "Gobelin de la Nuit",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 4,
+      "CC": 30,
+      "CT": 35,
+      "F": 30,
+      "E": 35,
+      "I": 20,
+      "Ag": 35,
+      "Dex": 30,
+      "Int": 30,
+      "FM": 20,
+      "Soc": 20,
+      "B": 11
+    },
+    "traits": [
+      "Animosité (Peaux-vertes)",
+      "Effrayé (Elfes)",
+      "Haine (Nains)",
+      "Infecté",
+      "Infravision",
+      "À distance (Arc court) +5 (20)",
+      "Arme (Lames rouillées) +7"
+    ],
+    "optionals": [
+      "Furtif"
+    ],
+    "skills": [
+      "Projectiles (Arc) 45",
+      "Projectiles (Entraves) 45"
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les gobelins de la nuit sont sans doute les membres les plus cruels de leur espèce à l'esprit déjà bien tordu. Ce sont des conspirateurs retors dépourvus de la moindre conscience morale. Ce sont eux qui ont investi la majorité des antiques karak des nains au fil des siècles, ce pourquoi les nains les haïssent par-dessus tout. Ils chassent les squigs depuis des éons, dont ils se servent tantôt comme nourriture, tantôt comme armes vivantes. Ils revêtent des tuniques souillées et s'équipent d'armes rouillées et bardées de crochets.<br><br>Certains gobelins de la nuit se servent de filets pour capturer leurs ennemis. Ceux-là ont le Trait d'attaque À distance (Filet 3) +0 (6).<br><br>Quelques gobelins de la nuit chevauchent des squigs au combat, ce qui finit généralement mal. Ces chevaucheurs de squigs ont la Compétence Chevaucher (Squig) 40.<br><br>Avant le combat, certains gobelins ingurgitent une boisson à base de bonnets de fou et deviennent des fanatiques gobelins de la nuit, armés d'un gigantesque boulet métalliques attaché à une chaîne. Les fanatiques gagnent +10 en Force, ont 16 Blessures et gagnent le Trait Frénésie ainsi que la Compétence Corps à corps (Deux-mains) 40.",
+    "source": {
+      "book": "ZI",
+      "page": 31
+    },
+    "appearance": {
+      "species": "Gobelin"
+    }
+  },
+  {
+    "label": "Dragon de la Forêt",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 6,
+      "CC": 65,
+      "CT": 60,
+      "F": 65,
+      "E": 65,
+      "I": 60,
+      "Ag": 35,
+      "Dex": 15,
+      "Int": 65,
+      "FM": 85,
+      "Soc": 45,
+      "B": 104
+    },
+    "traits": [
+      "Arboricole",
+      "Armure 5",
+      "Furtif",
+      "Immunité (Poison)",
+      "Redoutable",
+      "Taille (Énorme)",
+      "Vision nocturne",
+      "Vol 50",
+      "Arme (Griffes semblables à des racines) +11",
+      "Attaque caudale +9",
+      "Morsure +12",
+      "Souffle (Soporifique) +10"
+    ],
+    "optionals": [
+      "Dressé (Monture)",
+      "Lanceur de Sorts (Jade)",
+      "Magique",
+      "Venin"
+    ],
+    "skills": [
+      "Corps à corps (Griffes semblables à des racines) 75",
+      "Discrétion (Rurale) 65 (+6 DR grâce à Arboricole et Furtif)"
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "De toutes les créatures qui peuplent le Vieux Monde, aucune n'est aussi impressionnante que les dragons. Ils sont aussi l'une des plus vieilles espèces à y vivre. Aujourd'hui, il ne reste que peu de ces puissants reptiles, et le battement de leurs ailes s'est fait rare dans l'Empire. Les effets de leur célèbre souffle sont aussi variés que leur apparence, mais suffisent à écraser la plupart de leurs ennemis. Et c'est sans compter leurs griffes et leurs dents plus aiguisées qu'une épée ensorcelée, et leur peau bardée d'écailles capable d'amortir un boulet de canon. Aucun dragon n'est jamais mort de vieillesse : au contraire, ils ne deviennent que plus gros et plus rusés au fil des siècles, capables de parler de nombreuses langues et de manier la magie aussi bien qu'un Maître sorcier.<br><br>La bêtise les perdra : le Souffle soporifique ignore les Points d'Armure. Toute cible blessée par cette attaque doit effectuer un Test de Force Mentale Difficile (-20). En cas d'échec, elle gagne le Trait Stupide pendant un nombre de Rounds égal au Bonus d'Endurance du dragon.<br><br>La forêt est mon bouclier : dans une région boisée, lorsqu'il est entouré d'arbres, un dragon de la forêt ne sera jamais en infériorité numérique. De plus, ses écailles caméléonesques alternent entre l'apparence de l'écorce et celle des feuilles : toutes les attaques à distance qui le prennent pour cible subissent un malus de -20.",
+    "source": {
+      "book": "ZI",
+      "page": 33
+    },
+    "appearance": {
+      "species": "Dragon"
+    }
+  },
+  {
+    "label": "Caledair - la Faux de Feu",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 6,
+      "CC": 90,
+      "CT": 75,
+      "F": 75,
+      "E": 95,
+      "I": 60,
+      "Ag": 30,
+      "Dex": 15,
+      "Int": 75,
+      "FM": 90,
+      "Soc": 45,
+      "B": 344
+    },
+    "traits": [
+      "Armure 6",
+      "Endurant",
+      "Immunité (Feu)",
+      "Immunité Psychologique",
+      "Lanceur de Sorts (Feu)",
+      "Magique",
+      "Redoutable 3",
+      "Taille (Monstrueuse)",
+      "Vision nocturne",
+      "Vol 90",
+      "Arme (Griffes recouvertes de gromril) +12",
+      "Attaque caudale +11",
+      "Morsure +13",
+      "Souffle (Feu) +20"
+    ],
+    "optionals": [],
+    "skills": [
+      "Corps à corps (Griffes recouvertes de gromril) 110",
+      "Évaluation 95",
+      "Intimidation 95 (+3 DR grâce à Menaçant)",
+      "Langue (Magick) 105"
+    ],
+    "talents": [
+      "Diction instinctive",
+      "Menaçant 3"
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Caledair la Faux de Feu est un dragon de feu antique et monstrueux. Les nains ont des livres des rancunes entiers dédiés à ses déprédations, mais rien ne les a plus outrés que lorsque le dragon a acquis du gromril pour en recouvrir ses griffes.<br><br>Griffes « volées » : les griffes de Caledair ignorent totalement les Points d'Armure.",
+    "source": {
+      "book": "ZI",
+      "page": 33
+    },
+    "appearance": {
+      "species": "Dragon"
+    }
+  },
+  {
+    "label": "« L'abominable » Halagrundsor",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 6,
+      "CC": 42,
+      "CT": 30,
+      "F": 65,
+      "E": 65,
+      "I": 30,
+      "Ag": 34,
+      "Dex": 17,
+      "Int": 26,
+      "FM": 45,
+      "Soc": 39,
+      "B": 88
+    },
+    "traits": [
+      "Animosité (Peaux-vertes)",
+      "Arme (Grosse chope) +10",
+      "Foulée",
+      "Insensible à la douleur",
+      "Taille (Énorme)",
+      "Vision nocturne"
+    ],
+    "optionals": [],
+    "skills": [
+      "Calme 55",
+      "Charme 49",
+      "Corps à corps (Base) 57",
+      "Discrétion (Rurale) 44",
+      "Divertissement (Narration) 49",
+      "Escalade 70",
+      "Escamotage 22",
+      "Intuition 45",
+      "Marchandage 49",
+      "Pari 36",
+      "Perception 45",
+      "Ragot 49",
+      "Résistance à l'alcool 90",
+      "Savoir (Montagnes du Bord du Monde) 46",
+      "Signes secrets (Rôdeur) 31",
+      "Subornation 49"
+    ],
+    "talents": [
+      "Flairer les ennuis",
+      "Noctambule",
+      "Savoir-vivre (Nains)",
+      "Sens aiguisé (Ouïe)",
+      "Sociable"
+    ],
+    "trappings": [
+      "grosse chope lourdement renforcée (arme simple)",
+      "assortiment de pièces de toutes origines d'une valeur de 6d10 pistoles",
+      "collection d'alcool sans pareille"
+    ],
+    "spells": [],
+    "desc": "Halagrundsor est un géant errant des Montagnes du Bord du Monde, vêtu d'habits dépareillés marqués de plusieurs blasons différents, le crâne rasé et la barbe ornée de simples tresses. Il sert d'agent à la disposition des marchands humains qui transportent leurs denrées le long des montagnes, faisant la chasse aux peaux-vertes entre deux chopes. Il ne se sépare jamais de sa chope artisanale de la taille d'un petit tonneau.",
+    "source": {
+      "book": "ZI",
+      "page": 36
+    }
+  },
+  {
+    "label": "Brochet du Stir",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 8,
+      "CC": 45,
+      "CT": null,
+      "F": 52,
+      "E": 50,
+      "I": 32,
+      "Ag": 38,
+      "Dex": null,
+      "Int": 14,
+      "FM": 50,
+      "Soc": null,
+      "B": 40
+    },
+    "traits": [
+      "À sang froid",
+      "Amphibie",
+      "Armure 1",
+      "Bestial",
+      "Taille (Grande)",
+      "Vision nocturne",
+      "Arme (Queue mortelle) +9",
+      "Attaque caudale +9",
+      "Morsure +8"
+    ],
+    "optionals": [
+      "Affamé",
+      "Belliqueux",
+      "Protection 9+",
+      "Taille (Énorme)",
+      "Territorial"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les brochets du Stir sont de très gros poissons gris verdâtre, des monstres dangereux et rusés, passés maîtres dans l'art d'échapper aux cannes à pêche, et qui peuvent vivre très, très longtemps. La taille moyenne de ces monstres est de plus de 3,50 mètres, mais certains rapports fiables notent que certaines bêtes particulièrement célèbres atteignent les 6 mètres, et que leur poids se compte en tonnes. Ils ont été trop pêchés, et sont maintenant presque éteints dans la majeure partie du grand Stir.<br><br>Il a eu de la chance, c'est tout : les brochets du Stir qui ont vécu assez longtemps pour devenir énormes et pour gagner un surnom semblent protégés par Manann lui-même. Tous ces brochets du Stir ont 3 Points de Chance.<br><br>Queue agile : les brochets du Stir peuvent effectuer une attaque caudale par Round sans dépenser d'Avantage.",
+    "source": {
+      "book": "ZI",
+      "page": 38
+    }
+  },
+  {
+    "label": "Choses du Bois Mort",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 5,
+      "CC": 50,
+      "CT": 30,
+      "F": 45,
+      "E": 50,
+      "I": 30,
+      "Ag": 50,
+      "Dex": 20,
+      "Int": 10,
+      "FM": 40,
+      "Soc": 10,
+      "B": 23
+    },
+    "traits": [
+      "Corruption (Modérée)",
+      "Corruption mentale (Totalement déséquilibré et 2 autres lancers)",
+      "Endurant",
+      "Furtif",
+      "Mutation 3",
+      "Peur 2",
+      "Rage",
+      "Redoutable",
+      "Vision nocturne",
+      "Arme (Armes rouillées ou griffes) +8"
+    ],
+    "optionals": [
+      "Affamé",
+      "Cornes",
+      "Insensible à la douleur",
+      "Langue préhensile",
+      "Morsure",
+      "Pisteur",
+      "Sang corrosif",
+      "Taille (Grande)",
+      "Tentacules"
+    ],
+    "skills": [
+      "Discrétion (Rurale) 60 (+5 DR grâce à Furtif)"
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les Choses du Bois mort sont d'anciens habitants des villages bordant la forêt maudite, revenus changés et corrompus après s'être aventurés trop loin sous les frondaisons. Ils ne sont pas morts-vivants : pire. Couverts de mutations et d'une rage incontrôlable, ils reviennent traquer ceux qu'ils ont connus de leur vivant.<br><br>Choc des retrouvailles : la première fois qu'une personne reconnaît ce que la « chose » était, elle doit effectuer un Test de Force Mentale Complexe (-10). En cas d'échec, elle gagne un État Assommé.",
+    "source": {
+      "book": "ZI",
+      "page": 40
+    }
+  },
+  {
+    "label": "Chef de Meute du Clan Moulder",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 5,
+      "CC": 45,
+      "CT": 45,
+      "F": 40,
+      "E": 40,
+      "I": 50,
+      "Ag": 50,
+      "Dex": 30,
+      "Int": 40,
+      "FM": 40,
+      "Soc": 30,
+      "B": 16
+    },
+    "traits": [
+      "Armure 1",
+      "Infecté",
+      "Vision nocturne",
+      "À distance (Fouet) +6 (6)",
+      "Arme (Lame à dents) +8"
+    ],
+    "optionals": [
+      "Furtif",
+      "Maladie (Fièvre du rongeur)",
+      "Mutation"
+    ],
+    "skills": [
+      "Projectiles (Entraves) 65"
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les chefs de meute du clan Moulder sont des dompteurs skavens impitoyables, passés maîtres dans l'art de manier leur fouet pour maintenir leurs bêtes de guerre sous contrôle.<br><br>Maître du fouet : les rats ogres ordinaires et briseurs d'os menés par un chef de meute ignorent les effets de leur Trait Stupide. Les rats-loups et les rats géants, eux, ignorent leur Trait Nerveux. De plus, les chefs de meute peuvent effectuer des attaques Projectiles (Entraves) au corps à corps sans risquer de toucher leurs alliés (à moins d'obtenir une Maladresse sur leur jet d'attaque).",
+    "source": {
+      "book": "ZI",
+      "page": 43
+    },
+    "appearance": {
+      "species": "Skaven"
+    }
+  },
+  {
+    "label": "Rat Ogre Briseur d'os",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 5,
+      "CC": 40,
+      "CT": 10,
+      "F": 75,
+      "E": 55,
+      "I": 35,
+      "Ag": 40,
+      "Dex": 20,
+      "Int": 10,
+      "FM": 20,
+      "Soc": 10,
+      "B": 76
+    },
+    "traits": [
+      "Armure 2",
+      "Foulée",
+      "Infecté",
+      "Insensible à la douleur",
+      "Stupide",
+      "Taille (Énorme)",
+      "Vision nocturne",
+      "Arme (Griffes renforcées de métal) +11"
+    ],
+    "optionals": [
+      "Corruption (Mineure)",
+      "Infravision",
+      "Maladie (Fièvre du rongeur)",
+      "Mutation",
+      "Parasité",
+      "Rage",
+      "Redoutable"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les rats ogres briseurs d'os sont des monstres rarissimes. Ils servent souvent de montures aux skavens puissants, qui les chevauchent grâce à des howdahs construits sur mesure qui ressemblent à des trônes.<br><br>JE SUIS INARRÊTABLE ! : tant qu'un skaven est monté sur un briseur d'os, il gagne le Trait Immunité Psychologique. Si un rat ogre briseur d'os meurt, quiconque le chevauchait gagne immédiatement 5 États Brisé, et tous les autres skavens dans un rayon de 10 mètres gagnent immédiatement 1 État Brisé.",
+    "source": {
+      "book": "ZI",
+      "page": 43
+    },
+    "appearance": {
+      "species": "Rat ogre"
+    }
+  },
+  {
+    "label": "Rat Loup",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 6,
+      "CC": 35,
+      "CT": null,
+      "F": 40,
+      "E": 35,
+      "I": 40,
+      "Ag": 35,
+      "Dex": null,
+      "Int": 15,
+      "FM": 15,
+      "Soc": null,
+      "B": 11
+    },
+    "traits": [
+      "Armure 1",
+      "Bestial",
+      "Dressé (Dompté, Garder, Guerre, Magie, Revenir à la maison)",
+      "Foulée",
+      "Nerveux",
+      "Pisteur",
+      "Vision nocturne",
+      "Arme (Crocs acérés) +8"
+    ],
+    "optionals": [
+      "Frénésie",
+      "Infecté",
+      "Parasité",
+      "Taille (Grande)"
+    ],
+    "skills": [
+      "Pistage 60 (+4 DR grâce à Pisteur)"
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les rats-loups sont des bêtes de meute créées par le clan Moulder à partir de rats géants façonnés par la chair-sorcellerie skaven. Dressés pour la garde, la chasse et la guerre, ils traquent inlassablement leurs proies.<br><br>Rat-zoirs : les crocs acérés d'un rat loup ont l'Atout Perforante.",
+    "source": {
+      "book": "ZI",
+      "page": 43
+    }
+  },
+  {
+    "label": "Expérience Unique du Clan Moulder",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 5,
+      "CC": 45,
+      "CT": null,
+      "F": 60,
+      "E": 55,
+      "I": 30,
+      "Ag": 30,
+      "Dex": 15,
+      "Int": 20,
+      "FM": 45,
+      "Soc": null,
+      "B": 80
+    },
+    "traits": [
+      "Armure 3",
+      "Corruption (Modérée)",
+      "Immunité Psychologique",
+      "Infecté",
+      "Infravision",
+      "Insensible à la douleur",
+      "Maladie (Fièvre du rongeur)",
+      "Redoutable 2",
+      "Régénération",
+      "Taille (Énorme)",
+      "Terreur 2",
+      "Arme (Griffes de la taille de faux) +13",
+      "Morsure (Bouches multiples) +10",
+      "Se cabrer"
+    ],
+    "optionals": [
+      "À sang-froid",
+      "Affamé",
+      "Constricteur",
+      "Foulée",
+      "Increvable",
+      "Magique",
+      "Maladie (Divers)",
+      "Morsure",
+      "Mutation",
+      "Parasité",
+      "Protection (7-9)",
+      "Rage",
+      "Résistance à la Magie (13)",
+      "Sang corrosif",
+      "Souffle (Poison) +9",
+      "Taille (Monstrueuse)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les plus grands accomplissements des arts pervers du clan Moulder sont tous des abominations uniques et innommables, des amas de chair, de griffes et de bouches multiples façonnés par la chair-sorcellerie skaven.<br><br>Au nom de Sigmar, quelle est cette CHOSE ? : tout Test de Calme effectué pour résister à la Terreur ou à la Peur que provoquent ces horreurs sur mesure est Complexe (-10).",
+    "source": {
+      "book": "ZI",
+      "page": 26
+    },
+    "appearance": {
+      "species": "Rat ogre"
+    }
+  },
+  {
+    "label": "Amibe",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 3,
+      "CC": 30,
+      "CT": null,
+      "F": 35,
+      "E": 50,
+      "I": 3,
+      "Ag": 22,
+      "Dex": 5,
+      "Int": null,
+      "FM": null,
+      "Soc": null,
+      "B": 16
+    },
+    "traits": [
+      "Amphibie",
+      "Insensible à la douleur",
+      "Limicole",
+      "Régénération",
+      "Arme (Fouet pseudopode) +6",
+      "Engloutir",
+      "2 x Tentacules +6"
+    ],
+    "optionals": [
+      "Taille (Petite, Grande-Énorme)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les amibes, surnommées « diables gluants », sont des créatures dénuées de squelette, dont l'aspect n'évoque rien d'autre qu'une sorte de gelée hostile. Leur existence se limite à consommer toute matière organique qu'elles parviennent à recouvrir, à l'aide de longs tentacules appelés « pseudopodes ». Leur surface exsude un acide digestif puissant. Elles craignent le feu.<br><br>Engloutir : une amibe peut engloutir n'importe quelle créature de sa taille ou plus petite. Une victime Engloutie souffre d'un nombre d'États Empêtré égal au Bonus de Force de l'amibe et subit au début de chaque Round des Blessures égales à ce même Bonus (ignorant Armure et Endurance), digérée par les acides.<br><br>Gelée de l'enfer : toute Blessure non causée par le feu, un froid extrême ou de la magie est divisée par deux. Une amibe ne peut être tuée de manière permanente que par le feu, le froid ou la magie.<br><br>Essentiellement décérébrée : les amibes n'ont aucun score d'Intelligence, de Force Mentale ou de Sociabilité ; elles disposent du Trait Immunité Psychologique, mais réagissent aux flammes comme si elles possédaient le Trait Effrayé (Feu).",
+    "source": {
+      "book": "ZI",
+      "page": 44
+    }
+  },
+  {
+    "label": "Jetsam - la Gelée Intelligente",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 3,
+      "CC": 40,
+      "CT": null,
+      "F": 35,
+      "E": 50,
+      "I": 23,
+      "Ag": 22,
+      "Dex": 10,
+      "Int": 30,
+      "FM": 40,
+      "Soc": 20,
+      "B": 34
+    },
+    "traits": [
+      "Amphibie",
+      "Effrayé (Feu)",
+      "Furtif",
+      "Insensible à la douleur",
+      "Limicole",
+      "Régénération",
+      "Taille (Grande)",
+      "Arme (Fouet pseudopode) +7",
+      "Engloutir",
+      "2 x Tentacules +7"
+    ],
+    "optionals": [],
+    "skills": [
+      "Calme 50",
+      "Discrétion (Urbaine) 37 (+2 DR grâce au Trait Furtif)",
+      "Évaluation 40",
+      "Intimidation 45",
+      "Intuition 33",
+      "Pari 35",
+      "Ragot 35",
+      "Signes secrets (Voleurs) 45"
+    ],
+    "talents": [
+      "Lire/Écrire",
+      "Numismate 2",
+      "Savoir-vivre (Criminels)",
+      "Sociable"
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Jetsam est une très grosse amibe intelligente et capable de communiquer, employée par un gang de rançonneurs d'Altdorf comme « calèche de résolution des problèmes » : les corps encombrants — et les personnes gênantes — disparaissent entièrement après une « discussion avec Jetsam ».<br><br>Engloutir : comme l'Amibe, mais Jetsam est suffisamment intelligente pour expulser une cible qu'elle ne souhaite pas dévorer.<br><br>Gelée de l'enfer : comme l'Amibe.",
+    "source": {
+      "book": "ZI",
+      "page": 45
+    }
+  },
+  {
+    "label": "Amphisbaena",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 4,
+      "CC": 50,
+      "CT": null,
+      "F": 45,
+      "E": 40,
+      "I": 35,
+      "Ag": 40,
+      "Dex": null,
+      "Int": 30,
+      "FM": 45,
+      "Soc": 10,
+      "B": 32
+    },
+    "traits": [
+      "Armure 2",
+      "À sang-froid",
+      "Foulée",
+      "Furtif",
+      "Infravision",
+      "Taille (Grande)",
+      "Arme (Crocs) +8",
+      "Morsure +8",
+      "Venin (Difficile)"
+    ],
+    "optionals": [
+      "Amphibie",
+      "Arboricole",
+      "Haine (Pieuvres des tourbières)",
+      "Limicole",
+      "Magique",
+      "Taille (Énorme)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "L'amphisbaena, surnommé le « Serpent des prophètes », est un énorme serpent à deux têtes, une à chaque extrémité de son corps, et toutes deux dotées de l'un des poisons les plus mortels connus des alchimistes. Ses yeux brillent comme des lampes dans l'obscurité, attirant les créatures imprudentes vers leur trépas. Dilué, son venin permettrait de produire des visions d'un passé caché et d'un avenir inconnu.<br><br>Surnombre à quatre : l'amphisbaena ne peut être Surpris et 4 adversaires sont nécessaires pour avoir la supériorité numérique sur lui. Une fois par Round de combat, l'amphisbaena peut inverser le résultat d'un Test de Combat dans lequel il est impliqué.",
+    "source": {
+      "book": "ZI",
+      "page": 46
+    },
+    "appearance": {
+      "species": "Serpent"
+    }
+  },
+  {
+    "label": "Troll des Rivières",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 6,
+      "CC": 40,
+      "CT": 15,
+      "F": 55,
+      "E": 55,
+      "I": 20,
+      "Ag": 15,
+      "Dex": 15,
+      "Int": 20,
+      "FM": 20,
+      "Soc": 5,
+      "B": null
+    },
+    "traits": [
+      "Amphibie",
+      "Armure 2",
+      "Increvable",
+      "Infecté",
+      "Limicole",
+      "Redoutable",
+      "Régénération",
+      "Stupide",
+      "Taille (Grande)",
+      "Vision nocturne",
+      "Arme (Merlin grossier) +9",
+      "Morsure +8",
+      "Vomissement +9"
+    ],
+    "optionals": [
+      "Affamé",
+      "Bestial",
+      "Endurant",
+      "Frénésie",
+      "Furtif",
+      "Insensible à la douleur"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les trolls des rivières arrachent en pleine nuit les voyageurs à leurs barges et les condamnent à un sort terrible. La couleur de leur peau varie du vert herbeux au bleu bilieux, mais tous empestent la végétation en décomposition, le poisson putride et la vase rance. Ils guérissent de presque n'importe quelle blessure à une rapidité stupéfiante, le feu étant la seule chose dont ils ne peuvent facilement guérir, et peuvent vomir le contenu acide de leur estomac à volonté.<br><br>Rempli de poisson et pire encore : un troll des rivières peut effectuer sa première attaque de Vomissement dans un combat sans dépenser d'Avantage.<br><br>Odeur de pourriture : toutes les cibles vivantes situées à un nombre de mètres inférieur ou égal au Bonus d'Endurance du troll subissent une pénalité de -10 à tous les Tests (non cumulable).",
+    "source": {
+      "book": "ZI",
+      "page": 48
+    },
+    "appearance": {
+      "species": "Troll"
+    }
+  },
+  {
+    "label": "Sorcière Troll des Rivières",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 5,
+      "CC": 50,
+      "CT": 35,
+      "F": 65,
+      "E": 65,
+      "I": 20,
+      "Ag": 15,
+      "Dex": 15,
+      "Int": 45,
+      "FM": 50,
+      "Soc": 10,
+      "B": 92
+    },
+    "traits": [
+      "Amphibie",
+      "Armure 3",
+      "Immunité Psychologique",
+      "Increvable",
+      "Infecté",
+      "Infravision",
+      "Insensible à la douleur",
+      "Lanceur de Sorts (Sorcellerie)",
+      "Limicole",
+      "Redoutable 2",
+      "Régénération",
+      "Taille (Énorme)",
+      "Arme (Bâton en bois mort) +10",
+      "Morsure +9",
+      "Vomissement +14"
+    ],
+    "optionals": [
+      "Affamé",
+      "Endurant",
+      "Lanceur de Sorts (Mort)"
+    ],
+    "skills": [
+      "Focalisation (Shyish) 80",
+      "Langage (Magick) 75"
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les sorcières trolls des rivières sont les matriarches malfaisantes, cruelles et dotées d'une intelligence inquiétante de leur espèce. Elles émergent des profondeurs des marais pour mener leurs semblables au combat, pratiquant des arts mystiques obscurs et maudissant leurs ennemis à coups d'invectives trolls effroyables. Elles dépassent largement leurs homologues masculins en taille.<br><br>Vomissement abondant : elle effectue sa première attaque de Vomissement dans un combat sans dépenser d'Avantage.<br><br>Odeur accablante : ceux qui sont exposés à cette puanteur pour la première fois doivent passer un Test de Force Mentale, sans quoi ils se voient infliger l'État Assommé.",
+    "source": {
+      "book": "ZI",
+      "page": 48
+    },
+    "appearance": {
+      "species": "Troll"
+    }
+  },
+  {
+    "label": "Sangsue Caméléon",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 3,
+      "CC": 28,
+      "CT": null,
+      "F": 25,
+      "E": 30,
+      "I": 30,
+      "Ag": 30,
+      "Dex": null,
+      "Int": 5,
+      "FM": 25,
+      "Soc": null,
+      "B": 8
+    },
+    "traits": [
+      "Amphibie",
+      "Bestial",
+      "Immunité Psychologique",
+      "Limicole",
+      "Taille (Petite)",
+      "Arme (Morsure de dents aiguisées) +5"
+    ],
+    "optionals": [],
+    "skills": [
+      "Discrétion (Rurale) 60"
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les sangsues caméléons ressemblent à de simples sangsues géantes parées de couleurs étranges. Dénuées d'yeux, ce sont des buveuses de sang qui attirent leurs proies grâce à leur extraordinaire capacité à créer des hallucinations captivantes reflétant les désirs profonds de leur cible. Leur morsure est indolore. Elles chassent en groupes de trois ou plus.<br><br>Nuage hallucinogène : une sangsue caméléon exsude un nuage affectant les mammifères à une distance en mètres inférieure ou égale à son Bonus d'Endurance. Toute créature exposée doit réussir un Test d'Endurance Difficile (-20), sans quoi elle est en proie à une vision puissante de quelqu'un ou quelque chose qu'elle aime et a perdu, et compte comme victime de l'État Inconscient pendant trois Rounds, plus un par DR manquant.<br><br>Morsure indolore : après avoir touché, une sangsue caméléon se colle à sa cible et aspire 1 Blessure en sang par Round (ignorant Armure et Endurance) jusqu'à 1d10 Blessures. La retirer par un Test opposé de Force inflige une Blessure supplémentaire et l'État Hémorragique.",
+    "source": {
+      "book": "ZI",
+      "page": 50
+    }
+  },
+  {
+    "label": "Le Déchiqueteur de Cadavres",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 6,
+      "CC": 65,
+      "CT": null,
+      "F": 60,
+      "E": 65,
+      "I": 15,
+      "Ag": 30,
+      "Dex": null,
+      "Int": 20,
+      "FM": 35,
+      "Soc": null,
+      "B": 84
+    },
+    "traits": [
+      "Armure 3",
+      "Bestial",
+      "Limicole",
+      "Perturbant (Écailles changeant de couleur)",
+      "Redoutable",
+      "Régénération",
+      "Taille (Énorme)",
+      "Territorial",
+      "Vision nocturne",
+      "Arme (Dents) +10",
+      "Constricteur",
+      "Morsure (Gueule cachée) +12"
+    ],
+    "optionals": [],
+    "skills": [
+      "Corps à corps (Dents) 75"
+    ],
+    "talents": [
+      "Charge Berserk 3"
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "Le déchiqueteur de cadavres de Carroburg est un énorme prédateur limicole aux écailles changeant de couleur, doté de plusieurs regards perçants et d'une gueule cachée qui jaillit pour broyer ses proies.<br><br>Sept regards perçants : le déchiqueteur de cadavres ne peut pas être en infériorité numérique ni Surpris.",
+    "source": {
+      "book": "ZI",
+      "page": 54
+    }
+  },
+  {
+    "label": "Pégase Noir",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 8,
+      "CC": 45,
+      "CT": null,
+      "F": 45,
+      "E": 40,
+      "I": 25,
+      "Ag": 40,
+      "Dex": null,
+      "Int": 15,
+      "FM": 25,
+      "Soc": null,
+      "B": 28
+    },
+    "traits": [
+      "Belliqueux",
+      "Bestial",
+      "Infravision",
+      "Taille (Grande)",
+      "Vol 120",
+      "Arme (Cornes en dents de scie) +8",
+      "Cornes +8"
+    ],
+    "optionals": [
+      "Dressé (Dompté, Guerre, Magie, Monture)",
+      "Mutation"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les pégases « déchus » ou « noirs » sont nés d'un programme d'élevage couronnien dévoyé visant à créer un pégase plus rapide en y mêlant une bête issue des Désolations du Chaos. Ce sont des pégases aux couleurs sombres, dotés de grandes ailes semblables à celles d'une chauve-souris et de cornes en dents de scie irrégulières. Chasseurs cruels et rusés, ils aiment tendre des embuscades dévastatrices aux ennemis imprudents ou affaiblis.<br><br>Attaque impitoyable : lors du Round où un pégase noir charge, toutes ses attaques ont les Atouts Empaleuse et Perforante.",
+    "source": {
+      "book": "ZI",
+      "page": 56
+    },
+    "appearance": {
+      "species": "Pégase"
+    }
+  },
+  {
+    "label": "Volée de Noctecorbes",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 2,
+      "CC": 55,
+      "CT": 20,
+      "F": 42,
+      "E": 45,
+      "I": 60,
+      "Ag": 24,
+      "Dex": null,
+      "Int": 14,
+      "FM": 38,
+      "Soc": 10,
+      "B": 75
+    },
+    "traits": [
+      "Effrayé (Lumière)",
+      "Infravision",
+      "Nuée*",
+      "Peur 2",
+      "Taille (Petite)",
+      "Vol 100",
+      "Arme (Serres) +8",
+      "Morsure (Becs vicieux) +6"
+    ],
+    "optionals": [
+      "Infecté",
+      "Instable",
+      "Magique"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les noctecorbes sont des rapaces déformés ressemblant davantage à des monstres qu'à des oiseaux, qui descendaient en volées rapides déchiqueter les imprudents, réduisant leurs victimes à l'état d'ossements en moins de trente secondes. Ils craignent la lumière et n'attaquent que lorsqu'aucune des lunes n'apparaît dans le ciel.<br><br>Meurtre ailé : toutes les attaques de la nuée de noctecorbes ont les Atouts Empaleuse et Perforante.",
+    "source": {
+      "book": "ZI",
+      "page": 59
+    }
+  },
+  {
+    "label": "Preyton",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 6,
+      "CC": 50,
+      "CT": null,
+      "F": 55,
+      "E": 50,
+      "I": 40,
+      "Ag": 35,
+      "Dex": null,
+      "Int": 15,
+      "FM": 45,
+      "Soc": null,
+      "B": 38
+    },
+    "traits": [
+      "Arboricole",
+      "Armure 2",
+      "Bestial",
+      "Corruption (Mineure)",
+      "Frénésie",
+      "Insensible à la douleur",
+      "Redoutable",
+      "Taille (Grande)",
+      "Vision nocturne",
+      "Vol 50",
+      "Arme (Crocs dentelés) +9",
+      "Cornes (Bois) +10"
+    ],
+    "optionals": [
+      "Mutation",
+      "Parasité"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Le preyton est une terreur légendaire de la Forêt d'Arden. Ses pattes avant et son corps évoquent un cerf difforme et couvert d'écailles, son arrière-train se termine par des griffes de lion, et sa tête équine arbore des ramures acérées, des yeux rouges furieux et une gueule garnie de crocs dentelés. Féroce et impitoyable, il tue pour le plaisir, laissant derrière lui des cadavres déchiquetés dont il ne se nourrit même pas.<br><br>Malveillance infinie : si un preyton tue ou neutralise un adversaire vivant, il doit réussir un Test de Force Mentale ou s'arrêter pour mettre en pièces son opposant, perdant sa prochaine Action et son prochain Mouvement. Un ennemi inconscient subit automatiquement une Blessure Critique. Les témoins se voient infliger Peur 2.",
+    "source": {
+      "book": "ZI",
+      "page": 60
+    }
+  },
+  {
+    "label": "Grand Aigle",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 2,
+      "CC": 65,
+      "CT": null,
+      "F": 55,
+      "E": 43,
+      "I": 35,
+      "Ag": 40,
+      "Dex": null,
+      "Int": 45,
+      "FM": 45,
+      "Soc": 25,
+      "B": 68
+    },
+    "traits": [
+      "Armure 1",
+      "Taille (Énorme)",
+      "Vision nocturne",
+      "Vol 120",
+      "Arme (Serres) +10",
+      "Morsure (Bec) +9"
+    ],
+    "optionals": [
+      "Rage",
+      "Régénération",
+      "Langue (Au choix) 50"
+    ],
+    "skills": [
+      "Perception 85"
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les grands aigles, les plus imposants rapaces du Vieux Monde, nichent dans les hauts sommets des Montagnes Grises. Ce sont d'immenses créatures dont l'envergure dépasse fréquemment les neuf mètres, capables d'une vitesse fulgurante. Leur vue est la plus perçante que l'on puisse trouver chez des créatures mortelles, et leurs serres, aussi longues qu'un bras d'homme, perforent aisément une armure. Espèce noble, ils vouent une détestation féroce aux peaux-vertes.<br><br>Éclair tombé d'un ciel clair : toutes les attaques du grand aigle ont les Atouts Rapide et Perforante.",
+    "source": {
+      "book": "ZI",
+      "page": 62
+    }
+  },
+  {
+    "label": "Faucon des Montagnes Grises",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 2,
+      "CC": 35,
+      "CT": null,
+      "F": 35,
+      "E": 40,
+      "I": 45,
+      "Ag": 50,
+      "Dex": null,
+      "Int": 20,
+      "FM": 55,
+      "Soc": null,
+      "B": 32
+    },
+    "traits": [
+      "Bestial",
+      "Taille (Grande)",
+      "Territorial",
+      "Vision nocturne",
+      "Vol 100",
+      "Arme (Serres) +7",
+      "Morsure (Bec) +6"
+    ],
+    "optionals": [
+      "Dressé (Dompté, Guerre, Magie, Monture)",
+      "Frénésie"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les faucons des Montagnes Grises atteignent de très grandes tailles, avec des envergures moyennes approchant les cinq ou six mètres. Les Bretonniens les tiennent en haute estime pour leur extraordinaire bravoure : ils attaquent fréquemment les hippogriffes qui osent pénétrer sur leur territoire, repoussant ces prédateurs bien plus imposants. On dit que certains elfes chevauchent les plus grands faucons au combat.",
+    "source": {
+      "book": "ZI",
+      "page": 62
+    }
+  },
+  {
+    "label": "Heomreth (Hibou Géant)",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 2,
+      "CC": 55,
+      "CT": null,
+      "F": 40,
+      "E": 45,
+      "I": 30,
+      "Ag": 45,
+      "Dex": null,
+      "Int": 50,
+      "FM": 45,
+      "Soc": 20,
+      "B": 64
+    },
+    "traits": [
+      "Arboricole",
+      "Armure 1",
+      "Furtif",
+      "Infravision",
+      "Taille (Énorme)",
+      "Vol 80",
+      "Arme (Serres) +9"
+    ],
+    "optionals": [
+      "Béni (Verena)",
+      "Miracles (Verena)",
+      "Peur",
+      "Protection 8+"
+    ],
+    "skills": [
+      "Discrétion (Rurale) 75 (+4 DR grâce à Furtif)",
+      "Langue (Elthárin) 60",
+      "Savoir (Au choix) 80"
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les heomreths, que l'on appellerait sans doute « hiboux géants », résident dans les profondeurs de la Laurelorn, au sein de bosquets aux arbres anciens. Ce sont des créatures anciennes, d'une grande sagesse et aux dons mystiques, mais bien souvent insondables.",
+    "source": {
+      "book": "ZI",
+      "page": 63
+    }
+  },
+  {
+    "label": "Cockatrice",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 5,
+      "CC": 40,
+      "CT": 52,
+      "F": 35,
+      "E": 45,
+      "I": 55,
+      "Ag": 35,
+      "Dex": null,
+      "Int": 20,
+      "FM": 25,
+      "Soc": null,
+      "B": 34
+    },
+    "traits": [
+      "Armure 2",
+      "Bestial",
+      "Endurant",
+      "Infravision",
+      "Redoutable",
+      "Taille (Grande)",
+      "Territorial",
+      "Vol 60",
+      "Arme (Serres) +7",
+      "Attaque caudale +7",
+      "Morsure (Bec muni de crocs) +7",
+      "Regard Pétrifiant"
+    ],
+    "optionals": [
+      "Effrayé (Belettes)",
+      "Infecté",
+      "Souffle (Corrosion) +9"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Difforme et repoussante, la cockatrice est une créature jadis « bénie » par les Puissances de la Ruine. Elle ressemble à un grand oiseau difforme, avec un bec à crocs dentelés, un corps couvert de plumes et de fourrure de manière inégale, et une queue de serpent terminée par des serres. Ceux qui croisent son regard maudit sont aussitôt transformés en pierre, c'est pourquoi les chevaliers qui la chassent portent des casques qui les rendent presque aveugles, se guidant au sifflement résonnant qu'elle émet au combat.<br><br>Griffes cruelles : les serres d'une cockatrice ont le Trait Venin (Difficile).",
+    "source": {
+      "book": "ZI",
+      "page": 64
+    }
+  },
+  {
+    "label": "Chimère",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 6,
+      "CC": 65,
+      "CT": 55,
+      "F": 63,
+      "E": 52,
+      "I": 50,
+      "Ag": 54,
+      "Dex": null,
+      "Int": 24,
+      "FM": 40,
+      "Soc": null,
+      "B": 80
+    },
+    "traits": [
+      "Armure 2",
+      "Bestial",
+      "Corruption (Mineure)",
+      "Magique",
+      "Rage",
+      "Redoutable 2",
+      "Taille (Énorme)",
+      "Terreur 1",
+      "Territorial",
+      "Vision nocturne",
+      "Vol 80",
+      "Arme (Griffes) +10",
+      "Morsure +10",
+      "Souffle (Feu) +12"
+    ],
+    "optionals": [
+      "Attaque caudale +10",
+      "Cornes +10",
+      "Dressé (Magie, Monture)",
+      "Furtif",
+      "Infecté",
+      "Langue préhensile +10",
+      "Mutation",
+      "Sang corrosif",
+      "Venin"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "La terrible chimère à trois têtes est un véritable monstre du Chaos, une créature difforme qui ne vit que pour tuer. Son corps est généralement semblable à celui d'un énorme chat difforme aux larges pattes griffues, surmonté de trois têtes distinctes — l'une léonine, une autre celle d'un grand rapace, la troisième celle d'un dragon — qui agissent de concert et peuvent traquer indépendamment plusieurs ennemis à la fois. Elle vole à l'aide de grandes ailes et possède une longue queue pouvant s'achever par une lame, un dard ou une quatrième tête.<br><br>Nous vous voyons : une chimère ne peut être ni Surprise, ni en infériorité numérique au combat.",
+    "source": {
+      "book": "ZI",
+      "page": 66
+    }
+  },
+  {
+    "label": "La Bête de l'Oblast",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 6,
+      "CC": 75,
+      "CT": 63,
+      "F": 71,
+      "E": 65,
+      "I": 42,
+      "Ag": 38,
+      "Dex": null,
+      "Int": 32,
+      "FM": 40,
+      "Soc": null,
+      "B": 92
+    },
+    "traits": [
+      "Armure 3",
+      "Bestial",
+      "Corruption (Mineure)",
+      "Magique",
+      "Pisteur",
+      "Rage",
+      "Redoutable 2",
+      "Taille (Énorme)",
+      "Terreur 1",
+      "Territorial",
+      "Vision nocturne",
+      "Vol 80",
+      "Arme (Griffes incurvées) +12",
+      "Morsure +12",
+      "Souffle (Froid) +14"
+    ],
+    "optionals": [],
+    "skills": [
+      "Corps à corps (Griffes incurvées) 95",
+      "Pistage 62 (+4 DR grâce au Trait Pisteur)"
+    ],
+    "talents": [
+      "Endurci 2",
+      "Impitoyable 2"
+    ],
+    "trappings": [],
+    "spells": [],
+    "desc": "La redoutée Bête de l'Oblast, une chimère qui dévaste régulièrement les terres de Kislev et traque ses proies pendant des jours, a un corps immense évoquant un ours au poil gris et hirsute, surmonté des têtes d'un grand faucon, d'un sanglier aux défenses massives et d'un dragon crachant de la glace.<br><br>Nous vous voyons : la bête de l'Oblast ne peut être ni Surprise, ni en infériorité numérique au combat.<br><br>Mâchoires broyantes : la morsure de la bête de l'Oblast possède les Atouts Taille et Perforante.",
+    "source": {
+      "book": "ZI",
+      "page": 67
+    }
+  },
+  {
+    "label": "Cultiste de la Lune Imprévisible",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 4,
+      "CC": 30,
+      "CT": 40,
+      "F": 40,
+      "E": 45,
+      "I": 30,
+      "Ag": 30,
+      "Dex": 40,
+      "Int": 35,
+      "FM": 40,
+      "Soc": 30,
+      "B": 20
+    },
+    "traits": [
+      "Armure 1",
+      "Corruption mentale (Bête intérieure)",
+      "À distance (Arc long) +10* (100)",
+      "Arme (Dague) +6"
+    ],
+    "optionals": [],
+    "skills": [
+      "Calme 50",
+      "Corps à corps (Base) 40",
+      "Discrétion (Rurale) 40",
+      "Emprise sur les animaux 50",
+      "Escalade 45",
+      "Intuition 40",
+      "Perception 40",
+      "Piégeage 50",
+      "Projectiles (Arc) 50",
+      "Ragot 40",
+      "Recherche 45",
+      "Résistance 55",
+      "Résistance à l'alcool 55",
+      "Savoir (Bêtes) 45",
+      "Savoir (Peaux-de-loup) 45",
+      "Signes secrets (Chasseur) 45",
+      "Survie en extérieur 45"
+    ],
+    "talents": [
+      "Dur à Cuire",
+      "Tir précis 2*"
+    ],
+    "trappings": [
+      "arc long avec des flèches à l'aspect sinistre",
+      "tatouage de Morrslieb"
+    ],
+    "spells": [],
+    "desc": "Les cultistes de la Lune Imprévisible se consacrent à « atteindre une sombre transcendance » grâce à des rites terribles qui transforment leurs adeptes en peaux-de-loup. Ils se cachent parmi les chasseurs et les rôdeurs des forêts, marqués d'un tatouage de Morrslieb et portant en eux la Bête intérieure.",
+    "source": {
+      "book": "ZI",
+      "page": 70
+    },
+    "appearance": {
+      "species": "Humain"
+    }
+  },
+  {
+    "label": "Peau-de-Loup",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 7,
+      "CC": 60,
+      "CT": null,
+      "F": 54,
+      "E": 58,
+      "I": 55,
+      "Ag": 48,
+      "Dex": 30,
+      "Int": 35,
+      "FM": 50,
+      "Soc": 30,
+      "B": 25
+    },
+    "traits": [
+      "Armure 1",
+      "Endurant",
+      "Foulée",
+      "Frénésie",
+      "Increvable",
+      "Magique",
+      "Peur 2",
+      "Pisteur",
+      "Redoutable",
+      "Régénération",
+      "Vision nocturne",
+      "Arme (Griffes) +10",
+      "Morsure +9"
+    ],
+    "optionals": [
+      "Affamé",
+      "Infecté",
+      "Mutation"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les peaux-de-loup sont des métamorphes déformés souillés par le Chaos, nés d'une terrible malédiction : des monstres déambulant sous une apparence humaine, jusqu'à ce que Morrslieb les fasse émerger de leur prison de chair. La bête qui se trouve à l'intérieur se libère alors à coups de griffes de sa forme humaine — une terrible créature-loup qui se tient debout et sème la dévastation, uniquement vêtue des lambeaux de son ancien corps. Lorsqu'elle a suffisamment massacré, l'humain à l'intérieur doit en sortir à coups de griffes et de morsures.<br><br>Rage infinie : un peau-de-loup est toujours dans un état de Frénésie.",
+    "source": {
+      "book": "ZI",
+      "page": 71
+    }
+  },
+  {
+    "label": "Grand Taurus",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 6,
+      "CC": 55,
+      "CT": 40,
+      "F": 63,
+      "E": 52,
+      "I": 32,
+      "Ag": 35,
+      "Dex": null,
+      "Int": 30,
+      "FM": 48,
+      "Soc": null,
+      "B": 80
+    },
+    "traits": [
+      "Bestial",
+      "Foulée",
+      "Immunité (Feu, Magie flamboyante)",
+      "Infravision",
+      "Magique",
+      "Redoutable",
+      "Taille (Énorme)",
+      "Territorial",
+      "Vol 80",
+      "Arme (Sabots ardents) +11",
+      "Cornes +11",
+      "Souffle (Feu) +10"
+    ],
+    "optionals": [
+      "Armure 3",
+      "Dressé (Monture)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les grands taurus sont des créatures de feu et de rage natives des Terres Sombres. Ils ressemblent à d'énormes taureaux ailés dont la peau rouge profond brûle en permanence de la chaleur d'une gigantesque forge, leur apparence voilée par un nuage tourbillonnant de fumée. Leur gueule bardée de crocs ne laisse pas échapper un souffle, mais des flammes, et leurs sabots ardents laissent des traces calcinées sur la terre. Ce sont des êtres d'Aqshy, le Vent de Feu.<br><br>Corps de flammes : à la fin de chaque Round de combat, toutes les cibles Engagées avec un grand taurus subissent 1d10 Blessures (réductibles par le Bonus d'Endurance et les Points d'Armure, minimum 1). De plus, le Bonus d'Endurance d'un grand taurus est doublé contre les attaques et les armes non magiques.<br><br>Rage sanguinaire : les grands taurus sont toujours sujets à la Frénésie et à la Haine d'absolument tout.",
+    "source": {
+      "book": "ZI",
+      "page": 74
+    },
+    "appearance": {
+      "species": "Minotaure"
+    }
+  },
+  {
+    "label": "Trégara",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 6,
+      "CC": 38,
+      "CT": null,
+      "F": 45,
+      "E": 42,
+      "I": 47,
+      "Ag": 38,
+      "Dex": 15,
+      "Int": 18,
+      "FM": 32,
+      "Soc": 10,
+      "B": 30
+    },
+    "traits": [
+      "Armure 3",
+      "Furtif",
+      "Grimpant",
+      "Taille (Grande)",
+      "Territorial",
+      "Arme (Pinces antérieures) +8",
+      "Morsure (Mandibules acérées) +9"
+    ],
+    "optionals": [
+      "Insensible à la douleur",
+      "Sang corrosif"
+    ],
+    "skills": [
+      "Discrétion (Souterrains) 68 (+3 DR grâce au Trait Furtif)"
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les trégaras sont les plus gros insectes connus, ressemblant à un croisement entre une mante religieuse et un énorme bernard-l'ermite, avec un goût prononcé pour la viande de skaven. Leur carapace couleur pierre imite le plafond des cavernes où ils vivent, les rendant pratiquement indétectables, et ils ne dégagent aucune odeur. Dépourvus d'yeux, ils localisent leurs proies par les vibrations de la pierre, les attrapent de leurs pinces antérieures et les achèvent de leurs mâchoires phénoménales.<br><br>Pinces antérieures : si un trégara touche une cible avec ses pinces, celle-ci gagne automatiquement un État Empêtré, et le trégara peut entamer une Empoignade. Un trégara ne peut pas Empêtrer plus de deux adversaires à la fois.<br><br>Sens des vibrations : les trégaras détectent automatiquement toutes les créatures physiques dans un rayon de 4 x leur Bonus d'Initiative en mètres, et ne peuvent pas être Surpris.<br><br>Mandibules acérées : la morsure d'un trégara a les Atouts Empaleuse et Perforante.",
+    "source": {
+      "book": "ZI",
+      "page": 76
+    }
+  },
+  {
+    "label": "Macareux à Bec Tranchant",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 2,
+      "CC": 38,
+      "CT": null,
+      "F": 22,
+      "E": 34,
+      "I": 30,
+      "Ag": 24,
+      "Dex": null,
+      "Int": 10,
+      "FM": 24,
+      "Soc": null,
+      "B": 11
+    },
+    "traits": [
+      "Bestial",
+      "Endurant",
+      "Nerveux",
+      "Taille (Petite)",
+      "Vision nocturne",
+      "Vol 90",
+      "Arme (Bec crochu) +7"
+    ],
+    "optionals": [
+      "Affamé",
+      "Infecté",
+      "Nuée (Volée de rasoirs)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les macareux à bec tranchant sont d'énormes rapaces côtiers omnivores armés de becs crochus incroyablement tranchants, nichant par milliers dans les falaises de la Baie des Larmes. Un macareux isolé fuit dès qu'on lui tient tête, mais ils n'attaquent jamais seuls : en volées de dix à vingt, ils ne craignent plus rien et peuvent déchiqueter une bande de mercenaires ogres en moins d'une minute.<br><br>Volée de rasoirs : une volée de macareux a le Trait Nuée (Immunité Psychologique, Capacité de Combat 48, 55 Blessures). Tout adversaire Engagé perd automatiquement 1 Blessure (ignorant Endurance et PA) à la fin de chaque Round. Si un macareux inflige au moins 1 Dégât, la cible doit réussir un Test de Résistance Accessible (+20) ou gagner un État Hémorragique.",
+    "source": {
+      "book": "ZI",
+      "page": 77
+    }
+  },
+  {
+    "label": "Ver des Marais",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 3,
+      "CC": 50,
+      "CT": null,
+      "F": 60,
+      "E": 55,
+      "I": 10,
+      "Ag": 30,
+      "Dex": null,
+      "Int": 30,
+      "FM": 45,
+      "Soc": null,
+      "B": 80
+    },
+    "traits": [
+      "À sang-froid",
+      "Armure 2",
+      "Bestial",
+      "Furtif",
+      "Infravision",
+      "Limicole",
+      "Taille (Énorme)",
+      "Arme (Enroulement écrasant) +10",
+      "Constricteur"
+    ],
+    "optionals": [
+      "Insensible à la douleur",
+      "Taille (Monstrueuse)",
+      "4 x Tentacules +10",
+      "Terreur 1"
+    ],
+    "skills": [
+      "Discrétion (Rural) 50 (+3 DR grâce à Furtif)"
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Le ver des marais est le plus puissant des serpents du Vieux Monde, une créature immense dont les plus petits spécimens atteignent trois bons mètres à l'âge adulte ; de vieilles histoires en évoquent atteignant trente mètres ou plus. Présents uniquement dans les sols marécageux, leurs écailles aux pointillés bruns ou verts leur permettent de se fondre dans la végétation. Certaines légendes obscures les associent à la Foi antique.<br><br>Enroulements infinis : le ver des marais est extrêmement long et capable d'empoigner simultanément jusqu'à cinq cibles de Tailles inférieures.",
+    "source": {
+      "book": "ZI",
+      "page": 52
+    },
+    "appearance": {
+      "species": "Serpent"
+    }
+  },
+  {
+    "label": "Stégadon",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 6,
+      "CC": 55,
+      "CT": null,
+      "F": 63,
+      "E": 82,
+      "I": 15,
+      "Ag": 15,
+      "Dex": null,
+      "Int": 28,
+      "FM": 65,
+      "Soc": 10,
+      "B": 112
+    },
+    "traits": [
+      "À sang-froid",
+      "Armure 6",
+      "Immunité Psychologique",
+      "Insensible à la douleur",
+      "Limicole",
+      "Redoutable",
+      "Taille (Énorme)",
+      "Vision nocturne",
+      "Arme (Poids super-lourd) +12",
+      "Attaque caudale +11",
+      "Cornes +12",
+      "Morsure +10",
+      "Se cabrer +6"
+    ],
+    "optionals": [
+      "Dressé (Garder, Guerre, Monture)",
+      "Endurant",
+      "Taille (Monstrueuse)",
+      "Territorial"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les stégadons sont des reptiles gargantuesques des Terres du Sud et de la Lustrie, qui font trembler la terre sous leurs pas et peuvent réduire les arbres les plus gigantesques en copeaux d'une seule charge. Ils adorent manger des feuilles, mais mangent de tout, et en quantité monumentale.<br><br>Charge irrésistible : un stégadon gagne +3 Avantages lorsqu'il Charge.",
+    "source": {
+      "book": "ZI",
+      "page": 80
+    }
+  },
+  {
+    "label": "Cornu",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 7,
+      "CC": 42,
+      "CT": null,
+      "F": 42,
+      "E": 45,
+      "I": 25,
+      "Ag": 30,
+      "Dex": null,
+      "Int": 15,
+      "FM": 35,
+      "Soc": null,
+      "B": 30
+    },
+    "traits": [
+      "À sang-froid",
+      "Armure 2",
+      "Bestial",
+      "Foulée",
+      "Taille (Grande)",
+      "Territorial",
+      "Cornes +9",
+      "Morsure +8"
+    ],
+    "optionals": [
+      "Arboricole",
+      "Belliqueux",
+      "Dressé (Dompté, Garder, Guerre, Monture)",
+      "Furtif",
+      "Limicole",
+      "Stupide"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Le cornu est un lézard saurien des Terres du Sud, plus petit qu'un carnosaure mais tout aussi dangereux : rapide et mortel, doté de dents acérées et, bizarrement, de cornes pointues. Il chasse habituellement en meute.",
+    "source": {
+      "book": "ZI",
+      "page": 81
+    }
+  },
+  {
+    "label": "Carnosaure",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 7,
+      "CC": 65,
+      "CT": null,
+      "F": 75,
+      "E": 55,
+      "I": 20,
+      "Ag": 20,
+      "Dex": null,
+      "Int": 25,
+      "FM": 55,
+      "Soc": null,
+      "B": 88
+    },
+    "traits": [
+      "À sang-froid",
+      "Armure 4",
+      "Belliqueux",
+      "Bestial",
+      "Foulée",
+      "Redoutable 2",
+      "Taille (Énorme)",
+      "Vision nocturne",
+      "Attaque caudale +11",
+      "Morsure +13"
+    ],
+    "optionals": [
+      "Arboricole",
+      "Champion",
+      "Dressé (Garder, Guerre, Monture)",
+      "Endurant",
+      "Insensible à la douleur",
+      "Pisteur",
+      "Taille (Monstrueuse)"
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Le carnosaure, le « lézard du tonnerre », est la plus fabuleuse des créatures de la Lustrie et des Terres du Sud : un énorme reptile bipède d'au moins cinq mètres de haut, au corps tout entier bâti pour la vitesse, dont la mâchoire aux dents monstrueuses pourrait couper un ogre en deux.<br><br>Frénésie sanguinaire : une fois qu'un carnosaure a infligé une Blessure en combat, il entre immédiatement en Frénésie jusqu'à ce que tous les ennemis qu'il peut percevoir soient morts.",
+    "source": {
+      "book": "ZI",
+      "page": 78
+    }
+  },
+  {
+    "label": "Chat Sauvage",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 6,
+      "CC": 41,
+      "CT": null,
+      "F": 43,
+      "E": 32,
+      "I": 45,
+      "Ag": 55,
+      "Dex": null,
+      "Int": 10,
+      "FM": 44,
+      "Soc": null,
+      "B": 14
+    },
+    "traits": [
+      "Arboricole",
+      "Bestial",
+      "Déstabilisant",
+      "Foulée",
+      "Nerveux",
+      "Pisteur",
+      "Vision nocturne",
+      "Arme (Griffes) +7",
+      "Morsure +6"
+    ],
+    "optionals": [
+      "Dressé (Dompté)",
+      "Infecté",
+      "Magique",
+      "Mutation",
+      "Parasité",
+      "Protection 9+"
+    ],
+    "skills": [
+      "Discrétion (Rurale) 75 (+5 DR grâce à Arboricole)"
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les grands chats sauvages tiléens sont des chasseurs rapides et mortels à la fourrure épaisse et multicolore, ornée de rosaces ou de rayures. Ils se servent de leur longue queue annelée pour effacer leurs empreintes, ne laissant presque aucune trace, et ne miaulent que lorsque leur proie est morte. Très prisés des « gladiatore » de la Casa di Ruggisce.<br><br>Déstabilisant : en présence d'une créature Déstabilisante, une créature Instable compte ses Avantages à la fin de chaque Round comme si elle en avait deux de moins.",
+    "source": {
+      "book": "ZI",
+      "page": 82
+    }
+  },
+  {
+    "label": "Lion de Guerre de Chrace",
+    "title": null,
+    "folder": "Zoo Impérial",
+    "char": {
+      "M": 8,
+      "CC": 55,
+      "CT": null,
+      "F": 52,
+      "E": 48,
+      "I": 38,
+      "Ag": 42,
+      "Dex": null,
+      "Int": 35,
+      "FM": 50,
+      "Soc": 30,
+      "B": 36
+    },
+    "traits": [
+      "Armure 2",
+      "Foulée",
+      "Furtif",
+      "Pisteur",
+      "Rage",
+      "Redoutable 2",
+      "Taille (Grande)",
+      "Vision nocturne",
+      "Arme (Griffes) +10",
+      "Morsure +9"
+    ],
+    "optionals": [
+      "Champion",
+      "Endurant",
+      "Insensible à la douleur",
+      "Magique"
+    ],
+    "skills": [
+      "Corps à corps (Griffes) 65",
+      "Discrétion (Rurale) 62 (+4 DR grâce à Furtif)"
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les lions de guerre de la distante Chrace sont des créatures splendides, assez grandes pour atteindre l'épaule d'un homme et parcourir trois mètres d'un seul bond. Leur crinière brille tel un feu d'argent flottant, même sans vent, et leurs griffes, telles des dagues, déchirent une armure de plaques comme du papier. Les sorcières elfes en font parfois leurs familiers.<br><br>Don de Rahagra : les armes naturelles des lions de guerre de Chrace ont les Atouts Perforante et Rapide.",
+    "source": {
+      "book": "ZI",
+      "page": 97
+    }
   }
 ]

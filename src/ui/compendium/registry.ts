@@ -194,7 +194,7 @@ export const CODEX: CodexCategory[] = [
   {
     key: 'spells', label: 'Sorts', group: 'Magie',
     items: spells.map((s) => ({
-      label: s.label, sub: join(s.type, s.subType), desc: s.desc, source: src(s.source),
+      label: s.label, sub: join(s.type, s.subType), desc: s.desc, html: true, source: src(s.source),
       meta: facts(fact('NI', s.cn), fact('Portée', s.range), fact('Cible', s.target), fact('Durée', s.duration)),
     })),
   },
@@ -211,7 +211,7 @@ export const CODEX: CodexCategory[] = [
   {
     key: 'creatures', label: 'Créatures', group: 'Monde',
     items: creatures.map((c) => ({
-      label: c.label, sub: c.title ?? undefined, group: c.folder ?? undefined, desc: c.desc ?? undefined, source: src(c.source),
+      label: c.label, sub: c.title ?? undefined, group: c.folder ?? undefined, desc: c.desc ?? undefined, html: true, source: src(c.source),
       sections: sections(
         { title: 'Caractéristiques', layout: 'grid', rows: kvRows(Object.entries(c.char)) },
         chips('Traits', 'traits', c.traits),
@@ -225,7 +225,7 @@ export const CODEX: CodexCategory[] = [
   },
   {
     key: 'traits', label: 'Traits', group: 'Monde',
-    items: traits.map((t) => ({ label: t.label, sub: t.prefix ?? undefined, desc: t.desc, source: src(t.source) })),
+    items: traits.map((t) => ({ label: t.label, sub: t.prefix ?? undefined, desc: t.desc, html: true, source: src(t.source) })),
   },
   {
     key: 'locations', label: 'Lieux', group: 'Monde',

@@ -3526,5 +3526,47 @@
       "book": "LDB",
       "page": 228
     }
+  },
+  {
+    "label": "Bon Baiser d'la Fosse Noire",
+    "type": "Invocation",
+    "subType": "Déesse-Araignée",
+    "cn": null,
+    "range": "(Sociabilité) mètres",
+    "target": "Zone d'Effet",
+    "duration": "Instantanée",
+    "desc": "Le chamane prie la Déesse-araignée de frapper les ennemis de sa tribu d'une explosion de venin. Une masse bilieuse et verdâtre de poison bouillonnant vient frapper un point à portée et dans le champ de vision du chamane. Tout ce qui se trouve à (Bonus de Sociabilité) mètres du point ciblé est aspergé de poison mystique, reçoit 1d10 + DR Dégâts qui ignorent les Points d'Armure et subit un État Empoisonné.",
+    "source": {
+      "book": "ZI",
+      "page": 10
+    }
+  },
+  {
+    "label": "Nuée d'Escampette",
+    "type": "Invocation",
+    "subType": "Déesse-Araignée",
+    "cn": null,
+    "range": "(Bonus de Sociabilité) mètres",
+    "target": "Vous",
+    "duration": "(Bonus de Sociabilité) Rounds",
+    "desc": "D'un claquement de doigts, le chamane invoque une nuée d'araignées minuscules. Celles-ci sortent de sa robe souillée et se ruent sur ses ennemis pour les mordre pendant leur course. Toute créature qui se trouve dans la Zone d'Effet subit 1 Blessure qui ignore le Bonus d'Endurance et les PA. Chaque tranche de 2 DR ajoute 1 Blessure supplémentaire. Tout le long de la prière, toute créature qui se trouve dans la Zone d'Effet subit un malus de -10 à tous ses Tests : le déferlement d'araignées mystiques qui courent sur sa peau l'empêche de se concentrer.",
+    "source": {
+      "book": "ZI",
+      "page": 10
+    }
+  },
+  {
+    "label": "Toile surprise",
+    "type": "Invocation",
+    "subType": "Déesse-Araignée",
+    "cn": null,
+    "range": "Voir texte",
+    "target": "Zone d'Effet",
+    "duration": "Voir texte",
+    "desc": "Fonctionne exactement de la même manière que le Miracle de Taal Enchevêtrement, si ce n'est qu'il prend la forme de masses de toile d'araignée argentée.",
+    "source": {
+      "book": "ZI",
+      "page": 10
+    }
   }
 ]

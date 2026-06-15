@@ -28,5 +28,25 @@
       "book": "frenchy.bzh",
       "page": 560
     }
+  },
+  {
+    "label": "Redoutable",
+    "prefix": null,
+    "suffix": null,
+    "desc": "Cette créature est particulièrement dangereuse, si bien qu'il est presque impossible de réellement prendre le dessus sur elle. Si, au début de son tour, la créature n'a pas autant d'Avantages que son Indice de Redoutable le voudrait (par défaut, 1), elle gagne immédiatement tous les Avantages qui lui manquent. Si la créature est sous l'effet d'un État Empêtré, Inconscient ou Surpris, elle ne gagne pas d'Avantage.",
+    "source": {
+      "book": "ZI",
+      "page": 11
+    }
+  },
+  {
+    "label": "Fouissement",
+    "prefix": null,
+    "suffix": null,
+    "desc": "Cette créature peut se déplacer en creusant un tunnel dans la terre ou la pierre à une vitesse inimaginable. Pour se déplacer, elle peut creuser dans le sol sur une distance en mètres égale à son Indice. Lorsqu'elle fouit, elle ignore tout obstacle, personnage ou terrain difficile sur son passage. À la fin de son déplacement, elle peut choisir de sortir de terre ou de rester enfouie. Elle peut se servir de ce mode de déplacement pour Charger. Si elle commence son tour sous terre, elle doit se déplacer par fouissement.<br><br>Pour attaquer une cible enfouie, calculez la distance au sol comme d'habitude, mais augmentez la Portée de 2 niveaux. Ainsi, un tir à Portée Moyenne passerait à Portée Extrême, tandis qu'un tir à Portée Longue ou Extrême serait impossible.",
+    "source": {
+      "book": "ZI",
+      "page": 13
+    }
   }
 ]
