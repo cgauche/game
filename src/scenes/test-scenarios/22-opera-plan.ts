@@ -16,10 +16,9 @@ import type { TestScenario } from './_shared';
  * Repère du plan (cf. floorplan.ts) : y croissant = du FOND (scène, y bas) vers le FOYER (façade, y haut) ;
  * axe de symétrie x=21.5. Le public regarde la scène, vers le HAUT (y bas). Caméra par défaut : rot 0.
  *
- * NOTE d'orientation des sièges : le prop `rangee-sieges` est un sprite FIXE (le champ `facing` n'a
- * AUCUN effet visuel sur les props — seuls les bâtiments l'utilisent ; cf. IsoStage). On renseigne
- * `facing:'N'` comme INTENTION d'auteur (les fauteuils regardent la scène, au Nord = y bas) ; au rendu,
- * le sprite montre toujours l'avant des fauteuils côté caméra. Vérifié au rendu (scripts/qc/render-opera-furnished.mts).
+ * ORIENTATION des sièges : `facing:'N'` = fauteuils tournés vers la SCÈNE (Nord, y bas). Le prop directionnel
+ * PIVOTE avec la caméra (helper `project`, cf. rangee-sieges) — vu de dos depuis le foyer, de face quand la
+ * caméra fait demi-tour. Étages CO-VISIBLES : parterre (z=0) et loges (z=1) rendus dans le même regard.
  */
 
 const ents: SceneEntity[] = [
@@ -161,6 +160,62 @@ const ents: SceneEntity[] = [
   { id: 'royale-ft-d', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 22, y: 1 }, z: 1 },
   { id: 'royale-app-g', kind: 'prop', ref: 'applique-murale', pos: { x: 18, y: 1 }, z: 1 },
   { id: 'royale-app-d', kind: 'prop', ref: 'applique-murale', pos: { x: 24, y: 1 }, z: 1 },
+
+  // ───────────── FOYER (z=0, Salon 7, marbre y=42..55) : grand hall d'accueil — statues d'honneur,
+  //   urnes & candélabres, plantes, appliques aux murs, et deux lustres suspendus (z=1 = vide ici → flottent).
+  { id: 'foy-statue-g', kind: 'prop', ref: 'statue', pos: { x: 9, y: 43 } },
+  { id: 'foy-statue-d', kind: 'prop', ref: 'statue', pos: { x: 34, y: 43 } },
+  { id: 'foy-urne-g', kind: 'prop', ref: 'urne', pos: { x: 10, y: 54 } },
+  { id: 'foy-urne-d', kind: 'prop', ref: 'urne', pos: { x: 33, y: 54 } },
+  { id: 'foy-cand-g', kind: 'prop', ref: 'chandelier', pos: { x: 11, y: 48 } },
+  { id: 'foy-cand-d', kind: 'prop', ref: 'chandelier', pos: { x: 32, y: 48 } },
+  { id: 'foy-plante-5', kind: 'prop', ref: 'plante-pot', pos: { x: 8, y: 50 } },
+  { id: 'foy-plante-6', kind: 'prop', ref: 'plante-pot', pos: { x: 35, y: 50 } },
+  { id: 'foy-plante-7', kind: 'prop', ref: 'plante-pot', pos: { x: 18, y: 54 } },
+  { id: 'foy-plante-8', kind: 'prop', ref: 'plante-pot', pos: { x: 25, y: 54 } },
+  { id: 'foy-app-g1', kind: 'prop', ref: 'applique-murale', pos: { x: 2, y: 46 } },
+  { id: 'foy-app-d1', kind: 'prop', ref: 'applique-murale', pos: { x: 41, y: 46 } },
+  { id: 'foy-app-g2', kind: 'prop', ref: 'applique-murale', pos: { x: 2, y: 50 } },
+  { id: 'foy-app-d2', kind: 'prop', ref: 'applique-murale', pos: { x: 41, y: 50 } },
+  { id: 'foy-lustre-g', kind: 'prop', ref: 'lustre-opera', pos: { x: 14, y: 51 }, z: 1 },
+  { id: 'foy-lustre-d', kind: 'prop', ref: 'lustre-opera', pos: { x: 29, y: 51 }, z: 1 },
+
+  // ───────────── COULISSES (16, z=0, y=1..2 derrière la scène) + SALLE VERTE (14) / STOCKAGE DÉCORS (20)
+  //   de part et d'autre de la scène : mannequins de costume, caisses, racks d'accessoires, charrette.
+  { id: 'cl-mann-1', kind: 'prop', ref: 'mannequin', pos: { x: 15, y: 1 } },
+  { id: 'cl-caisse-1', kind: 'prop', ref: 'caisse', pos: { x: 18, y: 1 } },
+  { id: 'cl-rack-1', kind: 'prop', ref: 'rack-armes', pos: { x: 26, y: 1 } },
+  { id: 'cl-mann-2', kind: 'prop', ref: 'mannequin', pos: { x: 29, y: 1 } },
+  { id: 'sv-caisse', kind: 'prop', ref: 'caisse', pos: { x: 4, y: 5 } },
+  { id: 'sv-tonneaux', kind: 'prop', ref: 'tonneaux-pile', pos: { x: 7, y: 6 } },
+  { id: 'sv-etagere', kind: 'prop', ref: 'etagere', pos: { x: 10, y: 4 } },
+  { id: 'sd-caisse', kind: 'prop', ref: 'caisse', pos: { x: 34, y: 5 } },
+  { id: 'sd-charrette', kind: 'prop', ref: 'charrette', pos: { x: 37, y: 6 } },
+  { id: 'sd-mann', kind: 'prop', ref: 'mannequin', pos: { x: 39, y: 4 } },
+
+  // ───────────── SALLES LATÉRALES (z=0, le long des flancs y=11..40 : vestiaires, bureaux, costumiers,
+  //   charpenterie, réserves) — étagères, coffres, mannequins, caisses, piles de tonneaux. x=3..4 / 39..40.
+  { id: 'sl-g-13', kind: 'prop', ref: 'etagere', pos: { x: 3, y: 13 } },
+  { id: 'sl-g-18', kind: 'prop', ref: 'coffre', pos: { x: 3, y: 18 } },
+  { id: 'sl-g-23', kind: 'prop', ref: 'mannequin', pos: { x: 3, y: 23 } },
+  { id: 'sl-g-29', kind: 'prop', ref: 'caisse', pos: { x: 3, y: 29 } },
+  { id: 'sl-g-35', kind: 'prop', ref: 'tonneaux-pile', pos: { x: 4, y: 35 } },
+  { id: 'sl-d-13', kind: 'prop', ref: 'rack-lances', pos: { x: 40, y: 13 } },
+  { id: 'sl-d-18', kind: 'prop', ref: 'etagere', pos: { x: 40, y: 18 } },
+  { id: 'sl-d-23', kind: 'prop', ref: 'mannequin', pos: { x: 40, y: 23 } },
+  { id: 'sl-d-29', kind: 'prop', ref: 'caisse', pos: { x: 40, y: 29 } },
+  { id: 'sl-d-35', kind: 'prop', ref: 'tonneaux-pile', pos: { x: 39, y: 35 } },
+
+  // ───────────── GALERIE (35/37, z=1, y=42..47 au-dessus du foyer) + BARS DES BALCONS (36/38) :
+  //   plantes, étagères à bouteilles + tonneaux (comptoir de bar), appliques.
+  { id: 'gal-plante-g', kind: 'prop', ref: 'plante-pot', pos: { x: 6, y: 44 }, z: 1 },
+  { id: 'gal-plante-d', kind: 'prop', ref: 'plante-pot', pos: { x: 37, y: 44 }, z: 1 },
+  { id: 'gal-bar-g', kind: 'prop', ref: 'etagere', pos: { x: 4, y: 46 }, z: 1 },
+  { id: 'gal-bar-d', kind: 'prop', ref: 'etagere', pos: { x: 39, y: 46 }, z: 1 },
+  { id: 'gal-tonneau-g', kind: 'prop', ref: 'tonneau', pos: { x: 6, y: 46 }, z: 1 },
+  { id: 'gal-tonneau-d', kind: 'prop', ref: 'tonneau', pos: { x: 37, y: 46 }, z: 1 },
+  { id: 'gal-app-g', kind: 'prop', ref: 'applique-murale', pos: { x: 2, y: 43 }, z: 1 },
+  { id: 'gal-app-d', kind: 'prop', ref: 'applique-murale', pos: { x: 41, y: 43 }, z: 1 },
 ];
 
 export const scenarioEntities = ents;
