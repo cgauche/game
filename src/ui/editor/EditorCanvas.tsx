@@ -19,7 +19,7 @@ import { ViewControls } from '../ViewControls';
 import type { useEditorView } from './useEditorView';
 import {
   Tool, Layers, Sel, Rect, Pt, rectFrom, hitAt, selRect, moveSel, resizeSel, paintTiles, fillTerrainRect,
-  placeEntity, placeEntry, addTrigger, addRestZone, addEffectZone, effectZoneRect, addBuilding, addEnemyMember, eraseAt, sameSel,
+  placeEntity, placeEntry, addTrigger, addRestZone, addEffectZone, effectZoneRect, addBuilding, addEnemyMember, addStair, eraseAt, sameSel,
 } from './editorState';
 
 export function EditorCanvas({
@@ -134,6 +134,9 @@ export function EditorCanvas({
         onSelect({ type: 'entity', id: out.entityId }); // sélectionne l'ennemi posé (édition immédiate)
         return;
       }
+      case 'stair':
+        setScene(addStair(scene, p, currentLevel)); // relie cette case à la même case de l'étage au-dessus
+        return;
       case 'erase':
         setPainting(true);
         setScene(eraseAt(scene, p));

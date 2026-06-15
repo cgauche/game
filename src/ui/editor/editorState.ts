@@ -23,6 +23,7 @@ export type Tool =
   | { mode: 'zone'; zone: 'trigger' | 'rest' | 'effect' }
   | { mode: 'entry' }
   | { mode: 'encounter' }
+  | { mode: 'stair' }
   | { mode: 'erase' };
 
 /** Calques masquables du canvas (masquer débloque le clic sur ce qu'il y a dessous). */
@@ -223,6 +224,15 @@ export function addLevel(scene: Scene, z: number): Scene {
   if (scene.levels.some((l) => l.z === z)) return scene;
   const tiles = new Array(scene.dimensions.w * scene.dimensions.h).fill('vide') as Terrain[];
   return { ...scene, levels: [...scene.levels, { z, tiles }].sort((a, b) => a.z - b.z) };
+}
+
+/** Pose un escalier (franchissement vertical) reliant la case `p` de l'étage `z` à la même case de
+ *  l'étage AU-DESSUS (z+1). No-op si ce niveau n'existe pas ou si l'escalier est déjà présent. */
+export function addStair(scene: Scene, p: Pt, z: number): Scene {
+  if (!scene.levels.some((l) => l.z === z + 1)) return scene;
+  const from = { x: p.x, y: p.y, z }, to = { x: p.x, y: p.y, z: z + 1 };
+  if ((scene.stairs ?? []).some((s) => s.from.x === from.x && s.from.y === from.y && s.from.z === z && s.to.z === to.z)) return scene;
+  return { ...scene, stairs: [...(scene.stairs ?? []), { from, to }] };
 }
 
 /** Retire l'étage `z`. Le SOL (z=0) et le dernier étage sont protégés (jamais de scène sans niveau). */

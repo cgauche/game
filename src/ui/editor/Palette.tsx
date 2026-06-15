@@ -15,7 +15,7 @@ import type { Tool } from './editorState';
 
 const TERRAIN_IDS = Object.keys(TERRAINS);
 
-type Family = 'select' | 'tile' | 'personnage' | 'prop' | 'heroStart' | 'building' | 'zone' | 'entry' | 'encounter' | 'erase';
+type Family = 'select' | 'tile' | 'personnage' | 'prop' | 'heroStart' | 'building' | 'zone' | 'entry' | 'encounter' | 'stair' | 'erase';
 
 const RAIL: { key: Family; icon: string; label: string }[] = [
   { key: 'select', icon: '↖', label: 'Sélection / déplacer — clic = sélectionner, glisser = déplacer' },
@@ -27,6 +27,7 @@ const RAIL: { key: Family; icon: string; label: string }[] = [
   { key: 'zone', icon: '🟦', label: 'Dessiner une zone — trigger ou zone de repos' },
   { key: 'entry', icon: '⚑', label: 'Poser un point d’entrée (cible des transitions)' },
   { key: 'encounter', icon: '⚔️', label: 'Placer des ennemis (rencontre de combat)' },
+  { key: 'stair', icon: '🪜', label: 'Escalier — relie cette case à l’étage au-dessus (traversée multi-niveaux)' },
   { key: 'erase', icon: '🧽', label: 'Gomme — efface les entités cliquées' },
 ];
 
@@ -82,6 +83,7 @@ export function Palette({
       case 'zone': return setTool({ mode: 'zone', zone: 'trigger' });
       case 'entry': return setTool({ mode: 'entry' });
       case 'encounter': return setTool({ mode: 'encounter' });
+      case 'stair': return setTool({ mode: 'stair' });
       case 'erase': return setTool({ mode: 'erase' });
     }
   };

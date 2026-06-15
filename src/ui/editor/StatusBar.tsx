@@ -31,6 +31,7 @@ export function toolLabel(tool: Tool): string {
     case 'zone': return tool.zone === 'trigger' ? '🟦 Zone trigger' : '⛺ Zone de repos';
     case 'entry': return '⚑ Point d’entrée';
     case 'encounter': return '⚔️ Placer des ennemis';
+    case 'stair': return '🪜 Escalier (vers l’étage au-dessus)';
     case 'erase': return '🧽 Gomme';
   }
 }
