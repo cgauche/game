@@ -6630,7 +6630,7 @@
       "Défensive",
       "Protectrice 5"
     ],
-    "desc": "Le pavois s'emploie de deux manières. En grand bouclier — mauvaise idée vu sa lourde structure de bois et de cuir : il confère alors les Atouts et Défauts d'un grand bouclier (Protectrice 3, Défensive, Inoffensive) et acquiert Épuisante et Lente, pour un Encombrement de 4 et +BF+2 Dégâts. Mais il est conçu comme couvert portatif : l'installer coûte 2 Actions et le manieur indique la direction couverte. S'il reste à 1 mètre maximum derrière le pavois, ce dernier le protège de toute attaque de projectiles venant de la direction indiquée (Protectrice 5, Défensive). Contre un assaut au corps à corps, le pavois ne protège que si l'attaque vient de la direction indiquée, et seulement au premier Round de combat.",
+    "desc": "Le pavois est un grand bouclier porté par les arbalétriers afin de les abriter sur le champ de bataille pendant qu'ils rechargent. Faisant environ 1,20 mètre de hauteur et souvent orné du blason de l'unité, le pavois est planté sur le sol par l'arbalétrier comme l'équivalent d'un abri personnel. Ce bouclier est plus efficace quand il est déployé sur une ligne formée d'autres arbalétriers et de leurs pavois. Il fournit un bon couvert pour tirer sur les troupes ennemies et se défendre contre les sorties du camp adverse. Dans ce cas, le soldat manie une lance ou une épée de derrière le pavois planté.<br><br>Le pavois peut être utilisé de deux manières différentes.<br><br>Il peut être employé comme un grand bouclier. Mais ce n'est pas une bonne manière de s'en servir car c'est une lourde structure de bois et de cuir. Dans ce cas, il confère tous les Atouts et les Défauts d'un grand bouclier (Protectrice 3, Défensive, Inoffensive) et acquiert les Défauts Épuisante et Lente. Un pavois employé de cette manière a toujours un Encombrement de 4 et n'inflige que +BF +2 Dégâts.<br><br>Mais le pavois est conçu pour être installé comme couvert portatif. L'installer coûte 2 Actions à celui qui le manie. Ce dernier doit indiquer la direction du couvert, comme par exemple : une orientation (nord, sud, est, ouest) ; la position du corps de l'utilisateur (à gauche, à droite, devant ou derrière) ; un repère géographique en particulier (« Je l'ai installé entre le château et moi »).<br><br>Si celui qui manie le pavois reste à 1 mètre maximum derrière le pavois, ce dernier le protège contre toute attaque de projectiles venant de la direction indiquée, en accordant les Atouts Protectrice 5 et Défensive. Si un opposant engage le combat au corps à corps avec celui que le pavois protège, le pavois ne fournit une protection que si l'attaque est portée depuis la direction indiquée, et seulement lors du premier Round de combat.",
     "price": {
       "gold": 3,
       "silver": 15,
@@ -6687,7 +6687,7 @@
       "Recharge 3",
       "Arme d'équipe 2"
     ],
-    "desc": "Arbalète géante projetant des carreaux à pointe de fer capables de fendre un homme en deux ou de percer du bois massif. Se manie avec Projectiles (Arbalète) ; en tir individuel à la Capacité de Tir, elle perd ses Atouts mais conserve ses Défauts.",
+    "desc": "Les balistes sont des arbalètes géantes projetant des carreaux à pointe de fer qui ressemblent à des piquets de clôture. Elles peuvent fendre une personne en deux comme un poulet ou percer un joli trou bien propre dans du bois massif.<br><br>Les balistes sont relativement simples à utiliser. Vous pouvez tenter un Test de Projectiles (Arbalète) en utilisant votre Capacité de Tir, mais dans ce cas, l'arme perd tous ses Atouts tout en conservant ses Défauts.",
     "price": {
       "gold": 30,
       "silver": 0,
@@ -6714,7 +6714,7 @@
       "Recharge 3",
       "Arme d'équipe 2"
     ],
-    "desc": "Arme à tir indirect lançant rochers, bombes ou bombes incendiaires en arc élevé pour s'écraser sur les cibles. Se manie avec Projectiles (Catapulte).",
+    "desc": "Les catapultes sont des armes à tir indirect qui lancent des rochers, des bombes ou des bombes incendiaires en suivant un arc élevé, pour que les munitions s'écrasent ensuite sur les têtes des cibles.",
     "price": {
       "gold": 20,
       "silver": 0,
@@ -6741,7 +6741,7 @@
       "Recharge 3",
       "Arme d'équipe 3"
     ],
-    "desc": "Arme à tir indirect lançant rochers, bombes ou bombes incendiaires en arc élevé pour s'écraser sur les cibles. Se manie avec Projectiles (Catapulte).",
+    "desc": "Les catapultes sont des armes à tir indirect qui lancent des rochers, des bombes ou des bombes incendiaires en suivant un arc élevé, pour que les munitions s'écrasent ensuite sur les têtes des cibles.",
     "price": {
       "gold": 40,
       "silver": 0,
@@ -6768,7 +6768,7 @@
       "Recharge 4",
       "Arme d'équipe 4"
     ],
-    "desc": "Arme à tir indirect lançant rochers, bombes ou bombes incendiaires en arc élevé pour s'écraser sur les cibles. Se manie avec Projectiles (Catapulte).",
+    "desc": "Les catapultes sont des armes à tir indirect qui lancent des rochers, des bombes ou des bombes incendiaires en suivant un arc élevé, pour que les munitions s'écrasent ensuite sur les têtes des cibles.",
     "price": {
       "gold": 60,
       "silver": 0,
@@ -6798,7 +6798,7 @@
       "Salve 9",
       "Arme d'équipe 3"
     ],
-    "desc": "Pièce d'artillerie à canons multiples crachant une volée de projectiles (Atout Salve). Dévastatrice mais peu fiable. Se manie avec Projectiles (Ingénierie). Recharger n'augmente l'Indice de Salve que de 1 par cycle de Recharge.",
+    "desc": "C'est le maître ingénieur Herman Faulkstein qui a inventé cette arme expérimentale, inspiré par un spectacle de feux d'artifice de Cathay à Altdorf. Elle est composée d'un affût d'artillerie sur roues avec neuf missiles chargés de poudre posés sur un cadre. L'élévation peut être ajustée pour tirer sur des cibles au sol ou dans les airs. L'arme n'est pas particulièrement précise et sert davantage à tirer sur de grands régiments que sur de petits groupes au sol.",
     "price": {
       "gold": 500,
       "silver": 0,
@@ -6825,7 +6825,7 @@
       "Recharge 4",
       "Salve 7"
     ],
-    "desc": "Arme à poudre noire tirant plusieurs coups avant rechargement (Atout Salve). Se manie avec Projectiles (Ingénierie).",
+    "desc": "Le canon à répétition ressemble à une arquebuse à répétition, avec une manivelle circulaire complexe et des leviers. C'est en réalité un barillet comprenant sept canons, un au milieu et six autres regroupés autour en une forme hexagonale. Cette arme est mortelle pour ceux qui se trouvent devant, mais peut aussi se révéler dangereuse pour un utilisateur inexpérimenté.<br><br>Chaque fois qu'elle tire, celui qui la manie doit effectuer un Test de Résistance Accessible (+20) et subit 1 Blessure par Degré d'échec car l'arme s'enfonce violemment dans son épaule. En cas d'Échec Stupéfiant, l'utilisateur subit un Coup Critique à l'épaule ; utilisez le tableau Blessures Critiques au bras en ajustant les détails si nécessaire pour représenter une blessure à l'épaule.<br><br>Les canons à répétition emploient des balles du même calibre qu'une arme à Poudre noire normale, mais 1 balle et sa charge de poudre sont consommées pour chaque tir d'une salve.<br><br>Quand quelqu'un tourne la manivelle, un ingénieux système de cames allume chaque charge à tour de rôle, propulsant une volée de projectiles mortels depuis le canon.",
     "price": {
       "gold": 10,
       "silver": 0,
@@ -6853,7 +6853,7 @@
       "Salve 9",
       "Arme d'équipe 3"
     ],
-    "desc": "Variante impériale du canon orgue : barillet de neuf canons disposés en trois rangées de trois, tirant trois fois avant rechargement. Notoirement peu fiable, il a tendance à s'enrayer ou pire aux moments cruciaux. Se manie avec Projectiles (Ingénierie). Recharger n'augmente l'Indice de Salve que de 1 par cycle de Recharge.",
+    "desc": "Le canon à répétition feu d'enfer est un barillet doté de neuf canons distincts divisés en trois rangées de trois canons fixés sur une manivelle circulaire.",
     "price": {
       "gold": 500,
       "silver": 0,
@@ -6880,7 +6880,7 @@
       "Recharge 4",
       "Arme d'équipe 2"
     ],
-    "desc": "Pièce d'artillerie à poudre noire tirant un lourd boulet. Se manie avec Projectiles (Poudre noire ou Ingénierie).",
+    "desc": "Les plus gros canons ne sont employés que dans les forteresses ou les positions de champ de bataille bien préparées, mais les versions petites et moyennes de cette arme peuvent être montées sur un navire ou un chariot. Sur un champ de bataille, les boulets de canon infligent des dommages dans plusieurs rangs de troupes en rebondissant entre eux. Comme la plupart des situations de combat sont de petites escarmouches, cette propriété est limitée à l'Atout Explosion 2 pour représenter les dommages infligés à ceux à proximité, mais si les cibles sont en ligne, le MJ doit réfléchir au fait que le boulet pourrait en toucher plusieurs.",
     "price": {
       "gold": 40,
       "silver": 0,
@@ -6907,7 +6907,7 @@
       "Recharge 6",
       "Arme d'équipe 3"
     ],
-    "desc": "Pièce d'artillerie à poudre noire tirant un lourd boulet. Se manie avec Projectiles (Poudre noire ou Ingénierie).",
+    "desc": "Les plus gros canons ne sont employés que dans les forteresses ou les positions de champ de bataille bien préparées, mais les versions petites et moyennes de cette arme peuvent être montées sur un navire ou un chariot. Sur un champ de bataille, les boulets de canon infligent des dommages dans plusieurs rangs de troupes en rebondissant entre eux. Comme la plupart des situations de combat sont de petites escarmouches, cette propriété est limitée à l'Atout Explosion 2 pour représenter les dommages infligés à ceux à proximité, mais si les cibles sont en ligne, le MJ doit réfléchir au fait que le boulet pourrait en toucher plusieurs.",
     "price": {
       "gold": 100,
       "silver": 0,
@@ -6934,7 +6934,7 @@
       "Recharge 8",
       "Arme d'équipe 4"
     ],
-    "desc": "Pièce d'artillerie à poudre noire tirant un lourd boulet. Se manie avec Projectiles (Poudre noire ou Ingénierie).",
+    "desc": "Les plus gros canons ne sont employés que dans les forteresses ou les positions de champ de bataille bien préparées, mais les versions petites et moyennes de cette arme peuvent être montées sur un navire ou un chariot. Sur un champ de bataille, les boulets de canon infligent des dommages dans plusieurs rangs de troupes en rebondissant entre eux. Comme la plupart des situations de combat sont de petites escarmouches, cette propriété est limitée à l'Atout Explosion 2 pour représenter les dommages infligés à ceux à proximité, mais si les cibles sont en ligne, le MJ doit réfléchir au fait que le boulet pourrait en toucher plusieurs.",
     "price": {
       "gold": 250,
       "silver": 0,
@@ -6960,7 +6960,7 @@
       "Recharge 4",
       "Arme d'équipe 3"
     ],
-    "desc": "Équivalent à poudre noire de la catapulte : tire un lourd boulet ou une bombe en arc élevé, surtout lors des sièges pour projeter des explosifs par-dessus les murs. Tir indirect, Dégâts selon la munition employée. Se manie avec Projectiles (Ingénierie).",
+    "desc": "Un mortier est l'équivalent à Poudre noire d'une catapulte, qui tire un lourd boulet ou une bombe en suivant un arc élevé. Sur le champ de bataille, ils sont surtout utilisés lors des sièges pour projeter des explosifs par-dessus les murs d'un château.",
     "price": {
       "gold": 50,
       "silver": 0,
@@ -6986,7 +6986,7 @@
       "Dangereuse",
       "Recharge 4"
     ],
-    "desc": "Équivalent massif du tromblon, normalement monté sur un pivot ou un trépied en raison de son poids.",
+    "desc": "Un pierrier est l'équivalent d'un tromblon en plus massif. En raison de son poids, il est normalement monté sur un pivot ou sur un trépied.",
     "price": {
       "gold": 20,
       "silver": 0,
@@ -7012,7 +7012,7 @@
       "Empaleuse",
       "Percutante"
     ],
-    "desc": "Comme la lance de cavalerie mais plus courte et légère, conçue pour la charge montée. Considérée comme une arme improvisée lors d'un Round où vous n'avez pas Chargé.",
+    "desc": "Les lances de cavalerie ressemblent à des lances ordinaires, mais avec une lourde poignée conçue pour caler l'arme contre le bras et le torse d'un chevalier qui charge. La demi-lance de cavalerie est similaire, mais plus courte et plus légère.<br><br>Les lances de cavalerie et les demi-lances de cavalerie sont considérées comme des armes improvisées si vous les utilisez lors d'un Round où vous n'avez pas Chargé.",
     "price": {
       "gold": 1,
       "silver": 0,
@@ -7037,7 +7037,7 @@
     "qualities": [
       "Taillade (1A)"
     ],
-    "desc": "Semblable au cimeterre mais un peu plus long et droit. À pied avec Corps à corps (Base) son Atout Taillade (1A) devient Taillade (2A) ; avec Corps à corps (Escrime) il conserve Taillade (1A).",
+    "desc": "Le sabre est similaire au cimeterre, mais un peu plus long et un peu plus droit. Il peut être utilisé à pied avec Corps à Corps (Base), mais dans ce cas, son Atout Taillade (1A) devient Taillade (2A). Les escrimeurs talentueux savent tirer le meilleur parti d'un sabre. S'il est utilisé avec Corps à Corps (Escrime), le sabre conserve son Atout Taillade (1A).",
     "price": {
       "gold": 2,
       "silver": 0,
@@ -7064,7 +7064,7 @@
       "Précise",
       "Rapide"
     ],
-    "desc": "Version plus légère du fleuret, surtout employée lors des tournois sportifs ou des duels au premier sang. Les modèles à pointe boutonnée et lame émoussée servent d'armes de sport et ont le Défaut Inoffensive.",
+    "desc": "Une version plus légère du fleuret. L'épée de cour n'est pas considérée comme une arme sérieuse et est plutôt employée lors des tournois sportifs ou des duels au premier sang. Les épées de cour à la pointe boutonnée et à la lame émoussée sont souvent utilisées comme armes de sport et ont le Défaut Inoffensive.",
     "price": {
       "gold": 4,
       "silver": 0,
@@ -7090,7 +7090,7 @@
       "Déstabilisante",
       "Inoffensive"
     ],
-    "desc": "Outil de docker à crochet utilisé pour décharger et caler les cargaisons, redoutable s'il est manié dans l'intention de blesser.",
+    "desc": "Les gaffes sont utilisées par les dockers pour mieux décharger et maintenir en place les cargaisons, mais elles peuvent devenir des armes très efficaces si elles sont maniées dans l'intention de blesser.",
     "price": {
       "gold": 0,
       "silver": 6,
@@ -7116,7 +7116,7 @@
       "Déséquilibrée",
       "Empaleuse"
     ],
-    "desc": "Peut être acheté comme partie d'une armure de plates pour un bras (ajoutez son prix à celui de l'armure, sans Encombrement supplémentaire).",
+    "desc": "Un gantelet à pointes peut être acheté en tant que partie d'une armure de plates pour un bras. Ajoutez le prix du gantelet à pointes à celui de l'armure, mais utilisez seulement l'Encombrement de l'armure elle-même ; le gantelet à pointes ne rajoute pas de poids ou de volume significatif.",
     "price": {
       "gold": 2,
       "silver": 0,
@@ -7141,7 +7141,7 @@
     "qualities": [
       "Inoffensive"
     ],
-    "desc": "Plaques d'acier couvrant le poing, maintenues fermées par une vis ou un loquet. Le porteur ne lâche pas l'objet tenu dans cette main même quand les circonstances l'y obligeraient ; il subit alors -20 à tous ses Tests avec cet objet (1 Round minimum) ; un second événement contraignant le lui fait néanmoins lâcher. Achetable comme partie d'une armure de plates pour un bras.",
+    "desc": "Un gantelet verrouillé est formé de plaques d'acier recouvrant le poing et peut être maintenu en position fermée par une vis ou un loquet. Il peut certes servir d'arme de bagarre, mais il est surtout employé comme méthode pour s'assurer que celui qui le porte ne lâche pas une arme tenue dans la main gantée. Un gantelet verrouillé peut être acheté en tant que partie d'une armure de plates pour un bras. Ajoutez le prix du gantelet verrouillé à celui de l'armure, mais utilisez seulement l'Encombrement de l'armure elle-même ; le gantelet verrouillé ne rajoute pas de poids significatif.<br><br>Un Personnage équipé d'un gantelet verrouillé ne lâche pas l'objet tenu dans cette main, même lorsque les circonstances l'y obligeraient normalement. Au lieu de cela, il subit une pénalité de -20 sur tous les Tests qu'il effectue avec cet objet, y compris les Tests de Corps à Corps, tant que les circonstances qui auraient dû lui faire lâcher l'objet persistent (et pendant un Round minimum). Si pendant cette période un nouvel évènement se produit qui aurait encore une fois dû le contraindre à lâcher l'objet, il le lâche même s'il porte un gantelet verrouillé.",
     "price": {
       "gold": 1,
       "silver": 0,
@@ -7169,7 +7169,7 @@
       "Inoffensive",
       "Lente"
     ],
-    "desc": "Longueur de corde ou de fil passée autour du cou de l'adversaire et serrée au maximum. Fabricable dans un relais de poste ou en milieu urbain (Test étendu de Métier, total 5 DR).",
+    "desc": "Un lacet étrangleur est une longueur de corde ou de fil faite pour être passée autour du cou de l'adversaire et serrée le plus possible par les mains de celui qui la manie. Un Personnage qui se trouve dans un relais de poste ou dans un lieu urbain peut fabriquer un lacet étrangleur en réussissant un Test étendu de Métier (Cirier, Ingénieur, Tailleur ou Tanneur) Intermédiaire (+0) qui nécessite un total de 5 DR.",
     "price": {
       "gold": 0,
       "silver": 1,
@@ -7196,7 +7196,7 @@
       "Immobilisante",
       "Inoffensive"
     ],
-    "desc": "Cape de tissu épais enroulée autour du bras pour distraire l'adversaire ou détourner ses coups, voire le jeter sur lui pour l'empêtrer. Peu adaptée à l'entrave : pour un Test d'empêtrement, la cape compte une Force de 25.",
+    "desc": "Certains experts en escrime et en parade recommandent de garder une cape en tissu épais sous la main. Si vous l'enroulez autour de votre bras, vous pouvez l'utiliser pour distraire vos adversaires ou pour détourner leurs attaques. Vous pouvez même la jeter sur un opposant dans l'espoir qu'il s'empêtre dans ses plis. Cependant, les capes sont peu adaptées aux attaques d'entrave. Quand vous effectuez un Test pour savoir si un ennemi s'empêtre dans une cape, la cape est considérée comme ayant une Force de 25.",
     "price": {
       "gold": 0,
       "silver": 10,
@@ -7222,7 +7222,7 @@
       "Empaleuse",
       "Perforante"
     ],
-    "desc": "Long pic fin monté sur un manche de lance : peu de coupe, mais perfore mieux les armures.",
+    "desc": "L'ahlspiess est un long pic fin monté sur un manche de lance, ce qui réduit sa capacité à infliger des blessures tranchantes, mais permet de mieux perforer les armures.",
     "price": {
       "gold": 2,
       "silver": 0,
@@ -7248,7 +7248,7 @@
       "Défensive",
       "Immobilisante"
     ],
-    "desc": "Arme d'hast à tête semi-circulaire hérissée de petits pics, permettant d'attraper une personne par le cou. Souvent maniée par les skavens et hobgobelins. Les modèles à ressort coûtent 4 CO et donnent +20 aux Tests de Force pour empêtrer.",
+    "desc": "L'attrape-coquin est une étrange arme d'hast à tête semi-circulaire hérissée de petits pics. L'arme permet d'attraper une personne par le cou et de la forcer à cesser de se débattre sous peine de se blesser. Elle est assez rare dans l'Empire, mais les skavens et les hobgobelins l'emploient souvent. Certains attrape-coquins sont dotés de mécanismes à ressort. Ils coûtent 4 CO, mais celui qui en manie un bénéficie d'un bonus de +20 sur tous les Tests de Force effectués pour empêtrer quelqu'un avec l'arme.",
     "price": {
       "gold": 2,
       "silver": 0,
@@ -7276,7 +7276,7 @@
       "Assommante",
       "Défensive"
     ],
-    "desc": "Tête combinant un pic d'estoc, une lame de hache pour trancher et un marteau pour les coups contondants : choisissez Taille, Empaleuse ou Assommante avant le jet d'attaque.",
+    "desc": "La hache d'armes peut prendre de nombreuses formes, mais la plus répandue inclut une tête coiffée d'un pic court pour les coups d'estoc, une tête de hache d'un côté pour trancher et une tête de marteau de l'autre côté pour infliger des coups contondants.",
     "price": {
       "gold": 2,
       "silver": 0,
@@ -7303,7 +7303,7 @@
       "Empaleuse",
       "Taillade (2A)"
     ],
-    "desc": "Pertuisanes (lame épaisse en feuille d'arbre) et fauchards (lame de coupe ou d'épée) fonctionnent pareil : un peu moins d'allonge que la lance pour des coups tranchants plus puissants. Choisissez Empaleuse ou Taillade (2A).",
+    "desc": "Les pertuisanes sont des lances à lame épaisse en forme de feuille d'arbre, tandis que les fauchards sont des armes d'hast pourvues d'une lame de coupe ou d'une lame d'épée comme tête. Les deux armes fonctionnent de la même manière, sacrifiant une partie de l'allonge de la lance pour infliger des coups tranchants plus puissants.",
     "price": {
       "gold": 2,
       "silver": 0,
@@ -7330,7 +7330,7 @@
       "Taille",
       "Déstabilisante"
     ],
-    "desc": "Dérivée d'un outil agricole, dotée d'une lame en crochet servant à attraper les adversaires ou à les hacher. Choisissez Taille ou Déstabilisante.",
+    "desc": "Dérivée d'un outil agricole, la serpe de guerre est dotée d'une lame en crochet qui peut servir soit à attraper les adversaires, soit à les hacher menu.",
     "price": {
       "gold": 2,
       "silver": 0,
@@ -7357,7 +7357,7 @@
       "Taille",
       "Taillade (2A)"
     ],
-    "desc": "Zweihänder à lame ondulée et dentelée (flamberge), dont les blessures tranchantes sont plus profondes.",
+    "desc": "Les célèbres régiments de joueurs d'épée de l'Empire sont armés d'énormes lames d'acier, aussi longues que beaucoup d'armes d'hast. Certains maîtres armuriers rendent même leurs épées encore plus mortelles en leur ajoutant des ondulations et des bords dentelés. Ces armes sont appelées des flamberges et les blessures qu'elles infligent peuvent être plus profondes à cause de leur puissance pour les coups tranchants.",
     "price": {
       "gold": 30,
       "silver": 0,
@@ -7384,7 +7384,7 @@
       "Imprécise",
       "Inoffensive"
     ],
-    "desc": "Munition de fortune pour arc à court de flèches. Procurable en milieu boisé (Test étendu de Survie en extérieur, total 10 DR) ; mal taillée, elle a tendance à provoquer des Maladresses.",
+    "desc": "Les bâtons pointus peuvent être utilisés comme munitions par un archer à court de munitions spéciales. Un Personnage qui se trouve dans un lieu boisé peut se procurer un bâton pointu droit en réussissant un Test étendu de Survie en extérieur Intermédiaire (+0) qui nécessite un total de 10 DR. Cependant, méfiance, car comme elles n'ont pas été taillées par un fabricant de flèches professionnel, les flèches improvisées ont tendance à provoquer des Maladresses.",
     "price": {
       "gold": 0,
       "silver": 0,
@@ -7410,7 +7410,7 @@
       "Empaleuse",
       "Taillade (1A)"
     ],
-    "desc": "Tête à barbelures infligeant de vilaines blessures par entaille et des dommages supplémentaires si elle n'est pas retirée avec précaution. Vendue par 12.",
+    "desc": "La flèche barbelée inflige de vilaines blessures par entaille et cause des dommages supplémentaires si elle n'est pas retirée très précautionneusement.",
     "price": {
       "gold": 0,
       "silver": 8,
@@ -7436,7 +7436,7 @@
       "Empaleuse",
       "Perforante"
     ],
-    "desc": "Robuste pointe en pic conçue pour perforer les armures. Vendue par 12.",
+    "desc": "La flèche bodkin est dotée d'une robuste pointe en pic pour perforer les armures.",
     "price": {
       "gold": 0,
       "silver": 8,
@@ -7461,7 +7461,7 @@
     "qualities": [
       "Assommante"
     ],
-    "desc": "Munition de fronde en plomb. Vendue par 12.",
+    "desc": "Munition de fronde en plomb, vendue par lot de 12.",
     "price": {
       "gold": 0,
       "silver": 4,
@@ -7487,7 +7487,7 @@
       "Imprécise",
       "Inoffensive"
     ],
-    "desc": "Munition de fortune pour fronde. Procurable dans un lieu approprié (Test étendu de Survie en extérieur Facile, ou de Perception, total 5 DR).",
+    "desc": "Les cailloux peuvent être utilisés comme munitions par un tireur à la fronde à court de munitions spéciales. Un Personnage qui se trouve dans un lieu approprié peut se procurer un caillou adapté à une fronde en réussissant un Test étendu de Survie en extérieur Facile (+40) ou un Test étendu de Perception Intermédiaire (+0) qui nécessite un total de 5 DR.",
     "price": {
       "gold": 0,
       "silver": 0,
@@ -7514,7 +7514,7 @@
       "Dangereuse",
       "Recharge 4"
     ],
-    "desc": "Deux canons et deux gâchettes ; la plupart sont accompagnées d'un appareil rechargeant les deux canons à la fois pour tirer plus souvent.",
+    "desc": "Si un canon est déjà une bonne chose, alors deux canons doivent être assurément mieux. L'arquebuse à double canon est quasiment l'arme à feu la plus complexe possible qui puisse encore être utilisée par le soldat moyen. Elle comporte deux canons et deux gâchettes. Même si elle est lourde, la plupart sont accompagnées d'un appareil pour recharger les deux canons en même temps, ce qui permet à celui qui la manie de tirer plus fréquemment.",
     "price": {
       "gold": 7,
       "silver": 0,
@@ -7540,7 +7540,7 @@
       "Dangereuse",
       "Recharge 4"
     ],
-    "desc": "Modèle ancien d'arquebuse. Avant usage, dépensez une Action pour allumer la mèche ; allumée, elle brûle longtemps sauf si la pluie ou le vent l'éteint.",
+    "desc": "L'un des premiers modèles d'arquebuse. Quelques-unes de ces reliques persistent encore dans l'Empire et peuvent souvent être achetées pour une bouchée de pain. Avant d'utiliser cette arquebuse, celui qui la manie doit dépenser une Action pour allumer la mèche sur son arme. Une mèche allumée brûle pendant un très long moment, sauf si elle est éteinte par la pluie ou le vent.",
     "price": {
       "gold": 2,
       "silver": 0,
@@ -7567,7 +7567,7 @@
       "Imprécise",
       "Recharge 4"
     ],
-    "desc": "Combine une arquebuse et une hache. Maniée comme hache alors qu'elle est chargée, une Maladresse décharge l'arme dans le corps de l'utilisateur.",
+    "desc": "Comme son nom l'indique, cette arme combine une arquebuse et une hache. Elle peut être utilisée soit comme l'une, soit comme l'autre. Cependant, si elle est maniée comme hache alors qu'elle est chargée, une Maladresse décharge l'arme dans le corps de l'utilisateur.",
     "price": {
       "gold": 8,
       "silver": 0,
@@ -7594,7 +7594,7 @@
       "Imprécise",
       "Recharge 4"
     ],
-    "desc": "Hallebarde au canon d'arme à feu intégré dans la hampe. Maniée comme hallebarde alors qu'elle est chargée, une Maladresse décharge l'arme sur quiconque se tient juste derrière l'utilisateur.",
+    "desc": "Sur le même principe que la hache-arquebuse, cette arme sert à la fois de hallebarde et d'arquebuse. Le canon de l'arme à feu est intégré dans la hampe de la hallebarde. Si elle est maniée comme hallebarde alors qu'elle est chargée, une Maladresse décharge l'arme sur quiconque a le malheur de se tenir juste derrière l'utilisateur.",
     "price": {
       "gold": 10,
       "silver": 0,
@@ -7621,7 +7621,7 @@
       "Imprécise",
       "Recharge 5"
     ],
-    "desc": "Canon à échelle réduite, modèle très ancien souvent dépourvu de mire ou de gâchette. Les exemplaires encore en usage sont de gros calibre, utiles là où les modèles modernes manquent de puissance.",
+    "desc": "L'haquebute est à peine plus qu'un canon à échelle réduite, un modèle très ancien souvent dépourvu d'innovations telles que la mire, la gâchette ou même la poignée ou la crosse. Les premières haquebutes tiraient des munitions de taille similaire ou inférieure à celles utilisées pour les armes à poudre noire modernes, mais celles qui sont encore employées actuellement dans l'Empire sont généralement des armes à canon large gardées par des nobles qui veulent impressionner les visiteurs. Cependant, la taille conséquente de ces reliques les rend utiles là où le calibre des nouveaux modèles peut laisser à désirer.",
     "price": {
       "gold": 5,
       "silver": 0,
@@ -7648,7 +7648,7 @@
       "Recharge 6",
       "Tir de zone 5"
     ],
-    "desc": "Conçu pour tirer sur un groupe d'ennemis en formation serrée : une seule gâchette décharge les six canons, et recharger demande six munitions et autant de poudre.",
+    "desc": "Cette arme est conçue pour tirer sur un groupe d'ennemis en formation serrée. Une seule gâchette décharge les six canons et pour recharger, il faut six munitions et la même quantité de poudre.",
     "price": {
       "gold": 20,
       "silver": 0,
@@ -7675,7 +7675,7 @@
       "Recharge 3",
       "Tir de zone 3"
     ],
-    "desc": "Modèle ancien de tromblon, avec les mêmes inconvénients que l'arquebuse à mèche.",
+    "desc": "L'un des premiers modèles de tromblon. Cette arme comporte les mêmes inconvénients que l'arquebuse à mèche.",
     "price": {
       "gold": 1,
       "silver": 0,
@@ -7702,7 +7702,7 @@
       "Imprécise",
       "Recharge 6"
     ],
-    "desc": "Pistolet à canon court dissimulé dans un bâton de marche ou une canne. Très difficile à repérer (Perception Difficile -20, ou Très Difficile -30 pour qui connaît mal les armes à poudre noire).",
+    "desc": "Un pistolet à canon court dissimulé dans un bâton de marche ou dans une canne. Cette arme n'est pas des plus pratiques, mais est très difficile à repérer. Ceux qui cherchent des armes dissimulées doivent réussir un Test de Perception Difficile (–20) pour identifier la canne ou le bâton comme une arme, ou un Test de Perception Très Difficile (–30) s'ils connaissent mal les armes à poudre noire.",
     "price": {
       "gold": 15,
       "silver": 0,
@@ -7729,7 +7729,7 @@
       "Imprécise",
       "Recharge 2"
     ],
-    "desc": "Mortier à échelle réduite ressemblant à un tromblon court et trapu, conçu pour lancer bombes et gros objets. Une Maladresse en rechargeant fait exploser l'arme.",
+    "desc": "Ressemblant à un tromblon court et trapu, le mortier à main est un mortier à échelle réduite conçu pour lancer des bombes et d'autres gros objets dans la direction désirée. Son utilisation est très dangereuse car si celui qui la manie charge un peu trop de poudre ou calcule mal le temps de combustion d'une mèche sur une bombe chargée, l'arme explose de manière spectaculaire. Si l'utilisateur obtient une Maladresse en rechargeant l'arme, elle explose. Cependant, l'appareil élargit considérablement le champ des possibles à celui qui prend le risque de s'en servir.",
     "price": {
       "gold": 50,
       "silver": 0,
@@ -7757,7 +7757,7 @@
       "Pistolet",
       "Recharge 4"
     ],
-    "desc": "Forme plus simple du pistolet à répétition : quatre canons préchargés devant un unique mécanisme de tir, tournés/réamorcés entre chaque coup. L'utilisateur doit avoir sa seconde main libre, sinon l'arme perd l'Atout À répétition.",
+    "desc": "Cette arme est une forme plus simple du pistolet à répétition, une série de quatre canons préchargés placés devant un unique mécanisme de tir. Chaque fois que l'arme est déchargée, elle doit être tournée, réamorcée à la manivelle ou préparée manuellement d'une autre façon pour tirer de nouveau. Cela prend très peu de temps par rapport au fait de recharger une arme, mais l'utilisateur doit avoir sa deuxième main libre pour manier la poivrière sinon elle perd l'Atout À répétition.",
     "price": {
       "gold": 12,
       "silver": 0,
@@ -7784,7 +7784,7 @@
       "Percutante",
       "Perforante"
     ],
-    "desc": "Petits boulets de canon chargés dans les armes à grand canon (haquebute, mortier à main). Le tireur et quiconque à 2 mètres ou moins doivent réussir un Test de Résistance Intermédiaire (+0) sous peine de recevoir un État Assourdi. Vendue par 12.",
+    "desc": "Ces munitions sont techniquement de petits boulets de canon et sont chargées dans les armes à grand canon comme l'haquebute ou le mortier à main. Ceux qui tirent avec ces munitions ou se tiennent à 2 mètres ou moins de l'utilisateur doivent réussir un Test de Résistance Intermédiaire (+0) sous peine de recevoir un État Assourdi.",
     "price": {
       "gold": 1,
       "silver": 0,
@@ -7811,7 +7811,7 @@
       "À Explosion 5",
       "Percutante"
     ],
-    "desc": "Engin explosif rempli de poudre noire, de poix ou de goudron, lancé à la main ou chargé dans un mortier à main pour aller plus loin.",
+    "desc": "Ces munitions sont souvent lancées à la main. Beaucoup de gens ont tenté de projeter des engins explosifs remplis de poudre noire, de poix ou de goudron plus loin que la distance atteignable simplement à la main. Ces engins peuvent être chargés dans un mortier à main et ainsi lancés très loin.<br><br>Mais ces munitions ne peuvent pas être chargées très à l'avance car leur mèche doit être allumée avant de les introduire dans le mortier à main. Quand vous chargez la bombe explosive ou la bombe incendiaire, vous devez décider combien de Rounds dure la mèche que vous avez utilisée pour la munition.<br><br>Avec une mèche de la durée d'un Round, elle explose à la fin du Round actuel, avec une mèche de la durée de deux Rounds, elle explose à la fin du Round suivant. La munition explose au moment déterminé que vous ayez ou non tiré avec l'arme. Vous devez le garder en tête car le MJ n'est pas obligé de vous le rappeler avant que l'instant fatidique n'arrive.",
     "price": {
       "gold": 3,
       "silver": 0,
@@ -7837,7 +7837,7 @@
       "Empaleuse",
       "Perforante"
     ],
-    "desc": "Balle et dose de poudre préemballées dans du papier pour un rechargement plus régulier. Vendue par 12.",
+    "desc": "Ce sont des paquets préremplis de munitions, de poudre et de bourre, qui facilitent grandement la recharge des armes à poudre noire. Les Tests effectués pour recharger une arme du type approprié avec ces munitions bénéficient d'un bonus de +10.",
     "price": {
       "gold": 0,
       "silver": 5,
@@ -7864,7 +7864,7 @@
       "Perforante",
       "Précise"
     ],
-    "desc": "Cartouche soigneusement calibrée pour le tir de précision.",
+    "desc": "Une poudre préparée de manière experte et des balles soigneusement polies et arrondies peuvent être combinées pour donner des tirs plus fiables et plus précis avec n'importe quelle arme à poudre noire appropriée.",
     "price": {
       "gold": 0,
       "silver": 3,
@@ -7890,7 +7890,7 @@
       "Infecté",
       "Tir de zone +3"
     ],
-    "desc": "Débris métalliques sales tirés en gerbe par un tromblon ou un mortier à main. Les blessures qu'elle inflige risquent l'infection.",
+    "desc": "« Ferraille » est un terme général pour désigner les vieux clous de toiture, les morceaux de fer à cheval rouillés, les têtes de flèche et les autres bouts de matériau tranchants et pointus récupérés dans les tas de rouille ou de rebuts accessibles. Les attaques portées en utilisant ces munitions bénéficient du Trait de créature Infecté.",
     "price": {
       "gold": 0,
       "silver": 2,
@@ -7916,7 +7916,7 @@
       "Perforante",
       "Recharge +2"
     ],
-    "desc": "Harpon à crochet tiré par une arme à poudre noire de gros calibre, relié à une corde.",
+    "desc": "Recommandé à la Marine impériale pour son utilisation lors des actions d'abordage ou pour déchirer le gréement de l'ennemi, un grappin est composé d'un crochet entouré de beaucoup de rembourrage conçu pour être tiré par un mortier à main uniquement, avec environ 20 mètres de corde. Il peut être employé pour fixer une corde à un point éloigné ou pour piéger un ennemi en train de s'échapper, auquel cas il inflige un État Empêtré si le coup touche.<br><br>Si vous envisagez d'avoir recours à un grappin pour vous faufiler discrètement quelque part, n'oubliez pas que le tir fait énormément de bruit.",
     "price": {
       "gold": 2,
       "silver": 0,
@@ -7942,7 +7942,7 @@
       "Empaleuse",
       "Perforante"
     ],
-    "desc": "Poudre noire imprégnée de magie du Feu (Aqshy) par les Collèges de Magie, plus puissante et de plus longue portée. Vendue par 12.",
+    "desc": "Destinée aux aventuriers très braves ou très stupides, cette poudre est fabriquée à partir de sable du désert de Néhékhara, imprégné d'une quantité supplémentaire d'Aqshy par des moyens connus uniquement du Collège Flamboyant d'Altdorf. Elle a davantage de puissance explosive que la poudre normale, mais use les canons bien plus rapidement que la poudre ordinaire. Tout Test raté incluant un 8 ou un 9 sur le dé des dizaines ou celui des unités est considéré comme une Maladresse quand vous utilisez cette poudre.",
     "price": {
       "gold": 1,
       "silver": 0,

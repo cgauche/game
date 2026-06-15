@@ -176,7 +176,7 @@ export const CODEX: CodexCategory[] = [
   {
     key: 'trappings', label: 'Possessions', group: 'Équipement',
     items: trappings.map((t) => ({
-      label: t.label, sub: join(t.type, t.subType), desc: t.desc ?? undefined, source: src(t.source),
+      label: t.label, sub: join(t.type, t.subType), desc: t.desc ?? undefined, html: true, source: src(t.source),
       meta: facts(fact('Enc', t.enc), fact('Disponibilité', t.availability), fact('Dégâts', t.damage), fact('PA', t.pa), fact('Allonge', t.reach)),
       sections: sections(chips('Qualités', 'qualities', t.qualities)),
     })),
