@@ -1,5 +1,6 @@
 import { useGame } from '../state/store';
 import { ownsLocally } from '../state/netFlow';
+import { harvestProfileFor } from '../engine/harvest';
 import { Coins } from './Coins';
 import { TeamPortrait } from './TeamPortrait';
 import { GearAssignList } from './GearAssignList';
@@ -18,6 +19,7 @@ export function VictoryScreen() {
   const party = useGame((s) => s.party);
   const net = useGame((s) => s.net);
   const assignGear = useGame((s) => s.assignVictoryGear);
+  const harvest = useGame((s) => s.harvestCreature);
   const appraiseGear = useGame((s) => s.appraiseGear);
   const dismiss = useGame((s) => s.dismissVictory);
   const victoryReady = useGame((s) => s.victoryReady);
@@ -55,9 +57,25 @@ export function VictoryScreen() {
           <div className="victory-section">
             <h3>Ennemis vaincus</h3>
             <div className="victory-defeated">
-              {defeated.map((d) => (
-                <span key={d.name} className="victory-foe">{d.name}{d.count > 1 ? ` ×${d.count}` : ''}</span>
-              ))}
+              {defeated.map((d) => {
+                const canHarvest = !!harvestProfileFor(d.name) && net.mode !== 'guest';
+                const done = (pv?.harvested ?? []).includes(d.name);
+                return (
+                  <span key={d.name} className="victory-foe">
+                    {d.name}{d.count > 1 ? ` ×${d.count}` : ''}
+                    {canHarvest && (
+                      <button
+                        className="btn btn-ghost victory-harvest"
+                        disabled={done}
+                        onClick={() => harvest(d.name)}
+                        title="Récolter les pièces de monstre (Test de Savoir (Bêtes))"
+                      >
+                        {done ? '✓ récolté' : '🔪 Récolter'}
+                      </button>
+                    )}
+                  </span>
+                );
+              })}
             </div>
           </div>
         )}

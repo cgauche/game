@@ -35,9 +35,19 @@ export function harvestProfileFor(label: string): HarvestProfile | undefined {
   return findCreature(label)?.harvest ?? undefined;
 }
 
+/** Texte d'un Trait, qu'il soit une chaîne brute ou un TraitInstance parsé (robuste au modèle). */
+function traitText(x: unknown): string {
+  if (typeof x === 'string') return x;
+  if (x && typeof x === 'object') {
+    const o = x as { raw?: string; key?: string };
+    return o.raw ?? o.key ?? '';
+  }
+  return '';
+}
+
 /** Taille de récolte d'après le Trait Taille (défaut : Moyenne). */
-export function harvestSizeOf(creature: Pick<CreatureData, 'traits'>): HarvestSize {
-  const t = (creature.traits || []).find((x) => /^Taille\s*\(/.test(x)) ?? '';
+export function harvestSizeOf(creature: { traits?: readonly unknown[] }): HarvestSize {
+  const t = (creature.traits ?? []).map(traitText).find((s) => /^Taille/.test(s)) ?? '';
   if (/Monstrueuse/.test(t)) return 'Monstrueuse';
   if (/Énorme/.test(t)) return 'Énorme';
   if (/Grande/.test(t)) return 'Grande';

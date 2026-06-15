@@ -55,6 +55,8 @@ export interface PendingVictory {
    *  conservés), au lieu d'aller d'office au 1er héros. Non attribué → 1er héros à la fermeture. */
   gear?: LootGear[];
   defeated: { name: string; count: number }[];
+  /** Créatures déjà récoltées (« Précieuses Entrailles », ZI) sur cet écran — grise le bouton. */
+  harvested?: string[];
   /** Messages de journal de la victoire (Effets `journal` de onVictory) — affichés DANS l'écran (#9). */
   messages?: string[];
   /** Effets DIFFÉRÉS au clic « Continuer » (téléport/dialogue/combat) — sinon ils masquent l'écran (#9). */

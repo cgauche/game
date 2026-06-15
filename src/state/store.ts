@@ -11,7 +11,7 @@ import type { Dir8 } from './dir8';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import {
   activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers, entityPickables, fireScheduledEffects,
-  applyEffects, applyEffectsLoot, runFlow, assignGearAt, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
+  applyEffects, applyEffectsLoot, runFlow, assignGearAt, harvestVictoryCreature, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, attackWardGate,
   effectiveSpellOf, finishPlayerAction,
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn, resumeSuspendedAI,
@@ -346,6 +346,8 @@ export interface GameState {
   pendingVictory: PendingVictory | null;
   /** Attribue un objet d'équipement (giveTrapping) du butin de victoire au héros choisi. */
   assignVictoryGear: (index: number, heroId: string) => void;
+  /** Récolte « Précieuses Entrailles » (ZI) une créature vaincue (Test de Savoir → pièces valuées). */
+  harvestCreature: (name: string) => void;
   /** Ferme l'écran de victoire et revient à l'exploration. */
   dismissVictory: () => void;
   /** Butin HORS combat (fouille/Test/dialogue/trigger) — fenêtre « qui l'emporte ? » (même brique). */
@@ -1272,10 +1274,10 @@ export const useGame = create<GameState>((set, get) => ({
       if (!canAfford(get().money, cost)) { get().log('Pas assez d’argent pour cette option.'); return; }
       set((s) => ({ money: moneySub(s.money, cost)! }));
     }
-    // Objet/argent reçu en dialogue → fenêtre d'attribution aussi (titrée du donateur).
-    if (choice.effects) {
+    // Logique du choix (effets + branches) → runFlow ; objet/argent reçu = fenêtre d'attribution (titrée du donateur).
+    if (choice.flow) {
       const speaker = st.scene?.entities.find((e) => e.id === st.dialogue?.speakerId)?.label;
-      applyEffectsLoot(get, set, choice.effects, speaker ?? 'Butin');
+      runFlow(get, set, choice.flow, speaker ?? 'Butin');
     }
     if (choice.next) set({ dialogue: { dialogue: st.dialogue.dialogue, nodeId: choice.next, speakerId: st.dialogue.speakerId } });
     else {
@@ -1454,6 +1456,7 @@ export const useGame = create<GameState>((set, get) => ({
   assignLootGear: (index, heroId) => assignGearAt(get, set, 'pendingLoot', index, heroId),
   /** Attribue un objet d'équipement du butin de victoire au héros choisi (qualités/skin conservés). */
   assignVictoryGear: (index, heroId) => assignGearAt(get, set, 'pendingVictory', index, heroId),
+  harvestCreature: (name) => harvestVictoryCreature(get, set, name),
   raiseHand: () => {
     const b = get().battle;
     if (!b || b.handRaised) return;

@@ -225,9 +225,13 @@ export function confirmDistribution(_get: Get, set: Set): void {
  *  du prix de vente — partagée par `sellItem`, `confirmSell` ET l'aperçu UI (pas de formule dupliquée).
  *  Option 2 (LDB 60 l.22) : ¼ par défaut (resaleRate/2) ; ½ si le Marchandage de vente est GAGNÉ. */
 export function sellGain(item: ItemInstance, m: MerchantState): ReturnType<typeof fromBrass> {
+  const sellFactor = m.bargainSell ? bargainSellFactor(m.bargainSell.won, m.bargainSell.drNet, m.bargainSell.negotiator) : 0.5;
+  // Objet PRÉ-VALUÉ (pièces de monstre récoltées, ZI Précieuses Entrailles) : sa valeur de marché est
+  // déjà nette (rareté × dangerosité × Taille × Conservation) → revendu en DIRECT, sans le taux de revente
+  // catalogue. Le Marchandage de vente joue quand même (sellFactor/0.5 : ×1 par défaut, ×plus si gagné).
+  if (item.price) return fromBrass(Math.round(toBrass(item.price) * (sellFactor / 0.5)));
   const t = findTrapping(item.name);
   const base = t ? toBrass(priceToMoney(t.price)) * craftPriceFactor(item) : 0;
-  const sellFactor = m.bargainSell ? bargainSellFactor(m.bargainSell.won, m.bargainSell.drNet, m.bargainSell.negotiator) : 0.5;
   return fromBrass(Math.round(base * m.resaleRate * sellFactor));
 }
 

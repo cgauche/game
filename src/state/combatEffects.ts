@@ -11,6 +11,8 @@ import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, a
 import { easeDifficulty } from '../engine/tests';
 import { hasTalent } from '../engine/magic';
 import { recomputeLoadout, itemFromTrapping, customTrapping } from '../engine/items';
+import { findCreature } from '../data';
+import { harvestSizeOf, harvestYield } from '../engine/harvest';
 import { contractDisease } from '../engine/disease';
 import { type HealMode } from '../engine/healing';
 import { openMedic } from './medicFlow';
@@ -164,6 +166,30 @@ export function assignGearAt(get: Get, set: SetFn, key: 'pendingLoot' | 'pending
   if (!bucket?.gear || index < 0 || index >= bucket.gear.length) return;
   applyEffects(get, set, [{ ...bucket.gear[index].effect, heroId }]);
   set({ [key]: { ...bucket, gear: bucket.gear.filter((_, i) => i !== index) } });
+}
+
+/** Récolte « Précieuses Entrailles » (ZI) d'une créature vaincue (écran de victoire) : un Test de
+ *  Savoir (Bêtes) — RÉUTILISE l'Effet `test` + `giveTrapping` — dont la réussite donne les pièces
+ *  fraîches à pleine quantité, l'échec une quantité réduite (un cran de Taille en moins). Les pièces
+ *  portent leur valeur de marché (`giveTrapping.price`), revendable au marchand / composant ZI. */
+export function harvestVictoryCreature(get: Get, set: SetFn, name: string) {
+  const c = findCreature(name);
+  const p = c?.harvest;
+  if (!c || !p) return;
+  const pv = get().pendingVictory;
+  if (pv?.harvested?.includes(name)) return; // déjà récolté
+  const size = harvestSizeOf(c);
+  const full = harvestYield(p, size, 0, 'Frais');
+  const lo = harvestYield(p, size, -1, 'Frais');
+  const part = (enc: number) => `Pièces de ${name} (${enc} Enc)`;
+  if (pv) set({ pendingVictory: { ...pv, harvested: [...(pv.harvested ?? []), name] } }); // grise le bouton
+  applyEffects(get, set, [
+    {
+      type: 'test', skill: 'Savoir (Bêtes)', difficulty: 'intermediaire', label: `Récolter — ${name}`,
+      onSuccess: [{ type: 'giveTrapping', trapping: part(full.enc), price: full.total }],
+      onFailure: [{ type: 'giveTrapping', trapping: part(lo.enc), price: lo.total }],
+    },
+  ]);
 }
 
 /** Lot 0 — déclenche les effets PROGRAMMÉS (file `scheduledEffects`) dont l'échéance est atteinte.
