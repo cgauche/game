@@ -8,7 +8,7 @@
  */
 import { CharKey, Difficulty } from '../engine/types';
 import type { ZoneEffect } from '../engine/zones';
-import { toDate, type DayPhaseKey } from '../engine/clock';
+import { type DayPhaseKey } from '../engine/clock';
 import type { Dir8 } from './dir8';
 import { terrainWalkable } from './terrain';
 import { buildingBlockedAt } from './buildings';
@@ -361,26 +361,8 @@ export interface Trigger {
   effects: Effect[];
 }
 
-/** La fenêtre horaire `cond` est-elle satisfaite à l'instant `gameTime` (minutes depuis l'époque) ?
- *  Compare la minute-du-jour ; `before` est EXCLUSIF. SOURCE UNIQUE (triggers). PUR. */
-export function temporalConditionMet(cond: TemporalCondition, gameTime: number): boolean {
-  const d = toDate(gameTime);
-  const now = d.hour * 60 + d.minute;
-  if (cond.afterHour != null && now < cond.afterHour * 60 + (cond.afterMinute ?? 0)) return false;
-  if (cond.beforeHour != null && now >= cond.beforeHour * 60 + (cond.beforeMinute ?? 0)) return false;
-  return true;
-}
-
-/** Évalue une condition de flag — SOURCE UNIQUE pour les triggers ET les choix de dialogue. Un flag
- *  (`drapeau`) ou sa négation (`!drapeau`) ; plusieurs séparés par des virgules = combinés en ET
- *  (« v1,!v2 » ⇔ `flags.v1 && !flags.v2`). Une condition vide n'est jamais passée ici (toujours vraie). */
-export function condMet(cond: string, flags: Record<string, boolean>): boolean {
-  return cond
-    .split(',')
-    .map((c) => c.trim())
-    .filter(Boolean)
-    .every((c) => (c.startsWith('!') ? !flags[c.slice(1)] : !!flags[c]));
-}
+// Évaluation des conditions (flag/temporelle) : SOURCE UNIQUE `evalCondition` (src/state/flow.ts).
+// Les anciens `condMet`/`temporalConditionMet` ont fondu dedans (algèbre de Conditions unifiée).
 
 /** Membre d'une rencontre : RÉFÉRENCE une `SceneEntity` (kind 'personnage') de la scène — c'est
  *  ELLE qui porte le profil (ref/statblock/apparence/arme/label/facing/combat). Le membre n'ajoute

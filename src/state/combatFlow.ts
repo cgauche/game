@@ -113,7 +113,7 @@ import { feedFromMeal } from '../engine/provisions';
 import { runDailyUpkeep } from './upkeep';
 import { findSpell } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
-import { Scene, Effect, isWalkable, condMet } from './scene';
+import { Scene, Effect, isWalkable } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
 import { lineOfSightCover, coverModifier, smokeZone, tilesBetween } from './lineOfSight';
 import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune, clearPsychOf, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, PsychType } from '../engine/psychology';

@@ -1,11 +1,12 @@
 import { useGame } from '../state/store';
-import { condMet } from '../state/scene';
+import { evalCondition } from '../state/flow';
 import { canAfford, formatMoney, toMoney } from '../engine/money';
 import { pickBackend } from '../gameIso/pickBackend';
 
 export function DialogueBox() {
   const dialogue = useGame((s) => s.dialogue);
   const flags = useGame((s) => s.flags);
+  const gameTime = useGame((s) => s.gameTime);
   const money = useGame((s) => s.money);
   const scene = useGame((s) => s.scene);
   const choose = useGame((s) => s.chooseDialogue);
@@ -20,7 +21,7 @@ export function DialogueBox() {
 
   const visible = node.choices
     .map((c, i) => ({ c, i }))
-    .filter(({ c }) => !c.condition || condMet(c.condition, flags));
+    .filter(({ c }) => !c.condition || evalCondition({ kind: 'flag', expr: c.condition }, { flags, gameTime }));
 
   return (
     <div className="dialogue-box">

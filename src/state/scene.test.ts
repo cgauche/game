@@ -1,19 +1,21 @@
 import { describe, it, expect } from 'vitest';
-import { emptyScene, isWalkable, tileAt, normalizeAmbiance, isIndoor, condMet } from './scene';
+import { emptyScene, isWalkable, tileAt, normalizeAmbiance, isIndoor } from './scene';
+import { evalCondition } from './flow';
 import type { Scene } from './scene';
 
-describe('condMet — conditions de flag (triggers + dialogues, source unique)', () => {
+describe('evalCondition flag — conditions de flag (triggers + dialogues, source unique)', () => {
+  const ok = (expr: string, flags: Record<string, boolean>) => evalCondition({ kind: 'flag', expr }, { flags, gameTime: 0 });
   it('flag simple + négation', () => {
-    expect(condMet('a', { a: true })).toBe(true);
-    expect(condMet('a', {})).toBe(false);
-    expect(condMet('!a', {})).toBe(true);
-    expect(condMet('!a', { a: true })).toBe(false);
+    expect(ok('a', { a: true })).toBe(true);
+    expect(ok('a', {})).toBe(false);
+    expect(ok('!a', {})).toBe(true);
+    expect(ok('!a', { a: true })).toBe(false);
   });
   it('flags composés = ET (« v1,!v2 »), pour enchaîner des étapes (ex. vagues d’arène)', () => {
-    expect(condMet('v1,!v2', { v1: true })).toBe(true); // v1 fait, v2 pas encore
-    expect(condMet('v1,!v2', { v1: true, v2: true })).toBe(false); // v2 fait → masqué
-    expect(condMet('v1,!v2', {})).toBe(false); // v1 pas encore
-    expect(condMet(' v1 , !v2 ', { v1: true })).toBe(true); // tolère les espaces
+    expect(ok('v1,!v2', { v1: true })).toBe(true); // v1 fait, v2 pas encore
+    expect(ok('v1,!v2', { v1: true, v2: true })).toBe(false); // v2 fait → masqué
+    expect(ok('v1,!v2', {})).toBe(false); // v1 pas encore
+    expect(ok(' v1 , !v2 ', { v1: true })).toBe(true); // tolère les espaces
   });
 });
 

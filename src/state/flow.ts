@@ -17,7 +17,7 @@
  * vit dans le store (`runFlow`, brique suivante) — comme `applyEffects` aujourd'hui.
  */
 import type { Effect, TemporalCondition } from './scene';
-import { condMet, temporalConditionMet } from './scene';
+import { toDate } from '../engine/clock';
 import type { CharKey, Difficulty } from '../engine/types';
 
 /** Algèbre CLOSE de Conditions (sérialisation-stable). `flag`/`time` reprennent la sémantique des
@@ -40,12 +40,23 @@ export interface ConditionCtx {
   gameTime: number;
 }
 
-/** Évalue une Condition — SOURCE UNIQUE (remplace `condMet`/`temporalConditionMet` à terme). PURE. */
+/** Évalue une Condition — SOURCE UNIQUE de l'évaluation des conditions (triggers, choix de dialogue,
+ *  nœuds `if`). PURE. `flag` : ET de drapeaux avec négation (« v1,!v2 », tolère les espaces) ; `time` :
+ *  fenêtre horaire (heure-du-jour, `before` EXCLUSIF). */
 export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
   switch (cond.kind) {
     case 'always': return true;
-    case 'flag': return condMet(cond.expr, ctx.flags);
-    case 'time': return temporalConditionMet(cond.window, ctx.gameTime);
+    case 'flag':
+      return cond.expr.split(',').map((c) => c.trim()).filter(Boolean)
+        .every((c) => (c.startsWith('!') ? !ctx.flags[c.slice(1)] : !!ctx.flags[c]));
+    case 'time': {
+      const d = toDate(ctx.gameTime);
+      const now = d.hour * 60 + d.minute;
+      const w = cond.window;
+      if (w.afterHour != null && now < w.afterHour * 60 + (w.afterMinute ?? 0)) return false;
+      if (w.beforeHour != null && now >= w.beforeHour * 60 + (w.beforeMinute ?? 0)) return false;
+      return true;
+    }
     case 'all': return cond.of.every((c) => evalCondition(c, ctx));
     case 'any': return cond.of.some((c) => evalCondition(c, ctx));
     case 'not': return !evalCondition(cond.of, ctx);
