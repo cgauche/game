@@ -3,6 +3,7 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
+import { useAttackJetProps } from './jetProps/useAttackJetProps';
 import { RollPanel, type RollRowData } from './RollPanel';
 import { OptionChooser } from './OptionChooser';
 import { CriticalBody } from './RevealModal';
@@ -34,6 +35,7 @@ export function CascadeModal() {
   const choose = useGame((s) => s.cascadeChoose); // étape « choix » : pose l'option retenue
   const resolveAll = useGame((s) => s.cascadeResolveAll); // « Tout lancer » → bilan
   const finish = useGame((s) => s.cascadeFinish); // « Terminer » du bilan
+  const attackProps = useAttackJetProps(); // étape-jet d'attaque : rendue dans CETTE coquille (une fenêtre)
 
   if (!p) return null;
   const pool: Combatant[] = battle?.combatants ?? party;
@@ -97,6 +99,9 @@ export function CascadeModal() {
 
   const cur = p.participants[p.cursor];
   if (!cur) return null;
+  // ÉTAPE-JET de combat : le jet (attaque) est rendu via son hook de props dans la MÊME coquille
+  // restée montée → le jet et ses conséquences vivent dans UNE seule fenêtre, jusqu'à « Terminer ».
+  if (cur.jet === 'attack') return attackProps ? <RollFlowShell {...attackProps} /> : null;
   const interaction = stepInteraction(cur);
   const isLast = p.cursor + 1 >= p.participants.length;
   // Étapes DÉJÀ validées (figées), avec portrait ET conséquence (note) — pile persistante (tous types).

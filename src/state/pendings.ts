@@ -608,6 +608,10 @@ export interface CascadeStep extends RollParticipant {
   /** Héros qui lance (résolu via `actorIn`). Absent → étape de groupe (rare). */
   actorId?: string;
   icon?: string;
+  /** Étape-JET de combat : le jet d'attaque/défense/magie EST l'étape 0 de la séquence, rendu par
+   *  `CascadeModal` via le hook de props correspondant (`useAttackJetProps`…) → une seule fenêtre.
+   *  Les données du jet vivent dans `pendingAttack`/`pendingDefense`/`pendingCast` (coexistants). */
+  jet?: 'attack' | 'defense' | 'cast';
   /** Libellé du Test affiché (« Résistance », « Calme », « Survie en extérieur »…). */
   rollLabel?: string;
   /** Valeur « brute » du Test (carac/compétence, avant difficulté) — affichage. */

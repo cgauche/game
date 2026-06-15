@@ -137,7 +137,7 @@ import { bus, EVT } from './bus';
 import { campaign, campaignWorldMap } from '../scenes/campaign';
 import { dayIndex, runDailyUpkeep } from './upkeep';
 import * as travelFlow from './travelFlow';
-import { advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice } from './cascade';
+import { startCascade, advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice } from './cascade';
 
 export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'test' | 'interlude' | 'coop' | 'compendium';
 
@@ -2396,8 +2396,11 @@ export const useGame = create<GameState>((set, get) => ({
         return;
       }
     }
-    // Ouvre la modale d'attaque (le jet se fait après le clic « Lancer »).
+    // Ouvre la SÉQUENCE de combat : le jet d'attaque est l'ÉTAPE 0 (rendu par CascadeModal via
+    // useAttackJetProps), ses conséquences s'empileront APRÈS dans la MÊME fenêtre. Les données du
+    // jet vivent dans pendingAttack (coexistant) ; les actions attack* restent inchangées.
     set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null } });
+    startCascade(get, set, { title: 'Attaque', icon: '⚔️', purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: active.id }] });
   },
 
   battleEndTurn: () => {
@@ -2888,13 +2891,24 @@ export const useGame = create<GameState>((set, get) => ({
         if (b2) set({ battle: { ...b2, movementUsed: mountMovement(b2, attacker) } });
       }
     }
+    // Séquence de combat (jet = étape 0) : enchaîner sur les conséquences empilées par
+    // applyAttackResult, ou clore (resume) si aucune. Uniquement l'attaque-Action NON enchaînée
+    // (pendingAttack nul ici = pas de 2ᵉ frappe/balayage re-ouvert) ; les enchaînées gardent l'ancien
+    // flux pour l'instant (migrées plus tard, avec recette navigateur).
+    const seq = get().pendingCascade;
+    if (seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'attack' && !get().pendingAttack) {
+      get().cascadeNext();
+    }
   },
   attackCancel: () => {
     const pa = get().pendingAttack;
     if (pa?.fromCharge) return; // après une Charge, l'attaque est obligatoire (LDB 15-Dépl l.75)
     if (pa?.dualSecond) return; // 2ᵉ frappe d'un dual : engagée dès que la cible est choisie (le jet est imposé)
     if (pa?.cleave) return get().cleaveEnd(); // annuler un enchaînement = terminer le balayage
-    set({ pendingAttack: null });
+    // Annuler ferme aussi la séquence-jet de combat (étape 0 non encore validée).
+    const seq = get().pendingCascade;
+    const closeSeq = seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'attack';
+    set({ pendingAttack: null, ...(closeSeq ? { pendingCascade: null } : {}) });
   },
   cleaveAttack: (targetId) => {
     const { battle, pendingCleave: pc } = get();

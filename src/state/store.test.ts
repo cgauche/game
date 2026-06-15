@@ -188,6 +188,52 @@ describe('Boucle de jeu (store)', () => {
     expect(h.armour.corps).toBe(3);          // PA intacte (rien dévié)
   });
 
+  // ── Phase A — « une situation = une modale » : le JET d'attaque est l'ÉTAPE 0 de la séquence ──
+  // L'attaque ouvre un pendingCascade purpose 'combat' dont l'étape 0 (`jet:'attack'`) est rendue par
+  // CascadeModal via useAttackJetProps ; ses conséquences s'empilent DANS la même séquence (une fenêtre).
+  function mkAttackSeq(res: AttackResult) {
+    seedBattleRng(20260615);
+    const chars = { CC: 45, CT: 30, F: 40, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+    const hero = {
+      id: 'h1', name: 'Hardi', kind: 'hero', characteristics: chars, wounds: { current: 15, max: 15 },
+      advantage: 0, conditions: [], movement: 4, skills: [], talents: [], engagedWith: [], pos: { x: 0, y: 0 },
+      size: 'moyenne', weapons: [{ name: 'Épée', type: 'melee', damage: '+BF', qualities: [] }], items: [], fate: 0,
+    } as unknown as Combatant;
+    const enemy = {
+      id: 'e1', name: 'Brute', kind: 'enemy', characteristics: chars, wounds: { current: 40, max: 40 },
+      advantage: 0, conditions: [], movement: 4, skills: [], talents: [], engagedWith: [], pos: { x: 1, y: 0 },
+      size: 'moyenne', weapons: [{ name: 'Gourdin', type: 'melee', damage: '+BF', qualities: [] }],
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, items: [], criticalWounds: 0,
+    } as unknown as Combatant;
+    const battle: BattleState = {
+      combatants: [hero, enemy], order: [hero.id, enemy.id], baseOrder: [hero.id, enemy.id],
+      turn: 0, round: 1, action: null, selectedSpell: null, reachable: new Map(),
+      movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
+    };
+    useGame.setState({
+      battle, mode: 'battle',
+      pendingAttack: { attackerId: 'h1', targetId: 'e1', location: null, result: res },
+      pendingCascade: { title: 'Attaque', icon: '⚔️', purpose: 'combat', cursor: 0, log: [], participants: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: 'h1' }] },
+    });
+  }
+
+  it('Attaque (jet = étape 0) : une touche simple clôt la séquence (jet seul → resume)', () => {
+    mkAttackSeq({ hit: true, attackerRoll: 23, netSL: 2, location: 'corps', damage: 5, woundsLost: 3, critical: false, advantageTo: 'attacker', defenderDefeated: false, log: 'Touché' });
+    useGame.getState().attackConfirm();
+    expect(useGame.getState().pendingAttack).toBeNull();
+    expect(useGame.getState().pendingCascade).toBeNull(); // aucune conséquence empilée → séquence finalisée
+  });
+
+  it('Attaque (jet = étape 0) : un Coup Critique s’empile DANS la même séquence (pas de 2ᵉ fenêtre)', () => {
+    mkAttackSeq({ hit: true, attackerRoll: 24, netSL: 4, location: 'corps', damage: 9, woundsLost: 4, critical: true, advantageTo: 'attacker', defenderDefeated: false, log: 'Coup Critique' });
+    useGame.getState().attackConfirm();
+    const seq = useGame.getState().pendingCascade;
+    expect(seq?.purpose).toBe('combat');
+    expect(seq?.participants[0]?.jet).toBe('attack');                          // le jet reste l'étape 0
+    expect(seq?.participants.some((s) => s.kind === 'critical')).toBe(true);   // conséquence INLINE, même séquence
+    expect(useGame.getState().pendingAttack).toBeNull();
+  });
+
   // ── Phase C2a — qualité d'outil sur les Tests HORS COMBAT (Pratique/Peu Fiable/Bâclé) ──
   it('Effect.test : le nom d’outil est résolu vers pendingTest.itemUid (héros qui agit)', () => {
     const chars = { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 55, Int: 30, FM: 30, Soc: 30 };
@@ -1365,7 +1411,7 @@ describe('Avancement par PX (store) — câblage moteur', () => {
     const scene = emptyScene(6, 6);
     scene.id = 'xp-scene';
     scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
-    scene.triggers.push({ id: 't-xp', rect: { x: 2, y: 0, w: 1, h: 1 }, once: true, effects: [{ type: 'giveXp', amount: 100 }] });
+    scene.triggers.push({ id: 't-xp', rect: { x: 2, y: 0, w: 1, h: 1 }, once: true, flow: flowFromEffects([{ type: 'giveXp', amount: 100 }]) });
     useGame.setState({ party: [a, b] });
     useGame.getState().startScene(scene);
     useGame.getState().moveParty({ x: 2, y: 0 }); // entre dans la zone du trigger
