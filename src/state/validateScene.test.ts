@@ -39,6 +39,38 @@ describe('validateScene', () => {
     expect(msgs(validateScene([s])).some((m) => /déborde/.test(m))).toBe(true);
   });
 
+  function twoLevel() {
+    const s = base(); // 5×5
+    const z1 = new Array(25).fill('vide') as string[];
+    z1[1 * 5 + 1] = 'plancher'; // (1,1) marchable à l'étage
+    s.levels.push({ z: 1, tiles: z1 });
+    return s;
+  }
+
+  it('escalier valide (parterre→étage marchable, z différent) → 0 avertissement escalier', () => {
+    const s = twoLevel();
+    s.stairs = [{ from: { x: 1, y: 1, z: 0 }, to: { x: 1, y: 1, z: 1 } }];
+    expect(msgs(validateScene([s])).some((m) => /escalier/i.test(m))).toBe(false);
+  });
+
+  it('escalier vers un étage inexistant → avertissement', () => {
+    const s = twoLevel();
+    s.stairs = [{ from: { x: 1, y: 1, z: 0 }, to: { x: 1, y: 1, z: 5 } }];
+    expect(msgs(validateScene([s])).some((m) => /escalier.*étage 5 inexistant/i.test(m))).toBe(true);
+  });
+
+  it('escalier sur une case non marchable (vide) → avertissement', () => {
+    const s = twoLevel();
+    s.stairs = [{ from: { x: 1, y: 1, z: 0 }, to: { x: 2, y: 2, z: 1 } }]; // (2,2,1) = vide
+    expect(msgs(validateScene([s])).some((m) => /escalier.*non marchable/i.test(m))).toBe(true);
+  });
+
+  it('escalier reliant le même étage → avertissement', () => {
+    const s = twoLevel();
+    s.stairs = [{ from: { x: 1, y: 1, z: 0 }, to: { x: 2, y: 1, z: 0 } }];
+    expect(msgs(validateScene([s])).some((m) => /escalier.*même étage/i.test(m))).toBe(true);
+  });
+
   it('ids dupliqués → erreur', () => {
     const s = base();
     s.entities.push({ id: 'dup', kind: 'prop', pos: { x: 0, y: 0 } }, { id: 'dup', kind: 'prop', pos: { x: 1, y: 1 } });

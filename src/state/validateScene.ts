@@ -1,4 +1,5 @@
 import type { Scene, Effect } from './scene';
+import { isWalkable } from './scene';
 import type { WorldMap } from './worldMap';
 import { allMusicDefs } from '../audio/music';
 
@@ -87,6 +88,16 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       if (e.dialogueId && !dlgIds.has(e.dialogueId)) add('error', 'entity', e.id, `${e.label ?? e.id} → dialogue inexistant « ${e.dialogueId} »`);
       if (!within(e.pos.x, e.pos.y)) add('warn', 'entity', e.id, `${e.label ?? e.id} hors carte (${e.pos.x},${e.pos.y})`);
       if (e.z && !levelZs.has(e.z)) add('warn', 'entity', e.id, `${e.label ?? e.id} sur étage ${e.z} inexistant`);
+    }
+    // Escaliers (franchissements verticaux) : chaque extrémité dans la carte, sur un niveau existant et
+    // une case marchable ; relier deux étages DIFFÉRENTS (sinon l'escalier ne sert à rien).
+    for (const st of s.stairs ?? []) {
+      for (const end of [st.from, st.to]) {
+        if (!within(end.x, end.y)) add('warn', 'scene', undefined, `Escalier hors carte (${end.x},${end.y},z${end.z})`);
+        else if (!levelZs.has(end.z)) add('warn', 'scene', undefined, `Escalier vers l'étage ${end.z} inexistant`);
+        else if (!isWalkable(s, end.x, end.y, end.z)) add('warn', 'scene', undefined, `Escalier sur une case non marchable (${end.x},${end.y},z${end.z})`);
+      }
+      if (st.from.z === st.to.z) add('warn', 'scene', undefined, `Escalier reliant le même étage (z${st.from.z})`);
     }
     for (const b of s.buildings ?? []) {
       if (b.interiorScene && !sceneIds.has(b.interiorScene)) add('error', 'building', b.id, `${b.label ?? b.id} → scène intérieure inexistante « ${b.interiorScene} »`);
