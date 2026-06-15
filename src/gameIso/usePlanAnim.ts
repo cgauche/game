@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { bus, EVT } from '../state/bus';
 import { useGame } from '../state/store';
 import { hasLeap } from '../engine/traits/dispatch';
-import { planById, bodyPlanOf, type BodyPlanId, type BodyPlan, type WingState } from './rig/bodyPlan';
-import { creatureMatch } from './rig/creatures';
+import { planById, type BodyPlanId, type BodyPlan, type WingState } from './rig/bodyPlan';
 import { quadAttackPose, hasQuadAttackPose } from './rig/anim/creatureAttackPoses';
 import { project, type View } from './rig/facing';
 import type { Dir8 } from '../state/dir8';
@@ -40,7 +39,7 @@ const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
  * `plan` (null si monolithique), l'espèce, la `pose` courante, et `view`+`mirror`. EXTRAIT
  * d'AnimatedPlanToken pour être PARTAGÉ — le token seul ET MountedToken (monture) le consomment.
  */
-export function usePlanAnim(id: string, name: string, dead?: boolean, facing?: Dir8, pos?: { x: number; y: number }, prone?: boolean): {
+export function usePlanAnim(id: string, planId: BodyPlanId | 'monolithic', species: string, dead?: boolean, facing?: Dir8, pos?: { x: number; y: number }, prone?: boolean): {
   plan: BodyPlan | null;
   species: string;
   pose: Record<string, number>;
@@ -59,8 +58,7 @@ export function usePlanAnim(id: string, name: string, dead?: boolean, facing?: D
   const posRef = useRef(pos); // CULLING : tuile lue dans le rAF sans re-souscrire (pos stable)
   posRef.current = pos;
 
-  const planId = bodyPlanOf(name);
-  const plan = planId === 'monolithic' ? null : planById(planId as BodyPlanId);
+  const plan = planId === 'monolithic' ? null : planById(planId);
   const hasIdle = !!plan?.idlePose;
 
   useEffect(() => {
@@ -119,7 +117,7 @@ export function usePlanAnim(id: string, name: string, dead?: boolean, facing?: D
     return () => { offMove(); offAttack(); offImpact(); if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0; } };
   }, [id, plan, hasIdle, dead, prone]);
 
-  const species = plan ? (creatureMatch(name)?.name ?? plan.speciesNames()[0] ?? '') : '';
+  const speciesName = plan ? (species || plan.speciesNames()[0] || '') : ''; // espèce résolue (passée), repli 1re du plan
   const m = modeRef.current;
   const now = performance.now();
   // Recul (touché/dérobade), amplitude en cloche : quadrupède/ailé ont leur recul dédié (mêmes
@@ -151,5 +149,5 @@ export function usePlanAnim(id: string, name: string, dead?: boolean, facing?: D
   const wings: WingState =
     dead || prone || m.kind === 'walk' || m.kind === 'attack' || m.kind === 'dying' ? 'spread' : 'folded';
   const fv = worldDir ? project(worldDir, camRot) : { view: 'front' as View, mirror: false };
-  return { plan, species, pose, view: fv.view, mirror: fv.mirror, wings };
+  return { plan, species: speciesName, pose, view: fv.view, mirror: fv.mirror, wings };
 }

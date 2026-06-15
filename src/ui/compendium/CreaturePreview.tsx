@@ -5,13 +5,13 @@
  * dans l'éditeur, on voit en DIRECT le résultat de la modification.
  */
 import { useMemo } from 'react';
-import { classifyEnemy, entityRigProfile } from '../../gameIso/rig/enemyProfile';
+import { entityRigProfile } from '../../gameIso/rig/enemyProfile';
 import { resolveRig } from '../../gameIso/rig/composeRig';
 import { bonesToSvg } from '../../gameIso/rig/renderBones';
-import { bodyPlanOf, planById } from '../../gameIso/rig/bodyPlan';
-import { creatureMatch } from '../../gameIso/rig/creatures';
+import { resolveRender, planById } from '../../gameIso/rig/bodyPlan';
 import { eyesArtFromKeys } from '../../gameIso/rig/parts/eyes';
 import { hashSeed } from '../../gameIso/appearance';
+import { findCreature } from '../../data';
 import { DEFS } from '../../gameIso/sprites';
 import type { View } from '../../gameIso/rig/facing';
 import type { Palette } from '../../gameIso/rig/palette';
@@ -19,18 +19,19 @@ import type { EntityAppearance } from '../../state/scene';
 
 function rigSvg(name: string, a: EntityAppearance | undefined, view: View): string {
   const seed = a?.seed ?? hashSeed(name);
-  if (classifyEnemy(name) === 'rig') {
+  // Résolution UNIQUE par la donnée (espèce explicite de l'apparence + trait Nuée du record), repli nom.
+  const r = resolveRender(a?.species, findCreature(name)?.traits, name);
+  if (r.kind === 'rig') {
     const p = entityRigProfile(name, seed, {
       species: a?.species, tenue: a?.tenue, monster: a?.monster, features: a?.features,
       colors: a?.colors, parts: a?.parts, sex: a?.sex, build: a?.build, eyes: a?.eyes,
     });
     return p ? bonesToSvg(resolveRig(p.appearance, p.equip, {}, p.tenue, view, [])) : '';
   }
-  const plan = planById(bodyPlanOf(name));
+  const plan = planById(r.plan);
   if (!plan) return '';
-  const species = creatureMatch(name)?.name ?? name;
-  if (!plan.hasView(species, view)) return '';
-  return bonesToSvg(plan.resolve(species, view, plan.restPose(), { colors: a?.colors as Palette, eyes: eyesArtFromKeys(a?.eyes) }));
+  if (!plan.hasView(r.species, view)) return '';
+  return bonesToSvg(plan.resolve(r.species, view, plan.restPose(), { colors: a?.colors as Palette, eyes: eyesArtFromKeys(a?.eyes) }));
 }
 
 export function CreaturePreview({ name, appearance }: { name: string; appearance?: EntityAppearance }) {

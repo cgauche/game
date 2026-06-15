@@ -8,7 +8,7 @@ import { enemyRigProfile } from './rig/enemyProfile';
 import { defaultAppearance } from './rig/appearance';
 import { equipFromCombatant, isShield } from './rig/parts/equipment';
 import { combatantAppearance, combatantOverlays } from './rig/parts/combatantVisuals';
-import { bipedSpeciesScale, creatureSpeciesScale } from './rig/creatures';
+import { resolveRender } from './rig/bodyPlan';
 import { sizeTokenScale } from './sizeScale';
 import { isOutOfAction } from '../engine/conditions';
 import type { Combatant } from '../engine/types';
@@ -21,8 +21,10 @@ import type { Combatant } from '../engine/types';
  * Rendu dans la boîte 120×150 de la monture : à insérer dans un BodyToken à l'échelle monture.
  */
 export function MountedToken({ mount, rider }: { mount: Combatant; rider: Combatant }) {
-  // Monture : gabarit animé. Sa vue/mirror sont autoritaires pour le couple.
-  const mountA = usePlanAnim(mount.id, mount.name, isOutOfAction(mount), undefined, mount.pos);
+  // Monture : gabarit animé. Plan + espèce RÉSOLUS par la donnée (resolveRender), plus par le nom.
+  // Sa vue/mirror sont autoritaires pour le couple.
+  const mr = resolveRender(mount.species, mount.traits, mount.name);
+  const mountA = usePlanAnim(mount.id, mr.plan, mr.species, isOutOfAction(mount), undefined, mount.pos);
   // Cavalier : apparence/équipement dérivés (héros = du Combatant ; ennemi/PNJ = profil rig).
   const prof = rider.kind === 'hero' ? null : enemyRigProfile(rider);
   const appearance = combatantAppearance(prof?.appearance ?? rider.appearance ?? defaultAppearance(rider), rider);
@@ -47,7 +49,7 @@ export function MountedToken({ mount, rider }: { mount: Combatant; rider: Combat
   // cavalier garde SA taille de rendu en selle (échelle cavalier ÷ échelle monture, art × Taille).
   // Fin de l'ex-RIDE_SCALE 0.78 codé en dur : un cheval recalibré ou une autre monture (loup
   // funeste…) garde un couple proportionné gratuitement.
-  const k = bipedSpeciesScale(rider.name) / (creatureSpeciesScale(mount.name) * sizeTokenScale(mount.size));
+  const k = resolveRender(rider.species, rider.traits, rider.name).scale / (mr.scale * sizeTokenScale(mount.size));
   // Monture montée = monture HARNACHÉE (selle/sangle/rênes — os synthétiques z-calés).
   const merged = seatRiderOnMount([...mountBones, ...mountTackBones(mountBones, view)], riderBones, { view, mountScale: 1, riderScale: k });
   return <g transform={mountA.mirror ? 'translate(120,0) scale(-1,1)' : undefined} dangerouslySetInnerHTML={{ __html: bonesToSvg(merged) }} />;

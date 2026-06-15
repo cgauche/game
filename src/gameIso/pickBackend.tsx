@@ -5,9 +5,9 @@ import { isOutOfAction } from '../engine/conditions';
 import { AnimatedRigToken } from './AnimatedRigToken';
 import { AmbientRigToken } from './AmbientRigToken';
 import { AnimatedPlanToken } from './AnimatedPlanToken';
-import { enemyRigProfile, entityRigProfile, classifyBy } from './rig/enemyProfile';
-import { bodyPlanOf } from './rig/bodyPlan';
-import { bipedSpeciesScale, creatureSpeciesScale } from './rig/creatures';
+import { enemyRigProfile, entityRigProfile } from './rig/enemyProfile';
+import { resolveRender } from './rig/bodyPlan';
+import { findCreature } from '../data';
 import { eyesArtFromKeys } from './rig/parts/eyes';
 import { entitySprite, pnjSprite } from './sprites';
 import { hashSeed } from './appearance';
@@ -85,21 +85,22 @@ export function pickBackend(subject: TokenSubject, view: 'iso' | 'top' = 'iso'):
 
   if (subject.kind === 'combatant') {
     const c = subject.combatant;
-    // On décide par le PLAN CORPOREL (humanoïde vs créature), PAS par le camp. `kind==='hero'` est
-    // surchargé (PJ bipède OU acteur allié — cheval libre compris) : router sur kind dessinerait un
-    // cheval allié comme un humanoïde. Donc : nom humanoïde → rig ; créature → gabarit animé (plan).
-    if (classifyBy(c.species, c.traits, c.name) === 'rig') {
+    // Résolution de rendu UNIQUE par la DONNÉE (espèce explicite + trait Nuée), repli nom : classe
+    // (rig humanoïde vs gabarit créature), plan, espèce canonique, échelle. `kind==='hero'` est
+    // surchargé (PJ bipède OU acteur allié — cheval libre compris) → on route par le PLAN CORPOREL.
+    const r = resolveRender(c.species, c.traits, c.name);
+    if (r.kind === 'rig') {
       const prof = c.kind === 'hero' ? null : enemyRigProfile(c);
       if (top) {
         const appearance = combatantAppearance(prof?.appearance ?? c.appearance ?? defaultAppearance(c), c);
         const equip = prof?.equip ?? equipFromCombatant(c);
         const tenue = prof?.tenue ?? c.career;
         const f = faceFrame(appearance, equip, tenue, combatantOverlays(c));
-        return { backend: 'rig', id: c.id, speciesScale: bipedSpeciesScale(c.name), portraitBox: f.box, flat: true, body: f.body };
+        return { backend: 'rig', id: c.id, speciesScale: r.scale, portraitBox: f.box, flat: true, body: f.body };
       }
-      return { backend: 'rig', id: c.id, speciesScale: bipedSpeciesScale(c.name), portraitBox: FACE_BOX, flat: false, body: <AnimatedRigToken combatant={c} profile={prof ?? undefined} pos={c.pos} /> };
+      return { backend: 'rig', id: c.id, speciesScale: r.scale, portraitBox: FACE_BOX, flat: false, body: <AnimatedRigToken combatant={c} profile={prof ?? undefined} pos={c.pos} /> };
     }
-    return { backend: 'plan', id: c.id, speciesScale: creatureSpeciesScale(c.name), portraitBox: CREATURE_BOX, flat: top, body: <AnimatedPlanToken id={c.id} name={c.name} colors={c.appearance?.colors} eyes={c.appearance?.eyes} dead={groundStateOf(c) === 'corpse' || isOutOfAction(c)} prone={groundStateOf(c) === 'prone'} pos={c.pos} /> };
+    return { backend: 'plan', id: c.id, speciesScale: r.scale, portraitBox: CREATURE_BOX, flat: top, body: <AnimatedPlanToken id={c.id} planId={r.plan} species={r.species} colors={c.appearance?.colors} eyes={c.appearance?.eyes} dead={groundStateOf(c) === 'corpse' || isOutOfAction(c)} prone={groundStateOf(c) === 'prone'} pos={c.pos} /> };
   }
 
   if (subject.kind === 'partyLeader') {
@@ -118,23 +119,24 @@ export function pickBackend(subject: TokenSubject, view: 'iso' | 'top' = 'iso'):
   const ent = subject.ent;
   const id = `e-${ent.id}`;
   const seed = ent.appearance?.seed ?? hashSeed(ent.id);
+  const refName = ent.ref ?? ent.label ?? 'Villageois';
+  // Résolution UNIQUE par la donnée (espèce explicite de l'entité + trait Nuée du record), repli nom.
+  const r = resolveRender(ent.appearance?.species, findCreature(refName)?.traits, refName);
   const prof =
     ent.kind === 'personnage'
-      ? entityRigProfile(ent.ref ?? ent.label ?? 'Villageois', seed, { species: ent.appearance?.species, tenue: ent.appearance?.tenue, monster: ent.appearance?.monster, features: ent.appearance?.features, weapon: ent.weapon, colors: ent.appearance?.colors, parts: ent.appearance?.parts, sex: ent.appearance?.sex, build: ent.appearance?.build, eyes: ent.appearance?.eyes })
+      ? entityRigProfile(refName, seed, { species: ent.appearance?.species, tenue: ent.appearance?.tenue, monster: ent.appearance?.monster, features: ent.appearance?.features, weapon: ent.weapon, colors: ent.appearance?.colors, parts: ent.appearance?.parts, sex: ent.appearance?.sex, build: ent.appearance?.build, eyes: ent.appearance?.eyes })
       : null;
   if (prof) {
     if (top) {
       const f = faceFrame(prof.appearance, prof.equip, prof.tenue, []);
-      return { backend: 'rig', id, speciesScale: bipedSpeciesScale(ent.ref ?? ent.label ?? ''), portraitBox: f.box, flat: true, body: f.body };
+      return { backend: 'rig', id, speciesScale: r.scale, portraitBox: f.box, flat: true, body: f.body };
     }
-    return { backend: 'rig', id, speciesScale: bipedSpeciesScale(ent.ref ?? ent.label ?? ''), portraitBox: FACE_BOX, flat: false, body: <AmbientRigToken profile={prof} anim={ent.anim ?? ''} id={id} facing={ent.facing} pos={ent.pos} /> };
+    return { backend: 'rig', id, speciesScale: r.scale, portraitBox: FACE_BOX, flat: false, body: <AmbientRigToken profile={prof} anim={ent.anim ?? ''} id={id} facing={ent.facing} pos={ent.pos} /> };
   }
-  const refName = ent.ref ?? ent.label ?? '';
-  const planId = bodyPlanOf(refName);
-  if (planId !== 'biped' && planId !== 'monolithic') {
+  if (r.kind === 'plan' && r.plan !== 'monolithic') {
     // ent.appearance.eyes = CLÉS du catalogue (donnée éditeur) → résolues en arts ici
     // (les combattants passent par riggedAppearance au spawn, qui résout déjà).
-    return { backend: 'plan', id, speciesScale: creatureSpeciesScale(refName), portraitBox: CREATURE_BOX, flat: top, body: <AnimatedPlanToken id={id} name={refName} colors={ent.appearance?.colors} eyes={eyesArtFromKeys(ent.appearance?.eyes)} facing={ent.facing} pos={ent.pos} /> };
+    return { backend: 'plan', id, speciesScale: r.scale, portraitBox: CREATURE_BOX, flat: top, body: <AnimatedPlanToken id={id} planId={r.plan} species={r.species} colors={ent.appearance?.colors} eyes={eyesArtFromKeys(ent.appearance?.eyes)} facing={ent.facing} pos={ent.pos} /> };
   }
   return { backend: 'sprite', id, speciesScale: 1, portraitBox: FACE_BOX, flat: false, body: <g dangerouslySetInnerHTML={{ __html: entitySprite(ent) }} /> };
 }
