@@ -64,6 +64,20 @@ export function parseStatEntry(raw: string): StatEntry {
   return out;
 }
 
+/**
+ * Trait STRUCTURÉ (de-POC : fin du parsing de chaînes au runtime). Le bestiaire stocke des
+ * `TraitInstance`, plus des chaînes re-parsées partout. `key` = clé canonique du registre (sinon le
+ * nom brut : « Arme », « À distance », étiquette naturelle « Griffes ») ; `value` = numérique
+ * (Indice ou bonus signé) ; `arg` = parenthèse non-numérique ; `count` = compte en tête ; `range` = portée.
+ */
+export interface TraitInstance {
+  key: string;
+  value?: number;
+  arg?: string;
+  count?: number;
+  range?: number;
+}
+
 /** Nom canonique seul (raccourci pour les lookups Codex/registre). */
 export const statName = (raw: string): string => parseStatEntry(raw).name;
 

@@ -6,9 +6,32 @@
  */
 import type { CharKey, Combatant } from '../types';
 import { TRAITS, TraitDef } from './registry';
-import { parseStatEntry } from '../statEntry';
+import { parseStatEntry, type TraitInstance } from '../statEntry';
 
 const KEY_BY_LOWER = new Map(Object.keys(TRAITS).map((k) => [k.toLowerCase(), k]));
+
+/** IMPORT (saisie éditeur / migration JSON) : chaîne de statbloc → trait STRUCTURÉ. La clé est
+ *  canonicalisée sur le registre (« morsure » → « Morsure ») ; sinon le nom brut est conservé
+ *  (« Arme », « À distance », « Griffes »). C'est le SEUL endroit qui parse — le runtime lit les champs. */
+export function parseTraitInstance(raw: string): TraitInstance {
+  const p = parseStatEntry(raw);
+  const t: TraitInstance = { key: KEY_BY_LOWER.get(p.name.toLowerCase()) ?? p.name };
+  const value = p.bonus ?? p.indice;
+  if (value != null) t.value = value;
+  if (p.arg != null) t.arg = p.arg;
+  if (p.count != null) t.count = p.count;
+  if (p.range != null) t.range = p.range;
+  return t;
+}
+
+/** Rendu lisible d'un trait structuré (inverse de l'import) — inspecteur / Codex / éditeur. */
+export function formatTrait(t: TraitInstance): string {
+  let s = t.count != null ? `${t.count} ${t.key}` : t.key;
+  if (t.arg) s += ` (${t.arg})`;
+  if (t.value != null) s += ` ${t.value}`;
+  if (t.range != null) s += ` (${t.range})`;
+  return s;
+}
 
 export interface ParsedTrait {
   /** Clé canonique du registre (« Démoniaque »). */
