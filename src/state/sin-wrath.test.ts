@@ -37,7 +37,7 @@ function confirmPrayerWithRoll(casterId: string, targetId: string, roll: number,
 
 describe('Péché et Colère Divine (LDB 40)', () => {
   beforeEach(() => {
-    useGame.setState({ battle: null, pendingCast: null, pendingReveals: [], party: [], journal: [] });
+    useGame.setState({ battle: null, pendingCast: null, pendingReveals: [], pendingCascade: null, party: [], journal: [] });
     useGame.getState().seedRng(11);
   });
 
@@ -83,14 +83,15 @@ describe('Péché et Colère Divine (LDB 40)', () => {
     expect(useGame.getState().party.find((h) => h.id === priest.id)!.sinPoints).toBe(1);
   });
 
-  it('le jet de Colère est décalé de +10 par Péché (l.53) — observable via rolls du reveal', () => {
+  it('le jet de Colère est décalé de +10 par Péché (l.53) — observable via le dé de l\'étape', () => {
     const { priest, ally, party } = priestParty(5);
     useGame.setState({ party });
     confirmPrayerWithRoll(priest.id, ally.id, 41); // unités 1 ≤ 5
-    const reveal = useGame.getState().pendingReveals.find((r) => r.kind === 'miscast');
-    expect(reveal).toBeTruthy();
+    // La Colère est INLINE dans la séquence (étape 'miscast' portant la charge riche `reveal`).
+    const step = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'miscast');
+    expect(step?.reveal?.kind).toBe('miscast');
     // d100 ∈ [1;100] + 5×10 → le jet effectif est forcément > 50.
-    expect(reveal!.dice).toBeGreaterThan(50);
+    expect(step!.reveal!.dice).toBeGreaterThan(50);
   });
 
   it('Effet d\'éditeur giveSin : cible le héros désigné, sinon le premier sachant Prier', () => {

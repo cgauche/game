@@ -144,7 +144,7 @@ export function activeCombatant(battle: BattleState): Combatant | undefined {
 // --- Effets de scène/campagne extraits → combatEffects.ts (baril) ---
 export * from './combatEffects';
 import { pushReveal, applyEffects, gearFromEffects } from './combatEffects';
-import { startCascade, buildConsequenceSteps } from './cascade';
+import { startCascade } from './cascade';
 
 /** Le défenseur choisit sa meilleure réaction : Parade (Corps à corps) ou Esquive
  *  (Agilité + avances, pénalité d'Encombrement incluse) — la plus haute valeur. */
@@ -2199,11 +2199,13 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
   // interrompue (qui pousse déjà sa propre révélation « Calme » portant ces lignes) n'ouvre rien.
   if (caster.kind === 'hero' && !opts?.suppressReveal) {
     const colere = severity === 'colere';
+    const title = colere ? 'Colère des dieux' : 'Incantation Imparfaite';
+    const icon = colere ? '⚡' : '💥';
+    // Charge riche `reveal` (table : dé + lignes) — comme le Critique ; le dé reste observable (Péché +10).
+    const reveal: RevealEntry = { kind: 'miscast', title, dice: m.rolls[0], lines, subjectId: caster.id, severity: 'grave' };
     startCascade(get, set, {
-      title: colere ? 'Colère des dieux' : 'Incantation Imparfaite',
-      icon: colere ? '⚡' : '💥',
-      purpose: 'combat',
-      steps: buildConsequenceSteps([{ kind: 'miscast', label: colere ? 'Colère des dieux' : 'Imparfaite', icon: colere ? '⚡' : '💥', lines, actorId: caster.id }]),
+      title, icon, purpose: 'combat',
+      steps: [{ id: 'cons-miscast-0', kind: 'miscast', actorId: caster.id, icon, label: colere ? 'Colère des dieux' : 'Imparfaite', outcome: lines, reveal, interactive: true }],
     });
   }
   return lines;

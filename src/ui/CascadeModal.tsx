@@ -106,7 +106,7 @@ export function CascadeModal() {
   // Critique) → panneau détaillé partagé `CriticalBody` ; sinon contenu pré-posé (`outcome`) en note.
   if (interaction === 'affichage') {
     const rev = cur.reveal;
-    if (rev) {
+    if (rev && rev.kind === 'critical') {
       const revActor = rev.actorId ? pool.find((c) => c.id === rev.actorId) : undefined;
       const revSubject = rev.subjectId ? pool.find((c) => c.id === rev.subjectId) : undefined;
       return (
