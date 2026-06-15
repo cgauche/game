@@ -20,8 +20,9 @@ import { groupMatch } from './groups';
 import { ignoredArmourAP, impenetrableAt } from './items';
 import { meleeHitPenalty, isEtherial, attacksAreMagical } from './traits/dispatch';
 import { isPsychImmune } from './psychology';
-import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, isMagicWeapon } from './qualities/dispatch';
+import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, rangedOpposeWeapon, isMagicWeapon } from './qualities/dispatch';
 import { offHandPenalty, talentDamageBonus, isSlayer, talentDamageReduction, talentRangedAPIgnore, ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust, talentInitiativeBonus, fearImmuneVs } from './combatFeatures/dispatch';
+import { isEngagedWith } from './engagement';
 
 /** Inverse le jet du toucher (23 → 32 ; « 00 » → 100). */
 export function reverseRoll(r: number): number {
@@ -592,6 +593,31 @@ export function rangeBandName(distanceTiles: number, rangeMeters: number): strin
   if (m <= rangeMeters * 2) return 'Longue';
   if (m <= rangeMeters * 3) return 'Extrême';
   return null;
+}
+
+/**
+ * Modes de défense AUTORISÉS contre une attaque à DISTANCE. Défaut RAW : AUCUN (LDB 13 l.135, le tir
+ * est un Test de Projectiles non opposé). Trois exceptions, indépendantes (le défenseur choisit parmi
+ * les modes obtenus) :
+ *  - Parade : bouclier/arme **Protectrice 2+**, projectile en Ligne de Vue (LDB 62 l.307) ;
+ *  - Parade : tireur **Engagé** avec sa cible (tir au contact) → « n'importe quelle Corps à corps » (LDB 14 l.70) ;
+ *  - Esquive : tir à **Bout Portant** (LDB 14 l.62).
+ * `[]` = tir non défendable → résolution non opposée habituelle.
+ */
+export function rangedDefenseModes(
+  attacker: Combatant,
+  defender: Combatant,
+  weapon: Weapon,
+  distanceTiles: number | undefined,
+  los: boolean,
+): ('parade' | 'esquive')[] {
+  if (cannotDefend(defender)) return []; // Surpris / À Terre… : pas de réaction (LDB 16)
+  const modes = new Set<'parade' | 'esquive'>();
+  if (isEngagedWith(attacker, defender.id)) modes.add('parade'); // tireur Engagé (l.70) : toute Corps à corps
+  else if (los && rangedOpposeWeapon(defender.weapons)) modes.add('parade'); // bouclier Protectrice 2+ en Ligne de Vue (l.307)
+  if (distanceTiles != null && weapon.range && rangeBandName(distanceTiles, weapon.range) === 'Bout portant')
+    modes.add('esquive'); // Bout Portant (l.62)
+  return [...modes];
 }
 
 /** Résout une attaque à distance (Test de Projectiles, non opposé). */
