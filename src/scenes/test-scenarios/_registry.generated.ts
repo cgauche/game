@@ -24,5 +24,6 @@ import { scenario as e19 } from './18-arene';
 import { scenario as e20 } from './19-ciblage';
 import { scenario as e21 } from './20-equipement';
 import { scenario as e22 } from './20-opera-bombe';
+import { scenario as e23 } from './21-opera-theatre';
 
-export const SCENARIOS: TestScenario[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22];
+export const SCENARIOS: TestScenario[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23];
