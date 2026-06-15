@@ -6,6 +6,7 @@ import { isOutOfAction } from '../engine/conditions';
 import { formatImperial } from '../engine/clock';
 import { testScenarios } from '../scenes/test-scenarios';
 import { hoverTargeting } from './targeting';
+import { getViewZ, setViewZ } from '../gameIso/viewLevel';
 import type { Combatant } from '../engine/types';
 
 /**
@@ -117,6 +118,42 @@ export function buildApi() {
       if (!pt) return `❌ cible introuvable`;
       g().moveParty({ ...pt });
       return `✅ groupe → (${pt.x},${pt.y}${pt.z ? `,z${pt.z}` : ''})`;
+    },
+
+    /** VISUALISER LE MULTI-NIVEAUX — décompose le rendu étage par étage (tuiles pleines/vides, murs,
+     *  élévation min/max) + l'étage actuellement mis en avant. Pour comprendre « ce qui est au-dessus
+     *  / en dessous / au même plan ». */
+    levels: () => {
+      const s = g();
+      const sc = s.scene;
+      if (!sc) return '❌ aucune scène';
+      const wallsByZ: Record<number, number> = {};
+      for (const wl of sc.walls ?? []) wallsByZ[wl.z ?? 0] = (wallsByZ[wl.z ?? 0] ?? 0) + 1;
+      return {
+        etageActif: getViewZ() ?? (s.partyPos.z ?? 0),
+        override: getViewZ(),
+        groupeZ: s.partyPos.z ?? 0,
+        etages: [...sc.levels].sort((a, b) => a.z - b.z).map((l) => {
+          const pleines = l.tiles.filter((t) => t !== 'vide').length;
+          const elevs = (l.elev ?? []).filter((e) => e !== 0);
+          return {
+            z: l.z,
+            tuilesPleines: pleines,
+            vide: l.tiles.length - pleines,
+            murs: wallsByZ[l.z] ?? 0,
+            elevation: elevs.length ? { cases: elevs.length, min: Math.min(...elevs), max: Math.max(...elevs) } : 'plat',
+          };
+        }),
+      };
+    },
+
+    /** DEBUG affichage multi-niveaux : force l'étage mis en AVANT (les autres passent en fantôme).
+     *  `__wfrp.viewLevel(1)` montre l'étage ; `__wfrp.viewLevel(0)` le rez ; `__wfrp.viewLevel(null)`
+     *  = automatique (l'étage suit le groupe). Sans argument : renvoie l'override courant. */
+    viewLevel: (z?: number | null) => {
+      if (z === undefined) return { override: getViewZ(), note: 'null = auto (suit le groupe)' };
+      setViewZ(z);
+      return `✅ étage mis en avant : ${z === null ? 'auto (suit le groupe)' : z}`;
     },
 
     /** Navigue vers un écran (menu/party/creator/editor/test/coop/campaign). */

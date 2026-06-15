@@ -3,14 +3,14 @@
  * dessine la scène courante (exploration ou combat), gère le clic→tuile, les
  * surbrillances de combat et le déplacement animé. Réutilise toute la logique.
  */
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import './anim.css';
 import { useGame } from '../state/store';
 import { Scene as GameScene, tileAt, isWalkable, elevAt } from '../state/scene';
 import { sceneIsDark } from '../state/sceneRules';
 import { pathTo, type Pt } from '../state/path';
 import { planJump } from '../state/jumpMove';
-import { applyEffects } from '../state/combatEffects';
+import { runFlow } from '../state/combatEffects';
 import { maxJumpTiles } from '../engine/movement';
 import { effectiveMovement } from '../engine/encumbrance';
 import { zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
@@ -45,7 +45,8 @@ import { BodyToken } from './BodyToken';
 import { pickBackend } from './pickBackend';
 import { MountedToken } from './MountedToken';
 import { groundTile } from './ground';
-import { wallSegs } from './walls';
+import { wallSeg } from './walls';
+import { getViewZ, subscribeViewZ, floorEmphasisOpacity } from './viewLevel';
 import { buildingObj } from './BuildingSprite';
 import { roofHidden } from '../state/buildings';
 import { walkXY, STEP_MS } from './walkPath';
@@ -238,28 +239,41 @@ export function IsoStage() {
   // Planchers fusionnés dans le tri de profondeur GLOBAL (objs) : chaque étage porte une profondeur de
   // bande unique (floorDepth) le plaçant sous SES objets et au-dessus de tout le niveau inférieur — un
   // sol haut SURPLOMBE ainsi les tokens du sol. Tuiles « vide » non rendues (on voit le dessous).
+  // « Un étage à la fois » : l'étage ACTIF (celui du groupe, ou du combattant dont c'est le tour) se rend
+  // PLEIN, les autres en FANTÔME léger → on distingue enfin le sol, l'étage en surplomb et la fosse au
+  // lieu d'un magma de bois superposé. Override DEBUG : devtool `__wfrp.viewLevel(z)`.
+  const viewZ = useSyncExternalStore(subscribeViewZ, getViewZ, getViewZ);
+  const activePos = mode === 'battle' && battle ? (battle.combatants.find((c) => c.id === battle.order[battle.turn])?.pos as { z?: number } | undefined) : undefined;
+  const activeZ = viewZ ?? (activePos?.z ?? partyPos.z ?? 0);
+
   const floorObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
     if (!scene) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
     const out: { d: number; el: JSX.Element }[] = [];
     for (const lvl of [...scene.levels].sort((a, b) => a.z - b.z)) {
       const fd = floorDepth(d, lvl.z);
+      const op = floorEmphasisOpacity(lvl.z, activeZ);
       for (let y = 0; y < d.h; y++)
         for (let x = 0; x < d.w; x++) {
           const html = groundTile(scene, x, y, d, lvl.z);
-          if (html) out.push({ d: fd, el: <g key={`f${lvl.z}-${x}-${y}`} dangerouslySetInnerHTML={{ __html: html }} /> });
+          if (html) out.push({ d: fd, el: <g key={`f${lvl.z}-${x}-${y}`} opacity={op} dangerouslySetInnerHTML={{ __html: html }} /> });
         }
     }
     return out;
-  }, [scene, shownRot, viewMode]);
+  }, [scene, shownRot, viewMode, activeZ]);
 
   // Murs sur arêtes (cloisons fines) : quads verticaux dressés sur les arêtes de case, fusionnés dans
   // le tri de profondeur global (un mur avant occulte ce qui est derrière ; les portes sont ajourées).
   const wallObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
     if (!scene?.walls?.length) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
-    return wallSegs(scene, d).map((w, i) => ({ d: w.d, el: <g key={`wall-${i}`} dangerouslySetInnerHTML={{ __html: w.svg }} /> }));
-  }, [scene, shownRot, viewMode]);
+    // Gated par étage comme les sols : un mur d'un autre niveau passe en fantôme (plus de « fusion » des
+    // cloisons du rez et de l'étage).
+    return (scene.walls).map((w, i) => {
+      const seg = wallSeg(w, d);
+      return { d: seg.d, el: <g key={`wall-${i}`} opacity={floorEmphasisOpacity(w.z ?? 0, activeZ)} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
+    });
+  }, [scene, shownRot, viewMode, activeZ]);
 
   const decorObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
     if (!scene) return [];
@@ -1019,7 +1033,7 @@ export function IsoStage() {
         const plan = planJump(sc, prev, cur, partyM, runUp);
         st.moveParty(cur); // franchit (optimiste) ; un échec de Test fera retomber dans le gouffre
         if (plan.kind === 'test') {
-          applyEffects(useGame.getState, useGame.setState, plan.effects); // modale Athlétisme « Saut » ; échec → fall
+          runFlow(useGame.getState, useGame.setState, plan.flow); // modale Athlétisme « Saut » ; échec → fall
           movingRef.current = false; // on s'arrête au saut : le joueur reclique pour continuer
           return;
         }
