@@ -13,10 +13,6 @@ export const DEMONOLOGIE: SpellSpec[] = [
     //   Bonus d'Endurance et les PA. De plus, vous pouvez augmenter l'une de vos Caractéristiques de
     //   +10 pour la durée. » — Blessures aux Démons (op wounds onlyGroups) ; le gate « FM inférieure »
     //   et le choix du +10 de Caractéristique restent journalisés.
-    ops: [
-      { op: 'wounds', amount: { bonusOf: 'FM' }, onlyGroups: ['Démons'] },
-      { op: 'narrative', text: 'Destruction de Démon Mineur : ne draine que les Démons de Force Mentale inférieure à la vôtre ; vous gagnez alors +10 à une Caractéristique de votre choix pour la durée — arbitrage MJ.' },
-    ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 50 — Démonologie « Destruction de Démon Mineur »',
@@ -25,7 +21,6 @@ export const DEMONOLOGIE: SpellSpec[] = [
     label: 'Détection de démon',
     // « Vous savez immédiatement s'il y a un démon actif à portée, invoqué, lié à un artefact ou
     //   possédant quelqu'un. » — divination : arbitré.
-    ops: [{ op: 'narrative', text: 'Détection de démon : vous percevez toute influence démoniaque à portée (invoquée, liée à un artefact, en possession…) — arbitrage MJ.' }],
     durationRounds: null,
     curated: true,
     source: 'LDB 50 — Démonologie « Détection de démon »',
@@ -35,7 +30,6 @@ export const DEMONOLOGIE: SpellSpec[] = [
     // « Un Démon Mineur apparaît. Test opposé de Focalisation (Dhar)/FM : succès → il exécute un
     //   ordre puis disparaît ; échec → il attaque. » — démon invoqué (moteur d'invocation : Sanguinaire
     //   de Khorne, allié le temps du Sort) ; l'issue du Test opposé (obéir vs se retourner) reste journalisée.
-    ops: [{ op: 'narrative', text: 'Manifestation de Démon mineur : Test opposé de Focalisation (Dhar)/Force Mentale — sur un succès il vous obéit puis disparaît ; sur un échec il se retourne contre vous (passez-le hostile) — arbitrage MJ.' }],
     summon: { ref: 'Sanguinaire de Khorne', count: 1, allyOfCaster: true, despawnIfCasterDown: true },
     durationRounds: { bonusOf: 'FM' },
     curated: true,
@@ -45,7 +39,6 @@ export const DEMONOLOGIE: SpellSpec[] = [
     label: 'Octogramme',
     // « Quiconque possède le Trait Démoniaque ne peut entrer ou sortir de l'octogramme à moins que sa
     //   Force Mentale ne soit deux fois supérieure à la vôtre. » — barrière de protection : arbitré.
-    ops: [{ op: 'narrative', text: 'Octogramme : un cercle protecteur (diamètre BFM m) qu’aucune créature Démoniaque ne peut franchir, sauf si sa Force Mentale dépasse le double de la vôtre — arbitrage MJ.' }],
     durationRounds: null, // « (Force Mentale) minutes »
     curated: true,
     source: 'LDB 50 — Démonologie « Octogramme »',

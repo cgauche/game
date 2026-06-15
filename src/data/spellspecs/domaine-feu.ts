@@ -16,12 +16,6 @@ export const DOMAINE_FEU: SpellSpec[] = [
     // « Test de Calme Intermédiaire (+0) ou hurler de douleur ; échec de −6 DR ou plus →
     //   Inconscient (1d10 heures, marqué à vie). » (cibles sans Magie des Arcanes (Feu) —
     //   condition de Talent non testable ici : le Test est appliqué, fidèle au cas général.)
-    ops: [
-      { op: 'heal', amount: { dice: { n: 1, sides: 10 } } },
-      { op: 'removeCondition', name: 'Hémorragique', value: 99 },
-      { op: 'preventInfection' }, // « De plus, les Blessures ne s'infecteront pas. » (→ woundDressed, LDB 18 l.382)
-      { op: 'test', skill: 'Calme', difficulty: 'intermediaire', onFail: [{ op: 'narrative', text: 'La cible hurle de douleur (Aqshy brûle en guérissant).' }], onFailHard: { dr: -6, ops: [{ op: 'condition', name: 'Inconscient' }] } },
-    ],
     durationRounds: null,
     curated: true,
     source: 'LDB 47 p.247 « Cautériser »',
@@ -32,13 +26,6 @@ export const DOMAINE_FEU: SpellSpec[] = [
     //   Coude-à-coude, Sans peur et Cœur vaillant tant que le Sort est actif. » Sans peur
     //   (immunité Peur/Terreur) et Cœur vaillant (Calme anti-Brisé même Engagé) = op
     //   grantTalent (mécaniques) ; Coude-à-coude (surnombre coopératif) reste arbitrage MJ.
-    ops: [
-      { op: 'removeCondition', name: 'Brisé', value: 99 },
-      { op: 'removeCondition', name: 'Exténué', value: 99 },
-      { op: 'grantTalent', talent: 'Sans peur' },
-      { op: 'grantTalent', talent: 'Cœur vaillant' },
-      { op: 'narrative', text: 'Cœurs ardents : +1 Talent Coude-à-coude tant que le Sort est actif (arbitrage MJ).' },
-    ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 47 p.247 « Cœurs ardents »',
@@ -49,11 +36,6 @@ export const DOMAINE_FEU: SpellSpec[] = [
     //   Incanter avec Aqshy tant que le Sort est actif. » Peur 1 → op grantTrait (Jalon 2.6) ;
     //   le +10 d'incantation est un castPenalty positif. L'option « +2 DR : +1 Peur OU
     //   reprendre Seigneur de guerre » = un CHOIX → journalisée.
-    ops: [
-      { op: 'grantTrait', trait: 'Peur', indice: 1 },
-      { op: 'castPenalty', skill: 'all', mod: 10, rounds: { bonusOf: 'FM' } },
-      { op: 'narrative', text: 'Couronne de Flammes : +1 Talent Seigneur de guerre tant que le Sort est actif ; par +2 DR, +1 Peur OU Seigneur de guerre repris — arbitrage MJ.' },
-    ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 47 p.247 « Couronne de Flammes »',
@@ -66,11 +48,6 @@ export const DOMAINE_FEU: SpellSpec[] = [
     //   brûler dans la Zone d'Effet pour la durée du Sort. Quiconque se trouve dans la Zone
     //   d'Effet au début d'un Round subit 1d10+6 Dégâts, qui ignorent les PA et gagne +1 État
     //   En flammes. » — zone persistante (L11) en disque (BFM) m autour de la cible.
-    ops: [
-      { op: 'condition', name: 'En flammes', value: 2 },
-      { op: 'condition', name: 'À Terre' },
-      { op: 'narrative', text: 'Grands feux d’U’Zhul : la ZdE autour de la cible subit aussi +5 Dégâts immédiats (ignore PA) + Test d’Esquive ou En flammes — arbitrage MJ.' },
-    ],
     persistentZone: {
       shape: 'disc',
       radiusMeters: { bonusOf: 'FM' },
@@ -82,9 +59,6 @@ export const DOMAINE_FEU: SpellSpec[] = [
   },
   {
     label: "L'Égide d'Aqshy",
-    ops: [
-      { op: 'narrative', text: 'Égide d’Aqshy : immunisé aux Dégâts de feu non magiques, ignore l’État En flammes, Protection (9+) contre le feu magique (arbitrage MJ).' },
-    ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: "LDB 47 p.247 « L'Égide d'Aqshy »",
@@ -97,13 +71,6 @@ export const DOMAINE_FEU: SpellSpec[] = [
     //   — INVOQUÉE (op conjureWeapon, et non enchantement de l'arme tenue) : épée magique à Dégâts
     //   FIXES +6 (la valeur d'arme, pas un bonus à votre épée), Percutante, +1 En flammes à la touche.
     //   La maladresse d'un porteur sans Magie des Arcanes (Feu) reste journalisée.
-    ops: [
-      { op: 'conjureWeapon', name: 'Épée ardente de Rhuin', damage: 6, subType: 'Base', reach: 'Moyenne', hands: 1, qualities: ['Magique', 'Percutante'], onHitConditions: [{ name: 'En flammes' }],
-        form: 'Épée bâtarde', // silhouette d'épée pour le rendu
-        // Épée de flammes magiques — orange ardent, reflets dorés.
-        skin: { metal: '#ff8a3a', metalH: '#ffe1a3', metalO: '#7e2a10', cuir: '#5a2410', cuirH: '#c1631e', cuirO: '#2a1206', accent: '#ffce4a', accentH: '#fff6d6', accentO: '#d2641e' } },
-      { op: 'narrative', text: 'Épée ardente de Rhuin : un porteur SANS Magie des Arcanes (Feu) qui obtient une Maladresse avec l’Épée subit ses flammes — arbitrage MJ.' },
-    ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: "LDB 48 — Domaine du Feu « L'épée Ardente de Rhuin » (l.216)",
@@ -116,7 +83,6 @@ export const DOMAINE_FEU: SpellSpec[] = [
     //   gagne 1 État En flammes et subit une frappe avec un nombre de Dégâts égal à votre Bonus
     //   de Force Mentale, traitée comme un Projectile magique. » — zone persistante (L11) en MUR
     //   perpendiculaire à l'axe lanceur→cible, centré sur la cible (simplification de tracé).
-    ops: [],
     persistentZone: {
       shape: 'wall',
       lengthMeters: { bonusOf: 'FM' },
@@ -131,10 +97,6 @@ export const DOMAINE_FEU: SpellSpec[] = [
     label: 'Purification',
     // « toutes les créatures dans la zone gagnent +DR État Enflammé » (LDB 48 p.229) —
     // total = DR du jet, mécanique via `valuePerSL` (base 0 + 1/DR, plancher 1 de l'op).
-    ops: [
-      { op: 'condition', name: 'En flammes', value: 0, valuePerSL: { every: 1, amount: 1 } },
-      { op: 'narrative', text: 'Purification : consume les Influences corruptrices de la zone (malepierre, objets du Chaos) — arbitrage MJ.' },
-    ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 47 p.248 « Purification »',

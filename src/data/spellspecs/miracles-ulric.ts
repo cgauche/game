@@ -12,10 +12,6 @@ export const MIRACLES_ULRIC: SpellSpec[] = [
     // « Vous insufflez Peur 1 à tous les ennemis ; ceux dans un rayon de (Sociabilité) m perdent −1
     //   Avantage au début de chaque round. » — Peur 1 (aura du lanceur) ; la perte d'Avantage de zone
     //   reste journalisée.
-    ops: [
-      { op: 'grantTrait', trait: 'Peur', indice: 1 },
-      { op: 'narrative', text: 'Frisson du givre : tous ceux dans un rayon de (Sociabilité) m perdent −1 Avantage au début de chaque round (gelés jusqu’aux os) — arbitrage MJ.' },
-    ],
     durationRounds: { bonusOf: 'Soc' },
     curated: true,
     source: "LDB 42 — Miracles d'Ulric « Frisson du givre »",
@@ -23,7 +19,6 @@ export const MIRACLES_ULRIC: SpellSpec[] = [
   {
     label: "Fureur d'Ulric",
     // « Les cibles gagnent le Trait de créature Frénésie. »
-    ops: [{ op: 'grantTrait', trait: 'Frénésie' }],
     durationRounds: { bonusOf: 'Soc' },
     curated: true,
     source: "LDB 42 — Miracles d'Ulric « Fureur d'Ulric »",
@@ -32,7 +27,6 @@ export const MIRACLES_ULRIC: SpellSpec[] = [
     label: 'Hurlement du loup',
     // « Un loup blanc — statistiques d'un Loup avec les Traits Frénésie, Magique et Taille (Grande) —
     //   combat vos ennemis pour la durée, puis repart. » — invocation d'un allié (moteur d'invocation).
-    ops: [{ op: 'narrative', text: 'Hurlement du loup : à la fin du Miracle, le loup blanc repart aux Terrains de Chasse d’Ulric dans un hurlement effrayant — arbitrage MJ.' }],
     summon: { ref: 'Loup', count: 1, addTraits: ['Frénésie', 'Magique'], size: 'grande', allyOfCaster: true },
     durationRounds: { bonusOf: 'Soc' },
     curated: true,
@@ -43,10 +37,6 @@ export const MIRACLES_ULRIC: SpellSpec[] = [
     // « La cible subit 1d10 Blessures qui ignorent le Bonus d'Endurance et les PA. Si le MJ juge la
     //   cible ni faible, ni couarde, ni fourbe, vous subissez les effets à sa place. » — Blessures
     //   directes ; le jugement moral et le retour sur le lanceur restent journalisés.
-    ops: [
-      { op: 'wounds', amount: { dice: { n: 1, sides: 10 } } },
-      { op: 'narrative', text: 'Jugement du Roi de la neige : si le MJ juge la cible ni faible, ni couarde, ni fourbe, c’est VOUS qui subissez ces Blessures à sa place — arbitrage MJ.' },
-    ],
     durationRounds: null,
     curated: true,
     source: "LDB 42 — Miracles d'Ulric « Jugement du Roi de la neige »",
@@ -59,10 +49,6 @@ export const MIRACLES_ULRIC: SpellSpec[] = [
     //   l'Hémorragique (conditionnels, hache seulement) restent journalisés.
     // « …toute cible VIVANTE frappée teste Résistance (+0) ou gagne Sonné. » — « vivante » = hors des
     //   Groupes Mort-vivant/Démon (système de Groupes) → Test à la touche gaté par exclusion.
-    ops: [
-      { op: 'enchantWeapon', requiresWeapon: 'hache', addQualities: ['Magique'], onHitTest: { exceptGroups: ['Mort-vivant', 'Démon'], skill: 'Résistance', difficulty: 'intermediaire', onFail: [{ name: 'Sonné' }] } },
-      { op: 'narrative', text: 'Morsure de l’hiver : la hache inflige aussi +DR Dégâts et ses frappes retirent tout Hémorragique sans jamais en causer — arbitrage MJ.' },
-    ],
     durationRounds: { bonusOf: 'Soc' },
     curated: true,
     source: "LDB 42 — Miracles d'Ulric « Morsure de l'hiver »",
@@ -72,7 +58,6 @@ export const MIRACLES_ULRIC: SpellSpec[] = [
     // « Les cibles ne subissent aucune pénalité automatique due au froid et aux conditions
     //   hivernales (bien qu'elles ressentent toujours douleur et inconfort). » — immunité à
     //   l'EXPOSITION météo (op weatherWard, lue par engine/exposure) ; la sensation reste narrative.
-    ops: [{ op: 'weatherWard' }],
     durationRounds: null, // « (Bonus de Sociabilité) heures »
     curated: true,
     source: "LDB 42 — Miracles d'Ulric « Peau de loup d'hiver »",

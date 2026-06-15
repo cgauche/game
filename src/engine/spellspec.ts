@@ -17,8 +17,6 @@ export interface SpellSpec {
   /** Désambiguïsation des labels en DOUBLE entre familles (« Enchevêtrement » existe en
    *  Sort d'Arcane ET en Miracle de Taal) : absent = la spec vaut pour tout type. */
   type?: string;
-  /** Ops appliquées à la cible quand le sort est lancé (référent des formules = LANCEUR). */
-  ops: GameOp[];
   /** Durée en Rounds si exprimable (littéral / « (Bonus de X) Rounds » du lanceur) ;
    *  null = Instantané ou durée hors échelle tactique (minutes/heures/jours) —
    *  on n'invente PAS un nombre de rounds (LDB). */
@@ -69,10 +67,6 @@ export interface SpellSpec {
    *  des Blessures réellement infligées par le Projectile (`num/den`, arrondi). Consommé dans la
    *  branche missile (engine/magic ne connaît pas le lanceur côté soin). */
   lifeSteal?: { num: number; den: number; round: 'floor' | 'ceil' };
-  /** Ops appliquées au LANCEUR à l'incantation (en plus de celles sur la cible) : « vous retirez
-   *  tout État Exténué dont vous souffrez » (Vol de vie), buffs de soi d'un sort offensif… Référent
-   *  des formules = le lanceur. Appliquées une seule fois par lancement (missile ou soutien). */
-  casterOps?: GameOp[];
   /** INVOCATION de créature(s) en combat (Nécromancie « Réanimation/Relever les morts », Ulric
    *  « Hurlement du loup », Démonologie « Manifestation »…) : `ref` = créature du bestiaire ; `count`
    *  (+`countPerSL`) = nombre invoqué ; `addTraits`/`size` surchargent le statbloc (loup blanc =
@@ -120,12 +114,16 @@ export interface SpellSpec {
  *  - le drapeau `curated` reste vrai pour toute entrée du registre.
  */
 export function spellSupport(
+  ops: GameOp[],
   spec: SpellSpec,
   missile: boolean,
 ): 'mecanique' | 'partiel' | 'narratif' {
-  const mech = spec.ops.filter((o) => o.op !== 'narrative').length > 0 || missile || spec.zdeRadiusMeters != null
+  // Les EFFETS (ops) vivent désormais sur la donnée app-owned (`SpellData.effects`, Flow éditable) ;
+  // l'appelant les extrait du Flow (feuilles EffectOp) et les passe ici. La spec ne porte plus que les
+  // MÉTADONNÉES de résolution (zone/téléportation/poussée/souffle…) qui qualifient aussi la mécanique.
+  const mech = ops.filter((o) => o.op !== 'narrative').length > 0 || missile || spec.zdeRadiusMeters != null
     || spec.persistentZone != null || spec.breathAttack != null || spec.teleportMeters != null || spec.pushMeters != null;
-  const narr = spec.ops.some((o) => o.op === 'narrative') || (!spec.curated && spec.ops.length === 0);
+  const narr = ops.some((o) => o.op === 'narrative') || (!spec.curated && ops.length === 0);
   if (mech && narr) return 'partiel';
   if (mech) return 'mecanique';
   return 'narratif';

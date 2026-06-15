@@ -82,6 +82,9 @@ export interface SkillData {
   source: { book: string; page: number };
 }
 export interface TalentData {
+  /** Identifiant STABLE (slug du libellé d'origine) — cible des références structurées, robuste au
+   *  renommage du `label`. Source unique pour `findTalentById`. */
+  id: string;
   label: string;
   /** Maxi d'acquisitions (LDB 10 « Schéma des Talents ») : 1, « Bonus de X », « Aucun » ou null. */
   max: string | number | null;
@@ -135,7 +138,10 @@ export interface CreatureData {
   /** Compétences STRUCTURÉES (`SkillRef` par id stable + valeur de Test imprimée) — fin du parsing
    *  de chaînes « Calme 58 ». Le bestiaire stocke des refs ; `skillRefLabel` reformate à l'affichage. */
   skills: SkillRef[];
-  talents: string[];
+  /** Talents STRUCTURÉS (`TalentRef` par id stable + niveau/spécialisation) — fin du parsing de chaînes
+   *  « Maîtrise du combat 2 », « Magie des Arcanes (Ghur) ». `talentRefLabel` reformate à l'affichage ;
+   *  au spawn, `talentsFromBook` reconstruit le libellé canonique AVEC sa spec (clé du registre). */
+  talents: TalentRef[];
   trappings: string[];
   spells: string[];
   desc: string | null;
@@ -199,6 +205,15 @@ export interface SpellData {
   target: number | string;
   duration: string;
   desc: string;
+  /**
+   * EFFETS du sort — `Flow` ÉDITABLE (système logique unique : `do`/`if`/`test`), source des effets
+   * mécaniques appliqués à l'incantation (feuilles EffectOp `{type:'ops', on:'target'|'caster', ops}`).
+   * Édité dans le Compendium (CodexEdit → FlowEditor), exécuté par `runSpellFlow`. SOURCE UNIQUE des
+   * effets — les MÉTADONNÉES de résolution (durée/ZdE/opposition/invocation/métamorphose) restent dans
+   * la spec engine curée (`spellSpecFor`). Import TYPE seul (effacé à la compilation) → la couche data
+   * NE dépend PAS d'une valeur de `state` (pureté préservée). Absent = aucun effet mécanique (narratif).
+   */
+  effects?: import('../state/flow').Flow;
   source: { book: string; page: number };
 }
 
@@ -342,6 +357,26 @@ export function skillRefLabel(ref: SkillRef): string {
 }
 export function findTalent(label: string): TalentData | undefined {
   return talents.find((t) => t.label === label);
+}
+const TALENT_BY_ID = new Map(talents.map((t) => [t.id, t]));
+/** Résout un Talent par son `id` STABLE (référence structurée — fin du lookup par libellé parsé). */
+export function findTalentById(id: string): TalentData | undefined {
+  return TALENT_BY_ID.get(id);
+}
+/** Référence STRUCTURÉE à un Talent (par `id` stable) + son niveau (`times`, ≥2) et une spécialisation
+ *  éventuelle — remplace les chaînes parsées « Maîtrise du combat 2 », « Magie des Arcanes (Ghur) »
+ *  dans la donnée du bestiaire. */
+export interface TalentRef {
+  talentId: string;
+  times?: number;
+  spec?: string;
+}
+/** Libellé d'affichage d'une `TalentRef` : « Magie des Arcanes (Ghur) », « Maîtrise du combat 2 » —
+ *  repli sur l'id si le Talent a disparu du catalogue. Source UNIQUE du formatage (statbloc éditeur,
+ *  Codex, chips). La spec entre parenthèses RESTE dans le libellé (clé du registre combatFeatures). */
+export function talentRefLabel(ref: TalentRef): string {
+  const n = findTalentById(ref.talentId)?.label ?? ref.talentId;
+  return n + (ref.spec ? ` (${ref.spec})` : '') + (ref.times && ref.times > 1 ? ` ${ref.times}` : '');
 }
 export function findTrapping(label: string): TrappingData | undefined {
   return trappings.find((t) => t.label.toLowerCase() === label.toLowerCase());

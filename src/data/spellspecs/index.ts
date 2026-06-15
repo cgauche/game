@@ -57,5 +57,5 @@ export function curatedSpec(label: string, type?: string): SpellSpec | undefined
  *  minimale — sa description est journalisée verbatim, rien n'est deviné par regex. */
 export function spellSpecFor(spell: SpellLike): SpellSpec {
   return curatedSpec(spell.label, spell.type)
-    ?? { label: spell.label, ops: [{ op: 'narrative', text: spell.desc }], durationRounds: null, curated: false };
+    ?? { label: spell.label, durationRounds: null, curated: false };
 }

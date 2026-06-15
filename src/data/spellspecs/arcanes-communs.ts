@@ -8,9 +8,9 @@
  */
 import { SpellSpec } from '../../engine/spellspec';
 
-const N = (label: string, text: string, durationRounds: SpellSpec['durationRounds'] = { bonusOf: 'FM' }): SpellSpec => ({
+// `text` = trace documentaire de l'effet narratif (désormais sur `SpellData.effects`) — conservé pour la relecture.
+const N = (label: string, _text: string, durationRounds: SpellSpec['durationRounds'] = { bonusOf: 'FM' }): SpellSpec => ({
   label,
-  ops: [{ op: 'narrative', text }],
   durationRounds,
   curated: true,
   source: `LDB 47 p.242-245 « ${label} »`,
@@ -25,11 +25,6 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
     //   INVOQUÉE (op conjureWeapon, `chooseForm`) : objet de mêlée Magique, Dégâts FIXES = BFM (sans
     //   Bonus de Force), tenu tant que le Sort dure. Le lanceur CHOISIT la forme (n'importe quelle
     //   Compétence de Corps à corps qu'il possède) → l'arme prend le profil de cette Spé (Groupe/allonge).
-    ops: [
-      { op: 'conjureWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, qualities: ['Magique'], chooseForm: true,
-        // Lame d'Aethyr translucide, bleu spectral lumineux.
-        skin: { metal: '#8fd4ff', metalH: '#e6f7ff', metalO: '#2e5c8a', cuir: '#34557f', cuirH: '#6fa3d6', cuirO: '#1b3450', accent: '#bfe6ff', accentH: '#ffffff', accentO: '#5a92cc' } },
-    ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 47 — Arcanes communs « Arme Aethyrique » (l.243)',
@@ -37,7 +32,6 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
   {
     label: 'Armure Aethyrique',
     // « Vous gagnez +1 PA à toutes les Localisations » — PA temporisés, lus à la mitigation.
-    ops: [{ op: 'apAll', amount: 1 }],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 47 p.242 « Armure Aethyrique »',
@@ -48,7 +42,6 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
     //   la portée initiale du Sort, et à une distance en mètres de la cible précédente égale à
     //   votre BFM, infligeant de nouveau les mêmes Dégâts. Il peut rebondir un nombre maximum de
     //   fois égal à votre BFM. » — rebond mécanique (chainOnKill) ; Projectile +4 (moteur missile).
-    ops: [],
     chainOnKill: { maxBounces: { bonusOf: 'FM' }, hopMeters: { bonusOf: 'FM' } },
     durationRounds: null,
     curated: true,
@@ -62,7 +55,6 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
     //   leur cible. Les projectiles constitués uniquement de matière non organique […] ne sont
     //   pas affectés. » — aura arrowWard (BFM m) portée par le lanceur, consommée à la
     //   résolution des tirs (flèches/carreaux/javelots détruits ; balles/pierres passent).
-    ops: [{ op: 'arrowWard', radius: { bonusOf: 'FM' } }],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 47 p.243 « Bouclier anti-flèches »',
@@ -70,7 +62,7 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
   N('Bouclier magique', 'Bouclier magique : +BFM DR à vos tentatives de Dissipation tant que le Sort est actif (la Dissipation n’est pas encore modélisée).'),
   {
     label: 'Carreau',
-    ops: [], // Projectile magique +4 — entièrement résolu par le moteur missile.
+// Projectile magique +4 — entièrement résolu par le moteur missile.
     durationRounds: null,
     curated: true,
     source: 'LDB 47 p.243 « Carreau »',
@@ -79,7 +71,6 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
     label: 'Chute',
     // « À moins que la cible réussisse un Test de Dextérité Intermédiaire (+0), l'objet tombe.
     //   Pour chaque +2 DR, −10 supplémentaire au Test » (le −10/DR : arbitrage — le Test est posé tel quel).
-    ops: [{ op: 'test', skill: 'Dextérité', difficulty: 'intermediaire', onFail: [{ op: 'narrative', text: 'Chute : l’objet tenu tombe (arme au sol — arbitrage MJ).' }] }],
     durationRounds: null,
     curated: true,
     source: 'LDB 47 p.243 « Chute »',
@@ -92,7 +83,6 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
     //   personnes à l'intérieur peuvent attaquer des cibles situées à l'extérieur du dôme
     //   normalement, et le dôme ne gêne pas le déplacement. » — aura domeWard (BFM m) portée
     //   par le lanceur : sauvegarde d10 ≥ 6 contre tirs ET Projectiles magiques extérieurs.
-    ops: [{ op: 'domeWard', radius: { bonusOf: 'FM' } }],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 47 p.244 « Dôme »',
@@ -100,7 +90,6 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
   {
     label: 'Effrayant',
     // « Gagnez Peur 1. Pour chaque +3 DR, vous pouvez augmenter votre valeur de Peur de 1. »
-    ops: [{ op: 'grantTrait', trait: 'Peur', indice: 1, indicePerSL: { every: 3, amount: 1 } }],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 47 p.243 « Effrayant »',
@@ -112,10 +101,6 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
     //   Pour chaque +2 DR, +1 État Empêtré. » (+1/+2 DR mécanique via `valuePerSL` ; la Force
     //   de l'entrave = Int du lanceur reste journalisée — le Test de libération du jeu oppose
     //   la Force de la SOURCE, LDB 16 l.61.)
-    ops: [
-      { op: 'condition', name: 'Empêtré', valuePerSL: { every: 2, amount: 1 } },
-      { op: 'narrative', text: 'Enchevêtrement : Force de l’entrave = Intelligence du lanceur (arbitrage MJ).' },
-    ],
     durationRounds: null, // « jusqu'à ce que la cible se libère » (Spécial)
     curated: true,
     source: 'LDB 47 p.243 « Enchevêtrement »',
@@ -124,14 +109,13 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
     label: 'Envol',
     // « Gagnez le Trait de créature Vol (Agilité) » — Indice = votre Agilité ; le héros
     // SURVOLE les obstacles tant que le Sort dure (moveReachFor → flyReachable).
-    ops: [{ op: 'grantTrait', trait: 'Vol', indice: { charOf: 'Ag' } }],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 47 p.243 « Envol »',
   },
   {
     label: 'Explosion',
-    ops: [], // Projectile magique +3 en ZdE — moteur missile + ciblage de zone (clic-case).
+// Projectile magique +3 en ZdE — moteur missile + ciblage de zone (clic-case).
     durationRounds: null,
     curated: true,
     source: 'LDB 47 p.243 « Explosion »',
@@ -139,7 +123,6 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
   {
     label: 'Perturbant',
     // « Vous gagnez le Trait de créature Perturbant » (aura −10, dispatch existant).
-    ops: [{ op: 'grantTrait', trait: 'Perturbant' }],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 47 p.244 « Perturbant »',
@@ -150,7 +133,6 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
     // « Toutes les créatures à BFM mètres sont repoussées de BFM mètres et gagnent À Terre » —
     // zone AUTOUR DU LANCEUR (rayon de la spec) ; le RECUL est mécanique (pushAway : ligne
     // lanceur→cible jusqu'à l'obstacle) ; la collision (Dégâts = distance restante) reste MJ.
-    ops: [{ op: 'condition', name: 'À Terre' }],
     pushMeters: { bonusOf: 'FM' },
     durationRounds: null,
     zdeRadiusMeters: { bonusOf: 'FM' },
@@ -160,7 +142,6 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
   {
     label: 'Protection',
     // « Gagnez le Trait de créature Protection (9+) » — sauvegarde 1d10 ≥ 9 (dispatch existant).
-    ops: [{ op: 'grantTrait', trait: 'Protection', indice: 9 }],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 47 p.244 « Protection »',
@@ -168,7 +149,6 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
   {
     label: 'Sang corrosif',
     // « Vous gagnez le Trait de créature Sang corrosif » (riposte corrosive, dispatch existant).
-    ops: [{ op: 'grantTrait', trait: 'Sang corrosif' }],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 47 p.244 « Sang corrosif »',
@@ -181,7 +161,6 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
     //   Souffle correspond le mieux à votre Talent Magie des Arcanes. » — délégué à l'attaque de
     //   ZONE du Trait (breathAttack), Type mappé du Domaine (Feu/Cieux/Métal/Ombres ; sinon Dégâts purs).
     breathAttack: true,
-    ops: [],
     durationRounds: null,
     curated: true,
     source: 'LDB 47 p.244 « Souffle »',
@@ -191,7 +170,6 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
     // « Vous pouvez vous téléporter jusqu'à une distance en mètres égale à votre BFM »
     //   (+BFM par +2 DR). En combat : choix de la case d'arrivée après l'Appliquer (survol
     //   des obstacles, atterrissage libre) ; hors combat : repositionnement libre journalisé.
-    ops: [],
     teleportMeters: { bonusOf: 'FM' },
     teleportPerSL: { every: 2, metersFormula: { bonusOf: 'FM' } },
     durationRounds: null,
@@ -201,7 +179,6 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
   {
     label: 'Terrifiant',
     // « Vous gagnez le Trait de créature Terreur 1. »
-    ops: [{ op: 'grantTrait', trait: 'Terreur', indice: 1 }],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 47 p.245 « Terrifiant »',
@@ -209,7 +186,6 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
   {
     label: "Vision dans l'obscurité",
     // « Vous gagnez le Trait de créature Infravision » (vision de la chaleur, dispatch existant).
-    ops: [{ op: 'grantTrait', trait: 'Infravision' }],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: "LDB 47 p.245 « Vision dans l'obscurité »",

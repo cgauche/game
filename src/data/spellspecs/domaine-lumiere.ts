@@ -16,10 +16,6 @@ export const DOMAINE_LUMIERE: SpellSpec[] = [
     //   Instable, elles sont réduites à 0 PB. » — le Trait Instable est accordé aux cibles
     //   Mort-vivant/Démoniaque (op grantTrait + onlyGroups) ; le gate « E < votre FM » et la branche
     //   « déjà Instable → 0 PB » restent journalisés (non exprimables en op simple).
-    ops: [
-      { op: 'grantTrait', trait: 'Instable', onlyGroups: ['Mort-vivant', 'Démon'] },
-      { op: 'narrative', text: 'Bannissement : seules les cibles d’Endurance < votre FM sont affectées ; une cible Mort-vivant/Démoniaque qui possédait DÉJÀ Instable est réduite à 0 PB — arbitrage MJ.' },
-    ],
     durationRounds: null,
     curated: true,
     source: 'LDB 48 — Domaine de la Lumière « Bannissement »',
@@ -30,11 +26,6 @@ export const DOMAINE_LUMIERE: SpellSpec[] = [
     //   mentales, de Trait Psychologique ou de n'importe quelle autre source – sont ignorés tant
     //   que le Sort est actif. » — pénalités d'État ignorées (ignoreStatePenalties) + Traits
     //   psychologiques apaisés (suppressPsych) ; les modificateurs de mutation mentale restent MJ.
-    ops: [
-      { op: 'ignoreStatePenalties' },
-      { op: 'suppressPsych' },
-      { op: 'narrative', text: 'Clarté d’esprit : les modificateurs négatifs issus de mutations mentales sont aussi ignorés — arbitrage MJ.' },
-    ],
     durationRounds: null, // « (Intelligence) minutes » → échelle d'horloge (durationClockMinutes)
     curated: true,
     source: "LDB 48 — Domaine de la Lumière « Clarté d'esprit »",
@@ -46,10 +37,6 @@ export const DOMAINE_LUMIERE: SpellSpec[] = [
     //   FM est un MULTIJET dans la modale (`opposed`) : si le lanceur l'emporte, la cible Démoniaque
     //   est annihilée (reduceToZero gaté Démon) ; le cône d'aveuglement des témoins reste journalisé.
     opposed: { kind: 'resist', char: 'FM' },
-    ops: [
-      { op: 'reduceToZero', onlyGroups: ['Démon'] },
-      { op: 'narrative', text: 'Fauche-démon : les témoins (hors Magie des Arcanes (Lumière)) reçoivent +DR Aveuglé — arbitrage MJ.' },
-    ],
     durationRounds: null,
     curated: true,
     source: 'LDB 48 — Domaine de la Lumière « Fauche-démon »',
@@ -60,10 +47,6 @@ export const DOMAINE_LUMIERE: SpellSpec[] = [
     //   se remettant de cet État, les cibles effectuent un Test d'Intelligence au lieu de
     //   Résistance. Les cibles Bestial sont immunisées. » — l'État Sonné est mécanique ; le
     //   verrou « non retirable » et le Test d'Int de récupération restent journalisés.
-    ops: [
-      { op: 'condition', name: 'Sonné' },
-      { op: 'narrative', text: 'Filet d’Amyntok : ce Sonné ne peut pas être retiré tant que le Sort dure et se récupère sur un Test d’Intelligence ; les créatures Bestial y sont immunisées — arbitrage MJ.' },
-    ],
     durationRounds: null, // durée = « (Bonus d'Int de la CIBLE) Rounds » (hors barème lanceur)
     curated: true,
     source: "LDB 48 — Domaine de la Lumière « Filet d'Amyntok »",
@@ -73,10 +56,6 @@ export const DOMAINE_LUMIERE: SpellSpec[] = [
     // « Quiconque regarde dans votre direction, à moins de posséder le Talent Magie des Arcanes
     //   (Lumière), reçoit +DR État Aveuglé. » — Aveuglé total = DR du jet (base 0 + 1/DR, plancher
     //   1 de l'op, comme Purification) ; le ciblage « quiconque vous regarde » reste arbitré.
-    ops: [
-      { op: 'condition', name: 'Aveuglé', value: 0, valuePerSL: { every: 1, amount: 1 } },
-      { op: 'narrative', text: 'Lumière aveuglante : touche quiconque regarde dans votre direction (hors Magie des Arcanes (Lumière)) — arbitrage MJ du ciblage.' },
-    ],
     durationRounds: null,
     curated: true,
     source: 'LDB 48 — Domaine de la Lumière « Lumière aveuglante »',
@@ -87,12 +66,6 @@ export const DOMAINE_LUMIERE: SpellSpec[] = [
     //   Force Mentale. Si la cible réussit un Test de Résistance Difficile (-20), elle perd
     //   également 1 Point de Corruption gagné dans l'heure précédente. » — soin = BInt + BFM (deux
     //   heal additifs) ; retrait de Corruption sur Test réussi (corruption négative).
-    ops: [
-      { op: 'heal', amount: { bonusOf: 'Int' } },
-      { op: 'heal', amount: { bonusOf: 'FM' } },
-      { op: 'test', skill: 'Résistance', difficulty: 'difficile', onFail: [], onSuccess: [{ op: 'corruption', amount: -1 }] },
-      { op: 'narrative', text: 'Lumière de guérison : le retrait de Corruption ne vaut que pour 1 Point gagné dans l’heure précédente — arbitrage MJ.' },
-    ],
     durationRounds: null, // Instantané
     curated: true,
     source: 'LDB 48 — Domaine de la Lumière « Lumière de guérison »',
@@ -100,10 +73,6 @@ export const DOMAINE_LUMIERE: SpellSpec[] = [
   {
     label: 'Pensée rapide',
     // « Vous gagnez un Bonus de +20 en Initiative et en Intelligence. »
-    ops: [
-      { op: 'charMod', char: 'I', mod: 20 },
-      { op: 'charMod', char: 'Int', mod: 20 },
-    ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 48 — Domaine de la Lumière « Pensée rapide »',
@@ -114,9 +83,6 @@ export const DOMAINE_LUMIERE: SpellSpec[] = [
     //   peuvent pas entrer dans la ZdE. Celles déjà à l'intérieur gagnent Brisé jusqu'à ce qu'elles
     //   la quittent. Les créatures à l'intérieur ne peuvent pas gagner de Corruption. » — barrière
     //   de zone persistante (non modélisée) : arbitré.
-    ops: [
-      { op: 'narrative', text: 'Protection de Phâ : aura de zone (BFM m) — les profanes ne peuvent entrer, celles déjà dedans gagnent Brisé jusqu’à sortir, et nul n’y gagne de Corruption — arbitrage MJ.' },
-    ],
     durationRounds: { bonusOf: 'FM' },
     curated: true,
     source: 'LDB 48 — Domaine de la Lumière « Protection de Phâ »',
