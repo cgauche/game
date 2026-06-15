@@ -110,11 +110,13 @@ export function buildApi() {
     },
 
     /** Place le groupe sur la case d'une entité/coord (déclenche portes, triggers, fouilles au pas). */
-    goto: (idOrXY: string | { x: number; y: number }) => {
-      const pt = typeof idOrXY === 'string' ? find(idOrXY)?.pos : idOrXY;
+    goto: (idOrXY: string | { x: number; y: number; z?: number }) => {
+      // Cible une entité (sa case ET son étage z) ou des coordonnées brutes {x,y,z?}.
+      const ent = typeof idOrXY === 'string' ? find(idOrXY) : null;
+      const pt = typeof idOrXY === 'string' ? (ent ? { x: ent.pos.x, y: ent.pos.y, z: ent.z } : undefined) : idOrXY;
       if (!pt) return `❌ cible introuvable`;
       g().moveParty({ ...pt });
-      return `✅ groupe → (${pt.x},${pt.y})`;
+      return `✅ groupe → (${pt.x},${pt.y}${pt.z ? `,z${pt.z}` : ''})`;
     },
 
     /** Navigue vers un écran (menu/party/creator/editor/test/coop/campaign). */

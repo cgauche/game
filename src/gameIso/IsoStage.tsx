@@ -8,7 +8,7 @@ import './anim.css';
 import { useGame } from '../state/store';
 import { Scene as GameScene, tileAt, isWalkable } from '../state/scene';
 import { sceneIsDark } from '../state/sceneRules';
-import { pathTo } from '../state/path';
+import { pathTo, type Pt } from '../state/path';
 import { zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
 import { resolveFormula } from '../engine/ops';
 import { spellSpecFor } from '../data/spellspecs';
@@ -26,6 +26,7 @@ import {
   diamondCorners,
   stageSize,
   screenToTile,
+  screenToTileAtZ,
   depth,
   floorDepth,
 } from './iso';
@@ -89,19 +90,17 @@ function movePreviewEls(path: { x: number; y: number }[], dest: { x: number; y: 
   return els;
 }
 
-/** Case adjacente (8-voisins) libre et ATTEIGNABLE la plus proche d'un décor, pour le move-to-interact (P5). */
-function adjacentWalkable(
-  sc: GameScene,
-  target: { x: number; y: number },
-  from: { x: number; y: number },
-): { x: number; y: number } | null {
-  let best: { x: number; y: number } | null = null;
+/** Case adjacente (8-voisins) libre et ATTEIGNABLE la plus proche d'un décor, pour le move-to-interact
+ *  (P5). À l'ÉTAGE du décor (un PNJ de loge s'aborde depuis une case de loge voisine, même z). */
+function adjacentWalkable(sc: GameScene, target: Pt, from: Pt): Pt | null {
+  const tz = target.z ?? 0;
+  let best: Pt | null = null;
   let bestLen = Infinity;
   for (let dx = -1; dx <= 1; dx++) {
     for (let dy = -1; dy <= 1; dy++) {
       if (!dx && !dy) continue;
-      const c = { x: target.x + dx, y: target.y + dy };
-      if (!isWalkable(sc, c.x, c.y)) continue;
+      const c: Pt = tz ? { x: target.x + dx, y: target.y + dy, z: tz } : { x: target.x + dx, y: target.y + dy };
+      if (!isWalkable(sc, c.x, c.y, tz)) continue;
       const p = pathTo(sc, from, c, new Set());
       if (p && p.length < bestLen) {
         best = c;
@@ -140,7 +139,7 @@ export function IsoStage() {
   const svgRef = useRef<SVGSVGElement>(null);
   const movingRef = useRef(false);
   // Glisser-caméra : on diffère l'action de clic au relâchement ; un glissement > seuil = panoramique.
-  const dragRef = useRef<{ sx: number; sy: number; lastX: number; lastY: number; panned: boolean; button: number; tile: { x: number; y: number } | null } | null>(null);
+  const dragRef = useRef<{ sx: number; sy: number; lastX: number; lastY: number; panned: boolean; button: number; tile: Pt | null } | null>(null);
   const zoom = useGame((s) => s.zoom);
   const setZoom = useGame((s) => s.setZoom);
   // Rotation caméra (cran de 90°). `camRot` = cible (store, lu en live par le rig) ;
@@ -155,12 +154,12 @@ export function IsoStage() {
   const [shownRot, setShownRot] = useState<0 | 1 | 2 | 3>(camRot);
   const [turning, setTurning] = useState(false);
   // Tuile survolée (tooltip + réticule de visée ; suivie dans tous les modes de ciblage).
-  const [hover, setHover] = useState<{ x: number; y: number } | null>(null);
+  const [hover, setHover] = useState<Pt | null>(null);
   // Recette (DEV) : pilotage PROGRAMMATIQUE du survol — __wfrp.hover('id') passe par ce hook,
   // le tooltip/réticule se rendent sans souris réelle (pas de chasse aux pixels).
   useEffect(() => {
     if (!import.meta.env.DEV) return;
-    const w = window as unknown as { __wfrpSetHover?: (t: { x: number; y: number } | null) => void };
+    const w = window as unknown as { __wfrpSetHover?: (t: Pt | null) => void };
     w.__wfrpSetHover = (t) => setHover(t);
     return () => { delete w.__wfrpSetHover; };
   }, []);
@@ -632,8 +631,8 @@ export function IsoStage() {
   );
 
   type TokenExtras = { hp?: { current: number; max: number }; icons?: string[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number; ghost?: boolean; cid?: string };
-  const tokenNode = (id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean, walking?: boolean, extras?: TokenExtras) => (
-    <BodyToken key={id} x={x} y={y} dims={dims} scale={scale} ring={ringColor} ringDash={extras?.ringDash} dim={dim} ghost={extras?.ghost} walking={walking} bakedDeath
+  const tokenNode = (id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean, walking?: boolean, extras?: TokenExtras, z = 0) => (
+    <BodyToken key={id} x={x} y={y} z={z} dims={dims} scale={scale} ring={ringColor} ringDash={extras?.ringDash} dim={dim} ghost={extras?.ghost} walking={walking} bakedDeath
       hp={extras?.hp} icons={extras?.icons} iconsMore={extras?.iconsMore} veil={extras?.veil} active={extras?.active}
       flat={extras?.flat} portraitBox={extras?.portraitBox} discR={extras?.discR} cid={extras?.cid}>
       {child}
@@ -755,12 +754,13 @@ export function IsoStage() {
     }
     // groupe — glisse le long du chemin (ANIM_MOVE émis par moveAlong)
     const wp = partyLeader ? walkPosOf(partyLeader.id, partyPos.x, partyPos.y) : { x: partyPos.x, y: partyPos.y, walking: false };
+    const pZ = partyPos.z ?? 0; // le groupe se rend à son étage (loge) — token soulevé + trié au bon niveau
     const r = pickBackend({ kind: 'partyLeader', leader: partyLeader }, viewMode);
     const el =
       r.backend === 'sprite'
-        ? token(r.id, partyPos.x, partyPos.y, pnjSprite(), 0.6, HERO_RING[0])
-        : tokenNode(r.id, wp.x, wp.y, r.body, 0.6, HERO_RING[0], false, wp.walking, { flat: top, portraitBox: r.portraitBox, discR: discR(undefined) });
-    objs.push({ d: depth(wp.x, wp.y, dims) + 0.5, el });
+        ? token(r.id, partyPos.x, partyPos.y, pnjSprite(), 0.6, HERO_RING[0], false, undefined, false, false, pZ)
+        : tokenNode(r.id, wp.x, wp.y, r.body, 0.6, HERO_RING[0], false, wp.walking, { flat: top, portraitBox: r.portraitBox, discR: discR(undefined) }, pZ);
+    objs.push({ d: depth(wp.x, wp.y, dims, pZ) + 0.5, el });
   }
   objs.sort((a, b) => a.d - b.d);
 
@@ -830,7 +830,7 @@ export function IsoStage() {
 
   // --- Interaction (clic / survol → tuile) ---
   // Écran → tuile : annule le zoom (scale autour du centre viewport) puis la translation caméra.
-  const tileFromEvent = (ev: React.PointerEvent): { x: number; y: number } | null => {
+  const tileFromEvent = (ev: React.PointerEvent): Pt | null => {
     const svg = svgRef.current;
     if (!svg) return null;
     const pt = svg.createSVGPoint();
@@ -839,9 +839,16 @@ export function IsoStage() {
     const loc = pt.matrixTransform(svg.getScreenCTM()!.inverse());
     const gx = (loc.x - VW / 2) / zoom + VW / 2 - cam.x;
     const gy = (loc.y - VH / 2) / zoom + VH / 2 - cam.y;
-    const { x, y } = screenToTile(gx, gy, dims);
-    if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) return null;
-    return { x, y };
+    // Picking multi-niveaux : on teste les étages du HAUT vers le bas et on retient la 1re tuile
+    // RÉELLE (terrain présent, pas « vide ») sous le curseur — un plancher haut intercepte le clic
+    // avant le parterre (cohérent avec son rendu en surplomb). z=0 (sol plein) est le filet final.
+    for (const z of scene.levels.map((l) => l.z).sort((a, b) => b - a)) {
+      const { x, y } = screenToTileAtZ(gx, gy, dims, z);
+      if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) continue;
+      if (z > 0) { const ter = tileAt(scene, x, y, z); if (!ter || ter === 'vide') continue; }
+      return z ? { x, y, z } : { x, y };
+    }
+    return null;
   };
 
   // Survol : suit la tuile sous le curseur quand on vise (infobulle de portée). Ne met à jour
@@ -858,11 +865,12 @@ export function IsoStage() {
   };
 
   // Action de clic (DIFFÉRÉE au relâchement, sautée si on a fait un panoramique) — sélection / cible / déplacement.
-  const performClick = (t: { x: number; y: number } | null) => {
+  const performClick = (t: Pt | null) => {
     const st = useGame.getState();
     const sc = st.scene;
     if (!sc || st.dialogue || !t) return;
     const { x, y } = t;
+    const tz = t.z ?? 0;
     if (st.mode === 'battle') {
       if (!controlsActive(st)) return; // coop : tour du héros d'un AUTRE joueur — clics inertes
       const occ = st.battle?.combatants.find((c) => c.pos && occupiesTile(c.pos, c.size, x, y) && !isOutOfAction(c)); // clic sur N'IMPORTE quelle tuile de l'empreinte
@@ -874,7 +882,7 @@ export function IsoStage() {
       else st.battleClickTile({ x, y }, { confirm: hoverClickCommits() });
       return;
     }
-    const ent = sc.entities.find((e) => e.pos.x === x && e.pos.y === y);
+    const ent = sc.entities.find((e) => e.pos.x === x && e.pos.y === y && (e.z ?? 0) === tz);
     if (ent && (ent.dialogueId || !!ent.interact || !!ent.merchant)) {
       const dist = Math.max(Math.abs(st.partyPos.x - ent.pos.x), Math.abs(st.partyPos.y - ent.pos.y));
       if (dist <= 1) {
@@ -904,7 +912,7 @@ export function IsoStage() {
       return;
     }
     st.setPendingInteract(null); // clic ailleurs : annule un déplacement-puis-fouille en attente
-    moveAlong(sc, st.partyPos, { x, y });
+    moveAlong(sc, st.partyPos, t);
   };
 
   // Caméra libre : on ARME un glisser au pointer-down (sans agir), on panoramique au mouvement
@@ -936,7 +944,7 @@ export function IsoStage() {
     const sc = useGame.getState().scene;
     const overInteractive =
       !!sc && !!t && useGame.getState().mode === 'exploration' &&
-      sc.entities.some((e) => e.pos.x === t.x && e.pos.y === t.y && (e.dialogueId || !!e.interact || !!e.merchant));
+      sc.entities.some((e) => e.pos.x === t.x && e.pos.y === t.y && (e.z ?? 0) === (t.z ?? 0) && (e.dialogueId || !!e.interact || !!e.merchant));
     (ev.currentTarget as SVGElement).style.cursor = overInteractive ? 'pointer' : '';
     if (!hoverTracking) {
       if (hover) setHover(null);
@@ -961,8 +969,8 @@ export function IsoStage() {
     if (hover) setHover(null);
   };
 
-  const moveAlong = (sc: GameScene, from: { x: number; y: number }, to: { x: number; y: number }) => {
-    if (movingRef.current || !isWalkable(sc, to.x, to.y)) return;
+  const moveAlong = (sc: GameScene, from: Pt, to: Pt) => {
+    if (movingRef.current || !isWalkable(sc, to.x, to.y, to.z ?? 0)) return;
     const path = pathTo(sc, from, to, new Set());
     if (!path || path.length < 2) return;
     movingRef.current = true;

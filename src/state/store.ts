@@ -1204,13 +1204,14 @@ export const useGame = create<GameState>((set, get) => ({
   moveParty: (pt) => {
     const { scene, mode, partyPos } = get();
     if (!scene || mode !== 'exploration') return;
-    if (!isWalkable(scene, pt.x, pt.y)) return;
+    if (!isWalkable(scene, pt.x, pt.y, pt.z ?? 0)) return; // case de l'ÉTAGE visé (z) — une case « vide » se refuse
     const from = partyPos; // case quittée (sert de retour hors du bâtiment)
     set({ partyPos: pt });
     const leadId = get().party[0]?.id;
     if (leadId) get().faceFromPath(leadId, [from, pt]);
     bus.emit(EVT.SCENE_DIRTY);
-    const door = doorAt(scene, pt.x, pt.y);
+    // Portes/intérieurs : au sol seulement (les bâtiments vivent au niveau 0).
+    const door = (pt.z ?? 0) === 0 ? doorAt(scene, pt.x, pt.y) : undefined;
     if (door && door.reveal === 'door' && door.interiorScene) {
       set({ previousScene: { id: scene.id, pos: from } });
       get().transitionTo(door.interiorScene, door.entry);

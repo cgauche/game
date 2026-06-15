@@ -70,6 +70,11 @@ const ents: SceneEntity[] = [
   { id: 'comtesse', kind: 'personnage', ref: 'Villageois', label: 'Comtesse Emmanuelle', pos: { x: 9, y: 12 }, z: 1, facing: 'N' },
   { id: 'app-royale-g', kind: 'prop', ref: 'applique-murale', pos: { x: 6, y: 12 }, z: 1 },
   { id: 'app-royale-d', kind: 'prop', ref: 'applique-murale', pos: { x: 11, y: 12 }, z: 1 },
+
+  // Escaliers (props visuels) reliant le parterre aux loges — la traversée est portée en données par
+  // `Scene.stairs` (cf. ci-dessous). Le groupe monte en cliquant une case de loge.
+  { id: 'esc-royale', kind: 'prop', ref: 'escalier-loge', pos: { x: 12, y: 12 }, facing: 'NO' },
+  { id: 'esc-gauche', kind: 'prop', ref: 'escalier-loge', pos: { x: 3, y: 9 }, facing: 'NO' },
 ];
 
 const scene: Scene = {
@@ -79,6 +84,12 @@ const scene: Scene = {
   dimensions: { w: W, h: H },
   ambiance: 'interieur',
   levels: [{ z: 0, tiles: z0 }, { z: 1, tiles: z1 }],
+  // Franchissements verticaux (pathfinding 3D) : le parterre monte vers la loge royale et la loge
+  // gauche par leur escalier. Bidirectionnel — on redescend par le même.
+  stairs: [
+    { from: { x: 12, y: 12, z: 0 }, to: { x: 11, y: 12, z: 1 } }, // → loge royale
+    { from: { x: 3, y: 9, z: 0 }, to: { x: 2, y: 9, z: 1 } }, // → loge gauche
+  ],
   entities: ents,
   dialogues: [],
   triggers: [],

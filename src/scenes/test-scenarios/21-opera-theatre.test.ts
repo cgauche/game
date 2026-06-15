@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { validateScene } from '../../state/validateScene';
 import { isWalkable } from '../../state/scene';
+import { pathTo } from '../../state/path';
 import { scenario } from './21-opera-theatre';
 
 /**
@@ -35,5 +36,13 @@ describe('Scénario « Opéra — Théâtre » : salle multi-niveaux valide', ()
     // tout prop/PNJ d'étage référence un niveau existant
     const zs = new Set(scene.levels.map((l) => l.z));
     for (const e of scene.entities) expect(zs.has(e.z ?? 0)).toBe(true);
+  });
+
+  it('la loge royale est ATTEIGNABLE depuis le parterre par l’escalier (pathfinding 3D)', () => {
+    const start = scene.entities.find((e) => e.kind === 'heroStart')!.pos;
+    // sans escalier la loge (z1) serait isolée ; le chemin doit changer d'étage
+    const path = pathTo(scene, { x: start.x, y: start.y, z: 0 }, { x: 8, y: 11, z: 1 }, new Set<string>());
+    expect(path).not.toBeNull();
+    expect(path!.some((p) => (p.z ?? 0) === 1)).toBe(true);
   });
 });
