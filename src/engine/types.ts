@@ -319,6 +319,10 @@ export interface Trauma {
   /** Nombre d'éléments perdus pour une séquelle CUMULATIVE par comptage (LDB 18) : doigts (−5/doigt, 4+ →
    *  règle de la main, l.341/344) ou dents (−1 Soc/paire, l.338). Fusionné à chaque nouvelle perte. */
   count?: number;
+  /** Organe sensoriel PAIRÉ perdu (LDB 18) : 2 pertes du même sens → escalade (Cécité/Surdité). Porté
+   *  par la séquelle « Œil perdu » / « Oreille perdue » pour que `escalateSensoryLoss` compte par sens,
+   *  sans name-match sur le libellé. */
+  sense?: 'vue' | 'ouie';
 }
 
 export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';

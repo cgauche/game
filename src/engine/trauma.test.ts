@@ -138,8 +138,8 @@ describe('consolidateAmputations — cumul doigts (l.341/344) & dents (l.338)', 
 });
 
 describe('escalateSensoryLoss — cumul deux yeux/oreilles (LDB 18 l.360/363)', () => {
-  const eye = (): Trauma => ({ label: 'Œil perdu', location: 'tete', charPenalty: { Soc: -5 }, note: '' });
-  const ear = (): Trauma => ({ label: 'Oreille perdue', location: 'tete', charPenalty: { Soc: -5 }, note: '' });
+  const eye = (): Trauma => ({ label: 'Œil perdu', location: 'tete', charPenalty: { Soc: -5 }, sense: 'vue', note: '' });
+  const ear = (): Trauma => ({ label: 'Oreille perdue', location: 'tete', charPenalty: { Soc: -5 }, sense: 'ouie', note: '' });
   it('un seul œil : pas de cécité', () => {
     const c = fullCombatant({ traumas: [eye()] });
     expect(escalateSensoryLoss(c)).toHaveLength(0);

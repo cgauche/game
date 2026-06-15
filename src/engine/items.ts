@@ -224,18 +224,22 @@ export function recomputeLoadout(c: Combatant): void {
     // plus que pour l'armure (port) et de seed du loadout par défaut (ensureDefaultLoadout).
   }
 
-  // Crochet PORTÉ (prothèse, LDB 73) : « en Combat rapproché, considéré comme une Dague ». Arme dérivée.
-  if (items.some((i) => i.equipped && i.name === 'Crochet')) {
-    weapons.push({ name: 'Crochet', type: 'melee', damage: '+BF+2', reach: 'Très courte', qualities: [], subType: 'Base', hands: 1, hand: 'main' });
+  // Armes DÉRIVÉES d'un objet ÉQUIPÉ (prothèse-arme, LDB 73 : le Crochet « est considéré comme une
+  // Dague » en mêlée) — DÉCLARATIF sur le trapping (`derivedWeapon`). Ajouter une prothèse-arme = la
+  // donnée du trapping, plus aucun name-match `i.name === 'Crochet'` ici.
+  for (const i of items) {
+    const dw = i.equipped ? findTrapping(i.name)?.derivedWeapon : undefined;
+    if (dw) weapons.push({ hand: 'main', ...dw });
   }
-  // Armes NATURELLES de mutation (LDB 19) : Arme de Créature, Dégâts = Bonus de Force (LDB p.338,
-  // cf. note des Cornes asymétriques). Le Tentacule (trait Tentacules p.343) est AUSSI une Attaque
-  // gratuite 1/tour (battleTentacle) ; ici il reste utilisable comme arme ordinaire.
+  // Tentacule (trait Tentacules, LDB 85 p.343) : AUSSI une Attaque gratuite 1/tour (battleTentacle) ;
+  // ici utilisable comme arme ordinaire. La mutation « Tentacule épais » confère le trait → couvert.
   if (hasTraitKey(c.traits, 'Tentacules')) {
     weapons.push({ name: 'Tentacule', type: 'melee', damage: '+BF', qualities: [], subType: 'Base', hands: 1, hand: 'main', uid: 'nat-tentacule' });
   }
-  if ((c.mutations ?? []).some((m) => m.label === 'Cornes asymétriques')) {
-    weapons.push({ name: 'Cornes', type: 'melee', damage: '+BF', qualities: [], subType: 'Base', hands: 1, hand: 'main', uid: 'nat-cornes' });
+  // Armes NATURELLES de MUTATION (LDB 19 : « Compte comme une Arme de Créature », Dégâts = BF) —
+  // DÉCLARATIF sur la def de mutation (`fx.derivedWeapon`). Ajouter une mutation-arme = la donnée.
+  for (const m of c.mutations ?? []) {
+    if (m.derivedWeapon) weapons.push({ hand: 'main', ...m.derivedWeapon });
   }
   // Armes NATURELLES accordées par un Sort (op `grantNaturalWeapon` — Dent et griffe : Morsure/Arme ;
   // Incarnation de Wyssan) : attaques ADDITIONNELLES tant que l'effet dure (retirées au recompute

@@ -78,12 +78,12 @@ export function permanentAmputations(name: string, note: string, location: HitLo
         note: '−20 Sociabilité permanent (perte du nez). Prothèse : Nez doré.' });
     }
     if (/œil|oeil/.test(t)) {
-      out.push({ label: 'Œil perdu', location, charPenalty: { Soc: -5 },
+      out.push({ label: 'Œil perdu', location, charPenalty: { Soc: -5 }, sense: 'vue',
         prosthesis: [{ name: 'Cache-œil', cancels: 'all' }, { name: 'Œil de verre', cancels: 'all' }],
         note: '−5 Sociabilité (orbite vide visible) ; perte des DEUX yeux (−30 vue) non modélisée. Prothèse : Cache-œil / Œil de verre.' });
     }
     if (/oreille/.test(t)) {
-      out.push({ label: 'Oreille perdue', location, charPenalty: { Soc: -5 }, prosthesis: [MERVEILLE],
+      out.push({ label: 'Oreille perdue', location, charPenalty: { Soc: -5 }, sense: 'ouie', prosthesis: [MERVEILLE],
         note: '−5 Sociabilité par oreille perdue ; perte des DEUX oreilles (−20 ouïe) non modélisée. Prothèse : Merveille.' });
     }
     if (/dents?\b/.test(t)) {

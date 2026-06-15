@@ -16,7 +16,7 @@
  *  - Limites (l.95) : mutations physiques > BE ou mentales > BFM → DAMNÉ (le
  *    personnage bascule dans le Chaos — hors-jeu définitif).
  */
-import { Combatant, CharKey, HitLocation } from './types';
+import { Combatant, CharKey, HitLocation, Weapon } from './types';
 import { bonus, effectiveChar } from './characteristics';
 import type { PsychTrait } from './psychology';
 
@@ -42,6 +42,10 @@ export interface Mutation {
   apAll?: number;
   /** PA naturels par localisation (Cornes asymétriques : +1 Tête). */
   apLocations?: Partial<Record<HitLocation, number>>;
+  /** Arme naturelle conférée (LDB 19 : « Compte comme une Arme de Créature ») — ex. Cornes
+   *  asymétriques → Cornes (Dégâts = BF). Lue par recomputeLoadout : une mutation-arme = DONNÉE,
+   *  plus de name-match dans items.ts (ajouter une mutation-arme = remplir ce champ). */
+  derivedWeapon?: Weapon;
   /** Modificateur aux Tests d'une Compétence nommée (clé minuscule-préfixe — Groin poilu :
    *  +10 Pistage ; Langue pendante : −10 Langue). Lu par testValue, comme les Traumatismes. */
   skillMods?: Record<string, number>;

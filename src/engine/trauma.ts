@@ -249,8 +249,8 @@ export function consolidateAmputations(c: Combatant): string[] {
  */
 export function escalateSensoryLoss(c: Combatant): string[] {
   const log: string[] = [];
-  const eyes = (c.traumas ?? []).filter((t) => t.label === 'Œil perdu').length;
-  const ears = (c.traumas ?? []).filter((t) => t.label === 'Oreille perdue').length;
+  const eyes = (c.traumas ?? []).filter((t) => t.sense === 'vue').length;
+  const ears = (c.traumas ?? []).filter((t) => t.sense === 'ouie').length;
   if (eyes >= 2 && !(c.traumas ?? []).some((t) => t.label === 'Cécité')) {
     c.traumas = [...(c.traumas ?? []), { label: 'Cécité', location: 'tete', charPenalty: { CC: -30, CT: -30 }, dodgePenalty: -30, skillPenalty: { chevaucher: -30 }, note: 'perte des DEUX yeux — −30 aux Tests liés à la vue (Arme, Esquive, Chevaucher).' }];
     log.push(`${c.name} perd la vue (cécité) — −30 aux Tests liés à la vue.`);

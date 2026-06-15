@@ -5569,6 +5569,7 @@
     "pa": null,
     "damage": null,
     "qualities": [],
+    "derivedWeapon": { "name": "Crochet", "type": "melee", "damage": "+BF+2", "reach": "Très courte", "qualities": [], "subType": "Base", "hands": 1 },
     "desc": "Vous possédez un crochet là où vous aviez une main. Outil étonnamment maniable une fois que vous vous y êtes habitué, vous pouvez racheter la pénalité de -20 à tous les Tests impliquant deux mains pour 100 PX pour chaque tranche de 5, soustraite de la pénalité, retirant la pénalité entière pour 400 PX. Ajout: en Combat rapproché, les Crochets sont considérés comme des Dagues.",
     "price": {
       "gold": 0,

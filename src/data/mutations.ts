@@ -34,7 +34,7 @@ const PHYSIQUE: Row[] = [
   { min: 66, max: 70, label: 'Plumes éparses', fx: { note: 'Deux lancers de Localisation pour déterminer où ces plumes apparaissent.' } },
   { min: 71, max: 75, label: 'Court sur pattes', fx: { movement: -1 } },
   { min: 76, max: 80, label: 'Écailles épineuses', fx: { apAll: 1 } },
-  { min: 81, max: 85, label: 'Cornes asymétriques', fx: { apLocations: { tete: 1 }, note: 'Compte comme une Arme de Créature (Dégâts = Bonus de Force).' } },
+  { min: 81, max: 85, label: 'Cornes asymétriques', fx: { apLocations: { tete: 1 }, derivedWeapon: { name: 'Cornes', type: 'melee', damage: '+BF', qualities: [], subType: 'Base', hands: 1 }, note: 'Compte comme une Arme de Créature (Dégâts = Bonus de Force).' } },
   { min: 86, max: 90, label: 'Suintement de pus', fx: { note: 'Lancer de Localisation pour déterminer l’origine du suintement.' } },
   { min: 91, max: 95, label: 'Groin poilu', fx: { skillMods: { pistage: 10 } } },
   { min: 96, max: 100, label: 'Choix du MJ', fx: { note: 'Le MJ choisit une mutation ou un Trait de Créature.' } },

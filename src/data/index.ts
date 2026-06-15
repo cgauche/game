@@ -27,7 +27,7 @@ import locationsJson from './locations.json';
 import booksJson from './books.json';
 import namesJson from './names.json';
 import raceAppearanceJson from './raceAppearance.json';
-import { CharKey } from '../engine/types';
+import { CharKey, Weapon } from '../engine/types';
 
 export interface SpeciesData {
   label: string;
@@ -112,6 +112,10 @@ export interface TrappingData {
   desc: string | null;
   price: { gold: number; silver: number; bronze: number };
   source: { book: string; page: number };
+  /** Arme DÉRIVÉE conférée tant que l'objet est ÉQUIPÉ (prothèse-arme, LDB 73 : le Crochet « est
+   *  considéré comme une Dague » en mêlée). Lue par recomputeLoadout : ajouter une prothèse-arme =
+   *  remplir ce champ dans la donnée, plus de name-match `i.name === 'Crochet'`. */
+  derivedWeapon?: Weapon;
 }
 export type HarvestRarity = 'Commune' | 'Limitée' | 'Rare' | 'Exotique' | 'Unique';
 export type HarvestDanger = 'Inoffensive' | 'Inquiétante' | 'Menaçante' | 'Mortelle';
