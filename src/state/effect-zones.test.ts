@@ -12,8 +12,10 @@ import { testScene } from '../scenes/test-fixture';
 import { useGame } from './store';
 import type { Scene } from './scene';
 import {
-  zoneAreaTiles, sceneZonesToBattle, decayZones, crossZones, zonesRoundTick, type BattleZone,
+  zoneAreaTiles, sceneZonesToBattle, decayZones, crossZones, zonesRoundTick, barrierTilesFor, type BattleZone,
 } from './zones';
+import { occupied } from './combatGeometry';
+import type { BattleState } from './store';
 
 const rng: RNG = { int: () => 5 } as RNG;
 
@@ -87,6 +89,32 @@ describe('runtime : un piège authoré frappe via le runtime des zones de Sort',
     crossZones([trap as BattleZone], victim, [{ x: 4, y: 5 }, { x: 5, y: 5 }, { x: 6, y: 5 }], () => undefined, rng);
     expect(victim.wounds.current).toBe(7);
     expect(victim.conditions.some((c) => c.name === 'Empoisonné')).toBe(true);
+  });
+});
+
+describe('barrières — infranchissables pour les créatures gatées (via occupied)', () => {
+  const barrier = (blockGroups?: string[]): BattleZone => ({ label: 'Cercle de ward', tiles: [{ x: 5, y: 5 }], rounds: 1, permanent: true, barrier: { blockGroups } });
+  const battleWith = (zones: BattleZone[]): BattleState => ({ combatants: [], zones } as unknown as BattleState);
+
+  it('sceneZonesToBattle porte la barrière', () => {
+    const [z] = sceneZonesToBattle([{ id: 'w', label: 'Ward', area: { kind: 'rect', x: 0, y: 0, w: 1, h: 1 }, barrier: { blockGroups: ['Démon'] } }]);
+    expect(z.barrier).toEqual({ blockGroups: ['Démon'] });
+  });
+
+  it('barrierTilesFor : sans filtre bloque tout le monde ; filtré ne bloque que les Groupes visés', () => {
+    expect(barrierTilesFor([barrier()], ['Humain'])).toEqual([{ x: 5, y: 5 }]);
+    expect(barrierTilesFor([barrier(['Démon'])], ['Démon'])).toEqual([{ x: 5, y: 5 }]);
+    expect(barrierTilesFor([barrier(['Démon'])], ['Humain'])).toEqual([]);
+  });
+
+  it('occupied : un Démon est bloqué par la barrière sacrée, pas un vivant', () => {
+    const b = battleWith([barrier(['Démon'])]);
+    expect(occupied(b, mk({ id: 'd', groups: ['Démon'] })).has('5,5')).toBe(true);
+    expect(occupied(b, mk({ id: 'h', groups: ['Humain'] })).has('5,5')).toBe(false);
+  });
+
+  it('occupied : une barrière sans filtre bloque même un vivant', () => {
+    expect(occupied(battleWith([barrier()]), mk({ id: 'h', groups: ['Humain'] })).has('5,5')).toBe(true);
   });
 });
 

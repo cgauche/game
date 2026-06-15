@@ -443,6 +443,23 @@ export function Inspector({
                     <input type="checkbox" checked={!!efz.blocksLoS} onChange={(e) => setEfz({ ...efz, blocksLoS: e.target.checked || undefined })} />
                     🌫 Masque la ligne de vue (fumée, ténèbres)
                   </label>
+                  <label className="ed-check">
+                    <input type="checkbox" checked={!!efz.barrier} onChange={(e) => setEfz({ ...efz, barrier: e.target.checked ? { blockGroups: efz.barrier?.blockGroups } : undefined })} />
+                    🧱 Barrière infranchissable (mur magique, cercle de ward)
+                  </label>
+                  {efz.barrier && (
+                    <label className="ed-field">
+                      Bloque les groupes (vide = tout le monde)
+                      <input
+                        value={(efz.barrier.blockGroups ?? []).join(', ')}
+                        placeholder="Démon, Mort-vivant"
+                        onChange={(e) => {
+                          const blockGroups = e.target.value.split(',').map((s) => s.trim()).filter(Boolean);
+                          setEfz({ ...efz, barrier: { blockGroups: blockGroups.length ? blockGroups : undefined } });
+                        }}
+                      />
+                    </label>
+                  )}
                 </Fold>
                 <div className="insp-actions">
                   <button className="btn small danger" onClick={removeSel}>

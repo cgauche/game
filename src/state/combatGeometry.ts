@@ -15,7 +15,7 @@ import { footprintTiles, sizeFootprint, occupiesTile } from './footprint';
 import { sizeGap } from '../engine/size';
 import { isOutOfAction } from '../engine/conditions';
 import { traitSeesInDark } from '../engine/traits/dispatch';
-import { losBlockingTiles, crossZones } from './zones';
+import { losBlockingTiles, crossZones, barrierTilesFor } from './zones';
 import { battleRng } from './battleRng';
 import { ev } from './combatLog';
 import { bus, EVT } from './bus';
@@ -35,6 +35,10 @@ export function occupied(battle: BattleState, mover: Combatant | string): Set<st
     if (moverSize !== undefined && sizeGap(c.size, moverSize) < 0) continue; // plus petit → dégagé du chemin (85 l.308-309)
     for (const t of footprintTiles(c.pos, c.size)) s.add(`${t.x},${t.y}`);
   }
+  // BARRIÈRES (zones authorées/sorts) : leurs cases sont infranchissables pour le mover gaté — point
+  // d'injection UNIQUE → tout déplacement (reachable joueur, IA, poussée, téléport) les respecte.
+  const moverC = typeof mover === 'string' ? battle.combatants.find((c) => c.id === mover) : mover;
+  for (const t of barrierTilesFor(battle.zones, moverC?.groups)) s.add(`${t.x},${t.y}`);
   return s;
 }
 

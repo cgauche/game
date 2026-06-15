@@ -367,6 +367,7 @@ export function EditorCanvas({
                 const isSel = sel?.type === 'effectZone' && sel.idx === zi;
                 const r = effectZoneRect(z.area);
                 const { cx, cy } = tileCenter(r.x, r.y, dims);
+                const bar = !!z.barrier; // barrière = trait plein (mur), piège = pointillés (hasard)
                 return (
                   <g key={`ez-${z.id}`}>
                     {Array.from({ length: Math.max(0, r.w * r.h) }, (_, i) => {
@@ -376,15 +377,15 @@ export function EditorCanvas({
                         <path
                           key={i}
                           d={diamondPath(x, y, dims)}
-                          fill={isSel ? 'rgba(226,100,30,0.35)' : 'rgba(226,100,30,0.15)'}
-                          stroke={isSel ? '#ffe066' : 'rgba(226,100,30,0.9)'}
-                          strokeWidth={isSel ? 2.5 : 1.5}
-                          strokeDasharray="3 2"
+                          fill={isSel ? (bar ? 'rgba(120,140,200,0.4)' : 'rgba(226,100,30,0.35)') : (bar ? 'rgba(120,140,200,0.18)' : 'rgba(226,100,30,0.15)')}
+                          stroke={isSel ? '#ffe066' : bar ? 'rgba(120,140,200,0.95)' : 'rgba(226,100,30,0.9)'}
+                          strokeWidth={isSel ? 2.5 : bar ? 2 : 1.5}
+                          strokeDasharray={bar ? undefined : '3 2'}
                         />
                       );
                     })}
                     <text x={cx} y={cy + TH / 4} textAnchor="middle" fontSize="12" pointerEvents="none">
-                      ⚠️
+                      {bar ? '🧱' : '⚠️'}
                     </text>
                   </g>
                 );

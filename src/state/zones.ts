@@ -16,6 +16,7 @@ import { Formula, resolveFormula } from '../engine/ops';
 import { ZoneEffect, applyZoneEffect } from '../engine/zones';
 import type { ZoneArea, SceneEffectZone } from './scene';
 import { isOutOfAction } from '../engine/conditions';
+import { groupMatch } from '../engine/groups';
 
 export interface BattleZone {
   label: string;
@@ -27,6 +28,9 @@ export interface BattleZone {
   blocksLoS?: boolean;
   onCross?: ZoneEffect;
   perRound?: ZoneEffect;
+  /** BARRIÈRE : les cases sont infranchissables pour les créatures gatées (cf. `SceneEffectZone.barrier`) —
+   *  injectées dans `occupied()`, donc respectées par TOUT déplacement (joueur, IA, poussée, téléport). */
+  barrier?: { blockGroups?: string[] };
   /** Référent des formules de l'effet (« votre BFM » = le lanceur) — résolu à l'application. */
   casterId?: string;
 }
@@ -66,7 +70,23 @@ export function sceneZonesToBattle(zones: SceneEffectZone[] | undefined): Battle
     blocksLoS: z.blocksLoS,
     onCross: z.onCross,
     perRound: z.perRound,
+    barrier: z.barrier,
   }));
+}
+
+/** Cases d'un combattant `mover` BLOQUÉES par les barrières actives (`battle.zones[].barrier`) :
+ *  une barrière sans `blockGroups` bloque tout le monde ; sinon seulement les Groupes correspondants
+ *  (groupMatch). `moverGroups` = Groupes du mover (vide si inconnu → on bloque par prudence quand un
+ *  filtre existe). Injecté dans `occupied()` → respecté par TOUT déplacement. */
+export function barrierTilesFor(zones: BattleZone[] | undefined, moverGroups: string[] | undefined): Pt[] {
+  const out: Pt[] = [];
+  for (const z of zones ?? []) {
+    if (!z.barrier) continue;
+    const filter = z.barrier.blockGroups;
+    const blocks = !filter?.length || (moverGroups ? filter.some((g) => groupMatch(g, moverGroups)) : true);
+    if (blocks) out.push(...z.tiles);
+  }
+  return out;
 }
 
 /** Cases d'un MUR (Mur de feu, LDB 47 : « épais de 1 mètre ») : segment PERPENDICULAIRE à l'axe
