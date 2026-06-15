@@ -25,8 +25,6 @@ const OV_EPINES_PROFILE = EPINE(-6, -27, 1.2, -32) + EPINE(-8, -20, 1.1, -50) + 
 export const creature: CreatureDef = {
   name: 'Rat ogre',
   plan: 'biped',
-  matchPriority: 10, // AVANT le def Skaven générique
-  aliases: ['rat-ogre', 'ratogre'], // « rat ogre » = le nom
   race: 'Skaven',
   perso: {
     // MORPHO ici (chair cousue, fourrure, épines, griffes) ; son ÉQUIPEMENT (pagne-tablier

@@ -7,7 +7,6 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: 'Hydre',
   plan: 'quadruped',
-  aliases: ['hydra', 'hydre des marais'],
   quad: {
     // Canon LDB 79 l.96-98 : « corps massif » (girth↑, pattes courtes), « entrelacs de cous »
     // (neckLen↑), Constricteur (tailLen↑), Furtif des marais (robe tachetée), Armure 3.

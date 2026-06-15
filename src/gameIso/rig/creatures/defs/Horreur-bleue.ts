@@ -6,8 +6,6 @@ import { OV_TENTACULES_FLANC } from './Horreur-rose';
 export const creature: CreatureDef = {
   name: 'Horreur bleue',
   plan: 'biped',
-  matchPriority: 35, // AVANT la rose (36) — « horreur bleue » contient « horreur »
-  aliases: ['horreur bleues', 'horreurs bleue', 'horreurs bleues'], // « horreur bleue » = le nom
   perso: {
     tenue: 'Nu',
     gabarit: 'gremlin',

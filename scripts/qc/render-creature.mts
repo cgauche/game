@@ -18,7 +18,7 @@ import type { View } from '../../src/gameIso/rig/facing';
 const args = process.argv.slice(2);
 if (args[0] === '--list') {
   const list = CREATURES.filter((c) => c.plan !== 'biped' && c.plan !== 'monolithic')
-    .map((c) => ({ name: c.name, plan: c.plan, aliases: c.aliases ?? [] }));
+    .map((c) => ({ name: c.name, plan: c.plan }));
   console.log(JSON.stringify(list, null, 1));
   process.exit(0);
 }

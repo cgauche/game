@@ -10,7 +10,6 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: "Fr'hough Mournbreath",
   plan: 'jabberslythe',
-  aliases: ['mournbreath', 'frhough'],
   jabber: {
     sl: 1.05, girth: 1.32, antlers: true, tongue: 1.45,
     stored: { corps: '#5a5430', corpsO: '#211e0c', corpsH: '#e2ecd8', cheveux: '#3a3418', cheveuxO: '#1c180a', cuir: '#d8c693' },

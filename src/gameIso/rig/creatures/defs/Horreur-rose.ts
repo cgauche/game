@@ -16,8 +16,6 @@ export const OV_TENTACULES_FLANC = (s: 1 | -1) =>
 export const creature: CreatureDef = {
   name: 'Horreur rose',
   plan: 'biped',
-  matchPriority: 36, // APRÈS Horreur bleue (35) : « horreur » nu retombe sur la rose
-  aliases: ['horreur roses', 'horreurs rose', 'horreurs roses', 'couineur', 'couineurs', 'horreur', 'horreurs'], // « horreur rose » = le nom ; « horreur » nu → rose
   perso: {
     tenue: 'Nu',
     gabarit: 'gremlin', // dégingandé à grosse tête — la gueule domine la silhouette

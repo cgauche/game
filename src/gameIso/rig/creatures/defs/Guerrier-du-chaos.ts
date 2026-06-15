@@ -4,6 +4,4 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: 'Guerrier du Chaos',
   plan: 'biped',
-  matchPriority: 30,
-  aliases: ['chaos warrior', 'guerrier chaotique', 'elu du chaos', 'chevalier du chaos', 'champion du chaos'],
 };

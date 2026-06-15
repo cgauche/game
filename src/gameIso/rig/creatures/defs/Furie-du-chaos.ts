@@ -14,8 +14,6 @@ const OV_ECAILLES = (dx: number, dy: number, s: number) =>
 export const creature: CreatureDef = {
   name: 'Furie du Chaos',
   plan: 'biped',
-  matchPriority: 37, // avant Démon (38) — « furie » seul suffit
-  aliases: ['furie'],
   perso: {
     tenue: 'Nu',
     gabarit: 'elance-voute',

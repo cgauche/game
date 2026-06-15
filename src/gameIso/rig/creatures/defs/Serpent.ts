@@ -7,7 +7,6 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: 'Serpent',
   plan: 'serpentine',
-  aliases: ['serpent', 'vipere', 'cobra', 'python', 'naga', 'couleuvre'],
   serpent: {
     sl: 1.0, girth: 1.12, hood: false,
     stored: { corps: '#5e8a3f', corpsO: '#2c4520', corpsH: '#93b65a', cheveux: '#2c3a20', cheveuxO: '#1a2410', cuir: '#caa23a' },

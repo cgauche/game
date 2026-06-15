@@ -8,8 +8,6 @@ import { OV_CORNES_GOR } from '../../parts/monstrous';
 export const creature: CreatureDef = {
   name: 'Chamane-Brey',
   plan: 'biped',
-  matchPriority: 24, // avant Gor (25) — « bray » contient parfois « gor » dans la phrase
-  aliases: ['chamane bray', 'chamane-bray', 'chamanebray', 'chamane brey', 'chamanebrey', 'bray', 'brey'],
   race: 'Homme-bête',
   perso: {
     tenue: 'Chamane-Bray',

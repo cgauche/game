@@ -9,7 +9,6 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: 'Banshee',
   plan: 'spectral',
-  aliases: ['banshee', 'pleureuse'],
   spectre: {
     sl: 0.96, hood: false, face: 'cri',
     stored: { corps: '#63507f', corpsO: '#1a1226', corpsH: '#c7b3ef', cheveux: '#241b38', cheveuxO: '#140e22', cuir: '#4a3a66' },

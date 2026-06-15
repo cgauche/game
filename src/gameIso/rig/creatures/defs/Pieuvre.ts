@@ -4,7 +4,6 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: 'Pieuvre',
   plan: 'cephalopod',
-  aliases: ['pieuvre', 'poulpe', 'octopus', 'calmar', 'calamar', 'kraken'],
   // LDB 79 l.130-135 : « marbrées de vert et de brun » (camouflage de marécage),
   // « immenses yeux limpides », tentacules robustes, Taille (Grande).
   octopus: {

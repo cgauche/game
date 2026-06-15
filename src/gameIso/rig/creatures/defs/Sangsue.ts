@@ -4,7 +4,6 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: 'Sangsue',
   plan: 'serpentine',
-  aliases: ['sangsue', 'ver geant', 'asticot'],
   serpent: {
     // Ver gorgé de sang : masse trapue (girth ↑), robe brun-noir humide, anneaux très contrastés
     // (les stries @corpsO du gabarit lisent comme des annulations), reflet rougeâtre luisant.

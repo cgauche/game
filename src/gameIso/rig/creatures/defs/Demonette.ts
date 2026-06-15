@@ -12,8 +12,6 @@ const OV_BRASSARD =
 export const creature: CreatureDef = {
   name: 'Démonette',
   plan: 'biped',
-  matchPriority: 39, // proche de Démon (38) ; « demonette »/« slaanesh » ne chevauchent pas Khorne
-  aliases: ['slaanesh'],
   perso: {
     tenue: 'Démonette',
     sex: 'F',

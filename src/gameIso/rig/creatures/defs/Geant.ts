@@ -7,7 +7,6 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: 'Géant',
   plan: 'biped',
-  matchPriority: 46,
   // Espèce NON-canonique : baseSpeciesOf('Géant')→'Humain'. Sa config distincte (M, torse nu)
   // vit sur le perso, pour ne pas polluer la race Humain partagée.
   perso: { tenue: 'Nu', sex: 'M', scale: 1.2 }, // nuance intra-Énorme (final ≈ ×2.4 humain)

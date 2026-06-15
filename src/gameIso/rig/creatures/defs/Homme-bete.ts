@@ -6,8 +6,6 @@ import { OV_CORNES_GOR } from '../../parts/monstrous';
 export const creature: CreatureDef = {
   name: "Homme-bête",
   plan: 'biped',
-  matchPriority: 30,
-  aliases: ['homme bete', 'hommebete', 'beastman'], // « homme-bete » = le nom
   perso: {
     features: [{ bone: 'tete', svg: OV_CORNES_GOR, layer: -2 }],
   },

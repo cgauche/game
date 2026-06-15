@@ -8,7 +8,6 @@ import { OV_CORNES_VESTIGIALES } from '../../parts/monstrous';
 export const creature: CreatureDef = {
   name: 'Jumeaux',
   plan: 'biped',
-  matchPriority: 23,
   race: 'Homme-bête', // « jumeaux » (pluriel) = le nom ; « jumeau » nu désignerait des humains
 
   perso: {

@@ -9,7 +9,6 @@ import { scalesPatch } from '../../parts/textures';
 export const creature: CreatureDef = {
   name: 'Urzo',
   plan: 'biped',
-  matchPriority: 20,
   race: 'Homme-bête', // « urzo » = le nom (limite de mot)
 
   perso: {

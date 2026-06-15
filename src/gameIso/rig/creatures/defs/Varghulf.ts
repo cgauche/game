@@ -11,7 +11,6 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: 'Varghulf',
   plan: 'winged',
-  aliases: ['chauve-souris', 'chauve souris', 'chauve.?souris'],
   quad: {
     sl: 1.1, build: 'rodent', girth: 1.25, bodyLen: 1.0, neckLen: 0.5, neckAngle: 16, legLen: 0.72,
     head: 'rat', headScale: 1.35, tail: 'courte', tailLen: 0.8, ears: 'pointues',

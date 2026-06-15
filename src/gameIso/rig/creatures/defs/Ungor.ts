@@ -6,8 +6,6 @@ import { OV_CORNES_VESTIGIALES } from '../../parts/monstrous';
 export const creature: CreatureDef = {
   name: 'Ungor',
   plan: 'biped',
-  matchPriority: 25, // avant le def Homme-bête générique (30)
-  aliases: ['ungors'], // « ungor » = le nom ; ne déclenche PAS \bgor\b (limite de mot)
   race: 'Homme-bête',
   perso: {
     gabarit: 'elance-voute', // chétif — perd la masse trapue du gor

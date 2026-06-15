@@ -5,7 +5,6 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: 'Squig',
   plan: 'squig',
-  aliases: ['squig'],
   squig: {
     // LDB 79 l.138 : « de forme ronde … gueule béante et de grandes dents pointues » —
     // girth resserré (la gueule/crocs sont de taille fixe → boule plus petite = gueule qui DOMINE,

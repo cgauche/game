@@ -3,7 +3,6 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: "Sanglier",
   plan: 'quadruped',
-  aliases: ["laie","marcassin","truie","cochon","porc"],
   // LDB 78 l.58-61 : bête de forêt « défenses aiguisées » (Cornes (Défenses)), 1m50-1m80 DE LONG,
   // Armure (Peau 1) → corps long et bas sur pattes courtes, grosse hure de soies dressées
   // (mane hirsute), tête massive aux défenses lisibles, queue courte, robe brun-noir de forêt.

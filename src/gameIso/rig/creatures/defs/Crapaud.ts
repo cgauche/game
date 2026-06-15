@@ -6,7 +6,6 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: 'Crapaud',
   plan: 'quadruped',
-  aliases: ['crapaud geant', 'crapaud géant', 'batracien', 'toad'],
   quad: {
     sl: 0.98, build: 'batracien', girth: 1.5, bodyLen: 0.95, neckLen: 0.06, neckAngle: 4,
     legLen: 0.45, head: 'crapaud', tail: 'sans', ears: 'rondes', foot: 'patte',

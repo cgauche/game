@@ -9,9 +9,6 @@ import { OV_GRIFFES } from '../../parts/monstrous';
 export const creature: CreatureDef = {
   name: "Démon",
   plan: 'biped',
-  matchPriority: 38,
-  aliasOnly: true, // « démon » nu est trop générique → seuls « sanguinaire »/« khorne » déclenchent
-  aliases: ['sanguinaire', 'khorne'],
   perso: {
     tenue: 'Sanguinaire',
     features: [

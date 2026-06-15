@@ -5,8 +5,6 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: 'Vermine de choc',
   plan: 'biped',
-  matchPriority: 12, // avant le def Skaven générique
-  aliases: ['vermine'], // « vermine de choc » = le nom ; « vermine » nu suffit (élite skavenne)
   race: 'Skaven',
   perso: {
     tenue: 'Vermine de choc',

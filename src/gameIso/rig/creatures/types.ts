@@ -51,16 +51,8 @@ export interface CreatureDef {
   name: string;
   /** Gabarit corporel. `winged` = quadrupède + ailes (mêmes props `quad`). */
   plan: CreatureBodyPlan;
-  /** Synonymes de nom (accents retirés) — routage par nom (limite de mot) dérivé de cette liste. */
-  aliases?: string[];
-  /** Si vrai, le NOM de la def ne sert PAS de déclencheur de match : seuls les `aliases` le font.
-   *  Réservé aux defs dont le nom canonique est trop générique pour être un trigger fidèle
-   *  (« Démon » → ne doit matcher que « sanguinaire »/« khorne », pas le mot « démon » nu). */
-  aliasOnly?: boolean;
-  /** Priorité de matching (plus BAS = testé en premier). Désambiguïse les chevauchements
-   *  de nom : « rat ogre » → Rat ogre/Skaven avant Ogre, Minotaure avant Homme-bête, etc.
-   *  Défaut 100. Bipèdes ET non-bipèdes sont triés par cette valeur avant le match nom+alias. */
-  matchPriority?: number;
+  // (de-POC P5/5d) `aliases`/`aliasOnly`/`matchPriority` RETIRÉS : la résolution de rendu se fait
+  // par l'espèce explicite / le record / le lookup EXACT `defByName(nom)` — plus aucun match flou.
   /** Props de rendu du gabarit quad/ailé (requis si plan = quadruped | winged). */
   quad?: QuadProps;
   /** Race d'apparence (défauts tenue/monster/sex/parts/colors/scale). Défaut = baseSpeciesOf(name).

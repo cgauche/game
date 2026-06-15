@@ -7,8 +7,6 @@ import { OV_CORNES_CAPRIN } from '../../parts/monstrous';
 export const creature: CreatureDef = {
   name: 'Prophète gris',
   plan: 'biped',
-  matchPriority: 12, // avant le def Skaven générique
-  aliases: ['prophete-gris', 'prophetegris'], // « prophete gris » = le nom
   race: 'Skaven',
   perso: {
     tenue: 'Prophète gris',

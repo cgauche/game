@@ -7,7 +7,6 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: 'Basilic',
   plan: 'quadruped',
-  aliases: ['basilisk', 'lezard geant', 'lézard géant'],
   quad: {
     // Canon LDB 79 (l.15-16) : « créatures reptiliennes » solitaires, venimeuses, au regard
     // pétrifiant, avec Attaque caudale +8 (l.22) → silhouette de GRAND LÉZARD bas sur pattes :

@@ -5,8 +5,6 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: 'Esclave skaven',
   plan: 'biped',
-  matchPriority: 12,
-  aliases: ['esclave-skaven', 'esclaveskaven', 'skaven esclave', 'skaven-esclave', 'skavenesclave'],
   race: 'Skaven',
   perso: {
     tenue: 'Esclave skaven',

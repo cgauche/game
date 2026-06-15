@@ -8,7 +8,6 @@ import { OV_CORNES_VESTIGIALES, OV_GRIFFES } from '../../parts/monstrous';
 export const creature: CreatureDef = {
   name: 'Bête Impériale',
   plan: 'biped',
-  matchPriority: 22,
   race: 'Homme-bête',
   perso: {
     gabarit: 'gremlin',

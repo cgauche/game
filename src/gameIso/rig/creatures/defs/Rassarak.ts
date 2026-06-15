@@ -13,8 +13,6 @@ const OEIL_LAITEUX_PROFIL =
 export const creature: CreatureDef = {
   name: 'Rassarak',
   plan: 'biped',
-  matchPriority: 9, // avant Rat ogre (10) et tous les skavens
-  aliases: ['rassark'], // « rassarak » = le nom
   race: 'Skaven',
   perso: {
     tenue: 'Esclave skaven',

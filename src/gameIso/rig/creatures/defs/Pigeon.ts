@@ -4,7 +4,6 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: 'Pigeon',
   plan: 'avian',
-  aliases: ['pigeon', 'oiseau', 'corbeau', 'colombe', 'moineau', 'corneille'],
   bird: {
     sl: 0.62, girth: 1.15, // jabot plein du pigeon biset
     // Plumage gris-bleu, reflet irisé vert au cou (corpsH), pattes/bec rouge-rosé (cuir)

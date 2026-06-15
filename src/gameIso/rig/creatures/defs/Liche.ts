@@ -5,7 +5,6 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: 'Liche',
   plan: 'biped',
-  matchPriority: 19, // après Skaven, avant Squelette (le mot « liche » est unique de toute façon)
   // Espèce NON-canonique : baseSpeciesOf('Liche')→'Humain'. Sa config distincte (tenue ossuaire +
   // crâne, comme le squelette) vit sur le perso, pour ne pas polluer la race Humain partagée.
   perso: { tenue: 'Squelette', monster: { tete: 'crane' } },

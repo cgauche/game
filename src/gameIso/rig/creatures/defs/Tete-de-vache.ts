@@ -7,8 +7,6 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: 'Homme-bête à tête de vache',
   plan: 'biped',
-  matchPriority: 22, // avant Homme-bête (30)
-  aliases: ['tete de vache', 'homme vache', 'homme-vache', 'hommevache'],
   race: 'Homme-bête',
   perso: {
     head: 'vache',

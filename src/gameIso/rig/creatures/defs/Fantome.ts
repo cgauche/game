@@ -7,7 +7,6 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: 'Fantôme',
   plan: 'spectral',
-  aliases: ['fantome'],
   spectre: {
     sl: 0.95, hood: false, face: 'cri',
     stored: { corps: '#cce2f0', corpsO: '#7fa2b6', corpsH: '#f4fcff', cheveux: '#3a4a54', cheveuxO: '#222e34', cuir: '#9cbccd' },

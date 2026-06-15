@@ -5,8 +5,6 @@ import type { CreatureDef } from '../types';
 export const creature: CreatureDef = {
   name: "Coureur d'égout",
   plan: 'biped',
-  matchPriority: 12,
-  aliases: ['coureur degout', 'coureur d egout', 'coureur d-egout', 'coureur nocturne'],
   race: 'Skaven',
   perso: {
     tenue: "Coureur d'égout",
