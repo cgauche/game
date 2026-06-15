@@ -3,9 +3,9 @@
  * Chaque sprite est dessiné dans une boîte locale 120×150, pieds en (60,150).
  * placeSprite() le positionne sur une tuile. DEFS regroupe tous les dégradés.
  */
-import { TW, TH, tileCenter, depth, diamondPath, isSquareView, Dims } from './iso';
+import { TW, TH, tileCenter, depth, diamondPath, isSquareView, Dims, type Rot } from './iso';
 import { propSvg } from './catalog/decor';
-import type { Facing } from '../state/scene';
+import type { Dir8 } from '../state/dir8';
 
 const e = (cx: number, cy: number, r = 2) =>
   `<ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${r + 1}" fill="url(#g_eye)"/><circle cx="${cx}" cy="${cy}" r="${r * 0.55 + 0.4}" fill="#140a06"/>`;
@@ -89,8 +89,9 @@ export interface EntityViz {
   id: string;
   ref?: string;
   appearance?: { seed?: number };
-  /** Orientation d'auteur — utile aux props qui ont un AVANT/ARRIÈRE (sièges face à la scène). */
-  facing?: Facing;
+  /** Orientation MONDE (Dir8, même repère que `SceneEntity.facing`) — un prop directionnel (sièges)
+   *  la projette avec la caméra via `project()` ; les props symétriques l'ignorent. */
+  facing?: Dir8;
 }
 
 /**
@@ -99,10 +100,10 @@ export interface EntityViz {
  * personnages/pnj sont routés vers le rig EN AMONT et n'arrivent pas ici — on retombe sur le
  * villageois par sécurité. Partagé par IsoStage (jeu) et l'éditeur (WYSIWYG) — source unique.
  */
-export function entitySprite(ent: EntityViz): string {
+export function entitySprite(ent: EntityViz, camRot: Rot = 0): string {
   switch (ent.kind) {
     case 'prop':
-      return propSprite(ent.ref, ent.facing);
+      return propSprite(ent.ref, ent.facing, camRot);
     case 'personnage':
     case 'pnj':
       return pnjSprite();
@@ -110,8 +111,8 @@ export function entitySprite(ent: EntityViz): string {
       return '';
   }
 }
-export function propSprite(ref?: string, facing?: Facing): string {
-  return propSvg(ref ?? 'tonneau', facing);
+export function propSprite(ref?: string, facing?: Dir8, camRot: Rot = 0): string {
+  return propSvg(ref ?? 'tonneau', facing, camRot);
 }
 
 // --- Définitions partagées (dégradés) -------------------------------------

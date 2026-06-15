@@ -27,7 +27,7 @@ function placeProp(e: SceneEntity, d: Dims): { d: number; svg: string } {
   const px = e.pos.x + fg.offX, py = e.pos.y + fg.offY;
   const s = 0.55 * fg.scale;
   const { cx, cy } = tileCenter(px, py, d, z);
-  const inner = propSvg(e.ref ?? 'tonneau', e.facing); // honore l'orientation (sièges face scène = de dos)
+  const inner = propSvg(e.ref ?? 'tonneau', e.facing, d.rot); // honore l'orientation + le cran caméra (les sièges PIVOTENT)
   const svg = `<g transform="translate(${cx},${cy})"><g transform="translate(${-60 * s},${-150 * s}) scale(${s})">${inner}</g></g>`;
   const pd = depth(e.pos.x + (e.foot ? e.foot.w - 1 : 0), e.pos.y + (e.foot ? e.foot.h - 1 : 0), d, z);
   return { d: pd + 0.5, svg };
@@ -77,6 +77,9 @@ renderLevel(1, 'opera-furnished-etage.png');
 renderLevel(0, 'opera-furnished-rez-scene.png', 2);
 // Crops de lecture d'orientation (sièges du parterre ; scène/rideau ; loges ; loge royale).
 renderCrop(0, 21, 22, 'opera-furnished-crop-sieges.png', 230, 9);
+// MÊME bloc de sièges, caméra tournée d'un demi-tour (rot 2) : ils doivent PIVOTER (dos→face) et
+// continuer de regarder la scène (désormais en bas de l'écran). Preuve visuelle du helper project().
+renderCrop(0, 21, 22, 'opera-furnished-crop-sieges-rot2.png', 230, 9, 2);
 renderCrop(0, 21, 5, 'opera-furnished-crop-scene.png', 220, 9);
 renderCrop(1, 6, 15, 'opera-furnished-crop-loge.png', 230, 9);
 renderCrop(1, 21, 3, 'opera-furnished-crop-royale.png', 240, 10);

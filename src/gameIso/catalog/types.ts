@@ -1,5 +1,6 @@
 import type { Dims } from '../iso';
 import type { BuildingParams, Facing } from '../../state/scene';
+import type { Dir8 } from '../../state/dir8';
 import type { BuildingMeta } from '../../state/buildings';
 
 export type ParamField =
@@ -9,8 +10,11 @@ export type ParamField =
 
 export interface RenderCtx {
   dims: Dims;
-  /** Orientation du bâtiment (place la porte visible côté façade). */
+  /** Orientation du bâtiment (place la porte visible côté façade) — modèle 4 directions. */
   facing?: Facing;
+  /** Orientation MONDE d'une entité/prop (Dir8, même repère que le rig). Le décor directionnel
+   *  (sièges) la projette dans le repère caméra via `project(dir, dims.rot)` → il PIVOTE avec la vue. */
+  dir?: Dir8;
   /** Scène nocturne → fenêtres éclairées. */
   night?: boolean;
 }

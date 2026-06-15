@@ -572,7 +572,7 @@ export function IsoStage() {
           el: wrap(
             r.id,
             <BodyToken key={r.id} x={ent.pos.x} y={ent.pos.y} z={ez + elevAt(scene, ent.pos.x, ent.pos.y, ez)} dims={d} scale={0.55} fx={ent.anim}>
-              <g dangerouslySetInnerHTML={{ __html: entitySprite(ent) }} />
+              <g dangerouslySetInnerHTML={{ __html: entitySprite(ent, d.rot) }} />
             </BodyToken>,
           ),
         });
@@ -727,7 +727,7 @@ export function IsoStage() {
         ),
       });
     }
-    objs.push({ d: pd, el: token(`e-${ent.id}`, px, py, entitySprite(ent), 0.55 * fg.scale, undefined, false, ent.anim, false, false, ez) });
+    objs.push({ d: pd, el: token(`e-${ent.id}`, px, py, entitySprite(ent, dims.rot), 0.55 * fg.scale, undefined, false, ent.anim, false, false, ez) });
   }
 
   // Leader VISIBLE du groupe (#27b : si le principal est mort/à terre, le suivant debout) —

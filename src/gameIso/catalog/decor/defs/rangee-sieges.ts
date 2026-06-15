@@ -1,9 +1,11 @@
 import type { PropViz } from '../../types';
+import { project } from '../../../rig/facing';
 
 // Rangée de fauteuils d'opéra (3×1) : velours rouge + dorures, quatre sièges alignés — remplit le
-// parterre. ORIENTATION : le champ `facing` est honoré ici (cf. propSvg → ctx.facing). `facing:'N'`
-// = fauteuils tournés vers la SCÈNE (au Nord, y bas) → vus DE DOS depuis la salle (le public regarde
-// la scène). Sinon (S/défaut) = vus de FACE (côté caméra). Doit se lire « fauteuils de théâtre ».
+// parterre. ORIENTATION : on PIVOTE avec la caméra via `project(facing, camRot)` (le MÊME helper que les
+// rigs de personnages — `rig/facing.ts`). `facing` = orientation MONDE (la scène est au Nord) ; `project`
+// la projette dans l'orientation caméra → vue avant/arrière (un facing cardinal ne donne jamais de profil).
+// Donc tourner la caméra réoriente les sièges sans qu'ils restent figés.
 
 /** Un fauteuil vu de FACE (assise + dossier vers la caméra). */
 const front = (cx: number) =>
@@ -29,10 +31,12 @@ export const prop: PropViz = {
   foot: { w: 3, h: 1 },
   label: 'Rangée de fauteuils',
   render: (_params, ctx) => {
-    const seat = ctx?.facing === 'N' ? back : front; // tournés vers la scène (N) ⇒ de dos
-    return `<g><ellipse cx="60" cy="147" rx="55" ry="9" fill="#000" opacity="0.22"/>` +
+    const { view, mirror } = project(ctx?.dir ?? 'S', ctx?.dims?.rot ?? 0);
+    const seat = view === 'back' ? back : front; // un facing cardinal → 'front'/'back' (jamais 'profile')
+    const row = `<g><ellipse cx="60" cy="147" rx="55" ry="9" fill="#000" opacity="0.22"/>` +
       `<path d="M6 136 L114 136 L114 150 L6 150 Z" fill="#3a2c1e"/><path d="M6 136 L114 136" stroke="#241a10" stroke-width="2"/>` +
       [20, 48, 76, 104].map(seat).join('') +
       `</g>`;
+    return mirror ? `<g transform="translate(120,0) scale(-1,1)">${row}</g>` : row; // miroir = regarde à gauche
   },
 };
