@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { emptyScene, type Scene, type Terrain, type Effect } from './scene';
+import { flowEffects, type Flow } from './flow';
 import { planJump } from './jumpMove';
 
 /**
@@ -24,15 +25,14 @@ describe('planJump', () => {
     expect(plan.kind).toBe('free');
   });
 
-  it('saut trop long pour un humain = Effet test « Saut » dont l’échec tombe dans le gouffre', () => {
+  it('saut trop long pour un humain = nœud Test « Saut » dont l’échec tombe dans le gouffre', () => {
     const plan = planJump(scene, { x: 1, y: 1, z: 1 }, { x: 3, y: 1, z: 1 }, 4, 0); // M=4 → libre=0 → Test requis
     expect(plan.kind).toBe('test');
-    const eff = plan.kind === 'test' ? plan.effects[0] : null;
-    expect(eff?.type).toBe('test');
-    const test = eff as Extract<Effect, { type: 'test' }>;
-    expect(test.skill).toBe('Athlétisme');
-    expect(test.difficulty).toBe('intermediaire'); // sans élan
-    const fall = test.onFailure?.[0] as Extract<Effect, { type: 'fall' }>;
+    const node = (plan.kind === 'test' ? plan.flow : null) as Extract<Flow, { kind: 'test' }>;
+    expect(node.kind).toBe('test');
+    expect(node.test.skill).toBe('Athlétisme');
+    expect(node.test.difficulty).toBe('intermediaire'); // sans élan
+    const fall = flowEffects(node.fail)[0] as Extract<Effect, { type: 'fall' }>;
     expect(fall.type).toBe('fall');
     expect(fall.to).toEqual({ x: 2, y: 1, z: 0 }); // tombe sur le parterre (z0) sous le gouffre (x=2)
     expect(fall.metres).toBe(4); // 1 étage ≈ 4 m
@@ -40,6 +40,6 @@ describe('planJump', () => {
 
   it('avec un élan suffisant (≥ M/2 cases), le Test est Accessible (+20)', () => {
     const plan = planJump(scene, { x: 1, y: 1, z: 1 }, { x: 3, y: 1, z: 1 }, 4, 2); // élan 2 ≥ ceil(4/2)=2
-    expect(plan.kind === 'test' && (plan.effects[0] as Extract<Effect, { type: 'test' }>).difficulty).toBe('accessible');
+    expect(plan.kind === 'test' && (plan.flow as Extract<Flow, { kind: 'test' }>).test.difficulty).toBe('accessible');
   });
 });

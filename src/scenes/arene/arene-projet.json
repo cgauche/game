@@ -48,16 +48,25 @@
      "ref": "rack-armes",
      "label": "Râtelier de l’arène",
      "interact": {
-      "effects": [
-       {
-        "type": "giveTrapping",
-        "trapping": "Hallebarde"
-       },
-       {
-        "type": "journal",
-        "text": "Une hallebarde réglementaire dort sur le râtelier. Elle est à vous."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveTrapping",
+          "trapping": "Hallebarde"
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Une hallebarde réglementaire dort sur le râtelier. Elle est à vous."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -1123,38 +1132,50 @@
           "expr": "!coffre_pris"
          },
          "flow": {
-          "kind": "seq",
-          "steps": [
-           {
-            "kind": "do",
-            "effect": {
-             "type": "test",
-             "skill": "Crochetage",
-             "difficulty": "intermediaire",
-             "label": "Crocheter le coffre",
-             "onSuccess": [
-              {
-               "type": "setFlag",
-               "flag": "coffre_pris"
-              },
-              {
-               "type": "giveMoney",
-               "gold": 5
-              },
-              {
-               "type": "journal",
-               "text": "Le coffre cède : 5 couronnes !"
-              }
-             ],
-             "onFailure": [
-              {
-               "type": "journal",
-               "text": "Le mécanisme rouillé résiste — peut-être plus tard."
-              }
-             ]
+          "kind": "test",
+          "test": {
+           "skill": "Crochetage",
+           "difficulty": "intermediaire",
+           "label": "Crocheter le coffre"
+          },
+          "success": {
+           "kind": "seq",
+           "steps": [
+            {
+             "kind": "do",
+             "effect": {
+              "type": "setFlag",
+              "flag": "coffre_pris"
+             }
+            },
+            {
+             "kind": "do",
+             "effect": {
+              "type": "giveMoney",
+              "gold": 5
+             }
+            },
+            {
+             "kind": "do",
+             "effect": {
+              "type": "journal",
+              "text": "Le coffre cède : 5 couronnes !"
+             }
             }
-           }
-          ]
+           ]
+          },
+          "fail": {
+           "kind": "seq",
+           "steps": [
+            {
+             "kind": "do",
+             "effect": {
+              "type": "journal",
+              "text": "Le mécanisme rouillé résiste — peut-être plus tard."
+             }
+            }
+           ]
+          }
          }
         },
         {
@@ -3447,46 +3468,64 @@
           "expr": "!tronc_pille"
          },
          "flow": {
-          "kind": "seq",
-          "steps": [
-           {
-            "kind": "do",
-            "effect": {
-             "type": "test",
-             "skill": "Discrétion",
-             "difficulty": "difficile",
-             "label": "Piller le tronc sous l’œil de Sigmar",
-             "onSuccess": [
-              {
-               "type": "setFlag",
-               "flag": "tronc_pille"
-              },
-              {
-               "type": "giveMoney",
-               "silver": 30
-              },
-              {
-               "type": "journal",
-               "text": "Trente pistoles d’offrandes glissent dans votre poche. Personne n’a rien vu. Sauf, peut-être, Sigmar."
-              }
-             ],
-             "onFailure": [
-              {
-               "type": "setFlag",
-               "flag": "tronc_pille"
-              },
-              {
-               "type": "giveSin",
-               "amount": 1
-              },
-              {
-               "type": "journal",
-               "text": "Le tronc bascule avec fracas — le regard de Frère Anselm vous transperce. La honte (et le Péché) vous colle à la peau."
-              }
-             ]
+          "kind": "test",
+          "test": {
+           "skill": "Discrétion",
+           "difficulty": "difficile",
+           "label": "Piller le tronc sous l’œil de Sigmar"
+          },
+          "success": {
+           "kind": "seq",
+           "steps": [
+            {
+             "kind": "do",
+             "effect": {
+              "type": "setFlag",
+              "flag": "tronc_pille"
+             }
+            },
+            {
+             "kind": "do",
+             "effect": {
+              "type": "giveMoney",
+              "silver": 30
+             }
+            },
+            {
+             "kind": "do",
+             "effect": {
+              "type": "journal",
+              "text": "Trente pistoles d’offrandes glissent dans votre poche. Personne n’a rien vu. Sauf, peut-être, Sigmar."
+             }
             }
-           }
-          ]
+           ]
+          },
+          "fail": {
+           "kind": "seq",
+           "steps": [
+            {
+             "kind": "do",
+             "effect": {
+              "type": "setFlag",
+              "flag": "tronc_pille"
+             }
+            },
+            {
+             "kind": "do",
+             "effect": {
+              "type": "giveSin",
+              "amount": 1
+             }
+            },
+            {
+             "kind": "do",
+             "effect": {
+              "type": "journal",
+              "text": "Le tronc bascule avec fracas — le regard de Frère Anselm vous transperce. La honte (et le Péché) vous colle à la peau."
+             }
+            }
+           ]
+          }
          }
         },
         {
@@ -3759,17 +3798,26 @@
      "ref": "panneau",
      "label": "Stèle gravée",
      "interact": {
-      "effects": [
-       {
-        "type": "document",
-        "title": "Stèle des Ruines",
-        "text": "« Ici tint garnison la III^e bannière du Comte Palatin. Le feu prit la tour une nuit de Geheimnisnacht ; nul ne rebâtit. Que celui qui fouille nos pierres laisse une pièce aux morts. »"
-       },
-       {
-        "type": "journal",
-        "text": "La stèle parle d’une garnison brûlée une nuit de Geheimnisnacht…"
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "document",
+          "title": "Stèle des Ruines",
+          "text": "« Ici tint garnison la III^e bannière du Comte Palatin. Le feu prit la tour une nuit de Geheimnisnacht ; nul ne rebâtit. Que celui qui fouille nos pierres laisse une pièce aux morts. »"
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "La stèle parle d’une garnison brûlée une nuit de Geheimnisnacht…"
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -3782,20 +3830,32 @@
      "ref": "coffre",
      "label": "Coffre de la garnison",
      "interact": {
-      "effects": [
-       {
-        "type": "giveMoney",
-        "gold": 3
-       },
-       {
-        "type": "giveTrapping",
-        "trapping": "Bouclier"
-       },
-       {
-        "type": "journal",
-        "text": "Le coffre de la garnison : 3 co et un bouclier frappé du Comte Palatin."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveMoney",
+          "gold": 3
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveTrapping",
+          "trapping": "Bouclier"
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Le coffre de la garnison : 3 co et un bouclier frappé du Comte Palatin."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -4692,16 +4752,25 @@
      "ref": "cadavre",
      "label": "Égoutier noyé",
      "interact": {
-      "effects": [
-       {
-        "type": "giveMoney",
-        "silver": 12
-       },
-       {
-        "type": "journal",
-        "text": "L’égoutier n’avait plus besoin de sa paie : 12 pa."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveMoney",
+          "silver": 12
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "L’égoutier n’avait plus besoin de sa paie : 12 pa."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -4818,34 +4887,43 @@
      },
      "once": true,
      "flow": {
-      "kind": "seq",
-      "steps": [
-       {
-        "kind": "do",
-        "effect": {
-         "type": "test",
-         "skill": "Résistance",
-         "difficulty": "facile",
-         "label": "Miasmes des égouts",
-         "onSuccess": [
-          {
-           "type": "journal",
-           "text": "L’air est irrespirable, mais vous gardez vos tripes — et votre santé."
-          }
-         ],
-         "onFailure": [
-          {
-           "type": "inflictDisease",
-           "disease": "Fièvre du Rongeur"
-          },
-          {
-           "type": "journal",
-           "text": "Quelque chose se glisse dans vos poumons avec l’odeur… La Fièvre du Rongeur couve."
-          }
-         ]
+      "kind": "test",
+      "test": {
+       "skill": "Résistance",
+       "difficulty": "facile",
+       "label": "Miasmes des égouts"
+      },
+      "success": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "L’air est irrespirable, mais vous gardez vos tripes — et votre santé."
+         }
         }
-       }
-      ]
+       ]
+      },
+      "fail": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "inflictDisease",
+          "disease": "Fièvre du Rongeur"
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Quelque chose se glisse dans vos poumons avec l’odeur… La Fièvre du Rongeur couve."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -5624,34 +5702,52 @@
      "ref": "cadavre",
      "label": "Fossoyeur mort",
      "interact": {
-      "effects": [
-       {
-        "type": "test",
+      "flow": {
+       "kind": "test",
+       "test": {
         "skill": "Résistance",
         "difficulty": "intermediaire",
-        "label": "Fouiller les morts du charnier",
-        "onSuccess": [
+        "label": "Fouiller les morts du charnier"
+       },
+       "success": {
+        "kind": "seq",
+        "steps": [
          {
-          "type": "giveMoney",
-          "silver": 18
+          "kind": "do",
+          "effect": {
+           "type": "giveMoney",
+           "silver": 18
+          }
          },
          {
-          "type": "journal",
-          "text": "Le fossoyeur serrait encore sa bourse : 18 pa, et rien d’attrapé."
+          "kind": "do",
+          "effect": {
+           "type": "journal",
+           "text": "Le fossoyeur serrait encore sa bourse : 18 pa, et rien d’attrapé."
+          }
          }
-        ],
-        "onFailure": [
+        ]
+       },
+       "fail": {
+        "kind": "seq",
+        "steps": [
          {
-          "type": "inflictDisease",
-          "disease": "Blessure Purulente"
+          "kind": "do",
+          "effect": {
+           "type": "inflictDisease",
+           "disease": "Blessure Purulente"
+          }
          },
          {
-          "type": "journal",
-          "text": "Un os brisé vous entaille la paume. La plaie sent déjà mauvais…"
+          "kind": "do",
+          "effect": {
+           "type": "journal",
+           "text": "Un os brisé vous entaille la paume. La plaie sent déjà mauvais…"
+          }
          }
         ]
        }
-      ]
+      }
      }
     },
     {
@@ -5664,16 +5760,25 @@
      "ref": "coffre",
      "label": "Reliquaire descellé",
      "interact": {
-      "effects": [
-       {
-        "type": "giveTrapping",
-        "trapping": "Chemise de mailles"
-       },
-       {
-        "type": "journal",
-        "text": "Sous les os : une chemise de mailles, intacte. Les morts n’en font rien."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveTrapping",
+          "trapping": "Chemise de mailles"
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Sous les os : une chemise de mailles, intacte. Les morts n’en font rien."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -6526,16 +6631,25 @@
      "ref": "rack-lances",
      "label": "Râtelier de joute",
      "interact": {
-      "effects": [
-       {
-        "type": "giveTrapping",
-        "trapping": "Lance de cavalerie"
-       },
-       {
-        "type": "journal",
-        "text": "Une lance de cavalerie de tournoi — parfaite depuis une selle."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveTrapping",
+          "trapping": "Lance de cavalerie"
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Une lance de cavalerie de tournoi — parfaite depuis une selle."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -7438,16 +7552,25 @@
      },
      "label": "Monture éventrée",
      "interact": {
-      "effects": [
-       {
-        "type": "giveTrapping",
-        "trapping": "Faxtoryll"
-       },
-       {
-        "type": "journal",
-        "text": "Les fontes du cavalier disparu contenaient du faxtoryll — encore sec."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveTrapping",
+          "trapping": "Faxtoryll"
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Les fontes du cavalier disparu contenaient du faxtoryll — encore sec."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -7464,16 +7587,25 @@
      },
      "label": "Barque embourbée",
      "interact": {
-      "effects": [
-       {
-        "type": "giveMoney",
-        "silver": 10
-       },
-       {
-        "type": "journal",
-        "text": "Sous le banc de nage : une bourse oubliée (10 pa)."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveMoney",
+          "silver": 10
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Sous le banc de nage : une bourse oubliée (10 pa)."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -8499,34 +8631,52 @@
      "ref": "cocon",
      "label": "Cocon frémissant",
      "interact": {
-      "effects": [
-       {
-        "type": "test",
+      "flow": {
+       "kind": "test",
+       "test": {
         "skill": "Athlétisme",
         "difficulty": "intermediaire",
-        "label": "Éventrer le cocon sans s’y prendre",
-        "onSuccess": [
+        "label": "Éventrer le cocon sans s’y prendre"
+       },
+       "success": {
+        "kind": "seq",
+        "steps": [
          {
-          "type": "giveTrapping",
-          "trapping": "Potion de guérison"
+          "kind": "do",
+          "effect": {
+           "type": "giveTrapping",
+           "trapping": "Potion de guérison"
+          }
          },
          {
-          "type": "journal",
-          "text": "Dans la soie : la besace d’une victime, potion intacte."
+          "kind": "do",
+          "effect": {
+           "type": "journal",
+           "text": "Dans la soie : la besace d’une victime, potion intacte."
+          }
          }
-        ],
-        "onFailure": [
+        ]
+       },
+       "fail": {
+        "kind": "seq",
+        "steps": [
          {
-          "type": "inflictDisease",
-          "disease": "Infection Mineure"
+          "kind": "do",
+          "effect": {
+           "type": "inflictDisease",
+           "disease": "Infection Mineure"
+          }
          },
          {
-          "type": "journal",
-          "text": "Quelque chose vous mord à travers la soie avant de fuir. La plaie gonfle déjà."
+          "kind": "do",
+          "effect": {
+           "type": "journal",
+           "text": "Quelque chose vous mord à travers la soie avant de fuir. La plaie gonfle déjà."
+          }
          }
         ]
        }
-      ]
+      }
      }
     },
     {
@@ -8539,16 +8689,25 @@
      "ref": "cocon",
      "label": "Cocon lourd",
      "interact": {
-      "effects": [
-       {
-        "type": "giveMoney",
-        "silver": 24
-       },
-       {
-        "type": "journal",
-        "text": "Le cocon rend une bourse poisseuse : 24 pa."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveMoney",
+          "silver": 24
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Le cocon rend une bourse poisseuse : 24 pa."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -8579,16 +8738,25 @@
      "ref": "champignon",
      "label": "Chapeaux moirés",
      "interact": {
-      "effects": [
-       {
-        "type": "giveTrapping",
-        "trapping": "Bonnet de fou"
-       },
-       {
-        "type": "journal",
-        "text": "Des chapeaux moirés de Bonnet de fou — l’apothicaire en donnerait cher."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveTrapping",
+          "trapping": "Bonnet de fou"
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Des chapeaux moirés de Bonnet de fou — l’apothicaire en donnerait cher."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -8637,16 +8805,25 @@
      "ref": "cadavre",
      "label": "Chasseur momifié",
      "interact": {
-      "effects": [
-       {
-        "type": "giveTrapping",
-        "trapping": "Arc"
-       },
-       {
-        "type": "journal",
-        "text": "Le chasseur n’aura plus besoin de son arc. Sa corde est encore bonne."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveTrapping",
+          "trapping": "Arc"
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Le chasseur n’aura plus besoin de son arc. Sa corde est encore bonne."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -9604,16 +9781,25 @@
      "ref": "cage",
      "label": "Cage brisée",
      "interact": {
-      "effects": [
-       {
-        "type": "giveMoney",
-        "silver": 16
-       },
-       {
-        "type": "journal",
-        "text": "La cage du gladiateur — sa solde y était cachée : 16 pa, qu’il vous abandonne."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveMoney",
+          "silver": 16
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "La cage du gladiateur — sa solde y était cachée : 16 pa, qu’il vous abandonne."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -10489,20 +10675,32 @@
      "ref": "marmite",
      "label": "Marmite du troll",
      "interact": {
-      "effects": [
-       {
-        "type": "giveTrapping",
-        "trapping": "Potion de vitalité"
-       },
-       {
-        "type": "giveMoney",
-        "silver": 14
-       },
-       {
-        "type": "journal",
-        "text": "Au fond du brouet : une fiole scellée (potion de vitalité !) et 14 pa qui n’ont pas fondu."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveTrapping",
+          "trapping": "Potion de vitalité"
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveMoney",
+          "silver": 14
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Au fond du brouet : une fiole scellée (potion de vitalité !) et 14 pa qui n’ont pas fondu."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -10515,20 +10713,32 @@
      "ref": "coffre",
      "label": "Magot de la caverne",
      "interact": {
-      "effects": [
-       {
-        "type": "giveMoney",
-        "gold": 4
-       },
-       {
-        "type": "giveTrapping",
-        "trapping": "Grande hache"
-       },
-       {
-        "type": "journal",
-        "text": "Le magot : 4 co et une grande hache au fil intact. L’Ogre ne comptera plus rien."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveMoney",
+          "gold": 4
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveTrapping",
+          "trapping": "Grande hache"
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Le magot : 4 co et une grande hache au fil intact. L’Ogre ne comptera plus rien."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -11593,16 +11803,25 @@
      "ref": "caisse",
      "label": "Caisse de contrebande",
      "interact": {
-      "effects": [
-       {
-        "type": "giveTrapping",
-        "trapping": "Lotus noir"
-       },
-       {
-        "type": "journal",
-        "text": "De la contrebande skavenne : un sachet de lotus noir. À manier avec des gants."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveTrapping",
+          "trapping": "Lotus noir"
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "De la contrebande skavenne : un sachet de lotus noir. À manier avec des gants."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -11737,45 +11956,63 @@
           "expr": "!prisonnier_libre"
          },
          "flow": {
-          "kind": "seq",
-          "steps": [
-           {
-            "kind": "do",
-            "effect": {
-             "type": "test",
-             "skill": "Crochetage",
-             "difficulty": "accessible",
-             "label": "Crocheter la cage du garde-manger",
-             "onSuccess": [
-              {
-               "type": "setFlag",
-               "flag": "prisonnier_libre"
-              },
-              {
-               "type": "giveMoney",
-               "silver": 40
-              },
-              {
-               "type": "giveXp",
-               "amount": 50
-              },
-              {
-               "type": "journal",
-               "text": "Le colporteur halfling s’extrait de la cage, vous fourre sa bourse (40 pa) dans les mains et détale vers la surface."
-              },
-              {
-               "type": "endDialogue"
-              }
-             ],
-             "onFailure": [
-              {
-               "type": "journal",
-               "text": "La serrure est grossière mais voilée — le crochet ripe. Réessayez."
-              }
-             ]
+          "kind": "test",
+          "test": {
+           "skill": "Crochetage",
+           "difficulty": "accessible",
+           "label": "Crocheter la cage du garde-manger"
+          },
+          "success": {
+           "kind": "seq",
+           "steps": [
+            {
+             "kind": "do",
+             "effect": {
+              "type": "setFlag",
+              "flag": "prisonnier_libre"
+             }
+            },
+            {
+             "kind": "do",
+             "effect": {
+              "type": "giveMoney",
+              "silver": 40
+             }
+            },
+            {
+             "kind": "do",
+             "effect": {
+              "type": "giveXp",
+              "amount": 50
+             }
+            },
+            {
+             "kind": "do",
+             "effect": {
+              "type": "journal",
+              "text": "Le colporteur halfling s’extrait de la cage, vous fourre sa bourse (40 pa) dans les mains et détale vers la surface."
+             }
+            },
+            {
+             "kind": "do",
+             "effect": {
+              "type": "endDialogue"
+             }
             }
-           }
-          ]
+           ]
+          },
+          "fail": {
+           "kind": "seq",
+           "steps": [
+            {
+             "kind": "do",
+             "effect": {
+              "type": "journal",
+              "text": "La serrure est grossière mais voilée — le crochet ripe. Réessayez."
+             }
+            }
+           ]
+          }
          }
         },
         {
@@ -12887,20 +13124,32 @@
      "ref": "coffre",
      "label": "Coffre du célébrant",
      "interact": {
-      "effects": [
-       {
-        "type": "giveTrapping",
-        "trapping": "Grimoire"
-       },
-       {
-        "type": "learnSpell",
-        "spell": "Éblouissant"
-       },
-       {
-        "type": "journal",
-        "text": "Le grimoire du célébrant — votre sorcier en déchiffre déjà un charme (Éblouissant) ; le reste se lira au calme."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveTrapping",
+          "trapping": "Grimoire"
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "learnSpell",
+          "spell": "Éblouissant"
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Le grimoire du célébrant — votre sorcier en déchiffre déjà un charme (Éblouissant) ; le reste se lira au calme."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -14059,21 +14308,30 @@
      "ref": "sarcophage",
      "label": "Sarcophage du seigneur",
      "interact": {
-      "effects": [
-       {
-        "type": "giveTrapping",
-        "trapping": "Épée bâtarde",
-        "qualities": [
-         "Magique",
-         "De plaies atroces"
-        ],
-        "identified": false
-       },
-       {
-        "type": "journal",
-        "text": "Entre les mains du gisant : une épée bâtarde au fil GLACIAL. Quelque chose dort dans cet acier — faites-la évaluer."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveTrapping",
+          "trapping": "Épée bâtarde",
+          "qualities": [
+           "Magique",
+           "De plaies atroces"
+          ],
+          "identified": false
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Entre les mains du gisant : une épée bâtarde au fil GLACIAL. Quelque chose dort dans cet acier — faites-la évaluer."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -15060,34 +15318,52 @@
      "ref": "tas-or",
      "label": "Or épars (le dragon DORT…)",
      "interact": {
-      "effects": [
-       {
-        "type": "test",
+      "flow": {
+       "kind": "test",
+       "test": {
         "skill": "Discrétion",
         "difficulty": "difficile",
-        "label": "Chiper l’or sous l’œil clos du dragon",
-        "onSuccess": [
+        "label": "Chiper l’or sous l’œil clos du dragon"
+       },
+       "success": {
+        "kind": "seq",
+        "steps": [
          {
-          "type": "giveMoney",
-          "gold": 8
+          "kind": "do",
+          "effect": {
+           "type": "giveMoney",
+           "gold": 8
+          }
          },
          {
-          "type": "journal",
-          "text": "Huit couronnes glissées sans un tintement. Le dragon ronfle toujours."
+          "kind": "do",
+          "effect": {
+           "type": "journal",
+           "text": "Huit couronnes glissées sans un tintement. Le dragon ronfle toujours."
+          }
          }
-        ],
-        "onFailure": [
+        ]
+       },
+       "fail": {
+        "kind": "seq",
+        "steps": [
          {
-          "type": "journal",
-          "text": "UNE PIÈCE TINTE. L’œil du dragon s’ouvre — d’or en fusion."
+          "kind": "do",
+          "effect": {
+           "type": "journal",
+           "text": "UNE PIÈCE TINTE. L’œil du dragon s’ouvre — d’or en fusion."
+          }
          },
          {
-          "type": "startCombat",
-          "encounter": "enc-zone13"
+          "kind": "do",
+          "effect": {
+           "type": "startCombat",
+           "encounter": "enc-zone13"
+          }
          }
         ]
        }
-      ],
+      },
       "consume": true
      }
     },
@@ -15101,20 +15377,32 @@
      "ref": "coffre",
      "label": "Coffre du trésor",
      "interact": {
-      "effects": [
-       {
-        "type": "giveMoney",
-        "gold": 6
-       },
-       {
-        "type": "giveTrapping",
-        "trapping": "Arc elfique"
-       },
-       {
-        "type": "journal",
-        "text": "Dans le coffre d’un pillard digéré : 6 co et un arc elfique que le feu n’a jamais mordu."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveMoney",
+          "gold": 6
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveTrapping",
+          "trapping": "Arc elfique"
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Dans le coffre d’un pillard digéré : 6 co et un arc elfique que le feu n’a jamais mordu."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -16538,16 +16826,25 @@
      "ref": "champignon",
      "label": "Herbes de sous-bois",
      "interact": {
-      "effects": [
-       {
-        "type": "giveTrapping",
-        "trapping": "Racine de terre"
-       },
-       {
-        "type": "journal",
-        "text": "De la racine de terre, fraîche — l’apothicaire du Bourg en redemande."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveTrapping",
+          "trapping": "Racine de terre"
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "De la racine de terre, fraîche — l’apothicaire du Bourg en redemande."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -16560,16 +16857,25 @@
      "ref": "champignon",
      "label": "Talus à faxtoryll",
      "interact": {
-      "effects": [
-       {
-        "type": "giveTrapping",
-        "trapping": "Faxtoryll"
-       },
-       {
-        "type": "journal",
-        "text": "Du faxtoryll sauvage : de quoi étancher une mauvaise plaie."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveTrapping",
+          "trapping": "Faxtoryll"
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Du faxtoryll sauvage : de quoi étancher une mauvaise plaie."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -16628,23 +16934,35 @@
      "ref": "coffre",
      "label": "Coffre de la bande",
      "interact": {
-      "effects": [
-       {
-        "type": "giveMoney",
-        "gold": 5
-       },
-       {
-        "type": "giveTrapping",
-        "trapping": "Rapière",
-        "qualities": [
-         "Raffiné"
-        ]
-       },
-       {
-        "type": "journal",
-        "text": "Le coffre de Bella : 5 co… et une rapière de duelliste, raffinée, prise à quelque noble détroussé."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveMoney",
+          "gold": 5
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveTrapping",
+          "trapping": "Rapière",
+          "qualities": [
+           "Raffiné"
+          ]
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Le coffre de Bella : 5 co… et une rapière de duelliste, raffinée, prise à quelque noble détroussé."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -18201,20 +18519,32 @@
      },
      "label": "Barque du tourbier",
      "interact": {
-      "effects": [
-       {
-        "type": "giveTrapping",
-        "trapping": "Corde"
-       },
-       {
-        "type": "giveMoney",
-        "silver": 8
-       },
-       {
-        "type": "journal",
-        "text": "La barque du tourbier : une bonne corde et 8 pa dans une boîte à amadou."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveTrapping",
+          "trapping": "Corde"
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveMoney",
+          "silver": 8
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "La barque du tourbier : une bonne corde et 8 pa dans une boîte à amadou."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -18227,34 +18557,52 @@
      "ref": "cadavre",
      "label": "Voyageur repêché",
      "interact": {
-      "effects": [
-       {
-        "type": "test",
+      "flow": {
+       "kind": "test",
+       "test": {
         "skill": "Résistance",
         "difficulty": "facile",
-        "label": "Fouiller le noyé sans frémir",
-        "onSuccess": [
+        "label": "Fouiller le noyé sans frémir"
+       },
+       "success": {
+        "kind": "seq",
+        "steps": [
          {
-          "type": "giveMoney",
-          "silver": 22
+          "kind": "do",
+          "effect": {
+           "type": "giveMoney",
+           "silver": 22
+          }
          },
          {
-          "type": "journal",
-          "text": "Le noyé voyageait riche : 22 pa, que la tourbe lui pardonne."
+          "kind": "do",
+          "effect": {
+           "type": "journal",
+           "text": "Le noyé voyageait riche : 22 pa, que la tourbe lui pardonne."
+          }
          }
-        ],
-        "onFailure": [
+        ]
+       },
+       "fail": {
+        "kind": "seq",
+        "steps": [
          {
-          "type": "inflictDisease",
-          "disease": "Infection Mineure"
+          "kind": "do",
+          "effect": {
+           "type": "inflictDisease",
+           "disease": "Infection Mineure"
+          }
          },
          {
-          "type": "journal",
-          "text": "L’eau morte vous entre par une écorchure. Ça gratte. Ça GRATTE."
+          "kind": "do",
+          "effect": {
+           "type": "journal",
+           "text": "L’eau morte vous entre par une écorchure. Ça gratte. Ça GRATTE."
+          }
          }
         ]
        }
-      ]
+      }
      }
     },
     {
@@ -19465,16 +19813,25 @@
      "ref": "coffre",
      "label": "Coffre du foyer",
      "interact": {
-      "effects": [
-       {
-        "type": "giveMoney",
-        "silver": 26
-       },
-       {
-        "type": "journal",
-        "text": "Les économies d’une famille qui ne reviendra pas : 26 pa. Elles serviront à les venger."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveMoney",
+          "silver": 26
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Les économies d’une famille qui ne reviendra pas : 26 pa. Elles serviront à les venger."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -19487,17 +19844,26 @@
      "ref": "lettre",
      "label": "Journal du prévôt",
      "interact": {
-      "effects": [
-       {
-        "type": "document",
-        "title": "Journal du prévôt de Felsbach",
-        "text": "« 12 Sigmarzeit — Le colporteur est reparti vers le marais, fiévreux. 15 — Trois foyers touchés, on a muré la maison Brenner. 19 — L’eau du puits a un goût. TOUT LE MONDE a bu. 22 — Que Morr nous ouvre. Ne buvez pas l’e— » (la plume a traversé la page)"
-       },
-       {
-        "type": "journal",
-        "text": "Le journal du prévôt : la peste est venue du PUITS. Le Maître voudra lire ça."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "document",
+          "title": "Journal du prévôt de Felsbach",
+          "text": "« 12 Sigmarzeit — Le colporteur est reparti vers le marais, fiévreux. 15 — Trois foyers touchés, on a muré la maison Brenner. 19 — L’eau du puits a un goût. TOUT LE MONDE a bu. 22 — Que Morr nous ouvre. Ne buvez pas l’e— » (la plume a traversé la page)"
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Le journal du prévôt : la peste est venue du PUITS. Le Maître voudra lire ça."
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -19671,34 +20037,43 @@
      },
      "once": true,
      "flow": {
-      "kind": "seq",
-      "steps": [
-       {
-        "kind": "do",
-        "effect": {
-         "type": "test",
-         "skill": "Résistance",
-         "difficulty": "intermediaire",
-         "label": "Les remontées du puits maudit",
-         "onSuccess": [
-          {
-           "type": "journal",
-           "text": "L’odeur du puits vous plie en deux — mais rien ne s’accroche. Cette eau a TUÉ le village."
-          }
-         ],
-         "onFailure": [
-          {
-           "type": "inflictDisease",
-           "disease": "Courante Galopante"
-          },
-          {
-           "type": "journal",
-           "text": "Les miasmes du puits vous prennent à la gorge. Votre ventre gargouille déjà sinistrement…"
-          }
-         ]
+      "kind": "test",
+      "test": {
+       "skill": "Résistance",
+       "difficulty": "intermediaire",
+       "label": "Les remontées du puits maudit"
+      },
+      "success": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "L’odeur du puits vous plie en deux — mais rien ne s’accroche. Cette eau a TUÉ le village."
+         }
         }
-       }
-      ]
+       ]
+      },
+      "fail": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "inflictDisease",
+          "disease": "Courante Galopante"
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Les miasmes du puits vous prennent à la gorge. Votre ventre gargouille déjà sinistrement…"
+         }
+        }
+       ]
+      }
      }
     },
     {
@@ -20667,16 +21042,25 @@
      "ref": "cadavre",
      "label": "Postillon détroussé",
      "interact": {
-      "effects": [
-       {
-        "type": "giveMoney",
-        "silver": 9
-       },
-       {
-        "type": "journal",
-        "text": "Le postillon de la diligence perdue. Sa sacoche : 9 pa et une lettre illisible."
-       }
-      ]
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "giveMoney",
+          "silver": 9
+         }
+        },
+        {
+         "kind": "do",
+         "effect": {
+          "type": "journal",
+          "text": "Le postillon de la diligence perdue. Sa sacoche : 9 pa et une lettre illisible."
+         }
+        }
+       ]
+      }
      }
     },
     {

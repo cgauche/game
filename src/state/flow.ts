@@ -143,3 +143,21 @@ export function flowHasTest(flow: Flow): boolean {
     case 'test': return true;
   }
 }
+
+/** Constructeur d'un nœud `test` (jet → réussite/échec). Sucre pour les PRODUCTEURS de Flow (récolte,
+ *  saut…) : remplace l'ancien `Effect.test` qu'on poussait dans une liste d'effets. */
+export function testFlow(test: FlowTest, success: Flow, fail: Flow): Flow {
+  return { kind: 'test', test, success, fail };
+}
+
+/** Visite RÉCURSIVE de tous les nœuds d'un Flow (branches `if`/`test` comprises) — pour la validation
+ *  (effets référencés, bornes des conditions horaires) sur l'arbre ENTIER, pas seulement le 1er niveau. */
+export function walkFlow(flow: Flow, visit: (node: Flow) => void): void {
+  visit(flow);
+  switch (flow.kind) {
+    case 'seq': flow.steps.forEach((s) => walkFlow(s, visit)); break;
+    case 'if': walkFlow(flow.then, visit); if (flow.else) walkFlow(flow.else, visit); break;
+    case 'test': walkFlow(flow.success, visit); walkFlow(flow.fail, visit); break;
+    case 'do': break;
+  }
+}

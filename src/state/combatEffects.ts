@@ -25,7 +25,7 @@ import { feedFromMeal } from '../engine/provisions';
 import { findSpell } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
 import { Effect } from './scene';
-import { type Flow, type FlowTest, EMPTY_FLOW, flowFromEffects, evalCondition } from './flow';
+import { type Flow, type FlowTest, flowFromEffects, flowEffects, testFlow, evalCondition } from './flow';
 import { inRect } from './combatGeometry';
 import { loseWounds, addCondition } from '../engine/conditions';
 import { touchActors } from './combatOrParty';
@@ -91,11 +91,11 @@ export function pushCombatStep(set: SetFn, step: CascadeStep): void {
 
 // occupied / pushBackTiles / findFreeTile / displaceSmaller / removeEntity → combatGeometry.ts
 
-/** Items ramassables d'un prop interactif : un par effet « donneur » de son `interact`.
- *  `key` = `eff:<index dans interact.effects>`. Les effets non-objet (journal/document…) sont ignorés. */
-export function entityPickables(ent: { interact?: { effects: Effect[] } }): { key: string; label: string }[] {
+/** Items ramassables d'un prop interactif : un par feuille `do` « donneuse » de son `interact.flow`.
+ *  `key` = `eff:<index dans flowEffects(interact.flow)>`. Effets non-objet & branches (test) ignorés. */
+export function entityPickables(ent: { interact?: { flow: Flow } }): { key: string; label: string }[] {
   const out: { key: string; label: string }[] = [];
-  (ent.interact?.effects ?? []).forEach((e, i) => {
+  (ent.interact ? flowEffects(ent.interact.flow) : []).forEach((e, i) => {
     if (e.type === 'giveTrapping') out.push({ key: `eff:${i}`, label: e.trapping });
     else if (e.type === 'giveMoney') out.push({ key: `eff:${i}`, label: 'Argent' });
   });
@@ -168,10 +168,10 @@ export function assignGearAt(get: Get, set: SetFn, key: 'pendingLoot' | 'pending
   set({ [key]: { ...bucket, gear: bucket.gear.filter((_, i) => i !== index) } });
 }
 
-/** Récolte « Précieuses Entrailles » (ZI) d'une créature vaincue (écran de victoire) : un Test de
- *  Savoir (Bêtes) — RÉUTILISE l'Effet `test` + `giveTrapping` — dont la réussite donne les pièces
- *  fraîches à pleine quantité, l'échec une quantité réduite (un cran de Taille en moins). Les pièces
- *  portent leur valeur de marché (`giveTrapping.price`), revendable au marchand / composant ZI. */
+/** Récolte « Précieuses Entrailles » (ZI) d'une créature vaincue (écran de victoire) : un nœud Flow
+ *  `test` de Savoir (Bêtes) → `giveTrapping` — la réussite donne les pièces fraîches à pleine quantité,
+ *  l'échec une quantité réduite (un cran de Taille en moins). Les pièces portent leur valeur de marché
+ *  (`giveTrapping.price`), revendable au marchand / composant ZI. */
 export function harvestVictoryCreature(get: Get, set: SetFn, name: string) {
   const c = findCreature(name);
   const p = c?.harvest;
@@ -183,13 +183,11 @@ export function harvestVictoryCreature(get: Get, set: SetFn, name: string) {
   const lo = harvestYield(p, size, -1, 'Frais');
   const part = (enc: number) => `Pièces de ${name} (${enc} Enc)`;
   if (pv) set({ pendingVictory: { ...pv, harvested: [...(pv.harvested ?? []), name] } }); // grise le bouton
-  applyEffects(get, set, [
-    {
-      type: 'test', skill: 'Savoir (Bêtes)', difficulty: 'intermediaire', label: `Récolter — ${name}`,
-      onSuccess: [{ type: 'giveTrapping', trapping: part(full.enc), price: full.total }],
-      onFailure: [{ type: 'giveTrapping', trapping: part(lo.enc), price: lo.total }],
-    },
-  ]);
+  runFlow(get, set, testFlow(
+    { skill: 'Savoir (Bêtes)', difficulty: 'intermediaire', label: `Récolter — ${name}` },
+    flowFromEffects([{ type: 'giveTrapping', trapping: part(full.enc), price: full.total }]),
+    flowFromEffects([{ type: 'giveTrapping', trapping: part(lo.enc), price: lo.total }]),
+  ), `Récolter — ${name}`);
 }
 
 /** Lot 0 — déclenche les effets PROGRAMMÉS (file `scheduledEffects`) dont l'échéance est atteinte.
@@ -206,7 +204,7 @@ export function fireScheduledEffects(get: Get, set: SetFn) {
   const flags = get().flags;
   for (const s of due) {
     if (s.cancelFlag && flags[s.cancelFlag]) continue;
-    applyEffectsLoot(get, set, s.effects, 'Événement');
+    runFlow(get, set, s.flow, 'Événement');
   }
 }
 
@@ -266,15 +264,6 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
   return true;
 }
 
-/** Normalise un `Effect.test` (legacy) en nœud Flow `test` — chemin d'exécution UNIQUE des branches. */
-function effectTestToFlowNode(e: Extract<Effect, { type: 'test' }>): Flow {
-  return {
-    kind: 'test',
-    test: { skill: e.skill, characteristic: e.characteristic, difficulty: e.difficulty, requireSL: e.requireSL, label: e.label, tool: e.tool, vsGroups: e.vsGroups, easierIf: e.easierIf },
-    success: flowFromEffects(e.onSuccess), fail: flowFromEffects(e.onFailure),
-  };
-}
-
 /**
  * Exécute un Flow (logique authorée : séquence/branches/Test) — SOURCE UNIQUE. `do` accumule les
  * Effets et les applique en lot (butin attribuable via `applyEffectsLoot`) ; `if` vide d'abord le lot
@@ -290,8 +279,7 @@ export function runFlow(get: Get, set: SetFn, flow: Flow, label = 'Effet'): void
     const node = stack.shift()!;
     switch (node.kind) {
       case 'do':
-        if (node.effect.type === 'test') stack.unshift(effectTestToFlowNode(node.effect));
-        else batch.push(node.effect);
+        batch.push(node.effect);
         break;
       case 'seq': stack.unshift(...node.steps); break;
       case 'if': {
@@ -557,14 +545,6 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
         }
         break;
       }
-      case 'test': {
-        // `Effect.test` est NORMALISÉ vers le Test du Flow : branches en Flows, pas de continuation.
-        const opened = openSkillTest(get, set,
-          { skill: e.skill, characteristic: e.characteristic, difficulty: e.difficulty, requireSL: e.requireSL, label: e.label, tool: e.tool, vsGroups: e.vsGroups, easierIf: e.easierIf },
-          flowFromEffects(e.onSuccess), flowFromEffects(e.onFailure), EMPTY_FLOW);
-        if (!opened) break; // personne ne peut tenter → on saute le Test
-        return; // la suite est portée par la branche (résolue à l'acquittement)
-      }
       case 'extendedTest': {
         // Test ÉTENDU (LDB 12) : le meilleur du groupe pour la Compétence enchaîne les Rounds.
         const best = partyBest(get().party, e.skill, e.characteristic);
@@ -596,7 +576,7 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
         const executeAt = e.afterMinutes != null
           ? now + Math.max(0, e.afterMinutes)
           : now + minutesUntilNext(now, (e.atHour ?? 0) * 60 + (e.atMinute ?? 0));
-        set((s: GameState) => ({ scheduledEffects: [...s.scheduledEffects, { executeAt, effects: e.effects, cancelFlag: e.cancelFlag }] }));
+        set((s: GameState) => ({ scheduledEffects: [...s.scheduledEffects, { executeAt, flow: e.flow, cancelFlag: e.cancelFlag }] }));
         break;
       }
       case 'inflictDamage': {

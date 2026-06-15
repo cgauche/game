@@ -11,7 +11,7 @@
  */
 import type { MouseEvent } from 'react';
 import { Flow, Condition, FlowTest, EMPTY_FLOW } from '../../state/flow';
-import { Effect, TemporalCondition } from '../../state/scene';
+import { TemporalCondition } from '../../state/scene';
 import { DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
 import { isSocialTest } from '../../engine/skills';
 import {
@@ -25,9 +25,6 @@ import {
   closeDetails,
 } from './EffectList';
 import { whenFlag, whenWindow, buildWhen } from './editorState';
-
-/** `test` n'est plus une feuille d'effet (c'est un nœud Flow à part entière) → exclu du sélecteur `do`. */
-const LEAF_EXCLUDE: Effect['type'][] = ['test'];
 
 /** Normalise un Flow en liste de blocs éditables (un `seq` expose ses étapes ; sinon bloc unique). */
 function asSteps(flow: Flow): Flow[] {
@@ -140,19 +137,16 @@ function FlowAddMenu({ onAdd }: { onAdd: (node: Flow) => void }) {
           <button className="eff-add-item" onClick={pick({ kind: 'if', cond: { kind: 'flag', expr: '' }, then: EMPTY_FLOW })}>🔀 Condition (si…)</button>
           <button className="eff-add-item" onClick={pick({ kind: 'test', test: { skill: '', difficulty: 'intermediaire', requireSL: 0 }, success: EMPTY_FLOW, fail: EMPTY_FLOW })}>🎲 Test de compétence</button>
         </div>
-        {EFFECT_GROUPS.map(([g, types]) => {
-          const opts = types.filter((t) => !LEAF_EXCLUDE.includes(t));
-          return opts.length ? (
-            <div key={g} className="eff-add-group">
-              <div className="mini-title">{g}</div>
-              {opts.map((t) => (
-                <button key={t} className="eff-add-item" onClick={pick({ kind: 'do', effect: newEffect(t) })}>
-                  {EFFECT_ICON[t]} {EFFECT_LABEL[t]}
-                </button>
-              ))}
-            </div>
-          ) : null;
-        })}
+        {EFFECT_GROUPS.map(([g, types]) => (
+          <div key={g} className="eff-add-group">
+            <div className="mini-title">{g}</div>
+            {types.map((t) => (
+              <button key={t} className="eff-add-item" onClick={pick({ kind: 'do', effect: newEffect(t) })}>
+                {EFFECT_ICON[t]} {EFFECT_LABEL[t]}
+              </button>
+            ))}
+          </div>
+        ))}
       </div>
     </details>
   );
@@ -181,7 +175,7 @@ export function FlowEditor({ flow, onChange, ctx }: { flow: Flow; onChange: (f: 
             </span>
           </summary>
           {node.kind === 'do' && (
-            <EffectFields effect={node.effect} ctx={ctx} exclude={LEAF_EXCLUDE} onChange={(eff) => updAt(i, { kind: 'do', effect: eff })} />
+            <EffectFields effect={node.effect} ctx={ctx} onChange={(eff) => updAt(i, { kind: 'do', effect: eff })} />
           )}
           {node.kind === 'if' && (
             <div className="eff-body flow-branch">

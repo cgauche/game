@@ -1,4 +1,4 @@
-import { flowFromEffects, EMPTY_FLOW } from '../state/flow';
+import { flowFromEffects, testFlow, EMPTY_FLOW } from '../state/flow';
 import { describe, it, expect } from 'vitest';
 import { validateScene, type Warning } from './validateScene';
 import { emptyScene } from './scene';
@@ -86,12 +86,12 @@ describe('validateScene', () => {
     expect(validateScene([a, b]).filter((w) => w.scope === 'building')).toEqual([]);
   });
 
-  it('effet imbriqué dans un Test (onSuccess) est validé', () => {
+  it('effet imbriqué dans la branche RÉUSSITE d’un nœud Test est validé', () => {
     const s = base();
     s.triggers.push({
       id: 't-2',
       rect: { x: 0, y: 0, w: 1, h: 1 },
-      flow: flowFromEffects([{ type: 'test', onSuccess: [{ type: 'startDialogue', dialogue: 'absent' }] }]),
+      flow: testFlow({ skill: 'Perception' }, flowFromEffects([{ type: 'startDialogue', dialogue: 'absent' }]), EMPTY_FLOW),
     });
     expect(msgs(validateScene([s])).some((m) => /dialogue inexistant/.test(m))).toBe(true);
   });

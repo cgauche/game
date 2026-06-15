@@ -24,7 +24,7 @@ import {
   displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
-import { EMPTY_FLOW } from './flow';
+import { EMPTY_FLOW, flowEffects } from './flow';
 export { movementRemaining, canMove } from './mount';
 import { pickActiveModalKey } from './modalArbiter';
 
@@ -1250,8 +1250,8 @@ export const useGame = create<GameState>((set, get) => ({
         return;
       }
       get().log(`Vous fouillez ${ent.label ?? 'les lieux'}…`);
-      // Butin → fenêtre d'attribution (« qui l'emporte ? ») au lieu d'aller en silence au 1er héros.
-      applyEffectsLoot(get, set, ent.interact.effects, ent.label ?? 'Fouille');
+      // Logique de fouille (Flow) : butin → fenêtre d'attribution, test → fouille à risque (modale).
+      runFlow(get, set, ent.interact.flow, ent.label ?? 'Fouille');
       get().advanceTime(TIME_COST.search); // « tout est horodaté » : fouiller ≈ search min
       if (ent.interact.consume) removeEntity(get, set, entityId); // butin → le décor disparaît
       else set((s) => ({ flags: { ...s.flags, [`__fouille_${entityId}`]: true } })); // reste, marqué fouillé
@@ -2740,9 +2740,9 @@ export const useGame = create<GameState>((set, get) => ({
     const ent = scene.entities.find((e) => e.id === entityId && e.kind === 'prop' && !!e.interact);
     if (!ent || !ent.interact || !active.pos || chebyshev(active.pos, ent.pos) > 1) return; // doit être adjacent/sur la case
     const [tag, idxStr] = key.split(':');
-    if (tag !== 'eff') return; // clé = `eff:<index dans interact.effects>` (cf. entityPickables)
+    if (tag !== 'eff') return; // clé = `eff:<index dans flowEffects(interact.flow)>` (cf. entityPickables)
     const idx = Number(idxStr);
-    const eff = ent.interact.effects[idx];
+    const eff = flowEffects(ent.interact.flow)[idx];
     if (!eff) return;
     let label: string; // assigné dans chaque branche atteignant l'usage (le cas `else` renvoie)
     if (eff.type === 'giveTrapping') {
@@ -2764,7 +2764,12 @@ export const useGame = create<GameState>((set, get) => ({
       label = 'Argent';
       applyEffects(get, set, [eff]); // bourse party (or/argent/cuivre)
     } else return; // effet non ramassable (journal/document…) : pas grappillable en combat
-    ent.interact.effects = ent.interact.effects.filter((_, j) => j !== idx); // retire du pool partagé
+    // Retire la i-ème feuille `do` du flow de fouille (les props ramassables sont des seq de `do`).
+    const flow = ent.interact.flow;
+    if (flow.kind === 'seq') {
+      let seen = -1;
+      flow.steps = flow.steps.filter((s) => (s.kind === 'do' ? ++seen !== idx : true));
+    } else ent.interact.flow = EMPTY_FLOW;
     // Pool de ramassables vidé : `consume` → le décor disparaît ; sinon il reste (ses Effets non-objet
     // — journal/document — restent fouillables en exploration ; pas de sens à les grappiller en combat).
     if (entityPickables(ent).length === 0 && ent.interact.consume) {

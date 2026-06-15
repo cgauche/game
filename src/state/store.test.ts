@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame, type BattleState } from './store';
-import { flowFromEffects, EMPTY_FLOW } from './flow';
+import { flowFromEffects, flowEffects, testFlow, EMPTY_FLOW } from './flow';
 import { buildAdvancementView } from './advancement';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -10,7 +10,7 @@ import { makeInteriorScene } from '../scenes/interiors';
 import type { BuildingFeature } from './scene';
 import type { Combatant, ItemInstance, Weapon } from '../engine/types';
 import { isOutOfAction } from '../engine/conditions';
-import { applyAttackResult, applyEffects, applyEffectsLoot, computeMoveReach } from './combatFlow';
+import { applyAttackResult, applyEffects, applyEffectsLoot, runFlow, computeMoveReach } from './combatFlow';
 import { mountUp } from './mount';
 import { combatValue } from '../engine/combat';
 import { seedBattleRng } from './battleRng';
@@ -244,9 +244,7 @@ describe('Boucle de jeu (store)', () => {
       items: [{ uid: 't1', name: 'Rossignols', kind: 'melee', qualities: ['Pratique'], enc: 0, equipped: false }],
     } as unknown as Combatant;
     useGame.setState({ party: [hero] });
-    applyEffects(useGame.getState, useGame.setState, [
-      { type: 'test', characteristic: 'Dex', tool: 'Rossignols', requireSL: 0, onSuccess: [], onFailure: [] },
-    ]);
+    runFlow(useGame.getState, useGame.setState, testFlow({ characteristic: 'Dex', tool: 'Rossignols', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
     expect(pt.itemUid).toBe('t1');
     expect(pt.isDouble).toBe(false); // amorcé à false (pas encore lancé)
@@ -1436,10 +1434,10 @@ describe('Fouille / butin par objet cherchable (store)', () => {
       pos: { x: 1, y: 0 },
       label: 'Cadavre du cocher',
       interact: {
-        effects: [
+        flow: flowFromEffects([
           { type: 'giveMoney', gold: 2 },
           { type: 'giveXp', amount: 10 },
-        ],
+        ]),
       },
     });
     useGame.setState({ party: [looter()] });
@@ -1463,7 +1461,7 @@ describe('Fouille / butin par objet cherchable (store)', () => {
     const scene = emptyScene(6, 6);
     scene.id = 'loot-scene';
     scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
-    scene.entities.push({ id: 'coffre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Coffre', interact: { consume: true, effects: [{ type: 'giveTrapping', trapping: 'Fiole' }, { type: 'giveTrapping', trapping: 'Lettre' }] } });
+    scene.entities.push({ id: 'coffre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Coffre', interact: { consume: true, flow: flowFromEffects([{ type: 'giveTrapping', trapping: 'Fiole' }, { type: 'giveTrapping', trapping: 'Lettre' }]) } });
     useGame.setState({ party: [looter()] });
     useGame.getState().startScene(scene);
     useGame.setState({ partyPos: { x: 0, y: 0 } });
@@ -1512,7 +1510,7 @@ describe('Fouille / butin par objet cherchable (store)', () => {
       kind: 'prop',
       pos: { x: 1, y: 0 },
       label: 'Cadavre du cocher',
-      interact: { effects: [{ type: 'giveTrapping', trapping: 'Dague' }] },
+      interact: { flow: flowFromEffects([{ type: 'giveTrapping', trapping: 'Dague' }]) },
     });
     useGame.setState({ party: [heroWithBag()] });
     useGame.getState().startScene(scene);
@@ -1537,7 +1535,7 @@ describe('Déplacement-puis-fouille (move-to-interact, P5)', () => {
     const scene = emptyScene(8, 8);
     scene.id = 'mti-scene';
     scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
-    scene.entities.push({ id: 'cadavre', kind: 'prop', pos: { x: 5, y: 0 }, label: 'Cadavre', interact: { effects: [{ type: 'giveMoney', gold: 3 }] } });
+    scene.entities.push({ id: 'cadavre', kind: 'prop', pos: { x: 5, y: 0 }, label: 'Cadavre', interact: { flow: flowFromEffects([{ type: 'giveMoney', gold: 3 }]) } });
     useGame.setState({ party: [looter()] });
     useGame.getState().startScene(scene);
     useGame.setState({ partyPos: { x: 0, y: 0 }, money: { gold: 0, silver: 0, brass: 0 } });
@@ -1577,11 +1575,11 @@ describe('Fenêtre de loot (pendingLoot) — capture, attribution, révélation'
     scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
     scene.entities.push({
       id: 'coffre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Coffre de la garnison',
-      interact: { effects: [
+      interact: { flow: flowFromEffects([
         { type: 'journal', text: 'Sous une fausse planche, la solde du mois.' },
         { type: 'giveMoney', silver: 18 },
         { type: 'giveTrapping', trapping: 'Épée', qualities: ['De plaies atroces'], identified: false },
-      ] },
+      ]) },
     });
     useGame.setState({ party: [looter()] });
     useGame.getState().startScene(scene);
@@ -1893,11 +1891,11 @@ describe('Ramasser un objet au sol en combat (un à la fois, LDB ch.13 l.115-116
     scene.entities.push({
       id: 'corps', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Cocher',
       interact: {
-        effects: [
+        flow: flowFromEffects([
           { type: 'journal', text: 'Son tromblon repose à côté.' }, // index 0 (non ramassable)
           { type: 'giveTrapping', trapping: 'Dague' }, // index 1
           { type: 'giveTrapping', trapping: 'Tromblon' }, // index 2
-        ],
+        ]),
       },
     });
     const bh: Combatant = JSON.parse(JSON.stringify(hero));
@@ -1919,8 +1917,8 @@ describe('Ramasser un objet au sol en combat (un à la fois, LDB ch.13 l.115-116
     expect((bH.items ?? []).filter((i) => i.name === 'Tromblon').length).toBe(1); // un SEUL objet ramassé
     expect(st.battle!.acted).toBe(true); // coûte l'Action
     const corps = st.scene!.entities.find((e) => e.id === 'corps')!;
-    expect((corps.interact?.effects ?? []).some((e) => e.type === 'giveTrapping' && e.trapping === 'Tromblon')).toBe(false);
-    expect((corps.interact?.effects ?? []).some((e) => e.type === 'giveTrapping' && e.trapping === 'Dague')).toBe(true);
+    expect(flowEffects(corps.interact!.flow).some((e) => e.type === 'giveTrapping' && e.trapping === 'Tromblon')).toBe(false);
+    expect(flowEffects(corps.interact!.flow).some((e) => e.type === 'giveTrapping' && e.trapping === 'Dague')).toBe(true);
   });
 
   it('refusé si l’Action est déjà consommée', () => {
@@ -2414,7 +2412,7 @@ describe('« Tout est horodaté » — branchements TIME_COST (Phase T1)', () =>
     const scene = emptyScene(6, 6);
     scene.id = 'fouille-temps';
     scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
-    scene.entities.push({ id: 'cadavre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Cadavre', interact: { effects: [{ type: 'giveMoney', gold: 1 }] } });
+    scene.entities.push({ id: 'cadavre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Cadavre', interact: { flow: flowFromEffects([{ type: 'giveMoney', gold: 1 }]) } });
     useGame.setState({ party: [{ id: 'a', name: 'A', xp: 0, wounds: { current: 12, max: 12 }, conditions: [] } as unknown as Combatant] });
     useGame.getState().startScene(scene);
     useGame.setState({ partyPos: { x: 0, y: 0 }, money: { gold: 0, silver: 0, brass: 0 }, gameTime: CAMPAIGN_START });

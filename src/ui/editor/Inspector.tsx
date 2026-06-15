@@ -22,7 +22,9 @@ import { allMusicDefs } from '../../audio/music';
 import { findCreature } from '../../data';
 import { MonsterPartsFields } from './MonsterPartsFields';
 import { ParamFields } from './ParamFields';
-import { EffectList, effectCtxOf } from './EffectList';
+import { effectCtxOf } from './EffectList';
+import { FlowEditor } from './FlowEditor';
+import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
 import { propRefPatch } from './propDefaults';
@@ -769,7 +771,7 @@ function EntityPanel({
             <input
               type="checkbox"
               checked={!!ent.interact}
-              onChange={(e) => updateSel({ interact: e.target.checked ? (ent.interact ?? { effects: [] }) : undefined })}
+              onChange={(e) => updateSel({ interact: e.target.checked ? (ent.interact ?? { flow: EMPTY_FLOW }) : undefined })}
             />{' '}
             Interactif (fouille / ramassage)
           </label>
@@ -784,10 +786,10 @@ function EntityPanel({
                 Disparaît quand pris (butin) — sinon reste, fouillé une fois
               </label>
               <div className="ed-field">
-                <span className="mini-title">Effets de la fouille / du ramassage</span>
-                <EffectList
-                  effects={ent.interact.effects}
-                  onChange={(eff) => updateSel({ interact: { ...ent.interact!, effects: eff } })}
+                <span className="mini-title">Fouille / ramassage (effets · conditions · tests)</span>
+                <FlowEditor
+                  flow={ent.interact.flow}
+                  onChange={(flow) => updateSel({ interact: { ...ent.interact!, flow } })}
                   ctx={{ encounters: scene.encounters, dialogues: scene.dialogues, ...effectCtxOf(scene, otherScenes) }}
                 />
               </div>

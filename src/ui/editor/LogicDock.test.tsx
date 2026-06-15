@@ -88,6 +88,6 @@ describe('effectSummary — résumés humains des rangées repliées', () => {
     expect(
       effectSummary({ type: 'transition', scene: 'sc-b', entry: 'porte' }, { scenes: [{ id: 'sc-b', nom: 'Taverne', entries: ['porte'] }] }),
     ).toContain('Taverne');
-    expect(effectSummary({ type: 'test', skill: 'Charme', difficulty: 'difficile', onSuccess: [{ type: 'journal', text: '' }], onFailure: [] })).toContain('Charme');
+    expect(effectSummary({ type: 'extendedTest', skill: 'Crochetage', label: 'Serrure', targetDR: 5 })).toContain('Crochetage');
   });
 });

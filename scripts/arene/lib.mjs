@@ -88,6 +88,11 @@ export function flowOf(effects) {
 export function flagWhen(expr) {
   return { kind: 'flag', expr };
 }
+/** Nœud Flow `test` (jet de compétence → RÉUSSITE/ÉCHEC) ; `success`/`fail` = listes d'Effets (→ flowOf).
+ *  Remplace l'ancien `Effect.test` à brancher dans un flow (un test n'est PAS une feuille `do`). */
+export function testNode(test, success = [], fail = []) {
+  return { kind: 'test', test, success: flowOf(success), fail: flowOf(fail) };
+}
 
 /** Trigger de combat standard (une fois) : entrer dans le rect lance la rencontre. */
 export function fightTrigger(encounter, rect, extra = {}) {
@@ -110,9 +115,11 @@ export function zoneVictory(n, { money, xp, journal, extra = [] }) {
   ];
 }
 
-/** Fouille à effets (décor interactif). `consume` retire le décor une fois pris. */
-export function fouille(effects, consume = false) {
-  return { interact: { effects, ...(consume ? { consume: true } : {}) } };
+/** Fouille interactive (décor). Accepte une LISTE d'Effets (butin ramassable, → flowOf) OU un Flow
+ *  déjà construit (fouille à risque : `testNode(...)`). `consume` retire le décor une fois pris. */
+export function fouille(effectsOrFlow, consume = false) {
+  const flow = Array.isArray(effectsOrFlow) ? flowOf(effectsOrFlow) : effectsOrFlow;
+  return { interact: { flow, ...(consume ? { consume: true } : {}) } };
 }
 
 /** Statblocks d'AUTEUR conservés VERBATIM du projet v1 (sourcés à leur création). */

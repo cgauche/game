@@ -1,5 +1,5 @@
 /** Zones 8-13 de l'échelle — le haut du tableau : Fosse, Caverne, Vermine, Cercle, Sépulcre, Dragon. */
-import { scene, P, NPC, hero, resetIds, fouille, fightTrigger, zoneVictory, DRAGON_DES_TENEBRES, flowOf, flagWhen } from './lib.mjs';
+import { scene, P, NPC, hero, resetIds, fouille, fightTrigger, zoneVictory, DRAGON_DES_TENEBRES, flowOf, flagWhen, testNode } from './lib.mjs';
 
 // ── Zone 8 — La Fosse (30×20, roche) : gouffres, harde du Chaos, gladiateur ALLIÉ ───────────
 
@@ -192,22 +192,17 @@ export function makeZone10() {
           {
             text: '🔓 Crocheter la cage (Test de Crochetage).',
             when: flagWhen('!prisonnier_libre'),
-            flow: flowOf([
-              {
-                type: 'test',
-                skill: 'Crochetage',
-                difficulty: 'accessible',
-                label: 'Crocheter la cage du garde-manger',
-                onSuccess: [
-                  { type: 'setFlag', flag: 'prisonnier_libre' },
-                  { type: 'giveMoney', silver: 40 },
-                  { type: 'giveXp', amount: 50 },
-                  { type: 'journal', text: 'Le colporteur halfling s’extrait de la cage, vous fourre sa bourse (40 pa) dans les mains et détale vers la surface.' },
-                  { type: 'endDialogue' },
-                ],
-                onFailure: [{ type: 'journal', text: 'La serrure est grossière mais voilée — le crochet ripe. Réessayez.' }],
-              },
-            ]),
+            flow: testNode(
+              { skill: 'Crochetage', difficulty: 'accessible', label: 'Crocheter la cage du garde-manger' },
+              [
+                { type: 'setFlag', flag: 'prisonnier_libre' },
+                { type: 'giveMoney', silver: 40 },
+                { type: 'giveXp', amount: 50 },
+                { type: 'journal', text: 'Le colporteur halfling s’extrait de la cage, vous fourre sa bourse (40 pa) dans les mains et détale vers la surface.' },
+                { type: 'endDialogue' },
+              ],
+              [{ type: 'journal', text: 'La serrure est grossière mais voilée — le crochet ripe. Réessayez.' }],
+            ),
           },
           { text: '« On revient te chercher. » (Plus tard.)', flow: flowOf([{ type: 'endDialogue' }]) },
         ],
@@ -564,22 +559,17 @@ export function makeZone13() {
       P(16, 12, 'mare-sang'),
       P(13, 17, 'tas-or', {
         label: 'Or épars (le dragon DORT…)',
-        ...fouille([
-          {
-            type: 'test',
-            skill: 'Discrétion',
-            difficulty: 'difficile',
-            label: 'Chiper l’or sous l’œil clos du dragon',
-            onSuccess: [
-              { type: 'giveMoney', gold: 8 },
-              { type: 'journal', text: 'Huit couronnes glissées sans un tintement. Le dragon ronfle toujours.' },
-            ],
-            onFailure: [
-              { type: 'journal', text: 'UNE PIÈCE TINTE. L’œil du dragon s’ouvre — d’or en fusion.' },
-              { type: 'startCombat', encounter: 'enc-zone13' },
-            ],
-          },
-        ], true),
+        ...fouille(testNode(
+          { skill: 'Discrétion', difficulty: 'difficile', label: 'Chiper l’or sous l’œil clos du dragon' },
+          [
+            { type: 'giveMoney', gold: 8 },
+            { type: 'journal', text: 'Huit couronnes glissées sans un tintement. Le dragon ronfle toujours.' },
+          ],
+          [
+            { type: 'journal', text: 'UNE PIÈCE TINTE. L’œil du dragon s’ouvre — d’or en fusion.' },
+            { type: 'startCombat', encounter: 'enc-zone13' },
+          ],
+        ), true),
       }),
       P(36, 22, 'coffre', {
         label: 'Coffre du trésor',

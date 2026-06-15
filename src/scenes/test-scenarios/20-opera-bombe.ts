@@ -1,6 +1,6 @@
 import { makePregens } from '../../data/pregens';
 import { arena } from './_shared';
-import { flowFromEffects } from '../../state/flow';
+import { flowFromEffects, testFlow } from '../../state/flow';
 import type { TestScenario } from './_shared';
 
 /**
@@ -31,20 +31,19 @@ scene.entities.push(
     id: 'plante', kind: 'prop', ref: 'plante-pot', pos: { x: 11, y: 6 },
     interact: {
       consume: false,
-      effects: [
+      flow: testFlow(
         {
-          type: 'test',
           skill: 'Perception',
           difficulty: 'complexe',
           easierIf: { hasSkill: 'Projectiles (Poudre noire)', steps: 1 },
           label: 'Examiner la plante en pot',
-          onSuccess: [
-            { type: 'journal', text: 'Sous le feuillage : un pot bourré de poudre noire et une mèche qui se consume ! Vous arrachez le détonateur — la bombe est neutralisée.' },
-            { type: 'setFlag', flag: 'bombeDesamorcee' },
-          ],
-          onFailure: [{ type: 'journal', text: 'La plante en pot semble parfaitement ordinaire.' }],
         },
-      ],
+        flowFromEffects([
+          { type: 'journal', text: 'Sous le feuillage : un pot bourré de poudre noire et une mèche qui se consume ! Vous arrachez le détonateur — la bombe est neutralisée.' },
+          { type: 'setFlag', flag: 'bombeDesamorcee' },
+        ]),
+        flowFromEffects([{ type: 'journal', text: 'La plante en pot semble parfaitement ordinaire.' }]),
+      ),
     },
   },
 );
@@ -59,12 +58,12 @@ scene.triggers.push({
       type: 'delayedEffect',
       afterMinutes: 60,
       cancelFlag: 'bombeDesamorcee',
-      effects: [
+      flow: flowFromEffects([
         { type: 'journal', text: 'UNE EXPLOSION DÉCHIRE L’ANTICHAMBRE !' },
         // Souffle centré sur la plante piégée, assez large pour déchirer toute l'antichambre (RAW :
         // « les parois de la loge, l'antichambre et les loges voisines ») ; dégâts tirés + En flammes.
         { type: 'zoneBlast', center: { x: 11, y: 6 }, radius: 10, damage: '1d10+15', conditions: [{ name: 'En flammes' }] },
-      ],
+      ]),
     },
   ]),
 });

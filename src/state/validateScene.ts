@@ -1,6 +1,6 @@
 import type { Scene, Effect } from './scene';
 import { isWalkable } from './scene';
-import { flowEffects, walkConditionTimes } from './flow';
+import { type Flow, type Condition, walkFlow, walkConditionTimes, flowFromEffects } from './flow';
 import type { WorldMap } from './worldMap';
 import { allMusicDefs } from '../audio/music';
 
@@ -11,18 +11,6 @@ export interface Warning {
   /** Id du fautif (pour clic → sélection dans l'éditeur). */
   refId?: string;
   message: string;
-}
-
-/** Test (onSuccess/onFailure) et delayedEffect (effects) imbriquent des Effet → parcours récursif. */
-function walkEffects(effects: Effect[] | undefined, fn: (e: Effect) => void) {
-  for (const e of effects ?? []) {
-    fn(e);
-    if (e.type === 'test') {
-      walkEffects(e.onSuccess, fn);
-      walkEffects(e.onFailure, fn);
-    }
-    if (e.type === 'delayedEffect') walkEffects(e.effects, fn);
-  }
 }
 
 /**
@@ -103,15 +91,28 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
     for (const b of s.buildings ?? []) {
       if (b.interiorScene && !sceneIds.has(b.interiorScene)) add('error', 'building', b.id, `${b.label ?? b.id} → scène intérieure inexistante « ${b.interiorScene} »`);
     }
+    /** Bornes des fenêtres horaires d'une Condition (trigger `when`, choix `when`, nœud `si`). */
+    const checkCondTimes = (cond: Condition, refId: string, scope: Warning['scope']) =>
+      walkConditionTimes(cond, (tc) => {
+        for (const [k, v] of [['afterHour', tc.afterHour], ['beforeHour', tc.beforeHour]] as const)
+          if (v != null && (v < 0 || v > 23)) add('error', scope, refId, `Fenêtre horaire « ${refId} » : ${k} ${v} hors 0-23`);
+        for (const [k, v] of [['afterMinute', tc.afterMinute], ['beforeMinute', tc.beforeMinute]] as const)
+          if (v != null && (v < 0 || v > 59)) add('error', scope, refId, `Fenêtre horaire « ${refId} » : ${k} ${v} hors 0-59`);
+      });
+    /** Parcours RÉCURSIF d'un Flow (branches `if`/`test`, et le `flow` imbriqué d'un `delayedEffect`) :
+     *  effets référencés + bornes des conditions horaires. */
+    const checkFlow = (flow: Flow, refId: string, scope: Warning['scope']) =>
+      walkFlow(flow, (node) => {
+        if (node.kind === 'do') {
+          checkEffect(node.effect, refId, scope);
+          if (node.effect.type === 'delayedEffect') checkFlow(node.effect.flow, refId, scope);
+        } else if (node.kind === 'if') checkCondTimes(node.cond, refId, scope);
+      });
+
     for (const t of s.triggers) {
       if (!within(t.rect.x, t.rect.y) || !within(t.rect.x + t.rect.w - 1, t.rect.y + t.rect.h - 1)) add('warn', 'trigger', t.id, `Zone « ${t.id} » déborde de la carte`);
-      if (t.when) walkConditionTimes(t.when, (tc) => {
-        for (const [k, v] of [['afterHour', tc.afterHour], ['beforeHour', tc.beforeHour]] as const)
-          if (v != null && (v < 0 || v > 23)) add('error', 'trigger', t.id, `Fenêtre horaire « ${t.id} » : ${k} ${v} hors 0-23`);
-        for (const [k, v] of [['afterMinute', tc.afterMinute], ['beforeMinute', tc.beforeMinute]] as const)
-          if (v != null && (v < 0 || v > 59)) add('error', 'trigger', t.id, `Fenêtre horaire « ${t.id} » : ${k} ${v} hors 0-59`);
-      });
-      walkEffects(flowEffects(t.flow), (eff) => checkEffect(eff, t.id, 'trigger'));
+      if (t.when) checkCondTimes(t.when, t.id, 'trigger');
+      checkFlow(t.flow, t.id, 'trigger');
     }
     for (const d of s.dialogues) {
       const nodeIds = new Set(d.nodes.map((n) => n.id));
@@ -119,12 +120,13 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       for (const n of d.nodes)
         for (const c of n.choices) {
           if (c.next && !nodeIds.has(c.next)) add('error', 'dialogue', d.id, `Dialogue « ${d.id} » : choix → « ${c.next} » inexistant`);
-          if (c.flow) walkEffects(flowEffects(c.flow), (eff) => checkEffect(eff, d.id, 'dialogue'));
+          if (c.when) checkCondTimes(c.when, d.id, 'dialogue');
+          if (c.flow) checkFlow(c.flow, d.id, 'dialogue');
         }
     }
     const entIds = new Set(s.entities.map((e) => e.id));
     for (const e of s.encounters) {
-      walkEffects(e.onVictory, (eff) => checkEffect(eff, e.id, 'encounter'));
+      checkFlow(flowFromEffects(e.onVictory), e.id, 'encounter'); // onVictory = liste d'Effets (delayedEffect.flow récursé)
       for (const m of e.members ?? []) {
         if (!entIds.has(m.entityId)) add('error', 'encounter', e.id, `Rencontre « ${e.id} » → membre inexistant « ${m.entityId} »`);
         if (m.ridesEntityId && !entIds.has(m.ridesEntityId)) add('error', 'encounter', e.id, `Rencontre « ${e.id} » → monture inexistante « ${m.ridesEntityId} »`);

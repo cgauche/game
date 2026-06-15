@@ -7,11 +7,11 @@
  * effets se réordonnent (l'ordre d'application compte — `applyEffects`).
  */
 import { Effect, EncounterDef, Dialogue, Scene } from '../../state/scene';
-import { DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
-import { isSocialTest } from '../../engine/skills';
+import { EMPTY_FLOW } from '../../state/flow';
 import { DAY_PHASES, DayPhaseKey } from '../../engine/clock';
 import { DISEASE_DEFS } from '../../engine/disease';
 import { spells, etats } from '../../data';
+import { FlowEditor } from './FlowEditor';
 
 /** Noms des maladies câblées (LDB 20) proposés dans l'éditeur. */
 const DISEASE_NAMES = Object.keys(DISEASE_DEFS);
@@ -75,7 +75,6 @@ export const EFFECT_LABEL: Record<Effect['type'], string> = {
   startDialogue: 'Ouvrir un dialogue',
   openMerchant: 'Ouvrir une boutique (marchand)',
   medicalAid: 'Acte de soin payant (PNJ médecin/guérisseur)',
-  test: 'Test de compétence',
   extendedTest: 'Test Étendu (DR cumulé : crocheter/forcer un mécanisme)',
   forceDoor: 'Enfoncer une porte à plusieurs (objet BE/B)',
   setTime: 'Régler l’heure (jour/nuit)',
@@ -91,7 +90,7 @@ export const EFFECT_GROUPS: [string, Effect['type'][]][] = [
   ['🕰 Temps & repos', ['rest', 'mealParty', 'interlude', 'setTime', 'delayedEffect']],
   ['🚪 Navigation', ['transition', 'transitionBack', 'openWorldMap']],
   ['⚔️ Combat & social', ['startCombat', 'openMerchant', 'medicalAid']],
-  ['🎲 Tests', ['test', 'extendedTest', 'forceDoor']],
+  ['🎲 Tests', ['extendedTest', 'forceDoor']],
 ];
 
 export const EFFECT_ICON: Record<Effect['type'], string> = {
@@ -100,7 +99,7 @@ export const EFFECT_ICON: Record<Effect['type'], string> = {
   corruptionExposure: '🧿', giveCorruption: '🧬', learnSpell: '🪄', rest: '🌙', mealParty: '🍲',
   inflictDamage: '💥', applyCondition: '🌀', zoneBlast: '🧨', fall: '🪂', setLight: '💡',
   interlude: '📆', startCombat: '⚔️', transition: '🚪', transitionBack: '↩️', openWorldMap: '🗺️',
-  startDialogue: '💬', openMerchant: '🛒', medicalAid: '🩺', test: '🎲', extendedTest: '🗝️', forceDoor: '🔨',
+  startDialogue: '💬', openMerchant: '🛒', medicalAid: '🩺', extendedTest: '🗝️', forceDoor: '🔨',
   setTime: '🕰', delayedEffect: '⏳', endDialogue: '✖️',
 };
 
@@ -146,7 +145,6 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'startDialogue': return `${icon} Dialogue : ${e.dialogue || '?'}`;
     case 'openMerchant': return `${icon} Boutique : ${e.entityId || '?'}`;
     case 'medicalAid': return `${icon} Soins payants (${(e.acts ?? (e.act ? [0] : [])).length} acte(s))`;
-    case 'test': return `${icon} Test ${e.skill || '?'} (${DIFFICULTY_LABELS[(e.difficulty ?? 'intermediaire') as Difficulty] ?? e.difficulty}) — ${e.onSuccess?.length ?? 0}✓ / ${e.onFailure?.length ?? 0}✗`;
     case 'extendedTest': return `${icon} Test Étendu ${e.skill || e.characteristic || '?'} → DR cumulé ${e.targetDR ?? 0}${e.flag ? ` (flag ${e.flag})` : ''}`;
     case 'forceDoor': return `${icon} Enfoncer « ${e.label || '?'} » (BE ${e.doorBE ?? 0}, B ${e.doorB ?? 0})${e.flag ? ` → flag ${e.flag}` : ''}`;
     case 'setTime': return `${icon} Heure → ${DAY_PHASES.find((p) => p.key === e.phase)?.label ?? e.phase}`;
@@ -154,7 +152,8 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
       const when = e.afterMinutes != null
         ? `dans ${e.afterMinutes} min`
         : `à ${String(e.atHour ?? 0).padStart(2, '0')}:${String(e.atMinute ?? 0).padStart(2, '0')}`;
-      return `${icon} Différé ${when} → ${e.effects?.length ?? 0} effet(s)${e.cancelFlag ? ` · annulé si ${e.cancelFlag}` : ''}`;
+      const n = e.flow ? (e.flow.kind === 'seq' ? e.flow.steps.length : 1) : 0;
+      return `${icon} Différé ${when} → ${n} bloc(s)${e.cancelFlag ? ` · annulé si ${e.cancelFlag}` : ''}`;
     }
     case 'endDialogue': return `${icon} Fermer le dialogue`;
   }
@@ -183,8 +182,6 @@ export function newEffect(type: Effect['type']): Effect {
     case 'medicalAid':
       // tarif par défaut : « aide médicale 4-6 pistoles » (LDB 75) → 5 pa
       return { type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }], skill: 50, intBonus: 4 };
-    case 'test':
-      return { type: 'test', skill: '', difficulty: 'intermediaire', requireSL: 0, onSuccess: [], onFailure: [] };
     case 'extendedTest':
       return { type: 'extendedTest', skill: 'Crochetage', difficulty: 'intermediaire', label: 'Crocheter la serrure', targetDR: 5, flag: '' };
     case 'forceDoor':
@@ -228,37 +225,28 @@ export function newEffect(type: Effect['type']): Effect {
     case 'setTime':
       return { type: 'setTime', phase: 'nuit' };
     case 'delayedEffect':
-      return { type: 'delayedEffect', afterMinutes: 60, effects: [], cancelFlag: '' };
+      return { type: 'delayedEffect', afterMinutes: 60, flow: EMPTY_FLOW, cancelFlag: '' };
     default:
       return { type: 'journal', text: '' };
   }
 }
 
-/** Corps DÉPLIÉ d'un effet : select de type (groupé) + champs spécifiques. `exclude` retire des types
- *  du sélecteur (ex. la feuille `do` d'un Flow exclut `test`, devenu un nœud Flow à part entière). */
-export function EffectFields({ effect, onChange, ctx, exclude }: { effect: Effect; onChange: (e: Effect) => void; ctx: Ctx; exclude?: Effect['type'][] }) {
+/** Corps DÉPLIÉ d'un effet (feuille `do` d'un Flow) : select de type (groupé) + champs spécifiques. */
+export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChange: (e: Effect) => void; ctx: Ctx }) {
   const e = effect as any;
   const upd = (patch: any) => onChange({ ...e, ...patch });
-  /** MAJ du modulateur `easierIf` du Test, en l'élaguant à `undefined` s'il ne cible plus rien. */
-  const setEase = (patch: any) => {
-    const m = { ...(e.easierIf ?? {}), ...patch };
-    upd({ easierIf: m.hasSkill || m.hasTalent ? m : undefined });
-  };
   return (
     <div className="eff-body">
       <select className="eff-type" value={effect.type} onChange={(ev) => onChange(newEffect(ev.target.value as Effect['type']))}>
-        {EFFECT_GROUPS.map(([g, types]) => {
-          const opts = types.filter((t) => !exclude?.includes(t));
-          return opts.length ? (
-            <optgroup key={g} label={g}>
-              {opts.map((t) => (
-                <option key={t} value={t}>
-                  {EFFECT_LABEL[t]}
-                </option>
-              ))}
-            </optgroup>
-          ) : null;
-        })}
+        {EFFECT_GROUPS.map(([g, types]) => (
+          <optgroup key={g} label={g}>
+            {types.map((t) => (
+              <option key={t} value={t}>
+                {EFFECT_LABEL[t]}
+              </option>
+            ))}
+          </optgroup>
+        ))}
       </select>
       <div className="eff-fields">
         {effect.type === 'journal' && <input placeholder="Texte du journal" value={e.text ?? ''} onChange={(ev) => upd({ text: ev.target.value })} />}
@@ -428,8 +416,8 @@ export function EffectFields({ effect, onChange, ctx, exclude }: { effect: Effec
                 value={e.afterMinutes != null ? 'rel' : 'abs'}
                 onChange={(ev) =>
                   ev.target.value === 'rel'
-                    ? onChange({ type: 'delayedEffect', afterMinutes: e.afterMinutes ?? 60, effects: e.effects ?? [], cancelFlag: e.cancelFlag })
-                    : onChange({ type: 'delayedEffect', atHour: e.atHour ?? 0, atMinute: e.atMinute ?? 0, effects: e.effects ?? [], cancelFlag: e.cancelFlag })
+                    ? onChange({ type: 'delayedEffect', afterMinutes: e.afterMinutes ?? 60, flow: e.flow ?? EMPTY_FLOW, cancelFlag: e.cancelFlag })
+                    : onChange({ type: 'delayedEffect', atHour: e.atHour ?? 0, atMinute: e.atMinute ?? 0, flow: e.flow ?? EMPTY_FLOW, cancelFlag: e.cancelFlag })
                 }
               >
                 <option value="rel">Compte à rebours (minutes)</option>
@@ -443,8 +431,8 @@ export function EffectFields({ effect, onChange, ctx, exclude }: { effect: Effec
               <input placeholder="Flag d’annulation (désamorçage, optionnel)" value={e.cancelFlag ?? ''} onChange={(ev) => upd({ cancelFlag: ev.target.value || undefined })} />
             </div>
             <div className="branch">
-              <span className="branch-label">Effets à l’échéance :</span>
-              <EffectList effects={e.effects ?? []} onChange={(x) => upd({ effects: x })} ctx={ctx} />
+              <span className="branch-label">À l’échéance (effets · conditions · tests) :</span>
+              <FlowEditor flow={e.flow ?? EMPTY_FLOW} onChange={(flow) => upd({ flow })} ctx={ctx} />
             </div>
           </div>
         )}
@@ -616,48 +604,6 @@ export function EffectFields({ effect, onChange, ctx, exclude }: { effect: Effec
             </div>
           );
         })()}
-        {effect.type === 'test' && (
-          <div className="test-fields">
-            <div className="tf-row">
-              <input placeholder="Compétence (ex. Marchandage)" value={e.skill ?? ''} onChange={(ev) => upd({ skill: ev.target.value })} />
-              <select value={e.difficulty ?? 'intermediaire'} onChange={(ev) => upd({ difficulty: ev.target.value as Difficulty })}>
-                {(Object.keys(DIFFICULTY_LABELS) as Difficulty[]).map((d) => (
-                  <option key={d} value={d}>
-                    {DIFFICULTY_LABELS[d]}
-                  </option>
-                ))}
-              </select>
-              <label className="dr">DR≥<input type="number" value={e.requireSL ?? 0} onChange={(ev) => upd({ requireSL: Number(ev.target.value) })} /></label>
-              <input placeholder="Outil (ex. Rossignols — qualité Pratique/Bâclé…)" value={e.tool ?? ''} onChange={(ev) => upd({ tool: ev.target.value || undefined })} />
-            </div>
-            {isSocialTest(e.skill, e.characteristic) && (
-              <div className="tf-row">
-                <input
-                  placeholder="Interlocuteur — groupes (Sociabilité : Animosité/Préjugé −20/−10, ex. « Elfe, Mort-vivant »)"
-                  value={(e.vsGroups ?? []).join(', ')}
-                  onChange={(ev) => {
-                    const g = ev.target.value.split(',').map((s) => s.trim()).filter(Boolean);
-                    upd({ vsGroups: g.length ? g : undefined });
-                  }}
-                />
-              </div>
-            )}
-            <div className="tf-row">
-              <span className="dr">Plus facile si</span>
-              <input placeholder="compétence (ex. Projectiles (Poudre noire))" value={e.easierIf?.hasSkill ?? ''} onChange={(ev) => setEase({ hasSkill: ev.target.value || undefined })} />
-              <input placeholder="ou talent" value={e.easierIf?.hasTalent ?? ''} onChange={(ev) => setEase({ hasTalent: ev.target.value || undefined })} />
-              <label className="dr">−<input type="number" min={1} value={e.easierIf?.steps ?? 1} onChange={(ev) => setEase({ steps: Number(ev.target.value) })} /> cran(s)</label>
-            </div>
-            <div className="branch">
-              <span className="branch-label ok">Si RÉUSSITE :</span>
-              <EffectList effects={e.onSuccess ?? []} onChange={(x) => upd({ onSuccess: x })} ctx={ctx} />
-            </div>
-            <div className="branch">
-              <span className="branch-label fail">Si ÉCHEC :</span>
-              <EffectList effects={e.onFailure ?? []} onChange={(x) => upd({ onFailure: x })} ctx={ctx} />
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

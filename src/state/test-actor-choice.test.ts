@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
-import { applyEffects } from './combatFlow';
+import { runFlow } from './combatFlow';
+import { testFlow, EMPTY_FLOW } from './flow';
 import type { Combatant } from '../engine/types';
 
 /** Test de SCÈNE (dialogue/exploration) : au lieu de désigner AUTOMATIQUEMENT le meilleur du groupe,
@@ -17,7 +18,7 @@ describe('Test de scène — choix du lanceur dans le groupe', () => {
 
   it('candidats = tout le groupe ; défaut = le meilleur ; testSetActor re-cible le Test', () => {
     useGame.setState({ party: [mk('h1', 'Alric', 55), mk('h2', 'Bri', 35)] });
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'test', characteristic: 'Dex', requireSL: 0, onSuccess: [], onFailure: [] }]);
+    runFlow(useGame.getState, useGame.setState, testFlow({ characteristic: 'Dex', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
     expect(pt.candidates?.map((c) => c.id)).toEqual(['h1', 'h2']); // tout le groupe vivant
     expect(pt.actorId).toBe('h1'); // défaut = le meilleur (Dex 55)
@@ -32,14 +33,14 @@ describe('Test de scène — choix du lanceur dans le groupe', () => {
 
   it('un seul héros vivant → pas de choix (candidates absent)', () => {
     useGame.setState({ party: [mk('h1', 'Solo', 40)] });
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'test', characteristic: 'Dex', requireSL: 0, onSuccess: [], onFailure: [] }]);
+    runFlow(useGame.getState, useGame.setState, testFlow({ characteristic: 'Dex', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     expect(useGame.getState().pendingTest!.candidates).toBeUndefined();
     expect(useGame.getState().pendingTest!.actorId).toBe('h1');
   });
 
   it('testSetActor refusé APRÈS le jet (le lanceur est figé)', () => {
     useGame.setState({ party: [mk('h1', 'Alric', 55), mk('h2', 'Bri', 35)] });
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'test', characteristic: 'Dex', requireSL: 0, onSuccess: [], onFailure: [] }]);
+    runFlow(useGame.getState, useGame.setState, testFlow({ characteristic: 'Dex', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     useGame.getState().testRoll();
     useGame.getState().testSetActor('h2'); // après le jet → no-op
     expect(useGame.getState().pendingTest!.actorId).toBe('h1');

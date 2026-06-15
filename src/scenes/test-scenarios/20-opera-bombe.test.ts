@@ -1,11 +1,10 @@
-import { flowEffects } from '../../state/flow';
+import { flowEffects, type Flow } from '../../state/flow';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from '../../state/store';
 import { applyEffects } from '../../state/combatEffects';
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { scenario } from './20-opera-bombe';
-import type { Effect } from '../../state/scene';
 
 /**
  * Valide le CÂBLAGE AUTHORED du scénario « Opéra — Bombe » (pas seulement les primitifs isolés) :
@@ -18,7 +17,7 @@ describe('Scénario « Opéra — Bombe » : le câblage en données compose', (
 
   const armTrigger = scenario.scene.triggers.find((t) => t.id === 'armer-bombe')!;
   const plant = scenario.scene.entities.find((e) => e.id === 'plante')!;
-  const detectTest = plant.interact!.effects[0] as Extract<Effect, { type: 'test' }>;
+  const detectTest = plant.interact!.flow as Extract<Flow, { kind: 'test' }>;
 
   function lonePartyAt(wounds: number) {
     const h = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
@@ -29,8 +28,8 @@ describe('Scénario « Opéra — Bombe » : le câblage en données compose', (
 
   it('le scénario expose bien le trigger d’armement et la plante interactive', () => {
     expect(armTrigger).toBeTruthy();
-    expect(detectTest.type).toBe('test');
-    expect(detectTest.easierIf?.hasSkill).toBe('Projectiles (Poudre noire)');
+    expect(detectTest.kind).toBe('test');
+    expect(detectTest.test.easierIf?.hasSkill).toBe('Projectiles (Poudre noire)');
   });
 
   it('entrer dans la loge arme la mèche (delayedEffect programmé)', () => {
@@ -42,7 +41,7 @@ describe('Scénario « Opéra — Bombe » : le câblage en données compose', (
   it('détecter la plante (branche RÉUSSITE) pose le flag de désamorçage → pas d’explosion', () => {
     const before = lonePartyAt(30).wounds.current;
     applyEffects(useGame.getState, useGame.setState, flowEffects(armTrigger.flow));
-    applyEffects(useGame.getState, useGame.setState, detectTest.onSuccess!);
+    applyEffects(useGame.getState, useGame.setState, flowEffects(detectTest.success));
     expect(useGame.getState().flags.bombeDesamorcee).toBe(true);
     useGame.getState().advanceTime(120);
     expect(useGame.getState().party[0].wounds.current).toBe(before); // intacte

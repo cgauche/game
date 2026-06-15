@@ -2,7 +2,7 @@ import { makePregens } from '../../data/pregens';
 import { parseAsciiRows } from '../../state/asciiMap';
 import type { Scene, SceneEntity, CustomStatblock } from '../../state/scene';
 import type { TestScenario } from './_shared';
-import { flowFromEffects } from '../../state/flow';
+import { flowFromEffects, testFlow, type Flow } from '../../state/flow';
 
 // Profil des deux étudiants saboteurs : de jeunes civils paniqués, vifs mais fragiles (pas de combattants).
 const ETUDIANT: CustomStatblock = {
@@ -121,19 +121,19 @@ const ents: SceneEntity[] = [
     id: 'plante-bombe', kind: 'prop', ref: 'plante-pot', pos: { x: 10, y: 15 }, z: 1,
     interact: {
       consume: false,
-      effects: [
+      flow: testFlow(
         {
-          type: 'test', skill: 'Perception', difficulty: 'complexe',
+          skill: 'Perception', difficulty: 'complexe',
           easierIf: { hasSkill: 'Projectiles (Poudre noire)', steps: 1 },
           label: 'Examiner la plante en pot',
-          onSuccess: [
-            { type: 'journal', text: 'Sous le feuillage : le pot est bourré de poudre à canon, relié à un détonateur. Vous arrachez le détonateur — la bombe est neutralisée.' },
-            { type: 'setFlag', flag: 'bombeDesamorcee' },
-            { type: 'giveXp', amount: 50 }, // déjouer le complot de la bombe de Dammenblatz (source 08 l.275)
-          ],
-          onFailure: [{ type: 'journal', text: 'Une grande plante en pot, sans rien de particulier.' }],
         },
-      ],
+        flowFromEffects([
+          { type: 'journal', text: 'Sous le feuillage : le pot est bourré de poudre à canon, relié à un détonateur. Vous arrachez le détonateur — la bombe est neutralisée.' },
+          { type: 'setFlag', flag: 'bombeDesamorcee' },
+          { type: 'giveXp', amount: 50 }, // déjouer le complot de la bombe de Dammenblatz (source 08 l.275)
+        ]),
+        flowFromEffects([{ type: 'journal', text: 'Une grande plante en pot, sans rien de particulier.' }]),
+      ),
     },
   },
 
@@ -228,32 +228,36 @@ const scene: Scene = {
         // de Pakker. Flash de la mèche, pétards, spectacle interrompu SANS panique ; Glimbrin vole.
         {
           type: 'delayedEffect', afterMinutes: 10,
-          effects: [
-            { type: 'journal', text: 'Près de l’allée centrale, la lueur d’une mèche embrase la pénombre…' },
-            { type: 'setLight', level: 0.8 },
-            { type: 'zoneBlast', center: { x: 9, y: 8 }, radius: 1, damage: '2' },
-            { type: 'journal', text: 'Une volée de pétards éclate sur le siège du professeur Pakker ! Le spectacle s’interrompt dans les cris — mais sans panique. Dans le brouhaha, une petite silhouette se faufile sous son fauteuil…' },
-            {
-              type: 'test', skill: 'Perception', difficulty: 'difficile', label: 'Repérer le voleur dans le brouhaha',
-              onSuccess: [
-                { type: 'journal', text: 'Vous surprenez un gnome glissé sous le fauteuil du professeur — il détale les mains vides. Les clés de l’École d’artillerie sont sauves.' },
-                { type: 'setFlag', flag: 'glimbrinDejoue' },
-                { type: 'giveXp', amount: 15 }, // empêcher le vol des clés du professeur Pakker (source 08 l.297)
-              ],
-              onFailure: [
-                { type: 'journal', text: 'Plus tard, le professeur Pakker s’aperçoit avec effroi que les clés de l’École impériale d’artillerie ont disparu de sa poche…' },
-                { type: 'setFlag', flag: 'clesVolees' },
-              ],
-            },
-          ],
+          // Séquence d'échéance : ambiance + souffle des pétards, PUIS un Test de Perception (le vol de Glimbrin).
+          flow: {
+            kind: 'seq',
+            steps: [
+              { kind: 'do', effect: { type: 'journal', text: 'Près de l’allée centrale, la lueur d’une mèche embrase la pénombre…' } },
+              { kind: 'do', effect: { type: 'setLight', level: 0.8 } },
+              { kind: 'do', effect: { type: 'zoneBlast', center: { x: 9, y: 8 }, radius: 1, damage: '2' } },
+              { kind: 'do', effect: { type: 'journal', text: 'Une volée de pétards éclate sur le siège du professeur Pakker ! Le spectacle s’interrompt dans les cris — mais sans panique. Dans le brouhaha, une petite silhouette se faufile sous son fauteuil…' } },
+              testFlow(
+                { skill: 'Perception', difficulty: 'difficile', label: 'Repérer le voleur dans le brouhaha' },
+                flowFromEffects([
+                  { type: 'journal', text: 'Vous surprenez un gnome glissé sous le fauteuil du professeur — il détale les mains vides. Les clés de l’École d’artillerie sont sauves.' },
+                  { type: 'setFlag', flag: 'glimbrinDejoue' },
+                  { type: 'giveXp', amount: 15 }, // empêcher le vol des clés du professeur Pakker (source 08 l.297)
+                ]),
+                flowFromEffects([
+                  { type: 'journal', text: 'Plus tard, le professeur Pakker s’aperçoit avec effroi que les clés de l’École impériale d’artillerie ont disparu de sa poche…' },
+                  { type: 'setFlag', flag: 'clesVolees' },
+                ]),
+              ),
+            ] as Flow[],
+          },
         },
-        { type: 'delayedEffect', afterMinutes: 11, effects: [{ type: 'setLight', level: 0.35 }] },
+        { type: 'delayedEffect', afterMinutes: 11, flow: flowFromEffects([{ type: 'setLight', level: 0.35 }]) },
         {
           type: 'delayedEffect', afterMinutes: 60, cancelFlag: 'bombeDesamorcee',
-          effects: [
+          flow: flowFromEffects([
             { type: 'journal', text: 'UNE EXPLOSION DÉCHIRE L’ANTICHAMBRE DE LA LOGE ROYALE !' },
             { type: 'zoneBlast', center: { x: 10, y: 14 }, radius: 6, damage: '1d10+15', conditions: [{ name: 'En flammes' }] },
-          ],
+          ]),
         },
       ]),
     },

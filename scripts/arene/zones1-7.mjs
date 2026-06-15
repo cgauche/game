@@ -1,6 +1,6 @@
 /** Zones 1-7 de l'échelle — refaites en GRAND (24×16 → 32×24), layouts structurés, fouilles,
  *  rencontres enrichies. Ids/flags conservés (`arene-zoneN`, `zoneN_clear`). */
-import { scene, P, hero, resetIds, fouille, fightTrigger, zoneVictory, NUEE_DE_RATS, flowOf } from './lib.mjs';
+import { scene, P, hero, resetIds, fouille, fightTrigger, zoneVictory, NUEE_DE_RATS, flowOf, testNode } from './lib.mjs';
 
 // ── Zone 1 — La Cour (24×16, sable) : échauffement, tutoriel du couvert ────────────────────
 
@@ -225,19 +225,14 @@ export function makeZone3() {
         id: 'miasmes',
         rect: { x: 1, y: 7, w: 28, h: 1 },
         once: true,
-        flow: flowOf([
-          {
-            type: 'test',
-            skill: 'Résistance',
-            difficulty: 'facile',
-            label: 'Miasmes des égouts',
-            onSuccess: [{ type: 'journal', text: 'L’air est irrespirable, mais vous gardez vos tripes — et votre santé.' }],
-            onFailure: [
-              { type: 'inflictDisease', disease: 'Fièvre du Rongeur' },
-              { type: 'journal', text: 'Quelque chose se glisse dans vos poumons avec l’odeur… La Fièvre du Rongeur couve.' },
-            ],
-          },
-        ]),
+        flow: testNode(
+          { skill: 'Résistance', difficulty: 'facile', label: 'Miasmes des égouts' },
+          [{ type: 'journal', text: 'L’air est irrespirable, mais vous gardez vos tripes — et votre santé.' }],
+          [
+            { type: 'inflictDisease', disease: 'Fièvre du Rongeur' },
+            { type: 'journal', text: 'Quelque chose se glisse dans vos poumons avec l’odeur… La Fièvre du Rongeur couve.' },
+          ],
+        ),
       },
       fightTrigger('enc-zone3', { x: 1, y: 1, w: 28, h: 6 }),
     ],
@@ -309,22 +304,17 @@ export function makeZone4() {
       P(15, 16, 'brasero'),
       P(9, 15, 'cadavre', {
         label: 'Fossoyeur mort',
-        ...fouille([
-          {
-            type: 'test',
-            skill: 'Résistance',
-            difficulty: 'intermediaire',
-            label: 'Fouiller les morts du charnier',
-            onSuccess: [
-              { type: 'giveMoney', silver: 18 },
-              { type: 'journal', text: 'Le fossoyeur serrait encore sa bourse : 18 pa, et rien d’attrapé.' },
-            ],
-            onFailure: [
-              { type: 'inflictDisease', disease: 'Blessure Purulente' },
-              { type: 'journal', text: 'Un os brisé vous entaille la paume. La plaie sent déjà mauvais…' },
-            ],
-          },
-        ]),
+        ...fouille(testNode(
+          { skill: 'Résistance', difficulty: 'intermediaire', label: 'Fouiller les morts du charnier' },
+          [
+            { type: 'giveMoney', silver: 18 },
+            { type: 'journal', text: 'Le fossoyeur serrait encore sa bourse : 18 pa, et rien d’attrapé.' },
+          ],
+          [
+            { type: 'inflictDisease', disease: 'Blessure Purulente' },
+            { type: 'journal', text: 'Un os brisé vous entaille la paume. La plaie sent déjà mauvais…' },
+          ],
+        )),
       }),
       P(24, 2, 'coffre', {
         label: 'Reliquaire descellé',
@@ -579,22 +569,17 @@ export function makeZone7() {
       P(24, 16, 'toile'),
       P(6, 5, 'cocon', {
         label: 'Cocon frémissant',
-        ...fouille([
-          {
-            type: 'test',
-            skill: 'Athlétisme',
-            difficulty: 'intermediaire',
-            label: 'Éventrer le cocon sans s’y prendre',
-            onSuccess: [
-              { type: 'giveTrapping', trapping: 'Potion de guérison' },
-              { type: 'journal', text: 'Dans la soie : la besace d’une victime, potion intacte.' },
-            ],
-            onFailure: [
-              { type: 'inflictDisease', disease: 'Infection Mineure' },
-              { type: 'journal', text: 'Quelque chose vous mord à travers la soie avant de fuir. La plaie gonfle déjà.' },
-            ],
-          },
-        ]),
+        ...fouille(testNode(
+          { skill: 'Athlétisme', difficulty: 'intermediaire', label: 'Éventrer le cocon sans s’y prendre' },
+          [
+            { type: 'giveTrapping', trapping: 'Potion de guérison' },
+            { type: 'journal', text: 'Dans la soie : la besace d’une victime, potion intacte.' },
+          ],
+          [
+            { type: 'inflictDisease', disease: 'Infection Mineure' },
+            { type: 'journal', text: 'Quelque chose vous mord à travers la soie avant de fuir. La plaie gonfle déjà.' },
+          ],
+        )),
       }),
       P(21, 13, 'cocon', {
         label: 'Cocon lourd',

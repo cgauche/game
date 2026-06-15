@@ -1,4 +1,5 @@
 import { Scene, Effect, isWalkable } from './scene';
+import { type Flow, EMPTY_FLOW, flowFromEffects, testFlow } from './flow';
 import type { Pt } from './path';
 import { jumpNeedsTest } from '../engine/movement';
 
@@ -9,7 +10,7 @@ import { jumpNeedsTest } from '../engine/movement';
  */
 export const FALL_METRES_PER_LEVEL = 4;
 
-export type JumpPlan = { kind: 'free' } | { kind: 'test'; effects: Effect[] };
+export type JumpPlan = { kind: 'free' } | { kind: 'test'; flow: Flow };
 
 /**
  * Traduit un pas de SAUT (`takeoff`→`landing`, en cases cardinales) en plan jouable, SANS flux dédié :
@@ -30,8 +31,7 @@ export function planJump(scene: Scene, takeoff: Pt, landing: Pt, movement: numbe
   const metres = Math.max(FALL_METRES_PER_LEVEL, (tz - belowZ) * FALL_METRES_PER_LEVEL);
   const difficulty = runUpCases >= Math.ceil(movement / 2) ? 'accessible' : 'intermediaire';
   const fall: Effect = { type: 'fall', target: 'party', metres, to: { x: gap.x, y: gap.y, z: belowZ } };
-  return {
-    kind: 'test',
-    effects: [{ type: 'test', skill: 'Athlétisme', difficulty, label: 'Saut', onSuccess: [], onFailure: [fall] }],
-  };
+  // Test d'Athlétisme « Saut » : la réussite ne fait rien (on a déjà franchi, optimiste) ; l'échec
+  // déclenche `fall` dans le gouffre.
+  return { kind: 'test', flow: testFlow({ skill: 'Athlétisme', difficulty, label: 'Saut' }, EMPTY_FLOW, flowFromEffects([fall])) };
 }

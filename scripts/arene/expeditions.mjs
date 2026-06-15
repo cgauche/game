@@ -1,6 +1,6 @@
 /** Expéditions de la carte du monde (#T2) — on y VOYAGE depuis le Bourg (rations, péripéties,
  *  embuscades), on en revient par la carte. Pas de retour-hub automatique : la route est le retour. */
-import { scene, P, NPC, hero, resetIds, fouille, fightTrigger, flowOf } from './lib.mjs';
+import { scene, P, NPC, hero, resetIds, fouille, fightTrigger, testNode } from './lib.mjs';
 
 // ── La Vieille Futaie (40×28) : harde en lisière + camp de Bella la Noire (PNJ nommée) ──────
 
@@ -196,22 +196,17 @@ export function makeMarais() {
       }),
       P(20, 18, 'cadavre', {
         label: 'Voyageur repêché',
-        ...fouille([
-          {
-            type: 'test',
-            skill: 'Résistance',
-            difficulty: 'facile',
-            label: 'Fouiller le noyé sans frémir',
-            onSuccess: [
-              { type: 'giveMoney', silver: 22 },
-              { type: 'journal', text: 'Le noyé voyageait riche : 22 pa, que la tourbe lui pardonne.' },
-            ],
-            onFailure: [
-              { type: 'inflictDisease', disease: 'Infection Mineure' },
-              { type: 'journal', text: 'L’eau morte vous entre par une écorchure. Ça gratte. Ça GRATTE.' },
-            ],
-          },
-        ]),
+        ...fouille(testNode(
+          { skill: 'Résistance', difficulty: 'facile', label: 'Fouiller le noyé sans frémir' },
+          [
+            { type: 'giveMoney', silver: 22 },
+            { type: 'journal', text: 'Le noyé voyageait riche : 22 pa, que la tourbe lui pardonne.' },
+          ],
+          [
+            { type: 'inflictDisease', disease: 'Infection Mineure' },
+            { type: 'journal', text: 'L’eau morte vous entre par une écorchure. Ça gratte. Ça GRATTE.' },
+          ],
+        )),
       }),
       P(22, 2, 'menhir', { label: 'Pierre engloutie' }),
     ],
@@ -321,19 +316,14 @@ export function makeVillage() {
         id: 'puits-maudit',
         rect: { x: 6, y: 8, w: 3, h: 3 },
         once: true,
-        flow: flowOf([
-          {
-            type: 'test',
-            skill: 'Résistance',
-            difficulty: 'intermediaire',
-            label: 'Les remontées du puits maudit',
-            onSuccess: [{ type: 'journal', text: 'L’odeur du puits vous plie en deux — mais rien ne s’accroche. Cette eau a TUÉ le village.' }],
-            onFailure: [
-              { type: 'inflictDisease', disease: 'Courante Galopante' },
-              { type: 'journal', text: 'Les miasmes du puits vous prennent à la gorge. Votre ventre gargouille déjà sinistrement…' },
-            ],
-          },
-        ]),
+        flow: testNode(
+          { skill: 'Résistance', difficulty: 'intermediaire', label: 'Les remontées du puits maudit' },
+          [{ type: 'journal', text: 'L’odeur du puits vous plie en deux — mais rien ne s’accroche. Cette eau a TUÉ le village.' }],
+          [
+            { type: 'inflictDisease', disease: 'Courante Galopante' },
+            { type: 'journal', text: 'Les miasmes du puits vous prennent à la gorge. Votre ventre gargouille déjà sinistrement…' },
+          ],
+        ),
       },
       fightTrigger('enc-village', { x: 9, y: 1, w: 24, h: 21 }),
     ],

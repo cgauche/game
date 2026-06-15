@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { applyEffects } from './combatEffects';
+import { flowFromEffects } from './flow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import type { Effect } from './scene';
@@ -27,7 +28,7 @@ describe('Tranche verticale — la bombe compose en données (Lot 0 + Lot 3)', (
     type: 'delayedEffect',
     afterMinutes: 60,
     cancelFlag: 'bombeDesamorcee',
-    effects: [{ type: 'inflictDamage', target: 'party', amount: 15 }],
+    flow: flowFromEffects([{ type: 'inflictDamage', target: 'party', amount: 15 }]),
   };
 
   it('la mèche brûle puis explose : à 22h02 le groupe subit le souffle', () => {

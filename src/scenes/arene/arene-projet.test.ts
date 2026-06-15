@@ -1,4 +1,4 @@
-import { flowEffects } from '../../state/flow';
+import { flowEffects, flowFromEffects, flowHasTest, walkFlow, type Flow } from '../../state/flow';
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -81,23 +81,22 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
 
   it('VITRINE des systèmes : tous les Effets clés sont mis en scène quelque part dans le projet', () => {
     const used = new Set<string>();
-    const walk = (effs: any[] | undefined) => {
-      for (const e of effs ?? []) {
-        used.add(e.type);
-        if (e.type === 'test') {
-          walk(e.onSuccess);
-          walk(e.onFailure);
-        }
-      }
-    };
+    let hasTestNode = false;
+    const walk = (flow: Flow) => walkFlow(flow, (node) => {
+      if (node.kind === 'do') {
+        used.add(node.effect.type);
+        if (node.effect.type === 'delayedEffect') walk(node.effect.flow);
+      } else if (node.kind === 'test') hasTestNode = true;
+    });
     for (const s of project) {
-      for (const t of s.triggers) walk(flowEffects(t.flow));
-      for (const e of s.encounters) walk(e.onVictory);
-      for (const ent of s.entities) walk(ent.interact?.effects);
-      for (const d of s.dialogues) for (const n of d.nodes) for (const c of n.choices) walk(c.flow ? flowEffects(c.flow) : undefined);
+      for (const t of s.triggers) walk(t.flow);
+      for (const e of s.encounters) walk(flowFromEffects(e.onVictory));
+      for (const ent of s.entities) if (ent.interact) walk(ent.interact.flow);
+      for (const d of s.dialogues) for (const n of d.nodes) for (const c of n.choices) if (c.flow) walk(c.flow);
     }
+    expect(hasTestNode, 'un nœud Test (jet → branches) mis en scène').toBe(true);
     for (const type of [
-      'test', 'giveTrapping', 'giveMoney', 'giveXp', 'startCombat', 'transition', 'transitionBack',
+      'giveTrapping', 'giveMoney', 'giveXp', 'startCombat', 'transition', 'transitionBack',
       'startDialogue', 'journal', 'document', 'setTime', 'openMerchant', 'medicalAid', 'restoreFortune',
       'rest', 'mealParty', 'inflictNightmares', 'inflictDisease', 'giveSin', 'corruptionExposure',
       'learnSpell', 'interlude', 'setFlag', 'endDialogue',
@@ -131,7 +130,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
   it('FOUILLE : des décors interactifs (interact) répartis dans ≥8 scènes, certains piégés (test imbriqué)', () => {
     const withInteract = project.filter((s) => s.entities.some((e) => e.interact));
     expect(withInteract.length).toBeGreaterThanOrEqual(8);
-    const trapped = project.flatMap((s) => s.entities.filter((e) => e.interact?.effects.some((ef) => ef.type === 'test')));
+    const trapped = project.flatMap((s) => s.entities.filter((e) => e.interact && flowHasTest(e.interact.flow)));
     expect(trapped.length).toBeGreaterThanOrEqual(2); // fouilles à risque (maladie/réveil du dragon…)
   });
 
@@ -141,20 +140,17 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     // (victoires + fouilles + dialogues, optionnels compris) reste sous ~100 co — soit ~3 plates
     // en finissant ABSOLUMENT tout — et la zone 1 ne paie qu'en pistoles.
     let totalSb = 0; // tout en sous de bronze (1 co = 240 sb, 1 pa = 12 sb)
-    const walk = (effs: any[] | undefined) => {
-      for (const e of effs ?? []) {
-        if (e.type === 'giveMoney') totalSb += (e.gold ?? 0) * 240 + (e.silver ?? 0) * 12 + (e.brass ?? 0);
-        if (e.type === 'test') {
-          walk(e.onSuccess);
-          walk(e.onFailure);
-        }
-      }
-    };
+    const walk = (flow: Flow) => walkFlow(flow, (node) => {
+      if (node.kind !== 'do') return;
+      const e = node.effect as any;
+      if (e.type === 'giveMoney') totalSb += (e.gold ?? 0) * 240 + (e.silver ?? 0) * 12 + (e.brass ?? 0);
+      if (e.type === 'delayedEffect') walk(e.flow);
+    });
     for (const s of project) {
-      for (const t of s.triggers) walk(flowEffects(t.flow));
-      for (const e of s.encounters) walk(e.onVictory);
-      for (const ent of s.entities) walk(ent.interact?.effects);
-      for (const d of s.dialogues) for (const n of d.nodes) for (const c of n.choices) walk(c.flow ? flowEffects(c.flow) : undefined);
+      for (const t of s.triggers) walk(t.flow);
+      for (const e of s.encounters) walk(flowFromEffects(e.onVictory));
+      for (const ent of s.entities) if (ent.interact) walk(ent.interact.flow);
+      for (const d of s.dialogues) for (const n of d.nodes) for (const c of n.choices) if (c.flow) walk(c.flow);
     }
     expect(totalSb).toBeLessThanOrEqual(100 * 240);
     const z1 = project[0].encounters.find((e) => e.id === 'enc-zone1')!;
@@ -192,16 +188,13 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
 
   it('BUTIN magique : au moins un giveTrapping avec qualités magiques NON identifiées (vitrine Évaluation)', () => {
     let found = false;
-    const walk = (effs: any[] | undefined) => {
-      for (const e of effs ?? []) {
-        if (e.type === 'giveTrapping' && e.identified === false && (e.qualities ?? []).length > 0) found = true;
-        if (e.type === 'test') {
-          walk(e.onSuccess);
-          walk(e.onFailure);
-        }
-      }
-    };
-    for (const s of project) for (const ent of s.entities) walk(ent.interact?.effects);
+    const walk = (flow: Flow) => walkFlow(flow, (node) => {
+      if (node.kind !== 'do') return;
+      const e = node.effect as any;
+      if (e.type === 'giveTrapping' && e.identified === false && (e.qualities ?? []).length > 0) found = true;
+      if (e.type === 'delayedEffect') walk(e.flow);
+    });
+    for (const s of project) for (const ent of s.entities) if (ent.interact) walk(ent.interact.flow);
     expect(found).toBe(true);
   });
 
@@ -241,8 +234,8 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     expect(ALL_ENEMIES.some((en) => (en.statblock?.traits ?? []).includes('Nuée'))).toBe(true); // Nuée = statbloc custom
     expect(ALL_ENEMIES.some((en) => en.ref === 'Spectre de cairn')).toBe(true); // créature Terreur
     const hub = project.find((s) => s.id === 'arene-hub')!;
-    const hasTest = hub.dialogues.some((d) => d.nodes.some((n) => n.choices.some((c) => c.flow && flowEffects(c.flow).some((ef) => ef.type === 'test'))));
-    expect(hasTest).toBe(true); // Effet `test` (Crochetage) avec branches succès/échec
+    const hasTest = hub.dialogues.some((d) => d.nodes.some((n) => n.choices.some((c) => c.flow && flowHasTest(c.flow))));
+    expect(hasTest).toBe(true); // nœud Flow `test` (Crochetage) avec branches succès/échec
   });
 
   it('une zone met en scène la CAVALERIE : un cavalier pré-monté + un cheval libre allié (montable)', () => {

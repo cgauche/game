@@ -1,4 +1,4 @@
-import { flowEffects } from '../../state/flow';
+import { flowEffects, type Flow } from '../../state/flow';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { validateScene } from '../../state/validateScene';
 import { isWalkable, type Effect } from '../../state/scene';
@@ -62,7 +62,13 @@ describe('Scénario « Opéra — Théâtre » : salle multi-niveaux valide', ()
 describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', () => {
   const arm = scenario.scene.triggers.find((t) => t.id === 'armer-bombe')!;
   const plante = scenario.scene.entities.find((e) => e.id === 'plante-bombe')!;
-  const detect = plante.interact!.effects[0] as Extract<Effect, { type: 'test' }>;
+  const detect = plante.interact!.flow as Extract<Flow, { kind: 'test' }>;
+  /** Le nœud Test « voleur » niché dans le flow du delayedEffect des pétards (à 20h30). */
+  const spotNode = (): Extract<Flow, { kind: 'test' }> => {
+    const petards = flowEffects(arm.flow).find((e): e is Extract<Effect, { type: 'delayedEffect' }> => e.type === 'delayedEffect' && e.afterMinutes === 10)!;
+    const steps = petards.flow.kind === 'seq' ? petards.flow.steps : [petards.flow];
+    return steps.find((s) => s.kind === 'test') as Extract<Flow, { kind: 'test' }>;
+  };
 
   beforeEach(() => useGame.setState({ battle: null, flags: {}, scheduledEffects: [], gameTime: 20 * 60, partyPos: { x: 10, y: 14, z: 1 } }));
   function lonePartyAt(wounds: number) {
@@ -74,7 +80,7 @@ describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', ()
 
   it('la plante piégée est posée dans la loge royale (z1) et se détecte mieux avec la Poudre noire', () => {
     expect(plante.z).toBe(1);
-    expect(detect.easierIf?.hasSkill).toBe('Projectiles (Poudre noire)');
+    expect(detect.test.easierIf?.hasSkill).toBe('Projectiles (Poudre noire)');
   });
 
   it('entrer dans l’auditorium baisse les lumières et programme la soirée (pétards + mèche)', () => {
@@ -87,7 +93,7 @@ describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', ()
   it('retirer le détonateur empêche l’explosion finale', () => {
     const before = lonePartyAt(35).wounds.current;
     applyEffects(useGame.getState, useGame.setState, flowEffects(arm.flow));
-    applyEffects(useGame.getState, useGame.setState, detect.onSuccess!); // désamorçage
+    applyEffects(useGame.getState, useGame.setState, flowEffects(detect.success)); // désamorçage
     useGame.getState().advanceTime(120);
     expect(useGame.getState().party[0].wounds.current).toBe(before); // intacte (pétards à l'écart, bombe annulée)
   });
@@ -102,13 +108,12 @@ describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', ()
   });
 
   it('le spot-check Glimbrin (intrigue n°2) a ses deux issues (clés sauves / volées)', () => {
-    const petards = flowEffects(arm.flow).find((e): e is Extract<Effect, { type: 'delayedEffect' }> => e.type === 'delayedEffect' && e.afterMinutes === 10)!;
-    const spot = petards.effects.find((e): e is Extract<Effect, { type: 'test' }> => e.type === 'test')!;
-    expect(spot.skill).toBe('Perception');
+    const spot = spotNode();
+    expect(spot.test.skill).toBe('Perception');
     lonePartyAt(35);
-    applyEffects(useGame.getState, useGame.setState, spot.onFailure!);
+    applyEffects(useGame.getState, useGame.setState, flowEffects(spot.fail));
     expect(useGame.getState().flags.clesVolees).toBe(true);
-    applyEffects(useGame.getState, useGame.setState, spot.onSuccess!);
+    applyEffects(useGame.getState, useGame.setState, flowEffects(spot.success));
     expect(useGame.getState().flags.glimbrinDejoue).toBe(true);
   });
 
@@ -123,10 +128,8 @@ describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', ()
   it('chaque intrigue résolue récompense les PX canoniques (50 / 15 / 10)', () => {
     const xpIn = (effs: Effect[] | undefined) =>
       (effs ?? []).filter((e): e is Extract<Effect, { type: 'giveXp' }> => e.type === 'giveXp').reduce((n, e) => n + e.amount, 0);
-    expect(xpIn(detect.onSuccess)).toBe(50); // bombe déjouée (l.275)
-    const petards = flowEffects(arm.flow).find((e): e is Extract<Effect, { type: 'delayedEffect' }> => e.type === 'delayedEffect' && e.afterMinutes === 10)!;
-    const spot = petards.effects.find((e): e is Extract<Effect, { type: 'test' }> => e.type === 'test')!;
-    expect(xpIn(spot.onSuccess)).toBe(15); // vol de clés empêché (l.297)
+    expect(xpIn(flowEffects(detect.success))).toBe(50); // bombe déjouée (l.275)
+    expect(xpIn(flowEffects(spotNode().success))).toBe(15); // vol de clés empêché (l.297)
     expect(xpIn(scenario.scene.encounters.find((e) => e.id === 'enc-etudiants')!.onVictory)).toBe(10); // étudiants arrêtés (l.277)
   });
 

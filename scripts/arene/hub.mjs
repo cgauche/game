@@ -1,5 +1,5 @@
 /** Le Bourg de l'Arène (hub refondu, id conservé `arene-hub`) + ses deux intérieurs. */
-import { scene, P, NPC, hero, resetIds, fouille, flowOf, flagWhen } from './lib.mjs';
+import { scene, P, NPC, hero, resetIds, fouille, flowOf, flagWhen, testNode } from './lib.mjs';
 
 // ── Dialogues du Bourg ──────────────────────────────────────────────────────────────────────
 
@@ -46,20 +46,15 @@ const dlgHub = {
         {
           text: '🔓 Crocheter le vieux coffre du maître (Test de Crochetage).',
           when: flagWhen('!coffre_pris'),
-          flow: flowOf([
-            {
-              type: 'test',
-              skill: 'Crochetage',
-              difficulty: 'intermediaire',
-              label: 'Crocheter le coffre',
-              onSuccess: [
-                { type: 'setFlag', flag: 'coffre_pris' },
-                { type: 'giveMoney', gold: 5 },
-                { type: 'journal', text: 'Le coffre cède : 5 couronnes !' },
-              ],
-              onFailure: [{ type: 'journal', text: 'Le mécanisme rouillé résiste — peut-être plus tard.' }],
-            },
-          ]),
+          flow: testNode(
+            { skill: 'Crochetage', difficulty: 'intermediaire', label: 'Crocheter le coffre' },
+            [
+              { type: 'setFlag', flag: 'coffre_pris' },
+              { type: 'giveMoney', gold: 5 },
+              { type: 'journal', text: 'Le coffre cède : 5 couronnes !' },
+            ],
+            [{ type: 'journal', text: 'Le mécanisme rouillé résiste — peut-être plus tard.' }],
+          ),
         },
         {
           text: '🏆 Réclamer ton titre de CHAMPION.',
@@ -502,24 +497,19 @@ const dlgFrere = {
         {
           text: '🕯️ Piller le tronc des offrandes (Test de Discrétion).',
           when: flagWhen('!tronc_pille'),
-          flow: flowOf([
-            {
-              type: 'test',
-              skill: 'Discrétion',
-              difficulty: 'difficile',
-              label: 'Piller le tronc sous l’œil de Sigmar',
-              onSuccess: [
-                { type: 'setFlag', flag: 'tronc_pille' },
-                { type: 'giveMoney', silver: 30 },
-                { type: 'journal', text: 'Trente pistoles d’offrandes glissent dans votre poche. Personne n’a rien vu. Sauf, peut-être, Sigmar.' },
-              ],
-              onFailure: [
-                { type: 'setFlag', flag: 'tronc_pille' },
-                { type: 'giveSin', amount: 1 },
-                { type: 'journal', text: 'Le tronc bascule avec fracas — le regard de Frère Anselm vous transperce. La honte (et le Péché) vous colle à la peau.' },
-              ],
-            },
-          ]),
+          flow: testNode(
+            { skill: 'Discrétion', difficulty: 'difficile', label: 'Piller le tronc sous l’œil de Sigmar' },
+            [
+              { type: 'setFlag', flag: 'tronc_pille' },
+              { type: 'giveMoney', silver: 30 },
+              { type: 'journal', text: 'Trente pistoles d’offrandes glissent dans votre poche. Personne n’a rien vu. Sauf, peut-être, Sigmar.' },
+            ],
+            [
+              { type: 'setFlag', flag: 'tronc_pille' },
+              { type: 'giveSin', amount: 1 },
+              { type: 'journal', text: 'Le tronc bascule avec fracas — le regard de Frère Anselm vous transperce. La honte (et le Péché) vous colle à la peau.' },
+            ],
+          ),
         },
         { text: 'Plus tard.', flow: flowOf([{ type: 'endDialogue' }]) },
       ],

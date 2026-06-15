@@ -116,9 +116,10 @@ export interface SceneEntity {
   dialogueId?: string;
   /** Clé d'asset (token). */
   sprite?: string;
-  /** Décor INTERACTIF (fouille/ramassage). Absent = décor pur. `effects` appliqués une fois ;
+  /** Décor INTERACTIF (fouille/ramassage). Absent = décor pur. `flow` exécuté une fois (un butin de
+   *  feuilles `do` est ramassable un à un — cf. entityPickables ; un `test` en fait une fouille à risque) ;
    *  `consume:true` → le décor disparaît quand pris, sinon il reste (marqué `__fouille_<id>`). */
-  interact?: { effects: Effect[]; consume?: boolean };
+  interact?: { flow: Flow; consume?: boolean };
   /** Apparence (calques) : override éditeur ; sinon auto-variée au seed de l'id. */
   appearance?: EntityAppearance;
   /** Animation d'ambiance en boucle (clé de AMBIENT_CLIPS) — rend l'entité via le rig. */
@@ -194,27 +195,6 @@ export type Effect =
   | { type: 'startDialogue'; dialogue: string }
   | { type: 'journal'; text: string }
   | { type: 'document'; title: string; text: string }
-  /** Test de compétence interactif : branche selon réussite/échec. */
-  | {
-      type: 'test';
-      skill?: string;
-      characteristic?: CharKey;
-      difficulty?: Difficulty;
-      /** DR minimum requis (par défaut 0 = simple réussite). */
-      requireSL?: number;
-      label?: string;
-      /** Nom de l'objet/outil utilisé : sa qualité d'artisanat (Pratique/Peu Fiable/Bâclé) module le Test (Phase C2a). */
-      tool?: string;
-      /** Groupes de l'interlocuteur (ex. « Elfe », « Mort-vivant ») : sur un Test de **Sociabilité**, un PJ
-       *  qui possède Animosité/Préjugé envers ce groupe subit −20/−10 (LDB 21). Sans effet hors Sociabilité. */
-      vsGroups?: string[];
-      /** Difficulté RÉDUITE de `steps` crans (défaut 1) si un héros vivant du groupe possède la
-       *  compétence `hasSkill` (ex. « Projectiles (Poudre noire) ») ou le talent `hasTalent` —
-       *  ex. détecter la bombe est plus facile pour qui s'y connaît en poudre. Absent = sans effet. */
-      easierIf?: { hasSkill?: string; hasTalent?: string; steps?: number };
-      onSuccess?: Effect[];
-      onFailure?: Effect[];
-    }
   /** Test ÉTENDU (LDB 12 l.197-211) : un acteur cumule des DR Round par Round jusqu'à `targetDR`
    *  (crocheter une serrure, forcer un mécanisme…). `flag` posé à la réussite (gate la suite). */
   | {
@@ -237,7 +217,7 @@ export type Effect =
    *  occurrence de cette heure du jour). Annulé si `cancelFlag` est posé avant l'échéance
    *  (désamorçage). Déclenché au FRANCHISSEMENT dans `advanceTime` (le temps avance par actions
    *  discrètes : un événement programmé entre deux pas se déclenche dès le pas qui le dépasse). */
-  | { type: 'delayedEffect'; afterMinutes?: number; atHour?: number; atMinute?: number; effects: Effect[]; cancelFlag?: string }
+  | { type: 'delayedEffect'; afterMinutes?: number; atHour?: number; atMinute?: number; flow: Flow; cancelFlag?: string }
   /** Ouvre la boutique d'une entité marchande (par son id) — permet d'inclure le Marchand dans un
    *  dialogue (ex. choix « Montrez-moi vos marchandises »). L'entité doit porter `merchant` (#2). */
   | { type: 'openMerchant'; entityId: string }

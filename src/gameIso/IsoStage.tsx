@@ -530,14 +530,17 @@ export function IsoStage() {
     // combattant occupe leur case (pas d'empilement de corps).
     const covered = (x: number, y: number) =>
       inBattle && battle!.combatants.some((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, c.size, x, y));
-    const wrap = (key: string, el: JSX.Element) =>
-      inBattle ? (
-        <g key={`fig-${key}`} opacity={0.7} pointerEvents="none">
+    // Estompe l'entité selon son ÉTAGE (fantôme si pas l'étage actif) ET son rôle de figurant en combat.
+    const wrap = (key: string, el: JSX.Element, ez: number) => {
+      const op = floorEmphasisOpacity(ez, activeZ) * (inBattle ? 0.7 : 1);
+      return op < 1 ? (
+        <g key={`fig-${key}`} opacity={op} pointerEvents={inBattle ? 'none' : undefined}>
           {el}
         </g>
       ) : (
         el
       );
+    };
     for (const ent of scene.entities) {
       if (ent.kind === 'heroStart' || ent.kind === 'prop') continue;
       if (ent.combat?.hiddenUntilCombat) continue; // ennemi d'embuscade : invisible avant le combat
@@ -552,6 +555,7 @@ export function IsoStage() {
             <BodyToken key={r.id} x={ent.pos.x} y={ent.pos.y} z={ez + elevAt(scene, ent.pos.x, ent.pos.y, ez)} dims={d} scale={0.55} fx={ent.anim}>
               <g dangerouslySetInnerHTML={{ __html: entitySprite(ent) }} />
             </BodyToken>,
+            ez,
           ),
         });
       } else {
@@ -566,12 +570,13 @@ export function IsoStage() {
             <BodyToken key={r.id} x={ex} y={ey} z={ez + elevAt(scene, ent.pos.x, ent.pos.y, ez)} dims={d} scale={base * r.speciesScale * sizeTokenScale(entitySize(ent))} bakedDeath flat={isTop} portraitBox={r.portraitBox} discR={discRfn(entitySize(ent))}>
               {r.body}
             </BodyToken>,
+            ez,
           ),
         });
       }
     }
     return out;
-  }, [scene, shownRot, viewMode, mode, battle]);
+  }, [scene, shownRot, viewMode, mode, battle, activeZ]);
 
   if (!scene) return null;
   const dims: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
@@ -679,10 +684,11 @@ export function IsoStage() {
   for (const ent of scene.entities) {
     if (ent.kind !== 'prop') continue;
     const ez = ent.z ?? 0;
+    const propOp = floorEmphasisOpacity(ez, activeZ); // fantôme si pas l'étage actif
     const fg = decorFootGeometry(ent.foot);
     const px = ent.pos.x + fg.offX, py = ent.pos.y + fg.offY;
     const pd = depth(ent.pos.x + (ent.foot ? ent.foot.w - 1 : 0), ent.pos.y + (ent.foot ? ent.foot.h - 1 : 0), dims, ez);
-    if (ent.interact) {
+    if (ent.interact && propOp === 1) { // affordance « fouille » seulement sur l'étage où l'on est
       // Affordance : halo pulsé + onde « sonar » au sol, et étincelle dorée flottant AU-DESSUS du
       // décor fouillable — l'objet cliquable se repère de loin, sans texte (cf. anim.css).
       const c = tileCenter(px, py, dims, feetZ(px, py, ez));
