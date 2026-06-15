@@ -31,6 +31,7 @@ export function edgeBlends(scene: Scene, x: number, y: number, z = 0): EdgeBlend
 /** SVG d'une tuile de sol du niveau `z` (défaut sol) : losange de base + wedges de transition,
  *  soulevés de z·LEVEL_H si étage. */
 export function groundTile(scene: Scene, x: number, y: number, dims: Dims, z = 0): string {
+  if (tileAt(scene, x, y, z) === 'vide') return ''; // tuile non construite d'un étage → transparente
   const { cx, cy, top, right, bot, left } = diamondCorners(x, y, dims, z);
   const base = `<path d="M${top[0]},${top[1]} L${right[0]},${right[1]} L${bot[0]},${bot[1]} L${left[0]},${left[1]} Z" fill="url(#${terrainGradient(
     tileAt(scene, x, y, z),

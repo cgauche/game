@@ -233,9 +233,14 @@ export function IsoStage() {
     if (!scene) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
     const out: JSX.Element[] = [];
-    for (let y = 0; y < d.h; y++)
-      for (let x = 0; x < d.w; x++)
-        out.push(<g key={`f${x}-${y}`} dangerouslySetInnerHTML={{ __html: groundTile(scene, x, y, d) }} />);
+    // Étages dessinés du bas vers le haut : un niveau z>0 est soulevé (diamondCorners z) et passe
+    // au-dessus du sol ; les tuiles « vide » d'un étage ne sont pas rendues (on voit le dessous).
+    for (const lvl of [...scene.levels].sort((a, b) => a.z - b.z))
+      for (let y = 0; y < d.h; y++)
+        for (let x = 0; x < d.w; x++) {
+          const html = groundTile(scene, x, y, d, lvl.z);
+          if (html) out.push(<g key={`f${lvl.z}-${x}-${y}`} dangerouslySetInnerHTML={{ __html: html }} />);
+        }
     return out;
   }, [scene, shownRot, viewMode]);
 
