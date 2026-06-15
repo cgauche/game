@@ -184,7 +184,7 @@ export const CODEX: CodexCategory[] = [
   {
     key: 'qualities', label: 'Qualités', group: 'Équipement',
     items: (qualities as { label: string; type?: string; subType?: string; desc?: string; source?: CodexSource }[]).map((q) => ({
-      label: q.label, sub: join(q.type, q.subType), desc: q.desc, source: src(q.source),
+      label: q.label, sub: join(q.type, q.subType), desc: q.desc, html: true, source: src(q.source),
     })),
   },
   {

@@ -160,6 +160,23 @@
 .codex-body :is(b, strong) {
   color: var(--gold2);
 }
+.codex-body table {
+  border-collapse: collapse;
+  margin: 8px 0;
+  width: 100%;
+  white-space: normal;
+  font-size: 13px;
+}
+.codex-body :is(td, th) {
+  border: 1px solid var(--line, #4a3f33);
+  padding: 3px 7px;
+  text-align: left;
+  vertical-align: top;
+}
+.codex-body th {
+  color: var(--gold2);
+  font-weight: 600;
+}
 .codex-empty-desc {
   color: var(--muted);
 }

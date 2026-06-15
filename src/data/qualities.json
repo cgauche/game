@@ -193,7 +193,7 @@
     "label": "Déstabilisante",
     "type": "Atout",
     "subType": "Arme",
-    "desc": "Les armes Déstabilisantes sont conçues pour s'accrocher à la jambe de l'adversaire ou pour le faire tomber. Après avoir touché votre opposant, vous pouvez dépenser 2 Avantages et effectuer un Test opposé de Force/Athlétisme. Si vous l'emportez, votre adversaire subit l'État À Terre (s'il est monté, il fait une chute de 2 mètres puis subit l'État À Terre). Si vous perdez, rien ne se passe en dehors des effets standards de l'opposition.",
+    "desc": "Les armes Déstabilisantes sont conçues pour s'accrocher à la jambe de l'adversaire ou pour le faire tomber de toute autre manière. Après avoir touché votre opposant, vous pouvez dépenser 2 Avantages et effectuer un Test opposé de Force/Athlétisme.<br><br>Si vous l'emportez, votre adversaire subit l'État À Terre (s'il est monté, il fait une chute de 2 mètres puis subit l'État À Terre). Si vous perdez, rien ne se passe en dehors des effets standards du résultat de l'opposition.",
     "source": {
       "book": "AA",
       "page": 89
@@ -213,7 +213,7 @@
     "label": "Tir de zone",
     "type": "Atout",
     "subType": "Arme",
-    "desc": "Les armes possédant l'Atout Tir de zone tirent un nuage de projectiles pouvant frapper plusieurs cibles, avec un effet variable selon la portée. À bout portant : touche un seul individu, ajoutez l'Indice aux Dégâts de l'arme. À portée Courte à Longue : touche la cible plus les (Indice) créatures visibles les plus proches situées à moins de (Indice) mètres. À portée Extrême : comme Courte à Longue, mais réduit les Dégâts de l'arme de l'Indice.",
+    "desc": "Les armes possédant l'Atout Tir de zone tirent un nuage de projectiles qui se déploie et peut frapper plusieurs cibles. Les armes dotées de cet Atout se comportent un peu différemment en fonction de la portée à laquelle se trouve la cible.<br><br><b>Bout portant :</b> le tir cible un seul individu. Ajoutez l'Indice aux Dégâts de l'arme.<br><br><b>Portée Courte à Longue :</b> le tir cible un individu, mais aussi les (Indice) créatures visibles les plus proches si elles ne se trouvent pas à plus de (Indice) mètres de distance.<br><br><b>Portée Extrême :</b> comme pour Portée Courte à Longue, mais réduit les Dégâts de l'arme de (Indice).",
     "source": {
       "book": "AA",
       "page": 89
@@ -223,7 +223,7 @@
     "label": "Salve",
     "type": "Atout",
     "subType": "Arme",
-    "desc": "Une arme dotée de l'Atout Salve peut projeter des munitions une par une ou par volées. L'Indice de Salve indique le nombre de tirs disponibles ; chaque tir le réduit de 1, et l'arme n'a besoin d'être rechargée que lorsque l'Indice tombe à 0. Une arme dotée de Salve peut tirer plusieurs fois par Round, mais chaque tir après le premier impose une pénalité cumulative de -10 à la Compétence Projectiles utilisée pour tirer avec.",
+    "desc": "Une arme dotée de l'Atout Salve peut projeter des munitions soit une par une, soit par volées. Le nombre de fois où un personnage peut tirer avec l'arme est indiqué par l'Indice de Salve. Chaque fois que quelqu'un tire avec l'arme, réduisez de 1 l'Indice de Salve. L'arme n'a besoin d'être rechargée que lorsqu'elle tombe à Salve 0.<br><br>Une arme dotée de Salve peut tirer plusieurs fois par Round, mais chaque fois que quelqu'un tire avec l'arme après la première, imposez une pénalité cumulative de -10 à la Compétence Projectiles utilisée pour tirer avec.",
     "source": {
       "book": "AA",
       "page": 126
@@ -253,7 +253,7 @@
     "label": "Arme d'équipe",
     "type": "Défaut",
     "subType": "Arme",
-    "desc": "Une arme dotée du Défaut Arme d'équipe est si imposante, lourde et complexe qu'elle ne fonctionne bien que gérée par une équipe et non par une seule personne. Tous les membres de l'équipe doivent posséder la Compétence Projectiles appropriée ; ils en nomment un pour effectuer le Test de Projectiles déterminant l'efficacité de l'arme. L'Indice indique la taille d'équipe requise. Si l'équipe est en sous-nombre, les pénalités s'accumulent : temps de recharge doublé, puis Défaut Imprécise, puis Défaut Dangereuse selon l'écart. Si l'arme reçoit un Défaut qu'elle possède déjà, imposez -10 supplémentaire à tous les Tests de Projectiles pour tirer avec elle.",
+    "desc": "Une arme possédant le Défaut Arme d'équipe est si imposante, lourde et complexe qu'elle ne fonctionne bien que si elle est gérée par une équipe et non par une seule personne. Tous les membres de cette équipe doivent posséder la Compétence Projectiles appropriée pour participer au maniement de l'arme. Cependant, ils peuvent nommer l'un d'entre eux pour effectuer le Test de Projectiles pertinent visant à savoir à quel point l'arme est efficace quand elle est déclenchée.<br><br>La plupart des armes ont une équipe de 2, 3 ou 4 personnes. L'équipe assemblée pour manier une arme est souvent plus nombreuse, mais les membres supplémentaires n'ont aucun impact sur l'efficacité de l'arme elle-même. En revanche, ils peuvent aider à la déplacer ou compenser les pertes en plein milieu d'un combat.<br><br>Si une arme nécessitant une équipe n'est pas maniée par le nombre de personnes nécessaires, elle subit les inconvénients du tableau qui suit :<table><thead><tr><th>Équipe présente</th><th>Arme d'équipe 2</th><th>Arme d'équipe 3</th><th>Arme d'équipe 4</th></tr></thead><tbody><tr><td>4</td><td>N/A</td><td>N/A</td><td>N/A</td></tr><tr><td>3</td><td>N/A</td><td>N/A</td><td>Temps de recharge doublé</td></tr><tr><td>2</td><td>N/A</td><td>Temps de recharge doublé</td><td>Reçoit le Défaut Imprécise</td></tr><tr><td>1</td><td>Temps de recharge doublé</td><td>Reçoit le Défaut Imprécise</td><td>Reçoit le Défaut Dangereuse</td></tr></tbody></table>Les pénalités infligées par un sous-nombre de l'équipe Arme d'équipe sont cumulatives, ce qui signifie qu'une arme dotée d'Arme d'équipe 4, mais qui n'est maniée que par une seule personne, voit son temps de recharge doublé et reçoit les Défauts Imprécise et Dangereuse.<br><br>Si une arme reçoit un Défaut qu'elle possède déjà, imposez une pénalité supplémentaire de -10 sur tous les Tests de Projectiles effectués pour tirer avec cette arme.<br><br>Pour recharger une arme possédant le Défaut Arme d'équipe, l'un des membres de l'équipe peut apporter son Soutien sur tous les Tests effectués pour déterminer combien de temps prend le processus de recharge.<br><br>Si une arme dotée du Défaut Arme d'équipe subit un Incident de tir, tous les membres de son équipe sont affectés.",
     "source": {
       "book": "AA",
       "page": 124
