@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame, type BattleState } from './store';
+import { flowFromEffects, EMPTY_FLOW } from './flow';
 import { buildAdvancementView } from './advancement';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -219,7 +220,7 @@ describe('Boucle de jeu (store)', () => {
       pendingTest: {
         actorId: 'h1', actorName: 'Lest', label: 'Test', skillValue: 50, difficulty: 'intermediaire',
         requireSL: 0, target: 50, roll: null, success: false, sl: 0, isDouble: undefined,
-        onSuccess: [], onFailure: [],
+        onSuccess: EMPTY_FLOW, onFailure: EMPTY_FLOW,
       },
     });
     useGame.getState().testRoll();
@@ -240,8 +241,8 @@ describe('Boucle de jeu (store)', () => {
       pendingTest: {
         actorId: 'h1', actorName: 'Lest', label: 'Test', skillValue: 50, difficulty: 'intermediaire',
         requireSL: 1, target: 50, roll: 48, success: false, sl: 0, isDouble: false, itemUid: 't1',
-        onSuccess: [{ type: 'setFlag', flag: 'reussi', value: true }],
-        onFailure: [{ type: 'setFlag', flag: 'rate', value: true }],
+        onSuccess: flowFromEffects([{ type: 'setFlag', flag: 'reussi', value: true }]),
+        onFailure: flowFromEffects([{ type: 'setFlag', flag: 'rate', value: true }]),
         ...over,
       },
     });
@@ -597,8 +598,8 @@ describe('Boucle de jeu (store)', () => {
         roll: null, // pas encore lancé
         success: false,
         sl: 0,
-        onSuccess: [{ type: 'setFlag', flag: 'reussi', value: true }],
-        onFailure: [],
+        onSuccess: flowFromEffects([{ type: 'setFlag', flag: 'reussi', value: true }]),
+        onFailure: EMPTY_FLOW,
       },
     });
     // Acquittement bloqué tant que le jet n'a pas eu lieu.
@@ -1753,7 +1754,7 @@ describe('Chance : relance 1×/Test et seulement sur jet propre raté (LDB ch.12
     useGame.setState({
       party: [hero],
       pendingTest: { actorId: hero.id, actorName: 'A', label: 'Test', skillValue: 50, difficulty: 'intermediaire',
-        requireSL: 0, target: 50, roll: 20, success: true, sl: 3, rerolled: false, onSuccess: [], onFailure: [] },
+        requireSL: 0, target: 50, roll: 20, success: true, sl: 3, rerolled: false, onSuccess: EMPTY_FLOW, onFailure: EMPTY_FLOW },
     });
     useGame.getState().testReroll();
     expect(useGame.getState().party[0].fortune).toBe(2); // rien dépensé (jet réussi)
@@ -1766,7 +1767,7 @@ describe('Chance : relance 1×/Test et seulement sur jet propre raté (LDB ch.12
     useGame.setState({
       party: [hero],
       pendingTest: { actorId: hero.id, actorName: 'A', label: 'Test', skillValue: 5, difficulty: 'intermediaire',
-        requireSL: 0, target: 5, roll: 95, success: false, sl: -9, rerolled: false, onSuccess: [], onFailure: [] },
+        requireSL: 0, target: 5, roll: 95, success: false, sl: -9, rerolled: false, onSuccess: EMPTY_FLOW, onFailure: EMPTY_FLOW },
     });
     useGame.getState().testReroll(); // 1re relance OK (jet raté)
     expect(useGame.getState().party[0].fortune).toBe(1);
@@ -1781,7 +1782,7 @@ describe('Chance : relance 1×/Test et seulement sur jet propre raté (LDB ch.12
     useGame.setState({
       party: [hero],
       pendingTest: { actorId: hero.id, actorName: 'A', label: 'Test', skillValue: 50, difficulty: 'intermediaire',
-        requireSL: 2, target: 50, roll: 45, success: false, sl: 0, rerolled: false, onSuccess: [], onFailure: [] },
+        requireSL: 2, target: 50, roll: 45, success: false, sl: 0, rerolled: false, onSuccess: EMPTY_FLOW, onFailure: EMPTY_FLOW },
     });
     useGame.getState().testBonusSL(); // DR 0 → 1 (< 2)
     expect(useGame.getState().party[0].fortune).toBe(2);
@@ -2122,7 +2123,7 @@ describe('Résilience — « Je ne faillirai pas ! » (LDB ch.17 l.73)', () => {
     useGame.setState({
       party: [hero],
       pendingTest: { actorId: hero.id, actorName: 'A', label: 'Test', skillValue: 30, difficulty: 'intermediaire',
-        requireSL: 0, target: 30, roll: 95, success: false, sl: -6, rerolled: false, onSuccess: [], onFailure: [] },
+        requireSL: 0, target: 30, roll: 95, success: false, sl: -6, rerolled: false, onSuccess: EMPTY_FLOW, onFailure: EMPTY_FLOW },
     });
     useGame.getState().testForceSuccess();
     expect(useGame.getState().pendingTest!.success).toBe(true);

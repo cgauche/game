@@ -11,7 +11,7 @@ import type { Dir8 } from './dir8';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import {
   activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers, entityPickables, fireScheduledEffects,
-  applyEffects, applyEffectsLoot, assignGearAt, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
+  applyEffects, applyEffectsLoot, runFlow, assignGearAt, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, attackWardGate,
   effectiveSpellOf, finishPlayerAction,
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn, resumeSuspendedAI, resolveDeviation,
@@ -24,6 +24,7 @@ import {
   displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
+import { EMPTY_FLOW } from './flow';
 export { movementRemaining, canMove } from './mount';
 import { pickActiveModalKey } from './modalArbiter';
 
@@ -3455,8 +3456,10 @@ export const useGame = create<GameState>((set, get) => ({
       set({ party: [...get().party] }); // persiste la casse + re-render
       get().log(`${tool.name} (Bâclé) se brise sur la Maladresse de ${actor?.name ?? pt.actorName}.`);
     }
+    // Branche choisie PUIS continuation (suite du `seq` parent d'un nœud `test`) — exécutées par runFlow
+    // (butin de Test → fenêtre d'attribution ; if/test imbriqués gérés).
     const branch = effSuccess ? pt.onSuccess : pt.onFailure;
-    if (branch && branch.length) applyEffectsLoot(get, set, branch, pt.label); // butin de Test → fenêtre d'attribution
+    runFlow(get, set, { kind: 'seq', steps: [branch ?? EMPTY_FLOW, pt.after ?? EMPTY_FLOW] }, pt.label);
   },
   closeDocument: () => set({ document: null }),
 

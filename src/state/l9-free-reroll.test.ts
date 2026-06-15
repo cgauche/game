@@ -8,6 +8,7 @@ import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { hasActiveFlag } from '../engine/activeFlags';
+import { EMPTY_FLOW } from './flow';
 
 function reset() {
   useGame.setState({
@@ -29,7 +30,7 @@ function openFailedTest(heroId: string, heroName: string) {
     pendingTest: {
       actorId: heroId, actorName: heroName, label: 'Test de Force', skillValue: 50,
       difficulty: 'intermediaire', requireSL: 0, target: 50, roll: null, success: false, sl: 0,
-      onSuccess: [], onFailure: [],
+      onSuccess: EMPTY_FLOW, onFailure: EMPTY_FLOW,
     },
   });
   useGame.getState().testRoll();

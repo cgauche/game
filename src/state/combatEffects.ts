@@ -23,6 +23,7 @@ import { feedFromMeal } from '../engine/provisions';
 import { findSpell } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
 import { Effect, condMet, temporalConditionMet } from './scene';
+import { type Flow, type FlowTest, EMPTY_FLOW, flowFromEffects, evalCondition } from './flow';
 import { inRect } from './combatGeometry';
 import { loseWounds, addCondition } from '../engine/conditions';
 import { touchActors } from './combatOrParty';
@@ -194,6 +195,96 @@ function effectTargets(get: Get, target: 'party' | 'hero', heroId?: string): Com
     return pool.filter((c) => c.id === id);
   }
   return pool.filter((c) => c.kind === 'hero' && !c.dead);
+}
+
+/** Ouvre la modale d'un Test de compétence — SOURCE UNIQUE (le nœud Flow `test` ET `Effect.test` y
+ *  passent). `onSuccess`/`onFailure` = branches (Flows) ; `after` = continuation reprise APRÈS la
+ *  branche (suite d'un `seq`). Choix du meilleur PJ effectif (malus social compris), candidats,
+ *  `easierIf`, outil. Retourne false si aucun héros vivant ne peut tenter (le flux continue sans Test). */
+export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: Flow, onFailure: Flow, after: Flow): boolean {
+  const socialMod =
+    spec.vsGroups?.length && isSocialTest(spec.skill, spec.characteristic)
+      ? (c: Combatant) => socialPsychMod(c, spec.vsGroups!)
+      : undefined;
+  const best = partyBest(get().party, spec.skill, spec.characteristic, socialMod);
+  if (!best) return false;
+  const baseDifficulty = spec.difficulty ?? 'intermediaire';
+  const eased = !!spec.easierIf && get().party.some((c) => !c.dead && (
+    (!!spec.easierIf!.hasSkill && actorHasSkill(c, spec.easierIf!.hasSkill)) ||
+    (!!spec.easierIf!.hasTalent && hasTalent(c, spec.easierIf!.hasTalent))
+  ));
+  const difficulty = eased ? easeDifficulty(baseDifficulty, spec.easierIf!.steps ?? 1) : baseDifficulty;
+  const candidates = get().party.filter((c) => !c.dead).map((actor) => {
+    const value = testValue(actor, spec.skill, spec.characteristic) + (socialMod ? socialMod(actor) : 0);
+    const pl = socialMod ? socialPsychLabel(actor, spec.vsGroups!) : undefined;
+    const tool = spec.tool ? actor.items?.find((i) => i.name === spec.tool && !i.destroyed) : undefined;
+    return {
+      id: actor.id, name: actor.name, value,
+      target: Math.max(1, Math.min(99, value + DIFFICULTY_MODIFIERS[difficulty])),
+      psychMod: (socialMod ? socialMod(actor) : 0) || undefined,
+      psychDetail: pl ? `${pl} envers ${spec.vsGroups!.join('/')}` : undefined,
+      itemUid: tool?.uid,
+    };
+  });
+  const def = candidates.find((c) => c.id === best.actor.id) ?? candidates[0];
+  if (!def) return false;
+  const label = spec.label || spec.skill || (spec.characteristic ? `Test de ${spec.characteristic}` : 'Test');
+  set({
+    pendingTest: {
+      actorId: def.id, actorName: def.name, label, skillValue: def.value, difficulty,
+      requireSL: spec.requireSL ?? 0, target: def.target, psychMod: def.psychMod, psychDetail: def.psychDetail,
+      itemUid: def.itemUid, isDouble: false, roll: null, success: false, sl: 0,
+      onSuccess, onFailure, after,
+      candidates: candidates.length > 1 ? candidates : undefined,
+    },
+  });
+  return true;
+}
+
+/** Normalise un `Effect.test` (legacy) en nœud Flow `test` — chemin d'exécution UNIQUE des branches. */
+function effectTestToFlowNode(e: Extract<Effect, { type: 'test' }>): Flow {
+  return {
+    kind: 'test',
+    test: { skill: e.skill, characteristic: e.characteristic, difficulty: e.difficulty, requireSL: e.requireSL, label: e.label, tool: e.tool, vsGroups: e.vsGroups, easierIf: e.easierIf },
+    success: flowFromEffects(e.onSuccess), fail: flowFromEffects(e.onFailure),
+  };
+}
+
+/**
+ * Exécute un Flow (logique authorée : séquence/branches/Test) — SOURCE UNIQUE. `do` accumule les
+ * Effets et les applique en lot (butin attribuable via `applyEffectsLoot`) ; `if` vide d'abord le lot
+ * (la condition lit l'état VIVANT — flags/horloge — donc après les Effets émis) puis branche ; `test`
+ * vide le lot, ouvre la modale et SUSPEND — la branche choisie + la continuation (reste de la pile)
+ * sont reprises par `resolveTest`. Pas de boucle → terminaison garantie.
+ */
+export function runFlow(get: Get, set: SetFn, flow: Flow, label = 'Effet'): void {
+  const stack: Flow[] = [flow];
+  const batch: Effect[] = [];
+  const flush = () => { if (batch.length) applyEffectsLoot(get, set, batch.splice(0), label); };
+  while (stack.length) {
+    const node = stack.shift()!;
+    switch (node.kind) {
+      case 'do':
+        if (node.effect.type === 'test') stack.unshift(effectTestToFlowNode(node.effect));
+        else batch.push(node.effect);
+        break;
+      case 'seq': stack.unshift(...node.steps); break;
+      case 'if': {
+        flush();
+        const branch = evalCondition(node.cond, { flags: get().flags, gameTime: get().gameTime }) ? node.then : node.else;
+        if (branch) stack.unshift(branch);
+        break;
+      }
+      case 'test': {
+        flush();
+        const after: Flow = { kind: 'seq', steps: stack.splice(0) };
+        // Personne ne peut tenter → on saute le Test et on reprend directement la continuation.
+        if (!openSkillTest(get, set, node.test, node.success, node.fail, after)) runFlow(get, set, after, label);
+        return;
+      }
+    }
+  }
+  flush();
 }
 
 export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
@@ -441,65 +532,11 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
         break;
       }
       case 'test': {
-        // Test de compétence : le meilleur du groupe tente. Le jet attend « Lancer »
-        // dans la modale (testRoll), puis une Chance est possible avant l'acquittement.
-        // Malus psy de Sociabilité (LDB 21) : un PJ avec Animosité/Préjugé envers le groupe `vsGroups`
-        // de l'interlocuteur subit −20/−10 sur un Test de Sociabilité. Intégré PAR acteur → le meilleur
-        // PJ EFFECTIF (malus compris) est choisi, et le malus de l'acteur retenu est affiché dans la modale.
-        const socialMod =
-          e.vsGroups?.length && isSocialTest(e.skill, e.characteristic)
-            ? (c: Combatant) => socialPsychMod(c, e.vsGroups!)
-            : undefined;
-        const best = partyBest(get().party, e.skill, e.characteristic, socialMod);
-        if (!best) break;
-        const baseDifficulty = e.difficulty ?? 'intermediaire';
-        // `easierIf` : −`steps` crans si un héros vivant possède la compétence/le talent requis
-        // (ex. détecter la bombe est plus facile pour qui s'y connaît en poudre noire).
-        const eased = !!e.easierIf && get().party.some((c) => !c.dead && (
-          (!!e.easierIf!.hasSkill && actorHasSkill(c, e.easierIf!.hasSkill)) ||
-          (!!e.easierIf!.hasTalent && hasTalent(c, e.easierIf!.hasTalent))
-        ));
-        const difficulty = eased ? easeDifficulty(baseDifficulty, e.easierIf!.steps ?? 1) : baseDifficulty;
-        // Le GROUPE peut tenter : chaque membre vivant est un candidat (le défaut reste le meilleur,
-        // mais le JOUEUR choisit qui lance via `testSetActor`). Valeur/cible/malus/outil PAR acteur.
-        const candidates = get().party.filter((c) => !c.dead).map((actor) => {
-          const value = testValue(actor, e.skill, e.characteristic) + (socialMod ? socialMod(actor) : 0);
-          const pl = socialMod ? socialPsychLabel(actor, e.vsGroups!) : undefined;
-          const tool = e.tool ? actor.items?.find((i) => i.name === e.tool && !i.destroyed) : undefined;
-          return {
-            id: actor.id,
-            name: actor.name,
-            value,
-            target: Math.max(1, Math.min(99, value + DIFFICULTY_MODIFIERS[difficulty])),
-            psychMod: (socialMod ? socialMod(actor) : 0) || undefined,
-            psychDetail: pl ? `${pl} envers ${e.vsGroups!.join('/')}` : undefined,
-            itemUid: tool?.uid,
-          };
-        });
-        const def = candidates.find((c) => c.id === best.actor.id) ?? candidates[0];
-        if (!def) break;
-        const label = e.label || e.skill || (e.characteristic ? `Test de ${e.characteristic}` : 'Test');
-        set({
-          pendingTest: {
-            actorId: def.id,
-            actorName: def.name,
-            label,
-            skillValue: def.value,
-            difficulty,
-            requireSL: e.requireSL ?? 0,
-            target: def.target,
-            psychMod: def.psychMod, // malus Animosité/Préjugé de l'acteur (affiché en modale)
-            psychDetail: def.psychDetail, // libellé lisible (« Animosité −20 envers Elfe »)
-            itemUid: def.itemUid,
-            isDouble: false,
-            roll: null, // pas encore lancé
-            success: false,
-            sl: 0,
-            onSuccess: e.onSuccess,
-            onFailure: e.onFailure,
-            candidates: candidates.length > 1 ? candidates : undefined, // choix seulement si plusieurs
-          },
-        });
+        // `Effect.test` est NORMALISÉ vers le Test du Flow : branches en Flows, pas de continuation.
+        const opened = openSkillTest(get, set,
+          { skill: e.skill, characteristic: e.characteristic, difficulty: e.difficulty, requireSL: e.requireSL, label: e.label, tool: e.tool, vsGroups: e.vsGroups, easierIf: e.easierIf },
+          flowFromEffects(e.onSuccess), flowFromEffects(e.onFailure), EMPTY_FLOW);
+        if (!opened) break; // personne ne peut tenter → on saute le Test
         return; // la suite est portée par la branche (résolue à l'acquittement)
       }
       case 'extendedTest': {

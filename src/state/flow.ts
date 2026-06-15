@@ -52,8 +52,9 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
   }
 }
 
-/** Le Test d'un nœud `test` (jet de compétence/caractéristique différé → modale). Mêmes champs que
- *  l'`Effect` 'test' d'aujourd'hui, mais SANS les branches (portées par le nœud Flow). */
+/** Spécification d'un jet de compétence/caractéristique différé (→ modale) — TOUT le métier du Test,
+ *  SANS les branches (portées par le nœud Flow `test`). Source UNIQUE : `Effect` 'test' est normalisé
+ *  vers cette forme à l'exécution (un seul ouvreur de modale `openSkillTest`). */
 export interface FlowTest {
   skill?: string;
   characteristic?: CharKey;
@@ -61,6 +62,12 @@ export interface FlowTest {
   /** DR minimum requis (défaut 0 = simple réussite). */
   requireSL?: number;
   label?: string;
+  /** Outil utilisé : sa qualité d'artisanat module l'issue / casse l'objet. */
+  tool?: string;
+  /** Groupes de l'interlocuteur : malus Animosité/Préjugé sur un Test de Sociabilité (LDB 21). */
+  vsGroups?: string[];
+  /** Difficulté réduite si un héros possède la compétence/le talent requis. */
+  easierIf?: { hasSkill?: string; hasTalent?: string; steps?: number };
 }
 
 /**

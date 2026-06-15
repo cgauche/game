@@ -7,6 +7,7 @@ import type { CharKey, Difficulty, HitLocation, Weapon } from '../engine/types';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import type { Pt } from './path';
 import type { Effect } from './scene';
+import type { Flow } from './flow';
 import type { TestResult, OpposedResult } from '../engine/tests';
 import type { AttackResult } from '../engine/combat';
 import type { CriticalResolved } from '../engine/critical';
@@ -91,8 +92,11 @@ export interface PendingTest {
   forced?: boolean;
   /** Relance par Chance déjà effectuée (LDB ch.12 l.56 : 1 relance max par Test). */
   rerolled?: boolean;
-  onSuccess?: Effect[];
-  onFailure?: Effect[];
+  /** Branches du Test : des FLOWS (le nœud `test` du Flow ; `Effect.test` y est normalisé). */
+  onSuccess?: Flow;
+  onFailure?: Flow;
+  /** Continuation : le Flow à reprendre APRÈS la branche (suite du `seq` parent d'un nœud `test`). */
+  after?: Flow;
 }
 /** Rechargement en attente (LDB 63-Armures l.28-29 : Test étendu de Projectiles, Indice DR).
  *  La modale affiche « Lancer », le DR, puis Chance avant d'acquitter (cumul vers `reload`). */
