@@ -4288,6 +4288,9 @@
       },
       {
         "talentId": "maitrise-du-combat"
+      },
+      {
+        "talentId": "assaut-feroce"
       }
     ],
     "trappings": [],
@@ -4558,6 +4561,9 @@
       },
       {
         "talentId": "tireur-de-precision"
+      },
+      {
+        "talentId": "imperturbable"
       }
     ],
     "trappings": [],
@@ -4712,6 +4718,9 @@
       },
       {
         "talentId": "flairer-les-ennuis"
+      },
+      {
+        "talentId": "imperturbable"
       }
     ],
     "trappings": [],
@@ -4884,6 +4893,9 @@
       },
       {
         "talentId": "flairer-les-ennuis"
+      },
+      {
+        "talentId": "imperturbable"
       }
     ],
     "trappings": [],
@@ -5594,7 +5606,11 @@
         "value": 0
       }
     ],
-    "talents": [],
+    "talents": [
+      {
+        "talentId": "imperturbable"
+      }
+    ],
     "trappings": [],
     "spells": [],
     "desc": null,
@@ -5735,6 +5751,9 @@
       },
       {
         "talentId": "lire-ecrire"
+      },
+      {
+        "talentId": "imperturbable"
       }
     ],
     "trappings": [],
@@ -5896,6 +5915,9 @@
       },
       {
         "talentId": "flairer-les-ennuis"
+      },
+      {
+        "talentId": "imperturbable"
       }
     ],
     "trappings": [],
@@ -6076,6 +6098,9 @@
       },
       {
         "talentId": "volonte-de-fer"
+      },
+      {
+        "talentId": "imperturbable"
       }
     ],
     "trappings": [],
@@ -19322,6 +19347,9 @@
       },
       {
         "talentId": "pilote"
+      },
+      {
+        "talentId": "assaut-feroce"
       }
     ],
     "trappings": [],
@@ -21372,6 +21400,9 @@
       },
       {
         "talentId": "renversement"
+      },
+      {
+        "talentId": "assaut-feroce"
       }
     ],
     "trappings": [],
@@ -24199,6 +24230,9 @@
       },
       {
         "talentId": "vision-nocturne"
+      },
+      {
+        "talentId": "assaut-feroce"
       }
     ],
     "trappings": [],
@@ -24365,6 +24399,9 @@
       },
       {
         "talentId": "vision-nocturne"
+      },
+      {
+        "talentId": "assaut-feroce"
       }
     ],
     "trappings": [],
@@ -25478,6 +25515,9 @@
       },
       {
         "talentId": "maitrise-du-combat"
+      },
+      {
+        "talentId": "imperturbable"
       }
     ],
     "trappings": [],
@@ -25640,6 +25680,12 @@
       },
       {
         "talentId": "maitrise-du-combat"
+      },
+      {
+        "talentId": "assaut-feroce"
+      },
+      {
+        "talentId": "imperturbable"
       }
     ],
     "trappings": [],
@@ -32305,6 +32351,9 @@
       },
       {
         "talentId": "dur-a-cuire"
+      },
+      {
+        "talentId": "assaut-feroce"
       }
     ],
     "trappings": [],
@@ -32483,6 +32532,9 @@
       },
       {
         "talentId": "vision-nocturne"
+      },
+      {
+        "talentId": "assaut-feroce"
       }
     ],
     "trappings": [],
@@ -33595,6 +33647,9 @@
       },
       {
         "talentId": "machoires-d-acier"
+      },
+      {
+        "talentId": "assaut-feroce"
       }
     ],
     "trappings": [],
@@ -37612,6 +37667,9 @@
       },
       {
         "talentId": "renversement"
+      },
+      {
+        "talentId": "assaut-feroce"
       }
     ],
     "trappings": [],
@@ -38664,6 +38722,9 @@
       },
       {
         "talentId": "vision-nocturne"
+      },
+      {
+        "talentId": "assaut-feroce"
       }
     ],
     "trappings": [],
