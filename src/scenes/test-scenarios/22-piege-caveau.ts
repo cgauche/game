@@ -27,11 +27,12 @@ for (let x = 0; x < W; x++) { set(x, 0, 'mur'); set(x, H - 1, 'mur'); }
 for (let y = 0; y < H; y++) { set(0, y, 'mur'); set(W - 1, y, 'mur'); }
 for (let y = 1; y < H - 1; y++) if (y !== 5) set(10, y, 'mur'); // cloison du trésor, trouée en (10,5) = la herse
 
-// La herse du trésor : ouverte si (clé OU levier) ET NON alarme — l'algèbre que `ConditionEditor` authore.
+// La herse du trésor : ouverte si (on TIENT la clé OU on a tiré le levier) ET NON alarme — composition
+// ET/OU/NON + lecture de l'inventaire VIVANT (`hasItem`), toute authorée dans `ConditionEditor`.
 const HERSE_WHEN: Condition = {
   kind: 'all',
   of: [
-    { kind: 'any', of: [{ kind: 'flag', expr: 'cle_prise' }, { kind: 'flag', expr: 'levier_tire' }] },
+    { kind: 'any', of: [{ kind: 'hasItem', trapping: 'Clé en fer' }, { kind: 'flag', expr: 'levier_tire' }] },
     { kind: 'not', of: { kind: 'flag', expr: 'alarme' } },
   ],
 };
@@ -45,7 +46,6 @@ scene.entities.push(
   { id: 'cle', kind: 'prop', ref: 'cle', pos: { x: 2, y: 8 }, label: 'Clé en fer, posée là',
     interact: { consume: true, flow: flowFromEffects([
       { type: 'giveTrapping', trapping: 'Clé en fer' },
-      { type: 'setFlag', flag: 'cle_prise' },
       { type: 'journal', text: 'Vous empochez la lourde clé en fer.' },
     ]) } },
   { id: 'herse-grille', kind: 'prop', ref: 'grille', pos: { x: 10, y: 5 }, label: 'Herse du trésor' },
