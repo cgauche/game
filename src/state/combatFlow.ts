@@ -1207,6 +1207,8 @@ export function applyAttackResult(
       target.woundedByInfected = true;
       if (/rat|skaven|rongeur/i.test(attacker.name)) target.woundedByRodent = true;
     }
+    // Munition Infecté (Aux Armes p.102 — ferraille/débris souillés) : exposition à l'infection.
+    if (hasQuality(weapon, 'Infecté')) target.woundedByInfected = true;
     for (const t of atkTraits) {
       const m = t.match(/^Maladie\s*\(([^)]+)\)/i);
       if (m && !(target.diseaseExposure ?? []).includes(m[1].trim())) target.diseaseExposure = [...(target.diseaseExposure ?? []), m[1].trim()];

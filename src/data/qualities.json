@@ -478,5 +478,15 @@
       "book": "ADE2",
       "page": 76
     }
+  },
+  {
+    "label": "Infecté",
+    "type": "Défaut",
+    "subType": "Arme",
+    "desc": "Munition souillée (ferraille, débris) : un héros blessé par cette munition est exposé à l'infection et devra effectuer un Test de Contraction après le combat (LDB 18).",
+    "source": {
+      "book": "AA",
+      "page": 102
+    }
   }
 ]
