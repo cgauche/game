@@ -5,6 +5,7 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
 import { RollPanel, type RollRowData } from './RollPanel';
 import { OptionChooser } from './OptionChooser';
+import { CriticalBody } from './RevealModal';
 import { JournalLine } from './NarratedLine';
 import { ev, type CombatEventKind } from '../state/combatLog';
 import { cascadeAppliers, stepInteraction } from '../state/cascade';
@@ -101,8 +102,30 @@ export function CascadeModal() {
   // Étapes DÉJÀ validées (figées), avec portrait ET conséquence (note) — pile persistante (tous types).
   const doneRows = p.participants.slice(0, p.cursor).map(rowOf).filter((r): r is RollRowData => r !== null);
 
-  // AFFICHAGE : conséquence pure (contenu pré-posé dans `outcome`) — pas de jet, pas d'influence.
+  // AFFICHAGE : conséquence pure — pas de jet, pas d'influence. Charge RICHE (`reveal`, ex. Coup
+  // Critique) → panneau détaillé partagé `CriticalBody` ; sinon contenu pré-posé (`outcome`) en note.
   if (interaction === 'affichage') {
+    const rev = cur.reveal;
+    if (rev) {
+      const revActor = rev.actorId ? pool.find((c) => c.id === rev.actorId) : undefined;
+      const revSubject = rev.subjectId ? pool.find((c) => c.id === rev.subjectId) : undefined;
+      return (
+        <RollFlowShell
+          title={`${p.icon ?? '🎲'} ${p.title}`}
+          subtitle={null}
+          rolled
+          onRoll={() => {}}
+          rows={doneRows.length ? doneRows : undefined}
+          postRollExtra={<CriticalBody entry={rev} actor={revActor} subject={revSubject} />}
+          fortune={0}
+          rerollable={false}
+          onReroll={() => {}}
+          confirmLabel={isLast ? 'Terminer' : 'Continuer'}
+          onConfirm={() => next()}
+          disableEscClose
+        />
+      );
+    }
     return (
       <RollFlowShell
         title={`${p.icon ?? '🎲'} ${p.title}`}

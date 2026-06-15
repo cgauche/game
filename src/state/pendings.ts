@@ -619,6 +619,9 @@ export interface CascadeStep extends RollParticipant {
   committed?: boolean;
   /** Conséquence appliquée à la validation (journal) — gardée pour rester lisible dans la pile. */
   outcome?: string[];
+  /** Charge RICHE d'une étape d'affichage (ex. Coup Critique : localisation/Blessures/Traumatismes/
+   *  États) — rendue par le panneau détaillé partagé (`CriticalBody`) au lieu de simples lignes. */
+  reveal?: RevealEntry;
   /** Étape « choix » : options présentées au joueur (l'option retenue pilote la conséquence). */
   options?: { key: string; label: string; detail?: string }[];
   /** Option retenue (clé) — analogue de `result` pour une étape « choix ». */
