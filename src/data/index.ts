@@ -71,6 +71,9 @@ export interface CareerLevelData {
   status: string;
 }
 export interface SkillData {
+  /** Identifiant STABLE (slug du libellé d'origine) — cible des références structurées, robuste au
+   *  renommage du `label`. Source unique pour `findSkillById`. */
+  id: string;
   label: string;
   characteristic: string;
   type: string;
@@ -316,6 +319,11 @@ export function firstLevel(career: string): CareerLevelData | undefined {
 export function findSkill(label: string): SkillData | undefined {
   // Exact d'abord, puis casse ignorée (les statblocs de campagne écrivent « Corps à Corps »).
   return skills.find((s) => s.label === label) ?? skills.find((s) => s.label.toLowerCase() === label.toLowerCase());
+}
+const SKILL_BY_ID = new Map(skills.map((s) => [s.id, s]));
+/** Résout une Compétence par son `id` STABLE (référence structurée — fin du lookup par libellé parsé). */
+export function findSkillById(id: string): SkillData | undefined {
+  return SKILL_BY_ID.get(id);
 }
 export function findTalent(label: string): TalentData | undefined {
   return talents.find((t) => t.label === label);

@@ -1,5 +1,6 @@
 [
   {
+    "id": "art",
     "label": "Art",
     "characteristic": "Dextérité",
     "type": "base",
@@ -22,6 +23,7 @@
     }
   },
   {
+    "id": "athletisme",
     "label": "Athlétisme",
     "characteristic": "Agilité",
     "type": "base",
@@ -33,6 +35,7 @@
     }
   },
   {
+    "id": "calme",
     "label": "Calme",
     "characteristic": "Force Mentale",
     "type": "base",
@@ -44,6 +47,7 @@
     }
   },
   {
+    "id": "charme",
     "label": "Charme",
     "characteristic": "Sociabilité",
     "type": "base",
@@ -55,6 +59,7 @@
     }
   },
   {
+    "id": "chevaucher",
     "label": "Chevaucher",
     "characteristic": "Agilité",
     "type": "base",
@@ -73,6 +78,7 @@
     }
   },
   {
+    "id": "commandement",
     "label": "Commandement",
     "characteristic": "Sociabilité",
     "type": "base",
@@ -84,6 +90,7 @@
     }
   },
   {
+    "id": "conduite-d-attelage",
     "label": "Conduite d'attelage",
     "characteristic": "Agilité",
     "type": "base",
@@ -95,6 +102,7 @@
     }
   },
   {
+    "id": "corps-a-corps",
     "label": "Corps à corps",
     "characteristic": "Capacité de Combat",
     "type": "base",
@@ -115,6 +123,7 @@
     }
   },
   {
+    "id": "crochetage",
     "label": "Crochetage",
     "characteristic": "Dextérité",
     "type": "avancée",
@@ -126,6 +135,7 @@
     }
   },
   {
+    "id": "discretion",
     "label": "Discrétion",
     "characteristic": "Agilité",
     "type": "base",
@@ -141,6 +151,7 @@
     }
   },
   {
+    "id": "divertissement",
     "label": "Divertissement",
     "characteristic": "Sociabilité",
     "type": "base",
@@ -163,6 +174,7 @@
     }
   },
   {
+    "id": "dressage",
     "label": "Dressage",
     "characteristic": "Intelligence",
     "type": "avancée",
@@ -181,6 +193,7 @@
     }
   },
   {
+    "id": "emprise-sur-les-animaux",
     "label": "Emprise sur les animaux",
     "characteristic": "Force Mentale",
     "type": "base",
@@ -192,6 +205,7 @@
     }
   },
   {
+    "id": "escalade",
     "label": "Escalade",
     "characteristic": "Force",
     "type": "base",
@@ -203,6 +217,7 @@
     }
   },
   {
+    "id": "escamotage",
     "label": "Escamotage",
     "characteristic": "Dextérité",
     "type": "avancée",
@@ -214,6 +229,7 @@
     }
   },
   {
+    "id": "esquive",
     "label": "Esquive",
     "characteristic": "Agilité",
     "type": "base",
@@ -225,6 +241,7 @@
     }
   },
   {
+    "id": "evaluation",
     "label": "Évaluation",
     "characteristic": "Intelligence",
     "type": "avancée",
@@ -236,6 +253,7 @@
     }
   },
   {
+    "id": "focalisation",
     "label": "Focalisation",
     "characteristic": "Force Mentale",
     "type": "avancée",
@@ -257,6 +275,7 @@
     }
   },
   {
+    "id": "guerison",
     "label": "Guérison",
     "characteristic": "Intelligence",
     "type": "avancée",
@@ -268,6 +287,7 @@
     }
   },
   {
+    "id": "intimidation",
     "label": "Intimidation",
     "characteristic": "Force",
     "type": "base",
@@ -279,6 +299,7 @@
     }
   },
   {
+    "id": "intuition",
     "label": "Intuition",
     "characteristic": "Initiative",
     "type": "base",
@@ -290,6 +311,7 @@
     }
   },
   {
+    "id": "langue",
     "label": "Langue",
     "characteristic": "Intelligence",
     "type": "avancée",
@@ -321,6 +343,7 @@
     }
   },
   {
+    "id": "marchandage",
     "label": "Marchandage",
     "characteristic": "Sociabilité",
     "type": "base",
@@ -332,6 +355,7 @@
     }
   },
   {
+    "id": "metier",
     "label": "Métier",
     "characteristic": "Dextérité",
     "type": "avancée",
@@ -389,6 +413,7 @@
     }
   },
   {
+    "id": "musicien",
     "label": "Musicien",
     "characteristic": "Dextérité",
     "type": "avancée",
@@ -408,6 +433,7 @@
     }
   },
   {
+    "id": "natation",
     "label": "Natation",
     "characteristic": "Force",
     "type": "avancée",
@@ -419,6 +445,7 @@
     }
   },
   {
+    "id": "orientation",
     "label": "Orientation",
     "characteristic": "Initiative",
     "type": "base",
@@ -430,6 +457,7 @@
     }
   },
   {
+    "id": "pari",
     "label": "Pari",
     "characteristic": "Intelligence",
     "type": "base",
@@ -441,6 +469,7 @@
     }
   },
   {
+    "id": "perception",
     "label": "Perception",
     "characteristic": "Initiative",
     "type": "base",
@@ -452,6 +481,7 @@
     }
   },
   {
+    "id": "piegeage",
     "label": "Piégeage",
     "characteristic": "Dextérité",
     "type": "avancée",
@@ -463,6 +493,7 @@
     }
   },
   {
+    "id": "pistage",
     "label": "Pistage",
     "characteristic": "Initiative",
     "type": "avancée",
@@ -474,6 +505,7 @@
     }
   },
   {
+    "id": "priere",
     "label": "Prière",
     "characteristic": "Sociabilité",
     "type": "avancée",
@@ -485,6 +517,7 @@
     }
   },
   {
+    "id": "projectiles",
     "label": "Projectiles",
     "characteristic": "Capacité de Tir",
     "type": "avancée",
@@ -505,6 +538,7 @@
     }
   },
   {
+    "id": "ragot",
     "label": "Ragot",
     "characteristic": "Sociabilité",
     "type": "base",
@@ -516,6 +550,7 @@
     }
   },
   {
+    "id": "ramer",
     "label": "Ramer",
     "characteristic": "Force",
     "type": "base",
@@ -527,6 +562,7 @@
     }
   },
   {
+    "id": "recherche",
     "label": "Recherche",
     "characteristic": "Intelligence",
     "type": "avancée",
@@ -538,6 +574,7 @@
     }
   },
   {
+    "id": "representation",
     "label": "Représentation",
     "characteristic": "Agilité",
     "type": "avancée",
@@ -558,6 +595,7 @@
     }
   },
   {
+    "id": "resistance",
     "label": "Résistance",
     "characteristic": "Endurance",
     "type": "base",
@@ -569,6 +607,7 @@
     }
   },
   {
+    "id": "resistance-a-l-alcool",
     "label": "Résistance à l'alcool",
     "characteristic": "Endurance",
     "type": "base",
@@ -580,6 +619,7 @@
     }
   },
   {
+    "id": "savoir",
     "label": "Savoir",
     "characteristic": "Intelligence",
     "type": "avancée",
@@ -643,6 +683,7 @@
     }
   },
   {
+    "id": "signes-secrets",
     "label": "Signes secrets",
     "characteristic": "Intelligence",
     "type": "avancée",
@@ -666,6 +707,7 @@
     }
   },
   {
+    "id": "soin-aux-animaux",
     "label": "Soin aux animaux",
     "characteristic": "Intelligence",
     "type": "avancée",
@@ -677,6 +719,7 @@
     }
   },
   {
+    "id": "subornation",
     "label": "Subornation",
     "characteristic": "Sociabilité",
     "type": "base",
@@ -688,6 +731,7 @@
     }
   },
   {
+    "id": "survie-en-exterieur",
     "label": "Survie en extérieur",
     "characteristic": "Intelligence",
     "type": "base",
@@ -699,6 +743,7 @@
     }
   },
   {
+    "id": "voile",
     "label": "Voile",
     "characteristic": "Agilité",
     "type": "avancée",
