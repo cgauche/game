@@ -67,19 +67,17 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
   // Panneau pré-rempli (l'avant-jet = le résultat, pré-rempli) : MA ligne (score + mods) recalculée à
   // chaque changement d'option ; la ligne adverse via `previewDefense` (compétence + mods, sans valeur).
   const preview = !res ? previewAttack(useGame.getState, attacker, target, pa.location ?? undefined, { intoCrowd: pa.intoCrowd, heldGround: pa.heldGround, weaponUid: pa.weaponUid }) : null;
-  // Aperçu de la défense ADVERSE. À distance, le tir n'est PAS opposé par défaut (LDB 13 l.135) : on
-  // n'affiche une défense que si le RAW l'autorise (Protectrice 2+ / Bout Portant / tireur Engagé,
-  // `bestRangedDefense`), sinon « Sans défense » — fini le « Parade » fantôme. En mêlée : défense probable.
-  const defenderPreview = !res && preview && !preview.blocked && preview.inRange
-    ? weapon?.type === 'ranged'
-      ? (() => {
-          const rd = bestRangedDefense(attacker, target, weapon, combatDistance(attacker, target));
-          return rd
-            ? { label: DEFENSE_LABEL[rd.mode], mods: defenseModifiers(target, rd.mode, 0, rd.parryWeapon) }
-            : { label: 'Sans défense', mods: [] };
-        })()
-      : previewDefense(target)
-    : null;
+  // Aperçu de la défense ADVERSE dans le panneau pré-jet. À distance, le tir n'est PAS opposé par
+  // défaut (LDB 13 l.135) : on n'affiche une ligne de défense QUE si le RAW l'autorise (Parade avec
+  // bouclier Protectrice 2+/tireur Engagé, Esquive à Bout Portant — `bestRangedDefense`). Sinon AUCUNE
+  // ligne : le tir n'est juste pas opposé — ce n'est PAS un état « cible sans défense » (règle
+  // particulière distincte). En mêlée : défense probable.
+  const rangedDef = !res && weapon?.type === 'ranged' ? bestRangedDefense(attacker, target, weapon, combatDistance(attacker, target)) : undefined;
+  const defenderPending = res
+    ? undefined
+    : weapon?.type === 'ranged'
+      ? (rangedDef ? { label: DEFENSE_LABEL[rangedDef.mode], mods: defenseModifiers(target, rangedDef.mode, 0, rangedDef.parryWeapon) } : undefined)
+      : previewDefense(target);
   const forcedDie = FLOWS.attack.picker?.(pa, attacker); // dé choisi (source unique : caps.picker)
   // Issue COURTE (1 ligne, sans répéter les noms — le panneau dit déjà qui) à la place du log complet.
   const outcome = res
@@ -191,14 +189,14 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
                   mods: preview.mods,
                 },
               },
-              { combatant: target, pending: { ...(defenderPreview ?? previewDefense(target)), hideValue: true } },
+              ...(defenderPending ? [{ combatant: target, pending: { ...defenderPending, hideValue: true } }] : []),
             ]}
           />
         ))}
       </>
     ),
     preInfluence: <DeterminationButton combatant={attacker} onSpend={(name) => spendResolve(attacker.id, name)} />,
-    rows: res ? [{ combatant: attacker, d: res.attackerDetail }, { combatant: target, d: res.defenderDetail }] : undefined,
+    rows: res ? [{ combatant: attacker, d: res.attackerDetail }, ...(res.defenderDetail ? [{ combatant: target, d: res.defenderDetail }] : [])] : undefined,
     winnerIndex: res?.defenderDetail ? (res.hit ? 0 : 1) : undefined,
     netSL: res?.defenderDetail ? res.netSL : undefined,
     outcome: res ? (
