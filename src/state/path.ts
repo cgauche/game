@@ -1,5 +1,5 @@
 /** Déplacement sur grille : BFS pour cases atteignables et chemins. */
-import { Scene, isWalkable } from './scene';
+import { Scene, isWalkable, edgeOf } from './scene';
 import { hasTrait } from '../engine/traits/dispatch';
 import type { Combatant } from '../engine/types';
 
@@ -39,10 +39,28 @@ function stairLinks(scene: Scene): Map<string, Pt[]> {
   return m;
 }
 
-/** Voisins marchables d'une case : 4-adjacence du MÊME étage + transitions d'escalier vers z±1. */
-function neighborsOf(p: Pt, links: Map<string, Pt[]>): Pt[] {
+/** Arêtes MURÉES (non-porte) prébâties pour le BFS : clé « x,y,side,z » (même canonique que `wallBetween`). */
+function wallEdges(scene: Scene): Set<string> {
+  const s = new Set<string>();
+  for (const w of scene.walls ?? []) if (!w.door) s.add(`${w.x},${w.y},${w.side},${w.z ?? 0}`);
+  return s;
+}
+/** Un mur sépare-t-il (ax,ay) de (bx,by) au même étage ? (cardinal seulement.) */
+function walled(edges: Set<string>, ax: number, ay: number, bx: number, by: number, z: number): boolean {
+  if (!edges.size) return false;
+  const e = edgeOf(ax, ay, bx, by);
+  return e ? edges.has(`${e.x},${e.y},${e.side},${z}`) : false;
+}
+
+/** Voisins marchables d'une case : 4-adjacence du MÊME étage (sauf si une arête murée bloque) +
+ *  transitions d'escalier vers z±1 (les escaliers IGNORENT les murs — passage explicite). */
+function neighborsOf(p: Pt, links: Map<string, Pt[]>, edges: Set<string>): Pt[] {
   const z = pz(p);
-  const out: Pt[] = NEIGHBORS.map(([dx, dy]) => ({ x: p.x + dx, y: p.y + dy, z }));
+  const out: Pt[] = [];
+  for (const [dx, dy] of NEIGHBORS) {
+    const nx = p.x + dx, ny = p.y + dy;
+    if (!walled(edges, p.x, p.y, nx, ny, z)) out.push({ x: nx, y: ny, z });
+  }
   const stairs = links.get(key(p.x, p.y, z));
   if (stairs) out.push(...stairs);
   return out;
@@ -54,11 +72,12 @@ function neighborsOf(p: Pt, links: Map<string, Pt[]>): Pt[] {
  *  retournés sont DÉJÀ validés (atterrissage praticable et libre). `foot>1` ne saute pas ; `jump<2`
  *  = aucun saut (un pas d'1 case n'est jamais un saut). La portée libre (M/3 m) vs avec Test se
  *  décide à la couche déplacement — ici on ne fait que l'atteignabilité géométrique. */
-function jumpNeighbors(scene: Scene, p: Pt, jump: number, blocked: Set<string>, foot: number): Pt[] {
+function jumpNeighbors(scene: Scene, p: Pt, jump: number, blocked: Set<string>, foot: number, edges: Set<string>): Pt[] {
   if (jump < 2 || foot > 1) return [];
   const z = pz(p);
   const out: Pt[] = [];
   for (const [dx, dy] of NEIGHBORS) {
+    if (walled(edges, p.x, p.y, p.x + dx, p.y + dy, z)) continue; // un mur au décollage interdit le saut
     for (let d = 2; d <= jump; d++) {
       let overGap = true; // les cases 1..d-1 doivent toutes être un gouffre (non-marchables)
       for (let k = 1; k < d; k++) if (isWalkable(scene, p.x + dx * k, p.y + dy * k, z)) { overGap = false; break; }
@@ -90,6 +109,7 @@ function footFits(scene: Scene, x: number, y: number, z: number, foot: number, b
  */
 export function reachable(scene: Scene, start: Pt, range: number, blocked: Set<string>, foot = 1): Map<string, number> {
   const links = stairLinks(scene);
+  const edges = wallEdges(scene);
   const dist = new Map<string, number>();
   const sz = pz(start);
   dist.set(key(start.x, start.y, sz), 0);
@@ -97,7 +117,7 @@ export function reachable(scene: Scene, start: Pt, range: number, blocked: Set<s
   for (let step = 0; step < range; step++) {
     const next: Pt[] = [];
     for (const p of frontier) {
-      for (const n of neighborsOf(p, links)) {
+      for (const n of neighborsOf(p, links, edges)) {
         const nz = pz(n);
         const k = key(n.x, n.y, nz);
         if (dist.has(k)) continue;
@@ -185,6 +205,7 @@ export function fleeReachable(scene: Scene, from: Pt, foe: Pt, range: number, bl
 /** Plus court chemin (BFS) de `start` à `goal`, ou null. */
 export function pathTo(scene: Scene, start: Pt, goal: Pt, blocked: Set<string>, foot = 1, jump = 0): Pt[] | null {
   const links = stairLinks(scene);
+  const edges = wallEdges(scene);
   const gz = pz(goal);
   const came = new Map<string, string | null>();
   came.set(key(start.x, start.y, pz(start)), null);
@@ -201,7 +222,7 @@ export function pathTo(scene: Scene, start: Pt, goal: Pt, blocked: Set<string>, 
       }
       return path;
     }
-    for (const n of neighborsOf(p, links)) {
+    for (const n of neighborsOf(p, links, edges)) {
       const nz = pz(n);
       const k = key(n.x, n.y, nz);
       if (came.has(k)) continue;
@@ -215,7 +236,7 @@ export function pathTo(scene: Scene, start: Pt, goal: Pt, blocked: Set<string>, 
     }
     // Sauts par-dessus un gouffre : atterrissages déjà validés (praticables/libres) — n'altèrent jamais
     // le déplacement à pied (jumpNeighbors=[] sans gouffre), donc gratis quand jump=0.
-    for (const n of jumpNeighbors(scene, p, jump, blocked, foot)) {
+    for (const n of jumpNeighbors(scene, p, jump, blocked, foot, edges)) {
       const k = key(n.x, n.y, pz(n));
       if (came.has(k)) continue;
       came.set(k, key(p.x, p.y, pz(p)));

@@ -455,6 +455,10 @@ export interface Scene {
   levels: Level[];
   /** Escaliers reliant deux cases de niveaux différents (seuls points de franchissement vertical). */
   stairs?: { from: { x: number; y: number; z: number }; to: { x: number; y: number; z: number } }[];
+  /** Murs sur ARÊTES de case (cloisons fines entre deux cases adjacentes) — bloquent le passage sans
+   *  occuper de tuile, contrairement au terrain `mur`. Forme canonique : `side:'N'` = arête entre (x,y)
+   *  et (x,y-1) ; `side:'E'` = arête entre (x,y) et (x+1,y). `door` = arête franchissable (porte). */
+  walls?: WallSeg[];
   entities: SceneEntity[];
   /** Bâtiments multi-tuiles posés sur la grille (optionnel → [] par défaut). */
   buildings?: BuildingFeature[];
@@ -484,6 +488,34 @@ export function isWalkable(scene: Scene, x: number, y: number, z = 0): boolean {
   if (z === 0 && buildingBlockedAt(scene, x, y)) return false; // les bâtiments sont au sol
   if (entityBlockedAt(scene, x, y)) return false; // empreinte multi-cases d'un décor (foot {w,h})
   return terrainWalkable(tileAt(scene, x, y, z));
+}
+
+/** Mur sur ARÊTE de case. `side:'N'` = arête entre (x,y) et (x,y-1) ; `side:'E'` = arête entre (x,y)
+ *  et (x+1,y). `door` = franchissable (porte). `z` = étage (défaut 0). */
+export interface WallSeg {
+  x: number;
+  y: number;
+  side: 'N' | 'E';
+  z?: number;
+  door?: boolean;
+}
+
+/** Arête CANONIQUE (cellule + side N/E) séparant deux cases ADJACENTES en cardinal — null si non
+ *  adjacentes. L'arête entre (x,y) et (x,y+1) est le `N` de (x,y+1) ; entre (x,y) et (x+1,y) le `E` de (x,y). */
+export function edgeOf(ax: number, ay: number, bx: number, by: number): { x: number; y: number; side: 'N' | 'E' } | null {
+  if (by === ay && bx === ax + 1) return { x: ax, y: ay, side: 'E' };
+  if (by === ay && bx === ax - 1) return { x: bx, y: by, side: 'E' };
+  if (bx === ax && by === ay + 1) return { x: bx, y: by, side: 'N' };
+  if (bx === ax && by === ay - 1) return { x: ax, y: ay, side: 'N' };
+  return null;
+}
+
+/** Un mur (non-porte) sépare-t-il deux cases adjacentes du même étage ? (bloque le passage, pas la case). */
+export function wallBetween(scene: Scene, ax: number, ay: number, bx: number, by: number, z = 0): boolean {
+  if (!scene.walls?.length) return false;
+  const e = edgeOf(ax, ay, bx, by);
+  if (!e) return false;
+  return scene.walls.some((w) => w.x === e.x && w.y === e.y && w.side === e.side && (w.z ?? 0) === z && !w.door);
 }
 
 export function emptyScene(w = 20, h = 15): Scene {
