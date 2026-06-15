@@ -46,6 +46,7 @@ import { pickBackend } from './pickBackend';
 import { MountedToken } from './MountedToken';
 import { groundTile } from './ground';
 import { wallSeg } from './walls';
+import { stairSeg, stairLevels } from './stairs';
 import { getViewZ, subscribeViewZ, floorEmphasisOpacity } from './viewLevel';
 import { buildingObj } from './BuildingSprite';
 import { roofHidden } from '../state/buildings';
@@ -272,6 +273,19 @@ export function IsoStage() {
     return (scene.walls).map((w, i) => {
       const seg = wallSeg(w, d);
       return { d: seg.d, el: <g key={`wall-${i}`} opacity={floorEmphasisOpacity(w.z ?? 0, activeZ)} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
+    });
+  }, [scene, shownRot, viewMode, activeZ]);
+
+  // ESCALIERS (Scene.stairs) — volées de marches STRUCTURELLES (comme les murs), pas des décors posés.
+  // Pleine opacité si l'un des deux étages reliés est actif (l'escalier appartient aux deux).
+  const stairObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
+    if (!scene?.stairs?.length) return [];
+    const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode };
+    return scene.stairs.map((s, i) => {
+      const seg = stairSeg(s, d);
+      const [lo, hi] = stairLevels(s);
+      const op = activeZ === lo || activeZ === hi ? 1 : floorEmphasisOpacity(lo, activeZ);
+      return { d: seg.d, el: <g key={`stair-${i}`} opacity={op} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
     });
   }, [scene, shownRot, viewMode, activeZ]);
 
@@ -651,7 +665,7 @@ export function IsoStage() {
   // ré-insérés dans le tri de profondeur (leurs `el` gardent une réf stable → React saute le sous-arbre).
   // Planchers (floorObjs) et surbrillances au sol participent au MÊME tri : un sol haut surplombe les
   // tokens du bas, et les surbrillances (z=0) restent au-dessus du sol mais sous tout le reste.
-  objs.push(...floorObjs, ...wallObjs, ...decorObjs, ...buildingObjs);
+  objs.push(...floorObjs, ...wallObjs, ...stairObjs, ...decorObjs, ...buildingObjs);
   objs.push({ d: floorDepth(dims, 0) + 0.25, el: <g key="ground-overlays">{highlights}</g> });
 
   // token()/tokenNode() : adaptateurs minces vers la coquille partagée BodyToken (positionnement

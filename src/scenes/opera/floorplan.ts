@@ -124,8 +124,9 @@ function build(): { tiles0: Terrain[]; elev0: number[]; tiles1: Terrain[]; walls
   wallRect(9, 20, 13, 22, 1, { side: 'S' }); // loge royale + antichambre (porte au sud)
   wall(11, 20, 'N', 1); // balustrade de la loge royale vers le puits (ouverte au centre = vue sur scène)
 
-  // ESCALIERS : deux escaliers d'honneur du foyer (rez) vers la galerie (étage).
-  for (const [sx, sy] of [[3, 21], [19, 21]] as const) stairs.push({ from: { x: sx, y: sy, z: 0 }, to: { x: sx, y: sy, z: 1 } });
+  // ESCALIERS : deux escaliers d'honneur du foyer (rez) vers la GALERIE (étage) — sur des cases
+  // marchables aux DEUX niveaux (foyer en bas, galerie en haut) sinon la volée ne mène nulle part.
+  for (const [sx, sy] of [[5, 20], [17, 20]] as const) stairs.push({ from: { x: sx, y: sy, z: 0 }, to: { x: sx, y: sy, z: 1 } });
 
   return { tiles0, elev0, tiles1, walls, stairs };
 }

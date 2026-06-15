@@ -13,7 +13,9 @@ import type { TestScenario } from './_shared';
  */
 const scene: Scene = {
   ...buildOperaFloorplan(),
-  entities: [{ id: 'start', kind: 'heroStart', pos: { x: 11, y: 23 } }], // dans le foyer, face au parterre
+  // Aucun décor posé à la main : les ESCALIERS sont rendus par le moteur depuis `Scene.stairs` (élément
+  // structurel, comme les murs), l'élévation et les loges depuis la géométrie. Juste le départ du groupe.
+  entities: [{ id: 'start', kind: 'heroStart', pos: { x: 11, y: 23 } }],
   startMessage:
     'Le Théâtre Staatsoper, reconstitué d’après les plans : du foyer, le parterre en éventail s’élève vers la scène ; au-dessus, les loges cernent le vide central, dominées par la loge royale.',
 };
