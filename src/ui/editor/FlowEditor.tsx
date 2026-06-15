@@ -125,7 +125,7 @@ export function FlowEditor({ flow, onChange, ctx }: { flow: Flow; onChange: (f: 
   return (
     <div className="flow-list eff-list">
       {steps.map((node, i) => (
-        <details className="eff-row flow-node" key={i} open={node.kind !== 'do'}>
+        <details className={`eff-row flow-node flow-${node.kind}`} key={i} open={node.kind !== 'do'}>
           <summary>
             <span className="eff-summary">{nodeSummary(node, ctx)}</span>
             <span className="eff-actions" onClick={(e) => e.preventDefault()}>

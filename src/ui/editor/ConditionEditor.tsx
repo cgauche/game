@@ -82,7 +82,7 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
       )}
       {cond.kind === 'time' && <TimeWindowFields window={cond.window} onChange={(window) => onChange({ kind: 'time', window })} />}
       {(cond.kind === 'all' || cond.kind === 'any') && (
-        <div className="cond-children" style={{ marginLeft: 10, paddingLeft: 8, borderLeft: '2px solid var(--silver)' }}>
+        <div className={`cond-children ${cond.kind}`}>
           {cond.of.map((c, i) => (
             <div className="cond-child" key={i}>
               <ConditionEditor cond={c} onChange={(nc) => onChange({ ...cond, of: cond.of.map((x, j) => (j === i ? nc : x)) })} />
@@ -95,7 +95,7 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
         </div>
       )}
       {cond.kind === 'not' && (
-        <div className="cond-children" style={{ marginLeft: 10, paddingLeft: 8, borderLeft: '2px solid var(--danger)' }}>
+        <div className="cond-children not">
           <ConditionEditor cond={cond.of} onChange={(nc) => onChange({ kind: 'not', of: nc })} />
         </div>
       )}

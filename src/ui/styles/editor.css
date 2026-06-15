@@ -681,6 +681,65 @@ button.insp-row.active {
   width: 170px;
 }
 
+/* ── Éditeur de Flow : accent de bord par type de bloc (do neutre / si or / test vert) ── */
+.flow-node {
+  border-left-width: 3px;
+}
+.flow-if {
+  border-left-color: var(--gold);
+}
+.flow-test {
+  border-left-color: var(--ok);
+}
+.flow-branch {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ── Éditeur de Condition : l'algèbre ET / OU / NON en blocs imbriqués lisibles ── */
+.cond-node {
+  align-items: flex-start;
+}
+.cond-kind {
+  flex: none;
+  width: 11em;
+}
+.cond-flag {
+  flex: 1;
+  min-width: 8em;
+}
+.cond-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.cond-children {
+  flex-basis: 100%;
+  margin-left: 10px;
+  padding-left: 9px;
+  border-left: 2px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.cond-children.any {
+  border-left-color: var(--gold);
+}
+.cond-children.not {
+  border-left-color: var(--danger);
+}
+.cond-child {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+}
+.cond-child > .cond-node {
+  flex: 1;
+}
+
 /* ── Rencontres (détail du dock) ── */
 .enemy-list {
   display: flex;
