@@ -143,6 +143,8 @@ const scene: Scene = {
       rect: { x: 3, y: 6, w: 12, h: 4 },
       once: true,
       effects: [
+        { type: 'journal', text: 'Les lumières de la salle baissent, le rideau se lève — la représentation commence.' },
+        { type: 'setLight', level: 0.35 }, // mise en scène : la salle plonge dans la pénombre
         { type: 'journal', text: 'Une âcre odeur de poudre flotte depuis la galerie des loges…' },
         {
           type: 'delayedEffect', afterMinutes: 60, cancelFlag: 'bombeDesamorcee',

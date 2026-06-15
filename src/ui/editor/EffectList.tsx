@@ -60,6 +60,7 @@ export const EFFECT_LABEL: Record<Effect['type'], string> = {
   applyCondition: 'Poser un État (héros / groupe)',
   zoneBlast: 'Souffle de zone (dégâts tirés + États, rayon)',
   fall: 'Chute (dégâts/m + 1d10, À Terre, repositionne le groupe)',
+  setLight: 'Lumière de scène (les lumières baissent / se rallument)',
   giveSin: 'Points de Péché (prêtre fautif, LDB 40)',
   corruptionExposure: 'Influence corruptrice (Test, LDB 19)',
   giveCorruption: 'Points de Corruption directs (LDB 19)',
@@ -84,7 +85,7 @@ export const EFFECT_LABEL: Record<Effect['type'], string> = {
 
 /** Picker « + Effet » : les 27 types groupés par intention d'auteur. */
 export const EFFECT_GROUPS: [string, Effect['type'][]][] = [
-  ['📜 Narration', ['journal', 'document', 'startDialogue', 'endDialogue', 'setFlag']],
+  ['📜 Narration', ['journal', 'document', 'startDialogue', 'endDialogue', 'setFlag', 'setLight']],
   ['🎁 Récompenses', ['giveTrapping', 'giveMoney', 'giveXp', 'learnSpell', 'restoreFortune']],
   ['☠️ Afflictions', ['inflictDamage', 'applyCondition', 'zoneBlast', 'fall', 'inflictDisease', 'inflictTrauma', 'inflictNightmares', 'giveCorruption', 'corruptionExposure', 'giveSin']],
   ['🕰 Temps & repos', ['rest', 'mealParty', 'interlude', 'setTime', 'delayedEffect']],
@@ -97,7 +98,7 @@ const EFFECT_ICON: Record<Effect['type'], string> = {
   journal: '📜', setFlag: '🚩', document: '📄', giveTrapping: '🎒', giveMoney: '🪙', giveXp: '✨',
   restoreFortune: '🍀', inflictNightmares: '😱', inflictDisease: '🤢', inflictTrauma: '🦴', giveSin: '⚖️',
   corruptionExposure: '🧿', giveCorruption: '🧬', learnSpell: '🪄', rest: '🌙', mealParty: '🍲',
-  inflictDamage: '💥', applyCondition: '🌀', zoneBlast: '🧨', fall: '🪂',
+  inflictDamage: '💥', applyCondition: '🌀', zoneBlast: '🧨', fall: '🪂', setLight: '💡',
   interlude: '📆', startCombat: '⚔️', transition: '🚪', transitionBack: '↩️', openWorldMap: '🗺️',
   startDialogue: '💬', openMerchant: '🛒', medicalAid: '🩺', test: '🎲', extendedTest: '🗝️', forceDoor: '🔨',
   setTime: '🕰', delayedEffect: '⏳', endDialogue: '✖️',
@@ -127,6 +128,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'applyCondition': return `${icon} État « ${e.name || '?'} »${e.value && e.value > 1 ? ` ×${e.value}` : ''} → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}`;
     case 'zoneBlast': return `${icon} Souffle ${e.damage || '?'} rayon ${e.radius ?? 0} @(${e.center?.x ?? 0},${e.center?.y ?? 0})${e.conditions?.length ? ` +${e.conditions.map((c: any) => c.name).join('/')}` : ''}`;
     case 'fall': return `${icon} Chute ${e.metres ?? 0} m → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}${e.to ? ` ⤓(${e.to.x},${e.to.y}${e.to.z ? `,z${e.to.z}` : ''})` : ''}`;
+    case 'setLight': return `${icon} Lumière ${Math.round((e.level ?? 1) * 100)} %`;
     case 'giveSin': return `${icon} ${e.amount ?? 1} point(s) de Péché`;
     case 'corruptionExposure': return `${icon} Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ?? 'au choix'})`;
     case 'giveCorruption': return `${icon} ${e.amount ?? 1} point(s) de Corruption`;
@@ -209,6 +211,8 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'zoneBlast', center: { x: 0, y: 0 }, radius: 2, damage: '1d10+15', conditions: [] };
     case 'fall':
       return { type: 'fall', target: 'party', metres: 4 };
+    case 'setLight':
+      return { type: 'setLight', level: 0.3 };
     case 'giveSin':
       return { type: 'giveSin', amount: 1, heroId: '' };
     case 'corruptionExposure':
@@ -461,6 +465,14 @@ function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChange: (e:
                 <label className="dr">Intensité <input type="number" min={1} value={e.value ?? 1} onChange={(ev) => upd({ value: Number(ev.target.value) })} /></label>
               </>
             )}
+          </div>
+        )}
+        {effect.type === 'setLight' && (
+          <div className="tf-row">
+            <label className="dr" style={{ flex: 1 }}>
+              Lumière {Math.round((e.level ?? 1) * 100)} %
+              <input type="range" min={0} max={100} value={Math.round((e.level ?? 1) * 100)} onChange={(ev) => upd({ level: Number(ev.target.value) / 100 })} style={{ width: '100%' }} />
+            </label>
           </div>
         )}
         {effect.type === 'fall' && (

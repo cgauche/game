@@ -122,6 +122,7 @@ export function IsoStage() {
   const party = useGame((s) => s.party);
   const battle = useGame((s) => s.battle);
   const gameTime = useGame((s) => s.gameTime);
+  const lightLevel = useGame((s) => s.lightLevel);
   const dialogue = useGame((s) => s.dialogue);
   // Télégraphe ENNEMI (« qui l'adversaire vise ») — le ciblage du JOUEUR a son propre réticule
   // (survol hoverAim + jets à cible pendants), même rendu partagé (TargetReticle).
@@ -1237,6 +1238,15 @@ export function IsoStage() {
         </g>
       )}
       <rect x={0} y={0} width={VW} height={VH} fill="url(#g_vig)" pointerEvents="none" />
+      {/* Mise en scène (Lot L) : assombrissement piloté par setLight (`lightLevel`), sinon l'obscurité
+          d'horloge/ambiance. 1 = plein jour (aucun voile) → 0 = noir. Transition douce (rideau qui tombe). */}
+      {(() => {
+        const light = lightLevel ?? (scene && sceneIsDark(scene, gameTime) ? 0.4 : 1);
+        const veil = (1 - Math.max(0, Math.min(1, light))) * 0.82;
+        return veil > 0.001 ? (
+          <rect x={0} y={0} width={VW} height={VH} fill="#05040a" opacity={veil} pointerEvents="none" style={{ transition: 'opacity 1.1s ease' }} />
+        ) : null;
+      })()}
     </svg>
   );
 }

@@ -247,6 +247,9 @@ export interface GameState {
   inspectEnabled: boolean;
   toggleInspectEnabled: () => void;
   partyPos: Pt;
+  /** Niveau de lumière de scène (Lot L, mise en scène) : 0 = noir, 1 = plein jour ; null = auto
+   *  (horloge/ambiance). Posé par l'Effet `setLight`, lu par le rendu (overlay d'assombrissement). */
+  lightLevel: number | null;
   flags: Record<string, boolean>;
   journal: string[];
   dialogue: { dialogue: Dialogue; nodeId: string; speakerId?: string } | null;
@@ -967,6 +970,7 @@ export const useGame = create<GameState>((set, get) => ({
   inspectEnabled: false,
   toggleInspectEnabled: () => set((s) => ({ inspectEnabled: !s.inspectEnabled })),
   partyPos: { x: 0, y: 0 },
+  lightLevel: null,
   flags: {},
   journal: [],
   dialogue: null,
@@ -1168,6 +1172,7 @@ export const useGame = create<GameState>((set, get) => ({
       scene: JSON.parse(JSON.stringify(target)),
       mode: 'exploration',
       partyPos: { ...start },
+      lightLevel: null, // nouvelle scène → lumière auto (un setLight ne se propage pas d'une scène à l'autre)
       // flags persistants : on conserve l'état narratif et on ajoute les
       // valeurs par défaut de la nouvelle scène pour les clés absentes.
       flags: { ...target.flags, ...s.flags },

@@ -596,6 +596,9 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
         } else if (e.to && !get().battle) set({ partyPos: e.to });
         break;
       }
+      case 'setLight':
+        set({ lightLevel: Math.max(0, Math.min(1, e.level)) }); // mise en scène (Lot L) : niveau de lumière borné [0,1]
+        break;
       case 'openMerchant':
         get().openMerchant(e.entityId); // ouvre la boutique de l'entité (Marchand inclus dans un dialogue, #2)
         break;
