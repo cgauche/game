@@ -104,6 +104,14 @@ describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', ()
     expect(useGame.getState().flags.glimbrinDejoue).toBe(true);
   });
 
+  it('la Comtesse remercie si la bombe a été déjouée (branche gatée par flag)', () => {
+    const dlg = scenario.scene.dialogues.find((d) => d.id === 'dlg-comtesse')!;
+    const grateful = dlg.nodes.find((n) => n.id === 'n0')!.choices.find((c) => c.condition === 'bombeDesamorcee');
+    expect(grateful?.next).toBe('merci');
+    const merci = dlg.nodes.find((n) => n.id === 'merci')!;
+    expect(merci.choices[0].effects?.some((e) => e.type === 'giveMoney')).toBe(true);
+  });
+
   it('chaque intrigue résolue récompense les PX canoniques (50 / 15 / 10)', () => {
     const xpIn = (effs: Effect[] | undefined) =>
       (effs ?? []).filter((e): e is Extract<Effect, { type: 'giveXp' }> => e.type === 'giveXp').reduce((n, e) => n + e.amount, 0);

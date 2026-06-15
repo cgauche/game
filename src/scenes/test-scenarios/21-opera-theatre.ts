@@ -136,7 +136,9 @@ const scene: Scene = {
           speaker: 'Comtesse Emmanuelle',
           text: 'La Comtesse Emmanuelle vous toise depuis sa loge. « On ne vous a pas conviés dans ma loge. Qu’est-ce qui peut bien valoir cette intrusion ? »',
           choices: [
-            { text: '« Excellence, l’antichambre n’est peut-être pas sûre ce soir. »', next: 'n1' },
+            // Réactivité : une fois la bombe neutralisée, on peut le lui apprendre — elle remercie (faveur).
+            { text: '« Excellence — un attentat vous visait. Il est déjoué. »', condition: 'bombeDesamorcee', next: 'merci' },
+            { text: '« Excellence, l’antichambre n’est peut-être pas sûre ce soir. »', condition: '!bombeDesamorcee', next: 'n1' },
             { text: 'S’incliner et se retirer.', effects: [{ type: 'endDialogue' }] },
           ],
         },
@@ -145,6 +147,21 @@ const scene: Scene = {
           speaker: 'Comtesse Emmanuelle',
           text: '« Pas sûre ? » Un sourire glacé. « Mes gardes en jugeront. Mais examinez donc, puisque vous y tenez — discrètement. »',
           choices: [{ text: 'Remercier et examiner les lieux.', effects: [{ type: 'endDialogue' }] }],
+        },
+        {
+          id: 'merci',
+          speaker: 'Comtesse Emmanuelle',
+          text: 'Le masque de hauteur se fissure une seconde. « …Un attentat ? Dans MA loge ? » Elle se ressaisit, mais son regard s’est radouci. « L’Empire saura que la maison von Liebwitz a une dette envers vous. Prenez ceci — et discrétion. »',
+          choices: [
+            {
+              text: 'S’incliner et accepter.',
+              effects: [
+                { type: 'giveMoney', gold: 5 }, // la faveur d'une noble reconnaissante
+                { type: 'setFlag', flag: 'faveurComtesse' },
+                { type: 'endDialogue' },
+              ],
+            },
+          ],
         },
       ],
     },
