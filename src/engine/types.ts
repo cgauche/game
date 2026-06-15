@@ -566,6 +566,9 @@ export interface Combatant {
   /** À Répétition (Indice) (LDB 62 l.264-265) : munitions restantes dans le chargeur de l'arme à
    *  distance équipée (auto-rechargées entre les coups) ; undefined = pas de chargeur / vide. */
   chambered?: number;
+  /** Salve (Aux Armes p.126) : nombre de tirs DÉJÀ effectués ce tour (réinit. au changement de tour) ;
+   *  chaque tir suivant d'une arme à Salve subit −10 cumulatif (lu par `attackModifiers`). */
+  shotsThisTurn?: number;
   /** Perturbante (LDB 62 l.275-276) : mode « Repousser » armé — la prochaine attaque réussie repousse
    *  d'1 m par DR au lieu de causer des Dégâts. Consommé par l'attaque (héros uniquement). */
   pushbackMode?: boolean;

@@ -1249,6 +1249,7 @@ export function applyAttackResult(
   if (res.hit && hasQuality(weapon, 'Taille')) damageArmour(target, res.location ?? 'corps');
   // Munition héros : consommée à l'application ; arme à Recharge → déchargée (Test étendu requis pour recharger).
   if (weapon.type === 'ranged' && attacker.kind === 'hero') {
+    attacker.shotsThisTurn = (attacker.shotsThisTurn ?? 0) + 1; // Salve : compteur de tirs du tour (−10 cumulatif)
     const used = selectedAmmo(attacker, weapon);
     if (used && (used.qty ?? 0) > 0) {
       used.qty = (used.qty ?? 0) - 1;
@@ -1422,7 +1423,10 @@ export function applyAttackResult(
   // → Test de Calme Difficile (−20) ou perte des DR accumulés + Imparfaite Mineure.
   if (res.hit && res.woundsLost) log.push(...evLines(checkFocusInterruption(get, set, target), 'detail', target.id));
   if (isOutOfAction(target)) log.push(ev('death', `${target.name} est mis hors de combat !`, target.id));
-  set({ battle: { ...battle, acted: true, action: null, log } });
+  // Salve (Aux Armes p.126) : un héros qui tire une arme à Salve gardant des tirs (chambered > 0) ne
+  // consomme PAS son Action — il peut tirer encore ce tour (chaque tir suivant à −10 cumulatif).
+  const salvoContinues = attacker.kind === 'hero' && weapon.type === 'ranged' && hasQuality(weapon, 'Salve') && (attacker.chambered ?? 0) > 0;
+  set({ battle: { ...battle, acted: !salvoContinues, action: null, log } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
   resolveEnemyFumble(get, set, attacker, weapon, res); // Maladresse d'un ENNEMI attaquant → résolue instantanément
@@ -3457,6 +3461,7 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
   //     EN COOP (arbitrage 2026-06-11) : seul le round 1 est gaté (ready-check de tous) — les rounds
   //     suivants S'ENCHAÎNENT sans pause (le ✋ « ouvrir la fenêtre Chance » volontaire = P3).
   const b = get().battle!;
+  for (const c of b.combatants) if (c.shotsThisTurn) c.shotsThisTurn = 0; // Salve : compteur de tirs réinitialisé à chaque Round
   const reset = { ...b, action: null, movementUsed: 0, movedPreAction: false, acted: false, loadoutSwapped: false, reachable: new Map(), preview: null, runBudget: null, fearGate: null };
   if (get().net.mode !== 'local' && b.round > 1 && !b.handRaised) {
     set({ battle: reset, pendingRoundStart: null });

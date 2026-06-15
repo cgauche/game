@@ -244,6 +244,9 @@ export function attackModifiers(
       if (m != null && m !== 0 && name) out.push({ label: name, value: m });
     }
     if (attacker.aiming) out.push({ label: 'Viser', value: 20 }); // action Viser (l.90)
+    // Salve (Aux Armes p.126) : chaque tir SUPPLÉMENTAIRE dans le Round subit −10 cumulatif.
+    const salvoShots = hasQuality(weapon, 'Salve') ? (attacker.shotsThisTurn ?? 0) : 0;
+    if (salvoShots > 0) out.push({ label: 'Salve (tir suivant)', value: -10 * salvoShots });
     // Taille de la CIBLE au tir (LDB 14 l.151-170) — valeur absolue −30..+60. Une Nuée ignore la
     // Taille et donne +40 au tir contre elle (LDB 85 l.200).
     if (target?.swarm) out.push({ label: 'Nuée (tir)', value: 40 });
