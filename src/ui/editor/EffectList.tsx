@@ -59,6 +59,7 @@ export const EFFECT_LABEL: Record<Effect['type'], string> = {
   inflictDamage: 'Infliger des dégâts (héros / groupe)',
   applyCondition: 'Poser un État (héros / groupe)',
   zoneBlast: 'Souffle de zone (dégâts tirés + États, rayon)',
+  fall: 'Chute (dégâts/m + 1d10, À Terre, repositionne le groupe)',
   giveSin: 'Points de Péché (prêtre fautif, LDB 40)',
   corruptionExposure: 'Influence corruptrice (Test, LDB 19)',
   giveCorruption: 'Points de Corruption directs (LDB 19)',
@@ -85,7 +86,7 @@ export const EFFECT_LABEL: Record<Effect['type'], string> = {
 export const EFFECT_GROUPS: [string, Effect['type'][]][] = [
   ['📜 Narration', ['journal', 'document', 'startDialogue', 'endDialogue', 'setFlag']],
   ['🎁 Récompenses', ['giveTrapping', 'giveMoney', 'giveXp', 'learnSpell', 'restoreFortune']],
-  ['☠️ Afflictions', ['inflictDamage', 'applyCondition', 'zoneBlast', 'inflictDisease', 'inflictTrauma', 'inflictNightmares', 'giveCorruption', 'corruptionExposure', 'giveSin']],
+  ['☠️ Afflictions', ['inflictDamage', 'applyCondition', 'zoneBlast', 'fall', 'inflictDisease', 'inflictTrauma', 'inflictNightmares', 'giveCorruption', 'corruptionExposure', 'giveSin']],
   ['🕰 Temps & repos', ['rest', 'mealParty', 'interlude', 'setTime', 'delayedEffect']],
   ['🚪 Navigation', ['transition', 'transitionBack', 'openWorldMap']],
   ['⚔️ Combat & social', ['startCombat', 'openMerchant', 'medicalAid']],
@@ -96,7 +97,7 @@ const EFFECT_ICON: Record<Effect['type'], string> = {
   journal: '📜', setFlag: '🚩', document: '📄', giveTrapping: '🎒', giveMoney: '🪙', giveXp: '✨',
   restoreFortune: '🍀', inflictNightmares: '😱', inflictDisease: '🤢', inflictTrauma: '🦴', giveSin: '⚖️',
   corruptionExposure: '🧿', giveCorruption: '🧬', learnSpell: '🪄', rest: '🌙', mealParty: '🍲',
-  inflictDamage: '💥', applyCondition: '🌀', zoneBlast: '🧨',
+  inflictDamage: '💥', applyCondition: '🌀', zoneBlast: '🧨', fall: '🪂',
   interlude: '📆', startCombat: '⚔️', transition: '🚪', transitionBack: '↩️', openWorldMap: '🗺️',
   startDialogue: '💬', openMerchant: '🛒', medicalAid: '🩺', test: '🎲', extendedTest: '🗝️', forceDoor: '🔨',
   setTime: '🕰', delayedEffect: '⏳', endDialogue: '✖️',
@@ -125,6 +126,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'inflictDamage': return `${icon} ${e.amount ?? 0} dégât(s) → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}`;
     case 'applyCondition': return `${icon} État « ${e.name || '?'} »${e.value && e.value > 1 ? ` ×${e.value}` : ''} → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}`;
     case 'zoneBlast': return `${icon} Souffle ${e.damage || '?'} rayon ${e.radius ?? 0} @(${e.center?.x ?? 0},${e.center?.y ?? 0})${e.conditions?.length ? ` +${e.conditions.map((c: any) => c.name).join('/')}` : ''}`;
+    case 'fall': return `${icon} Chute ${e.metres ?? 0} m → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}${e.to ? ` ⤓(${e.to.x},${e.to.y}${e.to.z ? `,z${e.to.z}` : ''})` : ''}`;
     case 'giveSin': return `${icon} ${e.amount ?? 1} point(s) de Péché`;
     case 'corruptionExposure': return `${icon} Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ?? 'au choix'})`;
     case 'giveCorruption': return `${icon} ${e.amount ?? 1} point(s) de Corruption`;
@@ -205,6 +207,8 @@ export function newEffect(type: Effect['type']): Effect {
       return { type: 'applyCondition', target: 'party', name: etats[0]?.label ?? 'Sonné', value: 1 };
     case 'zoneBlast':
       return { type: 'zoneBlast', center: { x: 0, y: 0 }, radius: 2, damage: '1d10+15', conditions: [] };
+    case 'fall':
+      return { type: 'fall', target: 'party', metres: 4 };
     case 'giveSin':
       return { type: 'giveSin', amount: 1, heroId: '' };
     case 'corruptionExposure':
@@ -456,6 +460,24 @@ function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChange: (e:
                 </select>
                 <label className="dr">Intensité <input type="number" min={1} value={e.value ?? 1} onChange={(ev) => upd({ value: Number(ev.target.value) })} /></label>
               </>
+            )}
+          </div>
+        )}
+        {effect.type === 'fall' && (
+          <div className="tf-row">
+            <select value={e.target ?? 'party'} onChange={(ev) => upd({ target: ev.target.value })}>
+              <option value="party">Tout le groupe</option>
+              <option value="hero">Un héros</option>
+            </select>
+            {e.target === 'hero' && (
+              <input placeholder="id du héros (vide = 1ᵉʳ)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value || undefined })} />
+            )}
+            <label className="dr">Hauteur (m) <input type="number" min={0} style={{ width: '3.2em' }} value={e.metres ?? 0} onChange={(ev) => upd({ metres: Number(ev.target.value) })} /></label>
+            <label className="dr">
+              <input type="checkbox" checked={!!e.to} onChange={(ev) => upd({ to: ev.target.checked ? { x: 0, y: 0, z: 0 } : undefined })} /> Reposer le groupe
+            </label>
+            {e.to && (
+              <label className="dr">→ <input type="number" style={{ width: '3.2em' }} value={e.to.x} onChange={(ev) => upd({ to: { ...e.to, x: Number(ev.target.value) } })} />,<input type="number" style={{ width: '3.2em' }} value={e.to.y} onChange={(ev) => upd({ to: { ...e.to, y: Number(ev.target.value) } })} /> z<input type="number" style={{ width: '3em' }} value={e.to.z ?? 0} onChange={(ev) => upd({ to: { ...e.to, z: Number(ev.target.value) } })} /></label>
             )}
           </div>
         )}

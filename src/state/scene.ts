@@ -278,6 +278,10 @@ export type Effect =
    *  dés tirée PAR cible, ex. « 1d10+15 ») + les `conditions`. Bombe, grenade, piège de zone… Les
    *  Blessures critiques sous 0 PB se composent en ajoutant un `inflictTrauma` (non auto ici). */
   | { type: 'zoneBlast'; center: { x: number; y: number }; radius: number; damage: string; conditions?: { name: string; value?: number }[] }
+  /** Chute (LDB 15 l.117-122) : la cible tombe de `metres` mètres → 3 Dégâts/mètre + 1d10, réduits par
+   *  le Bonus d'Endurance mais PAS par les PA ; si les Blessures subies dépassent le BE → État À Terre.
+   *  `to` (optionnel) repositionne le GROUPE à l'arrivée (balcon→parterre, plancher de loge effondré). */
+  | { type: 'fall'; target: 'party' | 'hero'; heroId?: string; metres: number; to?: { x: number; y: number; z?: number } }
   /** Points de Péché (LDB 40 l.30-36) : l'auteur/MJ sanctionne une infraction aux commandements du dieu
    *  d'un Bienheureux — 1 à 3 selon la gravité (l.36). Défaut : le premier héros sachant Prier. Le dé des
    *  unités d'un Test de Prière ≤ Péchés déclenche la Colère des dieux même sur Test réussi (l.45) ;

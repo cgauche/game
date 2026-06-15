@@ -565,6 +565,25 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
         get().log(`💥 Souffle (${e.damage}) : ${lines.join(' · ')}.`);
         break;
       }
+      case 'fall': {
+        // Chute (LDB 15 l.117-122) : 3 Dégâts/mètre + 1d10, réduits par le Bonus d'Endurance mais
+        // PAS par les PA ; si les Blessures subies > BE → État À Terre. `to` repose le groupe (hors
+        // combat). Dégâts TIRÉS par cible et révélés au journal (involontaire : pas de Test d'Athlétisme).
+        const targets = effectTargets(get, e.target, e.heroId);
+        const m = Math.max(0, e.metres);
+        const lines = targets.map((c) => {
+          const be = Math.floor(effectiveChar(c, 'E') / 10);
+          const lost = Math.max(0, 3 * m + d10(battleRng()) - be);
+          loseWounds(c, lost);
+          if (lost > be) addCondition(c, 'À Terre');
+          return `${c.name} ${lost}${lost > be ? ' (À Terre)' : ''}`;
+        });
+        if (targets.length) {
+          set({ ...touchActors(get()), ...(e.to && !get().battle ? { partyPos: e.to } : {}) });
+          get().log(`🪂 Chute de ${m} m : ${lines.join(' · ')}.`);
+        } else if (e.to && !get().battle) set({ partyPos: e.to });
+        break;
+      }
       case 'openMerchant':
         get().openMerchant(e.entityId); // ouvre la boutique de l'entité (Marchand inclus dans un dialogue, #2)
         break;
