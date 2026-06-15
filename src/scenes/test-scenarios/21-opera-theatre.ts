@@ -45,6 +45,9 @@ const ents: SceneEntity[] = [
   { id: 'colonne-g', kind: 'prop', ref: 'colonne-brisee', pos: { x: 2, y: 6 } },
   { id: 'colonne-d', kind: 'prop', ref: 'colonne-brisee', pos: { x: 15, y: 6 } },
   { id: 'statue', kind: 'prop', ref: 'statue', pos: { x: 2, y: 11 } },
+  // Professeur Pakker et son épouse, assis près de l'allée centrale (source 08 l.158) — cible des
+  // pétards des étudiants (intrigue n°2 : Glimbrin lui vole ses clés dans le brouhaha).
+  { id: 'pakker', kind: 'personnage', ref: 'Villageois', label: 'Professeur Pakker', pos: { x: 8, y: 8 }, facing: 'N' },
 
   // Lustre suspendu au-dessus du parterre (prop sur le vide z1 → flotte 96 px plus haut).
   { id: 'lustre', kind: 'prop', ref: 'lustre-opera', pos: { x: 8, y: 6 }, z: 1 },
@@ -146,6 +149,19 @@ const scene: Scene = {
         { type: 'journal', text: 'Les lumières de la salle baissent, le rideau se lève — la représentation commence.' },
         { type: 'setLight', level: 0.35 }, // mise en scène : la salle plonge dans la pénombre
         { type: 'journal', text: 'Une âcre odeur de poudre flotte depuis la galerie des loges…' },
+        // INTRIGUE n°2 (source 08 l.158-162) : à 20h30, deux étudiants jettent un chapelet de pétards
+        // sur le siège du professeur Pakker. La lueur de la mèche éclaire la salle (flash), puis les
+        // pétards éclatent — le spectacle s'interrompt SANS panique ; Glimbrin en profite pour voler.
+        {
+          type: 'delayedEffect', afterMinutes: 10,
+          effects: [
+            { type: 'journal', text: 'Près de l’allée centrale, la lueur d’une mèche embrase la pénombre…' },
+            { type: 'setLight', level: 0.8 }, // l'éclat des pétards illumine brièvement toute la salle
+            { type: 'zoneBlast', center: { x: 8, y: 8 }, radius: 1, damage: '2' },
+            { type: 'journal', text: 'Une volée de pétards éclate sur le siège du professeur Pakker ! Le spectacle s’interrompt dans les cris — mais sans panique. Dans le brouhaha, une petite silhouette se faufile sous son fauteuil…' },
+          ],
+        },
+        { type: 'delayedEffect', afterMinutes: 11, effects: [{ type: 'setLight', level: 0.35 }] }, // la salle se rassoit dans la pénombre
         {
           type: 'delayedEffect', afterMinutes: 60, cancelFlag: 'bombeDesamorcee',
           effects: [

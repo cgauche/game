@@ -69,13 +69,28 @@ describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', ()
     expect(detect.easierIf?.hasSkill).toBe('Projectiles (Poudre noire)');
   });
 
-  it('entrer dans l’auditorium arme la mèche ; retirer le détonateur empêche l’explosion', () => {
+  it('entrer dans l’auditorium baisse les lumières et programme la soirée (pétards + mèche)', () => {
+    lonePartyAt(35);
+    applyEffects(useGame.getState, useGame.setState, arm.effects);
+    expect(useGame.getState().lightLevel).toBe(0.35); // les lumières baissent (mise en scène)
+    expect(useGame.getState().scheduledEffects).toHaveLength(3); // pétards (10), retour lumière (11), bombe (60)
+  });
+
+  it('retirer le détonateur empêche l’explosion finale', () => {
     const before = lonePartyAt(35).wounds.current;
     applyEffects(useGame.getState, useGame.setState, arm.effects);
-    expect(useGame.getState().scheduledEffects).toHaveLength(1);
     applyEffects(useGame.getState, useGame.setState, detect.onSuccess!); // désamorçage
     useGame.getState().advanceTime(120);
-    expect(useGame.getState().party[0].wounds.current).toBe(before); // intacte
+    expect(useGame.getState().party[0].wounds.current).toBe(before); // intacte (pétards à l'écart, bombe annulée)
+  });
+
+  it('les pétards (intrigue n°2) éclatent à 20h30 : flash puis pénombre rétablie', () => {
+    lonePartyAt(35);
+    applyEffects(useGame.getState, useGame.setState, arm.effects);
+    useGame.getState().advanceTime(10); // 20h30 : la mèche éclaire, les pétards éclatent
+    expect(useGame.getState().lightLevel).toBe(0.8); // flash
+    useGame.getState().advanceTime(1); // la salle se rassoit
+    expect(useGame.getState().lightLevel).toBe(0.35);
   });
 
   it('sans désamorçage, l’explosion frappe l’antichambre au bout de la mèche', () => {
