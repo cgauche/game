@@ -30,10 +30,8 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Constricteur', 'Empêtré sur touche (combatFlow.applyFreeAttackEffects)'],
   ['Vampirique', 'drain de PB sur Morsure (combatFlow.applyFreeAttackEffects)'],
   ['Se cabrer', 'couvert par le Piétinement existant (LDB 85 — trampleTarget)'],
-  // Profil dérivé au spawn — state/spawn.ts
-  ['Armure', 'PA plats au spawn (armourFromTraits)'],
-  // 'Taille' et 'Nuée' sont désormais des DEFS du registre (Taille → arg lu par sizeFromTraits ;
-  // Nuée → flag `swarm` lu par isSwarm) → couverture unique par la def, plus d'entrée allowlist.
+  // 'Armure', 'Taille' et 'Nuée' sont désormais des DEFS du registre (Armure/Taille → Indice/arg lus
+  // par armourFromTraits/sizeFromTraits ; Nuée → flag `swarm` lu par isSwarm) → couverture unique.
   // Psychologie — engine/psychology.ts (parsePsychTraits)
   ['Peur', 'causesPeur (parsePsychTraits)'],
   ['Terreur', 'causesTerreur (parsePsychTraits)'],
@@ -88,6 +86,10 @@ describe('parité — tout Trait de traits.json est couvert (def, ailleurs, ou j
     expect(parseTrait('Immunité (Poison)')).toEqual({ key: 'Immunité', indice: undefined, arg: 'Poison' });
     expect(parseTrait('À Sang-froid')?.key).toBe('À sang-froid'); // casse de la donnée ≠ clé canonique
     expect(parseTrait('Vol 100')).toEqual({ key: 'Vol', indice: 100, arg: undefined });
+    // Defs marqueurs migrés du parsing dispersé vers le registre (Nuée/Taille/Armure) :
+    expect(parseTrait('Nuée')?.key).toBe('Nuée');
+    expect(parseTrait('Taille (Énorme)')).toEqual({ key: 'Taille', indice: undefined, arg: 'Énorme' });
+    expect(parseTrait('Armure 4')).toEqual({ key: 'Armure', indice: 4, arg: undefined });
     expect(parseTrait('Trait inconnu')).toBeNull();
   });
 });

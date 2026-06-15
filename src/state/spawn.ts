@@ -100,12 +100,12 @@ function weaponsFromTraits(traits: string[]): Weapon[] {
   return weapons;
 }
 
+/** PA plats du trait « Armure (Indice) » (LDB 85, profils d'éditeur) — lus par le REGISTRE des
+ *  Traits (Indice ou argument), plus de regex propre. 0 si absent. */
 function armourFromTraits(traits: string[]): ArmourPoints {
-  for (const t of traits) {
-    const m = t.match(/^Armure\s*\(?\+?(\d+)\)?/i);
-    if (m) return emptyArmour(Number(m[1]));
-  }
-  return emptyArmour(0);
+  const r = resolveTraits(traits).find((x) => x.def.key === 'Armure');
+  const n = r ? Number(r.indice ?? r.arg ?? 0) : 0;
+  return emptyArmour(Number.isFinite(n) ? n : 0);
 }
 
 /** Catégorie de Taille depuis le trait « Taille (X) » (LDB 85) — lue par le REGISTRE des Traits
