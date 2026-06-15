@@ -5314,6 +5314,9 @@
       },
       {
         "talentId": "pilote"
+      },
+      {
+        "talentId": "artilleur"
       }
     ],
     "trappings": [],
@@ -5491,6 +5494,9 @@
       },
       {
         "talentId": "pilote"
+      },
+      {
+        "talentId": "artilleur"
       }
     ],
     "trappings": [],
@@ -31005,6 +31011,9 @@
       {
         "talentId": "travailleur-qualifie",
         "spec": "Engingneurie"
+      },
+      {
+        "talentId": "artilleur"
       }
     ],
     "trappings": [],
@@ -31210,6 +31219,9 @@
       {
         "talentId": "savant",
         "spec": "Engingneurie"
+      },
+      {
+        "talentId": "artilleur"
       }
     ],
     "trappings": [],
