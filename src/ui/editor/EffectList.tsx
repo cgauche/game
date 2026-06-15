@@ -94,7 +94,7 @@ export const EFFECT_GROUPS: [string, Effect['type'][]][] = [
   ['🎲 Tests', ['test', 'extendedTest', 'forceDoor']],
 ];
 
-const EFFECT_ICON: Record<Effect['type'], string> = {
+export const EFFECT_ICON: Record<Effect['type'], string> = {
   journal: '📜', setFlag: '🚩', document: '📄', giveTrapping: '🎒', giveMoney: '🪙', giveXp: '✨',
   restoreFortune: '🍀', inflictNightmares: '😱', inflictDisease: '🤢', inflictTrauma: '🦴', giveSin: '⚖️',
   corruptionExposure: '🧿', giveCorruption: '🧬', learnSpell: '🪄', rest: '🌙', mealParty: '🍲',
@@ -234,8 +234,9 @@ export function newEffect(type: Effect['type']): Effect {
   }
 }
 
-/** Corps DÉPLIÉ d'un effet : select de type (groupé) + champs spécifiques. */
-function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChange: (e: Effect) => void; ctx: Ctx }) {
+/** Corps DÉPLIÉ d'un effet : select de type (groupé) + champs spécifiques. `exclude` retire des types
+ *  du sélecteur (ex. la feuille `do` d'un Flow exclut `test`, devenu un nœud Flow à part entière). */
+export function EffectFields({ effect, onChange, ctx, exclude }: { effect: Effect; onChange: (e: Effect) => void; ctx: Ctx; exclude?: Effect['type'][] }) {
   const e = effect as any;
   const upd = (patch: any) => onChange({ ...e, ...patch });
   /** MAJ du modulateur `easierIf` du Test, en l'élaguant à `undefined` s'il ne cible plus rien. */
@@ -246,15 +247,18 @@ function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChange: (e:
   return (
     <div className="eff-body">
       <select className="eff-type" value={effect.type} onChange={(ev) => onChange(newEffect(ev.target.value as Effect['type']))}>
-        {EFFECT_GROUPS.map(([g, types]) => (
-          <optgroup key={g} label={g}>
-            {types.map((t) => (
-              <option key={t} value={t}>
-                {EFFECT_LABEL[t]}
-              </option>
-            ))}
-          </optgroup>
-        ))}
+        {EFFECT_GROUPS.map(([g, types]) => {
+          const opts = types.filter((t) => !exclude?.includes(t));
+          return opts.length ? (
+            <optgroup key={g} label={g}>
+              {opts.map((t) => (
+                <option key={t} value={t}>
+                  {EFFECT_LABEL[t]}
+                </option>
+              ))}
+            </optgroup>
+          ) : null;
+        })}
       </select>
       <div className="eff-fields">
         {effect.type === 'journal' && <input placeholder="Texte du journal" value={e.text ?? ''} onChange={(ev) => upd({ text: ev.target.value })} />}
@@ -660,7 +664,7 @@ function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChange: (e:
 }
 
 /** Ferme le `<details>` parent du bouton cliqué (picker « + Effet »). */
-function closeDetails(el: HTMLElement) {
+export function closeDetails(el: HTMLElement) {
   el.closest('details')?.removeAttribute('open');
 }
 

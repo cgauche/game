@@ -6,12 +6,13 @@
  */
 import { useRef } from 'react';
 import { Scene, Trigger, EncounterDef, Dialogue, Effect, TemporalCondition } from '../../state/scene';
-import { EMPTY_FLOW, flowFromEffects, type Condition, type Flow } from '../../state/flow';
+import { EMPTY_FLOW, type Condition, type Flow } from '../../state/flow';
 import type { Warning } from '../../state/validateScene';
 import { nextEntityId } from '../../state/entityId';
 import { CreatureData } from '../../data';
 import { addEnemyMember, removeMember, patchMember, whenFlag, whenWindow, buildWhen, flowEffects } from './editorState';
 import { EffectList, effectCtxOf, Ctx } from './EffectList';
+import { FlowEditor } from './FlowEditor';
 import { DialogueDetail } from './DialogueDetail';
 import { ValidationPanel } from './ValidationPanel';
 
@@ -232,8 +233,8 @@ function TriggersTab({
               Supprimer
             </button>
           </div>
-          <div className="mini-title">Effets au déclenchement</div>
-          <EffectList effects={flowEffects(t.flow)} onChange={(eff) => upd({ flow: flowFromEffects(eff) })} ctx={ctx} />
+          <div className="mini-title">Au déclenchement (effets · conditions · tests)</div>
+          <FlowEditor flow={t.flow} onChange={(flow) => upd({ flow })} ctx={ctx} />
         </div>
       ) : (
         <div className="logic-detail hint">Sélectionnez un trigger (liste ou carte) pour éditer ses effets.</div>

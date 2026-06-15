@@ -6,9 +6,13 @@
  */
 import { useState } from 'react';
 import { Dialogue, DialogueNode, DialogueChoice } from '../../state/scene';
-import { flowFromEffects } from '../../state/flow';
-import { whenFlag, buildWhen, flowEffects } from './editorState';
-import { EffectList, Ctx } from './EffectList';
+import { EMPTY_FLOW, type Flow } from '../../state/flow';
+import { whenFlag, buildWhen } from './editorState';
+import { Ctx } from './EffectList';
+import { FlowEditor } from './FlowEditor';
+
+/** Nombre de blocs de PREMIER niveau d'un Flow (badge du choix). */
+const flowLen = (flow?: Flow): number => (!flow ? 0 : flow.kind === 'seq' ? flow.steps.length : 1);
 
 export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue; onChange: (d: Dialogue) => void; ctx: Ctx }) {
   const [nodeId, setNodeId] = useState<string>(dialogue.start);
@@ -106,7 +110,7 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                       {c.next ? ` → ${c.next}` : ' → fin'}
                       {c.cost?.gold || c.cost?.silver || c.cost?.brass ? ' · 💰' : ''}
                       {whenFlag(c.when) ? ' · si ' + whenFlag(c.when) : ''}
-                      {c.flow && flowEffects(c.flow).length ? ` · ${flowEffects(c.flow).length} effet(s)` : ''}
+                      {flowLen(c.flow) ? ` · ${flowLen(c.flow)} bloc(s)` : ''}
                     </span>
                     <span className="eff-actions" onClick={(e) => e.preventDefault()}>
                       <button className="btn small danger" title="Supprimer le choix" onClick={() => updNode({ choices: node.choices.filter((_, i) => i !== ci) })}>
@@ -147,7 +151,7 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                         ))}
                       </span>
                     </div>
-                    <EffectList effects={c.flow ? flowEffects(c.flow) : []} onChange={(eff) => updChoice(ci, { flow: eff.length ? flowFromEffects(eff) : undefined })} ctx={ctx} />
+                    <FlowEditor flow={c.flow ?? EMPTY_FLOW} ctx={ctx} onChange={(flow) => updChoice(ci, { flow: flowLen(flow) ? flow : undefined })} />
                   </div>
                 </details>
               ))}

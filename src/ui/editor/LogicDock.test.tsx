@@ -53,7 +53,7 @@ describe('LogicDock — onglet Triggers (master-détail, édition LIVE)', () => 
     ];
     const html = renderToStaticMarkup(dock({ scene, tab: 'triggers', trigSel: 'trig-porte' }));
     expect(html).toContain('trig-porte');
-    expect(html).toContain('Effets au déclenchement');
+    expect(html).toContain('Au déclenchement'); // éditeur de Flow (effets · conditions · tests)
     expect(html).toContain('La porte grince');
   });
 });
