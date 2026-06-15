@@ -39,10 +39,28 @@ function post(p: P, h: number): string {
 /** Quad « tranche » de la face entre deux hauteurs (h0 bas, h1 haut), suivant l'arête a→b. */
 const slab = (a: P, b: P, h0: number, h1: number) => `${a.cx},${a.cy - h0} ${b.cx},${b.cy - h0} ${b.cx},${b.cy - h1} ${a.cx},${a.cy - h1}`;
 
+const lerpP = (A: P, B: P, t: number): P => ({ cx: A.cx + (B.cx - A.cx) * t, cy: A.cy + (B.cy - A.cy) * t });
+
+/** Mur en VUE DU DESSUS : un trait ÉPAIS posé SUR l'arête (pas d'extrusion verticale — sinon le mur
+ *  « flotte » comme un panneau au-dessus de la case). Une PORTE = ouverture au milieu (deux jambages). */
+function topWall(w: WallSeg, a: P, b: P, dims: Dims): { d: number; svg: string } {
+  const seg = (p: P, q: P, width: number, col: string) =>
+    `<line x1="${p.cx}" y1="${p.cy}" x2="${q.cx}" y2="${q.cy}" stroke="${col}" stroke-width="${width}" stroke-linecap="round"/>`;
+  let svg: string;
+  if (w.door) {
+    // deux jambages, ouverture franchissable au centre
+    svg = seg(a, lerpP(a, b, 0.3), 7, '#5b4a35') + seg(lerpP(a, b, 0.7), b, 7, '#5b4a35');
+  } else {
+    svg = seg(a, b, 8, '#2c2419') + seg(a, b, 5, '#6e5940'); // liseré sombre + dessus bois
+  }
+  return { d: wallDepth(w, dims) + 0.6, svg: `<g>${svg}</g>` }; // au-dessus des sols
+}
+
 /** SVG d'un segment de mur TEXTURÉ (panneau encadré + moulures + plinthe + ombrage par côté) + sa
  *  profondeur, pour le tri global de IsoStage. Une PORTE est ajourée (ouverture basse + linteau). */
 export function wallSeg(w: WallSeg, dims: Dims): { d: number; svg: string } {
   const [a, b] = edgeEnds(w, dims);
+  if (dims.view === 'top') return topWall(w, a, b, dims); // vue du dessus : trait sur l'arête, pas d'extrusion
   const H = WALL_H;
   // Palette par orientation (lumière en haut-gauche) : faces N (vers le bas-droit) plus sombres que E.
   const N = w.side === 'N';

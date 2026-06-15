@@ -1,5 +1,18 @@
-import { tileCenter, depth, LEVEL_H, TW, TH, type Dims } from './iso';
+import { tileCenter, depth, LEVEL_H, TW, TH, CELL, type Dims } from './iso';
 import type { Scene } from '../state/scene';
+
+/** Escalier en VUE DU DESSUS : un carré « gironné » (lignes de marches) + un chevron « monter » — un
+ *  symbole de plan, pas une extrusion (qui flotterait). */
+function topStair(s: NonNullable<Scene['stairs']>[number], dims: Dims): { d: number; svg: string } {
+  const lo = Math.min(s.from.z, s.to.z);
+  const x = s.from.x, y = s.from.y;
+  const { cx, cy } = tileCenter(x, y, dims, lo);
+  const h = (CELL / 2) * 0.82;
+  let svg = `<rect x="${cx - h}" y="${cy - h}" width="${2 * h}" height="${2 * h}" rx="2" fill="#6e5940" stroke="#2c2419" stroke-width="1"/>`;
+  for (let i = 1; i < 5; i++) { const ty = cy - h + 2 * h * (i / 5); svg += `<line x1="${cx - h}" y1="${ty}" x2="${cx + h}" y2="${ty}" stroke="#3c3022" stroke-width="1.6"/>`; }
+  svg += `<path d="M${cx - 7},${cy + 6} L${cx},${cy - 7} L${cx + 7},${cy + 6}" fill="none" stroke="#ecdcb2" stroke-width="2.2" stroke-linejoin="round"/>`; // « ↑ monter »
+  return { d: depth(x, y, dims, lo) + 0.7, svg: `<g>${svg}</g>` };
+}
 
 /**
  * Rendu des ESCALIERS — `Scene.stairs` (franchissement vertical d'un étage) dessiné comme une vraie
@@ -11,6 +24,7 @@ const STEPS_PER_LEVEL = 6;
 
 /** SVG + profondeur d'une volée reliant (x,y,from.z) à (x,y,to.z). */
 export function stairSeg(s: NonNullable<Scene['stairs']>[number], dims: Dims): { d: number; svg: string } {
+  if (dims.view === 'top') return topStair(s, dims); // vue du dessus : symbole de plan, pas d'extrusion
   const lo = Math.min(s.from.z, s.to.z);
   const hi = Math.max(s.from.z, s.to.z);
   const x = s.from.x, y = s.from.y;
