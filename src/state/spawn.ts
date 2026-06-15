@@ -5,7 +5,7 @@
 import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints, BodyShape, SkillInstance, TalentInstance } from '../engine/types';
 import { skillCharacteristic } from '../engine/character';
 import { parseStatEntry, type TraitInstance, type TraitList } from '../engine/statEntry';
-import { findCreature, findSkillById, CreatureData, type SkillRef } from '../data';
+import { findCreature, findSkillById, findTalentById, CreatureData, type SkillRef, type TalentRef } from '../data';
 import { CustomStatblock, EntityAppearance } from './scene';
 import { emptyArmour } from '../engine/items';
 import { maxWounds, bonus } from '../engine/characteristics';
@@ -186,9 +186,24 @@ export function skillsFromBook(list: (string | SkillRef)[] | undefined, printedC
   return out;
 }
 
-/** Talents d'un statbloc (libellés concrets : « Magie des Arcanes (Ghur) », « Menaçant »). */
-export function talentsFromBook(list: string[] | undefined): TalentInstance[] {
-  return (list ?? []).map((name) => ({ name: name.trim(), times: 1 })).filter((t) => t.name);
+/** Talents d'une créature/statbloc → `TalentInstance[]` (libellés concrets : « Magie des Arcanes (Ghur) »,
+ *  « Menaçant »). Accepte DEUX formes : `TalentRef` STRUCTURÉ (bestiaire migré — id stable + niveau/spec,
+ *  plus de parsing) ou chaîne legacy d'un statbloc d'éditeur, parsée à la volée. Le nom RECONSTRUIT garde
+ *  sa spec entre parenthèses : c'est la clé du registre combatFeatures (`featureKey`) et du grimoire. */
+export function talentsFromBook(list: (string | TalentRef)[] | undefined): TalentInstance[] {
+  const out: TalentInstance[] = [];
+  for (const raw of list ?? []) {
+    if (typeof raw === 'object') {
+      const t = findTalentById(raw.talentId);
+      if (!t) continue; // référence inconnue (catalogue) : ignorée (rien d'inventé)
+      const name = t.label + (raw.spec ? ` (${raw.spec})` : '');
+      out.push({ name, times: raw.times ?? 1 });
+      continue;
+    }
+    const name = raw.trim();
+    if (name) out.push({ name, times: 1 });
+  }
+  return out;
 }
 
 /** Personnalisations d'AUTEUR au spawn d'une créature (portées par SceneEntity.combat). */

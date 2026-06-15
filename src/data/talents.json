@@ -1,5 +1,6 @@
 [
   {
+    "id": "talent-aleatoire",
     "label": "Talent aléatoire",
     "max": null,
     "test": null,
@@ -15,6 +16,7 @@
     }
   },
   {
+    "id": "acrobaties-equestres",
     "label": "Acrobaties équestres",
     "max": "Bonus d'Agilité",
     "test": "Tests d'Esquive à cheval, Chevaucher (Cheval)",
@@ -30,6 +32,7 @@
     }
   },
   {
+    "id": "affable",
     "label": "Affable",
     "max": 1,
     "test": null,
@@ -45,6 +48,7 @@
     }
   },
   {
+    "id": "affinite-avec-les-animaux",
     "label": "Affinité avec les animaux",
     "max": "Bonus de Force Mentale",
     "test": "Emprise sur les animaux",
@@ -60,6 +64,7 @@
     }
   },
   {
+    "id": "ambidextre",
     "label": "Ambidextre",
     "max": 2,
     "test": null,
@@ -75,6 +80,7 @@
     }
   },
   {
+    "id": "ame-pure",
     "label": "Âme pure",
     "max": "Bonus de Force Mentale",
     "test": null,
@@ -90,6 +96,7 @@
     }
   },
   {
+    "id": "artilleur",
     "label": "Artilleur",
     "max": "Bonus de Dextérité",
     "test": null,
@@ -105,6 +112,7 @@
     }
   },
   {
+    "id": "artiste",
     "label": "Artiste",
     "max": "Bonus de Dextérité",
     "test": "Art (Au choix)",
@@ -131,6 +139,7 @@
     }
   },
   {
+    "id": "assaut-feroce",
     "label": "Assaut féroce",
     "max": "Bonus d'Agilité",
     "test": "Corps à corps quand vous effectuez des attaques supplémentaires",
@@ -146,6 +155,7 @@
     }
   },
   {
+    "id": "attirant",
     "label": "Attirant",
     "max": "Bonus de Sociabilité",
     "test": "Test de Charme pour influencer ceux qui vous trouvent attirant.",
@@ -161,6 +171,7 @@
     }
   },
   {
+    "id": "baratiner",
     "label": "Baratiner",
     "max": "Bonus de Sociabilité",
     "test": "Charme pour Baratiner",
@@ -176,6 +187,7 @@
     }
   },
   {
+    "id": "battement",
     "label": "Battement",
     "max": "Bonus de Capacité de Combat",
     "test": "Corps à corps pour effectuer une manœuvre de Battement",
@@ -191,6 +203,7 @@
     }
   },
   {
+    "id": "benediction-de-tzeentch",
     "label": "Bénédiction de Tzeentch",
     "max": 1,
     "test": null,
@@ -206,6 +219,7 @@
     }
   },
   {
+    "id": "beni",
     "label": "Béni",
     "max": 1,
     "test": null,
@@ -232,6 +246,7 @@
     }
   },
   {
+    "id": "bon-marcheur",
     "label": "Bon marcheur",
     "max": "Bonus d'Agilité",
     "test": "Tests d'Athlétisme pour traverser le Terrain",
@@ -254,6 +269,7 @@
     }
   },
   {
+    "id": "bonnes-jambes",
     "label": "Bonnes jambes",
     "max": "Bonus de Force",
     "test": null,
@@ -269,6 +285,7 @@
     }
   },
   {
+    "id": "bricoleur",
     "label": "Bricoleur",
     "max": "Bonus de Dextérité",
     "test": "Tests de Métier pour réparer des objets cassés",
@@ -284,6 +301,7 @@
     }
   },
   {
+    "id": "brouet",
     "label": "Brouet",
     "max": "Bonus d'Endurance",
     "test": "Tests de Résistance pour résister à la faim",
@@ -299,6 +317,7 @@
     }
   },
   {
+    "id": "caid",
     "label": "Caïd",
     "max": 1,
     "test": null,
@@ -314,6 +333,7 @@
     }
   },
   {
+    "id": "cavalier-emerite",
     "label": "Cavalier émérite",
     "max": "Bonus d'Agilité",
     "test": "Chevaucher (Cheval) pendant les combats",
@@ -329,6 +349,7 @@
     }
   },
   {
+    "id": "chanceux",
     "label": "Chanceux",
     "max": "Bonus de Sociabilité",
     "test": null,
@@ -344,6 +365,7 @@
     }
   },
   {
+    "id": "charge-berserk",
     "label": "Charge berserk",
     "max": "Bonus de Force",
     "test": "Corps à corps sur un Round lorsque vous effectuez une Charge berserk",
@@ -359,6 +381,7 @@
     }
   },
   {
+    "id": "chat-de-gouttiere",
     "label": "Chat de gouttière",
     "max": "Bonus d'Initiative",
     "test": "Discrétion (Urbaine)",
@@ -374,6 +397,7 @@
     }
   },
   {
+    "id": "chirurgie",
     "label": "Chirurgie",
     "max": "Bonus d'Intelligence",
     "test": "Tests de Guérison en dehors des Rounds de combat ; quand vous avez le temps de le faire correctement.",
@@ -389,6 +413,7 @@
     }
   },
   {
+    "id": "claquer-le-fouet",
     "label": "Claquer le fouet",
     "max": "Bonus de Dextérité",
     "test": "Tests de Conduite d'attelage ou de Chevaucher quand vous Fuyez ou lors d'une Course.",
@@ -404,6 +429,7 @@
     }
   },
   {
+    "id": "coeur-vaillant",
     "label": "Cœur vaillant",
     "max": "Bonus de Force Mentale",
     "test": "Tests de Calme pour retirer les États Brisé",
@@ -419,6 +445,7 @@
     }
   },
   {
+    "id": "combat-deloyal",
     "label": "Combat déloyal",
     "max": "Bonus de Capacité de Combat",
     "test": "Corps à corps (Bagarre)",
@@ -434,6 +461,7 @@
     }
   },
   {
+    "id": "combat-instinctif",
     "label": "Combat instinctif",
     "max": "Bonus d'Initiative",
     "test": null,
@@ -449,6 +477,7 @@
     }
   },
   {
+    "id": "combattant-au-contact",
     "label": "Combattant au contact",
     "max": "Bonus de Dextérité",
     "test": "Corps à corps quand vous combattez au contact ou que vous allez au contact",
@@ -464,6 +493,7 @@
     }
   },
   {
+    "id": "combattant-en-espace-clos",
     "label": "Combattant en espace clos",
     "max": "Bonus d'Agilité",
     "test": "Esquive dans des environnements clos",
@@ -479,6 +509,7 @@
     }
   },
   {
+    "id": "concocter",
     "label": "Concocter",
     "max": "Bonus d'Intelligence",
     "test": "Savoir (Apothicaire)",
@@ -494,6 +525,7 @@
     }
   },
   {
+    "id": "contorsionniste",
     "label": "Contorsionniste",
     "max": "Bonus d'Agilité",
     "test": "Représentation et Agilité quand vous vous aidez de Contorsionniste",
@@ -509,6 +541,7 @@
     }
   },
   {
+    "id": "controle-de-la-frenesie",
     "label": "Contrôle de la Frénésie",
     "max": "Bonus de Force Mentale",
     "test": "Tests de Corps à corps quand vous êtes en Frénésie",
@@ -524,6 +557,7 @@
     }
   },
   {
+    "id": "cooperatif",
     "label": "Coopératif",
     "max": "Bonus de Sociabilité",
     "test": "Tests sociaux pour influencer un supérieur",
@@ -539,6 +573,7 @@
     }
   },
   {
+    "id": "commandant-d-equipe",
     "label": "Commandant d'équipe",
     "max": "Bonus d'Initiative",
     "test": "Projectiles pour les tirs avec une arme dotée du Défaut Arme d'équipe",
@@ -554,6 +589,7 @@
     }
   },
   {
+    "id": "costaud",
     "label": "Costaud",
     "max": "Bonus de Force",
     "test": "Tests de Force quand vous soulevez",
@@ -569,6 +605,7 @@
     }
   },
   {
+    "id": "coude-a-coude",
     "label": "Coude-à-coude",
     "max": "Bonus de Capacité de Combat",
     "test": "Corps à corps quand vous vous trouvez à côté d'un allié avec Coude-à-coude",
@@ -584,6 +621,7 @@
     }
   },
   {
+    "id": "coup-puissant",
     "label": "Coup puissant",
     "max": "Bonus de Force",
     "test": null,
@@ -599,6 +637,7 @@
     }
   },
   {
+    "id": "criminel",
     "label": "Criminel",
     "max": "Aucun",
     "test": null,
@@ -614,6 +653,7 @@
     }
   },
   {
+    "id": "desarmer",
     "label": "Désarmer",
     "max": "Bonus d'Initiative",
     "test": "Tests de Corps à corps concernant ce Talent",
@@ -629,6 +669,7 @@
     }
   },
   {
+    "id": "destinee",
     "label": "Destinée",
     "max": 1,
     "test": null,
@@ -644,6 +685,7 @@
     }
   },
   {
+    "id": "detection-d-artefact",
     "label": "Détection d'artefact",
     "max": "Bonus d'Initiative",
     "test": "Tests d'Intuition pour détecter des artefacts magiques",
@@ -659,6 +701,7 @@
     }
   },
   {
+    "id": "determine",
     "label": "Déterminé",
     "max": "Bonus de Force",
     "test": null,
@@ -674,6 +717,7 @@
     }
   },
   {
+    "id": "diction-instinctive",
     "label": "Diction instinctive",
     "max": "Bonus d'Initiative",
     "test": "Langue (Magick) quand vous faites une Incantation",
@@ -689,6 +733,7 @@
     }
   },
   {
+    "id": "discret",
     "label": "Discret",
     "max": "Bonus d'Agilité",
     "test": "N'importe quel Test impliquant Filature",
@@ -704,6 +749,7 @@
     }
   },
   {
+    "id": "distraire",
     "label": "Distraire",
     "max": "Bonus d'Agilité",
     "test": "Athlétisme pour Distraire",
@@ -719,6 +765,7 @@
     }
   },
   {
+    "id": "disciple-du-changement",
     "label": "Disciple du changement",
     "max": 1,
     "test": null,
@@ -734,6 +781,7 @@
     }
   },
   {
+    "id": "doigts-de-fee",
     "label": "Doigts de fée",
     "max": 1,
     "test": null,
@@ -749,6 +797,7 @@
     }
   },
   {
+    "id": "double-vie",
     "label": "Double vie",
     "max": 1,
     "test": null,
@@ -764,6 +813,7 @@
     }
   },
   {
+    "id": "doue-en-calcul",
     "label": "Doué en calcul",
     "max": "Bonus d'Intelligence",
     "test": "Évaluation, Pari",
@@ -779,6 +829,7 @@
     }
   },
   {
+    "id": "dur-a-cuire",
     "label": "Dur à cuire",
     "max": "Bonus d'Endurance",
     "test": null,
@@ -794,6 +845,7 @@
     }
   },
   {
+    "id": "effraction",
     "label": "Effraction",
     "max": "Bonus de Force",
     "test": "Corps à corps quand vous forcez ou brisez des objets inanimés",
@@ -809,6 +861,7 @@
     }
   },
   {
+    "id": "effrayant",
     "label": "Effrayant",
     "max": "Bonus de Force",
     "test": null,
@@ -824,6 +877,7 @@
     }
   },
   {
+    "id": "endurci",
     "label": "Endurci",
     "max": "Bonus d'Endurance",
     "test": null,
@@ -839,6 +893,7 @@
     }
   },
   {
+    "id": "empreint-d-ulgu",
     "label": "Empreint d'Ulgu",
     "max": 1,
     "test": "Tout Test faisant appel à Discrétion",
@@ -854,6 +909,7 @@
     }
   },
   {
+    "id": "empreint-de-la-magie",
     "label": "Empreint de la Magie",
     "max": 1,
     "test": null,
@@ -869,6 +925,7 @@
     }
   },
   {
+    "id": "ergoteur",
     "label": "Ergoteur",
     "max": "Bonus de Sociabilité",
     "test": "Tests de Charme quand vous argumentez ou débattez",
@@ -884,6 +941,7 @@
     }
   },
   {
+    "id": "escroquer",
     "label": "Escroquer",
     "max": "Bonus d'Intelligence",
     "test": "Intelligence (Escroquerie)",
@@ -899,6 +957,7 @@
     }
   },
   {
+    "id": "exaltant",
     "label": "Exaltant",
     "max": "Bonus de Sociabilité",
     "test": "Commandement pendant la guerre",
@@ -914,6 +973,7 @@
     }
   },
   {
+    "id": "faire-la-manche",
     "label": "Faire la manche",
     "max": "Bonus de Sociabilité",
     "test": "Charme (Mendicité)",
@@ -929,6 +989,7 @@
     }
   },
   {
+    "id": "feinte",
     "label": "Feinte",
     "max": "Bonus de Capacité de Combat",
     "test": "Corps à corps (Escrime) pour les Feintes",
@@ -944,6 +1005,7 @@
     }
   },
   {
+    "id": "ferveur-ardente",
     "label": "Ferveur ardente",
     "max": "Bonus de Sociabilité",
     "test": "Charme quand vous parlez pour défendre votre cause",
@@ -959,6 +1021,7 @@
     }
   },
   {
+    "id": "flagellant",
     "label": "Flagellant",
     "max": "Bonus d'Endurance",
     "test": "Tout Test pour résister aux Puissances de la Ruine",
@@ -974,6 +1037,7 @@
     }
   },
   {
+    "id": "flairer-les-ennuis",
     "label": "Flairer les ennuis",
     "max": "Bonus d'Initiative",
     "test": "N'importe quel Test pour repérer les perturbateurs",
@@ -989,6 +1053,7 @@
     }
   },
   {
+    "id": "frappe-assommante",
     "label": "Frappe assommante",
     "max": "Bonus de Capacité de Combat",
     "test": "Tests de Corps à corps lorsque vous effectuez une Frappe assommante",
@@ -1004,6 +1069,7 @@
     }
   },
   {
+    "id": "frappe-blessante",
     "label": "Frappe blessante",
     "max": "Bonus d'Initiative",
     "test": null,
@@ -1019,6 +1085,7 @@
     }
   },
   {
+    "id": "frappe-precise",
     "label": "Frappe précise",
     "max": "Bonus d'Initiative",
     "test": null,
@@ -1034,6 +1101,7 @@
     }
   },
   {
+    "id": "frappe-reactive",
     "label": "Frappe réactive",
     "max": "Bonus d'Initiative",
     "test": "Tests d'Initiative pour tout ce qui concerne ce Talent",
@@ -1049,6 +1117,7 @@
     }
   },
   {
+    "id": "frenesie",
     "label": "Frénésie",
     "max": 1,
     "test": null,
@@ -1064,6 +1133,7 @@
     }
   },
   {
+    "id": "fuite",
     "label": "Fuite !",
     "max": "Bonus d'Agilité",
     "test": "Athlétisme quand vous Fuyez",
@@ -1079,6 +1149,7 @@
     }
   },
   {
+    "id": "grand-orateur",
     "label": "Grand orateur",
     "max": "Bonus de Sociabilité",
     "test": null,
@@ -1094,6 +1165,7 @@
     }
   },
   {
+    "id": "grimpeur",
     "label": "Grimpeur",
     "max": "Bonus de Force",
     "test": "Escalade",
@@ -1109,6 +1181,7 @@
     }
   },
   {
+    "id": "guerrier-ne",
     "label": "Guerrier né",
     "max": 1,
     "test": null,
@@ -1124,6 +1197,7 @@
     }
   },
   {
+    "id": "guide-fluvial",
     "label": "Guide fluvial",
     "max": "Bonus d'Initiative",
     "test": "N'importe quel Test de Savoir concernant les questions fluviales",
@@ -1139,6 +1213,7 @@
     }
   },
   {
+    "id": "haine",
     "label": "Haine",
     "max": "Bonus de Force Mentale",
     "test": "Force Mentale (Groupe à combattre)",
@@ -1163,6 +1238,7 @@
     }
   },
   {
+    "id": "haine-sacree",
     "label": "Haine sacrée",
     "max": "Bonus de Sociabilité",
     "test": null,
@@ -1178,6 +1254,7 @@
     }
   },
   {
+    "id": "harmonisation-aethyrique",
     "label": "Harmonisation aethyrique",
     "max": "Bonus d'Initiative",
     "test": "Focalisation (Au choix)",
@@ -1193,6 +1270,7 @@
     }
   },
   {
+    "id": "identite-secrete",
     "label": "Identité secrète",
     "max": "Bonus d'Intelligence",
     "test": "Tests de Divertissement (Interprétation) pour appuyer vos identités secrètes",
@@ -1208,6 +1286,7 @@
     }
   },
   {
+    "id": "imitation",
     "label": "Imitation",
     "max": "Bonus d'Initiative",
     "test": "Tests de Divertissement (Interprétation) où les accents sont importants",
@@ -1223,6 +1302,7 @@
     }
   },
   {
+    "id": "imperturbable",
     "label": "Imperturbable",
     "max": 1,
     "test": null,
@@ -1238,6 +1318,7 @@
     }
   },
   {
+    "id": "impitoyable",
     "label": "Impitoyable",
     "max": "Bonus d'Agilité",
     "test": null,
@@ -1253,6 +1334,7 @@
     }
   },
   {
+    "id": "inebranlable",
     "label": "Inébranlable",
     "max": "Bonus de Force Mentale",
     "test": "Tests de Calme pour résister à la panique de la Poudre noire",
@@ -1268,6 +1350,7 @@
     }
   },
   {
+    "id": "infatigable",
     "label": "Infatigable",
     "max": "Bonus de Force",
     "test": "Ramer et Natation",
@@ -1283,6 +1366,7 @@
     }
   },
   {
+    "id": "insignifiant",
     "label": "Insignifiant",
     "max": "Bonus de Sociabilité",
     "test": "Discrétion quand vous êtes à la vue de tous",
@@ -1298,6 +1382,7 @@
     }
   },
   {
+    "id": "intrigant",
     "label": "Intrigant",
     "max": "Bonus d'Intelligence",
     "test": "Tests d'Intelligence pour tout ce qui concerne ce Talent",
@@ -1313,6 +1398,7 @@
     }
   },
   {
+    "id": "invocation",
     "label": "Invocation",
     "max": 1,
     "test": null,
@@ -1339,6 +1425,7 @@
     }
   },
   {
+    "id": "lecture-rapide",
     "label": "Lecture rapide",
     "max": "Bonus d'Intelligence",
     "test": "Recherche et Langue si la vitesse de lecture est importante Vous lisez les livres à une cadence effrénée.",
@@ -1354,6 +1441,7 @@
     }
   },
   {
+    "id": "linguistique",
     "label": "Linguistique",
     "max": "Bonus d'Intelligence",
     "test": "Langue (toutes)",
@@ -1369,6 +1457,7 @@
     }
   },
   {
+    "id": "lire-ecrire",
     "label": "Lire/Écrire",
     "max": 1,
     "test": null,
@@ -1384,6 +1473,7 @@
     }
   },
   {
+    "id": "lire-sur-les-levres",
     "label": "Lire sur les lèvres",
     "max": "Bonus d'Initiative",
     "test": "Tests de Perception pour tout ce qui concerne ce Talent",
@@ -1399,6 +1489,7 @@
     }
   },
   {
+    "id": "loup-de-mer",
     "label": "Loup de mer",
     "max": "Bonus d'Agilité",
     "test": "Voile (tout vaisseau capable de naviguer en mer)",
@@ -1414,6 +1505,7 @@
     }
   },
   {
+    "id": "machoires-d-acier",
     "label": "Mâchoires d'acier",
     "max": "Bonus d'Endurance",
     "test": "Tests de Résistance pour résister à l'État Sonné",
@@ -1429,6 +1521,7 @@
     }
   },
   {
+    "id": "mage-de-guerre",
     "label": "Mage de guerre",
     "max": 1,
     "test": null,
@@ -1444,6 +1537,7 @@
     }
   },
   {
+    "id": "magie-des-arcanes",
     "label": "Magie des Arcanes",
     "max": 1,
     "test": null,
@@ -1472,6 +1566,7 @@
     }
   },
   {
+    "id": "magie-du-chaos",
     "label": "Magie du Chaos",
     "max": 1,
     "test": null,
@@ -1491,6 +1586,7 @@
     }
   },
   {
+    "id": "magie-mineure",
     "label": "Magie mineure",
     "max": 1,
     "test": null,
@@ -1506,6 +1602,7 @@
     }
   },
   {
+    "id": "magnum-opus",
     "label": "Magnum Opus",
     "max": "Aucun",
     "test": null,
@@ -1521,6 +1618,7 @@
     }
   },
   {
+    "id": "mains-agiles",
     "label": "Mains agiles",
     "max": "Bonus de Dextérité",
     "test": "Escamotage, Corps à corps (Bagarre) pour toucher un adversaire",
@@ -1536,6 +1634,7 @@
     }
   },
   {
+    "id": "maitre-artisan",
     "label": "Maître artisan",
     "max": "Bonus de Dextérité",
     "test": "Métier (Au choix)",
@@ -1596,6 +1695,7 @@
     }
   },
   {
+    "id": "maitre-en-deguisement",
     "label": "Maître en déguisement",
     "max": "Bonus de Sociabilité",
     "test": "Divertissement (Interprétation) lorsque vous êtes quelqu'un d'autre",
@@ -1611,6 +1711,7 @@
     }
   },
   {
+    "id": "maitrise-des-des",
     "label": "Maîtrise des dés",
     "max": "Bonus d'Intelligence",
     "test": "Pari et Escamotage quand vous jouez à un jeu de dés",
@@ -1626,6 +1727,7 @@
     }
   },
   {
+    "id": "maitrise-du-combat",
     "label": "Maîtrise du combat",
     "max": "Bonus d'Agilité",
     "test": null,
@@ -1641,6 +1743,7 @@
     }
   },
   {
+    "id": "maniement-de-deux-armes",
     "label": "Maniement de deux armes",
     "max": "Bonus d'Agilité",
     "test": "Corps à corps ou Projectiles si vous attaquez avec deux armes",
@@ -1656,6 +1759,7 @@
     }
   },
   {
+    "id": "marinier",
     "label": "Marinier",
     "max": "Bonus d'Agilité",
     "test": "Tests de Voile pour les navires fluviaux.",
@@ -1671,6 +1775,7 @@
     }
   },
   {
+    "id": "menacant",
     "label": "Menaçant",
     "max": "Bonus de Force",
     "test": "Intimidation",
@@ -1686,6 +1791,7 @@
     }
   },
   {
+    "id": "menteur",
     "label": "Menteur",
     "max": "Bonus de Sociabilité",
     "test": "Charme quand vous mentez",
@@ -1701,6 +1807,7 @@
     }
   },
   {
+    "id": "nageur-endurant",
     "label": "Nageur endurant",
     "max": "Bonus de Force",
     "test": "Natation",
@@ -1716,6 +1823,7 @@
     }
   },
   {
+    "id": "nanti",
     "label": "Nanti",
     "max": "Aucun",
     "test": null,
@@ -1731,6 +1839,7 @@
     }
   },
   {
+    "id": "negociateur",
     "label": "Négociateur",
     "max": "Bonus de Sociabilité",
     "test": "Marchandage",
@@ -1746,6 +1855,7 @@
     }
   },
   {
+    "id": "noblesse",
     "label": "Noblesse",
     "max": 1,
     "test": "N'importe quel Test influencé par votre Statut",
@@ -1761,6 +1871,7 @@
     }
   },
   {
+    "id": "noctambule",
     "label": "Noctambule",
     "max": "Bonus d'Endurance",
     "test": "Charme et Ragot lors des fêtes, Résistance à l'alcool",
@@ -1776,6 +1887,7 @@
     }
   },
   {
+    "id": "nomade",
     "label": "Nomade",
     "max": "Bonus d'Agilité",
     "test": "Tests de Discrétion en environnement Rural",
@@ -1791,6 +1903,7 @@
     }
   },
   {
+    "id": "numismate",
     "label": "Numismate",
     "max": "Bonus d'Initiative",
     "test": "Évaluation pour établir la valeur de pièces",
@@ -1806,6 +1919,7 @@
     }
   },
   {
+    "id": "obstine",
     "label": "Obstiné",
     "max": "Bonus de Force Mentale",
     "test": null,
@@ -1821,6 +1935,7 @@
     }
   },
   {
+    "id": "oeil-du-chasseur",
     "label": "Œil du chasseur",
     "max": "Bonus d'Initiative",
     "test": "N'importe quel Test pour traquer ou capturer du gibier",
@@ -1836,6 +1951,7 @@
     }
   },
   {
+    "id": "orateur",
     "label": "Orateur",
     "max": "Bonus de Sociabilité",
     "test": null,
@@ -1851,6 +1967,7 @@
     }
   },
   {
+    "id": "oreille-absolue",
     "label": "Oreille absolue",
     "max": "Bonus d'Initiative",
     "test": "Divertissement (Chant), Langue (Langues tonales, telles que l'elthárin, le cathayan, le Magick)",
@@ -1866,6 +1983,7 @@
     }
   },
   {
+    "id": "pansement-de-fortune",
     "label": "Pansement de fortune",
     "max": "Bonus d'Intelligence",
     "test": "Guérison pendant les Rounds de combat",
@@ -1881,6 +1999,7 @@
     }
   },
   {
+    "id": "pas-de-cote",
     "label": "Pas de côté",
     "max": "Bonus d'Agilité",
     "test": "Tests d'Esquive pour activer ce Talent",
@@ -1896,6 +2015,7 @@
     }
   },
   {
+    "id": "pecheur",
     "label": "Pêcheur",
     "max": "Bonus d'Initiative",
     "test": "Tout Test concernant la pêche",
@@ -1911,6 +2031,7 @@
     }
   },
   {
+    "id": "perception-de-la-magie",
     "label": "Perception de la magie",
     "max": "Bonus d'Initiative",
     "test": "Tests d'Intuition pour détecter les Sorciers",
@@ -1926,6 +2047,7 @@
     }
   },
   {
+    "id": "perseverant",
     "label": "Persévérant",
     "max": "Bonus d'Endurance",
     "test": "Tests de Résistance pour supporter les difficultés",
@@ -1941,6 +2063,7 @@
     }
   },
   {
+    "id": "perspicace",
     "label": "Perspicace",
     "max": 1,
     "test": null,
@@ -1956,6 +2079,7 @@
     }
   },
   {
+    "id": "petit",
     "label": "Petit",
     "max": 1,
     "test": null,
@@ -1971,6 +2095,7 @@
     }
   },
   {
+    "id": "pharmacologie",
     "label": "Pharmacologie",
     "max": "Bonus d'Intelligence",
     "test": "Métier (Apothicaire)",
@@ -1986,6 +2111,7 @@
     }
   },
   {
+    "id": "pied-marin",
     "label": "Pied marin",
     "max": "Bonus d'Endurance",
     "test": "Tout Tests pour résister au mal de mer",
@@ -2001,6 +2127,7 @@
     }
   },
   {
+    "id": "pilote",
     "label": "Pilote",
     "max": "Bonus d'Initiative",
     "test": "Tests de Ramer ou de Voile pendant que vous naviguez sur des eaux peu sûres",
@@ -2016,6 +2143,7 @@
     }
   },
   {
+    "id": "porte-bouclier",
     "label": "Porte-Bouclier",
     "max": "Bonus de Force",
     "test": "N'importe quel Test pour vous défendre avec un bouclier",
@@ -2031,6 +2159,7 @@
     }
   },
   {
+    "id": "presence-imposante",
     "label": "Présence imposante",
     "max": "Bonus de Sociabilité",
     "test": "Commandement",
@@ -2046,6 +2175,7 @@
     }
   },
   {
+    "id": "prevoyant",
     "label": "Prévoyant",
     "max": "Bonus d'Initiative",
     "test": null,
@@ -2061,6 +2191,7 @@
     }
   },
   {
+    "id": "rat-d-egout",
     "label": "Rat d'égout",
     "max": "Bonus d'Agilité",
     "test": "Tests de Discrétion dans les souterrains",
@@ -2076,6 +2207,7 @@
     }
   },
   {
+    "id": "rechargement-rapide",
     "label": "Rechargement rapide",
     "max": "Bonus de Dextérité",
     "test": null,
@@ -2091,6 +2223,7 @@
     }
   },
   {
+    "id": "reflexes-foudroyants",
     "label": "Réflexes foudroyants",
     "max": 1,
     "test": null,
@@ -2106,6 +2239,7 @@
     }
   },
   {
+    "id": "renversement",
     "label": "Renversement",
     "max": "Bonus de Capacité de Combat",
     "test": "Corps à corps quand vous vous défendez",
@@ -2121,6 +2255,7 @@
     }
   },
   {
+    "id": "resistance",
     "label": "Résistance",
     "max": "Bonus d'Endurance",
     "test": "Tous ceux pour résister à la Menace associée",
@@ -2142,6 +2277,7 @@
     }
   },
   {
+    "id": "resistance-a-la-magie",
     "label": "Résistance à la Magie",
     "max": "Bonus d'Endurance",
     "test": null,
@@ -2157,6 +2293,7 @@
     }
   },
   {
+    "id": "riposte",
     "label": "Riposte",
     "max": "Bonus d'Agilité",
     "test": "Corps à corps quand vous vous défendez",
@@ -2172,6 +2309,7 @@
     }
   },
   {
+    "id": "robuste",
     "label": "Robuste",
     "max": "Bonus d'Endurance",
     "test": null,
@@ -2187,6 +2325,7 @@
     }
   },
   {
+    "id": "sans-peur",
     "label": "Sans peur",
     "max": "Bonus de Force Mentale",
     "test": "Calme pour vous opposer à l'Intimidation, la Peur et la Terreur de votre Ennemi",
@@ -2223,6 +2362,7 @@
     }
   },
   {
+    "id": "saut-carpe",
     "label": "Saut carpé",
     "max": 1,
     "test": null,
@@ -2238,6 +2378,7 @@
     }
   },
   {
+    "id": "savant",
     "label": "Savant",
     "max": "Bonus d'Intelligence",
     "test": "Savoir (Savoir choisi)",
@@ -2305,6 +2446,7 @@
     }
   },
   {
+    "id": "savoir-vivre",
     "label": "Savoir-vivre",
     "max": "Bonus de Sociabilité",
     "test": "Charme et Ragot (Groupe Social)",
@@ -2329,6 +2471,7 @@
     }
   },
   {
+    "id": "seconde-vue",
     "label": "Seconde vue",
     "max": "Bonus d'Initiative",
     "test": "N'importe quel Test pour détecter les Vents de Magie",
@@ -2344,6 +2487,7 @@
     }
   },
   {
+    "id": "seigneur-de-guerre",
     "label": "Seigneur de guerre",
     "max": "Bonus de Sociabilité",
     "test": "Tests de Commandement pendant la guerre",
@@ -2359,6 +2503,7 @@
     }
   },
   {
+    "id": "sens-aiguise",
     "label": "Sens aiguisé",
     "max": "Bonus d'Initiative",
     "test": "Perception (Sens)",
@@ -2380,6 +2525,7 @@
     }
   },
   {
+    "id": "sens-de-l-orientation",
     "label": "Sens de l'orientation",
     "max": "Bonus d'Initiative",
     "test": "Orientation",
@@ -2395,6 +2541,7 @@
     }
   },
   {
+    "id": "sixieme-sens",
     "label": "Sixième sens",
     "max": "Bonus d'Initiative",
     "test": "Test d'Intuition impliquant votre Sixième sens",
@@ -2410,6 +2557,7 @@
     }
   },
   {
+    "id": "sociable",
     "label": "Sociable",
     "max": "Bonus de Sociabilité",
     "test": "Tests de Ragot avec les voyageurs",
@@ -2425,6 +2573,7 @@
     }
   },
   {
+    "id": "sorcier",
     "label": "Sorcier !",
     "max": "Bonus de Force Mentale",
     "test": null,
@@ -2440,6 +2589,7 @@
     }
   },
   {
+    "id": "souplesse-feline",
     "label": "Souplesse féline",
     "max": "Bonus d'Agilité",
     "test": "Athlétisme quand vous tombez",
@@ -2455,6 +2605,7 @@
     }
   },
   {
+    "id": "sprinter",
     "label": "Sprinter",
     "max": "Bonus de Force",
     "test": "Tests d'Athlétisme pour Courir",
@@ -2470,6 +2621,7 @@
     }
   },
   {
+    "id": "studieux",
     "label": "Studieux",
     "max": "Bonus d'Intelligence",
     "test": "Recherche",
@@ -2485,6 +2637,7 @@
     }
   },
   {
+    "id": "suborneur",
     "label": "Suborneur",
     "max": "Bonus de Sociabilité",
     "test": "Subornation",
@@ -2500,6 +2653,7 @@
     }
   },
   {
+    "id": "tireur-d-elite",
     "label": "Tireur d'élite",
     "max": 1,
     "test": null,
@@ -2515,6 +2669,7 @@
     }
   },
   {
+    "id": "tireur-de-precision",
     "label": "Tireur de précision",
     "max": 1,
     "test": null,
@@ -2530,6 +2685,7 @@
     }
   },
   {
+    "id": "tireur-embusque",
     "label": "Tireur embusqué",
     "max": 4,
     "test": "Portée (Longue – Extrême)",
@@ -2545,6 +2701,7 @@
     }
   },
   {
+    "id": "tir-mortel",
     "label": "Tir mortel",
     "max": 1,
     "test": null,
@@ -2560,6 +2717,7 @@
     }
   },
   {
+    "id": "tir-precis",
     "label": "Tir précis",
     "max": "Bonus de Capacité de Tir",
     "test": null,
@@ -2575,6 +2733,7 @@
     }
   },
   {
+    "id": "tir-rapide",
     "label": "Tir rapide",
     "max": "Bonus d'Agilité",
     "test": "Projectiles quand vous effectuez un Tir rapide",
@@ -2590,6 +2749,7 @@
     }
   },
   {
+    "id": "tir-sur",
     "label": "Tir sûr",
     "max": "Bonus d'Initiative",
     "test": null,
@@ -2605,6 +2765,7 @@
     }
   },
   {
+    "id": "tour-des-souvenirs",
     "label": "Tour des souvenirs",
     "max": "Bonus d'Intelligence",
     "test": null,
@@ -2620,6 +2781,7 @@
     }
   },
   {
+    "id": "trappeur",
     "label": "Trappeur",
     "max": "Bonus d'Initiative",
     "test": "Tests de Perception pour repérer des pièges, Piégeage",
@@ -2635,6 +2797,7 @@
     }
   },
   {
+    "id": "travailleur-qualifie",
     "label": "Travailleur qualifié",
     "max": "Bonus de Dextérité",
     "test": "Tous les Tests étendus appropriés de Métier.",
@@ -2695,6 +2858,7 @@
     }
   },
   {
+    "id": "tres-fort",
     "label": "Très fort",
     "max": 1,
     "test": null,
@@ -2710,6 +2874,7 @@
     }
   },
   {
+    "id": "tres-resistant",
     "label": "Très résistant",
     "max": 1,
     "test": null,
@@ -2725,6 +2890,7 @@
     }
   },
   {
+    "id": "tricheur",
     "label": "Tricheur",
     "max": "Bonus d'Intelligence",
     "test": "Pari et Escamotage quand vous jouez à un jeu de cartes",
@@ -2740,6 +2906,7 @@
     }
   },
   {
+    "id": "tueur",
     "label": "Tueur",
     "max": 1,
     "test": null,
@@ -2755,6 +2922,7 @@
     }
   },
   {
+    "id": "veloce",
     "label": "Véloce",
     "max": 1,
     "test": null,
@@ -2770,6 +2938,7 @@
     }
   },
   {
+    "id": "vigilance",
     "label": "Vigilance",
     "max": "Bonus d'Initiative",
     "test": "Perception pendant les combats au Corps à corps",
@@ -2785,6 +2954,7 @@
     }
   },
   {
+    "id": "vision-nocturne",
     "label": "Vision nocturne",
     "max": "Bonus d'Initiative",
     "test": "Tests de Perception dans des conditions de faible luminosité",
@@ -2800,6 +2970,7 @@
     }
   },
   {
+    "id": "visions-sacrees",
     "label": "Visions sacrées",
     "max": "Bonus d'Initiative",
     "test": "Test d'Intuition quand vous vous trouvez sur un sol sacré",
@@ -2815,6 +2986,7 @@
     }
   },
   {
+    "id": "vivacite",
     "label": "Vivacité",
     "max": 1,
     "test": null,
@@ -2830,6 +3002,7 @@
     }
   },
   {
+    "id": "volonte-de-fer",
     "label": "Volonté de fer",
     "max": "Bonus de Force Mentale",
     "test": "Tests de Calme pour s'opposer à Intimidation",
@@ -2845,6 +3018,7 @@
     }
   },
   {
+    "id": "voyageur-aguerri",
     "label": "Voyageur aguerri",
     "max": "Bonus d'Intelligence",
     "test": "N'importe quel Test concernant les particularités locales",
@@ -2860,6 +3034,7 @@
     }
   },
   {
+    "id": "massif",
     "label": "Massif",
     "max": 1,
     "test": null,
@@ -2875,6 +3050,7 @@
     }
   },
   {
+    "id": "vice",
     "label": "Vice",
     "max": "Bonus de Force Mentale",
     "test": "Force Mentale (Résister à la cible)",

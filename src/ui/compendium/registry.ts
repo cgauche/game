@@ -10,7 +10,7 @@
 import {
   species, careers, characteristics, classes, skills, talents,
   qualities, trappings, etats, creatures, traits, spells,
-  stars, locations, books, levelsForCareer, skillRefLabel,
+  stars, locations, books, levelsForCareer, skillRefLabel, talentRefLabel,
 } from '../../data';
 import { CULTS } from '../../engine/cults/registry';
 import { statName } from '../../engine/statEntry';
@@ -221,7 +221,7 @@ export const CODEX: CodexCategory[] = [
         chips('Traits', 'traits', traitLabels(c.traits)),
         chips('Traits optionnels', 'traits', c.optionals),
         chips('Compétences', 'skills', c.skills.map(skillRefLabel)), // SkillRef[] → libellés « Calme 58 »
-        chips('Talents', 'talents', c.talents),
+        chips('Talents', 'talents', c.talents.map(talentRefLabel)), // TalentRef[] → libellés « Magie des Arcanes (Ghur) »
         chips('Sorts', 'spells', c.spells),
         chips('Possessions', 'trappings', c.trappings),
         c.harvest
