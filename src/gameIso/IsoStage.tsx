@@ -9,6 +9,10 @@ import { useGame } from '../state/store';
 import { Scene as GameScene, tileAt, isWalkable } from '../state/scene';
 import { sceneIsDark } from '../state/sceneRules';
 import { pathTo, type Pt } from '../state/path';
+import { planJump } from '../state/jumpMove';
+import { applyEffects } from '../state/combatEffects';
+import { maxJumpTiles } from '../engine/movement';
+import { effectiveMovement } from '../engine/encumbrance';
 import { zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
 import { resolveFormula } from '../engine/ops';
 import { spellSpecFor } from '../data/spellspecs';
@@ -971,11 +975,13 @@ export function IsoStage() {
 
   const moveAlong = (sc: GameScene, from: Pt, to: Pt) => {
     if (movingRef.current || !isWalkable(sc, to.x, to.y, to.z ?? 0)) return;
-    const path = pathTo(sc, from, to, new Set());
+    // Portée de saut du GROUPE = le plus faible sauteur (tout le monde doit franchir) ; permet à pathTo
+    // de router des sauts par-dessus un gouffre vers la destination cliquée (Saut LDB 15).
+    const heroes = useGame.getState().party.filter((h) => !h.dead && h.wounds.current > 0);
+    const partyM = heroes.length ? Math.min(...heroes.map((h) => effectiveMovement(h))) : 0;
+    const path = pathTo(sc, from, to, new Set(), 1, maxJumpTiles(partyM));
     if (!path || path.length < 2) return;
     movingRef.current = true;
-    // Le déplacement d'exploration n'émet pas ANIM_MOVE côté store → on déclenche ici
-    // la marche du leader (même id que le token rendu et le suivi caméra) pour le chemin complet.
     if (partyLeader) bus.emit(EVT.ANIM_MOVE, { id: partyLeader.id, path });
     let i = 1;
     const step = () => {
@@ -984,7 +990,29 @@ export function IsoStage() {
         movingRef.current = false;
         return;
       }
-      st.moveParty(path[i]);
+      const prev = path[i - 1], cur = path[i];
+      const dist = Math.max(Math.abs(cur.x - prev.x), Math.abs(cur.y - prev.y));
+      if (dist > 1) {
+        // SAUT par-dessus un gouffre. Élan = pas contigus en ligne droite menant au décollage.
+        const jdx = Math.sign(cur.x - prev.x), jdy = Math.sign(cur.y - prev.y);
+        let runUp = 0;
+        for (let k = i - 1; k > 0; k--) {
+          const a = path[k], b = path[k - 1];
+          if (Math.sign(a.x - b.x) === jdx && Math.sign(a.y - b.y) === jdy && Math.abs(a.x - b.x) + Math.abs(a.y - b.y) === 1) runUp++;
+          else break;
+        }
+        const plan = planJump(sc, prev, cur, partyM, runUp);
+        st.moveParty(cur); // franchit (optimiste) ; un échec de Test fera retomber dans le gouffre
+        if (plan.kind === 'test') {
+          applyEffects(useGame.getState, useGame.setState, plan.effects); // modale Athlétisme « Saut » ; échec → fall
+          movingRef.current = false; // on s'arrête au saut : le joueur reclique pour continuer
+          return;
+        }
+        i++;
+        setTimeout(step, 150);
+        return;
+      }
+      st.moveParty(cur);
       i++;
       setTimeout(step, 150);
     };
