@@ -83,12 +83,17 @@ function build(): { tiles0: Terrain[]; elev0: number[]; tiles1: Terrain[]; walls
   // Foyer : coins avant ARRONDIS (façade courbe) — vide + diagonale.
   for (const [cxn, d] of [[1, '/'], [21, '\\']] as const) { tiles0[idx(cxn, 24)] = 'vide'; diag(cxn, 24, d, 0); }
 
-  // Côtés de l'ÉVENTAIL : cloison entre parterre et salles latérales (verticale + diagonale aux décrochés).
+  // Côtés de l'ÉVENTAIL : cloison BLOQUANTE entre parterre et salles latérales. Murs cardinaux (W/E) +
+  // fermeture des MARCHES par des murs N — sinon on passe par le coin du gradin. PAS de diagonale ici :
+  // une diagonale est purement VISUELLE (ne barre pas le passage) → à proscrire sur une cloison qui doit
+  // bloquer. La silhouette en escalier des murs cardinaux donne déjà l'oblique de l'éventail.
   for (let y = PY0; y <= PY1; y++) {
     wall(Lf(y), y, 'W', 0); // mur ouest du parterre
     wall(Rf(y), y, 'E', 0); // mur est du parterre
-    if (y > PY0 && Lf(y) < Lf(y - 1)) diag(Lf(y - 1), y, '\\', 0); // décroché gauche → pan oblique
-    if (y > PY0 && Rf(y) > Rf(y - 1)) diag(Rf(y - 1), y, '/', 0); // décroché droit → pan oblique
+    if (y > PY0) {
+      for (let x = Lf(y); x < Lf(y - 1); x++) wall(x, y, 'N', 0); // ferme la marche gauche
+      for (let x = Rf(y - 1) + 1; x <= Rf(y); x++) wall(x, y, 'N', 0); // ferme la marche droite
+    }
   }
   // Refends des salles latérales (portes vers le couloir périphérique) — quelques pièces de service.
   for (const sy of [9, 13, 17]) { for (let x = 1; x <= 4; x++) wall(x, sy, 'S', 0); for (let x = 18; x <= 21; x++) wall(x, sy, 'S', 0); }

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildOperaFloorplan } from './floorplan';
-import { tileAt, elevAt } from '../../state/scene';
+import { tileAt, elevAt, wallBetween } from '../../state/scene';
 import { groundTile } from '../../gameIso/ground';
 import type { Dims } from '../../gameIso/iso';
 
@@ -31,8 +31,15 @@ describe('plan de l’Opéra — géométrie', () => {
     expect(widthAt(17)).toBeGreaterThan(widthAt(7)); // le fond est plus large que l'avant
   });
 
-  it('pans obliques (murs diagonaux) sur les côtés de l’éventail', () => {
-    expect((s.walls ?? []).some((w) => w.side === '\\' || w.side === '/')).toBe(true);
+  it('éventail : la cloison parterre↔salles latérales BLOQUE (pas de mur fantôme à traverser)', () => {
+    const w = s.dimensions.w;
+    for (let y = 8; y <= 16; y++) {
+      const row = s.levels[0].tiles.slice(y * w, y * w + w);
+      const lp = row.indexOf('plancher'); // bord gauche du parterre
+      const rp = row.lastIndexOf('plancher'); // bord droit
+      expect(wallBetween(s, lp, y, lp - 1, y)).toBe(true); // on ne sort pas à gauche
+      expect(wallBetween(s, rp, y, rp + 1, y)).toBe(true); // ni à droite
+    }
   });
 
   it('PUITS CENTRAL : le cœur du parterre est VIDE au premier étage (ouvert sur le rez)', () => {
