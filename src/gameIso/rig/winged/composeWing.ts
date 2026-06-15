@@ -12,12 +12,12 @@ import type { Palette } from '../palette';
 import { resolveQuadFromProps } from '../quadruped/composeQuad';
 import { QUAD_REST, quadWalkPose, quadBitePose, quadLeapPose, QUAD_DEATH } from '../quadruped/quadPose';
 import { bonesToSvg } from '../renderBones';
-import { WINGED_SPECIES, wingSpeciesMatch, wingedSpeciesNames } from '../creatures';
+import { WINGED_SPECIES, wingedSpeciesNames } from '../creatures';
 
 // La DATA des espèces ailées (Griffon/Pégase/Hippogriffe/Dragon + alias) vit dans
 // `creatures/defs/<Nom>.ts` (plan: 'winged'). Ce module ne garde que le RENDU (resolveWing,
 // plan, svg, échelle). On re-exporte la table/matcher dérivés (consommateurs inchangés).
-export { WINGED_SPECIES, wingSpeciesMatch, wingedSpeciesNames };
+export { WINGED_SPECIES, wingedSpeciesNames };
 
 /** (espèce ailée, vue, pose, couleurs, ailes) → os résolus (réutilise le pipeline quadrupède).
  *  `wings` : REPLIÉES au repos (défaut) / DÉPLOYÉES en vol/attaque (cf. WingState). */
@@ -52,23 +52,3 @@ export const wingedPlan: BodyPlan = {
   hasView: () => true,
 };
 
-/** Espèce ailée déduite d'un nom (clé/alias de WINGED_SPECIES ; défaut Griffon). Routage
- *  dérivé de la table (aliases) — plus aucune regex de noms à re-maintenir. */
-export function wingSpeciesFromName(name: string): string {
-  return wingSpeciesMatch(name) ?? 'Griffon';
-}
-/** Échelle globale de l'espèce (le dragon est géant) — à multiplier au token scale en jeu. */
-export function wingSpeciesScale(name: string): number {
-  return (WINGED_SPECIES[wingSpeciesFromName(name)] ?? WINGED_SPECIES.Griffon).sl;
-}
-
-/** SVG (string) d'un ailé prêt à injecter — pose mort/marche intégrée. */
-export function wingedSvg(
-  name: string,
-  view: View,
-  opts: { dead?: boolean; walkPhase?: number; colors?: Palette } = {},
-): string {
-  const sp = wingSpeciesFromName(name);
-  const pose = opts.dead ? QUAD_DEATH : opts.walkPhase != null ? quadWalkPose(opts.walkPhase) : {};
-  return bonesToSvg(resolveWing(sp, view, pose, opts.colors));
-}

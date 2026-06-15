@@ -11,7 +11,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { bonesToSvg } from '../../src/gameIso/rig/renderBones';
 import { DEFS } from '../../src/gameIso/sprites';
 import { planById } from '../../src/gameIso/rig/bodyPlan';
-import { CREATURES, creatureMatch } from '../../src/gameIso/rig/creatures';
+import { CREATURES } from '../../src/gameIso/rig/creatures';
 import { norm } from '../../src/lib/normalize';
 import type { View } from '../../src/gameIso/rig/facing';
 
@@ -25,7 +25,7 @@ if (args[0] === '--list') {
 
 const name = args[0];
 if (!name) { console.error('usage: render-creature.mts "<Nom>" [outdir] [prefix]'); process.exit(1); }
-const def = CREATURES.find((c) => c.name === name) ?? creatureMatch(name);
+const def = CREATURES.find((c) => c.name === name); // lookup EXACT (plus de match flou)
 if (!def || def.plan === 'biped' || def.plan === 'monolithic') { console.error(`créature riguée introuvable: ${name}`); process.exit(1); }
 const plan = planById(def.plan);
 const outDir = args[1] ?? 'public/qc/creatures';

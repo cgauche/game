@@ -7,8 +7,7 @@
  */
 import { writeFileSync } from 'node:fs';
 import { DEFS } from '../src/gameIso/sprites';
-import { planById, bodyPlanOf, type BodyPlanId } from '../src/gameIso/rig/bodyPlan';
-import { creatureMatch, creatureSpeciesScale } from '../src/gameIso/rig/creatures';
+import { planById, bodyPlanOf, resolveByName, type BodyPlanId } from '../src/gameIso/rig/bodyPlan';
 import { mul, translate, type Matrix } from '../src/gameIso/rig/kinematics';
 import type { ResolvedBone } from '../src/gameIso/rig/composeRig';
 import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../src/engine/creatureAttacks';
@@ -32,8 +31,8 @@ function attackFrames(name: string, kind: AttackKind): { samples: ResolvedBone[]
   const planId = bodyPlanOf(name);
   if (planId === 'monolithic' || planId === 'biped') return null;
   const plan = planById(planId as BodyPlanId);
-  const species = creatureMatch(name)?.name ?? plan.speciesNames()[0] ?? '';
-  const sc = creatureSpeciesScale(name);
+  const species = resolveByName(name).species;
+  const sc = resolveByName(name).scale;
   const z = sc > 1 ? +(1 / sc).toFixed(3) : 1;
   const quadFamily = planId === 'quadruped' || planId === 'winged';
   const poseAt = quadFamily ? (p: number) => quadAttackPose(kind, p) : (p: number) => plan.attackPose(p);

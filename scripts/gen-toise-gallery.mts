@@ -10,9 +10,8 @@ import { writeFileSync } from 'node:fs';
 import { resolveRig, type ResolvedBone } from '../src/gameIso/rig/composeRig';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { DEFS } from '../src/gameIso/sprites';
-import { entityRigProfile, classifyEnemy } from '../src/gameIso/rig/enemyProfile';
-import { planById, bodyPlanOf, type BodyPlanId } from '../src/gameIso/rig/bodyPlan';
-import { creatureMatch, creatureSpeciesScale, bipedSpeciesScale } from '../src/gameIso/rig/creatures';
+import { entityRigProfile } from '../src/gameIso/rig/enemyProfile';
+import { planById, bodyPlanOf, resolveByName, type BodyPlanId } from '../src/gameIso/rig/bodyPlan';
 import { sizeTokenScale } from '../src/gameIso/sizeScale';
 import { parseSizeLabel, SIZE_LABEL, SIZE_ORDER, type SizeCategory } from '../src/engine/size';
 import { creatures } from '../src/data/index';
@@ -31,7 +30,7 @@ function restBones(name: string): ResolvedBone[] {
   const planId = bodyPlanOf(name);
   if (planId !== 'monolithic' && planId !== 'biped') {
     const plan = planById(planId as BodyPlanId);
-    const species = creatureMatch(name)?.name ?? plan.speciesNames()[0] ?? '';
+    const species = resolveByName(name).species;
     return plan.resolve(species, 'profile', plan.restPose(), {});
   }
   const prof = entityRigProfile(name, 7);
@@ -62,12 +61,12 @@ for (const c of creatures) {
   if (seen.has(c.label)) continue;
   seen.add(c.label);
   const size = sizeOf(c.traits);
-  const art = classifyEnemy(c.label) === 'rig' ? bipedSpeciesScale(c.label) : creatureSpeciesScale(c.label);
+  const art = resolveByName(c.label).scale;
   rows.push({ name: c.label, size, k: art * sizeTokenScale(size) });
 }
 // Espèces jouables (référence intra-Moyenne : elfe > humain > nain…).
 for (const sp of ['Humain', 'Elfe', 'Nain', 'Halfling', 'Gnome']) {
-  if (!seen.has(sp)) rows.push({ name: sp, size: 'moyenne', k: bipedSpeciesScale(sp) });
+  if (!seen.has(sp)) rows.push({ name: sp, size: 'moyenne', k: resolveByName(sp).scale });
 }
 
 const CATS = Object.keys(SIZE_ORDER) as SizeCategory[];

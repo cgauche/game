@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { classifyEnemy } from './rig/enemyProfile';
-import { creatureSpeciesScale, bipedSpeciesScale } from './rig/creatures';
+import { resolveByName } from './rig/bodyPlan';
 import { sizeTokenScale } from './sizeScale';
 import { parseSizeLabel, type SizeCategory } from '../engine/size';
 import { creatures } from '../data/index';
@@ -13,8 +12,7 @@ function sizeOf(traits: string[] | undefined): SizeCategory {
   }
   return 'moyenne';
 }
-const artScale = (label: string): number =>
-  classifyEnemy(label) === 'rig' ? bipedSpeciesScale(label) : creatureSpeciesScale(label);
+const artScale = (label: string): number => resolveByName(label).scale;
 
 // GARDE-FOU de la toise (décision utilisateur 2026-06-11) : l'art d'un modèle est dessiné à la
 // baseline MOYENNE — son échelle (sl / race.scale / perso.scale) n'exprime que la NUANCE
@@ -38,12 +36,12 @@ describe('toise — échelles de rendu (art = nuance intra-catégorie, la Taille
   });
 
   it('ancrages : un cheval (Grande) ~×1.3 humain, un Géant (Énorme) ~×2.4 — plus de ×3/×6', () => {
-    expect(creatureSpeciesScale('Cheval de selle') * sizeTokenScale('grande')).toBeLessThanOrEqual(1.5);
-    expect(bipedSpeciesScale('Géant') * sizeTokenScale('enorme')).toBeLessThanOrEqual(2.6);
-    expect(creatureSpeciesScale('Dragon') * sizeTokenScale('enorme')).toBeLessThanOrEqual(2.6);
+    expect(resolveByName('Cheval').scale * sizeTokenScale('grande')).toBeLessThanOrEqual(1.5);
+    expect(resolveByName('Géant').scale * sizeTokenScale('enorme')).toBeLessThanOrEqual(2.6);
+    expect(resolveByName('Dragon').scale * sizeTokenScale('enorme')).toBeLessThanOrEqual(2.6);
   });
 
   it('la nuance intra-catégorie reste respectée (loup < cheval ; catégorie inchangée)', () => {
-    expect(creatureSpeciesScale('Loup')).toBeLessThan(creatureSpeciesScale('Cheval'));
+    expect(resolveByName('Loup').scale).toBeLessThan(resolveByName('Cheval').scale);
   });
 });

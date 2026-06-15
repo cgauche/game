@@ -15,7 +15,7 @@ describe('bodyPlanOf', () => {
   it('quadrupèdes → quadruped', () => {
     for (const n of ['Cheval', 'Loup', 'Sanglier', 'Rat géant', 'Ours', 'Chien',
       // exotiques rapatriés en quad (reptilien/batracien/multi-têtes)
-      'Basilic', 'Crapaud géant', 'Hydre']) {
+      'Basilic', 'Crapaud', 'Hydre']) {
       expect(bodyPlanOf(n)).toBe('quadruped');
     }
   });
@@ -32,30 +32,29 @@ describe('bodyPlanOf', () => {
     }
   });
   it('ailés (griffon/pégase/hippogriffe/dragon) → winged', () => {
-    for (const n of ['Griffon', 'Pégase', 'Hippogriffe', 'Dragon', 'Wyverne', 'Demigriffon',
-      'Manticore', 'Varghulf', 'Chauve-souris vampire']) { // jalon 3 : sortis du monolithique
+    for (const n of ['Griffon', 'Pégase', 'Hippogriffe', 'Dragon', 'Demigriffon',
+      'Manticore', 'Varghulf']) { // jalon 3 : sortis du monolithique
       expect(bodyPlanOf(n)).toBe('winged');
     }
   });
   it('nouveaux squelettes exotiques → leur plan dédié', () => {
-    expect(bodyPlanOf('Grand serpent venimeux')).toBe('serpentine');
-    expect(bodyPlanOf('Sangsue des marais')).toBe('serpentine');
-    expect(bodyPlanOf('Araignée géante')).toBe('arachnid');
-    expect(bodyPlanOf('Pigeon voyageur')).toBe('avian');
-    expect(bodyPlanOf('Pieuvre des tourbières')).toBe('cephalopod');
+    expect(bodyPlanOf('Serpent')).toBe('serpentine');
+    expect(bodyPlanOf('Sangsue')).toBe('serpentine');
+    expect(bodyPlanOf('Araignée')).toBe('arachnid');
+    expect(bodyPlanOf('Pigeon')).toBe('avian');
+    expect(bodyPlanOf('Pieuvre')).toBe('cephalopod');
   });
   it('morts-vivants spectraux → spectral', () => {
     for (const n of ['Spectre de cairn', 'Fantôme', 'Banshee']) expect(bodyPlanOf(n)).toBe('spectral');
   });
   it('squig → squig', () => {
-    expect(bodyPlanOf('Squig des cavernes')).toBe('squig');
-    expect(bodyPlanOf('Squig vorace')).toBe('squig');
+    expect(bodyPlanOf('Squig')).toBe('squig');
   });
   it('bête des marais → amorphous (gabarit hulk réutilisable)', () => {
     expect(bodyPlanOf('Bête des marais')).toBe('amorphous');
   });
   it('bêtes du Chaos (jabberslythes nommés) → jabberslythe — bespoke ANIMÉ, plus de monolithique', () => {
-    for (const n of ['Jabberslythe', 'Slenderthigh Whiptongue', "Fr'hough Mournbreath", 'Bête de Nurgle']) {
+    for (const n of ['Jabberslythe', 'Slenderthigh Whiptongue', "Fr'hough Mournbreath"]) {
       expect(bodyPlanOf(n)).toBe('jabberslythe');
     }
   });

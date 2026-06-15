@@ -71,15 +71,14 @@ describe('enemyRigProfile', () => {
     expect(a.appearance).toEqual(b.appearance);
   });
 
-  it('espèce détectée du nom', () => {
-    expect(enemyRigProfile(mkEnemy('Nain mercenaire'))!.appearance.species).toBe('Nain');
-    expect(enemyRigProfile(mkEnemy('Cultiste'))!.appearance.species).toBe('Humain');
-    expect(enemyRigProfile(mkEnemy('Ogre brise-fer'))!.appearance.species).toBe('Ogre');
+  it('espèce : explicite > record > Humain par défaut (plus de name-match flou)', () => {
+    expect(enemyRigProfile(mkEnemy('Truc', { species: 'Nain' }))!.appearance.species).toBe('Nain'); // explicite gagne
+    expect(enemyRigProfile(mkEnemy('Cultiste'))!.appearance.species).toBe('Humain'); // ni espèce ni record → Humain
   });
 
-  it('espèces monstrueuses Phase B détectées + tête monstrueuse portée par la Race', () => {
-    // Depuis la migration race.monster → race.head/legs/features (iso-rendu), la tête
-    // monstrueuse est portée par race.head (rendu via composeRig), plus par appearance.monster.
+  it('espèce EXPLICITE (donnée) → tête monstrueuse portée par la Race (rendu data-driven)', () => {
+    // De-POC P5/5d : l'espèce vient de la DONNÉE (record/combattant) → species pilote race.head
+    // (tête monstrueuse via composeRig). Le nom est purement contextuel.
     const cases: [string, string, string | undefined][] = [
       ['Orc noir', 'Orc', 'orc'],
       ['Gobelin de la nuit', 'Gobelin', 'gobelin'],
@@ -95,7 +94,7 @@ describe('enemyRigProfile', () => {
       ['Vampire', 'Vampire', undefined], // humain pâle → pas de tête monstrueuse
     ];
     for (const [name, species, tete] of cases) {
-      const p = enemyRigProfile(mkEnemy(name))!;
+      const p = enemyRigProfile(mkEnemy(name, { species }))!;
       expect(p.appearance.species, name).toBe(species);
       // Résolution de race du RENDU : le def peut imposer sa race (Gor → Homme-bête).
       const race = raceById(bipedDef(p.appearance.species)?.race ?? baseSpeciesOf(p.appearance.species));

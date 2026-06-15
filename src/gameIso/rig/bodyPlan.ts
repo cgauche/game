@@ -13,13 +13,9 @@ import type { Appearance } from './appearance';
 import type { EquipCtx } from './parts/equipment';
 import { bonesToSvg } from './renderBones';
 import { PLAN_LIST } from './plans/_registry.generated';
-import { creaturePlanMatch, creatureMatch, defByName, speciesScale, bipedSpeciesMatch, bipedSpeciesScale, creatureSpeciesScale } from './creatures';
+import { defByName, speciesScale } from './creatures';
 import { findCreature } from '../../data';
 import { isSwarm } from '../../engine/traits/dispatch';
-
-/** Essaim depuis un NOM (lookup record → traits) — repli pour les chemins qui n'ont que le nom.
- *  La détection canonique est `isSwarm(traits)` (registre des Traits) ; ici on résout les traits. */
-const isSwarmName = (name: string): boolean => isSwarm(findCreature(name)?.traits);
 
 /** Identifiant de gabarit — chaîne libre dérivée des `plans/defs/` (data-driven : chaque plan
  *  déclare son `id`). Le monolithique n'est PAS un BodyPlan (fallback legacy hors registre). */
@@ -74,13 +70,20 @@ export function planById(id: BodyPlanId): BodyPlan {
  * humanoïde nommé ou générique non couvert par un def rigué).
  */
 export function bodyPlanOf(name: string): BodyPlanId | 'monolithic' {
-  return resolveRender(undefined, findCreature(name)?.traits, name).plan; // délègue au résolveur unique
+  return resolveByName(name).plan; // délègue au résolveur unique
 }
 
-/** Résolution de rendu UNIFIÉE et DATA-DRIVEN (de-POC P5) : classe (rig/gabarit), id de gabarit,
- *  espèce canonique et échelle de token — depuis l'ESPÈCE EXPLICITE (lookup exact) + le trait Nuée.
- *  `name` n'est qu'un REPLI transitoire (entités/spawns sans espèce explicite) retiré en 5d avec le
- *  matcher flou. UNE source pour pickBackend / usePlanAnim / CreaturePreview / MountedToken. */
+/** Résolution de rendu d'un NOM seul (sans espèce explicite) — sucre data-driven pour les outils
+ *  DEV (galeries/QC) et chemins legacy : = `resolveRender(undefined, traits du record, name)`. */
+export function resolveByName(name: string): RenderResolution {
+  return resolveRender(undefined, findCreature(name)?.traits, name);
+}
+
+/** Résolution de rendu UNIFIÉE et 100% DATA-DRIVEN (de-POC P5/5d) : classe (rig/gabarit), id de
+ *  gabarit, espèce canonique et échelle de token. Résout par la DONNÉE — espèce explicite → espèce du
+ *  RECORD (`findCreature`) → le NOM s'il EST une espèce canonique (lookup EXACT `defByName`) → bipède
+ *  Humain. Trait Nuée → 'swarm'. PLUS AUCUN match flou (aliases/priorité supprimés). UNE source pour
+ *  pickBackend / usePlanAnim / CreaturePreview / MountedToken. */
 export interface RenderResolution {
   kind: 'rig' | 'plan';
   plan: BodyPlanId | 'monolithic';
@@ -88,22 +91,21 @@ export interface RenderResolution {
   scale: number;
 }
 export function resolveRender(species: string | undefined, traits: string[] | undefined, name: string): RenderResolution {
+  const swarmSp = PLANS.swarm?.speciesNames()[0] ?? '';
   if (isSwarm(traits)) {
-    const sp = species || PLANS.swarm?.speciesNames()[0] || '';
-    return { kind: 'plan', plan: 'swarm', species: sp, scale: species ? speciesScale(species) : creatureSpeciesScale(name) };
+    const sp = species || swarmSp;
+    return { kind: 'plan', plan: 'swarm', species: sp, scale: speciesScale(sp) };
   }
-  if (species) {
-    const d = defByName(species);
-    if (d && d.plan !== 'biped') return { kind: 'plan', plan: d.plan, species, scale: speciesScale(species) };
-    return { kind: 'rig', plan: 'biped', species, scale: speciesScale(species) };
+  // Résolution par la DONNÉE : espèce explicite → espèce du record → le nom s'il EST une espèce
+  // canonique (lookup EXACT, pas de fuzzy). Tout vient de `defByName`/`findCreature`.
+  const resolved = species ?? findCreature(name)?.appearance?.species ?? (defByName(name) ? name : undefined);
+  if (resolved) {
+    const d = defByName(resolved);
+    if (d && d.plan !== 'biped') return { kind: 'plan', plan: d.plan, species: resolved, scale: speciesScale(resolved) };
+    return { kind: 'rig', plan: 'biped', species: resolved, scale: speciesScale(resolved) };
   }
-  // Repli name-match (transitoire — retiré en 5d) : nuée → 'swarm' ; non-bipède → son plan ; sinon rig.
-  const swarm = isSwarmName(name);
-  const nbPlan = creaturePlanMatch(name);
-  if (swarm || nbPlan) {
-    const plan = swarm ? 'swarm' : nbPlan!;
-    const sp = creatureMatch(name)?.name ?? (plan !== 'monolithic' ? PLANS[plan]?.speciesNames()[0] : '') ?? '';
-    return { kind: 'plan', plan, species: sp, scale: creatureSpeciesScale(name) };
-  }
-  return { kind: 'rig', plan: 'biped', species: bipedSpeciesMatch(name) ?? 'Humain', scale: bipedSpeciesScale(name) };
+  // Record sans espèce mais trait Nuée (les 7 records Nuée, si le caller n'a pas passé les traits).
+  if (isSwarm(findCreature(name)?.traits)) return { kind: 'plan', plan: 'swarm', species: swarmSp, scale: speciesScale(swarmSp) };
+  // Inconnu (rôle générique : Bandit/Cultiste/Villageois…) → bipède Humain par défaut.
+  return { kind: 'rig', plan: 'biped', species: 'Humain', scale: speciesScale('Humain') };
 }

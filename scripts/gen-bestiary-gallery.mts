@@ -11,9 +11,8 @@ import { resolveRig, type ResolvedBone } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import { addPose } from '../src/gameIso/rig/poses';
 import { CLIPS, sampleClip, clipDuration } from '../src/gameIso/rig/anim/clips';
-import { entityRigProfile, classifyEnemy } from '../src/gameIso/rig/enemyProfile';
-import { planById, bodyPlanOf, type BodyPlanId } from '../src/gameIso/rig/bodyPlan';
-import { creatureMatch, creatureSpeciesScale } from '../src/gameIso/rig/creatures';
+import { entityRigProfile } from '../src/gameIso/rig/enemyProfile';
+import { planById, bodyPlanOf, resolveByName, type BodyPlanId } from '../src/gameIso/rig/bodyPlan';
 import { mul, translate, type Matrix } from '../src/gameIso/rig/kinematics';
 import { animatedRig } from './_lib-anim-rig';
 import { creatures } from '../src/data/index';
@@ -29,7 +28,7 @@ const PLAN_LABEL: Record<string, string> = {
   squig: 'Squigs', amorphous: 'Amorphes', jabberslythe: 'Jabberslythe',
 };
 const PLAN_ORDER = ['biped', 'quadruped', 'winged', 'serpentine', 'arachnid', 'avian', 'cephalopod', 'spectral', 'squig', 'amorphous', 'jabberslythe'];
-const planOf = (name: string): string => (classifyEnemy(name) === 'rig' ? 'biped' : creatureMatch(name)?.plan ?? 'biped');
+const planOf = (name: string): string => resolveByName(name).plan;
 
 /** Pré-scale (autour du centre) chaque os pour faire tenir les grandes espèces dans la boîte. */
 function scaleBones(bones: ResolvedBone[], z: number, cx = 60, cy = 78): ResolvedBone[] {
@@ -40,11 +39,11 @@ function scaleBones(bones: ResolvedBone[], z: number, cx = 60, cy = 78): Resolve
 
 /** Échantillons d'os animés d'une créature + durée du cycle (idle), exactement comme l'IsoStage. */
 function creatureFrames(name: string): { samples: ResolvedBone[][]; dur: number } {
-  const z = (() => { const s = creatureSpeciesScale(name); return s > 1 ? +(1 / s).toFixed(3) : 1; })();
+  const z = (() => { const s = resolveByName(name).scale; return s > 1 ? +(1 / s).toFixed(3) : 1; })();
   const planId = bodyPlanOf(name);
   if (planId !== 'monolithic' && planId !== 'biped') {
     const plan = planById(planId as BodyPlanId);
-    const species = creatureMatch(name)?.name ?? plan.speciesNames()[0] ?? '';
+    const species = resolveByName(name).species;
     if (plan.idlePose) {
       const samples = Array.from({ length: NB }, (_, i) => scaleBones(plan.resolve(species, 'front', plan.idlePose!(i / (NB - 1)), {}), z));
       return { samples, dur: IDLE_MS };

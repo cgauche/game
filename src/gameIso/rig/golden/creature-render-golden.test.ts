@@ -10,26 +10,25 @@
  */
 import { describe, it, expect } from 'vitest';
 import { creatures } from '../../../data';
-import { entityRigProfile, classifyEnemy } from '../enemyProfile';
+import { entityRigProfile } from '../enemyProfile';
 import { resolveRig } from '../composeRig';
 import { bonesToSvg } from '../renderBones';
-import { planById, bodyPlanOf } from '../bodyPlan';
-import { creatureMatch } from '../creatures';
+import { planById, resolveByName } from '../bodyPlan';
 import type { View } from '../facing';
 
 const VIEWS: View[] = ['front', 'profile'];
 const SEED = 7;
 
 function renderSvg(name: string, view: View): string {
-  if (classifyEnemy(name) === 'rig') {
+  const r = resolveByName(name); // résolution data-driven (record/espèce exacte, plus de name-match)
+  if (r.kind === 'rig') {
     const p = entityRigProfile(name, SEED);
     return p ? bonesToSvg(resolveRig(p.appearance, p.equip, {}, p.tenue, view, [])) : '∅rig';
   }
-  const plan = planById(bodyPlanOf(name));
+  const plan = planById(r.plan);
   if (!plan) return '∅monolithic';
-  const species = creatureMatch(name)?.name ?? name;
-  if (!plan.hasView(species, view)) return `∅noview:${view}`;
-  return bonesToSvg(plan.resolve(species, view, plan.restPose()));
+  if (!plan.hasView(r.species, view)) return `∅noview:${view}`;
+  return bonesToSvg(plan.resolve(r.species, view, plan.restPose()));
 }
 
 describe('golden — rendu SVG du bestiaire entier (anti-régression de-POC apparence)', () => {

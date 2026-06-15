@@ -54,8 +54,8 @@ export interface QuadProps {
 
 // La DATA des espèces (props + alias) vit désormais dans `creatures/defs/<Nom>.ts` (un fichier
 // par créature, auto-collectés). `quadSkeleton` ne garde que les TYPES + la mécanique de rendu.
-// On RE-EXPORTE les tables/matchers dérivés pour que les consommateurs existants ne changent pas.
-export { QUAD_SPECIES, quadSpeciesMatch, quadSpeciesNames } from '../creatures';
+// On RE-EXPORTE les tables dérivées pour que les consommateurs existants ne changent pas.
+export { QUAD_SPECIES, quadSpeciesNames } from '../creatures';
 
 /** Construit le squelette d'une espèce (profil tourné à droite, pieds ~y150). */
 export function buildQuadSkeleton(p: QuadProps): QuadSkeleton {

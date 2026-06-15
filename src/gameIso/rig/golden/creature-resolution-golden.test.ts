@@ -11,22 +11,17 @@
  *   bipède     → { plan:'biped', species=bipedSpeciesMatch ?? 'Humain', def=bipedDef(species), scale=bipedSpeciesScale }
  */
 import { describe, it, expect } from 'vitest';
-import {
-  CREATURES, bipedSpeciesMatch, bipedDef, bipedSpeciesScale,
-  creatureMatch, creaturePlanMatch, creatureSpeciesScale,
-} from '../creatures';
+import { CREATURES, defByName } from '../creatures';
+import { resolveByName } from '../bodyPlan';
 import { creatures as bestiary } from '../../../data';
 
 type Resolved = { plan: string; species: string | null; def: string | null; scale: number };
 
-/** Mirroir EXACT de la résolution de production (enemyProfile.classifyEnemy/detectSpecies). */
+/** Snapshot de la résolution de PROD (`resolveByName` = resolveRender data-driven : record/espèce
+ *  exacte, plus de name-match flou). Fige plan/espèce/def/échelle de tout le bestiaire. */
 function resolve(name: string): Resolved {
-  const plan = creaturePlanMatch(name);
-  if (plan) {
-    return { plan, species: null, def: creatureMatch(name)?.name ?? null, scale: creatureSpeciesScale(name) };
-  }
-  const species = bipedSpeciesMatch(name) ?? 'Humain';
-  return { plan: 'biped', species, def: bipedDef(species)?.name ?? null, scale: bipedSpeciesScale(name) };
+  const r = resolveByName(name);
+  return { plan: r.plan, species: r.species || null, def: defByName(r.species)?.name ?? null, scale: r.scale };
 }
 
 const mapOf = (names: string[]): Record<string, Resolved> =>

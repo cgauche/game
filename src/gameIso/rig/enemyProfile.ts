@@ -13,8 +13,7 @@ import { weaponGroupKey } from './parts/weaponGroup';
 import { EYE_OPTIONS, eyesArtFromKeys } from './parts/eyes';
 import type { MonsterParts } from './parts/monstrous';
 import { hashSeed } from '../appearance';
-import { norm } from '../../lib/normalize';
-import { bipedDef, bipedSpeciesMatch } from './creatures';
+import { bipedDef, defByName } from './creatures';
 import { resolveRender } from './bodyPlan';
 import { findCreature } from '../../data';
 import type { EntityAppearance } from '../../state/scene';
@@ -47,11 +46,6 @@ export function classifyBy(species: string | undefined, traits: string[] | undef
   return resolveRender(species, traits, name).kind === 'plan' ? 'creature' : 'rig';
 }
 
-/** Espèce de rig détectée du nom (sinon Humain) : `bipedSpeciesMatch` route par name+aliases,
- *  triés par `matchPriority` (« rat ogre » → Skaven avant Ogre). Plus d'if-chain centrale. */
-function detectSpecies(n: string): string {
-  return bipedSpeciesMatch(n) ?? 'Humain';
-}
 
 // Les défauts d'apparence (tenue / monster / sex / parts / colors / scale) d'un bipède viennent
 // désormais de sa RACE (canonique, partagée — cf. `raceById(baseSpeciesOf(species))`), surchargés
@@ -74,13 +68,12 @@ export interface RiggedOpts {
 }
 const eyeArt = (k?: string): string | undefined => (k ? EYE_OPTIONS[k]?.art : undefined);
 export function riggedAppearance(name: string, seed: number, opts: RiggedOpts = {}): Appearance {
-  const n = norm(name);
   const sex: 'M' | 'F' = opts.sex ?? (seed % 7 < 2 ? 'F' : 'M');
   const build = opts.build ?? +(0.35 + ((Math.floor(seed / 7) % 41) / 100)).toFixed(2);
   const eyes = opts.eyes && (eyeArt(opts.eyes.G) || eyeArt(opts.eyes.D))
     ? { ...(eyeArt(opts.eyes.G) ? { G: eyeArt(opts.eyes.G) } : {}), ...(eyeArt(opts.eyes.D) ? { D: eyeArt(opts.eyes.D) } : {}) }
     : undefined;
-  return { species: opts.species ?? detectSpecies(n), sex, build, seed, monster: opts.monster, features: opts.features, colors: opts.colors, parts: opts.parts, gabarit: opts.gabarit, eyes };
+  return { species: opts.species ?? 'Humain', sex, build, seed, monster: opts.monster, features: opts.features, colors: opts.colors, parts: opts.parts, gabarit: opts.gabarit, eyes };
 }
 
 /** Synthèse d'items d'armure depuis les PA par localisation (matériau via palier). */
@@ -130,10 +123,9 @@ function rigFieldsFrom(a: EntityAppearance): Partial<Appearance> {
 export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   if (classifyBy(c.species, c.traits, c.name) === 'creature') return null; // espèce explicite (data) → repli nom
 
-  const n = norm(c.name);
   const seed = hashSeed(c.id);
   const cd = findCreature(c.name)?.appearance; // apparence par défaut UNIFIÉE du record créature
-  const species = c.species ?? cd?.species ?? detectSpecies(n);
+  const species = c.species ?? cd?.species ?? (defByName(c.name) ? c.name : 'Humain'); // explicite → record → nom-EXACT-espèce → Humain
   const d = bipedDef(species); // def bipède canonique (porte le perso éventuel + override race/gabarit)
   const race = raceById(d?.race ?? baseSpeciesOf(species)); // défauts d'apparence partagés (canon)
   const perso = d?.perso; // surcharges propres à la créature (espèces non-canoniques)
@@ -172,9 +164,8 @@ export function entityRigProfile(
 ): EnemyRigProfile | null {
   const rec = findCreature(name);
   if (classifyBy(opts?.species ?? rec?.appearance?.species, rec?.traits, name) === 'creature') return null; // espèce explicite (data) → repli nom
-  const n = norm(name);
   const cd = rec?.appearance; // apparence par défaut UNIFIÉE du record créature
-  const species = opts?.species ?? cd?.species ?? detectSpecies(n); // override d'auteur sinon record sinon déduit du nom
+  const species = opts?.species ?? cd?.species ?? (defByName(name) ? name : 'Humain'); // override → record → nom-EXACT-espèce → Humain
   const d = bipedDef(species);
   const race = raceById(d?.race ?? baseSpeciesOf(species)); // défauts d'apparence partagés (canon)
   const perso = d?.perso; // surcharges propres à la créature (espèces non-canoniques)

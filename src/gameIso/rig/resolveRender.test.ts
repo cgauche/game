@@ -1,47 +1,45 @@
 import { describe, it, expect } from 'vitest';
-import { resolveRender, planById, type RenderResolution } from './bodyPlan';
-import { creatureMatch, creaturePlanMatch, bipedSpeciesMatch, bipedSpeciesScale, creatureSpeciesScale } from './creatures';
+import { resolveRender, resolveByName } from './bodyPlan';
+import { defByName } from './creatures';
 import { isSwarm } from '../../engine/traits/dispatch';
-import { creatures, findCreature } from '../../data';
-import creaturesJson from '../../data/creatures.json';
+import { creatures } from '../../data';
 
-/** Résolution de rendu recomposée à la main depuis les matchers FEUILLES (creaturePlanMatch + isSwarm
- *  + creatureMatch + bipedSpeciesMatch + échelles) — référence INDÉPENDANTE des wrappers qui délèguent
- *  désormais à `resolveRender`. resolveRender DOIT reproduire ceci (repli name-match, espèce absente). */
-function current(name: string): RenderResolution {
-  const swarm = isSwarm(findCreature(name)?.traits);
-  const nb = creaturePlanMatch(name);
-  if (swarm || nb) {
-    const plan = swarm ? 'swarm' : nb!;
-    const sp = creatureMatch(name)?.name ?? (plan !== 'monolithic' ? planById(plan)?.speciesNames()[0] : '') ?? '';
-    return { kind: 'plan', plan, species: sp, scale: creatureSpeciesScale(name) };
-  }
-  return { kind: 'rig', plan: 'biped', species: bipedSpeciesMatch(name) ?? 'Humain', scale: bipedSpeciesScale(name) };
-}
-
-// Tout le bestiaire (labels creatures.json) + rôles génériques non présents comme record.
-const NAMES = [...new Set([...creatures.map((c) => c.label), 'Bandit', 'Cultiste', 'Mutant', 'Villageois', 'Soldat'])];
-
-describe('resolveRender — résolution de rendu data-driven byte-identique au name-match (P5)', () => {
-  it('le REPLI (sans espèce) reproduit exactement le name-match actuel', () => {
-    for (const name of NAMES) {
-      const traits = findCreature(name)?.traits;
-      expect(resolveRender(undefined, traits, name), name).toEqual(current(name));
+/**
+ * `resolveRender` est désormais 100% DATA-DRIVEN (de-POC P5/5d) : l'espèce vient de l'argument
+ * explicite, sinon du RECORD (`findCreature`), sinon le NOM s'il EST une espèce canonique (lookup
+ * EXACT `defByName`), sinon bipède Humain. PLUS AUCUN match flou (aliases/priorité supprimés).
+ */
+describe('resolveRender — résolution de rendu 100% data-driven (plus de name-match flou)', () => {
+  it('espèce EXPLICITE → plan de la def (defByName) ; Nuée → swarm ; sinon rig bipède', () => {
+    for (const c of creatures) {
+      const sp = c.appearance?.species;
+      if (!sp) continue;
+      const r = resolveRender(sp, c.traits, c.label);
+      const d = defByName(sp);
+      const expected = isSwarm(c.traits) ? 'plan' : d && d.plan !== 'biped' ? 'plan' : 'rig';
+      expect(r.kind, c.label).toBe(expected);
+      if (r.kind === 'rig') expect(r.plan, c.label).toBe('biped');
     }
   });
 
-  it('bestiaire OFFICIEL : la voie EXPLICITE (espèce posée par 5b) reproduit le name-match', () => {
-    // Byte-identité garantie sur le bestiaire officiel (5b a posé species = résolution par le nom).
-    // NB : les créatures frenchy.bzh ont une espèce AUTORITAIRE (fixée à l'import) qui peut CORRIGER
-    // un faux positif du matcher flou (ex. « Porte-Peste de Nurgle » : un alias matche à tort en
-    // créature, alors que l'espèce explicite « Démon » est bipède) → divergence VOULUE → on n'exige
-    // l'iso-résolution QUE sur le bestiaire officiel (frenchy.bzh exclu).
-    type Rec = { label: string; traits?: string[]; appearance?: { species?: string }; source?: { book?: string } };
-    const official = (creaturesJson as Rec[]).filter((c) => c.source?.book !== 'frenchy.bzh');
-    for (const c of official) {
-      const r = resolveRender(c.appearance?.species, c.traits, c.label);
-      const ref = current(c.label);
-      expect({ kind: r.kind, plan: r.plan }, c.label).toEqual({ kind: ref.kind, plan: ref.plan });
+  it('le REPLI (sans espèce) lit le RECORD — identique à passer l’espèce du record', () => {
+    for (const c of creatures) {
+      const sp = c.appearance?.species;
+      if (!sp) continue; // les 7 Nuée sans espèce sont couvertes par le trait (cas suivant)
+      expect(resolveByName(c.label), c.label).toEqual(resolveRender(sp, c.traits, c.label));
     }
+  });
+
+  it('un NOM exact d’espèce canonique résout sans record (lookup EXACT defByName, pas de fuzzy)', () => {
+    // « Varghulf » : def ailé SANS record creatures.json → résolu par defByName(nom).
+    expect(resolveByName('Varghulf').plan).toBe(defByName('Varghulf')?.plan);
+    expect(resolveByName('Varghulf').plan).toBe('winged');
+    // « Liche » : def bipède sans record → espèce = le nom (exact).
+    expect(resolveByName('Liche')).toMatchObject({ kind: 'rig', plan: 'biped', species: 'Liche' });
+  });
+
+  it('un nom INCONNU (rôle générique sans record ni def) → bipède Humain par défaut', () => {
+    for (const n of ['Cultiste', 'Soldat', 'Rôle totalement inconnu xyz'])
+      expect(resolveByName(n), n).toMatchObject({ kind: 'rig', plan: 'biped', species: 'Humain' });
   });
 });

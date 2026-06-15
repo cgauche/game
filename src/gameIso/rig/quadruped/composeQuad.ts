@@ -9,7 +9,7 @@ import { bonesToSvg } from '../renderBones';
 import { worldTransformsG, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap, type Palette } from '../palette';
 import {
-  QUAD_SPECIES, buildQuadSkeleton, groundQuad, quadSkeletonForView, quadSpeciesMatch,
+  QUAD_SPECIES, buildQuadSkeleton, groundQuad, quadSkeletonForView,
   type QuadBoneId, type QuadProps,
 } from './quadSkeleton';
 import { quadParts } from './quadParts';
@@ -78,25 +78,3 @@ export const quadrupedPlan: BodyPlan = {
   hasView: () => true,
 };
 
-/** Espèce quadrupède déduite d'un nom (clé/alias de QUAD_SPECIES ; défaut Loup). Le routage
- *  vient de la table d'espèces (aliases) — plus aucune regex de noms à re-maintenir ici. */
-export function quadSpeciesFromName(name: string): string {
-  return quadSpeciesMatch(name) ?? 'Loup';
-}
-/** Échelle globale de l'espèce (rat petit, ours grand) — à multiplier au token scale en jeu
- *  pour des TAILLES RELATIVES cohérentes (un rat n'a pas la taille d'un cheval). */
-export function quadSpeciesScale(name: string): number {
-  return (QUAD_SPECIES[quadSpeciesFromName(name)] ?? QUAD_SPECIES.Cheval).sl;
-}
-
-/** SVG (string, boîte 120×150) d'un quadrupède prêt à injecter — pose mort/marche INTÉGRÉE
- *  (la mort s'aplatit sur le flanc dans la pose, PAS de bascule 78° du rendu). */
-export function quadrupedSvg(
-  name: string,
-  view: View,
-  opts: { dead?: boolean; walkPhase?: number; colors?: Palette } = {},
-): string {
-  const sp = quadSpeciesFromName(name);
-  const pose = opts.dead ? QUAD_DEATH : opts.walkPhase != null ? quadWalkPose(opts.walkPhase) : {};
-  return bonesToSvg(resolveQuad(sp, view, pose, opts.colors));
-}
