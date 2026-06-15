@@ -491,11 +491,14 @@ export function isWalkable(scene: Scene, x: number, y: number, z = 0): boolean {
 }
 
 /** Mur sur ARÊTE de case. `side:'N'` = arête entre (x,y) et (x,y-1) ; `side:'E'` = arête entre (x,y)
- *  et (x+1,y). `door` = franchissable (porte). `z` = étage (défaut 0). */
+ *  et (x+1,y). Les DIAGONALES `'\\'` (coin NO→SE) et `'/'` (coin NE→SO) tracent une cloison OBLIQUE en
+ *  travers de la case (x,y) — pour les parois en éventail / courbes (purement VISUELLES : le déplacement
+ *  reste orthogonal, géré par le sol / les arêtes N-E). `door` = franchissable (porte). `z` = étage. */
+export type WallSide = 'N' | 'E' | '\\' | '/';
 export interface WallSeg {
   x: number;
   y: number;
-  side: 'N' | 'E';
+  side: WallSide;
   z?: number;
   door?: boolean;
 }

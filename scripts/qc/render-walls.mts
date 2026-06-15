@@ -16,6 +16,8 @@ const tiles = new Array(W * H).fill('dalle') as Terrain[];
 const walls: WallSeg[] = [];
 for (let x = 1; x <= 3; x++) { walls.push({ x, y: 1, side: 'N' }); walls.push({ x, y: 4, side: 'N', door: x === 2 }); }
 for (let y = 1; y <= 3; y++) { walls.push({ x: 0, y, side: 'E' }); walls.push({ x: 3, y, side: 'E' }); }
+// deux cloisons DIAGONALES (éventail/courbe) hors de la salle, pour valider le rendu oblique
+walls.push({ x: 5, y: 2, side: '\\' }, { x: 5, y: 4, side: '/' });
 const scene = {
   id: 's', nom: '', description: '', dimensions: { w: W, h: H },
   levels: [{ z: 0, tiles }], walls, entities: [], dialogues: [], triggers: [], encounters: [], flags: {},

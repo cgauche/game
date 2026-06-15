@@ -48,7 +48,8 @@ export function parseWalledAscii(rows: string[], base: Terrain, legend: Record<s
   for (let y = 0; y < H; y++)
     for (let x = 0; x < W; x++) {
       const ch = rows[2 * y + 1][2 * x + 1];
-      tiles.push(ch === '.' || ch === ' ' ? base : (lg[ch] ?? (() => { throw new Error(`ascii murs : char inconnu « ${ch} »`); })()));
+      if (ch === '/' || ch === '\\') { tiles.push(base); walls.push({ x, y, side: ch }); } // cloison DIAGONALE en travers de la case
+      else tiles.push(ch === '.' || ch === ' ' ? base : (lg[ch] ?? (() => { throw new Error(`ascii murs : char inconnu « ${ch} »`); })()));
       const n = rows[2 * y][2 * x + 1]; if (isWall(n)) wall(x, y, 'N', n); // arête N (au-dessus de la case)
       const e = rows[2 * y + 1][2 * x + 2]; if (isWall(e)) wall(x, y, 'E', e); // arête E (à droite)
     }

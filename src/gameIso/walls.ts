@@ -13,7 +13,19 @@ type P = { cx: number; cy: number };
 function edgeEnds(w: WallSeg, dims: Dims): [P, P] {
   const z = w.z ?? 0;
   const gc = (gx: number, gy: number) => tileCenter(gx - 0.5, gy - 0.5, dims, z);
-  return w.side === 'E' ? [gc(w.x + 1, w.y), gc(w.x + 1, w.y + 1)] : [gc(w.x, w.y), gc(w.x + 1, w.y)];
+  switch (w.side) {
+    case 'E': return [gc(w.x + 1, w.y), gc(w.x + 1, w.y + 1)]; // arête droite
+    case 'N': return [gc(w.x, w.y), gc(w.x + 1, w.y)]; // arête haute
+    case '\\': return [gc(w.x, w.y), gc(w.x + 1, w.y + 1)]; // diagonale NO→SE
+    default: return [gc(w.x + 1, w.y), gc(w.x, w.y + 1)]; // '/' diagonale NE→SO
+  }
+}
+
+/** Profondeur de tri d'un mur : du côté de la tuile la plus PROCHE de la caméra (occlusion correcte). */
+function wallDepth(w: WallSeg, dims: Dims): number {
+  const z = w.z ?? 0;
+  const t = w.side === 'E' ? { x: w.x + 1, y: w.y } : { x: w.x, y: w.y }; // diagonales : la case elle-même
+  return depth(t.x, t.y, dims, z) + 0.45;
 }
 
 /** Poteau vertical (montant) à une extrémité d'arête : posé aux deux bouts de chaque mur → les poteaux
@@ -48,8 +60,7 @@ export function wallSeg(w: WallSeg, dims: Dims): { d: number; svg: string } {
       `<polygon points="${slab(a, b, H * 0.86, H)}" fill="${cap}"/>` +
       jamb(a) + jamb(b) +
       `${post(b, H)}</g>`;
-    const dz = w.z ?? 0;
-    return { d: (N ? depth(w.x, w.y, dims, dz) : depth(w.x + 1, w.y, dims, dz)) + 0.45, svg };
+    return { d: wallDepth(w, dims), svg };
   }
 
   // Panneau encadré : un rectangle inset (renfoncé) au centre de la face.
@@ -68,9 +79,7 @@ export function wallSeg(w: WallSeg, dims: Dims): { d: number; svg: string } {
     `<polygon points="${slab(a, b, H * 0.86, H)}" fill="${cap}"/>` + // corniche
     `<polygon points="${slab(a, b, H, H + 4)}" fill="${cap}"/>` + // épaisseur dessus
     `${post(b, H)}</g>`;
-  const dz = w.z ?? 0;
-  const d = (N ? depth(w.x, w.y, dims, dz) : depth(w.x + 1, w.y, dims, dz)) + 0.45;
-  return { d, svg };
+  return { d: wallDepth(w, dims), svg };
 }
 
 /** Tous les segments de mur de la scène, prêts à fusionner dans le tri de profondeur. */
