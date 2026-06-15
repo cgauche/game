@@ -59,6 +59,11 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       if (eff.type === 'startDialogue' && !dlgIds.has(eff.dialogue)) add('error', scope, refId, `Effet → dialogue inexistant « ${eff.dialogue} »`);
       if (eff.type === 'startCombat' && !encIds.has(eff.encounter)) add('error', scope, refId, `Effet → rencontre inexistante « ${eff.encounter} »`);
       if (eff.type === 'transition' && !sceneIds.has(eff.scene)) add('error', scope, refId, `Effet → scène inexistante « ${eff.scene} »`);
+      if (eff.type === 'zoneBlast') {
+        if (!within(eff.center.x, eff.center.y)) add('warn', scope, refId, `Souffle de zone : centre (${eff.center.x},${eff.center.y}) hors de la carte`);
+        if (!eff.damage?.trim()) add('error', scope, refId, `Souffle de zone : formule de dégâts manquante`);
+        if (eff.radius < 0) add('error', scope, refId, `Souffle de zone : rayon négatif`);
+      }
     };
     const dup = (ids: string[], scope: Warning['scope']) => {
       const seen = new Set<string>();
