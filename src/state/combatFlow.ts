@@ -18,6 +18,7 @@ import { d10 } from '../engine/dice';
 import {
   resolveMelee,
   resolveRanged,
+  bestRangedDefense,
   defenseValue,
   combatValue,
   attackModifiers,
@@ -394,7 +395,11 @@ export function resolveAttack(
       }
       return { res, weapon };
     }
-    const res = resolveRanged(attacker, target, weapon, battleRng(), dist, location, env);
+    // Défense RAW contre le tir (Protectrice 2+ / Bout Portant / tireur Engagé) : un défenseur NON-héros
+    // oppose AUTOMATIQUEMENT sa meilleure défense (la Ligne de Vue est acquise — `blocked` a déjà rendu
+    // null). Un héros défenseur passera par la modale réactive (étape T3) → pas d'auto-défense ici.
+    const rd = target.kind === 'hero' ? undefined : bestRangedDefense(attacker, target, weapon, dist);
+    const res = resolveRanged(attacker, target, weapon, battleRng(), dist, location, env, rd);
     // Tir dans la mêlée (LDB 14 l.136) : si le −20 a transformé une réussite en échec, le tir dévie
     // et frappe un allié intercalé (touche acquise, dégâts recalculés sur l'allié).
     if (inMelee && !res.hit) {

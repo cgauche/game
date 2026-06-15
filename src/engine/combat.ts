@@ -460,23 +460,38 @@ export function finishMelee(
   dmgProxy?: AttackOptions['dmgProxy'], // Charge montée : Force+Taille de la monture pour les dégâts (LDB 14 l.223)
   parryWeapon: Weapon | undefined = defender.weapons[0], // arme de parade choisie (spé + Atouts + pénalité main 2nde)
 ): AttackResult {
-  // Atouts qui modulent le DR du Test opposé (uniquement en Parade — Corps à corps) :
-  // Défensive (arme du défenseur) +1 DR (l.273), À Enroulement (arme de l'attaquant) -1 DR (l.259).
-  // Pénalité de parade contre plus grand : −2 DR par catégorie de Taille supérieure (LDB 85 l.305-306) — Parade (CC) seulement, pas l'Esquive.
+  const atkBd = bd('Corps à corps', combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
+  return combineOpposed(attacker, defender, weapon, atk, def, defenseMode, atkBd, { location, dmgProxy, parryWeapon, dodgeMod });
+}
+
+/**
+ * Cœur PARTAGÉ du Test OPPOSÉ — à partir des jets d'attaque/défense DÉJÀ obtenus + du breakdown
+ * d'attaque `atkBd` (libellé « Corps à corps » vs « Projectiles », construit par l'appelant avec SES
+ * mods : la mêlée via `finishMelee`, le tir DÉFENDU via `resolveRanged` — défense RAW Protectrice 2+/
+ * Bout Portant/tireur Engagé). drAdjust : Défensive (déf.) +1 DR (l.273), À Enroulement (att.) -1 DR
+ * (l.259), pénalité de Taille en Parade (LDB 85 l.305-306) ; Protectrice (LDB 62 l.306) → Indice PA
+ * partout en Parade. Imprécise/Pratique/Peu Fiable/Lente modulent le DR du Test (LDB 63/60).
+ */
+function combineOpposed(
+  attacker: Combatant,
+  defender: Combatant,
+  weapon: Weapon,
+  atk: TestResult,
+  def: TestResult,
+  defenseMode: 'parade' | 'esquive',
+  atkBd: ReturnType<typeof bd>,
+  opts: { location?: HitLocation; dmgProxy?: AttackOptions['dmgProxy']; parryWeapon?: Weapon; dodgeMod?: number } = {},
+): AttackResult {
+  const { location, dmgProxy } = opts;
+  const parryWeapon = opts.parryWeapon ?? defender.weapons[0];
+  const dodgeMod = opts.dodgeMod ?? 0;
   const noSize = !!attacker.swarm || !!defender.swarm; // Nuée : ignore toutes les règles de Taille (LDB 85 l.200)
   const parrySizePenalty = defenseMode === 'parade' && !noSize ? 2 * Math.max(0, sizeGap(attacker.size, defender.size)) : 0;
-  // Pratique (+1) / Peu Fiable (-1) sur un Test RATÉ utilisant l'arme (LDB 60 l.59/88) : modifie le DR
-  // du jet → l'issue du Test opposé ET les Dégâts (via le DR net). L'attaque utilise toujours l'arme ;
-  // la parade utilise l'arme du défenseur (pas l'esquive — l'esquive ne « teste » pas l'arme).
-  // Imprécise : −1 DR au Test d'attaque avec l'arme (LDB 63 l.19) — réussi ou raté.
   const atkSL = atk.sl + craftTestDRAdjust(weapon, atk.success) + attackDRAdjust(weapon);
-  // Lente : +1 DR à TOUT Test de défense contre cette arme — Parade ET Esquive (LDB 63 l.26).
   const defSL = def.sl - parrySizePenalty + vsDefenseDRAdjust(weapon)
     + (defenseMode === 'parade' ? parryDRAdjust(parryWeapon, weapon) + craftTestDRAdjust(parryWeapon, def.success) : 0);
   const opp = resolveOpposed({ ...atk, sl: atkSL }, { ...def, sl: defSL });
-  const atkBd = bd('Corps à corps', combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
   const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode, parryWeapon), def, defenseModifiers(defender, defenseMode, dodgeMod, parryWeapon));
-
   const usedParry = defenseMode === 'parade' ? parryWeapon : undefined; // arme de parade (Critiques opposés / Piège-lame)
   if (opp.winner === 'defender') {
     return {
@@ -620,6 +635,24 @@ export function rangedDefenseModes(
   return [...modes];
 }
 
+/** Meilleure défense AUTO contre un tir (cible NON-héros, ou résolution synchrone) : parmi les modes
+ *  RAW autorisés (`rangedDefenseModes`), celui de plus haute valeur effective. `undefined` = aucune
+ *  défense → tir non opposé. La Parade utilise l'arme Protectrice 2+ si présente, sinon la main. */
+export function bestRangedDefense(
+  attacker: Combatant,
+  defender: Combatant,
+  weapon: Weapon,
+  distanceTiles: number | undefined,
+  los = true,
+): { mode: 'parade' | 'esquive'; parryWeapon?: Weapon } | undefined {
+  const modes = rangedDefenseModes(attacker, defender, weapon, distanceTiles, los);
+  if (!modes.length) return undefined;
+  const parryWeapon = rangedOpposeWeapon(defender.weapons) ?? defender.weapons[0];
+  const valOf = (m: 'parade' | 'esquive') => defenseValue(defender, m, m === 'parade' ? parryWeapon : undefined);
+  const best = modes.reduce((a, b) => (valOf(b) > valOf(a) ? b : a));
+  return { mode: best, parryWeapon: best === 'parade' ? parryWeapon : undefined };
+}
+
 /** Résout une attaque à distance (Test de Projectiles, non opposé). */
 export function resolveRanged(
   attacker: Combatant,
@@ -629,6 +662,7 @@ export function resolveRanged(
   distanceTiles?: number,
   location?: HitLocation,
   env: ModLine[] = [],
+  defense?: { mode: 'parade' | 'esquive'; parryWeapon?: Weapon; dodgeMod?: number },
 ): AttackResult {
   const atkVal = combatValue(attacker, 'ranged', weapon);
   if (distanceTiles != null && weapon.range && rangeBandModifier(distanceTiles, weapon.range) == null)
@@ -637,6 +671,12 @@ export function resolveRanged(
   let atk = rollTest(atkVal, 'intermediaire', rng, combineMods(mods));
   if (hasCondition(defender, 'Inconscient')) atk = helplessTest(atk, 'ranged'); // auto-succès, Dégâts à bout portant (LDB 16 l.112)
   const atkBd = bd('Projectiles', atkVal, atk, mods);
+  // Tir DÉFENDU (RAW : Protectrice 2+ LDB 62 l.307 / Bout Portant 14 l.62 / tireur Engagé 14 l.70) →
+  // Test OPPOSÉ, cœur partagé avec la mêlée (`combineOpposed`). L'Inconscient ne se défend pas.
+  if (defense && !hasCondition(defender, 'Inconscient')) {
+    const def = rollMeleeDefender(defender, defense.mode, rng, defense.dodgeMod ?? 0, defense.parryWeapon ?? defender.weapons[0], weapon);
+    return combineOpposed(attacker, defender, weapon, atk, def, defense.mode, atkBd, { location, parryWeapon: defense.parryWeapon, dodgeMod: defense.dodgeMod });
+  }
   if (!atk.success) {
     return {
       hit: false,
