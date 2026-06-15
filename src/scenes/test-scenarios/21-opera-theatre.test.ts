@@ -24,10 +24,12 @@ describe('Scénario « Opéra — Théâtre » : salle multi-niveaux valide', ()
 
   it('est bien multi-niveaux : parterre (z0) + galerie de loges (z1)', () => {
     expect(scene.levels.map((l) => l.z).sort()).toEqual([0, 1]);
-    // un plancher de loge existe au niveau 1 (loge royale en surplomb)
-    expect(isWalkable(scene, 8, 12, 1)).toBe(true);
-    // le parterre est marchable au sol sous la loge royale
-    expect(isWalkable(scene, 8, 10, 0)).toBe(true);
+    // la loge royale (galerie, z1) est marchable
+    expect(isWalkable(scene, 10, 13, 1)).toBe(true);
+    // le parterre est marchable au sol
+    expect(isWalkable(scene, 10, 8, 0)).toBe(true);
+    // une case « vide » d'étage (au-dessus du parterre central) reste infranchissable
+    expect(isWalkable(scene, 10, 8, 1)).toBe(false);
   });
 
   it('le mobilier et les PNJ sont posés à leur étage (entités z=1 présentes)', () => {
@@ -42,12 +44,17 @@ describe('Scénario « Opéra — Théâtre » : salle multi-niveaux valide', ()
     for (const e of scene.entities) expect(zs.has(e.z ?? 0)).toBe(true);
   });
 
-  it('la loge royale est ATTEIGNABLE depuis le parterre par l’escalier (pathfinding 3D)', () => {
+  it('la loge royale est ATTEIGNABLE depuis l’entrée par l’escalier (pathfinding 3D)', () => {
     const start = scene.entities.find((e) => e.kind === 'heroStart')!.pos;
-    // sans escalier la loge (z1) serait isolée ; le chemin doit changer d'étage
-    const path = pathTo(scene, { x: start.x, y: start.y, z: 0 }, { x: 8, y: 11, z: 1 }, new Set<string>());
+    // depuis le vestibule, on doit traverser le hall, monter un escalier (z change) et gagner la loge royale
+    const path = pathTo(scene, { x: start.x, y: start.y, z: 0 }, { x: 10, y: 13, z: 1 }, new Set<string>());
     expect(path).not.toBeNull();
     expect(path!.some((p) => (p.z ?? 0) === 1)).toBe(true);
+  });
+
+  it('la scène est accessible depuis le parterre (plan connexe au sol)', () => {
+    const start = scene.entities.find((e) => e.kind === 'heroStart')!.pos;
+    expect(pathTo(scene, { x: start.x, y: start.y }, { x: 10, y: 3 }, new Set<string>())).not.toBeNull();
   });
 });
 
@@ -56,7 +63,7 @@ describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', ()
   const plante = scenario.scene.entities.find((e) => e.id === 'plante-bombe')!;
   const detect = plante.interact!.effects[0] as Extract<Effect, { type: 'test' }>;
 
-  beforeEach(() => useGame.setState({ battle: null, flags: {}, scheduledEffects: [], gameTime: 20 * 60, partyPos: { x: 8, y: 12, z: 1 } }));
+  beforeEach(() => useGame.setState({ battle: null, flags: {}, scheduledEffects: [], gameTime: 20 * 60, partyPos: { x: 10, y: 14, z: 1 } }));
   function lonePartyAt(wounds: number) {
     const h = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
     h.wounds = { current: wounds, max: wounds };

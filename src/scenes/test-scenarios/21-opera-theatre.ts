@@ -1,5 +1,6 @@
 import { makePregens } from '../../data/pregens';
-import type { Scene, Terrain, SceneEntity, CustomStatblock } from '../../state/scene';
+import { parseAsciiRows } from '../../state/asciiMap';
+import type { Scene, SceneEntity, CustomStatblock } from '../../state/scene';
 import type { TestScenario } from './_shared';
 
 // Profil des deux étudiants saboteurs : de jeunes civils paniqués, vifs mais fragiles (pas de combattants).
@@ -9,85 +10,114 @@ const ETUDIANT: CustomStatblock = {
 };
 
 /**
- * « Une nuit à l'Opéra » — le THÉÂTRE multi-niveaux (Lot C1). Le lieu central, 100 % en données
- * éditeur : parterre + scène (z0) et galerie de loges + loge royale en surplomb (z1), reliés
- * visuellement par le tri de profondeur (un sol de loge surplombe les fauteuils du parterre). Tout
- * le mobilier d'opéra (props SVG) est posé à son étage. Aucune ligne de code applicatif — assemblé
- * avec `levels`, `SceneEntity.z` et les props du catalogue. (La bombe jouable vit dans « Opéra —
- * Bombe » ; ici on bâtit la salle ; les intrigues s'y câbleront quand la traversée d'étage existera.)
+ * « Une nuit à l'Opéra » — le Théâtre Staatsoper, reconstitué d'après le PLAN du scénario (NADJ ch.8,
+ * source 08 l.28-41). Carte AUTHORÉE EN ASCII (une grille par étage, comme l'arène), 100 % en données.
+ *
+ *  Rez-de-chaussée (z0) : coulisses + coursive (mur arrière) → scène → PARTERRE (auditorium) → HALL
+ *  (foyer) → vestibule d'entrée ; escaliers JUMEAUX de chaque côté du hall (surveillés) montant à l'étage.
+ *  Étage supérieur (z1) : galerie moquettée desservant 8 LOGES (4 de chaque côté) + la LOGE ROYALE et son
+ *  ANTICHAMBRE au fond-centre (où les agents de Dammenblatz posent la bombe, l.62/131).
+ *
+ *  Légende : # mur · = planches (coulisses/coursive) · S plancher (scène) · M marbre (parterre) ·
+ *  H dalle (hall/vestibule) · E plancher (escalier) · L plancher (galerie/loges) · D porte.
  */
-const W = 18, H = 14;
-const at = (x: number, y: number) => y * W + x;
-const z0 = new Array(W * H).fill('marbre') as Terrain[]; // parterre dallé de marbre
-const z1 = new Array(W * H).fill('vide') as Terrain[]; // galerie : vide sauf les planchers de loge
-const fill = (t: Terrain[], x0: number, y0: number, x1: number, y1: number, v: Terrain) => {
-  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) t[at(x, y)] = v;
-};
+const LEGEND: Record<string, string> = { M: 'marbre', S: 'plancher', H: 'dalle', E: 'plancher', L: 'plancher' };
 
-// --- Niveau 0 : la salle ---
-for (let x = 0; x < W; x++) { z0[at(x, 0)] = 'mur'; if (x < 8 || x > 9) z0[at(x, H - 1)] = 'mur'; } // entrée au centre du mur du fond
-for (let y = 0; y < H; y++) { z0[at(0, y)] = 'mur'; z0[at(W - 1, y)] = 'mur'; }
-fill(z0, 3, 1, 14, 3, 'plancher'); // la scène (plancher de bois, au fond)
+const Z0 = [
+  '#####################',
+  '#===================#', // coursive le long du mur arrière (accès coulisses/acteurs)
+  '#===#SSSSSSSSSSS#===#', // coulisses gauche (loges d'artistes/salle verte) | SCÈNE | coulisses droite (ateliers)
+  '#===#SSSSSSSSSSS#===#',
+  '#===DSSSSSSSSSSSD===#', // portes de scène
+  '#...MMMMMMMMMMMMM...#', // PARTERRE (auditorium, face à la scène)
+  '#...MMMMMMMMMMMMM...#',
+  '#...MMMMMMMMMMMMM...#',
+  '#...MMMMMMMMMMMMM...#',
+  '#...MMMMMMMMMMMMM...#',
+  '#...MMMMMMMMMMMMM...#',
+  '#...MMMMMMMMMMMMM...#',
+  '#...MMMMMMMMMMMMM...#',
+  '#EEHHHHHHHHHHHHHHHEE#', // escaliers jumeaux (E) flanquant le HALL d'entrée
+  '#EEHHHHHHHHHHHHHHHEE#',
+  '#..HHHHHHHHHHHHHHH..#',
+  '#......HHHHHHH......#', // vestibule (Porte des Dames / des Seigneurs, entrée du groupe)
+];
 
-// --- Niveau 1 : les loges en surplomb (plancher posé sur le vide) ---
-fill(z1, 1, 4, 2, 9, 'plancher'); // loges latérales gauche
-fill(z1, 15, 4, 16, 9, 'plancher'); // loges latérales droite
-fill(z1, 6, 11, 11, 12, 'plancher'); // LOGE ROYALE (devant, surplombe l'arrière du parterre)
+const Z1 = [
+  '.....................',
+  '.....................',
+  '.....................',
+  '.....................',
+  '.LLL.............LLL.', // loges latérales : 4 à gauche, 4 à droite, surplombant le parterre
+  '.LLL.............LLL.',
+  '.LLL.............LLL.',
+  '.LLL.............LLL.',
+  '.LLL.............LLL.',
+  '.LLL.............LLL.',
+  '.LLL.............LLL.',
+  '.LLL.............LLL.',
+  '.LLL.............LLL.',
+  '.LLLLLLLLLLLLLLLLLLL.', // galerie moquettée (relie les escaliers, les loges et la loge royale)
+  '.LLLLLLLLLLLLLLLLLLL.',
+  '...LLLLLLLLLLLLLLL...', // ANTICHAMBRE de la loge royale (la plante piégée y est livrée)
+  '.....................',
+];
+
+const g0 = parseAsciiRows(Z0, 'mur', LEGEND);
+const g1 = parseAsciiRows(Z1, 'vide', LEGEND);
+const W = g0.w, H = g0.h;
 
 const ents: SceneEntity[] = [
-  { id: 'start', kind: 'heroStart', pos: { x: 8, y: 12 } },
+  { id: 'start', kind: 'heroStart', pos: { x: 10, y: 16 } }, // vestibule d'entrée
 
   // Scène (z0) : rideau au fond, pupitre du chef devant.
-  { id: 'rideau-g', kind: 'prop', ref: 'rideau-scene', pos: { x: 5, y: 1 } },
-  { id: 'rideau-c', kind: 'prop', ref: 'rideau-scene', pos: { x: 8, y: 1 } },
-  { id: 'rideau-d', kind: 'prop', ref: 'rideau-scene', pos: { x: 11, y: 1 } },
-  { id: 'pupitre', kind: 'prop', ref: 'pupitre-chef', pos: { x: 8, y: 4 }, facing: 'N' },
+  { id: 'rideau-g', kind: 'prop', ref: 'rideau-scene', pos: { x: 7, y: 2 } },
+  { id: 'rideau-c', kind: 'prop', ref: 'rideau-scene', pos: { x: 10, y: 2 } },
+  { id: 'rideau-d', kind: 'prop', ref: 'rideau-scene', pos: { x: 13, y: 2 } },
+  { id: 'pupitre', kind: 'prop', ref: 'pupitre-chef', pos: { x: 10, y: 5 }, facing: 'N' },
 
-  // Parterre (z0) : rangées de fauteuils face à la scène + colonnes + statue.
-  { id: 'sieges-1g', kind: 'prop', ref: 'rangee-sieges', pos: { x: 4, y: 7 }, facing: 'N' },
-  { id: 'sieges-1d', kind: 'prop', ref: 'rangee-sieges', pos: { x: 10, y: 7 }, facing: 'N' },
-  { id: 'sieges-2g', kind: 'prop', ref: 'rangee-sieges', pos: { x: 4, y: 9 }, facing: 'N' },
-  { id: 'sieges-2d', kind: 'prop', ref: 'rangee-sieges', pos: { x: 10, y: 9 }, facing: 'N' },
-  { id: 'colonne-g', kind: 'prop', ref: 'colonne-brisee', pos: { x: 2, y: 6 } },
-  { id: 'colonne-d', kind: 'prop', ref: 'colonne-brisee', pos: { x: 15, y: 6 } },
-  { id: 'statue', kind: 'prop', ref: 'statue', pos: { x: 2, y: 11 } },
-  // Professeur Pakker et son épouse, assis près de l'allée centrale (source 08 l.158) — cible des
-  // pétards des étudiants (intrigue n°2 : Glimbrin lui vole ses clés dans le brouhaha).
-  { id: 'pakker', kind: 'personnage', ref: 'Villageois', label: 'Professeur Pakker', pos: { x: 8, y: 8 }, facing: 'N' },
-  // Les deux étudiants, repliés vers l'arrière de la salle près de la porte (source 08 l.158). On peut
-  // les surprendre et les arrêter (combat optionnel) — sinon ils lancent leurs pétards et filent.
-  { id: 'etudiant-1', kind: 'personnage', label: 'Étudiant nerveux', pos: { x: 5, y: 12 }, facing: 'S', dialogueId: 'dlg-etudiants', statblock: ETUDIANT },
-  { id: 'etudiant-2', kind: 'personnage', label: 'Étudiant fébrile', pos: { x: 6, y: 12 }, facing: 'S', statblock: ETUDIANT },
+  // Parterre (z0) : rangées de fauteuils face à la scène (allée centrale x10), colonnes, statue.
+  { id: 'sieges-1g', kind: 'prop', ref: 'rangee-sieges', pos: { x: 5, y: 7 }, facing: 'N' },
+  { id: 'sieges-1d', kind: 'prop', ref: 'rangee-sieges', pos: { x: 11, y: 7 }, facing: 'N' },
+  { id: 'sieges-2g', kind: 'prop', ref: 'rangee-sieges', pos: { x: 5, y: 10 }, facing: 'N' },
+  { id: 'sieges-2d', kind: 'prop', ref: 'rangee-sieges', pos: { x: 11, y: 10 }, facing: 'N' },
+  { id: 'colonne-g', kind: 'prop', ref: 'colonne-brisee', pos: { x: 4, y: 6 } },
+  { id: 'colonne-d', kind: 'prop', ref: 'colonne-brisee', pos: { x: 16, y: 6 } },
+  { id: 'statue', kind: 'prop', ref: 'statue', pos: { x: 4, y: 15 } },
+  // Professeur Pakker et son épouse, près de l'allée centrale (source 08 l.158) — cible des pétards.
+  { id: 'pakker', kind: 'personnage', ref: 'Villageois', label: 'Professeur Pakker', pos: { x: 9, y: 8 }, facing: 'N' },
+  // Les deux étudiants, repliés vers l'arrière de la salle près de la porte (l.158) — combat optionnel.
+  { id: 'etudiant-1', kind: 'personnage', label: 'Étudiant nerveux', pos: { x: 5, y: 15 }, facing: 'S', dialogueId: 'dlg-etudiants', statblock: ETUDIANT },
+  { id: 'etudiant-2', kind: 'personnage', label: 'Étudiant fébrile', pos: { x: 6, y: 15 }, facing: 'S', statblock: ETUDIANT },
 
-  // Lustre suspendu au-dessus du parterre (prop sur le vide z1 → flotte 96 px plus haut).
-  { id: 'lustre', kind: 'prop', ref: 'lustre-opera', pos: { x: 8, y: 6 }, z: 1 },
+  // Lustre suspendu au-dessus du parterre (prop sur le vide z1 → flotte plus haut).
+  { id: 'lustre', kind: 'prop', ref: 'lustre-opera', pos: { x: 10, y: 8 }, z: 1 },
 
-  // Loge gauche (z1) : balustrade côté parterre, fauteuils, applique, un spectateur.
-  { id: 'bal-g', kind: 'prop', ref: 'balustrade-loge', pos: { x: 2, y: 5 }, facing: 'E', z: 1 },
-  { id: 'ft-g1', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 1, y: 5 }, z: 1 },
-  { id: 'ft-g2', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 1, y: 7 }, z: 1 },
-  { id: 'app-g', kind: 'prop', ref: 'applique-murale', pos: { x: 1, y: 4 }, z: 1 },
+  // Loges gauche (z1) : balustrade côté parterre, fauteuils, applique, un spectateur.
+  { id: 'bal-g', kind: 'prop', ref: 'balustrade-loge', pos: { x: 3, y: 6 }, facing: 'E', z: 1 },
+  { id: 'ft-g1', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 1, y: 6 }, z: 1 },
+  { id: 'ft-g2', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 1, y: 8 }, z: 1 },
+  { id: 'app-g', kind: 'prop', ref: 'applique-murale', pos: { x: 1, y: 5 }, z: 1 },
   { id: 'spect-g', kind: 'personnage', ref: 'Villageois', label: 'Spectatrice', pos: { x: 2, y: 7 }, z: 1, facing: 'E' },
 
-  // Loge droite (z1).
-  { id: 'bal-d', kind: 'prop', ref: 'balustrade-loge', pos: { x: 15, y: 5 }, facing: 'O', z: 1 },
-  { id: 'ft-d1', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 16, y: 5 }, z: 1 },
-  { id: 'ft-d2', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 16, y: 7 }, z: 1 },
-  { id: 'app-d', kind: 'prop', ref: 'applique-murale', pos: { x: 16, y: 4 }, z: 1 },
-  { id: 'spect-d', kind: 'personnage', ref: 'Villageois', label: 'Spectateur', pos: { x: 15, y: 7 }, z: 1, facing: 'O' },
+  // Loges droite (z1).
+  { id: 'bal-d', kind: 'prop', ref: 'balustrade-loge', pos: { x: 17, y: 6 }, facing: 'O', z: 1 },
+  { id: 'ft-d1', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 19, y: 6 }, z: 1 },
+  { id: 'ft-d2', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 19, y: 8 }, z: 1 },
+  { id: 'app-d', kind: 'prop', ref: 'applique-murale', pos: { x: 19, y: 5 }, z: 1 },
+  { id: 'spect-d', kind: 'personnage', ref: 'Villageois', label: 'Spectateur', pos: { x: 18, y: 7 }, z: 1, facing: 'O' },
 
-  // LOGE ROYALE (z1) : balustrade face à la scène, fauteuils d'apparat, la Comtesse, appliques.
-  { id: 'bal-royale-g', kind: 'prop', ref: 'balustrade-loge', pos: { x: 6, y: 11 }, facing: 'N', z: 1 },
-  { id: 'bal-royale-d', kind: 'prop', ref: 'balustrade-loge', pos: { x: 11, y: 11 }, facing: 'N', z: 1 },
-  { id: 'fauteuil-royal', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 8, y: 12 }, z: 1 },
-  { id: 'comtesse', kind: 'personnage', ref: 'Villageois', label: 'Comtesse Emmanuelle', pos: { x: 9, y: 12 }, z: 1, facing: 'N', dialogueId: 'dlg-comtesse' },
-  { id: 'app-royale-g', kind: 'prop', ref: 'applique-murale', pos: { x: 6, y: 12 }, z: 1 },
-  { id: 'app-royale-d', kind: 'prop', ref: 'applique-murale', pos: { x: 11, y: 12 }, z: 1 },
-  // INTRIGUE n°1 (source 08 l.131) : « une grande plante en pot… le pot est rempli de poudre à canon,
-  // avec un détonateur caché », posée dans l'antichambre de la LOGE ROYALE (z1). Désamorçage = retirer
-  // le détonateur (l.166). Détection plus aisée pour qui connaît la Poudre noire.
+  // LOGE ROYALE (z1, fond-centre de la galerie) : balustrade face à la scène, fauteuil, la Comtesse, appliques.
+  { id: 'bal-royale-g', kind: 'prop', ref: 'balustrade-loge', pos: { x: 8, y: 13 }, facing: 'N', z: 1 },
+  { id: 'bal-royale-d', kind: 'prop', ref: 'balustrade-loge', pos: { x: 12, y: 13 }, facing: 'N', z: 1 },
+  { id: 'fauteuil-royal', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 10, y: 14 }, z: 1 },
+  { id: 'comtesse', kind: 'personnage', ref: 'Villageois', label: 'Comtesse Emmanuelle', pos: { x: 10, y: 13 }, z: 1, facing: 'N', dialogueId: 'dlg-comtesse' },
+  { id: 'app-royale-g', kind: 'prop', ref: 'applique-murale', pos: { x: 7, y: 14 }, z: 1 },
+  { id: 'app-royale-d', kind: 'prop', ref: 'applique-murale', pos: { x: 13, y: 14 }, z: 1 },
+  // INTRIGUE n°1 (source 08 l.131/166) : « grande plante en pot remplie de poudre à canon, détonateur
+  // caché », livrée dans l'ANTICHAMBRE de la loge royale (z1). Désamorçage = retirer le détonateur.
   {
-    id: 'plante-bombe', kind: 'prop', ref: 'plante-pot', pos: { x: 7, y: 11 }, z: 1,
+    id: 'plante-bombe', kind: 'prop', ref: 'plante-pot', pos: { x: 10, y: 15 }, z: 1,
     interact: {
       consume: false,
       effects: [
@@ -106,24 +136,22 @@ const ents: SceneEntity[] = [
     },
   },
 
-  // Escaliers (props visuels) reliant le parterre aux loges — la traversée est portée en données par
-  // `Scene.stairs` (cf. ci-dessous). Le groupe monte en cliquant une case de loge.
-  { id: 'esc-royale', kind: 'prop', ref: 'escalier-loge', pos: { x: 12, y: 12 }, facing: 'NO' },
-  { id: 'esc-gauche', kind: 'prop', ref: 'escalier-loge', pos: { x: 3, y: 9 }, facing: 'NO' },
+  // Escaliers JUMEAUX (props visuels) ; la traversée est portée en données par `Scene.stairs`.
+  { id: 'esc-gauche', kind: 'prop', ref: 'escalier-loge', pos: { x: 2, y: 14 }, facing: 'N' },
+  { id: 'esc-droite', kind: 'prop', ref: 'escalier-loge', pos: { x: 18, y: 14 }, facing: 'N' },
 ];
 
 const scene: Scene = {
   id: 'test-opera-theatre',
   nom: 'Opéra — Le théâtre',
-  description: 'Le théâtre de l\'Opéra : parterre et scène au sol, galerie de loges et loge royale en surplomb.',
+  description: 'Le Théâtre Staatsoper d\'après le plan du scénario : coulisses, scène, parterre, hall et escaliers jumeaux ; galerie de loges et loge royale à l\'étage.',
   dimensions: { w: W, h: H },
   ambiance: 'interieur',
-  levels: [{ z: 0, tiles: z0 }, { z: 1, tiles: z1 }],
-  // Franchissements verticaux (pathfinding 3D) : le parterre monte vers la loge royale et la loge
-  // gauche par leur escalier. Bidirectionnel — on redescend par le même.
+  levels: [{ z: 0, tiles: g0.tiles }, { z: 1, tiles: g1.tiles }],
+  // Escaliers JUMEAUX (source l.36/41) : de chaque côté du hall, montant à la galerie. Bidirectionnels.
   stairs: [
-    { from: { x: 12, y: 12, z: 0 }, to: { x: 11, y: 12, z: 1 } }, // → loge royale
-    { from: { x: 3, y: 9, z: 0 }, to: { x: 2, y: 9, z: 1 } }, // → loge gauche
+    { from: { x: 2, y: 13, z: 0 }, to: { x: 2, y: 13, z: 1 } }, // escalier gauche → galerie
+    { from: { x: 18, y: 13, z: 0 }, to: { x: 18, y: 13, z: 1 } }, // escalier droit → galerie
   ],
   entities: ents,
   dialogues: [
@@ -136,7 +164,6 @@ const scene: Scene = {
           speaker: 'Comtesse Emmanuelle',
           text: 'La Comtesse Emmanuelle vous toise depuis sa loge. « On ne vous a pas conviés dans ma loge. Qu’est-ce qui peut bien valoir cette intrusion ? »',
           choices: [
-            // Réactivité : une fois la bombe neutralisée, on peut le lui apprendre — elle remercie (faveur).
             { text: '« Excellence — un attentat vous visait. Il est déjoué. »', condition: 'bombeDesamorcee', next: 'merci' },
             { text: '« Excellence, l’antichambre n’est peut-être pas sûre ce soir. »', condition: '!bombeDesamorcee', next: 'n1' },
             { text: 'S’incliner et se retirer.', effects: [{ type: 'endDialogue' }] },
@@ -156,7 +183,7 @@ const scene: Scene = {
             {
               text: 'S’incliner et accepter.',
               effects: [
-                { type: 'giveMoney', gold: 5 }, // la faveur d'une noble reconnaissante
+                { type: 'giveMoney', gold: 5 },
                 { type: 'setFlag', flag: 'faveurComtesse' },
                 { type: 'endDialogue' },
               ],
@@ -187,27 +214,24 @@ const scene: Scene = {
   ],
   triggers: [
     {
-      // Entrer dans l'auditorium ARME l'intrigue (la plante est déjà en place, source 20h02) : la mèche
-      // brûle, l'explosion frappe l'antichambre sauf si on retire le détonateur (flag bombeDesamorcee).
+      // Entrer dans l'auditorium ARME l'intrigue (la plante est en place, l.20h02) : la mèche brûle,
+      // l'explosion frappe l'antichambre de la loge royale sauf si on retire le détonateur.
       id: 'armer-bombe',
-      rect: { x: 3, y: 6, w: 12, h: 4 },
+      rect: { x: 4, y: 5, w: 13, h: 8 },
       once: true,
       effects: [
         { type: 'journal', text: 'Les lumières de la salle baissent, le rideau se lève — la représentation commence.' },
-        { type: 'setLight', level: 0.35 }, // mise en scène : la salle plonge dans la pénombre
+        { type: 'setLight', level: 0.35 },
         { type: 'journal', text: 'Une âcre odeur de poudre flotte depuis la galerie des loges…' },
-        // INTRIGUE n°2 (source 08 l.158-162) : à 20h30, deux étudiants jettent un chapelet de pétards
-        // sur le siège du professeur Pakker. La lueur de la mèche éclaire la salle (flash), puis les
-        // pétards éclatent — le spectacle s'interrompt SANS panique ; Glimbrin en profite pour voler.
+        // INTRIGUE n°2 (source 08 l.158-162) : à 20h30, deux étudiants jettent des pétards sur le siège
+        // de Pakker. Flash de la mèche, pétards, spectacle interrompu SANS panique ; Glimbrin vole.
         {
           type: 'delayedEffect', afterMinutes: 10,
           effects: [
             { type: 'journal', text: 'Près de l’allée centrale, la lueur d’une mèche embrase la pénombre…' },
-            { type: 'setLight', level: 0.8 }, // l'éclat des pétards illumine brièvement toute la salle
-            { type: 'zoneBlast', center: { x: 8, y: 8 }, radius: 1, damage: '2' },
+            { type: 'setLight', level: 0.8 },
+            { type: 'zoneBlast', center: { x: 9, y: 8 }, radius: 1, damage: '2' },
             { type: 'journal', text: 'Une volée de pétards éclate sur le siège du professeur Pakker ! Le spectacle s’interrompt dans les cris — mais sans panique. Dans le brouhaha, une petite silhouette se faufile sous son fauteuil…' },
-            // Spot-check (intrigue n°2, source 08 l.162) : repérer Glimbrin le gnome qui vole les clés de
-            // l'École impériale d'artillerie sous la chaise. Difficile (-20) : le tumulte le couvre.
             {
               type: 'test', skill: 'Perception', difficulty: 'difficile', label: 'Repérer le voleur dans le brouhaha',
               onSuccess: [
@@ -222,12 +246,12 @@ const scene: Scene = {
             },
           ],
         },
-        { type: 'delayedEffect', afterMinutes: 11, effects: [{ type: 'setLight', level: 0.35 }] }, // la salle se rassoit dans la pénombre
+        { type: 'delayedEffect', afterMinutes: 11, effects: [{ type: 'setLight', level: 0.35 }] },
         {
           type: 'delayedEffect', afterMinutes: 60, cancelFlag: 'bombeDesamorcee',
           effects: [
             { type: 'journal', text: 'UNE EXPLOSION DÉCHIRE L’ANTICHAMBRE DE LA LOGE ROYALE !' },
-            { type: 'zoneBlast', center: { x: 8, y: 12 }, radius: 6, damage: '1d10+15', conditions: [{ name: 'En flammes' }] },
+            { type: 'zoneBlast', center: { x: 10, y: 14 }, radius: 6, damage: '1d10+15', conditions: [{ name: 'En flammes' }] },
           ],
         },
       ],
@@ -246,7 +270,7 @@ const scene: Scene = {
   ],
   flags: {},
   startMessage:
-    'Le grand théâtre de l\'Opéra d\'Altdorf. En bas, le parterre face à la scène ; au-dessus, la galerie de loges et la loge royale en surplomb où siège la Comtesse.',
+    'Le Théâtre Staatsoper. Du vestibule, le hall s’ouvre sur le parterre face à la scène ; deux escaliers surveillés montent à la galerie des loges, où siège la Comtesse dans la loge royale.',
 };
 
 export const scenario: TestScenario = {
@@ -254,7 +278,7 @@ export const scenario: TestScenario = {
   order: 21,
   icon: '🎭',
   title: 'Opéra — Théâtre',
-  tests: 'Salle multi-niveaux 100 % en données : parterre + scène (z0) et loges + loge royale (z1) avec mobilier d\'opéra posé à chaque étage ; surplomb des planchers ; NPC placés par niveau.',
+  tests: 'Plan du Théâtre Staatsoper reproduit en ASCII (source 08 l.28-41) : coulisses+scène+parterre+hall+vestibule (z0), escaliers jumeaux → galerie+loges+loge royale & antichambre (z1) ; intrigues bombe + pétards/Glimbrin + étudiants.',
   partyNote: 'Pré-tirés',
   makeParty: () => makePregens(),
   scene,
