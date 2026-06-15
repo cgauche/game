@@ -121,8 +121,8 @@ export function screenToTileAtZ(px: number, py: number, dims: Dims, z = 0): { x:
 /** Les 4 sommets (et le centre) d'une tuile — source unique de la géométrie, partagée par
  *  diamondPath et le raccord d'arêtes (ground.ts). Losange (TW/TH) en iso ; carré (CELL) en
  *  vue du dessus, où top=NO, right=NE, bot=SE, left=SO (l'ordre compose avec groundTile/diamondPath). */
-export function diamondCorners(x: number, y: number, dims: Dims) {
-  const { cx, cy } = tileCenter(x, y, dims);
+export function diamondCorners(x: number, y: number, dims: Dims, z = 0) {
+  const { cx, cy } = tileCenter(x, y, dims, z);
   if (dims.view === 'top') {
     const h = CELL / 2;
     return {
@@ -145,8 +145,8 @@ export function diamondCorners(x: number, y: number, dims: Dims) {
 }
 
 /** Chemin SVG d'un losange de sol centré sur la tuile. */
-export function diamondPath(x: number, y: number, dims: Dims): string {
-  const { top, right, bot, left } = diamondCorners(x, y, dims);
+export function diamondPath(x: number, y: number, dims: Dims, z = 0): string {
+  const { top, right, bot, left } = diamondCorners(x, y, dims, z);
   return `M${top[0]},${top[1]} L${right[0]},${right[1]} L${bot[0]},${bot[1]} L${left[0]},${left[1]} Z`;
 }
 

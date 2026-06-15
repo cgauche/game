@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, CELL, LEVEL_H, screenToTileAtZ, diamondPath, type Dims } from './iso';
+import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, CELL, LEVEL_H, screenToTileAtZ, diamondPath, diamondCorners, type Dims } from './iso';
 
 describe('rotTile / unrotTile', () => {
   const dims: Dims = { w: 5, h: 3 };
@@ -177,6 +177,17 @@ describe('projection multi-niveaux (élévation z)', () => {
         const { cx, cy } = tileCenter(x, y, dims);
         expect(screenToTileAtZ(cx, cy, dims, 0)).toEqual(screenToTile(cx, cy, dims));
       }
+  });
+
+  it('diamondCorners/diamondPath suivent l’élévation z (soulevés de z·LEVEL_H, cx inchangé)', () => {
+    const dims: Dims = { w: 5, h: 5 };
+    const c0 = diamondCorners(2, 2, dims, 0);
+    const c1 = diamondCorners(2, 2, dims, 1);
+    expect(c1.cx).toBe(c0.cx);
+    expect(c1.cy).toBe(c0.cy - LEVEL_H);
+    expect(c1.top[1]).toBe(c0.top[1] - LEVEL_H);
+    expect(diamondPath(2, 2, dims)).toBe(diamondPath(2, 2, dims, 0)); // z=0 rétro-compat
+    expect(diamondPath(2, 2, dims, 1)).not.toBe(diamondPath(2, 2, dims, 0));
   });
 });
 
