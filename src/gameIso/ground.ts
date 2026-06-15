@@ -65,6 +65,21 @@ export function elevSkirt(scene: Scene, x: number, y: number, dims: Dims, z = 0)
 
 // Faces avant (vers la caméra : S/E) éclairées, faces arrière sombres (occludées par le propre sol).
 const SKIRT_FILL: Record<EdgeDir, string> = { S: '#5a4a33', E: '#4a3d2b', N: '#33291c', O: '#3d3122' };
+const SKIRT_FOOT: Record<EdgeDir, string> = { S: '#3e3322', E: '#33291c', N: '#241c12', O: '#2a2117' };
+const lerpP = (a: [number, number], b: [number, number], t: number): [number, number] => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+
+/** SVG d'une jupe TEXTURÉE : face de base + ombre au pied (occlusion ambiante) + arête vive au rebord
+ *  (le bord du gradin se lit nettement, pas un bloc plat). */
+function renderSkirt(s: Skirt): string {
+  const [tl, tr, br, bl] = s.points; // haut-gauche, haut-droit, bas-droit, bas-gauche
+  const poly = (pts: [number, number][]) => pts.map((p) => `${p[0]},${p[1]}`).join(' ');
+  const fl = lerpP(tl, bl, 0.6), fr = lerpP(tr, br, 0.6); // bord haut de l'ombre de pied
+  return (
+    `<polygon class="elev-skirt" points="${poly([tl, tr, br, bl])}" fill="${SKIRT_FILL[s.dir]}" stroke="rgba(0,0,0,0.3)" stroke-width="0.6"/>` +
+    `<polygon points="${poly([fl, fr, br, bl])}" fill="${SKIRT_FOOT[s.dir]}" opacity="0.85"/>` +
+    `<line x1="${tl[0]}" y1="${tl[1]}" x2="${tr[0]}" y2="${tr[1]}" stroke="rgba(255,240,210,0.22)" stroke-width="1.1"/>`
+  );
+}
 
 /** SVG d'une tuile de sol du niveau `z` (défaut sol) : jupes de dénivelé + losange de base (soulevé de
  *  son élévation locale) + wedges de transition. */
@@ -72,9 +87,7 @@ export function groundTile(scene: Scene, x: number, y: number, dims: Dims, z = 0
   if (tileAt(scene, x, y, z) === 'vide') return ''; // tuile non construite d'un étage → transparente
   const e = elevAt(scene, x, y, z);
   // Jupes d'abord (la paroi descend SOUS le sol), puis le losange par-dessus son arête haute.
-  const skirts = elevSkirt(scene, x, y, dims, z)
-    .map((s) => `<polygon class="elev-skirt" points="${s.points.map((p) => `${p[0]},${p[1]}`).join(' ')}" fill="${SKIRT_FILL[s.dir]}" stroke="rgba(0,0,0,0.28)" stroke-width="0.5"/>`)
-    .join('');
+  const skirts = elevSkirt(scene, x, y, dims, z).map(renderSkirt).join('');
   const { cx, cy, top, right, bot, left } = diamondCorners(x, y, dims, z + e);
   const base = `<path d="M${top[0]},${top[1]} L${right[0]},${right[1]} L${bot[0]},${bot[1]} L${left[0]},${left[1]} Z" fill="url(#${terrainGradient(
     tileAt(scene, x, y, z),
