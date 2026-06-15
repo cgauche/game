@@ -27,7 +27,7 @@ describe('armes naturelles de mutation (recomputeLoadout)', () => {
     const t = hero.weapons.find((w) => w.uid === 'nat-tentacule');
     expect(t?.name).toBe('Tentacule');
     expect(t?.damage).toBe('+BF');
-    const c = hero.weapons.find((w) => w.uid === 'nat-cornes');
+    const c = hero.weapons.find((w) => w.name === 'Cornes'); // arme dérivée de mutation (derivedWeapon)
     expect(c?.name).toBe('Cornes');
     expect(c?.damage).toBe('+BF');
   });
@@ -35,7 +35,7 @@ describe('armes naturelles de mutation (recomputeLoadout)', () => {
   it('sans mutation : aucune arme naturelle dérivée', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(1) });
     recomputeLoadout(hero);
-    expect(hero.weapons.some((w) => w.uid === 'nat-tentacule' || w.uid === 'nat-cornes')).toBe(false);
+    expect(hero.weapons.some((w) => w.uid === 'nat-tentacule' || w.name === 'Cornes')).toBe(false);
   });
 });
 
