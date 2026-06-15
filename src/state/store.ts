@@ -138,6 +138,7 @@ import { campaign, campaignWorldMap } from '../scenes/campaign';
 import { dayIndex, runDailyUpkeep } from './upkeep';
 import * as travelFlow from './travelFlow';
 import { startCascade, advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice } from './cascade';
+import { describeTest } from './flowOutcomes';
 
 export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'test' | 'interlude' | 'coop' | 'compendium';
 
@@ -3440,6 +3441,7 @@ export const useGame = create<GameState>((set, get) => ({
     const pt = get().pendingTest;
     if (!pt || pt.roll == null) return; // pas d'acquittement avant le jet
     set({ pendingTest: null });
+    get().log(describeTest(pt)); // issue du jet journalisée (source UNIQUE avec la popin), puis la conséquence
     const actor = get().party.find((c) => c.id === pt.actorId);
     const tool = pt.itemUid ? actor?.items?.find((i) => i.uid === pt.itemUid) : undefined;
     // Pratique/Peu Fiable : ±1 DR sur un Test RATÉ (LDB 60 l.59/88). Ne repêche qu'un échec qui a

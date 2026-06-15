@@ -6,6 +6,7 @@ import { OptionChooser } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
+import { describeTest } from '../state/flowOutcomes';
 
 /**
  * Test de compétence interactif (brique « tests », hors combat). On clique
@@ -26,11 +27,6 @@ export function TestModal() {
   if (!pt) return null;
   const rolled = pt.roll != null;
   const actor = party.find((c) => c.id === pt.actorId);
-  const outcomeText = pt.forced
-    ? `${pt.actorName} ne faillit pas (Résilience) : réussite garantie.`
-    : pt.success
-      ? `${pt.actorName} réussit.`
-      : `${pt.actorName} échoue.`;
 
   return (
     <RollFlowShell
@@ -70,7 +66,7 @@ export function TestModal() {
       determination={!rolled && pt.psychMod ? { resolve: actor?.resolve ?? 0, onResolve: determination } : undefined}
       breakdown={rolled ? testBreakdown(pt.label, pt.skillValue, { roll: pt.roll!, target: pt.target, sl: pt.sl, success: pt.success }, pt.difficulty) : undefined}
       pending={testPending(pt.label, pt.skillValue, pt.target, pt.difficulty)}
-      outcome={rolled && <JournalLine className="rm-journal" event={ev('info', outcomeText, pt.actorId)} combatants={party} />}
+      outcome={rolled && <JournalLine className="rm-journal" event={ev('info', describeTest(pt), pt.actorId)} combatants={party} />}
       fortune={actor?.fortune ?? 0}
       freeReroll={freeRerollOf(actor)}
       rerollable={rolled && pt.roll != null && canReroll(pt.roll > pt.target, !!pt.rerolled)}
