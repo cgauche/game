@@ -140,7 +140,10 @@ const first = (traits: TraitList | undefined, pred: (d: TraitDef) => boolean): R
  *  collecteur passif (liveTraits). Éditer/créer un trait à modificateur de profil = de la donnée. */
 export function traitPassiveMods(traits: TraitList | undefined): PassiveMod[] {
   const out: PassiveMod[] = [];
-  for (const { def } of resolveTraits(traits)) { const p = traitByLabel.get(def.key)?.passive; if (p) out.push(...p); }
+  for (const { def } of resolveTraits(traits)) {
+    const ops = traitByLabel.get(def.key)?.passive;
+    if (ops) for (const op of ops) out.push({ op, kind: 'intrinsèque' }); // le collecteur affecte le kind (≠ donnée)
+  }
   return out;
 }
 

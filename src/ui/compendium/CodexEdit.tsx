@@ -12,6 +12,8 @@ import * as fs from '../../data/fsPersist';
 import { inferFields, type FieldDesc } from './editFields';
 import { MonsterPartsFields } from '../editor/MonsterPartsFields';
 import { FlowEditor } from '../editor/FlowEditor';
+import { GameOpEditor } from '../editor/GameOpEditor';
+import type { GameOp } from '../../engine/ops';
 import { JsonField } from '../editor/JsonField';
 import { RACES } from '../../gameIso/rig/races';
 import { CreaturePreview } from './CreaturePreview';
@@ -57,11 +59,14 @@ export function CodexEdit({ categoryKey, label, onClose }: { categoryKey: string
   // Porteurs d'effets DÉCLENCHÉS (mêmes `TriggeredEffect` éditables) : Traits ET Atouts d'arme.
   const isTriggered = categoryKey === 'traits' || categoryKey === 'qualities';
   const isTrait = categoryKey === 'traits'; // les Traits portent en plus un profil de MANŒUVRE éditable
+  // Porteurs de modificateurs PASSIFS continus (`PassiveMod[]`) édités par ops (GameOpEditor), comme un sort.
+  const isPassive = categoryKey === 'traits';
   const fields = useMemo(
     () => inferFields(arr as Record<string, unknown>[]).filter(
-      (f) => !(isCreature && f.key === 'appearance') && !((isSpell || isTriggered) && f.key === 'effects') && !(isTrait && f.key === 'maneuver'),
+      (f) => !(isCreature && f.key === 'appearance') && !((isSpell || isTriggered) && f.key === 'effects')
+        && !(isTrait && f.key === 'maneuver') && !(isPassive && f.key === 'passive'),
     ),
-    [arr, isCreature, isSpell, isTriggered, isTrait],
+    [arr, isCreature, isSpell, isTriggered, isTrait, isPassive],
   );
   const edit = (key: string, v: unknown) => { setEntry((e) => ({ ...e, [key]: v })); setDirty(true); };
 
@@ -92,6 +97,12 @@ export function CodexEdit({ categoryKey, label, onClose }: { categoryKey: string
       <div className="codex-edit-form">
         {isCreature && <AppearanceField name={String(entry.label ?? label)} value={entry.appearance as EntityAppearance | undefined} onChange={(v) => edit('appearance', v)} />}
         {isSpell && <SpellEffectsField value={entry.effects as Flow | undefined} onChange={(v) => edit('effects', v)} />}
+        {isPassive && (
+          <div className="ed-field">
+            <span>modificateurs PASSIFS continus (mêmes ops que les sorts — sans déclencheur)</span>
+            <GameOpEditor ops={(entry.passive as GameOp[] | undefined) ?? []} onChange={(ops) => edit('passive', ops)} />
+          </div>
+        )}
         {isTriggered && <TriggeredEffectsField value={entry.effects as TriggeredEffect[] | undefined} onChange={(v) => edit('effects', v)} />}
         {isTrait && <ManeuverField value={entry.maneuver as ManeuverProfile | undefined} onChange={(v) => edit('maneuver', v)} />}
         {fields.map((f) => <Field key={f.key} field={f} value={entry[f.key]} onChange={(v) => edit(f.key, v)} />)}

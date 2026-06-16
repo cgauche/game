@@ -216,31 +216,23 @@
     },
     "passive": [
       {
-        "op": {
-          "op": "charMod",
-          "char": "Ag",
-          "mod": -10
-        }
+        "op": "charMod",
+        "char": "Ag",
+        "mod": -10
       },
       {
-        "op": {
-          "op": "charMod",
-          "char": "F",
-          "mod": 10
-        }
+        "op": "charMod",
+        "char": "F",
+        "mod": 10
       },
       {
-        "op": {
-          "op": "charMod",
-          "char": "E",
-          "mod": 10
-        }
+        "op": "charMod",
+        "char": "E",
+        "mod": 10
       },
       {
-        "op": {
-          "op": "moveMod",
-          "mod": -1
-        }
+        "op": "moveMod",
+        "mod": -1
       }
     ]
   },
@@ -275,18 +267,14 @@
     },
     "passive": [
       {
-        "op": {
-          "op": "charMod",
-          "char": "E",
-          "mod": 10
-        }
+        "op": "charMod",
+        "char": "E",
+        "mod": 10
       },
       {
-        "op": {
-          "op": "charMod",
-          "char": "FM",
-          "mod": 10
-        }
+        "op": "charMod",
+        "char": "FM",
+        "mod": 10
       }
     ]
   },
@@ -366,25 +354,19 @@
     },
     "passive": [
       {
-        "op": {
-          "op": "charMod",
-          "char": "CC",
-          "mod": 20
-        }
+        "op": "charMod",
+        "char": "CC",
+        "mod": 20
       },
       {
-        "op": {
-          "op": "charMod",
-          "char": "CT",
-          "mod": 20
-        }
+        "op": "charMod",
+        "char": "CT",
+        "mod": 20
       },
       {
-        "op": {
-          "op": "charMod",
-          "char": "FM",
-          "mod": 20
-        }
+        "op": "charMod",
+        "char": "FM",
+        "mod": 20
       }
     ]
   },
@@ -475,25 +457,19 @@
     },
     "passive": [
       {
-        "op": {
-          "op": "charMod",
-          "char": "F",
-          "mod": 10
-        }
+        "op": "charMod",
+        "char": "F",
+        "mod": 10
       },
       {
-        "op": {
-          "op": "charMod",
-          "char": "E",
-          "mod": 10
-        }
+        "op": "charMod",
+        "char": "E",
+        "mod": 10
       },
       {
-        "op": {
-          "op": "charMod",
-          "char": "Ag",
-          "mod": -5
-        }
+        "op": "charMod",
+        "char": "Ag",
+        "mod": -5
       }
     ]
   },
@@ -646,18 +622,14 @@
     },
     "passive": [
       {
-        "op": {
-          "op": "charMod",
-          "char": "Int",
-          "mod": 20
-        }
+        "op": "charMod",
+        "char": "Int",
+        "mod": 20
       },
       {
-        "op": {
-          "op": "charMod",
-          "char": "I",
-          "mod": 10
-        }
+        "op": "charMod",
+        "char": "I",
+        "mod": 10
       }
     ]
   },
@@ -750,18 +722,14 @@
     },
     "passive": [
       {
-        "op": {
-          "op": "charMod",
-          "char": "Soc",
-          "mod": 10
-        }
+        "op": "charMod",
+        "char": "Soc",
+        "mod": 10
       },
       {
-        "op": {
-          "op": "charMod",
-          "char": "FM",
-          "mod": 10
-        }
+        "op": "charMod",
+        "char": "FM",
+        "mod": 10
       }
     ]
   },
@@ -937,17 +905,13 @@
     },
     "passive": [
       {
-        "op": {
-          "op": "charMod",
-          "char": "Ag",
-          "mod": 10
-        }
+        "op": "charMod",
+        "char": "Ag",
+        "mod": 10
       },
       {
-        "op": {
-          "op": "moveMod",
-          "mod": 1
-        }
+        "op": "moveMod",
+        "mod": 1
       }
     ]
   },
@@ -1112,25 +1076,19 @@
     },
     "passive": [
       {
-        "op": {
-          "op": "charMod",
-          "char": "Soc",
-          "mod": 10
-        }
+        "op": "charMod",
+        "char": "Soc",
+        "mod": 10
       },
       {
-        "op": {
-          "op": "charMod",
-          "char": "Int",
-          "mod": 10
-        }
+        "op": "charMod",
+        "char": "Int",
+        "mod": 10
       },
       {
-        "op": {
-          "op": "charMod",
-          "char": "I",
-          "mod": 10
-        }
+        "op": "charMod",
+        "char": "I",
+        "mod": 10
       }
     ]
   },

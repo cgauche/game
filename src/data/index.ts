@@ -217,11 +217,11 @@ export interface TraitData {
   /** Profil de MANŒUVRE si ce trait est une attaque naturelle activée (Morsure, Attaque caudale,
    *  Souffle…) — lu par `engine/creatureAttacks` (remplace la table `RULES`). */
   maneuver?: ManeuverProfile;
-  /** Modificateurs de PROFIL PASSIFS (Élite +20 CC/CT/FM, Brutal −1 M…) en vocabulaire d'ops UNIFIÉ
-   *  (`PassiveMod` = GameOp + `kind`), CONTINUS (sans wrapper Flow/déclencheur, ≠ `effects`) : édités
-   *  par `GameOpEditor` COMME un sort, lus DIRECT par le collecteur passif (`traitPassiveMods` → liveTraits).
-   *  `kind` absent ⇒ `intrinsèque`. Remplacent les champs `charMods`/`movement` des `defs/` TS. */
-  passive?: import('../engine/ops').PassiveMod[];
+  /** Modificateurs de PROFIL PASSIFS (Élite +20 CC/CT/FM, Brutal −1 M…) en `GameOp[]` — le MÊME vocabulaire
+   *  d'ops que les sorts et `Trauma.ops`, CONTINUS (sans wrapper Flow/déclencheur, ≠ `effects`) : édités par
+   *  `GameOpEditor` (le composant de liste d'ops existant), lus par le collecteur passif (`traitPassiveMods`
+   *  → liveTraits) qui leur AFFECTE le `kind` `intrinsèque` (comme la séquelle dérive le sien). */
+  passive?: import('../engine/ops').GameOp[];
 }
 /** Atout/Défaut d'arme (LDB 62-63) : libellé + desc VERBATIM + effets déclenchés authorés (mêmes
  *  `TriggeredEffect` que les Traits — un Atout « à la touche : 1d10 + Empêtré » s'édite au Codex). */
@@ -327,9 +327,9 @@ export const careerLevels = careerLevelsJson as CareerLevelData[];
 export const skills = skillsJson as SkillData[];
 export const talents = talentsJson as TalentData[];
 export const etats = etatsJson as EtatData[];
-// Traits officiels (build:data) + traits curés hors-extraction (mergés ici pour survivre à build:data
-// qui ne réécrit que traits.json) : homebrew frenchy.bzh (Aura de Dhar/Mort, Charnier) + traits de
-// suppléments autorisés référencés par le bestiaire mais absents d'all-data.json (Redoutable, ZI).
+// Traits app-owned + traits curés hors-extraction mergés ici : homebrew frenchy.bzh (Aura de Dhar/
+// Mort, Charnier) + traits de suppléments autorisés référencés par le bestiaire mais absents
+// d'all-data.json (Redoutable, ZI).
 export const traits = [...(traitsJson as TraitData[]), ...(frenchyTraitsJson as TraitData[])];
 /** Index des Traits par libellé canonique — lecture des `effects` au runtime (state/triggeredEffects). */
 export const traitByLabel: Map<string, TraitData> = new Map(traits.map((t) => [t.label, t]));
@@ -340,8 +340,8 @@ export const trappings = trappingsJson as TrappingData[];
 // Bestiaire APP-OWNED : officiel + complément « frenchy.bzh » INTÉGRÉ directement dans creatures.json
 // (fusionné 2026-06-15, espèce explicite posée) — plus de dataset frenchy séparé à merger.
 export const creatures = creaturesJson as CreatureData[];
-// Sorts officiels (build:data) + sorts homebrew « frenchy.bzh » des casters (Magie Mineure/Arcanes,
-// Bénédictions, Miracles…) — mergés ici pour survivre à build:data ; le nom listé par une créature résout.
+// Sorts app-owned + sorts homebrew « frenchy.bzh » des casters (Magie Mineure/Arcanes, Bénédictions,
+// Miracles…) mergés ici ; le nom listé par une créature résout.
 export const spells = [...(spellsJson as SpellData[]), ...(frenchySpellsJson as SpellData[])];
 export const eyes = eyesJson as DetailColorData[];
 export const hairs = hairsJson as DetailColorData[];
