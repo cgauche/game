@@ -96,7 +96,7 @@ import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } 
 import { recomputeLoadout, itemFromTrapping, customTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks } from '../engine/conditions';
-import { creatureAttacks, venomDifficulty, ATTACK_LABEL, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
+import { creatureAttacks, venomDifficulty, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { suffocationTick } from '../engine/suffocation';
 import { domainOf, domainOnHitRiders, domainMissileMods, ghurFearAfterCast, hasArcaneTalent } from '../engine/domainAttributes';
@@ -119,7 +119,7 @@ import { findSpell } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
 import { Scene, Effect, isWalkable } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
-import { lineOfSightCover, coverModifier, smokeZone, tilesBetween } from './lineOfSight';
+import { lineOfSightCover, coverModifier, tilesBetween } from './lineOfSight';
 import { fearSourceFor, resolvePeurTest, resolveTerreurTest, terreurBrise, calmeValue, isFrenzyCapable, isPsychImmune, clearPsychOf, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
@@ -148,16 +148,15 @@ export function activeCombatant(battle: BattleState): Combatant | undefined {
 // --- Effets de scène/campagne extraits → combatEffects.ts (baril) ---
 export * from './combatEffects';
 import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, runSpellFlow } from './combatEffects';
+// --- Manœuvres de créature (énumération + résolveurs roll/apply) extraites → combatManeuvers.ts (baril) ---
+export * from './combatManeuvers';
+import {
+  emitCreatureAttackAnim, trampleTarget, availableManeuvers, bestDefenseMode,
+  rollManeuverAttacker, maneuverAttackerDifficulty,
+  applyManArea, applyManTongue, applyManWail, applyManGaze, applyManChillGrasp,
+} from './combatManeuvers';
 import { spellFlowFor, spellOps, type Flow } from './flow';
 import { startCascade, registerCascadeApplier } from './cascade';
-
-/** Le défenseur choisit sa meilleure réaction : Parade (Corps à corps) ou Esquive
- *  (Agilité + avances, pénalité d'Encombrement incluse) — la plus haute valeur. */
-export function bestDefenseMode(defender: Combatant): 'parade' | 'esquive' {
-  // Bestial (LDB 85 p.338) : « En défense, elle peut seulement utiliser la Compétence Esquive. »
-  if (isBestial(defender.traits)) return 'esquive';
-  return defenseValue(defender, 'esquive') > defenseValue(defender, 'parade') ? 'esquive' : 'parade';
-}
 
 /** Sonné : tout adversaire qui frappe la cible en CORPS À CORPS gagne +1 Avantage
  *  AVANT son attaque (LDB États l.123) — ce +1 profite donc déjà au jet en cours puis
@@ -1791,21 +1790,6 @@ export function maybeHeroCleave(get: Get, set: SetFn, attacker: Combatant, targe
 /** Arme abstraite du Piétinement : Corps à corps (Bagarre), Dégâts = Bonus de Force (+0). */
 export const TRAMPLE_WEAPON: Weapon = { name: 'Piétinement', type: 'melee', damage: '+BF', qualities: [] };
 
-/** Cible de Piétinement valide pour `c` (LDB 85 l.320-321) : adversaire ADJACENT, encore actif et
- *  PLUS PETIT (`sizeGap >= 1`). `targetId` borne la recherche à une cible précise (clic du joueur). */
-export function trampleTarget(battle: BattleState, c: Combatant, targetId?: string): Combatant | undefined {
-  return battle.combatants.find(
-    (t) =>
-      (targetId ? t.id === targetId : true) &&
-      t.kind !== c.kind &&
-      !isOutOfAction(t) &&
-      !!t.pos &&
-      !!c.pos &&
-      combatDistance(c, t) <= 1 &&
-      sizeGap(c.size, t.size) >= 1,
-  );
-}
-
 /** Résout un Piétinement : dépense 1 Avantage (coût de l'action gratuite) puis applique
  *  `resolveTrample` (BF +0, Corps à corps). Ne consomme PAS l'Action (« action gratuite »). */
 export function applyTrample(get: Get, set: SetFn, attacker: Combatant, target: Combatant): void {
@@ -1947,196 +1931,59 @@ function applyFreeAttack(get: Get, set: SetFn, attacker: Combatant, target: Comb
   return false;
 }
 
-/** Émet l'animation d'attaque d'une attaque SPÉCIALE de créature → AnimatedPlanToken joue la pose
- *  dédiée (creatureAttackPoses) ; les biped/spectraux jouent leur clip d'attaque générique. */
-function emitCreatureAttackAnim(attacker: Combatant, kind: string): void {
-  bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: attacker.id, kind: 'creature', defense: 'none', result: { hit: true }, creatureAttack: kind });
-}
 
-/** Attaque de ZONE gratuite : Souffle (LDB 85, 2 Av) ou Vomissement (Troll, 3 Av). Cible visible la
- *  plus proche dans la portée (Souffle BE+20 m ; Vomi BE m), puis tous les ennemis dans la zone
- *  (Souffle : BF de la cible ; Vomi : 2 m). Test opposé CT/Esquive PAR cible ; sur un échec de la
- *  cible : Dégâts (mitigés BE+PA, sauf ignore-PA des Types Feu/Électricité/Poison) + effet de Type
- *  (Enflammé/Sonné/Empoisonné) ou Sonné (Vomi) + corrosion (Armure/Arme −1). Instantané (pas de modale
- *  IA), résolution opposée auto. Ne consomme pas l'Action. RAW : LDB 85 Souffle / Vomissement. */
+// ── Wrappers IA des manœuvres (jet d'attaquant + applier scindé + clôture). Source UNIQUE du
+//    « rouler le jet d'attaquant PUIS appliquer PUIS checkBattleOver » pour l'IA : le flux JOUEUR
+//    passe par `FLOWS.maneuver` (modale différée) qui appelle les MÊMES `rollManeuverAttacker` /
+//    `applyMan<X>`. Les noms publics historiques sont conservés (tests + chemin du sort Souffle). ──
+
+/** Souffle / Vomissement (IA & sort) : roule le jet d'attaquant (CT, +40 pour le Vomi) puis applique
+ *  la zone. `centerOverride` = point d'impact imposé du sort « Souffle » (LDB 47). Clôt par `checkBattleOver`. */
 export function applyAreaAttack(get: Get, set: SetFn, attacker: Combatant, a: CreatureAttack, centerOverride?: Combatant): void {
-  const battle = get().battle;
-  if (!battle || battle.over || !attacker.pos) return;
-  attacker.advantage = Math.max(0, attacker.advantage - a.avantage);
-  const isVomi = a.kind === 'vomi';
-  const be = bonus(effectiveChar(attacker, 'E'));
-  const rangeTiles = Math.max(1, Math.ceil((isVomi ? be : be + 20) / 2)); // 1 case = 2 m
-  const foes = battle.combatants.filter((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && chebyshev(attacker.pos!, c.pos) <= rangeTiles);
-  // Centre IMPOSÉ (sort « Souffle », LDB 47 : la cible du sort est le point d'impact) si valide ;
-  // sinon comportement trait : cible visible la plus proche.
-  const center = centerOverride && centerOverride.pos && !isOutOfAction(centerOverride) && chebyshev(attacker.pos, centerOverride.pos) <= rangeTiles
-    ? centerOverride
-    : foes.length
-      ? foes.reduce((p, c) => (chebyshev(attacker.pos!, p.pos!) <= chebyshev(attacker.pos!, c.pos!) ? p : c))
-      : null;
-  if (!center) return;
-  const blast = isVomi ? 1 : Math.max(1, Math.ceil(bonus(effectiveChar(center, 'F')) / 2)); // Souffle : BF de la cible ; Vomi : 2 m
-  const affected = battle.combatants.filter((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && chebyshev(center.pos!, c.pos) <= blast);
-  const type = (a.type ?? '').toLowerCase();
-  const ignorePA = !isVomi && /feu|électric|electric|poison/.test(type);
-  const corrosif = isVomi || /corros/.test(type);
-  const damage = isVomi ? be + 4 : a.bonus; // Vomi = BE+4 ; Souffle = Indice
-  const lines: string[] = [`${attacker.name} déclenche ${ATTACK_LABEL[a.kind]}${a.type ? ` (${a.type})` : ''} !`];
-  emitCreatureAttackAnim(attacker, a.kind);
-  // Flash de la ZONE touchée à l'exécution (R7) : on montre l'empreinte (centre ± blast, clippée à la scène)
-  // → on comprend pourquoi plusieurs combattants sont affectés. Émis pour TOUTE attaque de zone (ennemi/joueur).
-  const sc2 = get().scene;
-  const zone: Pt[] = [];
-  for (let dx = -blast; dx <= blast; dx++)
-    for (let dy = -blast; dy <= blast; dy++) {
-      const x = center.pos!.x + dx, y = center.pos!.y + dy;
-      if (sc2 && x >= 0 && y >= 0 && x < sc2.dimensions.w && y < sc2.dimensions.h) zone.push({ x, y });
-    }
-  bus.emit(EVT.ANIM_AOE, { tiles: zone, kind: a.kind, type: a.type });
-  for (const tgt of affected) {
-    // Test opposé CT/Esquive (Vomi : Facile +40 pour l'attaquant à courte distance).
-    const r = opposedTest(combatValue(attacker, 'ranged'), defenseValue(tgt, 'esquive'), battleRng(), isVomi ? 'facile' : 'intermediaire', 'intermediaire');
-    if (!r.attackerWins) { lines.push(`${tgt.name} esquive.`); continue; }
-    const tb = bonus(effectiveChar(tgt, 'E'));
-    const pa = ignorePA ? 0 : Math.max(0, tgt.armour.corps ?? 0);
-    const wl = Math.max(0, damage - tb - pa);
-    if (wl > 0) { loseWounds(tgt, wl); lines.push(`${tgt.name} subit ${wl} Blessure(s)${ignorePA ? ' (ignore PA)' : ''}.`); }
-    if (isVomi || /électric|electric/.test(type)) addCondition(tgt, 'Sonné');
-    else if (/froid/.test(type) && wl > 0) for (let i = 0; i < Math.max(1, Math.floor(wl / 5)); i++) addCondition(tgt, 'Sonné'); // 1 Sonné / 5 Blessures
-    if (/feu/.test(type)) addCondition(tgt, 'En flammes');
-    if (/poison/.test(type)) addCondition(tgt, 'Empoisonné');
-    if (corrosif) { // Armure & Arme portées subissent 1 Dégât
-      tgt.armour.corps = Math.max(0, (tgt.armour.corps ?? 0) - 1);
-      if (tgt.weapons[0]) tgt.weapons[0].damageTaken = (tgt.weapons[0].damageTaken ?? 0) + 1;
-    }
-    if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
-  }
-  // Type Fumée : la zone se remplit de fumée et bloque les Lignes de vue pendant BE Rounds (RAW Souffle).
-  let zones = get().battle!.zones;
-  if (/fum/.test(type)) {
-    const dur = Math.max(1, be); // Rounds = Bonus d'Endurance de la créature
-    const tiles = smokeZone(attacker.pos!, center.pos!, blast);
-    zones = [...(zones ?? []), { label: 'Fumée', tiles, rounds: dur, blocksLoS: true }];
-    lines.push(`La zone se remplit de fumée — Lignes de vue bloquées ${dur} Round(s).`);
-  }
-  set({ battle: { ...get().battle!, zones, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id)] } });
-  bus.emit(EVT.SCENE_DIRTY);
+  const atk = rollManeuverAttacker(attacker, a.stat ?? 'CT', battleRng(), maneuverAttackerDifficulty(a.kind));
+  applyManArea(get, set, attacker, a, atk, a.avantage, centerOverride);
   checkBattleOver(get, set);
 }
 
-/** Langue préhensile (Jabberslythe, LDB 85) : Attaque gratuite à 1 Avantage, À DISTANCE. Cible
- *  visible la plus proche, Test opposé CT/Esquive ; sur une touche : Dégâts = Indice + État Empêtré
- *  (et traction/Empoignade — non modélisées). Instantané. Ne consomme pas l'Action. */
+/** Langue préhensile (IA) : jet CT puis applier ; gratuit (Action préservée). Clôt par `checkBattleOver`. */
 export function applyTongue(get: Get, set: SetFn, attacker: Combatant, a: CreatureAttack): void {
-  const battle = get().battle;
-  if (!battle || battle.over || !attacker.pos) return;
-  attacker.advantage = Math.max(0, attacker.advantage - a.avantage);
-  const foes = battle.combatants.filter((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos);
-  if (!foes.length) return;
-  const tgt = foes.reduce((p, c) => (chebyshev(attacker.pos!, p.pos!) <= chebyshev(attacker.pos!, c.pos!) ? p : c));
-  const r = opposedTest(combatValue(attacker, 'ranged'), defenseValue(tgt, 'esquive'), battleRng());
-  const lines = [`${attacker.name} projette sa Langue préhensile sur ${tgt.name} !`];
-  emitCreatureAttackAnim(attacker, a.kind);
-  if (r.attackerWins) {
-    const wl = Math.max(0, a.bonus - bonus(effectiveChar(tgt, 'E')) - Math.max(0, tgt.armour.corps ?? 0));
-    if (wl > 0) { loseWounds(tgt, wl); lines.push(`${tgt.name} subit ${wl} Blessure(s).`); }
-    // Effet onHit AUTHORÉ de la manœuvre (Langue → Empêtré) — donnée éditable `maneuver.effects`.
-    lines.push(...applyTriggeredEffects(get, attacker, maneuverEffectsOf(attacker, 'langue'), 'onHit', { victim: tgt, woundsDealt: wl, rng: battleRng() }));
-    if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
-  } else lines.push(`${tgt.name} esquive la langue.`);
-  set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id, tgt.id)] } });
-  bus.emit(EVT.SCENE_DIRTY);
+  const atk = rollManeuverAttacker(attacker, a.stat ?? 'CT', battleRng());
+  applyManTongue(get, set, attacker, a, atk, a.avantage);
   checkBattleOver(get, set);
 }
 
-/** Hurlement fantomatique (Banshee, LDB 85) : Attaque gratuite (ne consomme pas l'Action), dépense
- *  TOUS les Avantages (min 2). Toutes les créatures VIVANTES (non Mort-vivant) à Initiative mètres
- *  subissent 1d10 Blessures (ignore BE et PA), un Test de Résistance Accessible (+20) ou l'État Brisé,
- *  et 3 États Assourdi. Instantané. Renvoie true si poussé. */
+/** Hurlement fantomatique (IA) : PAS de jet d'attaquant ; dépense TOUS les Avantages (min 2, LDB 85
+ *  l.135). Renvoie false si pas assez d'Avantage. Clôt par `checkBattleOver`. */
 export function applyWail(get: Get, set: SetFn, attacker: Combatant): boolean {
-  const battle = get().battle;
-  if (!battle || battle.over || !attacker.pos || attacker.advantage < 2) return false;
-  attacker.advantage = 0; // dépense TOUS les Avantages
-  const radius = Math.max(1, Math.ceil(effectiveChar(attacker, 'I') / 2)); // Initiative mètres → cases (2 m)
-  const living = battle.combatants.filter(
-    (c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && chebyshev(attacker.pos!, c.pos) <= radius && !hasTraitKey(c.traits, 'Mort-vivant'),
-  );
-  const lines = [`${attacker.name} pousse un Hurlement fantomatique !`];
-  emitCreatureAttackAnim(attacker, 'hurlement');
-  // Flash de la zone du Hurlement (R7) : rayon autour du crieur, clippé à la scène.
-  const scW = get().scene;
-  const zoneW: Pt[] = [];
-  for (let dx = -radius; dx <= radius; dx++)
-    for (let dy = -radius; dy <= radius; dy++) {
-      const x = attacker.pos!.x + dx, y = attacker.pos!.y + dy;
-      if (scW && x >= 0 && y >= 0 && x < scW.dimensions.w && y < scW.dimensions.h) zoneW.push({ x, y });
-    }
-  bus.emit(EVT.ANIM_AOE, { tiles: zoneW, kind: 'hurlement', type: '' });
-  for (const tgt of living) {
-    const wl = d10(battleRng()); // 1d10, ignore Endurance et PA
-    loseWounds(tgt, wl);
-    lines.push(`${tgt.name} subit ${wl} Blessure(s) (ignore Endurance et PA).`);
-    // Effets onHit AUTHORÉS de la manœuvre (Hurlement → Test de Résistance ou Brisé, + 3 Assourdi) —
-    // donnée éditable `maneuver.effects` (op `test` + `condition`).
-    lines.push(...applyTriggeredEffects(get, attacker, maneuverEffectsOf(attacker, 'hurlement'), 'onHit', { victim: tgt, woundsDealt: wl, rng: battleRng() }));
-    if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
-  }
-  set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id)] } });
-  bus.emit(EVT.SCENE_DIRTY);
+  if (!attacker.pos || attacker.advantage < 2) return false;
+  applyManWail(get, set, attacker, attacker.advantage); // dépense TOUT (l.135)
   checkBattleOver(get, set);
   return true;
 }
 
-/** Regard pétrifiant (Basilic, LDB 85) : pour son ACTION, la créature dépense ≥1 Avantage (l'IA
- *  dépense tout ce qu'elle a, min 1) → Test opposé CT/Initiative avec +1 DR par Avantage dépensé.
- *  La cible reçoit 1 État Sonné par tranche de 2 DR de marge ; pétrifiée si la marge atteint 6 DR.
- *  Cible visible la plus proche. Instantané. Consomme l'Action. Renvoie true si résolu. */
+/** Regard pétrifiant (IA) : jet CT puis applier ; l'IA dépense TOUT (min 1), +1 DR/Av (LDB 85 l.238).
+ *  Consomme l'Action. Renvoie false si pas d'Avantage/cible. Clôt par `checkBattleOver`. */
 export function applyGaze(get: Get, set: SetFn, attacker: Combatant): boolean {
-  const battle = get().battle;
-  if (!battle || battle.over || !attacker.pos || attacker.advantage < 1) return false;
-  const foes = battle.combatants.filter((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos);
-  if (!foes.length) return false;
-  const tgt = foes.reduce((p, c) => (chebyshev(attacker.pos!, p.pos!) <= chebyshev(attacker.pos!, c.pos!) ? p : c));
-  const spent = attacker.advantage; // l'IA met tout (min 1) — +1 DR par Avantage
-  attacker.advantage = 0;
-  const atk = rollTest(combatValue(attacker, 'ranged'), 'intermediaire', battleRng());
-  const initVal = effectiveChar(tgt, 'I') + (tgt.skills.find((s) => s.name.toLowerCase().startsWith('initiative'))?.advances ?? 0);
-  const def = rollTest(initVal, 'intermediaire', battleRng());
-  const margin = atk.sl + spent - def.sl; // DR de l'attaquant (+Avantage) − DR du défenseur
-  const lines = [`${attacker.name} fixe ${tgt.name} de son Regard pétrifiant (${spent} Avantage) !`];
-  emitCreatureAttackAnim(attacker, 'regard');
-  // Pétrifié à 6 DR de marge = issue spéciale de RÉSOLUTION (zéro les PB) → reste moteur. Le Sonné
-  // échelonné (1 par 2 DR) est un effet onHit AUTHORÉ (donnée `maneuver.effects`, op `condition`
-  // `valuePerSL{every:2}` alimenté par `ctx.sl = margin`).
-  if (margin >= 6) { addCondition(tgt, 'Pétrifié'); tgt.wounds.current = 0; applyZeroWounds(tgt); lines.push(`${tgt.name} est définitivement changé en PIERRE !`); }
-  else if (margin >= 2) lines.push(...applyTriggeredEffects(get, attacker, maneuverEffectsOf(attacker, 'regard'), 'onHit', { victim: tgt, margin, rng: battleRng() }));
-  else lines.push(`${tgt.name} soutient le regard.`);
-  set({ battle: { ...get().battle!, acted: true, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id, tgt.id)] } });
-  bus.emit(EVT.SCENE_DIRTY);
+  if (!attacker.pos || attacker.advantage < 1) return false;
+  const a = creatureAttacks(attacker.traits ?? []).find((x) => x.kind === 'regard');
+  const spent = attacker.advantage; // l'IA met tout (min 1)
+  const atk = rollManeuverAttacker(attacker, a?.stat ?? 'CT', battleRng());
+  applyManGaze(get, set, attacker, atk, spent);
+  set({ battle: { ...get().battle!, acted: true } }); // Regard = Action de la créature (l.238)
   checkBattleOver(get, set);
   return true;
 }
 
-/** Étreinte glaciale (Spectre de cairn, LDB 85) : ACTION + 2 Avantages. Test opposé CC vs Corps à
- *  corps/Esquive de la cible ; sur un succès, la cible perd 1d10 + DR Blessures ignorant le Bonus
- *  d'Endurance ET les PA. Attaque magique. Cible adjacente. Instantané. Consomme l'Action. */
+/** Étreinte glaciale (IA) : jet CC puis applier ; 2 Av + Action (LDB 85 l.112). Renvoie false si pas
+ *  assez d'Avantage / pas de cible adjacente. Clôt par `checkBattleOver`. */
 export function applyChillGrasp(get: Get, set: SetFn, attacker: Combatant): boolean {
+  if (!attacker.pos || attacker.advantage < 2) return false;
   const battle = get().battle;
-  if (!battle || battle.over || !attacker.pos || attacker.advantage < 2) return false;
-  const tgt = battle.combatants.find((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && combatDistance(attacker, c) <= 1);
-  if (!tgt) return false;
-  attacker.advantage = Math.max(0, attacker.advantage - 2);
-  const r = opposedTest(combatValue(attacker, 'melee'), defenseValue(tgt, bestDefenseMode(tgt)), battleRng());
-  const lines = [`${attacker.name} étreint ${tgt.name} de son toucher glacial !`];
-  emitCreatureAttackAnim(attacker, 'etreinte');
-  if (r.attackerWins) {
-    const wl = d10(battleRng()) + r.netSL; // 1d10 + DR, ignore BE et PA
-    loseWounds(tgt, wl);
-    lines.push(`${tgt.name} perd ${wl} Blessure(s) (ignore Endurance et PA).`);
-    if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
-  } else lines.push(`${tgt.name} résiste à l'étreinte.`);
-  set({ battle: { ...get().battle!, acted: true, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id, tgt.id)] } });
-  bus.emit(EVT.SCENE_DIRTY);
+  if (!battle || !battle.combatants.some((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && combatDistance(attacker, c) <= 1)) return false;
+  const a = creatureAttacks(attacker.traits ?? []).find((x) => x.kind === 'etreinte');
+  const atk = rollManeuverAttacker(attacker, a?.stat ?? 'CC', battleRng());
+  applyManChillGrasp(get, set, attacker, atk, a?.avantage ?? 2);
+  set({ battle: { ...get().battle!, acted: true } }); // Étreinte = Action de la créature (l.112)
   checkBattleOver(get, set);
   return true;
 }
@@ -2227,69 +2074,6 @@ export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): b
   return false;
 }
 
-// ---------------------------------------------------------------------------
-// Manœuvres JOUEUR — source UNIQUE des attaques spéciales activables par un héros (mutation/
-// polymorphie lui donnant un trait d'attaque de créature). La hotbar (« Manœuvre ▾ ») n'énumère
-// QUE ceci ; la résolution réutilise les mêmes appliers que l'IA (Piétinement/Tentacule gardent
-// leur flux dédié). Reste SOURCE-AGNOSTIQUE (kind/coût/déclenchement lus d'un ManeuverProfile) :
-// les manœuvres de personnage d'Aux Armes (Phase 4b) s'y brancheront via un autre porteur de profil.
-// ---------------------------------------------------------------------------
-
-/** Icône FR par type de manœuvre (cosmétique hotbar). */
-export const MANEUVER_ICON: Record<AttackKind, string> = {
-  arme: '⚔️', morsure: '🦷', caudale: '🦎', cornes: '🐏', souffle: '🐉', vomi: '🤮',
-  tentacules: '🐙', etreinte: '❄️', regard: '👁', langue: '👅', hurlement: '📢',
-};
-
-/** Manœuvre activable par le héros actif (descripteur uniforme rendu par la hotbar). `mode` dicte
- *  le ciblage : 'target' → on arme `battle.action` puis le clic-entité résout ; 'immediate' →
- *  résolution directe (zone/soi). `dispatch` route vers le store : 'trample'/'tentacle' (flux
- *  dédiés conservés), 'maneuver' (mêlée gratuite de trait, ciblée), 'area' (zone/action immédiate). */
-export interface Maneuver {
-  id: string;
-  /** Type d'attaque de créature (absent pour Piétinement, qui dérive de la Taille). */
-  kind?: AttackKind;
-  label: string;
-  icon: string;
-  /** Coût en Avantage (affiché « · N Av »). */
-  cost: number;
-  mode: 'target' | 'immediate';
-  dispatch: 'trample' | 'tentacle' | 'maneuver' | 'area';
-}
-
-/** Mêlée ciblée (clic-entité requis) : Morsure / Attaque caudale / Tentacules de trait. */
-const TARGET_MANEUVER_KINDS: AttackKind[] = ['morsure', 'caudale', 'tentacules'];
-
-/** Manœuvres que le héros ACTIF peut activer maintenant — agrège (dédupliquées) : (1) ses manœuvres
- *  de trait abordables & légales ; (2) Piétinement (Taille) ; (3) la mutation Tentacule. Aucune
- *  logique par créature en dur : tout vient de `creatureAttacks` (profils) + des prédicats existants. */
-export function availableManeuvers(active: Combatant, battle: BattleState): Maneuver[] {
-  if (active.kind !== 'hero') return [];
-  const out: Maneuver[] = [];
-  // (1) Manœuvres de trait. 'arme' = l'attaque-Action normale (pas une manœuvre) ; 'charge' (Cornes) =
-  // gratuite uniquement à la Charge (auto) → exclues. Les manœuvres-Action (Étreinte) exigent l'Action.
-  for (const a of creatureAttacks(active.traits ?? [])) {
-    if (a.kind === 'arme' || a.trigger === 'charge') continue;
-    if (a.trigger === 'free' && active.advantage < a.avantage) continue;
-    if (a.trigger === 'action' && (battle.acted || !canTakeAction(active))) continue;
-    const target = TARGET_MANEUVER_KINDS.includes(a.kind);
-    out.push({
-      id: a.kind, kind: a.kind, label: ATTACK_LABEL[a.kind], icon: MANEUVER_ICON[a.kind],
-      cost: a.avantage, mode: target ? 'target' : 'immediate', dispatch: target ? 'maneuver' : 'area',
-    });
-  }
-  // (2) Piétinement (Taille, LDB 85 l.320-321) : adversaire adjacent plus petit, ≥1 Avantage. Flux dédié.
-  if (active.advantage >= 1 && trampleTarget(battle, active))
-    out.push({ id: 'pietinement', label: 'Piétiner', icon: '🐾', cost: 1, mode: 'target', dispatch: 'trample' });
-  // (3) Mutation Tentacule (arme `nat-tentacule`, LDB 85 l.354) : 1/tour, 0 Avantage, cible adjacente.
-  if (
-    !active.tentacleUsedThisTurn && active.weapons.some((w) => w.uid === 'nat-tentacule') && !!active.pos &&
-    battle.combatants.some((c) => c.kind !== 'hero' && !isOutOfAction(c) && c.pos && combatDistance(active, c) <= 1)
-  )
-    out.push({ id: 'tentacule', label: 'Tentacule', icon: '🐙', cost: 0, mode: 'target', dispatch: 'tentacle' });
-  // Déduplique par id (la mutation Tentacule et le trait Tentacules ne coexistent pas, mais garde-fou).
-  return out.filter((m, i) => out.findIndex((n) => n.id === m.id) === i);
-}
 
 // applyActiveEffect / COMBAT_PERSIST vivent désormais dans le moteur (engine/ops) —
 // partagés par l'applicateur d'ops (sorts, tables de contrecoup, mutations).

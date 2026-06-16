@@ -38,6 +38,12 @@ export interface CreatureAttack {
   trigger: AttackTrigger;
   /** Coût en Avantage de l'Attaque gratuite (0 pour action/charge/tentacule). */
   avantage: number;
+  /** Caractéristique du jet d'attaquant (CC mêlée / CT distance·zone) ; absent = pas de jet
+   *  d'attaquant (Hurlement : chaque cible teste sa Résistance). Lu du `ManeuverProfile`. */
+  stat?: 'CC' | 'CT';
+  /** Gestion de l'Avantage dépensé : `fixed` (défaut) / `variable` (Regard, +1 DR/Av) / `all`
+   *  (Hurlement). Lu du `ManeuverProfile` (pilote la modale joueur — choix d'Avantage). */
+  advantageMode?: 'fixed' | 'variable' | 'all';
   /** Attaque de ZONE, Test opposé CT/Esquive (Souffle). */
   aoe?: boolean;
   /** Attaque magique (Souffle, Étreinte glaciale) → soumise à la Résistance à la Magie, etc. */
@@ -81,6 +87,7 @@ export function creatureAttacks(traits: TraitList): CreatureAttack[] {
     out.push({
       kind: m.kind, label: formatTrait(inst), bonus: inst.value ?? 0, type,
       trigger: m.activation, avantage: m.advantageCost,
+      ...(m.stat ? { stat: m.stat } : {}), ...(m.advantageMode ? { advantageMode: m.advantageMode } : {}),
       ...(inst.count != null ? { count: inst.count } : {}),
       ...(m.aoe ? { aoe: true } : {}), ...(m.magic ? { magic: true } : {}), ...(m.perTentacle ? { perTentacle: true } : {}),
     });
