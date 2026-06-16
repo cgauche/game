@@ -5,7 +5,8 @@ import { MINUTES_PER_DAY } from '../engine/clock';
 import { useModalA11y } from './Modal';
 import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem } from '../engine/items';
 import { CHAR_KEYS, CHAR_LABELS, CharKey, HitLocation, ItemInstance, Combatant, Weapon } from '../engine/types';
-import { effectiveChar } from '../engine/characteristics';
+import { effectiveChar, charBonus } from '../engine/characteristics';
+import { effectiveWeaponDamage } from '../engine/weaponDamage';
 import { buildAdvancementView } from '../state/advancement';
 import { hasHealSkill, isHealable } from '../engine/healing';
 import { itemUse } from '../engine/consumables';
@@ -336,10 +337,13 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
     const quals = it.identified === false
       ? (it.suspectedQualities?.length ? `soupçonné : ${it.suspectedQualities.join(', ')}` : '')
       : it.qualities.join(', ');
-    if (it.kind === 'melee' || it.kind === 'ranged')
-      return [it.damage && `Dégâts ${it.damage}`, it.reach && `Allonge ${it.reach}`, it.range && `Portée ${it.range} m`, quals]
+    if (it.kind === 'melee' || it.kind === 'ranged') {
+      // F5 : valeur RÉSOLUE entre parenthèses (« Dégâts +BF+4 (7) ») — BF du héros injecté, comme au combat.
+      const total = it.damage ? effectiveWeaponDamage(it as unknown as Weapon, charBonus(hero.characteristics, 'F')) : null;
+      return [it.damage && `Dégâts ${it.damage}${total != null ? ` (${total})` : ''}`, it.reach && `Allonge ${it.reach}`, it.range && `Portée ${it.range} m`, quals]
         .filter(Boolean)
         .join(' · ');
+    }
     if (it.kind === 'armor')
       return [it.pa != null && `PA ${it.pa}`, (it.locs ?? []).map((l) => LOC_SHORT[l]).join(', '), `couche ${armourLayer(it)}`]
         .filter(Boolean)

@@ -7,6 +7,8 @@ import { defaultAppearance } from '../gameIso/rig/appearance';
 import { equipFromCombatant } from '../gameIso/rig/parts/equipment';
 import { combatantAppearance, combatantOverlays } from '../gameIso/rig/parts/combatantVisuals';
 import { CodexRef } from './compendium/CodexRef';
+import { effectiveWeaponDamage } from '../engine/weaponDamage';
+import { charBonus } from '../engine/characteristics';
 
 /**
  * Écran d'EMPLACEMENTS d'équipement (onglet Combat de la fiche) — façon jeu vidéo : mannequin
@@ -198,7 +200,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
               const ammo = w.type === 'ranged' ? compatibleAmmo(hero, w).reduce((s, a) => s + (a.qty ?? 0), 0) : null;
               return (
                 <span className="weap" key={i}>
-                  <CodexRef category="trappings" label={w.name}>{w.name}</CodexRef> <em>({w.damage})</em>
+                  <CodexRef category="trappings" label={w.name}>{w.name}</CodexRef> <em>({w.damage} = {effectiveWeaponDamage(w, charBonus(hero.characteristics, 'F'))})</em>
                   {ammo != null && <span className="eq-ammo" title="Munitions compatibles dans le sac"> · 🏹 {ammo}</span>}
                 </span>
               );
