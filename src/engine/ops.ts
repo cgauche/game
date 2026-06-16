@@ -46,18 +46,22 @@ import {
 // Formules
 // ---------------------------------------------------------------------------
 
-/** Quantité résolue à l'application : littéral, « (Bonus de X) », « (X) », ou dés. */
+/** Quantité résolue à l'application : littéral, « (Bonus de X) », « (X) », dés, ou la VALEUR du jet
+ *  d'une op `rollThreshold` (`{rolled}` — Régénération « récupère [le dé] PB »). */
 export type Formula =
   | number
   | { bonusOf: CharKey }
   | { charOf: CharKey }
-  | { dice: { n: number; sides: number; plus?: number } };
+  | { dice: { n: number; sides: number; plus?: number } }
+  | { rolled: true };
 
-/** Résout une formule contre son référent (`ref`) — RNG seedable pour les dés. */
-export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG): number {
+/** Résout une formule contre son référent (`ref`) — RNG seedable pour les dés. `rolled` = valeur du
+ *  jet courant d'un `rollThreshold` (injectée par l'op ; 0 hors de ce contexte). */
+export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG, rolled?: number): number {
   if (typeof f === 'number') return f;
   if ('bonusOf' in f) return bonus(effectiveChar(ref, f.bonusOf));
   if ('charOf' in f) return effectiveChar(ref, f.charOf);
+  if ('rolled' in f) return rolled ?? 0;
   return rollDice(f.dice.n, f.dice.sides, rng) + (f.dice.plus ?? 0);
 }
 
@@ -244,6 +248,10 @@ export type GameOp =
    *  X/Round (malédictions). Les `ops` internes sont résolues MAINTENANT (valeurs littérales) puis
    *  ré-appliquées telles quelles — pas de dépendance au lanceur à chaque tick. */
   | { op: 'perRound'; ops: GameOp[] }
+  /** Jet à PALIERS (Régénération : un d10 → soin = le dé ; sur 10, soigne aussi un Critique) : roule
+   *  1d`sides` UNE fois, applique les `ops` de CHAQUE palier dont `atLeast` est atteint (cumulatif).
+   *  Les ops de palier voient `{rolled}` = la valeur du dé. UN seul jet partagé (≠ jets indépendants). */
+  | { op: 'rollThreshold'; sides: number; thresholds: { atLeast: number; ops: GameOp[] }[] }
   /** INVOCATION de créature(s) (Nécromancie « Réanimation/Relever les morts », Ulric « Hurlement du
    *  loup », Démonologie « Manifestation », Taal « Roi de la Nature »…). Effet IMPUR (grille +
    *  initiative) RÉSOLU par la couche state (`state/summonFlow.applySummon`) ; `applyOps` (moteur pur)
@@ -293,6 +301,21 @@ export type GameOp =
   /** Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). */
   | { op: 'narrative'; text: string };
 
+/** Profil d'ANNULATION d'un effet PASSIF (système unifié) — le « flag de typage » qui dit CE QUI le neutralise.
+ *  Porté par chaque `PassiveMod` ; une table `kind → annulateurs` (engine/trauma) applique le gating. */
+export type PassiveKind =
+  | 'douleur'      // pénalité de douleur (séquelle) : Détermination + Insensible + prothèse 'all'
+  | 'mobilité'     // pénalité de mobilité (séquelle de jambe) : idem + prothèse 'movement'
+  | 'structurel'   // membre perdu : prothèse 'all' SEULE (ni Détermination ni Insensible)
+  | 'sensoriel'    // organe perdu : rien
+  | 'maladie'      // symptôme de maladie : Détermination SEULE (pas Insensible)
+  | 'faim'         // pénalité de Faim : « Plus besoin de manger »
+  | 'intrinsèque'; // trait/mutation/qualité/sort : inconditionnel (rien hors expiration/retrait de la source)
+
+/** Effet PASSIF porté par un élément (trauma/trait/mutation/qualité…) : une op + son profil d'annulation.
+ *  Unité du collecteur unifié `passiveMods` ; `kind` absent ⇒ `intrinsèque`. */
+export interface PassiveMod { op: GameOp; kind?: PassiveKind }
+
 export interface OpsCtx {
   rng?: RNG;
   /** Référent des formules « (Bonus de X) » (le lanceur d'un sort) ; défaut : la cible. */
@@ -315,6 +338,8 @@ export interface OpsCtx {
   /** Blessures RÉELLEMENT infligées par le lancement courant (Projectile magique) — base du Vol de
    *  vie (op `lifeSteal`). Posé par la résolution missile avant d'appliquer les ops du lanceur. */
   woundsDealt?: number;
+  /** Valeur du jet courant d'une op `rollThreshold` — résout les Formula `{rolled}` des ops de palier. */
+  rolled?: number;
   /** Gain de Corruption AVEC seuil → mutation (corruptionFlow) ; sans contexte
    *  store, l'op `corruption` incrémente simplement le compteur. */
   onCorruption?: (n: number) => string[];
@@ -381,7 +406,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
     switch (o.op) {
       case 'wounds': {
         if (!groupGate(o.onlyGroups)) break;
-        const raw = Math.max(0, resolveFormula(o.amount, ref, rng) + slBonus(ctx.sl, o.perSL));
+        const raw = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled) + slBonus(ctx.sl, o.perSL));
         // Défaut : ignore BE+PA. `ignoreTB:false` → déduit le Bonus d'Endurance ; `ignoreAP:false` → déduit les PA.
         const tb = o.ignoreTB === false ? bonus(effectiveChar(target, 'E')) : 0;
         const ap = o.ignoreAP === false ? Math.max(0, target.armour.corps ?? 0) : 0;
@@ -392,7 +417,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'heal': {
-        const n = Math.max(0, resolveFormula(o.amount, ref, rng) + slBonus(ctx.sl, o.perSL));
+        const n = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled) + slBonus(ctx.sl, o.perSL));
         target.wounds.current = Math.min(target.wounds.max, target.wounds.current + n);
         lines.push(`${target.name} regagne ${n} Blessure(s).`);
         break;
@@ -756,6 +781,13 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       }
       case 'perRound': {
         pushPerRound(target, o.ops, ctx);
+        break;
+      }
+      case 'rollThreshold': {
+        const roll = rollDice(1, o.sides, rng);
+        for (const th of o.thresholds) {
+          if (roll >= th.atLeast) lines.push(...applyOps(target, th.ops, { ...ctx, rolled: roll }));
+        }
         break;
       }
       case 'grantNaturalWeapon': {

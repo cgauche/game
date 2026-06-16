@@ -12,7 +12,7 @@ import { Combatant, CharKey, HitLocation, Trauma, Difficulty, UpkeepDeferTest } 
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
 import { isPainless } from './traits/dispatch';
-import type { GameOp } from './ops';
+import type { GameOp, PassiveKind } from './ops';
 
 export type TraumaKind = 'dechirure' | 'fracture';
 export type TraumaSeverity = 'mineur' | 'majeur';
@@ -284,7 +284,7 @@ export function escalateSensoryLoss(c: Combatant): string[] {
 export function cannotWieldTwoHanded(c: Combatant): boolean {
   // Crochet PORTÉ et ENTRAÎNÉ (400 PX, LDB 73) : rachète entièrement la pénalité « deux mains ».
   if ((c.items ?? []).some((i) => i.name === 'Crochet' && i.equipped && i.prosthesisTrained)) return false;
-  return opsOfType(passiveOps(c), 'maxWeaponHands').some((o) => o.hands < 2);
+  return opsOfType(passiveMods(c), 'maxWeaponHands').some((o) => o.hands < 2);
 }
 
 /** La main `hand` est-elle PERDUE (amputation non compensée par une prothèse « tout », Merveille, LDB 73) ?
@@ -374,34 +374,52 @@ function painlessIgnores(c: Combatant, t: Trauma): boolean {
   return isPainless(c.traits) && !/amputation|cécité|surdité/i.test(t.label);
 }
 
+/** Quels « annulateurs » neutralisent chaque `kind` d'effet passif — TABLE de la fondation unifiée
+ *  (LDB 17 Détermination / 85 Insensible / 73 prothèse). Le `kind` (flag de typage) → ses annulateurs. */
+const PASSIVE_CANCELLERS: Record<PassiveKind, ('determination' | 'painless' | 'prosthesis-all' | 'prosthesis-move')[]> = {
+  douleur: ['determination', 'painless', 'prosthesis-all'],
+  mobilité: ['determination', 'painless', 'prosthesis-move'],
+  structurel: ['prosthesis-all'],
+  sensoriel: [],
+  maladie: ['determination'],
+  faim: [], // annulé par `noHunger` (flag de sort) — géré à la source Faim (P2), pas par une prothèse de séquelle
+  intrinsèque: [],
+};
+
+/** `kind` DÉRIVÉ d'une op de séquelle (P0 : par type d'op ; la donnée pourra le surcharger plus tard). */
+function traumaOpKind(op: GameOp): PassiveKind {
+  if (op.op === 'maxWeaponHands') return 'structurel';
+  if (op.op === 'senseLoss') return 'sensoriel';
+  if (op.op === 'moveScale') return 'mobilité';
+  return 'douleur'; // charMod / skillMod
+}
+
+/** Un effet passif de séquelle SURVIT-il à l'état du combattant (Détermination/Insensible/prothèse), selon son `kind` ? */
+function traumaModSurvives(c: Combatant, t: Trauma, kind: PassiveKind): boolean {
+  for (const canc of PASSIVE_CANCELLERS[kind]) {
+    if (canc === 'determination' && c.ignoreCritMods) return false;
+    if (canc === 'painless' && painlessIgnores(c, t)) return false;
+    if (canc === 'prosthesis-all' && prosthesisCancels(c, t, 'all')) return false;
+    if (canc === 'prosthesis-move' && prosthesisCancels(c, t, 'movement')) return false;
+  }
+  return true;
+}
+
 /**
- * Toutes les ops PASSIVES actives sur `c`, TOUTES SOURCES confondues — POINT DE LECTURE UNIQUE pour que les
- * MÊMES effets (`charMod`/`skillMod`/`moveScale`/`maxWeaponHands`/`senseLoss`) marchent quel que soit
- * l'élément qui les porte (séquelle aujourd'hui ; trait/mutation/objet ensuite — tous éditables en données).
- * Gating PAR NATURE d'op pour la source « séquelle » (LDB 17/18/73/85) :
- *  - `maxWeaponHands` (membre perdu, STRUCTUREL) : annulé SEULEMENT par une prothèse 'all' (Merveille) — pas
- *    par la Détermination (`ignoreCritMods`) ni l'Insensible à la douleur (ce n'est pas une douleur).
- *  - `senseLoss` (organe perdu) : non annulable.
- *  - `charMod`/`skillMod`/`moveScale` (douleur/mobilité) : ignorées par Détermination + Insensible, annulées
- *    par prothèse ('movement' pour moveScale = Fausse jambe ; 'all' sinon).
- * Trait/sort poussent leurs ops SANS gating prothèse (effets inconditionnels / temporisés).
+ * Collecteur UNIQUE des ops PASSIVES (`charMod`/`skillMod`/`moveScale`/`maxWeaponHands`/`senseLoss`) de TOUTES
+ * les sources — POINT DE LECTURE pour effectiveChar/testValue/defenseValue/effectiveMovement/recomputeLoadout
+ * (via les helpers ci-dessous), filtré par type d'op. Gating UNIFORME par `kind` (table `PASSIVE_CANCELLERS`) :
+ *  - séquelle : `kind` dérivé du type d'op (`traumaOpKind`) ;
+ *  - sort (ActiveEffect) : kind `intrinsèque` (expire, non annulable) ;
+ *  - à terme trait/mutation/objet : poussent leurs `PassiveMod` (kind explicite) au point d'extension.
+ * Le charMod de SORT reste lu par effectiveChar (e.char/e.bonus) → non émis ici (pas de double comptage).
  */
-export function passiveOps(c: Combatant): GameOp[] {
+export function passiveMods(c: Combatant): GameOp[] {
   const out: GameOp[] = [];
   for (const t of c.traumas ?? []) {
-    const cancelAll = prosthesisCancels(c, t, 'all');
-    const cancelMove = prosthesisCancels(c, t, 'movement');
-    const painless = painlessIgnores(c, t);
-    for (const o of traumaOps(t)) {
-      if (o.op === 'maxWeaponHands') { if (!cancelAll) out.push(o); continue; }
-      if (o.op === 'senseLoss') { out.push(o); continue; }
-      if (c.ignoreCritMods || painless) continue;
-      if (o.op === 'moveScale') { if (!cancelMove) out.push(o); continue; }
-      if (!cancelAll) out.push(o);
-    }
+    for (const o of traumaOps(t)) if (traumaModSurvives(c, t, traumaOpKind(o))) out.push(o);
   }
-  // Extension : trait/mutation/objet porteront aussi des `ops` (données éditables) → poussés ICI sans gating.
-  // Sorts (ActiveEffect, ops posées par applyOps). Le charMod de sort reste lu par effectiveChar (e.char/e.bonus).
+  // Extension P1+ : trait/mutation/objet poussent leurs `PassiveMod` (kind explicite) ICI.
   for (const e of c.activeEffects ?? []) {
     if (e.skillMods) for (const [skill, mod] of Object.entries(e.skillMods)) out.push({ op: 'skillMod', skill, mod });
     if (e.moveScale) out.push({ op: 'moveScale', num: e.moveScale.num, den: e.moveScale.den });
@@ -412,22 +430,22 @@ export function passiveOps(c: Combatant): GameOp[] {
 
 /** Le Mouvement est-il réduit de moitié (séquelle de jambe ou autre source `moveScale`) ? Lu par `effectiveMovement`. */
 export function traumaMovementHalved(c: Combatant): boolean {
-  return opsOfType(passiveOps(c), 'moveScale').length > 0;
+  return opsOfType(passiveMods(c), 'moveScale').length > 0;
 }
 
 /** Pénalités de Caractéristique dues aux traumatismes (valeurs négatives, pour le pool « pire pénalité »).
  *  Une prothèse qui annule TOUT (Nez doré, Œil de verre, Merveille…, LDB 73) lève la pénalité de sa séquelle. */
 export function traumaCharPenalties(c: Combatant, key: CharKey): number[] {
-  // `passiveOps` applique déjà le gating séquelle (Détermination/Insensible/prothèse). Le charMod de SORT
-  // est lu à part par effectiveChar (e.char/e.bonus) → non émis par passiveOps, pas de double comptage.
-  return opsOfType(passiveOps(c), 'charMod').filter((o) => o.char === key).map((o) => o.mod).filter((p) => p < 0);
+  // `passiveMods` applique déjà le gating séquelle (Détermination/Insensible/prothèse). Le charMod de SORT
+  // est lu à part par effectiveChar (e.char/e.bonus) → non émis par passiveMods, pas de double comptage.
+  return opsOfType(passiveMods(c), 'charMod').filter((o) => o.char === key).map((o) => o.mod).filter((p) => p < 0);
 }
 
 /** Pire pénalité de mobilité/Esquive due aux traumatismes de jambe (≤ 0 ; non-cumul, LDB l.20). Une prothèse
  *  qui annule TOUT (Merveille d'ingénierie, LDB 73) lève aussi l'Esquive (la Fausse jambe ne rend PAS l'Esquive
  *  sans 200 PX, non modélisé → son −20 subsiste). */
 export function traumaDodgePenalty(c: Combatant): number {
-  const pens = opsOfType(passiveOps(c), 'skillMod')
+  const pens = opsOfType(passiveMods(c), 'skillMod')
     .filter((o) => o.skill.toLowerCase() === 'esquive' && o.mod < 0)
     .map((o) => o.mod);
   return pens.length ? Math.min(...pens) : 0;
@@ -439,7 +457,7 @@ export function traumaSkillPenalty(c: Combatant, skill?: string): number {
   if (!skill) return 0;
   const low = skill.toLowerCase();
   // Esquive est porté par traumaDodgePenalty (defenseValue) → EXCLU ici pour préserver la séparation historique.
-  const pens = opsOfType(passiveOps(c), 'skillMod')
+  const pens = opsOfType(passiveMods(c), 'skillMod')
     .filter((o) => { const sl = o.skill.toLowerCase(); return sl !== 'esquive' && (low === sl || low.startsWith(sl)) && o.mod < 0; }) // « langue (reikspiel) » → « langue »
     .map((o) => o.mod);
   return pens.length ? Math.min(...pens) : 0;
