@@ -276,7 +276,7 @@ export function IsoStage() {
         }
     }
     return out;
-  }, [scene, shownRot, viewMode, renderLevels]);
+  }, [scene, shownRot, shownEdge, viewMode, renderLevels]);
 
   // Murs sur arêtes (cloisons fines) : quads verticaux dressés sur les arêtes de case, fusionnés dans
   // le tri de profondeur global (un mur avant occulte ce qui est derrière ; les portes sont ajourées).
@@ -289,7 +289,7 @@ export function IsoStage() {
       const seg = wallSeg(w, d);
       return { d: seg.d, el: <g key={`wall-${i}`} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
     });
-  }, [scene, shownRot, viewMode, renderLevels]);
+  }, [scene, shownRot, shownEdge, viewMode, renderLevels]);
 
   // ESCALIERS (Scene.stairs) — volées de marches STRUCTURELLES (comme les murs), pas des décors posés.
   // Pleine opacité si l'un des deux étages reliés est actif (l'escalier appartient aux deux).
@@ -302,7 +302,7 @@ export function IsoStage() {
       const seg = stairSeg(s, d);
       return { d: seg.d, el: <g key={`stair-${i}`} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
     });
-  }, [scene, shownRot, viewMode, renderLevels]);
+  }, [scene, shownRot, shownEdge, viewMode, renderLevels]);
 
   const decorObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
     if (!scene) return [];
@@ -330,7 +330,7 @@ export function IsoStage() {
           });
       }
     return out;
-  }, [scene, shownRot, viewMode, mode, battle, partyPos]);
+  }, [scene, shownRot, shownEdge, viewMode, mode, battle, partyPos]);
 
   const buildingObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
     if (!scene) return [];
@@ -341,7 +341,7 @@ export function IsoStage() {
         : [partyPos];
     const night = sceneIsDark(scene, gameTime); // jour/nuit = horloge (#T1c)
     return (scene.buildings ?? []).map((b) => buildingObj(b, d, roofHidden(b, allies), night));
-  }, [scene, shownRot, viewMode, mode, battle, partyPos, gameTime]);
+  }, [scene, shownRot, shownEdge, viewMode, mode, battle, partyPos, gameTime]);
 
   // Grisage hors-LdV : ennemis que le héros actif ne peut PAS viser au tir faute de Ligne de Vue
   // (LDB 13 l.123) → pion fantomatique. Distingue « hors LdV » de « hors de portée » (aucun
@@ -553,7 +553,7 @@ export function IsoStage() {
       }
     }
     return hl;
-  }, [scene, shownRot, viewMode, mode, battle, myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast]);
+  }, [scene, shownRot, shownEdge, viewMode, mode, battle, myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast]);
 
   // Tokens des ENTITÉS de scène (exploration) memoïsés : ils ne BOUGENT pas pendant que le groupe
   // marche (seul le leader glisse, rendu à part). Sans ça, le rAF de marche (setWalkTick) re-rendait
@@ -615,7 +615,7 @@ export function IsoStage() {
       }
     }
     return out;
-  }, [scene, shownRot, viewMode, mode, battle, viewZ, activeZ]);
+  }, [scene, shownRot, shownEdge, viewMode, mode, battle, viewZ, activeZ]);
 
   if (!scene) return null;
   const dims: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
