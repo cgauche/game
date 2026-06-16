@@ -1,3 +1,4 @@
+import type { KeyboardEvent } from 'react';
 import { Combatant, CHAR_KEYS, CharKey } from '../engine/types';
 import { PortraitTile } from './PortraitTile';
 import { speciesSingular } from '../data';
@@ -18,10 +19,16 @@ const SHORT: Record<CharKey, string> = {
   Soc: 'Soc',
 };
 
-export function CharCard({ hero, compact }: { hero: Combatant; compact?: boolean }) {
+export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?: boolean; onOpen?: () => void }) {
   return (
     <div className={`char-card panel ${compact ? 'compact' : ''}`}>
-      <div className="char-head">
+      <div
+        className={`char-head ${onOpen ? 'clickable' : ''}`}
+        {...(onOpen
+          ? { onClick: onOpen, role: 'button', tabIndex: 0, title: 'Voir la fiche complète',
+              onKeyDown: (e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(); } } }
+          : {})}
+      >
         {/* identity sans jauge : hors partie, la vie courante n'informe de rien (toujours au max).
             Anneau or « méta » — pas encore de couleur de groupe. Le nom RESTE : écran méta. */}
         <PortraitTile c={hero} ring="var(--gold)" variant="identity" size={compact ? 'sm' : 'lg'} />

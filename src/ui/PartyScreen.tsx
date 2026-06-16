@@ -9,6 +9,7 @@ import { publishedProjects } from '../state/projectLibrary';
 import { Combatant } from '../engine/types';
 import { Money, formatMoney } from '../engine/money';
 import { CharCard } from './CharCard';
+import { CharacterSheet } from './CharacterSheet';
 
 /**
  * Écran d'équipe — solo ET coop. En coop, l'hôte attribue chaque EMPLACEMENT (Aventurier 1-4)
@@ -171,6 +172,8 @@ export function PartyScreenView({
   onResume?: () => void;
 }) {
   const [picker, setPicker] = useState(false);
+  // F1 : cliquer le portrait d'un héros ouvre sa fiche complète (réutilise CharacterSheet).
+  const [sheetId, setSheetId] = useState<string | null>(null);
 
   const coop = net.mode !== 'local';
   const isHost = net.mode !== 'guest';
@@ -258,7 +261,7 @@ export function PartyScreenView({
               )}
               {h ? (
                 <>
-                  <CharCard hero={h} />
+                  <CharCard hero={h} onOpen={() => setSheetId(h.id)} />
                   {ownsHero(h.id) && (
                     <button className="btn small danger" onClick={() => onRemoveHero(h.id)}>
                       Retirer
@@ -287,6 +290,7 @@ export function PartyScreenView({
       </div>
 
       {picker && party.length < 4 && <PartyPicker party={party} onPick={pick} onClose={() => setPicker(false)} />}
+      {sheetId && <CharacterSheet heroId={sheetId} onClose={() => setSheetId(null)} />}
     </div>
   );
 }
