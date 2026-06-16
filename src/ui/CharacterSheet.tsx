@@ -573,14 +573,19 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                     <span className="ir-kind">{it.kind}</span>
                   )}
                   {party.length > 1 && !inBattleNow && (
-                    <span className="give-row" title="Donner cet objet à un autre héros">
-                      🎁
-                      <span className="frame-row">
+                    <label className="give-row" title="Donner cet objet à un autre héros">
+                      <span aria-hidden>🎁</span>
+                      <select
+                        className="give-select"
+                        value=""
+                        onChange={(e) => { if (e.target.value) transferItem(it.uid, hero.id, e.target.value); }}
+                      >
+                        <option value="">Donner à…</option>
                         {party.filter((p) => p.id !== hero.id).map((p) => (
-                          <CharFrame key={p.id} c={p} variant="identity" size="xs" onClick={() => transferItem(it.uid, hero.id, p.id)} title={`Donner à ${p.name}`} />
+                          <option key={p.id} value={p.id}>{p.name}</option>
                         ))}
-                      </span>
-                    </span>
+                      </select>
+                    </label>
                   )}
                 </div>
                 {open && (

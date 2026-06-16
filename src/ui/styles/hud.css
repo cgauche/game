@@ -66,6 +66,12 @@
   align-items: center;
   gap: 4px;
 }
+/* E4 : « Donner » = icône + droplist compacte (action secondaire repliée, plus la rangée de portraits). */
+.give-select {
+  max-width: 150px;
+  font-size: 12px;
+  padding: 4px 24px 4px 8px;
+}
 /* Choix par tuile-portrait avec légende sous la tuile (monture/cavalier, modes de soin…). */
 .frame-pick {
   display: inline-flex;
