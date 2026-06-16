@@ -180,31 +180,70 @@ const ents: SceneEntity[] = [
   { id: 'foy-lustre-g', kind: 'prop', ref: 'lustre-opera', pos: { x: 14, y: 51 }, z: 1 },
   { id: 'foy-lustre-d', kind: 'prop', ref: 'lustre-opera', pos: { x: 29, y: 51 }, z: 1 },
 
-  // ───────────── COULISSES (16, z=0, y=1..2 derrière la scène) + SALLE VERTE (14) / STOCKAGE DÉCORS (20)
-  //   de part et d'autre de la scène : mannequins de costume, caisses, racks d'accessoires, charrette.
+  // ───────────── COULISSES (16, z=0, y=1..2 derrière la scène) : décors en construction (mannequins,
+  //   caisses, râtelier d'accessoires) — d'après le plan p.40 (props épars derrière la scène).
   { id: 'cl-mann-1', kind: 'prop', ref: 'mannequin', pos: { x: 15, y: 1 } },
   { id: 'cl-caisse-1', kind: 'prop', ref: 'caisse', pos: { x: 18, y: 1 } },
   { id: 'cl-rack-1', kind: 'prop', ref: 'rack-armes', pos: { x: 26, y: 1 } },
   { id: 'cl-mann-2', kind: 'prop', ref: 'mannequin', pos: { x: 29, y: 1 } },
-  { id: 'sv-caisse', kind: 'prop', ref: 'caisse', pos: { x: 4, y: 5 } },
-  { id: 'sv-tonneaux', kind: 'prop', ref: 'tonneaux-pile', pos: { x: 7, y: 6 } },
-  { id: 'sv-etagere', kind: 'prop', ref: 'etagere', pos: { x: 10, y: 4 } },
-  { id: 'sd-caisse', kind: 'prop', ref: 'caisse', pos: { x: 34, y: 5 } },
-  { id: 'sd-charrette', kind: 'prop', ref: 'charrette', pos: { x: 37, y: 6 } },
-  { id: 'sd-mann', kind: 'prop', ref: 'mannequin', pos: { x: 39, y: 4 } },
 
-  // ───────────── SALLES LATÉRALES (z=0, le long des flancs y=11..40 : vestiaires, bureaux, costumiers,
-  //   charpenterie, réserves) — étagères, coffres, mannequins, caisses, piles de tonneaux. x=3..4 / 39..40.
-  { id: 'sl-g-13', kind: 'prop', ref: 'etagere', pos: { x: 3, y: 13 } },
-  { id: 'sl-g-18', kind: 'prop', ref: 'coffre', pos: { x: 3, y: 18 } },
-  { id: 'sl-g-23', kind: 'prop', ref: 'mannequin', pos: { x: 3, y: 23 } },
-  { id: 'sl-g-29', kind: 'prop', ref: 'caisse', pos: { x: 3, y: 29 } },
-  { id: 'sl-g-35', kind: 'prop', ref: 'tonneaux-pile', pos: { x: 4, y: 35 } },
-  { id: 'sl-d-13', kind: 'prop', ref: 'rack-lances', pos: { x: 40, y: 13 } },
-  { id: 'sl-d-18', kind: 'prop', ref: 'etagere', pos: { x: 40, y: 18 } },
-  { id: 'sl-d-23', kind: 'prop', ref: 'mannequin', pos: { x: 40, y: 23 } },
-  { id: 'sl-d-29', kind: 'prop', ref: 'caisse', pos: { x: 40, y: 29 } },
-  { id: 'sl-d-35', kind: 'prop', ref: 'tonneaux-pile', pos: { x: 39, y: 35 } },
+  // SALLE VERTE (14, gauche, y=1..8) : détente des artistes → table + chaises. Cf. plan p.40 (table centrale).
+  { id: 'sv-table', kind: 'prop', ref: 'table', pos: { x: 6, y: 4 }, foot: { w: 2, h: 1 } },
+  { id: 'sv-chaise-1', kind: 'prop', ref: 'chaise', pos: { x: 5, y: 6 } },
+  { id: 'sv-chaise-2', kind: 'prop', ref: 'chaise', pos: { x: 9, y: 5 } },
+  { id: 'sv-etagere', kind: 'prop', ref: 'etagere', pos: { x: 10, y: 2 } },
+  // STOCKAGE DÉCORS (20, droite, y=1..8) : caisses, étagère, charrette de décors. Cf. plan p.40.
+  { id: 'sd-caisse', kind: 'prop', ref: 'caisse', pos: { x: 34, y: 5 } },
+  { id: 'sd-etagere', kind: 'prop', ref: 'etagere', pos: { x: 33, y: 2 } },
+  { id: 'sd-charrette', kind: 'prop', ref: 'charrette', pos: { x: 37, y: 6 } },
+  { id: 'sd-mann', kind: 'prop', ref: 'mannequin', pos: { x: 39, y: 3 } },
+
+  // ───────────── SALLES LATÉRALES (z=0, flancs y=11..40) MEUBLÉES d'après le plan officiel, pièce par
+  //   pièce (coiffeuses/miroirs des loges, bureaux à tiroirs, armoires à costumes, établi de charpenterie).
+  //   Colonnes sûres : x=3..5 (gauche) / x=38..40 (droite). Bandes : cf. floorplan.ts.
+
+  // 13 VESTIAIRE des chœurs (g, y=9..15) : coiffeuse + chaise + miroir.
+  { id: 'vest13-table', kind: 'prop', ref: 'table', pos: { x: 4, y: 12 } },
+  { id: 'vest13-chaise', kind: 'prop', ref: 'chaise', pos: { x: 4, y: 14 } },
+  { id: 'vest13-miroir', kind: 'prop', ref: 'miroir', pos: { x: 3, y: 10 } },
+  // 21 STOCKAGE accessoires (d, y=9..15) : caisses + pile de tonneaux.
+  { id: 'stk21-caisse', kind: 'prop', ref: 'caisse', pos: { x: 39, y: 11 } },
+  { id: 'stk21-tonneaux', kind: 'prop', ref: 'tonneaux-pile', pos: { x: 39, y: 14 } },
+
+  // 12 VESTIAIRE des chœurs (g, y=16..22) : coiffeuse + chaise + armoire + miroir.
+  { id: 'vest12-table', kind: 'prop', ref: 'table', pos: { x: 4, y: 17 } },
+  { id: 'vest12-chaise', kind: 'prop', ref: 'chaise', pos: { x: 4, y: 19 } },
+  { id: 'vest12-armoire', kind: 'prop', ref: 'armoire', pos: { x: 3, y: 21 } },
+  { id: 'vest12-miroir', kind: 'prop', ref: 'miroir', pos: { x: 6, y: 21 } },
+  // 22-23 BUREAUX concierge & gestionnaire (d, y=16..22) : bureau à tiroirs + chaise + étagère.
+  { id: 'bur23-bureau', kind: 'prop', ref: 'bureau', pos: { x: 39, y: 18 }, foot: { w: 2, h: 1 } },
+  { id: 'bur23-chaise', kind: 'prop', ref: 'chaise', pos: { x: 38, y: 20 } },
+  { id: 'bur23-etagere', kind: 'prop', ref: 'etagere', pos: { x: 40, y: 16 } },
+
+  // 11 VESTIAIRE des chœurs (g, y=23..29) : coiffeuse + chaise + lit de repos des artistes.
+  { id: 'vest11-table', kind: 'prop', ref: 'table', pos: { x: 4, y: 24 } },
+  { id: 'vest11-chaise', kind: 'prop', ref: 'chaise', pos: { x: 4, y: 26 } },
+  { id: 'vest11-lit', kind: 'prop', ref: 'lit', pos: { x: 3, y: 28 }, foot: { w: 2, h: 1 } },
+  // 24 RANGEMENTS des costumes (d, y=23..29) : armoire + mannequin + caisse.
+  { id: 'cost24-armoire', kind: 'prop', ref: 'armoire', pos: { x: 39, y: 24 } },
+  { id: 'cost24-mann', kind: 'prop', ref: 'mannequin', pos: { x: 38, y: 26 } },
+  { id: 'cost24-caisse', kind: 'prop', ref: 'caisse', pos: { x: 40, y: 28 } },
+
+  // 10 PASSAGE (g, y=30..35) : peu de chose — un tabouret oublié + une caisse.
+  { id: 'pass10-tabouret', kind: 'prop', ref: 'tabouret', pos: { x: 4, y: 32 } },
+  { id: 'pass10-caisse', kind: 'prop', ref: 'caisse', pos: { x: 3, y: 34 } },
+  // 25 COSTUMIERS / Couturiers (d, y=30..35) : table de coupe + mannequin + chaise.
+  { id: 'cout25-table', kind: 'prop', ref: 'table', pos: { x: 39, y: 31 }, foot: { w: 2, h: 1 } },
+  { id: 'cout25-mann', kind: 'prop', ref: 'mannequin', pos: { x: 38, y: 33 } },
+  { id: 'cout25-chaise', kind: 'prop', ref: 'chaise', pos: { x: 40, y: 34 } },
+
+  // 15 BUREAU du régisseur (g, y=36..40) : bureau à tiroirs + chaise.
+  { id: 'reg15-bureau', kind: 'prop', ref: 'bureau', pos: { x: 4, y: 37 }, foot: { w: 2, h: 1 } },
+  { id: 'reg15-chaise', kind: 'prop', ref: 'chaise', pos: { x: 3, y: 39 } },
+  // 26-27 CHARPENTERIE & décors + RÉSERVE (d, y=36..40) : établi de charpentier + caisse + tonneaux.
+  { id: 'charp26-etabli', kind: 'prop', ref: 'etabli', pos: { x: 39, y: 37 }, foot: { w: 2, h: 1 } },
+  { id: 'charp26-caisse', kind: 'prop', ref: 'caisse', pos: { x: 38, y: 39 } },
+  { id: 'res27-tonneaux', kind: 'prop', ref: 'tonneaux-pile', pos: { x: 40, y: 39 } },
 
   // ───────────── GALERIE (35/37, z=1, y=42..47 au-dessus du foyer) + BARS DES BALCONS (36/38) :
   //   plantes, étagères à bouteilles + tonneaux (comptoir de bar), appliques.
@@ -214,8 +253,18 @@ const ents: SceneEntity[] = [
   { id: 'gal-bar-d', kind: 'prop', ref: 'etagere', pos: { x: 39, y: 46 }, z: 1 },
   { id: 'gal-tonneau-g', kind: 'prop', ref: 'tonneau', pos: { x: 6, y: 46 }, z: 1 },
   { id: 'gal-tonneau-d', kind: 'prop', ref: 'tonneau', pos: { x: 37, y: 46 }, z: 1 },
+  // Tables de bar + tabourets (36/38) le long des balcons. Cf. plan p.41.
+  { id: 'gal-table-g', kind: 'prop', ref: 'table', pos: { x: 4, y: 43 }, z: 1 },
+  { id: 'gal-tab-g', kind: 'prop', ref: 'tabouret', pos: { x: 3, y: 44 }, z: 1 },
+  { id: 'gal-table-d', kind: 'prop', ref: 'table', pos: { x: 39, y: 43 }, z: 1 },
+  { id: 'gal-tab-d', kind: 'prop', ref: 'tabouret', pos: { x: 40, y: 44 }, z: 1 },
   { id: 'gal-app-g', kind: 'prop', ref: 'applique-murale', pos: { x: 2, y: 43 }, z: 1 },
   { id: 'gal-app-d', kind: 'prop', ref: 'applique-murale', pos: { x: 41, y: 43 }, z: 1 },
+
+  // SALON DES SEIGNEURS (39, z=1) : guéridon d'honneur + fauteuil dans le bas du salon. Cf. plan p.41.
+  { id: 'salon-table', kind: 'prop', ref: 'table', pos: { x: 21, y: 46 }, z: 1 },
+  { id: 'salon-ft-g', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 19, y: 46 }, z: 1 },
+  { id: 'salon-ft-d', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 23, y: 46 }, z: 1 },
 ];
 
 export const scenarioEntities = ents;
