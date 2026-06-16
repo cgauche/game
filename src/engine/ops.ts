@@ -310,7 +310,8 @@ export type PassiveKind =
   | 'sensoriel'    // organe perdu : rien
   | 'maladie'      // symptôme de maladie : Détermination SEULE (pas Insensible)
   | 'faim'         // pénalité de Faim : « Plus besoin de manger »
-  | 'intrinsèque'; // trait/mutation/qualité/sort : inconditionnel (rien hors expiration/retrait de la source)
+  | 'magique'      // effet de SORT actif (ActiveEffect) : inconditionnel mais combiné en POOL non-cumul ; expire seul
+  | 'intrinsèque'; // trait/mutation/qualité : inconditionnel ET ADDITIF (Σ dans la base — corps/équipement permanent)
 
 /** Effet PASSIF porté par un élément (trauma/trait/mutation/qualité…) : une op + son profil d'annulation.
  *  Unité du collecteur unifié `passiveMods` ; `kind` absent ⇒ `intrinsèque`. */

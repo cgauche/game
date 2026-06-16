@@ -12,7 +12,7 @@ import { Combatant, CharKey, HitLocation, Trauma, Difficulty, UpkeepDeferTest } 
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
 import { isPainless } from './traits/dispatch';
-import type { GameOp, PassiveKind } from './ops';
+import type { GameOp, PassiveKind, PassiveMod } from './ops';
 
 export type TraumaKind = 'dechirure' | 'fracture';
 export type TraumaSeverity = 'mineur' | 'majeur';
@@ -284,7 +284,7 @@ export function escalateSensoryLoss(c: Combatant): string[] {
 export function cannotWieldTwoHanded(c: Combatant): boolean {
   // Crochet PORTÉ et ENTRAÎNÉ (400 PX, LDB 73) : rachète entièrement la pénalité « deux mains ».
   if ((c.items ?? []).some((i) => i.name === 'Crochet' && i.equipped && i.prosthesisTrained)) return false;
-  return opsOfType(passiveMods(c), 'maxWeaponHands').some((o) => o.hands < 2);
+  return pmods(c, 'maxWeaponHands').some((o) => o.hands < 2);
 }
 
 /** La main `hand` est-elle PERDUE (amputation non compensée par une prothèse « tout », Merveille, LDB 73) ?
@@ -383,8 +383,15 @@ const PASSIVE_CANCELLERS: Record<PassiveKind, ('determination' | 'painless' | 'p
   sensoriel: [],
   maladie: ['determination'],
   faim: [], // annulé par `noHunger` (flag de sort) — géré à la source Faim (P2), pas par une prothèse de séquelle
+  magique: [], // sort actif : rien ne l'annule (il expire), mais il se combine en POOL non-cumul (≠ intrinsèque additif)
   intrinsèque: [],
 };
+
+/** Le `kind` est-il ADDITIF (sommé dans la base : mutation/qualité, corps/équipement permanent) plutôt que
+ *  combiné en POOL non-cumul (trauma/maladie/faim/sort) ? Seuls les `charMod`/`skillMod` distinguent les deux. */
+function isAdditiveKind(kind: PassiveKind | undefined): boolean {
+  return (kind ?? 'intrinsèque') === 'intrinsèque';
+}
 
 /** `kind` DÉRIVÉ d'une op de séquelle (P0 : par type d'op ; la donnée pourra le surcharger plus tard). */
 function traumaOpKind(op: GameOp): PassiveKind {
@@ -414,38 +421,48 @@ function traumaModSurvives(c: Combatant, t: Trauma, kind: PassiveKind): boolean 
  *  - à terme trait/mutation/objet : poussent leurs `PassiveMod` (kind explicite) au point d'extension.
  * Le charMod de SORT reste lu par effectiveChar (e.char/e.bonus) → non émis ici (pas de double comptage).
  */
-export function passiveMods(c: Combatant): GameOp[] {
-  const out: GameOp[] = [];
+export function passiveMods(c: Combatant): PassiveMod[] {
+  const out: PassiveMod[] = [];
   for (const t of c.traumas ?? []) {
-    for (const o of traumaOps(t)) if (traumaModSurvives(c, t, traumaOpKind(o))) out.push(o);
+    for (const o of traumaOps(t)) { const kind = traumaOpKind(o); if (traumaModSurvives(c, t, kind)) out.push({ op: o, kind }); }
   }
-  // Extension P1+ : trait/mutation/objet poussent leurs `PassiveMod` (kind explicite) ICI.
+  // Mutations / qualités d'objet (kind `intrinsèque`, additif Σ) : poussées par leurs producteurs (P1b/P1c).
   for (const e of c.activeEffects ?? []) {
-    if (e.skillMods) for (const [skill, mod] of Object.entries(e.skillMods)) out.push({ op: 'skillMod', skill, mod });
-    if (e.moveScale) out.push({ op: 'moveScale', num: e.moveScale.num, den: e.moveScale.den });
-    if (e.maxWeaponHands != null) out.push({ op: 'maxWeaponHands', hands: e.maxWeaponHands });
+    if (e.skillMods) for (const [skill, mod] of Object.entries(e.skillMods)) out.push({ op: { op: 'skillMod', skill, mod }, kind: 'magique' });
+    if (e.moveScale) out.push({ op: { op: 'moveScale', num: e.moveScale.num, den: e.moveScale.den }, kind: 'magique' });
+    if (e.maxWeaponHands != null) out.push({ op: { op: 'maxWeaponHands', hands: e.maxWeaponHands }, kind: 'magique' });
   }
   return out;
 }
 
+/** Ops PASSIVES de type `op` collectées (kind aplati), filtrées par mode de combinaison quand il importe :
+ *  `additive===false` → POOL non-cumul (trauma/maladie/sort) ; `additive===true` → Σ (mutation/qualité) ;
+ *  absent → toutes (pour les op-types dont la combinaison ne dépend pas du kind : moveScale/maxWeaponHands). */
+function pmods<K extends GameOp['op']>(c: Combatant, op: K, additive?: boolean): Extract<GameOp, { op: K }>[] {
+  return passiveMods(c)
+    .filter((m) => m.op.op === op && (additive == null || isAdditiveKind(m.kind) === additive))
+    .map((m) => m.op as Extract<GameOp, { op: K }>);
+}
+
 /** Le Mouvement est-il réduit de moitié (séquelle de jambe ou autre source `moveScale`) ? Lu par `effectiveMovement`. */
 export function traumaMovementHalved(c: Combatant): boolean {
-  return opsOfType(passiveMods(c), 'moveScale').length > 0;
+  return pmods(c, 'moveScale').length > 0;
 }
 
 /** Pénalités de Caractéristique dues aux traumatismes (valeurs négatives, pour le pool « pire pénalité »).
  *  Une prothèse qui annule TOUT (Nez doré, Œil de verre, Merveille…, LDB 73) lève la pénalité de sa séquelle. */
 export function traumaCharPenalties(c: Combatant, key: CharKey): number[] {
   // `passiveMods` applique déjà le gating séquelle (Détermination/Insensible/prothèse). Le charMod de SORT
-  // est lu à part par effectiveChar (e.char/e.bonus) → non émis par passiveMods, pas de double comptage.
-  return opsOfType(passiveMods(c), 'charMod').filter((o) => o.char === key).map((o) => o.mod).filter((p) => p < 0);
+  // est lu à part par effectiveChar (e.char/e.bonus) → non émis par passiveMods. `additive=false` exclut les
+  // charMods de mutation/qualité (intrinsèque, sommés dans la base par effectiveChar) → pas de double comptage.
+  return pmods(c, 'charMod', false).filter((o) => o.char === key).map((o) => o.mod).filter((p) => p < 0);
 }
 
 /** Pire pénalité de mobilité/Esquive due aux traumatismes de jambe (≤ 0 ; non-cumul, LDB l.20). Une prothèse
  *  qui annule TOUT (Merveille d'ingénierie, LDB 73) lève aussi l'Esquive (la Fausse jambe ne rend PAS l'Esquive
  *  sans 200 PX, non modélisé → son −20 subsiste). */
 export function traumaDodgePenalty(c: Combatant): number {
-  const pens = opsOfType(passiveMods(c), 'skillMod')
+  const pens = pmods(c, 'skillMod', false)
     .filter((o) => o.skill.toLowerCase() === 'esquive' && o.mod < 0)
     .map((o) => o.mod);
   return pens.length ? Math.min(...pens) : 0;
@@ -457,7 +474,7 @@ export function traumaSkillPenalty(c: Combatant, skill?: string): number {
   if (!skill) return 0;
   const low = skill.toLowerCase();
   // Esquive est porté par traumaDodgePenalty (defenseValue) → EXCLU ici pour préserver la séparation historique.
-  const pens = opsOfType(passiveMods(c), 'skillMod')
+  const pens = pmods(c, 'skillMod', false)
     .filter((o) => { const sl = o.skill.toLowerCase(); return sl !== 'esquive' && (low === sl || low.startsWith(sl)) && o.mod < 0; }) // « langue (reikspiel) » → « langue »
     .map((o) => o.mod);
   return pens.length ? Math.min(...pens) : 0;
