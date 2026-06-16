@@ -119,19 +119,8 @@ export function attachMutation(c: Combatant, m: Mutation): void {
 // Lecture des effets (à la volée, comme les Traumatismes)
 // ---------------------------------------------------------------------------
 
-/** Somme des modifications PERMANENTES de `key` dues aux mutations (s'ajoute à la base). */
-export function mutationCharDelta(c: Combatant, key: CharKey): number {
-  let d = 0;
-  for (const m of c.mutations ?? []) d += m.charMods?.[key] ?? 0;
-  return d;
-}
-
-/** Delta de Mouvement dû aux mutations (Pattes d'animaux +1, Corpulent/Court sur pattes −1). */
-export function mutationMovementDelta(c: Combatant): number {
-  let d = 0;
-  for (const m of c.mutations ?? []) d += m.movement ?? 0;
-  return d;
-}
+// charMods/Mouvement des mutations : lus DIRECT par le collecteur passif unifié (engine/trauma `passiveMods`
+// → passiveCharSum/passiveMoveMod). Plus de helpers `mutationCharDelta`/`mutationMovementDelta` dédiés.
 
 /** PA naturels de mutation à `loc` (Peau d'acier, Écailles épineuses, Cornes…) — additifs. */
 export function mutationArmourBonus(c: Combatant, loc: HitLocation): number {

@@ -3,23 +3,19 @@
  * `defs/<slug>.ts` (gen-registry.mjs) dans `registry.ts` — même patron que `engine/qualities/`.
  *
  * Un TraitDef ne décrit QUE ce que la source écrit ; les hooks sont consommés aux moments de jeu :
- *  - profil dérivé (charMods/movement/bonusWoundsBE) : `spawn.ts` — statblocks d'ÉDITEUR uniquement
- *    (LDB 77 : « utilisez l'un des profils standard et AJOUTEZ les Traits ») ; les profils du
- *    bestiaire (LDB 78-83) sont imprimés FINALS → jamais réappliqués (anti double-compte) ;
+ *  - Blessures d'Endurant (bonusWoundsBE) : `spawn.ts` — statblocks d'ÉDITEUR / facultatifs (LDB 77) ;
+ *    les charMods/Mouvement de profil sont en DONNÉES (`traits.json` → `TraitData.passive`), lus en direct
+ *    par le collecteur passif ; les profils du bestiaire (LDB 78-83) sont imprimés FINALS → jamais réappliqués ;
  *  - mathématique de combat : `combat.ts` / `combatFlow.ts` ;
  *  - psychologie/IA : `psychology.ts` / `ai.ts` / `combatFlow.ts` ;
  *  - mouvement & vision : `combatFlow.ts` / `sceneRules` (env).
  */
-import type { CharKey } from '../types';
-
 export interface TraitDef {
   /** Libellé FR canonique (clé de correspondance, casse/Indice/parenthèse ignorés). */
   key: string;
   // ── Profil dérivé (appliqué au spawn des statblocks d'éditeur, LDB 77) ──
-  /** Modificateurs de Caractéristiques (« Élite : +20 en CC, CT et FM »). */
-  charMods?: Partial<Record<CharKey, number>>;
-  /** Modificateur de Mouvement (Brutal −1, Rapide +1). */
-  movement?: number;
+  // Les modificateurs de Caractéristiques/Mouvement (Élite +20 CC…, Brutal −1 M) sont désormais en DONNÉES
+  // éditables (`traits.json` → `TraitData.passive: GameOp[]`), lus en direct par le collecteur passif.
   /** Endurant : +Bonus d'Endurance Blessures (avant modificateur de Taille). */
   bonusWoundsBE?: boolean;
   /** Mutation / Corruption mentale (LDB 85) : tirage sur le Tableau des Corruptions au spawn. */

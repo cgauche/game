@@ -7,7 +7,7 @@ import type { Combatant } from './types';
 import { makeRNG } from './dice';
 import {
   corruptionGain, corruptionThresholdExceeded, mutationKindFor, mutationLimitExceeded,
-  attachMutation, mutationCharDelta, mutationMovementDelta, mutationArmourBonus,
+  attachMutation, mutationArmourBonus,
 } from './corruption';
 import { rollMutation } from '../data/mutations';
 import { passiveSkillSum, passiveTestMod } from './trauma';
@@ -85,12 +85,11 @@ describe('effets de mutation lus à la volée', () => {
     expect(effectiveChar(c, 'F')).toBe(35);
     c.activeEffects = [{ label: 'Puissance', char: 'F', bonus: 10, roundsLeft: 3 }];
     expect(effectiveChar(c, 'F')).toBe(45); // base mutée 35 + buff 10 (pas d'écrasement)
-    expect(mutationCharDelta(c, 'E')).toBe(5);
+    expect(effectiveChar(c, 'E')).toBe(c.characteristics.E + 5); // Corpulent E+5 via le collecteur (base + delta)
   });
   it('movement → effectiveMovement', () => {
     const c = hero();
     attachMutation(c, { label: 'Court sur pattes', kind: 'physique', roll: 73, movement: -1 });
-    expect(mutationMovementDelta(c)).toBe(-1);
     expect(effectiveMovement(c)).toBe(3);
   });
   it('PA naturels apAll + apLocations', () => {
