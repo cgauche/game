@@ -14,7 +14,7 @@ import { RNG, defaultRNG } from './dice';
 import { isPainless, traitCharMods, traitMovementMod } from './traits/dispatch';
 import { diseaseCharPenalties } from './disease';
 import { hungerCharPenalties } from './provisions';
-import { wornSocialMod } from './wearPenalty';
+import { wornSocialMod, qualityWearMods } from './wearPenalty';
 import type { GameOp, PassiveKind, PassiveMod } from './ops';
 
 export type TraumaKind = 'dechirure' | 'fracture';
@@ -450,10 +450,11 @@ export function passiveMods(c: Combatant): PassiveMod[] {
     if (m.skillMods) for (const [skill, mod] of Object.entries(m.skillMods)) if (mod) out.push({ op: { op: 'skillMod', skill, mod }, kind: 'intrinsèque' });
     for (const t of m.testMods ?? []) out.push({ op: { op: 'testMod', amount: t.mod, char: t.char }, kind: 'intrinsèque' }); // Visage inversé −20 Tests de Soc
   }
-  // Qualités d'objet équipées (LDB 60) — objet Laid : −Soc aux Tests sociaux (testMod char-qualifié). Le port
-  // d'armure (skillMod par compétence) est émis par `qualityWearMods` (P-B suite). Producteurs sans cycle.
+  // Qualités d'objet équipées (LDB 60), producteurs sans cycle (wearPenalty est une feuille) : objet Laid →
+  // −Soc aux Tests sociaux (testMod char-qualifié) ; port d'armure → −N% par compétence (skillMod, intrinsèque).
   const soc = wornSocialMod(c);
   if (soc) out.push({ op: { op: 'testMod', amount: soc, char: 'Soc' }, kind: 'intrinsèque' });
+  out.push(...qualityWearMods(c));
   // Traits à modificateur de PROFIL appliqués en DIRECT (LDB 85 : Élite/Coriace/Brutal/Rapide… facultatifs,
   // statbloc d'éditeur, traits accordés) — kind `intrinsèque`, additif. Les traits INHÉRENTS d'un profil
   // bestiaire FINAL ne sont PAS dans `liveTraits` (déjà cuits dans `characteristics`/`movement`) → zéro double-compte.
@@ -501,9 +502,13 @@ export function passiveMoveMod(c: Combatant): number {
  *  préfixe `skill.startsWith(op.skill)` (« Pistage » ⊇ clé « pistage »), comme l'ex-`mutationTestMod`. Lu par
  *  `testValue` (couche test-time) ; distinct du POOL non-cumul des séquelles (`traumaSkillPenalty`). */
 export function passiveSkillSum(c: Combatant, skill?: string): number {
-  const low = skill?.toLowerCase();
-  if (!low) return 0;
-  return pmods(c, 'skillMod', true).filter((o) => low.startsWith(o.skill)).reduce((s, o) => s + o.mod, 0);
+  if (!skill) return 0;
+  // Match par BASE (spécialisation retirée des deux côtés) : « Pistage (Forêt) » ⊇ clé mutation « pistage »,
+  // et le port d'armure « discrétion » n'over-matche PAS « Discrétion » d'un autre intitulé (exact, pas préfixe).
+  const base = skill.replace(/\s*\([^)]*\)\s*$/, '').trim().toLowerCase();
+  return pmods(c, 'skillMod', true)
+    .filter((o) => o.skill.replace(/\s*\([^)]*\)\s*$/, '').trim().toLowerCase() === base)
+    .reduce((s, o) => s + o.mod, 0);
 }
 
 /** Σ des modificateurs de TEST char-qualifiés (`testMod{char}`, kind `intrinsèque`) pour la Caractéristique

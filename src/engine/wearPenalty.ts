@@ -5,6 +5,7 @@
  * modulées par l'artisanat de la pièce (Pratique réduit d'un niveau, Peu Fiable double — LDB 60 l.59/88).
  */
 import { Combatant } from './types';
+import type { PassiveMod } from './ops';
 import { hasQuality, qualitySocMod } from './qualities/dispatch';
 
 const WEAR_RE = /^\s*([+-]?\d+)\s*%?\s*en\s+(.+?)\s*$/i;
@@ -16,23 +17,33 @@ export function parseWearPenalty(q: string): { skill: string; value: number } | 
   return { value: parseInt(m[1], 10), skill: m[2].trim() };
 }
 
-/** Somme des pénalités de port (≤ 0) des armures ÉQUIPÉES de `c` pour la compétence `skill`
- *  (spécialisation/casse ignorées). Pratique réduit d'un niveau (+10, plancher 0), Peu Fiable double. */
-export function wornArmourPenalty(c: Combatant, skill: string): number {
-  const base = skill.replace(/\s*\([^)]*\)\s*$/, '').trim().toLowerCase();
-  let total = 0;
+/** Pénalités de port (compétence en minuscules, valeur ≤ 0) des armures ÉQUIPÉES, modulées par l'artisanat
+ *  (Pratique +10 plancher 0, Peu Fiable ×2). SOURCE UNIQUE : `wornArmourPenalty` + le collecteur passif. */
+function wearEntries(c: Combatant): { skill: string; value: number }[] {
+  const out: { skill: string; value: number }[] = [];
   for (const piece of c.items ?? []) {
     if (!piece.equipped || piece.kind !== 'armor') continue;
     for (const q of piece.qualities ?? []) {
       const p = parseWearPenalty(q);
-      if (!p || p.skill.toLowerCase() !== base) continue;
+      if (!p) continue;
       let v = p.value; // négatif
       if (hasQuality(piece, 'Pratique')) v = Math.min(0, v + 10); // Atout : -1 niveau (LDB 60 l.59)
       if (hasQuality(piece, 'Peu Fiable')) v = v * 2; // Défaut : doublée (LDB 60 l.88)
-      total += v;
+      if (v) out.push({ skill: p.skill.toLowerCase(), value: v });
     }
   }
-  return total;
+  return out;
+}
+
+/** Somme des pénalités de port (≤ 0) des armures ÉQUIPÉES de `c` pour la compétence `skill` (spéc. ignorée). */
+export function wornArmourPenalty(c: Combatant, skill: string): number {
+  const base = skill.replace(/\s*\([^)]*\)\s*$/, '').trim().toLowerCase();
+  return wearEntries(c).filter((e) => e.skill === base).reduce((s, e) => s + e.value, 0);
+}
+
+/** Pénalités de port → ops `skillMod` skill-qualifiées (kind `intrinsèque`, Σ) pour le collecteur passif unifié. */
+export function qualityWearMods(c: Combatant): PassiveMod[] {
+  return wearEntries(c).map((e) => ({ op: { op: 'skillMod' as const, skill: e.skill, mod: e.value }, kind: 'intrinsèque' as const }));
 }
 
 /** Somme des modificateurs de Sociabilité (≤ 0) des objets ÉQUIPÉS de `c` (objet Laid -10, LDB 60 l.85). */

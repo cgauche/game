@@ -4,7 +4,6 @@
  */
 import { Combatant, CharKey, CHAR_BY_LABEL } from './types';
 import { findSkill } from '../data';
-import { wornArmourPenalty } from './wearPenalty';
 import { groupMatch } from './groups';
 import { effectiveChar } from './characteristics';
 import { testStatePenalty } from './conditions';
@@ -30,13 +29,12 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
   const base = effectiveChar(c, ck);
   const states = testStatePenalty(c, skill);
   const enc = ck === 'Ag' ? agilityTestPenalty(c) : 0; // charge : couche d'ÉTAT orthogonale (≠ passif d'élément)
-  const armour = skill ? wornArmourPenalty(c, skill) : 0;
   const traumaSkill = traumaSkillPenalty(c, skill); // séquelle permanente de fracture (Langue, LDB 18 l.300)
-  // Passifs INTRINSÈQUES d'élément (Σ), tous via le collecteur unifié : mutation compétence nommée (Groin
-  // poilu +10 Pistage, `passiveSkillSum`) + mods de Test char-qualifiés (`passiveTestMod` : mutation Visage
-  // inversé −20 Soc, objet Laid −Soc).
+  // Passifs INTRINSÈQUES d'élément (Σ), tous via le collecteur unifié : compétence nommée + port d'armure
+  // (`passiveSkillSum` : Groin poilu +10 Pistage, −N% en X du port d'armure) + mods de Test char-qualifiés
+  // (`passiveTestMod` : mutation Visage inversé −20 Soc, objet Laid −Soc).
   const passive = passiveSkillSum(c, skill) + passiveTestMod(c, ck);
-  return base + (sk?.advances ?? 0) + states + enc + armour + traumaSkill + passive;
+  return base + (sk?.advances ?? 0) + states + enc + traumaSkill + passive;
 }
 
 /** Le personnage possède-t-il la compétence `label` (nom seul OU « Nom (Spécialisation) », ex.
