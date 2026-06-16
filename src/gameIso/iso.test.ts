@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, floorDepth, CELL, LEVEL_H, screenToTileAtZ, screenToTileF, diamondPath, diamondCorners, type Dims } from './iso';
+import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, floorDepth, CELL, LEVEL_H, screenToTileAtZ, screenToTileF, diamondPath, diamondCorners, footprintSpan, billboardScale, type Dims } from './iso';
 
 describe('screenToTileF — picking FRACTIONNAIRE (arêtes éditeur)', () => {
   for (const rot of [0, 1, 2, 3] as const) {
@@ -283,5 +283,40 @@ describe('projection vue du dessus (view: top)', () => {
       const byDepth = [...tiles].sort((a, b) => a.d - b.d).map((t) => t.cy);
       for (let i = 1; i < byDepth.length; i++) expect(byDepth[i]).toBeGreaterThanOrEqual(byDepth[i - 1]);
     }
+  });
+});
+
+describe('footprintSpan — un billboard multi-cases couvre SON empreinte projetée (suit la rotation)', () => {
+  const D = { w: 20, h: 20 };
+
+  it('1×1 = 1 dans TOUTES les vues/rotations (non-régression du décor 1×1)', () => {
+    for (const rot of [0, 1, 2, 3] as const)
+      for (const extra of [{}, { edge: true }, { view: 'top' as const }]) {
+        expect(footprintSpan(1, 1, { ...D, rot, ...extra })).toBeCloseTo(1, 6);
+      }
+  });
+
+  it('3×1 en ISO ≈ 2 (le losange raccourcit la diagonale → moins que les 3 cases naïves = fini le débordement)', () => {
+    expect(footprintSpan(3, 1, { ...D, rot: 0 })).toBeCloseTo(2, 6);
+    // symétrie iso : une rangée 3×1 et une colonne 1×3 ont la même largeur projetée
+    expect(footprintSpan(1, 3, { ...D, rot: 0 })).toBeCloseTo(2, 6);
+  });
+
+  it('3×1 en vue « de face » (edge) ≈ 3 (axis-alignée, pas de raccourci horizontal)', () => {
+    expect(footprintSpan(3, 1, { ...D, rot: 0, edge: true })).toBeCloseTo(3, 6);
+  });
+
+  it('iso : span INVARIANT par rotation (le losange est diagonalement symétrique → une rangée 3 cases garde sa largeur projetée quel que soit le cran)', () => {
+    const spans = ([0, 1, 2, 3] as const).map((rot) => footprintSpan(3, 1, { ...D, rot }));
+    for (const s of spans) expect(s).toBeCloseTo(spans[0], 6);
+  });
+
+  it('edge > iso pour un multi-cases (axis-alignée ⇒ pas de raccourci ⇒ sprite plus large)', () => {
+    expect(footprintSpan(3, 1, { ...D, rot: 0, edge: true })).toBeGreaterThan(footprintSpan(3, 1, { ...D, rot: 0 }));
+  });
+
+  it('billboardScale : réduit en vue de face (EDGE_W/TW), 1 en iso', () => {
+    expect(billboardScale({ ...D, rot: 0 })).toBeCloseTo(1, 6);
+    expect(billboardScale({ ...D, rot: 0, edge: true })).toBeCloseTo(Math.SQRT1_2, 4);
   });
 });

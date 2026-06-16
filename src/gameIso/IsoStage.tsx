@@ -33,6 +33,7 @@ import {
   screenToTileAtZ,
   depth,
   floorDepth,
+  footprintSpan,
 } from './iso';
 import {
   DEFS,
@@ -708,6 +709,9 @@ export function IsoStage() {
     if (viewZ != null ? ez !== viewZ : ez > activeZ) continue; // viewLevel(z) isole ; sinon actif + dessous (pas au-dessus)
     const fg = decorFootGeometry(ent.foot);
     const px = ent.pos.x + fg.offX, py = ent.pos.y + fg.offY;
+    // Échelle = empreinte PROJETÉE (suit la rotation/projection) au lieu de `fg.scale`=max(w,h) figé,
+    // qui faisait déborder/glisser les props multi-cases quand on tourne la caméra.
+    const span = footprintSpan(ent.foot?.w ?? 1, ent.foot?.h ?? 1, dims);
     const pd = depth(ent.pos.x + (ent.foot ? ent.foot.w - 1 : 0), ent.pos.y + (ent.foot ? ent.foot.h - 1 : 0), dims, ez);
     if (ent.interact) { // affordance « fouille » (l'étage est déjà filtré ci-dessus)
       // Affordance : halo pulsé + onde « sonar » au sol, et étincelle dorée flottant AU-DESSUS du
@@ -718,23 +722,23 @@ export function IsoStage() {
         el: (
           <g key={`halo-${ent.id}`} pointerEvents="none">
             <g className="interact-halo">
-              <ellipse cx={c.cx} cy={c.cy + 4} rx={17 * fg.scale} ry={8.5 * fg.scale} fill="#ffe27a" opacity={0.26} />
-              <ellipse cx={c.cx} cy={c.cy + 4} rx={17 * fg.scale} ry={8.5 * fg.scale} fill="none" stroke="#ffd75e" strokeWidth={2} opacity={0.9} />
+              <ellipse cx={c.cx} cy={c.cy + 4} rx={17 * span} ry={8.5 * span} fill="#ffe27a" opacity={0.26} />
+              <ellipse cx={c.cx} cy={c.cy + 4} rx={17 * span} ry={8.5 * span} fill="none" stroke="#ffd75e" strokeWidth={2} opacity={0.9} />
             </g>
-            <ellipse className="halo-ping" cx={c.cx} cy={c.cy + 4} rx={17 * fg.scale} ry={8.5 * fg.scale} fill="none" stroke="#ffd75e" strokeWidth={1.6} />
+            <ellipse className="halo-ping" cx={c.cx} cy={c.cy + 4} rx={17 * span} ry={8.5 * span} fill="none" stroke="#ffd75e" strokeWidth={1.6} />
           </g>
         ),
       });
       objs.push({
         d: pd + 0.02, // au-dessus du sprite : l'étincelle « il y a quelque chose ici »
         el: (
-          <g key={`spark-${ent.id}`} className="halo-spark" pointerEvents="none" transform={`translate(${c.cx + 9 * fg.scale}, ${c.cy - 26 * fg.scale})`}>
+          <g key={`spark-${ent.id}`} className="halo-spark" pointerEvents="none" transform={`translate(${c.cx + 9 * span}, ${c.cy - 26 * span})`}>
             <path d="M0,-6 L1.7,-1.7 L6,0 L1.7,1.7 L0,6 L-1.7,1.7 L-6,0 L-1.7,-1.7 Z" fill="#ffd75e" stroke="#7a5b16" strokeWidth={0.7} />
           </g>
         ),
       });
     }
-    objs.push({ d: pd, el: token(`e-${ent.id}`, px, py, entitySprite(ent, dims.rot), 0.55 * fg.scale, undefined, false, ent.anim, false, false, ez) });
+    objs.push({ d: pd, el: token(`e-${ent.id}`, px, py, entitySprite(ent, dims.rot), 0.55 * span, undefined, false, ent.anim, false, false, ez) });
   }
 
   // Leader VISIBLE du groupe (#27b : si le principal est mort/à terre, le suivant debout) —
