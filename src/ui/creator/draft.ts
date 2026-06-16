@@ -138,6 +138,41 @@ export function newDraft(seed = (Date.now() & 0xffff) ^ ((Math.random() * 0xffff
   };
 }
 
+/**
+ * Reconstruit un brouillon ÉDITABLE à partir d'un héros déjà construit, pour le rouvrir dans le
+ * créateur. RECONSTRUCTION PARTIELLE (best-effort) : un `Combatant` ne retient PAS les tirages
+ * figés ni les choix étape par étape (répartition des 40 Augmentations, talent de carrière choisi,
+ * compétences d'espèce +5/+3, méthode de Caractéristiques, bonus de PX de création…). On récupère
+ * ce qui est portable — espèce, carrière, identité, détails physiques, apparence — et on laisse le
+ * reste aux défauts du créateur, à RE-VALIDER étape par étape. Préférer le `draft` sauvegardé du
+ * roster quand il existe (round-trip sans perte) ; ce chemin est le repli (pré-tirés, imports,
+ * héros d'avant cette fonctionnalité). */
+export function draftFromHero(hero: Combatant): CreatorDraft {
+  const d = newDraft();
+  const speciesLabel = hero.appearance?.species ?? hero.species ?? d.speciesLabel;
+  const withSp = withSpecies(d, speciesLabel);
+  const withCa = hero.career ? withCareer(withSp, hero.career) : withSp;
+  return {
+    ...withCa,
+    speciesLabel,
+    careerLabel: hero.career ?? withCa.careerLabel,
+    name: hero.name ?? '',
+    motivation: hero.motivation ?? '',
+    ambitionShort: hero.details?.ambitionShort ?? '',
+    ambitionLong: hero.details?.ambitionLong ?? '',
+    age: hero.details?.age,
+    height: hero.details?.height,
+    eyes: hero.details?.eyes,
+    hair: hero.details?.hair,
+    star: hero.star,
+    sex: hero.appearance?.sex ?? d.sex,
+    build: hero.appearance?.build ?? d.build,
+    appSeed: hero.appearance?.seed ?? d.appSeed,
+    colors: hero.appearance?.colors,
+    parts: hero.appearance?.parts,
+  };
+}
+
 export const draftSpecies = (d: CreatorDraft): SpeciesData => findSpecies(d.speciesLabel)!;
 export const draftLevel = (d: CreatorDraft): CareerLevelData | undefined =>
   levelsForCareer(d.careerLabel).find((l) => l.level === 1);

@@ -51,6 +51,7 @@ export function PartyScreen() {
   const sceneInProgress = useGame((s) => s.scene != null);
   const addHero = useGame((s) => s.partyAddHero);
   const removeHero = useGame((s) => s.partyRemoveHero);
+  const setEditingHero = useGame((s) => s.setEditingHero);
   const assignSlot = useGame((s) => s.netAssignSlot);
   const leave = useGame((s) => s.netLeave);
   const [campaignPick, setCampaignPick] = useState(false);
@@ -79,7 +80,8 @@ export function PartyScreen() {
         inProgress={inProgress}
         onMenu={() => setScreen('menu')}
         onQuitCoop={() => { leave(); setScreen('menu'); }}
-        onCreate={() => setScreen('creator')}
+        onCreate={() => { setEditingHero(null); setScreen('creator'); }}
+        onEditHero={(id) => { setEditingHero(id); setScreen('creator'); }}
         onAddHero={addHero}
         onRemoveHero={removeHero}
         onAssignSlot={assignSlot}
@@ -145,6 +147,7 @@ export function PartyScreenView({
   onMenu,
   onQuitCoop,
   onCreate,
+  onEditHero,
   onAddHero,
   onRemoveHero,
   onAssignSlot,
@@ -165,6 +168,8 @@ export function PartyScreenView({
   onMenu: () => void;
   onQuitCoop: () => void;
   onCreate: () => void;
+  /** Ouvre le créateur en MODIFICATION pour ce héros (bouton « Modifier »). Absent = non éditable. */
+  onEditHero?: (heroId: string) => void;
   onAddHero: (h: Combatant, wealth?: Money) => void;
   onRemoveHero: (heroId: string) => void;
   onAssignSlot: (slot: number, seat: number) => void;
@@ -245,9 +250,16 @@ export function PartyScreenView({
                 <>
                   <CharCard hero={h} onOpen={() => setSheetId(h.id)} />
                   {ownsHero(h.id) && (
-                    <button className="btn small danger" onClick={() => onRemoveHero(h.id)}>
-                      Retirer
-                    </button>
+                    <div className="row-flex slot-actions">
+                      {onEditHero && (
+                        <button className="btn small" onClick={() => onEditHero(h.id)}>
+                          Modifier
+                        </button>
+                      )}
+                      <button className="btn small danger" onClick={() => onRemoveHero(h.id)}>
+                        Retirer
+                      </button>
+                    </div>
                   )}
                 </>
               ) : mine ? (

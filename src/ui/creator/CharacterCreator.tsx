@@ -13,7 +13,7 @@
  */
 import { ReactNode, useMemo, useState } from 'react';
 import { useGame } from '../../state/store';
-import { rosterAdd } from '../../state/roster';
+import { rosterAdd, rosterLoad } from '../../state/roster';
 import {
   species as allSpecies,
   careersForSpecies,
@@ -68,6 +68,7 @@ import {
   rolledDetails,
   validateStep,
   buildHero,
+  draftFromHero,
   probeHero,
   isUnresolvedChoice,
   splitLabel,
@@ -202,21 +203,49 @@ function TalentEntryChips({ entry }: { entry: string }) {
 
 export function CharacterCreator() {
   const party = useGame((s) => s.party);
+  const net = useGame((s) => s.net);
   const setScreen = useGame((s) => s.setScreen);
   const addHero = useGame((s) => s.partyAddHero);
+  const removeHero = useGame((s) => s.partyRemoveHero);
+  const editingHeroId = useGame((s) => s.editingHeroId);
+  const setEditingHero = useGame((s) => s.setEditingHero);
 
-  const [d, setD] = useState<CreatorDraft>(() => newDraft());
+  // MODE ÉDITION : héros déjà dans le groupe (bouton « Modifier ») → on rouvre son brouillon.
+  // Round-trip SANS perte si le roster a gardé le `draft` exact ; sinon reconstruction partielle
+  // (espèce/carrière/identité/apparence — pas les tirages figés ni les allocations).
+  const editing = useMemo(() => {
+    if (!editingHeroId) return null;
+    const hero = party.find((h) => h.id === editingHeroId);
+    if (!hero) return null;
+    const saved = rosterLoad().find((e) => e.hero.id === editingHeroId);
+    const draft = saved?.draft ?? draftFromHero(hero);
+    return { heroId: hero.id, draft, lossless: !!saved?.draft };
+  }, [editingHeroId, party]);
+
+  const [d, setD] = useState<CreatorDraft>(() => editing?.draft ?? newDraft());
   const [step, setStep] = useState(0);
 
   const err = validateStep(d, step + 1);
   const canNext = err == null;
 
-  const create = () => {
-    const hero = buildHero(d);
-    const wealth = draftWealth(d);
-    rosterAdd({ hero, wealth }); // roster persistant LOCAL : réutilisable dans un futur groupe
-    addHero(hero, wealth); // côté invité : intent vers l'hôte (l'état arrive par snapshot)
+  const closeCreator = () => {
+    setEditingHero(null);
     setScreen('party');
+  };
+
+  const create = () => {
+    const hero = buildHero(d, editing?.heroId); // édition : on conserve l'id du héros
+    const wealth = draftWealth(d);
+    rosterAdd({ hero, wealth, draft: d }); // roster persistant + brouillon EXACT (round-trip futur)
+    if (editing) {
+      // Remplacement EN PLACE : on retire puis ré-ajoute au même siège pour préserver la possession.
+      const seat = net.ownership[editing.heroId] ?? net.mySeat ?? 0;
+      removeHero(editing.heroId);
+      addHero(hero, undefined, seat); // pas de re-crédit de la Richesse (déjà comptée à la création)
+    } else {
+      addHero(hero, wealth); // côté invité : intent vers l'hôte (l'état arrive par snapshot)
+    }
+    closeCreator();
   };
 
   const zones: { rail: ReactNode; main: ReactNode }[] = [
@@ -232,10 +261,10 @@ export function CharacterCreator() {
   return (
     <div className="screen creator">
       <header className="bar">
-        <button className="btn small" onClick={() => setScreen('party')}>
+        <button className="btn small" onClick={closeCreator}>
           ← Groupe
         </button>
-        <h2>Créateur de personnage</h2>
+        <h2>{editing ? 'Modifier le personnage' : 'Créateur de personnage'}</h2>
         <div className="wizard-steps">
           {STEPS.map((label, i) => (
             <button
@@ -259,6 +288,13 @@ export function CharacterCreator() {
         </div>
       </header>
 
+      {editing && !editing.lossless && (
+        <p className="hint" style={{ margin: '4px 12px', color: 'var(--gold)' }}>
+          ⚠️ Brouillon d'origine indisponible : espèce, carrière, identité et apparence sont repris, mais
+          les tirages, allocations et Talents sont à revoir étape par étape avant d'enregistrer.
+        </p>
+      )}
+
       <div className="creator-shell">
         <aside className="creator-rail">{zones[step].rail}</aside>
         <main className="creator-main">{zones[step].main}</main>
@@ -277,8 +313,8 @@ export function CharacterCreator() {
             Suivant →
           </button>
         ) : (
-          <button className="btn btn-primary" disabled={party.length >= 4 || !canNext} onClick={create}>
-            ⚔️ Créer l'aventurier
+          <button className="btn btn-primary" disabled={(!editing && party.length >= 4) || !canNext} onClick={create}>
+            {editing ? '💾 Enregistrer les modifications' : "⚔️ Créer l'aventurier"}
           </button>
         )}
       </footer>

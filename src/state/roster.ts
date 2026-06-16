@@ -1,13 +1,18 @@
 import { Combatant } from '../engine/types';
 import { Money } from '../engine/money';
+import type { CreatorDraft } from '../ui/creator/draft';
 
 /** Roster persistant (localStorage) des personnages créés via le créateur.
  *  Snapshot À LA CRÉATION : le héros tel que sorti de `buildHero`, plus sa
  *  Richesse initiale (créditée au groupe à la création, absente du Combatant —
- *  on la rejoue quand le personnage est repris dans un nouveau groupe). */
+ *  on la rejoue quand le personnage est repris dans un nouveau groupe).
+ *  `draft` (optionnel) = le brouillon EXACT du créateur (tirages figés + choix
+ *  étape par étape) : permet de RÉOUVRIR le personnage dans le créateur sans perte
+ *  (un Combatant seul ne retient pas ces choix). Absent → édition reconstruite. */
 export interface RosterEntry {
   hero: Combatant;
   wealth: Money;
+  draft?: CreatorDraft;
 }
 
 const KEY = 'wfrp4.roster.v1';

@@ -325,7 +325,7 @@ export interface GameState {
   pendingApproach: PendingApproach | null;
   /** Focalisation en cours (modale interactive). */
   pendingFocus: PendingFocus | null;
-  // (Psychologie de combat : PLUS de `pendingPsych` par tour — cascade de Round, cf. openRoundStartPsych/openRoundEndPsych.)
+  // (Psychologie de combat : cascade de Round, cf. openRoundStartPsych/openRoundEndPsych.)
   /** Entrée en Frénésie d'un héros en cours (Test de FM, LDB 21 l.32). */
   pendingFrenzy: PendingFrenzy | null;
   /** Maladresse d'un héros en attente (LDB 14 — Tableau des Oups !). */
@@ -814,9 +814,9 @@ export interface GameState {
   focusCancel: () => void;
   /** Focalisation HORS COMBAT (couture D) : ouvre la modale de Focalisation pour un héros lanceur du groupe. */
   oocFocusSpell: (casterId: string, label: string) => void;
-  // (Psychologie de combat (Peur/Terreur/Traits ciblés, LDB 21) : PLUS de modale par tour `pendingPsych`.
-  //  C'est désormais une CASCADE de Round — Traits/Terreur au DÉBUT (openRoundStartPsych), Peur à la FIN
-  //  (openRoundEndPsych) — résolue par les handlers `cascade*`, applier 'combatPsych'.)
+  // (Psychologie de combat (Peur/Terreur/Traits ciblés, LDB 21) : CASCADE de Round — Traits/Terreur au
+  //  DÉBUT (openRoundStartPsych), Peur à la FIN (openRoundEndPsych) — résolue par les handlers `cascade*`,
+  //  applier 'combatPsych'.)
   /** Entrée en Frénésie d'un héros (LDB 21 l.32) : ouvrir la modale, lancer le Test de FM, Chance/Résilience, appliquer. */
   battleFrenzy: () => void;
   frenzyRoll: () => void;
@@ -2043,9 +2043,9 @@ export const useGame = create<GameState>((set, get) => ({
     }
     set({ pendingFocus: { casterId: caster.id, spellLabel: label, result: null } });
   },
-  // Psychologie de COMBAT (Peur/Terreur/Traits ciblés, LDB 21) : PLUS de modale `pendingPsych` par tour.
-  // C'est une CASCADE de Round (Traits/Terreur au DÉBUT via openRoundStartPsych ; Peur — Test étendu —
-  // à la FIN via openRoundEndPsych), applier 'combatPsych', résolue par les handlers `cascade*`. La
+  // Psychologie de COMBAT (Peur/Terreur/Traits ciblés, LDB 21) : CASCADE de Round (Traits/Terreur au
+  // DÉBUT via openRoundStartPsych ; Peur — Test étendu — à la FIN via openRoundEndPsych), applier
+  // 'combatPsych', résolue par les handlers `cascade*`. La
   // Détermination (immunité, LDB 17 l.62) est offerte sur l'étape par `cascadeDetermine`.
   // Psychologie À LA RENCONTRE (couture C, LDB 21) : cascade équivalente, applier 'encounterPsych',
   // ouverte par `openEncounterPsych` à l'entrée de scène.
