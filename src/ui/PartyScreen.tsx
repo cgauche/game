@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useGame, type GameState } from '../state/store';
 import type { NetState } from '../state/netFlow';
 import { makePregens } from '../data/pregens';
@@ -179,12 +179,35 @@ export function PartyScreenView({
   const [picker, setPicker] = useState(false);
   // F1 : cliquer le portrait d'un héros ouvre sa fiche complète (réutilise CharacterSheet).
   const [sheetId, setSheetId] = useState<string | null>(null);
+  // L2 (solo) : carte slot→héros STABLE — l'emplacement d'un héros retiré RESTE en place (le trou ne
+  // file plus à droite). Réconciliée avec `party` : un héros disparu libère SA case ; un nouveau prend
+  // la 1re case vide. En coop, on garde `slotViews` (cases attribuées par siège).
+  const [slotMap, setSlotMap] = useState<(string | null)[]>(() => {
+    const m: (string | null)[] = [null, null, null, null];
+    party.forEach((h, i) => { if (i < 4) m[i] = h.id; });
+    return m;
+  });
+  useEffect(() => {
+    setSlotMap((prev) => {
+      const ids = new Set(party.map((h) => h.id));
+      const next = prev.map((id) => (id && ids.has(id) ? id : null));
+      const placed = new Set(next.filter((x): x is string => !!x));
+      for (const h of party) {
+        if (placed.has(h.id)) continue;
+        const e = next.indexOf(null);
+        if (e >= 0) { next[e] = h.id; placed.add(h.id); }
+      }
+      return next.every((v, i) => v === prev[i]) ? prev : next;
+    });
+  }, [party]);
 
   const coop = net.mode !== 'local';
   const isHost = net.mode !== 'guest';
   const seats = Object.entries(net.seatNames).map(([s, n]) => ({ seat: Number(s), name: n }));
   const seatName = (seat: number) => net.seatNames[seat] ?? (seat === 0 ? 'Hôte' : `Joueur ${seat + 1}`);
-  const views = slotViews(party, net.slots ?? [0, 0, 0, 0], net.ownership);
+  const views = coop
+    ? slotViews(party, net.slots ?? [0, 0, 0, 0], net.ownership)
+    : slotMap.map((id) => ({ seat: 0, hero: id ? party.find((h) => h.id === id) : undefined }));
   const ownsHero = (id: string) => !coop || (net.ownership[id] ?? 0) === net.mySeat;
   /** Un emplacement attribué à un invité n'est pas rempli → l'hôte ne peut pas lancer. */
   const guestPending = views.some((v) => v.seat !== 0 && !v.hero);
