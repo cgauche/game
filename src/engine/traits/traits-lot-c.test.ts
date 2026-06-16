@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import {
   traitCharMods, traitMovementMod, traitBonusWoundsBE, wardSaves, attacksAreMagical, isEtherial,
-  banishedAtZero, hasChampionDefense, meleeHitPenalty, hasPerturbingAura, hasCorrosiveBlood,
+  banishedAtZero, hasChampionDefense, meleeHitPenalty, hasPerturbingAura,
   magicResistanceOf, immunityTypes, isUnstable, isPainless, regenerates,
   bellicosePsychImmune, isMindless, isBestial, isColdBlooded, gorgesOnKill, isStupid, hasRage,
-  isNervous, isTerritorial, flyMeters, runMultiplier, traitSeesInDark, hasStealthAgBonus, mutationsAtSpawn,
+  isTerritorial, flyMeters, runMultiplier, traitSeesInDark, hasStealthAgBonus, mutationsAtSpawn,
 } from './dispatch';
 import { coldBloodedAdjust, isPsychImmune } from '../psychology';
 import { attackModifiers } from '../combat';
@@ -46,11 +46,10 @@ describe('dispatch — parsing et prédicats (LDB 85)', () => {
     expect(isEtherial(mk({ traits: ['Éthéré'] }))).toBe(true);
     expect(banishedAtZero(['Démoniaque 8+'])).toBe(true);
   });
-  it('divers combat : Champion, Parasité, Perturbant, Sang corrosif, Toile, Instable', () => {
+  it('divers combat : Champion, Parasité, Perturbant, Instable', () => {
     expect(hasChampionDefense(['Champion'])).toBe(true);
     expect(meleeHitPenalty(['Parasité'])).toBe(-10);
     expect(hasPerturbingAura(['Perturbant'])).toBe(true);
-    expect(hasCorrosiveBlood(['Sang corrosif'])).toBe(true);
     expect(isUnstable(['Instable'])).toBe(true);
   });
   it('magie : Résistance à la Magie, Immunité (Poison)', () => {
@@ -58,13 +57,12 @@ describe('dispatch — parsing et prédicats (LDB 85)', () => {
     expect(magicResistanceOf(['Résistance à la Magie'])).toBe(1); // Indice absent → 1 (donnée naine)
     expect(immunityTypes(['Immunité (Poison)'])).toEqual(['poison']);
   });
-  it('psy/IA : Bestial, À sang-froid, Affamé, Stupide, Rage, Nerveux, Territorial, Fabriqué', () => {
+  it('psy/IA : Bestial, À sang-froid, Affamé, Stupide, Rage, Territorial, Fabriqué', () => {
     expect(isBestial(['Bestial'])).toBe(true);
     expect(isColdBlooded(['À Sang-froid'])).toBe(true); // casse de la donnée
     expect(gorgesOnKill(['Affamé'])).toBe(true);
     expect(isStupid(['Stupide'])).toBe(true);
     expect(hasRage(['Rage'])).toBe(true);
-    expect(isNervous(['Nerveux'])).toBe(true);
     expect(isTerritorial(['Territorial'])).toBe(true);
     expect(isMindless(['Fabriqué'])).toBe(true);
   });

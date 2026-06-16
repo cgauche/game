@@ -29,13 +29,14 @@ function effectsOf(actor: Combatant, weapon?: Weapon): TriggeredEffect[] {
   return out;
 }
 
-/** Combattants visés par un effet selon `on` (le porteur, la victime touchée, ses adversaires Engagés). */
+/** Combattants visés par un effet selon `on` (le porteur, la victime touchée, ou TOUS ceux Engagés
+ *  avec lui — Sang corrosif : « tous ceux qui sont Engagés avec elle », alliés compris). */
 function targetsFor(get: Get, actor: Combatant, on: TriggeredEffect['on'], victim?: Combatant): Combatant[] {
   if (on === 'self') return [actor];
   if (on === 'victim') return victim ? [victim] : [];
   const battle = get().battle;
   if (!battle) return [];
-  return battle.combatants.filter((c) => c.kind !== actor.kind && isEngagedWith(c, actor.id));
+  return battle.combatants.filter((c) => c.id !== actor.id && isEngagedWith(c, actor.id));
 }
 
 /**

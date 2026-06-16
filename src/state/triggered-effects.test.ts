@@ -45,6 +45,22 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
     expect(empetre(prey)?.value).toBe(2); // inchangé
   });
 
+  it('TRAIT Nerveux : déclencheur onStartled (magie/bruit) → +3 Brisé sur soi', () => {
+    const skittish = mk({ traits: ['Nerveux'] });
+    fireTriggers(noBattle(), skittish, 'onStartled', {});
+    expect(skittish.conditions.find((c) => c.name === 'Brisé')?.value).toBe(3);
+  });
+
+  it('TRAIT Sang corrosif : onWoundLoss → les Engagés subissent 1d10 (BE+PA, min 1)', () => {
+    const acid = mk({ id: 'ac', traits: ['Sang corrosif'] });
+    const foe = mk({ id: 'fo', engagedWith: ['ac'], characteristics: { ...mk().characteristics, E: 80 } }); // BE élevé → mitigation forte
+    const get = () => ({ battle: { combatants: [acid, foe] } }) as never;
+    const before = foe.wounds.current;
+    fireTriggers(get, acid, 'onWoundLoss', { rng: makeRNG(1) });
+    expect(foe.wounds.current).toBeLessThan(before); // au moins 1 (min) malgré BE 80
+    expect(before - foe.wounds.current).toBeGreaterThanOrEqual(1);
+  });
+
   it('Atout authorable « à la touche : 1d10 Dégâts + Empêtré » — le Flow applique les DEUX ops', () => {
     // L'exemple exact demandé : un Flow de feuille EffectOp porté par un Atout (édité au Codex).
     const flow: Flow = {

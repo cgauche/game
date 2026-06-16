@@ -537,7 +537,33 @@
     "source": {
       "book": "LDB",
       "page": 340
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onStartled",
+        "on": "self",
+        "flow": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "target",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "name": "Brisé",
+                    "value": 3,
+                    "unlessCondition": "Brisé"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
   },
   {
     "label": "Nuée",
@@ -677,7 +703,39 @@
     "source": {
       "book": "LDB",
       "page": 341
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onWoundLoss",
+        "on": "engaged",
+        "flow": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "target",
+                "ops": [
+                  {
+                    "op": "wounds",
+                    "amount": {
+                      "dice": {
+                        "n": 1,
+                        "sides": 10
+                      }
+                    },
+                    "ignoreTB": false,
+                    "ignoreAP": false,
+                    "min": 1
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
   },
   {
     "label": "Se cabrer",

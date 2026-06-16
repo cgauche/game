@@ -151,7 +151,7 @@ const TRIGGER_LABEL: Record<EffectTrigger, string> = {
 const ON_LABEL: Record<TriggeredEffect['on'], string> = {
   self: 'le porteur lui-même',
   victim: 'la victime touchée',
-  engaged: 'ses adversaires Engagés',
+  engaged: 'tous ceux Engagés avec lui',
 };
 
 /** Éditeur des EFFETS DÉCLENCHÉS (`TriggeredEffect[]`) — porté indifféremment par un Trait OU un Atout

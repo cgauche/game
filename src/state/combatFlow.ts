@@ -5,7 +5,7 @@
  */
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { LootGear, PendingCast, PendingDeviation, PendingBladeTrap } from './pendings';
+import type { LootGear, PendingCast, PendingDeviation, PendingBladeTrap, PendingKnockdown } from './pendings';
 import { Combatant, ItemInstance, HitLocation, Weapon, DIFFICULTY_MODIFIERS, HIT_LOCATION_LABELS } from '../engine/types';
 import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
@@ -54,9 +54,9 @@ import { fireTriggers } from './triggeredEffects';
 import { hasStealAdvantage, shieldAdvantageLevel, hasRiposte, talentCritExtraWounds, hasSurpriseSave, talentMagicResistance, hasBraveheart, outnumberCountBonus, hasStunSave, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony } from '../engine/combatFeatures/dispatch';
 import { canStrikeFirst } from '../engine/qualities/dispatch';
 import {
-  wardSaves, hasChampionDefense, hasCorrosiveBlood, banishedAtZero, gorgesOnKill,
+  wardSaves, hasChampionDefense, banishedAtZero, gorgesOnKill,
   isStupid, hasRage, regenerates, isUnstable, isBestial, isTerritorial, hasPerturbingAura,
-  traitSeesInDark, isColdBlooded, bellicosePsychImmune, magicResistanceOf, isNervous, immunityTypes, hasStealthAgBonus, flyMeters, runMultiplier,
+  traitSeesInDark, isColdBlooded, bellicosePsychImmune, magicResistanceOf, immunityTypes, hasStealthAgBonus, flyMeters, runMultiplier,
   hasTraitKey, asTrait,
 } from '../engine/traits/dispatch';
 import {
@@ -1244,16 +1244,10 @@ export function applyAttackResult(
     addCondition(target, 'Sonné');
     critLog.push(`${target.name} vomit (Nausée) : Sonné.`);
   }
-  // Sang corrosif (LDB 85 p.341) : Blessures subies en mêlée → tous les Engagés avec la créature
-  // reçoivent 1d10 PB modifiés par le BE et les PA (min 1).
-  if (res.hit && res.woundsLost && weapon.type === 'melee' && hasCorrosiveBlood(target.traits)) {
-    for (const id of target.engagedWith ?? []) {
-      const e = battle.combatants.find((c) => c.id === id);
-      if (!e || isOutOfAction(e)) continue;
-      const lost = Math.max(1, d10(battleRng()) - bonus(effectiveChar(e, 'E')) - (e.armour.corps ?? 0));
-      loseWounds(e, lost);
-      critLog.push(`${e.name} est éclaboussé de sang corrosif : ${lost} Blessure(s).`);
-    }
+  // Effet DÉCLENCHÉ « à la perte de PB en mêlée » authoré (Sang corrosif : 1d10 aux Engagés, BE+PA,
+  // min 1) — dispatcher générique (state/triggeredEffects), plus de handler en dur.
+  if (res.hit && res.woundsLost && weapon.type === 'melee') {
+    for (const line of fireTriggers(get, target, 'onWoundLoss', { rng: battleRng() })) critLog.push(line);
   }
   // Démoniaque (LDB 85 p.339) : à 0 PB, « son âme retourne immédiatement dans les Royaumes du
   // Chaos, ce qui la retire du jeu » — pas de corps, pas d'Inconscient.
@@ -1381,10 +1375,8 @@ export function applyAttackResult(
   // feu (Poudre noire/Explosion) terrifie les créatures Nerveuses présentes : +3 État Brisé.
   if (weapon.type === 'ranged' && isFirearmQuality(weapon)) {
     for (const c of battle.combatants) {
-      if (!isOutOfAction(c) && isNervous(c.traits) && !hasCondition(c, 'Brisé')) {
-        addCondition(c, 'Brisé', 3);
-        log.push(ev('condition', `${c.name} (Nerveux) est terrifié par la détonation : +3 Brisé.`, c.id));
-      }
+      // Nerveux (effet déclenché onStartled : +3 Brisé) — fired par le dispatcher générique (no-op si absent).
+      if (!isOutOfAction(c)) for (const line of fireTriggers(get, c, 'onStartled', {})) log.push(ev('condition', line, c.id));
     }
   }
   // Effets DÉCLENCHÉS « à la touche » authorés (donnée éditable) : Traits de l'attaquant (Toile…) ET
@@ -1392,14 +1384,23 @@ export function applyAttackResult(
   // (state/triggeredEffects) remplace les handlers en dur — Trait et Atout traités à l'identique.
   if (res.hit) for (const line of fireTriggers(get, attacker, 'onHit', { victim: target, weapon, rng: battleRng() })) log.push(ev('condition', line, target.id));
   // Déstabilisante (Aux Armes p.89) : après une touche, l'attaquant PEUT dépenser des Avantages pour
-  // un Test opposé Force/Athlétisme ; gagné, la cible est mise À Terre. HÉROS → choix en modale
-  // (pendingKnockdown) ; IA → déclenché d'office quand elle a les Avantages requis.
+  // un Test opposé Force/Athlétisme ; gagné, la cible est mise À Terre. HÉROS → étape de CHOIX de la
+  // cascade d'attaque (pushCombatStep, applier 'knockdown') ; IA → déclenché d'office.
   if (res.hit && weapon.type === 'melee' && !isOutOfAction(target)) {
     for (const { def } of resolveQualities(weapon)) {
       const kd = def.onHitKnockdown;
       if (!kd || (attacker.advantage ?? 0) < kd.advantageCost || hasCondition(target, kd.condition)) continue;
       if (attacker.kind === 'hero') {
-        set({ pendingKnockdown: { attackerId: attacker.id, targetId: target.id, weaponName: weapon.name, quality: def.key, advantageCost: kd.advantageCost, char: kd.char, skill: kd.skill, condition: kd.condition } });
+        // Folding (comme Déviation/Piège-lame) : le choix du Renversement devient une ÉTAPE de CHOIX de
+        // la cascade d'ATTAQUE (plus de modale `pendingKnockdown` séparée). L'applier 'knockdown' rejoue
+        // resolveKnockdown sur l'option. L'attaquant/cible sont déjà montrés par la ligne d'attaque figée.
+        pushCombatStep(set, {
+          id: `cons-knockdown-${target.id}`, kind: 'knockdown', actorId: attacker.id, icon: '🤜',
+          label: `🤜 ${def.key} — renverser ?`,
+          options: [{ key: 'yes', label: `Renverser (${kd.advantageCost} Av)` }, { key: 'no', label: 'Renoncer' }],
+          defaultChoice: 'no', interactive: true,
+          knockdown: { attackerId: attacker.id, targetId: target.id, weaponName: weapon.name, quality: def.key, advantageCost: kd.advantageCost, char: kd.char, skill: kd.skill, condition: kd.condition },
+        });
         break; // un seul renversement proposé par touche
       }
       attacker.advantage = (attacker.advantage ?? 0) - kd.advantageCost;
@@ -2812,12 +2813,9 @@ export function applyCast(
       if (isOutOfAction(t)) logLines.push(`${t.name} est mis hors de combat !`);
     };
     applyMissileHit(target, res);
-    // Nerveux (LDB 85 p.340) : « facilement effrayée par la magie […] elle gagne +3 État Brisé. »
+    // Nerveux (effet déclenché onStartled : magie → +3 Brisé) — dispatcher générique (state/triggeredEffects).
     for (const t of [target, ...extraTargets]) {
-      if (res.cast && isNervous(t.traits) && !hasCondition(t, 'Brisé') && !isOutOfAction(t)) {
-        addCondition(t, 'Brisé', 3);
-        logLines.push(`${t.name} (Nerveux) est terrifié par la magie : +3 Brisé.`);
-      }
+      if (res.cast && !isOutOfAction(t)) for (const line of fireTriggers(get, t, 'onStartled', {})) logLines.push(line);
     }
     // Surincantation « Cible » (LDB 47 l.28-31) : le MÊME jet frappe les cibles supplémentaires.
     for (const t2 of extraTargets) {
@@ -3307,13 +3305,12 @@ registerCascadeApplier('bladeTrap', (get, set, step) => {
 
 /** Déstabilisante (Aux Armes p.89) : résout le choix du héros de renverser (dépense d'Avantages +
  *  Test opposé Force/Athlétisme → À Terre). `accept=false` : il renonce, rien n'est dépensé. */
-export function resolveKnockdown(get: Get, set: SetFn, accept: boolean): void {
-  const { battle, pendingKnockdown: pk } = get();
-  if (!battle || !pk) return;
-  set({ pendingKnockdown: null });
+export function resolveKnockdown(get: Get, set: SetFn, accept: boolean, pk: PendingKnockdown): void {
+  const { battle } = get();
+  if (!battle) return;
   const attacker = battle.combatants.find((c) => c.id === pk.attackerId);
   const target = battle.combatants.find((c) => c.id === pk.targetId);
-  if (!attacker || !target) { resumeEnemyTurn(get, set); return; }
+  if (!attacker || !target) return;
   const lines: string[] = [];
   if (accept && (attacker.advantage ?? 0) >= pk.advantageCost && !isOutOfAction(target) && !hasCondition(target, pk.condition)) {
     attacker.advantage = (attacker.advantage ?? 0) - pk.advantageCost;
@@ -3332,14 +3329,18 @@ export function resolveKnockdown(get: Get, set: SetFn, accept: boolean): void {
   if (lines.length) set({ battle: { ...b, log: [...b.log, ...evLines(lines, 'info', attacker.id, target.id)] } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
-  resumeEnemyTurn(get, set);
+  // PAS de resumeEnemyTurn : la cascade d'attaque (purpose:'combat') reprend l'IA à sa finalisation.
 }
+/** Applier de l'étape de CHOIX « renversement » (Déstabilisante) — folding façon Déviation/Piège-lame. */
+registerCascadeApplier('knockdown', (get, set, step) => {
+  if (step.knockdown) resolveKnockdown(get, set, step.chosen === 'yes', step.knockdown);
+});
 
 /** Reprend le tour de l'IA suspendu par la modale de défense (= ce qu'aurait fait
  *  attackThenAdvance juste après doAttack). No-op si le combat est terminé. */
 export function resumeEnemyTurn(get: Get, set: SetFn): void {
   const b = get().battle;
-  if (!b || b.over || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingKnockdown || get().pendingCascade || get().pendingReveals.length) return;
+  if (!b || b.over || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingCascade || get().pendingReveals.length) return;
   setTimeout(() => advanceTurn(get, set), TEMPO.enemyAdvance);
 }
 
@@ -3362,7 +3363,7 @@ export function advanceTurn(get: Get, set: SetFn) {
   // Pause de début de Round (PERSONNE n'est actif, turn -1) : un advanceTurn retardataire (timer
   // d'IA en vol) ne doit pas ré-incrémenter le tour SOUS la pause — confirmRoundStart le posera.
   if (get().pendingRoundStart) return;
-  if (!battle || battle.over || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingKnockdown || get().pendingCascade || get().pendingReveals.length) return;
+  if (!battle || battle.over || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingCascade || get().pendingReveals.length) return;
   // La Charge ne vaut que pour le tour où elle a lieu (Cornes LDB 85, Épuisante LDB 63 l.16-17) :
   // consommée au passage au combattant suivant (filet de sécurité, l'IA la consomme aussi en chemin).
   const prevActive = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
@@ -3569,7 +3570,7 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
 /** IA simple : si le combattant actif est un ennemi, il agit puis passe la main. */
 export function maybeRunEnemyTurn(get: Get, set: SetFn) {
   const battle = get().battle;
-  if (!battle || battle.over || get().pendingRoundStart || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingKnockdown || get().pendingCascade || get().pendingReveals.length) return;
+  if (!battle || battle.over || get().pendingRoundStart || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingCascade || get().pendingReveals.length) return;
   const active = activeCombatant(battle);
   if (!active || active.kind !== 'enemy' || isOutOfAction(active)) return;
   setTimeout(() => runEnemyAI(get, set, active.id), TEMPO.turnHandoff);

@@ -84,7 +84,9 @@ export type GameOp =
    *  d'Endurance de la cible est DÉDUIT (sort « ignorant les PA » SEULEMENT, ex. ZdE de poison) ;
    *  `ignoreAP:false` → les PA (Localisation Corps) sont déduits. `perSL` : « +DR Dégâts » ;
    *  `onlyGroups` : ne touche qu'un Groupe (« les Morts-vivants… », Feu de l'âme). */
-  | { op: 'wounds'; amount: Formula; perSL?: PerSL; onlyGroups?: string[]; ignoreTB?: boolean; ignoreAP?: boolean }
+  | { op: 'wounds'; amount: Formula; perSL?: PerSL; onlyGroups?: string[]; ignoreTB?: boolean; ignoreAP?: boolean;
+      /** Plancher de Blessures infligées APRÈS mitigation (Sang corrosif : « min 1 » même BE/PA élevés). */
+      min?: number }
   /** Blessures rendues (plafonnées au max). */
   | { op: 'heal'; amount: Formula; perSL?: PerSL }
   /** Blessures rendues AU LANCEUR (« Puis vous Guérissez 1 Point de Blessure » — Drain).
@@ -377,7 +379,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // Défaut : ignore BE+PA. `ignoreTB:false` → déduit le Bonus d'Endurance ; `ignoreAP:false` → déduit les PA.
         const tb = o.ignoreTB === false ? bonus(effectiveChar(target, 'E')) : 0;
         const ap = o.ignoreAP === false ? Math.max(0, target.armour.corps ?? 0) : 0;
-        const n = Math.max(0, raw - tb - ap);
+        const n = Math.max(o.min ?? 0, raw - tb - ap);
         loseWounds(target, n); // perte centralisée (−Avantage + À Terre à 0)
         const mitig = o.ignoreTB === false || o.ignoreAP === false ? ` (${o.ignoreAP === false ? 'PA' : 'PA ignorés'}, ${o.ignoreTB === false ? 'BE déduit' : 'BE ignoré'})` : ' (ignorant BE et PA)';
         lines.push(`${target.name} subit ${n} Blessure(s)${mitig}.`);

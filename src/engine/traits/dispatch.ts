@@ -198,11 +198,6 @@ export function hasPerturbingAura(traits: TraitList | undefined): boolean {
   return resolveTraits(traits).some((r) => r.def.perturbingAura);
 }
 
-/** Sang corrosif (LDB 85 p.341). */
-export function hasCorrosiveBlood(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.corrosiveBlood);
-}
-
 /** Résistance à la Magie (Indice) : réduction du DR des Sorts (défaut 1 si l'Indice manque). */
 export function magicResistanceOf(traits: TraitList | undefined): number {
   const r = first(traits, (d) => !!d.magicResistance);
@@ -265,11 +260,6 @@ export function isStupid(traits: TraitList | undefined): boolean {
 /** Rage (LDB 85 p.341). */
 export function hasRage(traits: TraitList | undefined): boolean {
   return resolveTraits(traits).some((r) => r.def.rage);
-}
-
-/** Nerveux (LDB 85 p.340) : magie/bruits forts → +3 Brisé. */
-export function isNervous(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.nervous);
 }
 
 /** Territorial (LDB 85 p.343) : annule la fuite de Bestial (combat jusqu'à la mort). */

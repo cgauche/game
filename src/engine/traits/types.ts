@@ -39,8 +39,6 @@ export interface TraitDef {
   meleeHitPenalty?: number;
   /** Perturbant : −20 à tous les Tests à Bonus d'Endurance mètres (non cumulable). */
   perturbingAura?: boolean;
-  /** Sang corrosif : quand elle perd des PB (mêlée), les Engagés subissent 1d10 PB (BE+PA, min 1). */
-  corrosiveBlood?: boolean;
   /** Résistance à la Magie (Indice) : le DR des Sorts l'affectant est réduit d'Indice. */
   magicResistance?: boolean;
   /** Immunité (Type) : Dégâts du Type ignorés (y compris critiques). */
@@ -67,8 +65,6 @@ export interface TraitDef {
   stupid?: boolean;
   /** Rage : dépense tous ses Avantages (min 1 → Haine ; min 3 → Frénésie). */
   rage?: boolean;
-  /** Nerveux : magie ou bruits forts → +3 État Brisé. */
-  nervous?: boolean;
   /** Territorial : combat jusqu'à la mort dans sa zone, ne poursuit pas (annule la fuite de Bestial). */
   territorial?: boolean;
   // ── Mouvement & vision ──
