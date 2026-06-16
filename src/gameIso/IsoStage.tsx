@@ -430,6 +430,19 @@ export function IsoStage() {
     return movePreviewAt(useGame.getState, hover);
   }, [hover, mode, battle, myTurn, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
 
+  // Aperçu de DÉPLACEMENT au SURVOL hors combat : même calcul que le clic (moveAlong) — pathTo avec
+  // la portée de saut du GROUPE. Memoïsé sur (hover, partyPos, scene) → le BFS ne tourne PAS à la frame
+  // (le hover ne change qu'au changement de tuile). null sur tuile de départ / non marchable / pas de chemin.
+  const explorePath = useMemo<{ x: number; y: number }[] | null>(() => {
+    if (mode !== 'exploration' || dialogue || !scene || !hover) return null;
+    if (hover.x === partyPos.x && hover.y === partyPos.y && (hover.z ?? 0) === (partyPos.z ?? 0)) return null;
+    if (!isWalkable(scene, hover.x, hover.y, hover.z ?? 0)) return null;
+    const heroes = party.filter((h) => !h.dead && h.wounds.current > 0);
+    const partyM = heroes.length ? Math.min(...heroes.map((h) => effectiveMovement(h))) : 0;
+    const path = pathTo(scene, partyPos, hover, new Set(), 1, maxJumpTiles(partyM));
+    return path && path.length >= 2 ? path : null;
+  }, [hover, mode, dialogue, scene, partyPos, party]);
+
   // Jauges EN DIRECT (clignotant de l'ActiveFrame) : le coût/gain (Action/Mouvement/Avantage) de
   // l'intention SOUS LA SOURIS — un aperçu de la forme tap-1 est synthétisé du survol et passe par
   // la MÊME source (`previewResourceDelta`). Écrit au store seulement quand le delta CHANGE.
@@ -718,11 +731,13 @@ export function IsoStage() {
       // Affordance : halo pulsé + onde « sonar » au sol, et étincelle dorée flottant AU-DESSUS du
       // décor fouillable — l'objet cliquable se repère de loin, sans texte (cf. anim.css).
       const c = tileCenter(px, py, dims, feetZ(px, py, ez));
+      // SURVOL direct du décor (hors combat) : la tuile sous le curseur == la tuile du prop → halo renforcé.
+      const haloHovered = mode === 'exploration' && !!hover && hover.x === ent.pos.x && hover.y === ent.pos.y && (hover.z ?? 0) === ez;
       objs.push({
         d: pd - 0.02, // juste sous le sprite
         el: (
           <g key={`halo-${ent.id}`} pointerEvents="none">
-            <g className="interact-halo">
+            <g className={haloHovered ? 'interact-halo hovered' : 'interact-halo'}>
               <ellipse cx={c.cx} cy={c.cy + 4} rx={17 * span} ry={8.5 * span} fill="#ffe27a" opacity={0.26} />
               <ellipse cx={c.cx} cy={c.cy + 4} rx={17 * span} ry={8.5 * span} fill="none" stroke="#ffd75e" strokeWidth={2} opacity={0.9} />
             </g>
@@ -1021,7 +1036,9 @@ export function IsoStage() {
       !!sc && !!t && useGame.getState().mode === 'exploration' &&
       sc.entities.some((e) => e.pos.x === t.x && e.pos.y === t.y && (e.z ?? 0) === (t.z ?? 0) && (e.dialogueId || !!e.interact || !!e.merchant));
     (ev.currentTarget as SVGElement).style.cursor = overInteractive ? 'pointer' : '';
-    if (!hoverTracking) {
+    // Survol suivi en COMBAT (visée) ET en EXPLORATION (halo renforcé du décor interactif + aperçu de
+    // déplacement) — borné aux changements de tuile (cf. garde plus bas), donc peu de re-rendus.
+    if (!hoverTracking && useGame.getState().mode !== 'exploration') {
       if (hover) setHover(null);
       return;
     }
@@ -1195,6 +1212,12 @@ export function IsoStage() {
         {mode === 'battle' && battle && hoverMove && hover && (
           <g pointerEvents="none">
             {movePreviewEls(hoverMove.path, hover, hoverMove.kind === 'move' ? `Aller (${hoverMove.cost})` : 'Courir', dims, 'hmv')}
+          </g>
+        )}
+        {/* Aperçu de DÉPLACEMENT au survol HORS combat : même tracé partagé (movePreviewEls), pas de badge. */}
+        {mode === 'exploration' && explorePath && hover && (
+          <g pointerEvents="none">
+            {movePreviewEls(explorePath, hover, null, dims, 'exp')}
           </g>
         )}
         {/* Ciblage du JOUEUR — réticule persistant des jets à cible en cours (modale ouverte), sinon
