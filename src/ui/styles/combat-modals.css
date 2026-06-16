@@ -379,12 +379,19 @@
 /* Fiche de personnage / équipement */
 .sheet-modal {
   position: relative;
+  display: flex;
+  flex-direction: column;
   width: 880px;
   max-width: 94vw;
-  max-height: 88vh;
-  overflow: auto;
+  height: 88vh; /* hauteur STABLE : changer d'onglet ne redimensionne plus la fenêtre (L1) — le corps scrolle */
+  overflow: hidden;
   border-top: 4px solid var(--gold);
   padding-top: 16px;
+}
+/* Overlay de la FICHE : panneau de référence PASSIF → reste SOUS les modales actives (jets, défense…
+   z-index 130) pour qu'un jet lancé DEPUIS la fiche s'affiche AU-DESSUS. Au-dessus de la victoire (120). B3. */
+.sheet-overlay {
+  z-index: 125;
 }
 .sheet-close {
   position: absolute;
@@ -394,6 +401,8 @@
 }
 /* Layout : L'ESSENTIEL à gauche (permanent) · détail en onglets à droite. S'empile ≤760px. */
 .sheet-layout {
+  flex: 1;
+  min-height: 0; /* L1 : remplit la hauteur stable du modal, autorise le scroll interne des colonnes */
   display: grid;
   grid-template-columns: 240px minmax(0, 1fr);
   gap: 16px;
@@ -404,6 +413,8 @@
   gap: 12px;
   border-right: 1px solid var(--border);
   padding-right: 16px;
+  min-height: 0;
+  overflow-y: auto; /* L1 : la colonne « essentiel » scrolle seule si elle dépasse */
 }
 /* Grand portrait + identité en tête de colonne (illustration du perso). */
 .sheet-portrait {
@@ -430,12 +441,19 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
+}
+/* Corps d'onglet : SEUL élément qui scrolle → la hauteur du modal ne bouge pas d'un onglet à l'autre (L1). */
+.sheet-tabbody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 /* Vitalité + ressources : cartouches = primitive .stat-chip (components.css) ; ici, juste les grilles
    et les accents propres à la fiche. */
 .sheet-vitals {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr)); /* minmax(0,…) : empêche le débordement de grille (B2) */
   gap: 6px;
 }
 .sheet-vitals .stat-chip.pv .sc-value {
@@ -446,7 +464,7 @@
 }
 .sheet-resources {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 6px;
 }
 .sheet-resources .stat-chip .sc-value {

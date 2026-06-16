@@ -109,6 +109,7 @@
   border-radius: 8px;
   padding: 7px 6px;
   text-align: center;
+  min-width: 0; /* en grille (sheet-vitals…) : autorise le rétrécissement → le label long ne déborde plus (B2) */
 }
 .stat-chip > .sc-label {
   font-size: 10px;

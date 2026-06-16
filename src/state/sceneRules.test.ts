@@ -35,8 +35,8 @@ describe('sceneCombatModifiers — obscurité (horloge) / météo (LDB 14 l.94-1
 
 describe('entityBlockedAt — empreinte multi-cases des décors', () => {
   const cart: SceneEntity = { id: 'c', kind: 'prop', pos: { x: 3, y: 2 }, ref: 'charrette', foot: { w: 2, h: 1 } } as SceneEntity;
-  const barrel: SceneEntity = { id: 'b', kind: 'prop', pos: { x: 0, y: 0 }, ref: 'tonneau' } as SceneEntity; // pas d'empreinte
-  const scene = { entities: [cart, barrel] } as unknown as Scene;
+  const puddle: SceneEntity = { id: 'b', kind: 'prop', pos: { x: 0, y: 0 }, ref: 'mare-sang' } as SceneEntity; // 1×1, type passable (au sol)
+  const scene = { entities: [cart, puddle] } as unknown as Scene;
   it('bloque toutes les cases de l’empreinte (charrette 2×1)', () => {
     expect(entityBlockedAt(scene, 3, 2)).toBe(true);
     expect(entityBlockedAt(scene, 4, 2)).toBe(true);
@@ -53,6 +53,14 @@ describe('entityBlockedAt — empreinte multi-cases des décors', () => {
     const sc2 = { entities: [chest] } as unknown as Scene;
     expect(entityBlockedAt(sc2, 6, 6)).toBe(true);
     expect(entityBlockedAt(sc2, 7, 6)).toBe(false); // adjacent libre (fouille P5 / Ramasser en combat)
+  });
+  it('décor SOLIDE 1×1 par type (feu de camp / barrière) bloque sa case — B5', () => {
+    const fire = { id: 'f', kind: 'prop', pos: { x: 2, y: 13 }, ref: 'feu-camp' } as unknown as SceneEntity;
+    const fence = { id: 'g', kind: 'prop', pos: { x: 6, y: 6 }, ref: 'barriere' } as unknown as SceneEntity;
+    const sc2 = { entities: [fire, fence] } as unknown as Scene;
+    expect(entityBlockedAt(sc2, 2, 13)).toBe(true);  // on ne se tient pas dans le feu de camp
+    expect(entityBlockedAt(sc2, 6, 6)).toBe(true);   // ni sur la barrière
+    expect(entityBlockedAt(sc2, 3, 13)).toBe(false); // case adjacente libre
   });
 });
 

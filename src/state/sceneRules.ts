@@ -47,14 +47,40 @@ export function sceneCombatModifiers(scene: Pick<Scene, 'ambiance' | 'weather'>,
   return { concealed, attackMod, dodgeMod, label };
 }
 
+/** Décors SOLIDES par TYPE (objets pleins infranchissables : on ne se tient pas DESSUS). Physique du
+ *  décor → vit en `state` (lue par la walkability), à côté de l'empreinte `foot` ; le rendu SVG reste
+ *  dans le catalogue gameIso. Liste éditable d'un coup d'œil ; un `ref` ABSENT = passable (sol, flaque,
+ *  ossements, gravats, bannière, objet ramassable…). Couvre combat ET exploration (via `isWalkable`). */
+export const SOLID_PROPS = new Set<string>([
+  // Feu & éclairage au sol
+  'feu-camp', 'brasero', 'chandelier', 'lampadaire', 'pupitre-chef',
+  // Barrières, clôtures, gradins, balustrades
+  'barriere', 'cloture', 'palissade', 'tribune', 'balustrade-loge', 'rangee-sieges', 'rideau-scene',
+  // Pierre & structures
+  'statue', 'gargouille', 'menhir', 'rocher', 'stalagmite', 'colonne-brisee',
+  'autel', 'idole-chaos', 'fontaine', 'puits', 'abreuvoir', 'sarcophage', 'tombe', 'gibet', 'pilori', 'cage',
+  // Arbres & nature volumineuse
+  'arbre', 'arbre-mort', 'souche',
+  // Contenants & charges
+  'tonneau', 'tonneaux-pile', 'caisse', 'coffre', 'urne', 'marmite', 'oeuf-dragon',
+  // Véhicules
+  'charrette', 'epave-carrosse', 'barque',
+  // Mobilier
+  'table', 'chaise', 'tabouret', 'armoire', 'bureau', 'etabli', 'lit', 'miroir',
+  'etagere', 'rack-armes', 'rack-lances', 'mannequin', 'fauteuil-loge', 'plante-pot', 'etal-marche', 'tente',
+]);
+
 /** La case (x,y) est-elle couverte par l'empreinte (`foot {w,h}`) d'un décor ? Pour la walkability.
- *  Un décor 1×1 (sans `foot`) ne bloque PAS (comportement historique préservé) — SAUF s'il est
- *  INTERACTIF (coffre, stèle, dépouille fouillable…) : on ne se tient pas SUR lui, on l'aborde
- *  en case adjacente (exploration P5 comme combat « Ramasser », LDB ch.13 l.115-116). */
+ *  Un décor 1×1 (sans `foot`) ne bloque PAS — SAUF s'il est :
+ *   • INTERACTIF (coffre, stèle, dépouille fouillable…) : on ne se tient pas SUR lui, on l'aborde en
+ *     case adjacente (exploration P5 comme combat « Ramasser », LDB ch.13 l.115-116) ; ou
+ *   • SOLIDE par son TYPE (`SOLID_PROPS` : feu de camp, brasero, barrière, statue, tonneau…) : objet
+ *     plein infranchissable. */
 export function entityBlockedAt(scene: Scene, x: number, y: number): boolean {
   return scene.entities.some((e: SceneEntity) => {
     if (e.kind !== 'prop') return false;
-    if (!e.foot && !e.interact) return false;
+    const solid = !!e.ref && SOLID_PROPS.has(e.ref);
+    if (!e.foot && !e.interact && !solid) return false;
     const w = e.foot?.w ?? 1;
     const h = e.foot?.h ?? 1;
     return x >= e.pos.x && x < e.pos.x + w && y >= e.pos.y && y < e.pos.y + h;

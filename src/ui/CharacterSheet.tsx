@@ -14,7 +14,7 @@ import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine
 import { spellSupport } from '../engine/spellspec';
 import { spellSpecFor } from '../data/spellspecs';
 import { spellEffectOps } from '../state/flow';
-import { careers, findSpell, findStar, spells as allSpells } from '../data';
+import { careers, findSpell, findStar, spells as allSpells, speciesSingular } from '../data';
 import { CodexRef } from './compendium/CodexRef';
 import { splitLabel } from '../engine/careerSlots';
 import { ColorPalettePickers } from './ColorPalettePickers';
@@ -154,7 +154,7 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
   const tabs: SheetTab[] = ['combat', 'competences', 'sac', ...(isCaster ? ['sorts' as const] : []), 'avancement'];
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay sheet-overlay" onClick={onClose}>
       <div ref={boxRef} role="dialog" aria-modal="true" className="modal sheet-modal" onClick={(e) => e.stopPropagation()}>
         <button className="btn small sheet-close" onClick={onClose} aria-label="Fermer">✕</button>
 
@@ -167,7 +167,7 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
               <PortraitTile c={hero} ring="var(--gold)" variant="full" size="xl" />
               <h3>{hero.name}</h3>
               <span className="char-sub">
-                {hero.species} · {hero.career}
+                {speciesSingular(hero.species)} · {hero.career}
                 {hero.careerLevel ? ` (niv. ${hero.careerLevel})` : ''}
               </span>
               {hero.star && (

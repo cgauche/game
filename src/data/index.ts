@@ -332,6 +332,26 @@ export const names = namesJson as Record<string, NamePool>;
 export function findSpecies(label: string) {
   return species.find((s) => s.label === label);
 }
+
+/** Affichage SINGULIER de l'espèce d'un INDIVIDU : les `label` du catalogue sont des libellés de
+ *  CATÉGORIE au pluriel (« Nains », « Humains (Reiklander) ») ; un personnage est un individu (B1).
+ *  Mappe le groupe pluriel → singulier en conservant la sous-espèce entre parenthèses. Repli = tel quel. */
+const SPECIES_SINGULAR: Record<string, string> = {
+  Humains: 'Humain',
+  Halflings: 'Halfling',
+  Nains: 'Nain',
+  Gnomes: 'Gnome',
+  Ogres: 'Ogre',
+  'Hauts elfes': 'Haut elfe',
+  'Elfes sylvains': 'Elfe sylvain',
+};
+export function speciesSingular(label: string | undefined): string {
+  if (!label) return '';
+  const i = label.indexOf('(');
+  const group = (i >= 0 ? label.slice(0, i) : label).trim();
+  const suffix = i >= 0 ? ' ' + label.slice(i).trim() : '';
+  return (SPECIES_SINGULAR[group] ?? group) + suffix;
+}
 /**
  * Carrières accessibles à une espèce (Tableau des Classes et Carrières aléatoires, LDB 05
  * l.197+ : « certaines ont des restrictions liées à la Race », l.360). `ignoreRestrictions`

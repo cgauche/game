@@ -1,5 +1,6 @@
 import { Combatant, CHAR_KEYS, CharKey } from '../engine/types';
 import { PortraitTile } from './PortraitTile';
+import { speciesSingular } from '../data';
 
 const SHORT: Record<CharKey, string> = {
   CC: 'CC',
@@ -24,7 +25,7 @@ export function CharCard({ hero, compact }: { hero: Combatant; compact?: boolean
         <div className="char-id">
           <strong>{hero.name}</strong>
           <span className="char-sub">
-            {hero.species} · {hero.career}
+            {speciesSingular(hero.species)} · {hero.career}
           </span>
         </div>
       </div>
