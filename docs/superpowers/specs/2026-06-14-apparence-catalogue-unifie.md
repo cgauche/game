@@ -44,3 +44,29 @@ unique (remplace mutationOverlaysFor/mutationAppearance/résolution monster/appl
   changements de partage ASSUMÉS (loggés).
 - `RaceDef.features` → clés : seul `races/index.ts`/composeRig consomment → contenu.
 - Empilement d'apparence déjà livré (record créature → scène) : les `features` suivent le même.
+
+## Livré — apparence d'élément data-driven (mutations / traits portent leur visuel)
+
+`MUTATION_VISUALS` + `mutationAppearance` / `mutationOverlaysFor` + l'adapter `mutationElements()` sont
+**supprimés** (registre keyé par label = mort). Les 17 difformités (LDB 19) sont désormais des éléments
+de catalogue `parts/elements/defs/<slug>.ts` (calques + morpho `build`/`legs`/`faceFlip`), comme les
+features de race.
+
+- **Donnée** : `Mutation.appearance` / `TraitData.appearance` = `Partial<EntityAppearance>` (`features`
+  clés du catalogue + `colors` + `eyes`). Édité par `AppearanceField` / `MonsterPartsFields` dans le
+  Compendium (créatures + traits + mutations). `mutations.json` est la SEULE énumération des mutations ;
+  elle référence les slugs du catalogue.
+- **Résolution** : `combatantVisuals` re-source depuis les fragments + le catalogue — `combatantOverlays`
+  = `feat(...features)` (param `overlays`), `combatantAppearance` fusionne `colors`/`eyes` (via
+  `eyesArtFromKeys`) et applique `featureMorpho(features)` (carrure/jambes/visage). `resolveRig`
+  INCHANGÉ → rendu byte-identique (golden + mutations + elements).
+
+### Ajouter un primitif visuel manquant (ex. « peau de plumes »)
+
+1. Déposer UN fichier `parts/elements/defs/<key>.ts` exportant `element: AppearanceElement` (calques SVG
+   paramétrés par `textures.ts`, teinte via tokens `@peau`/`@peauO`/`@peauH` → suit `colors.peau`).
+   Pilote : `defs/plumage.ts`.
+2. `npm run gen` régénère `_registry.generated.ts` (auto en dev via le plugin Vite).
+3. Le primitif est LIBRE en donnée : `appearance.features: ['<key>']` sur n'importe quelle mutation /
+   trait / créature, plus aucune touche au code. « peau de plumes rouge sang » =
+   `{ colors: { peau: '#8b0000' }, features: ['plumage'] }`.

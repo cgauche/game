@@ -10,7 +10,7 @@ import { addPose, type Pose } from './poses';
 import type { Appearance } from './appearance';
 import { resolveParts } from './parts/resolve';
 import { applyEyes, eyesArtFromKeys } from './parts/eyes';
-import { feat as catalogFeatures } from './parts/elements';
+import { feat as catalogFeatures, featureMorpho } from './parts/elements';
 import { pickView } from './parts/types';
 import { monsterInjection } from './parts/monstrous';
 import { HEADS, ARMS, LEGS } from './parts/monster';
@@ -57,14 +57,22 @@ export function resolveRig(
   // Fimir → Fimir…) ; sinon heuristique de nom (variantes régionales → espèce de base).
   const bDef = bipedDef(appearance.species);
   const race = raceById(bDef?.race ?? baseSpeciesOf(appearance.species));
+  // Difformités MORPHO posées en apparence (appearance.features → catalogue) : carrure/jambes/visage
+  // retourné cumulés ici → l'aperçu éditeur et les PNJ authorés reflètent la morpho, comme les calques.
+  // (Pour un combattant, la morpho de SES mutations est déjà repliée dans l'apparence par
+  // combatantAppearance, via des clés HORS appearance.features → aucune double application.)
+  const fm = featureMorpho(appearance.features ?? []);
+  const morphoBuild = Math.min(1, Math.max(0, appearance.build + fm.dBuild));
+  const legsMult = (appearance.legs ?? 1) * fm.legsMult;
+  const faceFlip = appearance.faceFlip || fm.faceFlip;
   // appearance.gabarit explicite = remplacement COMPLET de la carrure ; le gabaritOverride
   // de la race (réglé pour son gabarit par défaut) ne s'applique PAS dans ce cas.
   let gDef = appearance.gabarit
     ? gabaritById(appearance.gabarit)
     : { ...gabaritById(race.gabarit), ...(race.gabaritOverride ?? {}) };
   // Mutation morpho « Court sur pattes » : multiplicateur de jambes composé sur le gabarit.
-  if (appearance.legs) gDef = { ...gDef, legs: gDef.legs * appearance.legs };
-  let sk = groundSkeleton(applyBuild(baseSkeleton(gDef, appearance.sex), appearance.build));
+  if (legsMult !== 1) gDef = { ...gDef, legs: gDef.legs * legsMult };
+  let sk = groundSkeleton(applyBuild(baseSkeleton(gDef, appearance.sex), morphoBuild));
   if (view === 'profile') sk = profileNarrow(sk); // corps étroit de profil (membres sur l'axe)
   // De profil, le swing du bras DROIT (porteur de l'arme) éloigne la main → l'arme barre le
   // torse. Quand une arme de MÊLÉE est tenue, on annule ce swing pour que le bras pende au
@@ -128,7 +136,7 @@ export function resolveRig(
     if (!part || !part.svg) continue;
     // Visage inversé (mutation LDB 19) : le VRAI visage du personnage est retourné tête en bas
     // (flip vertical au centre du visage, y≈7) — cheveux et crâne restent en place.
-    const svg = slot === 'visage' && appearance.faceFlip
+    const svg = slot === 'visage' && faceFlip
       ? `<g transform="translate(0,14) scale(1,-1)">${part.svg}</g>`
       : part.svg;
     SLOT_BONES[slot].forEach((bid, idx) => {
