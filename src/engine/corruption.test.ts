@@ -81,7 +81,7 @@ describe('mutationKindFor — d100 corps/esprit par espèce (l.87-91)', () => {
 describe('effets de mutation lus à la volée', () => {
   it('charMods permanents → effectiveChar (base, cumulable avec un buff magique)', () => {
     const c = hero();
-    attachMutation(c, { label: 'Corpulent', kind: 'physique', roll: 8, charMods: { F: 5, E: 5 }, movement: -1 });
+    attachMutation(c, { label: 'Corpulent', kind: 'physique', roll: 8, passive: [{ op: 'charMod', char: 'F', mod: 5 }, { op: 'charMod', char: 'E', mod: 5 }, { op: 'moveMod', mod: -1 }] });
     expect(effectiveChar(c, 'F')).toBe(35);
     c.activeEffects = [{ label: 'Puissance', char: 'F', bonus: 10, roundsLeft: 3 }];
     expect(effectiveChar(c, 'F')).toBe(45); // base mutée 35 + buff 10 (pas d'écrasement)
@@ -89,7 +89,7 @@ describe('effets de mutation lus à la volée', () => {
   });
   it('movement → effectiveMovement', () => {
     const c = hero();
-    attachMutation(c, { label: 'Court sur pattes', kind: 'physique', roll: 73, movement: -1 });
+    attachMutation(c, { label: 'Court sur pattes', kind: 'physique', roll: 73, passive: [{ op: 'moveMod', mod: -1 }] });
     expect(effectiveMovement(c)).toBe(3);
   });
   it('PA naturels apAll + apLocations', () => {
@@ -101,8 +101,8 @@ describe('effets de mutation lus à la volée', () => {
   });
   it('mods de Tests : compétence nommée + Tests d\'une caractéristique (testValue)', () => {
     const c = hero({ skills: [{ name: 'Pistage', advances: 5 } as never, { name: 'Charme', advances: 0 } as never] });
-    attachMutation(c, { label: 'Groin poilu', kind: 'physique', roll: 93, skillMods: { pistage: 10 } });
-    attachMutation(c, { label: 'Visage inversé', kind: 'physique', roll: 53, testMods: [{ char: 'Soc', mod: -20 }] });
+    attachMutation(c, { label: 'Groin poilu', kind: 'physique', roll: 93, passive: [{ op: 'skillMod', skill: 'pistage', mod: 10 }] });
+    attachMutation(c, { label: 'Visage inversé', kind: 'physique', roll: 53, passive: [{ op: 'testMod', amount: -20, char: 'Soc' }] });
     expect(passiveSkillSum(c, 'Pistage')).toBe(10); // compétence nommée → collecteur passif (Σ, intrinsèque)
     expect(passiveTestMod(c, 'Soc')).toBe(-20); // Tests char-qualifiés (Visage inversé) → collecteur passif
     expect(testValue(c, 'Charme')).toBe(30 - 20); // Soc 30, Tests de Sociabilité −20 (bout en bout)

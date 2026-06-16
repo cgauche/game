@@ -5,7 +5,12 @@
       "max": 5,
       "label": "Pattes d’animaux",
       "fx": {
-        "movement": 1
+        "passive": [
+          {
+            "op": "moveMod",
+            "mod": 1
+          }
+        ]
       }
     },
     {
@@ -13,11 +18,22 @@
       "max": 10,
       "label": "Corpulent",
       "fx": {
-        "movement": -1,
-        "charMods": {
-          "F": 5,
-          "E": 5
-        }
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "F",
+            "mod": 5
+          },
+          {
+            "op": "charMod",
+            "char": "E",
+            "mod": 5
+          },
+          {
+            "op": "moveMod",
+            "mod": -1
+          }
+        ]
       }
     },
     {
@@ -25,9 +41,13 @@
       "max": 15,
       "label": "Doigts distendus",
       "fx": {
-        "charMods": {
-          "Dex": 10
-        }
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "Dex",
+            "mod": 10
+          }
+        ]
       }
     },
     {
@@ -35,10 +55,18 @@
       "max": 20,
       "label": "Émacié",
       "fx": {
-        "charMods": {
-          "F": -10,
-          "Ag": 5
-        }
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "F",
+            "mod": -10
+          },
+          {
+            "op": "charMod",
+            "char": "Ag",
+            "mod": 5
+          }
+        ]
       }
     },
     {
@@ -54,9 +82,13 @@
       "max": 30,
       "label": "Articulation supplémentaire aux jambes",
       "fx": {
-        "charMods": {
-          "Ag": 5
-        }
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "Ag",
+            "mod": 5
+          }
+        ]
       }
     },
     {
@@ -91,10 +123,14 @@
       "max": 50,
       "label": "Beauté surnaturelle",
       "fx": {
-        "charMods": {
-          "Soc": 10
-        },
-        "note": "Ne garde jamais de cicatrice."
+        "note": "Ne garde jamais de cicatrice.",
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "Soc",
+            "mod": 10
+          }
+        ]
       }
     },
     {
@@ -102,10 +138,11 @@
       "max": 55,
       "label": "Visage inversé",
       "fx": {
-        "testMods": [
+        "passive": [
           {
-            "char": "Soc",
-            "mod": -20
+            "op": "testMod",
+            "amount": -20,
+            "char": "Soc"
           }
         ]
       }
@@ -116,9 +153,13 @@
       "label": "Peau d’acier",
       "fx": {
         "apAll": 2,
-        "charMods": {
-          "Ag": -10
-        }
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "Ag",
+            "mod": -10
+          }
+        ]
       }
     },
     {
@@ -126,9 +167,13 @@
       "max": 65,
       "label": "Langue pendante",
       "fx": {
-        "skillMods": {
-          "langue": -10
-        }
+        "passive": [
+          {
+            "op": "skillMod",
+            "skill": "langue",
+            "mod": -10
+          }
+        ]
       }
     },
     {
@@ -144,7 +189,12 @@
       "max": 75,
       "label": "Court sur pattes",
       "fx": {
-        "movement": -1
+        "passive": [
+          {
+            "op": "moveMod",
+            "mod": -1
+          }
+        ]
       }
     },
     {
@@ -187,9 +237,13 @@
       "max": 95,
       "label": "Groin poilu",
       "fx": {
-        "skillMods": {
-          "pistage": 10
-        }
+        "passive": [
+          {
+            "op": "skillMod",
+            "skill": "pistage",
+            "mod": 10
+          }
+        ]
       }
     },
     {
@@ -207,10 +261,18 @@
       "max": 5,
       "label": "Atroces désirs",
       "fx": {
-        "charMods": {
-          "Soc": -5,
-          "FM": -5
-        }
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "Soc",
+            "mod": -5
+          },
+          {
+            "op": "charMod",
+            "char": "FM",
+            "mod": -5
+          }
+        ]
       }
     },
     {
@@ -218,11 +280,23 @@
       "max": 10,
       "label": "Bête intérieure",
       "fx": {
-        "charMods": {
-          "FM": 10,
-          "Soc": -5,
-          "Int": -5
-        }
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "FM",
+            "mod": 10
+          },
+          {
+            "op": "charMod",
+            "char": "Soc",
+            "mod": -5
+          },
+          {
+            "op": "charMod",
+            "char": "Int",
+            "mod": -5
+          }
+        ]
       }
     },
     {
@@ -238,10 +312,18 @@
       "max": 20,
       "label": "Formication",
       "fx": {
-        "charMods": {
-          "I": -5,
-          "Dex": -5
-        }
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "I",
+            "mod": -5
+          },
+          {
+            "op": "charMod",
+            "char": "Dex",
+            "mod": -5
+          }
+        ]
       }
     },
     {
@@ -249,10 +331,18 @@
       "max": 25,
       "label": "Imprévisible fantaisiste",
       "fx": {
-        "charMods": {
-          "Int": -5,
-          "FM": -5
-        }
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "Int",
+            "mod": -5
+          },
+          {
+            "op": "charMod",
+            "char": "FM",
+            "mod": -5
+          }
+        ]
       }
     },
     {
@@ -260,9 +350,13 @@
       "max": 30,
       "label": "Terrible inquiétude",
       "fx": {
-        "charMods": {
-          "FM": -10
-        }
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "FM",
+            "mod": -10
+          }
+        ]
       }
     },
     {
@@ -278,10 +372,18 @@
       "max": 40,
       "label": "Cœur desséché",
       "fx": {
-        "charMods": {
-          "FM": 10,
-          "Soc": -10
-        }
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "FM",
+            "mod": 10
+          },
+          {
+            "op": "charMod",
+            "char": "Soc",
+            "mod": -10
+          }
+        ]
       }
     },
     {
@@ -289,9 +391,13 @@
       "max": 45,
       "label": "Pensées envieuses",
       "fx": {
-        "charMods": {
-          "Soc": -10
-        }
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "Soc",
+            "mod": -10
+          }
+        ]
       }
     },
     {
@@ -307,9 +413,13 @@
       "max": 55,
       "label": "Blocage mental",
       "fx": {
-        "charMods": {
-          "Int": -10
-        }
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "Int",
+            "mod": -10
+          }
+        ]
       }
     },
     {
@@ -317,10 +427,18 @@
       "max": 60,
       "label": "Urgence profanatoire",
       "fx": {
-        "charMods": {
-          "FM": -10,
-          "Ag": 10
-        }
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "FM",
+            "mod": -10
+          },
+          {
+            "op": "charMod",
+            "char": "Ag",
+            "mod": 10
+          }
+        ]
       }
     },
     {
@@ -336,10 +454,18 @@
       "max": 70,
       "label": "Esprit suspicieux",
       "fx": {
-        "charMods": {
-          "I": -5,
-          "Int": -5
-        }
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "I",
+            "mod": -5
+          },
+          {
+            "op": "charMod",
+            "char": "Int",
+            "mod": -5
+          }
+        ]
       }
     },
     {
@@ -347,10 +473,18 @@
       "max": 75,
       "label": "Accro à l’adrénaline",
       "fx": {
-        "charMods": {
-          "FM": 10,
-          "I": -10
-        }
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "FM",
+            "mod": 10
+          },
+          {
+            "op": "charMod",
+            "char": "I",
+            "mod": -10
+          }
+        ]
       }
     },
     {
@@ -358,9 +492,13 @@
       "max": 80,
       "label": "Visions torturées",
       "fx": {
-        "charMods": {
-          "I": -10
-        }
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "I",
+            "mod": -10
+          }
+        ]
       }
     },
     {
@@ -368,10 +506,18 @@
       "max": 85,
       "label": "Totalement déséquilibré",
       "fx": {
-        "charMods": {
-          "Soc": -20,
-          "FM": 10
-        }
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "Soc",
+            "mod": -20
+          },
+          {
+            "op": "charMod",
+            "char": "FM",
+            "mod": 10
+          }
+        ]
       }
     },
     {
@@ -387,15 +533,19 @@
       "max": 95,
       "label": "Colère impie",
       "fx": {
-        "charMods": {
-          "CC": 10
-        },
         "psychTraits": [
           {
             "type": "frenesie"
           }
         ],
-        "note": "Sujet à Frénésie."
+        "note": "Sujet à Frénésie.",
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "CC",
+            "mod": 10
+          }
+        ]
       }
     },
     {
@@ -403,10 +553,18 @@
       "max": 100,
       "label": "Affreusement nerveux",
       "fx": {
-        "charMods": {
-          "Ag": 5,
-          "Soc": -5
-        }
+        "passive": [
+          {
+            "op": "charMod",
+            "char": "Ag",
+            "mod": 5
+          },
+          {
+            "op": "charMod",
+            "char": "Soc",
+            "mod": -5
+          }
+        ]
       }
     }
   ]

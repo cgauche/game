@@ -19,6 +19,7 @@
 import { Combatant, CharKey, HitLocation, Weapon } from './types';
 import { bonus, effectiveChar } from './characteristics';
 import type { PsychTrait } from './psychology';
+import type { GameOp } from './ops';
 
 export type ExposureLevel = 'mineure' | 'moderee' | 'majeure';
 
@@ -34,10 +35,10 @@ export interface Mutation {
   kind: 'physique' | 'mentale';
   /** Jet d100 sur le tableau (traçabilité). */
   roll: number;
-  /** Modifications PERMANENTES de caractéristiques (« +5 Force », « -10 Sociabilité »…). */
-  charMods?: Partial<Record<CharKey, number>>;
-  /** Modification du Mouvement (« +1 Mouvement », « -1 Mouvement »). */
-  movement?: number;
+  /** Modificateurs PASSIFS continus (charMod « +5 F » / skillMod « +10 Pistage » / testMod « −20 Soc » /
+   *  moveMod « ±1 ») en `GameOp[]` — MÊME vocabulaire/éditeur (GameOpEditor) que traits et sorts ; lus par
+   *  le collecteur passif unifié (engine/trauma). (Distinct de apAll/apLocations = armure naturelle.) */
+  passive?: GameOp[];
   /** PA naturels à TOUTES les localisations (Peau d'acier +2, Écailles épineuses +1). */
   apAll?: number;
   /** PA naturels par localisation (Cornes asymétriques : +1 Tête). */
@@ -46,12 +47,6 @@ export interface Mutation {
    *  asymétriques → Cornes (Dégâts = BF). Lue par recomputeLoadout : une mutation-arme = DONNÉE,
    *  plus de name-match dans items.ts (ajouter une mutation-arme = remplir ce champ). */
   derivedWeapon?: Weapon;
-  /** Modificateur aux Tests d'une Compétence nommée (clé minuscule-préfixe — Groin poilu :
-   *  +10 Pistage ; Langue pendante : −10 Langue). Lu par testValue, comme les Traumatismes. */
-  skillMods?: Record<string, number>;
-  /** Modificateur aux TESTS dérivés d'une caractéristique (Visage inversé : −20 aux Tests
-   *  de Sociabilité) — un mod de TEST, pas de caractéristique (le Bonus n'en dérive pas). */
-  testMods?: { char: CharKey; mod: number }[];
   /** Traits de créature gagnés (Tentacule épais → « Tentacules »). */
   traits?: string[];
   /** Traits psychologiques gagnés (Colère impie → Frénésie). */

@@ -441,15 +441,10 @@ export function passiveMods(c: Combatant): PassiveMod[] {
   if (c.hunger && modSurvives(c, 'faim')) {
     for (const key of Object.keys(c.characteristics) as CharKey[]) for (const mod of hungerCharPenalties(c, key)) out.push({ op: { op: 'charMod', char: key, mod }, kind: 'faim' });
   }
-  // Mutations de Corruption (LDB 19) : modifs PERMANENTES du corps → kind `intrinsèque` (additif Σ). Lues
-  // INLINE (pas via corruption.ts) pour éviter le cycle trauma→corruption→characteristics→trauma. Qualités
-  // d'objet (kind `intrinsèque`) : poussées en P1c.
-  for (const m of c.mutations ?? []) {
-    if (m.charMods) for (const k of Object.keys(m.charMods) as CharKey[]) { const mod = m.charMods[k] ?? 0; if (mod) out.push({ op: { op: 'charMod', char: k, mod }, kind: 'intrinsèque' }); }
-    if (m.movement) out.push({ op: { op: 'moveMod', mod: m.movement }, kind: 'intrinsèque' });
-    if (m.skillMods) for (const [skill, mod] of Object.entries(m.skillMods)) if (mod) out.push({ op: { op: 'skillMod', skill, mod }, kind: 'intrinsèque' });
-    for (const t of m.testMods ?? []) out.push({ op: { op: 'testMod', amount: t.mod, char: t.char }, kind: 'intrinsèque' }); // Visage inversé −20 Tests de Soc
-  }
+  // Mutations de Corruption (LDB 19) : modifs PERMANENTES du corps → leur `passive: GameOp[]` (vocab unifié,
+  // `mutations.json`) émis tel quel en kind `intrinsèque`, COMME les traits. (L'armure naturelle apAll/
+  // apLocations est lue à part par recomputeLoadout.) Lu inline (la donnée `c.mutations` est sur le Combatant).
+  for (const m of c.mutations ?? []) for (const op of m.passive ?? []) out.push({ op, kind: 'intrinsèque' });
   // Qualités d'objet équipées (LDB 60), producteurs sans cycle (wearPenalty est une feuille) : objet Laid →
   // −Soc aux Tests sociaux (testMod char-qualifié) ; port d'armure → −N% par compétence (skillMod, intrinsèque).
   const soc = wornSocialMod(c);
