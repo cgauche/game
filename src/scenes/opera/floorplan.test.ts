@@ -48,8 +48,8 @@ describe('plan de l’Opéra — géométrie', () => {
   it('SCÈNE surélevée (élévation > 0) et FOSSE en contrebas (< 0)', () => {
     expect(tileAt(s, AX, 8, 0)).toBe('planches'); // scène (rangées 5-13)
     expect(elevAt(s, AX, 8, 0)).toBeGreaterThan(0); // surélevée
-    expect(tileAt(s, AX, 15, 0)).toBe('planches'); // fosse d'orchestre (rangées 14-16)
-    expect(elevAt(s, AX, 15, 0)).toBeLessThan(0); // en contrebas
+    expect(tileAt(s, AX, 17, 0)).toBe('planches'); // fosse d'orchestre (rangées 15-19)
+    expect(elevAt(s, AX, 17, 0)).toBeLessThan(0); // en contrebas
   });
 
   it('PARTERRE en ÉVENTAIL : plus étroit près de la scène que vers le fond', () => {
@@ -58,8 +58,8 @@ describe('plan de l’Opéra — géométrie', () => {
   });
 
   it('éventail : la cloison parterre↔salles latérales BLOQUE (pas de mur fantôme à traverser)', () => {
-    const doorRow = Math.floor((17 + 44) / 2); // PY0=17, PY1=44
-    for (let y = 20; y <= 42; y++) {
+    const doorRow = Math.floor((20 + 43) / 2); // PY0=20, PY1=43 → porte parterre↔côtés à mi-hauteur
+    for (let y = 21; y <= 42; y++) {
       if (y === doorRow) continue;
       const row = s.levels[0].tiles.slice(y * W, y * W + W);
       const lp = row.indexOf('plancher'); // bord gauche du parterre

@@ -16,8 +16,9 @@ import type { TestScenario } from './_shared';
  * axe x=21.5. Le public regarde la scène, vers le HAUT. `facing:'N'` = tourné vers la scène (y bas) ;
  * sur l'étage les sièges regardent le PUITS (centre). Les props 1×1 PIVOTENT avec la caméra (`project`).
  *
- * Bandes (rangées) : 16 Coulisses 1-4 · 19 Scène 5-13 (cols 11-32) · 18 Fosse 14-16 · 17 Parterre 17-44 ·
- * 7 Foyer 46-52 · entrées 53-58. Fan parterre : demi-largeur 6 (haut) → 12 (bas).
+ * Bandes (rangées, cf. floorplan.ts reconstruit du schéma de murs) : pièces du fond 1-4 · Scène 5-14
+ * (cols 13-30) · Fosse 15-19 (cols 16-26) · Parterre en éventail 20-43 · Foyer 45-50 · entrées 51-58.
+ * Fan parterre : demi-largeur 5 (haut, sous la scène) → 13 (bas, vers le foyer).
  */
 
 /** Rangée de sièges 1×1 sur l'axe x de [x0..x1] à la rangée y, regardant `dir` (défaut Nord = scène). */
@@ -36,13 +37,13 @@ const seatCol = (id: string, x: number, y0: number, y1: number, dir: SceneEntity
 const ents: SceneEntity[] = [
   { id: 'start', kind: 'heroStart', pos: { x: 21, y: 54 } }, // entrée par le foyer (marbre, bas)
 
-  // ═══════════════ SCÈNE (19, z=0, rangées 5-13, cols 11-32, planches surélevées) ═══════════════
+  // ═══════════════ SCÈNE (19, z=0, rangées 5-14, cols 13-30, planches surélevées) ═══════════════
   // Rideau de scène en travers du fond (côté coulisses, regarde le public au sud), sur toute la largeur.
-  ...[11, 14, 17, 20, 23, 26, 29].map((x, i): SceneEntity => ({ id: `rideau-${i}`, kind: 'prop', ref: 'rideau-scene', pos: { x, y: 5 }, facing: 'S', foot: { w: 3, h: 1 } })),
+  ...[13, 16, 19, 22, 25, 28].map((x, i): SceneEntity => ({ id: `rideau-${i}`, kind: 'prop', ref: 'rideau-scene', pos: { x, y: 5 }, facing: 'S', foot: { w: 3, h: 1 } })),
   // Décors en place sur la scène (châssis peints + un praticable) — le plan montre des panneaux au sol.
-  { id: 'scene-flat-1', kind: 'prop', ref: 'decor-flat', pos: { x: 14, y: 9 } },
-  { id: 'scene-flat-2', kind: 'prop', ref: 'decor-flat', pos: { x: 29, y: 9 } },
-  { id: 'scene-colonne', kind: 'prop', ref: 'colonne-brisee', pos: { x: 21, y: 8 } },
+  { id: 'scene-flat-1', kind: 'prop', ref: 'decor-flat', pos: { x: 15, y: 10 } },
+  { id: 'scene-flat-2', kind: 'prop', ref: 'decor-flat', pos: { x: 28, y: 10 } },
+  { id: 'scene-colonne', kind: 'prop', ref: 'colonne-brisee', pos: { x: 21, y: 9 } },
 
   // ═══════════════ COULISSES (16, z=0, rangées 1-4 derrière la scène) ═══════════════
   // Décors en attente, accessoires : châssis, mannequins de costumier, caisses, râtelier d'accessoires.
@@ -53,12 +54,12 @@ const ents: SceneEntity[] = [
   { id: 'cl-caisse-2', kind: 'prop', ref: 'caisse', pos: { x: 27, y: 3 } },
   { id: 'cl-flat-2', kind: 'prop', ref: 'decor-flat', pos: { x: 30, y: 2 } },
 
-  // ═══════════════ FOSSE D'ORCHESTRE (18, z=0, rangées 14-16, planches en contrebas) ═══════════════
+  // ═══════════════ FOSSE D'ORCHESTRE (18, z=0, rangées 15-19, gx 16-26, planches en contrebas) ═══════════
   // Pupitres des musiciens disposés en arc face à la scène (le plan montre une rangée de pupitres + tabourets).
-  ...[15, 18, 21, 24, 27].map((x, i): SceneEntity => ({ id: `pup-${i}`, kind: 'prop', ref: 'pupitre-chef', pos: { x, y: 15 }, facing: 'N' })),
-  { id: 'pup-chef', kind: 'prop', ref: 'pupitre-chef', pos: { x: 21, y: 16 }, facing: 'N' },
-  { id: 'orch-tab-1', kind: 'prop', ref: 'tabouret', pos: { x: 16, y: 16 } },
-  { id: 'orch-tab-2', kind: 'prop', ref: 'tabouret', pos: { x: 26, y: 16 } },
+  ...[17, 19, 21, 23, 25].map((x, i): SceneEntity => ({ id: `pup-${i}`, kind: 'prop', ref: 'pupitre-chef', pos: { x, y: 16 }, facing: 'N' })),
+  { id: 'pup-chef', kind: 'prop', ref: 'pupitre-chef', pos: { x: 21, y: 18 }, facing: 'N' },
+  { id: 'orch-tab-1', kind: 'prop', ref: 'tabouret', pos: { x: 18, y: 18 } },
+  { id: 'orch-tab-2', kind: 'prop', ref: 'tabouret', pos: { x: 24, y: 18 } },
 
   // ═══════════════ PARTERRE / ORCHESTRE (17, z=0, rangées 17-44, éventail) ═══════════════
   // Fauteuils 1×1 remplissant TOUT l'éventail, de bord à bord (DENSE comme le plan p.40 : ≈14 rangs
@@ -86,88 +87,116 @@ const ents: SceneEntity[] = [
   // LUSTRE central : suspendu au-dessus du puits (z=1 → flotte au-dessus du vide).
   { id: 'lustre', kind: 'prop', ref: 'lustre-opera', pos: { x: 21, y: 28 }, z: 1 },
 
-  // ═══════════════ SALLES LATÉRALES GAUCHE (z=0) — meublées d'après le plan, pièce par pièce ═══════════════
-  // 14 SALLE VERTE (rangées 1-12) : détente des artistes — longue table centrale, chaises, bancs aux murs.
-  { id: 'sv-table', kind: 'prop', ref: 'table', pos: { x: 6, y: 5 }, foot: { w: 2, h: 1 } },
-  { id: 'sv-chaise-1', kind: 'prop', ref: 'chaise', pos: { x: 5, y: 7 } },
-  { id: 'sv-chaise-2', kind: 'prop', ref: 'chaise', pos: { x: 8, y: 7 } },
-  { id: 'sv-banc-1', kind: 'prop', ref: 'banc', pos: { x: 4, y: 3 } },
-  { id: 'sv-banc-2', kind: 'prop', ref: 'banc', pos: { x: 4, y: 10 } },
-  { id: 'sv-etagere', kind: 'prop', ref: 'etagere', pos: { x: 9, y: 2 } },
+  // ═══════════════ SALLES LATÉRALES GAUCHE (z=0) — DENSÉMENT meublées, pièce par pièce (plan p.40) ═══════
+  // Géométrie (cf. floorplan.ts) : bande HAUTE gy 1-14 (refend vertical gx6) ; puis Vestiaires des chœurs
+  //   Féminin gy 15-23, Masculin gy 24-33, Passage/Régisseur gy 34-43. Les pièces narrent vers le mur
+  //   diagonal de l'éventail (gx1..Lf(y)) : on garnit la partie large, côté mur extérieur (gx1..~10).
 
-  // 13 VESTIAIRE (rangées 13-18) : coiffeuse + chaise + paravent.
-  { id: 'v13-coif', kind: 'prop', ref: 'coiffeuse', pos: { x: 4, y: 14 } },
-  { id: 'v13-chaise', kind: 'prop', ref: 'chaise', pos: { x: 6, y: 16 } },
-  { id: 'v13-parav', kind: 'prop', ref: 'paravent', pos: { x: 3, y: 17 } },
+  // 14 SALLE VERTE / 13 VESTIAIRE (bande haute gy 1-14, deux colonnes gx1-6 et gx6-13) : détente des
+  //   artistes + coiffeuses. Colonne gx1-6 : coin repas + bancs ; colonne gx6-13 : loges/coiffeuses.
+  { id: 'sv-table', kind: 'prop', ref: 'table', pos: { x: 3, y: 6 }, foot: { w: 2, h: 1 } },
+  { id: 'sv-chaise-1', kind: 'prop', ref: 'chaise', pos: { x: 2, y: 8 } },
+  { id: 'sv-chaise-2', kind: 'prop', ref: 'chaise', pos: { x: 5, y: 8 } },
+  { id: 'sv-banc-1', kind: 'prop', ref: 'banc', pos: { x: 2, y: 3 } },
+  { id: 'sv-banc-2', kind: 'prop', ref: 'banc', pos: { x: 2, y: 11 } },
+  { id: 'sv-etagere', kind: 'prop', ref: 'etagere', pos: { x: 4, y: 2 } },
+  { id: 'sv-canape', kind: 'prop', ref: 'canape', pos: { x: 2, y: 13 }, facing: 'E' },
+  { id: 'sv-coif-1', kind: 'prop', ref: 'coiffeuse', pos: { x: 8, y: 2 } },
+  { id: 'sv-coif-2', kind: 'prop', ref: 'coiffeuse', pos: { x: 11, y: 2 } },
+  { id: 'sv-miroir-1', kind: 'prop', ref: 'miroir', pos: { x: 8, y: 6 } },
+  { id: 'sv-chaise-3', kind: 'prop', ref: 'chaise', pos: { x: 10, y: 6 } },
+  { id: 'sv-parav', kind: 'prop', ref: 'paravent', pos: { x: 12, y: 9 } },
+  { id: 'sv-portant', kind: 'prop', ref: 'portant-costumes', pos: { x: 8, y: 11 } },
+  { id: 'sv-mann', kind: 'prop', ref: 'mannequin', pos: { x: 11, y: 12 } },
 
-  // 12 VESTIAIRES DES CHŒURS (Féminin) (rangées 19-30, grande) : coiffeuses, bancs, paravent, armoire.
-  { id: 'v12-coif-1', kind: 'prop', ref: 'coiffeuse', pos: { x: 4, y: 20 } },
-  { id: 'v12-coif-2', kind: 'prop', ref: 'coiffeuse', pos: { x: 4, y: 24 } },
-  { id: 'v12-banc', kind: 'prop', ref: 'banc', pos: { x: 7, y: 22 } },
-  { id: 'v12-parav', kind: 'prop', ref: 'paravent', pos: { x: 3, y: 27 } },
-  { id: 'v12-armoire', kind: 'prop', ref: 'armoire', pos: { x: 8, y: 29 } },
+  // 12 VESTIAIRES DES CHŒURS (Féminin) (gy 15-23, grande) : rangée de coiffeuses-miroirs + paravents,
+  //   bancs, portants à robes, armoire — dense comme une loge collective.
+  { id: 'v12-coif-1', kind: 'prop', ref: 'coiffeuse', pos: { x: 2, y: 16 } },
+  { id: 'v12-coif-2', kind: 'prop', ref: 'coiffeuse', pos: { x: 5, y: 16 } },
+  { id: 'v12-coif-3', kind: 'prop', ref: 'coiffeuse', pos: { x: 8, y: 16 } },
+  { id: 'v12-miroir', kind: 'prop', ref: 'miroir', pos: { x: 11, y: 16 } },
+  { id: 'v12-chaise-1', kind: 'prop', ref: 'chaise', pos: { x: 3, y: 18 } },
+  { id: 'v12-chaise-2', kind: 'prop', ref: 'chaise', pos: { x: 6, y: 18 } },
+  { id: 'v12-banc', kind: 'prop', ref: 'banc', pos: { x: 9, y: 19 } },
+  { id: 'v12-portant', kind: 'prop', ref: 'portant-costumes', pos: { x: 2, y: 20 } },
+  { id: 'v12-parav', kind: 'prop', ref: 'paravent', pos: { x: 5, y: 21 } },
+  { id: 'v12-mann', kind: 'prop', ref: 'mannequin', pos: { x: 8, y: 21 } },
+  { id: 'v12-armoire', kind: 'prop', ref: 'armoire', pos: { x: 2, y: 22 } },
 
-  // 11 VESTIAIRES DES CHŒURS (Masculin) (rangées 31-38) : coiffeuse, banc, paravent.
-  { id: 'v11-coif', kind: 'prop', ref: 'coiffeuse', pos: { x: 4, y: 32 } },
-  { id: 'v11-banc', kind: 'prop', ref: 'banc', pos: { x: 7, y: 34 } },
-  { id: 'v11-parav', kind: 'prop', ref: 'paravent', pos: { x: 3, y: 37 } },
+  // 11 VESTIAIRES DES CHŒURS (Masculin) (gy 24-33) : coiffeuses, bancs, portants, miroir, armoire.
+  { id: 'v11-coif-1', kind: 'prop', ref: 'coiffeuse', pos: { x: 2, y: 25 } },
+  { id: 'v11-coif-2', kind: 'prop', ref: 'coiffeuse', pos: { x: 5, y: 25 } },
+  { id: 'v11-miroir', kind: 'prop', ref: 'miroir', pos: { x: 8, y: 25 } },
+  { id: 'v11-banc-1', kind: 'prop', ref: 'banc', pos: { x: 2, y: 27 } },
+  { id: 'v11-banc-2', kind: 'prop', ref: 'banc', pos: { x: 6, y: 28 } },
+  { id: 'v11-portant', kind: 'prop', ref: 'portant-costumes', pos: { x: 2, y: 30 } },
+  { id: 'v11-parav', kind: 'prop', ref: 'paravent', pos: { x: 5, y: 31 } },
+  { id: 'v11-armoire', kind: 'prop', ref: 'armoire', pos: { x: 2, y: 32 } },
 
-  // 10 PASSAGE (gauche, rangées 39-44) : couloir presque nu — un banc, une caisse oubliée.
-  { id: 'p10-banc', kind: 'prop', ref: 'banc', pos: { x: 4, y: 41 } },
-  { id: 'p10-caisse', kind: 'prop', ref: 'caisse', pos: { x: 6, y: 43 } },
+  // 10 PASSAGE + 15 BUREAU DU RÉGISSEUR (gy 34-43) : bureau du régisseur (papiers, coffre) + bancs.
+  { id: 'reg15-bureau', kind: 'prop', ref: 'bureau', pos: { x: 2, y: 35 }, foot: { w: 2, h: 1 } },
+  { id: 'reg15-chaise', kind: 'prop', ref: 'chaise', pos: { x: 5, y: 35 } },
+  { id: 'reg15-etag', kind: 'prop', ref: 'etagere', pos: { x: 2, y: 37 } },
+  { id: 'reg15-coffre', kind: 'prop', ref: 'coffre', pos: { x: 5, y: 38 } },
+  { id: 'p10-banc-1', kind: 'prop', ref: 'banc', pos: { x: 2, y: 40 } },
+  { id: 'p10-caisse', kind: 'prop', ref: 'caisse', pos: { x: 4, y: 41 } },
 
-  // 15 BUREAU DU RÉGISSEUR — le plan le place côté GAUCHE en bas (rangées du foyer) ; ici dans le passage 10.
-  { id: 'reg15-bureau', kind: 'prop', ref: 'bureau', pos: { x: 4, y: 39 }, foot: { w: 2, h: 1 } },
-  { id: 'reg15-chaise', kind: 'prop', ref: 'chaise', pos: { x: 7, y: 40 } },
+  // ═══════════════ SALLES LATÉRALES DROITE (z=0) — DENSÉMENT meublées ═══════════════
+  // Géométrie : bande HAUTE gy 1-14 (Stockage décors gx30-37 + petites pièces NE gx37-42) ; Rangements
+  //   costumes gy 15-23, Couturières gy 24-30, Charpenterie/Réserve gy 31-43.
 
-  // ═══════════════ SALLES LATÉRALES DROITE (z=0) ═══════════════
-  // 20 STOCKAGE DES DÉCORS (rangées 1-12, grande) : châssis peints alignés, charrette, caisses, mannequin.
-  { id: 's20-flat-1', kind: 'prop', ref: 'decor-flat', pos: { x: 37, y: 3 } },
-  { id: 's20-flat-2', kind: 'prop', ref: 'decor-flat', pos: { x: 40, y: 3 } },
-  { id: 's20-flat-3', kind: 'prop', ref: 'decor-flat', pos: { x: 37, y: 6 } },
-  { id: 's20-charrette', kind: 'prop', ref: 'charrette', pos: { x: 39, y: 9 } },
-  { id: 's20-caisse', kind: 'prop', ref: 'caisse', pos: { x: 36, y: 10 } },
-  { id: 's20-mann', kind: 'prop', ref: 'mannequin', pos: { x: 41, y: 11 } },
+  // 20 STOCKAGE DES DÉCORS (bande haute, gx30-37) : châssis peints alignés serrés, charrette, caisses.
+  { id: 's20-flat-1', kind: 'prop', ref: 'decor-flat', pos: { x: 31, y: 2 } },
+  { id: 's20-flat-2', kind: 'prop', ref: 'decor-flat', pos: { x: 33, y: 2 } },
+  { id: 's20-flat-3', kind: 'prop', ref: 'decor-flat', pos: { x: 35, y: 2 } },
+  { id: 's20-flat-4', kind: 'prop', ref: 'decor-flat', pos: { x: 31, y: 5 } },
+  { id: 's20-flat-5', kind: 'prop', ref: 'decor-flat', pos: { x: 33, y: 5 } },
+  { id: 's20-charrette', kind: 'prop', ref: 'charrette', pos: { x: 35, y: 7 } },
+  { id: 's20-caisse-1', kind: 'prop', ref: 'caisse', pos: { x: 31, y: 8 } },
+  { id: 's20-caisse-2', kind: 'prop', ref: 'caisse', pos: { x: 33, y: 9 } },
+  { id: 's20-tonneaux', kind: 'prop', ref: 'tonneaux-pile', pos: { x: 35, y: 10 } },
+  { id: 's20-mann', kind: 'prop', ref: 'mannequin', pos: { x: 31, y: 12 } },
+  { id: 's20-colonne', kind: 'prop', ref: 'colonne-brisee', pos: { x: 34, y: 12 } },
 
-  // 22 BUREAU DU CONCIERGE (sous-pièce coin, rangées 13-15) : petit bureau + chaise.
-  { id: 'b22-bureau', kind: 'prop', ref: 'bureau', pos: { x: 40, y: 14 }, foot: { w: 2, h: 1 } },
-  { id: 'b22-chaise', kind: 'prop', ref: 'chaise', pos: { x: 39, y: 13 } },
+  // 22 BUREAU DU CONCIERGE / 23 GESTIONNAIRE (petites pièces NE gx37-42, empilées) : bureaux + étagères.
+  { id: 'b22-bureau', kind: 'prop', ref: 'bureau', pos: { x: 39, y: 6 }, foot: { w: 2, h: 1 } },
+  { id: 'b22-chaise', kind: 'prop', ref: 'chaise', pos: { x: 38, y: 7 } },
+  { id: 'b23-bureau', kind: 'prop', ref: 'bureau', pos: { x: 39, y: 11 }, foot: { w: 2, h: 1 } },
+  { id: 'b23-etag', kind: 'prop', ref: 'etagere', pos: { x: 38, y: 13 } },
 
-  // 21 STOCKAGE DES ACCESSOIRES (rangées 13-19) : étagères chargées, caisses, tonneaux, coffre.
-  { id: 's21-etag-1', kind: 'prop', ref: 'etagere', pos: { x: 35, y: 14 } },
-  { id: 's21-etag-2', kind: 'prop', ref: 'etagere', pos: { x: 35, y: 18 } },
-  { id: 's21-tonneaux', kind: 'prop', ref: 'tonneaux-pile', pos: { x: 37, y: 17 } },
-  { id: 's21-coffre', kind: 'prop', ref: 'coffre', pos: { x: 38, y: 19 } },
+  // 24 RANGEMENTS DES COSTUMES (gy 15-23) : portants à costumes serrés, armoires, mannequins, coffres.
+  { id: 'c24-portant-1', kind: 'prop', ref: 'portant-costumes', pos: { x: 31, y: 16 } },
+  { id: 'c24-portant-2', kind: 'prop', ref: 'portant-costumes', pos: { x: 34, y: 16 } },
+  { id: 'c24-portant-3', kind: 'prop', ref: 'portant-costumes', pos: { x: 37, y: 16 } },
+  { id: 'c24-armoire-1', kind: 'prop', ref: 'armoire', pos: { x: 40, y: 16 } },
+  { id: 'c24-mann-1', kind: 'prop', ref: 'mannequin', pos: { x: 31, y: 19 } },
+  { id: 'c24-mann-2', kind: 'prop', ref: 'mannequin', pos: { x: 34, y: 19 } },
+  { id: 'c24-coffre', kind: 'prop', ref: 'coffre', pos: { x: 37, y: 20 } },
+  { id: 'c24-portant-4', kind: 'prop', ref: 'portant-costumes', pos: { x: 40, y: 20 } },
+  { id: 'c24-armoire-2', kind: 'prop', ref: 'armoire', pos: { x: 31, y: 22 } },
 
-  // 23 BUREAU DU GESTIONNAIRE DES ACCESSOIRES (sous-pièce, rangées 20-22) : bureau + étagère.
-  { id: 'b23-bureau', kind: 'prop', ref: 'bureau', pos: { x: 40, y: 21 }, foot: { w: 2, h: 1 } },
-  { id: 'b23-etag', kind: 'prop', ref: 'etagere', pos: { x: 39, y: 20 } },
+  // 25 COUTURIÈRES (gy 24-30) : tables de coupe, portants, mannequins, tabourets, étagère à étoffes.
+  { id: 'c25-table-1', kind: 'prop', ref: 'table', pos: { x: 31, y: 25 }, foot: { w: 2, h: 1 } },
+  { id: 'c25-tab-1', kind: 'prop', ref: 'tabouret', pos: { x: 34, y: 25 } },
+  { id: 'c25-table-2', kind: 'prop', ref: 'table', pos: { x: 36, y: 25 }, foot: { w: 2, h: 1 } },
+  { id: 'c25-mann-1', kind: 'prop', ref: 'mannequin', pos: { x: 39, y: 25 } },
+  { id: 'c25-portant', kind: 'prop', ref: 'portant-costumes', pos: { x: 31, y: 28 } },
+  { id: 'c25-mann-2', kind: 'prop', ref: 'mannequin', pos: { x: 34, y: 28 } },
+  { id: 'c25-etag', kind: 'prop', ref: 'etagere', pos: { x: 37, y: 28 } },
+  { id: 'c25-tab-2', kind: 'prop', ref: 'tabouret', pos: { x: 40, y: 28 } },
 
-  // 24 RANGEMENTS DES COSTUMES (rangées 20-29) : portants à costumes alignés, armoire, mannequins.
-  { id: 'c24-portant-1', kind: 'prop', ref: 'portant-costumes', pos: { x: 35, y: 23 } },
-  { id: 'c24-portant-2', kind: 'prop', ref: 'portant-costumes', pos: { x: 35, y: 26 } },
-  { id: 'c24-armoire', kind: 'prop', ref: 'armoire', pos: { x: 38, y: 24 } },
-  { id: 'c24-mann', kind: 'prop', ref: 'mannequin', pos: { x: 37, y: 28 } },
-
-  // 25 COUTURIÈRES (rangées 30-35) : tables de coupe, portant, mannequin, tabouret.
-  { id: 'c25-table-1', kind: 'prop', ref: 'table', pos: { x: 36, y: 31 }, foot: { w: 2, h: 1 } },
-  { id: 'c25-portant', kind: 'prop', ref: 'portant-costumes', pos: { x: 39, y: 33 } },
-  { id: 'c25-mann', kind: 'prop', ref: 'mannequin', pos: { x: 36, y: 34 } },
-  { id: 'c25-tab', kind: 'prop', ref: 'tabouret', pos: { x: 38, y: 31 } },
-
-  // 26 CHARPENTERIE ET DÉCORS (rangées 36-42) : établi, chevalet de sciage, bois (caisse), tonneau.
-  { id: 'c26-etabli', kind: 'prop', ref: 'etabli', pos: { x: 36, y: 37 }, foot: { w: 2, h: 1 } },
-  { id: 'c26-scie', kind: 'prop', ref: 'scie-chevalet', pos: { x: 39, y: 39 } },
-  { id: 'c26-caisse', kind: 'prop', ref: 'caisse', pos: { x: 36, y: 41 } },
-  { id: 'c26-flat', kind: 'prop', ref: 'decor-flat', pos: { x: 41, y: 37 } },
-
-  // 27 RÉSERVE GÉNÉRALE (rangées 43-50, grande) : caisses, tonneaux empilés, étagère, coffre.
-  { id: 'r27-tonneaux-1', kind: 'prop', ref: 'tonneaux-pile', pos: { x: 36, y: 44 } },
-  { id: 'r27-tonneaux-2', kind: 'prop', ref: 'tonneaux-pile', pos: { x: 40, y: 47 } },
-  { id: 'r27-caisse-1', kind: 'prop', ref: 'caisse', pos: { x: 38, y: 45 } },
-  { id: 'r27-caisse-2', kind: 'prop', ref: 'caisse', pos: { x: 37, y: 49 } },
-  { id: 'r27-etag', kind: 'prop', ref: 'etagere', pos: { x: 36, y: 47 } },
-  { id: 'r27-coffre', kind: 'prop', ref: 'coffre', pos: { x: 40, y: 50 } },
+  // 26 CHARPENTERIE + 27 RÉSERVE GÉNÉRALE (gy 31-43, l'atelier DÉCROÎT vers l'éventail : on garnit le
+  //   côté mur extérieur gx 34-42 où il reste de la place) : établis, scie, bois, tonneaux, caisses, coffres.
+  { id: 'c26-etabli', kind: 'prop', ref: 'etabli', pos: { x: 34, y: 32 }, foot: { w: 2, h: 1 } },
+  { id: 'c26-scie', kind: 'prop', ref: 'scie-chevalet', pos: { x: 37, y: 32 } },
+  { id: 'c26-flat', kind: 'prop', ref: 'decor-flat', pos: { x: 40, y: 32 } },
+  { id: 'c26-caisse-1', kind: 'prop', ref: 'caisse', pos: { x: 39, y: 34 } },
+  { id: 'r27-tonneaux-1', kind: 'prop', ref: 'tonneaux-pile', pos: { x: 35, y: 35 } },
+  { id: 'r27-caisse-2', kind: 'prop', ref: 'caisse', pos: { x: 37, y: 36 } },
+  { id: 'r27-etag', kind: 'prop', ref: 'etagere', pos: { x: 40, y: 36 } },
+  { id: 'r27-tonneaux-2', kind: 'prop', ref: 'tonneaux-pile', pos: { x: 36, y: 38 } },
+  { id: 'r27-coffre', kind: 'prop', ref: 'coffre', pos: { x: 39, y: 39 } },
+  { id: 'r27-caisse-3', kind: 'prop', ref: 'caisse', pos: { x: 38, y: 41 } },
 
   // ═══════════════ PREMIER ÉTAGE (z=1) — LOGES & BALCONS tiérés autour du puits ovale ═══════════════
   // Ring gauche (cols 2-8) : sièges face au PUITS (Est). Deux rangs tiérés par tranche de hauteur.
@@ -194,16 +223,16 @@ const ents: SceneEntity[] = [
   { id: 'royale-app-d', kind: 'prop', ref: 'applique-murale', pos: { x: 24, y: 1 }, z: 1 },
 
   // 29 LOGE DES NOBLES (haut, de part et d'autre de la loge royale) : fauteuils face au puits.
-  { id: 'noble-g-1', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 15, y: 16 }, facing: 'S', z: 1 },
-  { id: 'noble-g-2', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 14, y: 17 }, facing: 'S', z: 1 },
-  { id: 'noble-d-1', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 28, y: 16 }, facing: 'S', z: 1 },
-  { id: 'noble-d-2', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 29, y: 17 }, facing: 'S', z: 1 },
+  { id: 'noble-g-1', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 16, y: 15 }, facing: 'S', z: 1 },
+  { id: 'noble-g-2', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 14, y: 16 }, facing: 'S', z: 1 },
+  { id: 'noble-d-1', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 26, y: 15 }, facing: 'S', z: 1 },
+  { id: 'noble-d-2', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 28, y: 16 }, facing: 'S', z: 1 },
 
   // ═══════════════ GALERIE / BARS / SALONS de l'étage (z=1, débordent sur le foyer rangées 46-52) ═══════════════
   // 38 SALON DES DAMES (coin gauche, arrivée escalier 8) : comptoir de bar, tables, fauteuils, plante.
   { id: 'salon-d-comptoir', kind: 'prop', ref: 'comptoir', pos: { x: 4, y: 48 }, z: 1 },
   { id: 'salon-d-table', kind: 'prop', ref: 'table', pos: { x: 6, y: 50 }, z: 1 },
-  { id: 'salon-d-ft', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 5, y: 51 }, z: 1 },
+  { id: 'salon-d-ft', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 5, y: 49 }, z: 1 },
   { id: 'salon-d-plante', kind: 'prop', ref: 'plante-pot', pos: { x: 3, y: 50 }, z: 1 },
   // 36 BAR DES BALCONS gauche : comptoir + tonneaux + étagère à bouteilles.
   { id: 'bar-g-comptoir', kind: 'prop', ref: 'comptoir', pos: { x: 9, y: 47 }, z: 1 },
@@ -213,7 +242,7 @@ const ents: SceneEntity[] = [
   // 39 SALON DES SEIGNEURS (coin droit, arrivée escalier 9) : comptoir, table, canapé, plante.
   { id: 'salon-s-comptoir', kind: 'prop', ref: 'comptoir', pos: { x: 39, y: 48 }, z: 1 },
   { id: 'salon-s-table', kind: 'prop', ref: 'table', pos: { x: 37, y: 50 }, z: 1 },
-  { id: 'salon-s-canape', kind: 'prop', ref: 'canape', pos: { x: 38, y: 51 }, facing: 'N', z: 1 },
+  { id: 'salon-s-canape', kind: 'prop', ref: 'canape', pos: { x: 38, y: 49 }, facing: 'N', z: 1 },
   { id: 'salon-s-plante', kind: 'prop', ref: 'plante-pot', pos: { x: 40, y: 50 }, z: 1 },
   // 36 BAR DES BALCONS droit : comptoir + étagère + tonneau.
   { id: 'bar-d-comptoir', kind: 'prop', ref: 'comptoir', pos: { x: 34, y: 47 }, z: 1 },

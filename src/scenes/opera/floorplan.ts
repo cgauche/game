@@ -1,22 +1,28 @@
 /**
- * GÉOMÉTRIE du Théâtre Staatsoper (« Une nuit à l'Opéra », NADJ) — RECONSTRUITE FIDÈLEMENT du plan
- * officiel (rez-de-chaussée p.40 + premier étage p.41), à l'échelle du plan. Grille 44×60 (le bâtiment
- * est nettement plus haut que large : ratio mesuré sur le plan ≈ 1.36). Repère : y=0 = le FOND
- * (coulisses, derrière la scène, en HAUT du plan) ; y croissant = vers le FOYER (façade, en BAS).
- * La SCÈNE regarde vers le bas ; le public la regarde vers le HAUT. Axe de symétrie x=21.5.
+ * GÉOMÉTRIE du Théâtre Staatsoper (« Une nuit à l'Opéra », NADJ) — RECONSTRUITE FIDÈLEMENT du SCHÉMA DE
+ * MURS autoritaire (`art-ref/opera/plan_walls_doors.png` : murs noirs, portes vertes, escaliers orange),
+ * mesuré au pixel et reporté sur la grille 44×60 (le bâtiment est plus haut que large : ratio ≈ 1.36).
+ * Repère : y=0 = le FOND (coulisses, derrière la scène, en HAUT du plan) ; y croissant = vers le FOYER
+ * (façade, en BAS). La SCÈNE regarde vers le bas ; le public la regarde vers le HAUT. Axe x=21.5.
  *
- * MÉTHODE D'AUTORING (comparable au plan) : la carte est décrite par des TABLES DE DONNÉES lisibles —
- *   • bandes verticales (y) du centre : coulisses → scène → fosse → parterre → foyer → entrées ;
- *   • demi-largeurs du parterre PAR RANGÉE (l'éventail courbe du plan, interpolé) ;
- *   • pièces latérales GAUCHE et DROITE indépendantes (le plan n'est PAS symétrique : à gauche les
- *     grandes loges/vestiaires des chœurs, à droite les ateliers et réserves) — chacune = une plage de
- *     rangées [y0,y1] + numéro de légende ;
- *   • foyer (escaliers, commodités, vestiaire-billets, passages, portes d'entrée).
- * Le dump `scripts/qc/dump-opera-ascii.mts` ré-imprime cette géométrie en box-drawing pour la comparer
- * directement au plan.
+ * STRUCTURE DU SCHÉMA (du haut vers le bas) :
+ *   • périmètre rectangulaire, COINS AVANT (façade, bas) ARRONDIS (diagonales visuelles) ;
+ *   • la SCÈNE = grand rectangle centré en haut (cols 13..30), surélevée (+0.4) ;
+ *   • la FOSSE d'orchestre = petit rectangle centré sous la scène, en contrebas (−0.4) ;
+ *   • l'AUDITORIUM (parterre) = TRAPÈZE borné par DEUX MURS DIAGONAUX LISSES (étroit en haut vers la
+ *     scène, large en bas vers le foyer) — rendus par des diagonales VISUELLES `diag()` doublées d'une
+ *     fermeture cardinale BLOQUANTE (marches) le long de chaque bord ;
+ *   • de chaque côté une COLONNE de pièces subdivisée par des refends horizontaux (gauche = loges et
+ *     vestiaires des chœurs, salle verte ; droite = ateliers, stockages, réserves + petites pièces en
+ *     haut) — chaque pièce abute directement sur le mur diagonal de l'éventail ;
+ *   • en bas le FOYER (Salon) avec DEUX ESCALIERS (orange) décalés vers l'intérieur + portes, puis la
+ *     bande des entrées (commodités, billetterie) et la façade arrondie.
+ * Les portes (vert au schéma) sont placées de façon PLAUSIBLE en GARANTISSANT la connexité (toute pièce
+ * rejoignable depuis le foyer) — la position au pixel du vert n'est pas contraignante (cf. brief).
  *
  * PUREMENT la géométrie (étages, murs sur arêtes, portes, élévation, vide central, escaliers) : ni
  * logique, ni casting, ni dialogues. Construit un `Scene` éditable — donnée, pas de scène codée en dur.
+ * Le QC `scripts/qc/opera-walls.mts` ré-imprime ces murs en vue du dessus schématique (style du plan).
  *
  * Correspondance avec la LÉGENDE du plan (p.40/p.41) :
  *   REZ : 1 Porte des Dames · 2 Porte des Seigneurs · 3 Escalier principal · 4 Commodités des Dames ·
@@ -40,26 +46,26 @@ const inGrid = (x: number, y: number) => x >= 0 && x < W && y >= 0 && y < H;
 // ── Empreinte du bâtiment : x ∈ [BX0,BX1], y ∈ [BY0,BY1]. Le périmètre est mur ; la façade s'arrondit. ──
 const BX0 = 1, BX1 = W - 2;   // colonnes du bâti (1..42)
 const BY0 = 1, BY1 = H - 2;   // rangées du bâti (1..58)
-const CLx = BX0 + 1;          // couloir/cloison intérieure gauche (les pièces commencent à CLx)
-const CRx = BX1 - 1;          // couloir/cloison intérieure droite
 
-// ── Bandes verticales (y) reportées du plan p.40 (mesurées : ~18 px/rangée sur le plan). ──
-const COULY0 = 1, COULY1 = 4;       // 16 Coulisses : bande derrière la scène
-const STAGEY0 = 5, STAGEY1 = 13;    // 19 Scène surélevée (+0.4) — large, ~9 rangées
-const PITY0 = 14, PITY1 = 16;       // 18 Fosse d'orchestre en contrebas (−0.4), bande courbe
-const PY0 = 17, PY1 = 44;           // 17 Parterre en éventail — 28 rangées
-const FOYY = 45;                    // cloison foyer / auditorium
-const FOY0 = 46, FOY1 = 52;         // 7 Salon (foyer) — marbre
-const ENT0 = 53, ENT1 = 58;         // bande des entrées (3/4/5/6/8/9) + façade
+// ── Bandes verticales (y) reportées du SCHÉMA (mesurées au pixel : ~21 px/rangée). ──
+const TOPDIV = 4;                   // refend du fond : sépare la bande supérieure (gy≈4.5 sur le schéma)
+const STAGEY0 = 5, STAGEY1 = 14;    // 19 Scène surélevée (+0.4), grand rectangle centré (gy 5..14)
+const PITY0 = 15, PITY1 = 19;       // 18 Fosse d'orchestre en contrebas (−0.4), petit rect centré
+const PY0 = 20, PY1 = 43;           // 17 Parterre en éventail — 24 rangées (gy 20..43)
+const FOYY = 44;                    // cloison foyer / auditorium (gy≈43.6 du schéma)
+const FOY0 = 45, FOY1 = 50;         // 7 Salon (foyer) — marbre (gy 45..50)
+const ENT0 = 51, ENT1 = 58;         // bande des entrées (3/4/5/6/8/9) + façade
 const FACY = 58;                    // seuil de façade (portes 1/2), rangée courbe
-// L'étage déborde sur le foyer jusqu'ici (galerie/bars/salons + arrivées d'escalier).
-const GALY1 = 52;
+const GALY1 = 50;                   // l'étage déborde sur le foyer jusqu'ici (galerie/bars/salons)
+
+// La SCÈNE est centrée, cols 13..30 (mesuré : bords px 373 / 836 → gx ≈ 13 / 30).
+const STX0 = 13, STX1 = 30;
 
 // ── Éventail du parterre : demi-largeur par rangée (étroit près de la scène, large vers le foyer).
-//    Interpolation linéaire sur toute la hauteur → courbe lisse. Mesuré sur le plan : ~half 6 en haut,
-//    ~half 12 en bas (le parterre occupe la moitié centrale de la largeur du bâtiment). ──
-const FAN_TOP_HALF = 6;
-const FAN_BOT_HALF = 12;
+//    Mesuré sur le schéma : half ≈ 6.5 en haut (gy 20), ≈ 13.5 en bas (gy 43). Interpolation linéaire
+//    → deux murs DIAGONAUX LISSES (rendus diag() le long de chaque bord). ──
+const FAN_TOP_HALF = 5;
+const FAN_BOT_HALF = 13;
 const fanHalf = (y: number) => {
   const t = (y - PY0) / (PY1 - PY0);
   return Math.round(FAN_TOP_HALF + (FAN_BOT_HALF - FAN_TOP_HALF) * t);
@@ -69,8 +75,7 @@ const Rf = (y: number) => Math.round(AX + fanHalf(y)); // bord droit du parterre
 
 /** Cases de SIÈGE du parterre : éventail PLEIN, de bord à bord (Lf..Rf), un rang sur deux (allée de
  *  circulation entre les rangs), allée centrale de 2 cases (axe 21.5). Source UNIQUE de la géométrie des
- *  fauteuils → le scénario y pose un `siege` 1×1 par case (cf. 22-opera-plan). DENSE comme le plan p.40
- *  (≈14 rangs pleins), au lieu de quelques sièges épars avec un grand vide central. */
+ *  fauteuils → le scénario y pose un `siege` 1×1 par case (cf. 22-opera-plan). DENSE comme le plan p.40. */
 export function parterreSeatCells(): { x: number; y: number }[] {
   const out: { x: number; y: number }[] = [];
   for (let y = PY0; y <= PY1; y += 2)
@@ -80,9 +85,6 @@ export function parterreSeatCells(): { x: number; y: number }[] {
     }
   return out;
 }
-
-// La scène est un peu plus large que le sommet de l'éventail (avant-scène). Mesuré cols ~11..32.
-const STX0 = 11, STX1 = 32;
 
 // ── Puits central ovale (étage) : demi-largeur par rangée (ellipse approchée), un cran plus large que
 //    l'éventail au milieu (galbe vu d'en haut). Couvre fosse + parterre (sauf dernière rangée = galerie). ──
@@ -96,25 +98,25 @@ const ovalHalf = (y: number) => {
   return Math.max(3, Math.round(w));
 };
 
-// ── PIÈCES LATÉRALES (rez) — plages de rangées [y0,y1] par côté, du fond vers le foyer. Le plan n'est
-//    PAS symétrique : à GAUCHE les vestiaires/loges des chœurs et la salle verte ; à DROITE les ateliers,
-//    stockages et réserves. Chaque pièce occupe la bande de sa plage entre le couloir (CLx/CRx) et le bord
-//    de l'éventail. Les petits bureaux (22/23) sont des sous-pièces (coin haut/intérieur). ──
-type Room = { y0: number; y1: number; n: number };
+// ── PIÈCES LATÉRALES (rez) — plages de rangées [y0,y1] par côté, du fond vers le foyer, reportées des
+//    refends MESURÉS sur le schéma (gauche : refends gy≈20/24/34 ; droite : gy≈20/24/31). Le plan n'est
+//    PAS symétrique. Chaque pièce occupe la bande de sa plage entre le bord du bâtiment (BX0/BX1) et le
+//    mur diagonal de l'éventail. `n` = numéro de légende. `split` (optionnel) = colonne d'un refend
+//    VERTICAL interne (sous-pièces de la BANDE DU HAUT, le long de la scène — cf. schéma). ──
+type Room = { y0: number; y1: number; n: number; split?: number };
+// Bande du HAUT (le long de la scène, gy 1..14) : à GAUCHE refend vertical gx≈6 (mesuré) → 2 colonnes
+//   de pièces ; à DROITE refend vertical gx≈37 → pièce large + petites pièces NE (gérées à part).
 const LEFT_ROOMS: Room[] = [
-  { y0: COULY0, y1: 12, n: 14 },   // Salle verte (grande, le long de scène+coulisses)
-  { y0: 13, y1: 18, n: 13 },       // Vestiaire
-  { y0: 19, y1: 30, n: 12 },       // Vestiaires des chœurs (Féminin) — grande
-  { y0: 31, y1: 38, n: 11 },       // Vestiaires des chœurs (Masculin)
-  { y0: 39, y1: 44, n: 10 },       // Passage
+  { y0: BY0, y1: STAGEY1, n: 14, split: 6 }, // Salle verte / vestiaire (bande haute), refend vertical gx6
+  { y0: PITY0, y1: 23, n: 12 },              // Vestiaires des chœurs (Féminin) — grande
+  { y0: 24, y1: 33, n: 11 },                 // Vestiaires des chœurs (Masculin)
+  { y0: 34, y1: PY1, n: 10 },                // Passage / Bureau du régisseur (15)
 ];
 const RIGHT_ROOMS: Room[] = [
-  { y0: COULY0, y1: 12, n: 20 },   // Stockage des décors (grande, haut)
-  { y0: 13, y1: 19, n: 21 },       // Stockage des accessoires
-  { y0: 20, y1: 29, n: 24 },       // Rangements des costumes
-  { y0: 30, y1: 35, n: 25 },       // Couturières
-  { y0: 36, y1: 42, n: 26 },       // Charpenterie et décors
-  { y0: 43, y1: 50, n: 27 },       // Réserve générale
+  { y0: BY0, y1: STAGEY1, n: 20, split: 37 }, // Stockage des décors (bande haute), refend vertical gx37
+  { y0: PITY0, y1: 23, n: 24 },              // Rangements des costumes
+  { y0: 24, y1: 30, n: 25 },                 // Couturières
+  { y0: 31, y1: PY1, n: 26 },                // Charpenterie et décors (27 Réserve au foyer)
 ];
 
 type Side4 = 'N' | 'E' | 'S' | 'W';
@@ -169,13 +171,10 @@ function build(): { tiles0: Terrain[]; elev0: number[]; tiles1: Terrain[]; walls
   fill(tiles0, BX0, BY0, BX1, BY1, 'dalle');
   // SCÈNE SURÉLEVÉE (19) — planches, +0.4 (rend le relief et soulève le jeton).
   fill(tiles0, STX0, STAGEY0, STX1, STAGEY1, 'planches'); elevRect(STX0, STAGEY0, STX1, STAGEY1, 0.4);
-  // FOSSE D'ORCHESTRE (18) EN CONTREBAS — planches, −0.4, bande courbe sous l'avant-scène.
-  for (let y = PITY0; y <= PITY1; y++) {
-    const half = FAN_TOP_HALF + 1 + (y - PITY0); // s'élargit vers le parterre
-    fill(tiles0, Math.round(AX - half), y, Math.round(AX + half), y, 'planches');
-    elevRect(Math.round(AX - half), y, Math.round(AX + half), y, -0.4);
-  }
-  // PARTERRE en éventail (17, parquet) — le reste de chaque rangée (dalle) = couloirs + salles latérales.
+  // FOSSE D'ORCHESTRE (18) EN CONTREBAS — planches, −0.4, petit rectangle centré sous la scène.
+  fill(tiles0, Math.round(AX - FAN_TOP_HALF), PITY0, Math.round(AX + FAN_TOP_HALF), PITY1, 'planches');
+  elevRect(Math.round(AX - FAN_TOP_HALF), PITY0, Math.round(AX + FAN_TOP_HALF), PITY1, -0.4);
+  // PARTERRE en éventail (17, parquet) — le reste de chaque rangée (dalle) = salles latérales.
   for (let y = PY0; y <= PY1; y++) fill(tiles0, Lf(y), y, Rf(y), y, 'plancher');
   // FOYER (Salon 7) — marbre, sous le parterre.
   fill(tiles0, BX0, FOY0, BX1, FOY1, 'marbre');
@@ -186,22 +185,30 @@ function build(): { tiles0: Terrain[]; elev0: number[]; tiles1: Terrain[]; walls
   wallRect(BX0, BY0, BX1, FACY, 0);
   wall(Math.round(AX - 5), FACY, 'S', 0, true);   // Porte des Dames (1)
   wall(Math.round(AX + 5), FACY, 'S', 0, true);   // Porte des Seigneurs (2)
-  wall(BX1, COULY0, 'E', 0, true);                // Entrée des artistes (côté coulisses, est)
+  wall(BX1, BY0, 'E', 0, true);                   // Entrée des artistes (côté fond, est)
   // Façade : coins avant ARRONDIS (galbe du foyer) — vide + diagonale PUREMENT VISUELLE.
   for (let x = BX0; x <= BX0 + 3; x++) { tiles0[idx(x, FACY)] = 'vide'; diag(x, FACY, '/', 0); }
   for (let x = BX1 - 3; x <= BX1; x++) { tiles0[idx(x, FACY)] = 'vide'; diag(x, FACY, '\\', 0); }
 
-  // ── COULISSES (16) derrière la scène : ouvertes vers la scène (passage central des artistes),
-  //    desservies par les couloirs latéraux. ──
-  for (let x = STX0; x <= STX1; x++) wall(x, STAGEY0, 'N', 0, x === Math.round(AX)); // coulisses↔scène
-  wall(STX0 - 1, COULY1, 'S', 0); wall(STX1 + 1, COULY1, 'S', 0); // séparation coulisses/pièces du fond
+  // ── SCÈNE (19) : rectangle centré cloisonné. Bas de scène ouvert vers la fosse (passage central) ;
+  //    portes vers les pièces latérales de part et d'autre (mesuré gy≈14.6 sur le schéma). ──
+  for (let x = STX0; x <= STX1; x++) {
+    wall(x, STAGEY0, 'N', 0);                       // fond de scène (vers la bande du fond)
+    wall(x, STAGEY1, 'S', 0, x === STX0 + 2 || x === STX1 - 2); // bas de scène → pièces latérales (2 portes)
+  }
+  for (let y = STAGEY0; y <= STAGEY1; y++) { wall(STX0, y, 'W', 0); wall(STX1, y, 'E', 0); }
+  wall(STX1, STAGEY0, 'E', 0, true);                // porte coin haut-droit de la scène (schéma)
 
-  // ── Côtés de l'ÉVENTAIL : cloison BLOQUANTE parterre↔salles latérales (murs cardinaux W/E + fermeture
-  //    des MARCHES par des murs N). Une PORTE par côté relie le parterre au couloir, à mi-hauteur. ──
+  // ── ÉVENTAIL : deux MURS DIAGONAUX LISSES (diag visuelles) le long de chaque bord, DOUBLÉS d'une
+  //    fermeture cardinale BLOQUANTE (murs W/E + fermeture des marches par murs N). Une PORTE par côté
+  //    relie le parterre à la salle latérale, à mi-hauteur. ──
   const doorRow = Math.floor((PY0 + PY1) / 2);
   for (let y = PY0; y <= PY1; y++) {
     wall(Lf(y), y, 'W', 0, y === doorRow);
     wall(Rf(y), y, 'E', 0, y === doorRow);
+    // diagonale VISUELLE lissant le bord (pose une oblique sur la case de bord)
+    diag(Lf(y), y, '\\', 0);
+    diag(Rf(y), y, '/', 0);
     if (y > PY0) {
       for (let x = Lf(y); x < Lf(y - 1); x++) wall(x, y, 'N', 0); // ferme la marche gauche
       for (let x = Rf(y - 1) + 1; x <= Rf(y); x++) wall(x, y, 'N', 0); // ferme la marche droite
@@ -209,63 +216,84 @@ function build(): { tiles0: Terrain[]; elev0: number[]; tiles1: Terrain[]; walls
   }
   // Avant-scène : fond du parterre vers la fosse — mur plein, ouverture centrale.
   for (let x = Lf(PY0); x <= Rf(PY0); x++) wall(x, PY0, 'N', 0, x === Math.round(AX));
-  // Bord de la fosse côté scène (avant-scène) — la scène domine la fosse.
-  for (let x = STX0; x <= STX1; x++) wall(x, PITY0, 'N', 0);
+  // FOSSE D'ORCHESTRE : petit rectangle CLOS (le schéma le dessine ainsi), gx[AX±FAN_TOP_HALF],
+  //   gy[PITY0..PITY1] — la scène le domine au nord, le parterre le regarde au sud (avant-scène).
+  const pitL = Math.round(AX - FAN_TOP_HALF), pitR = Math.round(AX + FAN_TOP_HALF);
+  for (let x = pitL; x <= pitR; x++) { wall(x, PITY0, 'N', 0); wall(x, PITY1, 'S', 0, x === Math.round(AX)); }
+  for (let y = PITY0; y <= PITY1; y++) { wall(pitL, y, 'W', 0); wall(pitR, y, 'E', 0); }
 
-  // ── PIÈCES LATÉRALES desservies par un COULOIR de service périphérique (x=BX0 gauche / BX1 droite) :
-  //    chaque pièce ouvre par une PORTE sur le couloir ; le couloir débouche sur le foyer. Les cloisons
-  //    intérieures sont en CLx / CRx (le couloir = la colonne du bord). ──
+  // ── PIÈCES LATÉRALES : chaque pièce abute sur le mur diagonal de l'éventail (pas de couloir de
+  //    service). Refends horizontaux entre pièces ; refend vertical interne optionnel (`split`). Les
+  //    portes forment une CHAÎNE VERTICALE (pièce ↔ pièce suivante) débouchant sur le foyer → connexité. ──
   const sideRoom = (rooms: Room[], left: boolean) => {
-    const innerX = left ? CLx : CRx; // arête côté éventail (W à gauche, E à droite) avec porte
-    const side: Side4 = left ? 'W' : 'E';
-    for (const r of rooms) {
-      // la porte de la pièce sur le couloir : à mi-hauteur, MAIS bornée à l'extent réel (≤ PY1) — une
-      // pièce qui descend jusqu'au foyer (réserve 27) garde sa porte au-dessus de la cloison du foyer.
-      const ylo = r.y0, yhi = Math.min(r.y1, PY1);
-      const mid = Math.floor((ylo + yhi) / 2);
-      for (let y = r.y0; y <= r.y1; y++) {
-        // la pièce existe seulement là où il reste de la place entre le couloir et l'éventail/foyer central
-        const edge = left ? Lf(y) - 1 : Rf(y) + 1;
-        const hasRoom = left ? edge >= innerX : edge <= innerX;
-        if (hasRoom) wall(innerX, y, side, 0, y === mid);
-      }
-      // refend (séparation avec la pièce suivante) : du couloir au bord de l'éventail.
+    for (let i = 0; i < rooms.length; i++) {
+      const r = rooms[i];
+      // refend bas (séparation avec la pièce suivante), du bord du bâtiment au bord de l'éventail —
+      // avec une PORTE (chaîne verticale) sauf au dernier refend (qui donnera sur le foyer plus bas).
       if (r.y1 < PY1) {
-        const lo = left ? innerX : Rf(r.y1 + 1) + 1;
-        const hi = left ? Lf(r.y1 + 1) - 1 : innerX;
-        for (let x = lo; x <= hi; x++) wall(x, r.y1, 'S', 0);
+        const yNext = r.y1 + 1;
+        const lo = left ? BX0 : Rf(yNext) + 1;
+        const hi = left ? Lf(yNext) - 1 : BX1;
+        const door = left ? BX0 + 2 : BX1 - 2; // porte de chaîne près du mur extérieur
+        for (let x = lo; x <= hi; x++) wall(x, r.y1, 'S', 0, x === door);
+      }
+      // refend VERTICAL interne (sous-pièces du fond) avec une porte.
+      if (r.split !== undefined) {
+        const sx = r.split;
+        const mid = Math.floor((r.y0 + r.y1) / 2);
+        for (let y = r.y0; y <= r.y1; y++) {
+          const inRoom = left ? sx < Lf(Math.max(y, PY0)) : sx > Rf(Math.max(y, PY0));
+          // dans la bande haute (au-dessus du parterre), la pièce s'étend jusqu'au bord de la scène/fond
+          const inTop = y < PY0;
+          if (inRoom || inTop) wall(sx, y, 'E', 0, y === mid);
+        }
       }
     }
   };
   sideRoom(LEFT_ROOMS, true);
   sideRoom(RIGHT_ROOMS, false);
 
-  // Petits BUREAUX (22 concierge / 23 gestionnaire) : sous-pièces dans le coin du stockage droit, contre
-  //   le couloir (porte sur le couloir), séparées du gros stockage par un refend. Cf. plan p.40 (NE).
-  wallRect(CRx - 2, 13, CRx, 15, 0, { side: 'E' });    // 22 Bureau du concierge (haut)
-  wallRect(CRx - 2, 20, CRx, 22, 0, { side: 'E' });    // 23 Bureau du gestionnaire des accessoires
+  // Petites PIÈCES en HAUT-GAUCHE / HAUT-DROITE (sous-pièces de la bande du fond, mesurées au schéma).
+  // NW (gx 1..6) : refend horizontal gy≈4 → petite pièce du coin (porte vers la pièce du dessous).
+  for (let x = BX0; x <= 5; x++) wall(x, TOPDIV, 'S', 0, x === BX0 + 2);
+  // NE : la colonne gx 37..42 (séparée du stockage par le refend `split` gx37) porte 2 petites pièces
+  //   empilées (22 Bureau du concierge / 23 gestionnaire) — refend horizontal gy≈9, portes vers gx37.
+  const neDiv = STAGEY0 + 4; // gy≈9
+  for (let x = 37; x <= BX1; x++) wall(x, neDiv, 'S', 0, x === 38);
+  wall(37, STAGEY0 + 2, 'E', 0, true);  // porte de la petite pièce NE haute
+  wall(37, neDiv + 3, 'E', 0, true);    // porte de la petite pièce NE basse
 
-  // Cloison FOYER / AUDITORIUM (rangée FOYY) : deux PORTES sous les bords de l'éventail. Les couloirs
-  // périphériques restent OUVERTS sur le foyer.
-  for (let x = CLx; x <= CRx; x++) wall(x, FOYY, 'N', 0, x === Lf(PY1) || x === Rf(PY1));
-
-  // ── FOYER (7) → bande des ENTRÉES (rangées ENT0..FACY) : escalier principal au centre, escaliers des
-  //    Dames/Seigneurs dans les coins, commodités encadrant le grand escalier, vestiaire-billets, passages. ──
-  // 3 ESCALIER PRINCIPAL (grand escalier central, large) : volée au bas du foyer (rangées FOY1-1..FOY1),
-  //   montant vers la galerie de l'étage. Les cases d'escalier doivent être marchables AUX DEUX niveaux →
-  //   on les pose dans le foyer (marbre au rez, galerie/plancher à l'étage), pas dans la bande des entrées.
-  const mainX0 = Math.round(AX - 5), mainX1 = Math.round(AX + 5);
-  for (let x = mainX0; x <= mainX1; x++) stairs.push({ from: { x, y: FOY1, z: 0 }, to: { x, y: FOY1, z: 1 } });
-  // 8 ESCALIER DES DAMES (coin gauche) / 9 ESCALIER DES SEIGNEURS (coin droit) : cages tournantes vers l'étage.
-  const stairCornerX = [BX0 + 2, BX1 - 2] as const;
-  for (const sx of stairCornerX) {
-    wallRect(sx - 1, FOY1 - 2, sx + 1, FOY1, 0); // cage d'escalier (ouverte côté foyer par défaut : pas de porte)
-    wall(sx, FOY1 - 2, 'N', 0, true); // accès depuis le foyer
-    stairs.push({ from: { x: sx, y: FOY1, z: 0 }, to: { x: sx, y: FOY1, z: 1 } });
+  // Cloison FOYER / AUDITORIUM (rangée FOYY) : portes sous les bords de l'éventail + sous les chaînes
+  //   latérales → le foyer relie tout. Les salles latérales débouchent par leur dernier refend ici.
+  for (let x = BX0; x <= BX1; x++) {
+    const isFanEdge = x === Lf(PY1) || x === Rf(PY1);
+    const isSideDoor = x === BX0 + 2 || x === BX1 - 2;
+    wall(x, FOYY, 'N', 0, isFanEdge || isSideDoor);
   }
+  // BLOC CENTRAL DU FOYER (mesuré gx≈13 / 30, verticaux forts dans tout le foyer) : le grand hall de
+  //   marbre est borné par deux murs verticaux prolongeant le central block ; les zones d'escalier (8/9)
+  //   sont à l'extérieur. Une PORTE par côté relie le hall central aux côtés (escaliers + sorties).
+  const foyDoorY = FOY0 + 2;
+  for (let y = FOY0; y <= FOY1; y++) {
+    wall(STX0, y, 'W', 0, y === foyDoorY); // mur ouest du hall central (gx13)
+    wall(STX1, y, 'E', 0, y === foyDoorY); // mur est du hall central (gx30)
+  }
+
+  // ── FOYER (7) : DEUX ESCALIERS (8/9, orange au schéma) décalés vers l'intérieur (mesuré gx≈7.5 / 34.5,
+  //    gy≈47..50). Chaque escalier = cage 3 cases de large montant à l'étage, ouverte côté foyer (accès
+  //    depuis le marbre). Ce sont les SEULS escaliers visibles du schéma (pas de grand escalier orange). ──
+  const stairBoxX = [7, 35] as const; // colonne centrale de chaque cage (gauche / droite)
+  for (const sx of stairBoxX) {
+    wallRect(sx - 1, FOY0 + 1, sx + 1, FOY0 + 3, 0);   // cage (ouverte côté foyer : porte au nord)
+    wall(sx, FOY0 + 1, 'N', 0, true);                  // accès depuis le foyer
+    for (let dx = -1; dx <= 1; dx++)
+      stairs.push({ from: { x: sx + dx, y: FOY0 + 2, z: 0 }, to: { x: sx + dx, y: FOY0 + 2, z: 1 } });
+  }
+
   // 4 COMMODITÉS DES DAMES / 5 COMMODITÉS DES SEIGNEURS (bande des entrées, de part et d'autre du seuil).
-  wallRect(mainX0 - 4, ENT0, mainX0 - 1, ENT0 + 2, 0, { side: 'N' });
-  wallRect(mainX1 + 1, ENT0, mainX1 + 4, ENT0 + 2, 0, { side: 'N' });
+  const cdL = Math.round(AX - 5), cdR = Math.round(AX + 5); // de part et d'autre du seuil central
+  wallRect(cdL - 4, ENT0, cdL - 1, ENT0 + 2, 0, { side: 'N' });
+  wallRect(cdR + 1, ENT0, cdR + 4, ENT0 + 2, 0, { side: 'N' });
   // 6 VESTIAIRE ET VENTE DES BILLETS (coins de la façade, sous les escaliers d'angle).
   wallRect(BX0 + 1, FACY - 2, BX0 + 3, FACY, 0, { side: 'N' });
   wallRect(BX1 - 3, FACY - 2, BX1 - 1, FACY, 0, { side: 'N' });
@@ -273,19 +301,19 @@ function build(): { tiles0: Terrain[]; elev0: number[]; tiles1: Terrain[]; walls
   // ───────────────────────── PREMIER ÉTAGE (z=1) ─────────────────────────
   // PUITS CENTRAL OVALE : intérieur VIDE (ouvert sur le rez). Anneau bâti autour : couloir de service
   // (mur extérieur), loges (sur le puits), galerie (foyer), loge royale (fond).
-  fill(tiles1, BX0, COULY0, BX1, GALY1, 'plancher'); // anneau (fond → galerie sur le foyer)
+  fill(tiles1, BX0, BY0, BX1, GALY1, 'plancher'); // anneau (fond → galerie sur le foyer)
   // Recreuser le PUITS OVALE en VIDE (un cran plus large que l'éventail du rez, vue plongeante).
   for (let y = OVAL_Y0; y <= OVAL_Y1; y++) {
     const half = ovalHalf(y);
     fill(tiles1, Math.round(AX - half), y, Math.round(AX + half), y, 'vide');
   }
   // LOGE ROYALE (30, marbre) dans l'axe de la scène, au FOND (rangées du fond), + ANTICHAMBRE (31).
-  const RY0 = COULY0, RY1 = STAGEY0 - 1;
+  const RY0 = BY0, RY1 = STAGEY0 - 1;
   fill(tiles1, Math.round(AX - 4), RY0, Math.round(AX + 4), RY1, 'marbre');
 
   // ── Murs de l'étage ──
   // 1) Périmètre extérieur du bâti (jusqu'à la galerie qui déborde sur le foyer).
-  wallRect(BX0, COULY0, BX1, GALY1, 1);
+  wallRect(BX0, BY0, BX1, GALY1, 1);
   // 2) Couloirs de service derrière les loges (colonnes BX0/BX1) : mur intérieur (couloir↔loges) avec une
   //    PORTE par loge ; loges réparties sur la hauteur du puits.
   const LOGE_Y0 = OVAL_Y0 + 1, LOGE_Y1 = OVAL_Y1;
@@ -328,7 +356,7 @@ export function buildOperaFloorplan(): Scene {
   return {
     id: 'opera-staatsoper',
     nom: 'Théâtre Staatsoper',
-    description: 'Opéra d’Altdorf — rez-de-chaussée (parterre en éventail, scène surélevée, fosse d’orchestre, salles latérales desservies par des couloirs de service, foyer à grand escalier central et escaliers d’angle) et premier étage (loges en anneau autour du puits central ovale, galerie, loge royale dans l’axe de la scène). Géométrie reconstruite du plan officiel p.40/p.41 ; toutes les pièces sont reliées par des portes.',
+    description: 'Opéra d’Altdorf — rez-de-chaussée (parterre en éventail à murs diagonaux, scène surélevée, fosse d’orchestre, salles latérales en colonnes subdivisées, foyer à grand escalier central et escaliers d’angle) et premier étage (loges en anneau autour du puits central ovale, galerie, loge royale dans l’axe de la scène). Géométrie reconstruite du schéma de murs officiel ; toutes les pièces sont reliées par des portes.',
     ambiance: 'interieur',
     dimensions: { w: W, h: H },
     levels,
@@ -340,6 +368,6 @@ export function buildOperaFloorplan(): Scene {
     triggers: [],
     encounters: [],
     flags: {},
-    entryPoints: { 'entree-principale': { x: Math.round(AX), y: FACY }, 'entree-artistes': { x: BX1, y: COULY0 } },
+    entryPoints: { 'entree-principale': { x: Math.round(AX), y: FACY }, 'entree-artistes': { x: BX1, y: BY0 } },
   };
 }
