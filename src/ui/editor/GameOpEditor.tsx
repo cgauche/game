@@ -300,7 +300,7 @@ export function opSummary(o: GameOp): string {
 /** Ops avec un éditeur DÉDIÉ ; toute autre op tombe sur le repli JSON (lisible/modifiable sans perte). */
 const DEDICATED: ReadonlySet<GameOp['op']> = new Set([
   'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'skillMod', 'moveMod', 'apAll', 'testMod',
-  'corruption', 'gainResource', 'grantTrait', 'grantTalent', 'narrative',
+  'corruption', 'gainResource', 'grantTrait', 'grantTalent', 'grantNaturalWeapon', 'narrative',
   'summon', 'polymorph', 'lifeSteal',
 ]);
 
@@ -383,6 +383,15 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {op.op === 'grantTalent' && (
           <input placeholder="Talent (ex. Sang-froid)" value={o.talent ?? ''} onChange={(e) => upd({ talent: e.target.value })} />
+        )}
+        {op.op === 'grantNaturalWeapon' && (
+          <>
+            <input placeholder="Arme (ex. Morsure, Griffes)" value={o.name ?? ''} onChange={(e) => upd({ name: e.target.value })} />
+            <FormulaField label="Dégâts" value={o.damage} min={0} onChange={(damage) => upd({ damage })} />
+            <label className="dr"><input type="checkbox" checked={o.plusBF !== false} onChange={(e) => upd({ plusBF: e.target.checked })} /> BF+</label>
+            <input placeholder="Qualités (Magique…)" value={(o.qualities ?? []).join(', ')}
+              onChange={(e) => { const a = e.target.value.split(',').map((s: string) => s.trim()).filter(Boolean); upd({ qualities: a.length ? a : undefined }); }} />
+          </>
         )}
         {op.op === 'summon' && (
           <>
