@@ -1,6 +1,9 @@
 import { Combatant, CHAR_KEYS, CharKey } from '../engine/types';
 import { PortraitTile } from './PortraitTile';
 import { speciesSingular } from '../data';
+import { CodexRef } from './compendium/CodexRef';
+import { FateChips } from './FateChips';
+import { splitLabel } from '../engine/careerSlots';
 
 const SHORT: Record<CharKey, string> = {
   CC: 'CC',
@@ -37,23 +40,16 @@ export function CharCard({ hero, compact }: { hero: Combatant; compact?: boolean
           </div>
         ))}
       </div>
-      <div className="char-bottom">
-        <span>
-          Blessures <b>{hero.wounds.max}</b>
-        </span>
-        <span>
-          Mvt <b>{hero.movement}</b>
-        </span>
-        {hero.fate != null && (
-          <span>
-            Destin <b>{hero.fate}</b>
-          </span>
-        )}
-        {hero.resilience != null && (
-          <span>
-            Résilience <b>{hero.resilience}</b>
-          </span>
-        )}
+      <div className="char-vitals">
+        <div className="stat-chip">
+          <span className="sc-label">Blessures</span>
+          <span className="sc-value">{hero.wounds.max}</span>
+        </div>
+        <div className="stat-chip">
+          <span className="sc-label">Mouvement</span>
+          <span className="sc-value">{hero.movement}</span>
+        </div>
+        <FateChips c={hero} />
       </div>
       {!compact && (
         <div className="char-skills">
@@ -61,8 +57,9 @@ export function CharCard({ hero, compact }: { hero: Combatant; compact?: boolean
           <div className="skill-tags">
             {hero.skills.slice(0, 8).map((s, i) => (
               <span className="tag" key={i}>
-                {s.name}
-                {s.spec ? ` (${s.spec})` : ''} +{s.advances}
+                <CodexRef category="skills" label={splitLabel(s.name).name}>
+                  {s.name}{s.spec ? ` (${s.spec})` : ''}
+                </CodexRef> +{s.advances}
               </span>
             ))}
           </div>
@@ -72,7 +69,7 @@ export function CharCard({ hero, compact }: { hero: Combatant; compact?: boolean
               <div className="skill-tags">
                 {hero.talents.map((t, i) => (
                   <span className="tag talent" key={i}>
-                    {t.name}
+                    <CodexRef category="talents" label={splitLabel(t.name).name}>{t.name}</CodexRef>
                   </span>
                 ))}
               </div>

@@ -524,16 +524,13 @@ h3 {
   font-weight: 700;
   font-size: 15px;
 }
-.char-bottom {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+/* Vitalité + réserves (Destin/Chance/Résilience/Détermination) = cartouches .stat-chip (primitive),
+   comme la fiche. Grille 3 cols, minmax(0,…) anti-débordement. */
+.char-vitals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
   margin-top: 10px;
-  font-size: 12px;
-  color: var(--muted);
-}
-.char-bottom b {
-  color: var(--text);
 }
 .mini-title {
   font-size: 11px;

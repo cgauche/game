@@ -16,6 +16,7 @@ import { spellSpecFor } from '../data/spellspecs';
 import { spellEffectOps } from '../state/flow';
 import { careers, findSpell, findStar, spells as allSpells, speciesSingular } from '../data';
 import { CodexRef } from './compendium/CodexRef';
+import { FateChips } from './FateChips';
 import { splitLabel } from '../engine/careerSlots';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { weaponPart, armourPart } from '../gameIso/rig/parts/equipment';
@@ -372,12 +373,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
           </div>
         )}
         {hero.fate != null && (
-          <div className="sheet-resources">
-            <div className="stat-chip" title="Points de Destin — permanents (« Meurs un autre jour »)"><span className="sc-label">Destin</span><span className="sc-value">{hero.fate}</span></div>
-            <div className="stat-chip" title="Points de Chance — réserve par session, relances"><span className="sc-label">Chance</span><span className="sc-value">{hero.fortune ?? 0}</span></div>
-            <div className="stat-chip" title="Résilience — permanente (« Je ne faillirai pas »)"><span className="sc-label">Résilience</span><span className="sc-value">{hero.resilience ?? 0}</span></div>
-            <div className="stat-chip" title="Détermination — par session, retire un État"><span className="sc-label">Détermination</span><span className="sc-value">{hero.resolve ?? 0}</span></div>
-          </div>
+          <div className="sheet-resources"><FateChips c={hero} /></div>
         )}
         <div className="mini-title">Caractéristiques</div>
         <div className="char-stats sheet-stats">
