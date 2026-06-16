@@ -8,6 +8,7 @@ import { applyOps, type GameOp, type OpsCtx } from '../engine/ops';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { eligibleTalent } from '../engine/grimoire';
 import { effectiveChar } from '../engine/characteristics';
+import { SIZE_ORDER, effectiveSize } from '../engine/size';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, actorHasSkill } from '../engine/skills';
 import { easeDifficulty } from '../engine/tests';
 import { hasTalent } from '../engine/magic';
@@ -315,9 +316,10 @@ export function runFlow(get: Get, set: SetFn, flow: Flow, label = 'Effet'): void
  *  (Flow ÉDITABLE, donnée app-owned) — le cast flow en extrait le sous-Flow `target`/`caster`
  *  (`spellFlowFor`) et le passe ici. Renvoie le journal. Le `test` interactif du Flow n'a pas cours en
  *  résolution synchrone de sort (la cible jette dans l'op mécanique `test`) → branche RÉUSSITE par défaut. */
-/** Vue d'un combattant pour la Condition `compare` (PB + valeur d'États par nom). */
+/** Vue d'un combattant pour la Condition `compare` (PB + Taille/Avantage + valeur d'États par nom). */
 const actorView = (c: Combatant | undefined) =>
-  c ? { woundsCurrent: c.wounds.current, woundsMax: c.wounds.max, conditions: Object.fromEntries(c.conditions.map((x) => [x.name, x.value ?? 1])) } : undefined;
+  c ? { woundsCurrent: c.wounds.current, woundsMax: c.wounds.max, size: SIZE_ORDER[effectiveSize(c.size)],
+        advantage: c.advantage ?? 0, conditions: Object.fromEntries(c.conditions.map((x) => [x.name, x.value ?? 1])) } : undefined;
 
 export function runSpellFlow(target: Combatant, caster: Combatant | undefined, flow: Flow, ctx: OpsCtx): string[] {
   const lines: string[] = [];

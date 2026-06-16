@@ -76,14 +76,16 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
     expect(c.loseNextMovement).toBe(true);
   });
 
-  it('Condition `compare` générique : who (cible/lanceur) × donnée/État · opérateur · valeur', () => {
-    const target = { woundsCurrent: 5, woundsMax: 15, conditions: { Brisé: 3 } };
-    const caster = { woundsCurrent: 12, woundsMax: 12, conditions: {} as Record<string, number> };
+  it('Condition `compare` générique : who (cible/lanceur) × donnée/État · opérateur · valeur (const ou acteur)', () => {
+    const target = { woundsCurrent: 5, woundsMax: 15, size: 2, advantage: 0, conditions: { Brisé: 3 } }; // Taille Petite (2)
+    const caster = { woundsCurrent: 12, woundsMax: 12, size: 4, advantage: 1, conditions: {} as Record<string, number> }; // Taille Grande (4)
     const ctx = { flags: {}, gameTime: 0, target, caster };
     expect(evalCondition({ kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '>=', value: 1 }, ctx)).toBe(true);
-    expect(evalCondition({ kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '<=', value: 0 }, ctx)).toBe(false);
     expect(evalCondition({ kind: 'compare', subject: { who: 'target', condition: 'Brisé' }, op: '>=', value: 3 }, ctx)).toBe(true); // valeur d'État (stacks)
     expect(evalCondition({ kind: 'compare', subject: { who: 'caster', field: 'woundsCurrent' }, op: '>', value: 10 }, ctx)).toBe(true); // données du LANCEUR
+    // ACTEUR-vs-ACTEUR : « cible plus petite que l'attaquant » (Attaque caudale)
+    expect(evalCondition({ kind: 'compare', subject: { who: 'target', field: 'size' }, op: '<', value: { who: 'caster', field: 'size' } }, ctx)).toBe(true);
+    expect(evalCondition({ kind: 'compare', subject: { who: 'caster', field: 'size' }, op: '<', value: { who: 'target', field: 'size' } }, ctx)).toBe(false);
     expect(evalCondition({ kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '>=', value: 1 }, { flags: {}, gameTime: 0 })).toBe(false); // acteur absent
   });
 

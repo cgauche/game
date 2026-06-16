@@ -29,15 +29,15 @@ const brassValue = (m: Purse): number => (m.gold ?? 0) * 240 + (m.silver ?? 0) *
 
 /** Acteur d'un Flow visé par une comparaison : la CIBLE (l'unité affectée) ou le LANCEUR/porteur. */
 export type ActorRef = 'target' | 'caster';
-/** Donnée numérique fixe d'un acteur. */
-export type ActorField = 'woundsCurrent' | 'woundsMax';
+/** Donnée numérique fixe d'un acteur (`size` = ordinal de Taille SIZE_ORDER ; `advantage` = Avantage). */
+export type ActorField = 'woundsCurrent' | 'woundsMax' | 'size' | 'advantage';
 /** SUJET d'une comparaison `compare` : `who` (cible/lanceur) × (une donnée fixe OU la valeur/stacks d'un
  *  État nommé — 0 si absent → « la cible a l'État X » ⇔ `{who:'target', condition:X} >= 1`). */
 export type CompareSubject = { who: ActorRef; field: ActorField } | { who: ActorRef; condition: string };
 /** Opérateur de comparaison (Condition `compare`). */
 export type CompareOp = '>=' | '<=' | '==' | '<' | '>';
-/** Vue d'un acteur lue par `compare` (PB + valeur d'États par nom). */
-export interface ActorView { woundsCurrent: number; woundsMax: number; conditions: Record<string, number> }
+/** Vue d'un acteur lue par `compare` (PB + Taille/Avantage + valeur d'États par nom). */
+export interface ActorView { woundsCurrent: number; woundsMax: number; size: number; advantage: number; conditions: Record<string, number> }
 
 export type Condition =
   | { kind: 'always' }
@@ -52,10 +52,11 @@ export type Condition =
   /** État vital du groupe : `any` = au moins un héros mort, `all` = tous morts. */
   | { kind: 'partyDead'; who: 'any' | 'all' }
   /** COMPARAISON sur un ACTEUR du Flow (cible OU lanceur) — UNIQUE Condition « données d'acteur » :
-   *  `subject` (`who` × donnée fixe OU valeur d'un État) · `op` (≥ ≤ = < >) · `value`. Régénération
-   *  « PB > 0 » ⇔ `{who:'target', field:'woundsCurrent'} >= 1` ; « la cible a Inconscient » ⇔
-   *  `{who:'target', condition:'Inconscient'} >= 1`. Acteur absent → false. */
-  | { kind: 'compare'; subject: CompareSubject; op: CompareOp; value: number }
+   *  `subject` (`who` × donnée fixe OU valeur d'un État) · `op` (≥ ≤ = < >) · `value`. `value` est une
+   *  CONSTANTE ou le champ d'un AUTRE acteur (« cible plus petite que l'attaquant » ⇔
+   *  `{who:'target',field:'size'} '<' {who:'caster',field:'size'}`). Régénération « PB > 0 » ⇔
+   *  `{who:'target',field:'woundsCurrent'} >= 1`. Acteur absent → false. */
+  | { kind: 'compare'; subject: CompareSubject; op: CompareOp; value: number | { who: ActorRef; field: ActorField } }
   | { kind: 'all'; of: Condition[] }
   | { kind: 'any'; of: Condition[] }
   | { kind: 'not'; of: Condition };
@@ -101,12 +102,17 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
       return party.length > 0 && (cond.who === 'all' ? party.every((h) => h.dead) : party.some((h) => h.dead));
     }
     case 'compare': {
+      // Lecture d'un côté de la comparaison : valeur d'un État (par nom) ou champ fixe d'un acteur.
+      const read = (who: ActorRef, sel: { field: ActorField } | { condition: string }): number | undefined => {
+        const a = who === 'caster' ? ctx.caster : ctx.target;
+        if (!a) return undefined;
+        return 'condition' in sel ? (a.conditions[sel.condition] ?? 0) : a[sel.field];
+      };
       const s = cond.subject;
-      const a = s.who === 'caster' ? ctx.caster : ctx.target;
-      if (!a) return false;
-      const lhs = 'condition' in s ? (a.conditions[s.condition] ?? 0) : a[s.field];
-      const v = cond.value;
-      return cond.op === '>=' ? lhs >= v : cond.op === '<=' ? lhs <= v : cond.op === '==' ? lhs === v : cond.op === '<' ? lhs < v : lhs > v;
+      const lhs = read(s.who, s);
+      const rhs = typeof cond.value === 'number' ? cond.value : read(cond.value.who, { field: cond.value.field });
+      if (lhs == null || rhs == null) return false; // acteur absent → false
+      return cond.op === '>=' ? lhs >= rhs : cond.op === '<=' ? lhs <= rhs : cond.op === '==' ? lhs === rhs : cond.op === '<' ? lhs < rhs : lhs > rhs;
     }
     case 'all': return cond.of.every((c) => evalCondition(c, ctx));
     case 'any': return cond.of.some((c) => evalCondition(c, ctx));

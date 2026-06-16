@@ -48,7 +48,7 @@ export function fireTriggers(
   get: Get,
   actor: Combatant,
   trigger: EffectTrigger,
-  ctx: { victim?: Combatant; weapon?: Weapon; rng?: RNG } = {},
+  ctx: { victim?: Combatant; weapon?: Weapon; rng?: RNG; margin?: number; woundsDealt?: number } = {},
 ): string[] {
   const lines: string[] = [];
   const rng = ctx.rng ?? defaultRNG;
@@ -56,7 +56,9 @@ export function fireTriggers(
     if (eff.trigger !== trigger) continue;
     for (const t of targetsFor(get, actor, eff.on, ctx.victim)) {
       if (isOutOfAction(t)) continue;
-      lines.push(...runSpellFlow(t, actor, eff.flow, { rng, caster: actor }));
+      // `margin` (marge d'un Test opposé) alimente les échelles `valuePerSL` via `ctx.sl` ; `woundsDealt`
+      // alimente le Vol de vie (op `lifeSteal`). Cf. manœuvres (Regard, Vampirique).
+      lines.push(...runSpellFlow(t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt }));
     }
   }
   return lines;

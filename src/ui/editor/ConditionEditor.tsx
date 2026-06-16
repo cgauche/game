@@ -10,7 +10,7 @@ import type { TemporalCondition } from '../../state/scene';
 const ALWAYS: Condition = { kind: 'always' };
 
 /** Données fixes d'un acteur comparables (Condition `compare`) — libellés des sélecteurs. */
-const FIELD_LABEL: Record<ActorField, string> = { woundsCurrent: 'PB courants', woundsMax: 'PB max' };
+const FIELD_LABEL: Record<ActorField, string> = { woundsCurrent: 'PB courants', woundsMax: 'PB max', size: 'Taille', advantage: 'Avantage' };
 const WHO_LABEL: Record<ActorRef, string> = { target: 'la cible', caster: 'le lanceur' };
 const COMPARE_OPS: CompareOp[] = ['>=', '<=', '==', '<', '>'];
 
@@ -46,7 +46,11 @@ export function condSummary(c: Condition | undefined): string {
     case 'hasItem': return `a « ${c.trapping || '?'} »${c.count && c.count > 1 ? ` ×${c.count}` : ''}`;
     case 'money': return `bourse ≥ ${moneyStr(c.atLeast)}`;
     case 'partyDead': return c.who === 'all' ? 'tout le groupe mort' : 'un héros mort';
-    case 'compare': return `${WHO_LABEL[c.subject.who]} : ${'condition' in c.subject ? `État « ${c.subject.condition || '?'} »` : FIELD_LABEL[c.subject.field]} ${c.op} ${c.value}`;
+    case 'compare': {
+      const subj = 'condition' in c.subject ? `État « ${c.subject.condition || '?'} »` : FIELD_LABEL[c.subject.field];
+      const val = typeof c.value === 'number' ? `${c.value}` : `${WHO_LABEL[c.value.who]} ${FIELD_LABEL[c.value.field]}`;
+      return `${WHO_LABEL[c.subject.who]} : ${subj} ${c.op} ${val}`;
+    }
     case 'all': return c.of.length ? c.of.map(condSummary).join(' ET ') : 'toujours';
     case 'any': return c.of.length ? c.of.map(condSummary).join(' OU ') : 'jamais';
     case 'not': return `NON(${condSummary(c.of)})`;
@@ -138,7 +142,24 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
           <select className="cond-kind" value={cond.op} onChange={(e) => onChange({ ...cond, op: e.target.value as CompareOp })}>
             {COMPARE_OPS.map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
-          <input type="number" style={{ width: '3.4em' }} value={cond.value} onChange={(e) => onChange({ ...cond, value: Number(e.target.value) || 0 })} />
+          {/* Valeur comparée : une CONSTANTE, ou la donnée d'un AUTRE acteur (Taille cible < Taille attaquant). */}
+          <select className="cond-kind" value={typeof cond.value === 'number' ? 'const' : 'actor'}
+            onChange={(e) => onChange({ ...cond, value: e.target.value === 'const' ? 0 : { who: 'caster', field: 'woundsCurrent' } })}>
+            <option value="const">une valeur</option>
+            <option value="actor">donnée d’un acteur</option>
+          </select>
+          {typeof cond.value === 'number' ? (
+            <input type="number" style={{ width: '3.4em' }} value={cond.value} onChange={(e) => onChange({ ...cond, value: Number(e.target.value) || 0 })} />
+          ) : (
+            <>
+              <select className="cond-kind" value={cond.value.who} onChange={(e) => onChange({ ...cond, value: { who: e.target.value as ActorRef, field: (cond.value as { field: ActorField }).field } })}>
+                {(Object.keys(WHO_LABEL) as ActorRef[]).map((w) => <option key={w} value={w}>{WHO_LABEL[w]}</option>)}
+              </select>
+              <select className="cond-kind" value={cond.value.field} onChange={(e) => onChange({ ...cond, value: { who: (cond.value as { who: ActorRef }).who, field: e.target.value as ActorField } })}>
+                {(Object.keys(FIELD_LABEL) as ActorField[]).map((s) => <option key={s} value={s}>{FIELD_LABEL[s]}</option>)}
+              </select>
+            </>
+          )}
         </span>
       )}
       {(cond.kind === 'all' || cond.kind === 'any') && (
