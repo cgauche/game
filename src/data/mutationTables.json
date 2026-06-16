@@ -1,0 +1,212 @@
+[
+  {
+    "label": "physique",
+    "ranges": [
+      {
+        "min": 1,
+        "max": 5,
+        "mutation": "Pattes d’animaux"
+      },
+      {
+        "min": 6,
+        "max": 10,
+        "mutation": "Corpulent"
+      },
+      {
+        "min": 11,
+        "max": 15,
+        "mutation": "Doigts distendus"
+      },
+      {
+        "min": 16,
+        "max": 20,
+        "mutation": "Émacié"
+      },
+      {
+        "min": 21,
+        "max": 25,
+        "mutation": "Œil énorme"
+      },
+      {
+        "min": 26,
+        "max": 30,
+        "mutation": "Articulation supplémentaire aux jambes"
+      },
+      {
+        "min": 31,
+        "max": 35,
+        "mutation": "Bouche supplémentaire"
+      },
+      {
+        "min": 36,
+        "max": 40,
+        "mutation": "Tentacule épais"
+      },
+      {
+        "min": 41,
+        "max": 45,
+        "mutation": "Peau brillante"
+      },
+      {
+        "min": 46,
+        "max": 50,
+        "mutation": "Beauté surnaturelle"
+      },
+      {
+        "min": 51,
+        "max": 55,
+        "mutation": "Visage inversé"
+      },
+      {
+        "min": 56,
+        "max": 60,
+        "mutation": "Peau d’acier"
+      },
+      {
+        "min": 61,
+        "max": 65,
+        "mutation": "Langue pendante"
+      },
+      {
+        "min": 66,
+        "max": 70,
+        "mutation": "Plumes éparses"
+      },
+      {
+        "min": 71,
+        "max": 75,
+        "mutation": "Court sur pattes"
+      },
+      {
+        "min": 76,
+        "max": 80,
+        "mutation": "Écailles épineuses"
+      },
+      {
+        "min": 81,
+        "max": 85,
+        "mutation": "Cornes asymétriques"
+      },
+      {
+        "min": 86,
+        "max": 90,
+        "mutation": "Suintement de pus"
+      },
+      {
+        "min": 91,
+        "max": 95,
+        "mutation": "Groin poilu"
+      },
+      {
+        "min": 96,
+        "max": 100,
+        "mutation": "Choix du MJ"
+      }
+    ]
+  },
+  {
+    "label": "mentale",
+    "ranges": [
+      {
+        "min": 1,
+        "max": 5,
+        "mutation": "Atroces désirs"
+      },
+      {
+        "min": 6,
+        "max": 10,
+        "mutation": "Bête intérieure"
+      },
+      {
+        "min": 11,
+        "max": 15,
+        "mutation": "Rêves chaotiques"
+      },
+      {
+        "min": 16,
+        "max": 20,
+        "mutation": "Formication"
+      },
+      {
+        "min": 21,
+        "max": 25,
+        "mutation": "Imprévisible fantaisiste"
+      },
+      {
+        "min": 26,
+        "max": 30,
+        "mutation": "Terrible inquiétude"
+      },
+      {
+        "min": 31,
+        "max": 35,
+        "mutation": "Pulsions de haine"
+      },
+      {
+        "min": 36,
+        "max": 40,
+        "mutation": "Cœur desséché"
+      },
+      {
+        "min": 41,
+        "max": 45,
+        "mutation": "Pensées envieuses"
+      },
+      {
+        "min": 46,
+        "max": 50,
+        "mutation": "Esprit solitaire"
+      },
+      {
+        "min": 51,
+        "max": 55,
+        "mutation": "Blocage mental"
+      },
+      {
+        "min": 56,
+        "max": 60,
+        "mutation": "Urgence profanatoire"
+      },
+      {
+        "min": 61,
+        "max": 65,
+        "mutation": "Morale douteuse"
+      },
+      {
+        "min": 66,
+        "max": 70,
+        "mutation": "Esprit suspicieux"
+      },
+      {
+        "min": 71,
+        "max": 75,
+        "mutation": "Accro à l’adrénaline"
+      },
+      {
+        "min": 76,
+        "max": 80,
+        "mutation": "Visions torturées"
+      },
+      {
+        "min": 81,
+        "max": 85,
+        "mutation": "Totalement déséquilibré"
+      },
+      {
+        "min": 86,
+        "max": 90,
+        "mutation": "Infinie malveillance"
+      },
+      {
+        "min": 91,
+        "max": 95,
+        "mutation": "Colère impie"
+      },
+      {
+        "min": 96,
+        "max": 100,
+        "mutation": "Affreusement nerveux"
+      }
+    ]
+  }
+]

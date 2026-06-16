@@ -1,45 +1,51 @@
 /**
- * Tableaux de Corruption physique et mentale — Livre de base, chapitre 19 (p.184-185), VERBATIM.
+ * Mutations & Tableaux de Corruption — Livre de base, chapitre 19 (p.184-185), VERBATIM.
  *
- * La DONNÉE vit dans `mutations.json` (éditable, comme `creatures.json` / `trappings.json`) ; ce
- * module n'est que le TYPE + le chargement + le tirage. Ajouter / régler une mutation = éditer le
- * JSON, jamais ce fichier. Chaque entrée porte les effets modélisés (`fx` : caractéristiques
- * permanentes, Mouvement, PA naturels, mods de Tests, Traits, arme dérivée) ; la part descriptive
- * non modélisable reste en `fx.note` (journalisée, arbitrage MJ — rien d'inventé).
+ * DÉCOUPLÉ : la MUTATION (identité + effets) vit dans `mutations.json` (entité éditable, SANS plage de
+ * tirage) ; les TABLES de Corruption vivent dans `mutationTables.json` — des plages d100 qui RÉFÉRENCENT
+ * des mutations par label. Plusieurs tables peuvent pointer la même mutation SANS collision (LDB :
+ * physique/mentale ; Compagnon T1 : une table par dieu du Chaos rejoue les mêmes mutations à d'autres
+ * plages). Ce module = TYPES + chargement + tirage ; ajouter/régler = éditer le JSON (mutation OU table),
+ * jamais ce fichier. Effets modélisés sur la mutation : `passive` (GameOp[]), `apAll`/`apLocations`
+ * (armure naturelle), `derivedWeapon`, `traits`, `psychTraits` ; descriptif non modélisable en `note`.
  */
 import { RNG, d100 } from '../engine/dice';
 import { findTableEntry } from '../engine/tables';
 import type { Mutation } from '../engine/corruption';
 import mutationsJson from './mutations.json';
+import mutationTablesJson from './mutationTables.json';
 
-/** Une ligne du Tableau de Corruption (donnée `mutations.json`). */
-export interface MutationRow {
-  min: number;
-  max: number;
+/** Une MUTATION (entité, `mutations.json`) : identité + effets, INDÉPENDANTE de toute table de tirage. */
+export type MutationData = Omit<Mutation, 'roll'>;
+
+/** Une TABLE de Corruption (`mutationTables.json`) : plages d100 → référence de mutation par label. */
+export interface MutationTable {
   label: string;
-  fx?: Omit<Mutation, 'label' | 'kind' | 'roll'>;
+  ranges: { min: number; max: number; mutation: string }[];
 }
 
-const TABLES = mutationsJson as { physique: MutationRow[]; mentale: MutationRow[] };
+const MUTATIONS = mutationsJson as MutationData[];
+const TABLES = mutationTablesJson as MutationTable[];
+const norm = (s: string) => s.trim().toLowerCase().replace(/[’']/g, "'");
+const BY_LABEL = new Map(MUTATIONS.map((m) => [norm(m.label), m]));
 
-/** Labels des tables — pour le registre visuel du rig et son test d'exhaustivité. */
-export const LABELS_PHYSIQUES: readonly string[] = TABLES.physique.map((r) => r.label);
-export const LABELS_MENTALES: readonly string[] = TABLES.mentale.map((r) => r.label);
+/** Labels par nature de mutation — pour le registre visuel du rig et son test d'exhaustivité. */
+export const LABELS_PHYSIQUES: readonly string[] = MUTATIONS.filter((m) => m.kind === 'physique').map((m) => m.label);
+export const LABELS_MENTALES: readonly string[] = MUTATIONS.filter((m) => m.kind === 'mentale').map((m) => m.label);
 
-/** Tire une mutation sur le Tableau de Corruption `kind` (d100, RNG seedable). */
-export function rollMutation(kind: 'physique' | 'mentale', rng: RNG): Mutation {
+/** Tire une mutation sur la TABLE `table` (LDB : 'physique'/'mentale' ; Compagnon T1 : 'Khorne'…), d100 seedable. */
+export function rollMutation(table: string, rng: RNG): Mutation {
+  const t = TABLES.find((x) => x.label === table);
+  if (!t) throw new Error(`rollMutation : table « ${table} » introuvable (mutationTables.json)`);
   const roll = d100(rng);
-  const row = findTableEntry(TABLES[kind], roll);
-  return { label: row.label, kind, roll, ...(row.fx ?? {}) };
+  const range = findTableEntry(t.ranges, roll);
+  const m = range ? BY_LABEL.get(norm(range.mutation)) : undefined;
+  if (!m) throw new Error(`rollMutation : plage d100=${roll} sans mutation valide dans « ${table} »`);
+  return { ...m, roll };
 }
 
-/** Mutation EXPLICITE par son label (tell figé en DONNÉE, sans tirage — ex. trait
- *  « Mutation (Cornes asymétriques) »). Cherche dans les deux Tableaux. `null` si inconnu. */
+/** Mutation EXPLICITE par label (sans tirage — ex. trait « Mutation (Cornes asymétriques) »). null si inconnue. */
 export function mutationByLabel(label: string): Mutation | null {
-  const key = label.trim().toLowerCase().replace(/[’']/g, "'");
-  for (const kind of ['physique', 'mentale'] as const) {
-    const row = TABLES[kind].find((r) => r.label.toLowerCase().replace(/[’']/g, "'") === key);
-    if (row) return { label: row.label, kind, roll: row.min, ...(row.fx ?? {}) };
-  }
-  return null;
+  const m = BY_LABEL.get(norm(label));
+  return m ? { ...m, roll: 0 } : null;
 }

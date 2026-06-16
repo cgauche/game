@@ -1,571 +1,447 @@
-{
-  "physique": [
-    {
-      "min": 1,
-      "max": 5,
-      "label": "Pattes d’animaux",
-      "fx": {
-        "passive": [
-          {
-            "op": "moveMod",
-            "mod": 1
-          }
-        ]
+[
+  {
+    "label": "Pattes d’animaux",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "moveMod",
+        "mod": 1
       }
+    ]
+  },
+  {
+    "label": "Corpulent",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "F",
+        "mod": 5
+      },
+      {
+        "op": "charMod",
+        "char": "E",
+        "mod": 5
+      },
+      {
+        "op": "moveMod",
+        "mod": -1
+      }
+    ]
+  },
+  {
+    "label": "Doigts distendus",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Dex",
+        "mod": 10
+      }
+    ]
+  },
+  {
+    "label": "Émacié",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "F",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "Ag",
+        "mod": 5
+      }
+    ]
+  },
+  {
+    "label": "Œil énorme",
+    "kind": "physique",
+    "note": "+10 aux Tests de Perception impliquant la vue."
+  },
+  {
+    "label": "Articulation supplémentaire aux jambes",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Ag",
+        "mod": 5
+      }
+    ]
+  },
+  {
+    "label": "Bouche supplémentaire",
+    "kind": "physique",
+    "note": "Lancer sur le Tableau des Localisations pour déterminer où cette bouche apparaît."
+  },
+  {
+    "label": "Tentacule épais",
+    "kind": "physique",
+    "traits": [
+      "Tentacules"
+    ],
+    "note": "Trait de créature Tentacule."
+  },
+  {
+    "label": "Peau brillante",
+    "kind": "physique",
+    "note": "Produit une lumière équivalente à celle d’une bougie."
+  },
+  {
+    "label": "Beauté surnaturelle",
+    "kind": "physique",
+    "note": "Ne garde jamais de cicatrice.",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": 10
+      }
+    ]
+  },
+  {
+    "label": "Visage inversé",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "testMod",
+        "amount": -20,
+        "char": "Soc"
+      }
+    ]
+  },
+  {
+    "label": "Peau d’acier",
+    "kind": "physique",
+    "apAll": 2,
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Ag",
+        "mod": -10
+      }
+    ]
+  },
+  {
+    "label": "Langue pendante",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "skillMod",
+        "skill": "langue",
+        "mod": -10
+      }
+    ]
+  },
+  {
+    "label": "Plumes éparses",
+    "kind": "physique",
+    "note": "Deux lancers de Localisation pour déterminer où ces plumes apparaissent."
+  },
+  {
+    "label": "Court sur pattes",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "moveMod",
+        "mod": -1
+      }
+    ]
+  },
+  {
+    "label": "Écailles épineuses",
+    "kind": "physique",
+    "apAll": 1
+  },
+  {
+    "label": "Cornes asymétriques",
+    "kind": "physique",
+    "apLocations": {
+      "tete": 1
     },
-    {
-      "min": 6,
-      "max": 10,
-      "label": "Corpulent",
-      "fx": {
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "F",
-            "mod": 5
-          },
-          {
-            "op": "charMod",
-            "char": "E",
-            "mod": 5
-          },
-          {
-            "op": "moveMod",
-            "mod": -1
-          }
-        ]
-      }
+    "derivedWeapon": {
+      "name": "Cornes",
+      "type": "melee",
+      "damage": "+BF",
+      "qualities": [],
+      "subType": "Base",
+      "hands": 1
     },
-    {
-      "min": 11,
-      "max": 15,
-      "label": "Doigts distendus",
-      "fx": {
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "Dex",
-            "mod": 10
-          }
-        ]
+    "note": "Compte comme une Arme de Créature (Dégâts = Bonus de Force)."
+  },
+  {
+    "label": "Suintement de pus",
+    "kind": "physique",
+    "note": "Lancer de Localisation pour déterminer l’origine du suintement."
+  },
+  {
+    "label": "Groin poilu",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "skillMod",
+        "skill": "pistage",
+        "mod": 10
       }
-    },
-    {
-      "min": 16,
-      "max": 20,
-      "label": "Émacié",
-      "fx": {
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "F",
-            "mod": -10
-          },
-          {
-            "op": "charMod",
-            "char": "Ag",
-            "mod": 5
-          }
-        ]
+    ]
+  },
+  {
+    "label": "Choix du MJ",
+    "kind": "physique",
+    "note": "Le MJ choisit une mutation ou un Trait de Créature."
+  },
+  {
+    "label": "Atroces désirs",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -5
+      },
+      {
+        "op": "charMod",
+        "char": "FM",
+        "mod": -5
       }
-    },
-    {
-      "min": 21,
-      "max": 25,
-      "label": "Œil énorme",
-      "fx": {
-        "note": "+10 aux Tests de Perception impliquant la vue."
+    ]
+  },
+  {
+    "label": "Bête intérieure",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "FM",
+        "mod": 10
+      },
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -5
+      },
+      {
+        "op": "charMod",
+        "char": "Int",
+        "mod": -5
       }
-    },
-    {
-      "min": 26,
-      "max": 30,
-      "label": "Articulation supplémentaire aux jambes",
-      "fx": {
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "Ag",
-            "mod": 5
-          }
-        ]
+    ]
+  },
+  {
+    "label": "Rêves chaotiques",
+    "kind": "mentale",
+    "note": "État Exténué pendant les deux premières heures de chaque journée."
+  },
+  {
+    "label": "Formication",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "I",
+        "mod": -5
+      },
+      {
+        "op": "charMod",
+        "char": "Dex",
+        "mod": -5
       }
-    },
-    {
-      "min": 31,
-      "max": 35,
-      "label": "Bouche supplémentaire",
-      "fx": {
-        "note": "Lancer sur le Tableau des Localisations pour déterminer où cette bouche apparaît."
+    ]
+  },
+  {
+    "label": "Imprévisible fantaisiste",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Int",
+        "mod": -5
+      },
+      {
+        "op": "charMod",
+        "char": "FM",
+        "mod": -5
       }
-    },
-    {
-      "min": 36,
-      "max": 40,
-      "label": "Tentacule épais",
-      "fx": {
-        "traits": [
-          "Tentacules"
-        ],
-        "note": "Trait de créature Tentacule."
+    ]
+  },
+  {
+    "label": "Terrible inquiétude",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "FM",
+        "mod": -10
       }
-    },
-    {
-      "min": 41,
-      "max": 45,
-      "label": "Peau brillante",
-      "fx": {
-        "note": "Produit une lumière équivalente à celle d’une bougie."
+    ]
+  },
+  {
+    "label": "Pulsions de haine",
+    "kind": "mentale",
+    "note": "Sujet à l’Hostilité envers tous ceux qui ne sont pas de votre race."
+  },
+  {
+    "label": "Cœur desséché",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "FM",
+        "mod": 10
+      },
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -10
       }
-    },
-    {
-      "min": 46,
-      "max": 50,
-      "label": "Beauté surnaturelle",
-      "fx": {
-        "note": "Ne garde jamais de cicatrice.",
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "Soc",
-            "mod": 10
-          }
-        ]
+    ]
+  },
+  {
+    "label": "Pensées envieuses",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -10
       }
-    },
-    {
-      "min": 51,
-      "max": 55,
-      "label": "Visage inversé",
-      "fx": {
-        "passive": [
-          {
-            "op": "testMod",
-            "amount": -20,
-            "char": "Soc"
-          }
-        ]
+    ]
+  },
+  {
+    "label": "Esprit solitaire",
+    "kind": "mentale",
+    "note": "-10 aux Tests lorsque vous êtes seul."
+  },
+  {
+    "label": "Blocage mental",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Int",
+        "mod": -10
       }
-    },
-    {
-      "min": 56,
-      "max": 60,
-      "label": "Peau d’acier",
-      "fx": {
-        "apAll": 2,
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "Ag",
-            "mod": -10
-          }
-        ]
+    ]
+  },
+  {
+    "label": "Urgence profanatoire",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "FM",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "Ag",
+        "mod": 10
       }
-    },
-    {
-      "min": 61,
-      "max": 65,
-      "label": "Langue pendante",
-      "fx": {
-        "passive": [
-          {
-            "op": "skillMod",
-            "skill": "langue",
-            "mod": -10
-          }
-        ]
+    ]
+  },
+  {
+    "label": "Morale douteuse",
+    "kind": "mentale",
+    "note": "1 État Brisé sur tout échec à un Test dérivé de la Force Mentale."
+  },
+  {
+    "label": "Esprit suspicieux",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "I",
+        "mod": -5
+      },
+      {
+        "op": "charMod",
+        "char": "Int",
+        "mod": -5
       }
-    },
-    {
-      "min": 66,
-      "max": 70,
-      "label": "Plumes éparses",
-      "fx": {
-        "note": "Deux lancers de Localisation pour déterminer où ces plumes apparaissent."
+    ]
+  },
+  {
+    "label": "Accro à l’adrénaline",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "FM",
+        "mod": 10
+      },
+      {
+        "op": "charMod",
+        "char": "I",
+        "mod": -10
       }
-    },
-    {
-      "min": 71,
-      "max": 75,
-      "label": "Court sur pattes",
-      "fx": {
-        "passive": [
-          {
-            "op": "moveMod",
-            "mod": -1
-          }
-        ]
+    ]
+  },
+  {
+    "label": "Visions torturées",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "I",
+        "mod": -10
       }
-    },
-    {
-      "min": 76,
-      "max": 80,
-      "label": "Écailles épineuses",
-      "fx": {
-        "apAll": 1
+    ]
+  },
+  {
+    "label": "Totalement déséquilibré",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -20
+      },
+      {
+        "op": "charMod",
+        "char": "FM",
+        "mod": 10
       }
-    },
-    {
-      "min": 81,
-      "max": 85,
-      "label": "Cornes asymétriques",
-      "fx": {
-        "apLocations": {
-          "tete": 1
-        },
-        "derivedWeapon": {
-          "name": "Cornes",
-          "type": "melee",
-          "damage": "+BF",
-          "qualities": [],
-          "subType": "Base",
-          "hands": 1
-        },
-        "note": "Compte comme une Arme de Créature (Dégâts = Bonus de Force)."
+    ]
+  },
+  {
+    "label": "Infinie malveillance",
+    "kind": "mentale",
+    "note": "-10 aux Tests non destinés à blesser autrui ; +10 aux Tests destinés à blesser autrui."
+  },
+  {
+    "label": "Colère impie",
+    "kind": "mentale",
+    "psychTraits": [
+      {
+        "type": "frenesie"
       }
-    },
-    {
-      "min": 86,
-      "max": 90,
-      "label": "Suintement de pus",
-      "fx": {
-        "note": "Lancer de Localisation pour déterminer l’origine du suintement."
+    ],
+    "note": "Sujet à Frénésie.",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "CC",
+        "mod": 10
       }
-    },
-    {
-      "min": 91,
-      "max": 95,
-      "label": "Groin poilu",
-      "fx": {
-        "passive": [
-          {
-            "op": "skillMod",
-            "skill": "pistage",
-            "mod": 10
-          }
-        ]
+    ]
+  },
+  {
+    "label": "Affreusement nerveux",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Ag",
+        "mod": 5
+      },
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -5
       }
-    },
-    {
-      "min": 96,
-      "max": 100,
-      "label": "Choix du MJ",
-      "fx": {
-        "note": "Le MJ choisit une mutation ou un Trait de Créature."
-      }
-    }
-  ],
-  "mentale": [
-    {
-      "min": 1,
-      "max": 5,
-      "label": "Atroces désirs",
-      "fx": {
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "Soc",
-            "mod": -5
-          },
-          {
-            "op": "charMod",
-            "char": "FM",
-            "mod": -5
-          }
-        ]
-      }
-    },
-    {
-      "min": 6,
-      "max": 10,
-      "label": "Bête intérieure",
-      "fx": {
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "FM",
-            "mod": 10
-          },
-          {
-            "op": "charMod",
-            "char": "Soc",
-            "mod": -5
-          },
-          {
-            "op": "charMod",
-            "char": "Int",
-            "mod": -5
-          }
-        ]
-      }
-    },
-    {
-      "min": 11,
-      "max": 15,
-      "label": "Rêves chaotiques",
-      "fx": {
-        "note": "État Exténué pendant les deux premières heures de chaque journée."
-      }
-    },
-    {
-      "min": 16,
-      "max": 20,
-      "label": "Formication",
-      "fx": {
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "I",
-            "mod": -5
-          },
-          {
-            "op": "charMod",
-            "char": "Dex",
-            "mod": -5
-          }
-        ]
-      }
-    },
-    {
-      "min": 21,
-      "max": 25,
-      "label": "Imprévisible fantaisiste",
-      "fx": {
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "Int",
-            "mod": -5
-          },
-          {
-            "op": "charMod",
-            "char": "FM",
-            "mod": -5
-          }
-        ]
-      }
-    },
-    {
-      "min": 26,
-      "max": 30,
-      "label": "Terrible inquiétude",
-      "fx": {
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "FM",
-            "mod": -10
-          }
-        ]
-      }
-    },
-    {
-      "min": 31,
-      "max": 35,
-      "label": "Pulsions de haine",
-      "fx": {
-        "note": "Sujet à l’Hostilité envers tous ceux qui ne sont pas de votre race."
-      }
-    },
-    {
-      "min": 36,
-      "max": 40,
-      "label": "Cœur desséché",
-      "fx": {
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "FM",
-            "mod": 10
-          },
-          {
-            "op": "charMod",
-            "char": "Soc",
-            "mod": -10
-          }
-        ]
-      }
-    },
-    {
-      "min": 41,
-      "max": 45,
-      "label": "Pensées envieuses",
-      "fx": {
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "Soc",
-            "mod": -10
-          }
-        ]
-      }
-    },
-    {
-      "min": 46,
-      "max": 50,
-      "label": "Esprit solitaire",
-      "fx": {
-        "note": "-10 aux Tests lorsque vous êtes seul."
-      }
-    },
-    {
-      "min": 51,
-      "max": 55,
-      "label": "Blocage mental",
-      "fx": {
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "Int",
-            "mod": -10
-          }
-        ]
-      }
-    },
-    {
-      "min": 56,
-      "max": 60,
-      "label": "Urgence profanatoire",
-      "fx": {
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "FM",
-            "mod": -10
-          },
-          {
-            "op": "charMod",
-            "char": "Ag",
-            "mod": 10
-          }
-        ]
-      }
-    },
-    {
-      "min": 61,
-      "max": 65,
-      "label": "Morale douteuse",
-      "fx": {
-        "note": "1 État Brisé sur tout échec à un Test dérivé de la Force Mentale."
-      }
-    },
-    {
-      "min": 66,
-      "max": 70,
-      "label": "Esprit suspicieux",
-      "fx": {
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "I",
-            "mod": -5
-          },
-          {
-            "op": "charMod",
-            "char": "Int",
-            "mod": -5
-          }
-        ]
-      }
-    },
-    {
-      "min": 71,
-      "max": 75,
-      "label": "Accro à l’adrénaline",
-      "fx": {
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "FM",
-            "mod": 10
-          },
-          {
-            "op": "charMod",
-            "char": "I",
-            "mod": -10
-          }
-        ]
-      }
-    },
-    {
-      "min": 76,
-      "max": 80,
-      "label": "Visions torturées",
-      "fx": {
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "I",
-            "mod": -10
-          }
-        ]
-      }
-    },
-    {
-      "min": 81,
-      "max": 85,
-      "label": "Totalement déséquilibré",
-      "fx": {
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "Soc",
-            "mod": -20
-          },
-          {
-            "op": "charMod",
-            "char": "FM",
-            "mod": 10
-          }
-        ]
-      }
-    },
-    {
-      "min": 86,
-      "max": 90,
-      "label": "Infinie malveillance",
-      "fx": {
-        "note": "-10 aux Tests non destinés à blesser autrui ; +10 aux Tests destinés à blesser autrui."
-      }
-    },
-    {
-      "min": 91,
-      "max": 95,
-      "label": "Colère impie",
-      "fx": {
-        "psychTraits": [
-          {
-            "type": "frenesie"
-          }
-        ],
-        "note": "Sujet à Frénésie.",
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "CC",
-            "mod": 10
-          }
-        ]
-      }
-    },
-    {
-      "min": 96,
-      "max": 100,
-      "label": "Affreusement nerveux",
-      "fx": {
-        "passive": [
-          {
-            "op": "charMod",
-            "char": "Ag",
-            "mod": 5
-          },
-          {
-            "op": "charMod",
-            "char": "Soc",
-            "mod": -5
-          }
-        ]
-      }
-    }
-  ]
-}
+    ]
+  }
+]
