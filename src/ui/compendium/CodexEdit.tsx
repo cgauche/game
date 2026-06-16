@@ -62,12 +62,14 @@ export function CodexEdit({ categoryKey, label, onClose }: { categoryKey: string
   const isTrait = categoryKey === 'traits'; // les Traits portent en plus un profil de MANŒUVRE éditable
   // Porteurs de modificateurs PASSIFS continus (`GameOp[]`) édités par ops (GameOpEditor), comme un sort.
   const isPassive = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'mutations';
+  // Table de Corruption : ses `ranges` (plages d100 → réf mutation) ont leur éditeur dédié.
+  const isMutationTable = categoryKey === 'mutationTables';
   const fields = useMemo(
     () => inferFields(arr as Record<string, unknown>[]).filter(
       (f) => !(isCreature && f.key === 'appearance') && !((isSpell || isTriggered) && f.key === 'effects')
-        && !(isTrait && f.key === 'maneuver') && !(isPassive && f.key === 'passive'),
+        && !(isTrait && f.key === 'maneuver') && !(isPassive && f.key === 'passive') && !(isMutationTable && f.key === 'ranges'),
     ),
-    [arr, isCreature, isSpell, isTriggered, isTrait, isPassive],
+    [arr, isCreature, isSpell, isTriggered, isTrait, isPassive, isMutationTable],
   );
   const edit = (key: string, v: unknown) => { setEntry((e) => ({ ...e, [key]: v })); setDirty(true); };
 
@@ -106,6 +108,7 @@ export function CodexEdit({ categoryKey, label, onClose }: { categoryKey: string
         )}
         {isTriggered && <TriggeredEffectsField value={entry.effects as TriggeredEffect[] | undefined} onChange={(v) => edit('effects', v)} />}
         {isTrait && <ManeuverField value={entry.maneuver as ManeuverProfile | undefined} onChange={(v) => edit('maneuver', v)} />}
+        {isMutationTable && <MutationTableField value={entry.ranges as MutationRange[] | undefined} onChange={(v) => edit('ranges', v)} />}
         {fields.map((f) => <Field key={f.key} field={f} value={entry[f.key]} onChange={(v) => edit(f.key, v)} />)}
       </div>
     </div>
@@ -255,6 +258,36 @@ function ManeuverField({ value, onChange }: { value: ManeuverProfile | undefined
       </div>
       <span>effets PROPRES à la manœuvre (appliqués quand ELLE touche)</span>
       <TriggeredEffectsField value={m.effects} onChange={(effects) => patch({ effects: effects.length ? effects : undefined })} />
+    </div>
+  );
+}
+
+/** Une plage d100 d'une Table de Corruption : [min,max] → mutation référencée par label. */
+interface MutationRange { min: number; max: number; mutation: string; }
+
+/** Éditeur des PLAGES d'une Table de Corruption (`mutationTables.json`) : chaque rangée = un intervalle d100
+ *  → une mutation (réf par label, autocomplétée depuis le dataset `mutations`). La table renvoie la mutation
+ *  dont l'intervalle contient le jet (`findTableEntry`). DÉCOUPLÉ de la mutation : plusieurs tables (une par
+ *  dieu du Chaos, Compagnon T1) peuvent pointer la même mutation à des plages différentes. Réutilise
+ *  `RefDatalist` (autocomplétion des labels de mutation). */
+function MutationTableField({ value, onChange }: { value: MutationRange[] | undefined; onChange: (v: MutationRange[]) => void }) {
+  const list = value ?? [];
+  const set = (i: number, patch: Partial<MutationRange>) => onChange(list.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+  const clampD100 = (s: string) => Math.max(1, Math.min(100, Number(s) || 1));
+  return (
+    <div className="ed-field">
+      <span>plages d100 → mutation (la table renvoie la mutation dont l'intervalle contient le jet)</span>
+      {list.map((r, i) => (
+        <div className="ed-subfield" key={i}>
+          <div className="tf-row">
+            <label className="dr">d100&nbsp;<input type="number" min={1} max={100} value={r.min} onChange={(e) => set(i, { min: clampD100(e.target.value) })} />–<input type="number" min={1} max={100} value={r.max} onChange={(e) => set(i, { max: clampD100(e.target.value) })} /></label>
+            <input list="dl-mutations" value={r.mutation} placeholder="mutation (label)" onChange={(e) => set(i, { mutation: e.target.value })} />
+            <button className="btn small danger" title="Supprimer la plage" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
+          </div>
+        </div>
+      ))}
+      <RefDatalist ds="mutations" />
+      <button className="btn small" onClick={() => onChange([...list, { min: 1, max: 1, mutation: '' }])}>+ Plage d100</button>
     </div>
   );
 }
