@@ -455,6 +455,20 @@ h3 {
   text-align: center;
   margin: 0 0 6px;
 }
+/* L3 : actions principales (Commencer / Reprendre) en bas, centrées, plus visibles. */
+.party-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-top: 1px solid var(--border);
+  background: var(--panel);
+}
+.party-actions .btn {
+  padding: 10px 24px;
+  font-size: 15px;
+}
 
 /* Cartouche campagne (écran d'équipe) : campagne choisie + « Changer » (hôte/solo). */
 .campaign-pill {

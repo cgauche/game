@@ -214,26 +214,8 @@ export function PartyScreenView({
             )}
           </div>
         )}
-        {net.mode === 'guest' ? (
+        {net.mode === 'guest' && (
           <span className="hint">⏳ L'hôte lance la partie</span>
-        ) : (
-          <>
-            {inProgress && (
-              <button className="btn btn-primary" onClick={onResume}>
-                Reprendre →
-              </button>
-            )}
-            <button
-              className={inProgress ? 'btn' : 'btn btn-primary'}
-              disabled={party.length === 0 || guestPending}
-              title={guestPending
-                ? 'Des emplacements attribués aux autres joueurs sont encore vides.'
-                : inProgress ? 'Relance la campagne au début — la partie en cours sera perdue.' : undefined}
-              onClick={onStart}
-            >
-              Commencer →
-            </button>
-          </>
         )}
       </header>
       {isHost && guestPending && (
@@ -288,6 +270,26 @@ export function PartyScreenView({
           );
         })}
       </div>
+
+      {net.mode !== 'guest' && (
+        <footer className="party-actions">
+          {inProgress && (
+            <button className="btn btn-primary" onClick={onResume}>
+              Reprendre →
+            </button>
+          )}
+          <button
+            className={`btn ${inProgress ? '' : 'btn-primary'} party-start`}
+            disabled={party.length === 0 || guestPending}
+            title={guestPending
+              ? 'Des emplacements attribués aux autres joueurs sont encore vides.'
+              : inProgress ? 'Relance la campagne au début — la partie en cours sera perdue.' : undefined}
+            onClick={onStart}
+          >
+            Commencer →
+          </button>
+        </footer>
+      )}
 
       {picker && party.length < 4 && <PartyPicker party={party} onPick={pick} onClose={() => setPicker(false)} />}
       {sheetId && <CharacterSheet heroId={sheetId} onClose={() => setSheetId(null)} />}
