@@ -1121,7 +1121,7 @@ export function IsoStage() {
       onContextMenu={(e) => e.preventDefault()}
     >
       <defs dangerouslySetInnerHTML={{ __html: DEFS + AMBIANCE_DEFS }} />
-      <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.9 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: turning ? 'opacity 0.13s ease-out' : anyWalking ? 'opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out', opacity: turning ? 0.22 : 1 }}>
+      <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.97 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: turning ? 'opacity 0.13s ease-out' : anyWalking ? 'opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out', opacity: turning ? 0.6 : 1 }}>
         <g>{objs.map((o) => o.el)}</g>
         {/* Télégraphe ENNEMI (enemyAim) : réticule + ligne — PLEINE en mêlée, pointillée tir/sort. */}
         {targeting && (
