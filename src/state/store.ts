@@ -5,6 +5,7 @@
  */
 import { create } from 'zustand';
 import { Combatant, CharKey, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
+import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng, seedBattleRng } from './battleRng';
 import { facingToward } from '../gameIso/rig/facing';
 import type { Dir8 } from './dir8';
@@ -18,6 +19,7 @@ import {
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, aiOvercastPlan,
+  availableManeuvers, freeAttackWeapon, applyAreaAttack, applyTongue, applyWail, applyGaze, applyChillGrasp,
   castSightBlocked, spellSightOf, castZoneSpell, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone,
   counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition,
   openRoundStartPsych, displaceSmaller, applySurprise,
@@ -158,9 +160,12 @@ export interface BattleState {
   /** Mode d'action À BOUTON en cours (panneau ouvert). Le déplacement et l'attaque n'ont PAS de mode :
    *  ils sont implicites au clic (sol/ennemi) quand `action === null` — cf. battleClickTile/Entity.
    *  'teleport' = ciblage de case d'une Téléportation (op de sort) en attente. */
-  action: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'tentacle' | 'heal' | 'teleport' | null;
+  action: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'tentacle' | 'maneuver' | 'heal' | 'teleport' | null;
   /** Sort sélectionné pour l'action d'incantation en cours. */
   selectedSpell: string | null;
+  /** Manœuvre de trait CIBLÉE (mêlée gratuite : Morsure/Attaque caudale/Tentacules) armée par la
+   *  hotbar : le prochain clic-entité la résout (cf. `battleManeuver`). Effacée au résolution/tour. */
+  maneuverKind?: AttackKind;
   reachable: Map<string, number>;
   /** Cases de Mouvement déjà parcourues ce Tour. Le Mouvement est DÉCOMPOSABLE (règle maison : on peut
    *  fractionner son déplacement tant que le total ≤ Marche) MAIS non entrelacé avec l'Action : séquences
@@ -362,6 +367,10 @@ export interface GameState {
   setPendingCampaign: (pc: GameState['pendingCampaign']) => void;
 
   setScreen: (s: Screen) => void;
+  /** Héros en cours de MODIFICATION dans le créateur (bouton « Modifier » d'un emplacement) :
+   *  l'id du Combatant à mettre à jour EN PLACE ; null = création normale d'un nouveau héros. */
+  editingHeroId: string | null;
+  setEditingHero: (id: string | null) => void;
   /** Interlude « Entre deux aventures » (LDB 22-23, Jalon 5) — état + dépôts bancaires + commandes. */
   interlude: InterludeState | null;
   bank: BankDeposit[];
@@ -758,6 +767,16 @@ export interface GameState {
   /** Attaque gratuite de Tentacule (trait Tentacules, LDB 85 l.354 — mutation Tentacule épais) :
    *  1/tour, 0 Avantage, ne consomme pas l'Action, Empêtré sur Dégâts. Modale d'attaque standard. */
   battleTentacle: (targetId: string) => void;
+  /** Manœuvres JOUEUR génériques (« Manœuvre ▾ ») — attaques spéciales d'un trait de créature qu'un
+   *  héros possède (mutation/polymorphie). Source des entrées : `availableManeuvers`. */
+  /** Arme/désarme une manœuvre de mêlée CIBLÉE (Morsure/Caudale/Tentacules) : le prochain clic-entité
+   *  la résout (battleManeuver). Toggle si déjà armée sur le même type. */
+  battleSelectManeuver: (kind: AttackKind) => void;
+  /** Résout la manœuvre de mêlée armée contre la cible cliquée (Attaque gratuite, Action préservée). */
+  battleManeuver: (targetId: string) => void;
+  /** Manœuvre de ZONE / soi immédiate (Souffle/Vomi/Langue/Hurlement/Regard/Étreinte) : résolution
+   *  directe par le résolveur moteur partagé. L'Étreinte glaciale coûte l'Action (LDB 85 l.112). */
+  battleManeuverArea: (kind: AttackKind) => void;
   /** Acquitte la révélation en tête de file (montre le dé du jet subi/sur table) ; reprend l'IA si vide. */
   dismissReveal: () => void;
   /** Piétinement par modale (LDB 85 l.320-321) : Lancer le jet, dépenser une Chance, appliquer (gratuit). */
@@ -1004,6 +1023,8 @@ export const useGame = create<GameState>((set, get) => ({
   previousScene: null,
 
   setScreen: (s) => set({ screen: s }),
+  editingHeroId: null,
+  setEditingHero: (id) => set({ editingHeroId: id }),
   openCodex: (focus) => set((st) => ({ screen: 'compendium', compendiumFocus: focus ?? null, compendiumReturn: st.screen === 'compendium' ? st.compendiumReturn : st.screen })),
   setPendingCampaign: (pc) => set({ pendingCampaign: pc }),
 
@@ -2236,6 +2257,12 @@ export const useGame = create<GameState>((set, get) => ({
       get().battleTentacle(id);
       return;
     }
+    // Manœuvre de mêlée CIBLÉE (Morsure/Attaque caudale/Tentacules de trait) : Attaque gratuite — précède
+    // aussi le verrou `battle.acted`. La manœuvre armée est portée par `battle.maneuverKind`.
+    if (battle.action === 'maneuver') {
+      get().battleManeuver(id);
+      return;
+    }
     // Attaque GRATUITE de Frénésie (Test de CC non soumis à l'Action, LDB 21 l.34) : reste possible même
     // l'Action dépensée — y compris le tour où l'on entre en Frénésie (le Test de FM a consommé l'Action).
     const freeFrenzyAttack = battle.action === null && !!active.frenzied && !active.frenzyFreeUsed;
@@ -2834,7 +2861,13 @@ export const useGame = create<GameState>((set, get) => ({
     const dualBefore = get().pendingDualStrike; // données de la 1ʳᵉ frappe (présentes quand on confirme la 2ᵉ)
     set({ pendingAttack: null });
     if (attacker && target && victim) {
-      const weapon = firedWeapon(attacker, target, pa.weaponUid);
+      // Manœuvre de mêlée d'un trait SANS arme équipée (Morsure/Attaque caudale) : on synthétise l'arme
+      // naturelle (même que l'IA, freeAttackWeapon) avec l'Indice lu du profil — source unique. La
+      // mutation Tentacule, elle, A une arme équipée (`nat-tentacule`) → firedWeapon la résout normalement.
+      const freeNatural = pa.freeKind && !attacker.weapons.some((w) => w.uid === pa.weaponUid)
+        ? freeAttackWeapon(pa.freeKind, creatureAttacks(attacker.traits ?? []).find((a) => a.kind === pa.freeKind)?.bonus ?? 0)
+        : null;
+      const weapon = freeNatural ?? firedWeapon(attacker, target, pa.weaponUid);
       const prevActed = battle.acted; // pour la Frénésie : la 1re attaque du Round est GRATUITE
       const isDualMain = !!pa.dualMode && !pa.dualSecond && attacker.kind === 'hero'; // main directrice d'un dual
       const isDualSecond = !!pa.dualSecond; // 2ᵉ frappe (off-hand)
@@ -2844,9 +2877,9 @@ export const useGame = create<GameState>((set, get) => ({
       // Maladresse d'un HÉROS (jet propre raté + double) → modale Tableau des Oups ! (LDB 14 l.53) ; elle interrompt le balayage.
       if (attacker.kind === 'hero' && attackerFumbled(pa.result, weapon)) {
         set({ pendingFumble: { combatantId: attacker.id, weapon, result: null }, pendingCleave: null });
-      } else if (!isDualMain && !isDualSecond && !pa.freeTentacle) {
+      } else if (!isDualMain && !isDualSecond && !pa.freeKind) {
         // Frappe Mortelle (LDB 14 l.12 / 85 l.299) : démarre/poursuit le balayage d'un héros plus grand
-        // (jamais en mode dual ni sur l'Attaque gratuite de Tentacule).
+        // (jamais en mode dual ni sur une Attaque gratuite de manœuvre).
         maybeHeroCleave(get, set, attacker, victim, pa.result, wasChain);
       }
       // Action « des deux armes » (LDB 10 l.638) : on a CHOISI d'attaquer des deux → −10 à toutes ses défenses
@@ -2868,16 +2901,17 @@ export const useGame = create<GameState>((set, get) => ({
         if (dualBefore && pa.result.hit) { gainAdvantage(attacker); attacker.gainedAdvThisRound = true; }
         set({ pendingDualStrike: null, battle: { ...get().battle! } });
       }
-      // Attaque gratuite de Tentacule (LDB 85 l.354) : l'Action est préservée, 1/tour, et sur
-      // Dégâts la cible est Empêtrée (Empoignade) — effet partagé des attaques de créature.
-      if (attacker.kind === 'hero' && pa.freeTentacle) {
-        attacker.tentacleUsedThisTurn = true;
-        applyFreeAttackEffects(get, attacker, victim, 'tentacules', pa.result);
+      // Attaque gratuite de MANŒUVRE de mêlée (Morsure/Attaque caudale/Tentacules, LDB 85) : l'Action
+      // est préservée et les effets onHit PROPRES à la manœuvre s'appliquent (Caudale → À Terre si plus
+      // petit ; Tentacules → Empêtré). Le 1/tour est le limiteur de la MUTATION Tentacule uniquement.
+      if (attacker.kind === 'hero' && pa.freeKind) {
+        if (pa.freeKind === 'tentacules') attacker.tentacleUsedThisTurn = true;
+        applyFreeAttackEffects(get, attacker, victim, pa.freeKind, pa.result);
         set({ battle: { ...get().battle!, acted: prevActed } });
       }
       // Frénésie (LDB 21 l.34) : un Test de Capacité de Combat GRATUIT chaque Round → la 1re attaque du
       // héros frénétique ne consomme PAS l'Action (il pourra réattaquer normalement ensuite).
-      if (attacker.kind === 'hero' && attacker.frenzied && !attacker.frenzyFreeUsed && !wasChain && !isDualSecond && !pa.freeTentacle) {
+      if (attacker.kind === 'hero' && attacker.frenzied && !attacker.frenzyFreeUsed && !wasChain && !isDualSecond && !pa.freeKind) {
         attacker.frenzyFreeUsed = true;
         set({ battle: { ...get().battle!, acted: prevActed, log: [...get().battle!.log, ev('frenzy', `${attacker.name} : attaque libre de Frénésie (Action préservée).`, attacker.id)] } });
       }
@@ -2962,7 +2996,64 @@ export const useGame = create<GameState>((set, get) => ({
       return;
     }
     // OUVRE la modale d'attaque standard avec l'arme naturelle — « un jet = une modale ».
-    set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null, weaponUid: 'nat-tentacule', freeTentacle: true }, battle: { ...battle, action: null } });
+    set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null, weaponUid: 'nat-tentacule', freeKind: 'tentacules' }, battle: { ...battle, action: null, maneuverKind: undefined } });
+  },
+  // ── Manœuvres JOUEUR génériques (« Manœuvre ▾ ») : attaques spéciales de trait de créature qu'un
+  // héros possède (mutation/polymorphie). Source des entrées : `availableManeuvers` (combatFlow). ──
+  battleSelectManeuver: (kind) => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
+    const battle = get().battle;
+    if (!battle || battle.over) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero') return;
+    // Bascule l'armement « manœuvre ciblée » : le prochain clic-entité résout via battleManeuver.
+    const on = battle.action === 'maneuver' && battle.maneuverKind === kind;
+    set({ battle: { ...battle, action: on ? null : 'maneuver', maneuverKind: on ? undefined : kind, selectedSpell: null, preview: null } });
+  },
+  battleManeuver: (targetId) => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
+    const battle = get().battle;
+    if (!battle || battle.over) return;
+    const active = activeCombatant(battle);
+    const kind = battle.maneuverKind;
+    if (!active || active.kind !== 'hero' || !kind) return;
+    if (!canTakeAction(active) || hasCondition(active, 'Brisé')) return; // Sonné/Brisé : pas de manœuvre offensive
+    // Profil RAW de la manœuvre (coût d'Avantage + Indice de Dégâts) lu de la DONNÉE (creatureAttacks).
+    const a = creatureAttacks(active.traits ?? []).find((x) => x.kind === kind);
+    if (!a || a.trigger !== 'free' || active.advantage < a.avantage) return;
+    const target = battle.combatants.find((c) => c.id === targetId);
+    if (!target || target.kind === active.kind || isOutOfAction(target) || !target.pos || !active.pos) return;
+    if (combatDistance(active, target) > 1) { get().log('Cible hors de portée de la manœuvre.'); return; }
+    // Dépense l'Avantage RAW puis OUVRE la modale d'attaque standard (« un jet = une modale »). `freeKind`
+    // porte le type → attackConfirm synthétise l'arme naturelle (Indice du profil) + applique les effets
+    // onHit propres à la manœuvre, l'Action préservée. Pas de weaponUid (arme synthétique, pas équipée).
+    active.advantage = Math.max(0, active.advantage - a.avantage);
+    set({
+      pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null, freeKind: kind },
+      battle: { ...battle, action: null, maneuverKind: undefined },
+    });
+  },
+  battleManeuverArea: (kind) => {
+    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
+    const battle = get().battle;
+    if (!battle || battle.over) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero') return;
+    const a = creatureAttacks(active.traits ?? []).find((x) => x.kind === kind);
+    if (!a) return;
+    // Étreinte glaciale = manœuvre-Action (LDB 85 l.112 « au prix de 2 Avantages ET de son Action ») :
+    // exige l'Action ; les autres sont gratuites (préservent l'Action). Le coût d'Action est posé par le
+    // résolveur (applyGaze/applyChillGrasp set acted:true) — ici on ne fait que la garde de légalité.
+    if (a.trigger === 'action') { if (battle.acted || !canTakeAction(active)) return; }
+    else if (active.advantage < a.avantage) return;
+    set({ battle: { ...battle, action: null, maneuverKind: undefined } }); // referme le menu avant la résolution
+    // Routage vers le résolveur moteur PARTAGÉ (le même que l'IA) selon le type. Les résolveurs
+    // dépensent l'Avantage et appliquent les effets eux-mêmes ; instantanés (pas de modale joueur).
+    if (kind === 'souffle' || kind === 'vomi') applyAreaAttack(get, set, active, a);
+    else if (kind === 'langue') applyTongue(get, set, active, a);
+    else if (kind === 'hurlement') applyWail(get, set, active);
+    else if (kind === 'regard') applyGaze(get, set, active);
+    else if (kind === 'etreinte') applyChillGrasp(get, set, active);
   },
   trampleRoll: () => FLOWS.trample.roll(get, set),
   trampleReroll: () => FLOWS.trample.reroll(get, set),

@@ -70,6 +70,7 @@ const JUSTIFIED: Record<string, string> = {
   startDisengage: 'OUVRE pendingDisengage : le jet du foe est tiré et FIGÉ pour la modale (pattern Défense — montré dans la ligne adverse)',
   resolveDualSecond: '2ᵉ frappe du Maniement : jet IMPOSÉ (d100 inversé) AFFICHÉ dans la modale d’attaque (dualSecond)',
   applyCounterspell: 'Contre-sort : Test opposé du contre-lanceur, issue affichée dans la modale d’incantation (et déclaré pendant le jet ennemi)',
+  battleManeuverArea: 'manœuvre de ZONE/soi (Souffle/Vomi/Langue/Hurlement/Regard/Étreinte) : délègue aux MÊMES résolveurs instantanés que l’IA (Tests opposés auto-résolus, RAW LDB 85 — pas de jet de héros différable) ; Dégâts/effets affichés dans le feed de combat',
   // ── Moteur appelé par les points d'entrée (le jet aval est différé/révélé/IA) ──
   applyEffects: 'Effets d’AUTEUR (éditeur) : `test` OUVRE pendingTest ; inflictTrauma/inflictDisease/zoneBlast poussent une RÉVÉLATION témoin 📜 (souffle = dégâts SUBIS tirés, montrés au journal)',
   applyZoneCrossings: 'traversée de zones (feu…) : jets SUBIS — feed de combat + flottants FX (L11)',

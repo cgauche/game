@@ -96,7 +96,7 @@ import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } 
 import { recomputeLoadout, itemFromTrapping, customTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks } from '../engine/conditions';
-import { creatureAttacks, venomDifficulty, ATTACK_LABEL, type CreatureAttack } from '../engine/creatureAttacks';
+import { creatureAttacks, venomDifficulty, ATTACK_LABEL, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { suffocationTick } from '../engine/suffocation';
 import { domainOf, domainOnHitRiders, domainMissileMods, ghurFearAfterCast, hasArcaneTalent } from '../engine/domainAttributes';
@@ -120,7 +120,7 @@ import { toBrass, fromBrass } from '../engine/money';
 import { Scene, Effect, isWalkable } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
 import { lineOfSightCover, coverModifier, smokeZone, tilesBetween } from './lineOfSight';
-import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune, clearPsychOf, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
+import { fearSourceFor, resolvePeurTest, resolveTerreurTest, terreurBrise, calmeValue, isFrenzyCapable, isPsychImmune, clearPsychOf, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import { reachable, moveReachFor, flyReachable, pushAway, pathTo, chebyshev, Pt } from './path';
@@ -1855,7 +1855,7 @@ export function aiFrenzyAttack(get: Get, set: SetFn, enemy: Combatant): void {
 // ---------------------------------------------------------------------------
 
 /** Arme abstraite d'une attaque gratuite : Piétinement = BF+0 ; Morsure/Caudale/Tentacules = +Indice (BF inclus). */
-function freeAttackWeapon(kind: string, bonus: number): Weapon {
+export function freeAttackWeapon(kind: string, bonus: number): Weapon {
   if (kind === 'pietinement') return TRAMPLE_WEAPON;
   const name = kind === 'caudale' ? 'Attaque caudale' : kind === 'cornes' ? 'Cornes' : kind === 'tentacules' ? 'Tentacules' : 'Morsure';
   return { name, type: 'melee', damage: `+${bonus}`, qualities: [] };
@@ -2225,6 +2225,70 @@ export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): b
   }
   enemy.pendingFreeAttacks = undefined; // file épuisée
   return false;
+}
+
+// ---------------------------------------------------------------------------
+// Manœuvres JOUEUR — source UNIQUE des attaques spéciales activables par un héros (mutation/
+// polymorphie lui donnant un trait d'attaque de créature). La hotbar (« Manœuvre ▾ ») n'énumère
+// QUE ceci ; la résolution réutilise les mêmes appliers que l'IA (Piétinement/Tentacule gardent
+// leur flux dédié). Reste SOURCE-AGNOSTIQUE (kind/coût/déclenchement lus d'un ManeuverProfile) :
+// les manœuvres de personnage d'Aux Armes (Phase 4b) s'y brancheront via un autre porteur de profil.
+// ---------------------------------------------------------------------------
+
+/** Icône FR par type de manœuvre (cosmétique hotbar). */
+export const MANEUVER_ICON: Record<AttackKind, string> = {
+  arme: '⚔️', morsure: '🦷', caudale: '🦎', cornes: '🐏', souffle: '🐉', vomi: '🤮',
+  tentacules: '🐙', etreinte: '❄️', regard: '👁', langue: '👅', hurlement: '📢',
+};
+
+/** Manœuvre activable par le héros actif (descripteur uniforme rendu par la hotbar). `mode` dicte
+ *  le ciblage : 'target' → on arme `battle.action` puis le clic-entité résout ; 'immediate' →
+ *  résolution directe (zone/soi). `dispatch` route vers le store : 'trample'/'tentacle' (flux
+ *  dédiés conservés), 'maneuver' (mêlée gratuite de trait, ciblée), 'area' (zone/action immédiate). */
+export interface Maneuver {
+  id: string;
+  /** Type d'attaque de créature (absent pour Piétinement, qui dérive de la Taille). */
+  kind?: AttackKind;
+  label: string;
+  icon: string;
+  /** Coût en Avantage (affiché « · N Av »). */
+  cost: number;
+  mode: 'target' | 'immediate';
+  dispatch: 'trample' | 'tentacle' | 'maneuver' | 'area';
+}
+
+/** Mêlée ciblée (clic-entité requis) : Morsure / Attaque caudale / Tentacules de trait. */
+const TARGET_MANEUVER_KINDS: AttackKind[] = ['morsure', 'caudale', 'tentacules'];
+
+/** Manœuvres que le héros ACTIF peut activer maintenant — agrège (dédupliquées) : (1) ses manœuvres
+ *  de trait abordables & légales ; (2) Piétinement (Taille) ; (3) la mutation Tentacule. Aucune
+ *  logique par créature en dur : tout vient de `creatureAttacks` (profils) + des prédicats existants. */
+export function availableManeuvers(active: Combatant, battle: BattleState): Maneuver[] {
+  if (active.kind !== 'hero') return [];
+  const out: Maneuver[] = [];
+  // (1) Manœuvres de trait. 'arme' = l'attaque-Action normale (pas une manœuvre) ; 'charge' (Cornes) =
+  // gratuite uniquement à la Charge (auto) → exclues. Les manœuvres-Action (Étreinte) exigent l'Action.
+  for (const a of creatureAttacks(active.traits ?? [])) {
+    if (a.kind === 'arme' || a.trigger === 'charge') continue;
+    if (a.trigger === 'free' && active.advantage < a.avantage) continue;
+    if (a.trigger === 'action' && (battle.acted || !canTakeAction(active))) continue;
+    const target = TARGET_MANEUVER_KINDS.includes(a.kind);
+    out.push({
+      id: a.kind, kind: a.kind, label: ATTACK_LABEL[a.kind], icon: MANEUVER_ICON[a.kind],
+      cost: a.avantage, mode: target ? 'target' : 'immediate', dispatch: target ? 'maneuver' : 'area',
+    });
+  }
+  // (2) Piétinement (Taille, LDB 85 l.320-321) : adversaire adjacent plus petit, ≥1 Avantage. Flux dédié.
+  if (active.advantage >= 1 && trampleTarget(battle, active))
+    out.push({ id: 'pietinement', label: 'Piétiner', icon: '🐾', cost: 1, mode: 'target', dispatch: 'trample' });
+  // (3) Mutation Tentacule (arme `nat-tentacule`, LDB 85 l.354) : 1/tour, 0 Avantage, cible adjacente.
+  if (
+    !active.tentacleUsedThisTurn && active.weapons.some((w) => w.uid === 'nat-tentacule') && !!active.pos &&
+    battle.combatants.some((c) => c.kind !== 'hero' && !isOutOfAction(c) && c.pos && combatDistance(active, c) <= 1)
+  )
+    out.push({ id: 'tentacule', label: 'Tentacule', icon: '🐙', cost: 0, mode: 'target', dispatch: 'tentacle' });
+  // Déduplique par id (la mutation Tentacule et le trait Tentacules ne coexistent pas, mais garde-fou).
+  return out.filter((m, i) => out.findIndex((n) => n.id === m.id) === i);
 }
 
 // applyActiveEffect / COMBAT_PERSIST vivent désormais dans le moteur (engine/ops) —
@@ -3586,7 +3650,7 @@ export function enterRoundStartPause(get: Get, set: SetFn): void {
   const b = get().battle;
   if (!b || b.over) return;
   for (const c of b.combatants) if (c.shotsThisTurn) c.shotsThisTurn = 0; // Salve : compteur de tirs réinitialisé à chaque Round
-  const reset = { ...b, action: null, movementUsed: 0, movedPreAction: false, acted: false, loadoutSwapped: false, reachable: new Map(), preview: null, runBudget: null, fearGate: null };
+  const reset = { ...b, action: null, maneuverKind: undefined, movementUsed: 0, movedPreAction: false, acted: false, loadoutSwapped: false, reachable: new Map(), preview: null, runBudget: null, fearGate: null };
   if (get().net.mode !== 'local' && b.round > 1 && !b.handRaised) {
     set({ battle: reset, pendingRoundStart: null });
     get().confirmRoundStart();
@@ -3856,7 +3920,7 @@ registerCascadeApplier(
     let line: string;
     if (cp.kind === 'terreur') {
       // 1ʳᵉ rencontre (LDB 21 l.55-57) : échec → Brisé = Indice + |DR négatifs| ; devient une Peur.
-      const brise = r.success ? 0 : cp.indice + Math.max(0, -r.sl);
+      const brise = terreurBrise(cp.indice, r.success, r.sl);
       if (brise > 0) addCondition(hero, 'Brisé', brise);
       hero.psychState.push({ type: 'peur', sourceId: cp.sourceId, indice: r.success ? 0 : cp.indice, calmeDR: 0, lastTestRound: battle?.round });
       line = r.success ? `${hero.name} garde son sang-froid.` : `${hero.name} est terrifié par ${cp.sourceName} : ${brise} État(s) Brisé, puis Peur ${cp.indice}.`;

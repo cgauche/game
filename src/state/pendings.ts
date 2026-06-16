@@ -10,6 +10,7 @@ import type { Effect } from './scene';
 import type { Flow } from './flow';
 import type { TestResult, OpposedResult } from '../engine/tests';
 import type { AttackResult } from '../engine/combat';
+import type { AttackKind } from '../engine/creatureAttacks';
 import type { CriticalResolved } from '../engine/critical';
 import type { OupsResolved } from '../engine/oups';
 import type { CastResult, MissileResult, FocusResult, CounterspellOutcome } from '../engine/magic';
@@ -226,9 +227,10 @@ export interface PendingAttack {
   dualMode?: boolean;
   /** Cette attaque EST la 2ᵉ frappe (off-hand) d'un Maniement de deux armes : jet imposé, pas de relance. */
   dualSecond?: boolean;
-  /** Attaque GRATUITE de Tentacule (trait Tentacules, LDB 85 l.354) : ne consomme pas l'Action,
-   *  1/tour, Empêtré sur Dégâts (cf. attackConfirm). */
-  freeTentacle?: boolean;
+  /** Attaque GRATUITE de MANŒUVRE de mêlée (Morsure/Attaque caudale/Tentacules — trait de créature
+   *  qu'un héros active : mutation/polymorphie) : ne consomme pas l'Action ; effets onHit propres à la
+   *  manœuvre appliqués à la confirmation (cf. attackConfirm). `tentacules` = limiteur 1/tour (mutation). */
+  freeKind?: AttackKind;
 }
 /** Balayage en attente (Frappe Mortelle d'un HÉROS plus grand, LDB 14 l.12 / 85 l.299) : après une
  *  touche de mêlée, le joueur enchaîne sur d'autres adversaires adjacents (jusqu'à BCC), via le flux
@@ -608,12 +610,14 @@ export interface CascadeStep extends RollParticipant {
   /** Héros qui lance (résolu via `actorIn`). Absent → étape de groupe (rare). */
   actorId?: string;
   icon?: string;
-  /** Étape-JET : le jet d'attaque/défense/magie/Test EST l'étape 0 de la séquence, rendu par
-   *  `CascadeModal` via le hook de props correspondant (`useAttackJetProps`/`useTestJetProps`…) → une
-   *  seule fenêtre. Les données du jet vivent dans `pendingAttack`/`pendingDefense`/`pendingCast`/
-   *  `pendingTest`/`pendingExtendedTest` (coexistants — comme l'attaque), résolues par leur `xConfirm`/
-   *  `xNext` qui ferme la cascade. */
-  jet?: 'attack' | 'defense' | 'cast' | 'test' | 'extended' | 'disengage' | 'forceDoor';
+  /** Étape-JET : le jet d'attaque/magie/Test/désengagement/porte EST l'étape 0 de la séquence, rendu
+   *  par `CascadeModal` via le hook ou la modale correspondante (`useAttackJetProps`/`useTestJetProps`/
+   *  `useExtendedTestJetProps`/`CastModal`/`DisengageModal`/`ForceDoorModal`) → une seule fenêtre. Les
+   *  données vivent dans `pendingAttack`/`pendingCast`/`pendingTest`/`pendingExtendedTest`/
+   *  `pendingDisengage`/`pendingForceDoor` (coexistants — comme l'attaque), résolus par leur `xConfirm`/
+   *  `xNext` qui ferme la cascade. (La Défense N'EST PAS une étape de cascade : `pendingDefense` a sa
+   *  propre modale réactive.) */
+  jet?: 'attack' | 'cast' | 'test' | 'extended' | 'disengage' | 'forceDoor';
   /** Étape de GROUPE (action collective : enfoncer une porte à plusieurs) — l'arbitre coop lui donne
    *  l'owner '*' (chacun pilote ses héros) au lieu de `actorId` (une étape forceDoor n'a pas d'acteur
    *  unique). Absent sur les autres `kind` → repli sur `actorId` (identique à aujourd'hui). */
@@ -627,8 +631,6 @@ export interface CascadeStep extends RollParticipant {
   result?: CascadeRoll | null;
   /** Paramètres sérialisables de la conséquence (jamais de closure — coop). */
   meta?: Record<string, number | string | boolean>;
-  /** Note en clair d'une étape SANS jet (rare — les notes de cascade vont plutôt dans `log`). */
-  text?: string;
   /** Étape déjà validée (conséquence appliquée). */
   committed?: boolean;
   /** Conséquence appliquée à la validation (journal) — gardée pour rester lisible dans la pile. */

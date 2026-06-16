@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useGame, activeCombatant, entityPickables, trampleTarget, movementRemaining, canMove } from '../state/store';
+import { useGame, activeCombatant, entityPickables, movementRemaining, canMove } from '../state/store';
 import { hasMeaningfulOption } from '../state/turnEconomy';
 import { findSpell } from '../data/index';
 import { isArcaneSpell } from '../engine/magic';
@@ -16,7 +16,7 @@ import type { Combatant } from '../engine/types';
 import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
 import { TeamPortrait } from './TeamPortrait';
 import { CharFrame } from './CharFrame';
-import { previewResourceDelta, cleaveTargets, dualStrikeTargets, placingZoneOf } from '../state/combatFlow';
+import { previewResourceDelta, cleaveTargets, dualStrikeTargets, placingZoneOf, availableManeuvers } from '../state/combatFlow';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { ActiveFrame } from './ActiveFrame';
 import { CodexRef } from './compendium/CodexRef';
@@ -55,6 +55,8 @@ export function ActionBar() {
   const aim = useGame((s) => s.battleAim);
   const togglePushback = useGame((s) => s.battleTogglePushback);
   const heal = useGame((s) => s.battleHeal);
+  const selectManeuver = useGame((s) => s.battleSelectManeuver);
+  const maneuverArea = useGame((s) => s.battleManeuverArea);
   const cancelMove = useGame((s) => s.cancelMove);
   const switchLoadout = useGame((s) => s.battleSwitchLoadout);
   const scene = useGame((s) => s.scene);
@@ -77,7 +79,9 @@ export function ActionBar() {
   // Garde-fou « tour gâché » (R6) : confirmation à 2 clics avant de finir avec une Action non dépensée.
   // Réinitialisé à chaque changement de tour/Round.
   const [confirmEnd, setConfirmEnd] = useState(false);
-  useEffect(() => { setConfirmEnd(false); }, [battle?.turn, battle?.round]);
+  // Repli du menu « Manœuvre ▾ » (état UI local, comme l'ouverture d'un sous-menu) ; refermé au tour/round.
+  const [showManeuvers, setShowManeuvers] = useState(false);
+  useEffect(() => { setConfirmEnd(false); setShowManeuvers(false); }, [battle?.turn, battle?.round]);
   if (!battle || battle.over) return null;
   // Début de Round (LDB ch.17 l.27) : pause d'initiative à CHAQUE Round — la barre d'action est remplacée par
   // un seul bouton. On voit l'ordre (frise) et le champ, et on peut dépenser sa Chance pour agir en premier
@@ -214,12 +218,10 @@ export function ActionBar() {
   // la Course est la zone violette au-delà de la Marche (clic → Test d'Athlétisme, LDB 15 l.79-82).
   // Se relever (LDB 16 l.37) : possible si À Terre, ≥1 PB (LDB 18 l.28) et Mouvement non entamé.
   const canStandUp = prone && active.wounds.current > 0 && !moveStarted;
-  // Piétinement (LDB 85 l.320-321) : action gratuite si ≥1 Avantage et un adversaire adjacent plus petit.
-  const canTrample = isHero && active.advantage >= 1 && !!trampleTarget(battle, active);
-  // Tentacule (trait Tentacules, LDB 85 l.354 — mutation) : Attaque gratuite 1/tour, 0 Avantage,
-  // si un adversaire est au contact.
-  const canTentacle = isHero && !active.tentacleUsedThisTurn && active.weapons.some((w) => w.uid === 'nat-tentacule')
-    && !!active.pos && battle.combatants.some((c) => c.kind !== 'hero' && !isOutOfAction(c) && c.pos && Math.max(Math.abs(c.pos.x - active.pos!.x), Math.abs(c.pos.y - active.pos!.y)) <= 1);
+  // Manœuvres de combat activables (« Manœuvre ▾ ») : attaques spéciales d'un trait de créature que le
+  // héros possède (mutation/polymorphie) + Piétinement (Taille) + mutation Tentacule. Source UNIQUE :
+  // availableManeuvers (combatFlow) — la hotbar ne fait que rendre ces descripteurs.
+  const maneuvers = isHero ? availableManeuvers(active, battle) : [];
   // Frénésie (LDB 21 l.31-32) : un héros capable peut tenter d'entrer en Frénésie (Test de FM, coûte l'Action).
   const canFrenzy = isHero && isFrenzyCapable(active) && !active.frenzied && !battle.acted && !stunned;
   // Frénésie : l'attaque CC gratuite (LDB 21 l.34) reste possible même l'Action dépensée (entrée en Frénésie incluse).
@@ -343,6 +345,30 @@ export function ActionBar() {
               <CodexRef category="trappings" label={a.name} className="ab-codex-info" hideIfUnknown>ℹ️</CodexRef>
             </div>
           ))}
+        </div>
+      )}
+      {showManeuvers && maneuvers.length > 0 && (
+        <div className="ab-spells">
+          {maneuvers.map((m) => {
+            // Armée si le mode-cible courant correspond (mêlée de trait, Piétinement ou Tentacule).
+            const armed =
+              (m.dispatch === 'maneuver' && battle.action === 'maneuver' && battle.maneuverKind === m.kind) ||
+              (m.dispatch === 'trample' && battle.action === 'trample') ||
+              (m.dispatch === 'tentacle' && battle.action === 'tentacle');
+            const onClick = () => {
+              if (m.mode === 'immediate') { maneuverArea(m.kind!); setShowManeuvers(false); return; }
+              // Cible : arme/désarme le mode (le prochain clic-carte résout).
+              if (m.dispatch === 'maneuver') selectManeuver(m.kind!);
+              else if (m.dispatch === 'trample' || m.dispatch === 'tentacle') selectAction(battle.action === m.dispatch ? null : m.dispatch);
+            };
+            return (
+              <div key={m.id} className="ab-spell-row">
+                <button className={`btn btn-sm ${armed ? 'btn-primary' : ''}`} onClick={onClick}>
+                  {m.icon} {m.label}{m.cost > 0 ? ` · ${m.cost} Av` : ''}{m.mode === 'target' ? ' 🎯' : ''}
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
       {battle.action === 'resolve' && resolve > 0 && (
@@ -523,14 +549,13 @@ export function ActionBar() {
                 <span className="ab-ico">🐗</span><span className="ab-lbl">Frénésie</span>
               </button>
             )}
-            {canTrample && (
-              <button className={`ab-slot ${battle.action === 'trample' ? 'on' : ''}`} onClick={() => selectAction(battle.action === 'trample' ? null : 'trample')} title="Piétiner un adversaire adjacent plus petit : action gratuite à 1 Avantage">
-                <span className="ab-ico">🐾</span><span className="ab-lbl">Piétiner</span>
-              </button>
-            )}
-            {canTentacle && (
-              <button className={`ab-slot ${battle.action === 'tentacle' ? 'on' : ''}`} onClick={() => selectAction(battle.action === 'tentacle' ? null : 'tentacle')} title="Frapper du tentacule un adversaire au contact : Attaque gratuite, 1/tour — Empêtré sur Dégâts">
-                <span className="ab-ico">🐙</span><span className="ab-lbl">Tentacule</span>
+            {/* Manœuvres de combat (« Manœuvre ▾ ») : contrôle UNIQUE qui énumère availableManeuvers
+                (traits de créature activables + Piétinement + mutation Tentacule). Apparaît dès ≥1 dispo ;
+                déplie un panneau (idiome ab-spells). Une manœuvre est ARMÉE (action='maneuver'/'trample'/
+                'tentacle') → le clic-carte la résout, ou résolue directement (zone/soi). */}
+            {maneuvers.length > 0 && (
+              <button className={`ab-slot ${battle.action === 'maneuver' || battle.action === 'trample' || battle.action === 'tentacle' ? 'on' : ''}`} onClick={() => setShowManeuvers((v) => !v)} title="Manœuvre de combat (attaque spéciale d'un trait de créature)">
+                <span className="ab-ico">🌀</span><span className="ab-lbl">Manœuvre ▾</span>
               </button>
             )}
             {!frenzied && usableGroups.map((g) => (
