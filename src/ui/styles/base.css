@@ -561,6 +561,18 @@ h3 {
   gap: 6px;
   margin-top: 10px;
 }
+/* F4 : aperçu d'équipement sur la mini-carte (armes en main + PA corps). */
+.char-equip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.char-equip .ce-weap {
+  color: var(--text);
+}
 .mini-title {
   font-size: 11px;
   text-transform: uppercase;

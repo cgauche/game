@@ -20,6 +20,9 @@ const SHORT: Record<CharKey, string> = {
 };
 
 export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?: boolean; onOpen?: () => void }) {
+  // F4 : aperçu d'équipement sur la mini-carte — armes en main + PA du corps.
+  const arms = hero.weapons.filter((w) => w.name !== 'Mains nues');
+  const bodyPA = hero.armour?.corps ?? 0;
   return (
     <div className={`char-card panel ${compact ? 'compact' : ''}`}>
       <div
@@ -58,6 +61,12 @@ export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?:
         </div>
         <FateChips c={hero} />
       </div>
+      {(arms.length > 0 || bodyPA > 0) && (
+        <div className="char-equip">
+          {arms.length > 0 && <span className="ce-weap">⚔ {arms.map((w) => w.name).join(', ')}</span>}
+          {bodyPA > 0 && <span className="ce-pa" title="Points d'Armure (corps)">🛡 PA {bodyPA}</span>}
+        </div>
+      )}
       {!compact && (
         <div className="char-skills">
           <div className="mini-title">Compétences</div>
