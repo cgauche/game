@@ -39,6 +39,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   gainResource: '🍀 Points de Chance / Destin',
   corruption: '🧬 Points de Corruption',
   test: '🎲 Test imbriqué (succès/échec)',
+  opposedTest: '⚔️ Test opposé → effets',
   castPenalty: '🔮 Contrecoup d’incantation',
   castWard: '🔮 Aura anti-Sort (−20 Langue)',
   arrowWard: '🏹 Bouclier anti-projectiles',
@@ -89,7 +90,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['🩹 Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound']],
   ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'loseTurn']],
   ['🩼 Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'maxWeaponHands', 'senseLoss']],
-  ['🎲 Contrôle', ['test', 'rollThreshold']],
+  ['🎲 Contrôle', ['test', 'opposedTest', 'rollThreshold']],
   ['📝 Narration', ['narrative']],
 ];
 
@@ -195,6 +196,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'gainResource': return { op: 'gainResource', resource: 'fortune', amount: 1 };
     case 'corruption': return { op: 'corruption', amount: 1 };
     case 'test': return { op: 'test', skill: 'Résistance', difficulty: 'intermediaire', onFail: [], onSuccess: [] };
+    case 'opposedTest': return { op: 'opposedTest', attacker: 'F', defender: 'F', onWin: [] };
     case 'castPenalty': return { op: 'castPenalty', skill: 'all', mod: -10 };
     case 'castWard': return { op: 'castWard', radius: 5 };
     case 'arrowWard': return { op: 'arrowWard', radius: 5 };
@@ -258,6 +260,7 @@ export function opSummary(o: GameOp): string {
     case 'gainResource': return `${L} +${o.amount} ${o.resource === 'fate' ? 'Destin' : 'Chance'}${o.temporary ? ' (temp.)' : ''}`;
     case 'corruption': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount}`;
     case 'test': return `${L} ${o.skill} → ${o.onSuccess?.length ?? 0} si réussite / ${o.onFail.length} si échec`;
+    case 'opposedTest': return `${L} ${o.attacker} vs ${o.defender} → ${o.onWin.length} si gagné`;
     case 'castPenalty': return `${L} ${o.blocked ? 'magie interdite' : o.maxZeroDR ? 'Prière plafonnée' : `${o.mod ?? 0} ${o.skill}`}`;
     case 'castWard': return `${L} −20 Langue, rayon ${formulaSummary(o.radius)} m`;
     case 'arrowWard': return `${L} rayon ${formulaSummary(o.radius)} m`;

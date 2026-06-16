@@ -14,7 +14,7 @@
  * modélisable reste une op `narrative` (journalisée, arbitrage MJ, rien d'inventé).
  */
 import { RNG, defaultRNG, roll as rollDice } from './dice';
-import { rollTest } from './tests';
+import { rollTest, opposedTest } from './tests';
 import { testValue } from './skills';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
 import { addCondition, addTimedCondition, removeCondition, loseWounds, hasCondition } from './conditions';
@@ -131,6 +131,10 @@ export type GameOp =
    *  `onFailHard` : palier d'échec aggravé (« si vous échouez avec −4 DR ou
    *  moins… », Purifier la chair LDB 40) — appliqué EN PLUS d'`onFail`. */
   | { op: 'test'; skill?: string; characteristic?: CharKey; difficulty: Difficulty; onFail: GameOp[]; onSuccess?: GameOp[]; onFailHard?: { dr: number; ops: GameOp[] } }
+  /** Test OPPOSÉ à la touche (Assommante : F vs F ; Épée de justice : Soc vs Résistance) : l'attaquant
+   *  (`caster`/`ref`) oppose `attacker`[+`attackerSkill`] à la `defender`[+`defenderSkill`] de la cible ;
+   *  victoire de l'attaquant → `onWin`, sinon `onLose`. Réutilise `opposedTest()` (engine/tests). */
+  | { op: 'opposedTest'; attacker: CharKey; attackerSkill?: string; defender: CharKey; defenderSkill?: string; onWin: GameOp[]; onLose?: GameOp[] }
   /** Points de Corruption (LDB 19). Le store branche `ctx.onCorruption` (seuil →
    *  mutation → damnation) ; sans contexte, simple incrément du compteur. */
   | { op: 'corruption'; amount: number; perSL?: PerSL }
@@ -507,6 +511,12 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         lines.push(...applyOps(target, t.success ? o.onSuccess ?? [] : o.onFail, ctx));
         // Palier d'échec aggravé (« si vous échouez avec −N DR ou moins ») — EN PLUS d'onFail.
         if (!t.success && o.onFailHard && t.sl <= o.onFailHard.dr) lines.push(...applyOps(target, o.onFailHard.ops, ctx));
+        break;
+      }
+      case 'opposedTest': {
+        const opp = opposedTest(testValue(ref, o.attackerSkill, o.attacker), testValue(target, o.defenderSkill, o.defender), rng);
+        lines.push(`${ref.name} (${o.attacker}) vs ${target.name} (${o.defender}${o.defenderSkill ? `/${o.defenderSkill}` : ''}) — Test opposé : ${opp.attackerWins ? 'l’emporte' : 'résiste'}.`);
+        lines.push(...applyOps(target, opp.attackerWins ? o.onWin : (o.onLose ?? []), ctx));
         break;
       }
       case 'corruption': {
