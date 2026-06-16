@@ -247,8 +247,10 @@ export function opSummary(o: GameOp): string {
     case 'condition': return `${L} ${o.name}${o.value && o.value !== 1 ? ` ×${formulaSummary(o.value)}` : ''}${o.perRound ? '/Round' : ''}`;
     case 'removeCondition': return `${L} ${o.name ?? '(au choix)'}`;
     case 'charMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} ${CHAR_LABELS[o.char] ?? o.char}`;
+    case 'skillMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} ${o.skill}`;
+    case 'moveMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} Mouvement`;
     case 'apAll': return `${L} +${formulaSummary(o.amount)} PA`;
-    case 'testMod': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests`;
+    case 'testMod': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests${o.char ? ` de ${CHAR_LABELS[o.char] ?? o.char}` : ''}`;
     case 'ignoreStatePenalties': return `${L} ignore les pénalités d’État`;
     case 'freeReroll': return `${L} relance gratuite`;
     case 'critTwice': return `${L} deux lancers de Critique`;
