@@ -19,8 +19,7 @@
 import { Combatant } from './types';
 import { maxEncumbrance, totalEncumbrance } from './items';
 import { hasCondition } from './conditions';
-import { traumaMovementHalved } from './trauma';
-import { mutationMovementDelta } from './corruption';
+import { traumaMovementHalved, passiveMoveMod } from './trauma';
 
 export interface EncumbrancePenalties {
   /** Palier de surcharge : 0 (aucune) à 3 (immobilisé). */
@@ -61,9 +60,9 @@ export function effectiveMovement(c: Combatant): number {
   const p = encumbrancePenalties(c);
   // Empêtré (LDB 16-États l.85) / Surpris (l.132 « ni Mouvement ni Action ») : Mouvement = 0.
   if (p.immobile || hasCondition(c, 'Empêtré') || hasCondition(c, 'Surpris')) return 0;
-  // Mutations (LDB 19) : ±1 Mouvement PERMANENT (Pattes d'animaux / Corpulent / Court sur pattes).
-  // + op `moveMod` ADDITIF (sort/trait/mutation migrés vers le système passif unifié) — sommé avant tout halving.
-  const mv = Math.max(0, c.movement + mutationMovementDelta(c) + (c.activeEffects ?? []).reduce((s, e) => s + (e.moveMod ?? 0), 0));
+  // `moveMod` ADDITIF du collecteur passif unifié : mutation PERMANENTE (Pattes d'animaux +1 / Corpulent /
+  // Court sur pattes −1, kind `intrinsèque`) + sort actif (kind `magique`) — sommés avant tout demi-Mouvement.
+  const mv = Math.max(0, c.movement + passiveMoveMod(c));
   const base = p.tier === 0 ? mv : Math.min(mv, Math.max(mv - p.movePenalty, p.moveFloor));
   // Demi-Mouvement : Sonné (LDB 16 l.123), À Terre (= ramper à ½ Mouvement, l.37), OU traumatisme de
   // jambe/torse (LDB 18 : Déchirure/Fracture). Un seul halving (pas de cumul inventé).

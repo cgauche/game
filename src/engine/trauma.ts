@@ -426,10 +426,17 @@ export function passiveMods(c: Combatant): PassiveMod[] {
   for (const t of c.traumas ?? []) {
     for (const o of traumaOps(t)) { const kind = traumaOpKind(o); if (traumaModSurvives(c, t, kind)) out.push({ op: o, kind }); }
   }
-  // Mutations / qualités d'objet (kind `intrinsèque`, additif Σ) : poussées par leurs producteurs (P1b/P1c).
+  // Mutations de Corruption (LDB 19) : modifs PERMANENTES du corps → kind `intrinsèque` (additif Σ). Lues
+  // INLINE (pas via corruption.ts) pour éviter le cycle trauma→corruption→characteristics→trauma. Qualités
+  // d'objet (kind `intrinsèque`) : poussées en P1c.
+  for (const m of c.mutations ?? []) {
+    if (m.charMods) for (const k of Object.keys(m.charMods) as CharKey[]) { const mod = m.charMods[k] ?? 0; if (mod) out.push({ op: { op: 'charMod', char: k, mod }, kind: 'intrinsèque' }); }
+    if (m.movement) out.push({ op: { op: 'moveMod', mod: m.movement }, kind: 'intrinsèque' });
+  }
   for (const e of c.activeEffects ?? []) {
     if (e.skillMods) for (const [skill, mod] of Object.entries(e.skillMods)) out.push({ op: { op: 'skillMod', skill, mod }, kind: 'magique' });
     if (e.moveScale) out.push({ op: { op: 'moveScale', num: e.moveScale.num, den: e.moveScale.den }, kind: 'magique' });
+    if (e.moveMod) out.push({ op: { op: 'moveMod', mod: e.moveMod }, kind: 'magique' });
     if (e.maxWeaponHands != null) out.push({ op: { op: 'maxWeaponHands', hands: e.maxWeaponHands }, kind: 'magique' });
   }
   return out;
@@ -447,6 +454,18 @@ function pmods<K extends GameOp['op']>(c: Combatant, op: K, additive?: boolean):
 /** Le Mouvement est-il réduit de moitié (séquelle de jambe ou autre source `moveScale`) ? Lu par `effectiveMovement`. */
 export function traumaMovementHalved(c: Combatant): boolean {
   return pmods(c, 'moveScale').length > 0;
+}
+
+/** Σ des `charMod` ADDITIFS (mutation/qualité, kind `intrinsèque`) pour la Caractéristique `key` — sommés
+ *  dans la BASE par `effectiveChar` (un corps transformé n'est pas un bonus magique : hors pool non-cumul). */
+export function passiveCharSum(c: Combatant, key: CharKey): number {
+  return pmods(c, 'charMod', true).filter((o) => o.char === key).reduce((s, o) => s + o.mod, 0);
+}
+
+/** Σ de TOUS les `moveMod` (modif ADDITIVE de Mouvement — mutation `intrinsèque` + sort `magique`), additifs
+ *  par nature quel que soit le kind. Lu par `effectiveMovement` (sommé avant tout demi-Mouvement). */
+export function passiveMoveMod(c: Combatant): number {
+  return pmods(c, 'moveMod').reduce((s, o) => s + o.mod, 0);
 }
 
 /** Pénalités de Caractéristique dues aux traumatismes (valeurs négatives, pour le pool « pire pénalité »).

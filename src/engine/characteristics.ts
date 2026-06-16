@@ -2,7 +2,7 @@
  * Calculs dérivés des Caractéristiques — Livre de base, chapitre Personnage.
  */
 import { CharKey, Characteristics, Combatant } from './types';
-import { traumaCharPenalties } from './trauma';
+import { traumaCharPenalties, passiveCharSum } from './trauma';
 import { diseaseCharPenalties } from './disease';
 import { hungerCharPenalties } from './provisions';
 import { SizeCategory, woundsForSize, effectiveSize } from './size';
@@ -24,10 +24,10 @@ export function charBonus(chars: Characteristics, key: CharKey): number {
  */
 export function effectiveChar(c: Combatant, key: CharKey): number {
   let base = c.characteristics[key];
-  // Mutations de Corruption (LDB 19) : modifications PERMANENTES de la caractéristique
-  // (« +5 Force », « -10 Sociabilité »…) — s'ajoutent à la BASE, hors pool de non-cumul
-  // (un corps transformé n'est pas un bonus magique). Sommé inline (cycle d'import évité).
-  for (const m of c.mutations ?? []) base += m.charMods?.[key] ?? 0;
+  // Mutations de Corruption (LDB 19) : modifs PERMANENTES de la caractéristique (« +5 Force », « -10
+  // Sociabilité »…) — s'ajoutent à la BASE (hors pool non-cumul : un corps transformé n'est pas un bonus
+  // magique), désormais via le collecteur passif unifié (kind `intrinsèque`, sommé).
+  base += passiveCharSum(c, key);
   const mods = (c.activeEffects ?? []).filter((e) => e.char === key).map((e) => e.bonus);
   // Pénalités de traumatisme (LDB 18) : injectées dans le pool « pire pénalité » (non-cumul l.168).
   mods.push(...traumaCharPenalties(c, key));
