@@ -1,6 +1,6 @@
 import type { CultDef } from '../types';
 
-// ⚠️ GÉNÉRÉ par build-data depuis all-data.json (god) — NE PAS éditer à la main.
+// Culte app-owned (registre auto-chargé) — éditable à la main ou via l'éditeur de données in-app.
 export const cult: CultDef = {
   "key": "Rhya",
   "title": "Déesse de la festilité",
