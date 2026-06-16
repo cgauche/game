@@ -1,6 +1,6 @@
 /**
  * Ressources de héros ACCORDÉES temporairement par un Sort (Points de Chance / Destin —
- * ops `gainFortune` / `gainFate`, LDB 47 « Les Signes d'Amul », « Maître du Destin »…).
+ * ops `gainResource` / `gainResource`, LDB 47 « Les Signes d'Amul », « Maître du Destin »…).
  *
  * Le grant est immédiat (incrément de `c.fortune` / `c.fate`) ; les points NON dépensés sont
  * retirés à l'expiration de l'`ActiveEffect` porteur — fin de Round (`endOfRound`) OU échéance

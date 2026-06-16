@@ -2,7 +2,7 @@
  * Magie du Chaos — Domaine de Tzeentch (le Changeur de Voies) — LDB 51 / EDO, 14 sorts. Curation
  * B4 : les feux de Tzeentch sont des Projectiles (moteur missile) qui enflamment et corrompent
  * (composition test→corruption), « Aura dorée » accorde Protection, « Maître du Destin » accorde
- * de la Chance (gainFortune) ; les sorts de prescience, de malédiction de sorcier et de
+ * de la Chance (gainResource) ; les sorts de prescience, de malédiction de sorcier et de
  * transformation restent narratifs (effets de méta-jeu / arbitrage).
  */
 import { SpellSpec } from '../../engine/spellspec';
@@ -81,7 +81,7 @@ export const MAGIE_TZEENTCH: SpellSpec[] = [
   {
     label: 'Maître du Destin',
     // « Pour chaque DR positif, gagnez 1 Point de Chance utilisable pendant la durée ; si le Sort
-    //   échoue, +1 Corruption par DR négatif. » — Chance accordée (gainFortune au DR, temporaire) ;
+    //   échoue, +1 Corruption par DR négatif. » — Chance accordée (gainResource au DR, temporaire) ;
     //   la Corruption sur échec reste journalisée (le Sort raté n'applique pas les ops de réussite).
     durationRounds: null, // « (Bonus de Force Mentale) jours » (Chance temporaire à échéance d'horloge)
     curated: true,

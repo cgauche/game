@@ -271,11 +271,11 @@ export interface ActiveEffect {
   /** Martyr (LDB 42 — L13) : « Vous recevez tous les Dégâts subis en principe par vos cibles »
    *  — id du PRÊTRE qui encaisse à la place du porteur (BE doublé pour ces Dégâts). */
   martyrGuard?: string;
-  /** Points de Chance ACCORDÉS temporairement par un Sort (op `gainFortune` — Signes d'Amul,
+  /** Points de Chance ACCORDÉS temporairement par un Sort (op `gainResource` — Signes d'Amul,
    *  Maître du Destin) : les points NON dépensés sont retirés à l'expiration de l'effet (rounds OU
    *  horloge), via `dropExpiredGrantedResources` (engine/grantedResources). */
   grantedFortune?: number;
-  /** Points de Destin ACCORDÉS temporairement par un Sort (op `gainFate` — Troisième Signe d'Amul) :
+  /** Points de Destin ACCORDÉS temporairement par un Sort (op `gainResource` — Troisième Signe d'Amul) :
    *  retirés à l'expiration s'ils n'ont pas été dépensés (cf. `grantedFortune`). */
   grantedFate?: number;
   /** Modificateurs de Compétence nommée posés par cet effet (op `skillMod` — sort « −10 Esquive 3

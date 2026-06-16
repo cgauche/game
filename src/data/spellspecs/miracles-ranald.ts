@@ -1,6 +1,6 @@
 /**
  * Miracles de Ranald (dieu des filous et de la chance) — LDB 42, 6 miracles. Curation B4 :
- * « Que la chance persiste » accorde des Points de Chance (op gainFortune, au-delà du maximum),
+ * « Que la chance persiste » accorde des Points de Chance (op gainResource, au-delà du maximum),
  * « Grâce de Ranald » booste l'Agilité ; les énigmes de filou (crochetage, illusions de richesse,
  * passer inaperçu, chat-espion) restent narratives. Aucune op nouvelle.
  */
@@ -26,7 +26,7 @@ export const MIRACLES_RANALD: SpellSpec[] = [
   {
     label: 'Que la chance persiste',
     // « Gagnez +1 Point de Chance (peut dépasser le maximum normal), +1 par +2 DR. Vous ne pouvez
-    //   plus invoquer ce Miracle avant d'avoir atteint 0 Point de Chance. » — gainFortune (non
+    //   plus invoquer ce Miracle avant d'avoir atteint 0 Point de Chance. » — gainResource (non
     //   temporaire, au-delà du max) ; le verrou de relance reste journalisé.
     durationRounds: null, // Spécial
     curated: true,

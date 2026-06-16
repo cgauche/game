@@ -128,14 +128,12 @@ export type GameOp =
   /** Points de Corruption (LDB 19). Le store branche `ctx.onCorruption` (seuil →
    *  mutation → damnation) ; sans contexte, simple incrément du compteur. */
   | { op: 'corruption'; amount: number; perSL?: PerSL }
-  /** Points de Chance accordés (LDB 47 — « Les Signes d'Amul », « Que la chance persiste »,
-   *  « Maître du Destin ») : incrément immédiat de `fortune` (peut dépasser le maximum — c'est un
-   *  grant de Sort) ; `temporary` pose un effet actif qui RETIRE les points NON dépensés à
-   *  l'expiration (rounds OU horloge, engine/grantedResources). `perSL` : « +1 par +2 DR ». */
-  | { op: 'gainFortune'; amount: number; perSL?: PerSL; temporary?: boolean }
-  /** Points de Destin accordés (LDB 47 — « Le Troisième Signe d'Amul »). `temporary` : retiré à
-   *  l'expiration s'il n'est pas dépensé (cf. gainFortune). */
-  | { op: 'gainFate'; amount: number; perSL?: PerSL; temporary?: boolean }
+  /** Points de Chance OU de Destin accordés (`resource`, LDB 47 — « Les Signes d'Amul », « Que la
+   *  chance persiste », « Maître du Destin », « Troisième Signe d'Amul ») : incrément immédiat (peut
+   *  dépasser le maximum — c'est un grant de Sort) ; `temporary` pose un effet actif qui RETIRE les
+   *  points NON dépensés à l'expiration (rounds OU horloge, engine/grantedResources). `perSL` : « +1
+   *  par +2 DR ». */
+  | { op: 'gainResource'; resource: 'fortune' | 'fate'; amount: number; perSL?: PerSL; temporary?: boolean }
   /** Pénalité/blocage d'incantation temporisé (contrecoups, LDB 46/40) : −N à une
    *  Compétence de magie, Tests interdits, ou DR de Prière plafonné à 0. Durée en
    *  Rounds (combat + entretien hors combat) OU en minutes/jours d'horloge. */
@@ -517,36 +515,22 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         }
         break;
       }
-      case 'gainFortune': {
+      case 'gainResource': {
         const n = Math.max(0, o.amount + slBonus(ctx.sl, o.perSL));
         if (n <= 0) break;
-        target.fortune = (target.fortune ?? 0) + n;
+        const fate = o.resource === 'fate';
+        const key = fate ? 'fate' : 'fortune';
+        target[key] = (target[key] ?? 0) + n;
         if (o.temporary) {
           target.activeEffects = target.activeEffects ?? [];
           target.activeEffects.push({
             label: ctx.label ?? 'Effet', bonus: 0,
             roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
             ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
-            grantedFortune: n,
+            ...(fate ? { grantedFate: n } : { grantedFortune: n }),
           });
         }
-        lines.push(`${target.name} : +${n} Point${n > 1 ? 's' : ''} de Chance${o.temporary ? ' (le temps du Sort)' : ''} (total ${target.fortune}).`);
-        break;
-      }
-      case 'gainFate': {
-        const n = Math.max(0, o.amount + slBonus(ctx.sl, o.perSL));
-        if (n <= 0) break;
-        target.fate = (target.fate ?? 0) + n;
-        if (o.temporary) {
-          target.activeEffects = target.activeEffects ?? [];
-          target.activeEffects.push({
-            label: ctx.label ?? 'Effet', bonus: 0,
-            roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-            ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
-            grantedFate: n,
-          });
-        }
-        lines.push(`${target.name} : +${n} Point${n > 1 ? 's' : ''} de Destin${o.temporary ? ' (le temps du Sort)' : ''} (total ${target.fate}).`);
+        lines.push(`${target.name} : +${n} Point${n > 1 ? 's' : ''} de ${fate ? 'Destin' : 'Chance'}${o.temporary ? ' (le temps du Sort)' : ''} (total ${target[key]}).`);
         break;
       }
       case 'castPenalty': {

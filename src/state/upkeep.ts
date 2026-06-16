@@ -64,7 +64,7 @@ export function purgeClockEffects(get: Get, set: Set): string[] {
       for (const e of fx) expiredLog.push(`${h.name} : ${e.label} se dissipe.`);
       h.activeEffects = h.activeEffects!.filter((e) => !(e.untilTime != null && e.untilTime <= now));
       dropExpiredGrantedTraits(h, fx); // traits accordés (op grantTrait) retirés avec leur effet
-      dropExpiredGrantedResources(h, fx); // Chance/Destin accordés (gainFortune/gainFate) non dépensés
+      dropExpiredGrantedResources(h, fx); // Chance/Destin accordés (gainResource) non dépensés
       dropExpiredGrantedWeapons(h, fx); // armes invoquées/naturelles accordées : loadout recomposé
       restoreSuppressedPsych(h, fx); // Traits psy suspendus (Baume, LDB 42) restitués
     }

@@ -2650,7 +2650,8 @@
             "on": "target",
             "ops": [
               {
-                "op": "gainFortune",
+                "op": "gainResource",
+                "resource": "fortune",
                 "amount": 1,
                 "perSL": {
                   "every": 2,
@@ -2687,7 +2688,8 @@
             "on": "target",
             "ops": [
               {
-                "op": "gainFortune",
+                "op": "gainResource",
+                "resource": "fortune",
                 "amount": 0,
                 "perSL": {
                   "every": 1,
@@ -2728,7 +2730,8 @@
             "on": "target",
             "ops": [
               {
-                "op": "gainFate",
+                "op": "gainResource",
+                "resource": "fate",
                 "amount": 1,
                 "temporary": true
               }
@@ -6508,7 +6511,8 @@
             "on": "target",
             "ops": [
               {
-                "op": "gainFortune",
+                "op": "gainResource",
+                "resource": "fortune",
                 "amount": 0,
                 "perSL": {
                   "every": 1,
@@ -7667,7 +7671,8 @@
             "on": "target",
             "ops": [
               {
-                "op": "gainFortune",
+                "op": "gainResource",
+                "resource": "fortune",
                 "amount": 1,
                 "perSL": {
                   "every": 2,

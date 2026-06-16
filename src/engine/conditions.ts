@@ -234,7 +234,7 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
     for (const e of expired) log.push(`${c.name} : ${e.label} se dissipe.`);
     c.activeEffects = c.activeEffects.filter((e) => e.roundsLeft > 0);
     dropExpiredGrantedTraits(c, expired); // traits accordés (op grantTrait) retirés avec leur effet
-    dropExpiredGrantedResources(c, expired); // Chance/Destin accordés (gainFortune/gainFate) non dépensés
+    dropExpiredGrantedResources(c, expired); // Chance/Destin accordés (gainResource) non dépensés
     dropExpiredGrantedWeapons(c, expired); // armes invoquées/naturelles accordées : loadout recomposé
     restoreSuppressedPsych(c, expired); // Traits psy suspendus (Baume, LDB 42) restitués
   }

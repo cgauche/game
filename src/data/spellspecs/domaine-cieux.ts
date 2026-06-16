@@ -2,7 +2,7 @@
  * Domaine des Cieux (Azyr) — LDB 48 « Magie des Arcanes (Cieux) », 8 sorts.
  * Curation B4. Les Projectiles magiques (Arc de T'Essla, Comète de Cassandora) sont résolus par
  * le moteur missile (Dégâts lus de la desc) ; la spec ne porte que les États additionnels à la
- * touche. Les Signes d'Amul accordent Chance/Destin (ops gainFortune/gainFate, retirés à
+ * touche. Les Signes d'Amul accordent Chance/Destin (ops gainResource, retirés à
  * l'expiration s'ils ne sont pas dépensés). L'attribut de Domaine (Azyr : PA métalliques ignorés)
  * reste assuré par domainAttributes.ts.
  */

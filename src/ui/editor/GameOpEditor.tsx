@@ -36,8 +36,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   ignoreStatePenalties: '🚫 Ignore les pénalités d’État',
   freeReroll: '🔁 Relance gratuite (prochain échec)',
   critTwice: '🎯 Deux lancers de Critique (meilleur)',
-  gainFortune: '🍀 Points de Chance',
-  gainFate: '⭐ Points de Destin',
+  gainResource: '🍀 Points de Chance / Destin',
   corruption: '🧬 Points de Corruption',
   test: '🎲 Test imbriqué (succès/échec)',
   castPenalty: '🔮 Contrecoup d’incantation',
@@ -83,7 +82,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['💥 Dégâts & soin', ['wounds', 'heal', 'healCaster', 'lifeSteal', 'reduceToZero']],
   ['🌀 États', ['condition', 'removeCondition']],
   ['📊 Buffs & caractéristiques', ['charMod', 'apAll', 'testMod', 'ignoreStatePenalties', 'freeReroll', 'critTwice']],
-  ['✨ Ressources', ['gainFortune', 'gainFate', 'corruption']],
+  ['✨ Ressources', ['gainResource', 'corruption']],
   ['🔮 Incantation & contrecoup', ['castPenalty', 'castWard', 'arrowWard', 'domeWard', 'attackWardFM']],
   ['🐾 Invocation & armes', ['summon', 'polymorph', 'conjureWeapon', 'grantNaturalWeapon', 'grantTrait', 'grantTalent', 'enchantWeapon']],
   ['🌐 Zones', ['zone']],
@@ -192,8 +191,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'ignoreStatePenalties': return { op: 'ignoreStatePenalties' };
     case 'freeReroll': return { op: 'freeReroll' };
     case 'critTwice': return { op: 'critTwice' };
-    case 'gainFortune': return { op: 'gainFortune', amount: 1 };
-    case 'gainFate': return { op: 'gainFate', amount: 1 };
+    case 'gainResource': return { op: 'gainResource', resource: 'fortune', amount: 1 };
     case 'corruption': return { op: 'corruption', amount: 1 };
     case 'test': return { op: 'test', skill: 'Résistance', difficulty: 'intermediaire', onFail: [], onSuccess: [] };
     case 'castPenalty': return { op: 'castPenalty', skill: 'all', mod: -10 };
@@ -254,8 +252,7 @@ export function opSummary(o: GameOp): string {
     case 'ignoreStatePenalties': return `${L} ignore les pénalités d’État`;
     case 'freeReroll': return `${L} relance gratuite`;
     case 'critTwice': return `${L} deux lancers de Critique`;
-    case 'gainFortune': return `${L} +${o.amount} Chance${o.temporary ? ' (temp.)' : ''}`;
-    case 'gainFate': return `${L} +${o.amount} Destin${o.temporary ? ' (temp.)' : ''}`;
+    case 'gainResource': return `${L} +${o.amount} ${o.resource === 'fate' ? 'Destin' : 'Chance'}${o.temporary ? ' (temp.)' : ''}`;
     case 'corruption': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount}`;
     case 'test': return `${L} ${o.skill} → ${o.onSuccess?.length ?? 0} si réussite / ${o.onFail.length} si échec`;
     case 'castPenalty': return `${L} ${o.blocked ? 'magie interdite' : o.maxZeroDR ? 'Prière plafonnée' : `${o.mod ?? 0} ${o.skill}`}`;
@@ -300,7 +297,7 @@ export function opSummary(o: GameOp): string {
 /** Ops avec un éditeur DÉDIÉ ; toute autre op tombe sur le repli JSON (lisible/modifiable sans perte). */
 const DEDICATED: ReadonlySet<GameOp['op']> = new Set([
   'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'apAll', 'testMod',
-  'corruption', 'gainFortune', 'gainFate', 'grantTrait', 'grantTalent', 'narrative',
+  'corruption', 'gainResource', 'grantTrait', 'grantTalent', 'narrative',
   'summon', 'polymorph', 'lifeSteal',
 ]);
 
@@ -323,8 +320,12 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         {op.op === 'corruption' && (
           <label className="dr">Points<input type="number" value={o.amount ?? 1} onChange={(e) => upd({ amount: Number(e.target.value) || 0 })} /></label>
         )}
-        {(op.op === 'gainFortune' || op.op === 'gainFate') && (
+        {op.op === 'gainResource' && (
           <>
+            <select value={o.resource ?? 'fortune'} onChange={(e) => upd({ resource: e.target.value })}>
+              <option value="fortune">Chance</option>
+              <option value="fate">Destin</option>
+            </select>
             <label className="dr">Points<input type="number" min={1} value={o.amount ?? 1} onChange={(e) => upd({ amount: Math.max(1, Number(e.target.value) || 1) })} /></label>
             <label className="dr"><input type="checkbox" checked={!!o.temporary} onChange={(e) => upd({ temporary: e.target.checked || undefined })} /> le temps du Sort</label>
           </>

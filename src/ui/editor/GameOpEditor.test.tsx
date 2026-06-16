@@ -61,7 +61,7 @@ describe('GameOpEditor — menu « + op » COMPLET', () => {
   it('toutes les op du vocabulaire ont un défaut valide et un libellé', () => {
     const OPS: GameOp['op'][] = [
       'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'apAll', 'test',
-      'corruption', 'gainFortune', 'gainFate', 'castPenalty', 'grantTrait', 'grantTalent',
+      'corruption', 'gainResource', 'castPenalty', 'grantTrait', 'grantTalent',
       'enchantWeapon', 'cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound',
       'reduceToZero', 'ignoreStatePenalties', 'freeReroll', 'critTwice', 'damageArmour', 'suppressPsych',
       'castWard', 'suffocate', 'arrowWard', 'domeWard', 'attackWardFM', 'martyr', 'noBreath', 'noHunger',
