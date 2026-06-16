@@ -124,20 +124,20 @@ describe('manœuvres en combat (store)', () => {
     return { H, E };
   }
 
-  it('battleManeuverArea(souffle) : dépense l’Avantage et endommage l’ennemi adjacent (Action préservée)', () => {
+  it('battleManeuverArea(souffle) : OUVRE pendingManeuver (jet d’attaquant différé), rien n’est tiré avant Lancer', () => {
     useGame.getState().seedRng(2);
-    const { H, E } = setup();
+    const { H } = setup();
     H.traits = ['Souffle +15 (Feu)'];
     H.characteristics.CT = 90; // Test opposé CT/Esquive → touche déterministe
     H.advantage = 3;
-    const before = E.wounds.current;
     useGame.getState().battleManeuverArea('souffle');
-    const st = useGame.getState();
-    const h2 = st.battle!.combatants.find((c) => c.id === H.id)!;
-    const e2 = st.battle!.combatants.find((c) => c.id === E.id)!;
-    expect(h2.advantage).toBe(1); // 3 − 2 (coût RAW du Souffle)
-    expect(e2.wounds.current).toBeLessThan(before); // la zone a touché l’ennemi adjacent
-    expect(st.battle!.acted).toBe(false); // Attaque gratuite : l’Action reste disponible
+    const pm = useGame.getState().pendingManeuver;
+    expect(pm).toBeTruthy(); // « un jet = une modale » : le Souffle ouvre la modale de jet d’attaquant
+    expect(pm!.kind).toBe('souffle');
+    expect(pm!.result).toBeNull(); // rien n’est tiré avant Lancer
+    expect(pm!.avantageSpent).toBe(2); // coût RAW affiché (dépensé à l’application)
+    expect(useGame.getState().battle!.acted).toBe(false); // gratuite : l’Action reste
+    // (résolution complète Lancer→Appliquer couverte par maneuver-flow.test.ts)
   });
 
   it('manœuvre de mêlée ciblée : battle.action=maneuver + clic-cible → pendingAttack freeKind=morsure', () => {

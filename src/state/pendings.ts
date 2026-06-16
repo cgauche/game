@@ -263,6 +263,21 @@ export interface PendingTrample {
   /** Réussite forcée par Résilience (LDB 17 l.73) → le joueur peut CHOISIR la valeur du dé. */
   forced?: boolean;
 }
+/** Manœuvre de créature en attente (Souffle/Vomi/Langue/Regard/Étreinte — LDB 85) qu'un héros active.
+ *  La modale n'influence QUE le jet de l'attaquant (`result` : son TestResult CC/CT figé) ; l'apply
+ *  (`applyMan<X>`) roule les défenseurs et résout l'opposition dans le feed. `avantageSpent` = Avantage
+ *  dépensé (Regard variable : choisi 1..advantage → +N DR). Hurlement n'ouvre PAS de pending (pas de
+ *  jet d'attaquant). */
+export interface PendingManeuver {
+  attackerId: string;
+  kind: AttackKind;
+  /** Avantage dépensé (coût RAW ; Regard : choisi par le joueur, +1 DR/Av — LDB 85 l.238). */
+  avantageSpent: number;
+  result: TestResult | null; // null = pas encore lancé
+  rerolled?: boolean;
+  /** Réussite forcée par Résilience (LDB 17 l.73). */
+  forced?: boolean;
+}
 /** Course en attente (LDB 15-Déplacement l.79-82) : Test d'Athlétisme (+20) ; succès → déplacement
  *  étendu (Marche + Course + DR). Lancer → Chance/Résilience → Appliquer (ouvre le déplacement étendu). */
 export interface PendingRun {

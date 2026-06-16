@@ -51,7 +51,10 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'mountTargetSelect', 'mountTargetCancel',
   // jets divers en combat (fabrique rollFlow) + témoin/critiques/Destin
   'trampleRoll', 'trampleReroll', 'trampleBonusSL', 'trampleDarkPact', 'trampleForceSuccess',
-  'trampleSetForcedRoll', 'trampleConfirm', 'trampleCancel', 'runRoll', 'runReroll', 'runDarkPact', 'runForceSuccess',
+  'trampleSetForcedRoll', 'trampleConfirm', 'trampleCancel',
+  'maneuverRoll', 'maneuverReroll', 'maneuverBonusSL', 'maneuverDarkPact', 'maneuverForceSuccess',
+  'maneuverSetForcedRoll', 'maneuverConfirm', 'maneuverCancel', 'maneuverSetAvantage',
+  'runRoll', 'runReroll', 'runDarkPact', 'runForceSuccess',
   'runConfirm', 'runCancel', 'focusRoll', 'focusReroll', 'focusBonusSL', 'focusDarkPact',
   'focusForceSuccess', 'focusConfirm', 'focusCancel',
   // (Psychologie de COMBAT : PLUS d'intents `psych*` — cascade de Round, via les intents `cascade*` ci-dessus.)

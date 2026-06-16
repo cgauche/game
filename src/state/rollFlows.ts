@@ -11,7 +11,7 @@
  */
 import type {
   GameState,
-  PendingTrample, PendingRun, PendingFocus, PendingFrenzy, PendingApproach,
+  PendingTrample, PendingManeuver, PendingRun, PendingFocus, PendingFrenzy, PendingApproach,
   PendingReload, PendingStateRecovery, PendingTest, PendingAppraise, PendingBargain, PendingHeal,
   PendingCorruption, PendingAttack, PendingDefense, PendingCast, PendingDisengage,
   PendingCounterspell, CounterParticipant, PendingExtendedTest, ExtendedTestRound,
@@ -27,7 +27,9 @@ import { actorIn, touchActors } from './combatOrParty';
 import {
   TRAMPLE_WEAPON, resolveAttack, firedWeapon, bestDefenseMode, effectiveSpellOf,
   castInfoIsPrayer, disengageOutcome, castWardPenalty, domainCastBonus,
+  rollManeuverAttacker, maneuverAttackerDifficulty,
 } from './combatFlow';
+import { creatureAttacks } from '../engine/creatureAttacks';
 import { mountMovement, mountedDodgePenalty } from './mount';
 import { sceneCombatModifiers } from './sceneRules';
 import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, type AttackResult } from '../engine/combat';
@@ -496,6 +498,35 @@ export const FLOWS = {
         const atk2: TestResult = { roll: ad.roll, target: ad.target, success: ad.success, sl: ad.sl + 1, isDouble: isDoubleRoll(ad.roll) };
         return { result: rederivePassiveAttack(actor, target, TRAMPLE_WEAPON, atk2, 'melee') };
       },
+    },
+  }),
+
+  /** Manœuvre de créature (Souffle/Vomi/Langue/Regard/Étreinte — LDB 85) qu'un héros active. Le jet
+   *  INFLUENÇABLE est celui de l'ATTAQUANT (CC/CT) ; l'APPLICATION (jets des défenseurs + opposition)
+   *  vit dans `maneuverConfirm`/`applyMan<X>`, pas ici. Un seul effort de souffle → un jet d'attaquant
+   *  (LDB 85 l.251/376, relu influençable). Vomi : +40 d'attaquant (l.376) baked dans le jet. */
+  maneuver: makeRollFlow<PendingManeuver>({
+    key: 'pendingManeuver',
+    rolled: (p) => !!p.result,
+    actor: (s, p) => actorIn(s, p.attackerId),
+    caps: { forced: true },
+    resolve: (s, p, actor, _get, forced) => {
+      if (!actor) return null;
+      const stat = creatureAttacks(actor.traits ?? []).find((a) => a.kind === p.kind)?.stat ?? 'CT';
+      if (forced) {
+        // RAW LDB 17 l.73 « vous choisissez le résultat » : sans enjeu de double, DR MAX (01 → cible
+        // connue post-jet) ou plancher DR 1 pré-jet. Mirroir de `focus`/`disengage` forcés.
+        if (p.result?.success) return null;
+        const base = p.result;
+        const sl = base?.target != null ? Math.max(evaluateTest(1, base.target).sl, 1) : Math.max(base?.sl ?? 1, 1);
+        return { result: { roll: 1, target: base?.target ?? 0, success: true, sl, isDouble: isDoubleRoll(1) } };
+      }
+      return { result: rollManeuverAttacker(actor, stat, battleRng(), maneuverAttackerDifficulty(p.kind)) };
+    },
+    failed: (p) => !!p.result && !p.result.success,
+    bonus: {
+      guard: (p) => !!p.result,
+      derive: (_s, p) => (p.result ? { result: { ...p.result, sl: p.result.sl + 1, success: true } } : null),
     },
   }),
 

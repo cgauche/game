@@ -19,7 +19,8 @@ import {
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, aiOvercastPlan,
-  availableManeuvers, freeAttackWeapon, applyAreaAttack, applyTongue, applyWail, applyGaze, applyChillGrasp,
+  availableManeuvers, freeAttackWeapon, applyWail,
+  applyManArea, applyManTongue, applyManGaze, applyManChillGrasp,
   castSightBlocked, spellSightOf, castZoneSpell, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone,
   counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition,
   openRoundStartPsych, displaceSmaller, applySurprise,
@@ -107,7 +108,7 @@ import * as merchantFlow from './merchantFlow';
 import type { MerchantState, MerchantStocks } from './merchantFlow';
 import type {
   Money, PendingVictory, PendingLoot, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
-  PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingRun, PendingApproach, PendingFocus,
+  PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingManeuver, PendingRun, PendingApproach, PendingFocus,
   PendingFrenzy, RevealEntry, PendingFumble, PendingRenounce, PendingDefense,
   PendingDisengage, PendingCast, PendingCounterspell, CounterParticipant, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingCorruption,
   PendingCastOpposition, OppositionParticipant, PendingCascade, ScheduledEffect,
@@ -319,6 +320,8 @@ export interface GameState {
   scheduledEffects: ScheduledEffect[];
   /** Piétinement en cours (modale interactive). */
   pendingTrample: PendingTrample | null;
+  /** Manœuvre de créature en cours (Souffle/Vomi/Langue/Regard/Étreinte — modale de jet d'attaquant). */
+  pendingManeuver: PendingManeuver | null;
   /** Course en cours (modale Test d'Athlétisme → déplacement étendu). */
   pendingRun: PendingRun | null;
   /** Approche d'une source de Peur en cours (Test de Calme +0 différant le clic — LDB 21 l.29). */
@@ -787,6 +790,18 @@ export interface GameState {
   trampleForceSuccess: () => void;
   trampleConfirm: () => void;
   trampleCancel: () => void;
+  /** Manœuvre de créature par modale (LDB 85) : Lancer le jet d'ATTAQUANT (CC/CT), Chance/Pacte/
+   *  Résilience l'influencent, Appliquer roule les défenseurs et résout l'opposition au feed. */
+  maneuverRoll: () => void;
+  maneuverReroll: () => void;
+  maneuverBonusSL: () => void;
+  maneuverDarkPact: () => void;
+  maneuverForceSuccess: () => void;
+  maneuverSetForcedRoll: (roll: number) => void;
+  maneuverConfirm: () => void;
+  maneuverCancel: () => void;
+  /** Avantage dépensé par le Regard pétrifiant (variable, LDB 85 l.238) : 1..advantage → +N DR. */
+  maneuverSetAvantage: (n: number) => void;
   /** Course (LDB 15 l.79-82) : ouvrir la modale, lancer le Test d'Athlétisme, Chance/Résilience, appliquer (déplacement étendu). */
   battleRun: (dest?: Pt) => void;
   runRoll: () => void;
@@ -1010,6 +1025,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingReveals: [],
   scheduledEffects: [],
   pendingTrample: null,
+  pendingManeuver: null,
   pendingRun: null,
   pendingApproach: null,
   pendingFocus: null,
@@ -1194,6 +1210,7 @@ export const useGame = create<GameState>((set, get) => ({
       // N1 : entrée de zone (transition) en MODALE — reveal sceneEntry skippable (Journal = archive).
       pendingReveals: target.startMessage ? [{ kind: 'sceneEntry' as const, title: target.nom, lines: [target.startMessage] }] : [],
       pendingTrample: null,
+      pendingManeuver: null,
       pendingRun: null,
       pendingApproach: null,
       pendingFocus: null,
@@ -1441,7 +1458,7 @@ export const useGame = create<GameState>((set, get) => ({
     // Ouverture = pause de début du Round 1 (pendingRoundStart) : champ visible, ordre d'Initiative dans la
     // frise, pré-emption « agir en premier » (Chance, #12a) — IA gelée. Un seul bouton « Commencer le combat »
     // (pas de phase « plan d'ensemble » séparée : c'était redondant avec la pause de Round).
-    set({ battle, mode: 'battle', pendingRoundStart: { round: battle.round }, pendingVictory: null, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, pendingCounterspell: null, enemyAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingFrenzy: null, pendingFumble: null, pendingCascade: null });
+    set({ battle, mode: 'battle', pendingRoundStart: { round: battle.round }, pendingVictory: null, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, pendingCounterspell: null, enemyAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingManeuver: null, pendingRun: null, pendingFocus: null, pendingFrenzy: null, pendingFumble: null, pendingCascade: null });
     get().faceAtCombatStart();
     bus.emit(EVT.SCENE_DIRTY);
   },
@@ -3042,18 +3059,19 @@ export const useGame = create<GameState>((set, get) => ({
     const a = creatureAttacks(active.traits ?? []).find((x) => x.kind === kind);
     if (!a) return;
     // Étreinte glaciale = manœuvre-Action (LDB 85 l.112 « au prix de 2 Avantages ET de son Action ») :
-    // exige l'Action ; les autres sont gratuites (préservent l'Action). Le coût d'Action est posé par le
-    // résolveur (applyGaze/applyChillGrasp set acted:true) — ici on ne fait que la garde de légalité.
+    // exige l'Action ; les autres sont gratuites (préservent l'Action). Le coût d'Action est posé à la
+    // confirmation (maneuverConfirm pose `acted` selon l'activation) — ici, garde de légalité seule.
     if (a.trigger === 'action') { if (battle.acted || !canTakeAction(active)) return; }
     else if (active.advantage < a.avantage) return;
     set({ battle: { ...battle, action: null, maneuverKind: undefined } }); // referme le menu avant la résolution
-    // Routage vers le résolveur moteur PARTAGÉ (le même que l'IA) selon le type. Les résolveurs
-    // dépensent l'Avantage et appliquent les effets eux-mêmes ; instantanés (pas de modale joueur).
-    if (kind === 'souffle' || kind === 'vomi') applyAreaAttack(get, set, active, a);
-    else if (kind === 'langue') applyTongue(get, set, active, a);
-    else if (kind === 'hurlement') applyWail(get, set, active);
-    else if (kind === 'regard') applyGaze(get, set, active);
-    else if (kind === 'etreinte') applyChillGrasp(get, set, active);
+    // Hurlement (LDB 85 l.135) : PAS de jet d'attaquant — chaque cible tire son 1d10 + Test de
+    // Résistance (jets SUBIS montrés au feed). Aucune modale différable → résolution immédiate (le
+    // wrapper roule les jets subis + checkBattleOver). Dépense TOUS les Avantages (min 2).
+    if (kind === 'hurlement') { applyWail(get, set, active); return; }
+    // Souffle/Vomi/Langue/Regard/Étreinte : le jet de l'ATTAQUANT (CC/CT) est INFLUENÇABLE → modale
+    // `pendingManeuver` (« un jet = une modale »). Regard : Avantage variable (l.238) → défaut 1, le
+    // joueur ajuste via maneuverSetAvantage ; les autres dépensent leur coût RAW.
+    set({ pendingManeuver: { attackerId: active.id, kind, avantageSpent: a.advantageMode === 'variable' ? 1 : a.avantage, result: null } });
   },
   trampleRoll: () => FLOWS.trample.roll(get, set),
   trampleReroll: () => FLOWS.trample.reroll(get, set),
@@ -3074,6 +3092,44 @@ export const useGame = create<GameState>((set, get) => ({
     set({ battle: { ...get().battle!, acted: prevActed } });
   },
   trampleCancel: () => set({ pendingTrample: null }),
+
+  // ── Manœuvre de créature par modale (Souffle/Vomi/Langue/Regard/Étreinte — LDB 85) : le jet de
+  //    l'ATTAQUANT passe par FLOWS.maneuver (Lancer/Chance/Pacte/Résilience) ; « Appliquer » roule les
+  //    défenseurs et résout l'opposition au feed via les appliers `applyMan<X>`. ──
+  maneuverRoll: () => FLOWS.maneuver.roll(get, set),
+  maneuverReroll: () => FLOWS.maneuver.reroll(get, set),
+  maneuverBonusSL: () => FLOWS.maneuver.bonusSL(get, set),
+  maneuverDarkPact: () => FLOWS.maneuver.darkPact(get, set),
+  maneuverForceSuccess: () => FLOWS.maneuver.forceSuccess(get, set),
+  maneuverSetForcedRoll: (roll) => FLOWS.maneuver.setForcedRoll(get, set, roll),
+  maneuverConfirm: () => {
+    const { battle, pendingManeuver: pm } = get();
+    if (!battle || !pm || !pm.result) return;
+    const attacker = battle.combatants.find((c) => c.id === pm.attackerId);
+    set({ pendingManeuver: null });
+    if (!attacker) return;
+    const a = creatureAttacks(attacker.traits ?? []).find((x) => x.kind === pm.kind);
+    if (!a) return;
+    const prevActed = battle.acted;
+    // Étreinte/Regard = manœuvres-Action (LDB 85 l.112/238) : consomment l'Action ; les autres sont
+    // gratuites (Action préservée). L'applier dépense `avantageSpent` Avantage et résout au feed.
+    if (pm.kind === 'souffle' || pm.kind === 'vomi') applyManArea(get, set, attacker, a, pm.result, pm.avantageSpent);
+    else if (pm.kind === 'langue') applyManTongue(get, set, attacker, a, pm.result, pm.avantageSpent);
+    else if (pm.kind === 'regard') applyManGaze(get, set, attacker, pm.result, pm.avantageSpent);
+    else if (pm.kind === 'etreinte') applyManChillGrasp(get, set, attacker, pm.result, pm.avantageSpent);
+    const acted = a.trigger === 'action' ? true : prevActed; // Action consommée seulement par Étreinte/Regard
+    set({ battle: { ...get().battle!, acted } });
+    checkBattleOver(get, set);
+  },
+  maneuverCancel: () => set({ pendingManeuver: null }),
+  maneuverSetAvantage: (n) => {
+    const { battle, pendingManeuver: pm } = get();
+    if (!battle || !pm || pm.result) return; // pas après le jet (l'Avantage fixe le DR)
+    const attacker = battle.combatants.find((c) => c.id === pm.attackerId);
+    if (!attacker) return;
+    const clamped = Math.max(1, Math.min(n, attacker.advantage)); // 1..Avantage (LDB 85 l.238)
+    set({ pendingManeuver: { ...pm, avantageSpent: clamped } });
+  },
 
   // ── Course (LDB 15-Déplacement l.79-82) : utilise l'Action + un Test d'Athlétisme (+20) → déplacement
   //    étendu (Marche + Course + DR) vers la destination cliquée dans la zone de Course. « Un jet = une
