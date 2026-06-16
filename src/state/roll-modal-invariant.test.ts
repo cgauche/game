@@ -27,6 +27,7 @@ const FLOW_MODULES: Record<string, string> = {
   combatFlow: read('./combatFlow.ts'),
   combatGeometry: read('./combatGeometry.ts'), // helpers géométrie extraits de combatFlow
   combatEffects: read('./combatEffects.ts'), // effets de scène/campagne extraits de combatFlow
+  combatManeuvers: read('./combatManeuvers.ts'), // résolveurs de manœuvres extraits de combatFlow
   medicFlow: read('./medicFlow.ts'),
   partyFlow: read('./partyFlow.ts'),
   merchantFlow: read('./merchantFlow.ts'),
@@ -70,7 +71,7 @@ const JUSTIFIED: Record<string, string> = {
   startDisengage: 'OUVRE pendingDisengage : le jet du foe est tiré et FIGÉ pour la modale (pattern Défense — montré dans la ligne adverse)',
   resolveDualSecond: '2ᵉ frappe du Maniement : jet IMPOSÉ (d100 inversé) AFFICHÉ dans la modale d’attaque (dualSecond)',
   applyCounterspell: 'Contre-sort : Test opposé du contre-lanceur, issue affichée dans la modale d’incantation (et déclaré pendant le jet ennemi)',
-  battleManeuverArea: 'manœuvre de ZONE/soi (Souffle/Vomi/Langue/Hurlement/Regard/Étreinte) : délègue aux MÊMES résolveurs instantanés que l’IA (Tests opposés auto-résolus, RAW LDB 85 — pas de jet de héros différable) ; Dégâts/effets affichés dans le feed de combat',
+  battleManeuverArea: 'Hurlement : pas de jet d’attaquant — 1d10 + Test de Résistance des cibles (jets SUBIS) montrés au feed, pas de modale différable (LDB 85 l.135). Les autres manœuvres (Souffle/Vomi/Langue/Regard/Étreinte) OUVRENT pendingManeuver (modale du jet d’attaquant) — plus de résolution inline',
   // ── Moteur appelé par les points d'entrée (le jet aval est différé/révélé/IA) ──
   applyEffects: 'Effets d’AUTEUR (éditeur) : `test` OUVRE pendingTest ; inflictTrauma/inflictDisease/zoneBlast poussent une RÉVÉLATION témoin 📜 (souffle = dégâts SUBIS tirés, montrés au journal)',
   applyZoneCrossings: 'traversée de zones (feu…) : jets SUBIS — feed de combat + flottants FX (L11)',
@@ -165,10 +166,11 @@ describe('Invariante « un jet = une modale » (détecteur de jets cachés, v2)'
   for (const [name, mod] of rollers) {
     const allowed = RESOLVER.test(name) || name in JUSTIFIED;
     it(`${mod}.${name} (tire) est un résolveur ou est justifié${name in JUSTIFIED ? ` (${JUSTIFIED[name]})` : ''}`, () => {
-      // combatFlow = moteur du combat : ses helpers (IA instantanée par design + résolution
-      // appelée PAR les résolveurs/specs) sont couverts par la règle « FLOWS./primitives
-      // interdites aux actions non-résolveur » côté store — pas un point d'entrée joueur.
-      if (mod === 'combatFlow') return;
+      // combatFlow / combatManeuvers = moteur du combat : leurs helpers (IA instantanée par design +
+      // résolveurs `applyMan<X>` appelés PAR `FLOWS.maneuver`/les wrappers IA) sont couverts par la
+      // règle « FLOWS./primitives interdites aux actions non-résolveur » côté store — pas un point
+      // d'entrée joueur. Le jet d'attaquant influençable passe par `FLOWS.maneuver` (modale différée).
+      if (mod === 'combatFlow' || mod === 'combatManeuvers') return;
       expect(allowed, `${mod}.${name} tire un jet sans être un résolveur de modale — le différer/révéler, ou le JUSTIFIER ici`).toBe(true);
     });
   }

@@ -29,6 +29,7 @@ export const MODAL_DEFS = [
   //  cascade d'ATTAQUE — comme Déviation/Piège-lame — rendue par `cascade`.)
   { key: 'renounce', when: (s) => !!s.pendingRenounce, owner: (s) => s.pendingRenounce?.heroId },
   { key: 'trample', when: (s) => !!s.pendingTrample, owner: (s) => s.pendingTrample?.attackerId },
+  { key: 'maneuver', when: (s) => !!s.pendingManeuver, owner: (s) => s.pendingManeuver?.attackerId },
   { key: 'reveal', when: (s) => (s.pendingReveals?.length ?? 0) > 0, owner: (s) => s.pendingReveals?.[0]?.subjectId }, // sans sujet (entretien) → hôte
   { key: 'defense', when: (s) => !!s.pendingDefense, owner: (s) => s.pendingDefense?.defenderId },
   // (La Psychologie n'a PLUS d'entrée propre : EN COMBAT comme À LA RENCONTRE, c'est une cascade à N
