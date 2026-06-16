@@ -242,10 +242,10 @@ export function IsoStage() {
   // Planchers fusionnés dans le tri de profondeur GLOBAL (objs) : chaque étage porte une profondeur de
   // bande unique (floorDepth) le plaçant sous SES objets et au-dessus de tout le niveau inférieur — un
   // sol haut SURPLOMBE ainsi les tokens du sol. Tuiles « vide » non rendues (on voit le dessous).
-  // Étages CO-VISIBLES (cf. renderLevels) : on rend TOUS les étages, SOLIDES, fusionnés dans le tri de
-  // profondeur (z-aware) → un théâtre montre son parterre ET ses loges en surplomb dans un seul regard,
-  // pas de fantôme (rendu plein, pas estompé), pas de magma (tri propre). Override DEBUG `viewLevel(z)`
-  // isole un étage. Le PICKING reste sur l'étage ACTIF (activeZ) : on contrôle le groupe à son niveau.
+  // Étages rendus = l'ACTIF + ceux du DESSOUS (cf. renderLevels), JAMAIS au-dessus. Asymétrie voulue : d'en
+  // HAUT (loges) on voit le parterre EN CONTREBAS par le puits (utile, sans occlusion) ; d'en BAS, dessiner
+  // les loges en surplomb OCCULTERAIT le parterre et rendrait la navigation aveugle. Cohérent avec le
+  // PICKING (z <= activeZ). Override DEBUG `viewLevel(z)` isole un étage.
   const viewZ = useSyncExternalStore(subscribeViewZ, getViewZ, getViewZ);
   const activePos = mode === 'battle' && battle ? (battle.combatants.find((c) => c.id === battle.order[battle.turn])?.pos as { z?: number } | undefined) : undefined;
   const activeZ = viewZ ?? (activePos?.z ?? partyPos.z ?? 0);
@@ -255,11 +255,11 @@ export function IsoStage() {
   // jeton paraît hors de sa case sur un sol surélevé/en contrebas). `diamondPath(x,y,dims,liftAt(...))`.
   const liftAt = (x: number, y: number, z = 0) => z + (scene ? elevAt(scene, Math.round(x), Math.round(y), z) : 0);
 
-  // Étages à RENDRE : par défaut TOUS (co-visibles — un théâtre montre son parterre ET ses loges en
-  // surplomb dans le même regard), sauf override debug `viewLevel(z)` qui isole un seul étage. Les
-  // tuiles « vide » d'un étage haut ne dessinent rien → on voit l'étage du dessous au travers (la
-  // fosse de l'auditorium). Le tri de profondeur (z-aware) empile les étages correctement.
-  const renderLevels = useMemo(() => (scene ? (viewZ != null ? scene.levels.filter((l) => l.z === viewZ) : scene.levels) : []), [scene, viewZ]);
+  // Étages à RENDRE : l'ACTIF + ceux du DESSOUS (z <= activeZ) — d'en haut on voit l'auditorium par le
+  // puits ; d'en bas on ne dessine PAS les loges en surplomb (elles cacheraient le parterre). Les tuiles
+  // « vide » d'un étage haut ne dessinent rien → on voit l'étage du dessous au travers. Override debug
+  // `viewLevel(z)` isole un seul étage. Le tri de profondeur (z-aware) empile les étages correctement.
+  const renderLevels = useMemo(() => (scene ? (viewZ != null ? scene.levels.filter((l) => l.z === viewZ) : scene.levels.filter((l) => l.z <= activeZ)) : []), [scene, viewZ, activeZ]);
 
   const floorObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
     if (!scene) return [];
@@ -570,7 +570,7 @@ export function IsoStage() {
       if (ent.kind === 'heroStart' || ent.kind === 'prop') continue;
       if (ent.combat?.hiddenUntilCombat) continue; // ennemi d'embuscade : invisible avant le combat
       const ez = ent.z ?? 0;
-      if (viewZ != null && ez !== viewZ) continue; // override debug viewLevel(z) : isole un étage ; sinon co-visible
+      if (viewZ != null ? ez !== viewZ : ez > activeZ) continue; // viewLevel(z) isole ; sinon actif + dessous (pas au-dessus)
       if (!ez && covered(ent.pos.x, ent.pos.y)) continue; // l'occlusion par décor ne vaut qu'au sol
       const r = pickBackend({ kind: 'sceneEntity', ent }, viewMode);
       if (r.backend === 'sprite') {
@@ -600,7 +600,7 @@ export function IsoStage() {
       }
     }
     return out;
-  }, [scene, shownRot, viewMode, mode, battle, viewZ]);
+  }, [scene, shownRot, viewMode, mode, battle, viewZ, activeZ]);
 
   if (!scene) return null;
   const dims: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
@@ -705,7 +705,7 @@ export function IsoStage() {
   for (const ent of scene.entities) {
     if (ent.kind !== 'prop') continue;
     const ez = ent.z ?? 0;
-    if (viewZ != null && ez !== viewZ) continue; // override debug viewLevel(z) : isole un étage ; sinon co-visible
+    if (viewZ != null ? ez !== viewZ : ez > activeZ) continue; // viewLevel(z) isole ; sinon actif + dessous (pas au-dessus)
     const fg = decorFootGeometry(ent.foot);
     const px = ent.pos.x + fg.offX, py = ent.pos.y + fg.offY;
     const pd = depth(ent.pos.x + (ent.foot ? ent.foot.w - 1 : 0), ent.pos.y + (ent.foot ? ent.foot.h - 1 : 0), dims, ez);
