@@ -1,6 +1,6 @@
 /** Un culte : ses six Bénédictions + ses Miracles (LDB 41-42 ; suppléments). Les fichiers
- *  `cults/defs/` sont GÉNÉRÉS par `build-data` depuis le type `god` de all-data.json (filtré aux
- *  livres autorisés) : ajouter un dieu = autoriser son livre puis `npm run build:data`. */
+ *  `cults/defs/` sont APP-OWNED (registre auto-chargé) : ajouter un dieu = ajouter un fichier de def
+ *  (ou via l'éditeur de données in-app). */
 export interface CultDef {
   /** Nom du culte (clé : « Sigmar », « Evawn »…). */
   key: string;

@@ -267,7 +267,7 @@ export function CascadeModal() {
       forceShow={rolled && !res?.success}
       /* Résilience : dé CHOISI sur une Peur de combat étendue (le DR gagné suit le dé, LDB 17 l.73). */
       forcedRoll={forcedDie ? { ...forcedDie, onSet: (r) => setForcedRoll(cur.id, r) } : undefined}
-      /* Psychologie (rencontre OU combat) : Détermination (immunité, LDB 17 l.62) AVANT le jet — comme l'ex-PsychModal/EncounterPsychModal. */
+      /* Psychologie (rencontre OU combat) : Détermination (immunité, LDB 17 l.62) AVANT le jet. */
       determination={!res && (cur.encounterPsych || cur.combatPsych) ? { resolve: actor.resolve ?? 0, onResolve: () => determine(cur.id) } : undefined}
       confirmLabel={isLast ? 'Terminer' : 'Continuer'}
       onConfirm={() => next()}

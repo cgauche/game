@@ -1390,8 +1390,8 @@ export function applyAttackResult(
       const kd = def.onHitKnockdown;
       if (!kd || (attacker.advantage ?? 0) < kd.advantageCost || hasCondition(target, kd.condition)) continue;
       if (attacker.kind === 'hero') {
-        // Folding (comme Déviation/Piège-lame) : le choix du Renversement devient une ÉTAPE de CHOIX de
-        // la cascade d'ATTAQUE (plus de modale `pendingKnockdown` séparée). L'applier 'knockdown' rejoue
+        // Folding (comme Déviation/Piège-lame) : le choix du Renversement est une ÉTAPE de CHOIX de la
+        // cascade d'ATTAQUE. L'applier 'knockdown' rejoue
         // resolveKnockdown sur l'option. L'attaquant/cible sont déjà montrés par la ligne d'attaque figée.
         pushCombatStep(set, {
           id: `cons-knockdown-${target.id}`, kind: 'knockdown', actorId: attacker.id, icon: '🤜',

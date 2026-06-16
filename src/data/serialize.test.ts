@@ -12,8 +12,8 @@ import { serializeDataset } from './serialize';
 const DIR = join(fileURLToPath(new URL('.', import.meta.url)));
 // Exclus du périmètre éditeur v1 :
 //  - `_index.json` : index généré (Codex).
-//  - `names.json` : banque importée du projet WarhammerV2, en CRLF (pas produite par build-data) ;
-//    pas d'UI d'édition en v1. Quand `names` aura un éditeur (P5), normaliser son EOL en LF d'abord.
+//  - `names.json` : banque importée du projet WarhammerV2, en CRLF (origine externe) ; pas d'UI
+//    d'édition en v1. Quand `names` aura un éditeur (P5), normaliser son EOL en LF d'abord.
 const EXCLUDED = new Set(['names.json']);
 const files = readdirSync(DIR).filter((f) => f.endsWith('.json') && !f.startsWith('_') && !EXCLUDED.has(f));
 

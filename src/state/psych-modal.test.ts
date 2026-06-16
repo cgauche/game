@@ -8,8 +8,8 @@ import { testScene } from '../scenes/test-fixture';
 import type { Combatant } from '../engine/types';
 
 /**
- * Psychologie de COMBAT — régime CASCADE de Round (LDB 21). Depuis le fold : plus de modale `pendingPsych`
- * par tour. Les Traits ciblés et les NOUVELLES Terreurs se testent au DÉBUT du Round (l.14,
+ * Psychologie de COMBAT — régime CASCADE de Round (LDB 21). Les Traits ciblés et les NOUVELLES
+ * Terreurs se testent au DÉBUT du Round (l.14,
  * `openRoundStartPsych`) ; la Peur est un Test ÉTENDU testé à la FIN de chaque Round (l.27,
  * `openRoundEndPsych`). Chaque collecte ouvre UNE cascade `purpose:'combat'`, applier 'combatPsych',
  * une étape par héros — résolue par les handlers `cascade*`. On vérifie ce contrat.

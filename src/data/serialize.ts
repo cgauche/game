@@ -5,7 +5,7 @@
  * Voir `serialize.test.ts` (garde-fou sur les vrais fichiers `src/data/*.json`).
  */
 
-/** Indentation et fin de fichier conformes à ce que produit `scripts/build-data.ts`
+/** Indentation et fin de fichier du format canonique sur disque des datasets app-owned
  *  (`JSON.stringify(data, null, 2)`, sans newline final). */
 export function serializeDataset(value: unknown): string {
   return JSON.stringify(value, null, 2);

@@ -293,9 +293,9 @@ export interface PendingFocus {
   result: FocusResult | null;
   rerolled?: boolean;
 }
-// (Test de Psychologie de COMBAT : PLUS de `PendingPsych`. La psy de combat (Peur/Terreur/Traits
-//  ciblés, LDB 21) est une CASCADE de Round — étapes `kind:'combatPsych'` (cf. CascadeStep.combatPsych),
-//  Traits/Terreur au DÉBUT de Round, Peur (Test étendu) à la FIN.)
+// Psychologie de COMBAT (Peur/Terreur/Traits ciblés, LDB 21) : CASCADE de Round — étapes
+//  `kind:'combatPsych'` (cf. CascadeStep.combatPsych) ; Traits/Terreur au DÉBUT de Round, Peur
+//  (Test étendu) à la FIN.
 /** Entrée en Frénésie en attente (LDB 21 l.32) : Test de FM. Lancer → Chance → Appliquer (entre si succès). */
 export interface PendingFrenzy {
   combatantId: string;
