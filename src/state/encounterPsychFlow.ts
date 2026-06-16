@@ -15,7 +15,7 @@ import { Scene } from './scene';
 import type { CascadeStep } from './pendings';
 import { spawnEnemy } from './spawn';
 import { encounterPsych } from '../engine/encounterPsych';
-import { calmeValue, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
+import { calmeValue, CIBLE_TYPES, CIBLE_LABEL, PsychType, terreurBrise } from '../engine/psychology';
 import { addCondition } from '../engine/conditions';
 import { registerCascadeApplier, startCascade } from './cascade';
 import { describeEncounterPsych } from './flowOutcomes';
@@ -39,11 +39,6 @@ export function sceneFearSources(scene: Scene): Combatant[] {
   return (scene.entities ?? [])
     .filter((e) => e.kind === 'personnage' && !e.combat?.hiddenUntilCombat)
     .map((e) => spawnEnemy(e.ref, e.statblock, e.id, e.pos));
-}
-
-/** Calcule le Brisé d'une Terreur ratée (LDB 21 l.57 : Indice + |DR négatifs|). */
-function terreurBrise(indice: number, success: boolean, sl: number): number {
-  return success ? 0 : indice + Math.max(0, -sl);
 }
 
 /** Ouvre la CASCADE des Tests de Psychologie de rencontre dus (hors combat) — UNE étape par héros
@@ -99,8 +94,8 @@ registerCascadeApplier(
       set({ party: [...get().party] });
       return { journal: [`${hero.name} est temporairement insensible à la Psychologie (Détermination).`] };
     }
+    const brise = terreurBrise(ep.indice, r.success, r.sl);
     if (ep.kind === 'terreur') {
-      const brise = terreurBrise(ep.indice, r.success, r.sl);
       if (brise > 0) addCondition(hero, 'Brisé', brise);
       hero.psychState.push({ type: 'peur', sourceId: ep.sourceId, indice: r.success ? 0 : ep.indice, calmeDR: 0 }); // la Terreur devient une Peur (LDB 21 l.57)
     } else if (CIBLE_TYPES.has(ep.kind)) {
@@ -111,7 +106,7 @@ registerCascadeApplier(
     set({ party: [...get().party] });
     const pe: PendingEncounterPsych = {
       heroId: hero.id, kind: ep.kind, sourceId: ep.sourceId, sourceName: ep.sourceName, indice: ep.indice, cible: ep.cible,
-      result: { roll: r.roll, success: r.success, brise: terreurBrise(ep.indice, r.success, r.sl), target: r.target, sl: r.sl },
+      result: { roll: r.roll, success: r.success, brise, target: r.target, sl: r.sl },
     };
     return { journal: [describeEncounterPsych(pe, hero.name)] };
   },

@@ -224,6 +224,12 @@ export function resolveCalmeSimple(calme: number, rng: RNG = defaultRNG): { succ
   return { success: t.success, roll: t.roll, sl: t.sl, target: t.target };
 }
 
+/** Brisé infligé par une Terreur ratée (LDB 21 l.57) : Indice + |DR négatifs| ; 0 sur un succès.
+ *  SOURCE UNIQUE du calcul, partagée par la Terreur de rencontre, de combat et `resolveTerreurTest`. */
+export function terreurBrise(indice: number, success: boolean, sl: number): number {
+  return success ? 0 : indice + Math.max(0, -sl);
+}
+
 /** Test de Terreur à la 1ʳᵉ rencontre (LDB 21 l.55-57) : échec → Brisé = Indice + |DR négatifs| ;
  *  ensuite la créature cause une Peur d'Indice équivalent (`devientPeur`). */
 export function resolveTerreurTest(
@@ -233,6 +239,5 @@ export function resolveTerreurTest(
   coldBlooded = false, // À sang-froid (LDB 85 p.338) : inverse un Test de FM raté
 ): { success: boolean; brise: number; devientPeur: number; roll: number; target: number; sl: number } {
   const t = coldBloodedAdjust(rollTest(calme, 'intermediaire', rng), coldBlooded);
-  const brise = t.success ? 0 : indice + Math.max(0, -t.sl);
-  return { success: t.success, brise, devientPeur: indice, roll: t.roll, target: t.target, sl: t.sl };
+  return { success: t.success, brise: terreurBrise(indice, t.success, t.sl), devientPeur: indice, roll: t.roll, target: t.target, sl: t.sl };
 }
