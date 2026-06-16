@@ -53,15 +53,21 @@ export type Formula =
   | { bonusOf: CharKey }
   | { charOf: CharKey }
   | { dice: { n: number; sides: number; plus?: number } }
-  | { rolled: true };
+  | { rolled: true }
+  /** INDICE de l'attaque NATURELLE en cours (« Morsure +10 », « Souffle +15 ») — injecté par le
+   *  résolveur de manœuvre (`ctx.indice`). Permet d'authorer les Dégâts « Indice » d'une manœuvre en
+   *  GameOp : `wounds { amount: {indiceOf:true}, ignoreTB:false, ignoreAP:false }`. 0 hors contexte. */
+  | { indiceOf: true };
 
 /** Résout une formule contre son référent (`ref`) — RNG seedable pour les dés. `rolled` = valeur du
- *  jet courant d'un `rollThreshold` (injectée par l'op ; 0 hors de ce contexte). */
-export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG, rolled?: number): number {
+ *  jet courant d'un `rollThreshold` (injectée par l'op ; 0 hors de ce contexte) ; `indice` = Indice
+ *  de l'attaque naturelle d'une manœuvre (`{indiceOf}`, 0 hors contexte). */
+export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG, rolled?: number, indice?: number): number {
   if (typeof f === 'number') return f;
   if ('bonusOf' in f) return bonus(effectiveChar(ref, f.bonusOf));
   if ('charOf' in f) return effectiveChar(ref, f.charOf);
   if ('rolled' in f) return rolled ?? 0;
+  if ('indiceOf' in f) return indice ?? 0;
   return rollDice(f.dice.n, f.dice.sides, rng) + (f.dice.plus ?? 0);
 }
 
@@ -341,6 +347,9 @@ export interface OpsCtx {
   woundsDealt?: number;
   /** Valeur du jet courant d'une op `rollThreshold` — résout les Formula `{rolled}` des ops de palier. */
   rolled?: number;
+  /** INDICE de l'attaque naturelle d'une MANŒUVRE en cours (« Morsure +10 ») — résout les Formula
+   *  `{indiceOf}` (Dégâts authorés en GameOp). Posé par le résolveur de manœuvre. */
+  indice?: number;
   /** Gain de Corruption AVEC seuil → mutation (corruptionFlow) ; sans contexte
    *  store, l'op `corruption` incrémente simplement le compteur. */
   onCorruption?: (n: number) => string[];
@@ -407,7 +416,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
     switch (o.op) {
       case 'wounds': {
         if (!groupGate(o.onlyGroups)) break;
-        const raw = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled) + slBonus(ctx.sl, o.perSL));
+        const raw = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled, ctx.indice) + slBonus(ctx.sl, o.perSL));
         // Défaut : ignore BE+PA. `ignoreTB:false` → déduit le Bonus d'Endurance ; `ignoreAP:false` → déduit les PA.
         const tb = o.ignoreTB === false ? bonus(effectiveChar(target, 'E')) : 0;
         const ap = o.ignoreAP === false ? Math.max(0, target.armour.corps ?? 0) : 0;
@@ -418,7 +427,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'heal': {
-        const n = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled) + slBonus(ctx.sl, o.perSL));
+        const n = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled, ctx.indice) + slBonus(ctx.sl, o.perSL));
         target.wounds.current = Math.min(target.wounds.max, target.wounds.current + n);
         lines.push(`${target.name} regagne ${n} Blessure(s).`);
         break;

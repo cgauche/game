@@ -334,7 +334,7 @@ export function runSpellFlow(target: Combatant, caster: Combatant | undefined, f
         break;
       case 'if':
         // Condition `compare` : `target` = la cible du sous-Flow, `caster` = le lanceur/porteur.
-        if (evalCondition(f.cond, { flags: {}, gameTime: ctx.now ?? 0, party: [target],
+        if (evalCondition(f.cond, { flags: {}, gameTime: ctx.now ?? 0, party: [target], sl: ctx.sl,
           target: actorView(target), caster: actorView(caster) })) walk(f.then);
         else if (f.else) walk(f.else);
         break;

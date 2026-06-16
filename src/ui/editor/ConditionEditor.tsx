@@ -22,6 +22,7 @@ const KIND_OPTIONS: [Condition['kind'], string][] = [
   ['money', 'Bourse ≥'],
   ['partyDead', 'Héros mort'],
   ['compare', 'État du porteur (comparaison)'],
+  ['slThreshold', 'Seuil de marge (DR ≥)'],
   ['all', 'TOUS (ET)'],
   ['any', 'AU MOINS UN (OU)'],
   ['not', 'NON'],
@@ -51,6 +52,7 @@ export function condSummary(c: Condition | undefined): string {
       const val = typeof c.value === 'number' ? `${c.value}` : `${WHO_LABEL[c.value.who]} ${FIELD_LABEL[c.value.field]}`;
       return `${WHO_LABEL[c.subject.who]} : ${subj} ${c.op} ${val}`;
     }
+    case 'slThreshold': return `marge ≥ ${c.atLeast} DR`;
     case 'all': return c.of.length ? c.of.map(condSummary).join(' ET ') : 'toujours';
     case 'any': return c.of.length ? c.of.map(condSummary).join(' OU ') : 'jamais';
     case 'not': return `NON(${condSummary(c.of)})`;
@@ -67,6 +69,7 @@ function recast(cond: Condition, kind: Condition['kind']): Condition {
     case 'money': return { kind: 'money', atLeast: cond.kind === 'money' ? cond.atLeast : { gold: 1 } };
     case 'partyDead': return { kind: 'partyDead', who: cond.kind === 'partyDead' ? cond.who : 'any' };
     case 'compare': return cond.kind === 'compare' ? cond : { kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '>=', value: 1 };
+    case 'slThreshold': return { kind: 'slThreshold', atLeast: cond.kind === 'slThreshold' ? cond.atLeast : 6 };
     case 'all': return { kind: 'all', of: cond.kind === 'all' || cond.kind === 'any' ? cond.of : cond.kind === 'always' ? [] : [cond] };
     case 'any': return { kind: 'any', of: cond.kind === 'all' || cond.kind === 'any' ? cond.of : cond.kind === 'always' ? [] : [cond] };
     case 'not': return { kind: 'not', of: cond.kind === 'not' ? cond.of : cond };
@@ -161,6 +164,9 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
             </>
           )}
         </span>
+      )}
+      {cond.kind === 'slThreshold' && (
+        <label className="dr">marge ≥ <input type="number" min={0} style={{ width: '3.4em' }} value={cond.atLeast} onChange={(e) => onChange({ kind: 'slThreshold', atLeast: Math.max(0, Number(e.target.value) || 0) })} /> DR</label>
       )}
       {(cond.kind === 'all' || cond.kind === 'any') && (
         <div className={`cond-children ${cond.kind}`}>

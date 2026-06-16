@@ -57,6 +57,10 @@ export type Condition =
    *  `{who:'target',field:'size'} '<' {who:'caster',field:'size'}`). Régénération « PB > 0 » ⇔
    *  `{who:'target',field:'woundsCurrent'} >= 1`. Acteur absent → false. */
   | { kind: 'compare'; subject: CompareSubject; op: CompareOp; value: number | { who: ActorRef; field: ActorField } }
+  /** Seuil de MARGE / DR du contexte (`ctx.sl`) : vrai si `sl ≥ atLeast`. Permet d'authorer les issues
+   *  échelonnées d'une manœuvre (Regard pétrifiant : « si la marge atteint 6 DR → Pétrifié », LDB 85
+   *  l.238) en GameOp Flow — `if slThreshold(6) → … else if slThreshold(2) → …`. Hors contexte = 0. */
+  | { kind: 'slThreshold'; atLeast: number }
   | { kind: 'all'; of: Condition[] }
   | { kind: 'any'; of: Condition[] }
   | { kind: 'not'; of: Condition };
@@ -72,6 +76,8 @@ export interface ConditionCtx {
    *  `target` = l'unité affectée (la « cible » du sous-Flow) ; `caster` = le lanceur/porteur. */
   target?: ActorView;
   caster?: ActorView;
+  /** Marge / DR du contexte (jet d'incantation, opposition de manœuvre) — lu par `slThreshold`. */
+  sl?: number;
 }
 
 /** Évalue une Condition — SOURCE UNIQUE de l'évaluation des conditions (triggers, choix de dialogue,
@@ -114,6 +120,7 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
       if (lhs == null || rhs == null) return false; // acteur absent → false
       return cond.op === '>=' ? lhs >= rhs : cond.op === '<=' ? lhs <= rhs : cond.op === '==' ? lhs === rhs : cond.op === '<' ? lhs < rhs : lhs > rhs;
     }
+    case 'slThreshold': return (ctx.sl ?? 0) >= cond.atLeast;
     case 'all': return cond.of.every((c) => evalCondition(c, ctx));
     case 'any': return cond.of.some((c) => evalCondition(c, ctx));
     case 'not': return !evalCondition(cond.of, ctx);
