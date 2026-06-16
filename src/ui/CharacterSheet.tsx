@@ -487,7 +487,12 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
             const isCape = isCapeItem(it); // cape/manteau : emplacement Cape (cosmétique, onglet Combat)
             const equipable = it.kind === 'armor' || isProsthesis || isCape; // armes = via les sets d'armes (cf. EquipmentPanel)
             const isWeaponItem = it.kind === 'melee' || it.kind === 'ranged';
-            const inLoadout = isWeaponItem && (hero.loadouts ?? []).some((l) => l.main === it.uid || l.off === it.uid);
+            // E1 : état « en main » SANS jargon « set » (les sets = fonction avancée, cf. onglet Combat) —
+            // on NOMME l'arme du set ACTIF Main principale / secondaire ; les autres armes n'affichent rien.
+            const activeLo = (hero.loadouts ?? []).find((l) => l.id === hero.activeLoadoutId) ?? hero.loadouts?.[0];
+            const handLabel = isWeaponItem
+              ? (activeLo?.main === it.uid ? 'Main principale' : activeLo?.off === it.uid ? 'Main secondaire' : null)
+              : null;
             // Surbrillance « équipé » : arme tenue dans le set ACTIF (plus de flag `equipped` d'arme) ; sinon armure portée.
             const highlighted = isWeaponItem ? isWeaponActive(hero, it.uid) : it.equipped;
             const isSkinnable = it.kind === 'melee' || it.kind === 'ranged' || it.kind === 'armor';
@@ -541,9 +546,9 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                       </button>
                     );
                   })()}
-                  {(it.kind === 'melee' || it.kind === 'ranged') && (
-                    <span className={`ir-loadout ${inLoadout ? 'on' : ''}`} title="Géré via les sets d'armes (loadouts)">
-                      {inLoadout ? '🗡 en set' : '—'}
+                  {isWeaponItem && handLabel && (
+                    <span className="ir-loadout on" title="Arme en main — réglable dans l'onglet Combat">
+                      ✋ {handLabel}
                     </span>
                   )}
                   {equipable ? (
