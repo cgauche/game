@@ -61,16 +61,45 @@
   vertical-align: middle;
 }
 /* « Donner à… » d'une ligne d'inventaire : 🎁 + mini-tuiles des autres héros. */
-.give-row {
+/* E4 : « Donner » = icône 🎁 REPLIÉE par défaut → menu [portrait + nom] au clic (action secondaire,
+   plus de rangée de portraits toujours affichée). */
+.give-wrap {
+  position: relative;
   display: inline-flex;
-  align-items: center;
-  gap: 4px;
 }
-/* E4 : « Donner » = icône + droplist compacte (action secondaire repliée, plus la rangée de portraits). */
-.give-select {
-  max-width: 150px;
-  font-size: 12px;
-  padding: 4px 24px 4px 8px;
+.give-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  min-width: 150px;
+}
+.give-opt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 6px;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+}
+.give-opt:hover {
+  background: var(--panel);
+}
+.give-opt .go-name {
+  white-space: nowrap;
 }
 /* Choix par tuile-portrait avec légende sous la tuile (monture/cavalier, modes de soin…). */
 .frame-pick {

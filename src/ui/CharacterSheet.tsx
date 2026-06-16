@@ -316,6 +316,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
   const appraiseItem = useGame((s) => s.appraiseItem);
   const inBattleNow = useGame((s) => !!s.battle);
   const [skinFor, setSkinFor] = useState<string | null>(null);
+  const [giveFor, setGiveFor] = useState<string | null>(null); // E4 : menu « Donner » d'un item (replié par défaut, ouvert au clic du 🎁)
   const items = hero.items ?? [];
   const enc = hero.encumbrance ?? 0;
   const maxEnc = maxEncumbrance(hero);
@@ -486,7 +487,8 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
         <div className="mini-title">Inventaire & équipement ({items.length})</div>
         <div className="inv-rows">
           {items.length === 0 && <p className="muted">Aucun objet.</p>}
-          {items.map((it) => {
+          {(() => {
+          const renderRow = (it: ItemInstance) => {
             const isProsthesis = it.subType === 'Prothèses'; // prothèse (LDB 73) : se PORTE pour annuler un malus d'amputation
             const isCape = isCapeItem(it); // cape/manteau : emplacement Cape (cosmétique, onglet Combat)
             const equipable = it.kind === 'armor' || isProsthesis || isCape; // armes = via les sets d'armes (cf. EquipmentPanel)
@@ -577,19 +579,36 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                     <span className="ir-kind">{it.kind}</span>
                   )}
                   {party.length > 1 && !inBattleNow && (
-                    <label className="give-row" title="Donner cet objet à un autre héros">
-                      <span aria-hidden>🎁</span>
-                      <select
-                        className="give-select"
-                        value=""
-                        onChange={(e) => { if (e.target.value) transferItem(it.uid, hero.id, e.target.value); }}
+                    <span className="give-wrap">
+                      <button
+                        className={`btn small ${giveFor === it.uid ? 'btn-primary' : ''}`}
+                        title="Donner cet objet à un autre héros"
+                        aria-expanded={giveFor === it.uid}
+                        onClick={() => setGiveFor(giveFor === it.uid ? null : it.uid)}
                       >
-                        <option value="">Donner à…</option>
-                        {party.filter((p) => p.id !== hero.id).map((p) => (
-                          <option key={p.id} value={p.id}>{p.name}</option>
-                        ))}
-                      </select>
-                    </label>
+                        🎁
+                      </button>
+                      {giveFor === it.uid && (
+                        <div className="give-menu">
+                          {party.filter((p) => p.id !== hero.id).map((p) => {
+                            const give = () => { transferItem(it.uid, hero.id, p.id); setGiveFor(null); };
+                            return (
+                              <div
+                                key={p.id}
+                                className="give-opt"
+                                role="button"
+                                tabIndex={0}
+                                onClick={give}
+                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); give(); } }}
+                              >
+                                <CharFrame c={p} variant="identity" size="xs" />
+                                <span className="go-name">{p.name}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </span>
                   )}
                 </div>
                 {open && (
@@ -611,7 +630,29 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                 )}
               </div>
             );
-          })}
+          };
+          // E3 : sous-catégories du Sac — chaque objet dans son PREMIER groupe correspondant.
+          const GROUPS: { label: string; pred: (it: ItemInstance) => boolean }[] = [
+            { label: 'Armes', pred: (it) => it.kind === 'melee' || it.kind === 'ranged' },
+            { label: 'Armures & protections', pred: (it) => it.kind === 'armor' || isCapeItem(it) },
+            { label: 'Consommables', pred: (it) => itemUse(it, hero) != null },
+            { label: 'Divers', pred: () => true },
+          ];
+          const partition: ItemInstance[][] = GROUPS.map(() => []);
+          for (const it of items) {
+            const gi = GROUPS.findIndex((g) => g.pred(it));
+            partition[gi].push(it);
+          }
+          return GROUPS.map((g, gi) => {
+            const list = partition[gi];
+            return list.length ? (
+              <div key={g.label}>
+                <div className="mini-title">{g.label}</div>
+                {list.map(renderRow)}
+              </div>
+            ) : null;
+          });
+          })()}
         </div>
       </div>
       )}
