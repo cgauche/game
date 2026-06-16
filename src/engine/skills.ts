@@ -4,13 +4,12 @@
  */
 import { Combatant, CharKey, CHAR_BY_LABEL } from './types';
 import { findSkill } from '../data';
-import { wornArmourPenalty, wornSocialMod } from './wearPenalty';
+import { wornArmourPenalty } from './wearPenalty';
 import { groupMatch } from './groups';
 import { effectiveChar } from './characteristics';
 import { testStatePenalty } from './conditions';
 import { agilityTestPenalty } from './encumbrance';
-import { traumaSkillPenalty, passiveSkillSum } from './trauma';
-import { mutationCharTestMod } from './corruption';
+import { traumaSkillPenalty, passiveSkillSum, passiveTestMod } from './trauma';
 
 /** Caractéristique associée à une compétence (par son label). */
 export function skillCharKey(skillLabel: string): CharKey | undefined {
@@ -30,15 +29,14 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
   const sk = low ? c.skills.find((s) => low === s.name.toLowerCase() || low.startsWith(s.name.toLowerCase())) : undefined;
   const base = effectiveChar(c, ck);
   const states = testStatePenalty(c, skill);
-  const enc = ck === 'Ag' ? agilityTestPenalty(c) : 0;
+  const enc = ck === 'Ag' ? agilityTestPenalty(c) : 0; // charge : couche d'ÉTAT orthogonale (≠ passif d'élément)
   const armour = skill ? wornArmourPenalty(c, skill) : 0;
-  const soc = ck === 'Soc' ? wornSocialMod(c) : 0;
   const traumaSkill = traumaSkillPenalty(c, skill); // séquelle permanente de fracture (Langue, LDB 18 l.300)
-  // Mutations (LDB 19) : mods de TESTS — compétence nommée (Groin poilu : +10 Pistage) via le collecteur
-  // passif unifié (`passiveSkillSum`, additif Σ), + Tests dérivés d'une caractéristique (Visage inversé :
-  // −20 aux Tests de Sociabilité) via `mutationCharTestMod`.
-  const mut = passiveSkillSum(c, skill) + mutationCharTestMod(c, ck);
-  return base + (sk?.advances ?? 0) + states + enc + armour + soc + traumaSkill + mut;
+  // Passifs INTRINSÈQUES d'élément (Σ), tous via le collecteur unifié : mutation compétence nommée (Groin
+  // poilu +10 Pistage, `passiveSkillSum`) + mods de Test char-qualifiés (`passiveTestMod` : mutation Visage
+  // inversé −20 Soc, objet Laid −Soc).
+  const passive = passiveSkillSum(c, skill) + passiveTestMod(c, ck);
+  return base + (sk?.advances ?? 0) + states + enc + armour + traumaSkill + passive;
 }
 
 /** Le personnage possède-t-il la compétence `label` (nom seul OU « Nom (Spécialisation) », ex.

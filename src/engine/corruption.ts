@@ -140,11 +140,5 @@ export function mutationArmourBonus(c: Combatant, loc: HitLocation): number {
   return d;
 }
 
-/** Modificateur de TEST dû aux mutations, pour une CARACTÉRISTIQUE (Visage inversé → −20 aux Tests de
- *  Sociabilité). Signé, cumulable. Les mods de compétence NOMMÉE (Groin poilu +10 Pistage) sont désormais
- *  portés par le collecteur passif unifié (`passiveSkillSum`, kind `intrinsèque`). */
-export function mutationCharTestMod(c: Combatant, charKey: CharKey): number {
-  let d = 0;
-  for (const m of c.mutations ?? []) for (const t of m.testMods ?? []) if (t.char === charKey) d += t.mod;
-  return d;
-}
+// Les mods de TEST des mutations (compétence nommée Groin poilu, ou char-qualifiés Visage inversé −20 Soc)
+// sont désormais émis par le collecteur passif unifié (`passiveSkillSum`/`passiveTestMod`, engine/trauma).
