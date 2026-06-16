@@ -76,10 +76,10 @@ renderLevel(0, 'opera-furnished-rez.png');
 renderLevel(1, 'opera-furnished-etage.png');
 renderLevel(0, 'opera-furnished-rez-scene.png', 2);
 // Crops de lecture d'orientation (sièges du parterre ; scène/rideau ; loges ; loge royale).
-renderCrop(0, 21, 22, 'opera-furnished-crop-sieges.png', 230, 9);
+renderCrop(0, 21, 30, 'opera-furnished-crop-sieges.png', 230, 9);
 // MÊME bloc de sièges, caméra tournée d'un demi-tour (rot 2) : ils doivent PIVOTER (dos→face) et
 // continuer de regarder la scène (désormais en bas de l'écran). Preuve visuelle du helper project().
-renderCrop(0, 21, 22, 'opera-furnished-crop-sieges-rot2.png', 230, 9, 2);
-renderCrop(0, 21, 5, 'opera-furnished-crop-scene.png', 220, 9);
-renderCrop(1, 6, 15, 'opera-furnished-crop-loge.png', 230, 9);
+renderCrop(0, 21, 30, 'opera-furnished-crop-sieges-rot2.png', 230, 9, 2);
+renderCrop(0, 21, 8, 'opera-furnished-crop-scene.png', 220, 9);
+renderCrop(1, 6, 24, 'opera-furnished-crop-loge.png', 230, 9);
 renderCrop(1, 21, 3, 'opera-furnished-crop-royale.png', 240, 10);

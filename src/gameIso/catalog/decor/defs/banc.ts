@@ -1,0 +1,19 @@
+import type { PropViz } from '../../types';
+
+// Banc en bois : longue assise sans dossier sur quatre pieds. Mobilier le long des murs de la salle
+// verte et des vestiaires des chœurs du théâtre (les artistes s'y assoient pour se changer). Cf. plan
+// officiel NADJ p.40 (longues banquettes contre les cloisons).
+export const prop: PropViz = {
+  id: 'banc',
+  label: 'Banc',
+  searchable: true,
+  render: () =>
+    `<g><ellipse cx="60" cy="147" rx="46" ry="8" fill="#000" opacity="0.2"/>` +
+    // pieds
+    `<rect x="30" y="116" width="6" height="30" fill="#5a3c22"/><rect x="84" y="116" width="6" height="30" fill="#5a3c22"/>` +
+    `<rect x="46" y="116" width="5" height="28" fill="#4a3018"/><rect x="69" y="116" width="5" height="28" fill="#4a3018"/>` +
+    // assise (planche en perspective)
+    `<path d="M22 112 L98 112 L92 104 L28 104 Z" fill="#8a6038"/>` +
+    `<rect x="22" y="112" width="76" height="7" rx="2" fill="#6e4a28"/>` +
+    `<path d="M28 104 L92 104" stroke="#9a6e42" stroke-width="1.2" opacity="0.7"/></g>`,
+};

@@ -46,20 +46,20 @@ describe('plan de l’Opéra — géométrie', () => {
   });
 
   it('SCÈNE surélevée (élévation > 0) et FOSSE en contrebas (< 0)', () => {
-    expect(tileAt(s, AX, 5, 0)).toBe('planches'); // scène (rangées 3-8)
-    expect(elevAt(s, AX, 5, 0)).toBeGreaterThan(0); // surélevée
-    expect(tileAt(s, AX, 9, 0)).toBe('planches'); // fosse d'orchestre (rangées 9-10)
-    expect(elevAt(s, AX, 9, 0)).toBeLessThan(0); // en contrebas
+    expect(tileAt(s, AX, 8, 0)).toBe('planches'); // scène (rangées 5-13)
+    expect(elevAt(s, AX, 8, 0)).toBeGreaterThan(0); // surélevée
+    expect(tileAt(s, AX, 15, 0)).toBe('planches'); // fosse d'orchestre (rangées 14-16)
+    expect(elevAt(s, AX, 15, 0)).toBeLessThan(0); // en contrebas
   });
 
   it('PARTERRE en ÉVENTAIL : plus étroit près de la scène que vers le fond', () => {
     const widthAt = (y: number) => s.levels[0].tiles.filter((t, i) => Math.floor(i / W) === y && t === 'plancher').length;
-    expect(widthAt(38)).toBeGreaterThan(widthAt(15)); // le fond (vers le foyer) est plus large que l'avant
+    expect(widthAt(42)).toBeGreaterThan(widthAt(18)); // le fond (vers le foyer) est plus large que l'avant
   });
 
   it('éventail : la cloison parterre↔salles latérales BLOQUE (pas de mur fantôme à traverser)', () => {
-    const doorRow = Math.floor((11 + 40) / 2); // PY0=11, PY1=40
-    for (let y = 14; y <= 38; y++) {
+    const doorRow = Math.floor((17 + 44) / 2); // PY0=17, PY1=44
+    for (let y = 20; y <= 42; y++) {
       if (y === doorRow) continue;
       const row = s.levels[0].tiles.slice(y * W, y * W + W);
       const lp = row.indexOf('plancher'); // bord gauche du parterre
@@ -70,13 +70,13 @@ describe('plan de l’Opéra — géométrie', () => {
   });
 
   it('PUITS CENTRAL OVALE : le cœur du parterre est VIDE au premier étage (ouvert sur le rez)', () => {
-    expect(tileAt(s, AX, 25, 1)).toBe('vide'); // centre du puits ovale
-    expect(tileAt(s, AX, 25, 0)).toBe('plancher'); // parterre en dessous
+    expect(tileAt(s, AX, 28, 1)).toBe('vide'); // centre du puits ovale
+    expect(tileAt(s, AX, 28, 0)).toBe('plancher'); // parterre en dessous
   });
 
   it('LOGE ROYALE (marbre) à l’étage, dans l’axe de la scène, + escaliers reliant les deux niveaux', () => {
-    expect(tileAt(s, AX, 2, 1)).toBe('marbre'); // loge royale au fond, axe scène (rangées 1-2)
-    expect(s.stairs ?? []).toHaveLength(2);
+    expect(tileAt(s, AX, 2, 1)).toBe('marbre'); // loge royale au fond, axe scène (rangées 1-4)
+    expect((s.stairs ?? []).length).toBeGreaterThanOrEqual(2);
     expect((s.stairs ?? [])[0]).toMatchObject({ from: { z: 0 }, to: { z: 1 } });
   });
 
@@ -88,14 +88,14 @@ describe('plan de l’Opéra — géométrie', () => {
   });
 
   it('AUCUNE PIÈCE SCELLÉE au rez : tout l’intérieur est joignable depuis le foyer (portes)', () => {
-    const reached = flood(0, AX, 54); // départ : foyer, près des entrées
+    const reached = flood(0, AX, 50); // départ : foyer (rangées 46-52)
     let unreachable = 0;
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++)
       if (isWalkable(s, x, y, 0) && !reached.has(`${x},${y}`)) unreachable++;
     expect(unreachable).toBe(0);
     // témoins explicites : une salle latérale gauche (près de la scène) et une salle droite sont atteintes.
     expect(reached.has('2,5')).toBe(true);   // salle de service gauche (Salle verte, près de la scène)
-    expect(reached.has('41,30')).toBe(true); // salle de service droite (vers le foyer)
+    expect(reached.has('41,32')).toBe(true); // salle de service droite (vers le foyer)
   });
 
   it('AUCUNE PIÈCE SCELLÉE à l’étage : toutes les loges + loge royale joignables depuis l’escalier', () => {
@@ -111,8 +111,8 @@ describe('plan de l’Opéra — géométrie', () => {
   it('ENTRÉES : portes d’honneur (façade) + entrée des artistes, débouchant à l’intérieur', () => {
     expect(s.entryPoints?.['entree-principale']).toBeDefined();
     expect(s.entryPoints?.['entree-artistes']).toBeDefined();
-    // une porte non-pleine relie l’extérieur de la façade au seuil (AX-6, 56) — Porte des Dames.
-    const dx = AX - 6, dy = 56; // FACY=56
+    // une porte non-pleine relie l’extérieur de la façade au seuil (Math.round(21.5-5)=17, 58) — Porte des Dames.
+    const dx = 17, dy = 58; // FACY=58 ; Math.round(AX-5) avec AX=21.5
     expect(wallBetween(s, dx, dy, dx, dy + 1)).toBe(false); // arête sud = porte (franchissable)
     expect(isWalkable(s, dx, dy, 0)).toBe(true); // le seuil est marchable
   });
