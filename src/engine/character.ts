@@ -22,6 +22,7 @@
 import { RNG, defaultRNG, roll } from './dice';
 import { buildInventory, recomputeLoadout, emptyArmour } from './items';
 import { groupsFor } from './groups';
+import { slugId } from '../data/slug';
 import { CharKey, CHAR_KEYS, Characteristics, ArmourPoints, Combatant, Weapon, SkillInstance, TalentInstance, HitLocation, HeroDetails } from './types';
 import {
   SpeciesData,
@@ -29,13 +30,19 @@ import {
   firstLevel,
   levelsForCareer,
   findSkill,
+  findTalent,
+  talentConcrete,
   findTrapping,
+  trappingRefLabel,
+  qualityRuntime,
+  advancementLabel,
   classes,
   careers,
   talents as talentTable,
 } from '../data';
 import { splitTopLevelOu, splitLabel, concreteLabel, isUnresolvedChoice, skillSlots, talentSlots, designateSlot, freeSlotFor, designationsFor, talentMaxReached, wildcardSpecs } from './careerSlots';
 import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSkillAdditions } from './talentEffects';
+import { applyStarEffect } from './creation';
 
 const SKILL_CHAR: Record<string, CharKey> = {
   'Capacité de Combat': 'CC',
@@ -66,8 +73,8 @@ export function speciesSkillAdvanceMap(
   sp: SpeciesData,
   override?: { plus5: string[]; plus3: string[] },
 ): Record<string, number> {
-  const plus5 = override?.plus5 ?? sp.skills.slice(0, 3);
-  const plus3 = override?.plus3 ?? sp.skills.slice(3, 6);
+  const plus5 = override?.plus5 ?? sp.skills.slice(0, 3).map((a) => advancementLabel('skills', a));
+  const plus3 = override?.plus3 ?? sp.skills.slice(3, 6).map((a) => advancementLabel('skills', a));
   const map: Record<string, number> = {};
   for (const s of plus5) map[s] = (map[s] ?? 0) + 5;
   for (const s of plus3) map[s] = (map[s] ?? 0) + 3;
@@ -152,8 +159,8 @@ export function resolveSpeciesTalents(
     const free = specOptions.find((s) => !owned.has(concreteLabel(name, s))) ?? specOptions[0];
     return free ? concreteLabel(name, free) : name;
   };
-  for (const entry of sp.talents) {
-    const e = entry.trim();
+  for (const ref of sp.talents) {
+    const e = advancementLabel('talents', ref).trim(); // AdvancementRef → libellé (parsing inchangé)
     const mRand = e.match(RANDOM_ENTRY_RE);
     if (mRand) {
       rollN(parseInt(mRand[1] ?? '1', 10));
@@ -194,6 +201,9 @@ export interface CreateHeroOptions {
   /** Résolution des entrées « (Au choix) » : entrée brute → libellé concret
    *  (ex. « Métier (Au choix) » → « Métier (Forgeron) »). */
   specChoices?: Record<string, string>;
+  /** Signe astral choisi (ADE2, libellé concret) — son `effect` (charMod / grantTalent) est appliqué
+   *  aux attributs de départ via applyStarEffect. Absent = pas de signe. */
+  starLabel?: string;
   /** Les 5 Augmentations gratuites réparties sur les 3 Caractéristiques de carrière (LDB 05
    *  l.488). Défaut : 2/2/1 sur les 3 Caractéristiques du Niveau 1. */
   charAdvancesAlloc?: Partial<Record<CharKey, number>>;
@@ -244,7 +254,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   if (opts.manualChars) for (const k of CHAR_KEYS) if (opts.manualChars[k] != null) chars[k] = opts.manualChars[k]!;
 
   // 3b) 5 Augmentations gratuites sur les 3 Caractéristiques de carrière (LDB 05 l.488).
-  const careerCharKeys = (level?.characteristics ?? []).map((label) => skillCharByLabel(label)).filter((k): k is CharKey => !!k);
+  const careerCharKeys: CharKey[] = level?.characteristics ?? []; // déjà des CharKey (donnée)
   const alloc: Partial<Record<CharKey, number>> = opts.charAdvancesAlloc ?? autoCharAlloc(careerCharKeys);
   const charAdvances: Partial<Record<CharKey, number>> = {};
   for (const [k, n] of Object.entries(alloc) as [CharKey, number][]) {
@@ -259,9 +269,11 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     ?? resolveSpeciesTalents(sp, { rng, choices: opts.speciesTalentChoices });
   const talents: TalentInstance[] = [];
   const addTalent = (label: string) => {
-    const existing = talents.find((t) => t.name === label);
+    const { name, spec } = splitLabel(label);
+    const id = findTalent(name)?.id ?? slugId(name);
+    const existing = talents.find((t) => t.talentId === id && (t.spec ?? '') === (spec ?? ''));
     if (existing) existing.times += 1;
-    else talents.push({ name: label, times: 1 });
+    else talents.push({ talentId: id, spec, times: 1 });
   };
   for (const t of speciesTalents) addTalent(t);
 
@@ -270,8 +282,8 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   if (!chosenTalent) {
     // Défaut : 1re entrée du Niveau dont le Maxi n'est pas atteint (les Maxi 1 déjà possédés
     // via l'espèce sont sautés — cas Nain Lire/Écrire + Agitateur).
-    for (const raw of talentEntries) {
-      const candidate = resolveEntry(raw, opts.specChoices);
+    for (const ref of talentEntries) {
+      const candidate = resolveEntry(advancementLabel('talents', ref), opts.specChoices);
       const probe: Combatant = { characteristics: chars, talents } as Combatant;
       if (!talentMaxReached(probe, candidate)) {
         chosenTalent = candidate;
@@ -281,8 +293,13 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   }
   if (chosenTalent) addTalent(chosenTalent);
 
+  // Signe astral (ADE2 ch.03) : effet appliqué AUX ATTRIBUTS DE DÉPART (±carac) + Talents octroyés.
+  // AVANT heroSoFar (careerSkillAdditions voit un « Maître artisan » du signe) et avant les effets
+  // d'acquisition des Talents (l. ~377). Talent « (Au choix) » résolu via specChoices (resolveEntry).
+  if (opts.starLabel) applyStarEffect(opts.starLabel, chars, (label) => addTalent(resolveEntry(label, opts.specChoices)));
+
   for (const t of talents) {
-    if (isUnresolvedChoice(t.name)) throw new Error(`Talent non résolu : ${t.name}`);
+    if (isUnresolvedChoice(talentConcrete(t))) throw new Error(`Talent non résolu : ${talentConcrete(t)}`);
   }
 
   // 4b) Compétences de carrière : 40 augmentations (+5 par défaut sur les 8 entrées du Niveau),
@@ -292,12 +309,14 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   const addSkill = (label: string, adv: number) => {
     const { name, spec } = splitLabel(label);
     if (isUnresolvedChoice(label)) throw new Error(`Compétence non résolue : ${label}`);
-    const existing = skills.find((s) => s.name === name && (s.spec ?? '') === (spec ?? ''));
-    if (existing) existing.advances += adv; // même (name, spec) = même Compétence (LDB 09 l.42)
-    else skills.push({ name, spec, characteristic: skillCharacteristic(name), advances: adv });
+    const id = findSkill(name)?.id ?? slugId(name);
+    const existing = skills.find((s) => s.skillId === id && (s.spec ?? '') === (spec ?? ''));
+    if (existing) existing.advances += adv; // même (id, spec) = même Compétence (LDB 09 l.42)
+    else skills.push({ skillId: id, spec, characteristic: skillCharacteristic(name), advances: adv });
   };
   const advancedEntries: { raw: string; label: string }[] = [];
-  for (const raw of level?.skills ?? []) {
+  for (const ref of level?.skills ?? []) {
+    const raw = advancementLabel('skills', ref);
     const adv = opts.skillAdvances?.[raw] ?? 5;
     const label = resolveEntry(raw, opts.specChoices);
     addSkill(label, adv);
@@ -315,8 +334,9 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   }
 
   // 5) Possessions : classe + carrière → inventaire à stats, armes/armures équipées.
-  const classTrappings = classForCareer(opts.careerLabel)?.trappings ?? [];
-  const trappingNames = [...classTrappings, ...(level?.trappings ?? [])].map((t) => resolveEntry(t, opts.specChoices));
+  const classTrappings = (classForCareer(opts.careerLabel)?.trappings ?? []).map(trappingRefLabel); // TrappingRef[] → libellés
+  const careerTrappings = (level?.trappings ?? []).map(trappingRefLabel); // idem niveau de carrière
+  const trappingNames = [...classTrappings, ...careerTrappings].map((t) => resolveEntry(t, opts.specChoices));
   const items = buildInventory(trappingNames);
 
   // Taille de l'espèce (LDB 85) : Halfling = Petite (talent Petit), Ogre = Grande, sinon Moyenne.
@@ -362,7 +382,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
 
   // Effets d'acquisition des Talents (+5 Caractéristique de départ, Véloce) — une fois par
   // acquisition —, puis attributs dérivés (Blessures + Dur à cuire, Chance, Détermination).
-  for (const t of hero.talents) for (let i = 0; i < t.times; i++) applyTalentAcquisition(hero, t.name);
+  for (const t of hero.talents) for (let i = 0; i < t.times; i++) applyTalentAcquisition(hero, talentConcrete(t));
   const wmax = heroMaxWounds(hero);
   hero.wounds = { current: wmax, max: wmax, base: wmax };
   hero.fortune = fortuneMax(hero);
@@ -395,11 +415,6 @@ function autoCharAlloc(careerChars: CharKey[]): Partial<Record<CharKey, number>>
     out[k] = parts[i] ?? 0;
   });
   return out;
-}
-
-/** Libellé long de Caractéristique (« Capacité de Tir ») → clé courte, sinon null. */
-function skillCharByLabel(label: string): CharKey | null {
-  return (SKILL_CHAR as Record<string, CharKey>)[label] ?? null;
 }
 
 function autoFateSplit(extra: number): { fate: number; resilience: number } {
@@ -445,7 +460,7 @@ export function deriveWeapons(trappingNames: string[], _chars: Characteristics):
       damage: t.damage ?? '+BF',
       reach: t.reach,
       range: t.type === 'ranged' ? Number(t.reach) || null : null,
-      qualities: t.qualities,
+      qualities: t.qualities.map(qualityRuntime),
     });
   }
   // Tout le monde peut frapper à mains nues (Livre de base : « l'arme est votre corps »).

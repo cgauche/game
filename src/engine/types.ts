@@ -65,14 +65,17 @@ export const BODY_SHAPE_LOC_LABELS: Record<BodyShape, Partial<Record<HitLocation
 };
 
 export interface SkillInstance {
-  name: string;
+  /** id STABLE de la Compétence (langue-indépendant) ; l'affichage résout en libellé via `skillInstanceLabel`. */
+  skillId: string;
   spec?: string;
   characteristic: CharKey;
   advances: number;
 }
 
 export interface TalentInstance {
-  name: string;
+  /** id STABLE du Talent (langue-indépendant) ; la spec est séparée (plus de libellé concret stocké). */
+  talentId: string;
+  spec?: string;
   times: number;
 }
 
@@ -86,6 +89,10 @@ export interface HeroDetails {
   /** Ambitions à court / long terme (LDB 05 l.710-717). */
   ambitionShort?: string;
   ambitionLong?: string;
+  /** Astrologie (ADE2 ch.03, optionnel) — flavor pur : signe ascendant + demeures célestes
+   *  (le signe mécanique du Personnage vit sur `Combatant.star`). */
+  ascendant?: string;
+  dwellings?: { house: string; sign: string }[];
 }
 
 /** Ignorance de PA — descripteur GÉNÉRAL réutilisable (armes enchantées, attributs de Domaine,
@@ -219,14 +226,11 @@ export interface ActiveEffect {
     /** L'enchantement ne s'applique QUE si l'arme tenue matche cette famille (mot-clé sur nom/sous-type :
      *  « épée », « hache », « lance ») — Épée de justice / Morsure de l'hiver / Lance de Myrmidia. */
     requiresWeapon?: string;
-    /** États infligés à TOUTE cible frappée (Marteau ardent : En flammes + À Terre), sans Test.
-     *  `onlyGroups` : ne s'applique qu'aux cibles d'un Groupe (engine/groups). */
-    onHitConditions?: { name: string; value?: number; onlyGroups?: string[] }[];
-    /** Test à la touche GATÉ par Groupe (système de Groupes — auteur-marqué) : une cible du/des
-     *  `onlyGroups` (ou hors `exceptGroups`) effectue un Test ; sur ÉCHEC elle gagne `onFail`.
-     *  Épée de justice : un « Criminel » frappé teste Résistance (+20) ou tombe Inconscient ;
-     *  Morsure de l'hiver : une cible « vivante » (hors Mort-vivant/Démon) teste ou gagne Sonné. */
-    onHitTest?: { onlyGroups?: string[]; exceptGroups?: string[]; skill: string; difficulty: Difficulty; onFail: { name: string; value?: number }[] };
+    /** Effets DÉCLENCHÉS « à la touche » de l'arme enchantée — forme UNIFIÉE (`TriggeredEffect`,
+     *  partagée avec les Atouts d'arme et les Traits de créature) : Marteau ardent → En flammes/À Terre ;
+     *  Épée de justice → Test gaté « Criminel » → Inconscient ; Morsure de l'hiver → Test (hors
+     *  Mort-vivant/Démon) → Sonné. Agrégés par `effectsOf` et dispatchés par `fireTriggers('onHit')`. */
+    onHitEffects?: import('../state/flow').TriggeredEffect[];
   };
   /** « Peut relancer le prochain Test auquel elle échoue » (Bénédiction de Chance, LDB 41) —
    *  consommé à l'usage au point de relance des flux de jet (engine/activeFlags). */

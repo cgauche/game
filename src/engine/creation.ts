@@ -15,9 +15,10 @@
  *    Elfe 180+2d10 ; yeux/cheveux : 2d10 sur les tables (eyes.json / hairs.json).
  */
 import { RNG, defaultRNG, roll } from './dice';
-import { CharKey, CHAR_KEYS } from './types';
+import { findTableEntry } from './tables';
+import { CharKey, CHAR_KEYS, Characteristics } from './types';
 import { Money } from './money';
-import { SpeciesData, CareerData, species as allSpecies, eyes as eyesTable, hairs as hairsTable, details as detailTables, stars as starsTable } from '../data';
+import { SpeciesData, CareerData, species as allSpecies, eyes as eyesTable, hairs as hairsTable, details as detailTables, stars as starsTable, findStar } from '../data';
 
 // Bonus de PX des choix aléatoires acceptés (citations en tête de fichier).
 export const XP_SPECIES_ACCEPTED = 20; // LDB 04 l.87
@@ -25,6 +26,7 @@ export const XP_CAREER_FIRST = 50; // LDB 05 l.191
 export const XP_CAREER_TOP3 = 25; // LDB 05 l.193
 export const XP_CHARS_KEPT = 50; // LDB 05 l.381
 export const XP_CHARS_REASSIGNED = 25; // LDB 05 l.383
+export const XP_STAR_ROLLED = 25; // ADE2 ch.03 l.36 (signe astral tiré et accepté)
 
 /**
  * Tableau des Races aléatoires (LDB 04 l.90) — DÉRIVÉ des données : chaque espèce porte sa
@@ -149,12 +151,27 @@ function rollDetail(table: { rand: number; color: Record<string, string> }[], sp
   return entry.color[sp.refChar] ?? entry.color['Humain'] ?? '';
 }
 
-/** Signe astral (table d100 « Naissance sous les Étoiles », ADE2) → libellé du signe. `rand` =
- *  borne haute cumulée ; les signes ADE2 « extra » (rand ≥ 100 déjà couvert) ne sortent jamais
- *  au tirage — sélection manuelle seulement. Flavor par défaut (cf. plan : effet mécanique ADE2
- *  à sourcer avant d'être appliqué). */
+/** Signe astral (Tableau des Signes astrologiques, ADE2 ch.03 l.40) → libellé concret du signe.
+ *  `rand` = borne haute cumulée du 1d100. L'Étoile du Sorcier (l.62) regroupe plusieurs variantes
+ *  sur la même borne, départagées par un 1d10 interne (`sub` = [min, max]) → table partagée. */
 export function rollStar(rng: RNG = defaultRNG): string {
-  const r = roll(1, 100, rng);
   const sorted = [...starsTable].sort((a, b) => a.rand - b.rand);
-  return (sorted.find((e) => r <= e.rand) ?? sorted[0]).label;
+  const r = roll(1, 100, rng);
+  const hit = sorted.find((e) => r <= e.rand) ?? sorted[0];
+  const variants = sorted.filter((e) => e.rand === hit.rand && e.sub);
+  if (variants.length > 1) {
+    const table = variants.map((e) => ({ min: e.sub![0], max: e.sub![1], label: e.label }));
+    return findTableEntry(table, roll(1, 10, rng)).label;
+  }
+  return hit.label;
+}
+
+/** Applique l'effet ADE2 d'un signe astral AUX ATTRIBUTS DE DÉPART (ch.03 l.38) : `charMod` ajuste
+ *  une Caractéristique de départ, `grantTalent` octroie un Talent via `addTalent` (le résolveur de la
+ *  création). Effet baked une fois à la création — PAS un passif continu. */
+export function applyStarEffect(starLabel: string, chars: Characteristics, addTalent: (label: string) => void): void {
+  for (const op of findStar(starLabel)?.effect ?? []) {
+    if (op.op === 'charMod') chars[op.char] += op.mod;
+    else if (op.op === 'grantTalent') addTalent(op.talent);
+  }
 }

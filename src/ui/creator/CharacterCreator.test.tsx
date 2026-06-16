@@ -7,9 +7,10 @@ import { newDraft, withCareer } from './draft';
 describe('CharacterCreator (assistant) — rendu statique', () => {
   it('étape 1 : trois zones (rail de sélection, profil, fiche vivante) + tirage d100', () => {
     const html = renderToStaticMarkup(<CharacterCreator />);
-    // Barre d'étapes
+    // Barre d'étapes — le signe astral (ADE2, règle activée par défaut) insère une étape après Caractéristiques.
     expect(html).toContain('1. Espèce');
-    expect(html).toContain('7. Récapitulatif');
+    expect(html).toContain('4. Signe astral');
+    expect(html).toContain('8. Récapitulatif');
     // Coquille 3 zones : rail (liste de sélection), détail, fiche vivante
     expect(html).toContain('creator-shell');
     expect(html).toContain('creator-rail');

@@ -99,6 +99,15 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     options: ['figurants', 'tous', 'off'],
     hint: 'Sur un coup fatal (Dégâts > PB), la cible meurt ou tombe Inconsciente sans passer par les Blessures critiques. figurants = figurants seuls (défaut) ; tous = aussi les PNJ importants ; off = personne (tout passe par les critiques). Jamais les PJ.',
   },
+  {
+    id: 'creation-signes-astraux',
+    label: 'Signes astraux à la création',
+    ref: 'ADE2 ch.03',
+    group: 'Création',
+    kind: 'flag',
+    default: true,
+    hint: 'Étape optionnelle ADE2 : un signe astral (1d100, +25 PX si le tirage est gardé) qui modifie les attributs de départ ou octroie un Talent, plus l’ascendant et les demeures célestes (flavor). Désactiver retire l’étape du créateur.',
+  },
 ];
 
 const RULES_BY_ID = new Map<string, OptionalRule>(OPTIONAL_RULES.map((r) => [r.id, r]));

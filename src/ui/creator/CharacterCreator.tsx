@@ -20,8 +20,14 @@ import {
   classes,
   findCareer,
   findSkill,
+  findSkillById,
   findTalent,
+  findTalentById,
+  skillInstanceLabel,
+  talentConcrete,
   findTrapping,
+  trappingRefLabel,
+  advancementLabel,
   trappings as allTrappings,
   levelsForCareer,
   characteristics as charData,
@@ -42,6 +48,7 @@ import { RigSprite } from '../../gameIso/rig/composeRig';
 import { DEFS } from '../../gameIso/sprites';
 import { AppearancePanel } from '../AppearancePanel';
 import { CodexRef } from '../compendium/CodexRef';
+import { opSummary } from '../editor/GameOpEditor';
 import type { Appearance } from '../../gameIso/rig/appearance';
 import { CreatorSummary, previewHero } from './CreatorSummary';
 import {
@@ -67,6 +74,11 @@ import {
   draftWealth,
   rolledDetails,
   validateStep,
+  stepIds,
+  type StepId,
+  starXp,
+  rollDraftStar,
+  rollDraftAstrology,
   buildHero,
   draftFromHero,
   probeHero,
@@ -77,7 +89,19 @@ import {
 } from './draft';
 import { wildcardSpecs } from '../../engine/careerSlots';
 
-const STEPS = ['Espèce', 'Carrière', 'Caractéristiques', 'Compétences & Talents', 'Possessions', 'Détails', 'Récapitulatif'];
+/** Métadonnées d'étape : libellé FR + fabrique de zones (rail/main). SOURCE UNIQUE du rendu, indexée
+ *  par `StepId` stable — l'ordre ET la présence des étapes viennent de `stepIds()` (draft.ts, qui
+ *  insère « Signe astral » selon la règle optionnelle ADE2), jamais d'un index positionnel codé. */
+const STEP_META: Record<StepId, { label: string; zone: (p: StepProps) => { rail: ReactNode; main: ReactNode } }> = {
+  species: { label: 'Espèce', zone: SpeciesZones },
+  career: { label: 'Carrière', zone: CareerZones },
+  chars: { label: 'Caractéristiques', zone: CharZones },
+  star: { label: 'Signe astral', zone: StarZones },
+  skills: { label: 'Compétences & Talents', zone: SkillZones },
+  trappings: { label: 'Possessions', zone: TrappingZones },
+  details: { label: 'Détails', zone: DetailZones },
+  recap: { label: 'Récapitulatif', zone: ({ d }) => RecapZones({ d }) },
+};
 
 /** Espèces mises en avant : celles du Livre de base — dérivé des données, les suppléments
  *  apparaissent automatiquement à la suite. */
@@ -225,7 +249,9 @@ export function CharacterCreator() {
   const [d, setD] = useState<CreatorDraft>(() => editing?.draft ?? newDraft());
   const [step, setStep] = useState(0);
 
-  const err = validateStep(d, step + 1);
+  const ids = stepIds();
+  const curId = ids[step] ?? ids[ids.length - 1]; // garde-fou si la règle change le nombre d'étapes
+  const err = validateStep(d, curId);
   const canNext = err == null;
 
   const closeCreator = () => {
@@ -248,15 +274,7 @@ export function CharacterCreator() {
     closeCreator();
   };
 
-  const zones: { rail: ReactNode; main: ReactNode }[] = [
-    SpeciesZones({ d, setD }),
-    CareerZones({ d, setD }),
-    CharZones({ d, setD }),
-    SkillZones({ d, setD }),
-    TrappingZones({ d, setD }),
-    DetailZones({ d, setD }),
-    RecapZones({ d }),
-  ];
+  const zone = STEP_META[curId].zone({ d, setD });
 
   return (
     <div className="screen creator">
@@ -266,24 +284,24 @@ export function CharacterCreator() {
         </button>
         <h2>{editing ? 'Modifier le personnage' : 'Créateur de personnage'}</h2>
         <div className="wizard-steps">
-          {STEPS.map((label, i) => (
+          {ids.map((id, i) => (
             <button
-              key={label}
+              key={id}
               className={`step-chip ${i === step ? 'active' : ''} ${i < step ? 'done' : ''}`}
               disabled={i > step}
               onClick={() => setStep(i)}
             >
-              {i + 1}. {label}
+              {i + 1}. {STEP_META[id].label}
             </button>
           ))}
         </div>
         {/* Mobile : indicateur compact (pas de rangée défilante → pas de scrollbar). */}
         <div className="steps-progress">
           <span>
-            Étape <b>{step + 1}</b>/{STEPS.length} · {STEPS[step]}
+            Étape <b>{step + 1}</b>/{ids.length} · {STEP_META[curId].label}
           </span>
           <div className="steps-bar">
-            <i style={{ width: `${((step + 1) / STEPS.length) * 100}%` }} />
+            <i style={{ width: `${((step + 1) / ids.length) * 100}%` }} />
           </div>
         </div>
       </header>
@@ -296,8 +314,8 @@ export function CharacterCreator() {
       )}
 
       <div className="creator-shell">
-        <aside className="creator-rail">{zones[step].rail}</aside>
-        <main className="creator-main">{zones[step].main}</main>
+        <aside className="creator-rail">{zone.rail}</aside>
+        <main className="creator-main">{zone.main}</main>
         <CreatorSummary d={d} step={step} />
       </div>
 
@@ -308,7 +326,7 @@ export function CharacterCreator() {
         <span className="hint wizard-hint" style={{ color: err ? 'var(--gold)' : undefined }}>
           {err ?? ''}
         </span>
-        {step < STEPS.length - 1 ? (
+        {step < ids.length - 1 ? (
           <button className="btn btn-primary" disabled={!canNext} onClick={() => setStep(step + 1)}>
             Suivant →
           </button>
@@ -427,14 +445,14 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
       </Section>
       <Section title="Compétences d'espèce">
         <div className="skill-tags">
-          {sp.skills.map((s) => (
+          {sp.skills.map((a) => advancementLabel('skills', a)).map((s) => (
             <SkillChip key={s} label={s} />
           ))}
         </div>
       </Section>
       <Section title="Talents d'espèce">
         <div className="skill-tags">
-          {sp.talents.map((t) => (
+          {sp.talents.map((a) => advancementLabel('talents', a)).map((t) => (
             <TalentEntryChips key={t} entry={t} />
           ))}
         </div>
@@ -641,14 +659,14 @@ function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
           </Section>
           <Section title="Compétences du Niveau 1">
             <div className="skill-tags">
-              {lvl1.skills.map((s) => (
+              {lvl1.skills.map((a) => advancementLabel('skills', a)).map((s) => (
                 <SkillChip key={s} label={s} />
               ))}
             </div>
           </Section>
           <Section title="Talents du Niveau 1">
             <div className="skill-tags">
-              {lvl1.talents.map((t) => (
+              {lvl1.talents.map((a) => advancementLabel('talents', a)).map((t) => (
                 <TalentEntryChips key={t} entry={t} />
               ))}
             </div>
@@ -816,6 +834,67 @@ function SpecSelect({ d, setD, raw }: StepProps & { raw: string }) {
   );
 }
 
+// ════ 3bis) Signe astral (ADE2 ch.03, optionnel) — rail : tirage/choix + effet ; détail : sens + astrologie ════
+function StarZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode } {
+  const sign = d.star ? starsTable.find((s) => s.label === d.star) : undefined;
+  // Talent « (Au choix) » octroyé par le signe (ex. Maître artisan) → spec à préciser (réutilise specChoices).
+  const grantChoice = sign?.effect?.flatMap((o) => (o.op === 'grantTalent' && isUnresolvedChoice(o.talent) ? [o.talent] : []))[0];
+  const grantOpts = grantChoice ? specOptionsFor(grantChoice) : [];
+  const xp = starXp(d);
+
+  const rail = (
+    <Section title="Signe astral" right={<button className="btn small" onClick={() => setD(rollDraftStar(d))}>🎲 Tirer</button>}>
+      <label>
+        Signe
+        <select value={d.star ?? ''} onChange={(e) => setD({ ...d, star: e.target.value || undefined })}>
+          <option value="">— aucun —</option>
+          {starsTable.map((s) => (
+            <option key={s.label} value={s.label}>{s.label}</option>
+          ))}
+        </select>
+      </label>
+      {sign && (
+        <>
+          <p className="hint" style={{ margin: '2px 0 0' }}>{[sign.signe, sign.dates, sign.dieux && `Dieu : ${sign.dieux}`].filter(Boolean).join(' · ')}</p>
+          {!!sign.effect?.length && <ul className="trapping-list">{sign.effect.map((o, i) => <li key={i}>{opSummary(o)}</li>)}</ul>}
+          <p className="hint" style={{ margin: '4px 0 0', color: xp ? 'var(--gold)' : undefined }}>{xp ? `Tirage gardé : +${xp} PX` : 'Choix libre : +0 PX'}</p>
+          {grantChoice && grantOpts.length > 0 && (
+            <label>
+              {splitLabel(grantChoice).name}
+              <select
+                value={d.specChoices[grantChoice] ?? ''}
+                onChange={(e) => setD({ ...d, specChoices: { ...d.specChoices, [grantChoice]: e.target.value ? concreteLabel(splitLabel(grantChoice).name, e.target.value) : '' } })}
+              >
+                <option value="">— au choix —</option>
+                {grantOpts.map((o) => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </label>
+          )}
+        </>
+      )}
+    </Section>
+  );
+
+  const main = (
+    <>
+      <Section title={sign ? sign.label : 'Sous quel signe êtes-vous né ?'}>
+        {sign ? <LoreText html={sign.desc} /> : <p className="hint">Gardez le tirage : +25 PX · Choix libre : +0 PX.</p>}
+      </Section>
+      <Section title="Astrologie (facultatif)" right={<button className="btn small" onClick={() => setD(rollDraftAstrology(d))}>🎲 Thème astral</button>}>
+        {d.ascendant || d.dwellings?.length ? (
+          <>
+            {d.ascendant && <p style={{ margin: '0 0 4px' }}><b>Ascendant :</b> {d.ascendant}</p>}
+            {d.dwellings?.length ? <ul className="trapping-list">{d.dwellings.map((h) => <li key={h.house}><b>{h.house} :</b> {h.sign}</li>)}</ul> : null}
+          </>
+        ) : (
+          <p className="hint">Ascendant + 5 demeures célestes — pur roleplay (aucun effet de jeu).</p>
+        )}
+      </Section>
+    </>
+  );
+  return { rail, main };
+}
+
 // ════ 4) Compétences & Talents (LDB 05 l.493-555) — rail : espèce ; détail : carrière ════
 function SkillZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode } {
   const sp = draftSpecies(d);
@@ -847,10 +926,10 @@ function SkillZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode 
           </b>
         }
       >
-        <button className="btn small" style={{ marginBottom: 8 }} onClick={() => setD({ ...d, speciesPlus5: sp.skills.slice(0, 3), speciesPlus3: sp.skills.slice(3, 6) })}>
+        <button className="btn small" style={{ marginBottom: 8 }} onClick={() => setD({ ...d, speciesPlus5: sp.skills.slice(0, 3).map((a) => advancementLabel('skills', a)), speciesPlus3: sp.skills.slice(3, 6).map((a) => advancementLabel('skills', a)) })}>
           Répartition par défaut
         </button>
-        {sp.skills.map((raw) => {
+        {sp.skills.map((a) => advancementLabel('skills', a)).map((raw) => {
           const { k, v } = charOf(raw);
           const adv = d.speciesPlus5.includes(raw) ? 5 : d.speciesPlus3.includes(raw) ? 3 : 0;
           return (
@@ -875,7 +954,7 @@ function SkillZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode 
       </Section>
       <Section title="Talents d'espèce">
         <div className="talent-choices">
-          {sp.talents.map((entry) => {
+          {sp.talents.map((a) => advancementLabel('talents', a)).map((entry) => {
             const options = splitTopLevelOu(entry);
             if (options.length > 1) {
               return (
@@ -908,7 +987,7 @@ function SkillZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode 
           .filter((label) => {
             const { name, spec } = splitLabel(label);
             const specs = wildcardSpecs(name);
-            return spec != null && specs.length > 0 && !sp.talents.some((e) => e.includes(label));
+            return spec != null && specs.length > 0 && !sp.talents.map((a) => advancementLabel('talents', a)).some((e) => e.includes(label));
           })
           .map((label) => {
             const { name, spec } = splitLabel(label);
@@ -987,7 +1066,7 @@ function SkillZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode 
                   </select>
                 )}
                 {maxed && <em className="hint">Maxi atteint (déjà possédé)</em>}
-                {!maxed && selected && probe.talents.some((t) => t.name === selected) && <em className="hint">déjà possédé via l'espèce → passera ×2</em>}
+                {!maxed && selected && probe.talents.some((t) => talentConcrete(t) === selected) && <em className="hint">déjà possédé via l'espèce → passera ×2</em>}
               </label>
               <p className="hint talent-desc">{talentTip(selected ?? entry)}</p>
             </div>
@@ -1053,7 +1132,7 @@ function TrappingZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNo
   const level = draftLevel(d);
   const klass = classes.find((c) => c.label === findCareer(d.careerLabel)?.class);
   const wealth = draftWealth(d);
-  const careerTrappings = level?.trappings ?? [];
+  const careerTrappings = (level?.trappings ?? []).map(trappingRefLabel); // TrappingRef[] → libellés
   const item = (t: string) => {
     const meta = trappingMeta(t);
     return (
@@ -1095,7 +1174,7 @@ function TrappingZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNo
   const main = (
     <>
       <Section title={`Équipement de Classe (${klass?.label ?? '—'})`}>
-        <ul className="trapping-list">{(klass?.trappings ?? []).map(item)}</ul>
+        <ul className="trapping-list">{(klass?.trappings ?? []).map(trappingRefLabel).map(item)}</ul>
       </Section>
       <Section title={`Équipement de Carrière (${level?.label ?? '—'})`}>
         <ul className="trapping-list">{careerTrappings.filter((t) => t !== 'Arme (Au choix)').map(item)}</ul>
@@ -1116,7 +1195,7 @@ function DetailZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
           className="btn small"
           onClick={() => {
             const r = rolledDetails(d);
-            setD({ ...d, age: r.age, height: r.height, eyes: r.eyes, hair: r.hair, star: r.star });
+            setD({ ...d, age: r.age, height: r.height, eyes: r.eyes, hair: r.hair });
           }}
         >
           🎲 Tirer
@@ -1139,19 +1218,6 @@ function DetailZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
         Cheveux
         <input value={d.hair ?? ''} onChange={(e) => setD({ ...d, hair: e.target.value })} />
       </label>
-      <label>
-        Signe astral
-        <select value={d.star ?? ''} onChange={(e) => setD({ ...d, star: e.target.value || undefined })}>
-          <option value="">— aucun —</option>
-          {starsTable.map((s) => (
-            <option key={s.label} value={s.label}>{s.label}</option>
-          ))}
-        </select>
-      </label>
-      {(() => {
-        const s = starsTable.find((x) => x.label === d.star);
-        return s ? <p className="hint" style={{ margin: '2px 0 0' }}>{[s.signe, s.dates].filter(Boolean).join(' · ')}</p> : null;
-      })()}
     </Section>
   );
   const main = (
@@ -1212,6 +1278,7 @@ function RecapZones({ d }: { d: CreatorDraft }): { rail: ReactNode; main: ReactN
         <li>Espèce aléatoire : +{speciesXp(d)} PX</li>
         <li>Carrière aléatoire : +{careerXp(d)} PX</li>
         <li>Caractéristiques : +{charsXp(d)} PX</li>
+        {stepIds().includes('star') && <li>Signe astral : +{starXp(d)} PX</li>}
       </ul>
       <p className="hint">À dépenser dans la fiche (onglet Avancement), d'abord dans votre Niveau de Carrière.</p>
     </Section>
@@ -1243,9 +1310,9 @@ function RecapZones({ d }: { d: CreatorDraft }): { rail: ReactNode; main: ReactN
       <Section title="Talents">
         <div className="skill-tags">
           {(hero?.talents ?? []).map((t) => (
-            <span key={t.name} className="tag talent">
-              <CodexRef category="talents" label={splitLabel(t.name).name}>
-                {t.name}
+            <span key={`${t.talentId}|${t.spec ?? ''}`} className="tag talent">
+              <CodexRef category="talents" label={findTalentById(t.talentId)?.label ?? t.talentId}>
+                {talentConcrete(t)}
                 {t.times > 1 ? ` ×${t.times}` : ''}
               </CodexRef>
             </span>
@@ -1257,10 +1324,9 @@ function RecapZones({ d }: { d: CreatorDraft }): { rail: ReactNode; main: ReactN
           {(hero?.skills ?? [])
             .filter((s) => s.advances > 0)
             .map((s) => (
-              <span key={`${s.name}|${s.spec ?? ''}`} className="tag">
-                <CodexRef category="skills" label={s.name}>
-                  {s.name}
-                  {s.spec ? ` (${s.spec})` : ''} +{s.advances}
+              <span key={`${s.skillId}|${s.spec ?? ''}`} className="tag">
+                <CodexRef category="skills" label={findSkillById(s.skillId)?.label ?? s.skillId}>
+                  {skillInstanceLabel(s)} +{s.advances}
                 </CodexRef>
               </span>
             ))}

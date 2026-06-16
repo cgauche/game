@@ -31,13 +31,15 @@ import {
   XP_CAREER_TOP3,
   XP_CHARS_KEPT,
   XP_CHARS_REASSIGNED,
+  XP_STAR_ROLLED,
 } from '../../engine/creation';
+import { rule } from '../../engine/policy';
 import { createHero, resolveSpeciesTalents } from '../../engine/character';
 import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLevelOu, talentMaxReached, wildcardSpecs } from '../../engine/careerSlots';
 import { careerSkillAdditions, talentCharBonus } from '../../engine/talentEffects';
 import { castingKindOf } from '../../engine/combatFeatures/dispatch';
 import { bonus } from '../../engine/characteristics';
-import { findSpecies, careers, careersForSpecies, species as allSpecies, levelsForCareer, SpeciesData, CareerLevelData } from '../../data';
+import { findSpecies, careers, careersForSpecies, species as allSpecies, levelsForCareer, findSpell, advancementLabel, SpeciesData, CareerLevelData } from '../../data';
 import type { Appearance } from '../../gameIso/rig/appearance';
 
 export type CharMode = 'rolled' | 'reassigned' | 'pointBuy';
@@ -91,8 +93,14 @@ export interface CreatorDraft {
   height?: number;
   eyes?: string;
   hair?: string;
-  /** Signe astral (ADE2) — libellé du signe ; flavor à la création. */
+  // 3bis) Signe astral (ADE2 ch.03 — étape optionnelle, gated par la règle creation-signes-astraux)
+  /** Signe astral choisi (libellé concret) — son `effect` est appliqué aux attributs de départ. */
   star?: string;
+  /** Signe TIRÉ (1d100 figé) : si `star` lui reste égal → +25 PX (RAW l.36) ; un choix libre l'écarte. */
+  starRoll?: string;
+  /** Ascendant + 5 demeures célestes (ADE2 l.331-360) — flavor pur, aucun effet mécanique. */
+  ascendant?: string;
+  dwellings?: { house: string; sign: string }[];
   sex: 'M' | 'F';
   build: number;
   appSeed: number;
@@ -165,6 +173,8 @@ export function draftFromHero(hero: Combatant): CreatorDraft {
     eyes: hero.details?.eyes,
     hair: hero.details?.hair,
     star: hero.star,
+    ascendant: hero.details?.ascendant,
+    dwellings: hero.details?.dwellings,
     sex: hero.appearance?.sex ?? d.sex,
     build: hero.appearance?.build ?? d.build,
     appSeed: hero.appearance?.seed ?? d.appSeed,
@@ -257,7 +267,27 @@ export function charsXp(d: CreatorDraft): number {
   return d.charMode === 'rolled' ? XP_CHARS_KEPT : XP_CHARS_REASSIGNED;
 }
 
-export const xpTotal = (d: CreatorDraft): number => speciesXp(d) + careerXp(d) + charsXp(d);
+/** PX du signe astral : +25 si le signe choisi reste celui qui a été TIRÉ (ADE2 ch.03 l.36), sinon 0. */
+export const starXp = (d: CreatorDraft): number => (d.starRoll && d.star === d.starRoll ? XP_STAR_ROLLED : 0);
+
+export const xpTotal = (d: CreatorDraft): number => speciesXp(d) + careerXp(d) + charsXp(d) + starXp(d);
+
+// ── 3bis) Signe astral (ADE2 ch.03) ──
+/** 5 demeures célestes (ADE2 l.342-350) — ossature narrative FIXE de la lecture astrale (flavor pur). */
+const CELESTIAL_HOUSES = ['Demeure du Sens', 'Demeure des Épreuves', 'Demeure de la Pensée', "Demeure de l'Amour", "Demeure de l'Argent"];
+
+/** Tirage 1d100 FIGÉ du signe (anti-savescum, comme l'espèce) : on le garde (+25 PX) ou on choisit
+ *  librement ensuite (+0 PX, RAW l.36). Pas de relance — RAW n'en offre aucune. */
+export function rollDraftStar(d: CreatorDraft): CreatorDraft {
+  const label = rollStar(makeRNG(d.seed ^ 0x57a2));
+  return { ...d, starRoll: label, star: label };
+}
+
+/** Ascendant + demeures célestes (ADE2 l.331-360) — flavor pur, tirages figés par le seed. */
+export function rollDraftAstrology(d: CreatorDraft): CreatorDraft {
+  const rng = makeRNG(d.seed ^ 0xa57e);
+  return { ...d, ascendant: rollStar(rng), dwellings: CELESTIAL_HOUSES.map((house) => ({ house, sign: rollStar(rng) })) };
+}
 
 // ── 4) Compétences & Talents ──
 /** Talents d'espèce résolus (choix appliqués, tirages aléatoires FIGÉS par le seed). */
@@ -284,7 +314,7 @@ export function probeHero(d: CreatorDraft, withCareerTalent = true): Combatant {
 
 /** Entrées de compétences de carrière allouables : les 8 du Niveau + ajouts de talents (LDB 10). */
 export function careerSkillEntries(d: CreatorDraft): string[] {
-  const base = draftLevel(d)?.skills ?? [];
+  const base = (draftLevel(d)?.skills ?? []).map((a) => advancementLabel('skills', a));
   return [...base, ...careerSkillAdditions(probeHero(d))];
 }
 
@@ -322,7 +352,8 @@ export function pettySpellQuota(d: CreatorDraft): number {
 /** Options du talent de carrière (entrées brutes du Niveau 1) : libellé sélectionné + Maxi. */
 export function careerTalentOptions(d: CreatorDraft): { entry: string; choices: string[] | null; selected: string | null; maxed: boolean }[] {
   const probe = probeHero(d, false);
-  return (draftLevel(d)?.talents ?? []).map((entry) => {
+  return (draftLevel(d)?.talents ?? []).map((ref) => {
+    const entry = advancementLabel('talents', ref);
     const choices = talentEntryChoices(entry);
     const selected = choices ? (d.specChoices[entry] && choices.includes(d.specChoices[entry]) ? d.specChoices[entry] : null) : entry;
     return { entry, choices, selected, maxed: selected ? talentMaxReached(probe, selected) : false };
@@ -336,22 +367,33 @@ export function draftWealth(d: CreatorDraft): Money {
 }
 
 // ── 6) Détails ──
-export function rolledDetails(d: CreatorDraft): { age: number; height: number; eyes: string; hair: string; star: string } {
+export function rolledDetails(d: CreatorDraft): { age: number; height: number; eyes: string; hair: string } {
   const sp = draftSpecies(d);
   const rng = makeRNG(d.seed ^ 0xde7a);
-  return { age: rollAge(sp, rng), height: rollHeight(sp, rng), eyes: rollEyes(sp, rng), hair: rollHair(sp, rng), star: rollStar(rng) };
+  return { age: rollAge(sp, rng), height: rollHeight(sp, rng), eyes: rollEyes(sp, rng), hair: rollHair(sp, rng) };
+}
+
+export type StepId = 'species' | 'career' | 'chars' | 'star' | 'skills' | 'trappings' | 'details' | 'recap';
+
+/** Étapes du créateur dans l'ordre — `star` insérée après `chars` quand la règle optionnelle ADE2
+ *  `creation-signes-astraux` est active. SOURCE UNIQUE de l'ordre ET de la présence des étapes (le
+ *  rendu et la validation en dérivent — plus d'index positionnel fragile). */
+export function stepIds(): StepId[] {
+  const ids: StepId[] = ['species', 'career', 'chars', 'skills', 'trappings', 'details', 'recap'];
+  if (rule('creation-signes-astraux')) ids.splice(3, 0, 'star');
+  return ids;
 }
 
 // ── Validation par étape ──
-export function validateStep(d: CreatorDraft, step: number): string | null {
+export function validateStep(d: CreatorDraft, id: StepId): string | null {
   const sp = draftSpecies(d);
   const level = draftLevel(d);
-  switch (step) {
-    case 2: {
+  switch (id) {
+    case 'career': {
       if (!level) return 'Carrière sans Niveau 1 dans les données.';
       return null;
     }
-    case 3: {
+    case 'chars': {
       if (d.charMode === 'pointBuy') {
         const v = validatePointBuy(d.pointBuy as Record<CharKey, number>);
         if (!v.ok) return `Répartition des 100 Points : ${v.reason}.`;
@@ -367,14 +409,15 @@ export function validateStep(d: CreatorDraft, step: number): string | null {
       if (split !== sp.fate.extra) return `Répartissez les ${sp.fate.extra} points entre Destin et Résilience (actuel : ${split}).`;
       return null;
     }
-    case 4: {
+    case 'skills': {
       if (d.speciesPlus5.length !== 3 || d.speciesPlus3.length !== 3) return 'Choisissez 3 Compétences d\'espèce à +5 et 3 à +3.';
       if (d.speciesPlus5.some((s) => d.speciesPlus3.includes(s))) return 'Une Compétence d\'espèce ne peut pas être à la fois +5 et +3.';
       for (const raw of [...d.speciesPlus5, ...d.speciesPlus3]) {
         if (isUnresolvedChoice(raw) && !d.specChoices[raw]) return `Choisissez la Spécialisation de « ${raw} ».`;
       }
       // Entrées d'espèce « A ou B » : un choix requis quand il y en a.
-      for (const entry of sp.talents) {
+      for (const ref of sp.talents) {
+        const entry = advancementLabel('talents', ref);
         if (splitTopLevelOu(entry).length > 1 && !d.speciesTalentChoices[entry]) return `Choisissez : « ${entry} ».`;
       }
       const entries = careerSkillEntries(d);
@@ -393,7 +436,7 @@ export function validateStep(d: CreatorDraft, step: number): string | null {
       }
       return null;
     }
-    case 6: {
+    case 'details': {
       if (!d.name.trim()) return 'Donnez un nom à votre personnage.';
       return null;
     }
@@ -405,8 +448,8 @@ export function validateStep(d: CreatorDraft, step: number): string | null {
 // ── Construction finale ──
 export function buildHero(d: CreatorDraft, id?: string): Combatant {
   const sp = draftSpecies(d);
-  const plus5 = d.speciesPlus5.length === 3 ? d.speciesPlus5 : sp.skills.slice(0, 3);
-  const plus3 = d.speciesPlus3.length === 3 ? d.speciesPlus3 : sp.skills.slice(3, 6);
+  const plus5 = d.speciesPlus5.length === 3 ? d.speciesPlus5 : sp.skills.slice(0, 3).map((a) => advancementLabel('skills', a));
+  const plus3 = d.speciesPlus3.length === 3 ? d.speciesPlus3 : sp.skills.slice(3, 6).map((a) => advancementLabel('skills', a));
   const hero = createHero({
     speciesLabel: d.speciesLabel,
     careerLabel: d.careerLabel,
@@ -418,6 +461,7 @@ export function buildHero(d: CreatorDraft, id?: string): Combatant {
     speciesSkillAdvances: { plus5, plus3 },
     speciesTalentsResolved: resolvedSpeciesTalents(d),
     specChoices: d.specChoices,
+    starLabel: d.star,
     fateSplit: d.fateSplit,
     xpBonus: xpTotal(d),
     details: {
@@ -427,6 +471,8 @@ export function buildHero(d: CreatorDraft, id?: string): Combatant {
       hair: d.hair,
       ambitionShort: d.ambitionShort.trim() || undefined,
       ambitionLong: d.ambitionLong.trim() || undefined,
+      ascendant: d.ascendant,
+      dwellings: d.dwellings?.length ? d.dwellings : undefined,
     },
     motivation: d.motivation.trim() || undefined,
     rng: makeRNG(d.seed ^ 0xf17a1),
@@ -438,8 +484,9 @@ export function buildHero(d: CreatorDraft, id?: string): Combatant {
   // (Les Bénédictions de Béni sont déjà octroyées par applyTalentAcquisition dans createHero.)
   const quota = pettySpellQuota(d);
   if (quota && d.pettySpells.length) {
-    const picked = d.pettySpells.slice(0, quota).filter((s) => !(hero.spells ?? []).includes(s));
-    hero.spells = [...(hero.spells ?? []), ...picked];
+    // pettySpells = libellés (choix UI) → ids runtime ; dédup par id.
+    const pickedIds = d.pettySpells.slice(0, quota).map((l) => findSpell(l)?.id ?? l).filter((id) => !(hero.spells ?? []).includes(id));
+    hero.spells = [...(hero.spells ?? []), ...pickedIds];
   }
   return hero;
 }

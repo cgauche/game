@@ -14,11 +14,13 @@ import {
   rollEyes,
   rollHair,
   rollStar,
+  applyStarEffect,
   XP_SPECIES_ACCEPTED,
   XP_CAREER_FIRST,
   XP_CAREER_TOP3,
   XP_CHARS_KEPT,
   XP_CHARS_REASSIGNED,
+  XP_STAR_ROLLED,
 } from './creation';
 import { careers, findSpecies, stars } from '../data';
 
@@ -46,6 +48,52 @@ describe('rollStar — signe astral (ADE2, table d100)', () => {
 
   it('la sentinelle de test « TEST » est absente des données émises', () => {
     expect(stars.some((s) => s.label === 'TEST' || s.rand > 100)).toBe(false);
+  });
+
+  it('l\'Étoile du Sorcier : le 1d10 interne produit les 4 variantes (ADE2 l.62)', () => {
+    const variants = stars.filter((s) => /Étoile du Sorcier/.test(s.label)).map((s) => s.label);
+    expect(variants.length).toBe(4);
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 3000; seed++) {
+      const r = rollStar(makeRNG(seed));
+      if (/Étoile du Sorcier/.test(r)) {
+        expect(variants).toContain(r); // jamais une variante hors des 4 bandes
+        seen.add(r);
+      }
+    }
+    expect(seen.size).toBe(4); // les 4 bandes du d10 sont atteignables
+  });
+});
+
+describe('applyStarEffect — effet d\'un signe aux ATTRIBUTS DE DÉPART (ADE2 ch.03 l.38)', () => {
+  const baseChars = () => Object.fromEntries(CHAR_KEYS.map((k) => [k, 30])) as Record<CharKey, number>;
+
+  it('XP_STAR_ROLLED = 25 (l.36)', () => {
+    expect(XP_STAR_ROLLED).toBe(25);
+  });
+
+  it('applique les charMod (±carac) — Wymund : +2 Soc, +2 I, -3 Int', () => {
+    const chars = baseChars();
+    const talents: string[] = [];
+    applyStarEffect("Wymund l'Anachorète", chars, (t) => talents.push(t));
+    expect(chars.Soc).toBe(32);
+    expect(chars.I).toBe(32);
+    expect(chars.Int).toBe(27);
+    expect(talents).toEqual([]);
+  });
+
+  it('octroie le Talent + applique la pénalité — Mummit le Fou : Chanceux, -3 FM', () => {
+    const chars = baseChars();
+    const talents: string[] = [];
+    applyStarEffect('Mummit le Fou', chars, (t) => talents.push(t));
+    expect(chars.FM).toBe(27);
+    expect(talents).toEqual(['Chanceux']);
+  });
+
+  it('signe inconnu = aucun effet (pas d\'appel à addTalent)', () => {
+    const chars = baseChars();
+    applyStarEffect('Inexistant', chars, () => { throw new Error('addTalent ne doit pas être appelé'); });
+    expect(CHAR_KEYS.every((k) => chars[k] === 30)).toBe(true);
   });
 });
 

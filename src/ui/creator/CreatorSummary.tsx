@@ -10,7 +10,8 @@ import { formatMoney } from '../../engine/money';
 import { RigSprite } from '../../gameIso/rig/composeRig';
 import { DEFS } from '../../gameIso/sprites';
 import type { Appearance } from '../../gameIso/rig/appearance';
-import { CreatorDraft, buildHero, draftSpecies, draftLevel, draftWealth, draftChars, xpTotal, speciesXp, careerXp, charsXp } from './draft';
+import { skillInstanceLabel, talentConcrete } from '../../data';
+import { CreatorDraft, buildHero, draftSpecies, draftLevel, draftWealth, draftChars, xpTotal, speciesXp, careerXp, charsXp, starXp, stepIds } from './draft';
 
 export function previewHero(d: CreatorDraft): Combatant | null {
   try {
@@ -74,7 +75,7 @@ export function CreatorSummary({ d, step }: { d: CreatorDraft; step: number }) {
         </span>
       </div>
 
-      <div className="creator-xp" title={`Espèce +${speciesXp(d)} · Carrière +${careerXp(d)} · Caractéristiques +${charsXp(d)}`}>
+      <div className="creator-xp" title={`Espèce +${speciesXp(d)} · Carrière +${careerXp(d)} · Caractéristiques +${charsXp(d)}${stepIds().includes('star') ? ` · Signe +${starXp(d)}` : ''}`}>
         PX bonus de création : <b>+{xpTotal(d)}</b>
       </div>
 
@@ -83,8 +84,8 @@ export function CreatorSummary({ d, step }: { d: CreatorDraft; step: number }) {
           <div className="mini-title">Talents</div>
           <div className="skill-tags">
             {hero.talents.map((t) => (
-              <span className="tag talent" key={t.name}>
-                {t.name}
+              <span className="tag talent" key={`${t.talentId}|${t.spec ?? ''}`}>
+                {talentConcrete(t)}
                 {t.times > 1 ? ` ×${t.times}` : ''}
               </span>
             ))}
@@ -95,9 +96,8 @@ export function CreatorSummary({ d, step }: { d: CreatorDraft; step: number }) {
               .filter((s) => s.advances > 0)
               .slice(0, 14)
               .map((s) => (
-                <span className="tag" key={`${s.name}|${s.spec ?? ''}`}>
-                  {s.name}
-                  {s.spec ? ` (${s.spec})` : ''} +{s.advances}
+                <span className="tag" key={`${s.skillId}|${s.spec ?? ''}`}>
+                  {skillInstanceLabel(s)} +{s.advances}
                 </span>
               ))}
           </div>
