@@ -7,6 +7,10 @@ import { testScene } from '../scenes/test-fixture';
 
 // Colère des dieux / Incantation Imparfaite — conséquence INLINE dans la séquence partagée
 // (« un jet = une modale » : étape d'affichage, plus de RevealModal séparée).
+// FOLD (2026-06-16) : la conséquence est désormais APPENDUE à la cascade d'incantation ACTIVE
+// (parité avec le Critique d'attaque) via `pushCombatStep` ; hors cascade d'incantation (ces tests
+// appellent `applyMiscast` à nu, sans openCastCascade) le fallback démarre une cascade GÉNÉRIQUE
+// « Conséquences » et l'identité Colère/Imparfaite vit sur l'ÉTAPE (label/icon), plus sur le titre.
 describe('Miscast en séquence (store)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -38,9 +42,9 @@ describe('Miscast en séquence (store)', () => {
     useGame.setState({ pendingReveals: [], pendingCascade: null });
     applyMiscast(useGame.getState, useGame.setState, hero, 'colere');
     const c = useGame.getState().pendingCascade;
-    expect(c?.title).toBe('Colère des dieux');
     expect(c?.purpose).toBe('combat');
     expect(c?.participants[0].kind).toBe('miscast');
+    expect(c?.participants[0].label).toBe('Colère des dieux'); // identité sur l'ÉTAPE (fold), pas le titre de cascade
     expect(c?.participants[0].outcome?.length).toBeGreaterThan(0); // lignes de la table en affichage
     expect(useGame.getState().pendingReveals).toEqual([]); // plus de RevealModal séparée
   });
@@ -50,8 +54,10 @@ describe('Miscast en séquence (store)', () => {
     const { hero } = battle();
     useGame.setState({ pendingReveals: [], pendingCascade: null });
     applyMiscast(useGame.getState, useGame.setState, hero, 'mineure');
-    expect(useGame.getState().pendingCascade?.title).toBe('Incantation Imparfaite');
-    expect(useGame.getState().pendingCascade?.participants[0].kind).toBe('miscast');
+    const c = useGame.getState().pendingCascade;
+    expect(c?.purpose).toBe('combat');
+    expect(c?.participants[0].kind).toBe('miscast');
+    expect(c?.participants[0].label).toBe('Imparfaite'); // identité Imparfaite sur l'ÉTAPE (fold)
   });
 
   it('une Maladresse d’un ENNEMI n’ouvre NI séquence NI révélation (instantané)', () => {

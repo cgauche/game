@@ -1672,7 +1672,15 @@ export const useGame = create<GameState>((set, get) => ({
         && openCastOpposition(get, set, pc, [target, ...extras])) {
       return;
     }
-    set({ pendingCast: null, pendingCascade: null }); // TERMINAL : ferme la situation d'incantation (data + cascade-hôte) AVANT applyCast (un Critique de Sort y rouvre sa propre cascade Imparfaite)
+    // FOLD : on ne ferme PLUS la cascade d'incantation ici — seulement le JET (CastModal disparaît).
+    // La cascade `purpose:'combat'` (étape `jet:'cast'`) reste ACTIVE pour qu'un Critique de Sort
+    // (pushReveal 'critical') ou une Imparfaite/Colère (pushCombatStep) s'y APPENDENT comme l'attaque.
+    // On repère l'étape `jet:'cast'` SOUS le curseur AVANT applyCast (présente seulement si l'incantation
+    // a été ouverte par openCastCascade ; absente quand un test/IA pose pendingCast à la main).
+    const cascBefore = get().pendingCascade;
+    const castStepIdx = cascBefore && cascBefore.purpose === 'combat' && cascBefore.participants[cascBefore.cursor]?.jet === 'cast'
+      ? cascBefore.cursor : -1;
+    set({ pendingCast: null }); // ferme le JET ; la cascade d'incantation reste active (cursor sur 'cast')
     if (caster && target && spell) {
       applyCast(get, set, caster, target, spell, pc.result, pc.missile, pc.focused, pc.critChoice, {
         durationMult: 1 + (pc.overcast?.duration ?? 0),
@@ -1681,8 +1689,20 @@ export const useGame = create<GameState>((set, get) => ({
         opposedOutcome: pc.opposedOutcome,
       });
     }
-    // Lanceur ENNEMI (modale témoin) : le tour de l'IA était suspendu → reprise. No-op si une
-    // autre interaction bloquante s'est ouverte (Destin, révélations) — elle reprendra elle-même.
+    // Avance la cascade au-delà de l'étape `jet:'cast'` (résolue, CastModal éteint) : des conséquences
+    // appendues (Critique/Imparfaite/Colère) → la cascade les joue (cursor+1) ; aucune → ferme la situation.
+    // (Si pas de cascade d'incantation hôte — test/IA direct — on laisse intacte la cascade que les
+    // conséquences ont éventuellement démarrée elles-mêmes, cursor déjà sur la 1ʳᵉ conséquence.)
+    if (castStepIdx >= 0) {
+      const casc = get().pendingCascade;
+      if (casc && casc.purpose === 'combat' && casc.cursor === castStepIdx) {
+        if (casc.participants.length > castStepIdx + 1) set({ pendingCascade: { ...casc, cursor: castStepIdx + 1 } });
+        else set({ pendingCascade: null });
+      }
+    }
+    // Lanceur ENNEMI (modale témoin) : le tour de l'IA était suspendu → reprise. No-op si une autre
+    // interaction bloquante s'est ouverte (Destin, révélations, OU la cascade de conséquences encore
+    // ouverte) — elle reprendra elle-même (cascadeNext → resumeSuspendedAI à la clôture).
     if (caster?.kind === 'enemy' && get().battle) resumeEnemyTurn(get, set);
   },
   /** Incantation CRITIQUE (LDB 46 l.52-59) : le lanceur choisit l'effet bonus dans la modale. */

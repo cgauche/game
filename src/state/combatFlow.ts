@@ -2265,10 +2265,11 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
     const icon = colere ? '⚡' : '💥';
     // Charge riche `reveal` (table : dé + lignes) — comme le Critique ; le dé reste observable (Péché +10).
     const reveal: RevealEntry = { kind: 'miscast', title, dice: m.rolls[0], lines, subjectId: caster.id, severity: 'grave' };
-    startCascade(get, set, {
-      title, icon, purpose: 'combat',
-      steps: [{ id: 'cons-miscast-0', kind: 'miscast', actorId: caster.id, icon, label: colere ? 'Colère des dieux' : 'Imparfaite', outcome: lines, reveal, interactive: true }],
-    });
+    // FOLD : l'Imparfaite/Colère est une ÉTAPE de la cascade d'incantation ACTIVE (parité avec le
+    // Critique d'attaque, appendu via pushReveal) — plus une cascade SÉPARÉE. `pushCombatStep` append
+    // à la cascade `purpose:'combat'` en cours (jet d'incantation), ou démarre « Conséquences » si
+    // aucune (Focalisation interrompue suppressReveal / contextes hors-cast) — fallback identique à l'ex-startCascade.
+    pushCombatStep(set, { id: 'cons-miscast-0', kind: 'miscast', actorId: caster.id, icon, label: colere ? 'Colère des dieux' : 'Imparfaite', outcome: lines, reveal, interactive: true });
   }
   return lines;
 }
@@ -2523,11 +2524,24 @@ export function castCommitZone(get: Get, set: SetFn, pt: Pt): void {
   }
   const first = inZone[0];
   const r1 = pc.missile && res.cast ? evaluateMissile(caster, first, spell, res) : res;
-  set({ pendingCast: null, pendingCascade: null }); // TERMINAL : ferme data + cascade-hôte AVANT applyCast (un Critique de Sort y rouvre sa propre cascade Imparfaite)
+  // FOLD (parité castConfirm) : ne ferme QUE le jet ; la cascade d'incantation reste active pour
+  // qu'un Critique de Sort / Imparfaite s'y appendent. Repère l'étape `jet:'cast'` AVANT applyCast.
+  const cascBefore = get().pendingCascade;
+  const castStepIdx = cascBefore && cascBefore.purpose === 'combat' && cascBefore.participants[cascBefore.cursor]?.jet === 'cast'
+    ? cascBefore.cursor : -1;
+  set({ pendingCast: null }); // ferme le jet ; cascade d'incantation conservée
   applyCast(get, set, caster, first, spell, r1, pc.missile, pc.focused, pc.critChoice, {
     durationMult: 1 + (pc.overcast?.duration ?? 0),
     extraTargets: inZone.slice(1),
   });
+  // Avance au-delà de l'étape cast (résolue) : conséquences appendues → jouées ; aucune → ferme.
+  if (castStepIdx >= 0) {
+    const casc = get().pendingCascade;
+    if (casc && casc.purpose === 'combat' && casc.cursor === castStepIdx) {
+      if (casc.participants.length > castStepIdx + 1) set({ pendingCascade: { ...casc, cursor: castStepIdx + 1 } });
+      else set({ pendingCascade: null });
+    }
+  }
 }
 
 /** Contexte de visibilité OPTIONNEL pour filtrer des cibles de sort par Ligne de Vue (LDB 46

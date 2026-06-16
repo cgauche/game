@@ -6,7 +6,7 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
-import { applyCast, checkFocusInterruption } from './combatFlow';
+import { applyCast, checkFocusInterruption, openCastCascade } from './combatFlow';
 import { makePregens } from '../data/pregens';
 import { findSpell } from '../data';
 import type { Combatant } from '../engine/types';
@@ -65,6 +65,48 @@ describe('Incantation CRITIQUE (LDB 46 l.52-59)', () => {
     const ben = findSpell('Bénédiction de Guérison')!;
     applyCast(useGame.getState, useGame.setState, priest, priest, ben, critRes(true, 2), false, false);
     expect(useGame.getState().journal.join('\n')).not.toMatch(/Incantation Imparfaite/);
+  });
+
+  // FOLD (2026-06-16) : le Critique de Sort ET l'Imparfaite/Colère sont des ÉTAPES de la cascade
+  // d'incantation ACTIVE (comme l'attaque enchaîne Critique/Déviation), plus une cascade séparée.
+  it('FOLD : une Imparfaite via castConfirm APPEND à la cascade d\'incantation (pas de cascade séparée)', () => {
+    const w = wiz();
+    w.spells = ['Armure Aethyrique', ...(w.spells ?? [])];
+    useGame.setState({ party: [w] as Combatant[], pendingCast: null, pendingCascade: null, pendingReveals: [] });
+    // Situation d'incantation HÔTÉE par la cascade (comme l'aurait ouverte castSpell → openCastCascade).
+    openCastCascade(useGame.getState, useGame.setState, w);
+    expect(useGame.getState().pendingCascade?.title).toBe('Incantation'); // étape jet:'cast' au curseur 0
+    // Jet figé : Maladresse d'un Sort → Imparfaite Mineure (LDB 46) — appendue par applyMiscast.
+    useGame.setState({
+      pendingCast: {
+        casterId: w.id, targetId: w.id, spellLabel: 'Armure Aethyrique', missile: false, focused: false,
+        result: { cast: false, roll: 99, target: 40, sl: -3, isCritical: false, isFumble: true, log: 'Maladresse !' },
+      },
+    });
+    useGame.getState().castConfirm();
+    const c = useGame.getState().pendingCascade;
+    expect(useGame.getState().pendingCast).toBeNull(); // le JET est clos (CastModal disparaît)
+    expect(c).toBeTruthy(); // la cascade reste OUVERTE : la conséquence s'y joue
+    expect(c!.title).toBe('Incantation'); // MÊME cascade (pas une « Conséquences » neuve) = le fold
+    expect(c!.cursor).toBe(1); // curseur avancé au-delà de l'étape cast (cursor 0)
+    expect(c!.participants[1]?.kind).toBe('miscast'); // l'Imparfaite est l'étape appendue
+    expect(useGame.getState().pendingReveals).toEqual([]); // aucune RevealModal témoin séparée
+  });
+
+  it('FOLD : un Sort SANS conséquence ferme la cascade d\'incantation (rien à enchaîner)', () => {
+    const w = wiz();
+    w.spells = ['Armure Aethyrique', ...(w.spells ?? [])];
+    useGame.setState({ party: [w] as Combatant[], pendingCast: null, pendingCascade: null, pendingReveals: [] });
+    openCastCascade(useGame.getState, useGame.setState, w);
+    useGame.setState({
+      pendingCast: {
+        casterId: w.id, targetId: w.id, spellLabel: 'Armure Aethyrique', missile: false, focused: false,
+        result: { cast: true, roll: 21, target: 60, sl: 2, isCritical: false, isFumble: false, log: 'ok' },
+      },
+    });
+    useGame.getState().castConfirm();
+    expect(useGame.getState().pendingCast).toBeNull();
+    expect(useGame.getState().pendingCascade).toBeNull(); // aucune conséquence → la situation se clôt
   });
 });
 
