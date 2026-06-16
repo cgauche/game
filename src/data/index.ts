@@ -196,6 +196,12 @@ export interface ManeuverProfile {
   kind: import('../engine/creatureAttacks').AttackKind;
   activation: 'action' | 'free' | 'charge';
   advantageCost: number;
+  /** Caractéristique du jet de l'attaquant (CC mêlée / CT distance·zone) ; absent = pas de jet
+   *  d'attaquant (Hurlement : chaque cible teste sa Résistance). Pilote le ROLL-producing. */
+  stat?: 'CC' | 'CT';
+  /** Gestion de l'Avantage dépensé : `fixed` = `advantageCost` (défaut) ; `variable` = le joueur
+   *  CHOISIT (Regard : +1 DR par Avantage, LDB 85 l.238) ; `all` = dépense tout (Hurlement, l.135). */
+  advantageMode?: 'fixed' | 'variable' | 'all';
   aoe?: boolean;
   magic?: boolean;
   perTentacle?: boolean;

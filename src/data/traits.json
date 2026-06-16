@@ -102,7 +102,8 @@
     "maneuver": {
       "kind": "arme",
       "activation": "action",
-      "advantageCost": 0
+      "advantageCost": 0,
+      "stat": "CC"
     }
   },
   {
@@ -128,6 +129,7 @@
       "kind": "caudale",
       "activation": "free",
       "advantageCost": 1,
+      "stat": "CC",
       "effects": [
         {
           "trigger": "onHit",
@@ -290,7 +292,8 @@
     "maneuver": {
       "kind": "cornes",
       "activation": "charge",
-      "advantageCost": 0
+      "advantageCost": 0,
+      "stat": "CC"
     }
   },
   {
@@ -403,6 +406,7 @@
       "kind": "etreinte",
       "activation": "action",
       "advantageCost": 2,
+      "stat": "CC",
       "magic": true
     }
   },
@@ -506,6 +510,7 @@
       "kind": "hurlement",
       "activation": "free",
       "advantageCost": 2,
+      "advantageMode": "all",
       "aoe": true,
       "effects": [
         {
@@ -656,6 +661,7 @@
       "kind": "langue",
       "activation": "free",
       "advantageCost": 1,
+      "stat": "CT",
       "effects": [
         {
           "trigger": "onHit",
@@ -755,7 +761,8 @@
     "maneuver": {
       "kind": "morsure",
       "activation": "free",
-      "advantageCost": 1
+      "advantageCost": 1,
+      "stat": "CC"
     }
   },
   {
@@ -928,6 +935,8 @@
       "kind": "regard",
       "activation": "action",
       "advantageCost": 1,
+      "stat": "CT",
+      "advantageMode": "variable",
       "effects": [
         {
           "trigger": "onHit",
@@ -1157,6 +1166,7 @@
       "kind": "souffle",
       "activation": "free",
       "advantageCost": 2,
+      "stat": "CT",
       "aoe": true,
       "magic": true
     }
@@ -1194,6 +1204,7 @@
       "kind": "tentacules",
       "activation": "free",
       "advantageCost": 0,
+      "stat": "CC",
       "perTentacle": true,
       "effects": [
         {
@@ -1332,6 +1343,7 @@
       "kind": "vomi",
       "activation": "free",
       "advantageCost": 3,
+      "stat": "CT",
       "aoe": true
     }
   },

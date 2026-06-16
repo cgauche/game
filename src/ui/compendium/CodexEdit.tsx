@@ -206,6 +206,10 @@ function TriggeredEffectsField({ value, onChange }: { value: TriggeredEffect[] |
 const ACTIVATION_LABEL: Record<ManeuverProfile['activation'], string> = {
   action: 'Action', free: 'Gratuite (coût d’Avantage)', charge: 'À la Charge',
 };
+const STAT_LABEL: Record<NonNullable<ManeuverProfile['stat']>, string> = { CC: 'CC (mêlée)', CT: 'CT (distance)' };
+const ADV_MODE_LABEL: Record<NonNullable<ManeuverProfile['advantageMode']>, string> = {
+  fixed: 'Coût fixe', variable: 'Au choix (+1 DR/Av)', all: 'Tout l’Avantage',
+};
 
 /** Éditeur du PROFIL de MANŒUVRE d'un trait (`TraitData.maneuver`, ex-table `RULES`) + ses effets onHit
  *  propres (réutilise `TriggeredEffectsField`). Active/désactive la manœuvre ; profil = type/activation/
@@ -233,6 +237,17 @@ function ManeuverField({ value, onChange }: { value: ManeuverProfile | undefined
           </select>
         </label>
         <label className="dr">Coût d’Avantage<input type="number" min={0} value={m.advantageCost} onChange={(e) => patch({ advantageCost: Math.max(0, Number(e.target.value) || 0) })} /></label>
+        <label className="dr">Jet
+          <select value={m.stat ?? ''} onChange={(e) => patch({ stat: (e.target.value || undefined) as ManeuverProfile['stat'] })}>
+            <option value="">—</option>
+            {(Object.keys(STAT_LABEL) as NonNullable<ManeuverProfile['stat']>[]).map((s) => <option key={s} value={s}>{STAT_LABEL[s]}</option>)}
+          </select>
+        </label>
+        <label className="dr">Avantage
+          <select value={m.advantageMode ?? 'fixed'} onChange={(e) => patch({ advantageMode: e.target.value === 'fixed' ? undefined : (e.target.value as ManeuverProfile['advantageMode']) })}>
+            {(Object.keys(ADV_MODE_LABEL) as NonNullable<ManeuverProfile['advantageMode']>[]).map((a) => <option key={a} value={a}>{ADV_MODE_LABEL[a]}</option>)}
+          </select>
+        </label>
         <label className="dr"><input type="checkbox" checked={!!m.aoe} onChange={(e) => patch({ aoe: e.target.checked || undefined })} /> Zone</label>
         <label className="dr"><input type="checkbox" checked={!!m.magic} onChange={(e) => patch({ magic: e.target.checked || undefined })} /> Magique</label>
         <label className="dr"><input type="checkbox" checked={!!m.perTentacle} onChange={(e) => patch({ perTentacle: e.target.checked || undefined })} /> Par tentacule</label>
