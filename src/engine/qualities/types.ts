@@ -79,8 +79,7 @@ export interface QualityDef {
   testFailDR?: number;
   /** Arme qui endommage l'armure/le bouclier frappé sur une touche réussie (Taille, LDB 63 l.8). */
   damagesArmour?: boolean;
-  /** Modificateur aux Tests de Sociabilité du porteur quand l'objet est équipé (Laid -10, LDB 60 l.85). */
-  socMod?: number;
+  // socMod (Laid −10 Soc) migré en donnée éditable (`qualities.json` → `QualityData.passive`, op testMod{Soc}).
   /** ±X DR au Test d'ATTAQUE avec l'arme, réussi ou non (Imprécise -1, LDB 63 l.19). */
   attackDR?: number;
   /** +X DR à TOUT Test de défense de l'adversaire contre cette arme — Parade ET Esquive (Lente +1, LDB 63 l.26). */

@@ -7,6 +7,7 @@
 import type { Weapon } from '../types';
 import { QUALITIES, QualityDef, QualityCtx } from './registry';
 import { parseQuality } from './normalize';
+import { qualityByLabel } from '../../data';
 
 /** Tout porteur de qualités (Weapon ou ItemInstance) — seul `qualities` est requis. */
 export type QualityCarrier = { qualities: string[] };
@@ -81,9 +82,13 @@ export function craftTestDRAdjust(w: QualityCarrier | undefined, success: boolea
   return resolveQualities(w).reduce((s, r) => s + (r.def.testFailDR ?? 0), 0);
 }
 
-/** Somme des modificateurs de Sociabilité (Laid -10, LDB 60 l.85) des qualités du porteur. */
+/** Somme des modificateurs de Sociabilité (Laid -10, LDB 60 l.85) des qualités du porteur — lus dans la DONNÉE
+ *  éditable (`qualities.json` → `QualityData.passive`, op `testMod{Soc}`), extraits comme `traitCharMods`. */
 export function qualitySocMod(w: QualityCarrier | undefined): number {
-  return resolveQualities(w).reduce((s, r) => s + (r.def.socMod ?? 0), 0);
+  let d = 0;
+  for (const r of resolveQualities(w))
+    for (const op of qualityByLabel.get(r.def.key)?.passive ?? []) if (op.op === 'testMod' && op.char === 'Soc') d += op.amount;
+  return d;
 }
 
 /** Indice d'une Arme d'équipe maniée en sous-effectif (toujours, faute d'équipe modélisée), ou 0. */

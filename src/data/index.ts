@@ -231,6 +231,9 @@ export interface QualityData {
   subType: string | null;
   desc: string;
   effects?: import('../state/flow').TriggeredEffect[];
+  /** Modificateurs PASSIFS continus (objet Laid : −10 aux Tests de Soc) en `GameOp[]` — MÊME vocab/éditeur
+   *  (`GameOpEditor`) que les traits et les sorts ; lus par `qualitySocMod`/le collecteur passif. */
+  passive?: import('../engine/ops').GameOp[];
 }
 export interface SpellData {
   label: string;

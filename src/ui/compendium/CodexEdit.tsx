@@ -59,8 +59,8 @@ export function CodexEdit({ categoryKey, label, onClose }: { categoryKey: string
   // Porteurs d'effets DÉCLENCHÉS (mêmes `TriggeredEffect` éditables) : Traits ET Atouts d'arme.
   const isTriggered = categoryKey === 'traits' || categoryKey === 'qualities';
   const isTrait = categoryKey === 'traits'; // les Traits portent en plus un profil de MANŒUVRE éditable
-  // Porteurs de modificateurs PASSIFS continus (`PassiveMod[]`) édités par ops (GameOpEditor), comme un sort.
-  const isPassive = categoryKey === 'traits';
+  // Porteurs de modificateurs PASSIFS continus (`GameOp[]`) édités par ops (GameOpEditor), comme un sort.
+  const isPassive = categoryKey === 'traits' || categoryKey === 'qualities';
   const fields = useMemo(
     () => inferFields(arr as Record<string, unknown>[]).filter(
       (f) => !(isCreature && f.key === 'appearance') && !((isSpell || isTriggered) && f.key === 'effects')

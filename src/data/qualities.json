@@ -466,7 +466,14 @@
     "source": {
       "book": "LDB",
       "page": 286
-    }
+    },
+    "passive": [
+      {
+        "op": "testMod",
+        "amount": -10,
+        "char": "Soc"
+      }
+    ]
   },
   {
     "label": "Peu Fiable",
