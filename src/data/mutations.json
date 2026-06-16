@@ -7,7 +7,12 @@
         "op": "moveMod",
         "mod": 1
       }
-    ]
+    ],
+    "appearance": {
+      "features": [
+        "pattes-danimaux"
+      ]
+    }
   },
   {
     "label": "Corpulent",
@@ -27,7 +32,12 @@
         "op": "moveMod",
         "mod": -1
       }
-    ]
+    ],
+    "appearance": {
+      "features": [
+        "corpulent"
+      ]
+    }
   },
   {
     "label": "Doigts distendus",
@@ -38,7 +48,12 @@
         "char": "Dex",
         "mod": 10
       }
-    ]
+    ],
+    "appearance": {
+      "features": [
+        "doigts-distendus"
+      ]
+    }
   },
   {
     "label": "Émacié",
@@ -54,12 +69,22 @@
         "char": "Ag",
         "mod": 5
       }
-    ]
+    ],
+    "appearance": {
+      "features": [
+        "emacie"
+      ]
+    }
   },
   {
     "label": "Œil énorme",
     "kind": "physique",
-    "note": "+10 aux Tests de Perception impliquant la vue."
+    "note": "+10 aux Tests de Perception impliquant la vue.",
+    "appearance": {
+      "eyes": {
+        "G": "enorme"
+      }
+    }
   },
   {
     "label": "Articulation supplémentaire aux jambes",
@@ -70,12 +95,22 @@
         "char": "Ag",
         "mod": 5
       }
-    ]
+    ],
+    "appearance": {
+      "features": [
+        "articulation-supplementaire-aux-jambes"
+      ]
+    }
   },
   {
     "label": "Bouche supplémentaire",
     "kind": "physique",
-    "note": "Lancer sur le Tableau des Localisations pour déterminer où cette bouche apparaît."
+    "note": "Lancer sur le Tableau des Localisations pour déterminer où cette bouche apparaît.",
+    "appearance": {
+      "features": [
+        "bouche-supplementaire"
+      ]
+    }
   },
   {
     "label": "Tentacule épais",
@@ -83,12 +118,25 @@
     "traits": [
       "Tentacules"
     ],
-    "note": "Trait de créature Tentacule."
+    "note": "Trait de créature Tentacule.",
+    "appearance": {
+      "features": [
+        "tentacule-epais"
+      ]
+    }
   },
   {
     "label": "Peau brillante",
     "kind": "physique",
-    "note": "Produit une lumière équivalente à celle d’une bougie."
+    "note": "Produit une lumière équivalente à celle d’une bougie.",
+    "appearance": {
+      "colors": {
+        "peau": "#f0d8a8"
+      },
+      "features": [
+        "peau-brillante"
+      ]
+    }
   },
   {
     "label": "Beauté surnaturelle",
@@ -100,7 +148,12 @@
         "char": "Soc",
         "mod": 10
       }
-    ]
+    ],
+    "appearance": {
+      "features": [
+        "beaute-surnaturelle"
+      ]
+    }
   },
   {
     "label": "Visage inversé",
@@ -111,7 +164,12 @@
         "amount": -20,
         "char": "Soc"
       }
-    ]
+    ],
+    "appearance": {
+      "features": [
+        "visage-inverse"
+      ]
+    }
   },
   {
     "label": "Peau d’acier",
@@ -123,7 +181,12 @@
         "char": "Ag",
         "mod": -10
       }
-    ]
+    ],
+    "appearance": {
+      "colors": {
+        "peau": "#8a93a0"
+      }
+    }
   },
   {
     "label": "Langue pendante",
@@ -134,12 +197,22 @@
         "skill": "langue",
         "mod": -10
       }
-    ]
+    ],
+    "appearance": {
+      "features": [
+        "langue-pendante"
+      ]
+    }
   },
   {
     "label": "Plumes éparses",
     "kind": "physique",
-    "note": "Deux lancers de Localisation pour déterminer où ces plumes apparaissent."
+    "note": "Deux lancers de Localisation pour déterminer où ces plumes apparaissent.",
+    "appearance": {
+      "features": [
+        "plumes-eparses"
+      ]
+    }
   },
   {
     "label": "Court sur pattes",
@@ -149,12 +222,25 @@
         "op": "moveMod",
         "mod": -1
       }
-    ]
+    ],
+    "appearance": {
+      "features": [
+        "court-sur-pattes"
+      ]
+    }
   },
   {
     "label": "Écailles épineuses",
     "kind": "physique",
-    "apAll": 1
+    "apAll": 1,
+    "appearance": {
+      "colors": {
+        "peau": "#8a8a58"
+      },
+      "features": [
+        "ecailles-epineuses"
+      ]
+    }
   },
   {
     "label": "Cornes asymétriques",
@@ -170,12 +256,22 @@
       "subType": "Base",
       "hands": 1
     },
-    "note": "Compte comme une Arme de Créature (Dégâts = Bonus de Force)."
+    "note": "Compte comme une Arme de Créature (Dégâts = Bonus de Force).",
+    "appearance": {
+      "features": [
+        "cornes-asymetriques"
+      ]
+    }
   },
   {
     "label": "Suintement de pus",
     "kind": "physique",
-    "note": "Lancer de Localisation pour déterminer l’origine du suintement."
+    "note": "Lancer de Localisation pour déterminer l’origine du suintement.",
+    "appearance": {
+      "features": [
+        "suintement-de-pus"
+      ]
+    }
   },
   {
     "label": "Groin poilu",
@@ -186,7 +282,12 @@
         "skill": "pistage",
         "mod": 10
       }
-    ]
+    ],
+    "appearance": {
+      "features": [
+        "groin-poilu"
+      ]
+    }
   },
   {
     "label": "Choix du MJ",

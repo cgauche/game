@@ -53,6 +53,10 @@ export interface Mutation {
   psychTraits?: PsychTrait[];
   /** Partie non modélisée de l'effet — verbatim, arbitrage MJ (rien d'inventé). */
   note?: string;
+  /** Apparence COSMÉTIQUE déclarée en DONNÉE (calques du catalogue via `features` + `colors` + `eyes`) —
+   *  fusionnée sur le rig quand la mutation est présente (cf. `combatantVisuals`). Type erased : le
+   *  moteur ne la lit jamais (comme `Combatant.appearance` côté types). */
+  appearance?: import('../state/scene').EntityAppearance;
 }
 
 // ---------------------------------------------------------------------------

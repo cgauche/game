@@ -9,12 +9,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
-import { mutationOverlaysFor, mutationAppearance } from '../src/gameIso/rig/parts/mutations';
 import { combatantOverlays, combatantAppearance } from '../src/gameIso/rig/parts/combatantVisuals';
 import { creatureToCombatant } from '../src/state/spawn';
 import { findCreature } from '../src/data';
 import { EYE_OPTIONS } from '../src/gameIso/rig/parts/eyes';
-import { LABELS_PHYSIQUES } from '../src/data/mutations';
+import { LABELS_PHYSIQUES, mutationByLabel } from '../src/data/mutations';
 import type { Mutation } from '../src/engine/corruption';
 import type { Combatant, Trauma } from '../src/engine/types';
 import type { Appearance } from '../src/gameIso/rig/appearance';
@@ -25,7 +24,7 @@ import type { ItemInstance, Weapon } from '../src/engine/types';
 
 const APP: Appearance = { species: 'Humain', sex: 'M', build: 0.5, seed: 4 };
 const NU: EquipCtx = { weapons: [], armour: [] };
-const mut = (label: string): Mutation => ({ label, kind: 'physique', roll: 1 });
+const mut = (label: string): Mutation => mutationByLabel(label)!;
 
 function cell(label: string, app: Appearance, overlays: RigOverlay[], opts: { view?: View; equip?: EquipCtx; career?: string; bg?: string; tint?: string } = {}): string {
   const svg = renderToStaticMarkup(
@@ -38,8 +37,10 @@ function cell(label: string, app: Appearance, overlays: RigOverlay[], opts: { vi
   return `<figure style="margin:0;text-align:center"><div>${svg}</div><figcaption style="color:${opts.tint ?? '#cdd'};font:11px sans-serif">${label}</figcaption></figure>`;
 }
 
-const mutCell = (label: string, opts: Parameters<typeof cell>[3] = {}) =>
-  cell(opts.view ? `${label} — ${opts.view}` : label, mutationAppearance(APP, [mut(label)]), mutationOverlaysFor([mut(label)]), opts);
+const mutCell = (label: string, opts: Parameters<typeof cell>[3] = {}) => {
+  const c = { mutations: [mut(label)] } as unknown as Combatant;
+  return cell(opts.view ? `${label} — ${opts.view}` : label, combatantAppearance(APP, c), combatantOverlays(c), opts);
+};
 
 const sections: string[] = [];
 const section = (title: string, cells: string[]) =>
