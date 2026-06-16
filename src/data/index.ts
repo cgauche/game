@@ -217,6 +217,13 @@ export interface TraitData {
   /** Profil de MANŒUVRE si ce trait est une attaque naturelle activée (Morsure, Attaque caudale,
    *  Souffle…) — lu par `engine/creatureAttacks` (remplace la table `RULES`). */
   maneuver?: ManeuverProfile;
+  /** Modificateurs de PROFIL PASSIFS (LDB 85 : Élite +20 CC/CT/FM, Coriace +10 E/FM, Brutal −1 M…) —
+   *  app-owned ÉDITABLES (remplacent les champs `charMods`/`movement` des `defs/` TS). Lus par
+   *  `traitCharMods`/`traitMovementMod` (la donnée prime sur la def), appliqués en direct via `liveTraits`. */
+  charMods?: Partial<Record<CharKey, number>>;
+  movement?: number;
+  /** Modificateurs de compétence nommée (préfixe), additifs — émis intrinsèque par le collecteur passif. */
+  skillMods?: Record<string, number>;
 }
 /** Atout/Défaut d'arme (LDB 62-63) : libellé + desc VERBATIM + effets déclenchés authorés (mêmes
  *  `TriggeredEffect` que les Traits — un Atout « à la touche : 1d10 + Empêtré » s'édite au Codex). */

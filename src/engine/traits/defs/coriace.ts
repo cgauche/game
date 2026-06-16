@@ -1,4 +1,4 @@
 import type { TraitDef } from '../types';
 
 // LDB 85 p.338 : « Elle reçoit +10 en E et FM. »
-export const trait: TraitDef = { key: 'Coriace', charMods: { E: 10, FM: 10 } };
+export const trait: TraitDef = { key: 'Coriace' };

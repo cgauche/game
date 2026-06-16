@@ -213,7 +213,13 @@
     "source": {
       "book": "LDB",
       "page": 338
-    }
+    },
+    "charMods": {
+      "Ag": -10,
+      "F": 10,
+      "E": 10
+    },
+    "movement": -1
   },
   {
     "label": "Champion",
@@ -243,6 +249,10 @@
     "source": {
       "book": "LDB",
       "page": 338
+    },
+    "charMods": {
+      "E": 10,
+      "FM": 10
     }
   },
   {
@@ -318,6 +328,11 @@
     "source": {
       "book": "LDB",
       "page": 339
+    },
+    "charMods": {
+      "CC": 20,
+      "CT": 20,
+      "FM": 20
     }
   },
   {
@@ -404,6 +419,11 @@
     "source": {
       "book": "LDB",
       "page": 339
+    },
+    "charMods": {
+      "F": 10,
+      "E": 10,
+      "Ag": -5
     }
   },
   {
@@ -552,6 +572,10 @@
     "source": {
       "book": "LDB",
       "page": 340
+    },
+    "charMods": {
+      "Int": 20,
+      "I": 10
     }
   },
   {
@@ -640,6 +664,10 @@
     "source": {
       "book": "LDB",
       "page": 340
+    },
+    "charMods": {
+      "Soc": 10,
+      "FM": 10
     }
   },
   {
@@ -811,7 +839,11 @@
     "source": {
       "book": "LDB",
       "page": 341
-    }
+    },
+    "charMods": {
+      "Ag": 10
+    },
+    "movement": 1
   },
   {
     "label": "Regard pétrifiant",
@@ -971,6 +1003,11 @@
     "source": {
       "book": "LDB",
       "page": 341
+    },
+    "charMods": {
+      "Soc": 10,
+      "Int": 10,
+      "I": 10
     }
   },
   {

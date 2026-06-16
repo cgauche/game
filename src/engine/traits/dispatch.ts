@@ -7,6 +7,7 @@
 import type { CharKey, Combatant } from '../types';
 import { TRAITS, TraitDef } from './registry';
 import { parseStatEntry, type TraitInstance, type TraitList } from '../statEntry';
+import { traitByLabel } from '../../data';
 
 const KEY_BY_LOWER = new Map(Object.keys(TRAITS).map((k) => [k.toLowerCase(), k]));
 
@@ -133,17 +134,21 @@ const first = (traits: TraitList | undefined, pred: (d: TraitDef) => boolean): R
   resolveTraits(traits).find((r) => pred(r.def));
 
 // ── Profil dérivé au spawn (statblocks d'éditeur — LDB 77 « ajoutez les Traits ») ─────────────────
-/** Somme des modificateurs de Caractéristiques des traits (Élite, Coriace, Brutal…). */
+/** Somme des modificateurs de Caractéristiques des traits (Élite, Coriace, Brutal…). La DONNÉE éditable
+ *  (`traits.json` → `TraitData.charMods`) PRIME sur la def TS — qui ne sert plus que de repli (traits non
+ *  encore migrés). Permet d'éditer/créer un trait à modificateur de profil au Codex. */
 export function traitCharMods(traits: TraitList | undefined): Partial<Record<CharKey, number>> {
   const out: Partial<Record<CharKey, number>> = {};
-  for (const { def } of resolveTraits(traits))
-    for (const [k, v] of Object.entries(def.charMods ?? {})) out[k as CharKey] = (out[k as CharKey] ?? 0) + (v ?? 0);
+  for (const { def } of resolveTraits(traits)) {
+    const charMods = traitByLabel.get(def.key)?.charMods ?? def.charMods;
+    for (const [k, v] of Object.entries(charMods ?? {})) out[k as CharKey] = (out[k as CharKey] ?? 0) + (v ?? 0);
+  }
   return out;
 }
 
-/** Somme des modificateurs de Mouvement (Brutal −1, Rapide +1). */
+/** Somme des modificateurs de Mouvement (Brutal −1, Rapide +1). Donnée (`TraitData.movement`) prime sur la def. */
 export function traitMovementMod(traits: TraitList | undefined): number {
-  return resolveTraits(traits).reduce((s, r) => s + (r.def.movement ?? 0), 0);
+  return resolveTraits(traits).reduce((s, r) => s + (traitByLabel.get(r.def.key)?.movement ?? r.def.movement ?? 0), 0);
 }
 
 /** Endurant (LDB 85 p.339) : +Bonus d'Endurance Blessures. */
