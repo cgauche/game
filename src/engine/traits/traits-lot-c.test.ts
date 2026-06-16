@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   traitCharMods, traitMovementMod, traitBonusWoundsBE, wardSaves, attacksAreMagical, isEtherial,
   banishedAtZero, hasChampionDefense, meleeHitPenalty, hasPerturbingAura,
-  magicResistanceOf, immunityTypes, isUnstable, isPainless, regenerates,
+  magicResistanceOf, immunityTypes, isUnstable, isPainless,
   bellicosePsychImmune, isMindless, isBestial, isColdBlooded, isStupid, hasRage,
   isTerritorial, flyMeters, runMultiplier, traitSeesInDark, hasStealthAgBonus, mutationsAtSpawn,
 } from './dispatch';

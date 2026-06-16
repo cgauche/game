@@ -1,7 +1,7 @@
 import type { GameState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
 import type { LootGear, CascadeStep } from './pendings';
-import { Combatant, ItemInstance, DIFFICULTY_MODIFIERS } from '../engine/types';
+import { Combatant, ItemInstance, DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
 import { battleRng } from './battleRng';
 import { d10, rollExpr, defaultRNG } from '../engine/dice';
 import { applyOps, type GameOp, type OpsCtx } from '../engine/ops';
@@ -28,6 +28,7 @@ import { toBrass, fromBrass } from '../engine/money';
 import { Effect } from './scene';
 import { type Flow, type FlowTest, flowFromEffects, flowEffects, testFlow, evalCondition, conditionCtx } from './flow';
 import { inRect } from './combatGeometry';
+import { startCascade } from './cascade';
 import { loseWounds, addCondition } from '../engine/conditions';
 import { touchActors } from './combatOrParty';
 
@@ -252,16 +253,23 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
   });
   const def = candidates.find((c) => c.id === best.actor.id) ?? candidates[0];
   if (!def) return false;
-  const label = spec.label || spec.skill || (spec.characteristic ? `Test de ${spec.characteristic}` : 'Test');
+  // Compétence/Caractéristique RÉELLE (cadre de jet) ≠ intitulé de situation (titre). Char → libellé long.
+  const skill = spec.skill || (spec.characteristic ? CHAR_LABELS[spec.characteristic] : undefined);
+  const label = spec.label || skill || 'Test';
   set({
     pendingTest: {
-      actorId: def.id, actorName: def.name, label, skillValue: def.value, difficulty,
+      actorId: def.id, actorName: def.name, label, skill, skillValue: def.value, difficulty,
       requireSL: spec.requireSL ?? 0, target: def.target, psychMod: def.psychMod, psychDetail: def.psychDetail,
       itemUid: def.itemUid, isDouble: false, roll: null, success: false, sl: 0,
       onSuccess, onFailure, after,
       candidates: candidates.length > 1 ? candidates : undefined,
     },
   });
+  // « Une situation = une modale » : le Test EST une cascade à une étape `jet:'test'`, rendue par
+  // `CascadeModal` (via `useTestJetProps`). `pendingTest` coexiste comme porteur de données (comme
+  // `pendingAttack` pour l'attaque) ; `resolveTest` ferme les deux. Pas d'applier : la conséquence
+  // (branche onSuccess/onFailure + continuation) est lancée par `resolveTest`.
+  startCascade(get, set, { title: label, icon: '🎲', purpose: 'test', steps: [{ id: 'test-jet', kind: 'sceneTestJet', jet: 'test', actorId: def.id }] });
   return true;
 }
 
@@ -307,6 +315,10 @@ export function runFlow(get: Get, set: SetFn, flow: Flow, label = 'Effet'): void
  *  (Flow ÉDITABLE, donnée app-owned) — le cast flow en extrait le sous-Flow `target`/`caster`
  *  (`spellFlowFor`) et le passe ici. Renvoie le journal. Le `test` interactif du Flow n'a pas cours en
  *  résolution synchrone de sort (la cible jette dans l'op mécanique `test`) → branche RÉUSSITE par défaut. */
+/** Vue d'un combattant pour la Condition `compare` (PB + valeur d'États par nom). */
+const actorView = (c: Combatant | undefined) =>
+  c ? { woundsCurrent: c.wounds.current, woundsMax: c.wounds.max, conditions: Object.fromEntries(c.conditions.map((x) => [x.name, x.value ?? 1])) } : undefined;
+
 export function runSpellFlow(target: Combatant, caster: Combatant | undefined, flow: Flow, ctx: OpsCtx): string[] {
   const lines: string[] = [];
   const walk = (f: Flow): void => {
@@ -319,7 +331,9 @@ export function runSpellFlow(target: Combatant, caster: Combatant | undefined, f
         }
         break;
       case 'if':
-        if (evalCondition(f.cond, { flags: {}, gameTime: ctx.now ?? 0, party: [target] })) walk(f.then);
+        // Condition `compare` : `target` = la cible du sous-Flow, `caster` = le lanceur/porteur.
+        if (evalCondition(f.cond, { flags: {}, gameTime: ctx.now ?? 0, party: [target],
+          target: actorView(target), caster: actorView(caster) })) walk(f.then);
         else if (f.else) walk(f.else);
         break;
       case 'test': walk(f.success); break;

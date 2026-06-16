@@ -27,6 +27,18 @@ import type { CharKey, Difficulty } from '../engine/types';
 export interface Purse { gold?: number; silver?: number; brass?: number }
 const brassValue = (m: Purse): number => (m.gold ?? 0) * 240 + (m.silver ?? 0) * 12 + (m.brass ?? 0);
 
+/** Acteur d'un Flow visé par une comparaison : la CIBLE (l'unité affectée) ou le LANCEUR/porteur. */
+export type ActorRef = 'target' | 'caster';
+/** Donnée numérique fixe d'un acteur. */
+export type ActorField = 'woundsCurrent' | 'woundsMax';
+/** SUJET d'une comparaison `compare` : `who` (cible/lanceur) × (une donnée fixe OU la valeur/stacks d'un
+ *  État nommé — 0 si absent → « la cible a l'État X » ⇔ `{who:'target', condition:X} >= 1`). */
+export type CompareSubject = { who: ActorRef; field: ActorField } | { who: ActorRef; condition: string };
+/** Opérateur de comparaison (Condition `compare`). */
+export type CompareOp = '>=' | '<=' | '==' | '<' | '>';
+/** Vue d'un acteur lue par `compare` (PB + valeur d'États par nom). */
+export interface ActorView { woundsCurrent: number; woundsMax: number; conditions: Record<string, number> }
+
 export type Condition =
   | { kind: 'always' }
   /** ET de drapeaux avec négation : « v1,!v2 » ⇔ flags.v1 && !flags.v2 (sémantique `condMet`). */
@@ -39,6 +51,11 @@ export type Condition =
   | { kind: 'money'; atLeast: Purse }
   /** État vital du groupe : `any` = au moins un héros mort, `all` = tous morts. */
   | { kind: 'partyDead'; who: 'any' | 'all' }
+  /** COMPARAISON sur un ACTEUR du Flow (cible OU lanceur) — UNIQUE Condition « données d'acteur » :
+   *  `subject` (`who` × donnée fixe OU valeur d'un État) · `op` (≥ ≤ = < >) · `value`. Régénération
+   *  « PB > 0 » ⇔ `{who:'target', field:'woundsCurrent'} >= 1` ; « la cible a Inconscient » ⇔
+   *  `{who:'target', condition:'Inconscient'} >= 1`. Acteur absent → false. */
+  | { kind: 'compare'; subject: CompareSubject; op: CompareOp; value: number }
   | { kind: 'all'; of: Condition[] }
   | { kind: 'any'; of: Condition[] }
   | { kind: 'not'; of: Condition };
@@ -50,6 +67,10 @@ export interface ConditionCtx {
   gameTime: number;
   party?: { dead?: boolean; items?: { name: string }[] }[];
   money?: Purse;
+  /** Acteurs du Flow lus par la Condition `compare` (`conditions` = stacks par nom d'État, 0 si absent).
+   *  `target` = l'unité affectée (la « cible » du sous-Flow) ; `caster` = le lanceur/porteur. */
+  target?: ActorView;
+  caster?: ActorView;
 }
 
 /** Évalue une Condition — SOURCE UNIQUE de l'évaluation des conditions (triggers, choix de dialogue,
@@ -78,6 +99,14 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
     case 'partyDead': {
       const party = ctx.party ?? [];
       return party.length > 0 && (cond.who === 'all' ? party.every((h) => h.dead) : party.some((h) => h.dead));
+    }
+    case 'compare': {
+      const s = cond.subject;
+      const a = s.who === 'caster' ? ctx.caster : ctx.target;
+      if (!a) return false;
+      const lhs = 'condition' in s ? (a.conditions[s.condition] ?? 0) : a[s.field];
+      const v = cond.value;
+      return cond.op === '>=' ? lhs >= v : cond.op === '<=' ? lhs <= v : cond.op === '==' ? lhs === v : cond.op === '<' ? lhs < v : lhs > v;
     }
     case 'all': return cond.of.every((c) => evalCondition(c, ctx));
     case 'any': return cond.of.some((c) => evalCondition(c, ctx));

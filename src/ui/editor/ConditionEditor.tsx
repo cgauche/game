@@ -4,10 +4,15 @@
  * dialogue (où « Toujours » = pas de condition → `undefined`) ET le nœud `si` d'un Flow. Remplace les
  * adaptateurs plats `whenFlag/whenWindow/buildWhen` (qui n'exprimaient que « flag ET créneau »).
  */
-import type { Condition } from '../../state/flow';
+import type { Condition, ActorRef, ActorField, CompareOp } from '../../state/flow';
 import type { TemporalCondition } from '../../state/scene';
 
 const ALWAYS: Condition = { kind: 'always' };
+
+/** Données fixes d'un acteur comparables (Condition `compare`) — libellés des sélecteurs. */
+const FIELD_LABEL: Record<ActorField, string> = { woundsCurrent: 'PB courants', woundsMax: 'PB max' };
+const WHO_LABEL: Record<ActorRef, string> = { target: 'la cible', caster: 'le lanceur' };
+const COMPARE_OPS: CompareOp[] = ['>=', '<=', '==', '<', '>'];
 
 const KIND_OPTIONS: [Condition['kind'], string][] = [
   ['always', 'Toujours'],
@@ -16,6 +21,7 @@ const KIND_OPTIONS: [Condition['kind'], string][] = [
   ['hasItem', 'Possède un objet'],
   ['money', 'Bourse ≥'],
   ['partyDead', 'Héros mort'],
+  ['compare', 'État du porteur (comparaison)'],
   ['all', 'TOUS (ET)'],
   ['any', 'AU MOINS UN (OU)'],
   ['not', 'NON'],
@@ -40,6 +46,7 @@ export function condSummary(c: Condition | undefined): string {
     case 'hasItem': return `a « ${c.trapping || '?'} »${c.count && c.count > 1 ? ` ×${c.count}` : ''}`;
     case 'money': return `bourse ≥ ${moneyStr(c.atLeast)}`;
     case 'partyDead': return c.who === 'all' ? 'tout le groupe mort' : 'un héros mort';
+    case 'compare': return `${WHO_LABEL[c.subject.who]} : ${'condition' in c.subject ? `État « ${c.subject.condition || '?'} »` : FIELD_LABEL[c.subject.field]} ${c.op} ${c.value}`;
     case 'all': return c.of.length ? c.of.map(condSummary).join(' ET ') : 'toujours';
     case 'any': return c.of.length ? c.of.map(condSummary).join(' OU ') : 'jamais';
     case 'not': return `NON(${condSummary(c.of)})`;
@@ -55,6 +62,7 @@ function recast(cond: Condition, kind: Condition['kind']): Condition {
     case 'hasItem': return { kind: 'hasItem', trapping: cond.kind === 'hasItem' ? cond.trapping : '' };
     case 'money': return { kind: 'money', atLeast: cond.kind === 'money' ? cond.atLeast : { gold: 1 } };
     case 'partyDead': return { kind: 'partyDead', who: cond.kind === 'partyDead' ? cond.who : 'any' };
+    case 'compare': return cond.kind === 'compare' ? cond : { kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '>=', value: 1 };
     case 'all': return { kind: 'all', of: cond.kind === 'all' || cond.kind === 'any' ? cond.of : cond.kind === 'always' ? [] : [cond] };
     case 'any': return { kind: 'any', of: cond.kind === 'all' || cond.kind === 'any' ? cond.of : cond.kind === 'always' ? [] : [cond] };
     case 'not': return { kind: 'not', of: cond.kind === 'not' ? cond.of : cond };
@@ -113,6 +121,25 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
           <option value="any">un héros au moins</option>
           <option value="all">tout le groupe</option>
         </select>
+      )}
+      {cond.kind === 'compare' && (
+        <span className="cond-time">
+          <select className="cond-kind" value={cond.subject.who} onChange={(e) => onChange({ ...cond, subject: { ...cond.subject, who: e.target.value as ActorRef } })}>
+            {(Object.keys(WHO_LABEL) as ActorRef[]).map((w) => <option key={w} value={w}>{WHO_LABEL[w]}</option>)}
+          </select>
+          <select className="cond-kind" value={'condition' in cond.subject ? 'condition' : cond.subject.field}
+            onChange={(e) => onChange({ ...cond, subject: e.target.value === 'condition' ? { who: cond.subject.who, condition: '' } : { who: cond.subject.who, field: e.target.value as ActorField } })}>
+            {(Object.keys(FIELD_LABEL) as ActorField[]).map((s) => <option key={s} value={s}>{FIELD_LABEL[s]}</option>)}
+            <option value="condition">valeur d’un État</option>
+          </select>
+          {'condition' in cond.subject && (
+            <input className="cond-flag" value={cond.subject.condition} placeholder="nom de l'État (ex. Brisé)" onChange={(e) => onChange({ ...cond, subject: { who: cond.subject.who, condition: e.target.value } })} />
+          )}
+          <select className="cond-kind" value={cond.op} onChange={(e) => onChange({ ...cond, op: e.target.value as CompareOp })}>
+            {COMPARE_OPS.map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
+          <input type="number" style={{ width: '3.4em' }} value={cond.value} onChange={(e) => onChange({ ...cond, value: Number(e.target.value) || 0 })} />
+        </span>
       )}
       {(cond.kind === 'all' || cond.kind === 'any') && (
         <div className={`cond-children ${cond.kind}`}>

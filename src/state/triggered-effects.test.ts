@@ -6,6 +6,8 @@
 import { describe, it, expect } from 'vitest';
 import { fireTriggers } from './triggeredEffects';
 import { runSpellFlow } from './combatEffects';
+import { evalCondition } from './flow';
+import { applyOps } from '../engine/ops';
 import { makeRNG } from '../engine/dice';
 import type { Combatant, Weapon } from '../engine/types';
 import type { Flow } from './flow';
@@ -72,6 +74,30 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
     runSpellFlow(c, c, { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'loseTurn' }] } }, { rng: makeRNG(1), caster: c });
     expect(c.loseNextAction).toBe(true);
     expect(c.loseNextMovement).toBe(true);
+  });
+
+  it('Condition `compare` générique : who (cible/lanceur) × donnée/État · opérateur · valeur', () => {
+    const target = { woundsCurrent: 5, woundsMax: 15, conditions: { Brisé: 3 } };
+    const caster = { woundsCurrent: 12, woundsMax: 12, conditions: {} as Record<string, number> };
+    const ctx = { flags: {}, gameTime: 0, target, caster };
+    expect(evalCondition({ kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '>=', value: 1 }, ctx)).toBe(true);
+    expect(evalCondition({ kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '<=', value: 0 }, ctx)).toBe(false);
+    expect(evalCondition({ kind: 'compare', subject: { who: 'target', condition: 'Brisé' }, op: '>=', value: 3 }, ctx)).toBe(true); // valeur d'État (stacks)
+    expect(evalCondition({ kind: 'compare', subject: { who: 'caster', field: 'woundsCurrent' }, op: '>', value: 10 }, ctx)).toBe(true); // données du LANCEUR
+    expect(evalCondition({ kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '>=', value: 1 }, { flags: {}, gameTime: 0 })).toBe(false); // acteur absent
+  });
+
+  it('op rollThreshold : UN d10 → soin = la valeur du dé via Formula {rolled}', () => {
+    const c = mk({ wounds: { current: 0, max: 20 } });
+    applyOps(c, [{ op: 'rollThreshold', sides: 10, thresholds: [{ atLeast: 1, ops: [{ op: 'heal', amount: { rolled: true } }] }] }], { rng: makeRNG(3) });
+    expect(c.wounds.current).toBeGreaterThanOrEqual(1); // a soigné le dé (1..10)
+    expect(c.wounds.current).toBeLessThanOrEqual(10);
+  });
+
+  it('TRAIT Régénération : onRoundStart, PB>0 → régénère la valeur du dé (if « état de soi » + rollThreshold)', () => {
+    const troll = mk({ traits: ['Régénération'], wounds: { current: 5, max: 30 } });
+    fireTriggers(noBattle(), troll, 'onRoundStart', { rng: makeRNG(2) });
+    expect(troll.wounds.current).toBeGreaterThan(5); // branche PB>0 → heal {rolled}
   });
 
   it('Atout authorable « à la touche : 1d10 Dégâts + Empêtré » — le Flow applique les DEUX ops', () => {

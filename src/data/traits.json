@@ -704,7 +704,98 @@
     "source": {
       "book": "LDB",
       "page": 341
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onRoundStart",
+        "on": "self",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "compare",
+            "subject": {
+              "who": "target",
+              "field": "woundsCurrent"
+            },
+            "op": ">=",
+            "value": 1
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "rollThreshold",
+                  "sides": 10,
+                  "thresholds": [
+                    {
+                      "atLeast": 1,
+                      "ops": [
+                        {
+                          "op": "heal",
+                          "amount": {
+                            "rolled": true
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "atLeast": 10,
+                      "ops": [
+                        {
+                          "op": "cureCriticalWound",
+                          "count": 1
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "else": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "rollThreshold",
+                  "sides": 10,
+                  "thresholds": [
+                    {
+                      "atLeast": 8,
+                      "ops": [
+                        {
+                          "op": "heal",
+                          "amount": 1
+                        },
+                        {
+                          "op": "removeCondition",
+                          "name": "Inconscient",
+                          "value": 99
+                        }
+                      ]
+                    },
+                    {
+                      "atLeast": 10,
+                      "ops": [
+                        {
+                          "op": "cureCriticalWound",
+                          "count": 1
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
   },
   {
     "label": "Résistance à la Magie",

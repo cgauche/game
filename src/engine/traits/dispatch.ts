@@ -221,10 +221,6 @@ export function isPainless(traits: TraitList | undefined): boolean {
   return resolveTraits(traits).some((r) => r.def.painless);
 }
 
-/** Régénération (LDB 85 p.341). */
-export function regenerates(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.regenerates);
-}
 
 // ── Psychologie / IA ──────────────────────────────────────────────────────────────────────────────
 /** Belliqueux (LDB 85 p.338) : immunité psy si plus d'Avantages que `foesMaxAdvantage`. */

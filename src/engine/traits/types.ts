@@ -47,8 +47,6 @@ export interface TraitDef {
   unstable?: boolean;
   /** Insensible à la douleur : pénalités de Blessures Critiques (hors amputations) ignorées, États subis. */
   painless?: boolean;
-  /** Régénération : début de Round, PB>0 → +1d10 PB ; à 0 → 1d10, 8+ → +1 PB ; 10 → +1 Critique soignée. Pas le Feu. */
-  regenerates?: boolean;
   // ── Psychologie / IA ──
   /** Belliqueux : Immunité Psychologique tant qu'elle a plus d'Avantages que son adversaire. */
   psychImmuneIfAhead?: boolean;

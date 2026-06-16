@@ -74,6 +74,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   maxWeaponHands: '✋ Plafond de mains d’arme',
   senseLoss: '👁️ Perte sensorielle (œil/oreille)',
   loseTurn: '⏭️ Perdre Action + Mouvement',
+  rollThreshold: '🎲 Jet à paliers (un dé → ops par seuil)',
   narrative: '📝 Effet narratif (texte libre)',
 };
 
@@ -89,7 +90,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['🩹 Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound']],
   ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'loseTurn']],
   ['🩼 Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'maxWeaponHands', 'senseLoss']],
-  ['🎲 Contrôle', ['test']],
+  ['🎲 Contrôle', ['test', 'rollThreshold']],
   ['📝 Narration', ['narrative']],
 ];
 
@@ -97,9 +98,9 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
 // Formules
 // ---------------------------------------------------------------------------
 
-export type FormulaShape = 'lit' | 'bonus' | 'char' | 'dice';
+export type FormulaShape = 'lit' | 'bonus' | 'char' | 'dice' | 'rolled';
 export const shapeOf = (f: Formula | undefined): FormulaShape =>
-  typeof f === 'number' || f == null ? 'lit' : 'bonusOf' in f ? 'bonus' : 'charOf' in f ? 'char' : 'dice';
+  typeof f === 'number' || f == null ? 'lit' : 'bonusOf' in f ? 'bonus' : 'charOf' in f ? 'char' : 'rolled' in f ? 'rolled' : 'dice';
 
 /** Formule par défaut d'une forme — utilisée au CHANGEMENT de forme. Préserve le littéral courant
  *  quand on bascule vers « Nombre » ; ne touche JAMAIS une formule dont la forme est déjà la bonne. */
@@ -108,6 +109,7 @@ export function formulaForShape(s: FormulaShape, current: Formula | undefined): 
   if (s === 'lit') return typeof current === 'number' ? current : 1;
   if (s === 'bonus') return { bonusOf: 'F' };
   if (s === 'char') return { charOf: 'F' };
+  if (s === 'rolled') return { rolled: true };
   return { dice: { n: 1, sides: 10 } };
 }
 
@@ -121,6 +123,7 @@ export function formulaSummary(f: Formula | undefined): string {
   if (typeof f === 'number') return String(f);
   if ('bonusOf' in f) return `B${f.bonusOf}`;
   if ('charOf' in f) return f.charOf;
+  if ('rolled' in f) return 'dé';
   return `${f.dice.n}d${f.dice.sides}${f.dice.plus ? `+${f.dice.plus}` : ''}`;
 }
 
@@ -143,6 +146,7 @@ function FormulaField({ label, value, onChange, min }: {
           <option value="bonus">Bonus de carac.</option>
           <option value="char">Valeur de carac.</option>
           <option value="dice">Dés</option>
+          <option value="rolled">Dé du jet (paliers)</option>
         </select>
         {shape === 'lit' && (
           <input type="number" min={min} value={typeof value === 'number' ? value : 0}
@@ -226,6 +230,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'maxWeaponHands': return { op: 'maxWeaponHands', hands: 1 };
     case 'senseLoss': return { op: 'senseLoss', sense: 'vue' };
     case 'loseTurn': return { op: 'loseTurn' };
+    case 'rollThreshold': return { op: 'rollThreshold', sides: 10, thresholds: [] };
     case 'narrative': return { op: 'narrative', text: '' };
     default: return { op: 'wounds', amount: 5 };
   }
@@ -282,6 +287,7 @@ export function opSummary(o: GameOp): string {
     case 'polymorph': return `${L} ${o.ref}`;
     case 'lifeSteal': return `${L} ${o.num}/${o.den} des Dégâts`;
     case 'loseTurn': return `${L} saute le tour`;
+    case 'rollThreshold': return `${L} 1d${o.sides} → ${o.thresholds.length} palier(s)`;
     case 'narrative': return `${L} ${o.text ? `« ${o.text.length > 40 ? `${o.text.slice(0, 39)}…` : o.text}` + ' »' : '(vide)'}`;
     default: return `⚙️ ${(o as GameOp).op}`;
   }
