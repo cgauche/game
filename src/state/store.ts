@@ -1118,6 +1118,9 @@ export const useGame = create<GameState>((set, get) => ({
       money: { gold: 0, silver: 5, brass: 0 },
       campaignSceneId: scene.id,
       journal: scene.startMessage ? [scene.startMessage] : [],
+      // N1 : l'entrée de zone remonte en MODALE (« le Journal n'est pas lu ») — reveal sceneEntry
+      // skippable ; le Journal garde l'archive consultable.
+      pendingReveals: scene.startMessage ? [{ kind: 'sceneEntry' as const, title: scene.nom, lines: [scene.startMessage] }] : [],
     });
     bus.emit(EVT.SCENE_DIRTY);
     openEncounterPsych(get, set); // couture C : Peur/Terreur/trait ciblé à la rencontre des PNJ présents
@@ -1167,7 +1170,8 @@ export const useGame = create<GameState>((set, get) => ({
       pendingInteract: null,
       pendingCleave: null,
       pendingDualStrike: null,
-      pendingReveals: [],
+      // N1 : entrée de zone (transition) en MODALE — reveal sceneEntry skippable (Journal = archive).
+      pendingReveals: target.startMessage ? [{ kind: 'sceneEntry' as const, title: target.nom, lines: [target.startMessage] }] : [],
       pendingTrample: null,
       pendingRun: null,
       pendingApproach: null,

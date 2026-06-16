@@ -20,6 +20,7 @@ const ICON: Record<RevealEntry['kind'], string> = {
   round: '⏳',
   mutation: '🧬',
   effet: '📜', // effet d'AUTEUR (scénario) : Blessure Critique / maladie infligée
+  sceneEntry: '📍', // entrée de zone : mise en contexte narrative (N1 — « le Journal n'est pas lu »)
 };
 
 /** Nom de la table tirée pour la rangée d100 (présentation canonique `TableRollLine`). */
@@ -87,6 +88,7 @@ export function RevealModalView({ entry, subject, actor, onDismiss }: {
   onDismiss: () => void;
 }) {
   const isCrit = entry.kind === 'critical';
+  const isScene = entry.kind === 'sceneEntry';
   // Auto-fermeture par gravité — relancée à chaque NOUVELLE entrée de la file (clé = entry).
   const ms = entry.severity ? AUTO_CLOSE_MS[entry.severity] : null;
   const [armedAt, setArmedAt] = useState(0);
@@ -101,6 +103,14 @@ export function RevealModalView({ entry, subject, actor, onDismiss }: {
     <Modal title={<>{ICON[entry.kind]} {entry.title}</>} subject={isCrit ? undefined : subject} variant="test">
       {isCrit ? (
         <CriticalBody entry={entry} actor={actor} subject={subject} />
+      ) : isScene ? (
+        <div className="scene-intro">
+          {entry.lines.map((l, i) => (
+            <p key={i} className="rm-log">
+              {l}
+            </p>
+          ))}
+        </div>
       ) : (
         <>
           <TableRollLine table={TABLE_LABEL[entry.kind] ?? entry.title} roll={entry.dice} result={entry.lines[0] ?? ''} />
