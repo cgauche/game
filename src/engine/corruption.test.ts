@@ -7,9 +7,10 @@ import type { Combatant } from './types';
 import { makeRNG } from './dice';
 import {
   corruptionGain, corruptionThresholdExceeded, mutationKindFor, mutationLimitExceeded,
-  attachMutation, mutationCharDelta, mutationMovementDelta, mutationArmourBonus, mutationTestMod,
+  attachMutation, mutationCharDelta, mutationMovementDelta, mutationArmourBonus, mutationCharTestMod,
 } from './corruption';
 import { rollMutation } from '../data/mutations';
+import { passiveSkillSum } from './trauma';
 import { effectiveChar } from './characteristics';
 import { testValue } from './skills';
 import { effectiveMovement } from './encumbrance';
@@ -103,8 +104,9 @@ describe('effets de mutation lus à la volée', () => {
     const c = hero({ skills: [{ name: 'Pistage', advances: 5 } as never, { name: 'Charme', advances: 0 } as never] });
     attachMutation(c, { label: 'Groin poilu', kind: 'physique', roll: 93, skillMods: { pistage: 10 } });
     attachMutation(c, { label: 'Visage inversé', kind: 'physique', roll: 53, testMods: [{ char: 'Soc', mod: -20 }] });
-    expect(mutationTestMod(c, 'Pistage', 'I')).toBe(10);
-    expect(testValue(c, 'Charme')).toBe(30 - 20); // Soc 30, Tests de Sociabilité −20
+    expect(passiveSkillSum(c, 'Pistage')).toBe(10); // compétence nommée → collecteur passif (Σ, intrinsèque)
+    expect(mutationCharTestMod(c, 'Soc')).toBe(-20); // Tests dérivés d'une caractéristique
+    expect(testValue(c, 'Charme')).toBe(30 - 20); // Soc 30, Tests de Sociabilité −20 (bout en bout)
   });
   it('attachMutation pousse les Traits dérivés (créature + psychologie)', () => {
     const c = hero();

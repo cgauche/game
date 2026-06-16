@@ -140,14 +140,11 @@ export function mutationArmourBonus(c: Combatant, loc: HitLocation): number {
   return d;
 }
 
-/** Modificateur de TEST dû aux mutations : compétence nommée (préfixe) + tests dérivés d'une
- *  caractéristique (Visage inversé → −20 aux Tests de Sociabilité). Signé, cumulable. */
-export function mutationTestMod(c: Combatant, skill: string | undefined, charKey: CharKey): number {
+/** Modificateur de TEST dû aux mutations, pour une CARACTÉRISTIQUE (Visage inversé → −20 aux Tests de
+ *  Sociabilité). Signé, cumulable. Les mods de compétence NOMMÉE (Groin poilu +10 Pistage) sont désormais
+ *  portés par le collecteur passif unifié (`passiveSkillSum`, kind `intrinsèque`). */
+export function mutationCharTestMod(c: Combatant, charKey: CharKey): number {
   let d = 0;
-  const low = skill?.toLowerCase();
-  for (const m of c.mutations ?? []) {
-    if (low && m.skillMods) for (const [k, v] of Object.entries(m.skillMods)) if (low.startsWith(k)) d += v;
-    for (const t of m.testMods ?? []) if (t.char === charKey) d += t.mod;
-  }
+  for (const m of c.mutations ?? []) for (const t of m.testMods ?? []) if (t.char === charKey) d += t.mod;
   return d;
 }

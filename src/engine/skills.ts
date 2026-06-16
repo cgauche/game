@@ -9,8 +9,8 @@ import { groupMatch } from './groups';
 import { effectiveChar } from './characteristics';
 import { testStatePenalty } from './conditions';
 import { agilityTestPenalty } from './encumbrance';
-import { traumaSkillPenalty } from './trauma';
-import { mutationTestMod } from './corruption';
+import { traumaSkillPenalty, passiveSkillSum } from './trauma';
+import { mutationCharTestMod } from './corruption';
 
 /** Caractéristique associée à une compétence (par son label). */
 export function skillCharKey(skillLabel: string): CharKey | undefined {
@@ -34,10 +34,10 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
   const armour = skill ? wornArmourPenalty(c, skill) : 0;
   const soc = ck === 'Soc' ? wornSocialMod(c) : 0;
   const traumaSkill = traumaSkillPenalty(c, skill); // séquelle permanente de fracture (Langue, LDB 18 l.300)
-  // Mutations (LDB 19) : mods de TESTS — compétence nommée (Groin poilu : +10 Pistage ;
-  // Langue pendante : −10 Langue) et Tests dérivés d'une caractéristique (Visage inversé :
-  // −20 aux Tests de Sociabilité).
-  const mut = mutationTestMod(c, skill, ck);
+  // Mutations (LDB 19) : mods de TESTS — compétence nommée (Groin poilu : +10 Pistage) via le collecteur
+  // passif unifié (`passiveSkillSum`, additif Σ), + Tests dérivés d'une caractéristique (Visage inversé :
+  // −20 aux Tests de Sociabilité) via `mutationCharTestMod`.
+  const mut = passiveSkillSum(c, skill) + mutationCharTestMod(c, ck);
   return base + (sk?.advances ?? 0) + states + enc + armour + soc + traumaSkill + mut;
 }
 

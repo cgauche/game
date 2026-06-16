@@ -432,6 +432,7 @@ export function passiveMods(c: Combatant): PassiveMod[] {
   for (const m of c.mutations ?? []) {
     if (m.charMods) for (const k of Object.keys(m.charMods) as CharKey[]) { const mod = m.charMods[k] ?? 0; if (mod) out.push({ op: { op: 'charMod', char: k, mod }, kind: 'intrinsèque' }); }
     if (m.movement) out.push({ op: { op: 'moveMod', mod: m.movement }, kind: 'intrinsèque' });
+    if (m.skillMods) for (const [skill, mod] of Object.entries(m.skillMods)) if (mod) out.push({ op: { op: 'skillMod', skill, mod }, kind: 'intrinsèque' });
   }
   for (const e of c.activeEffects ?? []) {
     if (e.skillMods) for (const [skill, mod] of Object.entries(e.skillMods)) out.push({ op: { op: 'skillMod', skill, mod }, kind: 'magique' });
@@ -466,6 +467,15 @@ export function passiveCharSum(c: Combatant, key: CharKey): number {
  *  par nature quel que soit le kind. Lu par `effectiveMovement` (sommé avant tout demi-Mouvement). */
 export function passiveMoveMod(c: Combatant): number {
   return pmods(c, 'moveMod').reduce((s, o) => s + o.mod, 0);
+}
+
+/** Σ des `skillMod` ADDITIFS (mutation/qualité, kind `intrinsèque`) s'appliquant au Test `skill` — match par
+ *  préfixe `skill.startsWith(op.skill)` (« Pistage » ⊇ clé « pistage »), comme l'ex-`mutationTestMod`. Lu par
+ *  `testValue` (couche test-time) ; distinct du POOL non-cumul des séquelles (`traumaSkillPenalty`). */
+export function passiveSkillSum(c: Combatant, skill?: string): number {
+  const low = skill?.toLowerCase();
+  if (!low) return 0;
+  return pmods(c, 'skillMod', true).filter((o) => low.startsWith(o.skill)).reduce((s, o) => s + o.mod, 0);
 }
 
 /** Pénalités de Caractéristique dues aux traumatismes (valeurs négatives, pour le pool « pire pénalité »).
