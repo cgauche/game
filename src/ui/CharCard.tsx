@@ -1,5 +1,5 @@
 import type { KeyboardEvent } from 'react';
-import { Combatant, CHAR_KEYS, CharKey } from '../engine/types';
+import { Combatant, CHAR_KEYS, CharKey, CHAR_LABELS } from '../engine/types';
 import { PortraitTile } from './PortraitTile';
 import { speciesSingular } from '../data';
 import { CodexRef } from './compendium/CodexRef';
@@ -45,7 +45,9 @@ export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?:
       <div className="char-stats">
         {CHAR_KEYS.map((k) => (
           <div className="stat" key={k}>
-            <span className="stat-label">{SHORT[k]}</span>
+            <span className="stat-label">
+              <CodexRef category="characteristics" label={CHAR_LABELS[k]}>{SHORT[k]}</CodexRef>
+            </span>
             <span className="stat-val">{hero.characteristics[k]}</span>
           </div>
         ))}
