@@ -283,6 +283,8 @@ export interface ActiveEffect {
   skillMods?: Record<string, number>;
   /** Échelle multiplicative du Mouvement (op `moveScale`) — lue par `traumaMovementHalved`/`effectiveMovement`. */
   moveScale?: { num: number; den: number };
+  /** Modificateur ADDITIF de Mouvement (op `moveMod`) — sommé par `effectiveMovement` avant le `moveScale`. */
+  moveMod?: number;
   /** Plafond de mains d'arme maniables (op `maxWeaponHands`) — lu par `cannotWieldTwoHanded`. */
   maxWeaponHands?: number;
 }

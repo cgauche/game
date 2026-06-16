@@ -62,7 +62,8 @@ export function effectiveMovement(c: Combatant): number {
   // Empêtré (LDB 16-États l.85) / Surpris (l.132 « ni Mouvement ni Action ») : Mouvement = 0.
   if (p.immobile || hasCondition(c, 'Empêtré') || hasCondition(c, 'Surpris')) return 0;
   // Mutations (LDB 19) : ±1 Mouvement PERMANENT (Pattes d'animaux / Corpulent / Court sur pattes).
-  const mv = Math.max(0, c.movement + mutationMovementDelta(c));
+  // + op `moveMod` ADDITIF (sort/trait/mutation migrés vers le système passif unifié) — sommé avant tout halving.
+  const mv = Math.max(0, c.movement + mutationMovementDelta(c) + (c.activeEffects ?? []).reduce((s, e) => s + (e.moveMod ?? 0), 0));
   const base = p.tier === 0 ? mv : Math.min(mv, Math.max(mv - p.movePenalty, p.moveFloor));
   // Demi-Mouvement : Sonné (LDB 16 l.123), À Terre (= ramper à ½ Mouvement, l.37), OU traumatisme de
   // jambe/torse (LDB 18 : Déchirure/Fracture). Un seul halving (pas de cumul inventé).

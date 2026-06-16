@@ -278,6 +278,9 @@ export type GameOp =
    *  fraction appliquée à `c.movement` (amputation de jambe : 1/2). Trauma : lu par `traumaMovementHalved` ;
    *  sort : `ActiveEffect.moveScale`. (`M` n'est pas une Caractéristique → op de mouvement dédiée.) */
   | { op: 'moveScale'; num: number; den: number }
+  /** Modificateur ADDITIF de Mouvement (trait Brutal −1 / Rapide +1, mutation ±1, encombrement) — distinct de
+   *  `moveScale` (multiplicatif). `effectiveMovement` somme les `moveMod` PUIS applique les `moveScale`. */
+  | { op: 'moveMod'; mod: number }
   /** Plafond de mains d'arme maniables — GÉNÉRALISE `noTwoHanded` (hands:1 = pas d'arme à deux mains).
    *  Une amputation de main/bras pose `maxWeaponHands:1`. Lu par `cannotWieldTwoHanded`/`recomputeLoadout`. */
   | { op: 'maxWeaponHands'; hands: number }
@@ -920,6 +923,17 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           moveScale: { num: o.num, den: o.den },
         });
         lines.push(`${target.name} : Mouvement ×${o.num}/${o.den} (${ctx.label ?? 'sort'}).`);
+        break;
+      }
+      case 'moveMod': {
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
+          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          moveMod: o.mod,
+        });
+        lines.push(`${target.name} : ${o.mod >= 0 ? '+' : ''}${o.mod} Mouvement (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'maxWeaponHands': {

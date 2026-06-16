@@ -70,6 +70,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   lifeSteal: '🩸 Vol de vie (drain de Blessures)',
   skillMod: '🎯 Modif. d’une Compétence',
   moveScale: '🦵 Échelle de Mouvement (×n/d)',
+  moveMod: '🦵 Modif. de Mouvement (±N)',
   maxWeaponHands: '✋ Plafond de mains d’arme',
   senseLoss: '👁️ Perte sensorielle (œil/oreille)',
   loseTurn: '⏭️ Perdre Action + Mouvement',
@@ -87,7 +88,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['🌐 Zones', ['zone']],
   ['🩹 Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound']],
   ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'loseTurn']],
-  ['🩼 Séquelles & mobilité', ['skillMod', 'moveScale', 'maxWeaponHands', 'senseLoss']],
+  ['🩼 Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'maxWeaponHands', 'senseLoss']],
   ['🎲 Contrôle', ['test']],
   ['📝 Narration', ['narrative']],
 ];
@@ -221,6 +222,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'lifeSteal': return { op: 'lifeSteal', num: 1, den: 2, round: 'floor' };
     case 'skillMod': return { op: 'skillMod', skill: 'Esquive', mod: -10 };
     case 'moveScale': return { op: 'moveScale', num: 1, den: 2 };
+    case 'moveMod': return { op: 'moveMod', mod: -1 };
     case 'maxWeaponHands': return { op: 'maxWeaponHands', hands: 1 };
     case 'senseLoss': return { op: 'senseLoss', sense: 'vue' };
     case 'loseTurn': return { op: 'loseTurn' };
