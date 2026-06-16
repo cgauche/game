@@ -16,7 +16,7 @@ import { asTrait } from '../engine/traits/dispatch';
 import { resolveQualities } from '../engine/qualities/dispatch';
 import { isOutOfAction } from '../engine/conditions';
 import { isEngagedWith } from '../engine/engagement';
-import { traitByLabel, qualityByLabel } from '../data';
+import { traitByLabel, qualityByLabel, findManeuverById } from '../data';
 import { runSpellFlow } from './combatEffects';
 import { RNG, defaultRNG } from '../engine/dice';
 
@@ -73,11 +73,17 @@ export function fireTriggers(get: Get, actor: Combatant, trigger: EffectTrigger,
 }
 
 /** Effets onHit AUTHORÉS de la manœuvre `kind` portée par `actor` (Caudale → À Terre, Tentacules →
- *  Empêtré…) — lus du profil `TraitData.maneuver.effects`. Vide si la créature n'a pas cette manœuvre. */
+ *  Empêtré…) — lus de la MANŒUVRE octroyée (`TraitData.grantsManeuvers` → `findManeuverById`) dont la
+ *  `def.kind` correspond. Vide si la créature n'a pas cette manœuvre. Sert le chemin de mêlée FREE
+ *  (`freeKind` → arme + onHit) : la touche est résolue comme un coup d'arme, mais les États propres à
+ *  la manœuvre (À Terre/Empêtré) viennent de SA donnée éditable. */
 export function maneuverEffectsOf(actor: Combatant, kind: string): TriggeredEffect[] {
   for (const raw of actor.traits ?? []) {
     const td = traitByLabel.get(asTrait(raw).key);
-    if (td?.maneuver?.kind === kind) return td.maneuver.effects ?? [];
+    for (const ref of td?.grantsManeuvers ?? []) {
+      const def = findManeuverById(ref.id);
+      if (def?.kind === kind) return def.effects ?? [];
+    }
   }
   return [];
 }

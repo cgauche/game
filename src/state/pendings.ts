@@ -271,6 +271,9 @@ export interface PendingTrample {
 export interface PendingManeuver {
   attackerId: string;
   kind: AttackKind;
+  /** Cible DÉSIGNÉE au clic (victime pour Langue/Regard/Étreinte ; point d'impact de la zone pour
+   *  Souffle/Vomi — LDB 85 « choisit une cible visible »). Absent côté IA (cible auto la plus proche). */
+  targetId?: string;
   /** Avantage dépensé (coût RAW ; Regard : choisi par le joueur, +1 DR/Av — LDB 85 l.238). */
   avantageSpent: number;
   result: TestResult | null; // null = pas encore lancé

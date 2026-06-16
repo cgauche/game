@@ -9,16 +9,20 @@
  */
 import {
   species, careers, characteristics, classes, skills, talents,
-  qualities, trappings, etats, creatures, traits, spells, mutations, mutationTables,
-  stars, locations, books, levelsForCareer, skillRefLabel, talentRefLabel,
+  qualities, trappings, etats, creatures, traits, spells, maneuvers, mutations, mutationTables, gods,
+  stars, locations, books, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel,
+  skillInstanceLabel, talentConcrete,
 } from '../../data';
-import { CULTS } from '../../engine/cults/registry';
 import { statName } from '../../engine/statEntry';
+import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import { traitLabels } from '../../engine/traits/dispatch';
-import { CHAR_KEYS, HIT_LOCATION_LABELS, type Combatant, type HitLocation } from '../../engine/types';
+import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, type Combatant, type HitLocation } from '../../engine/types';
 import { SIZE_LABEL, effectiveSize } from '../../engine/size';
 import { costPerEnc } from '../../engine/harvest';
 import { formatMoney } from '../../engine/money';
+import type { EntityAppearance } from '../../state/scene';
+import type { MutationData } from '../../data/mutations';
+import { passiveSection, effectsSection } from './describe';
 
 export type CodexGroup = 'Personnage' | 'Compétences' | 'Équipement' | 'Effets' | 'Magie' | 'Monde';
 
@@ -60,6 +64,8 @@ export interface CodexItem {
   desc?: string;
   html?: boolean;
   source?: CodexSource | null;
+  /** Apparence (rig) à prévisualiser dans la fiche : créature, difformité de mutation, trait à visuel. */
+  appearance?: EntityAppearance;
 }
 export interface CodexCategory {
   key: string;
@@ -101,6 +107,10 @@ const chips = (title: string, category: string, items?: string[] | null): CodexS
 const sections = (...xs: (CodexSection | null | undefined | false)[]): CodexSection[] =>
   xs.filter((s): s is CodexSection => !!s && s.rows.length > 0);
 
+/** Libellés FR du déclenchement / ciblage d'une Manœuvre (Codex). */
+const MANEUVER_ACTIVATION_LABEL: Record<string, string> = { action: 'Action', free: 'Gratuite', charge: 'À la Charge' };
+const MANEUVER_TARGETING_LABEL: Record<string, string> = { melee: 'Mêlée', ranged: 'Distance', zone: 'Zone', allFoes: 'Tous les ennemis' };
+
 export const CODEX: CodexCategory[] = [
   {
     key: 'races', label: 'Races', group: 'Personnage',
@@ -112,8 +122,8 @@ export const CODEX: CodexCategory[] = [
       meta: facts(fact('Mouvement', s.movement), fact('Destin', s.fate?.fate), fact('Résilience', s.fate?.resilience)),
       sections: sections(
         { title: 'Caractéristiques de base', layout: 'grid', rows: kvRows(Object.entries(s.baseChar ?? {})) },
-        chips("Compétences d'espèce", 'skills', s.skills),
-        chips("Talents d'espèce", 'talents', s.talents),
+        chips("Compétences d'espèce", 'skills', s.skills.map((a) => advancementLabel('skills', a))),
+        chips("Talents d'espèce", 'talents', s.talents.map((a) => advancementLabel('talents', a))),
       ),
     })),
   },
@@ -125,10 +135,10 @@ export const CODEX: CodexCategory[] = [
         title: `Niveau ${lv.level} : ${lv.label} — ${lv.status}`,
         layout: 'chips' as const,
         rows: [
-          ...(lv.characteristics.length ? [{ t: 'sub', label: 'Caractéristiques avancées' } as CodexRow, { t: 'text', text: lv.characteristics.join(', ') } as CodexRow] : []),
-          ...(lv.skills.length ? [{ t: 'sub', label: 'Compétences' } as CodexRow, ...refRows('skills', lv.skills)] : []),
-          ...(lv.talents.length ? [{ t: 'sub', label: 'Talents' } as CodexRow, ...refRows('talents', lv.talents)] : []),
-          ...(lv.trappings.length ? [{ t: 'sub', label: 'Possessions' } as CodexRow, ...refRows('trappings', lv.trappings)] : []),
+          ...(lv.characteristics.length ? [{ t: 'sub', label: 'Caractéristiques avancées' } as CodexRow, { t: 'text', text: lv.characteristics.map((k) => CHAR_LABELS[k]).join(', ') } as CodexRow] : []),
+          ...(lv.skills.length ? [{ t: 'sub', label: 'Compétences' } as CodexRow, ...refRows('skills', lv.skills.map((a) => advancementLabel('skills', a)))] : []),
+          ...(lv.talents.length ? [{ t: 'sub', label: 'Talents' } as CodexRow, ...refRows('talents', lv.talents.map((a) => advancementLabel('talents', a)))] : []),
+          ...(lv.trappings.length ? [{ t: 'sub', label: 'Possessions' } as CodexRow, ...refRows('trappings', lv.trappings.map(trappingRefLabel))] : []),
         ],
       })),
     })),
@@ -143,14 +153,15 @@ export const CODEX: CodexCategory[] = [
     key: 'classes', label: 'Classes', group: 'Personnage',
     items: classes.map((c) => ({
       label: c.label, desc: c.desc, source: src(c.source),
-      sections: sections(chips('Possessions de départ', 'trappings', c.trappings)),
+      sections: sections(chips('Possessions de départ', 'trappings', c.trappings.map(trappingRefLabel))),
     })),
   },
   {
     key: 'stars', label: 'Étoiles', group: 'Personnage',
     items: stars.map((s) => ({
       label: s.label, sub: s.signe ?? undefined, desc: s.desc ?? undefined, source: src(s.source),
-      meta: facts(fact('Dates', s.dates), fact('Dieu', s.dieux), fact('Ascendant', s.ascendant), fact('Caractéristiques', s.characteristics), fact('Talent', s.talent)),
+      meta: facts(fact('Dates', s.dates), fact('Dieu', s.dieux), fact('Ascendant', s.ascendant)),
+      sections: sections(passiveSection(s.effect, 'Effet du signe')),
     })),
   },
   {
@@ -181,13 +192,14 @@ export const CODEX: CodexCategory[] = [
     items: trappings.map((t) => ({
       label: t.label, sub: join(t.type, t.subType), desc: t.desc ?? undefined, html: true, source: src(t.source),
       meta: facts(fact('Enc', t.enc), fact('Disponibilité', t.availability), fact('Dégâts', t.damage), fact('PA', t.pa), fact('Allonge', t.reach)),
-      sections: sections(chips('Qualités', 'qualities', t.qualities)),
+      sections: sections(chips('Qualités', 'qualities', t.qualities.map(qualityRefLabel))),
     })),
   },
   {
     key: 'qualities', label: 'Qualités', group: 'Équipement',
-    items: (qualities as { label: string; type?: string; subType?: string; desc?: string; source?: CodexSource }[]).map((q) => ({
+    items: (qualities as { label: string; type?: string; subType?: string; desc?: string; source?: CodexSource; passive?: import('../../engine/ops').GameOp[] }[]).map((q) => ({
       label: q.label, sub: join(q.type, q.subType), desc: q.desc, html: true, source: src(q.source),
+      sections: sections(passiveSection(q.passive)),
     })),
   },
   {
@@ -196,11 +208,35 @@ export const CODEX: CodexCategory[] = [
   },
   {
     key: 'mutations', label: 'Mutations', group: 'Effets',
-    items: (mutations as { label: string; kind?: string; note?: string }[]).map((m) => ({ label: m.label, sub: m.kind, desc: m.note })),
+    items: (mutations as MutationData[]).map((m) => ({
+      label: m.label,
+      sub: m.kind === 'physique' ? 'Physique' : 'Mentale',
+      group: m.kind === 'physique' ? 'Physiques' : 'Mentales',
+      desc: m.note ?? undefined,
+      appearance: m.appearance,
+      meta: facts(
+        fact('PA (toutes localisations)', m.apAll),
+        fact('PA localisé', m.apLocations ? Object.entries(m.apLocations).map(([loc, n]) => `${HIT_LOCATION_LABELS[loc as HitLocation] ?? loc} +${n}`).join(', ') : null),
+        fact('Arme naturelle', m.derivedWeapon ? `${m.derivedWeapon.name} (${m.derivedWeapon.damage})` : null),
+      ),
+      sections: sections(passiveSection(m.passive), chips('Traits conférés', 'traits', m.traits)),
+    })),
   },
   {
     key: 'mutationTables', label: 'Tables de Corruption', group: 'Effets',
     items: (mutationTables as { label: string; ranges: unknown[] }[]).map((t) => ({ label: t.label, sub: `${t.ranges.length} plages d100` })),
+  },
+  {
+    key: 'maneuvers', label: 'Manœuvres', group: 'Effets',
+    items: maneuvers.map((m) => ({
+      label: m.label, sub: ATTACK_LABEL[m.kind], desc: m.desc, source: src(m.source),
+      meta: facts(
+        fact('Activation', MANEUVER_ACTIVATION_LABEL[m.activation]),
+        fact('Coût Av', m.advantageCost),
+        fact('Portée', m.range),
+        fact('Cible', MANEUVER_TARGETING_LABEL[m.targeting]),
+      ),
+    })),
   },
   {
     key: 'spells', label: 'Sorts', group: 'Magie',
@@ -211,11 +247,11 @@ export const CODEX: CodexCategory[] = [
   },
   {
     key: 'gods', label: 'Dieux', group: 'Magie',
-    items: Object.values(CULTS).map((c) => ({
+    items: gods.map((c) => ({
       label: c.key, sub: c.title, desc: c.desc, html: true, source: c.source ?? null,
       sections: sections(
-        chips('Bénédictions', 'spells', c.blessings),
-        chips('Miracles', 'spells', c.miracles),
+        chips('Bénédictions', 'spells', c.blessings.map((b) => refLabel('spells', b))),
+        chips('Miracles', 'spells', c.miracles.map((m) => refLabel('spells', m))),
       ),
     })),
   },
@@ -223,15 +259,16 @@ export const CODEX: CodexCategory[] = [
     key: 'creatures', label: 'Créatures', group: 'Monde',
     items: creatures.map((c) => ({
       label: c.label, sub: c.title ?? undefined, group: c.folder ?? undefined, desc: c.desc ?? undefined, html: true, source: src(c.source),
+      appearance: c.appearance,
       meta: c.harvest ? facts(fact('Récolte (1 Enc)', formatMoney(costPerEnc(c.harvest)))) : undefined,
       sections: sections(
         { title: 'Caractéristiques', layout: 'grid', rows: kvRows(Object.entries(c.char)) },
         chips('Traits', 'traits', traitLabels(c.traits)),
-        chips('Traits optionnels', 'traits', c.optionals),
+        chips('Traits optionnels', 'traits', traitLabels(c.optionals)),
         chips('Compétences', 'skills', c.skills.map(skillRefLabel)), // SkillRef[] → libellés « Calme 58 »
         chips('Talents', 'talents', c.talents.map(talentRefLabel)), // TalentRef[] → libellés « Magie des Arcanes (Ghur) »
-        chips('Sorts', 'spells', c.spells),
-        chips('Possessions', 'trappings', c.trappings),
+        chips('Sorts', 'spells', c.spells.map((s) => refLabel('spells', s))),
+        chips('Possessions', 'trappings', c.trappings.map(trappingRefLabel)),
         c.harvest
           ? {
               title: 'Récolte (Précieuses Entrailles)',
@@ -249,7 +286,13 @@ export const CODEX: CodexCategory[] = [
   },
   {
     key: 'traits', label: 'Traits', group: 'Monde',
-    items: traits.map((t) => ({ label: t.label, sub: t.prefix ?? undefined, desc: t.desc, html: true, source: src(t.source) })),
+    items: traits.map((t) => ({
+      label: t.label, sub: t.prefix ?? undefined, desc: t.desc, html: true, source: src(t.source), appearance: t.appearance,
+      sections: sections(
+        chips('Manœuvres conférées', 'maneuvers', (t.grantsManeuvers ?? []).map((r) => refLabel('maneuvers', r))),
+        passiveSection(t.passive), effectsSection(t.effects),
+      ),
+    })),
   },
   {
     key: 'locations', label: 'Lieux', group: 'Monde',
@@ -288,7 +331,7 @@ export function combatantSections(c: Combatant): CodexSection[] {
     { t: 'kv', k: 'Taille', v: SIZE_LABEL[effectiveSize(c.size)] },
   ];
   const skillRows: CodexRow[] = (c.skills ?? []).map((s) =>
-    refRow('skills', `${s.name}${s.spec ? ` (${s.spec})` : ''} ${(ch[s.characteristic] ?? 0) + s.advances}`),
+    refRow('skills', `${skillInstanceLabel(s)} ${(ch[s.characteristic] ?? 0) + s.advances}`),
   );
   const weaponRows: CodexRow[] = (c.weapons ?? []).map((w) => ({ t: 'text', text: `${w.name} (${w.damage})` }));
   const worn = ARMOUR_LOCS.filter((l) => (c.armour?.[l] ?? 0) > 0);
@@ -298,7 +341,7 @@ export function combatantSections(c: Combatant): CodexSection[] {
     worn.length ? { title: 'Armure', layout: 'list', rows: [{ t: 'text', text: worn.map((l) => `${HIT_LOCATION_LABELS[l]} ${c.armour![l]}`).join(' · ') }] } : null,
     chips('Traits', 'traits', traitLabels(c.traits)),
     skillRows.length ? { title: 'Compétences', layout: 'chips', rows: skillRows } : null,
-    chips('Talents', 'talents', (c.talents ?? []).map((t) => t.name)),
+    chips('Talents', 'talents', (c.talents ?? []).map((t) => talentConcrete(t))),
     chips('Sorts', 'spells', c.spells),
   );
 }

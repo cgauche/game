@@ -40,13 +40,13 @@ describe('availableManeuvers — énumération (pur)', () => {
     expect(availableManeuvers(heroNoAdv, mkBattle([heroNoAdv, enemy])).some((x) => x.kind === 'morsure')).toBe(false);
   });
 
-  it('Souffle +15 (Feu) : manœuvre IMMÉDIATE (zone) présente avec Avantage ≥ 2', () => {
+  it('Souffle +15 (Feu) : manœuvre CIBLÉE (zone, clic = point d’impact) présente avec Avantage ≥ 2', () => {
     const enemy = at('enemy', 'E', 5, 6);
     const hero = at('hero', 'H', 5, 5, { traits: ['Souffle +15 (Feu)'], advantage: 2 });
     const souffle = availableManeuvers(hero, mkBattle([hero, enemy])).find((x) => x.kind === 'souffle');
     expect(souffle).toBeTruthy();
-    expect(souffle!.mode).toBe('immediate'); // zone → résolution directe
-    expect(souffle!.dispatch).toBe('area');
+    expect(souffle!.mode).toBe('target'); // zone CIBLÉE : le clic désigne le point d’impact (LDB 85 « cible visible »)
+    expect(souffle!.dispatch).toBe('maneuver');
     expect(souffle!.cost).toBe(2);
 
     const heroLow = at('hero', 'H', 5, 5, { traits: ['Souffle +15 (Feu)'], advantage: 1 });
@@ -124,16 +124,19 @@ describe('manœuvres en combat (store)', () => {
     return { H, E };
   }
 
-  it('battleManeuverArea(souffle) : OUVRE pendingManeuver (jet d’attaquant différé), rien n’est tiré avant Lancer', () => {
+  it('Souffle CIBLÉ : battle.action=maneuver + clic = point d’impact → pendingManeuver{targetId} (jet différé)', () => {
     useGame.getState().seedRng(2);
-    const { H } = setup();
+    const { H, E } = setup();
     H.traits = ['Souffle +15 (Feu)'];
     H.characteristics.CT = 90; // Test opposé CT/Esquive → touche déterministe
     H.advantage = 3;
-    useGame.getState().battleManeuverArea('souffle');
+    // La hotbar arme `battle.action='maneuver'` (mode-cible) ; le clic-entité désigne le point d’impact.
+    useGame.setState({ battle: { ...useGame.getState().battle!, action: 'maneuver', maneuverKind: 'souffle' } });
+    useGame.getState().battleClickEntity(E.id);
     const pm = useGame.getState().pendingManeuver;
     expect(pm).toBeTruthy(); // « un jet = une modale » : le Souffle ouvre la modale de jet d’attaquant
     expect(pm!.kind).toBe('souffle');
+    expect(pm!.targetId).toBe(E.id); // point d’impact = entité cliquée
     expect(pm!.result).toBeNull(); // rien n’est tiré avant Lancer
     expect(pm!.avantageSpent).toBe(2); // coût RAW affiché (dépensé à l’application)
     expect(useGame.getState().battle!.acted).toBe(false); // gratuite : l’Action reste

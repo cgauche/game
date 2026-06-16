@@ -19,8 +19,7 @@ import {
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, aiOvercastPlan,
-  availableManeuvers, freeAttackWeapon, applyWail,
-  applyManArea, applyManTongue, applyManGaze, applyManChillGrasp,
+  availableManeuvers, freeAttackWeapon, applyWail, resolveManeuver, MELEE_MANEUVER_KINDS,
   castSightBlocked, spellSightOf, castZoneSpell, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone,
   counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition,
   openRoundStartPsych, displaceSmaller, applySurprise,
@@ -3035,18 +3034,32 @@ export const useGame = create<GameState>((set, get) => ({
     const kind = battle.maneuverKind;
     if (!active || active.kind !== 'hero' || !kind) return;
     if (!canTakeAction(active) || hasCondition(active, 'Brisé')) return; // Sonné/Brisé : pas de manœuvre offensive
-    // Profil RAW de la manœuvre (coût d'Avantage + Indice de Dégâts) lu de la DONNÉE (creatureAttacks).
+    // Profil de la manœuvre lu de la DONNÉE (`creatureAttacks` → `ManeuverDef`).
     const a = creatureAttacks(active.traits ?? []).find((x) => x.kind === kind);
-    if (!a || a.trigger !== 'free' || active.advantage < a.avantage) return;
+    if (!a) return;
+    // Coût d'Action/Avantage (Étreinte/Regard = Action ; les autres gratuites). Avantage requis = coût
+    // RAW, ou 1 si VARIABLE (Regard, ajusté ensuite par maneuverSetAvantage).
+    if (a.trigger === 'action') { if (battle.acted || !canTakeAction(active)) return; }
+    const minAdv = a.advantageMode === 'variable' ? 1 : a.avantage;
+    if (active.advantage < minAdv) return;
     const target = battle.combatants.find((c) => c.id === targetId);
     if (!target || target.kind === active.kind || isOutOfAction(target) || !target.pos || !active.pos) return;
-    if (combatDistance(active, target) > 1) { get().log('Cible hors de portée de la manœuvre.'); return; }
-    // Dépense l'Avantage RAW puis OUVRE la modale d'attaque standard (« un jet = une modale »). `freeKind`
-    // porte le type → attackConfirm synthétise l'arme naturelle (Indice du profil) + applique les effets
-    // onHit propres à la manœuvre, l'Action préservée. Pas de weaponUid (arme synthétique, pas équipée).
-    active.advantage = Math.max(0, active.advantage - a.avantage);
+    if (MELEE_MANEUVER_KINDS.includes(kind)) {
+      // Mêlée de trait (Morsure/Caudale/Tentacules) : résolue comme un COUP D'ARME (pendingAttack +
+      // freeKind → arme naturelle, localisation/critique/FX/défense + effets onHit de la `ManeuverDef`).
+      if (combatDistance(active, target) > 1) { get().log('Cible hors de portée de la manœuvre.'); return; }
+      active.advantage = Math.max(0, active.advantage - a.avantage); // Avantage RAW dépensé à l'armement
+      set({
+        pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null, freeKind: kind },
+        battle: { ...battle, action: null, maneuverKind: undefined },
+      });
+      return;
+    }
+    // Manœuvre SPÉCIALE ciblée (Souffle/Vomi/Langue/Regard/Étreinte) : le jet de l'ATTAQUANT (CC/CT)
+    // est INFLUENÇABLE → modale `pendingManeuver` (« un jet = une modale »), `targetId` = clic joueur
+    // (victime ou point d'impact de la zone). Avantage variable (Regard) → défaut 1, ajusté ensuite.
     set({
-      pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null, freeKind: kind },
+      pendingManeuver: { attackerId: active.id, kind, targetId: target.id, avantageSpent: a.advantageMode === 'variable' ? 1 : a.avantage, result: null },
       battle: { ...battle, action: null, maneuverKind: undefined },
     });
   },
@@ -3058,20 +3071,12 @@ export const useGame = create<GameState>((set, get) => ({
     if (!active || active.kind !== 'hero') return;
     const a = creatureAttacks(active.traits ?? []).find((x) => x.kind === kind);
     if (!a) return;
-    // Étreinte glaciale = manœuvre-Action (LDB 85 l.112 « au prix de 2 Avantages ET de son Action ») :
-    // exige l'Action ; les autres sont gratuites (préservent l'Action). Le coût d'Action est posé à la
-    // confirmation (maneuverConfirm pose `acted` selon l'activation) — ici, garde de légalité seule.
-    if (a.trigger === 'action') { if (battle.acted || !canTakeAction(active)) return; }
-    else if (active.advantage < a.avantage) return;
+    if (active.advantage < a.avantage) return; // Hurlement : ≥ coût RAW (2, dépense tout à l'application)
     set({ battle: { ...battle, action: null, maneuverKind: undefined } }); // referme le menu avant la résolution
     // Hurlement (LDB 85 l.135) : PAS de jet d'attaquant — chaque cible tire son 1d10 + Test de
     // Résistance (jets SUBIS montrés au feed). Aucune modale différable → résolution immédiate (le
     // wrapper roule les jets subis + checkBattleOver). Dépense TOUS les Avantages (min 2).
-    if (kind === 'hurlement') { applyWail(get, set, active); return; }
-    // Souffle/Vomi/Langue/Regard/Étreinte : le jet de l'ATTAQUANT (CC/CT) est INFLUENÇABLE → modale
-    // `pendingManeuver` (« un jet = une modale »). Regard : Avantage variable (l.238) → défaut 1, le
-    // joueur ajuste via maneuverSetAvantage ; les autres dépensent leur coût RAW.
-    set({ pendingManeuver: { attackerId: active.id, kind, avantageSpent: a.advantageMode === 'variable' ? 1 : a.avantage, result: null } });
+    if (kind === 'hurlement') applyWail(get, set, active);
   },
   trampleRoll: () => FLOWS.trample.roll(get, set),
   trampleReroll: () => FLOWS.trample.reroll(get, set),
@@ -3095,7 +3100,7 @@ export const useGame = create<GameState>((set, get) => ({
 
   // ── Manœuvre de créature par modale (Souffle/Vomi/Langue/Regard/Étreinte — LDB 85) : le jet de
   //    l'ATTAQUANT passe par FLOWS.maneuver (Lancer/Chance/Pacte/Résilience) ; « Appliquer » roule les
-  //    défenseurs et résout l'opposition au feed via les appliers `applyMan<X>`. ──
+  //    défenseurs et résout l'opposition au feed via le RÉSOLVEUR GÉNÉRIQUE `resolveManeuver`. ──
   maneuverRoll: () => FLOWS.maneuver.roll(get, set),
   maneuverReroll: () => FLOWS.maneuver.reroll(get, set),
   maneuverBonusSL: () => FLOWS.maneuver.bonusSL(get, set),
@@ -3111,12 +3116,10 @@ export const useGame = create<GameState>((set, get) => ({
     const a = creatureAttacks(attacker.traits ?? []).find((x) => x.kind === pm.kind);
     if (!a) return;
     const prevActed = battle.acted;
-    // Étreinte/Regard = manœuvres-Action (LDB 85 l.112/238) : consomment l'Action ; les autres sont
-    // gratuites (Action préservée). L'applier dépense `avantageSpent` Avantage et résout au feed.
-    if (pm.kind === 'souffle' || pm.kind === 'vomi') applyManArea(get, set, attacker, a, pm.result, pm.avantageSpent);
-    else if (pm.kind === 'langue') applyManTongue(get, set, attacker, a, pm.result, pm.avantageSpent);
-    else if (pm.kind === 'regard') applyManGaze(get, set, attacker, pm.result, pm.avantageSpent);
-    else if (pm.kind === 'etreinte') applyManChillGrasp(get, set, attacker, pm.result, pm.avantageSpent);
+    // RÉSOLVEUR GÉNÉRIQUE unique : dépense `avantageSpent`, choisit la/les cible(s) (clic = `targetId`),
+    // roule les défenseurs, applique les effets AUTHORÉS de la `ManeuverDef`. Étreinte/Regard = Action.
+    const chosen = pm.targetId ? battle.combatants.find((c) => c.id === pm.targetId) : undefined;
+    resolveManeuver(get, set, attacker, a.def, a.indice, pm.result, pm.avantageSpent, chosen);
     const acted = a.trigger === 'action' ? true : prevActed; // Action consommée seulement par Étreinte/Regard
     set({ battle: { ...get().battle!, acted } });
     checkBattleOver(get, set);
@@ -3469,7 +3472,7 @@ export const useGame = create<GameState>((set, get) => ({
       loseWounds(mover, res.woundsLost); // perte de PB centralisée : −Avantage du fuyard + À Terre à 0 (LDB 15 l.40 / 18 l.28)
       gainAdvantage(foe); // touché → +1 Avantage de plus (l.107)
       // Test de Calme Intermédiaire (+0) ou État Brisé (+1 par DR négatif).
-      const calme = effectiveChar(mover, 'FM') + (mover.skills.find((s) => s.name.toLowerCase().startsWith('calme'))?.advances ?? 0);
+      const calme = effectiveChar(mover, 'FM') + (mover.skills.find((s) => s.skillId === 'calme')?.advances ?? 0);
       const ct = rollTest(calme, 'intermediaire', battleRng());
       broken = ct.success ? 0 : 1 + Math.max(0, -ct.sl);
       calmeRoll = ct.roll;

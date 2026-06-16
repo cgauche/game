@@ -45,6 +45,13 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
     return { H, E };
   }
 
+  /** Active une manœuvre SPÉCIALE ciblée comme la hotbar : arme le mode-cible puis clique l'entité
+   *  (point d'impact / victime) → `battleManeuver` ouvre `pendingManeuver{targetId}`. */
+  function activate(kind: string, targetId: string) {
+    useGame.setState({ battle: { ...useGame.getState().battle!, action: 'maneuver', maneuverKind: kind as never } });
+    useGame.getState().battleClickEntity(targetId);
+  }
+
   it('Souffle : ouvrir n’ouvre PAS de jet (result===null) ; Lancer→Appliquer dépense 2 Av, Action préservée, Dégâts', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
@@ -52,7 +59,7 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
     H.characteristics.CT = 90; // touche déterministe vs Esquive
     H.advantage = 3;
     const before = E.wounds.current;
-    useGame.getState().battleManeuverArea('souffle');
+    activate('souffle', E.id);
     const pm = useGame.getState().pendingManeuver;
     expect(pm).toBeTruthy();
     expect(pm!.kind).toBe('souffle');
@@ -86,11 +93,11 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
 
   it('Étreinte : manœuvre-Action → maneuverConfirm pose `acted`', () => {
     useGame.getState().seedRng(2);
-    const { H } = setup();
+    const { H, E } = setup();
     H.traits = ['Étreinte glaciale'];
     H.characteristics.CC = 90;
     H.advantage = 2;
-    useGame.getState().battleManeuverArea('etreinte');
+    activate('etreinte', E.id);
     const pm = useGame.getState().pendingManeuver;
     expect(pm!.kind).toBe('etreinte');
     expect(pm!.avantageSpent).toBe(2);
@@ -108,8 +115,8 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
     H.characteristics.CT = 95;
     H.advantage = 6;
     E.characteristics.I = 1;
-    E.skills = E.skills.filter((s) => !s.name.toLowerCase().startsWith('initiative'));
-    useGame.getState().battleManeuverArea('regard');
+    E.skills = E.skills.filter((s) => s.skillId !== 'initiative');
+    activate('regard', E.id);
     expect(useGame.getState().pendingManeuver!.avantageSpent).toBe(1); // défaut variable = 1
     useGame.getState().maneuverSetAvantage(6); // dépense tout → +6 DR
     expect(useGame.getState().pendingManeuver!.avantageSpent).toBe(6);
@@ -123,10 +130,10 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
   });
 
   it('maneuverSetAvantage clampe à 1..Avantage', () => {
-    const { H } = setup();
+    const { H, E } = setup();
     H.traits = ['Regard pétrifiant'];
     H.advantage = 3;
-    useGame.getState().battleManeuverArea('regard');
+    activate('regard', E.id);
     useGame.getState().maneuverSetAvantage(99);
     expect(useGame.getState().pendingManeuver!.avantageSpent).toBe(3); // plafonné à l’Avantage
     useGame.getState().maneuverSetAvantage(0);
@@ -141,7 +148,7 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
     H.advantage = 3;
     H.resilience = 1;
     const before = E.wounds.current;
-    useGame.getState().battleManeuverArea('souffle');
+    activate('souffle', E.id);
     useGame.getState().maneuverRoll();
     expect(useGame.getState().pendingManeuver!.result!.success).toBe(false); // jet raté
     useGame.getState().maneuverForceSuccess();

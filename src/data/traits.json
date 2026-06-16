@@ -1,5 +1,6 @@
 [
   {
+    "id": "a-distance",
     "label": "À distance",
     "prefix": "(Indice) (Portée)",
     "suffix": null,
@@ -10,6 +11,7 @@
     }
   },
   {
+    "id": "a-sang-froid",
     "label": "À sang-froid",
     "prefix": null,
     "suffix": null,
@@ -20,6 +22,7 @@
     }
   },
   {
+    "id": "affame",
     "label": "Affamé",
     "prefix": null,
     "suffix": null,
@@ -61,6 +64,7 @@
     ]
   },
   {
+    "id": "amphibie",
     "label": "Amphibie",
     "prefix": null,
     "suffix": null,
@@ -71,6 +75,7 @@
     }
   },
   {
+    "id": "animosite",
     "label": "Animosité",
     "prefix": "(Cible)",
     "suffix": null,
@@ -81,6 +86,7 @@
     }
   },
   {
+    "id": "arboricole",
     "label": "Arboricole",
     "prefix": null,
     "suffix": null,
@@ -91,6 +97,7 @@
     }
   },
   {
+    "id": "arme",
     "label": "Arme",
     "prefix": "(Indice)",
     "suffix": null,
@@ -99,14 +106,14 @@
       "book": "LDB",
       "page": 338
     },
-    "maneuver": {
-      "kind": "arme",
-      "activation": "action",
-      "advantageCost": 0,
-      "stat": "CC"
-    }
+    "grantsManeuvers": [
+      {
+        "id": "arme"
+      }
+    ]
   },
   {
+    "id": "armure",
     "label": "Armure",
     "prefix": "(Indice)",
     "suffix": null,
@@ -117,6 +124,7 @@
     }
   },
   {
+    "id": "attaque-caudale",
     "label": "Attaque caudale",
     "prefix": "(Indice)",
     "suffix": null,
@@ -125,49 +133,14 @@
       "book": "LDB",
       "page": 338
     },
-    "maneuver": {
-      "kind": "caudale",
-      "activation": "free",
-      "advantageCost": 1,
-      "stat": "CC",
-      "effects": [
-        {
-          "trigger": "onHit",
-          "on": "victim",
-          "flow": {
-            "kind": "if",
-            "cond": {
-              "kind": "compare",
-              "subject": {
-                "who": "target",
-                "field": "size"
-              },
-              "op": "<",
-              "value": {
-                "who": "caster",
-                "field": "size"
-              }
-            },
-            "then": {
-              "kind": "do",
-              "effect": {
-                "type": "ops",
-                "on": "target",
-                "ops": [
-                  {
-                    "op": "condition",
-                    "name": "À Terre",
-                    "unlessCondition": "À Terre"
-                  }
-                ]
-              }
-            }
-          }
-        }
-      ]
-    }
+    "grantsManeuvers": [
+      {
+        "id": "caudale"
+      }
+    ]
   },
   {
+    "id": "belliqueux",
     "label": "Belliqueux",
     "prefix": null,
     "suffix": null,
@@ -178,6 +151,7 @@
     }
   },
   {
+    "id": "beni",
     "label": "Béni",
     "prefix": "(Divers)",
     "suffix": null,
@@ -188,6 +162,7 @@
     }
   },
   {
+    "id": "bestial",
     "label": "Bestial",
     "prefix": null,
     "suffix": null,
@@ -198,6 +173,7 @@
     }
   },
   {
+    "id": "bond",
     "label": "Bond",
     "prefix": null,
     "suffix": null,
@@ -208,6 +184,7 @@
     }
   },
   {
+    "id": "brutal",
     "label": "Brutal",
     "prefix": null,
     "suffix": null,
@@ -239,6 +216,7 @@
     ]
   },
   {
+    "id": "champion",
     "label": "Champion",
     "prefix": null,
     "suffix": null,
@@ -249,6 +227,7 @@
     }
   },
   {
+    "id": "constricteur",
     "label": "Constricteur",
     "prefix": null,
     "suffix": null,
@@ -259,6 +238,7 @@
     }
   },
   {
+    "id": "coriace",
     "label": "Coriace",
     "prefix": null,
     "suffix": null,
@@ -281,6 +261,7 @@
     ]
   },
   {
+    "id": "cornes",
     "label": "Cornes",
     "prefix": "(Indice) (Aspect)",
     "suffix": null,
@@ -289,14 +270,14 @@
       "book": "LDB",
       "page": 338
     },
-    "maneuver": {
-      "kind": "cornes",
-      "activation": "charge",
-      "advantageCost": 0,
-      "stat": "CC"
-    }
+    "grantsManeuvers": [
+      {
+        "id": "cornes"
+      }
+    ]
   },
   {
+    "id": "corruption",
     "label": "Corruption",
     "prefix": "(Degré)",
     "suffix": null,
@@ -307,6 +288,7 @@
     }
   },
   {
+    "id": "corruption-mentale",
     "label": "Corruption mentale",
     "prefix": null,
     "suffix": null,
@@ -317,6 +299,7 @@
     }
   },
   {
+    "id": "demoniaque",
     "label": "Démoniaque",
     "prefix": "(Indice)",
     "suffix": null,
@@ -327,6 +310,7 @@
     }
   },
   {
+    "id": "dresse",
     "label": "Dressé",
     "prefix": "(Compétences spécifiques)",
     "suffix": null,
@@ -337,6 +321,7 @@
     }
   },
   {
+    "id": "effraye",
     "label": "Effrayé",
     "prefix": "(Cible)",
     "suffix": null,
@@ -347,6 +332,7 @@
     }
   },
   {
+    "id": "elite",
     "label": "Élite",
     "prefix": null,
     "suffix": null,
@@ -374,6 +360,7 @@
     ]
   },
   {
+    "id": "endurant",
     "label": "Endurant",
     "prefix": null,
     "suffix": null,
@@ -384,6 +371,7 @@
     }
   },
   {
+    "id": "ethere",
     "label": "Éthéré",
     "prefix": null,
     "suffix": null,
@@ -394,6 +382,7 @@
     }
   },
   {
+    "id": "etreinte-glaciale",
     "label": "Étreinte glaciale",
     "prefix": null,
     "suffix": null,
@@ -402,15 +391,14 @@
       "book": "LDB",
       "page": 339
     },
-    "maneuver": {
-      "kind": "etreinte",
-      "activation": "action",
-      "advantageCost": 2,
-      "stat": "CC",
-      "magic": true
-    }
+    "grantsManeuvers": [
+      {
+        "id": "etreinte-glaciale"
+      }
+    ]
   },
   {
+    "id": "fabrique",
     "label": "Fabriqué",
     "prefix": null,
     "suffix": null,
@@ -421,6 +409,7 @@
     }
   },
   {
+    "id": "foulee",
     "label": "Foulée",
     "prefix": null,
     "suffix": null,
@@ -431,6 +420,7 @@
     }
   },
   {
+    "id": "frenesie",
     "label": "Frénésie",
     "prefix": null,
     "suffix": null,
@@ -441,6 +431,7 @@
     }
   },
   {
+    "id": "furtif",
     "label": "Furtif",
     "prefix": null,
     "suffix": null,
@@ -451,6 +442,7 @@
     }
   },
   {
+    "id": "grand",
     "label": "Grand",
     "prefix": null,
     "suffix": null,
@@ -478,6 +470,7 @@
     ]
   },
   {
+    "id": "grimpant",
     "label": "Grimpant",
     "prefix": null,
     "suffix": null,
@@ -488,6 +481,7 @@
     }
   },
   {
+    "id": "haine",
     "label": "Haine",
     "prefix": "(Cible)",
     "suffix": null,
@@ -498,6 +492,7 @@
     }
   },
   {
+    "id": "hurlement-fantomatique",
     "label": "Hurlement fantomatique",
     "prefix": null,
     "suffix": null,
@@ -506,47 +501,14 @@
       "book": "LDB",
       "page": 339
     },
-    "maneuver": {
-      "kind": "hurlement",
-      "activation": "free",
-      "advantageCost": 2,
-      "advantageMode": "all",
-      "aoe": true,
-      "effects": [
-        {
-          "trigger": "onHit",
-          "on": "victim",
-          "flow": {
-            "kind": "do",
-            "effect": {
-              "type": "ops",
-              "on": "target",
-              "ops": [
-                {
-                  "op": "test",
-                  "skill": "Résistance",
-                  "difficulty": "accessible",
-                  "onFail": [
-                    {
-                      "op": "condition",
-                      "name": "Brisé"
-                    }
-                  ],
-                  "onSuccess": []
-                },
-                {
-                  "op": "condition",
-                  "name": "Assourdi",
-                  "value": 3
-                }
-              ]
-            }
-          }
-        }
-      ]
-    }
+    "grantsManeuvers": [
+      {
+        "id": "hurlement-fantomatique"
+      }
+    ]
   },
   {
+    "id": "immunite",
     "label": "Immunité",
     "prefix": "(Type)",
     "suffix": null,
@@ -557,6 +519,7 @@
     }
   },
   {
+    "id": "immunite-psychologique",
     "label": "Immunité Psychologique",
     "prefix": null,
     "suffix": null,
@@ -567,6 +530,7 @@
     }
   },
   {
+    "id": "increvable",
     "label": "Increvable",
     "prefix": null,
     "suffix": null,
@@ -577,6 +541,7 @@
     }
   },
   {
+    "id": "infecte",
     "label": "Infecté",
     "prefix": null,
     "suffix": null,
@@ -587,6 +552,7 @@
     }
   },
   {
+    "id": "infravision",
     "label": "Infravision",
     "prefix": null,
     "suffix": null,
@@ -597,6 +563,7 @@
     }
   },
   {
+    "id": "insensible-a-la-douleur",
     "label": "Insensible à la douleur",
     "prefix": null,
     "suffix": null,
@@ -607,6 +574,7 @@
     }
   },
   {
+    "id": "instable",
     "label": "Instable",
     "prefix": null,
     "suffix": null,
@@ -617,6 +585,7 @@
     }
   },
   {
+    "id": "intelligent",
     "label": "Intelligent",
     "prefix": null,
     "suffix": null,
@@ -639,6 +608,7 @@
     ]
   },
   {
+    "id": "lanceur-de-sorts",
     "label": "Lanceur de Sorts",
     "prefix": "(Divers)",
     "suffix": null,
@@ -649,6 +619,7 @@
     }
   },
   {
+    "id": "langue-prehensile",
     "label": "Langue préhensile",
     "prefix": "(Indice) (Portée)",
     "suffix": null,
@@ -657,37 +628,14 @@
       "book": "LDB",
       "page": 340
     },
-    "maneuver": {
-      "kind": "langue",
-      "activation": "free",
-      "advantageCost": 1,
-      "stat": "CT",
-      "effects": [
-        {
-          "trigger": "onHit",
-          "on": "victim",
-          "flow": {
-            "kind": "do",
-            "effect": {
-              "type": "ops",
-              "on": "target",
-              "ops": [
-                {
-                  "op": "condition",
-                  "name": "Empêtré",
-                  "unlessCondition": "Empêtré",
-                  "escapeStrength": {
-                    "charOf": "F"
-                  }
-                }
-              ]
-            }
-          }
-        }
-      ]
-    }
+    "grantsManeuvers": [
+      {
+        "id": "langue-prehensile"
+      }
+    ]
   },
   {
+    "id": "limicole",
     "label": "Limicole",
     "prefix": null,
     "suffix": null,
@@ -698,6 +646,7 @@
     }
   },
   {
+    "id": "magique",
     "label": "Magique",
     "prefix": null,
     "suffix": null,
@@ -708,6 +657,7 @@
     }
   },
   {
+    "id": "maladie",
     "label": "Maladie",
     "prefix": "(Type)",
     "suffix": null,
@@ -718,6 +668,7 @@
     }
   },
   {
+    "id": "meneur",
     "label": "Meneur",
     "prefix": null,
     "suffix": null,
@@ -740,6 +691,7 @@
     ]
   },
   {
+    "id": "miracles",
     "label": "Miracles",
     "prefix": "(Divers)",
     "suffix": null,
@@ -750,6 +702,7 @@
     }
   },
   {
+    "id": "morsure",
     "label": "Morsure",
     "prefix": "(Indice)",
     "suffix": null,
@@ -758,14 +711,14 @@
       "book": "LDB",
       "page": 340
     },
-    "maneuver": {
-      "kind": "morsure",
-      "activation": "free",
-      "advantageCost": 1,
-      "stat": "CC"
-    }
+    "grantsManeuvers": [
+      {
+        "id": "morsure"
+      }
+    ]
   },
   {
+    "id": "mort-vivant",
     "label": "Mort-vivant",
     "prefix": null,
     "suffix": null,
@@ -776,6 +729,7 @@
     }
   },
   {
+    "id": "mutation",
     "label": "Mutation",
     "prefix": null,
     "suffix": null,
@@ -786,6 +740,7 @@
     }
   },
   {
+    "id": "nerveux",
     "label": "Nerveux",
     "prefix": null,
     "suffix": null,
@@ -822,6 +777,7 @@
     ]
   },
   {
+    "id": "nuee",
     "label": "Nuée",
     "prefix": null,
     "suffix": null,
@@ -832,6 +788,7 @@
     }
   },
   {
+    "id": "parasite",
     "label": "Parasité",
     "prefix": null,
     "suffix": null,
@@ -842,6 +799,7 @@
     }
   },
   {
+    "id": "perturbant",
     "label": "Perturbant",
     "prefix": null,
     "suffix": null,
@@ -852,6 +810,7 @@
     }
   },
   {
+    "id": "peur",
     "label": "Peur",
     "prefix": "(Indice)",
     "suffix": null,
@@ -862,6 +821,7 @@
     }
   },
   {
+    "id": "pisteur",
     "label": "Pisteur",
     "prefix": null,
     "suffix": null,
@@ -872,6 +832,7 @@
     }
   },
   {
+    "id": "prejuge",
     "label": "Préjugé",
     "prefix": "(Cible)",
     "suffix": null,
@@ -882,6 +843,7 @@
     }
   },
   {
+    "id": "protection",
     "label": "Protection",
     "prefix": "(Indice)",
     "suffix": null,
@@ -892,6 +854,7 @@
     }
   },
   {
+    "id": "rage",
     "label": "Rage",
     "prefix": null,
     "suffix": null,
@@ -902,6 +865,7 @@
     }
   },
   {
+    "id": "rapide",
     "label": "Rapide",
     "prefix": null,
     "suffix": null,
@@ -923,6 +887,7 @@
     ]
   },
   {
+    "id": "regard-petrifiant",
     "label": "Regard pétrifiant",
     "prefix": null,
     "suffix": null,
@@ -931,39 +896,14 @@
       "book": "LDB",
       "page": 341
     },
-    "maneuver": {
-      "kind": "regard",
-      "activation": "action",
-      "advantageCost": 1,
-      "stat": "CT",
-      "advantageMode": "variable",
-      "effects": [
-        {
-          "trigger": "onHit",
-          "on": "victim",
-          "flow": {
-            "kind": "do",
-            "effect": {
-              "type": "ops",
-              "on": "target",
-              "ops": [
-                {
-                  "op": "condition",
-                  "name": "Sonné",
-                  "value": 0,
-                  "valuePerSL": {
-                    "every": 2,
-                    "amount": 1
-                  }
-                }
-              ]
-            }
-          }
-        }
-      ]
-    }
+    "grantsManeuvers": [
+      {
+        "id": "regard-petrifiant"
+      }
+    ]
   },
   {
+    "id": "regeneration",
     "label": "Régénération",
     "prefix": null,
     "suffix": null,
@@ -1065,6 +1005,7 @@
     ]
   },
   {
+    "id": "resistance-a-la-magie",
     "label": "Résistance à la Magie",
     "prefix": null,
     "suffix": null,
@@ -1075,6 +1016,7 @@
     }
   },
   {
+    "id": "ruse",
     "label": "Rusé",
     "prefix": null,
     "suffix": null,
@@ -1102,6 +1044,7 @@
     ]
   },
   {
+    "id": "sang-corrosif",
     "label": "Sang corrosif",
     "prefix": null,
     "suffix": null,
@@ -1144,6 +1087,7 @@
     ]
   },
   {
+    "id": "se-cabrer",
     "label": "Se cabrer",
     "prefix": null,
     "suffix": null,
@@ -1154,6 +1098,7 @@
     }
   },
   {
+    "id": "souffle",
     "label": "Souffle",
     "prefix": "(Indice) (Type)",
     "suffix": null,
@@ -1162,16 +1107,29 @@
       "book": "LDB",
       "page": 341
     },
-    "maneuver": {
-      "kind": "souffle",
-      "activation": "free",
-      "advantageCost": 2,
-      "stat": "CT",
-      "aoe": true,
-      "magic": true
-    }
+    "grantsManeuvers": [
+      {
+        "id": "souffle-feu"
+      },
+      {
+        "id": "souffle-froid"
+      },
+      {
+        "id": "souffle-corrosif"
+      },
+      {
+        "id": "souffle-electrique"
+      },
+      {
+        "id": "souffle-poison"
+      },
+      {
+        "id": "souffle-fumee"
+      }
+    ]
   },
   {
+    "id": "stupide",
     "label": "Stupide",
     "prefix": null,
     "suffix": null,
@@ -1182,6 +1140,7 @@
     }
   },
   {
+    "id": "taille",
     "label": "Taille",
     "prefix": "(Divers)",
     "suffix": null,
@@ -1192,6 +1151,7 @@
     }
   },
   {
+    "id": "tentacules",
     "label": "Tentacules",
     "prefix": "(Indice)",
     "suffix": "#",
@@ -1200,38 +1160,14 @@
       "book": "LDB",
       "page": 343
     },
-    "maneuver": {
-      "kind": "tentacules",
-      "activation": "free",
-      "advantageCost": 0,
-      "stat": "CC",
-      "perTentacle": true,
-      "effects": [
-        {
-          "trigger": "onHit",
-          "on": "victim",
-          "flow": {
-            "kind": "do",
-            "effect": {
-              "type": "ops",
-              "on": "target",
-              "ops": [
-                {
-                  "op": "condition",
-                  "name": "Empêtré",
-                  "unlessCondition": "Empêtré",
-                  "escapeStrength": {
-                    "charOf": "F"
-                  }
-                }
-              ]
-            }
-          }
-        }
-      ]
-    }
+    "grantsManeuvers": [
+      {
+        "id": "tentacules"
+      }
+    ]
   },
   {
+    "id": "terreur",
     "label": "Terreur",
     "prefix": "(Indice)",
     "suffix": null,
@@ -1242,6 +1178,7 @@
     }
   },
   {
+    "id": "territorial",
     "label": "Territorial",
     "prefix": null,
     "suffix": null,
@@ -1252,6 +1189,7 @@
     }
   },
   {
+    "id": "toile",
     "label": "Toile",
     "prefix": "(Indice)",
     "suffix": null,
@@ -1291,6 +1229,7 @@
     ]
   },
   {
+    "id": "vampirique",
     "label": "Vampirique",
     "prefix": null,
     "suffix": null,
@@ -1301,6 +1240,7 @@
     }
   },
   {
+    "id": "venin",
     "label": "Venin",
     "prefix": "(Difficulté)",
     "suffix": null,
@@ -1311,6 +1251,7 @@
     }
   },
   {
+    "id": "vision-nocturne",
     "label": "Vision nocturne",
     "prefix": null,
     "suffix": null,
@@ -1321,6 +1262,7 @@
     }
   },
   {
+    "id": "vol",
     "label": "Vol",
     "prefix": "(Indice)",
     "suffix": null,
@@ -1331,6 +1273,7 @@
     }
   },
   {
+    "id": "vomissement",
     "label": "Vomissement",
     "prefix": "(Indice)",
     "suffix": null,
@@ -1339,15 +1282,14 @@
       "book": "LDB",
       "page": 343
     },
-    "maneuver": {
-      "kind": "vomi",
-      "activation": "free",
-      "advantageCost": 3,
-      "stat": "CT",
-      "aoe": true
-    }
+    "grantsManeuvers": [
+      {
+        "id": "vomissement"
+      }
+    ]
   },
   {
+    "id": "marque-de-tzeentch",
     "label": "Marque de Tzeentch",
     "prefix": null,
     "suffix": null,
@@ -1358,6 +1300,7 @@
     }
   },
   {
+    "id": "dedoublement",
     "label": "Dédoublement",
     "prefix": null,
     "suffix": null,
@@ -1368,6 +1311,7 @@
     }
   },
   {
+    "id": "feu-de-tzeentch",
     "label": "Feu de Tzeentch",
     "prefix": null,
     "suffix": null,

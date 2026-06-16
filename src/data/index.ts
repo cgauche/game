@@ -21,6 +21,7 @@ import creaturesJson from './creatures.json';
 import frenchyTraitsJson from './frenchy-traits.json';
 import frenchySpellsJson from './frenchy-spells.json';
 import spellsJson from './spells.json';
+import maneuversJson from './maneuvers.json';
 import eyesJson from './eyes.json';
 import hairsJson from './hairs.json';
 import detailsJson from './details.json';
@@ -29,6 +30,7 @@ import locationsJson from './locations.json';
 import booksJson from './books.json';
 import namesJson from './names.json';
 import raceAppearanceJson from './raceAppearance.json';
+import godsJson from './gods.json';
 import { CharKey, Weapon } from '../engine/types';
 import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
 
@@ -42,15 +44,16 @@ export interface SpeciesData {
   fate: { fate: number; resilience: number; extra: number };
   small: boolean;
   baseChar: Partial<Record<CharKey, number>>;
-  /** Compétences d'espèce (Livre de base) : 3 reçoivent +5, 3 reçoivent +3. */
-  skills: string[];
-  /** Talents d'espèce : « A ou B » (choix), fixes, « N Talent aléatoire » (table d100). */
-  talents: string[];
+  /** Compétences d'espèce (`AdvancementRef[]` ; positionnel +5/+3 — lu via `advancementLabel`). */
+  skills: AdvancementRef[];
+  /** Talents d'espèce (`AdvancementRef[]` : {ref}, {choice} « A ou B », {random} « N aléatoire », {wildcard}). */
+  talents: AdvancementRef[];
   source: { book: string; page: number };
 }
 export interface ClassData {
   label: string;
-  trappings: string[];
+  /** Possessions de départ (`TrappingRef` : id du catalogue + quantité, ou `{text}` flavor hors catalogue). */
+  trappings: TrappingRef[];
   desc: string;
   source: { book: string; page: number };
 }
@@ -67,10 +70,14 @@ export interface CareerLevelData {
   label: string;
   career: string;
   level: number;
-  skills: string[];
-  talents: string[];
-  trappings: string[];
-  characteristics: string[];
+  /** Compétences/talents d'emplacement (`AdvancementRef[]` : {ref}/{wildcard}/{choice}) — lus via
+   *  `advancementLabel` (slotsOfLevel) ou structure. */
+  skills: AdvancementRef[];
+  talents: AdvancementRef[];
+  /** Possessions de niveau (`TrappingRef` : id catalogue + quantité « (3) », ou `{text}` flavor). */
+  trappings: TrappingRef[];
+  /** Caractéristiques de carrière (clés `CharKey` — « CT », « F »… ; pas de libellé, multilangue). */
+  characteristics: CharKey[];
   status: string;
 }
 export interface SkillData {
@@ -119,7 +126,8 @@ export interface TrappingData {
   loc: string | null;
   pa: number | null;
   damage: string | null;
-  qualities: string[];
+  /** Qualités d'arme/armure (`QualityRef` : id + Indice éventuel « Solide 3 » → value, spec = arg éventuel). */
+  qualities: QualityRef[];
   desc: string | null;
   price: { gold: number; silver: number; bronze: number };
   source: { book: string; page: number };
@@ -139,7 +147,8 @@ export interface CreatureData {
   /** Traits STRUCTURÉS (`TraitInstance`) — source app-owned migrée du parsing de chaînes (de-POC).
    *  Union transitoire : chaînes legacy tolérées et normalisées par `asTrait` à la consommation. */
   traits: import('../engine/statEntry').TraitList;
-  optionals: string[];
+  /** Traits FACULTATIFS (`TraitInstance` structurés) — affichés au Codex, choisissables au spawn. */
+  optionals: import('../engine/statEntry').TraitInstance[];
   /** Compétences STRUCTURÉES (`SkillRef` par id stable + valeur de Test imprimée) — fin du parsing
    *  de chaînes « Calme 58 ». Le bestiaire stocke des refs ; `skillRefLabel` reformate à l'affichage. */
   skills: SkillRef[];
@@ -147,8 +156,10 @@ export interface CreatureData {
    *  « Maîtrise du combat 2 », « Magie des Arcanes (Ghur) ». `talentRefLabel` reformate à l'affichage ;
    *  au spawn, `talentsFromBook` reconstruit le libellé canonique AVEC sa spec (clé du registre). */
   talents: TalentRef[];
-  trappings: string[];
-  spells: string[];
+  /** Possessions (`TrappingRef` : id catalogue + quantité, ou `{text}` narratif — « collection d'alcool »). */
+  trappings: TrappingRef[];
+  /** Sorts connus (`Ref` par id de sort). */
+  spells: Ref[];
   desc: string | null;
   source: { book: string; page: number };
   /** Apparence par défaut UNIFIÉE (plan P2) — UN seul bloc éditable porté par l'enregistrement :
@@ -192,30 +203,45 @@ export interface DetailsData {
     ambitionLong: DetailText;
   };
 }
-/** Profil d'une MANŒUVRE de combat (attaque naturelle activée — LDB 85) : ce qui pilotait la table en
- *  dur `engine/creatureAttacks.RULES`, désormais en DONNÉE éditable. `activation` (déclenchement) +
- *  `advantageCost` (coût d'Avantage de l'attaque gratuite) + `kind` (routage IA/poses/galerie) ;
- *  `aoe`/`magic`/`perTentacle` qualifient la résolution moteur. Les Dégâts (Indice) restent lus de
- *  l'INSTANCE du trait (« Morsure +10 »). */
-export interface ManeuverProfile {
+/** MANŒUVRE de combat (attaque naturelle activée — LDB 85) — ENTITÉ ÉDITABLE de PREMIÈRE CLASSE (au
+ *  même titre qu'un Sort) : son propre dataset `maneuvers.json`, sa catégorie Codex, ses effets
+ *  AUTHORÉS en GameOp (`effects`). Un trait l'OCTROIE (`TraitData.grantsManeuvers`) ; le résolveur
+ *  générique (`state/combatManeuvers.resolveManeuver`) la joue ENTIÈREMENT depuis cette donnée — plus
+ *  de table en dur ni d'applier par type. `kind` ne sert QU'À l'anim/pose/icône (jamais à résoudre).
+ *  La géométrie/portée/opposition restent moteur (règle 3) ; Dégâts (`wounds`) + États = data. */
+export interface ManeuverDef {
+  id: string;
+  label: string;
+  /** Anim/pose/icône SEULEMENT (pas la résolution) — type d'attaque naturelle (geste distinct). */
   kind: import('../engine/creatureAttacks').AttackKind;
+  /** Déclenchement RAW : Action normale, gratuite (coût d'Avantage), ou gratuite à la Charge. */
   activation: 'action' | 'free' | 'charge';
   advantageCost: number;
-  /** Caractéristique du jet de l'attaquant (CC mêlée / CT distance·zone) ; absent = pas de jet
-   *  d'attaquant (Hurlement : chaque cible teste sa Résistance). Pilote le ROLL-producing. */
-  stat?: 'CC' | 'CT';
   /** Gestion de l'Avantage dépensé : `fixed` = `advantageCost` (défaut) ; `variable` = le joueur
    *  CHOISIT (Regard : +1 DR par Avantage, LDB 85 l.238) ; `all` = dépense tout (Hurlement, l.135). */
   advantageMode?: 'fixed' | 'variable' | 'all';
-  aoe?: boolean;
+  /** Caractéristique du jet de l'attaquant (CC mêlée / CT distance·zone) ; absent = AUCUN jet
+   *  d'attaquant (Hurlement : chaque cible teste sa Résistance). */
+  stat?: 'CC' | 'CT';
+  /** Défense opposée : Esquive / Parade, Initiative (Regard), Résistance/auto sans opposition. */
+  defense?: 'esquive' | 'parade' | 'init' | 'resist' | 'auto';
+  /** Mode de ciblage (le résolveur en dérive la géométrie moteur). */
+  targeting: 'melee' | 'ranged' | 'zone' | 'allFoes';
+  /** Portée / Souffle (formules-chaînes résolues par le résolveur, ex. « Bonus d'Endurance + 20 mètres »). */
+  range?: string;
+  blast?: string;
+  /** Attaque magique (Souffle, Étreinte glaciale) → soumise à la Résistance à la Magie, etc. */
   magic?: boolean;
-  perTentacle?: boolean;
-  /** Effets PROPRES à la manœuvre, appliqués quand ELLE touche (Caudale → À Terre si plus petit ;
-   *  Tentacules → Empêtré) — distincts de `TraitData.effects` (qui s'appliquent à TOUTE touche). */
+  /** Effets AUTHORÉS (Dégâts `wounds` + États) appliqués quand la manœuvre touche (`onHit`) — MÊME
+   *  vocabulaire que les sorts (Flow d'ops), exécutés par `applyTriggeredEffects`. */
   effects?: import('../state/flow').TriggeredEffect[];
+  desc?: string;
+  source?: { book: string; page: number };
 }
 /** Trait de créature (LDB 85) : libellé canonique + desc VERBATIM (affichée à l'inspecteur). */
 export interface TraitData {
+  /** Identifiant STABLE (slug du libellé) — clé d'instance/lookup, indépendant de la langue. */
+  id: string;
   label: string;
   /** Squelette d'arguments du libellé (« (Indice) (Portée) »…), null si aucun. */
   prefix: string | null;
@@ -225,14 +251,19 @@ export interface TraitData {
    *  Sang corrosif, Régénération…) appliqués par `state/triggeredEffects`, plus de handler en dur.
    *  Type-only (le moteur reste pur : la donnée référence le Flow sans en dépendre à l'exécution). */
   effects?: import('../state/flow').TriggeredEffect[];
-  /** Profil de MANŒUVRE si ce trait est une attaque naturelle activée (Morsure, Attaque caudale,
-   *  Souffle…) — lu par `engine/creatureAttacks` (remplace la table `RULES`). */
-  maneuver?: ManeuverProfile;
+  /** Manœuvres OCTROYÉES par ce trait (Morsure, Attaque caudale, Souffle…) — `Ref[]` vers le dataset
+   *  `maneuvers`. Un trait d'attaque naturelle octroie sa/ses manœuvre(s) ; `engine/creatureAttacks`
+   *  les résout par id (`findManeuverById`). Le trait Souffle en octroie plusieurs (un par Type). */
+  grantsManeuvers?: Ref[];
   /** Modificateurs de PROFIL PASSIFS (Élite +20 CC/CT/FM, Brutal −1 M…) en `GameOp[]` — le MÊME vocabulaire
    *  d'ops que les sorts et `Trauma.ops`, CONTINUS (sans wrapper Flow/déclencheur, ≠ `effects`) : édités par
    *  `GameOpEditor` (le composant de liste d'ops existant), lus par le collecteur passif (`traitPassiveMods`
    *  → liveTraits) qui leur AFFECTE le `kind` `intrinsèque` (comme la séquelle dérive le sien). */
   passive?: import('../engine/ops').GameOp[];
+  /** Apparence COSMÉTIQUE déclarée en DONNÉE (calques du catalogue via `features` + `colors` + `eyes`) —
+   *  fusionnée sur le rig quand le trait est présent (cf. `combatantVisuals`). Même fragment éditable
+   *  (`AppearanceField`) que les créatures/mutations. */
+  appearance?: EntityAppearance;
 }
 /** Atout/Défaut d'arme (LDB 62-63) : libellé + desc VERBATIM + effets déclenchés authorés (mêmes
  *  `TriggeredEffect` que les Traits — un Atout « à la touche : 1d10 + Empêtré » s'édite au Codex). */
@@ -272,7 +303,7 @@ export interface SpellData {
   source: { book: string; page: number };
 }
 
-/** Signe astral (ADE2) : table d100 (`rand` = borne haute cumulée), flavor + faits. */
+/** Signe astral (ADE2) : table d100 (`rand` = borne haute cumulée), flavor + effet de création. */
 export interface StarData {
   label: string;
   rand: number;
@@ -282,8 +313,13 @@ export interface StarData {
   dates: string | null;
   dieux: string | null;
   apparence: string | null;
-  characteristics: string | null;
-  talent: string | null;
+  /** Effet ADE2 appliqué AUX ATTRIBUTS DE DÉPART (ch.03 l.38) — donnée éditable au Codex
+   *  (`GameOpEditor`) : `charMod` (±carac) et/ou `grantTalent` (talent octroyé). Appliqué une
+   *  fois à la création (cf. `applyStarEffect`), pas collecté en passif continu. */
+  effect?: import('../engine/ops').GameOp[];
+  /** L'Étoile du Sorcier (ADE2 l.62) : fourchette du 1d10 interne `[min, max]` parmi les variantes
+   *  partageant `rand:100`. Absent = pas de sous-tirage (signe simple). */
+  sub?: [number, number];
   desc: string | null;
   source: { book: string; page: number };
 }
@@ -351,6 +387,9 @@ export const etats = etatsJson as EtatData[];
 export const traits = [...(traitsJson as TraitData[]), ...(frenchyTraitsJson as TraitData[])];
 /** Index des Traits par libellé canonique — lecture des `effects` au runtime (state/triggeredEffects). */
 export const traitByLabel: Map<string, TraitData> = new Map(traits.map((t) => [t.label, t]));
+/** Index des Traits par `id` STABLE (slug) — lookup runtime indépendant de la langue. */
+export const traitById: Map<string, TraitData> = new Map(traits.map((t) => [t.id, t]));
+export const findTraitById = (id: string): TraitData | undefined => traitById.get(id);
 export const qualities = qualitiesJson as QualityData[];
 /** Index des Atouts/Défauts par libellé — lecture des `effects` déclenchés au runtime (triggeredEffects). */
 export const qualityByLabel: Map<string, QualityData> = new Map(qualities.map((q) => [q.label, q]));
@@ -365,6 +404,9 @@ export const creatures = creaturesJson as CreatureData[];
 // Sorts app-owned + sorts homebrew « frenchy.bzh » des casters (Magie Mineure/Arcanes, Bénédictions,
 // Miracles…) mergés ici ; le nom listé par une créature résout.
 export const spells = [...(spellsJson as SpellData[]), ...(frenchySpellsJson as SpellData[])];
+/** Manœuvres app-owned (attaques naturelles activées — LDB 85) : ENTITÉ de 1ʳᵉ classe éditable au Codex,
+ *  effets en GameOp. Octroyées aux créatures via `TraitData.grantsManeuvers` ; résolues par id. */
+export const maneuvers = maneuversJson as ManeuverDef[];
 export const eyes = eyesJson as DetailColorData[];
 export const hairs = hairsJson as DetailColorData[];
 export const details = detailsJson as DetailsData;
@@ -373,6 +415,17 @@ export const stars = starsJson as StarData[];
 export const raceAppearance = raceAppearanceJson as RaceAppearanceData[];
 export const locations = locationsJson as LocationData[];
 export const books = booksJson as BookData[];
+/** Culte/Dieu (LDB 41) : `key` = clé STABLE (« Sigmar »), Bénédictions/Miracles en `Ref[]` (sorts par id),
+ *  desc = lore HTML (Codex). Dataset éditable (Compendium) — remplace les `cults/defs/*.ts` (codegen retiré). */
+export interface GodData {
+  key: string;
+  title?: string;
+  blessings: Ref[];
+  miracles: Ref[];
+  desc?: string;
+  source?: { book: string; page: number };
+}
+export const gods = godsJson as GodData[];
 export const names = namesJson as Record<string, NamePool>;
 
 export function findSpecies(label: string) {
@@ -491,7 +544,32 @@ const SPELL_BY_ID = new Map(spells.map((s) => [s.id, s]));
 export function findSpellById(id: string): SpellData | undefined {
   return SPELL_BY_ID.get(id);
 }
+export const MANEUVER_BY_ID = new Map(maneuvers.map((m) => [m.id, m]));
+/** Résout une Manœuvre par son `id` STABLE (réf `TraitData.grantsManeuvers` → résolveur générique). */
+export function findManeuverById(id: string): ManeuverDef | undefined {
+  return MANEUVER_BY_ID.get(id);
+}
+const GOD_BY_KEY = new Map(gods.map((g) => [g.key, g]));
+/** Résout un Culte/Dieu par sa clé STABLE (« Sigmar »). */
+export function findGodById(key: string): GodData | undefined {
+  return GOD_BY_KEY.get(key);
+}
+/** Clés de culte disponibles, triées (choix de divinité à la création, joker « Béni (Au choix) »). */
+export const CULT_KEYS: string[] = gods.map((g) => g.key).sort();
+/** Les six Bénédictions d'un culte, IDS de sort (le runtime/grimoire compare par id ; l'UI résout en
+ *  libellé). Culte inconnu → []. */
+export function blessingsOf(cult: string): string[] {
+  return (findGodById(cult)?.blessings ?? []).map((r) => r.id);
+}
+/** Les Miracles d'un culte, IDS de sort. Culte inconnu → []. */
+export function miraclesOf(cult: string): string[] {
+  return (findGodById(cult)?.miracles ?? []).map((r) => r.id);
+}
 
+/** Référence à une Qualité d'objet (`Ref` + Indice éventuel : « Solide 3 » → value 3). */
+export interface QualityRef extends Ref {
+  value?: number;
+}
 /** Quantité d'une possession conférée : nombre fixe (« (3) ») ou jet (« (1d10) »). */
 export type CountSpec = { fixed: number } | { roll: string };
 /** Référence à une Possession : par `id` du catalogue (+ quantité éventuelle) OU texte NARRATIF hors
@@ -514,6 +592,7 @@ export function findById(category: string, id: string): { label: string } | unde
     case 'trappings': return findTrappingById(id);
     case 'qualities': return findQualityById(id);
     case 'spells': return findSpellById(id);
+    case 'maneuvers': return findManeuverById(id);
     default: return undefined;
   }
 }
@@ -522,4 +601,39 @@ export function findById(category: string, id: string): { label: string } | unde
 export function refLabel(category: string, ref: Ref): string {
   const base = findById(category, ref.id)?.label ?? ref.id;
   return ref.spec ? `${base} (${ref.spec})` : base;
+}
+/** Forme RUNTIME d'une qualité (Weapon/ItemInstance.qualities) : id STABLE, + Indice « id 3 ».
+ *  Le moteur (`parseQuality`) la relit par id ; l'affichage la repasse en libellé. PAS le libellé. */
+export function qualityRuntime(q: QualityRef): string {
+  return q.value != null ? `${q.id} ${q.value}` : q.id;
+}
+/** Libellé d'affichage d'une `QualityRef` : « Solide 3 », « Tranchante » (id → libellé + Indice). */
+export function qualityRefLabel(q: QualityRef): string {
+  return q.value != null ? `${refLabel('qualities', q)} ${q.value}` : refLabel('qualities', q);
+}
+/** Libellé d'affichage d'une `SkillInstance` (id+spec → « Langue (Magick) »). Repli sur l'id. */
+export function skillInstanceLabel(s: { skillId: string; spec?: string }): string {
+  return refLabel('skills', { id: s.skillId, spec: s.spec });
+}
+/** Libellé CONCRET d'une `TalentInstance` (id+spec → « Magie des Arcanes (Ghur) ») — clé du registre
+ *  combatFeatures + affichage. Repli sur l'id. */
+export function talentConcrete(t: { talentId: string; spec?: string }): string {
+  return refLabel('talents', { id: t.talentId, spec: t.spec });
+}
+/** Libellé d'affichage/clé concrète d'un `AdvancementRef` : « Savoir (Au choix) », « A ou B »,
+ *  « 3 Talent aléatoire », « Magie des Arcanes (Ghur) ». SOURCE UNIQUE (Codex + résolution création). */
+export function advancementLabel(category: string, a: AdvancementRef): string {
+  if ('ref' in a) return refLabel(category, a.ref);
+  if ('wildcard' in a) return a.specOptions?.length
+    ? `${refLabel(category, a.wildcard)} (${a.specOptions.join(' ou ')})`
+    : `${refLabel(category, a.wildcard)} (Au choix)`;
+  if ('choice' in a) return a.choice.map((x) => advancementLabel(category, x)).join(' ou ');
+  return a.random === 1 ? 'Talent aléatoire' : `${a.random} Talent aléatoire`;
+}
+/** Libellé d'affichage d'une `TrappingRef` : « Marteau », « Pamphlétaire (3) », « Chiffon (1d10) », ou
+ *  texte narratif hors catalogue. SOURCE UNIQUE (Codex, créateur, marchand, inventaire). */
+export function trappingRefLabel(ref: TrappingRef): string {
+  const base = 'text' in ref ? ref.text : (findTrappingById(ref.id)?.label ?? ref.id);
+  const count = ref.count ? ('fixed' in ref.count ? ` (${ref.count.fixed})` : ` (${ref.count.roll})`) : '';
+  return base + count;
 }

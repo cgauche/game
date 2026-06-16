@@ -1,0 +1,798 @@
+[
+  {
+    "id": "arme",
+    "label": "Arme / griffes",
+    "kind": "arme",
+    "activation": "action",
+    "advantageCost": 0,
+    "stat": "CC",
+    "defense": "auto",
+    "targeting": "melee",
+    "effects": [],
+    "desc": "Arme de Corps à corps (dents/griffes). Action normale. Dégâts = Indice (= 4 + Bonus de Force). LDB 85 l.338.",
+    "source": {
+      "book": "LDB",
+      "page": 85
+    }
+  },
+  {
+    "id": "morsure",
+    "label": "Morsure",
+    "kind": "morsure",
+    "activation": "free",
+    "advantageCost": 1,
+    "stat": "CC",
+    "defense": "auto",
+    "targeting": "melee",
+    "effects": [],
+    "desc": "Attaque gratuite en dépensant 1 Avantage. Dégâts = arme naturelle (Indice). LDB 85 l.171.",
+    "source": {
+      "book": "LDB",
+      "page": 85
+    }
+  },
+  {
+    "id": "caudale",
+    "label": "Attaque caudale",
+    "kind": "caudale",
+    "activation": "free",
+    "advantageCost": 1,
+    "stat": "CC",
+    "defense": "auto",
+    "targeting": "melee",
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "compare",
+            "subject": {
+              "who": "target",
+              "field": "size"
+            },
+            "op": "<",
+            "value": {
+              "who": "caster",
+              "field": "size"
+            }
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "victim",
+              "ops": [
+                {
+                  "op": "condition",
+                  "name": "À Terre",
+                  "unlessCondition": "À Terre"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "desc": "Attaque gratuite (1 Avantage). Une cible plus petite qui perd des PB subit À Terre. LDB 85 l.38.",
+    "source": {
+      "book": "LDB",
+      "page": 85
+    }
+  },
+  {
+    "id": "cornes",
+    "label": "Cornes",
+    "kind": "cornes",
+    "activation": "charge",
+    "advantageCost": 0,
+    "stat": "CC",
+    "defense": "auto",
+    "targeting": "melee",
+    "effects": [],
+    "desc": "Attaque gratuite gagnée en CHARGEANT (pas de coût d’Avantage). Dégâts = Indice. LDB 85 l.65.",
+    "source": {
+      "book": "LDB",
+      "page": 85
+    }
+  },
+  {
+    "id": "tentacules",
+    "label": "Tentacules",
+    "kind": "tentacules",
+    "activation": "free",
+    "advantageCost": 0,
+    "stat": "CC",
+    "defense": "auto",
+    "targeting": "melee",
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "victim",
+            "ops": [
+              {
+                "op": "condition",
+                "name": "Empêtré",
+                "escapeStrength": {
+                  "charOf": "F"
+                },
+                "unlessCondition": "Empêtré"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "desc": "Une Attaque gratuite par tentacule (coût 0). Sur Dégâts → Empêtré (Force d’évasion = Force). LDB 85 l.355.",
+    "source": {
+      "book": "LDB",
+      "page": 85
+    }
+  },
+  {
+    "id": "langue-prehensile",
+    "label": "Langue préhensile",
+    "kind": "langue",
+    "activation": "free",
+    "advantageCost": 1,
+    "stat": "CT",
+    "defense": "esquive",
+    "targeting": "ranged",
+    "range": "Bonus d’Endurance mètres",
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "wounds",
+                    "amount": {
+                      "indiceOf": true
+                    },
+                    "ignoreTB": false,
+                    "ignoreAP": false
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "name": "Empêtré",
+                    "escapeStrength": {
+                      "charOf": "F"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "desc": "Attaque gratuite à distance (1 Avantage). Dégâts Indice + Empêtré. LDB 85 l.186/188.",
+    "source": {
+      "book": "LDB",
+      "page": 85
+    }
+  },
+  {
+    "id": "etreinte-glaciale",
+    "label": "Étreinte glaciale",
+    "kind": "etreinte",
+    "activation": "action",
+    "advantageCost": 2,
+    "stat": "CC",
+    "defense": "auto",
+    "targeting": "melee",
+    "magic": true,
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "victim",
+            "ops": [
+              {
+                "op": "wounds",
+                "amount": {
+                  "dice": {
+                    "n": 1,
+                    "sides": 10
+                  }
+                },
+                "perSL": {
+                  "every": 1,
+                  "amount": 1
+                },
+                "ignoreTB": true,
+                "ignoreAP": true
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "desc": "2 Avantages + l’Action. Succès → 1d10 + DR Blessures ignorant BE et PA. Magique. LDB 85 l.112.",
+    "source": {
+      "book": "LDB",
+      "page": 85
+    }
+  },
+  {
+    "id": "regard-petrifiant",
+    "label": "Regard pétrifiant",
+    "kind": "regard",
+    "activation": "action",
+    "advantageCost": 1,
+    "stat": "CT",
+    "defense": "init",
+    "targeting": "ranged",
+    "advantageMode": "variable",
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "slThreshold",
+            "atLeast": 6
+          },
+          "then": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "victim",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "name": "Pétrifié"
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "victim",
+                  "ops": [
+                    {
+                      "op": "reduceToZero"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "else": {
+            "kind": "if",
+            "cond": {
+              "kind": "slThreshold",
+              "atLeast": 2
+            },
+            "then": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "name": "Sonné",
+                    "value": 0,
+                    "valuePerSL": {
+                      "every": 2,
+                      "amount": 1
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    ],
+    "desc": "Action, +1 DR par Avantage. Marge ≥ 6 DR → Pétrifié (0 PB) ; ≥ 2 DR → Sonné (1 par 2 DR). LDB 85 l.238.",
+    "source": {
+      "book": "LDB",
+      "page": 85
+    }
+  },
+  {
+    "id": "souffle-feu",
+    "label": "Souffle (Feu)",
+    "kind": "souffle",
+    "activation": "free",
+    "advantageCost": 2,
+    "stat": "CT",
+    "defense": "esquive",
+    "targeting": "zone",
+    "range": "Bonus d’Endurance + 20 mètres",
+    "blast": "Bonus de Force mètres",
+    "magic": true,
+    "source": {
+      "book": "LDB",
+      "page": 85
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "wounds",
+                    "amount": {
+                      "indiceOf": true
+                    },
+                    "ignoreTB": false,
+                    "ignoreAP": true
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "name": "En flammes"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "desc": "Zone, jet CT/Esquive. Dégâts Indice (ignore PA) + En flammes. LDB 85 l.249-269."
+  },
+  {
+    "id": "souffle-froid",
+    "label": "Souffle (Froid)",
+    "kind": "souffle",
+    "activation": "free",
+    "advantageCost": 2,
+    "stat": "CT",
+    "defense": "esquive",
+    "targeting": "zone",
+    "range": "Bonus d’Endurance + 20 mètres",
+    "blast": "Bonus de Force mètres",
+    "magic": true,
+    "source": {
+      "book": "LDB",
+      "page": 85
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "wounds",
+                    "amount": {
+                      "indiceOf": true
+                    },
+                    "ignoreTB": false,
+                    "ignoreAP": false
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "name": "Sonné"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "desc": "Zone, jet CT/Esquive. Dégâts Indice + Sonné (RAW : 1 Sonné/5 PB → forfaitaire). LDB 85 l.249-269."
+  },
+  {
+    "id": "souffle-corrosif",
+    "label": "Souffle (Corrosif)",
+    "kind": "souffle",
+    "activation": "free",
+    "advantageCost": 2,
+    "stat": "CT",
+    "defense": "esquive",
+    "targeting": "zone",
+    "range": "Bonus d’Endurance + 20 mètres",
+    "blast": "Bonus de Force mètres",
+    "magic": true,
+    "source": {
+      "book": "LDB",
+      "page": 85
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "wounds",
+                    "amount": {
+                      "indiceOf": true
+                    },
+                    "ignoreTB": false,
+                    "ignoreAP": false
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "name": "Sonné"
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "damageArmour",
+                    "material": "cuir"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "desc": "Zone, jet CT/Esquive. Dégâts Indice + Sonné + corrosion (cuir seul, RAW : toute matière). LDB 85 l.249-269."
+  },
+  {
+    "id": "souffle-electrique",
+    "label": "Souffle (Électrique)",
+    "kind": "souffle",
+    "activation": "free",
+    "advantageCost": 2,
+    "stat": "CT",
+    "defense": "esquive",
+    "targeting": "zone",
+    "range": "Bonus d’Endurance + 20 mètres",
+    "blast": "Bonus de Force mètres",
+    "magic": true,
+    "source": {
+      "book": "LDB",
+      "page": 85
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "wounds",
+                    "amount": {
+                      "indiceOf": true
+                    },
+                    "ignoreTB": false,
+                    "ignoreAP": true
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "name": "Sonné"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "desc": "Zone, jet CT/Esquive. Dégâts Indice (ignore PA) + Sonné. LDB 85 l.249-269."
+  },
+  {
+    "id": "souffle-poison",
+    "label": "Souffle (Poison)",
+    "kind": "souffle",
+    "activation": "free",
+    "advantageCost": 2,
+    "stat": "CT",
+    "defense": "esquive",
+    "targeting": "zone",
+    "range": "Bonus d’Endurance + 20 mètres",
+    "blast": "Bonus de Force mètres",
+    "magic": true,
+    "source": {
+      "book": "LDB",
+      "page": 85
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "wounds",
+                    "amount": {
+                      "indiceOf": true
+                    },
+                    "ignoreTB": false,
+                    "ignoreAP": true
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "name": "Empoisonné"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "desc": "Zone, jet CT/Esquive. Dégâts Indice (ignore PA) + Empoisonné. LDB 85 l.249-269."
+  },
+  {
+    "id": "souffle-fumee",
+    "label": "Souffle (Fumée)",
+    "kind": "souffle",
+    "activation": "free",
+    "advantageCost": 2,
+    "stat": "CT",
+    "defense": "esquive",
+    "targeting": "zone",
+    "range": "Bonus d’Endurance + 20 mètres",
+    "blast": "Bonus de Force mètres",
+    "magic": true,
+    "source": {
+      "book": "LDB",
+      "page": 85
+    },
+    "effects": [],
+    "desc": "Zone : la fumée bloque les Lignes de vue pendant Bonus d’Endurance Rounds (géométrie moteur). LDB 85 l.249-269."
+  },
+  {
+    "id": "vomissement",
+    "label": "Vomissement",
+    "kind": "vomi",
+    "activation": "free",
+    "advantageCost": 3,
+    "stat": "CT",
+    "defense": "esquive",
+    "targeting": "zone",
+    "range": "Bonus d’Endurance mètres",
+    "blast": "2 mètres",
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "wounds",
+                    "amount": {
+                      "bonusOf": "E"
+                    },
+                    "ignoreTB": false,
+                    "ignoreAP": false
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "wounds",
+                    "amount": 4,
+                    "ignoreTB": false,
+                    "ignoreAP": false
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "name": "Sonné"
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "damageArmour",
+                    "material": "cuir"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "desc": "Zone (3 Avantages). Dégâts BE+4 + Sonné + corrosion (cuir). LDB 85 l.374-378.",
+    "source": {
+      "book": "LDB",
+      "page": 85
+    }
+  },
+  {
+    "id": "hurlement-fantomatique",
+    "label": "Hurlement fantomatique",
+    "kind": "hurlement",
+    "activation": "free",
+    "advantageCost": 2,
+    "targeting": "allFoes",
+    "defense": "resist",
+    "advantageMode": "all",
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "victim",
+            "ops": [
+              {
+                "op": "wounds",
+                "amount": {
+                  "dice": {
+                    "n": 1,
+                    "sides": 10
+                  }
+                },
+                "ignoreTB": true,
+                "ignoreAP": true
+              },
+              {
+                "op": "test",
+                "skill": "Résistance",
+                "difficulty": "accessible",
+                "onFail": [
+                  {
+                    "op": "condition",
+                    "name": "Brisé"
+                  }
+                ]
+              },
+              {
+                "op": "condition",
+                "name": "Assourdi",
+                "value": 3
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "desc": "Tous les ennemis vivants à Initiative mètres : 1d10 (ignore BE+PA) + Test de Résistance ou Brisé + 3 Assourdi. LDB 85 l.136.",
+    "source": {
+      "book": "LDB",
+      "page": 85
+    }
+  }
+]

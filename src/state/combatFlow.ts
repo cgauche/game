@@ -93,6 +93,9 @@ import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } from '../engine/skills';
+import { findSkill, findManeuverById } from '../data';
+import { norm } from '../lib/normalize';
+import { slugId } from '../data/slug';
 import { recomputeLoadout, itemFromTrapping, customTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks } from '../engine/conditions';
@@ -115,7 +118,11 @@ import { DAY_PHASES, minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../e
 import { restRecovery } from '../engine/rest';
 import { feedFromMeal } from '../engine/provisions';
 import { runDailyUpkeep } from './upkeep';
-import { findSpell } from '../data/index';
+import { findSpell, findSpellById } from '../data/index';
+
+/** Résout un sort par ID (runtime : `Combatant.spells` = ids) avec repli sur le LIBELLÉ (appelants
+ *  legacy/tests/authoring). SOURCE UNIQUE de la résolution de sort dans le flux de combat. */
+const resolveSpell = (idOrLabel: string) => findSpellById(idOrLabel) ?? findSpell(idOrLabel);
 import { toBrass, fromBrass } from '../engine/money';
 import { Scene, Effect, isWalkable } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
@@ -152,8 +159,7 @@ import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, runSpellFlow
 export * from './combatManeuvers';
 import {
   emitCreatureAttackAnim, trampleTarget, availableManeuvers, bestDefenseMode,
-  rollManeuverAttacker, maneuverAttackerDifficulty,
-  applyManArea, applyManTongue, applyManWail, applyManGaze, applyManChillGrasp,
+  rollManeuverAttacker, maneuverAttackerDifficulty, resolveManeuver,
 } from './combatManeuvers';
 import { spellFlowFor, spellOps, type Flow } from './flow';
 import { startCascade, registerCascadeApplier } from './cascade';
@@ -1295,7 +1301,7 @@ export function applyAttackResult(
       const oh = def.onHit;
       if (!oh || (oh.location && res.location !== oh.location)) continue;
       const skillAdv = oh.opposed.defenderSkill
-        ? target.skills.find((s) => s.name.toLowerCase().startsWith(oh.opposed.defenderSkill!.toLowerCase()))?.advances ?? 0
+        ? target.skills.find((s) => s.skillId === (findSkill(oh.opposed.defenderSkill!)?.id ?? slugId(oh.opposed.defenderSkill!)))?.advances ?? 0
         : 0;
       const defVal = effectiveChar(target, oh.opposed.defender) + skillAdv;
       if (opposedTest(effectiveChar(attacker, oh.opposed.attacker), defVal, battleRng()).winner === 'attacker') {
@@ -1402,8 +1408,9 @@ export function applyAttackResult(
         break; // un seul renversement proposé par touche
       }
       attacker.advantage = (attacker.advantage ?? 0) - kd.advantageCost;
-      const aSk = kd.skill ? (attacker.skills.find((s) => s.name.toLowerCase().startsWith(kd.skill!.toLowerCase()))?.advances ?? 0) : 0;
-      const dSk = kd.skill ? (target.skills.find((s) => s.name.toLowerCase().startsWith(kd.skill!.toLowerCase()))?.advances ?? 0) : 0;
+      const kdSkillId = kd.skill ? (findSkill(kd.skill)?.id ?? slugId(kd.skill)) : '';
+      const aSk = kd.skill ? (attacker.skills.find((s) => s.skillId === kdSkillId)?.advances ?? 0) : 0;
+      const dSk = kd.skill ? (target.skills.find((s) => s.skillId === kdSkillId)?.advances ?? 0) : 0;
       const won = opposedTest(effectiveChar(attacker, kd.char) + aSk, effectiveChar(target, kd.char) + dSk, battleRng()).winner === 'attacker';
       if (won) {
         addCondition(target, kd.condition);
@@ -1900,7 +1907,7 @@ export function applyFreeAttackEffects(get: Get, attacker: Combatant, target: Co
   if (vd && immunityTypes(target.traits).some((ty) => ty.includes('poison'))) {
     get().log(`${target.name} est immunisé au poison (Immunité).`);
   } else if (vd && !hasCondition(target, 'Empoisonné')) {
-    const resAdv = target.skills.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0;
+    const resAdv = target.skills.find((s) => s.skillId === 'resistance')?.advances ?? 0;
     const t = rollTest(effectiveChar(target, 'E') + resAdv, venomDiffKey(vd), battleRng());
     if (!t.success) {
       addCondition(target, 'Empoisonné');
@@ -1932,23 +1939,24 @@ function applyFreeAttack(get: Get, set: SetFn, attacker: Combatant, target: Comb
 }
 
 
-// ── Wrappers IA des manœuvres (jet d'attaquant + applier scindé + clôture). Source UNIQUE du
-//    « rouler le jet d'attaquant PUIS appliquer PUIS checkBattleOver » pour l'IA : le flux JOUEUR
+// ── Wrappers IA des manœuvres (jet d'attaquant + RÉSOLVEUR GÉNÉRIQUE + clôture). Source UNIQUE du
+//    « rouler le jet d'attaquant PUIS résoudre PUIS checkBattleOver » pour l'IA : le flux JOUEUR
 //    passe par `FLOWS.maneuver` (modale différée) qui appelle les MÊMES `rollManeuverAttacker` /
-//    `applyMan<X>`. Les noms publics historiques sont conservés (tests + chemin du sort Souffle). ──
+//    `resolveManeuver`. Les noms publics historiques sont conservés (tests + chemin du sort Souffle). ──
 
-/** Souffle / Vomissement (IA & sort) : roule le jet d'attaquant (CT, +40 pour le Vomi) puis applique
- *  la zone. `centerOverride` = point d'impact imposé du sort « Souffle » (LDB 47). Clôt par `checkBattleOver`. */
+/** Souffle / Vomissement (IA & sort) : roule le jet d'attaquant (CT, +40 pour le Vomi) puis résout la
+ *  zone via le RÉSOLVEUR GÉNÉRIQUE. `centerOverride` = point d'impact imposé du sort « Souffle » (LDB 47).
+ *  Clôt par `checkBattleOver`. */
 export function applyAreaAttack(get: Get, set: SetFn, attacker: Combatant, a: CreatureAttack, centerOverride?: Combatant): void {
   const atk = rollManeuverAttacker(attacker, a.stat ?? 'CT', battleRng(), maneuverAttackerDifficulty(a.kind));
-  applyManArea(get, set, attacker, a, atk, a.avantage, centerOverride);
+  resolveManeuver(get, set, attacker, a.def, a.indice, atk, a.avantage, centerOverride);
   checkBattleOver(get, set);
 }
 
-/** Langue préhensile (IA) : jet CT puis applier ; gratuit (Action préservée). Clôt par `checkBattleOver`. */
+/** Langue préhensile (IA) : jet CT puis résolution ; gratuit (Action préservée). Clôt par `checkBattleOver`. */
 export function applyTongue(get: Get, set: SetFn, attacker: Combatant, a: CreatureAttack): void {
   const atk = rollManeuverAttacker(attacker, a.stat ?? 'CT', battleRng());
-  applyManTongue(get, set, attacker, a, atk, a.avantage);
+  resolveManeuver(get, set, attacker, a.def, a.indice, atk, a.avantage);
   checkBattleOver(get, set);
 }
 
@@ -1956,33 +1964,37 @@ export function applyTongue(get: Get, set: SetFn, attacker: Combatant, a: Creatu
  *  l.135). Renvoie false si pas assez d'Avantage. Clôt par `checkBattleOver`. */
 export function applyWail(get: Get, set: SetFn, attacker: Combatant): boolean {
   if (!attacker.pos || attacker.advantage < 2) return false;
-  applyManWail(get, set, attacker, attacker.advantage); // dépense TOUT (l.135)
+  const a = creatureAttacks(attacker.traits ?? []).find((x) => x.kind === 'hurlement');
+  if (!a) return false;
+  resolveManeuver(get, set, attacker, a.def, a.indice, null, attacker.advantage); // pas de jet d'attaquant ; dépense TOUT (l.135)
   checkBattleOver(get, set);
   return true;
 }
 
-/** Regard pétrifiant (IA) : jet CT puis applier ; l'IA dépense TOUT (min 1), +1 DR/Av (LDB 85 l.238).
+/** Regard pétrifiant (IA) : jet CT puis résolution ; l'IA dépense TOUT (min 1), +1 DR/Av (LDB 85 l.238).
  *  Consomme l'Action. Renvoie false si pas d'Avantage/cible. Clôt par `checkBattleOver`. */
 export function applyGaze(get: Get, set: SetFn, attacker: Combatant): boolean {
   if (!attacker.pos || attacker.advantage < 1) return false;
   const a = creatureAttacks(attacker.traits ?? []).find((x) => x.kind === 'regard');
+  if (!a) return false;
   const spent = attacker.advantage; // l'IA met tout (min 1)
-  const atk = rollManeuverAttacker(attacker, a?.stat ?? 'CT', battleRng());
-  applyManGaze(get, set, attacker, atk, spent);
+  const atk = rollManeuverAttacker(attacker, a.stat ?? 'CT', battleRng());
+  resolveManeuver(get, set, attacker, a.def, a.indice, atk, spent);
   set({ battle: { ...get().battle!, acted: true } }); // Regard = Action de la créature (l.238)
   checkBattleOver(get, set);
   return true;
 }
 
-/** Étreinte glaciale (IA) : jet CC puis applier ; 2 Av + Action (LDB 85 l.112). Renvoie false si pas
+/** Étreinte glaciale (IA) : jet CC puis résolution ; 2 Av + Action (LDB 85 l.112). Renvoie false si pas
  *  assez d'Avantage / pas de cible adjacente. Clôt par `checkBattleOver`. */
 export function applyChillGrasp(get: Get, set: SetFn, attacker: Combatant): boolean {
   if (!attacker.pos || attacker.advantage < 2) return false;
   const battle = get().battle;
   if (!battle || !battle.combatants.some((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && combatDistance(attacker, c) <= 1)) return false;
   const a = creatureAttacks(attacker.traits ?? []).find((x) => x.kind === 'etreinte');
-  const atk = rollManeuverAttacker(attacker, a?.stat ?? 'CC', battleRng());
-  applyManChillGrasp(get, set, attacker, atk, a?.avantage ?? 2);
+  if (!a) return false;
+  const atk = rollManeuverAttacker(attacker, a.stat ?? 'CC', battleRng());
+  resolveManeuver(get, set, attacker, a.def, a.indice, atk, a.avantage);
   set({ battle: { ...get().battle!, acted: true } }); // Étreinte = Action de la créature (l.112)
   checkBattleOver(get, set);
   return true;
@@ -2153,7 +2165,7 @@ export function castSpell(
   label: string,
   fromGrimoire = false,
 ) {
-  const spell = findSpell(label);
+  const spell = resolveSpell(label);
   if (!spell) {
     get().log(`Sort « ${label} » introuvable.`);
     return;
@@ -2264,7 +2276,7 @@ export const zoneRadiusTilesAt = (r0m: number, alloc: number): number =>
  *  `targetId` = ancre lanceur (aucun effet ne lui est appliqué — les cibles réelles sont
  *  recensées à la pose). Retourne false si le sort n'est PAS une zone chiffrable. */
 export function castZoneSpell(get: Get, set: SetFn, caster: Combatant, label: string): boolean {
-  const spell = findSpell(label);
+  const spell = resolveSpell(label);
   if (!spell) return false;
   const r0m = zoneRadiusMeters(spell, caster);
   if (r0m == null) return false;
@@ -2408,7 +2420,7 @@ export const spellSightOf = (get: Get): SpellSight =>
  *  atteignable → le moins exigeant (les Sorts mineurs NI 0 y pourvoient en pratique). */
 export function aiBestMissile(enemy: Combatant): string | undefined {
   const known = (enemy.spells ?? [])
-    .map((label) => findSpell(label))
+    .map((id) => resolveSpell(id))
     .filter((sp): sp is NonNullable<ReturnType<typeof findSpell>> => !!sp && isMagicMissile(sp));
   if (!known.length) return undefined;
   const dmg = (sp: { desc: string }) => parseSpellDamage(sp.desc)?.damage ?? 0;
@@ -2477,7 +2489,7 @@ export function overcastTargetCandidates(
 
 /** Sort effectif d'un pendingCast : NI DOUBLÉ pour une lecture au grimoire (LDB 47 l.34). */
 export function effectiveSpellOf(pc: { spellLabel: string; grimoire?: boolean }): ReturnType<typeof findSpell> {
-  const spell = findSpell(pc.spellLabel);
+  const spell = resolveSpell(pc.spellLabel);
   if (!spell || !pc.grimoire || spell.cn == null) return spell;
   return { ...spell, cn: spell.cn * 2 };
 }
@@ -2801,8 +2813,13 @@ export function applyCast(
       if (spec.breathAttack) {
         if (battle && caster.pos) {
           const type = domainBreathType(caster);
+          // Manœuvre Souffle de 1ʳᵉ classe (données) choisie par le Type du Domaine ; défaut `souffle-feu`.
+          // Indice = Bonus d'Endurance du lanceur (RAW : « Dégâts = Bonus d'Endurance »). Coût d'Avantage 0
+          // (le sort EST l'activation).
+          const sDef = (type && findManeuverById(`souffle-${norm(type)}`)) || findManeuverById('souffle-feu')!;
+          const indice = bonus(effectiveChar(caster, 'E'));
           applyAreaAttack(get, set, caster, {
-            kind: 'souffle', label: 'Souffle', bonus: bonus(effectiveChar(caster, 'E')),
+            kind: 'souffle', label: sDef.label, bonus: indice, indice, def: sDef,
             trigger: 'free', avantage: 0, aoe: true, magic: true, ...(type ? { type } : {}),
           }, target);
           if (!type) logLines.push('Souffle : Domaine sans Type évident — Dégâts purs (« Le MJ détermine quel type… »).');
@@ -2964,8 +2981,7 @@ function placeSpellZone(
  *  Arcanes ») — jeu sans MJ : seuls les Domaines au Type canonique évident sont mappés
  *  (Feu→Feu, Cieux→Électricité, Métal→Corrosif, Ombres→Fumée) ; les autres soufflent des Dégâts purs. */
 function domainBreathType(caster: Combatant): string | undefined {
-  const m = caster.talents.map((t) => t.name.match(/^Magie des Arcanes \(([^)]+)\)$/)).find(Boolean);
-  const domain = (m?.[1] ?? '').toLowerCase();
+  const domain = (caster.talents.find((t) => t.talentId === 'magie-des-arcanes')?.spec ?? '').toLowerCase();
   if (/feu/.test(domain)) return 'Feu';
   if (/cieux/.test(domain)) return 'Électricité';
   if (/m[ée]tal/.test(domain)) return 'Corrosif';
@@ -3020,7 +3036,7 @@ export function finalizeBattle(get: Get, set: SetFn): void {
     c.tookCriticalThisFight = false; // consommé (idempotent même si finalizeBattle est rappelé)
     c.woundDressed = false;
     if (c.dead || dressed) continue;
-    const resVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
+    const resVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
     infectLog.push(...rollContraction(c, 'Infection Mineure', resVal, 'tresFacile', battleRng()));
   }
   // Trait Infecté (LDB 20 l.32/49) : blessé par une créature Infectée → Résistance Facile (+40) ou
@@ -3028,7 +3044,7 @@ export function finalizeBattle(get: Get, set: SetFn): void {
   // du Rongeur. Trait Maladie (Type) (LDB 85 p.340) : Test de Contraction de la maladie portée.
   for (const c of battle.combatants) {
     if (c.kind !== 'hero' || c.dead) continue;
-    const resVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
+    const resVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
     if (c.woundedByInfected) infectLog.push(...rollContraction(c, 'Blessure Purulente', resVal, 'facile', battleRng()));
     if (c.woundedByRodent) infectLog.push(...rollContraction(c, 'Fièvre du Rongeur', resVal, 'accessible', battleRng()));
     for (const name of c.diseaseExposure ?? []) {
@@ -3188,8 +3204,9 @@ export function resolveKnockdown(get: Get, set: SetFn, accept: boolean, pk: Pend
   const lines: string[] = [];
   if (accept && (attacker.advantage ?? 0) >= pk.advantageCost && !isOutOfAction(target) && !hasCondition(target, pk.condition)) {
     attacker.advantage = (attacker.advantage ?? 0) - pk.advantageCost;
-    const aSk = pk.skill ? (attacker.skills.find((s) => s.name.toLowerCase().startsWith(pk.skill!.toLowerCase()))?.advances ?? 0) : 0;
-    const dSk = pk.skill ? (target.skills.find((s) => s.name.toLowerCase().startsWith(pk.skill!.toLowerCase()))?.advances ?? 0) : 0;
+    const pkSkillId = pk.skill ? (findSkill(pk.skill)?.id ?? slugId(pk.skill)) : '';
+    const aSk = pk.skill ? (attacker.skills.find((s) => s.skillId === pkSkillId)?.advances ?? 0) : 0;
+    const dSk = pk.skill ? (target.skills.find((s) => s.skillId === pkSkillId)?.advances ?? 0) : 0;
     const aT = rollTest(effectiveChar(attacker, pk.char) + aSk, 'intermediaire', battleRng());
     const dT = rollTest(effectiveChar(target, pk.char) + dSk, 'intermediaire', battleRng());
     const opp = resolveOpposed(aT, dT);
@@ -3824,7 +3841,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   // la détection a besoin des données de sort, donc elle reste ici (couche impure), pas dans ai.ts.
   const offensiveSpell = aiBestMissile(enemy);
   // Portée du sort en CASES, résolue ici (ai.ts est pur, sans données de sort) — gate de ciblage IA.
-  const offensiveSpellData = offensiveSpell ? findSpell(offensiveSpell) : undefined;
+  const offensiveSpellData = offensiveSpell ? resolveSpell(offensiveSpell) : undefined;
   const spellRange = offensiveSpellData ? spellRangeTiles(offensiveSpellData.range, enemy) : undefined;
   // Charge de cavalerie (LDB 15-Dépl l.74-77 / 14 l.223) : un cavalier ennemi non Engagé fonce à la portée
   // de COURSE (2× le Mouvement de sa monture) — PARITÉ avec le joueur ; à pied, l'IA reste en Marche (M).

@@ -1,43 +1,37 @@
 /**
- * MANŒUVRES de créature (attaques naturelles activées — LDB 85) extraites de `combatFlow` pour les
- * rendre RÉUTILISABLES par le flux joueur différé (« un jet = une modale ») ET l'IA, sans dette.
+ * MANŒUVRES de créature (attaques naturelles activées — LDB 85) : ENTITÉS de 1ʳᵉ classe ÉDITABLES
+ * (`maneuvers.json`, effets en GameOp). Ce module FEUILLE porte le RÉSOLVEUR GÉNÉRIQUE unique
+ * (`resolveManeuver`) — il REMPLACE les 5 appliers par type. La GÉOMÉTRIE/portée/opposition est moteur
+ * (règle 3, dérivée de `ManeuverDef.targeting` + `range`/`blast`) ; les Dégâts (`wounds`) et États sont
+ * la DONNÉE (`ManeuverDef.effects`, GameOp) appliquée par `applyTriggeredEffects` aux cibles GAGNÉES.
  *
- * Convention « baril » : ce module FEUILLE n'importe RIEN de `combatFlow` (qui le ré-exporte via
- * `export * from './combatManeuvers'`). Tout passe par les feuilles moteur/état (engine/*, ./path,
- * ./footprint, ./battleRng, ./combatLog, ./lineOfSight, ./triggeredEffects).
+ * Convention « baril » : n'importe RIEN de `combatFlow` (qui le ré-exporte via `export * from
+ * './combatManeuvers'`). Tout passe par les feuilles moteur/état (engine/*, ./path, ./footprint,
+ * ./battleRng, ./combatLog, ./lineOfSight, ./triggeredEffects).
  *
- * Chaque résolveur de manœuvre est SCINDÉ en deux :
- *  - `rollManeuverAttacker(attacker, stat, rng)` : le JET de l'attaquant (CC/CT) — produit le SEUL
- *    `TestResult` influençable (la Chance/Résilience de la modale joueur agit dessus). Partagé par
- *    le flux joueur ET l'IA.
- *  - `applyMan<X>(get, set, attacker, atk, spent, opts?)` : prend ce jet PRÉ-tiré, choisit la/les
- *    cible(s), roule chaque DÉFENSEUR à neuf, résout l'opposition (`resolveOpposed(atk, def)`, atk
- *    FIGÉ — pas de relance de l'attaquant), applique Dégâts/Type/corrosion/Pétrifié/effets + feed.
- *    NE PPELLE PAS `checkBattleOver` (l'appelant — store ou wrapper IA — le fait).
- *
- * Le défenseur roule SON jet dans l'apply (jet SUBI, montré au feed `evLines`) — ce n'est pas le jet
- * du joueur, donc pas de modale/révélation différée (comportement de feed inchangé vs l'historique).
- * RAW LDB 85 l.251/376 (« un lancer pour chaque cible ») relu en UN effort de souffle influençable :
- * un seul jet d'attaquant opposé à chaque cible (le souffle est UNE action, pas N).
+ * Le jet d'ATTAQUANT (`rollManeuverAttacker`, CC/CT) est le SEUL influençable (Chance/Résilience de la
+ * modale joueur) ; partagé par le flux joueur ET l'IA. Le DÉFENSEUR roule SON jet DANS le résolveur (jet
+ * SUBI, montré au feed `evLines`) — pas de modale différée. `resolveManeuver` NE PPELLE PAS
+ * `checkBattleOver` (l'appelant — store ou wrapper IA — le fait).
  */
 import type { Get, Set as SetFn } from './flowTypes';
 import type { BattleState } from './store';
 import { Combatant, type Difficulty } from '../engine/types';
 import { battleRng } from './battleRng';
 import { evLines } from './combatLog';
-import { d10 } from '../engine/dice';
 import type { RNG } from '../engine/dice';
 import { combatValue, defenseValue } from '../engine/combat';
 import { rollTest, resolveOpposed, type TestResult } from '../engine/tests';
 import { effectiveChar, bonus } from '../engine/characteristics';
-import { isOutOfAction, addCondition, loseWounds, applyZeroWounds } from '../engine/conditions';
+import { isOutOfAction, applyZeroWounds } from '../engine/conditions';
 import { hasTraitKey, isBestial } from '../engine/traits/dispatch';
-import { creatureAttacks, ATTACK_LABEL, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
+import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../engine/creatureAttacks';
+import type { ManeuverDef } from '../data';
 import { sizeGap } from '../engine/size';
 import { combatDistance } from './footprint';
 import { chebyshev, type Pt } from './path';
 import { smokeZone } from './lineOfSight';
-import { applyTriggeredEffects, maneuverEffectsOf } from './triggeredEffects';
+import { applyTriggeredEffects } from './triggeredEffects';
 import { canTakeAction } from '../engine/conditions';
 import { bus, EVT } from './bus';
 
@@ -49,6 +43,16 @@ import { bus, EVT } from './bus';
  *  dédiée (creatureAttackPoses) ; les biped/spectraux jouent leur clip d'attaque générique. */
 export function emitCreatureAttackAnim(attacker: Combatant, kind: string): void {
   bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: attacker.id, kind: 'creature', defense: 'none', result: { hit: true }, creatureAttack: kind });
+}
+
+/** Chiffre flottant de Dégâts sur le pion touché — MÊME canal FX que les attaques/sorts (`useCombatFx`
+ *  écoute `ANIM_FLOAT`). Sans ça, les Dégâts d'une manœuvre n'apparaissaient QUE dans le journal. */
+function floatDamage(tgt: Combatant, wl: number): void {
+  if (wl > 0) bus.emit(EVT.ANIM_FLOAT, { to: tgt.id, text: `-${wl}`, kind: 'damage' });
+}
+/** Étiquette flottante d'ÉTAT/issue (Pétrifié, Esquivé…) sur le pion — feedback visuel de la manœuvre. */
+function floatTag(tgt: Combatant, text: string): void {
+  bus.emit(EVT.ANIM_FLOAT, { to: tgt.id, text, kind: 'condition' });
 }
 
 /** Cible de Piétinement valide pour `c` (LDB 85 l.320-321) : adversaire ADJACENT, encore actif et
@@ -88,8 +92,10 @@ export interface Maneuver {
   dispatch: 'trample' | 'tentacle' | 'maneuver' | 'area';
 }
 
-/** Mêlée ciblée (clic-entité requis) : Morsure / Attaque caudale / Tentacules de trait. */
-const TARGET_MANEUVER_KINDS: AttackKind[] = ['morsure', 'caudale', 'tentacules'];
+/** Manœuvres de mêlée résolues comme un COUP D'ARME (via `pendingAttack` + `freeKind` →
+ *  `applyAttackResult` : localisation/critique/FX/défense). Les autres manœuvres ciblées passent par
+ *  `pendingManeuver` (résolution propre). Exporté : le store (`battleManeuver`) route là-dessus. */
+export const MELEE_MANEUVER_KINDS: AttackKind[] = ['morsure', 'caudale', 'tentacules'];
 
 /** Manœuvres que le héros ACTIF peut activer maintenant — agrège (dédupliquées) : (1) ses manœuvres
  *  de trait abordables & légales ; (2) Piétinement (Taille) ; (3) la mutation Tentacule. Aucune
@@ -101,12 +107,18 @@ export function availableManeuvers(active: Combatant, battle: BattleState): Mane
   // gratuite uniquement à la Charge (auto) → exclues. Les manœuvres-Action (Étreinte) exigent l'Action.
   for (const a of creatureAttacks(active.traits ?? [])) {
     if (a.kind === 'arme' || a.trigger === 'charge') continue;
-    if (a.trigger === 'free' && active.advantage < a.avantage) continue;
+    // Avantage requis = coût RAW, ou 1 si l'Avantage est VARIABLE (Regard, +1 DR/Av — LDB 85 l.238).
+    // Vaut pour les manœuvres-Action AUSSI (sinon Regard/Étreinte s'activeraient à 0 Avantage).
+    const minAdv = a.advantageMode === 'variable' ? 1 : a.avantage;
+    if (active.advantage < minAdv) continue;
     if (a.trigger === 'action' && (battle.acted || !canTakeAction(active))) continue;
-    const target = TARGET_MANEUVER_KINDS.includes(a.kind);
+    // Toute manœuvre se CIBLE au clic (victime, ou point d'impact de la zone pour Souffle/Vomi : LDB 85
+    // « choisit une cible visible ») SAUF Hurlement (tous les ennemis à I mètres, l.135). 'maneuver' →
+    // battleManeuver (pendingAttack pour la mêlée de trait, pendingManeuver pour les manœuvres spéciales).
+    const immediate = a.kind === 'hurlement';
     out.push({
       id: a.kind, kind: a.kind, label: ATTACK_LABEL[a.kind], icon: MANEUVER_ICON[a.kind],
-      cost: a.avantage, mode: target ? 'target' : 'immediate', dispatch: target ? 'maneuver' : 'area',
+      cost: a.avantage, mode: immediate ? 'immediate' : 'target', dispatch: immediate ? 'area' : 'maneuver',
     });
   }
   // (2) Piétinement (Taille, LDB 85 l.320-321) : adversaire adjacent plus petit, ≥1 Avantage. Flux dédié.
@@ -141,188 +153,121 @@ export function maneuverAttackerDifficulty(kind: AttackKind): Difficulty {
 }
 
 // ---------------------------------------------------------------------------
-// APPLIERS (jet d'attaquant figé) — choix de cible + jet de défenseur + effets + feed
+// RÉSOLVEUR GÉNÉRIQUE — UNE fonction joue TOUTE manœuvre depuis sa `ManeuverDef`
 // ---------------------------------------------------------------------------
 
-/** Souffle (LDB 85 l.251) / Vomissement (l.376) — attaque de ZONE. `atk` = jet CT FIGÉ de
- *  l'attaquant (un seul effort de souffle), opposé à l'Esquive de CHAQUE cible. Cible visible la plus
- *  proche dans la portée (Souffle BE+20 m ; Vomi BE m), puis tous les ennemis dans la zone (Souffle :
- *  BF de la cible ; Vomi : 2 m). Dégâts (mitigés BE+PA, sauf ignore-PA Feu/Électricité/Poison) +
- *  effet de Type (Enflammé/Sonné/Empoisonné) + corrosion (Armure/Arme −1). Dépense `spent` Avantage.
- *  `centerOverride` : sort « Souffle » (LDB 47, point d'impact imposé). NE consomme PAS l'Action. */
-export function applyManArea(get: Get, set: SetFn, attacker: Combatant, a: CreatureAttack, atk: TestResult, spent: number, centerOverride?: Combatant): void {
-  const battle = get().battle;
-  if (!battle || battle.over || !attacker.pos) return;
-  attacker.advantage = Math.max(0, attacker.advantage - spent);
-  const isVomi = a.kind === 'vomi';
-  const be = bonus(effectiveChar(attacker, 'E'));
-  const rangeTiles = Math.max(1, Math.ceil((isVomi ? be : be + 20) / 2)); // 1 case = 2 m
-  const foes = battle.combatants.filter((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && chebyshev(attacker.pos!, c.pos) <= rangeTiles);
-  // Centre IMPOSÉ (sort « Souffle », LDB 47 : la cible du sort est le point d'impact) si valide ;
-  // sinon comportement trait : cible visible la plus proche.
-  const center = centerOverride && centerOverride.pos && !isOutOfAction(centerOverride) && chebyshev(attacker.pos, centerOverride.pos) <= rangeTiles
-    ? centerOverride
-    : foes.length
-      ? foes.reduce((p, c) => (chebyshev(attacker.pos!, p.pos!) <= chebyshev(attacker.pos!, c.pos!) ? p : c))
-      : null;
-  if (!center) return;
-  const blast = isVomi ? 1 : Math.max(1, Math.ceil(bonus(effectiveChar(center, 'F')) / 2)); // Souffle : BF de la cible ; Vomi : 2 m
-  const affected = battle.combatants.filter((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && chebyshev(center.pos!, c.pos) <= blast);
-  const type = (a.type ?? '').toLowerCase();
-  const ignorePA = !isVomi && /feu|électric|electric|poison/.test(type);
-  const corrosif = isVomi || /corros/.test(type);
-  const damage = isVomi ? be + 4 : a.bonus; // Vomi = BE+4 ; Souffle = Indice
-  const lines: string[] = [`${attacker.name} déclenche ${ATTACK_LABEL[a.kind]}${a.type ? ` (${a.type})` : ''} !`];
-  emitCreatureAttackAnim(attacker, a.kind);
-  // Flash de la ZONE touchée à l'exécution (R7) : on montre l'empreinte (centre ± blast, clippée à la scène)
-  // → on comprend pourquoi plusieurs combattants sont affectés. Émis pour TOUTE attaque de zone (ennemi/joueur).
-  const sc2 = get().scene;
-  const zone: Pt[] = [];
-  for (let dx = -blast; dx <= blast; dx++)
-    for (let dy = -blast; dy <= blast; dy++) {
-      const x = center.pos!.x + dx, y = center.pos!.y + dy;
-      if (sc2 && x >= 0 && y >= 0 && x < sc2.dimensions.w && y < sc2.dimensions.h) zone.push({ x, y });
-    }
-  bus.emit(EVT.ANIM_AOE, { tiles: zone, kind: a.kind, type: a.type });
-  for (const tgt of affected) {
-    // Test opposé CT/Esquive : jet d'attaquant FIGÉ (`atk`, Vomi : Facile +40 déjà baked, l.376) vs
-    // Esquive de la cible (Intermédiaire, roulée à neuf — jet SUBI montré au feed). `atk` n'est PAS re-tiré.
-    const def = rollTest(defenseValue(tgt, 'esquive'), 'intermediaire', battleRng());
-    const opp = resolveOpposed(atk, def);
-    if (!opp.attackerWins) { lines.push(`${tgt.name} esquive.`); continue; }
-    const tb = bonus(effectiveChar(tgt, 'E'));
-    const pa = ignorePA ? 0 : Math.max(0, tgt.armour.corps ?? 0);
-    const wl = Math.max(0, damage - tb - pa);
-    if (wl > 0) { loseWounds(tgt, wl); lines.push(`${tgt.name} subit ${wl} Blessure(s)${ignorePA ? ' (ignore PA)' : ''}.`); }
-    if (isVomi || /électric|electric/.test(type)) addCondition(tgt, 'Sonné');
-    else if (/froid/.test(type) && wl > 0) for (let i = 0; i < Math.max(1, Math.floor(wl / 5)); i++) addCondition(tgt, 'Sonné'); // 1 Sonné / 5 Blessures
-    if (/feu/.test(type)) addCondition(tgt, 'En flammes');
-    if (/poison/.test(type)) addCondition(tgt, 'Empoisonné');
-    if (corrosif) { // Armure & Arme portées subissent 1 Dégât
-      tgt.armour.corps = Math.max(0, (tgt.armour.corps ?? 0) - 1);
-      if (tgt.weapons[0]) tgt.weapons[0].damageTaken = (tgt.weapons[0].damageTaken ?? 0) + 1;
-    }
-    if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
-  }
-  // Type Fumée : la zone se remplit de fumée et bloque les Lignes de vue pendant BE Rounds (RAW Souffle).
-  let zones = get().battle!.zones;
-  if (/fum/.test(type)) {
-    const dur = Math.max(1, be); // Rounds = Bonus d'Endurance de la créature
-    const tiles = smokeZone(attacker.pos!, center.pos!, blast);
-    zones = [...(zones ?? []), { label: 'Fumée', tiles, rounds: dur, blocksLoS: true }];
-    lines.push(`La zone se remplit de fumée — Lignes de vue bloquées ${dur} Round(s).`);
-  }
-  set({ battle: { ...get().battle!, zones, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id)] } });
-  bus.emit(EVT.SCENE_DIRTY);
+/** Portée d'une manœuvre en MÈTRES depuis sa formule-chaîne (« Bonus d'Endurance + 20 mètres »,
+ *  « Bonus de Force mètres », « 2 mètres »). PUR/moteur (règle 3) — géométrie de la manœuvre, les
+ *  Dégâts/États restent data. Non chiffrable → null. */
+function maneuverMeters(formula: string | undefined, ref: Combatant): number | null {
+  if (!formula) return null;
+  let m = 0;
+  if (/bonus d[e'’]\s*endurance/i.test(formula)) m += bonus(effectiveChar(ref, 'E'));
+  if (/bonus d[e'’]\s*force/i.test(formula)) m += bonus(effectiveChar(ref, 'F'));
+  const plus = formula.match(/\+\s*(\d+)/);
+  if (plus) m += parseInt(plus[1], 10);
+  // « N mètres » nu (sans « Bonus de … ») : littéral.
+  if (!/bonus/i.test(formula)) { const lit = formula.match(/(\d+)\s*m/i); if (lit) m = parseInt(lit[1], 10); }
+  return m > 0 ? m : null;
+}
+/** Mètres → CASES (grille 2 m/case), min 1 ; null conservé. */
+const tilesOf = (meters: number | null): number | null => (meters == null ? null : Math.max(1, Math.ceil(meters / 2)));
+
+/** Jet du DÉFENSEUR opposé à la manœuvre, selon `def.defense`. `null` = pas d'opposition (Résistance/
+ *  auto sans jet — le `test` op de l'effet roule lui-même, Hurlement). 'init' = Initiative (Regard) ;
+ *  'auto' = meilleure réaction ; 'esquive'/'parade' = explicite. */
+function defenderRoll(tgt: Combatant, defense: ManeuverDef['defense']): TestResult | null {
+  if (!defense || defense === 'resist') return null;
+  if (defense === 'init') return rollTest(effectiveChar(tgt, 'I'), 'intermediaire', battleRng()); // Regard, opposé à l'Initiative (LDB 85)
+  const mode = defense === 'auto' ? bestDefenseMode(tgt) : defense;
+  return rollTest(defenseValue(tgt, mode), 'intermediaire', battleRng());
 }
 
-/** Langue préhensile (Jabberslythe, LDB 85 l.185-186) : Attaque gratuite à 1 Avantage, À DISTANCE.
- *  `atk` = jet CT FIGÉ ; cible visible la plus proche, opposé à l'Esquive. Sur une touche : Dégâts =
- *  Indice + effet onHit AUTHORÉ (Langue → Empêtré). NE consomme PAS l'Action. */
-export function applyManTongue(get: Get, set: SetFn, attacker: Combatant, a: CreatureAttack, atk: TestResult, spent: number): void {
-  const battle = get().battle;
-  if (!battle || battle.over || !attacker.pos) return;
-  attacker.advantage = Math.max(0, attacker.advantage - spent);
-  const foes = battle.combatants.filter((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos);
-  if (!foes.length) return;
-  const tgt = foes.reduce((p, c) => (chebyshev(attacker.pos!, p.pos!) <= chebyshev(attacker.pos!, c.pos!) ? p : c));
-  const def = rollTest(defenseValue(tgt, 'esquive'), 'intermediaire', battleRng());
-  const opp = resolveOpposed(atk, def);
-  const lines = [`${attacker.name} projette sa Langue préhensile sur ${tgt.name} !`];
-  emitCreatureAttackAnim(attacker, a.kind);
-  if (opp.attackerWins) {
-    const wl = Math.max(0, a.bonus - bonus(effectiveChar(tgt, 'E')) - Math.max(0, tgt.armour.corps ?? 0));
-    if (wl > 0) { loseWounds(tgt, wl); lines.push(`${tgt.name} subit ${wl} Blessure(s).`); }
-    // Effet onHit AUTHORÉ de la manœuvre (Langue → Empêtré) — donnée éditable `maneuver.effects`.
-    lines.push(...applyTriggeredEffects(get, attacker, maneuverEffectsOf(attacker, 'langue'), 'onHit', { victim: tgt, woundsDealt: wl, rng: battleRng() }));
-    if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
-  } else lines.push(`${tgt.name} esquive la langue.`);
-  set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id, tgt.id)] } });
-  bus.emit(EVT.SCENE_DIRTY);
-}
-
-/** Hurlement fantomatique (Banshee, LDB 85 l.135-136) : PAS de jet d'attaquant — chaque cible vivante
- *  (non Mort-vivant) à I mètres subit 1d10 (ignore BE et PA) + effets onHit AUTHORÉS (Test de
- *  Résistance ou Brisé, + 3 Assourdi). `spent` Avantage déjà imposé à TOUT par l'appelant (l.135 :
- *  « dépenser tous ses Avantages, minimum 2 »). Attaque gratuite (Action préservée). */
-export function applyManWail(get: Get, set: SetFn, attacker: Combatant, spent: number): void {
-  const battle = get().battle;
-  if (!battle || battle.over || !attacker.pos) return;
-  attacker.advantage = Math.max(0, attacker.advantage - spent);
-  const radius = Math.max(1, Math.ceil(effectiveChar(attacker, 'I') / 2)); // Initiative mètres → cases (2 m)
-  const living = battle.combatants.filter(
-    (c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && chebyshev(attacker.pos!, c.pos) <= radius && !hasTraitKey(c.traits, 'Mort-vivant'),
-  );
-  const lines = [`${attacker.name} pousse un Hurlement fantomatique !`];
-  emitCreatureAttackAnim(attacker, 'hurlement');
-  // Flash de la zone du Hurlement (R7) : rayon autour du crieur, clippé à la scène.
-  const scW = get().scene;
-  const zoneW: Pt[] = [];
+/** Émet le flash de ZONE (empreinte centre ± rayon, clippée à la scène) — montre pourquoi plusieurs
+ *  cibles sont affectées (R7). Émis pour TOUTE manœuvre de zone (ennemi/joueur). */
+function emitAoe(get: Get, center: Pt, radius: number, kind: AttackKind, type?: string): void {
+  const sc = get().scene;
+  const tiles: Pt[] = [];
   for (let dx = -radius; dx <= radius; dx++)
     for (let dy = -radius; dy <= radius; dy++) {
-      const x = attacker.pos!.x + dx, y = attacker.pos!.y + dy;
-      if (scW && x >= 0 && y >= 0 && x < scW.dimensions.w && y < scW.dimensions.h) zoneW.push({ x, y });
+      const x = center.x + dx, y = center.y + dy;
+      if (sc && x >= 0 && y >= 0 && x < sc.dimensions.w && y < sc.dimensions.h) tiles.push({ x, y });
     }
-  bus.emit(EVT.ANIM_AOE, { tiles: zoneW, kind: 'hurlement', type: '' });
-  for (const tgt of living) {
-    const wl = d10(battleRng()); // 1d10, ignore Endurance et PA (jet SUBI par la cible)
-    loseWounds(tgt, wl);
-    lines.push(`${tgt.name} subit ${wl} Blessure(s) (ignore Endurance et PA).`);
-    // Effets onHit AUTHORÉS de la manœuvre (Hurlement → Test de Résistance ou Brisé, + 3 Assourdi) —
-    // donnée éditable `maneuver.effects` (op `test` + `condition`).
-    lines.push(...applyTriggeredEffects(get, attacker, maneuverEffectsOf(attacker, 'hurlement'), 'onHit', { victim: tgt, woundsDealt: wl, rng: battleRng() }));
+  bus.emit(EVT.ANIM_AOE, { tiles, kind, type });
+}
+
+/**
+ * RÉSOLVEUR UNIQUE de manœuvre — joue ENTIÈREMENT une `ManeuverDef` (remplace applyMan{Area,Tongue,
+ * Wail,Gaze,ChillGrasp}). `atk` = jet d'attaquant FIGÉ (influencé par la modale joueur ; null = pas de
+ * jet, Hurlement), `spent` = Avantage dépensé, `chosenTarget` = clic joueur (victime mêlée/distance, ou
+ * centre de zone). La GÉOMÉTRIE dérive de `def.targeting`+`range`/`blast` ; les effets AUTHORÉS
+ * (`def.effects`, GameOp : Dégâts `wounds` + États) sont appliqués aux cibles GAGNÉES avec l'Indice
+ * (`{indiceOf}`) et la marge (`ctx.sl` : slThreshold/valuePerSL). NE PPELLE PAS `checkBattleOver`.
+ */
+export function resolveManeuver(
+  get: Get, set: SetFn, attacker: Combatant, def: ManeuverDef, indice: number, atk: TestResult | null, spent: number, chosenTarget?: Combatant,
+): void {
+  const battle = get().battle;
+  if (!battle || battle.over || !attacker.pos) return;
+  attacker.advantage = Math.max(0, attacker.advantage - spent);
+  const rng = battleRng();
+  // Libellé de feed = celui de la manœuvre (« Souffle (Feu) ») s'il enrichit le geste, sinon le libellé
+  // canonique du geste (`ATTACK_LABEL[def.kind]`). Aucune LOGIQUE sur le label — pur affichage.
+  const lines: string[] = [`${attacker.name} déclenche ${def.label || ATTACK_LABEL[def.kind]} !`];
+  emitCreatureAttackAnim(attacker, def.kind);
+  const alive = (c: Combatant) => c.kind !== attacker.kind && !isOutOfAction(c) && !!c.pos;
+  const nearest = (cands: Combatant[]) => cands.reduce((p, c) => (chebyshev(attacker.pos!, p.pos!) <= chebyshev(attacker.pos!, c.pos!) ? p : c));
+
+  /** Applique la manœuvre à UNE cible : jet du défenseur (selon `def.defense`), opposition, et — si
+   *  l'attaquant gagne (ou pas d'opposition) — les effets AUTHORÉS (`def.effects`) avec `indice`/`margin`. */
+  const hitOne = (tgt: Combatant): void => {
+    const drow = defenderRoll(tgt, def.defense);
+    let margin: number | undefined;
+    if (drow) {
+      const opp = resolveOpposed(atk ?? drow, drow);
+      if (!opp.attackerWins) { lines.push(`${tgt.name} résiste.`); floatTag(tgt, def.defense === 'init' ? 'Résiste' : 'Esquive'); return; }
+      // Marge = DR net du vainqueur (+Avantage dépensé pour les manœuvres à Avantage VARIABLE, Regard l.238).
+      margin = opp.netSL + (def.advantageMode === 'variable' ? spent : 0);
+    }
+    const before = tgt.wounds.current;
+    lines.push(...applyTriggeredEffects(get, attacker, def.effects ?? [], 'onHit', { victim: tgt, margin, indice, rng }));
+    const wl = before - tgt.wounds.current;
+    if (wl > 0) floatDamage(tgt, wl);
     if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
+  };
+
+  if (def.targeting === 'zone') {
+    const rangeTiles = tilesOf(maneuverMeters(def.range, attacker)) ?? Math.max(1, Math.ceil(bonus(effectiveChar(attacker, 'E')) / 2));
+    const foes = battle.combatants.filter((c) => alive(c) && chebyshev(attacker.pos!, c.pos!) <= rangeTiles);
+    const center = chosenTarget && alive(chosenTarget) && chebyshev(attacker.pos!, chosenTarget.pos!) <= rangeTiles
+      ? chosenTarget : foes.length ? nearest(foes) : null;
+    if (!center) { set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id)] } }); return; }
+    // Rayon de Souffle : `blast` « Bonus de Force mètres » → BF de la CIBLE (RAW l.251) ; Vomi « 2 mètres » → 1 case.
+    const blast = /force/i.test(def.blast ?? '') ? Math.max(1, Math.ceil(bonus(effectiveChar(center, 'F')) / 2)) : (tilesOf(maneuverMeters(def.blast, attacker)) ?? 1);
+    emitAoe(get, center.pos!, blast, def.kind, def.label);
+    const affected = battle.combatants.filter((c) => alive(c) && chebyshev(center.pos!, c.pos!) <= blast);
+    for (const tgt of affected) hitOne(tgt);
+    // Fumée (souffle-fumee) : la zone bloque les Lignes de vue pendant BE Rounds — GÉOMÉTRIE moteur (pas un GameOp).
+    if (def.id === 'souffle-fumee') {
+      const dur = Math.max(1, bonus(effectiveChar(attacker, 'E')));
+      const tiles = smokeZone(attacker.pos!, center.pos!, blast);
+      const zones = [...(get().battle!.zones ?? []), { label: 'Fumée', tiles, rounds: dur, blocksLoS: true }];
+      lines.push(`La zone se remplit de fumée — Lignes de vue bloquées ${dur} Round(s).`);
+      set({ battle: { ...get().battle!, zones } });
+    }
+  } else if (def.targeting === 'allFoes') {
+    // Hurlement (l.135) : tous les ennemis VIVANTS (≠ Mort-vivant) à Initiative mètres — filtre de Groupe moteur.
+    const radius = Math.max(1, Math.ceil(effectiveChar(attacker, 'I') / 2));
+    const living = battle.combatants.filter((c) => alive(c) && chebyshev(attacker.pos!, c.pos!) <= radius && !hasTraitKey(c.traits, 'Mort-vivant'));
+    emitAoe(get, attacker.pos, radius, def.kind, def.label);
+    for (const tgt of living) hitOne(tgt);
+  } else {
+    // melee / ranged : cible unique (clic joueur, ou la plus proche pour l'IA/auto).
+    const foes = battle.combatants.filter(alive);
+    const tgt = chosenTarget && alive(chosenTarget) ? chosenTarget : foes.length ? nearest(foes) : null;
+    if (tgt) hitOne(tgt);
   }
   set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id)] } });
-  bus.emit(EVT.SCENE_DIRTY);
-}
-
-/** Regard pétrifiant (Basilic, LDB 85 l.238) : `atk` = jet CT FIGÉ vs Initiative de la cible, marge =
- *  DR attaquant + `spent` (Avantage dépensé, +1 DR/Av) − DR défenseur. Cible visible la plus proche.
- *  La cible reçoit 1 État Sonné par tranche de 2 DR de marge ; pétrifiée (et 0 PB) si la marge atteint
- *  6 DR. Consomme l'Action (le store pose `acted`). */
-export function applyManGaze(get: Get, set: SetFn, attacker: Combatant, atk: TestResult, spent: number): void {
-  const battle = get().battle;
-  if (!battle || battle.over || !attacker.pos) return;
-  attacker.advantage = Math.max(0, attacker.advantage - spent);
-  const foes = battle.combatants.filter((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos);
-  if (!foes.length) return;
-  const tgt = foes.reduce((p, c) => (chebyshev(attacker.pos!, p.pos!) <= chebyshev(attacker.pos!, c.pos!) ? p : c));
-  const initVal = effectiveChar(tgt, 'I') + (tgt.skills.find((s) => s.name.toLowerCase().startsWith('initiative'))?.advances ?? 0);
-  const def = rollTest(initVal, 'intermediaire', battleRng());
-  const margin = atk.sl + spent - def.sl; // DR de l'attaquant (+Avantage) − DR du défenseur
-  const lines = [`${attacker.name} fixe ${tgt.name} de son Regard pétrifiant (${spent} Avantage) !`];
-  emitCreatureAttackAnim(attacker, 'regard');
-  // Pétrifié à 6 DR de marge = issue spéciale de RÉSOLUTION (zéro les PB) → reste moteur. Le Sonné
-  // échelonné (1 par 2 DR) est un effet onHit AUTHORÉ (donnée `maneuver.effects`, op `condition`
-  // `valuePerSL{every:2}` alimenté par `ctx.sl = margin`).
-  if (margin >= 6) { addCondition(tgt, 'Pétrifié'); tgt.wounds.current = 0; applyZeroWounds(tgt); lines.push(`${tgt.name} est définitivement changé en PIERRE !`); }
-  else if (margin >= 2) lines.push(...applyTriggeredEffects(get, attacker, maneuverEffectsOf(attacker, 'regard'), 'onHit', { victim: tgt, margin, rng: battleRng() }));
-  else lines.push(`${tgt.name} soutient le regard.`);
-  set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id, tgt.id)] } });
-  bus.emit(EVT.SCENE_DIRTY);
-}
-
-/** Étreinte glaciale (Spectre de cairn, LDB 85 l.112) : `atk` = jet CC FIGÉ vs Corps à corps/Esquive
- *  de la cible adjacente. Sur un succès, la cible perd 1d10 + DR Blessures ignorant le Bonus
- *  d'Endurance ET les PA. Attaque magique. Consomme l'Action (le store pose `acted`). */
-export function applyManChillGrasp(get: Get, set: SetFn, attacker: Combatant, atk: TestResult, spent: number): void {
-  const battle = get().battle;
-  if (!battle || battle.over || !attacker.pos) return;
-  const tgt = battle.combatants.find((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && combatDistance(attacker, c) <= 1);
-  if (!tgt) return;
-  attacker.advantage = Math.max(0, attacker.advantage - spent);
-  const def = rollTest(defenseValue(tgt, bestDefenseMode(tgt)), 'intermediaire', battleRng());
-  const opp = resolveOpposed(atk, def);
-  const lines = [`${attacker.name} étreint ${tgt.name} de son toucher glacial !`];
-  emitCreatureAttackAnim(attacker, 'etreinte');
-  if (opp.attackerWins) {
-    const wl = d10(battleRng()) + opp.netSL; // 1d10 + DR, ignore BE et PA
-    loseWounds(tgt, wl);
-    lines.push(`${tgt.name} perd ${wl} Blessure(s) (ignore Endurance et PA).`);
-    if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
-  } else lines.push(`${tgt.name} résiste à l'étreinte.`);
-  set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id, tgt.id)] } });
   bus.emit(EVT.SCENE_DIRTY);
 }
 
