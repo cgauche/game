@@ -1,5 +1,5 @@
 import { makePregens } from '../../data/pregens';
-import { buildOperaFloorplan } from '../opera/floorplan';
+import { buildOperaFloorplan, parterreSeatCells } from '../opera/floorplan';
 import type { Scene, SceneEntity } from '../../state/scene';
 import type { TestScenario } from './_shared';
 
@@ -61,18 +61,10 @@ const ents: SceneEntity[] = [
   { id: 'orch-tab-2', kind: 'prop', ref: 'tabouret', pos: { x: 26, y: 16 } },
 
   // ═══════════════ PARTERRE / ORCHESTRE (17, z=0, rangées 17-44, éventail) ═══════════════
-  // Fauteuils rakés regardant la scène (`facing:'N'`), split L/R par l'allée centrale (cols 20-22 libres),
-  // rangs tous les 3 rangs (les rangs intermédiaires = circulation), bornés par les bords de l'éventail.
-  // Lf/Rf : y17-19 16..28 · y24 14..30 · y29 13..31 · y33 12..32 · y38 11..33 · y42 10..34.
-  ...seatRow('pt-19L', 19, 16, 19), ...seatRow('pt-19R', 19, 23, 28),
-  ...seatRow('pt-22L', 22, 15, 19), ...seatRow('pt-22R', 22, 23, 29),
-  ...seatRow('pt-25L', 25, 14, 19), ...seatRow('pt-25R', 25, 23, 30),
-  ...seatRow('pt-28L', 28, 14, 19), ...seatRow('pt-28R', 28, 23, 30),
-  ...seatRow('pt-31L', 31, 13, 19), ...seatRow('pt-31R', 31, 23, 31),
-  ...seatRow('pt-34L', 34, 12, 19), ...seatRow('pt-34R', 34, 23, 32),
-  ...seatRow('pt-37L', 37, 12, 19), ...seatRow('pt-37R', 37, 23, 32),
-  ...seatRow('pt-40L', 40, 11, 19), ...seatRow('pt-40R', 40, 23, 33),
-  ...seatRow('pt-43L', 43, 10, 19), ...seatRow('pt-43R', 43, 23, 34),
+  // Fauteuils 1×1 remplissant TOUT l'éventail, de bord à bord (DENSE comme le plan p.40 : ≈14 rangs
+  // pleins), un rang sur deux (circulation entre les rangs), fine allée centrale de 2 cases. Toute la
+  // géométrie vient de `parterreSeatCells` (floorplan = source unique) ; ils regardent la scène (Nord).
+  ...parterreSeatCells().map((c, i): SceneEntity => ({ id: `pt-${i}`, kind: 'prop', ref: 'siege', pos: c, facing: 'N' })),
 
   // ═══════════════ FOYER (7 Salon, z=0, marbre rangées 46-52) ═══════════════
   // Grand hall d'accueil sobre : statues d'honneur encadrant l'entrée du parterre, urnes, plantes, appliques.

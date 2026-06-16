@@ -67,6 +67,20 @@ const fanHalf = (y: number) => {
 const Lf = (y: number) => Math.round(AX - fanHalf(y)); // bord gauche du parterre
 const Rf = (y: number) => Math.round(AX + fanHalf(y)); // bord droit du parterre
 
+/** Cases de SIÈGE du parterre : éventail PLEIN, de bord à bord (Lf..Rf), un rang sur deux (allée de
+ *  circulation entre les rangs), allée centrale de 2 cases (axe 21.5). Source UNIQUE de la géométrie des
+ *  fauteuils → le scénario y pose un `siege` 1×1 par case (cf. 22-opera-plan). DENSE comme le plan p.40
+ *  (≈14 rangs pleins), au lieu de quelques sièges épars avec un grand vide central. */
+export function parterreSeatCells(): { x: number; y: number }[] {
+  const out: { x: number; y: number }[] = [];
+  for (let y = PY0; y <= PY1; y += 2)
+    for (let x = Lf(y); x <= Rf(y); x++) {
+      if (x === 21 || x === 22) continue; // allée centrale
+      out.push({ x, y });
+    }
+  return out;
+}
+
 // La scène est un peu plus large que le sommet de l'éventail (avant-scène). Mesuré cols ~11..32.
 const STX0 = 11, STX1 = 32;
 
