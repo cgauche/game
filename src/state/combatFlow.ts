@@ -50,7 +50,7 @@ import { gainAdvantage } from '../engine/advantage';
 import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, occupiesTile } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSize, hasBladeTrap, canPushback, strikesLast, isFirearmQuality } from '../engine/qualities/dispatch';
-import { fireTriggers } from './triggeredEffects';
+import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf } from './triggeredEffects';
 import { hasStealAdvantage, shieldAdvantageLevel, hasRiposte, talentCritExtraWounds, hasSurpriseSave, talentMagicResistance, hasBraveheart, outnumberCountBonus, hasStunSave, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony } from '../engine/combatFeatures/dispatch';
 import { canStrikeFirst } from '../engine/qualities/dispatch';
 import {
@@ -120,7 +120,7 @@ import { toBrass, fromBrass } from '../engine/money';
 import { Scene, Effect, isWalkable } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
 import { lineOfSightCover, coverModifier, smokeZone, tilesBetween } from './lineOfSight';
-import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune, clearPsychOf, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, PsychType } from '../engine/psychology';
+import { fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune, clearPsychOf, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import { reachable, moveReachFor, flyReachable, pushAway, pathTo, chebyshev, Pt } from './path';
@@ -1900,22 +1900,16 @@ export function applyFreeAttackEffects(get: Get, attacker: Combatant, target: Co
     get().log(`${target.name} est Empêtré (Constricteur).`);
   }
   if (!res.woundsLost) return; // les effets suivants exigent des Points de Blessure perdus
-  // Tentacules (LDB 85 l.355) : « Si elle cause des Dégâts, elle peut aussi infliger à son adversaire
-  // l'État Empêtré, bien que cela entame une Empoignade avec ce tentacule. » Un Constricteur (toute
-  // touche, ci-dessus) a pu le poser déjà — le garde-fou évite le double-comptage.
-  if (kind === 'tentacules' && !hasCondition(target, 'Empêtré')) {
-    addCondition(target, 'Empêtré');
-    const cond = target.conditions.find((c) => c.name === 'Empêtré'); if (cond) cond.sourceId = attacker.id;
-    get().log(`${target.name} est Empêtré (Tentacules).`);
-  }
+  // Effets onHit AUTHORÉS de la manœuvre (donnée éditable `maneuver.effects` : Attaque caudale → À Terre
+  // si la cible est plus petite ; Tentacules → Empêtré) — appliqués SCOPED à cette manœuvre (≠ l'onHit
+  // générique des traits/atouts), via le MÊME exécuteur de Flow.
+  const mEffects = maneuverEffectsOf(attacker, kind);
+  if (mEffects.length) applyTriggeredEffects(get, attacker, mEffects, 'onHit', { victim: target, woundsDealt: res.woundsLost, rng: battleRng() }).forEach((l) => get().log(l));
   // Vampirique (Vampire/Varghulf, LDB 85) : Morsure infligeant des PB → l'attaquant récupère autant.
+  // (DIFFÉRÉ : effet gaté par le KIND d'attaque + possession d'un trait → vocabulaire manquant.)
   if (kind === 'morsure' && hasTraitKey(traits, 'Vampirique')) {
     attacker.wounds.current = Math.min(attacker.wounds.max, attacker.wounds.current + res.woundsLost);
     get().log(`${attacker.name} draine ${res.woundsLost} Blessure(s) (Vampirique).`);
-  }
-  if (kind === 'caudale' && sizeGap(attacker.size, target.size) >= 1 && !hasCondition(target, 'À Terre')) {
-    addCondition(target, 'À Terre');
-    get().log(`${target.name} est mis À Terre (Attaque caudale).`);
   }
   const vd = venomDifficulty(attacker.traits ?? []);
   // Immunité (Type) (LDB 85 p.339) : un type « Poison » ignore totalement le Venin.
@@ -3538,10 +3532,12 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
   //     capture des récompenses incluse). On tranche AVANT de proposer la fenêtre d'initiative.
   if (checkBattleOver(get, set)) return;
   // (4bis) Psychologie de FIN de Round (LDB 21 l.27) : la PEUR est un Test ÉTENDU de Calme « à la fin
-  //     de chaque Round ». APRÈS le Destin (résolu en (1), peut avoir suspendu/re-rappelé) et l'entretien,
-  //     on ouvre UNE cascade (un héros par étape, applier 'combatPsych') qui SUSPEND la suite jusqu'à
-  //     résolution ; à sa fermeture (`roundBoundary`), le store ré-appelle `resolveRoundBoundary` →
-  //     la Peur est alors marquée testée ce Round, donc on enchaîne sur la pause de début de Round.
+  //     de chaque Round ». APRÈS le Destin (résolu en (1), peut avoir suspendu/re-rappelé) ET les
+  //     décomptes UNE-FOIS-PAR-ROUND ci-dessus (Avantage/Nuée/Engagement/zones — DÉJÀ appliqués), on
+  //     ouvre UNE cascade (un héros par étape, applier 'combatPsych') qui SUSPEND la suite jusqu'à
+  //     résolution. À sa fermeture (`roundBoundary`), le store enchaîne DIRECTEMENT sur `enterRoundStartPause`
+  //     — surtout PAS `resolveRoundBoundary` (qui re-jouerait ces décomptes). Sinon (aucune Peur), on
+  //     enchaîne ici même.
   openRoundEndPsych(get, set);
   if (get().pendingCascade) return;
   enterRoundStartPause(get, set);
@@ -3763,9 +3759,10 @@ function openCombatPsychCascade(
   collect: (get: Get, c: Combatant) => HeroPsychDue | null,
   title: string,
   icon: string,
+  roundBoundary = false,
 ): void {
   const battle = get().battle;
-  if (!battle || battle.over || get().pendingPsych || get().pendingCascade || get().pendingReveals.length || get().pendingFateSave || get().pendingFumble) return;
+  if (!battle || battle.over || get().pendingCascade || get().pendingReveals.length || get().pendingFateSave || get().pendingFumble) return;
   const steps: import('./pendings').CascadeStep[] = [];
   for (const c of battle.combatants) {
     if (c.kind !== 'hero' || isOutOfAction(c)) continue;
@@ -3788,7 +3785,7 @@ function openCombatPsychCascade(
     });
   }
   if (!steps.length) return;
-  startCascade(get, set, { title, icon, purpose: 'combat', steps });
+  startCascade(get, set, { title, icon, purpose: 'combat', steps, roundBoundary });
 }
 
 /** Cascade de Psychologie de DÉBUT de Round (Traits ciblés + nouvelles Terreurs, LDB 21 l.14) — un héros
@@ -3800,7 +3797,7 @@ export function openRoundStartPsych(get: Get, set: SetFn): void {
 /** Cascade de Psychologie de FIN de Round (Peur — Test étendu de Calme, LDB 21 l.27) — un héros par
  *  étape. Appelée au franchissement de Round APRÈS l'entretien/le Destin ; suspend l'IA jusqu'à résolution. */
 export function openRoundEndPsych(get: Get, set: SetFn): void {
-  openCombatPsychCascade(get, set, collectHeroRoundEndPsych, 'Peur — fin de Round', '😨');
+  openCombatPsychCascade(get, set, collectHeroRoundEndPsych, 'Peur — fin de Round', '😨', true);
 }
 
 /** Conséquence d'un Test de Calme de COMBAT (étape de cascade) : pose/mets à jour le `psychState`.
@@ -3814,6 +3811,15 @@ registerCascadeApplier(
     const battle = get().battle;
     const r = step.result;
     hero.psychState ??= [];
+    // DÉTERMINATION (LDB 17 l.62) : immunité TEMPORAIRE — la Peur/Terreur/Trait est IGNORÉE ce Round,
+    // PAS vaincue. On NE cumule PAS le DR, on NE pose PAS de Brisé, on N'active PAS le trait ciblé : le
+    // `psychState` (et le `calmeDR` d'une Peur déjà entamée) reste INCHANGÉ. Le collecteur de Round saute
+    // ce héros tant que `psychImmuneRoundsLeft > 0` ; à l'expiration, la source reprend.
+    if (step.immune) {
+      set({ party: [...get().party] });
+      if (battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
+      return { journal: [`${hero.name} est temporairement insensible à la Psychologie (Détermination).`] };
+    }
     let line: string;
     if (cp.kind === 'terreur') {
       // 1ʳᵉ rencontre (LDB 21 l.55-57) : échec → Brisé = Indice + |DR négatifs| ; devient une Peur.

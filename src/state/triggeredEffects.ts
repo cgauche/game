@@ -39,27 +39,43 @@ function targetsFor(get: Get, actor: Combatant, on: TriggeredEffect['on'], victi
   return battle.combatants.filter((c) => c.id !== actor.id && isEngagedWith(c, actor.id));
 }
 
-/**
- * Déclenche les effets de `actor` (Traits + Atouts de `ctx.weapon`) correspondant à `trigger`. Pour
- * chaque effet, applique son Flow aux cibles résolues (`on`) via `runSpellFlow` (caster = le porteur).
- * Renvoie le journal. C'est l'équivalent « sur événement » d'un lancement de sort.
- */
-export function fireTriggers(
-  get: Get,
-  actor: Combatant,
-  trigger: EffectTrigger,
-  ctx: { victim?: Combatant; weapon?: Weapon; rng?: RNG; margin?: number; woundsDealt?: number } = {},
+/** Contexte d'application d'effets déclenchés. `margin` (marge d'un Test opposé) alimente les échelles
+ *  `valuePerSL` via `ctx.sl` ; `woundsDealt` alimente le Vol de vie (op `lifeSteal`). */
+export interface TriggerCtx { victim?: Combatant; weapon?: Weapon; rng?: RNG; margin?: number; woundsDealt?: number }
+
+/** CŒUR d'application : applique une LISTE d'effets `TriggeredEffect` de `actor` correspondant à
+ *  `trigger`, chacun via `runSpellFlow` aux cibles résolues (`on`). Source UNIQUE : utilisé par
+ *  `fireTriggers` (effets de traits/atouts) ET par les manœuvres (effets du profil de manœuvre). */
+export function applyTriggeredEffects(
+  get: Get, actor: Combatant, effects: TriggeredEffect[], trigger: EffectTrigger, ctx: TriggerCtx = {},
 ): string[] {
   const lines: string[] = [];
   const rng = ctx.rng ?? defaultRNG;
-  for (const eff of effectsOf(actor, ctx.weapon)) {
+  for (const eff of effects) {
     if (eff.trigger !== trigger) continue;
     for (const t of targetsFor(get, actor, eff.on, ctx.victim)) {
       if (isOutOfAction(t)) continue;
-      // `margin` (marge d'un Test opposé) alimente les échelles `valuePerSL` via `ctx.sl` ; `woundsDealt`
-      // alimente le Vol de vie (op `lifeSteal`). Cf. manœuvres (Regard, Vampirique).
       lines.push(...runSpellFlow(t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt }));
     }
   }
   return lines;
+}
+
+/**
+ * Déclenche les effets de `actor` (Traits + Atouts de `ctx.weapon`) correspondant à `trigger` — pour
+ * TOUTE attaque/événement. (Les effets propres à une MANŒUVRE précise vivent sur son profil et sont
+ * appliqués par `applyTriggeredEffects(maneuverEffectsOf(...))`, scoped à la manœuvre.)
+ */
+export function fireTriggers(get: Get, actor: Combatant, trigger: EffectTrigger, ctx: TriggerCtx = {}): string[] {
+  return applyTriggeredEffects(get, actor, effectsOf(actor, ctx.weapon), trigger, ctx);
+}
+
+/** Effets onHit AUTHORÉS de la manœuvre `kind` portée par `actor` (Caudale → À Terre, Tentacules →
+ *  Empêtré…) — lus du profil `TraitData.maneuver.effects`. Vide si la créature n'a pas cette manœuvre. */
+export function maneuverEffectsOf(actor: Combatant, kind: string): TriggeredEffect[] {
+  for (const raw of actor.traits ?? []) {
+    const td = traitByLabel.get(asTrait(raw).key);
+    if (td?.maneuver?.kind === kind) return td.maneuver.effects ?? [];
+  }
+  return [];
 }

@@ -127,7 +127,42 @@
     "maneuver": {
       "kind": "caudale",
       "activation": "free",
-      "advantageCost": 1
+      "advantageCost": 1,
+      "effects": [
+        {
+          "trigger": "onHit",
+          "on": "victim",
+          "flow": {
+            "kind": "if",
+            "cond": {
+              "kind": "compare",
+              "subject": {
+                "who": "target",
+                "field": "size"
+              },
+              "op": "<",
+              "value": {
+                "who": "caster",
+                "field": "size"
+              }
+            },
+            "then": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "target",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "name": "À Terre",
+                    "unlessCondition": "À Terre"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
     }
   },
   {
@@ -961,7 +996,30 @@
       "kind": "tentacules",
       "activation": "free",
       "advantageCost": 0,
-      "perTentacle": true
+      "perTentacle": true,
+      "effects": [
+        {
+          "trigger": "onHit",
+          "on": "victim",
+          "flow": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "condition",
+                  "name": "Empêtré",
+                  "unlessCondition": "Empêtré",
+                  "escapeStrength": {
+                    "charOf": "F"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
     }
   },
   {

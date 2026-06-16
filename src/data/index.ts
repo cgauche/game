@@ -199,6 +199,9 @@ export interface ManeuverProfile {
   aoe?: boolean;
   magic?: boolean;
   perTentacle?: boolean;
+  /** Effets PROPRES à la manœuvre, appliqués quand ELLE touche (Caudale → À Terre si plus petit ;
+   *  Tentacules → Empêtré) — distincts de `TraitData.effects` (qui s'appliquent à TOUTE touche). */
+  effects?: import('../state/flow').TriggeredEffect[];
 }
 /** Trait de créature (LDB 85) : libellé canonique + desc VERBATIM (affichée à l'inspecteur). */
 export interface TraitData {
