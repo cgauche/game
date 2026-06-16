@@ -62,22 +62,6 @@ export function billboardScale(dims: Dims): number {
   return dims.edge && dims.view !== 'top' ? EDGE_W / TW : 1;
 }
 
-/** Largeur ÉCRAN d'une empreinte w×h, exprimée en « largeurs de tuile » de la projection courante
- *  (donc 1 pour 1×1, quelles que soient vue/rotation/edge). Sert à dimensionner un billboard MULTI-CASES
- *  pour qu'il couvre exactement SON empreinte projetée — et la SUIVE quand la caméra tourne, au lieu d'une
- *  échelle figée `max(w,h)` qui déborde aux crans obliques (le décor « se déplace » à la rotation). Couplée
- *  à `billboardScale` (le multiplicateur reste relatif à UNE tuile, la projection est gérée à part). */
-export function footprintSpan(w: number, h: number, dims: Dims): number {
-  if (w <= 1 && h <= 1) return 1;
-  // x-extent ÉCRAN des 4 coins EXTÉRIEURS du bloc (coins de grille = tileCenter à ±0.5).
-  const corner = (gx: number, gy: number) => tileCenter(gx - 0.5, gy - 0.5, dims).cx;
-  const xs = [corner(0, 0), corner(w, 0), corner(0, h), corner(w, h)];
-  const width = Math.max(...xs) - Math.min(...xs);
-  const st = axisStep(dims);
-  const oneTile = st ? st.sx : TW; // largeur d'UNE tuile dans la même projection
-  return width / oneTile;
-}
-
 /** Dimensions effectives à l'écran : pour rot impair, une grille W×H tournée occupe H×W. */
 export function effDims(dims: Dims): { w: number; h: number } {
   return (dims.rot ?? 0) % 2 === 0 ? { w: dims.w, h: dims.h } : { w: dims.h, h: dims.w };
