@@ -123,6 +123,7 @@ export function formulaSummary(f: Formula | undefined): string {
   if ('bonusOf' in f) return `B${f.bonusOf}`;
   if ('charOf' in f) return f.charOf;
   if ('rolled' in f) return 'dé';
+  if ('indiceOf' in f) return 'Indice';
   return `${f.dice.n}d${f.dice.sides}${f.dice.plus ? `+${f.dice.plus}` : ''}`;
 }
 
@@ -298,7 +299,7 @@ export function opSummary(o: GameOp): string {
 
 /** Ops avec un éditeur DÉDIÉ ; toute autre op tombe sur le repli JSON (lisible/modifiable sans perte). */
 const DEDICATED: ReadonlySet<GameOp['op']> = new Set([
-  'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'apAll', 'testMod',
+  'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'skillMod', 'moveMod', 'apAll', 'testMod',
   'corruption', 'gainResource', 'grantTrait', 'grantTalent', 'narrative',
   'summon', 'polymorph', 'lifeSteal',
 ]);
@@ -333,7 +334,15 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
           </>
         )}
         {op.op === 'testMod' && (
-          <label className="dr">Modif.<input type="number" value={o.amount ?? 0} onChange={(e) => upd({ amount: Number(e.target.value) || 0 })} /></label>
+          <>
+            <label className="dr">Modif.<input type="number" value={o.amount ?? 0} onChange={(e) => upd({ amount: Number(e.target.value) || 0 })} /></label>
+            <label className="dr">Carac.
+              <select value={o.char ?? ''} onChange={(e) => upd({ char: (e.target.value || undefined) as CharKey | undefined })}>
+                <option value="">— tous les Tests —</option>
+                {CHARS.map((c) => <option key={c} value={c}>{CHAR_LABELS[c]}</option>)}
+              </select>
+            </label>
+          </>
         )}
         {(op.op === 'condition' || op.op === 'removeCondition') && (
           <>
@@ -355,6 +364,15 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
             <label className="dr">Modif.<input type="number" value={o.mod} onChange={(e) => upd({ mod: Number(e.target.value) || 0 })} /></label>
             <label className="dr">Rounds<input type="number" min={1} placeholder="durée" value={typeof o.durationRounds === 'number' ? o.durationRounds : ''} onChange={(e) => upd({ durationRounds: e.target.value === '' ? undefined : Math.max(1, Number(e.target.value)) })} /></label>
           </>
+        )}
+        {op.op === 'skillMod' && (
+          <>
+            <input placeholder="Compétence (ex. Esquive, Pistage)" value={o.skill ?? ''} onChange={(e) => upd({ skill: e.target.value })} />
+            <label className="dr">Modif.<input type="number" value={o.mod ?? 0} onChange={(e) => upd({ mod: Number(e.target.value) || 0 })} /></label>
+          </>
+        )}
+        {op.op === 'moveMod' && (
+          <label className="dr">Mouvement (±)<input type="number" value={o.mod ?? 0} onChange={(e) => upd({ mod: Number(e.target.value) || 0 })} /></label>
         )}
         {op.op === 'grantTrait' && (
           <>
