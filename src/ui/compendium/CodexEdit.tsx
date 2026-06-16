@@ -17,6 +17,8 @@ import { RACES } from '../../gameIso/rig/races';
 import { CreaturePreview } from './CreaturePreview';
 import type { EntityAppearance } from '../../state/scene';
 import { type Flow, EMPTY_FLOW, type TriggeredEffect, type EffectTrigger } from '../../state/flow';
+import type { ManeuverProfile } from '../../data';
+import { ATTACK_LABEL, type AttackKind } from '../../engine/creatureAttacks';
 
 /** Catégorie Codex → dataset éditable. `gods` (cultes générés) absent = non éditable en v1. */
 const CATEGORY_DATASET: Record<string, DatasetKey> = {
@@ -54,11 +56,12 @@ export function CodexEdit({ categoryKey, label, onClose }: { categoryKey: string
   const isSpell = categoryKey === 'spells';
   // Porteurs d'effets DÉCLENCHÉS (mêmes `TriggeredEffect` éditables) : Traits ET Atouts d'arme.
   const isTriggered = categoryKey === 'traits' || categoryKey === 'qualities';
+  const isTrait = categoryKey === 'traits'; // les Traits portent en plus un profil de MANŒUVRE éditable
   const fields = useMemo(
     () => inferFields(arr as Record<string, unknown>[]).filter(
-      (f) => !(isCreature && f.key === 'appearance') && !((isSpell || isTriggered) && f.key === 'effects'),
+      (f) => !(isCreature && f.key === 'appearance') && !((isSpell || isTriggered) && f.key === 'effects') && !(isTrait && f.key === 'maneuver'),
     ),
-    [arr, isCreature, isSpell, isTriggered],
+    [arr, isCreature, isSpell, isTriggered, isTrait],
   );
   const edit = (key: string, v: unknown) => { setEntry((e) => ({ ...e, [key]: v })); setDirty(true); };
 
@@ -90,6 +93,7 @@ export function CodexEdit({ categoryKey, label, onClose }: { categoryKey: string
         {isCreature && <AppearanceField name={String(entry.label ?? label)} value={entry.appearance as EntityAppearance | undefined} onChange={(v) => edit('appearance', v)} />}
         {isSpell && <SpellEffectsField value={entry.effects as Flow | undefined} onChange={(v) => edit('effects', v)} />}
         {isTriggered && <TriggeredEffectsField value={entry.effects as TriggeredEffect[] | undefined} onChange={(v) => edit('effects', v)} />}
+        {isTrait && <ManeuverField value={entry.maneuver as ManeuverProfile | undefined} onChange={(v) => edit('maneuver', v)} />}
         {fields.map((f) => <Field key={f.key} field={f} value={entry[f.key]} onChange={(v) => edit(f.key, v)} />)}
       </div>
     </div>
@@ -184,6 +188,46 @@ function TriggeredEffectsField({ value, onChange }: { value: TriggeredEffect[] |
         </div>
       ))}
       <button className="btn small" onClick={add}>+ Effet de trait</button>
+    </div>
+  );
+}
+
+const ACTIVATION_LABEL: Record<ManeuverProfile['activation'], string> = {
+  action: 'Action', free: 'Gratuite (coût d’Avantage)', charge: 'À la Charge',
+};
+
+/** Éditeur du PROFIL de MANŒUVRE d'un trait (`TraitData.maneuver`, ex-table `RULES`) + ses effets onHit
+ *  propres (réutilise `TriggeredEffectsField`). Active/désactive la manœuvre ; profil = type/activation/
+ *  coût d'Avantage + drapeaux de résolution ; effets = Flow d'ops appliqués quand LA manœuvre touche. */
+function ManeuverField({ value, onChange }: { value: ManeuverProfile | undefined; onChange: (v: ManeuverProfile | undefined) => void }) {
+  if (!value) return (
+    <div className="ed-field">
+      <label className="dr"><input type="checkbox" checked={false} onChange={() => onChange({ kind: 'arme', activation: 'free', advantageCost: 1 })} /> ce trait est une MANŒUVRE (attaque naturelle activée)</label>
+    </div>
+  );
+  const m = value;
+  const patch = (p: Partial<ManeuverProfile>) => onChange({ ...m, ...p });
+  return (
+    <div className="ed-field ed-maneuver">
+      <label className="dr"><input type="checkbox" checked onChange={() => onChange(undefined)} /> MANŒUVRE de combat</label>
+      <div className="tf-row">
+        <label className="dr">Type
+          <select value={m.kind} onChange={(e) => patch({ kind: e.target.value as AttackKind })}>
+            {(Object.keys(ATTACK_LABEL) as AttackKind[]).map((k) => <option key={k} value={k}>{ATTACK_LABEL[k]}</option>)}
+          </select>
+        </label>
+        <label className="dr">Activation
+          <select value={m.activation} onChange={(e) => patch({ activation: e.target.value as ManeuverProfile['activation'] })}>
+            {(Object.keys(ACTIVATION_LABEL) as ManeuverProfile['activation'][]).map((a) => <option key={a} value={a}>{ACTIVATION_LABEL[a]}</option>)}
+          </select>
+        </label>
+        <label className="dr">Coût d’Avantage<input type="number" min={0} value={m.advantageCost} onChange={(e) => patch({ advantageCost: Math.max(0, Number(e.target.value) || 0) })} /></label>
+        <label className="dr"><input type="checkbox" checked={!!m.aoe} onChange={(e) => patch({ aoe: e.target.checked || undefined })} /> Zone</label>
+        <label className="dr"><input type="checkbox" checked={!!m.magic} onChange={(e) => patch({ magic: e.target.checked || undefined })} /> Magique</label>
+        <label className="dr"><input type="checkbox" checked={!!m.perTentacle} onChange={(e) => patch({ perTentacle: e.target.checked || undefined })} /> Par tentacule</label>
+      </div>
+      <span>effets PROPRES à la manœuvre (appliqués quand ELLE touche)</span>
+      <TriggeredEffectsField value={m.effects} onChange={(effects) => patch({ effects: effects.length ? effects : undefined })} />
     </div>
   );
 }
