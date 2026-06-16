@@ -5,7 +5,7 @@
  * recomputeLoadout : équiper une hache ou une armure change donc le combat.
  */
 import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout } from './types';
-import { bonus } from './characteristics';
+import { bonus, baseWithTraits } from './characteristics';
 import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { mutationArmourBonus } from './corruption';
 import { findTrapping } from '../data';
@@ -80,7 +80,7 @@ export function customTrapping(name: string): ItemInstance {
  *  (LDB ; talent Costaud : « Augmentez les Points d'Encombrement … de votre niveau × 2 »). */
 export function maxEncumbrance(c: Combatant): number {
   const costaud = (c.talents ?? []).find((t) => t.name.toLowerCase() === 'costaud')?.times ?? 0;
-  return bonus(c.characteristics.F) + bonus(c.characteristics.E) + costaud * 2;
+  return bonus(baseWithTraits(c, 'F')) + bonus(baseWithTraits(c, 'E')) + costaud * 2;
 }
 
 /** Encombrement transporté. Les objets PORTÉS (armure équipée) voient leur Encombrement

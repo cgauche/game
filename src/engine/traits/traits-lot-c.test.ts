@@ -9,6 +9,8 @@ import {
 import { coldBloodedAdjust, isPsychImmune } from '../psychology';
 import { attackModifiers } from '../combat';
 import { traumaCharPenalties } from '../trauma';
+import { effectiveChar } from '../characteristics';
+import { effectiveMovement } from '../encumbrance';
 import type { Combatant } from '../../engine/types';
 import { statblockToCombatant } from '../../state/spawn';
 
@@ -81,12 +83,14 @@ describe('dispatch — parsing et prédicats (LDB 85)', () => {
 });
 
 describe('spawn — profil dérivé des statblocks d’éditeur (LDB 77 « ajoutez les Traits »)', () => {
-  it('Élite +20 CC/CT/FM, Brutal −1 M', () => {
+  it('Élite +20 CC/CT/FM, Brutal −1 M — appliqués en DIRECT (characteristics = base, effectiveChar = final)', () => {
     const c = statblockToCombatant({ name: 'Vétéran', char: { CC: 30, CT: 30, FM: 30, M: 4 }, traits: ['Élite', 'Brutal'] } as any, 'e1', { x: 0, y: 0 });
-    expect(c.characteristics.CC).toBe(50);
-    expect(c.characteristics.FM).toBe(50);
-    expect(c.characteristics.F).toBe(40); // Brutal +10 F
-    expect(c.movement).toBe(3); // Brutal −1 M
+    expect(c.characteristics.CC).toBe(30); // BASE (les traits ne sont plus cuits dans characteristics)
+    expect(c.liveTraits).toEqual(['Élite', 'Brutal']);
+    expect(effectiveChar(c, 'CC')).toBe(50); // 30 + Élite 20 (en direct via le collecteur passif)
+    expect(effectiveChar(c, 'FM')).toBe(50);
+    expect(effectiveChar(c, 'F')).toBe(40); // Brutal +10 F
+    expect(effectiveMovement(c)).toBe(3); // Brutal −1 M
   });
   it('Endurant : +BE Blessures (formule)', () => {
     const sans = statblockToCombatant({ name: 'A', char: { E: 30 }, traits: [] } as any, 'e2', { x: 0, y: 0 });

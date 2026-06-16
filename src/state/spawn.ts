@@ -11,7 +11,7 @@ import { emptyArmour } from '../engine/items';
 import { maxWounds, bonus } from '../engine/characteristics';
 import { parseSizeLabel, resizeBySteps, SIZE_ORDER, SizeCategory } from '../engine/size';
 import { parsePsychTraits } from '../engine/psychology';
-import { traitCharMods, traitMovementMod, traitBonusWoundsBE, isMindless, mutationsAtSpawn, isSwarm, resolveTraits, asTrait } from '../engine/traits/dispatch';
+import { traitCharMods, traitBonusWoundsBE, isMindless, mutationsAtSpawn, isSwarm, resolveTraits, asTrait } from '../engine/traits/dispatch';
 import { rollMutation, mutationByLabel } from '../data/mutations';
 import { makeRNG } from '../engine/dice';
 import { groupsFor } from '../engine/groups';
@@ -216,6 +216,14 @@ export interface SpawnExtras {
   randomChars?: boolean;
 }
 
+/** Profil + modificateurs de PROFIL des traits `live` (Élite/Coriace/Brutal…) — pour les valeurs DÉRIVÉES
+ *  au spawn (Blessures) qui doivent refléter les traits, alors que `characteristics` ne stocke que la base. */
+function withTraitChars(chars: Characteristics, live: string[] | undefined): Characteristics {
+  const out = { ...chars };
+  for (const [k, v] of Object.entries(traitCharMods(live))) out[k as keyof Characteristics] += v ?? 0;
+  return out;
+}
+
 export function creatureToCombatant(creature: CreatureData, id: string, pos: { x: number; y: number }, extras?: SpawnExtras): Combatant {
   const optionals = extras?.optionals ?? [];
   // Traits FACULTATIFS (LDB 76 l.49 : « Traits de créature courants que vous pouvez ajouter si vous
@@ -231,8 +239,8 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   const talents = talentsFromBook(creature.talents);
   if (extras?.randomChars) chars = randomizeChars(chars, id); // LDB 78 : −10 + 2d10 sur le profil rond
   // Traits facultatifs à modificateurs de PROFIL (Élite, Coriace, Brutal, Rapide… — LDB 85) : le profil
-  // imprimé est FINAL pour ses traits fixes, mais un facultatif AJOUTÉ s'applique par-dessus.
-  for (const [k, v] of Object.entries(traitCharMods(optionals))) chars[k as keyof Characteristics] += v ?? 0;
+  // imprimé est FINAL pour ses traits fixes (déjà cuits) ; un facultatif AJOUTÉ s'applique en DIRECT via
+  // `liveTraits` (collecteur passif) → `characteristics` reste la base bestiaire, sans double-compte.
   const baseSize = sizeFromTraits(creature.traits) ?? 'moyenne';
   // Taille FACULTATIVE : PRIME sur celle du bestiaire et applique « Utiliser les Tailles »
   // (LDB 85 l.276-277 : ±10 F/E, ∓5 Ag par catégorie d'écart).
@@ -242,15 +250,19 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   // char.B (bestiaire) = la valeur livre d'UNE créature (≈ formule × Taille) → base/surcharge ; la
   // FORMULE (LDB 85) reprend la main si le profil a bougé (carac. aléatoires, Taille facultative).
   const profileChanged = !!extras?.randomChars || (optSize != null && optSize !== baseSize);
-  let wounds = typeof creature.char.B === 'number' && !profileChanged ? creature.char.B : maxWounds(chars, size);
-  if (traitBonusWoundsBE(optionals)) wounds += bonus(chars.E); // Endurant facultatif : +BE Blessures (LDB 85)
+  // Blessures dérivées de F/E/FM : computées sur le profil INCLUANT les facultatifs (Coriace +E, Élite +FM…),
+  // même si `characteristics` ne stocke que la base — sinon une créature renforcée perdrait ses PB de trait.
+  const charsEff = withTraitChars(chars, optionals);
+  let wounds = typeof creature.char.B === 'number' && !profileChanged ? creature.char.B : maxWounds(charsEff, size);
+  if (traitBonusWoundsBE(optionals)) wounds += bonus(charsEff.E); // Endurant facultatif : +BE Blessures (LDB 85)
   const swarm = isSwarm(traits);
   if (swarm) ({ chars, wounds } = applySwarmBuild(chars, wounds)); // ×5 PB + 10 CC (la nuée = 5 créatures)
-  const movement = (typeof creature.char.M === 'number' ? creature.char.M : 4) + traitMovementMod(optionals);
+  const movement = typeof creature.char.M === 'number' ? creature.char.M : 4; // facultatifs → liveTraits (effectiveMovement)
   return {
     id,
     name: creature.label,
     kind: 'enemy',
+    ...(optionals.length ? { liveTraits: optionals } : {}), // charMods/Mouvement des facultatifs appliqués en direct
     ...(creature.appearance?.species ? { species: creature.appearance.species } : {}), // espèce du record (P2) → le rig la lit ; le reste de l'apparence par défaut est lu par enemyRigProfile via findCreature
     characteristics: chars,
     wounds: { current: wounds, max: wounds, base: wounds },
@@ -282,24 +294,26 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
   const talents = talentsFromBook(sb.talents);
   // Caractéristiques aléatoires (LDB 78) : le statbloc saisi est le profil ROND → −10 + 2d10 au spawn.
   if (sb.randomChars) chars = randomizeChars(chars, id);
-  // Traits à modificateurs de PROFIL (Élite, Coriace, Brutal, Rapide… — LDB 85) : appliqués aux
-  // statblocks d'ÉDITEUR seulement (LDB 77 : « utilisez l'un des profils standard et AJOUTEZ les
-  // Traits ») ; les profils du bestiaire (creatures.json) sont imprimés FINALS → jamais réappliqués.
-  for (const [k, v] of Object.entries(traitCharMods(sb.traits))) chars[k as keyof Characteristics] += v ?? 0;
+  // Traits à modificateurs de PROFIL (Élite, Coriace, Brutal, Rapide… — LDB 85) : un statbloc d'ÉDITEUR
+  // part d'un profil standard et AJOUTE les Traits (LDB 77) → tous appliqués en DIRECT via `liveTraits`
+  // (collecteur passif). `characteristics` reste le profil de BASE saisi ; `effectiveChar` ajoute les traits.
   const size = sb.size ?? sizeFromTraits(sb.traits ?? []) ?? 'moyenne';
   // Blessures : surcharge explicite `char.B` si fournie, sinon formule par Taille (vide ⇒ formule, LDB 85).
   // La formule reprend la main si les caractéristiques ont été tirées (le B saisi valait pour le profil rond).
-  let wounds = typeof sb.char.B === 'number' && !sb.randomChars ? (sb.char.B as number) : maxWounds(chars, size);
+  // Blessures sur le profil INCLUANT les traits (Coriace +E…) ; `characteristics` ne garde que la base saisie.
+  const charsEff = withTraitChars(chars, sb.traits ?? []);
+  let wounds = typeof sb.char.B === 'number' && !sb.randomChars ? (sb.char.B as number) : maxWounds(charsEff, size);
   // Endurant (LDB 85 p.339) : +Bonus d'Endurance Blessures (sur la formule — un B explicite du
   // statbloc est réputé final, comme au bestiaire).
-  if ((typeof sb.char.B !== 'number' || sb.randomChars) && traitBonusWoundsBE(sb.traits)) wounds += Math.floor(chars.E / 10);
+  if ((typeof sb.char.B !== 'number' || sb.randomChars) && traitBonusWoundsBE(sb.traits)) wounds += Math.floor(charsEff.E / 10);
   const swarm = isSwarm(sb.traits ?? []);
   if (swarm) ({ chars, wounds } = applySwarmBuild(chars, wounds)); // Nuée : ×5 PB + 10 CC (l.200)
-  const movement = (typeof sb.char.M === 'number' ? (sb.char.M as number) : 4) + traitMovementMod(sb.traits);
+  const movement = typeof sb.char.M === 'number' ? (sb.char.M as number) : 4; // traits → liveTraits (effectiveMovement)
   return {
     id,
     name: sb.name,
     kind: 'enemy',
+    ...((sb.traits?.length) ? { liveTraits: [...sb.traits] } : {}), // statbloc d'éditeur : tous les traits en direct
     characteristics: chars,
     wounds: { current: wounds, max: wounds, base: wounds },
     advantage: 0,

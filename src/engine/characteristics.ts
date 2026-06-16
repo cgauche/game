@@ -3,6 +3,7 @@
  */
 import { CharKey, Characteristics, Combatant } from './types';
 import { traumaCharPenalties, passiveCharSum } from './trauma';
+import { traitCharMods } from './traits/dispatch';
 import { SizeCategory, woundsForSize, effectiveSize } from './size';
 
 /** Bonus de Caractéristique = chiffre des dizaines (ex. 37 → 3). */
@@ -12,6 +13,17 @@ export function bonus(value: number): number {
 
 export function charBonus(chars: Characteristics, key: CharKey): number {
   return bonus(chars[key]);
+}
+
+/**
+ * Caractéristique de BASE + modificateurs de PROFIL des traits `liveTraits` (Élite/Coriace/Brutal…), SANS les
+ * effets volatils (mutations/traumas/maladies/buffs). Reproduit EXACTEMENT l'ancienne valeur cuite au spawn
+ * (`characteristics` incluait les charMods de trait, mais pas les mutations) — pour les rares lecteurs BRUTS
+ * qui lisaient `c.characteristics[key]` et attendaient « base + traits » (roll d'Initiative, capacité
+ * d'Encombrement, polymorphe, affichage). Les lecteurs qui veulent l'effectif TOTAL prennent `effectiveChar`.
+ */
+export function baseWithTraits(c: Combatant, key: CharKey): number {
+  return c.characteristics[key] + (traitCharMods(c.liveTraits)[key] ?? 0);
 }
 
 /**
@@ -68,7 +80,10 @@ export function effectiveMaxWounds(c: Combatant): number {
   const size = effectiveSize(c.size);
   const base = c.wounds.base ?? c.wounds.max;
   const eff = woundsForSize(bonus(effectiveChar(c, 'F')), bonus(effectiveChar(c, 'E')), bonus(effectiveChar(c, 'FM')), size);
-  const raw = woundsForSize(bonus(c.characteristics.F), bonus(c.characteristics.E), bonus(c.characteristics.FM), size);
+  // Référence = base + traits de profil (`baseWithTraits`) : `wounds.base` a été calculé AU SPAWN sur ce profil
+  // (Coriace/Élite inclus) → le delta ne porte que les effets volatils (mutations/buffs/traumas), sans recompter
+  // les traits déjà dans `base`.
+  const raw = woundsForSize(bonus(baseWithTraits(c, 'F')), bonus(baseWithTraits(c, 'E')), bonus(baseWithTraits(c, 'FM')), size);
   return base + (eff - raw);
 }
 

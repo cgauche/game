@@ -430,6 +430,12 @@ export interface Combatant {
    *  engine/creatureAttacks). Lus sans parsing via `resolveTraits`/`asTrait`. Conservés au spawn.
    *  Union transitoire : les chaînes legacy/test restent acceptées (normalisées par `asTrait`). */
   traits?: import('./statEntry').TraitList;
+  /** Traits dont les modificateurs de PROFIL (charMods/Mouvement, LDB 85 : Élite/Coriace/Brutal/Rapide…)
+   *  s'appliquent en DIRECT par le collecteur passif (kind `intrinsèque`) plutôt que d'être cuits dans
+   *  `characteristics`/`movement` : facultatifs d'un profil bestiaire FINAL, traits d'un statbloc d'éditeur,
+   *  traits ACCORDÉS en jeu (`grantTrait`). Absent ⇒ aucun (profil déjà final / héros sans trait créature).
+   *  `characteristics` reste la BASE pure ; `effectiveChar` ajoute ces traits (cf. `baseWithTraits`). */
+  liveTraits?: string[];
   /** Nuée (Trait Essaim, LDB 85 l.199-200) : ignore la Taille et la Psychologie, +40 au tir CONTRE
    *  elle, Frappe Mortelle sur toute touche, 1 PB/Round aux Engagés ; ×5 PB & +10 CC posés au spawn. */
   swarm?: boolean;

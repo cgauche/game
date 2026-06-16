@@ -28,6 +28,7 @@ function resyncPsychScalars(c: Combatant): void {
  *  la psychologie dérivée. Mute `c`. */
 export function grantTrait(c: Combatant, trait: string): void {
   c.traits = [...(c.traits ?? []), trait];
+  c.liveTraits = [...(c.liveTraits ?? []), trait]; // modificateurs de PROFIL du trait accordé → appliqués en DIRECT (collecteur passif)
   resyncPsychScalars(c);
   const contrib = parsePsychTraits([trait]).psychTraits ?? [];
   if (contrib.length) c.psychTraits = [...(c.psychTraits ?? []), ...contrib];
@@ -39,6 +40,8 @@ export function removeGrantedTrait(c: Combatant, trait: string): void {
   const i = (c.traits ?? []).lastIndexOf(trait);
   if (i < 0) return;
   c.traits = [...c.traits!.slice(0, i), ...c.traits!.slice(i + 1)];
+  const li = (c.liveTraits ?? []).lastIndexOf(trait); // retire l'occurrence accordée des modificateurs de profil en direct
+  if (li >= 0) c.liveTraits = [...c.liveTraits!.slice(0, li), ...c.liveTraits!.slice(li + 1)];
   resyncPsychScalars(c);
   const contrib = parsePsychTraits([trait]).psychTraits ?? [];
   for (const pt of contrib) {

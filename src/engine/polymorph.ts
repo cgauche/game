@@ -13,6 +13,7 @@
 import type { Combatant } from './types';
 import type { GameOp } from './ops';
 import { findCreature } from '../data';
+import { baseWithTraits } from './characteristics';
 import { asTrait, formatTrait } from './traits/dispatch';
 
 export function polymorphOps(target: Combatant, ref: string): GameOp[] {
@@ -23,7 +24,7 @@ export function polymorphOps(target: Combatant, ref: string): GameOp[] {
   for (const k of ['F', 'E', 'Ag', 'Dex'] as const) {
     const v = cr.char[k];
     if (typeof v === 'number') {
-      const diff = v - (target.characteristics[k] ?? 0);
+      const diff = v - baseWithTraits(target, k);
       if (diff !== 0) ops.push({ op: 'charMod', char: k, mod: diff });
     }
   }

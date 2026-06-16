@@ -11,7 +11,7 @@
 import { Combatant, CharKey, HitLocation, Trauma, Difficulty, UpkeepDeferTest } from './types';
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
-import { isPainless } from './traits/dispatch';
+import { isPainless, traitCharMods, traitMovementMod } from './traits/dispatch';
 import { diseaseCharPenalties } from './disease';
 import { hungerCharPenalties } from './provisions';
 import type { GameOp, PassiveKind, PassiveMod } from './ops';
@@ -447,6 +447,14 @@ export function passiveMods(c: Combatant): PassiveMod[] {
     if (m.charMods) for (const k of Object.keys(m.charMods) as CharKey[]) { const mod = m.charMods[k] ?? 0; if (mod) out.push({ op: { op: 'charMod', char: k, mod }, kind: 'intrinsèque' }); }
     if (m.movement) out.push({ op: { op: 'moveMod', mod: m.movement }, kind: 'intrinsèque' });
     if (m.skillMods) for (const [skill, mod] of Object.entries(m.skillMods)) if (mod) out.push({ op: { op: 'skillMod', skill, mod }, kind: 'intrinsèque' });
+  }
+  // Traits à modificateur de PROFIL appliqués en DIRECT (LDB 85 : Élite/Coriace/Brutal/Rapide… facultatifs,
+  // statbloc d'éditeur, traits accordés) — kind `intrinsèque`, additif. Les traits INHÉRENTS d'un profil
+  // bestiaire FINAL ne sont PAS dans `liveTraits` (déjà cuits dans `characteristics`/`movement`) → zéro double-compte.
+  if (c.liveTraits?.length) {
+    for (const [k, v] of Object.entries(traitCharMods(c.liveTraits))) if (v) out.push({ op: { op: 'charMod', char: k as CharKey, mod: v }, kind: 'intrinsèque' });
+    const mv = traitMovementMod(c.liveTraits);
+    if (mv) out.push({ op: { op: 'moveMod', mod: mv }, kind: 'intrinsèque' });
   }
   for (const e of c.activeEffects ?? []) {
     if (e.skillMods) for (const [skill, mod] of Object.entries(e.skillMods)) out.push({ op: { op: 'skillMod', skill, mod }, kind: 'magique' });
