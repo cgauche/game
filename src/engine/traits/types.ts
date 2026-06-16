@@ -59,8 +59,6 @@ export interface TraitDef {
   bestial?: boolean;
   /** À sang-froid : peut inverser tous ses Tests de Force Mentale échoués. */
   coldBlooded?: boolean;
-  /** Affamé : sur mise hors de combat d'un adversaire, Test FM (+20) ou festoie (perd Action + Mouvement). */
-  gorgesOnKill?: boolean;
   /** Stupide : sans allié non-Stupide adjacent, Test d'Int (+40) au début du Round ou perd Action + Mouvement. */
   stupid?: boolean;
   /** Rage : dépense tous ses Avantages (min 1 → Haine ; min 3 → Frénésie). */

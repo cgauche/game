@@ -54,7 +54,7 @@ import { fireTriggers } from './triggeredEffects';
 import { hasStealAdvantage, shieldAdvantageLevel, hasRiposte, talentCritExtraWounds, hasSurpriseSave, talentMagicResistance, hasBraveheart, outnumberCountBonus, hasStunSave, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony } from '../engine/combatFeatures/dispatch';
 import { canStrikeFirst } from '../engine/qualities/dispatch';
 import {
-  wardSaves, hasChampionDefense, banishedAtZero, gorgesOnKill,
+  wardSaves, hasChampionDefense, banishedAtZero,
   isStupid, hasRage, regenerates, isUnstable, isBestial, isTerritorial, hasPerturbingAura,
   traitSeesInDark, isColdBlooded, bellicosePsychImmune, magicResistanceOf, immunityTypes, hasStealthAgBonus, flyMeters, runMultiplier,
   hasTraitKey, asTrait,
@@ -678,6 +678,10 @@ export function startDisengage(get: Get, set: SetFn, mover: Combatant): void {
       result: null,
     },
   });
+  // « Une situation = une modale » : le Désengagement est hôté dans la cascade (rendu par CascadeModal
+  // via l'étape `jet:'disengage'`). `pendingDisengage` reste le porteur de données/phases ; les
+  // résolveurs ferment LES DEUX. La ligne d'attaque figée du foe et les portraits restent inchangés.
+  startCascade(get, set, { title: 'Se désengager', icon: '↩', purpose: 'combat', steps: [{ id: 'disengage', kind: 'disengageStep', jet: 'disengage', actorId: mover.id }] });
 }
 
 /** Case ATTEIGNABLE adjacente à `target` qui coûte le moins de Mouvement (point d'arrivée d'une Charge). */
@@ -1255,15 +1259,10 @@ export function applyAttackResult(
     target.dead = true;
     critLog.push(`${target.name} est bannie — son essence retourne aux Royaumes du Chaos !`);
   }
-  // Affamé (LDB 85 p.338) : adversaire mis hors de combat → Test de FM Accessible (+20) ou la
-  // créature festoie, perdant sa prochaine Action et son prochain Mouvement.
-  if (res.hit && isOutOfAction(target) && gorgesOnKill(attacker.traits) && !isOutOfAction(attacker)) {
-    const t = rollTest(effectiveChar(attacker, 'FM'), 'accessible', battleRng());
-    if (!t.success) {
-      attacker.loseNextAction = true;
-      attacker.loseNextMovement = true;
-      critLog.push(`${attacker.name} (Affamé) se jette sur sa proie et festoie — prochaine Action et Mouvement perdus.`);
-    }
+  // Effet déclenché « à la mise hors de combat d'un adversaire » authoré (Affamé : Test de FM ou
+  // festoie — perd Action + Mouvement) — dispatcher générique (state/triggeredEffects).
+  if (res.hit && isOutOfAction(target) && !isOutOfAction(attacker)) {
+    for (const line of fireTriggers(get, attacker, 'onKill', { rng: battleRng() })) critLog.push(line);
   }
   // Taille (arme) : sur une touche réussie, endommage de 1 PA l'armure frappée (LDB 63 l.8).
   if (res.hit && hasQuality(weapon, 'Taille')) damageArmour(target, res.location ?? 'corps');

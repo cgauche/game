@@ -120,7 +120,7 @@ export type GameOp =
    *  immédiatement contre la CIBLE, puis applique `onFail` / `onSuccess`.
    *  `onFailHard` : palier d'échec aggravé (« si vous échouez avec −4 DR ou
    *  moins… », Purifier la chair LDB 40) — appliqué EN PLUS d'`onFail`. */
-  | { op: 'test'; skill: string; difficulty: Difficulty; onFail: GameOp[]; onSuccess?: GameOp[]; onFailHard?: { dr: number; ops: GameOp[] } }
+  | { op: 'test'; skill?: string; characteristic?: CharKey; difficulty: Difficulty; onFail: GameOp[]; onSuccess?: GameOp[]; onFailHard?: { dr: number; ops: GameOp[] } }
   /** Points de Corruption (LDB 19). Le store branche `ctx.onCorruption` (seuil →
    *  mutation → damnation) ; sans contexte, simple incrément du compteur. */
   | { op: 'corruption'; amount: number; perSL?: PerSL }
@@ -284,6 +284,9 @@ export type GameOp =
   /** Perte d'un organe sensoriel PAIRÉ (œil/oreille). Porté par une séquelle ; `escalateSensoryLoss`
    *  compte les `senseLoss` par sens (2 du même → Cécité/Surdité). */
   | { op: 'senseLoss'; sense: 'vue' | 'ouie' }
+  /** Perd sa prochaine Action ET son prochain Mouvement (Affamé : « festoie » ; généralisable à tout
+   *  effet qui fait sauter le tour). Pose les drapeaux lus au début du Round du porteur. */
+  | { op: 'loseTurn' }
   /** Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). */
   | { op: 'narrative'; text: string };
 
@@ -458,9 +461,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'test': {
-        const t = rollTest(testValue(target, o.skill), o.difficulty, rng);
+        const t = rollTest(testValue(target, o.skill, o.characteristic), o.difficulty, rng);
+        const what = o.skill ?? (o.characteristic ? CHAR_LABELS[o.characteristic] : '?');
         lines.push(
-          `${target.name} — Test de ${o.skill} ${DIFFICULTY_LABELS[o.difficulty]} : 🎲 ${t.roll} / ${t.target} → ${t.success ? 'réussite' : 'échec'}.`,
+          `${target.name} — Test de ${what} ${DIFFICULTY_LABELS[o.difficulty]} : 🎲 ${t.roll} / ${t.target} → ${t.success ? 'réussite' : 'échec'}.`,
         );
         lines.push(...applyOps(target, t.success ? o.onSuccess ?? [] : o.onFail, ctx));
         // Palier d'échec aggravé (« si vous échouez avec −N DR ou moins ») — EN PLUS d'onFail.
@@ -933,6 +937,11 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         lines.push(`${target.name} perd ${o.sense === 'vue' ? 'un œil' : 'une oreille'} (${ctx.label ?? 'séquelle'}).`);
         break;
       }
+      case 'loseTurn':
+        target.loseNextAction = true;
+        target.loseNextMovement = true;
+        lines.push(`${target.name} perd sa prochaine Action et son prochain Mouvement.`);
+        break;
       case 'narrative':
         lines.push(o.text);
         break;

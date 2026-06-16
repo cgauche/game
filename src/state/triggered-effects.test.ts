@@ -61,6 +61,19 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
     expect(before - foe.wounds.current).toBeGreaterThanOrEqual(1);
   });
 
+  it('TRAIT Affamé : déclencheur onKill → Test de FM (op test) ; échec → perd Action+Mouvement (op loseTurn)', () => {
+    const hungry = mk({ traits: ['Affamé'] });
+    const lines = fireTriggers(noBattle(), hungry, 'onKill', { rng: makeRNG(1) });
+    expect(lines.join(' ')).toMatch(/Force Mentale/); // le test FM s'est joué (op test, non-interactif)
+  });
+
+  it('op loseTurn : pose les drapeaux lus au début du Round', () => {
+    const c = mk();
+    runSpellFlow(c, c, { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'loseTurn' }] } }, { rng: makeRNG(1), caster: c });
+    expect(c.loseNextAction).toBe(true);
+    expect(c.loseNextMovement).toBe(true);
+  });
+
   it('Atout authorable « à la touche : 1d10 Dégâts + Empêtré » — le Flow applique les DEUX ops', () => {
     // L'exemple exact demandé : un Flow de feuille EffectOp porté par un Atout (édité au Codex).
     const flow: Flow = {

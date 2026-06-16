@@ -3,7 +3,7 @@ import {
   traitCharMods, traitMovementMod, traitBonusWoundsBE, wardSaves, attacksAreMagical, isEtherial,
   banishedAtZero, hasChampionDefense, meleeHitPenalty, hasPerturbingAura,
   magicResistanceOf, immunityTypes, isUnstable, isPainless, regenerates,
-  bellicosePsychImmune, isMindless, isBestial, isColdBlooded, gorgesOnKill, isStupid, hasRage,
+  bellicosePsychImmune, isMindless, isBestial, isColdBlooded, isStupid, hasRage,
   isTerritorial, flyMeters, runMultiplier, traitSeesInDark, hasStealthAgBonus, mutationsAtSpawn,
 } from './dispatch';
 import { coldBloodedAdjust, isPsychImmune } from '../psychology';
@@ -57,10 +57,9 @@ describe('dispatch — parsing et prédicats (LDB 85)', () => {
     expect(magicResistanceOf(['Résistance à la Magie'])).toBe(1); // Indice absent → 1 (donnée naine)
     expect(immunityTypes(['Immunité (Poison)'])).toEqual(['poison']);
   });
-  it('psy/IA : Bestial, À sang-froid, Affamé, Stupide, Rage, Territorial, Fabriqué', () => {
+  it('psy/IA : Bestial, À sang-froid, Stupide, Rage, Territorial, Fabriqué', () => {
     expect(isBestial(['Bestial'])).toBe(true);
     expect(isColdBlooded(['À Sang-froid'])).toBe(true); // casse de la donnée
-    expect(gorgesOnKill(['Affamé'])).toBe(true);
     expect(isStupid(['Stupide'])).toBe(true);
     expect(hasRage(['Rage'])).toBe(true);
     expect(isTerritorial(['Territorial'])).toBe(true);

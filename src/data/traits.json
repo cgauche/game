@@ -27,7 +27,38 @@
     "source": {
       "book": "LDB",
       "page": 338
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onKill",
+        "on": "self",
+        "flow": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "target",
+                "ops": [
+                  {
+                    "op": "test",
+                    "characteristic": "FM",
+                    "difficulty": "accessible",
+                    "onFail": [
+                      {
+                        "op": "loseTurn"
+                      }
+                    ],
+                    "onSuccess": []
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
   },
   {
     "label": "Amphibie",

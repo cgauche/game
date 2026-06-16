@@ -72,6 +72,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   moveScale: '🦵 Échelle de Mouvement (×n/d)',
   maxWeaponHands: '✋ Plafond de mains d’arme',
   senseLoss: '👁️ Perte sensorielle (œil/oreille)',
+  loseTurn: '⏭️ Perdre Action + Mouvement',
   narrative: '📝 Effet narratif (texte libre)',
 };
 
@@ -85,7 +86,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['🐾 Invocation & armes', ['summon', 'polymorph', 'conjureWeapon', 'grantNaturalWeapon', 'grantTrait', 'grantTalent', 'enchantWeapon']],
   ['🌐 Zones', ['zone']],
   ['🩹 Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound']],
-  ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound']],
+  ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'loseTurn']],
   ['🩼 Séquelles & mobilité', ['skillMod', 'moveScale', 'maxWeaponHands', 'senseLoss']],
   ['🎲 Contrôle', ['test']],
   ['📝 Narration', ['narrative']],
@@ -222,6 +223,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'moveScale': return { op: 'moveScale', num: 1, den: 2 };
     case 'maxWeaponHands': return { op: 'maxWeaponHands', hands: 1 };
     case 'senseLoss': return { op: 'senseLoss', sense: 'vue' };
+    case 'loseTurn': return { op: 'loseTurn' };
     case 'narrative': return { op: 'narrative', text: '' };
     default: return { op: 'wounds', amount: 5 };
   }
@@ -277,6 +279,7 @@ export function opSummary(o: GameOp): string {
     case 'zone': return `${L} ${o.shape === 'wall' ? `mur ${formulaSummary(o.lengthMeters ?? 2)} m` : `disque ${formulaSummary(o.radiusMeters ?? 2)} m`}`;
     case 'polymorph': return `${L} ${o.ref}`;
     case 'lifeSteal': return `${L} ${o.num}/${o.den} des Dégâts`;
+    case 'loseTurn': return `${L} saute le tour`;
     case 'narrative': return `${L} ${o.text ? `« ${o.text.length > 40 ? `${o.text.slice(0, 39)}…` : o.text}` + ' »' : '(vide)'}`;
     default: return `⚙️ ${(o as GameOp).op}`;
   }

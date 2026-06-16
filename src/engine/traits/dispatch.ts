@@ -247,11 +247,6 @@ export function isColdBlooded(traits: TraitList | undefined): boolean {
   return resolveTraits(traits).some((r) => r.def.coldBlooded);
 }
 
-/** Affamé (LDB 85 p.338). */
-export function gorgesOnKill(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.gorgesOnKill);
-}
-
 /** Stupide (LDB 85 p.341). */
 export function isStupid(traits: TraitList | undefined): boolean {
   return resolveTraits(traits).some((r) => r.def.stupid);
