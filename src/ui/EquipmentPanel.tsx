@@ -92,6 +92,12 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
   const equip = equipFromCombatant(hero);
 
   const activeWeapons = hero.weapons.filter((w) => w.name !== 'Mains nues');
+  // E2 : par DÉFAUT on édite les mains du set ACTIF (Main principale / secondaire) ; les Sets I/II
+  // (config rapide + bascule) deviennent une section AVANCÉE repliée.
+  const activeIdx = Math.max(0, (hero.loadouts ?? []).findIndex((l) => l.id === hero.activeLoadoutId));
+  const activeLo = hero.loadouts?.[activeIdx];
+  const activeMainItem = weapons.find((w) => w.uid === activeLo?.main);
+  const activeMainTwoHanded = activeMainItem ? weaponHands(activeMainItem) === 2 : false;
 
   return (
     <div className="equip-panel">
@@ -162,59 +168,27 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
       </div>
 
       <div className="equip-sets">
-        <div className="mini-title">Sets d'armes</div>
-        {WEAPON_SET_NAMES.map((name, idx) => {
-          const lo = hero.loadouts?.[idx];
-          const active = !!lo && hero.activeLoadoutId === lo.id;
-          const mainItem = weapons.find((w) => w.uid === lo?.main);
-          const mainTwoHanded = mainItem ? weaponHands(mainItem) === 2 : false;
-          return (
-            <div key={name} className={`loadout-row ${active ? 'active' : ''}`}>
-              <button
-                className={`btn small ${active ? 'btn-primary' : ''}`}
-                disabled={inBattle}
-                title={lockTitle ?? 'Rendre ce set actif (armes en main)'}
-                onClick={() => activateWeaponSet(hero.id, idx)}
-              >
-                {active ? '● Actif' : 'Activer'}
-              </button>
-              <span className="lo-name">{lo?.name ?? name}</span>
-              <label className="lo-slot">Main
-                <select value={lo?.main ?? ''} disabled={inBattle} title={lockTitle} onChange={(e) => setWeaponSetSlot(hero.id, idx, 'main', e.target.value || null)}>
-                  <option value="">— vide —</option>
-                  {weapons.map((w) => (
-                    <option key={w.uid} value={w.uid}>{w.name}{weaponHands(w) === 2 ? ' (2M)' : ''}</option>
-                  ))}
-                </select>
-              </label>
-              <label className="lo-slot">2nde
-                <select value={lo?.off ?? ''} disabled={inBattle || mainTwoHanded} title={lockTitle} onChange={(e) => setWeaponSetSlot(hero.id, idx, 'off', e.target.value || null)}>
-                  <option value="">{mainTwoHanded ? '— (2 mains) —' : '— vide —'}</option>
-                  {oneHanded.filter((w) => w.uid !== lo?.main).map((w) => (
-                    <option key={w.uid} value={w.uid}>{w.name}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          );
-        })}
-        {/* Sets au-delà des 2 fixes : soit une ARME INVOQUÉE (op conjureWeapon) — auto-gérée (créée à
-            l'incantation, retirée à l'expiration), NON supprimable ; soit un set personnalisé supprimable. */}
-        {(hero.loadouts ?? []).slice(WEAPON_SET_NAMES.length).map((lo) => {
-          const active = hero.activeLoadoutId === lo.id;
-          const conjured = !!(hero.items ?? []).find((it) => it.uid === lo.main)?.conjured;
-          return (
-            <div key={lo.id} className={`loadout-row ${conjured ? 'conjured' : 'extra'} ${active ? 'active' : ''}`}>
-              <button className={`btn small ${active ? 'btn-primary' : ''}`} disabled={inBattle} title={lockTitle} onClick={() => setActiveLoadout(hero.id, lo.id)}>
-                {active ? '● Actif' : 'Activer'}
-              </button>
-              <span className="lo-name">{conjured ? <>✦ {lo.name} <em className="muted">(invoquée)</em></> : lo.name}</span>
-              {!conjured && (
-                <button className="btn small" disabled={inBattle} title={lockTitle ?? 'Supprimer ce set'} onClick={() => deleteLoadout(hero.id, lo.id)}>🗑</button>
-              )}
-            </div>
-          );
-        })}
+        {/* DÉFAUT (E2) : armes en main du set ACTIF — « Main principale » / « Main secondaire ». Les
+            Sets I/II (pré-config + bascule rapide) sont repliés en section « avancé » ci-dessous. */}
+        <div className="mini-title">Armes en main</div>
+        <div className="eq-hands">
+          <label className="lo-slot">Main principale
+            <select value={activeLo?.main ?? ''} disabled={inBattle} title={lockTitle} onChange={(e) => setWeaponSetSlot(hero.id, activeIdx, 'main', e.target.value || null)}>
+              <option value="">— mains nues —</option>
+              {weapons.map((w) => (
+                <option key={w.uid} value={w.uid}>{w.name}{weaponHands(w) === 2 ? ' (2M)' : ''}</option>
+              ))}
+            </select>
+          </label>
+          <label className="lo-slot">Main secondaire
+            <select value={activeLo?.off ?? ''} disabled={inBattle || activeMainTwoHanded} title={activeMainTwoHanded ? 'Arme à deux mains — pas de seconde main' : lockTitle} onChange={(e) => setWeaponSetSlot(hero.id, activeIdx, 'off', e.target.value || null)}>
+              <option value="">{activeMainTwoHanded ? '— (2 mains) —' : '— vide —'}</option>
+              {oneHanded.filter((w) => w.uid !== activeLo?.main).map((w) => (
+                <option key={w.uid} value={w.uid}>{w.name}</option>
+              ))}
+            </select>
+          </label>
+        </div>
         <div className="eq-active-weapons">
           <span className="mini-title">En main</span>
           {activeWeapons.length === 0 ? (
@@ -231,6 +205,61 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
             })
           )}
         </div>
+
+        <details className="equip-sets-advanced">
+          <summary>Sets d'armes <span className="muted">— pré-config &amp; bascule rapide</span></summary>
+          {WEAPON_SET_NAMES.map((name, idx) => {
+            const lo = hero.loadouts?.[idx];
+            const setActive = !!lo && hero.activeLoadoutId === lo.id;
+            const mainItem = weapons.find((w) => w.uid === lo?.main);
+            const mainTwoHanded = mainItem ? weaponHands(mainItem) === 2 : false;
+            return (
+              <div key={name} className={`loadout-row ${setActive ? 'active' : ''}`}>
+                <button
+                  className={`btn small ${setActive ? 'btn-primary' : ''}`}
+                  disabled={inBattle}
+                  title={lockTitle ?? 'Rendre ce set actif (armes en main)'}
+                  onClick={() => activateWeaponSet(hero.id, idx)}
+                >
+                  {setActive ? '● Actif' : 'Activer'}
+                </button>
+                <span className="lo-name">{lo?.name ?? name}</span>
+                <label className="lo-slot">Main
+                  <select value={lo?.main ?? ''} disabled={inBattle} title={lockTitle} onChange={(e) => setWeaponSetSlot(hero.id, idx, 'main', e.target.value || null)}>
+                    <option value="">— vide —</option>
+                    {weapons.map((w) => (
+                      <option key={w.uid} value={w.uid}>{w.name}{weaponHands(w) === 2 ? ' (2M)' : ''}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="lo-slot">2nde
+                  <select value={lo?.off ?? ''} disabled={inBattle || mainTwoHanded} title={lockTitle} onChange={(e) => setWeaponSetSlot(hero.id, idx, 'off', e.target.value || null)}>
+                    <option value="">{mainTwoHanded ? '— (2 mains) —' : '— vide —'}</option>
+                    {oneHanded.filter((w) => w.uid !== lo?.main).map((w) => (
+                      <option key={w.uid} value={w.uid}>{w.name}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            );
+          })}
+          {/* Sets au-delà des 2 fixes : ARME INVOQUÉE (auto-gérée, non supprimable) ou set perso supprimable. */}
+          {(hero.loadouts ?? []).slice(WEAPON_SET_NAMES.length).map((lo) => {
+            const setActive = hero.activeLoadoutId === lo.id;
+            const conjured = !!(hero.items ?? []).find((it) => it.uid === lo.main)?.conjured;
+            return (
+              <div key={lo.id} className={`loadout-row ${conjured ? 'conjured' : 'extra'} ${setActive ? 'active' : ''}`}>
+                <button className={`btn small ${setActive ? 'btn-primary' : ''}`} disabled={inBattle} title={lockTitle} onClick={() => setActiveLoadout(hero.id, lo.id)}>
+                  {setActive ? '● Actif' : 'Activer'}
+                </button>
+                <span className="lo-name">{conjured ? <>✦ {lo.name} <em className="muted">(invoquée)</em></> : lo.name}</span>
+                {!conjured && (
+                  <button className="btn small" disabled={inBattle} title={lockTitle ?? 'Supprimer ce set'} onClick={() => deleteLoadout(hero.id, lo.id)}>🗑</button>
+                )}
+              </div>
+            );
+          })}
+        </details>
       </div>
     </div>
   );
