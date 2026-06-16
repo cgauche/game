@@ -98,6 +98,11 @@
     "source": {
       "book": "LDB",
       "page": 338
+    },
+    "maneuver": {
+      "kind": "arme",
+      "activation": "action",
+      "advantageCost": 0
     }
   },
   {
@@ -118,6 +123,11 @@
     "source": {
       "book": "LDB",
       "page": 338
+    },
+    "maneuver": {
+      "kind": "caudale",
+      "activation": "free",
+      "advantageCost": 1
     }
   },
   {
@@ -208,6 +218,11 @@
     "source": {
       "book": "LDB",
       "page": 338
+    },
+    "maneuver": {
+      "kind": "cornes",
+      "activation": "charge",
+      "advantageCost": 0
     }
   },
   {
@@ -298,6 +313,12 @@
     "source": {
       "book": "LDB",
       "page": 339
+    },
+    "maneuver": {
+      "kind": "etreinte",
+      "activation": "action",
+      "advantageCost": 2,
+      "magic": true
     }
   },
   {
@@ -378,6 +399,12 @@
     "source": {
       "book": "LDB",
       "page": 339
+    },
+    "maneuver": {
+      "kind": "hurlement",
+      "activation": "free",
+      "advantageCost": 2,
+      "aoe": true
     }
   },
   {
@@ -478,6 +505,11 @@
     "source": {
       "book": "LDB",
       "page": 340
+    },
+    "maneuver": {
+      "kind": "langue",
+      "activation": "free",
+      "advantageCost": 1
     }
   },
   {
@@ -538,6 +570,11 @@
     "source": {
       "book": "LDB",
       "page": 340
+    },
+    "maneuver": {
+      "kind": "morsure",
+      "activation": "free",
+      "advantageCost": 1
     }
   },
   {
@@ -694,6 +731,11 @@
     "source": {
       "book": "LDB",
       "page": 341
+    },
+    "maneuver": {
+      "kind": "regard",
+      "activation": "action",
+      "advantageCost": 1
     }
   },
   {
@@ -877,6 +919,13 @@
     "source": {
       "book": "LDB",
       "page": 341
+    },
+    "maneuver": {
+      "kind": "souffle",
+      "activation": "free",
+      "advantageCost": 2,
+      "aoe": true,
+      "magic": true
     }
   },
   {
@@ -907,6 +956,12 @@
     "source": {
       "book": "LDB",
       "page": 343
+    },
+    "maneuver": {
+      "kind": "tentacules",
+      "activation": "free",
+      "advantageCost": 0,
+      "perTentacle": true
     }
   },
   {
@@ -1016,6 +1071,12 @@
     "source": {
       "book": "LDB",
       "page": 343
+    },
+    "maneuver": {
+      "kind": "vomi",
+      "activation": "free",
+      "advantageCost": 3,
+      "aoe": true
     }
   },
   {

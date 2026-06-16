@@ -187,6 +187,19 @@ export interface DetailsData {
     ambitionLong: DetailText;
   };
 }
+/** Profil d'une MANŒUVRE de combat (attaque naturelle activée — LDB 85) : ce qui pilotait la table en
+ *  dur `engine/creatureAttacks.RULES`, désormais en DONNÉE éditable. `activation` (déclenchement) +
+ *  `advantageCost` (coût d'Avantage de l'attaque gratuite) + `kind` (routage IA/poses/galerie) ;
+ *  `aoe`/`magic`/`perTentacle` qualifient la résolution moteur. Les Dégâts (Indice) restent lus de
+ *  l'INSTANCE du trait (« Morsure +10 »). */
+export interface ManeuverProfile {
+  kind: import('../engine/creatureAttacks').AttackKind;
+  activation: 'action' | 'free' | 'charge';
+  advantageCost: number;
+  aoe?: boolean;
+  magic?: boolean;
+  perTentacle?: boolean;
+}
 /** Trait de créature (LDB 85) : libellé canonique + desc VERBATIM (affichée à l'inspecteur). */
 export interface TraitData {
   label: string;
@@ -198,6 +211,9 @@ export interface TraitData {
    *  Sang corrosif, Régénération…) appliqués par `state/triggeredEffects`, plus de handler en dur.
    *  Type-only (le moteur reste pur : la donnée référence le Flow sans en dépendre à l'exécution). */
   effects?: import('../state/flow').TriggeredEffect[];
+  /** Profil de MANŒUVRE si ce trait est une attaque naturelle activée (Morsure, Attaque caudale,
+   *  Souffle…) — lu par `engine/creatureAttacks` (remplace la table `RULES`). */
+  maneuver?: ManeuverProfile;
 }
 /** Atout/Défaut d'arme (LDB 62-63) : libellé + desc VERBATIM + effets déclenchés authorés (mêmes
  *  `TriggeredEffect` que les Traits — un Atout « à la touche : 1d10 + Empêtré » s'édite au Codex). */

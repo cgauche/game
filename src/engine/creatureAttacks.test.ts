@@ -24,9 +24,9 @@ describe('creatureAttacks — attaques + RÈGLES dérivées des traits (RAW)', (
     expect(a.trigger).toBe('free');
     expect(a.avantage).toBe(1);
   });
-  it('Attaque caudale = gratuite 1 Avantage + À Terre sur cible plus petite', () => {
+  it('Attaque caudale = gratuite 1 Avantage (À Terre sur cible plus petite = effet onHit migré)', () => {
     const a = by(DRAGON, 'caudale');
-    expect([a.trigger, a.avantage, a.prone]).toEqual(['free', 1, true]);
+    expect([a.trigger, a.avantage]).toEqual(['free', 1]);
   });
   it('Cornes = Attaque gratuite à la CHARGE (pas de coût d’Avantage)', () => {
     const a = by(['Cornes +7'], 'cornes');
@@ -39,13 +39,13 @@ describe('creatureAttacks — attaques + RÈGLES dérivées des traits (RAW)', (
   it('Souffle « (divers) » → Type non spécifié', () => {
     expect(by(['Souffle +12 (divers)'], 'souffle').type).toBeUndefined();
   });
-  it('Tentacules = une Attaque gratuite PAR tentacule, Empêtré, sans coût d’Avantage', () => {
+  it('Tentacules = une Attaque gratuite PAR tentacule, sans coût d’Avantage (Empêtré = effet onHit migré)', () => {
     const a = by(['Tentacules +6'], 'tentacules');
-    expect([a.trigger, a.avantage, a.perTentacle, a.entangle]).toEqual(['free', 0, true, true]);
+    expect([a.trigger, a.avantage, a.perTentacle]).toEqual(['free', 0, true]);
   });
   it('« 8 Tentacules +9 » (Pieuvre des tourbières) : compte en tête lu, Indice non avalé', () => {
     const a = by(['8 Tentacules +9'], 'tentacules');
-    expect([a.count, a.bonus, a.avantage, a.entangle]).toEqual([8, 9, 0, true]);
+    expect([a.count, a.bonus, a.avantage]).toEqual([8, 9, 0]);
   });
   it('Étreinte glaciale = 2 Avantages + Action, magique', () => {
     const a = by(['Étreinte glaciale'], 'etreinte');
