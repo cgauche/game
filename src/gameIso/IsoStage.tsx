@@ -123,6 +123,7 @@ export function IsoStage() {
   const scene = useGame((s) => s.scene);
   const mode = useGame((s) => s.mode);
   const partyPos = useGame((s) => s.partyPos);
+  const flags = useGame((s) => s.flags); // B4 : masquer le halo d'un décor déjà fouillé (flag __fouille_<id>)
   const party = useGame((s) => s.party);
   const battle = useGame((s) => s.battle);
   const gameTime = useGame((s) => s.gameTime);
@@ -713,7 +714,7 @@ export function IsoStage() {
     // qui faisait déborder/glisser les props multi-cases quand on tourne la caméra.
     const span = footprintSpan(ent.foot?.w ?? 1, ent.foot?.h ?? 1, dims);
     const pd = depth(ent.pos.x + (ent.foot ? ent.foot.w - 1 : 0), ent.pos.y + (ent.foot ? ent.foot.h - 1 : 0), dims, ez);
-    if (ent.interact) { // affordance « fouille » (l'étage est déjà filtré ci-dessus)
+    if (ent.interact && !flags[`__fouille_${ent.id}`]) { // affordance « fouille » — masquée dès l'objet épuisé (B4)
       // Affordance : halo pulsé + onde « sonar » au sol, et étincelle dorée flottant AU-DESSUS du
       // décor fouillable — l'objet cliquable se repère de loin, sans texte (cf. anim.css).
       const c = tileCenter(px, py, dims, feetZ(px, py, ez));
