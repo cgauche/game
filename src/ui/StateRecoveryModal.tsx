@@ -1,4 +1,5 @@
 import { useGame, type PendingStateRecovery } from '../state/store';
+import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
@@ -10,6 +11,7 @@ import { describeStateRecovery } from '../state/flowOutcomes';
 /** Vue pure de la modale « se libérer » (Empêtré) / « se rouler » (En flammes). Testable sans store. */
 export function StateRecoveryModalView({
   sr,
+  actor,
   fortune,
   freeReroll,
   onRoll,
@@ -20,6 +22,8 @@ export function StateRecoveryModalView({
   onCancel,
 }: {
   sr: PendingStateRecovery;
+  /** Acteur qui se libère (jet mono-acteur côté joueur) → portrait dans la ligne de jet. */
+  actor?: Combatant;
   fortune: number;
   freeReroll?: boolean;
   onRoll: () => void;
@@ -30,6 +34,8 @@ export function StateRecoveryModalView({
   onCancel: () => void;
 }) {
   const rolled = sr.roll != null;
+  // Contexte = nature du Test (opposé contre la source, ou cible) + pions ; le NOM de l'acteur est
+  // montré par son portrait dans la ligne de jet (plus de nom en clair).
   const sub = sr.opposed
     ? `${sr.skillLabel} (opposé) contre ${sr.opponentName}`
     : `${sr.skillLabel}, cible ${sr.roll?.target ?? sr.skillValue}`;
@@ -38,11 +44,8 @@ export function StateRecoveryModalView({
     <RollFlowShell
       variant="test"
       title={`${sr.state === 'Empêtré' ? 'Se libérer' : 'Se rouler au sol'} — ${sr.state}`}
-      subtitle={
-        <>
-          <strong>{sr.actorName}</strong> — {sub} · {sr.stacks} pion{sr.stacks > 1 ? 's' : ''}
-        </>
-      }
+      actor={actor}
+      subtitle={<>{sub} · {sr.stacks} pion{sr.stacks > 1 ? 's' : ''}</>}
       rolled={rolled}
       onRoll={onRoll}
       onCancel={onCancel}
@@ -91,6 +94,6 @@ export function StateRecoveryModal() {
   if (!sr || !battle) return null;
   const actor = battle.combatants.find((c) => c.id === sr.actorId);
   return (
-    <StateRecoveryModalView sr={sr} fortune={actor?.fortune ?? 0} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} />
+    <StateRecoveryModalView sr={sr} actor={actor} fortune={actor?.fortune ?? 0} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} />
   );
 }

@@ -7,6 +7,7 @@ import { ResilienceButton } from './ResilienceButton';
 import { InfluenceRow } from './InfluenceRow';
 import { RollPanel, type RollRowData } from './RollPanel';
 import type { PendingRoll } from './RollLine';
+import type { Combatant } from '../engine/types';
 import { Modal } from './Modal';
 
 // Dé d100 canonique (désormais animé) — ré-exporté pour les modales qui l'importaient d'ici.
@@ -36,6 +37,7 @@ export function RollFlowShell({
   title,
   subtitle,
   extra,
+  actor,
   rolled,
   rollLabel = '🎲 Lancer',
   onRoll,
@@ -80,6 +82,10 @@ export function RollFlowShell({
   subtitle: ReactNode;
   /** Contenu optionnel entre le sous-titre et le jet (ex. sélecteur de cible du soin, portraits). */
   extra?: ReactNode;
+  /** Acteur du jet (jet à UN combattant) : son PORTRAIT est injecté DANS la ligne de jet (comme la
+   *  cascade) → « montrer, pas écrire ». Les modales mono-acteur passent `actor` au lieu d'un nom en
+   *  clair dans le sous-titre. Ignoré si la ligne porte déjà un combattant (Défense/cascade multi). */
+  actor?: Combatant;
   rolled: boolean;
   rollLabel?: string;
   onRoll: () => void;
@@ -166,12 +172,17 @@ export function RollFlowShell({
       ✊ Détermination ×{determination.resolve}
     </button>
   );
+  // `actor` (jet MONO-acteur) → portrait injecté dans la ligne de jet UNIQUE (mutualise le « portrait
+  // dans la ligne » de la cascade). Garde-fou : SEULEMENT si une seule ligne — les flux opposés/multi
+  // (Défense, Marchandage, Empêtré) ont >1 ligne et posent leur PROPRE combattant par ligne.
+  const injectActor = (rs: RollRowData[] | undefined): RollRowData[] | undefined =>
+    actor && rs && rs.length === 1 && !rs[0].combatant ? [{ ...rs[0], combatant: actor }] : rs;
   const panelRows: RollRowData[] | undefined =
-    rows ?? (breakdown ? (Array.isArray(breakdown) ? breakdown : [breakdown]).map((d) => ({ d })) : undefined);
+    injectActor(rows ?? (breakdown ? (Array.isArray(breakdown) ? breakdown : [breakdown]).map((d) => ({ d })) : undefined));
   // Pré-jet : ligne(s) en attente (dé/DR vides), mêmes que l'Attaque/Défense avant le lancer.
-  const preRows: RollRowData[] | undefined = pending
+  const preRows: RollRowData[] | undefined = injectActor(pending
     ? (Array.isArray(pending) ? pending : [pending]).map((p) => ({ pending: p }))
-    : undefined;
+    : undefined);
   // Échap = Annuler, exactement quand le bouton Annuler est visible (pré-jet, ou post-jet si le flux le
   // permet) — JAMAIS pendant le frisson (le jet est imminent), comme les anciennes modales lourdes.
   const escClose = (disableEscClose || rolling) ? undefined : ((!rolled || cancelAfterRoll) ? onCancel : undefined);

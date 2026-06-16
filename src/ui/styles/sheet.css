@@ -392,6 +392,7 @@
   background: rgba(255, 255, 255, 0.04);
   font-size: 13px;
   line-height: 1.35;
+  text-align: left; /* ligne de journal : toujours à gauche, même dans .test-modal qui centre tout le reste */
 }
 
 .test-scenarios { max-width: 720px; }

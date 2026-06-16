@@ -14,13 +14,13 @@ import {
   applyEffects, applyEffectsLoot, runFlow, assignGearAt, harvestVictoryCreature, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, attackWardGate,
   effectiveSpellOf, finishPlayerAction,
-  applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, maybeRunEnemyTurn, resumeSuspendedAI,
+  applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, aiOvercastPlan,
   castSightBlocked, spellSightOf, castZoneSpell, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone,
   counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition,
-  maybeOpenHeroPsych, displaceSmaller, applySurprise, resolveKnockdown,
+  openRoundStartPsych, displaceSmaller, applySurprise,
   displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
@@ -75,9 +75,9 @@ import {
 import { disengageFrom, isEngaged, chargeAdvantage, meleeReachTiles } from '../engine/engagement';
 import { gainAdvantage } from '../engine/advantage';
 import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, hasTalent, zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
-import { rollTest, resolveOpposed } from '../engine/tests';
-import { effectiveChar, bonus } from '../engine/characteristics';
-import { isFrenzyCapable, isPsychImmune, CIBLE_TYPES, spendResolveForPsychImmunity } from '../engine/psychology';
+import { rollTest, resolveOpposed, evaluateTest } from '../engine/tests';
+import { effectiveChar, bonus, baseWithTraits } from '../engine/characteristics';
+import { isFrenzyCapable, isPsychImmune, spendResolveForPsychImmunity } from '../engine/psychology';
 import { recomputeLoadout, itemFromTrapping, customTrapping, compatibleAmmo, loadoutSetActive } from '../engine/items';
 import { attackModesFor } from '../engine/combatFeatures/dispatch';
 import { craftTestDRAdjust, hasQuality, isUnbreakable, magazineSize, canPushback, strikesLast, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
@@ -106,19 +106,12 @@ import type { MerchantState, MerchantStocks } from './merchantFlow';
 import type {
   Money, PendingVictory, PendingLoot, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
   PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingRun, PendingApproach, PendingFocus,
-  PendingPsych, PendingFrenzy, RevealEntry, PendingFumble, PendingKnockdown, PendingRenounce, PendingDefense,
+  PendingFrenzy, RevealEntry, PendingFumble, PendingRenounce, PendingDefense,
   PendingDisengage, PendingCast, PendingCounterspell, CounterParticipant, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingCorruption,
   PendingCastOpposition, OppositionParticipant, PendingCascade, ScheduledEffect,
 } from './pendings';
 import {
-  PendingEncounterPsych,
   openEncounterPsych,
-  encounterPsychRoll as encounterPsychRollFlow,
-  encounterPsychReroll as encounterPsychRerollFlow,
-  encounterPsychDarkPact as encounterPsychDarkPactFlow,
-  encounterPsychForceSuccess as encounterPsychForceSuccessFlow,
-  encounterPsychConfirm as encounterPsychConfirmFlow,
-  encounterPsychResolve as encounterPsychResolveFlow,
 } from './encounterPsychFlow';
 import { findSpell } from '../data/index';
 import { subtract as moneySub, add as moneyAdd, canAfford, toMoney } from '../engine/money';
@@ -138,7 +131,7 @@ import { campaign, campaignWorldMap } from '../scenes/campaign';
 import { dayIndex, runDailyUpkeep } from './upkeep';
 import * as travelFlow from './travelFlow';
 import { startCascade, advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice } from './cascade';
-import { describeTest, describePsych, describeFrenzy, describeReload, describeStateRecovery } from './flowOutcomes';
+import { describeTest, describeFrenzy, describeReload, describeStateRecovery } from './flowOutcomes';
 
 export type Screen = 'menu' | 'party' | 'creator' | 'campaign' | 'editor' | 'test' | 'interlude' | 'coop' | 'compendium';
 
@@ -228,6 +221,7 @@ export interface GameState {
   scene: Scene | null;
   mode: 'exploration' | 'battle';
   camRot: 0 | 1 | 2 | 3; // orientation caméra (cran de 90° horaire) — état de vue, non sérialisé
+  camEdge: boolean; // cran impair : vue « de face » (edge-on, grille axis-alignée 3D) ; alterne avec le coin (losange) par ¼ de tour
   rotateCam: (dir: 1 | -1) => void;
   /** Orientation MONDE vivante par entité/combattant (Dir8) — projetée au rendu (camRot). */
   facing: Record<string, Dir8>;
@@ -274,8 +268,6 @@ export interface GameState {
   /** « Se libérer » (Empêtré) / « se rouler » (En flammes) en cours — modale interactive (LDB 16). */
   pendingStateRecovery: PendingStateRecovery | null;
   pendingDefense: PendingDefense | null;
-  /** Déstabilisante (Aux Armes p.89) : choix du héros attaquant — dépenser des Avantages pour renverser. */
-  pendingKnockdown: PendingKnockdown | null;
   /** « Je te renie ! » (LDB 17 l.71) : choix subir la mutation / la refuser (1 Résilience). */
   pendingRenounce: PendingRenounce | null;
   pendingDisengage: PendingDisengage | null;
@@ -328,11 +320,7 @@ export interface GameState {
   pendingApproach: PendingApproach | null;
   /** Focalisation en cours (modale interactive). */
   pendingFocus: PendingFocus | null;
-  /** Test de Psychologie (Calme) d'un héros en cours (Peur/Terreur, LDB 21). */
-  pendingPsych: PendingPsych | null;
-  /** Test de Psychologie À LA RENCONTRE (hors combat) d'un héros : Peur/Terreur/trait ciblé
-   *  déclenché à l'entrée d'une scène par les PNJ présents (couture C, LDB 21). */
-  pendingEncounterPsych: PendingEncounterPsych | null;
+  // (Psychologie de combat : PLUS de `pendingPsych` par tour — cascade de Round, cf. openRoundStartPsych/openRoundEndPsych.)
   /** Entrée en Frénésie d'un héros en cours (Test de FM, LDB 21 l.32). */
   pendingFrenzy: PendingFrenzy | null;
   /** Maladresse d'un héros en attente (LDB 14 — Tableau des Oups !). */
@@ -692,6 +680,8 @@ export interface GameState {
   cascadeResolveAll: () => void;
   /** « Terminer » du bilan : ferme la cascade et enchaîne la suite (reprise de voyage…). */
   cascadeFinish: () => void;
+  /** Détermination (LDB 17 l.62) : immunité Psychologie sur l'étape `pid` (dépense 1 Détermination). */
+  cascadeDetermine: (pid: string) => void;
   /** Incantation OPPOSÉE (`FLOWS.castOpposition`) : chaque CIBLE oppose son Test (FM/Int) — son jet
    *  + cycle Chance/+1 DR/Pacte/Résilience (ciblé par `pid`). Cible IA = rangée témoin auto-roulée. */
   oppositionRoll: (pid: string) => void;
@@ -805,24 +795,9 @@ export interface GameState {
   focusCancel: () => void;
   /** Focalisation HORS COMBAT (couture D) : ouvre la modale de Focalisation pour un héros lanceur du groupe. */
   oocFocusSpell: (casterId: string, label: string) => void;
-  /** Test de Psychologie héros (Peur/Terreur, LDB 21) : Lancer, Chance, Appliquer. */
-  psychRoll: () => void;
-  psychReroll: () => void;
-  psychBonusSL: () => void;
-  psychForceSuccess: () => void;
-  /** « Je ne faillirai pas ! » (LDB 17 l.73) sur une Peur : choix de la valeur du dé du Test de Calme forcé. */
-  psychSetForcedRoll: (roll: number) => void;
-  psychDarkPact: () => void;
-  /** Détermination (LDB 17 l.62) : immunité Psychologie → passe la Peur/Terreur/trait sans risque. */
-  psychResolve: () => void;
-  psychConfirm: () => void;
-  /** Test de Psychologie à la rencontre, hors combat (couture C, LDB 21) : Lancer, Chance, Résilience, Appliquer. */
-  encounterPsychRoll: () => void;
-  encounterPsychReroll: () => void;
-  encounterPsychDarkPact: () => void;
-  encounterPsychForceSuccess: () => void;
-  encounterPsychConfirm: () => void;
-  encounterPsychResolve: () => void;
+  // (Psychologie de combat (Peur/Terreur/Traits ciblés, LDB 21) : PLUS de modale par tour `pendingPsych`.
+  //  C'est désormais une CASCADE de Round — Traits/Terreur au DÉBUT (openRoundStartPsych), Peur à la FIN
+  //  (openRoundEndPsych) — résolue par les handlers `cascade*`, applier 'combatPsych'.)
   /** Entrée en Frénésie d'un héros (LDB 21 l.32) : ouvrir la modale, lancer le Test de FM, Chance/Résilience, appliquer. */
   battleFrenzy: () => void;
   frenzyRoll: () => void;
@@ -846,8 +821,6 @@ export interface GameState {
   defenseDarkPact: () => void;
   defenseConfirm: () => void;
   defenseCancel: () => void;
-  /** Déstabilisante (Aux Armes p.89) : résout le choix (true = dépenser les Avantages et tenter le renversement). */
-  knockdownResolve: (accept: boolean) => void;
   /** « Je te renie ! » (LDB 17 l.71) : résout le choix (true = refuser la mutation, 1 Résilience). */
   renounceResolve: (renounce: boolean) => void;
   /** Combat monté (LDB 14 l.212-225) : enfourcher une monture libre adjacente / en descendre. Aucun jet
@@ -925,7 +898,22 @@ export const useGame = create<GameState>((set, get) => ({
   scene: null,
   mode: 'exploration',
   camRot: 0,
-  rotateCam: (dir) => set((s) => ({ camRot: ((((s.camRot + dir) % 4) + 4) % 4) as 0 | 1 | 2 | 3 })),
+  camEdge: true, // défaut = vue de FACE (edge-on) ; la rotation 8 crans alterne face ↔ coin par 45°
+  // 8 crans (45°) : +1 fait coin→face (même rot) puis face→coin (rot+1) ; -1 l'inverse.
+  rotateCam: (dir) =>
+    set((s) => {
+      const next =
+        dir === 1
+          ? s.camEdge
+            ? { camEdge: false, camRot: (((s.camRot + 1) % 4) as 0 | 1 | 2 | 3) }
+            : { camEdge: true }
+          : s.camEdge
+            ? { camEdge: false }
+            : { camEdge: true, camRot: (((s.camRot + 3) % 4) as 0 | 1 | 2 | 3) };
+      // Re-centre sur le point focal à chaque cran : sinon le décalage manuel (camPan) persiste à
+      // travers le changement de projection (coin↔face, origines très différentes) → vue « téléportée ».
+      return { ...next, camPan: { x: 0, y: 0 } };
+    }),
   facing: {},
   setFacing: (id, dir) => set((s) => ({ facing: { ...s.facing, [id]: dir } })),
   faceToward: (id, from, to) => {
@@ -985,7 +973,6 @@ export const useGame = create<GameState>((set, get) => ({
   pendingReload: null,
   pendingStateRecovery: null,
   pendingDefense: null,
-  pendingKnockdown: null,
   pendingRenounce: null,
   pendingMountTarget: null,
   pendingDisengage: null,
@@ -1007,8 +994,6 @@ export const useGame = create<GameState>((set, get) => ({
   pendingRun: null,
   pendingApproach: null,
   pendingFocus: null,
-  pendingPsych: null,
-  pendingEncounterPsych: null,
   pendingFrenzy: null,
   pendingFumble: null,
   pendingRoundStart: null,
@@ -1187,8 +1172,6 @@ export const useGame = create<GameState>((set, get) => ({
       pendingRun: null,
       pendingApproach: null,
       pendingFocus: null,
-      pendingPsych: null,
-      pendingEncounterPsych: null,
       pendingFrenzy: null,
       pendingCascade: null,
       document: null,
@@ -1399,7 +1382,7 @@ export const useGame = create<GameState>((set, get) => ({
     const surpriseLines = enc.surprise && !opts?.noSurprise ? applySurprise(all, enc.surprise) : [];
     // Initiative : on fixe l'Initiative de chaque combattant (I + 1d10 simplifié).
     // Combat instinctif (LDB 10) : +10 × niveau à l'Initiative de combat.
-    for (const c of all) c.initiative = c.characteristics.I + battleRng().int(1, 10) + talentInitiativeBonus(c);
+    for (const c of all) c.initiative = baseWithTraits(c, 'I') + battleRng().int(1, 10) + talentInitiativeBonus(c);
     // Effrayant (LDB 10) : le porteur inspire Peur (Indice = niveau) — comme un statbloc « Peur N ».
     for (const c of all) {
       const fear = talentFearIndice(c);
@@ -1433,7 +1416,7 @@ export const useGame = create<GameState>((set, get) => ({
     // Ouverture = pause de début du Round 1 (pendingRoundStart) : champ visible, ordre d'Initiative dans la
     // frise, pré-emption « agir en premier » (Chance, #12a) — IA gelée. Un seul bouton « Commencer le combat »
     // (pas de phase « plan d'ensemble » séparée : c'était redondant avec la pause de Round).
-    set({ battle, mode: 'battle', pendingRoundStart: { round: battle.round }, pendingVictory: null, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, pendingCounterspell: null, enemyAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingPsych: null, pendingEncounterPsych: null, pendingFrenzy: null, pendingFumble: null });
+    set({ battle, mode: 'battle', pendingRoundStart: { round: battle.round }, pendingVictory: null, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, pendingCounterspell: null, enemyAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingRun: null, pendingFocus: null, pendingFrenzy: null, pendingFumble: null, pendingCascade: null });
     get().faceAtCombatStart();
     bus.emit(EVT.SCENE_DIRTY);
   },
@@ -1689,7 +1672,7 @@ export const useGame = create<GameState>((set, get) => ({
         && openCastOpposition(get, set, pc, [target, ...extras])) {
       return;
     }
-    set({ pendingCast: null });
+    set({ pendingCast: null, pendingCascade: null }); // TERMINAL : ferme la situation d'incantation (data + cascade-hôte) AVANT applyCast (un Critique de Sort y rouvre sa propre cascade Imparfaite)
     if (caster && target && spell) {
       applyCast(get, set, caster, target, spell, pc.result, pc.missile, pc.focused, pc.critChoice, {
         durationMult: 1 + (pc.overcast?.duration ?? 0),
@@ -1765,7 +1748,7 @@ export const useGame = create<GameState>((set, get) => ({
   castCancel: () => {
     const pc = get().pendingCast;
     const caster = pc && actorIn(get(), pc.casterId);
-    set({ pendingCast: null });
+    set({ pendingCast: null, pendingCascade: null }); // TERMINAL : ferme data + cascade-hôte
     // Modale d'un lanceur ENNEMI fermée sans appliquer : reprendre le tour suspendu (anti soft-lock).
     if (caster?.kind === 'enemy' && get().battle) resumeEnemyTurn(get, set);
   },
@@ -1796,8 +1779,12 @@ export const useGame = create<GameState>((set, get) => ({
     get().castConfirm(); // « Laisser passer » : le Sort se résout tel quel
   },
   // Test Étendu SÉQUENTIEL (LDB 12) : chaque Round est un slot du flux multi (fabrique UNIQUE).
+  // « Une situation = une modale » : le Test étendu EST une cascade à une étape `jet:'extended'`,
+  // rendue par `CascadeModal` (via `useExtendedTestJetProps`). `pendingExtendedTest` coexiste comme
+  // porteur de données (les Rounds y vivent) ; `extendedTestNext` ferme les deux à la réussite.
   startExtendedTest: (opts) => {
     set({ pendingExtendedTest: { ...opts, total: 0, rounds: [{ id: 'round-1', interactive: true, result: null }] } });
+    startCascade(get, set, { title: opts.label, icon: '🗝️', purpose: 'test', steps: [{ id: 'ext-jet', kind: 'extendedJet', jet: 'extended', actorId: opts.actorId }] });
   },
   extendedTestRoll: (pid) => FLOWS.extendedTest.roll(get, set, pid),
   extendedTestReroll: (pid) => FLOWS.extendedTest.reroll(get, set, pid),
@@ -1815,18 +1802,24 @@ export const useGame = create<GameState>((set, get) => ({
     let total = p.total + cur.result.sl;
     if (total < 0) total = 0;
     if (total >= p.targetDR) {
-      set({ pendingExtendedTest: null });
+      set({ pendingExtendedTest: null, pendingCascade: null }); // ferme la cascade-hôte aussi
       get().log(`${p.label} : réussi (DR cumulé ${total} / ${p.targetDR}).`);
       if (p.flag) set({ flags: { ...get().flags, [p.flag]: true } }); // gate la suite (porte/serrure d'éditeur)
       return;
     }
+    // Round suivant : la cascade-hôte (1 étape) reste, seul `pendingExtendedTest` gagne un Round (re-rendu).
     set({ pendingExtendedTest: { ...p, total, rounds: [...p.rounds, { id: `round-${p.rounds.length + 1}`, interactive: true, result: null }] } });
   },
-  extendedTestCancel: () => { set({ pendingExtendedTest: null }); },
+  extendedTestCancel: () => { set({ pendingExtendedTest: null, pendingCascade: null }); },
   // Enfoncer une porte à plusieurs (EDO Appendice 2) : flux multi PARALLÈLE (objet BE/B).
   startForceDoor: (opts) => {
     set({ pendingForceDoor: { label: opts.label, doorBE: opts.doorBE, doorB: opts.doorB, doorBmax: opts.doorB, flag: opts.flag,
       participants: opts.heroIds.map((id) => ({ id, interactive: true, result: null })) } });
+    // « Une situation = une modale » : l'enfoncement est hôté dans la cascade (rendu par CascadeModal
+    // via l'étape `jet:'forceDoor'`). `pendingForceDoor` reste le porteur des données/participants ;
+    // ses résolveurs ferment LES DEUX quand la porte cède. `groupOwner` → l'arbitre coop met l'owner à
+    // '*' (action de GROUPE : chacun pilote ses héros), faute d'acteur unique sur l'étape.
+    startCascade(get, set, { title: 'Enfoncer la porte', icon: '🔨', purpose: 'combat', steps: [{ id: 'forceDoor', kind: 'forceDoorStep', jet: 'forceDoor', groupOwner: true }] });
   },
   forceDoorRoll: (pid) => FLOWS.forceDoor.roll(get, set, pid),
   forceDoorReroll: (pid) => FLOWS.forceDoor.reroll(get, set, pid),
@@ -1841,7 +1834,7 @@ export const useGame = create<GameState>((set, get) => ({
     const dmg = p.participants.reduce((s, x) => s + (x.result?.damage ?? 0), 0);
     const doorB = p.doorB - dmg;
     if (doorB <= 0) {
-      set({ pendingForceDoor: null });
+      set({ pendingForceDoor: null, pendingCascade: null }); // la porte cède → ferme la situation (data + cascade hôte)
       get().log(`${p.label} cède ! (${dmg} dégât${dmg > 1 ? 's' : ''})`);
       if (p.flag) set({ flags: { ...get().flags, [p.flag]: true } }); // ouverture en jeu (porte d'éditeur)
     } else {
@@ -1850,7 +1843,7 @@ export const useGame = create<GameState>((set, get) => ({
       get().log(`${p.label} : ${dmg} dégât${dmg > 1 ? 's' : ''}, reste ${doorB} Blessure${doorB > 1 ? 's' : ''}.`);
     }
   },
-  forceDoorCancel: () => { set({ pendingForceDoor: null }); },
+  forceDoorCancel: () => { set({ pendingForceDoor: null, pendingCascade: null }); }, // renonce : ferme data + cascade hôte
   // CASCADE séquentielle (jets de NUIT / VOYAGE) : flux multi SÉQUENTIEL générique (fabrique UNIQUE).
   // L'étape courante = `participants[cursor]` ; la conséquence par `kind` + l'avancée vivent dans
   // `advanceCascade` (state/cascade.ts), la finalisation propre au `purpose` ici.
@@ -1864,13 +1857,39 @@ export const useGame = create<GameState>((set, get) => ({
   cascadeNext: () => {
     const done = advanceCascade(get, set);
     if (done?.purpose === 'travel' && done.travelHalt) travelFlow.continueTravelAfterNight(get, set);
+    else if (done?.roundBoundary) enterRoundStartPause(get, set); // Peur de fin de Round close → pause de début de Round (PAS resolveRoundBoundary : décomptes déjà appliqués)
     else if (done?.purpose === 'combat') resumeSuspendedAI(get, set); // séquence de conséquences close → reprendre l'IA
   },
   cascadeResolveAll: () => resolveRemainingCascade(get, set), // → BILAN (la modale reste ouverte)
   cascadeFinish: () => {
     const done = finalizeCascade(get, set);
     if (done?.purpose === 'travel' && done.travelHalt) travelFlow.continueTravelAfterNight(get, set);
+    else if (done?.roundBoundary) enterRoundStartPause(get, set); // Peur de fin de Round close → pause de début de Round (PAS resolveRoundBoundary)
     else if (done?.purpose === 'combat') resumeSuspendedAI(get, set); // bilan clos → reprendre l'IA suspendue
+  },
+  // Détermination (LDB 17 l.62) sur une étape de PSYCHOLOGIE (combat/rencontre) : immunité TEMPORAIRE,
+  // PAS une réussite forcée. On dépense 1 point de Détermination (`spendResolveForPsychImmunity` →
+  // `psychImmuneRoundsLeft = 2`) et on MARQUE l'étape `immune` ; l'applier psy lit ce flag pour NE PAS
+  // cumuler le DR (Peur) ni poser le Brisé (Terreur) — la source est IGNORÉE ce Round, pas vaincue, et
+  // reprend à l'expiration. Le `result` synthétique (success) ne sert qu'à faire avancer la cascade :
+  // c'est `step.immune` (pas le succès) qui gouverne la conséquence côté applier. Réservé aux étapes psy.
+  cascadeDetermine: (pid) => {
+    const p = get().pendingCascade;
+    if (!p) return;
+    const idx = p.participants.findIndex((s) => s.id === pid);
+    const step = idx >= 0 ? p.participants[idx] : undefined;
+    if (!step || step.result || step.target == null || !step.actorId) return;
+    if (!step.combatPsych && !step.encounterPsych) return; // Détermination = immunité PSYCHOLOGIQUE seulement
+    const actor = actorIn(get(), step.actorId);
+    if (!actor || (actor.resolve ?? 0) <= 0) return;
+    const msg = spendResolveForPsychImmunity(actor); // dépense la Détermination + pose psychImmuneRoundsLeft
+    if (!msg) return;
+    const e = evaluateTest(1, step.target);
+    set({
+      pendingCascade: { ...p, participants: p.participants.map((s, k) => (k === idx ? { ...s, immune: true, result: { roll: 1, target: step.target!, sl: e.sl, success: true } } : s)) },
+      party: [...get().party],
+    });
+    get().log(msg);
   },
   // Incantation OPPOSÉE (multijet `FLOWS.castOpposition`) : chaque cible oppose son Test ; cible IA
   // = rangée témoin (jet auto-roulé à l'ouverture, cf. openCastOpposition). Mêmes 6 verbes que les autres flux.
@@ -1979,64 +1998,12 @@ export const useGame = create<GameState>((set, get) => ({
     }
     set({ pendingFocus: { casterId: caster.id, spellLabel: label, result: null } });
   },
-  // ── Test de Psychologie héros (Peur/Terreur, LDB 21) ── (pas d'« Annuler » : le Test est obligatoire)
-  psychRoll: () => FLOWS.psych.roll(get, set),
-  psychReroll: () => FLOWS.psych.reroll(get, set),
-  psychBonusSL: () => FLOWS.psych.bonusSL(get, set),
-  psychForceSuccess: () => FLOWS.psych.forceSuccess(get, set),
-  psychSetForcedRoll: (roll) => FLOWS.psych.setForcedRoll(get, set, roll),
-  psychDarkPact: () => FLOWS.psych.darkPact(get, set),
-  psychResolve: () => {
-    // Détermination (LDB 17 l.62) : immunité TEMPORAIRE à la Psychologie (ce Round + le prochain) — elle
-    // RETARDE/ignore la Peur, elle ne la SURMONTE PAS (l'Indice reste). On ferme donc le Test sans le
-    // résoudre comme « vaincu » : le héros agit, immunisé, et la Peur re-testera quand l'immunité expire.
-    const { battle, pendingPsych: pp } = get();
-    if (!battle || !pp) return;
-    const c = battle.combatants.find((x) => x.id === pp.combatantId);
-    if (!c) return;
-    const msg = spendResolveForPsychImmunity(c); // MÊME logique que la barre d'action (pas de duplication)
-    if (!msg) return;
-    set({ pendingPsych: null, battle: { ...battle, log: [...battle.log, ev('info', msg, c.id)] }, ...touchActors(get()) });
-  },
-  psychConfirm: () => {
-    const { battle, pendingPsych: pp } = get();
-    if (!battle || !pp || !pp.result) return;
-    const c = battle.combatants.find((x) => x.id === pp.combatantId);
-    set({ pendingPsych: null });
-    if (c) {
-      c.psychState ??= [];
-      const r = pp.result;
-      if (CIBLE_TYPES.has(pp.kind)) {
-        // Trait ciblé (Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie) : échec → affliction active
-        // (effets de combat/Soc/contrainte) ; succès → marqueur inerte (résisté, pas de re-déclenchement).
-        let e = c.psychState.find((p) => p.type === pp.kind && p.cible === pp.cible);
-        if (!e) { e = { type: pp.kind, cible: pp.cible, sourceId: pp.sourceId }; c.psychState.push(e); }
-        e.lastTestRound = battle.round;
-        e.active = !r.success;
-      } else if (pp.kind === 'terreur') {
-        if (!r.success && (r.brise ?? 0) > 0) addCondition(c, 'Brisé', r.brise!);
-        // La Terreur devient une Peur d'Indice équivalent (0 si réussie → inerte).
-        c.psychState.push({ type: 'peur', sourceId: pp.sourceId, indice: r.success ? 0 : (r.devientPeur ?? pp.indice), calmeDR: 0, lastTestRound: battle.round });
-      } else {
-        let e = c.psychState.find((p) => p.sourceId === pp.sourceId);
-        if (!e) { e = { type: 'peur', sourceId: pp.sourceId, indice: pp.indice, calmeDR: 0 }; c.psychState.push(e); }
-        e.calmeDR = r.calmeDR ?? 0;
-        e.lastTestRound = battle.round;
-      }
-      // Issue = source UNIQUE avec la popin (describePsych), au lieu d'une narration recalculée ici.
-      set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines([describePsych(pp, c.name)], 'fear', c.id)] } });
-    }
-    maybeOpenHeroPsych(get, set); // enchaîne le Test suivant s'il en reste, sinon ferme
-  },
-
-  // ── Psychologie À LA RENCONTRE, hors combat (couture C, LDB 21) : délégué à `encounterPsychFlow`
-  //    (self-contained pour limiter la collision avec la session « rig »). « Un jet = une modale ». ──
-  encounterPsychRoll: () => encounterPsychRollFlow(get, set),
-  encounterPsychReroll: () => encounterPsychRerollFlow(get, set),
-  encounterPsychDarkPact: () => encounterPsychDarkPactFlow(get, set),
-  encounterPsychForceSuccess: () => encounterPsychForceSuccessFlow(get, set),
-  encounterPsychConfirm: () => encounterPsychConfirmFlow(get, set),
-  encounterPsychResolve: () => encounterPsychResolveFlow(get, set),
+  // Psychologie de COMBAT (Peur/Terreur/Traits ciblés, LDB 21) : PLUS de modale `pendingPsych` par tour.
+  // C'est une CASCADE de Round (Traits/Terreur au DÉBUT via openRoundStartPsych ; Peur — Test étendu —
+  // à la FIN via openRoundEndPsych), applier 'combatPsych', résolue par les handlers `cascade*`. La
+  // Détermination (immunité, LDB 17 l.62) est offerte sur l'étape par `cascadeDetermine`.
+  // Psychologie À LA RENCONTRE (couture C, LDB 21) : cascade équivalente, applier 'encounterPsych',
+  // ouverte par `openEncounterPsych` à l'entrée de scène.
 
   // ── Entrée en Frénésie d'un héros (LDB 21 l.31-36) : Test de FM, succès → +1 BF / immunité psy / attaque obligatoire ──
   battleFrenzy: () => {
@@ -2455,7 +2422,10 @@ export const useGame = create<GameState>((set, get) => ({
     set({ battle: { ...battle, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false, reachable: new Map() } });
     if (checkBattleOver(get, set)) return;
     bus.emit(EVT.SCENE_DIRTY);
-    maybeOpenHeroPsych(get, set); // Test de Calme du héros actif (Peur/Terreur, LDB 21) avant qu'il agisse
+    // Psychologie de DÉBUT de Round (LDB 21 l.14) : Traits ciblés (Animosité/Haine/…) + nouvelles
+    // Terreurs → UNE cascade (un héros par étape) qui suspend l'IA jusqu'à résolution.
+    openRoundStartPsych(get, set);
+    if (get().pendingCascade) return; // la cascade tient la main ; sa fermeture reprendra l'IA
     maybeRunEnemyTurn(get, set);
   },
 
@@ -3173,7 +3143,6 @@ export const useGame = create<GameState>((set, get) => ({
     if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return;
     resumeEnemyTurn(get, set);
   },
-  knockdownResolve: (accept: boolean) => resolveKnockdown(get, set, accept),
   renounceResolve: (renounce: boolean) => resolveRenounce(get, set, renounce),
 
   // ── Combat monté : Monter / Descendre (LDB 14 l.212-225) ──
@@ -3226,7 +3195,7 @@ export const useGame = create<GameState>((set, get) => ({
     const { battle, scene, pendingDisengage: pd } = get();
     if (!battle || !scene || !pd || !pd.canSacrifice) return;
     const mover = battle.combatants.find((c) => c.id === pd.moverId);
-    if (!mover) return set({ pendingDisengage: null });
+    if (!mover) return set({ pendingDisengage: null, pendingCascade: null });
     const foes = (mover.engagedWith ?? [])
       .map((id) => battle.combatants.find((c) => c.id === id))
       .filter((c): c is Combatant => !!c);
@@ -3235,6 +3204,7 @@ export const useGame = create<GameState>((set, get) => ({
     const blocked = occupied(battle, mover);
     set({
       pendingDisengage: null,
+      pendingCascade: null, // ferme la cascade-hôte du Désengagement
       battle: {
         ...battle,
         action: null, // mouvement libre rouvert (clic-sol), sans pénalité (l.87) ; Action préservée
@@ -3278,7 +3248,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || !scene || !pd || !pd.result) return;
     const mover = battle.combatants.find((c) => c.id === pd.moverId);
     const foe = battle.combatants.find((c) => c.id === pd.foeId);
-    set({ pendingDisengage: null });
+    set({ pendingDisengage: null, pendingCascade: null });
     if (!mover || !foe) return;
     const log = [...battle.log];
     if (pd.result === 'success') {
@@ -3316,7 +3286,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || !scene || !pd) return;
     const mover = battle.combatants.find((c) => c.id === pd.moverId);
     const foe = battle.combatants.find((c) => c.id === pd.foeId);
-    if (!mover || !foe) return set({ pendingDisengage: null });
+    if (!mover || !foe) return set({ pendingDisengage: null, pendingCascade: null });
     const log = [...battle.log];
     gainAdvantage(foe); // l'adversaire gagne immédiatement +1 Avantage (l.101)
     foe.gainedAdvThisRound = true;
@@ -3352,13 +3322,13 @@ export const useGame = create<GameState>((set, get) => ({
     // en attente) : on ferme tout de suite pour ne pas empiler les modales.
     const st = get();
     if (mover.kind !== 'hero' || st.battle?.over || st.pendingFateSave || st.pendingReveals.length) {
-      set({ pendingDisengage: null });
+      set({ pendingDisengage: null, pendingCascade: null });
       return;
     }
     set({ pendingDisengage: { ...pd, phase: 'fuir', fuir: { attackerRoll: res.attackerRoll, hit: res.hit, woundsLost: res.woundsLost ?? 0, calmeRoll, broken } } });
   },
-  disengageFleeAck: () => set({ pendingDisengage: null }), // « Continuer » : ferme la modale (conséquences déjà appliquées)
-  disengageCancel: () => set({ pendingDisengage: null }), // renonce avant tout jet : aucun coût
+  disengageFleeAck: () => set({ pendingDisengage: null, pendingCascade: null }), // « Continuer » : ferme la modale (conséquences déjà appliquées)
+  disengageCancel: () => set({ pendingDisengage: null, pendingCascade: null }), // renonce avant tout jet : aucun coût
 
   /** Choix du lanceur (avant le jet) : re-cible le Test sur le candidat `id` du groupe. */
   testSetActor: (id) => {
@@ -3366,7 +3336,13 @@ export const useGame = create<GameState>((set, get) => ({
     if (!pt || pt.roll != null) return; // seulement AVANT le jet
     const cand = pt.candidates?.find((c) => c.id === id);
     if (!cand) return;
-    set({ pendingTest: { ...pt, actorId: cand.id, actorName: cand.name, skillValue: cand.value, target: cand.target, psychMod: cand.psychMod, psychDetail: cand.psychDetail, itemUid: cand.itemUid } });
+    // La cascade-hôte porte l'`actorId` de l'étape (gating coop « chacun ses jets ») : re-cibler le
+    // lanceur le met à jour aussi, pour que la modale reste chez le bon propriétaire.
+    const pc = get().pendingCascade;
+    set({
+      pendingTest: { ...pt, actorId: cand.id, actorName: cand.name, skillValue: cand.value, target: cand.target, psychMod: cand.psychMod, psychDetail: cand.psychDetail, itemUid: cand.itemUid },
+      ...(pc ? { pendingCascade: { ...pc, participants: pc.participants.map((st, k) => (k === pc.cursor ? { ...st, actorId: cand.id } : st)) } } : {}),
+    });
   },
   /** « Lancer » : effectue le jet du test en attente (hors combat). */
   testRoll: () => FLOWS.test.roll(get, set),
@@ -3434,7 +3410,9 @@ export const useGame = create<GameState>((set, get) => ({
   resolveTest: () => {
     const pt = get().pendingTest;
     if (!pt || pt.roll == null) return; // pas d'acquittement avant le jet
-    set({ pendingTest: null });
+    // Le Test EST une cascade-hôte à une étape (rendu par CascadeModal) : on ferme LES DEUX avant de
+    // lancer la branche (qui peut ouvrir d'autres pendings — combat, autre Test…).
+    set({ pendingTest: null, pendingCascade: null });
     get().log(describeTest(pt)); // issue du jet journalisée (source UNIQUE avec la popin), puis la conséquence
     const actor = get().party.find((c) => c.id === pt.actorId);
     const tool = pt.itemUid ? actor?.items?.find((i) => i.uid === pt.itemUid) : undefined;

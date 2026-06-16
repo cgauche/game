@@ -25,9 +25,14 @@ export function RollLine({ d }: { d: RollBreakdown }) {
     <div className="rm-roll-block">
       <div className={`rm-roll ${d.success ? 'ok' : 'fail'}`}>
         <span className="rm-roll-label">{d.label}</span>
-        <span className="rm-roll-calc" title="Compétence de base + modificateurs détaillés ci-dessous = cible à ne pas dépasser">
-          {d.base}
-          {mod} = <b>{d.target}</b>
+        <span className="rm-roll-calc" title={d.hideValue ? undefined : 'Compétence de base + modificateurs détaillés ci-dessous = cible à ne pas dépasser'}>
+          {/* Valeur CACHÉE (adversaire opaque, ex. Marchandage du marchand) : on ne montre que dé + DR. */}
+          {!d.hideValue && (
+            <>
+              {d.base}
+              {mod} = <b>{d.target}</b>
+            </>
+          )}
         </span>
         <span className="rm-roll-dice">
           🎲 <b><Dice roll={d.roll} /></b>

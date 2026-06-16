@@ -42,7 +42,7 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'forceDoorForceSuccess', 'forceDoorSetForcedRoll', 'forceDoorConfirm', 'forceDoorCancel',
   // Cascade séquentielle (jets de nuit / voyage influençables)
   'cascadeRoll', 'cascadeReroll', 'cascadeBonusSL', 'cascadeDarkPact',
-  'cascadeForceSuccess', 'cascadeSetForcedRoll', 'cascadeNext', 'cascadeResolveAll', 'cascadeFinish', 'cascadeChoose',
+  'cascadeForceSuccess', 'cascadeSetForcedRoll', 'cascadeNext', 'cascadeResolveAll', 'cascadeFinish', 'cascadeChoose', 'cascadeDetermine',
   // désengagement
   'disengageConfirmA', 'disengageRoll', 'disengageReroll', 'disengageBonusSL',
   'disengageDarkPact', 'disengageForceSuccess', 'disengageConfirm', 'disengageFlee',
@@ -53,8 +53,8 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'trampleRoll', 'trampleReroll', 'trampleBonusSL', 'trampleDarkPact', 'trampleForceSuccess',
   'trampleSetForcedRoll', 'trampleConfirm', 'trampleCancel', 'runRoll', 'runReroll', 'runDarkPact', 'runForceSuccess',
   'runConfirm', 'runCancel', 'focusRoll', 'focusReroll', 'focusBonusSL', 'focusDarkPact',
-  'focusForceSuccess', 'focusConfirm', 'focusCancel', 'psychRoll', 'psychReroll',
-  'psychBonusSL', 'psychDarkPact', 'psychForceSuccess', 'psychConfirm', 'psychResolve',
+  'focusForceSuccess', 'focusConfirm', 'focusCancel',
+  // (Psychologie de COMBAT : PLUS d'intents `psych*` — cascade de Round, via les intents `cascade*` ci-dessus.)
   'frenzyRoll', 'frenzyReroll', 'frenzyDarkPact', 'frenzyForceSuccess', 'frenzyConfirm',
   'frenzyCancel', 'reloadRoll', 'reloadReroll', 'reloadBonusSL', 'reloadDarkPact',
   'reloadConfirm', 'reloadCancel', 'recoverRoll', 'recoverReroll', 'recoverBonusSL',
@@ -64,14 +64,13 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'medicSelectPatient', 'medicAct', 'medicSetWound', 'medicSurgeryPass', 'medicEndSurgery', 'closeMedic',
   // Repos (nuit) : chacun règle SES héros (restSet vise un héros, 1er argument) + ready-check.
   'restSet', 'restReady',
-  'encounterPsychRoll', 'encounterPsychReroll', 'encounterPsychDarkPact',
-  'encounterPsychForceSuccess', 'encounterPsychConfirm', 'encounterPsychResolve',
+  // (Psychologie à la rencontre : passe désormais par les intents `cascade*` ci-dessus.)
   'dismissReveal', 'fateNegate', 'fateSurvive', 'fateAccept', 'fumbleRoll', 'fumbleConfirm',
   'cleaveAttack', 'cleaveEnd', 'dualStrikeAttack', 'dualStrikeSkip',
   'roundStartPromote', 'confirmRoundStart', 'roundStartReady', 'renounceResolve', 'corruptionRoll',
   'corruptionReroll', 'corruptionBonusSL', 'corruptionDarkPact', 'resolveCorruption',
   // (dismissVictory volontairement ABSENT : un invité passe par victoryReady — l'hôte ferme à l'unanimité.)
-  'knockdownResolve', 'victoryReady', 'assignVictoryGear', 'raiseHand',
+  'victoryReady', 'assignVictoryGear', 'raiseHand',
 ]);
 
 /** Composition du groupe (écran d'équipe coop) : un invité remplit/retire SES emplacements.

@@ -4,12 +4,20 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
 import { useAttackJetProps } from './jetProps/useAttackJetProps';
+import { useTestJetProps } from './jetProps/useTestJetProps';
+import { useExtendedTestJetProps } from './jetProps/useExtendedTestJetProps';
+import { DisengageModal } from './DisengageModal';
+import { ForceDoorModal } from './ForceDoorModal';
+import { CastModal } from './CastModal';
 import { RollPanel, type RollRowData } from './RollPanel';
 import { OptionChooser } from './OptionChooser';
+import { DrBar } from './DrBar';
+import { CIBLE_TYPES } from '../engine/psychology';
 import { CriticalBody } from './RevealModal';
 import { JournalLine } from './NarratedLine';
 import { ev, type CombatEventKind } from '../state/combatLog';
 import { cascadeAppliers, stepInteraction } from '../state/cascade';
+import { FLOWS } from '../state/rollFlows';
 import type { CascadeStep, CascadeRoll } from '../state/pendings';
 import type { Combatant } from '../engine/types';
 
@@ -26,16 +34,21 @@ export function CascadeModal() {
   const battle = useGame((s) => s.battle);
   const party = useGame((s) => s.party);
   const p = useGame((s) => s.pendingCascade);
+  const pendingCast = useGame((s) => s.pendingCast); // étape-jet `cast` : hôte la situation d'incantation (réactif, pas de hook conditionnel)
   const roll = useGame((s) => s.cascadeRoll);
   const reroll = useGame((s) => s.cascadeReroll);
   const bonusSL = useGame((s) => s.cascadeBonusSL);
   const darkPact = useGame((s) => s.cascadeDarkPact);
   const force = useGame((s) => s.cascadeForceSuccess);
+  const setForcedRoll = useGame((s) => s.cascadeSetForcedRoll); // Résilience : dé CHOISI (Peur étendue, LDB 17 l.73)
+  const determine = useGame((s) => s.cascadeDetermine); // Détermination (immunité Psychologie de rencontre)
   const next = useGame((s) => s.cascadeNext);
   const choose = useGame((s) => s.cascadeChoose); // étape « choix » : pose l'option retenue
   const resolveAll = useGame((s) => s.cascadeResolveAll); // « Tout lancer » → bilan
   const finish = useGame((s) => s.cascadeFinish); // « Terminer » du bilan
   const attackProps = useAttackJetProps(); // étape-jet d'attaque : rendue dans CETTE coquille (une fenêtre)
+  const testProps = useTestJetProps(); // étape-jet de Test de scène : même coquille, une seule fenêtre
+  const extendedProps = useExtendedTestJetProps(); // étape-jet de Test étendu (Rounds cumulés)
 
   if (!p) return null;
   const pool: Combatant[] = battle?.combatants ?? party;
@@ -102,6 +115,24 @@ export function CascadeModal() {
   // ÉTAPE-JET de combat : le jet (attaque) est rendu via son hook de props dans la MÊME coquille
   // restée montée → le jet et ses conséquences vivent dans UNE seule fenêtre, jusqu'à « Terminer ».
   if (cur.jet === 'attack') return attackProps ? <RollFlowShell {...attackProps} /> : null;
+  // ÉTAPE-JET de Test de scène : rendue via son hook dans la MÊME coquille (`resolveTest` ferme la cascade).
+  if (cur.jet === 'test') return testProps ? <RollFlowShell {...testProps} /> : null;
+  // ÉTAPE-JET de Test ÉTENDU : Rounds cumulés via `extendedTestNext` (ferme la cascade à la réussite).
+  if (cur.jet === 'extended') return extendedProps ? <RollFlowShell {...extendedProps} /> : null;
+  // ÉTAPE-JET de Désengagement : menu/Esquive/Fuite (3 phases) rendu par `DisengageModal` (bespoke,
+  // non-RollFlowShell : choix d'abord) ; `pendingDisengage` porte les données, ses résolveurs ferment la cascade.
+  if (cur.jet === 'disengage') return <DisengageModal />;
+  // ÉTAPE-JET d'enfoncement de porte : flux multi PARALLÈLE (N héros frappent) rendu par `ForceDoorModal`
+  // (bespoke : rangées par participant) ; `pendingForceDoor` porte les données, ses résolveurs ferment la cascade.
+  if (cur.jet === 'forceDoor') return <ForceDoorModal />;
+  // ÉTAPE-JET d'incantation : la situation « lancer un sort » (jet → opposition de cible → Contre-sort →
+  // Surincantation → critique → effets) est rendue par `CastModal` (bespoke) ; `pendingCast` porte les
+  // données, ses résolveurs (castConfirm/castCommitZone/oppositionConfirm/counterspellConfirm/castCancel)
+  // ferment la cascade. Pendant un ciblage CARTE (pickingTargets / pose de zone), la modale s'efface
+  // (comme l'ancienne entrée d'arbitre `cast`) → on défère à la carte.
+  if (cur.jet === 'cast') {
+    return pendingCast && !pendingCast.pickingTargets && !pendingCast.zone?.placing ? <CastModal /> : null;
+  }
   const interaction = stepInteraction(cur);
   const isLast = p.cursor + 1 >= p.participants.length;
   // Étapes DÉJÀ validées (figées), avec portrait ET conséquence (note) — pile persistante (tous types).
@@ -204,11 +235,19 @@ export function CascadeModal() {
   // Issue de l'étape COURANTE = case journal proéminente (les figées gardent leur note compacte).
   const ocText = res ? (cascadeAppliers[cur.kind]?.describe?.(res.success, actor.name) ?? (res.success ? `${actor.name} réussit.` : `${actor.name} échoue.`)) : null;
   const ocEv: CombatEventKind = res?.success ? 'heal' : 'condition';
+  // Peur de COMBAT = Test ÉTENDU (LDB 21 l.27) : barre de DR cumulé vers l'Indice (#23). Après le jet,
+  // on montre le cumul MIS À JOUR (prevDR + DR du jet) ; avant, l'état d'entrée (prevDR).
+  const peur = cur.combatPsych && !CIBLE_TYPES.has(cur.combatPsych.kind) && cur.combatPsych.kind !== 'terreur' ? cur.combatPsych : null;
+  // Résilience « Je ne faillirai pas ! » (LDB 17 l.73) : sur une Peur de combat (Test ÉTENDU), le DR
+  // gagné dépend du dé → on expose le sélecteur de dé (source unique `FLOWS.cascade.picker`). Les étapes
+  // BINAIRES (Terreur/cible/Test de scène) renvoient `null` → réussite au DR max, sans choix.
+  const forcedDie = FLOWS.cascade.picker?.(cur, actor);
 
   return (
     <RollFlowShell
       title={`${p.icon ?? '🎲'} ${p.title}`}
       subtitle={<><strong>{cur.icon ?? '🎲'} {cur.label}</strong>{p.participants.length > 1 ? ` · jet ${p.cursor + 1}/${p.participants.length}` : ''}</>}
+      extra={peur ? <DrBar cum={peur.prevDR + (res?.success ? Math.max(0, res.sl) : 0)} target={peur.indice} /> : undefined}
       rolled={rolled}
       onRoll={() => roll(cur.id)}
       /* Pré-jet : panneau multi-lignes (validées figées + leur conséquence + courante en attente). */
@@ -226,6 +265,10 @@ export function CascadeModal() {
       resilience={actor.resilience ?? 0}
       onForce={() => force(cur.id)}
       forceShow={rolled && !res?.success}
+      /* Résilience : dé CHOISI sur une Peur de combat étendue (le DR gagné suit le dé, LDB 17 l.73). */
+      forcedRoll={forcedDie ? { ...forcedDie, onSet: (r) => setForcedRoll(cur.id, r) } : undefined}
+      /* Psychologie (rencontre OU combat) : Détermination (immunité, LDB 17 l.62) AVANT le jet — comme l'ex-PsychModal/EncounterPsychModal. */
+      determination={!res && (cur.encounterPsych || cur.combatPsych) ? { resolve: actor.resolve ?? 0, onResolve: () => determine(cur.id) } : undefined}
       confirmLabel={isLast ? 'Terminer' : 'Continuer'}
       onConfirm={() => next()}
       /* « Tout lancer » : tant qu'il reste >1 jet, résout d'un coup le reste (RNG, sans influence) PUIS

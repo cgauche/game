@@ -11,7 +11,7 @@
  */
 import type {
   GameState,
-  PendingTrample, PendingRun, PendingFocus, PendingPsych, PendingFrenzy, PendingApproach,
+  PendingTrample, PendingRun, PendingFocus, PendingFrenzy, PendingApproach,
   PendingReload, PendingStateRecovery, PendingTest, PendingAppraise, PendingBargain, PendingHeal,
   PendingCorruption, PendingAttack, PendingDefense, PendingCast, PendingDisengage,
   PendingCounterspell, CounterParticipant, PendingExtendedTest, ExtendedTestRound,
@@ -38,21 +38,8 @@ import { resolveRun } from '../engine/movement';
 import { testValue } from '../engine/skills';
 import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR, resolveCounterspell, counterspellOutcomeFrom, castTestOf, castingValue } from '../engine/magic';
 import { effectiveChar, bonus } from '../engine/characteristics';
-import {
-  resolvePeurTest, resolveTerreurTest, resolveCalmeSimple, resolveFrenzyEntry, calmeValue, CIBLE_TYPES,
-} from '../engine/psychology';
+import { resolveFrenzyEntry, calmeValue, CIBLE_TYPES } from '../engine/psychology';
 import { findSpell } from '../data/index';
-
-/** Résolution du Test de Psychologie (LDB 21) — partagée entre `roll` et `reroll` (re-jet complet). */
-function psychResolve(s: GameState, p: PendingPsych, actor: Combatant | undefined) {
-  if (!s.battle || !actor) return null;
-  if (CIBLE_TYPES.has(p.kind)) {
-    const t = resolveCalmeSimple(calmeValue(actor), battleRng());
-    return { result: { roll: t.roll, success: t.success, target: t.target, sl: t.sl } };
-  }
-  if (p.kind === 'terreur') return { result: resolveTerreurTest(calmeValue(actor), p.indice, battleRng()) };
-  return { result: resolvePeurTest(calmeValue(actor), p.indice, p.prevDR, battleRng()) };
-}
 
 /** Re-dérive une attaque FIGÉE avec un jet d'attaquant modifié (Chance +1 DR / Résilience / dé
  *  choisi) : Test opposé si un défenseur a joué, attaque passive sinon — partagé attaque/force. */
@@ -376,15 +363,29 @@ export const FLOWS = {
     resolve: (_s, st, _actor, _get, forced) => {
       if (st.target == null) return null; // étape sans jet → rien à lancer
       if (forced) {
-        // Résilience « Je ne faillirai pas ! » : jet garanti réussi (dé 01 → DR max), LDB 17 l.73.
-        const e = evaluateTest(1, st.target);
-        return { result: { roll: 1, target: st.target, sl: e.sl, success: true } };
+        // Résilience « Je ne faillirai pas ! » (LDB 17 l.73) : « au lieu de lancer les dés, vous
+        // choisissez le résultat ». Dé CHOISI (`forced.roll`, picker des Peurs étendues — le DR gagné
+        // suit le dé) sinon dé PAR DÉFAUT (01 → DR maximal). Le choix doit RESTER une réussite.
+        const die = forced.roll != null ? Math.min(Math.max(1, forced.roll), maxForcedRoll(st.target)) : 1;
+        const e = evaluateTest(die, st.target);
+        return { result: { roll: die, target: st.target, sl: e.sl, success: true } };
       }
       const t = rollTest(st.target, 'intermediaire', battleRng());
       return { result: { roll: t.roll, target: st.target, sl: t.sl, success: t.success } };
     },
     failed: (st) => !!st.result && !st.result.success,
-    caps: { forced: true },
+    // Résilience GLOBALE ; `picker` (dé choisi) UNIQUEMENT sur une Peur de COMBAT (Test ÉTENDU, le DR
+    // gagné dépend du dé, LDB 21 l.27) — pas sur une étape BINAIRE (Terreur/cible/Test de scène/nuit).
+    caps: {
+      forced: true,
+      picker: (st) => {
+        const cp = st.combatPsych;
+        const isExtendedPeur = !!cp && cp.kind !== 'terreur' && !CIBLE_TYPES.has(cp.kind);
+        return st.forced && isExtendedPeur && st.target != null && st.result
+          ? { roll: st.result.roll, target: st.target, critable: false }
+          : null;
+      },
+    },
     bonus: {
       derive: (_s, st) => (st.result ? { result: { ...st.result, sl: st.result.sl + 1 } } : null),
     },
@@ -545,52 +546,9 @@ export const FLOWS = {
     },
   }),
 
-  /** Test de Psychologie héros (Peur/Terreur/Traits ciblés, LDB 21) — pas d'« Annuler » (Test obligatoire). */
-  psych: makeRollFlow<PendingPsych>({
-    key: 'pendingPsych',
-    rolled: (p) => !!p.result,
-    actor: (s, p) => actorIn(s, p.combatantId),
-    // Picker SEULEMENT sur une Peur (Test étendu de Calme) : ciblé/Terreur = binaires (rien à choisir).
-    caps: {
-      forced: true,
-      picker: (p, actor) =>
-        p.forced && actor && !CIBLE_TYPES.has(p.kind) && p.kind !== 'terreur' && p.result
-          ? { roll: p.result.roll, target: p.result.target ?? calmeValue(actor) }
-          : null,
-    },
-    resolve: (s, p, actor, _get, forced) => {
-      if (forced) {
-        if (!actor) return null;
-        // Binaire (Trait ciblé / Terreur) : « Je ne faillirai pas ! » garantit la réussite (rien à choisir).
-        if (CIBLE_TYPES.has(p.kind)) return { result: { ...(p.result ?? { roll: 1 }), success: true } };
-        if (p.kind === 'terreur') return { result: { ...(p.result ?? { roll: 1 }), success: true, brise: 0 } };
-        // Peur = Test ÉTENDU : la Résilience (LDB 17 l.73) garantit un Test de Calme RÉUSSI ce round.
-        // RAW « vous choisissez le résultat des dés » — pas d'opposant ici, on choisit la valeur :
-        // dé CHOISI (`forced.roll`, plancher DR 0) ou 01 par défaut (plancher DR 1). Le DR se cumule
-        // vers l'Indice (LDB 21). Le dé choisi doit RESTER une réussite (≤ cible).
-        const target = p.result?.target ?? calmeValue(actor);
-        const roll = forced.roll ?? 1;
-        if (roll > maxForcedRoll(target)) return null;
-        const dr = Math.max(evaluateTest(roll, target).sl, forced.roll != null ? 0 : 1);
-        const calmeDR = (p.prevDR ?? 0) + dr;
-        return { result: { roll, target, sl: dr, dr, calmeDR, vaincue: calmeDR >= p.indice, success: true } };
-      }
-      return psychResolve(s, p, actor);
-    },
-    failed: (p) =>
-      CIBLE_TYPES.has(p.kind) || p.kind === 'terreur' ? !p.result?.success : (p.result?.dr ?? 0) === 0,
-    bonus: {
-      guard: (p) => !CIBLE_TYPES.has(p.kind), // ciblé = Test binaire (pas de « +1 DR »)
-      derive: (_s, p) => {
-        const r = p.result!;
-        return {
-          result: p.kind === 'terreur'
-            ? { ...r, brise: Math.max(p.indice, (r.brise ?? 0) - 1) } // +1 DR réduit le Brisé (plancher = Indice)
-            : { ...r, calmeDR: (r.calmeDR ?? 0) + 1, vaincue: (r.calmeDR ?? 0) + 1 >= p.indice },
-        };
-      },
-    },
-  }),
+  // (Test de Psychologie héros (Peur/Terreur/Traits ciblés, LDB 21) : PLUS de flux `psych` dédié. C'est
+  //  une CASCADE de Round — résolue par le `FLOWS.cascade` générique, applier 'combatPsych'. La Peur
+  //  forcée (Résilience) prend le DR maximal du `forceSuccess` générique, comme la psy de rencontre.)
 
   /** Entrée en Frénésie (LDB 21 l.31-36) : Test de FM. */
   frenzy: makeRollFlow<PendingFrenzy>({

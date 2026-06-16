@@ -9,7 +9,6 @@
  */
 import type {
   PendingTest,
-  PendingPsych,
   PendingHeal,
   PendingCorruption,
   PendingRun,
@@ -36,20 +35,8 @@ export function describeTest(pt: PendingTest): string {
   return pt.success ? `${pt.actorName} réussit.` : `${pt.actorName} échoue.`;
 }
 
-/** Psychologie EN COMBAT (LDB 21) : Trait ciblé, Terreur (→ Brisé puis Peur) ou Peur (Test étendu).
- *  `name` = combattant concerné. */
-export function describePsych(pp: PendingPsych, name: string): string {
-  const r = pp.result;
-  if (!r) return '';
-  if (CIBLE_TYPES.has(pp.kind)) {
-    const cl = CIBLE_LABEL[pp.kind];
-    return r.success ? `${name} garde son sang-froid.` : `${name} est en proie à son ${cl?.label.toLowerCase() ?? pp.kind}.`;
-  }
-  if (pp.kind === 'terreur') {
-    return r.success ? `${name} garde son sang-froid.` : `${name} est terrifié : ${r.brise} État(s) Brisé, puis Peur ${pp.indice}.`;
-  }
-  return r.vaincue ? `${name} surmonte sa peur.` : `${name} reste sous l'emprise de la Peur (${r.calmeDR}/${pp.indice} DR).`;
-}
+// (Psychologie EN COMBAT : PLUS de `describePsych` — l'issue des étapes de la cascade de Round est
+//  produite par l'applier 'combatPsych' (state/combatFlow), comme la psy de rencontre.)
 
 /** Psychologie À LA RENCONTRE, hors combat (couture C) : Trait ciblé social, Terreur ou Peur face à
  *  une source nommée. `name` = héros concerné. */

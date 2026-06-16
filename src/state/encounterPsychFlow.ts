@@ -1,29 +1,27 @@
 /**
- * Flux de Psychologie À LA RENCONTRE, hors combat (couture C — câblage de `engine/encounterPsych`).
+ * Psychologie À LA RENCONTRE, hors combat (couture C, LDB 21). À l'entrée d'une scène, chaque héros
+ * face à un PNJ inspirant Peur/Terreur (Taille/statbloc) ou un Trait ciblé (Animosité/Haine/Phobie…)
+ * fait un Test de Calme.
  *
- * À l'entrée d'une scène, chaque héros du groupe évalue s'il doit faire un Test de Psychologie face aux
- * PNJ présents (Peur/Terreur de Taille ou de statbloc, ou Trait ciblé Animosité/Haine/Préjugé/Phobie).
- * Le Test du héros passe par une modale (`pendingEncounterPsych`) — invariante « un jet = une modale ».
- * Hors combat, la Peur est résolue par un Test de Calme SIMPLE (pas le Test étendu du combat) ; la Terreur
- * garde sa résolution canonique (Brisé puis devient Peur). Auto-chaîné héros par héros.
- *
- * Self-contained : ne touche NI `combatFlow` (modale combat) NI les actions psy de combat — il réutilise
- * seulement les résolveurs PURS (`resolveTerreurTest`/`resolveCalmeSimple`) et `encounterPsych`.
+ * « Une situation = une modale » : tous les héros concernés sont les ÉTAPES d'UNE cascade (rendue par
+ * `CascadeModal`), au lieu de N modales enchaînées une par une. Le jet est le Test de Calme GÉNÉRIQUE
+ * de la cascade (`FLOWS.cascade` → `rollTest(Calme)`, kind-agnostique) ; la CONSÉQUENCE (psychState,
+ * Brisé de Terreur dérivé du DR) vit dans l'applier `'encounterPsych'`. La Détermination (immunité,
+ * LDB 17 l.62) est offerte par la coquille via `cascadeDetermine` sur l'étape.
  */
-import type { GameState } from './store';
 import type { Get, Set } from './flowTypes';
 import { Combatant } from '../engine/types';
 import { Scene } from './scene';
+import type { CascadeStep } from './pendings';
 import { spawnEnemy } from './spawn';
 import { encounterPsych } from '../engine/encounterPsych';
-import { calmeValue, resolveTerreurTest, resolveCalmeSimple, CIBLE_TYPES, PsychType } from '../engine/psychology';
-import { canReroll } from '../engine/fortune';
-import { hasActiveFlag, consumeActiveFlag } from '../engine/activeFlags';
-import { battleRng } from './battleRng';
+import { calmeValue, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { addCondition } from '../engine/conditions';
-import { gainCorruption } from './corruptionFlow';
+import { registerCascadeApplier, startCascade } from './cascade';
 import { describeEncounterPsych } from './flowOutcomes';
 
+/** Forme d'un Test de Psychologie de rencontre résolu — conservée pour `describeEncounterPsych`
+ *  (l'applier en construit une à partir de l'étape de cascade). */
 export interface PendingEncounterPsych {
   heroId: string;
   kind: PsychType;
@@ -35,114 +33,87 @@ export interface PendingEncounterPsych {
   rerolled?: boolean;
 }
 
-/** PNJ « personnage » présents dans la scène, dérivés en Combatant (groups/causesPeur/Terreur/size). */
+/** PNJ « personnage » présents dans la scène, dérivés en Combatant (groups/causesPeur/Terreur/size).
+ *  Un embusqueur caché n'inspire pas la Peur avant le combat. */
 export function sceneFearSources(scene: Scene): Combatant[] {
   return (scene.entities ?? [])
-    .filter((e) => e.kind === 'personnage' && !e.combat?.hiddenUntilCombat) // un embusqueur caché n'inspire pas la Peur avant le combat
+    .filter((e) => e.kind === 'personnage' && !e.combat?.hiddenUntilCombat)
     .map((e) => spawnEnemy(e.ref, e.statblock, e.id, e.pos));
 }
 
-/** Ouvre le 1er Test de Psychologie de rencontre dû (hors combat). No-op en combat, si une modale est déjà
- *  ouverte, ou sans scène/PNJ. Auto-appelé à l'entrée de scène et après chaque résolution (chaînage). */
+/** Calcule le Brisé d'une Terreur ratée (LDB 21 l.57 : Indice + |DR négatifs|). */
+function terreurBrise(indice: number, success: boolean, sl: number): number {
+  return success ? 0 : indice + Math.max(0, -sl);
+}
+
+/** Ouvre la CASCADE des Tests de Psychologie de rencontre dus (hors combat) — UNE étape par héros
+ *  concerné. No-op en combat, si une cascade est déjà ouverte, ou sans scène/PNJ. Auto-appelé à
+ *  l'entrée de scène. */
 export function openEncounterPsych(get: Get, set: Set): void {
   const s = get();
-  if (s.battle || s.pendingEncounterPsych || !s.scene) return;
+  if (s.battle || s.pendingCascade || !s.scene) return;
   const npcs = sceneFearSources(s.scene);
   if (!npcs.length) return;
+  const steps: CascadeStep[] = [];
   for (const hero of s.party) {
     if (hero.dead) continue;
     const t = encounterPsych(hero, npcs);
     if (!t) continue;
     const src = npcs.find((n) => n.id === t.sourceId);
-    set({ pendingEncounterPsych: { heroId: hero.id, kind: t.kind, sourceId: t.sourceId, sourceName: src?.name ?? '?', indice: t.indice, cible: t.cible, result: null } });
-    return;
+    const cl = CIBLE_TYPES.has(t.kind) ? CIBLE_LABEL[t.kind] : null;
+    const calme = calmeValue(hero);
+    steps.push({
+      id: `psych-${hero.id}`,
+      kind: 'encounterPsych',
+      actorId: hero.id,
+      icon: cl?.emoji ?? (t.kind === 'terreur' ? '😱' : '😨'),
+      rollLabel: 'Calme',
+      base: calme,
+      target: calme, // Test de Calme Intermédiaire (+0)
+      label: cl ? `${cl.emoji} ${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? '😱 Terreur' : '😨 Peur'} ${t.indice} — ${src?.name ?? '?'}`,
+      encounterPsych: { kind: t.kind, sourceId: t.sourceId, sourceName: src?.name ?? '?', indice: t.indice, cible: t.cible },
+    });
   }
+  if (!steps.length) return;
+  startCascade(get, set, { title: 'Sang-froid', icon: '😨', purpose: 'test', steps });
 }
 
-function rollFor(pe: PendingEncounterPsych, hero: Combatant): PendingEncounterPsych['result'] {
-  const calme = calmeValue(hero);
-  if (pe.kind === 'terreur') {
-    const r = resolveTerreurTest(calme, pe.indice, battleRng());
-    return { roll: r.roll, success: r.success, brise: r.brise, target: r.target, sl: r.sl };
-  }
-  const r = resolveCalmeSimple(calme, battleRng()); // Peur (simple hors combat) ou trait ciblé : binaire
-  return { roll: r.roll, success: r.success, target: r.target, sl: r.sl };
-}
-
-export function encounterPsychRoll(get: Get, set: Set): void {
-  const { pendingEncounterPsych: pe, party } = get();
-  if (!pe || pe.result) return;
-  const hero = party.find((h) => h.id === pe.heroId);
-  if (!hero) return;
-  set({ pendingEncounterPsych: { ...pe, result: rollFor(pe, hero) } });
-}
-
-export function encounterPsychReroll(get: Get, set: Set): void {
-  const { pendingEncounterPsych: pe, party } = get();
-  if (!pe || !pe.result) return;
-  if (!canReroll(!pe.result.success, !!pe.rerolled)) return;
-  const hero = party.find((h) => h.id === pe.heroId);
-  // Bénédiction de Chance (LDB 41) : relance gratuite consommée à la place du Point de Chance.
-  const free = !!hero && hasActiveFlag(hero, 'freeReroll');
-  if (!hero || (!free && (hero.fortune ?? 0) <= 0)) return;
-  if (free) consumeActiveFlag(hero, 'freeReroll');
-  else hero.fortune = (hero.fortune ?? 0) - 1;
-  set({ pendingEncounterPsych: { ...pe, result: rollFor(pe, hero), rerolled: true }, party: [...party] });
-}
-
-/** Sombre Pacte (LDB 19 l.16/41) : +1 Point de Corruption pour RELANCER le Test raté — même déjà
- *  relancé par la Chance (le Pacte reste disponible : chaque usage corrompt, c'est sa limite). */
-export function encounterPsychDarkPact(get: Get, set: Set): void {
-  const { pendingEncounterPsych: pe, party } = get();
-  if (!pe || !pe.result || pe.result.success) return; // on ne pactise que pour relancer un Test RATÉ
-  const hero = party.find((h) => h.id === pe.heroId);
-  if (!hero) return;
-  const lines = gainCorruption(get, set, hero, 1);
-  for (const l of lines) get().log(l);
-  set({ pendingEncounterPsych: { ...get().pendingEncounterPsych!, result: rollFor(pe, hero) }, party: [...get().party] });
-}
-
-export function encounterPsychForceSuccess(get: Get, set: Set): void {
-  const { pendingEncounterPsych: pe, party } = get();
-  if (!pe || pe.result?.success) return;
-  const hero = party.find((h) => h.id === pe.heroId);
-  if (!hero || (hero.resilience ?? 0) <= 0) return;
-  hero.resilience = (hero.resilience ?? 0) - 1;
-  // RAW LDB 17 l.73 : avant le jet (result==null → base 01) OU après un échec.
-  const base = pe.result ?? { roll: 1, success: false };
-  set({ pendingEncounterPsych: { ...pe, result: { ...base, success: true, brise: 0 } }, party: [...party] });
-}
-
-/** Détermination (LDB 17 l.62) : dépense 1 point de Détermination → immunité à la Psychologie, la
- *  rencontre est surmontée d'office (retour playtest #6 : pouvoir se protéger des effets psy d'un clic). */
-export function encounterPsychResolve(get: Get, set: Set): void {
-  const { pendingEncounterPsych: pe, party } = get();
-  if (!pe) return;
-  const hero = party.find((h) => h.id === pe.heroId);
-  if (!hero || (hero.resolve ?? 0) <= 0) return;
-  hero.resolve = (hero.resolve ?? 0) - 1;
-  const base = pe.result ?? { roll: 1, success: false };
-  set({ pendingEncounterPsych: { ...pe, result: { ...base, success: true, brise: 0 } }, party: [...party] });
-}
-
-export function encounterPsychConfirm(get: Get, set: Set): void {
-  const { pendingEncounterPsych: pe, party } = get();
-  if (!pe || !pe.result) return;
-  const hero = party.find((h) => h.id === pe.heroId);
-  set({ pendingEncounterPsych: null });
-  if (hero) {
+/** Conséquence d'un Test de Calme de rencontre : pose le `psychState` (Brisé de Terreur dérivé du DR).
+ *  La résolution kind-agnostique (`rollTest(Calme)`) est faite par `FLOWS.cascade` ; ici on interprète
+ *  le résultat par `kind`. Issue de modale = source UNIQUE (`describeEncounterPsych`). */
+registerCascadeApplier(
+  'encounterPsych',
+  (get, set, step, hero) => {
+    const ep = step.encounterPsych;
+    if (!hero || !step.result || !ep) return;
+    const r = step.result;
     hero.psychState ??= [];
-    const r = pe.result;
-    if (pe.kind === 'terreur') {
-      if (!r.success && (r.brise ?? 0) > 0) addCondition(hero, 'Brisé', r.brise!);
-      hero.psychState.push({ type: 'peur', sourceId: pe.sourceId, indice: r.success ? 0 : pe.indice, calmeDR: 0 }); // la Terreur devient une Peur (LDB 21 l.57)
-    } else if (CIBLE_TYPES.has(pe.kind)) {
-      hero.psychState.push({ type: pe.kind, cible: pe.cible, sourceId: pe.sourceId, active: !r.success });
-    } else {
-      hero.psychState.push({ type: 'peur', sourceId: pe.sourceId, indice: pe.indice, calmeDR: r.success ? pe.indice : 0 });
+    // DÉTERMINATION (LDB 17 l.62) : immunité TEMPORAIRE. Pour un Test de rencontre ONE-SHOT (pas de Test
+    // étendu), « immune » ≈ « inerte » = même état final qu'un succès (la source ne se re-déclenche pas) :
+    // on pose le marqueur INERTE (comme un succès) — pas de Brisé de Terreur, trait ciblé non actif — mais
+    // avec une issue distincte au journal (« temporairement insensible »). Cohérent avec l'applier combat.
+    if (step.immune) {
+      if (ep.kind === 'terreur') hero.psychState.push({ type: 'peur', sourceId: ep.sourceId, indice: 0, calmeDR: 0 });
+      else if (CIBLE_TYPES.has(ep.kind)) hero.psychState.push({ type: ep.kind, cible: ep.cible, sourceId: ep.sourceId, active: false });
+      else hero.psychState.push({ type: 'peur', sourceId: ep.sourceId, indice: ep.indice, calmeDR: ep.indice });
+      set({ party: [...get().party] });
+      return { journal: [`${hero.name} est temporairement insensible à la Psychologie (Détermination).`] };
     }
-    // Issue = source UNIQUE avec la popin (describeEncounterPsych).
-    set({ party: [...party], journal: [...get().journal.slice(-40), describeEncounterPsych(pe, hero.name)] });
-  }
-  openEncounterPsych(get, set); // enchaîne le héros suivant
-}
+    if (ep.kind === 'terreur') {
+      const brise = terreurBrise(ep.indice, r.success, r.sl);
+      if (brise > 0) addCondition(hero, 'Brisé', brise);
+      hero.psychState.push({ type: 'peur', sourceId: ep.sourceId, indice: r.success ? 0 : ep.indice, calmeDR: 0 }); // la Terreur devient une Peur (LDB 21 l.57)
+    } else if (CIBLE_TYPES.has(ep.kind)) {
+      hero.psychState.push({ type: ep.kind, cible: ep.cible, sourceId: ep.sourceId, active: !r.success });
+    } else {
+      hero.psychState.push({ type: 'peur', sourceId: ep.sourceId, indice: ep.indice, calmeDR: r.success ? ep.indice : 0 });
+    }
+    set({ party: [...get().party] });
+    const pe: PendingEncounterPsych = {
+      heroId: hero.id, kind: ep.kind, sourceId: ep.sourceId, sourceName: ep.sourceName, indice: ep.indice, cible: ep.cible,
+      result: { roll: r.roll, success: r.success, brise: terreurBrise(ep.indice, r.success, r.sl), target: r.target, sl: r.sl },
+    };
+    return { journal: [describeEncounterPsych(pe, hero.name)] };
+  },
+  (success, name) => (success ? `${name} garde son sang-froid.` : `${name} cède à la Psychologie.`),
+);

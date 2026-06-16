@@ -1,4 +1,5 @@
 import { useGame, type PendingReload } from '../state/store';
+import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
@@ -11,6 +12,7 @@ import { DrBar } from './DrBar';
 /** Vue pure de la modale de rechargement (testable sans store). */
 export function ReloadModalView({
   pr,
+  actor,
   fortune,
   freeReroll,
   onRoll,
@@ -21,6 +23,8 @@ export function ReloadModalView({
   onCancel,
 }: {
   pr: PendingReload;
+  /** Tireur (jet mono-acteur) → portrait dans la ligne de jet. */
+  actor?: Combatant;
   fortune: number;
   freeReroll?: boolean;
   onRoll: () => void;
@@ -37,11 +41,9 @@ export function ReloadModalView({
     <RollFlowShell
       variant="test"
       title={`Recharger — ${pr.weaponName}`}
-      subtitle={
-        <>
-          <strong>{pr.actorName}</strong> — Projectiles, cible {pr.target} · {pr.progressBefore}/{pr.reload} DR
-        </>
-      }
+      /* QUI recharge → portrait dans la ligne de jet ; Projectiles/cible vivent dans le cadre, le cumul dans le DrBar. */
+      actor={actor}
+      subtitle={null}
       /* Test ÉTENDU (#23) : barre de DR cumulé vers l'Indice de Recharge. */
       extra={<DrBar cum={rolled ? after : pr.progressBefore} target={pr.reload} />}
       rolled={rolled}
@@ -85,6 +87,6 @@ export function ReloadModal() {
   if (!pr || !battle) return null;
   const actor = battle.combatants.find((c) => c.id === pr.actorId);
   return (
-    <ReloadModalView pr={pr} fortune={actor?.fortune ?? 0} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} />
+    <ReloadModalView pr={pr} actor={actor} fortune={actor?.fortune ?? 0} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} />
   );
 }

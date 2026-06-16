@@ -1,6 +1,6 @@
 import { useGame } from '../state/store';
 import { Modal } from './Modal';
-import { CharFrame } from './CharFrame';
+import { PortraitPicker } from './PortraitPicker';
 import { ChoiceButtons } from './OptionChooser';
 
 /**
@@ -25,19 +25,16 @@ export function MountTargetModal() {
         {rider.name} chevauche {mount.name} (même case — qui frapper ?) : viser le cavalier impose −10 si vous êtes
         plus petit que la monture ; abattre la monture désarçonne le cavalier.
       </p>
-      {/* Choix = picker de PORTRAITS (CharFrame), pas des boutons : reste un widget propre (cf. OptionChooser
-          ne couvre que les choix à boutons). Seule la barre d'action ci-dessous passe par <ChoiceButtons>. */}
+      {/* Choix = picker de PORTRAITS mutualisé (`PortraitPicker`), pas des boutons. Seule la barre
+          d'action ci-dessous passe par <ChoiceButtons>. */}
       <div className="rm-options">
-        <div className="rm-loc-grid">
-          <span className="frame-pick">
-            <CharFrame c={mount} variant="vital" size="sm" onClick={() => select(mount.id)} title={`${mount.name} — l'abattre désarçonne le cavalier`} />
-            <span className="cap">🐎 Monture</span>
-          </span>
-          <span className="frame-pick">
-            <CharFrame c={rider} variant="vital" size="sm" onClick={() => select(rider.id)} title={`${rider.name} — −10 si vous êtes plus petit que la monture`} />
-            <span className="cap">🗡️ Cavalier</span>
-          </span>
-        </div>
+        <PortraitPicker
+          choices={[
+            { c: mount, caption: '🐎 Monture', title: `${mount.name} — l'abattre désarçonne le cavalier` },
+            { c: rider, caption: '🗡️ Cavalier', title: `${rider.name} — −10 si vous êtes plus petit que la monture` },
+          ]}
+          onPick={(id) => select(id)}
+        />
       </div>
       <ChoiceButtons options={[{ key: 'cancel', label: 'Annuler', ghost: true, onSelect: cancel }]} />
     </Modal>

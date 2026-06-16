@@ -37,8 +37,8 @@ describe('pickActiveModalKey — priorité des modales de combat', () => {
     ).toBe('fateSave');
   });
 
-  it('la Maladresse passe avant l’Abattre', () => {
-    expect(pickActiveModalKey({ pendingFumble: {}, pendingKnockdown: {} })).toBe('fumble');
+  it('la Maladresse reste prioritaire (l’Abattre est désormais une étape de la cascade d’attaque, plus une modale)', () => {
+    expect(pickActiveModalKey({ pendingFumble: {}, pendingCorruption: {} })).toBe('fumble');
   });
 
   it('Frappe Mortelle / 2ᵉ frappe (Deux armes) ne sont PLUS des modales (ciblage carte, TargetPrompt)', () => {
@@ -50,8 +50,24 @@ describe('pickActiveModalKey — priorité des modales de combat', () => {
     expect(pickActiveModalKey({ pendingCleave: {}, pendingAttack: {} })).toBe('attack');
   });
 
-  it('Surincantation : choix des cibles sur la carte → la modale d’incantation s’efface', () => {
-    expect(pickActiveModalKey({ pendingCast: {} })).toBe('cast');
-    expect(pickActiveModalKey({ pendingCast: { pickingTargets: true } })).toBeNull();
+  it('l’incantation n’est PLUS une modale propre : c’est une étape `jet:\'cast\'` de la cascade (wrapper-fold)', () => {
+    // Un pendingCast SEUL (sans cascade) → l'arbitre ne renvoie plus 'cast' (entrée retirée).
+    // La SITUATION est désormais portée par la cascade-hôte ouverte à l'incantation (CascadeModal → CastModal).
+    expect(pickActiveModalKey({ pendingCast: {} })).toBeNull();
+    // pendingCast + cascade `jet:'cast'` → l'arbitre renvoie 'cascade' (qui rend CastModal via le host).
+    const castCascade = { participants: [{ jet: 'cast', actorId: 'h1' }], cursor: 0 };
+    expect(pickActiveModalKey({ pendingCast: {}, pendingCascade: castCascade })).toBe('cascade');
+    // Ciblage CARTE (Surincantation / pose de zone) : le host de CascadeModal s'efface (return null) —
+    // l'arbitre renvoie tout de même 'cascade' (la cascade existe) ; c'est le HOST qui ne monte rien.
+    expect(pickActiveModalKey({ pendingCast: { pickingTargets: true }, pendingCascade: castCascade })).toBe('cascade');
+  });
+
+  it('le Contre-sort n’est PLUS une modale propre : la réaction est rendue DANS la cascade `cast` (Sort ennemi figé)', () => {
+    // pendingCounterspell coexiste avec le pendingCast (+ cascade) du Sort ennemi → c'est la modale
+    // `cascade` (→ CastModal) qui s'affiche (elle héberge les rangées de contre-lanceurs). Plus d'entrée `counterspell`.
+    const enemyCast = { participants: [{ jet: 'cast', groupOwner: true }], cursor: 0 };
+    expect(pickActiveModalKey({ pendingCast: {}, pendingCascade: enemyCast, pendingCounterspell: { participants: [] } })).toBe('cascade');
+    // Un pendingCounterspell SANS pendingCast/cascade (impossible en pratique) ne déclenche aucune modale.
+    expect(pickActiveModalKey({ pendingCounterspell: { participants: [] } })).toBeNull();
   });
 });

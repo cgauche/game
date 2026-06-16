@@ -51,7 +51,7 @@ const offendersOf = (body: string): string[] => {
 };
 
 // Les RÉSOLVEURS de modale (le jet différé lui-même) : convention de suffixe.
-// `*Resolve` : résolveurs aussi (psychResolve, knockdownResolve, encounterPsychResolve).
+// `*Resolve` : résolveurs aussi (resolveTest ; la psy de combat/rencontre passe par FLOWS.cascade).
 const RESOLVER = /(Roll|Reroll|BonusSL|ForceSuccess|SetForcedRoll|Confirm|Cancel|DarkPact|SurgeryPass|Resolve)$/;
 
 /**

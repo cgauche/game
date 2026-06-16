@@ -28,11 +28,9 @@ export function ActivityModal() {
     <RollFlowShell
       variant="test"
       title={pa.label}
-      subtitle={
-        <>
-          <strong>{actor?.name}</strong> — {pa.skillLabel}
-        </>
-      }
+      /* QUI fait l'Activité → portrait dans la ligne de jet ; la compétence vit dans le cadre. */
+      actor={actor}
+      subtitle={null}
       extra={pa.kind === 'craft' ? <DrBar cum={rolled ? after : pa.drBefore ?? 0} target={pa.drTarget ?? 1} /> : undefined}
       rolled={rolled}
       onRoll={roll}

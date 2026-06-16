@@ -1,4 +1,6 @@
 import { useGame, type PendingBargain } from '../state/store';
+import type { Combatant } from '../engine/types';
+import { spawnEnemy } from '../state/spawn';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
@@ -7,9 +9,11 @@ import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { describeBargain } from '../state/flowOutcomes';
 
-/** Vue pure de la modale de Marchandage (Test opposé, testable sans store). */
+/** Vue pure de la modale de Marchandage (Test OPPOSÉ, testable sans store). */
 export function BargainModalView({
   pb,
+  actor,
+  merchant,
   fortune,
   freeReroll,
   onRoll,
@@ -20,6 +24,10 @@ export function BargainModalView({
   onCancel,
 }: {
   pb: PendingBargain;
+  /** Négociateur du groupe (portrait, ligne joueur). */
+  actor?: Combatant;
+  /** Le marchand, dérivé de l'entité de scène → portrait de la ligne adverse. */
+  merchant?: Combatant;
   fortune: number;
   freeReroll?: boolean;
   onRoll: () => void;
@@ -30,31 +38,32 @@ export function BargainModalView({
   onCancel: () => void;
 }) {
   const rolled = pb.roll != null && pb.result != null;
-  const verdictText = describeBargain(pb);
+  const playerD = pb.roll ? testBreakdown('Marchandage', pb.playerSkill, pb.roll) : null;
+  // Jet OPPOSÉ rendu façon Défense : 2 lignes à portrait (joueur + marchand), vainqueur accentué. Le
+  // Marchandage du marchand reste OPAQUE → ligne `hideValue` (portrait + dé + DR, sans base/cible).
+  const merchantD = rolled && pb.merchantRoll
+    ? { label: 'Marchandage', base: pb.merchantValue, modifier: 0, target: pb.merchantRoll.target, roll: pb.merchantRoll.roll, success: pb.merchantRoll.success, sl: pb.merchantRoll.sl, hideValue: true }
+    : null;
+  const oppRows = rolled && actor && merchant && playerD && merchantD
+    ? [{ combatant: actor, d: playerD }, { combatant: merchant, d: merchantD }]
+    : undefined;
 
   return (
     <RollFlowShell
       variant="test"
       title={`Marchander ${pb.mode === 'buy' ? 'l’achat' : 'la vente'} — ${pb.merchantName}`}
-      subtitle={
-        <>
-          {/* On NE révèle PAS le Marchandage de l'adversaire (info cachée du marchand). */}
-          <strong>{pb.playerName}</strong> — Marchandage {pb.playerSkill} contre {pb.merchantName}
-          {pb.negotiator && ' · Négociateur'}
-        </>
-      }
+      /* Pré-jet (1 ligne) : portrait du négociateur injecté ; post-jet opposé : `rows` portent les 2. */
+      actor={actor}
+      subtitle={pb.negotiator ? <span>· Négociateur</span> : null}
       rolled={rolled}
       onRoll={onRoll}
       onCancel={onCancel}
-      breakdown={rolled ? testBreakdown('Marchandage', pb.playerSkill, pb.roll!) : undefined}
+      rows={oppRows}
+      breakdown={!oppRows && rolled && playerD ? playerD : undefined}
       pending={testPending('Marchandage', pb.playerSkill)}
-      /* Le jet du marchand reste opaque (on ne révèle ni sa valeur ni sa cible) : dé + DR seulement. */
-      outcome={rolled && (
-        <JournalLine
-          className="rm-journal"
-          event={ev('info', `Marchand : 🎲 ${pb.merchantRoll!.roll === 100 ? '00' : String(pb.merchantRoll!.roll).padStart(2, '0')} (${pb.merchantRoll!.sl >= 0 ? '+' : ''}${pb.merchantRoll!.sl} DR) — ${verdictText}.`)}
-        />
-      )}
+      winnerIndex={oppRows ? (pb.result!.attackerWins ? 0 : 1) : undefined}
+      netSL={oppRows ? pb.result!.netSL : undefined}
+      outcome={rolled && <JournalLine className="rm-journal" event={ev('info', describeBargain(pb))} />}
       fortune={fortune}
       freeReroll={freeReroll}
       rerollable={rolled && pb.roll != null && canReroll(pb.roll.roll > pb.roll.target, !!pb.rerolled)}
@@ -77,6 +86,8 @@ export function BargainModalView({
 export function BargainModal() {
   const pb = useGame((s) => s.pendingBargain);
   const party = useGame((s) => s.party);
+  const scene = useGame((s) => s.scene);
+  const merchantState = useGame((s) => s.merchant);
   const roll = useGame((s) => s.bargainRoll);
   const reroll = useGame((s) => s.bargainReroll);
   const bonusSL = useGame((s) => s.bargainBonusSL);
@@ -85,5 +96,8 @@ export function BargainModal() {
   const cancel = useGame((s) => s.bargainCancel);
   if (!pb) return null;
   const actor = party.find((c) => c.id === pb.playerId);
-  return <BargainModalView pb={pb} fortune={actor?.fortune ?? 0} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} />;
+  // Le marchand est une entité de scène → on en dérive un Combatant (portrait de la ligne adverse).
+  const ent = merchantState ? scene?.entities.find((e) => e.id === merchantState.entityId) : undefined;
+  const merchant = ent ? spawnEnemy(ent.ref, ent.statblock, ent.id, ent.pos, { appearance: ent.appearance }) : undefined;
+  return <BargainModalView pb={pb} actor={actor} merchant={merchant} fortune={actor?.fortune ?? 0} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} />;
 }

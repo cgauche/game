@@ -8,7 +8,7 @@
  */
 import { RNG, defaultRNG } from './dice';
 import { rollTest, resolveOpposed, evaluateTest, TestResult } from './tests';
-import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
+import { bonus, effectiveChar, effectiveArmourAt, baseWithTraits } from './characteristics';
 import { bypassedAP } from './armourBypass';
 import { agilityTestPenalty } from './encumbrance';
 import { Combatant, HitLocation, Weapon, BodyShape, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS } from './types';
@@ -139,6 +139,9 @@ export interface RollBreakdown {
   success: boolean;
   /** Degrés de Réussite de CE jet (positif = réussite). */
   sl: number;
+  /** Ligne adverse à valeur CACHÉE (ex. Marchandage du marchand) : portrait + dé + DR, sans
+   *  base/cible — comme `PendingRoll.hideValue` mais sur un jet RÉSOLU. */
+  hideValue?: boolean;
 }
 
 export interface AttackResult {
@@ -859,10 +862,10 @@ function miss(
 /** Ordre d'initiative : Initiative décroissante, départage par Agilité. */
 export function initiativeOrder(combatants: Combatant[]): Combatant[] {
   return [...combatants].sort((a, b) => {
-    const ia = a.initiative ?? a.characteristics.I;
-    const ib = b.initiative ?? b.characteristics.I;
+    const ia = a.initiative ?? baseWithTraits(a, 'I');
+    const ib = b.initiative ?? baseWithTraits(b, 'I');
     if (ib !== ia) return ib - ia;
-    return b.characteristics.Ag - a.characteristics.Ag;
+    return baseWithTraits(b, 'Ag') - baseWithTraits(a, 'Ag');
   });
 }
 

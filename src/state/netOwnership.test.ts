@@ -35,7 +35,13 @@ describe('possession réseau (netOwnership)', () => {
   });
 
   it("sort ENNEMI ('*') : tout le monde peut agir (Contre-sort multi)", () => {
-    const s = base({ pendingCast: { casterId: 'e1', targetId: 'h1' } as GameState['pendingCast'] });
+    // Wrapper-fold : l'incantation est une étape `jet:'cast'` de la cascade (l'entrée d'arbitre `cast`
+    // a été retirée). Sort ENNEMI → la cascade est ouverte avec `groupOwner:true` → l'entrée `cascade`
+    // met l'owner à '*' (moment partagé + Contre-sort multi en coop). `pendingCast` coexiste comme data.
+    const s = base({
+      pendingCast: { casterId: 'e1', targetId: 'h1' } as GameState['pendingCast'],
+      pendingCascade: { participants: [{ jet: 'cast', kind: 'cast', actorId: 'e1', groupOwner: true }], cursor: 0 } as unknown as GameState['pendingCascade'],
+    });
     expect(modalOwnerOf(s)).toBe('*');
     expect(intentAllowedFor(s, 1, 'castCounterspell')).toBe(true);
   });

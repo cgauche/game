@@ -1,4 +1,5 @@
 import { useGame, type PendingAppraise } from '../state/store';
+import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
@@ -10,6 +11,7 @@ import { describeAppraise } from '../state/flowOutcomes';
 /** Vue pure de la modale d'Évaluation (testable sans store). */
 export function AppraiseModalView({
   pa,
+  actor,
   fortune,
   freeReroll,
   onRoll,
@@ -20,6 +22,8 @@ export function AppraiseModalView({
   onCancel,
 }: {
   pa: PendingAppraise;
+  /** Évaluateur (jet mono-acteur) → portrait dans la ligne de jet. */
+  actor?: Combatant;
   fortune: number;
   freeReroll?: boolean;
   onRoll: () => void;
@@ -36,11 +40,9 @@ export function AppraiseModalView({
     <RollFlowShell
       variant="test"
       title={detect ? `Détecter l'aura — ${pa.itemName}` : `Évaluer — ${pa.itemName}`}
-      subtitle={
-        <>
-          <strong>{pa.actorName}</strong> — {skill}, cible {pa.target}
-        </>
-      }
+      /* QUI évalue → portrait dans la ligne de jet (plus de nom en clair) ; la cible/DR vit dans le cadre. */
+      actor={actor}
+      subtitle={null}
       rolled={rolled}
       onRoll={onRoll}
       onCancel={onCancel}
@@ -80,5 +82,5 @@ export function AppraiseModal() {
   const cancel = useGame((s) => s.appraiseCancel);
   if (!pa) return null;
   const actor = party.find((c) => c.id === pa.actorId);
-  return <AppraiseModalView pa={pa} fortune={actor?.fortune ?? 0} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} />;
+  return <AppraiseModalView pa={pa} actor={actor} fortune={actor?.fortune ?? 0} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} />;
 }

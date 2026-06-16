@@ -124,8 +124,8 @@ export function peurTerreurFromSize(foe?: SizeCategory, self?: SizeCategory): { 
  * - Détermination « immunisé à Psychologie jusqu'à la fin du prochain Round » (LDB 17 l.62), via le
  *   compteur `psychImmuneRoundsLeft` (décrémenté au passage de Round) → l'immunité ne fait que RETARDER :
  *   à expiration, les déclencheurs/effets reprennent (sauf si la source est morte entre-temps).
- * Round-indépendant : utilisable autant dans les déclencheurs (collectHeroPsych…) que dans les
- * modificateurs purs (attackModifiers). Futurs Talents/effets d'immunité psy : ajouter ICI.
+ * Round-indépendant : utilisable autant dans les déclencheurs (collectHeroRoundStart/EndPsych…) que
+ * dans les modificateurs purs (attackModifiers). Futurs Talents/effets d'immunité psy : ajouter ICI.
  */
 export function isPsychImmune(c: Combatant, foesMaxAdvantage?: number): boolean {
   // Belliqueux (LDB 85 p.338) : « Tant qu'elle a plus d'Avantages que son adversaire, elle gagne

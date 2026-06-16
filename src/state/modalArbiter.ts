@@ -25,14 +25,17 @@ export interface ModalDef {
 export const MODAL_DEFS = [
   { key: 'fateSave', when: (s) => !!s.pendingFateSave, owner: (s) => s.pendingFateSave?.heroId },
   { key: 'fumble', when: (s) => !!s.pendingFumble, owner: (s) => s.pendingFumble?.combatantId },
-  { key: 'knockdown', when: (s) => !!s.pendingKnockdown, owner: (s) => s.pendingKnockdown?.attackerId },
+  // (Le Renversement (Déstabilisante) n'a PLUS d'entrée propre : c'est une étape de CHOIX de la
+  //  cascade d'ATTAQUE — comme Déviation/Piège-lame — rendue par `cascade`.)
   { key: 'renounce', when: (s) => !!s.pendingRenounce, owner: (s) => s.pendingRenounce?.heroId },
   { key: 'trample', when: (s) => !!s.pendingTrample, owner: (s) => s.pendingTrample?.attackerId },
   { key: 'reveal', when: (s) => (s.pendingReveals?.length ?? 0) > 0, owner: (s) => s.pendingReveals?.[0]?.subjectId }, // sans sujet (entretien) → hôte
   { key: 'defense', when: (s) => !!s.pendingDefense, owner: (s) => s.pendingDefense?.defenderId },
-  { key: 'psych', when: (s) => !!s.pendingPsych, owner: (s) => s.pendingPsych?.combatantId },
-  { key: 'encounterPsych', when: (s) => !!s.pendingEncounterPsych, owner: (s) => s.pendingEncounterPsych?.heroId },
-  { key: 'disengage', when: (s) => !!s.pendingDisengage, owner: (s) => s.pendingDisengage?.moverId },
+  // (La Psychologie n'a PLUS d'entrée propre : EN COMBAT comme À LA RENCONTRE, c'est une cascade à N
+  //  étapes — une par héros — rendue par `cascade`. Combat : Traits/Terreur au DÉBUT de Round, Peur à la
+  //  FIN (openRoundStartPsych/openRoundEndPsych). Rencontre : openEncounterPsych à l'entrée de scène.)
+  // (Le Désengagement n'a PLUS d'entrée propre : c'est une étape `jet:'disengage'` de la cascade,
+  //  rendue par `cascade` ci-dessous — `pendingDisengage` coexiste comme porteur de données/phases.)
   { key: 'mountTarget', when: (s) => !!s.pendingMountTarget, owner: (s) => (s.battle ? s.battle.order[s.battle.turn] : undefined) }, // l'attaquant actif qui a cliqué le couple
   { key: 'frenzy', when: (s) => !!s.pendingFrenzy, owner: (s) => s.pendingFrenzy?.combatantId },
   { key: 'approach', when: (s) => !!s.pendingApproach, owner: (s) => s.pendingApproach?.combatantId },
@@ -44,33 +47,34 @@ export const MODAL_DEFS = [
   // Repos (nuit) : chacun règle SES héros, ready-check, l'hôte dort — modale chez tous.
   { key: 'rest', when: (s) => !!s.pendingRest, owner: () => '*' },
   { key: 'heal', when: (s) => !!s.pendingHeal && !s.medic, owner: (s) => s.pendingHeal?.healerId },
-  // Contre-sort à PLUSIEURS (réaction au Sort ennemi figé dans pendingCast) : PRIORITAIRE sur `cast`
-  // (les deux pendings coexistent) → la modale de réaction prend la main. Moment partagé → tous.
-  { key: 'counterspell', when: (s) => !!s.pendingCounterspell, owner: () => '*' },
-  // Enfoncer une porte à plusieurs (EDO Appendice 2) : action de GROUPE — modale chez tous, chacun
-  // ne pilote que ses héros (gating per-participant côté UI + netOwnership).
-  { key: 'forceDoor', when: (s) => !!s.pendingForceDoor, owner: () => '*' },
-  // Test Étendu SÉQUENTIEL (un acteur enchaîne des Rounds) : modale chez le propriétaire de l'acteur.
-  { key: 'extendedTest', when: (s) => !!s.pendingExtendedTest, owner: (s) => s.pendingExtendedTest?.actorId },
+  // (Le Contre-sort (Dissipation) n'a PLUS d'entrée propre : c'est une RÉACTION au Sort ENNEMI figé
+  //  dans `pendingCast`, rendue DANS la modale `cast` ci-dessous (rangées ParticipantSpell par héros
+  //  contre-lanceur — comme l'opposition de cible). « Le contre-sort, c'est le lancement d'un sort qui
+  //  peut être opposé → pas une modale différente. » L'owner du Sort ennemi est déjà '*' (cf. `cast`).)
+  // (L'enfoncement de porte n'a PLUS d'entrée propre : c'est une étape `jet:'forceDoor'` (groupOwner)
+  //  de la cascade, rendue par `cascade` ci-dessous — `pendingForceDoor` coexiste comme porteur de
+  //  données/participants ; chacun ne pilote que ses héros (gating per-participant côté UI).)
+  // (Le Test étendu n'a PLUS d'entrée propre : c'est une cascade `jet:'extended'` rendue par `cascade`
+  //  ci-dessous — `pendingExtendedTest` coexiste comme porteur de données, comme `pendingAttack`.)
   // CASCADE séquentielle (jets de nuit/voyage) : l'étape COURANTE a son héros → modale chez son
   // propriétaire (coop : chaque contrôleur influence ses propres jets, l'un après l'autre).
-  { key: 'cascade', when: (s) => !!s.pendingCascade, owner: (s) => s.pendingCascade?.participants[s.pendingCascade.cursor]?.actorId },
-  {
-    key: 'cast',
-    // Surincantation : choix des cibles en cours sur la CARTE → la modale s'efface.
-    // Pose de ZONE (flux « jet puis pose ») : idem — le gabarit suit le curseur.
-    when: (s) => !!s.pendingCast && !s.pendingCast.pickingTargets && !s.pendingCast.zone?.placing,
-    // Sort ENNEMI : chez tous (moment partagé + Contre-sort multi) ; sort d'un héros : son propriétaire.
-    owner: (s) => {
-      const casterId = s.pendingCast?.casterId;
-      const caster = casterId && s.battle ? s.battle.combatants.find((c) => c.id === casterId) : undefined;
-      return caster?.kind === 'enemy' ? '*' : casterId;
-    },
-  },
+  { key: 'cascade', when: (s) => !!s.pendingCascade, owner: (s) => {
+    // Étape de GROUPE (enfoncer une porte) → '*' (chacun pilote ses héros) ; sinon le héros de l'étape.
+    const cur = s.pendingCascade?.participants[s.pendingCascade.cursor];
+    return cur?.groupOwner ? '*' : cur?.actorId;
+  } },
+  // (L'incantation n'a PLUS d'entrée propre : la situation « lancer un sort » (jet → opposition de
+  //  cible → Contre-sort → Surincantation/pose de zone → Critique → effets) est une étape `jet:'cast'`
+  //  de la cascade, rendue par `cascade` ci-dessus (`CastModal` bespoke). `pendingCast` coexiste comme
+  //  porteur de données ; ses résolveurs ferment LES DEUX. OWNER équivalent : un Sort ENNEMI ouvre la
+  //  cascade avec `groupOwner:true` → l'entrée `cascade` met l'owner à '*' (moment partagé + Contre-sort
+  //  multi en coop) ; un Sort de HÉROS sans `groupOwner` → owner = `actorId` (le lanceur). Le ciblage
+  //  CARTE (pickingTargets / pose de zone) efface la modale via le `return null` du host dans CascadeModal.)
   { key: 'reload', when: (s) => !!s.pendingReload, owner: (s) => s.pendingReload?.actorId },
   { key: 'stateRecovery', when: (s) => !!s.pendingStateRecovery, owner: (s) => s.pendingStateRecovery?.actorId },
   { key: 'attack', when: (s) => !!s.pendingAttack, owner: (s) => s.pendingAttack?.attackerId },
-  { key: 'test', when: (s) => !!s.pendingTest, owner: (s) => s.pendingTest?.actorId },
+  // (Le Test de scène n'a PLUS d'entrée propre : c'est une cascade `jet:'test'` rendue par `cascade`
+  //  ci-dessus — `pendingTest` coexiste comme porteur de données, comme `pendingAttack` pour l'attaque.)
   // Jet d'Activité d'interlude (LDB 23) — hors combat, mais même règle coop : le PROPRIÉTAIRE
   // du héros joue, les autres voient « X joue… » (audit M8 : fini la modale chez tout le monde).
   { key: 'activity', when: (s) => !!s.pendingActivity, owner: (s) => s.pendingActivity?.heroId },

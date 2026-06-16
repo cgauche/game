@@ -2,30 +2,23 @@ import { useGame } from '../state/store';
 import { ownsLocally } from '../state/netFlow';
 import { modalOwnerOf } from '../state/modalArbiter';
 import type { JSX } from 'react';
-import { TestModal } from './TestModal';
 import { RollModal } from './RollModal';
 import { ReloadModal } from './ReloadModal';
 import { StateRecoveryModal } from './StateRecoveryModal';
 import { DefenseModal } from './DefenseModal';
-import { KnockdownModal } from './KnockdownModal';
 import { RenounceModal } from './RenounceModal';
 import { MountTargetModal } from './MountTargetModal';
 import { FateSaveModal } from './FateSaveModal';
-import { DisengageModal } from './DisengageModal';
 import { TrampleModal } from './TrampleModal';
 import { RunModal } from './RunModal';
 import { ApproachModal } from './ApproachModal';
 import { FocusModal } from './FocusModal';
-import { PsychModal } from './PsychModal';
-import { EncounterPsychModal } from './EncounterPsychModal';
 import { FrenzyModal } from './FrenzyModal';
 import { HealModal } from './HealModal';
 import { MedicModal } from './MedicModal';
 import { RestModal } from './RestModal';
-import { CastModal } from './CastModal';
-import { CounterspellModal } from './CounterspellModal';
-import { ForceDoorModal } from './ForceDoorModal';
-import { ExtendedTestModal } from './ExtendedTestModal';
+// CastModal n'est plus monté ici : la situation d'incantation est une étape `jet:'cast'` de la
+// cascade (rendue par `CascadeModal`, qui hôte `CastModal`) — cf. state/modalArbiter (entrée `cast` retirée).
 import { CascadeModal } from './CascadeModal';
 import { FumbleModal } from './FumbleModal';
 import { RevealModal } from './RevealModal';
@@ -38,12 +31,11 @@ export { pickActiveModalKey, type ModalKey } from '../state/modalArbiter';
 import { pickActiveModalKey, type ModalKey } from '../state/modalArbiter';
 
 const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
-  fateSave: FateSaveModal, fumble: FumbleModal, knockdown: KnockdownModal, renounce: RenounceModal,
-  trample: TrampleModal, reveal: RevealModal, defense: DefenseModal, psych: PsychModal,
-  encounterPsych: EncounterPsychModal, disengage: DisengageModal,
+  fateSave: FateSaveModal, fumble: FumbleModal, renounce: RenounceModal,
+  trample: TrampleModal, reveal: RevealModal, defense: DefenseModal,
   mountTarget: MountTargetModal, frenzy: FrenzyModal, approach: ApproachModal, run: RunModal, focus: FocusModal,
-  medic: MedicModal, rest: RestModal, heal: HealModal, counterspell: CounterspellModal, forceDoor: ForceDoorModal, extendedTest: ExtendedTestModal, cascade: CascadeModal, cast: CastModal, reload: ReloadModal, stateRecovery: StateRecoveryModal,
-  attack: RollModal, test: TestModal, corruption: CorruptionModal, activity: ActivityModal,
+  medic: MedicModal, rest: RestModal, heal: HealModal, cascade: CascadeModal, reload: ReloadModal, stateRecovery: StateRecoveryModal,
+  attack: RollModal, corruption: CorruptionModal, activity: ActivityModal,
 };
 
 /** Indicateur discret pour les NON-concernés : qui joue la modale en cours. */

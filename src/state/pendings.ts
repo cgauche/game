@@ -69,7 +69,11 @@ export interface PendingVictory {
 export interface PendingTest {
   actorId: string;
   actorName: string;
+  /** Intitulé de la SITUATION (« Esquiver les piques de la dalle ») → titre de la modale. */
   label: string;
+  /** Compétence/Caractéristique RÉELLE testée (« Athlétisme », « Dextérité ») → libellé du cadre de
+   *  jet (RollLine), comme « Calme » pour la Psychologie. À défaut, on retombe sur `label`. */
+  skill?: string;
   skillValue: number;
   difficulty: Difficulty;
   requireSL: number;
@@ -287,21 +291,9 @@ export interface PendingFocus {
   result: FocusResult | null;
   rerolled?: boolean;
 }
-/** Test de Psychologie (Calme) en attente d'un HÉROS (LDB 21) : Peur (Test étendu) ou Terreur (1ʳᵉ
- *  rencontre). Lancer → Chance → Appliquer. */
-export interface PendingPsych {
-  combatantId: string;
-  kind: PsychType;
-  sourceId: string;
-  indice: number;
-  prevDR: number;
-  /** Trait CIBLÉ : groupe-Cible visé (Animosité (Elfes)…). Absent pour Peur/Terreur. */
-  cible?: string;
-  result: { roll: number; target?: number; sl?: number; dr?: number; calmeDR?: number; vaincue?: boolean; success?: boolean; brise?: number; devientPeur?: number } | null;
-  rerolled?: boolean;
-  /** Réussite forcée par Résilience (LDB 17 l.73) → sur une Peur, le joueur CHOISIT la valeur du dé. */
-  forced?: boolean;
-}
+// (Test de Psychologie de COMBAT : PLUS de `PendingPsych`. La psy de combat (Peur/Terreur/Traits
+//  ciblés, LDB 21) est une CASCADE de Round — étapes `kind:'combatPsych'` (cf. CascadeStep.combatPsych),
+//  Traits/Terreur au DÉBUT de Round, Peur (Test étendu) à la FIN.)
 /** Entrée en Frénésie en attente (LDB 21 l.32) : Test de FM. Lancer → Chance → Appliquer (entre si succès). */
 export interface PendingFrenzy {
   combatantId: string;
@@ -616,10 +608,16 @@ export interface CascadeStep extends RollParticipant {
   /** Héros qui lance (résolu via `actorIn`). Absent → étape de groupe (rare). */
   actorId?: string;
   icon?: string;
-  /** Étape-JET de combat : le jet d'attaque/défense/magie EST l'étape 0 de la séquence, rendu par
-   *  `CascadeModal` via le hook de props correspondant (`useAttackJetProps`…) → une seule fenêtre.
-   *  Les données du jet vivent dans `pendingAttack`/`pendingDefense`/`pendingCast` (coexistants). */
-  jet?: 'attack' | 'defense' | 'cast';
+  /** Étape-JET : le jet d'attaque/défense/magie/Test EST l'étape 0 de la séquence, rendu par
+   *  `CascadeModal` via le hook de props correspondant (`useAttackJetProps`/`useTestJetProps`…) → une
+   *  seule fenêtre. Les données du jet vivent dans `pendingAttack`/`pendingDefense`/`pendingCast`/
+   *  `pendingTest`/`pendingExtendedTest` (coexistants — comme l'attaque), résolues par leur `xConfirm`/
+   *  `xNext` qui ferme la cascade. */
+  jet?: 'attack' | 'defense' | 'cast' | 'test' | 'extended' | 'disengage' | 'forceDoor';
+  /** Étape de GROUPE (action collective : enfoncer une porte à plusieurs) — l'arbitre coop lui donne
+   *  l'owner '*' (chacun pilote ses héros) au lieu de `actorId` (une étape forceDoor n'a pas d'acteur
+   *  unique). Absent sur les autres `kind` → repli sur `actorId` (identique à aujourd'hui). */
+  groupOwner?: boolean;
   /** Libellé du Test affiché (« Résistance », « Calme », « Survie en extérieur »…). */
   rollLabel?: string;
   /** Valeur « brute » du Test (carac/compétence, avant difficulté) — affichage. */
@@ -644,6 +642,24 @@ export interface CascadeStep extends RollParticipant {
   /** Étape de CHOIX « piège-lame » (folding P3b) : contexte du Test opposé ; l'applier appelle
    *  `resolveBladeTrap(step.bladeTrap, chosen === 'trap')`. */
   bladeTrap?: PendingBladeTrap;
+  /** Étape de CHOIX « renversement » (Déstabilisante, Aux Armes p.89) : contexte du Test opposé ;
+   *  l'applier 'knockdown' appelle `resolveKnockdown(step.knockdown, chosen === 'yes')`. */
+  knockdown?: PendingKnockdown;
+  /** Étape-JET de Psychologie À LA RENCONTRE (LDB 21) : un héros face à une source de Peur/Terreur/
+   *  Trait ciblé à l'entrée de scène. Test de Calme générique (`target`=Calme) ; l'applier
+   *  'encounterPsych' pose le `psychState` (Brisé de Terreur dérivé du DR). Détermination = immunité. */
+  encounterPsych?: { kind: PsychType; sourceId: string; sourceName: string; indice: number; cible?: string };
+  /** Étape-JET de Psychologie EN COMBAT (LDB 21) : un héros face à une source de Peur/Terreur/Trait
+   *  ciblé. Les Traits ciblés ET les NOUVELLES Terreurs se testent au DÉBUT du Round (l.14) ; la Peur
+   *  est un Test ÉTENDU testé à la FIN de chaque Round (l.27) → `prevDR` = DR déjà cumulé, l'applier
+   *  'combatPsych' cumule `prevDR + DR` vers l'Indice (vainc à ≥ Indice, retire la Peur). Distinct de
+   *  `encounterPsych` (simple) car la Peur de combat est ÉTENDUE. Détermination = immunité (LDB 17 l.62). */
+  combatPsych?: { kind: PsychType; sourceId: string; sourceName: string; indice: number; cible?: string; prevDR: number };
+  /** DÉTERMINATION (LDB 17 l.62) sur une étape de Psychologie : le héros gagne une immunité TEMPORAIRE
+   *  (≈ 1 Round, `psychImmuneRoundsLeft`) — la Peur/Terreur/Trait est IGNORÉE ce Round, PAS vaincue.
+   *  L'applier psy lit ce flag pour NE PAS cumuler le DR (Peur) ni poser le Brisé (Terreur) : il
+   *  enregistre seulement « X est temporairement insensible » ; la source reprend à l'expiration. */
+  immune?: boolean;
   /** Étape « choix » : options présentées au joueur (l'option retenue pilote la conséquence). */
   options?: { key: string; label: string; detail?: string }[];
   /** Option retenue (clé) — analogue de `result` pour une étape « choix ». */
@@ -672,6 +688,9 @@ export interface PendingCascade extends MultiPending<CascadeStep> {
   purpose: 'night' | 'travel' | 'test' | 'combat';
   /** HALTE de voyage : la finalisation REPREND la route (continueTravelAfterNight). */
   travelHalt?: boolean;
+  /** Cascade de PEUR de FIN de Round (combat) : à sa fermeture, le store ré-appelle `resolveRoundBoundary`
+   *  pour enchaîner sur la pause de début de Round (la Peur est désormais marquée testée ce Round). */
+  roundBoundary?: boolean;
 }
 
 /** Soin de Guérison en attente (LDB 09-Compétences) : flux modale — « Lancer » (healRoll) → Chance

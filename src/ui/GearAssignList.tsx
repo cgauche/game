@@ -1,6 +1,6 @@
 import { useGame, type LootGear } from '../state/store';
 import { bestDetector } from '../state/merchantFlow';
-import { TeamPortrait } from './TeamPortrait';
+import { PortraitPicker } from './PortraitPicker';
 import type { Combatant } from '../engine/types';
 import { MINUTES_PER_DAY } from '../engine/clock';
 
@@ -50,17 +50,12 @@ export function GearAssignList({ gear, assignable, onAssign, onAppraise }: {
               </span>
             )}
             <span className="vl-assign">
-              {assignable.map((h) => (
-                <button
-                  key={h.id}
-                  className="vl-hero"
-                  onClick={() => onAssign(i, h.id)}
-                  title={`Donner « ${g.label} » à ${h.name}`}
-                  aria-label={`Donner ${g.label} à ${h.name}`}
-                >
-                  <TeamPortrait combatant={h} size={34} />
-                </button>
-              ))}
+              {/* Attribution par portrait → picker mutualisé (cf. PortraitPicker, partagé avec le
+                  choix du lanceur d'un Test et la cible montée) — clic = donner à ce héros. */}
+              <PortraitPicker
+                choices={assignable.map((h) => ({ c: h, title: `Donner « ${g.label} » à ${h.name}` }))}
+                onPick={(id) => onAssign(i, id)}
+              />
             </span>
           </li>
         );

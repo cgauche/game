@@ -6,7 +6,8 @@
  * simple galerie de monstres (ou un PNJ inoffensif de grande Taille) inonderait le joueur de Tests de
  * Calme. Seuls les **Traits psy CIBLÉS et SOCIAUX** se déclenchent à la rencontre hors combat
  * (Animosité / Haine / Préjugé / Phobie / Amour / Camaraderie) — RAW LDB 21, dont l'exemple canonique
- * (l.16) se passe DANS UNE TAVERNE. Le combat, lui, garde Peur/Terreur (cf. `collectHeroPsych`).
+ * (l.16) se passe DANS UNE TAVERNE. Le combat, lui, garde Peur/Terreur (cf. `collectHeroRoundStartPsych`
+ * / `collectHeroRoundEndPsych` — cascades de Round dans state/combatFlow).
  *
  * Pur et découplé : prend les PNJ déjà décrits en `Combatant` (groups). Immunité (Psychologie) et
  * Frénésie court-circuitent. Le branchement (entrée de scène / dialogue → modale) vit dans la couche state.

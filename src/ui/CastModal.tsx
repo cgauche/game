@@ -1,10 +1,12 @@
 import { useGame } from '../state/store';
+import { ownsLocally } from '../state/netFlow';
 import { FLOWS } from '../state/rollFlows';
 import { overcastTargetCandidates, previewCast } from '../state/combatFlow';
 import { findSpell } from '../data/index';
 import { spellSpecFor } from '../data/spellspecs';
 import { conjureFormOptions } from '../engine/conjuredWeapons';
 import { testValue } from '../engine/skills';
+import { castingValue } from '../engine/magic';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { CharFrame } from './CharFrame';
@@ -53,6 +55,19 @@ export function CastModal() {
   const oppDarkPact = useGame((s) => s.oppositionDarkPact);
   const oppForce = useGame((s) => s.oppositionForceSuccess);
   const oppConfirm = useGame((s) => s.oppositionConfirm);
+  // Contre-sort (Dissipation) : RÉACTION au Sort ENNEMI figé dans `pendingCast` — plus de modale
+  // séparée (« le contre-sort, c'est le lancement d'un sort qui peut être opposé »). Chaque héros
+  // contre-lanceur a SA rangée (`ParticipantRow`), DANS cette modale d'incantation, exactement comme
+  // l'opposition de cible ci-dessus. « Laisser passer »/« Appliquer » agrègent via `counterspellConfirm`.
+  const csp = useGame((s) => s.pendingCounterspell);
+  const cspRoll = useGame((s) => s.counterspellRoll);
+  const cspReroll = useGame((s) => s.counterspellReroll);
+  const cspBonusSL = useGame((s) => s.counterspellBonusSL);
+  const cspDarkPact = useGame((s) => s.counterspellDarkPact);
+  const cspForce = useGame((s) => s.counterspellForceSuccess);
+  const cspConfirm = useGame((s) => s.counterspellConfirm);
+  const cspCancel = useGame((s) => s.counterspellCancel);
+  const net = useGame((s) => s.net);
   if (!pc) return null;
   const pool = battle?.combatants ?? party; // même modale en combat (file) et hors combat (groupe)
   const caster = pool.find((c) => c.id === pc.casterId);
@@ -124,7 +139,8 @@ export function CastModal() {
       }
       rolled={!!res}
       onRoll={roll}
-      onCancel={caster.kind !== 'enemy' ? cancel : undefined}
+      onCancel={csp ? cspCancel : caster.kind !== 'enemy' ? cancel : undefined}
+      cancelLabel={csp ? 'Laisser passer' : undefined}
       setup={
         <>
           {conjureForms.length > 0 && (
@@ -287,6 +303,43 @@ export function CastModal() {
               })}
             </div>
           )}
+          {/* CONTRE-SORT (Dissipation, LDB 46 l.201-202/207) : le Sort ENNEMI est figé (révélé ci-dessus),
+              chaque héros contre-lanceur oppose son Langue (Magick) — rangées DANS cette même modale
+              d'incantation (plus de modale séparée : un contre-sort EST un lancement de sort opposé).
+              COOP : on ne pilote QUE ses propres héros (rangées distantes en lecture seule). */}
+          {csp && (
+            <div className="cs-rows">
+              <span className="mini-title">🛡️ Contre-sort — chaque lanceur oppose son Langue (Magick)</span>
+              {csp.participants.map((part) => {
+                const actor = pool.find((c) => c.id === part.id);
+                if (!actor) return null;
+                const r = part.result;
+                const val = castingValue(actor, 'Langue', 'Magick');
+                const row = r
+                  ? { combatant: actor, d: { label: 'Langue (Magick)', base: r.counter.target, modifier: 0, target: r.counter.target, roll: r.counter.roll, success: r.counter.success, sl: r.counter.sl } }
+                  : { combatant: actor, pending: { label: 'Langue (Magick)', base: val, mods: [] } };
+                return (
+                  <ParticipantRow
+                    key={part.id}
+                    actor={actor}
+                    row={row}
+                    rolled={!!r}
+                    interactive={net.mode === 'local' || ownsLocally(useGame.getState(), part.id)}
+                    rollLabel="🛡️ Contre-sort"
+                    onRoll={() => cspRoll(part.id)}
+                    rerollable={!!r && canReroll(!r.counter.success, !!part.rerolled)}
+                    onReroll={() => cspReroll(part.id)}
+                    onBonusSL={() => cspBonusSL(part.id)}
+                    darkPactable={actor.kind === 'hero' && !!r && !r.counter.success}
+                    onDarkPact={() => cspDarkPact(part.id)}
+                    onForce={() => cspForce(part.id)}
+                    forceShow={!!r && !r.dispelled}
+                    extra={r && <div className={`cs-outcome ${r.dispelled ? 'ok-text' : 'muted'}`}>{r.dispelled ? '✅ Dissipé !' : `DR net ${r.casterNetSL >= 0 ? '+' : ''}${r.casterNetSL}`}</div>}
+                  />
+                );
+              })}
+            </div>
+          )}
         </>
       )}
       forcedRoll={forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined}
@@ -301,9 +354,9 @@ export function CastModal() {
       onForce={forceSuccess}
       preRollForce={() => { roll(); forceSuccess(); }}
       forceShow={!!res && !res.cast}
-      confirmLabel={placeable ? '📍 Poser la zone' : 'Appliquer'}
-      confirmTitle={placeable ? "La modale s'efface — clique une case du champ de bataille pour déposer la zone" : undefined}
-      onConfirm={pcs ? oppConfirm : placeable ? () => placeZone(true) : confirm}
+      confirmLabel={csp ? (csp.participants.some((p) => p.result?.dispelled) ? 'Appliquer (dissipé)' : 'Appliquer') : placeable ? '📍 Poser la zone' : 'Appliquer'}
+      confirmTitle={placeable && !csp ? "La modale s'efface — clique une case du champ de bataille pour déposer la zone" : undefined}
+      onConfirm={csp ? cspConfirm : pcs ? oppConfirm : placeable ? () => placeZone(true) : confirm}
     />
   );
 }
