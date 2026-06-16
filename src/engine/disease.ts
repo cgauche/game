@@ -260,7 +260,8 @@ export function diseaseBlesseCount(c: Combatant): number {
 const PHYSICAL_SOCIAL: CharKey[] = ['CC', 'CT', 'F', 'E', 'Ag', 'Dex', 'Soc'];
 const PHYSICAL: CharKey[] = ['CC', 'CT', 'F', 'E', 'Ag', 'Dex'];
 export function diseaseCharPenalties(c: Combatant, key: CharKey): number[] {
-  if (c.ignoreCritMods) return [];
+  // Producteur PUR : le gating par Détermination (`ignoreCritMods`) est appliqué par le collecteur passif
+  // unifié (kind `maladie`, table `PASSIVE_CANCELLERS`) — plus ici, pour éviter le double-gating.
   const out: number[] = [];
   const active = (c.diseases ?? []).filter((d) => d.phase === 'active');
   const has = (k: DiseaseSymptomKind) => active.some((d) => d.symptoms.some((sy) => sy.kind === k));

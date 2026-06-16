@@ -12,6 +12,8 @@ import { Combatant, CharKey, HitLocation, Trauma, Difficulty, UpkeepDeferTest } 
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
 import { isPainless } from './traits/dispatch';
+import { diseaseCharPenalties } from './disease';
+import { hungerCharPenalties } from './provisions';
 import type { GameOp, PassiveKind, PassiveMod } from './ops';
 
 export type TraumaKind = 'dechirure' | 'fracture';
@@ -401,13 +403,15 @@ function traumaOpKind(op: GameOp): PassiveKind {
   return 'douleur'; // charMod / skillMod
 }
 
-/** Un effet passif de séquelle SURVIT-il à l'état du combattant (Détermination/Insensible/prothèse), selon son `kind` ? */
-function traumaModSurvives(c: Combatant, t: Trauma, kind: PassiveKind): boolean {
+/** Un effet passif SURVIT-il à l'état du combattant (Détermination/Insensible/prothèse), selon son `kind` ?
+ *  `t` (la séquelle porteuse) n'est requis que pour les annulateurs liés au porteur (Insensible/prothèse) ;
+ *  les sources SANS séquelle (maladie/faim — gating par Détermination seule) l'omettent. */
+function modSurvives(c: Combatant, kind: PassiveKind, t?: Trauma): boolean {
   for (const canc of PASSIVE_CANCELLERS[kind]) {
     if (canc === 'determination' && c.ignoreCritMods) return false;
-    if (canc === 'painless' && painlessIgnores(c, t)) return false;
-    if (canc === 'prosthesis-all' && prosthesisCancels(c, t, 'all')) return false;
-    if (canc === 'prosthesis-move' && prosthesisCancels(c, t, 'movement')) return false;
+    if (canc === 'painless' && t && painlessIgnores(c, t)) return false;
+    if (canc === 'prosthesis-all' && t && prosthesisCancels(c, t, 'all')) return false;
+    if (canc === 'prosthesis-move' && t && prosthesisCancels(c, t, 'movement')) return false;
   }
   return true;
 }
@@ -424,7 +428,17 @@ function traumaModSurvives(c: Combatant, t: Trauma, kind: PassiveKind): boolean 
 export function passiveMods(c: Combatant): PassiveMod[] {
   const out: PassiveMod[] = [];
   for (const t of c.traumas ?? []) {
-    for (const o of traumaOps(t)) { const kind = traumaOpKind(o); if (traumaModSurvives(c, t, kind)) out.push({ op: o, kind }); }
+    for (const o of traumaOps(t)) { const kind = traumaOpKind(o); if (modSurvives(c, kind, t)) out.push({ op: o, kind }); }
+  }
+  // Maladies (kind `maladie`, annulée par Détermination — comme l'ex-gating de `diseaseCharPenalties`) +
+  // Faim (kind `faim`, non annulée : `noHunger` purge l'état à l'entretien, pas ici). Pénalités de
+  // Caractéristique → pool non-cumul. Producteurs SANS cycle (disease/provisions n'importent ni trauma ni
+  // characteristics). Gating UNIFORME sans `t` ; sauté en bloc si annulé (perf : pas de boucle par clé).
+  if (c.diseases?.length && modSurvives(c, 'maladie')) {
+    for (const key of Object.keys(c.characteristics) as CharKey[]) for (const mod of diseaseCharPenalties(c, key)) out.push({ op: { op: 'charMod', char: key, mod }, kind: 'maladie' });
+  }
+  if (c.hunger && modSurvives(c, 'faim')) {
+    for (const key of Object.keys(c.characteristics) as CharKey[]) for (const mod of hungerCharPenalties(c, key)) out.push({ op: { op: 'charMod', char: key, mod }, kind: 'faim' });
   }
   // Mutations de Corruption (LDB 19) : modifs PERMANENTES du corps → kind `intrinsèque` (additif Σ). Lues
   // INLINE (pas via corruption.ts) pour éviter le cycle trauma→corruption→characteristics→trauma. Qualités
@@ -478,8 +492,9 @@ export function passiveSkillSum(c: Combatant, skill?: string): number {
   return pmods(c, 'skillMod', true).filter((o) => low.startsWith(o.skill)).reduce((s, o) => s + o.mod, 0);
 }
 
-/** Pénalités de Caractéristique dues aux traumatismes (valeurs négatives, pour le pool « pire pénalité »).
- *  Une prothèse qui annule TOUT (Nez doré, Œil de verre, Merveille…, LDB 73) lève la pénalité de sa séquelle. */
+/** Pénalités de Caractéristique PASSIVES non-`intrinsèque` (valeurs négatives, pour le pool « pire pénalité ») :
+ *  traumatismes (LDB 18), maladies (LDB 20) et faim (LDB 18 l.422), toutes sources confondues via le collecteur.
+ *  Le gating (Détermination/Insensible/prothèse selon le `kind`) est déjà appliqué par `passiveMods`. */
 export function traumaCharPenalties(c: Combatant, key: CharKey): number[] {
   // `passiveMods` applique déjà le gating séquelle (Détermination/Insensible/prothèse). Le charMod de SORT
   // est lu à part par effectiveChar (e.char/e.bonus) → non émis par passiveMods. `additive=false` exclut les

@@ -3,8 +3,6 @@
  */
 import { CharKey, Characteristics, Combatant } from './types';
 import { traumaCharPenalties, passiveCharSum } from './trauma';
-import { diseaseCharPenalties } from './disease';
-import { hungerCharPenalties } from './provisions';
 import { SizeCategory, woundsForSize, effectiveSize } from './size';
 
 /** Bonus de Caractéristique = chiffre des dizaines (ex. 37 → 3). */
@@ -29,12 +27,10 @@ export function effectiveChar(c: Combatant, key: CharKey): number {
   // magique), désormais via le collecteur passif unifié (kind `intrinsèque`, sommé).
   base += passiveCharSum(c, key);
   const mods = (c.activeEffects ?? []).filter((e) => e.char === key).map((e) => e.bonus);
-  // Pénalités de traumatisme (LDB 18) : injectées dans le pool « pire pénalité » (non-cumul l.168).
+  // Pénalités PASSIVES non-cumul (pool « pire pénalité », LDB l.168) du collecteur unifié : traumatisme
+  // (LDB 18), maladie (LDB 20 : fièvre −10 Physique/Social) et faim (LDB 18 l.422 : −10 F/E puis −10 ailleurs)
+  // — toutes en charMod non-`intrinsèque`, gating (Détermination…) déjà appliqué par le collecteur.
   mods.push(...traumaCharPenalties(c, key));
-  // Pénalités de maladie (LDB 20 : fièvre −10 aux Tests Physiques/Sociaux) — même pool non-cumul.
-  mods.push(...diseaseCharPenalties(c, key));
-  // Pénalités de faim (LDB 18 l.422 : −10 F/E au 1ᵉʳ échec, −10 ailleurs dès le 2ᵉ) — même pool.
-  mods.push(...hungerCharPenalties(c, key));
   if (mods.length === 0) return base;
   const bestBonus = Math.max(0, ...mods.filter((m) => m > 0));
   const worstPenalty = Math.min(0, ...mods.filter((m) => m < 0));
