@@ -439,7 +439,39 @@
       "kind": "hurlement",
       "activation": "free",
       "advantageCost": 2,
-      "aoe": true
+      "aoe": true,
+      "effects": [
+        {
+          "trigger": "onHit",
+          "on": "victim",
+          "flow": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "test",
+                  "skill": "Résistance",
+                  "difficulty": "accessible",
+                  "onFail": [
+                    {
+                      "op": "condition",
+                      "name": "Brisé"
+                    }
+                  ],
+                  "onSuccess": []
+                },
+                {
+                  "op": "condition",
+                  "name": "Assourdi",
+                  "value": 3
+                }
+              ]
+            }
+          }
+        }
+      ]
     }
   },
   {
@@ -544,7 +576,30 @@
     "maneuver": {
       "kind": "langue",
       "activation": "free",
-      "advantageCost": 1
+      "advantageCost": 1,
+      "effects": [
+        {
+          "trigger": "onHit",
+          "on": "victim",
+          "flow": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "condition",
+                  "name": "Empêtré",
+                  "unlessCondition": "Empêtré",
+                  "escapeStrength": {
+                    "charOf": "F"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
     }
   },
   {
@@ -770,7 +825,31 @@
     "maneuver": {
       "kind": "regard",
       "activation": "action",
-      "advantageCost": 1
+      "advantageCost": 1,
+      "effects": [
+        {
+          "trigger": "onHit",
+          "on": "victim",
+          "flow": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "condition",
+                  "name": "Sonné",
+                  "value": 0,
+                  "valuePerSL": {
+                    "every": 2,
+                    "amount": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
     }
   },
   {

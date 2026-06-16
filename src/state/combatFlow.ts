@@ -2040,9 +2040,8 @@ export function applyTongue(get: Get, set: SetFn, attacker: Combatant, a: Creatu
   if (r.attackerWins) {
     const wl = Math.max(0, a.bonus - bonus(effectiveChar(tgt, 'E')) - Math.max(0, tgt.armour.corps ?? 0));
     if (wl > 0) { loseWounds(tgt, wl); lines.push(`${tgt.name} subit ${wl} Blessure(s).`); }
-    if (!hasCondition(tgt, 'Empêtré')) addCondition(tgt, 'Empêtré');
-    const cond = tgt.conditions.find((c) => c.name === 'Empêtré'); if (cond) cond.sourceId = attacker.id; // source du Test opposé de Force (LDB 16 l.61)
-    lines.push(`${tgt.name} est Empêtré (Langue préhensile).`);
+    // Effet onHit AUTHORÉ de la manœuvre (Langue → Empêtré) — donnée éditable `maneuver.effects`.
+    lines.push(...applyTriggeredEffects(get, attacker, maneuverEffectsOf(attacker, 'langue'), 'onHit', { victim: tgt, woundsDealt: wl, rng: battleRng() }));
     if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
   } else lines.push(`${tgt.name} esquive la langue.`);
   set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id, tgt.id)] } });
@@ -2077,9 +2076,9 @@ export function applyWail(get: Get, set: SetFn, attacker: Combatant): boolean {
     const wl = d10(battleRng()); // 1d10, ignore Endurance et PA
     loseWounds(tgt, wl);
     lines.push(`${tgt.name} subit ${wl} Blessure(s) (ignore Endurance et PA).`);
-    const resAdv = tgt.skills.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0;
-    if (!rollTest(effectiveChar(tgt, 'E') + resAdv, 'accessible', battleRng()).success) addCondition(tgt, 'Brisé');
-    for (let i = 0; i < 3; i++) addCondition(tgt, 'Assourdi'); // 3 États Assourdi
+    // Effets onHit AUTHORÉS de la manœuvre (Hurlement → Test de Résistance ou Brisé, + 3 Assourdi) —
+    // donnée éditable `maneuver.effects` (op `test` + `condition`).
+    lines.push(...applyTriggeredEffects(get, attacker, maneuverEffectsOf(attacker, 'hurlement'), 'onHit', { victim: tgt, woundsDealt: wl, rng: battleRng() }));
     if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
   }
   set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id)] } });
@@ -2106,10 +2105,12 @@ export function applyGaze(get: Get, set: SetFn, attacker: Combatant): boolean {
   const margin = atk.sl + spent - def.sl; // DR de l'attaquant (+Avantage) − DR du défenseur
   const lines = [`${attacker.name} fixe ${tgt.name} de son Regard pétrifiant (${spent} Avantage) !`];
   emitCreatureAttackAnim(attacker, 'regard');
-  if (margin > 0) {
-    if (margin >= 6) { addCondition(tgt, 'Pétrifié'); tgt.wounds.current = 0; applyZeroWounds(tgt); lines.push(`${tgt.name} est définitivement changé en PIERRE !`); }
-    else { const n = Math.floor(margin / 2); for (let i = 0; i < n; i++) addCondition(tgt, 'Sonné'); lines.push(`${tgt.name} reçoit ${n} État(s) Sonné.`); }
-  } else lines.push(`${tgt.name} soutient le regard.`);
+  // Pétrifié à 6 DR de marge = issue spéciale de RÉSOLUTION (zéro les PB) → reste moteur. Le Sonné
+  // échelonné (1 par 2 DR) est un effet onHit AUTHORÉ (donnée `maneuver.effects`, op `condition`
+  // `valuePerSL{every:2}` alimenté par `ctx.sl = margin`).
+  if (margin >= 6) { addCondition(tgt, 'Pétrifié'); tgt.wounds.current = 0; applyZeroWounds(tgt); lines.push(`${tgt.name} est définitivement changé en PIERRE !`); }
+  else if (margin >= 2) lines.push(...applyTriggeredEffects(get, attacker, maneuverEffectsOf(attacker, 'regard'), 'onHit', { victim: tgt, margin, rng: battleRng() }));
+  else lines.push(`${tgt.name} soutient le regard.`);
   set({ battle: { ...get().battle!, acted: true, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id, tgt.id)] } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
@@ -2346,6 +2347,7 @@ export function castSpell(
       focused: focusedNI0, result: null, ...(fromGrimoire ? { grimoire: true } : {}),
     },
   });
+  openCastCascade(get, set, caster); // « Une situation = une modale » : hôte la situation d'incantation dans la cascade
   // Lanceur ENNEMI : le MOTEUR roule l'incantation (plus de « Lancer » joueur — on ne lance pas le
   // dé de l'adversaire), puis aiguille : Contre-sort à plusieurs si un héros peut Dissiper, sinon la
   // modale pré-roulée sert de RÉVÉLATION (résultat + « Appliquer », sans bouton « Lancer »).
@@ -2430,7 +2432,24 @@ export function castZoneSpell(get: Get, set: SetFn, caster: Combatant, label: st
       zone: { center: null, radius: zoneRadiusTilesAt(r0m, 0), r0m },
     },
   });
+  openCastCascade(get, set, caster); // hôte la situation d'incantation (jet → pose de zone → effets) dans la cascade
   return true;
+}
+
+/** « Une situation = une modale » (pattern wrapper-fold) : OUVRE une cascade `combat` à UNE étape
+ *  `jet:'cast'` qui HÔTE toute la situation d'incantation (jet → opposition de cible → Contre-sort →
+ *  Surincantation/pose de zone → Critique → effets). `pendingCast` reste le porteur de données ; ses
+ *  résolveurs (`castConfirm`/`castCancel`/`castCommitZone`/`oppositionConfirm`/`counterspellConfirm`)
+ *  ferment LES DEUX au point terminal. La cascade reste OUVERTE pour TOUTE la situation. Lanceur
+ *  ENNEMI → `groupOwner:true` (l'arbitre `cascade` met l'owner à '*' : moment partagé + Contre-sort
+ *  multi en coop) ; HÉROS → owner dérivé de `actorId` (le lanceur). Hôte aussi l'incantation HORS
+ *  COMBAT (couture D) : `CascadeModal` lit `battle?.combatants ?? party`, l'owner = le héros lanceur,
+ *  et les résolveurs de cast ferment le pending directement (jamais `cascadeFinish` → pas de reprise IA). */
+export function openCastCascade(get: Get, set: SetFn, caster: Combatant): void {
+  startCascade(get, set, {
+    title: 'Incantation', icon: '🔮', purpose: 'combat',
+    steps: [{ id: `cast-${caster.id}`, kind: 'cast', actorId: caster.id, jet: 'cast', ...(caster.kind === 'enemy' ? { groupOwner: true } : {}) }],
+  });
 }
 
 /** Source UNIQUE de la « pose de zone » en cours — le gabarit qui suit le curseur. Couvre TOUT
@@ -2497,14 +2516,14 @@ export function castCommitZone(get: Get, set: SetFn, pt: Pt): void {
   const inZone = battle.combatants.filter((c) => !isOutOfAction(c) && c.pos && chebyshev(c.pos, pt) <= radius);
   set({ pendingCast: { ...pc, zone: { ...pc.zone, center: { ...pt }, placing: false } } });
   if (!inZone.length) {
-    set({ pendingCast: null });
+    set({ pendingCast: null, pendingCascade: null }); // TERMINAL : ferme data + cascade-hôte (zone à vide)
     if (pc.focused) caster.focus = undefined; // le sort focalisé est consommé même à vide
     finishPlayerAction(get, set, [`${spell.label} : la zone ne touche personne.`], 'cast');
     return;
   }
   const first = inZone[0];
   const r1 = pc.missile && res.cast ? evaluateMissile(caster, first, spell, res) : res;
-  set({ pendingCast: null });
+  set({ pendingCast: null, pendingCascade: null }); // TERMINAL : ferme data + cascade-hôte AVANT applyCast (un Critique de Sort y rouvre sa propre cascade Imparfaite)
   applyCast(get, set, caster, first, spell, r1, pc.missile, pc.focused, pc.critChoice, {
     durationMult: 1 + (pc.overcast?.duration ?? 0),
     extraTargets: inZone.slice(1),

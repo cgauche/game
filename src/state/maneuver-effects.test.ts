@@ -6,6 +6,8 @@
  */
 import { describe, it, expect } from 'vitest';
 import { applyFreeAttackEffects } from './combatFlow';
+import { applyTriggeredEffects, maneuverEffectsOf } from './triggeredEffects';
+import { makeRNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
 import type { AttackResult } from '../engine/combat';
 
@@ -50,5 +52,30 @@ describe('effets onHit de manœuvre (data) appliqués par applyFreeAttackEffects
     const prey = mk({ size: 'petite' });
     applyFreeAttackEffects(get, dragon, prey, 'caudale', { hit: true, woundsLost: 0 } as AttackResult);
     expect(aTerre(prey)).toBeUndefined();
+  });
+});
+
+describe('effets onHit des manœuvres de zone/action (data) — appliqués par leur résolution moteur', () => {
+  const fire = (kind: string, attacker: Combatant, victim: Combatant, margin?: number) =>
+    applyTriggeredEffects((() => ({ battle: undefined })) as never, attacker, maneuverEffectsOf(attacker, kind), 'onHit', { victim, margin, rng: makeRNG(2) });
+
+  it('Langue préhensile → Empêtré (Force d’évasion = Force de l’attaquant)', () => {
+    const jab = mk({ traits: ['Langue préhensile +6'] }); const foe = mk({ id: 'f' });
+    fire('langue', jab, foe);
+    expect(empetre(foe)?.value).toBe(1);
+    expect(empetre(foe)?.escapeStrength).toBe(jab.characteristics.F);
+  });
+
+  it('Hurlement fantomatique → 3 Assourdi (+ Test de Résistance ou Brisé)', () => {
+    const banshee = mk({ traits: ['Hurlement fantomatique +0'] }); const foe = mk({ id: 'f' });
+    const lines = fire('hurlement', banshee, foe);
+    expect(foe.conditions.find((c) => c.name === 'Assourdi')?.value).toBe(3);
+    expect(lines.join(' ')).toMatch(/Résistance/); // le Test s’est joué (op test)
+  });
+
+  it('Regard pétrifiant → Sonné échelonné sur la marge (1 par 2 DR, via valuePerSL ← ctx.sl)', () => {
+    const basilic = mk({ traits: ['Regard pétrifiant +0'] }); const foe = mk({ id: 'f' });
+    fire('regard', basilic, foe, 4); // marge 4 → floor(4/2) = 2 Sonné
+    expect(foe.conditions.find((c) => c.name === 'Sonné')?.value).toBe(2);
   });
 });
