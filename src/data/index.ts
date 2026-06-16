@@ -14,6 +14,8 @@ import talentsJson from './talents.json';
 import etatsJson from './etats.json';
 import traitsJson from './traits.json';
 import qualitiesJson from './qualities.json';
+import mutationsJson from './mutations.json';
+import mutationTablesJson from './mutationTables.json';
 import trappingsJson from './trappings.json';
 import creaturesJson from './creatures.json';
 import frenchyTraitsJson from './frenchy-traits.json';
@@ -28,6 +30,7 @@ import booksJson from './books.json';
 import namesJson from './names.json';
 import raceAppearanceJson from './raceAppearance.json';
 import { CharKey, Weapon } from '../engine/types';
+import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
 
 export interface SpeciesData {
   label: string;
@@ -104,6 +107,8 @@ export interface TalentData {
   source: { book: string; page: number };
 }
 export interface TrappingData {
+  /** id STABLE (slug du libellé) — cible des `TrappingRef`, robuste au renommage. */
+  id: string;
   label: string;
   prefix: string | null;
   type: string;
@@ -232,6 +237,8 @@ export interface TraitData {
 /** Atout/Défaut d'arme (LDB 62-63) : libellé + desc VERBATIM + effets déclenchés authorés (mêmes
  *  `TriggeredEffect` que les Traits — un Atout « à la touche : 1d10 + Empêtré » s'édite au Codex). */
 export interface QualityData {
+  /** id STABLE (slug du libellé) — cible des `Ref` de qualité, robuste au renommage. */
+  id: string;
   label: string;
   type: string;
   subType: string | null;
@@ -242,6 +249,8 @@ export interface QualityData {
   passive?: import('../engine/ops').GameOp[];
 }
 export interface SpellData {
+  /** id STABLE (slug du libellé) — cible des `Ref` de sort (sorts de créature, bénédictions/miracles). */
+  id: string;
   label: string;
   type: string;
   subType: string | null;
@@ -345,6 +354,10 @@ export const traitByLabel: Map<string, TraitData> = new Map(traits.map((t) => [t
 export const qualities = qualitiesJson as QualityData[];
 /** Index des Atouts/Défauts par libellé — lecture des `effects` déclenchés au runtime (triggeredEffects). */
 export const qualityByLabel: Map<string, QualityData> = new Map(qualities.map((q) => [q.label, q]));
+/** Mutations (entités) + Tables de Corruption (plages d100 → réf), DÉCOUPLÉES (cf. data/mutations.ts) —
+ *  app-owned éditables au Codex. Le runtime du tirage (`rollMutation`) vit dans `mutations.ts`. */
+export const mutations = mutationsJson as MutationData[];
+export const mutationTables = mutationTablesJson as MutationTable[];
 export const trappings = trappingsJson as TrappingData[];
 // Bestiaire APP-OWNED : officiel + complément « frenchy.bzh » INTÉGRÉ directement dans creatures.json
 // (fusionné 2026-06-15, espèce explicite posée) — plus de dataset frenchy séparé à merger.
@@ -412,18 +425,20 @@ const SKILL_BY_ID = new Map(skills.map((s) => [s.id, s]));
 export function findSkillById(id: string): SkillData | undefined {
   return SKILL_BY_ID.get(id);
 }
-/** Référence STRUCTURÉE à une Compétence (par `id` stable) + sa valeur de Test IMPRIMÉE et une
- *  spécialisation éventuelle — remplace les chaînes parsées « Calme 58 » dans la donnée du bestiaire. */
-export interface SkillRef {
-  skillId: string;
-  value: number;
+/** Noyau de RÉFÉRENCE structurée par `id` STABLE — partagé par toutes les refs de la donnée
+ *  (compétences, talents, sorts, qualités, possessions, bénédictions…). `id` = slug du libellé
+ *  (robuste au renommage) ; `spec` = spécialisation/type concret libre (« Ghur », « Reikland »), non un id. */
+export interface Ref {
+  id: string;
   spec?: string;
 }
-/** Libellé d'affichage d'une `SkillRef` : « Langue (Magick) 63 » — repli sur l'id si la Compétence
- *  a disparu du catalogue. Source UNIQUE du formatage (statbloc éditeur, Codex, chips). */
+/** Référence STRUCTURÉE à une Compétence (`Ref` + valeur de Test IMPRIMÉE) — fin des chaînes « Calme 58 ». */
+export interface SkillRef extends Ref {
+  value: number;
+}
+/** Libellé d'affichage d'une `SkillRef` : « Langue (Magick) 63 » (base+spec via `refLabel`, + valeur). */
 export function skillRefLabel(ref: SkillRef): string {
-  const n = findSkillById(ref.skillId)?.label ?? ref.skillId;
-  return n + (ref.spec ? ` (${ref.spec})` : '') + ` ${ref.value}`;
+  return `${refLabel('skills', ref)} ${ref.value}`;
 }
 export function findTalent(label: string): TalentData | undefined {
   return talents.find((t) => t.label === label);
@@ -433,20 +448,14 @@ const TALENT_BY_ID = new Map(talents.map((t) => [t.id, t]));
 export function findTalentById(id: string): TalentData | undefined {
   return TALENT_BY_ID.get(id);
 }
-/** Référence STRUCTURÉE à un Talent (par `id` stable) + son niveau (`times`, ≥2) et une spécialisation
- *  éventuelle — remplace les chaînes parsées « Maîtrise du combat 2 », « Magie des Arcanes (Ghur) »
- *  dans la donnée du bestiaire. */
-export interface TalentRef {
-  talentId: string;
+/** Référence STRUCTURÉE à un Talent (`Ref` + niveau `times` ≥2) — fin des chaînes « Maîtrise du combat 2 ». */
+export interface TalentRef extends Ref {
   times?: number;
-  spec?: string;
 }
-/** Libellé d'affichage d'une `TalentRef` : « Magie des Arcanes (Ghur) », « Maîtrise du combat 2 » —
- *  repli sur l'id si le Talent a disparu du catalogue. Source UNIQUE du formatage (statbloc éditeur,
- *  Codex, chips). La spec entre parenthèses RESTE dans le libellé (clé du registre combatFeatures). */
+/** Libellé d'affichage d'une `TalentRef` : « Magie des Arcanes (Ghur) », « Maîtrise du combat 2 »
+ *  (base+spec via `refLabel`, + niveau si ≥2). La spec RESTE dans le libellé (clé du registre combatFeatures). */
 export function talentRefLabel(ref: TalentRef): string {
-  const n = findTalentById(ref.talentId)?.label ?? ref.talentId;
-  return n + (ref.spec ? ` (${ref.spec})` : '') + (ref.times && ref.times > 1 ? ` ${ref.times}` : '');
+  return refLabel('talents', ref) + (ref.times && ref.times > 1 ? ` ${ref.times}` : '');
 }
 export function findTrapping(label: string): TrappingData | undefined {
   return trappings.find((t) => t.label.toLowerCase() === label.toLowerCase());
@@ -465,4 +474,52 @@ export function findLocation(label: string): LocationData | undefined {
 }
 export function findBook(label: string): BookData | undefined {
   return books.find((b) => b.label === label || b.abr === label);
+}
+
+const TRAPPING_BY_ID = new Map(trappings.map((t) => [t.id, t]));
+/** Résout une Possession par son `id` STABLE (référence structurée — ≠ `findTrapping` par libellé, authoring). */
+export function findTrappingById(id: string): TrappingData | undefined {
+  return TRAPPING_BY_ID.get(id);
+}
+const QUALITY_BY_ID = new Map(qualities.map((q) => [q.id, q]));
+/** Résout une Qualité par son `id` STABLE. */
+export function findQualityById(id: string): QualityData | undefined {
+  return QUALITY_BY_ID.get(id);
+}
+const SPELL_BY_ID = new Map(spells.map((s) => [s.id, s]));
+/** Résout un Sort par son `id` STABLE. */
+export function findSpellById(id: string): SpellData | undefined {
+  return SPELL_BY_ID.get(id);
+}
+
+/** Quantité d'une possession conférée : nombre fixe (« (3) ») ou jet (« (1d10) »). */
+export type CountSpec = { fixed: number } | { roll: string };
+/** Référence à une Possession : par `id` du catalogue (+ quantité éventuelle) OU texte NARRATIF hors
+ *  catalogue (statblocs de créature : « collection d'alcool sans pareille »). */
+export type TrappingRef = (Ref & { count?: CountSpec }) | { text: string; count?: CountSpec };
+/** EMPLACEMENT d'avancement (espèce/carrière) : un espace de CHOIX, pas une instance résolue —
+ *  ref simple, joker « (Au choix) » (+ specs restreintes « Fléau ou À deux mains »), choix « A ou B »,
+ *  ou tirage aléatoire (« N Talent aléatoire »). Chaque branche concrète EST un `Ref`. */
+export type AdvancementRef =
+  | { ref: Ref }
+  | { wildcard: Ref; specOptions?: string[] }
+  | { choice: AdvancementRef[] }
+  | { random: number };
+
+/** Résout une entrée de dataset par (catégorie, `id`) — rendu/lookup des refs structurées. */
+export function findById(category: string, id: string): { label: string } | undefined {
+  switch (category) {
+    case 'skills': return findSkillById(id);
+    case 'talents': return findTalentById(id);
+    case 'trappings': return findTrappingById(id);
+    case 'qualities': return findQualityById(id);
+    case 'spells': return findSpellById(id);
+    default: return undefined;
+  }
+}
+/** Libellé CONCRET d'une `Ref` : « Magie des Arcanes (Ghur) » — base (repli sur l'id) + spec. SOURCE
+ *  UNIQUE du nom affiché ET de la clé runtime (combatFeatures/grimoire). */
+export function refLabel(category: string, ref: Ref): string {
+  const base = findById(category, ref.id)?.label ?? ref.id;
+  return ref.spec ? `${base} (${ref.spec})` : base;
 }

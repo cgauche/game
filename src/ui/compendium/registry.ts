@@ -9,7 +9,7 @@
  */
 import {
   species, careers, characteristics, classes, skills, talents,
-  qualities, trappings, etats, creatures, traits, spells,
+  qualities, trappings, etats, creatures, traits, spells, mutations, mutationTables,
   stars, locations, books, levelsForCareer, skillRefLabel, talentRefLabel,
 } from '../../data';
 import { CULTS } from '../../engine/cults/registry';
@@ -193,6 +193,14 @@ export const CODEX: CodexCategory[] = [
   {
     key: 'etats', label: 'États', group: 'Effets',
     items: etats.map((e) => ({ label: e.label, desc: e.desc, source: src(e.source) })),
+  },
+  {
+    key: 'mutations', label: 'Mutations', group: 'Effets',
+    items: (mutations as { label: string; kind?: string; note?: string }[]).map((m) => ({ label: m.label, sub: m.kind, desc: m.note })),
+  },
+  {
+    key: 'mutationTables', label: 'Tables de Corruption', group: 'Effets',
+    items: (mutationTables as { label: string; ranges: unknown[] }[]).map((t) => ({ label: t.label, sub: `${t.ranges.length} plages d100` })),
   },
   {
     key: 'spells', label: 'Sorts', group: 'Magie',

@@ -10,13 +10,13 @@
  */
 import {
   characteristics, species, classes, careers, careerLevels, skills, talents, etats, traits,
-  qualities, trappings, creatures, spells, eyes, hairs, stars, locations, books, raceAppearance,
+  qualities, mutations, mutationTables, trappings, creatures, spells, eyes, hairs, stars, locations, books, raceAppearance,
 } from './index';
 
 /** Datasets-tableaux mutables (clé éditeur → MÊME référence d'array que l'export de la façade). */
 const ARRAYS = {
   characteristics, species, classes, careers, careerLevels, skills, talents, etats, traits,
-  qualities, trappings, creatures, spells, eyes, hairs, stars, locations, books, raceAppearance,
+  qualities, mutations, mutationTables, trappings, creatures, spells, eyes, hairs, stars, locations, books, raceAppearance,
 } as const;
 
 export type DatasetKey = keyof typeof ARRAYS;

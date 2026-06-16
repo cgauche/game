@@ -27,6 +27,7 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   races: 'species', careers: 'careers', characteristics: 'characteristics', classes: 'classes',
   stars: 'stars', skills: 'skills', talents: 'talents', trappings: 'trappings', qualities: 'qualities',
   etats: 'etats', spells: 'spells', creatures: 'creatures', traits: 'traits', locations: 'locations', books: 'books',
+  mutations: 'mutations', mutationTables: 'mutationTables',
 };
 export const editableDataset = (categoryKey: string): DatasetKey | undefined => CATEGORY_DATASET[categoryKey];
 
@@ -60,7 +61,7 @@ export function CodexEdit({ categoryKey, label, onClose }: { categoryKey: string
   const isTriggered = categoryKey === 'traits' || categoryKey === 'qualities';
   const isTrait = categoryKey === 'traits'; // les Traits portent en plus un profil de MANŒUVRE éditable
   // Porteurs de modificateurs PASSIFS continus (`GameOp[]`) édités par ops (GameOpEditor), comme un sort.
-  const isPassive = categoryKey === 'traits' || categoryKey === 'qualities';
+  const isPassive = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'mutations';
   const fields = useMemo(
     () => inferFields(arr as Record<string, unknown>[]).filter(
       (f) => !(isCreature && f.key === 'appearance') && !((isSpell || isTriggered) && f.key === 'effects')
