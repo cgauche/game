@@ -7,6 +7,11 @@ export const TW = 64; // largeur d'un losange (pleine)
 export const TH = 32; // hauteur d'un losange (pleine)
 export const SPRITE_HEADROOM = 160; // place au-dessus des tuiles pour les sprites hauts
 export const CELL = 56; // côté d'une case carrée (vue du dessus)
+// Vue « de face » (edge-on, crans IMPAIRS de la rotation) : l'iso TOURNÉ DE 45° → cases axis-alignées
+// (rangées horizontales), même foreshortening 2:1 et même 3D que l'iso (l'extrusion des murs reste).
+// EDGE_W/EDGE_H = TW/TH·√½ → même aire de tuile que le losange iso.
+export const EDGE_W = TW * Math.SQRT1_2; // ≈ 45.25
+export const EDGE_H = TH * Math.SQRT1_2; // ≈ 22.63
 export const LEVEL_H = 96; // hauteur écran (px) d'un étage : un niveau z>0 est dessiné soulevé d'autant
 /** Poids de profondeur d'un étage : un niveau z+1 se dessine TOUJOURS après (au-dessus de) tout
  *  le niveau z (les scènes font au plus quelques dizaines de cases → base ≪ LEVEL_DEPTH). */
@@ -14,7 +19,8 @@ const LEVEL_DEPTH = 1_000_000;
 
 /** Marge à gauche pour que la tuile la plus à gauche reste visible (dimensions effectives). */
 export function originX(dims: Dims) {
-  if (dims.view === 'top') return CELL; // marge gauche = 1 case
+  const st = axisStep(dims);
+  if (st) return st.sx; // marge gauche = 1 tuile
   const ed = effDims(dims);
   return (ed.h - 1) * (TW / 2) + TW / 2;
 }
@@ -24,11 +30,36 @@ export function originY() {
 
 export type Rot = 0 | 1 | 2 | 3;
 
+/** Projection de la carte : 'iso' losange 2.5D (défaut) · 'top' grille carrée + pastilles (vue du dessus). */
+export type ViewMode = 'iso' | 'top';
+
+/** Grille carrée PLATE (vue du dessus 'top', acteurs en pastilles) : distincte du losange iso ET de
+ *  l'edge-on (qui garde la 3D). Sert UNIQUEMENT à router le rendu plat (murs/bâtiments sans extrusion). */
+export const isSquareView = (view?: ViewMode): boolean => view === 'top';
+
 export interface Dims {
   w: number;
   h: number;
   rot?: Rot; // orientation caméra (cran de 90° horaire) ; absent ⇒ 0
-  view?: 'iso' | 'top'; // projection ; absent ⇒ 'iso' (losange). 'top' = grille carrée vue du dessus
+  view?: ViewMode; // projection ; absent ⇒ 'iso' (losange). Cf. ViewMode.
+  edge?: boolean; // vue « de face » (edge-on) : grille axis-alignée MAIS 3D conservée (crans impairs). ⊥ view.
+}
+
+/** Pas écran (sx, sy) d'une tuile en projection AXIS-ALIGNÉE — carré 'top' (CELL) ou « de face » edge-on
+ *  (rectangle EDGE_W×EDGE_H = l'iso tourné de 45°) — ou null en iso losange (projection diagonale).
+ *  SOURCE UNIQUE : top et edge partagent toute la géométrie axis-alignée, seul le pas diffère. */
+function axisStep(dims: Dims): { sx: number; sy: number } | null {
+  if (dims.view === 'top') return { sx: CELL, sy: CELL };
+  if (dims.edge) return { sx: EDGE_W, sy: EDGE_H };
+  return null;
+}
+
+/** Facteur d'échelle d'un BILLBOARD (token/prop ancré aux pieds) selon la projection : la tuile « de
+ *  face » (edge-on) est plus ÉTROITE (EDGE_W) que le losange iso (TW) → on réduit le sprite d'autant
+ *  pour qu'il remplisse SA tuile dans les deux vues (sinon il déborde et chevauche ses voisins en vue
+ *  de face → « décor placé aléatoirement »). 1 en iso ; la vue du dessus 'top' garde sa propre échelle. */
+export function billboardScale(dims: Dims): number {
+  return dims.edge && dims.view !== 'top' ? EDGE_W / TW : 1;
 }
 
 /** Dimensions effectives à l'écran : pour rot impair, une grille W×H tournée occupe H×W. */
@@ -74,8 +105,9 @@ export function unrotTile(x: number, y: number, dims: Dims): { x: number; y: num
 export function tileCenter(x: number, y: number, dims: Dims, z = 0): { cx: number; cy: number } {
   const r = rotTile(x, y, dims);
   const lift = z * LEVEL_H;
-  if (dims.view === 'top') {
-    return { cx: originX(dims) + r.x * CELL, cy: originY() + r.y * CELL - lift };
+  const st = axisStep(dims);
+  if (st) {
+    return { cx: originX(dims) + r.x * st.sx, cy: originY() + r.y * st.sy - lift };
   }
   return {
     cx: originX(dims) + (r.x - r.y) * (TW / 2),
@@ -86,8 +118,9 @@ export function tileCenter(x: number, y: number, dims: Dims, z = 0): { cx: numbe
 /** Taille totale du canvas SVG pour une carte donnée (dimensions effectives). */
 export function stageSize(dims: Dims): { w: number; h: number } {
   const ed = effDims(dims);
-  if (dims.view === 'top') {
-    return { w: ed.w * CELL + 2 * CELL, h: ed.h * CELL + SPRITE_HEADROOM + CELL };
+  const st = axisStep(dims);
+  if (st) {
+    return { w: ed.w * st.sx + 2 * st.sx, h: ed.h * st.sy + SPRITE_HEADROOM + st.sy };
   }
   return {
     w: (ed.w + ed.h) * (TW / 2) + TW,
@@ -97,9 +130,10 @@ export function stageSize(dims: Dims): { w: number; h: number } {
 
 /** Inverse : point écran (relatif au SVG) → coordonnées de tuile entières (dé-tourne). */
 export function screenToTile(px: number, py: number, dims: Dims): { x: number; y: number } {
-  if (dims.view === 'top') {
-    const rx = Math.round((px - originX(dims)) / CELL);
-    const ry = Math.round((py - originY()) / CELL);
+  const st = axisStep(dims);
+  if (st) {
+    const rx = Math.round((px - originX(dims)) / st.sx);
+    const ry = Math.round((py - originY()) / st.sy);
     return unrotTile(rx, ry, dims);
   }
   const dx = px - originX(dims);
@@ -123,8 +157,9 @@ export function screenToTileAtZ(px: number, py: number, dims: Dims, z = 0): { x:
  *  une transformée linéaire, valable sur des flottants). z = étage visé. */
 export function screenToTileF(px: number, py: number, dims: Dims, z = 0): { x: number; y: number } {
   const qy = py + z * LEVEL_H;
-  if (dims.view === 'top') {
-    return unrotTile((px - originX(dims)) / CELL, (qy - originY()) / CELL, dims);
+  const st = axisStep(dims);
+  if (st) {
+    return unrotTile((px - originX(dims)) / st.sx, (qy - originY()) / st.sy, dims);
   }
   const a = (px - originX(dims)) / (TW / 2);
   const b = (qy - originY()) / (TH / 2);
@@ -136,15 +171,16 @@ export function screenToTileF(px: number, py: number, dims: Dims, z = 0): { x: n
  *  vue du dessus, où top=NO, right=NE, bot=SE, left=SO (l'ordre compose avec groundTile/diamondPath). */
 export function diamondCorners(x: number, y: number, dims: Dims, z = 0) {
   const { cx, cy } = tileCenter(x, y, dims, z);
-  if (dims.view === 'top') {
-    const h = CELL / 2;
+  const st = axisStep(dims);
+  if (st) {
+    const hx = st.sx / 2, hy = st.sy / 2;
     return {
       cx,
       cy,
-      top: [cx - h, cy - h] as [number, number],
-      right: [cx + h, cy - h] as [number, number],
-      bot: [cx + h, cy + h] as [number, number],
-      left: [cx - h, cy + h] as [number, number],
+      top: [cx - hx, cy - hy] as [number, number],
+      right: [cx + hx, cy - hy] as [number, number],
+      bot: [cx + hx, cy + hy] as [number, number],
+      left: [cx - hx, cy + hy] as [number, number],
     };
   }
   return {
@@ -186,7 +222,8 @@ export function diamondPath(x: number, y: number, dims: Dims, z = 0): string {
  *  z=0 (défaut) = comportement plan-sol historique. */
 export function depth(x: number, y: number, dims?: Dims, z = 0) {
   const r = dims ? rotTile(x, y, dims) : { x, y };
-  const base = dims?.view === 'top' ? r.y * (dims.w + dims.h) + r.x : r.x + r.y;
+  const st = dims ? axisStep(dims) : null;
+  const base = st ? r.y * (dims!.w + dims!.h) + r.x : r.x + r.y;
   return base + z * LEVEL_DEPTH;
 }
 

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { tileCenter, type Dims } from './iso';
+import { tileCenter, billboardScale, type Dims } from './iso';
 import { hpColor, ACTIVE_RING } from './teamColors';
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
@@ -76,13 +76,14 @@ export function BodyToken({
   cid?: string;
 }) {
   const { cx, cy } = tileCenter(x, y, dims, z); // feetY = cy : pieds au centre de la tuile (étage z)
+  const s = scale * billboardScale(dims); // échelle effective du billboard : réduite en vue « de face »
   const hpRatio = hp && hp.max > 0 ? clamp01(hp.current / hp.max) : null;
   const iconList = icons ?? [];
   const nIcons = iconList.length + (iconsMore > 0 ? 1 : 0);
   const iconStart = -(nIcons * 11) / 2 + 5.5;
   // Ancre haute du bloc de badges (PV + icônes) : au-dessus du disque en flat, au-dessus de la tête en iso.
   const R = discR ?? 22;
-  const badgeY = flat ? -R : -150 * scale;
+  const badgeY = flat ? -R : -150 * s;
   const clipId = `disc-${Math.round(cx)}-${Math.round(cy)}`;
   return (
     <g data-cid={cid} style={{ transform: `translate(${cx}px,${cy}px)`, transition: walking ? 'none' : 'transform 0.14s linear', opacity: dim ? (flat ? 0.5 : 0.82) : ghost ? 0.45 : 1, filter: ghost && !dim ? 'grayscale(0.85)' : undefined }}>
@@ -106,13 +107,13 @@ export function BodyToken({
       ) : (
         // Pion iso : corps ancré aux pieds (centre de tuile), ombre + anneau en ellipse, bascule de mort.
         <>
-          <ellipse cx={0} cy={0} rx={16 * scale + 5} ry={(16 * scale + 5) / 2} fill="#000" opacity={0.33} />
-          {active && <ellipse cx={0} cy={0} rx={20 * scale} ry={10 * scale} fill="#ffe066" opacity={0.2} />}
-          {ring && <ellipse cx={0} cy={0} rx={18 * scale} ry={9 * scale} fill="none" stroke={ring} strokeWidth={2.5} strokeDasharray={ringDash} />}
+          <ellipse cx={0} cy={0} rx={16 * s + 5} ry={(16 * s + 5) / 2} fill="#000" opacity={0.33} />
+          {active && <ellipse cx={0} cy={0} rx={20 * s} ry={10 * s} fill="#ffe066" opacity={0.2} />}
+          {ring && <ellipse cx={0} cy={0} rx={18 * s} ry={9 * s} fill="none" stroke={ring} strokeWidth={2.5} strokeDasharray={ringDash} />}
           <g className={dim ? undefined : fx} transform={dim && !bakedDeath ? 'rotate(78)' : undefined}>
-            <g transform={`translate(${-60 * scale},${-150 * scale}) scale(${scale})`}>{children}</g>
+            <g transform={`translate(${-60 * s},${-150 * s}) scale(${s})`}>{children}</g>
           </g>
-          {veil && <ellipse cx={0} cy={-44 * scale} rx={17 * scale} ry={34 * scale} fill={veil} opacity={0.11} pointerEvents="none" />}
+          {veil && <ellipse cx={0} cy={-44 * s} rx={17 * s} ry={34 * s} fill={veil} opacity={0.11} pointerEvents="none" />}
         </>
       )}
       {(hpRatio != null || nIcons > 0) && (
