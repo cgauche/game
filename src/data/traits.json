@@ -214,12 +214,35 @@
       "book": "LDB",
       "page": 338
     },
-    "charMods": {
-      "Ag": -10,
-      "F": 10,
-      "E": 10
-    },
-    "movement": -1
+    "passive": [
+      {
+        "op": {
+          "op": "charMod",
+          "char": "Ag",
+          "mod": -10
+        }
+      },
+      {
+        "op": {
+          "op": "charMod",
+          "char": "F",
+          "mod": 10
+        }
+      },
+      {
+        "op": {
+          "op": "charMod",
+          "char": "E",
+          "mod": 10
+        }
+      },
+      {
+        "op": {
+          "op": "moveMod",
+          "mod": -1
+        }
+      }
+    ]
   },
   {
     "label": "Champion",
@@ -250,10 +273,22 @@
       "book": "LDB",
       "page": 338
     },
-    "charMods": {
-      "E": 10,
-      "FM": 10
-    }
+    "passive": [
+      {
+        "op": {
+          "op": "charMod",
+          "char": "E",
+          "mod": 10
+        }
+      },
+      {
+        "op": {
+          "op": "charMod",
+          "char": "FM",
+          "mod": 10
+        }
+      }
+    ]
   },
   {
     "label": "Cornes",
@@ -329,11 +364,29 @@
       "book": "LDB",
       "page": 339
     },
-    "charMods": {
-      "CC": 20,
-      "CT": 20,
-      "FM": 20
-    }
+    "passive": [
+      {
+        "op": {
+          "op": "charMod",
+          "char": "CC",
+          "mod": 20
+        }
+      },
+      {
+        "op": {
+          "op": "charMod",
+          "char": "CT",
+          "mod": 20
+        }
+      },
+      {
+        "op": {
+          "op": "charMod",
+          "char": "FM",
+          "mod": 20
+        }
+      }
+    ]
   },
   {
     "label": "Endurant",
@@ -420,11 +473,29 @@
       "book": "LDB",
       "page": 339
     },
-    "charMods": {
-      "F": 10,
-      "E": 10,
-      "Ag": -5
-    }
+    "passive": [
+      {
+        "op": {
+          "op": "charMod",
+          "char": "F",
+          "mod": 10
+        }
+      },
+      {
+        "op": {
+          "op": "charMod",
+          "char": "E",
+          "mod": 10
+        }
+      },
+      {
+        "op": {
+          "op": "charMod",
+          "char": "Ag",
+          "mod": -5
+        }
+      }
+    ]
   },
   {
     "label": "Grimpant",
@@ -573,10 +644,22 @@
       "book": "LDB",
       "page": 340
     },
-    "charMods": {
-      "Int": 20,
-      "I": 10
-    }
+    "passive": [
+      {
+        "op": {
+          "op": "charMod",
+          "char": "Int",
+          "mod": 20
+        }
+      },
+      {
+        "op": {
+          "op": "charMod",
+          "char": "I",
+          "mod": 10
+        }
+      }
+    ]
   },
   {
     "label": "Lanceur de Sorts",
@@ -665,10 +748,22 @@
       "book": "LDB",
       "page": 340
     },
-    "charMods": {
-      "Soc": 10,
-      "FM": 10
-    }
+    "passive": [
+      {
+        "op": {
+          "op": "charMod",
+          "char": "Soc",
+          "mod": 10
+        }
+      },
+      {
+        "op": {
+          "op": "charMod",
+          "char": "FM",
+          "mod": 10
+        }
+      }
+    ]
   },
   {
     "label": "Miracles",
@@ -840,10 +935,21 @@
       "book": "LDB",
       "page": 341
     },
-    "charMods": {
-      "Ag": 10
-    },
-    "movement": 1
+    "passive": [
+      {
+        "op": {
+          "op": "charMod",
+          "char": "Ag",
+          "mod": 10
+        }
+      },
+      {
+        "op": {
+          "op": "moveMod",
+          "mod": 1
+        }
+      }
+    ]
   },
   {
     "label": "Regard pétrifiant",
@@ -1004,11 +1110,29 @@
       "book": "LDB",
       "page": 341
     },
-    "charMods": {
-      "Soc": 10,
-      "Int": 10,
-      "I": 10
-    }
+    "passive": [
+      {
+        "op": {
+          "op": "charMod",
+          "char": "Soc",
+          "mod": 10
+        }
+      },
+      {
+        "op": {
+          "op": "charMod",
+          "char": "Int",
+          "mod": 10
+        }
+      },
+      {
+        "op": {
+          "op": "charMod",
+          "char": "I",
+          "mod": 10
+        }
+      }
+    ]
   },
   {
     "label": "Sang corrosif",

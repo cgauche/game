@@ -11,7 +11,7 @@
 import { Combatant, CharKey, HitLocation, Trauma, Difficulty, UpkeepDeferTest } from './types';
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
-import { isPainless, traitCharMods, traitMovementMod } from './traits/dispatch';
+import { isPainless, traitPassiveMods } from './traits/dispatch';
 import { diseaseCharPenalties } from './disease';
 import { hungerCharPenalties } from './provisions';
 import { wornSocialMod, qualityWearMods } from './wearPenalty';
@@ -456,13 +456,10 @@ export function passiveMods(c: Combatant): PassiveMod[] {
   if (soc) out.push({ op: { op: 'testMod', amount: soc, char: 'Soc' }, kind: 'intrinsèque' });
   out.push(...qualityWearMods(c));
   // Traits à modificateur de PROFIL appliqués en DIRECT (LDB 85 : Élite/Coriace/Brutal/Rapide… facultatifs,
-  // statbloc d'éditeur, traits accordés) — kind `intrinsèque`, additif. Les traits INHÉRENTS d'un profil
-  // bestiaire FINAL ne sont PAS dans `liveTraits` (déjà cuits dans `characteristics`/`movement`) → zéro double-compte.
-  if (c.liveTraits?.length) {
-    for (const [k, v] of Object.entries(traitCharMods(c.liveTraits))) if (v) out.push({ op: { op: 'charMod', char: k as CharKey, mod: v }, kind: 'intrinsèque' });
-    const mv = traitMovementMod(c.liveTraits);
-    if (mv) out.push({ op: { op: 'moveMod', mod: mv }, kind: 'intrinsèque' });
-  }
+  // statbloc d'éditeur, traits accordés) — leurs `PassiveMod` (vocab GameOp unifié, `TraitData.passive`) émis
+  // TELS QUELS. Les traits INHÉRENTS d'un profil bestiaire FINAL ne sont PAS dans `liveTraits` (déjà cuits dans
+  // `characteristics`/`movement`) → zéro double-compte. Les consommateurs (passiveCharSum/passiveMoveMod) somment.
+  if (c.liveTraits?.length) out.push(...traitPassiveMods(c.liveTraits));
   for (const e of c.activeEffects ?? []) {
     if (e.skillMods) for (const [skill, mod] of Object.entries(e.skillMods)) out.push({ op: { op: 'skillMod', skill, mod }, kind: 'magique' });
     if (e.moveScale) out.push({ op: { op: 'moveScale', num: e.moveScale.num, den: e.moveScale.den }, kind: 'magique' });

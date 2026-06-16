@@ -8,6 +8,7 @@ import type { CharKey, Combatant } from '../types';
 import { TRAITS, TraitDef } from './registry';
 import { parseStatEntry, type TraitInstance, type TraitList } from '../statEntry';
 import { traitByLabel } from '../../data';
+import type { PassiveMod } from '../ops';
 
 const KEY_BY_LOWER = new Map(Object.keys(TRAITS).map((k) => [k.toLowerCase(), k]));
 
@@ -134,21 +135,26 @@ const first = (traits: TraitList | undefined, pred: (d: TraitDef) => boolean): R
   resolveTraits(traits).find((r) => pred(r.def));
 
 // ── Profil dérivé au spawn (statblocks d'éditeur — LDB 77 « ajoutez les Traits ») ─────────────────
-/** Somme des modificateurs de Caractéristiques des traits (Élite, Coriace, Brutal…). La DONNÉE éditable
- *  (`traits.json` → `TraitData.charMods`) PRIME sur la def TS — qui ne sert plus que de repli (traits non
- *  encore migrés). Permet d'éditer/créer un trait à modificateur de profil au Codex. */
-export function traitCharMods(traits: TraitList | undefined): Partial<Record<CharKey, number>> {
-  const out: Partial<Record<CharKey, number>> = {};
-  for (const { def } of resolveTraits(traits)) {
-    const charMods = traitByLabel.get(def.key)?.charMods ?? def.charMods;
-    for (const [k, v] of Object.entries(charMods ?? {})) out[k as CharKey] = (out[k as CharKey] ?? 0) + (v ?? 0);
-  }
+/** PassiveMod[] de PROFIL des traits — la DONNÉE éditable `TraitData.passive` (vocab GameOp unifié, éditée
+ *  par GameOpEditor comme un sort). SOURCE UNIQUE des modificateurs de profil de trait, lue DIRECT par le
+ *  collecteur passif (liveTraits). Éditer/créer un trait à modificateur de profil = de la donnée. */
+export function traitPassiveMods(traits: TraitList | undefined): PassiveMod[] {
+  const out: PassiveMod[] = [];
+  for (const { def } of resolveTraits(traits)) { const p = traitByLabel.get(def.key)?.passive; if (p) out.push(...p); }
   return out;
 }
 
-/** Somme des modificateurs de Mouvement (Brutal −1, Rapide +1). Donnée (`TraitData.movement`) prime sur la def. */
+/** Somme des `charMod` du passif (Élite/Coriace/Brutal…) — pour la base de `effectiveChar` (`baseWithTraits`)
+ *  et les Blessures (`withTraitChars`). Extrait du vocab d'ops unifié. */
+export function traitCharMods(traits: TraitList | undefined): Partial<Record<CharKey, number>> {
+  const out: Partial<Record<CharKey, number>> = {};
+  for (const m of traitPassiveMods(traits)) if (m.op.op === 'charMod') out[m.op.char] = (out[m.op.char] ?? 0) + m.op.mod;
+  return out;
+}
+
+/** Somme des `moveMod` du passif (Brutal −1, Rapide +1). */
 export function traitMovementMod(traits: TraitList | undefined): number {
-  return resolveTraits(traits).reduce((s, r) => s + (traitByLabel.get(r.def.key)?.movement ?? r.def.movement ?? 0), 0);
+  return traitPassiveMods(traits).reduce((s, m) => s + (m.op.op === 'moveMod' ? m.op.mod : 0), 0);
 }
 
 /** Endurant (LDB 85 p.339) : +Bonus d'Endurance Blessures. */
