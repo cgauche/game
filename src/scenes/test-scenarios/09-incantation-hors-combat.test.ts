@@ -20,7 +20,7 @@ describe('Scénario Magie hors combat', () => {
     expect(knowsCastingSkill(wiz, 'Langue', 'Magick')).toBe(true);
     expect(knowsCastingSkill(wiz, 'Focalisation')).toBe(true);
     const arme = findSpell('Armure Aethyrique')!;
-    expect(wiz.spells).toContain('Armure Aethyrique');
+    expect(wiz.spells).toContain('armure-aethyrique'); // runtime = id de sort
     expect(isArcaneSpell(arme)).toBe(true); // → bouton « ✨ Focaliser »
     expect(isMagicMissile(arme)).toBe(false); // non offensif → lançable hors combat
   });

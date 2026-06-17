@@ -16,8 +16,8 @@ setEncounters(scene, [
     enemies: [
       { ref: 'Bandit de Grand Chemin', pos: { x: 12, y: 4 } },
       { ref: 'Bandit de Grand Chemin', pos: { x: 14, y: 5 } },
-      { ref: 'Loup', pos: { x: 12, y: 8 } },
-      { ref: 'Loup', pos: { x: 13, y: 6 } },
+      { ref: 'loup', pos: { x: 12, y: 8 } },
+      { ref: 'loup', pos: { x: 13, y: 6 } },
     ],
   },
 ]);
@@ -46,9 +46,9 @@ function addTalents(c: Combatant, names: string[]): void {
   }
 }
 
-/** Labels des sorts d'un type (+ sous-type optionnel) depuis la base. */
+/** IDS des sorts d'un type (+ sous-type optionnel) depuis la base — `c.spells` = ids (ActionBar → findSpellById). */
 const spellsOf = (type: string, subTypes?: (string | null)[]): string[] =>
-  spells.filter((s) => s.type === type && (!subTypes || subTypes.includes(s.subType ?? null))).map((s) => s.label);
+  spells.filter((s) => s.type === type && (!subTypes || subTypes.includes(s.subType ?? null))).map((s) => s.id);
 
 /** Prêtre COMPLET d'un culte : Prière + Béni/Invocation (Culte) + TOUTES ses Bénédictions ET Miracles. */
 function makePriest(base: Combatant, id: string, name: string, cult: string, chars: Partial<Record<CharKey, number>>): Combatant {

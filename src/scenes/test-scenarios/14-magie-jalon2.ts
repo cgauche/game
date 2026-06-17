@@ -38,9 +38,9 @@ setEncounters(scene, [
   {
     id: 'enc-jalon2',
     enemies: [
-      { ref: 'Zombie', pos: { x: 8, y: 4 } },
-      { ref: 'Zombie', pos: { x: 9, y: 4 } },
-      { ref: 'Zombie', pos: { x: 9, y: 6 } },
+      { ref: 'zombie', pos: { x: 8, y: 4 } },
+      { ref: 'zombie', pos: { x: 9, y: 4 } },
+      { ref: 'zombie', pos: { x: 9, y: 6 } },
     ],
   },
 ]);
@@ -60,8 +60,8 @@ export const scenario: TestScenario = {
     const priest = P.find((p) => p.name.startsWith('Frère Anselm'))!;
     // Sorcière : Explosion (Projectile ZdE) + un Domaine pour la mémorisation + PX à dépenser.
     wiz.talents.push({ talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 });
-    if (!wiz.spells?.includes('Explosion')) wiz.spells = ['Explosion', ...(wiz.spells ?? [])];
-    if (!wiz.spells?.includes('Armure Aethyrique')) wiz.spells = ['Armure Aethyrique', ...wiz.spells];
+    if (!wiz.spells?.includes('explosion')) wiz.spells = ['explosion', ...(wiz.spells ?? [])];
+    if (!wiz.spells?.includes('armure-aethyrique')) wiz.spells = ['armure-aethyrique', ...wiz.spells];
     ensureSkill(wiz, 'Langue', 'Int', 'Magick');
     ensureSkill(wiz, 'Focalisation', 'FM', 'Feu');
     wiz.xp = 300;

@@ -33,7 +33,7 @@ export const scenario: TestScenario = {
     const priest = P.find((p) => p.name.startsWith('Frère Anselm'))!;
     // Sorcier : ajoute un Sort d'Arcane FOCALISABLE (les sorts pré-tirés Fléchette/Choc sont de la
     // Magie mineure, NON focalisable) pour exercer le bouton « ✨ Focaliser » hors combat.
-    if (!wiz.spells?.includes('Armure Aethyrique')) wiz.spells = ['Armure Aethyrique', ...(wiz.spells ?? [])];
+    if (!wiz.spells?.includes('armure-aethyrique')) wiz.spells = ['armure-aethyrique', ...(wiz.spells ?? [])];
     ensureSkill(wiz, 'Langue', 'Int', 'Magick'); // incantation des Arcanes
     ensureSkill(wiz, 'Focalisation', 'FM'); // Test étendu de Focalisation
     ensureSkill(priest, 'Prière', 'Soc'); // Bénédictions

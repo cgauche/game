@@ -63,7 +63,7 @@ export const scenario: TestScenario = {
   makeParty: () => {
     const P = makePregens();
     const w = P.find((p) => p.name.startsWith('Wilhelmina'))!;
-    w.spells = ['Explosion', 'Bouclier magique', ...(w.spells ?? [])]; // ZdE + buff « Vous » pour la recette
+    w.spells = ['explosion', 'bouclier-magique', ...(w.spells ?? [])]; // ZdE + buff « Vous » pour la recette (ids)
     return [tireur(), w];
   },
   scene,
