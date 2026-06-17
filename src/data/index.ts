@@ -18,6 +18,7 @@ import qualitiesJson from './qualities.json';
 import mutationsJson from './mutations.json';
 import mutationTablesJson from './mutationTables.json';
 import trappingsJson from './trappings.json';
+import weaponGroupsJson from './weaponGroups.json';
 import creaturesJson from './creatures.json';
 import frenchyTraitsJson from './frenchy-traits.json';
 import frenchySpellsJson from './frenchy-spells.json';
@@ -131,6 +132,8 @@ export interface TrappingData {
   label: string;
   prefix: string | null;
   type: string;
+  /** `id` du Groupe d'objet (`WeaponGroupData.id`) : Groupe d'arme (Base/Escrime…), famille de munition
+   *  (Arc/Poudre noire…), type d'armure (Plate/Mailles…) ou catégorie d'inventaire — réf d'entité, ≠ libellé. */
   subType: string | null;
   enc: number | null;
   availability: string | null;
@@ -147,6 +150,15 @@ export interface TrappingData {
    *  considéré comme une Dague » en mêlée). Lue par recomputeLoadout : ajouter une prothèse-arme =
    *  remplir ce champ dans la donnée, plus de name-match `i.name === 'Crochet'`. */
   derivedWeapon?: Weapon;
+}
+/** Groupe d'objet (taxonomie `subType` id-ifiée) : Groupe d'ARME (Base, Escrime, Deux-mains, Armes
+ *  d'hast…), famille de MUNITION (Arc, Arbalète, Poudre noire…), type d'ARMURE (Plate, Mailles, Cuir
+ *  souple/bouilli) ou catégorie d'INVENTAIRE (Outils, Possessions diverses…). `id` = cible de
+ *  `Trapping/Weapon/ItemInstance.subType` (réf, ≠ libellé) ; `kind` = métadonnée d'affichage. */
+export interface WeaponGroupData {
+  id: string;
+  label: string;
+  kind: 'weapon' | 'ammo' | 'armour' | 'inventory';
 }
 export type HarvestRarity = 'Commune' | 'Limitée' | 'Rare' | 'Exotique' | 'Unique';
 export type HarvestDanger = 'Inoffensive' | 'Inquiétante' | 'Menaçante' | 'Mortelle';
@@ -254,6 +266,10 @@ export interface ManeuverDef {
   effects?: import('../state/flow').TriggeredEffect[];
   desc?: string;
   source?: { book: string; page: number };
+  /** Pertinence de BASE pour le scoreur d'attaque (clic droit joueur ET décision IA) : POIDS ÉDITABLE,
+   *  plus haut = choisie plus volontiers. Combinée aux bonus situationnels AUTO (dégâts attendus,
+   *  multi-cible, état onHit applicable). Défaut 1 ; 0 = jamais auto-choisie (reste manuelle). */
+  priority?: number;
 }
 /** Trait de créature (LDB 85) : libellé canonique + desc VERBATIM (affichée à l'inspecteur). */
 export interface TraitData {
@@ -456,6 +472,8 @@ export const qualityByLabel: Map<string, QualityData> = new Map(qualities.map((q
 export const mutations = mutationsJson as MutationData[];
 export const mutationTables = mutationTablesJson as MutationTable[];
 export const trappings = trappingsJson as TrappingData[];
+/** Groupes d'objet app-owned (taxonomie `subType` id-ifiée) — éditable au Codex. */
+export const weaponGroups = weaponGroupsJson as WeaponGroupData[];
 // Bestiaire APP-OWNED : officiel + complément « frenchy.bzh » INTÉGRÉ directement dans creatures.json
 // (fusionné 2026-06-15, espèce explicite posée) — plus de dataset frenchy séparé à merger.
 export const creatures = creaturesJson as CreatureData[];
@@ -597,8 +615,22 @@ export interface TalentRef extends Ref {
 export function talentRefLabel(ref: TalentRef): string {
   return refLabel('talents', ref) + (ref.times && ref.times > 1 ? ` ${ref.times}` : '');
 }
-export function findTrapping(label: string): TrappingData | undefined {
-  return trappings.find((t) => t.label.toLowerCase() === label.toLowerCase());
+const WEAPON_GROUP_BY_ID = new Map(weaponGroups.map((g) => [g.id, g]));
+/** Résout un Groupe d'objet par son `id` STABLE (= `subType` d'un trapping/Weapon/ItemInstance). */
+export function findWeaponGroupById(id: string | null | undefined): WeaponGroupData | undefined {
+  return id ? WEAPON_GROUP_BY_ID.get(id) : undefined;
+}
+/** Libellé d'affichage d'un Groupe d'objet par son id (repli sur l'id). SOURCE UNIQUE du nom de Groupe. */
+export function weaponGroupLabel(id: string | null | undefined): string {
+  return id ? (WEAPON_GROUP_BY_ID.get(id)?.label ?? id) : '';
+}
+const WEAPON_GROUP_ID_BY_LABEL = new Map(weaponGroups.map((g) => [g.label.toLowerCase(), g.id]));
+/** Résout un `id` de Groupe depuis un LIBELLÉ (authoring/données de Sort « subType » par libellé) —
+ *  insensible à la casse. Renvoie l'id si déjà un id connu, sinon résout le libellé. */
+export function weaponGroupIdByLabel(label: string | null | undefined): string | undefined {
+  if (!label) return undefined;
+  if (WEAPON_GROUP_BY_ID.has(label)) return label; // déjà un id
+  return WEAPON_GROUP_ID_BY_LABEL.get(label.toLowerCase());
 }
 const CREATURE_BY_ID = new Map(creatures.map((c) => [c.id, c]));
 /** Résout une créature par son `id` STABLE — référence runtime/données (scènes, encounters, rig). */
@@ -687,6 +719,7 @@ export function findById(category: string, id: string): { label: string } | unde
     case 'skills': return findSkillById(id);
     case 'talents': return findTalentById(id);
     case 'trappings': return findTrappingById(id);
+    case 'weaponGroups': return findWeaponGroupById(id);
     case 'qualities': return findQualityById(id);
     case 'spells': return findSpellById(id);
     case 'maneuvers': return findManeuverById(id);

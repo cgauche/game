@@ -57,7 +57,8 @@ import { useWalkAnim } from './fx/useWalkAnim';
 import { FxLayer } from './fx/FxLayer';
 import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile, decorFootGeometry } from '../state/footprint';
-import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, castSightBlocked, placingZoneOf, placedZoneValidAt, displayedReach, computeRunReach, movePreviewAt, previewResourceDelta, cleaveTargets, dualStrikeTargets, overcastTargetCandidates, smokeOf, trampleTarget, firedWeapon, frenzyTarget, availableAttacks } from '../state/combatFlow';
+import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, castSightBlocked, placingZoneOf, placedZoneValidAt, displayedReach, computeRunReach, movePreviewAt, previewResourceDelta, cleaveTargets, dualStrikeTargets, overcastTargetCandidates, smokeOf, trampleTarget, firedWeapon, frenzyTarget } from '../state/combatFlow';
+import { bestAttack } from '../state/attackRelevance';
 import { hoverTargeting } from '../state/targeting';
 import { controlsActive } from '../state/netOwnership';
 import { hoverClickCommits } from '../ui/pointerCaps';
@@ -1086,8 +1087,8 @@ export function IsoStage() {
       onPointerCancel={onPointerUp}
       onPointerLeave={onPointerLeave}
       onContextMenu={(e) => {
-        // Clic droit en combat = première attaque ABORDABLE (Arme d'abord, puis gratuites) sur l'ennemi survolé —
-        // raccourci unique sur la liste `availableAttacks`, sans muter `selectedAttack`.
+        // Clic droit en combat = attaque la plus PERTINENTE sur l'ennemi survolé (scoreur partagé avec l'IA :
+        // poids éditable × dégâts/multi-cible), sans muter `selectedAttack`. Raccourci sur `availableAttacks`.
         e.preventDefault();
         const st = useGame.getState();
         const b = st.battle;
@@ -1096,8 +1097,8 @@ export function IsoStage() {
         if (!active || active.kind !== 'hero') return;
         const occ = b.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, c.size, hover.x, hover.y));
         if (!occ || occ.kind !== 'enemy') return;
-        const first = availableAttacks(active, b)[0];
-        if (first) st.battleClickEntity(occ.id, { forceAttackId: first.id, confirm: true });
+        const best = bestAttack(useGame.getState, active, b, occ);
+        if (best) st.battleClickEntity(occ.id, { forceAttackId: best.id, confirm: true });
       }}
     >
       <defs dangerouslySetInnerHTML={{ __html: DEFS + AMBIANCE_DEFS }} />

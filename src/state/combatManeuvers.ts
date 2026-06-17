@@ -100,6 +100,9 @@ export interface AttackOption {
   freeKind?: AttackKind;
   def?: ManeuverDef;
   advantageMode?: 'fixed' | 'variable' | 'all';
+  /** Pertinence de BASE (poids éditable, depuis `ManeuverDef.priority`) — lue par le scoreur d'attaque
+   *  (clic droit joueur + décision IA). Défaut 1 ; combinée aux bonus situationnels AUTO. */
+  priority?: number;
 }
 
 /** Attaque CC GRATUITE de Frénésie (LDB 21 l.34) encore disponible ce Round ? (l'attaque d'Arme reste
@@ -136,6 +139,7 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
       targeting: melee ? 'melee' : 'zone',
       ...(melee ? { reach: 1, forceMelee: true, freeKind: a.kind } : { def: a.def, advantageMode: a.advantageMode }),
       cost: { action: a.trigger === 'action', advantage: a.avantage },
+      priority: a.def?.priority, // poids éditable (maneuvers.json) lu par le scoreur
     });
   }
   // (2) Piétinement (Taille, LDB 85 l.320-321) : adversaire adjacent plus petit, ≥1 Avantage. Flux dédié.
