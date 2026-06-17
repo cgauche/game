@@ -57,7 +57,7 @@ import { useWalkAnim } from './fx/useWalkAnim';
 import { FxLayer } from './fx/FxLayer';
 import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile, decorFootGeometry } from '../state/footprint';
-import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, castSightBlocked, placingZoneOf, placedZoneValidAt, displayedReach, computeRunReach, movePreviewAt, previewResourceDelta, cleaveTargets, dualStrikeTargets, overcastTargetCandidates, smokeOf, trampleTarget, firedWeapon, frenzyTarget } from '../state/combatFlow';
+import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, castSightBlocked, placingZoneOf, placedZoneValidAt, displayedReach, computeRunReach, movePreviewAt, previewResourceDelta, cleaveTargets, dualStrikeTargets, overcastTargetCandidates, smokeOf, trampleTarget, firedWeapon, frenzyTarget, availableAttacks } from '../state/combatFlow';
 import { hoverTargeting } from '../state/targeting';
 import { controlsActive } from '../state/netOwnership';
 import { hoverClickCommits } from '../ui/pointerCaps';
@@ -1085,7 +1085,20 @@ export function IsoStage() {
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
       onPointerLeave={onPointerLeave}
-      onContextMenu={(e) => e.preventDefault()}
+      onContextMenu={(e) => {
+        // Clic droit en combat = première attaque ABORDABLE (Arme d'abord, puis gratuites) sur l'ennemi survolé —
+        // raccourci unique sur la liste `availableAttacks`, sans muter `selectedAttack`.
+        e.preventDefault();
+        const st = useGame.getState();
+        const b = st.battle;
+        if (st.mode !== 'battle' || !b || b.over || !controlsActive(st) || !hover) return;
+        const active = b.combatants.find((c) => c.id === b.order[b.turn]);
+        if (!active || active.kind !== 'hero') return;
+        const occ = b.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, c.size, hover.x, hover.y));
+        if (!occ || occ.kind !== 'enemy') return;
+        const first = availableAttacks(active, b)[0];
+        if (first) st.battleClickEntity(occ.id, { forceAttackId: first.id, confirm: true });
+      }}
     >
       <defs dangerouslySetInnerHTML={{ __html: DEFS + AMBIANCE_DEFS }} />
       <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.97 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: turning ? 'opacity 0.13s ease-out' : anyWalking ? 'opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out', opacity: turning ? 0.6 : 1 }}>

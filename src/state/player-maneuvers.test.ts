@@ -154,4 +154,31 @@ describe('manœuvres en combat (store)', () => {
     // L’Avantage est dépensé à la FRAPPE (coût RAW 1), après tous les portails — chemin d'attaque unifié.
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.advantage).toBe(1);
   });
+
+  it('mêlée gratuite sur cible DISTANTE : CHARGE puis frappe, même Action dépensée (≠ refus « hors de portée »)', () => {
+    const { H, E } = setup();
+    H.traits = [{ id: 'morsure', value: 10 }];
+    H.advantage = 2;
+    E.pos = { x: 14, y: 10 }; // hors d'Allonge
+    useGame.setState({ battle: { ...useGame.getState().battle!, acted: true, movementUsed: 0 } }); // Action déjà dépensée
+    useGame.getState().battleSelectAttack('morsure');
+    useGame.getState().battleClickEntity(E.id, { confirm: true });
+    const pa = useGame.getState().pendingAttack;
+    expect(pa!.freeKind).toBe('morsure');
+    expect(pa!.fromCharge).toBe(true); // s'est ruée au contact (gratuite = approche permise même Action dépensée)
+    expect(useGame.getState().battle!.acted).toBe(true); // la gratuite NE rend PAS l'Action (préservée à la résolution)
+  });
+
+  it('Morsure (reach 1, forceMelee) ignore une arme tenue À DISTANCE : approche en mêlée au lieu de tirer', () => {
+    const { H, E } = setup();
+    H.traits = [{ id: 'morsure', value: 10 }];
+    H.advantage = 2;
+    H.weapons = [{ name: 'Arc', type: 'ranged', damage: '+0', range: 30, qualities: [], uid: 'bow' }] as Combatant['weapons']; // arme tenue = arc
+    E.pos = { x: 14, y: 10 };
+    useGame.getState().battleSelectAttack('morsure');
+    useGame.getState().battleClickEntity(E.id, { confirm: true });
+    const pa = useGame.getState().pendingAttack;
+    expect(pa!.freeKind).toBe('morsure'); // la Morsure reste une attaque de MÊLÉE…
+    expect(pa!.fromCharge).toBe(true); // …elle s'approche (charge), elle ne tire pas à distance
+  });
 });
