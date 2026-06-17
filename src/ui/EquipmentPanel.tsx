@@ -108,6 +108,7 @@ function SlotCell({ item, pa, fallback, options, value, onSelect, disabled, empt
         <ItemIcon item={item} size="md" />
       </CodexRef>
       {pa != null && <span className="eq-slot-pa">{pa}</span>}
+      {item.enchants?.length ? <span className="eq-slot-ench" title="Arme enchantée (effets actifs)">✦</span> : null}
     </>
   );
   // Verrouillée (invoquée / combat) : cellule STATIQUE — le survol garde le popover, pas de picker.

@@ -674,6 +674,17 @@
   padding: 0 2px;
   pointer-events: none;
 }
+/* Marqueur « arme enchantée » (effets actifs portés par l'objet) — coin haut-gauche. */
+.eq-slot-ench {
+  position: absolute;
+  left: 1px;
+  top: 0;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--gold2);
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+}
 /* Icône d'une cellule pleine (enrobée CodexRef tooltipOnly → popover au survol, ou span title pour
    l'invoquée). Le clic appartient à la cellule (picker) → le curseur suit la cellule. */
 .eq-slot .eq-slot-icon {
