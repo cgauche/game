@@ -158,8 +158,15 @@ export interface WeaponEnchant {
 /** Points d'Armure par localisation. */
 export type ArmourPoints = Record<HitLocation, number>;
 
+/** id d'un État — slug d'`etats.json`. OUVERT (string) : les États sont de la DONNÉE éditable au Codex,
+ *  on peut en CRÉER. Les 12 États canoniques (LDB 16) à comportement moteur sont référencés par le moteur
+ *  via la constante `COND` (engine/conditions) — pas d'union fermée qui interdirait la création. Le libellé
+ *  affiché se résout via `conditionLabel`/`findConditionById`. */
+export type ConditionId = string;
+
 export interface ConditionInstance {
-  name: string;
+  /** id de l'État (slug d'etats.json) — ≠ libellé (résolu à l'affichage via `conditionLabel`). */
+  name: ConditionId;
   value: number; // certains États s'empilent (ex. Hémorragique)
   /** Source de l'État (id du Combatant) — pour le Test opposé de « se libérer » d'un Empêtré (LDB 16 l.61). */
   sourceId?: string;
@@ -469,9 +476,10 @@ export interface Combatant {
   pendingFreeAttacks?: string[];
   /** A chargé ce tour → ouvre une Attaque gratuite de Cornes (LDB 85) si la créature a le trait. */
   chargedThisTurn?: boolean;
-  /** Trait Tentacules (LDB 85 l.354, mutation Tentacule épais) : l'Attaque gratuite de tentacule
-   *  de ce Tour a-t-elle été jouée ? (héros — réinitialisée en fin de tour.) */
-  tentacleUsedThisTurn?: boolean;
+  /** Attaques GRATUITES de manœuvre déjà jouées ce TOUR, COMPTÉES par type (LDB 85 : « pendant son tour,
+   *  la créature peut effectuer UNE Attaque gratuite » → plafond 1/tour ; exception « une Attaque par
+   *  tentacule » → `count`/tour). Remplace l'ancien booléen tentacule ; remis à zéro en début de tour. */
+  freeAttacksThisTurn?: Partial<Record<string, number>>;
   /** Dissipation (LDB 46 l.201-202 : « un seul Sort chaque Round ») — Contre-sort déjà tenté ce Round. */
   dispelledThisRound?: boolean;
   characteristics: Characteristics;

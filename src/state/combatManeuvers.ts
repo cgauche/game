@@ -126,6 +126,10 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
     const minAdv = a.advantageMode === 'variable' ? 1 : a.avantage;
     if (active.advantage < minAdv) continue;
     if (a.trigger === 'action' && (battle.acted || !canTakeAction(active))) continue;
+    // RAW LDB 85 l.171 : « pendant son tour, la créature peut effectuer UNE Attaque gratuite » → 1/tour ;
+    // exception « une Attaque gratuite par tentacule » (l.355) → `count`/tour. Plafond DÉRIVÉ de la donnée
+    // (`perTentacle`/`count`), compteur partagé `freeAttacksThisTurn` — pas de limite par type en dur.
+    if (a.trigger === 'free' && (active.freeAttacksThisTurn?.[a.kind] ?? 0) >= (a.perTentacle ? (a.count ?? 1) : 1)) continue;
     const melee = MELEE_MANEUVER_KINDS.includes(a.kind);
     out.push({
       id: a.kind, kind: a.kind, label: ATTACK_LABEL[a.kind], icon: MANEUVER_ICON[a.kind],
@@ -137,10 +141,10 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
   // (2) Piétinement (Taille, LDB 85 l.320-321) : adversaire adjacent plus petit, ≥1 Avantage. Flux dédié.
   if (active.advantage >= 1 && trampleTarget(battle, active))
     out.push({ id: 'pietinement', label: 'Piétiner', icon: '🐾', targeting: 'trample', cost: { action: false, advantage: 1 } });
-  // (3) Mutation Tentacule (arme `nat-tentacule`, LDB 85 l.354) : 1/tour, 0 Avantage. Comme toute attaque de
-  //     mêlée, elle s'APPROCHE (charge/rejoindre) → dispo dès qu'un ennemi existe (l'adjacence n'est plus requise).
+  // (3) Mutation Tentacule (arme `nat-tentacule`, LDB 85 l.354) : 1/tour (compteur partagé), 0 Avantage. Comme
+  //     toute attaque de mêlée, elle s'APPROCHE (charge/rejoindre) → dispo dès qu'un ennemi existe (adjacence non requise).
   if (
-    !active.tentacleUsedThisTurn && active.weapons.some((w) => w.uid === 'nat-tentacule') && !!active.pos &&
+    (active.freeAttacksThisTurn?.['tentacules'] ?? 0) < 1 && active.weapons.some((w) => w.uid === 'nat-tentacule') && !!active.pos &&
     battle.combatants.some((c) => c.kind !== 'hero' && !isOutOfAction(c) && c.pos)
   )
     out.push({ id: 'tentacule', kind: 'tentacules', label: 'Tentacule', icon: '🐙', targeting: 'melee', reach: 1, forceMelee: true, weaponUid: 'nat-tentacule', freeKind: 'tentacules', cost: { action: false, advantage: 0 } });

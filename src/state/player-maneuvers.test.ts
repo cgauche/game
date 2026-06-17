@@ -75,7 +75,7 @@ describe('availableAttacks — énumération (pur)', () => {
 
     const used = at('hero', 'H', 5, 5, {
       weapons: [{ name: 'Tentacule', type: 'melee', damage: '+BF', qualities: [], uid: 'nat-tentacule' }] as Combatant['weapons'],
-      tentacleUsedThisTurn: true,
+      freeAttacksThisTurn: { tentacules: 1 }, // déjà jouée ce tour → plafond 1/tour atteint
     });
     expect(availableAttacks(used, mkBattle([used, enemy])).some((x) => x.id === 'tentacule')).toBe(false);
   });
@@ -180,5 +180,22 @@ describe('manœuvres en combat (store)', () => {
     const pa = useGame.getState().pendingAttack;
     expect(pa!.freeKind).toBe('morsure'); // la Morsure reste une attaque de MÊLÉE…
     expect(pa!.fromCharge).toBe(true); // …elle s'approche (charge), elle ne tire pas à distance
+  });
+
+  it('manœuvre gratuite = 1/tour (RAW LDB 85 l.171) : Morsure indisponible après une 1ʳᵉ Morsure, même avec de l\'Avantage', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    H.traits = [{ id: 'morsure', value: 10 }];
+    H.characteristics.CC = 90;
+    H.advantage = 3; // assez pour 3 Morsures si elles n'étaient PAS plafonnées
+    useGame.getState().battleSelectAttack('morsure');
+    useGame.getState().battleClickEntity(E.id, { confirm: true }); // E adjacent → frappe directe
+    useGame.getState().attackRoll();
+    useGame.getState().attackConfirm();
+    const st = useGame.getState();
+    const h2 = st.battle!.combatants.find((c) => c.id === H.id)!;
+    expect(h2.freeAttacksThisTurn?.morsure).toBe(1); // comptée
+    expect(h2.advantage).toBeGreaterThanOrEqual(1); // il RESTE de l'Avantage (coût −1, ±1 selon l'issue de la touche)…
+    expect(availableAttacks(h2, st.battle!).some((o) => o.id === 'morsure')).toBe(false); // …mais le plafond 1/tour est atteint
   });
 });

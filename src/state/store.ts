@@ -585,7 +585,7 @@ export interface GameState {
   /** Ferme la modale de rechargement sans coût (avant le jet). */
   reloadCancel: () => void;
   /** Se libérer (Empêtré, Test opposé de Force) / se rouler au sol (En flammes, Athlétisme) : OUVRE la modale (LDB 16 l.61/77). */
-  battleRecoverState: (state: 'Empêtré' | 'En flammes') => void;
+  battleRecoverState: (state: 'empetre' | 'en-flammes') => void;
   /** Modale « se libérer/se rouler » : « Lancer » effectue le Test (DR / opposition). */
   recoverRoll: () => void;
   /** Chance : relance le jet de récupération raté (1 max). */
@@ -1506,7 +1506,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!active || active.kind !== 'hero') return;
     // Surpris (LDB 16 l.132) : ni Mouvement ni Action ce tour — seule la Détermination (resolve) peut
     // le retirer (LDB 13 l.81). Tout le reste est bloqué.
-    if (hasCondition(active, 'Surpris') && a !== 'resolve' && a !== null) {
+    if (hasCondition(active, 'surpris') && a !== 'resolve' && a !== null) {
       get().log(`${active.name} est Surpris : ni Mouvement ni Action ce tour (Détermination possible).`);
       return;
     }
@@ -1515,7 +1515,7 @@ export const useGame = create<GameState>((set, get) => ({
     // ici seuls « resolve » (Détermination, qui peut retirer le Brisé) et la fermeture (null) passent.
     // (« Se cacher » par Discrétion = pas de système de furtivité en combat ; approximé par « rester
     // hors de vue » → récupération en fin de Round, cf. brokenRecovery.)
-    if (hasCondition(active, 'Brisé') && a !== 'resolve' && a !== null) {
+    if (hasCondition(active, 'brise') && a !== 'resolve' && a !== null) {
       get().log(`${active.name} est Brisé : il ne peut que fuir ou puiser dans sa Détermination.`);
       return;
     }
@@ -2273,7 +2273,7 @@ export const useGame = create<GameState>((set, get) => ({
     const option = selectedAttackOption(active, battle, opts?.forceAttackId);
     if (!option || !scene) return;
     if (target.kind === 'hero') return; // l'attaque ne vise que les ennemis (soin/sort via leurs modes)
-    if (!canTakeAction(active) || hasCondition(active, 'Brisé')) return; // Sonné/Brisé : pas d'attaque (parité boutons)
+    if (!canTakeAction(active) || hasCondition(active, 'brise')) return; // Sonné/Brisé : pas d'attaque (parité boutons)
     // Frénésie (LDB 21 l.34) : la cible est IMPOSÉE — l'ennemi le plus proche en Ligne de Vue.
     if (active.frenzied) {
       const ft = frenzyTarget(get, active);
@@ -2520,7 +2520,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!hero) return;
     hero.fate = (hero.fate ?? 0) - 1;
     hero.outOfRencontre = true; // survit mais éjecté de la rencontre (vivant)
-    if (!hero.conditions.some((c) => c.name === 'Inconscient')) addCondition(hero, 'Inconscient');
+    if (!hero.conditions.some((c) => c.name === 'inconscient')) addCondition(hero, 'inconscient');
     set({ battle: { ...battle, log: [...battle.log, ev('info', `${hero.name} : « Meurs un autre jour » — survit mais quitte le combat (Destin −1).`, hero.id)] } });
     if (source === 'slow') resolveRoundBoundary(get, set);
     else resumeEnemyTurn(get, set);
@@ -2653,8 +2653,8 @@ export const useGame = create<GameState>((set, get) => ({
     // FIGÉE par l'effet (escapeStrength — ex. Force Mentale du lanceur d'un Enchevêtrement, vaut même
     // lanceur absent) ; sinon, Force de la source VIVANTE ; sinon, Test simple.
     let opposed = false, opponentValue: number | undefined, opponentName: string | undefined;
-    if (state === 'Empêtré') {
-      const cond = active.conditions.find((c) => c.name === 'Empêtré');
+    if (state === 'empetre') {
+      const cond = active.conditions.find((c) => c.name === 'empetre');
       const srcId = cond?.sourceId;
       const src = srcId ? battle.combatants.find((c) => c.id === srcId && !isOutOfAction(c)) : undefined;
       if (cond?.escapeStrength != null) {
@@ -2663,11 +2663,11 @@ export const useGame = create<GameState>((set, get) => ({
         opposed = true; opponentValue = testValue(src, undefined, 'F'); opponentName = src.name;
       }
     }
-    const skillValue = state === 'Empêtré' ? testValue(active, undefined, 'F') : testValue(active, 'Athlétisme');
+    const skillValue = state === 'empetre' ? testValue(active, undefined, 'F') : testValue(active, 'Athlétisme');
     set({
       pendingStateRecovery: {
         actorId: active.id, actorName: active.name, state,
-        skillLabel: state === 'Empêtré' ? 'Force' : 'Athlétisme',
+        skillLabel: state === 'empetre' ? 'Force' : 'Athlétisme',
         skillValue, difficulty: 'intermediaire',
         opposed, opponentValue, opponentName, stacks: n,
         roll: null, opponentRoll: null, netSL: 0, success: false,
@@ -2711,7 +2711,7 @@ export const useGame = create<GameState>((set, get) => ({
     active.resolve = (active.resolve ?? 0) - 1;
     removeCondition(active, conditionName, 1); // « Retirez un État » (un pion), LDB ch.17 l.66
     let extra = '';
-    if (conditionName === 'À Terre') {
+    if (conditionName === 'a-terre') {
       active.wounds.current = Math.min(active.wounds.max, active.wounds.current + 1); // +1 PB en se relevant (l.66)
       extra = ' (+1 PB en se relevant)';
     }
@@ -2729,7 +2729,7 @@ export const useGame = create<GameState>((set, get) => ({
     hero.resolve = (hero.resolve ?? 0) - 1;
     removeCondition(hero, conditionName, 1); // « Retirez un État » (un pion), LDB ch.17 l.66
     let extra = '';
-    if (conditionName === 'À Terre') {
+    if (conditionName === 'a-terre') {
       hero.wounds.current = Math.min(hero.wounds.max, hero.wounds.current + 1); // +1 PB en se relevant (l.66)
       extra = ' (+1 PB en se relevant)';
     }
@@ -2919,11 +2919,12 @@ export const useGame = create<GameState>((set, get) => ({
         if (dualBefore && pa.result.hit) { gainAdvantage(attacker); attacker.gainedAdvThisRound = true; }
         set({ pendingDualStrike: null, battle: { ...get().battle! } });
       }
-      // Attaque gratuite de MANŒUVRE de mêlée (Morsure/Attaque caudale/Tentacules, LDB 85) : l'Action
-      // est préservée et les effets onHit PROPRES à la manœuvre s'appliquent (Caudale → À Terre si plus
-      // petit ; Tentacules → Empêtré). Le 1/tour est le limiteur de la MUTATION Tentacule uniquement.
+      // Attaque gratuite de MANŒUVRE de mêlée (Morsure/Attaque caudale/Tentacules, LDB 85) : l'Action est
+      // préservée et les effets onHit PROPRES à la manœuvre s'appliquent (Caudale → À Terre si plus petit ;
+      // Tentacules → Empêtré). On COMPTE l'usage : RAW « une Attaque gratuite pendant son tour » → 1/tour
+      // (ou N/tour « par tentacule »), plafond appliqué par `availableAttacks` (compteur partagé).
       if (attacker.kind === 'hero' && pa.freeKind) {
-        if (pa.freeKind === 'tentacules') attacker.tentacleUsedThisTurn = true;
+        attacker.freeAttacksThisTurn = { ...attacker.freeAttacksThisTurn, [pa.freeKind]: (attacker.freeAttacksThisTurn?.[pa.freeKind] ?? 0) + 1 };
         applyFreeAttackEffects(get, attacker, victim, pa.freeKind, pa.result);
         set({ battle: { ...get().battle!, acted: prevActed } });
       }
@@ -3068,6 +3069,12 @@ export const useGame = create<GameState>((set, get) => ({
     // roule les défenseurs, applique les effets AUTHORÉS de la `ManeuverDef`. Étreinte/Regard = Action.
     const chosen = pm.targetId ? battle.combatants.find((c) => c.id === pm.targetId) : undefined;
     resolveManeuver(get, set, attacker, a.def, a.indice, pm.result, pm.avantageSpent, chosen);
+    // Manœuvre GRATUITE de zone (Souffle/Vomi/Langue/Regard) : 1/tour aussi (RAW « une Attaque gratuite ») —
+    // même compteur partagé. (Étreinte/Regard à l'Action ne comptent pas — gérées par `acted` ci-dessous.)
+    if (a.trigger === 'free') {
+      const atk = get().battle?.combatants.find((c) => c.id === pm.attackerId);
+      if (atk) atk.freeAttacksThisTurn = { ...atk.freeAttacksThisTurn, [a.kind]: (atk.freeAttacksThisTurn?.[a.kind] ?? 0) + 1 };
+    }
     const acted = a.trigger === 'action' ? true : prevActed; // Action consommée seulement par Étreinte/Regard
     set({ battle: { ...get().battle!, acted } });
     checkBattleOver(get, set);
@@ -3090,7 +3097,7 @@ export const useGame = create<GameState>((set, get) => ({
     const battle = get().battle;
     if (!battle || battle.over || battle.acted || battle.movementUsed > 0) return; // Course = Marche + Action (exige le plein Mouvement)
     const active = activeCombatant(battle);
-    if (!active || active.kind !== 'hero' || isEngaged(active) || hasCondition(active, 'À Terre') || !canTakeAction(active)) return; // Engagé/À Terre → pas de Course (LDB 16 l.37)
+    if (!active || active.kind !== 'hero' || isEngaged(active) || hasCondition(active, 'a-terre') || !canTakeAction(active)) return; // Engagé/À Terre → pas de Course (LDB 16 l.37)
     set({ pendingRun: { combatantId: active.id, dest, result: null }, battle: { ...battle, action: null, preview: null } });
   },
   runRoll: () => FLOWS.run.roll(get, set),
@@ -3178,8 +3185,8 @@ export const useGame = create<GameState>((set, get) => ({
     const battle = get().battle;
     if (!battle || battle.over || battle.movementUsed > 0) return;
     const active = activeCombatant(battle);
-    if (!active || active.kind !== 'hero' || !hasCondition(active, 'À Terre') || active.wounds.current <= 0) return;
-    removeCondition(active, 'À Terre');
+    if (!active || active.kind !== 'hero' || !hasCondition(active, 'a-terre') || active.wounds.current <= 0) return;
+    removeCondition(active, 'a-terre');
     set({ battle: { ...battle, movementUsed: mountMovement(battle, active), action: null, log: [...battle.log, ev('move', `${active.name} se relève.`, active.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
@@ -3425,7 +3432,7 @@ export const useGame = create<GameState>((set, get) => ({
       broken = ct.success ? 0 : 1 + Math.max(0, -ct.sl);
       calmeRoll = ct.roll;
       if (broken) {
-        addCondition(mover, 'Brisé', broken);
+        addCondition(mover, 'brise', broken);
         log.push(ev('fear', `${mover.name} panique : ${broken} État(s) Brisé.`, mover.id));
       }
     }

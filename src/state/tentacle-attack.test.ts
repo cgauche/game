@@ -96,7 +96,7 @@ describe('Attaque gratuite de Tentacule (store)', () => {
     const e2 = st.battle!.combatants.find((c) => c.id === E.id)!;
     const h2 = st.battle!.combatants.find((c) => c.id === H.id)!;
     expect(st.battle!.acted).toBe(false); // GRATUITE : l'Action reste disponible
-    expect(h2.tentacleUsedThisTurn).toBe(true); // consommée pour ce tour
+    expect(h2.freeAttacksThisTurn?.tentacules).toBe(1); // consommée pour ce tour (compteur 1/tour)
     expect(e2.wounds.current).toBeLessThan(before); // CC 95 vs Mutant : touche déterministe (seed 2)
     expect(hasCondition(e2, 'Empêtré')).toBe(true); // LDB 85 l.354 : Dégâts → Empêtré
     // 2ᵉ tentative le même tour : la mutation Tentacule n'est PLUS dans la liste d'attaques (1/tour).
