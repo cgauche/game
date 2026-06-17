@@ -125,6 +125,15 @@ export interface TalentData {
   /** Borne haute de plage d100 sur le Tableau des Talents aléatoires (null = hors table). */
   rand?: number | null;
   source: { book: string; page: number };
+  /** Effets MÉCANIQUES authorés (déclencheur → ops du Flow) — Talents « effet sur événement » (Assaut
+   *  féroce `onHit`, Frappe réactive `onCharged`…), appliqués par `state/triggeredEffects` exactement comme
+   *  les traits. Type-only (le moteur reste pur). Édité au Codex par `TriggeredEffectsField`. */
+  effects?: import('../state/flow').TriggeredEffect[];
+  /** Modificateurs PASSIFS continus (Coup puissant, Dur à cuire…) en `GameOp[]` — MÊME vocabulaire que les
+   *  sorts/traits, lus par le collecteur passif (`talentPassiveMods` → `passiveMods`, kind `intrinsèque`,
+   *  répété par niveau). Édité au Codex par `GameOpEditor`. L'octroi d'attaque gratuite (Frénésie) vit ici :
+   *  `grantFreeAttack{when:'available'}`, lu par `availableAttacks`. */
+  passive?: import('../engine/ops').GameOp[];
 }
 export interface TrappingData {
   /** id STABLE (slug du libellé) — cible des `TrappingRef`, robuste au renommage. */

@@ -24,7 +24,7 @@ import { bypassedAP } from './armourBypass';
 import { grantTrait } from './grantedTraits';
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { cureCriticalWounds } from './trauma';
-import { damageLeatherArmour, itemFromTrapping, customTrapping, recomputeLoadout, buildWeapon, weaponItem, newUid, activeLoadout } from './items';
+import { damageLeatherArmour, itemFromTrappingById, itemFromGive, giveTrappingLabel, recomputeLoadout, buildWeapon, weaponItem, newUid, activeLoadout } from './items';
 import { weaponMatchesFamily } from './weaponDamage';
 import { suppressPsychTraits } from './psychology';
 import { norm } from '../lib/normalize';
@@ -248,7 +248,7 @@ export type GameOp =
    *  nom inconnu → objet CUSTOM (misc). Même vocabulaire que l'Effet de scène `giveTrapping`.
    *  Alimente tout sort qui DONNE du matériel : Rations (Générosité de Manann, Récolte de Rhya →
    *  système de provisions/Faim), etc. `count`/`perSL` : « +1 par +2 DR ». */
-  | { op: 'giveTrapping'; trapping: string; count?: number; perSL?: PerSL }
+  | { op: 'giveTrapping'; trappingId?: string; custom?: string; count?: number; perSL?: PerSL }
   /** Invoque une arme MAGIQUE temporaire (Arme aethyrique : Dégâts = BFM ; Faux de Shyish : Arme
    *  d'hast, BFM+3 ; Épée ardente de Rhuin : Dégâts +6, Percutante). `damage` (résolue vs lanceur)
    *  + `damagePlus` (offset constant) donnent la composante chiffrée ; `plusBF` y ajoute le Bonus de
@@ -257,7 +257,7 @@ export type GameOp =
    *  l'expiration. `onHitEffects` : effets DÉCLENCHÉS à la touche (Épée ardente → En flammes) — même
    *  forme `TriggeredEffect` unifiée que `augmentWeapon`/les Atouts d'arme. */
   | { op: 'grantWeapon'; name: string; damage: Formula; damagePlus?: number; plusBF?: boolean;
-      qualities?: string[]; subType?: string; reach?: string; hands?: 1 | 2;
+      qualities?: string[]; subType?: string /* `id` de Groupe d'arme (WeaponGroupData.id) */; reach?: string; hands?: 1 | 2;
       onHitEffects?: TriggeredEffect[];
       /** SKIN cosmétique magique (token→hex, ex. lame aethyrique bleutée / améthyste / ardente) —
        *  propagé à `Weapon.skin` par recomputeLoadout, l'arme se rend recolorée (système d'objet unique). */
@@ -272,6 +272,18 @@ export type GameOp =
    *  attaque ADDITIONNELLE de mêlée injectée dans `c.weapons` (recomputeLoadout), retirée à
    *  l'expiration. Dégâts SB-relatifs par défaut (`+BF+`+damage), `qualities` (Magique…) portés. */
   | { op: 'grantNaturalWeapon'; name: string; damage: Formula; damagePlus?: number; plusBF?: boolean; qualities?: string[] }
+  /** ATTAQUE GRATUITE accordée par un talent/état (Frénésie : 1 attaque d'Arme/Round ; Assaut féroce :
+   *  attaque supplémentaire à la touche ; Frappe réactive : riposte quand on est Chargé). Effet IMPUR (ouvre
+   *  une frappe) RÉSOLU par la couche state (`state/freeAttackFlow`) ; INERTE dans `applyOps`. `weapon` : arme
+   *  tenue / main principale / naturelle. `when` : 'available' = surfacée comme OPTION du Tour (Frénésie, lue
+   *  par `availableAttacks`) ou 'immediate' = résolue tout de suite (depuis un effet déclenché). `cost` :
+   *  Avantage et/ou Mouvement. `test` : jet préalable (Frappe réactive : Initiative +0). `activeIf` : condition
+   *  d'activation d'une grant 'available' (l'état `frenzied`). `perChargerOncePerRound` : 1× par chargeur. Le
+   *  plafond /Round est porté par la couche state (= niveau du talent). */
+  | { op: 'grantFreeAttack'; weapon: 'held' | 'mainHand' | 'natural'; when: 'available' | 'immediate';
+      cost?: { advantage?: number; movement?: boolean; advantageOrMovement?: boolean };
+      test?: { characteristic: CharKey; difficulty: Difficulty };
+      activeIf?: 'frenzied'; perChargerOncePerRound?: boolean; label?: string }
   /** Effet RÉCURRENT multi-Rounds : pose un effet actif porteur qui re-joue `ops` à CHAQUE fin de
    *  Round tant que le sort dure (`ctx.defaultDurationRounds`, Surincantation de Durée incluse —
    *  LDB 47). Généralise l'ancien « État par Round » : 1 Ration/Round (Récolte de Rhya), 1 État
@@ -826,8 +838,8 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'giveTrapping': {
         const n = Math.max(1, (o.count ?? 1) + slBonus(ctx.sl, o.perSL));
         target.items = target.items ?? [];
-        for (let i = 0; i < n; i++) target.items.push(itemFromTrapping(o.trapping) ?? customTrapping(o.trapping));
-        lines.push(`${target.name} obtient ${n > 1 ? `${n}× ` : ''}${o.trapping} (${ctx.label ?? 'sort'}).`);
+        for (let i = 0; i < n; i++) target.items.push(itemFromGive(o));
+        lines.push(`${target.name} obtient ${n > 1 ? `${n}× ` : ''}${giveTrappingLabel(o)} (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'perRound': {
@@ -865,7 +877,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // choisie par le lanceur (ctx.conjureForm, défaut = sa meilleure Spé de CC) ; sinon stats du
         // Sort. Seuls les Dégâts (= BFM…) et les Atouts du Sort surchargent le profil → un OBJET ordinaire.
         const form = o.chooseForm ? (ctx.conjureForm ?? conjureFormOptions(ref)[0]) : null;
-        const tpl = form ? itemFromTrapping(form.weapon) : null;
+        const tpl = form ? itemFromTrappingById(form.weapon) : null;
         // L'objet vit dans un SET dédié (equipConjuredWeapon), hors Set I/II auto → `weaponItem` (conjured).
         // Silhouette de rendu : forme choisie (chooseForm) ou silhouette fixe du Sort → le rig dessine
         // l'arme réelle bien que nommée « Arme aethyrique » / « Faux de Shyish ».
@@ -966,9 +978,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       }
       case 'summon':
       case 'zone':
-        // Effets IMPURS (grille + initiative / zones de bataille) — résolus par la couche state au
-        // LANCEMENT du sort (combatFlow : applySummon / placeSpellZone), qui détient get/set et le
-        // lanceur. `applyOps` (moteur pur) les laisse INERTES (aucune grille à ce niveau).
+      case 'grantFreeAttack':
+        // Effets IMPURS (grille + initiative / zones de bataille / ouverture d'une frappe) — résolus par la
+        // couche state (combatFlow : applySummon / placeSpellZone ; freeAttackFlow : applyGrantFreeAttack),
+        // qui détient get/set et le combattant. `applyOps` (moteur pur) les laisse INERTES.
         break;
       case 'polymorph':
         // Métamorphose : développée en charMod différentiel + grantTrait (auto-restitués) — pure.

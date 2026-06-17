@@ -12,6 +12,7 @@ import { Combatant, CharKey, HitLocation, Trauma, Difficulty, UpkeepDeferTest } 
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
 import { isPainless, traitPassiveMods } from './traits/dispatch';
+import { talentPassiveMods } from './talentEffects';
 import { diseaseCharPenalties } from './disease';
 import { hungerCharPenalties } from './provisions';
 import { wornSocialMod, qualityWearMods } from './wearPenalty';
@@ -455,6 +456,9 @@ export function passiveMods(c: Combatant): PassiveMod[] {
   // TELS QUELS. Les traits INHÉRENTS d'un profil bestiaire FINAL ne sont PAS dans `liveTraits` (déjà cuits dans
   // `characteristics`/`movement`) → zéro double-compte. Les consommateurs (passiveCharSum/passiveMoveMod) somment.
   if (c.liveTraits?.length) out.push(...traitPassiveMods(c.liveTraits));
+  // Talents POSSÉDÉS (LDB 10) : leur `passive: GameOp[]` (Coup puissant, Dur à cuire… ou Frénésie →
+  // grantFreeAttack) émis kind `intrinsèque`, par niveau — comme les traits. Disjoint → zéro double-compte.
+  out.push(...talentPassiveMods(c));
   for (const e of c.activeEffects ?? []) {
     if (e.skillMods) for (const [skill, mod] of Object.entries(e.skillMods)) out.push({ op: { op: 'skillMod', skill, mod }, kind: 'magique' });
     if (e.moveScale) out.push({ op: { op: 'moveScale', num: e.moveScale.num, den: e.moveScale.den }, kind: 'magique' });

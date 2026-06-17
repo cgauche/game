@@ -30,6 +30,7 @@ import { bonus, maxWounds } from './characteristics';
 import { findTalent, findTalentById, blessingsOf } from '../data';
 import { splitLabel, concreteLabel } from './careerSlots';
 import { COMBAT_FEATURES } from './combatFeatures/registry';
+import type { PassiveMod } from './ops';
 
 /** `addCharacteristic` d'un talent (libellé long des données), sinon null. */
 function addCharOf(talentLabel: string): string | null {
@@ -103,6 +104,19 @@ export function careerSkillAdditions(hero: Combatant): string[] {
     // Le talent porte une spec concrète et la compétence ajoutée est « au choix » → reporter.
     if (spec && add.spec && /au choix/i.test(add.spec)) out.push(concreteLabel(add.name, spec));
     else out.push(data.addSkill);
+  }
+  return out;
+}
+
+/** Modificateurs PASSIFS continus des talents POSSÉDÉS (`TalentData.passive` : Coup puissant, Dur à cuire…,
+ *  ou Frénésie → `grantFreeAttack`) en `GameOp[]`, émis kind `intrinsèque` et RÉPÉTÉS par niveau (`t.times`).
+ *  Lus par le collecteur `passiveMods` (trauma) EXACTEMENT comme `traitPassiveMods` pour les traits — le
+ *  talent (instance = id seul) est résolu par `findTalentById`. Disjoint des traits → zéro double-comptage. */
+export function talentPassiveMods(c: Combatant): PassiveMod[] {
+  const out: PassiveMod[] = [];
+  for (const t of c.talents ?? []) {
+    const ops = findTalentById(t.talentId)?.passive;
+    if (ops) for (let i = 0; i < (t.times ?? 1); i++) for (const op of ops) out.push({ op, kind: 'intrinsèque' });
   }
   return out;
 }
