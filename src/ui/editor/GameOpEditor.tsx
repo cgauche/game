@@ -12,6 +12,7 @@ import { Formula, GameOp } from '../../engine/ops';
 import { CHAR_LABELS, CharKey, type Difficulty, DIFFICULTY_LABELS } from '../../engine/types';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
 import { etats } from '../../data';
+import { giveTrappingLabel } from '../../engine/items';
 import { parseTraitInstance, formatTrait } from '../../engine/traits/dispatch';
 import { closeDetails } from './EffectList';
 import { JsonField } from './JsonField';
@@ -223,7 +224,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'damageArmour': return { op: 'damageArmour', material: 'cuir' };
     case 'reduceToZero': return { op: 'reduceToZero' };
     case 'martyr': return { op: 'martyr' };
-    case 'giveTrapping': return { op: 'giveTrapping', trapping: 'Ration' };
+    case 'giveTrapping': return { op: 'giveTrapping', custom: 'Ration' };
     case 'perRound': return { op: 'perRound', ops: [] };
     case 'summon': return { op: 'summon', ref: 'Loup', count: 1, allyOfCaster: true };
     case 'zone': return { op: 'zone', shape: 'disc', radiusMeters: { bonusOf: 'FM' } };
@@ -287,7 +288,7 @@ export function opSummary(o: GameOp): string {
     case 'damageArmour': return `${L} cuir −1 PA`;
     case 'reduceToZero': return `${L} Blessures à 0 (Inconscient)`;
     case 'martyr': return `${L} reçoit les Dégâts`;
-    case 'giveTrapping': return `${L} ${o.count && o.count > 1 ? `${o.count}× ` : ''}${o.trapping}`;
+    case 'giveTrapping': return `${L} ${o.count && o.count > 1 ? `${o.count}× ` : ''}${giveTrappingLabel(o)}`;
     case 'perRound': return `${L} ${o.ops.length} op(s) chaque Round`;
     case 'summon': return `${L} ${formulaSummary(o.count)}× ${o.ref}${o.allyOfCaster === false ? ' (hostile)' : ''}`;
     case 'zone': return `${L} ${o.shape === 'wall' ? `mur ${formulaSummary(o.lengthMeters ?? 2)} m` : `disque ${formulaSummary(o.radiusMeters ?? 2)} m`}`;

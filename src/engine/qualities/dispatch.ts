@@ -7,6 +7,7 @@
 import type { Weapon } from '../types';
 import { QUALITIES, QualityDef, QualityCtx } from './registry';
 import { parseQuality } from './normalize';
+import { qualityIdOf } from './ids';
 import { qualityByLabel } from '../../data';
 
 /** Tout porteur de qualités (Weapon ou ItemInstance) — seul `qualities` est requis. */
@@ -32,14 +33,14 @@ export function resolveQualities(w: QualityCarrier | undefined): ResolvedQuality
   return beaten.size ? out.filter((r) => !beaten.has(r.def.key)) : out;
 }
 
-/** L'objet possède-t-il la qualité canonique `key` ? (remplace l'ancien `hasQ` startsWith). */
-export function hasQuality(w: QualityCarrier | undefined, key: string): boolean {
-  return resolveQualities(w).some((r) => r.def.key === key);
+/** L'objet possède-t-il la qualité d'`id` STABLE (`QUALITY_IDS.X`) ? Compare par id (≠ littéral FR). */
+export function hasQuality(w: QualityCarrier | undefined, id: string): boolean {
+  return resolveQualities(w).some((r) => qualityIdOf(r.def.key) === id);
 }
 
-/** Indice de la qualité `key` sur l'objet (ex. Solide/Recharge → N), ou undefined si absente/sans Indice. */
-export function qualityIndice(w: QualityCarrier | undefined, key: string): number | undefined {
-  return resolveQualities(w).find((r) => r.def.key === key)?.indice;
+/** Indice de la qualité d'`id` sur l'objet (ex. Solide/Recharge → N), ou undefined si absente/sans Indice. */
+export function qualityIndice(w: QualityCarrier | undefined, id: string): number | undefined {
+  return resolveQualities(w).find((r) => qualityIdOf(r.def.key) === id)?.indice;
 }
 
 /** Somme d'un champ numérique du registre sur les qualités présentes (0 si aucune). */

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { combatValue, defenseValue } from './combat';
+import { weaponGroupIdByLabel } from '../data';
 import type { Combatant, Weapon } from './types';
 
 /**
@@ -17,8 +18,9 @@ function hero(over: Partial<Combatant> = {}): Combatant {
     ...over,
   } as Combatant;
 }
-const wpn = (subType: string, type: Weapon['type'] = 'melee'): Weapon =>
-  ({ name: subType, type, damage: '+BF', qualities: [], subType });
+// `groupLabel` = libellé de Groupe (lisibilité) → résolu en id pour `Weapon.subType` (réf).
+const wpn = (groupLabel: string, type: Weapon['type'] = 'melee'): Weapon =>
+  ({ name: groupLabel, type, damage: '+BF', qualities: [], subType: weaponGroupIdByLabel(groupLabel) ?? groupLabel });
 
 describe('combatValue — Spécialisation de Corps à corps (LDB 09 l.44)', () => {
   const sk = (spec: string, advances: number) =>

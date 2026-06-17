@@ -59,14 +59,14 @@ describe('applyOps — opérations unitaires', () => {
   it('giveTrapping : crée l’objet dans l’inventaire (réel → stats, échelle au DR)', () => {
     const c = hero({ items: [] });
     // Générosité de Manann : 1 Ration + 1 par +2 DR → à DR 4, 1 + floor(4/2) = 3 Rations.
-    applyOps(c, [{ op: 'giveTrapping', trapping: 'Ration (1 jour)', perSL: { every: 2, amount: 1 } }], { sl: 4 });
+    applyOps(c, [{ op: 'giveTrapping', custom: 'Ration (1 jour)', perSL: { every: 2, amount: 1 } }], { sl: 4 });
     const rations = (c.items ?? []).filter((it) => /^ration/i.test(it.name));
     expect(rations.length).toBe(3);
   });
 
   it('giveTrapping : nom inconnu → objet CUSTOM (jamais null, comme l’Effet de scène)', () => {
     const c = hero({ items: [] });
-    applyOps(c, [{ op: 'giveTrapping', trapping: 'Babiole onirique XYZ' }]);
+    applyOps(c, [{ op: 'giveTrapping', custom: 'Babiole onirique XYZ' }]);
     expect((c.items ?? []).some((it) => it.name === 'Babiole onirique XYZ')).toBe(true);
   });
 

@@ -1,5 +1,5 @@
 import { makeArenaParty } from '../../data/pregens';
-import { itemFromTrapping } from '../../engine/items';
+import { itemFromTrappingById } from '../../engine/items';
 import { parseProject } from '../../state/worldMap';
 import areneProjet from '../arene/arene-projet.json';
 import type { TestScenario } from './_shared';
@@ -17,7 +17,7 @@ function groupe() {
   const party = makeArenaParty();
   // De quoi tester voyage (rations) et marchands sans grinder la zone 1.
   for (const h of party) {
-    const ration = itemFromTrapping('Ration');
+    const ration = itemFromTrappingById('ration');
     if (ration) h.items = [...(h.items ?? []), ration];
   }
   return party;

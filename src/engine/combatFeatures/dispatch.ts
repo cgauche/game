@@ -69,7 +69,7 @@ export function attackModesFor(c: Combatant): string[] {
  *  Combat déloyal (Bagarre), Charge berserk/Déterminé (en Charge). LDB 10. */
 export function talentDamageBonus(c: Combatant, weapon: Weapon, charged: boolean): number {
   const melee = weapon.type === 'melee';
-  const brawl = melee && (weapon.subType ?? '').toLowerCase() === 'bagarre';
+  const brawl = melee && weapon.subType === 'bagarre'; // Groupe « Bagarre » (id)
   return (
     (melee ? levelSum(c, (d) => !!d.meleeDamageBonus) : levelSum(c, (d) => !!d.rangedDamageBonus)) +
     (brawl ? levelSum(c, (d) => !!d.brawlDamageBonus) : 0) +
@@ -134,7 +134,8 @@ export function hasSurpriseSave(c: Combatant): boolean {
 
 /** Rechargement rapide (toutes armes) / Artilleur (Poudre noire) : +DR au Test de rechargement. LDB 10. */
 export function reloadDRBonus(c: Combatant, weapon: Weapon | undefined): number {
-  const blackpowder = /poudre noire|ingénierie/i.test(weapon?.subType ?? '');
+  const g = weapon?.subType ?? ''; // id de Groupe (poudre-noire / ingenierie / poudre-noire-et-ingenierie)
+  const blackpowder = g === 'poudre-noire' || g === 'ingenierie' || g === 'poudre-noire-et-ingenierie';
   return levelSum(c, (d) => d.reloadDR === 'all' || (d.reloadDR === 'blackpowder' && blackpowder));
 }
 

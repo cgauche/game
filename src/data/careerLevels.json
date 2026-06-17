@@ -18580,7 +18580,7 @@
         "id": "fronde"
       },
       {
-        "text": "Pierre",
+        "id": "projectile-de-pierre",
         "count": {
           "fixed": 10
         }

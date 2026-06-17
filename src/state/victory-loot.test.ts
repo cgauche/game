@@ -27,7 +27,7 @@ describe('dismissVictory — fermeture de l’écran de victoire', () => {
 describe('assignVictoryGear — équipement attribuable, qualités conservées', () => {
   const gearEntry = () => ({
     label: 'Dague', magic: true,
-    effect: { type: 'giveTrapping', trapping: 'Dague', qualities: ['Dévastatrice'], identified: false },
+    effect: { type: 'giveTrapping', trappingId: 'dague', qualities: ['devastatrice'], identified: false },
   });
   beforeEach(() => {
     useGame.setState({

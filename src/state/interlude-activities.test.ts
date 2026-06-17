@@ -8,7 +8,7 @@ import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { toBrass, fromBrass } from '../engine/money';
-import { findTrapping } from '../data';
+import { findTrappingById } from '../data';
 import { testScene } from '../scenes/test-fixture';
 // (les tests Apprentissage/commande utilisent les actions store et les données réelles)
 
@@ -63,12 +63,12 @@ describe('Activités d’interlude (LDB 23)', () => {
     const itl0 = useGame.getState().interlude!;
     itl0.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
     useGame.setState({ interlude: { ...itl0 } });
-    const price = findTrapping('Dague')!.price;
+    const price = findTrappingById('dague')!.price;
     const quarter = Math.max(1, Math.floor(toBrass({ gold: price.gold, silver: price.silver, brass: price.bronze }) / 4));
     const before = toBrass(useGame.getState().money);
-    useGame.getState().interludeCraftStart(h.id, 'Dague', ['Solide'], []);
+    useGame.getState().interludeCraftStart(h.id, 'dague', ['solide'], []);
     expect(toBrass(useGame.getState().money)).toBe(before - quarter);
-    expect(st().craft?.trapping).toBe('Dague');
+    expect(st().craft?.trappingId).toBe('dague');
     // Lancer : on force l'achèvement (drBefore au seuil).
     useGame.getState().interludeCraftRoll(h.id);
     expect(useGame.getState().pendingActivity?.kind).toBe('craft');
@@ -79,7 +79,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     const after = st();
     expect(after.craft).toBeUndefined();
     expect(after.left).toBe(2);
-    const made = hero().items?.find((i) => i.name === 'Dague' && (i.qualities ?? []).includes('Solide'));
+    const made = hero().items?.find((i) => i.name === 'Dague' && (i.qualities ?? []).includes('solide'));
     expect(made).toBeTruthy();
   });
 
@@ -133,13 +133,13 @@ describe('Activités d’interlude (LDB 23)', () => {
     const itl = useGame.getState().interlude!;
     itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
     useGame.setState({ interlude: { ...itl }, money: fromBrass(999999) });
-    useGame.getState().interludeOrder(h.id, 'Dague'); // Commune → refus
+    useGame.getState().interludeOrder(h.id, 'dague'); // Commune → refus
     expect(useGame.getState().pendingOrders).toHaveLength(0);
     expect(useGame.getState().journal.join('\n')).toMatch(/Passer commande sert aux objets Exotiques/);
-    const exotic = findTrapping('Long fusil de Hochland'); // l'exemple du LDB (Exotique)
+    const exotic = findTrappingById('long-fusil-d-hochland'); // l'exemple du LDB (Exotique)
     if (!exotic || exotic.availability !== 'Exotique') return; // garde : données absentes → couvert par le refus ci-dessus
-    useGame.getState().interludeOrder(h.id, exotic.label);
-    expect(useGame.getState().pendingOrders).toEqual([{ heroId: h.id, trapping: exotic.label }]);
+    useGame.getState().interludeOrder(h.id, exotic.id);
+    expect(useGame.getState().pendingOrders).toEqual([{ heroId: h.id, trappingId: exotic.id }]);
     expect(st().left).toBe(2);
     // Clôture + nouvel interlude : la commande est livrée.
     useGame.getState().interludeEnd();

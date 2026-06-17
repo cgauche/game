@@ -335,6 +335,146 @@ function migrateConditions(): void {
   console.log(`etats id-ifiés ; refs d'État (op condition + listes conditions[]) → conditionId dans ${COND_FILES.length} fichiers`);
 }
 
+/** Phase D — id-ifie la taxonomie `subType` des possessions en un dataset `weaponGroups.json` (Groupes
+ *  d'armes + familles de munitions + types d'armure + catégories d'inventaire) et convertit
+ *  `trappings.subType` (label → id). Le `kind` est une métadonnée d'affichage (Codex/marchand) dérivée
+ *  du `type` prédominant des objets du Groupe : armour / weapon / ammo / inventory. Corrige d'abord le
+ *  typo de donnée « Deux mains » (sans tiret) → « Deux-mains » pour qu'ils mappent au MÊME Groupe.
+ *  Idempotent : un subType déjà = id (présent dans l'idSet) est conservé tel quel. */
+function migrateWeaponGroups(): void {
+  // 1) Normalise le typo « Deux mains » → « Deux-mains » AVANT toute id-ification (un seul Groupe).
+  const trapsRaw = read('trappings.json').map((t) => (t.subType === 'Deux mains' ? { ...t, subType: 'Deux-mains' } : t));
+
+  // 2) Bâtit le dataset des Groupes : une entrée {id, label, kind} par subType distinct (ordre de
+  //    première apparition = stable). `kind` dérivé du `type` prédominant des objets du Groupe.
+  const counts = new Map<string, Record<string, number>>(); // label → { type → n }
+  for (const t of trapsRaw) {
+    if (t.subType == null) continue;
+    const c = counts.get(String(t.subType)) ?? {};
+    c[String(t.type)] = (c[String(t.type)] ?? 0) + 1;
+    counts.set(String(t.subType), c);
+  }
+  const kindOf = (byType: Record<string, number>): string => {
+    const keys = Object.keys(byType);
+    if (keys.every((k) => k === 'armor')) return 'armour';
+    if (keys.every((k) => k === 'melee' || k === 'ranged' || k === 'ammunition') && (byType.melee || byType.ranged)) return 'weapon';
+    if (keys.every((k) => k === 'ammunition')) return 'ammo';
+    return 'inventory';
+  };
+  // IDEMPOTENCE : si `weaponGroups.json` existe déjà (1ʳᵉ migration faite), on le CONSERVE — les
+  // `trappings.subType` étant déjà des ids, les reconstruire ferait `label === id` (perte des libellés).
+  let groups: { id: string; label: string; kind: string }[];
+  const existing = (() => { try { return read('weaponGroups.json'); } catch { return []; } })();
+  if (existing.length) {
+    groups = existing as unknown as typeof groups;
+  } else {
+    const taken = new Set<string>();
+    groups = [...counts.entries()].map(([label, byType]) => ({
+      id: uniqueSlugId(label, taken), label, kind: kindOf(byType),
+    }));
+    write('weaponGroups.json', groups);
+  }
+
+  // 3) Convertit trappings.subType label → id (idempotent : un id déjà connu est conservé).
+  const labelToId = new Map(groups.map((g) => [nk(g.label), g.id]));
+  const idSet = new Set(groups.map((g) => g.id));
+  const traps = trapsRaw.map((t) => {
+    if (t.subType == null) return t;
+    const cur = String(t.subType);
+    if (idSet.has(cur)) return t; // déjà migré
+    const id = labelToId.get(nk(cur));
+    if (!id) { problems.push(`UNRESOLVED trapping ${t.label}.subType: "${cur}"`); return t; }
+    return { ...t, subType: id };
+  });
+  write('trappings.json', traps);
+  console.log(`weaponGroups : ${groups.length} Groupes ; trappings.subType → id`);
+}
+
+/** Phase D — résout des `{text}` de possessions restés non-cataloguables faute de label EXACT (ancien
+ *  runtime qui stripait toute parenthèse / aliasait) → `{id}` réel, pour préserver le comportement de
+ *  `buildInventory` (refs directes) : « Pierre » = munition de Fronde « Projectile de pierre » (Traqueur) ;
+ *  « Ration (Multiple) » = « Ration » (classes Ruraux/Itinérants — l'ancien code stripait « (Multiple) »).
+ *  Idempotent. */
+const TEXT_ALIAS: Record<string, string> = { 'Pierre': 'projectile-de-pierre', 'Ration (Multiple)': 'ration' };
+function fixCareerTrappingAliases(): void {
+  const fix = (file: string): number => {
+    let n = 0;
+    const out = read(file).map((e) => ({
+      ...e,
+      trappings: ((e.trappings as unknown[]) ?? []).map((tr) => {
+        const txt = tr && typeof tr === 'object' ? (tr as { text?: string }).text : undefined;
+        if (txt && TEXT_ALIAS[txt]) { n++; return { id: TEXT_ALIAS[txt], ...((tr as { count?: unknown }).count ? { count: (tr as { count: unknown }).count } : {}) }; }
+        return tr;
+      }),
+    }));
+    if (n) write(file, out);
+    return n;
+  };
+  console.log(`alias de possessions {text}→{id} : careerLevels ${fix('careerLevels.json')}, classes ${fix('classes.json')}`);
+}
+
+/** Phase D — convertit les ops `giveTrapping`/`grantWeapon` dans les datasets de Flow (sorts/traits…) :
+ *  `giveTrapping.trapping` (nom) → `trappingId`/`custom` ; `grantWeapon.subType` (libellé de Groupe) → id.
+ *  Idempotent (un op déjà migré est laissé tel quel). */
+function migrateOpTrappings(): void {
+  const trapMap = labelMap(['trappings.json']);
+  const groupMap = labelMap(['weaponGroups.json']);
+  const groupIds = new Set(read('weaponGroups.json').map((g) => String(g.id)));
+  const walk = (node: unknown): unknown => {
+    if (Array.isArray(node)) return node.map(walk);
+    if (node && typeof node === 'object') {
+      const o = node as Record<string, unknown>;
+      if (o.op === 'giveTrapping' && typeof o.trapping === 'string') {
+        const { trapping, ...rest } = o;
+        const ids = trapMap.get(nk(trapping));
+        const resolved = ids && ids.length ? { trappingId: ids[0] } : { custom: trapping };
+        return { ...Object.fromEntries(Object.entries(rest).map(([k, v]) => [k, walk(v)])), ...resolved };
+      }
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(o)) {
+        if (o.op === 'grantWeapon' && k === 'subType' && Array.isArray(v)) {
+          out[k] = v[0]; // répare un id accidentellement encodé en tableau (bug de migration antérieur)
+        } else if (o.op === 'grantWeapon' && k === 'subType' && typeof v === 'string' && !groupIds.has(v)) {
+          out[k] = groupMap.get(nk(v))?.[0] ?? slugId(v);
+        } else out[k] = walk(v);
+      }
+      return out;
+    }
+    return node;
+  };
+  for (const f of ['spells.json', 'frenchy-spells.json', 'maneuvers.json', 'traits.json', 'frenchy-traits.json', 'qualities.json', 'domains.json', 'creatures.json']) {
+    const raw = JSON.parse(readFileSync(DATA + f, 'utf8'));
+    writeFileSync(DATA + f, serialize(walk(raw)), 'utf8');
+  }
+  console.log('ops giveTrapping/grantWeapon → trappingId/custom + Groupe id');
+}
+
+/** Phase D — convertit les `giveTrapping` des scènes JSON (NOM → `trappingId` si le nom résout au
+ *  catalogue, sinon nom CUSTOM `{custom}` hors-base). Récursif (le champ vit dans des Flow imbriqués).
+ *  Idempotent : un nœud déjà migré (présence de `trappingId`/`custom`) est laissé tel quel. */
+function migrateSceneTrappings(file: string): void {
+  const trapMap = labelMap(['trappings.json']);
+  const raw = JSON.parse(readFileSync(file, 'utf8'));
+  const walk = (node: unknown): unknown => {
+    if (Array.isArray(node)) return node.map(walk);
+    if (node && typeof node === 'object') {
+      const o = node as Record<string, unknown>;
+      if (o.type === 'giveTrapping' && typeof o.trapping === 'string') {
+        const { trapping, ...rest } = o;
+        const ids = trapMap.get(nk(trapping));
+        const resolved = ids && ids.length ? { trappingId: ids[0] } : { custom: trapping };
+        return { ...Object.fromEntries(Object.entries(rest).map(([k, v]) => [k, walk(v)])), ...resolved };
+      }
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(o)) out[k] = walk(v);
+      return out;
+    }
+    return node;
+  };
+  writeFileSync(file, serialize(walk(raw)), 'utf8'); // LF
+  console.log(`scène ${file.split(/[\\/]/).pop()} : giveTrapping.trapping → trappingId/custom`);
+}
+
 // ── Run ───────────────────────────────────────────────────────────────────────────────────────
 // NB : `gods.json` a été généré une fois depuis les ex-`cults/defs/` (supprimés) ; c'est désormais
 // une SOURCE app-owned éditable au Codex, plus rien à régénérer.
@@ -348,5 +488,11 @@ ensureMissingTalents();
 convertAdvancement();
 migrateCareersSpecies();
 migrateConditions();
+migrateWeaponGroups();
+fixCareerTrappingAliases();
+migrateOpTrappings();
+for (const f of [
+  fileURLToPath(new URL('../src/scenes/arene/arene-projet.json', import.meta.url)),
+]) migrateSceneTrappings(f);
 if (problems.length) console.error(`\n⚠ ${problems.length} PROBLÈMES (résolution) :\n  ${problems.slice(0, 60).join('\n  ')}${problems.length > 60 ? `\n  …(+${problems.length - 60})` : ''}`);
 console.log('migration terminée.');

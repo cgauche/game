@@ -3168,7 +3168,7 @@
                 "op": "grantWeapon",
                 "name": "Épée ardente de Rhuin",
                 "damage": 6,
-                "subType": "Base",
+                "subType": "base",
                 "reach": "Moyenne",
                 "hands": 1,
                 "qualities": [
@@ -4294,7 +4294,7 @@
                   "bonusOf": "FM"
                 },
                 "damagePlus": 3,
-                "subType": "Armes d’hast",
+                "subType": "armes-d-hast",
                 "reach": "Longue",
                 "hands": 2,
                 "qualities": [
@@ -6915,11 +6915,11 @@
             "ops": [
               {
                 "op": "giveTrapping",
-                "trapping": "Ration (1 jour)",
                 "perSL": {
                   "every": 2,
                   "amount": 1
-                }
+                },
+                "custom": "Ration (1 jour)"
               },
               {
                 "op": "narrative",
@@ -8169,7 +8169,7 @@
                 "ops": [
                   {
                     "op": "giveTrapping",
-                    "trapping": "Ration (1 jour)"
+                    "custom": "Ration (1 jour)"
                   }
                 ]
               }

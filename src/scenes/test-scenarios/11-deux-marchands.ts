@@ -1,6 +1,6 @@
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
-import { itemFromTrapping, recomputeLoadout } from '../../engine/items';
+import { itemFromTrappingById, recomputeLoadout } from '../../engine/items';
 import { Combatant } from '../../engine/types';
 import { flowFromEffects } from '../../state/flow';
 import { arena } from './_shared';
@@ -11,10 +11,10 @@ import type { TestScenario } from './_shared';
  *  openMerchant). Deux archétypes de marchand côte à côte. */
 function groupe(): Combatant[] {
   const cap = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Capitaine (test)', motivation: 'Test', rng: makeRNG(3110), id: 'cap' });
-  const maille = itemFromTrapping('Chemise de mailles')!;
+  const maille = itemFromTrappingById('chemise-de-mailles')!;
   maille.damageTaken = 2; // endommagée → réparable chez l'armurier (10 %/PA, LDB 63)
   maille.equipped = true;
-  const dague = itemFromTrapping('Dague')!; // un objet à vendre
+  const dague = itemFromTrappingById('dague')!; // un objet à vendre
   cap.items = [maille, dague];
   recomputeLoadout(cap);
   cap.appearance = { species: 'Humains (Reiklander)', sex: 'M', build: 0.55 };

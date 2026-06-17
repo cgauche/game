@@ -7,8 +7,8 @@
  * (= BFM…) et l'Atout Magique sont surchargés par le Sort.
  */
 import { Combatant, ItemInstance } from './types';
-import { recomputeLoadout, itemFromTrapping, ensureDefaultLoadout, newLoadoutId } from './items';
-import { trappings } from '../data';
+import { recomputeLoadout, itemFromTrappingById, ensureDefaultLoadout, newLoadoutId } from './items';
+import { trappings, weaponGroupLabel } from '../data';
 
 type ConjuredSet = NonNullable<NonNullable<Combatant['activeEffects']>[number]['conjuredSet']>;
 
@@ -58,8 +58,8 @@ export function dropExpiredGrantedWeapons(
  *  Compétence de Corps à corps que vous possédez », LDB 47). `weapon` = arme RÉELLE de la base dont on
  *  clone le profil (Groupe/allonge/mains) ; `group` = sa Spécialisation de Corps à corps. */
 export interface ConjureForm {
-  weapon: string; // libellé d'une arme réelle (trapping) — son profil est cloné
-  group: string; // Groupe / Spé de Corps à corps appliquée par combatValue
+  weapon: string; // `id` d'une arme réelle (trapping) — son profil est cloné (label résolu à l'affichage)
+  group: string; // `id` du Groupe / Spé de Corps à corps appliquée par combatValue
 }
 
 /** Une arme de mêlée est-elle un objet À INVOQUER ? Exclut les boucliers, armes improvisées, mains
@@ -85,13 +85,14 @@ export function conjureFormOptions(caster: Pick<Combatant, 'skills'>): ConjureFo
   if (!groupAdv.size) groupAdv.set('base', 0); // mage sans Spé → armes de base
   const out: { weapon: string; group: string; adv: number }[] = [];
   for (const t of trappings) {
-    const it = itemFromTrapping(t.label);
+    const it = itemFromTrappingById(t.id);
     if (it?.kind !== 'melee' || !it.subType || !isConjurableWeapon(it)) continue;
-    const adv = groupAdv.get(it.subType.toLowerCase());
+    // groupAdv est keyé par Spé (libellé minuscule, choisi par le joueur) → résoudre l'id de Groupe en libellé.
+    const adv = groupAdv.get(weaponGroupLabel(it.subType).toLowerCase());
     if (adv == null) continue;
-    out.push({ weapon: t.label, group: it.subType, adv });
+    out.push({ weapon: t.id, group: it.subType, adv });
   }
   out.sort((a, b) => b.adv - a.adv); // meilleure Spé d'abord (l'ordre des armes dans la base sinon)
   const forms = out.map(({ weapon, group }) => ({ weapon, group }));
-  return forms.length ? forms : [{ weapon: 'Arme simple', group: 'Base' }];
+  return forms.length ? forms : [{ weapon: 'arme-simple', group: 'base' }];
 }

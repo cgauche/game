@@ -82,11 +82,11 @@ describe('statusIncome — « Gagner de l’argent grâce au Statut » (LDB 08 l
 import { craftSpecOf, craftCatalog, learnableTalents, orderCatalog, tutorCostRange, metierOf } from './activities';
 import { createHero } from './character';
 import { makeRNG } from './dice';
-import { findTrapping, skillInstanceLabel, talentConcrete } from '../data';
+import { findTrappingById, skillInstanceLabel, talentConcrete } from '../data';
 
 describe('craftSpecOf — dérivation partagée flux/catalogue', () => {
   it('matériaux = ¼ du prix (ch.23 l.66), gamme par pièce dominante', () => {
-    const dague = findTrapping('Dague')!;
+    const dague = findTrappingById('dague')!;
     const spec = craftSpecOf(dague);
     expect(spec.materialsBrass).toBe(Math.max(1, Math.floor(spec.priceBrass / 4)));
     expect(['bronze', 'argent', 'or']).toContain(spec.tier);
@@ -112,7 +112,7 @@ describe('craftCatalog / orderCatalog', () => {
     const cat = orderCatalog();
     expect(cat.length).toBeGreaterThan(0);
     for (const o of cat) expect(o.priceBrass).toBeGreaterThan(0);
-    expect(cat.every((o) => { const t = findTrapping(o.label)!; return t.availability === 'Exotique' || t.availability === 'ND' || t.availability == null; })).toBe(true);
+    expect(cat.every((o) => { const t = findTrappingById(o.id)!; return t.availability === 'Exotique' || t.availability === 'ND' || t.availability == null; })).toBe(true);
   });
 });
 

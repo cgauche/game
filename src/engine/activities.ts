@@ -95,6 +95,8 @@ export function craftSpecOf(t: Pick<TrappingData, 'price' | 'availability'>): {
 }
 
 export interface CraftOption {
+  /** `id` du trapping (`TrappingData.id`) — réf passée à `craftStart`/`orderItem`. */
+  id: string;
   label: string;
   /** Famille de données (melee/ranged/armor/trapping…) pour grouper le sélecteur. */
   type: string;
@@ -117,7 +119,7 @@ export function craftCatalog(): CraftOption[] {
     .map((t) => {
       const spec = craftSpecOf(t);
       const target = craftTarget(spec.tier, spec.avail, 0, 0);
-      return { label: t.label, type: t.type, ...spec, dr: target.dr, difficulty: target.difficulty };
+      return { id: t.id, label: t.label, type: t.type, ...spec, dr: target.dr, difficulty: target.difficulty };
     })
     .sort((a, b) => (a.type === b.type ? a.priceBrass - b.priceBrass : a.type.localeCompare(b.type)));
 }
@@ -161,10 +163,10 @@ export function learnableTalents(hero: Combatant): LearnOption[] {
 
 /** Catalogue de « Passer commande » (ch.23 l.167-172) : objets de rareté Exotique (ou jamais
  *  en vente — ND) à prix chiffré, payés à la commande. */
-export function orderCatalog(): { label: string; type: string; priceBrass: number }[] {
+export function orderCatalog(): { id: string; label: string; type: string; priceBrass: number }[] {
   return trappings
     .filter((t) => (t.availability === 'Exotique' || t.availability === 'ND' || t.availability == null))
-    .map((t) => ({ label: t.label, type: t.type, priceBrass: toBrass({ gold: numPrice(t.price?.gold), silver: numPrice(t.price?.silver), brass: numPrice(t.price?.bronze) }) }))
+    .map((t) => ({ id: t.id, label: t.label, type: t.type, priceBrass: toBrass({ gold: numPrice(t.price?.gold), silver: numPrice(t.price?.silver), brass: numPrice(t.price?.bronze) }) }))
     .filter((t) => t.priceBrass > 0)
     .sort((a, b) => a.priceBrass - b.priceBrass);
 }

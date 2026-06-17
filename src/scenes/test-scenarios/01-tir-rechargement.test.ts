@@ -9,8 +9,8 @@ describe('Scénario Tir & Rechargement', () => {
     const ranged = hero.weapons.find((w) => w.type === 'ranged');
     expect(ranged).toBeTruthy();
     expect(ranged!.reload ?? 0).toBeGreaterThanOrEqual(1); // Recharge → Test étendu
-    expect(ranged!.subType).toBe('Arbalète');
-    const ammo = (hero.items ?? []).find((i) => i.kind === 'ammo' && i.subType === 'Arbalète');
+    expect(ranged!.subType).toBe('arbalete'); // id de Groupe
+    const ammo = (hero.items ?? []).find((i) => i.kind === 'ammo' && i.subType === 'arbalete');
     expect(ammo && (ammo.qty ?? 0) > 0).toBe(true);
   });
   it('la scène a un encounter (autoCombat) avec une cible à distance', () => {

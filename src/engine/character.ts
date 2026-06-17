@@ -23,7 +23,7 @@ import { RNG, defaultRNG, roll } from './dice';
 import { buildInventory, recomputeLoadout, emptyArmour } from './items';
 import { groupsFor } from './groups';
 import { slugId } from '../data/slug';
-import { CharKey, CHAR_KEYS, Characteristics, ArmourPoints, Combatant, Weapon, SkillInstance, TalentInstance, HitLocation, HeroDetails } from './types';
+import { CharKey, CHAR_KEYS, Characteristics, Combatant, SkillInstance, TalentInstance, HeroDetails } from './types';
 import {
   SpeciesData,
   findSpeciesById,
@@ -34,9 +34,6 @@ import {
   findSkill,
   findTalent,
   talentConcrete,
-  findTrapping,
-  trappingRefLabel,
-  qualityRuntime,
   advancementLabel,
   talents as talentTable,
 } from '../data';
@@ -335,11 +332,13 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     addSkill(resolveEntry(raw, opts.specChoices), adv);
   }
 
-  // 5) Possessions : classe + carrière → inventaire à stats, armes/armures équipées.
-  const classTrappings = (classForCareer(opts.careerId)?.trappings ?? []).map(trappingRefLabel); // TrappingRef[] → libellés
-  const careerTrappings = (level?.trappings ?? []).map(trappingRefLabel); // idem niveau de carrière
-  const trappingNames = [...classTrappings, ...careerTrappings].map((t) => resolveEntry(t, opts.specChoices));
-  const items = buildInventory(trappingNames);
+  // 5) Possessions : classe + carrière → inventaire à stats, armes/armures équipées. Les refs `{id}`
+  //    (catalogue) deviennent des objets ; les refs `{text}` (« Arme (Base) », flavor) n'ont pas de
+  //    stats → ignorées par buildInventory (comme avant : un libellé non catalogué n'était pas trouvé).
+  const items = buildInventory([
+    ...(classForCareer(opts.careerId)?.trappings ?? []),
+    ...(level?.trappings ?? []),
+  ]);
 
   // Taille de l'espèce (LDB 85) : Halfling = Petite (talent Petit), Ogre = Grande, sinon Moyenne.
   const size: import('./size').SizeCategory = sp.small ? 'petite' : /ogre/i.test(sp.label) ? 'grande' : 'moyenne';
@@ -429,42 +428,3 @@ function classForCareer(careerId: string) {
   return findClassById(findCareerById(careerId)?.class);
 }
 
-const ARMOUR_LOC_MAP: Record<string, HitLocation[]> = {
-  Tête: ['tete'],
-  Bras: ['brasG', 'brasD'],
-  Mains: ['brasG', 'brasD'],
-  Corps: ['corps'],
-  Jambes: ['jambeG', 'jambeD'],
-};
-
-export function deriveArmour(trappingNames: string[]): ArmourPoints {
-  const ap = emptyArmour();
-  for (const name of trappingNames) {
-    const t = findTrapping(splitLabel(name).name);
-    if (!t || t.type !== 'armor' || !t.pa || !t.loc) continue;
-    for (const part of t.loc.split(',').map((s) => s.trim())) {
-      const locs = ARMOUR_LOC_MAP[part];
-      if (locs) for (const l of locs) ap[l] = Math.max(ap[l], t.pa);
-    }
-  }
-  return ap;
-}
-
-export function deriveWeapons(trappingNames: string[], _chars: Characteristics): Weapon[] {
-  const weapons: Weapon[] = [];
-  for (const name of trappingNames) {
-    const t = findTrapping(splitLabel(name).name);
-    if (!t || (t.type !== 'melee' && t.type !== 'ranged')) continue;
-    weapons.push({
-      name: t.label,
-      type: t.type,
-      damage: t.damage ?? '+BF',
-      reach: t.reach,
-      range: t.type === 'ranged' ? Number(t.reach) || null : null,
-      qualities: t.qualities.map(qualityRuntime),
-    });
-  }
-  // Tout le monde peut frapper à mains nues (Livre de base : « l'arme est votre corps »).
-  weapons.push({ name: 'Mains nues', type: 'melee', damage: '+BF-2', reach: 'Très courte', qualities: [] });
-  return weapons;
-}

@@ -80,7 +80,8 @@ import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isD
 import { rollTest, resolveOpposed, evaluateTest } from '../engine/tests';
 import { effectiveChar, bonus, baseWithTraits } from '../engine/characteristics';
 import { isFrenzyCapable, isPsychImmune, spendResolveForPsychImmunity } from '../engine/psychology';
-import { recomputeLoadout, itemFromTrapping, customTrapping, compatibleAmmo, loadoutSetActive } from '../engine/items';
+import { recomputeLoadout, itemFromGive, compatibleAmmo, loadoutSetActive } from '../engine/items';
+import { QUALITY_IDS } from '../engine/qualities/ids';
 import { attackModesFor } from '../engine/combatFeatures/dispatch';
 import { craftTestDRAdjust, hasQuality, isUnbreakable, magazineSize, canPushback, strikesLast, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
 import { talentInitiativeBonus, talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, runMovementBonus } from '../engine/combatFeatures/dispatch';
@@ -377,7 +378,7 @@ export interface GameState {
   /** Interlude « Entre deux aventures » (LDB 22-23, Jalon 5) — état + dépôts bancaires + commandes. */
   interlude: InterludeState | null;
   bank: BankDeposit[];
-  pendingOrders: { heroId: string; trapping: string }[];
+  pendingOrders: { heroId: string; trappingId: string }[];
   /** Ouvre un interlude de N semaines (Effet d'éditeur `interlude` ou appel direct). */
   startInterlude: (weeks?: number) => void;
   /** Clôt l'interlude : « Avec le pouvoir », Argent à gaspiller, Revenus, le temps passe. */
@@ -392,13 +393,13 @@ export interface GameState {
   activityConfirm: () => void;
   /** Activités (LDB 23) : Revenus, Artisanat (engager l'ouvrage puis lancer), banque. */
   interludeRevenus: (heroId: string) => void;
-  interludeCraftStart: (heroId: string, trapping: string, atouts: string[], defauts: string[]) => void;
+  interludeCraftStart: (heroId: string, trappingId: string, atouts: string[], defauts: string[]) => void;
   interludeCraftRoll: (heroId: string) => void;
   interludeBank: (heroId: string, kind: 'invest' | 'stash', amountBrass: number, rate?: number) => void;
   interludeWithdraw: (index: number) => void;
   /** Apprentissage particulier (Talent hors carrière, Test −20) ; Passer commande (Exotique). */
   interludeLearn: (heroId: string, talent: string) => void;
-  interludeOrder: (heroId: string, trapping: string) => void;
+  interludeOrder: (heroId: string, trappingId: string) => void;
   /** Identifier un artefact magique (ADE2 ch.4) : une semaine d'étude, Test de Savoir (Magie) +0. */
   interludeIdentify: (heroId: string, itemUid: string) => void;
   /** Coop en ligne : état réseau sérialisable + actions de session — délégué à netFlow.
@@ -2780,7 +2781,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!eff) return;
     let label: string; // assigné dans chaque branche atteignant l'usage (le cas `else` renvoie)
     if (eff.type === 'giveTrapping') {
-      const it = itemFromTrapping(eff.trapping) ?? customTrapping(eff.trapping); // réel sinon objet custom
+      const it = itemFromGive(eff); // catalogue (trappingId) sinon objet custom
       label = it.name;
       // ajout NON équipé au combattant actif (clone battle) ET au membre party (persiste post-combat).
       active.items = [...(active.items ?? []), it];
@@ -3550,7 +3551,7 @@ export const useGame = create<GameState>((set, get) => ({
     const drDelta = tool ? craftTestDRAdjust(tool, pt.success) : 0;
     const effSuccess = drDelta !== 0 ? pt.roll <= pt.target && pt.sl + drDelta >= pt.requireSL : pt.success;
     // Bâclé : un outil Bâclé qui Maladresse (échec + double) se brise (LDB 60, généralisé hors combat).
-    if (tool && pt.isDouble && !pt.success && hasQuality(tool, 'Bâclé') && !isUnbreakable(tool)) {
+    if (tool && pt.isDouble && !pt.success && hasQuality(tool, QUALITY_IDS.Bacle) && !isUnbreakable(tool)) {
       tool.destroyed = true;
       set({ party: [...get().party] }); // persiste la casse + re-render
       get().log(`${tool.name} (Bâclé) se brise sur la Maladresse de ${actor?.name ?? pt.actorName}.`);

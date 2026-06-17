@@ -2,7 +2,7 @@ import { flowFromEffects } from '../../state/flow';
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { contractDisease } from '../../engine/disease';
-import { itemFromTrapping } from '../../engine/items';
+import { itemFromTrappingById } from '../../engine/items';
 import { Combatant } from '../../engine/types';
 import { WorldMap } from '../../state/worldMap';
 import { arena, setEncounters } from './_shared';
@@ -17,7 +17,7 @@ import type { TestScenario } from './_shared';
  */
 function groupe(): Combatant[] {
   const erik = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Erik (test)', motivation: 'Test', rng: makeRNG(1501), id: 'erik' });
-  erik.items = [...(erik.items ?? []), itemFromTrapping('Ration')!, itemFromTrapping('Ration')!, itemFromTrapping('Ration')!];
+  erik.items = [...(erik.items ?? []), itemFromTrappingById('ration')!, itemFromTrappingById('ration')!, itemFromTrappingById('ration')!];
   erik.appearance = { species: 'Humains (Reiklander)', sex: 'M', build: 0.55 };
   // Greta voyage SANS provisions : sur un long trajet, la faim s'installe (LDB 18 l.417-422).
   const greta = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Greta (test)', motivation: 'Test', rng: makeRNG(1502), id: 'greta' });

@@ -9,8 +9,8 @@ import { d100, d10, type RNG } from './dice';
 
 export type Availability = 'Commune' | 'Limitée' | 'Rare' | 'Exotique';
 export type Settlement = 'village' | 'ville' | 'cite';
-export interface CatalogItem { label: string; availability: Availability | null; }
-export interface StockLine { label: string; qty: number; test?: { roll: number; target: number } }
+export interface CatalogItem { id: string; label: string; availability: Availability | null; }
+export interface StockLine { id: string; label: string; qty: number; test?: { roll: number; target: number } }
 
 /** % de Disponibilité (réussite si d100 ≤ %). RAW LDB 59 p.292. */
 export const DISPO_PCT: Record<'Limitée' | 'Rare', Record<Settlement, number>> = {
@@ -49,12 +49,12 @@ export function rollStock(catalog: CatalogItem[], settlement: Settlement, rng: R
   for (const it of catalog) {
     const av = it.availability;
     if (curated.includes(it.label)) {
-      out.push({ label: it.label, qty: Math.max(1, classQty(av ?? 'Commune', baseQty(settlement, rng))) });
+      out.push({ id: it.id, label: it.label, qty: Math.max(1, classQty(av ?? 'Commune', baseQty(settlement, rng))) });
       continue;
     }
     if (av !== 'Commune' && av !== 'Limitée' && av !== 'Rare' && av !== 'Exotique') continue; // ND/null exclus
     const r = rollAvailability(av, settlement, rng);
-    if (r.inStock) out.push({ label: it.label, qty: r.qty, test: r.test });
+    if (r.inStock) out.push({ id: it.id, label: it.label, qty: r.qty, test: r.test });
   }
   return out;
 }

@@ -6,6 +6,7 @@
 import { Weapon, WeaponEnchant, ArmourBypass } from './types';
 import type { TriggeredEffect } from '../state/flow';
 import { isUnbreakable, qualityIndice } from './qualities/dispatch';
+import { QUALITY_IDS } from './qualities/ids';
 import { norm } from '../lib/normalize';
 
 /** L'arme matche-t-elle la FAMILLE requise par un enchantement (mot-clé sur nom/sous-type — « épée »,
@@ -26,7 +27,7 @@ function flatDamage(damage: string): number {
 /** Dégâts d'arme encaissés EFFECTIFS (pour la pénalité) : l'Atout Solide(N) absorbe les N premiers
  *  Points de Dégâts sans pénalité (LDB 60 l.64). */
 function effectiveDamageTaken(w: Weapon): number {
-  return Math.max(0, (w.damageTaken ?? 0) - (qualityIndice(w, 'Solide') ?? 0));
+  return Math.max(0, (w.damageTaken ?? 0) - (qualityIndice(w, QUALITY_IDS.Solide) ?? 0));
 }
 
 /** Dégâts d'arme effectifs après réduction par `damageTaken` (la composante fixe positive est
@@ -95,6 +96,6 @@ export function destroyWeapon(w: Weapon): void {
 /** Seuil de Sauvegarde (1d10 ≥ seuil ⇒ l'arme résiste) contre une cassure instantanée pour une arme
  *  Solide(N) : 9+ pour N=1, amélioré de 1 par Indice (8+ pour N=2…), LDB 60 l.64-67. null si non Solide. */
 export function solideSaveThreshold(w: Weapon): number | null {
-  const n = qualityIndice(w, 'Solide');
+  const n = qualityIndice(w, QUALITY_IDS.Solide);
   return n && n > 0 ? Math.max(2, 10 - n) : null;
 }

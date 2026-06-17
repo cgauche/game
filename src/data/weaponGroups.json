@@ -1,0 +1,172 @@
+[
+  {
+    "id": "armes-d-hast",
+    "label": "Armes d'hast",
+    "kind": "weapon"
+  },
+  {
+    "id": "bagarre",
+    "label": "Bagarre",
+    "kind": "weapon"
+  },
+  {
+    "id": "base",
+    "label": "Base",
+    "kind": "weapon"
+  },
+  {
+    "id": "cavalerie",
+    "label": "Cavalerie",
+    "kind": "weapon"
+  },
+  {
+    "id": "deux-mains",
+    "label": "Deux-mains",
+    "kind": "weapon"
+  },
+  {
+    "id": "escrime",
+    "label": "Escrime",
+    "kind": "weapon"
+  },
+  {
+    "id": "fleau",
+    "label": "Fléau",
+    "kind": "weapon"
+  },
+  {
+    "id": "parade",
+    "label": "Parade",
+    "kind": "weapon"
+  },
+  {
+    "id": "arbalete",
+    "label": "Arbalète",
+    "kind": "weapon"
+  },
+  {
+    "id": "arc",
+    "label": "Arc",
+    "kind": "weapon"
+  },
+  {
+    "id": "entraves",
+    "label": "Entraves",
+    "kind": "weapon"
+  },
+  {
+    "id": "explosifs",
+    "label": "Explosifs",
+    "kind": "weapon"
+  },
+  {
+    "id": "fronde",
+    "label": "Fronde",
+    "kind": "weapon"
+  },
+  {
+    "id": "lancer",
+    "label": "Lancer",
+    "kind": "weapon"
+  },
+  {
+    "id": "ingenierie",
+    "label": "Ingénierie",
+    "kind": "weapon"
+  },
+  {
+    "id": "poudre-noire",
+    "label": "Poudre noire",
+    "kind": "weapon"
+  },
+  {
+    "id": "poudre-noire-et-ingenierie",
+    "label": "Poudre noire et ingénierie",
+    "kind": "ammo"
+  },
+  {
+    "id": "cuir-souple",
+    "label": "Cuir souple",
+    "kind": "armour"
+  },
+  {
+    "id": "cuir-bouilli",
+    "label": "Cuir bouilli",
+    "kind": "armour"
+  },
+  {
+    "id": "mailles",
+    "label": "Mailles",
+    "kind": "armour"
+  },
+  {
+    "id": "plate",
+    "label": "Plate",
+    "kind": "armour"
+  },
+  {
+    "id": "sacs-et-contenants",
+    "label": "Sacs et Contenants",
+    "kind": "inventory"
+  },
+  {
+    "id": "vetements-et-accessoires",
+    "label": "Vêtements et Accessoires",
+    "kind": "inventory"
+  },
+  {
+    "id": "nourriture-boisson-et-hebergement",
+    "label": "Nourriture, Boisson et Hébergement",
+    "kind": "inventory"
+  },
+  {
+    "id": "outils-et-necessaires",
+    "label": "Outils et nécessaires",
+    "kind": "inventory"
+  },
+  {
+    "id": "livres-et-documents",
+    "label": "Livres et documents",
+    "kind": "inventory"
+  },
+  {
+    "id": "outils-professionnels-et-ateliers",
+    "label": "Outils professionnels et ateliers",
+    "kind": "inventory"
+  },
+  {
+    "id": "animaux-et-vehicules",
+    "label": "Animaux et véhicules",
+    "kind": "inventory"
+  },
+  {
+    "id": "drogues-et-poisons",
+    "label": "Drogues et poisons",
+    "kind": "inventory"
+  },
+  {
+    "id": "herbes-et-potions",
+    "label": "Herbes et potions",
+    "kind": "inventory"
+  },
+  {
+    "id": "protheses",
+    "label": "Prothèses",
+    "kind": "inventory"
+  },
+  {
+    "id": "possessions-diverses",
+    "label": "Possessions diverses",
+    "kind": "inventory"
+  },
+  {
+    "id": "armes-de-siege",
+    "label": "Armes de siège",
+    "kind": "weapon"
+  },
+  {
+    "id": "munitions",
+    "label": "Munitions",
+    "kind": "weapon"
+  }
+]

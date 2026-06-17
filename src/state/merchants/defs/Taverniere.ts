@@ -8,7 +8,7 @@ import type { MerchantArchetypeDef } from '../types';
 export const merchantArchetype: MerchantArchetypeDef = {
   name: 'taverniere',
   label: 'Tavernière',
-  category: { subTypes: ['Nourriture, Boisson et Hébergement'] },
+  category: { subTypes: ['nourriture-boisson-et-hebergement'] }, // id de Groupe
   settlement: 'village',
   resaleRate: 0.5, // base ½ du prix listé (LDB 60 l.22)
   bargainSkill: 45,

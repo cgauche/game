@@ -110,7 +110,8 @@ export interface Weapon {
   /** Portée en mètres (distance uniquement). */
   range?: number | null;
   qualities: string[];
-  /** Famille d'arme (pour la compatibilité des munitions). */
+  /** `id` du Groupe d'arme/famille de munition (`WeaponGroupData.id`) — réf, ≠ libellé. Pilote la
+   *  Spécialisation de combat (`combatValue`), la famille de munition (`ammoFamily`), le rendu (rig). */
   subType?: string;
   /** Nombre de mains requises (1 ou 2). Dérivé de `(2M)` / arc / arbalète. */
   hands?: 1 | 2;
@@ -352,6 +353,10 @@ export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';
 /** Instance d'objet portée par un personnage (dérivée d'un trapping à stats). */
 export interface ItemInstance {
   uid: string;
+  /** `id` du trapping de catalogue dont l'objet dérive (`TrappingData.id`) — réf STABLE posée par
+   *  `itemFromTrappingById`. ABSENT = objet CUSTOM (hors-base : `customTrapping`, pièces de monstre…).
+   *  Source de re-dérivation (arme dérivée de prothèse, prix de revente, réparation) — ≠ name-match. */
+  trappingId?: string;
   name: string;
   kind: ItemKind;
   damage?: string; // armes
@@ -366,7 +371,8 @@ export interface ItemInstance {
   enc: number; // encombrement
   equipped: boolean;
   desc?: string | null;
-  /** Munition : famille compatible (Arc/Arbalète/Poudre noire) — correspond à `Weapon.subType`. */
+  /** `id` du Groupe/famille (`WeaponGroupData.id`) — munition : famille compatible (arc/arbalete/
+   *  poudre-noire) ; armure : type (plate/mailles/cuir-souple…). Correspond à `Weapon.subType`. */
   subType?: string;
   /** Nombre de mains requises (1 ou 2), posé à la création par itemFromTrapping (marqueur `(2M)`). */
   hands?: 1 | 2;

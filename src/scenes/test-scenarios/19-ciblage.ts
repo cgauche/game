@@ -1,6 +1,6 @@
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
-import { itemFromTrapping, recomputeLoadout } from '../../engine/items';
+import { itemFromTrappingById, recomputeLoadout } from '../../engine/items';
 import { Combatant } from '../../engine/types';
 import { CustomStatblock } from '../../state/scene';
 import { makePregens } from '../../data/pregens';
@@ -24,10 +24,10 @@ function tireur(): Combatant {
     rng: makeRNG(1901),
     id: 'test-tireur-ciblage',
   });
-  const arb = itemFromTrapping('Arbalète de poing')!;
+  const arb = itemFromTrappingById('arbalete-de-poing')!;
   arb.equipped = true;
-  const carreaux = itemFromTrapping('Carreau')!;
-  const epee = itemFromTrapping('Arme simple')!; // l'« épée » générique du LDB (groupe Base)
+  const carreaux = itemFromTrappingById('carreau')!;
+  const epee = itemFromTrappingById('arme-simple')!; // l'« épée » générique du LDB (groupe Base)
   h.items = [arb, carreaux, epee];
   h.loadouts = undefined; h.activeLoadoutId = undefined;
   recomputeLoadout(h);

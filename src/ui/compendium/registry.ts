@@ -9,8 +9,8 @@
  */
 import {
   species, careers, characteristics, classes, skills, talents,
-  qualities, trappings, etats, maladies, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
-  stars, locations, books, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel,
+  qualities, trappings, weaponGroups, etats, maladies, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
+  stars, locations, books, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, weaponGroupLabel,
   skillInstanceLabel, talentConcrete, careersForSpecies, findClassById, eyes, hairs, details,
 } from '../../data';
 import { statName } from '../../engine/statEntry';
@@ -123,6 +123,7 @@ const sections = (...xs: (CodexSection | null | undefined | false)[]): CodexSect
 /** Libellés FR du déclenchement / ciblage d'une Manœuvre (Codex). */
 const MANEUVER_ACTIVATION_LABEL: Record<string, string> = { action: 'Action', free: 'Gratuite', charge: 'À la Charge' };
 const MANEUVER_TARGETING_LABEL: Record<string, string> = { melee: 'Mêlée', ranged: 'Distance', zone: 'Zone', allFoes: 'Tous les ennemis' };
+const WEAPON_GROUP_KIND_LABEL: Record<string, string> = { weapon: 'Groupe d’arme', ammo: 'Munitions', armour: 'Armure', inventory: 'Inventaire' };
 
 /**
  * SOURCE UNIQUE du contenu structuré d'une fiche de race — onglets Profil / Carrières / Détails.
@@ -282,10 +283,14 @@ export const CODEX: CodexCategory[] = [
   {
     key: 'trappings', label: 'Possessions', group: 'Équipement',
     items: trappings.map((t) => ({
-      label: t.label, sub: join(t.type, t.subType), desc: t.desc ?? undefined, html: true, source: src(t.source),
+      label: t.label, sub: join(t.type, weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, html: true, source: src(t.source),
       meta: facts(fact('Enc', t.enc), fact('Disponibilité', t.availability), fact('Dégâts', t.damage), fact('PA', t.pa), fact('Allonge', t.reach)),
       sections: sections(chips('Qualités', 'qualities', t.qualities.map(qualityRefLabel))),
     })),
+  },
+  {
+    key: 'weaponGroups', label: 'Groupes d’objet', group: 'Équipement',
+    items: weaponGroups.map((g) => ({ label: g.label, sub: WEAPON_GROUP_KIND_LABEL[g.kind] })),
   },
   {
     key: 'qualities', label: 'Qualités', group: 'Équipement',

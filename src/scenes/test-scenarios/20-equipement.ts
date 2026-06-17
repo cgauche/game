@@ -1,6 +1,7 @@
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
-import { itemFromTrapping, recomputeLoadout } from '../../engine/items';
+import { itemFromTrappingById, recomputeLoadout } from '../../engine/items';
+import { trappings } from '../../data';
 import { Combatant } from '../../engine/types';
 import { arena } from './_shared';
 import type { TestScenario } from './_shared';
@@ -17,8 +18,10 @@ function maitreArmes(): Combatant {
     rng: makeRNG(2606),
     id: 'test-equipement',
   });
+  // Authoring : résout un libellé d'arme/armure → son id de catalogue (scan unique de la base).
   const take = (label: string, equipped = false) => {
-    const it = itemFromTrapping(label)!;
+    const id = trappings.find((t) => t.label === label)!.id;
+    const it = itemFromTrappingById(id)!;
     it.equipped = equipped;
     return it;
   };

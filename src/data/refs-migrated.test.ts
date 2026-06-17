@@ -5,10 +5,11 @@
  */
 import { describe, it, expect } from 'vitest';
 import {
-  trappings, qualities, spells, creatures, classes, careers, careerLevels, species, gods, etats, maladies,
+  trappings, qualities, spells, creatures, classes, careers, careerLevels, species, gods, etats, maladies, weaponGroups,
   findSkillById, findTalentById, findTrappingById, findQualityById, findSpellById,
-  findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById,
+  findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById,
 } from './index';
+import { itemFromTrappingById } from '../engine/items';
 import { COND } from '../engine/conditions';
 import { DISEASES } from '../engine/disease';
 import pregensJson from './pregens.json';
@@ -22,6 +23,28 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     for (const t of trappings) for (const q of t.qualities) {
       expect(isObj(q)).toBe(true);
       expect(findQualityById(q.id)).toBeTruthy();
+    }
+  });
+
+  it('trappings.subType = weaponGroupId qui résout (jamais un libellé brut)', () => {
+    const groupIds = new Set(weaponGroups.map((g) => g.id));
+    for (const t of trappings) {
+      if (t.subType == null) continue;
+      expect(groupIds.has(t.subType), `${t.label} → ${t.subType}`).toBe(true);
+      expect(findWeaponGroupById(t.subType)).toBeTruthy();
+    }
+  });
+
+  it('weaponGroups portent un id stable + kind valide', () => {
+    const kinds = new Set(['weapon', 'ammo', 'armour', 'inventory']);
+    for (const g of weaponGroups) { expect(typeof g.id).toBe('string'); expect(kinds.has(g.kind), g.kind).toBe(true); }
+  });
+
+  it('itemFromTrappingById pose un trappingId qui pointe le catalogue', () => {
+    for (const id of ['arbalete', 'epee-batarde', 'chemise-de-mailles', 'mains-nues']) {
+      const it = itemFromTrappingById(id);
+      expect(it, id).toBeTruthy();
+      expect(it!.trappingId).toBe(id);
     }
   });
 

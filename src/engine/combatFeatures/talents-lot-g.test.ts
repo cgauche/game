@@ -32,7 +32,7 @@ describe('dégâts (LDB 10) — Coup puissant / Tir précis / Combat déloyal / 
     const c = mk([{ name: 'Coup puissant', times: 2 }, { name: 'Tir précis', times: 1 }, { name: 'Combat déloyal', times: 1 }, { name: 'Charge berserk', times: 3 }]);
     expect(talentDamageBonus(c, w(), false)).toBe(2); // mêlée
     expect(talentDamageBonus(c, w({ type: 'ranged' }), false)).toBe(1); // distance
-    expect(talentDamageBonus(c, w({ subType: 'Bagarre' }), false)).toBe(3); // mêlée + Bagarre
+    expect(talentDamageBonus(c, w({ subType: 'bagarre' }), false)).toBe(3); // mêlée + Bagarre (id de Groupe)
     expect(talentDamageBonus(c, w(), true)).toBe(5); // mêlée + Charge berserk 3
   });
   it('Tueur / Robuste / Frappe blessante / Tir sûr', () => {
@@ -85,8 +85,8 @@ describe('initiative / économie d’action (LDB 10)', () => {
   });
   it('Rechargement rapide (toutes) / Artilleur (Poudre noire seulement)', () => {
     const c = mk([{ name: 'Rechargement rapide', times: 1 }, { name: 'Artilleur', times: 2 }]);
-    expect(reloadDRBonus(c, w({ type: 'ranged', subType: 'Arbalète' }))).toBe(1);
-    expect(reloadDRBonus(c, w({ type: 'ranged', subType: 'Poudre noire' }))).toBe(3);
+    expect(reloadDRBonus(c, w({ type: 'ranged', subType: 'arbalete' }))).toBe(1);
+    expect(reloadDRBonus(c, w({ type: 'ranged', subType: 'poudre-noire' }))).toBe(3);
   });
   it('Sprinter / Fuite ! / Vigilance / Maîtrise du combat', () => {
     expect(runMovementBonus(mk([{ name: 'Sprinter', times: 1 }]))).toBe(1);

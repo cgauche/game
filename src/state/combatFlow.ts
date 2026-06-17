@@ -53,6 +53,7 @@ import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSiz
 import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf } from './triggeredEffects';
 import { hasStealAdvantage, shieldAdvantageLevel, hasRiposte, talentCritExtraWounds, hasSurpriseSave, talentMagicResistance, hasBraveheart, outnumberCountBonus, hasStunSave, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony } from '../engine/combatFeatures/dispatch';
 import { canStrikeFirst } from '../engine/qualities/dispatch';
+import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
   wardSaves, hasChampionDefense, banishedAtZero,
   isStupid, hasRage, isUnstable, isBestial, isTerritorial, hasPerturbingAura,
@@ -96,7 +97,7 @@ import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } 
 import { findSkill, findManeuverById, findDomain } from '../data';
 import { norm } from '../lib/normalize';
 import { slugId } from '../data/slug';
-import { recomputeLoadout, itemFromTrapping, customTrapping, weaponWithAmmo, compatibleAmmo, damageArmour, buildWeapon } from '../engine/items';
+import { recomputeLoadout, weaponWithAmmo, compatibleAmmo, damageArmour, buildWeapon } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks } from '../engine/conditions';
 import { creatureAttacks, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
@@ -994,7 +995,7 @@ function deviateArmour(target: Combatant, weapon: Weapon, res: AttackResult, log
 /** Une armure Bâclée frappée par un Coup Critique à sa localisation casse (LDB 60 l.82) — héros (pièces). */
 function breakBacleArmour(target: Combatant, loc: HitLocation, log: string[]): void {
   const piece = (target.items ?? []).find(
-    (i) => i.equipped && i.kind === 'armor' && i.locs?.includes(loc) && hasQuality(i, 'Bâclé') && (i.pa ?? 0) - (i.damageTaken ?? 0) > 0,
+    (i) => i.equipped && i.kind === 'armor' && i.locs?.includes(loc) && hasQuality(i, QUALITY_IDS.Bacle) && (i.pa ?? 0) - (i.damageTaken ?? 0) > 0,
   );
   if (!piece) return;
   piece.damageTaken = piece.pa ?? 0; // inutilisable
@@ -1242,7 +1243,7 @@ export function applyAttackResult(
       if (/rat|skaven|rongeur/i.test(attacker.name)) target.woundedByRodent = true;
     }
     // Munition Infecté (Aux Armes p.102 — ferraille/débris souillés) : exposition à l'infection.
-    if (hasQuality(weapon, 'Infecté')) target.woundedByInfected = true;
+    if (hasQuality(weapon, QUALITY_IDS.Infecte)) target.woundedByInfected = true;
     for (const t of atkTraits) {
       if (t.id === 'maladie' && t.arg && !(target.diseaseExposure ?? []).includes(t.arg)) {
         target.diseaseExposure = [...(target.diseaseExposure ?? []), t.arg];
@@ -1272,7 +1273,7 @@ export function applyAttackResult(
     for (const line of fireTriggers(get, attacker, 'onKill', { rng: battleRng() })) critLog.push(line);
   }
   // Taille (arme) : sur une touche réussie, endommage de 1 PA l'armure frappée (LDB 63 l.8).
-  if (res.hit && hasQuality(weapon, 'Taille')) damageArmour(target, res.location ?? 'corps');
+  if (res.hit && hasQuality(weapon, QUALITY_IDS.Taille)) damageArmour(target, res.location ?? 'corps');
   // Munition héros : consommée à l'application ; arme à Recharge → déchargée (Test étendu requis pour recharger).
   if (weapon.type === 'ranged' && attacker.kind === 'hero') {
     attacker.shotsThisTurn = (attacker.shotsThisTurn ?? 0) + 1; // Salve : compteur de tirs du tour (−10 cumulatif)
@@ -1413,7 +1414,7 @@ export function applyAttackResult(
   if (isOutOfAction(target)) log.push(ev('death', `${target.name} est mis hors de combat !`, target.id));
   // Salve (Aux Armes p.126) : un héros qui tire une arme à Salve gardant des tirs (chambered > 0) ne
   // consomme PAS son Action — il peut tirer encore ce tour (chaque tir suivant à −10 cumulatif).
-  const salvoContinues = attacker.kind === 'hero' && weapon.type === 'ranged' && hasQuality(weapon, 'Salve') && (attacker.chambered ?? 0) > 0;
+  const salvoContinues = attacker.kind === 'hero' && weapon.type === 'ranged' && hasQuality(weapon, QUALITY_IDS.Salve) && (attacker.chambered ?? 0) > 0;
   set({ battle: { ...battle, acted: !salvoContinues, action: null, log } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
@@ -1514,7 +1515,7 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
   const battle = get().battle!;
   const log: string[] = [`${c.name} — Maladresse ! ${r.label}`];
   // Bâclé : l'arme casse sur toute Maladresse (Test raté + double, LDB 60 l.82) — sauvegarde Solide possible.
-  if (hasQuality(weapon, 'Bâclé')) wearActiveWeapon(c, weapon, true);
+  if (hasQuality(weapon, QUALITY_IDS.Bacle)) wearActiveWeapon(c, weapon, true);
   const sb = bonus(effectiveChar(c, 'F'));
   const units = r.roll % 10;
   switch (r.kind) {

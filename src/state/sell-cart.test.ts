@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
-import { itemFromTrapping } from '../engine/items';
+import { itemFromTrappingById } from '../engine/items';
 import { makeRNG } from '../engine/dice';
 import { toBrass } from '../engine/money';
 import type { MerchantState } from './merchantFlow';
@@ -10,8 +10,8 @@ import type { MerchantState } from './merchantFlow';
 describe('Panier de vente (#22b)', () => {
   function setup() {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
-    const a = itemFromTrapping('Hallebarde')!;
-    const b = itemFromTrapping('Dague')!;
+    const a = itemFromTrappingById('hallebarde')!;
+    const b = itemFromTrappingById('dague')!;
     hero.items = [a, b];
     const merchant: MerchantState = {
       entityId: 'm', archetype: 'armurier', settlement: 'ville', resaleRate: 0.5, stock: [], cart: [], bargainLocked: false,

@@ -36,9 +36,9 @@ describe('disponibilite — Disponibilité RAW (LDB 59 p.292)', () => {
   });
   it('rollStock : déterministe (même seed → même stock), filtre Exotique, curaté forcé', () => {
     const cat: CatalogItem[] = [
-      { label: 'Épée', availability: 'Commune' },
-      { label: 'Arquebuse', availability: 'Rare' },
-      { label: 'Clavecin', availability: 'Exotique' },
+      { id: 'epee', label: 'Épée', availability: 'Commune' },
+      { id: 'arquebuse', label: 'Arquebuse', availability: 'Rare' },
+      { id: 'clavecin', label: 'Clavecin', availability: 'Exotique' },
     ];
     const a = rollStock(cat, 'ville', makeRNG(7));
     const b = rollStock(cat, 'ville', makeRNG(7));

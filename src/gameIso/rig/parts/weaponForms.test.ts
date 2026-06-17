@@ -9,7 +9,7 @@ const wep = (label: string, type: 'melee' | 'ranged'): Weapon => ({ name: label,
 /** Sous-types NON tenus en main → hors contrat de silhouette : engins de siège servis par un équipage
  *  (Baliste/Canons/Catapultes/Mortier/Pierrier) et munitions/projectiles (flèches/cartouches/bombes/
  *  cailloux). Le rig ne dessine pas d'arme portée pour eux. */
-const NON_PORTEE = new Set(['Armes de siège', 'Munitions']);
+const NON_PORTEE = new Set(['armes-de-siege', 'munitions']); // ids de Groupe
 
 describe('weaponForms — contrat des armes tenues en main', () => {
   it('couvre toutes les armes melee/ranged de la donnée (hors siège & munitions)', () => {

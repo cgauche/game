@@ -43,7 +43,7 @@ describe('Scénario « Le Caveau piégé » : vitrine Flow + Condition', () => {
     runFlow(useGame.getState, useGame.setState, levier.interact!.flow);
     expect(useGame.getState().flags.levier_tire).toBe(true);
     // la fouille de la clé donne l'objet « Clé en fer » — c'est lui que la condition hasItem de la herse lit.
-    expect(flowEffects(cle.interact!.flow).some((e) => e.type === 'giveTrapping' && e.trapping === 'Clé en fer')).toBe(true);
+    expect(flowEffects(cle.interact!.flow).some((e) => e.type === 'giveTrapping' && e.custom === 'Clé en fer')).toBe(true);
   });
 
   beforeEach(() => useGame.setState({ battle: null, flags: {}, pendingTest: null }));

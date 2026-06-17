@@ -1,6 +1,6 @@
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
-import { itemFromTrapping, recomputeLoadout } from '../../engine/items';
+import { itemFromTrappingById, recomputeLoadout } from '../../engine/items';
 import { Combatant } from '../../engine/types';
 import { flowFromEffects } from '../../state/flow';
 import { arena } from './_shared';
@@ -20,13 +20,13 @@ function negociant(): Combatant {
   // Épée bâtarde « légendaire » : qualité MAGIQUE cachée (« De plaies atroces », ADE2 l.228 = Dévastatrice)
   // + skin bleuté ; identified:false → ses qualités sont MASQUÉES tant qu'une Évaluation ne l'a pas révélée
   // (elles restent ACTIVES en combat).
-  const epee = itemFromTrapping('Épée bâtarde')!;
-  epee.qualities = [...epee.qualities, 'De plaies atroces'];
+  const epee = itemFromTrappingById('epee-batarde')!;
+  epee.qualities = [...epee.qualities, 'de-plaies-atroces']; // id de qualité runtime
   epee.identified = false;
   epee.skin = { metal: '#7faaff' };
   epee.equipped = true;
   // Armure endommagée (2 PA perdus) → réparable chez le marchand (10 %/PA, LDB 63).
-  const maille = itemFromTrapping('Chemise de mailles')!;
+  const maille = itemFromTrappingById('chemise-de-mailles')!;
   maille.damageTaken = 2;
   maille.equipped = true;
   h.items = [epee, maille];

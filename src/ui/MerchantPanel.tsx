@@ -1,12 +1,12 @@
 import { useState, useMemo, Fragment } from 'react';
 import { useGame } from '../state/store';
-import { findTrapping, qualityRuntime, type QualityRef } from '../data/index';
+import { findTrappingById, weaponGroupLabel, qualityRuntime, type QualityRef } from '../data/index';
 import { priceToMoney, fromBrass, toBrass, formatMoney, canAfford, add as moneyAdd, type Money } from '../engine/money';
 import { craftPriceFactor } from '../engine/qualities/craftEconomy';
 import { repairCostBrass } from '../engine/repair';
 import { bargainBuyFactor } from '../engine/bargain';
 import { compareEquip, isShieldItem } from '../engine/equipCompare';
-import { itemFromTrapping, isWeaponActive } from '../engine/items';
+import { itemFromTrappingById, isWeaponActive } from '../engine/items';
 import { describeQuality } from '../engine/qualities/describe';
 import { sellGain } from '../state/merchantFlow';
 import type { Combatant, ItemInstance } from '../engine/types';
@@ -27,18 +27,18 @@ const FAMILIES: { key: string; label: string }[] = [
 ];
 const AVAIL_RANK: Record<string, number> = { Commune: 0, Limitée: 1, Rare: 2, Exotique: 3 };
 
-function familyOf(label: string): string {
-  const t = findTrapping(label);
+function familyOf(id: string): string {
+  const t = findTrappingById(id);
   if (!t) return 'divers';
-  if (isShieldItem({ name: label, qualities: (t.qualities ?? []).map(qualityRuntime) })) return 'boucliers';
+  if (isShieldItem({ name: t.label, qualities: (t.qualities ?? []).map(qualityRuntime) })) return 'boucliers';
   if (t.type === 'melee') return 'melee';
   if (t.type === 'ranged') return 'ranged';
   if (t.type === 'ammunition') return 'ammo';
   if (t.type === 'armor') return 'armor';
   return 'divers';
 }
-function availRank(label: string): number {
-  return AVAIL_RANK[findTrapping(label)?.availability ?? ''] ?? 4;
+function availRank(id: string): number {
+  return AVAIL_RANK[findTrappingById(id)?.availability ?? ''] ?? 4;
 }
 
 /** Colonnes de stats par famille (tableau comparatif). 1re colonne (`emph`) = info clé mise en avant. */
@@ -60,8 +60,8 @@ const FAMILY_COLS: Record<string, { label: string; get: (t: TrapRow) => string; 
 };
 
 /** Coût d'achat unitaire (catalogue × qualité d'artisanat × Marchandage). null si prix non chiffré (« ND »). */
-function lineCost(label: string, factor: number): Money | null {
-  const t = findTrapping(label);
+function lineCost(id: string, factor: number): Money | null {
+  const t = findTrappingById(id);
   if (!t) return null;
   const brass = toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities.map(qualityRuntime) }) * factor;
   if (!Number.isFinite(brass)) return null;
@@ -70,7 +70,7 @@ function lineCost(label: string, factor: number): Money | null {
 
 /** Coût de réparation d'une armure endommagée (LDB 63 l.97-98). */
 function repairPrice(item: ItemInstance): string {
-  const t = findTrapping(item.name);
+  const t = item.trappingId ? findTrappingById(item.trappingId) : undefined;
   const base = t ? toBrass(priceToMoney(t.price)) : 0;
   return formatMoney(fromBrass(repairCostBrass(item, base)));
 }
@@ -83,9 +83,9 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
   merchant: MerchantState;
   party: Combatant[];
   money: Money;
-  onAddToCart: (label: string) => void;
-  onDecCart: (label: string) => void;
-  onRemoveCart: (label: string) => void;
+  onAddToCart: (id: string) => void;
+  onDecCart: (id: string) => void;
+  onRemoveCart: (id: string) => void;
   onClearCart: () => void;
   onRefuse: (mode: 'buy' | 'sell') => void;
   onPay: () => void;
@@ -129,26 +129,27 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
     .filter((x): x is { hero: Combatant; it: ItemInstance } => !!x.it && !!x.hero);
   const sellCartTotal = sellCartItems.reduce((acc, x) => moneyAdd(acc, sellPriceMoney(x.it)), fromBrass(0));
 
-  // Stock groupé par famille puis trié (Disponibilité → nom).
+  // Stock groupé par famille puis trié (Disponibilité → nom). Lignes keyées par `trappingId`.
+  const labelOf = (id: string) => findTrappingById(id)?.label ?? id;
   const inStock = merchant.stock.filter((l) => l.qty > 0);
-  const byFamily: Record<string, { label: string; qty: number }[]> = {};
-  for (const l of inStock) (byFamily[familyOf(l.label)] ??= []).push(l);
-  for (const k of Object.keys(byFamily)) byFamily[k].sort((a, b) => availRank(a.label) - availRank(b.label) || a.label.localeCompare(b.label));
+  const byFamily: Record<string, { id: string; qty: number }[]> = {};
+  for (const l of inStock) (byFamily[familyOf(l.id)] ??= []).push(l);
+  for (const k of Object.keys(byFamily)) byFamily[k].sort((a, b) => availRank(a.id) - availRank(b.id) || labelOf(a.id).localeCompare(labelOf(b.id)));
 
   const cart = merchant.cart ?? [];
   const cartCount = cart.reduce((s, c) => s + c.qty, 0);
-  const cartTotalBrass = cart.reduce((s, c) => { const u = lineCost(c.label, buyFactor); return s + (u ? toBrass(u) * c.qty : 0); }, 0);
+  const cartTotalBrass = cart.reduce((s, c) => { const u = lineCost(c.id, buyFactor); return s + (u ? toBrass(u) * c.qty : 0); }, 0);
   const cartTotal = fromBrass(cartTotalBrass);
   const affordCart = toBrass(money) >= cartTotalBrass;
   const sealed = merchant.bargainBuy != null; // a négocié : prix figé, on peut RETIRER mais pas ajouter ni renégocier
-  const cartQtyOf = (label: string) => cart.find((c) => c.label === label)?.qty ?? 0;
+  const cartQtyOf = (id: string) => cart.find((c) => c.id === id)?.qty ?? 0;
   const dist = merchant.pendingDistribution ?? null;
 
   const previews = useMemo(() => {
     const map: Record<string, ItemInstance> = {};
-    for (const l of inStock) { const it = itemFromTrapping(l.label); if (it) map[l.label] = it; }
+    for (const l of inStock) { const it = itemFromTrappingById(l.id); if (it) map[l.id] = it; }
     return map;
-  }, [inStock.map((l) => l.label).join('|')]);
+  }, [inStock.map((l) => l.id).join('|')]);
 
   // Bloc de comparaison d'un héros (info : la neuve vs l'équipement actuel). Pas de bouton d'équipement (cart).
   const heroCompareBlock = (item: ItemInstance, h: Combatant) => {
@@ -247,20 +248,20 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
           <table className="cart-table">
             <tbody>
               {cart.map((c) => {
-                const u = lineCost(c.label, buyFactor);
+                const u = lineCost(c.id, buyFactor);
                 const sub = u ? fromBrass(toBrass(u) * c.qty) : null;
-                const stockQty = merchant.stock.find((l) => l.label === c.label)?.qty ?? 0;
+                const stockQty = merchant.stock.find((l) => l.id === c.id)?.qty ?? 0;
                 return (
-                  <tr key={c.label}>
-                    <td className="cart-name">{c.label}</td>
+                  <tr key={c.id}>
+                    <td className="cart-name">{labelOf(c.id)}</td>
                     <td className="cart-step">
-                      <button className="btn-step" onClick={() => onDecCart(c.label)} aria-label="Un de moins">−</button>
+                      <button className="btn-step" onClick={() => onDecCart(c.id)} aria-label="Un de moins">−</button>
                       <span className="cart-n">{c.qty}</span>
-                      <button className="btn-step" disabled={sealed || c.qty >= stockQty} title={sealed ? 'Marché négocié — vous ne pouvez plus ajouter' : undefined} onClick={() => onAddToCart(c.label)} aria-label="Un de plus">+</button>
+                      <button className="btn-step" disabled={sealed || c.qty >= stockQty} title={sealed ? 'Marché négocié — vous ne pouvez plus ajouter' : undefined} onClick={() => onAddToCart(c.id)} aria-label="Un de plus">+</button>
                     </td>
                     <td className="cart-unit">{u ? <Coins money={u} /> : '—'}</td>
                     <td className="cart-sub">{sub ? <Coins money={sub} /> : '—'}</td>
-                    <td className="cart-rm"><button className="btn-step" onClick={() => onRemoveCart(c.label)} aria-label="Retirer">✕</button></td>
+                    <td className="cart-rm"><button className="btn-step" onClick={() => onRemoveCart(c.id)} aria-label="Retirer">✕</button></td>
                   </tr>
                 );
               })}
@@ -309,27 +310,27 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
             {(() => {
               const cols = FAMILY_COLS[activeCat] ?? [];
               const span = cols.length + 4;
-              const groups: { key: string; items: typeof rows }[] = [];
+              const groups: { key: string; label: string; items: typeof rows }[] = [];
               for (const l of rows) {
-                const g = findTrapping(l.label)?.subType ?? 'Autres';
+                const g = findTrappingById(l.id)?.subType ?? 'autres';
                 let bucket = groups.find((x) => x.key === g);
-                if (!bucket) { bucket = { key: g, items: [] }; groups.push(bucket); }
+                if (!bucket) { bucket = { key: g, label: weaponGroupLabel(g) || 'Autres', items: [] }; groups.push(bucket); }
                 bucket.items.push(l);
               }
-              groups.sort((a, b) => a.key.localeCompare(b.key));
+              groups.sort((a, b) => a.label.localeCompare(b.label));
               const showGroups = groups.length > 1;
-              const itemRow = (l: { label: string; qty: number }) => {
-                const t = findTrapping(l.label);
-                const unit = lineCost(l.label, buyFactor);
+              const itemRow = (l: { id: string; qty: number }) => {
+                const t = findTrappingById(l.id);
+                const unit = lineCost(l.id, buyFactor);
                 const canAffordOne = unit ? canAfford(money, unit) : false;
-                const inCart = cartQtyOf(l.label);
-                const open = details === l.label;
+                const inCart = cartQtyOf(l.id);
+                const open = details === l.id;
                 return (
-                  <Fragment key={l.label}>
+                  <Fragment key={l.id}>
                     <tr className={`merch-trow ${canAffordOne ? '' : 'unaffordable'} ${open ? 'open' : ''}`}>
                       <td className="col-name">
-                        <button className="merch-name as-link" onClick={() => toggleDetails(l.label)} aria-expanded={open} title="Voir les détails de l’objet">
-                          <span className="caret">{open ? '▾' : '▸'}</span> {l.label}
+                        <button className="merch-name as-link" onClick={() => toggleDetails(l.id)} aria-expanded={open} title="Voir les détails de l’objet">
+                          <span className="caret">{open ? '▾' : '▸'}</span> {labelOf(l.id)}
                           <span className="merch-qty" title="En stock">×{l.qty}</span>
                         </button>
                       </td>
@@ -339,17 +340,17 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
                       <td className="col-buy">
                         {inCart > 0 ? (
                           <span className="cart-step">
-                            <button className="btn-step" onClick={() => onDecCart(l.label)} aria-label="Un de moins">−</button>
+                            <button className="btn-step" onClick={() => onDecCart(l.id)} aria-label="Un de moins">−</button>
                             <span className="cart-n">{inCart}</span>
-                            <button className="btn-step" disabled={sealed || inCart >= l.qty || !canAffordOne} onClick={() => onAddToCart(l.label)} aria-label="Un de plus">+</button>
+                            <button className="btn-step" disabled={sealed || inCart >= l.qty || !canAffordOne} onClick={() => onAddToCart(l.id)} aria-label="Un de plus">+</button>
                           </span>
                         ) : (
-                          <button className="btn small" disabled={sealed || !canAffordOne} title={sealed ? 'Marché conclu — panier figé' : canAffordOne ? 'Ajouter au panier' : 'Bourse insuffisante'} onClick={() => onAddToCart(l.label)}>+ Ajouter</button>
+                          <button className="btn small" disabled={sealed || !canAffordOne} title={sealed ? 'Marché conclu — panier figé' : canAffordOne ? 'Ajouter au panier' : 'Bourse insuffisante'} onClick={() => onAddToCart(l.id)}>+ Ajouter</button>
                         )}
                       </td>
                     </tr>
-                    {open && previews[l.label] && (
-                      <tr className="detail-row"><td colSpan={span}>{renderDetailCard(previews[l.label])}</td></tr>
+                    {open && previews[l.id] && (
+                      <tr className="detail-row"><td colSpan={span}>{renderDetailCard(previews[l.id])}</td></tr>
                     )}
                   </Fragment>
                 );
@@ -368,7 +369,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
                   <tbody>
                     {groups.map((g) => (
                       <Fragment key={g.key}>
-                        {showGroups && <tr className="group-row"><td colSpan={span}>{g.key}</td></tr>}
+                        {showGroups && <tr className="group-row"><td colSpan={span}>{g.label}</td></tr>}
                         {g.items.map(itemRow)}
                       </Fragment>
                     ))}

@@ -9,7 +9,8 @@ import { bonus, baseWithTraits } from './characteristics';
 import { applyEnchants } from './weaponDamage';
 import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { mutationArmourBonus } from './corruption';
-import { findTrapping, qualityRuntime } from '../data';
+import { findTrappingById, qualityRuntime, type TrappingRef, trappingRefLabel } from '../data';
+import { QUALITY_IDS } from './qualities/ids';
 import { indiceOf } from './qualities/normalize';
 import { craftEncDelta } from './qualities/craftEconomy';
 import { hasQuality } from './qualities/dispatch';
@@ -117,9 +118,10 @@ function kindOf(type: string): ItemKind {
   return 'misc';
 }
 
-/** Construit une instance d'objet depuis un trapping (par son label). */
-export function itemFromTrapping(label: string): ItemInstance | null {
-  const t = findTrapping(label);
+/** Construit une instance d'objet depuis un trapping de catalogue (par son `id` STABLE). Pose
+ *  `trappingId` (réf de re-dérivation). Id inconnu → null (objet hors-base → `customTrapping`). */
+export function itemFromTrappingById(id: string): ItemInstance | null {
+  const t = findTrappingById(id);
   if (!t) return null;
   const kind = kindOf(t.type);
   const locs =
@@ -133,6 +135,7 @@ export function itemFromTrapping(label: string): ItemInstance | null {
   const twoHandMark = /\(2m\)/i.test(t.prefix ?? '') || /\(2m\)/i.test(t.label); // marqueur « (2M) » = 2 mains
   return {
     uid: newUid(),
+    trappingId: t.id,
     name: t.label,
     kind,
     damage: t.damage ?? undefined,
@@ -157,6 +160,17 @@ export function customTrapping(name: string): ItemInstance {
   return { uid: newUid(), name, kind: 'misc', qualities: [], enc: 0, equipped: false };
 }
 
+/** Résout l'ItemInstance d'un Effet `giveTrapping` : objet de CATALOGUE (`trappingId`) sinon objet CUSTOM
+ *  (`custom`, nom libre hors-base). SOURCE UNIQUE (applyEffects + ramassage de prop). */
+export function itemFromGive(give: { trappingId?: string; custom?: string }): ItemInstance {
+  return (give.trappingId ? itemFromTrappingById(give.trappingId) : null) ?? customTrapping(give.custom ?? give.trappingId ?? 'Objet');
+}
+
+/** Libellé d'affichage d'un Effet `giveTrapping` (catalogue → label, sinon nom custom). */
+export function giveTrappingLabel(give: { trappingId?: string; custom?: string }): string {
+  return give.trappingId ? (findTrappingById(give.trappingId)?.label ?? give.trappingId) : (give.custom ?? 'Objet');
+}
+
 /** Limite d'Encombrement = Bonus de Force + Bonus d'Endurance, +2 par niveau de Costaud
  *  (LDB ; talent Costaud : « Augmentez les Points d'Encombrement … de votre niveau × 2 »). */
 export function maxEncumbrance(c: Combatant): number {
@@ -170,10 +184,10 @@ export function maxEncumbrance(c: Combatant): number {
 export function totalEncumbrance(c: Combatant): number {
   return (c.items ?? []).reduce((s, i) => {
     const enc = (i.enc || 0) + craftEncDelta(i); // Léger -1 / Volumineux +1 (LDB 60 l.56/91)
-    if (!!i.equipped && i.subType === 'Prothèses') return s; // prothèse portée = Enc 0 (LDB 73)
+    if (!!i.equipped && i.subType === 'protheses') return s; // prothèse portée = Enc 0 (LDB 73)
     const worn = !!i.equipped && i.kind === 'armor';
     // Objet porté : -1 (LDB Enc l.22) ; une armure Volumineux portée vaut Enc 1 (LDB 60 l.91).
-    const eff = worn ? (hasQuality(i, 'Volumineux') ? 1 : enc - 1) : enc;
+    const eff = worn ? (hasQuality(i, QUALITY_IDS.Volumineux) ? 1 : enc - 1) : enc;
     return s + Math.max(0, eff);
   }, 0);
 }
@@ -189,7 +203,7 @@ export function emptyArmour(ap = 0): ArmourPoints {
  *  marqueur `(2M)` dans le nom, ou Groupe « Deux-mains ». */
 export function weaponHands(it: { hands?: 1 | 2; name: string; subType?: string }): 1 | 2 {
   if (it.hands === 1 || it.hands === 2) return it.hands;
-  if (/\(2m\)/i.test(it.name) || (it.subType ?? '').toLowerCase() === 'deux-mains') return 2;
+  if (/\(2m\)/i.test(it.name) || it.subType === 'deux-mains') return 2; // Groupe « Deux-mains » (id)
   return 1;
 }
 
@@ -204,8 +218,8 @@ export function isTwoHandedWeapon(it: ItemInstance): boolean {
  *  Une seule pièce par couche et par localisation. */
 export type ArmourLayer = 'souple' | 'flexible' | 'rigide';
 export function armourLayer(it: ItemInstance): ArmourLayer {
-  if ((it.subType ?? '').toLowerCase() === 'cuir souple') return 'souple';
-  if (hasQuality(it, 'Flexible')) return 'flexible';
+  if (it.subType === 'cuir-souple') return 'souple'; // type d'armure « Cuir souple » (id)
+  if (hasQuality(it, QUALITY_IDS.Flexible)) return 'flexible';
   return 'rigide';
 }
 
@@ -235,10 +249,10 @@ let _unarmed: Weapon | null = null;
  *  plus de valeur codée en dur. Lazy + mémoïsé (data chargée au 1ᵉʳ appel). Copie fraîche à chaque appel. */
 export function unarmedWeapon(): Weapon {
   if (!_unarmed) {
-    const it = itemFromTrapping('Mains nues');
+    const it = itemFromTrappingById('mains-nues');
     _unarmed = it
       ? buildWeapon({ name: it.name, damage: { literal: it.damage ?? '+BF+0' }, reach: it.reach, qualities: it.qualities, subType: it.subType })
-      : buildWeapon({ name: 'Mains nues', damage: { literal: '+BF+0' }, reach: 'Personnelle', qualities: ['Inoffensive'], subType: 'Bagarre' });
+      : buildWeapon({ name: 'Mains nues', damage: { literal: '+BF+0' }, reach: 'Personnelle', qualities: [QUALITY_IDS.Inoffensive], subType: 'bagarre' });
   }
   return { ..._unarmed, hand: 'main' };
 }
@@ -272,7 +286,7 @@ export function recomputeLoadout(c: Combatant): void {
     if (it.destroyed) return null; // arme détruite : inutilisable (LDB 14 — Incident de Tir)
     const hands = weaponHands(it);
     if (hands === 2 && cannotWieldTwoHanded(c)) return null; // amputation : pas d'arme à 2 mains (LDB 18 l.352)
-    const reload = indiceOf(it.qualities, 'Recharge') ?? 0;
+    const reload = indiceOf(it.qualities, QUALITY_IDS.Recharge) ?? 0;
     // Enchantements PORTÉS PAR L'OBJET (op augmentWeapon / arme invoquée) repliés ici → l'arme active
     // est déjà Magique/+Dégâts/onHit, donc visible partout ET appliquée à la résolution (pas de merge ailleurs).
     return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? '+BF', reach: it.reach,
@@ -311,13 +325,13 @@ export function recomputeLoadout(c: Combatant): void {
   // Dague » en mêlée) — DÉCLARATIF sur le trapping (`derivedWeapon`). Ajouter une prothèse-arme = la
   // donnée du trapping, plus aucun name-match `i.name === 'Crochet'` ici.
   for (const i of items) {
-    const dw = i.equipped ? findTrapping(i.name)?.derivedWeapon : undefined;
+    const dw = i.equipped && i.trappingId ? findTrappingById(i.trappingId)?.derivedWeapon : undefined;
     if (dw) weapons.push({ hand: 'main', ...dw });
   }
   // Tentacule (trait Tentacules, LDB 85 p.343) : AUSSI une Attaque gratuite 1/tour (battleTentacle) ;
   // ici utilisable comme arme ordinaire. La mutation « Tentacule épais » confère le trait → couvert.
   if (hasTraitKey(c.traits, 'tentacules')) {
-    weapons.push({ ...buildWeapon({ name: 'Tentacule', subType: 'Base', uid: 'nat-tentacule', damage: { plusBF: true, flat: 0, bare: true } }), hand: 'main' });
+    weapons.push({ ...buildWeapon({ name: 'Tentacule', subType: 'base', uid: 'nat-tentacule', damage: { plusBF: true, flat: 0, bare: true } }), hand: 'main' });
   }
   // Armes NATURELLES de MUTATION (LDB 19 : « Compte comme une Arme de Créature », Dégâts = BF) —
   // DÉCLARATIF sur la def de mutation (`fx.derivedWeapon`). Ajouter une mutation-arme = la donnée.
@@ -417,12 +431,12 @@ export function loadoutSetSlot(c: Combatant, id: string, slot: 'main' | 'off', u
 }
 
 /**
- * Ajoute l'objet `label` à l'inventaire PERSONNEL d'un héros et re-dérive son équipement actif. Retourne
- * un NOUVEAU combattant (cloné). SOURCE UNIQUE du « donner un objet à un héros » : utilisée par l'achat
- * marchand (`buyItem`) ET l'assignation de butin de victoire — pas de logique dupliquée. Objet inconnu → inchangé.
+ * Ajoute l'objet de catalogue `trappingId` à l'inventaire PERSONNEL d'un héros et re-dérive son équipement
+ * actif. Retourne un NOUVEAU combattant (cloné). SOURCE UNIQUE du « donner un objet à un héros » : utilisée
+ * par l'achat marchand (`buyItem`) ET l'assignation de butin. Id inconnu → inchangé.
  */
-export function addItemToHero(hero: Combatant, label: string): Combatant {
-  const it = itemFromTrapping(label);
+export function addItemToHero(hero: Combatant, trappingId: string): Combatant {
+  const it = itemFromTrappingById(trappingId);
   if (!it) return hero;
   const clone: Combatant = JSON.parse(JSON.stringify(hero));
   clone.items = [...(clone.items ?? []), it];
@@ -444,7 +458,7 @@ export function wornArmourPoints(items: ItemInstance[], exclude?: (it: ItemInsta
     if (!it.equipped || it.kind !== 'armor' || !it.pa || !it.locs) continue;
     if (exclude?.(it)) continue;
     const net = Math.max(0, it.pa - (it.damageTaken ?? 0)); // PA nette des dégâts (LDB 63 l.53)
-    const layer = hasQuality(it, 'Flexible') ? flex : rigid;
+    const layer = hasQuality(it, QUALITY_IDS.Flexible) ? flex : rigid;
     for (const l of it.locs) layer[l] = Math.max(layer[l], net);
   }
   const armour = emptyArmour();
@@ -465,8 +479,8 @@ export function ignoredArmourAP(c: Combatant, loc: HitLocation, hit: { roll: num
   if (!items.length) return 0;
   const even = hit.roll % 2 === 0;
   const ignored = (it: ItemInstance): boolean =>
-    (hasQuality(it, 'Partielle') && (even || hit.critical)) ||
-    (hasQuality(it, 'Points faibles') && hit.critical && hit.empaleuse);
+    (hasQuality(it, QUALITY_IDS.Partielle) && (even || hit.critical)) ||
+    (hasQuality(it, QUALITY_IDS.PointsFaibles) && hit.critical && hit.empaleuse);
   if (!items.some((it) => it.equipped && it.kind === 'armor' && it.locs?.includes(loc) && ignored(it))) return 0;
   return Math.max(0, wornArmourPoints(items)[loc] - wornArmourPoints(items, ignored)[loc]);
 }
@@ -475,7 +489,7 @@ export function ignoredArmourAP(c: Combatant, loc: HitLocation, hit: { roll: num
  *  Critiques obtenus sur un jet de toucher IMPAIR sont ignorés) ? */
 export function impenetrableAt(c: Combatant, loc: HitLocation): boolean {
   return (c.items ?? []).some(
-    (i) => i.equipped && i.kind === 'armor' && i.locs?.includes(loc) && (i.pa ?? 0) - (i.damageTaken ?? 0) > 0 && hasQuality(i, 'Impénétrable'),
+    (i) => i.equipped && i.kind === 'armor' && i.locs?.includes(loc) && (i.pa ?? 0) - (i.damageTaken ?? 0) > 0 && hasQuality(i, QUALITY_IDS.Impenetrable),
   );
 }
 
@@ -518,20 +532,17 @@ export function damageScore(d?: string): number {
   return (d.replace(/BF/gi, '').match(/[+-]?\d+/g) ?? []).reduce((a, n) => a + parseInt(n, 10), 0);
 }
 
-/** Alias de munitions : certaines carrières listent un libellé de munition différent du trapping
- *  canonique (artefact de conversion). Ex. le Chasseur reçoit « Pierre (10) », mais la munition de
- *  Fronde s'appelle « Projectile de pierre » → sans alias, la fronde n'a pas de munition. */
-const TRAPPING_ALIASES: Record<string, string> = { pierre: 'Projectile de pierre' };
-
-/** Construit l'inventaire d'un héros depuis une liste de noms de trappings. */
-export function buildInventory(trappingNames: string[]): ItemInstance[] {
+/** Construit l'inventaire d'un héros depuis des `TrappingRef[]` (possessions de Classe + niveau de
+ *  carrière — déjà des refs par id). Un ref `{id}` à stats devient un objet ; le `count` d'une munition
+ *  donne sa quantité. Les refs `{text}` (flavor hors catalogue : « Réseau d'informateurs ») n'ont pas
+ *  de stats → ignorées (comme l'ancien runtime). */
+export function buildInventory(refs: TrappingRef[]): ItemInstance[] {
   const items: ItemInstance[] = [];
-  for (const raw of trappingNames) {
-    const qtyM = raw.match(/\((\d+)\)\s*$/); // « Pierre (10) » → 10 munitions
-    const base = raw.replace(/\s*\([^)]*\)\s*$/, '').trim();
-    const it = itemFromTrapping(TRAPPING_ALIASES[base.toLowerCase()] ?? base);
+  for (const ref of refs) {
+    if (!('id' in ref)) continue; // {text} narratif : pas d'objet à stats
+    const it = itemFromTrappingById(ref.id);
     if (it) {
-      if (it.kind === 'ammo' && qtyM) it.qty = parseInt(qtyM[1], 10); // quantité donnée par la carrière
+      if (it.kind === 'ammo' && ref.count && 'fixed' in ref.count) it.qty = ref.count.fixed; // quantité de la carrière
       items.push(it);
     }
   }
@@ -554,8 +565,8 @@ export function buildInventory(trappingNames: string[]): ItemInstance[] {
  *  Fronde) correspondent à l'identique. Sans cette normalisation, une arme à feu (subType « Poudre
  *  noire ») ne trouverait jamais sa munition (subType « Poudre noire et ingénierie »). */
 export function ammoFamily(subType?: string): string {
-  const s = (subType ?? '').toLowerCase();
-  if (s.includes('poudre noire') || s.includes('ingénierie') || s.includes('ingenierie')) return 'poudre-ingenierie';
+  const s = subType ?? ''; // `subType` = id de Groupe (poudre-noire / ingenierie / arc / arbalete / fronde…)
+  if (s === 'poudre-noire' || s === 'ingenierie' || s === 'poudre-noire-et-ingenierie') return 'poudre-ingenierie';
   return s;
 }
 

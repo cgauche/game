@@ -10,7 +10,8 @@ import { Effect, EncounterDef, Dialogue, Scene } from '../../state/scene';
 import { EMPTY_FLOW } from '../../state/flow';
 import { DAY_PHASES, DayPhaseKey } from '../../engine/clock';
 import { DISEASE_DEFS } from '../../engine/disease';
-import { spells, etats } from '../../data';
+import { spells, etats, trappings as trappingsData } from '../../data';
+import { giveTrappingLabel } from '../../engine/items';
 import { FlowEditor } from './FlowEditor';
 import { GameOpEditor, opSummary } from './GameOpEditor';
 
@@ -113,7 +114,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'journal': return `${icon} Journal : ${e.text ? `« ${cut(e.text)} »` : '(vide)'}`;
     case 'setFlag': return `${icon} Flag ${e.flag || '?'} = ${e.value === false ? 'faux' : 'vrai'}`;
     case 'document': return `${icon} Document : ${e.title || '(sans titre)'}`;
-    case 'giveTrapping': return `${icon} Objet : ${e.trapping || '?'}${e.qualities?.length ? ` (+${e.qualities.length} qualité(s))` : ''}`;
+    case 'giveTrapping': return `${icon} Objet : ${giveTrappingLabel(e) || '?'}${e.qualities?.length ? ` (+${e.qualities.length} qualité(s))` : ''}`;
     case 'giveMoney': {
       const parts = [e.gold ? `${e.gold} CO` : '', e.silver ? `${e.silver} pa` : '', e.brass ? `${e.brass} sc` : ''].filter(Boolean);
       return `${icon} Argent : ${parts.join(' ') || '0'}`;
@@ -168,7 +169,7 @@ export function newEffect(type: Effect['type']): Effect {
     case 'document':
       return { type: 'document', title: '', text: '' };
     case 'giveTrapping':
-      return { type: 'giveTrapping', trapping: '' };
+      return { type: 'giveTrapping', custom: '' };
     case 'giveMoney':
       return { type: 'giveMoney', gold: 0, silver: 0, brass: 0 };
     case 'giveXp':
@@ -266,7 +267,14 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         )}
         {effect.type === 'giveTrapping' && (
           <>
-            <input placeholder="Libellé exact (trappings.json), ex. Chemise de mailles" value={e.trapping ?? ''} onChange={(ev) => upd({ trapping: ev.target.value })} />
+            <input list="dl-trappings-give" placeholder="Objet de catalogue (sinon nom custom hors-base)"
+              value={e.trappingId ? (trappingsData.find((t) => t.id === e.trappingId)?.label ?? e.trappingId) : (e.custom ?? '')}
+              onChange={(ev) => {
+                const v = ev.target.value;
+                const t = trappingsData.find((x) => x.label.toLowerCase() === v.toLowerCase());
+                upd(t ? { trappingId: t.id, custom: undefined } : { custom: v || undefined, trappingId: undefined });
+              }} />
+            <datalist id="dl-trappings-give">{trappingsData.map((t) => <option key={t.id} value={t.label} />)}</datalist>
             <input
               placeholder="Qualités magiques ajoutées (virgules, ex. De plaies atroces)"
               value={(e.qualities ?? []).join(', ')}

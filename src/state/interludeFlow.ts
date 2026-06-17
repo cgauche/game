@@ -16,7 +16,7 @@ import { battleRng } from './battleRng';
 import { d100 } from '../engine/dice';
 import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvents';
 import { fromBrass, toBrass, formatMoney } from '../engine/money';
-import { itemFromTrapping, recomputeLoadout } from '../engine/items';
+import { itemFromTrappingById, recomputeLoadout } from '../engine/items';
 import { sleepParty } from './restFlow';
 import { craftTarget, craftSpecOf, metierOf, statusIncome, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost, type PriceTier, type Availability } from '../engine/activities';
 import { QUALITIES } from '../engine/qualities/registry';
@@ -24,7 +24,7 @@ import { testValue } from '../engine/skills';
 import { effectiveChar } from '../engine/characteristics';
 import { buyTalent as engineBuyTalent, talentCost } from '../engine/advancement';
 import { applyTalentAcquisition, fortuneMax, resolveMax, heroMaxWounds } from '../engine/talentEffects';
-import { findCareerById, levelsForCareer, findTrapping, findTalent, findSkillById, skillInstanceLabel, advancementLabel } from '../data';
+import { findCareerById, levelsForCareer, findTrappingById, findTalent, findSkillById, skillInstanceLabel, advancementLabel, qualityRefLabel } from '../data';
 import { CHAR_BY_LABEL, CHAR_LABELS, type CharKey, type Combatant, type Difficulty } from '../engine/types';
 import type { PendingBase } from './rollFlow';
 
@@ -41,8 +41,9 @@ export interface InterludeHeroState {
   didRevenus?: boolean;
   /** Gains de Revenus, crédités APRÈS le gaspillage (ch.23 l.179) — en sous de cuivre. */
   revenueBrass: number;
-  /** Artisanat en cours — « Tout travail inachevé peut être conservé » (ch.23 l.92). */
-  craft?: { trapping: string; tier: PriceTier; avail: Availability; atouts: string[]; defauts: string[]; drDone: number; drTarget: number; difficulty: Difficulty };
+  /** Artisanat en cours — « Tout travail inachevé peut être conservé » (ch.23 l.92). `trappingId` = id
+   *  de l'objet fabriqué ; `atouts`/`defauts` = ids de qualité (runtime). */
+  craft?: { trappingId: string; tier: PriceTier; avail: Availability; atouts: string[]; defauts: string[]; drDone: number; drTarget: number; difficulty: Difficulty };
   /** « +10 pour chaque tentative ratée » d'Apprentissage particulier (ch.23 l.63), par talent. */
   learnFails?: Record<string, number>;
 }
@@ -78,11 +79,11 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
   // les commandes du cycle précédent sont livrées à l'ouverture de CET interlude.
   for (const o of get().pendingOrders ?? []) {
     const hero = party.find((h) => h.id === o.heroId);
-    const it = hero ? itemFromTrapping(o.trapping) : null;
+    const it = hero ? itemFromTrappingById(o.trappingId) : null;
     if (hero && it) {
       hero.items = [...(hero.items ?? []), it];
       recomputeLoadout(hero);
-      lines.push(`${hero.name} reçoit sa commande : ${o.trapping}.`);
+      lines.push(`${hero.name} reçoit sa commande : ${trappingLabelOf(o.trappingId)}.`);
     }
   }
   const baseLeft = Math.min(3, w); // « 1/semaine, max 3 » (ch.23 l.6)
@@ -198,12 +199,17 @@ export function openRevenus(get: Get, set: Set, heroId: string): void {
 
 /** Engage un Artisanat (ch.23 l.66) : exige une Compétence Métier (≥1 avance) ; les matériaux
  *  coûtent ¼ du prix listé, payés AVANT (« devront être achetées avant le début de l'Activité »). */
-export function craftStart(get: Get, set: Set, heroId: string, trappingLabel: string, atouts: string[], defauts: string[]): void {
+/** Libellé d'affichage d'un trapping de catalogue par id (repli sur l'id). */
+const trappingLabelOf = (id: string): string => findTrappingById(id)?.label ?? id;
+/** Libellé d'affichage d'une qualité runtime (id → label, ex. « solide » → « Solide »). */
+const craftQualLabel = (id: string): string => qualityRefLabel({ id });
+
+export function craftStart(get: Get, set: Set, heroId: string, trappingId: string, atouts: string[], defauts: string[]): void {
   const st = heroState(get(), heroId);
   const h = get().party.find((x) => x.id === heroId);
   if (!st || !h) return;
   if (st.craft) {
-    get().log(`${h.name} a déjà un ouvrage en cours (${st.craft.trapping}).`);
+    get().log(`${h.name} a déjà un ouvrage en cours (${trappingLabelOf(st.craft.trappingId)}).`);
     return;
   }
   const metier = metierOf(h);
@@ -211,9 +217,9 @@ export function craftStart(get: Get, set: Set, heroId: string, trappingLabel: st
     get().log(`${h.name} ne possède aucune Compétence Métier — impossible de fabriquer.`);
     return;
   }
-  const t = findTrapping(trappingLabel);
+  const t = findTrappingById(trappingId);
   if (!t) {
-    get().log(`Équipement inconnu : « ${trappingLabel} ».`);
+    get().log(`Équipement inconnu : « ${trappingId} ».`);
     return;
   }
   // Gamme/Disponibilité/matériaux : dérivation PARTAGÉE avec le catalogue UI (craftSpecOf).
@@ -227,10 +233,10 @@ export function craftStart(get: Get, set: Set, heroId: string, trappingLabel: st
   const itl = get().interlude!;
   itl.perHero[heroId] = {
     ...st,
-    craft: { trapping: trappingLabel, tier, avail, atouts, defauts, drDone: 0, drTarget: target.dr, difficulty: target.difficulty },
+    craft: { trappingId, tier, avail, atouts, defauts, drDone: 0, drTarget: target.dr, difficulty: target.difficulty },
   };
   set({ interlude: { ...itl } });
-  get().log(`${h.name} achète les matériaux (${formatMoney(fromBrass(materials))}) et installe son ouvrage : ${trappingLabel} (${target.dr} DR à atteindre, ${skillInstanceLabel(metier)}).`);
+  get().log(`${h.name} achète les matériaux (${formatMoney(fromBrass(materials))}) et installe son ouvrage : ${t.label} (${target.dr} DR à atteindre, ${skillInstanceLabel(metier)}).`);
 }
 
 /** Ouvre la modale du LANCER d'Artisanat — « Chaque Activité […] vous permet d'effectuer un
@@ -243,7 +249,7 @@ export function openCraftRoll(get: Get, set: Set, heroId: string): void {
   const metierLabel = metier ? skillInstanceLabel(metier) : 'Métier';
   set({
     pendingActivity: {
-      heroId, kind: 'craft', label: `Artisanat — ${st.craft.trapping}`,
+      heroId, kind: 'craft', label: `Artisanat — ${trappingLabelOf(st.craft.trappingId)}`,
       skillLabel: metierLabel, skillValue: testValue(h, metierLabel), difficulty: st.craft.difficulty,
       roll: null, target: 0, sl: 0, success: false,
       drBefore: st.craft.drDone, drTarget: st.craft.drTarget,
@@ -332,13 +338,13 @@ function falseQualities(item: { kind: string; qualities: string[] }, count: numb
 
 /** Passer commande (ch.23 l.167-172) : objet de rareté Exotique payé MAINTENANT, « achevé après
  *  votre prochaine aventure » (livré à l'ouverture du prochain interlude). 1 objet par Activité. */
-export function orderItem(get: Get, set: Set, heroId: string, trappingLabel: string): void {
+export function orderItem(get: Get, set: Set, heroId: string, trappingId: string): void {
   const st = heroState(get(), heroId);
   const h = get().party.find((x) => x.id === heroId);
   if (!st || !h || st.left <= 0) return;
-  const t = findTrapping(trappingLabel);
+  const t = findTrappingById(trappingId);
   if (!t) {
-    get().log(`Équipement inconnu : « ${trappingLabel} ».`);
+    get().log(`Équipement inconnu : « ${trappingId} ».`);
     return;
   }
   if (t.availability !== 'Exotique' && t.availability !== 'ND') {
@@ -350,7 +356,7 @@ export function orderItem(get: Get, set: Set, heroId: string, trappingLabel: str
     get().log(`Commande trop chère (${formatMoney(fromBrass(price))}).`);
     return;
   }
-  set({ money: fromBrass(toBrass(get().money) - price), pendingOrders: [...(get().pendingOrders ?? []), { heroId, trapping: t.label }] });
+  set({ money: fromBrass(toBrass(get().money) - price), pendingOrders: [...(get().pendingOrders ?? []), { heroId, trappingId: t.id }] });
   const itl = get().interlude!;
   itl.perHero[heroId] = { ...st, left: st.left - 1 };
   set({ interlude: { ...itl } });
@@ -435,16 +441,17 @@ export function confirmActivity(get: Get, set: Set): void {
   } else if (pa.kind === 'craft' && st.craft) {
     const drDone = Math.max(0, (pa.drBefore ?? 0) + pa.sl); // Test étendu : cumul du DR (LDB 12 l.199-211)
     if (drDone >= st.craft.drTarget) {
-      const it = itemFromTrapping(st.craft.trapping);
+      const it = itemFromTrappingById(st.craft.trappingId);
       if (it) {
-        it.qualities = [...(it.qualities ?? []), ...st.craft.atouts, ...st.craft.defauts];
+        it.qualities = [...(it.qualities ?? []), ...st.craft.atouts, ...st.craft.defauts]; // ids de qualité runtime
         h.items = [...(h.items ?? []), it];
         recomputeLoadout(h);
       }
-      lines.push(`${h.name} achève son ouvrage : ${st.craft.trapping}${st.craft.atouts.length ? ` (${st.craft.atouts.join(', ')})` : ''}${st.craft.defauts.length ? ` [${st.craft.defauts.join(', ')}]` : ''} !`);
+      const atL = st.craft.atouts.map(craftQualLabel), dfL = st.craft.defauts.map(craftQualLabel);
+      lines.push(`${h.name} achève son ouvrage : ${trappingLabelOf(st.craft.trappingId)}${atL.length ? ` (${atL.join(', ')})` : ''}${dfL.length ? ` [${dfL.join(', ')}]` : ''} !`);
       itl.perHero[pa.heroId] = { ...st, left: st.left - 1, craft: undefined };
     } else {
-      lines.push(`${h.name} avance son ouvrage : ${drDone}/${st.craft.drTarget} DR (${st.craft.trapping}).`);
+      lines.push(`${h.name} avance son ouvrage : ${drDone}/${st.craft.drTarget} DR (${trappingLabelOf(st.craft.trappingId)}).`);
       itl.perHero[pa.heroId] = { ...st, left: st.left - 1, craft: { ...st.craft, drDone } };
     }
   }

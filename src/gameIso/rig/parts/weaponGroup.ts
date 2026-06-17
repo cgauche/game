@@ -12,12 +12,12 @@ import type { Weapon } from '../../../engine/types';
 import { trappings } from '../../../data';
 import { norm } from '../../../lib/normalize';
 
-/** subType canonique → clé de famille propre (sans accents). */
+/** id de Groupe (subType) → clé de famille propre (sans accents). */
 const GROUP_KEY: Record<string, string> = {
-  Base: 'base', Escrime: 'escrime', Cavalerie: 'cavalerie', 'Deux-mains': 'deuxmains',
-  "Armes d'hast": 'hast', Fléau: 'fleau', Parade: 'parade', Bagarre: 'bagarre',
-  Arc: 'arc', Arbalète: 'arbalete', 'Poudre noire': 'poudre', Fronde: 'fronde',
-  Lancer: 'lancer', Entraves: 'entraves', Explosifs: 'explosifs', Ingénierie: 'ingenierie',
+  base: 'base', escrime: 'escrime', cavalerie: 'cavalerie', 'deux-mains': 'deuxmains',
+  'armes-d-hast': 'hast', fleau: 'fleau', parade: 'parade', bagarre: 'bagarre',
+  arc: 'arc', arbalete: 'arbalete', 'poudre-noire': 'poudre', fronde: 'fronde',
+  lancer: 'lancer', entraves: 'entraves', explosifs: 'explosifs', ingenierie: 'ingenierie',
 };
 
 /** libellé normalisé d'arme catalogué → subType canonique (construit une fois). */

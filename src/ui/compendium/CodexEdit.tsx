@@ -30,7 +30,7 @@ import type { PsychTrait } from '../../engine/psychology';
 /** Catégorie Codex → dataset éditable (source app-owned `src/data/*.json`). */
 const CATEGORY_DATASET: Record<string, DatasetKey> = {
   races: 'species', careers: 'careers', characteristics: 'characteristics', classes: 'classes',
-  stars: 'stars', skills: 'skills', talents: 'talents', trappings: 'trappings', qualities: 'qualities',
+  stars: 'stars', skills: 'skills', talents: 'talents', trappings: 'trappings', weaponGroups: 'weaponGroups', qualities: 'qualities',
   etats: 'etats', maladies: 'maladies', spells: 'spells', maneuvers: 'maneuvers', creatures: 'creatures', traits: 'traits', locations: 'locations', books: 'books',
   mutations: 'mutations', mutationTables: 'mutationTables', gods: 'gods', domains: 'domains',
 };

@@ -45,14 +45,14 @@ scene.entities.push(
     ]) } },
   { id: 'cle', kind: 'prop', ref: 'cle', pos: { x: 2, y: 8 }, label: 'Clé en fer, posée là',
     interact: { consume: true, flow: flowFromEffects([
-      { type: 'giveTrapping', trapping: 'Clé en fer' },
+      { type: 'giveTrapping', custom: 'Clé en fer' },
       { type: 'journal', text: 'Vous empochez la lourde clé en fer.' },
     ]) } },
   { id: 'herse-grille', kind: 'prop', ref: 'grille', pos: { x: 10, y: 5 }, label: 'Herse du trésor' },
   { id: 'tresor', kind: 'prop', ref: 'coffre', pos: { x: 12, y: 5 }, label: 'Coffre du trésor',
     interact: { consume: true, flow: flowFromEffects([
       { type: 'giveMoney', gold: 5 },
-      { type: 'giveTrapping', trapping: 'Épée', qualities: ['Précise'], identified: false },
+      { type: 'giveTrapping', custom: 'Épée', qualities: ['precise'], identified: false },
       { type: 'journal', text: 'Le coffre regorge d’or et d’une lame finement ouvragée.' },
     ]) } },
 );

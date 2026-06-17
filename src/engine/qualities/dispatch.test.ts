@@ -7,13 +7,14 @@ import { fileURLToPath } from 'node:url';
 
 const w = (qualities: string[], over: Partial<Weapon> = {}): Weapon => ({ name: 'W', type: 'melee', damage: '+BF', qualities, ...over });
 
-describe('dispatch — parité avec hasQ (startsWith, insensible casse, ignore Indice)', () => {
-  it('hasQuality reconnaît le label exact, la casse et l’Indice', () => {
-    expect(hasQuality(w(['Précise']), 'Précise')).toBe(true);
-    expect(hasQuality(w(['précise']), 'Précise')).toBe(true);
-    expect(hasQuality(w(['Solide 3']), 'Solide')).toBe(true); // ignore l'Indice
-    expect(hasQuality(w(['Perforante']), 'Précise')).toBe(false);
-    expect(hasQuality(undefined, 'Précise')).toBe(false);
+describe('dispatch — hasQuality compare par ID de qualité (label/casse/Indice tolérés en entrée)', () => {
+  it('hasQuality(porteur, qualityId) reconnaît la qualité quelle que soit la forme stockée', () => {
+    expect(hasQuality(w(['Précise']), 'precise')).toBe(true); // label canonique en runtime
+    expect(hasQuality(w(['précise']), 'precise')).toBe(true); // casse
+    expect(hasQuality(w(['precise']), 'precise')).toBe(true); // id en runtime
+    expect(hasQuality(w(['Solide 3']), 'solide')).toBe(true); // ignore l'Indice
+    expect(hasQuality(w(['Perforante']), 'precise')).toBe(false);
+    expect(hasQuality(undefined, 'precise')).toBe(false);
   });
 });
 

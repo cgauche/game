@@ -21,6 +21,8 @@ import { ignoredArmourAP, impenetrableAt } from './items';
 import { meleeHitPenalty, isEtherial, attacksAreMagical } from './traits/dispatch';
 import { isPsychImmune } from './psychology';
 import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, rangedOpposeWeapon, isMagicWeapon } from './qualities/dispatch';
+import { QUALITY_IDS } from './qualities/ids';
+import { weaponGroupLabel } from '../data';
 import { offHandPenalty, talentDamageBonus, isSlayer, talentDamageReduction, talentRangedAPIgnore, ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust, talentInitiativeBonus, fearImmuneVs } from './combatFeatures/dispatch';
 import { isEngagedWith } from './engagement';
 
@@ -73,11 +75,12 @@ export function locationLabel(loc: HitLocation, shape: BodyShape = 'humanoide'):
  * fusionne parfois les deux Groupes sous « Poudre noire et ingénierie » (62 l.150/174-175).
  */
 function acceptableSpecs(weapon: Weapon, kind: 'melee' | 'ranged'): string[] {
-  const g = (weapon.subType ?? '').toLowerCase();
-  if (!g) return [];
-  if (kind === 'melee') return g === 'deux-mains' ? ['à deux mains'] : [g];
-  if (g.includes('poudre noire')) return ['poudre noire', 'ingénierie']; // dont « Poudre noire et ingénierie »
-  if (g === 'explosifs') return ['explosifs', 'ingénierie'];
+  const gid = weapon.subType ?? ''; // id de Groupe d'arme (`WeaponGroupData.id`)
+  if (!gid) return [];
+  const g = weaponGroupLabel(gid).toLowerCase(); // libellé du Groupe (= forme de la Spécialisation, l.144)
+  if (kind === 'melee') return gid === 'deux-mains' ? ['à deux mains'] : [g];
+  if (gid === 'poudre-noire' || gid === 'poudre-noire-et-ingenierie') return ['poudre noire', 'ingénierie'];
+  if (gid === 'explosifs') return ['explosifs', 'ingénierie'];
   return [g];
 }
 
@@ -249,7 +252,7 @@ export function attackModifiers(
     }
     if (attacker.aiming) out.push({ label: 'Viser', value: 20 }); // action Viser (l.90)
     // Salve (Aux Armes p.126) : chaque tir SUPPLÉMENTAIRE dans le Round subit −10 cumulatif.
-    const salvoShots = hasQuality(weapon, 'Salve') ? (attacker.shotsThisTurn ?? 0) : 0;
+    const salvoShots = hasQuality(weapon, QUALITY_IDS.Salve) ? (attacker.shotsThisTurn ?? 0) : 0;
     if (salvoShots > 0) out.push({ label: 'Salve (tir suivant)', value: -10 * salvoShots });
     // Taille de la CIBLE au tir (LDB 14 l.151-170) — valeur absolue −30..+60. Une Nuée ignore la
     // Taille et donne +40 au tir contre elle (LDB 85 l.200).
@@ -274,7 +277,7 @@ export function attackModifiers(
   // d'Impact des Créatures » p.312 / `76` l.39).
   // Frappe assommante (Tête + arme Assommante) / Tir mortel (distance) : pas de −10 (LDB 10).
   if (opts.location && !(target && sizeGap(target.size, attacker.size) >= 2)
-      && !ignoresCalledShotPenalty(attacker, opts.kind, opts.location, hasQuality(weapon, 'Assommante'))) out.push({ label: 'Localisation visée', value: -10 });
+      && !ignoresCalledShotPenalty(attacker, opts.kind, opts.location, hasQuality(weapon, QUALITY_IDS.Assommante))) out.push({ label: 'Localisation visée', value: -10 });
   // Pénalité de main secondaire (LDB 14 l.181) ; Ambidextre la réduit via le registre combatFeatures.
   if (weapon.hand === 'off') {
     const p = offHandPenalty(attacker);
@@ -314,7 +317,7 @@ function hasMeleeSpec(c: Combatant, spec: string): boolean {
  *  Défensive + le défenseur a Corps à corps (Parade) ; sinon pénalité de main secondaire (Ambidextre la réduit). */
 export function parryPenalty(defender: Combatant, weapon: Weapon | undefined): number {
   if (!weapon || weapon.hand !== 'off') return 0;
-  if (weapon.hands === 1 && hasQuality(weapon, 'Défensive') && hasMeleeSpec(defender, 'Parade')) return 0;
+  if (weapon.hands === 1 && hasQuality(weapon, QUALITY_IDS.Defensive) && hasMeleeSpec(defender, 'Parade')) return 0;
   return offHandPenalty(defender);
 }
 
@@ -815,7 +818,7 @@ function applyHit(
   // toucher sont ignorées » — pièce Impénétrable à la localisation + jet de toucher impair.
   if (isCritical && atkBd.roll % 2 === 1 && impenetrableAt(defender, loc)) isCritical = false;
   // Partielle / Points faibles (LDB 63) : PA des pièces concernées ignorés par CETTE touche.
-  const ignoredAP = ignoredArmourAP(defender, loc, { roll: atkBd.roll, critical: isCritical, empaleuse: hasQuality(weapon, 'Empaleuse') });
+  const ignoredAP = ignoredArmourAP(defender, loc, { roll: atkBd.roll, critical: isCritical, empaleuse: hasQuality(weapon, QUALITY_IDS.Empaleuse) });
   // Tir sûr (LDB 10) : ignore niveau PA de la cible au tir.
   const sureShot = weapon.type === 'ranged' ? talentRangedAPIgnore(attacker) : 0;
   const woundsLost = woundsFromHit(weapon, defender, loc, damage, extraAP - ignoredAP - sureShot);

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ItemIcon } from './ItemIcon';
-import { itemFromTrapping } from '../engine/items';
+import { itemFromTrappingById } from '../engine/items';
 import type { ItemInstance, Weapon } from '../engine/types';
 
 /** Objet minimal (catégories sans art : munition/cape/consommable/divers). */
@@ -12,7 +12,7 @@ const html = (item: ItemInstance) => renderToStaticMarkup(<ItemIcon item={item} 
 
 describe('ItemIcon', () => {
   it('arme du registre (tokenisée) : SVG en diagonale, sans <defs>', () => {
-    const h = html(itemFromTrapping('Hallebarde')!);
+    const h = html(itemFromTrappingById('hallebarde')!);
     expect(h).toContain('item-icon-weapon');
     expect(h).toContain('rotate(-40)'); // arme en diagonale
     expect(h).not.toContain('<defs'); // art tokenisé hex → pas de gradient
@@ -26,7 +26,7 @@ describe('ItemIcon', () => {
   });
 
   it('armure : SVG droit (pas de rotation), classe armor', () => {
-    const h = html(itemFromTrapping('Plastron')!);
+    const h = html(itemFromTrappingById('plastron')!);
     expect(h).toContain('item-icon-armor');
     expect(h).not.toContain('rotate(-40)');
   });
@@ -49,6 +49,6 @@ describe('ItemIcon', () => {
   });
 
   it('rend en SSR sans getBBox (repli viewBox, aucune exception)', () => {
-    expect(() => html(itemFromTrapping('Hallebarde')!)).not.toThrow();
+    expect(() => html(itemFromTrappingById('hallebarde')!)).not.toThrow();
   });
 });

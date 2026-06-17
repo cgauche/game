@@ -8,16 +8,18 @@ import {
   type CraftOption, type LearnOption,
 } from '../engine/activities';
 import { DIFFICULTY_LABELS } from '../engine/types';
-import { QUALITY_DESC } from '../engine/qualities/describe';
-import { findTalent, skillInstanceLabel } from '../data';
+import { QUALITY_DESC, describeQuality } from '../engine/qualities/describe';
+import { findTalent, skillInstanceLabel, findTrappingById } from '../data';
 import type { Combatant } from '../engine/types';
 import { ActiveModal } from './ActiveModal';
 import { Modal } from './Modal';
 import { CharFrame } from './CharFrame';
 
-/** Atouts/Défauts d'artisanat (LDB 60 l.55-90) — tooltips depuis le registre des qualités. */
-const ATOUTS = ['Léger', 'Pratique', 'Raffiné', 'Solide'];
-const DEFAUTS = ['Bâclé', 'Laid', 'Peu Fiable', 'Volumineux'];
+/** Atouts/Défauts d'artisanat (LDB 60 l.55-90), par `id` de qualité — tooltips/libellés via le registre. */
+const ATOUTS = ['leger', 'pratique', 'raffine', 'solide'];
+const DEFAUTS = ['bacle', 'laid', 'peu-fiable', 'volumineux'];
+/** Libellé + desc d'une qualité d'artisanat par id (registre via `describeQuality`). */
+const craftQual = (id: string) => describeQuality(id) ?? { label: id, desc: undefined };
 
 /** Familles d'équipement pour grouper les sélecteurs (mêmes données que le marchand). */
 const FAMILY_LABEL: Record<string, string> = {
@@ -41,7 +43,7 @@ export interface InterludeSeam {
   party: Combatant[];
   money: Money;
   bank: BankDeposit[];
-  pendingOrders: { heroId: string; trapping: string }[];
+  pendingOrders: { heroId: string; trappingId: string }[];
   /** Phase d'ouverture forcée ('activities' saute l'intro Événements). */
   phase?: 'events' | 'activities' | 'closing';
   net?: InterludeNet;
@@ -232,7 +234,7 @@ function HeroCard({ hero, st, weeks, money, canDrive, ownerName }: {
         {st.craft ? (
           <button className="btn small" disabled={none} onClick={() => craftRoll(hero.id)}
             title={`Test étendu de Métier — ${st.craft.drDone}/${st.craft.drTarget} DR (${DIFFICULTY_LABELS[st.craft.difficulty]})`}>
-            🔨 Travailler — {st.craft.trapping} ({st.craft.drDone}/{st.craft.drTarget})
+            🔨 Travailler — {findTrappingById(st.craft.trappingId)?.label ?? st.craft.trappingId} ({st.craft.drDone}/{st.craft.drTarget})
           </button>
         ) : (
           paneBtn('craft', '🔨 Artisanat…', 'Fabriquer un équipement du catalogue (matériaux = ¼ du prix, Test étendu de Métier)')
@@ -287,12 +289,12 @@ function IdentifyPane({ hero, disabled }: { hero: Combatant; disabled: boolean }
   );
 }
 
-/** Sélecteur d'équipement groupé par famille + recherche (audit B1/B3). */
+/** Sélecteur d'équipement groupé par famille + recherche (audit B1/B3). `value`/`onChange` = `id`. */
 function TrappingSelect({ options, value, onChange, detail }: {
-  options: { label: string; type: string; priceBrass: number }[];
+  options: { id: string; label: string; type: string; priceBrass: number }[];
   value: string;
   onChange: (v: string) => void;
-  detail?: (label: string) => string;
+  detail?: (id: string) => string;
 }) {
   const [search, setSearch] = useState('');
   const filtered = useMemo(() => {
@@ -321,8 +323,8 @@ function TrappingSelect({ options, value, onChange, detail }: {
         {families.map(([fam, list]) => (
           <optgroup key={fam} label={fam}>
             {list.map((o) => (
-              <option key={o.label} value={o.label}>
-                {o.label} — {fmt(o.priceBrass)}{detail ? ` · ${detail(o.label)}` : ''}
+              <option key={o.id} value={o.id}>
+                {o.label} — {fmt(o.priceBrass)}{detail ? ` · ${detail(o.id)}` : ''}
               </option>
             ))}
           </optgroup>
@@ -335,11 +337,11 @@ function TrappingSelect({ options, value, onChange, detail }: {
 function CraftPane({ hero, disabled, money }: { hero: Combatant; disabled: boolean; money: Money }) {
   const craftStart = useGame((s) => s.interludeCraftStart);
   const catalog = useMemo(() => craftCatalog(), []);
-  const [label, setLabel] = useState('');
+  const [id, setId] = useState('');
   const [atouts, setAtouts] = useState<string[]>([]);
   const [defauts, setDefauts] = useState<string[]>([]);
   const metier = metierOf(hero);
-  const sel: CraftOption | undefined = catalog.find((o) => o.label === label);
+  const sel: CraftOption | undefined = catalog.find((o) => o.id === id);
   const target = sel ? craftTarget(sel.tier, sel.avail, atouts.length, defauts.length) : null;
   const affordable = !sel || toBrass(money) >= sel.materialsBrass;
   const toggle = (list: string[], setList: (v: string[]) => void, q: string) =>
@@ -352,16 +354,16 @@ function CraftPane({ hero, disabled, money }: { hero: Combatant; disabled: boole
   return (
     <div className="interlude-pane">
       {!metier && <p className="interlude-blocked">{blockedReason}</p>}
-      <TrappingSelect options={catalog} value={label} onChange={setLabel} />
+      <TrappingSelect options={catalog} value={id} onChange={setId} />
       <div className="interlude-craft-q">
         {ATOUTS.map((q) => (
-          <label key={q} title={QUALITY_DESC[q]}>
-            <input type="checkbox" checked={atouts.includes(q)} onChange={() => toggle(atouts, setAtouts, q)} /> {q}
+          <label key={q} title={craftQual(q).desc}>
+            <input type="checkbox" checked={atouts.includes(q)} onChange={() => toggle(atouts, setAtouts, q)} /> {craftQual(q).label}
           </label>
         ))}
         {DEFAUTS.map((q) => (
-          <label key={q} title={QUALITY_DESC[q]}>
-            <input type="checkbox" checked={defauts.includes(q)} onChange={() => toggle(defauts, setDefauts, q)} /> {q} (défaut)
+          <label key={q} title={craftQual(q).desc}>
+            <input type="checkbox" checked={defauts.includes(q)} onChange={() => toggle(defauts, setDefauts, q)} /> {craftQual(q).label} (défaut)
           </label>
         ))}
       </div>
@@ -376,7 +378,7 @@ function CraftPane({ hero, disabled, money }: { hero: Combatant; disabled: boole
         className="btn small btn-primary"
         disabled={disabled || !sel || !metier || !affordable}
         title={blockedReason ?? 'Achète les matériaux et installe l’ouvrage (le travail inachevé se conserve)'}
-        onClick={() => sel && craftStart(hero.id, sel.label, atouts, defauts)}
+        onClick={() => sel && craftStart(hero.id, sel.id, atouts, defauts)}
       >
         Engager l'ouvrage{sel ? ` (${fmt(sel.materialsBrass)})` : ''}
       </button>
@@ -433,12 +435,12 @@ function LearnPane({ hero, disabled, fails, money }: { hero: Combatant; disabled
 function OrderPane({ hero, disabled, money }: { hero: Combatant; disabled: boolean; money: Money }) {
   const order = useGame((s) => s.interludeOrder);
   const catalog = useMemo(() => orderCatalog(), []);
-  const [label, setLabel] = useState('');
-  const sel = catalog.find((o) => o.label === label);
+  const [id, setId] = useState('');
+  const sel = catalog.find((o) => o.id === id);
   const affordable = !sel || toBrass(money) >= sel.priceBrass;
   return (
     <div className="interlude-pane">
-      <TrappingSelect options={catalog} value={label} onChange={setLabel} />
+      <TrappingSelect options={catalog} value={id} onChange={setId} />
       {sel && (
         <p className="interlude-detail">
           Payé <b>{fmt(sel.priceBrass)}</b> maintenant — « l'objet sera achevé après votre prochaine
@@ -449,7 +451,7 @@ function OrderPane({ hero, disabled, money }: { hero: Combatant; disabled: boole
         className="btn small btn-primary"
         disabled={disabled || !sel || !affordable}
         title={!affordable && sel ? `Commande trop chère (${fmt(sel.priceBrass)})` : 'Passer commande (1 objet par Activité)'}
-        onClick={() => sel && order(hero.id, sel.label)}
+        onClick={() => sel && order(hero.id, sel.id)}
       >
         Commander{sel ? ` (${fmt(sel.priceBrass)})` : ''}
       </button>
@@ -548,7 +550,7 @@ function CloseRecap({ heroes, interlude, money, bank, pendingOrders, onCancel }:
   interlude: InterludeState;
   money: Money;
   bank: BankDeposit[];
-  pendingOrders: { heroId: string; trapping: string }[];
+  pendingOrders: { heroId: string; trappingId: string }[];
   onCancel: () => void;
 }) {
   const end = useGame((s) => s.interludeEnd);
@@ -568,10 +570,10 @@ function CloseRecap({ heroes, interlude, money, bank, pendingOrders, onCancel }:
         <li>💰 Revenus crédités à la reprise : <b>{revenue > 0 ? fmt(revenue) : 'aucun'}</b>.</li>
         {kept > 0 && <li>🏦 Dépôts conservés : <b>{fmt(kept)}</b> (récupérables à un prochain interlude).</li>}
         {pendingOrders.length > 0 && (
-          <li>📦 Commandes en cours : {pendingOrders.map((o) => o.trapping).join(', ')} — livrées au prochain interlude.</li>
+          <li>📦 Commandes en cours : {pendingOrders.map((o) => findTrappingById(o.trappingId)?.label ?? o.trappingId).join(', ')} — livrées au prochain interlude.</li>
         )}
         {crafts.length > 0 && (
-          <li>🔨 Ouvrages inachevés conservés : {crafts.map((h) => `${h.name} (${interlude.perHero[h.id]!.craft!.trapping})`).join(', ')}.</li>
+          <li>🔨 Ouvrages inachevés conservés : {crafts.map((h) => `${h.name} (${findTrappingById(interlude.perHero[h.id]!.craft!.trappingId)?.label ?? interlude.perHero[h.id]!.craft!.trappingId})`).join(', ')}.</li>
         )}
         {demoted.map((h) => (
           <li key={h.id} className="interlude-blocked">

@@ -34,11 +34,12 @@ export function parseQuality(raw: string): ParsedQuality | null {
   return key ? { key, indice } : null;
 }
 
-/** Indice de la qualité `key` dans une liste de chaînes (ex. ['Recharge 2'] → 2), sinon undefined. */
-export function indiceOf(qualities: string[], key: string): number | undefined {
+/** Indice de la qualité d'`id` STABLE (`QUALITY_IDS.X`) dans une liste de chaînes runtime (ids + Indice :
+ *  ['recharge 2'] → 2), sinon undefined. Compare par id (`slugId` de la clé de registre). */
+export function indiceOf(qualities: string[], id: string): number | undefined {
   for (const raw of qualities) {
     const p = parseQuality(raw);
-    if (p && p.key === key) return p.indice;
+    if (p && slugId(p.key) === id) return p.indice;
   }
   return undefined;
 }

@@ -40,10 +40,10 @@ describe('grantWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)', (
 
   it('formes proposées : toutes les armes réelles des Spé connues, « Arme simple » incluse (≠ junk)', () => {
     const c = mage({ skills: [{ skillId: 'corps-a-corps', spec: 'Base', advances: 10 }] as Combatant['skills'] });
-    const labels = conjureFormOptions(c).map((f) => f.weapon);
-    expect(labels).toContain('Arme simple'); // arme de base commune (épée/hache/masse/lance courte)
-    expect(labels.every((l) => !/bouclier|improvis|mains nues/i.test(l))).toBe(true); // junk exclu
-    expect(conjureFormOptions(c).every((f) => f.group.toLowerCase() === 'base')).toBe(true); // seulement la Spé connue
+    const ids = conjureFormOptions(c).map((f) => f.weapon); // f.weapon = id de trapping
+    expect(ids).toContain('arme-simple'); // arme de base commune (épée/hache/masse/lance courte)
+    expect(ids.every((l) => !/bouclier|improvis|mains-nues/i.test(l))).toBe(true); // junk exclu
+    expect(conjureFormOptions(c).every((f) => f.group === 'base')).toBe(true); // seulement la Spé connue (id de Groupe)
   });
 
   it('forme LIBRE : clone le profil d’une arme RÉELLE de la Spé de Corps à corps choisie', () => {
@@ -93,17 +93,17 @@ describe('grantNaturalWeapon — armes naturelles accordées (Dent et griffe)', 
 describe('grantWeapon — variantes de domaine (stats fixes du Sort)', () => {
   it('Faux de Shyish : Armes d’hast à 2 mains, Dégâts = BFM+3', () => {
     const c = mage(); // BFM 4
-    applyOps(c, [{ op: 'grantWeapon', name: 'Faux de Shyish', damage: { bonusOf: 'FM' }, damagePlus: 3, subType: 'Armes d’hast', reach: 'Longue', hands: 2, qualities: ['Magique'] }],
+    applyOps(c, [{ op: 'grantWeapon', name: 'Faux de Shyish', damage: { bonusOf: 'FM' }, damagePlus: 3, subType: 'armes-d-hast', reach: 'Longue', hands: 2, qualities: ['Magique'] }],
       { label: 'La Faux de Shyish', defaultDurationRounds: 4 });
     expect(c.weapons[0].name).toBe('Faux de Shyish');
     expect(c.weapons[0].hands).toBe(2);
-    expect(c.weapons[0].subType).toBe('Armes d’hast');
+    expect(c.weapons[0].subType).toBe('armes-d-hast'); // id de Groupe
     expect(c.weapons[0].damage).toBe('+7'); // BFM 4 + 3
   });
 
   it('Épée ardente de Rhuin : Dégâts +6, Percutante + En flammes à la touche', () => {
     const c = mage();
-    applyOps(c, [{ op: 'grantWeapon', name: 'Épée ardente de Rhuin', damage: 6, subType: 'Base', reach: 'Moyenne', hands: 1, qualities: ['Magique', 'Percutante'], onHitEffects: [onHitFlow([{ op: 'condition', name: 'en-flammes' }])] }],
+    applyOps(c, [{ op: 'grantWeapon', name: 'Épée ardente de Rhuin', damage: 6, subType: 'base', reach: 'Moyenne', hands: 1, qualities: ['Magique', 'Percutante'], onHitEffects: [onHitFlow([{ op: 'condition', name: 'en-flammes' }])] }],
       { label: "L'Épée ardente de Rhuin", defaultDurationRounds: 4 });
     expect(c.weapons[0].damage).toBe('+6');
     expect(c.weapons[0].qualities).toEqual(expect.arrayContaining(['Magique', 'Percutante']));

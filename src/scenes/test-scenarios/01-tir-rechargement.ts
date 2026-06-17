@@ -1,6 +1,6 @@
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
-import { itemFromTrapping, recomputeLoadout } from '../../engine/items';
+import { itemFromTrappingById, recomputeLoadout } from '../../engine/items';
 import { Combatant } from '../../engine/types';
 import { CustomStatblock } from '../../state/scene';
 import { arena, setEncounters } from './_shared';
@@ -22,9 +22,9 @@ function arbaletrier(): Combatant {
     rng: makeRNG(1101),
     id: 'test-arbaletrier',
   });
-  const arb = itemFromTrapping('Arbalète')!;
+  const arb = itemFromTrappingById('arbalete')!;
   arb.equipped = true;
-  const carreaux = itemFromTrapping('Carreau')!; // (12) → qty 12, subType Arbalète, Empaleuse
+  const carreaux = itemFromTrappingById('carreau')!; // (12) → qty 12, subType arbalete, Empaleuse
   h.items = [arb, carreaux];
   h.loadouts = undefined; h.activeLoadoutId = undefined; // l'inventaire a changé → recompute régénère le loadout
   recomputeLoadout(h); // auto-génère « Distance » (arbalète) + dérive weapons (reload 1) + Mains nues

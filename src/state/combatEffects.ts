@@ -13,7 +13,7 @@ import { campOf } from '../engine/relations';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, actorHasSkill } from '../engine/skills';
 import { easeDifficulty } from '../engine/tests';
 import { hasTalent } from '../engine/magic';
-import { recomputeLoadout, itemFromTrapping, customTrapping } from '../engine/items';
+import { recomputeLoadout, itemFromGive, giveTrappingLabel } from '../engine/items';
 import { findCreatureById } from '../data';
 import { harvestSizeOf, harvestYield } from '../engine/harvest';
 import { contractDisease } from '../engine/disease';
@@ -100,7 +100,7 @@ export function pushCombatStep(set: SetFn, step: CascadeStep): void {
 export function entityPickables(ent: { interact?: { flow: Flow } }): { key: string; label: string }[] {
   const out: { key: string; label: string }[] = [];
   (ent.interact ? flowEffects(ent.interact.flow) : []).forEach((e, i) => {
-    if (e.type === 'giveTrapping') out.push({ key: `eff:${i}`, label: e.trapping });
+    if (e.type === 'giveTrapping') out.push({ key: `eff:${i}`, label: giveTrappingLabel(e) });
     else if (e.type === 'giveMoney') out.push({ key: `eff:${i}`, label: 'Argent' });
   });
   return out;
@@ -128,7 +128,7 @@ export function gearFromEffects(effects: Effect[]): { gear: LootGear[]; rest: Ef
   const gear: LootGear[] = [];
   const rest: Effect[] = [];
   for (const e of effects) {
-    if (e.type === 'giveTrapping' && !e.heroId) gear.push({ label: e.trapping, magic: !!e.qualities?.length || e.identified === false, effect: e });
+    if (e.type === 'giveTrapping' && !e.heroId) gear.push({ label: giveTrappingLabel(e), magic: !!e.qualities?.length || e.identified === false, effect: e });
     else rest.push(e);
   }
   return { gear, rest };
@@ -186,12 +186,12 @@ export function harvestVictoryCreature(get: Get, set: SetFn, creatureId: string)
   const size = harvestSizeOf(c);
   const full = harvestYield(p, size, 0, 'Frais');
   const lo = harvestYield(p, size, -1, 'Frais');
-  const part = (enc: number) => `Pièces de ${name} (${enc} Enc)`;
+  const part = (enc: number) => `Pièces de ${name} (${enc} Enc)`; // objet CUSTOM (hors catalogue)
   if (pv) set({ pendingVictory: { ...pv, harvested: [...(pv.harvested ?? []), creatureId] } }); // grise le bouton
   runFlow(get, set, testFlow(
     { skill: 'Savoir (Bêtes)', difficulty: 'intermediaire', label: `Récolter — ${name}` },
-    flowFromEffects([{ type: 'giveTrapping', trapping: part(full.enc), price: full.total }]),
-    flowFromEffects([{ type: 'giveTrapping', trapping: part(lo.enc), price: lo.total }]),
+    flowFromEffects([{ type: 'giveTrapping', custom: part(full.enc), price: full.total }]),
+    flowFromEffects([{ type: 'giveTrapping', custom: part(lo.enc), price: lo.total }]),
   ), `Récolter — ${name}`);
 }
 
@@ -542,8 +542,8 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
         break;
       }
       case 'giveTrapping': {
-        // Trapping RÉEL (base) sinon objet CUSTOM (misc) — « donner un objet = un trapping custom ou réel ».
-        const it = itemFromTrapping(e.trapping) ?? customTrapping(e.trapping);
+        // Objet de CATALOGUE (`trappingId`) sinon objet CUSTOM (`custom`, misc) — source unique itemFromGive.
+        const it = itemFromGive(e);
         // Butin MAGIQUE (optionnel) : qualités ajoutées, objet non identifié (qualités masquées jusqu'à
         // Évaluation, #2), skin légendaire. Les qualités restent ACTIVES mécaniquement (registre).
         if (e.qualities?.length) it.qualities = [...it.qualities, ...e.qualities];

@@ -1,6 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrapping, weaponWithAmmo, compatibleAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutRename, loadoutDelete, loadoutSetActive, loadoutSetSlot, armourLayer, equipConflicts, isCapeItem, buildInventory } from './items';
+import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutRename, loadoutDelete, loadoutSetActive, loadoutSetSlot, armourLayer, equipConflicts, isCapeItem, buildInventory } from './items';
+import { trappings, type TrappingRef } from '../data';
 import { Combatant, ItemInstance, Weapon } from './types';
+
+/** Shim de test : résout un LIBELLÉ d'objet → instance par id (authoring). Inconnu → null (comme l'ex-API). */
+const itemFromTrapping = (label: string): ItemInstance | null => {
+  const t = trappings.find((x) => x.label === label);
+  return t ? itemFromTrappingById(t.id) : null;
+};
+/** Réfs de catalogue par libellé (pour buildInventory). */
+const refsByLabel = (labels: string[]): TrappingRef[] => labels.map((l) => ({ id: trappings.find((t) => t.label === l)!.id }));
 
 const item = (o: Partial<ItemInstance>): ItemInstance =>
   ({ uid: 'u', name: 'x', kind: 'misc', qualities: [], enc: 0, equipped: false, ...o }) as ItemInstance;
@@ -15,7 +24,7 @@ describe('weaponHands (latéralité)', () => {
   });
   it('fallback sans `hands` : marqueur (2M) dans le nom, ou Groupe Deux-mains', () => {
     expect(weaponHands(it_({ name: '(2M) Lance', subType: "Armes d'hast" }))).toBe(2);
-    expect(weaponHands(it_({ name: 'Espadon', subType: 'Deux-mains' }))).toBe(2);
+    expect(weaponHands(it_({ name: 'Espadon', subType: 'deux-mains' }))).toBe(2); // id de Groupe
     expect(weaponHands(it_({ name: 'Epee', subType: 'Base' }))).toBe(1);
   });
   it('itemFromTrapping pose `hands` depuis le marqueur (2M) — mêlée ET distance', () => {
@@ -243,7 +252,7 @@ describe('couches d’armure (LDB 63) — armourLayer / equipConflicts', () => {
   });
 
   it('buildInventory n’équipe qu’UNE pièce par couche × localisation (meilleure PA)', () => {
-    const items = buildInventory(['Justaucorps de cuir', 'Veste de cuir', 'Chemise de mailles', 'Plastron']);
+    const items = buildInventory(refsByLabel(['Justaucorps de cuir', 'Veste de cuir', 'Chemise de mailles', 'Plastron']));
     const worn = items.filter((i) => i.equipped).map((i) => i.name).sort();
     // Justaucorps et Veste sont tous deux Cuir souple sur le Corps → une seule des deux portée.
     expect(worn).toContain('Chemise de mailles');
@@ -291,7 +300,7 @@ describe('items — recomputeLoadout / encombrement', () => {
     expect(c.weapons.map((w) => w.name)).toContain('Espadon'); // prothèse portée → arme à 2 mains de nouveau utilisable
   });
   it('Crochet porté (prothèse) fournit une arme « Dague » (+BF+2, LDB 73)', () => {
-    const c = { characteristics: { F: 30, E: 30 }, items: [item({ name: 'Crochet', subType: 'Prothèses', equipped: true })] } as unknown as Combatant;
+    const c = { characteristics: { F: 30, E: 30 }, items: [{ ...itemFromTrapping('Crochet')!, equipped: true }] } as unknown as Combatant;
     recomputeLoadout(c);
     const cr = c.weapons.find((w) => w.name === 'Crochet');
     expect(cr?.damage).toBe('+BF+2');
@@ -384,9 +393,9 @@ describe('items — recomputeLoadout / encombrement', () => {
     expect(c.weapons.map((w) => w.name)).toContain('Bouclier'); // prothèse « tout » → main rétablie, bouclier de nouveau tenu
   });
   it('prothèse PORTÉE = Enc 0 ; possédée mais non portée = son Enc (LDB 73)', () => {
-    const worn = { items: [item({ name: 'Fausse jambe', subType: 'Prothèses', enc: 2, equipped: true })] } as unknown as Combatant;
+    const worn = { items: [item({ name: 'Fausse jambe', subType: 'protheses', enc: 2, equipped: true })] } as unknown as Combatant;
     expect(totalEncumbrance(worn)).toBe(0);
-    const carried = { items: [item({ name: 'Fausse jambe', subType: 'Prothèses', enc: 2, equipped: false })] } as unknown as Combatant;
+    const carried = { items: [item({ name: 'Fausse jambe', subType: 'protheses', enc: 2, equipped: false })] } as unknown as Combatant;
     expect(totalEncumbrance(carried)).toBe(2);
   });
   it("maxEncumbrance = Bonus de Force + Bonus d'Endurance (LDB)", () => {
@@ -467,12 +476,12 @@ describe('Munitions & rechargement', () => {
   it('itemFromTrapping lit subType + qty (préfixe) pour une munition', () => {
     const fleche = itemFromTrapping('Flèche')!;
     expect(fleche.kind).toBe('ammo');
-    expect(fleche.subType).toBe('Arc');
+    expect(fleche.subType).toBe('arc'); // id de Groupe
     expect(fleche.qty).toBe(12);
     expect(fleche.qualities).toContain('empaleuse'); // runtime = id
   });
   it('weaponWithAmmo combine Dégâts (concaténés) et fusionne les Atouts', () => {
-    const arc: Weapon = { name: 'Arc', type: 'ranged', damage: '+9', range: 60, qualities: [], subType: 'Arc', reload: 0 };
+    const arc: Weapon = { name: 'Arc', type: 'ranged', damage: '+9', range: 60, qualities: [], subType: 'arc', reload: 0 };
     const fleche = itemFromTrapping('Flèche')!;
     const w = weaponWithAmmo(arc, fleche);
     expect(w.qualities).toContain('empaleuse'); // runtime = id
@@ -481,15 +490,15 @@ describe('Munitions & rechargement', () => {
   });
   it('compatibleAmmo filtre par subType et qty>0', () => {
     const c = { items: [itemFromTrapping('Flèche'), itemFromTrapping('Carreau')] } as unknown as Combatant;
-    const arc: Weapon = { name: 'Arc', type: 'ranged', damage: '+9', qualities: [], subType: 'Arc', reload: 0 };
+    const arc: Weapon = { name: 'Arc', type: 'ranged', damage: '+9', qualities: [], subType: 'arc', reload: 0 };
     const list = compatibleAmmo(c, arc);
     expect(list.length).toBe(1);
     expect(list[0].name).toBe('Flèche');
   });
   it('compatibleAmmo : Poudre noire ET Ingénierie acceptent les munitions « Poudre noire et ingénierie » (LDB 62 l.150)', () => {
     const c = { items: [itemFromTrapping('Balle et Poudre')] } as unknown as Combatant;
-    const pistolet: Weapon = { name: 'Pistolet', type: 'ranged', damage: '+8', qualities: ['Pistolet'], subType: 'Poudre noire', reload: 1 };
-    const arqRep: Weapon = { name: 'Arquebus à répétition', type: 'ranged', damage: '+9', qualities: [], subType: 'Ingénierie', reload: 5 };
+    const pistolet: Weapon = { name: 'Pistolet', type: 'ranged', damage: '+8', qualities: ['pistolet'], subType: 'poudre-noire', reload: 1 };
+    const arqRep: Weapon = { name: 'Arquebus à répétition', type: 'ranged', damage: '+9', qualities: [], subType: 'ingenierie', reload: 5 };
     expect(compatibleAmmo(c, pistolet).map((a) => a.name)).toContain('Balle et Poudre');
     expect(compatibleAmmo(c, arqRep).map((a) => a.name)).toContain('Balle et Poudre');
   });
@@ -503,7 +512,7 @@ describe('Munitions & rechargement', () => {
     recomputeLoadout(c);
     const tromblon = c.weapons.find((w) => w.name === 'Tromblon')!;
     expect(tromblon.reload).toBe(2);
-    expect(tromblon.subType).toBe('Poudre noire');
+    expect(tromblon.subType).toBe('poudre-noire'); // id de Groupe
   });
   it('recomputeLoadout : Arc (sans « Recharge ») → reload 0', () => {
     const c = {
@@ -515,6 +524,6 @@ describe('Munitions & rechargement', () => {
     recomputeLoadout(c);
     const arc = c.weapons.find((w) => w.name === 'Arc')!;
     expect(arc.reload).toBe(0);
-    expect(arc.subType).toBe('Arc');
+    expect(arc.subType).toBe('arc'); // id de Groupe
   });
 });

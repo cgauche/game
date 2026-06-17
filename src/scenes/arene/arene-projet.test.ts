@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { validateScene } from '../../state/validateScene';
 import { parseProject } from '../../state/worldMap';
 import { isWalkable, type Scene } from '../../state/scene';
-import { findCreatureById, findTrapping } from '../../data';
+import { findCreatureById, trappings } from '../../data';
 import { traitLabels } from '../../engine/traits/dispatch';
 import { MERCHANTS } from '../../state/merchants/index';
 import { entitySize } from '../../state/spawn';
@@ -335,9 +335,9 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     expect(medecin?.merchant?.archetype).toBe('medecin');
     const arch = MERCHANTS['medecin'];
     expect(arch).toBeTruthy();
-    expect(arch.category.subTypes).toContain('Herbes et potions');
-    expect(arch.category.subTypes).toContain('Prothèses');
-    // tous les articles garantis (curated) référencent un vrai trapping
-    for (const label of arch.curated ?? []) expect(findTrapping(label), label).toBeTruthy();
+    expect(arch.category.subTypes).toContain('herbes-et-potions'); // id de Groupe
+    expect(arch.category.subTypes).toContain('protheses');
+    // tous les articles garantis (curated, par libellé) référencent un vrai trapping de la base
+    for (const label of arch.curated ?? []) expect(trappings.some((t) => t.label === label), label).toBe(true);
   });
 });

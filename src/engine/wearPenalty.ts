@@ -7,6 +7,7 @@
 import { Combatant } from './types';
 import type { PassiveMod } from './ops';
 import { hasQuality, qualitySocMod } from './qualities/dispatch';
+import { QUALITY_IDS } from './qualities/ids';
 
 const WEAR_RE = /^\s*([+-]?\d+)\s*%?\s*en\s+(.+?)\s*$/i;
 
@@ -27,8 +28,8 @@ function wearEntries(c: Combatant): { skill: string; value: number }[] {
       const p = parseWearPenalty(q);
       if (!p) continue;
       let v = p.value; // négatif
-      if (hasQuality(piece, 'Pratique')) v = Math.min(0, v + 10); // Atout : -1 niveau (LDB 60 l.59)
-      if (hasQuality(piece, 'Peu Fiable')) v = v * 2; // Défaut : doublée (LDB 60 l.88)
+      if (hasQuality(piece, QUALITY_IDS.Pratique)) v = Math.min(0, v + 10); // Atout : -1 niveau (LDB 60 l.59)
+      if (hasQuality(piece, QUALITY_IDS.PeuFiable)) v = v * 2; // Défaut : doublée (LDB 60 l.88)
       if (v) out.push({ skill: p.skill.toLowerCase(), value: v });
     }
   }

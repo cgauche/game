@@ -1,5 +1,5 @@
 import { makePregens } from '../../data/pregens';
-import { itemFromTrapping, loadoutCreate, loadoutSetSlot, recomputeLoadout } from '../../engine/items';
+import { itemFromTrappingById, loadoutCreate, loadoutSetSlot, recomputeLoadout } from '../../engine/items';
 import type { ItemInstance } from '../../engine/types';
 import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
@@ -36,8 +36,8 @@ export const scenario: TestScenario = {
       h.talents.push({ talentId: 'maniement-de-deux-armes', times: 1 });
     }
     // Deux armes de MÊLÉE à 1 main + un loadout « Deux armes » actif (main directrice + secondaire).
-    const main = itemFromTrapping('Arme simple');
-    const off = itemFromTrapping('Dague');
+    const main = itemFromTrappingById('arme-simple');
+    const off = itemFromTrappingById('dague');
     h.items = [...(h.items ?? []), main, off].filter(Boolean) as ItemInstance[];
     if (main && off) {
       const id = loadoutCreate(h, 'Deux armes');

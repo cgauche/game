@@ -109,7 +109,7 @@
         "id": "couverture"
       },
       {
-        "text": "Ration (Multiple)"
+        "id": "ration"
       }
     ],
     "desc": "Personnes qui gagnent leur vie sur les routes, voyageant loin de leurs villes et villages. La plupart des Itinérants appartiennent à la classe inférieure, mais certains peuvent accéder à des posts de haut statut s'ils persévèrent.",
@@ -237,7 +237,7 @@
         "id": "besace"
       },
       {
-        "text": "Ration (Multiple)"
+        "id": "ration"
       }
     ],
     "desc": "Personnes qui vivent et travaillent dans les fermes, les villages et les campagnes. Les Ruraux appartiennent tous à la classe inférieure, bien qu'il soit possible qu'ils obtiennent une influence significative localement.",

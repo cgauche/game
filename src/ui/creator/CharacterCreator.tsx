@@ -24,8 +24,9 @@ import {
   findSkill,
   findTalent,
   talentConcrete,
-  findTrapping,
+  findTrappingById,
   trappingRefLabel,
+  qualityRefLabel,
   advancementLabel,
   trappings as allTrappings,
   levelsForCareer,
@@ -107,11 +108,11 @@ const STEP_META: Record<StepId, { label: string; zone: (p: StepProps) => { rail:
  *  apparaissent automatiquement à la suite. */
 const CORE = allSpecies.filter((s) => s.source.book === 'LDB').map((s) => s.label);
 
-/** Choix proposés pour le trapping « Arme (Au choix) » : toutes les ARMES des données. */
+/** Choix proposés pour le trapping « Arme (Au choix) » : toutes les ARMES des données ({id, label}). */
 const WEAPON_CHOICES = allTrappings
   .filter((t) => (t.type === 'melee' || t.type === 'ranged') && !/mains nues/i.test(t.label))
-  .map((t) => t.label)
-  .sort((a, b) => a.localeCompare(b, 'fr'));
+  .map((t) => ({ id: t.id, label: t.label }))
+  .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
 
 /** Texte de données (desc HTML) → extrait lisible pour cartes et infobulles. */
 function blurb(html: string | null | undefined, max = 160): string {
@@ -970,9 +971,9 @@ export function PettySpellsSection({ d, setD }: StepProps) {
   );
 }
 
-/** Détail d'un objet d'équipement (trappings.json) : dégâts / PA / encombrement. */
-function trappingMeta(label: string): string {
-  const t = findTrapping(splitLabel(label).name);
+/** Détail d'un objet d'équipement (trappings.json) par `id` : dégâts / PA / encombrement / qualités. */
+function trappingMeta(id: string): string {
+  const t = findTrappingById(id);
   if (!t) return '';
   const bits: string[] = [];
   if (t.damage) bits.push(`Dégâts ${t.damage}`);
@@ -980,7 +981,7 @@ function trappingMeta(label: string): string {
   if (t.reach && t.type === 'melee') bits.push(`Allonge ${t.reach}`);
   if (t.reach && t.type === 'ranged') bits.push(`Portée ${t.reach}`);
   if (t.enc) bits.push(`Enc. ${t.enc}`);
-  if (t.qualities?.length) bits.push(t.qualities.join(', '));
+  if (t.qualities?.length) bits.push(t.qualities.map(qualityRefLabel).join(', '));
   return bits.join(' · ');
 }
 
@@ -989,12 +990,14 @@ function TrappingZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNo
   const level = draftLevel(d);
   const klass = findClassById(findCareerById(d.careerId)?.class);
   const wealth = draftWealth(d);
-  const careerTrappings = (level?.trappings ?? []).map(trappingRefLabel); // TrappingRef[] → libellés
-  const item = (t: string) => {
-    const meta = trappingMeta(t);
+  const careerTrappings = level?.trappings ?? []; // TrappingRef[]
+  // Rendu d'une possession : libellé via trappingRefLabel, CodexRef par libellé (popover), meta par id.
+  const item = (ref: import('../../data').TrappingRef, key: number) => {
+    const label = trappingRefLabel(ref);
+    const meta = 'id' in ref ? trappingMeta(ref.id) : '';
     return (
-      <li key={t}>
-        <CodexRef category="trappings" label={splitLabel(t).name}>{t}</CodexRef>
+      <li key={key}>
+        <CodexRef category="trappings" label={splitLabel(label).name}>{label}</CodexRef>
         {meta && <em className="item-meta"> — {meta}</em>}
       </li>
     );
@@ -1010,7 +1013,7 @@ function TrappingZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNo
           Bourse : <b>{formatMoney(wealth)}</b> (au groupe)
         </p>
       </Section>
-      {careerTrappings.includes('Arme (Au choix)') && (
+      {careerTrappings.some((t) => 'text' in t && t.text === 'Arme (Au choix)') && (
         <Section title="Arme (au choix)">
           <select
             value={d.specChoices['Arme (Au choix)'] ?? ''}
@@ -1018,12 +1021,12 @@ function TrappingZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNo
           >
             <option value="">— choisir —</option>
             {WEAPON_CHOICES.map((w) => (
-              <option key={w} value={w}>
-                {w}
+              <option key={w.id} value={w.label}>
+                {w.label}
               </option>
             ))}
           </select>
-          {d.weaponChoice && <p className="hint">{trappingMeta(d.weaponChoice)}</p>}
+          {d.weaponChoice && <p className="hint">{trappingMeta(WEAPON_CHOICES.find((w) => w.label === d.weaponChoice)?.id ?? '')}</p>}
         </Section>
       )}
     </>
@@ -1031,10 +1034,10 @@ function TrappingZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNo
   const main = (
     <>
       <Section title={`Équipement de Classe (${klass?.label ?? '—'})`}>
-        <ul className="trapping-list">{(klass?.trappings ?? []).map(trappingRefLabel).map(item)}</ul>
+        <ul className="trapping-list">{(klass?.trappings ?? []).map(item)}</ul>
       </Section>
       <Section title={`Équipement de Carrière (${level?.label ?? '—'})`}>
-        <ul className="trapping-list">{careerTrappings.filter((t) => t !== 'Arme (Au choix)').map(item)}</ul>
+        <ul className="trapping-list">{careerTrappings.filter((t) => !('text' in t && t.text === 'Arme (Au choix)')).map(item)}</ul>
       </Section>
     </>
   );

@@ -3,7 +3,7 @@ import { useGame } from '../state/store';
 import { bestDetector } from '../state/merchantFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { useModalA11y } from './Modal';
-import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem } from '../engine/items';
+import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem, giveTrappingLabel } from '../engine/items';
 import { CHAR_KEYS, CHAR_LABELS, CharKey, HitLocation, ItemInstance, Combatant, Weapon } from '../engine/types';
 import { effectiveChar, charBonus } from '../engine/characteristics';
 import { effectiveWeaponDamage } from '../engine/weaponDamage';
@@ -77,7 +77,7 @@ function describeEffect(e: NonNullable<Combatant['activeEffects']>[number]): str
     const cond = e.opsPerRound.find((o) => o.op === 'condition');
     if (cond && cond.op === 'condition') return `${cond.name} chaque Round`;
     const give = e.opsPerRound.find((o) => o.op === 'giveTrapping');
-    if (give && give.op === 'giveTrapping') return `${give.trapping} chaque Round`;
+    if (give && give.op === 'giveTrapping') return `${giveTrappingLabel(give)} chaque Round`;
     return 'Effet récurrent chaque Round';
   }
   if (e.grantedFortune) return `+${e.grantedFortune} Chance (le temps du Sort)`;
@@ -462,7 +462,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
           {items.length === 0 && <p className="muted">Aucun objet.</p>}
           {(() => {
           const renderRow = (it: ItemInstance) => {
-            const isProsthesis = it.subType === 'Prothèses'; // prothèse (LDB 73) : se PORTE pour annuler un malus d'amputation
+            const isProsthesis = it.subType === 'protheses'; // prothèse (LDB 73, Groupe id) : se PORTE pour annuler un malus d'amputation
             const isCape = isCapeItem(it); // cape/manteau : emplacement Cape (cosmétique, onglet Combat)
             const equipable = it.kind === 'armor' || isProsthesis || isCape; // armes = via les sets d'armes (cf. EquipmentPanel)
             const isWeaponItem = it.kind === 'melee' || it.kind === 'ranged';
