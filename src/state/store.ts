@@ -2306,8 +2306,11 @@ export const useGame = create<GameState>((set, get) => ({
       }
     }
     const plan = attackPlan(get, active, target);
-    // Frénésie libre post-Action : attaque DIRECTE seulement (pas de déplacement combiné).
-    if (battle.acted && plan.kind !== 'attack') return;
+    // Frénésie (LDB 21 l.34) : le frénétique « doit se déplacer à son maximum vers l'ennemi le plus proche
+    // pour l'attaquer » → la CHARGE (déplacement + attaque CC GRATUITE) reste permise même l'Action dépensée
+    // (entrée en Frénésie : le Test de FM a consommé l'Action, mais PAS le Mouvement). Hors attaque libre de
+    // Frénésie, l'Action dépensée interdit tout déplacement combiné (attaque directe seulement).
+    if (battle.acted && !freeFrenzyAttack && plan.kind !== 'attack') return;
     if (plan.kind === 'blocked') {
       get().log(plan.reason);
       if (battle.preview) set({ battle: { ...battle, preview: null } });

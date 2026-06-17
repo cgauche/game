@@ -47,6 +47,20 @@ describe('Frénésie héros — cible imposée et déplacement contraint', () =>
     expect(useGame.getState().pendingAttack?.targetId).toBe(E1.id); // charge/attaque sur la cible imposée
   });
 
+  it('entrée en Frénésie ce Tour (Action dépensée) : la CHARGE vers la cible imposée reste permise (LDB 21 l.34)', () => {
+    const { H, E1 } = setup();
+    // Le Test de FM pour ENTRER en Frénésie a consommé l'Action (acted), mais PAS le Mouvement : le
+    // frénétique « doit se déplacer à son maximum vers l'ennemi le plus proche pour l'attaquer ».
+    const b = useGame.getState().battle!;
+    const Hc = b.combatants.find((c) => c.id === H.id)!;
+    Hc.frenzyFreeUsed = false; // attaque CC gratuite du Round encore disponible
+    useGame.setState({ battle: { ...b, acted: true }, pendingAttack: null });
+    useGame.getState().battleClickEntity(E1.id, { confirm: true }); // E1 à 2 cases → CHARGE (déplacement + attaque)
+    const pa = useGame.getState().pendingAttack;
+    expect(pa?.targetId).toBe(E1.id); // la charge s'ouvre malgré l'Action dépensée (≠ blocage « attaque directe seulement »)
+    expect(pa?.fromCharge).toBe(true);
+  });
+
   it('se déplacer en s’ÉLOIGNANT de la cible imposée est refusé ; s’en rapprocher passe', () => {
     const { H } = setup();
     const before = { ...useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.pos! };
