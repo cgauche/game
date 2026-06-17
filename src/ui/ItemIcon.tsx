@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { ItemInstance, Weapon } from '../engine/types';
 import { isCapeItem } from '../engine/items';
 import { isConsumable } from '../engine/consumables';
@@ -64,6 +64,9 @@ const FALLBACK_VB: Record<Geom, string> = {
   armor: '-39 -37 78 78',
 };
 
+// Mesure synchrone AVANT peinture au navigateur ; no-op silencieux en SSR/test (pas d'avertissement).
+const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
 const ROTATE = -40; // arme en diagonale (look inventaire) ; boucliers/armures restent droits
 /** Mémo des viewBox calculés par (art, rotation) — mesuré 1 fois, repeint sans flash ensuite. */
 const VB_CACHE = new Map<string, string>();
@@ -86,7 +89,7 @@ function ArtIcon({ art, geom, px }: { art: string; geom: Geom; px: number }) {
   const rotate = geom === 'weapon';
   const gRef = useRef<SVGGElement>(null);
   const [vb, setVb] = useState(() => VB_CACHE.get(cacheKey(art, rotate)) ?? FALLBACK_VB[geom]);
-  useLayoutEffect(() => {
+  useIsoLayoutEffect(() => {
     const el = gRef.current;
     if (!el || typeof el.getBBox !== 'function') return; // SSR/jsdom : on garde le repli, jamais d'exception
     let next = VB_CACHE.get(cacheKey(art, rotate));

@@ -11,6 +11,7 @@ const STEPS = [
   ['Rig — espèces × équipement', 'npx tsx scripts/gen-rig-gallery.mts'],
   ['Mutations physiques (LDB 19)', 'npx tsx scripts/gen-mutations-gallery.mts'],
   ['Armes', 'npx tsx scripts/gen-weapon-gallery.mts'],
+  ['Icônes d’objet (ItemIcon)', 'npx tsx scripts/gen-item-icon-gallery.mts'],
   ['Animations par arme (animé)', 'npx tsx scripts/gen-anim-gallery.mts'],
   ['Animations — clips & sorts (animé)', 'npx tsx scripts/gen-clip-anim-gallery.mts'],
   ['Bestiaire — attaques (traits, animé)', 'npx tsx scripts/gen-creature-attacks-gallery.mts'],
