@@ -5,7 +5,7 @@
 import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints, BodyShape, SkillInstance, TalentInstance } from '../engine/types';
 import { skillCharacteristic } from '../engine/character';
 import { type TraitInstance, type TraitList } from '../engine/statEntry';
-import { findCreature, findSkillById, findTalentById, findSpellById, CreatureData, type SkillRef, type TalentRef } from '../data';
+import { findCreatureById, findSkillById, findTalentById, findSpellById, CreatureData, type SkillRef, type TalentRef } from '../data';
 import { CustomStatblock, EntityAppearance } from './scene';
 import { emptyArmour, buildWeapon, type WeaponDamageSpec } from '../engine/items';
 import { maxWounds, bonus } from '../engine/characteristics';
@@ -119,7 +119,7 @@ export function sizeFromTraits(traits: TraitList): SizeCategory | null {
  *  dérivée des Traits (statbloc ou créature du bestiaire via `ref`). `undefined` ⇒ Moyenne au rendu. */
 export function entitySize(ent: { ref?: string; statblock?: CustomStatblock }): SizeCategory | undefined {
   if (ent.statblock?.size) return ent.statblock.size;
-  const traits = ent.statblock?.traits ?? (ent.ref ? findCreature(ent.ref)?.traits : undefined); // tous TraitInstance[]
+  const traits = ent.statblock?.traits ?? (ent.ref ? findCreatureById(ent.ref)?.traits : undefined); // tous TraitInstance[]
   return (traits && sizeFromTraits(traits)) || undefined;
 }
 
@@ -246,6 +246,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   return {
     id,
     name: creature.label,
+    creatureId: creature.id, // identité bestiaire STABLE → le rig la résout par id (plus par `name`)
     kind: 'enemy',
     ...(optTraits.length ? { liveTraits: optTraits } : {}), // charMods/Mouvement des facultatifs appliqués en direct
     ...(creature.appearance?.species ? { species: creature.appearance.species } : {}), // espèce du record (P2) → le rig la lit ; le reste de l'apparence par défaut est lu par enemyRigProfile via findCreature
@@ -256,7 +257,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
     weapons: weaponsFromTraits(traits),
     armour: armourFromTraits(traits),
     size,
-    bodyShape: bodyShapeOf(creature.label), // Tableau de Localisation par forme du corps (LDB p.312)
+    bodyShape: bodyShapeOf(creature.id), // Tableau de Localisation par forme du corps (LDB p.312)
     ...parsePsychTraits(traits), // Peur/Terreur/Immunité + traits ciblés depuis les traits (LDB 21+85)
     ...(swarm ? { swarm: true, psychImmune: true } : {}), // Nuée : ignore la Psychologie (l.200)
     ...(isMindless(traits) ? { psychImmune: true } : {}), // Fabriqué : Tests d'Int/FM/Soc auto-réussis (LDB 85 p.339)
@@ -338,7 +339,7 @@ export function spawnEnemy(
 ): Combatant {
   let c: Combatant;
   if (statblock) c = statblockToCombatant(statblock, id, pos);
-  else if (ref && findCreature(ref)) c = creatureToCombatant(findCreature(ref)!, id, pos, opts);
+  else if (ref && findCreatureById(ref)) c = creatureToCombatant(findCreatureById(ref)!, id, pos, opts);
   else c = statblockToCombatant({ name: ref ?? 'Ennemi', char: { B: 10 } }, id, pos); // repli
 
   // COSMÉTIQUE — identité visuelle traversant explo↔combat à l'identique : tout override d'auteur

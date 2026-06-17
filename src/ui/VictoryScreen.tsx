@@ -58,8 +58,8 @@ export function VictoryScreen() {
             <h3>Ennemis vaincus</h3>
             <div className="victory-defeated">
               {defeated.map((d) => {
-                const canHarvest = !!harvestProfileFor(d.name) && net.mode !== 'guest';
-                const done = (pv?.harvested ?? []).includes(d.name);
+                const canHarvest = !!harvestProfileFor(d.creatureId) && net.mode !== 'guest';
+                const done = (pv?.harvested ?? []).includes(d.creatureId ?? '');
                 return (
                   <span key={d.name} className="victory-foe">
                     {d.name}{d.count > 1 ? ` ×${d.count}` : ''}
@@ -67,7 +67,7 @@ export function VictoryScreen() {
                       <button
                         className="btn btn-ghost victory-harvest"
                         disabled={done}
-                        onClick={() => harvest(d.name)}
+                        onClick={() => harvest(d.creatureId!)}
                         title="Récolter les pièces de monstre (Test de Savoir (Bêtes))"
                       >
                         {done ? '✓ récolté' : '🔪 Récolter'}

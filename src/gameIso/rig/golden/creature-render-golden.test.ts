@@ -35,6 +35,6 @@ describe('golden — rendu SVG du bestiaire entier (anti-régression de-POC appa
   for (const c of creatures)
     for (const view of VIEWS)
       it(`${c.label} / ${view}`, () => {
-        expect(renderSvg(c.label, view)).toMatchSnapshot();
+        expect(renderSvg(c.id, view)).toMatchSnapshot(); // résolution PAR ID (clé d'affichage = label)
       });
 });

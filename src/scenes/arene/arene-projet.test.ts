@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { validateScene } from '../../state/validateScene';
 import { parseProject } from '../../state/worldMap';
 import { isWalkable, type Scene } from '../../state/scene';
-import { findCreature, findTrapping } from '../../data';
+import { findCreatureById, findTrapping } from '../../data';
 import { traitLabels } from '../../engine/traits/dispatch';
 import { MERCHANTS } from '../../state/merchants/index';
 import { entitySize } from '../../state/spawn';
@@ -208,7 +208,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     for (const sc of project)
       for (const enc of sc.encounters)
         for (const e of enemiesOf(sc, enc))
-          if (e.ref && !findCreature(e.ref)) missing.push(`${sc.id}:${e.ref}`);
+          if (e.ref && !findCreatureById(e.ref)) missing.push(`${sc.id}:${e.ref}`);
     expect(missing).toEqual([]);
   });
 
@@ -232,7 +232,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     const encs = project.flatMap((s) => s.encounters);
     expect(encs.some((e) => e.surprise === 'party')).toBe(true); // embuscade
     expect(ALL_ENEMIES.some((en) => (en.statblock?.traits ?? []).some((t) => t.id === 'nuee'))).toBe(true); // Nuée = statbloc custom
-    expect(ALL_ENEMIES.some((en) => en.ref === 'Spectre de cairn')).toBe(true); // créature Terreur
+    expect(ALL_ENEMIES.some((en) => en.ref === 'spectre-de-cairn')).toBe(true); // créature Terreur
     const hub = project.find((s) => s.id === 'arene-hub')!;
     const hasTest = hub.dialogues.some((d) => d.nodes.some((n) => n.choices.some((c) => c.flow && flowHasTest(c.flow))));
     expect(hasTest).toBe(true); // nœud Flow `test` (Crochetage) avec branches succès/échec
@@ -272,7 +272,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     const refs = new Set(ALL_ENEMIES.map((en) => en.ref).filter(Boolean));
     expect(refs.size).toBeGreaterThanOrEqual(30); // large vitrine (≥30 créatures distinctes)
     // Traits canoniques (LDB 85) portés par les créatures référencées.
-    const traitsOf = (ref?: string): string[] => (ref ? traitLabels(findCreature(ref)?.traits) : []);
+    const traitsOf = (ref?: string): string[] => (ref ? traitLabels(findCreatureById(ref)?.traits) : []);
     const allTraits = [...refs].flatMap((r) => traitsOf(r as string));
     for (const trait of [/^Champion$/, /^Corruption \(/, /^Démoniaque/, /^Venin$/]) {
       expect(allTraits.some((t) => trait.test(t)), `Trait ${trait}`).toBe(true);

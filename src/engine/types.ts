@@ -407,6 +407,9 @@ export interface Combatant {
   id: string;
   name: string;
   kind: 'hero' | 'enemy' | 'npc';
+  /** `id` STABLE de la créature du bestiaire dont ce combattant est une instance (posé au spawn) —
+   *  clé de résolution du rig/apparence (« plus de label » : on ne re-résout plus par `name`). */
+  creatureId?: string;
   species?: string;
   career?: string;
   /** Catégorie de Taille (LDB 85). Optionnel ; défaut Moyenne au point de lecture (`effectiveSize`). */

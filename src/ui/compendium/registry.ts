@@ -77,6 +77,8 @@ export interface CodexItem {
   source?: CodexSource | null;
   /** Apparence (rig) à prévisualiser dans la fiche : créature, difformité de mutation, trait à visuel. */
   appearance?: EntityAppearance;
+  /** `id` de créature pour résoudre l'aperçu rig PAR ID (Nuées/non-bipèdes lisent leurs traits du record). */
+  previewRef?: string;
 }
 export interface CodexCategory {
   key: string;
@@ -361,7 +363,7 @@ export const CODEX: CodexCategory[] = [
     key: 'creatures', label: 'Créatures', group: 'Monde',
     items: creatures.map((c) => ({
       label: c.label, sub: c.title ?? undefined, group: c.folder ?? undefined, desc: c.desc ?? undefined, html: true, source: src(c.source),
-      appearance: c.appearance,
+      appearance: c.appearance, previewRef: c.id, // aperçu rig résolu par id (Nuées/non-bipèdes lisent leurs traits)
       meta: c.harvest ? facts(fact('Récolte (1 Enc)', formatMoney(costPerEnc(c.harvest)))) : undefined,
       sections: sections(
         { title: 'Caractéristiques', layout: 'grid', rows: kvRows(Object.entries(c.char)) },

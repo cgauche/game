@@ -8,8 +8,8 @@ setEncounters(scene, [
   {
     id: 'enc-engage',
     enemies: [
-      { ref: 'Gobelin', pos: { x: 9, y: 4 } },
-      { ref: 'Gobelin', pos: { x: 9, y: 6 } },
+      { ref: 'gobelin', pos: { x: 9, y: 4 } },
+      { ref: 'gobelin', pos: { x: 9, y: 6 } },
     ],
   },
 ]);

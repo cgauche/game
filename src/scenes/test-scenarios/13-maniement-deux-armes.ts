@@ -13,8 +13,8 @@ setEncounters(scene, [
   {
     id: 'enc-dual',
     enemies: [
-      { ref: 'Gobelin', pos: { x: 5, y: 4 } },
-      { ref: 'Gobelin', pos: { x: 5, y: 6 } },
+      { ref: 'gobelin', pos: { x: 5, y: 4 } },
+      { ref: 'gobelin', pos: { x: 5, y: 6 } },
     ],
   },
 ]);

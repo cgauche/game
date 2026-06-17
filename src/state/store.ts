@@ -342,8 +342,8 @@ export interface GameState {
   pendingVictory: PendingVictory | null;
   /** Attribue un objet d'équipement (giveTrapping) du butin de victoire au héros choisi. */
   assignVictoryGear: (index: number, heroId: string) => void;
-  /** Récolte « Précieuses Entrailles » (ZI) une créature vaincue (Test de Savoir → pièces valuées). */
-  harvestCreature: (name: string) => void;
+  /** Récolte « Précieuses Entrailles » (ZI) une créature vaincue, par id (Test de Savoir → pièces valuées). */
+  harvestCreature: (creatureId: string) => void;
   /** Ferme l'écran de victoire et revient à l'exploration. */
   dismissVictory: () => void;
   /** Butin HORS combat (fouille/Test/dialogue/trigger) — fenêtre « qui l'emporte ? » (même brique). */
@@ -1481,7 +1481,7 @@ export const useGame = create<GameState>((set, get) => ({
   assignLootGear: (index, heroId) => assignGearAt(get, set, 'pendingLoot', index, heroId),
   /** Attribue un objet d'équipement du butin de victoire au héros choisi (qualités/skin conservés). */
   assignVictoryGear: (index, heroId) => assignGearAt(get, set, 'pendingVictory', index, heroId),
-  harvestCreature: (name) => harvestVictoryCreature(get, set, name),
+  harvestCreature: (creatureId) => harvestVictoryCreature(get, set, creatureId),
   raiseHand: () => {
     const b = get().battle;
     if (!b || b.handRaised) return;

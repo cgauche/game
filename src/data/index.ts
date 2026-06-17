@@ -141,6 +141,9 @@ export type HarvestRarity = 'Commune' | 'Limitée' | 'Rare' | 'Exotique' | 'Uniq
 export type HarvestDanger = 'Inoffensive' | 'Inquiétante' | 'Menaçante' | 'Mortelle';
 
 export interface CreatureData {
+  /** `id` STABLE (slug) — clé de résolution runtime/données (scènes, encounters, rig). « Plus de label » :
+   *  les références pointent l'id (robuste au renommage/multilangue) ; le `label` ne sert qu'à l'affichage. */
+  id: string;
   label: string;
   title: string | null;
   folder: string | null;
@@ -543,6 +546,16 @@ export function talentRefLabel(ref: TalentRef): string {
 export function findTrapping(label: string): TrappingData | undefined {
   return trappings.find((t) => t.label.toLowerCase() === label.toLowerCase());
 }
+const CREATURE_BY_ID = new Map(creatures.map((c) => [c.id, c]));
+/** Résout une créature par son `id` STABLE — référence runtime/données (scènes, encounters, rig). */
+export function findCreatureById(id: string | undefined): CreatureData | undefined {
+  return id ? CREATURE_BY_ID.get(id) : undefined;
+}
+/** Libellé d'affichage d'une créature par son id (repli sur l'id si introuvable). */
+export function creatureLabel(id: string): string {
+  return CREATURE_BY_ID.get(id)?.label ?? id;
+}
+/** Lookup par LIBELLÉ — réservé à l'AUTHORING/affichage (picker éditeur, Codex) ; le runtime résout par id. */
 export function findCreature(label: string): CreatureData | undefined {
   return creatures.find((c) => c.label === label);
 }

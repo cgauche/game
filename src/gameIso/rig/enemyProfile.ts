@@ -15,7 +15,7 @@ import type { MonsterParts } from './parts/monstrous';
 import { hashSeed } from '../appearance';
 import { bipedDef, defByName } from './creatures';
 import { resolveRender } from './bodyPlan';
-import { findCreature } from '../../data';
+import { findCreatureById } from '../../data';
 import type { EntityAppearance } from '../../state/scene';
 import { raceById } from './races';
 import { baseSpeciesOf } from './skeletons';
@@ -36,8 +36,8 @@ export interface EnemyRigProfile {
 
 /** Classe de rendu d'un NOM (sans espèce explicite) — délègue au résolveur unique `resolveRender`
  *  (repli name-match). 'rig' (humanoïde → rig bipède) ou 'creature' (gabarit quad/ailé/… / nuée). */
-export function classifyEnemy(name: string): 'rig' | 'creature' {
-  return resolveRender(undefined, findCreature(name)?.traits, name).kind === 'plan' ? 'creature' : 'rig';
+export function classifyEnemy(creatureId: string): 'rig' | 'creature' {
+  return resolveRender(undefined, findCreatureById(creatureId)?.traits, creatureId).kind === 'plan' ? 'creature' : 'rig';
 }
 
 /** Classe de rendu DATA-DRIVEN (de-POC P5) — délègue au résolveur unique `resolveRender` : trait
@@ -121,10 +121,10 @@ function rigFieldsFrom(a: EntityAppearance): Partial<Appearance> {
  * via AnimatedPlanToken, plus aucun sprite monolithique). PURE et déterministe (seed dérivé de l'id).
  */
 export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
-  if (classifyBy(c.species, c.traits, c.name) === 'creature') return null; // espèce explicite (data) → repli nom
+  if (classifyBy(c.species, c.traits, c.creatureId ?? c.name) === 'creature') return null; // espèce explicite (data) → repli id/nom
 
   const seed = hashSeed(c.id);
-  const cd = findCreature(c.name)?.appearance; // apparence par défaut UNIFIÉE du record créature
+  const cd = findCreatureById(c.creatureId)?.appearance; // apparence par défaut UNIFIÉE du record créature (par id)
   const species = c.species ?? cd?.species ?? (defByName(c.name) ? c.name : 'Humain'); // explicite → record → nom-EXACT-espèce → Humain
   const d = bipedDef(species); // def bipède canonique (porte le perso éventuel + override race/gabarit)
   const race = raceById(d?.race ?? baseSpeciesOf(species)); // défauts d'apparence partagés (canon)
@@ -162,8 +162,8 @@ export function entityRigProfile(
   seed: number,
   opts?: { species?: string; tenue?: string; monster?: MonsterParts; features?: string[]; weapon?: string; colors?: import('./palette').Palette; parts?: Appearance['parts']; sex?: 'M' | 'F'; build?: number; eyes?: { G?: string; D?: string } },
 ): EnemyRigProfile | null {
-  const rec = findCreature(name);
-  if (classifyBy(opts?.species ?? rec?.appearance?.species, rec?.traits, name) === 'creature') return null; // espèce explicite (data) → repli nom
+  const rec = findCreatureById(name);
+  if (classifyBy(opts?.species ?? rec?.appearance?.species, rec?.traits, name) === 'creature') return null; // espèce explicite (data) → repli id/nom
   const cd = rec?.appearance; // apparence par défaut UNIFIÉE du record créature
   const species = opts?.species ?? cd?.species ?? (defByName(name) ? name : 'Humain'); // override → record → nom-EXACT-espèce → Humain
   const d = bipedDef(species);

@@ -346,7 +346,7 @@ export function Editor() {
           terrainRect={terrainRect}
           encTarget={encTarget}
           setEncTarget={setEncTarget}
-          encRef={encRef || enemyCreatures[0]?.label || 'Mutant'}
+          encRef={encRef || enemyCreatures[0]?.id || 'mutant'}
           layers={layers}
           sel={sel}
           onSelect={selectFromCanvas}

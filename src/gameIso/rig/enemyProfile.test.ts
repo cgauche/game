@@ -45,9 +45,9 @@ describe('classifyEnemy (cosmétique : humanoïde peau-humaine → rig, sinon cr
     }
   });
   it('bêtes / morts-vivants non humanoïdes / démons exotiques → créature', () => {
-    for (const n of [
-      'Rat géant', 'Dragon', 'Loup', 'Ours',
-      'Araignée géante', 'Spectre', 'Bête des marais', 'Hydre',
+    for (const n of [ // ids de créatures (classifyEnemy résout par id)
+      'rat-geant', 'dragon', 'loup', 'ours',
+      'araignee-geante', 'spectre', 'bete-des-marais', 'hydre',
     ]) {
       expect(classifyEnemy(n), n).toBe('creature');
     }

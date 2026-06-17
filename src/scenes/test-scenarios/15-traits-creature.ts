@@ -18,10 +18,10 @@ setEncounters(scene, [
   {
     id: 'enc-traits',
     enemies: [
-      { ref: 'Fantôme', pos: { x: 12, y: 3 } },
-      { ref: 'Démonette de Slaanesh', pos: { x: 14, y: 6 } },
-      { ref: 'Troll', pos: { x: 12, y: 9 } },
-      { ref: 'Araignée géante', pos: { x: 9, y: 6 } },
+      { ref: 'fantome', pos: { x: 12, y: 3 } },
+      { ref: 'demonette-de-slaanesh', pos: { x: 14, y: 6 } },
+      { ref: 'troll', pos: { x: 12, y: 9 } },
+      { ref: 'araignee-geante', pos: { x: 9, y: 6 } },
     ],
   },
 ]);

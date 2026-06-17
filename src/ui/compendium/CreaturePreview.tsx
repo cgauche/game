@@ -11,16 +11,17 @@ import { bonesToSvg } from '../../gameIso/rig/renderBones';
 import { resolveRender, planById } from '../../gameIso/rig/bodyPlan';
 import { eyesArtFromKeys } from '../../gameIso/rig/parts/eyes';
 import { hashSeed } from '../../gameIso/appearance';
-import { findCreature } from '../../data';
+import { findCreatureById } from '../../data';
 import { DEFS } from '../../gameIso/sprites';
 import type { View } from '../../gameIso/rig/facing';
 import type { Palette } from '../../gameIso/rig/palette';
 import type { EntityAppearance } from '../../state/scene';
 
+// `name` = id de créature (Codex/bestiaire) OU libellé d'espèce/race (la résolution lit l'espèce
+// explicite de l'apparence ; les Nuées tirent leur trait du record par id).
 function rigSvg(name: string, a: EntityAppearance | undefined, view: View): string {
   const seed = a?.seed ?? hashSeed(name);
-  // Résolution UNIQUE par la donnée (espèce explicite de l'apparence + trait Nuée du record), repli nom.
-  const r = resolveRender(a?.species, findCreature(name)?.traits, name);
+  const r = resolveRender(a?.species, findCreatureById(name)?.traits, name);
   if (r.kind === 'rig') {
     const p = entityRigProfile(name, seed, {
       species: a?.species, tenue: a?.tenue, monster: a?.monster, features: a?.features,

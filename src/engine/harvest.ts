@@ -5,7 +5,7 @@
 // Degré de Conservation depuis la mort. Le profil de récolte (rareté/dangerosité/usages)
 // est porté par la créature (`CreatureData.harvest`) — pas de table parallèle.
 import type { CreatureData, HarvestRarity, HarvestDanger } from '../data';
-import { findCreature } from '../data';
+import { findCreatureById } from '../data';
 import { fromBrass, type Money, PA_PER_SC, PA_PER_CO } from './money';
 import { formatTrait } from './traits/dispatch';
 import type { TraitInstance } from './statEntry';
@@ -32,9 +32,9 @@ const SIZE_LADDER: HarvestSize[] = ['InfMoyenne', 'Moyenne', 'Grande', 'Énorme'
 // Modificateur de prix selon le Degré de Conservation (Conservé = standard du tableau).
 const CONSERV_MULT: Record<Conservation, number> = { Frais: 2, Conservé: 1, Faisandé: 0.5, Pourri: 0.125 };
 
-/** Profil de récolte d'une créature (ou undefined si non répertoriée). */
-export function harvestProfileFor(label: string): HarvestProfile | undefined {
-  return findCreature(label)?.harvest ?? undefined;
+/** Profil de récolte d'une créature par son `id` (ou undefined si non répertoriée). */
+export function harvestProfileFor(creatureId: string | undefined): HarvestProfile | undefined {
+  return findCreatureById(creatureId)?.harvest ?? undefined;
 }
 
 /** Texte d'un Trait, qu'il soit une chaîne brute (authoring/test) ou un TraitInstance (runtime). */

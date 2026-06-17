@@ -17,7 +17,7 @@ setEncounters(scene, [
   {
     id: 'enc-pieuvre',
     enemies: [
-      { ref: 'Pieuvre des tourbières', pos: { x: 12, y: 6 } },
+      { ref: 'pieuvre-des-tourbieres', pos: { x: 12, y: 6 } },
       {
         statblock: {
           name: 'Sorcier mutant',
@@ -27,8 +27,8 @@ setEncounters(scene, [
         },
         pos: { x: 14, y: 3 },
       },
-      { ref: 'Squelette', pos: { x: 12, y: 9 }, optionals: [{ id: 'elite' }], randomChars: true },
-      { ref: 'Eusapia Balacañon', pos: { x: 15, y: 6 } },
+      { ref: 'squelette', pos: { x: 12, y: 9 }, optionals: [{ id: 'elite' }], randomChars: true },
+      { ref: 'eusapia-balacanon', pos: { x: 15, y: 6 } },
     ],
   },
 ]);

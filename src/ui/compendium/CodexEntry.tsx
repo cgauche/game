@@ -127,7 +127,7 @@ export function CodexEntry({ item, instance, category }: { item: CodexItem; inst
       )}
       <TabbedEntry
         key={item.label}
-        figure={item.appearance ? <CreaturePreview name={item.label} appearance={item.appearance} /> : undefined}
+        figure={item.appearance ? <CreaturePreview name={item.previewRef ?? item.label} appearance={item.appearance} /> : undefined}
         title={item.label}
         aside={item.source ? <CodexSourceBadge source={item.source} /> : undefined}
         blurb={item.sub}

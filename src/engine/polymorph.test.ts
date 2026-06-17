@@ -3,7 +3,7 @@ import { polymorphOps } from './polymorph';
 import { applyOps } from './ops';
 import { effectiveChar } from './characteristics';
 import { endOfRound } from './conditions';
-import { findCreature } from '../data';
+import { findCreatureById } from '../data';
 import { hasTraitKey } from './traits/dispatch';
 import type { Combatant } from './types';
 
@@ -22,9 +22,9 @@ const dummy = (p: Partial<Combatant> = {}): Combatant =>
 
 describe('polymorphOps — Forme bestiale (Ours)', () => {
   it('remplace F/E/Ag/Dex par celles de l’Ours et accorde ses Traits (sauf Bestial)', () => {
-    const ours = findCreature('Ours')!;
+    const ours = findCreatureById('ours')!;
     const c = dummy({});
-    applyOps(c, polymorphOps(c, 'Ours'), { label: 'Forme bestiale', defaultDurationRounds: 3 });
+    applyOps(c, polymorphOps(c, 'ours'), { label: 'Forme bestiale', defaultDurationRounds: 3 });
     expect(effectiveChar(c, 'F')).toBe(ours.char.F); // 55
     expect(effectiveChar(c, 'E')).toBe(ours.char.E); // 45
     expect(effectiveChar(c, 'Ag')).toBe(ours.char.Ag); // 25

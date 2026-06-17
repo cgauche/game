@@ -14,7 +14,7 @@ describe('resolveRender — résolution de rendu 100% data-driven (plus de name-
     for (const c of creatures) {
       const sp = c.appearance?.species;
       if (!sp) continue;
-      const r = resolveRender(sp, c.traits, c.label);
+      const r = resolveRender(sp, c.traits, c.id);
       const d = defByName(sp);
       const expected = isSwarm(c.traits) ? 'plan' : d && d.plan !== 'biped' ? 'plan' : 'rig';
       expect(r.kind, c.label).toBe(expected);
@@ -26,7 +26,7 @@ describe('resolveRender — résolution de rendu 100% data-driven (plus de name-
     for (const c of creatures) {
       const sp = c.appearance?.species;
       if (!sp) continue; // les 7 Nuée sans espèce sont couvertes par le trait (cas suivant)
-      expect(resolveByName(c.label), c.label).toEqual(resolveRender(sp, c.traits, c.label));
+      expect(resolveByName(c.id), c.label).toEqual(resolveRender(sp, c.traits, c.id));
     }
   });
 

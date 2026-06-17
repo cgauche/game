@@ -2241,7 +2241,7 @@
             "ops": [
               {
                 "op": "polymorph",
-                "ref": "Ours"
+                "ref": "ours"
               }
             ]
           }

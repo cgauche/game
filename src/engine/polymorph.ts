@@ -12,11 +12,11 @@
  */
 import type { Combatant } from './types';
 import type { GameOp } from './ops';
-import { findCreature } from '../data';
+import { findCreatureById } from '../data';
 import { baseWithTraits } from './characteristics';
 
 export function polymorphOps(target: Combatant, ref: string): GameOp[] {
-  const cr = findCreature(ref);
+  const cr = findCreatureById(ref);
   if (!cr) return [{ op: 'narrative', text: `Forme bestiale : « ${ref} » introuvable au bestiaire — arbitrage MJ.` }];
   const ops: GameOp[] = [];
   // F/E/Ag/Dex de la créature, par DIFFÉRENCE (effectiveChar = base + bonus = valeur de la créature).

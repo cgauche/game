@@ -82,7 +82,7 @@ export function Palette({
   setEncTarget: (s: string) => void;
   encRef: string;
   setEncRef: (s: string) => void;
-  enemyCreatures: { label: string }[];
+  enemyCreatures: { id: string; label: string }[];
 }) {
   const family = familyOf(tool);
   const [search, setSearch] = useState(''); // filtre partagé des catalogues (réinitialisé au changement d'outil)
@@ -332,7 +332,7 @@ export function Palette({
             {searchBox('créature…')}
             <div className="pal-list">
               {enemyCreatures.filter((c) => match(c.label)).map((c) => (
-                <button key={c.label} className={`pal-item${(encRef || enemyCreatures[0]?.label) === c.label ? ' active' : ''}`} onClick={() => setEncRef(c.label)}>
+                <button key={c.id} className={`pal-item${(encRef || enemyCreatures[0]?.id) === c.id ? ' active' : ''}`} onClick={() => setEncRef(c.id)}>
                   {c.label}
                 </button>
               ))}

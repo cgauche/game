@@ -14,10 +14,10 @@ setEncounters(scene, [
   {
     id: 'enc-monture',
     enemies: [
-      { ref: 'Cheval', pos: { x: 13, y: 4 }, mount: true }, // #0 — destrier ennemi
-      { ref: 'Mutant', pos: { x: 13, y: 4 }, rides: 0 }, //     #1 — cavalier (monté sur #0)
-      { ref: 'Cheval', pos: { x: 6, y: 7 }, mount: true, side: 'ally' }, // #2 — monture libre, côté groupe
-      { ref: 'Gobelin', pos: { x: 12, y: 7 } }, //             #3 — fantassin (cible plus petite)
+      { ref: 'cheval', pos: { x: 13, y: 4 }, mount: true }, // #0 — destrier ennemi
+      { ref: 'mutant', pos: { x: 13, y: 4 }, rides: 0 }, //     #1 — cavalier (monté sur #0)
+      { ref: 'cheval', pos: { x: 6, y: 7 }, mount: true, side: 'ally' }, // #2 — monture libre, côté groupe
+      { ref: 'gobelin', pos: { x: 12, y: 7 } }, //             #3 — fantassin (cible plus petite)
     ],
   },
 ]);

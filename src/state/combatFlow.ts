@@ -3029,14 +3029,18 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
     const messages = immediate.filter((e) => e.type === 'journal').map((e) => (e as { text: string }).text);
     if (immediate.length) applyEffects(get, set, immediate);
     const after = get();
-    const counts = new Map<string, number>();
-    for (const c of battle.combatants) if (c.kind === 'enemy') counts.set(c.name, (counts.get(c.name) ?? 0) + 1);
+    const counts = new Map<string, { name: string; count: number; creatureId?: string }>();
+    for (const c of battle.combatants) if (c.kind === 'enemy') {
+      const key = c.creatureId ?? c.name; // regroupe par identité bestiaire (id), repli nom (statbloc custom)
+      const e = counts.get(key);
+      if (e) e.count++; else counts.set(key, { name: c.name, count: 1, creatureId: c.creatureId });
+    }
     set({
       pendingVictory: {
         xp: Math.max(0, (after.party[0]?.xp ?? 0) - xpBefore),
         gold: fromBrass(Math.max(0, toBrass(after.money) - brassBefore)),
         gear: gear.length ? gear : undefined,
-        defeated: [...counts].map(([name, count]) => ({ name, count })),
+        defeated: [...counts.values()].map(({ name, count, creatureId }) => ({ name, count, creatureId })),
         messages: messages.length ? messages : undefined,
         onContinue: deferred.length ? deferred : undefined,
       },

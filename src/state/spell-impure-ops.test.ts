@@ -12,7 +12,7 @@ import { describe, it, expect } from 'vitest';
 import { useGame } from './store';
 import { applyCast } from './combatFlow';
 import { makePregens } from '../data/pregens';
-import { findSpell, findCreature } from '../data';
+import { findSpell, findCreatureById } from '../data';
 import { spellEffectOps } from './flow';
 import { effectiveChar } from '../engine/characteristics';
 import type { CastResult, MissileResult } from '../engine/magic';
@@ -44,7 +44,7 @@ describe('effets « lourds » présents dans le Flow éditable (données app-own
       expect(opOf(label, 'lifeSteal'), label).toBeTruthy();
     }
     const poly = opOf('Forme bestiale', 'polymorph') as { ref?: string } | undefined;
-    expect(poly?.ref).toBe('Ours');
+    expect(poly?.ref).toBe('ours'); // ref créature en id (slug) depuis la migration
   });
 });
 
@@ -52,7 +52,7 @@ describe('résolution au lancement depuis le Flow', () => {
   it('Forme bestiale : la métamorphose (op polymorph) remplace les Caractéristiques du lanceur', () => {
     const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
     useGame.setState({ party: [w] as Combatant[] });
-    const ours = findCreature('Ours')!;
+    const ours = findCreatureById('ours')!;
     expect(typeof ours.char.F).toBe('number');
     applyCast(useGame.getState, useGame.setState, w, w, findSpell('Forme bestiale')!, ok(2), false, false);
     const after = useGame.getState().party.find((h) => h.id === w.id)!;

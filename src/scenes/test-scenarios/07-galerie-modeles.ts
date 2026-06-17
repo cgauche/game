@@ -56,21 +56,21 @@ for (const c of creatures) {
 // Démo Monstrueuse (4×4) : aucune créature LDB/ADE n'est Monstrueuse par DÉFAUT (c'est une option
 // facultative de plusieurs créatures) — on force la Taille via le statbloc ; le modèle reste le Géant.
 place(
-  { id: 'cr-monstre', kind: 'personnage', ref: 'Géant', statblock: { name: 'Démo — Monstrueuse 4×4', char: { B: 80 }, size: 'monstrueuse' }, label: 'Démo — Monstrueuse (4×4)' },
+  { id: 'cr-monstre', kind: 'personnage', ref: 'geant', statblock: { name: 'Démo — Monstrueuse 4×4', char: { B: 80 }, size: 'monstrueuse' }, label: 'Démo — Monstrueuse (4×4)' },
   4,
 );
 newSection();
 
 // 2) Toutes les carrières — rig humain + vêtements de la carrière (Moyenne, 1×1).
 for (const c of careers) {
-  place({ id: `car-${n++}`, kind: 'personnage', ref: 'Humain', label: `Carrière — ${c.label}`, appearance: { tenue: c.label }, weapon: 'Épée bâtarde' }, 1);
+  place({ id: `car-${n++}`, kind: 'personnage', ref: 'humain', label: `Carrière — ${c.label}`, appearance: { tenue: c.label }, weapon: 'Épée bâtarde' }, 1);
 }
 newSection();
 
 // 3) Toutes les armes — rig humain tenant chaque arme (mêlée + distance).
 const weapons = trappings.filter((t) => t.type === 'melee' || t.type === 'ranged');
 for (const w of weapons) {
-  place({ id: `wp-${n++}`, kind: 'personnage', ref: 'Humain', label: `Arme — ${w.label}`, weapon: w.label }, 1);
+  place({ id: `wp-${n++}`, kind: 'personnage', ref: 'humain', label: `Arme — ${w.label}`, weapon: w.label }, 1);
 }
 newSection();
 
@@ -84,7 +84,7 @@ const MUTANTS: { label: string; monster: MonsterPartsSel }[] = [
   { label: 'crétin', monster: { tete: 'minuscule' } },
 ];
 for (const m of MUTANTS) {
-  place({ id: `mut-${n++}`, kind: 'personnage', ref: 'Mutant', label: `Mutant (${m.label})`, appearance: { monster: m.monster } }, 1);
+  place({ id: `mut-${n++}`, kind: 'personnage', ref: 'mutant', label: `Mutant (${m.label})`, appearance: { monster: m.monster } }, 1);
 }
 
 const W = Math.max(maxX, X0 + MAXW) + 5;

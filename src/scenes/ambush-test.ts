@@ -159,11 +159,11 @@ function build(): Scene {
       //   HUMANOÏDES riggés : mutation = part monstrueuse (tête de chien, écailles…),
       //   arme = équipement (l'arbalète du reptilien, la hache qui mutile l'attelage).
       //   Mêmes positions que l'encounter (raccord visuel à l'entrée en combat). —
-      { id: 'knud', kind: 'personnage', pos: { x: 17, y: 6 }, ref: 'Mutant', appearance: { monster: { tete: 'lezard' } }, weapon: 'Arbalète', anim: 'standing', label: 'Knud Cratinx — chef à la peau écailleuse' },
-      { id: 'mikael', kind: 'personnage', pos: { x: 16, y: 7 }, ref: 'Mutant', appearance: { monster: { tete: 'chien' } }, anim: 'howl', label: 'Mikael — tête de chien, hurle à la mort' },
-      { id: 'erik', kind: 'personnage', pos: { x: 14, y: 8 }, ref: 'Mutant', appearance: { monster: { jambes: 'chevre' } }, anim: 'feeding', label: 'Erik — pattes de chèvre, dévore un cadavre' },
-      { id: 'johann', kind: 'personnage', pos: { x: 15, y: 7 }, ref: 'Mutant', appearance: { monster: { tete: 'ogive' } }, anim: 'standing', label: 'Johann — tête en ogive, panse Mikael' },
-      { id: 'terenz', kind: 'personnage', pos: { x: 12, y: 7 }, ref: 'Mutant', appearance: { monster: { tete: 'minuscule' } }, weapon: 'Hache', anim: 'standing', label: 'Terenz — crétin, mutile l’attelage' },
+      { id: 'knud', kind: 'personnage', pos: { x: 17, y: 6 }, ref: 'mutant', appearance: { monster: { tete: 'lezard' } }, weapon: 'Arbalète', anim: 'standing', label: 'Knud Cratinx — chef à la peau écailleuse' },
+      { id: 'mikael', kind: 'personnage', pos: { x: 16, y: 7 }, ref: 'mutant', appearance: { monster: { tete: 'chien' } }, anim: 'howl', label: 'Mikael — tête de chien, hurle à la mort' },
+      { id: 'erik', kind: 'personnage', pos: { x: 14, y: 8 }, ref: 'mutant', appearance: { monster: { jambes: 'chevre' } }, anim: 'feeding', label: 'Erik — pattes de chèvre, dévore un cadavre' },
+      { id: 'johann', kind: 'personnage', pos: { x: 15, y: 7 }, ref: 'mutant', appearance: { monster: { tete: 'ogive' } }, anim: 'standing', label: 'Johann — tête en ogive, panse Mikael' },
+      { id: 'terenz', kind: 'personnage', pos: { x: 12, y: 7 }, ref: 'mutant', appearance: { monster: { tete: 'minuscule' } }, weapon: 'Hache', anim: 'standing', label: 'Terenz — crétin, mutile l’attelage' },
       ...enc.entities,
     ],
     dialogues,

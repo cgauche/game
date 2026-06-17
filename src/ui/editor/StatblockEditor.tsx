@@ -10,7 +10,7 @@
  */
 import { CustomStatblock } from '../../state/scene';
 import { CHAR_KEYS, CHAR_LABELS, CharKey } from '../../engine/types';
-import { creatures, findCreature, findSkill, findTalent, skillRefLabel, talentRefLabel, type SkillRef, type TalentRef } from '../../data';
+import { creatures, findCreatureById, findSkill, findTalent, skillRefLabel, talentRefLabel, type SkillRef, type TalentRef } from '../../data';
 import { slugId } from '../../data/slug';
 import { parseStatEntry } from '../../engine/statEntry';
 import { woundsForSize, resizeBySteps, stepSize, SIZE_LABEL, SIZE_ORDER } from '../../engine/size';
@@ -36,9 +36,9 @@ const EXTRA: { key: 'M'; label: string; def: number }[] = [{ key: 'M', label: 'M
  *  Taille au spawn (LDB 85 ; `B` rempli = surcharge). */
 export const emptyStatblock = (name = 'Profil personnalisé'): CustomStatblock => ({ name, char: { M: 4 } });
 
-/** Clone une créature du bestiaire en statbloc éditable (base à personnaliser). */
-function cloneFromCreature(label: string): CustomStatblock | null {
-  const c = findCreature(label);
+/** Clone une créature du bestiaire en statbloc éditable (base à personnaliser) — par id. */
+function cloneFromCreature(creatureId: string): CustomStatblock | null {
+  const c = findCreatureById(creatureId);
   if (!c) return null;
   const char: CustomStatblock['char'] = {};
   for (const [k, v] of Object.entries(c.char)) if (typeof v === 'number') (char as Record<string, number>)[k] = v;
@@ -87,7 +87,7 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
         >
           <option value="">— choisir une base à personnaliser —</option>
           {creatures.map((c) => (
-            <option key={c.label} value={c.label}>{c.label}</option>
+            <option key={c.id} value={c.id}>{c.label}</option>
           ))}
         </select>
       </label>

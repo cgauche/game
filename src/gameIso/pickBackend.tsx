@@ -8,7 +8,7 @@ import { AmbientRigToken } from './AmbientRigToken';
 import { AnimatedPlanToken } from './AnimatedPlanToken';
 import { enemyRigProfile, entityRigProfile } from './rig/enemyProfile';
 import { resolveRender } from './rig/bodyPlan';
-import { findCreature } from '../data';
+import { findCreatureById } from '../data';
 import { eyesArtFromKeys } from './rig/parts/eyes';
 import { entitySprite, pnjSprite } from './sprites';
 import { hashSeed } from './appearance';
@@ -120,9 +120,9 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
   const ent = subject.ent;
   const id = `e-${ent.id}`;
   const seed = ent.appearance?.seed ?? hashSeed(ent.id);
-  const refName = ent.ref ?? ent.label ?? 'Villageois';
-  // Résolution UNIQUE par la donnée (espèce explicite de l'entité + trait Nuée du record), repli nom.
-  const r = resolveRender(ent.appearance?.species, findCreature(refName)?.traits, refName);
+  const refName = ent.ref ?? ent.label ?? 'villageois';
+  // Résolution UNIQUE par la donnée (espèce explicite de l'entité + trait Nuée du record), par id.
+  const r = resolveRender(ent.appearance?.species, findCreatureById(refName)?.traits, refName);
   const prof =
     ent.kind === 'personnage'
       ? entityRigProfile(refName, seed, { species: ent.appearance?.species, tenue: ent.appearance?.tenue, monster: ent.appearance?.monster, features: ent.appearance?.features, weapon: ent.weapon, colors: ent.appearance?.colors, parts: ent.appearance?.parts, sex: ent.appearance?.sex, build: ent.appearance?.build, eyes: ent.appearance?.eyes })

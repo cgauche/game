@@ -1,5 +1,6 @@
 [
   {
+    "id": "humain",
     "label": "Humain",
     "title": null,
     "folder": "Les peuples du Reikland",
@@ -54,6 +55,7 @@
     }
   },
   {
+    "id": "nain",
     "label": "Nain",
     "title": null,
     "folder": "Les peuples du Reikland",
@@ -119,6 +121,7 @@
     }
   },
   {
+    "id": "halfling",
     "label": "Halfling",
     "title": null,
     "folder": "Les peuples du Reikland",
@@ -173,6 +176,7 @@
     }
   },
   {
+    "id": "elfe-haut-et-sylvain",
     "label": "Elfe (haut et sylvain)",
     "title": null,
     "folder": "Les peuples du Reikland",
@@ -247,6 +251,7 @@
     }
   },
   {
+    "id": "ogre",
     "label": "Ogre",
     "title": null,
     "folder": "Les peuples du Reikland",
@@ -314,6 +319,7 @@
     }
   },
   {
+    "id": "bella-la-noire",
     "label": "Bella la Noire",
     "title": "Bandit humain",
     "folder": "Les peuples du Reikland",
@@ -378,6 +384,7 @@
     }
   },
   {
+    "id": "pol-dankels",
     "label": "Pol Dankels",
     "title": "Sorcier humain",
     "folder": "Les peuples du Reikland",
@@ -433,6 +440,7 @@
     }
   },
   {
+    "id": "eusapia-balacanon",
     "label": "Eusapia Balacañon",
     "title": "Maître sorcier humain (OR 1)",
     "folder": "Les peuples du Reikland",
@@ -619,6 +627,7 @@
     }
   },
   {
+    "id": "araignee-geante",
     "label": "Araignée géante",
     "title": null,
     "folder": "Les bêtes du Reikland",
@@ -700,6 +709,7 @@
     }
   },
   {
+    "id": "cheval",
     "label": "Cheval",
     "title": null,
     "folder": "Les bêtes du Reikland",
@@ -759,6 +769,7 @@
     }
   },
   {
+    "id": "chien",
     "label": "Chien",
     "title": null,
     "folder": "Les bêtes du Reikland",
@@ -838,6 +849,7 @@
     }
   },
   {
+    "id": "loup",
     "label": "Loup",
     "title": null,
     "folder": "Les bêtes du Reikland",
@@ -913,6 +925,7 @@
     }
   },
   {
+    "id": "ours",
     "label": "Ours",
     "title": null,
     "folder": "Les bêtes du Reikland",
@@ -996,6 +1009,7 @@
     }
   },
   {
+    "id": "pigeon",
     "label": "Pigeon",
     "title": null,
     "folder": "Les bêtes du Reikland",
@@ -1057,6 +1071,7 @@
     }
   },
   {
+    "id": "rat-geant",
     "label": "Rat géant",
     "title": null,
     "folder": "Les bêtes du Reikland",
@@ -1134,6 +1149,7 @@
     }
   },
   {
+    "id": "sanglier",
     "label": "Sanglier",
     "title": null,
     "folder": "Les bêtes du Reikland",
@@ -1216,6 +1232,7 @@
     }
   },
   {
+    "id": "serpent",
     "label": "Serpent",
     "title": null,
     "folder": "Les bêtes du Reikland",
@@ -1289,6 +1306,7 @@
     }
   },
   {
+    "id": "basilic",
     "label": "Basilic",
     "title": null,
     "folder": "Les bêtes monstrueuses du Reikland",
@@ -1375,6 +1393,7 @@
     }
   },
   {
+    "id": "bete-des-marais",
     "label": "Bête des marais",
     "title": null,
     "folder": "Les bêtes monstrueuses du Reikland",
@@ -1454,6 +1473,7 @@
     }
   },
   {
+    "id": "demigriffon",
     "label": "Demigriffon",
     "title": null,
     "folder": "Les bêtes monstrueuses du Reikland",
@@ -1518,6 +1538,7 @@
     }
   },
   {
+    "id": "dragon",
     "label": "Dragon",
     "title": null,
     "folder": "Les bêtes monstrueuses du Reikland",
@@ -1625,6 +1646,7 @@
     }
   },
   {
+    "id": "fimir",
     "label": "Fimir",
     "title": null,
     "folder": "Les bêtes monstrueuses du Reikland",
@@ -1690,6 +1712,7 @@
     }
   },
   {
+    "id": "geant",
     "label": "Géant",
     "title": null,
     "folder": "Les bêtes monstrueuses du Reikland",
@@ -1775,6 +1798,7 @@
     }
   },
   {
+    "id": "griffon",
     "label": "Griffon",
     "title": null,
     "folder": "Les bêtes monstrueuses du Reikland",
@@ -1845,6 +1869,7 @@
     }
   },
   {
+    "id": "hyppogriffe",
     "label": "Hyppogriffe",
     "title": null,
     "folder": "Les bêtes monstrueuses du Reikland",
@@ -1929,6 +1954,7 @@
     }
   },
   {
+    "id": "hydre",
     "label": "Hydre",
     "title": null,
     "folder": "Les bêtes monstrueuses du Reikland",
@@ -2011,6 +2037,7 @@
     }
   },
   {
+    "id": "jabberslythe",
     "label": "Jabberslythe",
     "title": null,
     "folder": "Les bêtes monstrueuses du Reikland",
@@ -2098,6 +2125,7 @@
     }
   },
   {
+    "id": "manticore",
     "label": "Manticore",
     "title": null,
     "folder": "Les bêtes monstrueuses du Reikland",
@@ -2177,6 +2205,7 @@
     }
   },
   {
+    "id": "pegase",
     "label": "Pégase",
     "title": null,
     "folder": "Les bêtes monstrueuses du Reikland",
@@ -2231,6 +2260,7 @@
     }
   },
   {
+    "id": "pieuvre-des-tourbieres",
     "label": "Pieuvre des tourbières",
     "title": null,
     "folder": "Les bêtes monstrueuses du Reikland",
@@ -2297,6 +2327,7 @@
     }
   },
   {
+    "id": "squig-des-cavernes",
     "label": "Squig des cavernes",
     "title": null,
     "folder": "Les bêtes monstrueuses du Reikland",
@@ -2371,6 +2402,7 @@
     }
   },
   {
+    "id": "troll",
     "label": "Troll",
     "title": null,
     "folder": "Les bêtes monstrueuses du Reikland",
@@ -2474,6 +2506,7 @@
     }
   },
   {
+    "id": "vouivre",
     "label": "Vouivre",
     "title": null,
     "folder": "Les bêtes monstrueuses du Reikland",
@@ -2551,6 +2584,7 @@
     }
   },
   {
+    "id": "orc",
     "label": "Orc",
     "title": null,
     "folder": "Les hordes de peaux-vertes",
@@ -2623,6 +2657,7 @@
     }
   },
   {
+    "id": "gobelin",
     "label": "Gobelin",
     "title": null,
     "folder": "Les hordes de peaux-vertes",
@@ -2699,6 +2734,7 @@
     }
   },
   {
+    "id": "snotling",
     "label": "Snotling",
     "title": null,
     "folder": "Les hordes de peaux-vertes",
@@ -2762,6 +2798,7 @@
     }
   },
   {
+    "id": "banshee",
     "label": "Banshee",
     "title": null,
     "folder": "Les morts sans repos",
@@ -2835,6 +2872,7 @@
     }
   },
   {
+    "id": "chauve-souris-vampire-varghulf",
     "label": "Chauve-souris vampire (Varghulf)",
     "title": null,
     "folder": "Les morts sans repos",
@@ -2935,6 +2973,7 @@
     }
   },
   {
+    "id": "fantome",
     "label": "Fantôme",
     "title": null,
     "folder": "Les morts sans repos",
@@ -3005,6 +3044,7 @@
     }
   },
   {
+    "id": "goule-de-crypte",
     "label": "Goule de crypte",
     "title": null,
     "folder": "Les morts sans repos",
@@ -3064,6 +3104,7 @@
     }
   },
   {
+    "id": "loup-funeste",
     "label": "Loup funeste",
     "title": null,
     "folder": "Les morts sans repos",
@@ -3149,6 +3190,7 @@
     }
   },
   {
+    "id": "spectre-de-cairn",
     "label": "Spectre de cairn",
     "title": null,
     "folder": "Les morts sans repos",
@@ -3219,6 +3261,7 @@
     }
   },
   {
+    "id": "squelette",
     "label": "Squelette",
     "title": null,
     "folder": "Les morts sans repos",
@@ -3292,6 +3335,7 @@
     }
   },
   {
+    "id": "vampire",
     "label": "Vampire",
     "title": null,
     "folder": "Les morts sans repos",
@@ -3402,6 +3446,7 @@
     }
   },
   {
+    "id": "zombie",
     "label": "Zombie",
     "title": null,
     "folder": "Les morts sans repos",
@@ -3483,6 +3528,7 @@
     }
   },
   {
+    "id": "chamane-brey",
     "label": "Chamane-Brey",
     "title": null,
     "folder": "Hommes-bêtes, les enfants du Chaos",
@@ -3561,6 +3607,7 @@
     }
   },
   {
+    "id": "gor",
     "label": "Gor",
     "title": null,
     "folder": "Hommes-bêtes, les enfants du Chaos",
@@ -3647,6 +3694,7 @@
     }
   },
   {
+    "id": "minotaure",
     "label": "Minotaure",
     "title": null,
     "folder": "Hommes-bêtes, les enfants du Chaos",
@@ -3727,6 +3775,7 @@
     }
   },
   {
+    "id": "ungor",
     "label": "Ungor",
     "title": null,
     "folder": "Hommes-bêtes, les enfants du Chaos",
@@ -3803,6 +3852,7 @@
     }
   },
   {
+    "id": "cultiste",
     "label": "Cultiste",
     "title": null,
     "folder": "Cultistes, les égarés et les damnés",
@@ -3858,6 +3908,7 @@
     }
   },
   {
+    "id": "mutant",
     "label": "Mutant",
     "title": null,
     "folder": "Cultistes, les égarés et les damnés",
@@ -3912,6 +3963,7 @@
     }
   },
   {
+    "id": "guerrier-du-chaos",
     "label": "Guerrier du Chaos",
     "title": null,
     "folder": "Cultistes, les égarés et les damnés",
@@ -3985,6 +4037,7 @@
     }
   },
   {
+    "id": "sanguinaire-de-khorne",
     "label": "Sanguinaire de Khorne",
     "title": null,
     "folder": "Démons, les armées baragouinantes",
@@ -4060,6 +4113,7 @@
     }
   },
   {
+    "id": "demonette-de-slaanesh",
     "label": "Démonette de Slaanesh",
     "title": null,
     "folder": "Démons, les armées baragouinantes",
@@ -4123,6 +4177,7 @@
     }
   },
   {
+    "id": "furie-du-chaos",
     "label": "Furie du Chaos",
     "title": null,
     "folder": "Démons, les armées baragouinantes",
@@ -4220,6 +4275,7 @@
     }
   },
   {
+    "id": "horreur-rose",
     "label": "Horreur rose",
     "title": null,
     "folder": "Démons, les armées baragouinantes",
@@ -4311,6 +4367,7 @@
     }
   },
   {
+    "id": "horreur-bleue",
     "label": "Horreur bleue",
     "title": null,
     "folder": "Démons, les armées baragouinantes",
@@ -4395,6 +4452,7 @@
     }
   },
   {
+    "id": "slenderthigh-whiptongue",
     "label": "Slenderthigh Whiptongue",
     "title": "Prince démon de Slaanesh",
     "folder": "Princes démons",
@@ -4473,6 +4531,7 @@
     }
   },
   {
+    "id": "fr-hough-mournbreath",
     "label": "Fr’hough Mournbreath",
     "title": "Prince démon de Nurgle",
     "folder": "Princes démons",
@@ -4560,6 +4619,7 @@
     }
   },
   {
+    "id": "guerrier-des-clans",
     "label": "Guerrier des clans",
     "title": null,
     "folder": "Les ignobles hommes-rats",
@@ -4626,6 +4686,7 @@
     }
   },
   {
+    "id": "rat-ogre",
     "label": "Rat ogre",
     "title": null,
     "folder": "Les ignobles hommes-rats",
@@ -4711,6 +4772,7 @@
     }
   },
   {
+    "id": "vermine-de-choc",
     "label": "Vermine de choc",
     "title": null,
     "folder": "Les ignobles hommes-rats",
@@ -4771,6 +4833,7 @@
     }
   },
   {
+    "id": "destrier-cheval-de-guerre-lourd",
     "label": "Destrier (cheval de guerre lourd)",
     "title": null,
     "folder": "Montures de guerre",
@@ -4842,6 +4905,7 @@
     }
   },
   {
+    "id": "demigriffon-adulte",
     "label": "Demigriffon adulte",
     "title": null,
     "folder": "Montures de guerre",
@@ -4913,6 +4977,7 @@
     }
   },
   {
+    "id": "jeune-recrue-du-guet",
     "label": "Jeune Recrue du Guet",
     "title": null,
     "folder": "Hommes du Guet (Villes) (frenchy.bzh)",
@@ -5038,6 +5103,7 @@
     }
   },
   {
+    "id": "homme-du-guet",
     "label": "Homme du Guet",
     "title": null,
     "folder": "Hommes du Guet (Villes) (frenchy.bzh)",
@@ -5174,6 +5240,7 @@
     }
   },
   {
+    "id": "sergent-du-guet",
     "label": "Sergent du Guet",
     "title": null,
     "folder": "Hommes du Guet (Villes) (frenchy.bzh)",
@@ -5331,6 +5398,7 @@
     }
   },
   {
+    "id": "capitaine-du-guet",
     "label": "Capitaine du Guet",
     "title": null,
     "folder": "Hommes du Guet (Villes) (frenchy.bzh)",
@@ -5511,6 +5579,7 @@
     }
   },
   {
+    "id": "jeune-recrue-de-la-garde-du-village",
     "label": "Jeune Recrue de la Garde du Village",
     "title": null,
     "folder": "Gardes (Villages) (frenchy.bzh)",
@@ -5640,6 +5709,7 @@
     }
   },
   {
+    "id": "garde-du-village",
     "label": "Garde du Village",
     "title": null,
     "folder": "Gardes (Villages) (frenchy.bzh)",
@@ -5785,6 +5855,7 @@
     }
   },
   {
+    "id": "chef-de-la-garde-du-village",
     "label": "Chef de la Garde du Village",
     "title": null,
     "folder": "Gardes (Villages) (frenchy.bzh)",
@@ -5960,6 +6031,7 @@
     }
   },
   {
+    "id": "chef-veteran-de-la-garde-du-village",
     "label": "Chef Vétéran de la Garde du Village",
     "title": null,
     "folder": "Gardes (Villages) (frenchy.bzh)",
@@ -6152,6 +6224,7 @@
     }
   },
   {
+    "id": "jeune-recrue-patrouilleurs-ruraux",
     "label": "Jeune Recrue (Patrouilleurs Ruraux)",
     "title": null,
     "folder": "Patrouilleurs Ruraux (frenchy.bzh)",
@@ -6289,6 +6362,7 @@
     }
   },
   {
+    "id": "patrouilleur-rural",
     "label": "Patrouilleur Rural",
     "title": null,
     "folder": "Patrouilleurs Ruraux (frenchy.bzh)",
@@ -6437,6 +6511,7 @@
     }
   },
   {
+    "id": "sergent-patrouilleurs-ruraux",
     "label": "Sergent (Patrouilleurs Ruraux)",
     "title": null,
     "folder": "Patrouilleurs Ruraux (frenchy.bzh)",
@@ -6600,6 +6675,7 @@
     }
   },
   {
+    "id": "capitaine-patrouilleurs-ruraux",
     "label": "Capitaine (Patrouilleurs Ruraux)",
     "title": null,
     "folder": "Patrouilleurs Ruraux (frenchy.bzh)",
@@ -6781,6 +6857,7 @@
     }
   },
   {
+    "id": "jeune-recrue-patrouilleurs-fluviaux",
     "label": "Jeune Recrue (Patrouilleurs Fluviaux)",
     "title": null,
     "folder": "Patrouilleurs Fluviaux (frenchy.bzh)",
@@ -6910,6 +6987,7 @@
     }
   },
   {
+    "id": "patrouilleur-fluvial",
     "label": "Patrouilleur Fluvial",
     "title": null,
     "folder": "Patrouilleurs Fluviaux (frenchy.bzh)",
@@ -7052,6 +7130,7 @@
     }
   },
   {
+    "id": "sergent-patrouilleurs-fluviaux",
     "label": "Sergent (Patrouilleurs Fluviaux)",
     "title": null,
     "folder": "Patrouilleurs Fluviaux (frenchy.bzh)",
@@ -7220,6 +7299,7 @@
     }
   },
   {
+    "id": "capitaine-patrouilleurs-fluviaux",
     "label": "Capitaine (Patrouilleurs Fluviaux)",
     "title": null,
     "folder": "Patrouilleurs Fluviaux (frenchy.bzh)",
@@ -7406,6 +7486,7 @@
     }
   },
   {
+    "id": "jeune-interrogateur",
     "label": "Jeune Interrogateur",
     "title": null,
     "folder": "Répurgateurs (frenchy.bzh)",
@@ -7527,6 +7608,7 @@
     }
   },
   {
+    "id": "repurgateur",
     "label": "Répurgateur",
     "title": null,
     "folder": "Répurgateurs (frenchy.bzh)",
@@ -7678,6 +7760,7 @@
     }
   },
   {
+    "id": "inquisiteur",
     "label": "Inquisiteur",
     "title": null,
     "folder": "Répurgateurs (frenchy.bzh)",
@@ -7848,6 +7931,7 @@
     }
   },
   {
+    "id": "grand-inquisiteur",
     "label": "Grand Inquisiteur",
     "title": null,
     "folder": "Répurgateurs (frenchy.bzh)",
@@ -8037,6 +8121,7 @@
     }
   },
   {
+    "id": "juge",
     "label": "Juge",
     "title": null,
     "folder": "Juges & Avocats (frenchy.bzh)",
@@ -8155,6 +8240,7 @@
     }
   },
   {
+    "id": "haut-juge",
     "label": "Haut Juge",
     "title": null,
     "folder": "Juges & Avocats (frenchy.bzh)",
@@ -8294,6 +8380,7 @@
     }
   },
   {
+    "id": "avocat",
     "label": "Avocat",
     "title": null,
     "folder": "Juges & Avocats (frenchy.bzh)",
@@ -8411,6 +8498,7 @@
     }
   },
   {
+    "id": "batonnier",
     "label": "Bâtonnier",
     "title": null,
     "folder": "Juges & Avocats (frenchy.bzh)",
@@ -8549,6 +8637,7 @@
     }
   },
   {
+    "id": "jeune-recrue-soldats-mercenaires",
     "label": "Jeune Recrue (Soldats & Mercenaires)",
     "title": null,
     "folder": "Soldats & Mercenaires (frenchy.bzh)",
@@ -8697,6 +8786,7 @@
     }
   },
   {
+    "id": "soldat-mercenaire-aguerri",
     "label": "Soldat & Mercenaire Aguerri",
     "title": null,
     "folder": "Soldats & Mercenaires (frenchy.bzh)",
@@ -8861,6 +8951,7 @@
     }
   },
   {
+    "id": "sous-officier",
     "label": "Sous-Officier",
     "title": null,
     "folder": "Soldats & Mercenaires (frenchy.bzh)",
@@ -9034,6 +9125,7 @@
     }
   },
   {
+    "id": "officier",
     "label": "Officier",
     "title": null,
     "folder": "Soldats & Mercenaires (frenchy.bzh)",
@@ -9224,6 +9316,7 @@
     }
   },
   {
+    "id": "jeune-citadin-i-b-habitants-des-villes",
     "label": "Jeune Citadin (I.B - Habitants des Villes)",
     "title": null,
     "folder": "I.B - Habitants des Villes (frenchy.bzh)",
@@ -9349,6 +9442,7 @@
     }
   },
   {
+    "id": "jeune-citadin-citadins",
     "label": "Jeune Citadin (Citadins)",
     "title": null,
     "folder": "Citadins (frenchy.bzh)",
@@ -9474,6 +9568,7 @@
     }
   },
   {
+    "id": "citadin",
     "label": "Citadin",
     "title": null,
     "folder": "Citadins (frenchy.bzh)",
@@ -9624,6 +9719,7 @@
     }
   },
   {
+    "id": "notable",
     "label": "Notable",
     "title": null,
     "folder": "Citadins (frenchy.bzh)",
@@ -9796,6 +9892,7 @@
     }
   },
   {
+    "id": "bourgmestre",
     "label": "Bourgmestre",
     "title": null,
     "folder": "Citadins (frenchy.bzh)",
@@ -9985,6 +10082,7 @@
     }
   },
   {
+    "id": "apothicaire",
     "label": "Apothicaire",
     "title": null,
     "folder": "Services Urbains Fréquents & Usuels (frenchy.bzh)",
@@ -10119,6 +10217,7 @@
     }
   },
   {
+    "id": "maistre-apothicaire",
     "label": "Maistre Apothicaire",
     "title": null,
     "folder": "Services Urbains Fréquents & Usuels (frenchy.bzh)",
@@ -10277,6 +10376,7 @@
     }
   },
   {
+    "id": "medecin",
     "label": "Médecin",
     "title": null,
     "folder": "Services Urbains Fréquents & Usuels (frenchy.bzh)",
@@ -10416,6 +10516,7 @@
     }
   },
   {
+    "id": "doktor",
     "label": "Doktor",
     "title": null,
     "folder": "Services Urbains Fréquents & Usuels (frenchy.bzh)",
@@ -10572,6 +10673,7 @@
     }
   },
   {
+    "id": "religieuse-de-shallya",
     "label": "Religieuse de Shallya",
     "title": null,
     "folder": "Services Urbains Fréquents & Usuels (frenchy.bzh)",
@@ -10678,6 +10780,7 @@
     }
   },
   {
+    "id": "pretresse-de-shallya",
     "label": "Prêtresse de Shallya",
     "title": null,
     "folder": "Services Urbains Fréquents & Usuels (frenchy.bzh)",
@@ -10845,6 +10948,7 @@
     }
   },
   {
+    "id": "artisan-services-urbains-frequents-usuels",
     "label": "Artisan (Services Urbains Fréquents & Usuels)",
     "title": null,
     "folder": "Services Urbains Fréquents & Usuels (frenchy.bzh)",
@@ -10991,6 +11095,7 @@
     }
   },
   {
+    "id": "maistre-artisan-services-urbains-frequents-usuels",
     "label": "Maistre Artisan (Services Urbains Fréquents & Usuels)",
     "title": null,
     "folder": "Services Urbains Fréquents & Usuels (frenchy.bzh)",
@@ -11155,6 +11260,7 @@
     }
   },
   {
+    "id": "marchand-services-urbains-frequents-usuels",
     "label": "Marchand (Services Urbains Fréquents & Usuels)",
     "title": null,
     "folder": "Services Urbains Fréquents & Usuels (frenchy.bzh)",
@@ -11303,6 +11409,7 @@
     }
   },
   {
+    "id": "maistre-marchand-services-urbains-frequents-usuels",
     "label": "Maistre Marchand (Services Urbains Fréquents & Usuels)",
     "title": null,
     "folder": "Services Urbains Fréquents & Usuels (frenchy.bzh)",
@@ -11465,6 +11572,7 @@
     }
   },
   {
+    "id": "erudit",
     "label": "Érudit",
     "title": null,
     "folder": "Services Urbains Fréquents & Usuels (frenchy.bzh)",
@@ -11583,6 +11691,7 @@
     }
   },
   {
+    "id": "erudit-de-renom",
     "label": "Érudit de Renom",
     "title": null,
     "folder": "Services Urbains Fréquents & Usuels (frenchy.bzh)",
@@ -11717,6 +11826,7 @@
     }
   },
   {
+    "id": "detective",
     "label": "Détective",
     "title": null,
     "folder": "Services Urbains Fréquents & Usuels (frenchy.bzh)",
@@ -11845,6 +11955,7 @@
     }
   },
   {
+    "id": "enqueteur-chevronne",
     "label": "Enquêteur Chevronné",
     "title": null,
     "folder": "Services Urbains Fréquents & Usuels (frenchy.bzh)",
@@ -11995,6 +12106,7 @@
     }
   },
   {
+    "id": "moine-de-sigmar",
     "label": "Moine de Sigmar",
     "title": null,
     "folder": "Services Urbains Fréquents & Usuels (frenchy.bzh)",
@@ -12124,6 +12236,7 @@
     }
   },
   {
+    "id": "pretre-de-sigmar",
     "label": "Prêtre de Sigmar",
     "title": null,
     "folder": "Services Urbains Fréquents & Usuels (frenchy.bzh)",
@@ -12310,6 +12423,7 @@
     }
   },
   {
+    "id": "moine-d-ulric",
     "label": "Moine D’ulric",
     "title": null,
     "folder": "Services Urbains Fréquents & Usuels (frenchy.bzh)",
@@ -12439,6 +12553,7 @@
     }
   },
   {
+    "id": "pretre-d-ulric",
     "label": "Prêtre D’ulric",
     "title": null,
     "folder": "Services Urbains Fréquents & Usuels (frenchy.bzh)",
@@ -12628,6 +12743,7 @@
     }
   },
   {
+    "id": "religieuse-de-verena",
     "label": "Religieuse de Verena",
     "title": null,
     "folder": "Services Urbains Fréquents & Usuels (frenchy.bzh)",
@@ -12757,6 +12873,7 @@
     }
   },
   {
+    "id": "pretresse-de-verena",
     "label": "Prêtresse de Verena",
     "title": null,
     "folder": "Services Urbains Fréquents & Usuels (frenchy.bzh)",
@@ -12947,6 +13064,7 @@
     }
   },
   {
+    "id": "jeune-delinquant",
     "label": "Jeune Délinquant",
     "title": null,
     "folder": "I.C - Criminalité Urbaine (frenchy.bzh)",
@@ -13051,6 +13169,7 @@
     }
   },
   {
+    "id": "fourgue",
     "label": "Fourgue",
     "title": null,
     "folder": "I.C - Criminalité Urbaine (frenchy.bzh)",
@@ -13175,6 +13294,7 @@
     }
   },
   {
+    "id": "receleur",
     "label": "Receleur",
     "title": null,
     "folder": "I.C - Criminalité Urbaine (frenchy.bzh)",
@@ -13324,6 +13444,7 @@
     }
   },
   {
+    "id": "racoleur",
     "label": "Racoleur",
     "title": null,
     "folder": "I.C - Criminalité Urbaine (frenchy.bzh)",
@@ -13452,6 +13573,7 @@
     }
   },
   {
+    "id": "guide-racoleur",
     "label": "Guide-Racoleur",
     "title": null,
     "folder": "I.C - Criminalité Urbaine (frenchy.bzh)",
@@ -13604,6 +13726,7 @@
     }
   },
   {
+    "id": "protagoniste",
     "label": "Protagoniste",
     "title": null,
     "folder": "I.C - Criminalité Urbaine (frenchy.bzh)",
@@ -13737,6 +13860,7 @@
     }
   },
   {
+    "id": "tueur-a-gages",
     "label": "Tueur À Gages",
     "title": null,
     "folder": "I.C - Criminalité Urbaine (frenchy.bzh)",
@@ -13888,6 +14012,7 @@
     }
   },
   {
+    "id": "voyou",
     "label": "Voyou",
     "title": null,
     "folder": "I.C - Criminalité Urbaine (frenchy.bzh)",
@@ -14023,6 +14148,7 @@
     }
   },
   {
+    "id": "racketteur",
     "label": "Racketteur",
     "title": null,
     "folder": "I.C - Criminalité Urbaine (frenchy.bzh)",
@@ -14176,6 +14302,7 @@
     }
   },
   {
+    "id": "charlatan",
     "label": "Charlatan",
     "title": null,
     "folder": "I.C - Criminalité Urbaine (frenchy.bzh)",
@@ -14300,6 +14427,7 @@
     }
   },
   {
+    "id": "escroc",
     "label": "Escroc",
     "title": null,
     "folder": "I.C - Criminalité Urbaine (frenchy.bzh)",
@@ -14452,6 +14580,7 @@
     }
   },
   {
+    "id": "faussaire",
     "label": "Faussaire",
     "title": null,
     "folder": "I.C - Criminalité Urbaine (frenchy.bzh)",
@@ -14590,6 +14719,7 @@
     }
   },
   {
+    "id": "maistre-faussaire",
     "label": "Maistre Faussaire",
     "title": null,
     "folder": "I.C - Criminalité Urbaine (frenchy.bzh)",
@@ -14751,6 +14881,7 @@
     }
   },
   {
+    "id": "voleur",
     "label": "Voleur",
     "title": null,
     "folder": "I.C - Criminalité Urbaine (frenchy.bzh)",
@@ -14887,6 +15018,7 @@
     }
   },
   {
+    "id": "voleur-aguerri",
     "label": "Voleur Aguerri",
     "title": null,
     "folder": "I.C - Criminalité Urbaine (frenchy.bzh)",
@@ -15038,6 +15170,7 @@
     }
   },
   {
+    "id": "pilleur-de-tombes",
     "label": "Pilleur de Tombes",
     "title": null,
     "folder": "I.C - Criminalité Urbaine (frenchy.bzh)",
@@ -15165,6 +15298,7 @@
     }
   },
   {
+    "id": "pilleur-de-cryptes",
     "label": "Pilleur de Cryptes",
     "title": null,
     "folder": "I.C - Criminalité Urbaine (frenchy.bzh)",
@@ -15318,6 +15452,7 @@
     }
   },
   {
+    "id": "pretre-voleur-de-ranald-i-c-criminalite-urbaine",
     "label": "Prêtre-Voleur de Ranald (I.C - Criminalité Urbaine)",
     "title": null,
     "folder": "I.C - Criminalité Urbaine (frenchy.bzh)",
@@ -15480,6 +15615,7 @@
     }
   },
   {
+    "id": "jeune-villageois",
     "label": "Jeune Villageois",
     "title": null,
     "folder": "Villageois (frenchy.bzh)",
@@ -15619,6 +15755,7 @@
     }
   },
   {
+    "id": "villageois",
     "label": "Villageois",
     "title": null,
     "folder": "Villageois (frenchy.bzh)",
@@ -15774,6 +15911,7 @@
     }
   },
   {
+    "id": "ancien",
     "label": "Ancien",
     "title": null,
     "folder": "Villageois (frenchy.bzh)",
@@ -15947,6 +16085,7 @@
     }
   },
   {
+    "id": "venerable",
     "label": "Vénérable",
     "title": null,
     "folder": "Villageois (frenchy.bzh)",
@@ -16138,6 +16277,7 @@
     }
   },
   {
+    "id": "artisan-services-ruraux-frequents-usuels",
     "label": "Artisan (Services Ruraux Fréquents & Usuels)",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -16284,6 +16424,7 @@
     }
   },
   {
+    "id": "maistre-artisan-services-ruraux-frequents-usuels",
     "label": "Maistre Artisan (Services Ruraux Fréquents & Usuels)",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -16448,6 +16589,7 @@
     }
   },
   {
+    "id": "marchand-services-ruraux-frequents-usuels",
     "label": "Marchand (Services Ruraux Fréquents & Usuels)",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -16600,6 +16742,7 @@
     }
   },
   {
+    "id": "maistre-marchand-services-ruraux-frequents-usuels",
     "label": "Maistre Marchand (Services Ruraux Fréquents & Usuels)",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -16766,6 +16909,7 @@
     }
   },
   {
+    "id": "batelier",
     "label": "Batelier",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -16907,6 +17051,7 @@
     }
   },
   {
+    "id": "nautonier",
     "label": "Nautonier",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -17076,6 +17221,7 @@
     }
   },
   {
+    "id": "riverain",
     "label": "Riverain",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -17240,6 +17386,7 @@
     }
   },
   {
+    "id": "riverain-respecte",
     "label": "Riverain Respecté",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -17417,6 +17564,7 @@
     }
   },
   {
+    "id": "herboriste",
     "label": "Herboriste",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -17574,6 +17722,7 @@
     }
   },
   {
+    "id": "maistre-herboriste",
     "label": "Maistre Herboriste",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -17748,6 +17897,7 @@
     }
   },
   {
+    "id": "rebouteux",
     "label": "Rebouteux",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -17937,6 +18087,7 @@
     }
   },
   {
+    "id": "maitre-des-taillis",
     "label": "Maître des Taillis",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -18168,6 +18319,7 @@
     }
   },
   {
+    "id": "sorciere",
     "label": "Sorcière",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -18328,6 +18480,7 @@
     }
   },
   {
+    "id": "envouteuse",
     "label": "Envoûteuse",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -18532,6 +18685,7 @@
     }
   },
   {
+    "id": "druide-de-la-foi-antique",
     "label": "Druide de la Foi Antique",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -18693,6 +18847,7 @@
     }
   },
   {
+    "id": "haut-druide-de-la-foi-antique",
     "label": "Haut Druide de la Foi Antique",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -18884,6 +19039,7 @@
     }
   },
   {
+    "id": "religieuse-novice-de-rhya",
     "label": "Religieuse Novice de Rhya",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -19011,6 +19167,7 @@
     }
   },
   {
+    "id": "religieuse-de-rhya",
     "label": "Religieuse de Rhya",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -19165,6 +19322,7 @@
     }
   },
   {
+    "id": "pretresse-de-rhya",
     "label": "Prêtresse de Rhya",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -19330,6 +19488,7 @@
     }
   },
   {
+    "id": "grande-pretresse-de-rhya",
     "label": "Grande Prêtresse de Rhya",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -19537,6 +19696,7 @@
     }
   },
   {
+    "id": "moine-novice-de-taal",
     "label": "Moine Novice de Taal",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -19669,6 +19829,7 @@
     }
   },
   {
+    "id": "moine-de-taal",
     "label": "Moine de Taal",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -19817,6 +19978,7 @@
     }
   },
   {
+    "id": "pretre-rodeur-de-taal",
     "label": "Prêtre-Rôdeur de Taal",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -19987,6 +20149,7 @@
     }
   },
   {
+    "id": "haut-pretre-rodeur-de-taal",
     "label": "Haut Prêtre-Rôdeur de Taal",
     "title": null,
     "folder": "Services Ruraux Fréquents & Usuels (frenchy.bzh)",
@@ -20198,6 +20361,7 @@
     }
   },
   {
+    "id": "jeune-brigand",
     "label": "Jeune Brigand",
     "title": null,
     "folder": "Brigands & Hors-la-Loi (frenchy.bzh)",
@@ -20314,6 +20478,7 @@
     }
   },
   {
+    "id": "brigand",
     "label": "Brigand",
     "title": null,
     "folder": "Brigands & Hors-la-Loi (frenchy.bzh)",
@@ -20455,6 +20620,7 @@
     }
   },
   {
+    "id": "chef-de-bande",
     "label": "Chef de Bande",
     "title": null,
     "folder": "Brigands & Hors-la-Loi (frenchy.bzh)",
@@ -20614,6 +20780,7 @@
     }
   },
   {
+    "id": "seigneur-brigand",
     "label": "Seigneur-Brigand",
     "title": null,
     "folder": "Brigands & Hors-la-Loi (frenchy.bzh)",
@@ -20791,6 +20958,7 @@
     }
   },
   {
+    "id": "jeune-contrebandier",
     "label": "Jeune Contrebandier",
     "title": null,
     "folder": "Contrebandiers & Trafiquants (frenchy.bzh)",
@@ -20912,6 +21080,7 @@
     }
   },
   {
+    "id": "contrebandier",
     "label": "Contrebandier",
     "title": null,
     "folder": "Contrebandiers & Trafiquants (frenchy.bzh)",
@@ -21058,6 +21227,7 @@
     }
   },
   {
+    "id": "chef-contrebandier",
     "label": "Chef Contrebandier",
     "title": null,
     "folder": "Contrebandiers & Trafiquants (frenchy.bzh)",
@@ -21222,6 +21392,7 @@
     }
   },
   {
+    "id": "roi-du-trafic",
     "label": "Roi du Trafic",
     "title": null,
     "folder": "Contrebandiers & Trafiquants (frenchy.bzh)",
@@ -21409,6 +21580,7 @@
     }
   },
   {
+    "id": "jeune-naufrageur",
     "label": "Jeune Naufrageur",
     "title": null,
     "folder": "Naufrageurs & Pirates Fluviaux (frenchy.bzh)",
@@ -21529,6 +21701,7 @@
     }
   },
   {
+    "id": "pirate-fluvial",
     "label": "Pirate Fluvial",
     "title": null,
     "folder": "Naufrageurs & Pirates Fluviaux (frenchy.bzh)",
@@ -21667,6 +21840,7 @@
     }
   },
   {
+    "id": "chef-pirate",
     "label": "Chef Pirate",
     "title": null,
     "folder": "Naufrageurs & Pirates Fluviaux (frenchy.bzh)",
@@ -21824,6 +21998,7 @@
     }
   },
   {
+    "id": "seigneur-pirate",
     "label": "Seigneur Pirate",
     "title": null,
     "folder": "Naufrageurs & Pirates Fluviaux (frenchy.bzh)",
@@ -21998,6 +22173,7 @@
     }
   },
   {
+    "id": "chien-de-compagnie-ii-a-animaux-domestiques",
     "label": "Chien de Compagnie (II.A — Animaux Domestiques)",
     "title": null,
     "folder": "II.A — Animaux Domestiques (frenchy.bzh)",
@@ -22105,6 +22281,7 @@
     }
   },
   {
+    "id": "chien-de-compagnie-chiens",
     "label": "Chien de Compagnie (Chiens)",
     "title": null,
     "folder": "Chiens (frenchy.bzh)",
@@ -22212,6 +22389,7 @@
     }
   },
   {
+    "id": "chien-de-garde",
     "label": "Chien de Garde",
     "title": null,
     "folder": "Chiens (frenchy.bzh)",
@@ -22344,6 +22522,7 @@
     }
   },
   {
+    "id": "chien-de-chasse",
     "label": "Chien de Chasse",
     "title": null,
     "folder": "Chiens (frenchy.bzh)",
@@ -22496,6 +22675,7 @@
     }
   },
   {
+    "id": "chien-de-ratier",
     "label": "Chien de Ratier",
     "title": null,
     "folder": "Chiens (frenchy.bzh)",
@@ -22627,6 +22807,7 @@
     }
   },
   {
+    "id": "poulain",
     "label": "Poulain",
     "title": null,
     "folder": "Chevaux (frenchy.bzh)",
@@ -22723,6 +22904,7 @@
     }
   },
   {
+    "id": "palefroi",
     "label": "Palefroi",
     "title": null,
     "folder": "Chevaux (frenchy.bzh)",
@@ -22853,6 +23035,7 @@
     }
   },
   {
+    "id": "coursier",
     "label": "Coursier",
     "title": null,
     "folder": "Chevaux (frenchy.bzh)",
@@ -22984,6 +23167,7 @@
     }
   },
   {
+    "id": "sommier",
     "label": "Sommier",
     "title": null,
     "folder": "Chevaux (frenchy.bzh)",
@@ -23109,6 +23293,7 @@
     }
   },
   {
+    "id": "destrier",
     "label": "Destrier",
     "title": null,
     "folder": "Chevaux (frenchy.bzh)",
@@ -23249,6 +23434,7 @@
     }
   },
   {
+    "id": "jeune-loup",
     "label": "Jeune Loup",
     "title": null,
     "folder": "Loups (frenchy.bzh)",
@@ -23365,6 +23551,7 @@
     }
   },
   {
+    "id": "loup-adulte",
     "label": "Loup Adulte",
     "title": null,
     "folder": "Loups (frenchy.bzh)",
@@ -23498,6 +23685,7 @@
     }
   },
   {
+    "id": "chef-de-meute",
     "label": "Chef de Meute",
     "title": null,
     "folder": "Loups (frenchy.bzh)",
@@ -23650,6 +23838,7 @@
     }
   },
   {
+    "id": "traqueur-impitoyable",
     "label": "Traqueur Impitoyable",
     "title": null,
     "folder": "Loups (frenchy.bzh)",
@@ -23819,6 +24008,7 @@
     }
   },
   {
+    "id": "jeune-ours",
     "label": "Jeune Ours",
     "title": null,
     "folder": "Ours (frenchy.bzh)",
@@ -23948,6 +24138,7 @@
     }
   },
   {
+    "id": "ours-adulte",
     "label": "Ours Adulte",
     "title": null,
     "folder": "Ours (frenchy.bzh)",
@@ -24091,6 +24282,7 @@
     }
   },
   {
+    "id": "vieil-ours-mal-leche",
     "label": "Vieil Ours Mal Léché",
     "title": null,
     "folder": "Ours (frenchy.bzh)",
@@ -24244,6 +24436,7 @@
     }
   },
   {
+    "id": "ours-2",
     "label": "? (Ours)",
     "title": null,
     "folder": "Ours (frenchy.bzh)",
@@ -24414,6 +24607,7 @@
     }
   },
   {
+    "id": "nuee-de-marcassins",
     "label": "Nuée de Marcassins",
     "title": null,
     "folder": "Sangliers (frenchy.bzh)",
@@ -24464,6 +24658,7 @@
     }
   },
   {
+    "id": "jeune-sanglier",
     "label": "Jeune Sanglier",
     "title": null,
     "folder": "Sangliers (frenchy.bzh)",
@@ -24572,6 +24767,7 @@
     }
   },
   {
+    "id": "sanglier-adulte",
     "label": "Sanglier Adulte",
     "title": null,
     "folder": "Sangliers (frenchy.bzh)",
@@ -24692,6 +24888,7 @@
     }
   },
   {
+    "id": "sanglier-feroce",
     "label": "Sanglier Féroce",
     "title": null,
     "folder": "Sangliers (frenchy.bzh)",
@@ -24778,6 +24975,7 @@
     }
   },
   {
+    "id": "grand-sanglier-ombrageux",
     "label": "Grand Sanglier Ombrageux",
     "title": null,
     "folder": "Sangliers (frenchy.bzh)",
@@ -24949,6 +25147,7 @@
     }
   },
   {
+    "id": "nuee-de-rats",
     "label": "Nuée de Rats",
     "title": null,
     "folder": "Rats Géants (frenchy.bzh)",
@@ -25005,6 +25204,7 @@
     }
   },
   {
+    "id": "jeune-rat-geant",
     "label": "Jeune Rat Géant",
     "title": null,
     "folder": "Rats Géants (frenchy.bzh)",
@@ -25120,6 +25320,7 @@
     }
   },
   {
+    "id": "rat-geant-2",
     "label": "Rat Géant",
     "title": null,
     "folder": "Rats Géants (frenchy.bzh)",
@@ -25246,6 +25447,7 @@
     }
   },
   {
+    "id": "maitre-des-egouts",
     "label": "Maître des Égouts",
     "title": null,
     "folder": "Rats Géants (frenchy.bzh)",
@@ -25379,6 +25581,7 @@
     }
   },
   {
+    "id": "horreur-des-profondeurs",
     "label": "Horreur des Profondeurs",
     "title": null,
     "folder": "Rats Géants (frenchy.bzh)",
@@ -25557,6 +25760,7 @@
     }
   },
   {
+    "id": "nuee-d-araignees-infantiles",
     "label": "Nuée D’araignées Infantiles",
     "title": null,
     "folder": "Araignées Géantes (frenchy.bzh)",
@@ -25613,6 +25817,7 @@
     }
   },
   {
+    "id": "jeune-araignee-geante",
     "label": "Jeune Araignée Géante",
     "title": null,
     "folder": "Araignées Géantes (frenchy.bzh)",
@@ -25751,6 +25956,7 @@
     }
   },
   {
+    "id": "araignee-geante-adulte",
     "label": "Araignée Géante Adulte",
     "title": null,
     "folder": "Araignées Géantes (frenchy.bzh)",
@@ -25891,6 +26097,7 @@
     }
   },
   {
+    "id": "araignee-geante-impitoyable",
     "label": "Araignée Géante Impitoyable",
     "title": null,
     "folder": "Araignées Géantes (frenchy.bzh)",
@@ -26057,6 +26264,7 @@
     }
   },
   {
+    "id": "chasseresse-des-ombres",
     "label": "Chasseresse des Ombres",
     "title": null,
     "folder": "Araignées Géantes (frenchy.bzh)",
@@ -26237,6 +26445,7 @@
     }
   },
   {
+    "id": "jeune-ungor",
     "label": "Jeune Ungor",
     "title": null,
     "folder": "Ungors, Gors & Bestigors (frenchy.bzh)",
@@ -26344,6 +26553,7 @@
     }
   },
   {
+    "id": "ungor-adulte",
     "label": "Ungor Adulte",
     "title": null,
     "folder": "Ungors, Gors & Bestigors (frenchy.bzh)",
@@ -26484,6 +26694,7 @@
     }
   },
   {
+    "id": "jeune-gor",
     "label": "Jeune Gor",
     "title": null,
     "folder": "Ungors, Gors & Bestigors (frenchy.bzh)",
@@ -26611,6 +26822,7 @@
     }
   },
   {
+    "id": "gor-eclaireur",
     "label": "Gor Éclaireur",
     "title": null,
     "folder": "Ungors, Gors & Bestigors (frenchy.bzh)",
@@ -26759,6 +26971,7 @@
     }
   },
   {
+    "id": "gor-chasseur",
     "label": "Gor Chasseur",
     "title": null,
     "folder": "Ungors, Gors & Bestigors (frenchy.bzh)",
@@ -26901,6 +27114,7 @@
     }
   },
   {
+    "id": "gor-combattant",
     "label": "Gor Combattant",
     "title": null,
     "folder": "Ungors, Gors & Bestigors (frenchy.bzh)",
@@ -27044,6 +27258,7 @@
     }
   },
   {
+    "id": "bestigor-combattant",
     "label": "Bestigor Combattant",
     "title": null,
     "folder": "Ungors, Gors & Bestigors (frenchy.bzh)",
@@ -27202,6 +27417,7 @@
     }
   },
   {
+    "id": "gor-chef-de-harde",
     "label": "Gor Chef de Harde",
     "title": null,
     "folder": "Ungors, Gors & Bestigors (frenchy.bzh)",
@@ -27354,6 +27570,7 @@
     }
   },
   {
+    "id": "bestigor-chef-de-harde",
     "label": "Bestigor Chef de Harde",
     "title": null,
     "folder": "Ungors, Gors & Bestigors (frenchy.bzh)",
@@ -27517,6 +27734,7 @@
     }
   },
   {
+    "id": "gor-chef-de-guerre",
     "label": "Gor Chef de Guerre",
     "title": null,
     "folder": "Ungors, Gors & Bestigors (frenchy.bzh)",
@@ -27710,6 +27928,7 @@
     }
   },
   {
+    "id": "bestigor-chef-de-guerre",
     "label": "Bestigor Chef de Guerre",
     "title": null,
     "folder": "Ungors, Gors & Bestigors (frenchy.bzh)",
@@ -27906,6 +28125,7 @@
     }
   },
   {
+    "id": "shaman-gor",
     "label": "Shaman Gor",
     "title": null,
     "folder": "Ungors, Gors & Bestigors (frenchy.bzh)",
@@ -28094,6 +28314,7 @@
     }
   },
   {
+    "id": "patre-de-la-nuit",
     "label": "Pâtre de la Nuit",
     "title": null,
     "folder": "Ungors, Gors & Bestigors (frenchy.bzh)",
@@ -28299,6 +28520,7 @@
     }
   },
   {
+    "id": "bouc-maudit",
     "label": "Bouc Maudit",
     "title": null,
     "folder": "Ungors, Gors & Bestigors (frenchy.bzh)",
@@ -28545,6 +28767,7 @@
     }
   },
   {
+    "id": "maraudeur-du-chaos",
     "label": "Maraudeur du Chaos",
     "title": null,
     "folder": "Maraudeurs du Chaos (frenchy.bzh)",
@@ -28687,6 +28910,7 @@
     }
   },
   {
+    "id": "maraudeur-du-chaos-chef-de-bande",
     "label": "Maraudeur du Chaos Chef de Bande",
     "title": null,
     "folder": "Maraudeurs du Chaos (frenchy.bzh)",
@@ -28843,6 +29067,7 @@
     }
   },
   {
+    "id": "maraudeur-du-chaos-chef-de-guerre",
     "label": "Maraudeur du Chaos Chef de Guerre",
     "title": null,
     "folder": "Maraudeurs du Chaos (frenchy.bzh)",
@@ -29024,6 +29249,7 @@
     }
   },
   {
+    "id": "guerrier-du-chaos-chef-de-bande",
     "label": "Guerrier du Chaos Chef de Bande",
     "title": null,
     "folder": "Guerriers du Chaos (frenchy.bzh)",
@@ -29196,6 +29422,7 @@
     }
   },
   {
+    "id": "guerrier-du-chaos-chef-de-guerre",
     "label": "Guerrier du Chaos Chef de Guerre",
     "title": null,
     "folder": "Guerriers du Chaos (frenchy.bzh)",
@@ -29385,6 +29612,7 @@
     }
   },
   {
+    "id": "sorcier-du-chaos",
     "label": "Sorcier du Chaos",
     "title": null,
     "folder": "Sorcier du Chaos (frenchy.bzh)",
@@ -29561,6 +29789,7 @@
     }
   },
   {
+    "id": "sorcier-du-chaos-terrifiant",
     "label": "Sorcier du Chaos Terrifiant",
     "title": null,
     "folder": "Sorcier du Chaos (frenchy.bzh)",
@@ -29752,6 +29981,7 @@
     }
   },
   {
+    "id": "sorcier-du-chaos-effroyable",
     "label": "Sorcier du Chaos Effroyable",
     "title": null,
     "folder": "Sorcier du Chaos (frenchy.bzh)",
@@ -29970,6 +30200,7 @@
     }
   },
   {
+    "id": "furie-exaltee-du-chaos",
     "label": "Furie Exaltée du Chaos",
     "title": null,
     "folder": "Démons du Chaos (frenchy.bzh)",
@@ -30080,6 +30311,7 @@
     }
   },
   {
+    "id": "heraut-de-khorne",
     "label": "Héraut de Khorne",
     "title": null,
     "folder": "Démons de Khorne (frenchy.bzh)",
@@ -30194,6 +30426,7 @@
     }
   },
   {
+    "id": "heraut-exalte-de-khorne",
     "label": "Héraut Exalté de Khorne",
     "title": null,
     "folder": "Démons de Khorne (frenchy.bzh)",
@@ -30311,6 +30544,7 @@
     }
   },
   {
+    "id": "buveur-de-sang-de-khorne",
     "label": "Buveur de Sang de Khorne",
     "title": null,
     "folder": "Démons de Khorne (frenchy.bzh)",
@@ -30427,6 +30661,7 @@
     }
   },
   {
+    "id": "buveur-de-sang-exalte-de-khorne",
     "label": "Buveur de Sang Exalté de Khorne",
     "title": null,
     "folder": "Démons de Khorne (frenchy.bzh)",
@@ -30546,6 +30781,7 @@
     }
   },
   {
+    "id": "daemonette-de-slaanesh",
     "label": "Daemonette de Slaanesh",
     "title": null,
     "folder": "Démons de Slaanesh (frenchy.bzh)",
@@ -30669,6 +30905,7 @@
     }
   },
   {
+    "id": "heraut-de-slaanesh",
     "label": "Héraut de Slaanesh",
     "title": null,
     "folder": "Démons de Slaanesh (frenchy.bzh)",
@@ -30818,6 +31055,7 @@
     }
   },
   {
+    "id": "heraut-exalte-de-slaanesh",
     "label": "Héraut Exalté de Slaanesh",
     "title": null,
     "folder": "Démons de Slaanesh (frenchy.bzh)",
@@ -30988,6 +31226,7 @@
     }
   },
   {
+    "id": "gardien-des-secrets-de-slaanesh",
     "label": "Gardien des Secrets de Slaanesh",
     "title": null,
     "folder": "Démons de Slaanesh (frenchy.bzh)",
@@ -31176,6 +31415,7 @@
     }
   },
   {
+    "id": "gardien-des-secrets-exalte-de-slaanesh",
     "label": "Gardien des Secrets Exalté de Slaanesh",
     "title": null,
     "folder": "Démons de Slaanesh (frenchy.bzh)",
@@ -31370,6 +31610,7 @@
     }
   },
   {
+    "id": "nurglings",
     "label": "Nurglings",
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
@@ -31462,6 +31703,7 @@
     }
   },
   {
+    "id": "nuee-de-nurglings",
     "label": "Nuée de Nurglings",
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
@@ -31551,6 +31793,7 @@
     }
   },
   {
+    "id": "porte-peste-de-nurgle",
     "label": "Porte-Peste de Nurgle",
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
@@ -31658,6 +31901,7 @@
     }
   },
   {
+    "id": "heraut-de-nurgle",
     "label": "Héraut de Nurgle",
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
@@ -31797,6 +32041,7 @@
     }
   },
   {
+    "id": "heraut-exalte-de-nurgle",
     "label": "Héraut Exalté de Nurgle",
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
@@ -31942,6 +32187,7 @@
     }
   },
   {
+    "id": "grand-immonde-de-nurgle",
     "label": "Grand Immonde de Nurgle",
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
@@ -32114,6 +32360,7 @@
     }
   },
   {
+    "id": "grand-immonde-exalte-de-nurgle",
     "label": "Grand Immonde Exalté de Nurgle",
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
@@ -32271,6 +32518,7 @@
     }
   },
   {
+    "id": "incendiaire-de-tzeentch",
     "label": "Incendiaire de Tzeentch",
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
@@ -32379,6 +32627,7 @@
     }
   },
   {
+    "id": "grand-incendiaire-de-tzeentch",
     "label": "Grand Incendiaire de Tzeentch",
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
@@ -32487,6 +32736,7 @@
     }
   },
   {
+    "id": "horreur-rose-de-tzeentch",
     "label": "Horreur Rose de Tzeentch",
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
@@ -32615,6 +32865,7 @@
     }
   },
   {
+    "id": "demons-de-tzeentch",
     "label": "? (Démons de Tzeentch)",
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
@@ -32740,6 +32991,7 @@
     }
   },
   {
+    "id": "heraut-de-tzeentch",
     "label": "Héraut de Tzeentch",
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
@@ -32894,6 +33146,7 @@
     }
   },
   {
+    "id": "heraut-exalte-de-tzeentch",
     "label": "Héraut Exalté de Tzeentch",
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
@@ -33075,6 +33328,7 @@
     }
   },
   {
+    "id": "seigneur-du-changement-de-tzeentch",
     "label": "Seigneur du Changement de Tzeentch",
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
@@ -33249,6 +33503,7 @@
     }
   },
   {
+    "id": "seigneur-du-changement-exalte-de-tzeentch",
     "label": "Seigneur du Changement Exalté de Tzeentch",
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
@@ -33423,6 +33678,7 @@
     }
   },
   {
+    "id": "esclave-faible",
     "label": "Esclave Faible",
     "title": null,
     "folder": "Esclaves Skavens (frenchy.bzh)",
@@ -33564,6 +33820,7 @@
     }
   },
   {
+    "id": "esclave",
     "label": "Esclave",
     "title": null,
     "folder": "Esclaves Skavens (frenchy.bzh)",
@@ -33715,6 +33972,7 @@
     }
   },
   {
+    "id": "kapo",
     "label": "Kapo",
     "title": null,
     "folder": "Esclaves Skavens (frenchy.bzh)",
@@ -33880,6 +34138,7 @@
     }
   },
   {
+    "id": "garde-chiourme",
     "label": "Garde-Chiourme",
     "title": null,
     "folder": "Esclaves Skavens (frenchy.bzh)",
@@ -34059,6 +34318,7 @@
     }
   },
   {
+    "id": "jeune-skaven",
     "label": "Jeune Skaven",
     "title": null,
     "folder": "Membre de Clans Mineurs (frenchy.bzh)",
@@ -34206,6 +34466,7 @@
     }
   },
   {
+    "id": "skaven",
     "label": "Skaven",
     "title": null,
     "folder": "Membre de Clans Mineurs (frenchy.bzh)",
@@ -34366,6 +34627,7 @@
     }
   },
   {
+    "id": "chef-de-portee",
     "label": "Chef de Portée",
     "title": null,
     "folder": "Membre de Clans Mineurs (frenchy.bzh)",
@@ -34550,6 +34812,7 @@
     }
   },
   {
+    "id": "chef-de-clan",
     "label": "Chef de Clan",
     "title": null,
     "folder": "Membre de Clans Mineurs (frenchy.bzh)",
@@ -34742,6 +35005,7 @@
     }
   },
   {
+    "id": "jeune-recrue-vermines-de-choc",
     "label": "Jeune Recrue (Vermines de Choc)",
     "title": null,
     "folder": "Vermines de Choc (frenchy.bzh)",
@@ -34892,6 +35156,7 @@
     }
   },
   {
+    "id": "vermine-de-choc-2",
     "label": "Vermine de Choc",
     "title": null,
     "folder": "Vermines de Choc (frenchy.bzh)",
@@ -35044,6 +35309,7 @@
     }
   },
   {
+    "id": "chef-de-section",
     "label": "Chef de Section",
     "title": null,
     "folder": "Vermines de Choc (frenchy.bzh)",
@@ -35206,6 +35472,7 @@
     }
   },
   {
+    "id": "chef-d-escadron",
     "label": "Chef d’Escadron",
     "title": null,
     "folder": "Vermines de Choc (frenchy.bzh)",
@@ -35386,6 +35653,7 @@
     }
   },
   {
+    "id": "apprenti-technomage",
     "label": "Apprenti Technomage",
     "title": null,
     "folder": "Clan Skryre (frenchy.bzh)",
@@ -35552,6 +35820,7 @@
     }
   },
   {
+    "id": "technomage",
     "label": "Technomage",
     "title": null,
     "folder": "Clan Skryre (frenchy.bzh)",
@@ -35748,6 +36017,7 @@
     }
   },
   {
+    "id": "technomage-experimente",
     "label": "Technomage Expérimenté",
     "title": null,
     "folder": "Clan Skryre (frenchy.bzh)",
@@ -35957,6 +36227,7 @@
     }
   },
   {
+    "id": "architechnomage",
     "label": "Architechnomage",
     "title": null,
     "folder": "Clan Skryre (frenchy.bzh)",
@@ -36193,6 +36464,7 @@
     }
   },
   {
+    "id": "coureur-nocturne",
     "label": "Coureur Nocturne",
     "title": null,
     "folder": "Clan Eshin (frenchy.bzh)",
@@ -36343,6 +36615,7 @@
     }
   },
   {
+    "id": "coureur-d-egouts",
     "label": "Coureur d’Égouts",
     "title": null,
     "folder": "Clan Eshin (frenchy.bzh)",
@@ -36534,6 +36807,7 @@
     }
   },
   {
+    "id": "assassin",
     "label": "Assassin",
     "title": null,
     "folder": "Clan Eshin (frenchy.bzh)",
@@ -36760,6 +37034,7 @@
     }
   },
   {
+    "id": "maitre-assassin",
     "label": "Maître Assassin",
     "title": null,
     "folder": "Clan Eshin (frenchy.bzh)",
@@ -37020,6 +37295,7 @@
     }
   },
   {
+    "id": "jeune-moine-de-la-peste",
     "label": "Jeune Moine de la Peste",
     "title": null,
     "folder": "Clan Pestilens (frenchy.bzh)",
@@ -37155,6 +37431,7 @@
     }
   },
   {
+    "id": "moine-de-la-peste",
     "label": "Moine de la Peste",
     "title": null,
     "folder": "Clan Pestilens (frenchy.bzh)",
@@ -37330,6 +37607,7 @@
     }
   },
   {
+    "id": "grand-moine-de-la-peste",
     "label": "Grand Moine de la Peste",
     "title": null,
     "folder": "Clan Pestilens (frenchy.bzh)",
@@ -37531,6 +37809,7 @@
     }
   },
   {
+    "id": "predicateur-de-la-peste",
     "label": "Prédicateur de la Peste",
     "title": null,
     "folder": "Clan Pestilens (frenchy.bzh)",
@@ -37750,6 +38029,7 @@
     }
   },
   {
+    "id": "jeune-contremaitre",
     "label": "Jeune Contremaître",
     "title": null,
     "folder": "Clan Moulder (frenchy.bzh)",
@@ -37884,6 +38164,7 @@
     }
   },
   {
+    "id": "contremaitre",
     "label": "Contremaître",
     "title": null,
     "folder": "Clan Moulder (frenchy.bzh)",
@@ -38051,6 +38332,7 @@
     }
   },
   {
+    "id": "maitre-des-hybridation",
     "label": "Maître des Hybridation",
     "title": null,
     "folder": "Clan Moulder (frenchy.bzh)",
@@ -38249,6 +38531,7 @@
     }
   },
   {
+    "id": "grand-maitre-des-hybridations",
     "label": "Grand Maître des Hybridations",
     "title": null,
     "folder": "Clan Moulder (frenchy.bzh)",
@@ -38460,6 +38743,7 @@
     }
   },
   {
+    "id": "cobaye-mutile",
     "label": "Cobaye Mutilé",
     "title": null,
     "folder": "Rat Ogre (frenchy.bzh)",
@@ -38582,6 +38866,7 @@
     }
   },
   {
+    "id": "rat-ogre-fonctionnel",
     "label": "Rat Ogre Fonctionnel",
     "title": null,
     "folder": "Rat Ogre (frenchy.bzh)",
@@ -38745,6 +39030,7 @@
     }
   },
   {
+    "id": "rat-ogre-augmente",
     "label": "Rat Ogre Augmenté",
     "title": null,
     "folder": "Rat Ogre (frenchy.bzh)",
@@ -38920,6 +39206,7 @@
     }
   },
   {
+    "id": "horreur-du-clan-moulder",
     "label": "Horreur du Clan Moulder",
     "title": null,
     "folder": "Rat Ogre (frenchy.bzh)",
@@ -39112,6 +39399,7 @@
     }
   },
   {
+    "id": "prophete-gris",
     "label": "Prophète Gris",
     "title": null,
     "folder": "Prophète Gris (frenchy.bzh)",
@@ -39356,6 +39644,7 @@
     }
   },
   {
+    "id": "prophete-gris-ancien",
     "label": "Prophète Gris Ancien",
     "title": null,
     "folder": "Prophète Gris (frenchy.bzh)",
@@ -39617,6 +39906,7 @@
     }
   },
   {
+    "id": "jeune-gobelin",
     "label": "Jeune Gobelin",
     "title": null,
     "folder": "Gobelins (frenchy.bzh)",
@@ -39754,6 +40044,7 @@
     }
   },
   {
+    "id": "eclaireur-gobelin",
     "label": "Éclaireur Gobelin",
     "title": null,
     "folder": "Gobelins (frenchy.bzh)",
@@ -39898,6 +40189,7 @@
     }
   },
   {
+    "id": "archer-gobelin",
     "label": "Archer Gobelin",
     "title": null,
     "folder": "Gobelins (frenchy.bzh)",
@@ -40047,6 +40339,7 @@
     }
   },
   {
+    "id": "guerrier-gobelin",
     "label": "Guerrier Gobelin",
     "title": null,
     "folder": "Gobelins (frenchy.bzh)",
@@ -40196,6 +40489,7 @@
     }
   },
   {
+    "id": "quadrilleur-gobelin",
     "label": "Quadrilleur Gobelin",
     "title": null,
     "folder": "Gobelins (frenchy.bzh)",
@@ -40354,6 +40648,7 @@
     }
   },
   {
+    "id": "plongeur-de-la-mort",
     "label": "Plongeur de la Mort",
     "title": null,
     "folder": "Gobelins (frenchy.bzh)",
@@ -40476,6 +40771,7 @@
     }
   },
   {
+    "id": "fanatique-gobelin",
     "label": "Fanatique Gobelin",
     "title": null,
     "folder": "Gobelins (frenchy.bzh)",
@@ -40594,6 +40890,7 @@
     }
   },
   {
+    "id": "chef-de-clan-gobelin",
     "label": "Chef de Clan Gobelin",
     "title": null,
     "folder": "Gobelins (frenchy.bzh)",
@@ -40770,6 +41067,7 @@
     }
   },
   {
+    "id": "chef-de-guerre-gobelin",
     "label": "Chef de Guerre Gobelin",
     "title": null,
     "folder": "Gobelins (frenchy.bzh)",
@@ -40975,6 +41273,7 @@
     }
   },
   {
+    "id": "shaman-gobelin",
     "label": "Shaman Gobelin",
     "title": null,
     "folder": "Gobelins (frenchy.bzh)",
@@ -41148,6 +41447,7 @@
     }
   },
   {
+    "id": "grand-shaman-gobelin",
     "label": "Grand Shaman Gobelin",
     "title": null,
     "folder": "Gobelins (frenchy.bzh)",
@@ -41361,6 +41661,7 @@
     }
   },
   {
+    "id": "fongus-de-mork",
     "label": "Fongus de Mork",
     "title": null,
     "folder": "Gobelins (frenchy.bzh)",
@@ -41598,6 +41899,7 @@
     }
   },
   {
+    "id": "nuee-de-snotlings",
     "label": "Nuée de Snotlings",
     "title": null,
     "folder": "Snotlings (frenchy.bzh)",
@@ -41636,6 +41938,7 @@
     }
   },
   {
+    "id": "jeune-orc",
     "label": "Jeune Orc",
     "title": null,
     "folder": "Orcs (frenchy.bzh)",
@@ -41769,6 +42072,7 @@
     }
   },
   {
+    "id": "eclaireur-orc",
     "label": "Éclaireur Orc",
     "title": null,
     "folder": "Orcs (frenchy.bzh)",
@@ -41920,6 +42224,7 @@
     }
   },
   {
+    "id": "archer-orc",
     "label": "Archer Orc",
     "title": null,
     "folder": "Orcs (frenchy.bzh)",
@@ -42076,6 +42381,7 @@
     }
   },
   {
+    "id": "guerrier-orc",
     "label": "Guerrier Orc",
     "title": null,
     "folder": "Orcs (frenchy.bzh)",
@@ -42223,6 +42529,7 @@
     }
   },
   {
+    "id": "chef-de-clan-orc",
     "label": "Chef de Clan Orc",
     "title": null,
     "folder": "Orcs (frenchy.bzh)",
@@ -42406,6 +42713,7 @@
     }
   },
   {
+    "id": "chef-de-guerre-orc",
     "label": "Chef de Guerre Orc",
     "title": null,
     "folder": "Orcs (frenchy.bzh)",
@@ -42625,6 +42933,7 @@
     }
   },
   {
+    "id": "shaman-orc",
     "label": "Shaman Orc",
     "title": null,
     "folder": "Orcs (frenchy.bzh)",
@@ -42819,6 +43128,7 @@
     }
   },
   {
+    "id": "grand-shaman-orc",
     "label": "Grand Shaman Orc",
     "title": null,
     "folder": "Orcs (frenchy.bzh)",
@@ -43026,6 +43336,7 @@
     }
   },
   {
+    "id": "fongus-de-gork",
     "label": "Fongus de Gork",
     "title": null,
     "folder": "Orcs (frenchy.bzh)",
@@ -43261,6 +43572,7 @@
     }
   },
   {
+    "id": "jeune-troll",
     "label": "Jeune Troll",
     "title": null,
     "folder": "Trolls (frenchy.bzh)",
@@ -43404,6 +43716,7 @@
     }
   },
   {
+    "id": "troll-veteran",
     "label": "Troll Vétéran",
     "title": null,
     "folder": "Trolls (frenchy.bzh)",
@@ -43584,6 +43897,7 @@
     }
   },
   {
+    "id": "grand-troll-sanguinaire",
     "label": "Grand Troll Sanguinaire",
     "title": null,
     "folder": "Trolls (frenchy.bzh)",
@@ -43776,6 +44090,7 @@
     }
   },
   {
+    "id": "sorciere-troll-des-marais",
     "label": "Sorcière Troll des Marais",
     "title": null,
     "folder": "Trolls (frenchy.bzh)",
@@ -43998,6 +44313,7 @@
     }
   },
   {
+    "id": "vieille-sorciere-troll-des-marais",
     "label": "Vieille Sorcière Troll des Marais",
     "title": null,
     "folder": "Trolls (frenchy.bzh)",
@@ -44254,6 +44570,7 @@
     }
   },
   {
+    "id": "affreuse-vieille-sorciere-troll-des-marais",
     "label": "Affreuse Vieille Sorcière Troll des Marais",
     "title": null,
     "folder": "Trolls (frenchy.bzh)",
@@ -44543,6 +44860,7 @@
     }
   },
   {
+    "id": "jeune-squig",
     "label": "Jeune Squig",
     "title": null,
     "folder": "Squigs (frenchy.bzh)",
@@ -44648,6 +44966,7 @@
     }
   },
   {
+    "id": "nuee-de-jeunes-squigs",
     "label": "Nuée de Jeunes Squigs",
     "title": null,
     "folder": "Squigs (frenchy.bzh)",
@@ -44698,6 +45017,7 @@
     }
   },
   {
+    "id": "squig",
     "label": "Squig",
     "title": null,
     "folder": "Squigs (frenchy.bzh)",
@@ -44821,6 +45141,7 @@
     }
   },
   {
+    "id": "grand-squig",
     "label": "Grand Squig",
     "title": null,
     "folder": "Squigs (frenchy.bzh)",
@@ -44966,6 +45287,7 @@
     }
   },
   {
+    "id": "squig-monstrueux",
     "label": "Squig Monstrueux",
     "title": null,
     "folder": "Squigs (frenchy.bzh)",
@@ -45127,6 +45449,7 @@
     }
   },
   {
+    "id": "necromancien",
     "label": "Nécromancien",
     "title": null,
     "folder": "Nécromanciens (frenchy.bzh)",
@@ -45311,6 +45634,7 @@
     }
   },
   {
+    "id": "necromancien-puissant",
     "label": "Nécromancien Puissant",
     "title": null,
     "folder": "Nécromanciens (frenchy.bzh)",
@@ -45521,6 +45845,7 @@
     }
   },
   {
+    "id": "magister-mortis",
     "label": "Magister Mortis",
     "title": null,
     "folder": "Nécromanciens (frenchy.bzh)",
@@ -45782,6 +46107,7 @@
     }
   },
   {
+    "id": "jeune-goule",
     "label": "Jeune Goule",
     "title": null,
     "folder": "Goules (frenchy.bzh)",
@@ -45892,6 +46218,7 @@
     }
   },
   {
+    "id": "goule",
     "label": "Goule",
     "title": null,
     "folder": "Goules (frenchy.bzh)",
@@ -46016,6 +46343,7 @@
     }
   },
   {
+    "id": "necrophage",
     "label": "Nécrophage",
     "title": null,
     "folder": "Goules (frenchy.bzh)",
@@ -46166,6 +46494,7 @@
     }
   },
   {
+    "id": "reine-des-cryptes",
     "label": "Reine des Cryptes",
     "title": null,
     "folder": "Goules (frenchy.bzh)",
@@ -46350,6 +46679,7 @@
     }
   },
   {
+    "id": "zombie-faible",
     "label": "Zombie Faible",
     "title": null,
     "folder": "Zombies (frenchy.bzh)",
@@ -46462,6 +46792,7 @@
     }
   },
   {
+    "id": "horde-de-zombies",
     "label": "Horde de Zombies",
     "title": null,
     "folder": "Zombies (frenchy.bzh)",
@@ -46588,6 +46919,7 @@
     }
   },
   {
+    "id": "zombie-gardien",
     "label": "Zombie Gardien",
     "title": null,
     "folder": "Zombies (frenchy.bzh)",
@@ -46713,6 +47045,7 @@
     }
   },
   {
+    "id": "squelette-vigoureux",
     "label": "Squelette Vigoureux",
     "title": null,
     "folder": "Squelettes (frenchy.bzh)",
@@ -46868,6 +47201,7 @@
     }
   },
   {
+    "id": "chevalier-des-tombes",
     "label": "Chevalier des Tombes",
     "title": null,
     "folder": "Squelettes (frenchy.bzh)",
@@ -47023,6 +47357,7 @@
     }
   },
   {
+    "id": "esprit-faible",
     "label": "Esprit Faible",
     "title": null,
     "folder": "Fantômes & Spectres (frenchy.bzh)",
@@ -47153,6 +47488,7 @@
     }
   },
   {
+    "id": "spectre",
     "label": "Spectre",
     "title": null,
     "folder": "Fantômes & Spectres (frenchy.bzh)",
@@ -47325,6 +47661,7 @@
     }
   },
   {
+    "id": "ombre-vengeresse",
     "label": "Ombre Vengeresse",
     "title": null,
     "folder": "Fantômes & Spectres (frenchy.bzh)",
@@ -47515,6 +47852,7 @@
     }
   },
   {
+    "id": "monture-decharne",
     "label": "Monture Décharné",
     "title": null,
     "folder": "Créatures d’Outre-Tombe (frenchy.bzh)",
@@ -47636,6 +47974,7 @@
     }
   },
   {
+    "id": "destrier-squelettique",
     "label": "Destrier Squelettique",
     "title": null,
     "folder": "Créatures d’Outre-Tombe (frenchy.bzh)",
@@ -47779,6 +48118,7 @@
     }
   },
   {
+    "id": "charognard",
     "label": "Charognard",
     "title": null,
     "folder": "Créatures d’Outre-Tombe (frenchy.bzh)",
@@ -47901,6 +48241,7 @@
     }
   },
   {
+    "id": "creatures-d-outre-tombe",
     "label": "? (Créatures d’Outre-Tombe)",
     "title": null,
     "folder": "Créatures d’Outre-Tombe (frenchy.bzh)",
@@ -48018,6 +48359,7 @@
     }
   },
   {
+    "id": "vhargulf",
     "label": "Vhargulf",
     "title": null,
     "folder": "Vampires (frenchy.bzh)",
@@ -48184,6 +48526,7 @@
     }
   },
   {
+    "id": "comte-vampire",
     "label": "Comte Vampire",
     "title": null,
     "folder": "Vampires (frenchy.bzh)",
@@ -48477,6 +48820,7 @@
     }
   },
   {
+    "id": "seigneur-vampire",
     "label": "Seigneur Vampire",
     "title": null,
     "folder": "Vampires (frenchy.bzh)",
@@ -48801,6 +49145,7 @@
     }
   },
   {
+    "id": "grand-cerf",
     "label": "Grand Cerf",
     "title": null,
     "folder": "Zoo Impérial",
@@ -48882,6 +49227,7 @@
     }
   },
   {
+    "id": "l-ombre-du-fleuve",
     "label": "L'Ombre du Fleuve",
     "title": null,
     "folder": "Zoo Impérial",
@@ -48975,6 +49321,7 @@
     }
   },
   {
+    "id": "arachnarok",
     "label": "Arachnarok",
     "title": null,
     "folder": "Zoo Impérial",
@@ -49057,6 +49404,7 @@
     }
   },
   {
+    "id": "mangeuse-d-hommes-de-la-drakwald-araignee-geante",
     "label": "Mangeuse d'hommes de la Drakwald (Araignée Géante)",
     "title": null,
     "folder": "Zoo Impérial",
@@ -49147,6 +49495,7 @@
     }
   },
   {
+    "id": "gobelin-des-forets",
     "label": "Gobelin des Forêts",
     "title": null,
     "folder": "Zoo Impérial",
@@ -49217,6 +49566,7 @@
     }
   },
   {
+    "id": "chamane-gobelin-des-forets",
     "label": "Chamane Gobelin des Forêts",
     "title": null,
     "folder": "Zoo Impérial",
@@ -49293,6 +49643,7 @@
     }
   },
   {
+    "id": "grand-loup",
     "label": "Grand Loup",
     "title": null,
     "folder": "Zoo Impérial",
@@ -49357,6 +49708,7 @@
     }
   },
   {
+    "id": "raukos",
     "label": "Raukos",
     "title": null,
     "folder": "Zoo Impérial",
@@ -49428,6 +49780,7 @@
     }
   },
   {
+    "id": "razorgor",
     "label": "Razorgor",
     "title": null,
     "folder": "Zoo Impérial",
@@ -49525,6 +49878,7 @@
     }
   },
   {
+    "id": "le-vieux-dos-de-pus",
     "label": "Le Vieux Dos-de-Pus",
     "title": null,
     "folder": "Zoo Impérial",
@@ -49607,6 +49961,7 @@
     }
   },
   {
+    "id": "gueule-d-effroi",
     "label": "Gueule d'Effroi",
     "title": null,
     "folder": "Zoo Impérial",
@@ -49708,6 +50063,7 @@
     }
   },
   {
+    "id": "rhinox",
     "label": "Rhinox",
     "title": null,
     "folder": "Zoo Impérial",
@@ -49801,6 +50157,7 @@
     }
   },
   {
+    "id": "brise-krag",
     "label": "Brise-Krag",
     "title": null,
     "folder": "Zoo Impérial",
@@ -49872,6 +50229,7 @@
     }
   },
   {
+    "id": "nuee-de-squigs-des-cavernes",
     "label": "Nuée de squigs des cavernes",
     "title": null,
     "folder": "Zoo Impérial",
@@ -49931,6 +50289,7 @@
     }
   },
   {
+    "id": "gobelin-de-la-nuit",
     "label": "Gobelin de la Nuit",
     "title": null,
     "folder": "Zoo Impérial",
@@ -50009,6 +50368,7 @@
     }
   },
   {
+    "id": "dragon-de-la-foret",
     "label": "Dragon de la Forêt",
     "title": null,
     "folder": "Zoo Impérial",
@@ -50120,6 +50480,7 @@
     }
   },
   {
+    "id": "caledair-la-faux-de-feu",
     "label": "Caledair - la Faux de Feu",
     "title": null,
     "folder": "Zoo Impérial",
@@ -50241,6 +50602,7 @@
     }
   },
   {
+    "id": "l-abominable-halagrundsor",
     "label": "« L'abominable » Halagrundsor",
     "title": null,
     "folder": "Zoo Impérial",
@@ -50392,6 +50754,7 @@
     }
   },
   {
+    "id": "brochet-du-stir",
     "label": "Brochet du Stir",
     "title": null,
     "folder": "Zoo Impérial",
@@ -50479,6 +50842,7 @@
     }
   },
   {
+    "id": "choses-du-bois-mort",
     "label": "Choses du Bois Mort",
     "title": null,
     "folder": "Zoo Impérial",
@@ -50586,6 +50950,7 @@
     }
   },
   {
+    "id": "chef-de-meute-du-clan-moulder",
     "label": "Chef de Meute du Clan Moulder",
     "title": null,
     "folder": "Zoo Impérial",
@@ -50658,6 +51023,7 @@
     }
   },
   {
+    "id": "rat-ogre-briseur-d-os",
     "label": "Rat Ogre Briseur d'os",
     "title": null,
     "folder": "Zoo Impérial",
@@ -50749,6 +51115,7 @@
     }
   },
   {
+    "id": "rat-loup",
     "label": "Rat Loup",
     "title": null,
     "folder": "Zoo Impérial",
@@ -50828,6 +51195,7 @@
     }
   },
   {
+    "id": "experience-unique-du-clan-moulder",
     "label": "Expérience Unique du Clan Moulder",
     "title": null,
     "folder": "Zoo Impérial",
@@ -50969,6 +51337,7 @@
     }
   },
   {
+    "id": "amibe",
     "label": "Amibe",
     "title": null,
     "folder": "Zoo Impérial",
@@ -51035,6 +51404,7 @@
     }
   },
   {
+    "id": "jetsam-la-gelee-intelligente",
     "label": "Jetsam - la Gelée Intelligente",
     "title": null,
     "folder": "Zoo Impérial",
@@ -51152,6 +51522,7 @@
     }
   },
   {
+    "id": "amphisbaena",
     "label": "Amphisbaena",
     "title": null,
     "folder": "Zoo Impérial",
@@ -51245,6 +51616,7 @@
     }
   },
   {
+    "id": "troll-des-rivieres",
     "label": "Troll des Rivières",
     "title": null,
     "folder": "Zoo Impérial",
@@ -51348,6 +51720,7 @@
     }
   },
   {
+    "id": "sorciere-troll-des-rivieres",
     "label": "Sorcière Troll des Rivières",
     "title": null,
     "folder": "Zoo Impérial",
@@ -51462,6 +51835,7 @@
     }
   },
   {
+    "id": "sangsue-cameleon",
     "label": "Sangsue Caméléon",
     "title": null,
     "folder": "Zoo Impérial",
@@ -51525,6 +51899,7 @@
     }
   },
   {
+    "id": "le-dechiqueteur-de-cadavres",
     "label": "Le Déchiqueteur de Cadavres",
     "title": null,
     "folder": "Zoo Impérial",
@@ -51614,6 +51989,7 @@
     }
   },
   {
+    "id": "pegase-noir",
     "label": "Pégase Noir",
     "title": null,
     "folder": "Zoo Impérial",
@@ -51687,6 +52063,7 @@
     }
   },
   {
+    "id": "volee-de-noctecorbes",
     "label": "Volée de Noctecorbes",
     "title": null,
     "folder": "Zoo Impérial",
@@ -51765,6 +52142,7 @@
     }
   },
   {
+    "id": "preyton",
     "label": "Preyton",
     "title": null,
     "folder": "Zoo Impérial",
@@ -51852,6 +52230,7 @@
     }
   },
   {
+    "id": "grand-aigle",
     "label": "Grand Aigle",
     "title": null,
     "folder": "Zoo Impérial",
@@ -51930,6 +52309,7 @@
     }
   },
   {
+    "id": "faucon-des-montagnes-grises",
     "label": "Faucon des Montagnes Grises",
     "title": null,
     "folder": "Zoo Impérial",
@@ -52001,6 +52381,7 @@
     }
   },
   {
+    "id": "heomreth-hibou-geant",
     "label": "Heomreth (Hibou Géant)",
     "title": null,
     "folder": "Zoo Impérial",
@@ -52095,6 +52476,7 @@
     }
   },
   {
+    "id": "cockatrice",
     "label": "Cockatrice",
     "title": null,
     "folder": "Zoo Impérial",
@@ -52188,6 +52570,7 @@
     }
   },
   {
+    "id": "chimere",
     "label": "Chimère",
     "title": null,
     "folder": "Zoo Impérial",
@@ -52309,6 +52692,7 @@
     }
   },
   {
+    "id": "la-bete-de-l-oblast",
     "label": "La Bête de l'Oblast",
     "title": null,
     "folder": "Zoo Impérial",
@@ -52421,6 +52805,7 @@
     }
   },
   {
+    "id": "cultiste-de-la-lune-imprevisible",
     "label": "Cultiste de la Lune Imprévisible",
     "title": null,
     "folder": "Zoo Impérial",
@@ -52563,6 +52948,7 @@
     }
   },
   {
+    "id": "peau-de-loup",
     "label": "Peau-de-Loup",
     "title": null,
     "folder": "Zoo Impérial",
@@ -52653,6 +53039,7 @@
     }
   },
   {
+    "id": "grand-taurus",
     "label": "Grand Taurus",
     "title": null,
     "folder": "Zoo Impérial",
@@ -52745,6 +53132,7 @@
     }
   },
   {
+    "id": "tregara",
     "label": "Trégara",
     "title": null,
     "folder": "Zoo Impérial",
@@ -52821,6 +53209,7 @@
     }
   },
   {
+    "id": "macareux-a-bec-tranchant",
     "label": "Macareux à Bec Tranchant",
     "title": null,
     "folder": "Zoo Impérial",
@@ -52893,6 +53282,7 @@
     }
   },
   {
+    "id": "ver-des-marais",
     "label": "Ver des Marais",
     "title": null,
     "folder": "Zoo Impérial",
@@ -52986,6 +53376,7 @@
     }
   },
   {
+    "id": "stegadon",
     "label": "Stégadon",
     "title": null,
     "folder": "Zoo Impérial",
@@ -53084,6 +53475,7 @@
     }
   },
   {
+    "id": "cornu",
     "label": "Cornu",
     "title": null,
     "folder": "Zoo Impérial",
@@ -53168,6 +53560,7 @@
     }
   },
   {
+    "id": "carnosaure",
     "label": "Carnosaure",
     "title": null,
     "folder": "Zoo Impérial",
@@ -53263,6 +53656,7 @@
     }
   },
   {
+    "id": "chat-sauvage",
     "label": "Chat Sauvage",
     "title": null,
     "folder": "Zoo Impérial",
@@ -53356,6 +53750,7 @@
     }
   },
   {
+    "id": "lion-de-guerre-de-chrace",
     "label": "Lion de Guerre de Chrace",
     "title": null,
     "folder": "Zoo Impérial",
@@ -53452,6 +53847,7 @@
     }
   },
   {
+    "id": "griffon-zoo-imperial",
     "label": "Griffon (Zoo Impérial)",
     "title": null,
     "folder": "Zoo Impérial",
@@ -53537,6 +53933,7 @@
     }
   },
   {
+    "id": "vouivre-zoo-imperial",
     "label": "Vouivre (Zoo Impérial)",
     "title": null,
     "folder": "Zoo Impérial",
@@ -53617,6 +54014,7 @@
     }
   },
   {
+    "id": "leviathan",
     "label": "Léviathan",
     "title": null,
     "folder": "Zoo Impérial",
@@ -53689,6 +54087,7 @@
     }
   },
   {
+    "id": "il-potente-granchio",
     "label": "Il Potente Granchio",
     "title": null,
     "folder": "Zoo Impérial",
@@ -53767,6 +54166,7 @@
     }
   },
   {
+    "id": "sirene",
     "label": "Sirène",
     "title": null,
     "folder": "Zoo Impérial",
@@ -53837,6 +54237,7 @@
     }
   },
   {
+    "id": "wyrm-des-mers",
     "label": "Wyrm des Mers",
     "title": null,
     "folder": "Zoo Impérial",
@@ -53928,6 +54329,7 @@
     }
   },
   {
+    "id": "dragon-barbele",
     "label": "Dragon Barbelé",
     "title": null,
     "folder": "Zoo Impérial",
@@ -54012,6 +54414,7 @@
     }
   },
   {
+    "id": "le-fantasma",
     "label": "Le Fantasma",
     "title": null,
     "folder": "Zoo Impérial",
@@ -54112,6 +54515,7 @@
     }
   },
   {
+    "id": "chevalier-mort-vivant-revenant",
     "label": "Chevalier Mort-Vivant (Revenant)",
     "title": null,
     "folder": "Zoo Impérial",
@@ -54206,6 +54610,7 @@
     }
   },
   {
+    "id": "technomage-du-clan-skryre",
     "label": "Technomage du Clan Skryre",
     "title": null,
     "folder": "Zoo Impérial",
@@ -54266,6 +54671,7 @@
     }
   },
   {
+    "id": "prototype-du-clan-skryre",
     "label": "« Prototype » du Clan Skryre",
     "title": null,
     "folder": "Zoo Impérial",

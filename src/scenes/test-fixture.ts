@@ -15,9 +15,9 @@ const H = 16;
 const enc = buildEncounter({
   id: 'enc-mutants',
   enemies: [
-    { ref: 'Mutant', pos: { x: 16, y: 11 } },
-    { ref: 'Mutant', pos: { x: 18, y: 12 } },
-    { ref: 'Mutant', pos: { x: 17, y: 13 } },
+    { ref: 'mutant', pos: { x: 16, y: 11 } },
+    { ref: 'mutant', pos: { x: 18, y: 12 } },
+    { ref: 'mutant', pos: { x: 17, y: 13 } },
   ],
 });
 

@@ -14,7 +14,7 @@ import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, a
 import { easeDifficulty } from '../engine/tests';
 import { hasTalent } from '../engine/magic';
 import { recomputeLoadout, itemFromTrapping, customTrapping } from '../engine/items';
-import { findCreature } from '../data';
+import { findCreatureById } from '../data';
 import { harvestSizeOf, harvestYield } from '../engine/harvest';
 import { contractDisease } from '../engine/disease';
 import { type HealMode } from '../engine/healing';
@@ -176,17 +176,18 @@ export function assignGearAt(get: Get, set: SetFn, key: 'pendingLoot' | 'pending
  *  `test` de Savoir (Bêtes) → `giveTrapping` — la réussite donne les pièces fraîches à pleine quantité,
  *  l'échec une quantité réduite (un cran de Taille en moins). Les pièces portent leur valeur de marché
  *  (`giveTrapping.price`), revendable au marchand / composant ZI. */
-export function harvestVictoryCreature(get: Get, set: SetFn, name: string) {
-  const c = findCreature(name);
+export function harvestVictoryCreature(get: Get, set: SetFn, creatureId: string) {
+  const c = findCreatureById(creatureId);
   const p = c?.harvest;
   if (!c || !p) return;
+  const name = c.label; // affichage depuis le record (résolu par id)
   const pv = get().pendingVictory;
-  if (pv?.harvested?.includes(name)) return; // déjà récolté
+  if (pv?.harvested?.includes(creatureId)) return; // déjà récolté
   const size = harvestSizeOf(c);
   const full = harvestYield(p, size, 0, 'Frais');
   const lo = harvestYield(p, size, -1, 'Frais');
   const part = (enc: number) => `Pièces de ${name} (${enc} Enc)`;
-  if (pv) set({ pendingVictory: { ...pv, harvested: [...(pv.harvested ?? []), name] } }); // grise le bouton
+  if (pv) set({ pendingVictory: { ...pv, harvested: [...(pv.harvested ?? []), creatureId] } }); // grise le bouton
   runFlow(get, set, testFlow(
     { skill: 'Savoir (Bêtes)', difficulty: 'intermediaire', label: `Récolter — ${name}` },
     flowFromEffects([{ type: 'giveTrapping', trapping: part(full.enc), price: full.total }]),

@@ -29,9 +29,9 @@ setEncounters(scene, [
   {
     id: 'enc-mutants',
     enemies: [
-      { ref: 'Mutant', pos: { x: 12, y: 4 } },
-      { ref: 'Mutant', pos: { x: 14, y: 6 } },
-      { ref: 'Mutant', pos: { x: 12, y: 8 } },
+      { ref: 'mutant', pos: { x: 12, y: 4 } },
+      { ref: 'mutant', pos: { x: 14, y: 6 } },
+      { ref: 'mutant', pos: { x: 12, y: 8 } },
     ],
   },
 ]);

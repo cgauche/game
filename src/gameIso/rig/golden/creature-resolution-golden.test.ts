@@ -32,6 +32,8 @@ describe('golden — résolution nom→apparence (anti-régression de-POC match-
     expect(mapOf(CREATURES.map((c) => c.name))).toMatchSnapshot();
   });
   it('bestiaire (creatures.json) : label → (plan, espèce, def, échelle)', () => {
-    expect(mapOf(bestiary.map((c) => c.label))).toMatchSnapshot();
+    // Clé d'affichage = label ; résolution PAR ID (record du bestiaire).
+    const entries = bestiary.map((c) => [c.label, resolve(c.id)] as const).sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+    expect(Object.fromEntries(entries)).toMatchSnapshot();
   });
 });

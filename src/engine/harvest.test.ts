@@ -4,14 +4,14 @@ import { formatMoney } from './money';
 
 describe('harvest — Précieuses Entrailles (ZI)', () => {
   it('profil porté par la créature (creatures.json), coût = rareté × dangerosité', () => {
-    const p = harvestProfileFor('Cockatrice')!; // Exotique, Menaçante
+    const p = harvestProfileFor('cockatrice')!; // Exotique, Menaçante
     expect(p.rarity).toBe('Exotique');
     expect(p.danger).toBe('Menaçante');
     expect(formatMoney(costPerEnc(p))).toBe('6 CO');
   });
 
   it('exemple du livre : cockatrice Grande → 4 Enc, 24 CO (Conservé), 3 CO (Pourri)', () => {
-    const p = harvestProfileFor('Cockatrice')!;
+    const p = harvestProfileFor('cockatrice')!;
     const conserve = harvestYield(p, 'Grande', 0, 'Conservé');
     expect(conserve.enc).toBe(4);
     expect(formatMoney(conserve.total)).toBe('24 CO');
@@ -19,12 +19,12 @@ describe('harvest — Précieuses Entrailles (ZI)', () => {
   });
 
   it('Frais double le prix standard', () => {
-    const p = harvestProfileFor('Cockatrice')!;
+    const p = harvestProfileFor('cockatrice')!;
     expect(formatMoney(harvestYield(p, 'Grande', 0, 'Frais').total)).toBe('48 CO');
   });
 
   it('chaque DR d’échec au Savoir retire un cran de quantité', () => {
-    const p = harvestProfileFor('Cockatrice')!;
+    const p = harvestProfileFor('cockatrice')!;
     expect(harvestYield(p, 'Grande', 0, 'Conservé').enc).toBe(4); // Grande
     expect(harvestYield(p, 'Grande', -1, 'Conservé').enc).toBe(2); // → Moyenne
     expect(harvestYield(p, 'Grande', -2, 'Conservé').enc).toBe(1); // → Inf. Moyenne
@@ -32,9 +32,9 @@ describe('harvest — Précieuses Entrailles (ZI)', () => {
   });
 
   it('Pourri : les pièces non Exotiques/Uniques ne valent plus rien', () => {
-    const troll = harvestProfileFor('Troll des Rivières')!; // Rare
+    const troll = harvestProfileFor('troll-des-rivieres')!; // Rare
     expect(formatMoney(harvestYield(troll, 'Grande', 0, 'Pourri').total)).toBe('0 sc');
-    const dragon = harvestProfileFor('Dragon de la Forêt')!; // Exotique
+    const dragon = harvestProfileFor('dragon-de-la-foret')!; // Exotique
     expect(harvestYield(dragon, 'Énorme', 0, 'Pourri').total.gold).toBeGreaterThan(0);
   });
 

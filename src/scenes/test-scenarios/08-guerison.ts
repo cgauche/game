@@ -9,7 +9,7 @@ scene.startMessage =
 setEncounters(scene, [
   {
     id: 'enc-guerison',
-    enemies: [{ ref: 'Gobelin', pos: { x: 10, y: 5 } }],
+    enemies: [{ ref: 'gobelin', pos: { x: 10, y: 5 } }],
   },
 ]);
 

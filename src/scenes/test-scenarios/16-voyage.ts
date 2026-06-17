@@ -81,8 +81,8 @@ setEncounters(embuscade, [{
   id: 'enc-vembuscade',
   hidden: true, // embuscade de route : invisibles jusqu'au combat
   enemies: [
-    { ref: 'Gobelin', pos: { x: 9, y: 3 } },
-    { ref: 'Gobelin', pos: { x: 10, y: 5 } },
+    { ref: 'gobelin', pos: { x: 9, y: 3 } },
+    { ref: 'gobelin', pos: { x: 10, y: 5 } },
   ],
   surprise: 'party', // annulée si la Perception du voyage est réussie (« le groupe les voit venir »)
 }]);

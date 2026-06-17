@@ -32,8 +32,9 @@ describe('bodyPlanOf', () => {
     }
   });
   it('ailés (griffon/pégase/hippogriffe/dragon) → winged', () => {
-    for (const n of ['Griffon', 'Pégase', 'Hippogriffe', 'Dragon', 'Demigriffon',
-      'Manticore', 'Varghulf']) { // jalon 3 : sortis du monolithique
+    // ids de créature (record→espèce) + espèces-defs sans record (Hippogriffe/Varghulf).
+    for (const n of ['griffon', 'pegase', 'Hippogriffe', 'dragon', 'demigriffon',
+      'manticore', 'Varghulf']) {
       expect(bodyPlanOf(n)).toBe('winged');
     }
   });
@@ -45,7 +46,7 @@ describe('bodyPlanOf', () => {
     expect(bodyPlanOf('Pieuvre')).toBe('cephalopod');
   });
   it('morts-vivants spectraux → spectral', () => {
-    for (const n of ['Spectre de cairn', 'Fantôme', 'Banshee']) expect(bodyPlanOf(n)).toBe('spectral');
+    for (const n of ['spectre-de-cairn', 'fantome', 'banshee']) expect(bodyPlanOf(n)).toBe('spectral');
   });
   it('squig → squig', () => {
     expect(bodyPlanOf('Squig')).toBe('squig');

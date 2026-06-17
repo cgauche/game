@@ -19,7 +19,7 @@ import { PROPS } from '../../gameIso/catalog/decor';
 import { perimeterTiles, defaultDoor } from '../../state/buildings';
 import { MERCHANTS } from '../../state/merchants/index';
 import { allMusicDefs } from '../../audio/music';
-import { findCreature } from '../../data';
+import { findCreatureById, creatureLabel } from '../../data';
 import { MonsterPartsFields } from './MonsterPartsFields';
 import { ParamFields } from './ParamFields';
 import { effectCtxOf } from './EffectList';
@@ -79,7 +79,7 @@ export function Inspector({
   setScene: (s: Scene) => void;
   sel: Sel;
   setSel: (s: Sel) => void;
-  enemyCreatures: { label: string }[];
+  enemyCreatures: { id: string; label: string }[];
   /** Ouvre le panneau Logique sur un onglet (+ élément). */
   openLogic: (tab: 'triggers' | 'dialogues' | 'encounters', id?: string) => void;
   resizeScene: (w: number, h: number) => void;
@@ -157,15 +157,15 @@ export function Inspector({
                 <>
                   <label className="ed-field">
                     Créature (profil de combat)
-                    <select value={ent.ref ?? ''} onChange={(e) => updateSel({ ref: e.target.value || undefined, label: ent.label ?? e.target.value })}>
+                    <select value={ent.ref ?? ''} onChange={(e) => { const cid = e.target.value || undefined; updateSel({ ref: cid, label: ent.label ?? (cid ? creatureLabel(cid) : undefined) }); }}>
                       <option value="">— créature —</option>
                       {enemyCreatures.map((c) => (
-                        <option key={c.label} value={c.label}>{c.label}</option>
+                        <option key={c.id} value={c.id}>{c.label}</option>
                       ))}
                     </select>
                   </label>
                   {(() => {
-                    const cr = ent.ref ? findCreature(ent.ref) : undefined;
+                    const cr = ent.ref ? findCreatureById(ent.ref) : undefined;
                     if (!cr) return null;
                     return (
                       <>
