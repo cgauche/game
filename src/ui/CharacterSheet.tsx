@@ -25,6 +25,7 @@ import { EquipmentPanel } from './EquipmentPanel';
 import { CharFrame } from './CharFrame';
 import { PortraitTile } from './PortraitTile';
 import { ItemIcon } from './ItemIcon';
+import { MediaSelect } from './MediaSelect';
 import type { Palette } from '../gameIso/rig/palette';
 
 /** Emplacements de couleur d'un SKIN d'OBJET légendaire (`metal/cuir/accent` = slots de palette). */
@@ -295,7 +296,6 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
   const appraiseItem = useGame((s) => s.appraiseItem);
   const inBattleNow = useGame((s) => !!s.battle);
   const [skinFor, setSkinFor] = useState<string | null>(null);
-  const [giveFor, setGiveFor] = useState<string | null>(null); // E4 : menu « Donner » d'un item (replié par défaut, ouvert au clic du 🎁)
   const items = hero.items ?? [];
   const enc = hero.encumbrance ?? 0;
   const maxEnc = maxEncumbrance(hero);
@@ -552,36 +552,18 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                     <span className="ir-kind">{it.kind}</span>
                   )}
                   {party.length > 1 && !inBattleNow && (
-                    <span className="give-wrap">
-                      <button
-                        className={`btn small ${giveFor === it.uid ? 'btn-primary' : ''}`}
-                        title="Donner cet objet à un autre héros"
-                        aria-expanded={giveFor === it.uid}
-                        onClick={() => setGiveFor(giveFor === it.uid ? null : it.uid)}
-                      >
-                        🎁
-                      </button>
-                      {giveFor === it.uid && (
-                        <div className="give-menu">
-                          {party.filter((p) => p.id !== hero.id).map((p) => {
-                            const give = () => { transferItem(it.uid, hero.id, p.id); setGiveFor(null); };
-                            return (
-                              <div
-                                key={p.id}
-                                className="give-opt"
-                                role="button"
-                                tabIndex={0}
-                                onClick={give}
-                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); give(); } }}
-                              >
-                                <CharFrame c={p} variant="identity" size="xs" />
-                                <span className="go-name">{p.name}</span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </span>
+                    <MediaSelect
+                      align="right"
+                      triggerClassName="btn small"
+                      title="Donner cet objet à un autre héros"
+                      trigger="🎁"
+                      options={party.filter((p) => p.id !== hero.id).map((p) => ({
+                        key: p.id,
+                        media: <CharFrame c={p} variant="identity" size="xs" />,
+                        label: p.name,
+                      }))}
+                      onSelect={(pid) => transferItem(it.uid, hero.id, pid)}
+                    />
                   )}
                 </div>
                 {open && (

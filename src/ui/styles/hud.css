@@ -60,34 +60,71 @@
   align-items: flex-start;
   vertical-align: middle;
 }
-/* « Donner à… » d'une ligne d'inventaire : 🎁 + mini-tuiles des autres héros. */
-/* E4 : « Donner » = icône 🎁 REPLIÉE par défaut → menu [portrait + nom] au clic (action secondaire,
-   plus de rangée de portraits toujours affichée). */
-.give-wrap {
+/* MediaSelect — sélecteur visuel partagé (déclencheur + popover de rangées « média + texte ») :
+   sélecteurs d'armes/armure de la fiche, menu « Donner » d'une ligne d'inventaire (🎁 → héros). */
+.media-select {
   position: relative;
   display: inline-flex;
+  min-width: 0;
 }
-.give-menu {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 4px);
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.ms-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
   background: var(--panel2);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 4px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
-  min-width: 150px;
+  padding: 3px 8px;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
 }
-.give-opt {
+.ms-trigger:hover:not(:disabled) {
+  background: var(--panel);
+}
+.ms-trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ms-trigger .ms-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ms-caret {
+  opacity: 0.6;
+  font-size: 11px;
+}
+.ms-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  z-index: 20;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  min-width: 160px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.media-select.align-left .ms-list { left: 0; }
+.media-select.align-right .ms-list { right: 0; }
+.media-select.open .ms-list { display: flex; }
+.ms-opt {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: none;
-  border: none;
   border-radius: 6px;
   padding: 4px 6px;
   color: var(--text);
@@ -95,11 +132,28 @@
   text-align: left;
   font-size: 13px;
 }
-.give-opt:hover {
+.ms-opt:hover:not(.disabled) {
   background: var(--panel);
 }
-.give-opt .go-name {
+.ms-opt.sel {
+  background: var(--panel);
+  outline: 1px solid var(--border);
+}
+.ms-opt.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.ms-opt .ms-label {
+  flex: 1;
+  min-width: 0;
   white-space: nowrap;
+}
+.ms-opt .ms-sub {
+  color: var(--muted);
+  font-size: 11px;
+}
+@media (pointer: coarse) {
+  .ms-trigger, .ms-opt { padding-top: 7px; padding-bottom: 7px; }
 }
 /* Choix par tuile-portrait avec légende sous la tuile (monture/cavalier, modes de soin…). */
 .frame-pick {
