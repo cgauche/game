@@ -95,7 +95,7 @@ function weaponsFromTraits(traits: TraitList): Weapon[] {
     const w = weaponFromTrait(t);
     if (w) weapons.push(w);
   }
-  if (weapons.length === 0) weapons.push({ name: 'Arme', type: 'melee', damage: '+BF', qualities: [] });
+  if (weapons.length === 0) weapons.push(buildWeapon({ name: 'Arme', damage: { literal: '+BF' } })); // uid universel
   return weapons;
 }
 
@@ -312,7 +312,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
     conditions: [],
     // Armes : depuis les Traits si fournis (« Arme (Épée) +7 », « À distance (Arbalète) +9 (60) »),
     // sinon une arme générique au dégât indiqué.
-    weapons: traits.length ? weaponsFromTraits(traits) : [{ name: 'Arme', type: 'melee', damage: sb.weaponDamage ?? '+BF', qualities: [] }],
+    weapons: traits.length ? weaponsFromTraits(traits) : [buildWeapon({ name: 'Arme', damage: { literal: sb.weaponDamage ?? '+BF' } })], // uid universel
     armour: emptyArmour(sb.armour ?? 0),
     size,
     bodyShape: bodyShapeOf(sb.name), // Tableau de Localisation par forme du corps (LDB p.312)

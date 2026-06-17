@@ -22,6 +22,7 @@ import { hasTraitKey } from './traits/dispatch';
 import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { reverseRoll, hitLocationByShape } from './combat';
 import { Formula, resolveFormula } from './ops';
+import { arcaneDomainOf } from './combatFeatures/dispatch';
 import { domainMissileMods } from './domainAttributes';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
 import { Combatant, HitLocation, Difficulty, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from './types';
@@ -122,9 +123,10 @@ export function castingValue(c: Combatant, skillName: string, spec?: string): nu
  * ignore les armures de cuir.
  */
 export function armourCastDRPenalty(c: Combatant): number {
-  // Le talent spécialisé est stocké « Magie des Arcanes (Métal) » (nom complet).
-  const ignoreMetal = c.talents.some((t) => t.talentId === 'magie-des-arcanes' && /^M[ée]tal$/.test(t.spec ?? ''));
-  const ignoreLeather = c.talents.some((t) => t.talentId === 'magie-des-arcanes' && /^Bêtes?$/.test(t.spec ?? ''));
+  // Domaine d'Arcane (spec du talent à castingKind:'arcane') — Métal ignore le métal, Bête le cuir.
+  const arc = arcaneDomainOf(c) ?? '';
+  const ignoreMetal = /^M[ée]tal$/.test(arc);
+  const ignoreLeather = /^Bêtes?$/.test(arc);
   let maxPA = 0;
   for (const it of c.items ?? []) {
     if (!it.equipped || it.kind !== 'armor' || !it.pa) continue;

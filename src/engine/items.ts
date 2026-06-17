@@ -43,7 +43,8 @@ function damageString(d: WeaponDamageSpec): string {
 
 /** Spécification d'une arme SYNTHÉTIQUE (≠ catalogue) : sert `buildWeapon` (→ Weapon) ET `weaponItem`
  *  (→ ItemInstance). `uid` : littéral (Tentacule : 'nat-tentacule'), préfixe → `${prefix}-${newUid()}`,
- *  ou absent (mains nues). */
+ *  ou absent → `buildWeapon` génère un uid stable par défaut (`w-${newUid()}`) : TOUTE arme construite
+ *  porte un uid (les Pendings d'arme — rechargement/renversement/piège-lame — la retrouvent par uid). */
 export interface WeaponSpec {
   name: string;
   type?: 'melee' | 'ranged';
@@ -58,8 +59,8 @@ export interface WeaponSpec {
   form?: string;
 }
 
-function specUid(uid: WeaponSpec['uid']): string | undefined {
-  if (uid == null) return undefined;
+function specUid(uid: WeaponSpec['uid']): string {
+  if (uid == null) return `w-${newUid()}`; // arme sans uid explicite → uid stable par défaut (universel)
   return typeof uid === 'string' ? uid : `${uid.prefix}-${newUid()}`; // UN seul appel newUid par arme
 }
 
@@ -78,8 +79,7 @@ export function buildWeapon(spec: WeaponSpec): Weapon {
   if (spec.reach !== undefined) w.reach = spec.reach;
   if (spec.range !== undefined) w.range = spec.range;
   if (spec.subType !== undefined) w.subType = spec.subType;
-  const uid = specUid(spec.uid);
-  if (uid !== undefined) w.uid = uid;
+  w.uid = specUid(spec.uid); // TOUJOURS défini (universel : Pendings d'arme par uid)
   if (spec.skin !== undefined) w.skin = spec.skin;
   if (spec.form !== undefined) w.form = spec.form;
   return w;
@@ -90,11 +90,11 @@ export function buildWeapon(spec: WeaponSpec): Weapon {
  *  champs propres à l'OBJET : enc/equipped/conjured). Utilisé par l'arme INVOQUÉE (op `grantWeapon`) posée
  *  dans un set d'armes dédié. */
 export function weaponItem(spec: WeaponSpec & { conjured?: boolean }): ItemInstance {
-  const { type, uid, ...rest } = buildWeapon(spec);
+  const { type, uid, ...rest } = buildWeapon(spec); // buildWeapon garantit toujours un uid
   return {
     ...rest,
     kind: type,
-    uid: uid ?? newUid(),
+    uid: uid!,
     enc: 0,
     equipped: false,
     ...(spec.conjured ? { conjured: true } : {}),

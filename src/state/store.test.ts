@@ -2187,7 +2187,7 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
 
   function archer() {
     const H = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
-    H.weapons = [{ name: 'Arbalète', type: 'ranged', damage: '+9', range: 60, qualities: ['Recharge 1'], subType: 'Arbalète', reload: 1 }];
+    H.weapons = [{ uid: 'w-arb', name: 'Arbalète', type: 'ranged', damage: '+9', range: 60, qualities: ['Recharge 1'], subType: 'Arbalète', reload: 1 }];
     H.items = [{ uid: 'am1', name: 'Carreau', kind: 'ammo', qualities: ['Empaleuse'], enc: 0, equipped: false, subType: 'Arbalète', qty: 2 } as ItemInstance];
     H.loaded = true;
     H.pos = { x: 0, y: 0 };
@@ -2317,7 +2317,7 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     H.reloadProgress = 1;
     useGame.setState({
       pendingReload: {
-        actorId: H.id, actorName: H.name, weaponName: 'Arbalète lourde', reload: 2, progressBefore: 1,
+        actorId: H.id, actorName: H.name, weaponUid: 'w-arb', reload: 2, progressBefore: 1,
         skillValue: 40, difficulty: 'intermediaire', roll: 95, target: 40, sl: -2, success: false,
       },
     });

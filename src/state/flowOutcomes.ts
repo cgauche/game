@@ -167,10 +167,10 @@ export function describeStateRecovery(sr: PendingStateRecovery, name: string): s
 }
 
 /** Rechargement = Test étendu de Projectiles (LDB 63 l.28-29) : issue (source unique popin ↔ journal).
- *  `after` = DR cumulé après ce jet (plafond 0). */
-export function describeReload(pr: PendingReload, after: number): string {
+ *  `after` = DR cumulé après ce jet (plafond 0). `weaponName` = NOM résolu de l'arme (uid → nom à l'appel). */
+export function describeReload(pr: PendingReload, after: number, weaponName: string): string {
   if (pr.roll == null) return '';
-  return after >= pr.reload ? `${pr.weaponName} rechargé ✓` : `${pr.actorName} recharge ${pr.weaponName} (${after}/${pr.reload} DR).`;
+  return after >= pr.reload ? `${weaponName} rechargé ✓` : `${pr.actorName} recharge ${weaponName} (${after}/${pr.reload} DR).`;
 }
 
 /** Focalisation = Test étendu (LDB 46) : issue (source unique popin ↔ journal). `prev`/`ni` = DR déjà

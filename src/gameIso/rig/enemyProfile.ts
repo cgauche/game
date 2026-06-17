@@ -9,6 +9,7 @@ import type { Combatant, ItemInstance, ArmourPoints, HitLocation } from '../../e
 import type { Appearance } from './appearance';
 import type { EquipCtx } from './parts/equipment';
 import { equipFromCombatant } from './parts/equipment';
+import { newUid } from '../../engine/items';
 import { weaponGroupKey } from './parts/weaponGroup';
 import { EYE_OPTIONS, eyesArtFromKeys } from './parts/eyes';
 import type { MonsterParts } from './parts/monstrous';
@@ -23,7 +24,7 @@ import { baseSpeciesOf } from './skeletons';
 const RANGED_GROUPS = new Set(['arc', 'arbalete', 'poudre', 'fronde', 'lancer', 'entraves', 'explosifs', 'ingenierie']);
 /** Construit une arme minimale depuis un libellé (type déduit du Groupe canonique). */
 export function weaponFromLabel(label: string): import('../../engine/types').Weapon {
-  const w = { name: label, type: 'melee' as 'melee' | 'ranged', damage: '+0', qualities: [] };
+  const w = { name: label, type: 'melee' as 'melee' | 'ranged', damage: '+0', qualities: [], uid: `w-${newUid()}` };
   if (RANGED_GROUPS.has(weaponGroupKey(w))) w.type = 'ranged';
   return w;
 }

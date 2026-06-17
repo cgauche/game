@@ -15,6 +15,14 @@ export function castingKindOf(talentLabel: string): CastingKind | undefined {
   return findTalent(splitLabel(talentLabel).name)?.combat?.castingKind;
 }
 
+/** Domaine d'Arcane du lanceur (LDB 46) : la spécialisation du talent à `castingKind:'arcane'` (Magie des
+ *  Arcanes — Métal, Bêtes…), ou undefined. Source DONNÉE (`combat.castingKind`) — remplace les checks en dur
+ *  `talentId === 'magie-des-arcanes'` (exemptions d'armure, domaine d'incantation, Souffle de breathType). */
+export function arcaneDomainOf(c: Combatant): string | undefined {
+  for (const t of c.talents ?? []) if (findTalentById(t.talentId)?.combat?.castingKind === 'arcane') return t.spec;
+  return undefined;
+}
+
 /** Capacités de combat présentes sur le combattant, lues de la DONNÉE (`TalentData.combat`) : talents
  *  POSSÉDÉS (niveau = times) + talents ACCORDÉS par un effet actif de sort (op `grantTalent`, niveau 1
  *  tant que l'effet dure — Flambeau de Vertu : Sans peur ; Cœurs ardents : Cœur vaillant…, Jalon 2.6). */

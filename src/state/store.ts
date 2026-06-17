@@ -2604,7 +2604,7 @@ export const useGame = create<GameState>((set, get) => ({
       pendingReload: {
         actorId: active.id,
         actorName: active.name,
-        weaponName: w.name,
+        weaponUid: w.uid!,
         reload: reloadDRTarget(w), // Recharge ×2 si Arme d'équipe maniée seul (Aux Armes p.124)
         progressBefore: active.reloadProgress ?? 0,
         skillValue,
@@ -2638,7 +2638,8 @@ export const useGame = create<GameState>((set, get) => ({
       a.reloadProgress = progress;
     }
     // Issue = source UNIQUE avec la popin (describeReload) — `progress` inclut le bonus de Talent (réalisé à l'application).
-    set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('reload', describeReload(pr, progress), a.id)] } });
+    const reloadName = a.weapons.find((w) => w.uid === pr.weaponUid)?.name ?? 'arme'; // uid → NOM (affichage)
+    set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('reload', describeReload(pr, progress, reloadName), a.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
   reloadCancel: () => set({ pendingReload: null }), // avant le jet : aucun coût

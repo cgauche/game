@@ -36,11 +36,12 @@ export function ReloadModalView({
 }) {
   const rolled = pr.roll != null;
   const after = Math.max(0, pr.progressBefore + pr.sl);
+  const weaponName = actor?.weapons.find((w) => w.uid === pr.weaponUid)?.name ?? 'arme'; // uid → NOM (affichage)
 
   return (
     <RollFlowShell
       variant="test"
-      title={`Recharger — ${pr.weaponName}`}
+      title={`Recharger — ${weaponName}`}
       /* QUI recharge → portrait dans la ligne de jet ; Projectiles/cible vivent dans le cadre, le cumul dans le DrBar. */
       actor={actor}
       subtitle={null}
@@ -54,7 +55,7 @@ export function ReloadModalView({
       outcome={rolled && (
         <JournalLine
           className="rm-journal"
-          event={ev('reload', describeReload(pr, after), pr.actorId)}
+          event={ev('reload', describeReload(pr, after, weaponName), pr.actorId)}
         />
       )}
       fortune={fortune}

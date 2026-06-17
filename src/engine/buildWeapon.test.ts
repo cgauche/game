@@ -26,10 +26,10 @@ describe('buildWeapon — convention de Dégâts (le token BF est porteur)', () 
 });
 
 describe('buildWeapon — défauts, uid, copie', () => {
-  it('défauts : mêlée, 1 main, qualities vide ; pas d\'uid/reach parasites', () => {
+  it('défauts : mêlée, 1 main, qualities vide ; uid universel (« w-it-N ») ; pas de reach parasite', () => {
     const w = buildWeapon({ name: 'X', damage: { plusBF: true, flat: 0, bare: true } });
     expect(w).toMatchObject({ type: 'melee', hands: 1, qualities: [] });
-    expect(w.uid).toBeUndefined();
+    expect(w.uid).toMatch(/^w-it-\d+$/); // uid TOUJOURS défini (Pendings d'arme par uid)
     expect(w.reach).toBeUndefined();
   });
   it('uid : littéral conservé ; préfixe → « prefix-it-N » (UN seul newUid)', () => {

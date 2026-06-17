@@ -111,7 +111,7 @@ export interface PendingTest {
 export interface PendingReload {
   actorId: string;
   actorName: string;
-  weaponName: string;
+  weaponUid: string; // arme de rechargement (loadout) — résolue en NOM à l'affichage
   reload: number; // Indice DR cible
   progressBefore: number; // DR déjà cumulés (Test étendu)
   skillValue: number; // combatValue(active, 'ranged')
@@ -411,7 +411,7 @@ export interface PendingBladeTrap {
   defenderId: string; // le héros piégeur
   attackerId: string; // l'adversaire dont la lame est visée
   weapon: Weapon; // la lame de l'attaquant
-  parryWeaponName: string;
+  parryWeaponUid: string; // l'arme Piège-lame du défenseur — résolue en NOM à l'affichage
   /** DR du Test de Corps à corps (défense) — ajouté au Test opposé de Force (l.293). */
   defSL: number;
   /** d100 du jet de défense critique (localisation du Coup Critique si refusé). */
@@ -423,7 +423,7 @@ export interface PendingBladeTrap {
 export interface PendingKnockdown {
   attackerId: string; // le héros qui a touché
   targetId: string;   // la cible à renverser
-  weaponName: string;
+  weaponUid: string;  // l'arme du renversement (loadout) — résolue en NOM à l'affichage
   quality: string;    // « Déstabilisante »
   advantageCost: number;
   char: CharKey;

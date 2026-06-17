@@ -51,7 +51,7 @@ import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, occupiesTile } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSize, hasBladeTrap, canPushback, strikesLast, isFirearmQuality } from '../engine/qualities/dispatch';
 import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf } from './triggeredEffects';
-import { hasStealAdvantage, shieldAdvantageLevel, hasRiposte, talentCritExtraWounds, hasSurpriseSave, talentMagicResistance, hasBraveheart, outnumberCountBonus, hasStunSave, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony } from '../engine/combatFeatures/dispatch';
+import { hasStealAdvantage, shieldAdvantageLevel, hasRiposte, talentCritExtraWounds, hasSurpriseSave, talentMagicResistance, hasBraveheart, outnumberCountBonus, hasStunSave, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainOf } from '../engine/combatFeatures/dispatch';
 import { canStrikeFirst } from '../engine/qualities/dispatch';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
@@ -1198,7 +1198,7 @@ export function applyAttackResult(
       if (target.kind === 'hero' && res.parryWeapon && hasBladeTrap(res.parryWeapon) && weaponHasBlade(weapon)) {
         // Folding P3b : le choix Piéger/Critique devient une ÉTAPE de la séquence (texte + options),
         // au lieu d'une modale `pendingBladeTrap` séparée. L'applier 'bladeTrap' appelle resolveBladeTrap.
-        const pbt: PendingBladeTrap = { defenderId: target.id, attackerId: attacker.id, weapon, parryWeaponName: res.parryWeapon.name, defSL: dd.sl, roll: dd.roll };
+        const pbt: PendingBladeTrap = { defenderId: target.id, attackerId: attacker.id, weapon, parryWeaponUid: res.parryWeapon.uid!, defSL: dd.sl, roll: dd.roll };
         pushCombatStep(set, {
           id: `cons-bladetrap-${target.id}`, kind: 'bladeTrap', actorId: target.id, icon: '🗡️',
           label: 'Parade — piéger la lame ?',
@@ -1363,7 +1363,7 @@ export function applyAttackResult(
           label: `🤜 ${def.key} — renverser ?`,
           options: [{ key: 'yes', label: `Renverser (${kd.advantageCost} Av)` }, { key: 'no', label: 'Renoncer' }],
           defaultChoice: 'no', interactive: true,
-          knockdown: { attackerId: attacker.id, targetId: target.id, weaponName: weapon.name, quality: def.key, advantageCost: kd.advantageCost, char: kd.char, skill: kd.skill, condition: kd.condition },
+          knockdown: { attackerId: attacker.id, targetId: target.id, weaponUid: weapon.uid!, quality: def.key, advantageCost: kd.advantageCost, char: kd.char, skill: kd.skill, condition: kd.condition },
         });
         break; // un seul renversement proposé par touche
       }
@@ -2955,7 +2955,7 @@ function placeSpellZone(
  *  Arcanes ») — jeu sans MJ : seuls les Domaines au Type canonique évident sont mappés
  *  (Feu→Feu, Cieux→Électricité, Métal→Corrosif, Ombres→Fumée) ; les autres soufflent des Dégâts purs. */
 function domainBreathType(caster: Combatant): string | undefined {
-  return findDomain(caster.talents.find((t) => t.talentId === 'magie-des-arcanes')?.spec)?.breathType;
+  return findDomain(arcaneDomainOf(caster))?.breathType;
 }
 
 /** Bonus d'incantation CONDITIONNEL du Domaine (Aqshy l.157 : +`bonus` par État `perCondition` situé à
@@ -3122,10 +3122,11 @@ export function resolveBladeTrap(get: Get, set: SetFn, pbt: PendingBladeTrap, tr
   const defender = battle.combatants.find((c) => c.id === pbt.defenderId);
   const attacker = battle.combatants.find((c) => c.id === pbt.attackerId);
   if (!defender || !attacker) return;
+  const parryWeaponName = defender.weapons.find((w) => w.uid === pbt.parryWeaponUid)?.name ?? 'arme'; // uid → NOM (affichage)
   const lines: string[] = [];
   if (!trap) {
     lines.push(`${defender.name} place un Critique sur sa défense.`);
-    applyOpposedCritical(get, set, attacker, pbt.roll, { attackerId: defender.id, weapon: pbt.parryWeaponName }, lines);
+    applyOpposedCritical(get, set, attacker, pbt.roll, { attackerId: defender.id, weapon: parryWeaponName }, lines);
   } else if (!isOutOfAction(attacker)) {
     // Test opposé de Force, le piégeur ajoutant son DR du Test de Corps à corps précédent (l.293).
     const dT = rollTest(effectiveChar(defender, 'F'), 'intermediaire', battleRng());
@@ -3133,7 +3134,7 @@ export function resolveBladeTrap(get: Get, set: SetFn, pbt: PendingBladeTrap, tr
     const opp = resolveOpposed({ ...dT, sl: dT.sl + pbt.defSL }, aT);
     lines.push(`Test opposé de Force : ${defender.name} 🎲 ${dT.roll}/${dT.target} (DR ${dT.sl}+${pbt.defSL}) contre ${attacker.name} 🎲 ${aT.roll}/${aT.target} (DR ${aT.sl}).`);
     if (opp.winner === 'attacker') {
-      const drop = attacker.weapons.find((w) => (pbt.weapon.uid && w.uid === pbt.weapon.uid) || w.name === pbt.weapon.name);
+      const drop = attacker.weapons.find((w) => w.uid === pbt.weapon.uid); // uid universel : plus de repli par nom
       if (drop && opp.netSL >= 6) {
         // Succès Stupéfiant : la lame est BRISÉE, à moins qu'elle ne possède l'Atout Incassable (l.294).
         wearActiveWeapon(attacker, drop, true);
@@ -3153,7 +3154,7 @@ export function resolveBladeTrap(get: Get, set: SetFn, pbt: PendingBladeTrap, tr
   set({ battle: { ...b, log: [...b.log, ...evLines(lines, 'info', defender.id, attacker.id)] } });
   // Modale seulement si un héros est d'un côté du piège (spec coop §4bis) — déjà journalisé ci-dessus.
   if (attacker.kind === 'hero' || defender.kind === 'hero')
-    pushReveal(set, { kind: 'assommante', title: 'Piège-lame', lines: [...lines], subjectId: attacker.id, actorId: defender.id, weapon: pbt.parryWeaponName, severity: 'minor' });
+    pushReveal(set, { kind: 'assommante', title: 'Piège-lame', lines: [...lines], subjectId: attacker.id, actorId: defender.id, weapon: parryWeaponName, severity: 'minor' });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
 }

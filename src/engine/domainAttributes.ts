@@ -39,6 +39,7 @@ import { groupMatch } from './groups';
 import { bypassedAP } from './armourBypass';
 import { hasTraitKey, parseTraitInstance } from './traits/dispatch';
 import { findDomain } from '../data';
+import { arcaneDomainOf } from './combatFeatures/dispatch';
 
 /** Domaine d'un sort (« issu du Domaine X ») : le subType d'un Sort d'Arcane, sinon null. */
 export function domainOf(spell: { type?: string; subType?: string | null }): string | null {
@@ -48,7 +49,8 @@ export function domainOf(spell: { type?: string; subType?: string | null }): str
 
 /** Le combattant possède-t-il le Talent « Magie des Arcanes (Domaine) » (exemption des riders) ? */
 export function hasArcaneTalent(c: Combatant, domain: string): boolean {
-  return (c.talents ?? []).some((t) => t.talentId === 'magie-des-arcanes' && (t.spec ?? '').toLowerCase() === domain.toLowerCase());
+  const arc = arcaneDomainOf(c);
+  return arc != null && arc.toLowerCase() === domain.toLowerCase();
 }
 
 // PA par matière (métal/cuir), PA magiques et ignorance générale : moteur UNIQUE engine/armourBypass.
