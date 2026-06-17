@@ -641,7 +641,7 @@
   color: var(--gold);
   flex: 0 0 auto;
 }
-.eq-pick {
+.equip-zone .media-select {
   width: 100%;
   min-width: 0;
   font-size: 12px;
@@ -677,7 +677,9 @@
   font-size: 12px;
   color: var(--muted);
 }
-.lo-slot select {
+.lo-slot .media-select {
+  flex: 1;
+  min-width: 0;
   max-width: 170px;
 }
 .eq-active-weapons {
@@ -699,7 +701,7 @@
   gap: 3px;
   color: var(--text);
 }
-.eq-hands .lo-slot select {
+.eq-hands .lo-slot .media-select {
   max-width: none;
   width: 100%;
 }
@@ -744,8 +746,7 @@
   }
 }
 @media (pointer: coarse) {
-  .eq-pick,
-  .lo-slot select {
+  .equip-panel .ms-trigger {
     min-height: 38px;
   }
   .eq-piece .btn,

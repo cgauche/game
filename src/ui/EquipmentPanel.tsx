@@ -7,6 +7,8 @@ import { defaultAppearance } from '../gameIso/rig/appearance';
 import { equipFromCombatant } from '../gameIso/rig/parts/equipment';
 import { combatantAppearance, combatantOverlays } from '../gameIso/rig/parts/combatantVisuals';
 import { CodexRef } from './compendium/CodexRef';
+import { ItemIcon } from './ItemIcon';
+import { MediaSelect, type MediaOption } from './MediaSelect';
 import { effectiveWeaponDamage } from '../engine/weaponDamage';
 import { charBonus } from '../engine/characteristics';
 
@@ -53,6 +55,19 @@ function pieceTitle(it: ItemInstance): string {
   ].join(' · ');
 }
 
+/** Option « objet » (ItemIcon + libellé) d'un MediaSelect. Libellé d'armure = UN seul nœud
+ *  (`nom · PA n[· zones]`) — lisible et indexable. */
+const armourOpt = (it: ItemInstance): MediaOption => ({
+  key: it.uid,
+  media: <ItemIcon item={it} size="sm" />,
+  label: `${it.name} · PA ${it.pa ?? 0}${(it.locs?.length ?? 0) > 1 ? ` · ${zonesOf(it).join('+')}` : ''}`,
+});
+const weaponOpt = (w: ItemInstance): MediaOption => ({
+  key: w.uid,
+  media: <ItemIcon item={w} size="sm" />,
+  label: `${w.name}${weaponHands(w) === 2 ? ' (2M)' : ''}`,
+});
+
 /** Sélecteur « + Équiper » d'une couche : pièces du sac (non portées) de cette couche couvrant la zone. */
 function LayerPicker({ candidates, disabled, title, onEquip }: {
   candidates: ItemInstance[];
@@ -61,14 +76,7 @@ function LayerPicker({ candidates, disabled, title, onEquip }: {
   onEquip: (uid: string) => void;
 }) {
   return (
-    <select className="eq-pick" value="" disabled={disabled} title={title} onChange={(e) => e.target.value && onEquip(e.target.value)}>
-      <option value="">+ Équiper…</option>
-      {candidates.map((it) => (
-        <option key={it.uid} value={it.uid}>
-          {it.name} · PA {it.pa ?? 0}{(it.locs?.length ?? 0) > 1 ? ` · ${zonesOf(it).join('+')}` : ''}
-        </option>
-      ))}
-    </select>
+    <MediaSelect disabled={disabled} title={title} placeholder="+ Équiper…" options={candidates.map(armourOpt)} onSelect={onEquip} />
   );
 }
 
@@ -117,6 +125,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
           </div>
           {wornCape ? (
             <div className="eq-piece" title="Cape portée (visible dans le dos du héros)">
+              <ItemIcon item={wornCape} size="sm" />
               <span className="eq-piece-name"><CodexRef category="trappings" label={wornCape.name}>{wornCape.name}</CodexRef></span>
               <button className="btn small" disabled={inBattle} title={lockTitle ?? 'Retirer'} onClick={() => toggleEquip(hero.id, wornCape.uid)}>✕</button>
             </div>
@@ -150,6 +159,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
                       <span className="eq-layer-name">{layer.label}</span>
                       {worn ? (
                         <div className="eq-piece" title={pieceTitle(worn)}>
+                          <ItemIcon item={worn} size="sm" />
                           <span className="eq-piece-name">
                             <CodexRef category="trappings" label={worn.name}>{worn.name}</CodexRef>
                             {zonesOf(worn).length > 1 && <em className="eq-multi" title={`Cette pièce couvre : ${zonesOf(worn).join(' + ')}`}> 🔗</em>}
@@ -174,22 +184,23 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
             Sets I/II (pré-config + bascule rapide) sont repliés en section « avancé » ci-dessous. */}
         <div className="mini-title">Armes en main</div>
         <div className="eq-hands">
-          <label className="lo-slot">Main principale
-            <select value={activeLo?.main ?? ''} disabled={inBattle} title={lockTitle} onChange={(e) => setWeaponSetSlot(hero.id, activeIdx, 'main', e.target.value || null)}>
-              <option value="">— mains nues —</option>
-              {weapons.map((w) => (
-                <option key={w.uid} value={w.uid}>{w.name}{weaponHands(w) === 2 ? ' (2M)' : ''}</option>
-              ))}
-            </select>
-          </label>
-          <label className="lo-slot">Main secondaire
-            <select value={activeLo?.off ?? ''} disabled={inBattle || activeMainTwoHanded} title={activeMainTwoHanded ? 'Arme à deux mains — pas de seconde main' : lockTitle} onChange={(e) => setWeaponSetSlot(hero.id, activeIdx, 'off', e.target.value || null)}>
-              <option value="">{activeMainTwoHanded ? '— (2 mains) —' : '— vide —'}</option>
-              {oneHanded.filter((w) => w.uid !== activeLo?.main).map((w) => (
-                <option key={w.uid} value={w.uid}>{w.name}</option>
-              ))}
-            </select>
-          </label>
+          <div className="lo-slot"><span>Main principale</span>
+            <MediaSelect
+              disabled={inBattle} title={lockTitle}
+              value={activeLo?.main ?? ''}
+              options={[{ key: '', label: '— mains nues —' }, ...weapons.map(weaponOpt)]}
+              onSelect={(v) => setWeaponSetSlot(hero.id, activeIdx, 'main', v || null)}
+            />
+          </div>
+          <div className="lo-slot"><span>Main secondaire</span>
+            <MediaSelect
+              disabled={inBattle || activeMainTwoHanded}
+              title={activeMainTwoHanded ? 'Arme à deux mains — pas de seconde main' : lockTitle}
+              value={activeLo?.off ?? ''}
+              options={[{ key: '', label: activeMainTwoHanded ? '— (2 mains) —' : '— vide —' }, ...oneHanded.filter((w) => w.uid !== activeLo?.main).map(weaponOpt)]}
+              onSelect={(v) => setWeaponSetSlot(hero.id, activeIdx, 'off', v || null)}
+            />
+          </div>
         </div>
         <div className="eq-active-weapons">
           <span className="mini-title">En main</span>
@@ -200,6 +211,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
               const ammo = w.type === 'ranged' ? compatibleAmmo(hero, w).reduce((s, a) => s + (a.qty ?? 0), 0) : null;
               return (
                 <span className="weap" key={i}>
+                  <ItemIcon item={w} size="sm" />
                   <CodexRef category="trappings" label={w.name}>{w.name}</CodexRef> <em>({w.damage} = {effectiveWeaponDamage(w, charBonus(hero.characteristics, 'F'))})</em>
                   {ammo != null && <span className="eq-ammo" title="Munitions compatibles dans le sac"> · 🏹 {ammo}</span>}
                 </span>
@@ -226,22 +238,22 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
                   {setActive ? '● Actif' : 'Activer'}
                 </button>
                 <span className="lo-name">{lo?.name ?? name}</span>
-                <label className="lo-slot">Main
-                  <select value={lo?.main ?? ''} disabled={inBattle} title={lockTitle} onChange={(e) => setWeaponSetSlot(hero.id, idx, 'main', e.target.value || null)}>
-                    <option value="">— vide —</option>
-                    {weapons.map((w) => (
-                      <option key={w.uid} value={w.uid}>{w.name}{weaponHands(w) === 2 ? ' (2M)' : ''}</option>
-                    ))}
-                  </select>
-                </label>
-                <label className="lo-slot">2nde
-                  <select value={lo?.off ?? ''} disabled={inBattle || mainTwoHanded} title={lockTitle} onChange={(e) => setWeaponSetSlot(hero.id, idx, 'off', e.target.value || null)}>
-                    <option value="">{mainTwoHanded ? '— (2 mains) —' : '— vide —'}</option>
-                    {oneHanded.filter((w) => w.uid !== lo?.main).map((w) => (
-                      <option key={w.uid} value={w.uid}>{w.name}</option>
-                    ))}
-                  </select>
-                </label>
+                <div className="lo-slot"><span>Main</span>
+                  <MediaSelect
+                    disabled={inBattle} title={lockTitle}
+                    value={lo?.main ?? ''}
+                    options={[{ key: '', label: '— vide —' }, ...weapons.map(weaponOpt)]}
+                    onSelect={(v) => setWeaponSetSlot(hero.id, idx, 'main', v || null)}
+                  />
+                </div>
+                <div className="lo-slot"><span>2nde</span>
+                  <MediaSelect
+                    disabled={inBattle || mainTwoHanded} title={lockTitle}
+                    value={lo?.off ?? ''}
+                    options={[{ key: '', label: mainTwoHanded ? '— (2 mains) —' : '— vide —' }, ...oneHanded.filter((w) => w.uid !== lo?.main).map(weaponOpt)]}
+                    onSelect={(v) => setWeaponSetSlot(hero.id, idx, 'off', v || null)}
+                  />
+                </div>
               </div>
             );
           })}
