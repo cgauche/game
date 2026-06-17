@@ -7,7 +7,7 @@
  * Réservé aux objets `misc` : une arme/armure dont le `desc` mentionne « Bonus de Force » (Dégâts)
  * ou « Blessure » ne doit pas être prise pour un consommable.
  */
-import { Combatant, ItemInstance, CHAR_BY_LABEL } from './types';
+import { Combatant, ItemInstance, CHAR_BY_LABEL, CharKey } from './types';
 import { bonus, effectiveChar } from './characteristics';
 import { removeCondition } from './conditions';
 
@@ -45,8 +45,15 @@ export function applyItemUse(target: Combatant, eff: ItemEffect): string[] {
   return log;
 }
 
-/** Effet d'usage d'un consommable pour un buveur donné, ou `null` si l'objet n'est pas utilisable. */
-export function itemUse(item: ItemInstance, user: Combatant): ItemEffect | null {
+/** Effet d'un consommable INDÉPENDANT du buveur : le soin « Bonus de <Carac> » reste une réf de carac
+ *  (`healBonus`) à résoudre, le reste est déjà concret. `null` = l'objet n'est pas un consommable.
+ *  Source UNIQUE de la DÉTECTION (parsing du `desc`) — partagée par `isConsumable` et `itemUse`. */
+type RawItemEffect =
+  | { heal: number }
+  | { healBonus: CharKey }
+  | { removeCondition: string; removeStacks?: number };
+
+function parseConsumable(item: ItemInstance): RawItemEffect | null {
   if (item.kind !== 'misc') return null;
   const desc = item.desc ?? '';
   // Soin : « Bonus de <Carac> » (valeur dépendante du buveur) ou « N Points de Blessure » littéral —
@@ -58,7 +65,7 @@ export function itemUse(item: ItemInstance, user: Combatant): ItemEffect | null 
     const byBonus = desc.match(/Bonus d[e'’]\s*([A-Za-zÀ-ÿ]+)/i);
     if (byBonus) {
       const key = CHAR_BY_LABEL[byBonus[1]];
-      if (key) return { heal: bonus(effectiveChar(user, key)) };
+      if (key) return { healBonus: key };
     }
     const lit = desc.match(/(\d+)\s*Points?\s+de\s+Blessure/i);
     if (lit) return { heal: parseInt(lit[1], 10) };
@@ -71,4 +78,18 @@ export function itemUse(item: ItemInstance, user: Combatant): ItemEffect | null 
     return { removeCondition: cond[1], ...(qty ? { removeStacks: parseInt(qty[1], 10) } : {}) };
   }
   return null;
+}
+
+/** L'objet est-il un consommable utilisable ? Indépendant du buveur (≠ `itemUse` qui calcule la valeur)
+ *  — sert l'icône d'objet (glyphe 🧪) et tout filtre « utilisable » qui n'a pas de Combatant sous la main. */
+export function isConsumable(item: ItemInstance): boolean {
+  return parseConsumable(item) != null;
+}
+
+/** Effet d'usage d'un consommable pour un buveur donné, ou `null` si l'objet n'est pas utilisable. */
+export function itemUse(item: ItemInstance, user: Combatant): ItemEffect | null {
+  const raw = parseConsumable(item);
+  if (!raw) return null;
+  if ('healBonus' in raw) return { heal: bonus(effectiveChar(user, raw.healBonus)) };
+  return raw; // { heal } | { removeCondition, removeStacks? } : déjà un ItemEffect concret
 }

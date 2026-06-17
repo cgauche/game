@@ -21,12 +21,10 @@ import { CodexRef } from './compendium/CodexRef';
 import { TalentChip } from './EntityChip';
 import { FateChips } from './FateChips';
 import { ColorPalettePickers } from './ColorPalettePickers';
-import { weaponPart, armourPart } from '../gameIso/rig/parts/equipment';
 import { EquipmentPanel } from './EquipmentPanel';
 import { CharFrame } from './CharFrame';
 import { PortraitTile } from './PortraitTile';
-import { pickView } from '../gameIso/rig/parts/types';
-import { DEFS } from '../gameIso/sprites';
+import { ItemIcon } from './ItemIcon';
 import type { Palette } from '../gameIso/rig/palette';
 
 /** Emplacements de couleur d'un SKIN d'OBJET légendaire (`metal/cuir/accent` = slots de palette). */
@@ -40,26 +38,6 @@ const ARMOUR_SKIN_SLOTS: [label: string, slot: keyof Palette][] = [
   ['Cuir / rembourrage', 'cuir'],
 ];
 const skinSlotsFor = (kind: ItemInstance['kind']) => (kind === 'armor' ? ARMOUR_SKIN_SLOTS : WEAPON_SKIN_SLOTS);
-
-/** Aperçu LIVE d'un objet (arme ou armure) recoloré par son skin — art résolu, recoloré. */
-function ItemSkinPreview({ item }: { item: ItemInstance }) {
-  const armor = item.kind === 'armor';
-  let art: string;
-  if (armor) {
-    const p = armourPart(item, 'torse'); // aperçu sur le torse
-    art = p ? pickView(p, 'front') : '';
-  } else {
-    const w = { name: item.name, type: item.kind === 'ranged' ? 'ranged' : 'melee', damage: '+0', qualities: [], skin: item.skin } as Weapon;
-    art = pickView(weaponPart(w), 'front');
-  }
-  const vb = armor ? '-20 -36 40 78' : '-20 -56 40 72';
-  return (
-    <svg viewBox={vb} width={46} height={83} style={{ background: '#222831', borderRadius: 4, flex: '0 0 auto' }}>
-      <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
-      <g dangerouslySetInnerHTML={{ __html: art }} />
-    </svg>
-  );
-}
 
 const LOC_SHORT: Record<HitLocation, string> = {
   tete: 'Tête',
@@ -608,7 +586,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                 </div>
                 {open && (
                   <div className="inv-skin" style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', padding: '6px 8px', background: 'rgba(0,0,0,0.18)', borderRadius: 4 }}>
-                    <ItemSkinPreview item={it} />
+                    <ItemIcon item={it} size="lg" />
                     <div style={{ flex: 1 }}>
                       <ColorPalettePickers
                         colors={it.skin as Palette | undefined}
