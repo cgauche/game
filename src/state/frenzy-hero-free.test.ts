@@ -33,25 +33,25 @@ describe('Frénésie du héros — attaque de CC GRATUITE chaque Round (LDB 21 l
     const E = b.combatants.find((c) => c.kind === 'enemy')!;
     H.pos = { x: 10, y: 10 };
     E.pos = { x: 11, y: 10 };
+    H.talents = [...(H.talents ?? []), { talentId: 'frenesie', times: 1 }]; // octroie l'attaque d'arme libre (donnée)
     return { H, E };
   }
 
-  it('1re attaque du Round = gratuite (Action préservée) + frenzyFreeUsed', () => {
+  it('1re attaque du Round = gratuite (Action préservée) + comptée (freeAttacksThisTurn)', () => {
     const { H, E } = setup();
     H.frenzied = true;
-    H.frenzyFreeUsed = false;
     useGame.setState({ battle: { ...useGame.getState().battle!, acted: false }, pendingAttack: { attackerId: H.id, targetId: E.id, location: null, result: HIT } });
     useGame.getState().attackConfirm();
     const st = useGame.getState();
     const h = st.battle!.combatants.find((c) => c.id === H.id)!;
-    expect(h.frenzyFreeUsed).toBe(true);
+    expect(h.freeAttacksThisTurn?.['arme']).toBe(1);
     expect(st.battle!.acted).toBe(false); // l'Action n'est PAS consommée par l'attaque libre
   });
 
   it('2e attaque du même Round (gratuite déjà utilisée) → consomme l’Action', () => {
     const { H, E } = setup();
     H.frenzied = true;
-    H.frenzyFreeUsed = true; // déjà utilisée ce Round
+    H.freeAttacksThisTurn = { arme: 1 }; // attaque d'arme libre déjà utilisée ce Round (plafond atteint)
     useGame.setState({ battle: { ...useGame.getState().battle!, acted: false }, pendingAttack: { attackerId: H.id, targetId: E.id, location: null, result: HIT } });
     useGame.getState().attackConfirm();
     expect(useGame.getState().battle!.acted).toBe(true);
@@ -67,7 +67,6 @@ describe('Frénésie du héros — attaque de CC GRATUITE chaque Round (LDB 21 l
   it('attaque libre de Frénésie INITIABLE même Action dépensée (entrée en Frénésie ce tour)', () => {
     const { H, E } = setup();
     H.frenzied = true;
-    H.frenzyFreeUsed = false;
     const b = useGame.getState().battle!;
     const turn = b.order.indexOf(H.id);
     useGame.setState({ battle: { ...b, turn, action: null, acted: true } }); // Action déjà dépensée (Test de FM d'entrée)

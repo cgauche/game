@@ -53,7 +53,7 @@ describe('Frénésie héros — cible imposée et déplacement contraint', () =>
     // frénétique « doit se déplacer à son maximum vers l'ennemi le plus proche pour l'attaquer ».
     const b = useGame.getState().battle!;
     const Hc = b.combatants.find((c) => c.id === H.id)!;
-    Hc.frenzyFreeUsed = false; // attaque CC gratuite du Round encore disponible
+    Hc.talents = [...(Hc.talents ?? []), { talentId: 'frenesie', times: 1 }]; // talent Frénésie → attaque d'arme libre dispo (donnée)
     useGame.setState({ battle: { ...b, acted: true }, pendingAttack: null });
     useGame.getState().battleClickEntity(E1.id, { confirm: true }); // E1 à 2 cases → CHARGE (déplacement + attaque)
     const pa = useGame.getState().pendingAttack;

@@ -26,7 +26,7 @@ import { effectiveChar, bonus } from '../engine/characteristics';
 import { isOutOfAction, applyZeroWounds } from '../engine/conditions';
 import { hasTraitKey, isBestial } from '../engine/traits/dispatch';
 import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../engine/creatureAttacks';
-import type { ManeuverDef } from '../data';
+import { findTalentById, type ManeuverDef } from '../data';
 import { sizeGap } from '../engine/size';
 import { combatDistance } from './footprint';
 import { chebyshev, type Pt } from './path';
@@ -105,9 +105,18 @@ export interface AttackOption {
   priority?: number;
 }
 
-/** Attaque CC GRATUITE de Frénésie (LDB 21 l.34) encore disponible ce Round ? (l'attaque d'Arme reste
- *  alors gratuite, Action préservée). */
-export const isFrenzyFree = (c: Combatant): boolean => !!c.frenzied && !c.frenzyFreeUsed;
+/** Une attaque d'Arme GRATUITE est-elle disponible ce Round ? Lue de la DONNÉE : un talent (Frénésie, LDB 21
+ *  l.34) porte `passive: grantFreeAttack{when:'available', activeIf:'frenzied'}` → l'attaque d'Arme reste
+ *  gratuite (Action préservée). Plafond /Round = niveau du talent (`times`), compté via
+ *  `freeAttacksThisTurn['arme']` (reset de tour). GÉNÉRIQUE : tout talent du même genre s'ajoute en donnée,
+ *  sans code. Lue par `availableAttacks` + ActionBar/IsoStage/turnEconomy (l'affordance « attaque libre »). */
+export const hasFreeWeaponAttack = (c: Combatant): boolean => {
+  for (const t of c.talents ?? [])
+    for (const op of findTalentById(t.talentId)?.passive ?? [])
+      if (op.op === 'grantFreeAttack' && op.when === 'available' && (op.activeIf !== 'frenzied' || c.frenzied) && (c.freeAttacksThisTurn?.['arme'] ?? 0) < (t.times ?? 1))
+        return true;
+  return false;
+};
 
 /** Attaques que le héros ACTIF peut lancer MAINTENANT — UNE liste à coût (Arme d'abord, puis gratuites/
  *  zone abordables, Piétinement, mutation Tentacule). Subsume l'attaque d'arme implicite ET la garde de
@@ -118,9 +127,9 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
   // (0) ARME du Set actif — attaque-Action de base ET attaque CC GRATUITE de Frénésie (l.34), tant que
   //     l'Action OU la libre de Frénésie est dispo. `reach` absent → attackPlan lit l'arme tenue (Allonge,
   //     branche distance pour une arme à distance).
-  const frenzyFree = isFrenzyFree(active);
-  if ((!battle.acted && canTakeAction(active)) || frenzyFree)
-    out.push({ id: 'arme', kind: 'arme', label: ATTACK_LABEL.arme, icon: MANEUVER_ICON.arme, targeting: 'melee', cost: { action: !frenzyFree, advantage: 0 } });
+  const freeWeapon = hasFreeWeaponAttack(active);
+  if ((!battle.acted && canTakeAction(active)) || freeWeapon)
+    out.push({ id: 'arme', kind: 'arme', label: ATTACK_LABEL.arme, icon: MANEUVER_ICON.arme, targeting: 'melee', cost: { action: !freeWeapon, advantage: 0 } });
   // (1) Attaques de trait : gratuites de MÊLÉE (Morsure/Caudale/Tentacules) ou SPÉCIALES de zone (Souffle/
   //     Vomi/Langue/Regard/Étreinte/Hurlement). 'arme' (ci-dessus) et 'charge' (Cornes, auto) exclues.
   //     Mêmes prédicats d'abordabilité (Avantage RAW ou 1 si variable ; Action si trigger='action').

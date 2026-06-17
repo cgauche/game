@@ -16,7 +16,7 @@ import type { Combatant } from '../engine/types';
 import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
 import { TeamPortrait } from './TeamPortrait';
 import { CharFrame } from './CharFrame';
-import { previewResourceDelta, cleaveTargets, dualStrikeTargets, placingZoneOf, availableAttacks } from '../state/combatFlow';
+import { previewResourceDelta, cleaveTargets, dualStrikeTargets, placingZoneOf, availableAttacks, hasFreeWeaponAttack } from '../state/combatFlow';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { ActiveFrame } from './ActiveFrame';
 import { CodexRef } from './compendium/CodexRef';
@@ -226,8 +226,8 @@ export function ActionBar() {
   const attacks = isHero ? availableAttacks(active, battle) : [];
   // Frénésie (LDB 21 l.31-32) : un héros capable peut tenter d'entrer en Frénésie (Test de FM, coûte l'Action).
   const canFrenzy = isHero && isFrenzyCapable(active) && !active.frenzied && !battle.acted && !stunned;
-  // Frénésie : l'attaque CC gratuite (LDB 21 l.34) reste possible même l'Action dépensée (entrée en Frénésie incluse).
-  const freeFrenzy = isHero && !!active.frenzied && !active.frenzyFreeUsed;
+  // Frénésie : l'attaque d'Arme gratuite (talent, LDB 21 l.34) reste possible même l'Action dépensée (donnée).
+  const freeFrenzy = isHero && hasFreeWeaponAttack(active);
   // Frénésie (LDB 21 l.34) : « La seule Action possible est un Test de Capacité de Combat ou un Test
   // d'Athlétisme » + « sous aucun prétexte vous ne fuirez, ni ne battrez en retraite » → en Frénésie,
   // la hotbar masque Incanter/Soigner/Défensive/Tir/Objets/Se désengager (restent : attaque au clic,

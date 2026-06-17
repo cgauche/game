@@ -146,7 +146,8 @@ export interface Weapon {
  *  pour le retrait ciblé à l'expiration (un `ActiveEffect.enchantRef` le temporise). */
 export interface WeaponEnchant {
   id: string;
-  /** Atouts ajoutés (« Magique » → touche l'Éthéré ; « Percutante »…). */
+  /** Atouts ajoutés en ids STABLES de qualité (`QualityRef.id` — « magique » → touche l'Éthéré ;
+   *  « percutante »…). Repliés tels quels dans `Weapon.qualities` (eux-mêmes des ids) par `applyEnchants`. */
   addQualities?: string[];
   /** Dégâts supplémentaires (Marteau ardent : +BSoc ; Épée ardente : +6) — déjà résolu. */
   damageBonus?: number;
@@ -236,10 +237,11 @@ export interface ActiveEffect {
    *  attaque ADDITIONNELLE injectée dans `c.weapons` par recomputeLoadout (même patron que Tentacule/
    *  Cornes), retirée à l'expiration. Dégâts SB-relatifs (« +BF+N ») et Atouts portés par l'arme. */
   naturalWeapon?: Weapon;
-  /** Talent ACCORDÉ par cet effet (op `grantTalent` — Flambeau de Vertu : Sans peur…) : lu par
-   *  `combatFeatures/dispatch.featuresOf` tant que l'effet dure (PAS posé dans `c.talents` —
-   *  la fiche/avancement ne voient que les talents possédés). */
-  grantedTalent?: string;
+  /** Talent ACCORDÉ par cet effet (op `grantTalent` — Flambeau de Vertu : Sans peur…) : réf par
+   *  `talentId` STABLE (+ `spec` éventuel), lu par `combatFeatures/dispatch.featuresOf` tant que
+   *  l'effet dure (PAS posé dans `c.talents` — la fiche/avancement ne voient que les talents
+   *  possédés). Résolu en libellé concret (clé du registre) par `talentConcrete`. */
+  grantedTalent?: { talentId: string; spec?: string };
   /** DURÉE d'un enchantement d'arme (op `augmentWeapon`) : l'enchant vit sur l'OBJET
    *  (`ItemInstance.enchants`, replié dans l'arme par `recomputeLoadout`) ; cet effet ne porte que sa
    *  durée + la réf de l'enchant à retirer à l'expiration (`dropExpiredGrantedWeapons`). Calqué sur
@@ -445,8 +447,6 @@ export interface Combatant {
   psychState?: import('./psychology').PsychAffliction[];
   /** Frénésie active (LDB 21 l.31-36) : +1 BF, attaque obligatoire, immunité psy ; fin → Exténué. */
   frenzied?: boolean;
-  /** Frénésie : l'attaque de CC GRATUITE de ce Round (l.34) a-t-elle déjà été utilisée ? (réinitialisé chaque Round.) */
-  frenzyFreeUsed?: boolean;
   /** Détermination (LDB 17 l.62) : immunisé à la Psychologie « jusqu'à la fin du prochain Round ».
    *  Compteur de Rounds restants (2 à la dépense = ce Round + le prochain), décrémenté au passage de
    *  Round ; immunisé tant que > 0. Round-indépendant → consommé partout (déclencheurs ET modificateurs). */

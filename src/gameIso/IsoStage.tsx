@@ -57,7 +57,7 @@ import { useWalkAnim } from './fx/useWalkAnim';
 import { FxLayer } from './fx/FxLayer';
 import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, occupiesTile, decorFootGeometry } from '../state/footprint';
-import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, castSightBlocked, placingZoneOf, placedZoneValidAt, displayedReach, computeRunReach, movePreviewAt, previewResourceDelta, cleaveTargets, dualStrikeTargets, overcastTargetCandidates, smokeOf, trampleTarget, firedWeapon, frenzyTarget } from '../state/combatFlow';
+import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfSightTargetIds, castSightBlocked, placingZoneOf, placedZoneValidAt, displayedReach, computeRunReach, movePreviewAt, previewResourceDelta, cleaveTargets, dualStrikeTargets, overcastTargetCandidates, smokeOf, trampleTarget, firedWeapon, frenzyTarget, hasFreeWeaponAttack } from '../state/combatFlow';
 import { bestAttack } from '../state/attackRelevance';
 import { hoverTargeting } from '../state/targeting';
 import { controlsActive } from '../state/netOwnership';
@@ -378,7 +378,7 @@ export function IsoStage() {
     if (!activeH || activeH.kind !== 'hero' || !activeH.pos) return null;
     // Mêmes verrous que battleClickEntity : Action consommée (sauf attaque libre de Frénésie),
     // Sonné/Brisé, cible de Frénésie IMPOSÉE (le plus proche en LdV).
-    const freeFrenzy = battle.action === null && !!activeH.frenzied && !activeH.frenzyFreeUsed;
+    const freeFrenzy = battle.action === null && hasFreeWeaponAttack(activeH);
     if (battle.acted && !freeFrenzy) return null;
     if (battle.action === null && (!canTakeAction(activeH) || hasCondition(activeH, 'brise'))) return null;
     if (battle.action === null && activeH.frenzied) {
@@ -491,7 +491,7 @@ export function IsoStage() {
     }
     // Cibles VALIDES de l'attaque (R4) : anneau « cliquable pour attaquer » — en mode neutre
     // (attaque implicite), tant que l'Action est disponible (ou attaque libre de Frénésie).
-    if (myTurn && battle.action === null && activeC?.kind === 'hero' && !pendingAttack && (!battle.acted || (activeC.frenzied && !activeC.frenzyFreeUsed))) {
+    if (myTurn && battle.action === null && activeC?.kind === 'hero' && !pendingAttack && (!battle.acted || hasFreeWeaponAttack(activeC))) {
       const eligible = eligibleAttackTargetIds(useGame.getState);
       for (const c of battle.combatants) {
         if (!c.pos || !eligible.has(c.id)) continue;

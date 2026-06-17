@@ -5,6 +5,7 @@ import { canTakeAction, isOutOfAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
 import { canStrikeFirst } from '../engine/qualities/dispatch';
 import { canPreemptRanged } from '../engine/combatFeatures/dispatch';
+import { hasFreeWeaponAttack } from './combatManeuvers';
 
 /**
  * Le héros actif a-t-il ENCORE une option UTILE ce tour ? (R6 du diagnostic lisibilité-combat). Sert au
@@ -27,8 +28,8 @@ export function hasMeaningfulOption(active: Combatant, battle: BattleState): boo
   }
   // Piétinement GRATUIT (≥1 Avantage + cible adjacente plus petite, LDB 85) ?
   if (active.advantage >= 1 && !!trampleTarget(battle, active)) return true;
-  // Attaque CC GRATUITE de Frénésie non encore utilisée ce Round (LDB 21 l.34) ?
-  if (active.frenzied && !active.frenzyFreeUsed) return true;
+  // Attaque d'Arme GRATUITE accordée par un talent (Frénésie) encore disponible ce Round (LDB 21 l.34) ?
+  if (hasFreeWeaponAttack(active)) return true;
   // Détermination : retirer un État (LDB 17 l.62-66) ?
   if ((active.resolve ?? 0) > 0 && active.conditions.length > 0) return true;
   return false;

@@ -3266,7 +3266,8 @@ export function advanceTurn(get: Get, set: SetFn) {
           tickLine(`${c.name} secoue la tête (Mâchoires d'acier) : ${n} État(s) Sonné retiré(s).`, c);
         }
       }
-      for (const c of battle.combatants) if (c.frenzied) c.frenzyFreeUsed = false; // Frénésie : nouvelle attaque CC gratuite chaque Round (LDB 21 l.34)
+      // (L'attaque d'Arme libre de Frénésie est désormais un grant de DONNÉE plafonné par `freeAttacksThisTurn`,
+      //  remis à zéro au passage de tour — plus de booléen `frenzyFreeUsed` à réinitialiser ici.)
       for (const c of battle.combatants) if (c.ignoreCritMods) c.ignoreCritMods = false; // Détermination : « ignorer modifs de critique » expire au début du prochain Round (LDB 17 l.64)
       for (const c of battle.combatants) if (c.psychImmuneRoundsLeft) c.psychImmuneRoundsLeft -= 1; // Détermination : l'immunité psy décompte 1 Round (LDB 17 l.62)
       brokenRecovery(get, tickLine); // récupération du Brisé en fin de Round (LDB 16 l.57-59)
