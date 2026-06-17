@@ -37,7 +37,7 @@ describe('Fuite intégrée à la modale (store)', () => {
   });
 
   it('Fuir résout le coup dans le dos + Test de Calme et les montre INLINE (phase fuir), sans révélation', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero], pendingReveals: [] });
     useGame.getState().seedRng(2);
     useGame.getState().startScene(testScene);

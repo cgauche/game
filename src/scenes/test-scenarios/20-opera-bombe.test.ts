@@ -20,7 +20,7 @@ describe('Scénario « Opéra — Bombe » : le câblage en données compose', (
   const detectTest = plant.interact!.flow as Extract<Flow, { kind: 'test' }>;
 
   function lonePartyAt(wounds: number) {
-    const h = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
     h.wounds = { current: wounds, max: wounds };
     useGame.setState({ party: [h] });
     return h;

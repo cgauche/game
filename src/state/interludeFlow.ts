@@ -24,7 +24,7 @@ import { testValue } from '../engine/skills';
 import { effectiveChar } from '../engine/characteristics';
 import { buyTalent as engineBuyTalent, talentCost } from '../engine/advancement';
 import { applyTalentAcquisition, fortuneMax, resolveMax, heroMaxWounds } from '../engine/talentEffects';
-import { findCareer, levelsForCareer, findTrapping, findTalent, findSkillById, skillInstanceLabel, advancementLabel } from '../data';
+import { findCareerById, levelsForCareer, findTrapping, findTalent, findSkillById, skillInstanceLabel, advancementLabel } from '../data';
 import { CHAR_BY_LABEL, CHAR_LABELS, type CharKey, type Combatant, type Difficulty } from '../engine/types';
 import type { PendingBase } from './rollFlow';
 
@@ -157,9 +157,10 @@ export function heroStatus(h: Combatant): { tier: PriceTier; standing: number } 
   return { tier, standing: Math.max(1, Number(m?.[2] ?? 1)) };
 }
 
-/** Classe du héros (CareerData.class — pour les événements visant une Classe). */
+/** Classe du héros, `id` STABLE (`ClassData.id`) — les événements visent une Classe par id
+ *  (`revenueClasses`/`revenueBlockedClasses`, eux aussi en id). Carrière → id de classe. */
 export function heroClass(h: Combatant): string {
-  return findCareer(h.career ?? '')?.class ?? '';
+  return findCareerById(h.career ?? '')?.class ?? '';
 }
 
 /** Compétence de carrière « qui permet de Gagner de l'argent » (LDB 08 l.135 : celle en italique

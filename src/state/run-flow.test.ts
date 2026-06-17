@@ -43,7 +43,7 @@ describe('runFlow — séquence + branche if (état vivant)', () => {
 
 describe('runFlow — nœud test (suspension + continuation)', () => {
   function hero() {
-    const h = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(1) });
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
     return h;
   }
 

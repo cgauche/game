@@ -16,11 +16,11 @@ import type { TestScenario } from './_shared';
  * modale de Repos (chambres/repas PAR HÉROS, prix RAW) ; le bouton 🌙 dort sur place.
  */
 function groupe(): Combatant[] {
-  const erik = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'Erik (test)', motivation: 'Test', rng: makeRNG(1501), id: 'erik' });
+  const erik = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Erik (test)', motivation: 'Test', rng: makeRNG(1501), id: 'erik' });
   erik.items = [...(erik.items ?? []), itemFromTrapping('Ration')!, itemFromTrapping('Ration')!, itemFromTrapping('Ration')!];
   erik.appearance = { species: 'Humains (Reiklander)', sex: 'M', build: 0.55 };
   // Greta voyage SANS provisions : sur un long trajet, la faim s'installe (LDB 18 l.417-422).
-  const greta = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'Greta (test)', motivation: 'Test', rng: makeRNG(1502), id: 'greta' });
+  const greta = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Greta (test)', motivation: 'Test', rng: makeRNG(1502), id: 'greta' });
   greta.appearance = { species: 'Humains (Reiklander)', sex: 'F', build: 0.45 };
   // Le groupe part DANS UN SALE ÉTAT pour que le bilan de nuit montre TOUS ses jets :
   //  - BLESSÉS → jet de Récupération (Résistance +20 → DR+BE PB, +BE/jour) chaque nuit ;

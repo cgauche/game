@@ -11,7 +11,7 @@ describe('Test de Sociabilité vs groupe haï (dialogue) — malus psy appliqué
   });
 
   function hero(name: string, soc: number, traits: { type: string; cible: string }[] = []) {
-    const h = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name, rng: makeRNG(1) });
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name, rng: makeRNG(1) });
     h.characteristics.Soc = soc;
     h.skills = []; // pas d'avances → testValue = Soc brut
     h.psychTraits = traits as never;

@@ -9,12 +9,14 @@
 import { Combatant } from '../engine/types';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { findSpell } from './index';
+import { findSpell, findSpeciesById } from './index';
 import pregensJson from './pregens.json';
 
 interface PregenDef {
   name: string;
+  /** `id` STABLE de l'espèce (`SpeciesData.id`). */
   species: string;
+  /** `id` STABLE de la carrière (`CareerData.id`). */
   career: string;
   seed: number;
   motivation: string;
@@ -37,8 +39,8 @@ export function makePregens(): Combatant[] {
   for (const d of DEFS) {
     try {
       const hero = createHero({
-        speciesLabel: d.species,
-        careerLabel: d.career,
+        speciesId: d.species,
+        careerId: d.career,
         name: d.name,
         motivation: d.motivation,
         careerTalent: d.careerTalent,
@@ -46,7 +48,8 @@ export function makePregens(): Combatant[] {
         id: `pregen-${d.seed}`,
       });
       if (d.spells?.length) hero.spells = d.spells.map((l) => findSpell(l)?.id ?? l); // libellés (def) → ids runtime
-      hero.appearance = { species: d.species, sex: d.sex ?? 'M', build: d.build ?? 0.5 };
+      // appearance.species = clé de rig (LIBELLÉ d'espèce, résolu depuis l'id) ≠ Combatant.species (id rules).
+      hero.appearance = { species: findSpeciesById(d.species)?.label ?? d.species, sex: d.sex ?? 'M', build: d.build ?? 0.5 };
       out.push(hero);
     } catch (e) {
       console.error(`Pré-tiré « ${d.name} » ignoré :`, e);

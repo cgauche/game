@@ -18,7 +18,9 @@ import {
   species as allSpecies,
   careersForSpecies,
   classes,
-  findCareer,
+  findCareerById,
+  findSpeciesById,
+  findClassById,
   findSkill,
   findTalent,
   talentConcrete,
@@ -320,7 +322,7 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
   const row = (s: SpeciesData) => {
     const { variant } = speciesFamily(s.label);
     return (
-      <button key={s.label} className={`pick-row ${d.speciesLabel === s.label ? 'selected' : ''}`} onClick={() => setD(withSpecies(d, s.label))}>
+      <button key={s.label} className={`pick-row ${d.speciesId === s.id ? 'selected' : ''}`} onClick={() => setD(withSpecies(d, s.id))}>
         <Figure speciesLabel={s.label} sex={d.sex} />
         <span className="row-body">
           <strong>{variant ?? s.label}</strong>
@@ -356,11 +358,11 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
         ) : (
           <div className="row-flex">
             <span>
-              Jet : <b>{d.speciesRoll.roll}</b> → <b>{d.speciesRoll.label}</b>
+              Jet : <b>{d.speciesRoll.roll}</b> → <b>{findSpeciesById(d.speciesRoll.id)?.label}</b>
             </span>
-            {d.speciesLabel !== d.speciesRoll.label && (
-              <button className="btn small" onClick={() => setD(withSpecies(d, d.speciesRoll!.label))}>
-                Accepter {d.speciesRoll.label} (+20 PX)
+            {d.speciesId !== d.speciesRoll.id && (
+              <button className="btn small" onClick={() => setD(withSpecies(d, d.speciesRoll!.id))}>
+                Accepter {findSpeciesById(d.speciesRoll.id)?.label} (+20 PX)
               </button>
             )}
           </div>
@@ -408,8 +410,8 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
 function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode } {
   const sp = draftSpecies(d);
   const accessible = careersForSpecies(sp.refCareer, d.ignoreRestrictions);
-  const career = findCareer(d.careerLabel);
-  const levels = levelsForCareer(d.careerLabel);
+  const career = findCareerById(d.careerId);
+  const levels = levelsForCareer(d.careerId);
   const lvl1 = levels.find((l) => l.level === 1);
 
   const rail = (
@@ -420,20 +422,20 @@ function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
           Ignorer les restrictions de race
         </label>
         {classes.map((cl) => {
-          const list = accessible.filter((c) => c.class === cl.label);
+          const list = accessible.filter((c) => c.class === cl.id);
           if (!list.length) return null;
           return (
-            <div key={cl.label}>
+            <div key={cl.id}>
               <div className="rail-group"><CodexRef category="classes" label={cl.label}>{cl.label}</CodexRef></div>
               <div className="pick-list">
                 {list.map((c: CareerData) => {
-                  const l1 = levelsForCareer(c.label).find((l) => l.level === 1);
+                  const l1 = levelsForCareer(c.id).find((l) => l.level === 1);
                   return (
-                    <button key={c.label} className={`pick-row ${d.careerLabel === c.label ? 'selected' : ''}`} onClick={() => setD(withCareer(d, c.label))}>
-                      <Figure speciesLabel={d.speciesLabel} career={c.label} sex={d.sex} />
+                    <button key={c.id} className={`pick-row ${d.careerId === c.id ? 'selected' : ''}`} onClick={() => setD(withCareer(d, c.id))}>
+                      <Figure speciesLabel={sp.label} career={c.label} sex={d.sex} />
                       <span className="row-body">
                         <strong>{c.label}</strong>
-                        <em>{l1 ? `${l1.label} · ${l1.status}` : c.class}</em>
+                        <em>{l1 ? `${l1.label} · ${l1.status}` : findClassById(c.class)?.label}</em>
                       </span>
                     </button>
                   );
@@ -449,12 +451,12 @@ function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
   const main = (
     <>
       <div className="main-head">
-        <Figure speciesLabel={d.speciesLabel} career={d.careerLabel} sex={d.sex} className="main-figure" />
+        <Figure speciesLabel={sp.label} career={career?.label} sex={d.sex} className="main-figure" />
         <div>
           <h2>
-            <CodexRef category="careers" label={d.careerLabel}>{d.careerLabel}</CodexRef>{' '}
+            <CodexRef category="careers" label={career?.label ?? d.careerId}>{career?.label ?? d.careerId}</CodexRef>{' '}
             {career?.class && (
-              <span className="hint">(<CodexRef category="classes" label={career.class}>{career.class}</CodexRef>)</span>
+              <span className="hint">(<CodexRef category="classes" label={findClassById(career.class)?.label ?? career.class}>{findClassById(career.class)?.label ?? career.class}</CodexRef>)</span>
             )}
           </h2>
           <p className="hint">{blurb(career?.desc, 460)}</p>
@@ -471,12 +473,15 @@ function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
         )}
         {d.careerRolls.length > 0 && (
           <div className="talent-choices">
-            {d.careerRolls.map((r, i) => (
-              <label className="radio" key={`${r.label}-${i}`}>
-                <input type="radio" name="career-roll" checked={d.careerLabel === r.label} onChange={() => setD(withCareer(d, r.label))} />
-                Jet {i + 1} : {r.roll} → <b>{r.label}</b> ({findCareer(r.label)?.class})
-              </label>
-            ))}
+            {d.careerRolls.map((r, i) => {
+              const rc = findCareerById(r.id);
+              return (
+                <label className="radio" key={`${r.id}-${i}`}>
+                  <input type="radio" name="career-roll" checked={d.careerId === r.id} onChange={() => setD(withCareer(d, r.id))} />
+                  Jet {i + 1} : {r.roll} → <b>{rc?.label}</b> ({findClassById(rc?.class)?.label})
+                </label>
+              );
+            })}
           </div>
         )}
         {d.careerRolls.length === 1 && (
@@ -982,7 +987,7 @@ function trappingMeta(label: string): string {
 // ════ 5) Possessions (LDB 05 l.559-585) — rail : richesse + choix ; détail : équipement ════
 function TrappingZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode } {
   const level = draftLevel(d);
-  const klass = classes.find((c) => c.label === findCareer(d.careerLabel)?.class);
+  const klass = findClassById(findCareerById(d.careerId)?.class);
   const wealth = draftWealth(d);
   const careerTrappings = (level?.trappings ?? []).map(trappingRefLabel); // TrappingRef[] → libellés
   const item = (t: string) => {
@@ -1038,7 +1043,8 @@ function TrappingZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNo
 
 // ════ 6) Détails (LDB 05 l.587-744) — rail : détails physiques ; détail : identité + apparence ════
 function DetailZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode } {
-  const appearance: Appearance = { species: d.speciesLabel, sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
+  const sp = draftSpecies(d);
+  const appearance: Appearance = { species: sp.label, sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
   const rail = (
     <Section
       title="Détails physiques"
@@ -1085,7 +1091,7 @@ function DetailZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
                 className="btn small"
                 title="Nom aléatoire (race et sexe du personnage)"
                 onClick={() => {
-                  const n = generateName(d.speciesLabel, d.sex, makeRNG(Math.floor(Math.random() * 1e9)));
+                  const n = generateName(sp.label, d.sex, makeRNG(Math.floor(Math.random() * 1e9)));
                   if (n) setD({ ...d, name: n });
                 }}
               >
@@ -1111,7 +1117,7 @@ function DetailZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
         <AppearancePanel
           value={appearance}
           equip={{ weapons: [], armour: [] }}
-          career={d.careerLabel}
+          career={findCareerById(d.careerId)?.label}
           onChange={(a) => setD({ ...d, sex: a.sex, build: a.build, appSeed: a.seed ?? d.appSeed, colors: a.colors, parts: a.parts })}
         />
       </Section>
@@ -1124,6 +1130,8 @@ function DetailZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
 function RecapZones({ d }: { d: CreatorDraft }): { rail: ReactNode; main: ReactNode } {
   const hero = previewHero(d);
   const wealth = draftWealth(d);
+  const speciesLabel = findSpeciesById(d.speciesId)?.label ?? d.speciesId;
+  const careerLabel = findCareerById(d.careerId)?.label ?? d.careerId;
   const rail = (
     <Section title="PX bonus de création">
       <ul className="hint" style={{ margin: 0, paddingLeft: 18 }}>
@@ -1139,7 +1147,7 @@ function RecapZones({ d }: { d: CreatorDraft }): { rail: ReactNode; main: ReactN
     <>
       <Section title="Votre aventurier">
         <p>
-          <b>{d.name.trim() || 'Aventurier'}</b> — <CodexRef category="races" label={d.speciesLabel}>{d.speciesLabel}</CodexRef>, {draftLevel(d)?.label} (<CodexRef category="careers" label={d.careerLabel}>{d.careerLabel}</CodexRef>) ·{' '}
+          <b>{d.name.trim() || 'Aventurier'}</b> — <CodexRef category="races" label={speciesLabel}>{speciesLabel}</CodexRef>, {draftLevel(d)?.label} (<CodexRef category="careers" label={careerLabel}>{careerLabel}</CodexRef>) ·{' '}
           {draftLevel(d)?.status}. Richesse initiale : <b>{formatMoney(wealth)}</b> (créditée au groupe).
         </p>
         <p className="hint">

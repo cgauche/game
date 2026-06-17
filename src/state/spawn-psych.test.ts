@@ -38,7 +38,7 @@ describe('spawn — Groupes & traits psy ciblés (P3)', () => {
     expect(c.psychTraits).toEqual([{ type: 'animosite', cible: 'Elfes' }]);
   });
   it('createHero : groups = racial(espèce) + carrière', () => {
-    const h = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(1) });
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
     expect(h.groups).toEqual(expect.arrayContaining(['Humain', 'Soldat']));
   });
 });

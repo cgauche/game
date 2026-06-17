@@ -32,7 +32,7 @@ import { castingKindOf } from '../engine/combatFeatures/dispatch';
 import { itemUse, applyItemUse } from '../engine/consumables';
 import { add as moneyAdd, Money, formatMoney } from '../engine/money';
 import { spellCost } from '../engine/grimoire';
-import { levelsForCareer, findSkill, findCareer, findSpell as findSpellData, findSpellById } from '../data/index';
+import { levelsForCareer, findSkill, findCareerById, findSpell as findSpellData, findSpellById } from '../data/index';
 import { slugId } from '../data/slug';
 import { seatSlotsRemaining } from './netOwnership';
 import { bus, EVT } from './bus';
@@ -422,7 +422,7 @@ export function changeCareer(get: Get, set: Set, heroId: string, newCareer: stri
       const clone: Combatant = JSON.parse(JSON.stringify(h));
       // Validation LDB 07 l.137 + LDB 08 l.7-11 : complétion, niveau cible, surcoût de Classe.
       const completed = isCompleted(clone);
-      const sameClass = findCareer(clone.career ?? '')?.class === findCareer(newCareer)?.class;
+      const sameClass = findCareerById(clone.career ?? '')?.class === findCareerById(newCareer)?.class;
       const targetLevelExists = levelsForCareer(newCareer).some((l) => l.level === newLevel);
       const r = engineChangeCareer(clone, newCareer, newLevel, { completed, sameClass, targetLevelExists });
       if (!r.ok) {

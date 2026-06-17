@@ -15,8 +15,8 @@ const MANNEQUIN: CustomStatblock = {
 
 function arbaletrier(): Combatant {
   const h = createHero({
-    speciesLabel: 'Humains (Reiklander)',
-    careerLabel: 'Soldat',
+    speciesId: 'humains-reiklander',
+    careerId: 'soldat',
     name: 'Arbalétrier (test)',
     motivation: 'Test',
     rng: makeRNG(1101),

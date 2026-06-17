@@ -1,5 +1,6 @@
 [
   {
+    "id": "humains-reiklander",
     "label": "Humains (Reiklander)",
     "refChar": "Humain",
     "refCareer": "Humain",
@@ -121,6 +122,7 @@
     }
   },
   {
+    "id": "humains-middenheim",
     "label": "Humains (Middenheim)",
     "refChar": "Humain",
     "refCareer": "Middenheim",
@@ -240,6 +242,7 @@
     }
   },
   {
+    "id": "humains-middenland",
     "label": "Humains (Middenland)",
     "refChar": "Humain",
     "refCareer": "Middenland",
@@ -367,6 +370,7 @@
     }
   },
   {
+    "id": "humains-nordland",
     "label": "Humains (Nordland)",
     "refChar": "Humain",
     "refCareer": "Nordland",
@@ -509,6 +513,7 @@
     }
   },
   {
+    "id": "humains-tileens",
     "label": "Humains (Tiléens)",
     "refChar": "Humain",
     "refCareer": "Humain",
@@ -637,6 +642,7 @@
     }
   },
   {
+    "id": "humains-altdorfer-south-banker",
     "label": "Humains (Altdorfer — South Banker)",
     "refChar": "Humain",
     "refCareer": "Humain",
@@ -788,6 +794,7 @@
     }
   },
   {
+    "id": "humains-altdorfer-eastender",
     "label": "Humains (Altdorfer — Eastender)",
     "refChar": "Humain",
     "refCareer": "Humain",
@@ -949,6 +956,7 @@
     }
   },
   {
+    "id": "humains-altdorfer-hexxerbezrik",
     "label": "Humains (Altdorfer — Hexxerbezrik)",
     "refChar": "Humain",
     "refCareer": "Humain",
@@ -1098,6 +1106,7 @@
     }
   },
   {
+    "id": "humains-altdorfer-docklands",
     "label": "Humains (Altdorfer — Docklands)",
     "refChar": "Humain",
     "refCareer": "Humain",
@@ -1252,6 +1261,7 @@
     }
   },
   {
+    "id": "humains-bjornling-norse",
     "label": "Humains (Bjornling Norse)",
     "refChar": "Humain",
     "refCareer": "Humain",
@@ -1387,6 +1397,7 @@
     }
   },
   {
+    "id": "humains-sarl-norse",
     "label": "Humains (Sarl Norse)",
     "refChar": "Humain",
     "refCareer": "Humain",
@@ -1522,6 +1533,7 @@
     }
   },
   {
+    "id": "humains-skaeling-norse",
     "label": "Humains (Skaeling Norse)",
     "refChar": "Humain",
     "refCareer": "Humain",
@@ -1659,6 +1671,7 @@
     }
   },
   {
+    "id": "humains-salzenmunder",
     "label": "Humains (Salzenmunder)",
     "refChar": "Humain",
     "refCareer": "Humain",
@@ -1780,6 +1793,7 @@
     }
   },
   {
+    "id": "halflings",
     "label": "Halflings",
     "refChar": "Halfling",
     "refCareer": "Halfling",
@@ -1902,6 +1916,7 @@
     }
   },
   {
+    "id": "halflings-cendreplaine",
     "label": "Halflings (Cendreplaine)",
     "refChar": "Halfling",
     "refCareer": "Halfling",
@@ -2035,6 +2050,7 @@
     }
   },
   {
+    "id": "halflings-basseronce",
     "label": "Halflings (Basseronce)",
     "refChar": "Halfling",
     "refCareer": "Halfling",
@@ -2166,6 +2182,7 @@
     }
   },
   {
+    "id": "halflings-tuilecaramel",
     "label": "Halflings (Tuilecaramel)",
     "refChar": "Halfling",
     "refCareer": "Halfling",
@@ -2299,6 +2316,7 @@
     }
   },
   {
+    "id": "halflings-piedfoin",
     "label": "Halflings (Piedfoin)",
     "refChar": "Halfling",
     "refCareer": "Halfling",
@@ -2431,6 +2449,7 @@
     }
   },
   {
+    "id": "halflings-piedpaille",
     "label": "Halflings (Piedpaille)",
     "refChar": "Halfling",
     "refCareer": "Halfling",
@@ -2562,6 +2581,7 @@
     }
   },
   {
+    "id": "halflings-piedfoin-piedpaille",
     "label": "Halflings (Piedfoin-Piedpaille)",
     "refChar": "Halfling",
     "refCareer": "Halfling",
@@ -2693,6 +2713,7 @@
     }
   },
   {
+    "id": "halflings-pochegaree",
     "label": "Halflings (Pochégarée)",
     "refChar": "Halfling",
     "refCareer": "Halfling",
@@ -2823,6 +2844,7 @@
     }
   },
   {
+    "id": "halflings-havrebas",
     "label": "Halflings (Havrebas)",
     "refChar": "Halfling",
     "refCareer": "Halfling",
@@ -2958,6 +2980,7 @@
     }
   },
   {
+    "id": "halflings-rumster",
     "label": "Halflings (Rumster)",
     "refChar": "Halfling",
     "refCareer": "Halfling",
@@ -3090,6 +3113,7 @@
     }
   },
   {
+    "id": "halflings-bordecharde",
     "label": "Halflings (Bordécharde)",
     "refChar": "Halfling",
     "refCareer": "Halfling",
@@ -3222,6 +3246,7 @@
     }
   },
   {
+    "id": "halflings-pavederonces",
     "label": "Halflings (Pavéderonces)",
     "refChar": "Halfling",
     "refCareer": "Halfling",
@@ -3358,6 +3383,7 @@
     }
   },
   {
+    "id": "halflings-fraisedebois",
     "label": "Halflings (Fraisedébois)",
     "refChar": "Halfling",
     "refCareer": "Halfling",
@@ -3490,6 +3516,7 @@
     }
   },
   {
+    "id": "nains",
     "label": "Nains",
     "refChar": "Nain",
     "refCareer": "Nain",
@@ -3633,6 +3660,7 @@
     }
   },
   {
+    "id": "nains-altdorfer",
     "label": "Nains (Altdorfer)",
     "refChar": "Nain",
     "refCareer": "Nain",
@@ -3775,6 +3803,7 @@
     }
   },
   {
+    "id": "nains-norse",
     "label": "Nains (Norse)",
     "refChar": "Nain",
     "refCareer": "Nain",
@@ -3917,6 +3946,7 @@
     }
   },
   {
+    "id": "nains-cragforge-clan",
     "label": "Nains (Cragforge Clan)",
     "refChar": "Nain",
     "refCareer": "Nain",
@@ -4061,6 +4091,7 @@
     }
   },
   {
+    "id": "nains-grumsson-clan",
     "label": "Nains (Grumsson Clan)",
     "refChar": "Nain",
     "refCareer": "Nain",
@@ -4192,6 +4223,7 @@
     }
   },
   {
+    "id": "gnomes",
     "label": "Gnomes",
     "refChar": "Gnome",
     "refCareer": "Gnome",
@@ -4356,6 +4388,7 @@
     }
   },
   {
+    "id": "ogres",
     "label": "Ogres",
     "refChar": "Ogre",
     "refCareer": "Ogre",
@@ -4502,6 +4535,7 @@
     }
   },
   {
+    "id": "hauts-elfes",
     "label": "Hauts elfes",
     "refChar": "Haut Elfe",
     "refCareer": "Haut Elfe",
@@ -4644,6 +4678,7 @@
     }
   },
   {
+    "id": "elfes-sylvains",
     "label": "Elfes sylvains",
     "refChar": "Elfe Sylvain",
     "refCareer": "Elfe Sylvain",

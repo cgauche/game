@@ -5,8 +5,8 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 
 describe('PartyDock', () => {
-  const h1 = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'Gunnar', rng: makeRNG(3) });
-  const h2 = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'Elsa', rng: makeRNG(4) });
+  const h1 = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Gunnar', rng: makeRNG(3) });
+  const h2 = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Elsa', rng: makeRNG(4) });
   h1.id = 'h1'; h2.id = 'h2';
 
   it('une tuile par héros, PV chiffrés affichés, actif marqué', () => {

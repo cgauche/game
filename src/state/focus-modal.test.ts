@@ -17,7 +17,7 @@ describe('Focalisation en modale (store)', () => {
   });
 
   it('battleFocusSpell ouvre pendingFocus sans tirer ; focusRoll tire ; focusConfirm cumule le DR + consomme l’Action', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Sorcier', name: 'Mage', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', name: 'Mage', rng: makeRNG(3) });
     hero.characteristics.FM = 80;
     hero.spells = ['Arme aethyrique'];
     if (!hero.skills.some((s) => s.skillId === 'focalisation')) hero.skills.push({ skillId: 'focalisation', advances: 20, characteristic: 'FM' } as never);
@@ -47,7 +47,7 @@ describe('Focalisation en modale (store)', () => {
   });
 
   it('un sort non focalisable (Magie mineure) n’ouvre pas la modale', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Sorcier', name: 'Mage', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', name: 'Mage', rng: makeRNG(3) });
     hero.spells = ['Fléchette'];
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);

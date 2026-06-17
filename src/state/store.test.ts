@@ -91,7 +91,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('persiste Blessures + critiques + États persistants vers le groupe en fin de combat (victoire)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -325,7 +325,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('ré-importe les États persistants du groupe au lancement du combat (carry-in)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
     // Le membre du groupe porte un État persistant (Hémorragique) et un transitoire (À Terre).
     useGame.setState({ party: [{ ...hero, conditions: [{ name: 'Hémorragique', value: 1 }, { name: 'À Terre', value: 1 }] }] });
     useGame.getState().startScene(testScene);
@@ -338,8 +338,8 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it("n'instancie pas un héros mort/éjecté au combat suivant", () => {
-    const a = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
-    const b = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'B', rng: makeRNG(2) });
+    const a = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
+    const b = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'B', rng: makeRNG(2) });
     useGame.setState({ party: [a, { ...b, dead: true }] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -351,7 +351,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('Maladresse — fumbleConfirm applique l’auto-blessure (Oups! 01-20)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -368,7 +368,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('Maladresse — trauma (Oups! 81-90) pose une Déchirure de jambe + 1 Blessure critique', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -384,7 +384,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('Maladresse — perte d’Action (Oups! 71-80) consommée au tour suivant', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -404,7 +404,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('Maladresse — fumble du DÉFENSEUR héros (défense ratée + double) ouvre la modale avec reprise IA', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -438,7 +438,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('Maladresse — « agir en dernier » (21-40) ne dure qu’UN Round (ordre canonique restauré)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -465,7 +465,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('Maladresse — l’usure d’arme (Oups! 21-40) écrit sur l’ItemInstance et persiste combat→combat', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -521,7 +521,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('incanter un Projectile magique résout l’incantation et consomme l’action', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Sorcier', name: 'Mage', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', name: 'Mage', rng: makeRNG(3) });
     hero.characteristics.Int = 90; // assurer le lancement (NI 0)
     hero.spells = ['flechette'];
     useGame.setState({ party: [hero] });
@@ -549,7 +549,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('une Bénédiction de bonus pose un effet actif temporisé sur la cible', () => {
-    const pretre = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Prêtre', name: 'Prêtre', rng: makeRNG(8) });
+    const pretre = createHero({ speciesId: 'humains-reiklander', careerId: 'pretre', name: 'Prêtre', rng: makeRNG(8) });
     pretre.characteristics.Soc = 95; // assurer la réussite de la Prière
     pretre.spells = ['benediction-de-bataille'];
     useGame.setState({ party: [pretre] });
@@ -600,7 +600,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('une attaque de héros adjacent retire des Blessures', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     hero.characteristics.CC = 70; // CC élevée + seed fixe → touche déterministe
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(2); // RNG de combat contrôlé : seed 2 ⇒ touche avec dégâts (cf. recherche)
@@ -625,7 +625,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('un test de compétence hors combat : Lancer, Chance, puis acquittement', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     hero.fortune = 2;
     useGame.setState({
       party: [hero],
@@ -663,7 +663,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('attaquer une cible Sonnée en mêlée donne +1 Avantage à l’attaquant (LDB États l.123)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(2);
     useGame.getState().startScene(testScene);
@@ -685,7 +685,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('défense réactive : Défendre → résultat ; Chance relance la défense (attaque FIGÉE) ; Appliquer ferme', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(4);
     useGame.getState().startScene(testScene);
@@ -723,7 +723,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('un ennemi qui attaque un héros en mêlée OUVRE la modale de défense (tour de l’IA suspendu)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(5);
     useGame.getState().startScene(testScene);
@@ -751,7 +751,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('attaque IA MONTÉE : le jet figé de la modale de défense porte le +20 Combat monté (LDB 14 l.217)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(5);
     useGame.getState().startScene(testScene);
@@ -787,7 +787,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('Sonné : un héros actif ne peut PAS attaquer/incanter, mais peut se déplacer (LDB États l.123)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -805,7 +805,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('Sonné : un ennemi renonce à son Action — pas d’attaque, pas de modale de défense', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(5);
     useGame.getState().startScene(testScene);
@@ -835,7 +835,7 @@ describe('Boucle de jeu (store)', () => {
   const mh = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 
   it('Engagé : une attaque de mêlée pose le lien des deux côtés (LDB 13-Combat l.174-175)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     hero.characteristics.CC = 70;
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(2);
@@ -857,7 +857,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('Charge : se ruer au contact depuis 2 cases donne +1 Avantage (strict l.77) et impose l’attaque', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(7);
     useGame.getState().startScene(testScene);
@@ -882,7 +882,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('Charge interdite si déjà Engagé (LDB 15-Dépl l.74)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -903,7 +903,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('attackCancel est sans effet après une Charge (attaque obligatoire, LDB 15-Dépl l.75)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -917,7 +917,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('Combat monté — cliquer un couple ouvre le choix cavalier/monture puis cible l’id choisi (LDB 14 l.219)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -949,7 +949,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('Désengagement A : Avantage supérieur → partir en le sacrifiant, sans consommer l’Action (LDB 15-Dépl l.87)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(3);
     useGame.getState().startScene(testScene);
@@ -978,7 +978,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('Désengagement B échec : l’adversaire gagne +1 Avantage, fuite impossible, Action consommée (LDB 15-Dépl l.89)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -1010,7 +1010,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('Désengagement B succès : +1 Avantage, libéré, Mouvement rouvert, Action consommée (LDB 15-Dépl l.89)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(3);
     useGame.getState().startScene(testScene);
@@ -1045,7 +1045,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('Désengagement B : la Chance relance l’Esquive (le jet du foe reste figé)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(4);
     useGame.getState().startScene(testScene);
@@ -1073,7 +1073,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('Engagé : sélectionner « Déplacer » entre dans le Désengagement (LDB 15-Dépl l.84)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(6);
     useGame.getState().startScene(testScene);
@@ -1095,7 +1095,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('Désengagement B égalité parfaite : statu quo — ni fuite, ni Avantage à l’adversaire', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -1126,7 +1126,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('Désengagement B succès en multi-engagement : libère TOUS les adversaires (cohérent avec A)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(3);
     useGame.getState().startScene(testScene);
@@ -1158,7 +1158,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('Désengagement raté (Action consommée) : re-cliquer « Déplacer » ne relance PAS l’Esquive (anti-boucle)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -1179,7 +1179,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('Désengagement — Fuir : adversaire +1 Avantage + attaque dans le dos, puis libéré et peut courir (LDB 15-Dépl l.98-109)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(5);
     useGame.getState().startScene(testScene);
@@ -1210,7 +1210,7 @@ describe('Boucle de jeu (store)', () => {
   });
 
   it('attaque en DIAGONALE : un ennemi diagonalement adjacent est à portée de mêlée (distance Chebyshev)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     hero.characteristics.CC = 70;
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(2);
@@ -1238,8 +1238,8 @@ describe('Avancement par PX (store) — câblage moteur', () => {
       id: 'h',
       name: 'H',
       kind: 'hero',
-      species: 'Humains (Reiklander)',
-      career: 'Agitateur', // Niveau 1 « Pamphlétaire » : caracs CT/Int/Soc, comp. Charme/Ragot, talent Sociable
+      species: 'humains-reiklander',
+      career: 'agitateur', // Niveau 1 « Pamphlétaire » : caracs CT/Int/Soc, comp. Charme/Ragot, talent Sociable
       careerLevel: 1,
       characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
       wounds: { current: 12, max: 12 },
@@ -1335,24 +1335,24 @@ describe('Avancement par PX (store) — câblage moteur', () => {
   it('changeCareer : 200 (non complété) + 100 (autre Classe, LDB 08 l.9) ; niveau 1 imposé', () => {
     // Agitateur (Citadins) → Érudit (Lettrés) : 200 + 100 PX.
     set1(mkHero({ xp: 350 }));
-    useGame.getState().changeCareer('h', 'Érudit', 2); // niveau ≠ 1 → refusé (LDB 08 l.9)
-    expect(h0().career).toBe('Agitateur');
-    useGame.getState().changeCareer('h', 'Érudit', 1);
-    expect(h0().career).toBe('Érudit');
+    useGame.getState().changeCareer('h', 'erudit', 2); // niveau ≠ 1 → refusé (LDB 08 l.9)
+    expect(h0().career).toBe('agitateur');
+    useGame.getState().changeCareer('h', 'erudit', 1);
+    expect(h0().career).toBe('erudit');
     expect(h0().careerLevel).toBe(1);
     expect(h0().xp).toBe(50);
   });
 
   it('changeCareer : même Classe = pas de surcoût (Agitateur → Artisan, Citadins)', () => {
     set1(mkHero({ xp: 250 }));
-    useGame.getState().changeCareer('h', 'Artisan', 1);
-    expect(h0().career).toBe('Artisan');
+    useGame.getState().changeCareer('h', 'artisan', 1);
+    expect(h0().career).toBe('artisan');
     expect(h0().xp).toBe(50);
   });
 
   it('changeCareer : monter au niveau suivant refusé tant que le niveau n\'est pas complété (LDB 07 l.137)', () => {
     set1(mkHero({ xp: 1000 }));
-    useGame.getState().changeCareer('h', 'Agitateur', 2);
+    useGame.getState().changeCareer('h', 'agitateur', 2);
     expect(h0().careerLevel).toBe(1); // refusé
     expect(h0().xp).toBe(1000);
   });
@@ -1367,7 +1367,7 @@ describe('Avancement par PX (store) — câblage moteur', () => {
   });
 
   it('buyTalent : « +5 Caractéristique de départ » appliqué à l\'achat (Guerrier né, LDB 10)', () => {
-    set1(mkHero({ xp: 1000, career: 'Soldat' })); // Recrue : Guerrier né in-carrière
+    set1(mkHero({ xp: 1000, career: 'soldat' })); // Recrue : Guerrier né in-carrière
     useGame.getState().buyTalent('h', 'Guerrier né');
     expect(h0().characteristics.CC).toBe(35);
     expect(h0().charAdvances?.CC ?? 0).toBe(0); // « ne compte pas comme des Augmentations »
@@ -1377,14 +1377,14 @@ describe('Avancement par PX (store) — câblage moteur', () => {
   it('emplacement « (Au choix) » : désignation gratuite d\'un talent d\'espèce, puis montée ×2 à 200 PX', () => {
     // Conseiller (Niveau 1) : « Savoir-vivre (Au choix) ». Le héros possède déjà
     // Savoir-vivre (Criminels) ×1 (espèce) — cas utilisateur « Sens aiguisé (Goût) ».
-    set1(mkHero({ xp: 1000, career: 'Conseiller', talents: [{ talentId: 'savoir-vivre', spec: 'Criminels', times: 1 }] }));
+    set1(mkHero({ xp: 1000, career: 'conseiller', talents: [{ talentId: 'savoir-vivre', spec: 'Criminels', times: 1 }] }));
     const view = buildAdvancementView(h0());
     const slot = view.talents.find((t) => t.entry === 'Savoir-vivre (Au choix)')!;
     expect(slot.options!.some((o) => o.label === 'Savoir-vivre (Criminels)' && o.owned)).toBe(true);
     // Avant désignation : l'achat direct passe par le slot libre (auto-désignation) — ici on
     // teste la DÉSIGNATION explicite (0 PX) puis la montée.
     useGame.getState().designateCareerSlot('h', slot.slotKey, 'Savoir-vivre (Criminels)');
-    expect(h0().careerSlotChoices?.['Conseiller']?.[slot.slotKey]).toBe('Savoir-vivre (Criminels)');
+    expect(h0().careerSlotChoices?.['conseiller']?.[slot.slotKey]).toBe('Savoir-vivre (Criminels)');
     expect(h0().xp).toBe(1000); // gratuit
     useGame.getState().buyTalent('h', 'Savoir-vivre (Criminels)');
     expect(h0().talents.find((t) => talentConcrete(t) === 'Savoir-vivre (Criminels)')!.times).toBe(2);
@@ -1395,10 +1395,10 @@ describe('Avancement par PX (store) — câblage moteur', () => {
   });
 
   it('emplacement « (Au choix) » : l\'achat via un slot libre le DÉSIGNE automatiquement', () => {
-    set1(mkHero({ xp: 1000, career: 'Conseiller' }));
+    set1(mkHero({ xp: 1000, career: 'conseiller' }));
     useGame.getState().buyTalent('h', 'Savoir-vivre (Nobles)');
     expect(h0().talents.find((t) => talentConcrete(t) === 'Savoir-vivre (Nobles)')!.times).toBe(1);
-    expect(Object.values(h0().careerSlotChoices?.['Conseiller'] ?? {})).toContain('Savoir-vivre (Nobles)');
+    expect(Object.values(h0().careerSlotChoices?.['conseiller'] ?? {})).toContain('Savoir-vivre (Nobles)');
     // Slot consommé : une autre spec n'est plus achetable dans CETTE carrière.
     useGame.getState().buyTalent('h', 'Savoir-vivre (Criminels)');
     expect(h0().talents.find((t) => talentConcrete(t) === 'Savoir-vivre (Criminels)')).toBeUndefined();
@@ -1792,7 +1792,7 @@ describe('Chance : relance 1×/Test et seulement sur jet propre raté (LDB ch.12
   });
 
   it('testReroll : refusée si le d100 propre est réussi (roll ≤ cible)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     hero.fortune = 2;
     useGame.setState({
       party: [hero],
@@ -1805,7 +1805,7 @@ describe('Chance : relance 1×/Test et seulement sur jet propre raté (LDB ch.12
   });
 
   it('testReroll : autorisée une seule fois sur un jet raté', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     hero.fortune = 2;
     useGame.setState({
       party: [hero],
@@ -1820,7 +1820,7 @@ describe('Chance : relance 1×/Test et seulement sur jet propre raté (LDB ch.12
   });
 
   it('testBonusSL : +1 DR fait passer un Test à requireSL, et est cumulable', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     hero.fortune = 3;
     useGame.setState({
       party: [hero],
@@ -1846,7 +1846,7 @@ describe('Détermination (Resolve) — retirer un État (LDB ch.17 l.62-66)', ()
   });
 
   it('retire un État, ne consomme pas l’Action, décrémente la Détermination', () => {
-    const h = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     h.resolve = 2;
     h.conditions = [{ name: 'Aveuglé', value: 1 }];
     useGame.setState({ mode: 'battle', battle: mkBattle(h) });
@@ -1858,7 +1858,7 @@ describe('Détermination (Resolve) — retirer un État (LDB ch.17 l.62-66)', ()
   });
 
   it('retirer À Terre fait regagner 1 PB (l.66)', () => {
-    const h = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     h.resolve = 1;
     h.conditions = [{ name: 'À Terre', value: 1 }];
     h.wounds = { current: 5, max: 12 };
@@ -1870,7 +1870,7 @@ describe('Détermination (Resolve) — retirer un État (LDB ch.17 l.62-66)', ()
   });
 
   it('sans Détermination : aucun effet', () => {
-    const h = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     h.resolve = 0;
     h.conditions = [{ name: 'Aveuglé', value: 1 }];
     useGame.setState({ mode: 'battle', battle: mkBattle(h) });
@@ -1883,7 +1883,7 @@ describe('Ramasser un objet au sol en combat (un à la fois, LDB ch.13 l.115-116
   beforeEach(() => reset());
 
   function setup() {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     hero.items = hero.items ?? [];
     hero.pos = { x: 0, y: 0 };
     const scene = emptyScene(8, 8);
@@ -1943,7 +1943,7 @@ describe('Chance — 3e usage : pré-emption d’initiative en début de Round (
   });
 
   function endOfRoundBattle(heroFortune: number) {
-    const H = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(3) });
+    const H = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(3) });
     H.fortune = heroFortune;
     H.pos = { x: 0, y: 0 };
     const E: Combatant = JSON.parse(JSON.stringify(H));
@@ -2011,7 +2011,7 @@ describe('cancelMove — annuler un déplacement décomposé tant qu’aucune Ac
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
   function moveSetup() {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -2062,7 +2062,7 @@ describe('Blessures critiques & mort en combat (LDB 18-Traumatisme)', () => {
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
   function combat(heroOver: Partial<Combatant> = {}, enemyOver: Partial<Combatant> = {}) {
-    const H = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(3) });
+    const H = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(3) });
     H.fortune = 0; // pas de pré-emption d'initiative dans ces tests
     Object.assign(H, heroOver);
     const E: Combatant = JSON.parse(JSON.stringify(H));
@@ -2105,7 +2105,7 @@ describe('Destin sacrifié (LDB ch.17 l.31-35)', () => {
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
   function combat(heroOver: Partial<Combatant> = {}) {
-    const H = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(3) });
+    const H = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(3) });
     H.fortune = 0; H.fate = 1; Object.assign(H, heroOver);
     const E: Combatant = JSON.parse(JSON.stringify(H));
     E.id = 'enemy-0'; E.name = 'Brigand'; E.kind = 'enemy'; E.fortune = 0; E.fate = 0;
@@ -2161,7 +2161,7 @@ describe('Résilience — « Je ne faillirai pas ! » (LDB ch.17 l.73)', () => {
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
   it('force un Test hors combat raté en succès, Résilience −1', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     hero.resilience = 1;
     useGame.setState({
       party: [hero],
@@ -2186,7 +2186,7 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
   });
 
   function archer() {
-    const H = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const H = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     H.weapons = [{ name: 'Arbalète', type: 'ranged', damage: '+9', range: 60, qualities: ['Recharge 1'], subType: 'Arbalète', reload: 1 }];
     H.items = [{ uid: 'am1', name: 'Carreau', kind: 'ammo', qualities: ['Empaleuse'], enc: 0, equipped: false, subType: 'Arbalète', qty: 2 } as ItemInstance];
     H.loaded = true;
@@ -2450,7 +2450,7 @@ describe('« Tout est horodaté » — branchements TIME_COST (Phase T1)', () =>
   });
 
   it('franchir un Round de combat avance le temps de TIME_COST.combatRound', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');

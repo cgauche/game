@@ -36,7 +36,7 @@ export const XP_STAR_ROLLED = 25; // ADE2 ch.03 l.36 (signe astral tiré et acce
  * autres suppléments).
  */
 const BOOK_PRIORITY = ['LDB', 'ADE1', 'ADE2'];
-export function randomSpeciesTable(): { max: number; label: string }[] {
+export function randomSpeciesTable(): { max: number; id: string }[] {
   const byBound = new Map<number, SpeciesData[]>();
   for (const s of allSpecies) {
     if (typeof s.rand !== 'number') continue;
@@ -48,21 +48,21 @@ export function randomSpeciesTable(): { max: number; label: string }[] {
   };
   return [...byBound.entries()]
     .sort(([a], [b]) => a - b)
-    .map(([max, list]) => ({ max, label: list.sort((a, b) => rank(a) - rank(b))[0].label }));
+    .map(([max, list]) => ({ max, id: list.sort((a, b) => rank(a) - rank(b))[0].id }));
 }
 
-export function rollSpecies(rng: RNG = defaultRNG): { roll: number; label: string } {
+export function rollSpecies(rng: RNG = defaultRNG): { roll: number; id: string } {
   const table = randomSpeciesTable();
   const r = roll(1, 100, rng);
   const entry = table.find((e) => r <= e.max) ?? table[table.length - 1];
-  return { roll: r, label: entry.label };
+  return { roll: r, id: entry.id };
 }
 
 /**
  * Tire une Carrière sur le Tableau des Classes et Carrières aléatoires (LDB 05 l.197+), colonne
  * de l'espèce (`refCareer`). Les bornes des données sont les bornes HAUTES par carrière.
  */
-export function rollCareer(careers: CareerData[], sp: SpeciesData, rng: RNG = defaultRNG): { roll: number; label: string } | null {
+export function rollCareer(careers: CareerData[], sp: SpeciesData, rng: RNG = defaultRNG): { roll: number; id: string } | null {
   const col = sp.refCareer;
   const table = careers
     .filter((c) => c.rand?.[col] != null)
@@ -70,7 +70,7 @@ export function rollCareer(careers: CareerData[], sp: SpeciesData, rng: RNG = de
   if (!table.length) return null;
   const r = roll(1, 100, rng);
   const entry = table.find((c) => r <= (c.rand[col] as number)) ?? table[table.length - 1];
-  return { roll: r, label: entry.label };
+  return { roll: r, id: entry.id };
 }
 
 /** Répartition manuelle (LDB 05 l.385) : 100 Points, min 4 / max 18 par Caractéristique. */

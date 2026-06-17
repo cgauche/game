@@ -16,7 +16,7 @@ import { bonus } from './characteristics';
 describe('création ↔ Magie (grimoire, LDB 10/41/46)', () => {
   it('un Prêtre créé (Béni) reçoit AUTOMATIQUEMENT les six Bénédictions de son culte (LDB 41)', () => {
     const h = createHero({
-      speciesLabel: 'Humains (Reiklander)', careerLabel: 'Prêtre', name: 'P', rng: makeRNG(7),
+      speciesId: 'humains-reiklander', careerId: 'pretre', name: 'P', rng: makeRNG(7),
       careerTalent: 'Béni (Sigmar)',
     });
     expect(casterTalents(h).some((t) => t.kind === 'beni' && t.spec === 'Sigmar')).toBe(true);
@@ -25,7 +25,7 @@ describe('création ↔ Magie (grimoire, LDB 10/41/46)', () => {
 
   it('un Sorcier créé (Magie mineure) peut mémoriser des sorts via le grimoire (coûts par bandes)', () => {
     const h = createHero({
-      speciesLabel: 'Humains (Reiklander)', careerLabel: 'Sorcier', name: 'S', rng: makeRNG(7),
+      speciesId: 'humains-reiklander', careerId: 'sorcier', name: 'S', rng: makeRNG(7),
       careerTalent: 'Magie mineure', // le talent de carrière choisi (1 seul au Niveau 1)
     });
     expect(casterTalents(h).some((t) => t.kind === 'mineure')).toBe(true);
@@ -40,7 +40,7 @@ describe('création ↔ Magie (grimoire, LDB 10/41/46)', () => {
 describe('création ↔ règles 2.5 (registre combatFeatures, LDB 10)', () => {
   it('un Ratier créé (Coup puissant, Frappe assommante) résout dans le registre des talents câblés', () => {
     const h = createHero({
-      speciesLabel: 'Humains (Reiklander)', careerLabel: 'Ratier', name: 'R', rng: makeRNG(7),
+      speciesId: 'humains-reiklander', careerId: 'ratier', name: 'R', rng: makeRNG(7),
       careerTalent: 'Coup puissant',
     });
     expect(h.talents.some((t) => talentConcrete(t) === 'Coup puissant')).toBe(true);
@@ -51,7 +51,7 @@ describe('création ↔ règles 2.5 (registre combatFeatures, LDB 10)', () => {
 describe('création ↔ Voyage & Nourriture (#T2, LDB 18 l.417-422)', () => {
   it('les Rations des trappings de classe sont vues par le système de faim et consommées', () => {
     // Classe « Ruraux » (Villageois…) : « Rations (1 jour) » dans les trappings de classe.
-    const h = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Villageois', name: 'V', rng: makeRNG(7) });
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'villageois', name: 'V', rng: makeRNG(7) });
     const before = rationCount(h);
     expect(before).toBeGreaterThan(0); // le créateur produit des objets compatibles isRation
     const r = dailyFoodUpkeep(h, 50, bonus(h.characteristics.E), makeRNG(1));

@@ -26,7 +26,7 @@ describe('Psychologie de combat héros — cascade de Round (Peur/Terreur)', () 
   });
 
   function setup(enemySize: Combatant['size']) {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');

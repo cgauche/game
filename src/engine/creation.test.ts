@@ -22,7 +22,7 @@ import {
   XP_CHARS_REASSIGNED,
   XP_STAR_ROLLED,
 } from './creation';
-import { careers, findSpecies, stars } from '../data';
+import { careers, findSpeciesById, stars } from '../data';
 
 describe('bonus de PX des choix aléatoires (LDB 04 l.87 / 05 l.191-385)', () => {
   it('valeurs verbatim', () => {
@@ -104,28 +104,28 @@ describe('Tableau des Races aléatoires (LDB 04 l.90) — dérivé des données 
     expect(bounds).toEqual([...bounds].sort((a, b) => a - b));
     expect(bounds[bounds.length - 1]).toBe(100);
     // Les bornes du Livre de base sont représentées par les espèces LDB (pas une variante ADE).
-    const byMax = Object.fromEntries(table.map((e) => [e.max, e.label]));
-    expect(byMax[90]).toBe('Humains (Reiklander)');
-    expect(byMax[94]).toBe('Halflings');
-    expect(byMax[99]).toBe('Hauts elfes');
-    expect(byMax[100]).toBe('Elfes sylvains');
-    for (const e of table) expect(findSpecies(e.label), e.label).toBeTruthy();
+    const byMax = Object.fromEntries(table.map((e) => [e.max, e.id]));
+    expect(byMax[90]).toBe('humains-reiklander');
+    expect(byMax[94]).toBe('halflings');
+    expect(byMax[99]).toBe('hauts-elfes');
+    expect(byMax[100]).toBe('elfes-sylvains');
+    for (const e of table) expect(findSpeciesById(e.id), e.id).toBeTruthy();
   });
   it('rollSpecies : déterministe (RNG seedé) et cohérent avec son jet', () => {
     const a = rollSpecies(makeRNG(7));
     expect(a).toEqual(rollSpecies(makeRNG(7)));
     const entry = randomSpeciesTable().find((e) => a.roll <= e.max)!;
-    expect(a.label).toBe(entry.label);
+    expect(a.id).toBe(entry.id);
   });
 });
 
 describe('Tableau des Classes et Carrières aléatoires (LDB 05 l.197+)', () => {
   it('rollCareer : retourne une carrière ACCESSIBLE à l\'espèce', () => {
-    const sylvain = findSpecies('Elfes sylvains')!;
+    const sylvain = findSpeciesById('elfes-sylvains')!;
     for (let seed = 1; seed <= 20; seed++) {
       const r = rollCareer(careers, sylvain, makeRNG(seed))!;
-      const career = careers.find((c) => c.label === r.label)!;
-      expect(career.rand[sylvain.refCareer], r.label).not.toBeNull();
+      const career = careers.find((c) => c.id === r.id)!;
+      expect(career.rand[sylvain.refCareer], r.id).not.toBeNull();
     }
   });
 });
@@ -166,8 +166,8 @@ describe('Richesse initiale (LDB 05 l.578-583)', () => {
 
 describe('Détails (LDB 05 l.691-744)', () => {
   it('âge/taille dans les bornes par espèce', () => {
-    const human = findSpecies('Humains (Reiklander)')!;
-    const dwarf = findSpecies('Nains')!;
+    const human = findSpeciesById('humains-reiklander')!;
+    const dwarf = findSpeciesById('nains')!;
     for (let seed = 1; seed <= 10; seed++) {
       const a = rollAge(human, makeRNG(seed));
       expect(a).toBeGreaterThanOrEqual(16); // 15 + 1d10
@@ -178,7 +178,7 @@ describe('Détails (LDB 05 l.691-744)', () => {
     }
   });
   it('yeux/cheveux : libellé non vide tiré des tables, déterministe', () => {
-    const elf = findSpecies('Hauts elfes')!;
+    const elf = findSpeciesById('hauts-elfes')!;
     expect(rollEyes(elf, makeRNG(3))).toBe(rollEyes(elf, makeRNG(3)));
     expect(rollEyes(elf, makeRNG(3)).length).toBeGreaterThan(0);
     expect(rollHair(elf, makeRNG(3)).length).toBeGreaterThan(0);

@@ -62,7 +62,7 @@ describe('Balayage en combat (store)', () => {
   /** Prépare un combat enc-mutants avec `nHeroes` héros, puis renvoie le state. */
   function setupBattle(nHeroes: number) {
     const party = Array.from({ length: nHeroes }, (_, i) =>
-      createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: `H${i}`, rng: makeRNG(i + 1) }),
+      createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: `H${i}`, rng: makeRNG(i + 1) }),
     );
     useGame.setState({ party });
     useGame.getState().startScene(testScene);

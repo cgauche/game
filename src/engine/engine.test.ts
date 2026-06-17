@@ -780,8 +780,8 @@ describe('Magie — Incantations Imparfaites & Colère des dieux', () => {
 describe('Création de héros', () => {
   it('génère un personnage jouable et reproductible', () => {
     const hero = createHero({
-      speciesLabel: 'Humains (Reiklander)',
-      careerLabel: 'Agitateur',
+      speciesId: 'humains-reiklander',
+      careerId: 'agitateur',
       name: 'Test',
       rng: makeRNG(7),
     });

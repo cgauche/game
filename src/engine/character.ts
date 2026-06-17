@@ -26,7 +26,9 @@ import { slugId } from '../data/slug';
 import { CharKey, CHAR_KEYS, Characteristics, ArmourPoints, Combatant, Weapon, SkillInstance, TalentInstance, HitLocation, HeroDetails } from './types';
 import {
   SpeciesData,
-  findSpecies,
+  findSpeciesById,
+  findCareerById,
+  findClassById,
   firstLevel,
   levelsForCareer,
   findSkill,
@@ -36,8 +38,6 @@ import {
   trappingRefLabel,
   qualityRuntime,
   advancementLabel,
-  classes,
-  careers,
   talents as talentTable,
 } from '../data';
 import { splitTopLevelOu, splitLabel, concreteLabel, isUnresolvedChoice, skillSlots, talentSlots, designateSlot, freeSlotFor, designationsFor, talentMaxReached, wildcardSpecs } from './careerSlots';
@@ -180,8 +180,10 @@ export function resolveSpeciesTalents(
 }
 
 export interface CreateHeroOptions {
-  speciesLabel: string;
-  careerLabel: string;
+  /** `id` STABLE de l'espèce (`SpeciesData.id`) — ≠ libellé. */
+  speciesId: string;
+  /** `id` STABLE de la carrière (`CareerData.id`) — ≠ libellé. */
+  careerId: string;
   name: string;
   /** Caractéristiques saisies manuellement (sinon tirage base + 2d10). */
   manualChars?: Partial<Characteristics>;
@@ -244,10 +246,10 @@ function resolveEntry(raw: string, specChoices?: Record<string, string>): string
 
 export function createHero(opts: CreateHeroOptions): Combatant {
   const rng = opts.rng ?? defaultRNG;
-  const sp = findSpecies(opts.speciesLabel);
-  if (!sp) throw new Error(`Espèce inconnue : ${opts.speciesLabel}`);
-  const levels = levelsForCareer(opts.careerLabel);
-  const level = levels.find((l) => l.level === 1) ?? firstLevel(opts.careerLabel);
+  const sp = findSpeciesById(opts.speciesId);
+  if (!sp) throw new Error(`Espèce inconnue : ${opts.speciesId}`);
+  const levels = levelsForCareer(opts.careerId);
+  const level = levels.find((l) => l.level === 1) ?? firstLevel(opts.careerId);
 
   // 3) Attributs : base d'espèce + 2d10, ou saisie manuelle (réassignation / 100 Points).
   const chars = rollCharacteristics(sp, rng);
@@ -334,7 +336,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   }
 
   // 5) Possessions : classe + carrière → inventaire à stats, armes/armures équipées.
-  const classTrappings = (classForCareer(opts.careerLabel)?.trappings ?? []).map(trappingRefLabel); // TrappingRef[] → libellés
+  const classTrappings = (classForCareer(opts.careerId)?.trappings ?? []).map(trappingRefLabel); // TrappingRef[] → libellés
   const careerTrappings = (level?.trappings ?? []).map(trappingRefLabel); // idem niveau de carrière
   const trappingNames = [...classTrappings, ...careerTrappings].map((t) => resolveEntry(t, opts.specChoices));
   const items = buildInventory(trappingNames);
@@ -353,9 +355,9 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     id: opts.id ?? `hero-${heroCounter}`,
     name: opts.name,
     kind: 'hero',
-    species: sp.label,
-    career: opts.careerLabel,
-    groups: groupsFor({ species: sp.label, career: opts.careerLabel }), // racial + carrière (Traits psy ciblés, LDB 21, P3)
+    species: opts.speciesId,
+    career: opts.careerId,
+    groups: groupsFor({ species: sp.label, careerId: opts.careerId }), // racial + carrière (Traits psy ciblés, LDB 21, P3)
     size,
     characteristics: chars,
     wounds: { current: 0, max: 0, base: 0 }, // posé après les effets de talents (Dur à cuire)
@@ -394,12 +396,12 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   const tSlots = talentSlots(levels, 1);
   for (const { raw, label } of advancedEntries) {
     const slot = sSlots.find((s) => s.needsChoice && s.entry === raw);
-    if (slot) designateSlot(hero, opts.careerLabel, slot, label, sSlots);
+    if (slot) designateSlot(hero, opts.careerId, slot, label, sSlots);
   }
   if (chosenTalent) {
     const { name, spec } = splitLabel(chosenTalent);
-    const slot = freeSlotFor(tSlots, designationsFor(hero, opts.careerLabel), name, spec);
-    if (slot) designateSlot(hero, opts.careerLabel, slot, chosenTalent, [...sSlots, ...tSlots]);
+    const slot = freeSlotFor(tSlots, designationsFor(hero, opts.careerId), name, spec);
+    if (slot) designateSlot(hero, opts.careerId, slot, chosenTalent, [...sSlots, ...tSlots]);
   }
 
   recomputeLoadout(hero); // dérive weapons/armure/encombrement ; auto-génère le loadout par défaut (Mêlée/Distance)
@@ -422,10 +424,9 @@ function autoFateSplit(extra: number): { fate: number; resilience: number } {
   return { fate, resilience: extra - fate };
 }
 
-function classForCareer(careerLabel: string) {
-  // careerLevels n'a pas la classe ; on la retrouve via la carrière.
-  const c = careers.find((x) => x.label === careerLabel);
-  return c ? classes.find((cl) => cl.label === c.class) : undefined;
+function classForCareer(careerId: string) {
+  // careerLevels n'a pas la classe ; on la retrouve via la carrière (par id stable).
+  return findClassById(findCareerById(careerId)?.class);
 }
 
 const ARMOUR_LOC_MAP: Record<string, HitLocation[]> = {

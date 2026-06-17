@@ -1,22 +1,22 @@
 [
   {
     "name": "Sigmund Reikhardt",
-    "species": "Humains (Reiklander)",
-    "career": "Soldat",
+    "species": "humains-reiklander",
+    "career": "soldat",
     "seed": 101,
     "motivation": "Devoir"
   },
   {
     "name": "Grunni Pierre-de-Fer",
-    "species": "Nains",
-    "career": "Tueur",
+    "species": "nains",
+    "career": "tueur",
     "seed": 202,
     "motivation": "Honte (Malédiction du Tueur)"
   },
   {
     "name": "Wilhelmina Faust",
-    "species": "Humains (Reiklander)",
-    "career": "Sorcier",
+    "species": "humains-reiklander",
+    "career": "sorcier",
     "seed": 707,
     "motivation": "Connaissance",
     "careerTalent": "Magie mineure",
@@ -29,8 +29,8 @@
   },
   {
     "name": "Frère Anselm",
-    "species": "Humains (Reiklander)",
-    "career": "Prêtre",
+    "species": "humains-reiklander",
+    "career": "pretre",
     "seed": 808,
     "motivation": "Foi",
     "careerTalent": "Béni (Sigmar)",
@@ -41,15 +41,15 @@
   },
   {
     "name": "Aelindra Feuille-d’Argent",
-    "species": "Elfes sylvains",
-    "career": "Chasseur",
+    "species": "elfes-sylvains",
+    "career": "chasseur",
     "seed": 303,
     "motivation": "Nature"
   },
   {
     "name": "Rosa Brandt",
-    "species": "Humains (Reiklander)",
-    "career": "Apothicaire",
+    "species": "humains-reiklander",
+    "career": "apothicaire",
     "seed": 404,
     "motivation": "Connaissance",
     "sex": "F",
@@ -57,15 +57,15 @@
   },
   {
     "name": "Klein Bürger",
-    "species": "Halflings",
-    "career": "Voleur",
+    "species": "halflings",
+    "career": "voleur",
     "seed": 505,
     "motivation": "Curiosité"
   },
   {
     "name": "Otto Hammerfest",
-    "species": "Humains (Reiklander)",
-    "career": "Répurgateur",
+    "species": "humains-reiklander",
+    "career": "repurgateur",
     "seed": 606,
     "motivation": "Foi"
   }

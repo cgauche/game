@@ -36,6 +36,9 @@ import { CharKey, Weapon } from '../engine/types';
 import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
 
 export interface SpeciesData {
+  /** id STABLE (slug du libellé) — cible de `Combatant.species`, pregens, draft. Le `label` ne sert
+   *  qu'à l'affichage (`speciesSingular`). */
+  id: string;
   label: string;
   refChar: string;
   refCareer: string;
@@ -52,6 +55,8 @@ export interface SpeciesData {
   source: { book: string; page: number };
 }
 export interface ClassData {
+  /** id STABLE (slug du libellé) — cible de `CareerData.class`. */
+  id: string;
   label: string;
   /** Possessions de départ (`TrappingRef` : id du catalogue + quantité, ou `{text}` flavor hors catalogue). */
   trappings: TrappingRef[];
@@ -59,7 +64,10 @@ export interface ClassData {
   source: { book: string; page: number };
 }
 export interface CareerData {
+  /** id STABLE (slug du libellé) — cible de `Combatant.career`, `CareerLevelData.career`, pregens. */
+  id: string;
   label: string;
+  /** `id` de la Classe (`ClassData.id`) — réf d'entité, ≠ libellé. */
   class: string;
   /** Tableau des Classes et Carrières aléatoires (LDB 05 l.197+) : borne haute d100 par colonne
    *  d'espèce (`SpeciesData.refCareer`). null = carrière INDISPONIBLE pour cette espèce (l.360). */
@@ -69,6 +77,7 @@ export interface CareerData {
 }
 export interface CareerLevelData {
   label: string;
+  /** `id` de la Carrière (`CareerData.id`) — réf d'entité, ≠ libellé. */
   career: string;
   level: number;
   /** Compétences/talents d'emplacement (`AdvancementRef[]` : {ref}/{wildcard}/{choice}) — lus via
@@ -461,8 +470,11 @@ export interface GodData {
 export const gods = godsJson as GodData[];
 export const names = namesJson as Record<string, NamePool>;
 
-export function findSpecies(label: string) {
-  return species.find((s) => s.label === label);
+const SPECIES_BY_ID = new Map(species.map((s) => [s.id, s]));
+/** Résout une Espèce par son `id` STABLE (slug du libellé) — réf runtime/données (Combatant.species,
+ *  pregens, draft). Le libellé ne sert qu'à l'affichage (`speciesSingular`). */
+export function findSpeciesById(id: string | undefined): SpeciesData | undefined {
+  return id ? SPECIES_BY_ID.get(id) : undefined;
 }
 
 /** Affichage SINGULIER de l'espèce d'un INDIVIDU : les `label` du catalogue sont des libellés de
@@ -493,14 +505,21 @@ export function careersForSpecies(refCareer: string, ignoreRestrictions = false)
   if (ignoreRestrictions) return careers;
   return careers.filter((c) => c.rand?.[refCareer] != null);
 }
-export function findCareer(label: string): CareerData | undefined {
-  return careers.find((c) => c.label === label);
+const CAREER_BY_ID = new Map(careers.map((c) => [c.id, c]));
+/** Résout une Carrière par son `id` STABLE. Le libellé ne sert qu'à l'affichage. */
+export function findCareerById(id: string | undefined): CareerData | undefined {
+  return id ? CAREER_BY_ID.get(id) : undefined;
 }
-export function levelsForCareer(career: string): CareerLevelData[] {
-  return careerLevels.filter((c) => c.career === career).sort((a, b) => a.level - b.level);
+const CLASS_BY_ID = new Map(classes.map((c) => [c.id, c]));
+/** Résout une Classe par son `id` STABLE (= `CareerData.class`). */
+export function findClassById(id: string | undefined): ClassData | undefined {
+  return id ? CLASS_BY_ID.get(id) : undefined;
 }
-export function firstLevel(career: string): CareerLevelData | undefined {
-  return levelsForCareer(career)[0];
+export function levelsForCareer(careerId: string): CareerLevelData[] {
+  return careerLevels.filter((c) => c.career === careerId).sort((a, b) => a.level - b.level);
+}
+export function firstLevel(careerId: string): CareerLevelData | undefined {
+  return levelsForCareer(careerId)[0];
 }
 export function findSkill(label: string): SkillData | undefined {
   // Exact d'abord, puis casse ignorée (les statblocs de campagne écrivent « Corps à Corps »).
@@ -636,6 +655,9 @@ export function findById(category: string, id: string): { label: string } | unde
     case 'qualities': return findQualityById(id);
     case 'spells': return findSpellById(id);
     case 'maneuvers': return findManeuverById(id);
+    case 'careers': return findCareerById(id);
+    case 'classes': return findClassById(id);
+    case 'races': return findSpeciesById(id);
     default: return undefined;
   }
 }

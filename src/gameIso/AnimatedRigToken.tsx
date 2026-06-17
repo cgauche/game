@@ -1,4 +1,5 @@
 import type { Combatant } from '../engine/types';
+import { findCareerById } from '../data';
 import { defaultAppearance } from './rig/appearance';
 import { equipFromCombatant } from './rig/parts/equipment';
 import { combatantAppearance, combatantOverlays } from './rig/parts/combatantVisuals';
@@ -18,7 +19,7 @@ export function AnimatedRigToken({ combatant, profile, pos }: { combatant: Comba
       id={combatant.id}
       appearance={combatantAppearance(profile?.appearance ?? combatant.appearance ?? defaultAppearance(combatant), combatant)}
       equip={profile?.equip ?? equipFromCombatant(combatant)}
-      career={profile?.tenue ?? combatant.career}
+      career={profile?.tenue ?? findCareerById(combatant.career)?.label ?? combatant.career}
       overlays={combatantOverlays(combatant)}
       pos={pos}
       ground={groundStateOf(combatant)}

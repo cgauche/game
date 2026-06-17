@@ -23,6 +23,7 @@ import {
   draftLevel,
 } from './draft';
 import { CHAR_KEYS } from '../../engine/types';
+import { findSpeciesById } from '../../data';
 import { isUnresolvedChoice, concreteLabel, splitLabel } from '../../engine/careerSlots';
 import { specOptionsFor, pettySpellQuota } from './draft';
 import { spells, advancementLabel, stars } from '../../data';
@@ -82,16 +83,16 @@ describe('bonus de PX (LDB 04/05)', () => {
   it('espèce : +20 uniquement si on garde le tirage', () => {
     const d1 = rollDraftSpecies(draft());
     expect(speciesXp(d1)).toBe(20);
-    expect(speciesXp(withSpecies(d1, d1.speciesRoll!.label === 'Nains' ? 'Halflings' : 'Nains'))).toBe(0);
+    expect(speciesXp(withSpecies(d1, d1.speciesRoll!.id === 'nains' ? 'halflings' : 'nains'))).toBe(0);
   });
   it('carrière : +50 (1er jet), +25 (parmi 3), 0 (libre / relances)', () => {
     const d1 = rollDraftCareer(draft());
     expect(careerXp(d1)).toBe(50);
-    const other = d1.careerRolls[0].label === 'Soldat' ? 'Artisan' : 'Soldat';
+    const other = d1.careerRolls[0].id === 'soldat' ? 'artisan' : 'soldat';
     expect(careerXp(withCareer(d1, other))).toBe(0); // refusé sans relancer → choix libre
     const d3 = rollDraftCareer(d1);
     expect(d3.careerRolls).toHaveLength(3);
-    expect(careerXp(withCareer(d3, d3.careerRolls[2].label))).toBe(25);
+    expect(careerXp(withCareer(d3, d3.careerRolls[2].id))).toBe(25);
     const dFree = rollDraftCareer(d3); // « continuez à relancer » (l.195)
     expect(careerXp(dFree)).toBe(0);
   });
@@ -135,7 +136,7 @@ describe('buildHero — bout en bout', () => {
     expect(Object.values(hero.charAdvances ?? {}).reduce((a, b) => a + (b ?? 0), 0)).toBe(5);
     for (const s of hero.skills) expect(`${s.spec ?? ''}`).not.toMatch(/au choix/i);
     expect(hero.details?.age).toBe(20);
-    expect(hero.appearance?.species).toBe(d.speciesLabel);
+    expect(hero.appearance?.species).toBe(findSpeciesById(d.speciesId)?.label);
     // Le total des dix Caractéristiques = somme du brouillon (transferts +5 de talents possibles).
     const sum = CHAR_KEYS.reduce((a, k) => a + hero.characteristics[k], 0);
     const draftSum = CHAR_KEYS.reduce((a, k) => a + draftChars(d)[k], 0);
@@ -156,7 +157,7 @@ describe('buildHero — bout en bout', () => {
 describe('Magie mineure à la création (LDB 10 l.587) — BFM sorts inclus au Talent', () => {
   /** Brouillon Sorcier valide (Niveau 1 : talent « Magie mineure » choisissable). */
   function sorcererDraft() {
-    const base = withCareer(readyDraft(), 'Sorcier');
+    const base = withCareer(readyDraft(), 'sorcier');
     const level = draftLevel(base)!;
     const specChoices: Record<string, string> = {};
     for (const ref of level.skills) {

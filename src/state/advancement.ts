@@ -31,7 +31,7 @@ import {
   wildcardSpecs,
 } from '../engine/careerSlots';
 import { careerSkillAdditions } from '../engine/talentEffects';
-import { levelsForCareer, findSkill, findSkillById, findCareer, careers, talentConcrete } from '../data';
+import { levelsForCareer, findSkill, findSkillById, findCareerById, findClassById, careers, talentConcrete } from '../data';
 
 export interface CharAdvanceRow {
   key: CharKey;
@@ -94,8 +94,8 @@ export interface AdvancementView {
   skillSlotsOpen: SkillSlotRow[];
   talents: TalentSlotRow[];
   targets: CareerTarget[];
-  /** Coût d'un changement vers une carrière donnée (sélecteur) : +100 hors Classe (LDB 08 l.9). */
-  changeCostFor: (careerLabel: string) => number;
+  /** Coût d'un changement vers une carrière donnée (id, sélecteur) : +100 hors Classe (LDB 08 l.9). */
+  changeCostFor: (careerId: string) => number;
 }
 
 /** Remise « 5 PX de moins par Augmentation » (LDB 10 Maître artisan/Oreille absolue/…) quand la
@@ -209,9 +209,9 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     targets.push({ career, level: l.level, label: l.label, cost: v.cost, ok: v.ok, reason: v.reason });
   }
 
-  const curClass = findCareer(career)?.class;
-  const changeCostFor = (careerLabel: string) =>
-    changeCost + (findCareer(careerLabel)?.class === curClass ? 0 : 100); // LDB 08 l.9-11
+  const curClass = findCareerById(career)?.class;
+  const changeCostFor = (careerId: string) =>
+    changeCost + (findCareerById(careerId)?.class === curClass ? 0 : 100); // LDB 08 l.9-11
 
   return {
     xp: hero.xp ?? 0,
@@ -230,7 +230,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
   };
 }
 
-/** Toutes les carrières, pour le sélecteur de changement (libellé + Classe). */
-export function allCareerChoices(): { label: string; class: string }[] {
-  return careers.map((c) => ({ label: c.label, class: c.class }));
+/** Toutes les carrières, pour le sélecteur de changement (id + libellé + libellé de Classe). */
+export function allCareerChoices(): { id: string; label: string; className: string }[] {
+  return careers.map((c) => ({ id: c.id, label: c.label, className: findClassById(c.class)?.label ?? c.class }));
 }

@@ -5,9 +5,12 @@
  */
 import { describe, it, expect } from 'vitest';
 import {
-  trappings, qualities, spells, creatures, classes, careerLevels, species, gods,
+  trappings, qualities, spells, creatures, classes, careers, careerLevels, species, gods,
   findSkillById, findTalentById, findTrappingById, findQualityById, findSpellById,
+  findCareerById, findClassById, findSpeciesById,
 } from './index';
+import pregensJson from './pregens.json';
+import interludeEventsJson from './interludeEvents.json';
 import { CHAR_KEYS } from '../engine/types';
 
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x != null;
@@ -50,6 +53,32 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     ];
     for (const list of advLists) for (const a of list) expect(isObj(a)).toBe(true);
     for (const l of careerLevels) for (const k of l.characteristics) expect(CHAR_KEYS as readonly string[]).toContain(k);
+  });
+
+  it('careers/classes/species portent un id ; careers.class = classId qui résout', () => {
+    for (const c of careers) { expect(typeof c.id).toBe('string'); expect(findClassById(c.class), c.label).toBeTruthy(); }
+    for (const cl of classes) expect(typeof cl.id).toBe('string');
+    for (const s of species) expect(typeof s.id).toBe('string');
+  });
+
+  it('careerLevels.career = careerId qui résout', () => {
+    for (const l of careerLevels) expect(findCareerById(l.career), l.label).toBeTruthy();
+  });
+
+  it('pregens.species/career = ids qui résolvent', () => {
+    for (const p of pregensJson as { name: string; species: string; career: string }[]) {
+      expect(findSpeciesById(p.species), p.name).toBeTruthy();
+      expect(findCareerById(p.career), p.name).toBeTruthy();
+    }
+  });
+
+  it('interludeEvents.fx.revenue(Blocked)Classes = classId qui résout (ou « * »)', () => {
+    for (const e of interludeEventsJson as { fx?: { revenueClasses?: string[]; revenueBlockedClasses?: string[] } }[]) {
+      for (const c of [...(e.fx?.revenueClasses ?? []), ...(e.fx?.revenueBlockedClasses ?? [])]) {
+        if (c === '*') continue;
+        expect(findClassById(c), c).toBeTruthy();
+      }
+    }
   });
 
   it('refs d’avancement explicites pointent un id de Compétence/Talent réel', () => {

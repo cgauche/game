@@ -14,7 +14,7 @@ describe('Désengagement après avoir attaqué (option A — LDB 15 l.87)', () =
   beforeEach(() => { useGame.setState({ battle: null, pendingDisengage: null }); });
 
   it('héros Engagé ayant DÉJÀ agi peut se désengager en sacrifiant l’Avantage', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(3);
     useGame.getState().startScene(testScene);

@@ -10,8 +10,8 @@ import type { TestScenario } from './_shared';
  *  superposables), cape cosmétique, et 2 sets d'armes (mêlée + arc avec munitions). */
 function maitreArmes(): Combatant {
   const h = createHero({
-    speciesLabel: 'Humains (Reiklander)',
-    careerLabel: 'Soldat',
+    speciesId: 'humains-reiklander',
+    careerId: 'soldat',
     name: "Maître d'armes (test)",
     motivation: 'Test',
     rng: makeRNG(2606),

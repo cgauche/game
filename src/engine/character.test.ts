@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
-import { findSpecies, talentConcrete } from '../data';
+import { findSpeciesById, talentConcrete } from '../data';
 import {
   speciesSkillAdvanceMap,
   rollRandomTalent,
@@ -8,8 +8,8 @@ import {
   createHero,
 } from './character';
 
-const REIK = 'Humains (Reiklander)';
-const sp = () => findSpecies(REIK)!;
+const REIK = 'humains-reiklander';
+const sp = () => findSpeciesById(REIK)!;
 
 describe('speciesSkillAdvanceMap — 3×+5 / 3×+3 (LDB l.510)', () => {
   it('par défaut : 3 premières compétences +5, 3 suivantes +3', () => {
@@ -72,7 +72,7 @@ describe('resolveSpeciesTalents — fixes / choix / aléatoires', () => {
 
 describe('createHero — applique compétences et talents raciaux', () => {
   it('le héros reçoit ses compétences d’espèce (advances ≥ valeur raciale) et ses talents', () => {
-    const hero = createHero({ speciesLabel: REIK, careerLabel: 'Soldat', name: 'Test', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: REIK, careerId: 'soldat', name: 'Test', rng: makeRNG(3) });
     const calme = hero.skills.find((s) => s.skillId === 'calme');
     expect(calme).toBeTruthy();
     expect(calme!.advances).toBeGreaterThanOrEqual(5); // +5 d'espèce (additif si aussi en carrière)
@@ -83,20 +83,20 @@ describe('createHero — applique compétences et talents raciaux', () => {
 
   it('aucun libellé « (Au choix) » résiduel sur le héros (specs résolues)', () => {
     for (const seed of [1, 5, 9]) {
-      const hero = createHero({ speciesLabel: 'Nains', careerLabel: 'Artisan', name: 'T', rng: makeRNG(seed) });
+      const hero = createHero({ speciesId: 'nains', careerId: 'artisan', name: 'T', rng: makeRNG(seed) });
       for (const s of hero.skills) expect(s.spec ?? '').not.toMatch(/au choix|\sou\s/i);
       for (const t of hero.talents) expect(talentConcrete(t)).not.toMatch(/\(.*au choix.*\)/i);
     }
   });
 
   it('5 Augmentations gratuites sur les 3 Caractéristiques de carrière (LDB 05 l.488)', () => {
-    const hero = createHero({ speciesLabel: REIK, careerLabel: 'Soldat', name: 'T', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: REIK, careerId: 'soldat', name: 'T', rng: makeRNG(3) });
     const total = Object.values(hero.charAdvances ?? {}).reduce((a, b) => a + (b ?? 0), 0);
     expect(total).toBe(5);
     // La répartition explicite s'ajoute aux valeurs initiales.
     const manual = createHero({
-      speciesLabel: REIK,
-      careerLabel: 'Soldat', // Caractéristiques de carrière : CC, F, E (Recrue)
+      speciesId: REIK,
+      careerId: 'soldat', // Caractéristiques de carrière : CC, F, E (Recrue)
       name: 'T',
       rng: makeRNG(3),
       manualChars: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
@@ -110,8 +110,8 @@ describe('createHero — applique compétences et talents raciaux', () => {
 
   it('« +5 Caractéristique de départ » appliqué (Affable → Soc +5), sans Augmentation comptée', () => {
     const hero = createHero({
-      speciesLabel: REIK,
-      careerLabel: 'Soldat',
+      speciesId: REIK,
+      careerId: 'soldat',
       name: 'T',
       manualChars: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
       charAdvancesAlloc: { CC: 5 },
@@ -124,8 +124,8 @@ describe('createHero — applique compétences et talents raciaux', () => {
 
   it('talent de carrière = talent d\'espèce → times 2 (LDB 05 l.502) ; Blessures avec Dur à cuire', () => {
     const hero = createHero({
-      speciesLabel: REIK,
-      careerLabel: 'Soldat', // Recrue propose « Dur à cuire »
+      speciesId: REIK,
+      careerId: 'soldat', // Recrue propose « Dur à cuire »
       name: 'T',
       manualChars: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
       charAdvancesAlloc: { CC: 5 },
@@ -140,8 +140,8 @@ describe('createHero — applique compétences et talents raciaux', () => {
 
   it('PX bonus de la création conservés ; détails portés', () => {
     const hero = createHero({
-      speciesLabel: REIK,
-      careerLabel: 'Soldat',
+      speciesId: REIK,
+      careerId: 'soldat',
       name: 'T',
       rng: makeRNG(3),
       xpBonus: 95,
@@ -154,8 +154,8 @@ describe('createHero — applique compétences et talents raciaux', () => {
 
   it('Halfling Herboriste : Sens aiguisé (Goût) d\'espèce reprenable en talent de carrière (times 2)', () => {
     const hero = createHero({
-      speciesLabel: 'Halflings',
-      careerLabel: 'Herboriste',
+      speciesId: 'halflings',
+      careerId: 'herboriste',
       name: 'T',
       careerTalent: 'Sens aiguisé (Goût)',
       speciesTalentsResolved: ['Petit', 'Résistance (Corruption)', 'Sens aiguisé (Goût)', 'Vision nocturne'],
@@ -165,7 +165,7 @@ describe('createHero — applique compétences et talents raciaux', () => {
   });
 
   it('entrée d\'espèce mixte « Destinée ou Talent aléatoire » : la branche aléatoire tire un talent', () => {
-    const middenland = findSpecies('Humains (Middenland)');
+    const middenland = findSpeciesById('humains-middenland');
     if (!middenland) return; // espèce ADE absente → rien à tester
     const out = resolveSpeciesTalents(middenland, {
       rng: makeRNG(11),

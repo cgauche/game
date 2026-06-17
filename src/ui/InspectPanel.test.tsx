@@ -12,7 +12,7 @@ describe('InspectPanel', () => {
   const render = (c: Parameters<typeof InspectPanel>[0]['combatant']) =>
     renderToStaticMarkup(<InspectPanel combatant={c} onClose={() => {}} />);
 
-  const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'Gunnar', rng: makeRNG(3) });
+  const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Gunnar', rng: makeRNG(3) });
 
   it('nom, PB et statbloc (caractéristiques partagées)', () => {
     const html = render(hero);

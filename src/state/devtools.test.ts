@@ -22,7 +22,7 @@ describe('__wfrp.killEnemies — commande de recette (élimine les ennemis, vict
   });
 
   it('en combat : tous les ennemis hors de combat + victoire par le flux normal (pendingVictory)', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -43,7 +43,7 @@ describe('__wfrp — autres commandes de recette', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
     useGame.setState({ battle: null, party: [hero] });
     useGame.getState().startScene(testScene);
     vi.clearAllTimers();

@@ -36,7 +36,7 @@
     "text": "La Garde veut une augmentation : tous les « coups » sont en suspens. Les Voleurs ne peuvent rien gagner avec Revenus.",
     "fx": {
       "revenueBlockedClasses": [
-        "Roublards"
+        "roublards"
       ]
     }
   },
@@ -67,7 +67,7 @@
     "fx": {
       "revenuePct": 50,
       "revenueClasses": [
-        "Riverains"
+        "riverains"
       ]
     }
   },
@@ -108,7 +108,7 @@
     "text": "La nourriture devient extrêmement rare : les Ruraux ne peuvent pas entreprendre Revenus, et le prix des aliments double pour la prochaine aventure.",
     "fx": {
       "revenueBlockedClasses": [
-        "Ruraux"
+        "ruraux"
       ]
     }
   },
@@ -143,7 +143,7 @@
     "fx": {
       "revenuePct": 20,
       "revenueClasses": [
-        "Roublards"
+        "roublards"
       ]
     }
   },
@@ -164,8 +164,8 @@
     "fx": {
       "revenuePct": 50,
       "revenueClasses": [
-        "Citadins",
-        "Ruraux"
+        "citadins",
+        "ruraux"
       ]
     }
   },
@@ -203,7 +203,7 @@
     "text": "Le peuple est furieux contre les puissants : les Courtisans ne peuvent pas entreprendre Revenus, et les banques vérifient immédiatement la faillite. Semer la dissension gagne +10.",
     "fx": {
       "revenueBlockedClasses": [
-        "Courtisans"
+        "courtisans"
       ],
       "bankCrashCheck": true
     }
@@ -231,7 +231,7 @@
     "fx": {
       "loseActivity": true,
       "revenueBlockedClasses": [
-        "Roublards"
+        "roublards"
       ]
     }
   },

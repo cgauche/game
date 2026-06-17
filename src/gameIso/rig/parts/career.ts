@@ -1,4 +1,4 @@
-import { careers } from '../../../data';
+import { careers, findClassById } from '../../../data';
 import { TENUE_MODELS } from './generated/careerTenues';
 import { TENUE_PALETTES } from './generated/careerPalettes';
 import TENUE_VIEWS_JSON from './generated/tenueViews.json';
@@ -22,8 +22,10 @@ function withViews(tenue: string, set: TenueSet): TenueSet {
   return out;
 }
 
+// `CareerData.class` est un classId → la tenue/palette du rig est keyée par LIBELLÉ de classe
+// (TENUES/CLASS_PALETTES) → on stocke le libellé résolu.
 const BY_LABEL: Record<string, string> = {};
-for (const row of careers) BY_LABEL[row.label] = row.class;
+for (const row of careers) BY_LABEL[row.label] = findClassById(row.class)?.label ?? row.class;
 
 export function careerClass(career: string): string {
   return BY_LABEL[career] ?? 'Citadins';

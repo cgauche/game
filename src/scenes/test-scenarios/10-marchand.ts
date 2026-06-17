@@ -10,8 +10,8 @@ import type { TestScenario } from './_shared';
  *  armure endommagée, pour tester Évaluer / Marchander / Réparer chez le marchand. */
 function negociant(): Combatant {
   const h = createHero({
-    speciesLabel: 'Humains (Reiklander)',
-    careerLabel: 'Soldat',
+    speciesId: 'humains-reiklander',
+    careerId: 'soldat',
     name: 'Négociant (test)',
     motivation: 'Test',
     rng: makeRNG(2510),

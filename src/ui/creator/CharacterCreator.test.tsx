@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { CharacterCreator, PettySpellsSection } from './CharacterCreator';
 import { CreatorSummary } from './CreatorSummary';
 import { newDraft, withCareer } from './draft';
+import { findCareerById } from '../../data';
 
 describe('CharacterCreator (assistant) — rendu statique', () => {
   it('étape 1 : trois zones (rail de sélection, profil, fiche vivante) + tirage d100', () => {
@@ -37,14 +38,14 @@ describe('CharacterCreator (assistant) — rendu statique', () => {
     expect(html).toContain('Fléchette'); // la liste des sorts de Magie mineure est proposée
     expect(html).toMatch(/0\/\d/); // compteur de quota (BFM)
     // Sans le Talent : aucune section.
-    expect(renderToStaticMarkup(<PettySpellsSection d={withCareer(newDraft(7), 'Soldat')} setD={() => {}} />)).toBe('');
+    expect(renderToStaticMarkup(<PettySpellsSection d={withCareer(newDraft(7), 'soldat')} setD={() => {}} />)).toBe('');
   });
 
   it('CreatorSummary : caractéristiques EN DIRECT du héros prévisualisé (talents/augmentations inclus)', () => {
     const d = newDraft(42);
     const html = renderToStaticMarkup(<CreatorSummary d={d} step={0} />);
     expect(html).toContain('Aventurier');
-    expect(html).toContain(d.careerLabel); // carrière par défaut dérivée des données
+    expect(html).toContain(findCareerById(d.careerId)!.label); // carrière par défaut dérivée des données
     expect(html).toContain('Mouvement');
     expect(html).toContain('Destin');
     expect(html).toContain('Bourse');

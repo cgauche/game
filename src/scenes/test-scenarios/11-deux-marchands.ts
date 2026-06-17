@@ -10,7 +10,7 @@ import type { TestScenario } from './_shared';
  *  l'armurier (interaction directe) ET l'herboriste (boutique ouverte DEPUIS un dialogue → Effet
  *  openMerchant). Deux archétypes de marchand côte à côte. */
 function groupe(): Combatant[] {
-  const cap = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'Capitaine (test)', motivation: 'Test', rng: makeRNG(3110), id: 'cap' });
+  const cap = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Capitaine (test)', motivation: 'Test', rng: makeRNG(3110), id: 'cap' });
   const maille = itemFromTrapping('Chemise de mailles')!;
   maille.damageTaken = 2; // endommagée → réparable chez l'armurier (10 %/PA, LDB 63)
   maille.equipped = true;
@@ -19,7 +19,7 @@ function groupe(): Combatant[] {
   recomputeLoadout(cap);
   cap.appearance = { species: 'Humains (Reiklander)', sex: 'M', build: 0.55 };
 
-  const ecl = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'Éclaireuse (test)', motivation: 'Test', rng: makeRNG(3111), id: 'ecl' });
+  const ecl = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Éclaireuse (test)', motivation: 'Test', rng: makeRNG(3111), id: 'ecl' });
   ecl.appearance = { species: 'Humains (Reiklander)', sex: 'F', build: 0.45 };
   return [cap, ecl];
 }

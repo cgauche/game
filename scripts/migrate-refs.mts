@@ -250,6 +250,49 @@ function convertCareerChars(): void {
   console.log('careerLevels.characteristics → CharKey');
 }
 
+/** Phase A1 — id-ifie les ENTITÉS careers/classes/species et convertit les RÉFÉRENCES d'entité :
+ *  careers.class (label→classId), careerLevels.career (label→careerId), pregens.career/species
+ *  (label→id). Le vocabulaire de GROUPE (clés `careers.rand`, `species.refChar`/`refCareer`) est un
+ *  concern distinct, traité par `migrateGroupVocab` (phase A2). Idempotent : une valeur déjà = id
+ *  (présente dans l'idSet) est conservée telle quelle. */
+function migrateCareersSpecies(): void {
+  idifyFile('careers.json');
+  idifyFile('classes.json');
+  idifyFile('species.json');
+
+  const classMap = labelMap(['classes.json']);
+  const careerMap = labelMap(['careers.json']);
+  const speciesMap = labelMap(['species.json']);
+  const classIds = new Set(read('classes.json').map((c) => String(c.id)));
+  const careerIds = new Set(read('careers.json').map((c) => String(c.id)));
+  const speciesIds = new Set(read('species.json').map((s) => String(s.id)));
+  const toId = (set: Set<string>, map: Map<string, string[]>, v: unknown, ctx: string): unknown =>
+    typeof v === 'string' ? (set.has(v) ? v : (resolveId(map, v, ctx) ?? v)) : v;
+
+  write('careers.json', read('careers.json').map((c) => ({ ...c, class: toId(classIds, classMap, c.class, `career ${c.label}.class`) })));
+  write('careerLevels.json', read('careerLevels.json').map((lv) => ({ ...lv, career: toId(careerIds, careerMap, lv.career, `careerLevel ${lv.label}.career`) })));
+  write('pregens.json', read('pregens.json').map((p) => ({
+    ...p,
+    career: toId(careerIds, careerMap, p.career, `pregen ${p.name}.career`),
+    species: toId(speciesIds, speciesMap, p.species, `pregen ${p.name}.species`),
+  })));
+
+  // interludeEvents : revenueClasses / revenueBlockedClasses (labels de Classe → classId). La
+  // sentinelle « * » (tout le monde) n'est PAS une Classe → préservée telle quelle.
+  const toClassList = (arr: unknown, ctx: string): unknown =>
+    Array.isArray(arr) ? arr.map((v) => (v === '*' ? '*' : toId(classIds, classMap, v, ctx))) : arr;
+  write('interludeEvents.json', read('interludeEvents.json').map((e) => {
+    const fx = (e as Entry).fx as Record<string, unknown> | undefined;
+    if (!fx || (!('revenueClasses' in fx) && !('revenueBlockedClasses' in fx))) return e;
+    return { ...e, fx: {
+      ...fx,
+      ...('revenueClasses' in fx ? { revenueClasses: toClassList(fx.revenueClasses, `interlude.revenueClasses`) } : {}),
+      ...('revenueBlockedClasses' in fx ? { revenueBlockedClasses: toClassList(fx.revenueBlockedClasses, `interlude.revenueBlockedClasses`) } : {}),
+    } };
+  }));
+  console.log('careers/classes/species id-ifiés ; careers.class/careerLevels.career/pregens/interludeEvents → ids');
+}
+
 // ── Run ───────────────────────────────────────────────────────────────────────────────────────
 // NB : `gods.json` a été généré une fois depuis les ex-`cults/defs/` (supprimés) ; c'est désormais
 // une SOURCE app-owned éditable au Codex, plus rien à régénérer.
@@ -261,5 +304,6 @@ convertSimpleRefs();
 convertCareerChars();
 ensureMissingTalents();
 convertAdvancement();
+migrateCareersSpecies();
 if (problems.length) console.error(`\n⚠ ${problems.length} PROBLÈMES (résolution) :\n  ${problems.slice(0, 60).join('\n  ')}${problems.length > 60 ? `\n  …(+${problems.length - 60})` : ''}`);
 console.log('migration terminée.');

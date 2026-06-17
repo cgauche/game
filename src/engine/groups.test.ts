@@ -15,21 +15,21 @@ describe('Groupes — dérivation & matching (LDB 21, P3)', () => {
   });
 
   it('espèce → racial + carrière + extras (dédup, normalisé)', () => {
-    const g = groupsFor({ species: 'Humains (Reiklander)', career: 'Soldat', extras: ['Sigmarite'] });
+    const g = groupsFor({ species: 'Humains (Reiklander)', careerId: 'soldat', extras: ['Sigmarite'] });
     expect(g).toEqual(expect.arrayContaining(['Humain', 'Soldat', 'Sigmarite']));
   });
 
   it('dédup : un même groupe n’apparaît qu’une fois', () => {
-    const g = groupsFor({ career: 'Humain', species: 'Humains (Reiklander)' });
+    const g = groupsFor({ careerId: 'humain', species: 'Humains (Reiklander)' });
     expect(g.filter((x) => x === 'Humain').length).toBe(1);
   });
 
   it('classe « Roublards » → Groupe « Criminel » auto-dérivé (Épée de justice / Traits psy ciblés)', () => {
-    for (const career of ['Voleur', 'Hors-la-loi', 'Charlatan', 'Receleur']) {
-      expect(groupsFor({ career })).toEqual(expect.arrayContaining([career, 'Criminel']));
+    for (const c of [{ id: 'voleur', label: 'Voleur' }, { id: 'hors-la-loi', label: 'Hors-la-loi' }, { id: 'charlatan', label: 'Charlatan' }, { id: 'receleur', label: 'Receleur' }]) {
+      expect(groupsFor({ careerId: c.id })).toEqual(expect.arrayContaining([c.label, 'Criminel']));
     }
-    expect(groupsFor({ career: 'Soldat' })).not.toContain('Criminel'); // classe Guerriers
-    expect(groupMatch('Criminel', groupsFor({ career: 'Voleur' }))).toBe(true);
+    expect(groupsFor({ careerId: 'soldat' })).not.toContain('Criminel'); // classe Guerriers
+    expect(groupMatch('Criminel', groupsFor({ careerId: 'voleur' }))).toBe(true);
   });
 
   it('groupMatch : insensible casse/accents + tolérance pluriel', () => {

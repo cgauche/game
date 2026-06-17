@@ -39,7 +39,7 @@ import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLeve
 import { careerSkillAdditions, talentCharBonus } from '../../engine/talentEffects';
 import { castingKindOf } from '../../engine/combatFeatures/dispatch';
 import { bonus } from '../../engine/characteristics';
-import { findSpecies, careers, careersForSpecies, species as allSpecies, levelsForCareer, findSpell, advancementLabel, SpeciesData, CareerLevelData } from '../../data';
+import { findSpeciesById, careers, careersForSpecies, species as allSpecies, levelsForCareer, findSpell, advancementLabel, SpeciesData, CareerLevelData } from '../../data';
 import type { Appearance } from '../../gameIso/rig/appearance';
 
 export type CharMode = 'rolled' | 'reassigned' | 'pointBuy';
@@ -48,14 +48,16 @@ export interface CreatorDraft {
   /** Seed unique de l'assistant — tous les flux aléatoires en dérivent (figés). */
   seed: number;
   // 1) Espèce
-  speciesLabel: string;
-  /** Tirage d'espèce figé (label) — absent tant que le d100 n'a pas été lancé. */
-  speciesRoll?: { roll: number; label: string };
+  /** `id` STABLE de l'espèce (`SpeciesData.id`) — ≠ libellé. */
+  speciesId: string;
+  /** Tirage d'espèce figé (id) — absent tant que le d100 n'a pas été lancé. */
+  speciesRoll?: { roll: number; id: string };
   // 2) Carrière
-  careerLabel: string;
+  /** `id` STABLE de la carrière (`CareerData.id`) — ≠ libellé. */
+  careerId: string;
   ignoreRestrictions: boolean;
   /** Jets de carrière figés (1 puis 3) ; au-delà : relances libres (0 PX, RAW l.195). */
-  careerRolls: { roll: number; label: string }[];
+  careerRolls: { roll: number; id: string }[];
   /** Nombre de relances LIBRES effectuées (annule tout bonus). */
   careerFreeRolls: number;
   // 3) Caractéristiques
@@ -118,8 +120,8 @@ export function newDraft(seed = (Date.now() & 0xffff) ^ ((Math.random() * 0xffff
   const sp = defaultSpecies();
   return {
     seed,
-    speciesLabel: sp.label,
-    careerLabel: careersForSpecies(sp.refCareer)[0]?.label ?? careers[0].label,
+    speciesId: sp.id,
+    careerId: careersForSpecies(sp.refCareer)[0]?.id ?? careers[0].id,
     ignoreRestrictions: false,
     careerRolls: [],
     careerFreeRolls: 0,
@@ -157,13 +159,15 @@ export function newDraft(seed = (Date.now() & 0xffff) ^ ((Math.random() * 0xffff
  * héros d'avant cette fonctionnalité). */
 export function draftFromHero(hero: Combatant): CreatorDraft {
   const d = newDraft();
-  const speciesLabel = hero.appearance?.species ?? hero.species ?? d.speciesLabel;
-  const withSp = withSpecies(d, speciesLabel);
+  // `Combatant.species` est l'id LDB (rules) ; `appearance.species` est une clé de rig (libellé) → on
+  // reconstruit le brouillon depuis l'id rules, pas depuis l'apparence.
+  const speciesId = hero.species ?? d.speciesId;
+  const withSp = withSpecies(d, speciesId);
   const withCa = hero.career ? withCareer(withSp, hero.career) : withSp;
   return {
     ...withCa,
-    speciesLabel,
-    careerLabel: hero.career ?? withCa.careerLabel,
+    speciesId,
+    careerId: hero.career ?? withCa.careerId,
     name: hero.name ?? '',
     motivation: hero.motivation ?? '',
     ambitionShort: hero.details?.ambitionShort ?? '',
@@ -183,25 +187,25 @@ export function draftFromHero(hero: Combatant): CreatorDraft {
   };
 }
 
-export const draftSpecies = (d: CreatorDraft): SpeciesData => findSpecies(d.speciesLabel)!;
+export const draftSpecies = (d: CreatorDraft): SpeciesData => findSpeciesById(d.speciesId)!;
 export const draftLevel = (d: CreatorDraft): CareerLevelData | undefined =>
-  levelsForCareer(d.careerLabel).find((l) => l.level === 1);
+  levelsForCareer(d.careerId).find((l) => l.level === 1);
 
 // ── 1) Espèce ──
 export function rollDraftSpecies(d: CreatorDraft): CreatorDraft {
   if (d.speciesRoll) return d; // FIGÉ : pas de relance (LDB 04 — aucune n'est offerte)
   const r = rollSpecies(makeRNG(d.seed ^ 0x51ec));
-  return withSpecies({ ...d, speciesRoll: r }, r.label);
+  return withSpecies({ ...d, speciesRoll: r }, r.id);
 }
 export const speciesXp = (d: CreatorDraft): number =>
-  d.speciesRoll && d.speciesLabel === d.speciesRoll.label ? XP_SPECIES_ACCEPTED : 0;
+  d.speciesRoll && d.speciesId === d.speciesRoll.id ? XP_SPECIES_ACCEPTED : 0;
 
-export function withSpecies(d: CreatorDraft, label: string): CreatorDraft {
-  if (label === d.speciesLabel) return d;
+export function withSpecies(d: CreatorDraft, id: string): CreatorDraft {
+  if (id === d.speciesId) return d;
   // Changer d'espèce invalide les choix dépendants (compétences/talents d'espèce, carrière tirée).
   return {
     ...d,
-    speciesLabel: label,
+    speciesId: id,
     speciesPlus5: [],
     speciesPlus3: [],
     speciesTalentChoices: {},
@@ -218,7 +222,7 @@ export function rollDraftCareer(d: CreatorDraft): CreatorDraft {
   const n = d.careerRolls.length;
   if (n === 0) {
     const r = rollCareer(careers, sp, makeRNG(d.seed ^ 0xca1));
-    return r ? withCareer({ ...d, careerRolls: [r] }, r.label) : d;
+    return r ? withCareer({ ...d, careerRolls: [r] }, r.id) : d;
   }
   if (n === 1) {
     // « Faites deux lancers de plus, ce qui porte votre total à 3 choix » (LDB 05 l.193).
@@ -230,17 +234,17 @@ export function rollDraftCareer(d: CreatorDraft): CreatorDraft {
   }
   // « continuez à relancer jusqu'à obtenir quelque chose qui vous plaît » (l.195) — 0 PX.
   const r = rollCareer(careers, sp, makeRNG(d.seed ^ (0xca3 + d.careerFreeRolls)));
-  return r ? withCareer({ ...d, careerFreeRolls: d.careerFreeRolls + 1 }, r.label) : d;
+  return r ? withCareer({ ...d, careerFreeRolls: d.careerFreeRolls + 1 }, r.id) : d;
 }
 export function careerXp(d: CreatorDraft): number {
   if (d.careerFreeRolls > 0) return 0;
-  if (d.careerRolls.length === 1 && d.careerLabel === d.careerRolls[0].label) return XP_CAREER_FIRST;
-  if (d.careerRolls.length === 3 && d.careerRolls.some((r) => r.label === d.careerLabel)) return XP_CAREER_TOP3;
+  if (d.careerRolls.length === 1 && d.careerId === d.careerRolls[0].id) return XP_CAREER_FIRST;
+  if (d.careerRolls.length === 3 && d.careerRolls.some((r) => r.id === d.careerId)) return XP_CAREER_TOP3;
   return 0;
 }
-export function withCareer(d: CreatorDraft, label: string): CreatorDraft {
-  if (label === d.careerLabel) return d;
-  return { ...d, careerLabel: label, skillAdvances: {}, specChoices: {}, careerTalent: undefined, pettySpells: [], charAdvancesAlloc: {}, weaponChoice: undefined };
+export function withCareer(d: CreatorDraft, id: string): CreatorDraft {
+  if (id === d.careerId) return d;
+  return { ...d, careerId: id, skillAdvances: {}, specChoices: {}, careerTalent: undefined, pettySpells: [], charAdvancesAlloc: {}, weaponChoice: undefined };
 }
 
 // ── 3) Caractéristiques ──
@@ -451,8 +455,8 @@ export function buildHero(d: CreatorDraft, id?: string): Combatant {
   const plus5 = d.speciesPlus5.length === 3 ? d.speciesPlus5 : sp.skills.slice(0, 3).map((a) => advancementLabel('skills', a));
   const plus3 = d.speciesPlus3.length === 3 ? d.speciesPlus3 : sp.skills.slice(3, 6).map((a) => advancementLabel('skills', a));
   const hero = createHero({
-    speciesLabel: d.speciesLabel,
-    careerLabel: d.careerLabel,
+    speciesId: d.speciesId,
+    careerId: d.careerId,
     name: d.name.trim() || 'Aventurier',
     manualChars: draftChars(d),
     charAdvancesAlloc: d.charAdvancesAlloc,
@@ -478,7 +482,8 @@ export function buildHero(d: CreatorDraft, id?: string): Combatant {
     rng: makeRNG(d.seed ^ 0xf17a1),
     id,
   });
-  hero.appearance = { species: d.speciesLabel, sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
+  // appearance.species = clé de rig (LIBELLÉ d'espèce, résolu depuis l'id) ≠ Combatant.species (id rules).
+  hero.appearance = { species: findSpeciesById(d.speciesId)?.label ?? d.speciesId, sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
   if (d.star) hero.star = d.star;
   // Sorts de Magie mineure inclus au Talent (LDB 10 l.587) — choisis à l'étape 4, mémorisés.
   // (Les Bénédictions de Béni sont déjà octroyées par applyTalentAcquisition dans createHero.)

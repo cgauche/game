@@ -11,7 +11,7 @@ import {
   species, careers, characteristics, classes, skills, talents,
   qualities, trappings, etats, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
   stars, locations, books, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel,
-  skillInstanceLabel, talentConcrete, careersForSpecies, eyes, hairs, details,
+  skillInstanceLabel, talentConcrete, careersForSpecies, findClassById, eyes, hairs, details,
 } from '../../data';
 import { statName } from '../../engine/statEntry';
 import { splitTopLevelOu } from '../../engine/careerSlots';
@@ -167,7 +167,7 @@ export function raceCareerSection(s: (typeof species)[number]): CodexSection | n
   const accessible = careersForSpecies(s.refCareer);
   const rows: CodexRow[] = [];
   for (const cl of classes) {
-    const list = accessible.filter((c) => c.class === cl.label);
+    const list = accessible.filter((c) => c.class === cl.id);
     if (list.length) rows.push({ t: 'sub', label: cl.label }, ...list.map((c) => refRow('careers', c.label)));
   }
   return rows.length ? { title: 'Carrières accessibles', layout: 'chips', rows } : null;
@@ -222,8 +222,8 @@ export const CODEX: CodexCategory[] = [
   {
     key: 'careers', label: 'Carrières', group: 'Personnage',
     items: careers.map((c) => ({
-      label: c.label, sub: c.class, group: c.class, desc: c.desc, source: src(c.source),
-      sections: levelsForCareer(c.label).map((lv) => ({
+      label: c.label, sub: findClassById(c.class)?.label ?? c.class, group: findClassById(c.class)?.label ?? c.class, desc: c.desc, source: src(c.source),
+      sections: levelsForCareer(c.id).map((lv) => ({
         title: `Niveau ${lv.level} : ${lv.label} — ${lv.status}`,
         layout: 'chips' as const,
         rows: [

@@ -11,6 +11,7 @@ import { RigSprite } from '../../gameIso/rig/composeRig';
 import { DEFS } from '../../gameIso/sprites';
 import type { Appearance } from '../../gameIso/rig/appearance';
 import { SkillChip, TalentChip } from '../EntityChip';
+import { findCareerById } from '../../data';
 import { CreatorDraft, buildHero, draftSpecies, draftLevel, draftWealth, draftChars, xpTotal, speciesXp, careerXp, charsXp, starXp, stepIds } from './draft';
 
 export function previewHero(d: CreatorDraft): Combatant | null {
@@ -26,7 +27,8 @@ export function CreatorSummary({ d, step }: { d: CreatorDraft; step: number }) {
   const sp = draftSpecies(d);
   const level = draftLevel(d);
   const baseChars = draftChars(d);
-  const appearance: Appearance = { species: d.speciesLabel, sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
+  const careerLabel = findCareerById(d.careerId)?.label ?? d.careerId;
+  const appearance: Appearance = { species: sp.label, sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
   const wealth = draftWealth(d);
 
   return (
@@ -34,13 +36,13 @@ export function CreatorSummary({ d, step }: { d: CreatorDraft; step: number }) {
       <svg viewBox="0 0 120 150" className="creator-figure">
         <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
         <rect x={0} y={0} width={120} height={150} fill="#1d2230" rx={8} />
-        <RigSprite appearance={appearance} equip={{ weapons: hero?.weapons ?? [], armour: [] }} career={d.careerLabel} />
+        <RigSprite appearance={appearance} equip={{ weapons: hero?.weapons ?? [], armour: [] }} career={careerLabel} />
       </svg>
       <div className="creator-id">
         <strong>{d.name.trim() || 'Aventurier'}</strong>
         <span className="char-sub">{sp.label}</span>
         <span className="char-sub">
-          {level ? `${level.label} (${d.careerLabel})` : d.careerLabel} · {level?.status ?? ''}
+          {level ? `${level.label} (${careerLabel})` : careerLabel} · {level?.status ?? ''}
         </span>
       </div>
 

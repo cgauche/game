@@ -11,7 +11,7 @@ describe('Test Étendu séquentiel (porte DR cumulé)', () => {
   beforeEach(() => { useGame.setState({ battle: null, pendingExtendedTest: null }); });
 
   function hero() {
-    const h = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'Brawn', rng: makeRNG(1) });
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Brawn', rng: makeRNG(1) });
     h.fortune = 2; h.resilience = 1;
     useGame.setState({ party: [h] });
     return h;

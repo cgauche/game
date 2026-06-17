@@ -384,11 +384,8 @@ export function IsoStage() {
       const ft = frenzyTarget(st, activeH);
       if (ft && ft.id !== occ.id) return null;
     }
-    // Piétinement : mêmes prédicats que battleTrample (≥1 Avantage, adjacent plus petit).
-    if (battle.action === 'trample') {
-      const ok = (activeH.advantage ?? 0) >= 1 && !!trampleTarget(battle, activeH, occ.id);
-      return ok ? { fromId: activeH.id, toId: occ.id, line: 'solid', tip: null, reticle: true } : null;
-    }
+    // Piétinement / zone / mêlée : tout l'aperçu (réticule + chemin + tip) passe désormais par
+    // hoverTargeting, qui lit l'`AttackOption` armée (selectedAttack) — plus de branche par mode.
     const ht = hoverTargeting(st, activeH, occ);
     if (ht.kind === 'none') return null;
     if (ht.kind === 'invalid') {

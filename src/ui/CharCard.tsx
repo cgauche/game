@@ -1,7 +1,7 @@
 import type { KeyboardEvent } from 'react';
 import { Combatant, CHAR_KEYS, CharKey, CHAR_LABELS } from '../engine/types';
 import { PortraitTile } from './PortraitTile';
-import { speciesSingular } from '../data';
+import { speciesSingular, findSpeciesById, findCareerById } from '../data';
 import { CodexRef } from './compendium/CodexRef';
 import { SkillChip, TalentChip } from './EntityChip';
 import { FateChips } from './FateChips';
@@ -40,7 +40,7 @@ export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?:
           {/* Race/carrière en texte simple : `.char-head` est lui-même cliquable (ouvre la fiche)
               → pas de CodexRef imbriqué (conflit de clic) ; le survol-info vit sur la fiche. */}
           <span className="char-sub">
-            {speciesSingular(hero.species)} · {hero.career}
+            {speciesSingular(findSpeciesById(hero.species)?.label ?? hero.species)} · {findCareerById(hero.career)?.label ?? hero.career}
           </span>
         </div>
       </div>

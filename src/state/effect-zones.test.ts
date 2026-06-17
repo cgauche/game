@@ -123,7 +123,7 @@ describe('intégration : startCombat sème les pièges de la scène dans battle.
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
   it('une scène avec effectZones → zone permanente dans le combat', () => {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
     const scene: Scene = {
       ...testScene,
       effectZones: [

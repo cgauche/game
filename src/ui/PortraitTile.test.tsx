@@ -5,7 +5,7 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
 
-const base = () => createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'Gunnar', rng: makeRNG(3) });
+const base = () => createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Gunnar', rng: makeRNG(3) });
 
 describe('PortraitTile', () => {
   it('jauge HORIZONTALE : pleine et verte à PV max', () => {

@@ -17,16 +17,16 @@ describe('Personnages pré-tirés', () => {
       expect(h.species).toBeTruthy();
     }
     // Les deux incantateurs portent bien leurs sorts.
-    const sorcier = pregens.find((h) => h.career === 'Sorcier');
-    const pretre = pregens.find((h) => h.career === 'Prêtre');
+    const sorcier = pregens.find((h) => h.career === 'sorcier');
+    const pretre = pregens.find((h) => h.career === 'pretre');
     expect(sorcier?.spells).toContain('flechette'); // runtime = ids de sort
     expect(pretre?.spells).toContain('benediction-de-guerison');
   });
 
   it('les incantateurs portent les Talents REQUIS par leurs sorts (RAW)', () => {
     const pregens = makePregens();
-    const sorcier = pregens.find((h) => h.career === 'Sorcier')!;
-    const pretre = pregens.find((h) => h.career === 'Prêtre')!;
+    const sorcier = pregens.find((h) => h.career === 'sorcier')!;
+    const pretre = pregens.find((h) => h.career === 'pretre')!;
     // LDB 10 (Magie mineure) : « Vous pouvez apprendre des Sorts de Magie mineure » — requis pour Fléchette/Choc.
     expect(sorcier.talents.map((t) => talentConcrete(t))).toContain('Magie mineure');
     // LDB 41 l.14 : « un Personnage avec le Talent Béni reçoit les six Bénédictions de son culte ».
@@ -56,7 +56,7 @@ describe('makeArenaParty — couverture des règles', () => {
   it('n’est PAS le simple slice(0, 4) des pré-tirés (inclut un Chasseur)', () => {
     const first4 = makePregens().slice(0, 4).map((h) => h.career);
     expect(party.map((h) => h.career)).not.toEqual(first4);
-    expect(party.some((h) => h.career === 'Chasseur')).toBe(true);
+    expect(party.some((h) => h.career === 'chasseur')).toBe(true);
   });
 
   it('porte une arme à DISTANCE (Projectiles : bandes de portée / munitions / rechargement)', () => {

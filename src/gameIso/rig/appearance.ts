@@ -1,6 +1,7 @@
 import type { Slot } from './bones';
 import type { Combatant } from '../../engine/types';
 import { hashSeed } from '../appearance';
+import { findSpeciesById } from '../../data';
 import type { MonsterParts } from './parts/monstrous';
 import type { Palette } from './palette';
 
@@ -20,10 +21,12 @@ export interface Appearance {
   seed?: number;
 }
 
-/** Apparence par défaut dérivée d'un Combatant (espèce + seed stable sur l'id). */
+/** Apparence par défaut dérivée d'un Combatant (espèce + seed stable sur l'id). `Combatant.species`
+ *  est un `id` (rules) → résolu en LIBELLÉ d'espèce ici (clé d'espèce du rig, contrat « label ») ;
+ *  un id de créature/non-espèce retombe tel quel (le rig le résout par mot-clé). */
 export function defaultAppearance(c: Combatant): Appearance {
   return {
-    species: c.species ?? 'Humain',
+    species: findSpeciesById(c.species)?.label ?? c.species ?? 'Humain',
     sex: 'M',
     build: 0.5,
     seed: hashSeed(c.id),

@@ -8,8 +8,8 @@ import type { TestScenario } from './_shared';
 /** Soldat (Recrue = Argent 1) : Revenus corrects et banque « Investir » autorisée (LDB 23). */
 function veteran(): Combatant {
   const h = createHero({
-    speciesLabel: 'Humains (Reiklander)',
-    careerLabel: 'Soldat',
+    speciesId: 'humains-reiklander',
+    careerId: 'soldat',
     name: 'Vétéran (test)',
     motivation: 'Test',
     rng: makeRNG(1601),
@@ -23,8 +23,8 @@ function veteran(): Combatant {
 /** Artisan : Compétence Métier → l'Activité Artisanat (Test étendu) est jouable. */
 function artisan(): Combatant {
   const h = createHero({
-    speciesLabel: 'Nains', // un forgeron nain, évidemment
-    careerLabel: 'Artisan',
+    speciesId: 'nains', // un forgeron nain, évidemment
+    careerId: 'artisan',
     name: 'Forgeron (test)',
     motivation: 'Test',
     rng: makeRNG(1602),

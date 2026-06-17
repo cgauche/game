@@ -16,8 +16,8 @@ describe('Interlude — flux start/end', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
-    const a = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'A', rng: makeRNG(1) });
-    const b = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'B', rng: makeRNG(2) });
+    const a = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
+    const b = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'B', rng: makeRNG(2) });
     useGame.setState({ party: [a, b], battle: null, interlude: null, bank: [], pendingOrders: [], journal: [], money: fromBrass(1000) });
     useGame.getState().startScene(testScene);
     vi.clearAllTimers();

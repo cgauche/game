@@ -17,8 +17,8 @@ const MANNEQUIN: CustomStatblock = {
 /** Arbalète de poing (Portée 10 m → Extrême ×3 = 15 cases) : le mannequin du fond est HORS portée. */
 function tireur(): Combatant {
   const h = createHero({
-    speciesLabel: 'Humains (Reiklander)',
-    careerLabel: 'Soldat',
+    speciesId: 'humains-reiklander',
+    careerId: 'soldat',
     name: 'Tireur (test)',
     motivation: 'Test',
     rng: makeRNG(1901),

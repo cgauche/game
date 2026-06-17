@@ -14,7 +14,7 @@ describe('Contre-sort (Dissipation, LDB 46 l.201-202)', () => {
 
   function setup() {
     const hero = createHero({
-      speciesLabel: 'Humains (Reiklander)', careerLabel: 'Sorcier', name: 'W',
+      speciesId: 'humains-reiklander', careerId: 'sorcier', name: 'W',
       careerTalent: 'Magie mineure', rng: makeRNG(707),
     });
     hero.spells = ['Fléchette'];

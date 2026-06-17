@@ -9,6 +9,7 @@ import { defaultAppearance } from './rig/appearance';
 import { equipFromCombatant, isShield } from './rig/parts/equipment';
 import { combatantAppearance, combatantOverlays } from './rig/parts/combatantVisuals';
 import { resolveRender } from './rig/bodyPlan';
+import { findCareerById } from '../data';
 import { sizeTokenScale } from './sizeScale';
 import { isOutOfAction } from '../engine/conditions';
 import type { Combatant } from '../engine/types';
@@ -29,7 +30,7 @@ export function MountedToken({ mount, rider }: { mount: Combatant; rider: Combat
   const prof = rider.kind === 'hero' ? null : enemyRigProfile(rider);
   const appearance = combatantAppearance(prof?.appearance ?? rider.appearance ?? defaultAppearance(rider), rider);
   const equip = prof?.equip ?? equipFromCombatant(rider);
-  const tenue = prof?.tenue ?? rider.career;
+  const tenue = prof?.tenue ?? findCareerById(rider.career)?.label ?? rider.career;
   const overlays = combatantOverlays(rider);
   // Animation vivante du cavalier (attaque/parade/touché via le bus, ciblées par rider.id) —
   // en mode ASSIS : clips MONTÉS (lance couchée, taille à cheval), gestes sans bassin/jambes,

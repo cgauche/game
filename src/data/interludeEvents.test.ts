@@ -22,7 +22,7 @@ describe('INTERLUDE_EVENTS — intégrité de la table (LDB 22)', () => {
     expect(interludeEventFor(38).fx?.loseActivity).toBe(true); // Festivités
     expect(interludeEventFor(84).fx?.moneyPct).toBe(-50); // Kleptomane
     expect(interludeEventFor(78).fx?.stashRaided).toBe(true); // Mise à sac
-    expect(interludeEventFor(31).fx?.revenueClasses).toEqual(['Riverains']); // Profits abondants
+    expect(interludeEventFor(31).fx?.revenueClasses).toEqual(['riverains']); // Profits abondants (classId)
     expect(interludeEventFor(58).fx?.revenueBlockedClasses).toEqual(['*']); // Complications monstrueuses
   });
   it('les événements purement narratifs ne portent AUCUN fx (rien d’inventé)', () => {

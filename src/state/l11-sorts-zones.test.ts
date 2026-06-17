@@ -18,7 +18,7 @@ describe('L11 — zones persistantes posées par les sorts', () => {
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
   function setup() {
-    const W = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'W', rng: makeRNG(3) });
+    const W = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'W', rng: makeRNG(3) });
     useGame.setState({ party: [W] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');

@@ -15,7 +15,7 @@ describe('Contre-sort à plusieurs (flux multi parallèle)', () => {
 
   function setup() {
     const mk = (name: string, seed: number) => {
-      const h = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Sorcier', name, careerTalent: 'Magie mineure', rng: makeRNG(seed) });
+      const h = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', name, careerTalent: 'Magie mineure', rng: makeRNG(seed) });
       h.spells = ['Fléchette'];
       h.resilience = 1; // pour le test Résilience
       return h;

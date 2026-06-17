@@ -15,7 +15,7 @@ import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine
 import { spellSupport } from '../engine/spellspec';
 import { spellSpecFor } from '../data/spellspecs';
 import { spellEffectOps } from '../state/flow';
-import { careers, findSpellById, findStar, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel } from '../data';
+import { careers, findSpellById, findStar, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel, findSpeciesById, findCareerById, findClassById } from '../data';
 import { formatTrait } from '../engine/traits/dispatch';
 import { CodexRef } from './compendium/CodexRef';
 import { TalentChip } from './EntityChip';
@@ -149,7 +149,7 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
               <PortraitTile c={hero} ring="var(--gold)" variant="full" size="xl" />
               <h3>{hero.name}</h3>
               <span className="char-sub">
-                <CodexRef category="races" label={hero.species ?? ''}>{speciesSingular(hero.species)}</CodexRef> · <CodexRef category="careers" label={hero.career ?? ''}>{hero.career}</CodexRef>
+                <CodexRef category="races" label={findSpeciesById(hero.species)?.label ?? ''}>{speciesSingular(findSpeciesById(hero.species)?.label ?? hero.species)}</CodexRef> · <CodexRef category="careers" label={findCareerById(hero.career)?.label ?? ''}>{findCareerById(hero.career)?.label ?? hero.career}</CodexRef>
                 {hero.careerLevel ? ` (niv. ${hero.careerLevel})` : ''}
               </span>
               {hero.star && (
@@ -833,10 +833,10 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
           <select value={target} onChange={(e) => setTarget(e.target.value)}>
             <option value="">— changer de carrière (niv. 1) —</option>
             {careers
-              .filter((c) => c.label !== v.career)
+              .filter((c) => c.id !== v.career)
               .map((c) => (
-                <option key={c.label} value={c.label}>
-                  {c.label} ({c.class}) · {v.changeCostFor(c.label)} PX
+                <option key={c.id} value={c.id}>
+                  {c.label} ({findClassById(c.class)?.label ?? c.class}) · {v.changeCostFor(c.id)} PX
                 </option>
               ))}
           </select>

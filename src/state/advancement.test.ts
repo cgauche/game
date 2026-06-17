@@ -10,8 +10,8 @@ const hero = (over: Partial<Combatant> = {}): Combatant =>
     id: 'h',
     name: 'H',
     kind: 'hero',
-    species: 'Humains (Reiklander)',
-    career: 'Agitateur',
+    species: 'humains-reiklander',
+    career: 'agitateur',
     careerLevel: 1,
     characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
     wounds: { current: 12, max: 12 },
@@ -34,7 +34,7 @@ describe('buildAdvancementView — coûts & in-carrière depuis careerLevels.jso
   it('méta : PX, carrière, niveau, libellé du niveau', () => {
     const v = buildAdvancementView(hero());
     expect(v.xp).toBe(1000);
-    expect(v.career).toBe('Agitateur');
+    expect(v.career).toBe('agitateur');
     expect(v.careerLevel).toBe(1);
     expect(v.levelLabel).toBe('Pamphlétaire');
   });
@@ -91,8 +91,8 @@ describe('buildAdvancementView — coûts & in-carrière depuis careerLevels.jso
     const v = buildAdvancementView(hero());
     const next = v.targets.find((t) => t.level === 2);
     expect(next).toBeTruthy();
-    expect(next!.career).toBe('Agitateur');
-    expect(next!.label).toBe('Agitateur'); // libellé du Niveau 2
+    expect(next!.career).toBe('agitateur');
+    expect(next!.label).toBe('Agitateur'); // libellé du Niveau 2 (label de niveau, pas un id)
     expect(next!.ok).toBe(false); // niveau 1 non complété
   });
 
@@ -108,12 +108,12 @@ describe('buildAdvancementView — coûts & in-carrière depuis careerLevels.jso
   it('changeCostFor : +100 PX vers une carrière d\'une autre Classe (LDB 08 l.9)', () => {
     const v = buildAdvancementView(hero());
     // Agitateur = Citadins ; Artisan = Citadins (même Classe) ; Soldat = Guerriers.
-    expect(v.changeCostFor('Artisan')).toBe(v.changeCost);
-    expect(v.changeCostFor('Soldat')).toBe(v.changeCost + 100);
+    expect(v.changeCostFor('artisan')).toBe(v.changeCost);
+    expect(v.changeCostFor('soldat')).toBe(v.changeCost + 100);
   });
 
   it('emplacement « (Au choix) » : Érudit propose un choix de spec de Savoir', () => {
-    const v = buildAdvancementView(hero({ career: 'Érudit' }));
+    const v = buildAdvancementView(hero({ career: 'erudit' }));
     const open = v.skillSlotsOpen.find((s) => s.group === 'Savoir');
     expect(open).toBeTruthy();
     expect(open!.options.length).toBeGreaterThan(0);

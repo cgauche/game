@@ -117,7 +117,7 @@ describe('craftCatalog / orderCatalog', () => {
 });
 
 describe('learnableTalents — « un Talent en dehors de votre Carrière » (ch.23 l.59)', () => {
-  const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'T', rng: makeRNG(7) });
+  const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'T', rng: makeRNG(7) });
   it('exclut les talents de la Carrière courante (eux passent par l’Avancement)', () => {
     const labels = learnableTalents(hero).map((t) => t.label);
     // « Guerrier né » est un talent du Soldat Niveau 1 (Recrue) → exclu de l'Apprentissage.

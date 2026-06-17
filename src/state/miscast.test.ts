@@ -23,7 +23,7 @@ describe('Miscast en séquence (store)', () => {
   });
 
   function battle() {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Sorcier', name: 'Mage', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', name: 'Mage', rng: makeRNG(3) });
     useGame.setState({ party: [hero], pendingReveals: [] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
