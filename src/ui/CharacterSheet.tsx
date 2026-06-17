@@ -481,6 +481,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
             return (
               <div key={it.uid}>
                 <div className={`inv-row kind-${it.kind} ${highlighted ? 'equipped' : ''}`}>
+                  <ItemIcon item={it} size="sm" />
                   <div className="ir-main">
                     <span className="ir-name">
                       <CodexRef category="trappings" label={it.name}>{it.name}</CodexRef>{skinned && ' ✨'}

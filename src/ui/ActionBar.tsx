@@ -20,6 +20,7 @@ import { previewResourceDelta, cleaveTargets, dualStrikeTargets, placingZoneOf, 
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { ActiveFrame } from './ActiveFrame';
 import { CodexRef } from './compendium/CodexRef';
+import { ItemIcon } from './ItemIcon';
 
 const bleedStacks = (c: Combatant) => c.conditions.find((x) => x.name === 'Hémorragique')?.value ?? 0;
 
@@ -342,7 +343,7 @@ export function ActionBar() {
         <div className="ab-spells">
           {ammoChoices.map((a) => (
             <div key={a.uid} className="ab-spell-row">
-              <button className={`btn btn-sm ${active.ammoUid === a.uid ? 'btn-primary' : ''}`} onClick={() => selectAmmo(a.uid)}>🏹 {a.name} ×{a.qty}</button>
+              <button className={`btn btn-sm ${active.ammoUid === a.uid ? 'btn-primary' : ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => selectAmmo(a.uid)}><ItemIcon item={a} size={18} /> {a.name} ×{a.qty}</button>
               <CodexRef category="trappings" label={a.name} className="ab-codex-info" hideIfUnknown>ℹ️</CodexRef>
             </div>
           ))}
@@ -420,16 +421,21 @@ export function ActionBar() {
             {isHero && loadouts.length >= 2 && (
               <div className="ab-loadouts" title={battle.loadoutSwapped ? 'Set d’armes déjà changé ce tour' : 'Changer de set d’armes (gratuit, 1/tour)'}>
                 <span className="ab-loadouts-ico">🗡</span>
-                {loadouts.map((lo) => (
-                  <button
-                    key={lo.id}
-                    className={`btn btn-sm ${active.activeLoadoutId === lo.id ? 'btn-primary' : ''}`}
-                    disabled={!!battle.loadoutSwapped && active.activeLoadoutId !== lo.id}
-                    onClick={() => switchLoadout(lo.id)}
-                  >
-                    {lo.name}
-                  </button>
-                ))}
+                {loadouts.map((lo) => {
+                  const mainItem = lo.main ? active.items?.find((i) => i.uid === lo.main) : undefined;
+                  return (
+                    <button
+                      key={lo.id}
+                      className={`btn btn-sm ${active.activeLoadoutId === lo.id ? 'btn-primary' : ''}`}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                      disabled={!!battle.loadoutSwapped && active.activeLoadoutId !== lo.id}
+                      onClick={() => switchLoadout(lo.id)}
+                    >
+                      {mainItem && <ItemIcon item={mainItem} size={18} />}
+                      {lo.name}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -559,11 +565,14 @@ export function ActionBar() {
                 <span className="ab-ico">🌀</span><span className="ab-lbl">Manœuvre ▾</span>
               </button>
             )}
-            {!frenzied && usableGroups.map((g) => (
-              <button key={g.name} className="ab-slot" disabled={battle.acted || stunned || broken} onClick={() => useItem(g.uids[0])} title={g.desc || `Utiliser ${g.name}`}>
-                <span className="ab-ico">🧪</span><span className="ab-lbl">{g.name}{g.uids.length > 1 ? ` ×${g.uids.length}` : ''}</span>
-              </button>
-            ))}
+            {!frenzied && usableGroups.map((g) => {
+              const it = active.items?.find((i) => i.uid === g.uids[0]);
+              return (
+                <button key={g.name} className="ab-slot" disabled={battle.acted || stunned || broken} onClick={() => useItem(g.uids[0])} title={g.desc || `Utiliser ${g.name}`}>
+                  {it ? <ItemIcon item={it} size={22} /> : <span className="ab-ico">🧪</span>}<span className="ab-lbl">{g.name}{g.uids.length > 1 ? ` ×${g.uids.length}` : ''}</span>
+                </button>
+              );
+            })}
             {!frenzied && groundItems.map((g) => (
               <button key={`${g.entityId}:${g.key}`} className="ab-slot" disabled={battle.acted || stunned || broken} onClick={() => pickup(g.entityId, g.key)} title="Ramasser cet objet au sol (coûte l'Action)">
                 <span className="ab-ico">✋</span><span className="ab-lbl">{g.label}</span>
