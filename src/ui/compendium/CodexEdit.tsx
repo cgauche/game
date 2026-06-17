@@ -195,6 +195,7 @@ const TRIGGER_LABEL: Record<EffectTrigger, string> = {
   onRoundStart: 'au début de son Round',
   onStartled: 'magie / bruit fort',
   onKill: 'quand il neutralise un adversaire',
+  onCharged: 'quand le porteur est Chargé',
 };
 const ON_LABEL: Record<'self' | 'victim' | 'engaged', string> = {
   self: 'le porteur lui-même',

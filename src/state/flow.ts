@@ -220,7 +220,7 @@ export const EMPTY_FLOW: Flow = { kind: 'seq', steps: [] };
  *  TOUT porteur d'effets déclenchés (Trait de créature, Atout d'arme…). `onHit` : après une touche
  *  réussie (du porteur ou de l'arme) ; `onWoundLoss` : quand le porteur PERD des PB ; `onRoundStart` :
  *  au début de son Round ; `onStartled` : magie / bruit fort ; `onKill` : adversaire mis hors de combat. */
-export type EffectTrigger = 'onHit' | 'onWoundLoss' | 'onRoundStart' | 'onStartled' | 'onKill';
+export type EffectTrigger = 'onHit' | 'onWoundLoss' | 'onRoundStart' | 'onStartled' | 'onKill' | 'onCharged';
 
 /** Effet DÉCLENCHÉ authoré (donnée éditable) : un Flow d'ops appliqué à `on` quand `trigger` se produit.
  *  GÉNÉRIQUE — porté indifféremment par `TraitData.effects` (Toile, Sang corrosif…) ET `QualityData.effects`

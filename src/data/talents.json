@@ -155,7 +155,23 @@
     "source": {
       "book": "LDB",
       "page": 132
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "self",
+            "ops": [
+              { "op": "grantFreeAttack", "weapon": "held", "when": "immediate", "cost": { "advantageOrMovement": true } }
+            ]
+          }
+        }
+      }
+    ]
   },
   {
     "id": "attirant",
@@ -1119,7 +1135,23 @@
     "source": {
       "book": "LDB",
       "page": 138
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onCharged",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "self",
+            "ops": [
+              { "op": "grantFreeAttack", "weapon": "mainHand", "when": "immediate", "test": { "characteristic": "I", "difficulty": "intermediaire" }, "perChargerOncePerRound": true }
+            ]
+          }
+        }
+      }
+    ]
   },
   {
     "id": "frenesie",
@@ -1137,7 +1169,12 @@
       "page": 138
     },
     "passive": [
-      { "op": "grantFreeAttack", "weapon": "held", "when": "available", "activeIf": "frenzied" }
+      {
+        "op": "grantFreeAttack",
+        "weapon": "held",
+        "when": "available",
+        "activeIf": "frenzied"
+      }
     ]
   },
   {

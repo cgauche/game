@@ -94,7 +94,7 @@ import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } from '../engine/skills';
-import { findSkill, findManeuverById, findDomain } from '../data';
+import { findSkill, findManeuverById, findDomain, findTalentById } from '../data';
 import { norm } from '../lib/normalize';
 import { slugId } from '../data/slug';
 import { recomputeLoadout, weaponWithAmmo, compatibleAmmo, damageArmour, buildWeapon } from '../engine/items';
@@ -162,7 +162,7 @@ import {
   emitCreatureAttackAnim, trampleTarget, bestDefenseMode,
   rollManeuverAttacker, maneuverAttackerDifficulty, resolveManeuver,
 } from './combatManeuvers';
-import { spellFlowFor, spellOps, type Flow } from './flow';
+import { spellFlowFor, spellOps, type Flow, type EffectTrigger } from './flow';
 import { startCascade, registerCascadeApplier } from './cascade';
 
 /** Sonné : tout adversaire qui frappe la cible en CORPS À CORPS gagne +1 Avantage
@@ -1796,6 +1796,58 @@ export function aiFrenzyAttack(get: Get, set: SetFn, enemy: Combatant): void {
   if (!r) return;
   applyAttackResult(get, set, enemy, r.victim ?? target, r.weapon, r.res, false); // instantané (pas de modale)
   set({ battle: { ...get().battle!, acted: prevActed } });
+}
+
+// ── Attaques GRATUITES accordées par un TALENT déclenché (Assaut féroce `onHit`, Frappe réactive
+//    `onCharged`) : op `grantFreeAttack{when:'immediate'}` portée en DONNÉE par le talent. Résolution
+//    INSTANTANÉE (motif aiFrenzyAttack — pas de modale), arme TENUE, Action PRÉSERVÉE. ──
+
+/** Collecte les ops `grantFreeAttack` d'un Flow (walk seq/do/if/test). Le grant doit être TOP-LEVEL,
+ *  gaté par ses propres champs (test/cost/cap) — même convention impure que summon/zone. */
+function freeAttackOpsOf(flow: Flow): Extract<GameOp, { op: 'grantFreeAttack' }>[] {
+  const out: Extract<GameOp, { op: 'grantFreeAttack' }>[] = [];
+  const walk = (f: Flow): void => {
+    if (f.kind === 'do' && f.effect.type === 'ops') { for (const op of f.effect.ops) if (op.op === 'grantFreeAttack') out.push(op); }
+    else if (f.kind === 'seq') f.steps.forEach(walk);
+    else if (f.kind === 'if') { walk(f.then); if (f.else) walk(f.else); }
+    else if (f.kind === 'test') { walk(f.success); walk(f.fail); }
+  };
+  walk(flow);
+  return out;
+}
+
+/** Résout UNE attaque gratuite de talent contre `target` : plafond /Round (= `level`, via
+ *  `freeAttacksThisTurn[key]`) + 1× par chargeur ; coût (Avantage) ; jet préalable (`op.test`, Frappe
+ *  réactive : Init) ; puis frappe INSTANTANÉE à l'arme tenue, Action préservée. Le plafond borne aussi la
+ *  récursion (un onHit qui touche → +1 attaque, recomptée → s'arrête au niveau). */
+function applyTalentFreeAttack(get: Get, set: SetFn, actor: Combatant, op: Extract<GameOp, { op: 'grantFreeAttack' }>, target: Combatant | undefined, level: number, key: string): void {
+  if (!target || isOutOfAction(actor) || isOutOfAction(target) || !actor.pos || !target.pos) return;
+  if ((actor.weapons[0]?.type ?? 'melee') !== 'melee') return; // attaque d'arme de mêlée (l'arme tenue)
+  const uses = actor.freeAttacksThisTurn ?? {};
+  if ((uses[key] ?? 0) >= level) return; // plafond /Round atteint (= niveau du talent)
+  const ck = `${key}:${target.id}`;
+  if (op.perChargerOncePerRound && (uses[ck] ?? 0) >= 1) return; // 1 riposte par chargeur (Frappe réactive)
+  if (op.cost?.advantage != null && actor.advantage < op.cost.advantage) return; // Avantage insuffisant
+  if (op.cost?.advantageOrMovement && actor.advantage <= 0) return; // simplifié : Avantage requis (« ou Mouvement » = raffinement)
+  if (op.test && !rollTest(effectiveChar(actor, op.test.characteristic), op.test.difficulty, battleRng()).success) return; // jet préalable raté
+  if (op.cost?.advantage != null) actor.advantage = Math.max(0, actor.advantage - op.cost.advantage);
+  else if (op.cost?.advantageOrMovement) actor.advantage = Math.max(0, actor.advantage - 1);
+  actor.freeAttacksThisTurn = { ...uses, [key]: (uses[key] ?? 0) + 1, ...(op.perChargerOncePerRound ? { [ck]: 1 } : {}) };
+  const prevActed = get().battle?.acted ?? false; // gratuite : Action préservée
+  const r = resolveAttack(get, actor, target);
+  if (r) applyAttackResult(get, set, actor, r.victim ?? target, r.weapon, r.res, false);
+  set({ battle: { ...get().battle!, acted: prevActed } });
+}
+
+/** Résout les attaques gratuites DÉCLENCHÉES des talents de `actor` pour `trigger` (against `victim`) —
+ *  source : les `effects` du talent (donnée), ops `grantFreeAttack{when:'immediate'}`. Vaut héros ET IA. */
+export function resolveTalentFreeAttacks(get: Get, set: SetFn, actor: Combatant, trigger: EffectTrigger, victim: Combatant | undefined): void {
+  for (const t of actor.talents ?? []) {
+    for (const eff of findTalentById(t.talentId)?.effects ?? []) {
+      if (eff.trigger !== trigger) continue;
+      for (const op of freeAttackOpsOf(eff.flow)) if (op.when === 'immediate') applyTalentFreeAttack(get, set, actor, op, victim, t.times ?? 1, t.talentId);
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -3921,6 +3973,9 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
             gainAdvantage(enemy, adv);
             enemy.gainedAdvThisRound = true;
             enemy.chargedThisTurn = true; // Charge → Attaque gratuite de Cornes (LDB 85), résolue par aiCreatureFreeAttacks
+            // Frappe réactive (LDB 10) : la cible CHARGÉE peut riposter HORS séquence (Test d'Init) avant
+            // l'attaque du chargeur — talent d'attaque déclenchée en donnée (`grantFreeAttack onCharged`).
+            resolveTalentFreeAttacks(get, set, tgt, 'onCharged', enemy);
           }
         }
         attackThenAdvance(tgt, Math.max(TEMPO.preAttack, walkMs(path ?? []) + TEMPO.afterMove));

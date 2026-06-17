@@ -17,6 +17,7 @@ const TRIGGER_LABEL: Record<EffectTrigger, string> = {
   onRoundStart: 'Au début du Round',
   onStartled: 'Surpris (magie / bruit)',
   onKill: 'En tuant un adversaire',
+  onCharged: 'Quand Chargé',
 };
 const ON_LABEL: Record<'self' | 'victim' | 'engaged', string> = {
   self: 'soi-même',
