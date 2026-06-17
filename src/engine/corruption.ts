@@ -18,6 +18,7 @@
  */
 import { Combatant, CharKey, HitLocation, Weapon } from './types';
 import { bonus, effectiveChar } from './characteristics';
+import { talentCorruptionThreshold } from './combatFeatures/dispatch';
 import type { PsychTrait } from './psychology';
 import type { GameOp } from './ops';
 import type { TraitInstance } from './statEntry';
@@ -83,8 +84,7 @@ export function corruptionGain(level: ExposureLevel, success: boolean, dr: numbe
  *  « Vous pouvez gagner un nombre de Points de Corruption supplémentaires égal à votre niveau d'Âme
  *  pure avant d'avoir à effectuer un Test pour savoir si vous êtes corrompu » → seuil +niveau. */
 export function corruptionThresholdExceeded(c: Combatant): boolean {
-  const amePure = (c.talents ?? []).filter((t) => t.talentId === 'ame-pure').reduce((a, t) => a + (t.times ?? 1), 0);
-  return (c.corruption ?? 0) > bonus(effectiveChar(c, 'FM')) + bonus(effectiveChar(c, 'E')) + amePure;
+  return (c.corruption ?? 0) > bonus(effectiveChar(c, 'FM')) + bonus(effectiveChar(c, 'E')) + talentCorruptionThreshold(c);
 }
 
 // ---------------------------------------------------------------------------

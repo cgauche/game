@@ -229,3 +229,18 @@ export function talentReverseFailed(c: Combatant, skillLabel: string | undefined
   }
   return null;
 }
+
+/** Costaud (LDB 10) : limite d'Encombrement +2 × niveau. Remplace le check `talentId === 'costaud'`. */
+export function talentEncumbranceBonus(c: Combatant): number {
+  return 2 * levelSum(c, (d) => !!d.encumbranceBonus);
+}
+
+/** Âme pure (LDB 10) : seuil de Corruption relevé de niveau. Remplace le check `talentId === 'ame-pure'`. */
+export function talentCorruptionThreshold(c: Combatant): number {
+  return levelSum(c, (d) => !!d.corruptionThreshold);
+}
+
+/** Chirurgie (LDB 10) : le combattant peut opérer (mode de soin chirurgical). Remplace `talentId === 'chirurgie'`. */
+export function hasSurgery(c: Combatant): boolean {
+  return featuresOf(c).some(({ def }) => def.surgery);
+}

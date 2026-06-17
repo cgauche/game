@@ -104,6 +104,13 @@ export interface CombatFeature {
   /** Négociateur (LDB 60 l.12) : un Marchandage GAGNÉ réduit le prix de 20 % (au lieu de 10 %) même
    *  sans Succès Stupéfiant (DR net ≥ 6). Lu par merchantFlow lors de la conclusion du Marchandage. */
   bargainBonus?: boolean;
+  // ── Capacités diverses (hors combat direct) ──────────────────────────────────
+  /** Costaud (LDB 10) : limite d'Encombrement +2 × niveau (items.maxEncumbrance). */
+  encumbranceBonus?: boolean;
+  /** Âme pure (LDB 10) : seuil de Corruption +niveau (corruption.corruptionThresholdExceeded). */
+  corruptionThreshold?: boolean;
+  /** Chirurgie (LDB 10) : débloque le mode de soin chirurgical (healing/partyFlow : fracture/amputation). */
+  surgery?: boolean;
   // ── Incantation (apprentissage des sorts — grimoire.ts) ──────────────────────
   /** Talent de lanceur (LDB 10) : famille d'incantation qu'il ouvre (Magie mineure → 'mineure',
    *  Magie des Arcanes → 'arcane', Invocation → 'invocation', Béni → 'beni', Magie du Chaos → 'chaos').

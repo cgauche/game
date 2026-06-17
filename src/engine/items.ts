@@ -6,6 +6,7 @@
  */
 import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout } from './types';
 import { bonus, baseWithTraits } from './characteristics';
+import { talentEncumbranceBonus } from './combatFeatures/dispatch';
 import { applyEnchants } from './weaponDamage';
 import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { mutationArmourBonus } from './corruption';
@@ -174,8 +175,7 @@ export function giveTrappingLabel(give: { trappingId?: string; custom?: string }
 /** Limite d'Encombrement = Bonus de Force + Bonus d'Endurance, +2 par niveau de Costaud
  *  (LDB ; talent Costaud : « Augmentez les Points d'Encombrement … de votre niveau × 2 »). */
 export function maxEncumbrance(c: Combatant): number {
-  const costaud = (c.talents ?? []).find((t) => t.talentId === 'costaud')?.times ?? 0;
-  return bonus(baseWithTraits(c, 'F')) + bonus(baseWithTraits(c, 'E')) + costaud * 2;
+  return bonus(baseWithTraits(c, 'F')) + bonus(baseWithTraits(c, 'E')) + talentEncumbranceBonus(c);
 }
 
 /** Encombrement transporté. Les objets PORTÉS (armure équipée) voient leur Encombrement

@@ -4,6 +4,7 @@
  * Pur + testé ; ne dépend que de types/conditions (déjà purs).
  */
 import { Combatant } from './types';
+import { hasSurgery } from './combatFeatures/dispatch';
 import { loseWounds, addCondition, removeCondition, hasCondition, recoveredStacks } from './conditions';
 import { hasTreatableTrauma, hasSurgeryTrauma } from './trauma';
 import { contractDisease } from './disease';
@@ -21,7 +22,7 @@ export function hasHealSkill(c: Combatant): boolean {
 /** Le personnage possède-t-il le Talent Chirurgie (LDB 10) ? Prérequis pour opérer une blessure
  *  chirurgicale (amputation, fracture majeure). */
 export function hasSurgerySkill(c: Combatant): boolean {
-  return (c.talents ?? []).some((t) => t.talentId === 'chirurgie');
+  return hasSurgery(c);
 }
 
 /** Cible soignable : blessée (PB perdus) OU porteuse d'≥1 État Hémorragique OU avec une déchirure traitable ;
