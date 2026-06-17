@@ -19,7 +19,7 @@ import {
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, aiOvercastPlan,
-  availableManeuvers, selectedAttackOption, freeAttackWeapon, applyWail, resolveManeuver, MELEE_MANEUVER_KINDS,
+  selectedAttackOption, freeAttackWeapon, applyWail, resolveManeuver, MELEE_MANEUVER_KINDS,
   castSightBlocked, spellSightOf, castZoneSpell, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone,
   counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition,
   openRoundStartPsych, displaceSmaller, applySurprise,
@@ -160,12 +160,9 @@ export interface BattleState {
   /** Mode d'action À BOUTON en cours (panneau ouvert). Le déplacement et l'attaque n'ont PAS de mode :
    *  ils sont implicites au clic (sol/ennemi) quand `action === null` — cf. battleClickTile/Entity.
    *  'teleport' = ciblage de case d'une Téléportation (op de sort) en attente. */
-  action: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'tentacle' | 'maneuver' | 'heal' | 'teleport' | null;
+  action: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'heal' | 'teleport' | null;
   /** Sort sélectionné pour l'action d'incantation en cours. */
   selectedSpell: string | null;
-  /** Manœuvre de trait CIBLÉE (mêlée gratuite : Morsure/Attaque caudale/Tentacules) armée par la
-   *  hotbar : le prochain clic-entité la résout (cf. `battleManeuver`). Effacée au résolution/tour. */
-  maneuverKind?: AttackKind;
   /** Attaque ARMÉE pour le clic-ennemi (id d'`AttackOption` : 'arme' | 'morsure' | … — cf. `availableAttacks`).
    *  Défaut 'arme' ; vivante seulement quand `action===null`. Source UNIQUE qui remplace l'attaque d'arme
    *  implicite + le mode manœuvre/tentacule/trample armé. */
@@ -543,7 +540,7 @@ export interface GameState {
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
   seedRng: (seed: number) => void;
   startCombat: (encounterId: string, onVictory?: Effect[], opts?: { noSurprise?: boolean }) => void;
-  battleSelectAction: (a: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'trample' | 'tentacle' | 'heal' | null) => void;
+  battleSelectAction: (a: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'heal' | null) => void;
   /** Guérison (LDB 09-Compétences) — ouvre la modale de soin EN COMBAT (soi/allié adjacent). */
   battleHeal: (targetId: string, mode: HealMode) => void;
   /** INFIRMERIE (hors combat, state/medicFlow) : modale de soins persistante — patients, actes
@@ -770,19 +767,10 @@ export interface GameState {
   /** Piétinement (LDB 85 l.320-321) : action gratuite (1 Avantage) contre un adversaire adjacent
    *  plus petit. Ne consomme pas l'Action. */
   battleTrample: (targetId: string) => void;
-  /** Attaque gratuite de Tentacule (trait Tentacules, LDB 85 l.354 — mutation Tentacule épais) :
-   *  1/tour, 0 Avantage, ne consomme pas l'Action, Empêtré sur Dégâts. Modale d'attaque standard. */
-  battleTentacle: (targetId: string) => void;
-  /** Manœuvres JOUEUR génériques (« Manœuvre ▾ ») — attaques spéciales d'un trait de créature qu'un
-   *  héros possède (mutation/polymorphie). Source des entrées : `availableManeuvers`. */
-  /** Arme/désarme une manœuvre de mêlée CIBLÉE (Morsure/Caudale/Tentacules) : le prochain clic-entité
-   *  la résout (battleManeuver). Toggle si déjà armée sur le même type. */
-  battleSelectManeuver: (kind: AttackKind) => void;
   /** Arme une ATTAQUE (id d'`AttackOption` : 'arme'/'morsure'/'tentacule'/'pietinement'…) pour le clic-ennemi
-   *  — source UNIQUE qui remplace l'arme implicite + le mode manœuvre/tentacule/trample. Toggle → 'arme'. */
+   *  — source UNIQUE qui remplace l'arme implicite + l'ancien mode manœuvre/tentacule/trample. Toggle → 'arme'.
+   *  Le clic-ennemi résout l'attaque armée via l'approche-puis-frappe (battleClickEntity). */
   battleSelectAttack: (id: string) => void;
-  /** Résout la manœuvre de mêlée armée contre la cible cliquée (Attaque gratuite, Action préservée). */
-  battleManeuver: (targetId: string) => void;
   /** Manœuvre de ZONE / soi immédiate (Souffle/Vomi/Langue/Hurlement/Regard/Étreinte) : résolution
    *  directe par le résolveur moteur partagé. L'Étreinte glaciale coûte l'Action (LDB 85 l.112). */
   battleManeuverArea: (kind: AttackKind) => void;
@@ -2295,11 +2283,15 @@ export const useGame = create<GameState>((set, get) => ({
         return;
       }
     }
-    // Aiguillage par NATURE de l'attaque : Piétinement (Taille) + zone (Souffle/Vomi/Langue/Regard/Étreinte/
-    // Hurlement) gardent leur flux dédié ; la MÊLÉE (Arme + Morsure/Caudale/Tentacule) passe par l'approche-
-    // puis-frappe ci-dessous. (Migration : la zone est encore servie par battleManeuver via `maneuverKind`.)
+    // Aiguillage par NATURE de l'attaque : Piétinement (Taille) → flux dédié ; zone ciblée (Souffle/Vomi/
+    // Langue/Regard/Étreinte) → `pendingManeuver` (jet d'ATTAQUANT influençable, « un jet = une modale » ;
+    // `targetId` = clic = victime/point d'impact ; Avantage variable de Regard → 1) ; la MÊLÉE (Arme +
+    // Morsure/Caudale/Tentacule) passe par l'approche-puis-frappe ci-dessous.
     if (option.targeting === 'trample') return get().battleTrample(target.id);
-    if (option.targeting === 'zone') { set({ battle: { ...battle, action: 'maneuver', maneuverKind: option.kind } }); return get().battleManeuver(target.id); }
+    if (option.targeting === 'zone') {
+      set({ pendingManeuver: { attackerId: active.id, kind: option.kind!, targetId: target.id, avantageSpent: option.advantageMode === 'variable' ? 1 : option.cost.advantage, result: null }, battle: { ...battle, action: null, selectedAttack: undefined } });
+      return;
+    }
     // === MÊLÉE : approche-puis-frappe (le SEUL exécuteur charge/moveAttack du jeu) ===
     const plan = attackPlan(get, active, target, { reach: option.reach, forceMelee: option.forceMelee });
     // L'Action dépensée interdit le DÉPLACEMENT combiné pour une attaque qui COÛTE l'Action (Arme hors
@@ -3007,35 +2999,8 @@ export const useGame = create<GameState>((set, get) => ({
     // OUVRE la modale (le jet se fait au clic « Lancer ») — « un jet = une modale ».
     set({ pendingTrample: { attackerId: active.id, targetId: target.id, result: null }, battle: { ...battle, action: null } });
   },
-  battleTentacle: (targetId) => {
-    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
-    const battle = get().battle;
-    if (!battle || battle.over) return;
-    const active = activeCombatant(battle);
-    if (!active || active.kind !== 'hero' || active.tentacleUsedThisTurn) return; // 1 tentacule (mutation) → 1 Attaque gratuite/tour
-    if (!active.weapons.some((w) => w.uid === 'nat-tentacule')) return;
-    if (!canTakeAction(active) || hasCondition(active, 'Brisé')) return;
-    const target = battle.combatants.find((c) => c.id === targetId);
-    if (!target || target.kind === active.kind || isOutOfAction(target) || !target.pos || !active.pos) return;
-    if (combatDistance(active, target) > 1) {
-      get().log('Cible hors de portée du tentacule.');
-      return;
-    }
-    // OUVRE la modale d'attaque standard avec l'arme naturelle — « un jet = une modale ».
-    set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null, weaponUid: 'nat-tentacule', freeKind: 'tentacules' }, battle: { ...battle, action: null, maneuverKind: undefined } });
-  },
-  // ── Manœuvres JOUEUR génériques (« Manœuvre ▾ ») : attaques spéciales de trait de créature qu'un
-  // héros possède (mutation/polymorphie). Source des entrées : `availableManeuvers` (combatFlow). ──
-  battleSelectManeuver: (kind) => {
-    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
-    const battle = get().battle;
-    if (!battle || battle.over) return;
-    const active = activeCombatant(battle);
-    if (!active || active.kind !== 'hero') return;
-    // Bascule l'armement « manœuvre ciblée » : le prochain clic-entité résout via battleManeuver.
-    const on = battle.action === 'maneuver' && battle.maneuverKind === kind;
-    set({ battle: { ...battle, action: on ? null : 'maneuver', maneuverKind: on ? undefined : kind, selectedSpell: null, preview: null } });
-  },
+  // ── Sélection d'ATTAQUE (« Attaque ▾ ») : arme une `AttackOption` (Arme + gratuites/zone/Piétinement/
+  // Tentacule). Source des entrées : `availableAttacks` (combatFlow). Le clic-ennemi résout l'armée. ──
   battleSelectAttack: (id) => {
     if (combatBusy(get())) return;
     const battle = get().battle;
@@ -3044,44 +3009,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!active || active.kind !== 'hero') return;
     // Arme une attaque pour le clic-ennemi (mode neutre : `action===null`). Re-sélectionner revient à l'Arme.
     const next = battle.selectedAttack === id ? 'arme' : id;
-    set({ battle: { ...battle, action: null, selectedAttack: next, maneuverKind: undefined, selectedSpell: null, preview: null } });
-  },
-  battleManeuver: (targetId) => {
-    if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
-    const battle = get().battle;
-    if (!battle || battle.over) return;
-    const active = activeCombatant(battle);
-    const kind = battle.maneuverKind;
-    if (!active || active.kind !== 'hero' || !kind) return;
-    if (!canTakeAction(active) || hasCondition(active, 'Brisé')) return; // Sonné/Brisé : pas de manœuvre offensive
-    // Profil de la manœuvre lu de la DONNÉE (`creatureAttacks` → `ManeuverDef`).
-    const a = creatureAttacks(active.traits ?? []).find((x) => x.kind === kind);
-    if (!a) return;
-    // Coût d'Action/Avantage (Étreinte/Regard = Action ; les autres gratuites). Avantage requis = coût
-    // RAW, ou 1 si VARIABLE (Regard, ajusté ensuite par maneuverSetAvantage).
-    if (a.trigger === 'action') { if (battle.acted || !canTakeAction(active)) return; }
-    const minAdv = a.advantageMode === 'variable' ? 1 : a.avantage;
-    if (active.advantage < minAdv) return;
-    const target = battle.combatants.find((c) => c.id === targetId);
-    if (!target || target.kind === active.kind || isOutOfAction(target) || !target.pos || !active.pos) return;
-    if (MELEE_MANEUVER_KINDS.includes(kind)) {
-      // Mêlée de trait (Morsure/Caudale/Tentacules) : résolue comme un COUP D'ARME (pendingAttack +
-      // freeKind → arme naturelle, localisation/critique/FX/défense + effets onHit de la `ManeuverDef`).
-      if (combatDistance(active, target) > 1) { get().log('Cible hors de portée de la manœuvre.'); return; }
-      active.advantage = Math.max(0, active.advantage - a.avantage); // Avantage RAW dépensé à l'armement
-      set({
-        pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null, freeKind: kind },
-        battle: { ...battle, action: null, maneuverKind: undefined },
-      });
-      return;
-    }
-    // Manœuvre SPÉCIALE ciblée (Souffle/Vomi/Langue/Regard/Étreinte) : le jet de l'ATTAQUANT (CC/CT)
-    // est INFLUENÇABLE → modale `pendingManeuver` (« un jet = une modale »), `targetId` = clic joueur
-    // (victime ou point d'impact de la zone). Avantage variable (Regard) → défaut 1, ajusté ensuite.
-    set({
-      pendingManeuver: { attackerId: active.id, kind, targetId: target.id, avantageSpent: a.advantageMode === 'variable' ? 1 : a.avantage, result: null },
-      battle: { ...battle, action: null, maneuverKind: undefined },
-    });
+    set({ battle: { ...battle, action: null, selectedAttack: next, selectedSpell: null, preview: null } });
   },
   battleManeuverArea: (kind) => {
     if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
@@ -3092,7 +3020,7 @@ export const useGame = create<GameState>((set, get) => ({
     const a = creatureAttacks(active.traits ?? []).find((x) => x.kind === kind);
     if (!a) return;
     if (active.advantage < a.avantage) return; // Hurlement : ≥ coût RAW (2, dépense tout à l'application)
-    set({ battle: { ...battle, action: null, maneuverKind: undefined } }); // referme le menu avant la résolution
+    set({ battle: { ...battle, action: null } }); // referme le menu avant la résolution
     // Hurlement (LDB 85 l.135) : PAS de jet d'attaquant — chaque cible tire son 1d10 + Test de
     // Résistance (jets SUBIS montrés au feed). Aucune modale différable → résolution immédiate (le
     // wrapper roule les jets subis + checkBattleOver). Dépense TOUS les Avantages (min 2).

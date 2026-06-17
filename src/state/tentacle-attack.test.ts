@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
+import { availableAttacks } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { recomputeLoadout } from '../engine/items';
@@ -81,7 +82,9 @@ describe('Attaque gratuite de Tentacule (store)', () => {
     H.characteristics.CC = 95;
     H.characteristics.F = 45;
     const before = E.wounds.current;
-    useGame.getState().battleTentacle(E.id);
+    // Chemin d'attaque UNIFIÉ : on arme l'attaque Tentacule puis on clique l'ennemi (adjacent → frappe directe).
+    useGame.getState().battleSelectAttack('tentacule');
+    useGame.getState().battleClickEntity(E.id, { confirm: true });
     const pa = useGame.getState().pendingAttack;
     expect(pa?.freeKind).toBe('tentacules');
     expect(pa?.weaponUid).toBe('nat-tentacule');
@@ -96,21 +99,22 @@ describe('Attaque gratuite de Tentacule (store)', () => {
     expect(h2.tentacleUsedThisTurn).toBe(true); // consommée pour ce tour
     expect(e2.wounds.current).toBeLessThan(before); // CC 95 vs Mutant : touche déterministe (seed 2)
     expect(hasCondition(e2, 'Empêtré')).toBe(true); // LDB 85 l.354 : Dégâts → Empêtré
-    // 2ᵉ tentative le même tour : refusée.
-    useGame.getState().battleTentacle(E.id);
-    expect(useGame.getState().pendingAttack).toBeNull();
+    // 2ᵉ tentative le même tour : la mutation Tentacule n'est PLUS dans la liste d'attaques (1/tour).
+    expect(availableAttacks(h2, st.battle!).some((o) => o.id === 'tentacule')).toBe(false);
   });
 
-  it('refusée sans le trait Tentacules', () => {
-    const { E } = setup(false);
-    useGame.getState().battleTentacle(E.id);
-    expect(useGame.getState().pendingAttack).toBeNull();
+  it('absente de la liste d\'attaques sans le trait Tentacules', () => {
+    const { H } = setup(false);
+    expect(availableAttacks(H, useGame.getState().battle!).some((o) => o.id === 'tentacule')).toBe(false);
   });
 
-  it('refusée hors de portée (cible non adjacente)', () => {
+  it('cible distante : la mutation Tentacule CHARGE puis frappe (approche-puis-frappe)', () => {
     const { E } = setup();
-    E.pos = { x: 14, y: 10 };
-    useGame.getState().battleTentacle(E.id);
-    expect(useGame.getState().pendingAttack).toBeNull();
+    E.pos = { x: 14, y: 10 }; // hors d'Allonge → l'attaque de mêlée s'approche (charge) au lieu de refuser
+    useGame.getState().battleSelectAttack('tentacule');
+    useGame.getState().battleClickEntity(E.id, { confirm: true });
+    const pa = useGame.getState().pendingAttack;
+    expect(pa?.freeKind).toBe('tentacules');
+    expect(pa?.fromCharge).toBe(true); // s'est ruée au contact
   });
 });

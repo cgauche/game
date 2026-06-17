@@ -630,7 +630,7 @@ export function IsoStage() {
   const activeC = mode === 'battle' && battle ? battle.combatants.find((c) => c.id === battle.order[battle.turn]) : undefined;
   const hoverTracking =
     mode === 'battle' && !!battle && !battle.over &&
-    (((battle.action === null || battle.action === 'cast' || battle.action === 'trample') && activeC?.kind === 'hero') ||
+    (((battle.action === null || battle.action === 'cast') && activeC?.kind === 'hero') ||
       !!pendingCleave || !!pendingDualStrike || !!pendingCast?.pickingTargets || !!placingZoneOf({ pendingCast, battle }));
 
   // --- Surbrillances de combat : grilles LOURDES memoïsées + éléments DYNAMIQUES (suivent le

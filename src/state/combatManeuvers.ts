@@ -76,25 +76,9 @@ export const MANEUVER_ICON: Record<AttackKind, string> = {
   tentacules: '🐙', etreinte: '❄️', regard: '👁', langue: '👅', hurlement: '📢',
 };
 
-/** Manœuvre activable par le héros actif (descripteur uniforme rendu par la hotbar). `mode` dicte
- *  le ciblage : 'target' → on arme `battle.action` puis le clic-entité résout ; 'immediate' →
- *  résolution directe (zone/soi). `dispatch` route vers le store : 'trample'/'tentacle' (flux
- *  dédiés conservés), 'maneuver' (mêlée gratuite de trait, ciblée), 'area' (zone/action immédiate). */
-export interface Maneuver {
-  id: string;
-  /** Type d'attaque de créature (absent pour Piétinement, qui dérive de la Taille). */
-  kind?: AttackKind;
-  label: string;
-  icon: string;
-  /** Coût en Avantage (affiché « · N Av »). */
-  cost: number;
-  mode: 'target' | 'immediate';
-  dispatch: 'trample' | 'tentacle' | 'maneuver' | 'area';
-}
-
 /** Manœuvres de mêlée résolues comme un COUP D'ARME (via `pendingAttack` + `freeKind` →
- *  `applyAttackResult` : localisation/critique/FX/défense). Les autres manœuvres ciblées passent par
- *  `pendingManeuver` (résolution propre). Exporté : le store (`battleManeuver`) route là-dessus. */
+ *  `applyAttackResult` : localisation/critique/FX/défense). Les autres (zone) passent par `pendingManeuver`
+ *  (résolution propre). Classifieur partagé : `availableAttacks` (targeting melee/zone) + le survol. */
 export const MELEE_MANEUVER_KINDS: AttackKind[] = ['morsure', 'caudale', 'tentacules'];
 
 /** ATTAQUE activable par le héros actif — descripteur UNIFIÉ (arme tenue + attaques gratuites/zone),
@@ -153,10 +137,11 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
   // (2) Piétinement (Taille, LDB 85 l.320-321) : adversaire adjacent plus petit, ≥1 Avantage. Flux dédié.
   if (active.advantage >= 1 && trampleTarget(battle, active))
     out.push({ id: 'pietinement', label: 'Piétiner', icon: '🐾', targeting: 'trample', cost: { action: false, advantage: 1 } });
-  // (3) Mutation Tentacule (arme `nat-tentacule`, LDB 85 l.354) : 1/tour, 0 Avantage, cible adjacente.
+  // (3) Mutation Tentacule (arme `nat-tentacule`, LDB 85 l.354) : 1/tour, 0 Avantage. Comme toute attaque de
+  //     mêlée, elle s'APPROCHE (charge/rejoindre) → dispo dès qu'un ennemi existe (l'adjacence n'est plus requise).
   if (
     !active.tentacleUsedThisTurn && active.weapons.some((w) => w.uid === 'nat-tentacule') && !!active.pos &&
-    battle.combatants.some((c) => c.kind !== 'hero' && !isOutOfAction(c) && c.pos && combatDistance(active, c) <= 1)
+    battle.combatants.some((c) => c.kind !== 'hero' && !isOutOfAction(c) && c.pos)
   )
     out.push({ id: 'tentacule', kind: 'tentacules', label: 'Tentacule', icon: '🐙', targeting: 'melee', reach: 1, forceMelee: true, weaponUid: 'nat-tentacule', freeKind: 'tentacules', cost: { action: false, advantage: 0 } });
   // Déduplique par id (la mutation Tentacule et le trait Tentacules ne coexistent pas, mais garde-fou).
@@ -164,31 +149,15 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
 }
 
 /** Résout l'`AttackOption` à exécuter/prévisualiser : clic droit = `forceId` (première abordable) ; sinon
- *  l'attaque ARMÉE (`selectedAttack`, défaut 'arme', repli sur 'arme' si périmée) ; pendant la migration,
- *  les anciens modes maneuver/tentacle/trample mappent sur leur option. `undefined` = mode non-attaque
- *  (cast/heal/focus/…) ou aucune attaque abordable. SOURCE UNIQUE partagée par le clic (store) et le survol
- *  (targeting). */
+ *  l'attaque ARMÉE (`selectedAttack`, défaut 'arme', repli sur 'arme' si périmée). `undefined` = mode
+ *  non-attaque (cast/heal/focus/…) ou aucune attaque abordable. SOURCE UNIQUE partagée par le clic (store)
+ *  et le survol (targeting). */
 export function selectedAttackOption(active: Combatant, battle: BattleState, forceId?: string): AttackOption | undefined {
-  if (battle.action !== null && battle.action !== 'maneuver' && battle.action !== 'tentacle' && battle.action !== 'trample') return undefined;
+  if (battle.action !== null) return undefined; // l'attaque ne vit qu'en mode neutre (cast/heal/… = leurs propres modes)
   const opts = availableAttacks(active, battle);
-  if (forceId) return opts.find((o) => o.id === forceId) ?? opts[0];
-  if (battle.action === 'maneuver') return battle.maneuverKind ? opts.find((o) => o.id === battle.maneuverKind) : undefined;
-  if (battle.action === 'tentacle') return opts.find((o) => o.id === 'tentacule');
-  if (battle.action === 'trample') return opts.find((o) => o.id === 'pietinement');
+  if (forceId) return opts.find((o) => o.id === forceId) ?? opts[0]; // clic droit = première abordable (repli)
   const want = battle.selectedAttack ?? 'arme';
-  return opts.find((o) => o.id === want) ?? opts.find((o) => o.id === 'arme');
-}
-
-/** SHIM TRANSITOIRE (retiré à l'Étape E, avec `Maneuver`) : les anciens consommateurs (ActionBar /
- *  battleManeuver) lisent encore `Maneuver`. Dérivé d'`availableAttacks` → source UNIQUE des prédicats. */
-export function availableManeuvers(active: Combatant, battle: BattleState): Maneuver[] {
-  return availableAttacks(active, battle)
-    .filter((o) => o.id !== 'arme')
-    .map((o) => ({
-      id: o.id, kind: o.kind, label: o.label, icon: o.icon, cost: o.cost.advantage,
-      mode: o.id === 'hurlement' ? 'immediate' : 'target',
-      dispatch: o.targeting === 'trample' ? 'trample' : o.id === 'tentacule' ? 'tentacle' : o.id === 'hurlement' ? 'area' : 'maneuver',
-    }));
+  return opts.find((o) => o.id === want) ?? opts.find((o) => o.id === 'arme'); // armée, repli sur l'Arme si périmée
 }
 
 // ---------------------------------------------------------------------------

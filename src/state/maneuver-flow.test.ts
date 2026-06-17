@@ -45,10 +45,10 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
     return { H, E };
   }
 
-  /** Active une manœuvre SPÉCIALE ciblée comme la hotbar : arme le mode-cible puis clique l'entité
-   *  (point d'impact / victime) → `battleManeuver` ouvre `pendingManeuver{targetId}`. */
+  /** Active une manœuvre SPÉCIALE ciblée comme la hotbar : arme l'attaque (`battleSelectAttack`) puis clique
+   *  l'entité (point d'impact / victime) → la zone ouvre `pendingManeuver{targetId}` (1er clic, sans aperçu). */
   function activate(kind: string, targetId: string) {
-    useGame.setState({ battle: { ...useGame.getState().battle!, action: 'maneuver', maneuverKind: kind as never } });
+    useGame.getState().battleSelectAttack(kind);
     useGame.getState().battleClickEntity(targetId);
   }
 
