@@ -96,7 +96,7 @@ import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } 
 import { findSkill, findManeuverById, findDomain } from '../data';
 import { norm } from '../lib/normalize';
 import { slugId } from '../data/slug';
-import { recomputeLoadout, itemFromTrapping, customTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
+import { recomputeLoadout, itemFromTrapping, customTrapping, weaponWithAmmo, compatibleAmmo, damageArmour, buildWeapon } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks } from '../engine/conditions';
 import { creatureAttacks, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
@@ -1751,7 +1751,7 @@ export function maybeHeroCleave(get: Get, set: SetFn, attacker: Combatant, targe
 // ---------------------------------------------------------------------------
 
 /** Arme abstraite du Piétinement : Corps à corps (Bagarre), Dégâts = Bonus de Force (+0). */
-export const TRAMPLE_WEAPON: Weapon = { name: 'Piétinement', type: 'melee', damage: '+BF', qualities: [] };
+export const TRAMPLE_WEAPON: Weapon = buildWeapon({ name: 'Piétinement', damage: { plusBF: true, flat: 0, bare: true } });
 
 /** Résout un Piétinement : dépense 1 Avantage (coût de l'action gratuite) puis applique
  *  `resolveTrample` (BF +0, Corps à corps). Ne consomme PAS l'Action (« action gratuite »). */
@@ -1805,7 +1805,7 @@ export function aiFrenzyAttack(get: Get, set: SetFn, enemy: Combatant): void {
 export function freeAttackWeapon(kind: string, bonus: number): Weapon {
   if (kind === 'pietinement') return TRAMPLE_WEAPON;
   const name = kind === 'caudale' ? 'Attaque caudale' : kind === 'cornes' ? 'Cornes' : kind === 'tentacules' ? 'Tentacules' : 'Morsure';
-  return { name, type: 'melee', damage: `+${bonus}`, qualities: [] };
+  return buildWeapon({ name, damage: { plusBF: false, flat: bonus } }); // Indice de créature (SB déjà inclus) → « +N »
 }
 
 /** Type de pose d'attaque (rendu créature) déduit du NOM de l'arme naturelle, ou undefined (arme

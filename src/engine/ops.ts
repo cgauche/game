@@ -23,7 +23,7 @@ import { bypassedAP } from './armourBypass';
 import { grantTrait } from './grantedTraits';
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { cureCriticalWounds } from './trauma';
-import { damageLeatherArmour, itemFromTrapping, customTrapping, newUid, recomputeLoadout } from './items';
+import { damageLeatherArmour, itemFromTrapping, customTrapping, recomputeLoadout, buildWeapon, weaponItem } from './items';
 import { suppressPsychTraits } from './psychology';
 import { norm } from '../lib/normalize';
 import { ConjureForm, conjureFormOptions, equipConjuredWeapon } from './conjuredWeapons';
@@ -43,8 +43,6 @@ import {
   DIFFICULTY_LABELS,
   HitLocation,
   HIT_LOCATION_LABELS,
-  ItemInstance,
-  Weapon,
 } from './types';
 import { immunityTypes, formatTrait } from './traits/dispatch';
 import type { TraitInstance } from './statEntry';
@@ -826,10 +824,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'grantNaturalWeapon': {
         const n = Math.max(0, resolveFormula(o.damage, ref, rng) + (o.damagePlus ?? 0));
         const plusBF = o.plusBF !== false; // attaques naturelles = SB-relatives par défaut
-        const weapon: Weapon = {
-          name: o.name, type: 'melee', damage: plusBF ? `+BF+${n}` : `+${n}`,
-          qualities: [...(o.qualities ?? [])], hands: 1, uid: `nat-${norm(o.name)}-${newUid()}`,
-        };
+        const weapon = buildWeapon({
+          name: o.name, damage: { plusBF, flat: n },
+          qualities: o.qualities, uid: { prefix: `nat-${norm(o.name)}` },
+        });
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? o.name, bonus: 0,
@@ -843,29 +841,26 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       }
       case 'conjureWeapon': {
         const flat = Math.max(0, resolveFormula(o.damage, ref, rng) + (o.damagePlus ?? 0));
-        const dmg = o.plusBF ? `+BF+${flat}` : `+${flat}`;
         // Forme LIBRE (Arme aethyrique) : on CLONE le profil (Groupe/allonge/mains) d'une arme RÉELLE
         // choisie par le lanceur (ctx.conjureForm, défaut = sa meilleure Spé de CC) ; sinon stats du
         // Sort. Seuls les Dégâts (= BFM…) et les Atouts du Sort surchargent le profil → un OBJET ordinaire.
         const form = o.chooseForm ? (ctx.conjureForm ?? conjureFormOptions(ref)[0]) : null;
         const tpl = form ? itemFromTrapping(form.weapon) : null;
-        const item: ItemInstance = {
-          uid: `conjure-${newUid()}`,
+        // L'objet vit dans un SET dédié (equipConjuredWeapon), hors Set I/II auto → `weaponItem` (conjured).
+        // Silhouette de rendu : forme choisie (chooseForm) ou silhouette fixe du Sort → le rig dessine
+        // l'arme réelle bien que nommée « Arme aethyrique » / « Faux de Shyish ».
+        const item = weaponItem({
           name: form ? `${o.name} (${tpl?.name ?? form.weapon})` : o.name,
-          kind: 'melee',
-          damage: dmg,
+          damage: { plusBF: !!o.plusBF, flat },
           subType: form ? tpl?.subType : o.subType,
           reach: form ? tpl?.reach : (o.reach ?? null),
           hands: form ? (tpl?.hands ?? 1) : (o.hands ?? 1),
-          qualities: [...(o.qualities ?? [])], // Atouts du Sort (Magique, Percutante) — PAS ceux du gabarit
-          enc: 0,
-          equipped: false, // hors Set I/II auto : l'objet vit dans son SET dédié (equipConjuredWeapon)
+          qualities: o.qualities, // Atouts du Sort (Magique, Percutante) — PAS ceux du gabarit ; copiés par buildWeapon
           conjured: true,
+          uid: { prefix: 'conjure' },
           ...(o.skin ? { skin: o.skin } : {}), // teinte magique unique (aethyrique/améthyste/ardente)
-          // Silhouette de rendu : forme choisie (chooseForm) ou silhouette fixe du Sort → le rig dessine
-          // l'arme réelle bien que nommée « Arme aethyrique » / « Faux de Shyish ».
           ...(form ? { form: form.weapon } : o.form ? { form: o.form } : {}),
-        };
+        });
         // SET d'armes DÉDIÉ rendu actif (réutilise les loadouts) — le joueur peut rebasculer sur ses
         // armes ; à l'expiration, le set d'origine est restauré (engine/conjuredWeapons).
         const conjuredSet = equipConjuredWeapon(target, item);
@@ -877,7 +872,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           conjuredSet,
           ...(o.onHitEffects?.length ? { weaponEnchant: { requiresWeapon: o.name, onHitEffects: o.onHitEffects } } : {}),
         });
-        lines.push(`${target.name} invoque ${item.name} (Dégâts ${dmg}${item.qualities.length ? `, ${item.qualities.join(', ')}` : ''}) (${ctx.label ?? 'sort'}).`);
+        lines.push(`${target.name} invoque ${item.name} (Dégâts ${item.damage}${item.qualities.length ? `, ${item.qualities.join(', ')}` : ''}) (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'castWard': {

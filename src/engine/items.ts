@@ -19,6 +19,86 @@ export function newUid(): string {
   return `it-${++uidCounter}`;
 }
 
+/** Spécification UNIFIÉE de Dégâts d'arme. La présence du token `BF` est PORTEUSE de sens
+ *  (`effectiveWeaponDamage` teste `/BF/i` pour ajouter le Bonus de Force) → on l'exprime EXPLICITEMENT,
+ *  jamais par accident de chaîne. La résolution `Formula`→`flat` se fait AU SITE D'APPEL (référent/rng
+ *  propres) ; ici on ne reçoit qu'un entier déjà résolu. `literal` court-circuite (Dégâts déjà finis :
+ *  trapping de catalogue). */
+export type WeaponDamageSpec =
+  /** Chaîne de Dégâts finie, utilisée verbatim (catalogue) — court-circuite la convention. */
+  | { literal: string }
+  /** `plusBF` : `true` → « +BF… » (SB-relatif : naturelles/invoquées/mains nues) ; `false` → pas de token
+   *  BF (Indice de créature, Bonus de Force déjà inclus : gratuites + traits). `flat` DÉJÀ résolu (négatif
+   *  autorisé : Indice −2). `bare` : « +BF » NU (Tentacule/Piétinement) au lieu de « +BF+0 ». */
+  | { plusBF: boolean; flat: number; bare?: true };
+
+/** Source UNIQUE de la convention de Dégâts (la SEULE fonction qui décide « +BF » vs « +N » vs « +BF+N »). */
+function damageString(d: WeaponDamageSpec): string {
+  if ('literal' in d) return d.literal;
+  if (d.plusBF) return d.flat === 0 && d.bare ? '+BF' : `+BF+${d.flat}`;
+  return d.flat < 0 ? `${d.flat}` : `+${d.flat}`; // Indice négatif : « -2 », pas « +-2 »
+}
+
+/** Spécification d'une arme SYNTHÉTIQUE (≠ catalogue) : sert `buildWeapon` (→ Weapon) ET `weaponItem`
+ *  (→ ItemInstance). `uid` : littéral (Tentacule : 'nat-tentacule'), préfixe → `${prefix}-${newUid()}`,
+ *  ou absent (mains nues). */
+export interface WeaponSpec {
+  name: string;
+  type?: 'melee' | 'ranged';
+  damage: WeaponDamageSpec;
+  qualities?: string[];
+  subType?: string;
+  reach?: string | null;
+  range?: number | null;
+  hands?: 1 | 2;
+  uid?: string | { prefix: string };
+  skin?: Record<string, string>;
+  form?: string;
+}
+
+function specUid(uid: WeaponSpec['uid']): string | undefined {
+  if (uid == null) return undefined;
+  return typeof uid === 'string' ? uid : `${uid.prefix}-${newUid()}`; // UN seul appel newUid par arme
+}
+
+/** CONSTRUCTEUR D'ARME UNIQUE. Toute arme synthétique (naturelle, invoquée, gratuite, de trait de créature,
+ *  mains nues, Tentacule) passe par ici — fin des re-déclarations éparpillées de la forme `Weapon`. Porte la
+ *  convention de Dégâts (`damageString`), l'uid, la COPIE de `qualities` et les défauts (mêlée, 1 main). Le
+ *  tag `hand` reste posé par l'appelant (cf. `recomputeLoadout`), comme pour les autres armes injectées. */
+export function buildWeapon(spec: WeaponSpec): Weapon {
+  const w: Weapon = {
+    name: spec.name,
+    type: spec.type ?? 'melee',
+    damage: damageString(spec.damage),
+    qualities: [...(spec.qualities ?? [])],
+    hands: spec.hands ?? 1,
+  };
+  if (spec.reach !== undefined) w.reach = spec.reach;
+  if (spec.range !== undefined) w.range = spec.range;
+  if (spec.subType !== undefined) w.subType = spec.subType;
+  const uid = specUid(spec.uid);
+  if (uid !== undefined) w.uid = uid;
+  if (spec.skin !== undefined) w.skin = spec.skin;
+  if (spec.form !== undefined) w.form = spec.form;
+  return w;
+}
+
+/** Variante ItemInstance (objet d'inventaire) : RÉUTILISE `buildWeapon` pour le cœur (Dégâts, uid,
+ *  qualities copiées, défauts) puis ne fait que la bascule `Weapon`→`ItemInstance` (`type`→`kind` + les
+ *  champs propres à l'OBJET : enc/equipped/conjured). Utilisé par l'arme INVOQUÉE (op `grantWeapon`) posée
+ *  dans un set d'armes dédié. */
+export function weaponItem(spec: WeaponSpec & { conjured?: boolean }): ItemInstance {
+  const { type, uid, ...rest } = buildWeapon(spec);
+  return {
+    ...rest,
+    kind: type,
+    uid: uid ?? newUid(),
+    enc: 0,
+    equipped: false,
+    ...(spec.conjured ? { conjured: true } : {}),
+  };
+}
+
 /** Localisations d'armure (libellés trappings → localisations d'impact). */
 const ARMOUR_LOC: Record<string, HitLocation[]> = {
   Tête: ['tete'],
@@ -156,8 +236,8 @@ export function unarmedWeapon(): Weapon {
   if (!_unarmed) {
     const it = itemFromTrapping('Mains nues');
     _unarmed = it
-      ? { name: it.name, type: 'melee', damage: it.damage ?? '+BF+0', reach: it.reach, qualities: it.qualities, subType: it.subType, hands: 1 }
-      : { name: 'Mains nues', type: 'melee', damage: '+BF+0', reach: 'Personnelle', qualities: ['Inoffensive'], subType: 'Bagarre', hands: 1 };
+      ? buildWeapon({ name: it.name, damage: { literal: it.damage ?? '+BF+0' }, reach: it.reach, qualities: it.qualities, subType: it.subType })
+      : buildWeapon({ name: 'Mains nues', damage: { literal: '+BF+0' }, reach: 'Personnelle', qualities: ['Inoffensive'], subType: 'Bagarre' });
   }
   return { ..._unarmed, hand: 'main' };
 }
@@ -234,7 +314,7 @@ export function recomputeLoadout(c: Combatant): void {
   // Tentacule (trait Tentacules, LDB 85 p.343) : AUSSI une Attaque gratuite 1/tour (battleTentacle) ;
   // ici utilisable comme arme ordinaire. La mutation « Tentacule épais » confère le trait → couvert.
   if (hasTraitKey(c.traits, 'tentacules')) {
-    weapons.push({ name: 'Tentacule', type: 'melee', damage: '+BF', qualities: [], subType: 'Base', hands: 1, hand: 'main', uid: 'nat-tentacule' });
+    weapons.push({ ...buildWeapon({ name: 'Tentacule', subType: 'Base', uid: 'nat-tentacule', damage: { plusBF: true, flat: 0, bare: true } }), hand: 'main' });
   }
   // Armes NATURELLES de MUTATION (LDB 19 : « Compte comme une Arme de Créature », Dégâts = BF) —
   // DÉCLARATIF sur la def de mutation (`fx.derivedWeapon`). Ajouter une mutation-arme = la donnée.

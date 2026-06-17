@@ -7,12 +7,12 @@ import { skillCharacteristic } from '../engine/character';
 import { type TraitInstance, type TraitList } from '../engine/statEntry';
 import { findCreature, findSkillById, findTalentById, findSpellById, CreatureData, type SkillRef, type TalentRef } from '../data';
 import { CustomStatblock, EntityAppearance } from './scene';
-import { emptyArmour } from '../engine/items';
+import { emptyArmour, buildWeapon, type WeaponDamageSpec } from '../engine/items';
 import { maxWounds, bonus } from '../engine/characteristics';
 import { parseSizeLabel, resizeBySteps, SIZE_ORDER, SizeCategory } from '../engine/size';
 import { parsePsychTraits } from '../engine/psychology';
 import { traitCharMods, traitBonusWoundsBE, isMindless, mutationsAtSpawn, isSwarm, resolveTraits, traitLabelById } from '../engine/traits/dispatch';
-import { rollMutation, mutationByLabel } from '../data/mutations';
+import { rollMutation, mutationById } from '../data/mutations';
 import { makeRNG } from '../engine/dice';
 import { groupsFor } from '../engine/groups';
 import { norm as normTrait } from '../lib/normalize';
@@ -67,26 +67,24 @@ const NATURAL_WEAPON = new Map<string, { ranged?: boolean }>([
  * une étiquette naturelle (→ weaponFamily renvoie '' = aucune arme dessinée).
  */
 export function weaponFromTrait(t: TraitInstance): Weapon | null {
-  const dmg = t.value != null ? (t.value < 0 ? `${t.value}` : `+${t.value}`) : null;
+  // Indice de créature = SB déjà inclus → PAS de token BF (« +N », « -N » négatif) ; à défaut d'Indice,
+  // arme générique « +BF » nu (SB-relatif). Le constructeur d'arme UNIQUE porte les deux conventions.
+  const dmg: WeaponDamageSpec = t.value != null ? { plusBF: false, flat: t.value } : { plusBF: true, flat: 0, bare: true };
   if (t.id === 'a-distance') {
-    if (dmg == null) return null; // « À distance » sans Indice de Dégâts : pas une arme jouable (RAW)
+    if (t.value == null) return null; // « À distance » sans Indice de Dégâts : pas une arme jouable (RAW)
     const type = t.arg;
-    const w: Weapon = { name: type && !NATURAL_WEAPON.has(normTrait(type)) ? type : 'Attaque à distance', type: 'ranged', damage: dmg, qualities: [] };
-    if (t.range != null) w.range = t.range;
-    return w;
+    return buildWeapon({
+      name: type && !NATURAL_WEAPON.has(normTrait(type)) ? type : 'Attaque à distance',
+      type: 'ranged', damage: dmg, range: t.range ?? undefined,
+    });
   }
-  if (t.id === 'arme') {
-    const type = t.arg;
-    const damage = dmg ?? '+BF';
-    if (type && NATURAL_WEAPON.has(normTrait(type))) return { name: type, type: 'melee', damage, qualities: [] };
-    return { name: type ?? 'Arme', type: 'melee', damage, qualities: [] };
-  }
+  if (t.id === 'arme') return buildWeapon({ name: t.arg ?? 'Arme', damage: dmg }); // mêlée par défaut
   // Attaque naturelle (« Morsure +9 », « 8 Tentacules +9 ») : la clé est une arme naturelle CONNUE
   // (source UNIQUE NATURAL_WEAPON). L'arme reste UNE (l'Action d'attaque) ; le compte joue sur les
   // Attaques GRATUITES (aiCreatureFreeAttacks), LDB 85 l.354.
   const word = traitLabelById(t.id).split(/\s+/)[0];
   const meta = NATURAL_WEAPON.get(normTrait(word));
-  if (meta) return { name: word, type: meta.ranged ? 'ranged' : 'melee', damage: dmg ?? '+BF', qualities: [] };
+  if (meta) return buildWeapon({ name: word, type: meta.ranged ? 'ranged' : 'melee', damage: dmg });
   return null;
 }
 
@@ -138,8 +136,8 @@ function spawnMutations(traits: TraitList | undefined, id: string) {
   const specs = mutationsAtSpawn(traits);
   if (!specs.length) return {};
   const rng = makeRNG(hashSeed(`mut:${id}`));
-  // Mutation EXPLICITE (label, ex. « Cornes asymétriques » : tell figé en donnée) sinon tirage.
-  const mutations = specs.map((s) => (s.label ? mutationByLabel(s.label) : null) ?? rollMutation(s.kind, rng));
+  // Mutation EXPLICITE (id, ex. « cornes-asymetriques » : tell figé en donnée) sinon tirage.
+  const mutations = specs.map((s) => (s.mutationId ? mutationById(s.mutationId) : null) ?? rollMutation(s.kind, rng));
   return { mutations };
 }
 
