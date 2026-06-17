@@ -66,12 +66,13 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const hasAppearance = categoryKey === 'creatures' || categoryKey === 'traits' || categoryKey === 'mutations';
   const isSpell = categoryKey === 'spells';
   // Porteurs d'effets DÉCLENCHÉS (mêmes `TriggeredEffect` éditables) : Traits, Atouts d'arme, Domaines
-  // (riders « à la touche » du Domaine — Feu→En flammes…, gatés par les Conditions Flow relation/has).
-  const isTriggered = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'domains';
+  // (riders « à la touche »…) ET Talents (Assaut féroce onHit, Frappe réactive onCharged…).
+  const isTriggered = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'domains' || categoryKey === 'talents';
   // Manœuvre = ENTITÉ de 1ʳᵉ classe : profil dédié + ses effets AUTHORÉS (Dégâts + États) en GameOp.
   const isManeuver = categoryKey === 'maneuvers';
   // Porteurs de modificateurs PASSIFS continus (`GameOp[]`) édités par ops (GameOpEditor), comme un sort.
-  const isPassive = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'mutations';
+  // Talents inclus (Coup puissant, Dur à cuire… ou Frénésie → grantFreeAttack, tous en `passive`).
+  const isPassive = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'mutations' || categoryKey === 'talents';
   // Signe astral : son EFFET de création (charMod / grantTalent) en `GameOp[]` — même éditeur que les
   // passifs, mais champ `effect` (appliqué une fois aux attributs de départ, cf. applyStarEffect).
   const isStarEffect = categoryKey === 'stars';

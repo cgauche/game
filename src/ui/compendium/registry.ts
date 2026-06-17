@@ -272,11 +272,13 @@ export const CODEX: CodexCategory[] = [
               title: 'Effet mécanique', layout: 'chips',
               rows: [
                 ...(t.addCharacteristic ? [{ t: 'kv', k: '+5 à', v: t.addCharacteristic } as CodexRow] : []),
-                ...(t.addSkill ? [refRow('skills', t.addSkill)] : []),
-                ...(t.addTalent ? [refRow('talents', t.addTalent)] : []),
+                ...(t.addSkill ? [refRow('skills', refLabel('skills', t.addSkill))] : []),
+                ...(t.addTalent ? [refRow('talents', refLabel('talents', t.addTalent))] : []),
               ],
             }
           : null,
+        passiveSection(t.passive),
+        effectsSection(t.effects, 'Effets déclenchés'),
       ),
     })),
   },
