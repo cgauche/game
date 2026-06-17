@@ -40,23 +40,23 @@ const mkHero = (mut?: (items: ItemInstance[]) => void): Combatant => {
 };
 
 describe('EquipmentPanel (rendu)', () => {
-  it('zones à couches : cuir souple et maille portés ENSEMBLE (PA cumulés), plate proposée en Extérieure', () => {
+  it('localisations × couches : PA cumulé en face de la zone, plate proposée en Extérieure', () => {
     const html = renderToStaticMarkup(<EquipmentPanel hero={mkHero()} />);
     expect(html).toContain('Tête');
     expect(html).toContain('Corps');
-    expect(html).toContain('Justaucorps de cuir'); // couche Souple portée
-    expect(html).toContain('Chemise de mailles'); // couche Flexible portée
-    expect(html).toContain('Souple');
+    expect(html).toContain('Souple'); // libellé de couche (en-tête + tooltip)
     expect(html).toContain('Flexible');
     expect(html).toContain('PA 3'); // Corps : maille (Flexible, 2) + justaucorps (souple, 1) cumulés par wornArmourPoints
-    expect(html).toContain('Plastron · PA 2'); // candidat de la couche Extérieure (option du sélecteur)
+    expect(html).toContain('Plastron · PA 2'); // candidat de la couche Extérieure (option du picker)
+    expect(html).toContain('eq-slot'); // cellules-emplacements (nom des pièces portées = popover au survol)
   });
 
-  it('mannequin présent (rig SVG) et emplacement Cape proposant la cape du sac', () => {
+  it('mannequin présent (rig SVG) + colonne emplacements en cellules + ligne Cape', () => {
     const html = renderToStaticMarkup(<EquipmentPanel hero={mkHero()} />);
     expect(html).toContain('equip-figure');
+    expect(html).toContain('equip-slots');
+    expect(html).toContain('eq-slot'); // cellules-emplacements
     expect(html).toContain('Cape');
-    expect(html).toContain('+ Équiper…');
   });
 
   it('cape portée → rendue dans le dos du mannequin (data-equip="cape") et retirable', () => {
@@ -65,23 +65,22 @@ describe('EquipmentPanel (rendu)', () => {
     expect(html).not.toContain('aucune cape');
   });
 
-  it('sets d’armes : Set I (actif, arme en main) et Set II fixes ; hallebarde marquée (2M)', () => {
+  it('sets d’armes en cartes-cellules (sans libellé « Set ») ; hallebarde marquée (2M) ; récap en main', () => {
     const html = renderToStaticMarkup(<EquipmentPanel hero={mkHero()} />);
-    expect(html).toContain('Set I');
-    expect(html).toContain('Set II');
-    expect(html).toContain('● Actif');
-    expect(html).toContain('Hallebarde (2M)');
+    expect(html).toContain('set-card');
+    expect(html).toContain('● Actif'); // Set I actif par défaut
+    expect(html).toContain('Hallebarde (2M)'); // option du picker d'arme
     expect(html).toContain('En main');
     expect(html).toContain('Arme simple');
+    expect(html).not.toContain('Set I'); // plus de libellé « Set 1/2/3 »
   });
 
-  it('arme 2 mains en principale → slot secondaire désactivé', () => {
+  it('arme 2 mains en principale → cellule secondaire bloquée (pas de 2nde main)', () => {
     const h = mkHero();
     h.loadouts![0].main = 'halle';
     h.loadouts![0].off = undefined;
     recomputeLoadout(h);
     const html = renderToStaticMarkup(<EquipmentPanel hero={h} />);
-    expect(html).toContain('(2 mains)');
-    expect(html).toContain('disabled');
+    expect(html).toContain('deux mains'); // titre de la cellule 2nde bloquée
   });
 });

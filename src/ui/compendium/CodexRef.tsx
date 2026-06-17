@@ -28,6 +28,8 @@ export function CodexRef({
   hideIfUnknown = false,
   inline = false,
   instance,
+  tooltipOnly = false,
+  fallback,
 }: {
   category: string;
   label: string;
@@ -42,6 +44,12 @@ export function CodexRef({
   /** Instance paramétrée portant les Indices (« 8 Tentacules +8 ») — affichée en tête du popover
    *  et transmise au Codex à l'ouverture (le Codex « prend en compte les Indices »). */
   instance?: string;
+  /** POPOVER SEUL : survol → info, mais le clic n'ouvre PAS la fiche Codex (ni rôle bouton). Pour
+   *  un déclencheur déjà cliquable par ailleurs (cellule d'équipement = picker au clic). */
+  tooltipOnly?: boolean;
+  /** Contenu de SECOURS quand l'entrée n'est pas au catalogue (arme invoquée/enchantée…) : un popover
+   *  est tout de même rendu au survol (sub + body), sans ouverture de fiche. */
+  fallback?: { sub?: string; body?: string };
 }) {
   const openCodex = useGame((s) => s.openCodex);
   const item = codexLookup(category, label);
@@ -60,26 +68,31 @@ export function CodexRef({
   }, []);
   const hide = useCallback(() => setPos(null), []);
 
-  // Pas de fiche connue : icône-déclencheur → rien ; libellé → texte simple (jamais d'enrobage mort).
-  if (!item) return hideIfUnknown ? null : <span className={className}>{children ?? label}</span>;
+  // Sans entrée catalogue NI fallback : icône-déclencheur → rien ; libellé → texte simple.
+  if (!item && !fallback) return hideIfUnknown ? null : <span className={className}>{children ?? label}</span>;
 
-  const body = item.desc ? truncate(item.html ? stripHtml(item.desc) : item.desc) : null;
-  const inst = instance && instance !== item.label ? instance : undefined;
-  const open = () => openCodex({ category, label: item.label, instance: inst });
+  const title = item?.label ?? label;
+  const body = item ? (item.desc ? truncate(item.html ? stripHtml(item.desc) : item.desc) : null) : (fallback?.body || null);
+  const popSub = item?.sub ?? fallback?.sub;
+  const src = item?.source;
+  const inst = instance && instance !== title ? instance : undefined;
+  // Clic → fiche Codex UNIQUEMENT pour une vraie entrée catalogue, hors mode popover-seul.
+  const interactive = !tooltipOnly && !!item;
+  const open = () => { if (item) openCodex({ category, label: item.label, instance: inst }); };
 
   return (
     <span
       ref={ref}
-      className={`codex-ref${inline ? ' codex-inline' : ''}${className ? ` ${className}` : ''}`}
-      tabIndex={0}
-      role="button"
-      onClick={open}
-      onKeyDown={(e) => {
+      className={`codex-ref${inline ? ' codex-inline' : ''}${interactive ? '' : ' codex-static'}${className ? ` ${className}` : ''}`}
+      tabIndex={interactive ? 0 : undefined}
+      role={interactive ? 'button' : undefined}
+      onClick={interactive ? open : undefined}
+      onKeyDown={interactive ? (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           open();
         }
-      }}
+      } : undefined}
       onMouseEnter={show}
       onMouseLeave={hide}
       onFocus={show}
@@ -89,13 +102,13 @@ export function CodexRef({
       {pos &&
         createPortal(
           <span className="codex-pop" style={{ top: pos.top, left: pos.left, maxWidth: Math.min(POP_W, window.innerWidth - 16) }} role="tooltip">
-            <span className="codex-pop-title">{inst ?? item.label}</span>
-            {inst && <span className="codex-pop-sub">{item.label}</span>}
-            {item.sub && <span className="codex-pop-sub">{item.sub}</span>}
+            <span className="codex-pop-title">{inst ?? title}</span>
+            {inst && <span className="codex-pop-sub">{title}</span>}
+            {popSub && <span className="codex-pop-sub">{popSub}</span>}
             {body && <span className="codex-pop-body">{body}</span>}
-            {item.source && (
+            {src && (
               <span className="codex-pop-foot">
-                <span className="codex-src">{item.source.book} p.{item.source.page}</span>
+                <span className="codex-src">{src.book} p.{src.page}</span>
               </span>
             )}
           </span>,

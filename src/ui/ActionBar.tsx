@@ -419,23 +419,27 @@ export function ActionBar() {
             )}
             {/* Commutateur de set d'armes (1 switch gratuit/tour, même Engagé — LDB 13 l.116). */}
             {isHero && loadouts.length >= 2 && (
-              <div className="ab-loadouts" title={battle.loadoutSwapped ? 'Set d’armes déjà changé ce tour' : 'Changer de set d’armes (gratuit, 1/tour)'}>
+              <div className="ab-loadouts" title={battle.loadoutSwapped ? 'Set d’armes déjà changé ce tour' : 'Changer de set d’armes (gratuit, 1/tour)'} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                 <span className="ab-loadouts-ico">🗡</span>
-                {loadouts.map((lo) => {
-                  const mainItem = lo.main ? active.items?.find((i) => i.uid === lo.main) : undefined;
-                  return (
-                    <button
-                      key={lo.id}
-                      className={`btn btn-sm ${active.activeLoadoutId === lo.id ? 'btn-primary' : ''}`}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
-                      disabled={!!battle.loadoutSwapped && active.activeLoadoutId !== lo.id}
-                      onClick={() => switchLoadout(lo.id)}
-                    >
-                      {mainItem && <ItemIcon item={mainItem} size={18} />}
-                      {lo.name}
-                    </button>
-                  );
-                })}
+                <span style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  {loadouts.map((lo) => {
+                    const mainItem = lo.main ? active.items?.find((i) => i.uid === lo.main) : undefined;
+                    const offItem = lo.off ? active.items?.find((i) => i.uid === lo.off) : undefined;
+                    return (
+                      <button
+                        key={lo.id}
+                        className={`btn btn-sm ${active.activeLoadoutId === lo.id ? 'btn-primary' : ''}`}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 2, padding: '2px 5px' }}
+                        disabled={!!battle.loadoutSwapped && active.activeLoadoutId !== lo.id}
+                        title={`Set : ${mainItem?.name ?? 'mains nues'}${offItem ? ` + ${offItem.name}` : ''}`}
+                        onClick={() => switchLoadout(lo.id)}
+                      >
+                        {mainItem ? <ItemIcon item={mainItem} size={20} /> : <span aria-hidden style={{ fontSize: 16 }}>✊</span>}
+                        {offItem && <ItemIcon item={offItem} size={14} />}
+                      </button>
+                    );
+                  })}
+                </span>
               </div>
             )}
           </div>

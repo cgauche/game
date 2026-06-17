@@ -11,13 +11,17 @@ import { ItemIcon } from './ItemIcon';
 import { MediaSelect, type MediaOption } from './MediaSelect';
 import { effectiveWeaponDamage } from '../engine/weaponDamage';
 import { charBonus } from '../engine/characteristics';
+import { refLabel } from '../data';
 
 /**
- * Écran d'EMPLACEMENTS d'équipement (onglet Combat de la fiche) — façon jeu vidéo : mannequin
- * (rig live) au centre, zones d'armure Tête/Bras/Corps/Jambes à 3 COUCHES (LDB 63 : cuir souple
- * sous tout ; Flexible sous la couche rigide — les PA des couches rigide+Flexible se cumulent),
- * emplacement Cape (cosmétique) et DEUX sets d'armes fixes (Set I / Set II). Équiper une pièce
- * retire automatiquement celle de même couche au même endroit (échange, journalisé par le store).
+ * Écran d'EMPLACEMENTS d'équipement (onglet Combat de la fiche) — façon jeu vidéo : colonne
+ * d'emplacements d'armure en CELLULES-ICÔNES à gauche (une ligne par localisation Tête/Bras/
+ * Corps/Jambes + Cape, trois cellules = les 3 COUCHES Ext./Flex./Soupl., LDB 63 : cuir souple
+ * sous tout ; Flexible sous la couche rigide — les PA rigide+Flexible se cumulent), mannequin
+ * (rig live) au CENTRE, et les sets d'armes en cellules à DROITE. Le PA cumulé est affiché EN
+ * FACE de chaque localisation. Survol d'une cellule → POPOVER (Codex de l'objet réel, ou stats +
+ * qualités pour une arme invoquée via `fallback`) ; le CLIC sur la cellule ouvre le picker
+ * changer/retirer (sauf cellule verrouillée : arme invoquée / combat).
  */
 
 /** Zones de la fiche → localisations WFRP4. `apLoc` = localisation représentative pour le PA affiché. */
@@ -29,14 +33,15 @@ const ZONES: { label: string; locs: HitLocation[]; apLoc: HitLocation }[] = [
 ];
 const ZONE_OF_LOC: Partial<Record<HitLocation, string>> = { tete: 'Tête', brasG: 'Bras', brasD: 'Bras', corps: 'Corps', jambeG: 'Jambes', jambeD: 'Jambes' };
 
-/** Couches affichées de HAUT en BAS (extérieure d'abord — c'est elle qu'on voit sur le mannequin). */
-const LAYERS: { key: ArmourLayer; label: string; hint: string }[] = [
-  { key: 'rigide', label: 'Extérieure', hint: 'Couche rigide (cuir bouilli, plate…) — une seule pièce par zone.' },
-  { key: 'flexible', label: 'Flexible', hint: 'Mailles (Flexible) : portée sous une couche non Flexible, les PA des deux se cumulent (LDB 63).' },
-  { key: 'souple', label: 'Souple', hint: 'Cuir souple : porté sans pénalité sous n’importe quelle autre armure (LDB 63) — PA non cumulés sous une autre couche.' },
+/** Couches : `label` plein (tooltip), `short` pour l'en-tête de colonne (cellules étroites). De gauche
+ *  (extérieure, visible) à droite (intime). */
+const LAYERS: { key: ArmourLayer; label: string; short: string; hint: string }[] = [
+  { key: 'rigide', label: 'Extérieure', short: 'Ext.', hint: 'Couche rigide (cuir bouilli, plate…) — une seule pièce par zone.' },
+  { key: 'flexible', label: 'Flexible', short: 'Flex.', hint: 'Mailles (Flexible) : portée sous une couche non Flexible, les PA des deux se cumulent (LDB 63).' },
+  { key: 'souple', label: 'Souple', short: 'Soupl.', hint: 'Cuir souple : porté sans pénalité sous n’importe quelle autre armure (LDB 63) — PA non cumulés sous une autre couche.' },
 ];
 
-/** Zones couvertes par une pièce, pour l'indicateur multi-zones (« 🔗 Bras+Corps »). */
+/** Zones couvertes par une pièce, pour l'indicateur multi-zones (« Bras+Corps »). */
 function zonesOf(it: ItemInstance): string[] {
   const seen: string[] = [];
   for (const l of it.locs ?? []) {
@@ -46,13 +51,9 @@ function zonesOf(it: ItemInstance): string[] {
   return seen;
 }
 
-function pieceTitle(it: ItemInstance): string {
-  return [
-    `PA ${it.pa ?? 0}`,
-    `couche ${armourLayer(it)}`,
-    zonesOf(it).join(' + '),
-    ...(it.qualities.length ? [it.qualities.join(', ')] : []),
-  ].join(' · ');
+/** Qualités/atouts d'une arme en libellés lisibles (ids runtime → libellés via `refLabel`). */
+function weaponQualities(qualities?: string[]): string {
+  return (qualities ?? []).map((q) => refLabel('qualities', { id: q })).filter(Boolean).join(', ');
 }
 
 /** Option « objet » (ItemIcon + libellé) d'un MediaSelect. Libellé d'armure = UN seul nœud
@@ -67,22 +68,62 @@ const weaponOpt = (w: ItemInstance): MediaOption => ({
   media: <ItemIcon item={w} size="sm" />,
   label: `${w.name}${weaponHands(w) === 2 ? ' (2M)' : ''}`,
 });
+const capeOpt = (c: ItemInstance): MediaOption => ({ key: c.uid, media: <ItemIcon item={c} size="sm" />, label: c.name });
 
-/** Sélecteur « + Équiper » d'une couche : pièces du sac (non portées) de cette couche couvrant la zone. */
-function LayerPicker({ candidates, disabled, title, onEquip }: {
-  candidates: ItemInstance[];
-  disabled: boolean;
-  title?: string;
-  onEquip: (uid: string) => void;
+/** Corps du popover de stats (arme invoquée / hors-catalogue) : Dégâts effectifs + portée + qualités. */
+function weaponStatsBody(it: ItemInstance, strBonus: number): string {
+  const reach = it.range != null ? `Portée ${it.range}` : it.reach ?? '';
+  return [`Dégâts ${effectiveWeaponDamage(it as never, strBonus)}`, reach, weaponQualities(it.qualities)].filter(Boolean).join(' · ');
+}
+
+/**
+ * Cellule-emplacement. Survol de l'icône → POPOVER : le Codex de l'objet (catalogue) ou, à défaut
+ * (arme invoquée/enchantée), un `fallback` (stats + qualités) — toujours un popover, jamais de title
+ * natif, et jamais d'ouverture de fiche au clic. Le CLIC ouvre le picker changer/retirer (sauf
+ * `disabled` : arme invoquée / combat → cellule statique). Vide : « + » (picker) ou « · » muet.
+ */
+function SlotCell({ item, pa, fallback, options, value, onSelect, disabled, emptyTitle }: {
+  item?: ItemInstance;
+  pa?: number;
+  fallback?: { sub?: string; body?: string };
+  options: MediaOption[];
+  value: string;
+  onSelect: (v: string) => void;
+  disabled?: boolean;
+  emptyTitle?: string;
 }) {
+  if (!item) {
+    const pickable = !disabled && options.some((o) => o.key);
+    if (!pickable) return <span className="eq-slot disabled" aria-hidden title={emptyTitle}>·</span>;
+    return (
+      <MediaSelect
+        options={options} value={value} onSelect={onSelect} title={emptyTitle}
+        trigger={<span className="eq-slot-plus" aria-hidden>+</span>} triggerClassName="eq-slot empty"
+      />
+    );
+  }
+  const trigger = (
+    <>
+      <CodexRef category="trappings" label={item.name} className="eq-slot-icon" tooltipOnly fallback={fallback}>
+        <ItemIcon item={item} size="md" />
+      </CodexRef>
+      {pa != null && <span className="eq-slot-pa">{pa}</span>}
+    </>
+  );
+  // Verrouillée (invoquée / combat) : cellule STATIQUE — le survol garde le popover, pas de picker.
+  if (disabled) return <span className="eq-slot filled locked">{trigger}</span>;
   return (
-    <MediaSelect disabled={disabled} title={title} placeholder="+ Équiper…" options={candidates.map(armourOpt)} onSelect={onEquip} />
+    <MediaSelect
+      options={options} value={value} onSelect={onSelect} title="Changer / retirer"
+      trigger={trigger} triggerClassName="eq-slot filled"
+    />
   );
 }
 
 export function EquipmentPanel({ hero }: { hero: Combatant }) {
   const toggleEquip = useGame((s) => s.toggleEquip);
   const setWeaponSetSlot = useGame((s) => s.setWeaponSetSlot);
+  const setLoadoutSlot = useGame((s) => s.setLoadoutSlot);
   const activateWeaponSet = useGame((s) => s.activateWeaponSet);
   const setActiveLoadout = useGame((s) => s.setActiveLoadout);
   const deleteLoadout = useGame((s) => s.deleteLoadout);
@@ -95,6 +136,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
   const wornCape = capes.find((i) => i.equipped);
   const weapons = items.filter((i) => (i.kind === 'melee' || i.kind === 'ranged') && !i.destroyed);
   const oneHanded = weapons.filter((w) => weaponHands(w) === 1);
+  const strBonus = charBonus(hero.characteristics, 'F');
 
   // Mannequin : MÊME recette que le token de jeu (pickBackend) — apparence enrichie des
   // mutations/blessures + équipement dérivé (couche visible déjà triée par equipFromCombatant).
@@ -102,106 +144,129 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
   const equip = equipFromCombatant(hero);
 
   const activeWeapons = hero.weapons.filter((w) => w.name !== 'Mains nues');
-  // E2 : par DÉFAUT on édite les mains du set ACTIF (Main principale / secondaire) ; les Sets I/II
-  // (config rapide + bascule) deviennent une section AVANCÉE repliée.
-  const activeIdx = Math.max(0, (hero.loadouts ?? []).findIndex((l) => l.id === hero.activeLoadoutId));
-  const activeLo = hero.loadouts?.[activeIdx];
-  const activeMainItem = weapons.find((w) => w.uid === activeLo?.main);
-  const activeMainTwoHanded = activeMainItem ? weaponHands(activeMainItem) === 2 : false;
+
+  /** `fallback` popover d'une arme (stats + qualités) — sert l'invoquée/enchantée hors catalogue. */
+  const weaponFallback = (it?: ItemInstance, conjured?: boolean) =>
+    it ? { sub: conjured ? 'Arme invoquée' : undefined, body: weaponStatsBody(it, strBonus) } : undefined;
 
   return (
     <div className="equip-panel">
+      {/* COLONNE GAUCHE — emplacements d'armure en cellules, PA cumulé en face de chaque localisation */}
+      <div className="equip-slots">
+        <div className="eq-layers-head">
+          <span className="eq-loc-spacer">Couche</span>
+          {LAYERS.map((l) => <span key={l.key} className="eq-layer-col" title={`${l.label} — ${l.hint}`}>{l.short}</span>)}
+        </div>
+
+        {ZONES.map((z) => {
+          const covering = armours.filter((i) => (i.locs ?? []).some((l) => z.locs.includes(l)));
+          const ap = hero.armour[z.apLoc];
+          return (
+            <div className="eq-loc-row" key={z.label}>
+              <span className="eq-loc-head">
+                <span className="eq-loc-name">{z.label}</span>
+                <span className={`eq-loc-pa ${ap > 0 ? 'on' : ''}`} title="Points d'Armure de la zone (couches rigide + Flexible cumulées, mutations comprises)">PA {ap}</span>
+              </span>
+              {LAYERS.map((layer) => {
+                const worn = covering.find((i) => i.equipped && armourLayer(i) === layer.key);
+                const candidates = covering.filter((i) => !i.equipped && armourLayer(i) === layer.key);
+                const netPa = worn ? Math.max(0, (worn.pa ?? 0) - (worn.damageTaken ?? 0)) : undefined;
+                return (
+                  <SlotCell
+                    key={layer.key}
+                    item={worn}
+                    pa={netPa}
+                    value={worn?.uid ?? ''}
+                    disabled={inBattle}
+                    emptyTitle={lockTitle ?? (candidates.length ? `${layer.label} — équiper` : `${layer.label} — rien à porter`)}
+                    options={[{ key: '', label: '— retirer —', disabled: !worn }, ...candidates.map(armourOpt)]}
+                    onSelect={(v) => toggleEquip(hero.id, v || worn!.uid)}
+                  />
+                );
+              })}
+            </div>
+          );
+        })}
+
+        {/* Ligne Cape (cosmétique — rendue dans le dos du mannequin) */}
+        <div className="eq-loc-row eq-loc-cape">
+          <span className="eq-loc-head">
+            <span className="eq-loc-name">Cape</span>
+            <span className="eq-loc-pa" title="Purement cosmétique — aucun effet de règles">✨</span>
+          </span>
+          <SlotCell
+            item={wornCape}
+            value={wornCape?.uid ?? ''}
+            disabled={inBattle}
+            emptyTitle={lockTitle ?? (capes.length ? 'Équiper une cape' : 'Aucune cape dans le sac')}
+            options={[{ key: '', label: '— retirer —', disabled: !wornCape }, ...capes.filter((c) => !c.equipped).map(capeOpt)]}
+            onSelect={(v) => toggleEquip(hero.id, v || wornCape!.uid)}
+          />
+        </div>
+      </div>
+
+      {/* COLONNE CENTRE — mannequin (rig live, porte l'armure visible + les armes du set actif) */}
       <div className="equip-doll" title="Aperçu du héros avec l’équipement porté (la couche du dessus s’affiche : plate sur maille sur cuir)">
         <svg viewBox="0 0 120 150" className="equip-figure">
           <defs dangerouslySetInnerHTML={{ __html: DEFS }} />
           <rect x={0} y={0} width={120} height={150} fill="#1d2230" rx={6} />
           <RigSprite appearance={appearance} equip={equip} career={hero.career} overlays={combatantOverlays(hero)} />
         </svg>
-        {/* Emplacement Cape sous le mannequin (cosmétique — l'aperçu est juste au-dessus) */}
-        <div className="equip-zone equip-cape">
-          <div className="eq-zone-head">
-            <span className="eq-zone-name">Cape</span>
-            <span className="eq-ap" title="Purement cosmétique — aucun effet de règles">✨</span>
-          </div>
-          {wornCape ? (
-            <div className="eq-piece" title="Cape portée (visible dans le dos du héros)">
-              <ItemIcon item={wornCape} size="sm" />
-              <span className="eq-piece-name"><CodexRef category="trappings" label={wornCape.name}>{wornCape.name}</CodexRef></span>
-              <button className="btn small" disabled={inBattle} title={lockTitle ?? 'Retirer'} onClick={() => toggleEquip(hero.id, wornCape.uid)}>✕</button>
-            </div>
-          ) : capes.length ? (
-            <LayerPicker candidates={capes} disabled={inBattle} title={lockTitle} onEquip={(uid) => toggleEquip(hero.id, uid)} />
-          ) : (
-            <span className="muted">— aucune cape dans le sac —</span>
-          )}
-        </div>
       </div>
 
-      <div className="equip-zones">
-        {ZONES.map((z) => {
-          const covering = armours.filter((i) => (i.locs ?? []).some((l) => z.locs.includes(l)));
-          const ap = hero.armour[z.apLoc];
+      {/* COLONNE DROITE — sets d'armes en cartes compactes (Set I/II fixes + perso/invoquée) + récap */}
+      <div className="equip-sets">
+        {(hero.loadouts ?? []).map((lo, idx) => {
+          const fixed = idx < WEAPON_SET_NAMES.length;
+          const conjured = !!(hero.items ?? []).find((it) => it.uid === lo.main)?.conjured;
+          const setActive = hero.activeLoadoutId === lo.id;
+          const mainItem = weapons.find((w) => w.uid === lo.main);
+          const offItem = weapons.find((w) => w.uid === lo.off);
+          const mainTwoHanded = mainItem ? weaponHands(mainItem) === 2 : false;
+          const editable = !conjured && !inBattle; // arme invoquée = lecture seule (auto-gérée)
+          const onMain = (v: string) => fixed ? setWeaponSetSlot(hero.id, idx, 'main', v || null) : setLoadoutSlot(hero.id, lo.id, 'main', v || null);
+          const onOff = (v: string) => fixed ? setWeaponSetSlot(hero.id, idx, 'off', v || null) : setLoadoutSlot(hero.id, lo.id, 'off', v || null);
           return (
-            <div className="equip-zone" key={z.label}>
-              <div className="eq-zone-head">
-                <span className="eq-zone-name">{z.label}</span>
-                <span className={`eq-ap ${ap > 0 ? 'on' : ''}`} title="Points d'Armure de la zone (couches rigide + Flexible cumulées, mutations comprises)">PA {ap}</span>
+            <div key={lo.id} className={`set-card ${setActive ? 'active' : ''} ${conjured ? 'conjured' : ''}`}>
+              <div className="set-card-slots">
+                <SlotCell
+                  item={mainItem}
+                  fallback={weaponFallback(mainItem, conjured)}
+                  disabled={!editable}
+                  value={lo.main ?? ''}
+                  emptyTitle={lockTitle ?? 'Main — choisir une arme'}
+                  options={[{ key: '', label: '— mains nues —' }, ...weapons.map(weaponOpt)]}
+                  onSelect={onMain}
+                />
+                <SlotCell
+                  item={offItem}
+                  fallback={weaponFallback(offItem, conjured)}
+                  disabled={!editable || mainTwoHanded}
+                  value={lo.off ?? ''}
+                  emptyTitle={mainTwoHanded ? 'Arme à deux mains — pas de seconde main' : (lockTitle ?? '2nde — arme à une main / bouclier')}
+                  options={[{ key: '', label: mainTwoHanded ? '— (2 mains) —' : '— vide —' }, ...oneHanded.filter((w) => w.uid !== lo.main).map(weaponOpt)]}
+                  onSelect={onOff}
+                />
               </div>
-              {covering.length === 0 ? (
-                <span className="muted">— rien à porter —</span>
-              ) : (
-                LAYERS.map((layer) => {
-                  const worn = covering.find((i) => i.equipped && armourLayer(i) === layer.key);
-                  const candidates = covering.filter((i) => !i.equipped && armourLayer(i) === layer.key);
-                  if (!worn && !candidates.length) return null;
-                  return (
-                    <div className="eq-layer" key={layer.key} title={layer.hint}>
-                      <span className="eq-layer-name">{layer.label}</span>
-                      {worn ? (
-                        <div className="eq-piece" title={pieceTitle(worn)}>
-                          <ItemIcon item={worn} size="sm" />
-                          <span className="eq-piece-name">
-                            <CodexRef category="trappings" label={worn.name}>{worn.name}</CodexRef>
-                            {zonesOf(worn).length > 1 && <em className="eq-multi" title={`Cette pièce couvre : ${zonesOf(worn).join(' + ')}`}> 🔗</em>}
-                          </span>
-                          <span className="eq-piece-pa">PA {Math.max(0, (worn.pa ?? 0) - (worn.damageTaken ?? 0))}</span>
-                          <button className="btn small" disabled={inBattle} title={lockTitle ?? 'Retirer'} onClick={() => toggleEquip(hero.id, worn.uid)}>✕</button>
-                        </div>
-                      ) : (
-                        <LayerPicker candidates={candidates} disabled={inBattle} title={lockTitle} onEquip={(uid) => toggleEquip(hero.id, uid)} />
-                      )}
-                    </div>
-                  );
-                })
-              )}
+              <span className="set-card-actions">
+                {conjured && <span className="lo-name" title="Arme invoquée (auto-gérée)">✦</span>}
+                <button
+                  className={`btn small ${setActive ? 'btn-primary' : ''}`}
+                  disabled={inBattle}
+                  title={lockTitle ?? 'Rendre ce set actif (armes en main)'}
+                  onClick={() => (fixed ? activateWeaponSet(hero.id, idx) : setActiveLoadout(hero.id, lo.id))}
+                >
+                  {setActive ? '● Actif' : 'Activer'}
+                </button>
+                {!fixed && !conjured && (
+                  <button className="btn small" disabled={inBattle} title={lockTitle ?? 'Supprimer ce set'} onClick={() => deleteLoadout(hero.id, lo.id)}>🗑</button>
+                )}
+              </span>
             </div>
           );
         })}
-      </div>
 
-      <div className="equip-sets">
-        {/* DÉFAUT (E2) : armes en main du set ACTIF — « Main principale » / « Main secondaire ». Les
-            Sets I/II (pré-config + bascule rapide) sont repliés en section « avancé » ci-dessous. */}
-        <div className="mini-title">Armes en main</div>
-        <div className="eq-hands">
-          <div className="lo-slot"><span>Main principale</span>
-            <MediaSelect
-              disabled={inBattle} title={lockTitle}
-              value={activeLo?.main ?? ''}
-              options={[{ key: '', label: '— mains nues —' }, ...weapons.map(weaponOpt)]}
-              onSelect={(v) => setWeaponSetSlot(hero.id, activeIdx, 'main', v || null)}
-            />
-          </div>
-          <div className="lo-slot"><span>Main secondaire</span>
-            <MediaSelect
-              disabled={inBattle || activeMainTwoHanded}
-              title={activeMainTwoHanded ? 'Arme à deux mains — pas de seconde main' : lockTitle}
-              value={activeLo?.off ?? ''}
-              options={[{ key: '', label: activeMainTwoHanded ? '— (2 mains) —' : '— vide —' }, ...oneHanded.filter((w) => w.uid !== activeLo?.main).map(weaponOpt)]}
-              onSelect={(v) => setWeaponSetSlot(hero.id, activeIdx, 'off', v || null)}
-            />
-          </div>
-        </div>
+        {/* Récap des armes EN MAIN du set actif (Dégâts effectifs, qualités/effets, munitions) */}
         <div className="eq-active-weapons">
           <span className="mini-title">En main</span>
           {activeWeapons.length === 0 ? (
@@ -209,71 +274,21 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
           ) : (
             activeWeapons.map((w, i) => {
               const ammo = w.type === 'ranged' ? compatibleAmmo(hero, w).reduce((s, a) => s + (a.qty ?? 0), 0) : null;
+              const quals = weaponQualities(w.qualities);
               return (
-                <span className="weap" key={i}>
+                <div className="weap" key={i}>
                   <ItemIcon item={w} size="sm" />
-                  <CodexRef category="trappings" label={w.name}>{w.name}</CodexRef> <em>({w.damage} = {effectiveWeaponDamage(w, charBonus(hero.characteristics, 'F'))})</em>
-                  {ammo != null && <span className="eq-ammo" title="Munitions compatibles dans le sac"> · 🏹 {ammo}</span>}
-                </span>
+                  <span className="weap-text">
+                    <CodexRef category="trappings" label={w.name}>{w.name}</CodexRef>{' '}
+                    <em>{w.damage} = {effectiveWeaponDamage(w, strBonus)}</em>
+                    {quals && <span className="weap-quals"> · {quals}</span>}
+                    {ammo != null && <span className="eq-ammo" title="Munitions compatibles dans le sac"> · 🏹 {ammo}</span>}
+                  </span>
+                </div>
               );
             })
           )}
         </div>
-
-        <details className="equip-sets-advanced">
-          <summary>Sets d'armes <span className="muted">— pré-config &amp; bascule rapide</span></summary>
-          {WEAPON_SET_NAMES.map((name, idx) => {
-            const lo = hero.loadouts?.[idx];
-            const setActive = !!lo && hero.activeLoadoutId === lo.id;
-            const mainItem = weapons.find((w) => w.uid === lo?.main);
-            const mainTwoHanded = mainItem ? weaponHands(mainItem) === 2 : false;
-            return (
-              <div key={name} className={`loadout-row ${setActive ? 'active' : ''}`}>
-                <button
-                  className={`btn small ${setActive ? 'btn-primary' : ''}`}
-                  disabled={inBattle}
-                  title={lockTitle ?? 'Rendre ce set actif (armes en main)'}
-                  onClick={() => activateWeaponSet(hero.id, idx)}
-                >
-                  {setActive ? '● Actif' : 'Activer'}
-                </button>
-                <span className="lo-name">{lo?.name ?? name}</span>
-                <div className="lo-slot"><span>Main</span>
-                  <MediaSelect
-                    disabled={inBattle} title={lockTitle}
-                    value={lo?.main ?? ''}
-                    options={[{ key: '', label: '— vide —' }, ...weapons.map(weaponOpt)]}
-                    onSelect={(v) => setWeaponSetSlot(hero.id, idx, 'main', v || null)}
-                  />
-                </div>
-                <div className="lo-slot"><span>2nde</span>
-                  <MediaSelect
-                    disabled={inBattle || mainTwoHanded} title={lockTitle}
-                    value={lo?.off ?? ''}
-                    options={[{ key: '', label: mainTwoHanded ? '— (2 mains) —' : '— vide —' }, ...oneHanded.filter((w) => w.uid !== lo?.main).map(weaponOpt)]}
-                    onSelect={(v) => setWeaponSetSlot(hero.id, idx, 'off', v || null)}
-                  />
-                </div>
-              </div>
-            );
-          })}
-          {/* Sets au-delà des 2 fixes : ARME INVOQUÉE (auto-gérée, non supprimable) ou set perso supprimable. */}
-          {(hero.loadouts ?? []).slice(WEAPON_SET_NAMES.length).map((lo) => {
-            const setActive = hero.activeLoadoutId === lo.id;
-            const conjured = !!(hero.items ?? []).find((it) => it.uid === lo.main)?.conjured;
-            return (
-              <div key={lo.id} className={`loadout-row ${conjured ? 'conjured' : 'extra'} ${setActive ? 'active' : ''}`}>
-                <button className={`btn small ${setActive ? 'btn-primary' : ''}`} disabled={inBattle} title={lockTitle} onClick={() => setActiveLoadout(hero.id, lo.id)}>
-                  {setActive ? '● Actif' : 'Activer'}
-                </button>
-                <span className="lo-name">{conjured ? <>✦ {lo.name} <em className="muted">(invoquée)</em></> : lo.name}</span>
-                {!conjured && (
-                  <button className="btn small" disabled={inBattle} title={lockTitle ?? 'Supprimer ce set'} onClick={() => deleteLoadout(hero.id, lo.id)}>🗑</button>
-                )}
-              </div>
-            );
-          })}
-        </details>
       </div>
     </div>
   );

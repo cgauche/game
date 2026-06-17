@@ -553,14 +553,16 @@
 .sc-weapons .weap em {
   color: var(--gold);
 }
-/* ── Écran d'équipement (onglet Combat) : mannequin + zones à couches (LDB 63) + sets d'armes ──
-   ≥700px : mannequin à gauche, zones en grille 2 colonnes ; ≤700px : mannequin au-dessus ;
-   ≤560px : zones en 1 colonne. Cibles tactiles élargies via pointer: coarse. */
+/* ── Écran d'équipement (onglet Combat) : emplacements en CELLULES (loc × couche) + mannequin + sets ──
+   ≥900px : 3 colonnes (emplacements | mannequin | armes) ; ≤900px : mannequin en haut, emplacements
+   puis armes empilés. Cibles tactiles élargies via pointer: coarse. */
 .equip-panel {
+  --eq-cell: 46px;
   display: grid;
-  grid-template-columns: 170px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.05fr) 150px minmax(0, 1fr);
   gap: 12px;
   margin-bottom: 14px;
+  align-items: start;
 }
 .equip-doll {
   display: flex;
@@ -573,184 +575,206 @@
   border: 1px solid var(--border);
   border-radius: 8px;
 }
-.equip-zones {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  align-content: start;
-}
-.equip-zone {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px;
+/* Colonne EMPLACEMENTS : en-tête de couches + une ligne par localisation (libellé+PA | 3 cellules). */
+.equip-slots {
   display: flex;
   flex-direction: column;
   gap: 6px;
   min-width: 0;
 }
-.eq-zone-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
+.eq-layers-head,
+.eq-loc-row {
+  display: grid;
+  grid-template-columns: 1fr repeat(3, var(--eq-cell));
+  gap: 6px;
+  align-items: center;
 }
-.eq-zone-name {
+.eq-layers-head {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0 6px;
+}
+.eq-layers-head .eq-layer-col {
+  text-align: center;
+}
+.eq-loc-row {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 6px;
+}
+.eq-loc-head {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.eq-loc-name {
   font-weight: 600;
   color: var(--gold2);
   font-size: 13px;
 }
-.eq-ap {
-  font-size: 12px;
-  color: var(--muted);
-}
-.eq-ap.on {
-  color: var(--gold2);
-}
-/* Une COUCHE de la zone : libellé (Extérieure/Flexible/Souple) + pièce portée ou sélecteur. */
-.eq-layer {
-  display: grid;
-  grid-template-columns: 70px minmax(0, 1fr);
-  gap: 6px;
-  align-items: center;
-}
-.eq-layer-name {
+.eq-loc-pa {
   font-size: 11px;
   color: var(--muted);
 }
-.eq-piece {
-  display: flex;
-  gap: 6px;
+.eq-loc-pa.on {
+  color: var(--gold);
+  font-weight: 600;
+}
+/* Cellule-emplacement : déclencheur de MediaSelect (icône portée) OU placeholder vide/désactivé. */
+.eq-slot {
+  position: relative;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+  width: var(--eq-cell);
+  height: var(--eq-cell);
   background: rgba(0, 0, 0, 0.22);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 2px 4px 2px 8px;
-  min-width: 0;
+  padding: 2px;
+  cursor: pointer;
+  color: var(--muted);
+  font: inherit;
+  appearance: none;
 }
-.eq-piece-name {
-  flex: 1;
-  min-width: 0;
-  font-size: 12px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.eq-slot.filled {
+  background: rgba(0, 0, 0, 0.3);
 }
-.eq-piece-pa {
-  font-size: 11px;
+.eq-slot.filled.locked {
+  cursor: default;
+}
+.eq-slot.empty {
+  border-style: dashed;
+}
+.eq-slot.empty:hover {
+  border-color: var(--gold);
   color: var(--gold);
-  flex: 0 0 auto;
 }
-.equip-zone .media-select {
-  width: 100%;
-  min-width: 0;
-  font-size: 12px;
+.eq-slot.disabled {
+  border-style: dashed;
+  opacity: 0.4;
+  cursor: default;
 }
+.eq-slot .eq-slot-plus {
+  font-size: 20px;
+  line-height: 1;
+}
+.eq-slot-pa {
+  position: absolute;
+  right: 1px;
+  bottom: 0;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--gold);
+  background: rgba(0, 0, 0, 0.62);
+  border-radius: 3px;
+  padding: 0 2px;
+  pointer-events: none;
+}
+/* Icône d'une cellule pleine (enrobée CodexRef tooltipOnly → popover au survol, ou span title pour
+   l'invoquée). Le clic appartient à la cellule (picker) → le curseur suit la cellule. */
+.eq-slot .eq-slot-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  cursor: inherit;
+}
+/* Le wrapper MediaSelect d'un slot épouse la cellule (taille fixe) et ancre le popover. */
+.equip-slots .media-select,
+.set-card .media-select {
+  position: relative;
+  display: inline-flex;
+}
+/* Colonne ARMES : deux cartes de set (+ sets supplémentaires) + récap en main. */
 .equip-sets {
-  grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-}
-.loadout-row {
-  display: flex;
   gap: 8px;
+  min-width: 0;
+}
+/* Carte de set d'armes COMPACTE : 2 cellules (Main · 2nde) + actions à droite, sur UNE rangée. */
+.set-card {
+  display: flex;
   align-items: center;
-  flex-wrap: wrap; /* primitive .bar-like : s'enroule sur écran étroit */
+  gap: 10px;
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 6px 8px;
 }
-.loadout-row.active {
+.set-card.active {
   border-color: var(--gold);
 }
-.loadout-row .lo-name {
-  font-weight: 600;
-  font-size: 13px;
-  min-width: 44px;
+.set-card.conjured {
+  border-style: dashed;
+  border-color: var(--gold2);
 }
-.lo-slot {
+.set-card-slots {
+  display: flex;
+  gap: 6px;
+}
+.set-card-actions {
   display: flex;
   gap: 4px;
   align-items: center;
-  font-size: 12px;
-  color: var(--muted);
+  margin-left: auto;
 }
-.lo-slot .media-select {
-  flex: 1;
-  min-width: 0;
-  max-width: 170px;
+.set-card-actions .lo-name {
+  font-size: 16px;
+  color: var(--gold2);
 }
 .eq-active-weapons {
-  margin-top: 4px;
+  margin-top: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
+.eq-active-weapons .weap {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  min-width: 0;
+}
+.eq-active-weapons .weap-text {
+  min-width: 0;
+  line-height: 1.35;
+}
+.eq-active-weapons .weap-text em {
+  color: var(--gold);
+  font-style: normal;
+}
+.weap-quals,
 .eq-ammo {
   color: var(--muted);
 }
-/* E2 : « Armes en main » par défaut = deux droplists (Main principale / secondaire) ; les Sets I/II
-   passent dans un <details> replié « avancé ». */
-.eq-hands {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 8px;
-}
-.eq-hands .lo-slot {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 3px;
-  color: var(--text);
-}
-.eq-hands .lo-slot .media-select {
-  max-width: none;
-  width: 100%;
-}
-.equip-sets-advanced {
-  margin-top: 6px;
-  border-top: 1px dashed var(--border);
-  padding-top: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.equip-sets-advanced > summary {
-  cursor: pointer;
-  font-size: 12px;
-  color: var(--muted);
-  padding: 2px 0;
-  user-select: none;
-}
-.equip-sets-advanced > summary:hover {
-  color: var(--gold);
-}
-@media (max-width: 700px) {
+@media (max-width: 900px) {
   .equip-panel {
     grid-template-columns: 1fr;
   }
-  /* Mannequin compact à gauche, emplacement Cape à sa droite (pas de grande zone vide). */
+  /* Mannequin en haut, centré ; emplacements puis armes empilés dessous. */
   .equip-doll {
+    order: -1;
     flex-direction: row;
     align-items: flex-start;
+    justify-content: center;
   }
   .equip-figure {
-    width: 128px;
+    width: 150px;
     flex: 0 0 auto;
-  }
-  .equip-cape {
-    flex: 1;
   }
 }
 @media (max-width: 560px) {
-  .equip-zones {
-    grid-template-columns: 1fr;
+  .equip-panel {
+    --eq-cell: 50px;
   }
 }
 @media (pointer: coarse) {
-  .equip-panel .ms-trigger {
-    min-height: 38px;
-  }
-  .eq-piece .btn,
-  .loadout-row .btn {
+  .set-card-actions .btn {
     min-height: 34px;
     min-width: 34px;
   }
