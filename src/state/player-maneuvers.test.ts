@@ -104,7 +104,7 @@ describe('manœuvres en combat (store)', () => {
   });
 
   function setup() {
-    const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -148,13 +148,13 @@ describe('manœuvres en combat (store)', () => {
     H.traits = [{ id: 'morsure', value: 10 }];
     H.advantage = 2;
     useGame.setState({ battle: { ...useGame.getState().battle!, action: 'maneuver', maneuverKind: 'morsure' } });
-    useGame.getState().battleClickEntity(E.id);
+    useGame.getState().battleClickEntity(E.id, { confirm: true }); // 2e tap (parité attaque de base : 1er = aperçu)
     const pa = useGame.getState().pendingAttack;
     expect(pa).toBeTruthy();
     expect(pa!.freeKind).toBe('morsure');
     expect(pa!.targetId).toBe(E.id);
     expect(pa!.result).toBeNull(); // « un jet = une modale » : rien n’est tiré avant Lancer
-    // L’Avantage est dépensé à l’armement de l’attaque (coût RAW 1).
+    // L’Avantage est dépensé à la FRAPPE (coût RAW 1), après tous les portails — chemin d'attaque unifié.
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.advantage).toBe(1);
   });
 });

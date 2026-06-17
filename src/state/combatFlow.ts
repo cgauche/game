@@ -835,15 +835,18 @@ export type AttackPlan =
 /** Ce qu'un clic sur CET ennemi ferait : attaque directe (Allonge / tir), Charge implicite
  *  (non Engagé + Mouvement intact + mêlée, portée de Course — LDB 15 l.74-77), ou
  *  rejoindre-et-attaquer dans la Marche restante (pas une Charge → pas de bonus). Pure-store. */
-export function attackPlan(get: Get, active: Combatant, target: Combatant): AttackPlan {
+export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?: { reach?: number; forceMelee?: boolean }): AttackPlan {
   const battle = get().battle!;
   const scene = get().scene!;
-  if (combatDistance(active, target) <= meleeReachTiles(active.weapons)) return { kind: 'attack' };
+  // `opts` (attaque CHOISIE : arme tenue vs attaque naturelle gratuite) : `reach` impose l'Allonge (gratuites
+  // de mêlée = 1), `forceMelee` ignore la branche distance même avec une arme à distance tenue. Sans opts =
+  // comportement historique (arme du Set actif), byte-identique.
+  if (combatDistance(active, target) <= (opts?.reach ?? meleeReachTiles(active.weapons))) return { kind: 'attack' };
   // L'arme du SET ACTIF décide : une arme à distance présente → tir. Gate PRÉ-clic (parité sort) :
   // sans Ligne de Vue (LDB 13 l.123) ou au-delà de la bande Extrême (Portée ×3), refuser AVANT la
   // modale — sinon « Lancer » fabrique un raté garanti qui consomme l'Action. Les gates de la
   // résolution restent (défense en profondeur) ; rechargement/munitions restent gérés au commit.
-  if (attackWeapon(active.weapons, false).type === 'ranged') {
+  if (!opts?.forceMelee && attackWeapon(active.weapons, false).type === 'ranged') {
     const p = previewAttack(get, active, target);
     if (p.blocked) return { kind: 'blocked', reason: 'Pas de ligne de vue (cible masquée).' };
     if (!p.inRange) return { kind: 'blocked', reason: 'Cible hors de portée.' };

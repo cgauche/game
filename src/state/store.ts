@@ -19,13 +19,28 @@ import {
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, aiOvercastPlan,
-  availableManeuvers, freeAttackWeapon, applyWail, resolveManeuver, MELEE_MANEUVER_KINDS,
+  availableManeuvers, availableAttacks, type AttackOption, freeAttackWeapon, applyWail, resolveManeuver, MELEE_MANEUVER_KINDS,
   castSightBlocked, spellSightOf, castZoneSpell, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone,
   counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition,
   openRoundStartPsych, displaceSmaller, applySurprise,
   displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
+
+/** Résout l'`AttackOption` à exécuter au clic-ennemi : clic droit = `forceId` (première abordable) ; sinon
+ *  l'attaque ARMÉE (`selectedAttack`, défaut 'arme', repli sur 'arme' si périmée) ; pendant la migration,
+ *  les anciens modes maneuver/tentacle/trample mappent sur leur option. `undefined` = mode non-attaque
+ *  (cast/heal/focus/…) ou aucune attaque abordable. */
+function selectedAttackOption(active: Combatant, battle: BattleState, forceId?: string): AttackOption | undefined {
+  if (battle.action !== null && battle.action !== 'maneuver' && battle.action !== 'tentacle' && battle.action !== 'trample') return undefined;
+  const opts = availableAttacks(active, battle);
+  if (forceId) return opts.find((o) => o.id === forceId) ?? opts[0];
+  if (battle.action === 'maneuver') return battle.maneuverKind ? opts.find((o) => o.id === battle.maneuverKind) : undefined;
+  if (battle.action === 'tentacle') return opts.find((o) => o.id === 'tentacule');
+  if (battle.action === 'trample') return opts.find((o) => o.id === 'pietinement');
+  const want = battle.selectedAttack ?? 'arme';
+  return opts.find((o) => o.id === want) ?? opts.find((o) => o.id === 'arme');
+}
 import { EMPTY_FLOW, flowEffects } from './flow';
 export { movementRemaining, canMove } from './mount';
 import { pickActiveModalKey } from './modalArbiter';
@@ -166,6 +181,10 @@ export interface BattleState {
   /** Manœuvre de trait CIBLÉE (mêlée gratuite : Morsure/Attaque caudale/Tentacules) armée par la
    *  hotbar : le prochain clic-entité la résout (cf. `battleManeuver`). Effacée au résolution/tour. */
   maneuverKind?: AttackKind;
+  /** Attaque ARMÉE pour le clic-ennemi (id d'`AttackOption` : 'arme' | 'morsure' | … — cf. `availableAttacks`).
+   *  Défaut 'arme' ; vivante seulement quand `action===null`. Source UNIQUE qui remplace l'attaque d'arme
+   *  implicite + le mode manœuvre/tentacule/trample armé. */
+  selectedAttack?: string;
   reachable: Map<string, number>;
   /** Cases de Mouvement déjà parcourues ce Tour. Le Mouvement est DÉCOMPOSABLE (règle maison : on peut
    *  fractionner son déplacement tant que le total ≤ Marche) MAIS non entrelacé avec l'Action : séquences
@@ -707,7 +726,7 @@ export interface GameState {
   oocCastSpell: (casterId: string, label: string, targetId: string, fromGrimoire?: boolean) => void;
   battleFocusSpell: (label: string) => void;
   battleClickTile: (pt: Pt, opts?: { confirm?: boolean }) => void;
-  battleClickEntity: (id: string, opts?: { confirm?: boolean; skipMountChoice?: boolean }) => void;
+  battleClickEntity: (id: string, opts?: { confirm?: boolean; skipMountChoice?: boolean; forceAttackId?: string }) => void;
   /** Annule TOUT le déplacement décomposé du Tour (R6/LOT 6) tant qu'aucune Action n'a été prise :
    *  restaure positions/orientation depuis `battle.moveSnapshot`. No-op après l'Action. */
   cancelMove: () => void;
@@ -774,6 +793,9 @@ export interface GameState {
   /** Arme/désarme une manœuvre de mêlée CIBLÉE (Morsure/Caudale/Tentacules) : le prochain clic-entité
    *  la résout (battleManeuver). Toggle si déjà armée sur le même type. */
   battleSelectManeuver: (kind: AttackKind) => void;
+  /** Arme une ATTAQUE (id d'`AttackOption` : 'arme'/'morsure'/'tentacule'/'pietinement'…) pour le clic-ennemi
+   *  — source UNIQUE qui remplace l'arme implicite + le mode manœuvre/tentacule/trample. Toggle → 'arme'. */
+  battleSelectAttack: (id: string) => void;
   /** Résout la manœuvre de mêlée armée contre la cible cliquée (Attaque gratuite, Action préservée). */
   battleManeuver: (targetId: string) => void;
   /** Manœuvre de ZONE / soi immédiate (Souffle/Vomi/Langue/Hurlement/Regard/Étreinte) : résolution
@@ -2263,26 +2285,6 @@ export const useGame = create<GameState>((set, get) => ({
       if (t?.pos) get().battleClickTile({ ...t.pos });
       return;
     }
-    // Piétinement : action GRATUITE (autorisée même Action consommée). Précède le verrou `battle.acted`.
-    if (battle.action === 'trample') {
-      get().battleTrample(id);
-      return;
-    }
-    // Tentacule (trait Tentacules) : Attaque GRATUITE 1/tour — idem, précède le verrou `battle.acted`.
-    if (battle.action === 'tentacle') {
-      get().battleTentacle(id);
-      return;
-    }
-    // Manœuvre de mêlée CIBLÉE (Morsure/Attaque caudale/Tentacules de trait) : Attaque gratuite — précède
-    // aussi le verrou `battle.acted`. La manœuvre armée est portée par `battle.maneuverKind`.
-    if (battle.action === 'maneuver') {
-      get().battleManeuver(id);
-      return;
-    }
-    // Attaque GRATUITE de Frénésie (Test de CC non soumis à l'Action, LDB 21 l.34) : reste possible même
-    // l'Action dépensée — y compris le tour où l'on entre en Frénésie (le Test de FM a consommé l'Action).
-    const freeFrenzyAttack = battle.action === null && !!active.frenzied && !active.frenzyFreeUsed;
-    if (battle.acted && !freeFrenzyAttack) return;
     const target = battle.combatants.find((c) => c.id === id);
     if (!target) return;
     if (battle.action === 'cast' && battle.selectedSpell) {
@@ -2292,8 +2294,11 @@ export const useGame = create<GameState>((set, get) => ({
       castSpell(get, set, active, target, battle.selectedSpell);
       return;
     }
-    // Clic-ennemi IMPLICITE (mode neutre uniquement — les autres modes ont leur sémantique propre).
-    if (battle.action !== null || !scene) return;
+    // ATTAQUE unifiée : l'`AttackOption` armée (clic droit = première abordable via `forceAttackId` ; sinon
+    // `selectedAttack`, défaut 'arme' ; les anciens modes maneuver/tentacle/trample mappent sur leur option).
+    // `undefined` = mode non-attaque (cast/heal/…) ou aucune attaque abordable (Action dépensée sans gratuite).
+    const option = selectedAttackOption(active, battle, opts?.forceAttackId);
+    if (!option || !scene) return;
     if (target.kind === 'hero') return; // l'attaque ne vise que les ennemis (soin/sort via leurs modes)
     if (!canTakeAction(active) || hasCondition(active, 'Brisé')) return; // Sonné/Brisé : pas d'attaque (parité boutons)
     // Frénésie (LDB 21 l.34) : la cible est IMPOSÉE — l'ennemi le plus proche en Ligne de Vue.
@@ -2305,12 +2310,18 @@ export const useGame = create<GameState>((set, get) => ({
         return;
       }
     }
-    const plan = attackPlan(get, active, target);
-    // Frénésie (LDB 21 l.34) : le frénétique « doit se déplacer à son maximum vers l'ennemi le plus proche
-    // pour l'attaquer » → la CHARGE (déplacement + attaque CC GRATUITE) reste permise même l'Action dépensée
-    // (entrée en Frénésie : le Test de FM a consommé l'Action, mais PAS le Mouvement). Hors attaque libre de
-    // Frénésie, l'Action dépensée interdit tout déplacement combiné (attaque directe seulement).
-    if (battle.acted && !freeFrenzyAttack && plan.kind !== 'attack') return;
+    // Aiguillage par NATURE de l'attaque : Piétinement (Taille) + zone (Souffle/Vomi/Langue/Regard/Étreinte/
+    // Hurlement) gardent leur flux dédié ; la MÊLÉE (Arme + Morsure/Caudale/Tentacule) passe par l'approche-
+    // puis-frappe ci-dessous. (Migration : la zone est encore servie par battleManeuver via `maneuverKind`.)
+    if (option.targeting === 'trample') return get().battleTrample(target.id);
+    if (option.targeting === 'zone') { set({ battle: { ...battle, action: 'maneuver', maneuverKind: option.kind } }); return get().battleManeuver(target.id); }
+    // === MÊLÉE : approche-puis-frappe (le SEUL exécuteur charge/moveAttack du jeu) ===
+    const plan = attackPlan(get, active, target, { reach: option.reach, forceMelee: option.forceMelee });
+    // L'Action dépensée interdit le DÉPLACEMENT combiné pour une attaque qui COÛTE l'Action (Arme hors
+    // Frénésie) → frappe directe seulement. Une attaque GRATUITE (Morsure/Caudale/Tentacule, ou l'Arme en
+    // attaque libre de Frénésie → `cost.action===false`) PEUT s'approcher (charge) même l'Action dépensée
+    // (LDB 21 l.34 : « se déplacer au maximum vers l'ennemi le plus proche pour l'attaquer »).
+    if (battle.acted && option.cost.action && plan.kind !== 'attack') return;
     if (plan.kind === 'blocked') {
       get().log(plan.reason);
       if (battle.preview) set({ battle: { ...battle, preview: null } });
@@ -2365,6 +2376,9 @@ export const useGame = create<GameState>((set, get) => ({
         }
       }
     }
+    // Avantage de la manœuvre dépensé UNE fois, à la frappe (après TOUS les portails — aperçu/monture/Peur/
+    // ward) : gratuites de mêlée (Morsure/Caudale… coût RAW). L'Arme (cost.advantage 0) ne dépense rien.
+    if (option.cost.advantage) active.advantage = Math.max(0, active.advantage - option.cost.advantage);
     if (plan.kind === 'charge') {
       // Charge (LDB 15-Dépl l.74-77) : se ruer au contact (portée de Course) puis attaquer — manœuvre
       // PLEINE (consomme tout le Mouvement). Combat monté : empreinte/Course de la MONTURE.
@@ -2382,7 +2396,7 @@ export const useGame = create<GameState>((set, get) => ({
       if (plan.adv > 0) active.gainedAdvThisRound = true;
       active.chargedThisTurn = true; // Charge → Atouts de Dégâts d'une arme Épuisante actifs (LDB 63 l.16-17) ; consommé en fin de tour
       set({ battle: { ...get().battle!, movementUsed: mountMovement(battle, active), action: null, preview: null, log: [...battle.log, ev('charge', `${active.name} charge ${target.name}${plan.adv ? ` (+${plan.adv} Avantage)` : ''}.`, active.id, target.id)] } });
-      set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null, fromCharge: true } });
+      set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null, fromCharge: true, ...(option.freeKind ? { freeKind: option.freeKind, ...(option.weaponUid ? { weaponUid: option.weaponUid } : {}) } : {}) } });
       return;
     }
     if (plan.kind === 'moveAttack') {
@@ -2409,6 +2423,14 @@ export const useGame = create<GameState>((set, get) => ({
       set({ battle: { ...b, moveSnapshot: snapshot, movementUsed: (b.movementUsed ?? 0) + plan.cost, movedPreAction: b.movedPreAction || !b.acted, action: null, reachable: new Map(), preview: null } });
       bus.emit(EVT.SCENE_DIRTY);
       // … puis on enchaîne sur la queue d'attaque (la cible est désormais à portée d'Allonge).
+    }
+    // Frappe GRATUITE (Morsure/Caudale/Tentacule) — déjà à portée (Allonge 1, approche faite) : résolveur =
+    // arme naturelle synthétique (freeAttackWeapon, via `pa.freeKind`) ; pas de gate Allonge d'arme tenue ni
+    // munitions. (Le cas Charge a déjà ouvert le `pendingAttack{freeKind, fromCharge}` ci-dessus.)
+    if (option.freeKind) {
+      set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null, freeKind: option.freeKind, ...(option.weaponUid ? { weaponUid: option.weaponUid } : {}) } });
+      startCascade(get, set, { title: 'Attaque', icon: '⚔️', purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: active.id }] });
+      return;
     }
     // Arme effectivement employée selon la distance (mêlée à portée d'Allonge, distance sinon) — PAS
     // weapons[0], sinon un héros mixte mêlée+distance ne pourrait jamais tirer une cible éloignée (LDB
@@ -3028,6 +3050,16 @@ export const useGame = create<GameState>((set, get) => ({
     // Bascule l'armement « manœuvre ciblée » : le prochain clic-entité résout via battleManeuver.
     const on = battle.action === 'maneuver' && battle.maneuverKind === kind;
     set({ battle: { ...battle, action: on ? null : 'maneuver', maneuverKind: on ? undefined : kind, selectedSpell: null, preview: null } });
+  },
+  battleSelectAttack: (id) => {
+    if (combatBusy(get())) return;
+    const battle = get().battle;
+    if (!battle || battle.over) return;
+    const active = activeCombatant(battle);
+    if (!active || active.kind !== 'hero') return;
+    // Arme une attaque pour le clic-ennemi (mode neutre : `action===null`). Re-sélectionner revient à l'Arme.
+    const next = battle.selectedAttack === id ? 'arme' : id;
+    set({ battle: { ...battle, action: null, selectedAttack: next, maneuverKind: undefined, selectedSpell: null, preview: null } });
   },
   battleManeuver: (targetId) => {
     if (combatBusy(get())) return; // flux différé en cours : hotbar inerte

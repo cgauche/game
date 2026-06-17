@@ -97,41 +97,82 @@ export interface Maneuver {
  *  `pendingManeuver` (résolution propre). Exporté : le store (`battleManeuver`) route là-dessus. */
 export const MELEE_MANEUVER_KINDS: AttackKind[] = ['morsure', 'caudale', 'tentacules'];
 
-/** Manœuvres que le héros ACTIF peut activer maintenant — agrège (dédupliquées) : (1) ses manœuvres
- *  de trait abordables & légales ; (2) Piétinement (Taille) ; (3) la mutation Tentacule. Aucune
- *  logique par créature en dur : tout vient de `creatureAttacks` (profils) + des prédicats existants. */
-export function availableManeuvers(active: Combatant, battle: BattleState): Maneuver[] {
+/** ATTAQUE activable par le héros actif — descripteur UNIFIÉ (arme tenue + attaques gratuites/zone),
+ *  SOURCE UNIQUE de la liste d'attaques (hotbar) ET de la résolution (`battleClickEntity`). `targeting`
+ *  pilote la résolution : 'melee' → approche-puis-frappe (attackPlan + pendingAttack) ; 'zone' →
+ *  resolveManeuver (pendingManeuver) ; 'trample' → battleTrample. `cost.action` = coûte l'Action (Arme),
+ *  sinon gratuite. `reach`/`forceMelee` = Allonge de l'attaque (gratuites de mêlée = 1 ; Arme absente →
+ *  attackPlan lit l'arme tenue). `freeKind`/`weaponUid` = charge utile de frappe (mêlée). */
+export interface AttackOption {
+  id: string;
+  kind?: AttackKind;
+  label: string;
+  icon: string;
+  targeting: 'melee' | 'zone' | 'trample';
+  reach?: number;
+  forceMelee?: boolean;
+  cost: { action: boolean; advantage: number };
+  weaponUid?: string;
+  freeKind?: AttackKind;
+  def?: ManeuverDef;
+  advantageMode?: 'fixed' | 'variable' | 'all';
+}
+
+/** Attaque CC GRATUITE de Frénésie (LDB 21 l.34) encore disponible ce Round ? (l'attaque d'Arme reste
+ *  alors gratuite, Action préservée). */
+export const isFrenzyFree = (c: Combatant): boolean => !!c.frenzied && !c.frenzyFreeUsed;
+
+/** Attaques que le héros ACTIF peut lancer MAINTENANT — UNE liste à coût (Arme d'abord, puis gratuites/
+ *  zone abordables, Piétinement, mutation Tentacule). Subsume l'attaque d'arme implicite ET la garde de
+ *  Frénésie. Source : `active.weapons` (Arme) + `creatureAttacks` (gratuites) + les prédicats existants. */
+export function availableAttacks(active: Combatant, battle: BattleState): AttackOption[] {
   if (active.kind !== 'hero') return [];
-  const out: Maneuver[] = [];
-  // (1) Manœuvres de trait. 'arme' = l'attaque-Action normale (pas une manœuvre) ; 'charge' (Cornes) =
-  // gratuite uniquement à la Charge (auto) → exclues. Les manœuvres-Action (Étreinte) exigent l'Action.
+  const out: AttackOption[] = [];
+  // (0) ARME du Set actif — attaque-Action de base ET attaque CC GRATUITE de Frénésie (l.34), tant que
+  //     l'Action OU la libre de Frénésie est dispo. `reach` absent → attackPlan lit l'arme tenue (Allonge,
+  //     branche distance pour une arme à distance).
+  const frenzyFree = isFrenzyFree(active);
+  if ((!battle.acted && canTakeAction(active)) || frenzyFree)
+    out.push({ id: 'arme', kind: 'arme', label: ATTACK_LABEL.arme, icon: MANEUVER_ICON.arme, targeting: 'melee', cost: { action: !frenzyFree, advantage: 0 } });
+  // (1) Attaques de trait : gratuites de MÊLÉE (Morsure/Caudale/Tentacules) ou SPÉCIALES de zone (Souffle/
+  //     Vomi/Langue/Regard/Étreinte/Hurlement). 'arme' (ci-dessus) et 'charge' (Cornes, auto) exclues.
+  //     Mêmes prédicats d'abordabilité (Avantage RAW ou 1 si variable ; Action si trigger='action').
   for (const a of creatureAttacks(active.traits ?? [])) {
     if (a.kind === 'arme' || a.trigger === 'charge') continue;
-    // Avantage requis = coût RAW, ou 1 si l'Avantage est VARIABLE (Regard, +1 DR/Av — LDB 85 l.238).
-    // Vaut pour les manœuvres-Action AUSSI (sinon Regard/Étreinte s'activeraient à 0 Avantage).
     const minAdv = a.advantageMode === 'variable' ? 1 : a.avantage;
     if (active.advantage < minAdv) continue;
     if (a.trigger === 'action' && (battle.acted || !canTakeAction(active))) continue;
-    // Toute manœuvre se CIBLE au clic (victime, ou point d'impact de la zone pour Souffle/Vomi : LDB 85
-    // « choisit une cible visible ») SAUF Hurlement (tous les ennemis à I mètres, l.135). 'maneuver' →
-    // battleManeuver (pendingAttack pour la mêlée de trait, pendingManeuver pour les manœuvres spéciales).
-    const immediate = a.kind === 'hurlement';
+    const melee = MELEE_MANEUVER_KINDS.includes(a.kind);
     out.push({
       id: a.kind, kind: a.kind, label: ATTACK_LABEL[a.kind], icon: MANEUVER_ICON[a.kind],
-      cost: a.avantage, mode: immediate ? 'immediate' : 'target', dispatch: immediate ? 'area' : 'maneuver',
+      targeting: melee ? 'melee' : 'zone',
+      ...(melee ? { reach: 1, forceMelee: true, freeKind: a.kind } : { def: a.def, advantageMode: a.advantageMode }),
+      cost: { action: a.trigger === 'action', advantage: a.avantage },
     });
   }
   // (2) Piétinement (Taille, LDB 85 l.320-321) : adversaire adjacent plus petit, ≥1 Avantage. Flux dédié.
   if (active.advantage >= 1 && trampleTarget(battle, active))
-    out.push({ id: 'pietinement', label: 'Piétiner', icon: '🐾', cost: 1, mode: 'target', dispatch: 'trample' });
+    out.push({ id: 'pietinement', label: 'Piétiner', icon: '🐾', targeting: 'trample', cost: { action: false, advantage: 1 } });
   // (3) Mutation Tentacule (arme `nat-tentacule`, LDB 85 l.354) : 1/tour, 0 Avantage, cible adjacente.
   if (
     !active.tentacleUsedThisTurn && active.weapons.some((w) => w.uid === 'nat-tentacule') && !!active.pos &&
     battle.combatants.some((c) => c.kind !== 'hero' && !isOutOfAction(c) && c.pos && combatDistance(active, c) <= 1)
   )
-    out.push({ id: 'tentacule', label: 'Tentacule', icon: '🐙', cost: 0, mode: 'target', dispatch: 'tentacle' });
+    out.push({ id: 'tentacule', kind: 'tentacules', label: 'Tentacule', icon: '🐙', targeting: 'melee', reach: 1, forceMelee: true, weaponUid: 'nat-tentacule', freeKind: 'tentacules', cost: { action: false, advantage: 0 } });
   // Déduplique par id (la mutation Tentacule et le trait Tentacules ne coexistent pas, mais garde-fou).
   return out.filter((m, i) => out.findIndex((n) => n.id === m.id) === i);
+}
+
+/** SHIM TRANSITOIRE (retiré à l'Étape E, avec `Maneuver`) : les anciens consommateurs (ActionBar /
+ *  battleManeuver) lisent encore `Maneuver`. Dérivé d'`availableAttacks` → source UNIQUE des prédicats. */
+export function availableManeuvers(active: Combatant, battle: BattleState): Maneuver[] {
+  return availableAttacks(active, battle)
+    .filter((o) => o.id !== 'arme')
+    .map((o) => ({
+      id: o.id, kind: o.kind, label: o.label, icon: o.icon, cost: o.cost.advantage,
+      mode: o.id === 'hurlement' ? 'immediate' : 'target',
+      dispatch: o.targeting === 'trample' ? 'trample' : o.id === 'tentacule' ? 'tentacle' : o.id === 'hurlement' ? 'area' : 'maneuver',
+    }));
 }
 
 // ---------------------------------------------------------------------------
