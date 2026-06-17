@@ -6,6 +6,7 @@
  */
 import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout } from './types';
 import { bonus, baseWithTraits } from './characteristics';
+import { applyEnchants } from './weaponDamage';
 import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { mutationArmourBonus } from './corruption';
 import { findTrapping, qualityRuntime } from '../data';
@@ -272,9 +273,11 @@ export function recomputeLoadout(c: Combatant): void {
     const hands = weaponHands(it);
     if (hands === 2 && cannotWieldTwoHanded(c)) return null; // amputation : pas d'arme à 2 mains (LDB 18 l.352)
     const reload = indiceOf(it.qualities, 'Recharge') ?? 0;
-    return { name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? '+BF', reach: it.reach,
+    // Enchantements PORTÉS PAR L'OBJET (op augmentWeapon / arme invoquée) repliés ici → l'arme active
+    // est déjà Magique/+Dégâts/onHit, donc visible partout ET appliquée à la résolution (pas de merge ailleurs).
+    return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? '+BF', reach: it.reach,
       range: it.range, qualities: it.qualities, subType: it.subType, reload, damageTaken: it.damageTaken,
-      skin: it.skin, form: it.form, hands, hand, uid: it.uid };
+      skin: it.skin, form: it.form, hands, hand, uid: it.uid }, it.enchants ?? []);
   };
 
   // UN SEUL modèle : tout combattant porteur d'armes passe par un loadout (auto-généré si absent — plus de

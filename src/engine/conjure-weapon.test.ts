@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { applyOps } from './ops';
 import { endOfRound } from './conditions';
-import { effectiveWeaponDamage, activeEnchantsFor } from './weaponDamage';
+import { effectiveWeaponDamage } from './weaponDamage';
 import { conjureFormOptions } from './conjuredWeapons';
 import { runSpellFlow } from '../state/combatEffects';
 import { bonus } from './characteristics';
@@ -107,8 +107,8 @@ describe('grantWeapon — variantes de domaine (stats fixes du Sort)', () => {
       { label: "L'Épée ardente de Rhuin", defaultDurationRounds: 4 });
     expect(c.weapons[0].damage).toBe('+6');
     expect(c.weapons[0].qualities).toEqual(expect.arrayContaining(['Magique', 'Percutante']));
-    // L'onHit unifié de l'arme invoquée, exécuté par le dispatcher, applique En flammes à la cible touchée.
-    const eff = activeEnchantsFor(c, c.weapons[0])[0].onHitEffects![0];
+    // L'onHit de l'arme invoquée est replié sur l'arme active (weapon.onHitEffects), appliqué par le dispatcher.
+    const eff = c.weapons[0].onHitEffects![0];
     const victim = mage();
     runSpellFlow(victim, c, eff.flow, {});
     expect(victim.conditions.some((x) => x.name === 'En flammes')).toBe(true);

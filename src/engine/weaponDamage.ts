@@ -3,28 +3,18 @@
  * reçu réduit les Dégâts de l'arme de 1 ; à +0 (ou BF +0) l'arme est improvisée. L'Atout Incassable
  * (l.310) exempte de tout dégât/corrosion/destruction. Réparation = hors combat (Jalon 5).
  */
-import { Combatant, Weapon } from './types';
+import { Weapon, WeaponEnchant, ArmourBypass } from './types';
+import type { TriggeredEffect } from '../state/flow';
 import { isUnbreakable, qualityIndice } from './qualities/dispatch';
 import { norm } from '../lib/normalize';
 
-type WeaponEnchant = NonNullable<NonNullable<Combatant['activeEffects']>[number]['weaponEnchant']>;
-
-/** L'arme `w` matche-t-elle la FAMILLE requise par un enchantement (mot-clé sur nom/sous-type) ?
- *  Pas de famille requise → toujours vrai ; pas d'arme connue → faux (l'enchant ne s'applique pas). */
-function weaponMatchesFamily(w: Weapon | undefined, requires?: string): boolean {
+/** L'arme matche-t-elle la FAMILLE requise par un enchantement (mot-clé sur nom/sous-type — « épée »,
+ *  « hache », « lance ») ? Pas de famille requise → toujours vrai. Sert à CHOISIR l'arme tenue à
+ *  enchanter au lancement (Épée de justice ne lie qu'une épée, etc.). */
+export function weaponMatchesFamily(w: { name: string; subType?: string } | undefined, requires?: string): boolean {
   if (!requires) return true;
   if (!w) return false;
   return norm(`${w.name} ${w.subType ?? ''}`).includes(norm(requires));
-}
-
-/** Enchantements actifs du porteur APPLICABLES à l'arme `w` (gatés par `requiresWeapon` — Épée de
- *  justice ne vaut que sur une épée, Morsure de l'hiver une hache, Lance de Myrmidia une lance).
- *  `w` absent (ex. badge de fiche) → on ignore le gating de famille (tous les enchants comptent). */
-export function activeEnchantsFor(bearer: Pick<Combatant, 'activeEffects'>, w?: Weapon): WeaponEnchant[] {
-  return (bearer.activeEffects ?? [])
-    .map((e) => e.weaponEnchant)
-    .filter((x): x is WeaponEnchant => !!x)
-    .filter((e) => w === undefined || weaponMatchesFamily(w, e.requiresWeapon));
 }
 
 /** Composante fixe (signée) des Dégâts, hors BF. Ex. '+BF+4' → 4, '+9' → 9, '+BF-2' → -2. */
@@ -50,24 +40,26 @@ export function effectiveWeaponDamage(w: Weapon, strengthBonus: number): number 
 }
 
 /**
- * Arme ENCHANTÉE (Jalon 2.6 — op `augmentWeapon`) : fusionne les enchantements actifs du PORTEUR
- * (B. de Droiture : Magique ; Marteau ardent : Magique +BSoc Dégâts ; Épée ardente de Rhuin :
- * +6 + Percutante) à l'arme au moment de la résolution. Les Atouts ajoutés passent par le registre
- * de qualités existant (Magique → `isMagicWeapon` → touche l'Éthéré) ; le bonus de Dégâts s'appose
- * à la formule (sommée par `flatDamage`). Renvoie l'arme telle quelle sans enchantement.
+ * Replie les ENCHANTEMENTS d'une arme (op `augmentWeapon` / arme invoquée) dans son profil de combat :
+ * Atouts ajoutés (Magique → `isMagicWeapon` → touche l'Éthéré ; Percutante…), bonus de Dégâts (sommé
+ * par `flatDamage`), ignorance de PA, et effets « à la touche » (→ `w.onHitEffects`, lus par
+ * `effectsOf`). Appelé par `recomputeLoadout` → l'arme dérivée `c.weapons` est DÉJÀ enchantée, donc
+ * visible partout (récap, popover, preview) ET appliquée à la résolution. Sans enchant : arme inchangée.
  */
-export function enchantedWeapon(bearer: Pick<Combatant, 'activeEffects'>, w: Weapon): Weapon {
-  const enchants = activeEnchantsFor(bearer, w); // gatés par famille d'arme (requiresWeapon)
+export function applyEnchants(w: Weapon, enchants: WeaponEnchant[]): Weapon {
   if (!enchants.length) return w;
   const out: Weapon = { ...w, qualities: [...(w.qualities ?? [])] };
   let dmgPlus = 0;
+  const onHit: TriggeredEffect[] = [...(w.onHitEffects ?? [])];
   for (const e of enchants) {
     for (const q of e.addQualities ?? []) if (!out.qualities.includes(q)) out.qualities.push(q);
     dmgPlus += e.damageBonus ?? 0;
+    if (e.onHitEffects?.length) onHit.push(...e.onHitEffects);
   }
   if (dmgPlus > 0) out.damage = `${out.damage ?? '+BF'}+${dmgPlus}`;
-  const bypasses = enchants.map((e) => e.bypass).filter((b) => b != null);
+  const bypasses = enchants.map((e) => e.bypass).filter((b): b is ArmourBypass => b != null);
   if (bypasses.length) out.bypass = bypasses.includes('all') ? 'all' : bypasses[bypasses.length - 1]; // 'all' prime
+  if (onHit.length) out.onHitEffects = onHit;
   return out;
 }
 

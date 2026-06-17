@@ -32,7 +32,7 @@ export function equipConjuredWeapon(c: Combatant, item: ItemInstance): ConjuredS
  *  (l'effet porteur a déjà été retiré). Recompose le loadout si besoin. Pur ; mute `c`. */
 export function dropExpiredGrantedWeapons(
   c: Combatant,
-  expired: { conjuredSet?: ConjuredSet; naturalWeapon?: unknown }[],
+  expired: { conjuredSet?: ConjuredSet; naturalWeapon?: unknown; enchantRef?: { itemUid: string; enchantId: string } }[],
 ): void {
   const sets = expired.map((e) => e.conjuredSet).filter((s): s is ConjuredSet => !!s);
   for (const s of sets) {
@@ -40,7 +40,18 @@ export function dropExpiredGrantedWeapons(
     c.loadouts = (c.loadouts ?? []).filter((lo) => lo.id !== s.loadoutId);
     if (c.activeLoadoutId === s.loadoutId) c.activeLoadoutId = s.restoreLoadoutId ?? c.loadouts?.[0]?.id;
   }
-  if (sets.length || expired.some((e) => e.naturalWeapon)) recomputeLoadout(c);
+  // Enchantements TEMPORISÉS (op augmentWeapon) : retirer l'enchant expiré de SON objet (l'objet reste).
+  let enchantCleared = false;
+  for (const e of expired) {
+    if (!e.enchantRef) continue;
+    const it = (c.items ?? []).find((i) => i.uid === e.enchantRef!.itemUid);
+    if (it?.enchants?.length) {
+      it.enchants = it.enchants.filter((x) => x.id !== e.enchantRef!.enchantId);
+      if (!it.enchants.length) delete it.enchants;
+      enchantCleared = true;
+    }
+  }
+  if (sets.length || enchantCleared || expired.some((e) => e.naturalWeapon)) recomputeLoadout(c);
 }
 
 /** FORME d'arme invoquée à forme libre (Arme aethyrique : « n'importe quelle forme, n'importe quelle

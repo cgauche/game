@@ -18,7 +18,6 @@ import { isOutOfAction } from '../engine/conditions';
 import { isEngagedWith } from '../engine/engagement';
 import { combatDistance } from './footprint';
 import { traitById, qualityByLabel, findManeuverById } from '../data';
-import { activeEnchantsFor } from '../engine/weaponDamage';
 import { difficultyFromLabel } from '../engine/tests';
 import { runSpellFlow } from './combatEffects';
 import { RNG, defaultRNG } from '../engine/dice';
@@ -44,12 +43,12 @@ function withArg(effects: TriggeredEffect[], arg?: string): TriggeredEffect[] {
 }
 
 /** Effets déclenchés portés par une créature (ses Traits) et, le cas échéant, par l'arme qui frappe :
- *  ses ENCHANTEMENTS actifs applicables (Marteau ardent, Épée de justice…), ses Traits, ses Atouts.
- *  Source UNIQUE d'agrégation : les trois sont traités à l'identique (`TriggeredEffect`). Ordre FIGÉ
- *  (enchants → traits → atouts) pour un déroulé RNG déterministe quand plusieurs portent un Test. */
+ *  son ENCHANTEMENT replié (`weapon.onHitEffects` — Marteau ardent, Épée ardente…), ses Traits, ses
+ *  Atouts. Source UNIQUE d'agrégation : les trois sont traités à l'identique (`TriggeredEffect`). Ordre
+ *  FIGÉ (enchant → traits → atouts) pour un déroulé RNG déterministe quand plusieurs portent un Test. */
 function effectsOf(actor: Combatant, weapon?: Weapon): TriggeredEffect[] {
   const out: TriggeredEffect[] = [];
-  if (weapon) for (const e of activeEnchantsFor(actor, weapon)) out.push(...(e.onHitEffects ?? []));
+  if (weapon?.onHitEffects) out.push(...weapon.onHitEffects);
   for (const raw of actor.traits ?? []) { const inst = raw; out.push(...withArg(traitById.get(inst.id)?.effects ?? [], inst.arg)); }
   if (weapon) for (const { def } of resolveQualities(weapon)) out.push(...(qualityByLabel.get(def.key)?.effects ?? []));
   return out;

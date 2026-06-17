@@ -68,7 +68,7 @@ function describeEffect(e: NonNullable<Combatant['activeEffects']>[number]): str
   if (e.conjuredSet) return `Arme invoquée (${e.label})`;
   if (e.grantedTalent) return `Talent ${e.grantedTalent}`;
   if (e.apAll) return `+${e.apAll} PA (toutes Localisations)`;
-  if (e.weaponEnchant) return 'Arme enchantée';
+  if (e.enchantRef) return 'Arme enchantée';
   if (e.weatherImmune) return 'Immunisé aux intempéries';
   if (e.suffocates) return 'Suffoque (−1 PB/Round)';
   if (e.noBreath) return 'Respiration superflue';

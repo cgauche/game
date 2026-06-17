@@ -23,7 +23,8 @@ import { bypassedAP } from './armourBypass';
 import { grantTrait } from './grantedTraits';
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { cureCriticalWounds } from './trauma';
-import { damageLeatherArmour, itemFromTrapping, customTrapping, recomputeLoadout, buildWeapon, weaponItem } from './items';
+import { damageLeatherArmour, itemFromTrapping, customTrapping, recomputeLoadout, buildWeapon, weaponItem, newUid, activeLoadout } from './items';
+import { weaponMatchesFamily } from './weaponDamage';
 import { suppressPsychTraits } from './psychology';
 import { norm } from '../lib/normalize';
 import { ConjureForm, conjureFormOptions, equipConjuredWeapon } from './conjuredWeapons';
@@ -43,6 +44,7 @@ import {
   DIFFICULTY_LABELS,
   HitLocation,
   HIT_LOCATION_LABELS,
+  ItemInstance,
 } from './types';
 import { immunityTypes, formatTrait } from './traits/dispatch';
 import type { TraitInstance } from './statEntry';
@@ -632,25 +634,42 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       }
       case 'augmentWeapon': {
         const dmg = o.damageBonus != null ? Math.max(0, resolveFormula(o.damageBonus, ref, rng)) : undefined;
+        // L'enchant se pose SUR L'ARME TENUE (set actif : main puis 2nde) qui matche la famille requise
+        // (Épée de justice → une épée ; ungated → la main). Aucune arme valable tenue → fizzle journalisé.
+        const lo = activeLoadout(target);
+        const held = [lo?.main, lo?.off]
+          .map((u) => (target.items ?? []).find((i) => i.uid === u))
+          .filter((i): i is ItemInstance => !!i && (i.kind === 'melee' || i.kind === 'ranged'));
+        const item = held.find((i) => weaponMatchesFamily(i, o.requiresWeapon));
+        if (!item) {
+          lines.push(`${target.name} : aucune arme en main à enchanter (${ctx.label ?? 'sort'}).`);
+          break;
+        }
+        const enchantId = newUid();
+        item.enchants = [
+          ...(item.enchants ?? []),
+          {
+            id: enchantId,
+            ...(o.addQualities?.length ? { addQualities: o.addQualities } : {}),
+            ...(dmg ? { damageBonus: dmg } : {}),
+            ...(o.bypass != null ? { bypass: o.bypass } : {}),
+            ...(o.onHitEffects?.length ? { onHitEffects: o.onHitEffects } : {}),
+          },
+        ];
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
           roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
           ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
-          weaponEnchant: {
-            ...(o.addQualities?.length ? { addQualities: o.addQualities } : {}),
-            ...(dmg ? { damageBonus: dmg } : {}),
-            ...(o.bypass != null ? { bypass: o.bypass } : {}),
-            ...(o.requiresWeapon ? { requiresWeapon: o.requiresWeapon } : {}),
-            ...(o.onHitEffects?.length ? { onHitEffects: o.onHitEffects } : {}),
-          },
+          enchantRef: { itemUid: item.uid, enchantId },
         });
+        recomputeLoadout(target); // replie l'enchant dans l'arme active (visible + appliqué)
         const parts = [
           ...(o.addQualities ?? []),
           ...(dmg ? [`+${dmg} Dégâts`] : []),
           ...(o.onHitEffects?.length ? ['effet à la touche'] : []),
         ];
-        lines.push(`${target.name} : son arme est enchantée — ${parts.join(', ')} (${ctx.label ?? 'sort'}).`);
+        lines.push(`${target.name} : ${item.name} est enchantée — ${parts.join(', ')} (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'cureDisease': {
@@ -863,6 +882,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         });
         // SET d'armes DÉDIÉ rendu actif (réutilise les loadouts) — le joueur peut rebasculer sur ses
         // armes ; à l'expiration, le set d'origine est restauré (engine/conjuredWeapons).
+        // Effets « à la touche » (Épée ardente → En flammes) PORTÉS PAR L'OBJET invoqué (enchant) ;
+        // equipConjuredWeapon recompose le loadout → repliés dans l'arme active. Pas d'enchantRef :
+        // l'objet est retiré en bloc à l'expiration (dropExpiredGrantedWeapons).
+        if (o.onHitEffects?.length) item.enchants = [{ id: newUid(), onHitEffects: o.onHitEffects }];
         const conjuredSet = equipConjuredWeapon(target, item);
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
@@ -870,7 +893,6 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
           ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
           conjuredSet,
-          ...(o.onHitEffects?.length ? { weaponEnchant: { requiresWeapon: o.name, onHitEffects: o.onHitEffects } } : {}),
         });
         lines.push(`${target.name} invoque ${item.name} (Dégâts ${item.damage}${item.qualities.length ? `, ${item.qualities.join(', ')}` : ''}) (${ctx.label ?? 'sort'}).`);
         break;

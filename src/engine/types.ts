@@ -134,6 +134,25 @@ export interface Weapon {
    *  « Bâton de combat » bien que nommée « Arme aethyrique ») — résolue par le rig (weaponFamily).
    *  Donnée opaque côté moteur (un simple libellé). */
   form?: string;
+  /** Effets « à la touche » repliés depuis l'enchantement de l'arme (op `augmentWeapon` / arme
+   *  invoquée) par `recomputeLoadout` → lus par `effectsOf` (state/triggeredEffects). */
+  onHitEffects?: import('../state/flow').TriggeredEffect[];
+}
+
+/** Enchantement d'ARME (op `augmentWeapon` — B. de Droiture, Marteau ardent, Épée de justice ;
+ *  arme invoquée — Épée ardente de Rhuin). PORTÉ PAR L'OBJET (`ItemInstance.enchants`, source de
+ *  vérité) et replié dans l'arme dérivée par `recomputeLoadout` (`applyEnchants`). `id` : identité
+ *  pour le retrait ciblé à l'expiration (un `ActiveEffect.enchantRef` le temporise). */
+export interface WeaponEnchant {
+  id: string;
+  /** Atouts ajoutés (« Magique » → touche l'Éthéré ; « Percutante »…). */
+  addQualities?: string[];
+  /** Dégâts supplémentaires (Marteau ardent : +BSoc ; Épée ardente : +6) — déjà résolu. */
+  damageBonus?: number;
+  /** Ignorance de PA conférée (Épée de justice → 'all') — descripteur général ArmourBypass. */
+  bypass?: ArmourBypass;
+  /** Effets DÉCLENCHÉS « à la touche » — forme `TriggeredEffect` (Marteau ardent → En flammes/À Terre). */
+  onHitEffects?: import('../state/flow').TriggeredEffect[];
 }
 
 /** Points d'Armure par localisation. */
@@ -213,25 +232,11 @@ export interface ActiveEffect {
    *  `combatFeatures/dispatch.featuresOf` tant que l'effet dure (PAS posé dans `c.talents` —
    *  la fiche/avancement ne voient que les talents possédés). */
   grantedTalent?: string;
-  /** Enchantement d'ARME temporisé (op `augmentWeapon` — B. de Droiture, Marteau ardent, Épée
-   *  ardente de Rhuin, Arme aethyrique) : porté par le PORTEUR (pas l'objet — `recomputeLoadout`
-   *  l'écraserait), fusionné à l'arme au moment de la résolution (`enchantedWeapon`). */
-  weaponEnchant?: {
-    /** Atouts ajoutés (« Magique » → touche l'Éthéré ; « Percutante »…). */
-    addQualities?: string[];
-    /** Dégâts supplémentaires (Marteau ardent : +BSoc ; Épée ardente : +6). */
-    damageBonus?: number;
-    /** Ignorance de PA conférée à l'arme (Épée de justice → 'all') — descripteur général ArmourBypass. */
-    bypass?: ArmourBypass;
-    /** L'enchantement ne s'applique QUE si l'arme tenue matche cette famille (mot-clé sur nom/sous-type :
-     *  « épée », « hache », « lance ») — Épée de justice / Morsure de l'hiver / Lance de Myrmidia. */
-    requiresWeapon?: string;
-    /** Effets DÉCLENCHÉS « à la touche » de l'arme enchantée — forme UNIFIÉE (`TriggeredEffect`,
-     *  partagée avec les Atouts d'arme et les Traits de créature) : Marteau ardent → En flammes/À Terre ;
-     *  Épée de justice → Test gaté « Criminel » → Inconscient ; Morsure de l'hiver → Test (hors
-     *  Mort-vivant/Démon) → Sonné. Agrégés par `effectsOf` et dispatchés par `fireTriggers('onHit')`. */
-    onHitEffects?: import('../state/flow').TriggeredEffect[];
-  };
+  /** DURÉE d'un enchantement d'arme (op `augmentWeapon`) : l'enchant vit sur l'OBJET
+   *  (`ItemInstance.enchants`, replié dans l'arme par `recomputeLoadout`) ; cet effet ne porte que sa
+   *  durée + la réf de l'enchant à retirer à l'expiration (`dropExpiredGrantedWeapons`). Calqué sur
+   *  `conjuredSet`. (L'arme invoquée n'en a pas : son objet est retiré en bloc.) */
+  enchantRef?: { itemUid: string; enchantId: string };
   /** « Peut relancer le prochain Test auquel elle échoue » (Bénédiction de Chance, LDB 41) —
    *  consommé à l'usage au point de relance des flux de jet (engine/activeFlags). */
   freeReroll?: boolean;
@@ -346,6 +351,9 @@ export interface ItemInstance {
   reach?: string | null;
   range?: number | null;
   qualities: string[];
+  /** Enchantements actifs portés par l'ARME (op `augmentWeapon` / arme invoquée) — SOURCE DE VÉRITÉ,
+   *  repliés dans l'arme dérivée par `recomputeLoadout` (`applyEnchants`). Temporisés via `ActiveEffect.enchantRef`. */
+  enchants?: WeaponEnchant[];
   pa?: number; // armures : Points d'Armure
   locs?: HitLocation[]; // armures : localisations couvertes
   enc: number; // encombrement
