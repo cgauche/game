@@ -16,7 +16,7 @@ import type { Combatant } from '../engine/types';
 import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
 import { TeamPortrait } from './TeamPortrait';
 import { CharFrame } from './CharFrame';
-import { previewResourceDelta, cleaveTargets, dualStrikeTargets, placingZoneOf, availableManeuvers } from '../state/combatFlow';
+import { previewResourceDelta, cleaveTargets, dualStrikeTargets, placingZoneOf, availableAttacks } from '../state/combatFlow';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { ActiveFrame } from './ActiveFrame';
 import { CodexRef } from './compendium/CodexRef';
@@ -56,7 +56,7 @@ export function ActionBar() {
   const aim = useGame((s) => s.battleAim);
   const togglePushback = useGame((s) => s.battleTogglePushback);
   const heal = useGame((s) => s.battleHeal);
-  const selectManeuver = useGame((s) => s.battleSelectManeuver);
+  const selectAttack = useGame((s) => s.battleSelectAttack);
   const maneuverArea = useGame((s) => s.battleManeuverArea);
   const cancelMove = useGame((s) => s.cancelMove);
   const switchLoadout = useGame((s) => s.battleSwitchLoadout);
@@ -219,10 +219,11 @@ export function ActionBar() {
   // la Course est la zone violette au-delà de la Marche (clic → Test d'Athlétisme, LDB 15 l.79-82).
   // Se relever (LDB 16 l.37) : possible si À Terre, ≥1 PB (LDB 18 l.28) et Mouvement non entamé.
   const canStandUp = prone && active.wounds.current > 0 && !moveStarted;
-  // Manœuvres de combat activables (« Manœuvre ▾ ») : attaques spéciales d'un trait de créature que le
-  // héros possède (mutation/polymorphie) + Piétinement (Taille) + mutation Tentacule. Source UNIQUE :
-  // availableManeuvers (combatFlow) — la hotbar ne fait que rendre ces descripteurs.
-  const maneuvers = isHero ? availableManeuvers(active, battle) : [];
+  // Liste d'ATTAQUES activables (« Attaque ▾ ») : l'Arme du Set actif + les attaques gratuites/zone d'un
+  // trait de créature (Morsure/Caudale/Tentacule/Souffle…) + Piétinement (Taille) + mutation Tentacule.
+  // Source UNIQUE : availableAttacks (combatFlow). Sélectionner arme `selectedAttack` ; le clic-ennemi
+  // résout l'attaque armée (approche-puis-frappe). La hotbar ne fait que rendre ces descripteurs.
+  const attacks = isHero ? availableAttacks(active, battle) : [];
   // Frénésie (LDB 21 l.31-32) : un héros capable peut tenter d'entrer en Frénésie (Test de FM, coûte l'Action).
   const canFrenzy = isHero && isFrenzyCapable(active) && !active.frenzied && !battle.acted && !stunned;
   // Frénésie : l'attaque CC gratuite (LDB 21 l.34) reste possible même l'Action dépensée (entrée en Frénésie incluse).
@@ -349,24 +350,19 @@ export function ActionBar() {
           ))}
         </div>
       )}
-      {showManeuvers && maneuvers.length > 0 && (
+      {showManeuvers && attacks.length > 1 && (
         <div className="ab-spells">
-          {maneuvers.map((m) => {
-            // Armée si le mode-cible courant correspond (mêlée de trait, Piétinement ou Tentacule).
-            const armed =
-              (m.dispatch === 'maneuver' && battle.action === 'maneuver' && battle.maneuverKind === m.kind) ||
-              (m.dispatch === 'trample' && battle.action === 'trample') ||
-              (m.dispatch === 'tentacle' && battle.action === 'tentacle');
+          {attacks.map((o) => {
+            const armed = battle.action === null && (battle.selectedAttack ?? 'arme') === o.id;
+            const immediate = o.id === 'hurlement'; // Hurlement : tous les ennemis à I mètres → résolution directe
             const onClick = () => {
-              if (m.mode === 'immediate') { maneuverArea(m.kind!); setShowManeuvers(false); return; }
-              // Cible : arme/désarme le mode (le prochain clic-carte résout).
-              if (m.dispatch === 'maneuver') selectManeuver(m.kind!);
-              else if (m.dispatch === 'trample' || m.dispatch === 'tentacle') selectAction(battle.action === m.dispatch ? null : m.dispatch);
+              if (immediate) { maneuverArea('hurlement'); setShowManeuvers(false); return; }
+              selectAttack(o.id); // arme l'attaque → le clic-ennemi l'exécute (approche-puis-frappe)
             };
             return (
-              <div key={m.id} className="ab-spell-row">
+              <div key={o.id} className="ab-spell-row">
                 <button className={`btn btn-sm ${armed ? 'btn-primary' : ''}`} onClick={onClick}>
-                  {m.icon} {m.label}{m.cost > 0 ? ` · ${m.cost} Av` : ''}{m.mode === 'target' ? ' 🎯' : ''}
+                  {o.icon} {o.label}{o.cost.advantage > 0 ? ` · ${o.cost.advantage} Av` : ''}{!immediate ? ' 🎯' : ''}
                 </button>
               </div>
             );
@@ -560,13 +556,13 @@ export function ActionBar() {
                 <span className="ab-ico">🐗</span><span className="ab-lbl">Frénésie</span>
               </button>
             )}
-            {/* Manœuvres de combat (« Manœuvre ▾ ») : contrôle UNIQUE qui énumère availableManeuvers
-                (traits de créature activables + Piétinement + mutation Tentacule). Apparaît dès ≥1 dispo ;
-                déplie un panneau (idiome ab-spells). Une manœuvre est ARMÉE (action='maneuver'/'trample'/
-                'tentacle') → le clic-carte la résout, ou résolue directement (zone/soi). */}
-            {maneuvers.length > 0 && (
-              <button className={`ab-slot ${battle.action === 'maneuver' || battle.action === 'trample' || battle.action === 'tentacle' ? 'on' : ''}`} onClick={() => setShowManeuvers((v) => !v)} title="Manœuvre de combat (attaque spéciale d'un trait de créature)">
-                <span className="ab-ico">🌀</span><span className="ab-lbl">Manœuvre ▾</span>
+            {/* Attaques (« Attaque ▾ ») : contrôle UNIQUE qui énumère availableAttacks (Arme + gratuites/zone
+                de trait + Piétinement + mutation Tentacule). Apparaît dès qu'il y a une attaque SPÉCIALE en
+                plus de l'Arme. Sélectionner arme `selectedAttack` (clic-ennemi = approche-puis-frappe) ;
+                Hurlement (zone/soi) se résout directement. */}
+            {attacks.length > 1 && (
+              <button className={`ab-slot ${showManeuvers || (battle.action === null && (battle.selectedAttack ?? 'arme') !== 'arme') ? 'on' : ''}`} onClick={() => setShowManeuvers((v) => !v)} title="Choisir l'attaque (arme ou attaque spéciale d'un trait de créature)">
+                <span className="ab-ico">⚔️</span><span className="ab-lbl">Attaque ▾</span>
               </button>
             )}
             {!frenzied && usableGroups.map((g) => {

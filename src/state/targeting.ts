@@ -13,7 +13,7 @@ import { findSpell } from '../data';
 import { spellSpecFor } from '../data/spellspecs';
 import { combatDistance } from './footprint';
 import type { GameState } from './store';
-import { attackPlan, previewAttack, previewCast, castSightBlocked } from './combatFlow';
+import { attackPlan, previewAttack, previewCast, castSightBlocked, selectedAttackOption, trampleTarget } from './combatFlow';
 
 export type HoverTargeting =
   | { kind: 'none' }
@@ -88,26 +88,34 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
     };
   }
 
-  // ── Mode neutre : attaque implicite ──
-  if (battle.action !== null) return { kind: 'none' };
+  // ── Mode ATTAQUE : l'`AttackOption` armée (selectedAttack / ancien mode maneuver/tentacle/trample) ──
+  const option = selectedAttackOption(active, battle);
+  if (!option) return { kind: 'none' }; // mode non-attaque (cast/heal/…) ou aucune attaque abordable
   if (target.kind === active.kind || isOutOfAction(target)) return { kind: 'none' };
-  const plan = attackPlan(get, active, target);
+  if (option.targeting === 'trample')
+    return (active.advantage ?? 0) >= 1 && !!trampleTarget(battle, active, target.id)
+      ? { kind: 'ok', line: 'solid', title: 'Piétinement', skill: 'Capacité de Combat', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } }
+      : { kind: 'none' };
+  if (option.targeting === 'zone') // Souffle/Vomi/Langue/Regard/Étreinte : réticule simple (portée/LdV au résolveur moteur)
+    return { kind: 'ok', line: 'dashed', title: option.label, skill: 'Capacité de Combat', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
+  // === MÊLÉE (Arme + gratuites) : approche-puis-frappe — chemin réel + réticule au survol (le clic commet) ;
+  // l'aperçu est calculé depuis la case d'ARRIVÉE (modificateurs honnêtes au contact). L'Allonge suit l'option.
+  const plan = attackPlan(get, active, target, { reach: option.reach, forceMelee: option.forceMelee });
   if (plan.kind === 'blocked') {
     const p = previewAttack(get, active, target);
     return { kind: 'invalid', reason: p.blocked ? 'los' : p.kind === 'melee' && isEngaged(active) ? 'engaged' : 'range' };
   }
-  // Charge / rejoindre : aperçu calculé depuis la case d'ARRIVÉE (modificateurs honnêtes au contact) ;
-  // le CHEMIN réel et la nature de la manœuvre remontent au survol (le clic UNIQUE commet tout).
   const from = plan.kind === 'attack' ? active : { ...active, pos: plan.dest };
   const p = previewAttack(get, from, target);
   return {
     kind: 'ok',
-    line: p.kind === 'ranged' ? 'dashed' : 'solid',
-    title: p.weapon.name,
-    skill: weaponSkillLabel(p.kind, p.weapon.subType),
+    // Gratuite (Morsure/Caudale/Tentacule) = toujours mêlée (trait solide) ; Arme = tir pointillé si à distance.
+    line: option.freeKind ? 'solid' : p.kind === 'ranged' ? 'dashed' : 'solid',
+    title: option.freeKind ? option.label : p.weapon.name,
+    skill: option.freeKind ? weaponSkillLabel('melee') : weaponSkillLabel(p.kind, p.weapon.subType),
     base: p.base,
     mod: combineMods(p.mods),
-    dmg: p.dmg,
+    dmg: p.dmg, // (gratuite : Dégâts de l'arme tenue = cosmétique ; le chemin/réticule, lui, est exact)
     path: plan.kind === 'attack' ? undefined : plan.path,
     note: plan.kind === 'charge' ? `Charge${plan.adv ? ' (+1 Avantage)' : ''}` : plan.kind === 'moveAttack' ? 'Rejoindre + attaquer' : undefined,
     // Aperçu de la forme `battle.preview` (tap-1) : le clignotant des jauges lit le MÊME objet.

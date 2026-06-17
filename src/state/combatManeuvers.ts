@@ -163,6 +163,22 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
   return out.filter((m, i) => out.findIndex((n) => n.id === m.id) === i);
 }
 
+/** Résout l'`AttackOption` à exécuter/prévisualiser : clic droit = `forceId` (première abordable) ; sinon
+ *  l'attaque ARMÉE (`selectedAttack`, défaut 'arme', repli sur 'arme' si périmée) ; pendant la migration,
+ *  les anciens modes maneuver/tentacle/trample mappent sur leur option. `undefined` = mode non-attaque
+ *  (cast/heal/focus/…) ou aucune attaque abordable. SOURCE UNIQUE partagée par le clic (store) et le survol
+ *  (targeting). */
+export function selectedAttackOption(active: Combatant, battle: BattleState, forceId?: string): AttackOption | undefined {
+  if (battle.action !== null && battle.action !== 'maneuver' && battle.action !== 'tentacle' && battle.action !== 'trample') return undefined;
+  const opts = availableAttacks(active, battle);
+  if (forceId) return opts.find((o) => o.id === forceId) ?? opts[0];
+  if (battle.action === 'maneuver') return battle.maneuverKind ? opts.find((o) => o.id === battle.maneuverKind) : undefined;
+  if (battle.action === 'tentacle') return opts.find((o) => o.id === 'tentacule');
+  if (battle.action === 'trample') return opts.find((o) => o.id === 'pietinement');
+  const want = battle.selectedAttack ?? 'arme';
+  return opts.find((o) => o.id === want) ?? opts.find((o) => o.id === 'arme');
+}
+
 /** SHIM TRANSITOIRE (retiré à l'Étape E, avec `Maneuver`) : les anciens consommateurs (ActionBar /
  *  battleManeuver) lisent encore `Maneuver`. Dérivé d'`availableAttacks` → source UNIQUE des prédicats. */
 export function availableManeuvers(active: Combatant, battle: BattleState): Maneuver[] {

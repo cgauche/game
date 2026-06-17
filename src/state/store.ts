@@ -19,28 +19,13 @@ import {
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
   aiCreatureFreeAttacks, aiFrenzyAttack, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, aiOvercastPlan,
-  availableManeuvers, availableAttacks, type AttackOption, freeAttackWeapon, applyWail, resolveManeuver, MELEE_MANEUVER_KINDS,
+  availableManeuvers, selectedAttackOption, freeAttackWeapon, applyWail, resolveManeuver, MELEE_MANEUVER_KINDS,
   castSightBlocked, spellSightOf, castZoneSpell, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone,
   counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition,
   openRoundStartPsych, displaceSmaller, applySurprise,
   displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
-
-/** Résout l'`AttackOption` à exécuter au clic-ennemi : clic droit = `forceId` (première abordable) ; sinon
- *  l'attaque ARMÉE (`selectedAttack`, défaut 'arme', repli sur 'arme' si périmée) ; pendant la migration,
- *  les anciens modes maneuver/tentacle/trample mappent sur leur option. `undefined` = mode non-attaque
- *  (cast/heal/focus/…) ou aucune attaque abordable. */
-function selectedAttackOption(active: Combatant, battle: BattleState, forceId?: string): AttackOption | undefined {
-  if (battle.action !== null && battle.action !== 'maneuver' && battle.action !== 'tentacle' && battle.action !== 'trample') return undefined;
-  const opts = availableAttacks(active, battle);
-  if (forceId) return opts.find((o) => o.id === forceId) ?? opts[0];
-  if (battle.action === 'maneuver') return battle.maneuverKind ? opts.find((o) => o.id === battle.maneuverKind) : undefined;
-  if (battle.action === 'tentacle') return opts.find((o) => o.id === 'tentacule');
-  if (battle.action === 'trample') return opts.find((o) => o.id === 'pietinement');
-  const want = battle.selectedAttack ?? 'arme';
-  return opts.find((o) => o.id === want) ?? opts.find((o) => o.id === 'arme');
-}
 import { EMPTY_FLOW, flowEffects } from './flow';
 export { movementRemaining, canMove } from './mount';
 import { pickActiveModalKey } from './modalArbiter';
