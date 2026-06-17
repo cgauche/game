@@ -5,102 +5,102 @@
       {
         "min": 1,
         "max": 5,
-        "mutation": "Pattes d’animaux"
+        "mutation": "pattes-d-animaux"
       },
       {
         "min": 6,
         "max": 10,
-        "mutation": "Corpulent"
+        "mutation": "corpulent"
       },
       {
         "min": 11,
         "max": 15,
-        "mutation": "Doigts distendus"
+        "mutation": "doigts-distendus"
       },
       {
         "min": 16,
         "max": 20,
-        "mutation": "Émacié"
+        "mutation": "emacie"
       },
       {
         "min": 21,
         "max": 25,
-        "mutation": "Œil énorme"
+        "mutation": "oeil-enorme"
       },
       {
         "min": 26,
         "max": 30,
-        "mutation": "Articulation supplémentaire aux jambes"
+        "mutation": "articulation-supplementaire-aux-jambes"
       },
       {
         "min": 31,
         "max": 35,
-        "mutation": "Bouche supplémentaire"
+        "mutation": "bouche-supplementaire"
       },
       {
         "min": 36,
         "max": 40,
-        "mutation": "Tentacule épais"
+        "mutation": "tentacule-epais"
       },
       {
         "min": 41,
         "max": 45,
-        "mutation": "Peau brillante"
+        "mutation": "peau-brillante"
       },
       {
         "min": 46,
         "max": 50,
-        "mutation": "Beauté surnaturelle"
+        "mutation": "beaute-surnaturelle"
       },
       {
         "min": 51,
         "max": 55,
-        "mutation": "Visage inversé"
+        "mutation": "visage-inverse"
       },
       {
         "min": 56,
         "max": 60,
-        "mutation": "Peau d’acier"
+        "mutation": "peau-d-acier"
       },
       {
         "min": 61,
         "max": 65,
-        "mutation": "Langue pendante"
+        "mutation": "langue-pendante"
       },
       {
         "min": 66,
         "max": 70,
-        "mutation": "Plumes éparses"
+        "mutation": "plumes-eparses"
       },
       {
         "min": 71,
         "max": 75,
-        "mutation": "Court sur pattes"
+        "mutation": "court-sur-pattes"
       },
       {
         "min": 76,
         "max": 80,
-        "mutation": "Écailles épineuses"
+        "mutation": "ecailles-epineuses"
       },
       {
         "min": 81,
         "max": 85,
-        "mutation": "Cornes asymétriques"
+        "mutation": "cornes-asymetriques"
       },
       {
         "min": 86,
         "max": 90,
-        "mutation": "Suintement de pus"
+        "mutation": "suintement-de-pus"
       },
       {
         "min": 91,
         "max": 95,
-        "mutation": "Groin poilu"
+        "mutation": "groin-poilu"
       },
       {
         "min": 96,
         "max": 100,
-        "mutation": "Choix du MJ"
+        "mutation": "choix-du-mj"
       }
     ]
   },
@@ -110,102 +110,102 @@
       {
         "min": 1,
         "max": 5,
-        "mutation": "Atroces désirs"
+        "mutation": "atroces-desirs"
       },
       {
         "min": 6,
         "max": 10,
-        "mutation": "Bête intérieure"
+        "mutation": "bete-interieure"
       },
       {
         "min": 11,
         "max": 15,
-        "mutation": "Rêves chaotiques"
+        "mutation": "reves-chaotiques"
       },
       {
         "min": 16,
         "max": 20,
-        "mutation": "Formication"
+        "mutation": "formication"
       },
       {
         "min": 21,
         "max": 25,
-        "mutation": "Imprévisible fantaisiste"
+        "mutation": "imprevisible-fantaisiste"
       },
       {
         "min": 26,
         "max": 30,
-        "mutation": "Terrible inquiétude"
+        "mutation": "terrible-inquietude"
       },
       {
         "min": 31,
         "max": 35,
-        "mutation": "Pulsions de haine"
+        "mutation": "pulsions-de-haine"
       },
       {
         "min": 36,
         "max": 40,
-        "mutation": "Cœur desséché"
+        "mutation": "coeur-desseche"
       },
       {
         "min": 41,
         "max": 45,
-        "mutation": "Pensées envieuses"
+        "mutation": "pensees-envieuses"
       },
       {
         "min": 46,
         "max": 50,
-        "mutation": "Esprit solitaire"
+        "mutation": "esprit-solitaire"
       },
       {
         "min": 51,
         "max": 55,
-        "mutation": "Blocage mental"
+        "mutation": "blocage-mental"
       },
       {
         "min": 56,
         "max": 60,
-        "mutation": "Urgence profanatoire"
+        "mutation": "urgence-profanatoire"
       },
       {
         "min": 61,
         "max": 65,
-        "mutation": "Morale douteuse"
+        "mutation": "morale-douteuse"
       },
       {
         "min": 66,
         "max": 70,
-        "mutation": "Esprit suspicieux"
+        "mutation": "esprit-suspicieux"
       },
       {
         "min": 71,
         "max": 75,
-        "mutation": "Accro à l’adrénaline"
+        "mutation": "accro-a-l-adrenaline"
       },
       {
         "min": 76,
         "max": 80,
-        "mutation": "Visions torturées"
+        "mutation": "visions-torturees"
       },
       {
         "min": 81,
         "max": 85,
-        "mutation": "Totalement déséquilibré"
+        "mutation": "totalement-desequilibre"
       },
       {
         "min": 86,
         "max": 90,
-        "mutation": "Infinie malveillance"
+        "mutation": "infinie-malveillance"
       },
       {
         "min": 91,
         "max": 95,
-        "mutation": "Colère impie"
+        "mutation": "colere-impie"
       },
       {
         "min": 96,
         "max": 100,
-        "mutation": "Affreusement nerveux"
+        "mutation": "affreusement-nerveux"
       }
     ]
   }

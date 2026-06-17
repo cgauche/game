@@ -4,6 +4,7 @@ import React from 'react';
 import { RigSprite } from './composeRig';
 import { enemyRigProfile } from './enemyProfile';
 import { combatantAppearance, combatantOverlays } from './parts/combatantVisuals';
+import { mutationById } from '../../data/mutations';
 import type { Combatant, Weapon, ArmourPoints } from '../../engine/types';
 
 const noArmour: ArmourPoints = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
@@ -37,7 +38,7 @@ describe('rendu rig ennemi (F1)', () => {
   it('un Mutant riggé porte un calque de mutation visible (data-driven, c.mutations)', () => {
     // Tell DATA-DRIVEN : ses mutations réelles (au spawn, le trait « Mutation (Cornes asymétriques) »
     // les pose) → combatantOverlays. Plus d'inférence du nom.
-    const svg = render(mkEnemy('Mutant', { mutations: [{ label: 'Cornes asymétriques', kind: 'physique', roll: 81 }] }));
+    const svg = render(mkEnemy('Mutant', { mutations: [mutationById('cornes-asymetriques')!] }));
     expect(svg).toContain('data-mut=');
   });
 

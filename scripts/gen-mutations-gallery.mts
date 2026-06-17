@@ -13,7 +13,7 @@ import { combatantOverlays, combatantAppearance } from '../src/gameIso/rig/parts
 import { creatureToCombatant } from '../src/state/spawn';
 import { findCreature } from '../src/data';
 import { EYE_OPTIONS } from '../src/gameIso/rig/parts/eyes';
-import { LABELS_PHYSIQUES, mutationByLabel } from '../src/data/mutations';
+import { IDS_PHYSIQUES, mutationById } from '../src/data/mutations';
 import type { Mutation } from '../src/engine/corruption';
 import type { Combatant, Trauma } from '../src/engine/types';
 import type { Appearance } from '../src/gameIso/rig/appearance';
@@ -24,7 +24,7 @@ import type { ItemInstance, Weapon } from '../src/engine/types';
 
 const APP: Appearance = { species: 'Humain', sex: 'M', build: 0.5, seed: 4 };
 const NU: EquipCtx = { weapons: [], armour: [] };
-const mut = (label: string): Mutation => mutationByLabel(label)!;
+const mut = (id: string): Mutation => mutationById(id)!;
 
 function cell(label: string, app: Appearance, overlays: RigOverlay[], opts: { view?: View; equip?: EquipCtx; career?: string; bg?: string; tint?: string } = {}): string {
   const svg = renderToStaticMarkup(
@@ -37,9 +37,10 @@ function cell(label: string, app: Appearance, overlays: RigOverlay[], opts: { vi
   return `<figure style="margin:0;text-align:center"><div>${svg}</div><figcaption style="color:${opts.tint ?? '#cdd'};font:11px sans-serif">${label}</figcaption></figure>`;
 }
 
-const mutCell = (label: string, opts: Parameters<typeof cell>[3] = {}) => {
-  const c = { mutations: [mut(label)] } as unknown as Combatant;
-  return cell(opts.view ? `${label} — ${opts.view}` : label, combatantAppearance(APP, c), combatantOverlays(c), opts);
+const mutCell = (id: string, opts: Parameters<typeof cell>[3] = {}) => {
+  const m = mut(id);
+  const c = { mutations: [m] } as unknown as Combatant;
+  return cell(opts.view ? `${m.label} — ${opts.view}` : m.label, combatantAppearance(APP, c), combatantOverlays(c), opts);
 };
 
 const sections: string[] = [];
@@ -48,12 +49,12 @@ const section = (title: string, cells: string[]) =>
     + `<div style="display:grid;grid-template-columns:repeat(auto-fill,120px);gap:14px">${cells.join('')}</div>`);
 
 // 1) La table physique complète, de face.
-section('Tableau de Corruption physique (LDB 19) — vue de face', LABELS_PHYSIQUES.map((l) => mutCell(l)));
+section('Tableau de Corruption physique (LDB 19) — vue de face', IDS_PHYSIQUES.map((id) => mutCell(id)));
 
 // 2) Vues directionnelles : détails de visage (face seule), membres remplacés, morpho.
-const VUES = ['Groin poilu', 'Visage inversé', 'Cornes asymétriques', 'Tentacule épais', 'Pattes d’animaux', 'Plumes éparses', 'Court sur pattes', 'Corpulent', 'Émacié'];
-section('Vues — les détails de visage disparaissent de dos/profil', VUES.flatMap((l) =>
-  (['front', 'profile', 'back'] as View[]).map((view) => mutCell(l, { view }))));
+const VUES = ['groin-poilu', 'visage-inverse', 'cornes-asymetriques', 'tentacule-epais', 'pattes-d-animaux', 'plumes-eparses', 'court-sur-pattes', 'corpulent', 'emacie'];
+section('Vues — les détails de visage disparaissent de dos/profil', VUES.flatMap((id) =>
+  (['front', 'profile', 'back'] as View[]).map((view) => mutCell(id, { view }))));
 
 // 3) Collisions avec l'armure équipée + arme en main (Soldat cuirassé).
 const piece = (uid: string, pa: number, locs: ItemInstance['locs']): ItemInstance =>
@@ -62,9 +63,9 @@ const ARMOUR: ItemInstance[] = [piece('a1', 3, ['corps']), piece('a2', 2, ['tete
 const EPEE: Weapon = { name: 'Épée', type: 'melee', damage: '+4', qualities: [] };
 const SOLDAT: Parameters<typeof cell>[3] = { equip: { weapons: [EPEE], armour: ARMOUR }, career: 'Soldat', bg: '#222a24', tint: '#be9' };
 section('Sur armure équipée (épée en main)', [
-  'Suintement de pus', 'Bouche supplémentaire', 'Écailles épineuses', 'Plumes éparses', 'Peau d’acier',
-  'Tentacule épais', 'Doigts distendus', 'Pattes d’animaux', 'Cornes asymétriques',
-].map((l) => mutCell(l, SOLDAT)));
+  'suintement-de-pus', 'bouche-supplementaire', 'ecailles-epineuses', 'plumes-eparses', 'peau-d-acier',
+  'tentacule-epais', 'doigts-distendus', 'pattes-d-animaux', 'cornes-asymetriques',
+].map((id) => mutCell(id, SOLDAT)));
 
 // 4) Mutants ennemis : visuels DATA-DRIVEN du bestiaire (trait « Mutation (Cornes asymétriques) » =
 // tell garanti + trait « Mutation » = tirage), chemin réel spawn→combatantOverlays. Plus de tirage

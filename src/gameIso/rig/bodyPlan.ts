@@ -93,7 +93,9 @@ export interface RenderResolution {
 export function resolveRender(species: string | undefined, traits: import('../../engine/statEntry').TraitList | undefined, name: string): RenderResolution {
   const swarmSp = PLANS.swarm?.speciesNames()[0] ?? '';
   if (isSwarm(traits)) {
-    const sp = species || swarmSp;
+    // Même résolution que la branche bipède : espèce explicite → espèce du RECORD → défaut Nuée.
+    // (Sans ça, une Nuée au record typé — « Nuée de squigs » → Squig — perdait son espèce.)
+    const sp = species ?? findCreature(name)?.appearance?.species ?? swarmSp;
     return { kind: 'plan', plan: 'swarm', species: sp, scale: speciesScale(sp) };
   }
   // Résolution par la DONNÉE : espèce explicite → espèce du record → le nom s'il EST une espèce

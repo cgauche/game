@@ -6,15 +6,20 @@ import type { Weapon } from '../../../engine/types';
 
 const wep = (label: string, type: 'melee' | 'ranged'): Weapon => ({ name: label, type, damage: '+4', qualities: [] } as Weapon);
 
-describe('weaponForms — contrat des 52 armes', () => {
-  it('couvre toutes les armes melee/ranged de la donnée', () => {
+/** Sous-types NON tenus en main → hors contrat de silhouette : engins de siège servis par un équipage
+ *  (Baliste/Canons/Catapultes/Mortier/Pierrier) et munitions/projectiles (flèches/cartouches/bombes/
+ *  cailloux). Le rig ne dessine pas d'arme portée pour eux. */
+const NON_PORTEE = new Set(['Armes de siège', 'Munitions']);
+
+describe('weaponForms — contrat des armes tenues en main', () => {
+  it('couvre toutes les armes melee/ranged de la donnée (hors siège & munitions)', () => {
     const known = new Set<string>([
       ...WEAPON_FORMS.map((f) => norm(f.label)),
       ...SHIELD_FORMS.map((s) => norm(s.label)),
       norm('Mains nues'),
     ]);
-    const missing = (trappings as { label: string; type: string }[])
-      .filter((t) => (t.type === 'melee' || t.type === 'ranged') && !known.has(norm(t.label)))
+    const missing = (trappings as { label: string; type: string; subType?: string }[])
+      .filter((t) => (t.type === 'melee' || t.type === 'ranged') && !NON_PORTEE.has(t.subType ?? '') && !known.has(norm(t.label)))
       .map((t) => t.label);
     expect(missing).toEqual([]);
   });
@@ -25,8 +30,8 @@ describe('weaponForms — contrat des 52 armes', () => {
     expect(new Set(slugs).size).toBe(slugs.length);
   });
 
-  it('48 armes-arts + 3 boucliers', () => {
-    expect(WEAPON_FORMS).toHaveLength(48);
+  it('83 armes-arts + 3 boucliers', () => {
+    expect(WEAPON_FORMS).toHaveLength(83);
     expect(SHIELD_FORMS).toHaveLength(3);
   });
 });

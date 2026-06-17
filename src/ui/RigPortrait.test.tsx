@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { RigPortrait } from './RigPortrait';
+import { mutationById } from '../data/mutations';
 import type { Combatant } from '../engine/types';
 
 const hero = { id: 'h1', kind: 'hero', name: 'Soldat', career: 'Soldat', appearance: { species: 'Humain', sex: 'M', build: 0.5, seed: 3 } } as unknown as Combatant;
@@ -14,7 +15,7 @@ describe('RigPortrait', () => {
   });
 
   it('montre la mutation de visage du héros (Œil énorme)', () => {
-    const mute = { ...hero, id: 'h2', mutations: [{ label: 'Œil énorme', kind: 'physique', roll: 21 }] } as unknown as Combatant;
+    const mute = { ...hero, id: 'h2', mutations: [mutationById('oeil-enorme')!] } as unknown as Combatant;
     const html = renderToStaticMarkup(<RigPortrait combatant={mute} ring="#4f8fe0" />);
     expect(html).toContain('data-mut="oeil-enorme"');
   });

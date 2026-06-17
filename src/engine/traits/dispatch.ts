@@ -168,13 +168,13 @@ export function traitBonusWoundsBE(traits: TraitList | undefined): boolean {
   return resolveTraits(traits).some((r) => r.def.bonusWoundsBE);
 }
 
-/** Mutation / Corruption mentale (LDB 85) : mutations à appliquer au spawn. `label` (argument du
- *  trait, « Mutation (Cornes asymétriques) ») = mutation EXPLICITE figée ; absent = tirage sur le
- *  Tableau `kind`. */
-export function mutationsAtSpawn(traits: TraitList | undefined): { kind: 'physique' | 'mentale'; label?: string }[] {
+/** Mutation / Corruption mentale (LDB 85) : mutations à appliquer au spawn. `mutationId` = mutation
+ *  EXPLICITE figée (l'argument d'auteur « Mutation (Cornes asymétriques) » est résolu en id stable via
+ *  `slugId` — runtime 100% id) ; absent = tirage sur le Tableau `kind`. */
+export function mutationsAtSpawn(traits: TraitList | undefined): { kind: 'physique' | 'mentale'; mutationId?: string }[] {
   return resolveTraits(traits)
     .filter((r) => r.def.mutationAtSpawn)
-    .map((r) => ({ kind: r.def.mutationAtSpawn!, label: r.arg }));
+    .map((r) => ({ kind: r.def.mutationAtSpawn!, mutationId: r.arg ? slugId(r.arg) : undefined }));
 }
 
 // ── Mathématique de combat ────────────────────────────────────────────────────────────────────────

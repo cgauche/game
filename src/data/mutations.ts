@@ -26,26 +26,27 @@ export interface MutationTable {
 
 const MUTATIONS = mutationsJson as MutationData[];
 const TABLES = mutationTablesJson as MutationTable[];
-const norm = (s: string) => s.trim().toLowerCase().replace(/[’']/g, "'");
-const BY_LABEL = new Map(MUTATIONS.map((m) => [norm(m.label), m]));
+const BY_ID = new Map(MUTATIONS.map((m) => [m.id, m]));
 
-/** Labels par nature de mutation — pour le registre visuel du rig et son test d'exhaustivité. */
-export const LABELS_PHYSIQUES: readonly string[] = MUTATIONS.filter((m) => m.kind === 'physique').map((m) => m.label);
-export const LABELS_MENTALES: readonly string[] = MUTATIONS.filter((m) => m.kind === 'mentale').map((m) => m.label);
+/** `id`s par nature de mutation — pour le registre visuel du rig et son test d'exhaustivité. */
+export const IDS_PHYSIQUES: readonly string[] = MUTATIONS.filter((m) => m.kind === 'physique').map((m) => m.id);
+export const IDS_MENTALES: readonly string[] = MUTATIONS.filter((m) => m.kind === 'mentale').map((m) => m.id);
 
-/** Tire une mutation sur la TABLE `table` (LDB : 'physique'/'mentale' ; Compagnon T1 : 'Khorne'…), d100 seedable. */
+/** Tire une mutation sur la TABLE `table` (LDB : 'physique'/'mentale' ; Compagnon T1 : 'Khorne'…), d100 seedable.
+ *  Les plages référencent les mutations par **id** (plus de label). */
 export function rollMutation(table: string, rng: RNG): Mutation {
   const t = TABLES.find((x) => x.label === table);
   if (!t) throw new Error(`rollMutation : table « ${table} » introuvable (mutationTables.json)`);
   const roll = d100(rng);
   const range = findTableEntry(t.ranges, roll);
-  const m = range ? BY_LABEL.get(norm(range.mutation)) : undefined;
+  const m = range ? BY_ID.get(range.mutation) : undefined;
   if (!m) throw new Error(`rollMutation : plage d100=${roll} sans mutation valide dans « ${table} »`);
   return { ...m, roll };
 }
 
-/** Mutation EXPLICITE par label (sans tirage — ex. trait « Mutation (Cornes asymétriques) »). null si inconnue. */
-export function mutationByLabel(label: string): Mutation | null {
-  const m = BY_LABEL.get(norm(label));
+/** Mutation EXPLICITE par **id** (sans tirage — ex. trait « Mutation (Cornes asymétriques) » résolu en id
+ *  au spawn). null si inconnue. */
+export function mutationById(id: string): Mutation | null {
+  const m = BY_ID.get(id);
   return m ? { ...m, roll: 0 } : null;
 }

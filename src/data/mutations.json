@@ -1,5 +1,6 @@
 [
   {
+    "id": "pattes-d-animaux",
     "label": "Pattes d’animaux",
     "kind": "physique",
     "passive": [
@@ -15,6 +16,7 @@
     }
   },
   {
+    "id": "corpulent",
     "label": "Corpulent",
     "kind": "physique",
     "passive": [
@@ -40,6 +42,7 @@
     }
   },
   {
+    "id": "doigts-distendus",
     "label": "Doigts distendus",
     "kind": "physique",
     "passive": [
@@ -56,6 +59,7 @@
     }
   },
   {
+    "id": "emacie",
     "label": "Émacié",
     "kind": "physique",
     "passive": [
@@ -77,6 +81,7 @@
     }
   },
   {
+    "id": "oeil-enorme",
     "label": "Œil énorme",
     "kind": "physique",
     "note": "+10 aux Tests de Perception impliquant la vue.",
@@ -87,6 +92,7 @@
     }
   },
   {
+    "id": "articulation-supplementaire-aux-jambes",
     "label": "Articulation supplémentaire aux jambes",
     "kind": "physique",
     "passive": [
@@ -103,6 +109,7 @@
     }
   },
   {
+    "id": "bouche-supplementaire",
     "label": "Bouche supplémentaire",
     "kind": "physique",
     "note": "Lancer sur le Tableau des Localisations pour déterminer où cette bouche apparaît.",
@@ -113,6 +120,7 @@
     }
   },
   {
+    "id": "tentacule-epais",
     "label": "Tentacule épais",
     "kind": "physique",
     "traits": [
@@ -128,6 +136,7 @@
     }
   },
   {
+    "id": "peau-brillante",
     "label": "Peau brillante",
     "kind": "physique",
     "note": "Produit une lumière équivalente à celle d’une bougie.",
@@ -141,6 +150,7 @@
     }
   },
   {
+    "id": "beaute-surnaturelle",
     "label": "Beauté surnaturelle",
     "kind": "physique",
     "note": "Ne garde jamais de cicatrice.",
@@ -158,6 +168,7 @@
     }
   },
   {
+    "id": "visage-inverse",
     "label": "Visage inversé",
     "kind": "physique",
     "passive": [
@@ -174,6 +185,7 @@
     }
   },
   {
+    "id": "peau-d-acier",
     "label": "Peau d’acier",
     "kind": "physique",
     "apAll": 2,
@@ -191,6 +203,7 @@
     }
   },
   {
+    "id": "langue-pendante",
     "label": "Langue pendante",
     "kind": "physique",
     "passive": [
@@ -207,6 +220,7 @@
     }
   },
   {
+    "id": "plumes-eparses",
     "label": "Plumes éparses",
     "kind": "physique",
     "note": "Deux lancers de Localisation pour déterminer où ces plumes apparaissent.",
@@ -217,6 +231,7 @@
     }
   },
   {
+    "id": "court-sur-pattes",
     "label": "Court sur pattes",
     "kind": "physique",
     "passive": [
@@ -232,6 +247,7 @@
     }
   },
   {
+    "id": "ecailles-epineuses",
     "label": "Écailles épineuses",
     "kind": "physique",
     "apAll": 1,
@@ -245,6 +261,7 @@
     }
   },
   {
+    "id": "cornes-asymetriques",
     "label": "Cornes asymétriques",
     "kind": "physique",
     "apLocations": {
@@ -266,6 +283,7 @@
     }
   },
   {
+    "id": "suintement-de-pus",
     "label": "Suintement de pus",
     "kind": "physique",
     "note": "Lancer de Localisation pour déterminer l’origine du suintement.",
@@ -276,6 +294,7 @@
     }
   },
   {
+    "id": "groin-poilu",
     "label": "Groin poilu",
     "kind": "physique",
     "passive": [
@@ -292,11 +311,13 @@
     }
   },
   {
+    "id": "choix-du-mj",
     "label": "Choix du MJ",
     "kind": "physique",
     "note": "Le MJ choisit une mutation ou un Trait de Créature."
   },
   {
+    "id": "atroces-desirs",
     "label": "Atroces désirs",
     "kind": "mentale",
     "passive": [
@@ -313,6 +334,7 @@
     ]
   },
   {
+    "id": "bete-interieure",
     "label": "Bête intérieure",
     "kind": "mentale",
     "passive": [
@@ -334,11 +356,13 @@
     ]
   },
   {
+    "id": "reves-chaotiques",
     "label": "Rêves chaotiques",
     "kind": "mentale",
     "note": "État Exténué pendant les deux premières heures de chaque journée."
   },
   {
+    "id": "formication",
     "label": "Formication",
     "kind": "mentale",
     "passive": [
@@ -355,6 +379,7 @@
     ]
   },
   {
+    "id": "imprevisible-fantaisiste",
     "label": "Imprévisible fantaisiste",
     "kind": "mentale",
     "passive": [
@@ -371,6 +396,7 @@
     ]
   },
   {
+    "id": "terrible-inquietude",
     "label": "Terrible inquiétude",
     "kind": "mentale",
     "passive": [
@@ -382,11 +408,13 @@
     ]
   },
   {
+    "id": "pulsions-de-haine",
     "label": "Pulsions de haine",
     "kind": "mentale",
     "note": "Sujet à l’Hostilité envers tous ceux qui ne sont pas de votre race."
   },
   {
+    "id": "coeur-desseche",
     "label": "Cœur desséché",
     "kind": "mentale",
     "passive": [
@@ -403,6 +431,7 @@
     ]
   },
   {
+    "id": "pensees-envieuses",
     "label": "Pensées envieuses",
     "kind": "mentale",
     "passive": [
@@ -414,11 +443,13 @@
     ]
   },
   {
+    "id": "esprit-solitaire",
     "label": "Esprit solitaire",
     "kind": "mentale",
     "note": "-10 aux Tests lorsque vous êtes seul."
   },
   {
+    "id": "blocage-mental",
     "label": "Blocage mental",
     "kind": "mentale",
     "passive": [
@@ -430,6 +461,7 @@
     ]
   },
   {
+    "id": "urgence-profanatoire",
     "label": "Urgence profanatoire",
     "kind": "mentale",
     "passive": [
@@ -446,11 +478,13 @@
     ]
   },
   {
+    "id": "morale-douteuse",
     "label": "Morale douteuse",
     "kind": "mentale",
     "note": "1 État Brisé sur tout échec à un Test dérivé de la Force Mentale."
   },
   {
+    "id": "esprit-suspicieux",
     "label": "Esprit suspicieux",
     "kind": "mentale",
     "passive": [
@@ -467,6 +501,7 @@
     ]
   },
   {
+    "id": "accro-a-l-adrenaline",
     "label": "Accro à l’adrénaline",
     "kind": "mentale",
     "passive": [
@@ -483,6 +518,7 @@
     ]
   },
   {
+    "id": "visions-torturees",
     "label": "Visions torturées",
     "kind": "mentale",
     "passive": [
@@ -494,6 +530,7 @@
     ]
   },
   {
+    "id": "totalement-desequilibre",
     "label": "Totalement déséquilibré",
     "kind": "mentale",
     "passive": [
@@ -510,11 +547,13 @@
     ]
   },
   {
+    "id": "infinie-malveillance",
     "label": "Infinie malveillance",
     "kind": "mentale",
     "note": "-10 aux Tests non destinés à blesser autrui ; +10 aux Tests destinés à blesser autrui."
   },
   {
+    "id": "colere-impie",
     "label": "Colère impie",
     "kind": "mentale",
     "psychTraits": [
@@ -532,6 +571,7 @@
     ]
   },
   {
+    "id": "affreusement-nerveux",
     "label": "Affreusement nerveux",
     "kind": "mentale",
     "passive": [

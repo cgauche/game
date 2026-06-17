@@ -32,6 +32,9 @@ export const EXPOSURE_LABELS: Record<ExposureLevel, string> = {
 
 /** Mutation subie (donnée persistée ; cf. Tableaux LDB 19 p.184-185). */
 export interface Mutation {
+  /** `id` STABLE (slug) — clé de résolution runtime/données (registre, table de Corruption, rendu).
+   *  « On ne se base plus sur le label » : le `label` ne sert qu'à l'affichage. */
+  id: string;
   label: string;
   kind: 'physique' | 'mentale';
   /** Jet d100 sur le tableau (traçabilité). */

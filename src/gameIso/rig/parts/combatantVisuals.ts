@@ -17,12 +17,19 @@ import { eyesArtFromKeys } from './eyes';
 import { injuryOverlaysFor, injuryAppearance } from './injuries';
 import { traitOverlaysFor } from './traitVisuals';
 import { traitById } from '../../../data';
+import { mutationById } from '../../../data/mutations';
 
 /** Fragments d'apparence déclarés par l'état : mutations PHYSIQUES + traits porteurs d'un `appearance`.
- *  Source unique lue par les deux fonctions (calques via `features`, couleurs/yeux/morpho). */
+ *  Source unique lue par les deux fonctions (calques via `features`, couleurs/yeux/morpho).
+ *  L'apparence d'une mutation est résolue depuis le registre **par id** (source unique ; l'instance ne
+ *  porte que son id), avec repli sur une éventuelle copie inline. */
 function stateFragments(c: Combatant): EntityAppearance[] {
   const out: EntityAppearance[] = [];
-  for (const m of c.mutations ?? []) if (m.kind === 'physique' && m.appearance) out.push(m.appearance);
+  for (const m of c.mutations ?? []) {
+    if (m.kind !== 'physique') continue;
+    const app = mutationById(m.id)?.appearance ?? m.appearance;
+    if (app) out.push(app);
+  }
   for (const x of c.traits ?? []) {
     const td = traitById.get(x.id);
     if (td?.appearance) out.push(td.appearance);

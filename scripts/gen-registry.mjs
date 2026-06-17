@@ -28,15 +28,6 @@ export const REGISTRIES = [
     typeFrom: './types',
   },
   {
-    // Cultes (dieux + leurs six Bénédictions, LDB 41) : 1 culte = 1 fichier defs/.
-    dir: 'src/engine/cults/defs',
-    out: 'src/engine/cults/_registry.generated.ts',
-    exportName: 'cult',
-    arrayName: 'CULT_DEFS',
-    type: 'CultDef',
-    typeFrom: './types',
-  },
-  {
     // Traits de Psychologie (LDB 21/85) : 1 trait = 1 fichier defs/ (reconnaît son libellé).
     dir: 'src/engine/psych/defs',
     out: 'src/engine/psych/_registry.generated.ts',

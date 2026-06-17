@@ -25,21 +25,13 @@ const isSep = (line) => /^\|[-:\s|]+\|?\s*$/.test(line.trim());
 const txt = (s) => (s || '').replace(/[*_]+/g, '').replace(/<br\s*\/?>/gi, ' ').replace(/\s+/g, ' ').trim();
 const norm0 = (v) => { const t = txt(v); return t === '' || t === '–' || t === '-' ? null : t; };
 
-const OURS_SPELLS = new Set(JSON.parse(readFileSync(resolve(ROOT, 'src/data/spells.json'), 'utf8')).map((s) => normKey(s.label)));
-// Bénédictions + Miracles OFFICIELS : PAS dans spells.json — rangés dans les CULTES (src/engine/cults/defs).
-// Le fan les nomme par l'adjectif nu (« Courage » = « Bénédiction de Courage ») → on retire le préfixe
-// divin + l'article pour matcher. Sinon ces sorts officiels seraient taggés frenchy à tort.
+const OURS = JSON.parse(readFileSync(resolve(ROOT, 'src/data/spells.json'), 'utf8'));
+const OURS_SPELLS = new Set(OURS.map((s) => normKey(s.label)));
+// Bénédictions + Miracles officiels sont DANS spells.json (le dataset gods y référence leurs ids).
+// Le fan les nomme par l'adjectif nu (« Courage » = « Bénédiction de Courage ») → on indexe aussi le
+// libellé SANS préfixe divin + article pour matcher, sinon ils seraient taggés frenchy à tort.
 const stripDivine = (s) => s.replace(/^(b[ée]n[ée]diction|invocation|miracle|p[ée]tition)\s+(d['e]\s*)?/i, '').replace(/^(la|le|les|l['])\s*/i, '').trim();
-const OURS_DIVINE = new Set();
-const CULTS = resolve(ROOT, 'src/engine/cults/defs');
-for (const f of readdirSync(CULTS)) {
-  if (!f.endsWith('.ts') || f.startsWith('_')) continue;
-  const t = readFileSync(join(CULTS, f), 'utf8');
-  for (const field of ['blessings', 'miracles']) {
-    const m = t.match(new RegExp(`"${field}":\\s*\\[([^\\]]*)\\]`, 's'));
-    if (m) for (const x of m[1].split(',')) { const v = x.trim().replace(/^"|"$/g, ''); if (v) OURS_DIVINE.add(normKey(stripDivine(v))); }
-  }
-}
+const OURS_DIVINE = new Set(OURS.map((s) => normKey(stripDivine(s.label))));
 
 const SPELL_SEC = /(sorts?|sortil|magie|b[ée]n[ée]diction|miracle|p[ée]tition|incantation)/i;
 /** Type de sort déduit du titre de section. */

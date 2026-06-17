@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { classifyEnemy, enemyRigProfile, entityRigProfile } from './enemyProfile';
 import { combatantOverlays } from './parts/combatantVisuals';
+import { mutationById } from '../../data/mutations';
 import { raceById } from './races';
 import { bipedDef } from './creatures';
 import { baseSpeciesOf } from './skeletons';
@@ -135,8 +136,8 @@ describe('enemyRigProfile', () => {
     // enemyRigProfile ne fabrique plus AUCUN calque depuis le nom : un combattant nommé « Mutant »
     // SANS mutations dans sa donnée n'a pas de calque (le profil ne porte plus de champ overlays).
     expect(enemyRigProfile(mkEnemy('Mutant'))).not.toHaveProperty('overlays');
-    // Le visuel de mutation vient des mutations RÉELLES du combattant (combatantOverlays), donnée pure :
-    const mute = mkEnemy('Humain', { mutations: [{ label: 'Cornes asymétriques', kind: 'physique', roll: 81 }] });
+    // Le visuel de mutation vient des mutations RÉELLES du combattant (combatantOverlays), résolu PAR ID :
+    const mute = mkEnemy('Humain', { mutations: [mutationById('cornes-asymetriques')!] });
     expect(combatantOverlays(mute).some((o) => o.svg.includes('data-mut="cornes-asymetriques"'))).toBe(true);
     // Sans mutation dans la donnée → aucun calque (Guerrier du Chaos tient son identité de sa RACE).
     expect(combatantOverlays(mkEnemy('Guerrier du Chaos')).length).toBe(0);

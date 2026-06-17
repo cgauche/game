@@ -56,7 +56,7 @@ let nCreatures = 0, nAttacks = 0;
 for (const c of creatures) {
   const planId = bodyPlanOf(c.label);
   if (planId === 'monolithic' || planId === 'biped') continue; // bipèdes → armes (anim-gallery)
-  const attacks = creatureAttacks((c as { traits?: string[] }).traits ?? []);
+  const attacks = creatureAttacks(c.traits ?? []);
   if (!attacks.length) continue;
   nCreatures++;
   nAttacks += attacks.length;
