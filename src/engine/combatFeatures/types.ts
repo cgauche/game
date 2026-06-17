@@ -24,13 +24,11 @@ export interface CombatFeatureCtx {
  * test de parité (`parity.test.ts`) — rien d'inventé.
  */
 export interface CombatFeature {
-  /** Nom FR canonique (clé de correspondance avec `Combatant.talents[].name`). */
-  key: string;
-  kind: 'talent' | 'trait';
-  /** Transforme la pénalité de main secondaire (Ambidextre : -20 → -10/0, LDB 10). */
-  modifyOffHandPenalty?: (penalty: number, ctx: CombatFeatureCtx) => number;
-  /** Modes d'attaque ajoutés par la capacité (Maniement de deux armes → 'dual-wield'). */
-  attackModes?: (ctx: CombatFeatureCtx) => string[];
+  /** Pénalité de main secondaire transformée par niveau (Ambidextre, LDB 10 : -20 → -10 à 1×, 0 à `zeroAt`).
+   *  DÉCLARATIF (`offHandPenalty(c)` l'interprète) — plus de hook-fonction, 100 % donnée éditable. */
+  offHandPenalty?: { perLevel: number; zeroAt: number };
+  /** Modes d'attaque ajoutés par la capacité (Maniement de deux armes → ['dual-wield']). */
+  attackModes?: string[];
   // ── Dégâts (× niveau) ──────────────────────────────────────────────────────
   /** Coup puissant : +niveau Dégâts avec les armes de Corps à corps. */
   meleeDamageBonus?: boolean;

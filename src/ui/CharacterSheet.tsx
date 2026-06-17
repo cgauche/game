@@ -15,7 +15,7 @@ import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine
 import { spellSupport } from '../engine/spellspec';
 import { spellSpecFor } from '../data/spellspecs';
 import { spellEffectOps } from '../state/flow';
-import { careers, findSpellById, findStar, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel, findSpeciesById, findCareerById, findClassById } from '../data';
+import { careers, findSpellById, findStar, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel, findSpeciesById, findCareerById, findClassById, talentConcrete } from '../data';
 import { formatTrait } from '../engine/traits/dispatch';
 import { CodexRef } from './compendium/CodexRef';
 import { TalentChip } from './EntityChip';
@@ -66,7 +66,7 @@ function describeEffect(e: NonNullable<Combatant['activeEffects']>[number]): str
   if (e.char) return `${e.bonus >= 0 ? '+' : ''}${e.bonus} ${CHAR_LABELS[e.char]}`;
   if (e.grantedTrait) return `Trait ${formatTrait(e.grantedTrait)}`;
   if (e.conjuredSet) return `Arme invoquée (${e.label})`;
-  if (e.grantedTalent) return `Talent ${e.grantedTalent}`;
+  if (e.grantedTalent) return `Talent ${talentConcrete(e.grantedTalent)}`;
   if (e.apAll) return `+${e.apAll} PA (toutes Localisations)`;
   if (e.enchantRef) return 'Arme enchantée';
   if (e.weatherImmune) return 'Immunisé aux intempéries';

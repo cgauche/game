@@ -696,7 +696,7 @@ function SpecSelect({ d, setD, raw }: StepProps & { raw: string }) {
 function StarZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode } {
   const sign = d.star ? starsTable.find((s) => s.label === d.star) : undefined;
   // Talent « (Au choix) » octroyé par le signe (ex. Maître artisan) → spec à préciser (réutilise specChoices).
-  const grantChoice = sign?.effect?.flatMap((o) => (o.op === 'grantTalent' && isUnresolvedChoice(o.talent) ? [o.talent] : []))[0];
+  const grantChoice = sign?.effect?.flatMap((o) => (o.op === 'grantTalent' && isUnresolvedChoice(talentConcrete(o)) ? [talentConcrete(o)] : []))[0];
   const grantOpts = grantChoice ? specOptionsFor(grantChoice) : [];
   const xp = starXp(d);
 

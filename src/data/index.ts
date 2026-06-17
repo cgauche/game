@@ -114,13 +114,14 @@ export interface TalentData {
   test: string | null;
   desc: string;
   /** Compétence ajoutée à « n'importe quelle Carrière que vous entamez » (LDB 10 : Maître
-   *  artisan, Oreille absolue, Sorcier !, Voyageur aguerri, Artiste). */
-  addSkill?: string | null;
+   *  artisan, Oreille absolue, Sorcier !, Voyageur aguerri, Artiste) — réf par id (+ spec « Au
+   *  choix »/« Chant »…). Résolue en libellé concret par `refLabel('skills', …)`. */
+  addSkill?: Ref | null;
   /** Caractéristique/attribut modifié à l'acquisition (LDB 10 : « +5 à votre Caractéristique de
-   *  départ », Blessure, Chance, Détermination, Mouvement, Corruption). Libellé long. */
+   *  départ », Blessure, Chance, Détermination, Mouvement, Corruption). Libellé long (hors id). */
   addCharacteristic?: string | null;
-  /** Talent conféré (LDB 10 : Flagellant → Frénésie). */
-  addTalent?: string | null;
+  /** Talent conféré (LDB 10 : Flagellant → Frénésie) — réf par id (+ spec éventuel). */
+  addTalent?: Ref | null;
   specs?: string[];
   /** Borne haute de plage d100 sur le Tableau des Talents aléatoires (null = hors table). */
   rand?: number | null;
@@ -134,6 +135,9 @@ export interface TalentData {
    *  répété par niveau). Édité au Codex par `GameOpEditor`. L'octroi d'attaque gratuite (Frénésie) vit ici :
    *  `grantFreeAttack{when:'available'}`, lu par `availableAttacks`. */
   passive?: import('../engine/ops').GameOp[];
+  /** Capacités de combat/jeu (LDB 10) en DONNÉE : sac de flags lu par `featuresOf`/`dispatch` (Coup
+   *  puissant `meleeDamageBonus`, Riposte, Tueur, castingKind…). Remplace les `combatFeatures/defs/*.ts`. */
+  combat?: import('../engine/combatFeatures/types').CombatFeature;
 }
 export interface TrappingData {
   /** id STABLE (slug du libellé) — cible des `TrappingRef`, robuste au renommage. */

@@ -77,6 +77,12 @@
     "source": {
       "book": "LDB",
       "page": 132
+    },
+    "combat": {
+      "offHandPenalty": {
+        "perLevel": 10,
+        "zeroAt": 2
+      }
     }
   },
   {
@@ -109,6 +115,9 @@
     "source": {
       "book": "LDB",
       "page": 132
+    },
+    "combat": {
+      "reloadDR": "blackpowder"
     }
   },
   {
@@ -166,7 +175,14 @@
             "type": "ops",
             "on": "self",
             "ops": [
-              { "op": "grantFreeAttack", "weapon": "held", "when": "immediate", "cost": { "advantageOrMovement": true } }
+              {
+                "op": "grantFreeAttack",
+                "weapon": "held",
+                "when": "immediate",
+                "cost": {
+                  "advantageOrMovement": true
+                }
+              }
             ]
           }
         }
@@ -262,6 +278,10 @@
     "source": {
       "book": "LDB",
       "page": 133
+    },
+    "combat": {
+      "castingKind": "beni",
+      "grantsCultBlessings": true
     }
   },
   {
@@ -301,6 +321,11 @@
     "source": {
       "book": "LDB",
       "page": 133
+    },
+    "combat": {
+      "testDR": {
+        "match": "athlétisme (saut)"
+      }
     }
   },
   {
@@ -397,6 +422,9 @@
     "source": {
       "book": "LDB",
       "page": 134
+    },
+    "combat": {
+      "chargeDamageBonus": true
     }
   },
   {
@@ -413,6 +441,11 @@
     "source": {
       "book": "LDB",
       "page": 134
+    },
+    "combat": {
+      "reverseFailed": {
+        "match": "discrétion (urbaine)"
+      }
     }
   },
   {
@@ -461,6 +494,9 @@
     "source": {
       "book": "LDB",
       "page": 134
+    },
+    "combat": {
+      "braveheart": true
     }
   },
   {
@@ -477,6 +513,9 @@
     "source": {
       "book": "LDB",
       "page": 134
+    },
+    "combat": {
+      "brawlDamageBonus": true
     }
   },
   {
@@ -493,6 +532,9 @@
     "source": {
       "book": "LDB",
       "page": 134
+    },
+    "combat": {
+      "initiativeBonus": true
     }
   },
   {
@@ -653,6 +695,9 @@
     "source": {
       "book": "LDB",
       "page": 135
+    },
+    "combat": {
+      "meleeDamageBonus": true
     }
   },
   {
@@ -733,6 +778,9 @@
     "source": {
       "book": "LDB",
       "page": 136
+    },
+    "combat": {
+      "chargeDamageBonus": true
     }
   },
   {
@@ -893,6 +941,9 @@
     "source": {
       "book": "LDB",
       "page": 136
+    },
+    "combat": {
+      "causesFear": true
     }
   },
   {
@@ -909,6 +960,9 @@
     "source": {
       "book": "LDB",
       "page": 136
+    },
+    "combat": {
+      "bleedIgnore": true
     }
   },
   {
@@ -1087,6 +1141,9 @@
     "source": {
       "book": "LDB",
       "page": 137
+    },
+    "combat": {
+      "ignoreCalledShotHead": true
     }
   },
   {
@@ -1103,6 +1160,9 @@
     "source": {
       "book": "LDB",
       "page": 138
+    },
+    "combat": {
+      "critExtraWounds": true
     }
   },
   {
@@ -1146,7 +1206,16 @@
             "type": "ops",
             "on": "self",
             "ops": [
-              { "op": "grantFreeAttack", "weapon": "mainHand", "when": "immediate", "test": { "characteristic": "I", "difficulty": "intermediaire" }, "perChargerOncePerRound": true }
+              {
+                "op": "grantFreeAttack",
+                "weapon": "mainHand",
+                "when": "immediate",
+                "test": {
+                  "characteristic": "I",
+                  "difficulty": "intermediaire"
+                },
+                "perChargerOncePerRound": true
+              }
             ]
           }
         }
@@ -1191,6 +1260,9 @@
     "source": {
       "book": "LDB",
       "page": 138
+    },
+    "combat": {
+      "fleeBonus": true
     }
   },
   {
@@ -1207,6 +1279,11 @@
     "source": {
       "book": "LDB",
       "page": 138
+    },
+    "combat": {
+      "testDR": {
+        "match": "charme (foule)"
+      }
     }
   },
   {
@@ -1312,6 +1389,9 @@
     "source": {
       "book": "LDB",
       "page": 138
+    },
+    "combat": {
+      "focusNoMiscastOnDouble": true
     }
   },
   {
@@ -1467,6 +1547,9 @@
     "source": {
       "book": "LDB",
       "page": 139
+    },
+    "combat": {
+      "castingKind": "invocation"
     }
   },
   {
@@ -1483,6 +1566,11 @@
     "source": {
       "book": "LDB",
       "page": 139
+    },
+    "combat": {
+      "reverseFailed": {
+        "match": "recherche"
+      }
     }
   },
   {
@@ -1563,6 +1651,9 @@
     "source": {
       "book": "LDB",
       "page": 140
+    },
+    "combat": {
+      "stunSave": true
     }
   },
   {
@@ -1608,6 +1699,9 @@
     "source": {
       "book": "LDB",
       "page": 140
+    },
+    "combat": {
+      "castingKind": "arcane"
     }
   },
   {
@@ -1628,6 +1722,9 @@
     "source": {
       "book": "LDB",
       "page": 140
+    },
+    "combat": {
+      "castingKind": "chaos"
     }
   },
   {
@@ -1644,6 +1741,9 @@
     "source": {
       "book": "LDB",
       "page": 140
+    },
+    "combat": {
+      "castingKind": "mineure"
     }
   },
   {
@@ -1788,6 +1888,9 @@
     "source": {
       "book": "LDB",
       "page": 141
+    },
+    "combat": {
+      "outnumberCount": true
     }
   },
   {
@@ -1804,6 +1907,11 @@
     "source": {
       "book": "LDB",
       "page": 141
+    },
+    "combat": {
+      "attackModes": [
+        "dual-wield"
+      ]
     }
   },
   {
@@ -1836,6 +1944,11 @@
     "source": {
       "book": "LDB",
       "page": 141
+    },
+    "combat": {
+      "testDR": {
+        "match": "intimidation"
+      }
     }
   },
   {
@@ -1900,6 +2013,9 @@
     "source": {
       "book": "LDB",
       "page": 142
+    },
+    "combat": {
+      "bargainBonus": true
     }
   },
   {
@@ -1932,6 +2048,11 @@
     "source": {
       "book": "LDB",
       "page": 142
+    },
+    "combat": {
+      "reverseFailed": {
+        "match": "résistance (alcool)"
+      }
     }
   },
   {
@@ -2047,6 +2168,12 @@
     "source": {
       "book": "LDB",
       "page": 143
+    },
+    "combat": {
+      "reverseFailed": {
+        "match": "guérison",
+        "capDR": 1
+      }
     }
   },
   {
@@ -2159,6 +2286,11 @@
     "source": {
       "book": "LDB",
       "page": 144
+    },
+    "combat": {
+      "reverseFailed": {
+        "match": "métier (apothicaire)"
+      }
     }
   },
   {
@@ -2207,6 +2339,9 @@
     "source": {
       "book": "LDB",
       "page": 144
+    },
+    "combat": {
+      "shieldAdvantage": true
     }
   },
   {
@@ -2271,6 +2406,9 @@
     "source": {
       "book": "LDB",
       "page": 144
+    },
+    "combat": {
+      "reloadDR": "all"
     }
   },
   {
@@ -2303,6 +2441,9 @@
     "source": {
       "book": "LDB",
       "page": 144
+    },
+    "combat": {
+      "stealAdvantage": true
     }
   },
   {
@@ -2341,6 +2482,9 @@
     "source": {
       "book": "LDB",
       "page": 144
+    },
+    "combat": {
+      "magicResistance2": true
     }
   },
   {
@@ -2357,6 +2501,9 @@
     "source": {
       "book": "LDB",
       "page": 144
+    },
+    "combat": {
+      "riposte": true
     }
   },
   {
@@ -2373,6 +2520,9 @@
     "source": {
       "book": "LDB",
       "page": 145
+    },
+    "combat": {
+      "damageReduction": true
     }
   },
   {
@@ -2410,6 +2560,9 @@
     "source": {
       "book": "LDB",
       "page": 145
+    },
+    "combat": {
+      "fearImmune": true
     }
   },
   {
@@ -2621,6 +2774,11 @@
     "source": {
       "book": "LDB",
       "page": 146
+    },
+    "combat": {
+      "reverseFailed": {
+        "match": "ragot"
+      }
     }
   },
   {
@@ -2672,6 +2830,9 @@
     "source": {
       "book": "LDB",
       "page": 146
+    },
+    "combat": {
+      "runBonus": true
     }
   },
   {
@@ -2688,6 +2849,11 @@
     "source": {
       "book": "LDB",
       "page": 146
+    },
+    "combat": {
+      "reverseFailed": {
+        "match": "recherche"
+      }
     }
   },
   {
@@ -2720,6 +2886,9 @@
     "source": {
       "book": "LDB",
       "page": 146
+    },
+    "combat": {
+      "ignoreSizeRangedMods": true
     }
   },
   {
@@ -2752,6 +2921,9 @@
     "source": {
       "book": "LDB",
       "page": 146
+    },
+    "combat": {
+      "sniper": true
     }
   },
   {
@@ -2768,6 +2940,9 @@
     "source": {
       "book": "LDB",
       "page": 146
+    },
+    "combat": {
+      "ignoreCalledShotRanged": true
     }
   },
   {
@@ -2784,6 +2959,9 @@
     "source": {
       "book": "LDB",
       "page": 146
+    },
+    "combat": {
+      "rangedDamageBonus": true
     }
   },
   {
@@ -2800,6 +2978,9 @@
     "source": {
       "book": "LDB",
       "page": 146
+    },
+    "combat": {
+      "strikeFirstRanged": true
     }
   },
   {
@@ -2816,6 +2997,9 @@
     "source": {
       "book": "LDB",
       "page": 146
+    },
+    "combat": {
+      "rangedAPIgnore": true
     }
   },
   {
@@ -2973,6 +3157,9 @@
     "source": {
       "book": "LDB",
       "page": 147
+    },
+    "combat": {
+      "slayer": true
     }
   },
   {
@@ -3005,6 +3192,9 @@
     "source": {
       "book": "LDB",
       "page": 147
+    },
+    "combat": {
+      "surpriseSave": true
     }
   },
   {

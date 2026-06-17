@@ -13,7 +13,7 @@ import { effectiveChar } from '../characteristics';
 import { effectiveMovement } from '../encumbrance';
 import type { Combatant } from '../../engine/types';
 import { statblockToCombatant, creatureToCombatant } from '../../state/spawn';
-import { creatures } from '../../data';
+import { findCreatureById } from '../../data';
 
 /** Lot C — Traits de créature (LDB 85). Tests PURS des helpers + dérivation de profil au spawn. */
 
@@ -101,7 +101,7 @@ describe('spawn — profil dérivé des statblocks d’éditeur (LDB 77 « ajout
   it('bestiaire : trait de profil INHÉRENT non ré-appliqué (profil imprimé FINAL → zéro double-compte)', () => {
     // Le bonus de profil d'un trait INHÉRENT (Bella la Noire : Brutal +10 F) est déjà cuit dans creatures.json ;
     // un spawn normal ne met PAS les traits inhérents dans `liveTraits` → le collecteur ne les ré-applique pas.
-    const def = creatures.find((c) => c.label === 'Bella la Noire')!;
+    const def = findCreatureById('bella-la-noire')!;
     const c = creatureToCombatant(def, 'b', { x: 0, y: 0 });
     expect(c.liveTraits).toBeUndefined(); // traits inhérents PAS « en direct »
     expect(effectiveChar(c, 'F')).toBe(def.char.F as number); // 41 = imprimé ; Brutal +10 NON re-compté (sinon 51)

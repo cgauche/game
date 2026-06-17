@@ -24,7 +24,6 @@ import { bonus } from './characteristics';
 import { findTalent, findSkill, spells, advancementLabel, CareerLevelData, type AdvancementRef } from '../data';
 import { slugId } from '../data/slug';
 import { CULT_KEYS } from '../data';
-import { COMBAT_FEATURES } from './combatFeatures/registry';
 import { splitLabel } from './statEntry';
 
 // `splitLabel` (split nom↔spécialisation) est la primitive UNIQUE de `statEntry` — ré-exportée ici
@@ -105,7 +104,7 @@ export function parseEntry(raw: string): SlotOption[] {
 export function wildcardSpecs(name: string): string[] {
   const skill = findSkill(name);
   if (skill?.specs?.length) return skill.specs;
-  if (COMBAT_FEATURES[name]?.grantsCultBlessings) return CULT_KEYS; // Béni → cultes (signal du registre, plus de name-match)
+  if (findTalent(name)?.combat?.grantsCultBlessings) return CULT_KEYS; // Béni → cultes (signal DONNÉE, plus de registre)
   const fromSpells = [...new Set(spells.filter((s) => s.type === name && s.subType).map((s) => s.subType as string))].sort();
   if (fromSpells.length) return fromSpells;
   return findTalent(name)?.specs ?? [];

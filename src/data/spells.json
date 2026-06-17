@@ -221,7 +221,7 @@
               {
                 "op": "augmentWeapon",
                 "addQualities": [
-                  "Magique"
+                  "magique"
                 ]
               }
             ]
@@ -1498,7 +1498,7 @@
                   "bonusOf": "FM"
                 },
                 "qualities": [
-                  "Magique"
+                  "magique"
                 ],
                 "chooseForm": true,
                 "skin": {
@@ -2489,7 +2489,7 @@
               {
                 "op": "augmentWeapon",
                 "addQualities": [
-                  "Magique"
+                  "magique"
                 ],
                 "onHitEffects": [
                   {
@@ -2971,11 +2971,11 @@
               },
               {
                 "op": "grantTalent",
-                "talent": "Sans peur"
+                "talentId": "sans-peur"
               },
               {
                 "op": "grantTalent",
-                "talent": "Cœur vaillant"
+                "talentId": "coeur-vaillant"
               },
               {
                 "op": "narrative",
@@ -3172,8 +3172,8 @@
                 "reach": "Moyenne",
                 "hands": 1,
                 "qualities": [
-                  "Magique",
-                  "Percutante"
+                  "magique",
+                  "percutante"
                 ],
                 "form": "Épée bâtarde",
                 "skin": {
@@ -3915,8 +3915,8 @@
               {
                 "op": "augmentWeapon",
                 "addQualities": [
-                  "Magique",
-                  "Incassable"
+                  "magique",
+                  "incassable"
                 ],
                 "damageBonus": {
                   "bonusOf": "FM"
@@ -4298,7 +4298,7 @@
                 "reach": "Longue",
                 "hands": 2,
                 "qualities": [
-                  "Magique"
+                  "magique"
                 ],
                 "form": "Hallebarde",
                 "skin": {
@@ -7388,7 +7388,7 @@
             "ops": [
               {
                 "op": "grantTalent",
-                "talent": "Coude-à-coude"
+                "talentId": "coude-a-coude"
               },
               {
                 "op": "narrative",
@@ -7427,8 +7427,8 @@
                 "op": "augmentWeapon",
                 "requiresWeapon": "lance",
                 "addQualities": [
-                  "Percutante",
-                  "Magique"
+                  "percutante",
+                  "magique"
                 ]
               }
             ]
@@ -7736,7 +7736,7 @@
             "ops": [
               {
                 "op": "grantTalent",
-                "talent": "Sans peur"
+                "talentId": "sans-peur"
               },
               {
                 "op": "narrative",
@@ -7850,7 +7850,7 @@
               },
               {
                 "op": "grantTalent",
-                "talent": "Souplesse féline"
+                "talentId": "souplesse-feline"
               },
               {
                 "op": "narrative",
@@ -8610,7 +8610,7 @@
               },
               {
                 "op": "grantTalent",
-                "talent": "Sans peur"
+                "talentId": "sans-peur"
               },
               {
                 "op": "narrative",
@@ -8648,7 +8648,7 @@
               {
                 "op": "augmentWeapon",
                 "addQualities": [
-                  "Magique"
+                  "magique"
                 ],
                 "damageBonus": {
                   "bonusOf": "Soc"
@@ -8793,7 +8793,7 @@
             "ops": [
               {
                 "op": "grantTalent",
-                "talent": "Bonnes jambes"
+                "talentId": "bonnes-jambes"
               },
               {
                 "op": "narrative",
@@ -8833,7 +8833,7 @@
                 "name": "Morsure",
                 "damage": 3,
                 "qualities": [
-                  "Magique"
+                  "magique"
                 ]
               },
               {
@@ -8841,7 +8841,7 @@
                 "name": "Griffe",
                 "damage": 4,
                 "qualities": [
-                  "Magique"
+                  "magique"
                 ]
               }
             ]
@@ -8920,7 +8920,7 @@
             "ops": [
               {
                 "op": "grantTalent",
-                "talent": "Sens aiguisé"
+                "talentId": "sens-aiguise"
               },
               {
                 "op": "narrative",
@@ -9210,7 +9210,7 @@
                 "op": "augmentWeapon",
                 "requiresWeapon": "hache",
                 "addQualities": [
-                  "Magique"
+                  "magique"
                 ],
                 "onHitEffects": [
                   {
@@ -9349,7 +9349,7 @@
                 "op": "augmentWeapon",
                 "requiresWeapon": "épée",
                 "addQualities": [
-                  "Magique"
+                  "magique"
                 ],
                 "bypass": "all",
                 "onHitEffects": [
@@ -9488,11 +9488,11 @@
               },
               {
                 "op": "grantTalent",
-                "talent": "Menaçant"
+                "talentId": "menacant"
               },
               {
                 "op": "grantTalent",
-                "talent": "Sens aiguisé"
+                "talentId": "sens-aiguise"
               }
             ]
           }

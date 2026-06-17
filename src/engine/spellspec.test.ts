@@ -7,7 +7,7 @@ import { describe, it, expect } from 'vitest';
 import type { Combatant } from './types';
 import { spellSpecFor, curatedSpec } from '../data/spellspecs';
 import { applyOps, resolveFormula, COMBAT_PERSIST } from './ops';
-import { spells, type SpellData } from '../data';
+import { spells, findSpellById, type SpellData } from '../data';
 import { spellOps } from '../state/flow';
 
 function hero(p: Partial<Combatant> = {}): Combatant {
@@ -31,14 +31,14 @@ function castVia(spell: SpellData, caster: Combatant, target: Combatant): string
 
 describe('specs curées — résolution', () => {
   it('Bénédiction de Guérison : op heal littérale (+1 PB)', () => {
-    const spell = spells.find((s) => s.label === 'Bénédiction de Guérison')!;
+    const spell = findSpellById('benediction-de-guerison')!;
     const target = hero();
     castVia(spell, hero({ id: 'c' }), target);
     expect(target.wounds.current).toBe(7);
   });
 
   it('Caresse de Rhya : « Guérir (Bonus de Sociabilité) Blessures » résolu contre le LANCEUR', () => {
-    const spell = spells.find((s) => s.label === 'Caresse de Rhya')!;
+    const spell = findSpellById('caresse-de-rhya')!;
     const caster = hero({ id: 'c' }); // Soc 42 → BSoc 4
     const target = hero();
     castVia(spell, caster, target);
@@ -46,7 +46,7 @@ describe('specs curées — résolution', () => {
   });
 
   it('Écorce : +2 BE (charMod E +20) et −10 en Agilité/Dextérité — effets lus de spell.effects', () => {
-    const spell = spells.find((s) => s.label === 'Écorce')!;
+    const spell = findSpellById('ecorce')!;
     expect(spellOps(spell.effects, 'target')).toEqual([
       { op: 'charMod', char: 'E', mod: 20 },
       { op: 'charMod', char: 'Ag', mod: -10 },

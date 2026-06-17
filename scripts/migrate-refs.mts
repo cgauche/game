@@ -475,6 +475,83 @@ function migrateSceneTrappings(file: string): void {
   console.log(`scène ${file.split(/[\\/]/).pop()} : giveTrapping.trapping → trappingId/custom`);
 }
 
+/** Sépare un libellé concret « Nom (Spec) » → { name, spec } (parenthèse non numérique = spec).
+ *  Réutilisé par la migration de `grantTalent` (« Maître artisan (Au choix) ») et `addTalent`. */
+function splitSpec(raw: string): { name: string; spec?: string } {
+  const m = raw.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+  return m && !/^\d+$/.test(m[2].trim()) ? { name: m[1].trim(), spec: m[2].trim() } : { name: raw.trim() };
+}
+
+/** Phase F — convertit les RÉFÉRENCES résiduelles des ops de Flow + des champs de talent :
+ *  - `augmentWeapon.addQualities` / `grantWeapon.qualities` / `grantNaturalWeapon.qualities` :
+ *    libellé de qualité → id (« Magique » → 'magique', « À Explosion » ⇔ « Explosion »).
+ *  - `grantTalent` : { talent: « Maître artisan (Au choix) » } → { talentId, spec? } (libellé → id, spec entre ()).
+ *  Dans `spells.json`/`frenchy-spells.json`/`maneuvers.json`/`traits.json`/`frenchy-traits.json`/
+ *  `qualities.json`/`domains.json`/`creatures.json`/`stars.json`. Idempotent (op déjà migré → laissé). */
+function migrateOpRefs(): void {
+  const qualMap = labelMap(['qualities.json'], true); // stripArticle : « À Explosion » ⇔ « Explosion »
+  const qualIds = new Set(read('qualities.json').map((q) => String(q.id)));
+  const talentMap = labelMap(['talents.json']);
+  const talentIds = new Set(read('talents.json').map((t) => String(t.id)));
+  // Libellé/id de qualité → id stable (idempotent : un id déjà connu est conservé).
+  const toQualId = (v: unknown, ctx: string): unknown => {
+    if (typeof v !== 'string') return v;
+    if (qualIds.has(v)) return v;
+    return resolveId(qualMap, v, ctx) ?? slugId(v);
+  };
+  const walk = (node: unknown): unknown => {
+    if (Array.isArray(node)) return node.map(walk);
+    if (node && typeof node === 'object') {
+      const o = node as Record<string, unknown>;
+      // grantTalent : { talent: « Nom (Spec) » } → { talentId, spec? } (idempotent : talentId déjà présent → laissé).
+      if (o.op === 'grantTalent' && typeof o.talent === 'string') {
+        const { talent, ...rest } = o;
+        const { name, spec } = splitSpec(talent);
+        const id = talentIds.has(name) ? name : (resolveId(talentMap, name, 'grantTalent') ?? slugId(name));
+        return { ...Object.fromEntries(Object.entries(rest).map(([k, v]) => [k, walk(v)])), talentId: id, ...(spec ? { spec } : {}) };
+      }
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(o)) {
+        // addQualities (augmentWeapon) / qualities (grantWeapon/grantNaturalWeapon) : libellé → id.
+        if ((k === 'addQualities' || (k === 'qualities' && (o.op === 'grantWeapon' || o.op === 'grantNaturalWeapon'))) && Array.isArray(v)) {
+          out[k] = v.map((q) => toQualId(q, `${String(o.op)}.${k}`));
+        } else out[k] = walk(v);
+      }
+      return out;
+    }
+    return node;
+  };
+  for (const f of ['spells.json', 'frenchy-spells.json', 'maneuvers.json', 'traits.json', 'frenchy-traits.json', 'qualities.json', 'domains.json', 'creatures.json', 'stars.json']) {
+    const raw = JSON.parse(readFileSync(DATA + f, 'utf8'));
+    writeFileSync(DATA + f, serialize(walk(raw)), 'utf8');
+  }
+  console.log('ops addQualities/grantWeapon.qualities → id de qualité ; grantTalent → { talentId, spec? }');
+}
+
+/** Phase F — convertit les champs `addSkill`/`addTalent` de `talents.json` (libellés concrets «
+ *  Métier (Au choix) », « Frénésie ») en réfs structurées par id (`addSkill`/`addTalent` =
+ *  `{ id, spec? }`). `addCharacteristic` reste un libellé long (hors périmètre). Idempotent. */
+function migrateTalentGrants(): void {
+  const skillMap = labelMap(['skills.json']);
+  const skillIds = new Set(read('skills.json').map((s) => String(s.id)));
+  const talentMap = labelMap(['talents.json']);
+  const talentIds = new Set(read('talents.json').map((t) => String(t.id)));
+  const toRef = (v: unknown, map: Map<string, string[]>, ids: Set<string>, ctx: string): unknown => {
+    if (v == null) return v;
+    if (typeof v !== 'string') return v; // déjà { id, spec? } (idempotent)
+    const { name, spec } = splitSpec(v);
+    const id = ids.has(name) ? name : (resolveId(map, name, ctx) ?? slugId(name));
+    return spec ? { id, spec } : { id };
+  };
+  const out = read('talents.json').map((t) => ({
+    ...t,
+    ...(t.addSkill != null ? { addSkill: toRef(t.addSkill, skillMap, skillIds, `talent ${t.label}.addSkill`) } : {}),
+    ...(t.addTalent != null ? { addTalent: toRef(t.addTalent, talentMap, talentIds, `talent ${t.label}.addTalent`) } : {}),
+  }));
+  write('talents.json', out);
+  console.log('talents.addSkill/addTalent → réfs par id ({ id, spec? })');
+}
+
 // ── Run ───────────────────────────────────────────────────────────────────────────────────────
 // NB : `gods.json` a été généré une fois depuis les ex-`cults/defs/` (supprimés) ; c'est désormais
 // une SOURCE app-owned éditable au Codex, plus rien à régénérer.
@@ -491,6 +568,8 @@ migrateConditions();
 migrateWeaponGroups();
 fixCareerTrappingAliases();
 migrateOpTrappings();
+migrateOpRefs();
+migrateTalentGrants();
 for (const f of [
   fileURLToPath(new URL('../src/scenes/arene/arene-projet.json', import.meta.url)),
 ]) migrateSceneTrappings(f);

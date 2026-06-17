@@ -11,7 +11,9 @@
 import { Formula, GameOp } from '../../engine/ops';
 import { CHAR_LABELS, CharKey, type Difficulty, DIFFICULTY_LABELS } from '../../engine/types';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
-import { etats } from '../../data';
+import { etats, talentConcrete, findTalent, qualityRefLabel } from '../../data';
+import { slugId } from '../../data/slug';
+import { splitLabel } from '../../engine/statEntry';
 import { giveTrappingLabel } from '../../engine/items';
 import { parseTraitInstance, formatTrait } from '../../engine/traits/dispatch';
 import { closeDetails } from './EffectList';
@@ -210,8 +212,8 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'grantWeapon': return { op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' } };
     case 'grantNaturalWeapon': return { op: 'grantNaturalWeapon', name: 'Griffes', damage: 3 };
     case 'grantTrait': return { op: 'grantTrait', traitId: 'armure' };
-    case 'grantTalent': return { op: 'grantTalent', talent: 'Sang-froid' };
-    case 'augmentWeapon': return { op: 'augmentWeapon', addQualities: ['Magique'] };
+    case 'grantTalent': return { op: 'grantTalent', talentId: 'sang-froid' };
+    case 'augmentWeapon': return { op: 'augmentWeapon', addQualities: ['magique'] };
     case 'cureDisease': return { op: 'cureDisease', count: 1 };
     case 'reduceDiseaseDays': return { op: 'reduceDiseaseDays', days: 1 };
     case 'preventInfection': return { op: 'preventInfection' };
@@ -274,8 +276,8 @@ export function opSummary(o: GameOp): string {
     case 'grantWeapon': return `${L} ${o.name} (Dégâts ${o.plusBF ? 'BF+' : ''}${formulaSummary(o.damage)})`;
     case 'grantNaturalWeapon': return `${L} ${o.name} (${o.plusBF !== false ? 'BF+' : ''}${formulaSummary(o.damage)})`;
     case 'grantTrait': return `${L} ${formatTrait({ id: o.traitId, arg: o.arg })}${o.indice != null ? ` ${formulaSummary(o.indice)}` : ''}`;
-    case 'grantTalent': return `${L} ${o.talent}`;
-    case 'augmentWeapon': return `${L} ${[...(o.addQualities ?? []), o.damageBonus != null ? `+${formulaSummary(o.damageBonus)} Dégâts` : ''].filter(Boolean).join(', ') || '(vide)'}`;
+    case 'grantTalent': return `${L} ${talentConcrete(o)}`;
+    case 'augmentWeapon': return `${L} ${[...(o.addQualities ?? []).map((id) => qualityRefLabel({ id })), o.damageBonus != null ? `+${formulaSummary(o.damageBonus)} Dégâts` : ''].filter(Boolean).join(', ') || '(vide)'}`;
     case 'cureDisease': return `${L} ${o.count ?? 1} maladie(s)`;
     case 'reduceDiseaseDays': return `${L} −${o.days ?? 1} jour(s)`;
     case 'preventInfection': return `${L} pas d’infection`;
@@ -394,7 +396,11 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
           </>
         )}
         {op.op === 'grantTalent' && (
-          <input placeholder="Talent (ex. Sang-froid)" value={o.talent ?? ''} onChange={(e) => upd({ talent: e.target.value })} />
+          <input
+            placeholder="Talent (ex. Sang-froid, Magie des Arcanes (Ghur))"
+            value={talentConcrete(o)}
+            onChange={(e) => { const p = splitLabel(e.target.value); const id = findTalent(p.name)?.id ?? slugId(p.name); upd({ talentId: id, spec: p.spec }); }}
+          />
         )}
         {op.op === 'grantNaturalWeapon' && (
           <>

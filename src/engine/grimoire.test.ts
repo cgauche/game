@@ -8,9 +8,9 @@ import type { Combatant } from './types';
 import {
   casterTalents, spellCost, learnableSpells, canCastFromGrimoire, knownCount,
 } from './grimoire';
-import { blessingsOf, spells } from '../data';
+import { blessingsOf, spells, findSpell } from '../data';
 
-const sp = (label: string) => spells.find((s) => s.label === label)!;
+const sp = (label: string) => findSpell(label)!;
 
 function hero(p: Partial<Combatant> = {}): Combatant {
   return {

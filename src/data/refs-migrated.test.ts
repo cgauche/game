@@ -6,6 +6,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   trappings, qualities, spells, creatures, classes, careers, careerLevels, species, gods, etats, maladies, weaponGroups,
+  traits, stars, talents,
   findSkillById, findTalentById, findTrappingById, findQualityById, findSpellById,
   findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById,
 } from './index';
@@ -132,5 +133,50 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     };
     for (const s of species) { s.skills.forEach((a) => ck('skills', a)); s.talents.forEach((a) => ck('talents', a)); }
     for (const l of careerLevels) { l.skills.forEach((a) => ck('skills', a)); l.talents.forEach((a) => ck('talents', a)); }
+  });
+
+  // ── Phase F — ops de Flow & champs de talent : qualité/talent par id, jamais un libellé ──
+  /** Visite récursive de chaque nœud-objet d'une arborescence de données (Flow/effets imbriqués). */
+  const walk = (node: unknown, fn: (o: Record<string, unknown>) => void): void => {
+    if (Array.isArray(node)) { node.forEach((x) => walk(x, fn)); return; }
+    if (!isObj(node)) return;
+    fn(node);
+    for (const v of Object.values(node)) walk(v, fn);
+  };
+  /** Tous les datasets porteurs de `GameOp` (Flow de sorts/traits/etc. + effet de signe). */
+  const opDatasets: unknown[] = [...spells, ...traits, ...creatures, ...qualities, ...stars];
+
+  it('ops grantTalent → { talentId } qui résout (jamais un libellé « talent »)', () => {
+    walk(opDatasets, (o) => {
+      if (o.op !== 'grantTalent') return;
+      expect('talent' in o, `grantTalent legacy { talent } résiduel : ${JSON.stringify(o)}`).toBe(false);
+      expect(typeof o.talentId, JSON.stringify(o)).toBe('string');
+      expect(findTalentById(o.talentId as string), String(o.talentId)).toBeTruthy();
+    });
+  });
+
+  it('ops addQualities / grantWeapon.qualities = id de Qualité qui résout', () => {
+    walk(opDatasets, (o) => {
+      const lists: unknown[] = [];
+      if (o.op === 'augmentWeapon' && Array.isArray(o.addQualities)) lists.push(o.addQualities);
+      if ((o.op === 'grantWeapon' || o.op === 'grantNaturalWeapon') && Array.isArray(o.qualities)) lists.push(o.qualities);
+      for (const q of lists.flat()) {
+        expect(typeof q, JSON.stringify(o)).toBe('string'); // id de Qualité, pas un objet/libellé brut
+        expect(findQualityById(q as string), String(q)).toBeTruthy();
+      }
+    });
+  });
+
+  it('talents.addSkill/addTalent = réf par id qui résout (libellé concret hors donnée)', () => {
+    for (const t of talents) {
+      if (t.addSkill != null) {
+        expect(isObj(t.addSkill), `${t.label}.addSkill`).toBe(true);
+        expect(findSkillById((t.addSkill as { id: string }).id), `${t.label}.addSkill`).toBeTruthy();
+      }
+      if (t.addTalent != null) {
+        expect(isObj(t.addTalent), `${t.label}.addTalent`).toBe(true);
+        expect(findTalentById((t.addTalent as { id: string }).id), `${t.label}.addTalent`).toBeTruthy();
+      }
+    }
   });
 });

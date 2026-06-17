@@ -8,7 +8,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { applyCast } from './combatFlow';
 import { makePregens } from '../data/pregens';
-import { spells, findSpell } from '../data';
+import { spells, findSpell, findSpellById } from '../data';
 import { curatedSpec, spellSpecFor } from '../data/spellspecs';
 import { spellSupport } from '../engine/spellspec';
 import { spellEffectOps } from './flow';
@@ -39,14 +39,14 @@ describe('couverture de curation', () => {
     const taal = curatedSpec('Enchevêtrement', 'Invocation');
     expect(arcane?.type).toBe('Magie des Arcanes'); // discriminant du Sort d'Arcane
     expect(taal?.type).toBe('Invocation'); // discriminant du miracle de Taal
-    const taalSpell = spells.find((s) => s.label === 'Enchevêtrement' && s.type === 'Invocation')!;
+    const taalSpell = findSpellById('enchevetrement-2')!; // miracle de Taal (le label « Enchevêtrement » est en double)
     expect(spellSpecFor(taalSpell).curated).toBe(true);
   });
 
   it('spellSupport : classification mécanique / partiel / narratif', () => {
     // Les EFFETS (ops) vivent sur `spell.effects` (Flow) → on les extrait (target + caster) par `spellEffectOps`.
     const sup = (s: typeof spells[number], missile: boolean) => spellSupport(spellEffectOps(s.effects), spellSpecFor(s), missile);
-    const choc = spells.find((s) => s.label === 'Choc' && s.type === 'Magie mineure')!;
+    const choc = findSpellById('choc')!; // Magie mineure
     expect(sup(choc, isMagicMissile(choc))).toBe('mecanique');
     const lumiere = findSpell('Lumière')!;
     expect(sup(lumiere, false)).toBe('narratif');
@@ -78,7 +78,7 @@ describe('ops de spec sur la branche Projectile (curées seulement)', () => {
     const cible = makePregens().find((h) => h.name === 'Sigmund Reikhardt')!;
     w.wounds.current = w.wounds.max - 3;
     useGame.setState({ party: [w, cible] as Combatant[] });
-    const drain = spells.find((s) => s.label === 'Drain' && s.type === 'Magie mineure')!;
+    const drain = findSpellById('drain')!; // Magie mineure
     const res: CastResult & Partial<MissileResult> = { ...ok(2), hit: true, location: 'corps', damage: 5, woundsLost: 2, defenderDefeated: false };
     const before = w.wounds.current;
     applyCast(useGame.getState, useGame.setState, w, cible, drain, res, true, false);

@@ -18,7 +18,7 @@ import { RNG, defaultRNG, roll } from './dice';
 import { findTableEntry } from './tables';
 import { CharKey, CHAR_KEYS, Characteristics } from './types';
 import { Money } from './money';
-import { SpeciesData, CareerData, species as allSpecies, eyes as eyesTable, hairs as hairsTable, details as detailTables, stars as starsTable, findStar } from '../data';
+import { SpeciesData, CareerData, species as allSpecies, eyes as eyesTable, hairs as hairsTable, details as detailTables, stars as starsTable, findStar, talentConcrete } from '../data';
 
 // Bonus de PX des choix aléatoires acceptés (citations en tête de fichier).
 export const XP_SPECIES_ACCEPTED = 20; // LDB 04 l.87
@@ -168,10 +168,11 @@ export function rollStar(rng: RNG = defaultRNG): string {
 
 /** Applique l'effet ADE2 d'un signe astral AUX ATTRIBUTS DE DÉPART (ch.03 l.38) : `charMod` ajuste
  *  une Caractéristique de départ, `grantTalent` octroie un Talent via `addTalent` (le résolveur de la
- *  création). Effet baked une fois à la création — PAS un passif continu. */
+ *  création). Le Talent est passé en LIBELLÉ CONCRET (`talentConcrete` : id+spec → « Maître artisan
+ *  (Au choix) ») que le consommateur re-résout. Effet baked une fois à la création — PAS un passif. */
 export function applyStarEffect(starLabel: string, chars: Characteristics, addTalent: (label: string) => void): void {
   for (const op of findStar(starLabel)?.effect ?? []) {
     if (op.op === 'charMod') chars[op.char] += op.mod;
-    else if (op.op === 'grantTalent') addTalent(op.talent);
+    else if (op.op === 'grantTalent') addTalent(talentConcrete(op));
   }
 }

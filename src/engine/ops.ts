@@ -18,7 +18,7 @@ import { rollTest, opposedTest } from './tests';
 import { testValue } from './skills';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
 import { addCondition, addTimedCondition, removeCondition, loseWounds, hasCondition } from './conditions';
-import { conditionLabel } from '../data';
+import { conditionLabel, talentConcrete, qualityRefLabel } from '../data';
 import { groupMatch } from './groups';
 import { bypassedAP } from './armourBypass';
 import { grantTrait } from './grantedTraits';
@@ -172,13 +172,15 @@ export type GameOp =
   | { op: 'grantTrait'; traitId: string; arg?: string; indice?: Formula; indicePerSL?: PerSL; onlyGroups?: string[] }
   /** Talent TEMPORISÉ (Jalon 2.6 — « +1 Talent Sans peur tant que le Sort est actif ») : porté
    *  par l'ActiveEffect, lu par le registre `combatFeatures` (featuresOf) — PAS posé dans
-   *  `c.talents` (fiche/avancement intacts). Seuls les talents AVEC def mécanique ont un effet. */
-  | { op: 'grantTalent'; talent: string }
+   *  `c.talents` (fiche/avancement intacts). Seuls les talents AVEC def mécanique ont un effet.
+   *  Réf par `talentId` STABLE (+ `spec` éventuel « Sans Peur (Vampires) ») — résolu en libellé
+   *  concret (clé du registre `combatFeatures`) par `talentConcrete` côté consommateur/affichage. */
+  | { op: 'grantTalent'; talentId: string; spec?: string }
   /** Enchantement d'ARME temporisé (Jalon 2.6 — B. de Droiture : Magique ; Marteau ardent :
    *  Magique +BSoc + En flammes/À Terre à la touche ; Épée ardente : +6 + Percutante + En
    *  flammes). Porté par le PORTEUR (ActiveEffect.weaponEnchant), fusionné à l'arme à la
    *  résolution (`enchantedWeapon`). `damageBonus` résolu contre le LANCEUR (BSoc du prêtre). */
-  | { op: 'augmentWeapon'; addQualities?: string[]; damageBonus?: Formula; bypass?: ArmourBypass; requiresWeapon?: string;
+  | { op: 'augmentWeapon'; /** ids STABLES de qualité (`QualityRef.id`) — relus par `parseQuality` ; jamais un libellé. */ addQualities?: string[]; damageBonus?: Formula; bypass?: ArmourBypass; requiresWeapon?: string;
       /** Effets DÉCLENCHÉS « à la touche » de l'arme enchantée — forme UNIFIÉE (`TriggeredEffect`,
        *  comme les Atouts d'arme et les Traits) : Marteau ardent → En flammes/À Terre ; Épée de
        *  justice → Test du Groupe « Criminel » → Inconscient ; Morsure de l'hiver → Test (hors
@@ -678,7 +680,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         });
         recomputeLoadout(target); // replie l'enchant dans l'arme active (visible + appliqué)
         const parts = [
-          ...(o.addQualities ?? []),
+          ...(o.addQualities ?? []).map((id) => qualityRefLabel({ id })), // id stable → libellé affiché
           ...(dmg ? [`+${dmg} Dégâts`] : []),
           ...(o.onHitEffects?.length ? ['effet à la touche'] : []),
         ];
@@ -712,9 +714,9 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           label: ctx.label ?? 'Effet', bonus: 0,
           roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
           ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
-          grantedTalent: o.talent,
+          grantedTalent: { talentId: o.talentId, ...(o.spec ? { spec: o.spec } : {}) },
         });
-        lines.push(`${target.name} gagne le Talent ${o.talent} (${ctx.label ?? 'sort'}).`);
+        lines.push(`${target.name} gagne le Talent ${talentConcrete(o)} (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'reduceToZero': {
@@ -868,7 +870,8 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           naturalWeapon: weapon,
         });
         recomputeLoadout(target);
-        lines.push(`${target.name} gagne l'attaque naturelle ${o.name} (Dégâts ${weapon.damage}${weapon.qualities.length ? `, ${weapon.qualities.join(', ')}` : ''}) (${ctx.label ?? 'sort'}).`);
+        const natQuals = weapon.qualities.map((id) => qualityRefLabel({ id })).join(', '); // ids → libellés
+        lines.push(`${target.name} gagne l'attaque naturelle ${o.name} (Dégâts ${weapon.damage}${weapon.qualities.length ? `, ${natQuals}` : ''}) (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'grantWeapon': {
@@ -907,7 +910,8 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
           conjuredSet,
         });
-        lines.push(`${target.name} invoque ${item.name} (Dégâts ${item.damage}${item.qualities.length ? `, ${item.qualities.join(', ')}` : ''}) (${ctx.label ?? 'sort'}).`);
+        const conjQuals = item.qualities.map((id) => qualityRefLabel({ id })).join(', '); // ids → libellés
+        lines.push(`${target.name} invoque ${item.name} (Dégâts ${item.damage}${item.qualities.length ? `, ${conjQuals}` : ''}) (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'castWard': {

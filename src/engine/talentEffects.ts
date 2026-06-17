@@ -27,9 +27,8 @@
  */
 import { Combatant, CHAR_BY_LABEL, CharKey } from './types';
 import { bonus, maxWounds } from './characteristics';
-import { findTalent, findTalentById, blessingsOf } from '../data';
+import { findTalent, findTalentById, blessingsOf, refLabel } from '../data';
 import { splitLabel, concreteLabel } from './careerSlots';
-import { COMBAT_FEATURES } from './combatFeatures/registry';
 import type { PassiveMod } from './ops';
 
 /** `addCharacteristic` d'un talent (libellé long des données), sinon null. */
@@ -62,7 +61,7 @@ export function applyTalentAcquisition(hero: Combatant, talentLabel: string): vo
   // à l'acquisition (création + achat PX), pas un achat à 0 PX par clic. Un « Béni » au culte non
   // résolu (« Au choix ») n'octroie rien. Le signal vient du REGISTRE (grantsCultBlessings), plus de name-match.
   const { name, spec } = splitLabel(talentLabel);
-  if (COMBAT_FEATURES[name]?.grantsCultBlessings && spec && !/au choix/i.test(spec)) {
+  if (findTalent(name)?.combat?.grantsCultBlessings && spec && !/au choix/i.test(spec)) {
     const six = blessingsOf(spec).filter((b) => !(hero.spells ?? []).includes(b));
     if (six.length) hero.spells = [...(hero.spells ?? []), ...six];
   }
@@ -98,12 +97,12 @@ export function careerSkillAdditions(hero: Combatant): string[] {
   const out: string[] = [];
   for (const t of hero.talents) {
     const spec = t.spec;
-    const data = findTalentById(t.talentId);
-    if (!data?.addSkill) continue;
-    const add = splitLabel(data.addSkill);
+    const add = findTalentById(t.talentId)?.addSkill;
+    if (!add) continue;
+    const base = refLabel('skills', { id: add.id }); // id → libellé de base (sans spec)
     // Le talent porte une spec concrète et la compétence ajoutée est « au choix » → reporter.
-    if (spec && add.spec && /au choix/i.test(add.spec)) out.push(concreteLabel(add.name, spec));
-    else out.push(data.addSkill);
+    if (spec && add.spec && /au choix/i.test(add.spec)) out.push(concreteLabel(base, spec));
+    else out.push(refLabel('skills', add)); // libellé concret (base + spec éventuel)
   }
   return out;
 }

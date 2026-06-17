@@ -4,34 +4,30 @@
  * rollFlows / store. Aucune mutation. Même patron que `engine/qualities/dispatch.ts`.
  */
 import type { Combatant, Weapon } from '../types';
-import { COMBAT_FEATURES } from './registry';
-import { featureKey } from './normalize';
 import { groupMatch } from '../groups';
 import { splitLabel } from '../statEntry';
-import { findTalentById } from '../../data';
+import { findTalent, findTalentById } from '../../data';
 import type { CombatFeature, CombatFeatureCtx, CastingKind } from './types';
 
-/** Famille d'incantation d'un LIBELLÉ de Talent (« Magie mineure », « Béni (Sigmar) ») via le registre,
- *  ou undefined. Pour les consommateurs qui ont un NOM, pas un Combattant (création / Avancement). */
+/** Famille d'incantation d'un LIBELLÉ de Talent (« Magie mineure », « Béni (Sigmar) ») via sa DONNÉE
+ *  (`TalentData.combat.castingKind`), ou undefined. Pour les consommateurs qui ont un NOM, pas un Combattant. */
 export function castingKindOf(talentLabel: string): CastingKind | undefined {
-  return COMBAT_FEATURES[splitLabel(talentLabel).name]?.castingKind;
+  return findTalent(splitLabel(talentLabel).name)?.combat?.castingKind;
 }
 
-/** Capacités du registre présentes sur le combattant : talents POSSÉDÉS (niveau = times) +
- *  talents ACCORDÉS par un effet actif de sort (op `grantTalent`, niveau 1 tant que l'effet
- *  dure — Flambeau de Vertu : Sans peur ; Cœurs ardents : Cœur vaillant…, Jalon 2.6). */
+/** Capacités de combat présentes sur le combattant, lues de la DONNÉE (`TalentData.combat`) : talents
+ *  POSSÉDÉS (niveau = times) + talents ACCORDÉS par un effet actif de sort (op `grantTalent`, niveau 1
+ *  tant que l'effet dure — Flambeau de Vertu : Sans peur ; Cœurs ardents : Cœur vaillant…, Jalon 2.6). */
 export function featuresOf(c: Combatant): { def: CombatFeature; ctx: CombatFeatureCtx }[] {
   const out: { def: CombatFeature; ctx: CombatFeatureCtx }[] = [];
-  const specOf = (name: string) => name.match(/\(([^)]+)\)\s*$/)?.[1]?.trim();
   for (const t of c.talents ?? []) {
-    const base = findTalentById(t.talentId)?.label ?? t.talentId; // id → libellé de base pour la clé de feature
-    const k = featureKey(base);
-    if (k) out.push({ def: COMBAT_FEATURES[k], ctx: { combatant: c, level: t.times ?? 1, spec: t.spec } });
+    const def = findTalentById(t.talentId)?.combat;
+    if (def) out.push({ def, ctx: { combatant: c, level: t.times ?? 1, spec: t.spec } });
   }
   for (const e of c.activeEffects ?? []) {
     if (!e.grantedTalent) continue;
-    const k = featureKey(e.grantedTalent);
-    if (k) out.push({ def: COMBAT_FEATURES[k], ctx: { combatant: c, level: 1, spec: specOf(e.grantedTalent) } });
+    const def = findTalentById(e.grantedTalent.talentId)?.combat;
+    if (def) out.push({ def, ctx: { combatant: c, level: 1, spec: e.grantedTalent.spec } });
   }
   return out;
 }
@@ -49,11 +45,15 @@ function levelSum(c: Combatant, pred: (d: CombatFeature) => boolean): number {
   return featuresOf(c).reduce((s, { def, ctx }) => s + (pred(def) ? ctx.level : 0), 0);
 }
 
-/** Pénalité de main secondaire (LDB 14 l.181 : -20), transformée par les capacités (Ambidextre → -10/0). */
+/** Pénalité de main secondaire (LDB 14 l.181 : -20), transformée par les capacités (Ambidextre → -10/0).
+ *  Interprète le champ DÉCLARATIF `offHandPenalty:{perLevel,zeroAt}` : -20 +perLevel×niveau, 0 dès `zeroAt`. */
 export function offHandPenalty(c: Combatant): number {
   let pen = -20;
   for (const { def, ctx } of featuresOf(c)) {
-    if (def.modifyOffHandPenalty) pen = def.modifyOffHandPenalty(pen, ctx);
+    if (def.offHandPenalty) {
+      const { perLevel, zeroAt } = def.offHandPenalty;
+      pen = ctx.level >= zeroAt ? 0 : Math.min(0, pen + perLevel * ctx.level);
+    }
   }
   return pen;
 }
@@ -61,7 +61,7 @@ export function offHandPenalty(c: Combatant): number {
 /** Modes d'attaque conférés par les capacités du combattant (ex. 'dual-wield' via Maniement de deux armes). */
 export function attackModesFor(c: Combatant): string[] {
   const out: string[] = [];
-  for (const { def, ctx } of featuresOf(c)) if (def.attackModes) out.push(...def.attackModes(ctx));
+  for (const { def } of featuresOf(c)) if (def.attackModes) out.push(...def.attackModes);
   return out;
 }
 
