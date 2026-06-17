@@ -9,7 +9,7 @@
  */
 import {
   species, careers, characteristics, classes, skills, talents,
-  qualities, trappings, etats, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
+  qualities, trappings, etats, maladies, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
   stars, locations, books, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel,
   skillInstanceLabel, talentConcrete, careersForSpecies, findClassById, eyes, hairs, details,
 } from '../../data';
@@ -297,6 +297,10 @@ export const CODEX: CodexCategory[] = [
   {
     key: 'etats', label: 'États', group: 'Effets',
     items: etats.map((e) => ({ label: e.label, desc: e.desc, source: src(e.source) })),
+  },
+  {
+    key: 'maladies', label: 'Maladies', group: 'Effets',
+    items: maladies.map((m) => ({ label: m.name, sub: m.symptoms.map((s) => s.kind).join(', ') })),
   },
   {
     key: 'mutations', label: 'Mutations', group: 'Effets',

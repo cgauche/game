@@ -115,7 +115,7 @@ export function resolveWoundsHeal(target: Combatant, intBonus: number, sl: numbe
   const healed = healWoundsDelta(intBonus, sl, success);
   const log = applyHealWounds(target, healed);
   if (!success && sl <= -6) {
-    const dz = contractDisease('Infection Mineure', rng);
+    const dz = contractDisease('infection-mineure', rng);
     if (dz && !(target.diseases ?? []).some((d) => d.name === dz.name)) {
       target.diseases = [...(target.diseases ?? []), dz];
       log.push(`${target.name} : soin catastrophique — contracte une Infection Mineure (Échec Stupéfiant).`);

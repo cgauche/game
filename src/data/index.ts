@@ -12,6 +12,7 @@ import careerLevelsJson from './careerLevels.json';
 import skillsJson from './skills.json';
 import talentsJson from './talents.json';
 import etatsJson from './etats.json';
+import maladiesJson from './maladies.json';
 import traitsJson from './traits.json';
 import qualitiesJson from './qualities.json';
 import mutationsJson from './mutations.json';
@@ -34,6 +35,7 @@ import raceAppearanceJson from './raceAppearance.json';
 import godsJson from './gods.json';
 import { CharKey, Weapon } from '../engine/types';
 import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
+import type { DiseaseDef } from '../engine/disease'; // type-only (le runtime de disease.ts importe `maladies` d'ici)
 
 export interface SpeciesData {
   /** id STABLE (slug du libellé) — cible de `Combatant.species`, pregens, draft. Le `label` ne sert
@@ -420,6 +422,23 @@ export const careerLevels = careerLevelsJson as CareerLevelData[];
 export const skills = skillsJson as SkillData[];
 export const talents = talentsJson as TalentData[];
 export const etats = etatsJson as EtatData[];
+/** Maladies (LDB 20) — app-owned éditable au Codex ; le COMPORTEMENT (cycle/symptômes) vit dans
+ *  `engine/disease`. `DiseaseDef` (type) y est défini ; ici on n'expose que la DONNÉE. */
+export const maladies = maladiesJson as DiseaseDef[];
+const DISEASE_BY_ID = new Map(maladies.map((m) => [m.id, m]));
+/** Résout une Maladie par son `id` STABLE. */
+export function findDiseaseById(id: string): DiseaseDef | undefined {
+  return DISEASE_BY_ID.get(id);
+}
+/** Libellé d'affichage d'une Maladie par son id (repli sur l'id). */
+export function diseaseLabel(id: string): string {
+  return DISEASE_BY_ID.get(id)?.name ?? id;
+}
+const DISEASE_ID_BY_LABEL = new Map(maladies.map((m) => [m.name.toLowerCase(), m.id]));
+/** Résout un `id` de Maladie depuis un LIBELLÉ (authoring/parsing) — insensible à la casse. */
+export function diseaseIdByLabel(label: string): string | undefined {
+  return DISEASE_ID_BY_LABEL.get(label.toLowerCase());
+}
 // Traits app-owned + traits curés hors-extraction mergés ici : homebrew frenchy.bzh (Aura de Dhar/
 // Mort, Charnier) + traits de suppléments autorisés référencés par le bestiaire mais absents
 // d'all-data.json (Redoutable, ZI).
@@ -675,6 +694,7 @@ export function findById(category: string, id: string): { label: string } | unde
     case 'classes': return findClassById(id);
     case 'races': return findSpeciesById(id);
     case 'etats': return findConditionById(id);
+    case 'maladies': return findDiseaseById(id) ? { label: findDiseaseById(id)!.name } : undefined;
     default: return undefined;
   }
 }

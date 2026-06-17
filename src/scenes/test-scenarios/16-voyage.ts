@@ -31,7 +31,7 @@ function groupe(): Combatant[] {
   erik.wounds.current = Math.max(1, erik.wounds.max - 8);
   greta.wounds.current = Math.max(1, greta.wounds.max - 6);
   erik.nightmares = true;
-  greta.diseases = [contractDisease('Vérole Urticante', makeRNG(1503), { incubation: 0, duration: 5 })!];
+  greta.diseases = [contractDisease('verole-urticante', makeRNG(1503), { incubation: 0, duration: 5 })!];
   return [erik, greta];
 }
 

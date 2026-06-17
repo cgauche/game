@@ -2952,7 +2952,7 @@ export function finalizeBattle(get: Get, set: SetFn): void {
     c.woundDressed = false;
     if (c.dead || dressed) continue;
     const resVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
-    infectLog.push(...rollContraction(c, 'Infection Mineure', resVal, 'tresFacile', battleRng()));
+    infectLog.push(...rollContraction(c, 'infection-mineure', resVal, 'tresFacile', battleRng()));
   }
   // Trait Infecté (LDB 20 l.32/49) : blessé par une créature Infectée → Résistance Facile (+40) ou
   // Blessure Purulente ; blessé par un RONGEUR Infecté → aussi Résistance Accessible (+20) ou Fièvre
@@ -2960,8 +2960,8 @@ export function finalizeBattle(get: Get, set: SetFn): void {
   for (const c of battle.combatants) {
     if (c.kind !== 'hero' || c.dead) continue;
     const resVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
-    if (c.woundedByInfected) infectLog.push(...rollContraction(c, 'Blessure Purulente', resVal, 'facile', battleRng()));
-    if (c.woundedByRodent) infectLog.push(...rollContraction(c, 'Fièvre du Rongeur', resVal, 'accessible', battleRng()));
+    if (c.woundedByInfected) infectLog.push(...rollContraction(c, 'blessure-purulente', resVal, 'facile', battleRng()));
+    if (c.woundedByRodent) infectLog.push(...rollContraction(c, 'fievre-du-rongeur', resVal, 'accessible', battleRng()));
     for (const name of c.diseaseExposure ?? []) {
       const def = DISEASE_DEFS[name] ?? Object.values(DISEASE_DEFS).find((d) => d.name.toLowerCase() === name.toLowerCase());
       if (def) infectLog.push(...rollContraction(c, def.name, resVal, def.contractDifficulty, battleRng()));

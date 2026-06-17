@@ -9,13 +9,13 @@
  * hors v1 — à ajouter ici quand ils auront un éditeur.
  */
 import {
-  characteristics, species, classes, careers, careerLevels, skills, talents, etats, traits,
+  characteristics, species, classes, careers, careerLevels, skills, talents, etats, maladies, traits,
   qualities, mutations, mutationTables, trappings, creatures, spells, maneuvers, domains, eyes, hairs, stars, locations, books, raceAppearance, gods,
 } from './index';
 
 /** Datasets-tableaux mutables (clé éditeur → MÊME référence d'array que l'export de la façade). */
 const ARRAYS = {
-  characteristics, species, classes, careers, careerLevels, skills, talents, etats, traits,
+  characteristics, species, classes, careers, careerLevels, skills, talents, etats, maladies, traits,
   qualities, mutations, mutationTables, trappings, creatures, spells, maneuvers, domains, eyes, hairs, stars, locations, books, raceAppearance, gods,
 } as const;
 

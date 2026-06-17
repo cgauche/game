@@ -26,7 +26,7 @@ const sick = (name: string, days = 5) => contractDisease(name, { int: () => 1 },
 describe('cureDisease — Amère catharsis (LDB 42)', () => {
   it('purge 1 + ⌊DR/2⌋ maladies (actives d’abord) et rend l’Exténué du malaise', () => {
     const c = dummy({
-      diseases: [sick('Infection Mineure'), sick('Blessure Purulente')],
+      diseases: [sick('infection-mineure'), sick('blessure-purulente')],
       conditions: [{ name: 'extenue', value: 2 }], // les 2 malaises « collants »
     });
     applyOps(c, [{ op: 'cureDisease', count: 1, countPerSL: { every: 2, amount: 1 } }], { sl: 2 });
@@ -35,15 +35,15 @@ describe('cureDisease — Amère catharsis (LDB 42)', () => {
   });
 
   it('immunité post-guérison préservée (Vérole Urticante)', () => {
-    const c = dummy({ diseases: [sick('Vérole Urticante')] });
+    const c = dummy({ diseases: [sick('verole-urticante')] });
     cureDiseases(c, 1);
-    expect(c.diseaseImmunities).toContain('Vérole Urticante');
+    expect(c.diseaseImmunities).toContain('verole-urticante');
   });
 });
 
 describe('reduceDiseaseDays — Bénédiction de Convalescence (LDB 41)', () => {
   it('−1 jour (min 1), UNE seule fois par maladie', () => {
-    const c = dummy({ diseases: [sick('Infection Mineure', 5)] });
+    const c = dummy({ diseases: [sick('infection-mineure', 5)] });
     blessDiseaseDuration(c, 1);
     expect(c.diseases![0].daysLeft).toBe(4);
     const log = blessDiseaseDuration(c, 1); // 2e tentative sur la même maladie → refus

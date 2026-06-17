@@ -534,8 +534,8 @@ export function restSleep(get: Get, set: Set): void {
     if (!cfg || h.dead) continue;
     if (cfg.food === 'repas' || cfg.food === 'maison') {
       feedFromMeal(h);
-      if (cfg.food === 'repas' && p.quality === 'pietre' && rng.int(1, 100) <= 10 && contractionDue(h, 'Courante Galopante')) {
-        extraContagion.push({ heroId: h.id, diseaseName: 'Courante Galopante', difficulty: DISEASE_DEFS['Courante Galopante']?.contractDifficulty ?? 'accessible', resVal: restResistVal(h) });
+      if (cfg.food === 'repas' && p.quality === 'pietre' && rng.int(1, 100) <= 10 && contractionDue(h, 'courante-galopante')) {
+        extraContagion.push({ heroId: h.id, diseaseName: 'courante-galopante', difficulty: DISEASE_DEFS['courante-galopante']?.contractDifficulty ?? 'accessible', resVal: restResistVal(h) });
       }
     }
     // 'ration' : consommée par l'entretien quotidien (#T3) ; 'rien' : la Faim suivra son cours.

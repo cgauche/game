@@ -5,11 +5,12 @@
  */
 import { describe, it, expect } from 'vitest';
 import {
-  trappings, qualities, spells, creatures, classes, careers, careerLevels, species, gods, etats,
+  trappings, qualities, spells, creatures, classes, careers, careerLevels, species, gods, etats, maladies,
   findSkillById, findTalentById, findTrappingById, findQualityById, findSpellById,
-  findCareerById, findClassById, findSpeciesById, findConditionById,
+  findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById,
 } from './index';
 import { COND } from '../engine/conditions';
+import { DISEASES } from '../engine/disease';
 import pregensJson from './pregens.json';
 import interludeEventsJson from './interludeEvents.json';
 import { CHAR_KEYS } from '../engine/types';
@@ -71,6 +72,13 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
 
   it('findConditionById résout les ids canoniques', () => {
     for (const id of Object.values(COND)) expect(findConditionById(id), id).toBeTruthy();
+  });
+
+  it('maladies portent un id ; la constante moteur DISEASES est synchrone avec maladies.json', () => {
+    for (const m of maladies) expect(typeof m.id).toBe('string');
+    const ids = new Set(maladies.map((m) => m.id));
+    for (const id of Object.values(DISEASES)) { expect(ids.has(id), id).toBe(true); expect(findDiseaseById(id), id).toBeTruthy(); }
+    expect(Object.values(DISEASES).length).toBe(9); // les 9 maladies LDB 20 câblées
   });
 
   it('careerLevels.career = careerId qui résout', () => {

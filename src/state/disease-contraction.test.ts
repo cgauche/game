@@ -36,7 +36,7 @@ describe('finalizeBattle — infection post-critique (LDB 20 l.72) & persistance
     setBattle([combatant]);
     useGame.setState({ party: [hero({ id: 'a' })] });
     finalizeBattle(useGame.getState, useGame.setState);
-    expect(useGame.getState().party[0].diseases?.some((d) => d.name === 'Infection Mineure')).toBe(true);
+    expect(useGame.getState().party[0].diseases?.some((d) => d.name === 'infection-mineure')).toBe(true);
   });
 
   it('blessure PANSÉE pendant le combat (Guérison/bandage) → pas d’Infection post-critique (LDB 18 l.382)', () => {
@@ -49,11 +49,11 @@ describe('finalizeBattle — infection post-critique (LDB 20 l.72) & persistance
   });
 
   it('une maladie déjà contractée survit à la fin du combat (carryOverState)', () => {
-    const combatant = hero({ id: 'a', diseases: [contractDisease('Infection Mineure', battleRng(), { incubation: 2, duration: 5 })!] });
+    const combatant = hero({ id: 'a', diseases: [contractDisease('infection-mineure', battleRng(), { incubation: 2, duration: 5 })!] });
     setBattle([combatant]);
     useGame.setState({ party: [hero({ id: 'a' })] });
     finalizeBattle(useGame.getState, useGame.setState);
-    expect(useGame.getState().party[0].diseases?.map((d) => d.name)).toEqual(['Infection Mineure']);
+    expect(useGame.getState().party[0].diseases?.map((d) => d.name)).toEqual(['infection-mineure']);
   });
 });
 
@@ -62,14 +62,14 @@ describe('Effet d’éditeur inflictDisease (LDB 20)', () => {
 
   it('contracte la maladie nommée sur le premier héros', () => {
     useGame.setState({ party: [hero({ id: 'a' })] });
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'inflictDisease', disease: 'Blessure Purulente' }]);
-    expect(useGame.getState().party[0].diseases?.map((d) => d.name)).toEqual(['Blessure Purulente']);
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'inflictDisease', disease: 'blessure-purulente' }]);
+    expect(useGame.getState().party[0].diseases?.map((d) => d.name)).toEqual(['blessure-purulente']);
   });
 
   it('dédoublonne : pas deux fois la même maladie', () => {
-    const a = hero({ id: 'a', diseases: [contractDisease('Blessure Purulente', battleRng(), { incubation: 1, duration: 5 })!] });
+    const a = hero({ id: 'a', diseases: [contractDisease('blessure-purulente', battleRng(), { incubation: 1, duration: 5 })!] });
     useGame.setState({ party: [a] });
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'inflictDisease', disease: 'Blessure Purulente' }]);
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'inflictDisease', disease: 'blessure-purulente' }]);
     expect(useGame.getState().party[0].diseases).toHaveLength(1);
   });
 });

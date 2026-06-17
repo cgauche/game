@@ -180,7 +180,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
     useGame.setState({ pendingHeal: { ...useGame.getState().pendingHeal!, success: false, sl: -6 } });
     useGame.getState().healConfirm();
     const p = useGame.getState().party.find((c) => c.id === 'p')!;
-    expect(p.diseases?.some((d) => d.name === 'Infection Mineure')).toBe(true);
+    expect(p.diseases?.some((d) => d.name === 'infection-mineure')).toBe(true);
   });
 
   it('Chirurgie ARMÉE : Test ÉTENDU (LDB 10 l.154 / 12 l.200) — passes jusqu’à la cible, retire le trauma (1d10 + Hémorragie/passe)', () => {

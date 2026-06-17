@@ -32,7 +32,7 @@ describe('#T3 — cascade d’horloge (maladies/convalescence/purge sur franchis
   });
 
   it('une maladie en incubation progresse quand le temps passe SANS repos (advanceTime)', () => {
-    const c = hero({ diseases: [contractDisease('Infection Mineure', { int: () => 1 }, { incubation: 2, duration: 5 })!] });
+    const c = hero({ diseases: [contractDisease('infection-mineure', { int: () => 1 }, { incubation: 2, duration: 5 })!] });
     useGame.setState({ party: [c], gameTime: 0, lastUpkeepDay: 0 });
     useGame.getState().advanceTime(2 * MINUTES_PER_DAY); // 2 jours d'aventure, personne ne dort
     const dz = useGame.getState().party[0].diseases![0];
@@ -57,7 +57,7 @@ describe('#T3 — cascade d’horloge (maladies/convalescence/purge sur franchis
   });
 
   it('anti-double-comptage : une nuit de repos = UN seul jour de maladie décompté', () => {
-    const c = hero({ diseases: [contractDisease('Infection Mineure', { int: () => 1 }, { incubation: 0, duration: 6 })!] });
+    const c = hero({ diseases: [contractDisease('infection-mineure', { int: () => 1 }, { incubation: 0, duration: 6 })!] });
     useGame.setState({ party: [c], gameTime: 12 * 60, lastUpkeepDay: 0 });
     useGame.getState().restParty(); // dort jusqu'à l'aube → 1 franchissement de jour
     expect(useGame.getState().party[0].diseases![0].daysLeft).toBe(5); // 6 − 1, PAS − 2

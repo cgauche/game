@@ -23,6 +23,7 @@
 import { Combatant, CharKey, Difficulty, UpkeepDeferTest } from './types';
 import { RNG, defaultRNG, roll } from './dice';
 import { rollTest } from './tests';
+import { maladies, diseaseLabel } from '../data';
 
 export type DiseaseSymptomKind =
   | 'malaise' | 'blesse' | 'fievre' | 'persistant' | 'toxine'
@@ -50,6 +51,9 @@ interface Dice {
 }
 
 export interface DiseaseDef {
+  /** id STABLE (slug du nom) — clé de `maladies.json`, cible de `Disease.name` et des refs. */
+  id: string;
+  /** Nom d'affichage (français) — résolu via `diseaseLabel` ; ≠ id. */
   name: string;
   /** Difficulté du Test de Contraction (pour mémoire/journal — la contraction est déclenchée par l'appelant). */
   contractDifficulty: Difficulty;
@@ -87,96 +91,19 @@ function rollDice(dc: Dice, rng: RNG): number {
   return roll(dc.n, dc.d, rng) + (dc.plus ?? 0);
 }
 
-// Registre des maladies CÂBLÉES (sourcées verbatim de LDB 20). D'autres maladies de la « Litanie de la
-// Pestilence » (Courante Galopante, Fièvre du Rongeur, Peste Noire…) s'ajoutent ici par une entrée.
-export const DISEASE_DEFS: Record<string, DiseaseDef> = {
-  // l.69-72 — contraction sur Résistance Très Facile (+60) ratée après un combat où l'on a subi un critique.
-  'Infection Mineure': {
-    name: 'Infection Mineure',
-    contractDifficulty: 'tresFacile',
-    incubation: { n: 1, d: 10 },
-    duration: { n: 1, d: 10 },
-    symptoms: [{ kind: 'blesse' }, { kind: 'malaise' }, { kind: 'persistant', difficulty: 'facile' }],
-  },
-  // l.29-34 — coupure infectée (Trait Infecté / développée depuis une Infection Mineure).
-  'Blessure Purulente': {
-    name: 'Blessure Purulente',
-    contractDifficulty: 'facile',
-    incubation: { n: 1, d: 10 },
-    duration: { n: 1, d: 10 },
-    symptoms: [
-      { kind: 'fievre' },
-      { kind: 'persistant', difficulty: 'intermediaire' },
-      { kind: 'malaise' },
-      { kind: 'blesse' },
-    ],
-  },
-  // l.64-67 — développement d'une autre maladie OU après une Blessure critique ; mortelle si non traitée.
-  'Infection du Sang': {
-    name: 'Infection du Sang',
-    contractDifficulty: 'tresFacile',
-    incubation: { n: 0, d: 1, plus: -1 }, // instantanée (l.67)
-    duration: { n: 1, d: 10 },
-    symptoms: [{ kind: 'fievre', severity: 'grave' }, { kind: 'malaise' }, { kind: 'toxine' }],
-  },
-  // l.39-44 — « sur un échec d'un Test d'Endurance Facile (+40) après avoir ingurgité de la matière
-  // infectée. Incubation : 1d10 heures » → active le jour même (échelle journalière du repos).
-  'Courante Galopante': {
-    name: 'Courante Galopante',
-    contractDifficulty: 'facile',
-    incubation: { n: 0, d: 1 }, // 1d10 HEURES — symptômes déclarés le jour même
-    duration: { n: 1, d: 10 },
-    symptoms: [{ kind: 'intoxication', severity: 'moderee' }, { kind: 'malaise' }, { kind: 'nausee' }],
-  },
-  // l.46-55 — Résistance Accessible (+20) après un combat contre des RONGEURS Infectés (skavens compris).
-  'Fièvre du Rongeur': {
-    name: 'Fièvre du Rongeur',
-    contractDifficulty: 'accessible',
-    incubation: { n: 3, d: 10, plus: 5 },
-    duration: { n: 3, d: 10, plus: 10 },
-    symptoms: [
-      { kind: 'blesse' }, { kind: 'convulsions' }, { kind: 'demangeaisons' },
-      { kind: 'fievre' }, { kind: 'malaise' }, { kind: 'persistant', difficulty: 'accessible' },
-    ],
-  },
-  // l.57-62 — Endurance Facile (+40) après ingestion de matière infectée.
-  'Flux Sanglant': {
-    name: 'Flux Sanglant',
-    contractDifficulty: 'facile',
-    incubation: { n: 2, d: 10 },
-    duration: { n: 1, d: 10 },
-    symptoms: [
-      { kind: 'fievre' }, { kind: 'intoxication', severity: 'grave' }, { kind: 'malaise' },
-      { kind: 'nausee' }, { kind: 'persistant', difficulty: 'intermediaire' },
-    ],
-  },
-  // l.74-83 — Résistance Accessible (+20) par heure en zone infectée. Incubation 1d10 minutes → immédiate.
-  'Peste Noire': {
-    name: 'Peste Noire',
-    contractDifficulty: 'accessible',
-    incubation: { n: 0, d: 1 }, // 1d10 MINUTES — immédiate à l'échelle du jour
-    duration: { n: 3, d: 10 },
-    symptoms: [{ kind: 'bubons' }, { kind: 'fievre' }, { kind: 'gangrene' }, { kind: 'malaise' }, { kind: 'toxine', severity: 'moderee' }],
-  },
-  // l.85-88 — Résistance Facile (+40) après contact avec un animal/peau/cadavre infecté.
-  'Vérole du Tanneur': {
-    name: 'Vérole du Tanneur',
-    contractDifficulty: 'facile',
-    incubation: { n: 1, d: 10 },
-    duration: { n: 5, d: 10 },
-    symptoms: [{ kind: 'demangeaisons' }, { kind: 'persistant', difficulty: 'intermediaire' }],
-  },
-  // l.90-97 — Résistance Accessible (+20) au contact / toux d'un contagieux (Test par heure).
-  // « vous ne pouvez pas l'attraper une seconde fois » → immunité après guérison.
-  'Vérole Urticante': {
-    name: 'Vérole Urticante',
-    contractDifficulty: 'accessible',
-    incubation: { n: 1, d: 10 },
-    duration: { n: 1, d: 10, plus: 7 },
-    symptoms: [{ kind: 'demangeaisons' }, { kind: 'touxEternuements' }],
-    immuneAfterCure: true,
-  },
-};
+// Registre des maladies CÂBLÉES — DÉRIVÉ de `maladies.json` (data app-owned, éditable au Codex), keyé
+// par `id`. Les valeurs verbatim (LDB 20) vivent désormais dans la donnée ; le COMPORTEMENT (cycle,
+// symptômes) reste ici. Ajouter une maladie = une entrée dans `maladies.json`.
+export const DISEASE_DEFS: Record<string, DiseaseDef> = Object.fromEntries(
+  (maladies as DiseaseDef[]).map((m) => [m.id, m]),
+);
+/** ids des maladies CANONIQUES (LDB 20) référencées par le moteur (cascade persistant, contagions). Pas de
+ *  chaîne magique. Garde-fou de synchro `DISEASES`⇄`maladies.json` : `refs-migrated.test`. */
+export const DISEASES = {
+  infectionMineure: 'infection-mineure', blessurePurulente: 'blessure-purulente', infectionDuSang: 'infection-du-sang',
+  couranteGalopante: 'courante-galopante', fievreDuRongeur: 'fievre-du-rongeur', fluxSanglant: 'flux-sanglant',
+  pesteNoire: 'peste-noire', veroleDuTanneur: 'verole-du-tanneur', veroleUrticante: 'verole-urticante',
+} as const;
 
 /** Construit une instance de maladie (tire incubation/durée). `opts.incubation`/`opts.duration` figent les
  *  jets (tests, ou contraction « instantanée » depuis un autre symptôme — l.32). Renvoie `null` si inconnue. */
@@ -223,7 +150,7 @@ export function applyContraction(c: Combatant, diseaseName: string, success: boo
   const dz = contractDisease(diseaseName, rng);
   if (!dz) return [];
   c.diseases = [...(c.diseases ?? []), dz];
-  return [`${c.name} contracte : ${diseaseName}.`];
+  return [`${c.name} contracte : ${diseaseLabel(diseaseName)}.`];
 }
 
 /**
@@ -293,12 +220,12 @@ export function contractDiseaseOnce(c: Combatant, name: string, rng: RNG = defau
   const dz = contractDisease(name, rng, { incubation: 0 });
   if (!dz) return [];
   c.diseases = [...(c.diseases ?? []), dz];
-  return [`${c.name} développe : ${name}.`];
+  return [`${c.name} développe : ${diseaseLabel(name)}.`];
 }
 
 /** Conséquence d'un Test de symptôme « blessé » DIFFÉRÉ (l.110) : échec → Blessure Purulente. */
 export function applyDiseaseBlesse(c: Combatant, success: boolean, rng: RNG = defaultRNG): string[] {
-  return success ? [] : contractDiseaseOnce(c, 'Blessure Purulente', rng);
+  return success ? [] : contractDiseaseOnce(c, 'blessure-purulente', rng);
 }
 
 /** Conséquence d'un Test de Gangrène DIFFÉRÉ (l.135+) : échec → +1 échec ; au-delà du BE → Localisation perdue. */
@@ -324,11 +251,11 @@ export function applyDiseasePersist(c: Combatant, diseaseName: string, success: 
   dz.endTestPending = undefined;
   const log: string[] = [];
   const remove = () => { c.diseases = (c.diseases ?? []).filter((d) => d !== dz); };
-  const cure = () => { remove(); log.push(`${c.name} guérit de : ${dz.name}.`); if (DISEASE_DEFS[dz.name]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), dz.name]; };
+  const cure = () => { remove(); log.push(`${c.name} guérit de : ${diseaseLabel(dz.name)}.`); if (DISEASE_DEFS[dz.name]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), dz.name]; };
   if (success) cure();
-  else if (sl <= -6) { remove(); log.push(`${c.name} : ${dz.name} dégénère (échec stupéfiant).`); log.push(...contractDiseaseOnce(c, 'Infection du Sang', rng)); }
-  else if (sl <= -2) { remove(); log.push(`${c.name} : ${dz.name} s'infecte (échec).`); log.push(...contractDiseaseOnce(c, 'Blessure Purulente', rng)); }
-  else { const extra = roll(1, 10, rng); dz.daysLeft = extra; log.push(`${c.name} : ${dz.name} persiste (+${extra} jours).`); }
+  else if (sl <= -6) { remove(); log.push(`${c.name} : ${diseaseLabel(dz.name)} dégénère (échec stupéfiant).`); log.push(...contractDiseaseOnce(c, 'infection-du-sang', rng)); }
+  else if (sl <= -2) { remove(); log.push(`${c.name} : ${diseaseLabel(dz.name)} s'infecte (échec).`); log.push(...contractDiseaseOnce(c, 'blessure-purulente', rng)); }
+  else { const extra = roll(1, 10, rng); dz.daysLeft = extra; log.push(`${c.name} : ${diseaseLabel(dz.name)} persiste (+${extra} jours).`); }
   return log;
 }
 
@@ -356,7 +283,7 @@ export function tickDisease(c: Combatant, days: number, rng: RNG = defaultRNG, r
     const dz = contractDisease(name, rng, { incubation: 0 }); // « instantanée » depuis un autre symptôme (l.32)
     if (dz) {
       contracted.push(dz);
-      log.push(`${c.name} développe : ${name}.`);
+      log.push(`${c.name} développe : ${diseaseLabel(name)}.`);
     }
     return true;
   };
@@ -369,15 +296,15 @@ export function tickDisease(c: Combatant, days: number, rng: RNG = defaultRNG, r
         if (dz.daysLeft <= 0) {
           dz.phase = 'active';
           dz.daysLeft = dz.durationDays;
-          log.push(`${c.name} : les symptômes de « ${dz.name} » se déclarent.`);
+          log.push(`${c.name} : les symptômes de « ${diseaseLabel(dz.name)} » se déclarent.`);
         }
         survivors.push(dz);
         continue;
       }
       // active
       if (hasSymptom(dz, 'blesse')) {
-        if (defer) defer({ kind: 'diseaseBlesse', label: `Symptôme « blessé » (${dz.name})`, base: resistVal, difficulty: 'accessible', meta: { diseaseName: dz.name } });
-        else { const res = rollTest(resistVal, 'accessible', rng); if (!res.success) contractOnce('Blessure Purulente'); } // l.110
+        if (defer) defer({ kind: 'diseaseBlesse', label: `Symptôme « blessé » (${diseaseLabel(dz.name)})`, base: resistVal, difficulty: 'accessible', meta: { diseaseName: dz.name } });
+        else { const res = rollTest(resistVal, 'accessible', rng); if (!res.success) contractOnce('blessure-purulente'); } // l.110
       }
       if (hasSymptom(dz, 'toxine') && !defer) {
         rollTest(resistVal, 'tresFacile', rng); // l.172 : conséquence non modélisée → pas d'étape de cascade
@@ -404,28 +331,28 @@ export function tickDisease(c: Combatant, days: number, rng: RNG = defaultRNG, r
       if (dz.persistDifficulty) {
         if (defer) {
           dz.endTestPending = true;
-          defer({ kind: 'diseasePersist', label: `Fin de « ${dz.name} »`, base: resistVal, difficulty: dz.persistDifficulty, meta: { diseaseName: dz.name } });
+          defer({ kind: 'diseasePersist', label: `Fin de « ${diseaseLabel(dz.name)} »`, base: resistVal, difficulty: dz.persistDifficulty, meta: { diseaseName: dz.name } });
           survivors.push(dz);
         } else {
           const res = rollTest(resistVal, dz.persistDifficulty, rng); // l.162
           if (res.success) {
-            log.push(`${c.name} guérit de : ${dz.name}.`);
+            log.push(`${c.name} guérit de : ${diseaseLabel(dz.name)}.`);
             if (DISEASE_DEFS[dz.name]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), dz.name]; // Vérole Urticante (l.97)
           } else if (res.sl <= -6) {
-            log.push(`${c.name} : ${dz.name} dégénère (échec stupéfiant).`);
-            contractOnce('Infection du Sang');
+            log.push(`${c.name} : ${diseaseLabel(dz.name)} dégénère (échec stupéfiant).`);
+            contractOnce('infection-du-sang');
           } else if (res.sl <= -2) {
-            log.push(`${c.name} : ${dz.name} s'infecte (échec).`);
-            contractOnce('Blessure Purulente');
+            log.push(`${c.name} : ${diseaseLabel(dz.name)} s'infecte (échec).`);
+            contractOnce('blessure-purulente');
           } else {
             const extra = roll(1, 10, rng); // échec minime → +1d10 jours (l.163)
             dz.daysLeft = extra;
-            log.push(`${c.name} : ${dz.name} persiste (+${extra} jours).`);
+            log.push(`${c.name} : ${diseaseLabel(dz.name)} persiste (+${extra} jours).`);
             survivors.push(dz);
           }
         }
       } else {
-        log.push(`${c.name} guérit de : ${dz.name}.`);
+        log.push(`${c.name} guérit de : ${diseaseLabel(dz.name)}.`);
         if (DISEASE_DEFS[dz.name]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), dz.name]; // Vérole Urticante (l.97)
       }
     }

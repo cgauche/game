@@ -31,7 +31,7 @@ import type { PsychTrait } from '../../engine/psychology';
 const CATEGORY_DATASET: Record<string, DatasetKey> = {
   races: 'species', careers: 'careers', characteristics: 'characteristics', classes: 'classes',
   stars: 'stars', skills: 'skills', talents: 'talents', trappings: 'trappings', qualities: 'qualities',
-  etats: 'etats', spells: 'spells', maneuvers: 'maneuvers', creatures: 'creatures', traits: 'traits', locations: 'locations', books: 'books',
+  etats: 'etats', maladies: 'maladies', spells: 'spells', maneuvers: 'maneuvers', creatures: 'creatures', traits: 'traits', locations: 'locations', books: 'books',
   mutations: 'mutations', mutationTables: 'mutationTables', gods: 'gods', domains: 'domains',
 };
 export const editableDataset = (categoryKey: string): DatasetKey | undefined => CATEGORY_DATASET[categoryKey];

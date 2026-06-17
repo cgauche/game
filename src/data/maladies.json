@@ -1,0 +1,250 @@
+[
+  {
+    "id": "infection-mineure",
+    "name": "Infection Mineure",
+    "contractDifficulty": "tresFacile",
+    "incubation": {
+      "n": 1,
+      "d": 10
+    },
+    "duration": {
+      "n": 1,
+      "d": 10
+    },
+    "symptoms": [
+      {
+        "kind": "blesse"
+      },
+      {
+        "kind": "malaise"
+      },
+      {
+        "kind": "persistant",
+        "difficulty": "facile"
+      }
+    ]
+  },
+  {
+    "id": "blessure-purulente",
+    "name": "Blessure Purulente",
+    "contractDifficulty": "facile",
+    "incubation": {
+      "n": 1,
+      "d": 10
+    },
+    "duration": {
+      "n": 1,
+      "d": 10
+    },
+    "symptoms": [
+      {
+        "kind": "fievre"
+      },
+      {
+        "kind": "persistant",
+        "difficulty": "intermediaire"
+      },
+      {
+        "kind": "malaise"
+      },
+      {
+        "kind": "blesse"
+      }
+    ]
+  },
+  {
+    "id": "infection-du-sang",
+    "name": "Infection du Sang",
+    "contractDifficulty": "tresFacile",
+    "incubation": {
+      "n": 0,
+      "d": 1,
+      "plus": -1
+    },
+    "duration": {
+      "n": 1,
+      "d": 10
+    },
+    "symptoms": [
+      {
+        "kind": "fievre",
+        "severity": "grave"
+      },
+      {
+        "kind": "malaise"
+      },
+      {
+        "kind": "toxine"
+      }
+    ]
+  },
+  {
+    "id": "courante-galopante",
+    "name": "Courante Galopante",
+    "contractDifficulty": "facile",
+    "incubation": {
+      "n": 0,
+      "d": 1
+    },
+    "duration": {
+      "n": 1,
+      "d": 10
+    },
+    "symptoms": [
+      {
+        "kind": "intoxication",
+        "severity": "moderee"
+      },
+      {
+        "kind": "malaise"
+      },
+      {
+        "kind": "nausee"
+      }
+    ]
+  },
+  {
+    "id": "fievre-du-rongeur",
+    "name": "Fièvre du Rongeur",
+    "contractDifficulty": "accessible",
+    "incubation": {
+      "n": 3,
+      "d": 10,
+      "plus": 5
+    },
+    "duration": {
+      "n": 3,
+      "d": 10,
+      "plus": 10
+    },
+    "symptoms": [
+      {
+        "kind": "blesse"
+      },
+      {
+        "kind": "convulsions"
+      },
+      {
+        "kind": "demangeaisons"
+      },
+      {
+        "kind": "fievre"
+      },
+      {
+        "kind": "malaise"
+      },
+      {
+        "kind": "persistant",
+        "difficulty": "accessible"
+      }
+    ]
+  },
+  {
+    "id": "flux-sanglant",
+    "name": "Flux Sanglant",
+    "contractDifficulty": "facile",
+    "incubation": {
+      "n": 2,
+      "d": 10
+    },
+    "duration": {
+      "n": 1,
+      "d": 10
+    },
+    "symptoms": [
+      {
+        "kind": "fievre"
+      },
+      {
+        "kind": "intoxication",
+        "severity": "grave"
+      },
+      {
+        "kind": "malaise"
+      },
+      {
+        "kind": "nausee"
+      },
+      {
+        "kind": "persistant",
+        "difficulty": "intermediaire"
+      }
+    ]
+  },
+  {
+    "id": "peste-noire",
+    "name": "Peste Noire",
+    "contractDifficulty": "accessible",
+    "incubation": {
+      "n": 0,
+      "d": 1
+    },
+    "duration": {
+      "n": 3,
+      "d": 10
+    },
+    "symptoms": [
+      {
+        "kind": "bubons"
+      },
+      {
+        "kind": "fievre"
+      },
+      {
+        "kind": "gangrene"
+      },
+      {
+        "kind": "malaise"
+      },
+      {
+        "kind": "toxine",
+        "severity": "moderee"
+      }
+    ]
+  },
+  {
+    "id": "verole-du-tanneur",
+    "name": "Vérole du Tanneur",
+    "contractDifficulty": "facile",
+    "incubation": {
+      "n": 1,
+      "d": 10
+    },
+    "duration": {
+      "n": 5,
+      "d": 10
+    },
+    "symptoms": [
+      {
+        "kind": "demangeaisons"
+      },
+      {
+        "kind": "persistant",
+        "difficulty": "intermediaire"
+      }
+    ]
+  },
+  {
+    "id": "verole-urticante",
+    "name": "Vérole Urticante",
+    "contractDifficulty": "accessible",
+    "incubation": {
+      "n": 1,
+      "d": 10
+    },
+    "duration": {
+      "n": 1,
+      "d": 10,
+      "plus": 7
+    },
+    "symptoms": [
+      {
+        "kind": "demangeaisons"
+      },
+      {
+        "kind": "touxEternuements"
+      }
+    ],
+    "immuneAfterCure": true
+  }
+]
