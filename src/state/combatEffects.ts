@@ -467,10 +467,12 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
         let who = '';
         set((s: GameState) => {
           let idx = e.heroId ? s.party.findIndex((h) => h.id === e.heroId) : -1;
-          if (idx < 0) idx = s.party.findIndex((h) => !!eligibleTalent(h, sp) && !(h.spells ?? []).includes(sp.label));
+          if (idx < 0) idx = s.party.findIndex((h) => !!eligibleTalent(h, sp) && !(h.spells ?? []).includes(sp.id));
           if (idx < 0) return {};
           who = s.party[idx].name;
-          return { party: s.party.map((h, i) => (i === idx && !(h.spells ?? []).includes(sp.label) ? { ...h, spells: [...(h.spells ?? []), sp.label] } : h)) };
+          // `c.spells` = IDS de sort (résolus par findSpellById dans l'ActionBar/IA/grimoire) ; le libellé
+          // ne sert qu'à l'affichage (log ci-dessous). Même convention que pregens/buySpell/Béni.
+          return { party: s.party.map((h, i) => (i === idx && !(h.spells ?? []).includes(sp.id) ? { ...h, spells: [...(h.spells ?? []), sp.id] } : h)) };
         });
         if (who) get().log(`${who} apprend ${sp.label}.`);
         break;
