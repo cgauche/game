@@ -31,14 +31,14 @@ describe('EffectOp hors combat (Effect `ops` : wounds / condition — vocabulair
 
   it('condition on=party : pose l’État sur tout le groupe (valeur par défaut 1)', () => {
     const f = fakeStore([hero('A', 12), hero('B', 12)]);
-    applyEffects(f.get, f.set, [{ type: 'ops', on: 'party', ops: [{ op: 'condition', name: 'En flammes' }] }]);
-    expect(hasCondition(f.state().party[0], 'En flammes')).toBe(true);
-    expect(hasCondition(f.state().party[1], 'En flammes')).toBe(true);
+    applyEffects(f.get, f.set, [{ type: 'ops', on: 'party', ops: [{ op: 'condition', name: 'en-flammes' }] }]);
+    expect(hasCondition(f.state().party[0], 'en-flammes')).toBe(true);
+    expect(hasCondition(f.state().party[1], 'en-flammes')).toBe(true);
   });
 
   it('condition value : pose l’intensité demandée sur un héros', () => {
     const f = fakeStore([hero('A', 12)]);
-    applyEffects(f.get, f.set, [{ type: 'ops', on: 'hero', ops: [{ op: 'condition', name: 'Empoisonné', value: 3 }] }]);
-    expect(f.state().party[0].conditions.find((c: any) => c.name === 'Empoisonné')?.value).toBe(3);
+    applyEffects(f.get, f.set, [{ type: 'ops', on: 'hero', ops: [{ op: 'condition', name: 'empoisonne', value: 3 }] }]);
+    expect(f.state().party[0].conditions.find((c: any) => c.name === 'empoisonne')?.value).toBe(3);
   });
 });

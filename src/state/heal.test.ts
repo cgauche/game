@@ -53,7 +53,7 @@ describe('Guérison — flux combat', () => {
 
   it('limite 1/rencontre : 2e « wounds » indisponible, « bleed » reste possible', () => {
     const doc = hero({ id: 'doc', pos: { x: 1, y: 1 } });
-    const t = hero({ id: 'al', wounds: { current: 3, max: 12 }, conditions: [{ name: 'Hémorragique', value: 2 }], soinRencontreUtilise: true, pos: { x: 2, y: 1 } });
+    const t = hero({ id: 'al', wounds: { current: 3, max: 12 }, conditions: [{ name: 'hemorragique', value: 2 }], soinRencontreUtilise: true, pos: { x: 2, y: 1 } });
     setBattle([doc, t], 'doc');
     useGame.getState().battleHeal('al', 'wounds'); // refusé (déjà soigné cette rencontre)
     expect(useGame.getState().pendingHeal).toBeNull();
@@ -63,7 +63,7 @@ describe('Guérison — flux combat', () => {
 
   it('soigner un allié Inconscient le relève une fois > 0 PB (LDB 18 l.28)', () => {
     const doc = hero({ id: 'doc', pos: { x: 1, y: 1 } });
-    const ko = hero({ id: 'ko', wounds: { current: 0, max: 12 }, conditions: [{ name: 'Inconscient', value: 1 }, { name: 'À Terre', value: 1 }], pos: { x: 2, y: 1 } });
+    const ko = hero({ id: 'ko', wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }, { name: 'a-terre', value: 1 }], pos: { x: 2, y: 1 } });
     setBattle([doc, ko], 'doc');
     useGame.getState().battleHeal('ko', 'wounds');
     useGame.getState().healRoll();
@@ -71,19 +71,19 @@ describe('Guérison — flux combat', () => {
     useGame.getState().healConfirm();
     const k = useGame.getState().battle!.combatants.find((c) => c.id === 'ko')!;
     expect(k.wounds.current).toBeGreaterThan(0);
-    expect(k.conditions.find((c) => c.name === 'Inconscient')).toBeUndefined();
+    expect(k.conditions.find((c) => c.name === 'inconscient')).toBeUndefined();
   });
 
   it('healConfirm (bleed) : arrête l’hémorragie sans consommer la limite de soin', () => {
     const doc = hero({ id: 'doc', pos: { x: 1, y: 1 } });
-    const t = hero({ id: 'al', wounds: { current: 12, max: 12 }, conditions: [{ name: 'Hémorragique', value: 3 }], pos: { x: 2, y: 1 } });
+    const t = hero({ id: 'al', wounds: { current: 12, max: 12 }, conditions: [{ name: 'hemorragique', value: 3 }], pos: { x: 2, y: 1 } });
     setBattle([doc, t], 'doc');
     useGame.getState().battleHeal('al', 'bleed');
     useGame.getState().healRoll();
     useGame.setState({ pendingHeal: { ...useGame.getState().pendingHeal!, success: true, sl: 1 } });
     useGame.getState().healConfirm();
     const al = useGame.getState().battle!.combatants.find((c) => c.id === 'al')!;
-    expect(al.conditions.find((c) => c.name === 'Hémorragique')?.value).toBe(1); // 3 − (1+1)
+    expect(al.conditions.find((c) => c.name === 'hemorragique')?.value).toBe(1); // 3 − (1+1)
     expect(al.soinRencontreUtilise).toBeUndefined(); // bleed ne consomme pas la limite
   });
 });
@@ -200,7 +200,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
     const p = useGame.getState().party.find((c) => c.id === 'p')!;
     expect(p.traumas!.length).toBe(0); // blessure chirurgicale réparée par le Test étendu
     expect(p.wounds.current).toBeLessThan(40); // 1d10 par passe
-    expect(p.conditions.some((c) => c.name === 'Hémorragique')).toBe(true);
+    expect(p.conditions.some((c) => c.name === 'hemorragique')).toBe(true);
     expect(useGame.getState().medic).not.toBeNull(); // l'infirmerie reste ouverte après l'opération
   });
 

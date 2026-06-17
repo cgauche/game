@@ -62,7 +62,7 @@
                   "onWin": [
                     {
                       "op": "condition",
-                      "name": "Sonné"
+                      "name": "sonne"
                     }
                   ]
                 }
@@ -146,9 +146,9 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "Empêtré",
+                    "name": "empetre",
                     "value": 1,
-                    "unlessCondition": "Empêtré",
+                    "unlessCondition": "empetre",
                     "escapeStrength": {
                       "charOf": "F"
                     }

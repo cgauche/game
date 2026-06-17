@@ -248,7 +248,7 @@ registerCascadeApplier('recovery', (_get, _set, step, hero) => {
 registerCascadeApplier('nightmare', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   if (step.result.success) return { journal: [`${hero.name} dort d'un sommeil sans rêve.`] };
-  addCondition(hero, 'Exténué'); // LDB 21 l.92 : Calme +40 raté → Exténué
+  addCondition(hero, 'extenue'); // LDB 21 l.92 : Calme +40 raté → Exténué
   return { journal: [`${hero.name} est en proie à de terribles cauchemars (Calme +40 raté) → Exténué.`] };
 }, (ok, n) => (ok ? `${n} dort d'un sommeil sans rêve.` : `${n} est en proie aux cauchemars → Exténué.`));
 
@@ -307,8 +307,8 @@ registerCascadeApplier('diseasePersist', (_get, _set, step, hero) => {
   const journal = applyDiseasePersist(hero, String(step.meta?.diseaseName ?? ''), step.result.success, step.result.sl, battleRng());
   // Réconcilie l'Exténué « collant » du malaise (l.153 : maladie guérie → −1) — différé avec le Test.
   const delta = activeMalaiseCount(hero) - before;
-  if (delta < 0) removeCondition(hero, 'Exténué', -delta);
-  else if (delta > 0) addCondition(hero, 'Exténué', delta);
+  if (delta < 0) removeCondition(hero, 'extenue', -delta);
+  else if (delta > 0) addCondition(hero, 'extenue', delta);
   return { journal };
 }, (ok, n) => (ok ? `${n} guérit de sa maladie.` : `${n} : la maladie persiste.`));
 

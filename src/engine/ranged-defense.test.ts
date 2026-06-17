@@ -45,7 +45,7 @@ describe('rangedDefenseModes — RAW défense contre les attaques à distance', 
   });
 
   it('cible qui ne peut pas se défendre (Surpris) → aucun mode', () => {
-    expect(rangedDefenseModes(atk({ engagedWith: ['d'] }), def({ conditions: [{ name: 'Surpris' }] as never }), w, 1, true)).toEqual([]);
+    expect(rangedDefenseModes(atk({ engagedWith: ['d'] }), def({ conditions: [{ name: 'surpris' }] as never }), w, 1, true)).toEqual([]);
   });
 });
 

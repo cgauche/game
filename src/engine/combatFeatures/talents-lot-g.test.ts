@@ -105,7 +105,7 @@ describe('défense / récupération (LDB 10)', () => {
     expect(hasStealAdvantage(mk([{ name: 'Renversement', times: 1 }]))).toBe(true);
   });
   it('Endurci : ignore niveau PB d’Hémorragique en fin de Round', () => {
-    const c = mk([{ name: 'Endurci', times: 1 }], { conditions: [{ name: 'Hémorragique', value: 2 }] });
+    const c = mk([{ name: 'Endurci', times: 1 }], { conditions: [{ name: 'hemorragique', value: 2 }] });
     endOfRound(c, makeRNG(3));
     expect(c.wounds.current).toBe(11); // 2 pions − 1 ignoré = 1 PB perdu
     expect(bleedIgnoreLevel(c)).toBe(1);

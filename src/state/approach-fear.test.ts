@@ -18,27 +18,27 @@ describe('approachFearTrigger — source de Peur qui s\'approche (LDB 21 l.29)',
     seedBattleRng(1);
     const h = hero({});
     run(h, mover({ pos: { x: 6, y: 5 } }), { x: 9, y: 5 }); // de (9,5) à (6,5) : s\'est rapproché de (5,5)
-    expect(stacks(h, 'Brisé')).toBe(1);
+    expect(stacks(h, 'brise')).toBe(1);
   });
 
   it('ne s\'est PAS rapproché (s\'éloigne) → aucun Test', () => {
     seedBattleRng(1);
     const h = hero({});
     run(h, mover({ pos: { x: 9, y: 5 } }), { x: 6, y: 5 }); // de (6,5) à (9,5) : s\'éloigne
-    expect(stacks(h, 'Brisé')).toBe(0);
+    expect(stacks(h, 'brise')).toBe(0);
   });
 
   it('Peur déjà vaincue (calmeDR ≥ indice) → aucun Test', () => {
     seedBattleRng(1);
     const h = hero({ psychState: [{ type: 'peur', sourceId: 'e', indice: 2, calmeDR: 2 } as never] });
     run(h, mover({ pos: { x: 6, y: 5 } }), { x: 9, y: 5 });
-    expect(stacks(h, 'Brisé')).toBe(0);
+    expect(stacks(h, 'brise')).toBe(0);
   });
 
   it('Calme réussi (FM 90) → pas de Brisé', () => {
     seedBattleRng(1);
     const h = hero({ characteristics: { FM: 90 } as never });
     run(h, mover({ pos: { x: 6, y: 5 } }), { x: 9, y: 5 });
-    expect(stacks(h, 'Brisé')).toBe(0);
+    expect(stacks(h, 'brise')).toBe(0);
   });
 });

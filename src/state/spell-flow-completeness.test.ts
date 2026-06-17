@@ -37,10 +37,10 @@ describe('Complétude : tout sort porte ses effets dans un Flow exécutable (Spe
   it('runSpellFlow EXÉCUTE réellement les ops d’un sort sur la cible (wounds + condition)', () => {
     const target = { id: 't', name: 'Cible', kind: 'enemy', dead: false, wounds: { current: 20, max: 20 }, advantage: 0, conditions: [], armour: { corps: 0 } } as unknown as Combatant;
     // un « sort » minimal : 6 Blessures + En flammes — exprimé en Flow EffectOp.
-    const flow: Flow = { kind: 'seq', steps: [{ kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'wounds', amount: 6 }, { op: 'condition', name: 'En flammes' }] } }] };
+    const flow: Flow = { kind: 'seq', steps: [{ kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'wounds', amount: 6 }, { op: 'condition', name: 'en-flammes' }] } }] };
     const lines = runSpellFlow(target, undefined, flow, { label: 'Test' });
     expect(target.wounds.current).toBe(14); // wounds ignore BE/PA → 20 − 6
-    expect(target.conditions.some((c) => c.name === 'En flammes')).toBe(true);
+    expect(target.conditions.some((c) => c.name === 'en-flammes')).toBe(true);
     expect(lines.length).toBeGreaterThan(0); // journal produit
   });
 });

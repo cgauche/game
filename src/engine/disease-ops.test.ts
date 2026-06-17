@@ -27,11 +27,11 @@ describe('cureDisease — Amère catharsis (LDB 42)', () => {
   it('purge 1 + ⌊DR/2⌋ maladies (actives d’abord) et rend l’Exténué du malaise', () => {
     const c = dummy({
       diseases: [sick('Infection Mineure'), sick('Blessure Purulente')],
-      conditions: [{ name: 'Exténué', value: 2 }], // les 2 malaises « collants »
+      conditions: [{ name: 'extenue', value: 2 }], // les 2 malaises « collants »
     });
     applyOps(c, [{ op: 'cureDisease', count: 1, countPerSL: { every: 2, amount: 1 } }], { sl: 2 });
     expect(c.diseases).toHaveLength(0); // 1 + ⌊2/2⌋ = 2 purges
-    expect(stacks(c, 'Exténué')).toBe(0); // malaise levé → Exténué rendu
+    expect(stacks(c, 'extenue')).toBe(0); // malaise levé → Exténué rendu
   });
 
   it('immunité post-guérison préservée (Vérole Urticante)', () => {

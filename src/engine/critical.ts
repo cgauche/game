@@ -161,9 +161,9 @@ export function rollCritical(
   if (ampDiff) {
     const res = rollTest(resistVal, ampDiff, rng);
     if (!res.success) {
-      conditions.push({ name: 'À Terre', value: 1 });
-      if (res.sl <= -2) conditions.push({ name: 'Sonné', value: 1 });
-      if (res.sl <= -4) conditions.push({ name: 'Inconscient', value: 1 });
+      conditions.push({ name: 'a-terre', value: 1 });
+      if (res.sl <= -2) conditions.push({ name: 'sonne', value: 1 });
+      if (res.sl <= -4) conditions.push({ name: 'inconscient', value: 1 });
     }
     // Plaie chirurgicale (l.333/401) : retirée par la Chirurgie ; bloque la guérison jusqu'à l'opération.
     traumas.push({

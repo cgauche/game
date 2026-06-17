@@ -91,8 +91,8 @@ describe('ops de spec sur la branche Projectile (curées seulement)', () => {
     useGame.setState({ party: [w, cible] as Combatant[] });
     applyCast(useGame.getState, useGame.setState, w, cible, findSpell('Éblouissant')!, ok(2), false, false);
     const after = useGame.getState().party.find((h) => h.id === cible.id)!;
-    expect(after.conditions.find((x) => x.name === 'Aveuglé')?.value).toBe(1);
-    expect(after.activeEffects?.some((e) => e.opsPerRound?.some((o) => o.op === 'condition' && o.name === 'Aveuglé'))).toBe(true);
+    expect(after.conditions.find((x) => x.name === 'aveugle')?.value).toBe(1);
+    expect(after.activeEffects?.some((e) => e.opsPerRound?.some((o) => o.op === 'condition' && o.name === 'aveugle'))).toBe(true);
   });
 
   it('Innocence immaculée : retire 1 Point de Corruption (jamais sous 0)', () => {

@@ -26,7 +26,7 @@ export type EnemyAction =
   | { kind: 'shoot'; targetId: string } // tir depuis la position courante (arme à distance)
   | { kind: 'melee'; targetId: string } // attaque de mêlée (cible adjacente)
   | { kind: 'move'; to: Pt; thenTargetId: string } // approche ; attaque après si adjacent
-  | { kind: 'recover'; state: 'Empêtré' | 'En flammes' } // se libérer / se rouler au sol (LDB 16 l.61/77)
+  | { kind: 'recover'; state: 'empetre' | 'en-flammes' } // se libérer / se rouler au sol (LDB 16 l.61/77)
   | { kind: 'end' }; // rien à faire, passe la main
 
 export interface EnemyTurnInput {
@@ -75,10 +75,10 @@ function nearest(enemyPos: Pt, heroes: Combatant[]): Combatant {
 export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const { enemy, heroes, scene, blocked, movement, offensiveSpell, spellRange, smoke, flying } = input;
   if (heroes.length === 0) return { kind: 'end' };
-  if (hasCondition(enemy, 'Surpris')) return { kind: 'end' }; // Surpris (LDB 16 l.132) : ni Mouvement ni Action ce tour
+  if (hasCondition(enemy, 'surpris')) return { kind: 'end' }; // Surpris (LDB 16 l.132) : ni Mouvement ni Action ce tour
   // En flammes (LDB 16 l.77) : un ennemi NON frénétique se roule au sol pour éteindre le feu (1d10/Round
   // est mortel). Un frénétique ignore le danger et continue d'attaquer (Frénésie, LDB 21 l.34).
-  if (hasCondition(enemy, 'En flammes') && !enemy.frenzied) return { kind: 'recover', state: 'En flammes' };
+  if (hasCondition(enemy, 'en-flammes') && !enemy.frenzied) return { kind: 'recover', state: 'en-flammes' };
   const pos = enemy.pos!;
   // Portée de mêlée = Allonge de l'arme (RAW-3, LDB 62 l.211/213) ; 1 case par défaut. Diagonale incluse
   // (Chebyshev). Source unique partagée avec le héros et la résolution → symétrie héros/ennemi.
@@ -130,7 +130,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   };
   // Brisé (LDB 16 l.55) : un ennemi Brisé NON Engagé fuit — il gagne la case atteignable la PLUS
   // éloignée des héros et ne peut pas attaquer. (Engagé : il reste — l'IA ne se désengage pas, simplif. assumée.)
-  if (hasCondition(enemy, 'Brisé') && !isEngaged(enemy)) return fleeMove();
+  if (hasCondition(enemy, 'brise') && !isEngaged(enemy)) return fleeMove();
   // Bestial (LDB 85 p.338) : « Si elle perd plus de la moitié de ses Blessures, elle tente de fuir »
   // — sauf Territorial (combat jusqu'à la mort) ou acculée/Engagée (elle reste — Frénésie gérée par
   // le drapeau frenzied de l'appelant).
@@ -205,6 +205,6 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   if (best) return { kind: 'move', to: best, thenTargetId: target.id };
   // Aucune attaque possible et nulle part où aller : un Empêtré (Mouvement nul, LDB 16 l.85) se libère
   // plutôt que de perdre son tour (Test opposé de Force contre la source, l.61).
-  if (hasCondition(enemy, 'Empêtré')) return { kind: 'recover', state: 'Empêtré' };
+  if (hasCondition(enemy, 'empetre')) return { kind: 'recover', state: 'empetre' };
   return { kind: 'end' };
 }

@@ -29,26 +29,26 @@ beforeEach(() => {
 describe('États à durée (ConditionInstance.roundsLeft)', () => {
   it('addTimedCondition pose la durée ; endOfRound décrémente puis dissipe', () => {
     const c = pair().ally;
-    addTimedCondition(c, 'Sonné', 1, 2);
-    expect(c.conditions.find((x) => x.name === 'Sonné')?.roundsLeft).toBe(2);
+    addTimedCondition(c, 'sonne', 1, 2);
+    expect(c.conditions.find((x) => x.name === 'sonne')?.roundsLeft).toBe(2);
     endOfRound(c, makeRNG(1));
-    expect(hasCondition(c, 'Sonné')).toBe(true);
+    expect(hasCondition(c, 'sonne')).toBe(true);
     const log = endOfRound(c, makeRNG(1));
-    expect(hasCondition(c, 'Sonné')).toBe(false);
+    expect(hasCondition(c, 'sonne')).toBe(false);
     expect(log.join('\n')).toMatch(/Sonné \(sort\) se dissipe/);
   });
 
   it('un ajout NON temporisé efface la durée (on n\'écourte jamais un État normal)', () => {
     const c = pair().ally;
-    addTimedCondition(c, 'Aveuglé', 1, 3);
-    addCondition(c, 'Aveuglé', 1);
-    expect(c.conditions.find((x) => x.name === 'Aveuglé')?.roundsLeft).toBeUndefined();
+    addTimedCondition(c, 'aveugle', 1, 3);
+    addCondition(c, 'aveugle', 1);
+    expect(c.conditions.find((x) => x.name === 'aveugle')?.roundsLeft).toBeUndefined();
   });
 
   it('op condition.durationRounds → addTimedCondition (Régurgitation : Sonné 1d10 Rounds)', () => {
     const c = pair().ally;
-    applyOps(c, [{ op: 'condition', name: 'Sonné', durationRounds: { dice: { n: 1, sides: 10 } } }], { rng: makeRNG(2) });
-    const inst = c.conditions.find((x) => x.name === 'Sonné')!;
+    applyOps(c, [{ op: 'condition', name: 'sonne', durationRounds: { dice: { n: 1, sides: 10 } } }], { rng: makeRNG(2) });
+    const inst = c.conditions.find((x) => x.name === 'sonne')!;
     expect(inst.roundsLeft).toBeGreaterThanOrEqual(1);
     expect(inst.roundsLeft).toBeLessThanOrEqual(10);
   });
@@ -57,14 +57,14 @@ describe('États à durée (ConditionInstance.roundsLeft)', () => {
 describe('États récurrents (« un par Round »)', () => {
   it('op condition.perRound : ré-appliqué chaque fin de Round pendant la durée du sort', () => {
     const c = pair().ally;
-    applyOps(c, [{ op: 'condition', name: 'Hémorragique', perRound: true }], { label: 'Malédiction', defaultDurationRounds: 2 });
-    expect(hasCondition(c, 'Hémorragique')).toBe(false); // récurrent : agit en fin de Round
+    applyOps(c, [{ op: 'condition', name: 'hemorragique', perRound: true }], { label: 'Malédiction', defaultDurationRounds: 2 });
+    expect(hasCondition(c, 'hemorragique')).toBe(false); // récurrent : agit en fin de Round
     endOfRound(c, makeRNG(1));
     // fin de Round 1 : +1 Hémorragique (le saignement immédiat tick aussi via endOfRound → PB)
-    expect(c.conditions.find((x) => x.name === 'Hémorragique')?.value).toBeGreaterThanOrEqual(1);
-    const v1 = c.conditions.find((x) => x.name === 'Hémorragique')!.value;
+    expect(c.conditions.find((x) => x.name === 'hemorragique')?.value).toBeGreaterThanOrEqual(1);
+    const v1 = c.conditions.find((x) => x.name === 'hemorragique')!.value;
     endOfRound(c, makeRNG(1));
-    const v2 = c.conditions.find((x) => x.name === 'Hémorragique')?.value ?? 0;
+    const v2 = c.conditions.find((x) => x.name === 'hemorragique')?.value ?? 0;
     expect(v2).toBeGreaterThanOrEqual(v1); // ré-appliqué au Round 2 (dernier de l'effet)
     expect(c.activeEffects?.length ?? 0).toBe(0); // l'effet porteur expiré
   });
@@ -115,7 +115,7 @@ describe('overcastTargetCandidates — cibles supplémentaires proposables (moda
   it('bénéfique : le lanceur et un allié Inconscient restent proposables (un soin le réveille), un mort non', () => {
     const caster = stub('w', 'hero', 0);
     const ko = stub('h2', 'hero', 1, 0);
-    addCondition(ko, 'Inconscient', 1);
+    addCondition(ko, 'inconscient', 1);
     const dead = { ...stub('h3', 'hero', 2), dead: true };
     const ids = overcastTargetCandidates([caster, stub('h1', 'hero', 3), ko, dead], caster, 'h1', { range: null }, false).map((c) => c.id);
     expect(ids).toEqual(['w', 'h2']);

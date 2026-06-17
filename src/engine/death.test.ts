@@ -45,21 +45,21 @@ describe('Modèle de mort (LDB 18-Traumatisme)', () => {
     });
   });
   it('Inconscient ou mort = hors de combat', () => {
-    expect(isOutOfAction(mk({ conditions: [{ name: 'Inconscient', value: 1 }] }))).toBe(true);
+    expect(isOutOfAction(mk({ conditions: [{ name: 'inconscient', value: 1 }] }))).toBe(true);
     expect(isOutOfAction(mk({ dead: true }))).toBe(true);
   });
   it('applyZeroWounds : à 0 PB → À Terre', () => {
     const h = mk({ wounds: { current: 0, max: 12 } });
     applyZeroWounds(h);
-    expect(hasCondition(h, 'À Terre')).toBe(true);
+    expect(hasCondition(h, 'a-terre')).toBe(true);
   });
   it('tickDeath : à 0 PB, Inconscient après BE rounds', () => {
     const h = mk({ wounds: { current: 0, max: 12 }, roundsAtZero: 3 }); // BE=3 ; 3→4 > 3
     tickDeath(h, makeRNG(1));
-    expect(hasCondition(h, 'Inconscient')).toBe(true);
+    expect(hasCondition(h, 'inconscient')).toBe(true);
   });
   it('tickDeath : à 0 PB Inconscient + critiques > BE → condition de mort remplie (finalisée par le store)', () => {
-    const h = mk({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'Inconscient', value: 1 }], criticalWounds: 4 }); // BE=3
+    const h = mk({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }], criticalWounds: 4 }); // BE=3
     tickDeath(h, makeRNG(1));
     expect(h.dead ?? false).toBe(false); // tickDeath ne tue plus
     expect(inDeathCondition(h)).toBe(true); // mais la condition est remplie
@@ -73,7 +73,7 @@ describe('Modèle de mort (LDB 18-Traumatisme)', () => {
 
 describe('Destin — états dérivés', () => {
   const dying = (over: Partial<Combatant> = {}): Combatant =>
-    mk({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'Inconscient', value: 1 }], criticalWounds: 4, ...over }); // BE=3
+    mk({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }], criticalWounds: 4, ...over }); // BE=3
   it('outOfRencontre = hors de combat (mais pas mort)', () => {
     const h = mk({ outOfRencontre: true });
     expect(isOutOfAction(h)).toBe(true);
@@ -86,7 +86,7 @@ describe('Destin — états dérivés', () => {
     expect(inDeathCondition(dying({ outOfRencontre: true }))).toBe(false); // déjà éjecté
   });
   it('tickDeath ne finalise plus la mort (seulement 0 PB→Inconscient)', () => {
-    const h = mk({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'Inconscient', value: 1 }], criticalWounds: 4 });
+    const h = mk({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }], criticalWounds: 4 });
     tickDeath(h, makeRNG(1));
     expect(h.dead ?? false).toBe(false); // la finalisation est désormais portée par le store
   });

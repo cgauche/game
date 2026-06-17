@@ -131,7 +131,7 @@ describe('openRest / choix par héros', () => {
 
   it('cascade : valider une MARCHE FORCÉE ratée applique +Exténué (applicateur forcedMarch)', () => {
     const h = useGame.getState().party[0];
-    const exten0 = stacks(h, 'Exténué');
+    const exten0 = stacks(h, 'extenue');
     // Cascade à une étape de marche forcée, jet figé sur un ÉCHEC.
     useGame.setState({ pendingCascade: {
       title: 'Marche', purpose: 'travel', cursor: 0, log: [], participants: [
@@ -140,7 +140,7 @@ describe('openRest / choix par héros', () => {
       ],
     } });
     useGame.getState().cascadeNext(); // verrouille l'échec → +Exténué (applyForcedMarch)
-    expect(stacks(useGame.getState().party[0], 'Exténué')).toBe(exten0 + 1);
+    expect(stacks(useGame.getState().party[0], 'extenue')).toBe(exten0 + 1);
     expect(useGame.getState().pendingCascade).toBeNull();
   });
 

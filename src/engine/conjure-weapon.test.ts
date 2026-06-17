@@ -103,7 +103,7 @@ describe('grantWeapon — variantes de domaine (stats fixes du Sort)', () => {
 
   it('Épée ardente de Rhuin : Dégâts +6, Percutante + En flammes à la touche', () => {
     const c = mage();
-    applyOps(c, [{ op: 'grantWeapon', name: 'Épée ardente de Rhuin', damage: 6, subType: 'Base', reach: 'Moyenne', hands: 1, qualities: ['Magique', 'Percutante'], onHitEffects: [onHitFlow([{ op: 'condition', name: 'En flammes' }])] }],
+    applyOps(c, [{ op: 'grantWeapon', name: 'Épée ardente de Rhuin', damage: 6, subType: 'Base', reach: 'Moyenne', hands: 1, qualities: ['Magique', 'Percutante'], onHitEffects: [onHitFlow([{ op: 'condition', name: 'en-flammes' }])] }],
       { label: "L'Épée ardente de Rhuin", defaultDurationRounds: 4 });
     expect(c.weapons[0].damage).toBe('+6');
     expect(c.weapons[0].qualities).toEqual(expect.arrayContaining(['Magique', 'Percutante']));
@@ -111,6 +111,6 @@ describe('grantWeapon — variantes de domaine (stats fixes du Sort)', () => {
     const eff = c.weapons[0].onHitEffects![0];
     const victim = mage();
     runSpellFlow(victim, c, eff.flow, {});
-    expect(victim.conditions.some((x) => x.name === 'En flammes')).toBe(true);
+    expect(victim.conditions.some((x) => x.name === 'en-flammes')).toBe(true);
   });
 });

@@ -29,13 +29,13 @@ const bow: Weapon = { name: 'Arc', type: 'ranged', damage: '+9', range: 60, qual
 describe('Attaque contre un Inconscient (LDB 16 l.112)', () => {
   it('un Inconscient ne peut pas se défendre', () => {
     const ko = mk();
-    addCondition(ko, 'Inconscient');
+    addCondition(ko, 'inconscient');
     expect(cannotDefend(ko)).toBe(true);
   });
 
   it('mêlée : touche automatiquement même sur un jet raté (98) et inflige un Critique', () => {
     const target = mk();
-    addCondition(target, 'Inconscient');
+    addCondition(target, 'inconscient');
     // CC 40, jet 98 → échec normal ; vs Inconscient → « Je ne faillirai pas ! » : réussite + critique.
     const res = resolveMelee(mk(), target, sword, rngOf(98));
     expect(res.hit).toBe(true);
@@ -50,7 +50,7 @@ describe('Attaque contre un Inconscient (LDB 16 l.112)', () => {
 
   it('distance : touche automatiquement et inflige un Critique', () => {
     const target = mk();
-    addCondition(target, 'Inconscient');
+    addCondition(target, 'inconscient');
     const res = resolveRanged(mk(), target, bow, rngOf(95), 5);
     expect(res.hit).toBe(true);
     expect(res.critical).toBe(true);
@@ -59,7 +59,7 @@ describe('Attaque contre un Inconscient (LDB 16 l.112)', () => {
   it('distance : Dégâts « à bout portant » > Dégâts à portée moyenne (même jet réussi)', () => {
     const consc = mk();
     const ko = mk();
-    addCondition(ko, 'Inconscient');
+    addCondition(ko, 'inconscient');
     // Jet 35 ≤ CT 40 → réussite dans les deux cas ; l'Inconscient ajoute +6 DR (bout portant).
     const hitConsc = resolveRanged(mk(), consc, bow, rngOf(35), 30); // portée moyenne
     const hitKO = resolveRanged(mk(), ko, bow, rngOf(35), 30);

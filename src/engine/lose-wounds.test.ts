@@ -19,7 +19,7 @@ describe('loseWounds — perte de PB centralisée + conséquences (LDB 15 l.40 /
     loseWounds(c, 5);
     expect(c.wounds.current).toBe(0);
     expect(c.advantage).toBe(0);
-    expect(hasCondition(c, 'À Terre')).toBe(true);
+    expect(hasCondition(c, 'a-terre')).toBe(true);
   });
 
   it('déjà à 0 PB → aucune perte, Avantage inchangé', () => {

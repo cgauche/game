@@ -88,11 +88,11 @@ describe('Tests imbriqués des tables', () => {
     const c = hero({ characteristics: { ...hero().characteristics, E: 1 } }); // cible ~1 → échec dur garanti
     applyOps(
       c,
-      [{ op: 'test', skill: 'Résistance', difficulty: 'difficile', onFail: [{ op: 'condition', name: 'Sonné' }], onFailHard: { dr: -4, ops: [{ op: 'condition', name: 'Inconscient' }] } }],
+      [{ op: 'test', skill: 'Résistance', difficulty: 'difficile', onFail: [{ op: 'condition', name: 'sonne' }], onFailHard: { dr: -4, ops: [{ op: 'condition', name: 'inconscient' }] } }],
       { rng: makeRNG(1) }, // d100 = 63 vs cible ~1 → échec à −6 DR (≤ −4 : palier dur)
     );
-    expect(c.conditions.some((x) => x.name === 'Sonné')).toBe(true);
-    expect(c.conditions.some((x) => x.name === 'Inconscient')).toBe(true);
+    expect(c.conditions.some((x) => x.name === 'sonne')).toBe(true);
+    expect(c.conditions.some((x) => x.name === 'inconscient')).toBe(true);
   });
 });
 

@@ -3,6 +3,7 @@
  * Gestion minimale pour le combat tactique : ajout, empilement, retrait.
  */
 import { Combatant } from './types';
+import { conditionLabel } from '../data';
 import { rule } from './policy';
 import { bleedIgnoreLevel } from './combatFeatures/dispatch';
 import { bonus, effectiveChar } from './characteristics';
@@ -14,6 +15,16 @@ import { dropExpiredGrantedWeapons } from './conjuredWeapons';
 import { restoreSuppressedPsych } from './psychology';
 import { hasActiveFlag } from './activeFlags';
 import { applyOps } from './ops'; // cycle runtime (ops→conditions) : applyOps n'est appelé qu'au tick, jamais à l'init du module
+
+/** Les 12 États CANONIQUES (LDB 16) à comportement moteur, par `id` STABLE (slug d'etats.json). Le
+ *  moteur (pénalités, fin de Round, récupération) les référence via ces constantes — JAMAIS de chaîne
+ *  magique. `ConditionInstance.name` reste OUVERT (string) : le Codex peut créer d'AUTRES États (posés/
+ *  affichés ; leur mécanique RAW serait à câbler). Garde-fou de synchro `COND`⇄etats.json : `conditions.test`. */
+export const COND = {
+  assourdi: 'assourdi', aTerre: 'a-terre', aveugle: 'aveugle', brise: 'brise',
+  empetre: 'empetre', empoisonne: 'empoisonne', enFlammes: 'en-flammes', extenue: 'extenue',
+  hemorragique: 'hemorragique', inconscient: 'inconscient', sonne: 'sonne', surpris: 'surpris',
+} as const;
 
 /** Nombre de pions (cumul) d'un État donné. */
 export const stacks = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name)?.value ?? 0;
@@ -88,11 +99,11 @@ export function combatTestPenalty(c: Combatant): number {
   // Endurance de l'anachorète (LDB 42) : « ne subit aucune pénalité causée par les États » —
   // n'efface QUE les pénalités d'État (l'aura Perturbante est un trait, pas un État).
   if (!hasActiveFlag(c, 'ignoreStatePenalties')) {
-    if (hasCondition(c, 'Aveuglé')) cand.push(-10);
-    if (hasCondition(c, 'Brisé')) cand.push(-10);
-    if (hasCondition(c, 'Empoisonné')) cand.push(-10);
-    if (hasCondition(c, 'Sonné')) cand.push(-10);
-    const ext = stacks(c, 'Exténué');
+    if (hasCondition(c, COND.aveugle)) cand.push(-10);
+    if (hasCondition(c, COND.brise)) cand.push(-10);
+    if (hasCondition(c, COND.empoisonne)) cand.push(-10);
+    if (hasCondition(c, COND.sonne)) cand.push(-10);
+    const ext = stacks(c, COND.extenue);
     if (ext > 0) cand.push(-10 * ext);
   }
   // Aura d'une créature Perturbante (LDB 85 p.341) : −20 à tous les Tests (non cumulable — flag).
@@ -116,15 +127,15 @@ export function testStatePenalty(c: Combatant, skill?: string): number {
   // Endurance de l'anachorète (LDB 42) : aucune pénalité d'État pour la durée (le modificateur de Sort reste).
   if (hasActiveFlag(c, 'ignoreStatePenalties')) return effMod;
   const cand: number[] = [];
-  if (hasCondition(c, 'Empoisonné')) cand.push(-10);
-  if (hasCondition(c, 'Sonné')) cand.push(-10);
-  const ext = stacks(c, 'Exténué');
+  if (hasCondition(c, COND.empoisonne)) cand.push(-10);
+  if (hasCondition(c, COND.sonne)) cand.push(-10);
+  const ext = stacks(c, COND.extenue);
   if (ext > 0) cand.push(-10 * ext);
-  if (hasCondition(c, 'Brisé') && !BRISE_EXEMPT.test(skill ?? '')) cand.push(-10);
+  if (hasCondition(c, COND.brise) && !BRISE_EXEMPT.test(skill ?? '')) cand.push(-10);
   // À Terre / Empêtré : pénalité aux Tests impliquant un déplacement (LDB 16 l.37 / l.85).
   if (MOVEMENT_SKILL.test(skill ?? '')) {
-    if (hasCondition(c, 'À Terre')) cand.push(-20);
-    if (hasCondition(c, 'Empêtré')) cand.push(-10);
+    if (hasCondition(c, COND.aTerre)) cand.push(-20);
+    if (hasCondition(c, COND.empetre)) cand.push(-10);
   }
   return (cand.length ? Math.min(...cand) : 0) + effMod;
 }
@@ -136,22 +147,22 @@ export function testStatePenalty(c: Combatant, skill?: string): number {
  */
 export function meleeAttackerBonus(target: Combatant): number {
   const cand: number[] = [];
-  if (hasCondition(target, 'À Terre')) cand.push(20);
-  if (hasCondition(target, 'Surpris')) cand.push(20);
-  if (hasCondition(target, 'Aveuglé')) cand.push(10);
+  if (hasCondition(target, COND.aTerre)) cand.push(20);
+  if (hasCondition(target, COND.surpris)) cand.push(20);
+  if (hasCondition(target, COND.aveugle)) cand.push(10);
   return cand.length ? Math.max(...cand) : 0;
 }
 
 /** Une cible Surprise (LDB ch.16 l.132) ou Inconscient (l.112 « rien faire de votre tour »)
  *  ne peut pas se défendre lors d'un Test opposé. */
 export function cannotDefend(c: Combatant): boolean {
-  return hasCondition(c, 'Surpris') || hasCondition(c, 'Inconscient');
+  return hasCondition(c, COND.surpris) || hasCondition(c, COND.inconscient);
 }
 
 /** Sonné : « vous êtes incapable d'effectuer votre Action » (LDB États l.123). Le combattant
  *  peut encore se déplacer (à demi-Mouvement, cf. effectiveMovement) mais ne peut pas agir. */
 export function canTakeAction(c: Combatant): boolean {
-  return !hasCondition(c, 'Sonné');
+  return !hasCondition(c, COND.sonne);
 }
 
 /**
@@ -162,13 +173,13 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
   const log: string[] = [];
   // Hémorragique : 1 Blessure par point, en ignorant les modificateurs (l.104).
   // Endurci (LDB 10) : ignore niveau Point(s) de Blessure perdus par l'État Hémorragique.
-  const bleed = Math.max(0, stacks(c, 'Hémorragique') - bleedIgnoreLevel(c));
+  const bleed = Math.max(0, stacks(c, COND.hemorragique) - bleedIgnoreLevel(c));
   if (bleed) {
     loseWounds(c, bleed); // perte de PB centralisée (perte d'Avantage + À Terre à 0)
     log.push(`${c.name} subit ${bleed} Blessure(s) (Hémorragique).`);
   }
   // Empoisonné : 1 Blessure par point, en ignorant les modificateurs (l.66).
-  const poison = stacks(c, 'Empoisonné');
+  const poison = stacks(c, COND.empoisonne);
   if (poison) {
     loseWounds(c, poison);
     log.push(`${c.name} subit ${poison} Blessure(s) (Empoisonné).`);
@@ -178,13 +189,13 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
     const res = rollTest(resistVal, 'intermediaire', rng, combatTestPenalty(c));
     if (res.success) {
       const removed = Math.min(poison, 1 + Math.max(0, res.sl));
-      removeCondition(c, 'Empoisonné', removed);
+      removeCondition(c, COND.empoisonne, removed);
       log.push(`${c.name} : ${removed} État(s) Empoisonné éliminé(s) (Résistance réussie).`);
-      if (!hasCondition(c, 'Empoisonné')) { addCondition(c, 'Exténué'); log.push(`${c.name} est Exténué (poison surmonté).`); }
+      if (!hasCondition(c, COND.empoisonne)) { addCondition(c, COND.extenue); log.push(`${c.name} est Exténué (poison surmonté).`); }
     }
   }
   // En flammes : 1d10 − BE − PA de la localisation la moins protégée (min 1), +1 par État en plus (l.77).
-  const fire = stacks(c, 'En flammes');
+  const fire = stacks(c, COND.enFlammes);
   if (fire) {
     const minPA = Math.min(...Object.values(c.armour));
     // « 1d10+2 si 3 États » (l.77) : le +1/État en plus s'ajoute aux Dégâts AVANT la
@@ -196,16 +207,16 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
   // Sonné : Test de Résistance Intermédiaire (+0) en fin de Round ; sur un succès, retire
   // 1 État + 1 par DR ; une fois tous retirés, on gagne 1 Exténué (LDB États l.125-127).
   // Le « -10 à tous les Tests » du Sonné s'applique au jet (l.123, via combatTestPenalty).
-  const sonne = stacks(c, 'Sonné');
+  const sonne = stacks(c, COND.sonne);
   if (sonne) {
     const resistVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
     const res = rollTest(resistVal, 'intermediaire', rng, combatTestPenalty(c));
     if (res.success) {
       const removed = Math.min(sonne, 1 + Math.max(0, res.sl));
-      removeCondition(c, 'Sonné', removed);
+      removeCondition(c, COND.sonne, removed);
       log.push(`${c.name} : ${removed} État(s) Sonné dissipé(s) (Résistance réussie).`);
-      if (!hasCondition(c, 'Sonné') && !hasCondition(c, 'Exténué')) {
-        addCondition(c, 'Exténué');
+      if (!hasCondition(c, COND.sonne) && !hasCondition(c, COND.extenue)) {
+        addCondition(c, COND.extenue);
         log.push(`${c.name} est Exténué (après avoir surmonté le dernier État Sonné).`);
       }
     } else {
@@ -213,10 +224,10 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
     }
   }
   // Dissipation en fin de Round : Aveuglé (l.48), Assourdi (l.32), Surpris (l.136).
-  for (const n of ['Aveuglé', 'Assourdi', 'Surpris']) {
+  for (const n of [COND.aveugle, COND.assourdi, COND.surpris]) {
     if (hasCondition(c, n)) {
       removeCondition(c, n, 1);
-      log.push(`${c.name} : un État ${n} se dissipe.`);
+      log.push(`${c.name} : un État ${conditionLabel(n)} se dissipe.`);
     }
   }
   // Effets RÉCURRENTS portés par un effet actif de sort (op `perRound`) — re-joués tant que l'effet
@@ -242,7 +253,7 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
   if (c.conditions.some((x) => x.roundsLeft != null)) {
     for (const x of c.conditions) if (x.roundsLeft != null) x.roundsLeft -= 1;
     const done = c.conditions.filter((x) => x.roundsLeft != null && x.roundsLeft <= 0);
-    for (const x of done) log.push(`${c.name} : l'État ${x.name} (sort) se dissipe.`);
+    for (const x of done) log.push(`${c.name} : l'État ${conditionLabel(x.name)} (sort) se dissipe.`);
     c.conditions = c.conditions.filter((x) => !(x.roundsLeft != null && x.roundsLeft <= 0));
   }
   // Contrecoups d'incantation à durée en Rounds (tables d'Imparfaites/Colère, LDB 46/40) —
@@ -266,7 +277,7 @@ export function nightmareCheck(c: Combatant, rng: RNG = defaultRNG, out?: { base
   const res = rollTest(calme, 'facile', rng); // Calme Facile (+40), palier canonique
   out?.push({ base: calme, result: res });
   if (res.success) return [`${c.name} dort d'un sommeil sans rêve.`];
-  addCondition(c, 'Exténué');
+  addCondition(c, COND.extenue);
   return [`${c.name} est en proie à de terribles cauchemars (Calme +40 raté) et gagne Exténué.`];
 }
 
@@ -277,13 +288,13 @@ export function nightmareCheck(c: Combatant, rng: RNG = defaultRNG, out?: { base
  * mais coagulation). Pur ; renvoie `died` (la finalisation — sauvetage par Destin — revient à l'appelant).
  */
 export function bleedDeathRoll(c: Combatant, rng: RNG = defaultRNG): { died: boolean; log: string[] } {
-  const n = stacks(c, 'Hémorragique');
+  const n = stacks(c, COND.hemorragique);
   if (n <= 0) return { died: false, log: [] };
   const r = d100(rng);
   if (isDoubleRoll(r)) {
-    removeCondition(c, 'Hémorragique', 1); // coagulation (le double prime sur la mort)
+    removeCondition(c, COND.hemorragique, 1); // coagulation (le double prime sur la mort)
     const log = [`${c.name} : une plaie coagule (${r === 100 ? '00' : r}, double) — un État Hémorragique en moins.`];
-    if (!hasCondition(c, 'Hémorragique')) { addCondition(c, 'Exténué'); log.push(`${c.name} est Exténué (dernière plaie refermée).`); } // tous retirés → 1 Exténué
+    if (!hasCondition(c, COND.hemorragique)) { addCondition(c, COND.extenue); log.push(`${c.name} est Exténué (dernière plaie refermée).`); } // tous retirés → 1 Exténué
     return { died: false, log };
   }
   if (r <= 10 * n) return { died: true, log: [`${c.name} succombe à l'hémorragie (${r} ≤ ${10 * n}).`] };
@@ -305,7 +316,7 @@ export function usesSuddenDeath(c: Combatant): boolean {
 /** Hors de combat : mort, ou Inconscient, ou figurant tombé à 0 PB (Mort Subite). Un héros à 0 PB
  *  reste actif (À Terre) — il n'est PAS hors de combat (LDB 18-Traumatisme l.28). */
 export function isOutOfAction(c: Combatant): boolean {
-  return c.dead === true || c.outOfRencontre === true || hasCondition(c, 'Inconscient') || (usesSuddenDeath(c) && c.wounds.current <= 0);
+  return c.dead === true || c.outOfRencontre === true || hasCondition(c, COND.inconscient) || (usesSuddenDeath(c) && c.wounds.current <= 0);
 }
 
 /** Condition de mort lente (LDB 18-Traumatisme l.48-49) : Inconscient + 0 PB + (Blessures
@@ -316,12 +327,12 @@ export function inDeathCondition(c: Combatant): boolean {
   if (c.dead || c.outOfRencontre) return false;
   if (c.suffocationCountdown != null && c.suffocationCountdown <= 0) return true;
   const be = bonus(effectiveChar(c, 'E'));
-  return hasCondition(c, 'Inconscient') && c.wounds.current <= 0 && (c.criticalWounds ?? 0) > be;
+  return hasCondition(c, COND.inconscient) && c.wounds.current <= 0 && (c.criticalWounds ?? 0) > be;
 }
 
 /** À 0 PB : gagne l'État À Terre (LDB 18 l.28). À appeler quand un coup non-critique amène à 0. */
 export function applyZeroWounds(c: Combatant): void {
-  if (c.wounds.current <= 0 && !hasCondition(c, 'À Terre')) addCondition(c, 'À Terre');
+  if (c.wounds.current <= 0 && !hasCondition(c, COND.aTerre)) addCondition(c, COND.aTerre);
 }
 
 /**
@@ -336,7 +347,7 @@ export function loseWounds(c: Combatant, amount: number): number {
   const lost = Math.min(amount, c.wounds.current);
   c.wounds.current -= lost;
   c.advantage = 0; // perdre une Blessure → perdre tout l'Avantage (LDB 15 l.40)
-  if (c.wounds.current <= 0 && !c.dead && !hasCondition(c, 'Inconscient')) applyZeroWounds(c);
+  if (c.wounds.current <= 0 && !c.dead && !hasCondition(c, COND.inconscient)) applyZeroWounds(c);
   return lost;
 }
 
@@ -355,8 +366,8 @@ export function tickDeath(c: Combatant, _rng: RNG = defaultRNG): string[] {
     return log;
   }
   c.roundsAtZero = (c.roundsAtZero ?? 0) + 1;
-  if (c.roundsAtZero > be && !hasCondition(c, 'Inconscient')) {
-    addCondition(c, 'Inconscient');
+  if (c.roundsAtZero > be && !hasCondition(c, COND.inconscient)) {
+    addCondition(c, COND.inconscient);
     log.push(`${c.name} perd connaissance (0 PB depuis ${c.roundsAtZero} Rounds).`);
   }
   return log; // la mort (dead) est finalisée par le store (avec sauvetage par Destin)

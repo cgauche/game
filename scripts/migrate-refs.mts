@@ -293,6 +293,48 @@ function migrateCareersSpecies(): void {
   console.log('careers/classes/species id-ifiés ; careers.class/careerLevels.career/pregens/interludeEvents → ids');
 }
 
+/** Phase B — id-ifie `etats.json` (États) et convertit les VALEURS des ops `condition`/`removeCondition`
+ *  dans les Flows de sorts (`name`/`onlyIfCondition`/`unlessCondition` : libellé → conditionId). Les NOMS
+ *  de champs sont conservés (cohérent Phase A : la valeur porte l'id). Idempotent (id déjà présent → gardé). */
+function migrateConditions(): void {
+  idifyFile('etats.json');
+  const etatMap = labelMap(['etats.json']);
+  const etatIds = new Set(read('etats.json').map((e) => String(e.id)));
+  // Inconnu du catalogue → slug (ex. « Pétrifié » → 'petrifie', cohérent effectIcons) ; id déjà présent → gardé.
+  const toCond = (v: unknown, ctx: string): unknown =>
+    typeof v === 'string' ? (etatIds.has(v) ? v : (resolveId(etatMap, v, ctx) ?? slugId(v))) : v;
+  const COND_KEYS = new Set(['name', 'onlyIfCondition', 'unlessCondition']);
+  // Listes porteuses d'États NUS (`[{name, value}]`) : `conditions` (zoneBlast/onHit) + `onFail`/`onSuccess`
+  // (bloc `resist` des critiques). `parentCondArr` = on est un élément d'une telle liste.
+  const COND_ARRAYS = new Set(['conditions', 'onFail', 'onSuccess']);
+  const walk = (node: unknown, parentCondArr = false): unknown => {
+    if (Array.isArray(node)) return node.map((x) => walk(x, parentCondArr));
+    if (node && typeof node === 'object') {
+      const o = node as Record<string, unknown>;
+      const isCondOp = o.op === 'condition' || o.op === 'removeCondition';
+      const isBareCond = parentCondArr && !('op' in o) && 'name' in o; // {name,value} sans op = État nu
+      const convert = isCondOp || isBareCond;
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(o)) {
+        if (convert && COND_KEYS.has(k)) out[k] = toCond(v, `condition.${k}`);
+        // Champ `condition` d'une Condition Flow (`compare.subject.condition`, `has`) → id d'État
+        // (uniquement si c'est un État CONNU, pour ne pas sluguer un champ homonyme non-État).
+        else if (k === 'condition' && typeof v === 'string' && (etatIds.has(v) || etatMap.has(nk(v)))) out[k] = toCond(v, 'flow.condition');
+        else if (COND_ARRAYS.has(k) && Array.isArray(v)) out[k] = v.map((x) => walk(x, true));
+        else out[k] = walk(v, false);
+      }
+      return out;
+    }
+    return node;
+  };
+  const COND_FILES = ['spells.json', 'frenchy-spells.json', 'qualities.json', 'domains.json', 'maneuvers.json', 'traits.json', 'frenchy-traits.json', 'criticals.json'];
+  for (const f of COND_FILES) {
+    const raw = JSON.parse(readFileSync(DATA + f, 'utf8')); // racine agnostique (array OU objet)
+    writeFileSync(DATA + f, serialize(walk(raw)), 'utf8');
+  }
+  console.log(`etats id-ifiés ; refs d'État (op condition + listes conditions[]) → conditionId dans ${COND_FILES.length} fichiers`);
+}
+
 // ── Run ───────────────────────────────────────────────────────────────────────────────────────
 // NB : `gods.json` a été généré une fois depuis les ex-`cults/defs/` (supprimés) ; c'est désormais
 // une SOURCE app-owned éditable au Codex, plus rien à régénérer.
@@ -305,5 +347,6 @@ convertCareerChars();
 ensureMissingTalents();
 convertAdvancement();
 migrateCareersSpecies();
+migrateConditions();
 if (problems.length) console.error(`\n⚠ ${problems.length} PROBLÈMES (résolution) :\n  ${problems.slice(0, 60).join('\n  ')}${problems.length > 60 ? `\n  …(+${problems.length - 60})` : ''}`);
 console.log('migration terminée.');

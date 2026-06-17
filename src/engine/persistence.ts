@@ -11,7 +11,7 @@ import type { Disease } from './disease';
 /** États qui persistent après le combat (LDB 16-États : Brisé l.57, Empoisonné l.70,
  *  En flammes l.77, Exténué l.91, Hémorragique l.107, Inconscient l.116). */
 export const PERSISTENT_CONDITIONS: ReadonlySet<string> = new Set([
-  'Brisé', 'Empoisonné', 'En flammes', 'Exténué', 'Hémorragique', 'Inconscient',
+  'brise', 'empoisonne', 'en-flammes', 'extenue', 'hemorragique', 'inconscient',
 ]);
 
 /** État persistant d'un combattant à reporter vers le groupe (fin de combat) ou à ré-importer

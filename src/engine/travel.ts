@@ -135,7 +135,7 @@ export function applyForcedMarch(c: Combatant, success: boolean): { line: string
   if (success) return { line: `${c.name} — marche forcée : il tient l'allure.`, gained: 0 };
   const overloaded = encumbrancePenalties(c).tier > 0;
   const n = overloaded ? 2 : 1;
-  addCondition(c, 'Exténué', n);
+  addCondition(c, 'extenue', n);
   return { line: `${c.name} — marche forcée : ÉCHEC, +${n} Exténué${overloaded ? ' (surchargé)' : ''}.`, gained: n };
 }
 
@@ -156,6 +156,6 @@ export function applyTravelFatigue(c: Combatant): string[] {
   if (c.dead) return [];
   const n = encumbrancePenalties(c).travelFatigue;
   if (n <= 0) return [];
-  addCondition(c, 'Exténué', n);
+  addCondition(c, 'extenue', n);
   return [`${c.name} termine la journée fourbu sous sa charge : +${n} Exténué (Encombrement).`];
 }

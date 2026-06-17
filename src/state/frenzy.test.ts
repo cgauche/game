@@ -42,7 +42,7 @@ describe('Frénésie — immunité psy & fin (→ Exténué)', () => {
     E.characteristics.FM = 10;
     resolvePsychAI(useGame.getState, useGame.setState, E);
     const e = useGame.getState().battle!.combatants.find((c) => c.id === E.id)!;
-    expect(e.conditions.some((c) => c.name === 'Brisé')).toBe(false);
+    expect(e.conditions.some((c) => c.name === 'brise')).toBe(false);
     expect(e.psychState ?? []).toEqual([]);
   });
 
@@ -53,6 +53,6 @@ describe('Frénésie — immunité psy & fin (→ Exténué)', () => {
     endFrenzyIfDone(useGame.getState, useGame.setState, E);
     const e = useGame.getState().battle!.combatants.find((c) => c.id === E.id)!;
     expect(e.frenzied).toBe(false);
-    expect(e.conditions.some((c) => c.name === 'Exténué')).toBe(true);
+    expect(e.conditions.some((c) => c.name === 'extenue')).toBe(true);
   });
 });

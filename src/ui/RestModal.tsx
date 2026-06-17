@@ -28,7 +28,7 @@ const FOOD_META: Record<RestFood, { icon: string; label: string }> = {
 /** Avertissements de la ligne d'un héros (info de DÉCISION, pas de texte tuto). */
 function heroWarnings(h: Combatant, lodging: RestLodging, food: RestFood, exposureTests: number): string[] {
   const out: string[] = [];
-  if (hasCondition(h, 'Hémorragique') || hasCondition(h, 'En flammes') || hasCondition(h, 'Empoisonné')) {
+  if (hasCondition(h, 'hemorragique') || hasCondition(h, 'en-flammes') || hasCondition(h, 'empoisonne')) {
     out.push('⚠ à stabiliser (pas de repos réparateur)');
   }
   if (food === 'rien') out.push('⚠ ventre vide');

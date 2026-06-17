@@ -21,7 +21,7 @@ const mk = (over: Partial<Combatant> = {}): Combatant => ({
 } as Combatant);
 
 const noBattle = () => ({ battle: undefined }) as never;
-const empetre = (c: Combatant) => c.conditions.find((x) => x.name === 'Empêtré');
+const empetre = (c: Combatant) => c.conditions.find((x) => x.name === 'empetre');
 
 describe('fireTriggers — Traits et Atouts sur le même système flow+déclencheur', () => {
   it('TRAIT Toile : à la touche, la victime gagne Empêtré (Force d’évasion = Force de l’attaquant)', () => {
@@ -42,7 +42,7 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
 
   it('déjà Empêtré → pas de re-application (unlessCondition)', () => {
     const spider = mk({ traits: [{ id: 'toile' }] });
-    const prey = mk({ conditions: [{ name: 'Empêtré', value: 2 }] });
+    const prey = mk({ conditions: [{ name: 'empetre', value: 2 }] });
     fireTriggers(noBattle(), spider, 'onHit', { victim: prey });
     expect(empetre(prey)?.value).toBe(2); // inchangé
   });
@@ -50,7 +50,7 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
   it('TRAIT Nerveux : déclencheur onStartled (magie/bruit) → +3 Brisé sur soi', () => {
     const skittish = mk({ traits: [{ id: 'nerveux' }] });
     fireTriggers(noBattle(), skittish, 'onStartled', {});
-    expect(skittish.conditions.find((c) => c.name === 'Brisé')?.value).toBe(3);
+    expect(skittish.conditions.find((c) => c.name === 'brise')?.value).toBe(3);
   });
 
   it('TRAIT Sang corrosif : onWoundLoss → les Engagés subissent 1d10 (BE+PA, min 1)', () => {
@@ -77,11 +77,11 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
   });
 
   it('Condition `compare` générique : who (cible/lanceur) × donnée/État · opérateur · valeur (const ou acteur)', () => {
-    const target = { id: 't', woundsCurrent: 5, woundsMax: 15, size: 2, advantage: 0, camp: 'hostile' as const, groups: ['Morts-vivants'], talents: [], traits: ['mort-vivant'], conditions: { Brisé: 3 } }; // Petite (2), ennemi mort-vivant
+    const target = { id: 't', woundsCurrent: 5, woundsMax: 15, size: 2, advantage: 0, camp: 'hostile' as const, groups: ['Morts-vivants'], talents: [], traits: ['mort-vivant'], conditions: { brise: 3 } }; // Petite (2), ennemi mort-vivant (conditions keyées par id)
     const caster = { id: 'c', woundsCurrent: 12, woundsMax: 12, size: 4, advantage: 1, camp: 'party' as const, groups: [], talents: [{ id: 'magie-des-arcanes', spec: 'Feu' }], traits: [], conditions: {} as Record<string, number> }; // Grande (4), mage de Feu
     const ctx = { flags: {}, gameTime: 0, target, caster };
     expect(evalCondition({ kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '>=', value: 1 }, ctx)).toBe(true);
-    expect(evalCondition({ kind: 'compare', subject: { who: 'target', condition: 'Brisé' }, op: '>=', value: 3 }, ctx)).toBe(true); // valeur d'État (stacks)
+    expect(evalCondition({ kind: 'compare', subject: { who: 'target', condition: 'brise' }, op: '>=', value: 3 }, ctx)).toBe(true); // valeur d'État (stacks)
     expect(evalCondition({ kind: 'compare', subject: { who: 'caster', field: 'woundsCurrent' }, op: '>', value: 10 }, ctx)).toBe(true); // données du LANCEUR
     // ACTEUR-vs-ACTEUR : « cible plus petite que l'attaquant » (Attaque caudale)
     expect(evalCondition({ kind: 'compare', subject: { who: 'target', field: 'size' }, op: '<', value: { who: 'caster', field: 'size' } }, ctx)).toBe(true);
@@ -121,7 +121,7 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
         kind: 'do',
         effect: { type: 'ops', on: 'target', ops: [
           { op: 'wounds', amount: { dice: { n: 1, sides: 10 } } },
-          { op: 'condition', name: 'Empêtré', value: 1 },
+          { op: 'condition', name: 'empetre', value: 1 },
         ] },
       }],
     };

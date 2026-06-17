@@ -379,7 +379,7 @@ export function IsoStage() {
     // Sonné/Brisé, cible de Frénésie IMPOSÉE (le plus proche en LdV).
     const freeFrenzy = battle.action === null && !!activeH.frenzied && !activeH.frenzyFreeUsed;
     if (battle.acted && !freeFrenzy) return null;
-    if (battle.action === null && (!canTakeAction(activeH) || hasCondition(activeH, 'Brisé'))) return null;
+    if (battle.action === null && (!canTakeAction(activeH) || hasCondition(activeH, 'brise'))) return null;
     if (battle.action === null && activeH.frenzied) {
       const ft = frenzyTarget(st, activeH);
       if (ft && ft.id !== occ.id) return null;

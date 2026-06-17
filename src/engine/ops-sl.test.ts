@@ -42,8 +42,8 @@ describe('PerSL — échelle « par +N DR » (OpsCtx.sl)', () => {
 
   it('condition « +1 Empêtré par +2 DR » (Enchevêtrement, LDB 47)', () => {
     const c = dummy();
-    applyOps(c, [{ op: 'condition', name: 'Empêtré', valuePerSL: { every: 2, amount: 1 } }], { sl: 5 });
-    expect(stacks(c, 'Empêtré')).toBe(3); // 1 (base) + ⌊5/2⌋ = 2
+    applyOps(c, [{ op: 'condition', name: 'empetre', valuePerSL: { every: 2, amount: 1 } }], { sl: 5 });
+    expect(stacks(c, 'empetre')).toBe(3); // 1 (base) + ⌊5/2⌋ = 2
   });
 
   it('corruption « perd 1 (+1 par +2 DR) » (Innocence immaculée, LDB 42) — plancher 0', () => {
@@ -56,8 +56,8 @@ describe('PerSL — échelle « par +N DR » (OpsCtx.sl)', () => {
 
   it('condition « +DR État En flammes » (Purification, LDB 48) — base 0, plancher 1 de l’op', () => {
     const c = dummy();
-    applyOps(c, [{ op: 'condition', name: 'En flammes', value: 0, valuePerSL: { every: 1, amount: 1 } }], { sl: 4 });
-    expect(stacks(c, 'En flammes')).toBe(4);
+    applyOps(c, [{ op: 'condition', name: 'en-flammes', value: 0, valuePerSL: { every: 1, amount: 1 } }], { sl: 4 });
+    expect(stacks(c, 'en-flammes')).toBe(4);
   });
 });
 
@@ -67,19 +67,19 @@ describe('onlyGroups — ops gatées par Groupe de la cible (Feu de l’âme, LD
     const villageois = dummy({ groups: ['Humain'] });
     const ops = [
       { op: 'wounds' as const, amount: 3 },
-      { op: 'condition' as const, name: 'En flammes', onlyGroups: ['Mort-vivant', 'Démon'] },
+      { op: 'condition' as const, name: 'en-flammes', onlyGroups: ['Mort-vivant', 'Démon'] },
     ];
     applyOps(zombie, ops, { sl: 0 });
     applyOps(villageois, ops, { sl: 0 });
     expect(zombie.wounds.current).toBe(17);
     expect(villageois.wounds.current).toBe(17);
-    expect(stacks(zombie, 'En flammes')).toBe(1);
-    expect(stacks(villageois, 'En flammes')).toBe(0);
+    expect(stacks(zombie, 'en-flammes')).toBe(1);
+    expect(stacks(villageois, 'en-flammes')).toBe(0);
   });
 
   it('groupMatch tolère le pluriel de la spec (« Morts-vivants » matche le groupe Mort-vivant)', () => {
     const zombie = dummy({ groups: ['Mort-vivant'] });
-    applyOps(zombie, [{ op: 'condition', name: 'En flammes', onlyGroups: ['Morts-vivants'] }], {});
-    expect(stacks(zombie, 'En flammes')).toBe(1);
+    applyOps(zombie, [{ op: 'condition', name: 'en-flammes', onlyGroups: ['Morts-vivants'] }], {});
+    expect(stacks(zombie, 'en-flammes')).toBe(1);
   });
 });

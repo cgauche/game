@@ -170,24 +170,24 @@ describe('États en combat (LDB ch.16)', () => {
   const mkc = (): Combatant => ({ conditions: [] } as unknown as Combatant);
   it('pénalité de combat non-cumul : la pire pénalité d’un seul État', () => {
     const c = mkc();
-    addCondition(c, 'Exténué', 3); // -30
-    addCondition(c, 'Aveuglé'); // -10
+    addCondition(c, 'extenue', 3); // -30
+    addCondition(c, 'aveugle'); // -10
     expect(combatTestPenalty(c)).toBe(-30); // pas -40 (non-cumul)
   });
   it('bonus d’attaquant : À Terre +20 prime sur Aveuglé +10', () => {
     const t = mkc();
-    addCondition(t, 'À Terre');
-    addCondition(t, 'Aveuglé');
+    addCondition(t, 'a-terre');
+    addCondition(t, 'aveugle');
     expect(meleeAttackerBonus(t)).toBe(20);
   });
   it('Surpris empêche de se défendre', () => {
     const t = mkc();
-    addCondition(t, 'Surpris');
+    addCondition(t, 'surpris');
     expect(cannotDefend(t)).toBe(true);
   });
   it('Empoisonné inflige 1 Blessure par point en fin de Round', () => {
     const c = { name: 'x', conditions: [], characteristics: { E: 30 }, skills: [], wounds: { current: 10, max: 10 } } as unknown as Combatant;
-    addCondition(c, 'Empoisonné', 2);
+    addCondition(c, 'empoisonne', 2);
     endOfRound(c);
     expect(c.wounds.current).toBe(8); // 2 Blessures de poison (la récupération éventuelle ne restaure pas les PB)
   });
@@ -200,7 +200,7 @@ describe('États en combat (LDB ch.16)', () => {
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
       wounds: { current: 20, max: 20 },
     } as unknown as Combatant;
-    addCondition(c, 'En flammes', 3);
+    addCondition(c, 'en-flammes', 3);
     endOfRound(c, { int: () => 4 }); // d10 = 4 ⇒ (4+2) − 7 = −1 → plancher 1
     expect(c.wounds.current).toBe(19); // 20 − 1, pas 20 − 3
   });
@@ -213,11 +213,11 @@ describe('États en combat (LDB ch.16)', () => {
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
       wounds: { current: 10, max: 10 },
     } as unknown as Combatant;
-    addCondition(c, 'Sonné', 2);
+    addCondition(c, 'sonne', 2);
     // E 50, Sonné −10 → cible 40 ; jet 5 → réussite, DR = 4 → retire min(2, 1+4) = 2 → nettoyé.
     endOfRound(c, { int: () => 5 });
-    expect(c.conditions.some((x) => x.name === 'Sonné')).toBe(false);
-    expect(c.conditions.some((x) => x.name === 'Exténué')).toBe(true);
+    expect(c.conditions.some((x) => x.name === 'sonne')).toBe(false);
+    expect(c.conditions.some((x) => x.name === 'extenue')).toBe(true);
   });
   it('Sonné : Résistance ratée conserve l’État et n’octroie pas d’Exténué (l.125)', () => {
     const c = {
@@ -228,11 +228,11 @@ describe('États en combat (LDB ch.16)', () => {
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
       wounds: { current: 10, max: 10 },
     } as unknown as Combatant;
-    addCondition(c, 'Sonné', 1);
+    addCondition(c, 'sonne', 1);
     // E 30, Sonné −10 → cible 20 ; jet 95 → échec → reste Sonné, pas d’Exténué.
     endOfRound(c, { int: () => 95 });
-    expect(c.conditions.some((x) => x.name === 'Sonné')).toBe(true);
-    expect(c.conditions.some((x) => x.name === 'Exténué')).toBe(false);
+    expect(c.conditions.some((x) => x.name === 'sonne')).toBe(true);
+    expect(c.conditions.some((x) => x.name === 'extenue')).toBe(false);
   });
 });
 

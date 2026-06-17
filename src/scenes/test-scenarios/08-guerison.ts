@@ -31,7 +31,7 @@ export const scenario: TestScenario = {
     }
     const ally = P.find((p) => p.name.startsWith('Sigmund'))!;
     ally.wounds = { ...ally.wounds, current: 3 }; // blessé → mode « Soigner les Blessures »
-    ally.conditions = [{ name: 'Hémorragique', value: 2 }]; // saigne → mode « Arrêter l'Hémorragie »
+    ally.conditions = [{ name: 'hemorragique', value: 2 }]; // saigne → mode « Arrêter l'Hémorragie »
     return [healer, ally];
   },
   scene,

@@ -67,7 +67,7 @@ scene.triggers.push(
       { skill: 'Athlétisme', difficulty: 'intermediaire', label: 'Esquiver les piques de la dalle' },
       flowFromEffects([{ type: 'journal', text: 'Un déclic — vous vous figez juste à temps, les piques claquent dans le vide.' }]),
       flowFromEffects([
-        { type: 'ops', on: 'party', ops: [{ op: 'wounds', amount: 5 }, { op: 'condition', name: 'À Terre' }] },
+        { type: 'ops', on: 'party', ops: [{ op: 'wounds', amount: 5 }, { op: 'condition', name: 'a-terre' }] },
         { type: 'setFlag', flag: 'alarme' },
         { type: 'journal', text: 'Les piques jaillissent ! Dans le fracas, une cloche d’alarme retentit — la herse se verrouille.' },
       ]),

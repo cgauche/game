@@ -50,24 +50,24 @@ const MINOR: Row[] = [
   { min: 6, max: 10, name: 'Lait caillé' },
   { min: 11, max: 15, name: 'Mildiou' },
   // « Gagnez 1 État Assourdi, qui ne peut être retiré [que par] Guérison » (l.66).
-  { min: 16, max: 20, name: 'Cérumen', ops: () => [cond('Assourdi')] },
+  { min: 16, max: 20, name: 'Cérumen', ops: () => [cond('assourdi')] },
   { min: 21, max: 25, name: 'Lueur occulte' },
   // « Réussissez un Test de FM Accessible (+20) ou gagnez 1 Point de Corruption » (l.70).
   { min: 26, max: 30, name: 'Murmures mortels', ops: () => [{ op: 'test', skill: 'Force Mentale', difficulty: 'accessible', onFail: [{ op: 'corruption', amount: 1 }] }] },
   // « Gagnez 1d10 États Hémorragique » (l.71).
-  { min: 31, max: 35, name: 'Rupture', ops: () => [cond('Hémorragique', d(1, 10))] },
-  { min: 36, max: 40, name: 'Secousse spirituelle', ops: () => [cond('À Terre')] },
+  { min: 31, max: 35, name: 'Rupture', ops: () => [cond('hemorragique', d(1, 10))] },
+  { min: 36, max: 40, name: 'Secousse spirituelle', ops: () => [cond('a-terre')] },
   { min: 41, max: 45, name: 'Délié' },
   { min: 46, max: 50, name: 'Tenue indisciplinée', ops: () => [cond('Enchevêtré')] },
   { min: 51, max: 55, name: 'Malédiction de la sobriété' },
-  { min: 56, max: 60, name: "Drain de l'âme", ops: () => [cond('Exténué')] },
-  { min: 61, max: 65, name: 'Distraction', ops: () => [cond('Surpris')] }, // si Engagé
+  { min: 56, max: 60, name: "Drain de l'âme", ops: () => [cond('extenue')] },
+  { min: 61, max: 65, name: 'Distraction', ops: () => [cond('surpris')] }, // si Engagé
   // « Recevez l'État Aveuglé ; réussissez un Test de Calme Intermédiaire (+0) ou gagnez-en un autre » (l.83).
-  { min: 66, max: 70, name: 'Visions impies', ops: () => [cond('Aveuglé'), { op: 'test', skill: 'Calme', difficulty: 'intermediaire', onFail: [cond('Aveuglé')] }] },
+  { min: 66, max: 70, name: 'Visions impies', ops: () => [cond('aveugle'), { op: 'test', skill: 'Calme', difficulty: 'intermediaire', onFail: [cond('aveugle')] }] },
   // « Tous les Tests de Langue (y compris d'Incantation) subissent −10 pendant 1d10 Rounds » (l.85).
   { min: 71, max: 75, name: 'Langue maladroite', ops: () => [{ op: 'castPenalty', skill: 'Langue', mod: -10, rounds: d(1, 10) }] },
   // « Réussissez un Test de Calme Difficile (−20) ou gagnez 1 État Brisé » (l.86).
-  { min: 76, max: 80, name: "L'horreur !", ops: () => [{ op: 'test', skill: 'Calme', difficulty: 'difficile', onFail: [cond('Brisé')] }] },
+  { min: 76, max: 80, name: "L'horreur !", ops: () => [{ op: 'test', skill: 'Calme', difficulty: 'difficile', onFail: [cond('brise')] }] },
   // « Gagnez 1 Point de Corruption » (l.87).
   { min: 81, max: 85, name: 'Malédiction de corruption', ops: () => [{ op: 'corruption', amount: 1 }] },
   { min: 86, max: 90, name: 'Double problème' },
@@ -79,27 +79,27 @@ const MINOR: Row[] = [
 const MAJOR: Row[] = [
   // « Test de Calme Accessible (+20) ou 1 Point de Corruption » (l.100).
   { min: 1, max: 5, name: 'Voix fantomatiques', ops: () => [{ op: 'test', skill: 'Calme', difficulty: 'accessible', onFail: [{ op: 'corruption', amount: 1 }] }] },
-  { min: 6, max: 10, name: 'Regard maudit', ops: () => [cond('Aveuglé')] },
+  { min: 6, max: 10, name: 'Regard maudit', ops: () => [cond('aveugle')] },
   // « 1d10 Blessures ignorant BE et PA. Résistance Accessible (+20) ou 1 État Sonné » (l.104).
-  { min: 11, max: 15, name: 'Choc aethyrique', ops: () => [{ op: 'wounds', amount: d(1, 10) }, { op: 'test', skill: 'Résistance', difficulty: 'accessible', onFail: [cond('Sonné')] }] },
+  { min: 11, max: 15, name: 'Choc aethyrique', ops: () => [{ op: 'wounds', amount: d(1, 10) }, { op: 'test', skill: 'Résistance', difficulty: 'accessible', onFail: [cond('sonne')] }] },
   { min: 16, max: 20, name: 'Marche de la mort' },
-  { min: 21, max: 25, name: 'Rébellion intestinale', ops: () => [cond('Exténué')] },
+  { min: 21, max: 25, name: 'Rébellion intestinale', ops: () => [cond('extenue')] },
   { min: 26, max: 30, name: "Feu de l'âme", ops: () => [cond('Enflammé')] },
   // « Vous ne pouvez pas effectuer de Test d'Incantation [pendant] 1d10 Rounds » (l.112).
   { min: 31, max: 35, name: 'Propos ésotériques', ops: () => [{ op: 'castPenalty', skill: 'Langue', blocked: true, rounds: d(1, 10) }] },
   { min: 36, max: 40, name: 'Essaim' },
-  { min: 41, max: 45, name: 'Poupée de chiffon', ops: () => [{ op: 'wounds', amount: d(1, 10) }, cond('À Terre')] },
+  { min: 41, max: 45, name: 'Poupée de chiffon', ops: () => [{ op: 'wounds', amount: d(1, 10) }, cond('a-terre')] },
   { min: 46, max: 50, name: 'Membre gelé' },
   // « Les Tests de Focalisation subissent −20 pour la durée de l'effet [1d10 heures] » (l.120).
   { min: 51, max: 55, name: 'Vue assombrie', ops: () => [{ op: 'castPenalty', skill: 'Focalisation', mod: -20, hours: d(1, 10) }] },
   { min: 56, max: 60, name: 'Lévitation' },
   { min: 61, max: 65, name: 'Lévitation (suite)' },
   // « Gagnez l'État Sonné, qui dure 1d10 Rounds » (l.126).
-  { min: 66, max: 70, name: 'Régurgitation', ops: () => [{ op: 'condition', name: 'Sonné', durationRounds: d(1, 10) }] },
+  { min: 66, max: 70, name: 'Régurgitation', ops: () => [{ op: 'condition', name: 'sonne', durationRounds: d(1, 10) }] },
   { min: 71, max: 75, name: 'Cœur de traître' },
   { min: 76, max: 80, name: 'Cœur de traître (suite)' },
   // « Gagnez 1 Point de Corruption, 1 État À Terre et 1 État Exténué » (l.132).
-  { min: 81, max: 85, name: 'Terrible affaiblissement', ops: () => [{ op: 'corruption', amount: 1 }, cond('À Terre'), cond('Exténué')] },
+  { min: 81, max: 85, name: 'Terrible affaiblissement', ops: () => [{ op: 'corruption', amount: 1 }, cond('a-terre'), cond('extenue')] },
   { min: 86, max: 90, name: 'Puanteur infernale' },
   // « Incapable d'utiliser le Talent vous permettant de lancer des Sorts pendant 1d10 minutes » (l.134).
   { min: 91, max: 95, name: 'Drain de puissance', ops: () => [{ op: 'castPenalty', skill: 'Langue', blocked: true, minutes: d(1, 10) }] },
@@ -110,35 +110,35 @@ const MAJOR: Row[] = [
 // (le jet peut dépasser 100 via +10 par Point de Péché.)
 const WRATH: Row[] = [
   // « Résistance Accessible (+20). Sur un échec, 1 État Sonné » (l.60).
-  { min: 1, max: 5, name: 'Visions sacrées', ops: () => [{ op: 'test', skill: 'Résistance', difficulty: 'accessible', onFail: [cond('Sonné')] }] },
+  { min: 1, max: 5, name: 'Visions sacrées', ops: () => [{ op: 'test', skill: 'Résistance', difficulty: 'accessible', onFail: [cond('sonne')] }] },
   // « Tout Test de Prière réussi ne peut pas obtenir plus de 0 DR pour la semaine suivante » (l.63).
   { min: 6, max: 10, name: 'Pensez à vos actes', ops: () => [{ op: 'castPenalty', skill: 'Prière', maxZeroDR: true, days: 7 }] },
   // « −10 à votre Compétence Prière pour les 1d10 + Péchés prochains Rounds » (l.64).
   { min: 11, max: 15, name: 'Tenez compte de mes enseignements', ops: (sin) => [{ op: 'castPenalty', skill: 'Prière', mod: -10, rounds: d(1, 10, sin) }] },
-  { min: 16, max: 20, name: 'Prouvez votre dévotion', ops: () => [cond('À Terre')] },
+  { min: 16, max: 20, name: 'Prouvez votre dévotion', ops: () => [cond('a-terre')] },
   // « Vous ne pouvez pas effectuer de Tests de Prière pendant 1d10 Rounds » (l.68).
   { min: 21, max: 25, name: 'Vous abusez de ma patience', ops: () => [{ op: 'castPenalty', skill: 'Prière', blocked: true, rounds: d(1, 10) }] },
   { min: 26, max: 30, name: 'Vous ne comprenez pas ma volonté' }, // compétences choisies par le MJ
   // « Pas de Tests de Prière pendant 1d10 + Péchés Rounds » (l.72).
   { min: 31, max: 35, name: 'Je trouve inquiétant votre manque de foi', ops: (sin) => [{ op: 'castPenalty', skill: 'Prière', blocked: true, rounds: d(1, 10, sin) }] },
   // « 1 + Péchés Blessures ignorant BE et PA. Résistance Accessible (+20) ou Sonné » (l.75).
-  { min: 36, max: 40, name: 'Partagez ma douleur', ops: (sin) => [{ op: 'wounds', amount: 1 + sin }, { op: 'test', skill: 'Résistance', difficulty: 'accessible', onFail: [cond('Sonné')] }] },
+  { min: 36, max: 40, name: 'Partagez ma douleur', ops: (sin) => [{ op: 'wounds', amount: 1 + sin }, { op: 'test', skill: 'Résistance', difficulty: 'accessible', onFail: [cond('sonne')] }] },
   { min: 41, max: 45, name: 'Votre cause est indigne' },
   // « Pas de Tests de Prière pendant 2d10 + Péchés Rounds » (l.79).
   { min: 46, max: 50, name: 'Cessez vos babillages', ops: (sin) => [{ op: 'castPenalty', skill: 'Prière', blocked: true, rounds: d(2, 10, sin) }] },
   // « 1d10 + Péchés Blessures. Résistance Intermédiaire (+0) ou Sonné » (l.86).
-  { min: 51, max: 55, name: 'Ressentez ma colère', ops: (sin) => [{ op: 'wounds', amount: d(1, 10, sin) }, { op: 'test', skill: 'Résistance', difficulty: 'intermediaire', onFail: [cond('Sonné')] }] },
+  { min: 51, max: 55, name: 'Ressentez ma colère', ops: (sin) => [{ op: 'wounds', amount: d(1, 10, sin) }, { op: 'test', skill: 'Résistance', difficulty: 'intermediaire', onFail: [cond('sonne')] }] },
   { min: 56, max: 60, name: 'Je ne vous aiderai pas' }, // compétence choisie par le MJ
-  { min: 61, max: 65, name: 'Blessures divines', ops: (sin) => [cond('Hémorragique', 1 + sin)] },
-  { min: 66, max: 70, name: 'Frappé de cécité', ops: (sin) => [cond('À Terre'), cond('Aveuglé', 1 + sin)] },
+  { min: 61, max: 65, name: 'Blessures divines', ops: (sin) => [cond('hemorragique', 1 + sin)] },
+  { min: 66, max: 70, name: 'Frappé de cécité', ops: (sin) => [cond('a-terre'), cond('aveugle', 1 + sin)] },
   // « 1d10 + Péchés Blessures ignorant BE/PA. Résistance Complexe (−10) ou Sonné » (l.95).
-  { min: 71, max: 75, name: "Qu'allez-vous sacrifier ?", ops: (sin) => [{ op: 'wounds', amount: d(1, 10, sin) }, { op: 'test', skill: 'Résistance', difficulty: 'complexe', onFail: [cond('Sonné')] }] },
+  { min: 71, max: 75, name: "Qu'allez-vous sacrifier ?", ops: (sin) => [{ op: 'wounds', amount: d(1, 10, sin) }, { op: 'test', skill: 'Résistance', difficulty: 'complexe', onFail: [cond('sonne')] }] },
   { min: 76, max: 80, name: 'Vous avez péché contre moi' }, // Tests de Prière forcés → MJ
   // « 2d10 + Péchés Blessures ignorant BE/PA. Résistance Difficile (−20) ou Sonné ;
   //   échec à −4 DR ou moins → 1 État Inconscient (min 1d10 Rounds) » (l.99-101).
-  { min: 81, max: 87, name: 'Purifier la chair', ops: (sin) => [{ op: 'wounds', amount: d(2, 10, sin) }, { op: 'test', skill: 'Résistance', difficulty: 'difficile', onFail: [cond('Sonné')], onFailHard: { dr: -4, ops: [cond('Inconscient')] } }] },
+  { min: 81, max: 87, name: 'Purifier la chair', ops: (sin) => [{ op: 'wounds', amount: d(2, 10, sin) }, { op: 'test', skill: 'Résistance', difficulty: 'difficile', onFail: [cond('sonne')], onFailHard: { dr: -4, ops: [cond('inconscient')] } }] },
   { min: 88, max: 88, name: 'Interférences démoniaques' },
-  { min: 89, max: 95, name: 'Redoutez ma colère', ops: (sin) => [cond('Brisé', 1 + sin)] },
+  { min: 89, max: 95, name: 'Redoutez ma colère', ops: (sin) => [cond('brise', 1 + sin)] },
   { min: 96, max: 100, name: 'Faites pénitence' },
   { min: 101, max: 105, name: 'Châtiment', ops: () => [{ op: 'reduceToZero' }] },
   { min: 106, max: 110, name: 'Ne prononcez pas mon nom en vain' }, // perte de Talents 1d10+Péchés jours → MJ

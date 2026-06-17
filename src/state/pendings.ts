@@ -130,7 +130,7 @@ export interface PendingReload {
 export interface PendingStateRecovery {
   actorId: string;
   actorName: string;
-  state: 'Empêtré' | 'En flammes';
+  state: 'empetre' | 'en-flammes';
   skillLabel: string; // 'Force' | 'Athlétisme'
   skillValue: number;
   difficulty: Difficulty;

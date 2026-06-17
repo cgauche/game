@@ -10,6 +10,7 @@
 import { Combatant, ItemInstance, CHAR_BY_LABEL, CharKey } from './types';
 import { bonus, effectiveChar } from './characteristics';
 import { removeCondition } from './conditions';
+import { conditionIdByLabel, conditionLabel } from '../data';
 
 export interface ItemEffect {
   /** Blessures rendues. */
@@ -29,7 +30,7 @@ export function applyItemUse(target: Combatant, eff: ItemEffect): string[] {
     target.wounds.current = Math.min(target.wounds.max, target.wounds.current + eff.heal);
     log.push(`${target.name} regagne ${target.wounds.current - before} Blessure(s).`);
   }
-  if (eff.removeCondition === 'Hémorragique') {
+  if (eff.removeCondition === 'hemorragique') {
     target.woundDressed = true; // un pansement/bandage panse la plaie → pas d'Infection (LDB 18 l.382)
   }
   if (eff.removeCondition) {
@@ -38,9 +39,9 @@ export function applyItemUse(target: Combatant, eff: ItemEffect): string[] {
       const n = eff.removeStacks ?? cond.value; // Bandages : +1 pion ; Potion : tout l'État
       removeCondition(target, eff.removeCondition, n);
       log.push(eff.removeStacks
-        ? `${target.name} : ${Math.min(n, cond.value)} pion ${eff.removeCondition} retiré.`
-        : `${target.name} n'est plus ${eff.removeCondition}.`);
-    } else log.push(`${target.name} n'a pas l'État ${eff.removeCondition}.`);
+        ? `${target.name} : ${Math.min(n, cond.value)} pion ${conditionLabel(eff.removeCondition)} retiré.`
+        : `${target.name} n'est plus ${conditionLabel(eff.removeCondition)}.`);
+    } else log.push(`${target.name} n'a pas l'État ${conditionLabel(eff.removeCondition)}.`);
   }
   return log;
 }
@@ -75,7 +76,9 @@ function parseConsumable(item: ItemInstance): RawItemEffect | null {
   const cond = desc.match(/retire[^.]*?[ÉEée]tat\s+([A-Za-zÀ-ÿ]+)/i);
   if (cond) {
     const qty = desc.match(/\+?\s*(\d+)\s*[ÉEée]tats?\b/i);
-    return { removeCondition: cond[1], ...(qty ? { removeStacks: parseInt(qty[1], 10) } : {}) };
+    // Le `desc` est en français → résoudre le libellé parsé en `conditionId` (clé runtime).
+    const id = conditionIdByLabel(cond[1]);
+    if (id) return { removeCondition: id, ...(qty ? { removeStacks: parseInt(qty[1], 10) } : {}) };
   }
   return null;
 }

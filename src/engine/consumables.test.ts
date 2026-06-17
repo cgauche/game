@@ -29,10 +29,10 @@ describe('itemUse — consommables (LDB p.307, sourcé du desc)', () => {
     expect(itemUse(item({ desc: 'Récupérez 4 Points de Blessure.' }), user())).toEqual({ heal: 4 });
   });
   it('Potion de vitalité : retire TOUT l’État Exténué (pas de quantité chiffrée)', () => {
-    expect(itemUse(VITAL, user())).toEqual({ removeCondition: 'Exténué' });
+    expect(itemUse(VITAL, user())).toEqual({ removeCondition: 'extenue' });
   });
   it('Bandages : retire +1 pion Hémorragique (quantité chiffrée, LDB 74 l.70)', () => {
-    expect(itemUse(BANDAGE, user())).toEqual({ removeCondition: 'Hémorragique', removeStacks: 1 });
+    expect(itemUse(BANDAGE, user())).toEqual({ removeCondition: 'hemorragique', removeStacks: 1 });
   });
   it('objet non consommable (arme, bibelot) → null', () => {
     expect(itemUse(SWORD, user())).toBeNull();

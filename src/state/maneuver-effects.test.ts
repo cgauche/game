@@ -21,8 +21,8 @@ const mk = (over: Partial<Combatant> = {}): Combatant => ({
 
 const get = (() => ({ log: () => {}, battle: undefined })) as never;
 const hit: AttackResult = { hit: true, woundsLost: 3 } as AttackResult;
-const empetre = (c: Combatant) => c.conditions.find((x) => x.name === 'Empêtré');
-const aTerre = (c: Combatant) => c.conditions.find((x) => x.name === 'À Terre');
+const empetre = (c: Combatant) => c.conditions.find((x) => x.name === 'empetre');
+const aTerre = (c: Combatant) => c.conditions.find((x) => x.name === 'a-terre');
 
 describe('effets onHit de manœuvre (data) appliqués par applyFreeAttackEffects', () => {
   it('Attaque caudale : cible PLUS PETITE → À Terre (compare Taille acteur-vs-acteur)', () => {
@@ -69,13 +69,13 @@ describe('effets onHit des manœuvres de zone/action (data) — appliqués par l
   it('Hurlement fantomatique → 3 Assourdi (+ Test de Résistance ou Brisé)', () => {
     const banshee = mk({ traits: [{ id: 'hurlement-fantomatique', value: 0 }] }); const foe = mk({ id: 'f' });
     const lines = fire('hurlement', banshee, foe);
-    expect(foe.conditions.find((c) => c.name === 'Assourdi')?.value).toBe(3);
+    expect(foe.conditions.find((c) => c.name === 'assourdi')?.value).toBe(3);
     expect(lines.join(' ')).toMatch(/Résistance/); // le Test s’est joué (op test)
   });
 
   it('Regard pétrifiant → Sonné échelonné sur la marge (1 par 2 DR, via valuePerSL ← ctx.sl)', () => {
     const basilic = mk({ traits: [{ id: 'regard-petrifiant', value: 0 }] }); const foe = mk({ id: 'f' });
     fire('regard', basilic, foe, 4); // marge 4 → floor(4/2) = 2 Sonné
-    expect(foe.conditions.find((c) => c.name === 'Sonné')?.value).toBe(2);
+    expect(foe.conditions.find((c) => c.name === 'sonne')?.value).toBe(2);
   });
 });

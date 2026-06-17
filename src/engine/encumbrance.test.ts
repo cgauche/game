@@ -73,10 +73,10 @@ describe('effectiveMovement', () => {
   });
   it('Sonné : déplacement réduit de moitié, arrondi à l’inférieur (LDB États l.123)', () => {
     const c = combatant({ movement: 4, enc: 0 });
-    c.conditions.push({ name: 'Sonné', value: 1 });
+    c.conditions.push({ name: 'sonne', value: 1 });
     expect(effectiveMovement(c)).toBe(2); // 4 → 2
     const odd = combatant({ movement: 3, enc: 0 });
-    odd.conditions.push({ name: 'Sonné', value: 1 });
+    odd.conditions.push({ name: 'sonne', value: 1 });
     expect(effectiveMovement(odd)).toBe(1); // floor(3/2) = 1
   });
 });

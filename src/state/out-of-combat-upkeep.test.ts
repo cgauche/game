@@ -20,7 +20,7 @@ function mk(opts: { current?: number; conditions?: { name: string; value: number
 
 describe('outOfCombatUpkeep — États qui tickent HORS COMBAT (couture A, LDB 13 l.49-50)', () => {
   it('Empoisonné : perte de PB chaque Round écoulé (et perte d’Avantage via loseWounds)', () => {
-    const c = mk({ current: 8, advantage: 2, conditions: [{ name: 'Empoisonné', value: 1 }] });
+    const c = mk({ current: 8, advantage: 2, conditions: [{ name: 'empoisonne', value: 1 }] });
     outOfCombatUpkeep([c], 3, fixed(50)); // 3 Rounds ; jet 50 = pas de mort par hémorragie
     expect(c.wounds.current).toBe(5); // 8 − 3×1
     expect(c.advantage).toBe(0); // perdre des PB → perte de tout l'Avantage (LDB 15 l.40)
@@ -33,14 +33,14 @@ describe('outOfCombatUpkeep — États qui tickent HORS COMBAT (couture A, LDB 1
   });
 
   it('tombe à 0 PB par poison → À Terre + progression d’agonie', () => {
-    const c = mk({ current: 2, conditions: [{ name: 'Empoisonné', value: 1 }] });
+    const c = mk({ current: 2, conditions: [{ name: 'empoisonne', value: 1 }] });
     outOfCombatUpkeep([c], 5, fixed(50));
     expect(c.wounds.current).toBe(0);
-    expect(hasCondition(c, 'À Terre')).toBe(true);
+    expect(hasCondition(c, 'a-terre')).toBe(true);
   });
 
   it('Hémorragique mortel hors combat : un héros à Destin est sauvé (Point consommé)', () => {
-    const c = mk({ current: 3, conditions: [{ name: 'Hémorragique', value: 3 }], fate: 1 });
+    const c = mk({ current: 3, conditions: [{ name: 'hemorragique', value: 3 }], fate: 1 });
     outOfCombatUpkeep([c], 1, fixed(5)); // jet 5 (non-double) ≤ 30 → mort, sauf Destin
     expect(c.dead).toBeFalsy();
     expect(c.fate).toBe(0);
@@ -48,7 +48,7 @@ describe('outOfCombatUpkeep — États qui tickent HORS COMBAT (couture A, LDB 1
   });
 
   it('Hémorragique mortel sans Destin → mort', () => {
-    const c = mk({ current: 3, conditions: [{ name: 'Hémorragique', value: 3 }], fate: 0 });
+    const c = mk({ current: 3, conditions: [{ name: 'hemorragique', value: 3 }], fate: 0 });
     outOfCombatUpkeep([c], 1, fixed(5));
     expect(c.dead).toBe(true);
   });

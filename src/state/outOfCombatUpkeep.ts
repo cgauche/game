@@ -17,7 +17,7 @@ import { endOfRound, bleedDeathRoll, tickDeath, hasCondition } from '../engine/c
 
 /** A-t-il un effet périodique (perte de PB chaque Round) OU est-il à 0 PB (progression vers l'Inconscience) ? */
 function needsUpkeep(c: Combatant): boolean {
-  return c.wounds.current <= 0 || hasCondition(c, 'Hémorragique') || hasCondition(c, 'Empoisonné') || hasCondition(c, 'En flammes');
+  return c.wounds.current <= 0 || hasCondition(c, 'hemorragique') || hasCondition(c, 'empoisonne') || hasCondition(c, 'en-flammes');
 }
 
 /**

@@ -80,20 +80,20 @@ describe('rollCritical — amputation (LDB 18 l.328-333)', () => {
   it('crée un trauma chirurgical (needsSurgery) et inflige À Terre sur Résistance ratée', () => {
     const r = rollCritical(victim(30), 'brasD', seq([83, 60])); // E30 → Accessible cible 50 ; 60 > 50 → échec (DR −1)
     expect(r.traumas.some((t) => t.needsSurgery && t.label.startsWith('Amputation'))).toBe(true);
-    expect(r.conditions.some((c) => c.name === 'À Terre')).toBe(true);
-    expect(r.conditions.some((c) => c.name === 'Inconscient')).toBe(false); // DR −1 : pas d'Inconscient
+    expect(r.conditions.some((c) => c.name === 'a-terre')).toBe(true);
+    expect(r.conditions.some((c) => c.name === 'inconscient')).toBe(false); // DR −1 : pas d'Inconscient
   });
 
   it('échec catastrophique (DR ≤ −4) ajoute Sonné ET Inconscient', () => {
     const r = rollCritical(victim(30), 'brasD', seq([83, 99])); // cible 50 ; 99 → DR −4
-    expect(r.conditions.some((c) => c.name === 'Sonné')).toBe(true);
-    expect(r.conditions.some((c) => c.name === 'Inconscient')).toBe(true);
+    expect(r.conditions.some((c) => c.name === 'sonne')).toBe(true);
+    expect(r.conditions.some((c) => c.name === 'inconscient')).toBe(true);
   });
 
   it('Résistance réussie : le membre est quand même amputé (trauma chirurgical), sans À Terre du choc', () => {
     const r = rollCritical(victim(30), 'brasD', seq([83, 5])); // 5 ≤ 50 → réussite
     expect(r.traumas.some((t) => t.needsSurgery)).toBe(true);
-    expect(r.conditions.some((c) => c.name === 'À Terre')).toBe(false);
+    expect(r.conditions.some((c) => c.name === 'a-terre')).toBe(false);
   });
 });
 

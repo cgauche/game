@@ -316,8 +316,8 @@ function resolvePerils(get: Get, set: Set, route: MapRoute, destLabel: string, d
         for (const h of party) {
           if (h.dead) continue;
           if (h.wounds.current < h.wounds.max) { h.wounds.current = h.wounds.max; lines.push(`${h.name} récupère toutes ses Blessures.`); }
-          const n = stacks(h, 'Exténué');
-          if (n > 0) { removeCondition(h, 'Exténué', n); lines.push(`${h.name} n’est plus Exténué.`); }
+          const n = stacks(h, 'extenue');
+          if (n > 0) { removeCondition(h, 'extenue', n); lines.push(`${h.name} n’est plus Exténué.`); }
         }
         set({ party: [...party] });
         tell(lines);
@@ -371,7 +371,7 @@ function applyEreintant(get: Get, set: Set): string[] {
   const lines: string[] = [];
   for (const h of party) {
     if (h.dead) continue;
-    addCondition(h, 'Exténué', 1);
+    addCondition(h, 'extenue', 1);
     lines.push(`${h.name} : +1 Exténué (détour épuisant).`);
   }
   set({ party: [...party], gameTime: get().gameTime + 24 * 60 }); // un jour de plus sur la route

@@ -245,7 +245,7 @@ describe('attackModifiers — modificateurs étiquetés (source unique)', () => 
     expect(mods).toContainEqual({ label: 'Localisation visée', value: -10 });
   });
   it('mêlée vs cible À Terre → mod « Cible vulnérable » +20', () => {
-    const downed = mk({ name: 'B', conditions: [{ name: 'À Terre', value: 1 }] });
+    const downed = mk({ name: 'B', conditions: [{ name: 'a-terre', value: 1 }] });
     const mods = attackModifiers(mk({ name: 'A' }), downed, sword, { kind: 'melee' });
     expect(mods).toContainEqual({ label: 'Cible vulnérable', value: 20 });
   });

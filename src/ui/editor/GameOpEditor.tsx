@@ -189,7 +189,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'wounds': return { op: 'wounds', amount: 5 };
     case 'heal': return { op: 'heal', amount: 3 };
     case 'healCaster': return { op: 'healCaster', amount: 1 };
-    case 'condition': return { op: 'condition', name: etats[0]?.label ?? 'Sonné', value: 1 };
+    case 'condition': return { op: 'condition', name: etats[0]?.label ?? 'sonne', value: 1 };
     case 'removeCondition': return { op: 'removeCondition' };
     case 'charMod': return { op: 'charMod', char: 'F', mod: -10 };
     case 'apAll': return { op: 'apAll', amount: 1 };

@@ -7,16 +7,16 @@ const C = (id: string, conditions: { name: string; value: number }[]): Combatant
 
 describe('diffConditionGains — flottants d’État par diff (lisibilité)', () => {
   it('État nouveau → flottant icône + nom ; empilement → valeur affichée', () => {
-    const prev = condSignature([C('a', [{ name: 'Hémorragique', value: 1 }])]);
-    const gains = diffConditionGains(prev, [C('a', [{ name: 'Hémorragique', value: 3 }, { name: 'Sonné', value: 1 }])]);
+    const prev = condSignature([C('a', [{ name: 'hemorragique', value: 1 }])]);
+    const gains = diffConditionGains(prev, [C('a', [{ name: 'hemorragique', value: 3 }, { name: 'sonne', value: 1 }])]);
     expect(gains).toHaveLength(2);
     expect(gains.some((g) => g.text.includes('Hémorragique 3'))).toBe(true);
-    expect(gains.some((g) => g.text.includes('Sonné'))).toBe(true);
+    expect(gains.some((g) => g.text.includes('Sonné'))).toBe(true); // le flottant affiche le LIBELLÉ
   });
   it('État retiré ou inchangé → rien ; combattant sans instantané (entrée en scène) → rien', () => {
-    const prev = condSignature([C('a', [{ name: 'Sonné', value: 2 }])]);
-    expect(diffConditionGains(prev, [C('a', [{ name: 'Sonné', value: 1 }])])).toHaveLength(0);
-    expect(diffConditionGains(prev, [C('a', [{ name: 'Sonné', value: 2 }])])).toHaveLength(0);
-    expect(diffConditionGains(new Map(), [C('b', [{ name: 'Brisé', value: 1 }])])).toHaveLength(0);
+    const prev = condSignature([C('a', [{ name: 'sonne', value: 2 }])]);
+    expect(diffConditionGains(prev, [C('a', [{ name: 'sonne', value: 1 }])])).toHaveLength(0);
+    expect(diffConditionGains(prev, [C('a', [{ name: 'sonne', value: 2 }])])).toHaveLength(0);
+    expect(diffConditionGains(new Map(), [C('b', [{ name: 'brise', value: 1 }])])).toHaveLength(0);
   });
 });

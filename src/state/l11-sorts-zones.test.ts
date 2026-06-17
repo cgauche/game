@@ -42,7 +42,7 @@ describe('L11 — zones persistantes posées par les sorts', () => {
     const wall = (useGame.getState().battle!.zones ?? []).find((z) => z.label === 'Mur de feu')!;
     expect(wall).toBeTruthy();
     expect(wall.rounds).toBe(4); // (BFM 4) Rounds
-    expect(wall.onCross?.conditions?.[0]?.name).toBe('En flammes');
+    expect(wall.onCross?.conditions?.[0]?.name).toBe('en-flammes');
     // axe O→E → mur VERTICAL passant par la cible ; longueur : BFM 4 m + 3 paliers (+2 DR) × 4 m = 16 m → 8 cases
     expect(wall.tiles.every((t) => t.x === 10)).toBe(true);
     expect(wall.tiles).toHaveLength(8);

@@ -31,7 +31,7 @@ export function suffocationTick(c: Combatant): string[] {
     loseWounds(c, 1);
     lines.push(`${c.name} suffoque (−1 PB).`);
     if (c.wounds.current <= 0) {
-      if (!hasCondition(c, 'Inconscient')) addCondition(c, 'Inconscient');
+      if (!hasCondition(c, 'inconscient')) addCondition(c, 'inconscient');
       c.suffocationCountdown = be;
       lines.push(`${c.name} s'évanouit, privé d'air (Inconscient) — mort dans ${be} Round(s).`);
     }
@@ -39,7 +39,7 @@ export function suffocationTick(c: Combatant): string[] {
   }
   // Déjà à 0 PB : décompte vers la mort (BE Rounds après l'Inconscient, LDB 18 l.425).
   if (c.suffocationCountdown == null) {
-    if (!hasCondition(c, 'Inconscient')) addCondition(c, 'Inconscient');
+    if (!hasCondition(c, 'inconscient')) addCondition(c, 'inconscient');
     c.suffocationCountdown = be;
     lines.push(`${c.name} suffoque, inconscient — mort dans ${be} Round(s).`);
     return lines;

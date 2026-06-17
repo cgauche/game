@@ -76,7 +76,7 @@ describe('runtime : un piège authoré frappe via le runtime des zones de Sort',
     {
       id: 'acid', label: 'Flaque acide', area: { kind: 'disc', cx: 5, cy: 5, radius: 1 },
       perRound: { damage: { amount: 8, ignoreAP: true } },
-      onCross: { damage: { amount: 8, ignoreAP: true }, conditions: [{ name: 'Empoisonné' }] },
+      onCross: { damage: { amount: 8, ignoreAP: true }, conditions: [{ name: 'empoisonne' }] },
     },
   ]);
   it('stationner dedans (perRound) : 8 − BE 3 = 5 Blessures', () => {
@@ -88,7 +88,7 @@ describe('runtime : un piège authoré frappe via le runtime des zones de Sort',
     const victim = mk({ id: 'v2', pos: { x: 3, y: 5 } });
     crossZones([trap as BattleZone], victim, [{ x: 4, y: 5 }, { x: 5, y: 5 }, { x: 6, y: 5 }], () => undefined, rng);
     expect(victim.wounds.current).toBe(7);
-    expect(victim.conditions.some((c) => c.name === 'Empoisonné')).toBe(true);
+    expect(victim.conditions.some((c) => c.name === 'empoisonne')).toBe(true);
   });
 });
 

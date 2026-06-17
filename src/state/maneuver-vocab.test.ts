@@ -47,14 +47,14 @@ describe('Condition {slThreshold} — issue échelonnée sur la marge', () => {
     const flow: Flow = {
       kind: 'if', cond: { kind: 'slThreshold', op: '>=', value: 6 },
       then: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', name: 'Pétrifié' }] } },
-      else: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', name: 'Sonné' }] } },
+      else: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', name: 'sonne' }] } },
     };
     const hi = mk({ id: 'h' });
     runSpellFlow(hi, mk({ id: 'a' }), flow, { sl: 6 });
     expect(hi.conditions.find((c) => c.name === 'Pétrifié')).toBeTruthy();
     const lo = mk({ id: 'l' });
     runSpellFlow(lo, mk({ id: 'a' }), flow, { sl: 3 });
-    expect(lo.conditions.find((c) => c.name === 'Sonné')).toBeTruthy();
+    expect(lo.conditions.find((c) => c.name === 'sonne')).toBeTruthy();
     expect(lo.conditions.find((c) => c.name === 'Pétrifié')).toBeUndefined();
   });
 });

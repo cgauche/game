@@ -66,8 +66,8 @@
               "ops": [
                 {
                   "op": "condition",
-                  "name": "À Terre",
-                  "unlessCondition": "À Terre"
+                  "name": "a-terre",
+                  "unlessCondition": "a-terre"
                 }
               ]
             }
@@ -118,11 +118,11 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "Empêtré",
+                "name": "empetre",
                 "escapeStrength": {
                   "charOf": "F"
                 },
-                "unlessCondition": "Empêtré"
+                "unlessCondition": "empetre"
               }
             ]
           }
@@ -177,7 +177,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "Empêtré",
+                    "name": "empetre",
                     "escapeStrength": {
                       "charOf": "F"
                     }
@@ -273,7 +273,7 @@
                   "ops": [
                     {
                       "op": "condition",
-                      "name": "Pétrifié"
+                      "name": "petrifie"
                     }
                   ]
                 }
@@ -307,7 +307,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "Sonné",
+                    "name": "sonne",
                     "value": 0,
                     "valuePerSL": {
                       "every": 2,
@@ -375,7 +375,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "En flammes"
+                    "name": "en-flammes"
                   }
                 ]
               }
@@ -434,7 +434,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "Sonné"
+                    "name": "sonne"
                   }
                 ]
               }
@@ -493,7 +493,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "Sonné"
+                    "name": "sonne"
                   }
                 ]
               }
@@ -565,7 +565,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "Sonné"
+                    "name": "sonne"
                   }
                 ]
               }
@@ -624,7 +624,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "Empoisonné"
+                    "name": "empoisonne"
                   }
                 ]
               }
@@ -712,7 +712,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "Sonné"
+                    "name": "sonne"
                   }
                 ]
               }
@@ -777,13 +777,13 @@
                 "onFail": [
                   {
                     "op": "condition",
-                    "name": "Brisé"
+                    "name": "brise"
                   }
                 ]
               },
               {
                 "op": "condition",
-                "name": "Assourdi",
+                "name": "assourdi",
                 "value": 3
               }
             ]

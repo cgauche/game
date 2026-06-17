@@ -41,7 +41,7 @@
               "ops": [
                 {
                   "op": "condition",
-                  "name": "En flammes"
+                  "name": "en-flammes"
                 }
               ]
             }
@@ -98,7 +98,7 @@
               "ops": [
                 {
                   "op": "condition",
-                  "name": "Aveuglé"
+                  "name": "aveugle"
                 }
               ]
             }
@@ -218,7 +218,7 @@
                   "kind": "compare",
                   "subject": {
                     "who": "target",
-                    "condition": "Exténué"
+                    "condition": "extenue"
                   },
                   "op": ">=",
                   "value": 1
@@ -234,7 +234,7 @@
               "ops": [
                 {
                   "op": "condition",
-                  "name": "Exténué"
+                  "name": "extenue"
                 }
               ]
             }
@@ -297,12 +297,12 @@
               "ops": [
                 {
                   "op": "removeCondition",
-                  "name": "Exténué",
+                  "name": "extenue",
                   "value": 99
                 },
                 {
                   "op": "removeCondition",
-                  "name": "Hémorragique",
+                  "name": "hemorragique",
                   "value": 99
                 }
               ]

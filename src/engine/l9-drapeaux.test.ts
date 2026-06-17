@@ -51,23 +51,23 @@ describe('activeFlags — drapeaux portés par un ActiveEffect (Jalon 2.6 L9)', 
 describe("Endurance de l'anachorète — « ne subit aucune pénalité causée par les États » (LDB 42)", () => {
   it('combatTestPenalty : pénalités d’États annulées sous le drapeau (Sonné + Exténué)', () => {
     const c = mk();
-    addCondition(c, 'Sonné');
-    addCondition(c, 'Exténué', 2);
+    addCondition(c, 'sonne');
+    addCondition(c, 'extenue', 2);
     expect(combatTestPenalty(c)).toBe(-20);
     c.activeEffects = [{ label: 'Endurance de l’anachorète', bonus: 0, roundsLeft: 3, ignoreStatePenalties: true }];
     expect(combatTestPenalty(c)).toBe(0);
   });
   it('combatTestPenalty : l’aura Perturbante (trait, pas un État) n’est PAS annulée', () => {
     const c = mk();
-    addCondition(c, 'Sonné');
+    addCondition(c, 'sonne');
     (c as Combatant & { perturbed?: boolean }).perturbed = true;
     c.activeEffects = [{ label: 'Endurance', bonus: 0, roundsLeft: 3, ignoreStatePenalties: true }];
     expect(combatTestPenalty(c)).toBe(-20);
   });
   it('testStatePenalty : annulée sous le drapeau (Empoisonné, déplacement À Terre)', () => {
     const c = mk();
-    addCondition(c, 'Empoisonné');
-    addCondition(c, 'À Terre');
+    addCondition(c, 'empoisonne');
+    addCondition(c, 'a-terre');
     expect(testStatePenalty(c, 'Athlétisme')).toBe(-20);
     c.activeEffects = [{ label: 'Endurance', bonus: 0, roundsLeft: 3, ignoreStatePenalties: true }];
     expect(testStatePenalty(c, 'Athlétisme')).toBe(0);
@@ -87,28 +87,28 @@ describe('Sommeil — « Si la cible possède un État À Terre, elle gagne Inco
   it('onlyIfCondition : cible À Terre → Inconscient pour la durée du sort (BFM du lanceur)', () => {
     const caster = mk({ id: 'w', name: 'Sorcier' });
     const target = mk({ id: 't', name: 'Cible' });
-    addCondition(target, 'À Terre');
-    applyOps(target, [{ op: 'condition', name: 'Inconscient', durationRounds: { bonusOf: 'FM' }, onlyIfCondition: 'À Terre' }], { caster, label: 'Sommeil' });
-    expect(hasCondition(target, 'Inconscient')).toBe(true);
-    expect(target.conditions.find((x) => x.name === 'Inconscient')?.roundsLeft).toBe(4); // BFM 40 → 4
+    addCondition(target, 'a-terre');
+    applyOps(target, [{ op: 'condition', name: 'inconscient', durationRounds: { bonusOf: 'FM' }, onlyIfCondition: 'a-terre' }], { caster, label: 'Sommeil' });
+    expect(hasCondition(target, 'inconscient')).toBe(true);
+    expect(target.conditions.find((x) => x.name === 'inconscient')?.roundsLeft).toBe(4); // BFM 40 → 4
   });
   it('onlyIfCondition : cible debout → PAS d’Inconscient ; unlessCondition pose À Terre à la place', () => {
     const caster = mk({ id: 'w' });
     const target = mk({ id: 't' });
     applyOps(target, [
-      { op: 'condition', name: 'Inconscient', durationRounds: { bonusOf: 'FM' }, onlyIfCondition: 'À Terre' },
-      { op: 'condition', name: 'À Terre', unlessCondition: 'À Terre' },
+      { op: 'condition', name: 'inconscient', durationRounds: { bonusOf: 'FM' }, onlyIfCondition: 'a-terre' },
+      { op: 'condition', name: 'a-terre', unlessCondition: 'a-terre' },
     ], { caster, label: 'Sommeil' });
-    expect(hasCondition(target, 'Inconscient')).toBe(false);
-    expect(hasCondition(target, 'À Terre')).toBe(true);
+    expect(hasCondition(target, 'inconscient')).toBe(false);
+    expect(hasCondition(target, 'a-terre')).toBe(true);
   });
   it('unlessCondition : cible déjà À Terre → l’op À Terre ne double pas l’État', () => {
     const caster = mk({ id: 'w' });
     const target = mk({ id: 't' });
-    addCondition(target, 'À Terre');
-    applyOps(target, [{ op: 'condition', name: 'À Terre', unlessCondition: 'À Terre' }], { caster, label: 'Sommeil' });
-    expect(target.conditions.filter((x) => x.name === 'À Terre')).toHaveLength(1);
-    expect(target.conditions.find((x) => x.name === 'À Terre')?.value).toBe(1);
+    addCondition(target, 'a-terre');
+    applyOps(target, [{ op: 'condition', name: 'a-terre', unlessCondition: 'a-terre' }], { caster, label: 'Sommeil' });
+    expect(target.conditions.filter((x) => x.name === 'a-terre')).toHaveLength(1);
+    expect(target.conditions.find((x) => x.name === 'a-terre')?.value).toBe(1);
   });
 });
 

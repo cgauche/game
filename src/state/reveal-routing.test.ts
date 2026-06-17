@@ -84,7 +84,7 @@ describe('entretien de fin de Round — partition héros/ennemis (spec coop §4b
 
   it('États récurrents ENNEMIS seuls → pas de modale, mais le journal de combat les porte', () => {
     const st = useGame.getState();
-    for (const c of st.battle!.combatants) if (c.kind === 'enemy') c.conditions.push({ name: 'Hémorragique', value: 1 });
+    for (const c of st.battle!.combatants) if (c.kind === 'enemy') c.conditions.push({ name: 'hemorragique', value: 1 });
     crossRound();
     const reveals = useGame.getState().pendingReveals.filter((r) => r.kind === 'round');
     expect(reveals).toHaveLength(0);
@@ -94,8 +94,8 @@ describe('entretien de fin de Round — partition héros/ennemis (spec coop §4b
   it('État récurrent sur un HÉROS → modale de Round avec SA ligne, sans les lignes ennemies', () => {
     const st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
-    H.conditions.push({ name: 'Hémorragique', value: 1 });
-    for (const c of st.battle!.combatants) if (c.kind === 'enemy') c.conditions.push({ name: 'Hémorragique', value: 1 });
+    H.conditions.push({ name: 'hemorragique', value: 1 });
+    for (const c of st.battle!.combatants) if (c.kind === 'enemy') c.conditions.push({ name: 'hemorragique', value: 1 });
     crossRound();
     const reveal = useGame.getState().pendingReveals.find((r) => r.kind === 'round');
     expect(reveal).toBeTruthy();

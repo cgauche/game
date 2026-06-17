@@ -43,7 +43,7 @@ describe('PortraitTile', () => {
 
   it('variantes : vital = jauge sans états ; identity = portrait seul', () => {
     const c = base();
-    c.conditions = [{ name: 'Sonné', value: 1 }] as Combatant['conditions'];
+    c.conditions = [{ name: 'sonne', value: 1 }] as Combatant['conditions'];
     const vital = renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" variant="vital" />);
     expect(vital).toContain('ptile-gauge');
     expect(vital).not.toContain('ptile-states');
@@ -61,15 +61,15 @@ describe('PortraitTile', () => {
   it('≤ 4 états visibles puis chevron ▾ (variante full)', () => {
     const c = base();
     c.conditions = [
-      { name: 'Sonné', value: 1 }, { name: 'À Terre', value: 1 }, { name: 'Aveuglé', value: 1 },
-      { name: 'Empoisonné', value: 2 }, { name: 'Hémorragique', value: 1 },
+      { name: 'sonne', value: 1 }, { name: 'a-terre', value: 1 }, { name: 'aveugle', value: 1 },
+      { name: 'empoisonne', value: 2 }, { name: 'hemorragique', value: 1 },
     ] as Combatant['conditions'];
     const html = renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" />);
     expect(html).toContain('💫'); // Sonné (sévérité max → 1er)
     expect(html).toContain('▾'); // 5 états → 4 + débordement
     expect(html).not.toContain('🩸'); // Hémorragique (sévérité min) débordé
     // 2 états → pas de chevron
-    c.conditions = [{ name: 'Sonné', value: 1 }, { name: 'À Terre', value: 1 }] as Combatant['conditions'];
+    c.conditions = [{ name: 'sonne', value: 1 }, { name: 'a-terre', value: 1 }] as Combatant['conditions'];
     expect(renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" />)).not.toContain('▾');
   });
 

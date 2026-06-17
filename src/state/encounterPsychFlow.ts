@@ -96,7 +96,7 @@ registerCascadeApplier(
     }
     const brise = terreurBrise(ep.indice, r.success, r.sl);
     if (ep.kind === 'terreur') {
-      if (brise > 0) addCondition(hero, 'Brisé', brise);
+      if (brise > 0) addCondition(hero, 'brise', brise);
       hero.psychState.push({ type: 'peur', sourceId: ep.sourceId, indice: r.success ? 0 : ep.indice, calmeDR: 0 }); // la Terreur devient une Peur (LDB 21 l.57)
     } else if (CIBLE_TYPES.has(ep.kind)) {
       hero.psychState.push({ type: ep.kind, cible: ep.cible, sourceId: ep.sourceId, active: !r.success });

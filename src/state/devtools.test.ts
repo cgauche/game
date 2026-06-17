@@ -56,7 +56,7 @@ describe('__wfrp — autres commandes de recette', () => {
   it('healParty : PB max, états purgés, mort relevé', () => {
     const h = useGame.getState().party[0];
     useGame.setState({
-      party: [{ ...h, wounds: { ...h.wounds, current: 0 }, conditions: [{ id: 'Hémorragique', stacks: 2 }] as never, criticalWounds: 3, dead: true }],
+      party: [{ ...h, wounds: { ...h.wounds, current: 0 }, conditions: [{ id: 'hemorragique', stacks: 2 }] as never, criticalWounds: 3, dead: true }],
     });
     buildApi().healParty();
     const healed = useGame.getState().party[0];

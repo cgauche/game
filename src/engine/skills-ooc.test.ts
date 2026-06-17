@@ -14,20 +14,20 @@ function mk(opts: Partial<Combatant> = {}): Combatant {
 
 describe('testValue HORS COMBAT — mêmes modulations qu’en combat (audit, LDB 16/18/61)', () => {
   it('État Empoisonné → −10 (LDB 16 l.66)', () => {
-    expect(testValue(mk({ conditions: [{ name: 'Empoisonné', value: 1 }] }), undefined, 'Int')).toBe(20); // 30 − 10
+    expect(testValue(mk({ conditions: [{ name: 'empoisonne', value: 1 }] }), undefined, 'Int')).toBe(20); // 30 − 10
   });
 
   it('État Exténué ×2 → −20 (LDB 16 l.18/89)', () => {
-    expect(testValue(mk({ conditions: [{ name: 'Exténué', value: 2 }] }), undefined, 'Int')).toBe(10); // 30 − 20
+    expect(testValue(mk({ conditions: [{ name: 'extenue', value: 2 }] }), undefined, 'Int')).toBe(10); // 30 − 20
   });
 
   it('Non-cumul (LDB 16 l.20) : Brisé(−10) + Exténué×2(−20) → −20 seulement', () => {
-    const c = mk({ conditions: [{ name: 'Brisé', value: 1 }, { name: 'Exténué', value: 2 }] });
+    const c = mk({ conditions: [{ name: 'brise', value: 1 }, { name: 'extenue', value: 2 }] });
     expect(testValue(c, undefined, 'Int')).toBe(10); // 30 − 20 (la pire), pas −30
   });
 
   it('Brisé : −10 sur un Test normal, EXEMPTÉ pour course (Athlétisme) / dissimulation (Discrétion) (l.55)', () => {
-    const broke = mk({ conditions: [{ name: 'Brisé', value: 1 }] });
+    const broke = mk({ conditions: [{ name: 'brise', value: 1 }] });
     const ok = mk();
     expect(testValue(ok, 'Perception') - testValue(broke, 'Perception')).toBe(10); // Test normal pénalisé
     expect(testValue(broke, 'Athlétisme')).toBe(testValue(ok, 'Athlétisme')); // course → pas de malus

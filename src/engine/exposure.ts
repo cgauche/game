@@ -91,8 +91,8 @@ export function applyExposureFailure(c: Combatant, failures: number, rng: RNG): 
   const dmg = Math.max(1, rng.int(1, 10));
   loseWounds(c, dmg);
   log.push(`${c.name} souffre du froid : ${dmg} Blessure(s) (ignore les PA).`);
-  if (c.wounds.current <= 0 && !hasCondition(c, 'Inconscient')) {
-    addCondition(c, 'Inconscient');
+  if (c.wounds.current <= 0 && !hasCondition(c, 'inconscient')) {
+    addCondition(c, 'inconscient');
     log.push(`${c.name} sombre, gelé — Inconscient.`);
   }
   return { log, wounds: dmg };

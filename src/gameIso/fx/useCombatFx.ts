@@ -9,6 +9,7 @@ import { useGame } from '../../state/store';
 import { bus, EVT } from '../../state/bus';
 import { isSupportiveCast, spellFxForLabel } from '../rig/anim/spellClips';
 import { conditionMeta } from '../effectIcons';
+import { conditionLabel } from '../../data';
 import type { Combatant } from '../../engine/types';
 
 /** Couleur du flash de zone d'effet selon l'élément (feu/froid/poison/foudre), défaut rouge. */
@@ -57,7 +58,7 @@ export function diffConditionGains(prev: CondSig, combatants: Combatant[]): { id
     for (const cd of c.conditions ?? []) {
       const v = cd.value ?? 1;
       const before = old.get(cd.name) ?? 0;
-      if (v > before) out.push({ id: c.id, x: c.pos.x, y: c.pos.y, text: `${conditionMeta(cd.name).icon} ${cd.name}${v > 1 ? ` ${v}` : ''}` });
+      if (v > before) out.push({ id: c.id, x: c.pos.x, y: c.pos.y, text: `${conditionMeta(cd.name).icon} ${conditionLabel(cd.name)}${v > 1 ? ` ${v}` : ''}` });
     }
   }
   return out;

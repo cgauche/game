@@ -9,6 +9,7 @@
  *  - l'IMPORTANCE (les événements importants remontent dans le bandeau haut ; le reste reste au journal).
  */
 import { conditionMeta } from './effectIcons';
+import { etats } from '../data';
 import type { CombatEvent, CombatEventKind } from '../state/combatLog';
 
 export interface NarratedSegment {
@@ -45,15 +46,14 @@ const IMPORTANT: Set<CombatEventKind> = new Set([
 
 /** États (LDB ch.16) reconnus dans le texte d'un événement `condition`/`detail` → icône via la
  *  source unique `conditionMeta` (jeu de noms FERMÉ, pas du devinage de verbe libre). */
-const STATE_NAMES = [
-  'Inconscient', 'Pétrifié', 'Hémorragique', 'Empoisonné', 'En flammes', 'Empêtré',
-  'Aveuglé', 'Assourdi', 'Exténué', 'Surpris', 'Sonné', 'À Terre', 'Brisé',
-];
+// Le texte d'un événement est en FRANÇAIS (journal) → on scanne le LIBELLÉ (etats.json + Pétrifié),
+// puis on mappe à l'`id` pour l'icône (conditionMeta keyé par id). Data-driven (zéro liste figée).
+const STATE_LABEL_TO_ID: [string, string][] = [...etats.map((e): [string, string] => [e.label, e.id]), ['Pétrifié', 'petrifie']];
 
 function stateMeta(text: string): { icon: string; important: boolean } | null {
-  for (const name of STATE_NAMES) {
-    if (text.includes(name)) {
-      const m = conditionMeta(name);
+  for (const [label, id] of STATE_LABEL_TO_ID) {
+    if (text.includes(label)) {
+      const m = conditionMeta(id);
       return { icon: m.icon, important: m.important };
     }
   }

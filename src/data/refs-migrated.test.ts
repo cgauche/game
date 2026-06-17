@@ -5,10 +5,11 @@
  */
 import { describe, it, expect } from 'vitest';
 import {
-  trappings, qualities, spells, creatures, classes, careers, careerLevels, species, gods,
+  trappings, qualities, spells, creatures, classes, careers, careerLevels, species, gods, etats,
   findSkillById, findTalentById, findTrappingById, findQualityById, findSpellById,
-  findCareerById, findClassById, findSpeciesById,
+  findCareerById, findClassById, findSpeciesById, findConditionById,
 } from './index';
+import { COND } from '../engine/conditions';
 import pregensJson from './pregens.json';
 import interludeEventsJson from './interludeEvents.json';
 import { CHAR_KEYS } from '../engine/types';
@@ -59,6 +60,17 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     for (const c of careers) { expect(typeof c.id).toBe('string'); expect(findClassById(c.class), c.label).toBeTruthy(); }
     for (const cl of classes) expect(typeof cl.id).toBe('string');
     for (const s of species) expect(typeof s.id).toBe('string');
+  });
+
+  it('etats portent un id ; la constante moteur COND est synchrone avec etats.json', () => {
+    for (const e of etats) expect(typeof e.id).toBe('string');
+    const ids = new Set(etats.map((e) => e.id));
+    for (const id of Object.values(COND)) expect(ids.has(id), id).toBe(true); // chaque État canonique existe dans le dataset
+    expect(Object.values(COND).length).toBe(12); // les 12 États LDB 16
+  });
+
+  it('findConditionById résout les ids canoniques', () => {
+    for (const id of Object.values(COND)) expect(findConditionById(id), id).toBeTruthy();
   });
 
   it('careerLevels.career = careerId qui résout', () => {

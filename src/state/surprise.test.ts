@@ -19,23 +19,23 @@ describe('Surprise — établissement & comportement (LDB 13 l.52-81 / 16 l.130-
     const hero = C({ id: 'h', kind: 'hero', characteristics: LOW }); // Perception faible
     const enemy = C({ id: 'e', kind: 'enemy', characteristics: HIGH }); // Discrétion forte (embusqueur)
     applySurprise([hero, enemy], 'party'); // les héros sont pris en embuscade
-    expect(hasCondition(hero, 'Surpris')).toBe(true);
-    expect(hasCondition(enemy, 'Surpris')).toBe(false);
+    expect(hasCondition(hero, 'surpris')).toBe(true);
+    expect(hasCondition(enemy, 'surpris')).toBe(false);
   });
 
   it('effectiveMovement = 0 quand Surpris (LDB 16 l.132)', () => {
-    const c = C({ characteristics: { F: 30, E: 30 } as never, conditions: [{ name: 'Surpris', value: 1 }] });
+    const c = C({ characteristics: { F: 30, E: 30 } as never, conditions: [{ name: 'surpris', value: 1 }] });
     expect(effectiveMovement(c)).toBe(0);
   });
 
   it('IA : un ennemi Surpris passe la main (ni Mouvement ni Action)', () => {
-    const e = C({ id: 'e', kind: 'enemy', conditions: [{ name: 'Surpris', value: 1 }], pos: { x: 5, y: 5 }, weapons: [{ name: 'Épée', type: 'melee', damage: '+4', qualities: [] }] as never });
+    const e = C({ id: 'e', kind: 'enemy', conditions: [{ name: 'surpris', value: 1 }], pos: { x: 5, y: 5 }, weapons: [{ name: 'Épée', type: 'melee', damage: '+4', qualities: [] }] as never });
     const h = C({ id: 'h', kind: 'hero', pos: { x: 6, y: 5 } });
     expect(chooseEnemyAction({ enemy: e, heroes: [h], scene: scene(), blocked: new Set(), movement: 4 } as never).kind).toBe('end');
   });
 
   it('un héros Surpris ne peut QUE puiser dans sa Détermination (resolve)', () => {
-    const hero = C({ id: 'h', kind: 'hero', conditions: [{ name: 'Surpris', value: 1 }], pos: { x: 5, y: 5 }, weapons: [{ name: 'Épée', type: 'melee', damage: '+4', qualities: [] }] as never, resolve: 1 });
+    const hero = C({ id: 'h', kind: 'hero', conditions: [{ name: 'surpris', value: 1 }], pos: { x: 5, y: 5 }, weapons: [{ name: 'Épée', type: 'melee', damage: '+4', qualities: [] }] as never, resolve: 1 });
     useGame.setState({ battle: { combatants: [hero], order: ['h'], turn: 0, action: null, movementUsed: 0, acted: false, reachable: new Map(), over: false, round: 1, log: [] } as never, scene: scene() });
     expect(computeMoveReach(useGame.getState).size).toBe(0); // Mouvement bloqué (effectiveMovement = 0)
     useGame.getState().battleSelectAction('cast');
@@ -48,7 +48,7 @@ describe('Surprise — établissement & comportement (LDB 13 l.52-81 / 16 l.130-
     const hero = C({ id: 'h', kind: 'hero' });
     const enemy = C({ id: 'e', kind: 'enemy' });
     // applySurprise n'est appelé que si enc.surprise est défini ; ici on vérifie juste l'état initial.
-    expect(hasCondition(hero, 'Surpris')).toBe(false);
-    expect(hasCondition(enemy, 'Surpris')).toBe(false);
+    expect(hasCondition(hero, 'surpris')).toBe(false);
+    expect(hasCondition(enemy, 'surpris')).toBe(false);
   });
 });

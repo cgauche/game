@@ -4,5 +4,5 @@ import type { QualityDef } from '../types';
 // Force/Athlétisme ; en cas de victoire la cible est mise À Terre (montée : chute de 2 m puis À Terre).
 export const quality: QualityDef = {
   key: 'Déstabilisante', type: 'Atout', subType: 'Arme',
-  onHitKnockdown: { advantageCost: 2, char: 'F', skill: 'Athlétisme', condition: 'À Terre' },
+  onHitKnockdown: { advantageCost: 2, char: 'F', skill: 'Athlétisme', condition: 'a-terre' },
 };

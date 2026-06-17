@@ -676,7 +676,7 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
           const be = Math.floor(effectiveChar(c, 'E') / 10);
           const lost = Math.max(0, 3 * m + d10(battleRng()) - be);
           loseWounds(c, lost);
-          if (lost > be) addCondition(c, 'À Terre');
+          if (lost > be) addCondition(c, 'a-terre');
           return `${c.name} ${lost}${lost > be ? ' (À Terre)' : ''}`;
         });
         if (targets.length) {

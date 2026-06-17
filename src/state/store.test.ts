@@ -103,7 +103,7 @@ describe('Boucle de jeu (store)', () => {
     const combatants = b.combatants.map((c) =>
       c.kind === 'hero'
         ? { ...c, wounds: { ...c.wounds, current: 4 }, criticalWounds: 1,
-            conditions: [{ name: 'Hémorragique', value: 2 }, { name: 'Surpris', value: 1 }] }
+            conditions: [{ name: 'hemorragique', value: 2 }, { name: 'surpris', value: 1 }] }
         : { ...c, dead: true },
     );
     const heroId = combatants.find((c) => c.kind === 'hero')!.id;
@@ -120,8 +120,8 @@ describe('Boucle de jeu (store)', () => {
     const h = st.party[0];
     expect(h.wounds.current).toBe(4);                                              // Blessures persistées
     expect(h.criticalWounds).toBe(1);                                             // critiques persistés
-    expect(h.conditions.find((x) => x.name === 'Hémorragique')?.value).toBe(2);    // persistant conservé
-    expect(h.conditions.some((x) => x.name === 'Surpris')).toBe(false);            // transitoire jeté
+    expect(h.conditions.find((x) => x.name === 'hemorragique')?.value).toBe(2);    // persistant conservé
+    expect(h.conditions.some((x) => x.name === 'surpris')).toBe(false);            // transitoire jeté
   });
 
   // ── Déviation Critique côté JOUEUR (LDB 63 l.63-66) : suspend re-entrant + choix Dévier/Subir ──
@@ -327,14 +327,14 @@ describe('Boucle de jeu (store)', () => {
   it('ré-importe les États persistants du groupe au lancement du combat (carry-in)', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
     // Le membre du groupe porte un État persistant (Hémorragique) et un transitoire (À Terre).
-    useGame.setState({ party: [{ ...hero, conditions: [{ name: 'Hémorragique', value: 1 }, { name: 'À Terre', value: 1 }] }] });
+    useGame.setState({ party: [{ ...hero, conditions: [{ name: 'hemorragique', value: 1 }, { name: 'a-terre', value: 1 }] }] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     const h = useGame.getState().battle!.combatants.find((c) => c.kind === 'hero')!;
-    expect(h.conditions.find((x) => x.name === 'Hémorragique')?.value).toBe(1); // persistant ré-importé
-    expect(h.conditions.some((x) => x.name === 'À Terre')).toBe(false);          // transitoire ignoré
+    expect(h.conditions.find((x) => x.name === 'hemorragique')?.value).toBe(1); // persistant ré-importé
+    expect(h.conditions.some((x) => x.name === 'a-terre')).toBe(false);          // transitoire ignoré
   });
 
   it("n'instancie pas un héros mort/éjecté au combat suivant", () => {
@@ -672,7 +672,7 @@ describe('Boucle de jeu (store)', () => {
     let st = useGame.getState();
     const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const enemy = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
-    enemy.conditions.push({ name: 'Sonné', value: 1 });
+    enemy.conditions.push({ name: 'sonne', value: 1 });
     heroC.advantage = 0;
     heroC.pos = { x: enemy.pos!.x - 1, y: enemy.pos!.y }; // adjacent
     const turn = st.battle!.order.indexOf(heroC.id);
@@ -794,7 +794,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().confirmRoundStart();
     const st = useGame.getState();
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
-    H.conditions.push({ name: 'Sonné', value: 1 });
+    H.conditions.push({ name: 'sonne', value: 1 });
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
     E.pos = { x: H.pos!.x + 1, y: H.pos!.y }; // adjacent : seul le Sonné bloque l'attaque
     const turn = st.battle!.order.indexOf(H.id);
@@ -816,7 +816,7 @@ describe('Boucle de jeu (store)', () => {
     const H = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
     E.pos = { x: H.pos!.x + 1, y: H.pos!.y }; // adjacent
-    E.conditions.push({ name: 'Sonné', value: 1 }); // l'ennemi est Sonné
+    E.conditions.push({ name: 'sonne', value: 1 }); // l'ennemi est Sonné
     for (const c of st.battle!.combatants) if (c.kind === 'enemy' && c.id !== E.id) c.wounds.current = 0;
     const woundsBefore = H.wounds.current;
     useGame.setState({
@@ -1757,13 +1757,13 @@ describe('Utiliser un consommable en combat (store)', () => {
 
   it('Potion de vitalité : retire l’État Exténué (toutes les piles)', () => {
     const h = combatHero({
-      conditions: [{ name: 'Exténué', value: 2 }],
+      conditions: [{ name: 'extenue', value: 2 }],
       items: [potion('p2', 'Potion de vitalité', 'Boire cette décoction retire instantanément tout État Exténué.')],
     });
     useGame.setState({ mode: 'battle', battle: mkBattle(h) });
     useGame.getState().battleUseItem('p2');
     const b = useGame.getState().battle!;
-    expect(b.combatants[0].conditions.find((c) => c.name === 'Exténué')).toBeUndefined();
+    expect(b.combatants[0].conditions.find((c) => c.name === 'extenue')).toBeUndefined();
     expect(b.acted).toBe(true);
   });
 
@@ -1848,11 +1848,11 @@ describe('Détermination (Resolve) — retirer un État (LDB ch.17 l.62-66)', ()
   it('retire un État, ne consomme pas l’Action, décrémente la Détermination', () => {
     const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     h.resolve = 2;
-    h.conditions = [{ name: 'Aveuglé', value: 1 }];
+    h.conditions = [{ name: 'aveugle', value: 1 }];
     useGame.setState({ mode: 'battle', battle: mkBattle(h) });
-    useGame.getState().battleSpendResolve('Aveuglé');
+    useGame.getState().battleSpendResolve('aveugle');
     const b = useGame.getState().battle!;
-    expect(b.combatants[0].conditions.find((c) => c.name === 'Aveuglé')).toBeUndefined();
+    expect(b.combatants[0].conditions.find((c) => c.name === 'aveugle')).toBeUndefined();
     expect(b.combatants[0].resolve).toBe(1);
     expect(b.acted).toBe(false); // ne coûte pas l'Action
   });
@@ -1860,22 +1860,22 @@ describe('Détermination (Resolve) — retirer un État (LDB ch.17 l.62-66)', ()
   it('retirer À Terre fait regagner 1 PB (l.66)', () => {
     const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     h.resolve = 1;
-    h.conditions = [{ name: 'À Terre', value: 1 }];
+    h.conditions = [{ name: 'a-terre', value: 1 }];
     h.wounds = { current: 5, max: 12 };
     useGame.setState({ mode: 'battle', battle: mkBattle(h) });
-    useGame.getState().battleSpendResolve('À Terre');
+    useGame.getState().battleSpendResolve('a-terre');
     const c0 = useGame.getState().battle!.combatants[0];
-    expect(c0.conditions.find((c) => c.name === 'À Terre')).toBeUndefined();
+    expect(c0.conditions.find((c) => c.name === 'a-terre')).toBeUndefined();
     expect(c0.wounds.current).toBe(6); // +1 PB
   });
 
   it('sans Détermination : aucun effet', () => {
     const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     h.resolve = 0;
-    h.conditions = [{ name: 'Aveuglé', value: 1 }];
+    h.conditions = [{ name: 'aveugle', value: 1 }];
     useGame.setState({ mode: 'battle', battle: mkBattle(h) });
-    useGame.getState().battleSpendResolve('Aveuglé');
-    expect(useGame.getState().battle!.combatants[0].conditions.find((c) => c.name === 'Aveuglé')).toBeTruthy();
+    useGame.getState().battleSpendResolve('aveugle');
+    expect(useGame.getState().battle!.combatants[0].conditions.find((c) => c.name === 'aveugle')).toBeTruthy();
   });
 });
 
@@ -2090,7 +2090,7 @@ describe('Blessures critiques & mort en combat (LDB 18-Traumatisme)', () => {
   });
 
   it('héros SANS Destin Inconscient + 0 PB + critiques > BE → meurt en fin de Round (LDB 18 l.48-49)', () => {
-    const { H, E } = combat({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'Inconscient', value: 1 }], criticalWounds: 4, fate: 0 }); // BE=3, pas de Destin → mort directe
+    const { H, E } = combat({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }], criticalWounds: 4, fate: 0 }); // BE=3, pas de Destin → mort directe
     useGame.setState({ battle: { ...useGame.getState().battle!, order: [E.id, H.id], turn: 1 } }); // H dernier → battleEndTurn franchit le Round
     useGame.getState().seedRng(1);
     useGame.getState().battleEndTurn();
@@ -2118,7 +2118,7 @@ describe('Destin sacrifié (LDB ch.17 l.31-35)', () => {
   }
 
   it('mort lente d’un héros à Destin → suspend (pendingFateSave source=slow), pas mort', () => {
-    combat({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'Inconscient', value: 1 }], criticalWounds: 4 }); // fate=1, BE=3
+    combat({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }], criticalWounds: 4 }); // fate=1, BE=3
     useGame.getState().seedRng(1);
     useGame.getState().battleEndTurn(); // H dernier → franchit le Round
     const st = useGame.getState();
@@ -2128,7 +2128,7 @@ describe('Destin sacrifié (LDB ch.17 l.31-35)', () => {
   });
 
   it('« Meurs un autre jour » : éjecté vivant, Destin −1, le Round reprend', () => {
-    const { H } = combat({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'Inconscient', value: 1 }], criticalWounds: 4, fate: 2 });
+    const { H } = combat({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }], criticalWounds: 4, fate: 2 });
     useGame.getState().seedRng(1);
     useGame.getState().battleEndTurn();
     useGame.getState().fateSurvive();
@@ -2140,7 +2140,7 @@ describe('Destin sacrifié (LDB ch.17 l.31-35)', () => {
   });
 
   it('« Accepter le sort » : mort', () => {
-    const { H } = combat({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'Inconscient', value: 1 }], criticalWounds: 4 });
+    const { H } = combat({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }], criticalWounds: 4 });
     useGame.getState().seedRng(1);
     useGame.getState().battleEndTurn();
     useGame.getState().fateAccept();
@@ -2148,7 +2148,7 @@ describe('Destin sacrifié (LDB ch.17 l.31-35)', () => {
   });
 
   it('héros SANS Destin : mort lente directe, pas de pause', () => {
-    const { H } = combat({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'Inconscient', value: 1 }], criticalWounds: 4, fate: 0 });
+    const { H } = combat({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }], criticalWounds: 4, fate: 0 });
     useGame.getState().seedRng(1);
     useGame.getState().battleEndTurn();
     expect(useGame.getState().pendingFateSave).toBeNull();

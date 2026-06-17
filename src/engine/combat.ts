@@ -579,7 +579,7 @@ export function resolveMelee(
 ): AttackResult {
   const defenseMode = cannotDefend(defender) ? 'none' : opts.defense ?? 'parade';
   let atk = rollMeleeAttacker(attacker, defender, weapon, rng, opts.location, opts.env);
-  if (hasCondition(defender, 'Inconscient')) atk = helplessTest(atk, 'melee'); // auto-réussite + critique (LDB 16 l.112)
+  if (hasCondition(defender, 'inconscient')) atk = helplessTest(atk, 'melee'); // auto-réussite + critique (LDB 16 l.112)
   if (defenseMode === 'none') return resolveMeleePassive(attacker, defender, weapon, atk, opts.location, opts.env, opts.dmgProxy);
   const def = rollMeleeDefender(defender, defenseMode, rng, opts.dodgeMod, defender.weapons[0], weapon);
   return finishMelee(attacker, defender, weapon, atk, def, defenseMode, opts.location, opts.env, opts.dodgeMod, opts.dmgProxy);
@@ -672,11 +672,11 @@ export function resolveRanged(
     return { hit: false, attackerRoll: 0, netSL: 0, critical: false, advantageTo: null, defenderDefeated: false, log: `${attacker.name} : cible hors de portée.` };
   const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env });
   let atk = rollTest(atkVal, 'intermediaire', rng, combineMods(mods));
-  if (hasCondition(defender, 'Inconscient')) atk = helplessTest(atk, 'ranged'); // auto-succès, Dégâts à bout portant (LDB 16 l.112)
+  if (hasCondition(defender, 'inconscient')) atk = helplessTest(atk, 'ranged'); // auto-succès, Dégâts à bout portant (LDB 16 l.112)
   const atkBd = bd('Projectiles', atkVal, atk, mods);
   // Tir DÉFENDU (RAW : Protectrice 2+ LDB 62 l.307 / Bout Portant 14 l.62 / tireur Engagé 14 l.70) →
   // Test OPPOSÉ, cœur partagé avec la mêlée (`combineOpposed`). L'Inconscient ne se défend pas.
-  if (defense && !hasCondition(defender, 'Inconscient')) {
+  if (defense && !hasCondition(defender, 'inconscient')) {
     const def = rollMeleeDefender(defender, defense.mode, rng, defense.dodgeMod ?? 0, defense.parryWeapon ?? defender.weapons[0], weapon);
     return combineOpposed(attacker, defender, weapon, atk, def, defense.mode, atkBd, { location, parryWeapon: defense.parryWeapon, dodgeMod: defense.dodgeMod });
   }

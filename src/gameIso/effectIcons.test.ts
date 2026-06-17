@@ -7,12 +7,12 @@ const buff = (label: string, bonus: number, roundsLeft: number, char?: CharKey):
 
 describe('conditionMeta', () => {
   it('donne une icône et marque les états incapacitants comme importants', () => {
-    expect(conditionMeta('Sonné').icon).toBeTruthy();
-    expect(conditionMeta('Sonné').important).toBe(true);
-    expect(conditionMeta('Inconscient').important).toBe(true);
+    expect(conditionMeta('sonne').icon).toBeTruthy();
+    expect(conditionMeta('sonne').important).toBe(true);
+    expect(conditionMeta('inconscient').important).toBe(true);
   });
   it('marque Exténué comme non-important (état mineur)', () => {
-    expect(conditionMeta('Exténué').important).toBe(false);
+    expect(conditionMeta('extenue').important).toBe(false);
   });
   it('a un repli pour un état inconnu', () => {
     expect(conditionMeta('TrucBizarre').icon).toBeTruthy();
@@ -36,33 +36,33 @@ describe('combatantFlags — Peur (LDB 21 l.29)', () => {
 
 describe('summarizeEffects', () => {
   it('rend tout quand on est sous la limite', () => {
-    const r = summarizeEffects([cond('Sonné'), cond('Aveuglé')], [], 5);
+    const r = summarizeEffects([cond('sonne'), cond('aveugle')], [], 5);
     expect(r.visible).toHaveLength(2);
     expect(r.moreCount).toBe(0);
   });
   it('tronque et compte le surplus quand ça déborde', () => {
-    const r = summarizeEffects([cond('Sonné'), cond('Aveuglé'), cond('Empoisonné'), cond('Hémorragique')], [], 2);
+    const r = summarizeEffects([cond('sonne'), cond('aveugle'), cond('empoisonne'), cond('hemorragique')], [], 2);
     expect(r.visible).toHaveLength(2);
     expect(r.moreCount).toBe(2);
   });
   it('trie les malus par sévérité décroissante (le plus grave en premier)', () => {
-    const r = summarizeEffects([cond('Exténué'), cond('Inconscient')], [], 5);
+    const r = summarizeEffects([cond('extenue'), cond('inconscient')], [], 5);
     expect(r.visible[0].label).toBe('Inconscient');
   });
   it('garde un empilement (value>1) comme compteur', () => {
-    const r = summarizeEffects([cond('Hémorragique', 3)], [], 5);
+    const r = summarizeEffects([cond('hemorragique', 3)], [], 5);
     expect(r.visible[0].count).toBe(3);
-    const single = summarizeEffects([cond('Sonné', 1)], [], 5);
+    const single = summarizeEffects([cond('sonne', 1)], [], 5);
     expect(single.visible[0].count).toBeUndefined();
   });
   it('place les buffs après les malus et expose leur durée + bonus', () => {
-    const r = summarizeEffects([cond('Sonné')], [buff('Bénédiction de Bataille', 10, 2, 'CC')], 5);
+    const r = summarizeEffects([cond('sonne')], [buff('Bénédiction de Bataille', 10, 2, 'CC')], 5);
     expect(r.visible.map((c) => c.kind)).toEqual(['malus', 'buff']);
     expect(r.visible[1].rounds).toBe(2);
     expect(r.visible[1].bonus).toBe(10);
   });
   it('priorise les malus quand le débordement coupe', () => {
-    const r = summarizeEffects([cond('Inconscient'), cond('Sonné')], [buff('X', 10, 1)], 2);
+    const r = summarizeEffects([cond('inconscient'), cond('sonne')], [buff('X', 10, 1)], 2);
     expect(r.visible.every((c) => c.kind === 'malus')).toBe(true);
     expect(r.moreCount).toBe(1);
   });
@@ -73,10 +73,10 @@ describe('summarizeEffects', () => {
 
 describe('topImportantCondition', () => {
   it('retourne le plus grave état important', () => {
-    expect(topImportantCondition([cond('Aveuglé'), cond('Inconscient')])?.label).toBe('Inconscient');
+    expect(topImportantCondition([cond('aveugle'), cond('inconscient')])?.label).toBe('Inconscient');
   });
   it('null si aucun état important', () => {
-    expect(topImportantCondition([cond('Exténué')])).toBeNull();
+    expect(topImportantCondition([cond('extenue')])).toBeNull();
   });
 });
 
@@ -89,10 +89,10 @@ describe('summarizeEffects — états-drapeaux (Frénésie)', () => {
     expect(fr?.icon).toBeTruthy();
   });
   it('sans drapeau, aucune pastille Frénésie', () => {
-    expect(summarizeEffects([cond('Sonné')], []).visible.some((c) => c.label === 'Frénésie')).toBe(false);
+    expect(summarizeEffects([cond('sonne')], []).visible.some((c) => c.label === 'Frénésie')).toBe(false);
   });
   it('ordonne malus → état-drapeau → buff', () => {
-    const r = summarizeEffects([cond('Sonné')], [buff('Bénédiction', 10, 2)], 5, { frenzied: true });
+    const r = summarizeEffects([cond('sonne')], [buff('Bénédiction', 10, 2)], 5, { frenzied: true });
     expect(r.visible.map((c) => c.kind)).toEqual(['malus', 'state', 'buff']);
   });
   it('Visée / Sur la défensive / Focalisation (avec DR en compteur)', () => {

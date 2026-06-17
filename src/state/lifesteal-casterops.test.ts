@@ -24,14 +24,14 @@ describe('Vol de vie — lifeSteal + casterOps', () => {
     const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
     const cible = makePregens().find((h) => h.name === 'Sigmund Reikhardt')!;
     w.wounds.current = w.wounds.max - 6;
-    w.conditions = [{ name: 'Exténué', value: 1 }];
+    w.conditions = [{ name: 'extenue', value: 1 }];
     useGame.setState({ party: [w, cible] as Combatant[] });
     const res: CastResult & Partial<MissileResult> = { ...ok(2), hit: true, location: 'corps', damage: 7, woundsLost: 5, defenderDefeated: false };
     const before = w.wounds.current;
     applyCast(useGame.getState, useGame.setState, w, cible, findSpell('Vol de vie')!, res, true, false);
     const wAfter = useGame.getState().party.find((h) => h.id === w.id)!;
     expect(wAfter.wounds.current).toBe(before + Math.ceil(5 / 2)); // vol de vie : +3
-    expect(wAfter.conditions.find((c) => c.name === 'Exténué')).toBeUndefined(); // casterOps a purgé l'Exténué du lanceur
+    expect(wAfter.conditions.find((c) => c.name === 'extenue')).toBeUndefined(); // casterOps a purgé l'Exténué du lanceur
   });
 });
 

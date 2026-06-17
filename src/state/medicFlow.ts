@@ -158,7 +158,7 @@ export function medicSurgeryPass(get: Get, set: Set): void {
   if (cum < 0) cum = 0;
   const harm = battleRng().int(1, 10);
   loseWounds(patient, harm);
-  addCondition(patient, 'Hémorragique');
+  addCondition(patient, 'hemorragique');
   const log = [`${sg.healerName} opère ${patient.name} — passe : DR ${res.sl >= 0 ? '+' : ''}${res.sl} (total ${cum}/${sg.targetDR}), ${harm} PB + 1 Hémorragie.`];
   if (patient.wounds.current <= 0) { // « de fortes chances de tuer » (LDB 10) : on interrompt
     log.push(`${patient.name} sombre sur la table — l'opération est interrompue (stabilisez-le d'abord).`);

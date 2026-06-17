@@ -45,7 +45,7 @@ export interface PortraitTileProps {
 export function PortraitTile({ c, ring, variant = 'full', size = 'md', active, selected, team, maxStates = 4, onClick, title }: PortraitTileProps) {
   const px = CHAR_SIZE_PX[size];
   const ratio = c.wounds.max > 0 ? Math.max(0, Math.min(1, c.wounds.current / c.wounds.max)) : 0;
-  const ko = c.dead || c.wounds.current <= 0 || c.conditions.some((x) => x.name === 'Inconscient');
+  const ko = c.dead || c.wounds.current <= 0 || c.conditions.some((x) => x.name === 'inconscient');
   const showGauge = variant !== 'identity';
   const showPv = showGauge && c.kind === 'hero' && px >= CHAR_SIZE_PX.md;
   // R6 : l'unité active est plus grosse que les autres pour la mettre en évidence.

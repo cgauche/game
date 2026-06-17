@@ -94,7 +94,7 @@ describe('resolveAttack — gate Ligne de Vue + Couvert (LDB 13 l.123 / 14)', ()
     // S'il ne peut pas se déplacer (effectiveMovement 0), il tire forcément immobile → pas de pénalité.
     seedBattleRng(1);
     const s = scene(7);
-    const a = shooter({ conditions: [{ name: 'Empêtré', value: 1 }] });
+    const a = shooter({ conditions: [{ name: 'empetre', value: 1 }] });
     const b = target({ pos: { x: 6, y: 0 } });
     const r = resolveAttack(mkGet(s, [a, b]), a, b); // pas de heldGround, mais Mouvement nul
     expect(r!.res.attackerDetail!.mods!.some((m) => m.label === 'Tir en bougeant')).toBe(false);

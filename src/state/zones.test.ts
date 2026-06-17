@@ -50,7 +50,7 @@ describe('decayZones — TTL en Rounds', () => {
 describe('crossZones — « Quiconque traverse le mur de feu » (LDB 47)', () => {
   const wall: BattleZone = {
     label: 'Mur de feu', tiles: [{ x: 4, y: 4 }, { x: 4, y: 5 }, { x: 4, y: 6 }], rounds: 3,
-    onCross: { damage: { amount: { bonusOf: 'FM' } }, conditions: [{ name: 'En flammes' }] },
+    onCross: { damage: { amount: { bonusOf: 'FM' } }, conditions: [{ name: 'en-flammes' }] },
     casterId: 'w',
   };
   const caster = mk({ id: 'w', name: 'Pyromancien', characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 40, Soc: 30 } as Combatant['characteristics'] });
@@ -58,7 +58,7 @@ describe('crossZones — « Quiconque traverse le mur de feu » (LDB 47)', () =>
     const m = mk({ id: 'm', name: 'Brigand' }); // E 30 → BE 3 ; FM lanceur 40 → 4 Dégâts → 1 PB
     const lines = crossZones([wall], m, [{ x: 3, y: 5 }, { x: 4, y: 5 }, { x: 5, y: 5 }], () => caster, rng);
     expect(m.wounds.current).toBe(11);
-    expect(m.conditions.some((c) => c.name === 'En flammes')).toBe(true);
+    expect(m.conditions.some((c) => c.name === 'en-flammes')).toBe(true);
     expect(lines.join(' ')).toMatch(/traverse Mur de feu/);
   });
   it('chemin qui contourne : rien', () => {
@@ -72,7 +72,7 @@ describe('crossZones — « Quiconque traverse le mur de feu » (LDB 47)', () =>
 describe('zonesRoundTick — « Quiconque se trouve dans la ZdE au début d’un Round » (Grands feux)', () => {
   const fire: BattleZone = {
     label: "Grands feux d'U'Zhul", tiles: discTiles({ x: 5, y: 5 }, 2), rounds: 4,
-    perRound: { damage: { amount: { dice: { n: 1, sides: 10, plus: 6 } }, ignoreAP: true }, conditions: [{ name: 'En flammes' }] },
+    perRound: { damage: { amount: { dice: { n: 1, sides: 10, plus: 6 } }, ignoreAP: true }, conditions: [{ name: 'en-flammes' }] },
   };
   it('occupant : 1d10+6 Dégâts ignorant les PA (mitigés BE) + 1 En flammes', () => {
     const inZone = mk({ id: 'a', pos: { x: 6, y: 5 }, armour: { tete: 9, brasG: 9, brasD: 9, corps: 9, jambeG: 9, jambeD: 9 } as Combatant['armour'] });
@@ -80,7 +80,7 @@ describe('zonesRoundTick — « Quiconque se trouve dans la ZdE au début d’un
     const ticks = zonesRoundTick([fire], [inZone, outZone], rng);
     // d10 scripté = 5 → 11 Dégâts − BE 3 = 8 (PA 9 ignorées)
     expect(inZone.wounds.current).toBe(4);
-    expect(inZone.conditions.some((c) => c.name === 'En flammes')).toBe(true);
+    expect(inZone.conditions.some((c) => c.name === 'en-flammes')).toBe(true);
     expect(outZone.wounds.current).toBe(12);
     expect(ticks.map((t) => t.line).join(' ')).toMatch(/ignore PA/);
     expect(ticks.every((t) => t.combatant.id === 'a')).toBe(true); // chaque ligne porte son combattant

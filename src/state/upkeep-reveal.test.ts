@@ -31,7 +31,7 @@ describe('Entretien de Round en révélation (store)', () => {
 
   it('un franchissement de Round avec hémorragie pousse UNE révélation « Fin du Round » groupée', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
-    hero.conditions = [{ name: 'Hémorragique', value: 2 }];
+    hero.conditions = [{ name: 'hemorragique', value: 2 }];
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');

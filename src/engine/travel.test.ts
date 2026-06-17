@@ -85,7 +85,7 @@ describe('forcedMarchTest (l.224 : Test de Résistance ou Exténué, +1 si Encom
   it('échec non surchargé → +1 Exténué (résultat structuré : ligne + jet)', () => {
     const c = hero({ E: 1 }); // Résistance ≈ 1 ; jet 53 (seed 6) → échec hors bande auto 01-05
     const r = forcedMarchTest(c, makeRNG(6))!;
-    expect(stacks(c, 'Exténué')).toBe(1);
+    expect(stacks(c, 'extenue')).toBe(1);
     expect(r.line).toContain('marche forcée');
     expect(r.gained).toBe(1);
     expect(r.d.success).toBe(false); // le jet est exposé pour la ligne de jet du recap
@@ -93,12 +93,12 @@ describe('forcedMarchTest (l.224 : Test de Résistance ou Exténué, +1 si Encom
   it('échec surchargé → +2 Exténué', () => {
     const c = hero({ E: 1, enc: 8 });
     forcedMarchTest(c, makeRNG(6)); // jet 53 → échec
-    expect(stacks(c, 'Exténué')).toBe(2);
+    expect(stacks(c, 'extenue')).toBe(2);
   });
   it('réussite → aucun Exténué', () => {
     const c = hero({ E: 100 });
     forcedMarchTest(c, makeRNG(7));
-    expect(stacks(c, 'Exténué')).toBe(0);
+    expect(stacks(c, 'extenue')).toBe(0);
   });
 });
 
@@ -106,15 +106,15 @@ describe('applyTravelFatigue (LDB p.295 : Exténué par journée de voyage selon
   it('non surchargé : rien', () => {
     const c = hero();
     expect(applyTravelFatigue(c)).toEqual([]);
-    expect(stacks(c, 'Exténué')).toBe(0);
+    expect(stacks(c, 'extenue')).toBe(0);
   });
   it('palier 1 → +1 Exténué ; palier 2 → +2', () => {
     const c1 = hero({ enc: 8 });
     applyTravelFatigue(c1);
-    expect(stacks(c1, 'Exténué')).toBe(1);
+    expect(stacks(c1, 'extenue')).toBe(1);
     const c2 = hero({ enc: 14 });
     applyTravelFatigue(c2);
-    expect(stacks(c2, 'Exténué')).toBe(2);
+    expect(stacks(c2, 'extenue')).toBe(2);
   });
 });
 

@@ -43,7 +43,7 @@ export function StateRecoveryModalView({
   return (
     <RollFlowShell
       variant="test"
-      title={`${sr.state === 'Empêtré' ? 'Se libérer' : 'Se rouler au sol'} — ${sr.state}`}
+      title={`${sr.state === 'empetre' ? 'Se libérer' : 'Se rouler au sol'} — ${sr.state}`}
       actor={actor}
       subtitle={<>{sub} · {sr.stacks} pion{sr.stacks > 1 ? 's' : ''}</>}
       rolled={rolled}

@@ -153,19 +153,19 @@ describe('Faim & repos (LDB 18 l.418) : pas de récupération naturelle sans pro
     const c = hero({ rations: 0 });
     c.hunger = { days: 2, tests: 1, failures: 0 };
     c.wounds.current = 5;
-    addCondition(c, 'Exténué', 2);
+    addCondition(c, 'extenue', 2);
     const log = restRecovery(c, makeRNG(1));
     expect(c.wounds.current).toBe(5);
-    expect(stacks(c, 'Exténué')).toBe(2);
+    expect(stacks(c, 'extenue')).toBe(2);
     expect(log.join(' ')).toContain('affamé');
   });
 
   it('nourri : le repos fonctionne normalement', () => {
     const c = hero({ rations: 1 });
     c.wounds.current = 5;
-    addCondition(c, 'Exténué', 2);
+    addCondition(c, 'extenue', 2);
     restRecovery(c, makeRNG(1));
     expect(c.wounds.current).toBeGreaterThan(5);
-    expect(stacks(c, 'Exténué')).toBe(0);
+    expect(stacks(c, 'extenue')).toBe(0);
   });
 });

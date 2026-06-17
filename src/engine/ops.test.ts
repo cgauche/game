@@ -46,7 +46,7 @@ describe('applyOps — opérations unitaires', () => {
     const lines = applyOps(c, [{ op: 'wounds', amount: 5 }]);
     expect(c.wounds.current).toBe(0);
     expect(c.advantage).toBe(0);
-    expect(c.conditions.some((x) => x.name === 'À Terre')).toBe(true);
+    expect(c.conditions.some((x) => x.name === 'a-terre')).toBe(true);
     expect(lines[0]).toMatch(/subit 5 Blessure/);
   });
 
@@ -83,14 +83,14 @@ describe('applyOps — opérations unitaires', () => {
   it('condition : ajout avec valeur en formule (Bonus de FM du référent caster)', () => {
     const caster = hero({ id: 'c', name: 'Lanceur', characteristics: { ...hero().characteristics, FM: 52 } });
     const c = hero();
-    applyOps(c, [{ op: 'condition', name: 'Hémorragique', value: { bonusOf: 'FM' } }], { caster });
-    expect(c.conditions.find((x) => x.name === 'Hémorragique')?.value).toBe(5);
+    applyOps(c, [{ op: 'condition', name: 'hemorragique', value: { bonusOf: 'FM' } }], { caster });
+    expect(c.conditions.find((x) => x.name === 'hemorragique')?.value).toBe(5);
   });
 
   it('removeCondition sans nom : retire le 1er État porté ; sans État → journal explicite', () => {
-    const c = hero({ conditions: [{ name: 'Exténué', value: 2 }] });
+    const c = hero({ conditions: [{ name: 'extenue', value: 2 }] });
     const lines = applyOps(c, [{ op: 'removeCondition' }]);
-    expect(c.conditions.find((x) => x.name === 'Exténué')?.value).toBe(1);
+    expect(c.conditions.find((x) => x.name === 'extenue')?.value).toBe(1);
     expect(lines[0]).toMatch(/retire 1 État Exténué/);
     const sain = hero();
     expect(applyOps(sain, [{ op: 'removeCondition' }])[0]).toMatch(/aucun État à retirer/);
@@ -123,9 +123,9 @@ describe('applyOps — opérations unitaires', () => {
     // Résistance = E 45 ; Intermédiaire +0 → cible 45. RNG fixé : on force les deux issues.
     const fail = hero({ characteristics: { ...hero().characteristics, E: 1 } }); // cible ~1 → échec quasi sûr
     const ok = hero({ characteristics: { ...hero().characteristics, E: 100 } }); // cible 100 → réussite sûre
-    const ops = [{ op: 'test', skill: 'Résistance', difficulty: 'intermediaire', onFail: [{ op: 'condition', name: 'Sonné' }], onSuccess: [{ op: 'narrative', text: 'tenu bon' }] } as const];
+    const ops = [{ op: 'test', skill: 'Résistance', difficulty: 'intermediaire', onFail: [{ op: 'condition', name: 'sonne' }], onSuccess: [{ op: 'narrative', text: 'tenu bon' }] } as const];
     const linesFail = applyOps(fail, ops as never, { rng: makeRNG(6) }); // jet 53 : échec vs cible 1 (hors bande auto 01-05)
-    expect(fail.conditions.some((x) => x.name === 'Sonné')).toBe(true);
+    expect(fail.conditions.some((x) => x.name === 'sonne')).toBe(true);
     expect(linesFail[0]).toMatch(/Test de Résistance/);
     const linesOk = applyOps(ok, ops as never, { rng: makeRNG(6) }); // jet 53 : réussite vs cible 99
     expect(ok.conditions).toHaveLength(0);
@@ -136,7 +136,7 @@ describe('applyOps — opérations unitaires', () => {
     const c = hero();
     applyOps(c, [{ op: 'reduceToZero' }]);
     expect(c.wounds.current).toBe(0);
-    expect(c.conditions.some((x) => x.name === 'Inconscient')).toBe(true);
+    expect(c.conditions.some((x) => x.name === 'inconscient')).toBe(true);
   });
 });
 

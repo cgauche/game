@@ -764,9 +764,9 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "Brisé",
+                    "name": "brise",
                     "value": 3,
-                    "unlessCondition": "Brisé"
+                    "unlessCondition": "brise"
                   }
                 ]
               }
@@ -981,7 +981,7 @@
                         },
                         {
                           "op": "removeCondition",
-                          "name": "Inconscient",
+                          "name": "inconscient",
                           "value": 99
                         }
                       ]
@@ -1213,9 +1213,9 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "Empêtré",
+                    "name": "empetre",
                     "value": 1,
-                    "unlessCondition": "Empêtré",
+                    "unlessCondition": "empetre",
                     "escapeStrength": {
                       "charOf": "F"
                     }
@@ -1265,7 +1265,7 @@
                   "kind": "compare",
                   "subject": {
                     "who": "target",
-                    "condition": "Empoisonné"
+                    "condition": "empoisonne"
                   },
                   "op": ">=",
                   "value": 1
@@ -1289,7 +1289,7 @@
                   "onFail": [
                     {
                       "op": "condition",
-                      "name": "Empoisonné"
+                      "name": "empoisonne"
                     }
                   ]
                 }

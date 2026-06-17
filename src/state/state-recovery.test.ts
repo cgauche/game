@@ -37,9 +37,9 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
   it('En flammes : se rouler (Athlétisme) → retire 1 + DR pions, consomme l’Action', () => {
-    const h = hero({ id: 'h', conditions: [{ name: 'En flammes', value: 2 }] });
+    const h = hero({ id: 'h', conditions: [{ name: 'en-flammes', value: 2 }] });
     setBattle([h], 'h');
-    useGame.getState().battleRecoverState('En flammes');
+    useGame.getState().battleRecoverState('en-flammes');
     const sr = useGame.getState().pendingStateRecovery!;
     expect(sr).not.toBeNull();
     expect(sr.opposed).toBe(false);
@@ -50,17 +50,17 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
     useGame.setState({ pendingStateRecovery: { ...useGame.getState().pendingStateRecovery!, success: true, netSL: 1 } });
     useGame.getState().recoverConfirm();
     const after = useGame.getState().battle!.combatants.find((c) => c.id === 'h')!;
-    expect(after.conditions.find((c) => c.name === 'En flammes')).toBeUndefined(); // 2 − (1+1) = 0 → retiré
+    expect(after.conditions.find((c) => c.name === 'en-flammes')).toBeUndefined(); // 2 − (1+1) = 0 → retiré
     expect(useGame.getState().battle!.acted).toBe(true);
     expect(useGame.getState().pendingStateRecovery).toBeNull();
   });
 
   it('Empêtré : Test OPPOSÉ de Force contre la source ; succès → se libère', () => {
     const h = hero({ id: 'h', characteristics: { CC: 40, CT: 40, F: 80, E: 40, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30 } as any,
-      conditions: [{ name: 'Empêtré', value: 1, sourceId: 'pieuvre' }] });
+      conditions: [{ name: 'empetre', value: 1, sourceId: 'pieuvre' }] });
     const src = enemy({ id: 'pieuvre', name: 'Pieuvre', characteristics: { CC: 30, CT: 30, F: 20, E: 30, I: 20, Ag: 20, Dex: 20, Int: 20, FM: 20, Soc: 20 } as any });
     setBattle([h, src], 'h');
-    useGame.getState().battleRecoverState('Empêtré');
+    useGame.getState().battleRecoverState('empetre');
     const sr = useGame.getState().pendingStateRecovery!;
     expect(sr.opposed).toBe(true);
     expect(sr.opponentName).toBe('Pieuvre');
@@ -69,27 +69,27 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
     useGame.setState({ pendingStateRecovery: { ...useGame.getState().pendingStateRecovery!, success: true, netSL: 0 } });
     useGame.getState().recoverConfirm();
     const after = useGame.getState().battle!.combatants.find((c) => c.id === 'h')!;
-    expect(after.conditions.find((c) => c.name === 'Empêtré')).toBeUndefined();
+    expect(after.conditions.find((c) => c.name === 'empetre')).toBeUndefined();
     expect(useGame.getState().battle!.acted).toBe(true);
   });
 
   it('Empêtré sans source vivante → Test simple (non opposé)', () => {
-    const h = hero({ id: 'h', conditions: [{ name: 'Empêtré', value: 1, sourceId: 'parti' }] });
+    const h = hero({ id: 'h', conditions: [{ name: 'empetre', value: 1, sourceId: 'parti' }] });
     setBattle([h], 'h'); // la source 'parti' n’est pas dans le combat
-    useGame.getState().battleRecoverState('Empêtré');
+    useGame.getState().battleRecoverState('empetre');
     expect(useGame.getState().pendingStateRecovery!.opposed).toBe(false);
     expect(useGame.getState().pendingStateRecovery!.skillLabel).toBe('Force');
   });
 
   it('échec : aucun pion retiré, l’Action est tout de même consommée', () => {
-    const h = hero({ id: 'h', conditions: [{ name: 'En flammes', value: 1 }] });
+    const h = hero({ id: 'h', conditions: [{ name: 'en-flammes', value: 1 }] });
     setBattle([h], 'h');
-    useGame.getState().battleRecoverState('En flammes');
+    useGame.getState().battleRecoverState('en-flammes');
     useGame.getState().recoverRoll();
     useGame.setState({ pendingStateRecovery: { ...useGame.getState().pendingStateRecovery!, success: false, netSL: 0 } });
     useGame.getState().recoverConfirm();
     const after = useGame.getState().battle!.combatants.find((c) => c.id === 'h')!;
-    expect(after.conditions.find((c) => c.name === 'En flammes')?.value).toBe(1); // intact
+    expect(after.conditions.find((c) => c.name === 'en-flammes')?.value).toBe(1); // intact
     expect(useGame.getState().battle!.acted).toBe(true);
   });
 
@@ -99,10 +99,10 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
       characteristics: { CC: 30, CT: 30, F: 25, E: 30, I: 30, Ag: 30, Dex: 30, Int: 40, FM: 55, Soc: 30 } as any });
     const h = hero({ id: 'h', conditions: [] });
     // L'op `condition` Empêtré avec escapeStrength = FM du lanceur (Enchevêtrement de Taal).
-    applyOps(h, [{ op: 'condition', name: 'Empêtré', value: 1, escapeStrength: { charOf: 'FM' } }], { caster });
-    expect(h.conditions.find((c) => c.name === 'Empêtré')?.escapeStrength).toBe(55);
+    applyOps(h, [{ op: 'condition', name: 'empetre', value: 1, escapeStrength: { charOf: 'FM' } }], { caster });
+    expect(h.conditions.find((c) => c.name === 'empetre')?.escapeStrength).toBe(55);
     setBattle([h], 'h'); // pas de source vivante dans le combat → sans escapeStrength, ce serait un Test simple
-    useGame.getState().battleRecoverState('Empêtré');
+    useGame.getState().battleRecoverState('empetre');
     const sr = useGame.getState().pendingStateRecovery!;
     expect(sr.opposed).toBe(true); // grâce à la Force d'entrave figée
     expect(sr.opponentValue).toBe(55); // FM du lanceur, pas sa Force (25)
@@ -113,20 +113,20 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
     const caster = enemy({ id: 'src', name: 'Liane',
       characteristics: { CC: 30, CT: 30, F: 80, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 } as any });
     const h = hero({ id: 'h', conditions: [] });
-    applyOps(h, [{ op: 'condition', name: 'Empêtré', value: 1, escapeStrength: { charOf: 'FM' } }], { caster });
+    applyOps(h, [{ op: 'condition', name: 'empetre', value: 1, escapeStrength: { charOf: 'FM' } }], { caster });
     // L'op ne pose pas de sourceId — on simule une entrave dont la source serait aussi présente :
-    h.conditions.find((c) => c.name === 'Empêtré')!.sourceId = 'src';
+    h.conditions.find((c) => c.name === 'empetre')!.sourceId = 'src';
     setBattle([h, caster], 'h');
-    useGame.getState().battleRecoverState('Empêtré');
+    useGame.getState().battleRecoverState('empetre');
     const sr = useGame.getState().pendingStateRecovery!;
     expect(sr.opponentValue).toBe(30); // FM figée, PAS la Force 80 de la source vivante
     expect(sr.opponentName).toBe('Liane'); // nom de la source si présente
   });
 
   it('cancel avant Appliquer : pas de coût d’Action', () => {
-    const h = hero({ id: 'h', conditions: [{ name: 'En flammes', value: 1 }] });
+    const h = hero({ id: 'h', conditions: [{ name: 'en-flammes', value: 1 }] });
     setBattle([h], 'h');
-    useGame.getState().battleRecoverState('En flammes');
+    useGame.getState().battleRecoverState('en-flammes');
     useGame.getState().recoverCancel();
     expect(useGame.getState().pendingStateRecovery).toBeNull();
     expect(useGame.getState().battle!.acted).toBe(false);

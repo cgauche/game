@@ -46,7 +46,7 @@ describe('0 PB → État À Terre, MÊME sur overkill/Critique (LDB 18-Traumatis
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect(h.wounds.current).toBeLessThanOrEqual(0);
     // Invariante : à 0 PB on n'est jamais debout sans état.
-    expect(!!h.dead || hasCondition(h, 'Inconscient') || hasCondition(h, 'À Terre')).toBe(true);
+    expect(!!h.dead || hasCondition(h, 'inconscient') || hasCondition(h, 'a-terre')).toBe(true);
   });
 
   it('un héros amené EXACTEMENT à 0 PB (sans overkill) obtient aussi À Terre', () => {
@@ -62,6 +62,6 @@ describe('0 PB → État À Terre, MÊME sur overkill/Critique (LDB 18-Traumatis
     applyAttackResult(useGame.getState, useGame.setState, E, H, E.weapons[0], res);
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect(h.wounds.current).toBe(0);
-    expect(hasCondition(h, 'À Terre')).toBe(true);
+    expect(hasCondition(h, 'a-terre')).toBe(true);
   });
 });

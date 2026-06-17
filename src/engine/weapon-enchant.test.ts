@@ -56,19 +56,19 @@ describe('augmentWeapon — enchantement porté par l’arme, replié dans c.wea
     const fighter = wielder(weaponItem('w', 'Épée', '+BF+4'), { id: 'f' });
     applyOps(fighter, [{
       op: 'augmentWeapon', addQualities: ['Magique'], damageBonus: { bonusOf: 'Soc' },
-      onHitEffects: [onHitFlow([{ op: 'condition', name: 'En flammes' }, { op: 'condition', name: 'À Terre' }])],
+      onHitEffects: [onHitFlow([{ op: 'condition', name: 'en-flammes' }, { op: 'condition', name: 'a-terre' }])],
     }], { label: 'Marteau ardent de Sigmar', caster: priest, defaultDurationRounds: 4 });
     expect(effectiveWeaponDamage(fighter.weapons[0], 3)).toBe(3 + 4 + 4); // BF 3 + arme 4 + BSoc 4 du prêtre
     expect(isMagicWeapon(fighter.weapons[0])).toBe(true);
     // L'onHit est replié sur l'arme (weapon.onHitEffects) ; exécuté par le dispatcher → 2 États sur la cible.
     const victim = dummy({ id: 'v' });
     runSpellFlow(victim, fighter, fighter.weapons[0].onHitEffects![0].flow, {});
-    expect(victim.conditions.map((c) => c.name).sort()).toEqual(['En flammes', 'À Terre'].sort());
+    expect(victim.conditions.map((c) => c.name).sort()).toEqual(['en-flammes', 'a-terre'].sort());
   });
 
   it('Épée ardente de Rhuin : +6 et Percutante s’apposent, et l’enchantement EXPIRE (objet nettoyé)', () => {
     const c = wielder(weaponItem('w', 'Épée', '+BF+4'));
-    applyOps(c, [{ op: 'augmentWeapon', addQualities: ['Percutante'], damageBonus: 6, onHitEffects: [onHitFlow([{ op: 'condition', name: 'En flammes' }])] }], {
+    applyOps(c, [{ op: 'augmentWeapon', addQualities: ['Percutante'], damageBonus: 6, onHitEffects: [onHitFlow([{ op: 'condition', name: 'en-flammes' }])] }], {
       label: 'Épée ardente de Rhuin', defaultDurationRounds: 1,
     });
     expect(c.weapons[0].qualities).toContain('Percutante');
@@ -97,7 +97,7 @@ describe('augmentWeapon — enchantement porté par l’arme, replié dans c.wea
     const c = wielder(weaponItem('w', 'Épée', '+BF+4'));
     applyOps(c, [{
       op: 'augmentWeapon', addQualities: ['Magique'],
-      onHitEffects: [onHitFlow([{ op: 'test', skill: 'Résistance', difficulty: 'accessible', onlyGroups: ['Criminel'], onFail: [{ op: 'condition', name: 'Inconscient' }] }])],
+      onHitEffects: [onHitFlow([{ op: 'test', skill: 'Résistance', difficulty: 'accessible', onlyGroups: ['Criminel'], onFail: [{ op: 'condition', name: 'inconscient' }] }])],
     }], { label: 'Épée de justice', defaultDurationRounds: 4 });
     // Cible NON-Criminel : le Test est gaté par Groupe → aucun effet, indépendamment du jet.
     const civilian = dummy({ id: 'civ' });

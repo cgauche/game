@@ -60,12 +60,12 @@ describe('Aux Armes p.89 — qualités de mêlée câblées', () => {
     expect(parryDRAdjust(w(['Défensive']), w(['Déséquilibrée']))).toBe(1);
   });
   it('Taillade : ajoute un État Hémorragique sur Critique (onCritCondition)', () => {
-    expect(QUALITIES['Taillade'].onCritCondition).toBe('Hémorragique');
+    expect(QUALITIES['Taillade'].onCritCondition).toBe('hemorragique');
   });
   it('Déstabilisante : dépense d’Avantages + Test opposé Force → À Terre (onHitKnockdown)', () => {
     const kd = QUALITIES['Déstabilisante'].onHitKnockdown!;
     expect(kd.advantageCost).toBe(2);
-    expect(kd.condition).toBe('À Terre');
+    expect(kd.condition).toBe('a-terre');
     expect(kd.char).toBe('F');
     expect(kd.skill).toBe('Athlétisme');
   });

@@ -4,6 +4,7 @@
  * Aucune règle ici : on lit `conditions[]` et `activeEffects[]` déjà gérés par le moteur.
  */
 import type { ConditionInstance, ActiveEffect, CharKey, Combatant } from '../engine/types';
+import { conditionLabel } from '../data';
 
 export interface EffectChip {
   key: string;
@@ -25,20 +26,21 @@ interface CondMeta { icon: string; severity: number; important: boolean; }
 
 /** Table des États (LDB ch.16) → icône + sévérité. `important` = incapacitant/dangereux
  *  (affiché dans le créneau unique de l'ordre de bataille). Seuil : sévérité ≥ 50. */
+// Keyé par `id` d'État (slug etats.json) — `conditionMeta` reçoit `ConditionInstance.name` (un id).
 const CONDITION_TABLE: Record<string, { icon: string; severity: number }> = {
-  Inconscient: { icon: '😵', severity: 100 },
-  Pétrifié: { icon: '🗿', severity: 95 },
-  Sonné: { icon: '💫', severity: 80 },
-  'À Terre': { icon: '🔻', severity: 75 },
-  Brisé: { icon: '💔', severity: 70 },
-  Aveuglé: { icon: '🙈', severity: 65 },
-  Empêtré: { icon: '🕸️', severity: 60 },
-  'En flammes': { icon: '🔥', severity: 58 },
-  Empoisonné: { icon: '🤢', severity: 55 },
-  Hémorragique: { icon: '🩸', severity: 52 },
-  Surpris: { icon: '❗', severity: 40 },
-  Assourdi: { icon: '🔇', severity: 30 },
-  Exténué: { icon: '😫', severity: 20 },
+  inconscient: { icon: '😵', severity: 100 },
+  petrifie: { icon: '🗿', severity: 95 },
+  sonne: { icon: '💫', severity: 80 },
+  'a-terre': { icon: '🔻', severity: 75 },
+  brise: { icon: '💔', severity: 70 },
+  aveugle: { icon: '🙈', severity: 65 },
+  empetre: { icon: '🕸️', severity: 60 },
+  'en-flammes': { icon: '🔥', severity: 58 },
+  empoisonne: { icon: '🤢', severity: 55 },
+  hemorragique: { icon: '🩸', severity: 52 },
+  surpris: { icon: '❗', severity: 40 },
+  assourdi: { icon: '🔇', severity: 30 },
+  extenue: { icon: '😫', severity: 20 },
 };
 const UNKNOWN: CondMeta = { icon: '•', severity: 10, important: false };
 
@@ -59,7 +61,7 @@ function malusChips(conditions: ConditionInstance[]): EffectChip[] {
   return conditions
     .map((c): EffectChip => {
       const m = conditionMeta(c.name);
-      return { key: `c-${c.name}`, icon: m.icon, label: c.name, kind: 'malus', severity: m.severity, count: c.value > 1 ? c.value : undefined };
+      return { key: `c-${c.name}`, icon: m.icon, label: conditionLabel(c.name), kind: 'malus', severity: m.severity, count: c.value > 1 ? c.value : undefined };
     })
     .sort((a, b) => b.severity - a.severity);
 }
@@ -140,6 +142,7 @@ export function summarizeEffects(
 
 /** L'État important le plus grave présent (créneau unique de l'ordre de bataille), ou null. */
 export function topImportantCondition(conditions: ConditionInstance[] = []): EffectChip | null {
-  const imp = malusChips(conditions).filter((c) => conditionMeta(c.label).important);
+  // « important » = sévérité ≥ 50 (cf. conditionMeta) — lu directement sur le chip (label déjà résolu).
+  const imp = malusChips(conditions).filter((c) => c.severity >= 50);
   return imp[0] ?? null;
 }

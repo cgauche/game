@@ -26,11 +26,11 @@ describe('usePartyItem — consommables hors combat (fiche)', () => {
   });
 
   it('bandages : retire 1 pion Hémorragique et consomme l’objet', () => {
-    const h = hero({ conditions: [{ name: 'Hémorragique', value: 3 }], items: [BANDAGE] });
+    const h = hero({ conditions: [{ name: 'hemorragique', value: 3 }], items: [BANDAGE] });
     useGame.setState({ party: [h] });
     useGame.getState().usePartyItem('h1', 'b1');
     const p = useGame.getState().party.find((c) => c.id === 'h1')!;
-    expect(p.conditions.find((c) => c.name === 'Hémorragique')?.value).toBe(2); // 3 − 1
+    expect(p.conditions.find((c) => c.name === 'hemorragique')?.value).toBe(2); // 3 − 1
     expect(p.items!.find((i) => i.uid === 'b1')).toBeUndefined(); // consommé
   });
 
@@ -44,11 +44,11 @@ describe('usePartyItem — consommables hors combat (fiche)', () => {
   });
 
   it('refus en combat : usePartyItem ne fait rien (passer par la barre d’action)', () => {
-    const h = hero({ conditions: [{ name: 'Hémorragique', value: 3 }], items: [BANDAGE] });
+    const h = hero({ conditions: [{ name: 'hemorragique', value: 3 }], items: [BANDAGE] });
     useGame.setState({ party: [h], battle: { over: null } as never });
     useGame.getState().usePartyItem('h1', 'b1');
     const p = useGame.getState().party.find((c) => c.id === 'h1')!;
-    expect(p.conditions.find((c) => c.name === 'Hémorragique')?.value).toBe(3); // inchangé
+    expect(p.conditions.find((c) => c.name === 'hemorragique')?.value).toBe(3); // inchangé
     expect(p.items!.length).toBe(1); // non consommé
   });
 });

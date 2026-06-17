@@ -30,7 +30,7 @@ describe('Effet fall — chute', () => {
     const lost = before - useGame.getState().party[0].wounds.current;
     expect(lost).toBeGreaterThanOrEqual(3 * 4 - be + 1); // 1d10 ≥ 1
     expect(lost).toBeLessThanOrEqual(3 * 4 - be + 10); // 1d10 ≤ 10
-    expect(hasCondition(useGame.getState().party[0], 'À Terre')).toBe(true); // 12−BE+1d10 ≫ BE
+    expect(hasCondition(useGame.getState().party[0], 'a-terre')).toBe(true); // 12−BE+1d10 ≫ BE
   });
 
   it('`to` repositionne le groupe (balcon → parterre)', () => {

@@ -36,7 +36,7 @@ import { isStarving } from './provisions';
  *  esprits » tant qu'un Hémorragique subsiste — on étend à En flammes/Empoisonné, qu'on ne traverse pas
  *  en dormant ; il faut d'abord stabiliser via Guérison/Sort). */
 function unstable(c: Combatant): boolean {
-  return hasCondition(c, 'Hémorragique') || hasCondition(c, 'En flammes') || hasCondition(c, 'Empoisonné');
+  return hasCondition(c, 'hemorragique') || hasCondition(c, 'en-flammes') || hasCondition(c, 'empoisonne');
 }
 
 /** Valeur de Résistance « brute » (E effective + augmentations de Résistance) — formule partagée
@@ -63,8 +63,8 @@ export function dailyDiseaseUpkeep(c: Combatant, rng: RNG = defaultRNG, caredFor
     }
   }
   const malaiseDelta = activeMalaiseCount(c) - malaiseStart;
-  if (malaiseDelta > 0) addCondition(c, 'Exténué', malaiseDelta);
-  else if (malaiseDelta < 0) removeCondition(c, 'Exténué', -malaiseDelta);
+  if (malaiseDelta > 0) addCondition(c, 'extenue', malaiseDelta);
+  else if (malaiseDelta < 0) removeCondition(c, 'extenue', -malaiseDelta);
   return log;
 }
 
@@ -86,7 +86,7 @@ export function cureDiseases(c: Combatant, n: number): string[] {
     if (DISEASE_DEFS[d.name]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), d.name];
   }
   const delta = activeMalaiseCount(c) - malaiseStart;
-  if (delta < 0) removeCondition(c, 'Exténué', -delta);
+  if (delta < 0) removeCondition(c, 'extenue', -delta);
   return log;
 }
 
@@ -148,9 +148,9 @@ export function applyRecoveryDay(c: Combatant, recoveryRoll: { sl: number; succe
   // Maladies (LDB 20) : l'Exténué « collant » du malaise (l.153) reste ; chaque « blessé » bloque 1 PB (l.110).
   const malaise = activeMalaiseCount(c);
   const blesse = diseaseBlesseCount(c);
-  const fat = stacks(c, 'Exténué');
+  const fat = stacks(c, 'extenue');
   const removable = starving ? 0 : Math.max(0, fat - malaise);
-  if (removable > 0) removeCondition(c, 'Exténué', removable);
+  if (removable > 0) removeCondition(c, 'extenue', removable);
   const dayStartPB = c.wounds.current;
   // volet a : DR + BE sur réussite (une fois par jour).
   if (!starving && recoveryRoll?.success && c.wounds.current < c.wounds.max)
@@ -163,8 +163,8 @@ export function applyRecoveryDay(c: Combatant, recoveryRoll: { sl: number; succe
   let wokeUp = false;
   if (c.wounds.current > 0) {
     c.roundsAtZero = 0;
-    if (hasCondition(c, 'Inconscient')) { removeCondition(c, 'Inconscient', stacks(c, 'Inconscient')); wokeUp = true; }
-    if (hasCondition(c, 'À Terre')) removeCondition(c, 'À Terre', stacks(c, 'À Terre'));
+    if (hasCondition(c, 'inconscient')) { removeCondition(c, 'inconscient', stacks(c, 'inconscient')); wokeUp = true; }
+    if (hasCondition(c, 'a-terre')) removeCondition(c, 'a-terre', stacks(c, 'a-terre'));
   }
   return { wokeUp };
 }
@@ -176,7 +176,7 @@ export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1, coll
   if (unstable(c)) return [`${c.name} ne trouve pas le repos (blessures à stabiliser d'abord — Guérison).`];
 
   const startPB = c.wounds.current;
-  const hadFatigue = stacks(c, 'Exténué') > 0;
+  const hadFatigue = stacks(c, 'extenue') > 0;
   let nightmareNights = 0;
   let wokeUp = false;
 
@@ -192,11 +192,11 @@ export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1, coll
     if (applyRecoveryDay(c, roll).wokeUp) wokeUp = true;
     // Cauchemars (l.92) : une nuit marquée peut regagner un Exténué.
     if (c.nightmares) {
-      const before = stacks(c, 'Exténué');
+      const before = stacks(c, 'extenue');
       const out: { base: number; result: import('./tests').TestResult }[] = [];
       nightmareCheck(c, rng, out);
       for (const o of out) collect?.push({ kind: 'nightmare', base: o.base, target: o.result.target, roll: o.result.roll, sl: o.result.sl, success: o.result.success });
-      if (stacks(c, 'Exténué') > before) nightmareNights++;
+      if (stacks(c, 'extenue') > before) nightmareNights++;
     }
   }
 
@@ -206,7 +206,7 @@ export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1, coll
   const span = days > 1 ? `${days} jours de repos` : 'une nuit de repos';
   if (healed > 0) log.unshift(`${c.name} récupère ${healed} PB (${span}).`);
   if (isStarving(c)) log.push(`${c.name} est affamé — pas de récupération naturelle (Faim & Soif).`);
-  if (hadFatigue && stacks(c, 'Exténué') === 0) log.push(`${c.name} se réveille reposé (Exténué dissipé).`);
+  if (hadFatigue && stacks(c, 'extenue') === 0) log.push(`${c.name} se réveille reposé (Exténué dissipé).`);
   if (nightmareNights > 0) log.push(`${c.name} a fait des cauchemars (${nightmareNights}/${days} nuit${days > 1 ? 's' : ''}) → Exténué.`);
   return log;
 }

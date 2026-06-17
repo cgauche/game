@@ -18,6 +18,7 @@ import { rollTest, opposedTest } from './tests';
 import { testValue } from './skills';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
 import { addCondition, addTimedCondition, removeCondition, loseWounds, hasCondition } from './conditions';
+import { conditionLabel } from '../data';
 import { groupMatch } from './groups';
 import { bypassedAP } from './armourBypass';
 import { grantTrait } from './grantedTraits';
@@ -499,7 +500,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const name = o.name ?? target.conditions[0]?.name;
         if (name) {
           removeCondition(target, name, v);
-          lines.push(`${target.name} retire ${v} État ${name}.`);
+          lines.push(`${target.name} retire ${v} État ${conditionLabel(name)}.`);
         } else {
           lines.push(`${target.name} n'a aucun État à retirer.`);
         }
@@ -707,7 +708,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'reduceToZero': {
         if (!groupGate(o.onlyGroups)) break; // Fauche-démon : n'annihile qu'une cible Démoniaque
         target.wounds.current = 0;
-        addCondition(target, 'Inconscient');
+        addCondition(target, 'inconscient');
         lines.push(`${target.name} : Blessures réduites à 0 (Inconscient).`);
         break;
       }

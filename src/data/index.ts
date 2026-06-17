@@ -185,6 +185,8 @@ export interface CreatureData {
   harvest?: { rarity: HarvestRarity; danger: HarvestDanger; uses: string };
 }
 export interface EtatData {
+  /** id STABLE (slug du libellé) — `ConditionId` ; cible de `ConditionInstance.name` et des ops condition. */
+  id: string;
   label: string;
   desc: string;
   source: { book: string; page: number };
@@ -470,6 +472,20 @@ export interface GodData {
 export const gods = godsJson as GodData[];
 export const names = namesJson as Record<string, NamePool>;
 
+const ETAT_BY_ID = new Map(etats.map((e) => [e.id, e]));
+/** Résout un État par son `id` STABLE (`ConditionId`). */
+export function findConditionById(id: string): EtatData | undefined {
+  return ETAT_BY_ID.get(id);
+}
+/** Libellé d'affichage d'un État par son id (repli sur l'id). SOURCE UNIQUE du nom d'État affiché. */
+export function conditionLabel(id: string): string {
+  return ETAT_BY_ID.get(id)?.label ?? id;
+}
+const ETAT_ID_BY_LABEL = new Map(etats.map((e) => [e.label.toLowerCase(), e.id]));
+/** Résout un `id` d'État depuis un LIBELLÉ (authoring : parsing de desc/texte) — insensible à la casse. */
+export function conditionIdByLabel(label: string): string | undefined {
+  return ETAT_ID_BY_LABEL.get(label.toLowerCase());
+}
 const SPECIES_BY_ID = new Map(species.map((s) => [s.id, s]));
 /** Résout une Espèce par son `id` STABLE (slug du libellé) — réf runtime/données (Combatant.species,
  *  pregens, draft). Le libellé ne sert qu'à l'affichage (`speciesSingular`). */
@@ -658,6 +674,7 @@ export function findById(category: string, id: string): { label: string } | unde
     case 'careers': return findCareerById(id);
     case 'classes': return findClassById(id);
     case 'races': return findSpeciesById(id);
+    case 'etats': return findConditionById(id);
     default: return undefined;
   }
 }

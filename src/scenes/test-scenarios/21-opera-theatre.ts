@@ -256,7 +256,7 @@ const scene: Scene = {
           type: 'delayedEffect', afterMinutes: 60, cancelFlag: 'bombeDesamorcee',
           flow: flowFromEffects([
             { type: 'journal', text: 'UNE EXPLOSION DÉCHIRE L’ANTICHAMBRE DE LA LOGE ROYALE !' },
-            { type: 'zoneBlast', center: { x: 10, y: 14 }, radius: 6, damage: '1d10+15', conditions: [{ name: 'En flammes' }] },
+            { type: 'zoneBlast', center: { x: 10, y: 14 }, radius: 6, damage: '1d10+15', conditions: [{ name: 'en-flammes' }] },
           ]),
         },
       ]),

@@ -22,7 +22,7 @@ import { ActiveFrame } from './ActiveFrame';
 import { CodexRef } from './compendium/CodexRef';
 import { ItemIcon } from './ItemIcon';
 
-const bleedStacks = (c: Combatant) => c.conditions.find((x) => x.name === 'Hémorragique')?.value ?? 0;
+const bleedStacks = (c: Combatant) => c.conditions.find((x) => x.name === 'hemorragique')?.value ?? 0;
 
 /**
  * Barre d'action (hotbar) du combattant ACTIF, façon Baldur's Gate / NWN. Désencombrée :
@@ -210,10 +210,10 @@ export function ActionBar() {
   // Combat monté (LDB 14) : descendre si à cheval ; enfourcher une monture libre adjacente (coûte l'Action).
   const mounted = isHero && !!active.mountId;
   const mountCandidate = isHero && !active.mountId && !moveStarted ? mountableNear(battle, active) : undefined; // enfourcher = plein Mouvement (pas de jet → pas une Action)
-  const prone = isHero && hasCondition(active, 'À Terre'); // À Terre (LDB 16 l.37) : ni Charge ni Course
-  const broken = isHero && hasCondition(active, 'Brisé'); // Brisé (LDB 16 l.55) : fuir/se cacher uniquement, aucune action offensive
-  const entangled = isHero && hasCondition(active, 'Empêtré'); // Empêtré (LDB 16 l.61) : se libérer (Action, Test opposé de Force)
-  const onFire = isHero && hasCondition(active, 'En flammes'); // En flammes (LDB 16 l.77) : se rouler (Action, Test d'Athlétisme)
+  const prone = isHero && hasCondition(active, 'a-terre'); // À Terre (LDB 16 l.37) : ni Charge ni Course
+  const broken = isHero && hasCondition(active, 'brise'); // Brisé (LDB 16 l.55) : fuir/se cacher uniquement, aucune action offensive
+  const entangled = isHero && hasCondition(active, 'empetre'); // Empêtré (LDB 16 l.61) : se libérer (Action, Test opposé de Force)
+  const onFire = isHero && hasCondition(active, 'en-flammes'); // En flammes (LDB 16 l.77) : se rouler (Action, Test d'Athlétisme)
   // Déplacement, Attaque, Charge et Course n'ont PLUS de bouton : implicites au clic (sol/ennemi).
   // La Charge se déclenche d'elle-même (mêlée + non Engagé + Mouvement intact — LDB 15 l.74-77) ;
   // la Course est la zone violette au-delà de la Marche (clic → Test d'Athlétisme, LDB 15 l.79-82).
@@ -491,7 +491,7 @@ export function ActionBar() {
               <button
                 className="ab-slot"
                 disabled={battle.acted || stunned}
-                onClick={() => recoverState('En flammes')}
+                onClick={() => recoverState('en-flammes')}
                 title="Se rouler au sol pour éteindre les flammes (Test d'Athlétisme — coûte l'Action)"
               >
                 <span className="ab-ico">🔥</span>
@@ -502,7 +502,7 @@ export function ActionBar() {
               <button
                 className="ab-slot"
                 disabled={battle.acted || stunned}
-                onClick={() => recoverState('Empêtré')}
+                onClick={() => recoverState('empetre')}
                 title="Se libérer de l'entrave (Test opposé de Force contre la source — coûte l'Action)"
               >
                 <span className="ab-ico">🪢</span>

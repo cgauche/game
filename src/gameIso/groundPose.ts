@@ -13,6 +13,6 @@ export type GroundState = 'corpse' | 'prone' | null;
 export function groundStateOf(c: Combatant): GroundState {
   if (!c.conditions) return null; // entité éparse (pas un combattant complet)
   if (c.wounds && isOutOfAction(c)) return 'corpse'; // mort / Inconscient / Mort Subite figurant
-  if (hasCondition(c, 'À Terre')) return 'prone';
+  if (hasCondition(c, 'a-terre')) return 'prone';
   return null;
 }

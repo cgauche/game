@@ -25,19 +25,19 @@ describe('engine/healing — gate compétence & cibles', () => {
   it('isHealable : blessé OU hémorragique ; pas mort/éjecté', () => {
     expect(isHealable(hero({ wounds: { current: 12, max: 12 }, conditions: [] }))).toBe(false);
     expect(isHealable(hero({ wounds: { current: 5, max: 12 } }))).toBe(true);
-    expect(isHealable(hero({ wounds: { current: 12, max: 12 }, conditions: [{ name: 'Hémorragique', value: 1 }] }))).toBe(true);
+    expect(isHealable(hero({ wounds: { current: 12, max: 12 }, conditions: [{ name: 'hemorragique', value: 1 }] }))).toBe(true);
     expect(isHealable(hero({ wounds: { current: 5, max: 12 }, dead: true }))).toBe(false);
   });
 
   it('availableHealModes : « wounds » bloqué si déjà soigné cette rencontre ; « bleed » indépendant', () => {
-    const t = hero({ wounds: { current: 5, max: 12 }, conditions: [{ name: 'Hémorragique', value: 2 }] });
+    const t = hero({ wounds: { current: 5, max: 12 }, conditions: [{ name: 'hemorragique', value: 2 }] });
     expect(availableHealModes(t)).toEqual(['wounds', 'bleed']);
     expect(availableHealModes({ ...t, soinRencontreUtilise: true })).toEqual(['bleed']);
   });
 
   it('healableTargets (combat) : soi + alliés adjacents (Chebyshev ≤ 1), inconscient inclus', () => {
     const healer = hero({ wounds: { current: 12, max: 12 }, pos: { x: 2, y: 2 } }); // plein PB → pas auto-soignable
-    const adj = hero({ id: 'a', wounds: { current: 0, max: 12 }, conditions: [{ name: 'Inconscient', value: 1 }], pos: { x: 3, y: 2 } });
+    const adj = hero({ id: 'a', wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }], pos: { x: 3, y: 2 } });
     const far = hero({ id: 'f', wounds: { current: 1, max: 12 }, pos: { x: 8, y: 8 } });
     const ids = healableTargets(healer, [healer, adj, far], { adjacency: true }).map((c) => c.id);
     expect(ids).toContain('a');
@@ -70,12 +70,12 @@ describe('engine/healing — calculs DR (purs)', () => {
 
 describe('engine/healing — mutateurs', () => {
   it('applyHealWounds : +PB plafonné max, pose le flag, lève l’Inconscient quand on repasse >0 (LDB 18 l.28)', () => {
-    const t = hero({ id: 't', wounds: { current: 0, max: 12 }, conditions: [{ name: 'Inconscient', value: 1 }, { name: 'À Terre', value: 1 }], roundsAtZero: 3 });
+    const t = hero({ id: 't', wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }, { name: 'a-terre', value: 1 }], roundsAtZero: 3 });
     applyHealWounds(t, 5);
     expect(t.wounds.current).toBe(5);
     expect(t.soinRencontreUtilise).toBe(true);
-    expect(t.conditions.find((c) => c.name === 'Inconscient')).toBeUndefined(); // reprend connaissance
-    expect(t.conditions.find((c) => c.name === 'À Terre')).toBeTruthy();        // mais reste à terre
+    expect(t.conditions.find((c) => c.name === 'inconscient')).toBeUndefined(); // reprend connaissance
+    expect(t.conditions.find((c) => c.name === 'a-terre')).toBeTruthy();        // mais reste à terre
     expect(t.roundsAtZero).toBe(0);
   });
 
@@ -84,14 +84,14 @@ describe('engine/healing — mutateurs', () => {
     applyHealWounds(t, -4);
     expect(t.wounds.current).toBe(0);
     expect(t.advantage).toBe(0);
-    expect(t.conditions.find((c) => c.name === 'À Terre')).toBeTruthy();
+    expect(t.conditions.find((c) => c.name === 'a-terre')).toBeTruthy();
     expect(t.soinRencontreUtilise).toBeUndefined(); // pas de bénéfice → flag non posé
   });
 
   it('applyStopBleed : retire les pions ; Exténué quand le dernier part (LDB 16 l.109)', () => {
-    const t = hero({ id: 't', conditions: [{ name: 'Hémorragique', value: 2 }] });
+    const t = hero({ id: 't', conditions: [{ name: 'hemorragique', value: 2 }] });
     applyStopBleed(t, 1); // 1+1 = 2 pions retirés
-    expect(t.conditions.find((c) => c.name === 'Hémorragique')).toBeUndefined();
-    expect(t.conditions.find((c) => c.name === 'Exténué')).toBeTruthy();
+    expect(t.conditions.find((c) => c.name === 'hemorragique')).toBeUndefined();
+    expect(t.conditions.find((c) => c.name === 'extenue')).toBeTruthy();
   });
 });

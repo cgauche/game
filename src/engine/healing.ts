@@ -28,7 +28,7 @@ export function hasSurgerySkill(c: Combatant): boolean {
  *  ni morte ni éjectée. Les cibles Inconscientes/À Terre sont valides (1 PB lève l'inconscience, LDB 18 l.28). */
 export function isHealable(c: Combatant): boolean {
   if (c.dead || c.outOfRencontre) return false;
-  return c.wounds.current < c.wounds.max || condStacks(c, 'Hémorragique') > 0 || hasTreatableTrauma(c) || hasSurgeryTrauma(c);
+  return c.wounds.current < c.wounds.max || condStacks(c, 'hemorragique') > 0 || hasTreatableTrauma(c) || hasSurgeryTrauma(c);
 }
 
 export type HealMode = 'wounds' | 'bleed' | 'trauma' | 'surgery';
@@ -39,7 +39,7 @@ export type HealMode = 'wounds' | 'bleed' | 'trauma' | 'surgery';
 export function availableHealModes(target: Combatant): HealMode[] {
   const modes: HealMode[] = [];
   if (target.wounds.current < target.wounds.max && !target.soinRencontreUtilise) modes.push('wounds');
-  if (condStacks(target, 'Hémorragique') > 0) modes.push('bleed');
+  if (condStacks(target, 'hemorragique') > 0) modes.push('bleed');
   if (hasTreatableTrauma(target)) modes.push('trauma');
   if (hasSurgeryTrauma(target)) modes.push('surgery'); // gate Talent Chirurgie côté action
   return modes;
@@ -84,8 +84,8 @@ export function applyHealWounds(target: Combatant, delta: number): string[] {
   target.soinRencontreUtilise = true; // a bénéficié de SON soin de cette rencontre (LDB 09 l.233)
   target.woundDressed = true; // matériel stérile : « aucune Infection » suite à la blessure (LDB 09 / 18 l.382)
   const log = [`${target.name} : +${target.wounds.current - before} PB (${target.wounds.current}/${target.wounds.max}).`];
-  if (target.wounds.current > 0 && hasCondition(target, 'Inconscient')) {
-    removeCondition(target, 'Inconscient', condStacks(target, 'Inconscient')); // reprend connaissance (LDB 18 l.28)
+  if (target.wounds.current > 0 && hasCondition(target, 'inconscient')) {
+    removeCondition(target, 'inconscient', condStacks(target, 'inconscient')); // reprend connaissance (LDB 18 l.28)
     log.push(`${target.name} reprend connaissance.`);
   }
   if (target.wounds.current > 0) target.roundsAtZero = 0;
@@ -94,12 +94,12 @@ export function applyHealWounds(target: Combatant, delta: number): string[] {
 
 /** Applique l'arrêt d'Hémorragie (mutation). `dr` = DR du Test réussi. */
 export function applyStopBleed(target: Combatant, dr: number): string[] {
-  const { removed, gainExtenue } = stopBleedOutcome(dr, condStacks(target, 'Hémorragique'), true);
+  const { removed, gainExtenue } = stopBleedOutcome(dr, condStacks(target, 'hemorragique'), true);
   if (removed <= 0) return [`${target.name} : l'hémorragie ne cède pas.`];
-  removeCondition(target, 'Hémorragique', removed);
+  removeCondition(target, 'hemorragique', removed);
   const log = [`${target.name} : ${removed} État(s) Hémorragique stoppé(s).`];
   if (gainExtenue) {
-    addCondition(target, 'Exténué');
+    addCondition(target, 'extenue');
     log.push(`${target.name} est Exténué (après l'arrêt de l'hémorragie).`);
   }
   return log;

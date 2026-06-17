@@ -91,19 +91,19 @@ describe('Riders « à la touche » data-driven (Feu / Lumière / Mort / Vie) �
     const w = mk({ id: 'w', kind: 'hero' });
     const t = mk({ id: 't', kind: 'enemy' });
     applyDomain(w, t, 'Feu');
-    expect(hasCondition(t, 'En flammes')).toBe(true);
+    expect(hasCondition(t, 'en-flammes')).toBe(true);
     const immune = mk({ id: 'i', kind: 'enemy', talents: [{ talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 }] as Combatant['talents'] });
     applyDomain(w, immune, 'Feu');
-    expect(hasCondition(immune, 'En flammes')).toBe(false);
+    expect(hasCondition(immune, 'en-flammes')).toBe(false);
     const ally = mk({ id: 'a', kind: 'hero' }); // même camp que le lanceur → pas adversaire
     applyDomain(w, ally, 'Feu');
-    expect(hasCondition(ally, 'En flammes')).toBe(false);
+    expect(hasCondition(ally, 'en-flammes')).toBe(false);
   });
   it('Lumière : Aveuglé + frappe BInt ignorant BE/PA sur un Mort-vivant', () => {
     const w = mk({ id: 'w', kind: 'hero' }); // BInt 4
     const z = mk({ id: 'z', kind: 'enemy', traits: [{ id: 'mort-vivant' }], wounds: { current: 10, max: 10 } as Combatant['wounds'] });
     applyDomain(w, z, 'Lumière');
-    expect(hasCondition(z, 'Aveuglé')).toBe(true);
+    expect(hasCondition(z, 'aveugle')).toBe(true);
     expect(z.wounds.current).toBe(6); // 4 = BInt, ignore BE+PA
   });
   it('Mort : +1 Exténué aux vivants adverses, UNE seule fois (pas déjà Exténué)', () => {
@@ -111,20 +111,20 @@ describe('Riders « à la touche » data-driven (Feu / Lumière / Mort / Vie) �
     const t = mk({ id: 't', kind: 'enemy' });
     applyDomain(w, t, 'Mort');
     applyDomain(w, t, 'Mort');
-    expect(stacks(t, 'Exténué')).toBe(1);
+    expect(stacks(t, 'extenue')).toBe(1);
     const z = mk({ id: 'z', kind: 'enemy', traits: [{ id: 'mort-vivant' }] });
     expect(isLiving(z)).toBe(false);
     applyDomain(w, z, 'Mort');
-    expect(stacks(z, 'Exténué')).toBe(0); // « cible vivante » seulement
+    expect(stacks(z, 'extenue')).toBe(0); // « cible vivante » seulement
   });
   it('Vie : purge Exténué/Hémorragique des vivants ; +BFM ignore BE/PA aux Morts-vivants', () => {
     const w = mk({ id: 'w', kind: 'hero' }); // BFM 4
     const ally = mk({ id: 'a', kind: 'hero' });
-    addCondition(ally, 'Exténué', 2);
-    addCondition(ally, 'Hémorragique', 3);
+    addCondition(ally, 'extenue', 2);
+    addCondition(ally, 'hemorragique', 3);
     applyDomain(w, ally, 'Vie');
-    expect(stacks(ally, 'Exténué')).toBe(0);
-    expect(stacks(ally, 'Hémorragique')).toBe(0);
+    expect(stacks(ally, 'extenue')).toBe(0);
+    expect(stacks(ally, 'hemorragique')).toBe(0);
     const z = mk({ id: 'z', kind: 'enemy', traits: [{ id: 'mort-vivant' }], wounds: { current: 10, max: 10 } as Combatant['wounds'] });
     applyDomain(w, z, 'Vie');
     expect(z.wounds.current).toBe(6);

@@ -38,7 +38,7 @@ describe('suffocationTick — Noyade et Suffocation (LDB 18 l.424-425)', () => {
     const c = mk({ wounds: { current: 1, max: 12 } });
     suffocationTick(c);
     expect(c.wounds.current).toBe(0);
-    expect(hasCondition(c, 'Inconscient')).toBe(true);
+    expect(hasCondition(c, 'inconscient')).toBe(true);
     expect(c.suffocationCountdown).toBe(3); // BE(30) = 3
   });
   it('après BE Rounds à 0 PB : condition de mort (canal mort-lente — Destin inclus)', () => {
@@ -74,14 +74,14 @@ describe('Effets curés — suffocation (lus de SpellData.effects)', () => {
   it('Ombres étrangleuses : Exténué + suffocation + incantation coupée (« ne peuvent pas parler »)', () => {
     const ops = opsOf('Ombres étrangleuses');
     expect(ops.some((o) => o.op === 'suffocate')).toBe(true);
-    expect(ops.some((o) => o.op === 'condition' && o.name === 'Exténué')).toBe(true);
+    expect(ops.some((o) => o.op === 'condition' && o.name === 'extenue')).toBe(true);
     expect(ops.some((o) => o.op === 'castPenalty' && o.blocked)).toBe(true);
   });
   it('Transmutation de Chamon : États persistants + 1 PA + suffocation', () => {
     const ops = opsOf('Transmutation de Chamon');
     expect(ops.some((o) => o.op === 'suffocate')).toBe(true);
     expect(ops.some((o) => o.op === 'apAll')).toBe(true);
-    for (const name of ['Aveuglé', 'Assourdi', 'Sonné']) {
+    for (const name of ['aveugle', 'assourdi', 'sonne']) {
       expect(ops.some((o) => o.op === 'condition' && o.name === name)).toBe(true);
     }
   });

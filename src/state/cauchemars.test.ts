@@ -19,13 +19,13 @@ describe('nightmareCheck (LDB 21 l.92)', () => {
     const c = hero({ characteristics: { FM: 35 } as never });
     const fail: RNG = { int: () => 90 }; // 90 > (35+40=75) → échec
     nightmareCheck(c, fail);
-    expect(hasCondition(c, 'Exténué')).toBe(true);
+    expect(hasCondition(c, 'extenue')).toBe(true);
   });
   it('Calme réussi → pas d’Exténué', () => {
     const c = hero({ characteristics: { FM: 35 } as never });
     const ok: RNG = { int: () => 20 }; // 20 ≤ 75 → réussite
     nightmareCheck(c, ok);
-    expect(hasCondition(c, 'Exténué')).toBe(false);
+    expect(hasCondition(c, 'extenue')).toBe(false);
   });
 });
 

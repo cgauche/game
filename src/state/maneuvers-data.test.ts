@@ -33,18 +33,18 @@ describe('manœuvres = donnée éditable (GameOp)', () => {
     const e = mk({ armour: { tete: 0, brasG: 0, brasD: 0, corps: 5, jambeG: 0, jambeD: 0 } }); // PA 5
     fire('souffle-feu', e, 15);
     expect(e.wounds.current).toBe(18); // 30 − (Indice 15 − BE 3 − PA 5 IGNORÉS) = 30 − 12
-    expect(cond(e, 'En flammes')).toBeTruthy();
+    expect(cond(e, 'en-flammes')).toBeTruthy();
   });
 
   it('regard-petrifiant : marge ≥6 → Pétrifié + 0 PB ; marge ≥2 → Sonné (slThreshold, depuis la donnée)', () => {
     const petrified = mk();
     fire('regard-petrifiant', petrified, 0, 6);
-    expect(cond(petrified, 'Pétrifié')).toBeTruthy();
+    expect(cond(petrified, 'petrifie')).toBeTruthy();
     expect(petrified.wounds.current).toBe(0); // op reduceToZero
     const stunned = mk();
     fire('regard-petrifiant', stunned, 0, 3);
-    expect(cond(stunned, 'Sonné')).toBeTruthy();
-    expect(cond(stunned, 'Pétrifié')).toBeFalsy();
+    expect(cond(stunned, 'sonne')).toBeTruthy();
+    expect(cond(stunned, 'petrifie')).toBeFalsy();
   });
 
   it('etreinte-glaciale : 1d10 + DR ignorant BE ET PA (depuis la donnée)', () => {
@@ -61,14 +61,14 @@ describe('manœuvres = donnée éditable (GameOp)', () => {
     const def = findManeuverById('souffle-feu')!;
     const original = def.effects;
     const edited: TriggeredEffect[] = [
-      { trigger: 'onHit', on: 'victim', flow: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', name: 'Empoisonné' }] } } },
+      { trigger: 'onHit', on: 'victim', flow: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', name: 'empoisonne' }] } } },
     ];
     try {
       def.effects = edited; // « édition » : Empoisonné, sans Dégâts
       const e = mk();
       fire('souffle-feu', e, 15);
-      expect(cond(e, 'Empoisonné')).toBeTruthy(); // le NOUVEL effet s'applique
-      expect(cond(e, 'En flammes')).toBeFalsy();  // l'ancien a disparu
+      expect(cond(e, 'empoisonne')).toBeTruthy(); // le NOUVEL effet s'applique
+      expect(cond(e, 'en-flammes')).toBeFalsy();  // l'ancien a disparu
       expect(e.wounds.current).toBe(30);           // plus de wounds op → 0 Dégât
     } finally {
       def.effects = original; // restaure la donnée partagée
