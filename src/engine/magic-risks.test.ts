@@ -18,8 +18,8 @@ function wiz(p: Partial<Combatant> = {}): Combatant {
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], movement: 4,
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [
-      { name: 'Langue', spec: 'Magick', advances: 10 },
-      { name: 'Focalisation', spec: 'Feu', advances: 10 },
+      { skillId: 'langue', spec: 'Magick', advances: 10 },
+      { skillId: 'focalisation', spec: 'Feu', advances: 10 },
     ] as never,
     talents: [],
     ...p,
@@ -41,7 +41,7 @@ describe('Focalisation — spécialisation par Vent (LDB 46)', () => {
   });
   it('un sort d\'Arcane commun accepte n\'importe quel Vent ; une compétence sans spec accepte tout', () => {
     expect(focusSkillFor(wiz(), SORT_COMMUN)).toBeTruthy();
-    const legacy = wiz({ skills: [{ name: 'Focalisation', advances: 8 }] as never });
+    const legacy = wiz({ skills: [{ skillId: 'focalisation', advances: 8 }] as never });
     expect(focusSkillFor(legacy, SORT_FEU)).toBeTruthy();
   });
 });
@@ -72,12 +72,12 @@ describe('« Repousser les Vents » — armure portée (l.199 + exemptions l.188
     expect(armourCastDRPenalty(wiz({ items: [mailles, cuir] }))).toBe(2);
   });
   it('Magie des Arcanes (Métal) ignore le métal ; (Bêtes) ignore le cuir', () => {
-    const metalMage = wiz({ items: [mailles], talents: [{ name: 'Magie des Arcanes (Métal)', times: 1 }] });
+    const metalMage = wiz({ items: [mailles], talents: [{ talentId: 'magie-des-arcanes', spec: 'Métal', times: 1 }] });
     expect(armourCastDRPenalty(metalMage)).toBe(0);
-    const beastMage = wiz({ items: [cuir], talents: [{ name: 'Magie des Arcanes (Bêtes)', times: 1 }] });
+    const beastMage = wiz({ items: [cuir], talents: [{ talentId: 'magie-des-arcanes', spec: 'Bêtes', times: 1 }] });
     expect(armourCastDRPenalty(beastMage)).toBe(0);
     // …mais pas l'inverse.
-    expect(armourCastDRPenalty(wiz({ items: [mailles], talents: [{ name: 'Magie des Arcanes (Bêtes)', times: 1 }] }))).toBe(2);
+    expect(armourCastDRPenalty(wiz({ items: [mailles], talents: [{ talentId: 'magie-des-arcanes', spec: 'Bêtes', times: 1 }] }))).toBe(2);
   });
   it('le DR d\'incantation est réduit par l\'armure (succès conservé)', () => {
     // Valeur 60 (Int 50 + 10) ; jet 10 → DR +5 ; armure 2 PA → DR +3.

@@ -1,6 +1,6 @@
 import { useState, useMemo, Fragment } from 'react';
 import { useGame } from '../state/store';
-import { findTrapping } from '../data/index';
+import { findTrapping, qualityRuntime, type QualityRef } from '../data/index';
 import { priceToMoney, fromBrass, toBrass, formatMoney, canAfford, add as moneyAdd, type Money } from '../engine/money';
 import { craftPriceFactor } from '../engine/qualities/craftEconomy';
 import { repairCostBrass } from '../engine/repair';
@@ -30,7 +30,7 @@ const AVAIL_RANK: Record<string, number> = { Commune: 0, Limitée: 1, Rare: 2, E
 function familyOf(label: string): string {
   const t = findTrapping(label);
   if (!t) return 'divers';
-  if (isShieldItem({ name: label, qualities: t.qualities ?? [] })) return 'boucliers';
+  if (isShieldItem({ name: label, qualities: (t.qualities ?? []).map(qualityRuntime) })) return 'boucliers';
   if (t.type === 'melee') return 'melee';
   if (t.type === 'ranged') return 'ranged';
   if (t.type === 'ammunition') return 'ammo';
@@ -42,7 +42,7 @@ function availRank(label: string): number {
 }
 
 /** Colonnes de stats par famille (tableau comparatif). 1re colonne (`emph`) = info clé mise en avant. */
-type TrapRow = { damage?: string | null; reach?: string | null; pa?: number | null; qualities?: string[] };
+type TrapRow = { damage?: string | null; reach?: string | null; pa?: number | null; qualities?: QualityRef[] };
 const DASH = '—';
 const FAMILY_COLS: Record<string, { label: string; get: (t: TrapRow) => string; emph?: boolean }[]> = {
   melee: [
@@ -54,7 +54,7 @@ const FAMILY_COLS: Record<string, { label: string; get: (t: TrapRow) => string; 
     { label: 'Portée', get: (t) => { const r = Number(t.reach); return r ? `${r} m` : DASH; } },
   ],
   ammo: [{ label: 'Dégâts', get: (t) => t.damage || DASH, emph: true }],
-  boucliers: [{ label: 'Protection', get: (t) => { const m = (t.qualities ?? []).map((q) => q.match(/protectrice\s*(\d+)/i)).find(Boolean); return m ? `Protectrice ${m[1]}` : DASH; }, emph: true }],
+  boucliers: [{ label: 'Protection', get: (t) => { const q = (t.qualities ?? []).find((x) => x.id === 'protectrice'); return q ? `Protectrice ${q.value ?? ''}`.trim() : DASH; }, emph: true }],
   armor: [{ label: 'PA', get: (t) => (t.pa != null ? String(t.pa) : DASH), emph: true }],
   divers: [],
 };
@@ -63,7 +63,7 @@ const FAMILY_COLS: Record<string, { label: string; get: (t: TrapRow) => string; 
 function lineCost(label: string, factor: number): Money | null {
   const t = findTrapping(label);
   if (!t) return null;
-  const brass = toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * factor;
+  const brass = toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities.map(qualityRuntime) }) * factor;
   if (!Number.isFinite(brass)) return null;
   return fromBrass(Math.round(brass));
 }

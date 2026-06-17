@@ -85,7 +85,7 @@ export function applySummon(get: Get, set: SetFn, caster: Combatant, summon: Sum
     const c = spawnEnemy(summon.ref, undefined, id, pos);
     c.kind = kind;
     if (summon.size) c.size = summon.size;
-    for (const t of summon.addTraits ?? []) grantTrait(c, t); // traits surchargés (Frénésie, Magique…)
+    for (const t of summon.addTraits ?? []) grantTrait(c, t); // traits surchargés (Frénésie, Magique…) — déjà structurés
     c.summon = {
       byId: caster.id,
       ...(opts.label ? { label: opts.label } : {}),

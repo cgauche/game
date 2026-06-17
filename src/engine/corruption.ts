@@ -20,6 +20,7 @@ import { Combatant, CharKey, HitLocation, Weapon } from './types';
 import { bonus, effectiveChar } from './characteristics';
 import type { PsychTrait } from './psychology';
 import type { GameOp } from './ops';
+import type { TraitInstance } from './statEntry';
 
 export type ExposureLevel = 'mineure' | 'moderee' | 'majeure';
 
@@ -47,8 +48,8 @@ export interface Mutation {
    *  asymétriques → Cornes (Dégâts = BF). Lue par recomputeLoadout : une mutation-arme = DONNÉE,
    *  plus de name-match dans items.ts (ajouter une mutation-arme = remplir ce champ). */
   derivedWeapon?: Weapon;
-  /** Traits de créature gagnés (Tentacule épais → « Tentacules »). */
-  traits?: string[];
+  /** Traits de créature gagnés (Tentacule épais → Tentacules), STRUCTURÉS (`{ id, value?, arg? }`). */
+  traits?: TraitInstance[];
   /** Traits psychologiques gagnés (Colère impie → Frénésie). */
   psychTraits?: PsychTrait[];
   /** Partie non modélisée de l'effet — verbatim, arbitrage MJ (rien d'inventé). */
@@ -79,7 +80,7 @@ export function corruptionGain(level: ExposureLevel, success: boolean, dr: numbe
  *  « Vous pouvez gagner un nombre de Points de Corruption supplémentaires égal à votre niveau d'Âme
  *  pure avant d'avoir à effectuer un Test pour savoir si vous êtes corrompu » → seuil +niveau. */
 export function corruptionThresholdExceeded(c: Combatant): boolean {
-  const amePure = (c.talents ?? []).filter((t) => /^âme pure/i.test(t.name)).reduce((a, t) => a + (t.times ?? 1), 0);
+  const amePure = (c.talents ?? []).filter((t) => t.talentId === 'ame-pure').reduce((a, t) => a + (t.times ?? 1), 0);
   return (c.corruption ?? 0) > bonus(effectiveChar(c, 'FM')) + bonus(effectiveChar(c, 'E')) + amePure;
 }
 

@@ -1,5 +1,6 @@
 [
   {
+    "id": "abondance-de-rhya",
     "label": "Abondance de Rhya",
     "type": "Miracle",
     "subType": null,
@@ -18,6 +19,7 @@
     }
   },
   {
+    "id": "agression-aethyrique",
     "label": "Agression AEthyrique",
     "type": "Magie des Arcanes & de Nécromancie",
     "subType": null,
@@ -36,6 +38,7 @@
     }
   },
   {
+    "id": "alarme",
     "label": "Alarme",
     "type": "Magie Mineure",
     "subType": null,
@@ -54,6 +57,7 @@
     }
   },
   {
+    "id": "algues-cruelles",
     "label": "Algues Cruelles",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -72,6 +76,7 @@
     }
   },
   {
+    "id": "ame-devoilee",
     "label": "Âme Dévoilée",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -90,6 +95,7 @@
     }
   },
   {
+    "id": "apaisement",
     "label": "Apaisement",
     "type": "Miracle",
     "subType": null,
@@ -108,6 +114,7 @@
     }
   },
   {
+    "id": "appel-de-vanhel",
     "label": "Appel de Vanhel",
     "type": "Magie des Arcanes & de Nécromancie",
     "subType": null,
@@ -126,6 +133,7 @@
     }
   },
   {
+    "id": "arme-souillee",
     "label": "Arme Souillée",
     "type": "Sort",
     "subType": null,
@@ -144,6 +152,7 @@
     }
   },
   {
+    "id": "armure-d-aethyr",
     "label": "Armure d’AEthyr",
     "type": "Magie des Arcanes & de Nécromancie",
     "subType": null,
@@ -162,6 +171,7 @@
     }
   },
   {
+    "id": "armure-d-obscurite",
     "label": "Armure d’Obscurité",
     "type": "du Domaine des Ombres",
     "subType": null,
@@ -180,6 +190,7 @@
     }
   },
   {
+    "id": "arriere-sorciere",
     "label": "Arrière, Sorcière !",
     "type": "Miracle",
     "subType": null,
@@ -198,6 +209,7 @@
     }
   },
   {
+    "id": "aux-innocents-les-mains-pleines",
     "label": "Aux Innocents les Mains Pleines !",
     "type": "Miracle",
     "subType": null,
@@ -216,6 +228,7 @@
     }
   },
   {
+    "id": "avatar-du-rat-cornu",
     "label": "Avatar du Rat Cornu",
     "type": "Magie des Arcanes Skaven",
     "subType": null,
@@ -234,6 +247,7 @@
     }
   },
   {
+    "id": "baratin",
     "label": "Baratin",
     "type": "Miracle",
     "subType": null,
@@ -252,6 +266,7 @@
     }
   },
   {
+    "id": "belier",
     "label": "Bélier",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -270,6 +285,7 @@
     }
   },
   {
+    "id": "benedicite-de-taal",
     "label": "Bénédicité de Taal",
     "type": "Miracle",
     "subType": null,
@@ -288,6 +304,7 @@
     }
   },
   {
+    "id": "berceuse-soporifique-ua-ii",
     "label": "Berceuse Soporifique UA II",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -306,6 +323,7 @@
     }
   },
   {
+    "id": "bienveillance",
     "label": "Bienveillance",
     "type": "Magie des Arcanes & des Taillis",
     "subType": null,
@@ -324,6 +342,7 @@
     }
   },
   {
+    "id": "blizzard",
     "label": "Blizzard",
     "type": "Miracle",
     "subType": null,
@@ -342,6 +361,7 @@
     }
   },
   {
+    "id": "bon-debarras",
     "label": "Bon Débarras !",
     "type": "Miracle",
     "subType": null,
@@ -360,6 +380,7 @@
     }
   },
   {
+    "id": "bond-furtif",
     "label": "Bond Furtif",
     "type": "du Domaine des Ombres",
     "subType": null,
@@ -378,6 +399,7 @@
     }
   },
   {
+    "id": "bouclier",
     "label": "Bouclier",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -396,6 +418,7 @@
     }
   },
   {
+    "id": "bouillon-revigorant",
     "label": "Bouillon Revigorant",
     "type": "Magie des Arcanes & des Taillis",
     "subType": null,
@@ -414,6 +437,7 @@
     }
   },
   {
+    "id": "bruit",
     "label": "Bruit",
     "type": "Magie Mineure",
     "subType": null,
@@ -432,6 +456,7 @@
     }
   },
   {
+    "id": "brume-acide",
     "label": "Brume Acide",
     "type": "du Domaine de la Peste",
     "subType": null,
@@ -450,6 +475,7 @@
     }
   },
   {
+    "id": "brume-mystique",
     "label": "Brume Mystique",
     "type": "Magie Mineure",
     "subType": null,
@@ -468,6 +494,7 @@
     }
   },
   {
+    "id": "cacophonie-scabreuse",
     "label": "Cacophonie Scabreuse",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -486,6 +513,7 @@
     }
   },
   {
+    "id": "catharsis",
     "label": "Catharsis",
     "type": "Miracle",
     "subType": null,
@@ -504,6 +532,7 @@
     }
   },
   {
+    "id": "chaleur-de-la-fourrure",
     "label": "Chaleur de la Fourrure",
     "type": "Miracle",
     "subType": null,
@@ -522,6 +551,7 @@
     }
   },
   {
+    "id": "chuchotis",
     "label": "Chuchotis",
     "type": "Magie Mineure",
     "subType": null,
@@ -540,6 +570,7 @@
     }
   },
   {
+    "id": "cogne-fort",
     "label": "Cogne-Fort",
     "type": "Sort",
     "subType": null,
@@ -558,6 +589,7 @@
     }
   },
   {
+    "id": "conserve",
     "label": "Conserve",
     "type": "Magie Mineure",
     "subType": null,
@@ -576,6 +608,7 @@
     }
   },
   {
+    "id": "contamination",
     "label": "Contamination",
     "type": "du Domaine de la Peste",
     "subType": null,
@@ -594,6 +627,7 @@
     }
   },
   {
+    "id": "coup-d-boule",
     "label": "Coup d’Boule !",
     "type": "Sort",
     "subType": null,
@@ -612,6 +646,7 @@
     }
   },
   {
+    "id": "courage-du-loup",
     "label": "Courage du Loup",
     "type": "Miracle",
     "subType": null,
@@ -630,6 +665,7 @@
     }
   },
   {
+    "id": "courant-d-air",
     "label": "Courant d’Air",
     "type": "Magie Mineure",
     "subType": null,
@@ -648,6 +684,7 @@
     }
   },
   {
+    "id": "crepitement-funeste",
     "label": "Crépitement Funeste",
     "type": "du Domaine de la Ruine",
     "subType": null,
@@ -666,6 +703,7 @@
     }
   },
   {
+    "id": "crepitements-vengeurs",
     "label": "Crépitements Vengeurs",
     "type": "Sort",
     "subType": null,
@@ -684,6 +722,7 @@
     }
   },
   {
+    "id": "crevasse",
     "label": "Crevasse",
     "type": "du Domaine de la Ruine",
     "subType": null,
@@ -702,6 +741,7 @@
     }
   },
   {
+    "id": "crue-mortelle",
     "label": "Crue Mortelle",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -720,6 +760,7 @@
     }
   },
   {
+    "id": "culpabilite",
     "label": "Culpabilité",
     "type": "Bénédiction",
     "subType": null,
@@ -738,6 +779,7 @@
     }
   },
   {
+    "id": "decharge-cerebrale",
     "label": "Décharge Cérébrale",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -756,6 +798,7 @@
     }
   },
   {
+    "id": "demangeaison-agacante",
     "label": "Démangeaison Agaçante",
     "type": "Sort",
     "subType": null,
@@ -774,6 +817,7 @@
     }
   },
   {
+    "id": "depecage",
     "label": "Dépeçage",
     "type": "du Domaine de la Ruine",
     "subType": null,
@@ -792,6 +836,7 @@
     }
   },
   {
+    "id": "desarroi",
     "label": "Désarroi",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -810,6 +855,7 @@
     }
   },
   {
+    "id": "disparition",
     "label": "Disparition",
     "type": "du Domaine des Ombres",
     "subType": null,
@@ -828,6 +874,7 @@
     }
   },
   {
+    "id": "douces-paroles",
     "label": "Douces Paroles",
     "type": "Sort",
     "subType": null,
@@ -846,6 +893,7 @@
     }
   },
   {
+    "id": "dressage-de-rhya",
     "label": "Dressage de Rhya",
     "type": "Miracle",
     "subType": null,
@@ -864,6 +912,7 @@
     }
   },
   {
+    "id": "duplicite-de-tzeentch",
     "label": "Duplicité de Tzeentch",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -882,6 +931,7 @@
     }
   },
   {
+    "id": "eau-pure",
     "label": "Eau Pure",
     "type": "Magie Mineure",
     "subType": null,
@@ -900,6 +950,7 @@
     }
   },
   {
+    "id": "eclat",
     "label": "Éclat",
     "type": "Magie Mineure",
     "subType": null,
@@ -918,6 +969,7 @@
     }
   },
   {
+    "id": "effigie-maudite",
     "label": "Effigie Maudite",
     "type": "Magie des Arcanes & de Sorcellerie",
     "subType": null,
@@ -936,6 +988,7 @@
     }
   },
   {
+    "id": "entrave",
     "label": "Entrave",
     "type": "Magie des Arcanes & de Nécromancie",
     "subType": null,
@@ -954,6 +1007,7 @@
     }
   },
   {
+    "id": "espionnage",
     "label": "Espionnage",
     "type": "Magie Mineure",
     "subType": null,
@@ -972,6 +1026,7 @@
     }
   },
   {
+    "id": "esprit-enfievre",
     "label": "Esprit Enfiévré",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -990,6 +1045,7 @@
     }
   },
   {
+    "id": "explosion-de-dhar",
     "label": "Explosion de Dhar",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1008,6 +1064,7 @@
     }
   },
   {
+    "id": "fatigue",
     "label": "Fatigue",
     "type": "Magie Mineure",
     "subType": null,
@@ -1026,6 +1083,7 @@
     }
   },
   {
+    "id": "faux-semblant",
     "label": "Faux- Semblant",
     "type": "Magie des Arcanes & de Sorcellerie",
     "subType": null,
@@ -1044,6 +1102,7 @@
     }
   },
   {
+    "id": "faveur-du-rat-cornu",
     "label": "Faveur du Rat Cornu",
     "type": "Magie Mineure Skaven",
     "subType": null,
@@ -1062,6 +1121,7 @@
     }
   },
   {
+    "id": "felure-aethyrique",
     "label": "Fêlure AEthyrique",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1080,6 +1140,7 @@
     }
   },
   {
+    "id": "fers-de",
     "label": "Fers de",
     "type": "Miracle",
     "subType": null,
@@ -1098,6 +1159,7 @@
     }
   },
   {
+    "id": "fertilisation",
     "label": "Fertilisation",
     "type": "Magie des Arcanes & des Taillis",
     "subType": null,
@@ -1116,6 +1178,7 @@
     }
   },
   {
+    "id": "feu-follet",
     "label": "Feu Follet",
     "type": "Magie Mineure",
     "subType": null,
@@ -1134,6 +1197,7 @@
     }
   },
   {
+    "id": "flamme",
     "label": "Flamme",
     "type": "Magie Mineure",
     "subType": null,
@@ -1152,6 +1216,7 @@
     }
   },
   {
+    "id": "flamme-verdatre",
     "label": "Flamme Verdâtre",
     "type": "du Domaine de la Ruine",
     "subType": null,
@@ -1170,6 +1235,7 @@
     }
   },
   {
+    "id": "flammes-bleues-de-tzeentch",
     "label": "Flammes Bleues de Tzeentch",
     "type": "Sort",
     "subType": null,
@@ -1188,6 +1254,7 @@
     }
   },
   {
+    "id": "flammes-roses-de-tzeentch",
     "label": "Flammes Roses de Tzeentch",
     "type": "Sort",
     "subType": null,
@@ -1206,6 +1273,7 @@
     }
   },
   {
+    "id": "forme-spectrale",
     "label": "Forme Spectrale",
     "type": "Magie des Arcanes & de Nécromancie",
     "subType": null,
@@ -1224,6 +1292,7 @@
     }
   },
   {
+    "id": "frenesie-artificielle",
     "label": "Frénésie Artificielle",
     "type": "Magie des Arcanes & de Nécromancie",
     "subType": null,
@@ -1242,6 +1311,7 @@
     }
   },
   {
+    "id": "furoncle-infecte",
     "label": "Furoncle Infecté",
     "type": "Sort",
     "subType": null,
@@ -1260,6 +1330,7 @@
     }
   },
   {
+    "id": "haine-du-faible",
     "label": "Haine du Faible",
     "type": "Miracle",
     "subType": null,
@@ -1278,6 +1349,7 @@
     }
   },
   {
+    "id": "haleine-fetide",
     "label": "Haleine Fétide",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1296,6 +1368,7 @@
     }
   },
   {
+    "id": "hebetement",
     "label": "Hébètement",
     "type": "du Domaine de la Ruine",
     "subType": null,
@@ -1314,6 +1387,7 @@
     }
   },
   {
+    "id": "immuno-deficience",
     "label": "Immuno - Déficience",
     "type": "du Domaine de la Peste",
     "subType": null,
@@ -1332,6 +1406,7 @@
     }
   },
   {
+    "id": "instinct-animal",
     "label": "Instinct Animal",
     "type": "Miracle",
     "subType": null,
@@ -1350,6 +1425,7 @@
     }
   },
   {
+    "id": "introspection",
     "label": "Introspection",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1368,6 +1444,7 @@
     }
   },
   {
+    "id": "justice",
     "label": "Justice",
     "type": "Bénédiction",
     "subType": null,
@@ -1386,6 +1463,7 @@
     }
   },
   {
+    "id": "la-verite-finit-toujours-par-sortir",
     "label": "La Vérité finit toujours par sortir",
     "type": "Miracle",
     "subType": null,
@@ -1404,6 +1482,7 @@
     }
   },
   {
+    "id": "langue-aceree",
     "label": "Langue Acérée",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1422,6 +1501,7 @@
     }
   },
   {
+    "id": "langue-des-gors",
     "label": "Langue des Gors",
     "type": "Magie Mineure",
     "subType": null,
@@ -1440,6 +1520,7 @@
     }
   },
   {
+    "id": "langue-des-pestigors",
     "label": "Langue des Pestigors",
     "type": "Magie Mineure",
     "subType": null,
@@ -1458,6 +1539,7 @@
     }
   },
   {
+    "id": "langue-des-slaangors",
     "label": "Langue des Slaangors",
     "type": "Magie Mineure",
     "subType": null,
@@ -1476,6 +1558,7 @@
     }
   },
   {
+    "id": "langue-des-tzaangors",
     "label": "Langue des Tzaangors",
     "type": "Magie Mineure",
     "subType": null,
@@ -1494,6 +1577,7 @@
     }
   },
   {
+    "id": "les-voies-de-la-nature",
     "label": "Les Voies de la Nature",
     "type": "Miracle",
     "subType": null,
@@ -1512,6 +1596,7 @@
     }
   },
   {
+    "id": "lune-de-malheur",
     "label": "Lune de Malheur",
     "type": "Sort",
     "subType": null,
@@ -1530,6 +1615,7 @@
     }
   },
   {
+    "id": "main-de-rhya",
     "label": "Main de Rhya",
     "type": "Miracle",
     "subType": null,
@@ -1548,6 +1634,7 @@
     }
   },
   {
+    "id": "maitrise-du-destin",
     "label": "Maîtrise du Destin",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1566,6 +1653,7 @@
     }
   },
   {
+    "id": "malveillance-absolue",
     "label": "Malveillance Absolue",
     "type": "Sort",
     "subType": null,
@@ -1584,6 +1672,7 @@
     }
   },
   {
+    "id": "marque-du-rat-cornu",
     "label": "Marque du Rat Cornu",
     "type": "Magie Mineure Skaven",
     "subType": null,
@@ -1602,6 +1691,7 @@
     }
   },
   {
+    "id": "marteau-de-justice",
     "label": "Marteau de Justice",
     "type": "Miracle",
     "subType": null,
@@ -1620,6 +1710,7 @@
     }
   },
   {
+    "id": "modele-de-vertu",
     "label": "Modèle de Vertu",
     "type": "Miracle",
     "subType": null,
@@ -1638,6 +1729,7 @@
     }
   },
   {
+    "id": "morsure-d-hiver",
     "label": "Morsure d’Hiver",
     "type": "Miracle",
     "subType": null,
@@ -1656,6 +1748,7 @@
     }
   },
   {
+    "id": "mouchard",
     "label": "Mouchard",
     "type": "Magie des Arcanes & de Nécromancie",
     "subType": null,
@@ -1674,6 +1767,7 @@
     }
   },
   {
+    "id": "nostrum",
     "label": "Nostrum",
     "type": "Magie des Arcanes & des Taillis",
     "subType": null,
@@ -1692,6 +1786,7 @@
     }
   },
   {
+    "id": "nuee",
     "label": "Nuée",
     "type": "Magie des Arcanes & de Sorcellerie",
     "subType": null,
@@ -1710,6 +1805,7 @@
     }
   },
   {
+    "id": "nuee-de-mouches",
     "label": "Nuée de Mouches",
     "type": "Sort",
     "subType": null,
@@ -1728,6 +1824,7 @@
     }
   },
   {
+    "id": "oeil-de-lynx",
     "label": "Oeil de Lynx",
     "type": "Miracle",
     "subType": null,
@@ -1746,6 +1843,7 @@
     }
   },
   {
+    "id": "ouverture",
     "label": "Ouverture",
     "type": "Magie Mineure",
     "subType": null,
@@ -1764,6 +1862,7 @@
     }
   },
   {
+    "id": "pattes-gluantes",
     "label": "Pattes Gluantes",
     "type": "du Domaine des Ombres",
     "subType": null,
@@ -1782,6 +1881,7 @@
     }
   },
   {
+    "id": "pied-leger",
     "label": "Pied Léger",
     "type": "Magie Mineure",
     "subType": null,
@@ -1800,6 +1900,7 @@
     }
   },
   {
+    "id": "pierre-de-souffrance",
     "label": "Pierre de Souffrance",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1818,6 +1919,7 @@
     }
   },
   {
+    "id": "piste-froide",
     "label": "Piste Froide",
     "type": "Miracle",
     "subType": null,
@@ -1836,6 +1938,7 @@
     }
   },
   {
+    "id": "poids-plume",
     "label": "Poids Plume",
     "type": "du Domaine des Ombres",
     "subType": null,
@@ -1854,6 +1957,7 @@
     }
   },
   {
+    "id": "position",
     "label": "Position",
     "type": "Magie Mineure",
     "subType": null,
@@ -1872,6 +1976,7 @@
     }
   },
   {
+    "id": "poudre-d-escampette",
     "label": "Poudre d’Escampette",
     "type": "du Domaine des Ombres",
     "subType": null,
@@ -1890,6 +1995,7 @@
     }
   },
   {
+    "id": "pourriture",
     "label": "Pourriture",
     "type": "Magie Mineure",
     "subType": null,
@@ -1908,6 +2014,7 @@
     }
   },
   {
+    "id": "prise-de-tete",
     "label": "Prise de Tête",
     "type": "Sort",
     "subType": null,
@@ -1926,6 +2033,7 @@
     }
   },
   {
+    "id": "projectile",
     "label": "Projectile",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1944,6 +2052,7 @@
     }
   },
   {
+    "id": "projectile-de-dhar",
     "label": "Projectile de Dhar",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1962,6 +2071,7 @@
     }
   },
   {
+    "id": "projectile-mineur",
     "label": "Projectile Mineur",
     "type": "Magie Mineure",
     "subType": null,
@@ -1980,6 +2090,7 @@
     }
   },
   {
+    "id": "rafale-hurlante",
     "label": "Rafale Hurlante",
     "type": "du Domaine de la Ruine",
     "subType": null,
@@ -1998,6 +2109,7 @@
     }
   },
   {
+    "id": "rage-meurtriere",
     "label": "Rage Meurtrière",
     "type": "du Domaine des Ombres",
     "subType": null,
@@ -2016,6 +2128,7 @@
     }
   },
   {
+    "id": "ramanchage",
     "label": "Ramanchage",
     "type": "Magie des Arcanes & des Taillis",
     "subType": null,
@@ -2034,6 +2147,7 @@
     }
   },
   {
+    "id": "rapidite",
     "label": "Rapidité",
     "type": "Bénédiction",
     "subType": null,
@@ -2052,6 +2166,7 @@
     }
   },
   {
+    "id": "rat-esclave",
     "label": "Rat Esclave",
     "type": "du Domaine des Ombres",
     "subType": null,
@@ -2070,6 +2185,7 @@
     }
   },
   {
+    "id": "regard-lubrique",
     "label": "Regard Lubrique",
     "type": "Magie Mineure",
     "subType": null,
@@ -2088,6 +2204,7 @@
     }
   },
   {
+    "id": "rejeton-de-slaanesh",
     "label": "Rejeton de Slaanesh",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -2106,6 +2223,7 @@
     }
   },
   {
+    "id": "resistance-du-penitent",
     "label": "Résistance du Pénitent",
     "type": "Miracle",
     "subType": null,
@@ -2124,6 +2242,7 @@
     }
   },
   {
+    "id": "robustesse",
     "label": "Robustesse",
     "type": "Bénédiction",
     "subType": null,
@@ -2142,6 +2261,7 @@
     }
   },
   {
+    "id": "ruine",
     "label": "Ruine",
     "type": "Magie des Arcanes & de Sorcellerie",
     "subType": null,
@@ -2160,6 +2280,7 @@
     }
   },
   {
+    "id": "saccade",
     "label": "Saccade",
     "type": "Magie Mineure",
     "subType": null,
@@ -2178,6 +2299,7 @@
     }
   },
   {
+    "id": "sagesse-du-hibou",
     "label": "Sagesse du Hibou",
     "type": "Miracle",
     "subType": null,
@@ -2196,6 +2318,7 @@
     }
   },
   {
+    "id": "sanctuaire",
     "label": "Sanctuaire",
     "type": "Miracle",
     "subType": null,
@@ -2214,6 +2337,7 @@
     }
   },
   {
+    "id": "saut-de-cabri",
     "label": "Saut de Cabri",
     "type": "Miracle",
     "subType": null,
@@ -2232,6 +2356,7 @@
     }
   },
   {
+    "id": "secousse-tellurique",
     "label": "Secousse Tellurique",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -2250,6 +2375,7 @@
     }
   },
   {
+    "id": "shurikens-enchantes",
     "label": "Shurikens Enchantés",
     "type": "du Domaine des Ombres",
     "subType": null,
@@ -2268,6 +2394,7 @@
     }
   },
   {
+    "id": "soins",
     "label": "Soins",
     "type": "Bénédiction",
     "subType": null,
@@ -2286,6 +2413,7 @@
     }
   },
   {
+    "id": "soleil-noir",
     "label": "Soleil Noir",
     "type": "Sort",
     "subType": null,
@@ -2304,6 +2432,7 @@
     }
   },
   {
+    "id": "sus-a-l-ennemi",
     "label": "Sus à l’Ennemi !",
     "type": "Miracle",
     "subType": null,
@@ -2322,6 +2451,7 @@
     }
   },
   {
+    "id": "telekinesie",
     "label": "Télékinésie",
     "type": "Magie des Arcanes & de Nécromancie",
     "subType": null,
@@ -2340,6 +2470,7 @@
     }
   },
   {
+    "id": "terreur-nocturne",
     "label": "Terreur Nocturne",
     "type": "Magie des Arcanes & de Sorcellerie",
     "subType": null,
@@ -2358,6 +2489,7 @@
     }
   },
   {
+    "id": "treve-de-taal-dsfl",
     "label": "Trêve de Taal DSFL",
     "type": "Miracle",
     "subType": null,
@@ -2376,6 +2508,7 @@
     }
   },
   {
+    "id": "trouble",
     "label": "Trouble",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -2394,6 +2527,7 @@
     }
   },
   {
+    "id": "vague-scelerate",
     "label": "Vague Scélérate",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -2412,6 +2546,7 @@
     }
   },
   {
+    "id": "verena-m-est-temoin",
     "label": "Verena m’est témoin !",
     "type": "Miracle",
     "subType": null,
@@ -2430,6 +2565,7 @@
     }
   },
   {
+    "id": "vol",
     "label": "Vol",
     "type": "Sort",
     "subType": null,
@@ -2448,6 +2584,7 @@
     }
   },
   {
+    "id": "waaagh",
     "label": "WAAAGH !",
     "type": "Sort",
     "subType": null,
@@ -2466,6 +2603,7 @@
     }
   },
   {
+    "id": "z-oeils-de-mork",
     "label": "Z’Oeils de Mork",
     "type": "Sort",
     "subType": null,

@@ -160,7 +160,7 @@ export function moveReachFor(
   mover: Pick<Combatant, 'traits'>,
   scene: Scene, start: Pt, range: number, blocked: Set<string>, foot = 1,
 ): Map<string, number> {
-  return (hasTrait(mover.traits, 'Vol') ? flyReachable : reachable)(scene, start, range, blocked, foot);
+  return (hasTrait(mover.traits, 'vol') ? flyReachable : reachable)(scene, start, range, blocked, foot);
 }
 
 /**

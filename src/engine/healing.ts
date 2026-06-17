@@ -15,13 +15,13 @@ const condStacks = (c: Combatant, name: string) => c.conditions.find((x) => x.na
 /** Le combattant possède-t-il la Compétence (Avancée) Guérison ? Sans Augmentation, « aucune idée
  *  de comment soigner » (LDB 09-Compétences l.31, l.226). */
 export function hasHealSkill(c: Combatant): boolean {
-  return (c.skills ?? []).some((s) => s.name.toLowerCase().startsWith('guérison'));
+  return (c.skills ?? []).some((s) => s.skillId === 'guerison');
 }
 
 /** Le personnage possède-t-il le Talent Chirurgie (LDB 10) ? Prérequis pour opérer une blessure
  *  chirurgicale (amputation, fracture majeure). */
 export function hasSurgerySkill(c: Combatant): boolean {
-  return (c.talents ?? []).some((t) => t.name.toLowerCase().startsWith('chirurgie'));
+  return (c.talents ?? []).some((t) => t.talentId === 'chirurgie');
 }
 
 /** Cible soignable : blessée (PB perdus) OU porteuse d'≥1 État Hémorragique OU avec une déchirure traitable ;

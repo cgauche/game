@@ -7,6 +7,8 @@
 import type { CreatureData, HarvestRarity, HarvestDanger } from '../data';
 import { findCreature } from '../data';
 import { fromBrass, type Money, PA_PER_SC, PA_PER_CO } from './money';
+import { formatTrait } from './traits/dispatch';
+import type { TraitInstance } from './statEntry';
 
 export type Rarity = HarvestRarity;
 export type Danger = HarvestDanger;
@@ -35,13 +37,10 @@ export function harvestProfileFor(label: string): HarvestProfile | undefined {
   return findCreature(label)?.harvest ?? undefined;
 }
 
-/** Texte d'un Trait, qu'il soit une chaîne brute ou un TraitInstance parsé (robuste au modèle). */
+/** Texte d'un Trait, qu'il soit une chaîne brute (authoring/test) ou un TraitInstance (runtime). */
 function traitText(x: unknown): string {
   if (typeof x === 'string') return x;
-  if (x && typeof x === 'object') {
-    const o = x as { raw?: string; key?: string };
-    return o.raw ?? o.key ?? '';
-  }
+  if (x && typeof x === 'object' && 'id' in x) return formatTrait(x as TraitInstance);
   return '';
 }
 

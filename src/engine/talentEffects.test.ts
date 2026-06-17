@@ -62,7 +62,7 @@ describe('« +5 à votre Caractéristique de départ » (LDB 10 — ne compte pa
 
 describe('attributs dérivés des talents', () => {
   it('Dur à cuire : +BE Points de Blessure par acquisition (LDB 10)', () => {
-    const h = hero({ talents: [{ name: 'Dur à cuire', times: 1 }] });
+    const h = hero({ talents: [{ talentId: 'dur-a-cuire', times: 1 }] });
     expect(extraWounds(h)).toBe(3); // BE 3
     expect(heroMaxWounds(h)).toBe(3 + 2 * 3 + 3 + 3); // BF+2BE+BFM + Dur à cuire
     h.talents[0].times = 2;
@@ -70,11 +70,11 @@ describe('attributs dérivés des talents', () => {
   });
   it('Chanceux : Chance max = Destin + niveaux (LDB 10)', () => {
     expect(fortuneMax(hero())).toBe(2);
-    expect(fortuneMax(hero({ talents: [{ name: 'Chanceux', times: 2 }] }))).toBe(4);
+    expect(fortuneMax(hero({ talents: [{ talentId: 'chanceux', times: 2 }] }))).toBe(4);
   });
   it('Obstiné : Détermination max = Résilience + niveaux (LDB 10)', () => {
     expect(resolveMax(hero())).toBe(1);
-    expect(resolveMax(hero({ talents: [{ name: 'Obstiné', times: 1 }] }))).toBe(2);
+    expect(resolveMax(hero({ talents: [{ talentId: 'obstine', times: 1 }] }))).toBe(2);
   });
 });
 
@@ -82,11 +82,11 @@ describe('« Ajoutez la Compétence X à n\'importe quelle Carrière que vous en
   it('Maître artisan (Forgeron) → Métier (Forgeron) ; Sorcier ! → Langue (Magick)', () => {
     const h = hero({
       talents: [
-        { name: 'Maître artisan (Forgeron)', times: 1 },
-        { name: 'Sorcier !', times: 1 },
-        { name: 'Oreille absolue', times: 1 },
-        { name: 'Voyageur aguerri', times: 1 },
-        { name: 'Baratiner', times: 1 }, // sans addSkill → rien
+        { talentId: 'maitre-artisan', spec: 'Forgeron', times: 1 },
+        { talentId: 'sorcier', times: 1 },
+        { talentId: 'oreille-absolue', times: 1 },
+        { talentId: 'voyageur-aguerri', times: 1 },
+        { talentId: 'baratiner', times: 1 }, // sans addSkill → rien
       ],
     });
     const adds = careerSkillAdditions(h);

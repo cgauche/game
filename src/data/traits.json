@@ -1245,6 +1245,60 @@
     "prefix": "(Difficulté)",
     "suffix": null,
     "desc": "Les attaques de la créature impliquent du poison ou du venin. Quand elle inflige des Points de Blessure avec ses Attaques venimeuses, son adversaire subit un État Empoisonné. Si aucune Difficulté n'est indiquée pour résister au Venin, le Test est considéré comme Intermédiaire. Voir page 168.",
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "all",
+            "of": [
+              {
+                "kind": "woundsDealt",
+                "op": ">",
+                "value": 0
+              },
+              {
+                "kind": "not",
+                "of": {
+                  "kind": "compare",
+                  "subject": {
+                    "who": "target",
+                    "condition": "Empoisonné"
+                  },
+                  "op": ">=",
+                  "value": 1
+                }
+              }
+            ]
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "victim",
+              "ops": [
+                {
+                  "op": "test",
+                  "characteristic": "E",
+                  "skill": "Résistance",
+                  "difficulty": "intermediaire",
+                  "argDifficulty": true,
+                  "unlessImmune": "poison",
+                  "onFail": [
+                    {
+                      "op": "condition",
+                      "name": "Empoisonné"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      }
+    ],
     "source": {
       "book": "LDB",
       "page": 343

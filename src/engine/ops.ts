@@ -19,6 +19,7 @@ import { testValue } from './skills';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
 import { addCondition, addTimedCondition, removeCondition, loseWounds, hasCondition } from './conditions';
 import { groupMatch } from './groups';
+import { bypassedAP } from './armourBypass';
 import { grantTrait } from './grantedTraits';
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { cureCriticalWounds } from './trauma';
@@ -29,6 +30,9 @@ import { ConjureForm, conjureFormOptions, equipConjuredWeapon } from './conjured
 import { polymorphOps } from './polymorph';
 import type { SizeCategory } from './size';
 import type { ZoneEffect } from './zones';
+// Type-only (effacé à la compilation) : la FORME unifiée des effets « à la touche » d'une arme
+// enchantée/invoquée = un `TriggeredEffect`, dispatché par `state/triggeredEffects` (pas ici).
+import type { TriggeredEffect } from '../state/flow';
 import {
   ActiveEffect,
   ArmourBypass,
@@ -37,10 +41,13 @@ import {
   Combatant,
   Difficulty,
   DIFFICULTY_LABELS,
+  HitLocation,
   HIT_LOCATION_LABELS,
   ItemInstance,
   Weapon,
 } from './types';
+import { immunityTypes, formatTrait } from './traits/dispatch';
+import type { TraitInstance } from './statEntry';
 
 // ---------------------------------------------------------------------------
 // Formules
@@ -95,6 +102,9 @@ export type GameOp =
    *  `ignoreAP:false` → les PA (Localisation Corps) sont déduits. `perSL` : « +DR Dégâts » ;
    *  `onlyGroups` : ne touche qu'un Groupe (« les Morts-vivants… », Feu de l'âme). */
   | { op: 'wounds'; amount: Formula; perSL?: PerSL; onlyGroups?: string[]; ignoreTB?: boolean; ignoreAP?: boolean;
+      /** Quand les PA sont déduits (`ignoreAP:false`), IGNORE en plus les PA d'une matière (Cieux/Métal =
+       *  `metal`, Ombres = `nonMagic`) — attribut de Domaine (l'arc d'Azyr perce le métal). */
+      bypassArmour?: 'metal' | 'nonMagic';
       /** Plancher de Blessures infligées APRÈS mitigation (Sang corrosif : « min 1 » même BE/PA élevés). */
       min?: number }
   /** Blessures rendues (plafonnées au max). */
@@ -130,7 +140,13 @@ export type GameOp =
    *  immédiatement contre la CIBLE, puis applique `onFail` / `onSuccess`.
    *  `onFailHard` : palier d'échec aggravé (« si vous échouez avec −4 DR ou
    *  moins… », Purifier la chair LDB 40) — appliqué EN PLUS d'`onFail`. */
-  | { op: 'test'; skill?: string; characteristic?: CharKey; difficulty: Difficulty; onFail: GameOp[]; onSuccess?: GameOp[]; onFailHard?: { dr: number; ops: GameOp[] } }
+  | { op: 'test'; skill?: string; characteristic?: CharKey; difficulty: Difficulty;
+      /** La difficulté EFFECTIVE vient de l'argument d'instance du porteur (« Venin (Difficile) ») —
+       *  substituée à la collecte (`effectsOf`) ; `difficulty` ci-dessus est le défaut (arg absent). */
+      argDifficulty?: boolean;
+      /** Saute le Test si la cible est IMMUNISÉE au type donné (Immunité (Poison) → Venin sans effet). */
+      unlessImmune?: string;
+      onlyGroups?: string[]; exceptGroups?: string[]; onFail: GameOp[]; onSuccess?: GameOp[]; onFailHard?: { dr: number; ops: GameOp[] } }
   /** Test OPPOSÉ à la touche (Assommante : F vs F ; Épée de justice : Soc vs Résistance) : l'attaquant
    *  (`caster`/`ref`) oppose `attacker`[+`attackerSkill`] à la `defender`[+`defenderSkill`] de la cible ;
    *  victoire de l'attaquant → `onWin`, sinon `onLose`. Réutilise `opposedTest()` (engine/tests). */
@@ -152,7 +168,7 @@ export type GameOp =
    *  actif ») : posé dans `c.traits` (vu par TOUS les consommateurs — dispatch, psy, IA,
    *  déplacement), retiré à l'expiration de l'ActiveEffect porteur. `indice` : Indice du trait
    *  (« Peur 1 », « Vol (Agilité) » → valeur du lanceur), `indicePerSL` : « +1 par +3 DR ». */
-  | { op: 'grantTrait'; trait: string; indice?: Formula; indicePerSL?: PerSL; onlyGroups?: string[] }
+  | { op: 'grantTrait'; traitId: string; arg?: string; indice?: Formula; indicePerSL?: PerSL; onlyGroups?: string[] }
   /** Talent TEMPORISÉ (Jalon 2.6 — « +1 Talent Sans peur tant que le Sort est actif ») : porté
    *  par l'ActiveEffect, lu par le registre `combatFeatures` (featuresOf) — PAS posé dans
    *  `c.talents` (fiche/avancement intacts). Seuls les talents AVEC def mécanique ont un effet. */
@@ -161,10 +177,12 @@ export type GameOp =
    *  Magique +BSoc + En flammes/À Terre à la touche ; Épée ardente : +6 + Percutante + En
    *  flammes). Porté par le PORTEUR (ActiveEffect.weaponEnchant), fusionné à l'arme à la
    *  résolution (`enchantedWeapon`). `damageBonus` résolu contre le LANCEUR (BSoc du prêtre). */
-  | { op: 'enchantWeapon'; addQualities?: string[]; damageBonus?: Formula; bypass?: ArmourBypass; requiresWeapon?: string; onHitConditions?: { name: string; value?: number; onlyGroups?: string[] }[];
-      /** Test à la touche gaté par Groupe (Épée de justice : Criminel → Inconscient ; Morsure de
-       *  l'hiver : vivant → Sonné). La cible teste `skill`/`difficulty` ; ÉCHEC → `onFail`. */
-      onHitTest?: { onlyGroups?: string[]; exceptGroups?: string[]; skill: string; difficulty: Difficulty; onFail: { name: string; value?: number }[] } }
+  | { op: 'enchantWeapon'; addQualities?: string[]; damageBonus?: Formula; bypass?: ArmourBypass; requiresWeapon?: string;
+      /** Effets DÉCLENCHÉS « à la touche » de l'arme enchantée — forme UNIFIÉE (`TriggeredEffect`,
+       *  comme les Atouts d'arme et les Traits) : Marteau ardent → En flammes/À Terre ; Épée de
+       *  justice → Test du Groupe « Criminel » → Inconscient ; Morsure de l'hiver → Test (hors
+       *  Mort-vivant/Démon) → Sonné. Agrégés par `effectsOf` et dispatchés par `fireTriggers('onHit')`. */
+      onHitEffects?: TriggeredEffect[] }
   /** Purge de maladies (Amère catharsis, LDB 42) : retire `count` (+échelle DR) maladies. */
   | { op: 'cureDisease'; count?: number; countPerSL?: PerSL }
   /** −N jours sur la durée d'une maladie active (B. de Convalescence, LDB 41 — 1×/maladie). */
@@ -235,10 +253,11 @@ export type GameOp =
    *  + `damagePlus` (offset constant) donnent la composante chiffrée ; `plusBF` y ajoute le Bonus de
    *  Force (défaut : Dégâts FIXES, sans BF — conforme aux armes invoquées). L'objet invoqué est posé
    *  dans un SET d'armes DÉDIÉ actif (engine/conjuredWeapons.equipConjuredWeapon) puis retiré à
-   *  l'expiration. `onHitConditions` : États infligés à la touche (Épée ardente → En flammes). */
+   *  l'expiration. `onHitEffects` : effets DÉCLENCHÉS à la touche (Épée ardente → En flammes) — même
+   *  forme `TriggeredEffect` unifiée que `enchantWeapon`/les Atouts d'arme. */
   | { op: 'conjureWeapon'; name: string; damage: Formula; damagePlus?: number; plusBF?: boolean;
       qualities?: string[]; subType?: string; reach?: string; hands?: 1 | 2;
-      onHitConditions?: { name: string; value?: number }[];
+      onHitEffects?: TriggeredEffect[];
       /** SKIN cosmétique magique (token→hex, ex. lame aethyrique bleutée / améthyste / ardente) —
        *  propagé à `Weapon.skin` par recomputeLoadout, l'arme se rend recolorée (système d'objet unique). */
       skin?: Record<string, string>;
@@ -269,7 +288,7 @@ export type GameOp =
    *  `addTraits`/`size` surchargent le statbloc (loup blanc = Loup + Frénésie + Grand) ; `allyOfCaster`
    *  = camp du lanceur (défaut) sinon hostile (démons « hors de votre contrôle ») ; `despawnIfCasterDown`
    *  = s'effondre si le lanceur tombe (minions liés au sorcier). */
-  | { op: 'summon'; ref: string; count: Formula; countPerSL?: PerSL; addTraits?: string[];
+  | { op: 'summon'; ref: string; count: Formula; countPerSL?: PerSL; addTraits?: TraitInstance[];
       size?: SizeCategory; allyOfCaster?: boolean; despawnIfCasterDown?: boolean }
   /** ZONE PERSISTANTE posée par le sort (Mur de feu, Grands feux d'U'Zhul, Vol du Destin). Effet IMPUR
    *  (pose une zone dans la scène/bataille) RÉSOLU par la couche state (`state/combatEffects`) ; INERTE
@@ -354,6 +373,8 @@ export interface OpsCtx {
   /** INDICE de l'attaque naturelle d'une MANŒUVRE en cours (« Morsure +10 ») — résout les Formula
    *  `{indiceOf}` (Dégâts authorés en GameOp). Posé par le résolveur de manœuvre. */
   indice?: number;
+  /** Localisation de la touche courante (dé inversé) — lue par la Condition Flow `location` (Assommante). */
+  location?: HitLocation;
   /** Gain de Corruption AVEC seuil → mutation (corruptionFlow) ; sans contexte
    *  store, l'op `corruption` incrémente simplement le compteur. */
   onCorruption?: (n: number) => string[];
@@ -412,9 +433,12 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
     lines.push(`${target.name} : ${ctx.label ?? 'Effet'} (${charParts.join(', ')}, ${dur}).`);
     charParts.length = 0;
   };
-  // Filtre par Groupe de la CIBLE (engine/groups — « les Morts-vivants gagnent aussi… »).
-  const groupGate = (only?: string[]): boolean =>
-    !only || only.some((g) => groupMatch(g, target.groups ?? []));
+  // Filtre par Groupe de la CIBLE (engine/groups) : `only` = doit appartenir à l'un (« les
+  // Morts-vivants gagnent aussi… ») ; `except` = exclu si appartient à l'un (Morsure de l'hiver :
+  // hors Mort-vivant/Démon).
+  const groupGate = (only?: string[], except?: string[]): boolean =>
+    (!only || only.some((g) => groupMatch(g, target.groups ?? [])))
+    && (!except || !except.some((g) => groupMatch(g, target.groups ?? [])));
   for (const o of ops) {
     if (o.op !== 'charMod') flushCharMods();
     switch (o.op) {
@@ -423,7 +447,9 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const raw = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled, ctx.indice) + slBonus(ctx.sl, o.perSL));
         // Défaut : ignore BE+PA. `ignoreTB:false` → déduit le Bonus d'Endurance ; `ignoreAP:false` → déduit les PA.
         const tb = o.ignoreTB === false ? bonus(effectiveChar(target, 'E')) : 0;
-        const ap = o.ignoreAP === false ? Math.max(0, target.armour.corps ?? 0) : 0;
+        const totalAP = Math.max(0, target.armour.corps ?? 0);
+        const bypass = o.bypassArmour ? bypassedAP(target, 'corps', o.bypassArmour, totalAP) : 0; // attribut de Domaine : perce le métal/non-magique
+        const ap = o.ignoreAP === false ? Math.max(0, totalAP - bypass) : 0;
         const n = Math.max(o.min ?? 0, raw - tb - ap);
         loseWounds(target, n); // perte centralisée (−Avantage + À Terre à 0)
         const mitig = o.ignoreTB === false || o.ignoreAP === false ? ` (${o.ignoreAP === false ? 'PA' : 'PA ignorés'}, ${o.ignoreTB === false ? 'BE déduit' : 'BE ignoré'})` : ' (ignorant BE et PA)';
@@ -503,6 +529,9 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'test': {
+        if (!groupGate(o.onlyGroups, o.exceptGroups)) break; // Test gaté par Groupe (Épée de justice : Criminel)
+        // Immunité de type (Immunité (Poison) → Venin sans effet) : la cible ne teste même pas.
+        if (o.unlessImmune && immunityTypes(target.traits ?? []).some((ty) => ty.includes(o.unlessImmune!.toLowerCase()))) break;
         const t = rollTest(testValue(target, o.skill, o.characteristic), o.difficulty, rng);
         const what = o.skill ?? (o.characteristic ? CHAR_LABELS[o.characteristic] : '?');
         lines.push(
@@ -591,16 +620,16 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'grantTrait': {
         if (!groupGate(o.onlyGroups)) break; // « les Mort-vivant/Démoniaque gagnent Instable » (Bannissement)
         const ind = o.indice != null ? resolveFormula(o.indice, ref, rng) + slBonus(ctx.sl, o.indicePerSL) : null;
-        const traitStr = ind != null ? `${o.trait} ${ind}` : o.trait;
-        grantTrait(target, traitStr);
+        const inst: TraitInstance = { id: o.traitId, ...(o.arg ? { arg: o.arg } : {}), ...(ind != null ? { value: ind } : {}) };
+        grantTrait(target, inst);
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
           roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
           ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
-          grantedTrait: traitStr,
+          grantedTrait: inst,
         });
-        lines.push(`${target.name} gagne le Trait ${traitStr} (${ctx.label ?? 'sort'}).`);
+        lines.push(`${target.name} gagne le Trait ${formatTrait(inst)} (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'enchantWeapon': {
@@ -615,15 +644,13 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
             ...(dmg ? { damageBonus: dmg } : {}),
             ...(o.bypass != null ? { bypass: o.bypass } : {}),
             ...(o.requiresWeapon ? { requiresWeapon: o.requiresWeapon } : {}),
-            ...(o.onHitConditions?.length ? { onHitConditions: o.onHitConditions } : {}),
-            ...(o.onHitTest ? { onHitTest: o.onHitTest } : {}),
+            ...(o.onHitEffects?.length ? { onHitEffects: o.onHitEffects } : {}),
           },
         });
         const parts = [
           ...(o.addQualities ?? []),
           ...(dmg ? [`+${dmg} Dégâts`] : []),
-          ...(o.onHitConditions ?? []).map((x) => `${x.name} à la touche`),
-          ...(o.onHitTest ? [`${o.onHitTest.onFail.map((c) => c.name).join('/')} à la touche (Test de ${o.onHitTest.skill})`] : []),
+          ...(o.onHitEffects?.length ? ['effet à la touche'] : []),
         ];
         lines.push(`${target.name} : son arme est enchantée — ${parts.join(', ')} (${ctx.label ?? 'sort'}).`);
         break;
@@ -848,7 +875,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
           ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
           conjuredSet,
-          ...(o.onHitConditions?.length ? { weaponEnchant: { requiresWeapon: o.name, onHitConditions: o.onHitConditions } } : {}),
+          ...(o.onHitEffects?.length ? { weaponEnchant: { requiresWeapon: o.name, onHitEffects: o.onHitEffects } } : {}),
         });
         lines.push(`${target.name} invoque ${item.name} (Dégâts ${dmg}${item.qualities.length ? `, ${item.qualities.join(', ')}` : ''}) (${ctx.label ?? 'sort'}).`);
         break;

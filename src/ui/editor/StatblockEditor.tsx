@@ -10,12 +10,25 @@
  */
 import { CustomStatblock } from '../../state/scene';
 import { CHAR_KEYS, CHAR_LABELS, CharKey } from '../../engine/types';
-import { creatures, findCreature, skillRefLabel, talentRefLabel } from '../../data';
+import { creatures, findCreature, findSkill, findTalent, skillRefLabel, talentRefLabel, type SkillRef, type TalentRef } from '../../data';
+import { slugId } from '../../data/slug';
+import { parseStatEntry } from '../../engine/statEntry';
 import { woundsForSize, resizeBySteps, stepSize, SIZE_LABEL, SIZE_ORDER } from '../../engine/size';
 import { bonus } from '../../engine/characteristics';
 import { sizeFromTraits } from '../../state/spawn';
-import { traitLabels } from '../../engine/traits/dispatch';
+import { parseTraitInstance, formatTrait } from '../../engine/traits/dispatch';
 import { SpellsField } from './OptionalTraitsPicker';
+
+/** Parse une saisie « Compétence (Spéc) Valeur » → `SkillRef` (id stable + spec + valeur de Test). */
+function parseSkillRef(text: string): SkillRef {
+  const p = parseStatEntry(text);
+  return { id: findSkill(p.name)?.id ?? slugId(p.name), spec: p.arg, value: p.indice ?? 0 };
+}
+/** Parse une saisie « Talent (Spéc) » → `TalentRef` (id stable + spec ; niveau par défaut 1 au spawn). */
+function parseTalentRef(text: string): TalentRef {
+  const p = parseStatEntry(text);
+  return { id: findTalent(p.name)?.id ?? slugId(p.name), spec: p.arg };
+}
 
 const EXTRA: { key: 'M'; label: string; def: number }[] = [{ key: 'M', label: 'Mouvement', def: 4 }];
 
@@ -32,12 +45,12 @@ function cloneFromCreature(label: string): CustomStatblock | null {
   return {
     name: c.label,
     char,
-    traits: traitLabels(c.traits), // statbloc éditeur = chaînes éditables (CreatureData structuré → libellés)
+    traits: c.traits, // statbloc éditeur = TraitInstance[] structurés (affichés/édités via formatTrait/parseTraitInstance)
     // PNJ nommés (Eusapia…) : compétences/talents/sorts de la donnée embarqués dans le clone.
-    // CustomStatblock.skills/talents RESTENT string[] (l'éditeur édite des chaînes) → on formate les refs.
-    ...(c.skills.length ? { skills: (c.skills ?? []).map(skillRefLabel) } : {}),
-    ...(c.talents.length ? { talents: (c.talents ?? []).map(talentRefLabel) } : {}),
-    ...(c.spells.length ? { spells: [...c.spells] } : {}),
+    // CustomStatblock stocke des REFS structurées (comme le bestiaire) — ids, pas libellés (multilangue).
+    ...(c.skills.length ? { skills: c.skills } : {}), // déjà SkillRef[]
+    ...(c.talents.length ? { talents: c.talents } : {}), // déjà TalentRef[]
+    ...(c.spells.length ? { spells: c.spells.map((s) => s.id) } : {}), // Ref[] → ids
   };
 }
 
@@ -57,8 +70,8 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
   /** « Utiliser les Tailles » (LDB 85 l.276-277) : agrandir/réduire de `steps` catégories ajuste F/E
    *  (+10/cat.) et Ag (−5/cat.) et met à jour le Trait « Taille (X) » (visible dans la liste). */
   const applyResize = (steps: number) => {
-    const traits = (stat.traits ?? []).filter((t) => !/^Taille\s*\(/i.test(t));
-    traits.push(`Taille (${SIZE_LABEL[stepSize(size, steps)]})`);
+    const traits = (stat.traits ?? []).filter((t) => t.id !== 'taille');
+    traits.push({ id: 'taille', arg: SIZE_LABEL[stepSize(size, steps)] });
     onChange({ ...stat, char: resizeBySteps(stat.char, steps), traits });
   };
   return (
@@ -111,16 +124,29 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
         <button type="button" onClick={() => applyResize(1)} disabled={SIZE_ORDER[size] === 6} title="Agrandir d'une catégorie (+10 F, +10 E, −5 Ag)">Agrandir ▲</button>
         <span className="statblock-note">« Utiliser les Tailles » (LDB 85) : ±10 F/E, ∓5 Ag par catégorie</span>
       </div>
-      <label className="ed-field">
+      <div className="ed-field">
         Traits (un par ligne — armement : « Arme (Épée) +7 », « À distance (Arbalète) +9 (60) » ; Taille : « Taille (Énorme) » ;
         Psychologie (LDB 21) : « Peur 3 », « Terreur 2 », « Immunité (Psychologie) », « Animosité (Elfes) », « Haine (Skavens) »,
         « Phobie (Araignées) », « Frénésie » — une Cible « (un au choix) » reste inerte jusqu'à ce qu'on la précise ici)
-        <textarea
-          rows={4}
-          value={(stat.traits ?? []).join('\n')}
-          onChange={(e) => onChange({ ...stat, traits: e.target.value.split('\n').map((s) => s.trim()).filter(Boolean) })}
-        />
-      </label>
+        {(stat.traits ?? []).map((t, i) => (
+          <div key={i} className="trait-row">
+            <input
+              value={formatTrait(t)}
+              onChange={(e) => onChange({ ...stat, traits: (stat.traits ?? []).map((x, j) => (j === i ? parseTraitInstance(e.target.value) : x)) })}
+            />
+            <button
+              className="btn small danger"
+              title="Retirer ce trait"
+              onClick={() => onChange({ ...stat, traits: (stat.traits ?? []).filter((_, j) => j !== i) })}
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+        <button className="btn small" onClick={() => onChange({ ...stat, traits: [...(stat.traits ?? []), { id: 'arme' }] })}>
+          + Ajouter un trait
+        </button>
+      </div>
       <label className="ed-field">
         Groupes (séparés par des virgules — ex. « Sigmarite, Cultiste ») : appartenances supplémentaires pour les Traits psy
         ciblés (Animosité/Haine/…). La catégorie du bestiaire (folder) est ajoutée automatiquement au spawn.
@@ -138,9 +164,9 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
         « Langue (Magick) 63 », « Corps à corps (Base) 52 », « Esquive 48 » ; les avances sont dérivées au spawn)
         <textarea
           rows={3}
-          value={(stat.skills ?? []).join('\n')}
+          value={(stat.skills ?? []).map(skillRefLabel).join('\n')}
           onChange={(e) => {
-            const skills = e.target.value.split('\n').map((s) => s.trim()).filter(Boolean);
+            const skills = e.target.value.split('\n').map((s) => s.trim()).filter(Boolean).map(parseSkillRef);
             onChange({ ...stat, skills: skills.length ? skills : undefined });
           }}
         />
@@ -148,9 +174,9 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
       <label className="ed-field">
         Talents (séparés par des virgules — « Magie des Arcanes (Ghur), Magie mineure, Menaçant »)
         <input
-          value={(stat.talents ?? []).join(', ')}
+          value={(stat.talents ?? []).map(talentRefLabel).join(', ')}
           onChange={(e) => {
-            const talents = e.target.value.split(',').map((s) => s.trim()).filter(Boolean);
+            const talents = e.target.value.split(',').map((s) => s.trim()).filter(Boolean).map(parseTalentRef);
             onChange({ ...stat, talents: talents.length ? talents : undefined });
           }}
         />

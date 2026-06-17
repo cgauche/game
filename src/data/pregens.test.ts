@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { makePregens, makeArenaParty } from './pregens';
+import { skillInstanceLabel, talentConcrete } from './index';
 
 describe('Personnages pré-tirés', () => {
   it('se génèrent tous sans erreur (labels d’espèce/carrière valides)', () => {
@@ -18,8 +19,8 @@ describe('Personnages pré-tirés', () => {
     // Les deux incantateurs portent bien leurs sorts.
     const sorcier = pregens.find((h) => h.career === 'Sorcier');
     const pretre = pregens.find((h) => h.career === 'Prêtre');
-    expect(sorcier?.spells).toContain('Fléchette');
-    expect(pretre?.spells).toContain('Bénédiction de Guérison');
+    expect(sorcier?.spells).toContain('flechette'); // runtime = ids de sort
+    expect(pretre?.spells).toContain('benediction-de-guerison');
   });
 
   it('les incantateurs portent les Talents REQUIS par leurs sorts (RAW)', () => {
@@ -27,12 +28,12 @@ describe('Personnages pré-tirés', () => {
     const sorcier = pregens.find((h) => h.career === 'Sorcier')!;
     const pretre = pregens.find((h) => h.career === 'Prêtre')!;
     // LDB 10 (Magie mineure) : « Vous pouvez apprendre des Sorts de Magie mineure » — requis pour Fléchette/Choc.
-    expect(sorcier.talents.map((t) => t.name)).toContain('Magie mineure');
+    expect(sorcier.talents.map((t) => talentConcrete(t))).toContain('Magie mineure');
     // LDB 41 l.14 : « un Personnage avec le Talent Béni reçoit les six Bénédictions de son culte ».
-    expect(pretre.talents.map((t) => t.name)).toContain('Béni (Sigmar)');
+    expect(pretre.talents.map((t) => talentConcrete(t))).toContain('Béni (Sigmar)');
     // Et les Compétences d'incantation restent là (gating des Compétences avancées).
-    expect(sorcier.skills.some((s) => s.name === 'Langue' && s.spec === 'Magick' && s.advances >= 1)).toBe(true);
-    expect(pretre.skills.some((s) => s.name === 'Prière' && s.advances >= 1)).toBe(true);
+    expect(sorcier.skills.some((s) => s.skillId === 'langue' && s.spec === 'Magick' && s.advances >= 1)).toBe(true);
+    expect(pretre.skills.some((s) => s.skillId === 'priere' && s.advances >= 1)).toBe(true);
   });
 });
 
@@ -45,7 +46,7 @@ describe('Personnages pré-tirés', () => {
 describe('makeArenaParty — couverture des règles', () => {
   const party = makeArenaParty();
   const hasSkill = (name: string) =>
-    party.some((h) => h.skills.some((s) => s.name.toLowerCase().includes(name.toLowerCase())));
+    party.some((h) => h.skills.some((s) => skillInstanceLabel(s).toLowerCase().includes(name.toLowerCase())));
 
   it('compte exactement 4 héros, tous de carrières distinctes', () => {
     expect(party).toHaveLength(4);
@@ -73,12 +74,12 @@ describe('makeArenaParty — couverture des règles', () => {
 
   it('exerce une Spécialisation de Corps à corps NON-Base (prouve le Jalon 2 en jeu)', () => {
     const specs = party.flatMap((h) =>
-      h.skills.filter((s) => s.name.toLowerCase().includes('corps à corps')).map((s) => (s.spec ?? '').toLowerCase()),
+      h.skills.filter((s) => s.skillId === 'corps-a-corps').map((s) => (s.spec ?? '').toLowerCase()),
     );
     expect(specs.some((sp) => sp && sp !== 'base')).toBe(true);
   });
 
   it('exerce la Psychologie (un héros au Talent Frénésie / Sans peur)', () => {
-    expect(party.some((h) => (h.talents ?? []).some((t) => /frénésie|sans peur/i.test(t.name)))).toBe(true);
+    expect(party.some((h) => (h.talents ?? []).some((t) => /frénésie|sans peur/i.test(talentConcrete(t))))).toBe(true);
   });
 });

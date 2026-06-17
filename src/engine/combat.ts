@@ -92,8 +92,8 @@ function acceptableSpecs(weapon: Weapon, kind: 'melee' | 'ranged'): string[] {
 export function combatValue(c: Combatant, kind: 'melee' | 'ranged', weapon?: Weapon): number {
   const charKey = kind === 'melee' ? 'CC' : 'CT';
   const base = effectiveChar(c, charKey);
-  const skillName = kind === 'melee' ? 'corps à corps' : 'projectiles';
-  const matching = c.skills.filter((s) => s.name.toLowerCase().includes(skillName));
+  const skillId = kind === 'melee' ? 'corps-a-corps' : 'projectiles';
+  const matching = c.skills.filter((s) => s.skillId === skillId);
   if (matching.length === 0) return base;
   if (!weapon || !weapon.subType) return base + Math.max(0, ...matching.map((s) => s.advances));
   const wanted = acceptableSpecs(weapon, kind);
@@ -108,7 +108,7 @@ export function combatValue(c: Combatant, kind: 'melee' | 'ranged', weapon?: Wea
  */
 export function defenseValue(c: Combatant, mode: 'parade' | 'esquive', weapon?: Weapon): number {
   if (mode === 'parade') return combatValue(c, 'melee', weapon ?? c.weapons[0]);
-  const sk = c.skills.find((s) => s.name.toLowerCase().includes('esquive'));
+  const sk = c.skills.find((s) => s.skillId === 'esquive');
   // Pénalité de mobilité : pire pénalité (non-cumul, LDB l.20) entre Encombrement et traumatisme
   // de jambe (Déchirure −10/−20, Fracture −20 « règle du Pied », LDB 18 l.298/315/369).
   const mobilityPenalty = Math.min(agilityTestPenalty(c), traumaDodgePenalty(c));
@@ -307,7 +307,7 @@ export function crowdMod(group: number): ModLine | null {
 
 /** Le défenseur possède-t-il une Spé de Corps à corps donnée (ex. 'Parade') ? */
 function hasMeleeSpec(c: Combatant, spec: string): boolean {
-  return (c.skills ?? []).some((s) => s.name.toLowerCase() === 'corps à corps' && (s.spec ?? '').toLowerCase() === spec.toLowerCase());
+  return (c.skills ?? []).some((s) => s.skillId === 'corps-a-corps' && (s.spec ?? '').toLowerCase() === spec.toLowerCase());
 }
 
 /** Pénalité à la PARADE avec l'arme `weapon` (LDB 62 l.192) : 0 en main principale ; 0 si arme à 1 main +

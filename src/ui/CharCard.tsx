@@ -3,8 +3,8 @@ import { Combatant, CHAR_KEYS, CharKey, CHAR_LABELS } from '../engine/types';
 import { PortraitTile } from './PortraitTile';
 import { speciesSingular } from '../data';
 import { CodexRef } from './compendium/CodexRef';
+import { SkillChip, TalentChip } from './EntityChip';
 import { FateChips } from './FateChips';
-import { splitLabel } from '../engine/careerSlots';
 
 const SHORT: Record<CharKey, string> = {
   CC: 'CC',
@@ -37,6 +37,8 @@ export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?:
         <PortraitTile c={hero} ring="var(--gold)" variant="identity" size={compact ? 'sm' : 'lg'} />
         <div className="char-id">
           <strong>{hero.name}</strong>
+          {/* Race/carrière en texte simple : `.char-head` est lui-même cliquable (ouvre la fiche)
+              → pas de CodexRef imbriqué (conflit de clic) ; le survol-info vit sur la fiche. */}
           <span className="char-sub">
             {speciesSingular(hero.species)} · {hero.career}
           </span>
@@ -74,11 +76,7 @@ export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?:
           <div className="mini-title">Compétences</div>
           <div className="skill-tags">
             {hero.skills.slice(0, 8).map((s, i) => (
-              <span className="tag" key={i}>
-                <CodexRef category="skills" label={splitLabel(s.name).name}>
-                  {s.name}{s.spec ? ` (${s.spec})` : ''}
-                </CodexRef> +{s.advances}
-              </span>
+              <SkillChip key={i} skill={s} />
             ))}
           </div>
           {hero.talents.length > 0 && (
@@ -86,9 +84,7 @@ export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?:
               <div className="mini-title">Talents</div>
               <div className="skill-tags">
                 {hero.talents.map((t, i) => (
-                  <span className="tag talent" key={i}>
-                    <CodexRef category="talents" label={splitLabel(t.name).name}>{t.name}</CodexRef>
-                  </span>
+                  <TalentChip key={i} talent={t} />
                 ))}
               </div>
             </>

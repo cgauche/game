@@ -8,7 +8,7 @@ import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, W
 import { bonus, baseWithTraits } from './characteristics';
 import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { mutationArmourBonus } from './corruption';
-import { findTrapping } from '../data';
+import { findTrapping, qualityRuntime } from '../data';
 import { indiceOf } from './qualities/normalize';
 import { craftEncDelta } from './qualities/craftEconomy';
 import { hasQuality } from './qualities/dispatch';
@@ -57,7 +57,7 @@ export function itemFromTrapping(label: string): ItemInstance | null {
     damage: t.damage ?? undefined,
     reach: t.reach,
     range: kind === 'ranged' ? Number(t.reach) || null : null,
-    qualities: t.qualities ?? [],
+    qualities: (t.qualities ?? []).map(qualityRuntime), // QualityRef[] (donnée) → ids runtime (stables)
     pa: t.pa ?? undefined,
     locs: locs && locs.length ? locs : undefined,
     enc: t.enc ?? 0,
@@ -79,7 +79,7 @@ export function customTrapping(name: string): ItemInstance {
 /** Limite d'Encombrement = Bonus de Force + Bonus d'Endurance, +2 par niveau de Costaud
  *  (LDB ; talent Costaud : « Augmentez les Points d'Encombrement … de votre niveau × 2 »). */
 export function maxEncumbrance(c: Combatant): number {
-  const costaud = (c.talents ?? []).find((t) => t.name.toLowerCase() === 'costaud')?.times ?? 0;
+  const costaud = (c.talents ?? []).find((t) => t.talentId === 'costaud')?.times ?? 0;
   return bonus(baseWithTraits(c, 'F')) + bonus(baseWithTraits(c, 'E')) + costaud * 2;
 }
 
@@ -233,7 +233,7 @@ export function recomputeLoadout(c: Combatant): void {
   }
   // Tentacule (trait Tentacules, LDB 85 p.343) : AUSSI une Attaque gratuite 1/tour (battleTentacle) ;
   // ici utilisable comme arme ordinaire. La mutation « Tentacule épais » confère le trait → couvert.
-  if (hasTraitKey(c.traits, 'Tentacules')) {
+  if (hasTraitKey(c.traits, 'tentacules')) {
     weapons.push({ name: 'Tentacule', type: 'melee', damage: '+BF', qualities: [], subType: 'Base', hands: 1, hand: 'main', uid: 'nat-tentacule' });
   }
   // Armes NATURELLES de MUTATION (LDB 19 : « Compte comme une Arme de Créature », Dégâts = BF) —

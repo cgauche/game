@@ -28,7 +28,7 @@ const mkBattle = (combatants: Combatant[], over: Partial<BattleState> = {}): Bat
 describe('availableManeuvers — énumération (pur)', () => {
   it('Morsure +10 : manœuvre CIBLÉE présente avec Avantage ≥ 1, absente à 0', () => {
     const enemy = at('enemy', 'E', 5, 6);
-    const heroAdv = at('hero', 'H', 5, 5, { traits: ['Morsure +10'], advantage: 1 });
+    const heroAdv = at('hero', 'H', 5, 5, { traits: [{ id: 'morsure', value: 10 }], advantage: 1 });
     const m = availableManeuvers(heroAdv, mkBattle([heroAdv, enemy]));
     const morsure = m.find((x) => x.kind === 'morsure');
     expect(morsure).toBeTruthy();
@@ -36,20 +36,20 @@ describe('availableManeuvers — énumération (pur)', () => {
     expect(morsure!.dispatch).toBe('maneuver');
     expect(morsure!.cost).toBe(1);
 
-    const heroNoAdv = at('hero', 'H', 5, 5, { traits: ['Morsure +10'], advantage: 0 });
+    const heroNoAdv = at('hero', 'H', 5, 5, { traits: [{ id: 'morsure', value: 10 }], advantage: 0 });
     expect(availableManeuvers(heroNoAdv, mkBattle([heroNoAdv, enemy])).some((x) => x.kind === 'morsure')).toBe(false);
   });
 
   it('Souffle +15 (Feu) : manœuvre CIBLÉE (zone, clic = point d’impact) présente avec Avantage ≥ 2', () => {
     const enemy = at('enemy', 'E', 5, 6);
-    const hero = at('hero', 'H', 5, 5, { traits: ['Souffle +15 (Feu)'], advantage: 2 });
+    const hero = at('hero', 'H', 5, 5, { traits: [{ id: 'souffle', value: 15, arg: 'Feu' }], advantage: 2 });
     const souffle = availableManeuvers(hero, mkBattle([hero, enemy])).find((x) => x.kind === 'souffle');
     expect(souffle).toBeTruthy();
     expect(souffle!.mode).toBe('target'); // zone CIBLÉE : le clic désigne le point d’impact (LDB 85 « cible visible »)
     expect(souffle!.dispatch).toBe('maneuver');
     expect(souffle!.cost).toBe(2);
 
-    const heroLow = at('hero', 'H', 5, 5, { traits: ['Souffle +15 (Feu)'], advantage: 1 });
+    const heroLow = at('hero', 'H', 5, 5, { traits: [{ id: 'souffle', value: 15, arg: 'Feu' }], advantage: 1 });
     expect(availableManeuvers(heroLow, mkBattle([heroLow, enemy])).some((x) => x.kind === 'souffle')).toBe(false);
   });
 
@@ -85,7 +85,7 @@ describe('availableManeuvers — énumération (pur)', () => {
 
   it('exclut l’attaque-Action normale (kind arme) et les manœuvres de Charge (Cornes)', () => {
     const enemy = at('enemy', 'E', 5, 6);
-    const hero = at('hero', 'H', 5, 5, { traits: ['Cornes +8'], advantage: 5 });
+    const hero = at('hero', 'H', 5, 5, { traits: [{ id: 'cornes', value: 8 }], advantage: 5 });
     const m = availableManeuvers(hero, mkBattle([hero, enemy]));
     expect(m.some((x) => x.kind === 'cornes')).toBe(false); // déclenchement charge → exclu de la liste
     expect(m.some((x) => x.kind === 'arme')).toBe(false);
@@ -127,7 +127,7 @@ describe('manœuvres en combat (store)', () => {
   it('Souffle CIBLÉ : battle.action=maneuver + clic = point d’impact → pendingManeuver{targetId} (jet différé)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
-    H.traits = ['Souffle +15 (Feu)'];
+    H.traits = [{ id: 'souffle', value: 15, arg: 'Feu' }];
     H.characteristics.CT = 90; // Test opposé CT/Esquive → touche déterministe
     H.advantage = 3;
     // La hotbar arme `battle.action='maneuver'` (mode-cible) ; le clic-entité désigne le point d’impact.
@@ -145,7 +145,7 @@ describe('manœuvres en combat (store)', () => {
 
   it('manœuvre de mêlée ciblée : battle.action=maneuver + clic-cible → pendingAttack freeKind=morsure', () => {
     const { H, E } = setup();
-    H.traits = ['Morsure +10'];
+    H.traits = [{ id: 'morsure', value: 10 }];
     H.advantage = 2;
     useGame.setState({ battle: { ...useGame.getState().battle!, action: 'maneuver', maneuverKind: 'morsure' } });
     useGame.getState().battleClickEntity(E.id);

@@ -15,9 +15,9 @@ function casterParty() {
   const priest = all.find((h) => h.name === 'Frère Anselm')!;
   const ally = all.find((h) => h.name === 'Sigmund Reikhardt')!;
   // Garantit que le Prêtre peut tenter la Prière (Compétence avancée ≥ 1 avance, LDB 09).
-  const priere = priest.skills.find((s) => s.name === 'Prière');
+  const priere = priest.skills.find((s) => s.skillId === 'priere');
   if (priere) priere.advances = Math.max(priere.advances, 5);
-  else priest.skills.push({ name: 'Prière', characteristic: 'Soc', advances: 5 });
+  else priest.skills.push({ skillId: 'priere', characteristic: 'Soc', advances: 5 });
   return { priest, ally, party: [priest, ally] as Combatant[] };
 }
 
@@ -77,9 +77,9 @@ describe('Incantation hors combat (couture D)', () => {
   it('Focalisation hors combat (sort d\'Arcane) : oocFocusSpell ouvre la modale ; focusConfirm accumule caster.focus, journalisé, sans combat', () => {
     const wiz = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
     wiz.spells = ['Arme aethyrique', ...(wiz.spells ?? [])];
-    const foc = wiz.skills.find((s) => s.name === 'Focalisation');
+    const foc = wiz.skills.find((s) => s.skillId === 'focalisation');
     if (foc) foc.advances = Math.max(foc.advances, 5);
-    else wiz.skills.push({ name: 'Focalisation', characteristic: 'FM', advances: 5 });
+    else wiz.skills.push({ skillId: 'focalisation', characteristic: 'FM', advances: 5 });
     useGame.setState({ party: [wiz], battle: null, pendingFocus: null });
     useGame.getState().seedRng(3);
 

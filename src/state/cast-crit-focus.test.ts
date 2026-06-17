@@ -14,7 +14,7 @@ import type { CastResult } from '../engine/magic';
 
 function wiz() {
   const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
-  const sk = w.skills.find((s) => s.name === 'Langue');
+  const sk = w.skills.find((s) => s.skillId === 'langue');
   if (sk) sk.advances = Math.max(sk.advances, 10);
   return w;
 }
@@ -41,7 +41,7 @@ describe('Incantation CRITIQUE (LDB 46 l.52-59)', () => {
 
   it('Diction instinctive : aucune Imparfaite sur le double réussi', () => {
     const w = wiz();
-    w.talents.push({ name: 'Diction instinctive', times: 1 });
+    w.talents.push({ talentId: 'diction-instinctive', times: 1 });
     useGame.setState({ party: [w] as Combatant[] });
     const armure = findSpell('Armure Aethyrique')!;
     applyCast(useGame.getState, useGame.setState, w, w, armure, critRes(true, 4), false, false);
@@ -113,9 +113,9 @@ describe('Incantation CRITIQUE (LDB 46 l.52-59)', () => {
 describe('Focalisation CRITIQUE (l.185-186)', () => {
   it('double réussi → le sort est lançable au prochain Round (focus.dr = NI) + Imparfaite Mineure', () => {
     const w = wiz();
-    w.talents = w.talents.filter((t) => t.name !== 'Harmonisation aethyrique'); // le pré-tiré l'a déjà
+    w.talents = w.talents.filter((t) => t.talentId !== 'harmonisation-aethyrique'); // le pré-tiré l'a déjà
     w.spells = ['Armure Aethyrique', ...(w.spells ?? [])];
-    w.skills.push({ name: 'Focalisation', advances: 8 } as never);
+    w.skills.push({ skillId: 'focalisation', characteristic: 'FM', advances: 8 } as never);
     useGame.setState({ party: [w] as Combatant[] });
     useGame.setState({ pendingFocus: { casterId: w.id, spellLabel: 'Armure Aethyrique', result: { dr: 0, isCritical: true, isFumble: false, roll: 33, log: 'Focalisation critique !' } } });
     useGame.getState().focusConfirm();
@@ -128,8 +128,8 @@ describe('Focalisation CRITIQUE (l.185-186)', () => {
   it('Harmonisation aethyrique : pas de contrecoup sur la Focalisation Critique', () => {
     const w = wiz();
     w.spells = ['Armure Aethyrique'];
-    w.skills.push({ name: 'Focalisation', advances: 8 } as never);
-    w.talents.push({ name: 'Harmonisation aethyrique', times: 1 });
+    w.skills.push({ skillId: 'focalisation', characteristic: 'FM', advances: 8 } as never);
+    w.talents.push({ talentId: 'harmonisation-aethyrique', times: 1 });
     useGame.setState({ party: [w] as Combatant[] });
     useGame.setState({ pendingFocus: { casterId: w.id, spellLabel: 'Armure Aethyrique', result: { dr: 0, isCritical: true, isFumble: false, roll: 33, log: 'crit' } } });
     useGame.getState().focusConfirm();
@@ -154,7 +154,7 @@ describe('Interruption de Focalisation (l.193-194)', () => {
   it('Calme réussi → concentration maintenue, DR conservés', () => {
     const w = wiz();
     w.characteristics.FM = 100;
-    w.skills.push({ name: 'Calme', advances: 20 } as never);
+    w.skills.push({ skillId: 'calme', characteristic: 'FM', advances: 20 } as never);
     w.focus = { spell: 'Armure Aethyrique', dr: 3 };
     useGame.setState({ party: [w] as Combatant[] });
     checkFocusInterruption(useGame.getState, useGame.setState, w);

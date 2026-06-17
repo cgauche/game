@@ -1,4 +1,4 @@
-import { tileCenter, depth, CELL, type Dims } from './iso';
+import { tileCenter, depth, CELL, isSquareView, type Dims } from './iso';
 import type { Scene } from '../state/scene';
 
 /** Escalier en VUE DU DESSUS : un carré « gironné » (lignes de marches) + un chevron « monter » — un
@@ -24,7 +24,7 @@ const STEPS_PER_LEVEL = 6;
 
 /** SVG + profondeur d'une volée reliant (x,y,from.z) à (x,y,to.z). */
 export function stairSeg(s: NonNullable<Scene['stairs']>[number], dims: Dims): { d: number; svg: string } {
-  if (dims.view === 'top') return topStair(s, dims); // vue du dessus : symbole de plan, pas d'extrusion
+  if (isSquareView(dims.view)) return topStair(s, dims); // grille carrée : symbole de plan, pas d'extrusion
   const lo = Math.min(s.from.z, s.to.z);
   const hi = Math.max(s.from.z, s.to.z);
   const x = s.from.x, y = s.from.y;

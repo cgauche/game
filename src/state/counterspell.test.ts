@@ -30,7 +30,7 @@ describe('Contre-sort (Dissipation, LDB 46 l.201-202)', () => {
     const E = enemies[0];
     // L'ennemi devient une lanceuse façon Eusapia : Langue (Magick) 63 (Int 48 + 15), Carreau connu.
     E.characteristics.Int = 48; E.characteristics.FM = 53;
-    E.skills = [{ name: 'Langue', spec: 'Magick', characteristic: 'Int', advances: 15 }];
+    E.skills = [{ skillId: 'langue', spec: 'Magick', characteristic: 'Int', advances: 15 }];
     E.spells = ['Carreau'];
     H.pos = { x: 10, y: 10 };
     E.pos = { x: 12, y: 10 }; // à 2 cases : dans les FM mètres de chacun
@@ -121,7 +121,7 @@ describe('Contre-sort (Dissipation, LDB 46 l.201-202)', () => {
     useGame.getState().seedRng(3);
     const { H, E } = setup();
     const hero = useGame.getState().battle!.combatants.find((c) => c.id === H.id)! as Combatant;
-    hero.skills = [...hero.skills, { name: 'Prière', characteristic: 'Soc', advances: 5 }];
+    hero.skills = [...hero.skills, { skillId: 'priere', characteristic: 'Soc', advances: 5 }];
     hero.spells = ['Bénédiction de Guérison'];
     castSpell(useGame.getState, useGame.setState, hero, hero, 'Bénédiction de Guérison');
     useGame.getState().castRoll();

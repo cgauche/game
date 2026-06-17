@@ -113,7 +113,7 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
 
   it('fracture à la TÊTE mal ressoudée → séquelle de Langue permanente (l.300/309)', () => {
     const t = traumaFromKind('fracture', 'majeur', 'tete', { be: 4, d10: 5 });
-    const c = C({ traumas: [t], skills: [{ name: 'Langue (Reikspiel)', advances: 20, characteristic: 'Int' } as never] });
+    const c = C({ traumas: [t], skills: [{ skillId: 'langue', spec: 'Reikspiel', advances: 20, characteristic: 'Int' } as never] });
     const fail: RNG = { int: () => 95 };
     tickTraumaRecovery(c, 50, fail, 0); // fin de convalescence, Test raté
     const seq = c.traumas![0];

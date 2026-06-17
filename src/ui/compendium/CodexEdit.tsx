@@ -32,7 +32,7 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   races: 'species', careers: 'careers', characteristics: 'characteristics', classes: 'classes',
   stars: 'stars', skills: 'skills', talents: 'talents', trappings: 'trappings', qualities: 'qualities',
   etats: 'etats', spells: 'spells', maneuvers: 'maneuvers', creatures: 'creatures', traits: 'traits', locations: 'locations', books: 'books',
-  mutations: 'mutations', mutationTables: 'mutationTables', gods: 'gods',
+  mutations: 'mutations', mutationTables: 'mutationTables', gods: 'gods', domains: 'domains',
 };
 export const editableDataset = (categoryKey: string): DatasetKey | undefined => CATEGORY_DATASET[categoryKey];
 
@@ -44,10 +44,12 @@ const REF_LIST_DATASET: Record<string, DatasetKey> = {
 
 type Entry = Record<string, unknown>;
 
-export function CodexEdit({ categoryKey, label, onClose }: { categoryKey: string; label: string; onClose: () => void }) {
+export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey: string; label: string; onClose: () => void; isNew?: boolean }) {
   const dsKey = editableDataset(categoryKey)!;
   const arr = datasetArray(dsKey) as Entry[];
-  const index = useMemo(() => arr.findIndex((e) => e.label === label), [arr, label]);
+  // `isNew` : on part d'une entrée VIERGE (index -1 → le formulaire infère les champs du dataset) et le
+  // save APPEND au lieu de remplacer — création générique d'une nouvelle entité (domaine, trait…).
+  const index = useMemo(() => (isNew ? -1 : arr.findIndex((e) => e.label === label)), [arr, label, isNew]);
   const [entry, setEntry] = useState<Entry>(() => structuredClone(arr[index] ?? {}));
   const [dir, setDir] = useState<FileSystemDirectoryHandle | null>(null);
   const [needsGrant, setNeedsGrant] = useState(false);
@@ -63,8 +65,9 @@ export function CodexEdit({ categoryKey, label, onClose }: { categoryKey: string
   // les créatures ET les difformités déclarées en donnée (traits / mutations → fragment `appearance`).
   const hasAppearance = categoryKey === 'creatures' || categoryKey === 'traits' || categoryKey === 'mutations';
   const isSpell = categoryKey === 'spells';
-  // Porteurs d'effets DÉCLENCHÉS (mêmes `TriggeredEffect` éditables) : Traits ET Atouts d'arme.
-  const isTriggered = categoryKey === 'traits' || categoryKey === 'qualities';
+  // Porteurs d'effets DÉCLENCHÉS (mêmes `TriggeredEffect` éditables) : Traits, Atouts d'arme, Domaines
+  // (riders « à la touche » du Domaine — Feu→En flammes…, gatés par les Conditions Flow relation/has).
+  const isTriggered = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'domains';
   // Manœuvre = ENTITÉ de 1ʳᵉ classe : profil dédié + ses effets AUTHORÉS (Dégâts + États) en GameOp.
   const isManeuver = categoryKey === 'maneuvers';
   // Porteurs de modificateurs PASSIFS continus (`GameOp[]`) édités par ops (GameOpEditor), comme un sort.
@@ -89,7 +92,7 @@ export function CodexEdit({ categoryKey, label, onClose }: { categoryKey: string
   const edit = (key: string, v: unknown) => { setEntry((e) => ({ ...e, [key]: v })); setDirty(true); };
 
   const save = async () => {
-    const next = arr.map((e, i) => (i === index ? entry : e));
+    const next = index < 0 ? [...arr, entry] : arr.map((e, i) => (i === index ? entry : e));
     setDataset(dsKey, next as never); // preview mémoire (live)
     const file = `${dsKey}.json`;
     const text = serializeDataset(next);
@@ -192,7 +195,7 @@ const TRIGGER_LABEL: Record<EffectTrigger, string> = {
   onStartled: 'magie / bruit fort',
   onKill: 'quand il neutralise un adversaire',
 };
-const ON_LABEL: Record<TriggeredEffect['on'], string> = {
+const ON_LABEL: Record<'self' | 'victim' | 'engaged', string> = {
   self: 'le porteur lui-même',
   victim: 'la victime touchée',
   engaged: 'tous ceux Engagés avec lui',
@@ -218,10 +221,18 @@ function TriggeredEffectsField({ value, onChange }: { value: TriggeredEffect[] |
               </select>
             </label>
             <label className="dr">Cible
-              <select value={eff.on} onChange={(e) => set(i, { on: e.target.value as TriggeredEffect['on'] })}>
-                {(Object.keys(ON_LABEL) as TriggeredEffect['on'][]).map((o) => <option key={o} value={o}>{ON_LABEL[o]}</option>)}
+              <select value={typeof eff.on === 'object' ? 'near' : eff.on} onChange={(e) => set(i, { on: e.target.value === 'near' ? { near: 'victim', radiusMeters: 2 } : e.target.value as TriggeredEffect['on'] })}>
+                {(Object.keys(ON_LABEL) as ('self' | 'victim' | 'engaged')[]).map((o) => <option key={o} value={o}>{ON_LABEL[o]}</option>)}
+                <option value="near">les cibles à portée (zone)</option>
               </select>
             </label>
+            {typeof eff.on === 'object' && (
+              <label className="dr">à ≤ <input type="number" min={1} style={{ width: '3.4em' }} value={eff.on.radiusMeters} onChange={(e) => set(i, { on: { near: (eff.on as { near: 'self' | 'victim' }).near, radiusMeters: Math.max(1, Number(e.target.value) || 1) } })} /> m de
+              <select value={eff.on.near} onChange={(e) => set(i, { on: { near: e.target.value as 'self' | 'victim', radiusMeters: (eff.on as { radiusMeters: number }).radiusMeters } })}>
+                <option value="victim">la victime</option>
+                <option value="self">soi</option>
+              </select></label>
+            )}
             <button className="btn small danger" title="Supprimer l’effet" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
           </div>
           <FlowEditor flow={eff.flow ?? EMPTY_FLOW} ctx={{ encounters: [], dialogues: [] }} onChange={(flow) => set(i, { flow })} />

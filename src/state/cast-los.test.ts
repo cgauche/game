@@ -16,7 +16,7 @@ import type { Combatant } from '../engine/types';
 
 function wiz() {
   const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
-  const sk = w.skills.find((s) => s.name === 'Langue');
+  const sk = w.skills.find((s) => s.skillId === 'langue');
   if (sk) sk.advances = Math.max(sk.advances, 10);
   w.spells = ['Explosion', 'Carreau', ...(w.spells ?? [])];
   return w;

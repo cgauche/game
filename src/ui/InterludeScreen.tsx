@@ -9,7 +9,7 @@ import {
 } from '../engine/activities';
 import { DIFFICULTY_LABELS } from '../engine/types';
 import { QUALITY_DESC } from '../engine/qualities/describe';
-import { findTalent } from '../data';
+import { findTalent, skillInstanceLabel } from '../data';
 import type { Combatant } from '../engine/types';
 import { ActiveModal } from './ActiveModal';
 import { Modal } from './Modal';
@@ -257,7 +257,7 @@ function IdentifyPane({ hero, disabled }: { hero: Combatant; disabled: boolean }
   const identify = useGame((s) => s.interludeIdentify);
   const items = (hero.items ?? []).filter((i) => i.identified === false);
   const [uid, setUid] = useState(items[0]?.uid ?? '');
-  const savoir = hero.skills.some((k) => k.name === 'Savoir (Magie)' && k.advances >= 1);
+  const savoir = hero.skills.some((k) => k.skillId === 'savoir' && (k.spec ?? '') === 'Magie' && k.advances >= 1);
   if (!items.length) {
     return <div className="interlude-pane"><p className="interlude-blocked">Aucun objet non identifié dans le sac de {hero.name}.</p></div>;
   }
@@ -368,7 +368,7 @@ function CraftPane({ hero, disabled, money }: { hero: Combatant; disabled: boole
       {sel && target && (
         <p className="interlude-detail">
           Matériaux <b>{fmt(sel.materialsBrass)}</b> (¼ du prix, payés à l'engagement) · Test étendu de{' '}
-          <b>{metier?.name ?? 'Métier'}</b> {DIFFICULTY_LABELS[target.difficulty]} · <b>{target.dr} DR</b> à cumuler
+          <b>{metier ? skillInstanceLabel(metier) : 'Métier'}</b> {DIFFICULTY_LABELS[target.difficulty]} · <b>{target.dr} DR</b> à cumuler
           (1 lancer par Activité).
         </p>
       )}

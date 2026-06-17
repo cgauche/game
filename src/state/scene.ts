@@ -32,18 +32,19 @@ export interface CustomStatblock {
   char: Partial<Record<CharKey | 'M' | 'B', number>>;
   weaponDamage?: string; // ex. "+BF+4"
   armour?: number; // PA uniforme sur toutes localisations
-  traits?: string[];
+  /** Traits du profil custom, STRUCTURÉS (`TraitInstance` : id + value/arg) — édités par picker. */
+  traits?: import('../engine/statEntry').TraitInstance[];
   /** Catégorie de Taille (LDB 85) — sinon dérivée du trait « Taille (X) », défaut Moyenne. */
   size?: import('../engine/size').SizeCategory;
   /** Groupes d'appartenance manuels supplémentaires (Sigmarite, Cultiste…) pour les Traits psy ciblés (LDB 21). */
   groups?: string[];
-  /** Sorts connus (libellés de spells.json) — choix d'AUTEUR ; l'IA incante les Projectiles magiques. */
+  /** Sorts connus (ids de spells.json) — choix d'AUTEUR ; l'IA incante les Projectiles magiques. */
   spells?: string[];
-  /** Compétences au FORMAT LIVRE (« Langue (Magick) 63 ») : valeur de Test FINALE → avances dérivées
-   *  au spawn (valeur − Caractéristique, inverse de LDB 09). */
-  skills?: string[];
-  /** Talents (libellés concrets : « Magie des Arcanes (Ghur) », « Menaçant »). */
-  talents?: string[];
+  /** Compétences STRUCTURÉES (`SkillRef` : id stable + valeur de Test FINALE) → avances dérivées au
+   *  spawn (valeur − Caractéristique, inverse de LDB 09). */
+  skills?: import('../data').SkillRef[];
+  /** Talents STRUCTURÉS (`TalentRef` : id stable + spécialisation/niveau). */
+  talents?: import('../data').TalentRef[];
   /** Caractéristiques aléatoires au spawn (LDB 78 : « soustrayez -10 et ajoutez 2d10 »). */
   randomChars?: boolean;
 }
@@ -137,9 +138,9 @@ export interface SceneEntity {
    *  enrôlé dans une rencontre (cf. EncounterMember). Porte les choix d'auteur qui DÉCRIVENT la
    *  personne au combat — son profil (ref/statblock) et son apparence vivent déjà sur l'entité. */
   combat?: {
-    /** Traits FACULTATIFS choisis (LDB 76 l.49), fusionnés aux traits fixes au spawn. */
-    optionals?: string[];
-    /** Sorts connus (créature `ref`) — choix d'auteur (la donnée bestiaire n'en liste pas). */
+    /** Traits FACULTATIFS choisis (LDB 76 l.49), STRUCTURÉS (`TraitInstance`), fusionnés au spawn. */
+    optionals?: import('../engine/statEntry').TraitInstance[];
+    /** Sorts connus (ids de spells.json, créature `ref`) — choix d'auteur (la donnée bestiaire n'en liste pas). */
     spells?: string[];
     /** Caractéristiques aléatoires au spawn (LDB 78 : −10 + 2d10, graine stable par id). */
     randomChars?: boolean;

@@ -1,5 +1,6 @@
 [
   {
+    "id": "aura-de-dhar",
     "label": "Aura de Dhar",
     "prefix": null,
     "suffix": null,
@@ -10,6 +11,7 @@
     }
   },
   {
+    "id": "aura-de-mort",
     "label": "Aura de Mort",
     "prefix": null,
     "suffix": null,
@@ -20,6 +22,7 @@
     }
   },
   {
+    "id": "charnier",
     "label": "Charnier",
     "prefix": null,
     "suffix": null,
@@ -30,6 +33,7 @@
     }
   },
   {
+    "id": "redoutable",
     "label": "Redoutable",
     "prefix": null,
     "suffix": null,
@@ -40,6 +44,7 @@
     }
   },
   {
+    "id": "fouissement",
     "label": "Fouissement",
     "prefix": null,
     "suffix": null,

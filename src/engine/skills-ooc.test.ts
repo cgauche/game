@@ -48,6 +48,6 @@ describe('testValue HORS COMBAT — mêmes modulations qu’en combat (audit, LD
 
   it('combattant sain → valeur brute (aucune régression)', () => {
     expect(testValue(mk(), undefined, 'Int')).toBe(30);
-    expect(testValue(mk({ skills: [{ name: 'Perception', advances: 10 } as never] }), 'Perception')).toBeGreaterThanOrEqual(30);
+    expect(testValue(mk({ skills: [{ skillId: 'perception', advances: 10 } as never] }), 'Perception')).toBeGreaterThanOrEqual(30);
   });
 });

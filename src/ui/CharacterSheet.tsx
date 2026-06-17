@@ -15,10 +15,11 @@ import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine
 import { spellSupport } from '../engine/spellspec';
 import { spellSpecFor } from '../data/spellspecs';
 import { spellEffectOps } from '../state/flow';
-import { careers, findSpell, findStar, spells as allSpells, speciesSingular } from '../data';
+import { careers, findSpellById, findStar, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel } from '../data';
+import { formatTrait } from '../engine/traits/dispatch';
 import { CodexRef } from './compendium/CodexRef';
+import { TalentChip } from './EntityChip';
 import { FateChips } from './FateChips';
-import { splitLabel } from '../engine/careerSlots';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { weaponPart, armourPart } from '../gameIso/rig/parts/equipment';
 import { EquipmentPanel } from './EquipmentPanel';
@@ -84,7 +85,7 @@ const SHORT: Record<CharKey, string> = {
 /** Description courte d'un effet actif (buff de carac, Trait/Talent accordé, enchantement…). */
 function describeEffect(e: NonNullable<Combatant['activeEffects']>[number]): string {
   if (e.char) return `${e.bonus >= 0 ? '+' : ''}${e.bonus} ${CHAR_LABELS[e.char]}`;
-  if (e.grantedTrait) return `Trait ${e.grantedTrait}`;
+  if (e.grantedTrait) return `Trait ${formatTrait(e.grantedTrait)}`;
   if (e.conjuredSet) return `Arme invoquée (${e.label})`;
   if (e.grantedTalent) return `Talent ${e.grantedTalent}`;
   if (e.apAll) return `+${e.apAll} PA (toutes Localisations)`;
@@ -169,7 +170,7 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
               <PortraitTile c={hero} ring="var(--gold)" variant="full" size="xl" />
               <h3>{hero.name}</h3>
               <span className="char-sub">
-                {speciesSingular(hero.species)} · {hero.career}
+                <CodexRef category="races" label={hero.species ?? ''}>{speciesSingular(hero.species)}</CodexRef> · <CodexRef category="careers" label={hero.career ?? ''}>{hero.career}</CodexRef>
                 {hero.careerLevel ? ` (niv. ${hero.careerLevel})` : ''}
               </span>
               {hero.star && (
@@ -216,8 +217,8 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
   const oocFocusSpell = useGame((s) => s.oocFocusSpell);
   const [targetId, setTargetId] = useState(hero.id);
   const spells = (hero.spells ?? [])
-    .map((label) => findSpell(label))
-    .filter((s): s is NonNullable<ReturnType<typeof findSpell>> => !!s);
+    .map((x) => findSpellById(x)) // hero.spells = ids de sort (runtime)
+    .filter((s): s is NonNullable<ReturnType<typeof findSpellById>> => !!s);
   // Lecture au grimoire (LDB 47 l.34) : sorts NON mémorisés de son Domaine, lançables à
   // deux mains depuis le livre porté — au NI DOUBLÉ.
   const grimoireSpells = carriedGrimoire(hero)
@@ -286,9 +287,9 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
           );
         })}
         {grimoireSpells.map((sp) => (
-          <div className="spell-row" key={`g-${sp.label}`} title={`${sp.desc}\n\nLecture au grimoire : sort non mémorisé de votre Domaine — NI doublé, deux mains.`}>
+          <div className="spell-row" key={`g-${sp.label}`} title="Lecture au grimoire : sort non mémorisé de votre Domaine — NI doublé, deux mains.">
             <span className="spell-name">
-              📖 {sp.label}
+              📖 <CodexRef category="spells" label={sp.label}>{sp.label}</CodexRef>
               {sp.cn != null ? ` · NI ${sp.cn}→${sp.cn * 2}` : ''}
             </span>
             {isMagicMissile(sp) ? (
@@ -409,9 +410,8 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
             return (
               <div className="skill-line" key={i} title={`${s.characteristic} ${effectiveChar(hero, s.characteristic)} + ${s.advances}`}>
                 <span className="sk-name">
-                  <CodexRef category="skills" label={s.name}>
-                    {s.name}
-                    {s.spec ? ` (${s.spec})` : ''}
+                  <CodexRef category="skills" label={findSkillById(s.skillId)?.label ?? s.skillId}>
+                    {skillInstanceLabel(s)}
                   </CodexRef>
                 </span>
                 <span className="sk-val">{val}</span>
@@ -425,12 +425,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
             <div className="mini-title">Talents</div>
             <div className="skill-tags">
               {hero.talents.map((t, i) => (
-                <span className="tag talent" key={i}>
-                  <CodexRef category="talents" label={splitLabel(t.name).name}>
-                    {t.name}
-                    {t.times > 1 ? ` ×${t.times}` : ''}
-                  </CodexRef>
-                </span>
+                <TalentChip key={i} talent={t} />
               ))}
             </div>
           </>
@@ -837,13 +832,13 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
               {learnable.map(({ spell, cost }) => {
                 const support = spellSupport(spellEffectOps(spell.effects), spellSpecFor(spell), isMagicMissile(spell));
                 return (
-                <div className="adv-row acquire" key={spell.label} title={spell.desc + (support !== 'mecanique' ? '\n\n📜 Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé.' : '')}>
+                <div className="adv-row acquire" key={spell.label} title={support !== 'mecanique' ? '📜 Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé.' : undefined}>
                   <span className="adv-name">
-                    {spell.label}{support === 'narratif' ? ' 📜' : support === 'partiel' ? ' 🟡' : ''}
+                    <CodexRef category="spells" label={spell.label}>{spell.label}</CodexRef>{support === 'narratif' ? ' 📜' : support === 'partiel' ? ' 🟡' : ''}
                     <span className="muted"> · {spell.type}{spell.subType ? ` (${spell.subType})` : ''}{spell.cn != null ? ` · NI ${spell.cn}` : ''}</span>
                   </span>
                   <span className="adv-meta" />
-                  <button className="btn small" disabled={cost > 0 && !afford(cost)} onClick={() => buySpell(hero.id, spell.label)}>
+                  <button className="btn small" disabled={cost > 0 && !afford(cost)} onClick={() => buySpell(hero.id, spell.id)}>
                     {cost > 0 ? `Mémoriser · ${cost} PX` : 'Inclus au Talent'}
                     {spell.type === 'Magie du Chaos' ? ' · +1 Corruption' : ''}
                   </button>

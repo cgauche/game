@@ -22,6 +22,7 @@ import frenchyTraitsJson from './frenchy-traits.json';
 import frenchySpellsJson from './frenchy-spells.json';
 import spellsJson from './spells.json';
 import maneuversJson from './maneuvers.json';
+import domainsJson from './domains.json';
 import eyesJson from './eyes.json';
 import hairsJson from './hairs.json';
 import detailsJson from './details.json';
@@ -279,6 +280,30 @@ export interface QualityData {
    *  (`GameOpEditor`) que les traits et les sorts ; lus par `qualitySocMod`/le collecteur passif. */
   passive?: import('../engine/ops').GameOp[];
 }
+/** Domaine de magie (Couleur, LDB 48) : ses ATTRIBUTS éditables au Codex — riders « à la touche »
+ *  (`onHitEffects`, gatés par les Conditions Flow `relation`/`has`), mitigation de Projectile
+ *  (`missile`), effet post-incantation (`afterCast`). Le `label` correspond au `subType` d'un Sort
+ *  d'Arcane (`domainOf`). */
+export interface DomainData {
+  id: string;
+  label: string;
+  desc?: string;
+  source?: { book: string; page: number };
+  /** Effets DÉCLENCHÉS « à la touche » sur une cible d'un Sort du Domaine (Feu → En flammes…) — MÊMES
+   *  `TriggeredEffect` éditables que Traits/Atouts, gatés par les Conditions Flow `relation`/`has`. */
+  effects?: import('../state/flow').TriggeredEffect[];
+  /** Mitigation des Projectiles : ignore les PA d'une matière (`metal`/`nonMagic`) ; `bonusFromBypass`
+   *  les ajoute aussi aux Dégâts (Métal). */
+  missile?: { bypass: 'metal' | 'nonMagic'; bonusFromBypass?: boolean };
+  /** Effet appliqué au LANCEUR après une incantation réussie (Bête : `grantTrait` pendant 1d`durationDice` Rounds). */
+  afterCast?: { grantTrait?: string; durationDice?: number };
+  /** Élément du Souffle conféré par le Talent Magie des Arcanes du Domaine (Cieux → Électricité,
+   *  Métal → Corrosif, Ombres → Fumée, Feu → Feu) — lu par le résolveur de Souffle. */
+  breathType?: string;
+  /** Bonus d'incantation CONDITIONNEL (Aqshy l.157) : +`bonus` par État `perCondition` porté par un
+   *  combattant situé à `radiusStat` (Bonus de carac.) mètres du lanceur (géométrie résolue par state). */
+  castBonus?: { perCondition: string; radiusStat: import('../engine/types').CharKey; bonus: number };
+}
 export interface SpellData {
   /** id STABLE (slug du libellé) — cible des `Ref` de sort (sorts de créature, bénédictions/miracles). */
   id: string;
@@ -407,6 +432,11 @@ export const spells = [...(spellsJson as SpellData[]), ...(frenchySpellsJson as 
 /** Manœuvres app-owned (attaques naturelles activées — LDB 85) : ENTITÉ de 1ʳᵉ classe éditable au Codex,
  *  effets en GameOp. Octroyées aux créatures via `TraitData.grantsManeuvers` ; résolues par id. */
 export const maneuvers = maneuversJson as ManeuverDef[];
+/** Domaines de magie app-owned (LDB 48) — ENTITÉ éditable au Codex (attributs en données : onHit,
+ *  projectile, post-incantation). Résolus par LIBELLÉ (= `subType` du Sort, cf. `domainOf`). */
+export const domains = domainsJson as DomainData[];
+export const domainByLabel: Map<string, DomainData> = new Map(domains.map((d) => [d.label, d]));
+export const findDomain = (label: string | null | undefined): DomainData | undefined => (label ? domainByLabel.get(label) : undefined);
 export const eyes = eyesJson as DetailColorData[];
 export const hairs = hairsJson as DetailColorData[];
 export const details = detailsJson as DetailsData;

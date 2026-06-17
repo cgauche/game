@@ -2,47 +2,47 @@ import { describe, it, expect } from 'vitest';
 import { weaponFromTrait, creatureToCombatant, statblockToCombatant, skillsFromBook, spawnEnemy } from './spawn';
 import { enemyRigProfile } from '../gameIso/rig/enemyProfile';
 import { weaponFamily } from '../gameIso/rig/parts/equipment';
-import { findCreature } from '../data';
+import { findCreature, talentConcrete } from '../data';
 import { CHAR_KEYS } from '../engine/types';
 import { knowsCastingSkill, castingValue } from '../engine/magic';
 
 /** Traits d'arme FR vérifiés dans L'ennemi dans l'Ombre ch.2 (Knud Cratinx & co). */
 describe('weaponFromTrait — armement des monstres dans les Traits (FR)', () => {
   it('Arme +7 (sans type) → mêlée générique', () => {
-    expect(weaponFromTrait('Arme +7')).toMatchObject({ name: 'Arme', type: 'melee', damage: '+7' });
+    expect(weaponFromTrait({ id: 'arme', value: 7 })).toMatchObject({ name: 'Arme', type: 'melee', damage: '+7' });
   });
   it('Arme (Épée) +7 → arme tenue « Épée »', () => {
-    const w = weaponFromTrait('Arme (Épée) +7')!;
+    const w = weaponFromTrait({ id: 'arme', value: 7, arg: 'Épée' })!;
     expect(w).toMatchObject({ name: 'Épée', type: 'melee', damage: '+7' });
     expect(weaponFamily(w)).toBe('epee'); // le rig tient une épée
   });
   it('Arme (Dague) +4 → dague', () => {
-    expect(weaponFamily(weaponFromTrait('Arme (Dague) +4')!)).toBe('dague');
+    expect(weaponFamily(weaponFromTrait({ id: 'arme', value: 4, arg: 'Dague' })!)).toBe('dague');
   });
   it('À distance (Arbalète) +9 (60) → arbalète à distance, portée 60', () => {
-    const w = weaponFromTrait('À distance (Arbalète) +9 (60)')!;
+    const w = weaponFromTrait({ id: 'a-distance', value: 9, arg: 'Arbalète', range: 60 })!;
     expect(w).toMatchObject({ name: 'Arbalète', type: 'ranged', damage: '+9', range: 60 });
     expect(weaponFamily(w)).toBe('arbalete');
   });
   it('À distance +8 (50) (sans type) → distance générique', () => {
-    expect(weaponFromTrait('À distance +8 (50)')).toMatchObject({ type: 'ranged', damage: '+8', range: 50 });
+    expect(weaponFromTrait({ id: 'a-distance', value: 8, range: 50 })).toMatchObject({ type: 'ranged', damage: '+8', range: 50 });
   });
   it('Arme (griffes) → attaque NATURELLE, aucune arme dessinée', () => {
-    const w = weaponFromTrait('Arme (griffes)')!;
+    const w = weaponFromTrait({ id: 'arme', arg: 'griffes' })!;
     expect(w.type).toBe('melee');
     expect(weaponFamily(w)).toBe(''); // pas d'arme tenue
   });
   it('Morsure +9 → attaque naturelle (pas d’arme tenue)', () => {
-    const w = weaponFromTrait('Morsure +9')!;
+    const w = weaponFromTrait({ id: 'morsure', value: 9 })!;
     expect(w).toMatchObject({ name: 'Morsure', type: 'melee', damage: '+9' });
     expect(weaponFamily(w)).toBe('');
   });
   it('un trait non-arme → null', () => {
-    expect(weaponFromTrait('Corruption (Mineure)')).toBeNull();
-    expect(weaponFromTrait('Mutation (Écailles épineuses)')).toBeNull();
+    expect(weaponFromTrait({ id: 'corruption', arg: 'Mineure' })).toBeNull();
+    expect(weaponFromTrait({ id: 'mutation', arg: 'Écailles épineuses' })).toBeNull();
   });
   it('« 8 Tentacules +9 » (Pieuvre) → UNE arme naturelle Tentacules +9 (pas d’« Arme +BF »)', () => {
-    const w = weaponFromTrait('8 Tentacules +9')!;
+    const w = weaponFromTrait({ id: 'tentacules', count: 8, value: 9 })!;
     expect(w).toMatchObject({ name: 'Tentacules', type: 'melee', damage: '+9' });
     expect(weaponFamily(w)).toBe(''); // attaque naturelle : rien en main
   });
@@ -63,9 +63,9 @@ describe('creatureToCombatant — fidélité du profil du bestiaire (LDB 76/78)'
 
   it('traits FACULTATIFS (LDB 76) fusionnés : Armure, psychologie ciblée, arme à distance', () => {
     const c = creatureToCombatant(findCreature('Loup')!, 'e1', at, {
-      optionals: ['Haine (Sigmarites)', 'À distance +8 (50)'],
+      optionals: [{ id: 'haine', arg: 'Sigmarites' }, { id: 'a-distance', value: 8, range: 50 }],
     });
-    expect(c.traits).toContainEqual({ key: 'Haine', arg: 'Sigmarites' }); // traits STRUCTURÉS au spawn (de-POC)
+    expect(c.traits).toContainEqual({ id: 'haine', arg: 'Sigmarites' }); // traits STRUCTURÉS au spawn (de-POC)
     expect(c.weapons.some((w) => w.type === 'ranged' && w.damage === '+8')).toBe(true);
     expect(c.psychTraits?.some((p) => p.type === 'haine')).toBe(true);
   });
@@ -73,7 +73,7 @@ describe('creatureToCombatant — fidélité du profil du bestiaire (LDB 76/78)'
   it('Taille facultative PRIME et applique « Utiliser les Tailles » (±10 F/E, ∓5 Ag) + PB par formule', () => {
     const wolf = findCreature('Loup')!; // Taille de base : Moyenne (aucun trait), F 35 E 35
     const base = creatureToCombatant(wolf, 'e1', at);
-    const big = creatureToCombatant(wolf, 'e1', at, { optionals: ['Taille (Grande)'] });
+    const big = creatureToCombatant(wolf, 'e1', at, { optionals: [{ id: 'taille', arg: 'Grande' }] });
     expect(big.size).toBe('grande');
     expect(big.characteristics.F).toBe(base.characteristics.F + 10);
     expect(big.characteristics.E).toBe(base.characteristics.E + 10);
@@ -84,8 +84,8 @@ describe('creatureToCombatant — fidélité du profil du bestiaire (LDB 76/78)'
   });
 
   it('sorts d’auteur posés sur le Combattant (la donnée bestiaire n’en liste pas)', () => {
-    const c = creatureToCombatant(findCreature('Mutant')!, 'e1', at, { spells: ['Fléchette'] });
-    expect(c.spells).toEqual(['Fléchette']);
+    const c = creatureToCombatant(findCreature('Mutant')!, 'e1', at, { spells: ['flechette'] });
+    expect(c.spells).toEqual(['flechette']); // SpawnExtras.spells = ids de sort (runtime)
   });
 
   describe('Caractéristiques aléatoires (LDB 78 : « soustrayez -10 et ajoutez 2d10 »)', () => {
@@ -128,19 +128,19 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
 
   it('compétences au format livre → avances dérivées (Test FINAL = Caractéristique + avances, LDB 09)', () => {
     const c = creatureToCombatant(eusapia, 'e1', at);
-    const langue = c.skills.find((s) => s.name === 'Langue' && s.spec === 'Magick')!;
+    const langue = c.skills.find((s) => s.skillId === 'langue' && s.spec === 'Magick')!;
     expect(langue.advances).toBe(63 - 48); // « Langue (Magick) 63 », Int 48
     expect(c.characteristics.Int + langue.advances).toBe(63);
-    const foc = c.skills.find((s) => s.name === 'Focalisation' && s.spec === 'Ghur')!;
+    const foc = c.skills.find((s) => s.skillId === 'focalisation' && s.spec === 'Ghur')!;
     expect(c.characteristics.FM + foc.advances).toBe(68); // « Focalisation (Ghur) 68 », FM 53
   });
 
   it('talents portés (Magie des Arcanes (Ghur), Magie mineure…) et 12 sorts de la donnée', () => {
     const c = creatureToCombatant(eusapia, 'e1', at);
-    expect(c.talents.map((t) => t.name)).toContain('Magie des Arcanes (Ghur)');
-    expect(c.talents.map((t) => t.name)).toContain('Magie mineure');
+    expect(c.talents.map((t) => talentConcrete(t))).toContain('Magie des Arcanes (Ghur)');
+    expect(c.talents.map((t) => talentConcrete(t))).toContain('Magie mineure');
     expect(c.spells).toHaveLength(12);
-    expect(c.spells).toContain('Fléchette');
+    expect(c.spells).toContain('flechette'); // runtime = id de sort
   });
 
   it('incante par la voie NORMALE (Langue (Magick) 63, sans le Trait Lanceur de Sorts)', () => {
@@ -156,18 +156,18 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
 
   it('statbloc personnalisé : skills/talents portés par CustomStatblock (mêmes règles)', () => {
     const c = statblockToCombatant(
-      { name: 'Sorcier custom', char: { Int: 48, FM: 53 }, skills: ['Langue (Magick) 63', 'Esquive 48'], talents: ['Menaçant'] },
+      { name: 'Sorcier custom', char: { Int: 48, FM: 53 }, skills: [{ id: 'langue', spec: 'Magick', value: 63 }, { id: 'esquive', value: 48 }], talents: [{ id: 'menacant' }] },
       'e1', at,
     );
-    expect(c.skills.find((s) => s.name === 'Langue')!.advances).toBe(15);
-    expect(c.talents[0]).toEqual({ name: 'Menaçant', times: 1 });
+    expect(c.skills.find((s) => s.skillId === 'langue')!.advances).toBe(15);
+    expect(c.talents[0]).toEqual({ talentId: 'menacant', times: 1 });
   });
 
-  it('skillsFromBook : casse tolérée (« Corps à Corps (Bagarre) 50 », Furie du Chaos) ; sans valeur → ignorée', () => {
+  it('skillsFromBook : ref structurée (id + value) → SkillInstance ; id inconnu du catalogue → ignoré', () => {
     const chars = { CC: 45 } as any;
-    const [cc] = skillsFromBook(['Corps à Corps (Bagarre) 50'], chars);
-    expect(cc).toMatchObject({ name: 'Corps à Corps', characteristic: 'CC', advances: 5 });
-    expect(skillsFromBook(['Athlétisme'], chars)).toEqual([]); // rien d'inventé
+    const [cc] = skillsFromBook([{ id: 'corps-a-corps', spec: 'Bagarre', value: 50 }], chars);
+    expect(cc).toMatchObject({ skillId: 'corps-a-corps', characteristic: 'CC', advances: 5 });
+    expect(skillsFromBook([{ id: 'competence-inexistante', value: 50 }], chars)).toEqual([]); // rien d'inventé
   });
 });
 

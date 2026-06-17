@@ -78,7 +78,7 @@ describe('Frénésie IA — entrée auto & attaque libre', () => {
   it('aiMaybeFrenzy : ennemi capable + adversaire en LdV → entre en Frénésie (Test de FM réussi)', () => {
     useGame.getState().seedRng(5);
     const { E } = setupBattle();
-    E.traits = ['Frénésie'];
+    E.traits = [{ id: 'frenesie' }];
     E.characteristics.FM = 99; // réussite quasi certaine
     aiMaybeFrenzy(useGame.getState, useGame.setState, E);
     expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.frenzied).toBe(true);
@@ -86,7 +86,7 @@ describe('Frénésie IA — entrée auto & attaque libre', () => {
 
   it('aiMaybeFrenzy : aucun adversaire vivant en LdV → pas de Frénésie', () => {
     const { H, E } = setupBattle();
-    E.traits = ['Frénésie'];
+    E.traits = [{ id: 'frenesie' }];
     E.characteristics.FM = 99;
     (H as Combatant).dead = true;
     aiMaybeFrenzy(useGame.getState, useGame.setState, E);

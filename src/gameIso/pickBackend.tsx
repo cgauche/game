@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { ViewMode } from './iso';
 import type { Combatant } from '../engine/types';
 import type { SceneEntity } from '../state/scene';
 import { isOutOfAction } from '../engine/conditions';
@@ -80,7 +81,7 @@ function faceFrame(appearance: Appearance, equip: EquipCtx, tenue: string | unde
  * appelant (BodyToken/token/tokenNode). Les deux moteurs d'animation (rig à clips vs plan rAF)
  * restent DEUX backends distincts (asymétrie essentielle : parade/sort/clips d'arme côté rig).
  */
-export function pickBackend(subject: TokenSubject, view: 'iso' | 'top' = 'iso'): PickedBackend {
+export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): PickedBackend {
   const top = view === 'top';
 
   if (subject.kind === 'combatant') {

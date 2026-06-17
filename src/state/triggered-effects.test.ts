@@ -25,7 +25,7 @@ const empetre = (c: Combatant) => c.conditions.find((x) => x.name === 'Empêtré
 
 describe('fireTriggers — Traits et Atouts sur le même système flow+déclencheur', () => {
   it('TRAIT Toile : à la touche, la victime gagne Empêtré (Force d’évasion = Force de l’attaquant)', () => {
-    const spider = mk({ id: 'sp', traits: ['Toile 40'] }); // l'Indice est descriptif ; l'effet est en donnée
+    const spider = mk({ id: 'sp', traits: [{ id: 'toile', value: 40 }] }); // l'Indice est descriptif ; l'effet est en donnée
     const prey = mk({ id: 'pr' });
     fireTriggers(noBattle(), spider, 'onHit', { victim: prey });
     expect(empetre(prey)?.value).toBe(1);
@@ -41,20 +41,20 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
   });
 
   it('déjà Empêtré → pas de re-application (unlessCondition)', () => {
-    const spider = mk({ traits: ['Toile'] });
+    const spider = mk({ traits: [{ id: 'toile' }] });
     const prey = mk({ conditions: [{ name: 'Empêtré', value: 2 }] });
     fireTriggers(noBattle(), spider, 'onHit', { victim: prey });
     expect(empetre(prey)?.value).toBe(2); // inchangé
   });
 
   it('TRAIT Nerveux : déclencheur onStartled (magie/bruit) → +3 Brisé sur soi', () => {
-    const skittish = mk({ traits: ['Nerveux'] });
+    const skittish = mk({ traits: [{ id: 'nerveux' }] });
     fireTriggers(noBattle(), skittish, 'onStartled', {});
     expect(skittish.conditions.find((c) => c.name === 'Brisé')?.value).toBe(3);
   });
 
   it('TRAIT Sang corrosif : onWoundLoss → les Engagés subissent 1d10 (BE+PA, min 1)', () => {
-    const acid = mk({ id: 'ac', traits: ['Sang corrosif'] });
+    const acid = mk({ id: 'ac', traits: [{ id: 'sang-corrosif' }] });
     const foe = mk({ id: 'fo', engagedWith: ['ac'], characteristics: { ...mk().characteristics, E: 80 } }); // BE élevé → mitigation forte
     const get = () => ({ battle: { combatants: [acid, foe] } }) as never;
     const before = foe.wounds.current;
@@ -64,7 +64,7 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
   });
 
   it('TRAIT Affamé : déclencheur onKill → Test de FM (op test) ; échec → perd Action+Mouvement (op loseTurn)', () => {
-    const hungry = mk({ traits: ['Affamé'] });
+    const hungry = mk({ traits: [{ id: 'affame' }] });
     const lines = fireTriggers(noBattle(), hungry, 'onKill', { rng: makeRNG(1) });
     expect(lines.join(' ')).toMatch(/Force Mentale/); // le test FM s'est joué (op test, non-interactif)
   });
@@ -77,8 +77,8 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
   });
 
   it('Condition `compare` générique : who (cible/lanceur) × donnée/État · opérateur · valeur (const ou acteur)', () => {
-    const target = { woundsCurrent: 5, woundsMax: 15, size: 2, advantage: 0, conditions: { Brisé: 3 } }; // Taille Petite (2)
-    const caster = { woundsCurrent: 12, woundsMax: 12, size: 4, advantage: 1, conditions: {} as Record<string, number> }; // Taille Grande (4)
+    const target = { id: 't', woundsCurrent: 5, woundsMax: 15, size: 2, advantage: 0, camp: 'hostile' as const, groups: ['Morts-vivants'], talents: [], traits: ['mort-vivant'], conditions: { Brisé: 3 } }; // Petite (2), ennemi mort-vivant
+    const caster = { id: 'c', woundsCurrent: 12, woundsMax: 12, size: 4, advantage: 1, camp: 'party' as const, groups: [], talents: [{ id: 'magie-des-arcanes', spec: 'Feu' }], traits: [], conditions: {} as Record<string, number> }; // Grande (4), mage de Feu
     const ctx = { flags: {}, gameTime: 0, target, caster };
     expect(evalCondition({ kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '>=', value: 1 }, ctx)).toBe(true);
     expect(evalCondition({ kind: 'compare', subject: { who: 'target', condition: 'Brisé' }, op: '>=', value: 3 }, ctx)).toBe(true); // valeur d'État (stacks)
@@ -87,6 +87,17 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
     expect(evalCondition({ kind: 'compare', subject: { who: 'target', field: 'size' }, op: '<', value: { who: 'caster', field: 'size' } }, ctx)).toBe(true);
     expect(evalCondition({ kind: 'compare', subject: { who: 'caster', field: 'size' }, op: '<', value: { who: 'target', field: 'size' } }, ctx)).toBe(false);
     expect(evalCondition({ kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '>=', value: 1 }, { flags: {}, gameTime: 0 })).toBe(false); // acteur absent
+    // Condition `relation` : camp ABSOLU (kind) + relation RELATIVE au lanceur.
+    expect(evalCondition({ kind: 'relation', who: 'target', is: 'hostile' }, ctx)).toBe(true); // la cible EST un ennemi (absolu)
+    expect(evalCondition({ kind: 'relation', who: 'target', is: 'opponent' }, ctx)).toBe(true); // adversaire du lanceur (camp ≠)
+    expect(evalCondition({ kind: 'relation', who: 'target', is: 'ally' }, ctx)).toBe(false);
+    expect(evalCondition({ kind: 'relation', who: 'caster', is: 'party' }, ctx)).toBe(true); // le lanceur est du groupe
+    expect(evalCondition({ kind: 'relation', who: 'target', is: 'self' }, ctx)).toBe(false); // cible ≠ lanceur
+    // Condition `has` : appartenance Groupe / Talent (spec) / Trait.
+    expect(evalCondition({ kind: 'has', who: 'target', what: 'group', value: 'Morts-vivants' }, ctx)).toBe(true);
+    expect(evalCondition({ kind: 'has', who: 'target', what: 'trait', value: 'mort-vivant' }, ctx)).toBe(true);
+    expect(evalCondition({ kind: 'has', who: 'caster', what: 'talent', value: 'magie-des-arcanes', spec: 'Feu' }, ctx)).toBe(true);
+    expect(evalCondition({ kind: 'has', who: 'caster', what: 'talent', value: 'magie-des-arcanes', spec: 'Mort' }, ctx)).toBe(false); // spec ≠
   });
 
   it('op rollThreshold : UN d10 → soin = la valeur du dé via Formula {rolled}', () => {
@@ -97,7 +108,7 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
   });
 
   it('TRAIT Régénération : onRoundStart, PB>0 → régénère la valeur du dé (if « état de soi » + rollThreshold)', () => {
-    const troll = mk({ traits: ['Régénération'], wounds: { current: 5, max: 30 } });
+    const troll = mk({ traits: [{ id: 'regeneration' }], wounds: { current: 5, max: 30 } });
     fireTriggers(noBattle(), troll, 'onRoundStart', { rng: makeRNG(2) });
     expect(troll.wounds.current).toBeGreaterThan(5); // branche PB>0 → heal {rolled}
   });

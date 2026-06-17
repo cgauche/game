@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { offHandPenalty, attackModesFor } from './dispatch';
+import { slugId } from '../../data/slug';
 import type { Combatant } from '../types';
 
 const mk = (talents: { name: string; times: number }[]): Combatant =>
-  ({ id: 'c', name: 'X', kind: 'hero', talents, skills: [] } as unknown as Combatant);
+  ({ id: 'c', name: 'X', kind: 'hero', talents: talents.map((t) => ({ talentId: slugId(t.name), times: t.times })), skills: [] } as unknown as Combatant);
 
 describe('offHandPenalty (registre de capacités)', () => {
   it('sans Ambidextre : -20 (LDB 14 l.181)', () => {

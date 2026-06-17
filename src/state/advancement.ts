@@ -31,7 +31,7 @@ import {
   wildcardSpecs,
 } from '../engine/careerSlots';
 import { careerSkillAdditions } from '../engine/talentEffects';
-import { levelsForCareer, findSkill, findCareer, careers } from '../data';
+import { levelsForCareer, findSkill, findSkillById, findCareer, careers, talentConcrete } from '../data';
 
 export interface CharAdvanceRow {
   key: CharKey;
@@ -132,15 +132,16 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
   // distincte (LDB 09 l.42). In-carrière = slot explicite / désigné / joker libre, OU
   // compétence ajoutée par un talent (« à n'importe quelle Carrière », LDB 10).
   const skills: SkillAdvanceRow[] = hero.skills.map((s) => {
-    const status = inCareerStatus(sSlots, designations, s.name, s.spec);
+    const sName = findSkillById(s.skillId)?.label ?? s.skillId;
+    const status = inCareerStatus(sSlots, designations, sName, s.spec);
     const addedExact = additions.some((a) => {
       const p = splitLabel(a);
-      return p.name === s.name && (!p.spec || /au choix/i.test(p.spec) || (p.spec ?? '') === (s.spec ?? ''));
+      return p.name === sName && (!p.spec || /au choix/i.test(p.spec) || (p.spec ?? '') === (s.spec ?? ''));
     });
     const inCareer = status != null || addedExact;
-    const discount = additionDiscount(additions, sSlots, designations, s.name, s.spec);
+    const discount = additionDiscount(additions, sSlots, designations, sName, s.spec);
     return {
-      name: s.name,
+      name: sName,
       spec: s.spec,
       characteristic: s.characteristic,
       advances: s.advances,
@@ -150,7 +151,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     };
   });
   // Entrées EXPLICITES de carrière pas encore connues → acquérables à advances 0.
-  const knows = (name: string, spec?: string) => hero.skills.some((s) => s.name === name && (s.spec ?? '') === (spec ?? ''));
+  const knows = (name: string, spec?: string) => hero.skills.some((s) => (findSkillById(s.skillId)?.label ?? s.skillId) === name && (s.spec ?? '') === (spec ?? ''));
   for (const slot of sSlots) {
     if (slot.needsChoice) continue;
     const o = slot.options[0];
@@ -168,7 +169,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     const specPool = o.specOptions ?? wildcardSpecs(o.name);
     const options = specPool
       .filter((spec) => !taken.has(concreteLabel(o.name, spec)))
-      .map((spec) => ({ spec, ownedAdvances: hero.skills.find((s) => s.name === o.name && (s.spec ?? '') === spec)?.advances ?? 0 }));
+      .map((spec) => ({ spec, ownedAdvances: hero.skills.find((s) => (findSkillById(s.skillId)?.label ?? s.skillId) === o.name && (s.spec ?? '') === spec)?.advances ?? 0 }));
     const characteristic = CHAR_BY_LABEL[findSkill(o.name)?.characteristic ?? ''] ?? 'Int';
     skillSlotsOpen.push({ slotKey: slot.key, entry: slot.entry, group: o.name, characteristic, options, nextCost: advanceCost(0, 'skill', true) });
   }
@@ -177,7 +178,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
   const talents: TalentSlotRow[] = tSlots.map((slot) => {
     const label = slot.needsChoice ? designations[slot.key] : concreteLabel(slot.options[0].name, slot.options[0].spec);
     if (label) {
-      const times = hero.talents.find((t) => t.name === label)?.times ?? 0;
+      const times = hero.talents.find((t) => talentConcrete(t) === label)?.times ?? 0;
       return { slotKey: slot.key, entry: slot.entry, label, times, nextCost: talentCost(times), maxReached: talentMaxReached(hero, label) };
     }
     // Slot à choix non désigné : proposer les options concrètes non prises par la carrière.
@@ -188,7 +189,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
       for (const spec of pool) {
         const lbl = concreteLabel(o.name, spec);
         if (taken.has(lbl)) continue;
-        options.push({ label: lbl, owned: (hero.talents.find((t) => t.name === lbl)?.times ?? 0) > 0 });
+        options.push({ label: lbl, owned: (hero.talents.find((t) => talentConcrete(t) === lbl)?.times ?? 0) > 0 });
       }
     }
     return { slotKey: slot.key, entry: slot.entry, times: 0, nextCost: talentCost(0), maxReached: false, options };

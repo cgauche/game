@@ -20,10 +20,7 @@ import {
   classes,
   findCareer,
   findSkill,
-  findSkillById,
   findTalent,
-  findTalentById,
-  skillInstanceLabel,
   talentConcrete,
   findTrapping,
   trappingRefLabel,
@@ -31,9 +28,6 @@ import {
   trappings as allTrappings,
   levelsForCareer,
   characteristics as charData,
-  eyes as eyesTable,
-  hairs as hairsTable,
-  details as detailTables,
   stars as starsTable,
   spells as allSpells,
   SpeciesData,
@@ -48,6 +42,10 @@ import { RigSprite } from '../../gameIso/rig/composeRig';
 import { DEFS } from '../../gameIso/sprites';
 import { AppearancePanel } from '../AppearancePanel';
 import { CodexRef } from '../compendium/CodexRef';
+import { TabbedEntry } from '../TabbedEntry';
+import { CodexSections } from '../compendium/CodexEntry';
+import { EntityRef, EntityChoice, SkillChip, TalentChip } from '../EntityChip';
+import { raceCareerSection, raceDetailSection, raceCharSection, raceSkillSection, raceTalentSection, type CodexSection } from '../compendium/registry';
 import { opSummary } from '../editor/GameOpEditor';
 import type { Appearance } from '../../gameIso/rig/appearance';
 import { CreatorSummary, previewHero } from './CreatorSummary';
@@ -93,7 +91,7 @@ import { wildcardSpecs } from '../../engine/careerSlots';
  *  par `StepId` stable — l'ordre ET la présence des étapes viennent de `stepIds()` (draft.ts, qui
  *  insère « Signe astral » selon la règle optionnelle ADE2), jamais d'un index positionnel codé. */
 const STEP_META: Record<StepId, { label: string; zone: (p: StepProps) => { rail: ReactNode; main: ReactNode } }> = {
-  species: { label: 'Espèce', zone: SpeciesZones },
+  species: { label: 'Race', zone: SpeciesZones },
   career: { label: 'Carrière', zone: CareerZones },
   chars: { label: 'Caractéristiques', zone: CharZones },
   star: { label: 'Signe astral', zone: StarZones },
@@ -172,56 +170,6 @@ function Section({ title, right, children }: { title: ReactNode; right?: ReactNo
       </h3>
       {children}
     </section>
-  );
-}
-
-/** Puce Compétence : caractéristique liée + popover Codex (desc + source) + valeur vivante. */
-function SkillChip({ label, value }: { label: string; value?: number }) {
-  const k = skillCharKey(label);
-  return (
-    <span className="tag">
-      <CodexRef category="skills" label={splitLabel(label).name}>{label}</CodexRef>
-      {k && <em className="tag-char">{k}{value != null ? ` ${value}` : ''}</em>}
-    </span>
-  );
-}
-
-/** Puce Talent : popover Codex (desc + source). */
-function TalentChip({ label }: { label: string }) {
-  return (
-    <span className="tag talent">
-      <CodexRef category="talents" label={splitLabel(label).name}>{label}</CodexRef>
-    </span>
-  );
-}
-
-const RANDOM_CHIP_RE = /^(?:(\d+)\s+)?Talents?\s+al[ée]atoires?$/i;
-
-/**
- * ENTRÉE de talents d'une liste d'espèce/carrière : « A ou B » est éclaté en puces séparées
- * (chacune avec SA règle au survol — une puce unique « Perspicace ou Affable » n'a pas
- * d'infobulle) ; « N Talent aléatoire » reçoit une explication dédiée.
- */
-function TalentEntryChips({ entry }: { entry: string }) {
-  const options = splitTopLevelOu(entry);
-  return (
-    <span className="entry-chips">
-      {options.map((opt, i) => {
-        const mRand = opt.match(RANDOM_CHIP_RE);
-        return (
-          <span key={opt} className="entry-chips">
-            {i > 0 && <em className="chip-ou">ou</em>}
-            {mRand ? (
-              <span className="tag talent" title={`${mRand[1] ?? 1} tirage(s) d100 sur le Tableau des Talents aléatoires — figé, relance seulement si déjà possédé.`}>
-                {opt}
-              </span>
-            ) : (
-              <TalentChip label={opt} />
-            )}
-          </span>
-        );
-      })}
-    </span>
   );
 }
 
@@ -308,7 +256,7 @@ export function CharacterCreator() {
 
       {editing && !editing.lossless && (
         <p className="hint" style={{ margin: '4px 12px', color: 'var(--gold)' }}>
-          ⚠️ Brouillon d'origine indisponible : espèce, carrière, identité et apparence sont repris, mais
+          ⚠️ Brouillon d'origine indisponible : race, carrière, identité et apparence sont repris, mais
           les tirages, allocations et Talents sont à revoir étape par étape avant d'enregistrer.
         </p>
       )}
@@ -354,10 +302,9 @@ function LoreText({ html }: { html: string | null | undefined }) {
   return <div className="lore-text" dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
-// ════ 1) Espèce (LDB 04 l.84-90) — rail : liste groupée par race ; détail : onglets ════
+// ════ 1) Race (LDB 04 l.84-90) — rail : liste groupée par race ; détail : onglets ════
 function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode } {
   const sp = draftSpecies(d);
-  const [tab, setTab] = useState<'profil' | 'carrieres' | 'description' | 'details'>('profil');
 
   // Groupes par race (les variantes des suppléments perdent leur préfixe répétitif),
   // les races du Livre de base d'abord — l'ordre des familles suit les données.
@@ -403,7 +350,7 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
         {!d.speciesRoll ? (
           <div className="row-flex">
             <button className="btn" onClick={() => setD(rollDraftSpecies(d))}>
-              🎲 Tirer l'espèce (d100) — +20 PX si vous acceptez
+              🎲 Tirer la race (d100) — +20 PX si vous acceptez
             </button>
           </div>
         ) : (
@@ -419,136 +366,40 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
           </div>
         )}
       </Section>
-      <Section title="Caractéristiques de base">
-        <div className="base-char-grid">
-          {CHAR_KEYS.map((k) => {
-            const base = sp.baseChar[k] ?? 20;
-            const diff = base - 20;
-            return (
-              <div key={k} className="base-char" title={`${CHAR_LABELS[k]} — ${CHAR_DESC[k] ?? ''}`}>
-                <span className="char-key">{k}</span>
-                <b>{base}</b>
-                {diff !== 0 && <em className={diff > 0 ? 'up' : 'down'}>{diff > 0 ? `+${diff}` : diff}</em>}
-              </div>
-            );
-          })}
-        </div>
-        <div className="derived" style={{ marginTop: 8 }}>
-          <span>
-            Mouvement <b>{sp.movement}</b>
-          </span>
-          <span>
-            Destin <b>{sp.fate.fate}</b> · Résilience <b>{sp.fate.resilience}</b> · +<b>{sp.fate.extra}</b> à répartir
-          </span>
-          {sp.small && <span title="Talent Petit : Blessures calculées sans le Bonus de Force">Taille <b>Petite</b></span>}
-        </div>
-      </Section>
-      <Section title="Compétences d'espèce">
-        <div className="skill-tags">
-          {sp.skills.map((a) => advancementLabel('skills', a)).map((s) => (
-            <SkillChip key={s} label={s} />
-          ))}
-        </div>
-      </Section>
-      <Section title="Talents d'espèce">
-        <div className="skill-tags">
-          {sp.talents.map((a) => advancementLabel('talents', a)).map((t) => (
-            <TalentEntryChips key={t} entry={t} />
-          ))}
-        </div>
-      </Section>
+      <div className="derived" style={{ margin: '2px 0 8px' }}>
+        <span>
+          Mouvement <b>{sp.movement}</b>
+        </span>
+        <span>
+          Destin <b>{sp.fate.fate}</b> · Résilience <b>{sp.fate.resilience}</b> · +<b>{sp.fate.extra}</b> à répartir
+        </span>
+        {sp.small && <span title="Talent Petit : Blessures calculées sans le Bonus de Force">Taille <b>Petite</b></span>}
+      </div>
+      {/* Caractéristiques / Compétences / Talents : MÊMES sections que le Codex (source unique
+          `raceCharSection`/`raceSkillSection`/`raceTalentSection`) → rendu identique des deux côtés. */}
+      <CodexSections sections={[raceCharSection(sp), raceSkillSection(sp), raceTalentSection(sp)].filter((s): s is CodexSection => !!s)} />
     </>
   );
 
-  // ── Onglet Carrières : ce que cette espèce peut embrasser ──
-  const accessible = careersForSpecies(sp.refCareer);
-  const carrieres = (
-    <>
-      {classes.map((cl) => {
-        const list = accessible.filter((c) => c.class === cl.label);
-        if (!list.length) return null;
-        return (
-          <Section key={cl.label} title={`${cl.label} (${list.length})`}>
-            <div className="skill-tags">
-              {list.map((c) => (
-                <span key={c.label} className="tag" title={blurb(c.desc, 260)}>
-                  {c.label}
-                </span>
-              ))}
-            </div>
-          </Section>
-        );
-      })}
-    </>
-  );
+  // ── Onglets Carrières / Description / Détails : MÊME contenu que le Codex (source unique
+  //    `raceCareerSection`/`raceDetailSection`) — plus de ré-implémentation divergente. ──
+  const careerSec = raceCareerSection(sp);
+  const carrieres = careerSec ? <CodexSections sections={[careerSec]} /> : <p className="hint">Aucune carrière accessible.</p>;
+  const description = sp.desc ? <div className="codex-body" dangerouslySetInnerHTML={{ __html: sp.desc }} /> : null;
+  const detailsTab = <CodexSections sections={[raceDetailSection(sp)]} />;
 
-  // ── Onglet Description : le texte complet ──
-  const description = <LoreText html={sp.desc} />;
-
-  // ── Onglet Détails : âge, taille, noms, yeux/cheveux (tables des données) ──
-  const ref = sp.refChar;
-  const txt = detailTables.texts;
-  const eyeColors = [...new Set(eyesTable.map((e) => e.color[ref]).filter(Boolean))];
-  const hairColors = [...new Set(hairsTable.map((e) => e.color[ref]).filter(Boolean))];
-  const detailsTab = (
-    <>
-      <Section title="Âge">
-        <p style={{ marginTop: 0 }}>
-          Tirage : <b>{detailTables.ageBase[ref] ?? detailTables.ageBase['Humain']} + {Math.round(detailTables.ageRoll[ref] ?? 1)}d10</b> ans
-        </p>
-        <LoreText html={txt.age.bySpecies[ref] ?? ''} />
-      </Section>
-      <Section title="Taille">
-        <p style={{ marginTop: 0 }}>
-          Tirage : <b>{detailTables.heightBase[ref] ?? detailTables.heightBase['Humain']} + {Math.round(detailTables.heightRoll[ref] ?? 1)}d10</b> cm
-        </p>
-        <LoreText html={txt.taille.bySpecies[ref] ?? txt.taille.all} />
-      </Section>
-      <Section title="Noms">
-        <LoreText html={txt.nom.bySpecies[ref] ?? txt.nom.bySpecies['Humain']} />
-      </Section>
-      <Section title="Yeux & cheveux">
-        <div className="skill-tags">
-          {eyeColors.map((c) => (
-            <span key={`e-${c}`} className="tag">👁 {c}</span>
-          ))}
-        </div>
-        <div className="skill-tags" style={{ marginTop: 6 }}>
-          {hairColors.map((c) => (
-            <span key={`h-${c}`} className="tag">💇 {c}</span>
-          ))}
-        </div>
-      </Section>
-    </>
-  );
-
-  const TABS = [
-    ['profil', 'Profil'],
-    ['carrieres', 'Carrières'],
-    ['description', 'Description'],
-    ['details', 'Détails'],
-  ] as const;
   const main = (
-    <>
-      <div className="main-head">
-        <Figure speciesLabel={sp.label} sex={d.sex} className="main-figure" />
-        <div>
-          <h2>{sp.label}</h2>
-          <p className="hint">{blurb(sp.desc, 300)}</p>
-        </div>
-      </div>
-      <div className="zone-tabs">
-        {TABS.map(([key, label]) => (
-          <button key={key} className={`zone-tab ${tab === key ? 'active' : ''}`} onClick={() => setTab(key)}>
-            {label}
-          </button>
-        ))}
-      </div>
-      {tab === 'profil' && profil}
-      {tab === 'carrieres' && carrieres}
-      {tab === 'description' && description}
-      {tab === 'details' && detailsTab}
-    </>
+    <TabbedEntry
+      figure={<Figure speciesLabel={sp.label} sex={d.sex} className="main-figure" />}
+      title={<CodexRef category="races" label={sp.label}>{sp.label}</CodexRef>}
+      blurb={blurb(sp.desc, 300)}
+      tabs={[
+        { id: 'profil', label: 'Profil', content: profil },
+        { id: 'carrieres', label: 'Carrières', content: carrieres },
+        { id: 'description', label: 'Description', content: description },
+        { id: 'details', label: 'Détails', content: detailsTab },
+      ]}
+    />
   );
   return { rail, main };
 }
@@ -566,14 +417,14 @@ function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
       <Section title={`Carrières (${accessible.length} accessibles)`}>
         <label className="radio" style={{ marginBottom: 8, fontSize: 12 }}>
           <input type="checkbox" checked={d.ignoreRestrictions} onChange={(e) => setD({ ...d, ignoreRestrictions: e.target.checked })} />
-          Ignorer les restrictions d'espèce
+          Ignorer les restrictions de race
         </label>
         {classes.map((cl) => {
           const list = accessible.filter((c) => c.class === cl.label);
           if (!list.length) return null;
           return (
             <div key={cl.label}>
-              <div className="rail-group" title={blurb(cl.desc, 220)}>{cl.label}</div>
+              <div className="rail-group"><CodexRef category="classes" label={cl.label}>{cl.label}</CodexRef></div>
               <div className="pick-list">
                 {list.map((c: CareerData) => {
                   const l1 = levelsForCareer(c.label).find((l) => l.level === 1);
@@ -601,7 +452,10 @@ function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
         <Figure speciesLabel={d.speciesLabel} career={d.careerLabel} sex={d.sex} className="main-figure" />
         <div>
           <h2>
-            {d.careerLabel} <span className="hint">({career?.class})</span>
+            <CodexRef category="careers" label={d.careerLabel}>{d.careerLabel}</CodexRef>{' '}
+            {career?.class && (
+              <span className="hint">(<CodexRef category="classes" label={career.class}>{career.class}</CodexRef>)</span>
+            )}
           </h2>
           <p className="hint">{blurb(career?.desc, 460)}</p>
         </div>
@@ -651,23 +505,21 @@ function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
           <Section title="Caractéristiques de carrière">
             <div className="skill-tags">
               {lvl1.characteristics.map((c) => (
-                <span key={c} className="tag char" title={CHAR_DESC[CHAR_BY_LABEL[c] ?? ''] ?? ''}>
-                  {c}
-                </span>
+                <EntityRef key={c} category="characteristics" label={c} />
               ))}
             </div>
           </Section>
           <Section title="Compétences du Niveau 1">
             <div className="skill-tags">
               {lvl1.skills.map((a) => advancementLabel('skills', a)).map((s) => (
-                <SkillChip key={s} label={s} />
+                <EntityChoice key={s} category="skills" entry={s} />
               ))}
             </div>
           </Section>
           <Section title="Talents du Niveau 1">
             <div className="skill-tags">
               {lvl1.talents.map((a) => advancementLabel('talents', a)).map((t) => (
-                <TalentEntryChips key={t} entry={t} />
+                <EntityChoice key={t} category="talents" entry={t} />
               ))}
             </div>
           </Section>
@@ -722,8 +574,8 @@ function CharZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode }
           À répartir sur les Caractéristiques de votre carrière.
         </p>
         {careerCharKeys.map((k) => (
-          <div key={k} className="rail-line" title={CHAR_DESC[k]}>
-            <span>{CHAR_LABELS[k]}</span>
+          <div key={k} className="rail-line">
+            <span><CodexRef category="characteristics" label={CHAR_LABELS[k]}>{CHAR_LABELS[k]}</CodexRef></span>
             <Stepper
               value={d.charAdvancesAlloc[k] ?? 0}
               max={Math.min(5, (d.charAdvancesAlloc[k] ?? 0) + (5 - allocTotal))}
@@ -769,8 +621,8 @@ function CharZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode }
         </p>
         <div className="char-alloc-grid">
           {CHAR_KEYS.map((k, i) => (
-            <div key={k} className="char-alloc" title={`${CHAR_LABELS[k]} — ${CHAR_DESC[k] ?? ''}`}>
-              <span className="char-key">{k}</span>
+            <div key={k} className="char-alloc">
+              <CodexRef category="characteristics" label={CHAR_LABELS[k]} className="char-key">{k}</CodexRef>
               <span className="char-name">
                 {CHAR_LABELS[k]}
                 {careerCharKeys.includes(k) && <span className="tag char">carrière</span>}
@@ -919,7 +771,7 @@ function SkillZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode 
   const rail = (
     <>
       <Section
-        title="Compétences d'espèce"
+        title="Compétences de race"
         right={
           <b className={d.speciesPlus5.length === 3 && d.speciesPlus3.length === 3 ? 'ok-text' : 'warn-text'}>
             +5 : {d.speciesPlus5.length}/3 · +3 : {d.speciesPlus3.length}/3
@@ -952,7 +804,7 @@ function SkillZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode 
           );
         })}
       </Section>
-      <Section title="Talents d'espèce">
+      <Section title="Talents de race">
         <div className="talent-choices">
           {sp.talents.map((a) => advancementLabel('talents', a)).map((entry) => {
             const options = splitTopLevelOu(entry);
@@ -974,13 +826,13 @@ function SkillZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode 
                 </label>
               );
             }
-            return <TalentChip key={entry} label={entry} />;
+            return <EntityChoice key={entry} category="talents" entry={entry} />;
           })}
         </div>
         <div className="mini-title" style={{ marginTop: 10 }}>Talents obtenus</div>
         <div className="skill-tags">
           {resolved.map((label) => (
-            <TalentChip key={label} label={label} />
+            <EntityChoice key={label} category="talents" entry={label} />
           ))}
         </div>
         {resolved
@@ -1066,7 +918,7 @@ function SkillZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode 
                   </select>
                 )}
                 {maxed && <em className="hint">Maxi atteint (déjà possédé)</em>}
-                {!maxed && selected && probe.talents.some((t) => talentConcrete(t) === selected) && <em className="hint">déjà possédé via l'espèce → passera ×2</em>}
+                {!maxed && selected && probe.talents.some((t) => talentConcrete(t) === selected) && <em className="hint">déjà possédé via la race → passera ×2</em>}
               </label>
               <p className="hint talent-desc">{talentTip(selected ?? entry)}</p>
             </div>
@@ -1136,8 +988,8 @@ function TrappingZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNo
   const item = (t: string) => {
     const meta = trappingMeta(t);
     return (
-      <li key={t} title={blurb(findTrapping(splitLabel(t).name)?.desc, 240)}>
-        {t}
+      <li key={t}>
+        <CodexRef category="trappings" label={splitLabel(t).name}>{t}</CodexRef>
         {meta && <em className="item-meta"> — {meta}</em>}
       </li>
     );
@@ -1231,7 +1083,7 @@ function DetailZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
               <button
                 type="button"
                 className="btn small"
-                title="Nom aléatoire (espèce et sexe du personnage)"
+                title="Nom aléatoire (race et sexe du personnage)"
                 onClick={() => {
                   const n = generateName(d.speciesLabel, d.sex, makeRNG(Math.floor(Math.random() * 1e9)));
                   if (n) setD({ ...d, name: n });
@@ -1275,7 +1127,7 @@ function RecapZones({ d }: { d: CreatorDraft }): { rail: ReactNode; main: ReactN
   const rail = (
     <Section title="PX bonus de création">
       <ul className="hint" style={{ margin: 0, paddingLeft: 18 }}>
-        <li>Espèce aléatoire : +{speciesXp(d)} PX</li>
+        <li>Race aléatoire : +{speciesXp(d)} PX</li>
         <li>Carrière aléatoire : +{careerXp(d)} PX</li>
         <li>Caractéristiques : +{charsXp(d)} PX</li>
         {stepIds().includes('star') && <li>Signe astral : +{starXp(d)} PX</li>}
@@ -1287,7 +1139,7 @@ function RecapZones({ d }: { d: CreatorDraft }): { rail: ReactNode; main: ReactN
     <>
       <Section title="Votre aventurier">
         <p>
-          <b>{d.name.trim() || 'Aventurier'}</b> — {d.speciesLabel}, {draftLevel(d)?.label} ({d.careerLabel}) ·{' '}
+          <b>{d.name.trim() || 'Aventurier'}</b> — <CodexRef category="races" label={d.speciesLabel}>{d.speciesLabel}</CodexRef>, {draftLevel(d)?.label} (<CodexRef category="careers" label={d.careerLabel}>{d.careerLabel}</CodexRef>) ·{' '}
           {draftLevel(d)?.status}. Richesse initiale : <b>{formatMoney(wealth)}</b> (créditée au groupe).
         </p>
         <p className="hint">
@@ -1310,12 +1162,7 @@ function RecapZones({ d }: { d: CreatorDraft }): { rail: ReactNode; main: ReactN
       <Section title="Talents">
         <div className="skill-tags">
           {(hero?.talents ?? []).map((t) => (
-            <span key={`${t.talentId}|${t.spec ?? ''}`} className="tag talent">
-              <CodexRef category="talents" label={findTalentById(t.talentId)?.label ?? t.talentId}>
-                {talentConcrete(t)}
-                {t.times > 1 ? ` ×${t.times}` : ''}
-              </CodexRef>
-            </span>
+            <TalentChip key={`${t.talentId}|${t.spec ?? ''}`} talent={t} />
           ))}
         </div>
       </Section>
@@ -1324,21 +1171,14 @@ function RecapZones({ d }: { d: CreatorDraft }): { rail: ReactNode; main: ReactN
           {(hero?.skills ?? [])
             .filter((s) => s.advances > 0)
             .map((s) => (
-              <span key={`${s.skillId}|${s.spec ?? ''}`} className="tag">
-                <CodexRef category="skills" label={findSkillById(s.skillId)?.label ?? s.skillId}>
-                  {skillInstanceLabel(s)} +{s.advances}
-                </CodexRef>
-              </span>
+              <SkillChip key={`${s.skillId}|${s.spec ?? ''}`} skill={s} />
             ))}
         </div>
       </Section>
       <Section title="Équipement">
         <div className="skill-tags">
           {(hero?.items ?? []).map((it) => (
-            <span key={it.uid} className="tag" title={trappingMeta(it.name)}>
-              {it.name}
-              {it.qty ? ` ×${it.qty}` : ''}
-            </span>
+            <EntityRef key={it.uid} category="trappings" label={it.name} show={`${it.name}${it.qty ? ` ×${it.qty}` : ''}`} />
           ))}
         </div>
       </Section>

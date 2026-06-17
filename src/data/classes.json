@@ -2,13 +2,27 @@
   {
     "label": "Citadins",
     "trappings": [
-      "Cape",
-      "Vêtements",
-      "Dague",
-      "Chapeau",
-      "Bourse",
-      "Besace",
-      "Déjeuner"
+      {
+        "id": "cape"
+      },
+      {
+        "id": "vetements"
+      },
+      {
+        "id": "dague"
+      },
+      {
+        "id": "chapeau"
+      },
+      {
+        "id": "bourse"
+      },
+      {
+        "id": "besace"
+      },
+      {
+        "text": "Déjeuner"
+      }
     ],
     "desc": "Il s'agit communément de citoyens respectueux des lois qui vivent et travaillent dans les nombreuses villes et cités de l'Empire. Beaucoup de Citadins appartiennent à la classe moyenne et gagnent convenablement leur vie.",
     "source": {
@@ -19,12 +33,24 @@
   {
     "label": "Courtisans",
     "trappings": [
-      "Costume luxueux",
-      "Dague",
-      "Bourse",
-      "Pince à épiler",
-      "Cure-oreille (Multiple)",
-      "Peigne"
+      {
+        "text": "Costume luxueux"
+      },
+      {
+        "id": "dague"
+      },
+      {
+        "id": "bourse"
+      },
+      {
+        "id": "pince-a-epiler"
+      },
+      {
+        "text": "Cure-oreille (Multiple)"
+      },
+      {
+        "id": "peigne"
+      }
     ],
     "desc": "Ceux qui dirigent ou qui leur fournissent des services spécialisés. Même les Courtisans les plus humbles de naissance possèdent un statut plus élevè que la plupart des gens, et ont tous la possibilité d'accéder à des posts d'influence.",
     "source": {
@@ -35,10 +61,18 @@
   {
     "label": "Guerriers",
     "trappings": [
-      "Vêtements",
-      "Arme simple",
-      "Dague",
-      "Bourse"
+      {
+        "id": "vetements"
+      },
+      {
+        "id": "arme-simple"
+      },
+      {
+        "id": "dague"
+      },
+      {
+        "id": "bourse"
+      }
     ],
     "desc": "S'appuyant sur leurs prouesses physiques, ce sont tous des combattants qualifiés, bien qu'ils ne soient pas nécessairement issus de l'armée. Les Guerriers viennent de différents milieux, aussi bien de statut élevé qu'inférieur, et tous peuvent s'imposer à des postes influents, s'ils vivent assez longtemps.",
     "source": {
@@ -49,14 +83,30 @@
   {
     "label": "Itinérants",
     "trappings": [
-      "Cape",
-      "Vêtements",
-      "Dague",
-      "Bourse",
-      "Sac à dos",
-      "Boîte à amadou",
-      "Couverture",
-      "Ration (Multiple)"
+      {
+        "id": "cape"
+      },
+      {
+        "id": "vetements"
+      },
+      {
+        "id": "dague"
+      },
+      {
+        "id": "bourse"
+      },
+      {
+        "id": "sac-a-dos"
+      },
+      {
+        "id": "boite-a-amadou"
+      },
+      {
+        "id": "couverture"
+      },
+      {
+        "text": "Ration (Multiple)"
+      }
     ],
     "desc": "Personnes qui gagnent leur vie sur les routes, voyageant loin de leurs villes et villages. La plupart des Itinérants appartiennent à la classe inférieure, mais certains peuvent accéder à des posts de haut statut s'ils persévèrent.",
     "source": {
@@ -67,12 +117,27 @@
   {
     "label": "Lettrés",
     "trappings": [
-      "Vêtements",
-      "Dague",
-      "Bourse",
-      "Besace",
-      "Nécessaire d'écriture",
-      "Feuille de parchemin (1d10)"
+      {
+        "id": "vetements"
+      },
+      {
+        "id": "dague"
+      },
+      {
+        "id": "bourse"
+      },
+      {
+        "id": "besace"
+      },
+      {
+        "id": "necessaire-d-ecriture"
+      },
+      {
+        "id": "feuille-de-parchemin",
+        "count": {
+          "roll": "1d10"
+        }
+      }
     ],
     "desc": "Ce sont des érudits qui utilisent leur éducation pour gagner leur vie. Souvent, les Lettrés sont les seuls Personnages à savoir lire et écrire. Ils commencent avec un statut inférieur mais peuvent accéder à des positions importantes s'ils progressent en grimpant les échelons.",
     "source": {
@@ -83,12 +148,24 @@
   {
     "label": "Riverains",
     "trappings": [
-      "Cape",
-      "Vêtements",
-      "Dague",
-      "Bourse",
-      "Besace",
-      "Flasque (Alcool)"
+      {
+        "id": "cape"
+      },
+      {
+        "id": "vetements"
+      },
+      {
+        "id": "dague"
+      },
+      {
+        "id": "bourse"
+      },
+      {
+        "id": "besace"
+      },
+      {
+        "text": "Flasque (Alcool)"
+      }
     ],
     "desc": "Personnes qui vivivent et travaillent sur les rivières et voies navigables à travers le Reikland et au-delà. Les Riverains commencent tous avec un statut inférieur, mais certains ont des opportunités qui peuvent mener à une vie confortable.",
     "source": {
@@ -99,13 +176,33 @@
   {
     "label": "Roublards",
     "trappings": [
-      "Vêtements",
-      "Dague",
-      "Bourse",
-      "Besace",
-      "Bougie (2)",
-      "Alumette (1d10)",
-      "Capuchon ou Masque"
+      {
+        "id": "vetements"
+      },
+      {
+        "id": "dague"
+      },
+      {
+        "id": "bourse"
+      },
+      {
+        "id": "besace"
+      },
+      {
+        "id": "bougie",
+        "count": {
+          "fixed": 2
+        }
+      },
+      {
+        "text": "Alumette",
+        "count": {
+          "roll": "1d10"
+        }
+      },
+      {
+        "text": "Capuchon ou Masque"
+      }
     ],
     "desc": "Principalement habitants de villes et de cités, ces personnes gagnent leur vie grâce à des actes considérés comme illégaux, ou du moins peu recommandables, sur le dos de la plupart des citoyens respectueux de la Loi. Les Roublards appartiennent tous à la classe inférieure, mais certains peuvent gagner beaucoup d'argent, bien qu'ils ne soient pas en mesure d'accéder à un statur élevé.",
     "source": {
@@ -116,12 +213,24 @@
   {
     "label": "Ruraux",
     "trappings": [
-      "Cape",
-      "Vêtements",
-      "Dague",
-      "Bourse",
-      "Besace",
-      "Ration (Multiple)"
+      {
+        "id": "cape"
+      },
+      {
+        "id": "vetements"
+      },
+      {
+        "id": "dague"
+      },
+      {
+        "id": "bourse"
+      },
+      {
+        "id": "besace"
+      },
+      {
+        "text": "Ration (Multiple)"
+      }
     ],
     "desc": "Personnes qui vivent et travaillent dans les fermes, les villages et les campagnes. Les Ruraux appartiennent tous à la classe inférieure, bien qu'il soit possible qu'ils obtiennent une influence significative localement.",
     "source": {

@@ -4,7 +4,8 @@ import { hasCondition } from '../engine/conditions';
 import type { Combatant } from '../engine/types';
 
 const hero = (id: string, current: number): Combatant =>
-  ({ id, name: id, kind: 'hero', dead: false, wounds: { current, max: 20 }, advantage: 0, conditions: [] } as unknown as Combatant);
+  ({ id, name: id, kind: 'hero', dead: false, wounds: { current, max: 20 }, advantage: 0, conditions: [],
+     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 } } as unknown as Combatant);
 
 function fakeStore(party: Combatant[]) {
   let s: any = { battle: undefined, party, flags: {}, journal: [], log: () => {} };

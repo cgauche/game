@@ -6,8 +6,11 @@
  * dupliqué à chaque site d'usage.
  */
 import { QUALITIES } from './registry';
+import { slugId } from '../../data/slug';
 
 const KEY_BY_LOWER = new Map(Object.keys(QUALITIES).map((k) => [k.toLowerCase(), k]));
+// Résolution par `id` STABLE (slug du libellé) — la donnée/runtime stocke l'id, pas le libellé.
+const KEY_BY_ID = new Map(Object.keys(QUALITIES).map((k) => [slugId(k), k]));
 
 export interface ParsedQuality {
   /** Clé canonique du registre (ex. 'Solide'). */
@@ -23,10 +26,11 @@ export function splitIndice(raw: string): { label: string; indice?: number } {
   return { label: raw.trim() };
 }
 
-/** Normalise une chaîne de qualité en { clé canonique, Indice? }, ou null si inconnue du registre. */
+/** Normalise une qualité (id STABLE du runtime/donnée OU libellé d'un littéral/test) en { clé canonique,
+ *  Indice? }, ou null si inconnue. Résout d'abord par libellé (casse ignorée), sinon par id (slug). */
 export function parseQuality(raw: string): ParsedQuality | null {
   const { label, indice } = splitIndice(raw);
-  const key = KEY_BY_LOWER.get(label.toLowerCase());
+  const key = KEY_BY_LOWER.get(label.toLowerCase()) ?? KEY_BY_ID.get(slugId(label));
   return key ? { key, indice } : null;
 }
 

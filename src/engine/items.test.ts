@@ -93,7 +93,7 @@ describe('unarmedWeapon (Mains nues canoniques, LDB 62 l.75)', () => {
     const u = unarmedWeapon();
     expect(u.damage).toBe('+BF+0');
     expect(u.reach).toBe('Personnelle');
-    expect(u.qualities).toContain('Inoffensive');
+    expect(u.qualities).toContain('inoffensive'); // runtime = id de qualité (pas le libellé)
     expect(u.hand).toBe('main');
   });
 });
@@ -393,7 +393,7 @@ describe('items — recomputeLoadout / encombrement', () => {
     expect(maxEncumbrance({ characteristics: { F: 35, E: 42 } } as unknown as Combatant)).toBe(3 + 4);
   });
   it('maxEncumbrance : +2 par niveau de Costaud (LDB talents)', () => {
-    const c = { characteristics: { F: 30, E: 30 }, talents: [{ name: 'Costaud', times: 1 }] } as unknown as Combatant;
+    const c = { characteristics: { F: 30, E: 30 }, talents: [{ talentId: 'costaud', times: 1 }] } as unknown as Combatant;
     expect(maxEncumbrance(c)).toBe(3 + 3 + 2); // BF+BE + Costaud×2
   });
   it('totalEncumbrance : une armure ÉQUIPÉE (portée) compte −1 ; arme tenue et armure rangée non (LDB Enc. l.22)', () => {
@@ -469,13 +469,13 @@ describe('Munitions & rechargement', () => {
     expect(fleche.kind).toBe('ammo');
     expect(fleche.subType).toBe('Arc');
     expect(fleche.qty).toBe(12);
-    expect(fleche.qualities).toContain('Empaleuse');
+    expect(fleche.qualities).toContain('empaleuse'); // runtime = id
   });
   it('weaponWithAmmo combine Dégâts (concaténés) et fusionne les Atouts', () => {
     const arc: Weapon = { name: 'Arc', type: 'ranged', damage: '+9', range: 60, qualities: [], subType: 'Arc', reload: 0 };
     const fleche = itemFromTrapping('Flèche')!;
     const w = weaponWithAmmo(arc, fleche);
-    expect(w.qualities).toContain('Empaleuse');
+    expect(w.qualities).toContain('empaleuse'); // runtime = id
     // La Flèche n'a pas de modificateur de Dégâts → reste +9.
     expect(w.damage).toBe('+9');
   });

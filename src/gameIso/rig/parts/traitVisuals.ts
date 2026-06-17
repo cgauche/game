@@ -48,18 +48,18 @@ export function traitOverlaysFor(c: Combatant): RigOverlay[] {
   const hasBehind = (bone: BoneId) => behindFeats.some((f) => f.bone === bone && (f.layer ?? 50) < 0);
   const has = (key: string) => hasTraitKey(traits, key);
   const out: RigOverlay[] = [];
-  if (has('Cornes') && !hasBehind('tete')) out.push({ bone: 'tete', svg: CORNES, behind: true });
+  if (has('cornes') && !hasBehind('tete')) out.push({ bone: 'tete', svg: CORNES, behind: true });
   // Queue et ailes = appendices DORSAUX : règles de vue/profondeur codifiées par dorsalOverlays.
-  if (has('Attaque caudale') && !hasBehind('bassin')) {
+  if (has('attaque-caudale') && !hasBehind('bassin')) {
     out.push(...dorsalOverlays('bassin', { front: QUEUE, back: QUEUE, profile: QUEUE_PROFILE }));
   }
-  if (has('Tentacules')) {
+  if (has('tentacules')) {
     out.push({ bone: 'epauleG', svg: TENTACULE_BRAS, replace: true });
     out.push({ bone: 'mainG', svg: '', replace: true });
   }
   // Vol : sauté si la créature porte déjà des ailes monstrueuses (Furie : ailes de cuir).
   const monsterWings = !!(c.appearance?.monster?.ailes ?? d?.perso?.monster?.ailes);
-  if (has('Vol') && !monsterWings) {
+  if (has('vol') && !monsterWings) {
     out.push(...dorsalOverlays('torse', { front: AILES_FRONT, back: AILES_BACK, profile: AILES_PROFILE }));
   }
   return out;

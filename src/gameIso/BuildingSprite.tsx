@@ -1,7 +1,7 @@
 /** Rendu partagé d'un bâtiment (jeu + éditeur). Une seule définition des 3
  *  calques et de la profondeur de tri ; le cutaway passe simplement hideRoof. */
 import { BuildingFeature } from '../state/scene';
-import { Dims, depth, tileCenter, CELL } from './iso';
+import { Dims, depth, tileCenter, CELL, isSquareView } from './iso';
 import { buildingLayers } from './catalog/buildings';
 
 /** Profondeur de tri d'un bâtiment = coin avant de l'empreinte. */
@@ -14,7 +14,7 @@ export function buildingObj(b: BuildingFeature, dims: Dims, hideRoof = false, ni
   // Vue du dessus : l'extrusion iso n'a pas de sens → plan de bâtiment (toit + MURS ÉPAIS + porte),
   // pour qu'on LISE un bâtiment et pas de simples tuiles. Boîte englobante des cases de l'empreinte
   // (les crans de rotation 90° gardent un rectangle). Fidélité fine déférée.
-  if (dims.view === 'top') {
+  if (isSquareView(dims.view)) {
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     for (let dy = 0; dy < b.foot.h; dy++)
       for (let dx = 0; dx < b.foot.w; dx++) {

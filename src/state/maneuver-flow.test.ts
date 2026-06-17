@@ -55,7 +55,7 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
   it('Souffle : ouvrir n’ouvre PAS de jet (result===null) ; Lancer→Appliquer dépense 2 Av, Action préservée, Dégâts', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
-    H.traits = ['Souffle +15 (Feu)'];
+    H.traits = [{ id: 'souffle', value: 15, arg: 'Feu' }];
     H.characteristics.CT = 90; // touche déterministe vs Esquive
     H.advantage = 3;
     const before = E.wounds.current;
@@ -80,7 +80,7 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
   it('Hurlement : reste IMMÉDIAT (pas de pendingManeuver) — jets SUBIS au feed', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
-    H.traits = ['Hurlement fantomatique'];
+    H.traits = [{ id: 'hurlement-fantomatique' }];
     H.characteristics.I = 40;
     H.advantage = 4;
     const before = E.wounds.current;
@@ -94,7 +94,7 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
   it('Étreinte : manœuvre-Action → maneuverConfirm pose `acted`', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
-    H.traits = ['Étreinte glaciale'];
+    H.traits = [{ id: 'etreinte-glaciale' }];
     H.characteristics.CC = 90;
     H.advantage = 2;
     activate('etreinte', E.id);
@@ -111,7 +111,7 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
   it('Regard : Avantage variable → maneuverSetAvantage(2) ajoute +2 DR à la marge (Pétrifié)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
-    H.traits = ['Regard pétrifiant'];
+    H.traits = [{ id: 'regard-petrifiant' }];
     H.characteristics.CT = 95;
     H.advantage = 6;
     E.characteristics.I = 1;
@@ -131,7 +131,7 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
 
   it('maneuverSetAvantage clampe à 1..Avantage', () => {
     const { H, E } = setup();
-    H.traits = ['Regard pétrifiant'];
+    H.traits = [{ id: 'regard-petrifiant' }];
     H.advantage = 3;
     activate('regard', E.id);
     useGame.getState().maneuverSetAvantage(99);
@@ -143,7 +143,7 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
   it('Résilience : forceSuccess garantit la réussite du jet d’attaquant (touche puis Dégâts)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
-    H.traits = ['Souffle +15 (Feu)'];
+    H.traits = [{ id: 'souffle', value: 15, arg: 'Feu' }];
     H.characteristics.CT = 1; // raterait sans Résilience
     H.advantage = 3;
     H.resilience = 1;

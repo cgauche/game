@@ -37,7 +37,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
   it('Morsure : touche, dégâts infligés, Action NON consommée (gratuite)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
-    E.traits = ['Morsure +14']; E.advantage = 1;
+    E.traits = [{ id: 'morsure', value: 14 }]; E.advantage = 1;
     const before = H.wounds.current;
     const suspended = aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     expect(suspended).toBe(false); // cible Surprise → instantané, pas de modale
@@ -50,7 +50,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
   it('coût : une attaque gratuite RATÉE dépense bien 1 Avantage (CC=1 → échec)', () => {
     useGame.getState().seedRng(2);
     const { E } = setup();
-    E.traits = ['Morsure +14']; E.advantage = 2; E.characteristics.CC = 1; // rate → pas de +1 du vainqueur
+    E.traits = [{ id: 'morsure', value: 14 }]; E.advantage = 2; E.characteristics.CC = 1; // rate → pas de +1 du vainqueur
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.advantage).toBeLessThan(2);
   });
@@ -58,7 +58,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
   it('Attaque caudale : cible de Taille INFÉRIEURE qui perd des PB → À Terre (LDB 85 l.338)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
-    E.traits = ['Attaque caudale +14']; E.advantage = 1;
+    E.traits = [{ id: 'attaque-caudale', value: 14 }]; E.advantage = 1;
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect(h.conditions.some((c) => c.name === 'À Terre')).toBe(true);
@@ -67,7 +67,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
   it('file priorisée : Morsure (trait) PUIS Piétinement (Taille) résolus, file vidée', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
-    E.traits = ['Morsure +14']; E.advantage = 5;
+    E.traits = [{ id: 'morsure', value: 14 }]; E.advantage = 5;
     const before = H.wounds.current;
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     const e = useGame.getState().battle!.combatants.find((c) => c.id === E.id)!;
@@ -77,7 +77,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
 
   it('sans Avantage : aucune attaque gratuite, file vidée', () => {
     const { H, E } = setup();
-    E.traits = ['Morsure +14']; E.advantage = 0;
+    E.traits = [{ id: 'morsure', value: 14 }]; E.advantage = 0;
     const before = H.wounds.current;
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBe(before);
@@ -86,7 +86,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
   it('Cornes : Attaque gratuite gagnée en CHARGEANT, sans coût d’Avantage (LDB 85)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
-    E.traits = ['Cornes +14']; E.advantage = 0; E.chargedThisTurn = true; // a chargé avec 0 Avantage
+    E.traits = [{ id: 'cornes', value: 14 }]; E.advantage = 0; E.chargedThisTurn = true; // a chargé avec 0 Avantage
     const before = H.wounds.current;
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBeLessThan(before);
@@ -94,7 +94,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
 
   it('Cornes : sans Charge, aucune Attaque de Cornes (0 Avantage → rien)', () => {
     const { H, E } = setup();
-    E.traits = ['Cornes +14']; E.advantage = 0; E.chargedThisTurn = false;
+    E.traits = [{ id: 'cornes', value: 14 }]; E.advantage = 0; E.chargedThisTurn = false;
     const before = H.wounds.current;
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBe(before);
@@ -103,8 +103,8 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
   it('Souffle (Feu) : zone, Test opposé CT/Esquive → dégâts ignorant les PA + En flammes', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
-    E.traits = ['Souffle +14 (Feu)']; E.advantage = 2; E.characteristics.CT = 85;
-    H.characteristics.Ag = 1; H.skills = H.skills.filter((s) => !s.name.toLowerCase().includes('esquive'));
+    E.traits = [{ id: 'souffle', value: 14, arg: 'Feu' }]; E.advantage = 2; E.characteristics.CT = 85;
+    H.characteristics.Ag = 1; H.skills = H.skills.filter((s) => s.skillId !== 'esquive');
     H.armour = { tete: 5, brasG: 5, brasD: 5, corps: 5, jambeG: 5, jambeD: 5 }; // PA ignorés par le Feu
     const before = H.wounds.current;
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
@@ -114,23 +114,27 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     expect(st.battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(0); // 2 − 2 (le Souffle ne gagne pas d'Avantage)
   });
 
-  it('Vomissement : zone (3 Av), dégâts BE+4 + Sonné + corrosion de l’armure', () => {
+  it('Vomissement : zone (3 Av), dégâts BE+4 + Sonné + corrosion (cuir porté)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
-    E.traits = ['Vomissement +0']; E.advantage = 3; E.characteristics.CT = 85;
-    H.characteristics.Ag = 1; H.skills = H.skills.filter((s) => !s.name.toLowerCase().includes('esquive'));
-    H.armour = { tete: 0, brasG: 0, brasD: 0, corps: 3, jambeG: 0, jambeD: 0 };
-    const beforePA = H.armour.corps;
+    E.traits = [{ id: 'vomissement', value: 0 }]; E.advantage = 3; E.characteristics.CT = 85; E.characteristics.E = 40; // BE 4 → BE+4 Dégâts
+    H.characteristics.Ag = 1; H.skills = H.skills.filter((s) => s.skillId !== 'esquive');
+    // Corrosion = op `damageArmour {material:'cuir'}` (GameOp authoré) : endommage une pièce de CUIR portée
+    // (RAW « toute matière » non modélisée → cuir seul). On en équipe une pour l'observer (≠ ex-décrément
+    // direct du champ plat `armour.corps`).
+    H.items = [{ uid: 'jaque', name: 'Jaque de cuir', kind: 'armor', equipped: true, locs: ['corps'], pa: 2, damageTaken: 0, enc: 1, qualities: [] } as never];
+    const before = H.wounds.current;
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(h.wounds.current).toBeLessThan(before); // BE+4 Dégâts infligés
     expect(h.conditions.some((c) => c.name === 'Sonné')).toBe(true);
-    expect(h.armour.corps).toBe(beforePA - 1); // corrosion : Armure −1
+    expect(h.items!.find((i) => i.uid === 'jaque')!.damageTaken).toBe(1); // corrosion : 1 Dégât au cuir
   });
 
   it('Souffle (Fumée) : la zone s’enfume — Lignes de vue bloquées pendant BE Rounds (RAW)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
-    E.traits = ['Souffle +0 (Fumée)']; E.advantage = 2; E.characteristics.CT = 85; E.characteristics.E = 40; // BE 4
+    E.traits = [{ id: 'souffle', value: 0, arg: 'Fumée' }]; E.advantage = 2; E.characteristics.CT = 85; E.characteristics.E = 40; // BE 4
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     const smoke = (useGame.getState().battle!.zones ?? []).find((z) => z.blocksLoS)!;
     expect(smoke).toBeTruthy();
@@ -152,8 +156,8 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
   it('Regard pétrifiant : dépense tout l’Avantage, marge ≥ 6 DR → cible Pétrifiée', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
-    E.traits = ['Regard pétrifiant']; E.advantage = 6; E.characteristics.CT = 90; // +6 DR d'Avantage + CT élevée
-    H.characteristics.I = 1; H.skills = H.skills.filter((s) => !s.name.toLowerCase().startsWith('initiative'));
+    E.traits = [{ id: 'regard-petrifiant' }]; E.advantage = 6; E.characteristics.CT = 90; // +6 DR d'Avantage + CT élevée
+    H.characteristics.I = 1; H.skills = H.skills.filter((s) => s.skillId !== 'initiative');
     const acted = applyGaze(useGame.getState, useGame.setState, E);
     expect(acted).toBe(true);
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
@@ -164,7 +168,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
   it('Étreinte glaciale : 2 Avantages, succès → 1d10+DR Blessures ignorant BE et PA', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
-    E.traits = ['Étreinte glaciale']; E.advantage = 2; E.characteristics.CC = 90;
+    E.traits = [{ id: 'etreinte-glaciale' }]; E.advantage = 2; E.characteristics.CC = 90;
     H.armour = { tete: 6, brasG: 6, brasD: 6, corps: 6, jambeG: 6, jambeD: 6 }; // PA ignorés
     const before = H.wounds.current;
     const acted = applyChillGrasp(useGame.getState, useGame.setState, E);
@@ -176,7 +180,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
   it('« 8 Tentacules +9 » : 8 Attaques gratuites à coût 0, Empêtré sur Dégâts, Avantage non consommé (LDB 85 l.354-355)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
-    E.traits = ['8 Tentacules +9']; E.advantage = 0; E.characteristics.CC = 95; // coût 0 : pas besoin d'Avantage
+    E.traits = [{ id: 'tentacules', count: 8, value: 9 }]; E.advantage = 0; E.characteristics.CC = 95; // coût 0 : pas besoin d'Avantage
     const before = H.wounds.current;
     const suspended = aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     expect(suspended).toBe(false); // cible Surprise → résolution instantanée
@@ -190,7 +194,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
   it('Constricteur : toute touche → Empêtré ; Vampirique : la Morsure soigne l’attaquant', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
-    E.traits = ['Morsure +14', 'Constricteur', 'Vampirique']; E.advantage = 1;
+    E.traits = [{ id: 'morsure', value: 14 }, { id: 'constricteur' }, { id: 'vampirique' }]; E.advantage = 1;
     E.wounds = { current: 10, max: 40, base: 40 } as Combatant['wounds']; // blessé → peut se soigner
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     const st = useGame.getState();
@@ -201,7 +205,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
   it('Hurlement fantomatique : zone vivante, 1d10 ignore BE+PA + 3 Assourdi, dépense tous les Av', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
-    E.traits = ['Hurlement fantomatique']; E.advantage = 4; E.characteristics.I = 40;
+    E.traits = [{ id: 'hurlement-fantomatique' }]; E.advantage = 4; E.characteristics.I = 40;
     H.armour = { tete: 6, brasG: 6, brasD: 6, corps: 6, jambeG: 6, jambeD: 6 }; // PA ignorés
     const before = H.wounds.current;
     const acted = applyWail(useGame.getState, useGame.setState, E);
@@ -215,9 +219,9 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
   it('Venin : Morsure venimeuse sur PB → Test de Résistance raté → Empoisonné (LDB 85 l.326)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
-    E.traits = ['Morsure +14', 'Venin (Intermédiaire)']; E.advantage = 1;
+    E.traits = [{ id: 'morsure', value: 14 }, { id: 'venin', arg: 'Intermédiaire' }]; E.advantage = 1;
     H.characteristics.E = 1; // Endurance minime → Résistance ratée quasi à coup sûr
-    H.skills = H.skills.filter((s) => !s.name.toLowerCase().startsWith('résistance'));
+    H.skills = H.skills.filter((s) => s.skillId !== 'resistance');
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect(h.conditions.some((c) => c.name === 'Empoisonné')).toBe(true);

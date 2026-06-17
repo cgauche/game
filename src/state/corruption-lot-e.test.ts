@@ -25,7 +25,7 @@ describe('Âme pure (LDB 10) — seuil de Corruption +niveau', () => {
     const base = bonus(h.characteristics.FM) + bonus(h.characteristics.E);
     h.corruption = base + 1;
     expect(corruptionThresholdExceeded(h)).toBe(true);
-    h.talents = [...h.talents, { name: 'Âme pure', times: 2 }];
+    h.talents = [...h.talents, { talentId: 'ame-pure', times: 2 }];
     expect(corruptionThresholdExceeded(h)).toBe(false); // seuil +2
     h.corruption = base + 3;
     expect(corruptionThresholdExceeded(h)).toBe(true);

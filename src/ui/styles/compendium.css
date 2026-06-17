@@ -7,7 +7,7 @@
   flex-direction: column;
   gap: 12px;
   height: 100vh;
-  max-width: 1200px;
+  max-width: 1500px;
   margin: 0 auto;
   padding: 14px 16px;
   box-sizing: border-box;
@@ -117,26 +117,6 @@
   overflow-y: auto;
   min-height: 0;
 }
-.codex-entry-head {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 8px 12px;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 8px;
-  margin-bottom: 10px;
-}
-.codex-entry-title {
-  font-family: var(--font-display);
-  font-size: 21px;
-  color: var(--gold2);
-  margin: 0;
-}
-.codex-entry-sub {
-  width: 100%;
-  color: var(--muted);
-  font-size: 13px;
-}
 .codex-src {
   font-size: 11px;
   color: var(--muted);
@@ -147,10 +127,18 @@
 }
 .codex-meta {
   gap: 6px;
-  margin-bottom: 10px;
+  margin: 8px 0 0;
 }
 .codex-fact {
   min-width: 52px;
+}
+
+/* Contenu d'un onglet de fiche (corps de section ou prose) — léger filet sous la barre d'onglets. */
+.codex-tabpane {
+  padding-top: 12px;
+}
+.codex-tabpane > .codex-sec:first-child {
+  margin-top: 0;
 }
 .codex-body {
   line-height: 1.55;
@@ -258,24 +246,6 @@
   margin: 0;
   line-height: 1.5;
 }
-/* puce cliquable de cross-référence */
-.codex-ref.codex-chip {
-  border-bottom: none;
-  cursor: pointer;
-  font-size: 12.5px;
-  padding: 2px 9px;
-  border-radius: 10px;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  color: var(--text);
-  transition: border-color 0.1s, color 0.1s;
-}
-.codex-ref.codex-chip:hover,
-.codex-ref.codex-chip:focus-visible {
-  border-color: var(--gold);
-  color: var(--gold2);
-}
-
 /* ── Hiérarchie : séparateur de groupe LÉGER (même liste plate, aspect cohérent) ── */
 .codex-grouplbl {
   display: flex;
@@ -295,14 +265,25 @@
   margin-left: auto;
 }
 
-/* ── CodexRef : libellé enrichi + popover (hover/focus) ── */
+/* ── CodexRef : libellé enrichi + popover (hover/focus) ──
+   Affordance : AUCUN soulignement au repos — le libellé est presque toujours déjà dans un cadre
+   (chip/tag/stat-chip/titre), le pointillé y serait redondant. Indice de découverte commun :
+   teinte or + curseur au survol/focus. Seul un ref en PLEINE PROSE (`inline`) garde le pointillé. */
 .codex-ref {
   position: relative;
-  border-bottom: 1px dotted var(--gold2);
   cursor: help;
   outline: none;
+  transition: color 0.1s, border-color 0.1s;
 }
+.codex-ref:hover,
 .codex-ref:focus-visible {
+  color: var(--gold2);
+}
+/* Ref hors cadre (prose) : l'« indice léger » = pointillé discret, réservé à ce seul cas. */
+.codex-ref.codex-inline {
+  border-bottom: 1px dotted var(--gold2);
+}
+.codex-ref.codex-inline:focus-visible {
   border-bottom-color: var(--gold);
 }
 /* Popover en PORTAL (document.body) : position fixed inline depuis le rect du déclencheur →
@@ -351,7 +332,6 @@
 
 /* déclencheur-icône ℹ️ (ActionBar : à côté d'un bouton d'action) */
 .codex-ref.ab-codex-info {
-  border-bottom: none;
   flex-shrink: 0;
   font-size: 13px;
   opacity: 0.55;

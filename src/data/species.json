@@ -25,23 +25,95 @@
       "Soc": 20
     },
     "skills": [
-      "Calme",
-      "Charme",
-      "Commandement",
-      "Corps à corps (Base)",
-      "Évaluation",
-      "Langue (Bretonnien)",
-      "Langue (Wastelander)",
-      "Marchandage",
-      "Projectiles (Arc)",
-      "Ragot",
-      "Savoir (Reikland)",
-      "Soin aux animaux"
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Bretonnien"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Wastelander"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "ref": {
+          "id": "projectiles",
+          "spec": "Arc"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Reikland"
+        }
+      },
+      {
+        "ref": {
+          "id": "soin-aux-animaux"
+        }
+      }
     ],
     "talents": [
-      "Perspicace ou Affable",
-      "Destinée",
-      "3 Talent aléatoire"
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "perspicace"
+            }
+          },
+          {
+            "ref": {
+              "id": "affable"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "destinee"
+        }
+      },
+      {
+        "random": 3
+      }
     ],
     "source": {
       "book": "LDB",
@@ -74,23 +146,93 @@
       "Soc": 20
     },
     "skills": [
-      "Calme",
-      "Charme",
-      "Commandement",
-      "Corps à corps (Base)",
-      "Divertissement (Au choix)",
-      "Évaluation",
-      "Marchandage",
-      "Métier (Au choix)",
-      "Projectiles (Arc)",
-      "Ragot",
-      "Savoir (Middenheim)",
-      "Subornation"
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "divertissement"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "metier"
+        }
+      },
+      {
+        "ref": {
+          "id": "projectiles",
+          "spec": "Arc"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Middenheim"
+        }
+      },
+      {
+        "ref": {
+          "id": "subornation"
+        }
+      }
     ],
     "talents": [
-      "Destinée",
-      "Savoir-vivre (Au choix) ou Infatigable",
-      "3 Talent aléatoire"
+      {
+        "ref": {
+          "id": "destinee"
+        }
+      },
+      {
+        "choice": [
+          {
+            "wildcard": {
+              "id": "savoir-vivre"
+            }
+          },
+          {
+            "ref": {
+              "id": "infatigable"
+            }
+          }
+        ]
+      },
+      {
+        "random": 3
+      }
     ],
     "source": {
       "book": "Middenheim",
@@ -123,23 +265,101 @@
       "Soc": 20
     },
     "skills": [
-      "Calme",
-      "Commandement",
-      "Corps à corps (Base)",
-      "Évaluation",
-      "Intimidation",
-      "Langue (Wastelander)",
-      "Marchandage",
-      "Projectiles (Arc)",
-      "Ragot",
-      "Savoir (Middenland)",
-      "Soin aux animaux",
-      "Survie en extérieur"
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Wastelander"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "ref": {
+          "id": "projectiles",
+          "spec": "Arc"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Middenland"
+        }
+      },
+      {
+        "ref": {
+          "id": "soin-aux-animaux"
+        }
+      },
+      {
+        "ref": {
+          "id": "survie-en-exterieur"
+        }
+      }
     ],
     "talents": [
-      "Menaçant ou Guerrier né",
-      "Destinée ou Talent aléatoire",
-      "3 Talent aléatoire"
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "menacant"
+            }
+          },
+          {
+            "ref": {
+              "id": "guerrier-ne"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "destinee"
+            }
+          },
+          {
+            "random": 1
+          }
+        ]
+      },
+      {
+        "random": 3
+      }
     ],
     "source": {
       "book": "Middenheim",
@@ -172,24 +392,116 @@
       "Soc": 20
     },
     "skills": [
-      "Corps à corps (Base)",
-      "Évaluation",
-      "Langue (Norse)",
-      "Langue (Wastelander)",
-      "Marchandage",
-      "Métier (Au choix)",
-      "Natation",
-      "Projectiles (Arc)",
-      "Ragot",
-      "Résistance à l'alcool",
-      "Savoir (Nordland)",
-      "Voile (Au choix)"
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Norse"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Wastelander"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "metier"
+        }
+      },
+      {
+        "ref": {
+          "id": "natation"
+        }
+      },
+      {
+        "ref": {
+          "id": "projectiles",
+          "spec": "Arc"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Nordland"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "voile"
+        }
+      }
     ],
     "talents": [
-      "Pêcheur ou Nomade",
-      "Cœur vaillant ou Très résistant",
-      "Destinée ou Talent aléatoire",
-      "2 Talent aléatoire"
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "pecheur"
+            }
+          },
+          {
+            "ref": {
+              "id": "nomade"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "coeur-vaillant"
+            }
+          },
+          {
+            "ref": {
+              "id": "tres-resistant"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "destinee"
+            }
+          },
+          {
+            "random": 1
+          }
+        ]
+      },
+      {
+        "random": 2
+      }
     ],
     "source": {
       "book": "Middenheim",
@@ -222,22 +534,102 @@
       "Soc": 20
     },
     "skills": [
-      "Calme",
-      "Charme",
-      "Corps à corps (Base)",
-      "Évaluation",
-      "Langue (Arabyan)",
-      "Langue (Reikspiel)",
-      "Langue (Tiléen)",
-      "Marchandage",
-      "Projectiles (Arbalète)",
-      "Ragot",
-      "Savoir (Tilée)",
-      "Voile (Au choix)"
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Arabyan"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Reikspiel"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Tiléen"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "ref": {
+          "id": "projectiles",
+          "spec": "Arbalète"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Tilée"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "voile"
+        }
+      }
     ],
     "talents": [
-      "Ergoteur ou Pêcheur",
-      "Imperturbable ou Affable"
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "ergoteur"
+            }
+          },
+          {
+            "ref": {
+              "id": "pecheur"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "imperturbable"
+            }
+          },
+          {
+            "ref": {
+              "id": "affable"
+            }
+          }
+        ]
+      }
     ],
     "source": {
       "book": "AA",
@@ -270,25 +662,125 @@
       "Soc": 20
     },
     "skills": [
-      "Calme",
-      "Charme",
-      "Chevaucher (Cheval)",
-      "Commandement",
-      "Corps à corps (Base)",
-      "Corps à corps (Escrime)",
-      "Langue (Au choix)",
-      "Projectiles (Arc)",
-      "Projectiles (Poudre noire)",
-      "Ragot",
-      "Savoir (Au choix)",
-      "Soin aux animaux"
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "ref": {
+          "id": "chevaucher",
+          "spec": "Cheval"
+        }
+      },
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Escrime"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "langue"
+        }
+      },
+      {
+        "ref": {
+          "id": "projectiles",
+          "spec": "Arc"
+        }
+      },
+      {
+        "ref": {
+          "id": "projectiles",
+          "spec": "Poudre noire"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "savoir"
+        }
+      },
+      {
+        "ref": {
+          "id": "soin-aux-animaux"
+        }
+      }
     ],
     "talents": [
-      "Affable ou Perspicace",
-      "Coopératif ou Lire/Écrire",
-      "Destinée",
-      "Noblesse ou Âme pure",
-      "Savoir-vivre (Au choix)"
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "affable"
+            }
+          },
+          {
+            "ref": {
+              "id": "perspicace"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "cooperatif"
+            }
+          },
+          {
+            "ref": {
+              "id": "lire-ecrire"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "destinee"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "noblesse"
+            }
+          },
+          {
+            "ref": {
+              "id": "ame-pure"
+            }
+          }
+        ]
+      },
+      {
+        "wildcard": {
+          "id": "savoir-vivre"
+        }
+      }
     ],
     "source": {
       "book": "ADE3",
@@ -321,25 +813,135 @@
       "Soc": 20
     },
     "skills": [
-      "Calme",
-      "Corps à corps (Bagarre)",
-      "Discrétion (Urbaine)",
-      "Escamotage",
-      "Évaluation",
-      "Intimidation",
-      "Intuition",
-      "Langue (Bataille ou Voleur)",
-      "Marchandage",
-      "Projectiles (Poudre noire)",
-      "Ragot",
-      "Savoir (Reikland)"
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Bagarre"
+        }
+      },
+      {
+        "ref": {
+          "id": "discretion",
+          "spec": "Urbaine"
+        }
+      },
+      {
+        "ref": {
+          "id": "escamotage"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "langue"
+        },
+        "specOptions": [
+          "Bataille",
+          "Voleur"
+        ]
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "ref": {
+          "id": "projectiles",
+          "spec": "Poudre noire"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Reikland"
+        }
+      }
     ],
     "talents": [
-      "Destinée",
-      "Doigts de fée ou Lire/Écrire",
-      "Ergoteur ou Fuite !",
-      "Perspicace ou Affable",
-      "Criminel ou Talent aléatoire"
+      {
+        "ref": {
+          "id": "destinee"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "doigts-de-fee"
+            }
+          },
+          {
+            "ref": {
+              "id": "lire-ecrire"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "ergoteur"
+            }
+          },
+          {
+            "ref": {
+              "id": "fuite"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "perspicace"
+            }
+          },
+          {
+            "ref": {
+              "id": "affable"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "criminel"
+            }
+          },
+          {
+            "random": 1
+          }
+        ]
+      }
     ],
     "source": {
       "book": "ADE3",
@@ -372,25 +974,123 @@
       "Soc": 20
     },
     "skills": [
-      "Calme",
-      "Corps à corps (Base)",
-      "Discrétion (Urbaine)",
-      "Escamotage",
-      "Évaluation",
-      "Intimidation",
-      "Intuition",
-      "Langue (Classique)",
-      "Perception",
-      "Ragot",
-      "Savoir (Magie)",
-      "Savoir (Reikland)"
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "discretion",
+          "spec": "Urbaine"
+        }
+      },
+      {
+        "ref": {
+          "id": "escamotage"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Classique"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Magie"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Reikland"
+        }
+      }
     ],
     "talents": [
-      "Destinée",
-      "Insignifiant ou Lire/Écrire",
-      "Perspicace ou Affable",
-      "Seconde vue ou Sixième sens",
-      "Talent aléatoire"
+      {
+        "ref": {
+          "id": "destinee"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "insignifiant"
+            }
+          },
+          {
+            "ref": {
+              "id": "lire-ecrire"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "perspicace"
+            }
+          },
+          {
+            "ref": {
+              "id": "affable"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "seconde-vue"
+            }
+          },
+          {
+            "ref": {
+              "id": "sixieme-sens"
+            }
+          }
+        ]
+      },
+      {
+        "random": 1
+      }
     ],
     "source": {
       "book": "ADE3",
@@ -423,26 +1123,128 @@
       "Soc": 20
     },
     "skills": [
-      "Corps à corps (Bagarre)",
-      "Escamotage",
-      "Évaluation",
-      "Intimidation",
-      "Intuition",
-      "Langue (Voleur)",
-      "Marchandage",
-      "Ragot",
-      "Ramer",
-      "Résistance à l'alcool",
-      "Savoir (Reikland)",
-      "Voile (Chaland)",
-      "Évaluation"
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Bagarre"
+        }
+      },
+      {
+        "ref": {
+          "id": "escamotage"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Voleur"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "ramer"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Reikland"
+        }
+      },
+      {
+        "ref": {
+          "id": "voile",
+          "spec": "Chaland"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      }
     ],
     "talents": [
-      "Criminel ou Savoir-vivre (Marchands)",
-      "Destinée",
-      "Négociateur ou Menaçant",
-      "Perspicace ou Affable",
-      "Talent aléatoire"
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "criminel"
+            }
+          },
+          {
+            "ref": {
+              "id": "savoir-vivre",
+              "spec": "Marchands"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "destinee"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "negociateur"
+            }
+          },
+          {
+            "ref": {
+              "id": "menacant"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "perspicace"
+            }
+          },
+          {
+            "ref": {
+              "id": "affable"
+            }
+          }
+        ]
+      },
+      {
+        "random": 1
+      }
     ],
     "source": {
       "book": "ADE3",
@@ -475,24 +1277,109 @@
       "Soc": 20
     },
     "skills": [
-      "Corps à corps (Base)",
-      "Langue (Reikspiel)",
-      "Langue (Wastelander)",
-      "Marchandage",
-      "Métier (Au choix)",
-      "Natation",
-      "Ragot",
-      "Ramer",
-      "Résistance à l'alcool",
-      "Savoir (Norsca)",
-      "Voile (Au choix)",
-      "Évaluation"
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Reikspiel"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Wastelander"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "metier"
+        }
+      },
+      {
+        "ref": {
+          "id": "natation"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "ramer"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Norsca"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "voile"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      }
     ],
     "talents": [
-      "Guerrier né ou Pied marin",
-      "Pêcheur ou Seigneur de guerre",
-      "Résistance (Corruption)",
-      "2 Talent aléatoire"
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "guerrier-ne"
+            }
+          },
+          {
+            "ref": {
+              "id": "pied-marin"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "pecheur"
+            }
+          },
+          {
+            "ref": {
+              "id": "seigneur-de-guerre"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "resistance",
+          "spec": "Corruption"
+        }
+      },
+      {
+        "random": 2
+      }
     ],
     "source": {
       "book": "SOC",
@@ -525,24 +1412,109 @@
       "Soc": 20
     },
     "skills": [
-      "Chevaucher (Au choix)",
-      "Corps à corps (Base)",
-      "Langue (Gospodarinyi)",
-      "Langue (Reikspiel)",
-      "Métier (Au choix)",
-      "Natation",
-      "Ragot",
-      "Ramer",
-      "Résistance à l'alcool",
-      "Savoir (Norsca)",
-      "Soin aux animaux",
-      "Voile (Au choix)"
+      {
+        "wildcard": {
+          "id": "chevaucher"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Gospodarinyi"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Reikspiel"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "metier"
+        }
+      },
+      {
+        "ref": {
+          "id": "natation"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "ramer"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Norsca"
+        }
+      },
+      {
+        "ref": {
+          "id": "soin-aux-animaux"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "voile"
+        }
+      }
     ],
     "talents": [
-      "Cavalier émérite ou Pied marin",
-      "Claquer le fouet ou Loup de mer",
-      "Résistance (Corruption)",
-      "2 Talent aléatoire"
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "cavalier-emerite"
+            }
+          },
+          {
+            "ref": {
+              "id": "pied-marin"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "claquer-le-fouet"
+            }
+          },
+          {
+            "ref": {
+              "id": "loup-de-mer"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "resistance",
+          "spec": "Corruption"
+        }
+      },
+      {
+        "random": 2
+      }
     ],
     "source": {
       "book": "SOC",
@@ -575,24 +1547,111 @@
       "Soc": 20
     },
     "skills": [
-      "Calme",
-      "Corps à corps (Base)",
-      "Corps à corps (Deux-mains)",
-      "Divertissement (Narration)",
-      "Langue (Khorne)",
-      "Langue (Reikspiel)",
-      "Langue (Wastelander)",
-      "Natation",
-      "Ramer",
-      "Résistance",
-      "Résistance à l'alcool",
-      "Voile (Au choix)"
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Deux-mains"
+        }
+      },
+      {
+        "ref": {
+          "id": "divertissement",
+          "spec": "Narration"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Khorne"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Reikspiel"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Wastelander"
+        }
+      },
+      {
+        "ref": {
+          "id": "natation"
+        }
+      },
+      {
+        "ref": {
+          "id": "ramer"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "voile"
+        }
+      }
     ],
     "talents": [
-      "Charge berserk ou Fuite !",
-      "Déterminé ou Insignifiant",
-      "Résistance (Corruption)",
-      "2 Talent aléatoire"
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "charge-berserk"
+            }
+          },
+          {
+            "ref": {
+              "id": "fuite"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "determine"
+            }
+          },
+          {
+            "ref": {
+              "id": "insignifiant"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "resistance",
+          "spec": "Corruption"
+        }
+      },
+      {
+        "random": 2
+      }
     ],
     "source": {
       "book": "SOC",
@@ -625,23 +1684,95 @@
       "Soc": 20
     },
     "skills": [
-      "Calme",
-      "Charme",
-      "Commandement",
-      "Corps à corps (Base)",
-      "Divertissement (Narration)",
-      "Langue (Norscan)",
-      "Marchandage",
-      "Métier (Au choix)",
-      "Projectiles (Arc)",
-      "Ragot",
-      "Savoir (Nordland)",
-      "Évaluation"
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "divertissement",
+          "spec": "Narration"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Norscan"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "metier"
+        }
+      },
+      {
+        "ref": {
+          "id": "projectiles",
+          "spec": "Arc"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Nordland"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      }
     ],
     "talents": [
-      "Affable ou Perspicace",
-      "Destinée",
-      "3 Talent aléatoire"
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "affable"
+            }
+          },
+          {
+            "ref": {
+              "id": "perspicace"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "destinee"
+        }
+      },
+      {
+        "random": 3
+      }
     ],
     "source": {
       "book": "Salzemund",
@@ -674,25 +1805,96 @@
       "Soc": 30
     },
     "skills": [
-      "Charme",
-      "Discrétion (Au choix)",
-      "Escamotage",
-      "Esquive",
-      "Intuition",
-      "Langue (Halfling)",
-      "Marchandage",
-      "Métier (Cuisinier)",
-      "Pari",
-      "Perception",
-      "Résistance à l'alcool",
-      "Savoir (Reikland)"
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "discretion"
+        }
+      },
+      {
+        "ref": {
+          "id": "escamotage"
+        }
+      },
+      {
+        "ref": {
+          "id": "esquive"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Halfling"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "Cuisinier"
+        }
+      },
+      {
+        "ref": {
+          "id": "pari"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Reikland"
+        }
+      }
     ],
     "talents": [
-      "Petit",
-      "Résistance (Corruption)",
-      "Sens aiguisé (Goût)",
-      "Vision nocturne",
-      "2 Talent aléatoire"
+      {
+        "ref": {
+          "id": "petit"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance",
+          "spec": "Corruption"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-aiguise",
+          "spec": "Goût"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      },
+      {
+        "random": 2
+      }
     ],
     "source": {
       "book": "LDB",
@@ -725,25 +1927,107 @@
       "Soc": 30
     },
     "skills": [
-      "Charme",
-      "Discrétion (Au choix)",
-      "Escamotage",
-      "Métier (Cuisinier)",
-      "Perception",
-      "Résistance à l'alcool",
-      "Savoir (Reikland)",
-      "Calme",
-      "Intuition",
-      "Langue (Halfling)",
-      "Projectiles (Au choix)"
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "discretion"
+        }
+      },
+      {
+        "ref": {
+          "id": "escamotage"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "Cuisinier"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Reikland"
+        }
+      },
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Halfling"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "projectiles"
+        }
+      }
     ],
     "talents": [
-      "Petit",
-      "Résistance (Corruption)",
-      "Sens aiguisé (Goût)",
-      "Vision nocturne",
-      "Savoir-vivre (Soldat) ou Sens aiguisé (Vue)",
-      "Talent aléatoire"
+      {
+        "ref": {
+          "id": "petit"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance",
+          "spec": "Corruption"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-aiguise",
+          "spec": "Goût"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "savoir-vivre",
+              "spec": "Soldat"
+            }
+          },
+          {
+            "ref": {
+              "id": "sens-aiguise",
+              "spec": "Vue"
+            }
+          }
+        ]
+      },
+      {
+        "random": 1
+      }
     ],
     "source": {
       "book": "ADE1",
@@ -776,25 +2060,105 @@
       "Soc": 30
     },
     "skills": [
-      "Charme",
-      "Discrétion (Au choix)",
-      "Escamotage",
-      "Métier (Cuisinier)",
-      "Perception",
-      "Résistance à l'alcool",
-      "Savoir (Reikland)",
-      "Calme",
-      "Intuition",
-      "Langue (Halfling)",
-      "Projectiles (Au choix)"
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "discretion"
+        }
+      },
+      {
+        "ref": {
+          "id": "escamotage"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "Cuisinier"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Reikland"
+        }
+      },
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Halfling"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "projectiles"
+        }
+      }
     ],
     "talents": [
-      "Petit",
-      "Résistance (Corruption)",
-      "Sens aiguisé (Goût)",
-      "Vision nocturne",
-      "Sociable ou Voyageur aguerri",
-      "Talent aléatoire"
+      {
+        "ref": {
+          "id": "petit"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance",
+          "spec": "Corruption"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-aiguise",
+          "spec": "Goût"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "sociable"
+            }
+          },
+          {
+            "ref": {
+              "id": "voyageur-aguerri"
+            }
+          }
+        ]
+      },
+      {
+        "random": 1
+      }
     ],
     "source": {
       "book": "ADE1",
@@ -827,25 +2191,107 @@
       "Soc": 30
     },
     "skills": [
-      "Charme",
-      "Discrétion (Au choix)",
-      "Escamotage",
-      "Métier (Cuisinier)",
-      "Perception",
-      "Résistance à l'alcool",
-      "Savoir (Reikland)",
-      "Langue (Halfling)",
-      "Pari",
-      "Savoir (Herbes)",
-      "Soin aux animaux"
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "discretion"
+        }
+      },
+      {
+        "ref": {
+          "id": "escamotage"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "Cuisinier"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Reikland"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Halfling"
+        }
+      },
+      {
+        "ref": {
+          "id": "pari"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Herbes"
+        }
+      },
+      {
+        "ref": {
+          "id": "soin-aux-animaux"
+        }
+      }
     ],
     "talents": [
-      "Petit",
-      "Résistance (Corruption)",
-      "Sens aiguisé (Goût)",
-      "Vision nocturne",
-      "Maître artisan (Fermiers) ou Costaud",
-      "Talent aléatoire"
+      {
+        "ref": {
+          "id": "petit"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance",
+          "spec": "Corruption"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-aiguise",
+          "spec": "Goût"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "maitre-artisan",
+              "spec": "Fermiers"
+            }
+          },
+          {
+            "ref": {
+              "id": "costaud"
+            }
+          }
+        ]
+      },
+      {
+        "random": 1
+      }
     ],
     "source": {
       "book": "ADE1",
@@ -878,25 +2324,106 @@
       "Soc": 30
     },
     "skills": [
-      "Charme",
-      "Discrétion (Au choix)",
-      "Escamotage",
-      "Métier (Cuisinier)",
-      "Perception",
-      "Résistance à l'alcool",
-      "Savoir (Reikland)",
-      "Évaluation",
-      "Langue (Halfling)",
-      "Marchandage",
-      "Pari"
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "discretion"
+        }
+      },
+      {
+        "ref": {
+          "id": "escamotage"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "Cuisinier"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Reikland"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Halfling"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "ref": {
+          "id": "pari"
+        }
+      }
     ],
     "talents": [
-      "Petit",
-      "Résistance (Corruption)",
-      "Sens aiguisé (Goût)",
-      "Vision nocturne",
-      "Négociateur ou Savoir-vivre (Guilde)",
-      "Talent aléatoire"
+      {
+        "ref": {
+          "id": "petit"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance",
+          "spec": "Corruption"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-aiguise",
+          "spec": "Goût"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "negociateur"
+            }
+          },
+          {
+            "ref": {
+              "id": "savoir-vivre",
+              "spec": "Guilde"
+            }
+          }
+        ]
+      },
+      {
+        "random": 1
+      }
     ],
     "source": {
       "book": "ADE1",
@@ -929,25 +2456,105 @@
       "Soc": 30
     },
     "skills": [
-      "Charme",
-      "Discrétion (Au choix)",
-      "Escamotage",
-      "Métier (Cuisinier)",
-      "Perception",
-      "Résistance à l'alcool",
-      "Savoir (Reikland)",
-      "Évaluation",
-      "Langue (Halfling)",
-      "Marchandage",
-      "Métier (Au choix)"
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "discretion"
+        }
+      },
+      {
+        "ref": {
+          "id": "escamotage"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "Cuisinier"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Reikland"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Halfling"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "metier"
+        }
+      }
     ],
     "talents": [
-      "Petit",
-      "Résistance (Corruption)",
-      "Sens aiguisé (Goût)",
-      "Vision nocturne",
-      "Maître artisan (Au choix) ou Doigts de fée",
-      "Talent aléatoire"
+      {
+        "ref": {
+          "id": "petit"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance",
+          "spec": "Corruption"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-aiguise",
+          "spec": "Goût"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      },
+      {
+        "choice": [
+          {
+            "wildcard": {
+              "id": "maitre-artisan"
+            }
+          },
+          {
+            "ref": {
+              "id": "doigts-de-fee"
+            }
+          }
+        ]
+      },
+      {
+        "random": 1
+      }
     ],
     "source": {
       "book": "ADE1",
@@ -980,25 +2587,105 @@
       "Soc": 30
     },
     "skills": [
-      "Charme",
-      "Discrétion (Au choix)",
-      "Escamotage",
-      "Métier (Cuisinier)",
-      "Perception",
-      "Résistance à l'alcool",
-      "Savoir (Reikland)",
-      "Langue (Halfling)",
-      "Marchandage",
-      "Ragot",
-      "Subornation"
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "discretion"
+        }
+      },
+      {
+        "ref": {
+          "id": "escamotage"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "Cuisinier"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Reikland"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Halfling"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "subornation"
+        }
+      }
     ],
     "talents": [
-      "Petit",
-      "Résistance (Corruption)",
-      "Sens aiguisé (Goût)",
-      "Vision nocturne",
-      "Ergoteur ou Numismate",
-      "Talent aléatoire"
+      {
+        "ref": {
+          "id": "petit"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance",
+          "spec": "Corruption"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-aiguise",
+          "spec": "Goût"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "ergoteur"
+            }
+          },
+          {
+            "ref": {
+              "id": "numismate"
+            }
+          }
+        ]
+      },
+      {
+        "random": 1
+      }
     ],
     "source": {
       "book": "ADE1",
@@ -1031,25 +2718,104 @@
       "Soc": 30
     },
     "skills": [
-      "Charme",
-      "Discrétion (Au choix)",
-      "Escamotage",
-      "Métier (Cuisinier)",
-      "Perception",
-      "Résistance à l'alcool",
-      "Savoir (Reikland)",
-      "Intuition",
-      "Pari",
-      "Ragot",
-      "Résistance"
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "discretion"
+        }
+      },
+      {
+        "ref": {
+          "id": "escamotage"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "Cuisinier"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Reikland"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "pari"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      }
     ],
     "talents": [
-      "Petit",
-      "Résistance (Corruption)",
-      "Sens aiguisé (Goût)",
-      "Vision nocturne",
-      "Brouet ou Dur à cuire",
-      "Talent aléatoire"
+      {
+        "ref": {
+          "id": "petit"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance",
+          "spec": "Corruption"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-aiguise",
+          "spec": "Goût"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "brouet"
+            }
+          },
+          {
+            "ref": {
+              "id": "dur-a-cuire"
+            }
+          }
+        ]
+      },
+      {
+        "random": 1
+      }
     ],
     "source": {
       "book": "ADE1",
@@ -1082,25 +2848,109 @@
       "Soc": 30
     },
     "skills": [
-      "Charme",
-      "Discrétion (Au choix)",
-      "Escamotage",
-      "Métier (Cuisinier)",
-      "Perception",
-      "Résistance à l'alcool",
-      "Savoir (Reikland)",
-      "Langue (Halfling)",
-      "Intimidation",
-      "Marchandage",
-      "Subornation"
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "discretion"
+        }
+      },
+      {
+        "ref": {
+          "id": "escamotage"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "Cuisinier"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Reikland"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Halfling"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "ref": {
+          "id": "subornation"
+        }
+      }
     ],
     "talents": [
-      "Petit",
-      "Résistance (Corruption)",
-      "Sens aiguisé (Goût)",
-      "Vision nocturne",
-      "Criminel ou Savoir-vivre (Criminel ou Guilde)",
-      "Talent aléatoire"
+      {
+        "ref": {
+          "id": "petit"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance",
+          "spec": "Corruption"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-aiguise",
+          "spec": "Goût"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "criminel"
+            }
+          },
+          {
+            "wildcard": {
+              "id": "savoir-vivre"
+            },
+            "specOptions": [
+              "Criminel",
+              "Guilde"
+            ]
+          }
+        ]
+      },
+      {
+        "random": 1
+      }
     ],
     "source": {
       "book": "ADE1",
@@ -1133,25 +2983,106 @@
       "Soc": 30
     },
     "skills": [
-      "Charme",
-      "Discrétion (Au choix)",
-      "Escamotage",
-      "Métier (Cuisinier)",
-      "Perception",
-      "Résistance à l'alcool",
-      "Savoir (Reikland)",
-      "Langue (Halfling)",
-      "Marchandage",
-      "Ragot",
-      "Résistance"
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "discretion"
+        }
+      },
+      {
+        "ref": {
+          "id": "escamotage"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "Cuisinier"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Reikland"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Halfling"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      }
     ],
     "talents": [
-      "Petit",
-      "Résistance (Corruption)",
-      "Sens aiguisé (Goût)",
-      "Vision nocturne",
-      "Maître artisan (Cuisinier) ou Négociateur",
-      "Talent aléatoire"
+      {
+        "ref": {
+          "id": "petit"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance",
+          "spec": "Corruption"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-aiguise",
+          "spec": "Goût"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "maitre-artisan",
+              "spec": "Cuisinier"
+            }
+          },
+          {
+            "ref": {
+              "id": "negociateur"
+            }
+          }
+        ]
+      },
+      {
+        "random": 1
+      }
     ],
     "source": {
       "book": "ADE1",
@@ -1184,25 +3115,106 @@
       "Soc": 30
     },
     "skills": [
-      "Charme",
-      "Discrétion (Au choix)",
-      "Escamotage",
-      "Métier (Cuisinier)",
-      "Perception",
-      "Résistance à l'alcool",
-      "Savoir (Reikland)",
-      "Langue (Halfling)",
-      "Pari",
-      "Ragot",
-      "Résistance"
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "discretion"
+        }
+      },
+      {
+        "ref": {
+          "id": "escamotage"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "Cuisinier"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Reikland"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Halfling"
+        }
+      },
+      {
+        "ref": {
+          "id": "pari"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      }
     ],
     "talents": [
-      "Petit",
-      "Résistance (Corruption)",
-      "Sens aiguisé (Goût)",
-      "Vision nocturne",
-      "Insignifiant ou Savoir-vivre (Serviteurs)",
-      "Talent aléatoire"
+      {
+        "ref": {
+          "id": "petit"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance",
+          "spec": "Corruption"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-aiguise",
+          "spec": "Goût"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "insignifiant"
+            }
+          },
+          {
+            "ref": {
+              "id": "savoir-vivre",
+              "spec": "Serviteurs"
+            }
+          }
+        ]
+      },
+      {
+        "random": 1
+      }
     ],
     "source": {
       "book": "ADE1",
@@ -1235,25 +3247,110 @@
       "Soc": 30
     },
     "skills": [
-      "Charme",
-      "Discrétion (Au choix)",
-      "Escamotage",
-      "Métier (Cuisinier)",
-      "Perception",
-      "Résistance à l'alcool",
-      "Savoir (Reikland)",
-      "Commandement",
-      "Langue (Halfling)",
-      "Ragot",
-      "Savoir (Héraldique)"
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "discretion"
+        }
+      },
+      {
+        "ref": {
+          "id": "escamotage"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "Cuisinier"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Reikland"
+        }
+      },
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Halfling"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Héraldique"
+        }
+      }
     ],
     "talents": [
-      "Petit",
-      "Résistance (Corruption)",
-      "Sens aiguisé (Goût)",
-      "Vision nocturne",
-      "Lire/Écrire ou Savoir-vivre (Érudits ou Nobles)",
-      "Talent aléatoire"
+      {
+        "ref": {
+          "id": "petit"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance",
+          "spec": "Corruption"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-aiguise",
+          "spec": "Goût"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "lire-ecrire"
+            }
+          },
+          {
+            "wildcard": {
+              "id": "savoir-vivre"
+            },
+            "specOptions": [
+              "Érudits",
+              "Nobles"
+            ]
+          }
+        ]
+      },
+      {
+        "random": 1
+      }
     ],
     "source": {
       "book": "ADE1",
@@ -1286,24 +3383,106 @@
       "Soc": 30
     },
     "skills": [
-      "Charme",
-      "Discrétion (Au choix)",
-      "Escamotage",
-      "Métier (Cuisinier)",
-      "Perception",
-      "Résistance à l'alcool",
-      "Savoir (Reikland)",
-      "Langue (Halfling)",
-      "Marchandage",
-      "Ragot",
-      "Savoir (Au choix)"
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "discretion"
+        }
+      },
+      {
+        "ref": {
+          "id": "escamotage"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "Cuisinier"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Reikland"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Halfling"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "savoir"
+        }
+      }
     ],
     "talents": [
-      "Petit",
-      "Résistance (Corruption)",
-      "Sens aiguisé (Goût)",
-      "Vision nocturne",
-      "Lire/Écrire ou Savoir-vivre (Citadins ou Guilde)"
+      {
+        "ref": {
+          "id": "petit"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance",
+          "spec": "Corruption"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-aiguise",
+          "spec": "Goût"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "lire-ecrire"
+            }
+          },
+          {
+            "wildcard": {
+              "id": "savoir-vivre"
+            },
+            "specOptions": [
+              "Citadins",
+              "Guilde"
+            ]
+          }
+        ]
+      }
     ],
     "source": {
       "book": "ADE1",
@@ -1336,25 +3515,117 @@
       "Soc": 10
     },
     "skills": [
-      "Calme",
-      "Corps à corps (Base)",
-      "Divertissement (Narration)",
-      "Évaluation",
-      "Intimidation",
-      "Langue (Khazalid)",
-      "Métier (Au choix)",
-      "Résistance",
-      "Résistance à l'alcool",
-      "Savoir (Géologie)",
-      "Savoir (Métallurgie)",
-      "Savoir (Nains)"
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "divertissement",
+          "spec": "Narration"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Khazalid"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "metier"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Géologie"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Métallurgie"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Nains"
+        }
+      }
     ],
     "talents": [
-      "Costaud",
-      "Déterminé ou Obstiné",
-      "Lire/Écrire ou Impitoyable",
-      "Résistance à la Magie",
-      "Vision nocturne"
+      {
+        "ref": {
+          "id": "costaud"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "determine"
+            }
+          },
+          {
+            "ref": {
+              "id": "obstine"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "lire-ecrire"
+            }
+          },
+          {
+            "ref": {
+              "id": "impitoyable"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "resistance-a-la-magie"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      }
     ],
     "source": {
       "book": "LDB",
@@ -1387,25 +3658,116 @@
       "Soc": 10
     },
     "skills": [
-      "Calme",
-      "Corps à corps (Base)",
-      "Intimidation",
-      "Intuition",
-      "Langue (Khazalid)",
-      "Métier (Au choix)",
-      "Résistance",
-      "Résistance à l'alcool",
-      "Savoir (Géologie)",
-      "Savoir (Métallurgie)",
-      "Savoir (Nains)",
-      "Évaluation"
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Khazalid"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "metier"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Géologie"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Métallurgie"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Nains"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      }
     ],
     "talents": [
-      "Costaud",
-      "Déterminé ou Maître artisan (Au choix)",
-      "Impitoyable ou Lire/Écrire",
-      "Résistance à la Magie",
-      "Vision nocturne"
+      {
+        "ref": {
+          "id": "costaud"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "determine"
+            }
+          },
+          {
+            "wildcard": {
+              "id": "maitre-artisan"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "impitoyable"
+            }
+          },
+          {
+            "ref": {
+              "id": "lire-ecrire"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "resistance-a-la-magie"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      }
     ],
     "source": {
       "book": "ADE3",
@@ -1438,25 +3800,116 @@
       "Soc": 10
     },
     "skills": [
-      "Calme",
-      "Corps à corps (Base)",
-      "Divertissement (Narration)",
-      "Escalade",
-      "Langue (Khazalid)",
-      "Langue (Norse)",
-      "Métier (Au choix)",
-      "Résistance",
-      "Résistance à l'alcool",
-      "Savoir (Nains)",
-      "Voile (Au choix)",
-      "Évaluation"
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "divertissement",
+          "spec": "Narration"
+        }
+      },
+      {
+        "ref": {
+          "id": "escalade"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Khazalid"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Norse"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "metier"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Nains"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "voile"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      }
     ],
     "talents": [
-      "Costaud",
-      "Impitoyable ou Lire/Écrire",
-      "Noctambule ou Obstiné",
-      "Résistance à la Magie",
-      "Vision nocturne"
+      {
+        "ref": {
+          "id": "costaud"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "impitoyable"
+            }
+          },
+          {
+            "ref": {
+              "id": "lire-ecrire"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "noctambule"
+            }
+          },
+          {
+            "ref": {
+              "id": "obstine"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "resistance-a-la-magie"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      }
     ],
     "source": {
       "book": "SOC",
@@ -1489,25 +3942,118 @@
       "Soc": 10
     },
     "skills": [
-      "Calme",
-      "Corps à corps (Base)",
-      "Divertissement (Narration)",
-      "Intimidation",
-      "Langue (Khazalid)",
-      "Métier (Orfèvre)",
-      "Résistance",
-      "Résistance à l'alcool",
-      "Savoir (Géologie)",
-      "Savoir (Métallurgie)",
-      "Savoir (Nains)",
-      "Évaluation"
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "divertissement",
+          "spec": "Narration"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Khazalid"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "Orfèvre"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Géologie"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Métallurgie"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Nains"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      }
     ],
     "talents": [
-      "Costaud",
-      "Déterminé ou Obstiné",
-      "Impitoyable ou Lire/Écrire",
-      "Résistance à la Magie",
-      "Vision nocturne"
+      {
+        "ref": {
+          "id": "costaud"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "determine"
+            }
+          },
+          {
+            "ref": {
+              "id": "obstine"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "impitoyable"
+            }
+          },
+          {
+            "ref": {
+              "id": "lire-ecrire"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "resistance-a-la-magie"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      }
     ],
     "source": {
       "book": "Salzemund",
@@ -1540,25 +4086,105 @@
       "Soc": 10
     },
     "skills": [
-      "Calme",
-      "Corps à corps (Base)",
-      "Divertissement (Narration)",
-      "Intimidation",
-      "Langue (Khazalid)",
-      "Langue (Norscan)",
-      "Métier (Au choix)",
-      "Résistance",
-      "Résistance à l'alcool",
-      "Savoir (Nains)",
-      "Voile (Au choix)",
-      "Évaluation"
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "divertissement",
+          "spec": "Narration"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Khazalid"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Norscan"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "metier"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Nains"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "voile"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      }
     ],
     "talents": [
-      "Costaud",
-      "Déterminé ou Obstiné",
-      "Résistance à la Magie",
-      "Vision nocturne",
-      "Talent aléatoire"
+      {
+        "ref": {
+          "id": "costaud"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "determine"
+            }
+          },
+          {
+            "ref": {
+              "id": "obstine"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "resistance-a-la-magie"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      },
+      {
+        "random": 1
+      }
     ],
     "source": {
       "book": "Salzemund",
@@ -1591,26 +4217,138 @@
       "Soc": 15
     },
     "skills": [
-      "Charme",
-      "Discrétion (Au choix)",
-      "Focalisation (Ulgu)",
-      "Esquive",
-      "Langue (Ghassalli)",
-      "Langue (Magick)",
-      "Langue (Wastelander)",
-      "Marchandage",
-      "Ragot",
-      "Représentation (Au choix)",
-      "Résistance à l'alcool",
-      "Survie en extérieur"
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "discretion"
+        }
+      },
+      {
+        "ref": {
+          "id": "focalisation",
+          "spec": "Ulgu"
+        }
+      },
+      {
+        "ref": {
+          "id": "esquive"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Ghassalli"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Magick"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Wastelander"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "representation"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "survie-en-exterieur"
+        }
+      }
     ],
     "talents": [
-      "Insignifiant ou Empreint d'Ulgu",
-      "Chanceux ou Imitation",
-      "Pêcheur ou Lire/Écrire",
-      "Petit",
-      "Seconde vue ou Sixième sens",
-      "Vision nocturne"
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "insignifiant"
+            }
+          },
+          {
+            "ref": {
+              "id": "empreint-d-ulgu"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "chanceux"
+            }
+          },
+          {
+            "ref": {
+              "id": "imitation"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "pecheur"
+            }
+          },
+          {
+            "ref": {
+              "id": "lire-ecrire"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "petit"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "seconde-vue"
+            }
+          },
+          {
+            "ref": {
+              "id": "sixieme-sens"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      }
     ],
     "source": {
       "book": "NADJ",
@@ -1643,27 +4381,120 @@
       "Soc": 10
     },
     "skills": [
-      "Athlétisme",
-      "Corps à corps (Bagarre)",
-      "Corps à corps (Base)",
-      "Divertissement (Narration)",
-      "Intimidation",
-      "Langue (Grumbarth)",
-      "Orientation",
-      "Pistage",
-      "Résistance",
-      "Résistance à l'alcool",
-      "Savoir (Ogres)",
-      "Survie en extérieur"
+      {
+        "ref": {
+          "id": "athletisme"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Bagarre"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "divertissement",
+          "spec": "Narration"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Grumbarth"
+        }
+      },
+      {
+        "ref": {
+          "id": "orientation"
+        }
+      },
+      {
+        "ref": {
+          "id": "pistage"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Ogres"
+        }
+      },
+      {
+        "ref": {
+          "id": "survie-en-exterieur"
+        }
+      }
     ],
     "talents": [
-      "Combat déloyal",
-      "Massif",
-      "Résistance (Corruption)",
-      "Résistance (Poisons ingérés)",
-      "Très résistant ou Très fort",
-      "Vice (Nourriture)",
-      "Vision nocturne"
+      {
+        "ref": {
+          "id": "combat-deloyal"
+        }
+      },
+      {
+        "ref": {
+          "id": "massif"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance",
+          "spec": "Corruption"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance",
+          "spec": "Poisons ingérés"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "tres-resistant"
+            }
+          },
+          {
+            "ref": {
+              "id": "tres-fort"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "vice",
+          "spec": "Nourriture"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      }
     ],
     "source": {
       "book": "ADE2",
@@ -1696,25 +4527,116 @@
       "Soc": 20
     },
     "skills": [
-      "Calme",
-      "Commandement",
-      "Corps à corps (Base)",
-      "Divertissement (Chant)",
-      "Évaluation",
-      "Musicien (Au choix)",
-      "Langue (Elthárin)",
-      "Natation",
-      "Orientation",
-      "Perception",
-      "Projectiles (Arc)",
-      "Voile (Au choix)"
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "divertissement",
+          "spec": "Chant"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "musicien"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Elthárin"
+        }
+      },
+      {
+        "ref": {
+          "id": "natation"
+        }
+      },
+      {
+        "ref": {
+          "id": "orientation"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "projectiles",
+          "spec": "Arc"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "voile"
+        }
+      }
     ],
     "talents": [
-      "Lire/Écrire",
-      "Imperturbable ou Sociable",
-      "Sens aiguisé (Vue)",
-      "Seconde vue ou Sixième sens",
-      "Vision nocturne"
+      {
+        "ref": {
+          "id": "lire-ecrire"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "imperturbable"
+            }
+          },
+          {
+            "ref": {
+              "id": "sociable"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "sens-aiguise",
+          "spec": "Vue"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "seconde-vue"
+            }
+          },
+          {
+            "ref": {
+              "id": "sixieme-sens"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      }
     ],
     "source": {
       "book": "LDB",
@@ -1747,25 +4669,117 @@
       "Soc": 20
     },
     "skills": [
-      "Athlétisme",
-      "Corps à corps (Base)",
-      "Discrétion (Rurale)",
-      "Divertissement (Chant)",
-      "Escalade",
-      "Intimidation",
-      "Langue (Elthárin)",
-      "Perception",
-      "Pistage",
-      "Projectiles (Arc)",
-      "Résistance",
-      "Survie en extérieur"
+      {
+        "ref": {
+          "id": "athletisme"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "Base"
+        }
+      },
+      {
+        "ref": {
+          "id": "discretion",
+          "spec": "Rurale"
+        }
+      },
+      {
+        "ref": {
+          "id": "divertissement",
+          "spec": "Chant"
+        }
+      },
+      {
+        "ref": {
+          "id": "escalade"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "Elthárin"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "pistage"
+        }
+      },
+      {
+        "ref": {
+          "id": "projectiles",
+          "spec": "Arc"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      },
+      {
+        "ref": {
+          "id": "survie-en-exterieur"
+        }
+      }
     ],
     "talents": [
-      "Dur à cuire ou Seconde vue",
-      "Lire/Écrire ou Très résistant",
-      "Nomade",
-      "Sens aiguisé (Vue)",
-      "Vision nocturne"
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "dur-a-cuire"
+            }
+          },
+          {
+            "ref": {
+              "id": "seconde-vue"
+            }
+          }
+        ]
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "lire-ecrire"
+            }
+          },
+          {
+            "ref": {
+              "id": "tres-resistant"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "nomade"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-aiguise",
+          "spec": "Vue"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      }
     ],
     "source": {
       "book": "LDB",

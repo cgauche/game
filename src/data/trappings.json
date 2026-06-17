@@ -1,5 +1,6 @@
 [
   {
+    "id": "baton-de-combat",
     "label": "Bâton de combat",
     "prefix": "(2M)",
     "type": "melee",
@@ -11,8 +12,12 @@
     "pa": null,
     "damage": "+BF+4",
     "qualities": [
-      "Assommante",
-      "Défensive"
+      {
+        "id": "assommante"
+      },
+      {
+        "id": "defensive"
+      }
     ],
     "desc": null,
     "price": {
@@ -26,6 +31,7 @@
     }
   },
   {
+    "id": "hallebarde",
     "label": "Hallebarde",
     "prefix": "(2M)",
     "type": "melee",
@@ -37,9 +43,15 @@
     "pa": null,
     "damage": "+BF+4",
     "qualities": [
-      "Défensive",
-      "Taille",
-      "Empaleuse"
+      {
+        "id": "defensive"
+      },
+      {
+        "id": "taille"
+      },
+      {
+        "id": "empaleuse"
+      }
     ],
     "desc": null,
     "price": {
@@ -53,6 +65,7 @@
     }
   },
   {
+    "id": "lance",
     "label": "Lance",
     "prefix": "(2M)",
     "type": "melee",
@@ -64,7 +77,9 @@
     "pa": null,
     "damage": "+BF+4",
     "qualities": [
-      "Empaleuse"
+      {
+        "id": "empaleuse"
+      }
     ],
     "desc": null,
     "price": {
@@ -78,6 +93,7 @@
     }
   },
   {
+    "id": "pique",
     "label": "Pique",
     "prefix": "(2M)",
     "type": "melee",
@@ -89,7 +105,9 @@
     "pa": null,
     "damage": "+BF+4",
     "qualities": [
-      "Empaleuse"
+      {
+        "id": "empaleuse"
+      }
     ],
     "desc": null,
     "price": {
@@ -103,6 +121,7 @@
     }
   },
   {
+    "id": "mains-nues",
     "label": "Mains nues",
     "prefix": null,
     "type": "melee",
@@ -114,7 +133,9 @@
     "pa": null,
     "damage": "+BF+0",
     "qualities": [
-      "Inoffensive"
+      {
+        "id": "inoffensive"
+      }
     ],
     "desc": null,
     "price": {
@@ -128,6 +149,7 @@
     }
   },
   {
+    "id": "coup-de-poing",
     "label": "Coup-de-poing",
     "prefix": null,
     "type": "melee",
@@ -151,6 +173,7 @@
     }
   },
   {
+    "id": "arme-improvisee",
     "label": "Arme improvisée",
     "prefix": null,
     "type": "melee",
@@ -162,7 +185,9 @@
     "pa": null,
     "damage": "+BF+1",
     "qualities": [
-      "Inoffensive"
+      {
+        "id": "inoffensive"
+      }
     ],
     "desc": null,
     "price": {
@@ -176,6 +201,7 @@
     }
   },
   {
+    "id": "arme-simple",
     "label": "Arme simple",
     "prefix": null,
     "type": "melee",
@@ -199,6 +225,7 @@
     }
   },
   {
+    "id": "bouclier",
     "label": "Bouclier",
     "prefix": null,
     "type": "melee",
@@ -210,9 +237,16 @@
     "pa": null,
     "damage": "+BF+2",
     "qualities": [
-      "Protectrice 2",
-      "Défensive",
-      "Inoffensive"
+      {
+        "id": "protectrice",
+        "value": 2
+      },
+      {
+        "id": "defensive"
+      },
+      {
+        "id": "inoffensive"
+      }
     ],
     "desc": null,
     "price": {
@@ -226,6 +260,7 @@
     }
   },
   {
+    "id": "bouclier-grand",
     "label": "Bouclier (Grand)",
     "prefix": null,
     "type": "melee",
@@ -237,9 +272,16 @@
     "pa": null,
     "damage": "+BF+3",
     "qualities": [
-      "Protectrice 3",
-      "Défensive",
-      "Inoffensive"
+      {
+        "id": "protectrice",
+        "value": 3
+      },
+      {
+        "id": "defensive"
+      },
+      {
+        "id": "inoffensive"
+      }
     ],
     "desc": null,
     "price": {
@@ -253,6 +295,7 @@
     }
   },
   {
+    "id": "bouclier-targe",
     "label": "Bouclier (Targe)",
     "prefix": null,
     "type": "melee",
@@ -264,9 +307,16 @@
     "pa": null,
     "damage": "+BF+1",
     "qualities": [
-      "Protectrice 1",
-      "Défensive",
-      "Inoffensive"
+      {
+        "id": "protectrice",
+        "value": 1
+      },
+      {
+        "id": "defensive"
+      },
+      {
+        "id": "inoffensive"
+      }
     ],
     "desc": null,
     "price": {
@@ -280,6 +330,7 @@
     }
   },
   {
+    "id": "couteau",
     "label": "Couteau",
     "prefix": null,
     "type": "melee",
@@ -291,7 +342,9 @@
     "pa": null,
     "damage": "+BF+1",
     "qualities": [
-      "Inoffensive"
+      {
+        "id": "inoffensive"
+      }
     ],
     "desc": null,
     "price": {
@@ -305,6 +358,7 @@
     }
   },
   {
+    "id": "dague",
     "label": "Dague",
     "prefix": null,
     "type": "melee",
@@ -328,6 +382,7 @@
     }
   },
   {
+    "id": "lance-de-cavalerie",
     "label": "Lance de cavalerie",
     "prefix": null,
     "type": "melee",
@@ -339,8 +394,12 @@
     "pa": null,
     "damage": "+BF+6",
     "qualities": [
-      "Empaleuse",
-      "Percutante"
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "percutante"
+      }
     ],
     "desc": "Les Lances de cavalerie sont considérées comme des Armes improvisées si vous les utilisez lors d'un Round où vous n'avez pas Chargé.",
     "price": {
@@ -354,6 +413,7 @@
     }
   },
   {
+    "id": "marteau-a-bec-de-corbin",
     "label": "Marteau à bec-de-corbin",
     "prefix": "(2M)",
     "type": "melee",
@@ -365,7 +425,9 @@
     "pa": null,
     "damage": "+BF+5",
     "qualities": [
-      "Assommante"
+      {
+        "id": "assommante"
+      }
     ],
     "desc": null,
     "price": {
@@ -379,6 +441,7 @@
     }
   },
   {
+    "id": "epee-batarde",
     "label": "Épée bâtarde",
     "prefix": "(2M)",
     "type": "melee",
@@ -390,8 +453,12 @@
     "pa": null,
     "damage": "+BF+5",
     "qualities": [
-      "Dévastatrice",
-      "Défensive"
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "defensive"
+      }
     ],
     "desc": null,
     "price": {
@@ -405,6 +472,7 @@
     }
   },
   {
+    "id": "grande-hache",
     "label": "Grande hache",
     "prefix": "(2M)",
     "type": "melee",
@@ -416,9 +484,15 @@
     "pa": null,
     "damage": "+BF+6",
     "qualities": [
-      "Épuisante",
-      "Percutante",
-      "Taille"
+      {
+        "id": "epuisante"
+      },
+      {
+        "id": "percutante"
+      },
+      {
+        "id": "taille"
+      }
     ],
     "desc": null,
     "price": {
@@ -432,6 +506,7 @@
     }
   },
   {
+    "id": "marteau-de-guerre",
     "label": "Marteau de guerre",
     "prefix": "(2M)",
     "type": "melee",
@@ -443,9 +518,15 @@
     "pa": null,
     "damage": "+BF+6",
     "qualities": [
-      "Assommante",
-      "Dévastatrice",
-      "Lente"
+      {
+        "id": "assommante"
+      },
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "lente"
+      }
     ],
     "desc": null,
     "price": {
@@ -459,6 +540,7 @@
     }
   },
   {
+    "id": "pioche-a-deux-mains",
     "label": "Pioche à deux mains",
     "prefix": "(2M)",
     "type": "melee",
@@ -470,9 +552,15 @@
     "pa": null,
     "damage": "+BF+5",
     "qualities": [
-      "Dévastatrice",
-      "Empaleuse",
-      "Lente"
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "lente"
+      }
     ],
     "desc": null,
     "price": {
@@ -486,6 +574,7 @@
     }
   },
   {
+    "id": "zweihander",
     "label": "Zweihänder",
     "prefix": "(2M)",
     "type": "melee",
@@ -497,8 +586,12 @@
     "pa": null,
     "damage": "+BF+5",
     "qualities": [
-      "Dévastatrice",
-      "Taille"
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "taille"
+      }
     ],
     "desc": null,
     "price": {
@@ -512,6 +605,7 @@
     }
   },
   {
+    "id": "fleuret",
     "label": "Fleuret",
     "prefix": null,
     "type": "melee",
@@ -523,10 +617,18 @@
     "pa": null,
     "damage": "+BF+3",
     "qualities": [
-      "Rapide",
-      "Empaleuse",
-      "Pointue",
-      "Inoffensive"
+      {
+        "id": "rapide"
+      },
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "pointue"
+      },
+      {
+        "id": "inoffensive"
+      }
     ],
     "desc": null,
     "price": {
@@ -540,6 +642,7 @@
     }
   },
   {
+    "id": "rapiere",
     "label": "Rapière",
     "prefix": null,
     "type": "melee",
@@ -551,8 +654,12 @@
     "pa": null,
     "damage": "+BF+4",
     "qualities": [
-      "Rapide",
-      "Empaleuse"
+      {
+        "id": "rapide"
+      },
+      {
+        "id": "empaleuse"
+      }
     ],
     "desc": null,
     "price": {
@@ -566,6 +673,7 @@
     }
   },
   {
+    "id": "fleau",
     "label": "Fléau",
     "prefix": null,
     "type": "melee",
@@ -577,8 +685,12 @@
     "pa": null,
     "damage": "+BF+5",
     "qualities": [
-      "Perturbante",
-      "À Enroulement"
+      {
+        "id": "perturbante"
+      },
+      {
+        "id": "a-enroulement"
+      }
     ],
     "desc": null,
     "price": {
@@ -592,6 +704,7 @@
     }
   },
   {
+    "id": "fleau-a-grain",
     "label": "Fléau à grain",
     "prefix": null,
     "type": "melee",
@@ -603,9 +716,15 @@
     "pa": null,
     "damage": "+BF+3",
     "qualities": [
-      "Perturbante",
-      "Imprécise",
-      "À Enroulement"
+      {
+        "id": "perturbante"
+      },
+      {
+        "id": "imprecise"
+      },
+      {
+        "id": "a-enroulement"
+      }
     ],
     "desc": null,
     "price": {
@@ -619,6 +738,7 @@
     }
   },
   {
+    "id": "fleau-d-armes",
     "label": "Fléau d'armes",
     "prefix": "(2M)",
     "type": "melee",
@@ -630,10 +750,18 @@
     "pa": null,
     "damage": "+BF+6",
     "qualities": [
-      "Perturbante",
-      "Percutante",
-      "Épuisante",
-      "À Enroulement"
+      {
+        "id": "perturbante"
+      },
+      {
+        "id": "percutante"
+      },
+      {
+        "id": "epuisante"
+      },
+      {
+        "id": "a-enroulement"
+      }
     ],
     "desc": null,
     "price": {
@@ -647,6 +775,7 @@
     }
   },
   {
+    "id": "brise-epee",
     "label": "Brise-épée",
     "prefix": null,
     "type": "melee",
@@ -658,8 +787,12 @@
     "pa": null,
     "damage": "+BF+3",
     "qualities": [
-      "Défensive",
-      "Piège-lame"
+      {
+        "id": "defensive"
+      },
+      {
+        "id": "piege-lame"
+      }
     ],
     "desc": null,
     "price": {
@@ -673,6 +806,7 @@
     }
   },
   {
+    "id": "main-gauche",
     "label": "Main Gauche",
     "prefix": null,
     "type": "melee",
@@ -684,7 +818,9 @@
     "pa": null,
     "damage": "+BF+2",
     "qualities": [
-      "Défensive"
+      {
+        "id": "defensive"
+      }
     ],
     "desc": null,
     "price": {
@@ -698,6 +834,7 @@
     }
   },
   {
+    "id": "arbalete",
     "label": "Arbalète",
     "prefix": "(2M)",
     "type": "ranged",
@@ -709,7 +846,10 @@
     "pa": null,
     "damage": "+9",
     "qualities": [
-      "Recharge 1"
+      {
+        "id": "recharge",
+        "value": 1
+      }
     ],
     "desc": null,
     "price": {
@@ -723,6 +863,7 @@
     }
   },
   {
+    "id": "arbalete-de-poing",
     "label": "Arbalète de poing",
     "prefix": null,
     "type": "ranged",
@@ -734,7 +875,9 @@
     "pa": null,
     "damage": "+7",
     "qualities": [
-      "Pistolet"
+      {
+        "id": "pistolet"
+      }
     ],
     "desc": null,
     "price": {
@@ -748,6 +891,7 @@
     }
   },
   {
+    "id": "arbalete-lourde",
     "label": "Arbalète lourde",
     "prefix": "(2M)",
     "type": "ranged",
@@ -759,8 +903,13 @@
     "pa": null,
     "damage": "+9",
     "qualities": [
-      "Dévastatrice",
-      "Recharge 2"
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "recharge",
+        "value": 2
+      }
     ],
     "desc": null,
     "price": {
@@ -774,6 +923,7 @@
     }
   },
   {
+    "id": "arc",
     "label": "Arc",
     "prefix": "(2M)",
     "type": "ranged",
@@ -797,6 +947,7 @@
     }
   },
   {
+    "id": "arc-court",
     "label": "Arc court",
     "prefix": "(2M)",
     "type": "ranged",
@@ -820,6 +971,7 @@
     }
   },
   {
+    "id": "arc-elfique",
     "label": "Arc elfique",
     "prefix": "(2M)",
     "type": "ranged",
@@ -831,8 +983,12 @@
     "pa": null,
     "damage": "+BF+4",
     "qualities": [
-      "Dévastatrice",
-      "Pointue"
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "pointue"
+      }
     ],
     "desc": null,
     "price": {
@@ -846,6 +1002,7 @@
     }
   },
   {
+    "id": "arc-long",
     "label": "Arc long",
     "prefix": "(2M)",
     "type": "ranged",
@@ -857,7 +1014,9 @@
     "pa": null,
     "damage": "+BF+4",
     "qualities": [
-      "Dévastatrice"
+      {
+        "id": "devastatrice"
+      }
     ],
     "desc": null,
     "price": {
@@ -871,6 +1030,7 @@
     }
   },
   {
+    "id": "fouet",
     "label": "Fouet",
     "prefix": null,
     "type": "ranged",
@@ -882,7 +1042,9 @@
     "pa": null,
     "damage": "+BF+2",
     "qualities": [
-      "Immobilisante"
+      {
+        "id": "immobilisante"
+      }
     ],
     "desc": "Les armes immobilisantes ne possèdent pas de fourchette de portée, juste la portée listée.",
     "price": {
@@ -896,6 +1058,7 @@
     }
   },
   {
+    "id": "lasso",
     "label": "Lasso",
     "prefix": null,
     "type": "ranged",
@@ -907,7 +1070,9 @@
     "pa": null,
     "damage": null,
     "qualities": [
-      "Immobilisante"
+      {
+        "id": "immobilisante"
+      }
     ],
     "desc": "Les armes immobilisantes ne possèdent pas de fourchette de portée, juste la portée listée.",
     "price": {
@@ -921,6 +1086,7 @@
     }
   },
   {
+    "id": "bombe",
     "label": "Bombe",
     "prefix": null,
     "type": "ranged",
@@ -932,9 +1098,16 @@
     "pa": null,
     "damage": "+12",
     "qualities": [
-      "À Explosion 5",
-      "Dangereuse",
-      "Percutante"
+      {
+        "id": "a-explosion",
+        "value": 5
+      },
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "percutante"
+      }
     ],
     "desc": null,
     "price": {
@@ -948,6 +1121,7 @@
     }
   },
   {
+    "id": "bombe-incendiaire",
     "label": "Bombe incendiaire",
     "prefix": null,
     "type": "ranged",
@@ -959,8 +1133,13 @@
     "pa": null,
     "damage": "Spécial",
     "qualities": [
-      "À Explosion 4",
-      "Dangereuse"
+      {
+        "id": "a-explosion",
+        "value": 4
+      },
+      {
+        "id": "dangereuse"
+      }
     ],
     "desc": "Une Bombe incendiaire donne +DR État En flammes à chaque cible affectée.",
     "price": {
@@ -974,6 +1153,7 @@
     }
   },
   {
+    "id": "fronde",
     "label": "Fronde",
     "prefix": null,
     "type": "ranged",
@@ -997,6 +1177,7 @@
     }
   },
   {
+    "id": "fustibale",
     "label": "Fustibale",
     "prefix": "(2M)",
     "type": "ranged",
@@ -1020,6 +1201,7 @@
     }
   },
   {
+    "id": "bolas",
     "label": "Bolas",
     "prefix": null,
     "type": "ranged",
@@ -1031,7 +1213,9 @@
     "pa": null,
     "damage": "+BF",
     "qualities": [
-      "Immobilisante"
+      {
+        "id": "immobilisante"
+      }
     ],
     "desc": null,
     "price": {
@@ -1045,6 +1229,7 @@
     }
   },
   {
+    "id": "couteau-de-lancer",
     "label": "Couteau de lancer",
     "prefix": null,
     "type": "ranged",
@@ -1068,6 +1253,7 @@
     }
   },
   {
+    "id": "flechette",
     "label": "Fléchette",
     "prefix": null,
     "type": "ranged",
@@ -1079,7 +1265,9 @@
     "pa": null,
     "damage": "+BF+1",
     "qualities": [
-      "Empaleuse"
+      {
+        "id": "empaleuse"
+      }
     ],
     "desc": null,
     "price": {
@@ -1093,6 +1281,7 @@
     }
   },
   {
+    "id": "hache-de-lancer",
     "label": "Hache de lancer",
     "prefix": null,
     "type": "ranged",
@@ -1104,7 +1293,9 @@
     "pa": null,
     "damage": "+BF+3",
     "qualities": [
-      "Taille"
+      {
+        "id": "taille"
+      }
     ],
     "desc": null,
     "price": {
@@ -1118,6 +1309,7 @@
     }
   },
   {
+    "id": "javelot",
     "label": "Javelot",
     "prefix": null,
     "type": "ranged",
@@ -1129,7 +1321,9 @@
     "pa": null,
     "damage": "+BF+3",
     "qualities": [
-      "Empaleuse"
+      {
+        "id": "empaleuse"
+      }
     ],
     "desc": null,
     "price": {
@@ -1143,6 +1337,7 @@
     }
   },
   {
+    "id": "rocher",
     "label": "Rocher",
     "prefix": null,
     "type": "ranged",
@@ -1166,6 +1361,7 @@
     }
   },
   {
+    "id": "arquebus-a-repetition",
     "label": "Arquebus à répétition",
     "prefix": "(2M)",
     "type": "ranged",
@@ -1177,11 +1373,23 @@
     "pa": null,
     "damage": "+9",
     "qualities": [
-      "Dangereuse",
-      "Dévastatrice",
-      "À Poudre noire",
-      "Recharge 5",
-      "À Répétition 4"
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "a-poudre-noire"
+      },
+      {
+        "id": "recharge",
+        "value": 5
+      },
+      {
+        "id": "a-repetition",
+        "value": 4
+      }
     ],
     "desc": null,
     "price": {
@@ -1195,6 +1403,7 @@
     }
   },
   {
+    "id": "pistolet-a-repetition",
     "label": "Pistolet à répétition",
     "prefix": null,
     "type": "ranged",
@@ -1206,12 +1415,26 @@
     "pa": null,
     "damage": "+8",
     "qualities": [
-      "Dangereuse",
-      "Dévastatrice",
-      "Pistolet",
-      "À Poudre noire",
-      "Recharge 4",
-      "À Répétition 4"
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "pistolet"
+      },
+      {
+        "id": "a-poudre-noire"
+      },
+      {
+        "id": "recharge",
+        "value": 4
+      },
+      {
+        "id": "a-repetition",
+        "value": 4
+      }
     ],
     "desc": null,
     "price": {
@@ -1225,6 +1448,7 @@
     }
   },
   {
+    "id": "arquebuse",
     "label": "Arquebuse",
     "prefix": "(2M)",
     "type": "ranged",
@@ -1236,10 +1460,19 @@
     "pa": null,
     "damage": "+9",
     "qualities": [
-      "Dangereuse",
-      "Dévastatrice",
-      "À Poudre noire",
-      "Recharge 3"
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "a-poudre-noire"
+      },
+      {
+        "id": "recharge",
+        "value": 3
+      }
     ],
     "desc": null,
     "price": {
@@ -1253,6 +1486,7 @@
     }
   },
   {
+    "id": "long-fusil-d-hochland",
     "label": "Long fusil d'Hochland",
     "prefix": "(2M)",
     "type": "ranged",
@@ -1264,11 +1498,22 @@
     "pa": null,
     "damage": "+9",
     "qualities": [
-      "Dévastatrice",
-      "Pointue",
-      "À Poudre noire",
-      "Précise",
-      "Recharge 4"
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "pointue"
+      },
+      {
+        "id": "a-poudre-noire"
+      },
+      {
+        "id": "precise"
+      },
+      {
+        "id": "recharge",
+        "value": 4
+      }
     ],
     "desc": null,
     "price": {
@@ -1282,6 +1527,7 @@
     }
   },
   {
+    "id": "pistolet",
     "label": "Pistolet",
     "prefix": null,
     "type": "ranged",
@@ -1293,10 +1539,19 @@
     "pa": null,
     "damage": "+8",
     "qualities": [
-      "Dévastatrice",
-      "Pistolet",
-      "À Poudre noire",
-      "Recharge 1"
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "pistolet"
+      },
+      {
+        "id": "a-poudre-noire"
+      },
+      {
+        "id": "recharge",
+        "value": 1
+      }
     ],
     "desc": null,
     "price": {
@@ -1310,6 +1565,7 @@
     }
   },
   {
+    "id": "tromblon",
     "label": "Tromblon",
     "prefix": "(2M)",
     "type": "ranged",
@@ -1321,11 +1577,23 @@
     "pa": null,
     "damage": "+8",
     "qualities": [
-      "Dangereuse",
-      "Dévastatrice",
-      "À Poudre noire",
-      "Recharge 2",
-      "À Explosion 3"
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "a-poudre-noire"
+      },
+      {
+        "id": "recharge",
+        "value": 2
+      },
+      {
+        "id": "a-explosion",
+        "value": 3
+      }
     ],
     "desc": null,
     "price": {
@@ -1339,6 +1607,7 @@
     }
   },
   {
+    "id": "carreau",
     "label": "Carreau",
     "prefix": "(12)",
     "type": "ammunition",
@@ -1350,7 +1619,9 @@
     "pa": null,
     "damage": null,
     "qualities": [
-      "Empaleuse"
+      {
+        "id": "empaleuse"
+      }
     ],
     "desc": null,
     "price": {
@@ -1364,6 +1635,7 @@
     }
   },
   {
+    "id": "fleche",
     "label": "Flèche",
     "prefix": "(12)",
     "type": "ammunition",
@@ -1375,7 +1647,9 @@
     "pa": null,
     "damage": null,
     "qualities": [
-      "Empaleuse"
+      {
+        "id": "empaleuse"
+      }
     ],
     "desc": null,
     "price": {
@@ -1389,6 +1663,7 @@
     }
   },
   {
+    "id": "fleche-elfique",
     "label": "Flèche elfique",
     "prefix": null,
     "type": "ammunition",
@@ -1400,9 +1675,15 @@
     "pa": null,
     "damage": "+1",
     "qualities": [
-      "Précise",
-      "Empaleuse",
-      "Perforante"
+      {
+        "id": "precise"
+      },
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "perforante"
+      }
     ],
     "desc": null,
     "price": {
@@ -1416,6 +1697,7 @@
     }
   },
   {
+    "id": "balle-de-plomb",
     "label": "Balle de plomb",
     "prefix": "(12)",
     "type": "ammunition",
@@ -1427,7 +1709,9 @@
     "pa": null,
     "damage": "+1",
     "qualities": [
-      "Assommante"
+      {
+        "id": "assommante"
+      }
     ],
     "desc": null,
     "price": {
@@ -1441,6 +1725,7 @@
     }
   },
   {
+    "id": "projectile-de-pierre",
     "label": "Projectile de pierre",
     "prefix": "(12)",
     "type": "ammunition",
@@ -1452,7 +1737,9 @@
     "pa": null,
     "damage": null,
     "qualities": [
-      "Assommante"
+      {
+        "id": "assommante"
+      }
     ],
     "desc": null,
     "price": {
@@ -1466,6 +1753,7 @@
     }
   },
   {
+    "id": "balle-et-poudre",
     "label": "Balle et Poudre",
     "prefix": "(12)",
     "type": "ammunition",
@@ -1477,8 +1765,12 @@
     "pa": null,
     "damage": "+1",
     "qualities": [
-      "Empaleuse",
-      "Perforante"
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "perforante"
+      }
     ],
     "desc": null,
     "price": {
@@ -1492,6 +1784,7 @@
     }
   },
   {
+    "id": "munitions-improvisees-et-poudre",
     "label": "Munitions improvisées et Poudre",
     "prefix": null,
     "type": "ammunition",
@@ -1515,6 +1808,7 @@
     }
   },
   {
+    "id": "petites-munitions-et-poudre",
     "label": "Petites munitions et Poudre",
     "prefix": null,
     "type": "ammunition",
@@ -1526,7 +1820,9 @@
     "pa": null,
     "damage": null,
     "qualities": [
-      "À Explosion +1"
+      {
+        "id": "a-explosion"
+      }
     ],
     "desc": null,
     "price": {
@@ -1540,6 +1836,7 @@
     }
   },
   {
+    "id": "calotte-de-cuir",
     "label": "Calotte de cuir",
     "prefix": null,
     "type": "armor",
@@ -1551,7 +1848,9 @@
     "pa": 1,
     "damage": null,
     "qualities": [
-      "Partielle"
+      {
+        "id": "partielle"
+      }
     ],
     "desc": "Le cuir souple peut être porté sans pénalité sous n'importe quelle autre Armure.",
     "price": {
@@ -1565,6 +1864,7 @@
     }
   },
   {
+    "id": "jambieres-en-cuir",
     "label": "Jambières en cuir",
     "prefix": null,
     "type": "armor",
@@ -1588,6 +1888,7 @@
     }
   },
   {
+    "id": "justaucorps-de-cuir",
     "label": "Justaucorps de cuir",
     "prefix": null,
     "type": "armor",
@@ -1611,6 +1912,7 @@
     }
   },
   {
+    "id": "veste-de-cuir",
     "label": "Veste de cuir",
     "prefix": null,
     "type": "armor",
@@ -1634,6 +1936,7 @@
     }
   },
   {
+    "id": "plastron-de-cuir",
     "label": "Plastron de cuir",
     "prefix": null,
     "type": "armor",
@@ -1645,7 +1948,9 @@
     "pa": 2,
     "damage": null,
     "qualities": [
-      "Points faibles"
+      {
+        "id": "points-faibles"
+      }
     ],
     "desc": null,
     "price": {
@@ -1659,6 +1964,7 @@
     }
   },
   {
+    "id": "chausses-de-mailles",
     "label": "Chausses de mailles",
     "prefix": null,
     "type": "armor",
@@ -1670,8 +1976,12 @@
     "pa": 2,
     "damage": null,
     "qualities": [
-      "Flexible",
-      "-10% en Discrétion"
+      {
+        "id": "flexible"
+      },
+      {
+        "id": "en-discretion"
+      }
     ],
     "desc": null,
     "price": {
@@ -1685,6 +1995,7 @@
     }
   },
   {
+    "id": "chemise-de-mailles",
     "label": "Chemise de mailles",
     "prefix": null,
     "type": "armor",
@@ -1696,8 +2007,12 @@
     "pa": 2,
     "damage": null,
     "qualities": [
-      "Flexible",
-      "-10% en Discrétion"
+      {
+        "id": "flexible"
+      },
+      {
+        "id": "en-discretion"
+      }
     ],
     "desc": null,
     "price": {
@@ -1711,6 +2026,7 @@
     }
   },
   {
+    "id": "coiffe-de-mailles",
     "label": "Coiffe de mailles",
     "prefix": null,
     "type": "armor",
@@ -1722,10 +2038,18 @@
     "pa": 2,
     "damage": null,
     "qualities": [
-      "Flexible",
-      "Partielle",
-      "-10% en Discrétion",
-      "-10% en Perception"
+      {
+        "id": "flexible"
+      },
+      {
+        "id": "partielle"
+      },
+      {
+        "id": "en-discretion"
+      },
+      {
+        "id": "en-perception"
+      }
     ],
     "desc": null,
     "price": {
@@ -1739,6 +2063,7 @@
     }
   },
   {
+    "id": "cotte-de-mailles",
     "label": "Cotte de mailles",
     "prefix": null,
     "type": "armor",
@@ -1750,8 +2075,12 @@
     "pa": 2,
     "damage": null,
     "qualities": [
-      "Flexible",
-      "-10% en Discrétion"
+      {
+        "id": "flexible"
+      },
+      {
+        "id": "en-discretion"
+      }
     ],
     "desc": null,
     "price": {
@@ -1765,6 +2094,7 @@
     }
   },
   {
+    "id": "brassards",
     "label": "Brassards",
     "prefix": null,
     "type": "armor",
@@ -1776,9 +2106,15 @@
     "pa": 2,
     "damage": null,
     "qualities": [
-      "Impénétrable",
-      "Points faibles",
-      "-10% en Discrétion"
+      {
+        "id": "impenetrable"
+      },
+      {
+        "id": "points-faibles"
+      },
+      {
+        "id": "en-discretion"
+      }
     ],
     "desc": null,
     "price": {
@@ -1792,6 +2128,7 @@
     }
   },
   {
+    "id": "heaume",
     "label": "Heaume",
     "prefix": null,
     "type": "armor",
@@ -1803,10 +2140,18 @@
     "pa": 2,
     "damage": null,
     "qualities": [
-      "Impénétrable",
-      "Points faibles",
-      "-10% en Discrétion",
-      "-20% en Perception"
+      {
+        "id": "impenetrable"
+      },
+      {
+        "id": "points-faibles"
+      },
+      {
+        "id": "en-discretion"
+      },
+      {
+        "id": "en-perception"
+      }
     ],
     "desc": null,
     "price": {
@@ -1820,6 +2165,7 @@
     }
   },
   {
+    "id": "heaume-ouvert",
     "label": "Heaume ouvert",
     "prefix": null,
     "type": "armor",
@@ -1831,9 +2177,15 @@
     "pa": 2,
     "damage": null,
     "qualities": [
-      "Partielle",
-      "-10% en Discrétion",
-      "-10% en Perception"
+      {
+        "id": "partielle"
+      },
+      {
+        "id": "en-discretion"
+      },
+      {
+        "id": "en-perception"
+      }
     ],
     "desc": null,
     "price": {
@@ -1847,6 +2199,7 @@
     }
   },
   {
+    "id": "jambieres-d-acier",
     "label": "Jambières d'acier",
     "prefix": null,
     "type": "armor",
@@ -1858,9 +2211,15 @@
     "pa": 2,
     "damage": null,
     "qualities": [
-      "Impénétrable",
-      "Points faibles",
-      "-20 % en Discrétion"
+      {
+        "id": "impenetrable"
+      },
+      {
+        "id": "points-faibles"
+      },
+      {
+        "id": "en-discretion"
+      }
     ],
     "desc": null,
     "price": {
@@ -1874,6 +2233,7 @@
     }
   },
   {
+    "id": "plastron",
     "label": "Plastron",
     "prefix": null,
     "type": "armor",
@@ -1885,9 +2245,15 @@
     "pa": 2,
     "damage": null,
     "qualities": [
-      "Impénétrable",
-      "Points faibles",
-      "-10% en Discrétion"
+      {
+        "id": "impenetrable"
+      },
+      {
+        "id": "points-faibles"
+      },
+      {
+        "id": "en-discretion"
+      }
     ],
     "desc": null,
     "price": {
@@ -1901,6 +2267,7 @@
     }
   },
   {
+    "id": "baril",
     "label": "Baril",
     "prefix": null,
     "type": "trapping",
@@ -1924,6 +2291,7 @@
     }
   },
   {
+    "id": "besace",
     "label": "Besace",
     "prefix": null,
     "type": "trapping",
@@ -1947,6 +2315,7 @@
     }
   },
   {
+    "id": "bourse",
     "label": "Bourse",
     "prefix": null,
     "type": "trapping",
@@ -1970,6 +2339,7 @@
     }
   },
   {
+    "id": "chope-en-etain",
     "label": "Chope en étain",
     "prefix": null,
     "type": "trapping",
@@ -1993,6 +2363,7 @@
     }
   },
   {
+    "id": "cruche",
     "label": "Cruche",
     "prefix": null,
     "type": "trapping",
@@ -2016,6 +2387,7 @@
     }
   },
   {
+    "id": "etui-a-parchemin",
     "label": "Étui à parchemin",
     "prefix": null,
     "type": "trapping",
@@ -2039,6 +2411,7 @@
     }
   },
   {
+    "id": "flasque",
     "label": "Flasque",
     "prefix": null,
     "type": "trapping",
@@ -2062,6 +2435,7 @@
     }
   },
   {
+    "id": "fontes-de-selle",
     "label": "Fontes de selle",
     "prefix": null,
     "type": "trapping",
@@ -2085,6 +2459,7 @@
     }
   },
   {
+    "id": "grand-sac",
     "label": "Grand sac",
     "prefix": null,
     "type": "trapping",
@@ -2108,6 +2483,7 @@
     }
   },
   {
+    "id": "outre-a-eau",
     "label": "Outre à eau",
     "prefix": null,
     "type": "trapping",
@@ -2131,6 +2507,7 @@
     }
   },
   {
+    "id": "sac",
     "label": "Sac",
     "prefix": null,
     "type": "trapping",
@@ -2154,6 +2531,7 @@
     }
   },
   {
+    "id": "sac-a-dos",
     "label": "Sac à dos",
     "prefix": null,
     "type": "trapping",
@@ -2177,6 +2555,7 @@
     }
   },
   {
+    "id": "tonneau",
     "label": "Tonneau",
     "prefix": null,
     "type": "trapping",
@@ -2200,6 +2579,7 @@
     }
   },
   {
+    "id": "amulette",
     "label": "Amulette",
     "prefix": null,
     "type": "trapping",
@@ -2223,6 +2603,7 @@
     }
   },
   {
+    "id": "bijoux",
     "label": "Bijoux",
     "prefix": null,
     "type": "trapping",
@@ -2246,6 +2627,7 @@
     }
   },
   {
+    "id": "bottes",
     "label": "Bottes",
     "prefix": null,
     "type": "trapping",
@@ -2269,6 +2651,7 @@
     }
   },
   {
+    "id": "canne-de-marche",
     "label": "Canne de marche",
     "prefix": null,
     "type": "trapping",
@@ -2292,6 +2675,7 @@
     }
   },
   {
+    "id": "cape",
     "label": "Cape",
     "prefix": null,
     "type": "trapping",
@@ -2315,6 +2699,7 @@
     }
   },
   {
+    "id": "capuchon",
     "label": "Capuchon",
     "prefix": null,
     "type": "trapping",
@@ -2338,6 +2723,7 @@
     }
   },
   {
+    "id": "masque",
     "label": "Masque",
     "prefix": null,
     "type": "trapping",
@@ -2361,6 +2747,7 @@
     }
   },
   {
+    "id": "chapeau",
     "label": "Chapeau",
     "prefix": null,
     "type": "trapping",
@@ -2384,6 +2771,7 @@
     }
   },
   {
+    "id": "chaussures",
     "label": "Chaussures",
     "prefix": null,
     "type": "trapping",
@@ -2407,6 +2795,7 @@
     }
   },
   {
+    "id": "chevaliere",
     "label": "Chevalière",
     "prefix": null,
     "type": "trapping",
@@ -2430,6 +2819,7 @@
     }
   },
   {
+    "id": "costume",
     "label": "Costume",
     "prefix": null,
     "type": "trapping",
@@ -2453,6 +2843,7 @@
     }
   },
   {
+    "id": "epingle",
     "label": "Épingle",
     "prefix": "(6)",
     "type": "trapping",
@@ -2476,6 +2867,7 @@
     }
   },
   {
+    "id": "gants",
     "label": "Gants",
     "prefix": null,
     "type": "trapping",
@@ -2499,6 +2891,7 @@
     }
   },
   {
+    "id": "gants-en-cuir",
     "label": "Gants en cuir",
     "prefix": null,
     "type": "trapping",
@@ -2522,6 +2915,7 @@
     }
   },
   {
+    "id": "costume-de-cour",
     "label": "Costume de cour",
     "prefix": null,
     "type": "trapping",
@@ -2545,6 +2939,7 @@
     }
   },
   {
+    "id": "manteau",
     "label": "Manteau",
     "prefix": null,
     "type": "trapping",
@@ -2568,6 +2963,7 @@
     }
   },
   {
+    "id": "parfum",
     "label": "Parfum",
     "prefix": null,
     "type": "trapping",
@@ -2591,6 +2987,7 @@
     }
   },
   {
+    "id": "poudre-pour-le-visage",
     "label": "Poudre pour le visage",
     "prefix": null,
     "type": "trapping",
@@ -2614,6 +3011,7 @@
     }
   },
   {
+    "id": "robes",
     "label": "Robes",
     "prefix": null,
     "type": "trapping",
@@ -2637,6 +3035,7 @@
     }
   },
   {
+    "id": "sceptre",
     "label": "Sceptre",
     "prefix": null,
     "type": "trapping",
@@ -2660,6 +3059,7 @@
     }
   },
   {
+    "id": "symbole-religieux",
     "label": "Symbole religieux",
     "prefix": null,
     "type": "trapping",
@@ -2683,6 +3083,7 @@
     }
   },
   {
+    "id": "tatouage",
     "label": "Tatouage",
     "prefix": null,
     "type": "trapping",
@@ -2706,6 +3107,7 @@
     }
   },
   {
+    "id": "uniforme",
     "label": "Uniforme",
     "prefix": null,
     "type": "trapping",
@@ -2729,6 +3131,7 @@
     }
   },
   {
+    "id": "vetements",
     "label": "Vêtements",
     "prefix": null,
     "type": "trapping",
@@ -2752,6 +3155,7 @@
     }
   },
   {
+    "id": "biere-pinte",
     "label": "Bière, pinte",
     "prefix": null,
     "type": "trapping",
@@ -2775,6 +3179,7 @@
     }
   },
   {
+    "id": "biere-tonnelet",
     "label": "Bière, tonnelet",
     "prefix": null,
     "type": "trapping",
@@ -2798,6 +3203,7 @@
     }
   },
   {
+    "id": "biere-de-bugman-xxxxxx-pinte",
     "label": "Bière de Bugman XXXXXX, pinte",
     "prefix": null,
     "type": "trapping",
@@ -2821,6 +3227,7 @@
     }
   },
   {
+    "id": "chambre-commune-nuit",
     "label": "Chambre, commune/nuit",
     "prefix": null,
     "type": "trapping",
@@ -2844,6 +3251,7 @@
     }
   },
   {
+    "id": "chambre-privee-nuit",
     "label": "Chambre, privée/nuit",
     "prefix": null,
     "type": "trapping",
@@ -2867,6 +3275,7 @@
     }
   },
   {
+    "id": "ecurie-nuit",
     "label": "Écurie/nuit",
     "prefix": null,
     "type": "trapping",
@@ -2890,6 +3299,7 @@
     }
   },
   {
+    "id": "nourriture-courses-journee",
     "label": "Nourriture, courses/journée",
     "prefix": null,
     "type": "trapping",
@@ -2913,6 +3323,7 @@
     }
   },
   {
+    "id": "repas-auberge",
     "label": "Repas, auberge",
     "prefix": null,
     "type": "trapping",
@@ -2936,6 +3347,7 @@
     }
   },
   {
+    "id": "spiritueux-pinte",
     "label": "Spiritueux, pinte",
     "prefix": null,
     "type": "trapping",
@@ -2959,6 +3371,7 @@
     }
   },
   {
+    "id": "vin-bouteille",
     "label": "Vin, bouteille",
     "prefix": null,
     "type": "trapping",
@@ -2982,6 +3395,7 @@
     }
   },
   {
+    "id": "vin-spiritueux-verre",
     "label": "Vin & spiritueux, verre",
     "prefix": null,
     "type": "trapping",
@@ -3005,6 +3419,7 @@
     }
   },
   {
+    "id": "ration",
     "label": "Ration",
     "prefix": "(1 jour)",
     "type": "trapping",
@@ -3028,6 +3443,7 @@
     }
   },
   {
+    "id": "aiguille",
     "label": "Aiguille",
     "prefix": null,
     "type": "trapping",
@@ -3051,6 +3467,7 @@
     }
   },
   {
+    "id": "balai",
     "label": "Balai",
     "prefix": null,
     "type": "trapping",
@@ -3074,6 +3491,7 @@
     }
   },
   {
+    "id": "bequille",
     "label": "Béquille",
     "prefix": null,
     "type": "trapping",
@@ -3097,6 +3515,7 @@
     }
   },
   {
+    "id": "besicles",
     "label": "Bésicles",
     "prefix": null,
     "type": "trapping",
@@ -3120,6 +3539,7 @@
     }
   },
   {
+    "id": "binette",
     "label": "Binette",
     "prefix": null,
     "type": "trapping",
@@ -3143,6 +3563,7 @@
     }
   },
   {
+    "id": "boulier",
     "label": "Boulier",
     "prefix": null,
     "type": "trapping",
@@ -3166,6 +3587,7 @@
     }
   },
   {
+    "id": "brosse-pour-le-sol",
     "label": "Brosse pour le sol",
     "prefix": null,
     "type": "trapping",
@@ -3189,6 +3611,7 @@
     }
   },
   {
+    "id": "cachet-grave",
     "label": "Cachet, gravé",
     "prefix": null,
     "type": "trapping",
@@ -3212,6 +3635,7 @@
     }
   },
   {
+    "id": "ciseau",
     "label": "Ciseau",
     "prefix": null,
     "type": "trapping",
@@ -3235,6 +3659,7 @@
     }
   },
   {
+    "id": "clef",
     "label": "Clef",
     "prefix": null,
     "type": "trapping",
@@ -3258,6 +3683,7 @@
     }
   },
   {
+    "id": "clou",
     "label": "Clou",
     "prefix": "(12)",
     "type": "trapping",
@@ -3281,6 +3707,7 @@
     }
   },
   {
+    "id": "couteau-2",
     "label": "Couteau",
     "prefix": null,
     "type": "trapping",
@@ -3304,6 +3731,7 @@
     }
   },
   {
+    "id": "cure-oreille",
     "label": "Cure-oreille",
     "prefix": null,
     "type": "trapping",
@@ -3327,6 +3755,7 @@
     }
   },
   {
+    "id": "faucille",
     "label": "Faucille",
     "prefix": null,
     "type": "trapping",
@@ -3350,6 +3779,7 @@
     }
   },
   {
+    "id": "gaffe",
     "label": "Gaffe",
     "prefix": null,
     "type": "trapping",
@@ -3373,6 +3803,7 @@
     }
   },
   {
+    "id": "hamecon",
     "label": "Hameçon",
     "prefix": "(12)",
     "type": "trapping",
@@ -3396,6 +3827,7 @@
     }
   },
   {
+    "id": "maillet",
     "label": "Maillet",
     "prefix": null,
     "type": "trapping",
@@ -3419,6 +3851,7 @@
     }
   },
   {
+    "id": "marteau",
     "label": "Marteau",
     "prefix": null,
     "type": "trapping",
@@ -3442,6 +3875,7 @@
     }
   },
   {
+    "id": "menottes",
     "label": "Menottes",
     "prefix": null,
     "type": "trapping",
@@ -3465,6 +3899,7 @@
     }
   },
   {
+    "id": "miroir-a-main",
     "label": "Miroir à main",
     "prefix": null,
     "type": "trapping",
@@ -3488,6 +3923,7 @@
     }
   },
   {
+    "id": "necessaire-antipoison",
     "label": "Nécessaire antipoison",
     "prefix": null,
     "type": "trapping",
@@ -3511,6 +3947,7 @@
     }
   },
   {
+    "id": "necessaire-d-ecriture",
     "label": "Nécessaire d'écriture",
     "prefix": null,
     "type": "trapping",
@@ -3534,6 +3971,7 @@
     }
   },
   {
+    "id": "necessaire-de-deguisement",
     "label": "Nécessaire de déguisement",
     "prefix": null,
     "type": "trapping",
@@ -3557,6 +3995,7 @@
     }
   },
   {
+    "id": "outils-de-crochetage",
     "label": "Outils de crochetage",
     "prefix": null,
     "type": "trapping",
@@ -3580,6 +4019,7 @@
     }
   },
   {
+    "id": "peigne",
     "label": "Peigne",
     "prefix": null,
     "type": "trapping",
@@ -3603,6 +4043,7 @@
     }
   },
   {
+    "id": "pelle",
     "label": "Pelle",
     "prefix": null,
     "type": "trapping",
@@ -3626,6 +4067,7 @@
     }
   },
   {
+    "id": "perche",
     "label": "Perche",
     "prefix": "(3 mètres)",
     "type": "trapping",
@@ -3649,6 +4091,7 @@
     }
   },
   {
+    "id": "pied-de-biche",
     "label": "Pied-de-biche",
     "prefix": null,
     "type": "trapping",
@@ -3672,6 +4115,7 @@
     }
   },
   {
+    "id": "piege-a-animaux",
     "label": "Piège à animaux",
     "prefix": null,
     "type": "trapping",
@@ -3695,6 +4139,7 @@
     }
   },
   {
+    "id": "pilon-et-mortier",
     "label": "Pilon et Mortier",
     "prefix": null,
     "type": "trapping",
@@ -3718,6 +4163,7 @@
     }
   },
   {
+    "id": "pinces-acier",
     "label": "Pinces, acier",
     "prefix": null,
     "type": "trapping",
@@ -3741,6 +4187,7 @@
     }
   },
   {
+    "id": "pince-a-epiler",
     "label": "Pince à épiler",
     "prefix": null,
     "type": "trapping",
@@ -3764,6 +4211,7 @@
     }
   },
   {
+    "id": "pinceau",
     "label": "Pinceau",
     "prefix": null,
     "type": "trapping",
@@ -3787,6 +4235,7 @@
     }
   },
   {
+    "id": "pioche",
     "label": "Pioche",
     "prefix": null,
     "type": "trapping",
@@ -3810,6 +4259,7 @@
     }
   },
   {
+    "id": "plume-d-oie",
     "label": "Plume d'oie",
     "prefix": null,
     "type": "trapping",
@@ -3833,6 +4283,7 @@
     }
   },
   {
+    "id": "rateau",
     "label": "Râteau",
     "prefix": null,
     "type": "trapping",
@@ -3856,6 +4307,7 @@
     }
   },
   {
+    "id": "scie",
     "label": "Scie",
     "prefix": null,
     "type": "trapping",
@@ -3879,6 +4331,7 @@
     }
   },
   {
+    "id": "seau",
     "label": "Seau",
     "prefix": null,
     "type": "trapping",
@@ -3902,6 +4355,7 @@
     }
   },
   {
+    "id": "serpillere",
     "label": "Serpillère",
     "prefix": null,
     "type": "trapping",
@@ -3925,6 +4379,7 @@
     }
   },
   {
+    "id": "telescope",
     "label": "Télescope",
     "prefix": null,
     "type": "trapping",
@@ -3948,6 +4403,7 @@
     }
   },
   {
+    "id": "carte",
     "label": "Carte",
     "prefix": null,
     "type": "trapping",
@@ -3971,6 +4427,7 @@
     }
   },
   {
+    "id": "document-legal",
     "label": "Document légal",
     "prefix": null,
     "type": "trapping",
@@ -3994,6 +4451,7 @@
     }
   },
   {
+    "id": "licence-de-guilde",
     "label": "Licence de Guilde",
     "prefix": null,
     "type": "trapping",
@@ -4017,6 +4475,7 @@
     }
   },
   {
+    "id": "livre-apothicaire",
     "label": "Livre (Apothicaire)",
     "prefix": null,
     "type": "trapping",
@@ -4040,6 +4499,7 @@
     }
   },
   {
+    "id": "livre-art",
     "label": "Livre (Art)",
     "prefix": null,
     "type": "trapping",
@@ -4063,6 +4523,7 @@
     }
   },
   {
+    "id": "livre-cryptographie",
     "label": "Livre (Cryptographie)",
     "prefix": null,
     "type": "trapping",
@@ -4086,6 +4547,7 @@
     }
   },
   {
+    "id": "livre-ingenierie",
     "label": "Livre (Ingénierie)",
     "prefix": null,
     "type": "trapping",
@@ -4109,6 +4571,7 @@
     }
   },
   {
+    "id": "livre-loi",
     "label": "Livre (Loi)",
     "prefix": null,
     "type": "trapping",
@@ -4132,6 +4595,7 @@
     }
   },
   {
+    "id": "livre-magie",
     "label": "Livre (Magie)",
     "prefix": null,
     "type": "trapping",
@@ -4155,6 +4619,7 @@
     }
   },
   {
+    "id": "livre-medecine",
     "label": "Livre (Médecine)",
     "prefix": null,
     "type": "trapping",
@@ -4178,6 +4643,7 @@
     }
   },
   {
+    "id": "livre-religion",
     "label": "Livre (Religion)",
     "prefix": null,
     "type": "trapping",
@@ -4201,6 +4667,7 @@
     }
   },
   {
+    "id": "grimoire",
     "label": "Grimoire",
     "prefix": null,
     "type": "trapping",
@@ -4224,6 +4691,7 @@
     }
   },
   {
+    "id": "parchemin",
     "label": "Parchemin",
     "prefix": null,
     "type": "trapping",
@@ -4247,6 +4715,7 @@
     }
   },
   {
+    "id": "feuille-de-parchemin",
     "label": "Feuille de parchemin",
     "prefix": null,
     "type": "trapping",
@@ -4270,6 +4739,7 @@
     }
   },
   {
+    "id": "tract",
     "label": "Tract",
     "prefix": null,
     "type": "trapping",
@@ -4293,6 +4763,7 @@
     }
   },
   {
+    "id": "atelier",
     "label": "Atelier",
     "prefix": null,
     "type": "trapping",
@@ -4316,6 +4787,7 @@
     }
   },
   {
+    "id": "atelier-apothicaire",
     "label": "Atelier (Apothicaire)",
     "prefix": null,
     "type": "trapping",
@@ -4339,6 +4811,7 @@
     }
   },
   {
+    "id": "atelier-charpentier",
     "label": "Atelier (Charpentier)",
     "prefix": null,
     "type": "trapping",
@@ -4362,6 +4835,7 @@
     }
   },
   {
+    "id": "atelier-forgeron",
     "label": "Atelier (Forgeron)",
     "prefix": null,
     "type": "trapping",
@@ -4385,6 +4859,7 @@
     }
   },
   {
+    "id": "atelier-graveur",
     "label": "Atelier (Graveur)",
     "prefix": null,
     "type": "trapping",
@@ -4408,6 +4883,7 @@
     }
   },
   {
+    "id": "atelier-artiste",
     "label": "Atelier (Artiste)",
     "prefix": null,
     "type": "trapping",
@@ -4431,6 +4907,7 @@
     }
   },
   {
+    "id": "atelier-herboriste",
     "label": "Atelier (Herboriste)",
     "prefix": null,
     "type": "trapping",
@@ -4454,6 +4931,7 @@
     }
   },
   {
+    "id": "atelier-ingenieur",
     "label": "Atelier (Ingénieur)",
     "prefix": null,
     "type": "trapping",
@@ -4477,6 +4955,7 @@
     }
   },
   {
+    "id": "atelier-medecin",
     "label": "Atelier (Médecin)",
     "prefix": null,
     "type": "trapping",
@@ -4500,6 +4979,7 @@
     }
   },
   {
+    "id": "outils-professionnels",
     "label": "Outils professionnels",
     "prefix": null,
     "type": "trapping",
@@ -4523,6 +5003,7 @@
     }
   },
   {
+    "id": "outils-professionnels-apothicaire",
     "label": "Outils professionnels (Apothicaire)",
     "prefix": null,
     "type": "trapping",
@@ -4546,6 +5027,7 @@
     }
   },
   {
+    "id": "outils-professionnels-charpentier",
     "label": "Outils professionnels (Charpentier)",
     "prefix": null,
     "type": "trapping",
@@ -4569,6 +5051,7 @@
     }
   },
   {
+    "id": "outils-professionnels-forgeron",
     "label": "Outils professionnels (Forgeron)",
     "prefix": null,
     "type": "trapping",
@@ -4592,6 +5075,7 @@
     }
   },
   {
+    "id": "outils-professionnels-graveur",
     "label": "Outils professionnels (Graveur)",
     "prefix": null,
     "type": "trapping",
@@ -4615,6 +5099,7 @@
     }
   },
   {
+    "id": "outils-professionnels-artiste",
     "label": "Outils professionnels (Artiste)",
     "prefix": null,
     "type": "trapping",
@@ -4638,6 +5123,7 @@
     }
   },
   {
+    "id": "outils-professionnels-herboriste",
     "label": "Outils professionnels (Herboriste)",
     "prefix": null,
     "type": "trapping",
@@ -4661,6 +5147,7 @@
     }
   },
   {
+    "id": "outils-professionnels-ingenieur",
     "label": "Outils professionnels (Ingénieur)",
     "prefix": null,
     "type": "trapping",
@@ -4684,6 +5171,7 @@
     }
   },
   {
+    "id": "outils-professionnels-medecin",
     "label": "Outils professionnels (Médecin)",
     "prefix": null,
     "type": "trapping",
@@ -4707,6 +5195,7 @@
     }
   },
   {
+    "id": "outils-professionnels-navigateur",
     "label": "Outils professionnels (Navigateur)",
     "prefix": null,
     "type": "trapping",
@@ -4730,6 +5219,7 @@
     }
   },
   {
+    "id": "barque",
     "label": "Barque",
     "prefix": null,
     "type": "trapping",
@@ -4753,6 +5243,7 @@
     }
   },
   {
+    "id": "chaland",
     "label": "Chaland",
     "prefix": null,
     "type": "trapping",
@@ -4776,6 +5267,7 @@
     }
   },
   {
+    "id": "chariot",
     "label": "Chariot",
     "prefix": null,
     "type": "trapping",
@@ -4799,6 +5291,7 @@
     }
   },
   {
+    "id": "charrette",
     "label": "Charrette",
     "prefix": null,
     "type": "trapping",
@@ -4822,6 +5315,7 @@
     }
   },
   {
+    "id": "cheval-de-guerre-leger",
     "label": "Cheval de guerre léger",
     "prefix": null,
     "type": "trapping",
@@ -4845,6 +5339,7 @@
     }
   },
   {
+    "id": "cheval-de-selle",
     "label": "Cheval de selle",
     "prefix": null,
     "type": "trapping",
@@ -4868,6 +5363,7 @@
     }
   },
   {
+    "id": "cheval-de-trait",
     "label": "Cheval de trait",
     "prefix": null,
     "type": "trapping",
@@ -4891,6 +5387,7 @@
     }
   },
   {
+    "id": "chien",
     "label": "Chien",
     "prefix": null,
     "type": "trapping",
@@ -4914,6 +5411,7 @@
     }
   },
   {
+    "id": "collier-et-laisse-chien",
     "label": "Collier et laisse (chien)",
     "prefix": null,
     "type": "trapping",
@@ -4937,6 +5435,7 @@
     }
   },
   {
+    "id": "coracle",
     "label": "Coracle",
     "prefix": null,
     "type": "trapping",
@@ -4960,6 +5459,7 @@
     }
   },
   {
+    "id": "destrier",
     "label": "Destrier",
     "prefix": null,
     "type": "trapping",
@@ -4983,6 +5483,7 @@
     }
   },
   {
+    "id": "diligence",
     "label": "Diligence",
     "prefix": null,
     "type": "trapping",
@@ -5006,6 +5507,7 @@
     }
   },
   {
+    "id": "mule",
     "label": "Mule",
     "prefix": null,
     "type": "trapping",
@@ -5029,6 +5531,7 @@
     }
   },
   {
+    "id": "pigeon-voyageur",
     "label": "Pigeon voyageur",
     "prefix": null,
     "type": "trapping",
@@ -5052,6 +5555,7 @@
     }
   },
   {
+    "id": "poney",
     "label": "Poney",
     "prefix": null,
     "type": "trapping",
@@ -5075,6 +5579,7 @@
     }
   },
   {
+    "id": "poulet",
     "label": "Poulet",
     "prefix": null,
     "type": "trapping",
@@ -5098,6 +5603,7 @@
     }
   },
   {
+    "id": "selle-et-harnais",
     "label": "Selle et Harnais",
     "prefix": null,
     "type": "trapping",
@@ -5121,6 +5627,7 @@
     }
   },
   {
+    "id": "singe",
     "label": "Singe",
     "prefix": null,
     "type": "trapping",
@@ -5144,6 +5651,7 @@
     }
   },
   {
+    "id": "vers",
     "label": "Vers",
     "prefix": "(6)",
     "type": "trapping",
@@ -5167,6 +5675,7 @@
     }
   },
   {
+    "id": "bave",
     "label": "Bave",
     "prefix": null,
     "type": "trapping",
@@ -5190,6 +5699,7 @@
     }
   },
   {
+    "id": "bonnet-de-fou",
     "label": "Bonnet de fou",
     "prefix": null,
     "type": "trapping",
@@ -5213,6 +5723,7 @@
     }
   },
   {
+    "id": "brise-coeur",
     "label": "Brise-cœur",
     "prefix": null,
     "type": "trapping",
@@ -5236,6 +5747,7 @@
     }
   },
   {
+    "id": "delice-de-ranald",
     "label": "Délice de Ranald",
     "prefix": null,
     "type": "trapping",
@@ -5259,6 +5771,7 @@
     }
   },
   {
+    "id": "fleur-de-lune",
     "label": "Fleur de lune",
     "prefix": null,
     "type": "trapping",
@@ -5282,6 +5795,7 @@
     }
   },
   {
+    "id": "lotus-noir",
     "label": "Lotus noir",
     "prefix": null,
     "type": "trapping",
@@ -5305,6 +5819,7 @@
     }
   },
   {
+    "id": "mystracine",
     "label": "Mystracine",
     "prefix": null,
     "type": "trapping",
@@ -5328,6 +5843,7 @@
     }
   },
   {
+    "id": "racine-de-mandragore",
     "label": "Racine de mandragore",
     "prefix": null,
     "type": "trapping",
@@ -5351,6 +5867,7 @@
     }
   },
   {
+    "id": "belladone",
     "label": "Belladone",
     "prefix": null,
     "type": "trapping",
@@ -5374,6 +5891,7 @@
     }
   },
   {
+    "id": "cataplasme-de-guerison",
     "label": "Cataplasme de guérison",
     "prefix": null,
     "type": "trapping",
@@ -5397,6 +5915,7 @@
     }
   },
   {
+    "id": "faxtoryll",
     "label": "Faxtoryll",
     "prefix": null,
     "type": "trapping",
@@ -5420,6 +5939,7 @@
     }
   },
   {
+    "id": "potion-de-guerison",
     "label": "Potion de guérison",
     "prefix": null,
     "type": "trapping",
@@ -5443,6 +5963,7 @@
     }
   },
   {
+    "id": "potion-de-vitalite",
     "label": "Potion de vitalité",
     "prefix": null,
     "type": "trapping",
@@ -5466,6 +5987,7 @@
     }
   },
   {
+    "id": "racine-de-terre",
     "label": "Racine de terre",
     "prefix": null,
     "type": "trapping",
@@ -5489,6 +6011,7 @@
     }
   },
   {
+    "id": "soude-commune",
     "label": "Soude commune",
     "prefix": null,
     "type": "trapping",
@@ -5512,6 +6035,7 @@
     }
   },
   {
+    "id": "tonique-digestif",
     "label": "Tonique digestif",
     "prefix": null,
     "type": "trapping",
@@ -5535,6 +6059,7 @@
     }
   },
   {
+    "id": "cache-oeil",
     "label": "Cache-œil",
     "prefix": null,
     "type": "trapping",
@@ -5558,6 +6083,7 @@
     }
   },
   {
+    "id": "crochet",
     "label": "Crochet",
     "prefix": null,
     "type": "trapping",
@@ -5590,6 +6116,7 @@
     }
   },
   {
+    "id": "dents-en-bois",
     "label": "Dents en bois",
     "prefix": null,
     "type": "trapping",
@@ -5613,6 +6140,7 @@
     }
   },
   {
+    "id": "fausse-jambe",
     "label": "Fausse jambe",
     "prefix": null,
     "type": "trapping",
@@ -5636,6 +6164,7 @@
     }
   },
   {
+    "id": "merveille-d-ingenierie",
     "label": "Merveille d'ingénierie",
     "prefix": null,
     "type": "trapping",
@@ -5659,6 +6188,7 @@
     }
   },
   {
+    "id": "nez-dore",
     "label": "Nez doré",
     "prefix": null,
     "type": "trapping",
@@ -5682,6 +6212,7 @@
     }
   },
   {
+    "id": "oeil-de-verre",
     "label": "Œil de verre",
     "prefix": null,
     "type": "trapping",
@@ -5705,6 +6236,7 @@
     }
   },
   {
+    "id": "affiche",
     "label": "Affiche",
     "prefix": null,
     "type": "trapping",
@@ -5728,6 +6260,7 @@
     }
   },
   {
+    "id": "allumette",
     "label": "Allumette",
     "prefix": null,
     "type": "trapping",
@@ -5751,6 +6284,7 @@
     }
   },
   {
+    "id": "assiette",
     "label": "Assiette",
     "prefix": null,
     "type": "trapping",
@@ -5774,6 +6308,7 @@
     }
   },
   {
+    "id": "bache-de-toile",
     "label": "Bâche de toile",
     "prefix": null,
     "type": "trapping",
@@ -5797,6 +6332,7 @@
     }
   },
   {
+    "id": "balle",
     "label": "Balle",
     "prefix": null,
     "type": "trapping",
@@ -5820,6 +6356,7 @@
     }
   },
   {
+    "id": "bandages",
     "label": "Bandages",
     "prefix": null,
     "type": "trapping",
@@ -5843,6 +6380,7 @@
     }
   },
   {
+    "id": "batonnet-de-fusain",
     "label": "Bâtonnet de fusain",
     "prefix": null,
     "type": "trapping",
@@ -5866,6 +6404,7 @@
     }
   },
   {
+    "id": "boite-a-amadou",
     "label": "Boîte à amadou",
     "prefix": null,
     "type": "trapping",
@@ -5889,6 +6428,7 @@
     }
   },
   {
+    "id": "bol",
     "label": "Bol",
     "prefix": null,
     "type": "trapping",
@@ -5912,6 +6452,7 @@
     }
   },
   {
+    "id": "bougie",
     "label": "Bougie",
     "prefix": null,
     "type": "trapping",
@@ -5935,6 +6476,7 @@
     }
   },
   {
+    "id": "casserole",
     "label": "Casserole",
     "prefix": null,
     "type": "trapping",
@@ -5958,6 +6500,7 @@
     }
   },
   {
+    "id": "chiffons",
     "label": "Chiffons",
     "prefix": null,
     "type": "trapping",
@@ -5981,6 +6524,7 @@
     }
   },
   {
+    "id": "corde",
     "label": "Corde",
     "prefix": "(10 mètres)",
     "type": "trapping",
@@ -6004,6 +6548,7 @@
     }
   },
   {
+    "id": "couvert",
     "label": "Couvert",
     "prefix": null,
     "type": "trapping",
@@ -6027,6 +6572,7 @@
     }
   },
   {
+    "id": "couverture",
     "label": "Couverture",
     "prefix": null,
     "type": "trapping",
@@ -6050,6 +6596,7 @@
     }
   },
   {
+    "id": "craie",
     "label": "Craie",
     "prefix": null,
     "type": "trapping",
@@ -6073,6 +6620,7 @@
     }
   },
   {
+    "id": "des",
     "label": "Dés",
     "prefix": null,
     "type": "trapping",
@@ -6096,6 +6644,7 @@
     }
   },
   {
+    "id": "grappin",
     "label": "Grappin",
     "prefix": null,
     "type": "trapping",
@@ -6119,6 +6668,7 @@
     }
   },
   {
+    "id": "instrument",
     "label": "Instrument",
     "prefix": null,
     "type": "trapping",
@@ -6142,6 +6692,7 @@
     }
   },
   {
+    "id": "lampe-davrich",
     "label": "Lampe Davrich",
     "prefix": null,
     "type": "trapping",
@@ -6165,6 +6716,7 @@
     }
   },
   {
+    "id": "huile-de-lampe",
     "label": "Huile de lampe",
     "prefix": null,
     "type": "trapping",
@@ -6188,6 +6740,7 @@
     }
   },
   {
+    "id": "lampe-tempete",
     "label": "Lampe tempête",
     "prefix": null,
     "type": "trapping",
@@ -6211,6 +6764,7 @@
     }
   },
   {
+    "id": "lanterne",
     "label": "Lanterne",
     "prefix": null,
     "type": "trapping",
@@ -6234,6 +6788,7 @@
     }
   },
   {
+    "id": "marmite",
     "label": "Marmite",
     "prefix": null,
     "type": "trapping",
@@ -6257,6 +6812,7 @@
     }
   },
   {
+    "id": "matraque",
     "label": "Matraque",
     "prefix": null,
     "type": "trapping",
@@ -6280,6 +6836,7 @@
     }
   },
   {
+    "id": "paquet-de-cartes",
     "label": "Paquet de cartes",
     "prefix": null,
     "type": "trapping",
@@ -6303,6 +6860,7 @@
     }
   },
   {
+    "id": "pipe-et-tabac",
     "label": "Pipe et Tabac",
     "prefix": null,
     "type": "trapping",
@@ -6326,6 +6884,7 @@
     }
   },
   {
+    "id": "poupee",
     "label": "Poupée",
     "prefix": null,
     "type": "trapping",
@@ -6349,6 +6908,7 @@
     }
   },
   {
+    "id": "sac-de-couchage",
     "label": "Sac de couchage",
     "prefix": null,
     "type": "trapping",
@@ -6372,6 +6932,7 @@
     }
   },
   {
+    "id": "tasse",
     "label": "Tasse",
     "prefix": null,
     "type": "trapping",
@@ -6395,6 +6956,7 @@
     }
   },
   {
+    "id": "tente",
     "label": "Tente",
     "prefix": null,
     "type": "trapping",
@@ -6418,6 +6980,7 @@
     }
   },
   {
+    "id": "charrette-2",
     "label": "Charrette",
     "prefix": null,
     "type": "vehicle",
@@ -6441,6 +7004,7 @@
     }
   },
   {
+    "id": "chaise",
     "label": "Chaise",
     "prefix": null,
     "type": "vehicle",
@@ -6464,6 +7028,7 @@
     }
   },
   {
+    "id": "diligence-2",
     "label": "Diligence",
     "prefix": null,
     "type": "vehicle",
@@ -6487,6 +7052,7 @@
     }
   },
   {
+    "id": "charrette-a-bras",
     "label": "Charrette à bras",
     "prefix": null,
     "type": "vehicle",
@@ -6510,6 +7076,7 @@
     }
   },
   {
+    "id": "petite-litiere",
     "label": "Petite litière",
     "prefix": null,
     "type": "vehicle",
@@ -6533,6 +7100,7 @@
     }
   },
   {
+    "id": "grande-litiere",
     "label": "Grande litière",
     "prefix": null,
     "type": "vehicle",
@@ -6556,6 +7124,7 @@
     }
   },
   {
+    "id": "chariot-leger",
     "label": "Chariot léger",
     "prefix": null,
     "type": "vehicle",
@@ -6579,6 +7148,7 @@
     }
   },
   {
+    "id": "chariot-moyen",
     "label": "Chariot moyen",
     "prefix": null,
     "type": "vehicle",
@@ -6602,6 +7172,7 @@
     }
   },
   {
+    "id": "chariot-lourd",
     "label": "Chariot lourd",
     "prefix": null,
     "type": "vehicle",
@@ -6625,6 +7196,7 @@
     }
   },
   {
+    "id": "pavois",
     "label": "Pavois",
     "prefix": null,
     "type": "melee",
@@ -6636,8 +7208,13 @@
     "pa": null,
     "damage": "+BF+2",
     "qualities": [
-      "Défensive",
-      "Protectrice 5"
+      {
+        "id": "defensive"
+      },
+      {
+        "id": "protectrice",
+        "value": 5
+      }
     ],
     "desc": "Le pavois est un grand bouclier porté par les arbalétriers afin de les abriter sur le champ de bataille pendant qu'ils rechargent. Faisant environ 1,20 mètre de hauteur et souvent orné du blason de l'unité, le pavois est planté sur le sol par l'arbalétrier comme l'équivalent d'un abri personnel. Ce bouclier est plus efficace quand il est déployé sur une ligne formée d'autres arbalétriers et de leurs pavois. Il fournit un bon couvert pour tirer sur les troupes ennemies et se défendre contre les sorties du camp adverse. Dans ce cas, le soldat manie une lance ou une épée de derrière le pavois planté.<br><br>Le pavois peut être utilisé de deux manières différentes.<br><br>Il peut être employé comme un grand bouclier. Mais ce n'est pas une bonne manière de s'en servir car c'est une lourde structure de bois et de cuir. Dans ce cas, il confère tous les Atouts et les Défauts d'un grand bouclier (Protectrice 3, Défensive, Inoffensive) et acquiert les Défauts Épuisante et Lente. Un pavois employé de cette manière a toujours un Encombrement de 4 et n'inflige que +BF +2 Dégâts.<br><br>Mais le pavois est conçu pour être installé comme couvert portatif. L'installer coûte 2 Actions à celui qui le manie. Ce dernier doit indiquer la direction du couvert, comme par exemple : une orientation (nord, sud, est, ouest) ; la position du corps de l'utilisateur (à gauche, à droite, devant ou derrière) ; un repère géographique en particulier (« Je l'ai installé entre le château et moi »).<br><br>Si celui qui manie le pavois reste à 1 mètre maximum derrière le pavois, ce dernier le protège contre toute attaque de projectiles venant de la direction indiquée, en accordant les Atouts Protectrice 5 et Défensive. Si un opposant engage le combat au corps à corps avec celui que le pavois protège, le pavois ne fournit une protection que si l'attaque est portée depuis la direction indiquée, et seulement lors du premier Round de combat.",
     "price": {
@@ -6651,6 +7228,7 @@
     }
   },
   {
+    "id": "filet-leste",
     "label": "Filet lesté",
     "prefix": "(2M)",
     "type": "melee",
@@ -6662,12 +7240,25 @@
     "pa": null,
     "damage": "+BF+0",
     "qualities": [
-      "À Enroulement",
-      "Défensive",
-      "Immobilisante",
-      "Inoffensive",
-      "Lente",
-      "Protectrice 1"
+      {
+        "id": "a-enroulement"
+      },
+      {
+        "id": "defensive"
+      },
+      {
+        "id": "immobilisante"
+      },
+      {
+        "id": "inoffensive"
+      },
+      {
+        "id": "lente"
+      },
+      {
+        "id": "protectrice",
+        "value": 1
+      }
     ],
     "desc": "Un filet lesté est encombrant et peu maniable, mais peut beaucoup gêner un opposant pour se battre s'il est utilisé au bon moment. Quand vous effectuez un Test pour savoir si un adversaire s'empêtre dans un filet lesté, le filet a une Force de 55.",
     "price": {
@@ -6681,6 +7272,7 @@
     }
   },
   {
+    "id": "baliste",
     "label": "Baliste",
     "prefix": null,
     "type": "ranged",
@@ -6692,9 +7284,17 @@
     "pa": null,
     "damage": "+12",
     "qualities": [
-      "Pointue",
-      "Recharge 3",
-      "Arme d'équipe 2"
+      {
+        "id": "pointue"
+      },
+      {
+        "id": "recharge",
+        "value": 3
+      },
+      {
+        "id": "arme-d-equipe",
+        "value": 2
+      }
     ],
     "desc": "Les balistes sont des arbalètes géantes projetant des carreaux à pointe de fer qui ressemblent à des piquets de clôture. Elles peuvent fendre une personne en deux comme un poulet ou percer un joli trou bien propre dans du bois massif.<br><br>Les balistes sont relativement simples à utiliser. Vous pouvez tenter un Test de Projectiles (Arbalète) en utilisant votre Capacité de Tir, mais dans ce cas, l'arme perd tous ses Atouts tout en conservant ses Défauts.",
     "price": {
@@ -6708,6 +7308,7 @@
     }
   },
   {
+    "id": "catapulte-petite",
     "label": "Catapulte (petite)",
     "prefix": null,
     "type": "ranged",
@@ -6719,9 +7320,17 @@
     "pa": null,
     "damage": "+10",
     "qualities": [
-      "Imprécise",
-      "Recharge 3",
-      "Arme d'équipe 2"
+      {
+        "id": "imprecise"
+      },
+      {
+        "id": "recharge",
+        "value": 3
+      },
+      {
+        "id": "arme-d-equipe",
+        "value": 2
+      }
     ],
     "desc": "Les catapultes sont des armes à tir indirect qui lancent des rochers, des bombes ou des bombes incendiaires en suivant un arc élevé, pour que les munitions s'écrasent ensuite sur les têtes des cibles.",
     "price": {
@@ -6735,6 +7344,7 @@
     }
   },
   {
+    "id": "catapulte-moyenne",
     "label": "Catapulte (moyenne)",
     "prefix": null,
     "type": "ranged",
@@ -6746,9 +7356,17 @@
     "pa": null,
     "damage": "+15",
     "qualities": [
-      "Imprécise",
-      "Recharge 3",
-      "Arme d'équipe 3"
+      {
+        "id": "imprecise"
+      },
+      {
+        "id": "recharge",
+        "value": 3
+      },
+      {
+        "id": "arme-d-equipe",
+        "value": 3
+      }
     ],
     "desc": "Les catapultes sont des armes à tir indirect qui lancent des rochers, des bombes ou des bombes incendiaires en suivant un arc élevé, pour que les munitions s'écrasent ensuite sur les têtes des cibles.",
     "price": {
@@ -6762,6 +7380,7 @@
     }
   },
   {
+    "id": "catapulte-grande",
     "label": "Catapulte (grande)",
     "prefix": null,
     "type": "ranged",
@@ -6773,9 +7392,17 @@
     "pa": null,
     "damage": "+18",
     "qualities": [
-      "Imprécise",
-      "Recharge 4",
-      "Arme d'équipe 4"
+      {
+        "id": "imprecise"
+      },
+      {
+        "id": "recharge",
+        "value": 4
+      },
+      {
+        "id": "arme-d-equipe",
+        "value": 4
+      }
     ],
     "desc": "Les catapultes sont des armes à tir indirect qui lancent des rochers, des bombes ou des bombes incendiaires en suivant un arc élevé, pour que les munitions s'écrasent ensuite sur les têtes des cibles.",
     "price": {
@@ -6789,6 +7416,7 @@
     }
   },
   {
+    "id": "batterie-tonnerre-de-feu",
     "label": "Batterie tonnerre de feu",
     "prefix": null,
     "type": "ranged",
@@ -6800,12 +7428,28 @@
     "pa": null,
     "damage": "+12",
     "qualities": [
-      "À Explosion 5",
-      "Dangereuse",
-      "Imprécise",
-      "Recharge 6",
-      "Salve 9",
-      "Arme d'équipe 3"
+      {
+        "id": "a-explosion",
+        "value": 5
+      },
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "imprecise"
+      },
+      {
+        "id": "recharge",
+        "value": 6
+      },
+      {
+        "id": "salve",
+        "value": 9
+      },
+      {
+        "id": "arme-d-equipe",
+        "value": 3
+      }
     ],
     "desc": "C'est le maître ingénieur Herman Faulkstein qui a inventé cette arme expérimentale, inspiré par un spectacle de feux d'artifice de Cathay à Altdorf. Elle est composée d'un affût d'artillerie sur roues avec neuf missiles chargés de poudre posés sur un cadre. L'élévation peut être ajustée pour tirer sur des cibles au sol ou dans les airs. L'arme n'est pas particulièrement précise et sert davantage à tirer sur de grands régiments que sur de petits groupes au sol.",
     "price": {
@@ -6819,6 +7463,7 @@
     }
   },
   {
+    "id": "canon-a-repetition",
     "label": "Canon à répétition",
     "prefix": null,
     "type": "ranged",
@@ -6830,9 +7475,17 @@
     "pa": null,
     "damage": "+9",
     "qualities": [
-      "Dangereuse",
-      "Recharge 4",
-      "Salve 7"
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "recharge",
+        "value": 4
+      },
+      {
+        "id": "salve",
+        "value": 7
+      }
     ],
     "desc": "Le canon à répétition ressemble à une arquebuse à répétition, avec une manivelle circulaire complexe et des leviers. C'est en réalité un barillet comprenant sept canons, un au milieu et six autres regroupés autour en une forme hexagonale. Cette arme est mortelle pour ceux qui se trouvent devant, mais peut aussi se révéler dangereuse pour un utilisateur inexpérimenté.<br><br>Chaque fois qu'elle tire, celui qui la manie doit effectuer un Test de Résistance Accessible (+20) et subit 1 Blessure par Degré d'échec car l'arme s'enfonce violemment dans son épaule. En cas d'Échec Stupéfiant, l'utilisateur subit un Coup Critique à l'épaule ; utilisez le tableau Blessures Critiques au bras en ajustant les détails si nécessaire pour représenter une blessure à l'épaule.<br><br>Les canons à répétition emploient des balles du même calibre qu'une arme à Poudre noire normale, mais 1 balle et sa charge de poudre sont consommées pour chaque tir d'une salve.<br><br>Quand quelqu'un tourne la manivelle, un ingénieux système de cames allume chaque charge à tour de rôle, propulsant une volée de projectiles mortels depuis le canon.",
     "price": {
@@ -6846,6 +7499,7 @@
     }
   },
   {
+    "id": "canon-a-repetition-feu-d-enfer",
     "label": "Canon à répétition feu d'enfer",
     "prefix": null,
     "type": "ranged",
@@ -6857,10 +7511,21 @@
     "pa": null,
     "damage": "+10",
     "qualities": [
-      "Dangereuse",
-      "Recharge 4",
-      "Salve 9",
-      "Arme d'équipe 3"
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "recharge",
+        "value": 4
+      },
+      {
+        "id": "salve",
+        "value": 9
+      },
+      {
+        "id": "arme-d-equipe",
+        "value": 3
+      }
     ],
     "desc": "Le canon à répétition feu d'enfer est un barillet doté de neuf canons distincts divisés en trois rangées de trois canons fixés sur une manivelle circulaire.",
     "price": {
@@ -6874,6 +7539,7 @@
     }
   },
   {
+    "id": "canon-petit",
     "label": "Canon (petit)",
     "prefix": null,
     "type": "ranged",
@@ -6885,9 +7551,17 @@
     "pa": null,
     "damage": "+10",
     "qualities": [
-      "Dangereuse",
-      "Recharge 4",
-      "Arme d'équipe 2"
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "recharge",
+        "value": 4
+      },
+      {
+        "id": "arme-d-equipe",
+        "value": 2
+      }
     ],
     "desc": "Les plus gros canons ne sont employés que dans les forteresses ou les positions de champ de bataille bien préparées, mais les versions petites et moyennes de cette arme peuvent être montées sur un navire ou un chariot. Sur un champ de bataille, les boulets de canon infligent des dommages dans plusieurs rangs de troupes en rebondissant entre eux. Comme la plupart des situations de combat sont de petites escarmouches, cette propriété est limitée à l'Atout Explosion 2 pour représenter les dommages infligés à ceux à proximité, mais si les cibles sont en ligne, le MJ doit réfléchir au fait que le boulet pourrait en toucher plusieurs.",
     "price": {
@@ -6901,6 +7575,7 @@
     }
   },
   {
+    "id": "canon-moyen",
     "label": "Canon (moyen)",
     "prefix": null,
     "type": "ranged",
@@ -6912,9 +7587,17 @@
     "pa": null,
     "damage": "+14",
     "qualities": [
-      "Dangereuse",
-      "Recharge 6",
-      "Arme d'équipe 3"
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "recharge",
+        "value": 6
+      },
+      {
+        "id": "arme-d-equipe",
+        "value": 3
+      }
     ],
     "desc": "Les plus gros canons ne sont employés que dans les forteresses ou les positions de champ de bataille bien préparées, mais les versions petites et moyennes de cette arme peuvent être montées sur un navire ou un chariot. Sur un champ de bataille, les boulets de canon infligent des dommages dans plusieurs rangs de troupes en rebondissant entre eux. Comme la plupart des situations de combat sont de petites escarmouches, cette propriété est limitée à l'Atout Explosion 2 pour représenter les dommages infligés à ceux à proximité, mais si les cibles sont en ligne, le MJ doit réfléchir au fait que le boulet pourrait en toucher plusieurs.",
     "price": {
@@ -6928,6 +7611,7 @@
     }
   },
   {
+    "id": "canon-grand",
     "label": "Canon (grand)",
     "prefix": null,
     "type": "ranged",
@@ -6939,9 +7623,17 @@
     "pa": null,
     "damage": "+16",
     "qualities": [
-      "Dangereuse",
-      "Recharge 8",
-      "Arme d'équipe 4"
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "recharge",
+        "value": 8
+      },
+      {
+        "id": "arme-d-equipe",
+        "value": 4
+      }
     ],
     "desc": "Les plus gros canons ne sont employés que dans les forteresses ou les positions de champ de bataille bien préparées, mais les versions petites et moyennes de cette arme peuvent être montées sur un navire ou un chariot. Sur un champ de bataille, les boulets de canon infligent des dommages dans plusieurs rangs de troupes en rebondissant entre eux. Comme la plupart des situations de combat sont de petites escarmouches, cette propriété est limitée à l'Atout Explosion 2 pour représenter les dommages infligés à ceux à proximité, mais si les cibles sont en ligne, le MJ doit réfléchir au fait que le boulet pourrait en toucher plusieurs.",
     "price": {
@@ -6955,6 +7647,7 @@
     }
   },
   {
+    "id": "mortier",
     "label": "Mortier",
     "prefix": null,
     "type": "ranged",
@@ -6966,8 +7659,14 @@
     "pa": null,
     "damage": null,
     "qualities": [
-      "Recharge 4",
-      "Arme d'équipe 3"
+      {
+        "id": "recharge",
+        "value": 4
+      },
+      {
+        "id": "arme-d-equipe",
+        "value": 3
+      }
     ],
     "desc": "Un mortier est l'équivalent à Poudre noire d'une catapulte, qui tire un lourd boulet ou une bombe en suivant un arc élevé. Sur le champ de bataille, ils sont surtout utilisés lors des sièges pour projeter des explosifs par-dessus les murs d'un château.",
     "price": {
@@ -6981,6 +7680,7 @@
     }
   },
   {
+    "id": "pierrier",
     "label": "Pierrier",
     "prefix": null,
     "type": "ranged",
@@ -6992,8 +7692,13 @@
     "pa": null,
     "damage": "+14",
     "qualities": [
-      "Dangereuse",
-      "Recharge 4"
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "recharge",
+        "value": 4
+      }
     ],
     "desc": "Un pierrier est l'équivalent d'un tromblon en plus massif. En raison de son poids, il est normalement monté sur un pivot ou sur un trépied.",
     "price": {
@@ -7007,6 +7712,7 @@
     }
   },
   {
+    "id": "demi-lance-de-cavalerie",
     "label": "Demi-lance de cavalerie",
     "prefix": null,
     "type": "melee",
@@ -7018,8 +7724,12 @@
     "pa": null,
     "damage": "+BF+5",
     "qualities": [
-      "Empaleuse",
-      "Percutante"
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "percutante"
+      }
     ],
     "desc": "Les lances de cavalerie ressemblent à des lances ordinaires, mais avec une lourde poignée conçue pour caler l'arme contre le bras et le torse d'un chevalier qui charge. La demi-lance de cavalerie est similaire, mais plus courte et plus légère.<br><br>Les lances de cavalerie et les demi-lances de cavalerie sont considérées comme des armes improvisées si vous les utilisez lors d'un Round où vous n'avez pas Chargé.",
     "price": {
@@ -7033,6 +7743,7 @@
     }
   },
   {
+    "id": "sabre",
     "label": "Sabre",
     "prefix": null,
     "type": "melee",
@@ -7044,7 +7755,10 @@
     "pa": null,
     "damage": "+BF+4",
     "qualities": [
-      "Taillade (1A)"
+      {
+        "id": "taillade",
+        "spec": "1A"
+      }
     ],
     "desc": "Le sabre est similaire au cimeterre, mais un peu plus long et un peu plus droit. Il peut être utilisé à pied avec Corps à Corps (Base), mais dans ce cas, son Atout Taillade (1A) devient Taillade (2A). Les escrimeurs talentueux savent tirer le meilleur parti d'un sabre. S'il est utilisé avec Corps à Corps (Escrime), le sabre conserve son Atout Taillade (1A).",
     "price": {
@@ -7058,6 +7772,7 @@
     }
   },
   {
+    "id": "epee-de-cour",
     "label": "Épée de cour",
     "prefix": null,
     "type": "melee",
@@ -7069,9 +7784,15 @@
     "pa": null,
     "damage": "+BF+2",
     "qualities": [
-      "Empaleuse",
-      "Précise",
-      "Rapide"
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "precise"
+      },
+      {
+        "id": "rapide"
+      }
     ],
     "desc": "Une version plus légère du fleuret. L'épée de cour n'est pas considérée comme une arme sérieuse et est plutôt employée lors des tournois sportifs ou des duels au premier sang. Les épées de cour à la pointe boutonnée et à la lame émoussée sont souvent utilisées comme armes de sport et ont le Défaut Inoffensive.",
     "price": {
@@ -7085,6 +7806,7 @@
     }
   },
   {
+    "id": "gaffe-2",
     "label": "Gaffe",
     "prefix": null,
     "type": "melee",
@@ -7096,8 +7818,12 @@
     "pa": null,
     "damage": "+BF+4",
     "qualities": [
-      "Déstabilisante",
-      "Inoffensive"
+      {
+        "id": "destabilisante"
+      },
+      {
+        "id": "inoffensive"
+      }
     ],
     "desc": "Les gaffes sont utilisées par les dockers pour mieux décharger et maintenir en place les cargaisons, mais elles peuvent devenir des armes très efficaces si elles sont maniées dans l'intention de blesser.",
     "price": {
@@ -7111,6 +7837,7 @@
     }
   },
   {
+    "id": "gantelet-a-pointes",
     "label": "Gantelet à pointes",
     "prefix": null,
     "type": "melee",
@@ -7122,8 +7849,12 @@
     "pa": null,
     "damage": "+BF+3",
     "qualities": [
-      "Déséquilibrée",
-      "Empaleuse"
+      {
+        "id": "desequilibree"
+      },
+      {
+        "id": "empaleuse"
+      }
     ],
     "desc": "Un gantelet à pointes peut être acheté en tant que partie d'une armure de plates pour un bras. Ajoutez le prix du gantelet à pointes à celui de l'armure, mais utilisez seulement l'Encombrement de l'armure elle-même ; le gantelet à pointes ne rajoute pas de poids ou de volume significatif.",
     "price": {
@@ -7137,6 +7868,7 @@
     }
   },
   {
+    "id": "gantelet-verrouille",
     "label": "Gantelet verrouillé",
     "prefix": null,
     "type": "melee",
@@ -7148,7 +7880,9 @@
     "pa": null,
     "damage": "+BF+2",
     "qualities": [
-      "Inoffensive"
+      {
+        "id": "inoffensive"
+      }
     ],
     "desc": "Un gantelet verrouillé est formé de plaques d'acier recouvrant le poing et peut être maintenu en position fermée par une vis ou un loquet. Il peut certes servir d'arme de bagarre, mais il est surtout employé comme méthode pour s'assurer que celui qui le porte ne lâche pas une arme tenue dans la main gantée. Un gantelet verrouillé peut être acheté en tant que partie d'une armure de plates pour un bras. Ajoutez le prix du gantelet verrouillé à celui de l'armure, mais utilisez seulement l'Encombrement de l'armure elle-même ; le gantelet verrouillé ne rajoute pas de poids significatif.<br><br>Un Personnage équipé d'un gantelet verrouillé ne lâche pas l'objet tenu dans cette main, même lorsque les circonstances l'y obligeraient normalement. Au lieu de cela, il subit une pénalité de -20 sur tous les Tests qu'il effectue avec cet objet, y compris les Tests de Corps à Corps, tant que les circonstances qui auraient dû lui faire lâcher l'objet persistent (et pendant un Round minimum). Si pendant cette période un nouvel évènement se produit qui aurait encore une fois dû le contraindre à lâcher l'objet, il le lâche même s'il porte un gantelet verrouillé.",
     "price": {
@@ -7162,6 +7896,7 @@
     }
   },
   {
+    "id": "lacet-etrangleur",
     "label": "Lacet étrangleur",
     "prefix": "(2M)",
     "type": "melee",
@@ -7173,10 +7908,18 @@
     "pa": null,
     "damage": "+BF+2",
     "qualities": [
-      "Déséquilibrée",
-      "Immobilisante",
-      "Inoffensive",
-      "Lente"
+      {
+        "id": "desequilibree"
+      },
+      {
+        "id": "immobilisante"
+      },
+      {
+        "id": "inoffensive"
+      },
+      {
+        "id": "lente"
+      }
     ],
     "desc": "Un lacet étrangleur est une longueur de corde ou de fil faite pour être passée autour du cou de l'adversaire et serrée le plus possible par les mains de celui qui la manie. Un Personnage qui se trouve dans un relais de poste ou dans un lieu urbain peut fabriquer un lacet étrangleur en réussissant un Test étendu de Métier (Cirier, Ingénieur, Tailleur ou Tanneur) Intermédiaire (+0) qui nécessite un total de 5 DR.",
     "price": {
@@ -7190,6 +7933,7 @@
     }
   },
   {
+    "id": "cape-2",
     "label": "Cape",
     "prefix": null,
     "type": "melee",
@@ -7201,9 +7945,15 @@
     "pa": null,
     "damage": "+BF+0",
     "qualities": [
-      "Défensive",
-      "Immobilisante",
-      "Inoffensive"
+      {
+        "id": "defensive"
+      },
+      {
+        "id": "immobilisante"
+      },
+      {
+        "id": "inoffensive"
+      }
     ],
     "desc": "Certains experts en escrime et en parade recommandent de garder une cape en tissu épais sous la main. Si vous l'enroulez autour de votre bras, vous pouvez l'utiliser pour distraire vos adversaires ou pour détourner leurs attaques. Vous pouvez même la jeter sur un opposant dans l'espoir qu'il s'empêtre dans ses plis. Cependant, les capes sont peu adaptées aux attaques d'entrave. Quand vous effectuez un Test pour savoir si un ennemi s'empêtre dans une cape, la cape est considérée comme ayant une Force de 25.",
     "price": {
@@ -7217,6 +7967,7 @@
     }
   },
   {
+    "id": "ahlspiess",
     "label": "Ahlspiess",
     "prefix": "(2M)",
     "type": "melee",
@@ -7228,8 +7979,12 @@
     "pa": null,
     "damage": "+BF+3",
     "qualities": [
-      "Empaleuse",
-      "Perforante"
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "perforante"
+      }
     ],
     "desc": "L'ahlspiess est un long pic fin monté sur un manche de lance, ce qui réduit sa capacité à infliger des blessures tranchantes, mais permet de mieux perforer les armures.",
     "price": {
@@ -7243,6 +7998,7 @@
     }
   },
   {
+    "id": "attrape-coquin",
     "label": "Attrape-coquin",
     "prefix": "(2M)",
     "type": "melee",
@@ -7254,8 +8010,12 @@
     "pa": null,
     "damage": "+BF+2",
     "qualities": [
-      "Défensive",
-      "Immobilisante"
+      {
+        "id": "defensive"
+      },
+      {
+        "id": "immobilisante"
+      }
     ],
     "desc": "L'attrape-coquin est une étrange arme d'hast à tête semi-circulaire hérissée de petits pics. L'arme permet d'attraper une personne par le cou et de la forcer à cesser de se débattre sous peine de se blesser. Elle est assez rare dans l'Empire, mais les skavens et les hobgobelins l'emploient souvent. Certains attrape-coquins sont dotés de mécanismes à ressort. Ils coûtent 4 CO, mais celui qui en manie un bénéficie d'un bonus de +20 sur tous les Tests de Force effectués pour empêtrer quelqu'un avec l'arme.",
     "price": {
@@ -7269,6 +8029,7 @@
     }
   },
   {
+    "id": "hache-d-armes",
     "label": "Hache d'armes",
     "prefix": "(2M)",
     "type": "melee",
@@ -7280,10 +8041,18 @@
     "pa": null,
     "damage": "+BF+4",
     "qualities": [
-      "Taille",
-      "Empaleuse",
-      "Assommante",
-      "Défensive"
+      {
+        "id": "taille"
+      },
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "assommante"
+      },
+      {
+        "id": "defensive"
+      }
     ],
     "desc": "La hache d'armes peut prendre de nombreuses formes, mais la plus répandue inclut une tête coiffée d'un pic court pour les coups d'estoc, une tête de hache d'un côté pour trancher et une tête de marteau de l'autre côté pour infliger des coups contondants.",
     "price": {
@@ -7297,6 +8066,7 @@
     }
   },
   {
+    "id": "pertuisane-fauchard",
     "label": "Pertuisane/Fauchard",
     "prefix": "(2M)",
     "type": "melee",
@@ -7308,9 +8078,16 @@
     "pa": null,
     "damage": "+BF+4",
     "qualities": [
-      "Défensive",
-      "Empaleuse",
-      "Taillade (2A)"
+      {
+        "id": "defensive"
+      },
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "taillade",
+        "spec": "2A"
+      }
     ],
     "desc": "Les pertuisanes sont des lances à lame épaisse en forme de feuille d'arbre, tandis que les fauchards sont des armes d'hast pourvues d'une lame de coupe ou d'une lame d'épée comme tête. Les deux armes fonctionnent de la même manière, sacrifiant une partie de l'allonge de la lance pour infliger des coups tranchants plus puissants.",
     "price": {
@@ -7324,6 +8101,7 @@
     }
   },
   {
+    "id": "serpe-de-guerre",
     "label": "Serpe de guerre",
     "prefix": "(2M)",
     "type": "melee",
@@ -7335,9 +8113,15 @@
     "pa": null,
     "damage": "+BF+4",
     "qualities": [
-      "Défensive",
-      "Taille",
-      "Déstabilisante"
+      {
+        "id": "defensive"
+      },
+      {
+        "id": "taille"
+      },
+      {
+        "id": "destabilisante"
+      }
     ],
     "desc": "Dérivée d'un outil agricole, la serpe de guerre est dotée d'une lame en crochet qui peut servir soit à attraper les adversaires, soit à les hacher menu.",
     "price": {
@@ -7351,6 +8135,7 @@
     }
   },
   {
+    "id": "zweihander-flamberge",
     "label": "Zweihänder flamberge",
     "prefix": "(2M)",
     "type": "melee",
@@ -7362,9 +8147,16 @@
     "pa": null,
     "damage": "+BF+5",
     "qualities": [
-      "Dévastatrice",
-      "Taille",
-      "Taillade (2A)"
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "taille"
+      },
+      {
+        "id": "taillade",
+        "spec": "2A"
+      }
     ],
     "desc": "Les célèbres régiments de joueurs d'épée de l'Empire sont armés d'énormes lames d'acier, aussi longues que beaucoup d'armes d'hast. Certains maîtres armuriers rendent même leurs épées encore plus mortelles en leur ajoutant des ondulations et des bords dentelés. Ces armes sont appelées des flamberges et les blessures qu'elles infligent peuvent être plus profondes à cause de leur puissance pour les coups tranchants.",
     "price": {
@@ -7378,6 +8170,7 @@
     }
   },
   {
+    "id": "baton-pointu",
     "label": "Bâton pointu",
     "prefix": null,
     "type": "ranged",
@@ -7389,9 +8182,15 @@
     "pa": null,
     "damage": "-2",
     "qualities": [
-      "Dangereuse",
-      "Imprécise",
-      "Inoffensive"
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "imprecise"
+      },
+      {
+        "id": "inoffensive"
+      }
     ],
     "desc": "Les bâtons pointus peuvent être utilisés comme munitions par un archer à court de munitions spéciales. Un Personnage qui se trouve dans un lieu boisé peut se procurer un bâton pointu droit en réussissant un Test étendu de Survie en extérieur Intermédiaire (+0) qui nécessite un total de 10 DR. Cependant, méfiance, car comme elles n'ont pas été taillées par un fabricant de flèches professionnel, les flèches improvisées ont tendance à provoquer des Maladresses.",
     "price": {
@@ -7405,6 +8204,7 @@
     }
   },
   {
+    "id": "fleche-barbelee",
     "label": "Flèche barbelée",
     "prefix": null,
     "type": "ranged",
@@ -7416,8 +8216,13 @@
     "pa": null,
     "damage": null,
     "qualities": [
-      "Empaleuse",
-      "Taillade (1A)"
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "taillade",
+        "spec": "1A"
+      }
     ],
     "desc": "La flèche barbelée inflige de vilaines blessures par entaille et cause des dommages supplémentaires si elle n'est pas retirée très précautionneusement.",
     "price": {
@@ -7431,6 +8236,7 @@
     }
   },
   {
+    "id": "fleche-bodkin",
     "label": "Flèche bodkin",
     "prefix": null,
     "type": "ranged",
@@ -7442,8 +8248,12 @@
     "pa": null,
     "damage": null,
     "qualities": [
-      "Empaleuse",
-      "Perforante"
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "perforante"
+      }
     ],
     "desc": "La flèche bodkin est dotée d'une robuste pointe en pic pour perforer les armures.",
     "price": {
@@ -7457,6 +8267,7 @@
     }
   },
   {
+    "id": "bille-de-plomb",
     "label": "Bille de plomb",
     "prefix": null,
     "type": "ranged",
@@ -7468,7 +8279,9 @@
     "pa": null,
     "damage": "+1",
     "qualities": [
-      "Assommante"
+      {
+        "id": "assommante"
+      }
     ],
     "desc": "Munition de fronde en plomb, vendue par lot de 12.",
     "price": {
@@ -7482,6 +8295,7 @@
     }
   },
   {
+    "id": "caillou",
     "label": "Caillou",
     "prefix": null,
     "type": "ranged",
@@ -7493,8 +8307,12 @@
     "pa": null,
     "damage": "-2",
     "qualities": [
-      "Imprécise",
-      "Inoffensive"
+      {
+        "id": "imprecise"
+      },
+      {
+        "id": "inoffensive"
+      }
     ],
     "desc": "Les cailloux peuvent être utilisés comme munitions par un tireur à la fronde à court de munitions spéciales. Un Personnage qui se trouve dans un lieu approprié peut se procurer un caillou adapté à une fronde en réussissant un Test étendu de Survie en extérieur Facile (+40) ou un Test étendu de Perception Intermédiaire (+0) qui nécessite un total de 5 DR.",
     "price": {
@@ -7508,6 +8326,7 @@
     }
   },
   {
+    "id": "arquebuse-a-double-canon",
     "label": "Arquebuse à double canon",
     "prefix": "(2M)",
     "type": "ranged",
@@ -7519,9 +8338,17 @@
     "pa": null,
     "damage": "+9",
     "qualities": [
-      "À répétition 2",
-      "Dangereuse",
-      "Recharge 4"
+      {
+        "id": "a-repetition",
+        "value": 2
+      },
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "recharge",
+        "value": 4
+      }
     ],
     "desc": "Si un canon est déjà une bonne chose, alors deux canons doivent être assurément mieux. L'arquebuse à double canon est quasiment l'arme à feu la plus complexe possible qui puisse encore être utilisée par le soldat moyen. Elle comporte deux canons et deux gâchettes. Même si elle est lourde, la plupart sont accompagnées d'un appareil pour recharger les deux canons en même temps, ce qui permet à celui qui la manie de tirer plus fréquemment.",
     "price": {
@@ -7535,6 +8362,7 @@
     }
   },
   {
+    "id": "arquebuse-a-meche",
     "label": "Arquebuse à mèche",
     "prefix": "(2M)",
     "type": "ranged",
@@ -7546,8 +8374,13 @@
     "pa": null,
     "damage": "+8",
     "qualities": [
-      "Dangereuse",
-      "Recharge 4"
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "recharge",
+        "value": 4
+      }
     ],
     "desc": "L'un des premiers modèles d'arquebuse. Quelques-unes de ces reliques persistent encore dans l'Empire et peuvent souvent être achetées pour une bouchée de pain. Avant d'utiliser cette arquebuse, celui qui la manie doit dépenser une Action pour allumer la mèche sur son arme. Une mèche allumée brûle pendant un très long moment, sauf si elle est éteinte par la pluie ou le vent.",
     "price": {
@@ -7561,6 +8394,7 @@
     }
   },
   {
+    "id": "hache-arquebuse",
     "label": "Hache-arquebuse",
     "prefix": "(2M)",
     "type": "ranged",
@@ -7572,9 +8406,16 @@
     "pa": null,
     "damage": "+9",
     "qualities": [
-      "Dangereuse",
-      "Imprécise",
-      "Recharge 4"
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "imprecise"
+      },
+      {
+        "id": "recharge",
+        "value": 4
+      }
     ],
     "desc": "Comme son nom l'indique, cette arme combine une arquebuse et une hache. Elle peut être utilisée soit comme l'une, soit comme l'autre. Cependant, si elle est maniée comme hache alors qu'elle est chargée, une Maladresse décharge l'arme dans le corps de l'utilisateur.",
     "price": {
@@ -7588,6 +8429,7 @@
     }
   },
   {
+    "id": "hallebarde-arquebuse",
     "label": "Hallebarde-arquebuse",
     "prefix": "(2M)",
     "type": "ranged",
@@ -7599,9 +8441,16 @@
     "pa": null,
     "damage": "+9",
     "qualities": [
-      "Dangereuse",
-      "Imprécise",
-      "Recharge 4"
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "imprecise"
+      },
+      {
+        "id": "recharge",
+        "value": 4
+      }
     ],
     "desc": "Sur le même principe que la hache-arquebuse, cette arme sert à la fois de hallebarde et d'arquebuse. Le canon de l'arme à feu est intégré dans la hampe de la hallebarde. Si elle est maniée comme hallebarde alors qu'elle est chargée, une Maladresse décharge l'arme sur quiconque a le malheur de se tenir juste derrière l'utilisateur.",
     "price": {
@@ -7615,6 +8464,7 @@
     }
   },
   {
+    "id": "haquebute",
     "label": "Haquebute",
     "prefix": "(2M)",
     "type": "ranged",
@@ -7626,9 +8476,16 @@
     "pa": null,
     "damage": "+9",
     "qualities": [
-      "Dangereuse",
-      "Imprécise",
-      "Recharge 5"
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "imprecise"
+      },
+      {
+        "id": "recharge",
+        "value": 5
+      }
     ],
     "desc": "L'haquebute est à peine plus qu'un canon à échelle réduite, un modèle très ancien souvent dépourvu d'innovations telles que la mire, la gâchette ou même la poignée ou la crosse. Les premières haquebutes tiraient des munitions de taille similaire ou inférieure à celles utilisées pour les armes à poudre noire modernes, mais celles qui sont encore employées actuellement dans l'Empire sont généralement des armes à canon large gardées par des nobles qui veulent impressionner les visiteurs. Cependant, la taille conséquente de ces reliques les rend utiles là où le calibre des nouveaux modèles peut laisser à désirer.",
     "price": {
@@ -7642,6 +8499,7 @@
     }
   },
   {
+    "id": "pistolet-patte-de-griffon",
     "label": "Pistolet patte de griffon",
     "prefix": null,
     "type": "ranged",
@@ -7653,9 +8511,17 @@
     "pa": null,
     "damage": "+7",
     "qualities": [
-      "Imprécise",
-      "Recharge 6",
-      "Tir de zone 5"
+      {
+        "id": "imprecise"
+      },
+      {
+        "id": "recharge",
+        "value": 6
+      },
+      {
+        "id": "tir-de-zone",
+        "value": 5
+      }
     ],
     "desc": "Cette arme est conçue pour tirer sur un groupe d'ennemis en formation serrée. Une seule gâchette décharge les six canons et pour recharger, il faut six munitions et la même quantité de poudre.",
     "price": {
@@ -7669,6 +8535,7 @@
     }
   },
   {
+    "id": "tromblon-a-meche",
     "label": "Tromblon à mèche",
     "prefix": "(2M)",
     "type": "ranged",
@@ -7680,9 +8547,17 @@
     "pa": null,
     "damage": "+7",
     "qualities": [
-      "Dangereuse",
-      "Recharge 3",
-      "Tir de zone 3"
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "recharge",
+        "value": 3
+      },
+      {
+        "id": "tir-de-zone",
+        "value": 3
+      }
     ],
     "desc": "L'un des premiers modèles de tromblon. Cette arme comporte les mêmes inconvénients que l'arquebuse à mèche.",
     "price": {
@@ -7696,6 +8571,7 @@
     }
   },
   {
+    "id": "canne-pistolet",
     "label": "Canne-pistolet",
     "prefix": null,
     "type": "ranged",
@@ -7707,9 +8583,16 @@
     "pa": null,
     "damage": "+8",
     "qualities": [
-      "Dangereuse",
-      "Imprécise",
-      "Recharge 6"
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "imprecise"
+      },
+      {
+        "id": "recharge",
+        "value": 6
+      }
     ],
     "desc": "Un pistolet à canon court dissimulé dans un bâton de marche ou dans une canne. Cette arme n'est pas des plus pratiques, mais est très difficile à repérer. Ceux qui cherchent des armes dissimulées doivent réussir un Test de Perception Difficile (–20) pour identifier la canne ou le bâton comme une arme, ou un Test de Perception Très Difficile (–30) s'ils connaissent mal les armes à poudre noire.",
     "price": {
@@ -7723,6 +8606,7 @@
     }
   },
   {
+    "id": "mortier-a-main",
     "label": "Mortier à main",
     "prefix": "(2M)",
     "type": "ranged",
@@ -7734,9 +8618,16 @@
     "pa": null,
     "damage": "+7",
     "qualities": [
-      "Dangereuse",
-      "Imprécise",
-      "Recharge 2"
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "imprecise"
+      },
+      {
+        "id": "recharge",
+        "value": 2
+      }
     ],
     "desc": "Ressemblant à un tromblon court et trapu, le mortier à main est un mortier à échelle réduite conçu pour lancer des bombes et d'autres gros objets dans la direction désirée. Son utilisation est très dangereuse car si celui qui la manie charge un peu trop de poudre ou calcule mal le temps de combustion d'une mèche sur une bombe chargée, l'arme explose de manière spectaculaire. Si l'utilisateur obtient une Maladresse en rechargeant l'arme, elle explose. Cependant, l'appareil élargit considérablement le champ des possibles à celui qui prend le risque de s'en servir.",
     "price": {
@@ -7750,6 +8641,7 @@
     }
   },
   {
+    "id": "poivriere",
     "label": "Poivrière",
     "prefix": null,
     "type": "ranged",
@@ -7761,10 +8653,20 @@
     "pa": null,
     "damage": "+8",
     "qualities": [
-      "À répétition 4",
-      "Dangereuse",
-      "Pistolet",
-      "Recharge 4"
+      {
+        "id": "a-repetition",
+        "value": 4
+      },
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "pistolet"
+      },
+      {
+        "id": "recharge",
+        "value": 4
+      }
     ],
     "desc": "Cette arme est une forme plus simple du pistolet à répétition, une série de quatre canons préchargés placés devant un unique mécanisme de tir. Chaque fois que l'arme est déchargée, elle doit être tournée, réamorcée à la manivelle ou préparée manuellement d'une autre façon pour tirer de nouveau. Cela prend très peu de temps par rapport au fait de recharger une arme, mais l'utilisateur doit avoir sa deuxième main libre pour manier la poivrière sinon elle perd l'Atout À répétition.",
     "price": {
@@ -7778,6 +8680,7 @@
     }
   },
   {
+    "id": "balle-de-gros-calibre-et-poudre",
     "label": "Balle de gros calibre et poudre",
     "prefix": null,
     "type": "ranged",
@@ -7789,9 +8692,15 @@
     "pa": null,
     "damage": "+2",
     "qualities": [
-      "Empaleuse",
-      "Percutante",
-      "Perforante"
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "percutante"
+      },
+      {
+        "id": "perforante"
+      }
     ],
     "desc": "Ces munitions sont techniquement de petits boulets de canon et sont chargées dans les armes à grand canon comme l'haquebute ou le mortier à main. Ceux qui tirent avec ces munitions ou se tiennent à 2 mètres ou moins de l'utilisateur doivent réussir un Test de Résistance Intermédiaire (+0) sous peine de recevoir un État Assourdi.",
     "price": {
@@ -7805,6 +8714,7 @@
     }
   },
   {
+    "id": "bombe-explosive",
     "label": "Bombe explosive",
     "prefix": null,
     "type": "ranged",
@@ -7816,9 +8726,16 @@
     "pa": null,
     "damage": "+5",
     "qualities": [
-      "Dangereuse",
-      "À Explosion 5",
-      "Percutante"
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "a-explosion",
+        "value": 5
+      },
+      {
+        "id": "percutante"
+      }
     ],
     "desc": "Ces munitions sont souvent lancées à la main. Beaucoup de gens ont tenté de projeter des engins explosifs remplis de poudre noire, de poix ou de goudron plus loin que la distance atteignable simplement à la main. Ces engins peuvent être chargés dans un mortier à main et ainsi lancés très loin.<br><br>Mais ces munitions ne peuvent pas être chargées très à l'avance car leur mèche doit être allumée avant de les introduire dans le mortier à main. Quand vous chargez la bombe explosive ou la bombe incendiaire, vous devez décider combien de Rounds dure la mèche que vous avez utilisée pour la munition.<br><br>Avec une mèche de la durée d'un Round, elle explose à la fin du Round actuel, avec une mèche de la durée de deux Rounds, elle explose à la fin du Round suivant. La munition explose au moment déterminé que vous ayez ou non tiré avec l'arme. Vous devez le garder en tête car le MJ n'est pas obligé de vous le rappeler avant que l'instant fatidique n'arrive.",
     "price": {
@@ -7832,6 +8749,7 @@
     }
   },
   {
+    "id": "cartouche-en-papier",
     "label": "Cartouche en papier",
     "prefix": null,
     "type": "ranged",
@@ -7843,8 +8761,12 @@
     "pa": null,
     "damage": "+1",
     "qualities": [
-      "Empaleuse",
-      "Perforante"
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "perforante"
+      }
     ],
     "desc": "Ce sont des paquets préremplis de munitions, de poudre et de bourre, qui facilitent grandement la recharge des armes à poudre noire. Les Tests effectués pour recharger une arme du type approprié avec ces munitions bénéficient d'un bonus de +10.",
     "price": {
@@ -7858,6 +8780,7 @@
     }
   },
   {
+    "id": "cartouche-et-poudre-de-precision",
     "label": "Cartouche et poudre de précision",
     "prefix": null,
     "type": "ranged",
@@ -7869,9 +8792,15 @@
     "pa": null,
     "damage": "+1",
     "qualities": [
-      "Empaleuse",
-      "Perforante",
-      "Précise"
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "perforante"
+      },
+      {
+        "id": "precise"
+      }
     ],
     "desc": "Une poudre préparée de manière experte et des balles soigneusement polies et arrondies peuvent être combinées pour donner des tirs plus fiables et plus précis avec n'importe quelle arme à poudre noire appropriée.",
     "price": {
@@ -7885,6 +8814,7 @@
     }
   },
   {
+    "id": "ferraille-et-poudre",
     "label": "Ferraille et poudre",
     "prefix": null,
     "type": "ranged",
@@ -7896,8 +8826,12 @@
     "pa": null,
     "damage": "-1",
     "qualities": [
-      "Infecté",
-      "Tir de zone +3"
+      {
+        "id": "infecte"
+      },
+      {
+        "id": "tir-de-zone"
+      }
     ],
     "desc": "« Ferraille » est un terme général pour désigner les vieux clous de toiture, les morceaux de fer à cheval rouillés, les têtes de flèche et les autres bouts de matériau tranchants et pointus récupérés dans les tas de rouille ou de rebuts accessibles. Les attaques portées en utilisant ces munitions bénéficient du Trait de créature Infecté.",
     "price": {
@@ -7911,6 +8845,7 @@
     }
   },
   {
+    "id": "grappin-munition",
     "label": "Grappin (munition)",
     "prefix": null,
     "type": "ranged",
@@ -7922,8 +8857,12 @@
     "pa": null,
     "damage": "+2",
     "qualities": [
-      "Perforante",
-      "Recharge +2"
+      {
+        "id": "perforante"
+      },
+      {
+        "id": "recharge"
+      }
     ],
     "desc": "Recommandé à la Marine impériale pour son utilisation lors des actions d'abordage ou pour déchirer le gréement de l'ennemi, un grappin est composé d'un crochet entouré de beaucoup de rembourrage conçu pour être tiré par un mortier à main uniquement, avec environ 20 mètres de corde. Il peut être employé pour fixer une corde à un point éloigné ou pour piéger un ennemi en train de s'échapper, auquel cas il inflige un État Empêtré si le coup touche.<br><br>Si vous envisagez d'avoir recours à un grappin pour vous faufiler discrètement quelque part, n'oubliez pas que le tir fait énormément de bruit.",
     "price": {
@@ -7937,6 +8876,7 @@
     }
   },
   {
+    "id": "poudre-impregnee-d-aqshy",
     "label": "Poudre imprégnée d'Aqshy",
     "prefix": null,
     "type": "ranged",
@@ -7948,8 +8888,12 @@
     "pa": null,
     "damage": "+2",
     "qualities": [
-      "Empaleuse",
-      "Perforante"
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "perforante"
+      }
     ],
     "desc": "Destinée aux aventuriers très braves ou très stupides, cette poudre est fabriquée à partir de sable du désert de Néhékhara, imprégné d'une quantité supplémentaire d'Aqshy par des moyens connus uniquement du Collège Flamboyant d'Altdorf. Elle a davantage de puissance explosive que la poudre normale, mais use les canons bien plus rapidement que la poudre ordinaire. Tout Test raté incluant un 8 ou un 9 sur le dé des dizaines ou celui des unités est considéré comme une Maladresse quand vous utilisez cette poudre.",
     "price": {
@@ -7963,6 +8907,7 @@
     }
   },
   {
+    "id": "jezail-a-malepierre",
     "label": "Jezaïl à malepierre",
     "type": "ranged",
     "subType": "Poudre noire",
@@ -7983,14 +8928,23 @@
     "pa": null,
     "damage": "+9",
     "qualities": [
-      "Pointue",
-      "Précise",
-      "Recharge",
-      "Dangereuse"
+      {
+        "id": "pointue"
+      },
+      {
+        "id": "precise"
+      },
+      {
+        "id": "recharge"
+      },
+      {
+        "id": "dangereuse"
+      }
     ],
     "enc": 3
   },
   {
+    "id": "canon-ratling",
     "label": "Canon ratling",
     "type": "ranged",
     "subType": "Ingénierie",
@@ -8011,16 +8965,30 @@
     "pa": null,
     "damage": "+10",
     "qualities": [
-      "À Poudre noire",
-      "Empaleuse",
-      "Explosion 3",
-      "Perforante",
-      "Dangereuse",
-      "Imprécise"
+      {
+        "id": "a-poudre-noire"
+      },
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "a-explosion",
+        "value": 3
+      },
+      {
+        "id": "perforante"
+      },
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "imprecise"
+      }
     ],
     "enc": 4
   },
   {
+    "id": "pistolet-a-malepierre",
     "label": "Pistolet à malepierre",
     "type": "ranged",
     "subType": "Poudre noire",
@@ -8041,17 +9009,33 @@
     "pa": null,
     "damage": "+8",
     "qualities": [
-      "Pistolet",
-      "À Poudre noire",
-      "Dévastatrice",
-      "Empaleuse",
-      "Perforante",
-      "Dangereuse",
-      "Recharge 1"
+      {
+        "id": "pistolet"
+      },
+      {
+        "id": "a-poudre-noire"
+      },
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "perforante"
+      },
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "recharge",
+        "value": 1
+      }
     ],
     "enc": 0
   },
   {
+    "id": "baiser-de-la-vouivre",
     "label": "Baiser de la Vouivre",
     "type": "trapping",
     "subType": "Drogues et poisons",
@@ -8066,9 +9050,11 @@
       "book": "ZI",
       "page": 105
     },
-    "desc": "Puissant poison de contact extrait du dard d'une vouivre. Les personnes qui subissent une Blessure à cause d'une lame, flèche ou carreau recouvert de baiser de la vouivre doivent réussir un Test de Résistance, sous peine de recevoir immédiatement 5 Blessures supplémentaires qui ignorent l'Endurance et l'Armure. Une arme traitée doit être utilisée dans un délai de 2+1d10 Rounds avant que le poison ne s'évapore."
+    "desc": "Puissant poison de contact extrait du dard d'une vouivre. Les personnes qui subissent une Blessure à cause d'une lame, flèche ou carreau recouvert de baiser de la vouivre doivent réussir un Test de Résistance, sous peine de recevoir immédiatement 5 Blessures supplémentaires qui ignorent l'Endurance et l'Armure. Une arme traitée doit être utilisée dans un délai de 2+1d10 Rounds avant que le poison ne s'évapore.",
+    "qualities": []
   },
   {
+    "id": "boursoufleur",
     "label": "Boursoufleur",
     "type": "trapping",
     "subType": "Drogues et poisons",
@@ -8083,9 +9069,11 @@
       "book": "ZI",
       "page": 105
     },
-    "desc": "Poison dérivé du venin d'arachnarok. Un simple contact provoque des boursouflures et fait fondre la chair. Une arme traitée doit être utilisée dans l'heure ; les lames recouvertes sont tachetées de vert, souvent de façon permanente. Quand une arme recouverte de boursoufleur inflige au moins 1 Blessure, elle applique automatiquement 1d10 Blessures supplémentaires. Quiconque en ingère doit faire un Test de Résistance Difficile (-20) ou subir immédiatement une Blessure Critique au torse."
+    "desc": "Poison dérivé du venin d'arachnarok. Un simple contact provoque des boursouflures et fait fondre la chair. Une arme traitée doit être utilisée dans l'heure ; les lames recouvertes sont tachetées de vert, souvent de façon permanente. Quand une arme recouverte de boursoufleur inflige au moins 1 Blessure, elle applique automatiquement 1d10 Blessures supplémentaires. Quiconque en ingère doit faire un Test de Résistance Difficile (-20) ou subir immédiatement une Blessure Critique au torse.",
+    "qualities": []
   },
   {
+    "id": "long-sommeil",
     "label": "Long Sommeil",
     "type": "trapping",
     "subType": "Drogues et poisons",
@@ -8100,9 +9088,11 @@
       "book": "ZI",
       "page": 105
     },
-    "desc": "Venin distillé de mangeuse d'hommes de la Drakwald, presque impossible à détecter (-40 à toute tentative). Si une dose complète est ingérée, la victime doit réussir un Test de Résistance Difficile (-20). En cas d'échec, elle ressent juste une fatigue précoce, puis s'endort ; une fois endormie, il est presque impossible de la sauver et elle ne se réveillera jamais."
+    "desc": "Venin distillé de mangeuse d'hommes de la Drakwald, presque impossible à détecter (-40 à toute tentative). Si une dose complète est ingérée, la victime doit réussir un Test de Résistance Difficile (-20). En cas d'échec, elle ressent juste une fatigue précoce, puis s'endort ; une fois endormie, il est presque impossible de la sauver et elle ne se réveillera jamais.",
+    "qualities": []
   },
   {
+    "id": "sibilance",
     "label": "Sibilance",
     "type": "trapping",
     "subType": "Drogues et poisons",
@@ -8117,9 +9107,11 @@
       "book": "ZI",
       "page": 105
     },
-    "desc": "Poison difficile à détecter. Pendant six heures après l'ingestion, la victime se fatigue très facilement : toute tâche impliquant la moindre stimulation physique inflige l'État Exténué, et les activités qui en causent normalement un en appliquent deux. À la fin de chaque heure, un Test de Résistance Intermédiaire (+0) réussi stoppe l'aggravation."
+    "desc": "Poison difficile à détecter. Pendant six heures après l'ingestion, la victime se fatigue très facilement : toute tâche impliquant la moindre stimulation physique inflige l'État Exténué, et les activités qui en causent normalement un en appliquent deux. À la fin de chaque heure, un Test de Résistance Intermédiaire (+0) réussi stoppe l'aggravation.",
+    "qualities": []
   },
   {
+    "id": "potion-a-deux-tetes",
     "label": "Potion à deux têtes",
     "type": "trapping",
     "subType": "Herbes et potions",
@@ -8134,9 +9126,11 @@
       "book": "ZI",
       "page": 106
     },
-    "desc": "Préparée à partir du sang d'amphisbaena (dont chaque tête mord l'autre, rendant son sang un puissant antidote). Une préparation de sang d'amphisbaena confère un bonus de +40 pour résister aux effets de n'importe quel poison."
+    "desc": "Préparée à partir du sang d'amphisbaena (dont chaque tête mord l'autre, rendant son sang un puissant antidote). Une préparation de sang d'amphisbaena confère un bonus de +40 pour résister aux effets de n'importe quel poison.",
+    "qualities": []
   },
   {
+    "id": "remede-de-lurek",
     "label": "Remède de Lurek",
     "type": "trapping",
     "subType": "Herbes et potions",
@@ -8151,9 +9145,11 @@
       "book": "ZI",
       "page": 106
     },
-    "desc": "Boisson immonde préparée à base de plantes des marais et de parties de créatures (sang de rhinox ou de loup), qui force l'organisme à évacuer l'alcool. Dans la minute, elle annule les pénalités de Caractéristique dues à des Tests de Résistance à l'alcool échoués ou à l'État Ivre. Le buveur subit alors un État Exténué pendant (10 − Bonus d'Endurance) heures."
+    "desc": "Boisson immonde préparée à base de plantes des marais et de parties de créatures (sang de rhinox ou de loup), qui force l'organisme à évacuer l'alcool. Dans la minute, elle annule les pénalités de Caractéristique dues à des Tests de Résistance à l'alcool échoués ou à l'État Ivre. Le buveur subit alors un État Exténué pendant (10 − Bonus d'Endurance) heures.",
+    "qualities": []
   },
   {
+    "id": "solvant-a-bezoard",
     "label": "Solvant à bézoard",
     "type": "trapping",
     "subType": "Herbes et potions",
@@ -8168,9 +9164,11 @@
       "book": "ZI",
       "page": 106
     },
-    "desc": "Mélange d'alcool conservé une nuit dans un estomac de chèvre. Inutile en l'état, mais il suffit d'y verser une goutte de n'importe quel poison pour en faire un antidote à cette substance précise. L'antidote n'est efficace que contre exactement le même poison issu de la même préparation."
+    "desc": "Mélange d'alcool conservé une nuit dans un estomac de chèvre. Inutile en l'état, mais il suffit d'y verser une goutte de n'importe quel poison pour en faire un antidote à cette substance précise. L'antidote n'est efficace que contre exactement le même poison issu de la même préparation.",
+    "qualities": []
   },
   {
+    "id": "acide-de-troll",
     "label": "Acide de troll",
     "type": "trapping",
     "subType": "Herbes et potions",
@@ -8185,9 +9183,11 @@
       "book": "ZI",
       "page": 107
     },
-    "desc": "Sécrétions caustiques du système digestif d'un troll (bile pure), vendues en fioles renforcées. Une seule flasque suffit pour traverser 8 points d'Encombrement d'Équipement et inflige +9 Dégâts de base. Utilisé comme arme de fortune, il possède l'Atout Perforante et le Défaut Dangereuse."
+    "desc": "Sécrétions caustiques du système digestif d'un troll (bile pure), vendues en fioles renforcées. Une seule flasque suffit pour traverser 8 points d'Encombrement d'Équipement et inflige +9 Dégâts de base. Utilisé comme arme de fortune, il possède l'Atout Perforante et le Défaut Dangereuse.",
+    "qualities": []
   },
   {
+    "id": "bouclier-de-la-forge",
     "label": "Bouclier de la forge",
     "type": "trapping",
     "subType": "Herbes et potions",
@@ -8202,9 +9202,11 @@
       "book": "ZI",
       "page": 107
     },
-    "desc": "Onguent dérivé de la bave de gueule d'effroi, utilisé par les nains pour manipuler des matériaux brûlants. Un flacon confère 4 PA contre les Dégâts de feu de toutes sortes (y compris magiques) et immunise contre l'État En flammes, mais inflige -20 à l'Agilité et l'Initiative. Agit une heure (ou éliminé avant en frottant avec de l'alcool)."
+    "desc": "Onguent dérivé de la bave de gueule d'effroi, utilisé par les nains pour manipuler des matériaux brûlants. Un flacon confère 4 PA contre les Dégâts de feu de toutes sortes (y compris magiques) et immunise contre l'État En flammes, mais inflige -20 à l'Agilité et l'Initiative. Agit une heure (ou éliminé avant en frottant avec de l'alcool).",
+    "qualities": []
   },
   {
+    "id": "camouflarbre",
     "label": "Camouflarbre",
     "type": "trapping",
     "subType": "Herbes et potions",
@@ -8219,9 +9221,11 @@
       "book": "ZI",
       "page": 107
     },
-    "desc": "Onguent des elfes sylvains à base de chair de sangsue caméléon : étalé sur la peau, il prend lentement l'aspect de l'environnement. Recouvert entièrement, l'utilisateur bénéficie d'un bonus de +40 à tous les Tests de Discrétion basés sur la vue (+10 pour visage et mains seuls, un quart de dose). Son odeur nauséabonde le réserve aux proies à l'odorat peu développé."
+    "desc": "Onguent des elfes sylvains à base de chair de sangsue caméléon : étalé sur la peau, il prend lentement l'aspect de l'environnement. Recouvert entièrement, l'utilisateur bénéficie d'un bonus de +40 à tous les Tests de Discrétion basés sur la vue (+10 pour visage et mains seuls, un quart de dose). Son odeur nauséabonde le réserve aux proies à l'odorat peu développé.",
+    "qualities": []
   },
   {
+    "id": "dernier-souffle",
     "label": "Dernier souffle",
     "type": "trapping",
     "subType": "Herbes et potions",
@@ -8236,9 +9240,11 @@
       "book": "ZI",
       "page": 107
     },
-    "desc": "Potion à base d'os de revenant, versée dans la gorge d'un cadavre frais (moins d'un jour) pour le ramener brièvement à la vie. Il peut répondre à trois questions sans pouvoir mentir (comme le sort Dernières paroles), puis retrouve le repos. Si on lui pose une quatrième question, le cadavre se transforme en une chose du Bois mort et attaque tout le monde."
+    "desc": "Potion à base d'os de revenant, versée dans la gorge d'un cadavre frais (moins d'un jour) pour le ramener brièvement à la vie. Il peut répondre à trois questions sans pouvoir mentir (comme le sort Dernières paroles), puis retrouve le repos. Si on lui pose une quatrième question, le cadavre se transforme en une chose du Bois mort et attaque tout le monde.",
+    "qualities": []
   },
   {
+    "id": "esprit-clair",
     "label": "Esprit clair",
     "type": "trapping",
     "subType": "Herbes et potions",
@@ -8253,9 +9259,11 @@
       "book": "ZI",
       "page": 107
     },
-    "desc": "Potion rare à base de sang de cornu qui renforce l'esprit. Le consommateur gagne le Trait À sang-froid et peut inverser les Tests échoués basés sur la Force Mentale. S'il reçoit un État Surpris, il n'est pas perdu lors de la première occasion."
+    "desc": "Potion rare à base de sang de cornu qui renforce l'esprit. Le consommateur gagne le Trait À sang-froid et peut inverser les Tests échoués basés sur la Force Mentale. S'il reçoit un État Surpris, il n'est pas perdu lors de la première occasion.",
+    "qualities": []
   },
   {
+    "id": "feu-de-carroburg",
     "label": "Feu de Carroburg",
     "type": "trapping",
     "subType": "Herbes et potions",
@@ -8270,9 +9278,11 @@
       "book": "ZI",
       "page": 108
     },
-    "desc": "Potion à base de gelée d'amibe permettant de cracher du feu. L'utilisateur gagne le Trait Souffle +10 (Feu) qu'il peut activer une fois sans dépenser d'Avantage, après quoi les effets se dissipent. Immédiatement après, il doit faire un Test de Résistance Difficile (-20) ou subir un État En flammes."
+    "desc": "Potion à base de gelée d'amibe permettant de cracher du feu. L'utilisateur gagne le Trait Souffle +10 (Feu) qu'il peut activer une fois sans dépenser d'Avantage, après quoi les effets se dissipent. Immédiatement après, il doit faire un Test de Résistance Difficile (-20) ou subir un État En flammes.",
+    "qualities": []
   },
   {
+    "id": "feu-liquide",
     "label": "Feu liquide",
     "type": "trapping",
     "subType": "Herbes et potions",
@@ -8287,9 +9297,11 @@
       "book": "ZI",
       "page": 108
     },
-    "desc": "Sang de grand taurus traité, mis en fioles. Déversé, il prend feu et brûle sur n'importe quelle surface (même gelée ou marécageuse). Utilisé comme arme, il compte comme une bombe incendiaire, mais les États En flammes qui en résultent ne peuvent pas être annulés pendant 3 Rounds, même immergé."
+    "desc": "Sang de grand taurus traité, mis en fioles. Déversé, il prend feu et brûle sur n'importe quelle surface (même gelée ou marécageuse). Utilisé comme arme, il compte comme une bombe incendiaire, mais les États En flammes qui en résultent ne peuvent pas être annulés pendant 3 Rounds, même immergé.",
+    "qualities": []
   },
   {
+    "id": "fleau-de-la-sorciere",
     "label": "Fléau de la sorcière",
     "type": "trapping",
     "subType": "Herbes et potions",
@@ -8304,9 +9316,11 @@
       "book": "ZI",
       "page": 108
     },
-    "desc": "Potion de dents de gueule d'effroi broyées. L'utilisateur gagne le Trait Résistance à la Magie 3 (réduit de 3 le DR de tout sort l'affectant) pendant une heure. Chaque dose supplémentaire augmente de 1 la valeur et prolonge d'une heure, mais exige un Test de Résistance Intermédiaire (+0) ; un échec fait sécréter une bave toxique (1 État Empoisonné par Round, et à quiconque le touche) pendant dix Rounds."
+    "desc": "Potion de dents de gueule d'effroi broyées. L'utilisateur gagne le Trait Résistance à la Magie 3 (réduit de 3 le DR de tout sort l'affectant) pendant une heure. Chaque dose supplémentaire augmente de 1 la valeur et prolonge d'une heure, mais exige un Test de Résistance Intermédiaire (+0) ; un échec fait sécréter une bave toxique (1 État Empoisonné par Round, et à quiconque le touche) pendant dix Rounds.",
+    "qualities": []
   },
   {
+    "id": "furie-du-preyton",
     "label": "Furie du preyton",
     "type": "trapping",
     "subType": "Herbes et potions",
@@ -8321,9 +9335,11 @@
       "book": "ZI",
       "page": 108
     },
-    "desc": "Potion de bile de preyton. Quand une personne la boit, elle entre immédiatement dans un État de Frénésie qui dure 1d10 Rounds et ne peut pas être calmé avant ce délai."
+    "desc": "Potion de bile de preyton. Quand une personne la boit, elle entre immédiatement dans un État de Frénésie qui dure 1d10 Rounds et ne peut pas être calmé avant ce délai.",
+    "qualities": []
   },
   {
+    "id": "liqueur-de-serpent-du-prophete",
     "label": "Liqueur de serpent du prophète",
     "type": "trapping",
     "subType": "Herbes et potions",
@@ -8338,9 +9354,11 @@
       "book": "ZI",
       "page": 109
     },
-    "desc": "Breuvage distillé avec un peu de venin d'amphisbaena, donnant des visions de passé et de futur (à la discrétion du MJ). L'utilisateur fait un Test de Résistance à l'alcool ; en cas de succès, il peut dépenser un point de Chance dans l'heure pour inverser les dés de n'importe quel Test échoué."
+    "desc": "Breuvage distillé avec un peu de venin d'amphisbaena, donnant des visions de passé et de futur (à la discrétion du MJ). L'utilisateur fait un Test de Résistance à l'alcool ; en cas de succès, il peut dépenser un point de Chance dans l'heure pour inverser les dés de n'importe quel Test échoué.",
+    "qualities": []
   },
   {
+    "id": "malveillance",
     "label": "Malveillance",
     "type": "trapping",
     "subType": "Herbes et potions",
@@ -8355,9 +9373,11 @@
       "book": "ZI",
       "page": 109
     },
-    "desc": "Sang de chimère mélangé d'ingrédients exotiques et de bière naine. Le buveur fait un Test de Résistance Complexe (-10) : en cas de succès, il obtient le Trait Sang corrosif pendant 3+DR Rounds ; en cas d'échec, il subit deux États Empoisonné. Toute créature Bestiale qui le mord et reçoit des Dégâts ne le mordra plus de ce combat."
+    "desc": "Sang de chimère mélangé d'ingrédients exotiques et de bière naine. Le buveur fait un Test de Résistance Complexe (-10) : en cas de succès, il obtient le Trait Sang corrosif pendant 3+DR Rounds ; en cas d'échec, il subit deux États Empoisonné. Toute créature Bestiale qui le mord et reçoit des Dégâts ne le mordra plus de ce combat.",
+    "qualities": []
   },
   {
+    "id": "poudre-de-veine",
     "label": "Poudre de veine",
     "type": "trapping",
     "subType": "Herbes et potions",
@@ -8372,9 +9392,11 @@
       "book": "ZI",
       "page": 109
     },
-    "desc": "Mélange à base de serre de noctecorbe. En onguent, étalé sur une plaie, dissipe tous les États Hémorragique sans Test de Guérison. En potion, permet d'annuler un État Hémorragique à la fin de chaque Round pendant une heure. Une seconde dose pendant l'effet exige un Test de Résistance (+0) ou 1d10 Blessures + État Exténué. Empêche aussi les vampires de se nourrir du sang de l'utilisateur."
+    "desc": "Mélange à base de serre de noctecorbe. En onguent, étalé sur une plaie, dissipe tous les États Hémorragique sans Test de Guérison. En potion, permet d'annuler un État Hémorragique à la fin de chaque Round pendant une heure. Une seconde dose pendant l'effet exige un Test de Résistance (+0) ou 1d10 Blessures + État Exténué. Empêche aussi les vampires de se nourrir du sang de l'utilisateur.",
+    "qualities": []
   },
   {
+    "id": "protection-du-cerf",
     "label": "Protection du cerf",
     "type": "trapping",
     "subType": "Herbes et potions",
@@ -8389,9 +9411,11 @@
       "book": "ZI",
       "page": 110
     },
-    "desc": "Potion préparée à partir des organes (rein ou foie) d'un grand cerf. Bue AVANT toute exposition à un poison, elle immunise pendant une heure contre tous les États Empoisonné et tout autre effet d'un poison naturel ou surnaturel. Inutile contre un poison déjà ingéré. Sa préparation est punie de mort par les elfes sylvains."
+    "desc": "Potion préparée à partir des organes (rein ou foie) d'un grand cerf. Bue AVANT toute exposition à un poison, elle immunise pendant une heure contre tous les États Empoisonné et tout autre effet d'un poison naturel ou surnaturel. Inutile contre un poison déjà ingéré. Sa préparation est punie de mort par les elfes sylvains.",
+    "qualities": []
   },
   {
+    "id": "razorflamme",
     "label": "Razorflamme",
     "type": "trapping",
     "subType": "Herbes et potions",
@@ -8406,9 +9430,11 @@
       "book": "ZI",
       "page": 110
     },
-    "desc": "Naphte corrompu produit à partir de bile de razorgor. Les bombes incendiaires créées avec produisent des flammes surnaturelles qui consument l'esprit comme la chair et comptent comme une attaque Magique. En onguent étalé sur une arme puis enflammé, l'arme inflige un État En flammes à chaque coup et compte comme Magique pendant 1d10 Rounds. Possession passible du bûcher dans certaines provinces."
+    "desc": "Naphte corrompu produit à partir de bile de razorgor. Les bombes incendiaires créées avec produisent des flammes surnaturelles qui consument l'esprit comme la chair et comptent comme une attaque Magique. En onguent étalé sur une arme puis enflammé, l'arme inflige un État En flammes à chaque coup et compte comme Magique pendant 1d10 Rounds. Possession passible du bûcher dans certaines provinces.",
+    "qualities": []
   },
   {
+    "id": "sang-douleur",
     "label": "Sang-douleur",
     "type": "trapping",
     "subType": "Herbes et potions",
@@ -8423,9 +9449,11 @@
       "book": "ZI",
       "page": 110
     },
-    "desc": "Préparation crue de bile de squig. Confère le Trait Insensible à la douleur et permet d'ignorer les effets de la plupart des Blessures Critiques (sauf amputation) pendant une heure. Passé ce délai, toutes les blessures subies se font soudain sentir. N'empêche pas de subir une Blessure Critique ou d'en mourir, seulement d'en ignorer les effets."
+    "desc": "Préparation crue de bile de squig. Confère le Trait Insensible à la douleur et permet d'ignorer les effets de la plupart des Blessures Critiques (sauf amputation) pendant une heure. Passé ce délai, toutes les blessures subies se font soudain sentir. N'empêche pas de subir une Blessure Critique ou d'en mourir, seulement d'en ignorer les effets.",
+    "qualities": []
   },
   {
+    "id": "sang-de-la-mer",
     "label": "Sang de la mer",
     "type": "trapping",
     "subType": "Herbes et potions",
@@ -8440,9 +9468,11 @@
       "book": "ZI",
       "page": 110
     },
-    "desc": "« Remède » tristement célèbre à base de sang extrait du foie d'un wyrm des mers. L'utilisateur subit immédiatement 3 États Empoisonné irrésistibles, récupère autant de Blessures que son Bonus d'Endurance et obtient le Trait Régénération. Le MJ choisit si la régénération agit plus vite que le poison ; quand tous les États Empoisonné sont dissipés, la Régénération disparaît."
+    "desc": "« Remède » tristement célèbre à base de sang extrait du foie d'un wyrm des mers. L'utilisateur subit immédiatement 3 États Empoisonné irrésistibles, récupère autant de Blessures que son Bonus d'Endurance et obtient le Trait Régénération. Le MJ choisit si la régénération agit plus vite que le poison ; quand tous les États Empoisonné sont dissipés, la Régénération disparaît.",
+    "qualities": []
   },
   {
+    "id": "dague-funeste",
     "label": "Dague Funeste",
     "type": "melee",
     "subType": "Base",
@@ -8466,6 +9496,7 @@
     "enc": 0
   },
   {
+    "id": "armure-de-plates-du-leviathan",
     "label": "Armure de Plates du Léviathan",
     "type": "armor",
     "subType": "Plate",
@@ -8486,13 +9517,20 @@
     "pa": 2,
     "damage": null,
     "qualities": [
-      "Impénétrable",
-      "Points faibles",
-      "-10% en Discrétion"
+      {
+        "id": "impenetrable"
+      },
+      {
+        "id": "points-faibles"
+      },
+      {
+        "id": "en-discretion"
+      }
     ],
     "enc": 8
   },
   {
+    "id": "lame-a-poignee-en-bois-de-cerf",
     "label": "Lame à poignée en bois de cerf",
     "type": "melee",
     "subType": "Base",
@@ -8516,6 +9554,7 @@
     "enc": 1
   },
   {
+    "id": "trempe-au-sang-de-dragon",
     "label": "Trempe au Sang de Dragon",
     "type": "trapping",
     "subType": "Possessions diverses",
@@ -8529,9 +9568,11 @@
       "book": "ZI",
       "page": 113
     },
-    "desc": "Non une arme, mais du sang de dragon (1 Enc par point d'Enc de l'arme ; 20 CO/Enc) utilisé pour tremper une arme en métal pendant sa fabrication. L'arme gagne alors l'Atout Solide sans nécessiter de DR additionnel pendant sa création, car sa lame ne perdra jamais son tranchant."
+    "desc": "Non une arme, mais du sang de dragon (1 Enc par point d'Enc de l'arme ; 20 CO/Enc) utilisé pour tremper une arme en métal pendant sa fabrication. L'arme gagne alors l'Atout Solide sans nécessiter de DR additionnel pendant sa création, car sa lame ne perdra jamais son tranchant.",
+    "qualities": []
   },
   {
+    "id": "surin-de-l-aigle",
     "label": "Surin de l'aigle",
     "type": "melee",
     "subType": "Base",
@@ -8555,6 +9596,7 @@
     "enc": 0
   },
   {
+    "id": "seve-de-tregara",
     "label": "Sève de trégara",
     "type": "ammunition",
     "subType": "Arbalète",
@@ -8575,12 +9617,17 @@
     "pa": null,
     "damage": null,
     "qualities": [
-      "Empaleuse",
-      "Perforante"
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "perforante"
+      }
     ],
     "enc": 0
   },
   {
+    "id": "empennage-de-griffon",
     "label": "Empennage de griffon",
     "type": "ammunition",
     "subType": "Arc",
@@ -8601,13 +9648,20 @@
     "pa": null,
     "damage": "+1",
     "qualities": [
-      "Empaleuse",
-      "Perforante",
-      "Pointue"
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "perforante"
+      },
+      {
+        "id": "pointue"
+      }
     ],
     "enc": 0
   },
   {
+    "id": "pointes-barbelees",
     "label": "Pointes barbelées",
     "type": "ammunition",
     "subType": "Arc",
@@ -8628,11 +9682,14 @@
     "pa": null,
     "damage": null,
     "qualities": [
-      "Empaleuse"
+      {
+        "id": "empaleuse"
+      }
     ],
     "enc": 0
   },
   {
+    "id": "broyeur-d-os",
     "label": "Broyeur d'os",
     "type": "melee",
     "subType": "Deux-mains",
@@ -8653,13 +9710,20 @@
     "pa": null,
     "damage": "+BF+6",
     "qualities": [
-      "Assommante",
-      "Dévastatrice",
-      "Lente"
+      {
+        "id": "assommante"
+      },
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "lente"
+      }
     ],
     "enc": 3
   },
   {
+    "id": "silence",
     "label": "Silence",
     "type": "melee",
     "subType": "Base",
@@ -8680,11 +9744,14 @@
     "pa": null,
     "damage": "+BF+4",
     "qualities": [
-      "Dévastatrice"
+      {
+        "id": "devastatrice"
+      }
     ],
     "enc": 1
   },
   {
+    "id": "vision-de-vie",
     "label": "Vision de Vie",
     "type": "melee",
     "subType": "Base",
@@ -8705,13 +9772,21 @@
     "pa": null,
     "damage": "+BF+2",
     "qualities": [
-      "Protectrice 2",
-      "Défensive",
-      "Inoffensive"
+      {
+        "id": "protectrice",
+        "value": 2
+      },
+      {
+        "id": "defensive"
+      },
+      {
+        "id": "inoffensive"
+      }
     ],
     "enc": 1
   },
   {
+    "id": "cape-du-loup",
     "label": "Cape du Loup",
     "type": "trapping",
     "subType": "Possessions diverses",
@@ -8725,9 +9800,11 @@
       "book": "ZI",
       "page": 116
     },
-    "desc": "Cape magique cousue dans la dépouille d'une chimère, d'apparence de peau de loup avec des écailles nacrées sous la fourrure. Son porteur provoque Peur 2 chez les loups, les lions, les chèvres et les chimères. Si d'autres exemplaires sont créés, l'effet porte sur les animaux composant la chimère en question."
+    "desc": "Cape magique cousue dans la dépouille d'une chimère, d'apparence de peau de loup avec des écailles nacrées sous la fourrure. Son porteur provoque Peur 2 chez les loups, les lions, les chèvres et les chimères. Si d'autres exemplaires sont créés, l'effet porte sur les animaux composant la chimère en question.",
+    "qualities": []
   },
   {
+    "id": "gants-de-l-etrangleur",
     "label": "Gants de l'étrangleur",
     "type": "trapping",
     "subType": "Possessions diverses",
@@ -8741,9 +9818,11 @@
       "book": "ZI",
       "page": 116
     },
-    "desc": "Gants magiques cousus à partir des ligaments d'un géant. Pour les Tests opposés de Force et jets similaires uniquement, la Taille du porteur est supérieure d'une catégorie à sa Taille réelle. En contrepartie, ils compliquent l'identification des alliés dans le feu de l'action."
+    "desc": "Gants magiques cousus à partir des ligaments d'un géant. Pour les Tests opposés de Force et jets similaires uniquement, la Taille du porteur est supérieure d'une catégorie à sa Taille réelle. En contrepartie, ils compliquent l'identification des alliés dans le feu de l'action.",
+    "qualities": []
   },
   {
+    "id": "derniere-gorgee",
     "label": "Dernière Gorgée",
     "type": "trapping",
     "subType": "Possessions diverses",
@@ -8757,9 +9836,11 @@
       "book": "ZI",
       "page": 117
     },
-    "desc": "Tasse magique créée en liant Shyish au crâne d'une chose du Bois mort. En y buvant n'importe quel liquide, l'utilisateur perçoit, entend et peut communiquer avec les esprits et entités éthérées (qui le prennent pour un esprit) pendant une minute, prolongeable par d'autres gorgées. Risque : être hanté par des esprits de plus en plus malveillants."
+    "desc": "Tasse magique créée en liant Shyish au crâne d'une chose du Bois mort. En y buvant n'importe quel liquide, l'utilisateur perçoit, entend et peut communiquer avec les esprits et entités éthérées (qui le prennent pour un esprit) pendant une minute, prolongeable par d'autres gorgées. Risque : être hanté par des esprits de plus en plus malveillants.",
+    "qualities": []
   },
   {
+    "id": "pierre-assoiffee",
     "label": "Pierre Assoiffée",
     "type": "trapping",
     "subType": "Possessions diverses",
@@ -8773,6 +9854,7 @@
       "book": "ZI",
       "page": 117
     },
-    "desc": "Rubis magique (souvent enchâssé dans une bague ou amulette) prélevé sur un grand dragon barbelé, qui absorbe le sang versé dessus. En échange, il confère le Trait Protection 9+ pendant 1d10 Tours. Mais s'il est insatiable : si le porteur subit un État Hémorragique, un Test de Résistance (+0) raté fait s'agripper le rubis à sa peau comme une sangsue (l'État Hémorragique ne se lève qu'en arrachant la pierre par un Test de Force (+20))."
+    "desc": "Rubis magique (souvent enchâssé dans une bague ou amulette) prélevé sur un grand dragon barbelé, qui absorbe le sang versé dessus. En échange, il confère le Trait Protection 9+ pendant 1d10 Tours. Mais s'il est insatiable : si le porteur subit un État Hémorragique, un Test de Résistance (+0) raté fait s'agripper le rubis à sa peau comme une sangsue (l'État Hémorragique ne se lève qu'en arrachant la pierre par un Test de Force (+20)).",
+    "qualities": []
   }
 ]

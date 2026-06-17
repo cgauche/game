@@ -144,5 +144,5 @@ export function isFlankOrRear(targetFacing: Dir8, dirToAttacker: Dir8): boolean 
 
 /** Voit dans l'obscurité : Trait Vision nocturne / Infravision (LDB 85) ou Talent Vision nocturne (LDB 10). */
 export function seesInDark(c: Combatant): boolean {
-  return traitSeesInDark(c.traits) || (c.talents ?? []).some((t) => /^vision nocturne/i.test(t.name));
+  return traitSeesInDark(c.traits) || (c.talents ?? []).some((t) => t.talentId === 'vision-nocturne');
 }

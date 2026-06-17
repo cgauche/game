@@ -43,7 +43,7 @@ describe('mount — modificateurs de Combat monté (LDB 14 l.215-225)', () => {
 
   it('Esquive : −20 à cheval, annulé par Acrobaties équestres, nul à pied (l.225)', () => {
     expect(mountedDodgePenalty(mk('x', 'moyenne', { mountId: 'h' }))).toBe(-20);
-    expect(mountedDodgePenalty(mk('x', 'moyenne', { mountId: 'h', talents: [{ name: 'Acrobaties équestres', times: 1 }] as any }))).toBe(0);
+    expect(mountedDodgePenalty(mk('x', 'moyenne', { mountId: 'h', talents: [{ talentId: 'acrobaties-equestres', times: 1 }] as any }))).toBe(0);
     expect(mountedDodgePenalty(mk('x', 'moyenne'))).toBe(0); // à pied
   });
 

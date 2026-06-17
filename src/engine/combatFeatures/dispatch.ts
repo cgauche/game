@@ -8,6 +8,7 @@ import { COMBAT_FEATURES } from './registry';
 import { featureKey } from './normalize';
 import { groupMatch } from '../groups';
 import { splitLabel } from '../statEntry';
+import { findTalentById } from '../../data';
 import type { CombatFeature, CombatFeatureCtx, CastingKind } from './types';
 
 /** Famille d'incantation d'un LIBELLÉ de Talent (« Magie mineure », « Béni (Sigmar) ») via le registre,
@@ -23,8 +24,9 @@ export function featuresOf(c: Combatant): { def: CombatFeature; ctx: CombatFeatu
   const out: { def: CombatFeature; ctx: CombatFeatureCtx }[] = [];
   const specOf = (name: string) => name.match(/\(([^)]+)\)\s*$/)?.[1]?.trim();
   for (const t of c.talents ?? []) {
-    const k = featureKey(t.name);
-    if (k) out.push({ def: COMBAT_FEATURES[k], ctx: { combatant: c, level: t.times ?? 1, spec: specOf(t.name) } });
+    const base = findTalentById(t.talentId)?.label ?? t.talentId; // id → libellé de base pour la clé de feature
+    const k = featureKey(base);
+    if (k) out.push({ def: COMBAT_FEATURES[k], ctx: { combatant: c, level: t.times ?? 1, spec: t.spec } });
   }
   for (const e of c.activeEffects ?? []) {
     if (!e.grantedTalent) continue;

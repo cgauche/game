@@ -5,7 +5,7 @@ describe('buildEncounter — authoring terse → entités + members canoniques',
   it("un ennemi devient une entité 'personnage' + un membre qui la référence (profil porté par l'entité)", () => {
     const { entities, encounter } = buildEncounter({
       id: 'enc-1',
-      enemies: [{ ref: 'Mutant', pos: { x: 2, y: 3 }, weapon: 'Hache', optionals: ['Peur 1'], spells: ['Fléchette'], randomChars: true }],
+      enemies: [{ ref: 'Mutant', pos: { x: 2, y: 3 }, weapon: 'Hache', optionals: [{ id: 'peur', value: 1 }], spells: ['flechette'], randomChars: true }],
     });
     expect(encounter.members![0].entityId).toBe('enemy-enc-1-0');
     const ent = entities[0];
@@ -14,7 +14,7 @@ describe('buildEncounter — authoring terse → entités + members canoniques',
     expect(ent.ref).toBe('Mutant');
     expect(ent.weapon).toBe('Hache');
     // VISIBLE par défaut : pas de hiddenUntilCombat
-    expect(ent.combat).toEqual({ optionals: ['Peur 1'], spells: ['Fléchette'], randomChars: true });
+    expect(ent.combat).toEqual({ optionals: [{ id: 'peur', value: 1 }], spells: ['flechette'], randomChars: true });
   });
 
   it("hidden (rencontre) → toutes les entités cachées jusqu'au combat (embuscade)", () => {

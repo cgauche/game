@@ -30,8 +30,8 @@ function artisan(): Combatant {
     rng: makeRNG(1602),
     id: 'test-interlude-forgeron',
   });
-  if (!h.skills.some((s) => /^métier/i.test(s.name))) {
-    h.skills.push({ name: 'Métier (Forgeron)', characteristic: 'Dex', advances: 10 });
+  if (!h.skills.some((s) => s.skillId === 'metier')) {
+    h.skills.push({ skillId: 'metier', spec: 'Forgeron', characteristic: 'Dex', advances: 10 });
   }
   h.appearance = { species: 'Nains', sex: 'M', build: 0.7 };
   return h;

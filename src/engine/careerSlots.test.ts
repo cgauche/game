@@ -15,8 +15,12 @@ import {
   talentMax,
   talentMaxReached,
   wildcardSpecs,
+  parseAdvancement,
 } from './careerSlots';
 import { CareerLevelData } from '../data';
+
+/** Fixtures : libellés d'avancement → `AdvancementRef[]` (la donnée est structurée). */
+const A = (xs: string[]) => xs.map(parseAdvancement);
 
 const hero = (over: Partial<Combatant> = {}): Combatant =>
   ({
@@ -73,15 +77,15 @@ describe('parsing des entrées de carrière (LDB 09 l.38 / pièges de données)'
 const C1: CareerLevelData[] = [
   {
     label: 'N1', career: 'C1', level: 1,
-    skills: ['Charme', 'Savoir (Au choix)'],
-    talents: ['Sens aiguisé (Au choix)', 'Baratiner'],
-    trappings: [], characteristics: ['Force', 'Endurance', 'Sociabilité'], status: 'Bronze 1',
+    skills: A(['Charme', 'Savoir (Au choix)']),
+    talents: A(['Sens aiguisé (Au choix)', 'Baratiner']),
+    trappings: [], characteristics: ['F', 'E', 'Soc'], status: 'Bronze 1',
   },
   {
     label: 'N2', career: 'C1', level: 2,
-    skills: ['Ragot', 'Savoir (Au choix)'],
-    talents: ['Sens aiguisé (Au choix)', 'Sociable'],
-    trappings: [], characteristics: ['Agilité'], status: 'Bronze 2',
+    skills: A(['Ragot', 'Savoir (Au choix)']),
+    talents: A(['Sens aiguisé (Au choix)', 'Sociable']),
+    trappings: [], characteristics: ['Ag'], status: 'Bronze 2',
   },
 ];
 
@@ -90,13 +94,13 @@ describe('disponibilité par niveaux (LDB 07 l.67/78/100)', () => {
     expect(skillSlots(C1, 1).map((s) => s.entry)).toEqual(['Charme', 'Savoir (Au choix)']);
     expect(skillSlots(C1, 2).map((s) => s.entry)).toEqual(['Charme', 'Savoir (Au choix)', 'Ragot', 'Savoir (Au choix)']);
     expect(talentSlots(C1, 2).map((s) => s.entry)).toEqual(['Sens aiguisé (Au choix)', 'Sociable']);
-    expect(availableChars(C1, 2)).toEqual(['Force', 'Endurance', 'Sociabilité', 'Agilité']);
+    expect(availableChars(C1, 2)).toEqual(['F', 'E', 'Soc', 'Ag']);
   });
 });
 
 describe('scénario complet : Sens aiguisé espèce + emplacements « (Au choix) » par carrière', () => {
   it('1) désignation GRATUITE de la spec déjà possédée → in-carrière, montable (200 PX au ×2)', () => {
-    const h = hero({ talents: [{ name: 'Sens aiguisé (Goût)', times: 1 }] });
+    const h = hero({ talents: [{ talentId: 'sens-aiguise', spec: 'Goût', times: 1 }] });
     const slots1 = talentSlots(C1, 1);
     // Avant désignation : le slot libre couvre Goût.
     expect(inCareerStatus(slots1, {}, 'Sens aiguisé', 'Goût')).toBe('free');
@@ -108,7 +112,7 @@ describe('scénario complet : Sens aiguisé espèce + emplacements « (Au choix)
   });
 
   it('2) au niveau 2, le NOUVEAU slot ne peut pas re-désigner la spec prise au niveau 1', () => {
-    const h = hero({ careerLevel: 2, talents: [{ name: 'Sens aiguisé (Goût)', times: 1 }, { name: 'Sens aiguisé (Ouïe)', times: 1 }] });
+    const h = hero({ careerLevel: 2, talents: [{ talentId: 'sens-aiguise', spec: 'Goût', times: 1 }, { talentId: 'sens-aiguise', spec: 'Ouïe', times: 1 }] });
     const slots1 = talentSlots(C1, 1);
     const slots2 = talentSlots(C1, 2);
     const all = [...slots1, ...slots2];
@@ -125,7 +129,7 @@ describe('scénario complet : Sens aiguisé espèce + emplacements « (Au choix)
   });
 
   it('3) changement de carrière : les désignations sont PAR carrière — tout sens redevient désignable', () => {
-    const h = hero({ talents: [{ name: 'Sens aiguisé (Goût)', times: 1 }, { name: 'Sens aiguisé (Ouïe)', times: 1 }] });
+    const h = hero({ talents: [{ talentId: 'sens-aiguise', spec: 'Goût', times: 1 }, { talentId: 'sens-aiguise', spec: 'Ouïe', times: 1 }] });
     const slots1 = talentSlots(C1, 1);
     designateSlot(h, 'C1', slots1[0], 'Sens aiguisé (Ouïe)', slots1);
     // Carrière C2 (autre carrière, même type de slot) : aucune désignation → tout est libre.
@@ -141,7 +145,7 @@ describe('scénario complet : Sens aiguisé espèce + emplacements « (Au choix)
   it('4) un slot ne peut pas désigner le libellé d\'une entrée EXPLICITE de la même carrière', () => {
     const LV: CareerLevelData[] = [{
       ...C1[0],
-      talents: ['Sens aiguisé (Vue)', 'Sens aiguisé (Au choix)'],
+      talents: A(['Sens aiguisé (Vue)', 'Sens aiguisé (Au choix)']),
     }];
     const h = hero();
     const slots = talentSlots(LV, 1);
@@ -150,7 +154,7 @@ describe('scénario complet : Sens aiguisé espèce + emplacements « (Au choix)
   });
 
   it('5) joker RESTREINT « (Goût ou Toucher) » : limité à la liste', () => {
-    const LV: CareerLevelData[] = [{ ...C1[0], talents: ['Sens aiguisé (Goût ou Toucher)'] }];
+    const LV: CareerLevelData[] = [{ ...C1[0], talents: A(['Sens aiguisé (Goût ou Toucher)']) }];
     const slots = talentSlots(LV, 1);
     expect(inCareerStatus(slots, {}, 'Sens aiguisé', 'Goût')).toBe('free');
     expect(inCareerStatus(slots, {}, 'Sens aiguisé', 'Vue')).toBe(null);
@@ -159,14 +163,14 @@ describe('scénario complet : Sens aiguisé espèce + emplacements « (Au choix)
 
 describe('Maxi des Talents (LDB 10 « Schéma des Talents »)', () => {
   it('Maxi 1 (Lire/Écrire) : atteint dès la 1re acquisition', () => {
-    const h = hero({ talents: [{ name: 'Lire/Écrire', times: 1 }] });
+    const h = hero({ talents: [{ talentId: 'lire-ecrire', times: 1 }] });
     expect(talentMax(h, 'Lire/Écrire')).toBe(1);
     expect(talentMaxReached(h, 'Lire/Écrire')).toBe(true);
     expect(talentMaxReached(h, 'Baratiner')).toBe(false);
   });
   it('Maxi « Bonus de Caractéristique » : par spécialisation, recalculé sur la valeur courante', () => {
     // Sens aiguisé : Maxi = Bonus d'Initiative (I 30 → 3).
-    const h = hero({ talents: [{ name: 'Sens aiguisé (Goût)', times: 3 }, { name: 'Sens aiguisé (Ouïe)', times: 1 }] });
+    const h = hero({ talents: [{ talentId: 'sens-aiguise', spec: 'Goût', times: 3 }, { talentId: 'sens-aiguise', spec: 'Ouïe', times: 1 }] });
     expect(talentMax(h, 'Sens aiguisé (Goût)')).toBe(3);
     expect(talentMaxReached(h, 'Sens aiguisé (Goût)')).toBe(true);
     expect(talentMaxReached(h, 'Sens aiguisé (Ouïe)')).toBe(false); // spec distincte

@@ -32,13 +32,13 @@
  * PLATE d'un statblock (matière inconnue) compte comme NON-métal et NON-magique.
  */
 import type { Combatant, HitLocation } from './types';
-import { RNG, defaultRNG, d10 } from './dice';
-import { bonus, effectiveChar } from './characteristics';
-import { addCondition, removeCondition, loseWounds, applyZeroWounds, stacks } from './conditions';
+import type { TriggeredEffect } from '../state/flow';
+import { RNG, defaultRNG, roll as rollDice } from './dice';
 import { grantTrait } from './grantedTraits';
 import { groupMatch } from './groups';
 import { bypassedAP } from './armourBypass';
-import { hasTraitKey } from './traits/dispatch';
+import { hasTraitKey, parseTraitInstance } from './traits/dispatch';
+import { findDomain } from '../data';
 
 /** Domaine d'un sort (« issu du Domaine X ») : le subType d'un Sort d'Arcane, sinon null. */
 export function domainOf(spell: { type?: string; subType?: string | null }): string | null {
@@ -48,100 +48,51 @@ export function domainOf(spell: { type?: string; subType?: string | null }): str
 
 /** Le combattant possède-t-il le Talent « Magie des Arcanes (Domaine) » (exemption des riders) ? */
 export function hasArcaneTalent(c: Combatant, domain: string): boolean {
-  const re = new RegExp(`^Magie des Arcanes \\(${domain}\\)$`, 'i');
-  return (c.talents ?? []).some((t) => re.test(t.name));
+  return (c.talents ?? []).some((t) => t.talentId === 'magie-des-arcanes' && (t.spec ?? '').toLowerCase() === domain.toLowerCase());
 }
 
 // PA par matière (métal/cuir), PA magiques et ignorance générale : moteur UNIQUE engine/armourBypass.
 export { metalAPAt, magicAPOf } from './armourBypass';
 
-/** Modulation de la MITIGATION d'un Projectile magique par l'attribut du Domaine (Cieux/Métal/
- *  Ombres). `totalAP` = PA effectifs de la cible à la localisation (pièces + plats + magiques).
- *  Exprimé via le bypass GÉNÉRAL (engine/armourBypass) : Chamon/Azyr = métal, Ulgu = non-magique. */
+/** Modulation de la MITIGATION d'un Projectile par l'attribut du Domaine (Cieux/Métal/Ombres) — PARAMÈTRE
+ *  lu en DONNÉES (`DomainData.missile`) : `bypass` (matière ignorée) + `bonusFromBypass` (Métal : ajoute
+ *  les PA ignorés aux Dégâts). `totalAP` = PA effectifs de la cible à la localisation. */
 export function domainMissileMods(
   target: Combatant,
   spell: { type?: string; subType?: string | null },
   loc: HitLocation,
   totalAP: number,
 ): { apIgnored: number; bonusDamage: number } {
-  const dom = domainOf(spell);
-  if (dom === 'Métal') {
-    const m = bypassedAP(target, loc, 'metal', totalAP); // ignore le métal ET l'ajoute aux Dégâts
-    return { apIgnored: m, bonusDamage: m };
-  }
-  if (dom === 'Cieux') return { apIgnored: bypassedAP(target, loc, 'metal', totalAP), bonusDamage: 0 };
-  if (dom === 'Ombres') return { apIgnored: bypassedAP(target, loc, 'nonMagic', totalAP), bonusDamage: 0 };
-  return { apIgnored: 0, bonusDamage: 0 };
+  const missile = findDomain(domainOf(spell))?.missile;
+  if (!missile) return { apIgnored: 0, bonusDamage: 0 };
+  const ignored = bypassedAP(target, loc, missile.bypass, totalAP);
+  return { apIgnored: ignored, bonusDamage: missile.bonusFromBypass ? ignored : 0 };
 }
 
 const isUndead = (c: Combatant): boolean =>
-  groupMatch('Morts-vivants', c.groups ?? []) || hasTraitKey(c.traits, 'Mort-vivant');
+  groupMatch('Morts-vivants', c.groups ?? []) || hasTraitKey(c.traits, 'mort-vivant');
 const isDaemon = (c: Combatant): boolean =>
-  groupMatch('Démons', c.groups ?? []) || hasTraitKey(c.traits, 'Démoniaque');
+  groupMatch('Démons', c.groups ?? []) || hasTraitKey(c.traits, 'demoniaque');
 /** « cible vivante » (Mort/Vie) : ni Mort-vivant ni Démon. */
 export const isLiving = (c: Combatant): boolean => !isUndead(c) && !isDaemon(c);
 
-/** Riders post-lancement appliqués à UNE cible d'un Sort du Domaine (Feu/Lumière/Mort/Vie).
- *  `hostile` = la cible est d'un camp adverse (les riders offensifs ne s'appliquent qu'à elle).
- *  Mute la cible, retourne le journal. */
-export function domainOnHitRiders(
-  caster: Combatant,
-  target: Combatant,
-  spell: { type?: string; subType?: string | null },
-  hostile: boolean,
-): string[] {
-  const dom = domainOf(spell);
-  if (!dom) return [];
-  const lines: string[] = [];
-  if (dom === 'Feu' && hostile && !hasArcaneTalent(target, 'Feu')) {
-    addCondition(target, 'En flammes');
-    lines.push(`${target.name} s'embrase — +1 En flammes (attribut d'Aqshy).`);
-  }
-  if (dom === 'Lumière') {
-    if (hostile && !hasArcaneTalent(target, 'Lumière')) {
-      addCondition(target, 'Aveuglé');
-      lines.push(`${target.name} est ébloui — +1 Aveuglé (attribut d'Hysh).`);
-    }
-    if (isUndead(target) || isDaemon(target)) {
-      const extra = Math.max(0, bonus(effectiveChar(caster, 'Int')));
-      if (extra > 0) {
-        loseWounds(target, extra);
-        if (target.wounds.current <= 0) applyZeroWounds(target);
-        lines.push(`${target.name} est consumé par la lumière pure : ${extra} Blessures (ignore BE et PA — attribut d'Hysh).`);
-      }
-    }
-  }
-  if (dom === 'Mort' && hostile && isLiving(target) && !target.shyishExhausted) {
-    addCondition(target, 'Exténué');
-    target.shyishExhausted = true; // « un seul État Exténué gagné de cette façon à la fois »
-    lines.push(`${target.name} est drainé — +1 Exténué (attribut de Shyish).`);
-  }
-  if (dom === 'Vie') {
-    if (isLiving(target)) {
-      const ext = stacks(target, 'Exténué');
-      const hem = stacks(target, 'Hémorragique');
-      if (ext > 0) removeCondition(target, 'Exténué', ext);
-      if (hem > 0) removeCondition(target, 'Hémorragique', hem);
-      if (ext > 0 || hem > 0) lines.push(`${target.name} est revigoré par Ghyran : Exténué et Hémorragique retirés (attribut de Vie).`);
-    } else if (isUndead(target)) {
-      const extra = Math.max(0, bonus(effectiveChar(caster, 'FM')));
-      if (extra > 0) {
-        loseWounds(target, extra);
-        if (target.wounds.current <= 0) applyZeroWounds(target);
-        lines.push(`${target.name} se flétrit au contact de la Vie : ${extra} Blessures (ignore BE et PA — attribut de Ghyran).`);
-      }
-    }
-  }
-  return lines;
+/** Riders « à la touche » d'un Sort du Domaine (Feu → En flammes ; Lumière → Aveuglé + frappe ;
+ *  Mort → Exténué ; Vie → purge/flétrissure) — DONNÉE éditable (`DomainData.onHitEffects`, `TriggeredEffect[]`).
+ *  Le gating (cible adverse / vivante / mort-vivante / résistance par Talent) vit dans les Conditions Flow
+ *  `relation`/`has`. Appliqués par le dispatcher `state/triggeredEffects` (qui détient `runSpellFlow`). */
+export function domainOnHitEffects(spell: { type?: string; subType?: string | null }): TriggeredEffect[] {
+  return findDomain(domainOf(spell))?.effects ?? [];
 }
 
-/** Bête (l.9) : après un Sort de la Bête lancé avec succès, le LANCEUR gagne Peur 1 pour
- *  1d10 Rounds (« vous pouvez » — toujours appliqué, l'aura n'a pas d'inconvénient). */
-export function ghurFearAfterCast(caster: Combatant, spell: { type?: string; subType?: string | null }, rng: RNG = defaultRNG): string[] {
-  if (domainOf(spell) !== 'Bête') return [];
-  const rounds = d10(rng);
-  grantTrait(caster, 'Peur 1');
+/** Effet post-incantation appliqué au LANCEUR après un Sort de Domaine réussi — PARAMÈTRE en données
+ *  (`DomainData.afterCast`) : Bête (Ghur) octroie le Trait `grantTrait` pour 1d`durationDice` Rounds. */
+export function domainAfterCast(caster: Combatant, spell: { type?: string; subType?: string | null }, rng: RNG = defaultRNG): string[] {
+  const after = findDomain(domainOf(spell))?.afterCast;
+  if (!after?.grantTrait) return [];
+  const rounds = after.durationDice ? rollDice(1, after.durationDice, rng) : 1;
+  const tr = parseTraitInstance(after.grantTrait);
+  grantTrait(caster, tr);
   caster.activeEffects = caster.activeEffects ?? [];
-  caster.activeEffects.push({ label: 'Attribut de Ghur (Peur 1)', bonus: 0, roundsLeft: rounds, grantedTrait: 'Peur 1' });
-  return [`${caster.name} irradie la férocité de Ghur — Peur 1 pendant ${rounds} Round(s).`];
+  caster.activeEffects.push({ label: `Attribut de domaine (${after.grantTrait})`, bonus: 0, roundsLeft: rounds, grantedTrait: tr });
+  return [`${caster.name} gagne ${after.grantTrait} pendant ${rounds} Round(s) (attribut de domaine).`];
 }

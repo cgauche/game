@@ -5,8 +5,10 @@
  * acheté pour cette Caractéristique / Compétence (l.69, l.80). Toutes les valeurs sont copiées
  * VERBATIM du Tableau de Coût des Augmentations (l.45-62) — aucune invention.
  */
-import { Combatant, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from './types';
+import { Combatant, CharKey } from './types';
 import { CareerSlot, slotCovers, concreteLabel, splitLabel } from './careerSlots';
+import { findSkill, findTalent } from '../data';
+import { slugId } from '../data/slug';
 
 /**
  * Détection « in-carrière » (07-Carrières l.95) : une Augmentation est au coût standard si la
@@ -16,8 +18,8 @@ import { CareerSlot, slotCovers, concreteLabel, splitLabel } from './careerSlots
  * Les Compétences/Talents passent par les EMPLACEMENTS de `careerSlots.ts` (spécialisations) ;
  * les Caractéristiques, sans spec, par `inCareerChar`. Libellés longs → clé via CHAR_LABELS.
  */
-export function inCareerChar(careerChars: string[], char: CharKey): boolean {
-  return careerChars.includes(CHAR_LABELS[char]);
+export function inCareerChar(careerChars: CharKey[], char: CharKey): boolean {
+  return careerChars.includes(char);
 }
 
 /**
@@ -79,7 +81,8 @@ export function buyCharAdvance(hero: Combatant, char: CharKey, inCareer = true):
 /** Achète UNE Augmentation pour une Compétence DÉJÀ connue — identité (name, spec) : chaque
  *  Spécialisation est une Compétence distincte (LDB 09 l.42). */
 export function buySkillAdvance(hero: Combatant, skillName: string, spec: string | undefined, inCareer = true, discount = 0): AdvanceResult {
-  const skill = hero.skills.find((s) => s.name === skillName && (s.spec ?? '') === (spec ?? ''));
+  const id = findSkill(skillName)?.id ?? slugId(skillName);
+  const skill = hero.skills.find((s) => s.skillId === id && (s.spec ?? '') === (spec ?? ''));
   if (!skill) return { ok: false, cost: 0, reason: 'Compétence inconnue' };
   const cost = advanceCost(skill.advances, 'skill', inCareer, discount);
   if ((hero.xp ?? 0) < cost) return { ok: false, cost, reason: 'PX insuffisants' };
@@ -93,13 +96,15 @@ export function buySkillAdvance(hero: Combatant, skillName: string, spec: string
  *  pas achetables (l.97) et le Maxi doit être respecté (LDB 10) — vérifiés par l'appelant
  *  (`talentMaxReached`) ; ici on applique le coût standard. */
 export function buyTalent(hero: Combatant, talentName: string): AdvanceResult {
-  const existing = hero.talents.find((t) => t.name === talentName);
+  const { name, spec } = splitLabel(talentName);
+  const id = findTalent(name)?.id ?? slugId(name);
+  const existing = hero.talents.find((t) => t.talentId === id && (t.spec ?? '') === (spec ?? ''));
   const already = existing?.times ?? 0;
   const cost = talentCost(already);
   if ((hero.xp ?? 0) < cost) return { ok: false, cost, reason: 'PX insuffisants' };
   hero.xp = (hero.xp ?? 0) - cost;
   if (existing) existing.times += 1;
-  else hero.talents.push({ name: talentName, times: 1 });
+  else hero.talents.push({ talentId: id, spec, times: 1 });
   return { ok: true, cost };
 }
 
@@ -134,19 +139,20 @@ export function isCareerLevelComplete(
     skillSlots: CareerSlot[];
     /** Slots de Talents du niveau courant (careerSlots.talentSlots). */
     talentSlots: CareerSlot[];
-    /** Caractéristiques de carrière disponibles, libellés longs (careerSlots.availableChars). */
-    careerChars: string[];
+    /** Caractéristiques de carrière disponibles, clés `CharKey` (careerSlots.availableChars). */
+    careerChars: CharKey[];
     /** Désignations du héros pour SA carrière (careerSlots.designationsFor). */
     designations: Record<string, string>;
   },
 ): boolean {
   const req = careerCompletionAdvances(level);
-  const charKeys = opts.careerChars.map((label) => CHAR_BY_LABEL[label]).filter(Boolean);
+  const charKeys = opts.careerChars; // déjà des CharKey
   if (!charKeys.length || !charKeys.every((k) => (hero.charAdvances?.[k] ?? 0) >= req)) return false;
 
   const skillAdv = (label: string): number => {
     const { name, spec } = splitLabel(label);
-    return hero.skills.find((s) => s.name === name && (s.spec ?? '') === (spec ?? ''))?.advances ?? 0;
+    const id = findSkill(name)?.id ?? slugId(name);
+    return hero.skills.find((s) => s.skillId === id && (s.spec ?? '') === (spec ?? ''))?.advances ?? 0;
   };
   let held = 0;
   for (const slot of opts.skillSlots) {
@@ -157,7 +163,10 @@ export function isCareerLevelComplete(
 
   return opts.talentSlots.some((slot) => {
     const label = explicitLabel(slot) ?? opts.designations[slot.key];
-    return label != null && hero.talents.some((t) => t.name === label && t.times > 0);
+    if (label == null) return false;
+    const { name, spec } = splitLabel(label);
+    const id = findTalent(name)?.id ?? slugId(name);
+    return hero.talents.some((t) => t.talentId === id && (t.spec ?? '') === (spec ?? '') && t.times > 0);
   });
 }
 

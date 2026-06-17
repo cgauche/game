@@ -15,6 +15,20 @@ export const tens = (n: number): number => Math.floor(n / 10);
 /** Échelle de Difficulté ORDONNÉE, du plus FACILE (tresFacile +60) au plus difficile (tresDifficile −30). */
 export const DIFFICULTY_LADDER: Difficulty[] = ['tresFacile', 'facile', 'accessible', 'intermediaire', 'complexe', 'difficile', 'tresDifficile'];
 
+/** Difficulté (clé) depuis un libellé FR — paramétrage générique d'un Test par l'argument d'instance
+ *  d'un porteur (« Venin (Difficile) » → difficile). Ordre des tests : variantes « Très » avant la base.
+ *  Défaut Intermédiaire (le RAW : « si aucune Difficulté n'est indiquée, le Test est Intermédiaire »). */
+export function difficultyFromLabel(label: string | undefined): Difficulty {
+  const l = (label ?? '').toLowerCase();
+  if (l.includes('très facile') || l.includes('tres facile')) return 'tresFacile';
+  if (l.includes('facile')) return 'facile';
+  if (l.includes('accessible')) return 'accessible';
+  if (l.includes('très difficile') || l.includes('tres difficile')) return 'tresDifficile';
+  if (l.includes('complexe')) return 'complexe';
+  if (l.includes('difficile')) return 'difficile';
+  return 'intermediaire';
+}
+
 /** Décale une difficulté de `steps` crans vers PLUS FACILE (bornée aux extrémités de l'échelle). PUR. */
 export function easeDifficulty(base: Difficulty, steps: number): Difficulty {
   const i = DIFFICULTY_LADDER.indexOf(base);

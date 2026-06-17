@@ -59,7 +59,7 @@ describe('Activités d’interlude (LDB 23)', () => {
 
   it('Artisanat : engager paie ¼ du prix ; le jet cumule ; l’achèvement crée l’objet qualifié', () => {
     const h = hero();
-    h.skills.push({ name: 'Métier (Forgeron)', characteristic: 'Dex', advances: 10 });
+    h.skills.push({ skillId: 'metier', spec: 'Forgeron', characteristic: 'Dex', advances: 10 });
     const itl0 = useGame.getState().interlude!;
     itl0.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
     useGame.setState({ interlude: { ...itl0 } });
@@ -117,14 +117,14 @@ describe('Activités d’interlude (LDB 23)', () => {
     expect(hero().xp).toBe(200);
     expect(toBrass(useGame.getState().money)).toBe(moneyBefore - (pa.tutorBrass ?? 0));
     expect(st().learnFails?.['Chanceux']).toBe(1);
-    expect(hero().talents.some((t) => t.name === 'Chanceux')).toBe(false);
+    expect(hero().talents.some((t) => t.talentId === 'chanceux')).toBe(false);
     // Seconde tentative : succès → Talent acquis (et le +10 d'acharnement était affiché).
     useGame.getState().interludeLearn(h.id, 'Chanceux');
     expect(useGame.getState().pendingActivity!.skillValue).toBeGreaterThan(pa.skillValue);
     useGame.getState().activityRoll();
     useGame.setState({ pendingActivity: { ...useGame.getState().pendingActivity!, roll: 1, success: true, sl: 1 } });
     useGame.getState().activityConfirm();
-    expect(hero().talents.some((t) => t.name === 'Chanceux')).toBe(true);
+    expect(hero().talents.some((t) => t.talentId === 'chanceux')).toBe(true);
     expect(hero().xp).toBe(100);
   });
 
@@ -164,7 +164,7 @@ describe('Activités d’interlude (LDB 23)', () => {
   // ── Identifier un artefact magique (ADE2 ch.4 l.46-59) ─────────────────────────────────────
   function armArtefact(withSavoir = true) {
     const h = hero();
-    if (withSavoir) h.skills.push({ name: 'Savoir (Magie)', characteristic: 'Int', advances: 10 });
+    if (withSavoir) h.skills.push({ skillId: 'savoir', spec: 'Magie', characteristic: 'Int', advances: 10 });
     h.items = [...(h.items ?? []), { uid: 'art1', name: 'Épée ancienne', kind: 'melee', qualities: ['De plaies atroces'], enc: 1, equipped: false, identified: false } as never];
     const itl = useGame.getState().interlude!;
     itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };

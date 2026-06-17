@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Combatant } from './types';
+import { Combatant, CharKey } from './types';
 import {
   advanceCost,
   talentCost,
@@ -13,8 +13,11 @@ import {
   validateCareerChange,
   inCareerChar,
 } from './advancement';
-import { skillSlots, talentSlots } from './careerSlots';
+import { skillSlots, talentSlots, parseAdvancement } from './careerSlots';
 import { CareerLevelData } from '../data';
+
+/** Fixtures : libellés d'avancement → `AdvancementRef[]`. */
+const A = (xs: string[]) => xs.map(parseAdvancement);
 
 const hero = (xp: number): Combatant =>
   ({
@@ -27,7 +30,7 @@ const hero = (xp: number): Combatant =>
     conditions: [],
     weapons: [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
-    skills: [{ name: 'Discrétion', characteristic: 'Ag', advances: 0 }],
+    skills: [{ skillId: 'discretion', characteristic: 'Ag', advances: 0 }],
     talents: [],
     movement: 4,
     xp,
@@ -62,8 +65,8 @@ describe('advanceCost — Tableau de Coût (LDB 07-Carrières l.45-62), verbatim
 });
 
 describe('Détection in-carrière (LDB 07-Carrières l.95 : hors-carrière → coût ×2)', () => {
-  it('inCareerChar : vrai si le libellé long de la Caractéristique est listé au Niveau', () => {
-    const chars = ['Capacité de Tir', 'Intelligence', 'Sociabilité']; // Niveau « Pamphlétaire »
+  it('inCareerChar : vrai si la clé de la Caractéristique est listée au Niveau', () => {
+    const chars: CharKey[] = ['CT', 'Int', 'Soc']; // Niveau « Pamphlétaire »
     expect(inCareerChar(chars, 'CT')).toBe(true);
     expect(inCareerChar(chars, 'Int')).toBe(true);
     expect(inCareerChar(chars, 'CC')).toBe(false);
@@ -109,15 +112,15 @@ describe('Achat un par un (mutation du héros, PX déduits)', () => {
     const h = hero(1000);
     const r = buySkillAdvance(h, 'Discrétion', undefined); // 0 avance → 10 PX
     expect(r).toEqual({ ok: true, cost: 10 });
-    expect(h.skills.find((s) => s.name === 'Discrétion')!.advances).toBe(1);
+    expect(h.skills.find((s) => s.skillId === 'discretion')!.advances).toBe(1);
     expect(h.xp).toBe(990);
     expect(buySkillAdvance(h, 'Inconnue', undefined).ok).toBe(false); // compétence non connue
     // Une AUTRE spec du même groupe est une Compétence distincte (LDB 09 l.42).
-    h.skills.push({ name: 'Discrétion', spec: 'Urbaine', characteristic: 'Ag', advances: 0 });
+    h.skills.push({ skillId: 'discretion', spec: 'Urbaine', characteristic: 'Ag', advances: 0 });
     expect(buySkillAdvance(h, 'Discrétion', 'Rurale').ok).toBe(false); // (Rurale) non connue
     expect(buySkillAdvance(h, 'Discrétion', 'Urbaine')).toEqual({ ok: true, cost: 10 });
     expect(h.skills.find((s) => s.spec === 'Urbaine')!.advances).toBe(1);
-    expect(h.skills.find((s) => !s.spec && s.name === 'Discrétion')!.advances).toBe(1); // inchangée
+    expect(h.skills.find((s) => !s.spec && s.skillId === 'discretion')!.advances).toBe(1); // inchangée
   });
   it('buySkillAdvance : remise −5 PX (talent Maître artisan…, LDB 10) in-carrière seulement', () => {
     const h = hero(1000);
@@ -127,9 +130,9 @@ describe('Achat un par un (mutation du héros, PX déduits)', () => {
   it('buyTalent : crée à times 1 (100 PX), puis +1 (200 PX)', () => {
     const h = hero(1000);
     expect(buyTalent(h, 'Sang-froid')).toEqual({ ok: true, cost: 100 });
-    expect(h.talents.find((t) => t.name === 'Sang-froid')!.times).toBe(1);
+    expect(h.talents.find((t) => t.talentId === 'sang-froid')!.times).toBe(1);
     expect(buyTalent(h, 'Sang-froid')).toEqual({ ok: true, cost: 200 });
-    expect(h.talents.find((t) => t.name === 'Sang-froid')!.times).toBe(2);
+    expect(h.talents.find((t) => t.talentId === 'sang-froid')!.times).toBe(2);
     expect(h.xp).toBe(1000 - 100 - 200);
   });
 });
@@ -141,20 +144,20 @@ describe('Compléter / Changer de Carrière (LDB 07-Carrières l.108-137, LDB 08
       label: 'Niv1',
       career: 'Test',
       level: 1,
-      skills: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9'],
-      talents: ['T1', 'T2'],
+      skills: A(['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9']),
+      talents: A(['T1', 'T2']),
       trappings: [],
-      characteristics: ['Capacité de Combat', 'Force', 'Endurance'],
+      characteristics: ['CC', 'F', 'E'],
       status: 'Bronze 1',
     },
     {
       label: 'Niv2',
       career: 'Test',
       level: 2,
-      skills: ['S10', 'S11'],
-      talents: ['T3'],
+      skills: A(['S10', 'S11']),
+      talents: A(['T3']),
       trappings: [],
-      characteristics: ['Agilité'],
+      characteristics: ['Ag'],
       status: 'Bronze 2',
     },
   ];
@@ -173,8 +176,8 @@ describe('Compléter / Changer de Carrière (LDB 07-Carrières l.108-137, LDB 08
       ...hero(xp),
       career: 'Test',
       charAdvances: { CC: 5, F: 5, E: 5 },
-      skills: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8'].map((name) => ({ name, characteristic: 'Ag', advances: 5 })),
-      talents: [{ name: 'T1', times: 1 }],
+      skills: ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'].map((skillId) => ({ skillId, characteristic: 'Ag', advances: 5 })),
+      talents: [{ talentId: 't1', times: 1 }],
       careerLevel: 1,
     }) as unknown as Combatant;
 
@@ -212,7 +215,7 @@ describe('Compléter / Changer de Carrière (LDB 07-Carrières l.108-137, LDB 08
     h.charAdvances = { CC: 10, F: 10, E: 10, Ag: 10 };
     h.skills = h.skills.map((s) => ({ ...s, advances: 10 })); // 8 compétences du Niveau 1 à 10
     expect(isCareerLevelComplete(h, 2, completionOpts(2))).toBe(false); // T1 n'est PAS du niveau 2
-    h.talents = [{ name: 'T3', times: 1 }];
+    h.talents = [{ talentId: 't3', times: 1 }];
     expect(isCareerLevelComplete(h, 2, completionOpts(2))).toBe(true);
   });
   it('careerChangeCost : 100 si complété, 200 sinon (l.120)', () => {

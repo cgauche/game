@@ -22,7 +22,7 @@ const wpn = (subType: string, type: Weapon['type'] = 'melee'): Weapon =>
 
 describe('combatValue — Spécialisation de Corps à corps (LDB 09 l.44)', () => {
   const sk = (spec: string, advances: number) =>
-    ({ name: 'Corps à corps', spec, characteristic: 'CC', advances } as Combatant['skills'][number]);
+    ({ skillId: 'corps-a-corps', spec, characteristic: 'CC', advances } as Combatant['skills'][number]);
 
   it('les Augmentations comptent quand la Spé correspond au Groupe de l’arme', () => {
     const c = hero({ skills: [sk('Base', 20)] });
@@ -63,7 +63,7 @@ describe('combatValue — Spécialisation de Corps à corps (LDB 09 l.44)', () =
 
 describe('combatValue — Spécialisation de Projectiles (LDB 62 l.225/234)', () => {
   const sk = (spec: string, advances: number) =>
-    ({ name: 'Projectiles', spec, characteristic: 'CT', advances } as Combatant['skills'][number]);
+    ({ skillId: 'projectiles', spec, characteristic: 'CT', advances } as Combatant['skills'][number]);
 
   it('les Augmentations comptent pour le bon Groupe à distance', () => {
     const c = hero({ skills: [sk('Arc', 18)] });

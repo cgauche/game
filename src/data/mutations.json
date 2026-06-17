@@ -116,7 +116,9 @@
     "label": "Tentacule épais",
     "kind": "physique",
     "traits": [
-      "Tentacules"
+      {
+        "id": "tentacules"
+      }
     ],
     "note": "Trait de créature Tentacule.",
     "appearance": {

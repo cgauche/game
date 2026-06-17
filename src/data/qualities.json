@@ -1,5 +1,6 @@
 [
   {
+    "id": "a-enroulement",
     "label": "À Enroulement",
     "type": "Atout",
     "subType": "Arme",
@@ -10,6 +11,7 @@
     }
   },
   {
+    "id": "a-poudre-noire",
     "label": "À Poudre noire",
     "type": "Atout",
     "subType": "Arme",
@@ -20,6 +22,7 @@
     }
   },
   {
+    "id": "a-repetition",
     "label": "À Répétition",
     "type": "Atout",
     "subType": "Arme",
@@ -30,16 +33,52 @@
     }
   },
   {
+    "id": "assommante",
     "label": "Assommante",
     "type": "Atout",
     "subType": "Arme",
     "desc": "Les armes Assommantes sont particulièrement efficaces pour forcer les ennemis à se soumettre. Si vous touchez la Tête avec une arme Assommante, tentez un Test opposé Force/ Résistance contre la cible frappée. Si vous remportez le Test, votre adversaire gagne un État Sonné.",
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "location",
+            "is": "tete"
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "victim",
+              "ops": [
+                {
+                  "op": "opposedTest",
+                  "attacker": "F",
+                  "defender": "E",
+                  "defenderSkill": "Résistance",
+                  "onWin": [
+                    {
+                      "op": "condition",
+                      "name": "Sonné"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      }
+    ],
     "source": {
       "book": "LDB",
       "page": 297
     }
   },
   {
+    "id": "defensive",
     "label": "Défensive",
     "type": "Atout",
     "subType": "Arme",
@@ -50,6 +89,7 @@
     }
   },
   {
+    "id": "devastatrice",
     "label": "Dévastatrice",
     "type": "Atout",
     "subType": "Arme",
@@ -60,6 +100,7 @@
     }
   },
   {
+    "id": "empaleuse",
     "label": "Empaleuse",
     "type": "Atout",
     "subType": "Arme",
@@ -70,6 +111,7 @@
     }
   },
   {
+    "id": "a-explosion",
     "label": "À Explosion",
     "type": "Atout",
     "subType": "Arme",
@@ -80,6 +122,7 @@
     }
   },
   {
+    "id": "immobilisante",
     "label": "Immobilisante",
     "type": "Atout",
     "subType": "Arme",
@@ -119,6 +162,7 @@
     ]
   },
   {
+    "id": "incassable",
     "label": "Incassable",
     "type": "Atout",
     "subType": "Arme",
@@ -129,6 +173,7 @@
     }
   },
   {
+    "id": "percutante",
     "label": "Percutante",
     "type": "Atout",
     "subType": "Arme",
@@ -139,6 +184,7 @@
     }
   },
   {
+    "id": "perforante",
     "label": "Perforante",
     "type": "Atout",
     "subType": "Arme",
@@ -149,6 +195,7 @@
     }
   },
   {
+    "id": "perturbante",
     "label": "Perturbante",
     "type": "Atout",
     "subType": "Arme",
@@ -159,6 +206,7 @@
     }
   },
   {
+    "id": "piege-lame",
     "label": "Piège-lame",
     "type": "Atout",
     "subType": "Arme",
@@ -169,6 +217,7 @@
     }
   },
   {
+    "id": "pistolet",
     "label": "Pistolet",
     "type": "Atout",
     "subType": "Arme",
@@ -179,6 +228,7 @@
     }
   },
   {
+    "id": "pointue",
     "label": "Pointue",
     "type": "Atout",
     "subType": "Arme",
@@ -189,6 +239,7 @@
     }
   },
   {
+    "id": "precise",
     "label": "Précise",
     "type": "Atout",
     "subType": "Arme",
@@ -199,6 +250,7 @@
     }
   },
   {
+    "id": "protectrice",
     "label": "Protectrice",
     "type": "Atout",
     "subType": "Arme",
@@ -209,6 +261,7 @@
     }
   },
   {
+    "id": "rapide",
     "label": "Rapide",
     "type": "Atout",
     "subType": "Arme",
@@ -219,6 +272,7 @@
     }
   },
   {
+    "id": "destabilisante",
     "label": "Déstabilisante",
     "type": "Atout",
     "subType": "Arme",
@@ -229,6 +283,7 @@
     }
   },
   {
+    "id": "taillade",
     "label": "Taillade",
     "type": "Atout",
     "subType": "Arme",
@@ -239,6 +294,7 @@
     }
   },
   {
+    "id": "tir-de-zone",
     "label": "Tir de zone",
     "type": "Atout",
     "subType": "Arme",
@@ -249,6 +305,7 @@
     }
   },
   {
+    "id": "salve",
     "label": "Salve",
     "type": "Atout",
     "subType": "Arme",
@@ -259,6 +316,7 @@
     }
   },
   {
+    "id": "taille",
     "label": "Taille",
     "type": "Atout",
     "subType": "Arme",
@@ -269,6 +327,7 @@
     }
   },
   {
+    "id": "desequilibree",
     "label": "Déséquilibrée",
     "type": "Défaut",
     "subType": "Arme",
@@ -279,6 +338,7 @@
     }
   },
   {
+    "id": "arme-d-equipe",
     "label": "Arme d'équipe",
     "type": "Défaut",
     "subType": "Arme",
@@ -289,6 +349,7 @@
     }
   },
   {
+    "id": "dangereuse",
     "label": "Dangereuse",
     "type": "Défaut",
     "subType": "Arme",
@@ -299,6 +360,7 @@
     }
   },
   {
+    "id": "epuisante",
     "label": "Épuisante",
     "type": "Défaut",
     "subType": "Arme",
@@ -309,6 +371,7 @@
     }
   },
   {
+    "id": "imprecise",
     "label": "Imprécise",
     "type": "Défaut",
     "subType": "Arme",
@@ -319,6 +382,7 @@
     }
   },
   {
+    "id": "inoffensive",
     "label": "Inoffensive",
     "type": "Défaut",
     "subType": "Arme",
@@ -329,6 +393,7 @@
     }
   },
   {
+    "id": "lente",
     "label": "Lente",
     "type": "Défaut",
     "subType": "Arme",
@@ -339,6 +404,7 @@
     }
   },
   {
+    "id": "recharge",
     "label": "Recharge",
     "type": "Défaut",
     "subType": "Arme",
@@ -349,6 +415,7 @@
     }
   },
   {
+    "id": "flexible",
     "label": "Flexible",
     "type": "Atout",
     "subType": "Armure",
@@ -359,6 +426,7 @@
     }
   },
   {
+    "id": "impenetrable",
     "label": "Impénétrable",
     "type": "Atout",
     "subType": "Armure",
@@ -369,6 +437,7 @@
     }
   },
   {
+    "id": "partielle",
     "label": "Partielle",
     "type": "Défaut",
     "subType": "Armure",
@@ -379,6 +448,7 @@
     }
   },
   {
+    "id": "points-faibles",
     "label": "Points faibles",
     "type": "Défaut",
     "subType": "Armure",
@@ -389,6 +459,7 @@
     }
   },
   {
+    "id": "en-discretion",
     "label": "% en discretion",
     "type": "Défaut",
     "subType": "Armure",
@@ -399,6 +470,7 @@
     }
   },
   {
+    "id": "en-perception",
     "label": "% en perception",
     "type": "Défaut",
     "subType": "Armure",
@@ -409,6 +481,7 @@
     }
   },
   {
+    "id": "leger",
     "label": "Léger",
     "type": "Atout",
     "subType": "Objet",
@@ -419,6 +492,7 @@
     }
   },
   {
+    "id": "pratique",
     "label": "Pratique",
     "type": "Atout",
     "subType": "Objet",
@@ -429,6 +503,7 @@
     }
   },
   {
+    "id": "raffine",
     "label": "Raffiné",
     "type": "Atout",
     "subType": "Objet",
@@ -439,6 +514,7 @@
     }
   },
   {
+    "id": "solide",
     "label": "Solide",
     "type": "Atout",
     "subType": "Objet",
@@ -449,6 +525,7 @@
     }
   },
   {
+    "id": "bacle",
     "label": "Bâclé",
     "type": "Défaut",
     "subType": "Objet",
@@ -459,6 +536,7 @@
     }
   },
   {
+    "id": "laid",
     "label": "Laid",
     "type": "Défaut",
     "subType": "Objet",
@@ -476,6 +554,7 @@
     ]
   },
   {
+    "id": "peu-fiable",
     "label": "Peu Fiable",
     "type": "Défaut",
     "subType": "Objet",
@@ -486,6 +565,7 @@
     }
   },
   {
+    "id": "volumineux",
     "label": "Volumineux",
     "type": "Défaut",
     "subType": "Objet",
@@ -496,6 +576,7 @@
     }
   },
   {
+    "id": "magique",
     "label": "Magique",
     "type": "Atout",
     "subType": "Arme",
@@ -506,6 +587,7 @@
     }
   },
   {
+    "id": "de-plaies-atroces",
     "label": "De plaies atroces",
     "type": "Atout",
     "subType": "Arme",
@@ -516,6 +598,7 @@
     }
   },
   {
+    "id": "infecte",
     "label": "Infecté",
     "type": "Défaut",
     "subType": "Arme",

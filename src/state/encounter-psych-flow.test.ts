@@ -11,7 +11,7 @@ import type { Scene, SceneEntity, CustomStatblock } from './scene';
  * déclenchent à la rencontre. Depuis le fold cascade : c'est UNE cascade `purpose:'test'` à N étapes
  * (une par héros concerné, `kind:'encounterPsych'`) — plus N modales enchaînées. On vérifie ce contrat.
  */
-const TERREUR2: CustomStatblock = { name: 'Spectre', char: { F: 30, E: 30, FM: 30 }, traits: ['Terreur 2'] };
+const TERREUR2: CustomStatblock = { name: 'Spectre', char: { F: 30, E: 30, FM: 30 }, traits: [{ id: 'terreur', value: 2 }] };
 const ELFE: CustomStatblock = { name: 'Elfe', char: { B: 10 }, groups: ['Elfe'] };
 
 function ent(over: Partial<SceneEntity> & Pick<SceneEntity, 'id'>): SceneEntity {

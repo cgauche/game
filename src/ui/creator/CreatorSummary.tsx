@@ -10,7 +10,7 @@ import { formatMoney } from '../../engine/money';
 import { RigSprite } from '../../gameIso/rig/composeRig';
 import { DEFS } from '../../gameIso/sprites';
 import type { Appearance } from '../../gameIso/rig/appearance';
-import { skillInstanceLabel, talentConcrete } from '../../data';
+import { SkillChip, TalentChip } from '../EntityChip';
 import { CreatorDraft, buildHero, draftSpecies, draftLevel, draftWealth, draftChars, xpTotal, speciesXp, careerXp, charsXp, starXp, stepIds } from './draft';
 
 export function previewHero(d: CreatorDraft): Combatant | null {
@@ -84,10 +84,7 @@ export function CreatorSummary({ d, step }: { d: CreatorDraft; step: number }) {
           <div className="mini-title">Talents</div>
           <div className="skill-tags">
             {hero.talents.map((t) => (
-              <span className="tag talent" key={`${t.talentId}|${t.spec ?? ''}`}>
-                {talentConcrete(t)}
-                {t.times > 1 ? ` ×${t.times}` : ''}
-              </span>
+              <TalentChip key={`${t.talentId}|${t.spec ?? ''}`} talent={t} />
             ))}
           </div>
           <div className="mini-title">Compétences formées</div>
@@ -96,9 +93,7 @@ export function CreatorSummary({ d, step }: { d: CreatorDraft; step: number }) {
               .filter((s) => s.advances > 0)
               .slice(0, 14)
               .map((s) => (
-                <span className="tag" key={`${s.skillId}|${s.spec ?? ''}`}>
-                  {skillInstanceLabel(s)} +{s.advances}
-                </span>
+                <SkillChip key={`${s.skillId}|${s.spec ?? ''}`} skill={s} />
               ))}
           </div>
         </div>

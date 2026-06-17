@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { TRAITS } from './registry';
 import { parseTrait } from './dispatch';
+import { slugId } from '../../data/slug';
 
 /**
  * Parité des Traits de créature (LDB 85) — garde-fou anti-empilement, sur le modèle de
@@ -26,7 +27,7 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Hurlement fantomatique', 'cri de zone (creatureAttacks.ts + combatFlow)'],
   ['Regard pétrifiant', 'attaque-Action (creatureAttacks.ts + combatFlow)'],
   ['Vomissement', 'attaque de zone (creatureAttacks.ts + combatFlow)'],
-  ['Venin', 'Empoisonné sur PB infligés (creatureAttacks.venomDifficulty + combatFlow)'],
+  ['Venin', 'Empoisonné sur PB infligés — `effects` AUTHORÉ du trait (Test de Résistance paramétré par l’arg, fireTriggers onHit)'],
   ['Constricteur', 'Empêtré sur touche (combatFlow.applyFreeAttackEffects)'],
   ['Vampirique', 'drain de PB sur Morsure (combatFlow.applyFreeAttackEffects)'],
   ['Se cabrer', 'couvert par le Piétinement existant (LDB 85 — trampleTarget)'],
@@ -73,23 +74,23 @@ describe('parité — tout Trait de traits.json est couvert (def, ailleurs, ou j
     const all = JSON.parse(readFileSync(path, 'utf8')) as { label: string }[];
     const missing = all
       .map((t) => t.label)
-      .filter((l) => !TRAITS[l] && !COUVERT_AILLEURS.has(l) && !JOURNAL_MJ.has(l));
+      .filter((l) => !TRAITS[slugId(l)] && !COUVERT_AILLEURS.has(l) && !JOURNAL_MJ.has(l));
     expect(missing).toEqual([]);
   });
   it('pas de double-couverture def + allowlist (une seule source de vérité par trait)', () => {
-    const dupes = [...COUVERT_AILLEURS.keys(), ...JOURNAL_MJ.keys()].filter((l) => TRAITS[l]);
+    const dupes = [...COUVERT_AILLEURS.keys(), ...JOURNAL_MJ.keys()].filter((l) => TRAITS[slugId(l)]);
     expect(dupes).toEqual([]);
   });
   it('parseTrait normalise Indice/argument/casse', () => {
-    expect(parseTrait('Démoniaque 8+')).toEqual({ key: 'Démoniaque', indice: 8, arg: undefined });
-    expect(parseTrait('Toile 40')).toEqual({ key: 'Toile', indice: 40, arg: undefined });
-    expect(parseTrait('Immunité (Poison)')).toEqual({ key: 'Immunité', indice: undefined, arg: 'Poison' });
-    expect(parseTrait('À Sang-froid')?.key).toBe('À sang-froid'); // casse de la donnée ≠ clé canonique
-    expect(parseTrait('Vol 100')).toEqual({ key: 'Vol', indice: 100, arg: undefined });
+    expect(parseTrait('Démoniaque 8+')).toEqual({ id: 'demoniaque', indice: 8, arg: undefined });
+    expect(parseTrait('Toile 40')).toEqual({ id: 'toile', indice: 40, arg: undefined });
+    expect(parseTrait('Immunité (Poison)')).toEqual({ id: 'immunite', indice: undefined, arg: 'Poison' });
+    expect(parseTrait('À Sang-froid')?.id).toBe('a-sang-froid'); // casse de la donnée ≠ id canonique
+    expect(parseTrait('Vol 100')).toEqual({ id: 'vol', indice: 100, arg: undefined });
     // Defs marqueurs migrés du parsing dispersé vers le registre (Nuée/Taille/Armure) :
-    expect(parseTrait('Nuée')?.key).toBe('Nuée');
-    expect(parseTrait('Taille (Énorme)')).toEqual({ key: 'Taille', indice: undefined, arg: 'Énorme' });
-    expect(parseTrait('Armure 4')).toEqual({ key: 'Armure', indice: 4, arg: undefined });
+    expect(parseTrait('Nuée')?.id).toBe('nuee');
+    expect(parseTrait('Taille (Énorme)')).toEqual({ id: 'taille', indice: undefined, arg: 'Énorme' });
+    expect(parseTrait('Armure 4')).toEqual({ id: 'armure', indice: 4, arg: undefined });
     expect(parseTrait('Trait inconnu')).toBeNull();
   });
 });

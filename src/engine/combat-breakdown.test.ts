@@ -43,7 +43,7 @@ describe('attackModifiers : pénalité de main secondaire (LDB 14 l.181)', () =>
     expect(mods.find((m) => m.label === 'Main secondaire')?.value).toBe(-20);
   });
   it('Ambidextre 1× → -10', () => {
-    const mods = attackModifiers(mk({ talents: [{ name: 'Ambidextre', times: 1 }] }), mk(), off, { kind: 'melee' });
+    const mods = attackModifiers(mk({ talents: [{ talentId: 'ambidextre', times: 1 }] }), mk(), off, { kind: 'melee' });
     expect(mods.find((m) => m.label === 'Main secondaire')?.value).toBe(-10);
   });
   it('arme de main principale → aucune pénalité', () => {
@@ -53,7 +53,7 @@ describe('attackModifiers : pénalité de main secondaire (LDB 14 l.181)', () =>
 });
 
 describe('parade : pénalité de main secondaire + exception Parade/Défensive (LDB 62 l.192)', () => {
-  const parrySpec = { name: 'Corps à corps', spec: 'Parade', characteristic: 'CC', advances: 0 } as any;
+  const parrySpec = { skillId: 'corps-a-corps', spec: 'Parade', characteristic: 'CC', advances: 0 } as any;
   const offShield: Weapon = { name: 'Bouclier', type: 'melee', damage: '+BF', qualities: ['Défensive'], hand: 'off', hands: 1 };
   it('parade main secondaire : bouclier Défensive + spé Parade → AUCUNE pénalité', () => {
     const mods = defenseModifiers(mk({ skills: [parrySpec] }), 'parade', 0, offShield);

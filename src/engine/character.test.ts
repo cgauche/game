@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
-import { findSpecies } from '../data';
+import { findSpecies, talentConcrete } from '../data';
 import {
   speciesSkillAdvanceMap,
   rollRandomTalent,
@@ -73,10 +73,10 @@ describe('resolveSpeciesTalents — fixes / choix / aléatoires', () => {
 describe('createHero — applique compétences et talents raciaux', () => {
   it('le héros reçoit ses compétences d’espèce (advances ≥ valeur raciale) et ses talents', () => {
     const hero = createHero({ speciesLabel: REIK, careerLabel: 'Soldat', name: 'Test', rng: makeRNG(3) });
-    const calme = hero.skills.find((s) => s.name === 'Calme');
+    const calme = hero.skills.find((s) => s.skillId === 'calme');
     expect(calme).toBeTruthy();
     expect(calme!.advances).toBeGreaterThanOrEqual(5); // +5 d'espèce (additif si aussi en carrière)
-    expect(hero.talents.map((t) => t.name)).toContain('Destinée');
+    expect(hero.talents.map((t) => talentConcrete(t))).toContain('Destinée');
     // 5 talents raciaux + l'éventuel talent de carrière
     expect(hero.talents.length).toBeGreaterThanOrEqual(5);
   });
@@ -85,7 +85,7 @@ describe('createHero — applique compétences et talents raciaux', () => {
     for (const seed of [1, 5, 9]) {
       const hero = createHero({ speciesLabel: 'Nains', careerLabel: 'Artisan', name: 'T', rng: makeRNG(seed) });
       for (const s of hero.skills) expect(s.spec ?? '').not.toMatch(/au choix|\sou\s/i);
-      for (const t of hero.talents) expect(t.name).not.toMatch(/\(.*au choix.*\)/i);
+      for (const t of hero.talents) expect(talentConcrete(t)).not.toMatch(/\(.*au choix.*\)/i);
     }
   });
 
@@ -133,7 +133,7 @@ describe('createHero — applique compétences et talents raciaux', () => {
       speciesTalentsResolved: ['Affable', 'Destinée', 'Dur à cuire'],
       rng: makeRNG(3),
     });
-    expect(hero.talents.find((t) => t.name === 'Dur à cuire')!.times).toBe(2);
+    expect(hero.talents.find((t) => talentConcrete(t) === 'Dur à cuire')!.times).toBe(2);
     // Blessures = BF+2BE+BFM (3+6+3=12) + 2 × BE (Dur à cuire ×2) = 18.
     expect(hero.wounds.max).toBe(18);
   });
@@ -161,7 +161,7 @@ describe('createHero — applique compétences et talents raciaux', () => {
       speciesTalentsResolved: ['Petit', 'Résistance (Corruption)', 'Sens aiguisé (Goût)', 'Vision nocturne'],
       rng: makeRNG(3),
     });
-    expect(hero.talents.find((t) => t.name === 'Sens aiguisé (Goût)')!.times).toBe(2);
+    expect(hero.talents.find((t) => talentConcrete(t) === 'Sens aiguisé (Goût)')!.times).toBe(2);
   });
 
   it('entrée d\'espèce mixte « Destinée ou Talent aléatoire » : la branche aléatoire tire un talent', () => {

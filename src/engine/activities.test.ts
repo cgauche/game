@@ -82,7 +82,7 @@ describe('statusIncome — « Gagner de l’argent grâce au Statut » (LDB 08 l
 import { craftSpecOf, craftCatalog, learnableTalents, orderCatalog, tutorCostRange, metierOf } from './activities';
 import { createHero } from './character';
 import { makeRNG } from './dice';
-import { findTrapping } from '../data';
+import { findTrapping, skillInstanceLabel, talentConcrete } from '../data';
 
 describe('craftSpecOf — dérivation partagée flux/catalogue', () => {
   it('matériaux = ¼ du prix (ch.23 l.66), gamme par pièce dominante', () => {
@@ -127,7 +127,7 @@ describe('learnableTalents — « un Talent en dehors de votre Carrière » (ch.
   });
   it('coût PX de la prochaine acquisition + fourchette tuteur 2d10 pa/100 PX', () => {
     const lt = learnableTalents(hero);
-    const fresh = lt.find((x) => !hero.talents.some((t) => t.name === x.label))!;
+    const fresh = lt.find((x) => !hero.talents.some((t) => talentConcrete(t) === x.label))!;
     expect(fresh.xpCost).toBe(100); // 1re acquisition
     // Chanceux est déjà pris 1× (tirage de création) → la 2e acquisition coûte 200 PX.
     expect(lt.find((x) => x.label === 'Chanceux')!.xpCost).toBe(200);
@@ -136,7 +136,7 @@ describe('learnableTalents — « un Talent en dehors de votre Carrière » (ch.
   });
   it('metierOf : Compétence Métier avec avances seulement', () => {
     expect(metierOf(hero)).toBeUndefined();
-    hero.skills.push({ name: 'Métier (Forgeron)', characteristic: 'Dex', advances: 5 });
-    expect(metierOf(hero)?.name).toBe('Métier (Forgeron)');
+    hero.skills.push({ skillId: 'metier', spec: 'Forgeron', characteristic: 'Dex', advances: 5 });
+    expect(skillInstanceLabel(metierOf(hero)!)).toBe('Métier (Forgeron)');
   });
 });

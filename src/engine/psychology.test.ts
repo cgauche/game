@@ -5,13 +5,13 @@ import type { Combatant } from './types';
 
 describe('Psychologie (pur)', () => {
   it('parsePsychTraits : « Peur N » / « Terreur N » / Immunité', () => {
-    expect(parsePsychTraits(['Peur 4', 'Arme +7'])).toEqual({ causesPeur: 4 });
-    expect(parsePsychTraits(['Terreur 3'])).toEqual({ causesTerreur: 3 });
-    expect(parsePsychTraits(['Immunité (Psychologie)'])).toEqual({ psychImmune: true });
-    expect(parsePsychTraits(['Arme +7'])).toEqual({});
+    expect(parsePsychTraits([{ id: 'peur', value: 4 }, { id: 'arme', value: 7 }])).toEqual({ causesPeur: 4 });
+    expect(parsePsychTraits([{ id: 'terreur', value: 3 }])).toEqual({ causesTerreur: 3 });
+    expect(parsePsychTraits([{ id: 'immunite', arg: 'Psychologie' }])).toEqual({ psychImmune: true });
+    expect(parsePsychTraits([{ id: 'arme', value: 7 }])).toEqual({});
   });
   it('parsePsychTraits : traits ciblés → psychTraits (Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie)', () => {
-    const r = parsePsychTraits(['Animosité (Elfes)', 'Haine (Skavens)', 'Préjugé (Nains)', 'Amour (Famille)', 'Camaraderie (Soldats)', 'Phobie (Araignées)']);
+    const r = parsePsychTraits([{ id: 'animosite', arg: 'Elfes' }, { id: 'haine', arg: 'Skavens' }, { id: 'prejuge', arg: 'Nains' }, { id: 'amour', arg: 'Famille' }, { id: 'camaraderie', arg: 'Soldats' }, { id: 'phobie', arg: 'Araignées' }]);
     expect(r.psychTraits).toEqual(expect.arrayContaining([
       { type: 'animosite', cible: 'Elfes' },
       { type: 'haine', cible: 'Skavens' },
@@ -22,7 +22,7 @@ describe('Psychologie (pur)', () => {
     ]));
   });
   it('parsePsychTraits : « un au choix » → Cible indéfinie (inerte)', () => {
-    expect(parsePsychTraits(['Animosité (un au choix)']).psychTraits).toEqual([{ type: 'animosite', cible: undefined }]);
+    expect(parsePsychTraits([{ id: 'animosite', arg: 'un au choix' }]).psychTraits).toEqual([{ type: 'animosite', cible: undefined }]);
   });
   it('peurTerreurFromSize : écart ≥1 → Peur ; ≥2 → Terreur (Indice = écart)', () => {
     expect(peurTerreurFromSize('grande', 'moyenne')).toEqual({ kind: 'peur', indice: 1 });
@@ -42,9 +42,9 @@ describe('Psychologie (pur)', () => {
     expect(r.devientPeur).toBe(3);
   });
   it('isFrenzyCapable : trait OU talent « Frénésie »', () => {
-    expect(isFrenzyCapable({ traits: ['Frénésie'], talents: [] } as unknown as Combatant)).toBe(true);
-    expect(isFrenzyCapable({ traits: [], talents: [{ name: 'Frénésie', times: 1 }] } as unknown as Combatant)).toBe(true);
-    expect(isFrenzyCapable({ traits: ['Arme +7'], talents: [] } as unknown as Combatant)).toBe(false);
+    expect(isFrenzyCapable({ traits: [{ id: 'frenesie' }], talents: [] } as unknown as Combatant)).toBe(true);
+    expect(isFrenzyCapable({ traits: [], talents: [{ talentId: 'frenesie', times: 1 }] } as unknown as Combatant)).toBe(true);
+    expect(isFrenzyCapable({ traits: [{ id: 'arme', value: 7 }], talents: [] } as unknown as Combatant)).toBe(false);
   });
   it('resolveFrenzyEntry : Test de FM, succès = entre', () => {
     const r = resolveFrenzyEntry(80, makeRNG(2));

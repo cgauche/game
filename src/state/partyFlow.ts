@@ -32,7 +32,8 @@ import { castingKindOf } from '../engine/combatFeatures/dispatch';
 import { itemUse, applyItemUse } from '../engine/consumables';
 import { add as moneyAdd, Money, formatMoney } from '../engine/money';
 import { spellCost } from '../engine/grimoire';
-import { levelsForCareer, findSkill, findCareer, findSpell as findSpellData } from '../data/index';
+import { levelsForCareer, findSkill, findCareer, findSpell as findSpellData, findSpellById } from '../data/index';
+import { slugId } from '../data/slug';
 import { seatSlotsRemaining } from './netOwnership';
 import { bus, EVT } from './bus';
 
@@ -237,7 +238,8 @@ export function buySkillAdvance(get: Get, set: Set, heroId: string, skillName: s
       if (h.id !== heroId) return h;
       const clone: Combatant = JSON.parse(JSON.stringify(h));
       const ctx = careerCtx(clone);
-      const known = clone.skills.some((sk) => sk.name === skillName && (sk.spec ?? '') === (spec ?? ''));
+      const skillId = findSkill(skillName)?.id ?? slugId(skillName);
+      const known = clone.skills.some((sk) => sk.skillId === skillId && (sk.spec ?? '') === (spec ?? ''));
       const status = inCareerStatus(ctx.sSlots, ctx.designations, skillName, spec);
       const additions = careerSkillAdditions(clone);
       const added = additions.some((a) => {
@@ -252,7 +254,7 @@ export function buySkillAdvance(get: Get, set: Set, heroId: string, skillName: s
         }
         // Acquérir la Compétence de carrière à advances 0, puis l'augmenter (l'Augmentation est payée).
         const characteristic = CHAR_BY_LABEL[findSkill(skillName)?.characteristic ?? ''] ?? 'Int';
-        clone.skills.push({ name: skillName, spec, characteristic, advances: 0 });
+        clone.skills.push({ skillId, spec, characteristic, advances: 0 });
       }
       const discount = added && status != null ? 5 : 0;
       const r = engineBuySkillAdvance(clone, skillName, spec, inC, discount);
@@ -359,7 +361,7 @@ export function buySpell(get: Get, set: Set, heroId: string, label: string): { o
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
-      const sp = findSpellData(label);
+      const sp = findSpellById(label) ?? findSpellData(label); // id (runtime/UI) ou libellé (legacy)
       if (!sp) {
         msg = `Sort « ${label} » introuvable.`;
         return h;
@@ -375,10 +377,10 @@ export function buySpell(get: Get, set: Set, heroId: string, label: string): { o
         return h;
       }
       clone.xp = (clone.xp ?? 0) - cost;
-      clone.spells = [...(clone.spells ?? []), label];
+      clone.spells = [...(clone.spells ?? []), sp.id]; // runtime = id de sort (pas le libellé)
       msg = cost > 0
-        ? `${clone.name} mémorise ${label} (−${cost} PX).`
-        : `${clone.name} reçoit ${label} (inclus au Talent).`;
+        ? `${clone.name} mémorise ${sp.label} (−${cost} PX).`
+        : `${clone.name} reçoit ${sp.label} (inclus au Talent).`;
       result = { ok: true, chaos: sp.type === 'Magie du Chaos' };
       return clone;
     }),

@@ -29,7 +29,7 @@ describe('Scénario Magie hors combat', () => {
     const heal = findSpell('Bénédiction de Guérison')!;
     expect(castInfo(heal).skill).toBe('Prière');
     expect(knowsCastingSkill(priest, 'Prière')).toBe(true);
-    expect(priest.spells).toContain('Bénédiction de Guérison');
+    expect(priest.spells).toContain('benediction-de-guerison'); // runtime = id de sort
     expect(isMagicMissile(heal)).toBe(false);
   });
 

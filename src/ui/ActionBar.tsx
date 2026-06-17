@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useGame, activeCombatant, entityPickables, movementRemaining, canMove } from '../state/store';
 import { hasMeaningfulOption } from '../state/turnEconomy';
-import { findSpell } from '../data/index';
+import { findSpellById } from '../data/index';
 import { isArcaneSpell } from '../engine/magic';
 import { canTakeAction, hasCondition, isOutOfAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
@@ -294,9 +294,10 @@ export function ActionBar() {
     <div className="action-bar">
       {hasSpells && battle.action === 'cast' && !pendingCast && (
         <div className="ab-spells">
-          {active.spells!.map((label) => {
-            const spell = findSpell(label);
+          {active.spells!.map((spellId) => {
+            const spell = findSpellById(spellId);
             if (!spell) return null;
+            const label = spell.label; // pont id→libellé : le flux de cast (selectedSpell/focus) reste par libellé
             const selected = battle.selectedSpell === label;
             const ni = spell.cn != null ? `NI ${spell.cn}` : 'Prière';
             const canFocus = isArcaneSpell(spell) && (spell.cn ?? 0) > 0;
@@ -305,7 +306,7 @@ export function ActionBar() {
             const tgtLabel = typeof spell.target === 'number' ? (spell.target === 1 ? '1 cible' : `${spell.target} cibles`) : spell.target;
             const meta = `📏 ${spell.range} · ⏳ ${spell.duration} · 🎯 ${tgtLabel}`;
             return (
-              <div key={label} className="ab-spell-row">
+              <div key={spellId} className="ab-spell-row">
                 <button className={`btn btn-sm ${selected ? 'btn-primary' : ''}`} onClick={() => selectSpell(label)}>
                   {spell.label} <span className="bp-spell-ni">({ni})</span>
                   <span className="ab-spell-meta">{meta}</span>

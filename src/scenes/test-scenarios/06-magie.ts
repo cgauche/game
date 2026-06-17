@@ -1,6 +1,7 @@
 import { makePregens } from '../../data/pregens';
-import { spells } from '../../data';
-import { blessingsOf, miraclesOf } from '../../engine/cults/registry';
+import { spells, blessingsOf, miraclesOf, findSkill, findTalent } from '../../data';
+import { slugId } from '../../data/slug';
+import { splitLabel } from '../../engine/careerSlots';
 import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 import type { Combatant, CharKey, SkillInstance, TalentInstance } from '../../engine/types';
@@ -26,9 +27,10 @@ const clone = (c: Combatant): Combatant => JSON.parse(JSON.stringify(c)) as Comb
 
 /** Monte (ou ajoute) une Compétence d'incantation à un niveau d'avances donné. */
 function boostSkill(c: Combatant, name: string, spec: string | undefined, characteristic: CharKey, advances: number): void {
-  const s = c.skills.find((x) => x.name === name && (spec == null || x.spec === spec));
+  const skillId = findSkill(name)?.id ?? slugId(name);
+  const s = c.skills.find((x) => x.skillId === skillId && (spec == null || x.spec === spec));
   if (s) s.advances = Math.max(s.advances, advances);
-  else c.skills.push({ name, spec, characteristic, advances } as SkillInstance);
+  else c.skills.push({ skillId, spec, characteristic, advances } as SkillInstance);
 }
 
 const setChars = (c: Combatant, over: Partial<Record<CharKey, number>>) => {
@@ -37,7 +39,11 @@ const setChars = (c: Combatant, over: Partial<Record<CharKey, number>>) => {
 
 /** Ajoute des Talents (libellés concrets) sans doublon. */
 function addTalents(c: Combatant, names: string[]): void {
-  for (const name of names) if (!c.talents.some((t) => t.name === name)) c.talents.push({ name, times: 1 } as TalentInstance);
+  for (const name of names) {
+    const { name: base, spec } = splitLabel(name);
+    const talentId = findTalent(base)?.id ?? slugId(base);
+    if (!c.talents.some((t) => t.talentId === talentId && (t.spec ?? '') === (spec ?? ''))) c.talents.push({ talentId, spec, times: 1 } as TalentInstance);
+  }
 }
 
 /** Labels des sorts d'un type (+ sous-type optionnel) depuis la base. */

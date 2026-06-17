@@ -10,6 +10,7 @@ import {
 import { attackModifiers, woundsFromHit } from '../combat';
 import { endOfRound } from '../conditions';
 import { makeRNG } from '../dice';
+import { slugId } from '../../data/slug';
 import type { Combatant, Weapon } from '../types';
 
 /** Lot G — Talents à effet de jeu (LDB 10) : helpers du registre + câblages moteur purs. */
@@ -21,7 +22,7 @@ function mk(talents: { name: string; times: number }[] = [], over: Partial<Comba
     characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
-    skills: [], talents, movement: 4,
+    skills: [], talents: talents.map((t) => ({ talentId: slugId(t.name), times: t.times })), movement: 4,
     ...over,
   } as Combatant;
 }

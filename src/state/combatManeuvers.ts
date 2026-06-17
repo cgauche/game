@@ -258,7 +258,7 @@ export function resolveManeuver(
   } else if (def.targeting === 'allFoes') {
     // Hurlement (l.135) : tous les ennemis VIVANTS (≠ Mort-vivant) à Initiative mètres — filtre de Groupe moteur.
     const radius = Math.max(1, Math.ceil(effectiveChar(attacker, 'I') / 2));
-    const living = battle.combatants.filter((c) => alive(c) && chebyshev(attacker.pos!, c.pos!) <= radius && !hasTraitKey(c.traits, 'Mort-vivant'));
+    const living = battle.combatants.filter((c) => alive(c) && chebyshev(attacker.pos!, c.pos!) <= radius && !hasTraitKey(c.traits, 'mort-vivant'));
     emitAoe(get, attacker.pos, radius, def.kind, def.label);
     for (const tgt of living) hitOne(tgt);
   } else {

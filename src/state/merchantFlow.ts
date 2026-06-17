@@ -16,7 +16,8 @@ import { makeRNG } from '../engine/dice';
 import { rollStock, type Settlement, type CatalogItem } from '../engine/disponibilite';
 import { priceToMoney, subtract as moneySub, add as moneyAdd, canAfford, fromBrass, toBrass, formatMoney } from '../engine/money';
 import { MINUTES_PER_DAY } from '../engine/clock';
-import { findTrapping, trappings } from '../data/index';
+import { findTrapping, trappings, qualityRuntime } from '../data/index';
+import { slugId } from '../data/slug';
 import { MERCHANTS } from './merchants/index';
 import { describeBargain } from './flowOutcomes';
 
@@ -102,7 +103,7 @@ export function buyItem(get: Get, set: Set, label: string, heroId?: string): voi
   const line = m.stock.find((l) => l.label === label); if (!line || line.qty <= 0) return;
   const t = findTrapping(label); if (!t) return;
   const factor = m.bargainBuy ? bargainBuyFactor(m.bargainBuy.won, m.bargainBuy.drNet, m.bargainBuy.negotiator) : 1;
-  const cost = fromBrass(Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * (m.buyMarkup ?? 1) * factor));
+  const cost = fromBrass(Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities.map(qualityRuntime) }) * (m.buyMarkup ?? 1) * factor));
   if (!canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour ${label}.`); return; }
   const it = itemFromTrapping(label); if (!it) return;
   const dest = heroId ?? get().party[0]?.id;
@@ -171,7 +172,7 @@ export function payCart(get: Get, set: Set): void {
   const factor = m.bargainBuy ? bargainBuyFactor(m.bargainBuy.won, m.bargainBuy.drNet, m.bargainBuy.negotiator) : 1;
   const unitBrass = (label: string) => {
     const t = findTrapping(label); if (!t) return 0;
-    return Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * (m.buyMarkup ?? 1) * factor);
+    return Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities.map(qualityRuntime) }) * (m.buyMarkup ?? 1) * factor);
   };
   let totalBrass = 0;
   for (const c of cart) totalBrass += unitBrass(c.label) * c.qty;
@@ -364,7 +365,7 @@ export const DETECT_TALENT = "Détection d'artefact";
 /** Meilleur détecteur du groupe : meilleure Intuition PARMI les porteurs du Talent (c'est LUI qui
  *  touche l'objet — pas un partyBest global comme l'Évaluation). null si personne ne l'a. */
 export function bestDetector(party: Combatant[]): { actor: Combatant; value: number } | null {
-  const holders = party.filter((h) => !h.dead && h.talents.some((t) => t.name === DETECT_TALENT && (t.times ?? 1) >= 1));
+  const holders = party.filter((h) => !h.dead && h.talents.some((t) => t.talentId === slugId(DETECT_TALENT) && (t.times ?? 1) >= 1));
   if (!holders.length) return null;
   const best = partyBest(holders, 'Intuition', 'I');
   return best ? { actor: best.actor, value: best.value } : null;

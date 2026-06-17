@@ -6,6 +6,7 @@ import { describe, it, expect } from 'vitest';
 import type { Combatant } from './types';
 import { makeRNG } from './dice';
 import { resolveFormula, applyOps, applyActiveEffect, COMBAT_PERSIST } from './ops';
+import { hasTraitKey } from './traits/dispatch';
 
 function hero(p: Partial<Combatant> = {}): Combatant {
   return {
@@ -72,11 +73,11 @@ describe('applyOps — opérations unitaires', () => {
   it('grantTrait onlyGroups (Bannissement) : Instable n’atteint que Mort-vivant/Démon', () => {
     const undead = hero({ groups: ['Mort-vivant'] });
     const human = hero({ groups: ['Humain'] });
-    const op = { op: 'grantTrait' as const, trait: 'Instable', onlyGroups: ['Mort-vivant', 'Démon'] };
+    const op = { op: 'grantTrait' as const, traitId: 'instable', onlyGroups: ['Mort-vivant', 'Démon'] };
     applyOps(undead, [op]);
     applyOps(human, [op]);
-    expect((undead.traits ?? []).includes('Instable')).toBe(true);
-    expect((human.traits ?? []).includes('Instable')).toBe(false); // gate de Groupe : non affecté
+    expect(hasTraitKey(undead.traits, 'instable')).toBe(true);
+    expect(hasTraitKey(human.traits, 'instable')).toBe(false); // gate de Groupe : non affecté
   });
 
   it('condition : ajout avec valeur en formule (Bonus de FM du référent caster)', () => {

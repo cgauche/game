@@ -157,14 +157,14 @@ describe('Avantage : +1 UNIQUE et seulement si les DEUX frappes touchent (LDB 10
 
 describe('bornage : jamais sur une attaque gratuite / enchaînée (LDB 10 l.638 « pour votre Action »)', () => {
   it('attaque d’enchaînement (cleave) avec le talent : pas de pendingDualStrike', () => {
-    setupBattle({ talents: [{ name: 'Maniement de deux armes', times: 1 }] as any });
+    setupBattle({ talents: [{ talentId: 'maniement-de-deux-armes', times: 1 }] as any });
     // Une attaque de balayage (cleave) n'a JAMAIS dualMode (le toggle est masqué si pa.cleave).
     useGame.setState({ pendingAttack: { attackerId: 'h', targetId: 'f1', location: 'corps', result: hitRes(), cleave: true } as any });
     useGame.getState().attackConfirm();
     expect(useGame.getState().pendingDualStrike).toBeNull();
   });
   it('attaque normale (sans dualMode) avec le talent : pas de pendingDualStrike', () => {
-    setupBattle({ talents: [{ name: 'Maniement de deux armes', times: 1 }] as any });
+    setupBattle({ talents: [{ talentId: 'maniement-de-deux-armes', times: 1 }] as any });
     useGame.setState({ pendingAttack: { attackerId: 'h', targetId: 'f1', location: 'corps', result: hitRes() } as any });
     useGame.getState().attackConfirm();
     expect(useGame.getState().pendingDualStrike).toBeNull();

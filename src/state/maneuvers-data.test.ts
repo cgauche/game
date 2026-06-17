@@ -61,7 +61,7 @@ describe('manœuvres = donnée éditable (GameOp)', () => {
     const def = findManeuverById('souffle-feu')!;
     const original = def.effects;
     const edited: TriggeredEffect[] = [
-      { trigger: 'onHit', on: 'victim', flow: { kind: 'do', effect: { type: 'ops', on: 'victim', ops: [{ op: 'condition', name: 'Empoisonné' }] } } },
+      { trigger: 'onHit', on: 'victim', flow: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', name: 'Empoisonné' }] } } },
     ];
     try {
       def.effects = edited; // « édition » : Empoisonné, sans Dégâts

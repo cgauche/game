@@ -46,7 +46,7 @@ export interface HungerState {
 
 /** Talent Brouet (LDB 10 l.108-113) — lu sur la donnée, sans import. */
 export function hasBrouet(c: Combatant): boolean {
-  return (c.talents ?? []).some((t) => t.name === 'Brouet' && (t.times ?? 1) >= 1);
+  return (c.talents ?? []).some((t) => t.talentId === 'brouet' && (t.times ?? 1) >= 1);
 }
 
 /** L'objet est-il une ration de voyage (« Ration (1 jour) », LDB p.302) ? */

@@ -19,7 +19,7 @@
  */
 import { RNG, defaultRNG, roll as rollDice } from './dice';
 import { Money, fromBrass, toBrass, PA_PER_SC, PA_PER_CO } from './money';
-import type { Combatant, Difficulty } from './types';
+import type { Combatant, Difficulty, SkillInstance } from './types';
 import { trappings, talents, levelsForCareer, type TrappingData } from '../data';
 import { talentSlotsUpTo, designationsFor, inCareerStatus, talentMaxReached, splitLabel } from './careerSlots';
 import { talentCost } from './advancement';
@@ -69,8 +69,8 @@ export function bankPayout(kind: 'invest' | 'stash', amountBrass: number, rate: 
 
 /** Compétence Métier (≥ 1 avance) du héros — porte d'entrée RAW de l'Artisanat (ch.23 l.66 :
  *  « si vous possédez les Compétences Métier appropriées »). */
-export function metierOf(c: Combatant): { name: string; advances?: number } | undefined {
-  return c.skills.find((s) => /^métier/i.test(s.name) && (s.advances ?? 0) > 0);
+export function metierOf(c: Combatant): SkillInstance | undefined {
+  return c.skills.find((s) => s.skillId === 'metier' && (s.advances ?? 0) > 0);
 }
 
 /** Dérivation Artisanat d'un équipement : gamme de prix, Disponibilité jouable et matériaux.
@@ -152,7 +152,7 @@ export function learnableTalents(hero: Combatant): LearnOption[] {
       return true;
     })
     .map((t) => {
-      const xpCost = talentCost(hero.talents.find((k) => k.name === t.label)?.times ?? 0);
+      const xpCost = talentCost(hero.talents.find((k) => k.talentId === t.id)?.times ?? 0);
       const { minBrass, maxBrass } = tutorCostRange(xpCost);
       return { label: t.label, xpCost, tutorMinBrass: minBrass, tutorMaxBrass: maxBrass };
     })

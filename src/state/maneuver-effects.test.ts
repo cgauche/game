@@ -26,21 +26,21 @@ const aTerre = (c: Combatant) => c.conditions.find((x) => x.name === 'À Terre')
 
 describe('effets onHit de manœuvre (data) appliqués par applyFreeAttackEffects', () => {
   it('Attaque caudale : cible PLUS PETITE → À Terre (compare Taille acteur-vs-acteur)', () => {
-    const dragon = mk({ id: 'd', traits: ['Attaque caudale +9'], size: 'enorme' });
+    const dragon = mk({ id: 'd', traits: [{ id: 'attaque-caudale', value: 9 }], size: 'enorme' });
     const prey = mk({ id: 'p', size: 'moyenne' });
     applyFreeAttackEffects(get, dragon, prey, 'caudale', hit);
     expect(aTerre(prey)?.value).toBe(1);
   });
 
   it('Attaque caudale : cible AUSSI GRANDE ou plus → PAS d’À Terre', () => {
-    const dragon = mk({ id: 'd', traits: ['Attaque caudale +9'], size: 'moyenne' });
+    const dragon = mk({ id: 'd', traits: [{ id: 'attaque-caudale', value: 9 }], size: 'moyenne' });
     const peer = mk({ id: 'p', size: 'grande' });
     applyFreeAttackEffects(get, dragon, peer, 'caudale', hit);
     expect(aTerre(peer)).toBeUndefined();
   });
 
   it('Tentacules : à la touche causant des Dégâts → Empêtré (Force d’évasion = Force de l’attaquant)', () => {
-    const kraken = mk({ id: 'k', traits: ['Tentacules +6'] });
+    const kraken = mk({ id: 'k', traits: [{ id: 'tentacules', value: 6 }] });
     const foe = mk({ id: 'f' });
     applyFreeAttackEffects(get, kraken, foe, 'tentacules', hit);
     expect(empetre(foe)?.value).toBe(1);
@@ -48,7 +48,7 @@ describe('effets onHit de manœuvre (data) appliqués par applyFreeAttackEffects
   });
 
   it('sans Dégâts (woundsLost 0) : pas d’effet de manœuvre', () => {
-    const dragon = mk({ traits: ['Attaque caudale +9'], size: 'enorme' });
+    const dragon = mk({ traits: [{ id: 'attaque-caudale', value: 9 }], size: 'enorme' });
     const prey = mk({ size: 'petite' });
     applyFreeAttackEffects(get, dragon, prey, 'caudale', { hit: true, woundsLost: 0 } as AttackResult);
     expect(aTerre(prey)).toBeUndefined();
@@ -60,21 +60,21 @@ describe('effets onHit des manœuvres de zone/action (data) — appliqués par l
     applyTriggeredEffects((() => ({ battle: undefined })) as never, attacker, maneuverEffectsOf(attacker, kind), 'onHit', { victim, margin, rng: makeRNG(2) });
 
   it('Langue préhensile → Empêtré (Force d’évasion = Force de l’attaquant)', () => {
-    const jab = mk({ traits: ['Langue préhensile +6'] }); const foe = mk({ id: 'f' });
+    const jab = mk({ traits: [{ id: 'langue-prehensile', value: 6 }] }); const foe = mk({ id: 'f' });
     fire('langue', jab, foe);
     expect(empetre(foe)?.value).toBe(1);
     expect(empetre(foe)?.escapeStrength).toBe(jab.characteristics.F);
   });
 
   it('Hurlement fantomatique → 3 Assourdi (+ Test de Résistance ou Brisé)', () => {
-    const banshee = mk({ traits: ['Hurlement fantomatique +0'] }); const foe = mk({ id: 'f' });
+    const banshee = mk({ traits: [{ id: 'hurlement-fantomatique', value: 0 }] }); const foe = mk({ id: 'f' });
     const lines = fire('hurlement', banshee, foe);
     expect(foe.conditions.find((c) => c.name === 'Assourdi')?.value).toBe(3);
     expect(lines.join(' ')).toMatch(/Résistance/); // le Test s’est joué (op test)
   });
 
   it('Regard pétrifiant → Sonné échelonné sur la marge (1 par 2 DR, via valuePerSL ← ctx.sl)', () => {
-    const basilic = mk({ traits: ['Regard pétrifiant +0'] }); const foe = mk({ id: 'f' });
+    const basilic = mk({ traits: [{ id: 'regard-petrifiant', value: 0 }] }); const foe = mk({ id: 'f' });
     fire('regard', basilic, foe, 4); // marge 4 → floor(4/2) = 2 Sonné
     expect(foe.conditions.find((c) => c.name === 'Sonné')?.value).toBe(2);
   });

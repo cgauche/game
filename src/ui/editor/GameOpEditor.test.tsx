@@ -92,11 +92,11 @@ describe('GameOpEditor — éditeur pour TOUTE op (dédié ou repli JSON)', () =
     expect(opSummary(ops[0])).toContain('Le sol tremble.');
   });
 
-  it('round-trip : une op test (à sous-ops) préserve ses champs via le repli JSON', () => {
+  it('une op test (à sous-ops) a un éditeur DÉDIÉ : champs + sous-ops imbriquées visibles', () => {
     const test: GameOp = { op: 'test', skill: 'Calme', difficulty: 'difficile', onFail: [{ op: 'condition', name: 'Sonné' }], onSuccess: [] };
     const html = renderToStaticMarkup(<GameOpEditor ops={[test]} onChange={() => {}} />);
-    expect(html).toContain('Calme'); // skill visible
-    expect(html).toContain('onFail'); // sous-ops préservées
+    expect(html).toContain('Calme'); // compétence (input du formulaire dédié)
+    expect(html).toContain('Sonné'); // sous-op onFail rendue par le GameOpEditor IMBRIQUÉ
     expect(opSummary(test)).toContain('Calme');
   });
 });

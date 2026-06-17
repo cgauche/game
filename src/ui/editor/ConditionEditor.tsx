@@ -6,6 +6,16 @@
  */
 import type { Condition, ActorRef, ActorField, CompareOp } from '../../state/flow';
 import type { TemporalCondition } from '../../state/scene';
+import { HIT_LOCATION_LABELS, type HitLocation } from '../../engine/types';
+import type { Camp, Relation } from '../../engine/relations';
+
+/** Libellés des valeurs de la Condition `relation` : RELATIF au lanceur (allié/adversaire) + camp ABSOLU. */
+const REL_LABEL: Record<Relation | Camp, string> = {
+  self: 'soi-même', ally: 'allié (même camp)', opponent: 'adversaire (camp ≠)',
+  party: 'du groupe (joueur)', neutral: 'neutre (PNJ)', hostile: 'hostile (ennemi)',
+};
+/** Nature de l'appartenance testée par la Condition `has`. */
+const WHAT_LABEL: Record<'group' | 'talent' | 'trait', string> = { group: 'le Groupe', talent: 'le Talent', trait: 'le Trait' };
 
 const ALWAYS: Condition = { kind: 'always' };
 
@@ -22,7 +32,11 @@ const KIND_OPTIONS: [Condition['kind'], string][] = [
   ['money', 'Bourse ≥'],
   ['partyDead', 'Héros mort'],
   ['compare', 'État du porteur (comparaison)'],
-  ['slThreshold', 'Seuil de marge (DR ≥)'],
+  ['slThreshold', 'Marge (DR)'],
+  ['location', 'Localisation touchée'],
+  ['woundsDealt', 'Blessures infligées'],
+  ['relation', 'Camp / relation'],
+  ['has', 'Possède (Groupe/Talent/Trait)'],
   ['all', 'TOUS (ET)'],
   ['any', 'AU MOINS UN (OU)'],
   ['not', 'NON'],
@@ -52,7 +66,11 @@ export function condSummary(c: Condition | undefined): string {
       const val = typeof c.value === 'number' ? `${c.value}` : `${WHO_LABEL[c.value.who]} ${FIELD_LABEL[c.value.field]}`;
       return `${WHO_LABEL[c.subject.who]} : ${subj} ${c.op} ${val}`;
     }
-    case 'slThreshold': return `marge ≥ ${c.atLeast} DR`;
+    case 'slThreshold': return `marge ${c.op} ${c.value} DR`;
+    case 'location': return `touche ${HIT_LOCATION_LABELS[c.is]}`;
+    case 'woundsDealt': return `PB infligés ${c.op} ${c.value}`;
+    case 'relation': return `${WHO_LABEL[c.who]} : ${REL_LABEL[c.is]}`;
+    case 'has': return `${WHO_LABEL[c.who]} a ${WHAT_LABEL[c.what]} « ${c.value || '?'}${c.spec ? ` (${c.spec})` : ''} »`;
     case 'all': return c.of.length ? c.of.map(condSummary).join(' ET ') : 'toujours';
     case 'any': return c.of.length ? c.of.map(condSummary).join(' OU ') : 'jamais';
     case 'not': return `NON(${condSummary(c.of)})`;
@@ -69,7 +87,11 @@ function recast(cond: Condition, kind: Condition['kind']): Condition {
     case 'money': return { kind: 'money', atLeast: cond.kind === 'money' ? cond.atLeast : { gold: 1 } };
     case 'partyDead': return { kind: 'partyDead', who: cond.kind === 'partyDead' ? cond.who : 'any' };
     case 'compare': return cond.kind === 'compare' ? cond : { kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '>=', value: 1 };
-    case 'slThreshold': return { kind: 'slThreshold', atLeast: cond.kind === 'slThreshold' ? cond.atLeast : 6 };
+    case 'slThreshold': return cond.kind === 'slThreshold' ? cond : { kind: 'slThreshold', op: '>=', value: 6 };
+    case 'location': return { kind: 'location', is: cond.kind === 'location' ? cond.is : 'tete' };
+    case 'woundsDealt': return cond.kind === 'woundsDealt' ? cond : { kind: 'woundsDealt', op: '>', value: 0 };
+    case 'relation': return cond.kind === 'relation' ? cond : { kind: 'relation', who: 'target', is: 'opponent' };
+    case 'has': return cond.kind === 'has' ? cond : { kind: 'has', who: 'target', what: 'group', value: '' };
     case 'all': return { kind: 'all', of: cond.kind === 'all' || cond.kind === 'any' ? cond.of : cond.kind === 'always' ? [] : [cond] };
     case 'any': return { kind: 'any', of: cond.kind === 'all' || cond.kind === 'any' ? cond.of : cond.kind === 'always' ? [] : [cond] };
     case 'not': return { kind: 'not', of: cond.kind === 'not' ? cond.of : cond };
@@ -166,7 +188,56 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
         </span>
       )}
       {cond.kind === 'slThreshold' && (
-        <label className="dr">marge ≥ <input type="number" min={0} style={{ width: '3.4em' }} value={cond.atLeast} onChange={(e) => onChange({ kind: 'slThreshold', atLeast: Math.max(0, Number(e.target.value) || 0) })} /> DR</label>
+        <span className="cond-time">marge
+          <select className="cond-kind" value={cond.op} onChange={(e) => onChange({ ...cond, op: e.target.value as CompareOp })}>
+            {COMPARE_OPS.map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
+          <input type="number" min={0} style={{ width: '3.4em' }} value={cond.value} onChange={(e) => onChange({ ...cond, value: Math.max(0, Number(e.target.value) || 0) })} /> DR
+        </span>
+      )}
+      {cond.kind === 'location' && (
+        <select className="cond-kind" value={cond.is} onChange={(e) => onChange({ kind: 'location', is: e.target.value as HitLocation })}>
+          {(Object.keys(HIT_LOCATION_LABELS) as HitLocation[]).map((l) => <option key={l} value={l}>{HIT_LOCATION_LABELS[l]}</option>)}
+        </select>
+      )}
+      {cond.kind === 'woundsDealt' && (
+        <span className="cond-time">PB infligés
+          <select className="cond-kind" value={cond.op} onChange={(e) => onChange({ ...cond, op: e.target.value as CompareOp })}>
+            {COMPARE_OPS.map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
+          <input type="number" min={0} style={{ width: '3.4em' }} value={cond.value} onChange={(e) => onChange({ ...cond, value: Math.max(0, Number(e.target.value) || 0) })} />
+        </span>
+      )}
+      {cond.kind === 'relation' && (
+        <span className="cond-time">
+          <select className="cond-kind" value={cond.who} onChange={(e) => onChange({ ...cond, who: e.target.value as ActorRef })}>
+            {(Object.keys(WHO_LABEL) as ActorRef[]).map((w) => <option key={w} value={w}>{WHO_LABEL[w]}</option>)}
+          </select>
+          est
+          <select className="cond-kind" value={cond.is} onChange={(e) => onChange({ ...cond, is: e.target.value as Relation | Camp })}>
+            <optgroup label="relatif au lanceur">
+              {(['self', 'ally', 'opponent'] as const).map((r) => <option key={r} value={r}>{REL_LABEL[r]}</option>)}
+            </optgroup>
+            <optgroup label="camp absolu">
+              {(['party', 'neutral', 'hostile'] as const).map((r) => <option key={r} value={r}>{REL_LABEL[r]}</option>)}
+            </optgroup>
+          </select>
+        </span>
+      )}
+      {cond.kind === 'has' && (
+        <span className="cond-time">
+          <select className="cond-kind" value={cond.who} onChange={(e) => onChange({ ...cond, who: e.target.value as ActorRef })}>
+            {(Object.keys(WHO_LABEL) as ActorRef[]).map((w) => <option key={w} value={w}>{WHO_LABEL[w]}</option>)}
+          </select>
+          a
+          <select className="cond-kind" value={cond.what} onChange={(e) => onChange({ ...cond, what: e.target.value as 'group' | 'talent' | 'trait' })}>
+            {(Object.keys(WHAT_LABEL) as ('group' | 'talent' | 'trait')[]).map((w) => <option key={w} value={w}>{WHAT_LABEL[w]}</option>)}
+          </select>
+          <input className="cond-flag" value={cond.value} placeholder={cond.what === 'group' ? 'Groupe (ex. Morts-vivants)' : cond.what === 'talent' ? 'id Talent (ex. magie-des-arcanes)' : 'id Trait (ex. mort-vivant)'} onChange={(e) => onChange({ ...cond, value: e.target.value })} />
+          {cond.what === 'talent' && (
+            <input style={{ width: '6em' }} value={cond.spec ?? ''} placeholder="spéc. (Feu…)" onChange={(e) => onChange({ ...cond, spec: e.target.value || undefined })} />
+          )}
+        </span>
       )}
       {(cond.kind === 'all' || cond.kind === 'any') && (
         <div className={`cond-children ${cond.kind}`}>

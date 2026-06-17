@@ -26,6 +26,7 @@ export function CodexRef({
   children,
   className,
   hideIfUnknown = false,
+  inline = false,
   instance,
 }: {
   category: string;
@@ -35,6 +36,9 @@ export function CodexRef({
   className?: string;
   /** Pour un déclencheur-icône (ℹ️) : ne rien rendre si l'entrée est inconnue (pas d'icône morte). */
   hideIfUnknown?: boolean;
+  /** Ref en PLEINE PROSE (hors cadre) : réintroduit l'indice pointillé. Par défaut (libellé déjà
+   *  encadré : chip/tag/stat-chip/titre) aucun soulignement — cf. `.codex-ref.codex-inline`. */
+  inline?: boolean;
   /** Instance paramétrée portant les Indices (« 8 Tentacules +8 ») — affichée en tête du popover
    *  et transmise au Codex à l'ouverture (le Codex « prend en compte les Indices »). */
   instance?: string;
@@ -66,7 +70,7 @@ export function CodexRef({
   return (
     <span
       ref={ref}
-      className={`codex-ref${className ? ` ${className}` : ''}`}
+      className={`codex-ref${inline ? ' codex-inline' : ''}${className ? ` ${className}` : ''}`}
       tabIndex={0}
       role="button"
       onClick={open}

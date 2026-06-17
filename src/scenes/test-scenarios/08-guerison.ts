@@ -26,8 +26,8 @@ export const scenario: TestScenario = {
     const P = makePregens();
     const healer = P.find((p) => p.name.startsWith('Frère Anselm'))!;
     // Garantit la Compétence Guérison sur le soigneur (sinon le slot Soigner n'apparaît pas).
-    if (!healer.skills.some((s) => s.name.toLowerCase().startsWith('guérison'))) {
-      healer.skills.push({ name: 'Guérison', characteristic: 'Int', advances: 25 });
+    if (!healer.skills.some((s) => s.skillId === 'guerison')) {
+      healer.skills.push({ skillId: 'guerison', characteristic: 'Int', advances: 25 });
     }
     const ally = P.find((p) => p.name.startsWith('Sigmund'))!;
     ally.wounds = { ...ally.wounds, current: 3 }; // blessé → mode « Soigner les Blessures »

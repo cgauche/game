@@ -54,7 +54,7 @@ describe('pickBackend — threading resolveRender → token (P5/5c)', () => {
   });
 
   it('Nuée (trait, donnée) : gabarit swarm passé au token même SANS espèce explicite', () => {
-    const out = pickBackend({ kind: 'combatant', combatant: mk({ name: 'Essaim de rats', traits: ['Nuée'] }) });
+    const out = pickBackend({ kind: 'combatant', combatant: mk({ name: 'Essaim de rats', traits: [{ id: 'nuee' }] }) });
     expect(out.backend).toBe('plan');
     expect((out.body as ReactElement).props.planId).toBe('swarm');
   });

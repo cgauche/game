@@ -168,7 +168,7 @@ export function medicSurgeryPass(get: Get, set: Set): void {
   }
   if (cum >= sg.targetDR) { // cible atteinte : la Blessure Critique est réparée
     log.push(...removeSurgicalTrauma(patient, sg.traumaIdx));
-    const resVal = effectiveChar(patient, 'E') + (patient.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
+    const resVal = effectiveChar(patient, 'E') + (patient.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
     log.push(...rollContraction(patient, 'Infection Mineure', resVal, 'accessible', battleRng()));
     set({ medic: { ...m, surgery: undefined } });
     finishPlayerAction(get, set, log, 'heal');

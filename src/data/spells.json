@@ -1,5 +1,6 @@
 [
   {
+    "id": "benediction-de-bataille",
     "label": "Bénédiction de Bataille",
     "type": "Béni",
     "subType": null,
@@ -33,6 +34,7 @@
     }
   },
   {
+    "id": "benediction-de-chance",
     "label": "Bénédiction de Chance",
     "type": "Béni",
     "subType": null,
@@ -64,6 +66,7 @@
     }
   },
   {
+    "id": "benediction-de-charisme",
     "label": "Bénédiction de Charisme",
     "type": "Béni",
     "subType": null,
@@ -97,6 +100,7 @@
     }
   },
   {
+    "id": "benediction-de-conscience",
     "label": "Bénédiction de Conscience",
     "type": "Béni",
     "subType": null,
@@ -129,6 +133,7 @@
     }
   },
   {
+    "id": "benediction-de-convalescence",
     "label": "Bénédiction de Convalescence",
     "type": "Béni",
     "subType": null,
@@ -161,6 +166,7 @@
     }
   },
   {
+    "id": "benediction-de-courage",
     "label": "Bénédiction de Courage",
     "type": "Béni",
     "subType": null,
@@ -194,6 +200,7 @@
     }
   },
   {
+    "id": "benediction-de-droiture",
     "label": "Bénédiction de Droiture",
     "type": "Béni",
     "subType": null,
@@ -228,6 +235,7 @@
     }
   },
   {
+    "id": "benediction-de-finesse",
     "label": "Bénédiction de Finesse",
     "type": "Béni",
     "subType": null,
@@ -261,6 +269,7 @@
     }
   },
   {
+    "id": "benediction-de-grace",
     "label": "Bénédiction de Grâce",
     "type": "Béni",
     "subType": null,
@@ -294,6 +303,7 @@
     }
   },
   {
+    "id": "benediction-de-guerison",
     "label": "Bénédiction de Guérison",
     "type": "Béni",
     "subType": null,
@@ -326,6 +336,7 @@
     }
   },
   {
+    "id": "benediction-de-la-chasse",
     "label": "Bénédiction de La Chasse",
     "type": "Béni",
     "subType": null,
@@ -359,6 +370,7 @@
     }
   },
   {
+    "id": "benediction-de-protection",
     "label": "Bénédiction de Protection",
     "type": "Béni",
     "subType": null,
@@ -390,6 +402,7 @@
     }
   },
   {
+    "id": "benediction-de-puissance",
     "label": "Bénédiction de Puissance",
     "type": "Béni",
     "subType": null,
@@ -423,6 +436,7 @@
     }
   },
   {
+    "id": "benediction-de-sagesse",
     "label": "Bénédiction de Sagesse",
     "type": "Béni",
     "subType": null,
@@ -456,6 +470,7 @@
     }
   },
   {
+    "id": "benediction-de-sauvagerie",
     "label": "Bénédiction de Sauvagerie",
     "type": "Béni",
     "subType": null,
@@ -487,6 +502,7 @@
     }
   },
   {
+    "id": "benediction-de-souffle",
     "label": "Bénédiction de Souffle",
     "type": "Béni",
     "subType": null,
@@ -518,6 +534,7 @@
     }
   },
   {
+    "id": "benediction-de-tenacite",
     "label": "Bénédiction de Ténacité",
     "type": "Béni",
     "subType": null,
@@ -549,6 +566,7 @@
     }
   },
   {
+    "id": "benediction-de-vigueur",
     "label": "Bénédiction de Vigueur",
     "type": "Béni",
     "subType": null,
@@ -582,6 +600,7 @@
     }
   },
   {
+    "id": "benediction-de-vivacite",
     "label": "Bénédiction de Vivacité",
     "type": "Béni",
     "subType": null,
@@ -615,6 +634,7 @@
     }
   },
   {
+    "id": "alerte",
     "label": "Alerte",
     "type": "Magie mineure",
     "subType": null,
@@ -647,6 +667,7 @@
     }
   },
   {
+    "id": "amitie-animale",
     "label": "Amitié animale",
     "type": "Magie mineure",
     "subType": null,
@@ -679,6 +700,7 @@
     }
   },
   {
+    "id": "bruits",
     "label": "Bruits",
     "type": "Magie mineure",
     "subType": null,
@@ -711,6 +733,7 @@
     }
   },
   {
+    "id": "choc",
     "label": "Choc",
     "type": "Magie mineure",
     "subType": null,
@@ -743,6 +766,7 @@
     }
   },
   {
+    "id": "conservation",
     "label": "Conservation",
     "type": "Magie mineure",
     "subType": null,
@@ -775,6 +799,7 @@
     }
   },
   {
+    "id": "coup-de-vent",
     "label": "Coup de vent",
     "type": "Magie mineure",
     "subType": null,
@@ -807,6 +832,7 @@
     }
   },
   {
+    "id": "creer-un-petit-animal",
     "label": "Créer un petit animal",
     "type": "Magie mineure",
     "subType": null,
@@ -839,6 +865,7 @@
     }
   },
   {
+    "id": "drain",
     "label": "Drain",
     "type": "Magie mineure",
     "subType": null,
@@ -871,6 +898,7 @@
     }
   },
   {
+    "id": "eblouissant",
     "label": "Éblouissant",
     "type": "Magie mineure",
     "subType": null,
@@ -908,6 +936,7 @@
     }
   },
   {
+    "id": "en-catimini",
     "label": "En catimini",
     "type": "Magie mineure",
     "subType": null,
@@ -940,6 +969,7 @@
     }
   },
   {
+    "id": "feux-follets",
     "label": "Feux follets",
     "type": "Magie mineure",
     "subType": null,
@@ -972,6 +1002,7 @@
     }
   },
   {
+    "id": "flamme-magique",
     "label": "Flamme magique",
     "type": "Magie mineure",
     "subType": null,
@@ -1004,6 +1035,7 @@
     }
   },
   {
+    "id": "flechette",
     "label": "Fléchette",
     "type": "Magie mineure",
     "subType": null,
@@ -1022,6 +1054,7 @@
     }
   },
   {
+    "id": "lumiere",
     "label": "Lumière",
     "type": "Magie mineure",
     "subType": null,
@@ -1054,6 +1087,7 @@
     }
   },
   {
+    "id": "murmures",
     "label": "Murmures",
     "type": "Magie mineure",
     "subType": null,
@@ -1086,6 +1120,7 @@
     }
   },
   {
+    "id": "pas-leger",
     "label": "Pas léger",
     "type": "Magie mineure",
     "subType": null,
@@ -1118,6 +1153,7 @@
     }
   },
   {
+    "id": "protection-contre-la-pluie",
     "label": "Protection contre la pluie",
     "type": "Magie mineure",
     "subType": null,
@@ -1149,6 +1185,7 @@
     }
   },
   {
+    "id": "purification-de-l-eau",
     "label": "Purification de l'eau",
     "type": "Magie mineure",
     "subType": null,
@@ -1181,6 +1218,7 @@
     }
   },
   {
+    "id": "putrefaction",
     "label": "Putréfaction",
     "type": "Magie mineure",
     "subType": null,
@@ -1217,6 +1255,7 @@
     }
   },
   {
+    "id": "reperes",
     "label": "Repères",
     "type": "Magie mineure",
     "subType": null,
@@ -1249,6 +1288,7 @@
     }
   },
   {
+    "id": "secousse",
     "label": "Secousse",
     "type": "Magie mineure",
     "subType": null,
@@ -1288,6 +1328,7 @@
     }
   },
   {
+    "id": "serrure-ouverte",
     "label": "Serrure ouverte",
     "type": "Magie mineure",
     "subType": null,
@@ -1320,6 +1361,7 @@
     }
   },
   {
+    "id": "sommeil",
     "label": "Sommeil",
     "type": "Magie mineure",
     "subType": null,
@@ -1365,6 +1407,7 @@
     }
   },
   {
+    "id": "source",
     "label": "Source",
     "type": "Magie mineure",
     "subType": null,
@@ -1397,6 +1440,7 @@
     }
   },
   {
+    "id": "tendre-l-oreille",
     "label": "Tendre l'oreille",
     "type": "Magie mineure",
     "subType": null,
@@ -1429,6 +1473,7 @@
     }
   },
   {
+    "id": "arme-aethyrique",
     "label": "Arme aethyrique",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1479,6 +1524,7 @@
     }
   },
   {
+    "id": "armure-aethyrique",
     "label": "Armure Aethyrique",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1511,6 +1557,7 @@
     }
   },
   {
+    "id": "attaques-en-chaine",
     "label": "Attaques en chaîne",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1529,6 +1576,7 @@
     }
   },
   {
+    "id": "aura-ordinaire",
     "label": "Aura ordinaire",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1561,6 +1609,7 @@
     }
   },
   {
+    "id": "bouclier-anti-fleches",
     "label": "Bouclier anti-flèches",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1595,6 +1644,7 @@
     }
   },
   {
+    "id": "bouclier-magique",
     "label": "Bouclier magique",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1627,6 +1677,7 @@
     }
   },
   {
+    "id": "carreau",
     "label": "Carreau",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1645,6 +1696,7 @@
     }
   },
   {
+    "id": "chute",
     "label": "Chute",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1684,6 +1736,7 @@
     }
   },
   {
+    "id": "deplacement-d-objet",
     "label": "Déplacement d'objet",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1716,6 +1769,7 @@
     }
   },
   {
+    "id": "dome",
     "label": "Dôme",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1750,6 +1804,7 @@
     }
   },
   {
+    "id": "effrayant",
     "label": "Effrayant",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1769,7 +1824,7 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Peur",
+                "traitId": "peur",
                 "indice": 1,
                 "indicePerSL": {
                   "every": 3,
@@ -1787,6 +1842,7 @@
     }
   },
   {
+    "id": "enchevetrement",
     "label": "Enchevêtrement",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1826,6 +1882,7 @@
     }
   },
   {
+    "id": "envol",
     "label": "Envol",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1845,7 +1902,7 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Vol",
+                "traitId": "vol",
                 "indice": {
                   "charOf": "Ag"
                 }
@@ -1861,6 +1918,7 @@
     }
   },
   {
+    "id": "explosion",
     "label": "Explosion",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1879,6 +1937,7 @@
     }
   },
   {
+    "id": "perturbant",
     "label": "Perturbant",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1898,7 +1957,7 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Perturbant"
+                "traitId": "perturbant"
               }
             ]
           }
@@ -1911,6 +1970,7 @@
     }
   },
   {
+    "id": "pont",
     "label": "Pont",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1943,6 +2003,7 @@
     }
   },
   {
+    "id": "poussee",
     "label": "Poussée",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1975,6 +2036,7 @@
     }
   },
   {
+    "id": "protection",
     "label": "Protection",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -1994,7 +2056,7 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Protection",
+                "traitId": "protection",
                 "indice": 9
               }
             ]
@@ -2008,6 +2070,7 @@
     }
   },
   {
+    "id": "sang-corrosif",
     "label": "Sang corrosif",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -2027,7 +2090,7 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Sang corrosif"
+                "traitId": "sang-corrosif"
               }
             ]
           }
@@ -2040,6 +2103,7 @@
     }
   },
   {
+    "id": "souffle",
     "label": "Souffle",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -2058,6 +2122,7 @@
     }
   },
   {
+    "id": "teleportation",
     "label": "Téléportation",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -2076,6 +2141,7 @@
     }
   },
   {
+    "id": "terrifiant",
     "label": "Terrifiant",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -2095,7 +2161,7 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Terreur",
+                "traitId": "terreur",
                 "indice": 1
               }
             ]
@@ -2109,6 +2175,7 @@
     }
   },
   {
+    "id": "vision-dans-l-obscurite",
     "label": "Vision dans l'obscurité",
     "type": "Magie des Arcanes",
     "subType": null,
@@ -2128,7 +2195,7 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Infravision"
+                "traitId": "infravision"
               }
             ]
           }
@@ -2141,6 +2208,7 @@
     }
   },
   {
+    "id": "forme-bestiale",
     "label": "Forme bestiale",
     "type": "Magie des Arcanes",
     "subType": "Bête",
@@ -2186,6 +2254,7 @@
     }
   },
   {
+    "id": "incarnation-de-wyssan",
     "label": "Incarnation de Wyssan",
     "type": "Magie des Arcanes",
     "subType": "Bête",
@@ -2205,20 +2274,20 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Peur",
+                "traitId": "peur",
                 "indice": 1
               },
               {
                 "op": "grantTrait",
-                "trait": "Rage"
+                "traitId": "rage"
               },
               {
                 "op": "grantTrait",
-                "trait": "Magique"
+                "traitId": "magique"
               },
               {
                 "op": "grantTrait",
-                "trait": "Belliqueux"
+                "traitId": "belliqueux"
               },
               {
                 "op": "apAll",
@@ -2249,6 +2318,7 @@
     }
   },
   {
+    "id": "la-lance-d-ambre",
     "label": "La lance d'Ambre",
     "type": "Magie des Arcanes",
     "subType": "Bête",
@@ -2285,6 +2355,7 @@
     }
   },
   {
+    "id": "langue-bestiale",
     "label": "Langue bestiale",
     "type": "Magie des Arcanes",
     "subType": "Bête",
@@ -2317,6 +2388,7 @@
     }
   },
   {
+    "id": "maitre-de-la-bete",
     "label": "Maître de la bête",
     "type": "Magie des Arcanes",
     "subType": "Bête",
@@ -2349,6 +2421,7 @@
     }
   },
   {
+    "id": "peau-de-chasseur",
     "label": "Peau de chasseur",
     "type": "Magie des Arcanes",
     "subType": "Bête",
@@ -2373,12 +2446,12 @@
               },
               {
                 "op": "grantTrait",
-                "trait": "Peur",
+                "traitId": "peur",
                 "indice": 1
               },
               {
                 "op": "grantTrait",
-                "trait": "Infravision"
+                "traitId": "infravision"
               },
               {
                 "op": "narrative",
@@ -2395,6 +2468,7 @@
     }
   },
   {
+    "id": "serres-d-ambre",
     "label": "Serres d'ambre",
     "type": "Magie des Arcanes",
     "subType": "Bête",
@@ -2417,9 +2491,23 @@
                 "addQualities": [
                   "Magique"
                 ],
-                "onHitConditions": [
+                "onHitEffects": [
                   {
-                    "name": "Hémorragique"
+                    "trigger": "onHit",
+                    "on": "victim",
+                    "flow": {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "on": "victim",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "name": "Hémorragique"
+                          }
+                        ]
+                      }
+                    }
                   }
                 ]
               },
@@ -2438,6 +2526,7 @@
     }
   },
   {
+    "id": "vol-du-destin",
     "label": "Vol du Destin",
     "type": "Magie des Arcanes",
     "subType": "Bête",
@@ -2496,6 +2585,7 @@
     }
   },
   {
+    "id": "arc-de-t-essla",
     "label": "Arc de T'Essla",
     "type": "Magie des Arcanes",
     "subType": "Cieux",
@@ -2528,6 +2618,7 @@
     }
   },
   {
+    "id": "bouclier-ceruleen",
     "label": "Bouclier céruléen",
     "type": "Magie des Arcanes",
     "subType": "Cieux",
@@ -2560,6 +2651,7 @@
     }
   },
   {
+    "id": "comete-de-cassandora",
     "label": "Comète de Cassandora",
     "type": "Magie des Arcanes",
     "subType": "Cieux",
@@ -2600,6 +2692,7 @@
     }
   },
   {
+    "id": "ironie-du-destin",
     "label": "Ironie du Destin",
     "type": "Magie des Arcanes",
     "subType": "Cieux",
@@ -2632,6 +2725,7 @@
     }
   },
   {
+    "id": "le-premier-signe-d-amul",
     "label": "Le Premier Signe d'Amul",
     "type": "Magie des Arcanes",
     "subType": "Cieux",
@@ -2670,6 +2764,7 @@
     }
   },
   {
+    "id": "le-second-signe-d-amul",
     "label": "Le Second Signe d'Amul",
     "type": "Magie des Arcanes",
     "subType": "Cieux",
@@ -2712,6 +2807,7 @@
     }
   },
   {
+    "id": "le-troisieme-signe-d-amul",
     "label": "Le Troisième Signe d'Amul",
     "type": "Magie des Arcanes",
     "subType": "Cieux",
@@ -2746,6 +2842,7 @@
     }
   },
   {
+    "id": "maudit",
     "label": "Maudit",
     "type": "Magie des Arcanes",
     "subType": "Cieux",
@@ -2778,6 +2875,7 @@
     }
   },
   {
+    "id": "cauteriser",
     "label": "Cautériser",
     "type": "Magie des Arcanes",
     "subType": "Feu",
@@ -2843,6 +2941,7 @@
     }
   },
   {
+    "id": "coeurs-ardents",
     "label": "Cœurs ardents",
     "type": "Magie des Arcanes",
     "subType": "Feu",
@@ -2893,6 +2992,7 @@
     }
   },
   {
+    "id": "couronne-de-flammes",
     "label": "Couronne de Flammes",
     "type": "Magie des Arcanes",
     "subType": "Feu",
@@ -2912,7 +3012,7 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Peur",
+                "traitId": "peur",
                 "indice": 1
               },
               {
@@ -2938,6 +3038,7 @@
     }
   },
   {
+    "id": "grands-feux-d-u-zhul",
     "label": "Grands feux d'U'Zhul",
     "type": "Magie des Arcanes",
     "subType": "Feu",
@@ -3012,6 +3113,7 @@
     }
   },
   {
+    "id": "l-egide-d-aqshy",
     "label": "L'Égide d'Aqshy",
     "type": "Magie des Arcanes",
     "subType": "Feu",
@@ -3044,6 +3146,7 @@
     }
   },
   {
+    "id": "l-epee-ardente-de-rhuin",
     "label": "L'Épée ardente de Rhuin",
     "type": "Magie des Arcanes",
     "subType": "Feu",
@@ -3072,11 +3175,6 @@
                   "Magique",
                   "Percutante"
                 ],
-                "onHitConditions": [
-                  {
-                    "name": "En flammes"
-                  }
-                ],
                 "form": "Épée bâtarde",
                 "skin": {
                   "metal": "#ff8a3a",
@@ -3088,7 +3186,26 @@
                   "accent": "#ffce4a",
                   "accentH": "#fff6d6",
                   "accentO": "#d2641e"
-                }
+                },
+                "onHitEffects": [
+                  {
+                    "trigger": "onHit",
+                    "on": "victim",
+                    "flow": {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "on": "victim",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "name": "En flammes"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
               },
               {
                 "op": "narrative",
@@ -3105,6 +3222,7 @@
     }
   },
   {
+    "id": "mur-de-feu",
     "label": "Mur de feu",
     "type": "Magie des Arcanes",
     "subType": "Feu",
@@ -3158,6 +3276,7 @@
     }
   },
   {
+    "id": "purification",
     "label": "Purification",
     "type": "Magie des Arcanes",
     "subType": "Feu",
@@ -3199,6 +3318,7 @@
     }
   },
   {
+    "id": "bouf-crane",
     "label": "Bouf 'crâne",
     "type": "Magie des Arcanes",
     "subType": "Gueule",
@@ -3218,7 +3338,7 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Peur",
+                "traitId": "peur",
                 "indice": 2
               },
               {
@@ -3236,6 +3356,7 @@
     }
   },
   {
+    "id": "broyeur-d-os",
     "label": "Broyeur d'os",
     "type": "Magie des Arcanes",
     "subType": "Gueule",
@@ -3268,6 +3389,7 @@
     }
   },
   {
+    "id": "festin-des-damnes",
     "label": "Festin des Damnés",
     "type": "Magie des Arcanes",
     "subType": "Gueule",
@@ -3287,7 +3409,7 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Vampirique"
+                "traitId": "vampirique"
               },
               {
                 "op": "narrative",
@@ -3304,6 +3426,7 @@
     }
   },
   {
+    "id": "goinfre-costaud",
     "label": "Goinfre costaud",
     "type": "Magie des Arcanes",
     "subType": "Gueule",
@@ -3341,6 +3464,7 @@
     }
   },
   {
+    "id": "goutemort",
     "label": "Goûtemort",
     "type": "Magie des Arcanes",
     "subType": "Gueule",
@@ -3373,6 +3497,7 @@
     }
   },
   {
+    "id": "la-gueule",
     "label": "La Gueule",
     "type": "Magie des Arcanes",
     "subType": "Gueule",
@@ -3405,6 +3530,7 @@
     }
   },
   {
+    "id": "trollboyaux",
     "label": "Trollboyaux",
     "type": "Magie des Arcanes",
     "subType": "Gueule",
@@ -3424,7 +3550,7 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Régénération"
+                "traitId": "regeneration"
               },
               {
                 "op": "narrative",
@@ -3441,6 +3567,7 @@
     }
   },
   {
+    "id": "bannissement",
     "label": "Bannissement",
     "type": "Magie des Arcanes",
     "subType": "Lumière",
@@ -3460,7 +3587,7 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Instable",
+                "traitId": "instable",
                 "onlyGroups": [
                   "Mort-vivant",
                   "Démon"
@@ -3481,6 +3608,7 @@
     }
   },
   {
+    "id": "clarte-d-esprit",
     "label": "Clarté d'esprit",
     "type": "Magie des Arcanes",
     "subType": "Lumière",
@@ -3519,6 +3647,7 @@
     }
   },
   {
+    "id": "fauche-demon",
     "label": "Fauche-démon",
     "type": "Magie des Arcanes",
     "subType": "Lumière",
@@ -3557,6 +3686,7 @@
     }
   },
   {
+    "id": "filet-d-amyntok",
     "label": "Filet d'Amyntok",
     "type": "Magie des Arcanes",
     "subType": "Lumière",
@@ -3593,6 +3723,7 @@
     }
   },
   {
+    "id": "lumiere-aveuglante",
     "label": "Lumière aveuglante",
     "type": "Magie des Arcanes",
     "subType": "Lumière",
@@ -3634,6 +3765,7 @@
     }
   },
   {
+    "id": "lumiere-de-guerison",
     "label": "Lumière de guérison",
     "type": "Magie des Arcanes",
     "subType": "Lumière",
@@ -3690,6 +3822,7 @@
     }
   },
   {
+    "id": "pensee-rapide",
     "label": "Pensée rapide",
     "type": "Magie des Arcanes",
     "subType": "Lumière",
@@ -3728,6 +3861,7 @@
     }
   },
   {
+    "id": "protection-de-pha",
     "label": "Protection de Phâ",
     "type": "Magie des Arcanes",
     "subType": "Lumière",
@@ -3760,6 +3894,7 @@
     }
   },
   {
+    "id": "arme-enchantee",
     "label": "Arme enchantée",
     "type": "Magie des Arcanes",
     "subType": "Métal",
@@ -3802,6 +3937,7 @@
     }
   },
   {
+    "id": "creuset-de-chamon",
     "label": "Creuset de Chamon",
     "type": "Magie des Arcanes",
     "subType": "Métal",
@@ -3834,6 +3970,7 @@
     }
   },
   {
+    "id": "ecaille-d-acier",
     "label": "Écaille d'acier",
     "type": "Magie des Arcanes",
     "subType": "Métal",
@@ -3853,7 +3990,7 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Protection",
+                "traitId": "protection",
                 "indice": 9
               },
               {
@@ -3871,6 +4008,7 @@
     }
   },
   {
+    "id": "forge-de-chamon",
     "label": "Forge de Chamon",
     "type": "Magie des Arcanes",
     "subType": "Métal",
@@ -3903,6 +4041,7 @@
     }
   },
   {
+    "id": "l-or-des-fous",
     "label": "L'Or des fous",
     "type": "Magie des Arcanes",
     "subType": "Métal",
@@ -3935,6 +4074,7 @@
     }
   },
   {
+    "id": "metal-changeant",
     "label": "Métal changeant",
     "type": "Magie des Arcanes",
     "subType": "Métal",
@@ -3967,6 +4107,7 @@
     }
   },
   {
+    "id": "plume-de-plomb",
     "label": "Plume de plomb",
     "type": "Magie des Arcanes",
     "subType": "Métal",
@@ -3999,6 +4140,7 @@
     }
   },
   {
+    "id": "transmutation-de-chamon",
     "label": "Transmutation de Chamon",
     "type": "Magie des Arcanes",
     "subType": "Métal",
@@ -4059,6 +4201,7 @@
     }
   },
   {
+    "id": "caresse-de-laniph",
     "label": "Caresse de Laniph",
     "type": "Magie des Arcanes",
     "subType": "Mort",
@@ -4093,6 +4236,7 @@
     }
   },
   {
+    "id": "dernieres-paroles",
     "label": "Dernières paroles",
     "type": "Magie des Arcanes",
     "subType": "Mort",
@@ -4125,6 +4269,7 @@
     }
   },
   {
+    "id": "la-faux-de-shyish",
     "label": "La Faux de Shyish",
     "type": "Magie des Arcanes",
     "subType": "Mort",
@@ -4183,6 +4328,7 @@
     }
   },
   {
+    "id": "le-voile-violet-de-shyish",
     "label": "Le Voile violet de Shyish",
     "type": "Magie des Arcanes",
     "subType": "Mort",
@@ -4208,7 +4354,7 @@
               },
               {
                 "op": "grantTrait",
-                "trait": "Peur",
+                "traitId": "peur",
                 "indice": 1,
                 "indicePerSL": {
                   "every": 2,
@@ -4226,6 +4372,7 @@
     }
   },
   {
+    "id": "mort-rapide",
     "label": "Mort rapide",
     "type": "Magie des Arcanes",
     "subType": "Mort",
@@ -4258,6 +4405,7 @@
     }
   },
   {
+    "id": "sanctifier",
     "label": "Sanctifier",
     "type": "Magie des Arcanes",
     "subType": "Mort",
@@ -4290,6 +4438,7 @@
     }
   },
   {
+    "id": "vol-de-vie",
     "label": "Vol de vie",
     "type": "Magie des Arcanes",
     "subType": "Mort",
@@ -4351,6 +4500,7 @@
     }
   },
   {
+    "id": "vortex-d-ames",
     "label": "Vortex d'âmes",
     "type": "Magie des Arcanes",
     "subType": "Mort",
@@ -4387,6 +4537,7 @@
     }
   },
   {
+    "id": "destrier-d-ombre",
     "label": "Destrier d'Ombre",
     "type": "Magie des Arcanes",
     "subType": "Ombres",
@@ -4422,8 +4573,13 @@
                 "ref": "Cheval",
                 "count": 1,
                 "addTraits": [
-                  "Magique",
-                  "Peur 1"
+                  {
+                    "id": "magique"
+                  },
+                  {
+                    "id": "peur",
+                    "value": 1
+                  }
                 ],
                 "allyOfCaster": true
               }
@@ -4438,6 +4594,7 @@
     }
   },
   {
+    "id": "illusion",
     "label": "Illusion",
     "type": "Magie des Arcanes",
     "subType": "Ombres",
@@ -4470,6 +4627,7 @@
     }
   },
   {
+    "id": "jumeau-malefique",
     "label": "Jumeau maléfique",
     "type": "Magie des Arcanes",
     "subType": "Ombres",
@@ -4502,6 +4660,7 @@
     }
   },
   {
+    "id": "linceul-d-invisibilite",
     "label": "Linceul d'Invisibilité",
     "type": "Magie des Arcanes",
     "subType": "Ombres",
@@ -4534,6 +4693,7 @@
     }
   },
   {
+    "id": "miasme-mystifiant",
     "label": "Miasme mystifiant",
     "type": "Magie des Arcanes",
     "subType": "Ombres",
@@ -4587,6 +4747,7 @@
     }
   },
   {
+    "id": "ombres-etrangleuses",
     "label": "Ombres étrangleuses",
     "type": "Magie des Arcanes",
     "subType": "Ombres",
@@ -4634,6 +4795,7 @@
     }
   },
   {
+    "id": "perte-de-memoire",
     "label": "Perte de mémoire",
     "type": "Magie des Arcanes",
     "subType": "Ombres",
@@ -4666,6 +4828,7 @@
     }
   },
   {
+    "id": "portail-d-ombre",
     "label": "Portail d'Ombre",
     "type": "Magie des Arcanes",
     "subType": "Ombres",
@@ -4698,6 +4861,7 @@
     }
   },
   {
+    "id": "configuration-du-terrain",
     "label": "Configuration du terrain",
     "type": "Magie des Arcanes",
     "subType": "Vie",
@@ -4730,6 +4894,7 @@
     }
   },
   {
+    "id": "don-de-vie",
     "label": "Don de Vie",
     "type": "Magie des Arcanes",
     "subType": "Vie",
@@ -4762,6 +4927,7 @@
     }
   },
   {
+    "id": "eau-de-la-terre",
     "label": "Eau de la terre",
     "type": "Magie des Arcanes",
     "subType": "Vie",
@@ -4794,6 +4960,7 @@
     }
   },
   {
+    "id": "ecorce",
     "label": "Écorce",
     "type": "Magie des Arcanes",
     "subType": "Vie",
@@ -4837,6 +5004,7 @@
     }
   },
   {
+    "id": "foret-d-epines",
     "label": "Forêt d'épines",
     "type": "Magie des Arcanes",
     "subType": "Vie",
@@ -4895,6 +5063,7 @@
     }
   },
   {
+    "id": "graisse-de-la-terre",
     "label": "Graisse de la terre",
     "type": "Magie des Arcanes",
     "subType": "Vie",
@@ -4930,6 +5099,7 @@
     }
   },
   {
+    "id": "regeneration",
     "label": "Régénération",
     "type": "Magie des Arcanes",
     "subType": "Vie",
@@ -4949,7 +5119,7 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Régénération"
+                "traitId": "regeneration"
               }
             ]
           }
@@ -4962,6 +5132,7 @@
     }
   },
   {
+    "id": "sang-de-la-terre",
     "label": "Sang de la Terre",
     "type": "Magie des Arcanes",
     "subType": "Vie",
@@ -5017,6 +5188,7 @@
     }
   },
   {
+    "id": "bonne-volonte",
     "label": "Bonne Volonté",
     "type": "Magie des Arcanes",
     "subType": "Magie naturelle",
@@ -5049,6 +5221,7 @@
     }
   },
   {
+    "id": "charme-protecteur",
     "label": "Charme protecteur",
     "type": "Magie des Arcanes",
     "subType": "Magie naturelle",
@@ -5081,6 +5254,7 @@
     }
   },
   {
+    "id": "chevaucher-l-obscurite",
     "label": "Chevaucher l'Obscurité",
     "type": "Magie des Arcanes",
     "subType": "Magie naturelle",
@@ -5113,6 +5287,7 @@
     }
   },
   {
+    "id": "nepenthes",
     "label": "Nepenthès",
     "type": "Magie des Arcanes",
     "subType": "Magie naturelle",
@@ -5145,6 +5320,7 @@
     }
   },
   {
+    "id": "panacee",
     "label": "Panacée",
     "type": "Magie des Arcanes",
     "subType": "Magie naturelle",
@@ -5177,6 +5353,7 @@
     }
   },
   {
+    "id": "separer-les-branches",
     "label": "Séparer les branches",
     "type": "Magie des Arcanes",
     "subType": "Magie naturelle",
@@ -5209,6 +5386,7 @@
     }
   },
   {
+    "id": "degradation",
     "label": "Dégradation",
     "type": "Magie des Arcanes",
     "subType": "Sorcellerie",
@@ -5241,6 +5419,7 @@
     }
   },
   {
+    "id": "horreur-obsedante",
     "label": "Horreur obsédante",
     "type": "Magie des Arcanes",
     "subType": "Sorcellerie",
@@ -5273,6 +5452,7 @@
     }
   },
   {
+    "id": "malediction-de-douleur-paralysante",
     "label": "Malédiction de douleur paralysante",
     "type": "Magie des Arcanes",
     "subType": "Sorcellerie",
@@ -5305,6 +5485,7 @@
     }
   },
   {
+    "id": "malediction-de-malchance",
     "label": "Malédiction de malchance",
     "type": "Magie des Arcanes",
     "subType": "Sorcellerie",
@@ -5341,6 +5522,7 @@
     }
   },
   {
+    "id": "mauvais-oeil",
     "label": "Mauvais œil",
     "type": "Magie des Arcanes",
     "subType": "Sorcellerie",
@@ -5377,6 +5559,7 @@
     }
   },
   {
+    "id": "menace-rampante",
     "label": "Menace rampante",
     "type": "Magie des Arcanes",
     "subType": "Sorcellerie",
@@ -5412,7 +5595,9 @@
                 "ref": "Rat géant",
                 "count": 1,
                 "addTraits": [
-                  "Nuée"
+                  {
+                    "id": "nuee"
+                  }
                 ],
                 "allyOfCaster": true
               }
@@ -5427,6 +5612,7 @@
     }
   },
   {
+    "id": "destruction-de-demon-mineur",
     "label": "Destruction de Démon Mineur",
     "type": "Magie des Arcanes",
     "subType": "Démonologie",
@@ -5468,6 +5654,7 @@
     }
   },
   {
+    "id": "detection-de-demon",
     "label": "Détection de démon",
     "type": "Magie des Arcanes",
     "subType": "Démonologie",
@@ -5500,6 +5687,7 @@
     }
   },
   {
+    "id": "manifestation-de-demon-mineur",
     "label": "Manifestation de Démon mineur",
     "type": "Magie des Arcanes",
     "subType": "Démonologie",
@@ -5548,6 +5736,7 @@
     }
   },
   {
+    "id": "octogramme",
     "label": "Octogramme",
     "type": "Magie des Arcanes",
     "subType": "Démonologie",
@@ -5580,6 +5769,7 @@
     }
   },
   {
+    "id": "crane-hurlant",
     "label": "Crâne hurlant",
     "type": "Magie des Arcanes",
     "subType": "Nécromancie",
@@ -5623,6 +5813,7 @@
     }
   },
   {
+    "id": "l-appel-de-vanhel",
     "label": "L'appel de Vanhel",
     "type": "Magie des Arcanes",
     "subType": "Nécromancie",
@@ -5655,6 +5846,7 @@
     }
   },
   {
+    "id": "reanimation",
     "label": "Réanimation",
     "type": "Magie des Arcanes",
     "subType": "Nécromancie",
@@ -5709,6 +5901,7 @@
     }
   },
   {
+    "id": "relever-les-morts",
     "label": "Relever les morts",
     "type": "Magie des Arcanes",
     "subType": "Nécromancie",
@@ -5761,6 +5954,7 @@
     }
   },
   {
+    "id": "allure-demoniaque",
     "label": "Allure démoniaque",
     "type": "Magie du Chaos",
     "subType": null,
@@ -5793,6 +5987,7 @@
     }
   },
   {
+    "id": "aspect-sublime",
     "label": "Aspect sublimé",
     "type": "Magie du Chaos",
     "subType": null,
@@ -5825,6 +6020,7 @@
     }
   },
   {
+    "id": "decharge-de-corruption",
     "label": "Décharge de Corruption",
     "type": "Magie du Chaos",
     "subType": null,
@@ -5864,6 +6060,7 @@
     }
   },
   {
+    "id": "dechirer-l-aethyr",
     "label": "Déchirer l'Aethyr",
     "type": "Magie du Chaos",
     "subType": null,
@@ -5911,6 +6108,7 @@
     }
   },
   {
+    "id": "esclave-des-tenebres",
     "label": "Esclave des Ténèbres",
     "type": "Magie du Chaos",
     "subType": null,
@@ -5943,6 +6141,7 @@
     }
   },
   {
+    "id": "explosion-de-corruption",
     "label": "Explosion de Corruption",
     "type": "Magie du Chaos",
     "subType": null,
@@ -5982,6 +6181,7 @@
     }
   },
   {
+    "id": "obsession",
     "label": "Obsession",
     "type": "Magie du Chaos",
     "subType": null,
@@ -6014,6 +6214,7 @@
     }
   },
   {
+    "id": "odieux-messager",
     "label": "Odieux messager",
     "type": "Magie du Chaos",
     "subType": null,
@@ -6046,6 +6247,7 @@
     }
   },
   {
+    "id": "pouvoir-du-chaos",
     "label": "Pouvoir du Chaos",
     "type": "Magie du Chaos",
     "subType": null,
@@ -6078,6 +6280,7 @@
     }
   },
   {
+    "id": "flot-de-corruption",
     "label": "Flot de Corruption",
     "type": "Magie du Chaos",
     "subType": "Nurgle",
@@ -6110,6 +6313,7 @@
     }
   },
   {
+    "id": "consentement",
     "label": "Consentement",
     "type": "Magie du Chaos",
     "subType": "Slaanesh",
@@ -6142,6 +6346,7 @@
     }
   },
   {
+    "id": "trahison-de-tzeentch",
     "label": "Trahison de Tzeentch",
     "type": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -6174,6 +6379,7 @@
     }
   },
   {
+    "id": "aura-doree-de-tzeentch",
     "label": "Aura dorée de Tzeentch",
     "type": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -6193,7 +6399,7 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Protection",
+                "traitId": "protection",
                 "indice": 9
               }
             ]
@@ -6207,6 +6413,7 @@
     }
   },
   {
+    "id": "avantage-de-tzeentch",
     "label": "Avantage de Tzeentch",
     "type": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -6239,6 +6446,7 @@
     }
   },
   {
+    "id": "eclair-du-changement",
     "label": "Éclair du changement",
     "type": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -6282,6 +6490,7 @@
     }
   },
   {
+    "id": "feu-bleu-de-tzeentch",
     "label": "Feu bleu de Tzeentch",
     "type": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -6318,6 +6527,7 @@
     }
   },
   {
+    "id": "feu-rose-de-tzeentch",
     "label": "Feu rose de Tzeentch",
     "type": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -6354,6 +6564,7 @@
     }
   },
   {
+    "id": "feu-spirituel",
     "label": "Feu spirituel",
     "type": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -6397,6 +6608,7 @@
     }
   },
   {
+    "id": "flammes-vacillantes-du-capricieux-destin",
     "label": "Flammes vacillantes du capricieux destin",
     "type": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -6429,6 +6641,7 @@
     }
   },
   {
+    "id": "la-main-pourpre",
     "label": "La Main Pourpre",
     "type": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -6461,6 +6674,7 @@
     }
   },
   {
+    "id": "malediction-de-tzeentch",
     "label": "Malédiction de Tzeentch",
     "type": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -6493,6 +6707,7 @@
     }
   },
   {
+    "id": "maitre-du-destin",
     "label": "Maître du Destin",
     "type": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -6535,6 +6750,7 @@
     }
   },
   {
+    "id": "parole-de-tzeentch",
     "label": "Parole de Tzeentch",
     "type": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -6576,6 +6792,7 @@
     }
   },
   {
+    "id": "percevoir-l-echeveau",
     "label": "Percevoir l'écheveau",
     "type": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -6608,6 +6825,7 @@
     }
   },
   {
+    "id": "tempete-de-feu-de-tzeentch",
     "label": "Tempête de feu de Tzeentch",
     "type": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -6644,6 +6862,7 @@
     }
   },
   {
+    "id": "encalmine",
     "label": "Encalminé",
     "type": "Invocation",
     "subType": "Manann",
@@ -6676,6 +6895,7 @@
     }
   },
   {
+    "id": "generosite-de-manann",
     "label": "Générosité de Manann",
     "type": "Invocation",
     "subType": "Manann",
@@ -6716,6 +6936,7 @@
     }
   },
   {
+    "id": "marcher-sur-les-eaux",
     "label": "Marcher sur les eaux",
     "type": "Invocation",
     "subType": "Manann",
@@ -6748,6 +6969,7 @@
     }
   },
   {
+    "id": "mer-dechainee",
     "label": "Mer déchainée",
     "type": "Invocation",
     "subType": "Manann",
@@ -6792,6 +7014,7 @@
     }
   },
   {
+    "id": "vents-favorables",
     "label": "Vents favorables",
     "type": "Invocation",
     "subType": "Manann",
@@ -6824,6 +7047,7 @@
     }
   },
   {
+    "id": "visage-de-l-homme-noye",
     "label": "Visage de l'homme noyé",
     "type": "Invocation",
     "subType": "Manann",
@@ -6863,6 +7087,7 @@
     }
   },
   {
+    "id": "aneantir-les-morts-vivants",
     "label": "Anéantir les morts-vivants",
     "type": "Invocation",
     "subType": "Morr",
@@ -6907,6 +7132,7 @@
     }
   },
   {
+    "id": "condamne",
     "label": "Condamné",
     "type": "Invocation",
     "subType": "Morr",
@@ -6939,6 +7165,7 @@
     }
   },
   {
+    "id": "main-de-morr",
     "label": "Main de Morr",
     "type": "Invocation",
     "subType": "Morr",
@@ -6971,6 +7198,7 @@
     }
   },
   {
+    "id": "masque-mortuaire",
     "label": "Masque mortuaire",
     "type": "Invocation",
     "subType": "Morr",
@@ -6990,7 +7218,7 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Peur",
+                "traitId": "peur",
                 "indice": 1
               }
             ]
@@ -7004,6 +7232,7 @@
     }
   },
   {
+    "id": "rites-funeraires",
     "label": "Rites funéraires",
     "type": "Invocation",
     "subType": "Morr",
@@ -7036,6 +7265,7 @@
     }
   },
   {
+    "id": "seuil-du-portail",
     "label": "Seuil du Portail",
     "type": "Invocation",
     "subType": "Morr",
@@ -7068,6 +7298,7 @@
     }
   },
   {
+    "id": "appel-a-la-fureur",
     "label": "Appel à la Fureur",
     "type": "Invocation",
     "subType": "Myrmidia",
@@ -7087,7 +7318,7 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Haine"
+                "traitId": "haine"
               },
               {
                 "op": "narrative",
@@ -7104,6 +7335,7 @@
     }
   },
   {
+    "id": "bouclier-de-myrmidia",
     "label": "Bouclier de Myrmidia",
     "type": "Invocation",
     "subType": "Myrmidia",
@@ -7136,6 +7368,7 @@
     }
   },
   {
+    "id": "inspirant",
     "label": "Inspirant",
     "type": "Invocation",
     "subType": "Myrmidia",
@@ -7172,6 +7405,7 @@
     }
   },
   {
+    "id": "lance-de-myrmidia",
     "label": "Lance de Myrmidia",
     "type": "Invocation",
     "subType": "Myrmidia",
@@ -7208,6 +7442,7 @@
     }
   },
   {
+    "id": "oeil-de-l-aigle",
     "label": "Œil de l'aigle",
     "type": "Invocation",
     "subType": "Myrmidia",
@@ -7240,6 +7475,7 @@
     }
   },
   {
+    "id": "soleil-flamboyant",
     "label": "Soleil flamboyant",
     "type": "Invocation",
     "subType": "Myrmidia",
@@ -7281,6 +7517,7 @@
     }
   },
   {
+    "id": "commander-la-legion",
     "label": "Commander la Légion",
     "type": "Invocation",
     "subType": "Myrmidia",
@@ -7313,6 +7550,7 @@
     }
   },
   {
+    "id": "terrifier-l-ennemi",
     "label": "Terrifier l'Ennemi",
     "type": "Invocation",
     "subType": "Myrmidia",
@@ -7332,7 +7570,7 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Terreur",
+                "traitId": "terreur",
                 "indice": 1
               }
             ]
@@ -7346,6 +7584,7 @@
     }
   },
   {
+    "id": "en-bon-ordre",
     "label": "En Bon Ordre",
     "type": "Invocation",
     "subType": "Myrmidia",
@@ -7378,6 +7617,7 @@
     }
   },
   {
+    "id": "connais-ton-ennemi",
     "label": "Connais Ton Ennemi",
     "type": "Invocation",
     "subType": "Myrmidia",
@@ -7410,6 +7650,7 @@
     }
   },
   {
+    "id": "en-terrain-dangereux",
     "label": "En Terrain Dangereux",
     "type": "Invocation",
     "subType": "Myrmidia",
@@ -7442,6 +7683,7 @@
     }
   },
   {
+    "id": "frappe-rapide",
     "label": "Frappe Rapide",
     "type": "Invocation",
     "subType": "Myrmidia",
@@ -7474,6 +7716,7 @@
     }
   },
   {
+    "id": "devotion-de-la-vierge-guerriere",
     "label": "Dévotion de la Vierge Guerrière",
     "type": "Invocation",
     "subType": "Myrmidia",
@@ -7510,6 +7753,7 @@
     }
   },
   {
+    "id": "prouesses-martiales",
     "label": "Prouesses Martiales",
     "type": "Invocation",
     "subType": "Myrmidia",
@@ -7548,6 +7792,7 @@
     }
   },
   {
+    "id": "fureur-vengeresse",
     "label": "Fureur Vengeresse",
     "type": "Invocation",
     "subType": "Myrmidia",
@@ -7580,6 +7825,7 @@
     }
   },
   {
+    "id": "grace-de-ranald",
     "label": "Grâce de Ranald",
     "type": "Invocation",
     "subType": "Ranald",
@@ -7621,6 +7867,7 @@
     }
   },
   {
+    "id": "invitation",
     "label": "Invitation",
     "type": "Invocation",
     "subType": "Ranald",
@@ -7653,6 +7900,7 @@
     }
   },
   {
+    "id": "que-la-chance-persiste",
     "label": "Que la chance persiste",
     "type": "Invocation",
     "subType": "Ranald",
@@ -7694,6 +7942,7 @@
     }
   },
   {
+    "id": "riche-pauvre-mendiant-voleur",
     "label": "Riche, pauvre, mendiant, voleur",
     "type": "Invocation",
     "subType": "Ranald",
@@ -7726,6 +7975,7 @@
     }
   },
   {
+    "id": "vous-ne-m-avez-pas-vu-n-est-ce-pas",
     "label": "Vous ne m'avez pas vu, n'est-ce pas?",
     "type": "Invocation",
     "subType": "Ranald",
@@ -7758,6 +8008,7 @@
     }
   },
   {
+    "id": "yeux-de-chat",
     "label": "Yeux de chat",
     "type": "Invocation",
     "subType": "Ranald",
@@ -7790,6 +8041,7 @@
     }
   },
   {
+    "id": "abri-de-rhya",
     "label": "Abri de Rhya",
     "type": "Invocation",
     "subType": "Rhya",
@@ -7822,6 +8074,7 @@
     }
   },
   {
+    "id": "caresse-de-rhya",
     "label": "Caresse de Rhya",
     "type": "Invocation",
     "subType": "Rhya",
@@ -7860,6 +8113,7 @@
     }
   },
   {
+    "id": "enfants-de-rhya",
     "label": "Enfants de Rhya",
     "type": "Invocation",
     "subType": "Rhya",
@@ -7892,6 +8146,7 @@
     }
   },
   {
+    "id": "recolte-de-rhya",
     "label": "Récolte de Rhya",
     "type": "Invocation",
     "subType": "Rhya",
@@ -7929,6 +8184,7 @@
     }
   },
   {
+    "id": "secours-de-rhya",
     "label": "Secours de Rhya",
     "type": "Invocation",
     "subType": "Rhya",
@@ -7964,6 +8220,7 @@
     }
   },
   {
+    "id": "union-de-rhya",
     "label": "Union de Rhya",
     "type": "Invocation",
     "subType": "Rhya",
@@ -7996,6 +8253,7 @@
     }
   },
   {
+    "id": "amere-catharsis",
     "label": "Amère catharsis",
     "type": "Invocation",
     "subType": "Shallya",
@@ -8041,6 +8299,7 @@
     }
   },
   {
+    "id": "baume-pour-un-esprit-blesse",
     "label": "Baume pour un esprit blessé",
     "type": "Invocation",
     "subType": "Shallya",
@@ -8076,6 +8335,7 @@
     }
   },
   {
+    "id": "endurance-de-l-anachorete",
     "label": "Endurance de l'anachorète",
     "type": "Invocation",
     "subType": "Shallya",
@@ -8111,6 +8371,7 @@
     }
   },
   {
+    "id": "innocence-immaculee",
     "label": "Innocence immaculée",
     "type": "Invocation",
     "subType": "Shallya",
@@ -8151,6 +8412,7 @@
     }
   },
   {
+    "id": "larmes-de-shallya",
     "label": "Larmes de Shallya",
     "type": "Invocation",
     "subType": "Shallya",
@@ -8191,6 +8453,7 @@
     }
   },
   {
+    "id": "martyr",
     "label": "Martyr",
     "type": "Invocation",
     "subType": "Shallya",
@@ -8222,6 +8485,7 @@
     }
   },
   {
+    "id": "comete-a-deux-queues",
     "label": "Comète à Deux Queues",
     "type": "Invocation",
     "subType": "Sigmar",
@@ -8271,6 +8535,7 @@
     }
   },
   {
+    "id": "feu-de-l-ame",
     "label": "Feu de l'âme",
     "type": "Invocation",
     "subType": "Sigmar",
@@ -8320,6 +8585,7 @@
     }
   },
   {
+    "id": "flambeau-de-vertu",
     "label": "Flambeau de Vertu",
     "type": "Invocation",
     "subType": "Sigmar",
@@ -8361,6 +8627,7 @@
     }
   },
   {
+    "id": "marteau-ardent-de-sigmar",
     "label": "Marteau ardent de Sigmar",
     "type": "Invocation",
     "subType": "Sigmar",
@@ -8386,12 +8653,27 @@
                 "damageBonus": {
                   "bonusOf": "Soc"
                 },
-                "onHitConditions": [
+                "onHitEffects": [
                   {
-                    "name": "En flammes"
-                  },
-                  {
-                    "name": "À Terre"
+                    "trigger": "onHit",
+                    "on": "victim",
+                    "flow": {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "on": "victim",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "name": "En flammes"
+                          },
+                          {
+                            "op": "condition",
+                            "name": "À Terre"
+                          }
+                        ]
+                      }
+                    }
                   }
                 ]
               }
@@ -8406,6 +8688,7 @@
     }
   },
   {
+    "id": "n-ecoutez-point-la-sorciere",
     "label": "N'écoutez point la Sorcière",
     "type": "Invocation",
     "subType": "Sigmar",
@@ -8446,6 +8729,7 @@
     }
   },
   {
+    "id": "vaincre-les-impies",
     "label": "Vaincre les impies",
     "type": "Invocation",
     "subType": "Sigmar",
@@ -8465,15 +8749,18 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Haine (Peaux-Vertes)"
+                "traitId": "haine",
+                "arg": "Peaux-Vertes"
               },
               {
                 "op": "grantTrait",
-                "trait": "Haine (Morts-vivants)"
+                "traitId": "haine",
+                "arg": "Morts-vivants"
               },
               {
                 "op": "grantTrait",
-                "trait": "Haine (Démons)"
+                "traitId": "haine",
+                "arg": "Démons"
               }
             ]
           }
@@ -8486,6 +8773,7 @@
     }
   },
   {
+    "id": "bondissant-comme-un-cerf",
     "label": "Bondissant comme un cerf",
     "type": "Invocation",
     "subType": "Taal",
@@ -8522,6 +8810,7 @@
     }
   },
   {
+    "id": "dent-et-griffe",
     "label": "Dent et griffe",
     "type": "Invocation",
     "subType": "Taal",
@@ -8566,6 +8855,7 @@
     }
   },
   {
+    "id": "enchevetrement-2",
     "label": "Enchevêtrement",
     "type": "Invocation",
     "subType": "Taal",
@@ -8610,6 +8900,7 @@
     }
   },
   {
+    "id": "instincts-animaux",
     "label": "Instincts animaux",
     "type": "Invocation",
     "subType": "Taal",
@@ -8646,6 +8937,7 @@
     }
   },
   {
+    "id": "roi-de-la-nature",
     "label": "Roi de la Nature",
     "type": "Invocation",
     "subType": "Taal",
@@ -8693,6 +8985,7 @@
     }
   },
   {
+    "id": "seigneur-de-la-chasse",
     "label": "Seigneur de la Chasse",
     "type": "Invocation",
     "subType": "Taal",
@@ -8725,6 +9018,7 @@
     }
   },
   {
+    "id": "frisson-du-givre",
     "label": "Frisson du givre",
     "type": "Invocation",
     "subType": "Ulric",
@@ -8744,7 +9038,7 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Peur",
+                "traitId": "peur",
                 "indice": 1
               },
               {
@@ -8762,6 +9056,7 @@
     }
   },
   {
+    "id": "fureur-d-ulric",
     "label": "Fureur d'Ulric",
     "type": "Invocation",
     "subType": "Ulric",
@@ -8781,7 +9076,7 @@
             "ops": [
               {
                 "op": "grantTrait",
-                "trait": "Frénésie"
+                "traitId": "frenesie"
               }
             ]
           }
@@ -8794,6 +9089,7 @@
     }
   },
   {
+    "id": "hurlement-du-loup",
     "label": "Hurlement du loup",
     "type": "Invocation",
     "subType": "Ulric",
@@ -8829,8 +9125,12 @@
                 "ref": "Loup",
                 "count": 1,
                 "addTraits": [
-                  "Frénésie",
-                  "Magique"
+                  {
+                    "id": "frenesie"
+                  },
+                  {
+                    "id": "magique"
+                  }
                 ],
                 "size": "grande",
                 "allyOfCaster": true
@@ -8846,6 +9146,7 @@
     }
   },
   {
+    "id": "jugement-du-roi-de-la-neige",
     "label": "Jugement du Roi de la neige",
     "type": "Invocation",
     "subType": "Ulric",
@@ -8887,6 +9188,7 @@
     }
   },
   {
+    "id": "morsure-de-l-hiver",
     "label": "Morsure de l'hiver",
     "type": "Invocation",
     "subType": "Ulric",
@@ -8910,19 +9212,36 @@
                 "addQualities": [
                   "Magique"
                 ],
-                "onHitTest": {
-                  "exceptGroups": [
-                    "Mort-vivant",
-                    "Démon"
-                  ],
-                  "skill": "Résistance",
-                  "difficulty": "intermediaire",
-                  "onFail": [
-                    {
-                      "name": "Sonné"
+                "onHitEffects": [
+                  {
+                    "trigger": "onHit",
+                    "on": "victim",
+                    "flow": {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "on": "victim",
+                        "ops": [
+                          {
+                            "op": "test",
+                            "skill": "Résistance",
+                            "difficulty": "intermediaire",
+                            "exceptGroups": [
+                              "Mort-vivant",
+                              "Démon"
+                            ],
+                            "onFail": [
+                              {
+                                "op": "condition",
+                                "name": "Sonné"
+                              }
+                            ]
+                          }
+                        ]
+                      }
                     }
-                  ]
-                }
+                  }
+                ]
               },
               {
                 "op": "narrative",
@@ -8939,6 +9258,7 @@
     }
   },
   {
+    "id": "peau-de-loup-d-hiver",
     "label": "Peau de loup d'hiver",
     "type": "Invocation",
     "subType": "Ulric",
@@ -8970,6 +9290,7 @@
     }
   },
   {
+    "id": "entraves-a-la-verite",
     "label": "Entraves à la vérité",
     "type": "Invocation",
     "subType": "Verena",
@@ -9006,6 +9327,7 @@
     }
   },
   {
+    "id": "epee-de-justice",
     "label": "Épée de justice",
     "type": "Invocation",
     "subType": "Verena",
@@ -9030,18 +9352,35 @@
                   "Magique"
                 ],
                 "bypass": "all",
-                "onHitTest": {
-                  "onlyGroups": [
-                    "Criminel"
-                  ],
-                  "skill": "Résistance",
-                  "difficulty": "accessible",
-                  "onFail": [
-                    {
-                      "name": "Inconscient"
+                "onHitEffects": [
+                  {
+                    "trigger": "onHit",
+                    "on": "victim",
+                    "flow": {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "on": "victim",
+                        "ops": [
+                          {
+                            "op": "test",
+                            "skill": "Résistance",
+                            "difficulty": "accessible",
+                            "onlyGroups": [
+                              "Criminel"
+                            ],
+                            "onFail": [
+                              {
+                                "op": "condition",
+                                "name": "Inconscient"
+                              }
+                            ]
+                          }
+                        ]
+                      }
                     }
-                  ]
-                }
+                  }
+                ]
               },
               {
                 "op": "narrative",
@@ -9058,6 +9397,7 @@
     }
   },
   {
+    "id": "justice-aveugle",
     "label": "Justice aveugle",
     "type": "Invocation",
     "subType": "Verena",
@@ -9090,6 +9430,7 @@
     }
   },
   {
+    "id": "la-verite-eclatera",
     "label": "La Vérité éclatera",
     "type": "Invocation",
     "subType": "Verena",
@@ -9122,6 +9463,7 @@
     }
   },
   {
+    "id": "sagesse-de-la-chouette",
     "label": "Sagesse de la chouette",
     "type": "Invocation",
     "subType": "Verena",
@@ -9163,6 +9505,7 @@
     }
   },
   {
+    "id": "verena-est-mon-temoin",
     "label": "Verena est mon témoin",
     "type": "Invocation",
     "subType": "Verena",
@@ -9195,6 +9538,7 @@
     }
   },
   {
+    "id": "bon-baiser-d-la-fosse-noire",
     "label": "Bon Baiser d'la Fosse Noire",
     "type": "Invocation",
     "subType": "Déesse-Araignée",
@@ -9241,6 +9585,7 @@
     }
   },
   {
+    "id": "nuee-d-escampette",
     "label": "Nuée d'Escampette",
     "type": "Invocation",
     "subType": "Déesse-Araignée",
@@ -9281,6 +9626,7 @@
     }
   },
   {
+    "id": "toile-surprise",
     "label": "Toile surprise",
     "type": "Invocation",
     "subType": "Déesse-Araignée",

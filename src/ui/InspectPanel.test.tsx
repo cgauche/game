@@ -34,7 +34,7 @@ describe('InspectPanel', () => {
   });
 
   it('badge 🪄 + section Sorts si l’ennemi connaît des sorts', () => {
-    const caster = creatureToCombatant(findCreature('Mutant')!, 'e1', { x: 0, y: 0 }, { spells: ['Fléchette'] });
+    const caster = creatureToCombatant(findCreature('Mutant')!, 'e1', { x: 0, y: 0 }, { spells: ['flechette'] });
     const html = render(caster);
     expect(html).toContain('Lanceur de sorts');
     expect(html).toContain('Sorts');

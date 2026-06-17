@@ -3,7 +3,7 @@
  * Chaque sprite est dessiné dans une boîte locale 120×150, pieds en (60,150).
  * placeSprite() le positionne sur une tuile. DEFS regroupe tous les dégradés.
  */
-import { TW, TH, tileCenter, depth, diamondPath, isSquareView, Dims, type Rot } from './iso';
+import { TW, TH, EDGE_W, EDGE_H, tileCenter, depth, diamondPath, isSquareView, Dims, type Rot } from './iso';
 import { propSvg } from './catalog/decor';
 import type { Dir8 } from '../state/dir8';
 
@@ -45,6 +45,16 @@ export function wallBlock(x: number, y: number, dims: Dims): string {
     // Grille carrée : un mur vu de dessus = un bloc plein sur sa case (pas d'extrusion iso, qui
     // dessinait des faces orientées en losange → murs « mal orientés » sur la grille carrée).
     return `<path d="${diamondPath(x, y, dims)}" fill="#9b8e72" stroke="rgba(0,0,0,0.4)" stroke-width="1"/>`;
+  }
+  if (dims.edge) {
+    // Vue de FACE (edge-on) : bloc AXIS-ALIGNÉ (façade droite + dessus), pas le cube-iso losange.
+    const hx = EDGE_W / 2, hy = EDGE_H / 2;
+    const Hh = TH * 1.6; // même hauteur visuelle qu'en iso
+    const yTop = cy + hy - Hh; // arête haute de la façade (= arête avant du dessus)
+    return (
+      `<polygon points="${cx - hx},${cy + hy} ${cx + hx},${cy + hy} ${cx + hx},${yTop} ${cx - hx},${yTop}" fill="#9b8e72" stroke="rgba(0,0,0,0.3)" stroke-width="0.7"/>` + // façade
+      `<polygon points="${cx - hx},${cy - hy - Hh} ${cx + hx},${cy - hy - Hh} ${cx + hx},${yTop} ${cx - hx},${yTop}" fill="#cdbfa0" stroke="rgba(0,0,0,0.25)"/>` // dessus
+    );
   }
   const H = TH * 1.6;
   const top = `M${cx},${cy - TH / 2 - H} L${cx + TW / 2},${cy - H} L${cx},${cy + TH / 2 - H} L${cx - TW / 2},${cy - H} Z`;

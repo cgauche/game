@@ -143,7 +143,7 @@ export function rollCritical(
   const entry = findTableEntry(CRITICAL_TABLES[location], roll);
   const resistVal =
     effectiveChar(target, 'E') +
-    (target.skills.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
+    (target.skills.find((s) => s.skillId === 'resistance')?.advances ?? 0);
   const conditions = [...(entry.conditions ?? [])];
   if (entry.resist) {
     const res = rollTest(resistVal, entry.resist.difficulty, rng);

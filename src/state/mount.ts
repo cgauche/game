@@ -109,7 +109,7 @@ export function sweepDismountDeaths(battle: BattleState, scene: Scene): string[]
 // ── Combat monté : Mouvement & modificateurs de combat (LDB 14 l.215-225) ──────────────────────────
 /** Acrobaties équestres (LDB 10) : annule la pénalité d'Esquive du cavalier (l.225). */
 const hasAcrobatiesEquestres = (c: Combatant): boolean =>
-  (c.talents ?? []).some((t) => (t.times ?? 0) > 0 && t.name?.toLowerCase().startsWith('acrobaties équestres'));
+  (c.talents ?? []).some((t) => (t.times ?? 0) > 0 && t.talentId === 'acrobaties-equestres');
 
 /** Mouvement effectif d'un combattant : celui de sa MONTURE s'il est cavalier (LDB 14 l.215), sinon le sien. */
 export function mountMovement(battle: BattleState, c: Combatant): number {

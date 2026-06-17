@@ -30,64 +30,64 @@ function mk(over: Partial<Combatant> = {}): Combatant {
 
 describe('dispatch — parsing et prédicats (LDB 85)', () => {
   it('modificateurs de profil : Élite, Coriace, Brutal, Rapide, Rusé', () => {
-    expect(traitCharMods(['Élite'])).toEqual({ CC: 20, CT: 20, FM: 20 });
-    expect(traitCharMods(['Coriace', 'Brutal'])).toEqual({ E: 20, FM: 10, Ag: -10, F: 10 });
-    expect(traitMovementMod(['Brutal'])).toBe(-1);
-    expect(traitMovementMod(['Rapide'])).toBe(1);
-    expect(traitCharMods(['Rusé'])).toEqual({ Soc: 10, Int: 10, I: 10 });
-    expect(traitBonusWoundsBE(['Endurant'])).toBe(true);
+    expect(traitCharMods([{ id: 'elite' }])).toEqual({ CC: 20, CT: 20, FM: 20 });
+    expect(traitCharMods([{ id: 'coriace' }, { id: 'brutal' }])).toEqual({ E: 20, FM: 10, Ag: -10, F: 10 });
+    expect(traitMovementMod([{ id: 'brutal' }])).toBe(-1);
+    expect(traitMovementMod([{ id: 'rapide' }])).toBe(1);
+    expect(traitCharMods([{ id: 'ruse' }])).toEqual({ Soc: 10, Int: 10, I: 10 });
+    expect(traitBonusWoundsBE([{ id: 'endurant' }])).toBe(true);
   });
   it('sauvegardes : Démoniaque 8+, Protection 9', () => {
-    expect(wardSaves(['Démoniaque 8+'])).toEqual([8]);
-    expect(wardSaves(['Protection 9'])).toEqual([9]);
-    expect(wardSaves(['Arme +8'])).toEqual([]);
+    expect(wardSaves([{ id: 'demoniaque', value: 8 }])).toEqual([8]);
+    expect(wardSaves([{ id: 'protection', value: 9 }])).toEqual([9]);
+    expect(wardSaves([{ id: 'arme', value: 8 }])).toEqual([]);
   });
   it('attaques magiques / Éthéré / bannissement', () => {
-    expect(attacksAreMagical(mk({ traits: ['Démoniaque 8+'] }))).toBe(true);
-    expect(attacksAreMagical(mk({ traits: ['Magique'] }))).toBe(true);
-    expect(attacksAreMagical(mk({ traits: ['Fabriqué'] }))).toBe(true);
-    expect(isEtherial(mk({ traits: ['Éthéré'] }))).toBe(true);
-    expect(banishedAtZero(['Démoniaque 8+'])).toBe(true);
+    expect(attacksAreMagical(mk({ traits: [{ id: 'demoniaque', value: 8 }] }))).toBe(true);
+    expect(attacksAreMagical(mk({ traits: [{ id: 'magique' }] }))).toBe(true);
+    expect(attacksAreMagical(mk({ traits: [{ id: 'fabrique' }] }))).toBe(true);
+    expect(isEtherial(mk({ traits: [{ id: 'ethere' }] }))).toBe(true);
+    expect(banishedAtZero([{ id: 'demoniaque', value: 8 }])).toBe(true);
   });
   it('divers combat : Champion, Parasité, Perturbant, Instable', () => {
-    expect(hasChampionDefense(['Champion'])).toBe(true);
-    expect(meleeHitPenalty(['Parasité'])).toBe(-10);
-    expect(hasPerturbingAura(['Perturbant'])).toBe(true);
-    expect(isUnstable(['Instable'])).toBe(true);
+    expect(hasChampionDefense([{ id: 'champion' }])).toBe(true);
+    expect(meleeHitPenalty([{ id: 'parasite' }])).toBe(-10);
+    expect(hasPerturbingAura([{ id: 'perturbant' }])).toBe(true);
+    expect(isUnstable([{ id: 'instable' }])).toBe(true);
   });
   it('magie : Résistance à la Magie, Immunité (Poison)', () => {
-    expect(magicResistanceOf(['Résistance à la Magie 2'])).toBe(2);
-    expect(magicResistanceOf(['Résistance à la Magie'])).toBe(1); // Indice absent → 1 (donnée naine)
-    expect(immunityTypes(['Immunité (Poison)'])).toEqual(['poison']);
+    expect(magicResistanceOf([{ id: 'resistance-a-la-magie', value: 2 }])).toBe(2);
+    expect(magicResistanceOf([{ id: 'resistance-a-la-magie' }])).toBe(1); // Indice absent → 1 (donnée naine)
+    expect(immunityTypes([{ id: 'immunite', arg: 'Poison' }])).toEqual(['poison']);
   });
   it('psy/IA : Bestial, À sang-froid, Stupide, Rage, Territorial, Fabriqué', () => {
-    expect(isBestial(['Bestial'])).toBe(true);
-    expect(isColdBlooded(['À Sang-froid'])).toBe(true); // casse de la donnée
-    expect(isStupid(['Stupide'])).toBe(true);
-    expect(hasRage(['Rage'])).toBe(true);
-    expect(isTerritorial(['Territorial'])).toBe(true);
-    expect(isMindless(['Fabriqué'])).toBe(true);
+    expect(isBestial([{ id: 'bestial' }])).toBe(true);
+    expect(isColdBlooded([{ id: 'a-sang-froid' }])).toBe(true); // casse de la donnée
+    expect(isStupid([{ id: 'stupide' }])).toBe(true);
+    expect(hasRage([{ id: 'rage' }])).toBe(true);
+    expect(isTerritorial([{ id: 'territorial' }])).toBe(true);
+    expect(isMindless([{ id: 'fabrique' }])).toBe(true);
   });
   it('mouvement & vision : Vol, Bond/Foulée, Vision nocturne/Infravision, Furtif', () => {
-    expect(flyMeters(['Vol 100'])).toBe(100);
-    expect(flyMeters(['Foulée'])).toBeNull();
-    expect(runMultiplier(['Bond'])).toBe(2);
-    expect(runMultiplier(['Foulée'])).toBe(1.5);
-    expect(runMultiplier(['Bond', 'Foulée'])).toBe(2); // Bond prime
-    expect(traitSeesInDark(['Vision nocturne'])).toBe(true);
-    expect(traitSeesInDark(['Infravision'])).toBe(true);
-    expect(hasStealthAgBonus(['Furtif'])).toBe(true);
-    expect(mutationsAtSpawn(['Mutation', 'Corruption mentale'])).toEqual([{ kind: 'physique', label: undefined }, { kind: 'mentale', label: undefined }]);
+    expect(flyMeters([{ id: 'vol', value: 100 }])).toBe(100);
+    expect(flyMeters([{ id: 'foulee' }])).toBeNull();
+    expect(runMultiplier([{ id: 'bond' }])).toBe(2);
+    expect(runMultiplier([{ id: 'foulee' }])).toBe(1.5);
+    expect(runMultiplier([{ id: 'bond' }, { id: 'foulee' }])).toBe(2); // Bond prime
+    expect(traitSeesInDark([{ id: 'vision-nocturne' }])).toBe(true);
+    expect(traitSeesInDark([{ id: 'infravision' }])).toBe(true);
+    expect(hasStealthAgBonus([{ id: 'furtif' }])).toBe(true);
+    expect(mutationsAtSpawn([{ id: 'mutation' }, { id: 'corruption-mentale' }])).toEqual([{ kind: 'physique', label: undefined }, { kind: 'mentale', label: undefined }]);
     // Mutation EXPLICITE (tell figé en donnée) : l'argument du trait porte le label.
-    expect(mutationsAtSpawn(['Mutation (Cornes asymétriques)'])).toEqual([{ kind: 'physique', label: 'Cornes asymétriques' }]);
+    expect(mutationsAtSpawn([{ id: 'mutation', arg: 'Cornes asymétriques' }])).toEqual([{ kind: 'physique', label: 'Cornes asymétriques' }]);
   });
 });
 
 describe('spawn — profil dérivé des statblocks d’éditeur (LDB 77 « ajoutez les Traits »)', () => {
   it('Élite +20 CC/CT/FM, Brutal −1 M — appliqués en DIRECT (characteristics = base, effectiveChar = final)', () => {
-    const c = statblockToCombatant({ name: 'Vétéran', char: { CC: 30, CT: 30, FM: 30, M: 4 }, traits: ['Élite', 'Brutal'] } as any, 'e1', { x: 0, y: 0 });
+    const c = statblockToCombatant({ name: 'Vétéran', char: { CC: 30, CT: 30, FM: 30, M: 4 }, traits: [{ id: 'elite' }, { id: 'brutal' }] } as any, 'e1', { x: 0, y: 0 });
     expect(c.characteristics.CC).toBe(30); // BASE (les traits ne sont plus cuits dans characteristics)
-    expect(c.liveTraits).toEqual(['Élite', 'Brutal']);
+    expect(c.liveTraits).toEqual([{ id: 'elite' }, { id: 'brutal' }]);
     expect(effectiveChar(c, 'CC')).toBe(50); // 30 + Élite 20 (en direct via le collecteur passif)
     expect(effectiveChar(c, 'FM')).toBe(50);
     expect(effectiveChar(c, 'F')).toBe(40); // Brutal +10 F
@@ -95,7 +95,7 @@ describe('spawn — profil dérivé des statblocks d’éditeur (LDB 77 « ajout
   });
   it('Endurant : +BE Blessures (formule)', () => {
     const sans = statblockToCombatant({ name: 'A', char: { E: 30 }, traits: [] } as any, 'e2', { x: 0, y: 0 });
-    const avec = statblockToCombatant({ name: 'B', char: { E: 30 }, traits: ['Endurant'] } as any, 'e3', { x: 0, y: 0 });
+    const avec = statblockToCombatant({ name: 'B', char: { E: 30 }, traits: [{ id: 'endurant' }] } as any, 'e3', { x: 0, y: 0 });
     expect(avec.wounds.max - sans.wounds.max).toBe(3);
   });
   it('bestiaire : trait de profil INHÉRENT non ré-appliqué (profil imprimé FINAL → zéro double-compte)', () => {
@@ -107,12 +107,12 @@ describe('spawn — profil dérivé des statblocks d’éditeur (LDB 77 « ajout
     expect(effectiveChar(c, 'F')).toBe(def.char.F as number); // 41 = imprimé ; Brutal +10 NON re-compté (sinon 51)
   });
   it('Fabriqué → immunité psychologique ; Mutation → mutation tirée (graine stable)', () => {
-    const c = statblockToCombatant({ name: 'Golem', char: {}, traits: ['Fabriqué', 'Mutation'] } as any, 'e4', { x: 0, y: 0 });
+    const c = statblockToCombatant({ name: 'Golem', char: {}, traits: [{ id: 'fabrique' }, { id: 'mutation' }] } as any, 'e4', { x: 0, y: 0 });
     expect(c.psychImmune).toBe(true);
     expect(c.mutations?.length).toBe(1);
     expect(c.mutations![0].kind).toBe('physique');
     // Déterminisme : même id → même mutation.
-    const c2 = statblockToCombatant({ name: 'Golem', char: {}, traits: ['Fabriqué', 'Mutation'] } as any, 'e4', { x: 0, y: 0 });
+    const c2 = statblockToCombatant({ name: 'Golem', char: {}, traits: [{ id: 'fabrique' }, { id: 'mutation' }] } as any, 'e4', { x: 0, y: 0 });
     expect(c2.mutations![0].label).toBe(c.mutations![0].label);
   });
 });
@@ -120,7 +120,7 @@ describe('spawn — profil dérivé des statblocks d’éditeur (LDB 77 « ajout
 describe('câblages moteur', () => {
   it('Parasité : −10 pour toucher en mêlée (attackModifiers)', () => {
     const atk = mk({ id: 'a' });
-    const tgt = mk({ id: 't', traits: ['Parasité'] });
+    const tgt = mk({ id: 't', traits: [{ id: 'parasite' }] });
     const mods = attackModifiers(atk, tgt, { name: 'Épée', type: 'melee', damage: '+BF', qualities: [] }, { kind: 'melee' });
     expect(mods.find((m) => m.label === 'Parasité')?.value).toBe(-10);
   });
@@ -130,7 +130,7 @@ describe('câblages moteur', () => {
     expect(coldBloodedAdjust({ roll: 91, target: 40, success: false, sl: -5 }, false).success).toBe(false);
   });
   it('Belliqueux : immunité psy si plus d’Avantages que l’adversaire', () => {
-    const c = mk({ traits: ['Belliqueux'], advantage: 2 });
+    const c = mk({ traits: [{ id: 'belliqueux' }], advantage: 2 });
     expect(bellicosePsychImmune(c, 1)).toBe(true);
     expect(bellicosePsychImmune(c, 2)).toBe(false);
     expect(isPsychImmune(c, 1)).toBe(true);
@@ -139,11 +139,11 @@ describe('câblages moteur', () => {
   it('Insensible à la douleur : pénalités de Critique ignorées (hors amputations)', () => {
     const t = { label: 'Déchirure musculaire (Majeure)', location: 'jambeG', ops: [{ op: 'charMod', char: 'Ag', mod: -10 }] } as any;
     const douillet = mk({ traumas: [t] });
-    const stoique = mk({ traumas: [t], traits: ['Insensible à la douleur'] });
+    const stoique = mk({ traumas: [t], traits: [{ id: 'insensible-a-la-douleur' }] });
     expect(traumaCharPenalties(douillet, 'Ag')).toEqual([-10]);
     expect(traumaCharPenalties(stoique, 'Ag')).toEqual([]);
     // … mais une AMPUTATION reste pénalisante (LDB 85 p.340).
-    const ampute = mk({ traumas: [{ label: 'Amputation (Doigt)', location: 'brasD', ops: [{ op: 'charMod', char: 'CC', mod: -5 }] } as any], traits: ['Insensible à la douleur'] });
+    const ampute = mk({ traumas: [{ label: 'Amputation (Doigt)', location: 'brasD', ops: [{ op: 'charMod', char: 'CC', mod: -5 }] } as any], traits: [{ id: 'insensible-a-la-douleur' }] });
     expect(traumaCharPenalties(ampute, 'CC')).toEqual([-5]);
   });
 });

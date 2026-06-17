@@ -22,12 +22,12 @@ setEncounters(scene, [
         statblock: {
           name: 'Sorcier mutant',
           char: { M: 4, CC: 30, CT: 30, F: 30, E: 30, I: 40, Ag: 30, Dex: 30, Int: 40, FM: 45, Soc: 30 },
-          traits: ['Arme (Dague) +4', 'Lanceur de Sorts (Sorcellerie)', 'Corruption (Mineure)'],
-          spells: ['Fléchette'],
+          traits: [{ id: 'arme', value: 4, arg: 'Dague' }, { id: 'lanceur-de-sorts', arg: 'Sorcellerie' }, { id: 'corruption', arg: 'Mineure' }],
+          spells: ['flechette'], // id de sort (CustomStatblock.spells = string[] d'ids)
         },
         pos: { x: 14, y: 3 },
       },
-      { ref: 'Squelette', pos: { x: 12, y: 9 }, optionals: ['Élite'], randomChars: true },
+      { ref: 'Squelette', pos: { x: 12, y: 9 }, optionals: [{ id: 'elite' }], randomChars: true },
       { ref: 'Eusapia Balacañon', pos: { x: 15, y: 6 } },
     ],
   },

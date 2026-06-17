@@ -3069,5 +3069,21 @@
       "book": "ADE2",
       "page": 20
     }
+  },
+  {
+    "id": "officier-de-siege",
+    "label": "Officier de Siège",
+    "max": null,
+    "test": null,
+    "desc": "",
+    "addSkill": null,
+    "addTalent": null,
+    "addCharacteristic": null,
+    "specs": [],
+    "rand": null,
+    "source": {
+      "book": "AA",
+      "page": 0
+    }
   }
 ]

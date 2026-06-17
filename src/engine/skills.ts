@@ -3,7 +3,7 @@
  * (hors combat) : Caractéristique + Augmentations de la compétence.
  */
 import { Combatant, CharKey, CHAR_BY_LABEL } from './types';
-import { findSkill } from '../data';
+import { findSkill, findSkillById } from '../data';
 import { groupMatch } from './groups';
 import { effectiveChar } from './characteristics';
 import { testStatePenalty } from './conditions';
@@ -25,7 +25,7 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
   if (!skill && !characteristic) return 0;
   const ck = characteristic ?? skillCharKey(skill!) ?? 'Dex';
   const low = skill?.toLowerCase();
-  const sk = low ? c.skills.find((s) => low === s.name.toLowerCase() || low.startsWith(s.name.toLowerCase())) : undefined;
+  const sk = low ? c.skills.find((s) => { const n = (findSkillById(s.skillId)?.label ?? s.skillId).toLowerCase(); return low === n || low.startsWith(n); }) : undefined;
   const base = effectiveChar(c, ck);
   const states = testStatePenalty(c, skill);
   const enc = ck === 'Ag' ? agilityTestPenalty(c) : 0; // charge : couche d'ÉTAT orthogonale (≠ passif d'élément)
@@ -42,8 +42,9 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
 export function actorHasSkill(c: Combatant, label: string): boolean {
   const low = label.trim().toLowerCase();
   return c.skills.some((s) => {
-    const full = s.spec ? `${s.name} (${s.spec})` : s.name;
-    return full.toLowerCase() === low || s.name.toLowerCase() === low;
+    const base = findSkillById(s.skillId)?.label ?? s.skillId;
+    const full = s.spec ? `${base} (${s.spec})` : base;
+    return full.toLowerCase() === low || base.toLowerCase() === low;
   });
 }
 

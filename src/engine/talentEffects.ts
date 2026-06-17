@@ -27,9 +27,8 @@
  */
 import { Combatant, CHAR_BY_LABEL, CharKey } from './types';
 import { bonus, maxWounds } from './characteristics';
-import { findTalent } from '../data';
+import { findTalent, findTalentById, blessingsOf } from '../data';
 import { splitLabel, concreteLabel } from './careerSlots';
-import { blessingsOf } from './cults/registry';
 import { COMBAT_FEATURES } from './combatFeatures/registry';
 
 /** `addCharacteristic` d'un talent (libellé long des données), sinon null. */
@@ -39,7 +38,7 @@ function addCharOf(talentLabel: string): string | null {
 
 /** Somme des `times` des talents du héros dont addCharacteristic === attr. */
 function timesWithAddChar(hero: Combatant, attr: string): number {
-  return hero.talents.reduce((a, t) => a + (addCharOf(t.name) === attr ? t.times : 0), 0);
+  return hero.talents.reduce((a, t) => a + ((findTalentById(t.talentId)?.addCharacteristic ?? null) === attr ? t.times : 0), 0);
 }
 
 /** Caractéristique « +5 de départ » conférée par un talent (clé courte), sinon null. */
@@ -97,8 +96,8 @@ export function resolveMax(hero: Combatant): number {
 export function careerSkillAdditions(hero: Combatant): string[] {
   const out: string[] = [];
   for (const t of hero.talents) {
-    const { name, spec } = splitLabel(t.name);
-    const data = findTalent(name);
+    const spec = t.spec;
+    const data = findTalentById(t.talentId);
     if (!data?.addSkill) continue;
     const add = splitLabel(data.addSkill);
     // Le talent porte une spec concrète et la compétence ajoutée est « au choix » → reporter.

@@ -6,8 +6,10 @@
  */
 import type { TraitDef } from './types';
 import { TRAIT_DEFS } from './_registry.generated';
+import { slugId } from '../../data/slug';
 
 export type { TraitDef } from './types';
 
-/** Table des traits. Clé = libellé FR canonique (porté par chaque def). */
-export const TRAITS: Record<string, TraitDef> = Object.fromEntries(TRAIT_DEFS.map((t) => [t.key, t]));
+/** Table des traits. Clé = `id` STABLE (slug du libellé canonique porté par chaque def) — indépendant
+ *  de la langue. Le `key`/libellé de la def reste pour l'affichage. */
+export const TRAITS: Record<string, TraitDef> = Object.fromEntries(TRAIT_DEFS.map((t) => [slugId(t.key), t]));

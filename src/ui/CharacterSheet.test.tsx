@@ -19,8 +19,8 @@ const hero = (): Combatant =>
     weapons: [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [
-      { name: 'Charme', characteristic: 'Soc', advances: 0 },
-      { name: 'Esquive', characteristic: 'Ag', advances: 0 },
+      { skillId: 'charme', characteristic: 'Soc', advances: 0 },
+      { skillId: 'esquive', characteristic: 'Ag', advances: 0 },
     ],
     talents: [],
     movement: 4,

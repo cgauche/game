@@ -16,8 +16,7 @@ import { feat as catalogFeatures, featureMorpho } from './elements';
 import { eyesArtFromKeys } from './eyes';
 import { injuryOverlaysFor, injuryAppearance } from './injuries';
 import { traitOverlaysFor } from './traitVisuals';
-import { asTrait } from '../../../engine/traits/dispatch';
-import { traitByLabel } from '../../../data';
+import { traitById } from '../../../data';
 
 /** Fragments d'apparence déclarés par l'état : mutations PHYSIQUES + traits porteurs d'un `appearance`.
  *  Source unique lue par les deux fonctions (calques via `features`, couleurs/yeux/morpho). */
@@ -25,7 +24,7 @@ function stateFragments(c: Combatant): EntityAppearance[] {
   const out: EntityAppearance[] = [];
   for (const m of c.mutations ?? []) if (m.kind === 'physique' && m.appearance) out.push(m.appearance);
   for (const x of c.traits ?? []) {
-    const td = traitByLabel.get(asTrait(x).key);
+    const td = traitById.get(x.id);
     if (td?.appearance) out.push(td.appearance);
   }
   return out;

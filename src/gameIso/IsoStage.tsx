@@ -9,6 +9,7 @@ import { useGame } from '../state/store';
 import { Scene as GameScene, tileAt, isWalkable, elevAt } from '../state/scene';
 import { sceneIsDark } from '../state/sceneRules';
 import { pathTo, type Pt } from '../state/path';
+import { exploreMoveDest } from '../state/exploreNav';
 import { planJump } from '../state/jumpMove';
 import { runFlow } from '../state/combatEffects';
 import { maxJumpTiles } from '../engine/movement';
@@ -95,27 +96,6 @@ function movePreviewEls(path: { x: number; y: number }[], dest: { x: number; y: 
     els.push(<text key={`${keyPrefix}-lbl`} x={c0.cx} y={c0.cy - 28} textAnchor="middle" className="pv-badge" pointerEvents="none">{label}</text>);
   }
   return els;
-}
-
-/** Case adjacente (8-voisins) libre et ATTEIGNABLE la plus proche d'un décor, pour le move-to-interact
- *  (P5). À l'ÉTAGE du décor (un PNJ de loge s'aborde depuis une case de loge voisine, même z). */
-function adjacentWalkable(sc: GameScene, target: Pt, from: Pt): Pt | null {
-  const tz = target.z ?? 0;
-  let best: Pt | null = null;
-  let bestLen = Infinity;
-  for (let dx = -1; dx <= 1; dx++) {
-    for (let dy = -1; dy <= 1; dy++) {
-      if (!dx && !dy) continue;
-      const c: Pt = tz ? { x: target.x + dx, y: target.y + dy, z: tz } : { x: target.x + dx, y: target.y + dy };
-      if (!isWalkable(sc, c.x, c.y, tz)) continue;
-      const p = pathTo(sc, from, c, new Set());
-      if (p && p.length < bestLen) {
-        best = c;
-        bestLen = p.length;
-      }
-    }
-  }
-  return best;
 }
 
 export function IsoStage() {
@@ -435,10 +415,13 @@ export function IsoStage() {
   const explorePath = useMemo<{ x: number; y: number }[] | null>(() => {
     if (mode !== 'exploration' || dialogue || !scene || !hover) return null;
     if (hover.x === partyPos.x && hover.y === partyPos.y && (hover.z ?? 0) === (partyPos.z ?? 0)) return null;
-    if (!isWalkable(scene, hover.x, hover.y, hover.z ?? 0)) return null;
+    // Même cible que le clic : un objet/PNJ interactif route vers une case adjacente (sa case est souvent
+    // bloquée) — c'est ce qui rend l'aperçu visible au survol d'un objet ; sinon déplacement simple.
+    const dest = exploreMoveDest(scene, partyPos, hover);
+    if (!dest) return null;
     const heroes = party.filter((h) => !h.dead && h.wounds.current > 0);
     const partyM = heroes.length ? Math.min(...heroes.map((h) => effectiveMovement(h))) : 0;
-    const path = pathTo(scene, partyPos, hover, new Set(), 1, maxJumpTiles(partyM));
+    const path = pathTo(scene, partyPos, dest, new Set(), 1, maxJumpTiles(partyM));
     return path && path.length >= 2 ? path : null;
   }, [hover, mode, dialogue, scene, partyPos, party]);
 
@@ -964,44 +947,32 @@ export function IsoStage() {
       return;
     }
     const ent = sc.entities.find((e) => e.pos.x === x && e.pos.y === y && (e.z ?? 0) === tz);
+    // Case d'arrivée partagée avec l'aperçu de survol (explorePath) — JAMAIS recalculée à part (cf.
+    // exploreMoveDest) : escalier (autre bout), case adjacente d'un objet/PNJ interactif, ou déplacement simple.
+    const dest = exploreMoveDest(sc, st.partyPos, t);
     if (ent && (ent.dialogueId || !!ent.interact || !!ent.merchant)) {
-      const dist = Math.max(Math.abs(st.partyPos.x - ent.pos.x), Math.abs(st.partyPos.y - ent.pos.y));
-      if (dist <= 1) {
+      if (cheb(st.partyPos, ent.pos) <= 1) {
         st.setPendingInteract(null);
         st.interactEntity(ent.id); // adjacent → fouille / dialogue immédiat
-      } else {
-        // Déplacement-puis-fouille (P5) : marche vers une case adjacente libre, puis fouille à l'arrivée.
-        const adj = adjacentWalkable(sc, ent.pos, st.partyPos);
-        if (adj) {
-          st.setPendingInteract(ent.id);
-          moveAlong(sc, st.partyPos, adj);
-        }
+      } else if (dest) {
+        // Déplacement-puis-fouille (P5) : marche vers la case adjacente libre, puis fouille à l'arrivée.
+        st.setPendingInteract(ent.id);
+        moveAlong(sc, st.partyPos, dest);
       }
       return;
     }
     if (ent && ent.kind === 'personnage') {
       // FIGURANT (PNJ sans dialogue/boutique/fouille) : on ne lui marche pas DESSUS — on s'approche
-      // à une case adjacente et on le dit (sinon le groupe « entre dans » le corps du PNJ).
+      // d'une case adjacente, ou on le dit s'il est déjà à côté (sinon le groupe entre dans son corps).
       st.setPendingInteract(null);
-      const dist = Math.max(Math.abs(st.partyPos.x - ent.pos.x), Math.abs(st.partyPos.y - ent.pos.y));
-      if (dist > 1) {
-        const adj = adjacentWalkable(sc, ent.pos, st.partyPos);
-        if (adj) moveAlong(sc, st.partyPos, adj);
-      } else {
-        st.log(`${ent.label ?? 'Ce badaud'} n’a rien à vous dire.`);
-      }
+      if (cheb(st.partyPos, ent.pos) <= 1) st.log(`${ent.label ?? 'Ce badaud'} n’a rien à vous dire.`);
+      else if (dest) moveAlong(sc, st.partyPos, dest);
       return;
     }
-    st.setPendingInteract(null); // clic ailleurs : annule un déplacement-puis-fouille en attente
-    // ESCALIER : cliquer une marche CHANGE d'étage (la destination devient l'autre bout) — c'est le geste
-    // explicite pour monter/descendre, maintenant que le clic vise l'étage affiché et non plus le surplomb.
-    const stair = (sc.stairs ?? []).find((s) => (s.from.x === x && s.from.y === y && s.from.z === tz) || (s.to.x === x && s.to.y === y && s.to.z === tz));
-    if (stair) {
-      const dest = stair.from.x === x && stair.from.y === y && stair.from.z === tz ? stair.to : stair.from;
-      moveAlong(sc, st.partyPos, dest);
-      return;
-    }
-    moveAlong(sc, st.partyPos, t);
+    // Clic ailleurs : annule un déplacement-puis-fouille en attente. `dest` couvre l'ESCALIER (geste
+    // explicite pour changer d'étage) et le déplacement simple ; moveAlong filtre les cases non marchables.
+    st.setPendingInteract(null);
+    if (dest) moveAlong(sc, st.partyPos, dest);
   };
 
   // Caméra libre : on ARME un glisser au pointer-down (sans agir), on panoramique au mouvement
@@ -1216,7 +1187,8 @@ export function IsoStage() {
         {/* Aperçu de DÉPLACEMENT au survol HORS combat : même tracé partagé (movePreviewEls), pas de badge. */}
         {mode === 'exploration' && explorePath && hover && (
           <g pointerEvents="none">
-            {movePreviewEls(explorePath, hover, null, dims, 'exp')}
+            {/* Case d'arrivée = fin du chemin (case adjacente pour un objet/PNJ interactif), pas le survol. */}
+            {movePreviewEls(explorePath, explorePath[explorePath.length - 1], null, dims, 'exp')}
           </g>
         )}
         {/* Ciblage du JOUEUR — réticule persistant des jets à cible en cours (modale ouverte), sinon

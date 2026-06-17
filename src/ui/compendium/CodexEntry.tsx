@@ -1,9 +1,9 @@
 /** Rendu d'une fiche du Codex (détail) : en-tête + faits + prose + SECTIONS riches (statbloc,
  *  niveaux de carrière, bénédictions…) dont les entités citées sont des liens `CodexRef`. */
 import type { CodexItem, CodexRow, CodexSection } from './registry';
-import { CodexRef } from './CodexRef';
+import { EntityRef, ChoiceChips } from '../EntityChip';
 import { CreaturePreview } from './CreaturePreview';
-import { findCreature } from '../../data';
+import { TabbedEntry, type EntryTab } from '../TabbedEntry';
 
 export function CodexSourceBadge({ source }: { source: CodexItem['source'] }) {
   if (!source) return null;
@@ -32,11 +32,10 @@ function CodexRowView({ row }: { row: CodexRow }) {
         <p className="codex-rowtext">{row.text}</p>
       );
     case 'ref':
-      return (
-        <CodexRef category={row.category} label={row.label} instance={row.show} className="codex-chip">
-          {row.show}
-        </CodexRef>
-      );
+      return <EntityRef category={row.category} label={row.label} show={row.show} instance={row.show} />;
+    case 'choice':
+      // « A ou B » : rendu via la brique PARTAGÉE (identique partout — Codex et écrans).
+      return <ChoiceChips category={row.category} options={row.options} />;
   }
 }
 
@@ -65,45 +64,76 @@ export function CodexSections({ sections }: { sections: CodexSection[] }) {
 }
 
 export function CodexEntry({ item, instance, category }: { item: CodexItem; instance?: string; category?: string }) {
-  const hasBody = !!item.desc || !!item.meta?.length || !!item.sections?.length;
-  const creature = category === 'creatures' ? findCreature(item.label) : undefined;
+  void category; // conservé pour la compat des appelants ; l'aperçu est piloté par `item.appearance`.
+
+  // ONGLETS data-driven : CHAQUE section de la fiche (statbloc, compétences, niveaux de carrière,
+  // bénédictions…) devient un onglet → les onglets reflètent les données PROPRES de l'entité (une
+  // créature, un sort et une race n'exposent pas les mêmes). La CHARTE (figurine + onglets) est, elle,
+  // partagée avec le créateur via `TabbedEntry` — on ne se perd pas d'une fiche à l'autre.
+  const tabs: EntryTab[] = item.tabs
+    ? // Regroupement EXPLICITE (ex. race : Profil bundle carac+compétences+talents) → sections avec titre.
+      item.tabs.map((t, i) => ({
+        id: `tab-${i}`,
+        label: t.title,
+        content: (
+          <div className="codex-tabpane">
+            <CodexSections sections={t.sections} />
+          </div>
+        ),
+      }))
+    : // Sinon : UN onglet par section (corps seul, le libellé d'onglet porte déjà le titre).
+      (item.sections ?? []).map((sec, i) => ({
+        id: `sec-${i}`,
+        label: sec.title,
+        content: (
+          <div className={`codex-tabpane codex-sec-body codex-${sec.layout ?? 'list'}`}>
+            {sec.rows.map((row, j) => (
+              <CodexRowView key={j} row={row} />
+            ))}
+          </div>
+        ),
+      }));
+  if (item.desc) {
+    tabs.push({
+      id: 'desc',
+      label: 'Description',
+      content: item.html ? (
+        <div className="codex-tabpane codex-body" dangerouslySetInnerHTML={{ __html: item.desc }} />
+      ) : (
+        <p className="codex-tabpane codex-body">{item.desc}</p>
+      ),
+    });
+  }
+
+  // Faits-clés : TOUJOURS visibles dans l'en-tête (jamais cachés derrière un onglet).
+  const meta =
+    item.meta && item.meta.length > 0 ? (
+      <div className="row-flex codex-meta">
+        {item.meta.map((m) => (
+          <span key={m.label} className="stat-chip codex-fact">
+            <span className="sc-label">{m.label}</span>
+            <span className="sc-value">{m.value}</span>
+          </span>
+        ))}
+      </div>
+    ) : undefined;
+
   return (
     <article className="codex-entry">
-      <header className="codex-entry-head">
-        <h2 className="codex-entry-title">{item.label}</h2>
-        <CodexSourceBadge source={item.source} />
-        {item.sub && <div className="codex-entry-sub">{item.sub}</div>}
-      </header>
-
-      {creature && <CreaturePreview name={item.label} appearance={creature.appearance} />}
-
       {instance && instance !== item.label && (
         <div className="codex-instance">
           Cette occurrence : <b>{instance}</b>
         </div>
       )}
-
-      {item.meta && item.meta.length > 0 && (
-        <div className="row-flex codex-meta">
-          {item.meta.map((m) => (
-            <span key={m.label} className="stat-chip codex-fact">
-              <span className="sc-label">{m.label}</span>
-              <span className="sc-value">{m.value}</span>
-            </span>
-          ))}
-        </div>
-      )}
-
-      {item.desc &&
-        (item.html ? (
-          <div className="codex-body" dangerouslySetInnerHTML={{ __html: item.desc }} />
-        ) : (
-          <p className="codex-body">{item.desc}</p>
-        ))}
-
-      {item.sections && <CodexSections sections={item.sections} />}
-
-      {!hasBody && <p className="codex-body codex-empty-desc">—</p>}
+      <TabbedEntry
+        key={item.label}
+        figure={item.appearance ? <CreaturePreview name={item.label} appearance={item.appearance} /> : undefined}
+        title={item.label}
+        aside={item.source ? <CodexSourceBadge source={item.source} /> : undefined}
+        blurb={item.sub}
+        meta={meta}
+        tabs={tabs}
+      />
     </article>
   );
 }

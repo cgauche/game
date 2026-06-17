@@ -24,7 +24,7 @@ import { testValue } from '../engine/skills';
 import { effectiveChar } from '../engine/characteristics';
 import { buyTalent as engineBuyTalent, talentCost } from '../engine/advancement';
 import { applyTalentAcquisition, fortuneMax, resolveMax, heroMaxWounds } from '../engine/talentEffects';
-import { findCareer, levelsForCareer, findTrapping, findTalent } from '../data';
+import { findCareer, levelsForCareer, findTrapping, findTalent, findSkillById, skillInstanceLabel, advancementLabel } from '../data';
 import { CHAR_BY_LABEL, CHAR_LABELS, type CharKey, type Combatant, type Difficulty } from '../engine/types';
 import type { PendingBase } from './rollFlow';
 
@@ -167,8 +167,8 @@ export function heroClass(h: Combatant): string {
  *  Niveau 1 que le héros POSSÈDE, sinon la première listée. Approximation documentée). */
 function incomeSkillOf(h: Combatant): string {
   const lvl1 = levelsForCareer(h.career ?? '')[0];
-  const skills = lvl1?.skills ?? [];
-  const owned = skills.find((s) => h.skills.some((k) => s.toLowerCase().startsWith(k.name.toLowerCase())));
+  const skills = (lvl1?.skills ?? []).map((a) => advancementLabel('skills', a)); // AdvancementRef → libellés
+  const owned = skills.find((s) => h.skills.some((k) => s.toLowerCase().startsWith((findSkillById(k.skillId)?.label ?? k.skillId).toLowerCase())));
   return owned ?? skills[0] ?? 'Athlétisme';
 }
 
@@ -229,7 +229,7 @@ export function craftStart(get: Get, set: Set, heroId: string, trappingLabel: st
     craft: { trapping: trappingLabel, tier, avail, atouts, defauts, drDone: 0, drTarget: target.dr, difficulty: target.difficulty },
   };
   set({ interlude: { ...itl } });
-  get().log(`${h.name} achète les matériaux (${formatMoney(fromBrass(materials))}) et installe son ouvrage : ${trappingLabel} (${target.dr} DR à atteindre, ${metier.name}).`);
+  get().log(`${h.name} achète les matériaux (${formatMoney(fromBrass(materials))}) et installe son ouvrage : ${trappingLabel} (${target.dr} DR à atteindre, ${skillInstanceLabel(metier)}).`);
 }
 
 /** Ouvre la modale du LANCER d'Artisanat — « Chaque Activité […] vous permet d'effectuer un
@@ -238,11 +238,12 @@ export function openCraftRoll(get: Get, set: Set, heroId: string): void {
   const st = heroState(get(), heroId);
   const h = get().party.find((x) => x.id === heroId);
   if (!st?.craft || !h || st.left <= 0) return;
-  const metier = h.skills.find((k) => /^métier/i.test(k.name)) ?? { name: 'Métier' };
+  const metier = h.skills.find((k) => k.skillId === 'metier');
+  const metierLabel = metier ? skillInstanceLabel(metier) : 'Métier';
   set({
     pendingActivity: {
       heroId, kind: 'craft', label: `Artisanat — ${st.craft.trapping}`,
-      skillLabel: metier.name, skillValue: testValue(h, metier.name), difficulty: st.craft.difficulty,
+      skillLabel: metierLabel, skillValue: testValue(h, metierLabel), difficulty: st.craft.difficulty,
       roll: null, target: 0, sl: 0, success: false,
       drBefore: st.craft.drDone, drTarget: st.craft.drTarget,
     },
@@ -263,7 +264,7 @@ export function openLearn(get: Get, set: Set, heroId: string, talentLabel: strin
     get().log(`Talent inconnu : « ${talentLabel} ».`);
     return;
   }
-  const xpCost = talentCost(h.talents.find((k) => k.name === talentLabel)?.times ?? 0);
+  const xpCost = talentCost(h.talents.find((k) => k.talentId === t.id)?.times ?? 0);
   if ((h.xp ?? 0) < xpCost) {
     get().log(`${h.name} : PX insuffisants (${xpCost} requis pour ${talentLabel}).`);
     return;
@@ -297,7 +298,7 @@ export function openIdentify(get: Get, set: Set, heroId: string, itemUid: string
   if (!st || !h || st.left <= 0) return;
   const item = (h.items ?? []).find((i) => i.uid === itemUid);
   if (!item || item.identified !== false) return; // rien à identifier
-  const savoir = h.skills.find((k) => k.name === 'Savoir (Magie)' && k.advances >= 1);
+  const savoir = h.skills.find((k) => k.skillId === 'savoir' && (k.spec ?? '') === 'Magie' && k.advances >= 1);
   if (!savoir) {
     get().log(`${h.name} ne possède pas Savoir (Magie) — impossible d'étudier l'artefact (ADE2 : la voie des sorciers).`);
     return;

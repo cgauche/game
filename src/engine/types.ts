@@ -197,9 +197,9 @@ export interface ActiveEffect {
   /** PA temporisés à TOUTES les localisations (Armure Aethyrique : « +1 PA à toutes les
    *  Localisations ») — lus par effectiveArmourAt à la mitigation des Dégâts. */
   apAll?: number;
-  /** Trait de créature ACCORDÉ par cet effet (op `grantTrait` — Envol, Effrayant…) : la chaîne
-   *  exacte posée dans `c.traits`, retirée (une instance) à l'expiration (engine/grantedTraits). */
-  grantedTrait?: string;
+  /** Trait de créature ACCORDÉ par cet effet (op `grantTrait` — Envol, Effrayant…) : le
+   *  `TraitInstance` exact posé dans `c.traits`, retiré (une instance) à l'expiration (engine/grantedTraits). */
+  grantedTrait?: import('./statEntry').TraitInstance;
   /** Arme INVOQUÉE temporaire (op `conjureWeapon` — Arme aethyrique, Faux de Shyish, Épée ardente) :
    *  l'objet `conjured` est posé dans un SET d'armes DÉDIÉ (réutilise le système de loadouts) rendu
    *  actif. À l'expiration, `dropExpiredGrantedWeapons` retire l'objet ET le set, et réactive le set
@@ -389,6 +389,10 @@ export interface ItemInstance {
   conjured?: boolean;
   /** Silhouette de RENDU forcée (libellé d'arme du catalogue) — propagée à `Weapon.form`. */
   form?: string;
+  /** Valeur de marché PRÉ-CALCULÉE (butin récolté : pièces de monstre, Précieuses Entrailles ZI) —
+   *  rareté × dangerosité × Taille × Conservation déjà nettes. Revendu en DIRECT (sans le taux de
+   *  revente catalogue), cf. `merchantFlow.sellGain`. Absent pour un objet ordinaire (prix = catalogue). */
+  price?: import('./money').Money;
 }
 
 /** Set d'armes nommé (les 2 mains). `off` ignoré si l'arme `main` est à 2 mains. uids → ItemInstance. */
@@ -429,17 +433,16 @@ export interface Combatant {
   /** Groupes d'appartenance + traits psy possédés (matching des Cibles — utilisés en P3). */
   groups?: string[];
   psychTraits?: import('./psychology').PsychTrait[];
-  /** Traits de créature (STRUCTURÉS — `TraitInstance` : key/value/arg/count/range) → attaques
+  /** Traits de créature (STRUCTURÉS — `TraitInstance` : id/value/arg/count/range) → attaques
    *  naturelles gratuites & règles dérivées (Morsure, Attaque caudale, Souffle… cf.
-   *  engine/creatureAttacks). Lus sans parsing via `resolveTraits`/`asTrait`. Conservés au spawn.
-   *  Union transitoire : les chaînes legacy/test restent acceptées (normalisées par `asTrait`). */
+   *  engine/creatureAttacks). Lus sans aucun parsing (`resolveTraits`/`hasTraitKey`). Conservés au spawn. */
   traits?: import('./statEntry').TraitList;
   /** Traits dont les modificateurs de PROFIL (charMods/Mouvement, LDB 85 : Élite/Coriace/Brutal/Rapide…)
    *  s'appliquent en DIRECT par le collecteur passif (kind `intrinsèque`) plutôt que d'être cuits dans
    *  `characteristics`/`movement` : facultatifs d'un profil bestiaire FINAL, traits d'un statbloc d'éditeur,
    *  traits ACCORDÉS en jeu (`grantTrait`). Absent ⇒ aucun (profil déjà final / héros sans trait créature).
    *  `characteristics` reste la BASE pure ; `effectiveChar` ajoute ces traits (cf. `baseWithTraits`). */
-  liveTraits?: string[];
+  liveTraits?: import('./statEntry').TraitList;
   /** Nuée (Trait Essaim, LDB 85 l.199-200) : ignore la Taille et la Psychologie, +40 au tir CONTRE
    *  elle, Frappe Mortelle sur toute touche, 1 PB/Round aux Engagés ; ×5 PB & +10 CC posés au spawn. */
   swarm?: boolean;

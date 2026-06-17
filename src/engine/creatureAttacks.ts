@@ -9,8 +9,8 @@
  * la manœuvre dont le suffixe d'id (`souffle-feu`…) correspond à `norm(arg)` (« Feu » → souffle-feu),
  * sinon le défaut élémentaire `souffle-feu` (exotiques arbitrés MJ). Aucun regex « (Type) » en dur.
  */
-import { asTrait, formatTrait } from './traits/dispatch';
-import { traitByLabel, findManeuverById, type ManeuverDef } from '../data';
+import { formatTrait } from './traits/dispatch';
+import { traitById, findManeuverById, type ManeuverDef } from '../data';
 import { norm } from '../lib/normalize';
 import type { TraitList } from './statEntry';
 
@@ -83,8 +83,8 @@ function pickGranted(ids: string[], arg?: string): ManeuverDef | undefined {
 export function creatureAttacks(traits: TraitList): CreatureAttack[] {
   const out: CreatureAttack[] = [];
   for (const x of traits) {
-    const inst = asTrait(x);
-    const grants = traitByLabel.get(inst.key)?.grantsManeuvers;
+    const inst = x;
+    const grants = traitById.get(inst.id)?.grantsManeuvers;
     if (!grants?.length) continue;
     const def = pickGranted(grants.map((r) => r.id), inst.arg);
     if (!def) continue;
@@ -100,14 +100,4 @@ export function creatureAttacks(traits: TraitList): CreatureAttack[] {
     });
   }
   return out;
-}
-
-/** Atout Venin : les Attaques venimeuses infligent l'État Empoisonné sur PB (Difficulté de résistance
- *  par défaut Intermédiaire). Retourne la Difficulté écrite, ou 'Intermédiaire' si absente. */
-export function venomDifficulty(traits: TraitList): string | null {
-  for (const x of traits) {
-    const inst = asTrait(x);
-    if (inst.key === 'Venin') return inst.arg ?? 'Intermédiaire';
-  }
-  return null;
 }

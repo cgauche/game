@@ -36,29 +36,29 @@ const scene = (w: number, h: number, walls: string[] = []): Scene => {
 
 describe('grantTrait / removeGrantedTrait (engine/grantedTraits)', () => {
   it('pose le trait, le retrait n’enlève qu’UNE instance (jamais le natif)', () => {
-    const c = dummy({ traits: ['Vol 60'] }); // Vol NATIF
-    grantTrait(c, 'Vol 35'); // Envol par-dessus
-    expect(c.traits).toEqual(['Vol 60', 'Vol 35']);
-    removeGrantedTrait(c, 'Vol 35');
-    expect(c.traits).toEqual(['Vol 60']); // le natif survit
-    removeGrantedTrait(c, 'Vol 35'); // déjà retiré → no-op
-    expect(c.traits).toEqual(['Vol 60']);
+    const c = dummy({ traits: [{ id: 'vol', value: 60 }] }); // Vol NATIF
+    grantTrait(c, { id: 'vol', value: 35 }); // Envol par-dessus
+    expect(c.traits).toEqual([{ id: 'vol', value: 60 }, { id: 'vol', value: 35 }]);
+    removeGrantedTrait(c, { id: 'vol', value: 35 });
+    expect(c.traits).toEqual([{ id: 'vol', value: 60 }]); // le natif survit
+    removeGrantedTrait(c, { id: 'vol', value: 35 }); // déjà retiré → no-op
+    expect(c.traits).toEqual([{ id: 'vol', value: 60 }]);
   });
 
   it('Peur accordée → causesPeur dérivé ; retirée → champ nettoyé ; psychTraits de MUTATION préservés', () => {
     const c = dummy({ psychTraits: [{ type: 'frenesie' }] }); // « Colère impie » (mutation)
-    grantTrait(c, 'Peur 2');
+    grantTrait(c, { id: 'peur', value: 2 });
     expect(c.causesPeur).toBe(2);
-    removeGrantedTrait(c, 'Peur 2');
+    removeGrantedTrait(c, { id: 'peur', value: 2 });
     expect(c.causesPeur).toBeUndefined();
     expect(c.psychTraits).toEqual([{ type: 'frenesie' }]); // la mutation n'est PAS perdue
   });
 
   it('Haine accordée (Vaincre les impies) → psychTrait ciblé, retiré proprement', () => {
     const c = dummy({});
-    grantTrait(c, 'Haine (Morts-vivants)');
+    grantTrait(c, { id: 'haine', arg: 'Morts-vivants' });
     expect(c.psychTraits?.some((t) => t.type === 'haine')).toBe(true);
-    removeGrantedTrait(c, 'Haine (Morts-vivants)');
+    removeGrantedTrait(c, { id: 'haine', arg: 'Morts-vivants' });
     expect(c.psychTraits?.some((t) => t.type === 'haine') ?? false).toBe(false);
   });
 });
@@ -66,23 +66,23 @@ describe('grantTrait / removeGrantedTrait (engine/grantedTraits)', () => {
 describe('op grantTrait (ops) + expiration de fin de Round', () => {
   it('Effrayant : Peur 1 (+1 par +3 DR) — Indice échelonné au DR du jet', () => {
     const c = dummy({});
-    applyOps(c, [{ op: 'grantTrait', trait: 'Peur', indice: 1, indicePerSL: { every: 3, amount: 1 } }], {
+    applyOps(c, [{ op: 'grantTrait', traitId: 'peur', indice: 1, indicePerSL: { every: 3, amount: 1 } }], {
       label: 'Effrayant', defaultDurationRounds: 4, sl: 6,
     });
-    expect(c.traits).toContain('Peur 3'); // 1 + ⌊6/3⌋
+    expect(c.traits).toContainEqual({ id: 'peur', value: 3 }); // 1 + ⌊6/3⌋
     expect(c.causesPeur).toBe(3);
-    expect(c.activeEffects?.[0]?.grantedTrait).toBe('Peur 3');
+    expect(c.activeEffects?.[0]?.grantedTrait).toEqual({ id: 'peur', value: 3 });
   });
 
   it('Envol : Vol (Agilité) — l’Indice est l’Agilité du lanceur ; expire en fin de Round', () => {
     const c = dummy({}); // Ag 35
-    applyOps(c, [{ op: 'grantTrait', trait: 'Vol', indice: { charOf: 'Ag' } }], {
+    applyOps(c, [{ op: 'grantTrait', traitId: 'vol', indice: { charOf: 'Ag' } }], {
       label: 'Envol', defaultDurationRounds: 1,
     });
-    expect(hasTrait(c.traits, 'Vol')).toBe(true);
-    expect(c.traits).toContain('Vol 35');
+    expect(hasTrait(c.traits, 'vol')).toBe(true);
+    expect(c.traits).toContainEqual({ id: 'vol', value: 35 });
     endOfRound(c); // 1 Round écoulé → l'effet expire et retire le trait
-    expect(hasTrait(c.traits, 'Vol')).toBe(false);
+    expect(hasTrait(c.traits, 'vol')).toBe(false);
     expect(c.activeEffects ?? []).toHaveLength(0);
   });
 });
@@ -92,7 +92,7 @@ describe('moveReachFor — Vol héros (Envol, Jalon 2.6)', () => {
     // mur vertical complet en x=2 : aucune case au-delà n'est atteignable au sol.
     const s = scene(6, 3, ['2,0', '2,1', '2,2']);
     const walker = dummy({});
-    const flyer = dummy({ traits: ['Vol 35'] });
+    const flyer = dummy({ traits: [{ id: 'vol', value: 35 }] });
     const ground = moveReachFor(walker, s, { x: 0, y: 1 }, 4, new Set());
     expect(ground.has('4,1')).toBe(false);
     const air = moveReachFor(flyer, s, { x: 0, y: 1 }, 4, new Set());
@@ -118,7 +118,7 @@ describe('op grantTalent — talents temporisés (Flambeau de Vertu / Cœurs ard
 
   it('Sans Peur POSSÉDÉ ciblé (LDB 10 l.859) : immunise vs l’Ennemi spécifié seulement', async () => {
     const { fearImmuneVs } = await import('../engine/combatFeatures/dispatch');
-    const c = dummy({ talents: [{ name: 'Sans peur (Morts-vivants)', times: 1 }] });
+    const c = dummy({ talents: [{ talentId: 'sans-peur', spec: 'Morts-vivants', times: 1 }] });
     expect(fearImmuneVs(c, { groups: ['Mort-vivant'] })).toBe(true);
     expect(fearImmuneVs(c, { groups: ['Ogre'] })).toBe(false); // pas l'Ennemi du talent
   });

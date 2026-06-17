@@ -9,6 +9,7 @@ import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { eligibleTalent } from '../engine/grimoire';
 import { effectiveChar } from '../engine/characteristics';
 import { SIZE_ORDER, effectiveSize } from '../engine/size';
+import { campOf } from '../engine/relations';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, actorHasSkill } from '../engine/skills';
 import { easeDifficulty } from '../engine/tests';
 import { hasTalent } from '../engine/magic';
@@ -318,8 +319,10 @@ export function runFlow(get: Get, set: SetFn, flow: Flow, label = 'Effet'): void
  *  résolution synchrone de sort (la cible jette dans l'op mécanique `test`) → branche RÉUSSITE par défaut. */
 /** Vue d'un combattant pour la Condition `compare` (PB + Taille/Avantage + valeur d'États par nom). */
 const actorView = (c: Combatant | undefined) =>
-  c ? { woundsCurrent: c.wounds.current, woundsMax: c.wounds.max, size: SIZE_ORDER[effectiveSize(c.size)],
-        advantage: c.advantage ?? 0, conditions: Object.fromEntries(c.conditions.map((x) => [x.name, x.value ?? 1])) } : undefined;
+  c ? { id: c.id, woundsCurrent: c.wounds.current, woundsMax: c.wounds.max, size: SIZE_ORDER[effectiveSize(c.size)],
+        advantage: c.advantage ?? 0, camp: campOf(c),
+        groups: c.groups ?? [], talents: (c.talents ?? []).map((t) => ({ id: t.talentId, spec: t.spec })), traits: (c.traits ?? []).map((t) => t.id),
+        conditions: Object.fromEntries(c.conditions.map((x) => [x.name, x.value ?? 1])) } : undefined;
 
 export function runSpellFlow(target: Combatant, caster: Combatant | undefined, flow: Flow, ctx: OpsCtx): string[] {
   const lines: string[] = [];
@@ -334,8 +337,9 @@ export function runSpellFlow(target: Combatant, caster: Combatant | undefined, f
         break;
       case 'if':
         // Condition `compare` : `target` = la cible du sous-Flow, `caster` = le lanceur/porteur.
+        // `location`/`woundsDealt` : contexte de la touche courante (Assommante Tête, Venin sur PB).
         if (evalCondition(f.cond, { flags: {}, gameTime: ctx.now ?? 0, party: [target], sl: ctx.sl,
-          target: actorView(target), caster: actorView(caster) })) walk(f.then);
+          location: ctx.location, woundsDealt: ctx.woundsDealt, target: actorView(target), caster: actorView(caster) })) walk(f.then);
         else if (f.else) walk(f.else);
         break;
       case 'test': walk(f.success); break;
@@ -427,7 +431,7 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
         set((s: GameState) => {
           if (!s.party.length) return {};
           let idx = e.heroId ? s.party.findIndex((h) => h.id === e.heroId) : -1;
-          if (idx < 0) idx = s.party.findIndex((h) => h.skills.some((sk) => sk.name === 'Prière' && sk.advances >= 1));
+          if (idx < 0) idx = s.party.findIndex((h) => h.skills.some((sk) => sk.skillId === 'priere' && sk.advances >= 1));
           if (idx < 0) idx = 0;
           who = s.party[idx].name;
           return { party: s.party.map((h, i) => (i === idx ? { ...h, sinPoints: (h.sinPoints ?? 0) + amount } : h)) };

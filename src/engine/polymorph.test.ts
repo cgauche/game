@@ -28,8 +28,8 @@ describe('polymorphOps — Forme bestiale (Ours)', () => {
     expect(effectiveChar(c, 'F')).toBe(ours.char.F); // 55
     expect(effectiveChar(c, 'E')).toBe(ours.char.E); // 45
     expect(effectiveChar(c, 'Ag')).toBe(ours.char.Ag); // 25
-    expect(c.traits ?? []).toContain('Morsure +9'); // Trait de l'Ours accordé
-    expect(hasTraitKey(c.traits, 'Bestial')).toBe(false); // Bestial exclu
+    expect(hasTraitKey(c.traits, 'morsure')).toBe(true); // Trait de l'Ours accordé
+    expect(hasTraitKey(c.traits, 'bestial')).toBe(false); // Bestial exclu
   });
 
   it('reprend sa vraie forme à l’expiration (Caractéristiques restaurées, Traits retirés)', () => {
@@ -38,6 +38,6 @@ describe('polymorphOps — Forme bestiale (Ours)', () => {
     endOfRound(c); // 1 Round écoulé → l'effet expire
     expect(effectiveChar(c, 'F')).toBe(30); // base restaurée
     expect(effectiveChar(c, 'Ag')).toBe(40);
-    expect((c.traits ?? []).includes('Morsure +9')).toBe(false); // Trait retiré
+    expect(hasTraitKey(c.traits, 'morsure')).toBe(false); // Trait retiré
   });
 });

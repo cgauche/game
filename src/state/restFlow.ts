@@ -319,7 +319,7 @@ registerCascadeApplier('contagion', (_get, _set, step, hero) => {
 
 /** Valeur de Calme d'un héros (LDB 21 : FM effective + avances de Calme) — cible du jet de cauchemars. */
 function calmeVal(c: Combatant): number {
-  return effectiveChar(c, 'FM') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('calme'))?.advances ?? 0);
+  return effectiveChar(c, 'FM') + (c.skills?.find((s) => s.skillId === 'calme')?.advances ?? 0);
 }
 
 /** Icône d'étape de cascade par `kind` de Test d'entretien différé. */

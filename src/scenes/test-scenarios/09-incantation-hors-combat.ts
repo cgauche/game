@@ -1,14 +1,17 @@
 import { makePregens } from '../../data/pregens';
 import { arena } from './_shared';
+import { findSkill } from '../../data';
+import { slugId } from '../../data/slug';
 import type { TestScenario } from './_shared';
 import type { Combatant, CharKey } from '../../engine/types';
 
 /** Garantit qu'un héros peut TENTER une Compétence d'incantation (avancée ≥ 1, LDB 09-Compétences) —
  *  fixture de vérif : un pré-tiré peut avoir la Compétence à 0 avance (donc non tentable). */
 function ensureSkill(h: Combatant, name: string, characteristic: CharKey, spec?: string) {
-  const sk = h.skills.find((s) => s.name === name && (spec == null || s.spec === spec));
+  const skillId = findSkill(name)?.id ?? slugId(name);
+  const sk = h.skills.find((s) => s.skillId === skillId && (spec == null || s.spec === spec));
   if (sk) sk.advances = Math.max(sk.advances, 5);
-  else h.skills.push({ name, spec, characteristic, advances: 5 });
+  else h.skills.push({ skillId, spec, characteristic, advances: 5 });
 }
 
 const scene = arena({ id: 'test-magie-hors-combat', nom: 'Magie — incantation hors combat', w: 14, h: 9, heroStart: { x: 2, y: 4 } });

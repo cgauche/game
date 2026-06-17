@@ -10,6 +10,7 @@
  * Node pur) en porte un miroir JS — garder les deux alignés.
  */
 import type { CustomStatblock, EncounterDef, EncounterMember, EntityAppearance, Effect, SceneEntity } from './scene';
+import type { TraitInstance } from '../engine/statEntry';
 import type { Dir8 } from './dir8';
 
 export interface AuthoredEnemy {
@@ -26,7 +27,7 @@ export interface AuthoredEnemy {
   mount?: boolean;
   /** Index (dans `enemies`) de la monture chevauchée au spawn. */
   rides?: number;
-  optionals?: string[];
+  optionals?: TraitInstance[];
   spells?: string[];
   randomChars?: boolean;
   /** Surcharge la visibilité de la rencontre pour CET ennemi. */

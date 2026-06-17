@@ -231,7 +231,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
   it('couvre les types de rencontre ÉTENDUS : Surprise/embuscade, Nuée (statbloc), Terreur, Test interactif', () => {
     const encs = project.flatMap((s) => s.encounters);
     expect(encs.some((e) => e.surprise === 'party')).toBe(true); // embuscade
-    expect(ALL_ENEMIES.some((en) => (en.statblock?.traits ?? []).includes('Nuée'))).toBe(true); // Nuée = statbloc custom
+    expect(ALL_ENEMIES.some((en) => (en.statblock?.traits ?? []).some((t) => t.id === 'nuee'))).toBe(true); // Nuée = statbloc custom
     expect(ALL_ENEMIES.some((en) => en.ref === 'Spectre de cairn')).toBe(true); // créature Terreur
     const hub = project.find((s) => s.id === 'arene-hub')!;
     const hasTest = hub.dialogues.some((d) => d.nodes.some((n) => n.choices.some((c) => c.flow && flowHasTest(c.flow))));
@@ -246,7 +246,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
   it('FINALE : un boss MONSTRUEUX (4×4) au SOUFFLE de ténèbres (statbloc inline)', () => {
     const dragon = ALL_ENEMIES.find((e) => e.statblock?.size === 'monstrueuse');
     expect(dragon, 'un ennemi de Taille Monstrueuse').toBeTruthy();
-    expect((dragon!.statblock!.traits ?? []).some((t) => /Souffle/i.test(t))).toBe(true); // attaque de Souffle
+    expect((dragon!.statblock!.traits ?? []).some((t) => t.id === 'souffle')).toBe(true); // attaque de Souffle
   });
 
   it('chaque zone est UNIQUE : terrains de base distincts (campagne démo)', () => {

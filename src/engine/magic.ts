@@ -25,7 +25,8 @@ import { Formula, resolveFormula } from './ops';
 import { domainMissileMods } from './domainAttributes';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
 import { Combatant, HitLocation, Difficulty, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from './types';
-import { findTalent } from '../data';
+import { findTalent, findTalentById, findSkill } from '../data';
+import { slugId } from '../data/slug';
 
 /** Sous-ensemble des champs de sort nécessaires au moteur (cf. src/data/spells.json). */
 export interface SpellLike {
@@ -40,7 +41,8 @@ export interface SpellLike {
 
 /** Le personnage possède-t-il le Talent nommé ? (Diction instinctive, Harmonisation aethyrique…) */
 export function hasTalent(c: Combatant, name: string): boolean {
-  return c.talents.some((t) => t.name === name && (t.times ?? 1) >= 1);
+  const id = findTalent(name)?.id ?? slugId(name);
+  return c.talents.some((t) => t.talentId === id && (t.times ?? 1) >= 1);
 }
 
 /** Branche d'incantation déduite du type de sort. */
@@ -101,8 +103,9 @@ export function prayerMaxZeroDR(c: Combatant): boolean {
 export function castingValue(c: Combatant, skillName: string, spec?: string): number {
   const charKey = skillName === 'Prière' ? 'Soc' : skillName === 'Focalisation' ? 'FM' : 'Int';
   const base = effectiveChar(c, charKey);
+  const sid = findSkill(skillName)?.id ?? slugId(skillName);
   const sk = c.skills.find(
-    (s) => s.name === skillName && (spec == null || s.spec === spec),
+    (s) => s.skillId === sid && (spec == null || s.spec === spec),
   );
   const penalty = skillName === 'Prière' || skillName === 'Langue' || skillName === 'Focalisation'
     ? castPenaltyMod(c, skillName)
@@ -120,8 +123,8 @@ export function castingValue(c: Combatant, skillName: string, spec?: string): nu
  */
 export function armourCastDRPenalty(c: Combatant): number {
   // Le talent spécialisé est stocké « Magie des Arcanes (Métal) » (nom complet).
-  const ignoreMetal = c.talents.some((t) => /^Magie des Arcanes \(M[ée]tal\)$/.test(t.name));
-  const ignoreLeather = c.talents.some((t) => /^Magie des Arcanes \(Bêtes?\)$/.test(t.name));
+  const ignoreMetal = c.talents.some((t) => t.talentId === 'magie-des-arcanes' && /^M[ée]tal$/.test(t.spec ?? ''));
+  const ignoreLeather = c.talents.some((t) => t.talentId === 'magie-des-arcanes' && /^Bêtes?$/.test(t.spec ?? ''));
   let maxPA = 0;
   for (const it of c.items ?? []) {
     if (!it.equipped || it.kind !== 'armor' || !it.pa) continue;
@@ -147,7 +150,7 @@ export function focusSpecOf(spell: SpellLike): string | undefined {
 export function focusSkillFor(c: Combatant, spell: SpellLike) {
   const spec = focusSpecOf(spell);
   return c.skills.find(
-    (s) => s.name === 'Focalisation' && s.advances >= 1 && (s.spec == null || spec == null || s.spec === spec),
+    (s) => s.skillId === 'focalisation' && s.advances >= 1 && (s.spec == null || spec == null || s.spec === spec),
   );
 }
 
@@ -163,9 +166,10 @@ export function focusSkillFor(c: Combatant, spell: SpellLike) {
  * sur la Caractéristique seule (castingValue, avances 0).
  */
 export function knowsCastingSkill(c: Combatant, skillName: string, spec?: string): boolean {
-  if (hasTraitKey(c.traits, 'Lanceur de Sorts')) return true;
+  if (hasTraitKey(c.traits, 'lanceur-de-sorts')) return true;
+  const sid = findSkill(skillName)?.id ?? slugId(skillName);
   return c.skills.some(
-    (s) => s.name === skillName && (spec == null || s.spec === spec) && s.advances >= 1,
+    (s) => s.skillId === sid && (spec == null || s.spec === spec) && s.advances >= 1,
   );
 }
 
@@ -205,7 +209,7 @@ export function isMagicMissile(spell: SpellLike): boolean {
 export function castTestTalentDR(c: Combatant, needle: 'Langue (Magick)' | 'Focalisation' | 'Prière'): number {
   let n = 0;
   for (const t of c.talents ?? []) {
-    const data = findTalent(t.name) ?? findTalent(t.name.replace(/\s*\([^)]*\)\s*$/, ''));
+    const data = findTalentById(t.talentId);
     if (data?.test?.toLowerCase().includes(needle.toLowerCase())) n += t.times;
   }
   return n;

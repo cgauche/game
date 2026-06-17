@@ -17,7 +17,7 @@ beforeEach(() => {
 describe('buySpell', () => {
   it('mémorise contre PX (Magie mineure) ; refuse sans PX suffisants', () => {
     const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
-    w.talents.push({ name: 'Magie mineure', times: 1 });
+    w.talents.push({ talentId: 'magie-mineure', times: 1 });
     // Prémisse contrôlée (les stats des pré-tirés évoluent avec la création) : BFM 2, et
     // Wilhelmina connaît déjà 2 sorts mineurs (Fléchette, Choc) = ses BFM inclus au Talent.
     // Le suivant est PAYANT : « Jusqu'à BFM ×1 » (bande inclusive) = 50 PX (LDB 10 l.591).
@@ -26,7 +26,7 @@ describe('buySpell', () => {
     useGame.setState({ party: [w] as Combatant[] });
     useGame.getState().buySpell(w.id, 'Drain');
     const after = useGame.getState().party[0];
-    expect(after.spells).toContain('Drain');
+    expect(after.spells).toContain('drain'); // runtime = id de sort
     expect(after.xp).toBe(10);
     useGame.getState().buySpell(w.id, 'Éblouissant'); // 3 connus → bande ×2 : 100 PX > 10 restants
     expect(useGame.getState().party[0].spells).not.toContain('Éblouissant');
@@ -35,17 +35,17 @@ describe('buySpell', () => {
 
   it('Bénédictions du culte : 0 PX (incluses au Talent Béni)', () => {
     const p = makePregens().find((h) => h.name === 'Frère Anselm')!;
-    p.talents.push({ name: 'Béni (Sigmar)', times: 1 });
+    p.talents.push({ talentId: 'beni', spec: 'Sigmar', times: 1 });
     p.xp = 0;
     useGame.setState({ party: [p] as Combatant[] });
     useGame.getState().buySpell(p.id, 'Bénédiction de Puissance'); // Sigmar (LDB 41)
-    expect(useGame.getState().party[0].spells).toContain('Bénédiction de Puissance');
+    expect(useGame.getState().party[0].spells).toContain('benediction-de-puissance'); // id de sort
     expect(useGame.getState().party[0].xp).toBe(0);
   });
 
   it('sort de Magie du Chaos : 100 PX ET +1 Point de Corruption', () => {
     const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
-    w.talents.push({ name: 'Magie du Chaos (Nurgle)', times: 1 });
+    w.talents.push({ talentId: 'magie-du-chaos', spec: 'Nurgle', times: 1 });
     w.xp = 200;
     useGame.setState({ party: [w] as Combatant[] });
     const chaos = 'Flot de corruption';
@@ -65,7 +65,7 @@ describe('Effet learnSpell (trouvaille de campagne)', () => {
   it('apprend SANS PX au héros au Talent éligible', () => {
     const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
     const other = makePregens().find((h) => h.name === 'Sigmund Reikhardt')!;
-    w.talents.push({ name: 'Magie des Arcanes (Feu)', times: 1 }); // rend le sort d'Arcane apprenable
+    w.talents.push({ talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 }); // rend le sort d'Arcane apprenable
     w.xp = 0;
     useGame.setState({ party: [other, w] as Combatant[] });
     applyEffects(useGame.getState, useGame.setState, [{ type: 'learnSpell', spell: 'Arme aethyrique' }]);
@@ -92,7 +92,7 @@ describe('lecture au grimoire — NI doublé dans le flux', () => {
 
   it('avec grimoire porté + Domaine : pendingCast.grimoire posé', () => {
     const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
-    w.talents.push({ name: 'Magie des Arcanes (Feu)', times: 1 });
+    w.talents.push({ talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 });
     w.spells = (w.spells ?? []).filter((s) => s !== 'Arme aethyrique');
     w.items = [...(w.items ?? []), { uid: 'g1', name: 'Grimoire', kind: 'misc', enc: 1, qualities: [] } as never];
     useGame.setState({ party: [w] as Combatant[] });

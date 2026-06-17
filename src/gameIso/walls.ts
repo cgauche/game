@@ -1,4 +1,4 @@
-import { tileCenter, tileEdge, depth, type Dims } from './iso';
+import { tileCenter, tileEdge, depth, isSquareView, type Dims } from './iso';
 import type { Scene, WallSeg } from '../state/scene';
 
 /** Hauteur écran (px) d'une cloison dressée sur une arête. */
@@ -55,7 +55,7 @@ function topWall(w: WallSeg, a: P, b: P, dims: Dims): { d: number; svg: string }
  *  profondeur, pour le tri global de IsoStage. Une PORTE est ajourée (ouverture basse + linteau). */
 export function wallSeg(w: WallSeg, dims: Dims): { d: number; svg: string } {
   const [a, b] = edgeEnds(w, dims);
-  if (dims.view === 'top') return topWall(w, a, b, dims); // vue du dessus : trait sur l'arête, pas d'extrusion
+  if (isSquareView(dims.view)) return topWall(w, a, b, dims); // grille carrée : trait sur l'arête, pas d'extrusion
   const H = WALL_H;
   // Palette par orientation (lumière en haut-gauche) : faces N (vers le bas-droit) plus sombres que E.
   const N = w.side === 'N';
@@ -67,10 +67,16 @@ export function wallSeg(w: WallSeg, dims: Dims): { d: number; svg: string } {
 
   if (w.door) {
     const op = H * 0.52; // hauteur de l'ouverture
-    const jamb = (p: P) => `<rect x="${p.cx - 1.5}" y="${p.cy - op}" width="3" height="${op}" fill="#4a3b2a"/>`;
+    // Jambage ENCADRÉ (montant sombre + chapiteau clair) → la porte se lit comme une ouverture cadrée,
+    // pas comme un simple trou (crucial en vue de FACE où l'embrasure n'est plus vue en biais).
+    const jamb = (p: P) =>
+      `<rect x="${p.cx - 1.8}" y="${p.cy - op}" width="3.6" height="${op}" fill="#6e5940"/>` +
+      `<rect x="${p.cx - 1.8}" y="${p.cy - op}" width="3.6" height="1.8" fill="#8a7048"/>`; // chapiteau clair
     const svg = `<g>${post(a, H)}` +
-      `<polygon points="${slab(a, b, op, H)}" fill="${face}" stroke="#2a2118" stroke-width="0.7"/>` + // linteau
-      `<polygon points="${slab(a, b, H * 0.86, H)}" fill="${cap}"/>` +
+      `<polygon points="${slab(a, b, 0, op)}" fill="#15100a" opacity="0.42"/>` + // embrasure ombrée (marque l'ouverture, reste un peu translucide)
+      `<polygon points="${slab(a, b, op, H)}" fill="${face}" stroke="#2a2118" stroke-width="0.7"/>` + // mur au-dessus de la porte
+      `<polygon points="${slab(a, b, op, op + 4)}" fill="#7c6647" stroke="#2a2118" stroke-width="0.5"/>` + // poutre de linteau (claire, contraste sur l'ouverture)
+      `<polygon points="${slab(a, b, H * 0.86, H)}" fill="${cap}"/>` + // corniche
       jamb(a) + jamb(b) +
       `${post(b, H)}</g>`;
     return { d: wallDepth(w, dims), svg };

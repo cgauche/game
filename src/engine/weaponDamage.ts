@@ -20,7 +20,7 @@ function weaponMatchesFamily(w: Weapon | undefined, requires?: string): boolean 
 /** Enchantements actifs du porteur APPLICABLES à l'arme `w` (gatés par `requiresWeapon` — Épée de
  *  justice ne vaut que sur une épée, Morsure de l'hiver une hache, Lance de Myrmidia une lance).
  *  `w` absent (ex. badge de fiche) → on ignore le gating de famille (tous les enchants comptent). */
-function activeEnchantsFor(bearer: Pick<Combatant, 'activeEffects'>, w?: Weapon): WeaponEnchant[] {
+export function activeEnchantsFor(bearer: Pick<Combatant, 'activeEffects'>, w?: Weapon): WeaponEnchant[] {
   return (bearer.activeEffects ?? [])
     .map((e) => e.weaponEnchant)
     .filter((x): x is WeaponEnchant => !!x)
@@ -69,17 +69,6 @@ export function enchantedWeapon(bearer: Pick<Combatant, 'activeEffects'>, w: Wea
   const bypasses = enchants.map((e) => e.bypass).filter((b) => b != null);
   if (bypasses.length) out.bypass = bypasses.includes('all') ? 'all' : bypasses[bypasses.length - 1]; // 'all' prime
   return out;
-}
-
-/** États « à la touche » des enchantements actifs APPLICABLES à `w` (Marteau ardent : En flammes +
- *  À Terre). `onlyGroups` éventuel : le gating de Groupe est appliqué à la résolution (combatFlow). */
-export function enchantOnHitConditions(bearer: Pick<Combatant, 'activeEffects'>, w?: Weapon): { name: string; value?: number; onlyGroups?: string[] }[] {
-  return activeEnchantsFor(bearer, w).flatMap((e) => e.onHitConditions ?? []);
-}
-
-/** Tests « à la touche » gatés par Groupe des enchantements APPLICABLES à `w` (Épée de justice, Morsure de l'hiver). */
-export function enchantOnHitTests(bearer: Pick<Combatant, 'activeEffects'>, w?: Weapon): WeaponEnchant['onHitTest'][] {
-  return activeEnchantsFor(bearer, w).flatMap((e) => (e.onHitTest ? [e.onHitTest] : []));
 }
 
 /** L'arme est-elle réduite à l'état improvisé (bonus de Dégâts à +0 par usure) ? */

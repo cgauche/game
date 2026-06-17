@@ -11,9 +11,9 @@ import type { Combatant } from '../engine/types';
 function priest() {
   const all = makePregens();
   const p = all.find((h) => h.name === 'Frère Anselm')!;
-  const sk = p.skills.find((s) => s.name === 'Prière');
+  const sk = p.skills.find((s) => s.skillId === 'priere');
   if (sk) sk.advances = Math.max(sk.advances, 5);
-  else p.skills.push({ name: 'Prière', characteristic: 'Soc', advances: 5 });
+  else p.skills.push({ skillId: 'priere', characteristic: 'Soc', advances: 5 });
   return p;
 }
 
@@ -35,7 +35,7 @@ describe('gates d\'incantation', () => {
   it('blocage de Focalisation → oocFocusSpell refuse', () => {
     const wiz = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
     wiz.spells = ['Arme aethyrique'];
-    wiz.skills.push({ name: 'Focalisation', characteristic: 'FM', advances: 5 } as never);
+    wiz.skills.push({ skillId: 'focalisation', characteristic: 'FM', advances: 5 } as never);
     wiz.castPenalties = [{ label: 'Vue assombrie', skill: 'Focalisation', blocked: true, roundsLeft: 3 }];
     useGame.setState({ party: [wiz] as Combatant[] });
     useGame.getState().oocFocusSpell(wiz.id, 'Arme aethyrique');

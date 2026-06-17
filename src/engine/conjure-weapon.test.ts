@@ -1,10 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import { applyOps } from './ops';
 import { endOfRound } from './conditions';
-import { effectiveWeaponDamage, enchantOnHitConditions } from './weaponDamage';
+import { effectiveWeaponDamage, activeEnchantsFor } from './weaponDamage';
 import { conjureFormOptions } from './conjuredWeapons';
+import { runSpellFlow } from '../state/combatEffects';
 import { bonus } from './characteristics';
 import type { Combatant } from './types';
+import type { TriggeredEffect } from '../state/flow';
+
+/** `TriggeredEffect` onHit→victim portant `ops` (forme unifiée des onHit d'arme invoquée/enchantée). */
+const onHitFlow = (ops: unknown[]): TriggeredEffect =>
+  ({ trigger: 'onHit', on: 'victim', flow: { kind: 'do', effect: { type: 'ops', on: 'victim', ops } as never } });
 
 /**
  * Armes INVOQUÉES temporaires (op `conjureWeapon`, LDB 47/48) : un OBJET ordinaire `conjured` posé en
@@ -33,7 +39,7 @@ describe('conjureWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)',
   });
 
   it('formes proposées : toutes les armes réelles des Spé connues, « Arme simple » incluse (≠ junk)', () => {
-    const c = mage({ skills: [{ name: 'Corps à corps', spec: 'Base', advances: 10 }] as Combatant['skills'] });
+    const c = mage({ skills: [{ skillId: 'corps-a-corps', spec: 'Base', advances: 10 }] as Combatant['skills'] });
     const labels = conjureFormOptions(c).map((f) => f.weapon);
     expect(labels).toContain('Arme simple'); // arme de base commune (épée/hache/masse/lance courte)
     expect(labels.every((l) => !/bouclier|improvis|mains nues/i.test(l))).toBe(true); // junk exclu
@@ -41,7 +47,7 @@ describe('conjureWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)',
   });
 
   it('forme LIBRE : clone le profil d’une arme RÉELLE de la Spé de Corps à corps choisie', () => {
-    const c = mage({ skills: [{ name: 'Corps à corps', spec: 'Escrime', advances: 10 }] as Combatant['skills'] });
+    const c = mage({ skills: [{ skillId: 'corps-a-corps', spec: 'Escrime', advances: 10 }] as Combatant['skills'] });
     const opt = conjureFormOptions(c)[0]; // arme réelle d'Escrime issue de la base (Rapière…)
     applyOps(c, [{ op: 'conjureWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, qualities: ['Magique'], chooseForm: true }],
       { label: 'Arme aethyrique', defaultDurationRounds: 4, conjureForm: opt });
@@ -97,10 +103,14 @@ describe('conjureWeapon — variantes de domaine (stats fixes du Sort)', () => {
 
   it('Épée ardente de Rhuin : Dégâts +6, Percutante + En flammes à la touche', () => {
     const c = mage();
-    applyOps(c, [{ op: 'conjureWeapon', name: 'Épée ardente de Rhuin', damage: 6, subType: 'Base', reach: 'Moyenne', hands: 1, qualities: ['Magique', 'Percutante'], onHitConditions: [{ name: 'En flammes' }] }],
+    applyOps(c, [{ op: 'conjureWeapon', name: 'Épée ardente de Rhuin', damage: 6, subType: 'Base', reach: 'Moyenne', hands: 1, qualities: ['Magique', 'Percutante'], onHitEffects: [onHitFlow([{ op: 'condition', name: 'En flammes' }])] }],
       { label: "L'Épée ardente de Rhuin", defaultDurationRounds: 4 });
     expect(c.weapons[0].damage).toBe('+6');
     expect(c.weapons[0].qualities).toEqual(expect.arrayContaining(['Magique', 'Percutante']));
-    expect(enchantOnHitConditions(c, c.weapons[0]).some((x) => x.name === 'En flammes')).toBe(true);
+    // L'onHit unifié de l'arme invoquée, exécuté par le dispatcher, applique En flammes à la cible touchée.
+    const eff = activeEnchantsFor(c, c.weapons[0])[0].onHitEffects![0];
+    const victim = mage();
+    runSpellFlow(victim, c, eff.flow, {});
+    expect(victim.conditions.some((x) => x.name === 'En flammes')).toBe(true);
   });
 });

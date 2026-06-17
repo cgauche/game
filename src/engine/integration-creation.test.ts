@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { createHero } from './character';
 import { makeRNG } from './dice';
 import { casterTalents, learnableSpells } from './grimoire';
-import { blessingsOf } from './cults/registry';
+import { blessingsOf, talentConcrete } from '../data';
 import { featuresOf } from './combatFeatures/dispatch';
 import { rationCount, dailyFoodUpkeep } from './provisions';
 import { bonus } from './characteristics';
@@ -43,7 +43,7 @@ describe('création ↔ règles 2.5 (registre combatFeatures, LDB 10)', () => {
       speciesLabel: 'Humains (Reiklander)', careerLabel: 'Ratier', name: 'R', rng: makeRNG(7),
       careerTalent: 'Coup puissant',
     });
-    expect(h.talents.some((t) => t.name === 'Coup puissant')).toBe(true);
+    expect(h.talents.some((t) => talentConcrete(t) === 'Coup puissant')).toBe(true);
     expect(featuresOf(h).some(({ def }) => def.meleeDamageBonus)).toBe(true); // câblé, pas juste affiché
   });
 });

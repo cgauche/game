@@ -1,14 +1,17 @@
 import { makePregens } from '../../data/pregens';
 import { arena, setEncounters } from './_shared';
 import { flowFromEffects } from '../../state/flow';
+import { findSkill } from '../../data';
+import { slugId } from '../../data/slug';
 import type { TestScenario } from './_shared';
 import type { Combatant, CharKey } from '../../engine/types';
 
 /** Garantit qu'un héros peut TENTER une Compétence d'incantation (avancée ≥ 1, LDB 09). */
 function ensureSkill(h: Combatant, name: string, characteristic: CharKey, spec?: string) {
-  const sk = h.skills.find((s) => s.name === name && (spec == null || s.spec === spec));
+  const skillId = findSkill(name)?.id ?? slugId(name);
+  const sk = h.skills.find((s) => s.skillId === skillId && (spec == null || s.spec === spec));
   if (sk) sk.advances = Math.max(sk.advances, 10);
-  else h.skills.push({ name, spec, characteristic, advances: 10 });
+  else h.skills.push({ skillId, spec, characteristic, advances: 10 });
 }
 
 const scene = arena({ id: 'test-magie-jalon2', nom: 'Magie — Jalon 2 (Péché, Corruption, ZdE, Surincantation)', w: 16, h: 10, heroStart: { x: 2, y: 4 } });
@@ -56,7 +59,7 @@ export const scenario: TestScenario = {
     const wiz = P.find((p) => p.name.startsWith('Wilhelmina'))!;
     const priest = P.find((p) => p.name.startsWith('Frère Anselm'))!;
     // Sorcière : Explosion (Projectile ZdE) + un Domaine pour la mémorisation + PX à dépenser.
-    wiz.talents.push({ name: 'Magie des Arcanes (Feu)', times: 1 });
+    wiz.talents.push({ talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 });
     if (!wiz.spells?.includes('Explosion')) wiz.spells = ['Explosion', ...(wiz.spells ?? [])];
     if (!wiz.spells?.includes('Armure Aethyrique')) wiz.spells = ['Armure Aethyrique', ...wiz.spells];
     ensureSkill(wiz, 'Langue', 'Int', 'Magick');

@@ -35,7 +35,7 @@ describe('Entrée en Frénésie du héros — modale (Test de FM)', () => {
 
   it('battleFrenzy ouvre pendingFrenzy (héros capable, pas déjà frenzied, pas acted)', () => {
     const { H } = setup();
-    H.traits = ['Frénésie'];
+    H.traits = [{ id: 'frenesie' }];
     useGame.getState().battleFrenzy();
     const pf = useGame.getState().pendingFrenzy;
     expect(pf).toBeTruthy();
@@ -51,7 +51,7 @@ describe('Entrée en Frénésie du héros — modale (Test de FM)', () => {
 
   it('héros déjà frenzied → battleFrenzy n’ouvre rien', () => {
     const { H } = setup();
-    H.traits = ['Frénésie'];
+    H.traits = [{ id: 'frenesie' }];
     H.frenzied = true;
     useGame.getState().battleFrenzy();
     expect(useGame.getState().pendingFrenzy).toBeNull();
@@ -59,7 +59,7 @@ describe('Entrée en Frénésie du héros — modale (Test de FM)', () => {
 
   it('frenzyRoll lance le Test de FM ; frenzyForceSuccess + frenzyConfirm → frenzied + Action consommée', () => {
     const { H } = setup();
-    H.traits = ['Frénésie'];
+    H.traits = [{ id: 'frenesie' }];
     H.resilience = 1; // Résilience pour forcer le succès
     useGame.getState().battleFrenzy();
     useGame.getState().frenzyRoll();
@@ -76,7 +76,7 @@ describe('Entrée en Frénésie du héros — modale (Test de FM)', () => {
 
   it('frenzyConfirm sur échec → pas frenzied mais Action consommée', () => {
     const { H } = setup();
-    H.traits = ['Frénésie'];
+    H.traits = [{ id: 'frenesie' }];
     H.characteristics.FM = 1; // Test de FM raté quasi sûr
     useGame.getState().seedRng(3);
     useGame.getState().battleFrenzy();

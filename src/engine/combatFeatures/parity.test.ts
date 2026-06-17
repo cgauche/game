@@ -60,6 +60,7 @@ const NARRATIF_MJ = new Set([
   'Combattant au contact', 'Combattant en espace clos', // règles optionnelles (Combat au contact p.297) / espaces clos non modélisés
   'Disciple du changement', 'Double vie', // talents de culte du Chaos (EDO) — Mutation/double carrière, non câblés (classe Chaos hors création joueur)
   "Commandant d'équipe", // Aux Armes : coordonne une équipe d'arme de siège (Projectiles partagés) — lié aux armes d'équipe, non modélisé → narratif/MJ
+  'Officier de Siège', // Aux Armes : bonus aux armes de siège — stub sourcé (mécanique non câblée) → narratif/MJ
 ]);
 
 describe('parité — tout Talent de talents.json est couvert (def, création, ailleurs, ou MJ en conscience)', () => {

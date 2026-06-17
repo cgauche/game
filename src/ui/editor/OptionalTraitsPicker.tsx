@@ -7,9 +7,10 @@
  *    (l'auteur complète l'Indice/la Cible : « Armure 2 », « Haine (Sigmarites) ») ;
  *  - sorts connus (la donnée bestiaire n'en liste pas — choix d'auteur, datalist sur spells.json).
  */
-import { CreatureData, spells } from '../../data';
+import { CreatureData, spells, findSpell, refLabel } from '../../data';
 import { CHAR_KEYS } from '../../engine/types';
-import { traitLabels } from '../../engine/traits/dispatch';
+import { traitLabels, parseTraitInstance, formatTrait } from '../../engine/traits/dispatch';
+import type { TraitInstance } from '../../engine/statEntry';
 
 /** Traits Standard de créature (LDB 76 l.28-31, verbatim) : « Les Traits suivants sont ajoutés à
  *  la liste Facultative de toutes les créatures. » */
@@ -50,26 +51,28 @@ export function OptionalTraitsPicker({
   onChange,
 }: {
   creature: CreatureData;
-  value: string[] | undefined;
-  onChange: (v: string[] | undefined) => void;
+  value: TraitInstance[] | undefined;
+  onChange: (v: TraitInstance[] | undefined) => void;
 }) {
   const chosen = value ?? [];
-  const set = (next: string[]) => onChange(next.length ? next : undefined);
+  const set = (next: TraitInstance[]) => onChange(next.length ? next : undefined);
+  // creature.optionals = TraitInstance[] → libellés pour les suggestions (l'édition reste en chaînes, parsées au choix).
+  const optionLabels = traitLabels(creature.optionals);
   // « Tous les traits » (Mutant) n'est pas une chaîne posable telle quelle → note, pas d'option.
-  const suggested = creature.optionals.filter((o) => !/^tous les traits$/i.test(o));
-  const allTraits = creature.optionals.some((o) => /^tous les traits$/i.test(o));
+  const suggested = optionLabels.filter((o) => !/^tous les traits$/i.test(o));
+  const allTraits = optionLabels.some((o) => /^tous les traits$/i.test(o));
   return (
     <div className="ed-field">
       Traits facultatifs (LDB 76) — éditez la chaîne pour compléter l'Indice/la Cible
       {chosen.map((t, i) => (
         <div key={i} className="trait-row">
-          <input value={t} onChange={(e) => set(chosen.map((x, j) => (j === i ? e.target.value : x)))} />
+          <input value={formatTrait(t)} onChange={(e) => set(chosen.map((x, j) => (j === i ? parseTraitInstance(e.target.value) : x)))} />
           <button className="btn small danger" title="Retirer ce trait facultatif" onClick={() => set(chosen.filter((_, j) => j !== i))}>
             ✕
           </button>
         </div>
       ))}
-      <select value="" onChange={(e) => e.target.value && set([...chosen, e.target.value])}>
+      <select value="" onChange={(e) => e.target.value && set([...chosen, parseTraitInstance(e.target.value)])}>
         <option value="">+ Ajouter un trait facultatif…</option>
         {suggested.length > 0 && (
           <optgroup label={`Facultatifs de ${creature.label}`}>
@@ -93,18 +96,23 @@ export function OptionalTraitsPicker({
   );
 }
 
-/** Sorts connus d'un ennemi (libellés de spells.json, séparés par des virgules) — l'IA incante les
- *  Projectiles magiques connus (combatFlow). Partagé : spawn `ref` (Inspector) et statbloc. */
+/** Sorts connus d'un ennemi (IDS de spells.json) — l'IA incante les Projectiles magiques connus
+ *  (combatFlow). UX inchangée (saisie comma-text par LIBELLÉ via datalist) mais STOCKE des ids
+ *  (multilangue) : affichage id→libellé (`refLabel`), saisie libellé→id (`findSpell`). Partagé :
+ *  spawn `ref` (Inspector) et statbloc. */
 export function SpellsField({ value, onChange }: { value: string[] | undefined; onChange: (v: string[] | undefined) => void }) {
   return (
     <label className="ed-field">
       Sorts connus (séparés par des virgules — l'IA lance les Projectiles magiques, ex. « Fléchette »)
       <input
-        value={(value ?? []).join(', ')}
+        value={(value ?? []).map((id) => refLabel('spells', { id })).join(', ')}
         list="ed-spells-list"
         placeholder="aucun"
         onChange={(e) => {
-          const list = e.target.value.split(',').map((s) => s.trim()).filter(Boolean);
+          const list = e.target.value
+            .split(',')
+            .map((s) => findSpell(s.trim())?.id)
+            .filter((x): x is string => !!x);
           onChange(list.length ? list : undefined);
         }}
       />

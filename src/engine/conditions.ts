@@ -174,7 +174,7 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
     log.push(`${c.name} subit ${poison} Blessure(s) (Empoisonné).`);
     // Test de Résistance en fin de Round → retire 1 + DR États ; une fois tous retirés, 1 Exténué (l.70-72).
     // (Difficulté « dictée par le poison » non modélisée → Intermédiaire +0 par défaut.)
-    const resistVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
+    const resistVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
     const res = rollTest(resistVal, 'intermediaire', rng, combatTestPenalty(c));
     if (res.success) {
       const removed = Math.min(poison, 1 + Math.max(0, res.sl));
@@ -198,7 +198,7 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
   // Le « -10 à tous les Tests » du Sonné s'applique au jet (l.123, via combatTestPenalty).
   const sonne = stacks(c, 'Sonné');
   if (sonne) {
-    const resistVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('résistance'))?.advances ?? 0);
+    const resistVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
     const res = rollTest(resistVal, 'intermediaire', rng, combatTestPenalty(c));
     if (res.success) {
       const removed = Math.min(sonne, 1 + Math.max(0, res.sl));
@@ -262,7 +262,7 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
  * un État **Exténué**. Pur ; mute `c`, renvoie le journal.
  */
 export function nightmareCheck(c: Combatant, rng: RNG = defaultRNG, out?: { base: number; result: TestResult }[]): string[] {
-  const calme = effectiveChar(c, 'FM') + (c.skills?.find((s) => s.name.toLowerCase().startsWith('calme'))?.advances ?? 0);
+  const calme = effectiveChar(c, 'FM') + (c.skills?.find((s) => s.skillId === 'calme')?.advances ?? 0);
   const res = rollTest(calme, 'facile', rng); // Calme Facile (+40), palier canonique
   out?.push({ base: calme, result: res });
   if (res.success) return [`${c.name} dort d'un sommeil sans rêve.`];

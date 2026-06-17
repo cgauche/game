@@ -4,9 +4,20 @@
 import { describe, it, expect } from 'vitest';
 import type { Combatant, ItemInstance } from './types';
 import type { RNG } from './dice';
-import { domainOf, hasArcaneTalent, metalAPAt, domainMissileMods, domainOnHitRiders, ghurFearAfterCast, isLiving } from './domainAttributes';
+import { domainOf, hasArcaneTalent, metalAPAt, domainMissileMods, domainOnHitEffects, domainAfterCast, isLiving } from './domainAttributes';
 import { evaluateMissile } from './magic';
 import { hasCondition, stacks, addCondition } from './conditions';
+import { runSpellFlow } from '../state/combatEffects';
+import { applyTriggeredEffects } from '../state/triggeredEffects';
+import type { Get } from '../state/flowTypes';
+
+/** Applique les riders onHit AUTHORÉS d'un Domaine à `target` (gating par les Conditions Flow, contre
+ *  les vues d'acteur du lanceur/cible). `caster` adverse = camp ≠ (hero vs enemy). */
+const applyDomain = (caster: Combatant, target: Combatant, d: string, rng: RNG = seq([])): string[] => {
+  const lines: string[] = [];
+  for (const eff of domainOnHitEffects({ type: 'Magie des Arcanes', subType: d })) lines.push(...runSpellFlow(target, caster, eff.flow, { rng, caster }));
+  return lines;
+};
 
 function seq(values: number[]): RNG {
   let i = 0;
@@ -38,7 +49,7 @@ describe('domainOf / hasArcaneTalent', () => {
     expect(domainOf({ type: 'Béni', subType: 'Sigmar' })).toBeNull();
   });
   it('talent Magie des Arcanes (X) détecté', () => {
-    const c = mk({ talents: [{ name: 'Magie des Arcanes (Feu)', times: 1 }] as Combatant['talents'] });
+    const c = mk({ talents: [{ talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 }] as Combatant['talents'] });
     expect(hasArcaneTalent(c, 'Feu')).toBe(true);
     expect(hasArcaneTalent(c, 'Cieux')).toBe(false);
   });
@@ -75,63 +86,97 @@ describe('Métal / Cieux / Ombres — mitigation des Projectiles (LDB 48 l.87/30
   });
 });
 
-describe('Riders post-lancement (Feu / Lumière / Mort / Vie)', () => {
-  const spellOf = (d: string) => ({ type: 'Magie des Arcanes', subType: d });
-  it('Feu : +1 En flammes à la cible adverse, sauf Talent Magie des Arcanes (Feu)', () => {
-    const w = mk({ id: 'w' });
-    const t = mk({ id: 't' });
-    domainOnHitRiders(w, t, spellOf('Feu'), true);
+describe('Riders « à la touche » data-driven (Feu / Lumière / Mort / Vie) — gating par Conditions Flow', () => {
+  it('Feu : +1 En flammes à la cible adverse, sauf Talent (Feu) ; pas sur un allié', () => {
+    const w = mk({ id: 'w', kind: 'hero' });
+    const t = mk({ id: 't', kind: 'enemy' });
+    applyDomain(w, t, 'Feu');
     expect(hasCondition(t, 'En flammes')).toBe(true);
-    const immune = mk({ id: 'i', talents: [{ name: 'Magie des Arcanes (Feu)', times: 1 }] as Combatant['talents'] });
-    domainOnHitRiders(w, immune, spellOf('Feu'), true);
+    const immune = mk({ id: 'i', kind: 'enemy', talents: [{ talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 }] as Combatant['talents'] });
+    applyDomain(w, immune, 'Feu');
     expect(hasCondition(immune, 'En flammes')).toBe(false);
-    const ally = mk({ id: 'a' });
-    domainOnHitRiders(w, ally, spellOf('Feu'), false); // « vous pouvez » — pas sur un allié
+    const ally = mk({ id: 'a', kind: 'hero' }); // même camp que le lanceur → pas adversaire
+    applyDomain(w, ally, 'Feu');
     expect(hasCondition(ally, 'En flammes')).toBe(false);
   });
   it('Lumière : Aveuglé + frappe BInt ignorant BE/PA sur un Mort-vivant', () => {
-    const w = mk({ id: 'w' }); // BInt 4
-    const z = mk({ id: 'z', traits: ['Mort-vivant'], wounds: { current: 10, max: 10 } as Combatant['wounds'] });
-    const lines = domainOnHitRiders(w, z, spellOf('Lumière'), true);
+    const w = mk({ id: 'w', kind: 'hero' }); // BInt 4
+    const z = mk({ id: 'z', kind: 'enemy', traits: [{ id: 'mort-vivant' }], wounds: { current: 10, max: 10 } as Combatant['wounds'] });
+    applyDomain(w, z, 'Lumière');
     expect(hasCondition(z, 'Aveuglé')).toBe(true);
     expect(z.wounds.current).toBe(6); // 4 = BInt, ignore BE+PA
-    expect(lines.join(' ')).toMatch(/lumière pure/);
   });
-  it('Mort : +1 Exténué aux vivants, UNE seule fois (marqueur shyishExhausted)', () => {
-    const w = mk({ id: 'w' });
-    const t = mk({ id: 't' });
-    domainOnHitRiders(w, t, spellOf('Mort'), true);
-    domainOnHitRiders(w, t, spellOf('Mort'), true);
+  it('Mort : +1 Exténué aux vivants adverses, UNE seule fois (pas déjà Exténué)', () => {
+    const w = mk({ id: 'w', kind: 'hero' });
+    const t = mk({ id: 't', kind: 'enemy' });
+    applyDomain(w, t, 'Mort');
+    applyDomain(w, t, 'Mort');
     expect(stacks(t, 'Exténué')).toBe(1);
-    const z = mk({ id: 'z', traits: ['Mort-vivant'] });
+    const z = mk({ id: 'z', kind: 'enemy', traits: [{ id: 'mort-vivant' }] });
     expect(isLiving(z)).toBe(false);
-    domainOnHitRiders(w, z, spellOf('Mort'), true);
+    applyDomain(w, z, 'Mort');
     expect(stacks(z, 'Exténué')).toBe(0); // « cible vivante » seulement
   });
   it('Vie : purge Exténué/Hémorragique des vivants ; +BFM ignore BE/PA aux Morts-vivants', () => {
-    const w = mk({ id: 'w' }); // BFM 4
-    const ally = mk({ id: 'a' });
+    const w = mk({ id: 'w', kind: 'hero' }); // BFM 4
+    const ally = mk({ id: 'a', kind: 'hero' });
     addCondition(ally, 'Exténué', 2);
     addCondition(ally, 'Hémorragique', 3);
-    domainOnHitRiders(w, ally, spellOf('Vie'), false);
+    applyDomain(w, ally, 'Vie');
     expect(stacks(ally, 'Exténué')).toBe(0);
     expect(stacks(ally, 'Hémorragique')).toBe(0);
-    const z = mk({ id: 'z', traits: ['Mort-vivant'], wounds: { current: 10, max: 10 } as Combatant['wounds'] });
-    domainOnHitRiders(w, z, spellOf('Vie'), true);
+    const z = mk({ id: 'z', kind: 'enemy', traits: [{ id: 'mort-vivant' }], wounds: { current: 10, max: 10 } as Combatant['wounds'] });
+    applyDomain(w, z, 'Vie');
     expect(z.wounds.current).toBe(6);
+  });
+});
+
+describe('Cieux — arc d’Azyr (LDB 48 l.87) : géométrie on:{near} + bypass métal', () => {
+  // « se dirigent vers toutes les autres cibles dans les 2 mètres, à l’exception de ceux possédant le
+  //   Talent Magie des Arcanes (Cieux), infligeant un nombre de Dégâts égal à votre BFM ». L’effet est
+  //   une GÉOMÉTRIE (`on:{near:'victim',radiusMeters:2}`) résolue par `applyTriggeredEffects` (≠ runSpellFlow
+  //   direct des autres riders) : il faut un `battle` (positions) pour exercer le ciblage de zone + le bypass.
+  const at = (over: Partial<Combatant>, x: number, y: number): Combatant =>
+    mk({ ...over, pos: { x, y } } as Partial<Combatant>);
+
+  it('arc vers les voisins (≤2 m) en perçant le métal ; épargne le Talent (Cieux), la victime, les lointains', () => {
+    const caster = mk({ id: 'w', kind: 'hero', pos: { x: 0, y: 0 } } as Partial<Combatant>); // BFM 4
+    const victim = at({ id: 'v', kind: 'enemy' }, 5, 5);
+    // voisin en mailles (métal) : l’arc perce les PA métalliques → BFM(4) − BE(2) − 0 = 2 Blessures.
+    const nearMail = at({ id: 'n', kind: 'enemy', items: [mail(4)],
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 4, jambeG: 0, jambeD: 0 } as Combatant['armour'],
+      characteristics: { ...mk().characteristics, E: 20 } as Combatant['characteristics'] }, 6, 5);
+    // voisin en cuir (non-métal) : rien n’est percé → BFM(4) − BE(2) − PA(4) = 0, l’armure tient.
+    const nearLeather = at({ id: 'l', kind: 'enemy', items: [leather(4)],
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 4, jambeG: 0, jambeD: 0 } as Combatant['armour'],
+      characteristics: { ...mk().characteristics, E: 20 } as Combatant['characteristics'] }, 5, 6);
+    // voisin avec le Talent (Cieux) : exempté par la Condition Flow `has talent`.
+    const nearTalent = at({ id: 't', kind: 'enemy',
+      talents: [{ talentId: 'magie-des-arcanes', spec: 'Cieux', times: 1 }] as Combatant['talents'] }, 4, 5);
+    const farFoe = at({ id: 'f', kind: 'enemy' }, 9, 5); // >2 m → hors arc
+
+    const all = [caster, victim, nearMail, nearLeather, nearTalent, farFoe];
+    const get = (() => ({ battle: { combatants: all } })) as unknown as Get;
+    applyTriggeredEffects(get, caster, domainOnHitEffects({ type: 'Magie des Arcanes', subType: 'Cieux' }), 'onHit', { victim });
+
+    expect(nearMail.wounds.current).toBe(10);   // 12 − 2 : métal percé
+    expect(nearLeather.wounds.current).toBe(12); // armure non-métal intacte
+    expect(nearTalent.wounds.current).toBe(12);  // Talent (Cieux) → exempté
+    expect(victim.wounds.current).toBe(12);      // l’arc vise « les AUTRES cibles », pas la victime
+    expect(farFoe.wounds.current).toBe(12);      // hors des 2 m
   });
 });
 
 describe('Bête — Peur 1 pour 1d10 Rounds après un Sort de la Bête réussi (LDB 48 l.9)', () => {
   it('pose le Trait + l’effet porteur à la durée tirée', () => {
     const w = mk({ id: 'w', traits: [] });
-    const lines = ghurFearAfterCast(w, { type: 'Magie des Arcanes', subType: 'Bête' }, seq([7]));
-    expect(w.traits).toContain('Peur 1');
-    expect(w.activeEffects?.[0]).toMatchObject({ grantedTrait: 'Peur 1', roundsLeft: 7 });
+    const lines = domainAfterCast(w, { type: 'Magie des Arcanes', subType: 'Bête' }, seq([7]));
+    expect(w.traits).toContainEqual({ id: 'peur', value: 1 });
+    expect(w.activeEffects?.[0]).toMatchObject({ grantedTrait: { id: 'peur', value: 1 }, roundsLeft: 7 });
     expect(lines.join(' ')).toMatch(/Peur 1 pendant 7/);
   });
   it('aucun effet pour un autre Domaine', () => {
     const w = mk({ id: 'w' });
-    expect(ghurFearAfterCast(w, { type: 'Magie des Arcanes', subType: 'Feu' }, seq([7]))).toEqual([]);
+    expect(domainAfterCast(w, { type: 'Magie des Arcanes', subType: 'Feu' }, seq([7]))).toEqual([]);
   });
 });

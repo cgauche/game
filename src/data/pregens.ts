@@ -9,6 +9,7 @@
 import { Combatant } from '../engine/types';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
+import { findSpell } from './index';
 import pregensJson from './pregens.json';
 
 interface PregenDef {
@@ -44,7 +45,7 @@ export function makePregens(): Combatant[] {
         rng: makeRNG(d.seed),
         id: `pregen-${d.seed}`,
       });
-      if (d.spells?.length) hero.spells = [...d.spells];
+      if (d.spells?.length) hero.spells = d.spells.map((l) => findSpell(l)?.id ?? l); // libellés (def) → ids runtime
       hero.appearance = { species: d.species, sex: d.sex ?? 'M', build: d.build ?? 0.5 };
       out.push(hero);
     } catch (e) {

@@ -18,7 +18,9 @@
  */
 import type { Effect, TemporalCondition } from './scene';
 import { toDate } from '../engine/clock';
-import type { CharKey, Difficulty } from '../engine/types';
+import type { CharKey, Difficulty, HitLocation } from '../engine/types';
+import type { Camp, Relation } from '../engine/relations';
+import { groupMatch } from '../engine/groups';
 
 /** Algèbre CLOSE de Conditions (sérialisation-stable). `flag`/`time` reprennent la sémantique des
  *  anciens `condMet`/`temporalConditionMet` ; `all`/`any` composent ; `not` nie. Aucune condition
@@ -26,6 +28,10 @@ import type { CharKey, Difficulty } from '../engine/types';
 /** Bourse (sous-ensemble de `Money`) — comparée en sous de bronze (1 CO = 240 sb, 1 pa = 12 sb). */
 export interface Purse { gold?: number; silver?: number; brass?: number }
 const brassValue = (m: Purse): number => (m.gold ?? 0) * 240 + (m.silver ?? 0) * 12 + (m.brass ?? 0);
+
+/** Applique un opérateur de comparaison — SOURCE UNIQUE pour les Conditions `compare` et `woundsDealt`. */
+const applyCompareOp = (a: number, op: CompareOp, b: number): boolean =>
+  op === '>=' ? a >= b : op === '<=' ? a <= b : op === '==' ? a === b : op === '<' ? a < b : a > b;
 
 /** Acteur d'un Flow visé par une comparaison : la CIBLE (l'unité affectée) ou le LANCEUR/porteur. */
 export type ActorRef = 'target' | 'caster';
@@ -36,8 +42,13 @@ export type ActorField = 'woundsCurrent' | 'woundsMax' | 'size' | 'advantage';
 export type CompareSubject = { who: ActorRef; field: ActorField } | { who: ActorRef; condition: string };
 /** Opérateur de comparaison (Condition `compare`). */
 export type CompareOp = '>=' | '<=' | '==' | '<' | '>';
-/** Vue d'un acteur lue par `compare` (PB + Taille/Avantage + valeur d'États par nom). */
-export interface ActorView { woundsCurrent: number; woundsMax: number; size: number; advantage: number; conditions: Record<string, number> }
+/** Vue d'un acteur lue par les Conditions d'acteur (`compare`/`relation`/`has`) : id + PB + Taille/
+ *  Avantage + camp + appartenances (Groupes/Talents/Traits) + valeur d'États par nom. */
+export interface ActorView {
+  id: string; woundsCurrent: number; woundsMax: number; size: number; advantage: number; camp: Camp;
+  groups: string[]; talents: { id: string; spec?: string }[]; traits: string[];
+  conditions: Record<string, number>;
+}
 
 export type Condition =
   | { kind: 'always' }
@@ -60,7 +71,22 @@ export type Condition =
   /** Seuil de MARGE / DR du contexte (`ctx.sl`) : vrai si `sl ≥ atLeast`. Permet d'authorer les issues
    *  échelonnées d'une manœuvre (Regard pétrifiant : « si la marge atteint 6 DR → Pétrifié », LDB 85
    *  l.238) en GameOp Flow — `if slThreshold(6) → … else if slThreshold(2) → …`. Hors contexte = 0. */
-  | { kind: 'slThreshold'; atLeast: number }
+  | { kind: 'slThreshold'; op: CompareOp; value: number }
+  /** Localisation touchée par l'attaque courante (`ctx.location`, dé inversé) — Assommante : « si vous
+   *  touchez la Tête… ». Hors contexte d'attaque (location absente) = jamais vrai. */
+  | { kind: 'location'; is: HitLocation }
+  /** Blessures infligées par l'attaque/lancement courant (`ctx.woundsDealt`), comparées par `op` à
+   *  `value` (Venin : `> 0` → Empoisonné ; un rider « coup lourd » : `>= 3`). Hors contexte = 0. */
+  | { kind: 'woundsDealt'; op: CompareOp; value: number }
+  /** Camp / RELATION d'un acteur (`who`) — gate « seulement les ennemis / les alliés / les neutres »
+   *  (riders de domaine offensifs : `who:'target', is:'opponent'`). `ally`/`opponent` sont RELATIFS à
+   *  l'autre acteur (même camp / camp différent) ; `party`/`neutral`/`hostile` sont ABSOLUS (le `kind`).
+   *  Acteur(s) absent(s) = false. */
+  | { kind: 'relation'; who: ActorRef; is: Relation | Camp }
+  /** L'acteur (`who`) POSSÈDE un élément : appartenance à un **Groupe** (faction, via `groupMatch`),
+   *  un **Talent** (par id, `spec` éventuel — « Magie des Arcanes (Feu) »), ou un **Trait** (par id).
+   *  Généralise les gates op-level `onlyGroups`/`unlessImmune`. Acteur absent = false. */
+  | { kind: 'has'; who: ActorRef; what: 'group' | 'talent' | 'trait'; value: string; spec?: string }
   | { kind: 'all'; of: Condition[] }
   | { kind: 'any'; of: Condition[] }
   | { kind: 'not'; of: Condition };
@@ -78,6 +104,10 @@ export interface ConditionCtx {
   caster?: ActorView;
   /** Marge / DR du contexte (jet d'incantation, opposition de manœuvre) — lu par `slThreshold`. */
   sl?: number;
+  /** Localisation de la touche courante (dé inversé) — lue par la Condition `location`. */
+  location?: HitLocation;
+  /** Blessures infligées par l'attaque courante — lue par la Condition `woundsDealt`. */
+  woundsDealt?: number;
 }
 
 /** Évalue une Condition — SOURCE UNIQUE de l'évaluation des conditions (triggers, choix de dialogue,
@@ -118,9 +148,28 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
       const lhs = read(s.who, s);
       const rhs = typeof cond.value === 'number' ? cond.value : read(cond.value.who, { field: cond.value.field });
       if (lhs == null || rhs == null) return false; // acteur absent → false
-      return cond.op === '>=' ? lhs >= rhs : cond.op === '<=' ? lhs <= rhs : cond.op === '==' ? lhs === rhs : cond.op === '<' ? lhs < rhs : lhs > rhs;
+      return applyCompareOp(lhs, cond.op, rhs);
     }
-    case 'slThreshold': return (ctx.sl ?? 0) >= cond.atLeast;
+    case 'slThreshold': return applyCompareOp(ctx.sl ?? 0, cond.op, cond.value);
+    case 'location': return ctx.location != null && ctx.location === cond.is;
+    case 'woundsDealt': return applyCompareOp(ctx.woundsDealt ?? 0, cond.op, cond.value);
+    case 'relation': {
+      const a = cond.who === 'caster' ? ctx.caster : ctx.target;
+      if (!a) return false;
+      if (cond.is === 'party' || cond.is === 'neutral' || cond.is === 'hostile') return a.camp === cond.is; // camp ABSOLU
+      const other = cond.who === 'caster' ? ctx.target : ctx.caster; // RELATIF à l'autre acteur
+      if (!other) return false;
+      if (cond.is === 'self') return a.id === other.id;
+      if (cond.is === 'ally') return a.camp === other.camp && a.id !== other.id; // même camp, pas soi-même
+      return a.camp !== other.camp; // 'opponent'
+    }
+    case 'has': {
+      const a = cond.who === 'caster' ? ctx.caster : ctx.target;
+      if (!a) return false;
+      if (cond.what === 'group') return groupMatch(cond.value, a.groups);
+      if (cond.what === 'talent') return a.talents.some((t) => t.id === cond.value && (!cond.spec || t.spec === cond.spec));
+      return a.traits.includes(cond.value);
+    }
     case 'all': return cond.of.every((c) => evalCondition(c, ctx));
     case 'any': return cond.of.some((c) => evalCondition(c, ctx));
     case 'not': return !evalCondition(cond.of, ctx);
@@ -178,9 +227,13 @@ export type EffectTrigger = 'onHit' | 'onWoundLoss' | 'onRoundStart' | 'onStartl
  *  (Atout d'arme : « à la touche, 1d10 + Empêtré »). Même vocabulaire que les sorts (réutilise
  *  `runSpellFlow`/`applyOps`) → plus de handler en dur. `on` : le porteur lui-même (`self`), la victime
  *  touchée (`victim`), ou les adversaires Engagés du porteur (`engaged`). */
+/** CIBLE(S) d'un effet déclenché : le porteur (`self`), la victime touchée (`victim`), les adversaires
+ *  Engagés (`engaged`), ou — géométrie — TOUS les combattants à `radiusMeters` d'un centre (l'arc d'Azyr :
+ *  `{ near: 'victim', radiusMeters: 2 }`). Le centre lui-même et le porteur sont exclus. */
+export type EffectTargeting = 'self' | 'victim' | 'engaged' | { near: 'victim' | 'self'; radiusMeters: number };
 export interface TriggeredEffect {
   trigger: EffectTrigger;
-  on: 'self' | 'victim' | 'engaged';
+  on: EffectTargeting;
   flow: Flow;
 }
 

@@ -100,7 +100,7 @@ describe('effets de mutation lus à la volée', () => {
     expect(mutationArmourBonus(c, 'corps')).toBe(1);
   });
   it('mods de Tests : compétence nommée + Tests d\'une caractéristique (testValue)', () => {
-    const c = hero({ skills: [{ name: 'Pistage', advances: 5 } as never, { name: 'Charme', advances: 0 } as never] });
+    const c = hero({ skills: [{ skillId: 'pistage', advances: 5 } as never, { skillId: 'charme', advances: 0 } as never] });
     attachMutation(c, { label: 'Groin poilu', kind: 'physique', roll: 93, passive: [{ op: 'skillMod', skill: 'pistage', mod: 10 }] });
     attachMutation(c, { label: 'Visage inversé', kind: 'physique', roll: 53, passive: [{ op: 'testMod', amount: -20, char: 'Soc' }] });
     expect(passiveSkillSum(c, 'Pistage')).toBe(10); // compétence nommée → collecteur passif (Σ, intrinsèque)
@@ -109,9 +109,9 @@ describe('effets de mutation lus à la volée', () => {
   });
   it('attachMutation pousse les Traits dérivés (créature + psychologie)', () => {
     const c = hero();
-    attachMutation(c, { label: 'Tentacule épais', kind: 'physique', roll: 38, traits: ['Tentacules'] });
+    attachMutation(c, { label: 'Tentacule épais', kind: 'physique', roll: 38, traits: [{ id: 'tentacules' }] });
     attachMutation(c, { label: 'Colère impie', kind: 'mentale', roll: 93, psychTraits: [{ type: 'frenesie' }] });
-    expect(c.traits).toContain('Tentacules');
+    expect(c.traits).toContainEqual({ id: 'tentacules' });
     expect(c.psychTraits?.some((t) => t.type === 'frenesie')).toBe(true);
   });
 });

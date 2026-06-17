@@ -39,13 +39,13 @@ describe('Formula {indiceOf} — Dégâts « Indice » en GameOp', () => {
 
 describe('Condition {slThreshold} — issue échelonnée sur la marge', () => {
   it('vrai si ctx.sl ≥ atLeast', () => {
-    expect(evalCondition({ kind: 'slThreshold', atLeast: 6 }, { flags: {}, gameTime: 0, sl: 6 })).toBe(true);
-    expect(evalCondition({ kind: 'slThreshold', atLeast: 6 }, { flags: {}, gameTime: 0, sl: 5 })).toBe(false);
-    expect(evalCondition({ kind: 'slThreshold', atLeast: 6 }, { flags: {}, gameTime: 0 })).toBe(false); // sl absent = 0
+    expect(evalCondition({ kind: 'slThreshold', op: '>=', value: 6 }, { flags: {}, gameTime: 0, sl: 6 })).toBe(true);
+    expect(evalCondition({ kind: 'slThreshold', op: '>=', value: 6 }, { flags: {}, gameTime: 0, sl: 5 })).toBe(false);
+    expect(evalCondition({ kind: 'slThreshold', op: '>=', value: 6 }, { flags: {}, gameTime: 0 })).toBe(false); // sl absent = 0
   });
   it('Flow if(slThreshold) branche sur la marge (Regard : ≥6 → Pétrifié)', () => {
     const flow: Flow = {
-      kind: 'if', cond: { kind: 'slThreshold', atLeast: 6 },
+      kind: 'if', cond: { kind: 'slThreshold', op: '>=', value: 6 },
       then: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', name: 'Pétrifié' }] } },
       else: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', name: 'Sonné' }] } },
     };

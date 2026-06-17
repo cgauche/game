@@ -8,9 +8,8 @@ import type { CharKey, Combatant } from '../types';
 import { TRAITS, TraitDef } from './registry';
 import { parseStatEntry, type TraitInstance, type TraitList } from '../statEntry';
 import { traitByLabel } from '../../data';
+import { slugId } from '../../data/slug';
 import type { PassiveMod } from '../ops';
-
-const KEY_BY_LOWER = new Map(Object.keys(TRAITS).map((k) => [k.toLowerCase(), k]));
 
 /**
  * Libellés canoniques des traits HORS registre `defs/` : attaques naturelles (lues par
@@ -29,18 +28,30 @@ export const EXTRA_TRAIT_LABELS = [
   'Infecté', 'Maladie', 'Corruption',
 ];
 
-/** Canonicalisation UNIQUE des clés de trait : registre `defs/` + libellés hors registre, casse ignorée. */
+/** Résolution UNIQUE libellé (casse ignorée) → `id` STABLE (slug) : dataset `traits.json`, registre
+ *  `defs/` (`def.key` = libellé), et libellés hors registre. Source unique de l'import label→id. */
 const CANON_BY_LOWER = new Map<string, string>([
-  ...Object.keys(TRAITS).map((k) => [k.toLowerCase(), k] as const),
-  ...EXTRA_TRAIT_LABELS.map((k) => [k.toLowerCase(), k] as const),
+  ...[...traitByLabel.keys()].map((label) => [label.toLowerCase(), slugId(label)] as const),
+  ...Object.values(TRAITS).map((d) => [d.key.toLowerCase(), slugId(d.key)] as const),
+  ...EXTRA_TRAIT_LABELS.map((label) => [label.toLowerCase(), slugId(label)] as const),
 ]);
+
+/** Inverse : `id` → libellé FR canonique (affichage : inspecteur/Codex/éditeur). Même couverture. */
+const LABEL_BY_ID = new Map<string, string>([
+  ...[...traitByLabel.keys()].map((label) => [slugId(label), label] as const),
+  ...Object.values(TRAITS).map((d) => [slugId(d.key), d.key] as const),
+  ...EXTRA_TRAIT_LABELS.map((label) => [slugId(label), label] as const),
+]);
+
+/** Libellé FR d'un trait par son `id` (repli sur l'id si inconnu). */
+export const traitLabelById = (id: string): string => LABEL_BY_ID.get(id) ?? id;
 
 /** IMPORT (saisie éditeur / migration JSON) : chaîne de statbloc → trait STRUCTURÉ. La clé est
  *  canonicalisée sur le registre (« morsure » → « Morsure ») ; sinon le nom brut est conservé
  *  (« Arme », « À distance », « Griffes »). C'est le SEUL endroit qui parse — le runtime lit les champs. */
 export function parseTraitInstance(raw: string): TraitInstance {
   const p = parseStatEntry(raw);
-  const t: TraitInstance = { key: CANON_BY_LOWER.get(p.name.toLowerCase()) ?? p.name };
+  const t: TraitInstance = { id: CANON_BY_LOWER.get(p.name.toLowerCase()) ?? slugId(p.name) };
   const value = p.bonus ?? p.indice;
   if (value != null) t.value = value;
   if (p.arg != null) t.arg = p.arg;
@@ -55,15 +66,16 @@ export function parseTraitInstance(raw: string): TraitInstance {
 const PLUS_DISPLAY = new Set([
   'Arme', 'À distance', 'Morsure', 'Attaque caudale', 'Cornes', 'Souffle', 'Vomissement',
   'Langue préhensile', 'Hurlement fantomatique', 'Regard pétrifiant', 'Tentacules', 'Étreinte glaciale',
-]);
+].map(slugId));
 
 /** Rendu lisible et FIDÈLE d'un trait structuré (inverse exact de `parseTraitInstance` pour l'affichage)
  *  — inspecteur / Codex / éditeur / libellé d'attaque. Restitue le signe « + » des Dégâts et le « + »
  *  de seuil des sauvegardes, sinon l'Indice nu. */
 export function formatTrait(t: TraitInstance): string {
-  const head = t.count != null ? `${t.count} ${t.key}` : t.key;
-  const isAttack = PLUS_DISPLAY.has(t.key);
-  const ward = !isAttack && !!TRAITS[t.key]?.wardSave;
+  const label = traitLabelById(t.id);
+  const head = t.count != null ? `${t.count} ${label}` : label;
+  const isAttack = PLUS_DISPLAY.has(t.id);
+  const ward = !isAttack && !!TRAITS[t.id]?.wardSave;
   const val = t.value == null ? '' : isAttack ? ` +${t.value}` : ward ? ` ${t.value}+` : ` ${t.value}`;
   const arg = t.arg ? ` (${t.arg})` : '';
   const range = t.range != null ? ` (${t.range})` : '';
@@ -71,33 +83,27 @@ export function formatTrait(t: TraitInstance): string {
   return isAttack ? `${head}${val}${arg}${range}` : `${head}${arg}${val}${range}`;
 }
 
-/** Normalise un élément de `TraitList` en `TraitInstance` : chaîne (test/legacy) → parse UNE fois ;
- *  déjà structuré → renvoyé tel quel (aucun parsing au runtime). SEUL point d'entrée des consommateurs. */
-export function asTrait(x: string | TraitInstance): TraitInstance {
-  return typeof x === 'string' ? parseTraitInstance(x) : x;
-}
-
-/** `TraitList` → libellés affichables (UI/Codex/éditeur) : la chaîne legacy est rendue telle quelle
- *  (fidélité d'affichage), l'instance structurée est formatée par `formatTrait`. */
+/** `TraitList` → libellés affichables (UI/Codex/éditeur) : chaque `TraitInstance` formatée par
+ *  `formatTrait` (inverse fidèle de `parseTraitInstance`). */
 export const traitLabels = (traits: TraitList | undefined): string[] =>
-  (traits ?? []).map((x) => (typeof x === 'string' ? x : formatTrait(x)));
+  (traits ?? []).map(formatTrait);
 
 export interface ParsedTrait {
-  /** Clé canonique du registre (« Démoniaque »). */
-  key: string;
+  /** `id` STABLE du trait de registre (slug, « demoniaque »). */
+  id: string;
   /** Indice numérique (« Démoniaque 8+ » → 8, « Vol 100 » → 100, « Toile 40 » → 40). */
   indice?: number;
   /** Argument entre parenthèses (« Immunité (Poison) » → « Poison »). */
   arg?: string;
 }
 
-/** Normalise une chaîne de trait via le parseur PARTAGÉ `parseStatEntry`, puis matche la clé du
- *  registre (casse ignorée). L'Indice = valeur non signée de fin (« Démoniaque 8+ », « Vol 100 »),
+/** Normalise une chaîne de trait via le parseur PARTAGÉ `parseStatEntry`, puis matche le trait du
+ *  registre par `id` (casse ignorée). L'Indice = valeur non signée de fin (« Démoniaque 8+ », « Vol 100 »),
  *  sinon le bonus signé (« Arme +7 ») pour les traits d'attaque. */
 export function parseTrait(raw: string): ParsedTrait | null {
   const p = parseStatEntry(raw);
-  const key = KEY_BY_LOWER.get(p.name.toLowerCase());
-  return key ? { key, indice: p.indice ?? p.bonus, arg: p.arg } : null;
+  const id = CANON_BY_LOWER.get(p.name.toLowerCase());
+  return id && TRAITS[id] ? { id, indice: p.indice ?? p.bonus, arg: p.arg } : null;
 }
 
 export interface ResolvedTrait {
@@ -106,29 +112,26 @@ export interface ResolvedTrait {
   arg?: string;
 }
 
-/** Traits du registre présents sur la créature. Lecture SANS parsing quand la donnée est déjà
- *  structurée (`asTrait` = passthrough) ; les chaînes legacy/test sont parsées une fois. Traits hors
+/** Traits du registre présents sur la créature (`TraitInstance` structurés, zéro parsing). Traits hors
  *  registre (attaques naturelles, marqueurs) ignorés ici — ils ont leurs propres consommateurs. */
 export function resolveTraits(traits: TraitList | undefined): ResolvedTrait[] {
   const out: ResolvedTrait[] = [];
-  for (const x of traits ?? []) {
-    const t = asTrait(x);
-    const def = TRAITS[t.key];
+  for (const t of traits ?? []) {
+    const def = TRAITS[t.id];
     if (def) out.push({ def, indice: t.value, arg: t.arg });
   }
   return out;
 }
 
-/** La créature possède-t-elle le trait canonique `key` ? (registre `defs/` UNIQUEMENT). */
-export function hasTrait(traits: TraitList | undefined, key: string): boolean {
-  return resolveTraits(traits).some((r) => r.def.key === key);
+/** La créature possède-t-elle le trait d'`id` donné ? (registre `defs/` UNIQUEMENT). */
+export function hasTrait(traits: TraitList | undefined, id: string): boolean {
+  return (traits ?? []).some((t) => t.id === id && !!TRAITS[id]);
 }
 
-/** La créature porte-t-elle un trait/attaque de clé canonique `key` (registre OU libellé hors registre :
- *  Venin, Lanceur de Sorts, Cornes, Tentacules…) ? Remplace les regex `/^x\b/i` dispersées : la
- *  canonicalisation a déjà eu lieu (`asTrait`), donc comparaison de clé STRICTE — plus de parsing ad hoc. */
-export function hasTraitKey(traits: TraitList | undefined, key: string): boolean {
-  return (traits ?? []).some((x) => asTrait(x).key === key);
+/** La créature porte-t-elle un trait/attaque d'`id` donné (registre OU hors registre : Venin, Lanceur
+ *  de Sorts, Cornes, Tentacules…) ? Comparaison d'`id` STRICTE — les `TraitInstance` sont déjà structurés. */
+export function hasTraitKey(traits: TraitList | undefined, id: string): boolean {
+  return (traits ?? []).some((t) => t.id === id);
 }
 
 const first = (traits: TraitList | undefined, pred: (d: TraitDef) => boolean): ResolvedTrait | undefined =>

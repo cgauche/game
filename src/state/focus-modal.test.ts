@@ -20,7 +20,7 @@ describe('Focalisation en modale (store)', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Sorcier', name: 'Mage', rng: makeRNG(3) });
     hero.characteristics.FM = 80;
     hero.spells = ['Arme aethyrique'];
-    if (!hero.skills.some((s) => s.name === 'Focalisation')) hero.skills.push({ name: 'Focalisation', advances: 20, characteristic: 'FM' } as never);
+    if (!hero.skills.some((s) => s.skillId === 'focalisation')) hero.skills.push({ skillId: 'focalisation', advances: 20, characteristic: 'FM' } as never);
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(2);
     useGame.getState().startScene(testScene);

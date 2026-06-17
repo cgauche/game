@@ -20,8 +20,7 @@
  */
 import { Combatant } from './types';
 import { bonus, effectiveChar } from './characteristics';
-import { spells, type SpellData } from '../data';
-import { blessingsOf } from './cults/registry'; // Bénédictions par culte : registre defs/ (plus de record en dur)
+import { spells, blessingsOf, findSpellById, type SpellData } from '../data'; // Bénédictions par culte : dataset gods (façade)
 import { featuresOf } from './combatFeatures/dispatch';
 import type { CastingKind } from './combatFeatures/types';
 
@@ -57,8 +56,8 @@ function familyOf(spell: SpellData): CasterTalent['kind'] | null {
 /** Nombre de sorts CONNUS de la famille (référence des bandes de coût). */
 export function knownCount(c: Combatant, family: CasterTalent['kind']): number {
   let n = 0;
-  for (const label of c.spells ?? []) {
-    const sp = spells.find((s) => s.label === label);
+  for (const x of c.spells ?? []) {
+    const sp = findSpellById(x); // `c.spells` = ids de sort (runtime)
     if (sp && familyOf(sp) === family) n++;
   }
   return n;
@@ -75,7 +74,7 @@ export function eligibleTalent(c: Combatant, spell: SpellData): CasterTalent | u
     return talents.find((t) => t.kind === 'arcane' && (spell.subType == null || t.spec == null || t.spec === spell.subType));
   }
   if (fam === 'invocation') return talents.find((t) => t.kind === 'invocation' && (t.spec == null || t.spec === spell.subType));
-  if (fam === 'beni') return talents.find((t) => t.kind === 'beni' && (t.spec == null || blessingsOf(t.spec).includes(spell.label)));
+  if (fam === 'beni') return talents.find((t) => t.kind === 'beni' && (t.spec == null || blessingsOf(t.spec).includes(spell.id)));
   if (fam === 'chaos') return talents.find((t) => t.kind === 'chaos' && (t.spec == null || t.spec === spell.subType));
   return undefined;
 }
@@ -93,7 +92,7 @@ export function eligibleTalent(c: Combatant, spell: SpellData): CasterTalent | u
  *  - Chaos : 100 PX (et +1 Point de Corruption — appliqué par l'acheteur).
  */
 export function spellCost(c: Combatant, spell: SpellData): number | null {
-  if ((c.spells ?? []).includes(spell.label)) return null;
+  if ((c.spells ?? []).some((x) => x === spell.id)) return null;
   const talent = eligibleTalent(c, spell);
   if (!talent) return null;
   const fam = familyOf(spell)!;
@@ -131,7 +130,7 @@ export function carriedGrimoire(c: Combatant): { name: string } | undefined {
 /** Sort lançable DEPUIS le grimoire porté (LDB 47 l.34) : non mémorisé, du Domaine
  *  d'un Talent Magie des Arcanes du lanceur — le NI est DOUBLÉ à l'incantation. */
 export function canCastFromGrimoire(c: Combatant, spell: SpellData): boolean {
-  if ((c.spells ?? []).includes(spell.label)) return false; // mémorisé : pas besoin du livre
+  if ((c.spells ?? []).some((x) => x === spell.id)) return false; // mémorisé : pas besoin du livre
   if (!carriedGrimoire(c)) return false;
   if (spell.type !== 'Magie des Arcanes') return false; // un grimoire transcrit des Sorts (pas des Prières)
   return !!eligibleTalent(c, spell);

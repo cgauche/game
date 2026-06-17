@@ -259,7 +259,8 @@
           "kind": "if",
           "cond": {
             "kind": "slThreshold",
-            "atLeast": 6
+            "op": ">=",
+            "value": 6
           },
           "then": {
             "kind": "seq",
@@ -295,7 +296,8 @@
             "kind": "if",
             "cond": {
               "kind": "slThreshold",
-              "atLeast": 2
+              "op": ">=",
+              "value": 2
             },
             "then": {
               "kind": "do",

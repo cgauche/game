@@ -3,7 +3,7 @@ import { ownsLocally } from '../state/netFlow';
 import { FLOWS } from '../state/rollFlows';
 import { overcastTargetCandidates, previewCast } from '../state/combatFlow';
 import { findSpell } from '../data/index';
-import { spellSpecFor } from '../data/spellspecs';
+import { spellEffectOps } from '../state/flow';
 import { conjureFormOptions } from '../engine/conjuredWeapons';
 import { testValue } from '../engine/skills';
 import { castingValue } from '../engine/magic';
@@ -81,7 +81,7 @@ export function CastModal() {
   const selfTarget = caster.id === target.id;
   // Arme invoquée à forme libre (Arme aethyrique, op conjureWeapon + chooseForm) : le lanceur choisit
   // la Compétence de Corps à corps / le profil d'arme avant d'appliquer (RAW LDB 47). Sinon : [].
-  const conjureForms = spellSpecFor(spell).ops.some((o) => o.op === 'conjureWeapon' && o.chooseForm)
+  const conjureForms = spellEffectOps(spell.effects).some((o) => o.op === 'conjureWeapon' && o.chooseForm)
     ? conjureFormOptions(caster) : [];
   const selectedForm = pc.conjureForm ?? conjureForms[0];
   // ZONE non posée (flux « jet puis pose », LDB 47 l.29/44) : pas de cible — le gabarit se dépose

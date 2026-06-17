@@ -66,7 +66,7 @@ function isConjurableWeapon(it: { name: string; qualities?: string[] }): boolean
 export function conjureFormOptions(caster: Pick<Combatant, 'skills'>): ConjureForm[] {
   const groupAdv = new Map<string, number>(); // groupe (minuscule) → meilleures avances connues
   for (const s of caster.skills ?? []) {
-    if (/corps à corps/i.test(s.name) && s.spec) {
+    if (s.skillId === 'corps-a-corps' && s.spec) {
       const g = s.spec.trim().toLowerCase();
       groupAdv.set(g, Math.max(groupAdv.get(g) ?? 0, s.advances ?? 0));
     }

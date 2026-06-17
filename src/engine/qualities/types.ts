@@ -44,13 +44,6 @@ export interface QualityDef {
   damageBonusUnits?: boolean;
   /** Annule les Atouts de Dégâts (Dévastatrice/Percutante) sur cette arme (Inoffensive, LDB 62 l.279/313). */
   negatesDamageAtouts?: boolean;
-  /** Effet « à la touche » : Test opposé à une localisation → condition infligée si l'attaquant l'emporte
-   *  (Assommante : Tête → F vs Endurance+Résistance → Sonné, LDB Armes l.268). Interprété par combatFlow. */
-  onHit?: {
-    location?: HitLocation;
-    opposed: { attacker: CharKey; defender: CharKey; defenderSkill?: string };
-    condition: string;
-  };
   /** Taillade (Aux Armes p.89) : si l'arme inflige une Blessure Critique, la cible subit en plus
    *  cet État (Hémorragique). Appliqué par combatFlow au point de résolution du Critique. */
   onCritCondition?: string;

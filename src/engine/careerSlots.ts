@@ -19,10 +19,11 @@
  * 4 niveaux ; jokers RESTREINTS « Corps à corps (Fléau ou À deux mains) » ; entrée talent
  * « Guide fluvial ou Bonnes jambes ».
  */
-import { Combatant } from './types';
+import { Combatant, CharKey } from './types';
 import { bonus } from './characteristics';
-import { findTalent, findSkill, spells, CareerLevelData } from '../data';
-import { CULT_KEYS } from './cults/registry';
+import { findTalent, findSkill, spells, advancementLabel, CareerLevelData, type AdvancementRef } from '../data';
+import { slugId } from '../data/slug';
+import { CULT_KEYS } from '../data';
 import { COMBAT_FEATURES } from './combatFeatures/registry';
 import { splitLabel } from './statEntry';
 
@@ -121,9 +122,25 @@ export function isUnresolvedChoice(label: string): boolean {
   return spec != null && (CHOICE_RE.test(spec) || /\sou\s/i.test(spec));
 }
 
+/** Entrée d'avancement (chaîne d'authoring/test) → `AdvancementRef` (id = nom brut, résolu à l'affichage
+ *  par `advancementLabel`). Le SCRIPT de migration résout en id réel ; ce parseur runtime garde le nom. */
+export function parseAdvancement(entry: string): AdvancementRef {
+  const RAND = /^(?:(\d+)\s+)?Talents?\s+al[ée]atoires?$/i;
+  const opts = splitTopLevelOu(entry).map((o): AdvancementRef => {
+    const m = o.match(RAND);
+    if (m) return { random: parseInt(m[1] ?? '1', 10) };
+    const so = parseOption(o);
+    if (so.wildcard) return so.specOptions ? { wildcard: { id: so.name }, specOptions: so.specOptions } : { wildcard: { id: so.name } };
+    return so.spec ? { ref: { id: so.name, spec: so.spec } } : { ref: { id: so.name } };
+  });
+  return opts.length > 1 ? { choice: opts } : opts[0];
+}
+
 function slotsOfLevel(level: CareerLevelData, kind: 'skill' | 'talent'): CareerSlot[] {
-  const entries = kind === 'skill' ? level.skills : level.talents;
-  return entries.map((entry, i) => {
+  const refs = kind === 'skill' ? level.skills : level.talents;
+  const cat = kind === 'skill' ? 'skills' : 'talents';
+  return refs.map((ref, i) => {
+    const entry = advancementLabel(cat, ref); // AdvancementRef → libellé, puis parseEntry (logique inchangée)
     const options = parseEntry(entry);
     const needsChoice = options.length > 1 || options.some((o) => o.wildcard);
     const summary = options.map((o) => o.name).join('|');
@@ -148,7 +165,7 @@ export function talentSlotsUpTo(levels: CareerLevelData[], level: number): Caree
 }
 
 /** Caractéristiques de carrière disponibles : cumul des niveaux ≤ courant (LDB 07 l.67). */
-export function availableChars(levels: CareerLevelData[], level: number): string[] {
+export function availableChars(levels: CareerLevelData[], level: number): CharKey[] {
   return levels.filter((l) => l.level <= level).flatMap((l) => l.characteristics);
 }
 
@@ -278,7 +295,9 @@ export function talentMax(hero: Combatant, label: string): number | null {
 export function talentMaxReached(hero: Combatant, label: string): boolean {
   const max = talentMax(hero, label);
   if (max == null) return false;
-  const times = hero.talents.find((t) => t.name === label)?.times ?? 0;
+  const { name, spec } = splitLabel(label);
+  const id = findTalent(name)?.id ?? slugId(name);
+  const times = hero.talents.find((t) => t.talentId === id && (t.spec ?? '') === (spec ?? ''))?.times ?? 0;
   return times >= max;
 }
 

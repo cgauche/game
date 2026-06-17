@@ -4,14 +4,14 @@
  */
 import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints, BodyShape, SkillInstance, TalentInstance } from '../engine/types';
 import { skillCharacteristic } from '../engine/character';
-import { parseStatEntry, type TraitInstance, type TraitList } from '../engine/statEntry';
-import { findCreature, findSkillById, findTalentById, CreatureData, type SkillRef, type TalentRef } from '../data';
+import { type TraitInstance, type TraitList } from '../engine/statEntry';
+import { findCreature, findSkillById, findTalentById, findSpellById, CreatureData, type SkillRef, type TalentRef } from '../data';
 import { CustomStatblock, EntityAppearance } from './scene';
 import { emptyArmour } from '../engine/items';
 import { maxWounds, bonus } from '../engine/characteristics';
 import { parseSizeLabel, resizeBySteps, SIZE_ORDER, SizeCategory } from '../engine/size';
 import { parsePsychTraits } from '../engine/psychology';
-import { traitCharMods, traitBonusWoundsBE, isMindless, mutationsAtSpawn, isSwarm, resolveTraits, asTrait } from '../engine/traits/dispatch';
+import { traitCharMods, traitBonusWoundsBE, isMindless, mutationsAtSpawn, isSwarm, resolveTraits, traitLabelById } from '../engine/traits/dispatch';
 import { rollMutation, mutationByLabel } from '../data/mutations';
 import { makeRNG } from '../engine/dice';
 import { groupsFor } from '../engine/groups';
@@ -66,17 +66,16 @@ const NATURAL_WEAPON = new Map<string, { ranged?: boolean }>([
  * Le `name` = le TYPE quand il est manufacturé (→ le rig tient cette arme) ; sinon
  * une étiquette naturelle (→ weaponFamily renvoie '' = aucune arme dessinée).
  */
-export function weaponFromTrait(x: string | TraitInstance): Weapon | null {
-  const t = asTrait(x); // structuré (passthrough, zéro parsing) ou chaîne legacy (parsée une fois)
+export function weaponFromTrait(t: TraitInstance): Weapon | null {
   const dmg = t.value != null ? (t.value < 0 ? `${t.value}` : `+${t.value}`) : null;
-  if (t.key === 'À distance') {
+  if (t.id === 'a-distance') {
     if (dmg == null) return null; // « À distance » sans Indice de Dégâts : pas une arme jouable (RAW)
     const type = t.arg;
     const w: Weapon = { name: type && !NATURAL_WEAPON.has(normTrait(type)) ? type : 'Attaque à distance', type: 'ranged', damage: dmg, qualities: [] };
     if (t.range != null) w.range = t.range;
     return w;
   }
-  if (t.key === 'Arme') {
+  if (t.id === 'arme') {
     const type = t.arg;
     const damage = dmg ?? '+BF';
     if (type && NATURAL_WEAPON.has(normTrait(type))) return { name: type, type: 'melee', damage, qualities: [] };
@@ -85,7 +84,7 @@ export function weaponFromTrait(x: string | TraitInstance): Weapon | null {
   // Attaque naturelle (« Morsure +9 », « 8 Tentacules +9 ») : la clé est une arme naturelle CONNUE
   // (source UNIQUE NATURAL_WEAPON). L'arme reste UNE (l'Action d'attaque) ; le compte joue sur les
   // Attaques GRATUITES (aiCreatureFreeAttacks), LDB 85 l.354.
-  const word = t.key.split(/\s+/)[0];
+  const word = traitLabelById(t.id).split(/\s+/)[0];
   const meta = NATURAL_WEAPON.get(normTrait(word));
   if (meta) return { name: word, type: meta.ranged ? 'ranged' : 'melee', damage: dmg ?? '+BF', qualities: [] };
   return null;
@@ -122,7 +121,7 @@ export function sizeFromTraits(traits: TraitList): SizeCategory | null {
  *  dérivée des Traits (statbloc ou créature du bestiaire via `ref`). `undefined` ⇒ Moyenne au rendu. */
 export function entitySize(ent: { ref?: string; statblock?: CustomStatblock }): SizeCategory | undefined {
   if (ent.statblock?.size) return ent.statblock.size;
-  const traits = ent.statblock?.traits ?? (ent.ref ? findCreature(ent.ref)?.traits : undefined);
+  const traits = ent.statblock?.traits ?? (ent.ref ? findCreature(ent.ref)?.traits : undefined); // tous TraitInstance[]
   return (traits && sizeFromTraits(traits)) || undefined;
 }
 
@@ -164,52 +163,41 @@ function randomizeChars(chars: Characteristics, id: string): Characteristics {
  *  Balacañon, MSR Compagnon p.48) → avances = valeur − Caractéristique de la Compétence (inverse
  *  de LDB 09 : Test = Caractéristique + avances). Les avances se calculent sur le profil IMPRIMÉ —
  *  un profil retouché ensuite (carac. aléatoires LDB 78, Taille) garde les mêmes avances.
- *  Entrée sans valeur chiffrée : ignorée (rien d'inventé).
- *
- *  Accepte DEUX formes : `SkillRef` STRUCTURÉ (bestiaire migré — id stable + valeur imprimée, plus
- *  de parsing) ou chaîne legacy d'un statbloc d'éditeur (« Langue (Magick) 63 ») parsée à la volée. */
-export function skillsFromBook(list: (string | SkillRef)[] | undefined, printedChars: Characteristics): SkillInstance[] {
+ *  Entrée sans valeur chiffrée : ignorée (rien d'inventé). Réf STRUCTURÉE `SkillRef` (id stable +
+ *  valeur imprimée) — plus de parsing de chaînes. */
+/** Une `SkillInstance` (id + spec) depuis le LIBELLÉ (pour la Caractéristique) + valeur de Test IMPRIMÉE. */
+function skillInstance(skillId: string, label: string, spec: string | undefined, value: number, printedChars: Characteristics): SkillInstance {
+  const ch = skillCharacteristic(label);
+  return { skillId, spec, characteristic: ch, advances: Math.max(0, value - printedChars[ch]) };
+}
+
+/** Compétences du BESTIAIRE — refs structurées `SkillRef` (id + valeur de Test imprimée). Réf. inconnue
+ *  du catalogue ignorée (rien d'inventé). */
+export function skillsFromBook(list: SkillRef[] | undefined, printedChars: Characteristics): SkillInstance[] {
   const out: SkillInstance[] = [];
-  for (const raw of list ?? []) {
-    if (typeof raw === 'object') {
-      const sk = findSkillById(raw.skillId);
-      if (!sk) continue; // référence inconnue (catalogue) : ignorée (rien d'inventé)
-      const ch = skillCharacteristic(sk.label);
-      out.push({ name: sk.label, spec: raw.spec, characteristic: ch, advances: Math.max(0, raw.value - printedChars[ch]) });
-      continue;
-    }
-    const p = parseStatEntry(raw); // statbloc legacy : « Langue (Magick) 63 » → name/arg/indice en un passage
-    if (p.indice == null) continue; // entrée sans valeur chiffrée : ignorée (rien d'inventé)
-    const characteristic = skillCharacteristic(p.name);
-    out.push({ name: p.name, spec: p.arg, characteristic, advances: Math.max(0, p.indice - printedChars[characteristic]) });
+  for (const ref of list ?? []) {
+    const sk = findSkillById(ref.id);
+    if (sk) out.push(skillInstance(sk.id, sk.label, ref.spec, ref.value, printedChars));
   }
   return out;
 }
 
 /** Talents d'une créature/statbloc → `TalentInstance[]` (libellés concrets : « Magie des Arcanes (Ghur) »,
- *  « Menaçant »). Accepte DEUX formes : `TalentRef` STRUCTURÉ (bestiaire migré — id stable + niveau/spec,
- *  plus de parsing) ou chaîne legacy d'un statbloc d'éditeur, parsée à la volée. Le nom RECONSTRUIT garde
- *  sa spec entre parenthèses : c'est la clé du registre combatFeatures (`featureKey`) et du grimoire. */
-export function talentsFromBook(list: (string | TalentRef)[] | undefined): TalentInstance[] {
+ *  « Menaçant »). Refs STRUCTURÉES `TalentRef` (id stable + niveau/spec). Le nom RECONSTRUIT garde sa spec
+ *  entre parenthèses : c'est la clé du registre combatFeatures (`featureKey`) et du grimoire. */
+export function talentsFromBook(list: TalentRef[] | undefined): TalentInstance[] {
   const out: TalentInstance[] = [];
-  for (const raw of list ?? []) {
-    if (typeof raw === 'object') {
-      const t = findTalentById(raw.talentId);
-      if (!t) continue; // référence inconnue (catalogue) : ignorée (rien d'inventé)
-      const name = t.label + (raw.spec ? ` (${raw.spec})` : '');
-      out.push({ name, times: raw.times ?? 1 });
-      continue;
-    }
-    const name = raw.trim();
-    if (name) out.push({ name, times: 1 });
+  for (const ref of list ?? []) {
+    const t = findTalentById(ref.id);
+    if (t) out.push({ talentId: t.id, spec: ref.spec, times: ref.times ?? 1 });
   }
   return out;
 }
 
 /** Personnalisations d'AUTEUR au spawn d'une créature (portées par SceneEntity.combat). */
 export interface SpawnExtras {
-  /** Traits FACULTATIFS choisis (LDB 76 l.49), chaînes éditées — fusionnés avant toute dérivation. */
-  optionals?: string[];
+  /** Traits FACULTATIFS choisis (LDB 76 l.49), STRUCTURÉS (`TraitInstance`) — fusionnés avant dérivation. */
+  optionals?: TraitInstance[];
   /** Sorts connus (la donnée bestiaire n'en liste pas — choix d'auteur). */
   spells?: string[];
   /** Caractéristiques aléatoires (LDB 78). */
@@ -218,19 +206,18 @@ export interface SpawnExtras {
 
 /** Profil + modificateurs de PROFIL des traits `live` (Élite/Coriace/Brutal…) — pour les valeurs DÉRIVÉES
  *  au spawn (Blessures) qui doivent refléter les traits, alors que `characteristics` ne stocke que la base. */
-function withTraitChars(chars: Characteristics, live: string[] | undefined): Characteristics {
+function withTraitChars(chars: Characteristics, live: TraitList | undefined): Characteristics {
   const out = { ...chars };
   for (const [k, v] of Object.entries(traitCharMods(live))) out[k as keyof Characteristics] += v ?? 0;
   return out;
 }
 
 export function creatureToCombatant(creature: CreatureData, id: string, pos: { x: number; y: number }, extras?: SpawnExtras): Combatant {
-  const optionals = extras?.optionals ?? [];
+  const optTraits = extras?.optionals ?? [];
   // Traits FACULTATIFS (LDB 76 l.49 : « Traits de créature courants que vous pouvez ajouter si vous
   // créez votre propre version ») : fusionnés AVANT toutes les dérivations (armes, armure, psy, nuée…).
-  // STRUCTURÉS une fois ici (`asTrait`) → le Combattant porte des `TraitInstance` ; le runtime
-  // (rendu/combat) les lit sans re-parser de chaîne « en permanence » (de-POC).
-  const traits = [...creature.traits, ...optionals].map(asTrait);
+  // `creature.traits` (donnée) ET `optTraits` (choix d'auteur) sont déjà des `TraitInstance` structurés.
+  const traits = [...creature.traits, ...optTraits];
   // « – » du Schéma des Profils (LDB 76) = caractéristique INEXISTANTE → 0 (Int/FM nulles = Fabriqué,
   // auto-réussite via isMindless ; CT nulle = pas d'arme à distance dans la donnée). Pas de 30 inventé.
   let chars = charsFrom(creature.char, 0);
@@ -244,7 +231,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   const baseSize = sizeFromTraits(creature.traits) ?? 'moyenne';
   // Taille FACULTATIVE : PRIME sur celle du bestiaire et applique « Utiliser les Tailles »
   // (LDB 85 l.276-277 : ±10 F/E, ∓5 Ag par catégorie d'écart).
-  const optSize = sizeFromTraits(optionals);
+  const optSize = sizeFromTraits(optTraits);
   const size = optSize ?? baseSize;
   if (optSize && optSize !== baseSize) chars = resizeBySteps(chars, SIZE_ORDER[optSize] - SIZE_ORDER[baseSize]);
   // char.B (bestiaire) = la valeur livre d'UNE créature (≈ formule × Taille) → base/surcharge ; la
@@ -252,9 +239,9 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   const profileChanged = !!extras?.randomChars || (optSize != null && optSize !== baseSize);
   // Blessures dérivées de F/E/FM : computées sur le profil INCLUANT les facultatifs (Coriace +E, Élite +FM…),
   // même si `characteristics` ne stocke que la base — sinon une créature renforcée perdrait ses PB de trait.
-  const charsEff = withTraitChars(chars, optionals);
+  const charsEff = withTraitChars(chars, optTraits);
   let wounds = typeof creature.char.B === 'number' && !profileChanged ? creature.char.B : maxWounds(charsEff, size);
-  if (traitBonusWoundsBE(optionals)) wounds += bonus(charsEff.E); // Endurant facultatif : +BE Blessures (LDB 85)
+  if (traitBonusWoundsBE(optTraits)) wounds += bonus(charsEff.E); // Endurant facultatif : +BE Blessures (LDB 85)
   const swarm = isSwarm(traits);
   if (swarm) ({ chars, wounds } = applySwarmBuild(chars, wounds)); // ×5 PB + 10 CC (la nuée = 5 créatures)
   const movement = typeof creature.char.M === 'number' ? creature.char.M : 4; // facultatifs → liveTraits (effectiveMovement)
@@ -262,7 +249,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
     id,
     name: creature.label,
     kind: 'enemy',
-    ...(optionals.length ? { liveTraits: optionals } : {}), // charMods/Mouvement des facultatifs appliqués en direct
+    ...(optTraits.length ? { liveTraits: optTraits } : {}), // charMods/Mouvement des facultatifs appliqués en direct
     ...(creature.appearance?.species ? { species: creature.appearance.species } : {}), // espèce du record (P2) → le rig la lit ; le reste de l'apparence par défaut est lu par enemyRigProfile via findCreature
     characteristics: chars,
     wounds: { current: wounds, max: wounds, base: wounds },
@@ -277,7 +264,10 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
     ...(isMindless(traits) ? { psychImmune: true } : {}), // Fabriqué : Tests d'Int/FM/Soc auto-réussis (LDB 85 p.339)
     ...spawnMutations(traits, id), // Mutation / Corruption mentale : tirage au spawn (LDB 85)
     // Sorts : ceux de la DONNÉE (PNJ nommés — Eusapia en a 12), surchargés par le choix d'auteur.
-    ...(extras?.spells?.length ? { spells: [...extras.spells] } : creature.spells.length ? { spells: [...creature.spells] } : {}),
+    // Combatant.spells = IDS de sort (runtime) : créature = ids des refs ; choix d'auteur = ids (filtrés valides).
+    ...(extras?.spells?.length
+      ? { spells: extras.spells.filter((id) => !!findSpellById(id)) }
+      : creature.spells.length ? { spells: creature.spells.map((s) => s.id) } : {}),
     groups: groupsFor({ folder: creature.folder }), // catégorie de Groupe dérivée du folder bestiaire (P3)
     traits, // conservés (facultatifs inclus) → attaques gratuites de créature en combat
     skills,
@@ -288,8 +278,11 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
 }
 
 export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: number; y: number }): Combatant {
+  // Traits du statbloc d'éditeur : déjà des `TraitInstance` structurés (édités par picker) — toutes
+  // les dérivations en aval les lisent sans aucun parsing.
+  const traits = sb.traits ?? [];
   let chars = charsFrom(sb.char as any);
-  // Compétences (format livre, avances dérivées du profil SAISI) + talents du statbloc.
+  // Compétences (refs `SkillRef` structurées, avances dérivées du profil SAISI) + talents du statbloc.
   const skills = skillsFromBook(sb.skills, chars);
   const talents = talentsFromBook(sb.talents);
   // Caractéristiques aléatoires (LDB 78) : le statbloc saisi est le profil ROND → −10 + 2d10 au spawn.
@@ -297,40 +290,40 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
   // Traits à modificateurs de PROFIL (Élite, Coriace, Brutal, Rapide… — LDB 85) : un statbloc d'ÉDITEUR
   // part d'un profil standard et AJOUTE les Traits (LDB 77) → tous appliqués en DIRECT via `liveTraits`
   // (collecteur passif). `characteristics` reste le profil de BASE saisi ; `effectiveChar` ajoute les traits.
-  const size = sb.size ?? sizeFromTraits(sb.traits ?? []) ?? 'moyenne';
+  const size = sb.size ?? sizeFromTraits(traits) ?? 'moyenne';
   // Blessures : surcharge explicite `char.B` si fournie, sinon formule par Taille (vide ⇒ formule, LDB 85).
   // La formule reprend la main si les caractéristiques ont été tirées (le B saisi valait pour le profil rond).
   // Blessures sur le profil INCLUANT les traits (Coriace +E…) ; `characteristics` ne garde que la base saisie.
-  const charsEff = withTraitChars(chars, sb.traits ?? []);
+  const charsEff = withTraitChars(chars, traits);
   let wounds = typeof sb.char.B === 'number' && !sb.randomChars ? (sb.char.B as number) : maxWounds(charsEff, size);
   // Endurant (LDB 85 p.339) : +Bonus d'Endurance Blessures (sur la formule — un B explicite du
   // statbloc est réputé final, comme au bestiaire).
-  if ((typeof sb.char.B !== 'number' || sb.randomChars) && traitBonusWoundsBE(sb.traits)) wounds += Math.floor(charsEff.E / 10);
-  const swarm = isSwarm(sb.traits ?? []);
+  if ((typeof sb.char.B !== 'number' || sb.randomChars) && traitBonusWoundsBE(traits)) wounds += Math.floor(charsEff.E / 10);
+  const swarm = isSwarm(traits);
   if (swarm) ({ chars, wounds } = applySwarmBuild(chars, wounds)); // Nuée : ×5 PB + 10 CC (l.200)
   const movement = typeof sb.char.M === 'number' ? (sb.char.M as number) : 4; // traits → liveTraits (effectiveMovement)
   return {
     id,
     name: sb.name,
     kind: 'enemy',
-    ...((sb.traits?.length) ? { liveTraits: [...sb.traits] } : {}), // statbloc d'éditeur : tous les traits en direct
+    ...(traits.length ? { liveTraits: [...traits] } : {}), // statbloc d'éditeur : tous les traits en direct
     characteristics: chars,
     wounds: { current: wounds, max: wounds, base: wounds },
     advantage: 0,
     conditions: [],
     // Armes : depuis les Traits si fournis (« Arme (Épée) +7 », « À distance (Arbalète) +9 (60) »),
     // sinon une arme générique au dégât indiqué.
-    weapons: sb.traits?.length ? weaponsFromTraits(sb.traits) : [{ name: 'Arme', type: 'melee', damage: sb.weaponDamage ?? '+BF', qualities: [] }],
+    weapons: traits.length ? weaponsFromTraits(traits) : [{ name: 'Arme', type: 'melee', damage: sb.weaponDamage ?? '+BF', qualities: [] }],
     armour: emptyArmour(sb.armour ?? 0),
     size,
     bodyShape: bodyShapeOf(sb.name), // Tableau de Localisation par forme du corps (LDB p.312)
-    ...parsePsychTraits(sb.traits ?? []), // Peur/Terreur/Immunité + traits ciblés depuis les traits (LDB 21+85)
+    ...parsePsychTraits(traits), // Peur/Terreur/Immunité + traits ciblés depuis les traits (LDB 21+85)
     ...(swarm ? { swarm: true, psychImmune: true } : {}), // Nuée : ignore la Psychologie (l.200)
-    ...(isMindless(sb.traits) ? { psychImmune: true } : {}), // Fabriqué : Tests d'Int/FM/Soc auto-réussis (LDB 85 p.339)
-    ...spawnMutations(sb.traits, id), // Mutation / Corruption mentale : tirage au spawn (LDB 85)
-    ...(sb.spells?.length ? { spells: [...sb.spells] } : {}), // sorts d'auteur → l'IA incante (combatFlow)
+    ...(isMindless(traits) ? { psychImmune: true } : {}), // Fabriqué : Tests d'Int/FM/Soc auto-réussis (LDB 85 p.339)
+    ...spawnMutations(traits, id), // Mutation / Corruption mentale : tirage au spawn (LDB 85)
+    ...(sb.spells?.length ? { spells: sb.spells.filter((id) => !!findSpellById(id)) } : {}), // ids d'auteur (filtrés valides)
     groups: groupsFor({ extras: sb.groups }), // extras manuels (Sigmarite…) — espèce/carrière non portées par le statbloc (P3)
-    traits: (sb.traits ?? []).map(asTrait), // structurés → attaques gratuites + lecture sans re-parsing
+    traits, // structurés → attaques gratuites + lecture sans re-parsing
     skills,
     talents,
     movement,

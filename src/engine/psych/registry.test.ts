@@ -8,7 +8,7 @@ describe('Registre Psychologie (defs/ auto-chargé, gen-registry) — LDB 21/85'
   });
 
   it('parse Peur/Terreur/Immunité + ciblés (Animosité/Phobie indice 1/Effrayé indice 0)', () => {
-    const p = parsePsychTraits(['Peur 2', 'Immunité (Psychologie)', 'Animosité (Elfes)', 'Phobie (Serpents)', 'Effrayé (Feu)']);
+    const p = parsePsychTraits([{ id: 'peur', value: 2 }, { id: 'immunite', arg: 'Psychologie' }, { id: 'animosite', arg: 'Elfes' }, { id: 'phobie', arg: 'Serpents' }, { id: 'effraye', arg: 'Feu' }]);
     expect(p.causesPeur).toBe(2);
     expect(p.psychImmune).toBe(true);
     expect(p.psychTraits).toEqual(expect.arrayContaining([
@@ -19,6 +19,6 @@ describe('Registre Psychologie (defs/ auto-chargé, gen-registry) — LDB 21/85'
   });
 
   it('Cible « un au choix » ou vide → inerte (cible indéfinie)', () => {
-    expect(parsePsychTraits(['Haine (un au choix)']).psychTraits).toEqual([{ type: 'haine', cible: undefined }]);
+    expect(parsePsychTraits([{ id: 'haine', arg: 'un au choix' }]).psychTraits).toEqual([{ type: 'haine', cible: undefined }]);
   });
 });

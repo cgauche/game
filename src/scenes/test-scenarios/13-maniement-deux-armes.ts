@@ -32,8 +32,8 @@ export const scenario: TestScenario = {
   makeParty: () => {
     const P = makePregens();
     const h = P.find((p) => p.name.startsWith('Sigmund'))!;
-    if (!h.talents.some((t) => t.name.toLowerCase() === 'maniement de deux armes')) {
-      h.talents.push({ name: 'Maniement de deux armes', times: 1 });
+    if (!h.talents.some((t) => t.talentId === 'maniement-de-deux-armes')) {
+      h.talents.push({ talentId: 'maniement-de-deux-armes', times: 1 });
     }
     // Deux armes de MÊLÉE à 1 main + un loadout « Deux armes » actif (main directrice + secondaire).
     const main = itemFromTrapping('Arme simple');

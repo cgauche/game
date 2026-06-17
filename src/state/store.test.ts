@@ -18,6 +18,7 @@ import type { AttackResult } from '../engine/combat';
 import { CAMPAIGN_START, MINUTES_PER_DAY } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
 import { toBrass } from '../engine/money';
+import { talentConcrete } from '../data';
 
 function reset() {
   useGame.setState({
@@ -379,7 +380,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().fumbleConfirm();
     const after = useGame.getState().battle!.combatants.find((c) => c.id === h.id)!;
     expect(after.criticalWounds).toBe(1);
-    expect(after.traumas?.[0]?.movementHalved).toBe(true); // jambe → Mouvement ÷2
+    expect(after.traumas?.[0]?.ops?.some((o) => o.op === 'moveScale')).toBe(true); // jambe → Mouvement ÷2
   });
 
   it('Maladresse — perte d’Action (Oups! 71-80) consommée au tour suivant', () => {
@@ -522,7 +523,7 @@ describe('Boucle de jeu (store)', () => {
   it('incanter un Projectile magique résout l’incantation et consomme l’action', () => {
     const hero = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Sorcier', name: 'Mage', rng: makeRNG(3) });
     hero.characteristics.Int = 90; // assurer le lancement (NI 0)
-    hero.spells = ['Fléchette'];
+    hero.spells = ['flechette'];
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -550,7 +551,7 @@ describe('Boucle de jeu (store)', () => {
   it('une Bénédiction de bonus pose un effet actif temporisé sur la cible', () => {
     const pretre = createHero({ speciesLabel: 'Humains (Reiklander)', careerLabel: 'Prêtre', name: 'Prêtre', rng: makeRNG(8) });
     pretre.characteristics.Soc = 95; // assurer la réussite de la Prière
-    pretre.spells = ['Bénédiction de Bataille'];
+    pretre.spells = ['benediction-de-bataille'];
     useGame.setState({ party: [pretre] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -1247,8 +1248,8 @@ describe('Avancement par PX (store) — câblage moteur', () => {
       weapons: [],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
       skills: [
-        { name: 'Charme', characteristic: 'Soc', advances: 0 }, // in-carrière
-        { name: 'Esquive', characteristic: 'Ag', advances: 0 }, // hors-carrière
+        { skillId: 'charme', characteristic: 'Soc', advances: 0 }, // in-carrière
+        { skillId: 'esquive', characteristic: 'Ag', advances: 0 }, // hors-carrière
       ],
       talents: [],
       movement: 4,
@@ -1297,14 +1298,14 @@ describe('Avancement par PX (store) — câblage moteur', () => {
   it('buySkillAdvance : Compétence connue in-carrière (Charme) +1, coût 10', () => {
     set1(mkHero({ xp: 1000 }));
     useGame.getState().buySkillAdvance('h', 'Charme');
-    expect(h0().skills.find((s) => s.name === 'Charme')!.advances).toBe(1);
+    expect(h0().skills.find((s) => s.skillId === 'charme')!.advances).toBe(1);
     expect(h0().xp).toBe(990);
   });
 
   it('buySkillAdvance : acquiert une Compétence de carrière non connue (Ragot) à advances 1', () => {
     set1(mkHero({ xp: 1000 }));
     useGame.getState().buySkillAdvance('h', 'Ragot');
-    const ragot = h0().skills.find((s) => s.name === 'Ragot');
+    const ragot = h0().skills.find((s) => s.skillId === 'ragot');
     expect(ragot).toBeTruthy();
     expect(ragot!.advances).toBe(1);
     expect(h0().xp).toBe(990);
@@ -1313,21 +1314,21 @@ describe('Avancement par PX (store) — câblage moteur', () => {
   it('buySkillAdvance : refuse une Compétence hors-carrière non connue', () => {
     set1(mkHero({ xp: 1000 }));
     useGame.getState().buySkillAdvance('h', 'Natation'); // ni connue, ni in-carrière
-    expect(h0().skills.find((s) => s.name === 'Natation')).toBeUndefined();
+    expect(h0().skills.find((s) => s.skillId === 'natation')).toBeUndefined();
     expect(h0().xp).toBe(1000);
   });
 
   it('buyTalent in-carrière (Sociable) : créé à times 1, coût 100', () => {
     set1(mkHero({ xp: 1000 }));
     useGame.getState().buyTalent('h', 'Sociable');
-    expect(h0().talents.find((t) => t.name === 'Sociable')!.times).toBe(1);
+    expect(h0().talents.find((t) => t.talentId === 'sociable')!.times).toBe(1);
     expect(h0().xp).toBe(900);
   });
 
   it('buyTalent hors-carrière : refusé (LDB l.97)', () => {
     set1(mkHero({ xp: 1000 }));
     useGame.getState().buyTalent('h', 'Castagneur'); // hors Niveau Agitateur
-    expect(h0().talents.find((t) => t.name === 'Castagneur')).toBeUndefined();
+    expect(h0().talents.find((t) => t.talentId === 'castagneur')).toBeUndefined();
     expect(h0().xp).toBe(1000);
   });
 
@@ -1359,9 +1360,9 @@ describe('Avancement par PX (store) — câblage moteur', () => {
   it('buyTalent : Maxi 1 respecté (Lire/Écrire ×2 refusé, LDB 10)', () => {
     set1(mkHero({ xp: 1000 })); // Pamphlétaire : Lire/Écrire in-carrière
     useGame.getState().buyTalent('h', 'Lire/Écrire');
-    expect(h0().talents.find((t) => t.name === 'Lire/Écrire')!.times).toBe(1);
+    expect(h0().talents.find((t) => t.talentId === 'lire-ecrire')!.times).toBe(1);
     useGame.getState().buyTalent('h', 'Lire/Écrire');
-    expect(h0().talents.find((t) => t.name === 'Lire/Écrire')!.times).toBe(1); // Maxi atteint
+    expect(h0().talents.find((t) => t.talentId === 'lire-ecrire')!.times).toBe(1); // Maxi atteint
     expect(h0().xp).toBe(900);
   });
 
@@ -1376,7 +1377,7 @@ describe('Avancement par PX (store) — câblage moteur', () => {
   it('emplacement « (Au choix) » : désignation gratuite d\'un talent d\'espèce, puis montée ×2 à 200 PX', () => {
     // Conseiller (Niveau 1) : « Savoir-vivre (Au choix) ». Le héros possède déjà
     // Savoir-vivre (Criminels) ×1 (espèce) — cas utilisateur « Sens aiguisé (Goût) ».
-    set1(mkHero({ xp: 1000, career: 'Conseiller', talents: [{ name: 'Savoir-vivre (Criminels)', times: 1 }] }));
+    set1(mkHero({ xp: 1000, career: 'Conseiller', talents: [{ talentId: 'savoir-vivre', spec: 'Criminels', times: 1 }] }));
     const view = buildAdvancementView(h0());
     const slot = view.talents.find((t) => t.entry === 'Savoir-vivre (Au choix)')!;
     expect(slot.options!.some((o) => o.label === 'Savoir-vivre (Criminels)' && o.owned)).toBe(true);
@@ -1386,21 +1387,21 @@ describe('Avancement par PX (store) — câblage moteur', () => {
     expect(h0().careerSlotChoices?.['Conseiller']?.[slot.slotKey]).toBe('Savoir-vivre (Criminels)');
     expect(h0().xp).toBe(1000); // gratuit
     useGame.getState().buyTalent('h', 'Savoir-vivre (Criminels)');
-    expect(h0().talents.find((t) => t.name === 'Savoir-vivre (Criminels)')!.times).toBe(2);
+    expect(h0().talents.find((t) => talentConcrete(t) === 'Savoir-vivre (Criminels)')!.times).toBe(2);
     expect(h0().xp).toBe(800); // 2ᵉ acquisition = 200 PX (LDB 07 l.102)
     // Le slot étant désigné, une AUTRE spec est hors carrière → refusée (l.97).
     useGame.getState().buyTalent('h', 'Savoir-vivre (Nobles)');
-    expect(h0().talents.find((t) => t.name === 'Savoir-vivre (Nobles)')).toBeUndefined();
+    expect(h0().talents.find((t) => talentConcrete(t) === 'Savoir-vivre (Nobles)')).toBeUndefined();
   });
 
   it('emplacement « (Au choix) » : l\'achat via un slot libre le DÉSIGNE automatiquement', () => {
     set1(mkHero({ xp: 1000, career: 'Conseiller' }));
     useGame.getState().buyTalent('h', 'Savoir-vivre (Nobles)');
-    expect(h0().talents.find((t) => t.name === 'Savoir-vivre (Nobles)')!.times).toBe(1);
+    expect(h0().talents.find((t) => talentConcrete(t) === 'Savoir-vivre (Nobles)')!.times).toBe(1);
     expect(Object.values(h0().careerSlotChoices?.['Conseiller'] ?? {})).toContain('Savoir-vivre (Nobles)');
     // Slot consommé : une autre spec n'est plus achetable dans CETTE carrière.
     useGame.getState().buyTalent('h', 'Savoir-vivre (Criminels)');
-    expect(h0().talents.find((t) => t.name === 'Savoir-vivre (Criminels)')).toBeUndefined();
+    expect(h0().talents.find((t) => talentConcrete(t) === 'Savoir-vivre (Criminels)')).toBeUndefined();
   });
 
   it('Effet giveXp : octroie les PX à TOUT le groupe (via trigger)', () => {
@@ -1635,7 +1636,7 @@ describe('Fenêtre de loot (pendingLoot) — capture, attribution, révélation'
   it('Détection d’artefact (LDB 10) : succès DR≥1 → identifié ; échec → tentative unique consommée', () => {
     lootScene();
     // Le looter reçoit le Talent : le bouton/flux ne s'arme que pour un porteur (Intuition).
-    useGame.setState({ party: [looter({ talents: [{ name: "Détection d'artefact", times: 1 }] } as Partial<Combatant>)] });
+    useGame.setState({ party: [looter({ talents: [{ talentId: 'detection-d-artefact', times: 1 }] } as Partial<Combatant>)] });
     useGame.getState().interactEntity('coffre');
     useGame.getState().appraiseGear('loot', 0, 'detect');
     let pa = useGame.getState().pendingAppraise!;
@@ -1663,7 +1664,7 @@ describe('Fenêtre de loot (pendingLoot) — capture, attribution, révélation'
 
   it('Détection sur un objet NON magique : « aucune aura », tentative consommée', () => {
     lootScene();
-    useGame.setState({ party: [looter({ talents: [{ name: "Détection d'artefact", times: 1 }] } as Partial<Combatant>)] });
+    useGame.setState({ party: [looter({ talents: [{ talentId: 'detection-d-artefact', times: 1 }] } as Partial<Combatant>)] });
     applyEffectsLoot(useGame.getState, useGame.setState, [{ type: 'giveTrapping', trapping: 'Dague' }], 'Sac');
     useGame.getState().appraiseGear('loot', 0, 'detect');
     const pa = useGame.getState().pendingAppraise!;
@@ -2374,16 +2375,28 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
 });
 
 describe('camRot (rotation caméra — état de vue)', () => {
-  it('démarre à 0, tourne horaire/anti-horaire en bouclant sur 4', () => {
-    useGame.setState({ camRot: 0 });
+  it('tourne par crans de 45° (face↔coin), boucle sur un tour complet (8 crans)', () => {
+    useGame.setState({ camRot: 0, camEdge: true });
+    // +1 depuis une vue de face (edge) : passe en vue de coin, même cran +1.
     useGame.getState().rotateCam(1);
     expect(useGame.getState().camRot).toBe(1);
+    expect(useGame.getState().camEdge).toBe(false);
+    // demi-cran suivant : revient en vue de face SANS changer camRot.
     useGame.getState().rotateCam(1);
-    useGame.getState().rotateCam(1);
-    useGame.getState().rotateCam(1);
-    expect(useGame.getState().camRot).toBe(0); // 4 crans = tour complet
+    expect(useGame.getState().camRot).toBe(1);
+    expect(useGame.getState().camEdge).toBe(true);
+    // 8 crans (45°) = tour complet → retour à l'état initial (face, camRot 0).
+    for (let i = 0; i < 6; i++) useGame.getState().rotateCam(1);
+    expect(useGame.getState().camRot).toBe(0);
+    expect(useGame.getState().camEdge).toBe(true);
+    // Anti-horaire : un cran depuis (0, face) bascule en vue de coin sans changer camRot…
     useGame.getState().rotateCam(-1);
-    expect(useGame.getState().camRot).toBe(3); // boucle négative
+    expect(useGame.getState().camRot).toBe(0);
+    expect(useGame.getState().camEdge).toBe(false);
+    // …puis le cran suivant décrémente camRot en bouclant (0→3).
+    useGame.getState().rotateCam(-1);
+    expect(useGame.getState().camRot).toBe(3);
+    expect(useGame.getState().camEdge).toBe(true);
   });
 });
 

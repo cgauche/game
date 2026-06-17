@@ -100,29 +100,29 @@ function build(): Scene {
         statblock: {
           name: 'Knud Cratinx',
           char: { M: 4, CC: 36, CT: 43, F: 39, E: 32, I: 35, Ag: 33, Dex: 29, Int: 33, FM: 35, Soc: 30, B: 12 },
-          traits: ['À distance (Arbalète) +9 (60)', 'Arme (Épée) +7', 'Corruption (Mineure)', 'Mutation (Écailles épineuses)'],
+          traits: [{ id: 'a-distance', value: 9, arg: 'Arbalète', range: 60 }, { id: 'arme', value: 7, arg: 'Épée' }, { id: 'corruption', arg: 'Mineure' }, { id: 'mutation', arg: 'Écailles épineuses' }],
         },
       },
       {
         pos: { x: 16, y: 7 },
         appearance: { monster: { tete: 'chien' } },
-        statblock: { name: 'Mikael', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 1 }, traits: ['Arme +7', 'Corruption (Mineure)', 'Mutation (Tête de chien)'] },
+        statblock: { name: 'Mikael', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 1 }, traits: [{ id: 'arme', value: 7 }, { id: 'corruption', arg: 'Mineure' }, { id: 'mutation', arg: 'Tête de chien' }] },
       },
       {
         pos: { x: 14, y: 8 },
         appearance: { monster: { jambes: 'chevre' } },
-        statblock: { name: 'Erik', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 2 }, traits: ['Arme +7', 'Corruption (Mineure)', 'Mutation (Pattes de chèvre)'] },
+        statblock: { name: 'Erik', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 2 }, traits: [{ id: 'arme', value: 7 }, { id: 'corruption', arg: 'Mineure' }, { id: 'mutation', arg: 'Pattes de chèvre' }] },
       },
       {
         pos: { x: 15, y: 7 },
         appearance: { monster: { tete: 'ogive' } },
-        statblock: { name: 'Johann', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 4 }, traits: ['Arme +7', 'Corruption (Mineure)', 'Mutation (Tête en ogive)'] },
+        statblock: { name: 'Johann', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 4 }, traits: [{ id: 'arme', value: 7 }, { id: 'corruption', arg: 'Mineure' }, { id: 'mutation', arg: 'Tête en ogive' }] },
       },
       {
         // « Mutile l'attelage à la hache » → arme dans le Trait (type Hache).
         pos: { x: 12, y: 7 },
         appearance: { monster: { tete: 'minuscule' } },
-        statblock: { name: 'Terenz', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 3 }, traits: ['Arme (Hache) +7', 'Corruption (Mineure)', 'Mutation (Crétin)'] },
+        statblock: { name: 'Terenz', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 3 }, traits: [{ id: 'arme', value: 7, arg: 'Hache' }, { id: 'corruption', arg: 'Mineure' }, { id: 'mutation', arg: 'Crétin' }] },
       },
     ],
     onVictory: [

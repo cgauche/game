@@ -9,15 +9,19 @@
  * « 0 » puis écrasé). Un nouveau type d'op = 1 entrée dans `OP_GROUPS` + 1 défaut dans `newOp`.
  */
 import { Formula, GameOp } from '../../engine/ops';
-import { CHAR_LABELS, CharKey } from '../../engine/types';
+import { CHAR_LABELS, CharKey, type Difficulty, DIFFICULTY_LABELS } from '../../engine/types';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
 import { etats } from '../../data';
+import { parseTraitInstance, formatTrait } from '../../engine/traits/dispatch';
 import { closeDetails } from './EffectList';
 import { JsonField } from './JsonField';
 
 const SIZES = Object.keys(SIZE_LABEL) as SizeCategory[];
 
 const CHARS = Object.keys(CHAR_LABELS) as CharKey[];
+const DIFFICULTIES = Object.keys(DIFFICULTY_LABELS) as Difficulty[];
+/** Liste de Groupes saisie en CSV (« Criminel, Mort-vivant ») ↔ tableau (undefined si vide). */
+const csv = (s: string): string[] => s.split(',').map((x) => x.trim()).filter(Boolean);
 
 // ---------------------------------------------------------------------------
 // Vocabulaire COMPLET — libellé + menu groupé par intention
@@ -204,7 +208,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'attackWardFM': return { op: 'attackWardFM' };
     case 'conjureWeapon': return { op: 'conjureWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' } };
     case 'grantNaturalWeapon': return { op: 'grantNaturalWeapon', name: 'Griffes', damage: 3 };
-    case 'grantTrait': return { op: 'grantTrait', trait: 'Armure' };
+    case 'grantTrait': return { op: 'grantTrait', traitId: 'armure' };
     case 'grantTalent': return { op: 'grantTalent', talent: 'Sang-froid' };
     case 'enchantWeapon': return { op: 'enchantWeapon', addQualities: ['Magique'] };
     case 'cureDisease': return { op: 'cureDisease', count: 1 };
@@ -268,7 +272,7 @@ export function opSummary(o: GameOp): string {
     case 'attackWardFM': return `${L} l’attaquer exige un Test de FM`;
     case 'conjureWeapon': return `${L} ${o.name} (Dégâts ${o.plusBF ? 'BF+' : ''}${formulaSummary(o.damage)})`;
     case 'grantNaturalWeapon': return `${L} ${o.name} (${o.plusBF !== false ? 'BF+' : ''}${formulaSummary(o.damage)})`;
-    case 'grantTrait': return `${L} ${o.trait}${o.indice != null ? ` ${formulaSummary(o.indice)}` : ''}`;
+    case 'grantTrait': return `${L} ${formatTrait({ id: o.traitId, arg: o.arg })}${o.indice != null ? ` ${formulaSummary(o.indice)}` : ''}`;
     case 'grantTalent': return `${L} ${o.talent}`;
     case 'enchantWeapon': return `${L} ${[...(o.addQualities ?? []), o.damageBonus != null ? `+${formulaSummary(o.damageBonus)} Dégâts` : ''].filter(Boolean).join(', ') || '(vide)'}`;
     case 'cureDisease': return `${L} ${o.count ?? 1} maladie(s)`;
@@ -304,7 +308,7 @@ export function opSummary(o: GameOp): string {
 const DEDICATED: ReadonlySet<GameOp['op']> = new Set([
   'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'skillMod', 'moveMod', 'apAll', 'testMod',
   'corruption', 'gainResource', 'grantTrait', 'grantTalent', 'grantNaturalWeapon', 'narrative',
-  'summon', 'polymorph', 'lifeSteal',
+  'summon', 'polymorph', 'lifeSteal', 'test', 'opposedTest',
 ]);
 
 function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void }) {
@@ -379,7 +383,11 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {op.op === 'grantTrait' && (
           <>
-            <input placeholder="Trait (ex. Peur, Armure)" value={o.trait ?? ''} onChange={(e) => upd({ trait: e.target.value })} />
+            <input
+              placeholder="Trait (ex. Peur, Armure, Haine (Skavens))"
+              value={formatTrait({ id: o.traitId, arg: o.arg })}
+              onChange={(e) => { const p = parseTraitInstance(e.target.value); upd({ traitId: p.id, arg: p.arg }); }}
+            />
             <label className="dr"><input type="checkbox" checked={o.indice != null} onChange={(e) => upd({ indice: e.target.checked ? 1 : undefined })} /> Indice</label>
             {o.indice != null && <FormulaField label="Valeur" value={o.indice} min={0} onChange={(indice) => upd({ indice })} />}
           </>
@@ -406,8 +414,8 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
                 {SIZES.map((s) => <option key={s} value={s}>{SIZE_LABEL[s]}</option>)}
               </select>
             </label>
-            <input placeholder="Traits ajoutés (ex. Frénésie, Magique)" value={(o.addTraits ?? []).join(', ')}
-              onChange={(e) => { const a = e.target.value.split(',').map((t: string) => t.trim()).filter(Boolean); upd({ addTraits: a.length ? a : undefined }); }} />
+            <input placeholder="Traits ajoutés (ex. Frénésie, Magique)" value={(o.addTraits ?? []).map(formatTrait).join(', ')}
+              onChange={(e) => { const a = e.target.value.split(',').map((t: string) => t.trim()).filter(Boolean).map(parseTraitInstance); upd({ addTraits: a.length ? a : undefined }); }} />
             <label className="dr"><input type="checkbox" checked={o.allyOfCaster !== false} onChange={(e) => upd({ allyOfCaster: e.target.checked ? true : false })} /> alliée du lanceur</label>
             <label className="dr"><input type="checkbox" checked={!!o.despawnIfCasterDown} onChange={(e) => upd({ despawnIfCasterDown: e.target.checked || undefined })} /> se dissipe si le lanceur tombe</label>
           </>
@@ -432,6 +440,49 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {op.op === 'narrative' && (
           <textarea placeholder="Texte journalisé (arbitrage MJ)" value={o.text ?? ''} onChange={(e) => upd({ text: e.target.value })} />
+        )}
+        {op.op === 'test' && (
+          <>
+            <input placeholder="Compétence (ex. Résistance) — option" value={o.skill ?? ''} onChange={(e) => upd({ skill: e.target.value || undefined })} />
+            <label className="dr">Carac.
+              <select value={o.characteristic ?? ''} onChange={(e) => upd({ characteristic: (e.target.value || undefined) as CharKey | undefined })}>
+                <option value="">— (de la compétence) —</option>
+                {CHARS.map((c) => <option key={c} value={c}>{CHAR_LABELS[c]}</option>)}
+              </select>
+            </label>
+            <label className="dr">Difficulté
+              <select value={o.difficulty} disabled={!!o.argDifficulty} onChange={(e) => upd({ difficulty: e.target.value })}>
+                {DIFFICULTIES.map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
+              </select>
+            </label>
+            <label className="dr"><input type="checkbox" checked={!!o.argDifficulty} onChange={(e) => upd({ argDifficulty: e.target.checked || undefined })} /> Difficulté de l'arg d'instance</label>
+            <input placeholder="Immunité qui annule (ex. poison)" value={o.unlessImmune ?? ''} onChange={(e) => upd({ unlessImmune: e.target.value || undefined })} />
+            <input placeholder="Groupes requis (CSV — ex. Criminel)" value={(o.onlyGroups ?? []).join(', ')} onChange={(e) => { const a = csv(e.target.value); upd({ onlyGroups: a.length ? a : undefined }); }} />
+            <input placeholder="Groupes exclus (CSV — ex. Mort-vivant)" value={(o.exceptGroups ?? []).join(', ')} onChange={(e) => { const a = csv(e.target.value); upd({ exceptGroups: a.length ? a : undefined }); }} />
+            <div className="eff-sub"><div className="mini-title">Sur ÉCHEC</div><GameOpEditor ops={o.onFail ?? []} onChange={(ops) => upd({ onFail: ops })} /></div>
+            <div className="eff-sub"><div className="mini-title">Sur RÉUSSITE (option)</div><GameOpEditor ops={o.onSuccess ?? []} onChange={(ops) => upd({ onSuccess: ops.length ? ops : undefined })} /></div>
+            <label className="dr"><input type="checkbox" checked={!!o.onFailHard} onChange={(e) => upd({ onFailHard: e.target.checked ? { dr: -2, ops: [] } : undefined })} /> Palier d'échec aggravé</label>
+            {o.onFailHard && (
+              <div className="eff-sub">
+                <label className="dr">si DR ≤ <input type="number" style={{ width: '3.4em' }} value={o.onFailHard.dr} onChange={(e) => upd({ onFailHard: { ...o.onFailHard, dr: Number(e.target.value) || 0 } })} /></label>
+                <GameOpEditor ops={o.onFailHard.ops} onChange={(ops) => upd({ onFailHard: { ...o.onFailHard, ops } })} />
+              </div>
+            )}
+          </>
+        )}
+        {op.op === 'opposedTest' && (
+          <>
+            <label className="dr">Attaquant
+              <select value={o.attacker} onChange={(e) => upd({ attacker: e.target.value as CharKey })}>{CHARS.map((c) => <option key={c} value={c}>{CHAR_LABELS[c]}</option>)}</select>
+            </label>
+            <input placeholder="Compétence attaquant — option" value={o.attackerSkill ?? ''} onChange={(e) => upd({ attackerSkill: e.target.value || undefined })} />
+            <label className="dr">Défenseur
+              <select value={o.defender} onChange={(e) => upd({ defender: e.target.value as CharKey })}>{CHARS.map((c) => <option key={c} value={c}>{CHAR_LABELS[c]}</option>)}</select>
+            </label>
+            <input placeholder="Compétence défenseur — option" value={o.defenderSkill ?? ''} onChange={(e) => upd({ defenderSkill: e.target.value || undefined })} />
+            <div className="eff-sub"><div className="mini-title">Si l'attaquant l'emporte</div><GameOpEditor ops={o.onWin ?? []} onChange={(ops) => upd({ onWin: ops })} /></div>
+            <div className="eff-sub"><div className="mini-title">Sinon (option)</div><GameOpEditor ops={o.onLose ?? []} onChange={(ops) => upd({ onLose: ops.length ? ops : undefined })} /></div>
+          </>
         )}
         {/* Repli JSON pour toute op sans éditeur dédié — paramètres TOUJOURS lisibles/modifiables sans perte. */}
         {!DEDICATED.has(op.op) && (

@@ -56,8 +56,8 @@ import { canStrikeFirst } from '../engine/qualities/dispatch';
 import {
   wardSaves, hasChampionDefense, banishedAtZero,
   isStupid, hasRage, isUnstable, isBestial, isTerritorial, hasPerturbingAura,
-  traitSeesInDark, isColdBlooded, bellicosePsychImmune, magicResistanceOf, immunityTypes, hasStealthAgBonus, flyMeters, runMultiplier,
-  hasTraitKey, asTrait,
+  traitSeesInDark, isColdBlooded, bellicosePsychImmune, magicResistanceOf, hasStealthAgBonus, flyMeters, runMultiplier,
+  hasTraitKey,
 } from '../engine/traits/dispatch';
 import {
   isMagicMissile,
@@ -93,16 +93,16 @@ import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } from '../engine/skills';
-import { findSkill, findManeuverById } from '../data';
+import { findSkill, findManeuverById, findDomain } from '../data';
 import { norm } from '../lib/normalize';
 import { slugId } from '../data/slug';
 import { recomputeLoadout, itemFromTrapping, customTrapping, weaponWithAmmo, compatibleAmmo, damageArmour } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks } from '../engine/conditions';
-import { creatureAttacks, venomDifficulty, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
+import { creatureAttacks, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { suffocationTick } from '../engine/suffocation';
-import { domainOf, domainOnHitRiders, domainMissileMods, ghurFearAfterCast, hasArcaneTalent } from '../engine/domainAttributes';
+import { domainOf, domainOnHitEffects, domainMissileMods, domainAfterCast, hasArcaneTalent } from '../engine/domainAttributes';
 import { losBlockingTiles, decayZones, zonesRoundTick, crossZones, discTiles, wallTiles, metersToTiles, resolveZoneMeters, type BattleZone } from './zones';
 import { carryOverState } from '../engine/persistence';
 import { rollContraction, contractDisease, hasActiveSymptom, contagiousDiseases, DISEASE_DEFS } from '../engine/disease';
@@ -112,7 +112,7 @@ import { openRest, placesOfKind } from './restFlow';
 import { rollCritical, critLocationRoll, permanentAmputations, type CriticalResolved } from '../engine/critical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaFromKind, escalateSensoryLoss, consolidateAmputations } from '../engine/trauma';
-import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold, enchantOnHitConditions, enchantOnHitTests } from '../engine/weaponDamage';
+import { effectiveWeaponDamage, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold } from '../engine/weaponDamage';
 import { TIME_COST } from '../engine/timeCost';
 import { DAY_PHASES, minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
 import { restRecovery } from '../engine/rest';
@@ -1234,15 +1234,14 @@ export function applyAttackResult(
   // Tests de Contraction post-combat (finalizeBattle, LDB 20 l.32/49). Rongeur Infecté → Fièvre du Rongeur.
   if (res.hit && res.woundsLost && target.kind === 'hero') {
     const atkTraits = attacker.traits ?? [];
-    if (hasTraitKey(atkTraits, 'Infecté')) {
+    if (hasTraitKey(atkTraits, 'infecte')) {
       target.woundedByInfected = true;
       if (/rat|skaven|rongeur/i.test(attacker.name)) target.woundedByRodent = true;
     }
     // Munition Infecté (Aux Armes p.102 — ferraille/débris souillés) : exposition à l'infection.
     if (hasQuality(weapon, 'Infecté')) target.woundedByInfected = true;
-    for (const x of atkTraits) {
-      const t = asTrait(x);
-      if (t.key === 'Maladie' && t.arg && !(target.diseaseExposure ?? []).includes(t.arg)) {
+    for (const t of atkTraits) {
+      if (t.id === 'maladie' && t.arg && !(target.diseaseExposure ?? []).includes(t.arg)) {
         target.diseaseExposure = [...(target.diseaseExposure ?? []), t.arg];
       }
     }
@@ -1293,49 +1292,6 @@ export function applyAttackResult(
   }
   // Interruption du rechargement (LDB 63-Armures l.29) : un héros touché en plein rechargement recommence à zéro.
   if (res.hit && res.woundsLost && target.kind === 'hero' && (target.reloadProgress ?? 0) > 0) target.reloadProgress = 0;
-  // Qualités à effet « à la touche » (hook `onHit` du registre) : ex. Assommante — touche à la Tête →
-  // Test opposé F vs Endurance+Résistance ; si l'attaquant l'emporte, la cible gagne l'État Sonné (LDB Armes l.268).
-  let assommanteLog: string | null = null;
-  if (res.hit) {
-    for (const { def } of resolveQualities(weapon)) {
-      const oh = def.onHit;
-      if (!oh || (oh.location && res.location !== oh.location)) continue;
-      const skillAdv = oh.opposed.defenderSkill
-        ? target.skills.find((s) => s.skillId === (findSkill(oh.opposed.defenderSkill!)?.id ?? slugId(oh.opposed.defenderSkill!)))?.advances ?? 0
-        : 0;
-      const defVal = effectiveChar(target, oh.opposed.defender) + skillAdv;
-      if (opposedTest(effectiveChar(attacker, oh.opposed.attacker), defVal, battleRng()).winner === 'attacker') {
-        addCondition(target, oh.condition);
-        assommanteLog = `${target.name} est ${oh.condition} (${def.key}).`;
-        // Modale seulement si un héros subit OU inflige (spec coop §4bis) ; sinon journal/bandeau.
-        if (target.kind === 'hero' || attacker.kind === 'hero')
-          pushReveal(set, { kind: 'assommante', title: def.key, lines: [assommanteLog], subjectId: target.id, severity: 'minor' }); // « un jet = une modale » (Test opposé)
-      }
-    }
-    // États « à la touche » des ENCHANTEMENTS d'arme actifs du porteur (Jalon 2.6 — Marteau
-    // ardent : « toute cible frappée reçoit En flammes et À Terre » ; Épée ardente de Rhuin :
-    // « quiconque est frappé gagne +1 En flammes »). RAW : sans Test, à la touche.
-    if (weapon.type === 'melee') {
-      const inGroups = (only?: string[], except?: string[]) =>
-        (!only || only.some((g) => groupMatch(g, target.groups ?? [])))
-        && (!except || !except.some((g) => groupMatch(g, target.groups ?? [])));
-      for (const cond of enchantOnHitConditions(attacker, weapon)) {
-        if (!inGroups(cond.onlyGroups)) continue; // ex. « Criminel » seulement (système de Groupes)
-        addCondition(target, cond.name, cond.value ?? 1);
-        assommanteLog = `${target.name} reçoit ${cond.value ?? 1} État ${cond.name} (arme enchantée).`;
-      }
-      // Test à la touche gaté par Groupe (Épée de justice : un Criminel teste Résistance ou tombe
-      // Inconscient ; Morsure de l'hiver : une cible vivante teste ou gagne Sonné). RAW : Test à la touche.
-      for (const ht of enchantOnHitTests(attacker, weapon)) {
-        if (!ht || !inGroups(ht.onlyGroups, ht.exceptGroups)) continue;
-        const t = rollTest(testValue(target, ht.skill), ht.difficulty, battleRng());
-        if (!t.success) {
-          for (const c of ht.onFail) addCondition(target, c.name, c.value ?? 1);
-          assommanteLog = `${target.name} échoue à son Test de ${ht.skill} (arme enchantée) — ${ht.onFail.map((c) => c.name).join(', ')}.`;
-        }
-      }
-    }
-  }
   // Avantage (LDB Déplacement l.30-40) : +1 au vainqueur du Test opposé / sur une
   // Blessure infligée sans Test opposé (tir) ; perte de TOUT l'Avantage en échouant
   // un Test opposé ou en perdant une Blessure.
@@ -1374,7 +1330,6 @@ export function applyAttackResult(
   const evKind: CombatEventKind = weapon.type === 'ranged' ? 'shoot' : 'attack';
   const log = [...battle.log, ev(evKind, res.log, attacker.id, target.id)];
   log.push(...evLines(critLog, 'crit', attacker.id, target.id));
-  if (assommanteLog) log.push(ev('condition', assommanteLog, target.id));
   // Nerveux (LDB 85 p.340) : « facilement effrayée par […] les bruits forts » — un coup d'arme à
   // feu (Poudre noire/Explosion) terrifie les créatures Nerveuses présentes : +3 État Brisé.
   if (weapon.type === 'ranged' && isFirearmQuality(weapon)) {
@@ -1383,10 +1338,11 @@ export function applyAttackResult(
       if (!isOutOfAction(c)) for (const line of fireTriggers(get, c, 'onStartled', {})) log.push(ev('condition', line, c.id));
     }
   }
-  // Effets DÉCLENCHÉS « à la touche » authorés (donnée éditable) : Traits de l'attaquant (Toile…) ET
-  // Atouts de l'arme (Immobilisante, Atout custom « 1d10 + Empêtré »…). UN dispatcher générique
-  // (state/triggeredEffects) remplace les handlers en dur — Trait et Atout traités à l'identique.
-  if (res.hit) for (const line of fireTriggers(get, attacker, 'onHit', { victim: target, weapon, rng: battleRng() })) log.push(ev('condition', line, target.id));
+  // Effets DÉCLENCHÉS « à la touche » authorés (donnée éditable) : Traits de l'attaquant (Toile, Venin…),
+  // Atouts de l'arme (Assommante, Immobilisante…) et Enchantements actifs — agrégés et appliqués par UN
+  // dispatcher générique (state/triggeredEffects). `location` (Assommante Tête) et `woundsDealt` (Venin
+  // sur PB) alimentent les Conditions Flow de gating.
+  if (res.hit) for (const line of fireTriggers(get, attacker, 'onHit', { victim: target, weapon, woundsDealt: res.woundsLost, location: res.location, rng: battleRng() })) log.push(ev('condition', line, target.id));
   // Déstabilisante (Aux Armes p.89) : après une touche, l'attaquant PEUT dépenser des Avantages pour
   // un Test opposé Force/Athlétisme ; gagné, la cible est mise À Terre. HÉROS → étape de CHOIX de la
   // cascade d'attaque (pushCombatStep, applier 'knockdown') ; IA → déclenché d'office.
@@ -1865,27 +1821,14 @@ export function creatureAttackKind(weaponName: string): string | undefined {
   return undefined;
 }
 
-/** Difficulté de Test (clé) depuis le libellé FR de la Difficulté du Venin (défaut Intermédiaire). */
-function venomDiffKey(label: string): import('../engine/types').Difficulty {
-  const l = label.toLowerCase();
-  if (l.includes('très facile')) return 'tresFacile';
-  if (l.includes('facile')) return 'facile';
-  if (l.includes('accessible')) return 'accessible';
-  if (l.includes('très difficile')) return 'tresDifficile';
-  if (l.includes('difficile')) return 'difficile';
-  if (l.includes('complexe')) return 'complexe';
-  return 'intermediaire';
-}
-
-/** Effets RAW post-touche d'une attaque gratuite (sur PB infligés) :
- *  - Attaque caudale → cible de Taille INFÉRIEURE → À Terre (LDB 85 l.338) ;
- *  - Atout Venin de la créature → Test de Résistance (Endurance) à la Difficulté du Venin ;
- *    sur un échec, la cible subit l'État Empoisonné (LDB 85 l.326, voir p.168). */
+/** Effets RAW post-touche d'une attaque gratuite (sur PB infligés) : Attaque caudale → cible de Taille
+ *  INFÉRIEURE → À Terre (LDB 85 l.338). Le Venin est un `effects` du trait (dispatché par le
+ *  `fireTriggers('onHit')` d'`applyAttackResult`, atteint aussi par les attaques gratuites). */
 export function applyFreeAttackEffects(get: Get, attacker: Combatant, target: Combatant, kind: string, res: AttackResult): void {
   if (!res.hit) return; // les effets se déclenchent sur une touche réussie
   const traits = attacker.traits ?? [];
   // Constricteur (Hydre/Pieuvre, LDB 85) : toute touche → Empêtré (+ Empoignade possible).
-  if (hasTraitKey(traits, 'Constricteur') && !hasCondition(target, 'Empêtré')) {
+  if (hasTraitKey(traits, 'constricteur') && !hasCondition(target, 'Empêtré')) {
     addCondition(target, 'Empêtré');
     const cond = target.conditions.find((c) => c.name === 'Empêtré'); if (cond) cond.sourceId = attacker.id; // source du Test opposé de Force (LDB 16 l.61)
     get().log(`${target.name} est Empêtré (Constricteur).`);
@@ -1898,22 +1841,11 @@ export function applyFreeAttackEffects(get: Get, attacker: Combatant, target: Co
   if (mEffects.length) applyTriggeredEffects(get, attacker, mEffects, 'onHit', { victim: target, woundsDealt: res.woundsLost, rng: battleRng() }).forEach((l) => get().log(l));
   // Vampirique (Vampire/Varghulf, LDB 85) : Morsure infligeant des PB → l'attaquant récupère autant.
   // (DIFFÉRÉ : effet gaté par le KIND d'attaque + possession d'un trait → vocabulaire manquant.)
-  if (kind === 'morsure' && hasTraitKey(traits, 'Vampirique')) {
+  if (kind === 'morsure' && hasTraitKey(traits, 'vampirique')) {
     attacker.wounds.current = Math.min(attacker.wounds.max, attacker.wounds.current + res.woundsLost);
     get().log(`${attacker.name} draine ${res.woundsLost} Blessure(s) (Vampirique).`);
   }
-  const vd = venomDifficulty(attacker.traits ?? []);
-  // Immunité (Type) (LDB 85 p.339) : un type « Poison » ignore totalement le Venin.
-  if (vd && immunityTypes(target.traits).some((ty) => ty.includes('poison'))) {
-    get().log(`${target.name} est immunisé au poison (Immunité).`);
-  } else if (vd && !hasCondition(target, 'Empoisonné')) {
-    const resAdv = target.skills.find((s) => s.skillId === 'resistance')?.advances ?? 0;
-    const t = rollTest(effectiveChar(target, 'E') + resAdv, venomDiffKey(vd), battleRng());
-    if (!t.success) {
-      addCondition(target, 'Empoisonné');
-      get().log(`${target.name} échoue à résister au Venin et est Empoisonné.`);
-    } else get().log(`${target.name} résiste au Venin.`);
-  }
+  // (Venin = `effects` du trait `Venin`, appliqué par le `fireTriggers('onHit')` d'`applyAttackResult`.)
 }
 
 /** Cible d'une attaque gratuite : adversaire adjacent actif (Piétinement exige une Taille inférieure). */
@@ -2868,28 +2800,14 @@ export function applyCast(
     for (const t of [target, ...extraTargets]) {
       // Une cible qui a EMPORTÉ l'opposition (spec.opposed) résiste au Sort entier : pas de rider de Domaine.
       if (extras?.opposedOutcome?.[t.id]?.resisted) continue;
-      logLines.push(...domainOnHitRiders(caster, t, spell, t.kind !== caster.kind));
+      // Riders « à la touche » du Domaine = DONNÉE (`domains.json`), dispatchés comme les autres onHit ;
+      // le gating « cible adverse / vivante / résiste par Talent » vit dans les Conditions Flow.
+      logLines.push(...applyTriggeredEffects(get, caster, domainOnHitEffects(spell), 'onHit', { victim: t, rng: battleRng() }));
     }
-    // Cieux (l.87) : le Sort « se dirige vers toutes les autres cibles dans les 2 mètres » de la
-    // cible (sauf Magie des Arcanes (Cieux)) — BFM Dégâts, mitigés BE + PA (PA métal ignorées).
-    if (domainOf(spell) === 'Cieux' && battle && target.pos) {
-      const bfm = bonus(effectiveChar(caster, 'FM'));
-      const splashed = battle.combatants.filter((c) =>
-        c.id !== target.id && c.id !== caster.id && !isOutOfAction(c) && c.pos
-        && combatDistance(target, c) <= 1 && !hasArcaneTalent(c, 'Cieux'));
-      for (const s of splashed) {
-        const totalAP = Math.max(0, s.armour.corps ?? 0);
-        const dom = domainMissileMods(s, spell, 'corps', totalAP);
-        const wl = Math.max(0, bfm - bonus(effectiveChar(s, 'E')) - Math.max(0, totalAP - dom.apIgnored));
-        if (wl > 0) {
-          loseWounds(s, wl);
-          if (s.wounds.current <= 0) applyZeroWounds(s);
-        }
-        logLines.push(`L'arc d'Azyr saute sur ${s.name} : ${wl} Blessure(s) (attribut des Cieux).`);
-      }
-    }
-    // Bête (l.9) : le lanceur gagne Peur 1 pour 1d10 Rounds après un Sort de la Bête réussi.
-    logLines.push(...ghurFearAfterCast(caster, spell, battleRng()));
+    // (L'arc de zone des Cieux/Azyr est un `effects` AUTHORÉ du domaine — ciblage `on:{near:'victim'}` +
+    //  op `wounds bypassArmour:'metal'` — dispatché par le `domainOnHitEffects` ci-dessus, plus de code dédié.)
+    // Effet post-incantation au LANCEUR (Bête → Peur 1) — paramètre en données (DomainData.afterCast).
+    logLines.push(...domainAfterCast(caster, spell, battleRng()));
     // Effets sur le LANCEUR (op casterOps — Vol de vie « retirez tout État Exténué dont vous
     // souffrez », buffs de soi d'un sort offensif) : appliqués une seule fois par lancement.
     const castSpec = spellSpecFor(spell);
@@ -2981,27 +2899,21 @@ function placeSpellZone(
  *  Arcanes ») — jeu sans MJ : seuls les Domaines au Type canonique évident sont mappés
  *  (Feu→Feu, Cieux→Électricité, Métal→Corrosif, Ombres→Fumée) ; les autres soufflent des Dégâts purs. */
 function domainBreathType(caster: Combatant): string | undefined {
-  const domain = (caster.talents.find((t) => t.talentId === 'magie-des-arcanes')?.spec ?? '').toLowerCase();
-  if (/feu/.test(domain)) return 'Feu';
-  if (/cieux/.test(domain)) return 'Électricité';
-  if (/m[ée]tal/.test(domain)) return 'Corrosif';
-  if (/ombre/.test(domain)) return 'Fumée';
-  return undefined;
+  return findDomain(caster.talents.find((t) => t.talentId === 'magie-des-arcanes')?.spec)?.breathType;
 }
 
-/** Attribut d'Aqshy (LDB 48 l.157 — L14) : « Chaque État Enflammé situé à une distance en mètres
- *  égale à votre Bonus de Force Mentale ajoute +10 aux tentatives de Focalisation ou d'Incantation
- *  avec Aqshy. » — +10 par PION En flammes porté par un combattant à portée du LANCEUR.
- *  (Volet Focalisation : non câblé — différé documenté.) */
+/** Bonus d'incantation CONDITIONNEL du Domaine (Aqshy l.157 : +`bonus` par État `perCondition` situé à
+ *  `radiusStat` m du lanceur) — PARAMÈTRE en données (`DomainData.castBonus`) ; géométrie résolue ici. */
 export function domainCastBonus(s: GameState, caster: Combatant, spell: { type?: string; subType?: string | null }): number {
-  if (domainOf(spell) !== 'Feu' || !caster.pos) return 0;
-  const radius = Math.max(1, Math.ceil(bonus(effectiveChar(caster, 'FM')) / 2));
+  const cb = findDomain(domainOf(spell))?.castBonus;
+  if (!cb || !caster.pos) return 0;
+  const radius = Math.max(1, Math.ceil(bonus(effectiveChar(caster, cb.radiusStat)) / 2));
   let pions = 0;
   for (const c of s.battle?.combatants ?? []) {
     if (!c.pos || isOutOfAction(c)) continue;
-    if (combatDistance(caster, c) <= radius) pions += stacks(c, 'En flammes');
+    if (combatDistance(caster, c) <= radius) pions += stacks(c, cb.perCondition);
   }
-  return 10 * pions;
+  return cb.bonus * pions;
 }
 
 /** « N'écoutez point la Sorcière » (LDB 42) : « Tous les Sorts qui ciblent quelque chose ou
@@ -3061,7 +2973,7 @@ export function finalizeBattle(get: Get, set: SetFn): void {
   // gain de Points selon le niveau et le DR (corruptionGain), puis seuil/mutation via gainCorruption.
   const degrees = battle.combatants
     .filter((c) => c.kind !== 'hero')
-    .flatMap((c) => (c.traits ?? []).map(asTrait).filter((t) => t.key === 'Corruption').map((t) => t.arg).filter(Boolean));
+    .flatMap((c) => (c.traits ?? []).filter((t) => t.id === 'corruption').map((t) => t.arg).filter(Boolean));
   if (degrees.length) {
     const rank = { mineure: 0, modérée: 1, majeure: 2 } as Record<string, number>;
     const worst = degrees.reduce((a, b) => (rank[b!.toLowerCase()] > rank[a!.toLowerCase()] ? b : a))!;
@@ -3894,7 +3806,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   // pas seule (le couple bouge au tour du cavalier). Sans le Trait Nerveux, elle peut consacrer SA propre
   // Action à attaquer un adversaire au contact ; sinon elle passe son tour.
   if (enemy.riderId) {
-    const nerveux = hasTraitKey(enemy.traits, 'Nerveux');
+    const nerveux = hasTraitKey(enemy.traits, 'nerveux');
     const foe = nerveux || !canAct ? undefined
       : battle.combatants.find((c) => c.kind !== enemy.kind && !isOutOfAction(c) && !!c.pos && combatDistance(enemy, c) <= meleeReachTiles(enemy.weapons));
     if (foe) { attackThenAdvance(foe); return; }

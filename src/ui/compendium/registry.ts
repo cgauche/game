@@ -9,11 +9,12 @@
  */
 import {
   species, careers, characteristics, classes, skills, talents,
-  qualities, trappings, etats, creatures, traits, spells, maneuvers, mutations, mutationTables, gods,
+  qualities, trappings, etats, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
   stars, locations, books, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel,
-  skillInstanceLabel, talentConcrete,
+  skillInstanceLabel, talentConcrete, careersForSpecies, eyes, hairs, details,
 } from '../../data';
 import { statName } from '../../engine/statEntry';
+import { splitTopLevelOu } from '../../engine/careerSlots';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import { traitLabels } from '../../engine/traits/dispatch';
 import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, type Combatant, type HitLocation } from '../../engine/types';
@@ -44,12 +45,20 @@ export type CodexRow =
   /** Lien vers une autre fiche. `label` = clé de résolution (base) ; `show` = libellé affiché,
    *  qui PORTE les Indices (« 8 Tentacules +8 ») et est transmis au Codex/popover comme instance. */
   | { t: 'ref'; category: string; label: string; show: string }
+  /** CHOIX « A ou B » : chaque option est un lien cross-réf cliquable, séparées par « ou ». */
+  | { t: 'choice'; category: string; options: { label: string; show: string }[] }
   /** Mini sous-en-tête à l'intérieur d'une section (« Compétences », « Talents »…). */
   | { t: 'sub'; label: string };
 export interface CodexSection {
   title: string;
   layout?: 'list' | 'chips' | 'grid';
   rows: CodexRow[];
+}
+/** Regroupement EXPLICITE de sections en UN onglet de fiche (ex. « Profil » = carac+compétences+
+ *  talents). Quand une catégorie le fournit, l'onglet groupe ses sections ; sinon = un onglet/section. */
+export interface CodexTab {
+  title: string;
+  sections: CodexSection[];
 }
 /** Entrée normalisée, rendue uniformément par `CodexEntry`. */
 export interface CodexItem {
@@ -60,6 +69,8 @@ export interface CodexItem {
   meta?: CodexFact[];
   /** Sections riches (statbloc, niveaux de carrière, bénédictions…) avec liens cross-réf. */
   sections?: CodexSection[];
+  /** Regroupement EXPLICITE des sections en onglets (sinon : un onglet par section). */
+  tabs?: CodexTab[];
   /** Corps prose : texte simple, OU HTML si `html` (lore des Dieux/Livres). */
   desc?: string;
   html?: boolean;
@@ -111,6 +122,85 @@ const sections = (...xs: (CodexSection | null | undefined | false)[]): CodexSect
 const MANEUVER_ACTIVATION_LABEL: Record<string, string> = { action: 'Action', free: 'Gratuite', charge: 'À la Charge' };
 const MANEUVER_TARGETING_LABEL: Record<string, string> = { melee: 'Mêlée', ranged: 'Distance', zone: 'Zone', allFoes: 'Tous les ennemis' };
 
+/**
+ * SOURCE UNIQUE du contenu structuré d'une fiche de race — onglets Profil / Carrières / Détails.
+ * Consommée par le Codex (`registry.races`) ET la page de race du créateur (`SpeciesZones`), pour
+ * qu'elles ne puissent plus diverger. Données tirées des MÊMES tables que le créateur
+ * (`careersForSpecies`, `details`, `eyes`, `hairs`). Les faits-clés (M/Destin/Résilience) restent en
+ * en-tête (méta), pas ici ; le tirage aléatoire (création) est ajouté PAR le créateur.
+ */
+/** Une ENTRÉE de compétence/talent de race : « A ou B » → ligne de CHOIX (chaque option cliquable),
+ *  sinon un simple lien cross-réf. PARTAGÉE (Codex + créateur) → split identique des deux côtés. */
+const choiceOrRef = (category: string, entry: string): CodexRow => {
+  const opts = splitTopLevelOu(entry);
+  return opts.length > 1
+    ? { t: 'choice', category, options: opts.map((o) => ({ label: statName(o), show: o })) }
+    : refRow(category, entry);
+};
+
+/** Section « Caractéristiques de base » d'une race — chaque carac affiche son écart racial (±). */
+export function raceCharSection(s: (typeof species)[number]): CodexSection {
+  const rows: CodexRow[] = CHAR_KEYS.map((k) => {
+    const base = s.baseChar?.[k] ?? 20;
+    const diff = base - 20;
+    return { t: 'kv', k, v: diff !== 0 ? `${base} (${diff > 0 ? '+' : ''}${diff})` : String(base) };
+  });
+  return { title: 'Caractéristiques de base', layout: 'grid', rows };
+}
+
+/** Section « Compétences de race » — chips cliquables, « A ou B » éclaté en choix. */
+export function raceSkillSection(s: (typeof species)[number]): CodexSection | null {
+  const rows = s.skills.map((a) => choiceOrRef('skills', advancementLabel('skills', a)));
+  return rows.length ? { title: 'Compétences de race', layout: 'chips', rows } : null;
+}
+
+/** Section « Talents de race » — chips cliquables, « A ou B » éclaté en choix. */
+export function raceTalentSection(s: (typeof species)[number]): CodexSection | null {
+  const rows = s.talents.map((a) => choiceOrRef('talents', advancementLabel('talents', a)));
+  return rows.length ? { title: 'Talents de race', layout: 'chips', rows } : null;
+}
+
+/** Section « Carrières accessibles » d'une race — groupées par classe, cliquables (→ fiche carrière). */
+export function raceCareerSection(s: (typeof species)[number]): CodexSection | null {
+  const accessible = careersForSpecies(s.refCareer);
+  const rows: CodexRow[] = [];
+  for (const cl of classes) {
+    const list = accessible.filter((c) => c.class === cl.label);
+    if (list.length) rows.push({ t: 'sub', label: cl.label }, ...list.map((c) => refRow('careers', c.label)));
+  }
+  return rows.length ? { title: 'Carrières accessibles', layout: 'chips', rows } : null;
+}
+
+/** Section « Détails » d'une race — âge, taille, yeux & cheveux, noms (tables de création). */
+export function raceDetailSection(s: (typeof species)[number]): CodexSection {
+  const ref = s.refChar;
+  const txt = details.texts;
+  const eyeColors = [...new Set(eyes.map((e) => e.color[ref]).filter(Boolean))];
+  const hairColors = [...new Set(hairs.map((e) => e.color[ref]).filter(Boolean))];
+  const rows: CodexRow[] = [
+    { t: 'sub', label: 'Âge' },
+    { t: 'text', text: `${details.ageBase[ref] ?? details.ageBase['Humain']} + ${Math.round(details.ageRoll[ref] ?? 1)}d10 ans` },
+  ];
+  if (txt.age.bySpecies[ref]) rows.push({ t: 'text', text: txt.age.bySpecies[ref], html: true });
+  rows.push({ t: 'sub', label: 'Taille' }, { t: 'text', text: `${details.heightBase[ref] ?? details.heightBase['Humain']} + ${Math.round(details.heightRoll[ref] ?? 1)}d10 cm` });
+  const tailleTxt = txt.taille.bySpecies[ref] ?? txt.taille.all;
+  if (tailleTxt) rows.push({ t: 'text', text: tailleTxt, html: true });
+  if (eyeColors.length) rows.push({ t: 'sub', label: 'Yeux' }, { t: 'text', text: eyeColors.join(', ') });
+  if (hairColors.length) rows.push({ t: 'sub', label: 'Cheveux' }, { t: 'text', text: hairColors.join(', ') });
+  const namesTxt = txt.nom.bySpecies[ref] ?? txt.nom.bySpecies['Humain'];
+  if (namesTxt) rows.push({ t: 'sub', label: 'Noms' }, { t: 'text', text: namesTxt, html: true });
+  return { title: 'Âge, taille & apparence', layout: 'list', rows };
+}
+
+export function raceFicheTabs(s: (typeof species)[number]): CodexTab[] {
+  const career = raceCareerSection(s);
+  return [
+    { title: 'Profil', sections: sections(raceCharSection(s), raceSkillSection(s), raceTalentSection(s)) },
+    ...(career ? [{ title: 'Carrières', sections: [career] }] : []),
+    { title: 'Détails', sections: [raceDetailSection(s)] },
+  ];
+}
+
 export const CODEX: CodexCategory[] = [
   {
     key: 'races', label: 'Races', group: 'Personnage',
@@ -118,13 +208,13 @@ export const CODEX: CodexCategory[] = [
       label: s.label,
       group: family(s.label),
       desc: s.desc,
+      html: true, // desc = HTML (mêmes données que le créateur, qui le rend via LoreText)
       source: src(s.source),
+      // Aperçu rig DATA-DRIVEN (même chemin que le créateur) : la fiche de race montre sa silhouette.
+      appearance: { species: s.label },
       meta: facts(fact('Mouvement', s.movement), fact('Destin', s.fate?.fate), fact('Résilience', s.fate?.resilience)),
-      sections: sections(
-        { title: 'Caractéristiques de base', layout: 'grid', rows: kvRows(Object.entries(s.baseChar ?? {})) },
-        chips("Compétences d'espèce", 'skills', s.skills.map((a) => advancementLabel('skills', a))),
-        chips("Talents d'espèce", 'talents', s.talents.map((a) => advancementLabel('talents', a))),
-      ),
+      // Contenu = SOURCE UNIQUE partagée avec le créateur (plus de ré-implémentation divergente).
+      tabs: raceFicheTabs(s),
     })),
   },
   {
@@ -219,7 +309,7 @@ export const CODEX: CodexCategory[] = [
         fact('PA localisé', m.apLocations ? Object.entries(m.apLocations).map(([loc, n]) => `${HIT_LOCATION_LABELS[loc as HitLocation] ?? loc} +${n}`).join(', ') : null),
         fact('Arme naturelle', m.derivedWeapon ? `${m.derivedWeapon.name} (${m.derivedWeapon.damage})` : null),
       ),
-      sections: sections(passiveSection(m.passive), chips('Traits conférés', 'traits', m.traits)),
+      sections: sections(passiveSection(m.passive), chips('Traits conférés', 'traits', traitLabels(m.traits))),
     })),
   },
   {
@@ -236,6 +326,18 @@ export const CODEX: CodexCategory[] = [
         fact('Portée', m.range),
         fact('Cible', MANEUVER_TARGETING_LABEL[m.targeting]),
       ),
+    })),
+  },
+  {
+    key: 'domains', label: 'Domaines', group: 'Magie',
+    items: domains.map((d) => ({
+      label: d.label, desc: d.desc, source: src(d.source),
+      meta: facts(
+        fact('Projectile', d.missile ? `ignore les PA ${d.missile.bypass === 'metal' ? 'métalliques' : 'non magiques'}${d.missile.bonusFromBypass ? ' (+ Dégâts)' : ''}` : null),
+        fact('Bonus d’incantation', d.castBonus ? `+${d.castBonus.bonus} par « ${d.castBonus.perCondition} » à ≤ B${d.castBonus.radiusStat} m` : null),
+        fact('Post-incantation', d.afterCast?.grantTrait ? `${d.afterCast.grantTrait} (1d${d.afterCast.durationDice ?? 1} Rounds)` : null),
+      ),
+      sections: sections(effectsSection(d.effects, 'Riders à la touche')),
     })),
   },
   {
@@ -342,6 +444,6 @@ export function combatantSections(c: Combatant): CodexSection[] {
     chips('Traits', 'traits', traitLabels(c.traits)),
     skillRows.length ? { title: 'Compétences', layout: 'chips', rows: skillRows } : null,
     chips('Talents', 'talents', (c.talents ?? []).map((t) => talentConcrete(t))),
-    chips('Sorts', 'spells', c.spells),
+    chips('Sorts', 'spells', (c.spells ?? []).map((id) => refLabel('spells', { id }))),
   );
 }

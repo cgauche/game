@@ -3947,7 +3947,9 @@
      "ref": "Orc",
      "combat": {
       "optionals": [
-       "Insensible à la douleur"
+       {
+        "id": "insensible-a-la-douleur"
+       }
       ]
      }
     },
@@ -4827,8 +4829,13 @@
        "B": 5
       },
       "traits": [
-       "Nuée",
-       "Taille (Petite)"
+       {
+        "id": "nuee"
+       },
+       {
+        "id": "taille",
+        "arg": "Petite"
+       }
       ]
      }
     },
@@ -4850,8 +4857,13 @@
        "B": 5
       },
       "traits": [
-       "Nuée",
-       "Taille (Petite)"
+       {
+        "id": "nuee"
+       },
+       {
+        "id": "taille",
+        "arg": "Petite"
+       }
       ]
      }
     },
@@ -5809,7 +5821,9 @@
      "ref": "Squelette",
      "combat": {
       "optionals": [
-       "Territorial"
+       {
+        "id": "territorial"
+       }
       ]
      }
     },
@@ -7627,7 +7641,10 @@
      "ref": "Gor",
      "combat": {
       "optionals": [
-       "Armure 2"
+       {
+        "id": "armure",
+        "value": 2
+       }
       ]
      }
     },
@@ -8864,7 +8881,10 @@
      "ref": "Araignée géante",
      "combat": {
       "optionals": [
-       "Armure 1"
+       {
+        "id": "armure",
+        "value": 1
+       }
       ]
      }
     },
@@ -9836,7 +9856,10 @@
      "ref": "Gor",
      "combat": {
       "optionals": [
-       "Armure 2"
+       {
+        "id": "armure",
+        "value": 2
+       }
       ]
      }
     },
@@ -10779,7 +10802,9 @@
      "ref": "Squig des cavernes",
      "combat": {
       "optionals": [
-       "Frénésie"
+       {
+        "id": "frenesie"
+       }
       ]
      }
     },
@@ -10802,7 +10827,9 @@
      "ref": "Ogre",
      "combat": {
       "optionals": [
-       "Affamé"
+       {
+        "id": "affame"
+       }
       ]
      }
     }
@@ -11888,7 +11915,9 @@
      "ref": "Guerrier des clans",
      "combat": {
       "optionals": [
-       "Pisteur"
+       {
+        "id": "pisteur"
+       }
       ]
      }
     },
@@ -13162,9 +13191,9 @@
      "ref": "Chamane-Brey",
      "combat": {
       "spells": [
-       "Fléchette",
-       "La lance d’Ambre",
-       "Serres d’ambre"
+       "flechette",
+       "la-lance-d-ambre",
+       "serres-d-ambre"
       ]
      }
     },
@@ -13178,10 +13207,13 @@
      "ref": "Cultiste",
      "combat": {
       "optionals": [
-       "Lanceur de Sorts (Chaos)"
+       {
+        "id": "lanceur-de-sorts",
+        "arg": "Chaos"
+       }
       ],
       "spells": [
-       "Fléchette"
+       "flechette"
       ]
      }
     },
@@ -14398,7 +14430,9 @@
      "ref": "Vampire",
      "combat": {
       "optionals": [
-       "Champion"
+       {
+        "id": "champion"
+       }
       ]
      }
     }
@@ -15429,13 +15463,34 @@
        "B": 104
       },
       "traits": [
-       "Taille (Monstrueuse)",
-       "Souffle +15 (Ténèbres)",
-       "Terreur 2",
-       "Armure 5",
-       "Arme +10",
-       "Morsure +10",
-       "Vol"
+       {
+        "id": "taille",
+        "arg": "Monstrueuse"
+       },
+       {
+        "id": "souffle",
+        "value": 15,
+        "arg": "Ténèbres"
+       },
+       {
+        "id": "terreur",
+        "value": 2
+       },
+       {
+        "id": "armure",
+        "value": 5
+       },
+       {
+        "id": "arme",
+        "value": 10
+       },
+       {
+        "id": "morsure",
+        "value": 10
+       },
+       {
+        "id": "vol"
+       }
       ],
       "size": "monstrueuse"
      }
@@ -15489,7 +15544,10 @@
      "ref": "Cultiste",
      "combat": {
       "optionals": [
-       "Armure 1"
+       {
+        "id": "armure",
+        "value": 1
+       }
       ]
      }
     }
@@ -16998,7 +17056,10 @@
      "combat": {
       "hiddenUntilCombat": true,
       "optionals": [
-       "Armure 2"
+       {
+        "id": "armure",
+        "value": 2
+       }
       ]
      }
     },
@@ -19894,7 +19955,9 @@
      "ref": "Zombie",
      "combat": {
       "optionals": [
-       "Maladie"
+       {
+        "id": "maladie"
+       }
       ]
      }
     },
