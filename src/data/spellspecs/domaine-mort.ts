@@ -31,7 +31,7 @@ export const DOMAINE_MORT: SpellSpec[] = [
     // « Vous invoquez une faux magique, qui peut être portée en combat, utilisant la Compétence Corps
     //   à corps (Arme d'hast). Elle agit comme une faux banale avec une valeur de Dégâts égale à votre
     //   Bonus de Force Mentale +3. Les ennemis possédant le Trait Mort-vivant ne reçoivent pas
-    //   d'Avantage quand ils sont Engagés en combat avec vous. » — INVOQUÉE (op conjureWeapon) : Arme
+    //   d'Avantage quand ils sont Engagés en combat avec vous. » — INVOQUÉE (op grantWeapon) : Arme
     //   d'hast magique à 2 mains, Dégâts FIXES = BFM+3. La clause anti-Avantage des Mort-vivant
     //   (modificateur relationnel non exprimable en une op) reste journalisée.
     durationRounds: { bonusOf: 'FM' },

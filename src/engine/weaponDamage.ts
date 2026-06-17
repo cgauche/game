@@ -50,7 +50,7 @@ export function effectiveWeaponDamage(w: Weapon, strengthBonus: number): number 
 }
 
 /**
- * Arme ENCHANTÉE (Jalon 2.6 — op `enchantWeapon`) : fusionne les enchantements actifs du PORTEUR
+ * Arme ENCHANTÉE (Jalon 2.6 — op `augmentWeapon`) : fusionne les enchantements actifs du PORTEUR
  * (B. de Droiture : Magique ; Marteau ardent : Magique +BSoc Dégâts ; Épée ardente de Rhuin :
  * +6 + Percutante) à l'arme au moment de la résolution. Les Atouts ajoutés passent par le registre
  * de qualités existant (Magique → `isMagicWeapon` → touche l'Éthéré) ; le bonus de Dégâts s'appose

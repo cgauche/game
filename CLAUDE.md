@@ -52,10 +52,15 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
   2026-06-11 : sorts de Tzeentch, créatures du Chaos (Horreurs, Furie), 3 talents + 3 traits.
 - **EDOC** (Compagnon T1) = `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/` — 9 véhicules.
 - **Middenheim** = `Source/Warhammer v4 - Middenheim la cité du Loup Blanc/` — 3 origines humaines + carrière Frère Loup.
-- `Source/all-data.json` = extraction filtrée aux **livres autorisés ci-dessus** (LDB/ADE1/ADE2 +
-  EDO/Middenheim/EDOC) — source de `npm run build:data`. **Exclusion** (`DENY_CLASS`, `scripts/build-data.ts`) :
-  la classe « Chaos » et sa carrière « Magus du culte de Tzeentch » sont retirées (contenu ennemi, hors
-  création joueur) ; les sorts de Tzeentch RESTENT (verrouillés au joueur par le Talent du grimoire).
+- **AA** (Aux Armes / *Up in Arms*) = `Source/WH - V4 - Aux Armes/` — supplément combat & armes (autorisé 2026-06-14 ;
+  source des talents que frenchy.bzh référence : Fusilier, Officier de Siège, etc.).
+- **ZI** (Zoo Impérial / *The Imperial Zoo*) = `Source/WH - V4 - Le zoo impérial/` — créatures exotiques + le trait
+  **Redoutable** (*Grim*) (autorisé 2026-06-14). NB : AA/ZI ne sont PAS dans `all-data.json` → leur donnée est
+  intégrée par **extraction curée** (`scripts/frenchy/` + datasets `src/data/*.json` taggés à leur source), pas par `build:data`.
+- `Source/all-data.json` = ancienne extraction (LDB/ADE1/ADE2 + EDO/Middenheim/EDOC). **La migration
+  `build:data` a été RETIRÉE** (elle régénérait `src/data/*.json` et écrasait les données curées —
+  apparence des créatures, etc.). `src/data/*.json` est désormais la **SOURCE app-owned** (commitée,
+  éditée dans le Compendium) ; tout nouveau contenu s'ajoute à la main / via l'éditeur, plus par re-seed.
   EDO/EDOC/Middenheim sont AUSSI des livres de scénario (cf. ci-dessous) ; seule leur **donnée extraite**
   entre dans les règles, pas leur prose narrative.
 
@@ -77,8 +82,7 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
 
 ```bash
 npm install
-npm run build:data   # (re)génère src/data/*.json depuis all-data.json (livres autorisés : LDB/ADE + EDO/Middenheim/EDOC)
-npm run dev          # serveur de dev (http://localhost:5173)
+npm run dev          # serveur de dev (http://localhost:5173) — src/data/*.json est la SOURCE app-owned (commitée)
 npm test             # tests Vitest du moteur
 npm run typecheck    # tsc --noEmit
 npm run galleries              # (re)génère toutes les galeries QC -> public/galeries.html (hub)
@@ -88,7 +92,7 @@ npm run relay:dev      # Worker relay en local (wrangler dev, port 8787) ; côt�
 npm run relay:deploy   # déploie le Worker (compte Cloudflare) → URL dans RELAY_URL_PROD (src/net/relay.ts)
 
 # Déploiement en PRODUCTION (GitHub Pages → https://cgauche.github.io/jeu/)
-node scripts/deploy/deploy.mjs            # build:data + build (Vite) + copie dist/ → cgauche.github.io/jeu/
+node scripts/deploy/deploy.mjs            # build (Vite) + copie dist/ → cgauche.github.io/jeu/
 node scripts/deploy/deploy.mjs --no-build # copie le dist/ existant seulement (pas de rebuild)
 node scripts/deploy/deploy.mjs --push     # + git add/commit/push du repo prod (publie réellement)
 ```
@@ -135,9 +139,8 @@ re-rendu React — séparer en deux appels (cf. `game-browser-verif-tempo`).
 ## Architecture (où trouver quoi)
 
 ```
-Source/                     Livres WFRP4 en .md + all-data.json (source de vérité ; PDFs gitignorés)
-scripts/build-data.ts       Pipeline Source/all-data.json -> src/data (filtré LDB/ADE1/ADE2)
-src/data/                   NOTRE base générée (NE PAS éditer à la main) + index.ts (accès typé), pregens.ts
+Source/                     Livres WFRP4 en .md (+ all-data.json dormant : la migration build:data est retirée)
+src/data/                   NOTRE base APP-OWNED (JSON commité, éditable dans le Compendium) + index.ts (accès typé), pregens.ts
                             EXCEPTIONS manuscrites (tables verbatim sourcées) : criticals.ts, oups.ts,
                             mutations.ts (Tableaux de Corruption LDB 19), spellspecs/ (specs de sorts
                             CURÉES par famille — repli regex iso-POC pour les sorts non curés)
@@ -159,7 +162,7 @@ src/engine/                 Règles WFRP4, PUR + testé :
   conditions.ts               États (+ durées d'États de sort, États récurrents)
   ops.ts                      vocabulaire GameOp PARTAGÉ (sorts/contrecoups/mutations) + applyOps ;
                               Jalon 2.6 : PerSL (échelle par DR), onlyGroups, grantTrait/grantTalent/
-                              enchantWeapon/cureDisease/… ; SpellSpec.teleportMeters/pushMeters
+                              augmentWeapon/cureDisease/… ; SpellSpec.teleportMeters/pushMeters
   spellspec.ts                SpellSpec (effets structurés d'un sort) + repli regex (fallbackSpec)
   magic.ts                    incantation/Focalisation/Péché/ZdE/portée/armure (« Repousser les Vents »)
   miscast.ts                  tables d'Imparfaites & Colère des dieux (d100 → GameOps, verbatim)
@@ -266,6 +269,17 @@ art-ref/                    Illustrations extraites des PDFs + mapping.json (GIT
   panneau Logique en bas (triggers/dialogues/rencontres/validation, master-détail, édition live →
   undo global), points d'entrée ⚑ et zones de repos dessinés sur la carte, resize à la poignée,
   barre de statut. Bouton « Tester » lance la scène en jeu.
+- **Passifs unifiés + corruption data-driven** (réf. **`docs/systeme-passifs.md`**) : tout modificateur
+  PASSIF continu (trait/mutation/qualité/trauma/maladie/faim/sort) = une liste de `GameOp` lue par UN
+  collecteur `passiveMods(c)` (`engine/trauma.ts`), emballée en `PassiveMod{op, kind}` — le `kind` porte
+  l'annulation ET la combinaison (`intrinsèque` = Σ dans la base / autres = pool non-cumul). `charMod` =
+  SEUL op de modif de carac (passif ET sort) ; `moveMod` pour le Mouvement (≠ carac : `M` ∉ `CharKey`).
+  Traits de profil appliqués `spawn→live` (`Combatant.liveTraits` + `baseWithTraits`, sans double-compte
+  du profil bestiaire imprimé FINAL). **Édité en DONNÉES au Codex** : `TraitData`/`QualityData`/`Mutation`
+  ont `passive: GameOp[]`, édité par le `<GameOpEditor>` EXISTANT (comme un sort — NE PAS réinventer de
+  widget de liste d'ops). **Mutation découplée de sa table** : `mutations.json` (entités) ⊥
+  `mutationTables.json` (plages d100 → réf mutation) → plusieurs tables (une par dieu du Chaos, Compagnon T1)
+  sans collision. L'APPARENCE d'une mutation (cornes/peau…) reste couche **rig** (≠ GameOp).
 
 ## Primitives partagées (RÉUTILISER — ne JAMAIS réécrire à la main)
 
@@ -288,6 +302,8 @@ fait DANS la primitive, pas dans une nième copie.
 | Modificateurs de combat « brut » (Avantage×10 + État) | `baseTestMods` | `src/engine/combat.ts` |
 | Libellé d'attaque gratuite de créature (`freeKind`) | `FREE_ATTACK_LABEL` | `src/engine/combat.ts` |
 | Combattant par id (combat ou groupe) | `actorIn` / `inBattle` | `src/state/combatOrParty.ts` |
+| Éditer une **liste de `GameOp[]`** (sorts, effets déclenchés, **PASSIFS** de trait/mutation/qualité) | `GameOpEditor` (liste) — repris par `EffectList`/`FlowEditor` | `src/ui/editor/GameOpEditor.tsx` |
+| Modificateur **PASSIF** d'un élément (trait/mutation/qualité/trauma/maladie/faim/sort) | `passiveMods(c)` collecteur UNIQUE + `passive: GameOp[]` en donnée | `src/engine/trauma.ts` |
 
 > Pistes ÉVALUÉES puis ÉCARTÉES (sites trop divergents pour une source unique propre — ne pas
 > « globaliser » de force) : `confirmPending` (les `xConfirm` divergent par leur garde de résultat et
@@ -309,8 +325,8 @@ Prochain candidat : **sprites de carrières** (réfs prêtes dans `art-ref/ldb/m
 - **Closure synchrone en test Playwright** : cliquer un bouton qui change un état React PUIS
   agir dans le MÊME `evaluate` lit l'ANCIEN état (React n'a pas re-rendu). Séparer en deux
   appels, ou utiliser un `ref` côté composant pour la logique de drag.
-- `npm run build:data` doit être lancé après un `git clone` (les `src/data/*.json` sont commités,
-  mais les régénérer garantit la cohérence avec `Source/`).
+- `src/data/*.json` sont la SOURCE app-owned commitée (rien à régénérer après un `git clone` — la
+  migration `build:data` depuis `Source/all-data.json` a été retirée car elle écrasait les données curées).
 - Il n'y a PLUS d'inventaire de GROUPE (`store.inventory`/`giveItem` supprimés) : tout objet va
   sur un héros (`Combatant.items`) via `giveTrapping` (réel ou custom). Butin d'équipement
   attribuable par portrait à l'écran de victoire (`pendingVictory.gear`).

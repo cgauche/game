@@ -1,5 +1,5 @@
 /**
- * Armes INVOQUÉES temporaires (op `conjureWeapon` — Arme aethyrique LDB 47, Faux de Shyish / Épée
+ * Armes INVOQUÉES temporaires (op `grantWeapon` — Arme aethyrique LDB 47, Faux de Shyish / Épée
  * ardente de Rhuin LDB 48). Une arme invoquée est un `ItemInstance` ORDINAIRE marqué `conjured`,
  * posé en inventaire et injecté en tête de `c.weapons` par `recomputeLoadout` (via le même `toWeapon`
  * que les armes tenues — aucune arme synthétique). Elle est retirée à l'expiration du Sort. Le SYSTÈME

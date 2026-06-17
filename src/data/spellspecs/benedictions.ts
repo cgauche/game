@@ -68,7 +68,7 @@ export const BENEDICTIONS: SpellSpec[] = [
   {
     label: 'Bénédiction de Droiture',
     // « L'arme de votre cible est considérée comme Magique. » — Atout Magique temporisé
-    // (op enchantWeapon → isMagicWeapon → touche l'Éthéré, LDB 85).
+    // (op augmentWeapon → isMagicWeapon → touche l'Éthéré, LDB 85).
     durationRounds: 6,
     curated: true,
     source: '« L’arme de votre cible est considérée comme Magique. »',

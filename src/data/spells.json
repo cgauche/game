@@ -219,7 +219,7 @@
             "on": "target",
             "ops": [
               {
-                "op": "enchantWeapon",
+                "op": "augmentWeapon",
                 "addQualities": [
                   "Magique"
                 ]
@@ -1492,7 +1492,7 @@
             "on": "target",
             "ops": [
               {
-                "op": "conjureWeapon",
+                "op": "grantWeapon",
                 "name": "Arme aethyrique",
                 "damage": {
                   "bonusOf": "FM"
@@ -2487,7 +2487,7 @@
             "on": "target",
             "ops": [
               {
-                "op": "enchantWeapon",
+                "op": "augmentWeapon",
                 "addQualities": [
                   "Magique"
                 ],
@@ -3165,7 +3165,7 @@
             "on": "target",
             "ops": [
               {
-                "op": "conjureWeapon",
+                "op": "grantWeapon",
                 "name": "Épée ardente de Rhuin",
                 "damage": 6,
                 "subType": "Base",
@@ -3913,7 +3913,7 @@
             "on": "target",
             "ops": [
               {
-                "op": "enchantWeapon",
+                "op": "augmentWeapon",
                 "addQualities": [
                   "Magique",
                   "Incassable"
@@ -4288,7 +4288,7 @@
             "on": "target",
             "ops": [
               {
-                "op": "conjureWeapon",
+                "op": "grantWeapon",
                 "name": "Faux de Shyish",
                 "damage": {
                   "bonusOf": "FM"
@@ -7424,7 +7424,7 @@
             "on": "target",
             "ops": [
               {
-                "op": "enchantWeapon",
+                "op": "augmentWeapon",
                 "requiresWeapon": "lance",
                 "addQualities": [
                   "Percutante",
@@ -8646,7 +8646,7 @@
             "on": "target",
             "ops": [
               {
-                "op": "enchantWeapon",
+                "op": "augmentWeapon",
                 "addQualities": [
                   "Magique"
                 ],
@@ -9207,7 +9207,7 @@
             "on": "target",
             "ops": [
               {
-                "op": "enchantWeapon",
+                "op": "augmentWeapon",
                 "requiresWeapon": "hache",
                 "addQualities": [
                   "Magique"
@@ -9346,7 +9346,7 @@
             "on": "target",
             "ops": [
               {
-                "op": "enchantWeapon",
+                "op": "augmentWeapon",
                 "requiresWeapon": "épée",
                 "addQualities": [
                   "Magique"

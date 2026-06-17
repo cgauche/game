@@ -79,9 +79,9 @@ export function CastModal() {
   const isPrayer = spell.cn == null;
   const ni = spell.cn ?? 0;
   const selfTarget = caster.id === target.id;
-  // Arme invoquée à forme libre (Arme aethyrique, op conjureWeapon + chooseForm) : le lanceur choisit
+  // Arme invoquée à forme libre (Arme aethyrique, op grantWeapon + chooseForm) : le lanceur choisit
   // la Compétence de Corps à corps / le profil d'arme avant d'appliquer (RAW LDB 47). Sinon : [].
-  const conjureForms = spellEffectOps(spell.effects).some((o) => o.op === 'conjureWeapon' && o.chooseForm)
+  const conjureForms = spellEffectOps(spell.effects).some((o) => o.op === 'grantWeapon' && o.chooseForm)
     ? conjureFormOptions(caster) : [];
   const selectedForm = pc.conjureForm ?? conjureForms[0];
   // ZONE non posée (flux « jet puis pose », LDB 47 l.29/44) : pas de cible — le gabarit se dépose

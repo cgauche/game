@@ -22,7 +22,7 @@ export const ARCANES_COMMUNS: SpellSpec[] = [
     // « Vous créez une arme de Corps à corps dont les Dégâts sont égaux à votre Bonus de Force
     //   Mentale. Elle peut prendre n'importe quelle forme et peut donc utiliser n'importe quelle
     //   Compétence de Corps à corps que vous possédez. L'arme est considérée comme Magique. » —
-    //   INVOQUÉE (op conjureWeapon, `chooseForm`) : objet de mêlée Magique, Dégâts FIXES = BFM (sans
+    //   INVOQUÉE (op grantWeapon, `chooseForm`) : objet de mêlée Magique, Dégâts FIXES = BFM (sans
     //   Bonus de Force), tenu tant que le Sort dure. Le lanceur CHOISIT la forme (n'importe quelle
     //   Compétence de Corps à corps qu'il possède) → l'arme prend le profil de cette Spé (Groupe/allonge).
     durationRounds: { bonusOf: 'FM' },

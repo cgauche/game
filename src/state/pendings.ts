@@ -500,7 +500,7 @@ export interface PendingCast {
    *  (Projectile à Dégâts) / Puissance totale (lancé quel que soit le NI, dissipable) /
    *  Force inéluctable (indissipable). Défaut auto à l'application. */
   critChoice?: 'critique' | 'puissance' | 'ineluctable';
-  /** Forme choisie pour une arme invoquée à forme libre (Arme aethyrique, op `conjureWeapon` +
+  /** Forme choisie pour une arme invoquée à forme libre (Arme aethyrique, op `grantWeapon` +
    *  `chooseForm`) — le lanceur sélectionne la Compétence de Corps à corps/profil d'arme. Défaut
    *  (absent) : sa meilleure Spé de Corps à corps. */
   conjureForm?: ConjureForm;

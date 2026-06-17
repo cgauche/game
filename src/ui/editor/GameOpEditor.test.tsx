@@ -51,10 +51,10 @@ describe('GameOpEditor — Formule sans perte (correction du bug num()→0)', ()
 });
 
 describe('GameOpEditor — menu « + op » COMPLET', () => {
-  it('le menu propose narrative ET conjureWeapon (entre autres)', () => {
+  it('le menu propose narrative ET grantWeapon (entre autres)', () => {
     const html = renderToStaticMarkup(<GameOpEditor ops={[]} onChange={() => {}} />);
     expect(html).toContain('Effet narratif'); // narrative
-    expect(html).toContain('Invoquer une arme magique'); // conjureWeapon
+    expect(html).toContain('Invoquer une arme magique'); // grantWeapon
     expect(html).toContain('+ Op mécanique');
   });
 
@@ -62,10 +62,10 @@ describe('GameOpEditor — menu « + op » COMPLET', () => {
     const OPS: GameOp['op'][] = [
       'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'apAll', 'test',
       'corruption', 'gainResource', 'castPenalty', 'grantTrait', 'grantTalent',
-      'enchantWeapon', 'cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound',
+      'augmentWeapon', 'cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound',
       'reduceToZero', 'ignoreStatePenalties', 'freeReroll', 'critTwice', 'damageArmour', 'suppressPsych',
       'castWard', 'suffocate', 'arrowWard', 'domeWard', 'attackWardFM', 'martyr', 'noBreath', 'noHunger',
-      'testMod', 'weatherWard', 'giveTrapping', 'conjureWeapon', 'grantNaturalWeapon', 'perRound', 'narrative',
+      'testMod', 'weatherWard', 'giveTrapping', 'grantWeapon', 'grantNaturalWeapon', 'perRound', 'narrative',
     ];
     for (const k of OPS) {
       const o = newOp(k);
@@ -76,8 +76,8 @@ describe('GameOpEditor — menu « + op » COMPLET', () => {
 });
 
 describe('GameOpEditor — éditeur pour TOUTE op (dédié ou repli JSON)', () => {
-  it('conjureWeapon (sans éditeur dédié) rend un repli JSON montrant ses params', () => {
-    const ops: GameOp[] = [{ op: 'conjureWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, plusBF: false }];
+  it('grantWeapon (sans éditeur dédié) rend un repli JSON montrant ses params', () => {
+    const ops: GameOp[] = [{ op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, plusBF: false }];
     const html = renderToStaticMarkup(<GameOpEditor ops={ops} onChange={() => {}} />);
     expect(html).toContain('(JSON)'); // repli JSON présent
     expect(html).toContain('Arme aethyrique'); // params lisibles dans le textarea

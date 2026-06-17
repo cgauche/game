@@ -13,7 +13,7 @@ const onHitFlow = (ops: unknown[]): TriggeredEffect =>
   ({ trigger: 'onHit', on: 'victim', flow: { kind: 'do', effect: { type: 'ops', on: 'victim', ops } as never } });
 
 /**
- * Armes INVOQUÉES temporaires (op `conjureWeapon`, LDB 47/48) : un OBJET ordinaire `conjured` posé en
+ * Armes INVOQUÉES temporaires (op `grantWeapon`, LDB 47/48) : un OBJET ordinaire `conjured` posé en
  * inventaire, tenu d'office (recomputeLoadout) puis retiré à l'expiration. Réutilise la base d'armes
  * (itemFromTrapping) et le loadout — seuls Dégâts (= BFM…) et l'Atout Magique sont surchargés.
  */
@@ -26,10 +26,10 @@ const mage = (p: Partial<Combatant> = {}): Combatant =>
     ...p,
   } as Combatant);
 
-describe('conjureWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)', () => {
+describe('grantWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)', () => {
   it('crée un OBJET `conjured` en inventaire, tenu en tête de c.weapons, Dégâts FIXES = BFM', () => {
     const c = mage(); // FM 45 → BFM 4
-    applyOps(c, [{ op: 'conjureWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, qualities: ['Magique'] }],
+    applyOps(c, [{ op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, qualities: ['Magique'] }],
       { label: 'Arme aethyrique', defaultDurationRounds: 4 });
     expect(c.items?.some((it) => it.conjured && it.name === 'Arme aethyrique')).toBe(true); // objet réel
     expect(c.weapons[0].name).toBe('Arme aethyrique'); // arme directrice
@@ -49,7 +49,7 @@ describe('conjureWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)',
   it('forme LIBRE : clone le profil d’une arme RÉELLE de la Spé de Corps à corps choisie', () => {
     const c = mage({ skills: [{ skillId: 'corps-a-corps', spec: 'Escrime', advances: 10 }] as Combatant['skills'] });
     const opt = conjureFormOptions(c)[0]; // arme réelle d'Escrime issue de la base (Rapière…)
-    applyOps(c, [{ op: 'conjureWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, qualities: ['Magique'], chooseForm: true }],
+    applyOps(c, [{ op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, qualities: ['Magique'], chooseForm: true }],
       { label: 'Arme aethyrique', defaultDurationRounds: 4, conjureForm: opt });
     expect(c.weapons[0].subType?.toLowerCase()).toBe('escrime'); // Groupe = la Spé choisie (profil réel)
     expect(c.weapons[0].name).toContain('Arme aethyrique');
@@ -58,7 +58,7 @@ describe('conjureWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)',
 
   it('vit dans un SET dédié actif, retiré à l’expiration (set + objet + restauration)', () => {
     const c = mage();
-    applyOps(c, [{ op: 'conjureWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, qualities: ['Magique'] }],
+    applyOps(c, [{ op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, qualities: ['Magique'] }],
       { label: 'Arme aethyrique', defaultDurationRounds: 1 });
     const conjuredSet = (c.loadouts ?? []).find((l) => l.name === 'Arme invoquée');
     expect(conjuredSet).toBeTruthy(); // SET dédié créé…
@@ -90,10 +90,10 @@ describe('grantNaturalWeapon — armes naturelles accordées (Dent et griffe)', 
   });
 });
 
-describe('conjureWeapon — variantes de domaine (stats fixes du Sort)', () => {
+describe('grantWeapon — variantes de domaine (stats fixes du Sort)', () => {
   it('Faux de Shyish : Armes d’hast à 2 mains, Dégâts = BFM+3', () => {
     const c = mage(); // BFM 4
-    applyOps(c, [{ op: 'conjureWeapon', name: 'Faux de Shyish', damage: { bonusOf: 'FM' }, damagePlus: 3, subType: 'Armes d’hast', reach: 'Longue', hands: 2, qualities: ['Magique'] }],
+    applyOps(c, [{ op: 'grantWeapon', name: 'Faux de Shyish', damage: { bonusOf: 'FM' }, damagePlus: 3, subType: 'Armes d’hast', reach: 'Longue', hands: 2, qualities: ['Magique'] }],
       { label: 'La Faux de Shyish', defaultDurationRounds: 4 });
     expect(c.weapons[0].name).toBe('Faux de Shyish');
     expect(c.weapons[0].hands).toBe(2);
@@ -103,7 +103,7 @@ describe('conjureWeapon — variantes de domaine (stats fixes du Sort)', () => {
 
   it('Épée ardente de Rhuin : Dégâts +6, Percutante + En flammes à la touche', () => {
     const c = mage();
-    applyOps(c, [{ op: 'conjureWeapon', name: 'Épée ardente de Rhuin', damage: 6, subType: 'Base', reach: 'Moyenne', hands: 1, qualities: ['Magique', 'Percutante'], onHitEffects: [onHitFlow([{ op: 'condition', name: 'En flammes' }])] }],
+    applyOps(c, [{ op: 'grantWeapon', name: 'Épée ardente de Rhuin', damage: 6, subType: 'Base', reach: 'Moyenne', hands: 1, qualities: ['Magique', 'Percutante'], onHitEffects: [onHitFlow([{ op: 'condition', name: 'En flammes' }])] }],
       { label: "L'Épée ardente de Rhuin", defaultDurationRounds: 4 });
     expect(c.weapons[0].damage).toBe('+6');
     expect(c.weapons[0].qualities).toEqual(expect.arrayContaining(['Magique', 'Percutante']));

@@ -778,7 +778,7 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
   **talent « Sans peur » MÉCANISÉ** (LDB 10 l.859, sorti de l'allowlist : immunité Peur/Terreur vs
   l'Ennemi spécifié — `fearImmuneVs`, consommé par `fearSourceFor` + `attackModifiers`). Curés :
   Flambeau de Vertu, Cœurs ardents (Sans peur + Cœur vaillant ; Coude-à-coude = MJ).
-- **Op `enchantWeapon`** (demande utilisateur — qualités d'objet TEMPORAIRES) : porté par le
+- **Op `augmentWeapon`** (demande utilisateur — qualités d'objet TEMPORAIRES) : porté par le
   PORTEUR, fusionné à l'arme à la résolution (`enchantedWeapon`) ; **nouvel Atout « Magique »**
   au registre (→ `isMagicWeapon` → blesse l'Éthéré, LDB 85). Curés : B. de Droiture, Marteau
   ardent de Sigmar (+BSoc + En flammes/À Terre à la touche), Épée ardente de Rhuin (+6,

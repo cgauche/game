@@ -41,7 +41,7 @@ export const MIRACLES_SIGMAR: SpellSpec[] = [
   {
     label: 'Marteau ardent de Sigmar',
     // « Si vous portez un marteau, il est considéré comme Magique, inflige +(BSoc) Dégâts et
-    //   toute cible frappée reçoit l'État En flammes et l'État À Terre. » — op enchantWeapon
+    //   toute cible frappée reçoit l'État En flammes et l'État À Terre. » — op augmentWeapon
     //   (approximation : enchante l'arme TENUE, la nature « marteau » n'est pas vérifiée).
     durationRounds: { bonusOf: 'Soc' },
     curated: true,

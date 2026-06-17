@@ -49,11 +49,11 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   arrowWard: '🏹 Bouclier anti-projectiles',
   domeWard: '🛡️ Dôme protecteur',
   attackWardFM: '🛡️ Attaquer exige un Test de FM',
-  conjureWeapon: '🐾 Invoquer une arme magique',
+  grantWeapon: '🐾 Invoquer une arme magique',
   grantNaturalWeapon: '🐾 Accorder une arme naturelle',
   grantTrait: '🐾 Accorder un Trait',
   grantTalent: '🐾 Accorder un Talent',
-  enchantWeapon: '🗡️ Enchanter l’arme',
+  augmentWeapon: '🗡️ Enchanter l’arme',
   cureDisease: '🩹 Guérir des maladies',
   reduceDiseaseDays: '🩹 Raccourcir une maladie',
   preventInfection: '🩹 Empêcher l’infection',
@@ -89,7 +89,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['📊 Buffs & caractéristiques', ['charMod', 'apAll', 'testMod', 'ignoreStatePenalties', 'freeReroll', 'critTwice']],
   ['✨ Ressources', ['gainResource', 'corruption']],
   ['🔮 Incantation & contrecoup', ['castPenalty', 'castWard', 'arrowWard', 'domeWard', 'attackWardFM']],
-  ['🐾 Invocation & armes', ['summon', 'polymorph', 'conjureWeapon', 'grantNaturalWeapon', 'grantTrait', 'grantTalent', 'enchantWeapon']],
+  ['🐾 Invocation & armes', ['summon', 'polymorph', 'grantWeapon', 'grantNaturalWeapon', 'grantTrait', 'grantTalent', 'augmentWeapon']],
   ['🌐 Zones', ['zone']],
   ['🩹 Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound']],
   ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'loseTurn']],
@@ -206,11 +206,11 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'arrowWard': return { op: 'arrowWard', radius: 5 };
     case 'domeWard': return { op: 'domeWard', radius: 5 };
     case 'attackWardFM': return { op: 'attackWardFM' };
-    case 'conjureWeapon': return { op: 'conjureWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' } };
+    case 'grantWeapon': return { op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' } };
     case 'grantNaturalWeapon': return { op: 'grantNaturalWeapon', name: 'Griffes', damage: 3 };
     case 'grantTrait': return { op: 'grantTrait', traitId: 'armure' };
     case 'grantTalent': return { op: 'grantTalent', talent: 'Sang-froid' };
-    case 'enchantWeapon': return { op: 'enchantWeapon', addQualities: ['Magique'] };
+    case 'augmentWeapon': return { op: 'augmentWeapon', addQualities: ['Magique'] };
     case 'cureDisease': return { op: 'cureDisease', count: 1 };
     case 'reduceDiseaseDays': return { op: 'reduceDiseaseDays', days: 1 };
     case 'preventInfection': return { op: 'preventInfection' };
@@ -270,11 +270,11 @@ export function opSummary(o: GameOp): string {
     case 'arrowWard': return `${L} rayon ${formulaSummary(o.radius)} m`;
     case 'domeWard': return `${L} rayon ${formulaSummary(o.radius)} m`;
     case 'attackWardFM': return `${L} l’attaquer exige un Test de FM`;
-    case 'conjureWeapon': return `${L} ${o.name} (Dégâts ${o.plusBF ? 'BF+' : ''}${formulaSummary(o.damage)})`;
+    case 'grantWeapon': return `${L} ${o.name} (Dégâts ${o.plusBF ? 'BF+' : ''}${formulaSummary(o.damage)})`;
     case 'grantNaturalWeapon': return `${L} ${o.name} (${o.plusBF !== false ? 'BF+' : ''}${formulaSummary(o.damage)})`;
     case 'grantTrait': return `${L} ${formatTrait({ id: o.traitId, arg: o.arg })}${o.indice != null ? ` ${formulaSummary(o.indice)}` : ''}`;
     case 'grantTalent': return `${L} ${o.talent}`;
-    case 'enchantWeapon': return `${L} ${[...(o.addQualities ?? []), o.damageBonus != null ? `+${formulaSummary(o.damageBonus)} Dégâts` : ''].filter(Boolean).join(', ') || '(vide)'}`;
+    case 'augmentWeapon': return `${L} ${[...(o.addQualities ?? []), o.damageBonus != null ? `+${formulaSummary(o.damageBonus)} Dégâts` : ''].filter(Boolean).join(', ') || '(vide)'}`;
     case 'cureDisease': return `${L} ${o.count ?? 1} maladie(s)`;
     case 'reduceDiseaseDays': return `${L} −${o.days ?? 1} jour(s)`;
     case 'preventInfection': return `${L} pas d’infection`;

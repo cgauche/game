@@ -200,7 +200,7 @@ export interface ActiveEffect {
   /** Trait de créature ACCORDÉ par cet effet (op `grantTrait` — Envol, Effrayant…) : le
    *  `TraitInstance` exact posé dans `c.traits`, retiré (une instance) à l'expiration (engine/grantedTraits). */
   grantedTrait?: import('./statEntry').TraitInstance;
-  /** Arme INVOQUÉE temporaire (op `conjureWeapon` — Arme aethyrique, Faux de Shyish, Épée ardente) :
+  /** Arme INVOQUÉE temporaire (op `grantWeapon` — Arme aethyrique, Faux de Shyish, Épée ardente) :
    *  l'objet `conjured` est posé dans un SET d'armes DÉDIÉ (réutilise le système de loadouts) rendu
    *  actif. À l'expiration, `dropExpiredGrantedWeapons` retire l'objet ET le set, et réactive le set
    *  d'origine (`restoreLoadoutId`). Pas d'arme synthétique ni d'injection parallèle. */
@@ -213,7 +213,7 @@ export interface ActiveEffect {
    *  `combatFeatures/dispatch.featuresOf` tant que l'effet dure (PAS posé dans `c.talents` —
    *  la fiche/avancement ne voient que les talents possédés). */
   grantedTalent?: string;
-  /** Enchantement d'ARME temporisé (op `enchantWeapon` — B. de Droiture, Marteau ardent, Épée
+  /** Enchantement d'ARME temporisé (op `augmentWeapon` — B. de Droiture, Marteau ardent, Épée
    *  ardente de Rhuin, Arme aethyrique) : porté par le PORTEUR (pas l'objet — `recomputeLoadout`
    *  l'écraserait), fusionné à l'arme au moment de la résolution (`enchantedWeapon`). */
   weaponEnchant?: {
@@ -384,7 +384,7 @@ export interface ItemInstance {
   /** Prothèse ENTRAÎNÉE par dépense de PX (LDB 73) : une Fausse jambe « réapprise » (200 PX) annule AUSSI
    *  l'Esquive (sa séquelle passe de `'movement'` à `'all'`), pas seulement le déplacement. */
   prosthesisTrained?: boolean;
-  /** Arme INVOQUÉE temporaire (op `conjureWeapon`) : objet ordinaire mais TENU d'office (injecté en
+  /** Arme INVOQUÉE temporaire (op `grantWeapon`) : objet ordinaire mais TENU d'office (injecté en
    *  tête de `c.weapons` par recomputeLoadout) et retiré à l'expiration du Sort. */
   conjured?: boolean;
   /** Silhouette de RENDU forcée (libellé d'arme du catalogue) — propagée à `Weapon.form`. */

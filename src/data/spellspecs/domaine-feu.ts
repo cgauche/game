@@ -63,7 +63,7 @@ export const DOMAINE_FEU: SpellSpec[] = [
     // « Vous enveloppez une épée de flammes magiques. L'arme possède Dégâts +6 et l'Atout Percutante,
     //   et quiconque est frappé par la lame gagne +1 État En flammes. Si les porteurs ne possèdent pas
     //   le Talent Magie des Arcanes (Feu) et obtiennent une maladresse… ils gagnent +1 État En flammes. »
-    //   — INVOQUÉE (op conjureWeapon, et non enchantement de l'arme tenue) : épée magique à Dégâts
+    //   — INVOQUÉE (op grantWeapon, et non enchantement de l'arme tenue) : épée magique à Dégâts
     //   FIXES +6 (la valeur d'arme, pas un bonus à votre épée), Percutante, +1 En flammes à la touche.
     //   La maladresse d'un porteur sans Magie des Arcanes (Feu) reste journalisée.
     durationRounds: { bonusOf: 'FM' },

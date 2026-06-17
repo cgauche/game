@@ -175,7 +175,7 @@ export type GameOp =
    *  Magique +BSoc + En flammes/À Terre à la touche ; Épée ardente : +6 + Percutante + En
    *  flammes). Porté par le PORTEUR (ActiveEffect.weaponEnchant), fusionné à l'arme à la
    *  résolution (`enchantedWeapon`). `damageBonus` résolu contre le LANCEUR (BSoc du prêtre). */
-  | { op: 'enchantWeapon'; addQualities?: string[]; damageBonus?: Formula; bypass?: ArmourBypass; requiresWeapon?: string;
+  | { op: 'augmentWeapon'; addQualities?: string[]; damageBonus?: Formula; bypass?: ArmourBypass; requiresWeapon?: string;
       /** Effets DÉCLENCHÉS « à la touche » de l'arme enchantée — forme UNIFIÉE (`TriggeredEffect`,
        *  comme les Atouts d'arme et les Traits) : Marteau ardent → En flammes/À Terre ; Épée de
        *  justice → Test du Groupe « Criminel » → Inconscient ; Morsure de l'hiver → Test (hors
@@ -252,8 +252,8 @@ export type GameOp =
    *  Force (défaut : Dégâts FIXES, sans BF — conforme aux armes invoquées). L'objet invoqué est posé
    *  dans un SET d'armes DÉDIÉ actif (engine/conjuredWeapons.equipConjuredWeapon) puis retiré à
    *  l'expiration. `onHitEffects` : effets DÉCLENCHÉS à la touche (Épée ardente → En flammes) — même
-   *  forme `TriggeredEffect` unifiée que `enchantWeapon`/les Atouts d'arme. */
-  | { op: 'conjureWeapon'; name: string; damage: Formula; damagePlus?: number; plusBF?: boolean;
+   *  forme `TriggeredEffect` unifiée que `augmentWeapon`/les Atouts d'arme. */
+  | { op: 'grantWeapon'; name: string; damage: Formula; damagePlus?: number; plusBF?: boolean;
       qualities?: string[]; subType?: string; reach?: string; hands?: 1 | 2;
       onHitEffects?: TriggeredEffect[];
       /** SKIN cosmétique magique (token→hex, ex. lame aethyrique bleutée / améthyste / ardente) —
@@ -348,7 +348,7 @@ export interface OpsCtx {
   rng?: RNG;
   /** Référent des formules « (Bonus de X) » (le lanceur d'un sort) ; défaut : la cible. */
   caster?: Combatant;
-  /** Forme choisie par le lanceur pour une arme invoquée à forme libre (op `conjureWeapon` +
+  /** Forme choisie par le lanceur pour une arme invoquée à forme libre (op `grantWeapon` +
    *  `chooseForm`) — fixe Groupe/allonge/mains. Défaut (absent) : la 1ʳᵉ forme proposée. */
   conjureForm?: ConjureForm;
   /** Libellé de la source (sort/table) — ActiveEffect.label + journal. */
@@ -630,7 +630,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         lines.push(`${target.name} gagne le Trait ${formatTrait(inst)} (${ctx.label ?? 'sort'}).`);
         break;
       }
-      case 'enchantWeapon': {
+      case 'augmentWeapon': {
         const dmg = o.damageBonus != null ? Math.max(0, resolveFormula(o.damageBonus, ref, rng)) : undefined;
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
@@ -839,7 +839,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         lines.push(`${target.name} gagne l'attaque naturelle ${o.name} (Dégâts ${weapon.damage}${weapon.qualities.length ? `, ${weapon.qualities.join(', ')}` : ''}) (${ctx.label ?? 'sort'}).`);
         break;
       }
-      case 'conjureWeapon': {
+      case 'grantWeapon': {
         const flat = Math.max(0, resolveFormula(o.damage, ref, rng) + (o.damagePlus ?? 0));
         // Forme LIBRE (Arme aethyrique) : on CLONE le profil (Groupe/allonge/mains) d'une arme RÉELLE
         // choisie par le lanceur (ctx.conjureForm, défaut = sa meilleure Spé de CC) ; sinon stats du
