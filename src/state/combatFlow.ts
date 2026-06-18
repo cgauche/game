@@ -1024,14 +1024,20 @@ function applyOpposedCritical(
   log: string[],
 ): void {
   const loc = hitLocationByShape(reverseRoll(roll), victim.bodyShape);
+  // B. de Sauvagerie (LDB 41) : l'attaquant à l'origine du double tire deux lancers de Critique.
+  const attacker = ctx.attackerId ? get().battle?.combatants.find((c) => c.id === ctx.attackerId) : undefined;
+  const heroConcerned = victim.kind === 'hero' || attacker?.kind === 'hero';
   if (victim.kind === 'enemy' && (victim.armour[loc] ?? 0) > 0) {
     damageArmour(victim, loc);
-    log.push(`${victim.name} dévie le Critique sur son armure (−1 PA, Critique ignoré).`);
+    const line = `${victim.name} dévie le Critique sur son armure (−1 PA, Critique ignoré).`;
+    log.push(line);
+    // Le Critique paré DOIT rester VISIBLE dans la cascade (sinon la fenêtre se referme sans rien montrer)
+    // quand un héros est concerné — il l'a PLACÉ (parade) ou le SUBIT ; sinon (ennemi↔ennemi) : journal seul.
+    if (heroConcerned) pushReveal(set, { kind: 'critical', title: 'Coup Critique dévié', dice: roll,
+      lines: [`Coup Critique (${HIT_LOCATION_LABELS[loc]}) — dévié.`, line], subjectId: victim.id, severity: 'minor', actorId: ctx.attackerId, weapon: ctx.weapon });
     return;
   }
   const currentBefore = victim.wounds.current;
-  // B. de Sauvagerie (LDB 41) : l'attaquant à l'origine du double tire deux lancers de Critique.
-  const attacker = ctx.attackerId ? get().battle?.combatants.find((c) => c.id === ctx.attackerId) : undefined;
   const lethal = applyCriticalToTarget(victim, loc, true, 0, log, set, undefined,
     { ...ctx, attackerKind: attacker?.kind, critTwice: attacker ? hasActiveFlag(attacker, 'critRollTwice') : undefined });
   if (lethal) finalizeHeroDeath(get, set, victim, 'hit', currentBefore);
@@ -1192,9 +1198,11 @@ export function applyAttackResult(
       critLog.push(`${attacker.name} place un Critique malgré l'échange perdu.`);
       applyOpposedCritical(get, set, target, ad.roll, { attackerId: attacker.id, weapon: weapon?.name }, critLog);
     }
-    // (b) Défenseur : Critique sur sa défense → l'attaquant subit un Critique sec. Un HÉROS qui PARE
-    // avec une arme Piège-lame face à une lame peut choisir de PIÉGER à la place (LDB 62 l.292-294) → modale.
-    if (dd.success && isDoubleRoll(dd.roll) && !isOutOfAction(attacker)) {
+    // (b) Défenseur : Critique sur sa défense → l'attaquant subit un Critique sec — UNIQUEMENT en PARADE
+    // (« Test de Corps à corps », LDB 13 l.184) ; l'Esquive est un Test d'AGILITÉ → ne génère PAS de Critique.
+    // `res.parryWeapon` n'est posé qu'en Parade (finishMelee). Un HÉROS qui PARE avec une arme Piège-lame face
+    // à une lame peut choisir de PIÉGER à la place (LDB 62 l.292-294) → étape de séquence.
+    if (dd.success && isDoubleRoll(dd.roll) && !isOutOfAction(attacker) && res.parryWeapon) {
       if (target.kind === 'hero' && res.parryWeapon && hasBladeTrap(res.parryWeapon) && weaponHasBlade(weapon)) {
         // Folding P3b : le choix Piéger/Critique devient une ÉTAPE de la séquence (texte + options),
         // au lieu d'une modale `pendingBladeTrap` séparée. L'applier 'bladeTrap' appelle resolveBladeTrap.
