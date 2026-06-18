@@ -12,7 +12,9 @@ import { datasetArray } from '../../data/overrides';
 import { DIFFICULTY_LABELS, CHAR_KEYS, CHAR_LABELS, type Difficulty, type CharKey } from '../../engine/types';
 import type { DiseaseSymptom, DiseaseSymptomKind } from '../../engine/disease';
 import type { CombatFeature, CastingKind } from '../../engine/combatFeatures/types';
-import type { AdvancementRef, TrappingRef, Ref, CountSpec, DomainData } from '../../data';
+import type { AdvancementRef, TrappingRef, Ref, CountSpec, DomainData, HarvestRarity, HarvestDanger } from '../../data';
+import type { TraitInstance } from '../../engine/statEntry';
+import { parseTraitInstance, formatTrait } from '../../engine/traits/dispatch';
 
 const DIFFICULTIES = Object.keys(DIFFICULTY_LABELS) as Difficulty[];
 
@@ -367,6 +369,78 @@ export function DomainEffectsField(
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 8) TraitInstance[] — liste de Traits de créature STRUCTURÉS (édités via la chaîne
+ *    réversible `formatTrait` ⇄ `parseTraitInstance`, comme dans StatblockEditor).
+ *    PARTAGÉ : StatblockEditor (traits fixes) + Codex `creatures.traits`/`.optionals`.
+ *    L'auteur complète l'Indice/la Cible dans la chaîne (« Arme (Épée) +7 », « Peur 3 »).
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+/** Suggestions d'autocomplétion : libellés du dataset `traits` (le param libre reste saisi à la main). */
+const traitDatalistOptions = (): string[] => (datasetArray('traits') as { label: string }[]).map((t) => t.label);
+
+export function TraitListField(
+  { label, hint, value, onChange, suggestions }:
+  { label: string; hint?: string; value: TraitInstance[] | undefined; onChange: (v: TraitInstance[]) => void; suggestions?: string[] },
+) {
+  const list = value ?? [];
+  const set = (next: TraitInstance[]) => onChange(next);
+  const dlId = `dl-traitlist-${label.replace(/\s+/g, '-')}`;
+  const opts = suggestions ?? traitDatalistOptions();
+  return (
+    <div className="ed-field">
+      <span>{label}{hint && <em className="de-hint"> {hint}</em>}</span>
+      {list.map((t, i) => (
+        <div key={i} className="trait-row">
+          <input list={dlId} value={formatTrait(t)} onChange={(e) => set(list.map((x, j) => (j === i ? parseTraitInstance(e.target.value) : x)))} />
+          <button className="btn small danger" title="Retirer ce trait" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
+        </div>
+      ))}
+      <datalist id={dlId}>{opts.map((o) => <option key={o} value={o} />)}</datalist>
+      <button className="btn small" onClick={() => set([...list, { id: 'arme' }])}>+ Ajouter un trait</button>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 9) creatures.harvest — { rarity, danger, uses } (Précieuses Entrailles, ZI).
+ *    Deux vocabulaires FERMÉS (selects) + un texte d'usage ; checkbox = présence.
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+const HARVEST_RARITIES: HarvestRarity[] = ['Commune', 'Limitée', 'Rare', 'Exotique', 'Unique'];
+const HARVEST_DANGERS: HarvestDanger[] = ['Inoffensive', 'Inquiétante', 'Menaçante', 'Mortelle'];
+
+type Harvest = { rarity: HarvestRarity; danger: HarvestDanger; uses: string };
+
+export function HarvestField({ value, onChange }: { value: Harvest | undefined; onChange: (v: Harvest | undefined) => void }) {
+  const h = value;
+  return (
+    <div className="ed-field">
+      <span>récolte « Précieuses Entrailles » (ZI — rareté + dangerosité → valeur par Enc, usages des organes)</span>
+      <label className="dr"><input type="checkbox" checked={!!h} onChange={(e) => onChange(e.target.checked ? { rarity: 'Commune', danger: 'Inoffensive', uses: '' } : undefined)} /> récoltable</label>
+      {h && (
+        <>
+          <div className="tf-row">
+            <label className="dr">Rareté
+              <select value={h.rarity} onChange={(e) => onChange({ ...h, rarity: e.target.value as HarvestRarity })}>
+                {HARVEST_RARITIES.map((r) => <option key={r} value={r}>{r}</option>)}
+              </select>
+            </label>
+            <label className="dr">Dangerosité
+              <select value={h.danger} onChange={(e) => onChange({ ...h, danger: e.target.value as HarvestDanger })}>
+                {HARVEST_DANGERS.map((d) => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </label>
+          </div>
+          <label className="ed-subfield">Usages (organes, parties prélevées)
+            <textarea rows={2} value={h.uses} onChange={(e) => onChange({ ...h, uses: e.target.value })} />
+          </label>
+        </>
+      )}
     </div>
   );
 }

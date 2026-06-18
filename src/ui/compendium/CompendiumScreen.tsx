@@ -10,7 +10,7 @@ import { useGame } from '../../state/store';
 import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, type CodexGroup, type CodexItem } from './registry';
 import { filterItems } from './search';
 import { CodexEntry } from './CodexEntry';
-import { CodexEdit, editableDataset } from './CodexEdit';
+import { CodexEdit, isEditableCategory } from './CodexEdit';
 
 export function CompendiumScreen() {
   const setScreen = useGame((s) => s.setScreen);
@@ -133,7 +133,7 @@ export function CompendiumScreen() {
         </aside>
 
         <section className="codex-detail panel">
-          {import.meta.env.DEV && cat && editableDataset(cat.key) && !creating && (
+          {import.meta.env.DEV && cat && isEditableCategory(cat.key) && !creating && (
             <div className="codex-detail-actions">
               {selected && (
                 <button className="btn small" onClick={() => setEditing((v) => !v)}>
@@ -143,9 +143,9 @@ export function CompendiumScreen() {
               <button className="btn small" onClick={() => { setEditing(false); setCreating(true); }}>➕ Nouveau (DEV)</button>
             </div>
           )}
-          {creating && import.meta.env.DEV && cat && editableDataset(cat.key)
+          {creating && import.meta.env.DEV && cat && isEditableCategory(cat.key)
             ? <CodexEdit categoryKey={cat.key} label="" isNew onClose={() => setCreating(false)} />
-            : selected && editing && import.meta.env.DEV && cat && editableDataset(cat.key)
+            : selected && editing && import.meta.env.DEV && cat && isEditableCategory(cat.key)
               ? <CodexEdit categoryKey={cat.key} label={selected.label} onClose={() => setEditing(false)} />
               : selected && <CodexEntry item={selected} instance={instance} category={cat?.key} />}
         </section>

@@ -16,8 +16,8 @@ import { parseStatEntry } from '../../engine/statEntry';
 import { woundsForSize, resizeBySteps, stepSize, SIZE_LABEL, SIZE_ORDER } from '../../engine/size';
 import { bonus } from '../../engine/characteristics';
 import { sizeFromTraits } from '../../state/spawn';
-import { parseTraitInstance, formatTrait } from '../../engine/traits/dispatch';
 import { SpellsField } from './OptionalTraitsPicker';
+import { TraitListField } from '../compendium/StructFields';
 
 /** Parse une saisie « Compétence (Spéc) Valeur » → `SkillRef` (id stable + spec + valeur de Test). */
 function parseSkillRef(text: string): SkillRef {
@@ -124,29 +124,12 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
         <button type="button" onClick={() => applyResize(1)} disabled={SIZE_ORDER[size] === 6} title="Agrandir d'une catégorie (+10 F, +10 E, −5 Ag)">Agrandir ▲</button>
         <span className="statblock-note">« Utiliser les Tailles » (LDB 85) : ±10 F/E, ∓5 Ag par catégorie</span>
       </div>
-      <div className="ed-field">
-        Traits (un par ligne — armement : « Arme (Épée) +7 », « À distance (Arbalète) +9 (60) » ; Taille : « Taille (Énorme) » ;
-        Psychologie (LDB 21) : « Peur 3 », « Terreur 2 », « Immunité (Psychologie) », « Animosité (Elfes) », « Haine (Skavens) »,
-        « Phobie (Araignées) », « Frénésie » — une Cible « (un au choix) » reste inerte jusqu'à ce qu'on la précise ici)
-        {(stat.traits ?? []).map((t, i) => (
-          <div key={i} className="trait-row">
-            <input
-              value={formatTrait(t)}
-              onChange={(e) => onChange({ ...stat, traits: (stat.traits ?? []).map((x, j) => (j === i ? parseTraitInstance(e.target.value) : x)) })}
-            />
-            <button
-              className="btn small danger"
-              title="Retirer ce trait"
-              onClick={() => onChange({ ...stat, traits: (stat.traits ?? []).filter((_, j) => j !== i) })}
-            >
-              ✕
-            </button>
-          </div>
-        ))}
-        <button className="btn small" onClick={() => onChange({ ...stat, traits: [...(stat.traits ?? []), { id: 'arme' }] })}>
-          + Ajouter un trait
-        </button>
-      </div>
+      <TraitListField
+        label="Traits"
+        hint="(armement : « Arme (Épée) +7 », « À distance (Arbalète) +9 (60) » ; Taille : « Taille (Énorme) » ; Psychologie LDB 21 : « Peur 3 », « Animosité (Elfes) », « Frénésie » — précisez la Cible « (un au choix) »)"
+        value={stat.traits}
+        onChange={(traits) => onChange({ ...stat, traits })}
+      />
       <label className="ed-field">
         Groupes (séparés par des virgules — ex. « Sigmarite, Cultiste ») : appartenances supplémentaires pour les Traits psy
         ciblés (Animosité/Haine/…). La catégorie du bestiaire (folder) est ajoutée automatiquement au spawn.

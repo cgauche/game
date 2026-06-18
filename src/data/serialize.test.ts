@@ -10,12 +10,9 @@ import { fileURLToPath } from 'node:url';
 import { serializeDataset } from './serialize';
 
 const DIR = join(fileURLToPath(new URL('.', import.meta.url)));
-// Exclus du périmètre éditeur v1 :
-//  - `_index.json` : index généré (Codex).
-//  - `names.json` : banque importée du projet WarhammerV2, en CRLF (origine externe) ; pas d'UI
-//    d'édition en v1. Quand `names` aura un éditeur (P5), normaliser son EOL en LF d'abord.
-const EXCLUDED = new Set(['names.json']);
-const files = readdirSync(DIR).filter((f) => f.endsWith('.json') && !f.startsWith('_') && !EXCLUDED.has(f));
+// Seul exclu : `_index.json` (index généré du Codex, filtré par le préfixe `_`). `names.json` a été
+// normalisé en LF (E3b) et est désormais éditable au Codex → garde-fou de fidélité comme les autres.
+const files = readdirSync(DIR).filter((f) => f.endsWith('.json') && !f.startsWith('_'));
 
 describe('serializeDataset — round-trip byte-fidèle des datasets app-owned', () => {
   for (const f of files) {

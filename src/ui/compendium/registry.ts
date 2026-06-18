@@ -11,7 +11,7 @@ import {
   species, careers, characteristics, classes, skills, talents,
   qualities, trappings, weaponGroups, etats, maladies, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
   stars, locations, books, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, weaponGroupLabel,
-  skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details,
+  skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names,
   pregens, oups, interludeEvents, peripeties,
 } from '../../data';
 import { statName } from '../../engine/statEntry';
@@ -480,6 +480,34 @@ export const CODEX: CodexCategory[] = [
   {
     key: 'peripeties', label: 'Péripéties de voyage', group: 'Tables',
     items: peripeties.map((p) => ({ label: p.label, sub: `1d10 = ${p.roll} · ${p.kind}`, desc: p.text })),
+  },
+  // ── Datasets-OBJETS uniques (E3b) : config de création (objet) + banque de noms (Record par race) ──
+  {
+    key: 'details', label: 'Détails de création', group: 'Tables',
+    // UNE seule entrée (objet `details.json`) — formules Âge/Taille par espèce + textes d'aide.
+    items: [{
+      label: 'Détails de création (LDB 05)',
+      sections: sections({
+        title: 'Formules Âge & Taille (base + Nd10)', layout: 'list',
+        rows: Object.keys(details.ageBase).map((sp) => ({
+          t: 'kv', k: sp,
+          v: `Âge ${details.ageBase[sp]}+${Math.round(details.ageRoll[sp] ?? 1)}d10 · Taille ${details.heightBase[sp]}+${Math.round(details.heightRoll[sp] ?? 1)}d10 cm`,
+        } as CodexRow)),
+      }),
+    }],
+  },
+  {
+    key: 'names', label: 'Banque de noms', group: 'Tables',
+    // Record race → NamePool : une entrée par race (clé = libellé de l'item, édité au Codex).
+    items: Object.entries(names).map(([race, pool]) => ({
+      label: race,
+      sub: `${pool.maleFirstNames.length}♂ · ${pool.femaleFirstNames.length}♀ · ${pool.lastNames.length} noms`,
+      sections: sections(
+        pool.maleFirstNames.length ? { title: 'Prénoms masculins', layout: 'chips', rows: [{ t: 'text', text: pool.maleFirstNames.join(', ') }] } : null,
+        pool.femaleFirstNames.length ? { title: 'Prénoms féminins', layout: 'chips', rows: [{ t: 'text', text: pool.femaleFirstNames.join(', ') }] } : null,
+        pool.lastNames.length ? { title: 'Noms de famille', layout: 'chips', rows: [{ t: 'text', text: pool.lastNames.join(', ') }] } : null,
+      ),
+    })),
   },
 ];
 

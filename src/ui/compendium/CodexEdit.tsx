@@ -6,7 +6,7 @@
  * System Access (`fsPersist`) + preview mémoire (`setDataset`).
  */
 import { useEffect, useMemo, useState } from 'react';
-import { datasetArray, setDataset, type DatasetKey } from '../../data/overrides';
+import { datasetArray, setDataset, datasetObject, setObjectDataset, type DatasetKey, type ObjectDatasetKey } from '../../data/overrides';
 import { serializeDataset } from '../../data/serialize';
 import * as fs from '../../data/fsPersist';
 import { inferFields, type FieldDesc } from './editFields';
@@ -27,7 +27,8 @@ import { WeaponField } from '../editor/WeaponField';
 import { PsychTraitsField } from '../editor/PsychTraitsField';
 import type { Weapon } from '../../engine/types';
 import type { PsychTrait } from '../../engine/psychology';
-import { SymptomsField, CombatField, AdvancementRefField, TrappingRefField, CharKeysField, StarSubField, DomainEffectsField } from './StructFields';
+import { SymptomsField, CombatField, AdvancementRefField, TrappingRefField, CharKeysField, StarSubField, DomainEffectsField, TraitListField, HarvestField } from './StructFields';
+import type { TraitInstance } from '../../engine/statEntry';
 import type { DomainData } from '../../data';
 import type { CharKey } from '../../engine/types';
 import type { DiseaseSymptom } from '../../engine/disease';
@@ -44,7 +45,18 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   careerLevels: 'careerLevels', eyes: 'eyes', hairs: 'hairs', raceAppearance: 'raceAppearance',
   pregens: 'pregens', oups: 'oups', interludeEvents: 'interludeEvents', peripeties: 'peripeties',
 };
+/** Catégorie Codex → dataset-OBJET éditable (E3b) : pas un tableau d'entités mais UN objet de config
+ *  unique (`details`) ou un Record keyé par entrée (`names`, une entrée par race). Le `mode` dit comment
+ *  l'éditeur projette l'objet : `single` = édite l'objet entier ; `record` = une entrée par clé (l'item
+ *  Codex porte la clé en `label`). */
+const OBJECT_CATEGORY: Record<string, { ds: ObjectDatasetKey; mode: 'single' | 'record' }> = {
+  details: { ds: 'details', mode: 'single' },
+  names: { ds: 'names', mode: 'record' },
+};
+export const editableObjectDataset = (categoryKey: string): { ds: ObjectDatasetKey; mode: 'single' | 'record' } | undefined => OBJECT_CATEGORY[categoryKey];
+/** Une catégorie est éditable au Codex ssi elle a un dataset tableau OU un dataset-objet. */
 export const editableDataset = (categoryKey: string): DatasetKey | undefined => CATEGORY_DATASET[categoryKey];
+export const isEditableCategory = (categoryKey: string): boolean => !!CATEGORY_DATASET[categoryKey] || !!OBJECT_CATEGORY[categoryKey];
 
 /** Champ-liste (string[]) → dataset dont on propose les libellés en autocomplétion. */
 const REF_LIST_DATASET: Record<string, DatasetKey> = {
@@ -54,22 +66,101 @@ const REF_LIST_DATASET: Record<string, DatasetKey> = {
 
 type Entry = Record<string, unknown>;
 
+/** Axes du PROFIL de manœuvre rendus par `ManeuverDefField` (selects/checkbox). */
+const MANEUVER_PROFILE_KEYS = ['kind', 'activation', 'advantageCost', 'advantageMode', 'stat', 'defense', 'targeting', 'range', 'blast', 'magic'];
+
+/**
+ * Clés de champ COUVERTES par un éditeur dédié (sorties du formulaire générique inféré), PAR catégorie.
+ * SOURCE UNIQUE : utilisée par le filtre de `CodexEdit` ET par le garde-fou `no-json-fields.test` (qui
+ * vérifie qu'aucun champ d'aucun dataset éditable ne retombe en `kind:'json'`). Ajouter un éditeur dédié
+ * = ajouter sa/ses clé(s) ici (et le composant dans le rendu). */
+export function dedicatedFieldKeys(categoryKey: string): Set<string> {
+  const k = new Set<string>();
+  const add = (...keys: string[]) => keys.forEach((x) => k.add(x));
+  if (['creatures', 'traits', 'mutations'].includes(categoryKey)) add('appearance');
+  if (['spells', 'traits', 'qualities', 'domains', 'talents', 'maneuvers'].includes(categoryKey)) add('effects');
+  if (categoryKey === 'maneuvers') add(...MANEUVER_PROFILE_KEYS);
+  if (['traits', 'qualities', 'mutations', 'talents'].includes(categoryKey)) add('passive');
+  if (categoryKey === 'stars') add('effect', 'sub');
+  if (categoryKey === 'mutationTables') add('ranges');
+  if (categoryKey === 'mutations') add('psychTraits');
+  if (['mutations', 'trappings'].includes(categoryKey)) add('derivedWeapon');
+  if (categoryKey === 'maladies') add('symptoms');
+  if (categoryKey === 'talents') add('combat');
+  if (categoryKey === 'races' || categoryKey === 'careerLevels') add('skills', 'talents');
+  if (categoryKey === 'classes' || categoryKey === 'careerLevels') add('trappings');
+  if (categoryKey === 'careerLevels') add('characteristics');
+  if (categoryKey === 'domains') add('castBonus', 'missile', 'afterCast');
+  if (categoryKey === 'creatures') add('traits', 'optionals', 'harvest');
+  if (categoryKey === 'details') add('texts');
+  return k;
+}
+
+/** Échantillons pour `inferFields` d'une catégorie éditable (tableau d'entités, objet unique, ou
+ *  valeurs d'un Record keyé). SOURCE UNIQUE des champs inférés — utilisée par `CodexEdit` ET le
+ *  garde-fou no-json-fields.test (pas de duplication de la logique de projection). */
+export function editableEntries(categoryKey: string): Entry[] {
+  const obj = editableObjectDataset(categoryKey);
+  if (obj) {
+    const data = datasetObject(obj.ds) as Record<string, unknown>;
+    if (obj.mode === 'single') return [data as Entry];
+    const entries = Object.values(data) as Entry[];
+    return entries.length ? entries : [{}];
+  }
+  return datasetArray(editableDataset(categoryKey)!) as Entry[];
+}
+
 export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey: string; label: string; onClose: () => void; isNew?: boolean }) {
-  const dsKey = editableDataset(categoryKey)!;
-  const arr = datasetArray(dsKey) as Entry[];
-  // `isNew` : on part d'une entrée VIERGE (index -1 → le formulaire infère les champs du dataset) et le
-  // save APPEND au lieu de remplacer — création générique d'une nouvelle entité (domaine, trait…).
-  // Identité GÉNÉRIQUE via `entryKey` (label/name/key/id, composite careerLevels) — MÊME clé que le
-  // navigateur passe en `label` → le findIndex vise la bonne entrée même pour gods/pregens/careerLevels.
-  const index = useMemo(() => (isNew ? -1 : arr.findIndex((e) => entryKey(e) === label)), [arr, label, isNew]);
-  const [entry, setEntry] = useState<Entry>(() => structuredClone(arr[index] ?? {}));
+  // SOURCE de données UNIFIÉE (tableau d'entités OU dataset-objet) → la même UI de formulaire édite les
+  // trois formes : tableau (une entité par item Codex), objet unique (`details`), Record keyé (`names`,
+  // une entrée par race). `entries` = échantillons pour `inferFields` ; `initial` = l'objet édité ;
+  // `file`/`persist` = écriture disque (preview live in-place + `serializeDataset` byte-fidèle).
+  const obj = editableObjectDataset(categoryKey);
+  // `recordMode` : dataset-objet Record (`names`) — l'entrée est keyée par une CLÉ (la race) éditable
+  // (création/renommage). `persist(entry, key)` écrit sous `key` (et purge l'ancienne si renommée).
+  const src = useMemo<{ entries: Entry[]; initial: Entry; file: string; recordMode: boolean; initialKey: string; persist: (entry: Entry, key: string) => void }>(() => {
+    const entries = editableEntries(categoryKey);
+    if (obj) {
+      const data = datasetObject(obj.ds) as Record<string, unknown>;
+      const file = `${obj.ds}.json`;
+      if (obj.mode === 'single')
+        return { entries, initial: data as Entry, file, recordMode: false, initialKey: '', persist: (e) => setObjectDataset(obj.ds, e as never) };
+      // record : une entrée par clé (le `label` du navigateur = la clé, ex. la race) ; inférence sur
+      // TOUTES les valeurs (mêmes champs partout). `isNew` → clé vide à saisir dans le champ « Clé ».
+      const initialKey = isNew ? '' : label;
+      const initial = (data[initialKey] as Entry) ?? {};
+      return {
+        entries, initial, file, recordMode: true, initialKey,
+        persist: (e, key) => {
+          const next = { ...data } as Record<string, unknown>;
+          if (initialKey && initialKey !== key) delete next[initialKey]; // renommage : retire l'ancienne clé
+          if (key) next[key] = e;
+          setObjectDataset(obj.ds, next as never);
+        },
+      };
+    }
+    const dsKey = editableDataset(categoryKey)!;
+    const arr = entries;
+    // `isNew` : entrée VIERGE (le save APPEND) ; sinon identité GÉNÉRIQUE via `entryKey` (label/name/key/
+    // id, composite careerLevels) — MÊME clé que le navigateur passe en `label`.
+    const index = isNew ? -1 : arr.findIndex((e) => entryKey(e) === label);
+    return {
+      entries: arr,
+      initial: arr[index] ?? {},
+      file: `${dsKey}.json`, recordMode: false, initialKey: '',
+      persist: (e) => setDataset(dsKey, (index < 0 ? [...arr, e] : arr.map((x, i) => (i === index ? e : x))) as never),
+    };
+  }, [obj, categoryKey, label, isNew]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const [entry, setEntry] = useState<Entry>(() => structuredClone(src.initial));
+  const [recordKey, setRecordKey] = useState(src.initialKey);
   const [dir, setDir] = useState<FileSystemDirectoryHandle | null>(null);
   const [needsGrant, setNeedsGrant] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [msg, setMsg] = useState('');
 
   useEffect(() => { fs.restoreDataDir().then((r) => { if (r) { setDir(r.handle); setNeedsGrant(!r.granted); } }); }, []);
-  useEffect(() => { setEntry(structuredClone(arr[index] ?? {})); setDirty(false); setMsg(''); }, [index, dsKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setEntry(structuredClone(src.initial)); setRecordKey(src.initialKey); setDirty(false); setMsg(''); }, [src]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // L'apparence (MonsterPartsFields) ET les EFFETS d'un sort (FlowEditor) ont leur éditeur dédié — on les
   // sort du formulaire générique (sinon rendus en JSON brut). Les autres champs gardent le formulaire
@@ -99,39 +190,38 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   // Talent : sa capacité de combat `combat` (CombatFeature : drapeaux + castingKind/attackModes/offHand).
   const hasCombat = categoryKey === 'talents';
   // Avancement (espèce / niveau de carrière) : `skills`/`talents` = AdvancementRef[] (réf/joker/choix/aléatoire).
-  const hasAdvancement = categoryKey === 'races';
-  // Possessions de DÉPART (classe) : `trappings` = TrappingRef[] (id catalogue + quantité, ou texte).
-  const hasTrappings = categoryKey === 'classes';
+  const hasAdvancement = categoryKey === 'races' || categoryKey === 'careerLevels';
+  // Possessions de DÉPART (classe / niveau de carrière) : `trappings` = TrappingRef[] (id catalogue + quantité, ou texte).
+  const hasTrappings = categoryKey === 'classes' || categoryKey === 'careerLevels';
   // Niveau de carrière : `characteristics` = CharKey[] (vocab fermé) → multi-sélection (pas de saisie libre).
   const hasCharKeys = categoryKey === 'careerLevels';
   // Étoile : `sub` = sous-fourchette d100 [min,max] (Étoile du Sorcier) → deux inputs number.
   const hasStarSub = categoryKey === 'stars';
   // Domaine de magie : `castBonus`/`missile`/`afterCast` = petits objets d'effet typés (éditeur dédié).
   const hasDomainEffects = categoryKey === 'domains';
-  // Axes du PROFIL de manœuvre rendus par `ManeuverDefField` (selects/checkbox) → exclus du repli générique.
-  const MANEUVER_PROFILE_KEYS = ['kind', 'activation', 'advantageCost', 'advantageMode', 'stat', 'defense', 'targeting', 'range', 'blast', 'magic'];
-  const fields = useMemo(
-    () => inferFields(arr as Record<string, unknown>[]).filter(
-      (f) => !(hasAppearance && f.key === 'appearance') && !((isSpell || isTriggered || isManeuver) && f.key === 'effects')
-        && !(isManeuver && MANEUVER_PROFILE_KEYS.includes(f.key)) && !(isPassive && f.key === 'passive') && !(isStarEffect && f.key === 'effect') && !(isMutationTable && f.key === 'ranges')
-        && !(isMutation && f.key === 'psychTraits') && !(hasDerivedWeapon && f.key === 'derivedWeapon')
-        && !(isDisease && f.key === 'symptoms') && !(hasCombat && f.key === 'combat')
-        && !(hasAdvancement && (f.key === 'skills' || f.key === 'talents')) && !(hasTrappings && f.key === 'trappings')
-        && !(hasCharKeys && f.key === 'characteristics') && !(hasStarSub && f.key === 'sub')
-        && !(hasDomainEffects && (f.key === 'castBonus' || f.key === 'missile' || f.key === 'afterCast')),
-    ),
-    [arr, hasAppearance, isSpell, isTriggered, isManeuver, isPassive, isStarEffect, isMutationTable, isMutation, hasDerivedWeapon, isDisease, hasCombat, hasAdvancement, hasTrappings, hasCharKeys, hasStarSub, hasDomainEffects], // eslint-disable-line react-hooks/exhaustive-deps
-  );
+  // Créature : `traits`/`optionals` = TraitInstance[] (réutilise `TraitListField` du StatblockEditor),
+  // `harvest` = objet { rareté, dangerosité, usages } (HarvestField) → sortis du repli JSON.
+  const isCreature = categoryKey === 'creatures';
+  // Détails de création (objet unique `details.json`) : `texts` (5 entrées { all, bySpecies }) a son
+  // éditeur dédié ; les 4 records Âge/Taille restent au formulaire générique (`recordNumber`).
+  const isDetails = categoryKey === 'details';
+  // Champs au formulaire GÉNÉRIQUE = tous les champs inférés SAUF ceux couverts par un éditeur dédié
+  // (`dedicatedFieldKeys`, source unique partagée avec le garde-fou no-json-fields.test).
+  const fields = useMemo(() => {
+    const handled = dedicatedFieldKeys(categoryKey);
+    return inferFields(src.entries as Record<string, unknown>[]).filter((f) => !handled.has(f.key));
+  }, [src.entries, categoryKey]);
   const edit = (key: string, v: unknown) => { setEntry((e) => ({ ...e, [key]: v })); setDirty(true); };
+  // En mode Record, la clé (race) ne peut pas être vide (sinon entrée fantôme) — bloque l'enregistrement.
+  const canSave = dirty && (!src.recordMode || recordKey.trim().length > 0);
 
   const save = async () => {
-    const next = index < 0 ? [...arr, entry] : arr.map((e, i) => (i === index ? entry : e));
-    setDataset(dsKey, next as never); // preview mémoire (live)
-    const file = `${dsKey}.json`;
-    const text = serializeDataset(next);
+    src.persist(entry, recordKey.trim()); // preview mémoire (live) — mutation en place (tableau ou objet)
+    // Le texte écrit = la SOURCE entière (tableau ou objet-dataset), re-sérialisée byte-fidèle.
+    const text = serializeDataset(obj ? datasetObject(obj.ds) : datasetArray(editableDataset(categoryKey)!));
     try {
-      if (fs.FS_API && dir && !needsGrant) { await fs.writeFile(dir, file, text); setMsg(`Enregistré ${file} — Vite recharge…`); }
-      else { fs.downloadFallback(file, text); setMsg(`Téléchargé ${file} — reposez-le dans src/data/`); }
+      if (fs.FS_API && dir && !needsGrant) { await fs.writeFile(dir, src.file, text); setMsg(`Enregistré ${src.file} — Vite recharge…`); }
+      else { fs.downloadFallback(src.file, text); setMsg(`Téléchargé ${src.file} — reposez-le dans src/data/`); }
       setDirty(false);
     } catch (e) { setMsg(`Échec : ${String(e)}`); }
   };
@@ -146,9 +236,14 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         <span className="de-spacer" />
         {msg && <span className="de-msg">{msg}</span>}
         <button className="btn small" onClick={onClose}>Fermer</button>
-        <button className="btn small btn-primary" disabled={!dirty} onClick={save}>Enregistrer{dirty ? ' •' : ''}</button>
+        <button className="btn small btn-primary" disabled={!canSave} onClick={save}>Enregistrer{dirty ? ' •' : ''}</button>
       </div>
       <div className="codex-edit-form">
+        {src.recordMode && (
+          <label className="ed-field"><span>Clé (race) — identifiant de l'entrée</span>
+            <input value={recordKey} placeholder="ex. Humain" onChange={(e) => { setRecordKey(e.target.value); setDirty(true); }} />
+          </label>
+        )}
         {hasAppearance && <AppearanceField name={String(entry.label ?? label)} value={entry.appearance as EntityAppearance | undefined} onChange={(v) => edit('appearance', v)} />}
         {isSpell && <SpellEffectsField value={entry.effects as Flow | undefined} onChange={(v) => edit('effects', v)} />}
         {isPassive && (
@@ -169,7 +264,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {hasDerivedWeapon && <WeaponField value={entry.derivedWeapon as Weapon | undefined} onChange={(v) => edit('derivedWeapon', v)} />}
         {isMutation && <PsychTraitsField value={entry.psychTraits as PsychTrait[] | undefined} onChange={(v) => edit('psychTraits', v)} />}
         {isDisease && <SymptomsField value={entry.symptoms as DiseaseSymptom[] | undefined} onChange={(v) => edit('symptoms', v)} />}
-        {hasCombat && <CombatField value={entry.combat as Partial<CombatFeature> | undefined} allFeatures={arr.map((e) => e.combat as Partial<CombatFeature> | undefined)} onChange={(v) => edit('combat', v)} />}
+        {hasCombat && <CombatField value={entry.combat as Partial<CombatFeature> | undefined} allFeatures={src.entries.map((e) => e.combat as Partial<CombatFeature> | undefined)} onChange={(v) => edit('combat', v)} />}
         {hasAdvancement && <AdvancementRefField ds="skills" label="Compétences" value={entry.skills as AdvancementRef[] | undefined} onChange={(v) => edit('skills', v)} />}
         {hasAdvancement && <AdvancementRefField ds="talents" label="Talents" value={entry.talents as AdvancementRef[] | undefined} onChange={(v) => edit('talents', v)} />}
         {hasTrappings && <TrappingRefField value={entry.trappings as TrappingRef[] | undefined} onChange={(v) => edit('trappings', v)} />}
@@ -188,6 +283,14 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
             <RefDatalist ds="etats" /* alimente l'autocomplétion « par État » de castBonus */ />
           </>
         )}
+        {isCreature && (
+          <>
+            <TraitListField label="Traits" hint="(LDB 85 — armement « Arme (Épée) +7 », Psychologie « Peur 3 »…)" value={entry.traits as TraitInstance[] | undefined} onChange={(v) => edit('traits', v)} />
+            <TraitListField label="Traits optionnels" hint="(LDB 76 — proposés au spawn)" value={entry.optionals as TraitInstance[] | undefined} onChange={(v) => edit('optionals', v)} />
+            <HarvestField value={entry.harvest as { rarity: import('../../data').HarvestRarity; danger: import('../../data').HarvestDanger; uses: string } | undefined} onChange={(v) => edit('harvest', v)} />
+          </>
+        )}
+        {isDetails && <DetailsTextsField value={entry.texts as DetailsTexts | undefined} onChange={(v) => edit('texts', v)} />}
         {fields.map((f) => {
           const cfg = refFieldCfg(categoryKey, f.key);
           return cfg
@@ -400,6 +503,58 @@ function MutationTableField({ value, onChange }: { value: MutationRange[] | unde
   );
 }
 
+/** Texte d'aide LDB 05 (« Détails ») : global + par espèce (HTML léger). */
+interface DetailText { all: string; bySpecies: Record<string, string>; }
+/** Bloc `details.texts` : 5 entrées d'aide (nom/âge/taille/Ambitions courte & longue). Clés OUVERTES
+ *  (un nouveau texte ajouté à la donnée apparaît tout seul). */
+type DetailsTexts = Record<string, DetailText>;
+
+const DETAIL_TEXT_LABEL: Record<string, string> = {
+  nom: 'Noms', age: 'Âge', taille: 'Taille', ambitionShort: 'Ambition (court terme)', ambitionLong: 'Ambition (long terme)',
+};
+
+/** Éditeur du bloc `details.texts` (objet `details.json`) — pour chaque entrée d'aide : un texte GLOBAL
+ *  (`all`) + des surcharges PAR ESPÈCE (`bySpecies`, clés ouvertes). HTML léger autorisé (rendu via
+ *  LoreText au Codex). Réutilise le motif `de-reflrow` (rangée + ✕ + « + »). Sort `texts` du repli JSON. */
+function DetailsTextsField({ value, onChange }: { value: DetailsTexts | undefined; onChange: (v: DetailsTexts) => void }) {
+  const texts = value ?? {};
+  const EMPTY_TEXT: DetailText = { all: '', bySpecies: {} };
+  const setText = (key: string, patch: Partial<DetailText>) => onChange({ ...texts, [key]: { ...EMPTY_TEXT, ...texts[key], ...patch } });
+  const setSpecies = (key: string, sp: string, v: string) => setText(key, { bySpecies: { ...texts[key]?.bySpecies, [sp]: v } });
+  const renameSpecies = (key: string, oldSp: string, newSp: string) => {
+    const by = { ...texts[key]?.bySpecies };
+    const v = by[oldSp]; delete by[oldSp]; if (newSp) by[newSp] = v ?? '';
+    setText(key, { bySpecies: by });
+  };
+  const removeSpecies = (key: string, sp: string) => {
+    const by = { ...texts[key]?.bySpecies }; delete by[sp];
+    setText(key, { bySpecies: by });
+  };
+  return (
+    <div className="ed-field">
+      <span>textes d'aide de création (LDB 05 — global + surcharges par espèce, HTML léger)</span>
+      {Object.keys(texts).map((key) => {
+        const t = texts[key];
+        return (
+          <div className="ed-subfield" key={key}>
+            <b>{DETAIL_TEXT_LABEL[key] ?? key}</b>
+            <label className="ed-subfield">global<textarea rows={3} value={t.all} onChange={(e) => setText(key, { all: e.target.value })} /></label>
+            <span className="de-hint">par espèce</span>
+            {Object.keys(t.bySpecies ?? {}).map((sp) => (
+              <div className="de-reflrow" key={sp}>
+                <input style={{ width: 120 }} value={sp} onChange={(e) => renameSpecies(key, sp, e.target.value)} />
+                <textarea rows={2} value={t.bySpecies[sp]} onChange={(e) => setSpecies(key, sp, e.target.value)} />
+                <button className="btn small danger" title="Retirer l'espèce" onClick={() => removeSpecies(key, sp)}>✕</button>
+              </div>
+            ))}
+            <button className="btn small" onClick={() => setSpecies(key, '', '')}>+ Espèce</button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /** Rendu d'un champ, avec autocomplétion `<datalist>` pour les listes de références. */
 function Field({ field, value, onChange }: { field: FieldDesc; value: unknown; onChange: (v: unknown) => void }) {
   const { key, kind } = field;
@@ -438,8 +593,54 @@ function Field({ field, value, onChange }: { field: FieldDesc; value: unknown; o
     const keys = Object.keys(rec);
     return <div className="ed-field"><span>{key}</span>{keys.length === 0 ? <em className="de-hint">vide</em> : <div className="de-grid">{keys.map((k) => <label key={k} className="de-cell"><span>{k}</span><input type="number" value={rec[k] ?? ''} onChange={(e) => onChange({ ...rec, [k]: e.target.value === '' ? null : Number(e.target.value) })} /></label>)}</div>}</div>;
   }
+  if (kind === 'recordText') return <RecordTextField label={key} value={value as Record<string, string> | undefined} onChange={onChange} />;
+  if (kind === 'object') return <ObjectField label={key} value={value as Record<string, unknown> | undefined} onChange={onChange} />;
   if (kind === 'json') return <JsonField label={field.key} value={value} onChange={onChange} />;
   return <label className="ed-field"><span>{key}</span><input value={(value as string) ?? ''} onChange={(e) => onChange(field.nullable && e.target.value === '' ? null : e.target.value)} /></label>;
+}
+
+/** Record homogène clé→chaîne (couleur par espèce des yeux/cheveux, palette de couleurs d'apparence) :
+ *  une rangée par clé (clé renommable + valeur), + ajout/retrait. Clés OUVERTES → un nouveau membre
+ *  s'ajoute sans toucher le code. */
+function RecordTextField({ label, value, onChange }: { label: string; value: Record<string, string> | undefined; onChange: (v: Record<string, string>) => void }) {
+  const rec = value ?? {};
+  const keys = Object.keys(rec);
+  const rename = (oldK: string, newK: string) => {
+    const next: Record<string, string> = {};
+    for (const k of keys) next[k === oldK ? newK : k] = rec[k]; // ordre préservé
+    onChange(next);
+  };
+  return (
+    <div className="ed-field">
+      <span>{label}</span>
+      {keys.map((k) => (
+        <div className="de-reflrow" key={k}>
+          <input style={{ width: 140 }} value={k} onChange={(e) => rename(k, e.target.value)} />
+          <input value={rec[k]} onChange={(e) => onChange({ ...rec, [k]: e.target.value })} />
+          <button className="btn small danger" title="Retirer" onClick={() => { const next = { ...rec }; delete next[k]; onChange(next); }}>✕</button>
+        </div>
+      ))}
+      <button className="btn small" onClick={() => onChange({ ...rec, '': '' })}>+ Entrée</button>
+    </div>
+  );
+}
+
+/** Objet de config hétérogène (`interludeEvents.fx`, `raceAppearance.eyes`…) : SOUS-FORMULAIRE inféré
+ *  (récursif) — chaque sous-champ retrouve son kind structuré (number/checkbox/stringList/recordText/…)
+ *  via le MÊME `inferFields` + `Field`. Plus de repli JSON pour les objets plats. */
+function ObjectField({ label, value, onChange }: { label: string; value: Record<string, unknown> | undefined; onChange: (v: Record<string, unknown>) => void }) {
+  const obj = value ?? {};
+  const subFields = useMemo(() => inferFields([obj]), [obj]);
+  return (
+    <div className="ed-field ed-subform">
+      <span>{label}</span>
+      <div className="ed-subfield">
+        {subFields.map((f) => (
+          <Field key={f.key} field={f} value={obj[f.key]} onChange={(v) => onChange({ ...obj, [f.key]: v })} />
+        ))}
+      </div>
+    </div>
+  );
 }
 
 /** `<datalist>` des libellés d'un dataset (dé-dupliqués) — réutilise le motif SpellsField. */

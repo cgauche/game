@@ -3,7 +3,7 @@
  * tout seul). Métadonnées de RENDU uniquement : décrit comment afficher un champ, sans introduire de
  * structure intermédiaire — on édite les vrais objets de `src/data`. Consommé par `CodexEdit`.
  */
-export type FieldKind = 'text' | 'textarea' | 'number' | 'checkbox' | 'stringList' | 'source' | 'recordNumber' | 'json';
+export type FieldKind = 'text' | 'textarea' | 'number' | 'checkbox' | 'stringList' | 'source' | 'recordNumber' | 'recordText' | 'object' | 'json';
 
 export interface FieldDesc {
   key: string;
@@ -18,12 +18,17 @@ function kindOf(key: string, v: unknown): FieldKind {
   if (typeof v === 'string') return v.length > 80 ? 'textarea' : 'text';
   if (typeof v === 'number') return 'number';
   if (typeof v === 'boolean') return 'checkbox';
+  // Tableau d'objets = json (un éditeur dédié le sort du repli ; un tableau de chaînes = stringList).
   if (Array.isArray(v)) return v.every((x) => typeof x === 'string') ? 'stringList' : 'json';
   if (v && typeof v === 'object') {
     if ('book' in (v as object) && 'page' in (v as object)) return 'source';
     const vals = Object.values(v as Record<string, unknown>);
+    // Record homogène : valeurs toutes nombres → grille de nombres ; toutes chaînes → grille de textes.
     if (vals.length > 0 && vals.every((x) => typeof x === 'number' || x === null)) return 'recordNumber';
-    return 'json';
+    if (vals.length > 0 && vals.every((x) => typeof x === 'string')) return 'recordText';
+    // Objet de config hétérogène (ex. interludeEvents.fx, raceAppearance.eyes) → sous-formulaire inféré
+    // (récursif) plutôt que JSON brut — chaque sous-champ retrouve son kind structuré.
+    return 'object';
   }
   return 'text';
 }
