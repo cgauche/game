@@ -20,7 +20,6 @@ import { RestModal } from './RestModal';
 // CastModal n'est plus monté ici : la situation d'incantation est une étape `jet:'cast'` de la
 // cascade (rendue par `CascadeModal`, qui hôte `CastModal`) — cf. state/modalArbiter (entrée `cast` retirée).
 import { CascadeModal } from './CascadeModal';
-import { FumbleModal } from './FumbleModal';
 import { RevealModal } from './RevealModal';
 import { CorruptionModal } from './CorruptionModal';
 import { ActivityModal } from './ActivityModal';
@@ -31,7 +30,7 @@ export { pickActiveModalKey, type ModalKey } from '../state/modalArbiter';
 import { pickActiveModalKey, type ModalKey } from '../state/modalArbiter';
 
 const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
-  fateSave: FateSaveModal, fumble: FumbleModal, renounce: RenounceModal,
+  fateSave: FateSaveModal, renounce: RenounceModal,
   trample: TrampleModal, maneuver: ManeuverModal, reveal: RevealModal,
   mountTarget: MountTargetModal, frenzy: FrenzyModal, approach: ApproachModal, run: RunModal, focus: FocusModal,
   medic: MedicModal, rest: RestModal, heal: HealModal, cascade: CascadeModal, reload: ReloadModal, stateRecovery: StateRecoveryModal,

@@ -18,7 +18,7 @@ import {
   applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
-  aiCreatureFreeAttacks, aiFrenzyAttack, resolveTalentFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, aiOvercastPlan,
+  aiCreatureFreeAttacks, aiFrenzyAttack, resolveTalentFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan,
   selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, MELEE_MANEUVER_KINDS,
   castSightBlocked, spellSightOf, castZoneSpell, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone,
   counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition,
@@ -2910,6 +2910,8 @@ export const useGame = create<GameState>((set, get) => ({
       applyAttackResult(get, set, attacker, victim, weapon, pa.result, undefined, undefined, isDualMain || isDualSecond);
       // Maladresse d'un HÉROS (jet propre raté + double) → modale Tableau des Oups ! (LDB 14 l.53) ; elle interrompt le balayage.
       if (attacker.kind === 'hero' && attackerFumbled(pa.result, weapon)) {
+        // Maladresse = étape de la cascade d'attaque (comme le Critique) ; advanceCombatJet l'enchaîne au bout.
+        pushCombatStep(set, { id: `cons-fumble-${attacker.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: attacker.id });
         set({ pendingFumble: { combatantId: attacker.id, weapon, result: null }, pendingCleave: null });
       } else if (!isDualMain && !isDualSecond && !pa.freeKind) {
         // Frappe Mortelle (LDB 14 l.12 / 85 l.299) : démarre/poursuit le balayage d'un héros plus grand
@@ -3220,10 +3222,13 @@ export const useGame = create<GameState>((set, get) => ({
     const { battle, pendingFumble: pf } = get();
     if (!battle || !pf || !pf.result) return;
     const c = battle.combatants.find((x) => x.id === pf.combatantId);
-    const resume = pf.resumeAfter;
     set({ pendingFumble: null });
     if (c) applyOups(get, set, c, pf.weapon, pf.result);
-    if (resume) resumeEnemyTurn(get, set); // Maladresse en défense réactive → l'IA reprend
+    // La Maladresse est l'étape COURANTE de la cascade combat → enchaîner le curseur (la clôture reprend l'IA).
+    // Hors cascade (tests directs) : repli sur la reprise du tour de l'IA.
+    const seq = get().pendingCascade;
+    if (seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'fumble') get().cascadeNext();
+    else resumeEnemyTurn(get, set);
   },
 
   // ── Défense réactive (héros attaqué par l'IA en mêlée) ──
@@ -3261,7 +3266,11 @@ export const useGame = create<GameState>((set, get) => ({
     // Maladresse du DÉFENSEUR héros (sa défense ratée sur un double, LDB 14 l.48-51) → modale Oups!,
     // puis reprise de l'IA APRÈS Appliquer (resumeAfter). Sinon on reprend l'IA tout de suite.
     if (defender && defender.kind === 'hero' && defenderFumbled(pd.result, pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : defender.weapons[0]) && !isOutOfAction(defender)) {
-      set({ pendingFumble: { combatantId: defender.id, weapon: defender.weapons[0], result: null, resumeAfter: true } });
+      // Maladresse du défenseur = étape de SA cascade combat ; on AVANCE défense → Maladresse (la reprise IA
+      // suivra fumbleConfirm → cascadeNext), SANS déclencher la Frénésie de l'attaquant (comme avant le fold).
+      pushCombatStep(set, { id: `cons-fumble-${defender.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: defender.id });
+      set({ pendingFumble: { combatantId: defender.id, weapon: defender.weapons[0], result: null } });
+      get().cascadeNext();
       return;
     }
     // Frénésie : Test de CC gratuit après l'attaque PRINCIPALE (jamais après une attaque gratuite : `!pd.free`) → fire une seule fois.

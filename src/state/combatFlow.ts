@@ -1166,10 +1166,10 @@ export function applyAttackResult(
       // Taillade (Aux Armes p.89) : une Blessure Critique infligée par une arme de Taillade ajoute
       // un État Hémorragique, en plus de tous les effets du Coup Critique.
       if (res.critical && !lethal) {
-        for (const { def } of resolveQualities(weapon)) {
-          if (!def.onCritCondition) continue;
-          addCondition(target, def.onCritCondition);
-          critLog.push(`${target.name} : ${def.onCritCondition} (${def.key}).`);
+        for (const { def, caps } of resolveQualities(weapon)) {
+          if (!caps?.onCritCondition) continue;
+          addCondition(target, caps.onCritCondition);
+          critLog.push(`${target.name} : ${caps.onCritCondition} (${def.key}).`);
         }
       }
       if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore); // mort directe ou pause Destin
@@ -1359,8 +1359,8 @@ export function applyAttackResult(
   // un Test opposé Force/Athlétisme ; gagné, la cible est mise À Terre. HÉROS → étape de CHOIX de la
   // cascade d'attaque (pushCombatStep, applier 'knockdown') ; IA → déclenché d'office.
   if (res.hit && weapon.type === 'melee' && !isOutOfAction(target)) {
-    for (const { def } of resolveQualities(weapon)) {
-      const kd = def.onHitKnockdown;
+    for (const { def, caps } of resolveQualities(weapon)) {
+      const kd = caps?.onHitKnockdown;
       if (!kd || (attacker.advantage ?? 0) < kd.advantageCost || hasCondition(target, kd.condition)) continue;
       if (attacker.kind === 'hero') {
         // Folding (comme Déviation/Piège-lame) : le choix du Renversement est une ÉTAPE de CHOIX de la
@@ -1394,7 +1394,7 @@ export function applyAttackResult(
   // Dégâts sur la cible ; à portée → la touche frappe AUSSI les Indice créatures les plus proches
   // (≤ Indice mètres, 1 case = 2 m). Réutilise la géométrie de zone (comme le Souffle de créature).
   if (res.hit && weapon.type === 'ranged' && res.damage != null && attacker.pos && target.pos && !isOutOfAction(target)) {
-    const tz = resolveQualities(weapon).find((r) => r.def.areaFire);
+    const tz = resolveQualities(weapon).find((r) => r.caps?.areaFire);
     if (tz) {
       const indice = tz.indice ?? 1;
       if (chebyshev(attacker.pos, target.pos) <= 1) {
@@ -2025,8 +2025,11 @@ export function resolveDeviation(get: Get, set: SetFn, dev: PendingDeviation, de
     autoCleave(get, set, attacker, target, dev.res); // balayage de l'ennemi plus grand sur les AUTRES héros
     // Maladresse du défenseur héros (parade/esquive active ratée sur un double, LDB 14 l.48-51).
     if (target.kind === 'hero' && defenderFumbled(dev.res, target.weapons[0]) && !isOutOfAction(target)) {
-      set({ pendingFumble: { combatantId: target.id, weapon: target.weapons[0], result: null, resumeAfter: true } });
-      return; // la reprise suivra la modale de Maladresse (resumeAfter)
+      // Maladresse = étape APPENDUE à la cascade ; après cet applier, la séquence avance déviation → Maladresse,
+      // et la reprise IA suit la fermeture de la séquence (fumbleConfirm → cascadeNext).
+      pushCombatStep(set, { id: `cons-fumble-${target.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: target.id });
+      set({ pendingFumble: { combatantId: target.id, weapon: target.weapons[0], result: null } });
+      return;
     }
   }
 }

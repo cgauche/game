@@ -373,8 +373,6 @@ export interface PendingFumble {
   combatantId: string;
   weapon: Weapon; // arme utilisée (pour Dégâts d'arme / Incident de Tir)
   result: OupsResolved | null; // null = pas encore lancé sur le Tableau des Oups !
-  /** Vrai si la Maladresse survient pendant une défense réactive : reprendre le tour de l'IA après Appliquer. */
-  resumeAfter?: boolean;
 }
 /** Déviation Critique en attente (LDB 63 l.63-66) : un HÉROS a subi un Coup Critique à une
  *  localisation où il porte de la PA ; il choisit Dévier (sacrifie 1 PA, ignore le Critique mais
@@ -634,7 +632,7 @@ export interface CascadeStep extends RollParticipant {
    *  `ForceDoorModal`) → une seule fenêtre. Les données vivent dans `pendingAttack`/`pendingDefense`/
    *  `pendingCast`/`pendingTest`/`pendingExtendedTest`/`pendingDisengage`/`pendingForceDoor`
    *  (coexistants — comme l'attaque), résolus par leur `xConfirm`/`xNext` qui ferme la cascade. */
-  jet?: 'attack' | 'defense' | 'cast' | 'test' | 'extended' | 'disengage' | 'forceDoor';
+  jet?: 'attack' | 'defense' | 'fumble' | 'cast' | 'test' | 'extended' | 'disengage' | 'forceDoor';
   /** Étape de GROUPE (action collective : enfoncer une porte à plusieurs) — l'arbitre coop lui donne
    *  l'owner '*' (chacun pilote ses héros) au lieu de `actorId` (une étape forceDoor n'a pas d'acteur
    *  unique). Absent sur les autres `kind` → repli sur `actorId` (identique à aujourd'hui). */

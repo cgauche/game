@@ -404,7 +404,7 @@ describe('Boucle de jeu (store)', () => {
     expect(st.battle!.acted).toBe(true); // l'Action est consommée d'office
   });
 
-  it('Maladresse — fumble du DÉFENSEUR héros (défense ratée + double) ouvre la modale avec reprise IA', () => {
+  it('Maladresse — fumble du DÉFENSEUR héros (défense ratée + double) → étape jet:fumble de la cascade', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
@@ -431,11 +431,15 @@ describe('Boucle de jeu (store)', () => {
         def: { roll: 33, target: 40, success: false, sl: 0, isDouble: true },
         result,
       },
+      // La défense est une étape de cascade combat (Lot 1) → on la pose comme en jeu (maybeOpenDefense).
+      pendingCascade: { title: 'Défense', icon: '🛡️', purpose: 'combat', cursor: 0, log: [], participants: [{ id: 'defense-jet', kind: 'defenseJet', jet: 'defense', actorId: h.id }] } as any,
     });
     useGame.getState().defenseConfirm();
     const st = useGame.getState();
     expect(st.pendingFumble?.combatantId).toBe(h.id);
-    expect(st.pendingFumble?.resumeAfter).toBe(true);
+    // La Maladresse est désormais l'étape COURANTE de la cascade combat (plus de modale séparée / resumeAfter).
+    const cur = st.pendingCascade?.participants[st.pendingCascade!.cursor];
+    expect(cur?.jet).toBe('fumble');
   });
 
   it('Maladresse — « agir en dernier » (21-40) ne dure qu’UN Round (ordre canonique restauré)', () => {

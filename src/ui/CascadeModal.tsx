@@ -5,6 +5,7 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
 import { useAttackJetProps } from './jetProps/useAttackJetProps';
 import { useDefenseJetProps } from './jetProps/useDefenseJetProps';
+import { useFumbleJetProps } from './jetProps/useFumbleJetProps';
 import { useTestJetProps } from './jetProps/useTestJetProps';
 import { useExtendedTestJetProps } from './jetProps/useExtendedTestJetProps';
 import { DisengageModal } from './DisengageModal';
@@ -49,6 +50,7 @@ export function CascadeModal() {
   const finish = useGame((s) => s.cascadeFinish); // « Terminer » du bilan
   const attackProps = useAttackJetProps(); // étape-jet d'attaque : rendue dans CETTE coquille (une fenêtre)
   const defenseProps = useDefenseJetProps(); // étape-jet de défense réactive : défense + son Critique dans UNE fenêtre
+  const fumbleProps = useFumbleJetProps(); // étape-jet de Maladresse : Tableau des Oups ! dans la MÊME fenêtre
   const testProps = useTestJetProps(); // étape-jet de Test de scène : même coquille, une seule fenêtre
   const extendedProps = useExtendedTestJetProps(); // étape-jet de Test étendu (Rounds cumulés)
 
@@ -120,6 +122,9 @@ export function CascadeModal() {
   // ÉTAPE-JET de défense réactive : rendue via son hook dans la MÊME coquille → la défense ET son
   // Critique/Maladresse vivent dans UNE seule fenêtre (`defenseConfirm`/`defenseCancel` enchaînent le curseur).
   if (cur.jet === 'defense') return defenseProps ? <RollFlowShell {...defenseProps} /> : null;
+  // ÉTAPE-JET de Maladresse : conséquence d'un Test raté sur un double, rendue via son hook dans la MÊME
+  // coquille (comme le Critique) → plus de modale d'arbitre séparée ; `fumbleConfirm` enchaîne le curseur.
+  if (cur.jet === 'fumble') return fumbleProps ? <RollFlowShell {...fumbleProps} /> : null;
   // ÉTAPE-JET de Test de scène : rendue via son hook dans la MÊME coquille (`resolveTest` ferme la cascade).
   if (cur.jet === 'test') return testProps ? <RollFlowShell {...testProps} /> : null;
   // ÉTAPE-JET de Test ÉTENDU : Rounds cumulés via `extendedTestNext` (ferme la cascade à la réussite).
