@@ -26,14 +26,29 @@ import { testValue } from './skills';
 import { addCondition } from './conditions';
 import { effectiveMovement, encumbrancePenalties } from './encumbrance';
 import { Money, fromBrass } from './money';
+import transportsJson from '../data/transports.json';
 
-export type TravelMode = 'pied' | 'diligence' | 'barge';
+/** Classe d'un transport payant : prix RAW en sous (PA) par kilomètre ET par passager (l.207-219). */
+export interface TransportClass { key: string; label: string; brassPerKm: number; }
+/** Transport payant ÉDITABLE (`src/data/transports.json`). `movement` = Déplacement du véhicule (km/h). */
+export interface TransportData { id: string; label: string; movement: number; classes: TransportClass[]; }
+
+/** Transports payants RAW (l.210-219), en DONNÉE éditable. */
+export const TRANSPORTS_LIST = transportsJson as TransportData[];
+export type TransportId = (typeof TRANSPORTS_LIST)[number]['id'];
+
+/** Index par `id` des transports — `TRANSPORTS[mode]` (accès historique des consommateurs). */
+export const TRANSPORTS: Record<TransportId, TransportData> = Object.fromEntries(
+  TRANSPORTS_LIST.map((t) => [t.id, t]),
+) as Record<TransportId, TransportData>;
+
+/** Mode de voyage : `'pied'` (Mouvement du groupe) OU l'`id` d'un transport payant (`transports.json`). */
+export type TravelMode = 'pied' | TransportId;
 
 export const TRAVEL_MODE_LABEL: Record<TravelMode, string> = {
   pied: 'À pied',
-  diligence: 'Diligence',
-  barge: 'Barge',
-};
+  ...Object.fromEntries(TRANSPORTS_LIST.map((t) => [t.id, t.label])),
+} as Record<TravelMode, string>;
 
 /** Défauts paramétrables (surchargés par la carte du monde / la route dans l'éditeur). */
 export const TRAVEL_DEFAULTS = {
@@ -44,27 +59,6 @@ export const TRAVEL_DEFAULTS = {
   /** Seuil du d10 quotidien de péripétie : « événement sur un résultat de 8 » (l.237). 0 = désactivé. */
   perilDie: 8,
 } as const;
-
-/** Classe d'un transport payant : prix RAW en sous (PA) par kilomètre ET par passager (l.207-219). */
-export interface TransportClass { key: string; label: string; brassPerKm: number; }
-
-/** Transports payants RAW (l.210-219). `movement` = Déplacement du véhicule (km/h, l.222). */
-export const TRANSPORTS: Record<Exclude<TravelMode, 'pied'>, { movement: number; classes: TransportClass[] }> = {
-  diligence: {
-    movement: 6,
-    classes: [
-      { key: 'interieur', label: 'Intérieur', brassPerKm: 2 },
-      { key: 'exterieur', label: 'Extérieur', brassPerKm: 1 },
-    ],
-  },
-  barge: {
-    movement: 8,
-    classes: [
-      { key: 'cabine', label: 'Cabine', brassPerKm: 5 },
-      { key: 'pont', label: 'Pont', brassPerKm: 2 },
-    ],
-  },
-};
 
 /** Vitesse du groupe à pied = Mouvement EFFECTIF le plus lent (l.222), en km/h. */
 export function partyWalkSpeed(party: Combatant[]): number {

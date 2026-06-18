@@ -64,6 +64,9 @@ export interface SpeciesData {
   /** Talents d'espèce (`AdvancementRef[]` : {ref}, {choice} « A ou B », {random} « N aléatoire », {wildcard}). */
   talents: AdvancementRef[];
   source: { book: string; page: number };
+  /** Racial de Groupe ÉDITABLE (Traits psy ciblés, LDB 21) — surcharge la dérivation par label
+   *  (`engine/groups`). Absent = racial auto-dérivé du `label` d'espèce. */
+  group?: string;
 }
 export interface ClassData {
   /** id STABLE (slug du libellé) — cible de `CareerData.class`. */
@@ -218,6 +221,9 @@ export interface CreatureData {
   /** Récolte « Précieuses Entrailles » (ZI) : rareté + dangerosité (→ coût par Enc des pièces,
    *  cf. engine/harvest) et usages supposés des organes. Porté par la créature (pas de table //). */
   harvest?: { rarity: HarvestRarity; danger: HarvestDanger; uses: string };
+  /** Catégorie de Groupe ÉDITABLE (Traits psy ciblés, LDB 21) — surcharge la dérivation par folder
+   *  (`engine/groups`). Absent = catégorie auto-dérivée du `folder`. */
+  group?: string;
 }
 export interface EtatData {
   /** id STABLE (slug du libellé) — `ConditionId` ; cible de `ConditionInstance.name` et des ops condition. */
@@ -353,6 +359,9 @@ export interface TraitData {
   /** Drapeaux de CAPACITÉ irréductibles (décisions IA/psy, résolution, build/déplacement/vision) —
    *  migrés des `defs/` mécaniques, lus PAR ID par `engine/traits/dispatch`. Édité au Codex. */
   capabilities?: TraitCapabilities;
+  /** Trait STANDARD (LDB 76 l.28-31 : « ajoutés à la liste Facultative de TOUTES les créatures ») —
+   *  proposé par le picker de Traits facultatifs sur n'importe quel bestiaire. Édité au Codex. */
+  standard?: boolean;
 }
 /** Drapeaux/marqueurs de CAPACITÉ IRRÉDUCTIBLES d'une qualité d'arme/armure/objet (LDB 62-63) — règles
  *  que le moteur INTERROGE (résolution de combat, économie d'artisanat) : NI un modificateur (`passive`)
@@ -440,6 +449,13 @@ export interface SpellData {
   label: string;
   type: string;
   subType: string | null;
+  /** id STABLE du Domaine de magie (= `DomainData.id`, ex. « feu ») — source RUNTIME du chemin
+   *  sort→domaine (attributs LDB 48). Dérivé du `subType` (libellé) à l'authoring ; le runtime ne
+   *  lit QUE l'id. Absent = Sort sans Domaine (Magie Mineure, Prière…). */
+  domainId?: string;
+  /** Prière (Béni/Invocation) plutôt qu'un Sort arcanique : branche d'incantation (Test de Prière,
+   *  pas de Niveau d'Incantation, non dissipable) lue PAR LA DONNÉE — cf. `castInfo`/`isArcaneSpell`. */
+  isPrayer?: boolean;
   /** Niveau d'Incantation (NI). `null` pour les Prières (Béni/Invocation). */
   cn: number | null;
   range: string;
@@ -526,6 +542,10 @@ export interface NamePool {
   maleFirstNames: string[];
   femaleFirstNames: string[];
   lastNames: string[];
+  /** Suffixes de patronyme par sexe du PERSONNAGE (Nain, LDB 05 l.622 : « –sson » fils de…, « –snev »
+   *  neveu de…, « –sdottir » fille de…, « –sniz » nièce de…) — le nom de famille est généré depuis le
+   *  parent + suffixe quand `lastNames` est vide. Absent = pas de génération par suffixe. */
+  lastNameSuffixes?: { M: string[]; F: string[] };
 }
 
 export const characteristics = characteristicsJson as any[];
@@ -547,11 +567,6 @@ export function findDiseaseById(id: string): DiseaseDef | undefined {
 /** Libellé d'affichage d'une Maladie par son id (repli sur l'id). */
 export function diseaseLabel(id: string): string {
   return DISEASE_BY_ID.get(id)?.name ?? id;
-}
-const DISEASE_ID_BY_LABEL = new Map(maladies.map((m) => [m.name.toLowerCase(), m.id]));
-/** Résout un `id` de Maladie depuis un LIBELLÉ (authoring/parsing) — insensible à la casse. */
-export function diseaseIdByLabel(label: string): string | undefined {
-  return DISEASE_ID_BY_LABEL.get(label.toLowerCase());
 }
 // Traits app-owned + traits curés hors-extraction mergés ici : homebrew frenchy.bzh (Aura de Dhar/
 // Mort, Charnier) + traits de suppléments autorisés référencés par le bestiaire mais absents
@@ -584,10 +599,14 @@ export const spells = [...(spellsJson as SpellData[]), ...(frenchySpellsJson as 
  *  effets en GameOp. Octroyées aux créatures via `TraitData.grantsManeuvers` ; résolues par id. */
 export const maneuvers = maneuversJson as ManeuverDef[];
 /** Domaines de magie app-owned (LDB 48) — ENTITÉ éditable au Codex (attributs en données : onHit,
- *  projectile, post-incantation). Résolus par LIBELLÉ (= `subType` du Sort, cf. `domainOf`). */
+ *  projectile, post-incantation). Le RUNTIME résout par `id` STABLE (= `SpellData.domainId`, cf.
+ *  `findDomainById`) ; `domainByLabel`/`findDomain` restent pour l'authoring/affichage. */
 export const domains = domainsJson as DomainData[];
 export const domainByLabel: Map<string, DomainData> = new Map(domains.map((d) => [d.label, d]));
 export const findDomain = (label: string | null | undefined): DomainData | undefined => (label ? domainByLabel.get(label) : undefined);
+/** Index des Domaines par `id` STABLE — lookup RUNTIME indépendant de la langue (sort→domaine). */
+export const domainById: Map<string, DomainData> = new Map(domains.map((d) => [d.id, d]));
+export const findDomainById = (id: string | null | undefined): DomainData | undefined => (id ? domainById.get(id) : undefined);
 export const eyes = eyesJson as DetailColorData[];
 export const hairs = hairsJson as DetailColorData[];
 export const details = detailsJson as DetailsData;
@@ -759,12 +778,6 @@ export function findSpell(label: string): SpellData | undefined {
 }
 export function findStar(label: string): StarData | undefined {
   return stars.find((s) => s.label === label);
-}
-export function findLocation(label: string): LocationData | undefined {
-  return locations.find((l) => l.label === label);
-}
-export function findBook(label: string): BookData | undefined {
-  return books.find((b) => b.label === label || b.abr === label);
 }
 
 const TRAPPING_BY_ID = new Map(trappings.map((t) => [t.id, t]));

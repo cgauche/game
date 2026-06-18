@@ -267,7 +267,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
     ...(extras?.spells?.length
       ? { spells: extras.spells.filter((id) => !!findSpellById(id)) }
       : creature.spells.length ? { spells: creature.spells.map((s) => s.id) } : {}),
-    groups: groupsFor({ folder: creature.folder }), // catégorie de Groupe dérivée du folder bestiaire (P3)
+    groups: groupsFor({ folder: creature.folder, group: creature.group }), // catégorie de Groupe (folder, ou surcharge `group` éditable) (P3)
     traits, // conservés (facultatifs inclus) → attaques gratuites de créature en combat
     skills,
     talents,

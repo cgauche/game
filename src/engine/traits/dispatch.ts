@@ -7,12 +7,12 @@
 import type { CharKey, Combatant } from '../types';
 import { TRAITS, TraitDef } from './registry';
 import { parseStatEntry, type TraitInstance, type TraitList } from '../statEntry';
-import { traitByLabel } from '../../data';
+import { traitByLabel, traitById, type TraitCapabilities } from '../../data';
 import { slugId } from '../../data/slug';
 import type { PassiveMod } from '../ops';
 
 /**
- * Libellés canoniques des traits HORS registre `defs/` : attaques naturelles (lues par
+ * Libellés canoniques des traits HORS registre (donnée `traits.json`) : attaques naturelles (lues par
  * `creatureAttacks` / `spawn.weaponsFromTraits`) et marqueurs spéciaux (Venin, Lanceur de Sorts,
  * Mort-vivant, Frénésie…). On les canonicalise ICI pour que `t.key === 'X'` soit FIABLE en aval
  * malgré la casse hétérogène des livres (« Lanceur de sorts » → « Lanceur de Sorts »), au lieu de
@@ -28,18 +28,16 @@ export const EXTRA_TRAIT_LABELS = [
   'Infecté', 'Maladie', 'Corruption',
 ];
 
-/** Résolution UNIQUE libellé (casse ignorée) → `id` STABLE (slug) : dataset `traits.json`, registre
- *  `defs/` (`def.key` = libellé), et libellés hors registre. Source unique de l'import label→id. */
+/** Résolution UNIQUE libellé (casse ignorée) → `id` STABLE (slug) : dataset `traits.json` (qui est
+ *  AUSSI la source de `TRAITS`) + libellés hors registre. Source unique de l'import label→id. */
 const CANON_BY_LOWER = new Map<string, string>([
   ...[...traitByLabel.keys()].map((label) => [label.toLowerCase(), slugId(label)] as const),
-  ...Object.values(TRAITS).map((d) => [d.key.toLowerCase(), slugId(d.key)] as const),
   ...EXTRA_TRAIT_LABELS.map((label) => [label.toLowerCase(), slugId(label)] as const),
 ]);
 
 /** Inverse : `id` → libellé FR canonique (affichage : inspecteur/Codex/éditeur). Même couverture. */
 const LABEL_BY_ID = new Map<string, string>([
   ...[...traitByLabel.keys()].map((label) => [slugId(label), label] as const),
-  ...Object.values(TRAITS).map((d) => [slugId(d.key), d.key] as const),
   ...EXTRA_TRAIT_LABELS.map((label) => [slugId(label), label] as const),
 ]);
 
@@ -75,7 +73,7 @@ export function formatTrait(t: TraitInstance): string {
   const label = traitLabelById(t.id);
   const head = t.count != null ? `${t.count} ${label}` : label;
   const isAttack = PLUS_DISPLAY.has(t.id);
-  const ward = !isAttack && !!TRAITS[t.id]?.wardSave;
+  const ward = !isAttack && !!traitById.get(t.id)?.capabilities?.wardSave;
   const val = t.value == null ? '' : isAttack ? ` +${t.value}` : ward ? ` ${t.value}+` : ` ${t.value}`;
   const arg = t.arg ? ` (${t.arg})` : '';
   const range = t.range != null ? ` (${t.range})` : '';
@@ -134,17 +132,14 @@ export function hasTraitKey(traits: TraitList | undefined, id: string): boolean 
   return (traits ?? []).some((t) => t.id === id);
 }
 
-const first = (traits: TraitList | undefined, pred: (d: TraitDef) => boolean): ResolvedTrait | undefined =>
-  resolveTraits(traits).find((r) => pred(r.def));
-
 // ── Profil dérivé au spawn (statblocks d'éditeur — LDB 77 « ajoutez les Traits ») ─────────────────
 /** PassiveMod[] de PROFIL des traits — la DONNÉE éditable `TraitData.passive` (vocab GameOp unifié, éditée
  *  par GameOpEditor comme un sort). SOURCE UNIQUE des modificateurs de profil de trait, lue DIRECT par le
  *  collecteur passif (liveTraits). Éditer/créer un trait à modificateur de profil = de la donnée. */
 export function traitPassiveMods(traits: TraitList | undefined): PassiveMod[] {
   const out: PassiveMod[] = [];
-  for (const { def } of resolveTraits(traits)) {
-    const ops = traitByLabel.get(def.key)?.passive;
+  for (const t of traits ?? []) {
+    const ops = traitById.get(t.id)?.passive; // lecture PAR ID stable (≠ jointure par libellé)
     if (ops) for (const op of ops) out.push({ op, kind: 'intrinsèque' }); // le collecteur affecte le kind (≠ donnée)
   }
   return out;
@@ -163,139 +158,129 @@ export function traitMovementMod(traits: TraitList | undefined): number {
   return traitPassiveMods(traits).reduce((s, m) => s + (m.op.op === 'moveMod' ? m.op.mod : 0), 0);
 }
 
+/** La créature a-t-elle la CAPACITÉ booléenne `cap` (drapeau de `TraitData.capabilities`, lu PAR ID) ?
+ *  SOURCE UNIQUE des helpers de capacité (bestial/stupide/rage/…). Le seuil/type éventuel (Démoniaque 8+,
+ *  Immunité (Poison)) vient de l'INDICE/arg de l'INSTANCE, lu par les helpers dédiés (wardSaves, etc.). */
+export function traitCapability(traits: TraitList | undefined, cap: keyof TraitCapabilities): boolean {
+  return (traits ?? []).some((t) => !!traitById.get(t.id)?.capabilities?.[cap]);
+}
+
 /** Endurant (LDB 85 p.339) : +Bonus d'Endurance Blessures. */
 export function traitBonusWoundsBE(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.bonusWoundsBE);
+  return traitCapability(traits, 'bonusWoundsBE');
 }
 
 /** Mutation / Corruption mentale (LDB 85) : mutations à appliquer au spawn. `mutationId` = mutation
  *  EXPLICITE figée (l'argument d'auteur « Mutation (Cornes asymétriques) » est résolu en id stable via
  *  `slugId` — runtime 100% id) ; absent = tirage sur le Tableau `kind`. */
 export function mutationsAtSpawn(traits: TraitList | undefined): { kind: 'physique' | 'mentale'; mutationId?: string }[] {
-  return resolveTraits(traits)
-    .filter((r) => r.def.mutationAtSpawn)
-    .map((r) => ({ kind: r.def.mutationAtSpawn!, mutationId: r.arg ? slugId(r.arg) : undefined }));
+  return (traits ?? [])
+    .filter((t) => traitById.get(t.id)?.capabilities?.mutationAtSpawn)
+    .map((t) => ({ kind: traitById.get(t.id)!.capabilities!.mutationAtSpawn!, mutationId: t.arg ? slugId(t.arg) : undefined }));
 }
 
 // ── Mathématique de combat ────────────────────────────────────────────────────────────────────────
 /** Sauvegardes « 1d10 ≥ Indice → coup ignoré » (Démoniaque 8+, Protection N). Liste des seuils. */
 export function wardSaves(traits: TraitList | undefined): number[] {
-  return resolveTraits(traits)
-    .filter((r) => r.def.wardSave && r.indice != null)
-    .map((r) => r.indice!);
+  return (traits ?? []).filter((t) => traitById.get(t.id)?.capabilities?.wardSave && t.value != null).map((t) => t.value!);
 }
 
-/** Les attaques de la créature sont-elles MAGIQUES (Démoniaque/Magique/Fabriqué) ? */
-export function attacksAreMagical(c: Pick<Combatant, 'traits'>): boolean {
-  return resolveTraits(c.traits).some((r) => r.def.magicalAttacks);
-}
-
-/** Éthéré (LDB 85 p.339) : blessée uniquement par les Attaques magiques. */
-export function isEtherial(c: Pick<Combatant, 'traits'>): boolean {
-  return resolveTraits(c.traits).some((r) => r.def.etherial);
-}
 
 /** Démoniaque : à 0 PB, retirée du jeu (bannie vers les Royaumes du Chaos). */
 export function banishedAtZero(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.banishedAtZero);
+  return traitCapability(traits, 'banishedAtZero');
 }
 
 /** Champion (LDB 85 p.338) : Dégâts en gagnant un Test opposé en défense de mêlée. */
 export function hasChampionDefense(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.championDefense);
+  return traitCapability(traits, 'championDefense');
 }
 
-/** Parasité (LDB 85 p.340) : pénalité pour toucher la créature en Corps à corps (−10), sinon 0. */
-export function meleeHitPenalty(traits: TraitList | undefined): number {
-  return resolveTraits(traits).reduce((s, r) => s + (r.def.meleeHitPenalty ?? 0), 0);
-}
 
 /** Perturbant (LDB 85 p.341) : aura de −20 aux Tests à Bonus d'Endurance mètres. */
 export function hasPerturbingAura(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.perturbingAura);
+  return traitCapability(traits, 'perturbingAura');
 }
 
 /** Résistance à la Magie (Indice) : réduction du DR des Sorts (défaut 1 si l'Indice manque). */
 export function magicResistanceOf(traits: TraitList | undefined): number {
-  const r = first(traits, (d) => !!d.magicResistance);
-  return r ? r.indice ?? 1 : 0;
+  const t = (traits ?? []).find((t) => traitById.get(t.id)?.capabilities?.magicResistance);
+  return t ? t.value ?? 1 : 0;
 }
 
 /** Immunité (Type) : types de Dégâts totalement ignorés (en minuscules). */
 export function immunityTypes(traits: TraitList | undefined): string[] {
-  return resolveTraits(traits)
-    .filter((r) => r.def.damageImmunity && r.arg)
-    .map((r) => r.arg!.toLowerCase());
+  return (traits ?? []).filter((t) => traitById.get(t.id)?.capabilities?.damageImmunity && t.arg).map((t) => t.arg!.toLowerCase());
 }
 
 /** Instable (LDB 85 p.340). */
 export function isUnstable(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.unstable);
+  return traitCapability(traits, 'unstable');
 }
 
 /** Insensible à la douleur (LDB 85 p.340) : pénalités de Critiques (hors amputations) ignorées. */
 export function isPainless(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.painless);
+  return traitCapability(traits, 'painless');
 }
 
 
 // ── Psychologie / IA ──────────────────────────────────────────────────────────────────────────────
 /** Belliqueux (LDB 85 p.338) : immunité psy si plus d'Avantages que `foesMaxAdvantage`. */
 export function bellicosePsychImmune(c: Pick<Combatant, 'traits' | 'advantage'>, foesMaxAdvantage: number): boolean {
-  return resolveTraits(c.traits).some((r) => r.def.psychImmuneIfAhead) && (c.advantage ?? 0) > foesMaxAdvantage;
+  return traitCapability(c.traits, 'psychImmuneIfAhead') && (c.advantage ?? 0) > foesMaxAdvantage;
 }
 
 /** Fabriqué (LDB 85 p.339) : pas d'Int/FM/Soc → Tests psychologiques auto-réussis. */
 export function isMindless(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.mindless);
+  return traitCapability(traits, 'mindless');
 }
 
 /** Bestial (LDB 85 p.338). */
 export function isBestial(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.bestial);
+  return traitCapability(traits, 'bestial');
 }
 
 /** À sang-froid (LDB 85 p.338) : peut inverser ses Tests de FM échoués. */
 export function isColdBlooded(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.coldBlooded);
+  return traitCapability(traits, 'coldBlooded');
 }
 
 /** Stupide (LDB 85 p.341). */
 export function isStupid(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.stupid);
+  return traitCapability(traits, 'stupid');
 }
 
 /** Rage (LDB 85 p.341). */
 export function hasRage(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.rage);
+  return traitCapability(traits, 'rage');
 }
 
 /** Territorial (LDB 85 p.343) : annule la fuite de Bestial (combat jusqu'à la mort). */
 export function isTerritorial(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.territorial);
+  return traitCapability(traits, 'territorial');
 }
 
 // ── Mouvement & vision ────────────────────────────────────────────────────────────────────────────
 /** Vol (Indice) : distance de vol en MÈTRES, ou null. */
 export function flyMeters(traits: TraitList | undefined): number | null {
-  const r = first(traits, (d) => !!d.fly);
-  return r ? r.indice ?? 0 : null;
+  const t = (traits ?? []).find((t) => traitById.get(t.id)?.capabilities?.fly);
+  return t ? t.value ?? 0 : null;
 }
 
 /** Bond (LDB 85 p.338) : Charge/Course ×2 (et ignore les obstacles traversés). */
 export function hasLeap(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.leap);
+  return (traits ?? []).some((t) => !!traitById.get(t.id)?.capabilities?.leap);
 }
 
 /** Nuée / Essaim (LDB 85) : SOURCE UNIQUE de la détection d'amas — pilote le gabarit « swarm » et le
  *  build ×5 PB. Remplace les regex `/^Nu[eé]e\b/i` éparpillées (rendu/classification/spawn). */
 export function isSwarm(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.swarm);
+  return traitCapability(traits, 'swarm');
 }
 
 /** Foulée (LDB 85 p.339) : Course ×1,5. */
 export function hasStride(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.stride);
+  return (traits ?? []).some((t) => !!traitById.get(t.id)?.capabilities?.stride);
 }
 
 /** Multiplicateur de Mouvement de COURSE/CHARGE dû aux traits : Bond ×2 (prioritaire), Foulée ×1,5. */
@@ -307,10 +292,5 @@ export function runMultiplier(traits: TraitList | undefined): number {
 
 /** Vision nocturne / Infravision : voit dans l'obscurité (annule la pénalité d'obscurité). */
 export function traitSeesInDark(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.seesInDark);
-}
-
-/** Furtif (LDB 85 p.339) : +Bonus d'Agilité au DR des Tests de Discrétion. */
-export function hasStealthAgBonus(traits: TraitList | undefined): boolean {
-  return resolveTraits(traits).some((r) => r.def.stealthAgBonus);
+  return (traits ?? []).some((t) => !!traitById.get(t.id)?.capabilities?.seesInDark);
 }

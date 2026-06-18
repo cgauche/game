@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import {
-  traitCharMods, traitMovementMod, traitBonusWoundsBE, wardSaves, attacksAreMagical, isEtherial,
-  banishedAtZero, hasChampionDefense, meleeHitPenalty, hasPerturbingAura,
+  traitCharMods, traitMovementMod, traitBonusWoundsBE, wardSaves,
+  banishedAtZero, hasChampionDefense, hasPerturbingAura,
   magicResistanceOf, immunityTypes, isUnstable, isPainless,
   bellicosePsychImmune, isMindless, isBestial, isColdBlooded, isStupid, hasRage,
-  isTerritorial, flyMeters, runMultiplier, traitSeesInDark, hasStealthAgBonus, mutationsAtSpawn,
+  isTerritorial, flyMeters, runMultiplier, traitSeesInDark, mutationsAtSpawn,
 } from './dispatch';
 import { coldBloodedAdjust, isPsychImmune } from '../psychology';
 import { attackModifiers } from '../combat';
@@ -42,16 +42,11 @@ describe('dispatch — parsing et prédicats (LDB 85)', () => {
     expect(wardSaves([{ id: 'protection', value: 9 }])).toEqual([9]);
     expect(wardSaves([{ id: 'arme', value: 8 }])).toEqual([]);
   });
-  it('attaques magiques / Éthéré / bannissement', () => {
-    expect(attacksAreMagical(mk({ traits: [{ id: 'demoniaque', value: 8 }] }))).toBe(true);
-    expect(attacksAreMagical(mk({ traits: [{ id: 'magique' }] }))).toBe(true);
-    expect(attacksAreMagical(mk({ traits: [{ id: 'fabrique' }] }))).toBe(true);
-    expect(isEtherial(mk({ traits: [{ id: 'ethere' }] }))).toBe(true);
+  it('bannissement à 0 PB (Démoniaque)', () => {
     expect(banishedAtZero([{ id: 'demoniaque', value: 8 }])).toBe(true);
   });
   it('divers combat : Champion, Parasité, Perturbant, Instable', () => {
     expect(hasChampionDefense([{ id: 'champion' }])).toBe(true);
-    expect(meleeHitPenalty([{ id: 'parasite' }])).toBe(-10);
     expect(hasPerturbingAura([{ id: 'perturbant' }])).toBe(true);
     expect(isUnstable([{ id: 'instable' }])).toBe(true);
   });
@@ -76,7 +71,6 @@ describe('dispatch — parsing et prédicats (LDB 85)', () => {
     expect(runMultiplier([{ id: 'bond' }, { id: 'foulee' }])).toBe(2); // Bond prime
     expect(traitSeesInDark([{ id: 'vision-nocturne' }])).toBe(true);
     expect(traitSeesInDark([{ id: 'infravision' }])).toBe(true);
-    expect(hasStealthAgBonus([{ id: 'furtif' }])).toBe(true);
     expect(mutationsAtSpawn([{ id: 'mutation' }, { id: 'corruption-mentale' }])).toEqual([{ kind: 'physique', mutationId: undefined }, { kind: 'mentale', mutationId: undefined }]);
     // Mutation EXPLICITE (tell figé en donnée) : l'argument d'auteur est résolu en id stable (slugId).
     expect(mutationsAtSpawn([{ id: 'mutation', arg: 'Cornes asymétriques' }])).toEqual([{ kind: 'physique', mutationId: 'cornes-asymetriques' }]);

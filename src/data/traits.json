@@ -19,6 +19,9 @@
     "source": {
       "book": "LDB",
       "page": 338
+    },
+    "capabilities": {
+      "coldBlooded": true
     }
   },
   {
@@ -83,7 +86,8 @@
     "source": {
       "book": "LDB",
       "page": 338
-    }
+    },
+    "standard": true
   },
   {
     "id": "arboricole",
@@ -110,7 +114,8 @@
       {
         "id": "arme"
       }
-    ]
+    ],
+    "standard": true
   },
   {
     "id": "armure",
@@ -121,7 +126,8 @@
     "source": {
       "book": "LDB",
       "page": 338
-    }
+    },
+    "standard": true
   },
   {
     "id": "attaque-caudale",
@@ -148,6 +154,9 @@
     "source": {
       "book": "LDB",
       "page": 338
+    },
+    "capabilities": {
+      "psychImmuneIfAhead": true
     }
   },
   {
@@ -170,6 +179,9 @@
     "source": {
       "book": "LDB",
       "page": 338
+    },
+    "capabilities": {
+      "bestial": true
     }
   },
   {
@@ -181,6 +193,9 @@
     "source": {
       "book": "LDB",
       "page": 338
+    },
+    "capabilities": {
+      "leap": true
     }
   },
   {
@@ -213,7 +228,8 @@
         "op": "moveMod",
         "mod": -1
       }
-    ]
+    ],
+    "standard": true
   },
   {
     "id": "champion",
@@ -224,6 +240,9 @@
     "source": {
       "book": "LDB",
       "page": 338
+    },
+    "capabilities": {
+      "championDefense": true
     }
   },
   {
@@ -258,7 +277,8 @@
         "char": "FM",
         "mod": 10
       }
-    ]
+    ],
+    "standard": true
   },
   {
     "id": "cornes",
@@ -296,6 +316,9 @@
     "source": {
       "book": "LDB",
       "page": 339
+    },
+    "capabilities": {
+      "mutationAtSpawn": "mentale"
     }
   },
   {
@@ -307,7 +330,17 @@
     "source": {
       "book": "LDB",
       "page": 339
-    }
+    },
+    "capabilities": {
+      "wardSave": true,
+      "banishedAtZero": true
+    },
+    "passive": [
+      {
+        "op": "attackKeyword",
+        "keyword": "magic"
+      }
+    ]
   },
   {
     "id": "dresse",
@@ -329,7 +362,8 @@
     "source": {
       "book": "LDB",
       "page": 339
-    }
+    },
+    "standard": true
   },
   {
     "id": "elite",
@@ -357,7 +391,8 @@
         "char": "FM",
         "mod": 20
       }
-    ]
+    ],
+    "standard": true
   },
   {
     "id": "endurant",
@@ -368,7 +403,11 @@
     "source": {
       "book": "LDB",
       "page": 339
-    }
+    },
+    "capabilities": {
+      "bonusWoundsBE": true
+    },
+    "standard": true
   },
   {
     "id": "ethere",
@@ -379,7 +418,14 @@
     "source": {
       "book": "LDB",
       "page": 339
-    }
+    },
+    "passive": [
+      {
+        "op": "mitigateIncoming",
+        "mode": "nullify",
+        "unlessKeyword": "magic"
+      }
+    ]
   },
   {
     "id": "etreinte-glaciale",
@@ -406,7 +452,16 @@
     "source": {
       "book": "LDB",
       "page": 339
-    }
+    },
+    "capabilities": {
+      "mindless": true
+    },
+    "passive": [
+      {
+        "op": "attackKeyword",
+        "keyword": "magic"
+      }
+    ]
   },
   {
     "id": "foulee",
@@ -417,6 +472,9 @@
     "source": {
       "book": "LDB",
       "page": 339
+    },
+    "capabilities": {
+      "stride": true
     }
   },
   {
@@ -476,7 +534,8 @@
         "char": "Ag",
         "mod": -5
       }
-    ]
+    ],
+    "standard": true
   },
   {
     "id": "grimpant",
@@ -498,7 +557,8 @@
     "source": {
       "book": "LDB",
       "page": 339
-    }
+    },
+    "standard": true
   },
   {
     "id": "hurlement-fantomatique",
@@ -525,6 +585,9 @@
     "source": {
       "book": "LDB",
       "page": 339
+    },
+    "capabilities": {
+      "damageImmunity": true
     }
   },
   {
@@ -569,6 +632,9 @@
     "source": {
       "book": "LDB",
       "page": 340
+    },
+    "capabilities": {
+      "seesInDark": true
     }
   },
   {
@@ -580,6 +646,9 @@
     "source": {
       "book": "LDB",
       "page": 340
+    },
+    "capabilities": {
+      "painless": true
     }
   },
   {
@@ -591,6 +660,9 @@
     "source": {
       "book": "LDB",
       "page": 340
+    },
+    "capabilities": {
+      "unstable": true
     }
   },
   {
@@ -614,7 +686,8 @@
         "char": "I",
         "mod": 10
       }
-    ]
+    ],
+    "standard": true
   },
   {
     "id": "lanceur-de-sorts",
@@ -663,7 +736,13 @@
     "source": {
       "book": "LDB",
       "page": 340
-    }
+    },
+    "passive": [
+      {
+        "op": "attackKeyword",
+        "keyword": "magic"
+      }
+    ]
   },
   {
     "id": "maladie",
@@ -697,7 +776,8 @@
         "char": "FM",
         "mod": 10
       }
-    ]
+    ],
+    "standard": true
   },
   {
     "id": "miracles",
@@ -746,6 +826,9 @@
     "source": {
       "book": "LDB",
       "page": 340
+    },
+    "capabilities": {
+      "mutationAtSpawn": "physique"
     }
   },
   {
@@ -794,6 +877,9 @@
     "source": {
       "book": "LDB",
       "page": 340
+    },
+    "capabilities": {
+      "swarm": true
     }
   },
   {
@@ -805,7 +891,14 @@
     "source": {
       "book": "LDB",
       "page": 340
-    }
+    },
+    "passive": [
+      {
+        "op": "incomingAttackMod",
+        "mode": "melee",
+        "amount": -10
+      }
+    ]
   },
   {
     "id": "perturbant",
@@ -816,6 +909,9 @@
     "source": {
       "book": "LDB",
       "page": 341
+    },
+    "capabilities": {
+      "perturbingAura": true
     }
   },
   {
@@ -849,7 +945,8 @@
     "source": {
       "book": "LDB",
       "page": 341
-    }
+    },
+    "standard": true
   },
   {
     "id": "protection",
@@ -860,6 +957,9 @@
     "source": {
       "book": "LDB",
       "page": 341
+    },
+    "capabilities": {
+      "wardSave": true
     }
   },
   {
@@ -871,6 +971,9 @@
     "source": {
       "book": "LDB",
       "page": 341
+    },
+    "capabilities": {
+      "rage": true
     }
   },
   {
@@ -893,7 +996,8 @@
         "op": "moveMod",
         "mod": 1
       }
-    ]
+    ],
+    "standard": true
   },
   {
     "id": "regard-petrifiant",
@@ -1022,6 +1126,9 @@
     "source": {
       "book": "LDB",
       "page": 341
+    },
+    "capabilities": {
+      "magicResistance": true
     }
   },
   {
@@ -1050,7 +1157,8 @@
         "char": "I",
         "mod": 10
       }
-    ]
+    ],
+    "standard": true
   },
   {
     "id": "sang-corrosif",
@@ -1146,6 +1254,9 @@
     "source": {
       "book": "LDB",
       "page": 341
+    },
+    "capabilities": {
+      "stupid": true
     }
   },
   {
@@ -1195,6 +1306,9 @@
     "source": {
       "book": "LDB",
       "page": 343
+    },
+    "capabilities": {
+      "territorial": true
     }
   },
   {
@@ -1322,6 +1436,9 @@
     "source": {
       "book": "LDB",
       "page": 343
+    },
+    "capabilities": {
+      "seesInDark": true
     }
   },
   {
@@ -1333,6 +1450,9 @@
     "source": {
       "book": "LDB",
       "page": 343
+    },
+    "capabilities": {
+      "fly": true
     }
   },
   {

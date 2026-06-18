@@ -10238,7 +10238,17 @@
       "Zylri",
       "Zylru"
     ],
-    "lastNames": []
+    "lastNames": [],
+    "lastNameSuffixes": {
+      "M": [
+        "sson",
+        "snev"
+      ],
+      "F": [
+        "sdottir",
+        "sniz"
+      ]
+    }
   },
   "Gnome": {
     "maleFirstNames": [

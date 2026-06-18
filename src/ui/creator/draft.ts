@@ -39,7 +39,7 @@ import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLeve
 import { careerSkillAdditions, talentCharBonus } from '../../engine/talentEffects';
 import { castingKindOf } from '../../engine/combatFeatures/dispatch';
 import { bonus } from '../../engine/characteristics';
-import { findSpeciesById, careers, careersForSpecies, species as allSpecies, levelsForCareer, findSpell, advancementLabel, SpeciesData, CareerLevelData } from '../../data';
+import { findSpeciesById, findTalent, careers, careersForSpecies, species as allSpecies, levelsForCareer, findSpell, advancementLabel, SpeciesData, CareerLevelData } from '../../data';
 import type { Appearance } from '../../gameIso/rig/appearance';
 
 export type CharMode = 'rolled' | 'reassigned' | 'pointBuy';
@@ -354,7 +354,8 @@ export function talentEntryChoices(entry: string): string[] | null {
  *  gratuites + talents « +5 FM » appliqués, même pipeline que createHero) — 0 sans le Talent. */
 export function pettySpellQuota(d: CreatorDraft): number {
   const all = [...resolvedSpeciesTalents(d), ...(d.careerTalent ? [d.careerTalent] : [])];
-  if (!all.some((t) => castingKindOf(t) === 'mineure')) return 0;
+  // Libellés d'authoring → id stable (la donnée des carrières/espèces porte le libellé) pour le lookup par DONNÉE.
+  if (!all.some((t) => castingKindOf(findTalent(splitLabel(t).name)?.id ?? '') === 'mineure')) return 0;
   let fm = draftChars(d).FM + (d.charAdvancesAlloc.FM ?? 0);
   for (const t of all) if (talentCharBonus(t) === 'FM') fm += 5;
   return bonus(fm);

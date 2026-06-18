@@ -1,5 +1,6 @@
 [
   {
+    "id": "physique",
     "label": "physique",
     "ranges": [
       {
@@ -105,6 +106,7 @@
     ]
   },
   {
+    "id": "mentale",
     "label": "mentale",
     "ranges": [
       {

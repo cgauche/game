@@ -4,6 +4,7 @@
     "label": "Bénédiction de Bataille",
     "type": "Béni",
     "subType": null,
+    "isPrayer": true,
     "cn": null,
     "range": "6 mètres",
     "target": 1,
@@ -38,6 +39,7 @@
     "label": "Bénédiction de Chance",
     "type": "Béni",
     "subType": null,
+    "isPrayer": true,
     "cn": null,
     "range": "6 mètres",
     "target": 1,
@@ -70,6 +72,7 @@
     "label": "Bénédiction de Charisme",
     "type": "Béni",
     "subType": null,
+    "isPrayer": true,
     "cn": null,
     "range": "6 mètres",
     "target": 1,
@@ -104,6 +107,7 @@
     "label": "Bénédiction de Conscience",
     "type": "Béni",
     "subType": null,
+    "isPrayer": true,
     "cn": null,
     "range": "6 mètres",
     "target": 1,
@@ -137,6 +141,7 @@
     "label": "Bénédiction de Convalescence",
     "type": "Béni",
     "subType": null,
+    "isPrayer": true,
     "cn": null,
     "range": "Contact",
     "target": 1,
@@ -170,6 +175,7 @@
     "label": "Bénédiction de Courage",
     "type": "Béni",
     "subType": null,
+    "isPrayer": true,
     "cn": null,
     "range": "6 mètres",
     "target": 1,
@@ -204,6 +210,7 @@
     "label": "Bénédiction de Droiture",
     "type": "Béni",
     "subType": null,
+    "isPrayer": true,
     "cn": null,
     "range": "6 mètres",
     "target": 1,
@@ -239,6 +246,7 @@
     "label": "Bénédiction de Finesse",
     "type": "Béni",
     "subType": null,
+    "isPrayer": true,
     "cn": null,
     "range": "6 mètres",
     "target": 1,
@@ -273,6 +281,7 @@
     "label": "Bénédiction de Grâce",
     "type": "Béni",
     "subType": null,
+    "isPrayer": true,
     "cn": null,
     "range": "6 mètres",
     "target": 1,
@@ -307,6 +316,7 @@
     "label": "Bénédiction de Guérison",
     "type": "Béni",
     "subType": null,
+    "isPrayer": true,
     "cn": null,
     "range": "Contact",
     "target": 1,
@@ -340,6 +350,7 @@
     "label": "Bénédiction de La Chasse",
     "type": "Béni",
     "subType": null,
+    "isPrayer": true,
     "cn": null,
     "range": "6 mètres",
     "target": 1,
@@ -374,6 +385,7 @@
     "label": "Bénédiction de Protection",
     "type": "Béni",
     "subType": null,
+    "isPrayer": true,
     "cn": null,
     "range": "6 mètres",
     "target": 1,
@@ -406,6 +418,7 @@
     "label": "Bénédiction de Puissance",
     "type": "Béni",
     "subType": null,
+    "isPrayer": true,
     "cn": null,
     "range": "6 mètres",
     "target": 1,
@@ -440,6 +453,7 @@
     "label": "Bénédiction de Sagesse",
     "type": "Béni",
     "subType": null,
+    "isPrayer": true,
     "cn": null,
     "range": "6 mètres",
     "target": 1,
@@ -474,6 +488,7 @@
     "label": "Bénédiction de Sauvagerie",
     "type": "Béni",
     "subType": null,
+    "isPrayer": true,
     "cn": null,
     "range": "6 mètres",
     "target": 1,
@@ -506,6 +521,7 @@
     "label": "Bénédiction de Souffle",
     "type": "Béni",
     "subType": null,
+    "isPrayer": true,
     "cn": null,
     "range": "6 mètres",
     "target": 1,
@@ -538,6 +554,7 @@
     "label": "Bénédiction de Ténacité",
     "type": "Béni",
     "subType": null,
+    "isPrayer": true,
     "cn": null,
     "range": "6 mètres",
     "target": 1,
@@ -570,6 +587,7 @@
     "label": "Bénédiction de Vigueur",
     "type": "Béni",
     "subType": null,
+    "isPrayer": true,
     "cn": null,
     "range": "6 mètres",
     "target": 1,
@@ -604,6 +622,7 @@
     "label": "Bénédiction de Vivacité",
     "type": "Béni",
     "subType": null,
+    "isPrayer": true,
     "cn": null,
     "range": "6 mètres",
     "target": 1,
@@ -2251,7 +2270,8 @@
     "source": {
       "book": "LDB",
       "page": 245
-    }
+    },
+    "domainId": "bete"
   },
   {
     "id": "incarnation-de-wyssan",
@@ -2315,7 +2335,8 @@
     "source": {
       "book": "LDB",
       "page": 245
-    }
+    },
+    "domainId": "bete"
   },
   {
     "id": "la-lance-d-ambre",
@@ -2352,7 +2373,8 @@
     "source": {
       "book": "LDB",
       "page": 245
-    }
+    },
+    "domainId": "bete"
   },
   {
     "id": "langue-bestiale",
@@ -2385,7 +2407,8 @@
     "source": {
       "book": "LDB",
       "page": 245
-    }
+    },
+    "domainId": "bete"
   },
   {
     "id": "maitre-de-la-bete",
@@ -2418,7 +2441,8 @@
     "source": {
       "book": "LDB",
       "page": 245
-    }
+    },
+    "domainId": "bete"
   },
   {
     "id": "peau-de-chasseur",
@@ -2465,7 +2489,8 @@
     "source": {
       "book": "LDB",
       "page": 246
-    }
+    },
+    "domainId": "bete"
   },
   {
     "id": "serres-d-ambre",
@@ -2523,7 +2548,8 @@
     "source": {
       "book": "LDB",
       "page": 246
-    }
+    },
+    "domainId": "bete"
   },
   {
     "id": "vol-du-destin",
@@ -2582,7 +2608,8 @@
     "source": {
       "book": "LDB",
       "page": 246
-    }
+    },
+    "domainId": "bete"
   },
   {
     "id": "arc-de-t-essla",
@@ -2615,7 +2642,8 @@
     "source": {
       "book": "LDB",
       "page": 246
-    }
+    },
+    "domainId": "cieux"
   },
   {
     "id": "bouclier-ceruleen",
@@ -2648,7 +2676,8 @@
     "source": {
       "book": "LDB",
       "page": 246
-    }
+    },
+    "domainId": "cieux"
   },
   {
     "id": "comete-de-cassandora",
@@ -2689,7 +2718,8 @@
     "source": {
       "book": "LDB",
       "page": 247
-    }
+    },
+    "domainId": "cieux"
   },
   {
     "id": "ironie-du-destin",
@@ -2722,7 +2752,8 @@
     "source": {
       "book": "LDB",
       "page": 247
-    }
+    },
+    "domainId": "cieux"
   },
   {
     "id": "le-premier-signe-d-amul",
@@ -2761,7 +2792,8 @@
     "source": {
       "book": "LDB",
       "page": 247
-    }
+    },
+    "domainId": "cieux"
   },
   {
     "id": "le-second-signe-d-amul",
@@ -2804,7 +2836,8 @@
     "source": {
       "book": "LDB",
       "page": 247
-    }
+    },
+    "domainId": "cieux"
   },
   {
     "id": "le-troisieme-signe-d-amul",
@@ -2839,7 +2872,8 @@
     "source": {
       "book": "LDB",
       "page": 247
-    }
+    },
+    "domainId": "cieux"
   },
   {
     "id": "maudit",
@@ -2872,7 +2906,8 @@
     "source": {
       "book": "LDB",
       "page": 247
-    }
+    },
+    "domainId": "cieux"
   },
   {
     "id": "cauteriser",
@@ -2938,7 +2973,8 @@
     "source": {
       "book": "LDB",
       "page": 247
-    }
+    },
+    "domainId": "feu"
   },
   {
     "id": "coeurs-ardents",
@@ -2989,7 +3025,8 @@
     "source": {
       "book": "LDB",
       "page": 247
-    }
+    },
+    "domainId": "feu"
   },
   {
     "id": "couronne-de-flammes",
@@ -3035,7 +3072,8 @@
     "source": {
       "book": "LDB",
       "page": 247
-    }
+    },
+    "domainId": "feu"
   },
   {
     "id": "grands-feux-d-u-zhul",
@@ -3110,7 +3148,8 @@
     "source": {
       "book": "LDB",
       "page": 248
-    }
+    },
+    "domainId": "feu"
   },
   {
     "id": "l-egide-d-aqshy",
@@ -3143,7 +3182,8 @@
     "source": {
       "book": "LDB",
       "page": 248
-    }
+    },
+    "domainId": "feu"
   },
   {
     "id": "l-epee-ardente-de-rhuin",
@@ -3219,7 +3259,8 @@
     "source": {
       "book": "LDB",
       "page": 248
-    }
+    },
+    "domainId": "feu"
   },
   {
     "id": "mur-de-feu",
@@ -3273,7 +3314,8 @@
     "source": {
       "book": "LDB",
       "page": 248
-    }
+    },
+    "domainId": "feu"
   },
   {
     "id": "purification",
@@ -3315,7 +3357,8 @@
     "source": {
       "book": "LDB",
       "page": 248
-    }
+    },
+    "domainId": "feu"
   },
   {
     "id": "bouf-crane",
@@ -3605,7 +3648,8 @@
     "source": {
       "book": "LDB",
       "page": 248
-    }
+    },
+    "domainId": "lumiere"
   },
   {
     "id": "clarte-d-esprit",
@@ -3644,7 +3688,8 @@
     "source": {
       "book": "LDB",
       "page": 249
-    }
+    },
+    "domainId": "lumiere"
   },
   {
     "id": "fauche-demon",
@@ -3683,7 +3728,8 @@
     "source": {
       "book": "LDB",
       "page": 249
-    }
+    },
+    "domainId": "lumiere"
   },
   {
     "id": "filet-d-amyntok",
@@ -3720,7 +3766,8 @@
     "source": {
       "book": "LDB",
       "page": 249
-    }
+    },
+    "domainId": "lumiere"
   },
   {
     "id": "lumiere-aveuglante",
@@ -3762,7 +3809,8 @@
     "source": {
       "book": "LDB",
       "page": 249
-    }
+    },
+    "domainId": "lumiere"
   },
   {
     "id": "lumiere-de-guerison",
@@ -3819,7 +3867,8 @@
     "source": {
       "book": "LDB",
       "page": 249
-    }
+    },
+    "domainId": "lumiere"
   },
   {
     "id": "pensee-rapide",
@@ -3858,7 +3907,8 @@
     "source": {
       "book": "LDB",
       "page": 249
-    }
+    },
+    "domainId": "lumiere"
   },
   {
     "id": "protection-de-pha",
@@ -3891,7 +3941,8 @@
     "source": {
       "book": "LDB",
       "page": 249
-    }
+    },
+    "domainId": "lumiere"
   },
   {
     "id": "arme-enchantee",
@@ -3934,7 +3985,8 @@
     "source": {
       "book": "LDB",
       "page": 249
-    }
+    },
+    "domainId": "metal"
   },
   {
     "id": "creuset-de-chamon",
@@ -3967,7 +4019,8 @@
     "source": {
       "book": "LDB",
       "page": 249
-    }
+    },
+    "domainId": "metal"
   },
   {
     "id": "ecaille-d-acier",
@@ -4005,7 +4058,8 @@
     "source": {
       "book": "LDB",
       "page": 250
-    }
+    },
+    "domainId": "metal"
   },
   {
     "id": "forge-de-chamon",
@@ -4038,7 +4092,8 @@
     "source": {
       "book": "LDB",
       "page": 250
-    }
+    },
+    "domainId": "metal"
   },
   {
     "id": "l-or-des-fous",
@@ -4071,7 +4126,8 @@
     "source": {
       "book": "LDB",
       "page": 250
-    }
+    },
+    "domainId": "metal"
   },
   {
     "id": "metal-changeant",
@@ -4104,7 +4160,8 @@
     "source": {
       "book": "LDB",
       "page": 250
-    }
+    },
+    "domainId": "metal"
   },
   {
     "id": "plume-de-plomb",
@@ -4137,7 +4194,8 @@
     "source": {
       "book": "LDB",
       "page": 250
-    }
+    },
+    "domainId": "metal"
   },
   {
     "id": "transmutation-de-chamon",
@@ -4198,7 +4256,8 @@
     "source": {
       "book": "LDB",
       "page": 250
-    }
+    },
+    "domainId": "metal"
   },
   {
     "id": "caresse-de-laniph",
@@ -4233,7 +4292,8 @@
     "source": {
       "book": "LDB",
       "page": 251
-    }
+    },
+    "domainId": "mort"
   },
   {
     "id": "dernieres-paroles",
@@ -4266,7 +4326,8 @@
     "source": {
       "book": "LDB",
       "page": 251
-    }
+    },
+    "domainId": "mort"
   },
   {
     "id": "la-faux-de-shyish",
@@ -4325,7 +4386,8 @@
     "source": {
       "book": "LDB",
       "page": 251
-    }
+    },
+    "domainId": "mort"
   },
   {
     "id": "le-voile-violet-de-shyish",
@@ -4369,7 +4431,8 @@
     "source": {
       "book": "LDB",
       "page": 251
-    }
+    },
+    "domainId": "mort"
   },
   {
     "id": "mort-rapide",
@@ -4402,7 +4465,8 @@
     "source": {
       "book": "LDB",
       "page": 251
-    }
+    },
+    "domainId": "mort"
   },
   {
     "id": "sanctifier",
@@ -4435,7 +4499,8 @@
     "source": {
       "book": "LDB",
       "page": 251
-    }
+    },
+    "domainId": "mort"
   },
   {
     "id": "vol-de-vie",
@@ -4497,7 +4562,8 @@
     "source": {
       "book": "LDB",
       "page": 251
-    }
+    },
+    "domainId": "mort"
   },
   {
     "id": "vortex-d-ames",
@@ -4534,7 +4600,8 @@
     "source": {
       "book": "LDB",
       "page": 251
-    }
+    },
+    "domainId": "mort"
   },
   {
     "id": "destrier-d-ombre",
@@ -4591,7 +4658,8 @@
     "source": {
       "book": "LDB",
       "page": 252
-    }
+    },
+    "domainId": "ombres"
   },
   {
     "id": "illusion",
@@ -4624,7 +4692,8 @@
     "source": {
       "book": "LDB",
       "page": 252
-    }
+    },
+    "domainId": "ombres"
   },
   {
     "id": "jumeau-malefique",
@@ -4657,7 +4726,8 @@
     "source": {
       "book": "LDB",
       "page": 252
-    }
+    },
+    "domainId": "ombres"
   },
   {
     "id": "linceul-d-invisibilite",
@@ -4690,7 +4760,8 @@
     "source": {
       "book": "LDB",
       "page": 252
-    }
+    },
+    "domainId": "ombres"
   },
   {
     "id": "miasme-mystifiant",
@@ -4744,7 +4815,8 @@
     "source": {
       "book": "LDB",
       "page": 252
-    }
+    },
+    "domainId": "ombres"
   },
   {
     "id": "ombres-etrangleuses",
@@ -4792,7 +4864,8 @@
     "source": {
       "book": "LDB",
       "page": 252
-    }
+    },
+    "domainId": "ombres"
   },
   {
     "id": "perte-de-memoire",
@@ -4825,7 +4898,8 @@
     "source": {
       "book": "LDB",
       "page": 252
-    }
+    },
+    "domainId": "ombres"
   },
   {
     "id": "portail-d-ombre",
@@ -4858,7 +4932,8 @@
     "source": {
       "book": "LDB",
       "page": 252
-    }
+    },
+    "domainId": "ombres"
   },
   {
     "id": "configuration-du-terrain",
@@ -4891,7 +4966,8 @@
     "source": {
       "book": "LDB",
       "page": 253
-    }
+    },
+    "domainId": "vie"
   },
   {
     "id": "don-de-vie",
@@ -4924,7 +5000,8 @@
     "source": {
       "book": "LDB",
       "page": 253
-    }
+    },
+    "domainId": "vie"
   },
   {
     "id": "eau-de-la-terre",
@@ -4957,7 +5034,8 @@
     "source": {
       "book": "LDB",
       "page": 253
-    }
+    },
+    "domainId": "vie"
   },
   {
     "id": "ecorce",
@@ -5001,7 +5079,8 @@
     "source": {
       "book": "LDB",
       "page": 253
-    }
+    },
+    "domainId": "vie"
   },
   {
     "id": "foret-d-epines",
@@ -5060,7 +5139,8 @@
     "source": {
       "book": "LDB",
       "page": 253
-    }
+    },
+    "domainId": "vie"
   },
   {
     "id": "graisse-de-la-terre",
@@ -5096,7 +5176,8 @@
     "source": {
       "book": "LDB",
       "page": 254
-    }
+    },
+    "domainId": "vie"
   },
   {
     "id": "regeneration",
@@ -5129,7 +5210,8 @@
     "source": {
       "book": "LDB",
       "page": 254
-    }
+    },
+    "domainId": "vie"
   },
   {
     "id": "sang-de-la-terre",
@@ -5185,7 +5267,8 @@
     "source": {
       "book": "LDB",
       "page": 254
-    }
+    },
+    "domainId": "vie"
   },
   {
     "id": "bonne-volonte",
@@ -6866,6 +6949,7 @@
     "label": "Encalminé",
     "type": "Invocation",
     "subType": "Manann",
+    "isPrayer": true,
     "cn": null,
     "range": "(Bonus d'Initiative) kilomètres",
     "target": "1 voilier dans la Ligne de vue",
@@ -6899,6 +6983,7 @@
     "label": "Générosité de Manann",
     "type": "Invocation",
     "subType": "Manann",
+    "isPrayer": true,
     "cn": null,
     "range": "Contact",
     "target": 1,
@@ -6940,6 +7025,7 @@
     "label": "Marcher sur les eaux",
     "type": "Invocation",
     "subType": "Manann",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Vous",
@@ -6973,6 +7059,7 @@
     "label": "Mer déchainée",
     "type": "Invocation",
     "subType": "Manann",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": 1,
@@ -7018,6 +7105,7 @@
     "label": "Vents favorables",
     "type": "Invocation",
     "subType": "Manann",
+    "isPrayer": true,
     "cn": null,
     "range": "(Bonus d'Initiative) kilomètres",
     "target": "1 voilier dans la Ligne de vue",
@@ -7051,6 +7139,7 @@
     "label": "Visage de l'homme noyé",
     "type": "Invocation",
     "subType": "Manann",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": 1,
@@ -7091,6 +7180,7 @@
     "label": "Anéantir les morts-vivants",
     "type": "Invocation",
     "subType": "Morr",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "ZdE (Bonus de Sociabilité) mètres",
@@ -7136,6 +7226,7 @@
     "label": "Condamné",
     "type": "Invocation",
     "subType": "Morr",
+    "isPrayer": true,
     "cn": null,
     "range": "Contact",
     "target": 1,
@@ -7169,6 +7260,7 @@
     "label": "Main de Morr",
     "type": "Invocation",
     "subType": "Morr",
+    "isPrayer": true,
     "cn": null,
     "range": "Contact",
     "target": 1,
@@ -7202,6 +7294,7 @@
     "label": "Masque mortuaire",
     "type": "Invocation",
     "subType": "Morr",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Vous",
@@ -7236,6 +7329,7 @@
     "label": "Rites funéraires",
     "type": "Invocation",
     "subType": "Morr",
+    "isPrayer": true,
     "cn": null,
     "range": "1 mètre",
     "target": 1,
@@ -7269,6 +7363,7 @@
     "label": "Seuil du Portail",
     "type": "Invocation",
     "subType": "Morr",
+    "isPrayer": true,
     "cn": null,
     "range": "Contact",
     "target": "Zone d'Effet",
@@ -7302,6 +7397,7 @@
     "label": "Appel à la Fureur",
     "type": "Invocation",
     "subType": "Myrmidia",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": "(Bonus d'Intelligence) alliés",
@@ -7339,6 +7435,7 @@
     "label": "Bouclier de Myrmidia",
     "type": "Invocation",
     "subType": "Myrmidia",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": "(Bonus d'Intelligence) alliés",
@@ -7372,6 +7469,7 @@
     "label": "Inspirant",
     "type": "Invocation",
     "subType": "Myrmidia",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": "(Bonus d'Intelligence) alliés",
@@ -7409,6 +7507,7 @@
     "label": "Lance de Myrmidia",
     "type": "Invocation",
     "subType": "Myrmidia",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": "Vous",
@@ -7446,6 +7545,7 @@
     "label": "Œil de l'aigle",
     "type": "Invocation",
     "subType": "Myrmidia",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": "Vous",
@@ -7479,6 +7579,7 @@
     "label": "Soleil flamboyant",
     "type": "Invocation",
     "subType": "Myrmidia",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Zone d'Effet",
@@ -7521,6 +7622,7 @@
     "label": "Commander la Légion",
     "type": "Invocation",
     "subType": "Myrmidia",
+    "isPrayer": true,
     "cn": null,
     "range": "Voir texte",
     "target": "Un allié au choix",
@@ -7554,6 +7656,7 @@
     "label": "Terrifier l'Ennemi",
     "type": "Invocation",
     "subType": "Myrmidia",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Vous",
@@ -7588,6 +7691,7 @@
     "label": "En Bon Ordre",
     "type": "Invocation",
     "subType": "Myrmidia",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "ZdE (Force Mentale) mètres",
@@ -7621,6 +7725,7 @@
     "label": "Connais Ton Ennemi",
     "type": "Invocation",
     "subType": "Myrmidia",
+    "isPrayer": true,
     "cn": null,
     "range": "(Force Mentale) mètres",
     "target": 1,
@@ -7654,6 +7759,7 @@
     "label": "En Terrain Dangereux",
     "type": "Invocation",
     "subType": "Myrmidia",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "ZdE (Force Mentale) mètres",
@@ -7687,6 +7793,7 @@
     "label": "Frappe Rapide",
     "type": "Invocation",
     "subType": "Myrmidia",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Vous",
@@ -7720,6 +7827,7 @@
     "label": "Dévotion de la Vierge Guerrière",
     "type": "Invocation",
     "subType": "Myrmidia",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "ZdE (Force Mentale) mètres",
@@ -7757,6 +7865,7 @@
     "label": "Prouesses Martiales",
     "type": "Invocation",
     "subType": "Myrmidia",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "ZdE (Force Mentale) mètres",
@@ -7796,6 +7905,7 @@
     "label": "Fureur Vengeresse",
     "type": "Invocation",
     "subType": "Myrmidia",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Vous",
@@ -7829,6 +7939,7 @@
     "label": "Grâce de Ranald",
     "type": "Invocation",
     "subType": "Ranald",
+    "isPrayer": true,
     "cn": null,
     "range": "Contact",
     "target": 1,
@@ -7871,6 +7982,7 @@
     "label": "Invitation",
     "type": "Invocation",
     "subType": "Ranald",
+    "isPrayer": true,
     "cn": null,
     "range": "1 mètre",
     "target": 1,
@@ -7904,6 +8016,7 @@
     "label": "Que la chance persiste",
     "type": "Invocation",
     "subType": "Ranald",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Vous",
@@ -7946,6 +8059,7 @@
     "label": "Riche, pauvre, mendiant, voleur",
     "type": "Invocation",
     "subType": "Ranald",
+    "isPrayer": true,
     "cn": null,
     "range": "1 mètre",
     "target": 1,
@@ -7979,6 +8093,7 @@
     "label": "Vous ne m'avez pas vu, n'est-ce pas?",
     "type": "Invocation",
     "subType": "Ranald",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": 1,
@@ -8012,6 +8127,7 @@
     "label": "Yeux de chat",
     "type": "Invocation",
     "subType": "Ranald",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": "Vous",
@@ -8045,6 +8161,7 @@
     "label": "Abri de Rhya",
     "type": "Invocation",
     "subType": "Rhya",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Vous",
@@ -8078,6 +8195,7 @@
     "label": "Caresse de Rhya",
     "type": "Invocation",
     "subType": "Rhya",
+    "isPrayer": true,
     "cn": null,
     "range": "Contact",
     "target": 1,
@@ -8117,6 +8235,7 @@
     "label": "Enfants de Rhya",
     "type": "Invocation",
     "subType": "Rhya",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Zone d'Effet",
@@ -8150,6 +8269,7 @@
     "label": "Récolte de Rhya",
     "type": "Invocation",
     "subType": "Rhya",
+    "isPrayer": true,
     "cn": null,
     "range": "Contact",
     "target": "Vous",
@@ -8188,6 +8308,7 @@
     "label": "Secours de Rhya",
     "type": "Invocation",
     "subType": "Rhya",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": "(Bonus de Sociabilité) alliés",
@@ -8224,6 +8345,7 @@
     "label": "Union de Rhya",
     "type": "Invocation",
     "subType": "Rhya",
+    "isPrayer": true,
     "cn": null,
     "range": "Contact",
     "target": "Spécial",
@@ -8257,6 +8379,7 @@
     "label": "Amère catharsis",
     "type": "Invocation",
     "subType": "Shallya",
+    "isPrayer": true,
     "cn": null,
     "range": "Contact",
     "target": 1,
@@ -8303,6 +8426,7 @@
     "label": "Baume pour un esprit blessé",
     "type": "Invocation",
     "subType": "Shallya",
+    "isPrayer": true,
     "cn": null,
     "range": "Contact",
     "target": 1,
@@ -8339,6 +8463,7 @@
     "label": "Endurance de l'anachorète",
     "type": "Invocation",
     "subType": "Shallya",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": 1,
@@ -8375,6 +8500,7 @@
     "label": "Innocence immaculée",
     "type": "Invocation",
     "subType": "Shallya",
+    "isPrayer": true,
     "cn": null,
     "range": "Contact",
     "target": 1,
@@ -8416,6 +8542,7 @@
     "label": "Larmes de Shallya",
     "type": "Invocation",
     "subType": "Shallya",
+    "isPrayer": true,
     "cn": null,
     "range": "Contact",
     "target": 1,
@@ -8457,6 +8584,7 @@
     "label": "Martyr",
     "type": "Invocation",
     "subType": "Shallya",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": 1,
@@ -8489,6 +8617,7 @@
     "label": "Comète à Deux Queues",
     "type": "Invocation",
     "subType": "Sigmar",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": "Zone d'Effet",
@@ -8539,6 +8668,7 @@
     "label": "Feu de l'âme",
     "type": "Invocation",
     "subType": "Sigmar",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Zone d'Effet",
@@ -8589,6 +8719,7 @@
     "label": "Flambeau de Vertu",
     "type": "Invocation",
     "subType": "Sigmar",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Zone d'Effet",
@@ -8631,6 +8762,7 @@
     "label": "Marteau ardent de Sigmar",
     "type": "Invocation",
     "subType": "Sigmar",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Vous",
@@ -8692,6 +8824,7 @@
     "label": "N'écoutez point la Sorcière",
     "type": "Invocation",
     "subType": "Sigmar",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Zone d'Effet",
@@ -8733,6 +8866,7 @@
     "label": "Vaincre les impies",
     "type": "Invocation",
     "subType": "Sigmar",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": "(Bonus de Sociabilité) alliés",
@@ -8777,6 +8911,7 @@
     "label": "Bondissant comme un cerf",
     "type": "Invocation",
     "subType": "Taal",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Vous",
@@ -8814,6 +8949,7 @@
     "label": "Dent et griffe",
     "type": "Invocation",
     "subType": "Taal",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Vous",
@@ -8859,6 +8995,7 @@
     "label": "Enchevêtrement",
     "type": "Invocation",
     "subType": "Taal",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": "Zone d'Effet",
@@ -8904,6 +9041,7 @@
     "label": "Instincts animaux",
     "type": "Invocation",
     "subType": "Taal",
+    "isPrayer": true,
     "cn": null,
     "range": "Contact",
     "target": 1,
@@ -8941,6 +9079,7 @@
     "label": "Roi de la Nature",
     "type": "Invocation",
     "subType": "Taal",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": 1,
@@ -8989,6 +9128,7 @@
     "label": "Seigneur de la Chasse",
     "type": "Invocation",
     "subType": "Taal",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Vous",
@@ -9022,6 +9162,7 @@
     "label": "Frisson du givre",
     "type": "Invocation",
     "subType": "Ulric",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Zone d'Effet",
@@ -9060,6 +9201,7 @@
     "label": "Fureur d'Ulric",
     "type": "Invocation",
     "subType": "Ulric",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": 1,
@@ -9093,6 +9235,7 @@
     "label": "Hurlement du loup",
     "type": "Invocation",
     "subType": "Ulric",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": "Spécial",
@@ -9150,6 +9293,7 @@
     "label": "Jugement du Roi de la neige",
     "type": "Invocation",
     "subType": "Ulric",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": 1,
@@ -9192,6 +9336,7 @@
     "label": "Morsure de l'hiver",
     "type": "Invocation",
     "subType": "Ulric",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Vous",
@@ -9262,6 +9407,7 @@
     "label": "Peau de loup d'hiver",
     "type": "Invocation",
     "subType": "Ulric",
+    "isPrayer": true,
     "cn": null,
     "range": "Contact",
     "target": 1,
@@ -9294,6 +9440,7 @@
     "label": "Entraves à la vérité",
     "type": "Invocation",
     "subType": "Verena",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": 1,
@@ -9331,6 +9478,7 @@
     "label": "Épée de justice",
     "type": "Invocation",
     "subType": "Verena",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Vous",
@@ -9401,6 +9549,7 @@
     "label": "Justice aveugle",
     "type": "Invocation",
     "subType": "Verena",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Vous",
@@ -9434,6 +9583,7 @@
     "label": "La Vérité éclatera",
     "type": "Invocation",
     "subType": "Verena",
+    "isPrayer": true,
     "cn": null,
     "range": "(Bonus de Sociabilité) mètres",
     "target": 1,
@@ -9467,6 +9617,7 @@
     "label": "Sagesse de la chouette",
     "type": "Invocation",
     "subType": "Verena",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Vous",
@@ -9509,6 +9660,7 @@
     "label": "Verena est mon témoin",
     "type": "Invocation",
     "subType": "Verena",
+    "isPrayer": true,
     "cn": null,
     "range": "Vous",
     "target": "Vous",
@@ -9542,6 +9694,7 @@
     "label": "Bon Baiser d'la Fosse Noire",
     "type": "Invocation",
     "subType": "Déesse-Araignée",
+    "isPrayer": true,
     "cn": null,
     "range": "(Sociabilité) mètres",
     "target": "Zone d'Effet",
@@ -9589,6 +9742,7 @@
     "label": "Nuée d'Escampette",
     "type": "Invocation",
     "subType": "Déesse-Araignée",
+    "isPrayer": true,
     "cn": null,
     "range": "(Bonus de Sociabilité) mètres",
     "target": "Vous",
@@ -9630,6 +9784,7 @@
     "label": "Toile surprise",
     "type": "Invocation",
     "subType": "Déesse-Araignée",
+    "isPrayer": true,
     "cn": null,
     "range": "Voir texte",
     "target": "Zone d'Effet",

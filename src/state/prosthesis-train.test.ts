@@ -3,8 +3,8 @@ import { useGame } from './store';
 import { traumaDodgePenalty, cannotWieldTwoHanded } from '../engine/trauma';
 import type { Combatant, ItemInstance } from '../engine/types';
 
-const legSequela = { label: 'Membre inférieur amputé (jambeD)', location: 'jambeD' as const, ops: [{ op: 'moveScale' as const, num: 1, den: 2 }, { op: 'skillMod' as const, skill: 'esquive', mod: -20 }], prosthesis: [{ name: 'Fausse jambe', cancels: 'movement' as const }], note: '' };
-const fausseJambe = (over: Partial<ItemInstance> = {}): ItemInstance => ({ uid: 'fj', name: 'Fausse jambe', kind: 'misc', subType: 'Prothèses', qualities: [], enc: 2, equipped: true, ...over } as ItemInstance);
+const legSequela = { label: 'Membre inférieur amputé (jambeD)', location: 'jambeD' as const, ops: [{ op: 'moveScale' as const, num: 1, den: 2 }, { op: 'skillMod' as const, skill: 'esquive', mod: -20 }], prosthesis: [{ trappingId: 'fausse-jambe', cancels: 'movement' as const }], note: '' };
+const fausseJambe = (over: Partial<ItemInstance> = {}): ItemInstance => ({ uid: 'fj', trappingId: 'fausse-jambe', name: 'Fausse jambe', kind: 'misc', subType: 'Prothèses', qualities: [], enc: 2, equipped: true, ...over } as ItemInstance);
 
 const hero = (p: Partial<Combatant>): Combatant =>
   ({
@@ -46,7 +46,7 @@ describe('trainProsthesis — rachat PX de l’Esquive (Fausse jambe, LDB 73)', 
   });
 
   it('Crochet entraîné (400 PX) rétablit le port d’armes à deux mains (LDB 73)', () => {
-    const crochet: ItemInstance = { uid: 'cr', name: 'Crochet', kind: 'misc', subType: 'Prothèses', qualities: [], enc: 1, equipped: true } as ItemInstance;
+    const crochet: ItemInstance = { uid: 'cr', trappingId: 'crochet', name: 'Crochet', kind: 'misc', subType: 'Prothèses', qualities: [], enc: 1, equipped: true } as ItemInstance;
     const h = hero({ id: 'a', xp: 500, traumas: [{ label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }], note: '' }], items: [crochet] });
     useGame.setState({ party: [h] });
     expect(cannotWieldTwoHanded(useGame.getState().party[0])).toBe(true); // avant : pas d'arme à 2 mains

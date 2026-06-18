@@ -1407,14 +1407,15 @@ export const useGame = create<GameState>((set, get) => ({
       return c;
     });
     // Chaque membre RÉFÉRENCE une entité de la scène. L'entité PORTE le profil/apparence/arme/traits
-    // — on résout (membre + entité appariés), puis
-    // on spawne (id `enemy-${i}`, conservé pour les tests/recettes de combat).
+    // — on résout (membre + entité appariés), puis on spawne en CONSERVANT l'id de l'entité :
+    // identité UNIFIÉE explo↔combat (Combatant.id === SceneEntity.id) → apparence identique (même seed),
+    // pas de figurant dupliqué, et réconciliation post-combat directe (finalizeBattle).
     const byEntity = new Map(scene.entities.map((e) => [e.id, e]));
     const roster = (enc.members ?? [])
       .map((m) => ({ m, ent: byEntity.get(m.entityId) }))
       .filter((r): r is { m: typeof r.m; ent: SceneEntity } => !!r.ent);
-    const enemies = roster.map(({ ent }, i) =>
-      spawnEnemy(ent.ref, ent.statblock, `enemy-${i}`, { ...ent.pos }, {
+    const enemies = roster.map(({ ent }) =>
+      spawnEnemy(ent.ref, ent.statblock, ent.id, { ...ent.pos }, {
         appearance: ent.appearance, weapon: ent.weapon,
         optionals: ent.combat?.optionals, spells: ent.combat?.spells, randomChars: ent.combat?.randomChars, // LDB 76/78
       }));

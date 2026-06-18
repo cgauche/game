@@ -29,8 +29,8 @@ export function parseAmputation(note: string): Difficulty | null {
   return m ? AMPUTATION_DIFFICULTY[m[1]] : null;
 }
 
-// Prothèses qui ANNULENT TOTALEMENT une séquelle (LDB 73) — par partie remplacée.
-const MERVEILLE = { name: "Merveille d'ingénierie", cancels: 'all' as const }; // oreille/main/bras/jambe (l.28)
+// Prothèses qui ANNULENT TOTALEMENT une séquelle (LDB 73) — réf par `trappingId` (trappings.json).
+const MERVEILLE = { trappingId: 'merveille-d-ingenierie', cancels: 'all' as const }; // oreille/main/bras/jambe (l.28)
 
 /**
  * Séquelles PERMANENTES d'une amputation (LDB 18 l.335-370) — distinctes de la plaie chirurgicale : elles
@@ -50,7 +50,7 @@ export function permanentAmputations(name: string, note: string, location: HitLo
         note: '−1 Agilité et −1 CC par orteil perdu (séquelle permanente ; cumul non suivi).' });
     } else {
       out.push({ label: `Membre inférieur amputé (${HIT_LOCATION_LABELS[location]})`, location, ops: [{ op: 'moveScale', num: 1, den: 2 }, { op: 'skillMod', skill: 'esquive', mod: -20 }],
-        prosthesis: [MERVEILLE, { name: 'Fausse jambe', cancels: 'movement' }],
+        prosthesis: [MERVEILLE, { trappingId: 'fausse-jambe', cancels: 'movement' }],
         note: 'Mouvement ÷2 + −20 mobilité (Esquive) — à pied seulement, une monture rétablit le déplacement. Prothèse : Fausse jambe / Merveille.' });
     }
     return out;
@@ -78,12 +78,12 @@ export function permanentAmputations(name: string, note: string, location: HitLo
         note: 'sans langue, tout Test de Langue impliquant la parole échoue automatiquement.' });
     }
     if (/\bnez\b/.test(t)) {
-      out.push({ label: 'Nez amputé', location, ops: [{ op: 'charMod', char: 'Soc', mod: -20 }], prosthesis: [{ name: 'Nez doré', cancels: 'all' }],
+      out.push({ label: 'Nez amputé', location, ops: [{ op: 'charMod', char: 'Soc', mod: -20 }], prosthesis: [{ trappingId: 'nez-dore', cancels: 'all' }],
         note: '−20 Sociabilité permanent (perte du nez). Prothèse : Nez doré.' });
     }
     if (/œil|oeil/.test(t)) {
       out.push({ label: 'Œil perdu', location, ops: [{ op: 'charMod', char: 'Soc', mod: -5 }, { op: 'senseLoss', sense: 'vue' }],
-        prosthesis: [{ name: 'Cache-œil', cancels: 'all' }, { name: 'Œil de verre', cancels: 'all' }],
+        prosthesis: [{ trappingId: 'cache-oeil', cancels: 'all' }, { trappingId: 'oeil-de-verre', cancels: 'all' }],
         note: '−5 Sociabilité (orbite vide visible) ; perte des DEUX yeux (−30 vue) non modélisée. Prothèse : Cache-œil / Œil de verre.' });
     }
     if (/oreille/.test(t)) {
@@ -94,7 +94,7 @@ export function permanentAmputations(name: string, note: string, location: HitLo
       const n = /1d10/.test(t) ? d10(rng) : 1; // « 1d10 dents » (Bouche explosée/Mâchoire) ou 1 dent. Cumulé.
       const soc = -Math.floor(n / 2); // −1 Sociabilité par PAIRE (l.338) : 1 dent = 0, 3 dents = −1, 4 = −2…
       const ops: GameOp[] = soc < 0 ? [{ op: 'charMod', char: 'Soc', mod: soc }] : [];
-      out.push({ label: 'Dents perdues', location, count: n, ...(ops.length ? { ops } : {}), prosthesis: [{ name: 'Dents en bois', cancels: 'all' }],
+      out.push({ label: 'Dents perdues', traumaId: 'dents-perdues', location, count: n, ...(ops.length ? { ops } : {}), prosthesis: [{ trappingId: 'dents-en-bois', cancels: 'all' }],
         note: `${n} dents perdues → −1 Sociabilité par paire (${soc} Soc). Prothèse : Dents en bois.` });
     }
     return out;

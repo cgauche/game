@@ -55,11 +55,12 @@ describe('Prothèses — annulation de la séquelle d’amputation de jambe (LDB
   const legSequela: Trauma = {
     label: 'Membre inférieur amputé (jambeD)', location: 'jambeD',
     ops: [{ op: 'moveScale', num: 1, den: 2 }, { op: 'skillMod', skill: 'esquive', mod: -20 }],
-    prosthesis: [{ name: "Merveille d'ingénierie", cancels: 'all' }, { name: 'Fausse jambe', cancels: 'movement' }],
+    prosthesis: [{ trappingId: 'merveille-d-ingenierie', cancels: 'all' }, { trappingId: 'fausse-jambe', cancels: 'movement' }],
     note: '',
   };
-  // Une prothèse doit être PORTÉE (équipée) pour lever le malus (LDB 73), pas seulement possédée.
-  const item = (name: string, equipped = true): ItemInstance => ({ uid: name, name, kind: 'misc', subType: 'Prothèses', qualities: [], enc: 0, equipped } as ItemInstance);
+  // Une prothèse doit être PORTÉE (équipée) pour lever le malus (LDB 73), pas seulement possédée. Matchée
+  // par `trappingId` STABLE (≠ libellé) — `worn`/`prosthesisCancels` lisent l'id.
+  const item = (trappingId: string, equipped = true): ItemInstance => ({ uid: trappingId, trappingId, name: trappingId, kind: 'misc', subType: 'Prothèses', qualities: [], enc: 0, equipped } as ItemInstance);
 
   it('sans prothèse : Mouvement ÷2 et −20 Esquive s’appliquent', () => {
     const c = fullCombatant({ traumas: [legSequela], items: [] });
@@ -67,40 +68,40 @@ describe('Prothèses — annulation de la séquelle d’amputation de jambe (LDB
     expect(traumaDodgePenalty(c)).toBe(-20);
   });
   it('Fausse jambe portée : rétablit le déplacement, l’Esquive reste pénalisée (200 PX non modélisés)', () => {
-    const c = fullCombatant({ traumas: [legSequela], items: [item('Fausse jambe')] });
+    const c = fullCombatant({ traumas: [legSequela], items: [item('fausse-jambe')] });
     expect(traumaMovementHalved(c)).toBe(false);
     expect(traumaDodgePenalty(c)).toBe(-20);
   });
   it('Merveille d’ingénierie portée : annule TOUT (déplacement + Esquive)', () => {
-    const c = fullCombatant({ traumas: [legSequela], items: [item("Merveille d'ingénierie")] });
+    const c = fullCombatant({ traumas: [legSequela], items: [item('merveille-d-ingenierie')] });
     expect(traumaMovementHalved(c)).toBe(false);
     expect(traumaDodgePenalty(c)).toBe(0);
   });
   it('Fausse jambe ENTRAÎNÉE (200 PX, LDB 73) rétablit AUSSI l’Esquive', () => {
-    const trained: ItemInstance = { ...item('Fausse jambe'), prosthesisTrained: true };
+    const trained: ItemInstance = { ...item('fausse-jambe'), prosthesisTrained: true };
     const c = fullCombatant({ traumas: [legSequela], items: [trained] });
     expect(traumaMovementHalved(c)).toBe(false);
     expect(traumaDodgePenalty(c)).toBe(0); // entraînée → −20 Esquive levé
   });
   it('prothèse perdue (retirée des items) : la pénalité revient', () => {
-    const c = fullCombatant({ traumas: [legSequela], items: [item('Couverture')] });
+    const c = fullCombatant({ traumas: [legSequela], items: [item('couverture')] });
     expect(traumaMovementHalved(c)).toBe(true);
   });
   it('prothèse POSSÉDÉE mais non portée (au sac) : le malus reste — il faut l’ÉQUIPER (LDB 73)', () => {
-    const c = fullCombatant({ traumas: [legSequela], items: [item('Fausse jambe', false)] }); // equipped:false
+    const c = fullCombatant({ traumas: [legSequela], items: [item('fausse-jambe', false)] }); // equipped:false
     expect(traumaMovementHalved(c)).toBe(true);
   });
 
   it('Nez doré annule le −20 Sociabilité de l’amputation du nez (charPenalty, LDB 73)', () => {
-    const nez: Trauma = { label: 'Nez amputé', location: 'tete', ops: [{ op: 'charMod', char: 'Soc', mod: -20 }], prosthesis: [{ name: 'Nez doré', cancels: 'all' }], note: '' };
+    const nez: Trauma = { label: 'Nez amputé', location: 'tete', ops: [{ op: 'charMod', char: 'Soc', mod: -20 }], prosthesis: [{ trappingId: 'nez-dore', cancels: 'all' }], note: '' };
     expect(traumaCharPenalties(fullCombatant({ traumas: [nez], items: [] }), 'Soc')).toEqual([-20]);
-    expect(traumaCharPenalties(fullCombatant({ traumas: [nez], items: [item('Nez doré')] }), 'Soc')).toEqual([]);
+    expect(traumaCharPenalties(fullCombatant({ traumas: [nez], items: [item('nez-dore')] }), 'Soc')).toEqual([]);
   });
 });
 
 describe('consolidateAmputations — cumul doigts (l.341/344) & dents (l.338)', () => {
   const finger = (loc: 'brasG' | 'brasD', count = 1): Trauma => ({ label: `Doigts amputés (${loc})`, location: loc, count, ops: loc === 'brasD' ? [{ op: 'charMod', char: 'CC', mod: -5 * count }, { op: 'charMod', char: 'CT', mod: -5 * count }] : undefined, note: '' });
-  const teeth = (count: number): Trauma => ({ label: 'Dents perdues', location: 'tete', count, note: '' });
+  const teeth = (count: number): Trauma => ({ label: 'Dents perdues', traumaId: 'dents-perdues', location: 'tete', count, note: '' });
 
   it('cas réel : 1 doigt (main droite) + 3 dents → −5 CC/CT et −1 Soc (3 dents = 1 paire)', () => {
     const c = fullCombatant({ traumas: [finger('brasD', 1), teeth(3)] });

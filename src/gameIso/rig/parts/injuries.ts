@@ -59,7 +59,8 @@ const NEZ_DORE = g('nez-dore',
   '<path d="M-1.1 6.6 L0.4 6.4 Q1.7 8.4 0.7 9.7 Q-0.6 10.2 -1.3 9.4 Z" fill="#e0b34a" stroke="#8a6a1e" stroke-width="0.4"/>'
   + '<path d="M-0.7 7.2 q0.7 -0.3 1.2 0.2" stroke="#f4dc8a" stroke-width="0.4" fill="none"/>');
 
-const worn = (c: Combatant, name: string): boolean => (c.items ?? []).some((i) => i.name === name && i.equipped);
+// Prothèse PORTÉE par son `trappingId` STABLE (≠ libellé) — réf de catalogue (trappings.json).
+const worn = (c: Combatant, trappingId: string): boolean => (c.items ?? []).some((i) => i.trappingId === trappingId && i.equipped);
 const handBone = (t: Trauma): BoneId => (t.location === 'brasG' ? 'mainG' : 'mainD');
 
 /** Calques d'amputations/prothèses d'un combattant (traumas + objets portés). */
@@ -70,18 +71,18 @@ export function injuryOverlaysFor(c: Combatant): RigOverlay[] {
   for (const t of traumas) {
     // Main/bras : la prothèse portée remplace le poing, sinon moignon bandé.
     if (t.ops?.some((o) => o.op === 'maxWeaponHands') && (t.location === 'brasG' || t.location === 'brasD')) {
-      const svg = worn(c, "Merveille d'ingénierie") ? MAIN_MECA : worn(c, 'Crochet') ? CROCHET : MOIGNON;
+      const svg = worn(c, 'merveille-d-ingenierie') ? MAIN_MECA : worn(c, 'crochet') ? CROCHET : MOIGNON;
       out.push({ bone: handBone(t), svg, replace: true });
     }
     // Jambe : visible seulement avec une prothèse (jambe de bois) — pilon + pied effacé.
     if (t.label.startsWith('Membre inférieur amputé') && (t.location === 'jambeG' || t.location === 'jambeD')) {
-      if (worn(c, 'Fausse jambe') || worn(c, "Merveille d'ingénierie")) {
+      if (worn(c, 'fausse-jambe') || worn(c, 'merveille-d-ingenierie')) {
         const side = t.location === 'jambeG' ? 'G' : 'D';
         out.push({ bone: `cuisse${side}` as BoneId, svg: JAMBE_DE_BOIS, replace: true });
         out.push({ bone: `pied${side}` as BoneId, svg: '', replace: true });
       }
     }
-    if (t.label === 'Nez amputé') out.push({ bone: 'tete', svg: worn(c, 'Nez doré') ? NEZ_DORE : NEZ_AMPUTE, view: 'front' });
+    if (t.label === 'Nez amputé') out.push({ bone: 'tete', svg: worn(c, 'nez-dore') ? NEZ_DORE : NEZ_AMPUTE, view: 'front' });
   }
   // Cécité (agrégat des deux yeux) : bandage par-dessus le visage (l'œil unique perdu, lui,
   // passe par le remplacement d'œil — injuryAppearance).
@@ -96,6 +97,6 @@ export function injuryOverlaysFor(c: Combatant): RigOverlay[] {
 export function injuryAppearance(a: Appearance, c: Combatant): Appearance {
   const traumas = c.traumas ?? [];
   if (!traumas.some((t) => t.label === 'Œil perdu') || traumas.some((t) => t.label === 'Cécité')) return a;
-  const art = worn(c, 'Cache-œil') ? CACHE_OEIL_ART : worn(c, 'Œil de verre') ? OEIL_DE_VERRE_ART : OEIL_PERDU_ART;
+  const art = worn(c, 'cache-oeil') ? CACHE_OEIL_ART : worn(c, 'oeil-de-verre') ? OEIL_DE_VERRE_ART : OEIL_PERDU_ART;
   return { ...a, eyes: { ...a.eyes, G: art } };
 }

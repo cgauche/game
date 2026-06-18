@@ -105,7 +105,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     const itl = useGame.getState().interlude!;
     itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
     useGame.setState({ interlude: { ...itl }, money: fromBrass(5000) });
-    useGame.getState().interludeLearn(h.id, 'Chanceux');
+    useGame.getState().interludeLearn(h.id, 'chanceux'); // id STABLE du Talent
     const pa = useGame.getState().pendingActivity!;
     expect(pa.kind).toBe('learn');
     expect(pa.xpCost).toBe(100);
@@ -116,10 +116,10 @@ describe('Activités d’interlude (LDB 23)', () => {
     useGame.getState().activityConfirm();
     expect(hero().xp).toBe(200);
     expect(toBrass(useGame.getState().money)).toBe(moneyBefore - (pa.tutorBrass ?? 0));
-    expect(st().learnFails?.['Chanceux']).toBe(1);
+    expect(st().learnFails?.['chanceux']).toBe(1); // clé = id stable
     expect(hero().talents.some((t) => t.talentId === 'chanceux')).toBe(false);
     // Seconde tentative : succès → Talent acquis (et le +10 d'acharnement était affiché).
-    useGame.getState().interludeLearn(h.id, 'Chanceux');
+    useGame.getState().interludeLearn(h.id, 'chanceux');
     expect(useGame.getState().pendingActivity!.skillValue).toBeGreaterThan(pa.skillValue);
     useGame.getState().activityRoll();
     useGame.setState({ pendingActivity: { ...useGame.getState().pendingActivity!, roll: 1, success: true, sl: 1 } });

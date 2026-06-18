@@ -21,7 +21,7 @@
  */
 import { Combatant, CharKey } from './types';
 import { bonus } from './characteristics';
-import { findTalent, findSkill, spells, advancementLabel, CareerLevelData, type AdvancementRef } from '../data';
+import { findTalent, findTalentById, findSkill, spells, advancementLabel, CareerLevelData, type AdvancementRef } from '../data';
 import { slugId } from '../data/slug';
 import { CULT_KEYS } from '../data';
 import { splitLabel } from './statEntry';
@@ -104,10 +104,13 @@ export function parseEntry(raw: string): SlotOption[] {
 export function wildcardSpecs(name: string): string[] {
   const skill = findSkill(name);
   if (skill?.specs?.length) return skill.specs;
-  if (findTalent(name)?.combat?.grantsCultBlessings) return CULT_KEYS; // Béni → cultes (signal DONNÉE, plus de registre)
+  // `name` est un nom d'AUTHORING (entrée de carrière) — résolution nom→def UNE fois (bord authoring,
+  // comme `findSkill`) ; pas un chemin runtime/persistance (l'id n'existe pas au point d'appel).
+  const talent = findTalent(name);
+  if (talent?.combat?.grantsCultBlessings) return CULT_KEYS; // Béni → cultes (signal DONNÉE, plus de registre)
   const fromSpells = [...new Set(spells.filter((s) => s.type === name && s.subType).map((s) => s.subType as string))].sort();
   if (fromSpells.length) return fromSpells;
-  return findTalent(name)?.specs ?? [];
+  return talent?.specs ?? [];
 }
 
 /** Libellé concret d'un talent/compétence : « Nom » ou « Nom (Spec) ». */
@@ -272,12 +275,12 @@ export function designateSlot(
 }
 
 /**
- * Maxi d'un Talent (LDB 10 « Schéma des Talents ») : 1, « Bonus de X » (recalculé sur les
- * Caractéristiques courantes) ou illimité (« Aucun »/absent). Le Maxi se compte PAR
- * spécialisation (le libellé concret porte la spec).
+ * Maxi d'un Talent (LDB 10 « Schéma des Talents ») par son `id` STABLE : 1, « Bonus de X »
+ * (recalculé sur les Caractéristiques courantes) ou illimité (« Aucun »/absent). Le Maxi se
+ * compte PAR spécialisation (côté appelant : le libellé concret porte la spec).
  */
-export function talentMax(hero: Combatant, label: string): number | null {
-  const data = findTalent(splitLabel(label).name);
+export function talentMaxById(hero: Combatant, talentId: string): number | null {
+  const data = findTalentById(talentId);
   if (!data || data.max == null || data.max === 'Aucun') return null;
   if (typeof data.max === 'number') return data.max;
   const m = String(data.max).match(/^Bonus (?:de |d')(.*)$/i);
@@ -290,12 +293,18 @@ export function talentMax(hero: Combatant, label: string): number | null {
   return bonus(hero.characteristics[entry[1]]);
 }
 
-/** Le héros a-t-il atteint le Maxi de ce Talent (libellé concret) ? */
+/** Maxi par LIBELLÉ — bord authoring/tests : résout l'id (nom seul) puis délègue. */
+export function talentMax(hero: Combatant, label: string): number | null {
+  const id = findTalent(splitLabel(label).name)?.id ?? slugId(splitLabel(label).name);
+  return talentMaxById(hero, id);
+}
+
+/** Le héros a-t-il atteint le Maxi de ce Talent (libellé concret) ? Résout l'id UNE fois (par DONNÉE). */
 export function talentMaxReached(hero: Combatant, label: string): boolean {
-  const max = talentMax(hero, label);
-  if (max == null) return false;
   const { name, spec } = splitLabel(label);
   const id = findTalent(name)?.id ?? slugId(name);
+  const max = talentMaxById(hero, id);
+  if (max == null) return false;
   const times = hero.talents.find((t) => t.talentId === id && (t.spec ?? '') === (spec ?? ''))?.times ?? 0;
   return times >= max;
 }

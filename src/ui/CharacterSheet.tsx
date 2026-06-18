@@ -513,16 +513,17 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                       ✨
                     </button>
                   )}
-                  {isProsthesis && it.equipped && !it.prosthesisTrained && (it.name === 'Fausse jambe' || it.name === 'Crochet') && (() => {
-                    const px = it.name === 'Crochet' ? 400 : 200;
+                  {isProsthesis && it.equipped && !it.prosthesisTrained && (it.trappingId === 'fausse-jambe' || it.trappingId === 'crochet') && (() => {
+                    const isCrochet = it.trappingId === 'crochet';
+                    const px = isCrochet ? 400 : 200;
                     return (
                       <button
                         className="btn small"
-                        title={it.name === 'Crochet' ? 'Maîtriser le crochet : armes à deux mains de nouveau possibles (400 PX)' : 'Réapprendre l’Esquive avec la fausse jambe (200 PX)'}
+                        title={isCrochet ? 'Maîtriser le crochet : armes à deux mains de nouveau possibles (400 PX)' : 'Réapprendre l’Esquive avec la fausse jambe (200 PX)'}
                         disabled={(hero.xp ?? 0) < px}
                         onClick={() => trainProsthesis(hero.id, it.uid)}
                       >
-                        {it.name === 'Crochet' ? `2 mains (${px} PX)` : `Esquive (${px} PX)`}
+                        {isCrochet ? `2 mains (${px} PX)` : `Esquive (${px} PX)`}
                       </button>
                     );
                   })()}

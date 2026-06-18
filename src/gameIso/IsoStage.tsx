@@ -564,6 +564,7 @@ export function IsoStage() {
     for (const ent of scene.entities) {
       if (ent.kind === 'heroStart' || ent.kind === 'prop') continue;
       if (ent.combat?.hiddenUntilCombat) continue; // ennemi d'embuscade : invisible avant le combat
+      if (inBattle && battle!.combatants.some((c) => c.id === ent.id)) continue; // enrôlé : c'est le combattant qui le rend (pas de figurant dupliqué)
       const ez = ent.z ?? 0;
       if (viewZ != null ? ez !== viewZ : ez > activeZ) continue; // viewLevel(z) isole ; sinon actif + dessous (pas au-dessus)
       if (!ez && covered(ent.pos.x, ent.pos.y)) continue; // l'occlusion par décor ne vaut qu'au sol

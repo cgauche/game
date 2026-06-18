@@ -49,13 +49,13 @@ describe('« +5 à votre Caractéristique de départ » (LDB 10 — ne compte pa
   });
   it('applyTalentAcquisition : +5 à la valeur, AUCUNE Augmentation comptée', () => {
     const h = hero();
-    applyTalentAcquisition(h, 'Très fort');
+    applyTalentAcquisition(h, 'tres-fort'); // id stable du Talent
     expect(h.characteristics.F).toBe(35);
     expect(h.charAdvances?.F ?? 0).toBe(0);
   });
   it('Véloce : +1 Mouvement (LDB 10)', () => {
     const h = hero();
-    applyTalentAcquisition(h, 'Véloce');
+    applyTalentAcquisition(h, 'veloce'); // id stable du Talent
     expect(h.movement).toBe(5);
   });
 });

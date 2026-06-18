@@ -5,14 +5,13 @@
  */
 import type { Combatant, Weapon } from '../types';
 import { groupMatch } from '../groups';
-import { splitLabel } from '../statEntry';
-import { findTalent, findTalentById } from '../../data';
+import { findTalentById } from '../../data';
 import type { CombatFeature, CombatFeatureCtx, CastingKind } from './types';
 
-/** Famille d'incantation d'un LIBELLÉ de Talent (« Magie mineure », « Béni (Sigmar) ») via sa DONNÉE
- *  (`TalentData.combat.castingKind`), ou undefined. Pour les consommateurs qui ont un NOM, pas un Combattant. */
-export function castingKindOf(talentLabel: string): CastingKind | undefined {
-  return findTalent(splitLabel(talentLabel).name)?.combat?.castingKind;
+/** Famille d'incantation d'un Talent par son `id` STABLE (« magie-mineure », « beni ») via sa DONNÉE
+ *  (`TalentData.combat.castingKind`), ou undefined. Pour les consommateurs qui ont un id, pas un Combattant. */
+export function castingKindOf(talentId: string): CastingKind | undefined {
+  return findTalentById(talentId)?.combat?.castingKind;
 }
 
 /** Domaine d'Arcane du lanceur (LDB 46) : la spécialisation du talent à `castingKind:'arcane'` (Magie des

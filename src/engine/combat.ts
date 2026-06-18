@@ -284,7 +284,7 @@ export function attackModifiers(
     const para = incomingAttackMod(target, 'melee');
     if (para) out.push({ label: 'Parasité', value: para });
     // Option « Longueur d'Arme » (LDB 62 l.215) : arme adverse plus longue → −10 pour la toucher.
-    const reach = weaponReachPenalty(weapon, target.weapons.find((w) => w.type === 'melee'));
+    const reach = weaponReachPenalty(weapon, target.weapons?.find((w) => w.type === 'melee'));
     if (reach) out.push({ label: "Allonge de l'adversaire", value: reach });
   }
   // +10 au plus petit, mêlée ET tir (LDB 85 l.301-303). Une Nuée ignore TOUTES les règles de Taille (l.200).

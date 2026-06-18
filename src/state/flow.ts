@@ -56,8 +56,9 @@ export type Condition =
   | { kind: 'flag'; expr: string }
   /** Fenêtre horaire (heure-du-jour, `before` exclusif) — sémantique `temporalConditionMet`. */
   | { kind: 'time'; window: TemporalCondition }
-  /** Le GROUPE possède au moins `count` (défaut 1) exemplaire(s) de l'objet `trapping` (par nom). */
-  | { kind: 'hasItem'; trapping: string; count?: number }
+  /** Le GROUPE possède au moins `count` (défaut 1) exemplaire(s) de l'objet d'`id` `trappingId` (réf de
+   *  catalogue stable). Repli sur le NOM pour les objets CUSTOM (hors-base, sans `trappingId`). */
+  | { kind: 'hasItem'; trappingId: string; count?: number }
   /** La bourse du groupe vaut AU MOINS le seuil `atLeast` (comparaison en sous de bronze). */
   | { kind: 'money'; atLeast: Purse }
   /** État vital du groupe : `any` = au moins un héros mort, `all` = tous morts. */
@@ -96,7 +97,7 @@ export type Condition =
 export interface ConditionCtx {
   flags: Record<string, boolean>;
   gameTime: number;
-  party?: { dead?: boolean; items?: { name: string }[] }[];
+  party?: { dead?: boolean; items?: { name: string; trappingId?: string }[] }[];
   money?: Purse;
   /** Acteurs du Flow lus par la Condition `compare` (`conditions` = stacks par nom d'État, 0 si absent).
    *  `target` = l'unité affectée (la « cible » du sous-Flow) ; `caster` = le lanceur/porteur. */
@@ -129,7 +130,8 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
     }
     case 'hasItem': {
       const need = Math.max(1, cond.count ?? 1);
-      const have = (ctx.party ?? []).reduce((n, h) => n + (h.items ?? []).filter((it) => it.name === cond.trapping).length, 0);
+      // Objet catalogué → match par `trappingId` stable ; objet CUSTOM (sans trappingId) → repli sur le nom.
+      const have = (ctx.party ?? []).reduce((n, h) => n + (h.items ?? []).filter((it) => (it.trappingId ?? it.name) === cond.trappingId).length, 0);
       return have >= need;
     }
     case 'money': return ctx.money ? brassValue(ctx.money) >= brassValue(cond.atLeast) : false;

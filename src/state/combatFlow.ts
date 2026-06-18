@@ -94,7 +94,7 @@ import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } from '../engine/skills';
-import { findSkill, findManeuverById, findDomain, findTalentById } from '../data';
+import { findSkill, findManeuverById, findDomain, findDomainById, findTalentById } from '../data';
 import { norm } from '../lib/normalize';
 import { slugId } from '../data/slug';
 import { recomputeLoadout, weaponWithAmmo, compatibleAmmo, damageArmour, buildWeapon } from '../engine/items';
@@ -103,7 +103,7 @@ import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition,
 import { creatureAttacks, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { suffocationTick } from '../engine/suffocation';
-import { domainOf, domainOnHitEffects, domainMissileMods, domainAfterCast, hasArcaneTalent } from '../engine/domainAttributes';
+import { domainOnHitEffects, domainMissileMods, domainAfterCast, hasArcaneTalent } from '../engine/domainAttributes';
 import { losBlockingTiles, decayZones, zonesRoundTick, crossZones, discTiles, wallTiles, metersToTiles, resolveZoneMeters, type BattleZone } from './zones';
 import { carryOverState } from '../engine/persistence';
 import { rollContraction, contractDisease, hasActiveSymptom, contagiousDiseases, DISEASE_DEFS } from '../engine/disease';
@@ -139,7 +139,7 @@ import { bus, EVT } from './bus';
 // Géométrie de combat extraite (placement/déplacement/zones/flanc-dos/vision) — importée pour
 // l'usage interne ET ré-exportée (baril) pour les importeurs de combatFlow.
 import {
-  occupied, pushBackTiles, findFreeTile, displaceSmaller, removeEntity, inRect,
+  occupied, pushBackTiles, findFreeTile, displaceSmaller, removeEntity, removeEntities, inRect,
   applyZoneCrossings, isFlankOrRear, seesInDark, smokeOf,
 } from './combatGeometry';
 export * from './combatGeometry';
@@ -3009,8 +3009,8 @@ function domainBreathType(caster: Combatant): string | undefined {
 
 /** Bonus d'incantation CONDITIONNEL du Domaine (Aqshy l.157 : +`bonus` par État `perCondition` situé à
  *  `radiusStat` m du lanceur) — PARAMÈTRE en données (`DomainData.castBonus`) ; géométrie résolue ici. */
-export function domainCastBonus(s: GameState, caster: Combatant, spell: { type?: string; subType?: string | null }): number {
-  const cb = findDomain(domainOf(spell))?.castBonus;
+export function domainCastBonus(s: GameState, caster: Combatant, spell: { domainId?: string | null }): number {
+  const cb = findDomainById(spell.domainId)?.castBonus;
   if (!cb || !caster.pos) return 0;
   const radius = Math.max(1, Math.ceil(bonus(effectiveChar(caster, cb.radiusStat)) / 2));
   let pions = 0;
@@ -3102,6 +3102,16 @@ export function finalizeBattle(get: Get, set: SetFn): void {
     return c ? { ...h, ...carryOverState(c) } : h;
   });
   set({ party: newParty, ...(infectLog.length ? { journal: [...get().journal.slice(-40), ...infectLog] } : {}) });
+  // Réconciliation de la scène : tout combattant ISSU d'une entité de scène (identité unifiée,
+  // Combatant.id === SceneEntity.id) et hors d'action quitte la scène. Victoire → les ennemis sont tous
+  // hors d'action = retirés ; défaite → ennemis vivants = conservés ; les héros du groupe ne sont jamais
+  // des entités de scène (jamais touchés). Hook futur : fuite hors-carte, morts persistants.
+  const scene = get().scene;
+  if (scene) {
+    const entIds = new Set(scene.entities.map((e) => e.id));
+    const fallen = battle.combatants.filter((c) => entIds.has(c.id) && isOutOfAction(c)).map((c) => c.id);
+    if (fallen.length) removeEntities(get, set, fallen);
+  }
 }
 
 export function checkBattleOver(get: Get, set: SetFn): boolean {

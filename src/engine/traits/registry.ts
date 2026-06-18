@@ -1,15 +1,15 @@
 /**
- * Registre des Traits de créature (LDB 85) — DÉRIVÉ du registre `defs/` (gen-registry.mjs).
- * Ajouter un trait = déposer `defs/<slug>.ts` (`export const trait: TraitDef = { key, … }`, la clé
- * étant le libellé FR canonique) puis `npm run gen` (auto en dev).
+ * Registre des Traits de créature (LDB 85) — DÉRIVÉ de la DONNÉE (`src/data/traits.json`, via
+ * `data.traits`). Plus de `defs/` mécaniques : toute la mécanique (passive/effects/grantsManeuvers/
+ * capabilities) vit dans `traits.json`, lue PAR ID. `TRAITS` ne porte plus que le libellé d'affichage
+ * (`{ key }`) ; ses ids sont EXACTEMENT ceux de `traits.json` (« traits du registre »).
  * Les helpers de `dispatch.ts` lisent `TRAITS` ; spawn/combat/IA les appellent aux moments de jeu.
  */
 import type { TraitDef } from './types';
-import { TRAIT_DEFS } from './_registry.generated';
-import { slugId } from '../../data/slug';
+import { traits } from '../../data';
 
 export type { TraitDef } from './types';
 
-/** Table des traits. Clé = `id` STABLE (slug du libellé canonique porté par chaque def) — indépendant
- *  de la langue. Le `key`/libellé de la def reste pour l'affichage. */
-export const TRAITS: Record<string, TraitDef> = Object.fromEntries(TRAIT_DEFS.map((t) => [slugId(t.key), t]));
+/** Table des traits. Clé = `id` STABLE (slug du libellé canonique) — indépendant de la langue.
+ *  Le `key`/libellé reste pour l'affichage. Dérivée 1:1 de `traits.json`. */
+export const TRAITS: Record<string, TraitDef> = Object.fromEntries(traits.map((t) => [t.id, { key: t.label }]));

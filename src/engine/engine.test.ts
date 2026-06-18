@@ -470,7 +470,7 @@ function caster(chars: Partial<Characteristics>, skills: SkillInstance[] = [], w
 }
 
 const FLECHETTE: SpellLike = { label: 'Fléchette', type: 'Magie mineure', cn: 0, duration: 'Instantanée', desc: 'Il s’agit d’un Projectile magique avec Dégât +0.' };
-const PRIERE: SpellLike = { label: 'Bénédiction de Bataille', type: 'Béni', cn: null, duration: '6 rounds', desc: 'Votre cible gagne +10 en Capacité de Combat.' };
+const PRIERE: SpellLike = { label: 'Bénédiction de Bataille', type: 'Béni', isPrayer: true, cn: null, duration: '6 rounds', desc: 'Votre cible gagne +10 en Capacité de Combat.' };
 const ARCANE: SpellLike = { label: 'Boule de feu', type: 'Magie des Arcanes', cn: 8, duration: 'Instantanée', desc: 'Projectile magique avec Dégâts +8.' };
 
 describe('Magie — routage du test par branche', () => {
@@ -730,7 +730,7 @@ describe('Magie — compétences Avancées (gating)', () => {
 
   it('Dissipation : seul un SORT se dissipe — pas une Prière (LDB 46 « Si un Sort vous cible »)', () => {
     expect(isDispellableSpell(FLECHETTE)).toBe(true);
-    expect(isDispellableSpell({ label: 'Bénédiction', type: 'Béni', cn: null, duration: '', desc: '' })).toBe(false);
+    expect(isDispellableSpell({ label: 'Bénédiction', type: 'Béni', isPrayer: true, cn: null, duration: '', desc: '' })).toBe(false);
   });
 
   it('le Trait « Lanceur de Sorts » (LDB 85 : « La créature peut lancer des Sorts ») dispense de la Compétence', () => {

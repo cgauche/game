@@ -38,14 +38,12 @@ import { grantTrait } from './grantedTraits';
 import { groupMatch } from './groups';
 import { bypassedAP } from './armourBypass';
 import { hasTraitKey, parseTraitInstance } from './traits/dispatch';
-import { findDomain } from '../data';
+import { findDomainById } from '../data';
 import { arcaneDomainOf } from './combatFeatures/dispatch';
 
-/** Domaine d'un sort (« issu du Domaine X ») : le subType d'un Sort d'Arcane, sinon null. */
-export function domainOf(spell: { type?: string; subType?: string | null }): string | null {
-  if (spell.type && spell.type !== 'Magie des Arcanes') return null;
-  return spell.subType ?? null;
-}
+/** Forme MINIMALE d'un sort pour la résolution de son Domaine : le RUNTIME lit le seul `domainId`
+ *  (id STABLE, indépendant de la langue) ; absent = Sort sans Domaine (Magie Mineure, Prière…). */
+type SpellDomainRef = { domainId?: string | null };
 
 /** Le combattant possède-t-il le Talent « Magie des Arcanes (Domaine) » (exemption des riders) ? */
 export function hasArcaneTalent(c: Combatant, domain: string): boolean {
@@ -61,11 +59,11 @@ export { metalAPAt, magicAPOf } from './armourBypass';
  *  les PA ignorés aux Dégâts). `totalAP` = PA effectifs de la cible à la localisation. */
 export function domainMissileMods(
   target: Combatant,
-  spell: { type?: string; subType?: string | null },
+  spell: SpellDomainRef,
   loc: HitLocation,
   totalAP: number,
 ): { apIgnored: number; bonusDamage: number } {
-  const missile = findDomain(domainOf(spell))?.missile;
+  const missile = findDomainById(spell.domainId)?.missile;
   if (!missile) return { apIgnored: 0, bonusDamage: 0 };
   const ignored = bypassedAP(target, loc, missile.bypass, totalAP);
   return { apIgnored: ignored, bonusDamage: missile.bonusFromBypass ? ignored : 0 };
@@ -82,14 +80,14 @@ export const isLiving = (c: Combatant): boolean => !isUndead(c) && !isDaemon(c);
  *  Mort → Exténué ; Vie → purge/flétrissure) — DONNÉE éditable (`DomainData.onHitEffects`, `TriggeredEffect[]`).
  *  Le gating (cible adverse / vivante / mort-vivante / résistance par Talent) vit dans les Conditions Flow
  *  `relation`/`has`. Appliqués par le dispatcher `state/triggeredEffects` (qui détient `runSpellFlow`). */
-export function domainOnHitEffects(spell: { type?: string; subType?: string | null }): TriggeredEffect[] {
-  return findDomain(domainOf(spell))?.effects ?? [];
+export function domainOnHitEffects(spell: SpellDomainRef): TriggeredEffect[] {
+  return findDomainById(spell.domainId)?.effects ?? [];
 }
 
 /** Effet post-incantation appliqué au LANCEUR après un Sort de Domaine réussi — PARAMÈTRE en données
  *  (`DomainData.afterCast`) : Bête (Ghur) octroie le Trait `grantTrait` pour 1d`durationDice` Rounds. */
-export function domainAfterCast(caster: Combatant, spell: { type?: string; subType?: string | null }, rng: RNG = defaultRNG): string[] {
-  const after = findDomain(domainOf(spell))?.afterCast;
+export function domainAfterCast(caster: Combatant, spell: SpellDomainRef, rng: RNG = defaultRNG): string[] {
+  const after = findDomainById(spell.domainId)?.afterCast;
   if (!after?.grantTrait) return [];
   const rounds = after.durationDice ? rollDice(1, after.durationDice, rng) : 1;
   const tr = parseTraitInstance(after.grantTrait);

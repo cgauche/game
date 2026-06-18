@@ -290,12 +290,12 @@ describe('items — recomputeLoadout / encombrement', () => {
   it('amputation de main : arme à deux mains exclue de la dotation ; Merveille PORTÉE la rétablit (LDB 18 l.352 / 73)', () => {
     const c = {
       characteristics: { F: 30, E: 30 },
-      traumas: [{ label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }], prosthesis: [{ name: "Merveille d'ingénierie", cancels: 'all' }], note: '' }],
+      traumas: [{ label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }], prosthesis: [{ trappingId: 'merveille-d-ingenierie', cancels: 'all' }], note: '' }],
       items: [item({ name: 'Espadon', kind: 'melee', damage: '+BF+5', subType: 'deux-mains', equipped: true })],
     } as unknown as Combatant;
     recomputeLoadout(c);
     expect(c.weapons.map((w) => w.name)).not.toContain('Espadon'); // pas d'arme à 2 mains avec une main amputée
-    c.items!.push(item({ name: "Merveille d'ingénierie", subType: 'Prothèses', equipped: true }));
+    c.items!.push(item({ trappingId: 'merveille-d-ingenierie', name: "Merveille d'ingénierie", subType: 'protheses', equipped: true }));
     recomputeLoadout(c);
     expect(c.weapons.map((w) => w.name)).toContain('Espadon'); // prothèse portée → arme à 2 mains de nouveau utilisable
   });
@@ -380,11 +380,11 @@ describe('items — recomputeLoadout / encombrement', () => {
   it('Merveille d’ingénierie (cancels all) sur la main secondaire amputée : le bouclier reste utilisable (LDB 73)', () => {
     const c = {
       characteristics: { F: 30, E: 30 },
-      traumas: [{ label: 'Main', location: 'brasG', ops: [{ op: 'maxWeaponHands', hands: 1 }], prosthesis: [{ name: "Merveille d'ingénierie", cancels: 'all' }], note: '' }],
+      traumas: [{ label: 'Main', location: 'brasG', ops: [{ op: 'maxWeaponHands', hands: 1 }], prosthesis: [{ trappingId: 'merveille-d-ingenierie', cancels: 'all' }], note: '' }],
       items: [
         item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: '+BF+4', equipped: true }),
         item({ uid: 'bo', name: 'Bouclier', kind: 'melee', damage: '+BF', qualities: ['Bouclier'], equipped: true }),
-        item({ name: "Merveille d'ingénierie", subType: 'Prothèses', equipped: true }),
+        item({ trappingId: 'merveille-d-ingenierie', name: "Merveille d'ingénierie", subType: 'protheses', equipped: true }),
       ],
       loadouts: [{ id: 'l1', name: 'X', main: 'ep', off: 'bo' }],
       activeLoadoutId: 'l1',

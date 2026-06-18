@@ -24,7 +24,7 @@ import { rule } from '../engine/policy';
 import { effectiveChar } from '../engine/characteristics';
 import { buyTalent as engineBuyTalent, talentCost } from '../engine/advancement';
 import { applyTalentAcquisition, fortuneMax, resolveMax, heroMaxWounds } from '../engine/talentEffects';
-import { findCareerById, levelsForCareer, findTrappingById, findTalent, findSkillById, skillInstanceLabel, advancementLabel, qualityRefLabel, qualities } from '../data';
+import { findCareerById, levelsForCareer, findTrappingById, findTalentById, refLabel, findSkillById, skillInstanceLabel, advancementLabel, qualityRefLabel, qualities } from '../data';
 import { CHAR_BY_LABEL, CHAR_LABELS, type CharKey, type Combatant, type Difficulty } from '../engine/types';
 import type { PendingBase } from './rollFlow';
 
@@ -142,7 +142,7 @@ export interface PendingActivity extends PendingBase {
   /** Artisanat : progression du Test étendu (avant ce jet) et cible. */
   drBefore?: number;
   drTarget?: number;
-  /** Apprentissage particulier (ch.23 l.58-63) : talent visé + coûts (débités MÊME sur échec). */
+  /** Apprentissage particulier (ch.23 l.58-63) : `id` STABLE du talent visé + coûts (débités MÊME sur échec). */
   talent?: string;
   xpCost?: number;
   tutorBrass?: number;
@@ -263,15 +263,16 @@ export function openCraftRoll(get: Get, set: Set, heroId: string): void {
  *  Difficile (-20) en utilisant la Caractéristique […] la plus pertinente » (V1 : celle du Maxi du
  *  Talent, sinon Int) ; « gagnez un modificateur de +10 pour chaque tentative ratée ». PX et
  *  argent sont dépensés MÊME sur un échec (« dépensant en vain des PX et de l'argent »). */
-export function openLearn(get: Get, set: Set, heroId: string, talentLabel: string): void {
+export function openLearn(get: Get, set: Set, heroId: string, talentId: string): void {
   const st = heroState(get(), heroId);
   const h = get().party.find((x) => x.id === heroId);
   if (!st || !h || st.left <= 0) return;
-  const t = findTalent(talentLabel);
+  const t = findTalentById(talentId);
   if (!t) {
-    get().log(`Talent inconnu : « ${talentLabel} ».`);
+    get().log(`Talent inconnu : « ${talentId} ».`);
     return;
   }
+  const talentLabel = refLabel('talents', { id: t.id }); // affichage seul (multilangue)
   const xpCost = talentCost(h.talents.find((k) => k.talentId === t.id)?.times ?? 0);
   if ((h.xp ?? 0) < xpCost) {
     get().log(`${h.name} : PX insuffisants (${xpCost} requis pour ${talentLabel}).`);
@@ -284,14 +285,14 @@ export function openLearn(get: Get, set: Set, heroId: string, talentLabel: strin
   }
   const m = typeof t.max === 'string' ? t.max.match(/Bonus d[e'’]\s*(.+)/i) : null;
   const ck: CharKey = (m && CHAR_BY_LABEL[m[1].trim()]) || 'Int';
-  const fails = st.learnFails?.[talentLabel] ?? 0;
+  const fails = st.learnFails?.[t.id] ?? 0; // clé = id stable du Talent
   set({
     pendingActivity: {
       heroId, kind: 'learn', label: `Apprentissage particulier — ${talentLabel}`,
       skillLabel: `${CHAR_LABELS[ck]}${fails ? ` (+${fails * 10} d'acharnement)` : ''}`,
       skillValue: effectiveChar(h, ck) + 10 * fails, difficulty: 'difficile',
       roll: null, target: 0, sl: 0, success: false,
-      talent: talentLabel, xpCost, tutorBrass,
+      talent: t.id, xpCost, tutorBrass,
     },
   });
 }
@@ -388,26 +389,29 @@ export function confirmActivity(get: Get, set: Set): void {
     lines.push(`${h.name} travaille une semaine : ${formatMoney(fromBrass(brass))} (disponibles à la prochaine aventure).`);
   } else if (pa.kind === 'learn' && pa.talent) {
     // RAW ch.23 l.59-63 : argent du tuteur et PX dépensés MÊME sur un échec (« en vain »).
+    // `pa.talent` = id STABLE du Talent ; le libellé n'est que pour l'affichage (multilangue).
+    const talentId = pa.talent;
+    const talentLabel = refLabel('talents', { id: talentId });
     set({ money: fromBrass(Math.max(0, toBrass(get().money) - (pa.tutorBrass ?? 0))) });
     if (pa.success) {
       const fortuneBefore = fortuneMax(h);
       const resolveBefore = resolveMax(h);
-      const r = engineBuyTalent(h, pa.talent); // débite les PX + acquiert le Talent
+      const r = engineBuyTalent(h, talentLabel); // débite les PX + acquiert le Talent
       if (r.ok) {
-        applyTalentAcquisition(h, pa.talent);
+        applyTalentAcquisition(h, talentId);
         h.wounds.max = heroMaxWounds(h); // Dur à cuire & co
         h.wounds.current = Math.min(h.wounds.current, h.wounds.max);
         h.fortune = (h.fortune ?? 0) + (fortuneMax(h) - fortuneBefore); // Chanceux
         h.resolve = (h.resolve ?? 0) + (resolveMax(h) - resolveBefore); // Obstiné
-        lines.push(`${h.name} apprend ${pa.talent} hors carrière (−${r.cost} PX + ${formatMoney(fromBrass(pa.tutorBrass ?? 0))} de tuteur — Apprentissage particulier).`);
+        lines.push(`${h.name} apprend ${talentLabel} hors carrière (−${r.cost} PX + ${formatMoney(fromBrass(pa.tutorBrass ?? 0))} de tuteur — Apprentissage particulier).`);
       }
       itl.perHero[pa.heroId] = { ...st, left: st.left - 1 };
     } else {
       h.xp = Math.max(0, (h.xp ?? 0) - (pa.xpCost ?? 0)); // PX perdus en vain
       const learnFails = { ...(st.learnFails ?? {}) };
-      learnFails[pa.talent] = (learnFails[pa.talent] ?? 0) + 1;
+      learnFails[talentId] = (learnFails[talentId] ?? 0) + 1; // clé = id stable du Talent
       itl.perHero[pa.heroId] = { ...st, left: st.left - 1, learnFails };
-      lines.push(`${h.name} échoue à apprendre ${pa.talent} — PX et argent dépensés en vain ; +10 à la prochaine tentative.`);
+      lines.push(`${h.name} échoue à apprendre ${talentLabel} — PX et argent dépensés en vain ; +10 à la prochaine tentative.`);
     }
   } else if (pa.kind === 'identify' && pa.itemUid) {
     // ADE2 ch.4 — tableau d'identification, mappé sur notre modèle (identified/magicKnown/soupçons),

@@ -6,7 +6,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
-import { generateName, NAIN_SUFFIXES } from './names';
+import { generateName } from './names';
 import { names as N } from '../data';
 const startsWithOne = (name: string, pool: string[]) => pool.some((p) => name.startsWith(p + ' '));
 const endsWithOne = (name: string, pool: string[]) => pool.some((p) => name.endsWith(' ' + p));
@@ -36,7 +36,7 @@ describe('generateName — banque names.json + canon nain (LDB 05 l.622)', () =>
   it('le parent du patronyme nain vient du pool de prénoms nains (mono-mot)', () => {
     const m = generateName('Nains', 'M', makeRNG(7))!;
     const fam = m.slice(m.lastIndexOf(' ') + 1);
-    const suffix = NAIN_SUFFIXES.M.find((sf) => fam.endsWith(sf))!;
+    const suffix = N.Nain.lastNameSuffixes!.M.find((sf) => fam.endsWith(sf))!;
     const parent = fam.slice(0, -suffix.length);
     expect([...N.Nain.maleFirstNames, ...N.Nain.femaleFirstNames]).toContain(parent);
   });

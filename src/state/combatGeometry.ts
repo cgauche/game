@@ -107,12 +107,20 @@ function nearestFreeOutside(scene: Scene, battle: BattleState, c: Combatant, mov
   return undefined;
 }
 
-export function removeEntity(get: Get, set: SetFn, id: string) {
+/** Retrait par lot d'entités de scène (un seul `set` + un seul SCENE_DIRTY). No-op si rien à retirer. */
+export function removeEntities(get: Get, set: SetFn, ids: string[]) {
   const scene = get().scene;
-  if (!scene) return;
-  scene.entities = scene.entities.filter((e) => e.id !== id);
+  if (!scene || !ids.length) return;
+  const drop = new Set(ids);
+  const next = scene.entities.filter((e) => !drop.has(e.id));
+  if (next.length === scene.entities.length) return; // aucun id présent → rien à faire
+  scene.entities = next;
   set({ scene: { ...scene } });
   bus.emit(EVT.SCENE_DIRTY);
+}
+
+export function removeEntity(get: Get, set: SetFn, id: string) {
+  removeEntities(get, set, [id]);
 }
 
 export function inRect(p: Pt, r: { x: number; y: number; w: number; h: number }): boolean {

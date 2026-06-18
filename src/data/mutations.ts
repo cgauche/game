@@ -3,9 +3,10 @@
  *
  * DÉCOUPLÉ : la MUTATION (identité + effets) vit dans `mutations.json` (entité éditable, SANS plage de
  * tirage) ; les TABLES de Corruption vivent dans `mutationTables.json` — des plages d100 qui RÉFÉRENCENT
- * des mutations par label. Plusieurs tables peuvent pointer la même mutation SANS collision (LDB :
- * physique/mentale ; Compagnon T1 : une table par dieu du Chaos rejoue les mêmes mutations à d'autres
- * plages). Ce module = TYPES + chargement + tirage ; ajouter/régler = éditer le JSON (mutation OU table),
+ * des mutations par id, et sont elles-mêmes indexées par leur propre `id` (physique/mentale/khorne…).
+ * Plusieurs tables peuvent pointer la même mutation SANS collision (LDB : physique/mentale ; Compagnon
+ * T1 : une table par dieu du Chaos rejoue les mêmes mutations à d'autres plages). Ce module = TYPES +
+ * chargement + tirage ; ajouter/régler = éditer le JSON (mutation OU table),
  * jamais ce fichier. Effets modélisés sur la mutation : `passive` (GameOp[]), `apAll`/`apLocations`
  * (armure naturelle), `derivedWeapon`, `traits`, `psychTraits` ; descriptif non modélisable en `note`.
  */
@@ -18,8 +19,10 @@ import mutationTablesJson from './mutationTables.json';
 /** Une MUTATION (entité, `mutations.json`) : identité + effets, INDÉPENDANTE de toute table de tirage. */
 export type MutationData = Omit<Mutation, 'roll'>;
 
-/** Une TABLE de Corruption (`mutationTables.json`) : plages d100 → référence de mutation par label. */
+/** Une TABLE de Corruption (`mutationTables.json`) : plages d100 → référence de mutation par id.
+ *  `id` STABLE (langue-indépendant — 'physique'/'mentale'/'khorne'…) ; `label` = affichage. */
 export interface MutationTable {
+  id: string;
   label: string;
   ranges: { min: number; max: number; mutation: string }[];
 }
@@ -27,15 +30,16 @@ export interface MutationTable {
 const MUTATIONS = mutationsJson as MutationData[];
 const TABLES = mutationTablesJson as MutationTable[];
 const BY_ID = new Map(MUTATIONS.map((m) => [m.id, m]));
+const TABLE_BY_ID = new Map(TABLES.map((t) => [t.id, t]));
 
 /** `id`s par nature de mutation — pour le registre visuel du rig et son test d'exhaustivité. */
 export const IDS_PHYSIQUES: readonly string[] = MUTATIONS.filter((m) => m.kind === 'physique').map((m) => m.id);
 export const IDS_MENTALES: readonly string[] = MUTATIONS.filter((m) => m.kind === 'mentale').map((m) => m.id);
 
-/** Tire une mutation sur la TABLE `table` (LDB : 'physique'/'mentale' ; Compagnon T1 : 'Khorne'…), d100 seedable.
+/** Tire une mutation sur la TABLE d'`id` `table` (LDB : 'physique'/'mentale' ; Compagnon T1 : 'khorne'…), d100 seedable.
  *  Les plages référencent les mutations par **id** (plus de label). */
 export function rollMutation(table: string, rng: RNG): Mutation {
-  const t = TABLES.find((x) => x.label === table);
+  const t = TABLE_BY_ID.get(table);
   if (!t) throw new Error(`rollMutation : table « ${table} » introuvable (mutationTables.json)`);
   const roll = d100(rng);
   const range = findTableEntry(t.ranges, roll);

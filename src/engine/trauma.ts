@@ -213,7 +213,7 @@ export function hasSurgeryTrauma(c: Combatant): boolean {
   return (c.traumas ?? []).some((t) => t.needsSurgery);
 }
 
-const PROSTHESIS_MERVEILLE = { name: "Merveille d'ingénierie", cancels: 'all' as const };
+const PROSTHESIS_MERVEILLE = { trappingId: 'merveille-d-ingenierie', cancels: 'all' as const };
 
 /**
  * Fusionne les séquelles CUMULATIVES par comptage (LDB 18) en UN trauma agrégé (≠ modèle non-cumul : ici le
@@ -228,7 +228,7 @@ export function consolidateAmputations(c: Combatant): string[] {
   const log: string[] = [];
   const traumas = c.traumas ?? [];
   const isFinger = (t: Trauma) => !!t.label?.startsWith('Doigts amputés');
-  const isTeeth = (t: Trauma) => t.label === 'Dents perdues';
+  const isTeeth = (t: Trauma) => t.traumaId === 'dents-perdues';
   if (!traumas.some((t) => isFinger(t) || isTeeth(t))) return log;
   const kept = traumas.filter((t) => !isFinger(t) && !isTeeth(t));
   for (const loc of ['brasG', 'brasD'] as const) {
@@ -253,7 +253,7 @@ export function consolidateAmputations(c: Combatant): string[] {
     const total = teeth.reduce((s, t) => s + (t.count ?? 1), 0);
     const soc = -Math.floor(total / 2);
     const ops: GameOp[] = soc < 0 ? [{ op: 'charMod', char: 'Soc', mod: soc }] : [];
-    kept.push({ label: 'Dents perdues', location: 'tete', count: total, ...(ops.length ? { ops } : {}), prosthesis: [{ name: 'Dents en bois', cancels: 'all' }], note: `${total} dents perdues → ${soc} Sociabilité (−1 par paire). Prothèse : Dents en bois.` });
+    kept.push({ label: 'Dents perdues', traumaId: 'dents-perdues', location: 'tete', count: total, ...(ops.length ? { ops } : {}), prosthesis: [{ trappingId: 'dents-en-bois', cancels: 'all' }], note: `${total} dents perdues → ${soc} Sociabilité (−1 par paire). Prothèse : Dents en bois.` });
   }
   c.traumas = kept;
   return log;
@@ -270,12 +270,12 @@ export function escalateSensoryLoss(c: Combatant): string[] {
   const hasSense = (t: Trauma, s: 'vue' | 'ouie') => traumaOps(t).some((o) => o.op === 'senseLoss' && o.sense === s);
   const eyes = (c.traumas ?? []).filter((t) => hasSense(t, 'vue')).length;
   const ears = (c.traumas ?? []).filter((t) => hasSense(t, 'ouie')).length;
-  if (eyes >= 2 && !(c.traumas ?? []).some((t) => t.label === 'Cécité')) {
-    c.traumas = [...(c.traumas ?? []), { label: 'Cécité', location: 'tete', ops: [{ op: 'charMod', char: 'CC', mod: -30 }, { op: 'charMod', char: 'CT', mod: -30 }, { op: 'skillMod', skill: 'esquive', mod: -30 }, { op: 'skillMod', skill: 'chevaucher', mod: -30 }], note: 'perte des DEUX yeux — −30 aux Tests liés à la vue (Arme, Esquive, Chevaucher).' }];
+  if (eyes >= 2 && !(c.traumas ?? []).some((t) => t.traumaId === 'cecite')) {
+    c.traumas = [...(c.traumas ?? []), { label: 'Cécité', traumaId: 'cecite', location: 'tete', ops: [{ op: 'charMod', char: 'CC', mod: -30 }, { op: 'charMod', char: 'CT', mod: -30 }, { op: 'skillMod', skill: 'esquive', mod: -30 }, { op: 'skillMod', skill: 'chevaucher', mod: -30 }], note: 'perte des DEUX yeux — −30 aux Tests liés à la vue (Arme, Esquive, Chevaucher).' }];
     log.push(`${c.name} perd la vue (cécité) — −30 aux Tests liés à la vue.`);
   }
-  if (ears >= 2 && !(c.traumas ?? []).some((t) => t.label === 'Surdité')) {
-    c.traumas = [...(c.traumas ?? []), { label: 'Surdité', location: 'tete', ops: [{ op: 'skillMod', skill: 'perception', mod: -20 }], note: 'perte des DEUX oreilles — −20 aux Tests de Perception auditive.' }];
+  if (ears >= 2 && !(c.traumas ?? []).some((t) => t.traumaId === 'surdite')) {
+    c.traumas = [...(c.traumas ?? []), { label: 'Surdité', traumaId: 'surdite', location: 'tete', ops: [{ op: 'skillMod', skill: 'perception', mod: -20 }], note: 'perte des DEUX oreilles — −20 aux Tests de Perception auditive.' }];
     log.push(`${c.name} perd l'ouïe (surdité) — −20 Perception auditive.`);
   }
   return log;
@@ -287,7 +287,7 @@ export function escalateSensoryLoss(c: Combatant): string[] {
  *  donc les armes à distance bimanuelles SONT couvertes. */
 export function cannotWieldTwoHanded(c: Combatant): boolean {
   // Crochet PORTÉ et ENTRAÎNÉ (400 PX, LDB 73) : rachète entièrement la pénalité « deux mains ».
-  if ((c.items ?? []).some((i) => i.name === 'Crochet' && i.equipped && i.prosthesisTrained)) return false;
+  if ((c.items ?? []).some((i) => i.trappingId === 'crochet' && i.equipped && i.prosthesisTrained)) return false;
   return pmods(c, 'maxWeaponHands').some((o) => o.hands < 2);
 }
 
@@ -364,7 +364,7 @@ export function treatTrauma(c: Combatant, dr: number, success = true): string[] 
 function prosthesisCancels(c: Combatant, t: Trauma, aspect: 'movement' | 'all'): boolean {
   if (!t.prosthesis?.length) return false;
   return t.prosthesis.some((p) => {
-    const worn = (c.items ?? []).find((i) => i.name === p.name && i.equipped);
+    const worn = (c.items ?? []).find((i) => i.trappingId === p.trappingId && i.equipped);
     if (!worn) return false;
     const eff = worn.prosthesisTrained ? 'all' : p.cancels; // 200 PX → Esquive réapprise (Fausse jambe, LDB 73)
     return aspect === 'movement' ? true : eff === 'all';

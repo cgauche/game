@@ -9,15 +9,16 @@ import {
 } from '../engine/activities';
 import { DIFFICULTY_LABELS } from '../engine/types';
 import { QUALITY_DESC, describeQuality } from '../engine/qualities/describe';
-import { findTalent, skillInstanceLabel, findTrappingById } from '../data';
+import { findTalent, skillInstanceLabel, findTrappingById, qualities } from '../data';
 import type { Combatant } from '../engine/types';
 import { ActiveModal } from './ActiveModal';
 import { Modal } from './Modal';
 import { CharFrame } from './CharFrame';
 
-/** Atouts/Défauts d'artisanat (LDB 60 l.55-90), par `id` de qualité — tooltips/libellés via le registre. */
-const ATOUTS = ['leger', 'pratique', 'raffine', 'solide'];
-const DEFAUTS = ['bacle', 'laid', 'peu-fiable', 'volumineux'];
+/** Atouts/Défauts d'artisanat (LDB 60 l.55-90) — dérivés de la DONNÉE éditable (`qualities.json`,
+ *  qualités d'Objet) par `id` ; tooltips/libellés via le registre (`describeQuality`). */
+const ATOUTS = qualities.filter((q) => q.type === 'Atout' && q.subType === 'Objet').map((q) => q.id);
+const DEFAUTS = qualities.filter((q) => q.type === 'Défaut' && q.subType === 'Objet').map((q) => q.id);
 /** Libellé + desc d'une qualité d'artisanat par id (registre via `describeQuality`). */
 const craftQual = (id: string) => describeQuality(id) ?? { label: id, desc: undefined };
 
@@ -398,7 +399,7 @@ function LearnPane({ hero, disabled, fails, money }: { hero: Combatant; disabled
   }, [options, search]);
   const sel: LearnOption | undefined = options.find((o) => o.label === label);
   const xp = hero.xp ?? 0;
-  const failCount = sel ? fails?.[sel.label] ?? 0 : 0;
+  const failCount = sel ? fails?.[sel.id] ?? 0 : 0;
   const xpOk = !sel || xp >= sel.xpCost;
   const purseOk = !sel || toBrass(money) >= sel.tutorMinBrass;
   const desc = sel ? findTalent(sel.label)?.desc ?? '' : '';
@@ -423,7 +424,7 @@ function LearnPane({ hero, disabled, fails, money }: { hero: Combatant; disabled
         className="btn small btn-primary"
         disabled={disabled || !sel || !xpOk || !purseOk}
         title={!xpOk && sel ? `PX insuffisants (${sel.xpCost} requis)` : !purseOk ? 'La bourse ne couvre même pas le tuteur le moins cher' : 'Trouver un tuteur et tenter l’apprentissage'}
-        onClick={() => sel && learn(hero.id, sel.label)}
+        onClick={() => sel && learn(hero.id, sel.id)}
       >
         Trouver un tuteur{sel ? ` (${sel.xpCost} PX)` : ''}
       </button>

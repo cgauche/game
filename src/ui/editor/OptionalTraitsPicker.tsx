@@ -7,17 +7,14 @@
  *    (l'auteur complète l'Indice/la Cible : « Armure 2 », « Haine (Sigmarites) ») ;
  *  - sorts connus (la donnée bestiaire n'en liste pas — choix d'auteur, datalist sur spells.json).
  */
-import { CreatureData, spells, findSpell, refLabel } from '../../data';
+import { CreatureData, spells, findSpell, refLabel, traits } from '../../data';
 import { CHAR_KEYS } from '../../engine/types';
 import { traitLabels, parseTraitInstance, formatTrait } from '../../engine/traits/dispatch';
 import type { TraitInstance } from '../../engine/statEntry';
 
-/** Traits Standard de créature (LDB 76 l.28-31, verbatim) : « Les Traits suivants sont ajoutés à
- *  la liste Facultative de toutes les créatures. » */
-const STANDARD_OPTIONALS = [
-  'Animosité', 'Arme', 'Armure', 'Brutal', 'Coriace', 'Craintif', 'Élite', 'Endurant',
-  'Grand', 'Haine', 'Intelligent', 'Meneur', 'Préjugé', 'Rapide', 'Rusé',
-];
+/** Traits Standard de créature (LDB 76 l.28-31) — « ajoutés à la liste Facultative de TOUTES les
+ *  créatures » : dérivés de la DONNÉE (`traits.json`, drapeau `standard`), pas d'une liste en dur. */
+const STANDARD_OPTIONALS = traits.filter((t) => t.standard).map((t) => t.label);
 
 /** Aperçu lecture seule du profil du bestiaire : ligne de caractéristiques (« – » = inexistante,
  *  Schéma des Profils LDB 76) + traits fixes. */

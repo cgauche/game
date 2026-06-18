@@ -13,9 +13,6 @@
 import { names as POOLS, type NamePool } from '../data';
 import type { RNG } from './dice';
 
-/** Suffixes de patronyme nain (LDB 05 l.622) — par sexe du PERSONNAGE. */
-export const NAIN_SUFFIXES = { M: ['sson', 'snev'], F: ['sdottir', 'sniz'] } as const;
-
 /** Pool de la banque ← libellé d'espèce du jeu (species.json, variantes régionales incluses). */
 function poolOf(speciesLabel: string): NamePool | null {
   const s = speciesLabel.toLowerCase();
@@ -36,10 +33,11 @@ export function generateName(speciesLabel: string, sex: 'M' | 'F', rng: RNG): st
   const pool = poolOf(speciesLabel);
   if (!pool) return null;
   const first = pick(sex === 'F' ? pool.femaleFirstNames : pool.maleFirstNames, rng);
-  if (!pool.lastNames.length) {
-    // Nain : patronyme « parent + suffixe sexué » (LDB 05 l.622). Parent mono-mot (lisibilité).
+  const suffixes = pool.lastNameSuffixes?.[sex];
+  if (!pool.lastNames.length && suffixes?.length) {
+    // Nain : patronyme « parent + suffixe sexué » (LDB 05 l.622, donnée). Parent mono-mot (lisibilité).
     const parents = [...pool.maleFirstNames, ...pool.femaleFirstNames].filter((p) => !p.includes(' '));
-    return `${first} ${pick(parents, rng)}${pick([...NAIN_SUFFIXES[sex]], rng)}`;
+    return `${first} ${pick(parents, rng)}${pick(suffixes, rng)}`;
   }
   return `${first} ${pick(pool.lastNames, rng)}`;
 }

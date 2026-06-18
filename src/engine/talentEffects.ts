@@ -31,9 +31,9 @@ import { findTalent, findTalentById, blessingsOf, refLabel } from '../data';
 import { splitLabel, concreteLabel } from './careerSlots';
 import type { PassiveMod } from './ops';
 
-/** `addCharacteristic` d'un talent (libellé long des données), sinon null. */
-function addCharOf(talentLabel: string): string | null {
-  return findTalent(splitLabel(talentLabel).name)?.addCharacteristic ?? null;
+/** `addCharacteristic` d'un talent par son `id` STABLE (libellé long des données), sinon null. */
+function addCharById(talentId: string): string | null {
+  return findTalentById(talentId)?.addCharacteristic ?? null;
 }
 
 /** Somme des `times` des talents du héros dont addCharacteristic === attr. */
@@ -41,27 +41,33 @@ function timesWithAddChar(hero: Combatant, attr: string): number {
   return hero.talents.reduce((a, t) => a + ((findTalentById(t.talentId)?.addCharacteristic ?? null) === attr ? t.times : 0), 0);
 }
 
-/** Caractéristique « +5 de départ » conférée par un talent (clé courte), sinon null. */
-export function talentCharBonus(talentLabel: string): CharKey | null {
-  const attr = addCharOf(talentLabel);
+/** Caractéristique « +5 de départ » conférée par un talent (clé courte), sinon null, par `id`. */
+export function talentCharBonusById(talentId: string): CharKey | null {
+  const attr = addCharById(talentId);
   return attr ? CHAR_BY_LABEL[attr] ?? null : null;
 }
 
+/** Idem par LIBELLÉ — bord UI (créateur) / tests ; résout l'id puis délègue. */
+export function talentCharBonus(talentLabel: string): CharKey | null {
+  const id = findTalent(splitLabel(talentLabel).name)?.id;
+  return id ? talentCharBonusById(id) : null;
+}
+
 /**
- * Applique l'effet d'acquisition d'un Talent (création OU achat PX) — mute le héros.
+ * Applique l'effet d'acquisition d'un Talent (création OU achat PX) — mute le héros. Référence
+ * STRUCTURÉE : `talentId` STABLE + `spec` concret (cult de « Béni » : « Sigmar »…).
  * +5 Caractéristique de départ (PAS une Augmentation → charAdvances intacts) ; Mouvement : +1.
  * Les effets dérivés (Blessures, Chance, Détermination) sont des helpers recalculés par
  * l'appelant (heroMaxWounds / fortuneMax / resolveMax).
  */
-export function applyTalentAcquisition(hero: Combatant, talentLabel: string): void {
-  const key = talentCharBonus(talentLabel);
+export function applyTalentAcquisition(hero: Combatant, talentId: string, spec?: string): void {
+  const key = talentCharBonusById(talentId);
   if (key) hero.characteristics[key] += 5;
-  if (addCharOf(talentLabel) === 'Mouvement') hero.movement += 1;
+  if (addCharById(talentId) === 'Mouvement') hero.movement += 1;
   // Béni (Culte) — LDB 10/41 : « reçoit les SIX Bénédictions de son culte » → octroi AUTOMATIQUE
   // à l'acquisition (création + achat PX), pas un achat à 0 PX par clic. Un « Béni » au culte non
   // résolu (« Au choix ») n'octroie rien. Le signal vient du REGISTRE (grantsCultBlessings), plus de name-match.
-  const { name, spec } = splitLabel(talentLabel);
-  if (findTalent(name)?.combat?.grantsCultBlessings && spec && !/au choix/i.test(spec)) {
+  if (findTalentById(talentId)?.combat?.grantsCultBlessings && spec && !/au choix/i.test(spec)) {
     const six = blessingsOf(spec).filter((b) => !(hero.spells ?? []).includes(b));
     if (six.length) hero.spells = [...(hero.spells ?? []), ...six];
   }

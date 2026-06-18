@@ -27,7 +27,14 @@ function altCharKey(c: Combatant, low: string, ck: CharKey): CharKey {
   return ck;
 }
 
-/** Caractéristique associée à une compétence (par son label). */
+/** Caractéristique associée à une compétence par son `id` STABLE (la `SkillData.characteristic`
+ *  est un libellé — « Agilité »… — converti en `CharKey` via `CHAR_BY_LABEL`). */
+export function skillCharKeyById(skillId: string): CharKey | undefined {
+  const d = findSkillById(skillId);
+  return d ? CHAR_BY_LABEL[d.characteristic] : undefined;
+}
+
+/** Caractéristique associée à une compétence (par son label) — bord UI / lookup hors instance. */
 export function skillCharKey(skillLabel: string): CharKey | undefined {
   const base = skillLabel.replace(/\s*\([^)]*\)\s*$/, '').trim(); // retire la spécialisation
   const d = findSkill(base);
@@ -40,10 +47,11 @@ export function skillCharKey(skillLabel: string): CharKey | undefined {
  *  d'Encombrement sur l'Agilité (LDB 61), port d'armure (LDB 63) et objet Laid sur la Sociabilité (LDB 60). */
 export function testValue(c: Combatant, skill?: string, characteristic?: CharKey): number {
   if (!skill && !characteristic) return 0;
-  let ck = characteristic ?? skillCharKey(skill!) ?? 'Dex';
   const low = skill?.toLowerCase();
-  if (low && !characteristic) ck = altCharKey(c, low, ck); // carac alternative (Métier/Intimidation, règle optionnelle)
   const sk = low ? c.skills.find((s) => { const n = (findSkillById(s.skillId)?.label ?? s.skillId).toLowerCase(); return low === n || low.startsWith(n); }) : undefined;
+  // Caractéristique : explicite > id de la SkillInstance possédée (par id, RAW) > libellé (repli hors instance) > Dex.
+  let ck = characteristic ?? (sk ? skillCharKeyById(sk.skillId) : undefined) ?? (skill ? skillCharKey(skill) : undefined) ?? 'Dex';
+  if (low && !characteristic) ck = altCharKey(c, low, ck); // carac alternative (Métier/Intimidation, règle optionnelle)
   const base = effectiveChar(c, ck);
   const states = testStatePenalty(c, skill);
   const enc = ck === 'Ag' ? agilityTestPenalty(c) : 0; // charge : couche d'ÉTAT orthogonale (≠ passif d'élément)

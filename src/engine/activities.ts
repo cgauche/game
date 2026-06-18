@@ -132,6 +132,8 @@ export function tutorCostRange(talentXpCost: number): { minBrass: number; maxBra
 }
 
 export interface LearnOption {
+  /** `id` STABLE du Talent — clé de `learnFails` et argument de `interludeLearn` (réf structurée). */
+  id: string;
   label: string;
   /** Coût PX de la PROCHAINE acquisition (talentCost × fois déjà prises). */
   xpCost: number;
@@ -156,7 +158,7 @@ export function learnableTalents(hero: Combatant): LearnOption[] {
     .map((t) => {
       const xpCost = talentCost(hero.talents.find((k) => k.talentId === t.id)?.times ?? 0);
       const { minBrass, maxBrass } = tutorCostRange(xpCost);
-      return { label: t.label, xpCost, tutorMinBrass: minBrass, tutorMaxBrass: maxBrass };
+      return { id: t.id, label: t.label, xpCost, tutorMinBrass: minBrass, tutorMaxBrass: maxBrass };
     })
     .sort((a, b) => a.label.localeCompare(b.label));
 }

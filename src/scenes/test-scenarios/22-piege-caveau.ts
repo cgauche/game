@@ -32,7 +32,8 @@ for (let y = 1; y < H - 1; y++) if (y !== 5) set(10, y, 'mur'); // cloison du tr
 const HERSE_WHEN: Condition = {
   kind: 'all',
   of: [
-    { kind: 'any', of: [{ kind: 'hasItem', trapping: 'Clé en fer' }, { kind: 'flag', expr: 'levier_tire' }] },
+    // « Clé en fer » est un objet CUSTOM (giveTrapping custom, sans id de catalogue) → match par nom (repli).
+    { kind: 'any', of: [{ kind: 'hasItem', trappingId: 'Clé en fer' }, { kind: 'flag', expr: 'levier_tire' }] },
     { kind: 'not', of: { kind: 'flag', expr: 'alarme' } },
   ],
 };

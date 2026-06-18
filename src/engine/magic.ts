@@ -35,9 +35,14 @@ export interface SpellLike {
   type: string;
   /** Domaine/Vent (« Feu », « Ombres »…) ou culte — null pour les sorts génériques. */
   subType?: string | null;
+  /** id STABLE du Domaine de magie (`DomainData.id`, ex. « feu ») — source RUNTIME des attributs de
+   *  Domaine (LDB 48), indépendante de la langue. Dérivé du `subType` à l'authoring. */
+  domainId?: string | null;
   cn: number | null;
   duration?: string;
   desc: string;
+  /** Prière (Béni/Invocation) plutôt qu'un Sort arcanique — porté par la DONNÉE (spells.json). */
+  isPrayer?: boolean;
 }
 
 /** Le personnage possède-t-il le Talent nommé ? (Diction instinctive, Harmonisation aethyrique…) */
@@ -56,11 +61,9 @@ export interface CastInfo {
   requireNI: boolean;
 }
 
-const PRAYER_TYPES = ['Béni', 'Invocation'];
-
-/** Détermine la branche (et donc la Compétence) selon le type du sort. */
+/** Détermine la branche (et donc la Compétence) selon le sort : Prière (`isPrayer`, donnée) vs Sort. */
 export function castInfo(spell: SpellLike): CastInfo {
-  if (PRAYER_TYPES.includes(spell.type)) {
+  if (spell.isPrayer) {
     return { skill: 'Prière', requireNI: false };
   }
   return { skill: 'Langue', spec: 'Magick', requireNI: true };
@@ -68,7 +71,7 @@ export function castInfo(spell: SpellLike): CastInfo {
 
 /** Vrai pour les Sorts d'Arcane/Domaine pouvant être alimentés par Focalisation. */
 export function isArcaneSpell(spell: SpellLike): boolean {
-  return !PRAYER_TYPES.includes(spell.type) && spell.type !== 'Magie mineure';
+  return !spell.isPrayer && spell.type !== 'Magie mineure';
 }
 
 /** La pénalité `p` vise-t-elle la compétence de magie `skill` ? */
@@ -445,7 +448,7 @@ export interface CounterspellOutcome {
 /** Seul un SORT se dissipe (LDB 46 l.201 : « Si un Sort vous cible ») — pas une Prière
  *  (Bénédictions/Miracles relèvent de la Colère des dieux, LDB 40). */
 export function isDispellableSpell(spell: SpellLike): boolean {
-  return !PRAYER_TYPES.includes(spell.type);
+  return !spell.isPrayer;
 }
 
 /**

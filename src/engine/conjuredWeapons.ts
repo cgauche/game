@@ -8,7 +8,7 @@
  */
 import { Combatant, ItemInstance } from './types';
 import { recomputeLoadout, itemFromTrappingById, ensureDefaultLoadout, newLoadoutId } from './items';
-import { trappings, weaponGroupLabel } from '../data';
+import { trappings, weaponGroupIdByLabel } from '../data';
 
 type ConjuredSet = NonNullable<NonNullable<Combatant['activeEffects']>[number]['conjuredSet']>;
 
@@ -75,10 +75,10 @@ function isConjurableWeapon(it: { name: string; qualities?: string[] }): boolean
  *  (LDB 47) → TOUTES les armes réelles des Spécialisations de Corps à corps connues (le lanceur
  *  CHOISIT son arme), les Spé les mieux entraînées d'abord. Aucune Spé → l'arme de base par défaut. */
 export function conjureFormOptions(caster: Pick<Combatant, 'skills'>): ConjureForm[] {
-  const groupAdv = new Map<string, number>(); // groupe (minuscule) → meilleures avances connues
+  const groupAdv = new Map<string, number>(); // id de Groupe → meilleures avances connues
   for (const s of caster.skills ?? []) {
     if (s.skillId === 'corps-a-corps' && s.spec) {
-      const g = s.spec.trim().toLowerCase();
+      const g = weaponGroupIdByLabel(s.spec.trim()) ?? s.spec.trim().toLowerCase(); // Spé (libellé authoré) → id de Groupe stable
       groupAdv.set(g, Math.max(groupAdv.get(g) ?? 0, s.advances ?? 0));
     }
   }
@@ -87,8 +87,8 @@ export function conjureFormOptions(caster: Pick<Combatant, 'skills'>): ConjureFo
   for (const t of trappings) {
     const it = itemFromTrappingById(t.id);
     if (it?.kind !== 'melee' || !it.subType || !isConjurableWeapon(it)) continue;
-    // groupAdv est keyé par Spé (libellé minuscule, choisi par le joueur) → résoudre l'id de Groupe en libellé.
-    const adv = groupAdv.get(weaponGroupLabel(it.subType).toLowerCase());
+    // groupAdv est keyé par id de Groupe ; it.subType EST l'id de Groupe de l'arme → match direct.
+    const adv = groupAdv.get(it.subType);
     if (adv == null) continue;
     out.push({ weapon: t.id, group: it.subType, adv });
   }

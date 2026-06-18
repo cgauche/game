@@ -5,7 +5,7 @@
  * Refacto pure — comportement préservé.
  */
 import type { GameState } from './store';
-import { Combatant, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from '../engine/types';
+import { Combatant, CharKey, CHAR_LABELS } from '../engine/types';
 import { recomputeLoadout, loadoutCreate, loadoutRename, loadoutDelete, loadoutSetActive, loadoutSetSlot, equipConflicts, ensureWeaponSet, WEAPON_SET_NAMES } from '../engine/items';
 import {
   buyCharAdvance as engineBuyCharAdvance,
@@ -27,12 +27,13 @@ import {
   splitLabel,
 } from '../engine/careerSlots';
 import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSkillAdditions } from '../engine/talentEffects';
+import { skillCharacteristicById } from '../engine/character';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { castingKindOf } from '../engine/combatFeatures/dispatch';
 import { itemUse, applyItemUse } from '../engine/consumables';
 import { add as moneyAdd, Money, formatMoney } from '../engine/money';
 import { spellCost } from '../engine/grimoire';
-import { levelsForCareer, findSkill, findCareerById, findSpell as findSpellData, findSpellById } from '../data/index';
+import { levelsForCareer, findSkill, findTalent, findCareerById, findSpell as findSpellData, findSpellById } from '../data/index';
 import { slugId } from '../data/slug';
 import { seatSlotsRemaining } from './netOwnership';
 import { bus, EVT } from './bus';
@@ -253,7 +254,7 @@ export function buySkillAdvance(get: Get, set: Set, heroId: string, skillName: s
           return h;
         }
         // Acquérir la Compétence de carrière à advances 0, puis l'augmenter (l'Augmentation est payée).
-        const characteristic = CHAR_BY_LABEL[findSkill(skillName)?.characteristic ?? ''] ?? 'Int';
+        const characteristic = skillCharacteristicById(skillId); // par id (≠ 2e lookup par libellé)
         clone.skills.push({ skillId, spec, characteristic, advances: 0 });
       }
       const discount = added && status != null ? 5 : 0;
@@ -335,13 +336,14 @@ export function buyTalent(get: Get, set: Set, heroId: string, talentName: string
         if (slot) designateSlot(clone, ctx.career, slot, talentName, [...ctx.sSlots, ...ctx.tSlots]);
       }
       // Effets d'acquisition (+5 Caractéristique de départ, Véloce) + attributs dérivés.
-      applyTalentAcquisition(clone, talentName);
+      const talentId = findTalent(name)?.id ?? slugId(name);
+      applyTalentAcquisition(clone, talentId, spec);
       recomputeWounds(clone); // Dur à cuire / Très résistant (BE)
       clone.fortune = (clone.fortune ?? 0) + (fortuneMax(clone) - fortuneBefore); // Chanceux
       clone.resolve = (clone.resolve ?? 0) + (resolveMax(clone) - resolveBefore); // Obstiné
       msg = `${clone.name} : Talent ${talentName} (−${r.cost} PX).`;
       // Magie mineure (LDB 10 l.587) : BFM sorts inclus au Talent — à choisir (0 PX, Avancement).
-      if (castingKindOf(talentName) === 'mineure') {
+      if (castingKindOf(talentId) === 'mineure') {
         const q = bonus(effectiveChar(clone, 'FM'));
         if (q > 0) msg += ` ${q} sorts de Magie mineure inclus — à mémoriser (Avancement).`;
       }
@@ -391,21 +393,22 @@ export function buySpell(get: Get, set: Set, heroId: string, label: string): { o
 
 export function trainProsthesis(get: Get, set: Set, heroId: string, uid: string): void {
   // Rachat PX d'une prothèse (LDB 73) : Fausse jambe → réapprendre l'Esquive (200 PX) ; Crochet → racheter
-  // la pénalité « deux mains » entière (400 PX) pour manier de nouveau les armes à deux mains.
-  const COSTS: Record<string, number> = { 'Fausse jambe': 200, Crochet: 400 };
+  // la pénalité « deux mains » entière (400 PX) pour manier de nouveau les armes à deux mains. Keyé par
+  // `trappingId` STABLE (≠ libellé).
+  const COSTS: Record<string, number> = { 'fausse-jambe': 200, crochet: 400 };
   let msg = '';
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
       const clone: Combatant = JSON.parse(JSON.stringify(h));
       const it = (clone.items ?? []).find((i) => i.uid === uid);
-      const cost = it ? COSTS[it.name] : undefined;
+      const cost = it?.trappingId ? COSTS[it.trappingId] : undefined;
       if (!it || cost == null || !it.equipped) { msg = `${clone.name} : prothèse non portée / non entraînable.`; return h; }
       if (it.prosthesisTrained) { msg = `${clone.name} : ${it.name} déjà entraînée.`; return h; }
       if ((clone.xp ?? 0) < cost) { msg = `${clone.name} : PX insuffisants (${cost}).`; return h; }
       clone.xp = (clone.xp ?? 0) - cost;
       it.prosthesisTrained = true;
-      msg = it.name === 'Crochet'
+      msg = it.trappingId === 'crochet'
         ? `${clone.name} maîtrise son crochet : armes à deux mains de nouveau possibles (−${cost} PX).`
         : `${clone.name} réapprend l'Esquive avec sa fausse jambe (−${cost} PX).`;
       return clone;

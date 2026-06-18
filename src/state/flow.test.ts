@@ -38,13 +38,15 @@ describe('evalCondition — algèbre close (flags/time/all/any/not)', () => {
 
 describe('evalCondition — état VIVANT du groupe (hasItem / money / partyDead)', () => {
   const base = { flags: {}, gameTime: 0 };
-  it('hasItem : compte les exemplaires de l’objet dans le groupe', () => {
-    const party = [{ items: [{ name: 'Clé en fer' }, { name: 'Dague' }] }, { items: [{ name: 'Clé en fer' }] }];
-    expect(evalCondition({ kind: 'hasItem', trapping: 'Clé en fer' }, { ...base, party })).toBe(true);
-    expect(evalCondition({ kind: 'hasItem', trapping: 'Clé en fer', count: 2 }, { ...base, party })).toBe(true);
-    expect(evalCondition({ kind: 'hasItem', trapping: 'Clé en fer', count: 3 }, { ...base, party })).toBe(false);
-    expect(evalCondition({ kind: 'hasItem', trapping: 'Amulette' }, { ...base, party })).toBe(false);
-    expect(evalCondition({ kind: 'hasItem', trapping: 'Clé en fer' }, base)).toBe(false); // pas de groupe → false
+  it('hasItem : compte les exemplaires de l’objet dans le groupe (id catalogue + repli nom custom)', () => {
+    // Objet catalogué → match par trappingId stable ; objet CUSTOM (sans trappingId) → repli sur le nom.
+    const party = [{ items: [{ name: 'Corde', trappingId: 'corde' }, { name: 'Clé en fer' }] }, { items: [{ name: 'Clé en fer' }] }];
+    expect(evalCondition({ kind: 'hasItem', trappingId: 'corde' }, { ...base, party })).toBe(true); // par id de catalogue
+    expect(evalCondition({ kind: 'hasItem', trappingId: 'Clé en fer' }, { ...base, party })).toBe(true); // custom → repli nom
+    expect(evalCondition({ kind: 'hasItem', trappingId: 'Clé en fer', count: 2 }, { ...base, party })).toBe(true);
+    expect(evalCondition({ kind: 'hasItem', trappingId: 'Clé en fer', count: 3 }, { ...base, party })).toBe(false);
+    expect(evalCondition({ kind: 'hasItem', trappingId: 'Amulette' }, { ...base, party })).toBe(false);
+    expect(evalCondition({ kind: 'hasItem', trappingId: 'Clé en fer' }, base)).toBe(false); // pas de groupe → false
   });
   it('money : bourse comparée en sous de bronze (1 CO = 240 sb, 1 pa = 12 sb)', () => {
     const ctx = { ...base, money: { gold: 1, silver: 2, brass: 0 } }; // 264 sb

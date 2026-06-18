@@ -2,19 +2,24 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { TRAITS } from './registry';
-import { parseTrait } from './dispatch';
+import { parseTrait, EXTRA_TRAIT_LABELS } from './dispatch';
 import { slugId } from '../../data/slug';
 
 /**
- * Parité des Traits de créature (LDB 85) — garde-fou anti-empilement, sur le modèle de
- * `qualities/dispatch.test.ts` : CHAQUE trait de `traits.json` est soit une def du registre,
- * soit couvert AILLEURS (creatureAttacks/psychology/spawn — listé avec sa raison), soit
- * journal/MJ en conscience. Toute nouvelle donnée non couverte fait échouer ce test.
+ * Parité des Traits de créature (LDB 85). Le registre `TRAITS` est désormais DÉRIVÉ 1:1 de la donnée
+ * (`traits.json`) — il n'y a plus de `defs/` mécaniques. Ce garde-fou vérifie donc :
+ *  1. la DÉRIVATION est totale : chaque trait de `traits.json` est présent dans `TRAITS` (par id) ;
+ *  2. la mécanique de CHAQUE trait est portée par un sous-système identifié — soit `dispatch`
+ *     (capabilities/passive lus par les helpers), soit un AUTRE sous-système (creatureAttacks /
+ *     psychology / disease / corruption), soit journal/MJ en conscience. Les maps ci-dessous
+ *     DOCUMENTENT cette propriété (qui porte quoi) ; une nouvelle donnée non listée fait échouer (2).
+ *  3. les `EXTRA_TRAIT_LABELS` (libellés canonicalisés HORS donnée pour fiabiliser l'aval) résolvent
+ *     bien via le parseur.
  */
 
-// Couverts par un AUTRE sous-système (pas de def — la raison est documentée ici).
+// Traits dont la mécanique vit AILLEURS que dans les helpers de `dispatch` (la raison est documentée).
 const COUVERT_AILLEURS = new Map<string, string>([
-  // Attaques naturelles et armement — engine/creatureAttacks.ts + spawn.weaponsFromTraits
+  // Attaques naturelles et armement — engine/creatureAttacks.ts + spawn.weaponsFromTraits (grantsManeuvers)
   ['À distance', 'arme dérivée au spawn (weaponsFromTraits)'],
   ['Arme', 'arme dérivée au spawn (weaponsFromTraits)'],
   ['Attaque caudale', 'attaque gratuite (creatureAttacks.ts)'],
@@ -31,8 +36,6 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Constricteur', 'Empêtré sur touche (combatFlow.applyFreeAttackEffects)'],
   ['Vampirique', 'drain de PB sur Morsure (combatFlow.applyFreeAttackEffects)'],
   ['Se cabrer', 'couvert par le Piétinement existant (LDB 85 — trampleTarget)'],
-  // 'Armure', 'Taille' et 'Nuée' sont désormais des DEFS du registre (Armure/Taille → Indice/arg lus
-  // par armourFromTraits/sizeFromTraits ; Nuée → flag `swarm` lu par isSwarm) → couverture unique.
   // Psychologie — engine/psychology.ts (parsePsychTraits)
   ['Peur', 'causesPeur (parsePsychTraits)'],
   ['Terreur', 'causesTerreur (parsePsychTraits)'],
@@ -68,26 +71,56 @@ const JOURNAL_MJ = new Map<string, string>([
   ['Feu de Tzeentch', 'aura de feu entre Horreurs du même type — pas de système d’aura inter-créatures (MJ)'],
 ]);
 
-describe('parité — tout Trait de traits.json est couvert (def, ailleurs, ou journal en conscience)', () => {
-  it('aucun trait de la donnée ne tombe dans un trou', () => {
-    const path = fileURLToPath(new URL('../../data/traits.json', import.meta.url));
-    const all = JSON.parse(readFileSync(path, 'utf8')) as { label: string }[];
-    const missing = all
-      .map((t) => t.label)
-      .filter((l) => !TRAITS[slugId(l)] && !COUVERT_AILLEURS.has(l) && !JOURNAL_MJ.has(l));
+// Traits dont la mécanique est portée par les helpers de `dispatch` (capabilities/passive/effects/
+// grantsManeuvers de la donnée). Tout trait de traits.json qui n'est NI ici NI dans les maps ci-dessus
+// échoue le test de couverture — on n'oublie aucun trait dans un trou.
+const DISPATCH = new Set<string>([
+  'À sang-froid', 'Affamé', 'Armure', 'Belliqueux', 'Bestial', 'Bond', 'Brutal', 'Champion', 'Coriace',
+  'Corruption mentale', 'Démoniaque', 'Élite', 'Endurant', 'Éthéré', 'Fabriqué', 'Foulée', 'Furtif',
+  'Grand', 'Immunité', 'Infravision', 'Insensible à la douleur', 'Instable', 'Intelligent', 'Magique',
+  'Meneur', 'Mutation', 'Nerveux', 'Nuée', 'Parasité', 'Perturbant', 'Protection', 'Rage', 'Rapide',
+  'Régénération', 'Résistance à la Magie', 'Rusé', 'Sang corrosif', 'Stupide', 'Taille', 'Territorial',
+  'Toile', 'Vision nocturne', 'Vol',
+]);
+
+function allTraitLabels(): string[] {
+  const path = fileURLToPath(new URL('../../data/traits.json', import.meta.url));
+  return (JSON.parse(readFileSync(path, 'utf8')) as { label: string }[]).map((t) => t.label);
+}
+
+describe('parité — registre des Traits dérivé de traits.json', () => {
+  it('la dérivation est totale : chaque trait de traits.json est dans TRAITS (par id)', () => {
+    const missing = allTraitLabels().filter((l) => !TRAITS[slugId(l)]);
     expect(missing).toEqual([]);
   });
-  it('pas de double-couverture def + allowlist (une seule source de vérité par trait)', () => {
-    const dupes = [...COUVERT_AILLEURS.keys(), ...JOURNAL_MJ.keys()].filter((l) => TRAITS[slugId(l)]);
+
+  it('chaque trait de traits.json est couvert par un sous-système identifié (dispatch / ailleurs / journal)', () => {
+    const uncovered = allTraitLabels().filter(
+      (l) => !DISPATCH.has(l) && !COUVERT_AILLEURS.has(l) && !JOURNAL_MJ.has(l),
+    );
+    expect(uncovered).toEqual([]);
+  });
+
+  it('une seule source de couverture par trait (pas de double-classement)', () => {
+    const seen = new Map<string, number>();
+    for (const l of [...DISPATCH, ...COUVERT_AILLEURS.keys(), ...JOURNAL_MJ.keys()]) {
+      seen.set(l, (seen.get(l) ?? 0) + 1);
+    }
+    const dupes = [...seen.entries()].filter(([, n]) => n > 1).map(([l]) => l);
     expect(dupes).toEqual([]);
   });
+
+  it('chaque EXTRA_TRAIT_LABEL (libellé canonicalisé hors donnée) résout via le parseur', () => {
+    const unresolved = EXTRA_TRAIT_LABELS.filter((l) => !parseTrait(l));
+    expect(unresolved).toEqual([]);
+  });
+
   it('parseTrait normalise Indice/argument/casse', () => {
     expect(parseTrait('Démoniaque 8+')).toEqual({ id: 'demoniaque', indice: 8, arg: undefined });
     expect(parseTrait('Toile 40')).toEqual({ id: 'toile', indice: 40, arg: undefined });
     expect(parseTrait('Immunité (Poison)')).toEqual({ id: 'immunite', indice: undefined, arg: 'Poison' });
     expect(parseTrait('À Sang-froid')?.id).toBe('a-sang-froid'); // casse de la donnée ≠ id canonique
     expect(parseTrait('Vol 100')).toEqual({ id: 'vol', indice: 100, arg: undefined });
-    // Defs marqueurs migrés du parsing dispersé vers le registre (Nuée/Taille/Armure) :
     expect(parseTrait('Nuée')?.id).toBe('nuee');
     expect(parseTrait('Taille (Énorme)')).toEqual({ id: 'taille', indice: undefined, arg: 'Énorme' });
     expect(parseTrait('Armure 4')).toEqual({ id: 'armure', indice: 4, arg: undefined });

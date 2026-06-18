@@ -8,6 +8,12 @@ import type { Condition, ActorRef, ActorField, CompareOp } from '../../state/flo
 import type { TemporalCondition } from '../../state/scene';
 import { HIT_LOCATION_LABELS, type HitLocation } from '../../engine/types';
 import type { Camp, Relation } from '../../engine/relations';
+import { trappings, findTrappingById } from '../../data';
+
+/** Libellé d'affichage d'un `trappingId` (objet catalogué) — repli sur l'id brut (objet CUSTOM par nom). */
+const trappingLabelOrId = (id?: string): string => (id ? findTrappingById(id)?.label ?? id : '');
+/** Map LIBELLÉ (minuscule) → id de catalogue, pour résoudre la saisie de l'éditeur de Condition `hasItem`. */
+const TRAPPING_ID_BY_LABEL = new Map(trappings.map((t) => [t.label.toLowerCase(), t.id]));
 
 /** Libellés des valeurs de la Condition `relation` : RELATIF au lanceur (allié/adversaire) + camp ABSOLU. */
 const REL_LABEL: Record<Relation | Camp, string> = {
@@ -58,7 +64,7 @@ export function condSummary(c: Condition | undefined): string {
     case 'always': return 'toujours';
     case 'flag': return c.expr || '(flag ?)';
     case 'time': return winSummary(c.window);
-    case 'hasItem': return `a « ${c.trapping || '?'} »${c.count && c.count > 1 ? ` ×${c.count}` : ''}`;
+    case 'hasItem': return `a « ${trappingLabelOrId(c.trappingId) || '?'} »${c.count && c.count > 1 ? ` ×${c.count}` : ''}`;
     case 'money': return `bourse ≥ ${moneyStr(c.atLeast)}`;
     case 'partyDead': return c.who === 'all' ? 'tout le groupe mort' : 'un héros mort';
     case 'compare': {
@@ -83,7 +89,7 @@ function recast(cond: Condition, kind: Condition['kind']): Condition {
     case 'always': return ALWAYS;
     case 'flag': return { kind: 'flag', expr: cond.kind === 'flag' ? cond.expr : '' };
     case 'time': return { kind: 'time', window: cond.kind === 'time' ? cond.window : {} };
-    case 'hasItem': return { kind: 'hasItem', trapping: cond.kind === 'hasItem' ? cond.trapping : '' };
+    case 'hasItem': return { kind: 'hasItem', trappingId: cond.kind === 'hasItem' ? cond.trappingId : '' };
     case 'money': return { kind: 'money', atLeast: cond.kind === 'money' ? cond.atLeast : { gold: 1 } };
     case 'partyDead': return { kind: 'partyDead', who: cond.kind === 'partyDead' ? cond.who : 'any' };
     case 'compare': return cond.kind === 'compare' ? cond : { kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '>=', value: 1 };
@@ -131,8 +137,16 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
       {cond.kind === 'time' && <TimeWindowFields window={cond.window} onChange={(window) => onChange({ kind: 'time', window })} />}
       {cond.kind === 'hasItem' && (
         <>
-          <input className="cond-flag" value={cond.trapping} placeholder="nom de l'objet (ex. Clé en fer)" onChange={(e) => onChange({ kind: 'hasItem', trapping: e.target.value, count: cond.count })} />
-          <label className="dr">×<input type="number" min={1} style={{ width: '3em' }} value={cond.count ?? 1} onChange={(e) => onChange({ kind: 'hasItem', trapping: cond.trapping, count: Math.max(1, Number(e.target.value) || 1) })} /></label>
+          <input
+            className="cond-flag" list="dl-cond-trapping"
+            // L'objet catalogué se choisit par LIBELLÉ (datalist) mais on stocke son `id` ; un nom hors
+            // catalogue (objet CUSTOM) est stocké tel quel → repli `it.name` côté runtime (evalCondition).
+            defaultValue={trappingLabelOrId(cond.trappingId)} key={cond.trappingId}
+            placeholder="objet (catalogue ou nom custom)"
+            onChange={(e) => { const v = e.target.value.trim(); onChange({ kind: 'hasItem', trappingId: TRAPPING_ID_BY_LABEL.get(v.toLowerCase()) ?? v, count: cond.count }); }}
+          />
+          <datalist id="dl-cond-trapping">{trappings.map((t) => <option key={t.id} value={t.label} />)}</datalist>
+          <label className="dr">×<input type="number" min={1} style={{ width: '3em' }} value={cond.count ?? 1} onChange={(e) => onChange({ kind: 'hasItem', trappingId: cond.trappingId, count: Math.max(1, Number(e.target.value) || 1) })} /></label>
         </>
       )}
       {cond.kind === 'money' && (

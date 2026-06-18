@@ -30,26 +30,33 @@ const SPECIES_RACIAL: { kw: string; group: string }[] = [
   { kw: 'ogre', group: 'Ogre' },
 ];
 
-function categoryFromFolder(folder: string): string | null {
+/** Catégorie de Groupe d'un folder bestiaire : le `group` ÉDITABLE de la créature l'emporte sur la
+ *  dérivation par table (overridable en donnée, cf. `CreatureData.group`). */
+function categoryFromFolder(folder: string, override?: string | null): string | null {
+  if (override) return override;
   const n = norm(folder);
   for (const r of FOLDER_RULES) if (n.includes(r.kw)) return r.group;
   return null;
 }
-function racialFromSpecies(species: string): string | null {
+/** Racial d'une espèce : le `group` ÉDITABLE de l'espèce l'emporte sur la dérivation par table
+ *  (overridable en donnée, cf. `SpeciesData.group`). */
+function racialFromSpecies(species: string, override?: string | null): string | null {
+  if (override) return override;
   const n = norm(species);
   for (const r of SPECIES_RACIAL) if (n.includes(r.kw)) return r.group;
   return null;
 }
 
 /** Groupes d'appartenance d'un combattant (mots-clés multiples) : catégorie(folder) ∪ racial(espèce)
- *  ∪ carrière ∪ extras manuels. Dédupliqué (clé normalisée), ordre stable. */
-export function groupsFor(src: { folder?: string | null; species?: string; careerId?: string; extras?: string[] }): string[] {
+ *  ∪ carrière ∪ extras manuels. Dédupliqué (clé normalisée), ordre stable. `group` = surcharge
+ *  ÉDITABLE en donnée (créature/espèce) ; les tables ci-dessus restent le DÉFAUT/fallback. */
+export function groupsFor(src: { folder?: string | null; species?: string; careerId?: string; extras?: string[]; group?: string | null }): string[] {
   const out: string[] = [];
   const push = (g?: string | null) => {
     if (g && !out.some((x) => norm(x) === norm(g))) out.push(g);
   };
-  if (src.folder) push(categoryFromFolder(src.folder));
-  if (src.species) push(racialFromSpecies(src.species));
+  if (src.folder) push(categoryFromFolder(src.folder, src.group));
+  if (src.species) push(racialFromSpecies(src.species, src.group));
   if (src.careerId) {
     const career = findCareerById(src.careerId);
     push(career?.label ?? src.careerId); // jeton de Groupe = libellé de carrière (matché par `groupMatch`, tolérant)

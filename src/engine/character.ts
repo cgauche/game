@@ -32,6 +32,7 @@ import {
   firstLevel,
   levelsForCareer,
   findSkill,
+  findSkillById,
   findTalent,
   talentConcrete,
   advancementLabel,
@@ -57,6 +58,13 @@ const SKILL_CHAR: Record<string, CharKey> = {
 /** Caractéristique d'une Compétence (skills.json) — LDB 09 : valeur de Test = Caractéristique + avances. */
 export function skillCharacteristic(name: string): CharKey {
   const data = findSkill(name);
+  if (data && SKILL_CHAR[data.characteristic]) return SKILL_CHAR[data.characteristic];
+  return 'Dex'; // repli prudent
+}
+
+/** Idem par `id` STABLE de la Compétence (réf structurée — pas de re-lookup par libellé). */
+export function skillCharacteristicById(id: string): CharKey {
+  const data = findSkillById(id);
   if (data && SKILL_CHAR[data.characteristic]) return SKILL_CHAR[data.characteristic];
   return 'Dex'; // repli prudent
 }
@@ -311,7 +319,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     const id = findSkill(name)?.id ?? slugId(name);
     const existing = skills.find((s) => s.skillId === id && (s.spec ?? '') === (spec ?? ''));
     if (existing) existing.advances += adv; // même (id, spec) = même Compétence (LDB 09 l.42)
-    else skills.push({ skillId: id, spec, characteristic: skillCharacteristic(name), advances: adv });
+    else skills.push({ skillId: id, spec, characteristic: skillCharacteristicById(id), advances: adv });
   };
   const advancedEntries: { raw: string; label: string }[] = [];
   for (const ref of level?.skills ?? []) {
@@ -356,7 +364,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     kind: 'hero',
     species: opts.speciesId,
     career: opts.careerId,
-    groups: groupsFor({ species: sp.label, careerId: opts.careerId }), // racial + carrière (Traits psy ciblés, LDB 21, P3)
+    groups: groupsFor({ species: sp.label, careerId: opts.careerId, group: sp.group }), // racial (label, ou surcharge `group`) + carrière (LDB 21, P3)
     size,
     characteristics: chars,
     wounds: { current: 0, max: 0, base: 0 }, // posé après les effets de talents (Dur à cuire)
@@ -383,7 +391,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
 
   // Effets d'acquisition des Talents (+5 Caractéristique de départ, Véloce) — une fois par
   // acquisition —, puis attributs dérivés (Blessures + Dur à cuire, Chance, Détermination).
-  for (const t of hero.talents) for (let i = 0; i < t.times; i++) applyTalentAcquisition(hero, talentConcrete(t));
+  for (const t of hero.talents) for (let i = 0; i < t.times; i++) applyTalentAcquisition(hero, t.talentId, t.spec);
   const wmax = heroMaxWounds(hero);
   hero.wounds = { current: wmax, max: wmax, base: wmax };
   hero.fortune = fortuneMax(hero);
