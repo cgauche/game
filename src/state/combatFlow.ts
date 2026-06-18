@@ -3388,8 +3388,7 @@ export function advanceTurn(get: Get, set: SetFn) {
       }
       // (L'attaque d'Arme libre de Frénésie est désormais un grant de DONNÉE plafonné par `freeAttacksThisTurn`,
       //  remis à zéro au passage de tour — plus de booléen `frenzyFreeUsed` à réinitialiser ici.)
-      for (const c of battle.combatants) if (c.ignoreCritMods) c.ignoreCritMods = false; // Détermination : « ignorer modifs de critique » expire au début du prochain Round (LDB 17 l.64)
-      for (const c of battle.combatants) if (c.psychImmuneRoundsLeft) c.psychImmuneRoundsLeft -= 1; // Détermination : l'immunité psy décompte 1 Round (LDB 17 l.62)
+      // (Décomptes de Détermination ignoreCritMods / psychImmuneRoundsLeft migrés en hooks roundBoundary 70/72.)
       brokenRecovery(get, tickLine); // récupération du Brisé en fin de Round (LDB 16 l.57-59)
       // Fin de séquence de franchissement de Round → hooks `roundBoundary` (state/combat/roundHooks) :
       // tickDeath(76)/suffocation(78)/zones(79)/clearPsychOf(79.3)/purge(79.5) migrés ISO-COMPORTEMENT

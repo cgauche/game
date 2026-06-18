@@ -44,6 +44,21 @@ registerCombatHook({
   },
 });
 
+// Détermination (LDB 17 l.62/64) : décomptes de fin de Round — RNG-free et indépendants des autres blocs
+// (flags de Détermination ≠ Brisé/morts), donc migrables sans réordonnancement observable.
+registerCombatHook({
+  id: 'determination-ignore-crit-expire', // « ignorer modifs de critique » expire au début du prochain Round
+  phase: 'roundBoundary',
+  order: 70,
+  run: ({ battle }) => { for (const c of battle.combatants) if (c.ignoreCritMods) c.ignoreCritMods = false; },
+});
+registerCombatHook({
+  id: 'determination-psych-immune-tick', // l'immunité psychologique décompte 1 Round
+  phase: 'roundBoundary',
+  order: 72,
+  run: ({ battle }) => { for (const c of battle.combatants) if (c.psychImmuneRoundsLeft) c.psychImmuneRoundsLeft -= 1; },
+});
+
 // --- Migration ISO-COMPORTEMENT des 5 derniers blocs du franchissement de Round (anciennement inline
 //     dans advanceTurn, juste avant le dispatch → ordre EXACT préservé par les `order` 76→79.5). Le corps
 //     est copié tel quel ; `ctx.sink` remplace la `tickLine` locale. Pas de hook suspensif (aucun pending). ---
