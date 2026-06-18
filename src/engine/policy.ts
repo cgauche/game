@@ -237,6 +237,16 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'En mêlée, une arme plus longue impose −10 à l’adversaire pour vous toucher (selon l’Allonge des armes). Désactivé par défaut.',
   },
   {
+    id: 'combat-init-method',
+    label: 'Méthode d’Initiative',
+    ref: 'LDB 13 l.39',
+    group: 'Combat',
+    kind: 'mode',
+    default: 'roll-i',
+    options: ['roll-i', 'fixed-i', 'roll-bi'],
+    hint: 'roll-i = 1d10 + Initiative (défaut) ; fixed-i = Initiative fixe, sans dé (ordre stable d’un Round à l’autre) ; roll-bi = 1d10 + Bonus d’Initiative + Bonus d’Agilité.',
+  },
+  {
     id: 'combat-cadence',
     label: 'Cadence de combat',
     ref: 'maison',

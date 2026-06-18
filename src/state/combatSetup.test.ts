@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { rollInitiative } from './combatSetup';
 import { makeRNG } from '../engine/dice';
+import { setRule, resetRule } from '../engine/policy';
 import type { Combatant } from '../engine/types';
 
 describe('combatSetup — rollInitiative (LDB 13, seam init-method)', () => {
@@ -18,5 +19,26 @@ describe('combatSetup — rollInitiative (LDB 13, seam init-method)', () => {
     const probe = makeRNG(9);
     probe.int(1, 10); // avance d'un tirage
     expect(rng.int(1, 10)).toBe(probe.int(1, 10)); // le RNG est au même point → 1 seul tirage consommé
+  });
+});
+
+describe('rollInitiative — règle « méthode d’Initiative » (combat-init-method, LDB 13 l.39)', () => {
+  afterEach(() => resetRule('combat-init-method'));
+  const ci = () => ({ characteristics: { I: 45, Ag: 30 }, liveTraits: [], talents: [], activeEffects: [] }) as unknown as Combatant;
+
+  it('défaut (roll-i) : 1d10 + Initiative — inchangé', () => {
+    const d = makeRNG(3).int(1, 10);
+    expect(rollInitiative(ci(), makeRNG(3))).toBe(45 + d);
+  });
+  it('fixed-i : Initiative fixe, sans dé (ne consomme pas le RNG)', () => {
+    setRule('combat-init-method', 'fixed-i');
+    const rng = makeRNG(3);
+    expect(rollInitiative(ci(), rng)).toBe(45);
+    expect(rng.int(1, 10)).toBe(makeRNG(3).int(1, 10)); // RNG intact : aucun tirage consommé
+  });
+  it('roll-bi : 1d10 + Bonus d’Initiative (4) + Bonus d’Agilité (3)', () => {
+    setRule('combat-init-method', 'roll-bi');
+    const d = makeRNG(3).int(1, 10);
+    expect(rollInitiative(ci(), makeRNG(3))).toBe(d + 4 + 3);
   });
 });
