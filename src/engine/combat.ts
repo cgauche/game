@@ -173,6 +173,10 @@ export interface AttackResult {
   /** Arme avec laquelle le défenseur a PARÉ (mode parade uniquement) — sert aux Critiques du Test
    *  opposé (Piège-lame, LDB 62 l.292) et à la Maladresse défensive d'une arme Dangereuse. */
   parryWeapon?: Weapon;
+  /** Cible Inconsciente — règle optionnelle « mort-auto » (LDB 16 l.112) : en CORPS À CORPS, la cible
+   *  est tuée automatiquement. Le store applique la mise hors de combat MORTELLE par le chemin des morts
+   *  normales (finalizeHeroDeath → Destin possible). Absent/false = comportement « critique » (RAW). */
+  autoKill?: boolean;
   log: string;
 }
 
@@ -586,10 +590,21 @@ export function resolveMelee(
 ): AttackResult {
   const defenseMode = cannotDefend(defender) ? 'none' : opts.defense ?? 'parade';
   let atk = rollMeleeAttacker(attacker, defender, weapon, rng, opts.location, opts.env);
-  if (hasCondition(defender, 'inconscient')) atk = helplessTest(atk, 'melee'); // auto-réussite + critique (LDB 16 l.112)
-  if (defenseMode === 'none') return resolveMeleePassive(attacker, defender, weapon, atk, opts.location, opts.env, opts.dmgProxy);
-  const def = rollMeleeDefender(defender, defenseMode, rng, opts.dodgeMod, defender.weapons[0], weapon);
-  return finishMelee(attacker, defender, weapon, atk, def, defenseMode, opts.location, opts.env, opts.dodgeMod, opts.dmgProxy);
+  // Cible Inconsciente (LDB 16 l.112) : auto-réussite + Critique (RAW). Règle optionnelle « mort-auto » :
+  // en CORPS À CORPS la cible est tuée automatiquement → on marque `autoKill` (le store finalise la mort
+  // par le chemin normal, Destin possible). Le tir n'est PAS concerné (cf. resolveRanged).
+  const helpless = hasCondition(defender, 'inconscient');
+  if (helpless) atk = helplessTest(atk, 'melee');
+  const autoKill = helpless && rule('combat-helpless-mode') === 'mort-auto';
+  let res: AttackResult;
+  if (defenseMode === 'none') {
+    res = resolveMeleePassive(attacker, defender, weapon, atk, opts.location, opts.env, opts.dmgProxy);
+  } else {
+    const def = rollMeleeDefender(defender, defenseMode, rng, opts.dodgeMod, defender.weapons[0], weapon);
+    res = finishMelee(attacker, defender, weapon, atk, def, defenseMode, opts.location, opts.env, opts.dodgeMod, opts.dmgProxy);
+  }
+  if (autoKill && res.hit) res.autoKill = true;
+  return res;
 }
 
 /**

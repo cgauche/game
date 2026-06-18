@@ -143,6 +143,9 @@ import {
   applyZoneCrossings, isFlankOrRear, seesInDark, smokeOf,
 } from './combatGeometry';
 export * from './combatGeometry';
+// --- Garde de reprise unique (« une modale / une pause bloque l'IA ? ») extraite → combatGate.ts (baril) ---
+export * from './combatGate';
+import { combatAdvanceBlocked } from './combatGate';
 
 
 // ---------------------------------------------------------------------------
@@ -346,8 +349,10 @@ export function attackEnv(
       ? (battle.movementUsed > 0 || (mountMovement(battle, attacker) > 0 && !opts?.heldGround))
       : battle.movementUsed > 0;
     if (mobileShot) env.push({ label: 'Tir en bougeant', value: -10 });
-    // Tir dans la mêlée (LDB 14 l.134) : la cible est Engagée avec un allié du tireur.
-    const inMelee = (target.engagedWith ?? []).some((id) => {
+    // Tir dans la mêlée (LDB 14 l.134) : la cible est Engagée avec un allié du tireur. Règle optionnelle
+    // « Tir dans un corps à corps » (LDB 14 l.133) : si désactivée, pas de −20 NI d'artefact d'aperçu
+    // (`inMelee` reste false → pas de tir égaré non plus).
+    const inMelee = !!rule('combat-ranged-melee-penalty') && (target.engagedWith ?? []).some((id) => {
       const ally = battle.combatants.find((c) => c.id === id);
       return !!ally && ally.kind === attacker.kind;
     });
@@ -1114,6 +1119,32 @@ export function applyAttackResult(
       };
     }
   }
+  // Cible Inconsciente — règle optionnelle « mort-auto » (LDB 16 l.112) : en CORPS À CORPS la cible est
+  // tuée automatiquement. On applique la mort par le MÊME chemin que les morts normales (`finalizeHeroDeath`
+  // → un héros à Destin est suspendu via pendingFateSave, sinon `dead = true`), pas un early-return brutal.
+  // Le reste du flux d'attaque (États/Avantage/Critiques) est court-circuité : la cible est hors de combat.
+  if (res.hit && res.autoKill) {
+    const battle = get().battle!;
+    attacker.aiming = false;
+    if (weapon.type === 'melee') engage(attacker, target); // Engagé symétrique (LDB 13 l.174-175)
+    const currentBefore = target.wounds.current;
+    target.wounds.current = 0;
+    finalizeHeroDeath(get, set, target, 'hit', currentBefore); // Destin possible (héros) ; sinon mort directe
+    if (isOutOfAction(target)) {
+      clearEngagementOf(get().battle?.combatants ?? [], target.id);
+      clearPsychOf(get().battle?.combatants ?? [], target.id);
+    }
+    if (attacker.pos && target.pos) {
+      set((s: GameState) => ({ facing: { ...s.facing, [attacker.id]: facingToward(attacker.pos!, target.pos!), [target.id]: facingToward(target.pos!, attacker.pos!) } }));
+    }
+    bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: target.id, result: res, kind: 'melee', defense: 'none', weapon, parryWeapon: res.parryWeapon, creatureAttack: creatureAttackKind(weapon.name) });
+    const log = [...battle.log, ev('attack', `${attacker.name} achève ${target.name}, sans défense.`, attacker.id, target.id)];
+    if (isOutOfAction(target)) log.push(ev('death', `${target.name} est mis hors de combat !`, target.id));
+    set({ battle: { ...battle, acted: true, action: null, log } });
+    bus.emit(EVT.SCENE_DIRTY);
+    checkBattleOver(get, set);
+    return false; // application complète (mort-auto) — non suspendu côté cascade d'attaque
+  }
   // Déviation Critique (LDB 63 l.63-66) : un HÉROS subit un Coup Critique à une localisation où il
   // porte de la PA → on SUSPEND pour son choix Dévier/Subir (modale). AUCUN effet de bord ici ; la
   // résolution (étape 'deviation', resolveDeviation) rappelle cette fonction avec `deviated` défini (early-return sauté →
@@ -1121,7 +1152,9 @@ export function applyAttackResult(
   // pour résoudre instantanément (pas de modale imbriquée). Les sorts (applyCast) gèrent leurs Critiques
   // à part : ils n'atteignent jamais cette fonction, donc pas de garde « arme » nécessaire.
   const dloc = res.location ?? 'corps';
-  if (deviated === undefined && res.hit && res.woundsLost && res.critical && target.kind === 'hero') {
+  // Règle optionnelle « Déviation Critique » (LDB 63 l.63) : si désactivée, on N'OFFRE PAS le choix
+  // Dévier/Subir au héros → le Critique est subi directement (chemin normal ci-dessous).
+  if (rule('combat-critical-deflect') && deviated === undefined && res.hit && res.woundsLost && res.critical && target.kind === 'hero') {
     // Pré-tire le Coup Critique (graine figée) pour l'AFFICHER sur la modale de déviation — choix éclairé
     // Dévier/Subir, une seule modale. Aucune mutation de la cible ici ; « Subir » l'appliquera tel quel.
     const overkill = Math.max(0, res.woundsLost - target.wounds.current);
@@ -1150,7 +1183,9 @@ export function applyAttackResult(
     target.wounds.current = Math.max(0, currentBefore - res.woundsLost);
     const loc = res.location ?? 'corps';
     if (res.critical) breakBacleArmour(target, loc, critLog); // armure Bâclée brisée par le Critique (LDB 60 l.82)
-    const autoDeviate = res.critical && target.kind === 'enemy' && (target.armour[loc] ?? 0) > 0; // ennemi : dévie toujours (auto)
+    // Règle optionnelle « Déviation Critique » (LDB 63 l.63) : si désactivée, l'ennemi ne dévie plus
+    // automatiquement → il subit le Critique comme le héros sans déviation.
+    const autoDeviate = rule('combat-critical-deflect') && res.critical && target.kind === 'enemy' && (target.armour[loc] ?? 0) > 0; // ennemi : dévie toujours (auto)
     if (res.critical && (autoDeviate || deviated === true)) {
       deviateArmour(target, weapon, res, critLog); // Déviation (auto pour l'ennemi ; choix « Dévier » du héros, LDB 63 l.63-66)
     } else if (res.critical || overkill > 0) {
@@ -3222,8 +3257,7 @@ registerCascadeApplier('knockdown', (get, set, step) => {
 /** Reprend le tour de l'IA suspendu par la modale de défense (= ce qu'aurait fait
  *  attackThenAdvance juste après doAttack). No-op si le combat est terminé. */
 export function resumeEnemyTurn(get: Get, set: SetFn): void {
-  const b = get().battle;
-  if (!b || b.over || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingCascade || get().pendingReveals.length) return;
+  if (combatAdvanceBlocked(get())) return;
   setTimeout(() => advanceTurn(get, set), TEMPO.enemyAdvance);
 }
 
@@ -3231,8 +3265,10 @@ export function resumeEnemyTurn(get: Get, set: SetFn): void {
  *  combat) une fois qu'elle est CLOSE — appelée par `dismissReveal` (file vidée) et par la fin d'une
  *  séquence de combat (`cascadeNext`/`cascadeFinish`). Garde alignée sur celle de `resumeEnemyTurn`. */
 export function resumeSuspendedAI(get: Get, set: SetFn): void {
-  const { battle, pendingReveals, pendingCascade, pendingFateSave, pendingFumble } = get();
-  if (!battle || battle.over || pendingReveals.length || pendingCascade || pendingFateSave || pendingFumble) return;
+  const s = get();
+  // `resumeSuspendedAI` ne surveillait historiquement PAS `pendingCast` → `{ cast: false }` (iso A1).
+  if (combatAdvanceBlocked(s, { cast: false })) return;
+  const battle = s.battle!;
   const active = activeCombatant(battle);
   if (active && active.kind === 'enemy' && !isOutOfAction(active)) {
     // Ennemi ayant déjà agi (conséquence d'attaque) → fin de tour ; sinon début de tour (entretien) → IA.
@@ -3242,11 +3278,11 @@ export function resumeSuspendedAI(get: Get, set: SetFn): void {
 }
 
 export function advanceTurn(get: Get, set: SetFn) {
-  const battle = get().battle;
   // Pause de début de Round (PERSONNE n'est actif, turn -1) : un advanceTurn retardataire (timer
   // d'IA en vol) ne doit pas ré-incrémenter le tour SOUS la pause — confirmRoundStart le posera.
   if (get().pendingRoundStart) return;
-  if (!battle || battle.over || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingCascade || get().pendingReveals.length) return;
+  if (combatAdvanceBlocked(get())) return;
+  const battle = get().battle!; // non-null garanti par combatAdvanceBlocked ci-dessus
   // La Charge ne vaut que pour le tour où elle a lieu (Cornes LDB 85, Épuisante LDB 63 l.16-17) :
   // consommée au passage au combattant suivant (filet de sécurité, l'IA la consomme aussi en chemin).
   const prevActive = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
@@ -3456,8 +3492,8 @@ export function enterRoundStartPause(get: Get, set: SetFn): void {
 
 /** IA simple : si le combattant actif est un ennemi, il agit puis passe la main. */
 export function maybeRunEnemyTurn(get: Get, set: SetFn) {
-  const battle = get().battle;
-  if (!battle || battle.over || get().pendingRoundStart || get().pendingCast || get().pendingFateSave || get().pendingFumble || get().pendingCascade || get().pendingReveals.length) return;
+  if (combatAdvanceBlocked(get(), { roundStart: true })) return;
+  const battle = get().battle!;
   const active = activeCombatant(battle);
   if (!active || active.kind !== 'enemy' || isOutOfAction(active)) return;
   setTimeout(() => runEnemyAI(get, set, active.id), TEMPO.turnHandoff);

@@ -398,8 +398,9 @@ export interface GameState {
   interludeCraftRoll: (heroId: string) => void;
   interludeBank: (heroId: string, kind: 'invest' | 'stash', amountBrass: number, rate?: number) => void;
   interludeWithdraw: (index: number) => void;
-  /** Apprentissage particulier (Talent hors carrière, Test −20) ; Passer commande (Exotique). */
-  interludeLearn: (heroId: string, talent: string) => void;
+  /** Apprentissage particulier (Talent hors carrière, Test −20) — `talent` = `id` STABLE ;
+   *  Passer commande (Exotique). */
+  interludeLearn: (heroId: string, talentId: string) => void;
   interludeOrder: (heroId: string, trappingId: string) => void;
   /** Identifier un artefact magique (ADE2 ch.4) : une semaine d'étude, Test de Savoir (Magie) +0. */
   interludeIdentify: (heroId: string, itemUid: string) => void;

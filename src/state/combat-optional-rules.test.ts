@@ -1,0 +1,206 @@
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { useGame, type BattleState } from './store';
+import { applyAttackResult, attackEnv } from './combatFlow';
+import { seedBattleRng } from './battleRng';
+import { setRule, resetRule } from '../engine/policy';
+import type { Combatant, Weapon } from '../engine/types';
+import type { AttackResult } from '../engine/combat';
+import { resolveMelee } from '../engine/combat';
+import { makeRNG } from '../engine/dice';
+import { emptyScene } from './scene';
+
+const CHARS = { CC: 45, CT: 45, F: 40, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+
+const hero = (p: Partial<Combatant>): Combatant =>
+  ({
+    id: 'h1', name: 'Hardi', kind: 'hero', characteristics: CHARS,
+    wounds: { current: 15, max: 15 }, advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
+    engagedWith: [], pos: { x: 0, y: 0 }, size: 'moyenne', weapons: [], items: [], fate: 0,
+    armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+    ...p,
+  } as unknown as Combatant);
+
+const enemy = (p: Partial<Combatant>): Combatant =>
+  ({
+    id: 'e1', name: 'Brute', kind: 'enemy', characteristics: CHARS,
+    wounds: { current: 20, max: 20 }, advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
+    engagedWith: [], pos: { x: 1, y: 0 }, size: 'moyenne',
+    weapons: [{ name: 'Gourdin', type: 'melee', damage: '+BF', qualities: [] } as Weapon], items: [],
+    armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+    ...p,
+  } as unknown as Combatant);
+
+function setBattle(combatants: Combatant[]): BattleState {
+  const battle: BattleState = {
+    combatants, order: combatants.map((c) => c.id), baseOrder: combatants.map((c) => c.id),
+    turn: 0, round: 1, action: null, selectedSpell: null, reachable: new Map(),
+    movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
+  } as unknown as BattleState;
+  useGame.setState({ battle, mode: 'battle', scene: emptyScene(), gameTime: 12 * 60, pendingReveals: [], pendingCascade: null, pendingFateSave: null });
+  return battle;
+}
+
+// ── Règle 1 : « Sur la Défensive » (combat-defensive-stance, LDB 13 l.118) ──
+describe('combat-defensive-stance — Action « Sur la Défensive » (LDB 13 l.118)', () => {
+  beforeEach(() => { seedBattleRng(1); });
+  afterEach(() => resetRule('combat-defensive-stance'));
+
+  it('défaut (true) : battleDefendTotal pose defensiveStance et consomme l’Action', () => {
+    const h = hero({});
+    setBattle([h, enemy({})]);
+    useGame.getState().battleDefendTotal();
+    const st = useGame.getState().battle!;
+    expect(st.combatants.find((c) => c.id === 'h1')!.defensiveStance).toBe(true);
+    expect(st.acted).toBe(true);
+  });
+
+  it('désactivée : l’Action est refusée (pas de defensiveStance, Action intacte)', () => {
+    setRule('combat-defensive-stance', false);
+    const h = hero({});
+    setBattle([h, enemy({})]);
+    useGame.getState().battleDefendTotal();
+    const st = useGame.getState().battle!;
+    expect(st.combatants.find((c) => c.id === 'h1')!.defensiveStance).toBeFalsy();
+    expect(st.acted).toBe(false); // Action non consommée
+  });
+});
+
+// ── Règle 2 : « Déviation Critique » (combat-critical-deflect, LDB 63 l.63) ──
+describe('combat-critical-deflect — offre de Déviation Critique (LDB 63 l.63)', () => {
+  beforeEach(() => { seedBattleRng(424242); });
+  afterEach(() => resetRule('combat-critical-deflect'));
+
+  const critWeapon: Weapon = { name: 'Gourdin', type: 'melee', damage: '+BF', qualities: [] };
+  const critRes = (): AttackResult => ({
+    hit: true, attackerRoll: 12, netSL: 4, location: 'corps', damage: 8, woundsLost: 3,
+    critical: true, advantageTo: null, defenderDefeated: false, log: 'Coup Critique (corps)',
+  });
+
+  it('défaut (true) : un héros blindé encaissant un Critique → SUSPEND (étape de déviation)', () => {
+    const e = enemy({});
+    const h = hero({ armour: { tete: 0, brasG: 0, brasD: 0, corps: 3, jambeG: 0, jambeD: 0 } });
+    setBattle([e, h]);
+    const suspended = applyAttackResult(useGame.getState, useGame.setState, e, h, critWeapon, critRes());
+    expect(suspended).toBe(true);
+    const dev = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'deviation');
+    expect(dev).toBeTruthy();
+  });
+
+  it('désactivée : pas d’offre de déviation → le Critique est subi directement (criticalWounds +1)', () => {
+    setRule('combat-critical-deflect', false);
+    const e = enemy({});
+    const h = hero({ armour: { tete: 0, brasG: 0, brasD: 0, corps: 3, jambeG: 0, jambeD: 0 }, criticalWounds: 0 });
+    setBattle([e, h]);
+    const suspended = applyAttackResult(useGame.getState, useGame.setState, e, h, critWeapon, critRes());
+    expect(suspended).toBe(false); // aucune suspension
+    expect(useGame.getState().pendingCascade?.participants.some((s) => s.kind === 'deviation')).toBeFalsy();
+    const hh = useGame.getState().battle!.combatants.find((c) => c.id === 'h1')!;
+    expect(hh.criticalWounds ?? 0).toBe(1); // Critique subi
+    expect(hh.armour.corps).toBe(3);        // PA intacte (pas de déviation)
+  });
+
+  it('désactivée : un ENNEMI blindé ne dévie plus automatiquement (subit le Critique)', () => {
+    setRule('combat-critical-deflect', false);
+    const e = enemy({ armour: { tete: 0, brasG: 0, brasD: 0, corps: 3, jambeG: 0, jambeD: 0 }, criticalWounds: 0 });
+    const h = hero({});
+    setBattle([h, e]);
+    applyAttackResult(useGame.getState, useGame.setState, h, e, critWeapon, critRes());
+    const ee = useGame.getState().battle!.combatants.find((c) => c.id === 'e1')!;
+    expect(ee.armour.corps).toBe(3);          // PA intacte (pas d'auto-déviation)
+    expect(ee.criticalWounds ?? 0).toBe(1);   // Critique subi
+  });
+});
+
+// ── Règle 3 : « Tir dans un corps à corps » (combat-ranged-melee-penalty, LDB 14 l.133) ──
+describe('combat-ranged-melee-penalty — −20 + tir égaré (LDB 14 l.133)', () => {
+  beforeEach(() => { seedBattleRng(1); });
+  afterEach(() => resetRule('combat-ranged-melee-penalty'));
+
+  const bow: Weapon = { name: 'Arc', type: 'ranged', damage: '+7', range: 30, qualities: [] } as Weapon;
+
+  // « Tir dans la mêlée » = la cible est Engagée avec un ALLIÉ du tireur. Tireur HÉROS (arc), cible
+  // ENNEMIE engagée avec un autre HÉROS (le combattant de mêlée du groupe).
+  function meleeShotSetup() {
+    const shooter = hero({ id: 'h1', pos: { x: 0, y: 0 }, weapons: [bow] });
+    const targetEnemy = enemy({ id: 'e1', pos: { x: 5, y: 0 }, engagedWith: ['h2'] });
+    const allyHero = hero({ id: 'h2', name: 'Allié', pos: { x: 6, y: 0 } });
+    setBattle([shooter, targetEnemy, allyHero]);
+    return { shooter, targetEnemy, allyHero };
+  }
+
+  it('défaut (true) : la cible Engagée avec un allié → inMelee + ligne −20', () => {
+    const { shooter, targetEnemy } = meleeShotSetup();
+    const e = attackEnv(useGame.getState, shooter, targetEnemy, bow);
+    expect(e.inMelee).toBe(true);
+    expect(e.env.some((m) => m.value === -20 && /mêlée/i.test(m.label))).toBe(true);
+  });
+
+  it('désactivée : pas de −20 NI artefact d’aperçu (inMelee reste false)', () => {
+    setRule('combat-ranged-melee-penalty', false);
+    const { shooter, targetEnemy } = meleeShotSetup();
+    const e = attackEnv(useGame.getState, shooter, targetEnemy, bow);
+    expect(e.inMelee).toBe(false); // pas d'artefact d'affichage
+    expect(e.env.some((m) => /Tir dans la mêlée/i.test(m.label))).toBe(false); // pas de malus
+  });
+});
+
+// ── Règle 4 : « Cible Inconsciente » (combat-helpless-mode, LDB 16 l.112) ──
+describe('combat-helpless-mode — cible Inconsciente (LDB 16 l.112)', () => {
+  beforeEach(() => { seedBattleRng(7); });
+  afterEach(() => resetRule('combat-helpless-mode'));
+
+  const sword: Weapon = { name: 'Épée', type: 'melee', damage: '+BF+3', qualities: [] } as Weapon;
+
+  it('défaut (critique) : resolveMelee NE marque PAS autoKill (comportement RAW = Critique)', () => {
+    const atk = enemy({});
+    const def = hero({ conditions: [{ name: 'inconscient', value: 1 }] });
+    const res = resolveMelee(atk, def, sword, makeRNG(1), { defense: 'none' });
+    expect(res.autoKill).toBeFalsy();
+    expect(res.hit).toBe(true);
+    expect(res.critical).toBe(true); // helpless → réussite critique (RAW)
+  });
+
+  it('mort-auto : resolveMelee marque autoKill sur une cible Inconsciente en MÊLÉE', () => {
+    setRule('combat-helpless-mode', 'mort-auto');
+    const atk = enemy({});
+    const def = hero({ conditions: [{ name: 'inconscient', value: 1 }] });
+    const res = resolveMelee(atk, def, sword, makeRNG(1), { defense: 'none' });
+    expect(res.autoKill).toBe(true);
+    expect(res.hit).toBe(true);
+  });
+
+  it('mort-auto + mêlée : applyAttackResult TUE une cible SANS Destin (dead via chemin normal)', () => {
+    setRule('combat-helpless-mode', 'mort-auto');
+    const atk = hero({ id: 'h1', pos: { x: 0, y: 0 } });
+    const victim = enemy({ id: 'e1', pos: { x: 1, y: 0 }, wounds: { current: 20, max: 20 }, conditions: [{ name: 'inconscient', value: 1 }] });
+    setBattle([atk, victim]);
+    const res: AttackResult = {
+      hit: true, attackerRoll: 10, netSL: 5, location: 'tete', damage: 12, woundsLost: 5,
+      critical: true, advantageTo: null, defenderDefeated: false, autoKill: true, log: 'Achève',
+    };
+    const suspended = applyAttackResult(useGame.getState, useGame.setState, atk, victim, sword, res);
+    expect(suspended).toBe(false);
+    const v = useGame.getState().battle!.combatants.find((c) => c.id === 'e1')!;
+    expect(v.dead).toBe(true);            // mort par le chemin normal (finalizeHeroDeath)
+    expect(v.wounds.current).toBe(0);
+    expect(useGame.getState().pendingFateSave).toBeNull(); // ennemi : pas de Destin
+  });
+
+  it('mort-auto + mêlée : un HÉROS à Destin déclenche le sauvetage (pendingFateSave), pas une mort sèche', () => {
+    setRule('combat-helpless-mode', 'mort-auto');
+    const atk = enemy({ id: 'e1', pos: { x: 0, y: 0 } });
+    const victim = hero({ id: 'h1', pos: { x: 1, y: 0 }, fate: 2, wounds: { current: 12, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }] });
+    setBattle([atk, victim]);
+    const res: AttackResult = {
+      hit: true, attackerRoll: 10, netSL: 5, location: 'tete', damage: 12, woundsLost: 5,
+      critical: true, advantageTo: null, defenderDefeated: false, autoKill: true, log: 'Achève',
+    };
+    const suspended = applyAttackResult(useGame.getState, useGame.setState, atk, victim, sword, res);
+    expect(suspended).toBe(false);
+    const v = useGame.getState().battle!.combatants.find((c) => c.id === 'h1')!;
+    expect(v.dead).toBeFalsy();                                    // pas de mort sèche
+    expect(useGame.getState().pendingFateSave).not.toBeNull();    // sauvetage par Destin proposé
+    expect(useGame.getState().pendingFateSave!.heroId).toBe('h1');
+    expect(useGame.getState().pendingFateSave!.source).toBe('hit');
+  });
+});
