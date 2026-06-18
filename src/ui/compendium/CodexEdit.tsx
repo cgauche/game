@@ -26,6 +26,10 @@ import { WeaponField } from '../editor/WeaponField';
 import { PsychTraitsField } from '../editor/PsychTraitsField';
 import type { Weapon } from '../../engine/types';
 import type { PsychTrait } from '../../engine/psychology';
+import { SymptomsField, CombatField, AdvancementRefField, TrappingRefField } from './StructFields';
+import type { DiseaseSymptom } from '../../engine/disease';
+import type { CombatFeature } from '../../engine/combatFeatures/types';
+import type { AdvancementRef, TrappingRef } from '../../data';
 
 /** Catégorie Codex → dataset éditable (source app-owned `src/data/*.json`). */
 const CATEGORY_DATASET: Record<string, DatasetKey> = {
@@ -49,7 +53,8 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const arr = datasetArray(dsKey) as Entry[];
   // `isNew` : on part d'une entrée VIERGE (index -1 → le formulaire infère les champs du dataset) et le
   // save APPEND au lieu de remplacer — création générique d'une nouvelle entité (domaine, trait…).
-  const index = useMemo(() => (isNew ? -1 : arr.findIndex((e) => e.label === label)), [arr, label, isNew]);
+  // Identité d'affichage = `label`, SAUF maladies (keyées par `name`, sans `label`) → matcher les deux.
+  const index = useMemo(() => (isNew ? -1 : arr.findIndex((e) => (e.label ?? e.name) === label)), [arr, label, isNew]);
   const [entry, setEntry] = useState<Entry>(() => structuredClone(arr[index] ?? {}));
   const [dir, setDir] = useState<FileSystemDirectoryHandle | null>(null);
   const [needsGrant, setNeedsGrant] = useState(false);
@@ -78,17 +83,29 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const isStarEffect = categoryKey === 'stars';
   // Table de Corruption : ses `ranges` (plages d100 → réf mutation) ont leur éditeur dédié.
   const isMutationTable = categoryKey === 'mutationTables';
-  // Mutation : arme dérivée (WeaponField) + traits psy conférés (PsychTraitsField) — sortis du repli JSON.
+  // Mutation : traits psy conférés (PsychTraitsField) — sorti du repli JSON.
   const isMutation = categoryKey === 'mutations';
+  // Arme DÉRIVÉE (WeaponField) : portée par une Mutation (Tentacule…) OU une Possession (prothèse-arme).
+  const hasDerivedWeapon = categoryKey === 'mutations' || categoryKey === 'trappings';
+  // Maladie : ses `symptoms` (DiseaseSymptom[]) ont un éditeur dédié (type + sévérité + difficulté).
+  const isDisease = categoryKey === 'maladies';
+  // Talent : sa capacité de combat `combat` (CombatFeature : drapeaux + castingKind/attackModes/offHand).
+  const hasCombat = categoryKey === 'talents';
+  // Avancement (espèce / niveau de carrière) : `skills`/`talents` = AdvancementRef[] (réf/joker/choix/aléatoire).
+  const hasAdvancement = categoryKey === 'races';
+  // Possessions de DÉPART (classe) : `trappings` = TrappingRef[] (id catalogue + quantité, ou texte).
+  const hasTrappings = categoryKey === 'classes';
   // Axes du PROFIL de manœuvre rendus par `ManeuverDefField` (selects/checkbox) → exclus du repli générique.
   const MANEUVER_PROFILE_KEYS = ['kind', 'activation', 'advantageCost', 'advantageMode', 'stat', 'defense', 'targeting', 'range', 'blast', 'magic'];
   const fields = useMemo(
     () => inferFields(arr as Record<string, unknown>[]).filter(
       (f) => !(hasAppearance && f.key === 'appearance') && !((isSpell || isTriggered || isManeuver) && f.key === 'effects')
         && !(isManeuver && MANEUVER_PROFILE_KEYS.includes(f.key)) && !(isPassive && f.key === 'passive') && !(isStarEffect && f.key === 'effect') && !(isMutationTable && f.key === 'ranges')
-        && !(isMutation && (f.key === 'derivedWeapon' || f.key === 'psychTraits')),
+        && !(isMutation && f.key === 'psychTraits') && !(hasDerivedWeapon && f.key === 'derivedWeapon')
+        && !(isDisease && f.key === 'symptoms') && !(hasCombat && f.key === 'combat')
+        && !(hasAdvancement && (f.key === 'skills' || f.key === 'talents')) && !(hasTrappings && f.key === 'trappings'),
     ),
-    [arr, hasAppearance, isSpell, isTriggered, isManeuver, isPassive, isStarEffect, isMutationTable, isMutation], // eslint-disable-line react-hooks/exhaustive-deps
+    [arr, hasAppearance, isSpell, isTriggered, isManeuver, isPassive, isStarEffect, isMutationTable, isMutation, hasDerivedWeapon, isDisease, hasCombat, hasAdvancement, hasTrappings], // eslint-disable-line react-hooks/exhaustive-deps
   );
   const edit = (key: string, v: unknown) => { setEntry((e) => ({ ...e, [key]: v })); setDirty(true); };
 
@@ -134,8 +151,13 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {isTriggered && <TriggeredEffectsField value={entry.effects as TriggeredEffect[] | undefined} onChange={(v) => edit('effects', v)} />}
         {isManeuver && <ManeuverDefField entry={entry} edit={edit} />}
         {isMutationTable && <MutationTableField value={entry.ranges as MutationRange[] | undefined} onChange={(v) => edit('ranges', v)} />}
-        {isMutation && <WeaponField value={entry.derivedWeapon as Weapon | undefined} onChange={(v) => edit('derivedWeapon', v)} />}
+        {hasDerivedWeapon && <WeaponField value={entry.derivedWeapon as Weapon | undefined} onChange={(v) => edit('derivedWeapon', v)} />}
         {isMutation && <PsychTraitsField value={entry.psychTraits as PsychTrait[] | undefined} onChange={(v) => edit('psychTraits', v)} />}
+        {isDisease && <SymptomsField value={entry.symptoms as DiseaseSymptom[] | undefined} onChange={(v) => edit('symptoms', v)} />}
+        {hasCombat && <CombatField value={entry.combat as Partial<CombatFeature> | undefined} allFeatures={arr.map((e) => e.combat as Partial<CombatFeature> | undefined)} onChange={(v) => edit('combat', v)} />}
+        {hasAdvancement && <AdvancementRefField ds="skills" label="Compétences" value={entry.skills as AdvancementRef[] | undefined} onChange={(v) => edit('skills', v)} />}
+        {hasAdvancement && <AdvancementRefField ds="talents" label="Talents" value={entry.talents as AdvancementRef[] | undefined} onChange={(v) => edit('talents', v)} />}
+        {hasTrappings && <TrappingRefField value={entry.trappings as TrappingRef[] | undefined} onChange={(v) => edit('trappings', v)} />}
         {fields.map((f) => {
           const cfg = refFieldCfg(categoryKey, f.key);
           return cfg

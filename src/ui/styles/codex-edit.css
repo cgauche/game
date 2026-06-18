@@ -34,6 +34,11 @@
 .de-reflrow { display: flex; gap: 0.4rem; align-items: center; }
 .de-reflrow input { flex: 1; }
 
+/* Grille de drapeaux booléens (talents.combat) — cases denses, libellé = clé du type. */
+.de-flags { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.de-flags .ed-check { gap: 0.3rem; }
+.de-flags .ed-check span { font-size: 0.74rem; }
+
 /* Aperçu LIVE de la créature (apparence) — face + profil, se met à jour à chaque modification. */
 .creature-preview {
   display: flex;

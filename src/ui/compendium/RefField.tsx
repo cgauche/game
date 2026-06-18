@@ -30,6 +30,9 @@ export const REF_FIELD: Record<string, RefFieldCfg> = {
   miracles: { ds: 'spells' },
   qualities: { ds: 'qualities', value: true },
   grantsManeuvers: { ds: 'maneuvers' },
+  // Traits conférés par une mutation (Tentacule → Arme) : `{id}` simple (≠ traits de créature qui
+  // portent value/arg/range/count → éditeur de statbloc dédié). Liste de réfs par id, lossless ici.
+  'mutations.traits': { ds: 'traits' },
   // ── single (dataset réel) ───────────────────────────────────────────────────
   'trappings.subType': { ds: 'weaponGroups', single: true },
   'careers.class': { ds: 'classes', single: true },
@@ -39,6 +42,10 @@ export const REF_FIELD: Record<string, RefFieldCfg> = {
   'pregens.career': { ds: 'careers', single: true },
   'talents.addSkill': { ds: 'skills', single: true, spec: true },
   'talents.addTalent': { ds: 'talents', single: true, spec: true },
+  // Caractéristique d'une compétence : SÉLECTEUR (pas d'input libre) — le dataset `characteristics` n'a
+  // pas d'`id`, il est keyé par `label` ; la valeur STOCKÉE lue par l'engine (CHAR_BY_LABEL) est le label
+  // complet (« Dextérité ») → single-ref keyé `label`, format inchangé.
+  'skills.characteristic': { ds: 'characteristics', single: true, valueKey: 'label' },
   // ── vocab (valeurs distinctes d'un champ) ───────────────────────────────────
   // refChar/refCareer n'existent QUE sur les espèces → repli global par nom (la catégorie Codex
   // d'`species.json` est `races`, pas `species` ; un nom de champ unique évite de la coder en dur).
