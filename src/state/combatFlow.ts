@@ -166,7 +166,7 @@ export * from './combatManeuvers';
 export * from './combatHooks';
 export * from './combatSetup';
 import { runCombatHooks } from './combatHooks';
-import './combat/roundHooks'; // effet de bord : enregistre les hooks de franchissement de Round (se-fatiguer…)
+export { brokenRecovery } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export de brokenRecovery (broken-recovery.test)
 import {
   emitCreatureAttackAnim, trampleTarget, bestDefenseMode,
   rollManeuverAttacker, maneuverAttackerDifficulty, resolveManeuver,
@@ -2174,15 +2174,15 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
 
 /**
  * Clôt une action JOUEUR résolue (soin / incantation / Focalisation, et futures actions hors combat) :
- * EN COMBAT consomme l'Action (`acted`/`action:null`/`selectedSpell:null`), journalise dans `battle.log`
+ * EN COMBAT consomme l'Action (`acted`/`action:null`/`selectedSpellId:null`), journalise dans `battle.log`
  * et vérifie la fin de combat ; HORS COMBAT trace le `journal`. C'est la SORTIE commune — `combatOrParty`
  * fournit la RÉSOLUTION des acteurs (`actorIn`/`touchActors`), ce helper la finalisation.
- * `selectedSpell:null` est neutre pour une action non-incantation (déjà null).
+ * `selectedSpellId:null` est neutre pour une action non-incantation (déjà null).
  */
 export function finishPlayerAction(get: Get, set: SetFn, lines: string[], kind: CombatEventKind = 'info'): void {
   const battle = get().battle;
   if (battle) {
-    set({ battle: { ...battle, acted: true, action: null, selectedSpell: null, log: [...battle.log, ...evLines(lines, kind)] } });
+    set({ battle: { ...battle, acted: true, action: null, selectedSpellId: null, log: [...battle.log, ...evLines(lines, kind)] } });
     bus.emit(EVT.SCENE_DIRTY);
     checkBattleOver(get, set);
   } else {
@@ -2239,10 +2239,10 @@ export function castSpell(
       return;
     }
   }
-  const focusedNI0 = caster.focus?.spell === label && caster.focus.dr >= (spell.cn ?? 0);
+  const focusedNI0 = caster.focus?.spell === spell.id && caster.focus.dr >= (spell.cn ?? 0);
   set({
     pendingCast: {
-      casterId: caster.id, targetId: target.id, spellLabel: label, missile: breathSpell ? false : isMagicMissile(spell),
+      casterId: caster.id, targetId: target.id, spellId: spell.id, missile: breathSpell ? false : isMagicMissile(spell),
       focused: focusedNI0, result: null, ...(fromGrimoire ? { grimoire: true } : {}),
     },
   });
@@ -2323,10 +2323,10 @@ export function castZoneSpell(get: Get, set: SetFn, caster: Combatant, label: st
     get().log(`${caster.name} ne peut pas ${castInfoIsPrayer(spell.type) ? 'prier' : 'incanter'} : ${blocked}.`);
     return true; // c'était bien une zone — l'entrée est consommée (refus journalisé)
   }
-  const focusedNI0 = caster.focus?.spell === label && caster.focus.dr >= (spell.cn ?? 0);
+  const focusedNI0 = caster.focus?.spell === spell.id && caster.focus.dr >= (spell.cn ?? 0);
   set({
     pendingCast: {
-      casterId: caster.id, targetId: caster.id, spellLabel: label, missile: isMagicMissile(spell),
+      casterId: caster.id, targetId: caster.id, spellId: spell.id, missile: isMagicMissile(spell),
       focused: focusedNI0, result: null,
       zone: { center: null, radius: zoneRadiusTilesAt(r0m, 0), r0m },
     },
@@ -2363,7 +2363,7 @@ export function placingZoneOf(s: Pick<GameState, 'pendingCast' | 'battle'>): Pla
     const caster = s.battle?.combatants.find((c) => c.id === pc.casterId);
     const spell = effectiveSpellOf(pc);
     return {
-      source: 'cast', label: pc.spellLabel, casterId: pc.casterId, radius: pc.zone.radius,
+      source: 'cast', label: spell?.label ?? pc.spellId, casterId: pc.casterId, radius: pc.zone.radius,
       rangeTiles: spell && caster ? spellRangeTiles(spell.range, caster) : null,
     };
   }
@@ -2526,8 +2526,8 @@ export function overcastTargetCandidates(
 }
 
 /** Sort effectif d'un pendingCast : NI DOUBLÉ pour une lecture au grimoire (LDB 47 l.34). */
-export function effectiveSpellOf(pc: { spellLabel: string; grimoire?: boolean }): ReturnType<typeof findSpell> {
-  const spell = resolveSpell(pc.spellLabel);
+export function effectiveSpellOf(pc: { spellId: string; grimoire?: boolean }): ReturnType<typeof findSpell> {
+  const spell = resolveSpell(pc.spellId);
   if (!spell || !pc.grimoire || spell.cn == null) return spell;
   return { ...spell, cn: spell.cn * 2 };
 }
@@ -3278,6 +3278,18 @@ export function resumeEnemyTurn(get: Get, set: SetFn): void {
  *  séquence de combat (`cascadeNext`/`cascadeFinish`). Garde alignée sur celle de `resumeEnemyTurn`. */
 export function resumeSuspendedAI(get: Get, set: SetFn): void {
   const s = get();
+  // Garde-fou anti-soft-lock : une Maladresse (`pendingFumble`) posée mais NON hébergée par une cascade
+  // de combat (orpheline — p.ex. une cascade fermée pendant l'append du fumble, cadence Rapide/Auto)
+  // gèlerait le tour À JAMAIS : `combatGate` bloque sur `pendingFumble` et, depuis le fold, plus aucune
+  // modale autonome ne la porte. On la RÉ-HÉBERGE (étape de cascade → la modale réapparaît, résolue par
+  // le joueur ou l'auto-cadence) plutôt que de figer l'IA.
+  const pf = s.pendingFumble;
+  const pc = s.pendingCascade;
+  const fumbleHosted = !!pc && pc.purpose === 'combat' && pc.participants.some((st) => st.jet === 'fumble' && !st.committed);
+  if (pf && !fumbleHosted) {
+    pushCombatStep(set, { id: `cons-fumble-${pf.combatantId}`, kind: 'fumbleJet', jet: 'fumble', actorId: pf.combatantId });
+    return; // la cascade fumble reprend la main ; sa clôture rappellera resumeSuspendedAI
+  }
   // `resumeSuspendedAI` ne surveillait historiquement PAS `pendingCast` → `{ cast: false }` (iso A1).
   if (combatAdvanceBlocked(s, { cast: false })) return;
   const battle = s.battle!;
@@ -3325,74 +3337,12 @@ export function advanceTurn(get: Get, set: SetFn) {
         battle.log.push(ev('condition', line, c?.id));
         if (c?.kind === 'hero') heroRoundLines.push(line);
       };
-      for (const c of battle.combatants) endOfRound(c, battleRng()).forEach((l) => tickLine(l, c));
-      for (const c of battle.combatants) refreshWounds(c); // dissipation d'un buff F/E/FM → recale les Blessures (LDB 85)
-      // Effets « début de Round » authorés (Régénération : un d10 → soin = le dé si PB>0 ; à 0, 8+ →
-      // 1 PB + reprise de conscience ; 10 → +1 Critique soigné) — dispatcher générique
-      // (state/triggeredEffects). (Exception du Feu non suivie — provenance des Blessures non tracée.)
-      for (const c of battle.combatants) {
-        if (c.dead || c.outOfRencontre) continue;
-        for (const line of fireTriggers(get, c, 'onRoundStart', { rng: battleRng() })) tickLine(line, c);
-      }
-      // Instable (LDB 85 p.340) : fin de Round Engagé avec un adversaire d'Avantage SUPÉRIEUR →
-      // perd la différence en PB ; à 0 PB, elle « meurt » (les magies qui la maintiennent cèdent).
-      for (const c of battle.combatants) {
-        if (isOutOfAction(c) || !isUnstable(c.traits)) continue;
-        const foesAdv = (c.engagedWith ?? [])
-          .map((id) => battle.combatants.find((x) => x.id === id))
-          .filter((e): e is Combatant => !!e && e.kind !== c.kind && !isOutOfAction(e))
-          .map((e) => e.advantage ?? 0);
-        const diff = (foesAdv.length ? Math.max(...foesAdv) : 0) - (c.advantage ?? 0);
-        if (diff > 0) {
-          loseWounds(c, diff);
-          tickLine(`${c.name} (Instable) est repoussée : −${diff} PB.`, c);
-          if (c.wounds.current <= 0) { c.dead = true; tickLine(`${c.name} se délite — les magies qui la maintenaient s'effondrent.`, c); }
-        }
-      }
-      // Bestial (LDB 85 p.338) : « Elle a peur du feu et gagne l'État Brisé si elle est touchée par
-      // ce dernier » — approximé sur l'État En flammes (granularité Round, documenté).
-      for (const c of battle.combatants) {
-        if (!isOutOfAction(c) && isBestial(c.traits) && hasCondition(c, COND.enFlammes) && !hasCondition(c, COND.brise)) {
-          addCondition(c, COND.brise);
-          tickLine(`${c.name} (Bestial) est terrifié par les flammes : Brisé.`, c);
-        }
-      }
-      // Perturbant (LDB 85 p.341) : −20 à tous les Tests à Bonus d'Endurance mètres d'une créature
-      // Perturbante (non cumulable). Aura recalculée à chaque franchissement de Round (granularité assumée).
-      for (const c of battle.combatants) {
-        c.perturbed = !isOutOfAction(c) && !!c.pos && battle.combatants.some(
-          (p) => p.id !== c.id && p.kind !== c.kind && !isOutOfAction(p) && p.pos
-            && hasPerturbingAura(p.traits) && chebyshev(p.pos, c.pos!) * 2 <= bonus(effectiveChar(p, 'E')),
-        );
-      }
-      // Surnombre (LDB 14 l.149) : un combattant surpassé en nombre (≥2 ennemis Engagés avec lui) perd 1 Avantage en fin de Round.
-      for (const c of battle.combatants) {
-        if (isOutOfAction(c) || (c.advantage ?? 0) <= 0) continue;
-        const foes = (c.engagedWith ?? []).filter((id) => {
-          const e = battle.combatants.find((x) => x.id === id);
-          return !!e && e.kind !== c.kind && !isOutOfAction(e);
-        }).length;
-        // Maîtrise du combat (LDB 10) : on compte pour 1+niveau personnes au calcul du surnombre.
-        if (foes >= 2 + outnumberCountBonus(c)) { c.advantage = Math.max(0, c.advantage - 1); tickLine(`${c.name} est surpassé en nombre (${foes} c.1) : −1 Avantage.`, c); }
-      }
-      // Mâchoires d'acier (LDB 10) : Test de Résistance (+0) — retire 1 + DR États Sonné (résolu au
-      // franchissement de Round, approximation de « chaque fois que vous gagnez un État Sonné »).
-      for (const c of battle.combatants) {
-        if (isOutOfAction(c) || !hasStunSave(c) || !stacks(c, COND.sonne)) continue;
-        const t = rollTest(testValue(c, 'Résistance'), 'intermediaire', battleRng());
-        if (t.success) {
-          const n = Math.min(stacks(c, COND.sonne), 1 + Math.max(0, t.sl));
-          removeCondition(c, COND.sonne, n);
-          tickLine(`${c.name} secoue la tête (Mâchoires d'acier) : ${n} État(s) Sonné retiré(s).`, c);
-        }
-      }
-      // (L'attaque d'Arme libre de Frénésie est désormais un grant de DONNÉE plafonné par `freeAttacksThisTurn`,
-      //  remis à zéro au passage de tour — plus de booléen `frenzyFreeUsed` à réinitialiser ici.)
-      // (Décomptes de Détermination ignoreCritMods / psychImmuneRoundsLeft migrés en hooks roundBoundary 70/72.)
-      brokenRecovery(get, tickLine); // récupération du Brisé en fin de Round (LDB 16 l.57-59)
-      // Fin de séquence de franchissement de Round → hooks `roundBoundary` (state/combat/roundHooks) :
-      // tickDeath(76)/suffocation(78)/zones(79)/clearPsychOf(79.3)/purge(79.5) migrés ISO-COMPORTEMENT
-      // (ils étaient les derniers blocs inline → ordre exact préservé), + règles optionnelles (se-fatiguer 80).
+      // TOUTE la séquence de franchissement de Round est déléguée aux hooks `roundBoundary`
+      // (state/combat/roundHooks), ordonnés par `order` : end-of-round 10 → refresh-wounds 20 →
+      // triggers 25 → Instable 30 → Bestial 40 → Perturbant 50 → Surnombre 55 → Mâchoires 60 →
+      // Détermination 70/72 → broken-recovery 74 → tail 76-79.5 → règles optionnelles (se-fatiguer 80).
+      // advanceTurn n'orchestre plus que le CADRE (Round, ordre, révélation) ; le CONTENU vit en hooks.
+      // (Frénésie : l'Arme libre est un grant de DONNÉE plafonné par freeAttacksThisTurn, remis à zéro au tour.)
       runCombatHooks('roundBoundary', { get, set, battle, sink: tickLine });
       if (heroRoundLines.length) pushReveal(set, { kind: 'round', title: `Fin du Round ${round - 1}`, lines: heroRoundLines, severity: 'minor' }); // (entretien HÉROS — auto-fermée)
       // Maniement de deux armes : le −10 défensif expire au DÉBUT du prochain Tour de son porteur. Si ce
@@ -3540,39 +3490,8 @@ export function approachFearTrigger(get: Get, set: SetFn, mover: Combatant, from
   }
 }
 
-/** Récupération du Brisé en fin de Round (LDB 16 l.57-59) — combattant par combattant :
- *  - pas de Test si Engagé (l.57) ; sinon Test de Calme dont la Difficulté suit les circonstances
- *    (caché hors de vue → Accessible +20 ; ennemi à ≤ 3 cases → Très difficile −30 ; sinon Intermédiaire +0),
- *    retirant 1 + DR États Brisé sur un succès ;
- *  - +1 État Brisé retiré si l'on est resté caché hors de vue de TOUT ennemi ce Round (l.59).
- *  Émet chaque ligne via `sink(line, combattant)` — l'entretien de Round partitionne héros/ennemis. */
-export function brokenRecovery(get: Get, sink: (line: string, c: Combatant) => void): void {
-  const battle = get().battle;
-  const scene = get().scene;
-  if (!battle) return;
-  for (const c of battle.combatants) {
-    if (!stacks(c, COND.brise) || isOutOfAction(c) || !c.pos) continue;
-    const enemies = battle.combatants.filter((e) => e.kind !== c.kind && !isOutOfAction(e) && e.pos);
-    const hidden = !!scene && enemies.length > 0 && enemies.every((e) => lineOfSightCover(scene, e.pos!, c.pos!, [], smokeOf(battle)).blocked);
-    if (hidden) { removeCondition(c, COND.brise, 1); sink(`${c.name} est resté caché hors de vue : retire 1 État Brisé.`, c); }
-    // Récupération par Test de Calme : seulement si pas Engagé (l.57) — sauf Cœur vaillant
-    // (LDB 10 : Test de Calme en fin de Round, sans restriction d'Engagement) — et qu'il reste du Brisé.
-    if ((!isEngaged(c) || hasBraveheart(c)) && stacks(c, COND.brise)) {
-      const nearest = enemies.length ? Math.min(...enemies.map((e) => chebyshev(c.pos!, e.pos!))) : Infinity;
-      const diff: import('../engine/types').Difficulty = hidden ? 'accessible' : nearest <= 3 ? 'tresDifficile' : 'intermediaire';
-      const t = rollTest(calmeValue(c), diff, battleRng());
-      if (t.success) {
-        const removed = Math.min(stacks(c, COND.brise), 1 + Math.max(0, t.sl));
-        removeCondition(c, COND.brise, removed);
-        sink(`${c.name} se ressaisit : retire ${removed} État(s) Brisé (Test de Calme réussi).`, c);
-      } else {
-        sink(`${c.name} reste Brisé (Test de Calme raté).`, c);
-      }
-    }
-    // « Une fois que vous n'avez plus d'États Brisé, vous gagnez 1 État Exténué » (LDB 16 l.80).
-    if (!stacks(c, COND.brise)) { addCondition(c, COND.extenue); sink(`${c.name} est Exténué (après s'être ressaisi).`, c); }
-  }
-}
+// brokenRecovery (récupération du Brisé en fin de Round, LDB 16 l.57-59) déplacé → state/combat/roundHooks
+// (hook `roundBoundary` order 74), ré-exporté en tête de ce fichier pour broken-recovery.test.
 
 /** Psychologie d'un ENNEMI (IA) au début de son tour (LDB 21) : teste Peur/Terreur des sources
  *  adverses en Ligne de Vue. Terreur ratée → Brisé ; Peur → Test étendu de Calme (cumul). Instantané

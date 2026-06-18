@@ -14,8 +14,13 @@ const combatant = (over: Partial<Combatant>): Combatant =>
     ...over,
   }) as unknown as Combatant;
 
-const ctx = (combatants: Combatant[]): CombatHookCtx =>
-  ({ get: (() => {}) as never, set: (() => {}) as never, battle: { combatants } as never, sink: () => {} });
+const ctx = (combatants: Combatant[]): CombatHookCtx => {
+  // runCombatHooks('roundBoundary') exécute TOUTE la séquence : `get` doit renvoyer un état valide
+  // (broken-recovery/fireTriggers lisent get().battle/scene). Combattants nus → les autres hooks no-op
+  // sans tirer le RNG (pas de condition/Brisé/zone) → se-fatiguer obtient bien le 1ᵉʳ tirage seedé.
+  const battle = { combatants, zones: [], round: 1 } as never;
+  return { get: (() => ({ battle, scene: undefined })) as never, set: (() => {}) as never, battle, sink: () => {} };
+};
 
 describe('roundHooks — se-fatiguer (combat-se-fatiguer, LDB 16 l.99)', () => {
   beforeEach(() => resetRule('combat-se-fatiguer'));
