@@ -2,7 +2,6 @@ import { useGame } from '../state/store';
 import { ownsLocally } from '../state/netFlow';
 import { modalOwnerOf } from '../state/modalArbiter';
 import type { JSX } from 'react';
-import { RollModal } from './RollModal';
 import { ReloadModal } from './ReloadModal';
 import { StateRecoveryModal } from './StateRecoveryModal';
 import { RenounceModal } from './RenounceModal';
@@ -34,7 +33,7 @@ const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
   trample: TrampleModal, maneuver: ManeuverModal, reveal: RevealModal,
   mountTarget: MountTargetModal, frenzy: FrenzyModal, approach: ApproachModal, run: RunModal, focus: FocusModal,
   medic: MedicModal, rest: RestModal, heal: HealModal, cascade: CascadeModal, reload: ReloadModal, stateRecovery: StateRecoveryModal,
-  attack: RollModal, corruption: CorruptionModal, activity: ActivityModal,
+  corruption: CorruptionModal, activity: ActivityModal,
 };
 
 /** Indicateur discret pour les NON-concernés : qui joue la modale en cours. */

@@ -77,7 +77,10 @@ export const MODAL_DEFS = [
   //  CARTE (pickingTargets / pose de zone) efface la modale via le `return null` du host dans CascadeModal.)
   { key: 'reload', when: (s) => !!s.pendingReload, owner: (s) => s.pendingReload?.actorId },
   { key: 'stateRecovery', when: (s) => !!s.pendingStateRecovery, owner: (s) => s.pendingStateRecovery?.actorId },
-  { key: 'attack', when: (s) => !!s.pendingAttack, owner: (s) => s.pendingAttack?.attackerId },
+  // (L'attaque n'a PLUS d'entrée propre : c'est une étape `jet:'attack'` de la cascade `combat` (CascadeModal
+  //  → useAttackJetProps) — `pendingAttack` coexiste comme porteur de données. TOUS les chemins d'attaque
+  //  (Charge / normale / gratuite + balayage/dual qui réutilisent) ouvrent une cascade → plus de modale
+  //  `attack` autonome ni de `RollModal`. Cf. le fold défense/maladresse/cast.)
   // (Le Test de scène n'a PLUS d'entrée propre : c'est une cascade `jet:'test'` rendue par `cascade`
   //  ci-dessus — `pendingTest` coexiste comme porteur de données, comme `pendingAttack` pour l'attaque.)
   // Jet d'Activité d'interlude (LDB 23) — hors combat, mais même règle coop : le PROPRIÉTAIRE

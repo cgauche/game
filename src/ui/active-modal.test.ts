@@ -14,7 +14,6 @@ describe('pickActiveModalKey — priorité des modales de combat', () => {
   });
 
   it('un seul pending → sa modale', () => {
-    expect(pickActiveModalKey({ pendingAttack: {} })).toBe('attack');
     expect(pickActiveModalKey({ pendingReveals: [{}] })).toBe('reveal');
   });
 
@@ -43,8 +42,12 @@ describe('pickActiveModalKey — priorité des modales de combat', () => {
     ).toBe('fateSave');
   });
 
-  it('la Maladresse reste prioritaire (l’Abattre est désormais une étape de la cascade d’attaque, plus une modale)', () => {
-    expect(pickActiveModalKey({ pendingFumble: {}, pendingCorruption: {} })).toBe('fumble');
+  it('la Maladresse n’est PLUS une modale propre : étape `jet:\'fumble\'` de la cascade (passe avant la Corruption)', () => {
+    // pendingFumble SEUL (sans cascade) → plus d'entrée 'fumble' (retirée au fold Lot 2) → tombe sur 'corruption'.
+    expect(pickActiveModalKey({ pendingFumble: {}, pendingCorruption: {} })).toBe('corruption');
+    // pendingFumble + cascade `jet:'fumble'` → 'cascade' (avant 'corruption' au registre).
+    const fumbleCascade = { participants: [{ jet: 'fumble', actorId: 'h1' }], cursor: 0 };
+    expect(pickActiveModalKey({ pendingFumble: {}, pendingCascade: fumbleCascade, pendingCorruption: {} })).toBe('cascade');
   });
 
   it('Frappe Mortelle / 2ᵉ frappe (Deux armes) ne sont PLUS des modales (ciblage carte, TargetPrompt)', () => {
@@ -52,8 +55,14 @@ describe('pickActiveModalKey — priorité des modales de combat', () => {
     expect(pickActiveModalKey({ pendingDualStrike: {} })).toBeNull();
   });
 
-  it('Frappe Mortelle + jet d’enchaînement en cours → le jet prend la main', () => {
-    expect(pickActiveModalKey({ pendingCleave: {}, pendingAttack: {} })).toBe('attack');
+  it('l’attaque n’est PLUS une modale propre : étape `jet:\'attack\'` de la cascade `combat` (charge/normale/gratuite + cleave/dual)', () => {
+    // pendingAttack SEUL (sans cascade) → plus d'entrée 'attack' (retirée) → null. TOUS les chemins d'attaque
+    // ouvrent une cascade (Charge incluse) ; cleave/dual réutilisent celle déjà ouverte.
+    expect(pickActiveModalKey({ pendingAttack: {} })).toBeNull();
+    const atkCascade = { participants: [{ jet: 'attack', actorId: 'h1' }], cursor: 0 };
+    expect(pickActiveModalKey({ pendingAttack: {}, pendingCascade: atkCascade })).toBe('cascade');
+    // Frappe Mortelle : la 2ᵉ frappe (pendingAttack) RÉUTILISE la cascade d'enchaînement → 'cascade'.
+    expect(pickActiveModalKey({ pendingCleave: {}, pendingAttack: {}, pendingCascade: atkCascade })).toBe('cascade');
   });
 
   it('l’incantation n’est PLUS une modale propre : c’est une étape `jet:\'cast\'` de la cascade (wrapper-fold)', () => {
