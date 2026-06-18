@@ -15,7 +15,10 @@ function setup(broken: boolean, enemyPos = { x: 9, y: 5 }) {
 }
 
 describe('Brisé — restriction d\'action (LDB 16 l.55)', () => {
-  beforeEach(() => useGame.setState({ battle: null, pendingAttack: null })); // purge inter-tests (combatBusy gèle la hotbar sous un jet en cours)
+  // Purge inter-tests : `combatBusy` gèle la hotbar sous un jet OU une cascade en cours. Depuis que la
+  // Charge ouvre une cascade combat (comme l'attaque normale), `battleClickEntity` laisse un `pendingCascade`
+  // qu'il faut aussi purger (sinon le test suivant verra `combatBusy === true`).
+  beforeEach(() => useGame.setState({ battle: null, pendingAttack: null, pendingCascade: null }));
 
   it('Brisé : le clic-ennemi est REFUSÉ (aucune action offensive)', () => {
     setup(true);
