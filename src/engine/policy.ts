@@ -81,6 +81,15 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'Largeur des bandes de réussite/échec automatiques : 01-N réussite, (101−N)-00 échec. Défaut 5 (01-05 / 96-00) ; 0 = aucune bande.',
   },
   {
+    id: 'test-extended-min-sl',
+    label: 'Tests étendus : DR 0 = ±1 minimum',
+    ref: 'LDB 12 l.208',
+    group: 'Tests',
+    kind: 'flag',
+    default: false,
+    hint: 'Dans un Test étendu, un Round réussi ajoute au moins +1 au total cumulé (même à DR 0) et un Round raté en retire au moins 1.',
+  },
+  {
     id: 'test-metier-int',
     label: 'Métier (Savoir) : Int au lieu de Dex',
     ref: 'LDB 09 l.352',

@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
+import { setRule, resetRule } from '../engine/policy';
 
 /** Test Étendu SÉQUENTIEL (LDB 12 l.197-211 : « atteindre un certain DR … les DR obtenus à chaque
  *  Round sont additionnés … Si le DR total passe en dessous de 0, recommencer depuis le début »).
@@ -61,5 +62,36 @@ describe('Test Étendu séquentiel (porte DR cumulé)', () => {
     useGame.getState().extendedTestForceSuccess('round-1');
     expect(useGame.getState().pendingExtendedTest!.rounds[0].result!.success).toBe(true);
     expect(useGame.getState().party[0].resilience).toBe(0); // 1 Point de Résilience dépensé
+  });
+});
+
+describe('Test Étendu — règle « DR 0 = ±1 minimum » (LDB 12 l.208)', () => {
+  beforeEach(() => { useGame.setState({ battle: null, pendingExtendedTest: null }); });
+  afterEach(() => resetRule('test-extended-min-sl'));
+
+  function setRound(total: number, sl: number, success: boolean) {
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'B', rng: makeRNG(1) });
+    useGame.setState({ party: [h] });
+    useGame.getState().startExtendedTest({ actorId: h.id, label: 'X', skillLabel: 'Force', target: 50, targetDR: 30 });
+    const p = useGame.getState().pendingExtendedTest!;
+    useGame.setState({ pendingExtendedTest: { ...p, total, rounds: [{ id: 'round-1', interactive: true, result: { roll: success ? 40 : 96, sl, success } }] } });
+  }
+
+  it('défaut : un Round réussi à DR 0 ne change pas le total', () => {
+    setRound(4, 0, true);
+    useGame.getState().extendedTestNext();
+    expect(useGame.getState().pendingExtendedTest!.total).toBe(4);
+  });
+  it('règle ON : un Round réussi à DR 0 ajoute +1', () => {
+    setRound(4, 0, true);
+    setRule('test-extended-min-sl', true);
+    useGame.getState().extendedTestNext();
+    expect(useGame.getState().pendingExtendedTest!.total).toBe(5);
+  });
+  it('règle ON : un Round raté à DR 0 retire 1 (puis clamp ≥ 0)', () => {
+    setRound(4, 0, false);
+    setRule('test-extended-min-sl', true);
+    useGame.getState().extendedTestNext();
+    expect(useGame.getState().pendingExtendedTest!.total).toBe(3);
   });
 });

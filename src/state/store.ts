@@ -76,6 +76,7 @@ import {
 } from '../engine/combat';
 import { disengageFrom, isEngaged, chargeAdvantage, meleeReachTiles } from '../engine/engagement';
 import { gainAdvantage } from '../engine/advantage';
+import { rule } from '../engine/policy';
 import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, hasTalent, zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
 import { rollTest, resolveOpposed, evaluateTest } from '../engine/tests';
 import { effectiveChar, bonus, baseWithTraits } from '../engine/characteristics';
@@ -1865,7 +1866,11 @@ export const useGame = create<GameState>((set, get) => ({
     if (!cur?.result) return; // le Round courant doit avoir été lancé
     // Cumul (LDB 12 l.200) : « les DR obtenus à chaque Round sont additionnés jusqu'à atteindre une
     // valeur cible. Si le DR total passe en dessous de 0, vous pouvez recommencer depuis le début. »
-    let total = p.total + cur.result.sl;
+    // Règle optionnelle (LDB 12 l.208) : un Round réussi compte ≥ +1, un Round raté ≤ −1 (DR 0 non neutre).
+    const sl = rule('test-extended-min-sl')
+      ? (cur.result.success ? Math.max(1, cur.result.sl) : Math.min(-1, cur.result.sl))
+      : cur.result.sl;
+    let total = p.total + sl;
     if (total < 0) total = 0;
     if (total >= p.targetDR) {
       set({ pendingExtendedTest: null, pendingCascade: null }); // ferme la cascade-hôte aussi
