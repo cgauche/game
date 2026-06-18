@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { evaluateTest, maxForcedRoll, rollTest } from './tests';
+import { evaluateTest, maxForcedRoll, rollTest, evaluateCombinedTest } from './tests';
 import { getTestPolicy, type TestPolicy } from './testPolicy';
 import type { RNG } from './dice';
 import { setRule, resetRule } from './policy';
@@ -58,6 +58,30 @@ describe('maxForcedRoll — borne du dé forcé DÉRIVÉE de la policy (pas un n
   });
   it("'off' : pas de bande d'échec auto → plafonné à la cible", () => {
     expect(maxForcedRoll(99, P({ bandsMode: 'off' }))).toBe(99);
+  });
+});
+
+describe('evaluateCombinedTest — Test Combiné (LDB 12 l.229) : un jet vs DEUX valeurs', () => {
+  it('les deux réussies → succès complet (full) ; DR par compétence', () => {
+    const r = evaluateCombinedTest(35, 60, 40, P());
+    expect(r.level).toBe('full');
+    expect(r.a.success).toBe(true);
+    expect(r.b.success).toBe(true);
+  });
+  it('une seule réussie → réussite partielle (partial)', () => {
+    const r = evaluateCombinedTest(50, 60, 40, P()); // 50 ≤ 60 (a) ; 50 > 40 (b)
+    expect(r.level).toBe('partial');
+    expect(r.a.success).toBe(true);
+    expect(r.b.success).toBe(false);
+  });
+  it('aucune → échec (fail)', () => {
+    const r = evaluateCombinedTest(70, 60, 40, P());
+    expect(r.level).toBe('fail');
+  });
+  it('même jet pour les deux (cohérence)', () => {
+    const r = evaluateCombinedTest(42, 80, 30, P());
+    expect(r.a.roll).toBe(42);
+    expect(r.b.roll).toBe(42);
   });
 });
 

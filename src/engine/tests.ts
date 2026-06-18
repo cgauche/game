@@ -95,6 +95,27 @@ export function maxForcedRoll(target: number, policy: TestPolicy = getTestPolicy
   return Math.min(target, ceil);
 }
 
+/** Issue d'un Test Combiné (LDB 12 l.229, règle optionnelle) : UN seul d100 confronté à DEUX valeurs. */
+export interface CombinedTestResult {
+  roll: number;
+  /** Résultat vs la 1ʳᵉ valeur (même jet). */
+  a: TestResult;
+  /** Résultat vs la 2ᵈᵉ valeur (même jet). */
+  b: TestResult;
+  /** `full` = les deux réussies ; `partial` = une seule ; `fail` = aucune. */
+  level: 'full' | 'partial' | 'fail';
+}
+
+/** Test Combiné (LDB 12 l.229) : un MÊME jet d100 est évalué contre deux valeurs cibles (deux
+ *  Compétences). Réutilise `evaluateTest` (bandes/DR identiques) pour chaque cible. PUR : la primitive
+ *  est neutre ; l'activation (règle `test-combined`) et le branchement des issues vivent côté flux. */
+export function evaluateCombinedTest(roll: number, target1: number, target2: number, policy: TestPolicy = getTestPolicy()): CombinedTestResult {
+  const a = evaluateTest(roll, target1, policy);
+  const b = evaluateTest(roll, target2, policy);
+  const passed = (a.success ? 1 : 0) + (b.success ? 1 : 0);
+  return { roll, a, b, level: passed === 2 ? 'full' : passed === 1 ? 'partial' : 'fail' };
+}
+
 /** Détail d'AFFICHAGE d'un Test (base + mod = cible · d100 · DR) — la forme des lignes de jet
  *  (RollLine / NightEntry.d). UNE construction partagée, au lieu d'objets recopiés par site. */
 export function testDetail(label: string, base: number, t: TestResult): {
