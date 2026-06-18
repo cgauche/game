@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { combineMods, defenseModifiers } from './combat';
+import { describe, it, expect, afterEach } from 'vitest';
+import { combineMods, defenseModifiers, rangeBandModifier, rangeBandName } from './combat';
+import { setRule, resetRule } from './policy';
 import type { Combatant } from './types';
 
 describe('combineMods — Combiner les Difficultés (LDB 14 l.126-131)', () => {
@@ -24,6 +25,40 @@ describe('combineMods — Combiner les Difficultés (LDB 14 l.126-131)', () => {
   });
   it('liste vide → 0', () => {
     expect(combineMods([])).toBe(0);
+  });
+});
+
+describe('combineMods — plafonds de Difficulté réglables (LDB 14 l.126, règle optionnelle)', () => {
+  afterEach(() => { resetRule('combat-diff-cap-bonus'); resetRule('combat-diff-cap-malus'); });
+  it('combat-diff-cap-bonus → 20 : la somme des bonus plafonne à +20 (défaut +60)', () => {
+    expect(combineMods([{ label: 'a', value: 40 }, { label: 'b', value: 40 }])).toBe(60);
+    setRule('combat-diff-cap-bonus', 20);
+    expect(combineMods([{ label: 'a', value: 40 }, { label: 'b', value: 40 }])).toBe(20);
+  });
+  it('combat-diff-cap-malus → 10 : la somme des malus plafonne à −10 (défaut −30)', () => {
+    expect(combineMods([{ label: 'a', value: -20 }, { label: 'b', value: -20 }])).toBe(-30);
+    setRule('combat-diff-cap-malus', 10);
+    expect(combineMods([{ label: 'a', value: -20 }, { label: 'b', value: -20 }])).toBe(-10);
+  });
+});
+
+describe('rangeBandModifier / rangeBandName — table de portée unique (identité du refactor)', () => {
+  const R = 10; // Portée 10 m ; échelle 1 case = 2 m
+  it('modificateurs aux 5 bandes + hors de portée', () => {
+    expect(rangeBandModifier(0, R)).toBe(60); // bout portant (m=0 ≤ 1)
+    expect(rangeBandModifier(2, R)).toBe(40); // courte (m=4 ≤ 5)
+    expect(rangeBandModifier(5, R)).toBe(0); // moyenne (m=10 ≤ 10)
+    expect(rangeBandModifier(8, R)).toBe(-10); // longue (m=16 ≤ 20)
+    expect(rangeBandModifier(14, R)).toBe(-30); // extrême (m=28 ≤ 30)
+    expect(rangeBandModifier(16, R)).toBeNull(); // m=32 > 30
+  });
+  it('noms de bande alignés sur les mêmes seuils', () => {
+    expect(rangeBandName(0, R)).toBe('Bout portant');
+    expect(rangeBandName(2, R)).toBe('Courte portée');
+    expect(rangeBandName(5, R)).toBe('Moyenne');
+    expect(rangeBandName(8, R)).toBe('Longue');
+    expect(rangeBandName(14, R)).toBe('Extrême');
+    expect(rangeBandName(16, R)).toBeNull();
   });
 });
 

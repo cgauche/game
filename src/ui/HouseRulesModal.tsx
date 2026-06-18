@@ -18,10 +18,6 @@ export function HouseRulesModal({ onClose }: { onClose: () => void }) {
 
   return (
     <Modal title="📜 Règles maison" variant="plain" className="house-rules" onClose={onClose} backdropClose>
-      <p className="hr-intro">
-        Active les règles optionnelles du Livre de base. Les changements s’appliquent aux prochains jets
-        et sont mémorisés sur cet appareil.
-      </p>
       {groups.map((g) => (
         <section key={g} className="hr-group">
           <h4 className="mini-title">{g}</h4>
@@ -56,7 +52,7 @@ function HouseRuleRow({
         )}
       </span>
       <span className="hr-control">
-        {(def.kind === 'flag' || def.kind === 'flow') && (
+        {def.kind === 'flag' && (
           <input type="checkbox" checked={val === true} onChange={(e) => onChange(def.id, e.target.checked)} />
         )}
         {def.kind === 'mode' && (

@@ -30,9 +30,11 @@ export interface TestPolicy {
 /** Policy EFFECTIVE courante (lit les règles optionnelles). Appelée à chaque Test → reflète les
  *  surcharges in-game en direct. */
 export function getTestPolicy(): TestPolicy {
+  // Largeur des bandes auto réglable (LDB 12 l.48) : 01..N réussite, (101−N)..00 échec. Défaut 5 → 01-05 / 96-00.
+  const bandWidth = rule('test-auto-band-width') as number;
   return {
-    autoSuccessMax: 5,
-    autoFailMin: 96,
+    autoSuccessMax: bandWidth,
+    autoFailMin: 101 - bandWidth,
     bandsMode: rule('test-auto-bands') as BandsMode,
     slMode: rule('test-fast-sl') ? 'fast' : 'standard',
     targetMin: 1,

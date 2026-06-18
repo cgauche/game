@@ -3,11 +3,6 @@
   max-width: min(560px, 94vw);
   text-align: left;
 }
-.house-rules .hr-intro {
-  color: var(--ink-soft, #b8a98c);
-  font-size: 0.9rem;
-  margin: 0 0 0.75rem;
-}
 .house-rules .hr-group {
   margin-bottom: 1rem;
 }

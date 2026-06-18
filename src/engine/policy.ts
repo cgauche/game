@@ -10,7 +10,7 @@
  *
  * Réf. : Livre de base, chapitre « Tests » et autres « Option : … ».
  */
-export type RuleKind = 'flag' | 'param' | 'mode' | 'flow';
+export type RuleKind = 'flag' | 'param' | 'mode';
 export type RuleValue = boolean | number | string;
 
 export interface OptionalRule {
@@ -22,7 +22,7 @@ export interface OptionalRule {
   ref: string;
   /** Sous-système (regroupement dans le panneau). */
   group: string;
-  /** Forme du contrôle auto-rendu : flag=toggle, param=nombre, mode=select, flow=toggle lourd. */
+  /** Forme du contrôle auto-rendu : flag=toggle, param=nombre, mode=select. */
   kind: RuleKind;
   /** Valeur par défaut (RAW). */
   default: RuleValue;
@@ -70,6 +70,17 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'Une valeur de Compétence/Caractéristique au-delà de 100 % n’est plus plafonnée : +1 DR par tranche de 10 % au-dessus de 100 sur une réussite.',
   },
   {
+    id: 'test-auto-band-width',
+    label: 'Largeur des bandes automatiques',
+    ref: 'LDB 12 l.48',
+    group: 'Tests',
+    kind: 'param',
+    default: 5,
+    min: 0,
+    max: 10,
+    hint: 'Largeur des bandes de réussite/échec automatiques : 01-N réussite, (101−N)-00 échec. Défaut 5 (01-05 / 96-00) ; 0 = aucune bande.',
+  },
+  {
     id: 'combat-advantage-cap',
     label: 'Plafond d’Avantage',
     ref: 'LDB 15 l.17',
@@ -79,6 +90,30 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     min: 1,
     max: 20,
     hint: 'Limiter les Avantages : valeur maximale d’Avantage qu’un combattant peut accumuler.',
+  },
+  {
+    id: 'combat-diff-cap-bonus',
+    label: 'Plafond des bonus de Difficulté',
+    ref: 'LDB 14 l.126',
+    group: 'Combat',
+    kind: 'param',
+    default: 60,
+    min: 0,
+    max: 100,
+    step: 10,
+    hint: 'Plafond de la SOMME des bonus de Difficulté d’un Test (RAW +60 = Très Facile). L’Avantage reste hors plafond.',
+  },
+  {
+    id: 'combat-diff-cap-malus',
+    label: 'Plafond des malus de Difficulté',
+    ref: 'LDB 14 l.126',
+    group: 'Combat',
+    kind: 'param',
+    default: 30,
+    min: 0,
+    max: 100,
+    step: 10,
+    hint: 'Plafond de la SOMME des malus de Difficulté d’un Test (RAW −30 = Très Difficile), exprimé en valeur positive.',
   },
   {
     id: 'combat-frappe-mortelle',

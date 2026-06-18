@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { evaluateTest, maxForcedRoll, rollTest } from './tests';
-import type { TestPolicy } from './testPolicy';
+import { getTestPolicy, type TestPolicy } from './testPolicy';
 import type { RNG } from './dice';
 import { setRule, resetRule } from './policy';
 
@@ -58,6 +58,27 @@ describe('maxForcedRoll — borne du dé forcé DÉRIVÉE de la policy (pas un n
   });
   it("'off' : pas de bande d'échec auto → plafonné à la cible", () => {
     expect(maxForcedRoll(99, P({ bandsMode: 'off' }))).toBe(99);
+  });
+});
+
+describe('Largeur des bandes automatiques (LDB 12 l.48) : param réglable, plus de 5/96 en dur', () => {
+  afterEach(() => resetRule('test-auto-band-width'));
+  it('défaut RAW : bandes 01-05 / 96-00', () => {
+    expect(getTestPolicy().autoSuccessMax).toBe(5);
+    expect(getTestPolicy().autoFailMin).toBe(96);
+  });
+  it('largeur 10 → bandes 01-10 / 91-00 (autoFailMin = 101 − largeur), effet live + maxForcedRoll suit', () => {
+    setRule('test-auto-band-width', 10);
+    expect(getTestPolicy().autoSuccessMax).toBe(10);
+    expect(getTestPolicy().autoFailMin).toBe(91);
+    expect(evaluateTest(8, 0).success).toBe(true); // 8 ≤ 10 → réussite auto (bande basse élargie)
+    expect(maxForcedRoll(99)).toBe(90); // 91 − 1
+  });
+  it('largeur 0 → aucune bande effective (01-00 hors plage)', () => {
+    setRule('test-auto-band-width', 0);
+    expect(getTestPolicy().autoSuccessMax).toBe(0);
+    expect(getTestPolicy().autoFailMin).toBe(101);
+    expect(evaluateTest(3, 0).success).toBe(false); // pas de bande basse → échec numérique
   });
 });
 

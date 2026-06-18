@@ -18,13 +18,14 @@ import { traumaDodgePenalty } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
 import { groupMatch } from './groups';
 import { ignoredArmourAP, impenetrableAt } from './items';
-import { meleeHitPenalty, isEtherial, attacksAreMagical } from './traits/dispatch';
+import { incomingAttackMod, incomingDamageNullified } from './ops';
 import { isPsychImmune } from './psychology';
 import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, rangedOpposeWeapon, isMagicWeapon } from './qualities/dispatch';
 import { QUALITY_IDS } from './qualities/ids';
 import { weaponGroupLabel } from '../data';
 import { offHandPenalty, talentDamageBonus, isSlayer, talentDamageReduction, talentRangedAPIgnore, ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust, talentInitiativeBonus, fearImmuneVs } from './combatFeatures/dispatch';
 import { isEngagedWith } from './engagement';
+import { rule } from './policy';
 
 /** Inverse le jet du toucher (23 → 32 ; « 00 » → 100). */
 export function reverseRoll(r: number): number {
@@ -195,9 +196,10 @@ export const FREE_ATTACK_LABEL: Record<string, string> = {
 };
 
 /**
- * Combiner les Difficultés (LDB `14 - _GoBack.md` l.126-131) : la somme des MALUS est plafonnée
- * à −30 (Très Difficile) et la somme des BONUS à +60 (Très Facile) ; un mélange se somme. Les
- * lignes `uncapped` (Avantage — hors table de Difficulté) s'ajoutent sans plafond.
+ * Combiner les Difficultés (LDB `14 - _GoBack.md` l.126-131) : la somme des MALUS et la somme des
+ * BONUS sont chacune plafonnée (RAW +60 Très Facile / −30 Très Difficile) ; un mélange se somme. Les
+ * deux plafonds sont des règles optionnelles (`combat-diff-cap-bonus`/`-malus`). Les lignes `uncapped`
+ * (Avantage — hors table de Difficulté) s'ajoutent sans plafond.
  */
 export function combineMods(mods: ModLine[]): number {
   let pos = 0;
@@ -208,7 +210,9 @@ export function combineMods(mods: ModLine[]): number {
     else if (m.value >= 0) pos += m.value;
     else neg += m.value;
   }
-  return free + Math.min(60, pos) + Math.max(-30, neg);
+  const capBonus = rule('combat-diff-cap-bonus') as number;
+  const capMalus = rule('combat-diff-cap-malus') as number;
+  return free + Math.min(capBonus, pos) + Math.max(-capMalus, neg);
 }
 
 /**
@@ -265,7 +269,7 @@ export function attackModifiers(
     const vuln = meleeAttackerBonus(target);
     if (vuln) out.push({ label: 'Cible vulnérable', value: vuln });
     // Parasité (LDB 85 p.340) : −10 pour toucher la créature en Corps à corps (vermine perturbante).
-    const para = meleeHitPenalty(target.traits);
+    const para = incomingAttackMod(target, 'melee');
     if (para) out.push({ label: 'Parasité', value: para });
   }
   // +10 au plus petit, mêlée ET tir (LDB 85 l.301-303). Une Nuée ignore TOUTES les règles de Taille (l.200).
@@ -546,7 +550,7 @@ function combineOpposed(
  * meilleur : une réussite **critique** (double choisi). À distance, les Dégâts sont ceux
  * d'un tir **à bout portant** (+6 DR ≈ le +60 au toucher de la bande de portée). Le jet
  * brut est conservé pour la Localisation et l'Atout Empaleuse (le tireur peut la choisir,
- * non modélisé). Variante MJ « tue automatiquement » non retenue (trop sèche pour un héros à terre).
+ * non modélisé).
  */
 function helplessTest(atk: TestResult, kind: 'melee' | 'ranged'): TestResult {
   const dr = Math.max(atk.sl, 0) + (kind === 'ranged' ? 6 : 0);
@@ -589,31 +593,33 @@ export function resolveMelee(
 }
 
 /**
- * Modificateur de portée d'un tir (table des Difficultés de Combat, LDB `14 - _GoBack.md`
- * l.82-118, transcrite ici) : Bout portant (≤ Portée÷10) **+60** (l.82), Courte (≤ Portée÷2)
- * **+40** (l.88), Moyenne (≤ Portée) **+0** (l.96), Longue (≤ Portée×2) **−10** (l.99),
- * Extrême (≤ Portée×3) **−30** (l.118) ; au-delà = hors de portée (null). Échelle 1 case = 2 m
- * (LDB Déplacement l.55). `rangeMeters` = Portée de l'arme en mètres.
+ * Bandes de portée d'un tir (table des Difficultés de Combat, LDB `14 - _GoBack.md` l.82-118) :
+ * Bout portant (≤ Portée÷10) +60, Courte (≤ Portée÷2) +40, Moyenne (≤ Portée) +0, Longue (≤ Portée×2)
+ * −10, Extrême (≤ Portée×3) −30 ; au-delà = hors de portée. Échelle 1 case = 2 m (LDB Déplacement l.55).
+ * SOURCE UNIQUE des seuils : le modificateur ET le nom y lisent. `rangeMeters` = Portée de l'arme en m.
  */
-export function rangeBandModifier(distanceTiles: number, rangeMeters: number): number | null {
-  const m = distanceTiles * 2;
-  if (m <= rangeMeters / 10) return 60; // Bout portant — Très Facile
-  if (m <= rangeMeters / 2) return 40; // Courte — Facile
-  if (m <= rangeMeters) return 0; // Moyenne — Intermédiaire
-  if (m <= rangeMeters * 2) return -10; // Longue — Complexe
-  if (m <= rangeMeters * 3) return -30; // Extrême — Très Difficile
-  return null;
+const RANGE_BANDS: { maxFactor: number; mod: number; name: string }[] = [
+  { maxFactor: 1 / 10, mod: 60, name: 'Bout portant' },
+  { maxFactor: 1 / 2, mod: 40, name: 'Courte portée' },
+  { maxFactor: 1, mod: 0, name: 'Moyenne' },
+  { maxFactor: 2, mod: -10, name: 'Longue' },
+  { maxFactor: 3, mod: -30, name: 'Extrême' },
+];
+
+/** Bande de portée applicable, ou null si hors de portée (au-delà de Portée×3). */
+function rangeBandAt(distanceTiles: number, rangeMeters: number): { mod: number; name: string } | null {
+  const m = distanceTiles * 2; // 1 case = 2 m
+  return RANGE_BANDS.find((b) => m <= rangeMeters * b.maxFactor) ?? null;
 }
 
-/** Nom de la bande de portée (mêmes seuils que `rangeBandModifier`) — pour l'affichage. */
+/** Modificateur de portée d'un tir (LDB l.82-118) ; null si hors de portée. */
+export function rangeBandModifier(distanceTiles: number, rangeMeters: number): number | null {
+  return rangeBandAt(distanceTiles, rangeMeters)?.mod ?? null;
+}
+
+/** Nom de la bande de portée — pour l'affichage. */
 export function rangeBandName(distanceTiles: number, rangeMeters: number): string | null {
-  const m = distanceTiles * 2;
-  if (m <= rangeMeters / 10) return 'Bout portant';
-  if (m <= rangeMeters / 2) return 'Courte portée';
-  if (m <= rangeMeters) return 'Moyenne';
-  if (m <= rangeMeters * 2) return 'Longue';
-  if (m <= rangeMeters * 3) return 'Extrême';
-  return null;
+  return rangeBandAt(distanceTiles, rangeMeters)?.name ?? null;
 }
 
 /**
@@ -782,7 +788,7 @@ function applyHit(
   const loc = forcedLoc ?? hitLocationByShape(reverseRoll(atkBd.roll), defender.bodyShape);
   // Éthéré (LDB 85 p.339) : « ne peut être blessée que par les Attaques magiques » — une attaque
   // non magique (créature non Magique/Démoniaque, arme non magique) passe au travers : 0 Blessure.
-  if (isEtherial(defender) && !attacksAreMagical(attacker) && !isMagicWeapon(weapon)) {
+  if (incomingDamageNullified(defender, attacker, isMagicWeapon(weapon))) {
     return {
       hit: true, attackerRoll: atkBd.roll, attackerDetail: atkBd, netSL: dr, location: loc,
       damage: 0, woundsLost: 0, critical: false, advantageTo: 'attacker', defenderDefeated: false,
