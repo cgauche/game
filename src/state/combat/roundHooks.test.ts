@@ -1,0 +1,46 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import './roundHooks'; // effet de bord : enregistre le hook se-fatiguer
+import { runCombatHooks, type CombatHookCtx } from '../combatHooks';
+import { setRule, resetRule } from '../../engine/policy';
+import { seedBattleRng } from '../battleRng';
+import { hasCondition, COND } from '../../engine/conditions';
+import type { Combatant } from '../../engine/types';
+
+const combatant = (over: Partial<Combatant>): Combatant =>
+  ({
+    id: 'x', name: 'X', kind: 'enemy',
+    characteristics: { E: 1 }, skills: [], talents: [], conditions: [], activeEffects: [], liveTraits: [],
+    wounds: { current: 10, max: 10, base: 10 }, advantage: 0,
+    ...over,
+  }) as unknown as Combatant;
+
+const ctx = (combatants: Combatant[]): CombatHookCtx =>
+  ({ get: (() => {}) as never, set: (() => {}) as never, battle: { combatants } as never, sink: () => {} });
+
+describe('roundHooks — se-fatiguer (combat-se-fatiguer, LDB 16 l.99)', () => {
+  beforeEach(() => resetRule('combat-se-fatiguer'));
+
+  it('règle OFF (défaut) : aucun effet, le compteur ne bouge pas', () => {
+    const c = combatant({ effortRounds: 5 });
+    runCombatHooks('roundBoundary', ctx([c]));
+    expect(c.effortRounds).toBe(5);
+    expect(hasCondition(c, COND.extenue)).toBe(false);
+  });
+
+  it('sous le seuil (Bonus d’Endurance Rounds) : accumule sans Test ni État', () => {
+    setRule('combat-se-fatiguer', true);
+    const c = combatant({ characteristics: { E: 35 } as never, effortRounds: 0 }); // BE=3 → seuil 3
+    runCombatHooks('roundBoundary', ctx([c]));
+    expect(c.effortRounds).toBe(1);
+    expect(hasCondition(c, COND.extenue)).toBe(false);
+  });
+
+  it('au seuil, Test de Résistance raté → État Exténué, compteur remis à zéro', () => {
+    setRule('combat-se-fatiguer', true);
+    seedBattleRng(4); // 1ᵉʳ d100 = 93 → Test de Résistance raté (cible ≈ Endurance basse)
+    const c = combatant({ effortRounds: 0 }); // E=1 → seuil 1
+    runCombatHooks('roundBoundary', ctx([c]));
+    expect(hasCondition(c, COND.extenue)).toBe(true);
+    expect(c.effortRounds).toBe(0);
+  });
+});

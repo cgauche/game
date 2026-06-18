@@ -247,6 +247,15 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'roll-i = 1d10 + Initiative (défaut) ; fixed-i = Initiative fixe, sans dé (ordre stable d’un Round à l’autre) ; roll-bi = 1d10 + Bonus d’Initiative + Bonus d’Agilité.',
   },
   {
+    id: 'combat-se-fatiguer',
+    label: 'Se fatiguer au combat',
+    ref: 'LDB 16 l.99',
+    group: 'Combat',
+    kind: 'flag',
+    default: false,
+    hint: 'Un effort soutenu épuise : après Bonus d’Endurance Rounds de combat, Test de Résistance — échec = État Exténué. Désactivé par défaut.',
+  },
+  {
     id: 'combat-cadence',
     label: 'Cadence de combat',
     ref: 'maison',

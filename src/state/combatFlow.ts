@@ -165,6 +165,8 @@ export * from './combatManeuvers';
 // --- Refonte par coutures : registre de hooks de cycle de vie + mise en place (barils, modules FEUILLES) ---
 export * from './combatHooks';
 export * from './combatSetup';
+import { runCombatHooks } from './combatHooks';
+import './combat/roundHooks'; // effet de bord : enregistre les hooks de franchissement de Round (se-fatiguer…)
 import {
   emitCreatureAttackAnim, trampleTarget, bestDefenseMode,
   rollManeuverAttacker, maneuverAttackerDifficulty, resolveManeuver,
@@ -3394,6 +3396,9 @@ export function advanceTurn(get: Get, set: SetFn) {
       zonesRoundTick(battle.zones, battle.combatants, battleRng()).forEach((t) => tickLine(t.line, t.combatant)); // zones perRound (Grands feux d'U'Zhul, LDB 47 : « au début d'un Round »)
       for (const c of battle.combatants) if (isOutOfAction(c)) clearPsychOf(battle.combatants, c.id); // effets psy d'une créature morte → fin (catch-all toutes causes de mort)
       purgeExpiredSummons(battle, round).forEach((l) => tickLine(l)); // invocations à durée écoulée OU lanceur tombé (state/summonFlow)
+      // Couture d'extension du franchissement de Round (refonte par hooks) : les règles/features de fin de
+      // Round s'enregistrent en hooks `roundBoundary` (ex. se-fatiguer). Inerte tant qu'aucun hook actif.
+      runCombatHooks('roundBoundary', { get, set, battle, sink: tickLine });
       if (heroRoundLines.length) pushReveal(set, { kind: 'round', title: `Fin du Round ${round - 1}`, lines: heroRoundLines, severity: 'minor' }); // (entretien HÉROS — auto-fermée)
       // Maniement de deux armes : le −10 défensif expire au DÉBUT du prochain Tour de son porteur. Si ce
       // porteur est order[0] (il rejoue en premier), c'est ICI (le franchissement de Round) que son Tour démarre.

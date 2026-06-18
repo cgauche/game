@@ -491,6 +491,9 @@ export interface Combatant {
   pendingFreeAttacks?: string[];
   /** A chargé ce tour → ouvre une Attaque gratuite de Cornes (LDB 85) si la créature a le trait. */
   chargedThisTurn?: boolean;
+  /** Règle optionnelle « se fatiguer » (LDB 16 l.99) : Rounds d'effort soutenu accumulés ; à BE Rounds,
+   *  Test de Résistance → échec = Exténué. Inerte tant que la règle `combat-se-fatiguer` est inactive. */
+  effortRounds?: number;
   /** Attaques GRATUITES de manœuvre déjà jouées ce TOUR, COMPTÉES par type (LDB 85 : « pendant son tour,
    *  la créature peut effectuer UNE Attaque gratuite » → plafond 1/tour ; exception « une Attaque par
    *  tentacule » → `count`/tour). Remplace l'ancien booléen tentacule ; remis à zéro en début de tour. */
