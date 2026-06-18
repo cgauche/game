@@ -92,6 +92,15 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'Limiter les Avantages : valeur maximale d’Avantage qu’un combattant peut accumuler.',
   },
   {
+    id: 'combat-advantage-cap-bi',
+    label: 'Plafond d’Avantage = Bonus d’Initiative',
+    ref: 'LDB 15 l.15',
+    group: 'Combat',
+    kind: 'flag',
+    default: false,
+    hint: 'L’Avantage d’un combattant ne peut dépasser son Bonus d’Initiative (plafond par combattant). Prime sur le plafond fixe ci-dessus.',
+  },
+  {
     id: 'combat-diff-cap-bonus',
     label: 'Plafond des bonus de Difficulté',
     ref: 'LDB 14 l.126',

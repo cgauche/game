@@ -1,6 +1,6 @@
 import { PortraitTile } from './PortraitTile';
 import { StateChips } from './StateChips';
-import { advantageCap } from '../engine/advantage';
+import { advantageCapFor } from '../engine/advantage';
 import type { Combatant } from '../engine/types';
 
 /** Jauge CRANTÉE à taille fixe : N segments égaux dans une longueur constante (2 ou 150 points →
@@ -36,7 +36,7 @@ export function ActiveFrame({ c, ring, isHero, actAvail, actMax, moveLeft, moveM
       {isHero && <Notches kind="action" vertical value={actAvail} max={actMax} spend={spendAction} title={`Action : ${actAvail}/${actMax}`} />}
       <div className="af-mid">
         <PortraitTile c={c} ring={ring} variant="vital" size="lg" team={isHero ? 'ally' : 'enemy'} title={title} />
-        <Notches kind="adv" value={Math.min(c.advantage, advantageCap())} max={advantageCap()} gain={gainAdv} title={`Avantage : ${c.advantage}/${advantageCap()}`} />
+        <Notches kind="adv" value={Math.min(c.advantage, advantageCapFor(c))} max={advantageCapFor(c)} gain={gainAdv} title={`Avantage : ${c.advantage}/${advantageCapFor(c)}`} />
       </div>
       {isHero && <Notches kind="move" vertical value={moveLeft} max={moveMax} spend={spendMove} title={`Mouvement : ${moveLeft}/${moveMax} case${moveMax > 1 ? 's' : ''}`} />}
       {/* États / buffs (TOUS) À DROITE de la jauge de Mouvement — plus en débordement derrière elle. */}
