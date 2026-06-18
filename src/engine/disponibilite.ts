@@ -42,6 +42,19 @@ export function rollAvailability(av: Availability, settlement: Settlement, rng: 
   return { inStock: true, qty: Math.max(1, classQty(av, baseQty(settlement, rng))), test: { roll, target } };
 }
 
+/** Stock SANS Test de Disponibilité (règle optionnelle « système d'achat/vente simplifié », LDB 59 l.15) :
+ *  tout article disponible (Exotique et availability nulle exclus) à sa quantité de classe. Le rng ne sert
+ *  qu'à la quantité de base (Ville 1d10). */
+export function fullStock(catalog: CatalogItem[], settlement: Settlement, rng: RNG): StockLine[] {
+  const out: StockLine[] = [];
+  for (const it of catalog) {
+    const av = it.availability;
+    if (av !== 'Commune' && av !== 'Limitée' && av !== 'Rare') continue; // Exotique + null exclus
+    out.push({ id: it.id, label: it.label, qty: Math.max(1, classQty(av, baseQty(settlement, rng))) });
+  }
+  return out;
+}
+
 /** Instantané de stock : pour chaque article du catalogue, Test de Disponibilité (sauf Commune/curaté).
  *  Exotique exclu sauf curaté ; `availability` nulle/inconnue → exclue. Déterministe pour un seed donné. */
 export function rollStock(catalog: CatalogItem[], settlement: Settlement, rng: RNG, curated: string[] = []): StockLine[] {

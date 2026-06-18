@@ -8,12 +8,13 @@ import { Combatant, ItemInstance } from '../engine/types';
 import { recomputeLoadout, itemFromTrappingById, addItemToHero } from '../engine/items';
 import { repairCostBrass } from '../engine/repair';
 import { bargainBuyFactor, bargainSellFactor } from '../engine/bargain';
-import { craftPriceFactor } from '../engine/qualities/craftEconomy';
+import { craftPriceFactor, shiftAvailability } from '../engine/qualities/craftEconomy';
+import { rule } from '../engine/policy';
 import { partyBest } from '../engine/skills';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { appraiseEstimate } from '../engine/appraisal';
 import { makeRNG } from '../engine/dice';
-import { rollStock, type Settlement, type CatalogItem } from '../engine/disponibilite';
+import { rollStock, fullStock, type Settlement, type CatalogItem } from '../engine/disponibilite';
 import { priceToMoney, subtract as moneySub, add as moneyAdd, canAfford, fromBrass, toBrass, formatMoney } from '../engine/money';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { findTrappingById, trappings, qualityRuntime } from '../data/index';
@@ -69,15 +70,25 @@ export function openMerchant(get: Get, set: Set, entityId: string): void {
   const prev = get().merchantStocks[entityId];
   // Re-stock dans le temps (#T3) : on conserve le stock DÉPLÉTÉ entre visites ; on ne re-tire un stock
   // FRAIS (nouvelle Disponibilité) que si `restockPeriod` s'est écoulé depuis le dernier tirage.
+  // Règles optionnelles « Marché » (LDB 59/60) : Guildes d'Artisans (Atouts/Défauts inversent la
+  // Disponibilité) ; système simplifié (pas de Test de Disponibilité) ; cf. `market-guild`/`market-mode`.
+  const guild = !!rule('market-guild');
+  const marketMode = rule('market-mode') as string;
   let stock = prev?.stock;
   if (!prev || now - prev.rolledAt >= restockPeriod) {
     const cat: CatalogItem[] = trappings
       .filter((t) => (!arch.category.types || arch.category.types.includes(t.type)) && (!arch.category.subTypes || (t.subType != null && arch.category.subTypes.includes(t.subType))))
-      .map((t) => ({ id: t.id, label: t.label, availability: (t.availability as CatalogItem['availability']) ?? null }));
+      .map((t) => {
+        const base = (t.availability as CatalogItem['availability']) ?? null;
+        const av = guild && base ? shiftAvailability(base, { qualities: t.qualities.map(qualityRuntime) }, { guild: true }) : base;
+        return { id: t.id, label: t.label, availability: av };
+      });
     // Seed dérivé de l'entité ET de la PÉRIODE de réassort → chaque réassort a un stock frais déterministe.
     const period = Math.floor(now / restockPeriod);
     const seed = [...`${entityId}:${period}`].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7) >>> 0;
-    const lines = rollStock(cat, settlement, makeRNG(seed), arch.curated);
+    const lines = marketMode === 'sans-disponibilite' || marketMode === 'simplifie'
+      ? fullStock(cat, settlement, makeRNG(seed))
+      : rollStock(cat, settlement, makeRNG(seed), arch.curated);
     stock = lines.map((l) => ({ id: l.id, qty: l.qty }));
     const tested = lines.filter((l) => l.test);
     if (tested.length) get().log(`Marché (${settlement}) : ${tested.map((l) => `${l.label} ✔×${l.qty}`).join(', ')}.`);
@@ -327,6 +338,8 @@ export function repairArmour(get: Get, set: Set, uid: string, heroId: string): v
 
 export function startBargain(get: Get, set: Set, mode: 'buy' | 'sell'): void {
   const m = get().merchant; if (!m) return;
+  const mkt = rule('market-mode') as string;
+  if (mkt === 'sans-marchandage' || mkt === 'simplifie') return; // Marchandage désactivé (règle optionnelle LDB 59 l.15)
   if (m.soured) return; // botch antérieur : le marchand se méfie, plus de marchandage (LDB 60 l.12)
   if (m.bargainLocked) return; // VERROU PARTAGÉ : a refusé/renié un marché (achat OU vente) → plus de négociation jusqu'au réassort
   if (mode === 'buy' ? m.bargainBuy : m.bargainSell) return; // 1 marchandage par MODE et par visite (achat ≠ vente)

@@ -16,6 +16,7 @@ import { combatValue } from '../engine/combat';
 import { seedBattleRng } from './battleRng';
 import type { AttackResult } from '../engine/combat';
 import { CAMPAIGN_START, MINUTES_PER_DAY } from '../engine/clock';
+import { setRule, resetRule } from '../engine/policy';
 import { TIME_COST } from '../engine/timeCost';
 import { toBrass } from '../engine/money';
 import { talentConcrete } from '../data';
@@ -2956,5 +2957,46 @@ describe('viewMode (vue du dessus)', () => {
     useGame.setState({ viewMode: 'top' });
     useGame.getState().startScene(emptyScene());
     expect(useGame.getState().viewMode).toBe('top');
+  });
+});
+
+describe('Marché — règles optionnelles (market-mode / market-guild)', () => {
+  beforeEach(() => reset());
+  afterEach(() => { resetRule('market-mode'); resetRule('market-guild'); });
+  const hero = (): Combatant => ({ id: 'h', name: 'H', items: [], characteristics: { Soc: 35 }, skills: [], wounds: { current: 10, max: 10 }, conditions: [], weapons: [], armour: {} } as unknown as Combatant);
+  const merchantScene = () => {
+    const sc = emptyScene(4, 4); sc.id = 'm';
+    sc.entities.push({ id: 'pnj', kind: 'personnage', pos: { x: 0, y: 0 }, merchant: { archetype: 'armurier' } });
+    return sc;
+  };
+
+  it("market-mode 'sans-disponibilite' : le stock est un superset du mode complet (tout le catalogue, pas de Test)", () => {
+    useGame.setState({ party: [hero()], scene: merchantScene() });
+    useGame.getState().openMerchant('pnj');
+    const complet = useGame.getState().merchant!.stock.length;
+    useGame.setState({ merchant: null, merchantStocks: {} });
+    setRule('market-mode', 'sans-disponibilite');
+    useGame.getState().openMerchant('pnj');
+    const sansDispo = useGame.getState().merchant!.stock.length;
+    expect(sansDispo).toBeGreaterThan(0);
+    expect(sansDispo).toBeGreaterThanOrEqual(complet);
+  });
+
+  it("market-mode 'sans-marchandage' : startBargain ne propose plus de Marchandage", () => {
+    useGame.setState({ party: [hero()], scene: merchantScene() });
+    useGame.getState().openMerchant('pnj');
+    useGame.getState().startBargain('buy');
+    expect(useGame.getState().pendingBargain).not.toBeNull(); // complet : Marchandage proposé
+    useGame.setState({ pendingBargain: null });
+    setRule('market-mode', 'sans-marchandage');
+    useGame.getState().startBargain('buy');
+    expect(useGame.getState().pendingBargain).toBeNull(); // désactivé
+  });
+
+  it('market-guild : openMerchant produit un stock valide (Guildes câblées sans casse)', () => {
+    useGame.setState({ party: [hero()], scene: merchantScene() });
+    setRule('market-guild', true);
+    useGame.getState().openMerchant('pnj');
+    expect(useGame.getState().merchant!.stock.length).toBeGreaterThan(0);
   });
 });

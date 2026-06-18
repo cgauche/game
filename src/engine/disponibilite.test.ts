@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
-import { rollAvailability, rollStock, DISPO_PCT, type CatalogItem } from './disponibilite';
+import { rollAvailability, rollStock, fullStock, DISPO_PCT, type CatalogItem } from './disponibilite';
 
 describe('disponibilite — Disponibilité RAW (LDB 59 p.292)', () => {
   it('table RAW : Limitée 30/60/90, Rare 15/30/45', () => {
@@ -47,5 +47,19 @@ describe('disponibilite — Disponibilité RAW (LDB 59 p.292)', () => {
     expect(a.find((l) => l.label === 'Clavecin')).toBeUndefined(); // Exotique exclu
     const withCurated = rollStock(cat, 'ville', makeRNG(7), ['Clavecin']);
     expect(withCurated.find((l) => l.label === 'Clavecin')!.qty).toBeGreaterThan(0); // curaté forcé
+  });
+  it('fullStock (système simplifié, LDB 59 l.15) : tout sauf Exotique/null en stock sans Test', () => {
+    const cat: CatalogItem[] = [
+      { id: 'epee', label: 'Épée', availability: 'Commune' },
+      { id: 'arquebuse', label: 'Arquebuse', availability: 'Rare' },
+      { id: 'clavecin', label: 'Clavecin', availability: 'Exotique' },
+      { id: 'nd', label: 'Inconnu', availability: null },
+    ];
+    const s = fullStock(cat, 'ville', makeRNG(7));
+    expect(s.find((l) => l.label === 'Épée')!.qty).toBeGreaterThan(0);
+    expect(s.find((l) => l.label === 'Arquebuse')!.qty).toBeGreaterThan(0); // Rare présente SANS Test de Disponibilité
+    expect(s.every((l) => l.test === undefined)).toBe(true); // aucun Test de Disponibilité
+    expect(s.find((l) => l.label === 'Clavecin')).toBeUndefined(); // Exotique exclu
+    expect(s.find((l) => l.label === 'Inconnu')).toBeUndefined(); // availability nulle exclue
   });
 });

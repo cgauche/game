@@ -180,6 +180,25 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     default: true,
     hint: 'Étape optionnelle ADE2 : un signe astral (1d100, +25 PX si le tirage est gardé) qui modifie les attributs de départ ou octroie un Talent, plus l’ascendant et les demeures célestes (flavor). Désactiver retire l’étape du créateur.',
   },
+  {
+    id: 'market-mode',
+    label: 'Système d’achat / vente',
+    ref: 'LDB 59 l.15',
+    group: 'Marché',
+    kind: 'mode',
+    default: 'complet',
+    options: ['complet', 'sans-disponibilite', 'sans-marchandage', 'simplifie'],
+    hint: 'complet = Disponibilité + Marchandage (RAW) ; sans-disponibilite = tout en stock (pas de Test) ; sans-marchandage = prix fixes (pas de jet opposé) ; simplifie = les deux désactivés.',
+  },
+  {
+    id: 'market-guild',
+    label: 'Guildes d’Artisans',
+    ref: 'LDB 60 l.69',
+    group: 'Marché',
+    kind: 'flag',
+    default: false,
+    hint: 'Marché dans une ville à Guilde : les Défauts d’un objet réduisent sa Disponibilité (plus rare) et le premier Atout ne l’augmente pas.',
+  },
 ];
 
 const RULES_BY_ID = new Map<string, OptionalRule>(OPTIONAL_RULES.map((r) => [r.id, r]));
