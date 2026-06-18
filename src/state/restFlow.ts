@@ -30,6 +30,7 @@ import { hasHealSkill } from '../engine/healing';
 import { isOutOfAction, addCondition, removeCondition, loseWounds } from '../engine/conditions';
 import { restRecovery, restResistVal, applyRecoveryDay, needsRecoveryRoll, recoveryTarget, type RestRoll } from '../engine/rest';
 import { rollContraction, DISEASE_DEFS, contagiousDiseases, contractionDue, applyContraction, applyDiseaseBlesse, applyDiseaseGangrene, applyDiseasePersist, activeMalaiseCount } from '../engine/disease';
+import { rule } from '../engine/policy';
 import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import { applyFractureEnd } from '../engine/trauma';
 import type { DeferredUpkeepTest } from './upkeep';
@@ -160,7 +161,8 @@ export function sleepParty(
   }
 
   // Contagion de promiscuité (chambrée/campement — LDB 20 l.185, 1 Test de Contraction par jour).
-  for (const c of runContagion(party, n, rng)) {
+  // Règle optionnelle « Utilisation des Maladies » : désactivée si disease-mode = off.
+  for (const c of rule('disease-mode') === 'off' ? [] : runContagion(party, n, rng)) {
     entries.push({ actorId: c.actorId, icon: '🤒', label: `Contagion (${c.dz})`, text: c.log.join(' '), tone: 'bad' });
     journal.push(...c.log);
   }

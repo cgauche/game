@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { finalizeBattle, applyEffects } from './combatFlow';
 import { contractDisease } from '../engine/disease';
 import { seedBattleRng, battleRng } from './battleRng';
+import { setRule, resetRule } from '../engine/policy';
 import type { Combatant } from '../engine/types';
 
 const hero = (p: Partial<Combatant>): Combatant =>
@@ -54,6 +55,46 @@ describe('finalizeBattle — infection post-critique (LDB 20 l.72) & persistance
     useGame.setState({ party: [hero({ id: 'a' })] });
     finalizeBattle(useGame.getState, useGame.setState);
     expect(useGame.getState().party[0].diseases?.map((d) => d.name)).toEqual(['infection-mineure']);
+  });
+});
+
+describe('finalizeBattle — règle « Utilisation des Maladies » (disease-mode, LDB 20 l.36)', () => {
+  beforeEach(() => { seedBattleRng(4); useGame.setState({ mode: 'exploration', journal: [] }); });
+  afterEach(() => resetRule('disease-mode'));
+  const e30 = { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+
+  it("'off' : pas d'Infection Mineure post-critique, flag tookCriticalThisFight consommé", () => {
+    setRule('disease-mode', 'off');
+    const c = hero({ id: 'a', characteristics: e30, tookCriticalThisFight: true });
+    setBattle([c]); useGame.setState({ party: [hero({ id: 'a', characteristics: e30 })] });
+    finalizeBattle(useGame.getState, useGame.setState);
+    expect(useGame.getState().party[0].diseases ?? []).toHaveLength(0);
+    expect(c.tookCriticalThisFight).toBe(false);
+  });
+
+  it("'situational' : pas d'Infection Mineure post-critique (sautée comme en 'off')", () => {
+    setRule('disease-mode', 'situational');
+    const c = hero({ id: 'a', characteristics: e30, tookCriticalThisFight: true });
+    setBattle([c]); useGame.setState({ party: [hero({ id: 'a', characteristics: e30 })] });
+    finalizeBattle(useGame.getState, useGame.setState);
+    expect(useGame.getState().party[0].diseases ?? []).toHaveLength(0);
+  });
+
+  it("'situational' : GARDE la Blessure Purulente d'un Trait Infecté (Skavens/Nurgle)", () => {
+    setRule('disease-mode', 'situational');
+    const c = hero({ id: 'a', characteristics: e30, woundedByInfected: true });
+    setBattle([c]); useGame.setState({ party: [hero({ id: 'a', characteristics: e30 })] });
+    finalizeBattle(useGame.getState, useGame.setState);
+    expect(useGame.getState().party[0].diseases?.some((d) => d.name === 'blessure-purulente')).toBe(true);
+  });
+
+  it("'off' : pas de Blessure Purulente + marqueur woundedByInfected purgé", () => {
+    setRule('disease-mode', 'off');
+    const c = hero({ id: 'a', characteristics: e30, woundedByInfected: true });
+    setBattle([c]); useGame.setState({ party: [hero({ id: 'a', characteristics: e30 })] });
+    finalizeBattle(useGame.getState, useGame.setState);
+    expect(useGame.getState().party[0].diseases ?? []).toHaveLength(0);
+    expect(c.woundedByInfected).toBe(false);
   });
 });
 

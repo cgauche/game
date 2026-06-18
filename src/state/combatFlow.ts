@@ -3007,13 +3007,17 @@ export function finalizeBattle(get: Get, set: SetFn): void {
   // « Après un combat où vous avez subi une Blessure critique » (LDB 20 l.72) : Test de Résistance Très
   // Facile (+60) ou Infection Mineure. Auto-résolu (comme le Test de Résistance interne d'un critique) sur
   // les héros survivants ; mute le combattant AVANT le report d'état (carryOverState copie `diseases`).
+  // Règle optionnelle « Utilisation des Maladies » (LDB 20 l.36) : full (RAW) / situational (pas
+  // d'Infection Mineure post-critique mais garde Infecté/Maladie — Skavens/Nurgle) / off (aucune maladie ;
+  // les marqueurs sont quand même purgés pour ne pas reporter au combat suivant).
+  const dm = rule('disease-mode') as string;
   const infectLog: string[] = [];
   for (const c of battle.combatants) {
     if (c.kind !== 'hero' || !c.tookCriticalThisFight) continue;
     const dressed = c.woundDressed; // pansement/Guérison pendant le combat → pas d'Infection (LDB 18 l.382)
     c.tookCriticalThisFight = false; // consommé (idempotent même si finalizeBattle est rappelé)
     c.woundDressed = false;
-    if (c.dead || dressed) continue;
+    if (c.dead || dressed || dm !== 'full') continue; // 'situational'/'off' : pas d'Infection Mineure post-critique
     const resVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
     infectLog.push(...rollContraction(c, 'infection-mineure', resVal, 'tresFacile', battleRng()));
   }
@@ -3022,13 +3026,15 @@ export function finalizeBattle(get: Get, set: SetFn): void {
   // du Rongeur. Trait Maladie (Type) (LDB 85 p.340) : Test de Contraction de la maladie portée.
   for (const c of battle.combatants) {
     if (c.kind !== 'hero' || c.dead) continue;
-    const resVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
-    if (c.woundedByInfected) infectLog.push(...rollContraction(c, 'blessure-purulente', resVal, 'facile', battleRng()));
-    if (c.woundedByRodent) infectLog.push(...rollContraction(c, 'fievre-du-rongeur', resVal, 'accessible', battleRng()));
-    for (const name of c.diseaseExposure ?? []) {
-      const def = DISEASE_DEFS[name] ?? Object.values(DISEASE_DEFS).find((d) => d.name.toLowerCase() === name.toLowerCase());
-      if (def) infectLog.push(...rollContraction(c, def.name, resVal, def.contractDifficulty, battleRng()));
-      else infectLog.push(`${c.name} a été exposé à : ${name} (maladie non répertoriée — arbitrage MJ).`);
+    if (dm !== 'off') { // 'off' : aucune contraction (les marqueurs sont purgés ci-dessous quoi qu'il arrive)
+      const resVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
+      if (c.woundedByInfected) infectLog.push(...rollContraction(c, 'blessure-purulente', resVal, 'facile', battleRng()));
+      if (c.woundedByRodent) infectLog.push(...rollContraction(c, 'fievre-du-rongeur', resVal, 'accessible', battleRng()));
+      for (const name of c.diseaseExposure ?? []) {
+        const def = DISEASE_DEFS[name] ?? Object.values(DISEASE_DEFS).find((d) => d.name.toLowerCase() === name.toLowerCase());
+        if (def) infectLog.push(...rollContraction(c, def.name, resVal, def.contractDifficulty, battleRng()));
+        else infectLog.push(`${c.name} a été exposé à : ${name} (maladie non répertoriée — arbitrage MJ).`);
+      }
     }
     c.woundedByInfected = false;
     c.woundedByRodent = false;

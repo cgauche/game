@@ -30,6 +30,7 @@ import { effectiveChar, bonus } from '../engine/characteristics';
 import { loseWounds } from '../engine/conditions';
 import { DIFFICULTY_MODIFIERS, type UpkeepDeferTest } from '../engine/types';
 import { dailyDiseaseUpkeep, restResistVal } from '../engine/rest';
+import { rule } from '../engine/policy';
 import { dropExpiredGrantedTraits } from '../engine/grantedTraits';
 import { dropExpiredGrantedResources } from '../engine/grantedResources';
 import { dropExpiredGrantedWeapons } from '../engine/conjuredWeapons';
@@ -115,8 +116,8 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
       if (r.rationConsumed) rations++;
       if (r.damage > 0) loseWounds(h, r.damage);
       lines.push(...r.log);
-      // 2. Maladies (LDB 20 — jours calendaires, #T3).
-      lines.push(...dailyDiseaseUpkeep(h, battleRng(), opts.caredFor, defer));
+      // 2. Maladies (LDB 20 — jours calendaires, #T3). Règle optionnelle : désactivable (disease-mode off).
+      if (rule('disease-mode') !== 'off') lines.push(...dailyDiseaseUpkeep(h, battleRng(), opts.caredFor, defer));
       // 3. Convalescence des Blessures critiques (LDB 18 — jours calendaires, #T3).
       lines.push(...tickTraumaRecovery(h, 1, battleRng(), restResistVal(h), defer));
     }

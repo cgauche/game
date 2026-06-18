@@ -217,6 +217,16 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     default: true,
     hint: 'Un personnage elfe perd 1 Activité (interlude ≥ 3 semaines) pour son devoir envers les siens. Désactiver lève cette restriction.',
   },
+  {
+    id: 'disease-mode',
+    label: 'Utilisation des maladies',
+    ref: 'LDB 20 l.36',
+    group: 'Maladies',
+    kind: 'mode',
+    default: 'full',
+    options: ['full', 'situational', 'off'],
+    hint: 'full = toutes les expositions (RAW) ; situational = pas d’Infection Mineure post-critique, mais Infecté/Maladie conservés (Skavens/Nurgle) ; off = aucune maladie (ni contraction, ni progression, ni contagion).',
+  },
 ];
 
 const RULES_BY_ID = new Map<string, OptionalRule>(OPTIONAL_RULES.map((r) => [r.id, r]));
