@@ -9,6 +9,23 @@ import { effectiveChar } from './characteristics';
 import { testStatePenalty } from './conditions';
 import { agilityTestPenalty } from './encumbrance';
 import { traumaSkillPenalty, passiveSkillSum, passiveTestMod } from './trauma';
+import { rule } from './policy';
+
+/** Règles optionnelles « caractéristique alternative » (LDB 09) : Métier comme Savoir → Int (l.352) ;
+ *  Intimidation → carac réglable F/FM/Int (l.266). Renvoie la CharKey de base à utiliser pour le Test
+ *  (inchangée si aucune règle ne s'applique). N'opère que sur une COMPÉTENCE nommée (pas une carac brute). */
+function altCharKey(c: Combatant, low: string, ck: CharKey): CharKey {
+  if (ck === 'Dex' && (low.startsWith('métier') || low.startsWith('metier')) && rule('test-metier-int')) return 'Int';
+  if (low === 'intimidation') {
+    const mode = rule('test-intimidation-char') as string;
+    if (mode === 'FM' || mode === 'Int') return mode;
+    if (mode === 'max') {
+      const f = effectiveChar(c, 'F'), fm = effectiveChar(c, 'FM'), i = effectiveChar(c, 'Int');
+      return f >= fm && f >= i ? 'F' : fm >= i ? 'FM' : 'Int';
+    }
+  }
+  return ck;
+}
 
 /** Caractéristique associée à une compétence (par son label). */
 export function skillCharKey(skillLabel: string): CharKey | undefined {
@@ -23,8 +40,9 @@ export function skillCharKey(skillLabel: string): CharKey | undefined {
  *  d'Encombrement sur l'Agilité (LDB 61), port d'armure (LDB 63) et objet Laid sur la Sociabilité (LDB 60). */
 export function testValue(c: Combatant, skill?: string, characteristic?: CharKey): number {
   if (!skill && !characteristic) return 0;
-  const ck = characteristic ?? skillCharKey(skill!) ?? 'Dex';
+  let ck = characteristic ?? skillCharKey(skill!) ?? 'Dex';
   const low = skill?.toLowerCase();
+  if (low && !characteristic) ck = altCharKey(c, low, ck); // carac alternative (Métier/Intimidation, règle optionnelle)
   const sk = low ? c.skills.find((s) => { const n = (findSkillById(s.skillId)?.label ?? s.skillId).toLowerCase(); return low === n || low.startsWith(n); }) : undefined;
   const base = effectiveChar(c, ck);
   const states = testStatePenalty(c, skill);

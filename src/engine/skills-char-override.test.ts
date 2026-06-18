@@ -1,0 +1,45 @@
+import { describe, it, expect, afterEach } from 'vitest';
+import { testValue } from './skills';
+import { setRule, resetRule } from './policy';
+import type { Combatant } from './types';
+
+/** Combattant nu : seules les caractéristiques comptent (pas d'avances, états, passifs). */
+const c = () =>
+  ({
+    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 35, Int: 50, FM: 60, Soc: 30 },
+    skills: [], conditions: [], items: [], activeEffects: [], liveTraits: [],
+  }) as unknown as Combatant;
+
+describe('testValue — Métier (Savoir) : Int au lieu de Dex (LDB 09 l.352, règle optionnelle)', () => {
+  afterEach(() => resetRule('test-metier-int'));
+  it('défaut : Métier utilise la Dextérité', () => {
+    expect(testValue(c(), 'Métier (Forgeron)')).toBe(35);
+  });
+  it('règle ON : Métier utilise l’Intelligence', () => {
+    setRule('test-metier-int', true);
+    expect(testValue(c(), 'Métier (Forgeron)')).toBe(50);
+  });
+  it('règle ON : n’affecte PAS les autres compétences (Intimidation reste Force)', () => {
+    setRule('test-metier-int', true);
+    expect(testValue(c(), 'Intimidation')).toBe(30);
+  });
+});
+
+describe('testValue — Intimidation : caractéristique alternative (LDB 09 l.266, règle optionnelle)', () => {
+  afterEach(() => resetRule('test-intimidation-char'));
+  it('défaut F : Intimidation utilise la Force', () => {
+    expect(testValue(c(), 'Intimidation')).toBe(30);
+  });
+  it('FM : Force Mentale', () => {
+    setRule('test-intimidation-char', 'FM');
+    expect(testValue(c(), 'Intimidation')).toBe(60);
+  });
+  it('Int : Intelligence', () => {
+    setRule('test-intimidation-char', 'Int');
+    expect(testValue(c(), 'Intimidation')).toBe(50);
+  });
+  it('max : la meilleure des trois (F/FM/Int) → FM ici', () => {
+    setRule('test-intimidation-char', 'max');
+    expect(testValue(c(), 'Intimidation')).toBe(60);
+  });
+});
