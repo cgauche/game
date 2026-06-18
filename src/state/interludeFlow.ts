@@ -21,6 +21,7 @@ import { sleepParty } from './restFlow';
 import { craftTarget, craftSpecOf, metierOf, statusIncome, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost, type PriceTier, type Availability } from '../engine/activities';
 import { QUALITIES } from '../engine/qualities/registry';
 import { testValue } from '../engine/skills';
+import { rule } from '../engine/policy';
 import { effectiveChar } from '../engine/characteristics';
 import { buyTalent as engineBuyTalent, talentCost } from '../engine/advancement';
 import { applyTalentAcquisition, fortuneMax, resolveMax, heroMaxWounds } from '../engine/talentEffects';
@@ -97,7 +98,8 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
     let left = baseLeft;
     if (ev.fx?.loseActivity) left -= 1;
     // « les elfes ne perdent une Activité que si la durée est d'au moins trois semaines » (ch.23 l.50).
-    if (/elfe/i.test(h.species ?? '') && w >= 3) {
+    // Règle optionnelle (LDB 23 l.48) : le devoir elfique peut être ignoré (désactiver `interlude-elf-duty`).
+    if (rule('interlude-elf-duty') && /elfe/i.test(h.species ?? '') && w >= 3) {
       left -= 1;
       lines.push(`${h.name} consacre une Activité au contact des siens (devoir elfique).`);
     }

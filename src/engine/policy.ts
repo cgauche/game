@@ -199,6 +199,24 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     default: false,
     hint: 'Marché dans une ville à Guilde : les Défauts d’un objet réduisent sa Disponibilité (plus rare) et le premier Atout ne l’augmente pas.',
   },
+  {
+    id: 'interlude-enabled',
+    label: 'Entre deux aventures',
+    ref: 'LDB 22 l.14',
+    group: 'Activités',
+    kind: 'flag',
+    default: true,
+    hint: 'Système « Entre deux aventures » (événements, Activités, dépenses). Désactiver court-circuite l’interlude (ignoré silencieusement).',
+  },
+  {
+    id: 'interlude-elf-duty',
+    label: 'Devoir elfique (Prestige Elfique)',
+    ref: 'LDB 23 l.48',
+    group: 'Activités',
+    kind: 'flag',
+    default: true,
+    hint: 'Un personnage elfe perd 1 Activité (interlude ≥ 3 semaines) pour son devoir envers les siens. Désactiver lève cette restriction.',
+  },
 ];
 
 const RULES_BY_ID = new Map<string, OptionalRule>(OPTIONAL_RULES.map((r) => [r.id, r]));

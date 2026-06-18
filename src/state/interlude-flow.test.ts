@@ -11,6 +11,7 @@ import { toBrass, fromBrass } from '../engine/money';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
+import { setRule, resetRule } from '../engine/policy';
 
 describe('Interlude — flux start/end', () => {
   beforeEach(() => {
@@ -95,5 +96,34 @@ describe('Interlude — flux start/end', () => {
     vi.clearAllTimers();
     useGame.getState().startInterlude(1);
     expect(useGame.getState().interlude).toBeNull();
+  });
+
+  it('règle interlude-enabled OFF : l’effet interlude est ignoré silencieusement', () => {
+    setRule('interlude-enabled', false);
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'interlude', weeks: 2 }]);
+    expect(useGame.getState().interlude).toBeNull();
+    resetRule('interlude-enabled');
+  });
+
+  it('interlude-elf-duty (défaut) : un elfe ≥3 semaines perd 1 Activité (devoir)', () => {
+    const elf = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'E', rng: makeRNG(3) });
+    elf.species = 'Haut Elfe';
+    useGame.setState({ party: [elf], interlude: null });
+    useGame.getState().startInterlude(3);
+    const st = useGame.getState().interlude!.perHero[elf.id];
+    const ev = interludeEventFor(st.eventRoll);
+    expect(st.left).toBe(Math.max(0, 3 - (ev.fx?.loseActivity ? 1 : 0) - 1)); // −1 devoir elfique
+  });
+
+  it('interlude-elf-duty OFF : l’elfe garde son Activité', () => {
+    setRule('interlude-elf-duty', false);
+    const elf = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'E', rng: makeRNG(3) });
+    elf.species = 'Haut Elfe';
+    useGame.setState({ party: [elf], interlude: null });
+    useGame.getState().startInterlude(3);
+    const st = useGame.getState().interlude!.perHero[elf.id];
+    const ev = interludeEventFor(st.eventRoll);
+    expect(st.left).toBe(Math.max(0, 3 - (ev.fx?.loseActivity ? 1 : 0))); // pas de devoir
+    resetRule('interlude-elf-duty');
   });
 });

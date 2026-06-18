@@ -5,6 +5,7 @@ import { Combatant, ItemInstance, DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../e
 import { battleRng } from './battleRng';
 import { d10, rollExpr, defaultRNG } from '../engine/dice';
 import { applyOps, type GameOp, type OpsCtx } from '../engine/ops';
+import { rule } from '../engine/policy';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { eligibleTalent } from '../engine/grimoire';
 import { effectiveChar } from '../engine/characteristics';
@@ -390,7 +391,8 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
         break;
       case 'interlude':
         // « Entre deux aventures » (LDB 22-23) — via l'action store (pas d'import direct : cycle).
-        get().startInterlude(e.weeks ?? 1);
+        // Règle optionnelle (LDB 22 l.14) : tout le chapitre est facultatif → désactivable.
+        if (rule('interlude-enabled')) get().startInterlude(e.weeks ?? 1);
         break;
       case 'openWorldMap':
         // « Partir en voyage » depuis une porte/route de la scène (#T2) — l'action est déjà gardée
