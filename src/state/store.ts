@@ -89,7 +89,7 @@ import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, r
 import { runMultiplier } from '../engine/traits/dispatch';
 import { itemUse, applyItemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, loseWounds, stacks, recoveredStacks } from '../engine/conditions';
+import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, loseWounds, stacks, recoveredStacks, COND } from '../engine/conditions';
 import { testValue, partyBest } from '../engine/skills';
 import { hasHealSkill, hasSurgerySkill, availableHealModes, resolveWoundsHeal, resolveBleedHeal, type HealMode } from '../engine/healing';
 import { treatTrauma, removeSurgicalTrauma } from '../engine/trauma';
@@ -1528,7 +1528,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!active || active.kind !== 'hero') return;
     // Surpris (LDB 16 l.132) : ni Mouvement ni Action ce tour — seule la Détermination (resolve) peut
     // le retirer (LDB 13 l.81). Tout le reste est bloqué.
-    if (hasCondition(active, 'surpris') && a !== 'resolve' && a !== null) {
+    if (hasCondition(active, COND.surpris) && a !== 'resolve' && a !== null) {
       get().log(`${active.name} est Surpris : ni Mouvement ni Action ce tour (Détermination possible).`);
       return;
     }
@@ -1537,7 +1537,7 @@ export const useGame = create<GameState>((set, get) => ({
     // ici seuls « resolve » (Détermination, qui peut retirer le Brisé) et la fermeture (null) passent.
     // (« Se cacher » par Discrétion = pas de système de furtivité en combat ; approximé par « rester
     // hors de vue » → récupération en fin de Round, cf. brokenRecovery.)
-    if (hasCondition(active, 'brise') && a !== 'resolve' && a !== null) {
+    if (hasCondition(active, COND.brise) && a !== 'resolve' && a !== null) {
       get().log(`${active.name} est Brisé : il ne peut que fuir ou puiser dans sa Détermination.`);
       return;
     }
@@ -2299,7 +2299,7 @@ export const useGame = create<GameState>((set, get) => ({
     const option = selectedAttackOption(active, battle, opts?.forceAttackId);
     if (!option || !scene) return;
     if (target.kind === 'hero') return; // l'attaque ne vise que les ennemis (soin/sort via leurs modes)
-    if (!canTakeAction(active) || hasCondition(active, 'brise')) return; // Sonné/Brisé : pas d'attaque (parité boutons)
+    if (!canTakeAction(active) || hasCondition(active, COND.brise)) return; // Sonné/Brisé : pas d'attaque (parité boutons)
     // Frénésie (LDB 21 l.34) : la cible est IMPOSÉE — l'ennemi le plus proche en Ligne de Vue.
     if (active.frenzied) {
       const ft = frenzyTarget(get, active);
@@ -2551,7 +2551,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!hero) return;
     hero.fate = (hero.fate ?? 0) - 1;
     hero.outOfRencontre = true; // survit mais éjecté de la rencontre (vivant)
-    if (!hero.conditions.some((c) => c.name === 'inconscient')) addCondition(hero, 'inconscient');
+    if (!hero.conditions.some((c) => c.name === COND.inconscient)) addCondition(hero, COND.inconscient);
     set({ battle: { ...battle, log: [...battle.log, ev('info', `${hero.name} : « Meurs un autre jour » — survit mais quitte le combat (Destin −1).`, hero.id)] } });
     if (source === 'slow') resolveRoundBoundary(get, set);
     else resumeEnemyTurn(get, set);
@@ -2688,8 +2688,8 @@ export const useGame = create<GameState>((set, get) => ({
     // FIGÉE par l'effet (escapeStrength — ex. Force Mentale du lanceur d'un Enchevêtrement, vaut même
     // lanceur absent) ; sinon, Force de la source VIVANTE ; sinon, Test simple.
     let opposed = false, opponentValue: number | undefined, opponentName: string | undefined;
-    if (state === 'empetre') {
-      const cond = active.conditions.find((c) => c.name === 'empetre');
+    if (state === COND.empetre) {
+      const cond = active.conditions.find((c) => c.name === COND.empetre);
       const srcId = cond?.sourceId;
       const src = srcId ? battle.combatants.find((c) => c.id === srcId && !isOutOfAction(c)) : undefined;
       if (cond?.escapeStrength != null) {
@@ -2698,11 +2698,11 @@ export const useGame = create<GameState>((set, get) => ({
         opposed = true; opponentValue = testValue(src, undefined, 'F'); opponentName = src.name;
       }
     }
-    const skillValue = state === 'empetre' ? testValue(active, undefined, 'F') : testValue(active, 'Athlétisme');
+    const skillValue = state === COND.empetre ? testValue(active, undefined, 'F') : testValue(active, 'Athlétisme');
     set({
       pendingStateRecovery: {
         actorId: active.id, actorName: active.name, state,
-        skillLabel: state === 'empetre' ? 'Force' : 'Athlétisme',
+        skillLabel: state === COND.empetre ? 'Force' : 'Athlétisme',
         skillValue, difficulty: 'intermediaire',
         opposed, opponentValue, opponentName, stacks: n,
         roll: null, opponentRoll: null, netSL: 0, success: false,
@@ -2746,7 +2746,7 @@ export const useGame = create<GameState>((set, get) => ({
     active.resolve = (active.resolve ?? 0) - 1;
     removeCondition(active, conditionName, 1); // « Retirez un État » (un pion), LDB ch.17 l.66
     let extra = '';
-    if (conditionName === 'a-terre') {
+    if (conditionName === COND.aTerre) {
       active.wounds.current = Math.min(active.wounds.max, active.wounds.current + 1); // +1 PB en se relevant (l.66)
       extra = ' (+1 PB en se relevant)';
     }
@@ -2764,7 +2764,7 @@ export const useGame = create<GameState>((set, get) => ({
     hero.resolve = (hero.resolve ?? 0) - 1;
     removeCondition(hero, conditionName, 1); // « Retirez un État » (un pion), LDB ch.17 l.66
     let extra = '';
-    if (conditionName === 'a-terre') {
+    if (conditionName === COND.aTerre) {
       hero.wounds.current = Math.min(hero.wounds.max, hero.wounds.current + 1); // +1 PB en se relevant (l.66)
       extra = ' (+1 PB en se relevant)';
     }

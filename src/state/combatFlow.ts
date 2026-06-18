@@ -99,7 +99,7 @@ import { norm } from '../lib/normalize';
 import { slugId } from '../data/slug';
 import { recomputeLoadout, weaponWithAmmo, compatibleAmmo, damageArmour, buildWeapon } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks } from '../engine/conditions';
+import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, COND } from '../engine/conditions';
 import { creatureAttacks, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { suffocationTick } from '../engine/suffocation';
@@ -176,7 +176,7 @@ import { startCascade, registerCascadeApplier } from './cascade';
  *  AVANT son attaque (LDB États l.123) — ce +1 profite donc déjà au jet en cours puis
  *  persiste. À appeler une seule fois par attaque (avant le 1er jet ; pas sur une relance). */
 export function applySonneMeleeAdvantage(attacker: Combatant, target: Combatant): void {
-  if (attacker.weapons[0]?.type === 'melee' && target.conditions.some((c) => c.name === 'sonne')) {
+  if (attacker.weapons[0]?.type === 'melee' && target.conditions.some((c) => c.name === COND.sonne)) {
     gainAdvantage(attacker);
     attacker.gainedAdvThisRound = true;
   }
@@ -306,7 +306,7 @@ export function applySurprise(combatants: Combatant[], surprisedSide: 'party' | 
         lines.push(`${c.name} flaire l'embuscade (Vigilance) : pas de Surprise.`);
         continue;
       }
-      addCondition(c, 'surpris');
+      addCondition(c, COND.surpris);
       lines.push(`${c.name} est pris par surprise !`);
     }
   }
@@ -733,7 +733,7 @@ export function computeMoveReach(get: Get): Map<string, number> {
 
 /** Brisé (LDB 16 l.55) : fuir seulement — retire toute case qui RAPPROCHE d'un ennemi. */
 function briseFleeFilter(battle: BattleState, active: Combatant, reach: Map<string, number>): Map<string, number> {
-  if (!hasCondition(active, 'brise')) return reach;
+  if (!hasCondition(active, COND.brise)) return reach;
   const foes = battle.combatants.filter((c) => c.kind !== active.kind && !isOutOfAction(c) && c.pos);
   if (!foes.length) return reach;
   const distNow = Math.min(...foes.map((e) => chebyshev(active.pos!, e.pos!)));
@@ -751,7 +751,7 @@ export function computeRunReach(get: Get): Map<string, number> {
   if (!battle || !scene || battle.over || battle.acted || battle.movementUsed > 0) return new Map();
   const active = activeCombatant(battle);
   if (!active || active.kind !== 'hero' || !active.pos) return new Map();
-  if (isEngaged(active) || hasCondition(active, 'a-terre') || !canTakeAction(active)) return new Map();
+  if (isEngaged(active) || hasCondition(active, COND.aTerre) || !canTakeAction(active)) return new Map();
   const geom = mountOf(battle, active) ?? active;
   const blocked = occupied(battle, geom);
   const M = mountMovement(battle, active);
@@ -784,7 +784,7 @@ export function aiApproachPlan(
   const enemy = input.enemy;
   const none = { plan: action, ran: null };
   if (action.kind !== 'move') return none;
-  if (isEngaged(enemy) || hasCondition(enemy, 'a-terre') || !canTakeAction(enemy)) return none;
+  if (isEngaged(enemy) || hasCondition(enemy, COND.aTerre) || !canTakeAction(enemy)) return none;
   if (!enemy.weapons.some((w) => w.type === 'melee')) return none;
   const M = effectiveMovement(geom);
   if (M <= 0) return none;
@@ -866,7 +866,7 @@ export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?
   if (isEngaged(active)) return { kind: 'blocked', reason: 'Engagé : se désengager avant de rejoindre une autre cible.' };
   const geom = mountOf(battle, active) ?? active;
   const blocked = occupied(battle, geom);
-  if (battle.movementUsed === 0 && !hasCondition(active, 'a-terre')) {
+  if (battle.movementUsed === 0 && !hasCondition(active, COND.aTerre)) {
     // Charge (LDB 15 l.74-77) : manœuvre PLEINE, portée de Course (2M × Bond/Foulée), arrivée
     // adjacente la moins chère.
     const M = mountMovement(battle, active);
@@ -910,7 +910,7 @@ export function applyCriticalToTarget(
   if (overkill > 0 && !isCoupCritique && usesSuddenDeath(target)) {
     // Figurant : Mort Subite (LDB 18 l.51-54) — sortie directe.
     target.wounds.current = 0;
-    if (!target.conditions.some((c) => c.name === 'inconscient')) addCondition(target, 'inconscient');
+    if (!target.conditions.some((c) => c.name === COND.inconscient)) addCondition(target, COND.inconscient);
     log.push(`${target.name} s'effondre, hors de combat.`);
     return false;
   }
@@ -1068,7 +1068,7 @@ export function applyAttackResult(
   // de défense ont déjà joué pour CELLE-CI ; les suivantes n'en bénéficieront plus. Les attaques GRATUITES
   // groupées d'une créature (Morsure+Piétinement, deviated===false) forment UN assaut-surprise : on garde
   // l'État jusqu'à la fin du Round (sinon la 2ᵉ attaque gratuite rouvrirait une défense en plein milieu).
-  if (deviated === undefined && hasCondition(target, 'surpris')) removeCondition(target, 'surpris', 1);
+  if (deviated === undefined && hasCondition(target, COND.surpris)) removeCondition(target, COND.surpris, 1);
   // Démoniaque (Indice+) / Protection (Indice) — LDB 85 p.339/341 : « Lancez 1d10 après chaque coup
   // reçu ; si la créature obtient le nombre de l'Indice ou plus, le coup est ignoré, même critique. »
   // (Les héros n'ont pas ces traits → pas de double-jet sur les reprises de déviation.)
@@ -1215,7 +1215,7 @@ export function applyAttackResult(
     }
     // 0 PB → À Terre (LDB 18 l.28) : TOUJOURS quand on tombe à 0, EN PLUS du Critique éventuel (l'overkill
     // déclenche une Blessure critique mais ne dispense pas de l'État À Terre) ; sauf si déjà KO/mort.
-    if (target.wounds.current <= 0 && !target.dead && !hasCondition(target, 'inconscient')) applyZeroWounds(target);
+    if (target.wounds.current <= 0 && !target.dead && !hasCondition(target, COND.inconscient)) applyZeroWounds(target);
     // Cible neutralisée → on ne reste pas Engagé avec elle (LDB 13) : on lève ses liens immédiatement
     // (sinon ils persisteraient jusqu'au franchissement de Round, bloquant Charge/déplacement libre).
     // Et ses effets PSYCHOLOGIQUES (Peur/Terreur/traits ciblés) prennent fin : on les retire des autres.
@@ -1274,7 +1274,7 @@ export function applyAttackResult(
       const before = attacker.wounds.current;
       attacker.wounds.current = Math.max(0, before - riposte.woundsLost);
       critLog.push(`${target.name} ${hasChampionDefense(target.traits) ? '(Champion)' : '(Riposte)'} inflige ${riposte.woundsLost} Blessure(s) en défendant.`);
-      if (attacker.wounds.current <= 0 && !attacker.dead && !hasCondition(attacker, 'inconscient')) applyZeroWounds(attacker);
+      if (attacker.wounds.current <= 0 && !attacker.dead && !hasCondition(attacker, COND.inconscient)) applyZeroWounds(attacker);
       if (isOutOfAction(attacker)) {
         clearEngagementOf(get().battle?.combatants ?? [], attacker.id);
         clearPsychOf(get().battle?.combatants ?? [], attacker.id);
@@ -1287,7 +1287,7 @@ export function applyAttackResult(
     const atkTraits = attacker.traits ?? [];
     if (hasTraitKey(atkTraits, 'infecte')) {
       target.woundedByInfected = true;
-      if (/rat|skaven|rongeur/i.test(attacker.name)) target.woundedByRodent = true;
+      if (hasTraitKey(atkTraits, 'rongeur')) target.woundedByRodent = true; // rongeur Infecté → Fièvre du Rongeur
     }
     // Munition Infecté (Aux Armes p.102 — ferraille/débris souillés) : exposition à l'infection.
     if (hasQuality(weapon, QUALITY_IDS.Infecte)) target.woundedByInfected = true;
@@ -1298,9 +1298,9 @@ export function applyAttackResult(
     }
   }
   // Nausée (LDB 20 l.170) : un Test de DÉPLACEMENT raté (Esquive) fait vomir → État Sonné.
-  if (res.defenderDetail?.label === 'Esquive' && !res.defenderDetail.success
-      && hasActiveSymptom(target, 'nausee') && !hasCondition(target, 'sonne')) {
-    addCondition(target, 'sonne');
+  if (res.defenderDetail?.mode === 'esquive' && !res.defenderDetail.success
+      && hasActiveSymptom(target, 'nausee') && !hasCondition(target, COND.sonne)) {
+    addCondition(target, COND.sonne);
     critLog.push(`${target.name} vomit (Nausée) : Sonné.`);
   }
   // Effet DÉCLENCHÉ « à la perte de PB en mêlée » authoré (Sang corrosif : 1d10 aux Engagés, BE+PA,
@@ -1600,7 +1600,7 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
         if (ally.wounds.current <= 0) applyZeroWounds(ally);
         log.push(`  ↳ Touche ${ally.name} (${locationLabel(loc, ally.bodyShape)}) : ${lost} Blessure(s).`);
       } else {
-        addCondition(c, 'sonne'); // « Si personne n'est à distance, vous vous frappez tout seul → Sonné » (l.45-46)
+        addCondition(c, COND.sonne); // « Si personne n'est à distance, vous vous frappez tout seul → Sonné » (l.45-46)
         log.push(`  ↳ Personne à portée : se frappe seul → Sonné.`);
       }
       break;
@@ -1932,12 +1932,8 @@ export function creatureAttackKind(weaponName: string): string | undefined {
 export function applyFreeAttackEffects(get: Get, attacker: Combatant, target: Combatant, kind: string, res: AttackResult): void {
   if (!res.hit) return; // les effets se déclenchent sur une touche réussie
   const traits = attacker.traits ?? [];
-  // Constricteur (Hydre/Pieuvre, LDB 85) : toute touche → Empêtré (+ Empoignade possible).
-  if (hasTraitKey(traits, 'constricteur') && !hasCondition(target, 'empetre')) {
-    addCondition(target, 'empetre');
-    const cond = target.conditions.find((c) => c.name === 'empetre'); if (cond) cond.sourceId = attacker.id; // source du Test opposé de Force (LDB 16 l.61)
-    get().log(`${target.name} est Empêtré (Constricteur).`);
-  }
+  // (Constricteur = `effects` onHit du trait → Empêtré sur toute touche, appliqué par le
+  //  `fireTriggers('onHit')` d'`applyAttackResult` — atteint aussi les attaques gratuites.)
   if (!res.woundsLost) return; // les effets suivants exigent des Points de Blessure perdus
   // Effets onHit AUTHORÉS de la manœuvre (donnée éditable `maneuver.effects` : Attaque caudale → À Terre
   // si la cible est plus petite ; Tentacules → Empêtré) — appliqués SCOPED à cette manœuvre (≠ l'onHit
@@ -3354,8 +3350,8 @@ export function advanceTurn(get: Get, set: SetFn) {
       // Bestial (LDB 85 p.338) : « Elle a peur du feu et gagne l'État Brisé si elle est touchée par
       // ce dernier » — approximé sur l'État En flammes (granularité Round, documenté).
       for (const c of battle.combatants) {
-        if (!isOutOfAction(c) && isBestial(c.traits) && hasCondition(c, 'en-flammes') && !hasCondition(c, 'brise')) {
-          addCondition(c, 'brise');
+        if (!isOutOfAction(c) && isBestial(c.traits) && hasCondition(c, COND.enFlammes) && !hasCondition(c, COND.brise)) {
+          addCondition(c, COND.brise);
           tickLine(`${c.name} (Bestial) est terrifié par les flammes : Brisé.`, c);
         }
       }
@@ -3380,11 +3376,11 @@ export function advanceTurn(get: Get, set: SetFn) {
       // Mâchoires d'acier (LDB 10) : Test de Résistance (+0) — retire 1 + DR États Sonné (résolu au
       // franchissement de Round, approximation de « chaque fois que vous gagnez un État Sonné »).
       for (const c of battle.combatants) {
-        if (isOutOfAction(c) || !hasStunSave(c) || !stacks(c, 'sonne')) continue;
+        if (isOutOfAction(c) || !hasStunSave(c) || !stacks(c, COND.sonne)) continue;
         const t = rollTest(testValue(c, 'Résistance'), 'intermediaire', battleRng());
         if (t.success) {
-          const n = Math.min(stacks(c, 'sonne'), 1 + Math.max(0, t.sl));
-          removeCondition(c, 'sonne', n);
+          const n = Math.min(stacks(c, COND.sonne), 1 + Math.max(0, t.sl));
+          removeCondition(c, COND.sonne, n);
           tickLine(`${c.name} secoue la tête (Mâchoires d'acier) : ${n} État(s) Sonné retiré(s).`, c);
         }
       }
@@ -3538,7 +3534,7 @@ export function approachFearTrigger(get: Get, set: SetFn, mover: Combatant, from
     peur.lastApproachKey = approachKey;
     const t = rollTest(calmeValue(c), 'intermediaire', battleRng());
     const line = t.success ? `${c.name} garde son sang-froid alors que ${mover.name} s'approche.` : `${c.name} panique alors que ${mover.name} s'approche : 1 État Brisé.`;
-    if (!t.success) addCondition(c, 'brise', 1);
+    if (!t.success) addCondition(c, COND.brise, 1);
     battle.log.push(ev('fear', line, c.id, mover.id));
     if (c.kind === 'hero') pushReveal(set, { kind: 'calme', title: 'Approche menaçante', dice: t.roll, lines: [line], subjectId: c.id, severity: 'minor' });
   }
@@ -3555,26 +3551,26 @@ export function brokenRecovery(get: Get, sink: (line: string, c: Combatant) => v
   const scene = get().scene;
   if (!battle) return;
   for (const c of battle.combatants) {
-    if (!stacks(c, 'brise') || isOutOfAction(c) || !c.pos) continue;
+    if (!stacks(c, COND.brise) || isOutOfAction(c) || !c.pos) continue;
     const enemies = battle.combatants.filter((e) => e.kind !== c.kind && !isOutOfAction(e) && e.pos);
     const hidden = !!scene && enemies.length > 0 && enemies.every((e) => lineOfSightCover(scene, e.pos!, c.pos!, [], smokeOf(battle)).blocked);
-    if (hidden) { removeCondition(c, 'brise', 1); sink(`${c.name} est resté caché hors de vue : retire 1 État Brisé.`, c); }
+    if (hidden) { removeCondition(c, COND.brise, 1); sink(`${c.name} est resté caché hors de vue : retire 1 État Brisé.`, c); }
     // Récupération par Test de Calme : seulement si pas Engagé (l.57) — sauf Cœur vaillant
     // (LDB 10 : Test de Calme en fin de Round, sans restriction d'Engagement) — et qu'il reste du Brisé.
-    if ((!isEngaged(c) || hasBraveheart(c)) && stacks(c, 'brise')) {
+    if ((!isEngaged(c) || hasBraveheart(c)) && stacks(c, COND.brise)) {
       const nearest = enemies.length ? Math.min(...enemies.map((e) => chebyshev(c.pos!, e.pos!))) : Infinity;
       const diff: import('../engine/types').Difficulty = hidden ? 'accessible' : nearest <= 3 ? 'tresDifficile' : 'intermediaire';
       const t = rollTest(calmeValue(c), diff, battleRng());
       if (t.success) {
-        const removed = Math.min(stacks(c, 'brise'), 1 + Math.max(0, t.sl));
-        removeCondition(c, 'brise', removed);
+        const removed = Math.min(stacks(c, COND.brise), 1 + Math.max(0, t.sl));
+        removeCondition(c, COND.brise, removed);
         sink(`${c.name} se ressaisit : retire ${removed} État(s) Brisé (Test de Calme réussi).`, c);
       } else {
         sink(`${c.name} reste Brisé (Test de Calme raté).`, c);
       }
     }
     // « Une fois que vous n'avez plus d'États Brisé, vous gagnez 1 État Exténué » (LDB 16 l.80).
-    if (!stacks(c, 'brise')) { addCondition(c, 'extenue'); sink(`${c.name} est Exténué (après s'être ressaisi).`, c); }
+    if (!stacks(c, COND.brise)) { addCondition(c, COND.extenue); sink(`${c.name} est Exténué (après s'être ressaisi).`, c); }
   }
 }
 
@@ -3603,7 +3599,7 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
     if (src.kind === 'terreur') {
       const r = resolveTerreurTest(calmeValue(enemy), src.indice, battleRng(), isColdBlooded(enemy.traits)); // À sang-froid : inverse un raté (LDB 85)
       if (!r.success) {
-        addCondition(enemy, 'brise', r.brise);
+        addCondition(enemy, COND.brise, r.brise);
         log.push(`${enemy.name} est terrifié par ${foe.name} : ${r.brise} Brisé.`);
       }
       enemy.psychState.push({ type: 'peur', sourceId: foe.id, indice: r.success ? 0 : r.devientPeur, calmeDR: 0, lastTestRound: battle.round }); // Terreur → Peur
@@ -3773,7 +3769,7 @@ registerCascadeApplier(
     if (cp.kind === 'terreur') {
       // 1ʳᵉ rencontre (LDB 21 l.55-57) : échec → Brisé = Indice + |DR négatifs| ; devient une Peur.
       const brise = terreurBrise(cp.indice, r.success, r.sl);
-      if (brise > 0) addCondition(hero, 'brise', brise);
+      if (brise > 0) addCondition(hero, COND.brise, brise);
       hero.psychState.push({ type: 'peur', sourceId: cp.sourceId, indice: r.success ? 0 : cp.indice, calmeDR: 0, lastTestRound: battle?.round });
       line = r.success ? `${hero.name} garde son sang-froid.` : `${hero.name} est terrifié par ${cp.sourceName} : ${brise} État(s) Brisé, puis Peur ${cp.indice}.`;
     } else if (CIBLE_TYPES.has(cp.kind)) {
@@ -3808,13 +3804,13 @@ export function endFrenzyIfDone(get: Get, set: SetFn, c: Combatant): void {
   const battle = get().battle;
   const scene = get().scene;
   if (!battle || !scene || !c.pos) return;
-  const stunned = c.conditions.some((x) => x.name === 'sonne' || x.name === 'inconscient');
+  const stunned = c.conditions.some((x) => x.name === COND.sonne || x.name === COND.inconscient);
   const foeInLoS = battle.combatants.some(
     (f) => f.kind !== c.kind && !isOutOfAction(f) && f.pos && !lineOfSightCover(scene, c.pos!, f.pos, [], smokeOf(battle)).blocked,
   );
   if (stunned || !foeInLoS) {
     c.frenzied = false;
-    addCondition(c, 'extenue');
+    addCondition(c, COND.extenue);
     set({ battle: { ...get().battle!, log: [...get().battle!.log, ev('frenzy', `${c.name} sort de Frénésie (Exténué).`, c.id)] } });
   }
 }
@@ -4008,8 +4004,8 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       // IA = résolution INSTANTANÉE (pas de modale ni de Chance). Coûte l'Action.
       if (!canAct) return advanceTurn(get, set);
       let success: boolean, netSL: number;
-      if (action.state === 'empetre') {
-        const srcId = enemy.conditions.find((c) => c.name === 'empetre')?.sourceId;
+      if (action.state === COND.empetre) {
+        const srcId = enemy.conditions.find((c) => c.name === COND.empetre)?.sourceId;
         const src = srcId ? battle.combatants.find((c) => c.id === srcId && !isOutOfAction(c)) : undefined;
         if (src) { const opp = opposedTest(testValue(enemy, undefined, 'F'), testValue(src, undefined, 'F'), battleRng()); success = opp.attackerWins; netSL = opp.netSL; }
         else { const t = rollTest(testValue(enemy, undefined, 'F'), 'intermediaire', battleRng()); success = t.success; netSL = Math.max(0, t.sl); }
@@ -4019,8 +4015,8 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       const removed = recoveredStacks(netSL, stacks(enemy, action.state), success);
       if (removed > 0) removeCondition(enemy, action.state, removed);
       const line = removed > 0
-        ? (action.state === 'empetre' ? `${enemy.name} se libère (${removed} État Empêtré retiré).` : `${enemy.name} étouffe les flammes (${removed} État En flammes retiré).`)
-        : (action.state === 'empetre' ? `${enemy.name} reste Empêtré.` : `${enemy.name} reste En flammes.`);
+        ? (action.state === COND.empetre ? `${enemy.name} se libère (${removed} État Empêtré retiré).` : `${enemy.name} étouffe les flammes (${removed} État En flammes retiré).`)
+        : (action.state === COND.empetre ? `${enemy.name} reste Empêtré.` : `${enemy.name} reste En flammes.`);
       set({ battle: { ...battle, log: [...battle.log, ev('condition', line, enemy.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
       setTimeout(() => advanceTurn(get, set), TEMPO.afterMove);

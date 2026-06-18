@@ -25,7 +25,7 @@ export const EXTRA_TRAIT_LABELS = [
   'Langue préhensile', 'Hurlement fantomatique', 'Regard pétrifiant', 'Tentacules', 'Étreinte glaciale',
   // Marqueurs spéciaux consommés ailleurs (psychologie / magie / domaines / groupes / maladies)
   'Venin', 'Lanceur de Sorts', 'Mort-vivant', 'Frénésie', 'Constricteur', 'Vampirique',
-  'Infecté', 'Maladie', 'Corruption',
+  'Infecté', 'Maladie', 'Corruption', 'Rongeur',
 ];
 
 /** Résolution UNIQUE libellé (casse ignorée) → `id` STABLE (slug) : dataset `traits.json` (qui est

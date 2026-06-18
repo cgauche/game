@@ -1112,6 +1112,9 @@
       {
         "id": "taille",
         "arg": "Petite"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [
@@ -4651,6 +4654,9 @@
       },
       {
         "id": "vision-nocturne"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [
@@ -4725,6 +4731,9 @@
       },
       {
         "id": "vision-nocturne"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [
@@ -4804,6 +4813,9 @@
       },
       {
         "id": "vision-nocturne"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [
@@ -25190,6 +25202,9 @@
       },
       {
         "id": "nuee"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -25248,6 +25263,9 @@
       },
       {
         "id": "vision-nocturne"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -25368,6 +25386,9 @@
       },
       {
         "id": "vision-nocturne"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -25488,6 +25509,9 @@
       },
       {
         "id": "vision-nocturne"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -25646,6 +25670,9 @@
       },
       {
         "id": "vision-nocturne"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -33717,6 +33744,9 @@
       },
       {
         "id": "vision-nocturne"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -33859,6 +33889,9 @@
       },
       {
         "id": "vision-nocturne"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -34011,6 +34044,9 @@
       },
       {
         "id": "vision-nocturne"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -34177,6 +34213,9 @@
       },
       {
         "id": "vision-nocturne"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -34357,6 +34396,9 @@
       },
       {
         "id": "vision-nocturne"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -34502,6 +34544,9 @@
       },
       {
         "id": "vision-nocturne"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -38799,6 +38844,9 @@
       },
       {
         "id": "vision-nocturne"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -38948,6 +38996,9 @@
       },
       {
         "id": "vision-nocturne"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -39115,6 +39166,9 @@
       },
       {
         "id": "vision-nocturne"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -39294,6 +39348,9 @@
       },
       {
         "id": "vision-nocturne"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [],
@@ -51069,6 +51126,9 @@
         "id": "arme",
         "value": 11,
         "arg": "Griffes renforcées de métal"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [
@@ -51161,6 +51221,9 @@
         "id": "arme",
         "value": 8,
         "arg": "Crocs acérés"
+      },
+      {
+        "id": "rongeur"
       }
     ],
     "optionals": [

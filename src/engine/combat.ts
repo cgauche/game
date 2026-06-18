@@ -131,6 +131,9 @@ export interface ModLine {
 export interface RollBreakdown {
   /** Intitulé du jet : 'Corps à corps' / 'Parade' / 'Esquive' / 'Projectiles'. */
   label: string;
+  /** Mode de défense STRUCTUREL (≠ libellé d'affichage) — renseigné sur le jet du DÉFENSEUR pour que
+   *  le moteur branche sur la nature de la défense (Esquive = Test de Déplacement) sans matcher le texte. */
+  mode?: 'parade' | 'esquive';
   /** Valeur de Compétence/Caractéristique de base (avant modificateurs). */
   base: number;
   /** Somme des modificateurs appliqués (Avantage, viser, États, portée, Atouts…). */
@@ -180,8 +183,9 @@ export interface AttackResult {
   log: string;
 }
 
-const bd = (label: string, base: number, t: TestResult, mods?: ModLine[]): RollBreakdown => ({
+const bd = (label: string, base: number, t: TestResult, mods?: ModLine[], mode?: 'parade' | 'esquive'): RollBreakdown => ({
   label,
+  ...(mode ? { mode } : {}),
   base,
   modifier: t.target - base,
   mods,
@@ -516,7 +520,7 @@ function combineOpposed(
   const defSL = def.sl - parrySizePenalty + vsDefenseDRAdjust(weapon)
     + (defenseMode === 'parade' ? parryDRAdjust(parryWeapon, weapon) + craftTestDRAdjust(parryWeapon, def.success) : 0);
   const opp = resolveOpposed({ ...atk, sl: atkSL }, { ...def, sl: defSL });
-  const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode, parryWeapon), def, defenseModifiers(defender, defenseMode, dodgeMod, parryWeapon));
+  const defBd = bd(DEFENSE_LABEL[defenseMode], defenseValue(defender, defenseMode, parryWeapon), def, defenseModifiers(defender, defenseMode, dodgeMod, parryWeapon), defenseMode);
   const usedParry = defenseMode === 'parade' ? parryWeapon : undefined; // arme de parade (Critiques opposés / Piège-lame)
   if (opp.winner === 'defender') {
     return {

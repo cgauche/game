@@ -33,8 +33,8 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Regard pétrifiant', 'attaque-Action (creatureAttacks.ts + combatFlow)'],
   ['Vomissement', 'attaque de zone (creatureAttacks.ts + combatFlow)'],
   ['Venin', 'Empoisonné sur PB infligés — `effects` AUTHORÉ du trait (Test de Résistance paramétré par l’arg, fireTriggers onHit)'],
-  ['Constricteur', 'Empêtré sur touche (combatFlow.applyFreeAttackEffects)'],
-  ['Vampirique', 'drain de PB sur Morsure (combatFlow.applyFreeAttackEffects)'],
+  ['Constricteur', 'Empêtré sur touche — `effects` AUTHORÉ du trait (condition empetre, escapeStrength=Force, fireTriggers onHit)'],
+  ['Vampirique', 'drain de PB sur Morsure (combatFlow.applyFreeAttackEffects — gating « kind=morsure » sans Condition Flow)'],
   ['Se cabrer', 'couvert par le Piétinement existant (LDB 85 — trampleTarget)'],
   // Psychologie — engine/psychology.ts (parsePsychTraits)
   ['Peur', 'causesPeur (parsePsychTraits)'],
@@ -48,6 +48,7 @@ const COUVERT_AILLEURS = new Map<string, string>([
   // Afflictions transmises — engine/disease.ts + state/corruptionFlow.ts
   ['Maladie', 'contraction post-combat (disease.ts — Lot D)'],
   ['Infecté', 'Blessure Purulente post-combat (disease.ts — Lot D)'],
+  ['Rongeur', 'marqueur rongeur → Fièvre du Rongeur si aussi Infecté (woundedByRodent, contraction post-combat)'],
   ['Corruption', 'exposition du groupe (corruptionFlow — Lot E)'],
 ]);
 

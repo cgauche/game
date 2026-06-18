@@ -402,7 +402,7 @@
     "missile": {
       "bypass": "metal"
     },
-    "breathType": "Électricité"
+    "breathType": "Électrique"
   },
   {
     "id": "metal",
