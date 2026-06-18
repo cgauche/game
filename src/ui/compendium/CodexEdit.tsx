@@ -10,7 +10,7 @@ import { datasetArray, setDataset, type DatasetKey } from '../../data/overrides'
 import { serializeDataset } from '../../data/serialize';
 import * as fs from '../../data/fsPersist';
 import { inferFields, type FieldDesc } from './editFields';
-import { RefField, REF_FIELD } from './RefField';
+import { RefField, refFieldCfg } from './RefField';
 import { MonsterPartsFields } from '../editor/MonsterPartsFields';
 import { FlowEditor } from '../editor/FlowEditor';
 import { GameOpEditor } from '../editor/GameOpEditor';
@@ -136,9 +136,12 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {isMutationTable && <MutationTableField value={entry.ranges as MutationRange[] | undefined} onChange={(v) => edit('ranges', v)} />}
         {isMutation && <WeaponField value={entry.derivedWeapon as Weapon | undefined} onChange={(v) => edit('derivedWeapon', v)} />}
         {isMutation && <PsychTraitsField value={entry.psychTraits as PsychTrait[] | undefined} onChange={(v) => edit('psychTraits', v)} />}
-        {fields.map((f) => REF_FIELD[f.key]
-          ? <RefField key={f.key} fieldKey={f.key} value={entry[f.key]} onChange={(v) => edit(f.key, v)} />
-          : <Field key={f.key} field={f} value={entry[f.key]} onChange={(v) => edit(f.key, v)} />)}
+        {fields.map((f) => {
+          const cfg = refFieldCfg(categoryKey, f.key);
+          return cfg
+            ? <RefField key={f.key} cfg={cfg} categoryKey={categoryKey} fieldKey={f.key} nullable={f.nullable} value={entry[f.key]} onChange={(v) => edit(f.key, v)} />
+            : <Field key={f.key} field={f} value={entry[f.key]} onChange={(v) => edit(f.key, v)} />;
+        })}
       </div>
     </div>
   );

@@ -100,7 +100,9 @@
       "book": "LDB",
       "page": 132
     },
-    "combat": { "corruptionThreshold": true }
+    "combat": {
+      "corruptionThreshold": true
+    }
   },
   {
     "id": "artilleur",
@@ -464,7 +466,9 @@
       "book": "LDB",
       "page": 134
     },
-    "combat": { "surgery": true }
+    "combat": {
+      "surgery": true
+    }
   },
   {
     "id": "claquer-le-fouet",
@@ -666,7 +670,9 @@
       "book": "LDB",
       "page": 135
     },
-    "combat": { "encumbranceBonus": true }
+    "combat": {
+      "encumbranceBonus": true
+    }
   },
   {
     "id": "coude-a-coude",
