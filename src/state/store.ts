@@ -912,6 +912,15 @@ export interface GameState {
   lastUpkeepDay: number;
 }
 
+/** Avance l'étape-jet d'attaque de la cascade combat à la FIN de la chaîne (plus de `pendingAttack` NI
+ *  d'enchaînement balayage/dual) → conséquences inline ou reprise. La cascade reste ouverte pendant la
+ *  chaîne ; on n'avance qu'au bout. Partagé par attackConfirm / cleaveEnd / dualStrikeSkip (zéro duplication). */
+function advanceCombatJet(get: () => GameState): void {
+  const seq = get().pendingCascade;
+  if (seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'attack'
+    && !get().pendingAttack && !get().pendingCleave && !get().pendingDualStrike) get().cascadeNext();
+}
+
 export const useGame = create<GameState>((set, get) => ({
   screen: 'menu',
   compendiumFocus: null,
@@ -2950,20 +2959,17 @@ export const useGame = create<GameState>((set, get) => ({
         if (b2) set({ battle: { ...b2, movementUsed: mountMovement(b2, attacker) } });
       }
     }
-    // Séquence de combat (jet = étape 0) : enchaîner sur les conséquences empilées par
-    // applyAttackResult, ou clore (resume) si aucune. Uniquement l'attaque-Action NON enchaînée
-    // (pendingAttack nul ici = pas de 2ᵉ frappe/balayage re-ouvert) ; les enchaînées gardent l'ancien
-    // flux pour l'instant (migrées plus tard, avec recette navigateur).
-    const seq = get().pendingCascade;
-    if (seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'attack' && !get().pendingAttack) {
-      get().cascadeNext();
-    }
+    // Séquence de combat (jet = étape 0) : enchaîner sur les conséquences empilées par applyAttackResult,
+    // ou clore (resume) si aucune. La cascade RESTE ouverte tant qu'un enchaînement est en cours
+    // (balayage `pendingCleave` / 2ᵉ frappe `pendingDualStrike`) → la frappe suivante se rend dans la MÊME
+    // étape `attack` (`pendingAttack` mis à jour par cleaveAttack/dualStrikeAttack) ; on n'avance qu'au bout.
+    advanceCombatJet(get);
   },
   attackCancel: () => {
     const pa = get().pendingAttack;
     if (pa?.fromCharge) return; // après une Charge, l'attaque est obligatoire (LDB 15-Dépl l.75)
     if (pa?.dualSecond) return; // 2ᵉ frappe d'un dual : engagée dès que la cible est choisie (le jet est imposé)
-    if (pa?.cleave) return get().cleaveEnd(); // annuler un enchaînement = terminer le balayage
+    if (pa?.cleave) { set({ pendingAttack: null }); return get().cleaveEnd(); } // annuler = terminer le balayage (cleaveEnd clôt la cascade)
     // Annuler ferme aussi la séquence-jet de combat (étape 0 non encore validée).
     const seq = get().pendingCascade;
     const closeSeq = seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'attack';
@@ -2979,7 +2985,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!cleaveTargets(battle, attacker, pc.hitIds).some((t) => t.id === targetId)) return; // cible invalide (non adjacente / déjà frappée)
     set({ pendingAttack: { attackerId: attacker.id, targetId, location: null, result: null, cleave: true } });
   },
-  cleaveEnd: () => set({ pendingCleave: null }),
+  cleaveEnd: () => { set({ pendingCleave: null }); advanceCombatJet(get); }, // fin du balayage → clore l'étape-jet de la cascade (reprise)
   dualStrikeAttack: (targetId) => {
     const { battle, pendingDualStrike: ds } = get();
     if (!battle || !ds) return;
@@ -2993,7 +2999,7 @@ export const useGame = create<GameState>((set, get) => ({
     const res = resolveDualSecond(get, attacker, target, off, ds.mainRoll, { critValue: ds.critValue });
     set({ pendingAttack: { attackerId: attacker.id, targetId, location: res.location ?? null, result: res, dualSecond: true, weaponUid: off.uid } });
   },
-  dualStrikeSkip: () => set({ pendingDualStrike: null }), // « peut viser » = optionnel : pas de 2ᵉ → pas d'Avantage (LDB 10 l.638)
+  dualStrikeSkip: () => { set({ pendingDualStrike: null }); advanceCombatJet(get); }, // « peut viser » = optionnel : pas de 2ᵉ → pas d'Avantage (LDB 10 l.638)
   dismissReveal: () => {
     set((s) => ({ pendingReveals: s.pendingReveals.slice(1) }));
     resumeSuspendedAI(get, set); // file vidée alors qu'un tour d'IA était suspendu → reprendre l'avancement
