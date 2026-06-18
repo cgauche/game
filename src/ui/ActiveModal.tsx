@@ -1,6 +1,7 @@
 import { useGame } from '../state/store';
 import { ownsLocally } from '../state/netFlow';
 import { modalOwnerOf } from '../state/modalArbiter';
+import { willAutoResolve } from '../state/combatAuto';
 import type { JSX } from 'react';
 import { ReloadModal } from './ReloadModal';
 import { StateRecoveryModal } from './StateRecoveryModal';
@@ -52,6 +53,9 @@ export function ActiveModal(): JSX.Element | null {
   const s = useGame();
   const key = pickActiveModalKey(s);
   if (!key) return null;
+  // Cadence Rapide/Auto : si le driver va auto-résoudre cette modale, NE PAS la rendre (fini le flash
+  // de quelques ms). Le BILAN voyage/nuit et les vrais choix (surincantation/Destin en Rapide) restent rendus.
+  if (willAutoResolve(s)) return null;
   if (s.net.mode !== 'local') {
     const ownerId = modalOwnerOf(s);
     if (ownerId !== '*' && ownerId !== null && !ownsLocally(s, ownerId)) {

@@ -15,7 +15,7 @@ import {
   applyEffects, applyEffectsLoot, runFlow, assignGearAt, harvestVictoryCreature, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, attackWardGate,
   effectiveSpellOf, finishPlayerAction,
-  applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI,
+  applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
   aiCreatureFreeAttacks, aiFrenzyAttack, resolveTalentFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan,
@@ -302,7 +302,7 @@ export interface GameState {
    *  → `castConfirm` applique (cible résistante = aucune op ; sinon ops à la marge). */
   pendingCastOpposition: PendingCastOpposition | null;
   /** Tir ENNEMI télégraphié : réticule « qui l'adversaire vise », montré ~0,7 s AVANT le tir. */
-  enemyAim: { fromId: string; toId: string; melee?: boolean } | null;
+  actorAim: { fromId: string; toId: string; melee?: boolean } | null;
   /** Coût/gain (Action/Mouvement/Avantage) de l'intention SOUS LA SOURIS (desktop) — alimente le
    *  clignotant des jauges (ActiveFrame), même source que le tap-1 (`previewResourceDelta`).
    *  Posé par IsoStage au changement de tuile survolée ; null hors survol pertinent. */
@@ -1014,7 +1014,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingBargain: null,
   pendingAppraise: null,
   pendingAttack: null,
-  enemyAim: null,
+  actorAim: null,
   hoverDelta: null,
   pendingReload: null,
   pendingStateRecovery: null,
@@ -1473,7 +1473,7 @@ export const useGame = create<GameState>((set, get) => ({
     // Ouverture = pause de début du Round 1 (pendingRoundStart) : champ visible, ordre d'Initiative dans la
     // frise, pré-emption « agir en premier » (Chance, #12a) — IA gelée. Un seul bouton « Commencer le combat »
     // (pas de phase « plan d'ensemble » séparée : c'était redondant avec la pause de Round).
-    set({ battle, mode: 'battle', pendingRoundStart: { round: battle.round }, pendingVictory: null, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, pendingCounterspell: null, enemyAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingManeuver: null, pendingRun: null, pendingFocus: null, pendingFrenzy: null, pendingFumble: null, pendingCascade: null });
+    set({ battle, mode: 'battle', pendingRoundStart: { round: battle.round }, pendingVictory: null, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, pendingCounterspell: null, actorAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingManeuver: null, pendingRun: null, pendingFocus: null, pendingFrenzy: null, pendingFumble: null, pendingCascade: null });
     get().faceAtCombatStart();
     bus.emit(EVT.SCENE_DIRTY);
   },
@@ -1683,7 +1683,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (aqshy) get().log(`${caster.name} : +${aqshy} en Langue (Magick) — Aqshy se nourrit des flammes proches.`);
     // Lanceur ENNEMI : Surincantation automatique (LDB 47 l.28-31) — le surplus de DR alloué à
     // l'axe Cible d'un Projectile (l'IA n'a pas de modale de choix ; ZdE déjà toutes-cibles).
-    const auto = caster.kind === 'enemy' && pc.missile && !pc.zone
+    const auto = aiDriven(get(), caster) && pc.missile && !pc.zone
       ? aiOvercastPlan(caster, pc.targetId, spell, res, get().battle?.combatants ?? [], pc.focused, spellSightOf(get))
       : {};
     set({ pendingCast: { ...pc, result: res, ...auto } });
@@ -1760,7 +1760,7 @@ export const useGame = create<GameState>((set, get) => ({
     // Lanceur ENNEMI (modale témoin) : le tour de l'IA était suspendu → reprise. No-op si une autre
     // interaction bloquante s'est ouverte (Destin, révélations, OU la cascade de conséquences encore
     // ouverte) — elle reprendra elle-même (cascadeNext → resumeSuspendedAI à la clôture).
-    if (caster?.kind === 'enemy' && get().battle) resumeEnemyTurn(get, set);
+    if (caster && aiDriven(get(), caster) && get().battle) resumeEnemyTurn(get, set);
   },
   /** Incantation CRITIQUE (LDB 46 l.52-59) : le lanceur choisit l'effet bonus dans la modale. */
   castSetCritChoice: (choice) => {
@@ -1827,7 +1827,7 @@ export const useGame = create<GameState>((set, get) => ({
     const caster = pc && actorIn(get(), pc.casterId);
     set({ pendingCast: null, pendingCascade: null }); // TERMINAL : ferme data + cascade-hôte
     // Modale d'un lanceur ENNEMI fermée sans appliquer : reprendre le tour suspendu (anti soft-lock).
-    if (caster?.kind === 'enemy' && get().battle) resumeEnemyTurn(get, set);
+    if (caster && aiDriven(get(), caster) && get().battle) resumeEnemyTurn(get, set);
   },
   // Contre-sort à plusieurs (flux multi) : chaque verbe cible un participant via `pid` (fabrique unique).
   counterspellRoll: (pid) => FLOWS.counterspell.roll(get, set, pid),
@@ -2671,6 +2671,8 @@ export const useGame = create<GameState>((set, get) => ({
     const reloadName = a.weapons.find((w) => w.uid === pr.weaponUid)?.name ?? 'arme'; // uid → NOM (affichage)
     set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('reload', describeReload(pr, progress, reloadName), a.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
+    // Acteur PILOTÉ par l'IA (Auto-combat) : son tour était suspendu par la modale → reprise (comme cast/défense).
+    if (aiDriven(get(), a) && get().battle) resumeEnemyTurn(get, set);
   },
   reloadCancel: () => set({ pendingReload: null }), // avant le jet : aucun coût
   battleRecoverState: (state) => {
@@ -3286,7 +3288,12 @@ export const useGame = create<GameState>((set, get) => ({
       // suivra fumbleConfirm → cascadeNext), SANS déclencher la Frénésie de l'attaquant (comme avant le fold).
       pushCombatStep(set, { id: `cons-fumble-${defender.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: defender.id });
       set({ pendingFumble: { combatantId: defender.id, weapon: defender.weapons[0], result: null } });
-      get().cascadeNext();
+      // Avance défense → Maladresse SEULEMENT si la défense est encore l'étape courante (cascade
+      // pré-existante). Si `pushCombatStep` a dû CRÉER une cascade neuve (Maladresse seule au curseur 0),
+      // on y est déjà : un `cascadeNext` la refermerait (next ≥ length) et ORPHELINERAIT `pendingFumble`
+      // → modale invisible (le fold a retiré la modale Maladresse autonome) → soft-lock.
+      const casc = get().pendingCascade;
+      if (casc && casc.participants[casc.cursor]?.jet === 'defense') get().cascadeNext();
       return;
     }
     // Frénésie : Test de CC gratuit après l'attaque PRINCIPALE (jamais après une attaque gratuite : `!pd.free`) → fire une seule fois.

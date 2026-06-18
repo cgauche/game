@@ -7,7 +7,12 @@ import { formatImperial } from '../engine/clock';
 import { testScenarios } from '../scenes/test-scenarios';
 import { hoverTargeting } from './targeting';
 import { getViewZ, setViewZ } from '../gameIso/viewLevel';
+import { rule, setRule } from '../engine/policy';
+import { pickActiveModalKey, autoPolicyOf } from './modalArbiter';
+import { willAutoResolve } from './combatAuto';
+import { aiDriven } from './combatGate';
 import type { Combatant } from '../engine/types';
+import type { Cadence } from '../engine/cadence';
 
 /**
  * Outils de recette navigateur (DEV uniquement) — exposés sur `window.__wfrp`.
@@ -419,6 +424,37 @@ export function buildApi() {
     rest: (days = 1) => {
       g().restParty(days);
       return `🛏️ +${days} j → ${formatImperial(g().gameTime)}`;
+    },
+
+    /** RECETTE : règle (ou lit) la Cadence de combat — manuel = défaut ; rapide = jets auto-lancés
+     *  sans dépense ; auto = l'IA joue aussi les héros + Destin auto. Surcharge runtime (non persistée). */
+    cadence: (mode?: Cadence) => {
+      if (!mode) return `cadence = ${rule('combat-cadence')} (manuel | rapide | auto)`;
+      setRule('combat-cadence', mode);
+      return `✅ Cadence de combat → ${mode}`;
+    },
+
+    /** RECETTE : diagnostic d'AUTO-CADENCE — « pourquoi ça avance / ça se fige ? ». Montre le mode, la
+     *  modale active + sa politique, le verdict `willAutoResolve` (rendue ou masquée+auto-pilotée), tous
+     *  les `pending*` ouverts, et l'acteur courant (aiDriven). Un `pending*` ouvert avec cadence ≠ manuel
+     *  ET `willAutoResolve:false` sans attente de choix joueur = soft-lock probable (modale invisible non pilotée). */
+    auto: () => {
+      const s = useGame.getState();
+      const sr = s as unknown as Record<string, unknown>;
+      const open = Object.keys(sr).filter((k) => /^pending/.test(k) && (Array.isArray(sr[k]) ? (sr[k] as unknown[]).length > 0 : sr[k] != null));
+      const b = s.battle;
+      const act = b && !b.over ? b.combatants.find((c) => c.id === b.order[b.turn]) : undefined;
+      const key = pickActiveModalKey(s);
+      return {
+        cadence: rule('combat-cadence'),
+        activeModal: key,
+        policy: autoPolicyOf(s)?.mode ?? null,
+        willAutoResolve: willAutoResolve(s),
+        openPendings: open,
+        roundPause: !!s.pendingRoundStart,
+        medic: !!s.medic,
+        active: act ? { id: act.id, kind: act.kind, aiDriven: aiDriven(s, act), acted: !!b!.acted } : null,
+      };
     },
   };
 }

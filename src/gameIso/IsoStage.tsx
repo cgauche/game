@@ -111,7 +111,7 @@ export function IsoStage() {
   const dialogue = useGame((s) => s.dialogue);
   // Télégraphe ENNEMI (« qui l'adversaire vise ») — le ciblage du JOUEUR a son propre réticule
   // (survol hoverAim + jets à cible pendants), même rendu partagé (TargetReticle).
-  const enemyAim = useGame((s) => s.enemyAim);
+  const actorAim = useGame((s) => s.actorAim);
   // COOP : le tour du héros d'un AUTRE joueur s'affiche comme un tour ennemi — AUCUNE affordance
   // (grille de déplacement, visée au survol, anneaux de cible, clics). Source unique : netFlow.
   const myTurn = useGame(controlsActive);
@@ -825,13 +825,13 @@ export function IsoStage() {
   objs.sort((a, b) => a.d - b.d);
 
   // --- Caméra : recadre autour du point focal (groupe / combattant actif) ---
-  // Attaque/sort ENNEMI télégraphié (enemyAim) : ligne (pleine en mêlée, pointillée tir/sort) +
+  // Attaque/sort ENNEMI télégraphié (actorAim) : ligne (pleine en mêlée, pointillée tir/sort) +
   // réticule + cadrage des deux. Le ciblage du JOUEUR a son propre réticule (survol + pending*).
   let targeting: { from: Combatant; to: Combatant; melee?: boolean } | null = null;
-  if (mode === 'battle' && battle && enemyAim) {
-    const a = battle.combatants.find((c) => c.id === enemyAim.fromId);
-    const b = battle.combatants.find((c) => c.id === enemyAim.toId);
-    if (a?.pos && b?.pos) targeting = { from: a, to: b, melee: enemyAim.melee };
+  if (mode === 'battle' && battle && actorAim) {
+    const a = battle.combatants.find((c) => c.id === actorAim.fromId);
+    const b = battle.combatants.find((c) => c.id === actorAim.toId);
+    if (a?.pos && b?.pos) targeting = { from: a, to: b, melee: actorAim.melee };
   }
 
   // Cadrage CAMÉRA (découplé du réticule, R8) : on cadre la paire attaquant↔cible aussi pour une
@@ -1104,7 +1104,7 @@ export function IsoStage() {
       <defs dangerouslySetInnerHTML={{ __html: DEFS + AMBIANCE_DEFS }} />
       <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.97 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: turning ? 'opacity 0.13s ease-out' : anyWalking ? 'opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out', opacity: turning ? 0.6 : 1 }}>
         <g>{objs.map((o) => o.el)}</g>
-        {/* Télégraphe ENNEMI (enemyAim) : réticule + ligne — PLEINE en mêlée, pointillée tir/sort. */}
+        {/* Télégraphe ENNEMI (actorAim) : réticule + ligne — PLEINE en mêlée, pointillée tir/sort. */}
         {targeting && (
           <TargetReticle
             from={reticleAnchor(targeting.from)}

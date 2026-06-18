@@ -19,4 +19,6 @@ export const TEMPO = {
   turnHandoff: 450,
   /** Avant `advanceTurn` après une action instantanée de l'IA (incantation, reprise…). */
   enemyAdvance: 500,
+  /** Cadence Rapide/Auto : beat entre deux étapes auto-résolues (jet → application), laisse lire le résultat. */
+  autoResolve: 260,
 } as const;

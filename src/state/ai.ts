@@ -24,6 +24,7 @@ import { isBestial, isTerritorial } from '../engine/traits/dispatch';
 export type EnemyAction =
   | { kind: 'cast'; targetId: string; spell: string } // incantation offensive sur la cible
   | { kind: 'shoot'; targetId: string } // tir depuis la position courante (arme à distance)
+  | { kind: 'reload' } // recharge une arme à Recharge déchargée (Test étendu de Projectiles, LDB 63 l.28-29)
   | { kind: 'melee'; targetId: string } // attaque de mêlée (cible adjacente)
   | { kind: 'move'; to: Pt; thenTargetId: string } // approche ; attaque après si adjacent
   | { kind: 'recover'; state: 'empetre' | 'en-flammes' } // se libérer / se rouler au sol (LDB 16 l.61/77)
@@ -89,6 +90,11 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
 
   const hasRanged = offensiveSpell == null && enemy.weapons.some((w) => w.type === 'ranged');
   const hasMeleeWeapon = enemy.weapons.some((w) => w.type === 'melee');
+  // Rechargement (LDB 63 l.28-29) : une arme à Recharge DÉCHARGÉE ne peut pas tirer → il faut recharger
+  // d'abord. `loaded` n'est suivi que pour les acteurs concernés (héros ayant tiré) ; un ennemi reste
+  // chargé (le décompte de Recharge lui est épargné), donc `!enemy.loaded` ne déclenche que pour qui doit.
+  const rangedW = enemy.weapons.find((w) => w.type === 'ranged');
+  const reloadNeeded = hasRanged && !!rangedW && (rangedW.reload ?? 0) > 0 && !enemy.loaded;
 
   // Un ennemi sans sort et sans arme ne peut rien faire d'utile.
   if (offensiveSpell == null && enemy.weapons.length === 0) return { kind: 'end' };
@@ -110,7 +116,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const castPool = spellRange != null ? shootableHeroes.filter((h) => fpDist(h) <= spellRange) : shootableHeroes;
   // Frénésie (LDB 21 l.34) : la seule Action est un Test de Capacité de Combat / Athlétisme — ni tir ni sort.
   const frenzied = !!enemy.frenzied;
-  const canShoot = !frenzied && hasRanged && !(adjacentFoes.length > 0 && hasMeleeWeapon) && shootPool.length > 0;
+  const canShoot = !frenzied && hasRanged && !reloadNeeded && !(adjacentFoes.length > 0 && hasMeleeWeapon) && shootPool.length > 0;
   const canCast = !frenzied && offensiveSpell != null && castPool.length > 0;
 
   // Cases atteignables ce tour (inclut la case de départ à distance 0). Vol (LDB 85 p.343) :
@@ -181,6 +187,10 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
 
   // --- Sort offensif : on lance sur la cible visible (résolu comme un projectile) ---
   if (canCast) return { kind: 'cast', targetId: target.id, spell: offensiveSpell! };
+
+  // --- Recharger : arme à Recharge déchargée + cible en vue/portée → recharger plutôt que rester inerte
+  //     (consomme l'Action) ; sauf si un adversaire au contact justifie une attaque de mêlée. ---
+  if (reloadNeeded && shootPool.length > 0 && !(adjacentFoes.length > 0 && hasMeleeWeapon)) return { kind: 'reload' };
 
   // --- Arme à distance (hors Combat rapproché, cible visible) : tenir la position et tirer ----
   if (canShoot) return { kind: 'shoot', targetId: target.id };

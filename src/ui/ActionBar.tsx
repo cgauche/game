@@ -12,6 +12,7 @@ import { canPushback } from '../engine/qualities/dispatch';
 import { hasHealSkill, healableTargets, availableHealModes } from '../engine/healing';
 import { mountableNear } from '../state/mount';
 import { controlsActive } from '../state/netOwnership';
+import { aiDriven } from '../state/combatGate';
 import type { Combatant } from '../engine/types';
 import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
 import { TeamPortrait } from './TeamPortrait';
@@ -191,7 +192,10 @@ export function ActionBar() {
     );
   }
 
-  const isHero = active.kind === 'hero';
+  // Un héros PILOTÉ PAR L'IA (Auto-combat) n'est pas contrôlable par le joueur → on rend la MÊME barre
+  // que pour un ennemi (aucun contrôle : le joueur regarde). En Rapide, le héros reste contrôlable (seuls
+  // les jets s'auto-résolvent) ; en Auto, l'IA joue → barre « ennemie ». `isHero` gate TOUS les contrôles.
+  const isHero = active.kind === 'hero' && !aiDriven(useGame.getState(), active);
   const loadouts = active.loadouts ?? []; // sets d'armes basculables en combat (≥2 → commutateur)
   // Mouvement DÉCOMPOSABLE (mais non entrelacé avec l'Action) : cases encore disponibles ce Tour (0 = épuisé).
   // `canMoveNow` applique aussi la règle M-A-M (pas de Mouvement après une Action déjà précédée de Mouvement).
@@ -612,7 +616,7 @@ export function ActionBar() {
             </button>
           </div>
         ) : (
-          <div className="ab-enemy">⚔️ Tour de l'ennemi…</div>
+          <div className="ab-enemy">⚔️ {active.kind === 'enemy' ? 'Tour de l’ennemi' : `L’IA joue ${active.name}`}…</div>
         )}
       </div>
     </div>

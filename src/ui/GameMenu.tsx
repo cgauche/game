@@ -7,13 +7,15 @@ import { formatMoney, type Money } from '../engine/money';
  * (retour à l'écran de groupe — parité avec l'ancien bouton toujours visible). `initialOpen` = aide
  * de test. Pur à props.
  */
-export function GameMenu({ sceneName, money, dateLine, onQuit, onSaveLoad, coop, initialOpen = false }: {
+export function GameMenu({ sceneName, money, dateLine, onQuit, onSaveLoad, onHouseRules, coop, initialOpen = false }: {
   sceneName?: string;
   money: Money;
   dateLine: string;
   onQuit: () => void;
   /** Ouvre la modale Sauvegarder/Charger (Jalon 5) — absent en combat (sauvegarde refusée). */
   onSaveLoad?: () => void;
+  /** Ouvre le panneau « Règles maison » (mêmes réglages qu'au menu principal, dont la Cadence de combat). */
+  onHouseRules?: () => void;
   /** Section coop de l'HÔTE (réinviter un déconnecté, réattribuer les héros — Jalon 7 P3c). */
   coop?: ReactNode;
   initialOpen?: boolean;
@@ -36,6 +38,11 @@ export function GameMenu({ sceneName, money, dateLine, onQuit, onSaveLoad, coop,
           {onSaveLoad && (
             <button type="button" className="btn small" onClick={() => { setOpen(false); onSaveLoad(); }}>
               💾 Sauvegarder / Charger
+            </button>
+          )}
+          {onHouseRules && (
+            <button type="button" className="btn small" onClick={() => { setOpen(false); onHouseRules(); }}>
+              📜 Règles maison
             </button>
           )}
           <button type="button" className="btn small gm-quit" onClick={onQuit}>← Quitter la partie</button>

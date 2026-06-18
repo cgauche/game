@@ -145,7 +145,8 @@ import {
 export * from './combatGeometry';
 // --- Garde de reprise unique (« une modale / une pause bloque l'IA ? ») extraite → combatGate.ts (baril) ---
 export * from './combatGate';
-import { combatAdvanceBlocked } from './combatGate';
+import { combatAdvanceBlocked, aiDriven } from './combatGate';
+import { cadenceAutoCombat } from '../engine/cadence';
 
 
 // ---------------------------------------------------------------------------
@@ -2576,7 +2577,7 @@ export function applyCounterspellOutcome(get: Get, set: SetFn, counter: Combatan
     next.log = `${out.log} ${next.log}`;
   }
   // Surincantation : le surplus a changé — re-plan IA (lanceur ennemi), remise à zéro sinon.
-  const oc = caster.kind === 'enemy' && pc.missile && !pc.zone
+  const oc = aiDriven(get(), caster) && pc.missile && !pc.zone
     ? aiOvercastPlan(caster, pc.targetId, spell, next, get().battle?.combatants ?? [], pc.focused, spellSightOf(get))
     : {};
   set({ pendingCast: { ...pc, result: next, overcast: undefined, extraTargetIds: undefined, ...oc } });
@@ -3270,8 +3271,8 @@ export function resumeSuspendedAI(get: Get, set: SetFn): void {
   if (combatAdvanceBlocked(s, { cast: false })) return;
   const battle = s.battle!;
   const active = activeCombatant(battle);
-  if (active && active.kind === 'enemy' && !isOutOfAction(active)) {
-    // Ennemi ayant déjà agi (conséquence d'attaque) → fin de tour ; sinon début de tour (entretien) → IA.
+  if (active && aiDriven(s, active) && !isOutOfAction(active)) {
+    // Acteur IA ayant déjà agi (conséquence d'attaque) → fin de tour ; sinon début de tour (entretien) → IA.
     if (battle.acted) resumeEnemyTurn(get, set);
     else maybeRunEnemyTurn(get, set);
   }
@@ -3486,16 +3487,24 @@ export function enterRoundStartPause(get: Get, set: SetFn): void {
     get().confirmRoundStart();
     return;
   }
+  // Auto-combat SOLO : on enchaîne les Rounds sans pause (l'IA joue tout le groupe). On NE touche PAS la
+  // branche coop (ready-check du Round 1 préservé ci-dessus) ni le mode manuel/Rapide (pause conservée).
+  if (cadenceAutoCombat() && get().net.mode === 'local') {
+    set({ battle: reset, pendingRoundStart: null });
+    get().confirmRoundStart();
+    return;
+  }
   // Pause de début de Round : PERSONNE n'est actif (turn -1) — confirmRoundStart posera le tour.
   set({ battle: { ...reset, turn: -1, handRaised: false }, pendingRoundStart: { round: b.round } });
 }
 
-/** IA simple : si le combattant actif est un ennemi, il agit puis passe la main. */
+/** IA : si le combattant actif est PILOTÉ par l'IA (ennemi, ou héros en Auto-combat possédé localement),
+ *  il agit puis passe la main — cf. `aiDriven`. */
 export function maybeRunEnemyTurn(get: Get, set: SetFn) {
   if (combatAdvanceBlocked(get(), { roundStart: true })) return;
   const battle = get().battle!;
   const active = activeCombatant(battle);
-  if (!active || active.kind !== 'enemy' || isOutOfAction(active)) return;
+  if (!active || !aiDriven(get(), active) || isOutOfAction(active)) return;
   setTimeout(() => runEnemyAI(get, set, active.id), TEMPO.turnHandoff);
 }
 
@@ -3843,7 +3852,11 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
     }
   }
 
-  const heroes = battle.combatants.filter((c) => c.kind === 'hero' && !isOutOfAction(c));
+  // Cible = camp OPPOSÉ à l'acteur : un ennemi vise les héros (inchangé) ; un héros auto-piloté (Auto-combat)
+  // vise les ennemis. Les helpers Rage/Stupide/Frénésie/psy ci-dessus n'agissent que sur les ennemis (no-op
+  // pour un héros, par leurs propres gardes `kind` internes — comportement conservateur, pas de bug).
+  const foeKind = enemy.kind === 'enemy' ? 'hero' : 'enemy';
+  const heroes = battle.combatants.filter((c) => c.kind === foeKind && !isOutOfAction(c));
   if (heroes.length === 0) {
     checkBattleOver(get, set);
     return;
@@ -3899,10 +3912,10 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   const attackThenAdvance = (target: Combatant, delay: number = TEMPO.preAttack) => {
     // Télégraphe (réticule + ligne — PLEINE en mêlée, pointillée au tir) pendant la pré-attaque :
     // même affordance que la visée du joueur, des deux côtés.
-    set({ enemyAim: { fromId: enemy.id, toId: target.id, melee: firedWeapon(enemy, target).type !== 'ranged' } });
+    set({ actorAim: { fromId: enemy.id, toId: target.id, melee: firedWeapon(enemy, target).type !== 'ranged' } });
     bus.emit(EVT.SCENE_DIRTY);
     setTimeout(() => {
-      set({ enemyAim: null });
+      set({ actorAim: null });
       const b = get().battle;
       if (!b || b.over) return;
       // Attaque-ACTION spéciale (Regard pétrifiant / Étreinte glaciale) à la place de l'attaque
@@ -3940,10 +3953,10 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       if (!canAct) return advanceTurn(get, set);
       const ctgt = targetOf(action.targetId);
       // Télégraphe d'incantation (parité tir) : ligne pointillée + réticule ~0,7 s avant le jet.
-      set({ enemyAim: { fromId: enemy.id, toId: ctgt.id } });
+      set({ actorAim: { fromId: enemy.id, toId: ctgt.id } });
       bus.emit(EVT.SCENE_DIRTY);
       setTimeout(() => {
-        set({ enemyAim: null });
+        set({ actorAim: null });
         const b = get().battle;
         if (!b || b.over) return;
         castSpell(get, set, enemy, ctgt, action.spell);
@@ -3960,9 +3973,17 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       const tgt = targetOf(action.targetId);
       // Télégraphe de tir : on montre QUI le tireur vise (réticule + cadrage) ~0,7 s AVANT de tirer
       // (retour playtest « jamais su sur qui il tirait »). doAttack journalise « X tire sur Y ».
-      set({ enemyAim: { fromId: enemy.id, toId: tgt.id } });
+      set({ actorAim: { fromId: enemy.id, toId: tgt.id } });
       bus.emit(EVT.SCENE_DIRTY);
-      setTimeout(() => { set({ enemyAim: null }); attackThenAdvance(tgt); }, TEMPO.aimTelegraph);
+      setTimeout(() => { set({ actorAim: null }); attackThenAdvance(tgt); }, TEMPO.aimTelegraph);
+      return;
+    }
+    case 'reload': {
+      // Recharge (Test étendu de Projectiles) : on ouvre la modale comme le joueur ; en Auto le driver
+      // résout reloadRoll→reloadConfirm (qui reprend le tour via aiDriven). Refusée (garde) → on passe.
+      if (!canAct) return advanceTurn(get, set);
+      get().battleReload();
+      if (!get().pendingReload) advanceTurn(get, set);
       return;
     }
     case 'melee':
