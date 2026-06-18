@@ -20,9 +20,9 @@ describe('combatAdvanceBlocked — garde de reprise unifiée (A1, iso)', () => {
     expect(combatAdvanceBlocked(s({ battle: { over: true } as unknown as ArbiterState['battle'] }))).toBe(true);
   });
 
-  it('modales du cœur commun (fateSave/fumble/cascade/reveals) → bloqué', () => {
+  it('modales du cœur commun (fateSave/cascade/reveals) → bloqué', () => {
     expect(combatAdvanceBlocked(s({ pendingFateSave: {} as never }))).toBe(true);
-    expect(combatAdvanceBlocked(s({ pendingFumble: {} as never }))).toBe(true);
+    // La Maladresse n'est plus un pending à part : c'est une étape de `pendingCascade` (déjà couverte).
     expect(combatAdvanceBlocked(s({ pendingCascade: {} as never }))).toBe(true);
     expect(combatAdvanceBlocked(s({ pendingReveals: [{}] as never }))).toBe(true);
   });

@@ -9,7 +9,7 @@ import { castInfo, isMagicMissile, parseSpellDamage, spellRangeTiles } from '../
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { isOutOfAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
-import { findSpell } from '../data';
+import { findSpellById } from '../data';
 import { spellSpecFor } from '../data/spellspecs';
 import { combatDistance } from './footprint';
 import type { GameState } from './store';
@@ -56,8 +56,8 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
   if (!battle || battle.over || !active.pos || !target.pos) return { kind: 'none' };
 
   // ── Mode incantation : mêmes gates que castSpell (équipe → portée → LdV) ──
-  if (battle.action === 'cast' && battle.selectedSpell) {
-    const spell = findSpell(battle.selectedSpell);
+  if (battle.action === 'cast' && battle.selectedSpellId) {
+    const spell = findSpellById(battle.selectedSpellId);
     if (!spell) return { kind: 'none' };
     const missile = isMagicMissile(spell);
     if (missile ? target.kind === active.kind || isOutOfAction(target) : target.kind !== active.kind || target.dead || target.outOfRencontre)
@@ -72,7 +72,7 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
     }
     const pv = previewCast(active, spell, {
       missile,
-      focused: active.focus?.spell === spell.label && active.focus.dr >= (spell.cn ?? 0),
+      focused: active.focus?.spell === spell.id && active.focus.dr >= (spell.cn ?? 0),
     });
     const dmg = missile ? parseSpellDamage(spell.desc) : null;
     return {

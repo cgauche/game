@@ -69,6 +69,21 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
     expect(lines.join(' ')).toMatch(/Force Mentale/); // le test FM s'est joué (op test, non-interactif)
   });
 
+  it('TRAIT Vampirique : Morsure infligeant N PB → l’attaquant draine N PB (Vol de vie, gaté par attackKind)', () => {
+    const vampire = mk({ id: 'vp', traits: [{ id: 'vampirique' }], wounds: { current: 10, max: 30 } });
+    const prey = mk({ id: 'pr' });
+    // onHit d'une Morsure ayant infligé 6 PB → lifeSteal 1/1 sur l'attaquant (ctx.caster).
+    fireTriggers(noBattle(), vampire, 'onHit', { victim: prey, attackKind: 'morsure', woundsDealt: 6 });
+    expect(vampire.wounds.current).toBe(16); // 10 + 6, plafonné au max (30)
+  });
+
+  it('TRAIT Vampirique : un coup d’ARME (≠ Morsure) ne draine PAS (Condition attackKind)', () => {
+    const vampire = mk({ id: 'vp', traits: [{ id: 'vampirique' }], wounds: { current: 10, max: 30 } });
+    const prey = mk({ id: 'pr' });
+    fireTriggers(noBattle(), vampire, 'onHit', { victim: prey, attackKind: 'arme', woundsDealt: 6 });
+    expect(vampire.wounds.current).toBe(10); // attackKind ≠ 'morsure' → branche then non prise
+  });
+
   it('op loseTurn : pose les drapeaux lus au début du Round', () => {
     const c = mk();
     runSpellFlow(c, c, { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'loseTurn' }] } }, { rng: makeRNG(1), caster: c });

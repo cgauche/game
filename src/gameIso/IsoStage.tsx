@@ -17,7 +17,7 @@ import { effectiveMovement } from '../engine/encumbrance';
 import { zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
 import { resolveFormula } from '../engine/ops';
 import { spellSpecFor } from '../data/spellspecs';
-import { findSpell } from '../data';
+import { findSpellById } from '../data';
 import { bus, EVT } from '../state/bus';
 import { isOutOfAction, canTakeAction, hasCondition } from '../engine/conditions';
 import { Combatant } from '../engine/types';
@@ -330,7 +330,7 @@ export function IsoStage() {
   const ghostIds = useMemo<Set<string>>(() => {
     if (mode !== 'battle' || !battle || battle.over) return new Set();
     // Mode incantation : grisage hors-LdV du SORT (LDB 46 l.170), indépendant de l'arme portée.
-    if (battle.action === 'cast' && battle.selectedSpell) return castOutOfSightTargetIds(useGame.getState);
+    if (battle.action === 'cast' && battle.selectedSpellId) return castOutOfSightTargetIds(useGame.getState);
     if (battle.acted || battle.action !== null) return new Set();
     return outOfSightTargetIds(useGame.getState);
   }, [scene, mode, battle]);
@@ -369,7 +369,7 @@ export function IsoStage() {
     }
     if (pendingCast?.pickingTargets) {
       const caster = battle.combatants.find((c) => c.id === pendingCast.casterId);
-      const spell = findSpell(pendingCast.spellLabel);
+      const spell = findSpellById(pendingCast.spellId);
       const ok = !!caster && !!spell && !!scene &&
         overcastTargetCandidates(battle.combatants, caster, pendingCast.targetId, spell, !!pendingCast.missile, { scene, smoke: smokeOf(battle) }).some((t) => t.id === occ.id);
       return ok ? { fromId: caster!.id, toId: occ.id, line: 'dashed', tip: null, reticle: true } : null;
@@ -524,7 +524,7 @@ export function IsoStage() {
       }
       if (pendingCast?.pickingTargets) {
         const caster = battle.combatants.find((c) => c.id === pendingCast.casterId);
-        const spell = findSpell(pendingCast.spellLabel);
+        const spell = findSpellById(pendingCast.spellId);
         if (caster && spell)
           for (const t of overcastTargetCandidates(battle.combatants, caster, pendingCast.targetId, spell, !!pendingCast.missile, { scene, smoke: smokeOf(battle) })) {
             // Cibles déjà cochées en vert (re-cliquer décoche), candidates restantes en rouge.
@@ -1143,8 +1143,8 @@ export function IsoStage() {
             radius = pz.radius;
             caster = battle.combatants.find((c) => c.id === pz.casterId);
             ok = placedZoneValidAt(useGame.getState, pz, hover);
-          } else if (battle.action === 'cast' && battle.selectedSpell && activeC?.kind === 'hero' && !pendingCast) {
-            const spell = findSpell(battle.selectedSpell);
+          } else if (battle.action === 'cast' && battle.selectedSpellId && activeC?.kind === 'hero' && !pendingCast) {
+            const spell = findSpellById(battle.selectedSpellId);
             // Même calcul que castZoneSpell : rayon de spec curée prioritaire sur le champ Cible.
             const specRadius = spell ? spellSpecFor(spell).zdeRadiusMeters : undefined;
             radius = spell

@@ -40,7 +40,7 @@ describe('castWard — pénalité −20 aux Sorts ciblant la zone du prêtre', (
     P.activeEffects = [{ label: 'N’écoutez point la Sorcière', bonus: 0, roundsLeft: 5, castWard: { radiusMeters: 4 } }];
     useGame.setState({
       battle: { ...useGame.getState().battle! },
-      pendingCast: { casterId: E.id, targetId: H.id, spellLabel: 'Fléchette', missile: true, focused: false, result: null },
+      pendingCast: { casterId: E.id, targetId: H.id, spellId: 'flechette', missile: true, focused: false, result: null },
     });
     return { H, P, E };
   }

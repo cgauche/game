@@ -29,7 +29,9 @@ export function combatAdvanceBlocked(
   if (!s.battle || s.battle.over) return true;
   if ((opts?.roundStart ?? false) && s.pendingRoundStart) return true;
   if ((opts?.cast ?? true) && s.pendingCast) return true;
-  if (s.pendingFateSave || s.pendingFumble || s.pendingCascade || (s.pendingReveals?.length ?? 0) > 0) return true;
+  // NB : pas de `pendingFumble` ici — la Maladresse est une ÉTAPE de `pendingCascade` (source unique),
+  // déjà couverte. La lister à part créait une 2ᵉ source de vérité désynchronisable → soft-lock.
+  if (s.pendingFateSave || s.pendingCascade || (s.pendingReveals?.length ?? 0) > 0) return true;
   return false;
 }
 

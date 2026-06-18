@@ -33,7 +33,7 @@ const enemy = (p: Partial<Combatant>): Combatant =>
 function setBattle(combatants: Combatant[]): BattleState {
   const battle: BattleState = {
     combatants, order: combatants.map((c) => c.id), baseOrder: combatants.map((c) => c.id),
-    turn: 0, round: 1, action: null, selectedSpell: null, reachable: new Map(),
+    turn: 0, round: 1, action: null, selectedSpellId: null, reachable: new Map(),
     movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
   } as unknown as BattleState;
   useGame.setState({ battle, mode: 'battle', scene: emptyScene(), gameTime: 12 * 60, pendingReveals: [], pendingCascade: null, pendingFateSave: null });

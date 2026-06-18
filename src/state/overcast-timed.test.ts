@@ -128,7 +128,7 @@ describe('Surincantation (LDB 47 l.28-31)', () => {
     const wiz = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
     useGame.setState({ party: [wiz, priest, ally] as Combatant[] });
     // Armure Aethyrique : NI 2 ; DR 6 → surplus 4 → budget 2 allocations.
-    useGame.setState({ pendingCast: { casterId: wiz.id, targetId: wiz.id, spellLabel: 'Armure Aethyrique', missile: false, focused: false, result: okRes(6) } });
+    useGame.setState({ pendingCast: { casterId: wiz.id, targetId: wiz.id, spellId: 'armure-aethyrique', missile: false, focused: false, result: okRes(6) } });
     useGame.getState().castAllocOvercast('duration');
     useGame.getState().castAllocOvercast('duration');
     useGame.getState().castAllocOvercast('duration'); // refusé : budget épuisé
@@ -138,7 +138,7 @@ describe('Surincantation (LDB 47 l.28-31)', () => {
   it('les Bénédictions surincantent sur le DR ENTIER (LDB 41 « Degrés de Réussite ») : +4 DR → 2 allocations', () => {
     const { priest, ally } = pair();
     useGame.setState({ party: [priest, ally] as Combatant[] });
-    useGame.setState({ pendingCast: { casterId: priest.id, targetId: ally.id, spellLabel: 'Bénédiction de Bataille', missile: false, focused: false, result: okRes(4) } });
+    useGame.setState({ pendingCast: { casterId: priest.id, targetId: ally.id, spellId: 'benediction-de-bataille', missile: false, focused: false, result: okRes(4) } });
     useGame.getState().castAllocOvercast('duration');
     useGame.getState().castAllocOvercast('targets');
     useGame.getState().castAllocOvercast('targets'); // refusé : budget 2 épuisé

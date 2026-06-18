@@ -475,6 +475,9 @@ export interface OpsCtx {
   indice?: number;
   /** Localisation de la touche courante (dé inversé) — lue par la Condition Flow `location` (Assommante). */
   location?: HitLocation;
+  /** KIND de l'attaque courante (`creatureAttackKind` : 'morsure'/'cornes'/…) — lu par la Condition Flow
+   *  `attackKind` (Vampirique : Vol de vie sur Morsure seulement). */
+  attackKind?: string;
   /** Gain de Corruption AVEC seuil → mutation (corruptionFlow) ; sans contexte
    *  store, l'op `corruption` incrémente simplement le compteur. */
   onCorruption?: (n: number) => string[];

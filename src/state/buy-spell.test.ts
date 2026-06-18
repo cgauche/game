@@ -77,8 +77,8 @@ describe('Effet learnSpell (trouvaille de campagne)', () => {
 
 describe('lecture au grimoire — NI doublé dans le flux', () => {
   it('effectiveSpellOf double le NI quand pendingCast.grimoire', () => {
-    const base = effectiveSpellOf({ spellLabel: 'Arme aethyrique' });
-    const doubled = effectiveSpellOf({ spellLabel: 'Arme aethyrique', grimoire: true });
+    const base = effectiveSpellOf({ spellId: 'arme-aethyrique' });
+    const doubled = effectiveSpellOf({ spellId: 'arme-aethyrique', grimoire: true });
     expect(doubled!.cn).toBe((base!.cn ?? 0) * 2);
   });
 

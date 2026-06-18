@@ -14,7 +14,7 @@ const hero = (over: Partial<Combatant> = {}): Combatant =>
 
 const battle = (active: Combatant, over: Partial<BattleState> = {}): BattleState =>
   ({
-    combatants: [active], order: [active.id], turn: 0, round: 1, action: null, selectedSpell: null,
+    combatants: [active], order: [active.id], turn: 0, round: 1, action: null, selectedSpellId: null,
     reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null, ...over,
   }) as unknown as BattleState;
 
@@ -54,7 +54,7 @@ describe('canActFirst — pré-emption d’initiative en début de Round (LDB ch
   // Ordre par défaut [E, H] : l'ennemi est en tête, donc le héros peut se placer devant lui.
   const duel = (h: Combatant, e: Combatant, over: Partial<BattleState> = {}): BattleState =>
     ({
-      combatants: [h, e], order: [e.id, h.id], turn: 0, round: 2, action: null, selectedSpell: null,
+      combatants: [h, e], order: [e.id, h.id], turn: 0, round: 2, action: null, selectedSpellId: null,
       reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null, ...over,
     }) as unknown as BattleState;
 

@@ -43,11 +43,11 @@ describe('pickActiveModalKey — priorité des modales de combat', () => {
   });
 
   it('la Maladresse n’est PLUS une modale propre : étape `jet:\'fumble\'` de la cascade (passe avant la Corruption)', () => {
-    // pendingFumble SEUL (sans cascade) → plus d'entrée 'fumble' (retirée au fold Lot 2) → tombe sur 'corruption'.
-    expect(pickActiveModalKey({ pendingFumble: {}, pendingCorruption: {} })).toBe('corruption');
-    // pendingFumble + cascade `jet:'fumble'` → 'cascade' (avant 'corruption' au registre).
-    const fumbleCascade = { participants: [{ jet: 'fumble', actorId: 'h1' }], cursor: 0 };
-    expect(pickActiveModalKey({ pendingFumble: {}, pendingCascade: fumbleCascade, pendingCorruption: {} })).toBe('cascade');
+    // Sans cascade fumble → la Corruption l'emporte (la Maladresse n'existe QUE comme étape de cascade).
+    expect(pickActiveModalKey({ pendingCorruption: {} })).toBe('corruption');
+    // Cascade portant une étape `jet:'fumble'` (donnée SUR l'étape `step.fumble`) → 'cascade' (avant 'corruption').
+    const fumbleCascade = { participants: [{ jet: 'fumble', actorId: 'h1', fumble: { weapon: {}, result: null } }], cursor: 0 };
+    expect(pickActiveModalKey({ pendingCascade: fumbleCascade, pendingCorruption: {} })).toBe('cascade');
   });
 
   it('Frappe Mortelle / 2ᵉ frappe (Deux armes) ne sont PLUS des modales (ciblage carte, TargetPrompt)', () => {

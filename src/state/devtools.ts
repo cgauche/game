@@ -266,7 +266,7 @@ export function buildApi() {
         return Array.isArray(v) ? v.length > 0 : v != null;
       });
       return {
-        round: b.round, over: b.over, action: b.action, selectedSpell: b.selectedSpell,
+        round: b.round, over: b.over, action: b.action, selectedSpellId: b.selectedSpellId,
         actif: b.order[b.turn], acted: b.acted, movementUsed: b.movementUsed,
         modales: pendings,
         combatants: b.combatants.map((c) => ({
@@ -288,7 +288,7 @@ export function buildApi() {
       if (idx < 0 || !c) return `❌ « ${id} » absent de l'ordre d'initiative`;
       if (isOutOfAction(c)) return `❌ ${c.name} est hors de combat`;
       useGame.setState({
-        battle: { ...b, turn: idx, acted: false, movementUsed: 0, movedPreAction: false, action: null, selectedSpell: null, preview: null, reachable: new Map(), moveSnapshot: null },
+        battle: { ...b, turn: idx, acted: false, movementUsed: 0, movedPreAction: false, action: null, selectedSpellId: null, preview: null, reachable: new Map(), moveSnapshot: null },
       });
       bus.emit(EVT.SCENE_DIRTY);
       return `✅ au tour de ${c.name}`;

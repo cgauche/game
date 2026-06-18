@@ -41,7 +41,7 @@ import { testValue } from '../engine/skills';
 import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR, resolveCounterspell, counterspellOutcomeFrom, castTestOf, castingValue } from '../engine/magic';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { resolveFrenzyEntry, calmeValue, CIBLE_TYPES } from '../engine/psychology';
-import { findSpell } from '../data/index';
+import { findSpellById } from '../data/index';
 
 /** Re-dérive une attaque FIGÉE avec un jet d'attaquant modifié (Chance +1 DR / Résilience / dé
  *  choisi) : Test opposé si un défenseur a joué, attaque passive sinon — partagé attaque/force. */
@@ -567,7 +567,7 @@ export const FLOWS = {
         const sl = base?.target != null ? Math.max(evaluateTest(1, base.target).sl, 1) : Math.max(base?.sl ?? 1, 1);
         return { result: { dr: Math.max(base?.dr ?? 0, sl), isCritical: base?.isCritical ?? false, isFumble: false, roll: 1, target: base?.target, sl, log: `${actor.name} force la focalisation (Résilience).` } };
       }
-      const spell = findSpell(p.spellLabel);
+      const spell = findSpellById(p.spellId);
       if (!spell) return null;
       return { result: resolveFocus(actor, spell, battleRng()) };
     },

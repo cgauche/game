@@ -76,6 +76,9 @@ export type Condition =
   /** Localisation touchée par l'attaque courante (`ctx.location`, dé inversé) — Assommante : « si vous
    *  touchez la Tête… ». Hors contexte d'attaque (location absente) = jamais vrai. */
   | { kind: 'location'; is: HitLocation }
+  /** KIND de l'attaque courante (`ctx.attackKind` : 'morsure'/'cornes'/'caudale'/… cf. `creatureAttackKind`)
+   *  — gate « seulement quand l'attaque est une Morsure » (Vampirique). Hors contexte = jamais vrai. */
+  | { kind: 'attackKind'; is: string }
   /** Blessures infligées par l'attaque/lancement courant (`ctx.woundsDealt`), comparées par `op` à
    *  `value` (Venin : `> 0` → Empoisonné ; un rider « coup lourd » : `>= 3`). Hors contexte = 0. */
   | { kind: 'woundsDealt'; op: CompareOp; value: number }
@@ -109,6 +112,8 @@ export interface ConditionCtx {
   location?: HitLocation;
   /** Blessures infligées par l'attaque courante — lue par la Condition `woundsDealt`. */
   woundsDealt?: number;
+  /** KIND de l'attaque courante (`creatureAttackKind` : 'morsure'/'cornes'/…) — lu par la Condition `attackKind`. */
+  attackKind?: string;
 }
 
 /** Évalue une Condition — SOURCE UNIQUE de l'évaluation des conditions (triggers, choix de dialogue,
@@ -154,6 +159,7 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
     }
     case 'slThreshold': return applyCompareOp(ctx.sl ?? 0, cond.op, cond.value);
     case 'location': return ctx.location != null && ctx.location === cond.is;
+    case 'attackKind': return ctx.attackKind != null && ctx.attackKind === cond.is;
     case 'woundsDealt': return applyCompareOp(ctx.woundsDealt ?? 0, cond.op, cond.value);
     case 'relation': {
       const a = cond.who === 'caster' ? ctx.caster : ctx.target;

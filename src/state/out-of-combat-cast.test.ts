@@ -76,7 +76,7 @@ describe('Incantation hors combat (couture D)', () => {
 
   it('Focalisation hors combat (sort d\'Arcane) : oocFocusSpell ouvre la modale ; focusConfirm accumule caster.focus, journalisé, sans combat', () => {
     const wiz = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
-    wiz.spells = ['Arme aethyrique', ...(wiz.spells ?? [])];
+    wiz.spells = ['arme-aethyrique', ...(wiz.spells ?? [])];
     const foc = wiz.skills.find((s) => s.skillId === 'focalisation');
     if (foc) foc.advances = Math.max(foc.advances, 5);
     else wiz.skills.push({ skillId: 'focalisation', characteristic: 'FM', advances: 5 });
@@ -93,7 +93,7 @@ describe('Incantation hors combat (couture D)', () => {
     useGame.getState().focusConfirm();
 
     const after = useGame.getState().party.find((h) => h.id === wiz.id)!;
-    expect(after.focus?.spell).toBe('Arme aethyrique'); // accumulation enregistrée sur le héros
+    expect(after.focus?.spell).toBe('arme-aethyrique'); // accumulation enregistrée sur le héros (id stable)
     expect(useGame.getState().pendingFocus).toBeNull();
     expect(useGame.getState().battle).toBeNull();
     expect(useGame.getState().journal.some((l) => /Focalis/i.test(l))).toBe(true);

@@ -1,5 +1,5 @@
 import { useGame } from '../state/store';
-import { findSpell } from '../data/index';
+import { findSpellById } from '../data/index';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { castingValue } from '../engine/magic';
@@ -28,9 +28,9 @@ export function FocusModal() {
   if (!pf) return null;
   const caster = (battle?.combatants ?? party).find((c) => c.id === pf.casterId); // combat (file) ou hors combat (groupe)
   if (!caster) return null;
-  const spell = findSpell(pf.spellLabel);
+  const spell = findSpellById(pf.spellId);
   const ni = spell?.cn ?? 0;
-  const prev = caster.focus?.spell === pf.spellLabel ? caster.focus.dr : 0;
+  const prev = caster.focus?.spell === pf.spellId ? caster.focus.dr : 0;
   const r = pf.result;
 
   return (
@@ -38,7 +38,7 @@ export function FocusModal() {
       title="✨ Focalisation"
       subtitle={
         <>
-          <strong>{caster.name}</strong> focalise <strong>{spell?.label ?? pf.spellLabel}</strong> ({prev}/{ni} DR)
+          <strong>{caster.name}</strong> focalise <strong>{spell?.label ?? pf.spellId}</strong> ({prev}/{ni} DR)
         </>
       }
       /* Test ÉTENDU (#23) : barre de DR cumulé vers le NI du sort. */

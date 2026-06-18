@@ -307,7 +307,7 @@ export interface PendingApproach {
 /** Focalisation en attente (LDB — Test étendu) : Lancer (resolveFocus) → Chance → Appliquer (cumule le DR). */
 export interface PendingFocus {
   casterId: string;
-  spellLabel: string;
+  spellId: string;
   result: FocusResult | null;
   rerolled?: boolean;
 }
@@ -366,13 +366,6 @@ export interface PendingCorruption {
   sl?: number;
   success?: boolean;
   rerolled?: boolean;
-}
-/** Maladresse d'un HÉROS (LDB 14 — Tableau des Oups !) : son Test de combat a échoué sur un double.
- *  Flux modale : Lancer (rollOups → result) → Appliquer (applyOups). Pas de Chance (elle agit AVANT). */
-export interface PendingFumble {
-  combatantId: string;
-  weapon: Weapon; // arme utilisée (pour Dégâts d'arme / Incident de Tir)
-  result: OupsResolved | null; // null = pas encore lancé sur le Tableau des Oups !
 }
 /** Déviation Critique en attente (LDB 63 l.63-66) : un HÉROS a subi un Coup Critique à une
  *  localisation où il porte de la PA ; il choisit Dévier (sacrifie 1 PA, ignore le Critique mais
@@ -483,7 +476,7 @@ export interface PendingDisengage {
 export interface PendingCast {
   casterId: string;
   targetId: string;
-  spellLabel: string;
+  spellId: string;
   /** Projectile magique (résolution façon attaque) vs autre sort / prière. */
   missile: boolean;
   /** Sort focalisé à NI 0 (consommé à l'application). */
@@ -662,6 +655,12 @@ export interface CascadeStep extends RollParticipant {
   /** Étape de CHOIX « renversement » (Déstabilisante, Aux Armes p.89) : contexte du Test opposé ;
    *  l'applier 'knockdown' appelle `resolveKnockdown(step.knockdown, chosen === 'yes')`. */
   knockdown?: PendingKnockdown;
+  /** Étape-JET « Maladresse » (LDB 14, Tableau des Oups !) : SOURCE UNIQUE de la maladresse — l'arme
+   *  utilisée + le résultat tiré vivent ICI (l'acteur est `actorId`). Plus de `pendingFumble` top-level
+   *  parallèle à désynchroniser : si l'étape existe la donnée existe, si la cascade ferme la maladresse
+   *  s'en va — orphelin structurellement impossible. Flux : `fumbleRoll` (rollOups → result),
+   *  `fumbleConfirm` (applyOups). */
+  fumble?: { weapon: Weapon; result: OupsResolved | null };
   /** Étape-JET de Psychologie À LA RENCONTRE (LDB 21) : un héros face à une source de Peur/Terreur/
    *  Trait ciblé à l'entrée de scène. Test de Calme générique (`target`=Calme) ; l'applier
    *  'encounterPsych' pose le `psychState` (Brisé de Terreur dérivé du DR). Détermination = immunité. */

@@ -5,6 +5,7 @@
  */
 import type { Combatant, Weapon } from '../types';
 import { groupMatch } from '../groups';
+import { isShieldItem } from '../equipCompare';
 import { findTalentById } from '../../data';
 import type { CombatFeature, CombatFeatureCtx, CastingKind } from './types';
 
@@ -154,9 +155,10 @@ export function fleeMovementBonus(c: Combatant): number {
   return featuresOf(c).some(({ def }) => def.fleeBonus) ? 1 : 0;
 }
 
-/** Porte-Bouclier (LDB 10) : +niveau Avantage en défense gagnée au Bouclier. */
+/** Porte-Bouclier (LDB 10) : +niveau Avantage en défense gagnée au Bouclier. Bouclier = `isShieldItem`
+ *  (source UNIQUE du prédicat de bouclier — Atout « Bouclier » ou nom « Bouclier… »), pas de regex dupliquée. */
 export function shieldAdvantageLevel(c: Combatant, parryWeapon: Weapon | undefined): number {
-  if (!parryWeapon || !/bouclier|targe|rondache|écu/i.test(parryWeapon.name)) return 0;
+  if (!parryWeapon || !isShieldItem(parryWeapon)) return 0;
   return levelSum(c, (d) => !!d.shieldAdvantage);
 }
 

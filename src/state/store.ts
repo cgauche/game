@@ -110,14 +110,14 @@ import type { MerchantState, MerchantStocks } from './merchantFlow';
 import type {
   Money, PendingVictory, PendingLoot, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
   PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingManeuver, PendingRun, PendingApproach, PendingFocus,
-  PendingFrenzy, RevealEntry, PendingFumble, PendingRenounce, PendingDefense,
+  PendingFrenzy, RevealEntry, PendingRenounce, PendingDefense,
   PendingDisengage, PendingCast, PendingCounterspell, CounterParticipant, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingCorruption,
   PendingCastOpposition, OppositionParticipant, PendingCascade, ScheduledEffect,
 } from './pendings';
 import {
   openEncounterPsych,
 } from './encounterPsychFlow';
-import { findSpell } from '../data/index';
+import { findSpell, findSpellById } from '../data/index';
 import { subtract as moneySub, add as moneyAdd, canAfford, toMoney } from '../engine/money';
 import * as medicFlow from './medicFlow';
 import type { MedicState, MedicNpc } from './medicFlow';
@@ -165,8 +165,8 @@ export interface BattleState {
    *  = panneaux (Détermination / munition / soin). La Focalisation / l'usage d'objet / le ramassage NE sont
    *  PAS des modes : ils passent par `battleFocusSpell`→`pendingFocus`, `battleUseItem`, `battlePickup`. */
   action: 'cast' | 'resolve' | 'ammo' | 'heal' | 'teleport' | null;
-  /** Sort sélectionné pour l'action d'incantation en cours. */
-  selectedSpell: string | null;
+  /** Sort sélectionné pour l'action d'incantation en cours (id STABLE — le libellé se résout à l'affichage). */
+  selectedSpellId: string | null;
   /** Attaque ARMÉE pour le clic-ennemi (id d'`AttackOption` : 'arme' | 'morsure' | … — cf. `availableAttacks`).
    *  Défaut 'arme' ; vivante seulement quand `action===null`. Source UNIQUE qui remplace l'attaque d'arme
    *  implicite + le mode manœuvre/tentacule/trample armé. */
@@ -335,8 +335,6 @@ export interface GameState {
   // (Psychologie de combat : cascade de Round, cf. openRoundStartPsych/openRoundEndPsych.)
   /** Entrée en Frénésie d'un héros en cours (Test de FM, LDB 21 l.32). */
   pendingFrenzy: PendingFrenzy | null;
-  /** Maladresse d'un héros en attente (LDB 14 — Tableau des Oups !). */
-  pendingFumble: PendingFumble | null;
   /** Modale d'ordre de Round en attente (Chance, 3e usage : pré-emption d'initiative). */
   pendingRoundStart: { round: number; readyBySeat?: Record<number, boolean> } | null;
   /** Coop : marque le siège PRÊT au ready-check d'ouverture (round 1) ; l'hôte lance quand tous ✓. */
@@ -622,7 +620,7 @@ export interface GameState {
    *  actif un item ramassable d'un `prop` interactif adjacent. Consomme l'Action, pas d'auto-équipe.
    *  `key` = `eff:<index dans interact.effects>` (cf. entityPickables). */
   battlePickup: (entityId: string, key: string) => void;
-  battleSelectSpell: (label: string) => void;
+  battleSelectSpell: (spellId: string) => void;
   /** Le combattant actif boit/utilise un consommable de son inventaire (coûte l'Action). */
   battleUseItem: (uid: string) => void;
   /** HORS COMBAT : un héros utilise un consommable (bandages, potion) depuis sa fiche. */
@@ -715,7 +713,7 @@ export interface GameState {
   oppositionConfirm: () => void;
   /** Incantation HORS COMBAT (couture D) : un héros lanceur cible self/allié ; sorts non-offensifs. */
   oocCastSpell: (casterId: string, label: string, targetId: string, fromGrimoire?: boolean) => void;
-  battleFocusSpell: (label: string) => void;
+  battleFocusSpell: (spellId: string) => void;
   battleClickTile: (pt: Pt, opts?: { confirm?: boolean }) => void;
   battleClickEntity: (id: string, opts?: { confirm?: boolean; skipMountChoice?: boolean; forceAttackId?: string }) => void;
   /** Annule TOUT le déplacement décomposé du Tour (R6/LOT 6) tant qu'aucune Action n'a été prise :
@@ -1042,7 +1040,6 @@ export const useGame = create<GameState>((set, get) => ({
   pendingApproach: null,
   pendingFocus: null,
   pendingFrenzy: null,
-  pendingFumble: null,
   pendingRoundStart: null,
   pendingFateSave: null,
   pendingVictory: null,
@@ -1459,7 +1456,7 @@ export const useGame = create<GameState>((set, get) => ({
       turn: -1,
       round: 1,
       action: null,
-      selectedSpell: null,
+      selectedSpellId: null,
       reachable: new Map(),
       movementUsed: 0,
       movedPreAction: false,
@@ -1474,7 +1471,7 @@ export const useGame = create<GameState>((set, get) => ({
     // Ouverture = pause de début du Round 1 (pendingRoundStart) : champ visible, ordre d'Initiative dans la
     // frise, pré-emption « agir en premier » (Chance, #12a) — IA gelée. Un seul bouton « Commencer le combat »
     // (pas de phase « plan d'ensemble » séparée : c'était redondant avec la pause de Round).
-    set({ battle, mode: 'battle', pendingRoundStart: { round: battle.round }, pendingVictory: null, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, pendingCounterspell: null, actorAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingManeuver: null, pendingRun: null, pendingFocus: null, pendingFrenzy: null, pendingFumble: null, pendingCascade: null });
+    set({ battle, mode: 'battle', pendingRoundStart: { round: battle.round }, pendingVictory: null, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, pendingCounterspell: null, actorAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingManeuver: null, pendingRun: null, pendingFocus: null, pendingFrenzy: null, pendingCascade: null });
     get().faceAtCombatStart();
     bus.emit(EVT.SCENE_DIRTY);
   },
@@ -1548,8 +1545,8 @@ export const useGame = create<GameState>((set, get) => ({
     // Quitter le mode incantation oublie le sort sélectionné. Le déplacement et l'attaque n'ont PLUS de
     // mode : ils sont implicites au clic (battleClickTile/battleClickEntity) — le reachable stocké ne
     // porte que les budgets spéciaux (Course, post-Désengagement), on ne le touche pas ici.
-    const selectedSpell = a === 'cast' ? battle.selectedSpell : null;
-    set({ battle: { ...battle, action: a, selectedSpell, preview: null } });
+    const selectedSpellId = a === 'cast' ? battle.selectedSpellId : null;
+    set({ battle: { ...battle, action: a, selectedSpellId, preview: null } });
     bus.emit(EVT.SCENE_DIRTY);
   },
 
@@ -1630,14 +1627,14 @@ export const useGame = create<GameState>((set, get) => ({
 
   /** Sélectionne un sort à incanter ; le clic suivant sur une cible le lance. Un sort de ZONE
    *  ouvre la modale DIRECTEMENT (flux « jet puis pose », LDB 47 l.29) — pas de cible à désigner. */
-  battleSelectSpell: (label) => {
+  battleSelectSpell: (spellId) => {
     if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const { battle } = get();
     if (!battle || battle.over) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero' || battle.acted) return;
-    set({ battle: { ...battle, action: 'cast', selectedSpell: label, reachable: new Map() } });
-    castZoneSpell(get, set, active, label); // no-op si le sort n'est pas une ZdE chiffrable
+    set({ battle: { ...battle, action: 'cast', selectedSpellId: spellId, reachable: new Map() } });
+    castZoneSpell(get, set, active, spellId); // no-op si le sort n'est pas une ZdE chiffrable
     bus.emit(EVT.SCENE_DIRTY);
   },
 
@@ -1780,7 +1777,7 @@ export const useGame = create<GameState>((set, get) => ({
    *  +durée initiale, Cibles +1). */
   castAllocOvercast: (axis) => {
     const pc = get().pendingCast;
-    const spell = pc && findSpell(pc.spellLabel);
+    const spell = pc && findSpellById(pc.spellId);
     if (!pc || !pc.result?.cast || !spell) return;
     const oc = pc.overcast ?? { duration: 0, targets: 0 };
     const ni = spell.cn == null ? 0 : pc.focused ? 0 : spell.cn; // Prière : pas de NI à dépasser
@@ -1801,7 +1798,7 @@ export const useGame = create<GameState>((set, get) => ({
     // indispensable depuis le clic carte (pickingTargets), inoffensif depuis le picker en modale.
     const pool = get().battle?.combatants ?? get().party;
     const caster = pool.find((c) => c.id === pc.casterId);
-    const spell = findSpell(pc.spellLabel);
+    const spell = findSpellById(pc.spellId);
     if (!caster || !spell || !overcastTargetCandidates(pool, caster, pc.targetId, spell, !!pc.missile, spellSightOf(get)).some((c) => c.id === id)) return;
     const cur = pc.extraTargetIds ?? [];
     const next = cur.includes(id)
@@ -2008,13 +2005,13 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   /** Focalise un sort d'Arcane/Domaine (Test étendu de Focalisation). */
-  battleFocusSpell: (label) => {
+  battleFocusSpell: (spellId) => {
     if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const { battle } = get();
     if (!battle || battle.over) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero' || battle.acted) return;
-    const spell = findSpell(label);
+    const spell = findSpellById(spellId);
     if (!spell || !isArcaneSpell(spell)) {
       get().log('Ce sort ne peut pas être focalisé.');
       return;
@@ -2026,7 +2023,7 @@ export const useGame = create<GameState>((set, get) => ({
       return;
     }
     // OUVRE la modale (le Test étendu se fait au clic « Lancer »)
-    set({ pendingFocus: { casterId: active.id, spellLabel: label, result: null } });
+    set({ pendingFocus: { casterId: active.id, spellId: spell.id, result: null } });
   },
   // Focalisation COMMUNE combat/hors-combat (couture D) : acteur via `actorIn`, sortie journal hors combat.
   focusRoll: () => FLOWS.focus.roll(get, set),
@@ -2038,19 +2035,19 @@ export const useGame = create<GameState>((set, get) => ({
     const { pendingFocus: pf } = get();
     if (!pf || !pf.result) return;
     const caster = actorIn(get(), pf.casterId);
-    const spell = findSpell(pf.spellLabel);
+    const spell = findSpellById(pf.spellId);
     set({ pendingFocus: null });
     if (!caster || !spell) return;
     const res = pf.result;
-    const prev = caster.focus?.spell === pf.spellLabel ? caster.focus.dr : 0;
-    caster.focus = { spell: pf.spellLabel, dr: prev + res.dr };
+    const prev = caster.focus?.spell === pf.spellId ? caster.focus.dr : 0;
+    caster.focus = { spell: pf.spellId, dr: prev + res.dr };
     const ni = spell.cn ?? 0;
     const logLines = [res.log];
     // Focalisation CRITIQUE (LDB 46 l.185-186) : le sort est lançable au prochain Round
     // QUEL QUE SOIT le DR accumulé — mais tant de magie si vite concentrée provoque un
     // contrecoup : Imparfaite Mineure, sauf Talent Harmonisation aethyrique.
     if (res.isCritical) {
-      caster.focus = { spell: pf.spellLabel, dr: Math.max(caster.focus.dr, ni) };
+      caster.focus = { spell: pf.spellId, dr: Math.max(caster.focus.dr, ni) };
       logLines.push(`${caster.name} — Focalisation CRITIQUE : ${spell.label} est lançable au prochain Round (NI 0) !`);
       if (!hasTalent(caster, 'Harmonisation aethyrique')) logLines.push(...applyMiscast(get, set, caster, 'mineure'));
       else logLines.push(`Harmonisation aethyrique : le contrecoup est maîtrisé (pas d'Imparfaite).`);
@@ -2078,7 +2075,7 @@ export const useGame = create<GameState>((set, get) => ({
       get().log(`${caster.name} ne peut pas focaliser : ${fblocked}.`);
       return;
     }
-    set({ pendingFocus: { casterId: caster.id, spellLabel: label, result: null } });
+    set({ pendingFocus: { casterId: caster.id, spellId: spell.id, result: null } });
   },
   // Psychologie de COMBAT (Peur/Terreur/Traits ciblés, LDB 21) : CASCADE de Round (Traits/Terreur au
   // DÉBUT via openRoundStartPsych ; Peur — Test étendu — à la FIN via openRoundEndPsych), applier
@@ -2144,8 +2141,8 @@ export const useGame = create<GameState>((set, get) => ({
     }
     // Sort de ZONE sélectionné : le clic-case (comme le clic-token) OUVRE la modale — le centre
     // se choisit APRÈS le jet (flux ci-dessus). Sort non-zone : clic-sol sans effet en mode cast.
-    if (battle.action === 'cast' && battle.selectedSpell && !battle.acted && !get().pendingCast) {
-      castZoneSpell(get, set, active, battle.selectedSpell);
+    if (battle.action === 'cast' && battle.selectedSpellId && !battle.acted && !get().pendingCast) {
+      castZoneSpell(get, set, active, battle.selectedSpellId);
       return;
     }
     // Mode NEUTRE = clic-sol implicite (les modes restants — heal/ammo/trample/resolve… — ne
@@ -2286,11 +2283,11 @@ export const useGame = create<GameState>((set, get) => ({
     }
     const target = battle.combatants.find((c) => c.id === id);
     if (!target) return;
-    if (battle.action === 'cast' && battle.selectedSpell) {
+    if (battle.action === 'cast' && battle.selectedSpellId) {
       // Sort de ZONE : un token n'est pas une cible (la zone se pose après le jet) → modale.
-      if (castZoneSpell(get, set, active, battle.selectedSpell)) return;
+      if (castZoneSpell(get, set, active, battle.selectedSpellId)) return;
       // L'incantation peut viser un allié, un ennemi ou soi-même.
-      castSpell(get, set, active, target, battle.selectedSpell);
+      castSpell(get, set, active, target, battle.selectedSpellId);
       return;
     }
     // ATTAQUE unifiée : l'`AttackOption` armée (clic droit = première abordable via `forceAttackId` ; sinon
@@ -2930,8 +2927,9 @@ export const useGame = create<GameState>((set, get) => ({
       // Maladresse d'un HÉROS (jet propre raté + double) → modale Tableau des Oups ! (LDB 14 l.53) ; elle interrompt le balayage.
       if (attacker.kind === 'hero' && attackerFumbled(pa.result, weapon)) {
         // Maladresse = étape de la cascade d'attaque (comme le Critique) ; advanceCombatJet l'enchaîne au bout.
-        pushCombatStep(set, { id: `cons-fumble-${attacker.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: attacker.id });
-        set({ pendingFumble: { combatantId: attacker.id, weapon, result: null }, pendingCleave: null });
+        // La donnée (arme/résultat) vit SUR l'étape — source unique, plus de `pendingFumble` à désynchroniser.
+        pushCombatStep(set, { id: `cons-fumble-${attacker.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: attacker.id, fumble: { weapon, result: null } });
+        set({ pendingCleave: null });
       } else if (!isDualMain && !isDualSecond && !pa.freeKind) {
         // Frappe Mortelle (LDB 14 l.12 / 85 l.299) : démarre/poursuit le balayage d'un héros plus grand
         // (jamais en mode dual ni sur une Attaque gratuite de manœuvre).
@@ -3051,7 +3049,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!active || active.kind !== 'hero') return;
     // Arme une attaque pour le clic-ennemi (mode neutre : `action===null`). Re-sélectionner revient à l'Arme.
     const next = battle.selectedAttack === id ? 'arme' : id;
-    set({ battle: { ...battle, action: null, selectedAttack: next, selectedSpell: null, preview: null } });
+    set({ battle: { ...battle, action: null, selectedAttack: next, selectedSpellId: null, preview: null } });
   },
   battleManeuverArea: (kind) => {
     if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
@@ -3138,7 +3136,7 @@ export const useGame = create<GameState>((set, get) => ({
     const battle = get().battle;
     if (!battle || battle.over || battle.acted || battle.movementUsed > 0) return; // Course = Marche + Action (exige le plein Mouvement)
     const active = activeCombatant(battle);
-    if (!active || active.kind !== 'hero' || isEngaged(active) || hasCondition(active, 'a-terre') || !canTakeAction(active)) return; // Engagé/À Terre → pas de Course (LDB 16 l.37)
+    if (!active || active.kind !== 'hero' || isEngaged(active) || hasCondition(active, COND.aTerre) || !canTakeAction(active)) return; // Engagé/À Terre → pas de Course (LDB 16 l.37)
     set({ pendingRun: { combatantId: active.id, dest, result: null }, battle: { ...battle, action: null, preview: null } });
   },
   runRoll: () => FLOWS.run.roll(get, set),
@@ -3226,28 +3224,29 @@ export const useGame = create<GameState>((set, get) => ({
     const battle = get().battle;
     if (!battle || battle.over || battle.movementUsed > 0) return;
     const active = activeCombatant(battle);
-    if (!active || active.kind !== 'hero' || !hasCondition(active, 'a-terre') || active.wounds.current <= 0) return;
-    removeCondition(active, 'a-terre');
+    if (!active || active.kind !== 'hero' || !hasCondition(active, COND.aTerre) || active.wounds.current <= 0) return;
+    removeCondition(active, COND.aTerre);
     set({ battle: { ...battle, movementUsed: mountMovement(battle, active), action: null, log: [...battle.log, ev('move', `${active.name} se relève.`, active.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
   },
 
+  // Maladresse : la donnée vit SUR l'étape COURANTE de la cascade (`step.fumble`) — source unique.
   fumbleRoll: () => {
-    const pf = get().pendingFumble;
-    if (!pf || pf.result) return; // un seul jet sur le Tableau des Oups !
-    set({ pendingFumble: { ...pf, result: rollOups(pf.weapon, battleRng()) } });
+    const pc = get().pendingCascade;
+    const i = pc?.cursor ?? -1;
+    const step = pc?.participants[i];
+    if (!pc || step?.jet !== 'fumble' || !step.fumble || step.fumble.result) return; // un seul jet sur le Tableau des Oups !
+    const result = rollOups(step.fumble.weapon, battleRng());
+    set({ pendingCascade: { ...pc, participants: pc.participants.map((s, k) => (k === i ? { ...s, fumble: { ...s.fumble!, result } } : s)) } });
   },
   fumbleConfirm: () => {
-    const { battle, pendingFumble: pf } = get();
-    if (!battle || !pf || !pf.result) return;
-    const c = battle.combatants.find((x) => x.id === pf.combatantId);
-    set({ pendingFumble: null });
-    if (c) applyOups(get, set, c, pf.weapon, pf.result);
-    // La Maladresse est l'étape COURANTE de la cascade combat → enchaîner le curseur (la clôture reprend l'IA).
-    // Hors cascade (tests directs) : repli sur la reprise du tour de l'IA.
-    const seq = get().pendingCascade;
-    if (seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'fumble') get().cascadeNext();
-    else resumeEnemyTurn(get, set);
+    const { battle, pendingCascade: pc } = get();
+    const step = pc?.participants[pc.cursor];
+    if (!battle || !pc || step?.jet !== 'fumble' || !step.fumble?.result) return;
+    const c = battle.combatants.find((x) => x.id === step.actorId);
+    if (c) applyOups(get, set, c, step.fumble.weapon, step.fumble.result);
+    // La Maladresse est l'étape COURANTE de la cascade combat → enchaîner le curseur (sa clôture reprend l'IA).
+    get().cascadeNext();
   },
 
   // ── Défense réactive (héros attaqué par l'IA en mêlée) ──
@@ -3282,17 +3281,13 @@ export const useGame = create<GameState>((set, get) => ({
         applyFreeAttackEffects(get, attacker, defender, pd.freeKind ?? '', pd.result); // À Terre (Attaque caudale)…
       } else autoCleave(get, set, attacker, defender, pd.result); // Frappe Mortelle (attaque principale)
     }
-    // Maladresse du DÉFENSEUR héros (sa défense ratée sur un double, LDB 14 l.48-51) → modale Oups!,
-    // puis reprise de l'IA APRÈS Appliquer (resumeAfter). Sinon on reprend l'IA tout de suite.
+    // Maladresse du DÉFENSEUR héros (sa défense ratée sur un double, LDB 14 l.48-51) → étape Oups! de SA
+    // cascade combat (donnée SUR l'étape — plus de `pendingFumble` à orpheliner), SANS déclencher la
+    // Frénésie de l'attaquant (comme avant le fold).
     if (defender && defender.kind === 'hero' && defenderFumbled(pd.result, pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : defender.weapons[0]) && !isOutOfAction(defender)) {
-      // Maladresse du défenseur = étape de SA cascade combat ; on AVANCE défense → Maladresse (la reprise IA
-      // suivra fumbleConfirm → cascadeNext), SANS déclencher la Frénésie de l'attaquant (comme avant le fold).
-      pushCombatStep(set, { id: `cons-fumble-${defender.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: defender.id });
-      set({ pendingFumble: { combatantId: defender.id, weapon: defender.weapons[0], result: null } });
-      // Avance défense → Maladresse SEULEMENT si la défense est encore l'étape courante (cascade
-      // pré-existante). Si `pushCombatStep` a dû CRÉER une cascade neuve (Maladresse seule au curseur 0),
-      // on y est déjà : un `cascadeNext` la refermerait (next ≥ length) et ORPHELINERAIT `pendingFumble`
-      // → modale invisible (le fold a retiré la modale Maladresse autonome) → soft-lock.
+      pushCombatStep(set, { id: `cons-fumble-${defender.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: defender.id, fumble: { weapon: defender.weapons[0], result: null } });
+      // Positionne le curseur défense → Maladresse quand la défense est l'étape courante (sinon
+      // `pushCombatStep` a créé une cascade neuve déjà au curseur 0 sur la Maladresse).
       const casc = get().pendingCascade;
       if (casc && casc.participants[casc.cursor]?.jet === 'defense') get().cascadeNext();
       return;
@@ -3492,7 +3487,7 @@ export const useGame = create<GameState>((set, get) => ({
       broken = ct.success ? 0 : 1 + Math.max(0, -ct.sl);
       calmeRoll = ct.roll;
       if (broken) {
-        addCondition(mover, 'brise', broken);
+        addCondition(mover, COND.brise, broken);
         log.push(ev('fear', `${mover.name} panique : ${broken} État(s) Brisé.`, mover.id));
       }
     }

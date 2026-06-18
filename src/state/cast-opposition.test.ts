@@ -41,10 +41,10 @@ describe('Incantation opposée (SpellSpec.opposed — multijet)', () => {
   }
 
   /** Pose une incantation RÉUSSIE figée (résultat contrôlé) prête à confirmer. */
-  function frozenCast(H: Combatant, E: Combatant, label: string, sl: number) {
+  function frozenCast(H: Combatant, E: Combatant, spellId: string, sl: number) {
     useGame.setState({
       pendingCast: {
-        casterId: H.id, targetId: E.id, spellLabel: label, missile: false, focused: false,
+        casterId: H.id, targetId: E.id, spellId, missile: false, focused: false,
         result: { cast: true, roll: 30, target: 70, sl, isCritical: false, isFumble: false, log: 'x' },
       },
     });
@@ -53,7 +53,7 @@ describe('Incantation opposée (SpellSpec.opposed — multijet)', () => {
   it('GATE : un Sort `opposed` réussi OUVRE le multijet d’opposition (garde pendingCast, ne s’applique pas encore)', () => {
     const { H, E } = setup();
     E.characteristics.FM = 20; // FM faible → DR d'opposition plafonné (max +2)
-    frozenCast(H, E, 'Fauche-démon', 6);
+    frozenCast(H, E, 'fauche-demon', 6);
     useGame.getState().castConfirm();
     const pco = useGame.getState().pendingCastOpposition;
     expect(pco).toBeTruthy();
@@ -69,7 +69,7 @@ describe('Incantation opposée (SpellSpec.opposed — multijet)', () => {
     useGame.getState().seedRng(11);
     const { H, E } = setup();
     E.characteristics.FM = 20; // opposition ≤ +2 DR, l'incantation à +6 gagne toujours
-    frozenCast(H, E, 'Fauche-démon', 6);
+    frozenCast(H, E, 'fauche-demon', 6);
     useGame.getState().castConfirm(); // ouvre l'opposition, IA auto-roulée
     const part = useGame.getState().pendingCastOpposition!.participants.find((p) => p.id === E.id)!;
     expect(part.result!.resisted).toBe(false);
@@ -85,7 +85,7 @@ describe('Incantation opposée (SpellSpec.opposed — multijet)', () => {
     const { H, E } = setup();
     E.characteristics.FM = 100; // FM ≥ 100 → DR d'opposition toujours ≥ l'incantation à +0
     E.wounds = { current: 12, max: 20 };
-    frozenCast(H, E, 'Fauche-démon', 0);
+    frozenCast(H, E, 'fauche-demon', 0);
     useGame.getState().castConfirm();
     const part = useGame.getState().pendingCastOpposition!.participants.find((p) => p.id === E.id)!;
     expect(part.result!.resisted).toBe(true);
@@ -98,7 +98,7 @@ describe('Incantation opposée (SpellSpec.opposed — multijet)', () => {
 
   it('paramétrage par Sort : Parole de Tzeentch oppose l’INTELLIGENCE (pas la FM)', () => {
     const { H, E } = setup();
-    frozenCast(H, E, 'Parole de Tzeentch', 4);
+    frozenCast(H, E, 'parole-de-tzeentch', 4);
     useGame.getState().castConfirm();
     const pco = useGame.getState().pendingCastOpposition!;
     expect(pco.char).toBe('Int');

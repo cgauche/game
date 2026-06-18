@@ -25,6 +25,11 @@ const WHAT_LABEL: Record<'group' | 'talent' | 'trait', string> = { group: 'le Gr
 
 const ALWAYS: Condition = { kind: 'always' };
 
+/** Kinds d'attaque (cf. `creatureAttackKind`) — libellés du sélecteur de la Condition `attackKind`. */
+const ATTACK_KIND_LABELS: Record<string, string> = {
+  arme: 'Arme / griffe', morsure: 'Morsure', caudale: 'Attaque caudale', cornes: 'Cornes', tentacules: 'Tentacules', pietinement: 'Piétinement',
+};
+
 /** Données fixes d'un acteur comparables (Condition `compare`) — libellés des sélecteurs. */
 const FIELD_LABEL: Record<ActorField, string> = { woundsCurrent: 'PB courants', woundsMax: 'PB max', size: 'Taille', advantage: 'Avantage' };
 const WHO_LABEL: Record<ActorRef, string> = { target: 'la cible', caster: 'le lanceur' };
@@ -40,6 +45,7 @@ const KIND_OPTIONS: [Condition['kind'], string][] = [
   ['compare', 'État du porteur (comparaison)'],
   ['slThreshold', 'Marge (DR)'],
   ['location', 'Localisation touchée'],
+  ['attackKind', 'Type d’attaque'],
   ['woundsDealt', 'Blessures infligées'],
   ['relation', 'Camp / relation'],
   ['has', 'Possède (Groupe/Talent/Trait)'],
@@ -74,6 +80,7 @@ export function condSummary(c: Condition | undefined): string {
     }
     case 'slThreshold': return `marge ${c.op} ${c.value} DR`;
     case 'location': return `touche ${HIT_LOCATION_LABELS[c.is]}`;
+    case 'attackKind': return `attaque = ${ATTACK_KIND_LABELS[c.is] ?? (c.is || '?')}`;
     case 'woundsDealt': return `PB infligés ${c.op} ${c.value}`;
     case 'relation': return `${WHO_LABEL[c.who]} : ${REL_LABEL[c.is]}`;
     case 'has': return `${WHO_LABEL[c.who]} a ${WHAT_LABEL[c.what]} « ${c.value || '?'}${c.spec ? ` (${c.spec})` : ''} »`;
@@ -95,6 +102,7 @@ function recast(cond: Condition, kind: Condition['kind']): Condition {
     case 'compare': return cond.kind === 'compare' ? cond : { kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '>=', value: 1 };
     case 'slThreshold': return cond.kind === 'slThreshold' ? cond : { kind: 'slThreshold', op: '>=', value: 6 };
     case 'location': return { kind: 'location', is: cond.kind === 'location' ? cond.is : 'tete' };
+    case 'attackKind': return { kind: 'attackKind', is: cond.kind === 'attackKind' ? cond.is : 'morsure' };
     case 'woundsDealt': return cond.kind === 'woundsDealt' ? cond : { kind: 'woundsDealt', op: '>', value: 0 };
     case 'relation': return cond.kind === 'relation' ? cond : { kind: 'relation', who: 'target', is: 'opponent' };
     case 'has': return cond.kind === 'has' ? cond : { kind: 'has', who: 'target', what: 'group', value: '' };
@@ -212,6 +220,11 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
       {cond.kind === 'location' && (
         <select className="cond-kind" value={cond.is} onChange={(e) => onChange({ kind: 'location', is: e.target.value as HitLocation })}>
           {(Object.keys(HIT_LOCATION_LABELS) as HitLocation[]).map((l) => <option key={l} value={l}>{HIT_LOCATION_LABELS[l]}</option>)}
+        </select>
+      )}
+      {cond.kind === 'attackKind' && (
+        <select className="cond-kind" value={cond.is} onChange={(e) => onChange({ kind: 'attackKind', is: e.target.value })}>
+          {Object.keys(ATTACK_KIND_LABELS).map((k) => <option key={k} value={k}>{ATTACK_KIND_LABELS[k]}</option>)}
         </select>
       )}
       {cond.kind === 'woundsDealt' && (

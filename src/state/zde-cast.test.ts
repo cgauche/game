@@ -51,7 +51,7 @@ describe('ZdE en combat — flux « jet PUIS pose » (LDB 47 l.29/44)', () => {
     const e3 = spawnEnemy('Bandit de Grand Chemin', undefined, 'e3', { x: 12, y: 12 }); // hors zone
     const battle = {
       combatants: [w, e1, e2, e3], order: [w.id, 'e1', 'e2', 'e3'], baseOrder: [w.id, 'e1', 'e2', 'e3'],
-      turn: 0, round: 1, action: 'cast', selectedSpell: 'Explosion', reachable: new Map(),
+      turn: 0, round: 1, action: 'cast', selectedSpellId: 'explosion', reachable: new Map(),
       movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
     } as never;
     const scene = { id: 's', dimensions: { w: 20, h: 20 }, levels: [{ z: 0, tiles: [] }], entities: [], dialogues: [], triggers: [], encounters: [] } as never;

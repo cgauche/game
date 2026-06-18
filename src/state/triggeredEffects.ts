@@ -79,7 +79,10 @@ export interface TriggerCtx { victim?: Combatant; weapon?: Weapon; rng?: RNG; ma
   /** Indice de l'attaque naturelle d'une MANŒUVRE — alimente les Formula `{indiceOf}` (Dégâts en GameOp). */
   indice?: number;
   /** Localisation de la touche courante (dé inversé) — alimente la Condition Flow `location` (Assommante). */
-  location?: HitLocation }
+  location?: HitLocation;
+  /** KIND de l'attaque courante (`creatureAttackKind` : 'morsure'/'cornes'/…) — alimente la Condition Flow
+   *  `attackKind` (Vampirique : Vol de vie sur Morsure seulement). */
+  attackKind?: string }
 
 /** CŒUR d'application : applique une LISTE d'effets `TriggeredEffect` de `actor` correspondant à
  *  `trigger`, chacun via `runSpellFlow` aux cibles résolues (`on`). Source UNIQUE : utilisé par
@@ -93,7 +96,7 @@ export function applyTriggeredEffects(
     if (eff.trigger !== trigger) continue;
     for (const t of targetsFor(get, actor, eff.on, ctx.victim)) {
       if (isOutOfAction(t)) continue;
-      lines.push(...runSpellFlow(t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, location: ctx.location }));
+      lines.push(...runSpellFlow(t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, location: ctx.location, attackKind: ctx.attackKind }));
     }
   }
   return lines;

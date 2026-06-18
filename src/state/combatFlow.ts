@@ -1395,7 +1395,7 @@ export function applyAttackResult(
   // Atouts de l'arme (Assommante, Immobilisante…) et Enchantements actifs — agrégés et appliqués par UN
   // dispatcher générique (state/triggeredEffects). `location` (Assommante Tête) et `woundsDealt` (Venin
   // sur PB) alimentent les Conditions Flow de gating.
-  if (res.hit) for (const line of fireTriggers(get, attacker, 'onHit', { victim: target, weapon, woundsDealt: res.woundsLost, location: res.location, rng: battleRng() })) log.push(ev('condition', line, target.id));
+  if (res.hit) for (const line of fireTriggers(get, attacker, 'onHit', { victim: target, weapon, woundsDealt: res.woundsLost, location: res.location, attackKind: creatureAttackKind(weapon.name), rng: battleRng() })) log.push(ev('condition', line, target.id));
   // Déstabilisante (Aux Armes p.89) : après une touche, l'attaquant PEUT dépenser des Avantages pour
   // un Test opposé Force/Athlétisme ; gagné, la cible est mise À Terre. HÉROS → étape de CHOIX de la
   // cascade d'attaque (pushCombatStep, applier 'knockdown') ; IA → déclenché d'office.
@@ -1489,7 +1489,7 @@ export function checkFocusInterruption(get: Get, set: SetFn, target: Combatant):
     `${target.name}, frappé en pleine Focalisation — Test de Calme Difficile (−20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'concentration maintenue' : 'concentration BRISÉE'}.`,
   ];
   if (!t.success) {
-    lines.push(`${target.name} perd les ${target.focus.dr} DR focalisés sur ${target.focus.spell}.`);
+    lines.push(`${target.name} perd les ${target.focus.dr} DR focalisés sur ${findSpellById(target.focus.spell)?.label ?? target.focus.spell}.`);
     target.focus = undefined;
     lines.push(...applyMiscast(get, set, target, 'mineure', { suppressReveal: true })); // la révélation « Calme » ci-dessous porte déjà ces lignes
   }
@@ -1933,7 +1933,6 @@ export function creatureAttackKind(weaponName: string): string | undefined {
  *  `fireTriggers('onHit')` d'`applyAttackResult`, atteint aussi par les attaques gratuites). */
 export function applyFreeAttackEffects(get: Get, attacker: Combatant, target: Combatant, kind: string, res: AttackResult): void {
   if (!res.hit) return; // les effets se déclenchent sur une touche réussie
-  const traits = attacker.traits ?? [];
   // (Constricteur = `effects` onHit du trait → Empêtré sur toute touche, appliqué par le
   //  `fireTriggers('onHit')` d'`applyAttackResult` — atteint aussi les attaques gratuites.)
   if (!res.woundsLost) return; // les effets suivants exigent des Points de Blessure perdus
@@ -1941,13 +1940,9 @@ export function applyFreeAttackEffects(get: Get, attacker: Combatant, target: Co
   // si la cible est plus petite ; Tentacules → Empêtré) — appliqués SCOPED à cette manœuvre (≠ l'onHit
   // générique des traits/atouts), via le MÊME exécuteur de Flow.
   const mEffects = maneuverEffectsOf(attacker, kind);
-  if (mEffects.length) applyTriggeredEffects(get, attacker, mEffects, 'onHit', { victim: target, woundsDealt: res.woundsLost, rng: battleRng() }).forEach((l) => get().log(l));
-  // Vampirique (Vampire/Varghulf, LDB 85) : Morsure infligeant des PB → l'attaquant récupère autant.
-  // (DIFFÉRÉ : effet gaté par le KIND d'attaque + possession d'un trait → vocabulaire manquant.)
-  if (kind === 'morsure' && hasTraitKey(traits, 'vampirique')) {
-    attacker.wounds.current = Math.min(attacker.wounds.max, attacker.wounds.current + res.woundsLost);
-    get().log(`${attacker.name} draine ${res.woundsLost} Blessure(s) (Vampirique).`);
-  }
+  if (mEffects.length) applyTriggeredEffects(get, attacker, mEffects, 'onHit', { victim: target, woundsDealt: res.woundsLost, attackKind: kind, rng: battleRng() }).forEach((l) => get().log(l));
+  // (Vampirique = `effects` onHit du trait `vampirique`, gaté par la Condition Flow `attackKind: 'morsure'` →
+  //  Vol de vie ; appliqué par le `fireTriggers('onHit')` d'`applyAttackResult` — atteint aussi les attaques gratuites.)
   // (Venin = `effects` du trait `Venin`, appliqué par le `fireTriggers('onHit')` d'`applyAttackResult`.)
 }
 
@@ -2062,10 +2057,9 @@ export function resolveDeviation(get: Get, set: SetFn, dev: PendingDeviation, de
     autoCleave(get, set, attacker, target, dev.res); // balayage de l'ennemi plus grand sur les AUTRES héros
     // Maladresse du défenseur héros (parade/esquive active ratée sur un double, LDB 14 l.48-51).
     if (target.kind === 'hero' && defenderFumbled(dev.res, target.weapons[0]) && !isOutOfAction(target)) {
-      // Maladresse = étape APPENDUE à la cascade ; après cet applier, la séquence avance déviation → Maladresse,
-      // et la reprise IA suit la fermeture de la séquence (fumbleConfirm → cascadeNext).
-      pushCombatStep(set, { id: `cons-fumble-${target.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: target.id });
-      set({ pendingFumble: { combatantId: target.id, weapon: target.weapons[0], result: null } });
+      // Maladresse = étape APPENDUE à la cascade (donnée SUR l'étape — source unique, plus de `pendingFumble`) ;
+      // la séquence avance déviation → Maladresse, et la reprise IA suit la fermeture (fumbleConfirm → cascadeNext).
+      pushCombatStep(set, { id: `cons-fumble-${target.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: target.id, fumble: { weapon: target.weapons[0], result: null } });
       return;
     }
   }
@@ -3278,18 +3272,6 @@ export function resumeEnemyTurn(get: Get, set: SetFn): void {
  *  séquence de combat (`cascadeNext`/`cascadeFinish`). Garde alignée sur celle de `resumeEnemyTurn`. */
 export function resumeSuspendedAI(get: Get, set: SetFn): void {
   const s = get();
-  // Garde-fou anti-soft-lock : une Maladresse (`pendingFumble`) posée mais NON hébergée par une cascade
-  // de combat (orpheline — p.ex. une cascade fermée pendant l'append du fumble, cadence Rapide/Auto)
-  // gèlerait le tour À JAMAIS : `combatGate` bloque sur `pendingFumble` et, depuis le fold, plus aucune
-  // modale autonome ne la porte. On la RÉ-HÉBERGE (étape de cascade → la modale réapparaît, résolue par
-  // le joueur ou l'auto-cadence) plutôt que de figer l'IA.
-  const pf = s.pendingFumble;
-  const pc = s.pendingCascade;
-  const fumbleHosted = !!pc && pc.purpose === 'combat' && pc.participants.some((st) => st.jet === 'fumble' && !st.committed);
-  if (pf && !fumbleHosted) {
-    pushCombatStep(set, { id: `cons-fumble-${pf.combatantId}`, kind: 'fumbleJet', jet: 'fumble', actorId: pf.combatantId });
-    return; // la cascade fumble reprend la main ; sa clôture rappellera resumeSuspendedAI
-  }
   // `resumeSuspendedAI` ne surveillait historiquement PAS `pendingCast` → `{ cast: false }` (iso A1).
   if (combatAdvanceBlocked(s, { cast: false })) return;
   const battle = s.battle!;
@@ -3626,7 +3608,7 @@ function openCombatPsychCascade(
   roundBoundary = false,
 ): void {
   const battle = get().battle;
-  if (!battle || battle.over || get().pendingCascade || get().pendingReveals.length || get().pendingFateSave || get().pendingFumble) return;
+  if (!battle || battle.over || get().pendingCascade || get().pendingReveals.length || get().pendingFateSave) return; // Maladresse = étape de pendingCascade (déjà couverte)
   const steps: import('./pendings').CascadeStep[] = [];
   for (const c of battle.combatants) {
     if (c.kind !== 'hero' || isOutOfAction(c)) continue;

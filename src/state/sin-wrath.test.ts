@@ -30,7 +30,7 @@ function confirmPrayerWithRoll(casterId: string, targetId: string, roll: number,
     log: ok ? 'Prière exaucée.' : 'Prière échouée.',
   };
   useGame.setState({
-    pendingCast: { casterId, targetId, spellLabel: 'Bénédiction de Guérison', missile: false, focused: false, result },
+    pendingCast: { casterId, targetId, spellId: 'benediction-de-guerison', missile: false, focused: false, result },
   });
   useGame.getState().castConfirm();
 }
@@ -75,7 +75,7 @@ describe('Péché et Colère Divine (LDB 40)', () => {
     useGame.setState({ party });
     const result: CastResult = { cast: false, roll: 22, target: 20, sl: -1, isCritical: false, isFumble: true, log: 'Maladresse !' };
     useGame.setState({
-      pendingCast: { casterId: priest.id, targetId: ally.id, spellLabel: 'Bénédiction de Guérison', missile: false, focused: false, result },
+      pendingCast: { casterId: priest.id, targetId: ally.id, spellId: 'benediction-de-guerison', missile: false, focused: false, result },
     });
     useGame.getState().castConfirm();
     const journal = useGame.getState().journal.join('\n');

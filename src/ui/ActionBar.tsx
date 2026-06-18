@@ -303,23 +303,23 @@ export function ActionBar() {
           {active.spells!.map((spellId) => {
             const spell = findSpellById(spellId);
             if (!spell) return null;
-            const label = spell.label; // pont id→libellé : le flux de cast (selectedSpell/focus) reste par libellé
-            const selected = battle.selectedSpell === label;
+            const label = spell.label; // libellé pour l'affichage (boutons, Codex) — l'identité passe par l'id
+            const selected = battle.selectedSpellId === spell.id;
             const ni = spell.cn != null ? `NI ${spell.cn}` : 'Prière';
             const canFocus = isArcaneSpell(spell) && (spell.cn ?? 0) > 0;
-            const focusDr = active.focus?.spell === label ? active.focus.dr : null;
+            const focusDr = active.focus?.spell === spell.id ? active.focus.dr : null;
             // Découvrabilité (R4) : portée / durée / cibles d'un sort, AVANT de l'incanter (données SpellData).
             const tgtLabel = typeof spell.target === 'number' ? (spell.target === 1 ? '1 cible' : `${spell.target} cibles`) : spell.target;
             const meta = `📏 ${spell.range} · ⏳ ${spell.duration} · 🎯 ${tgtLabel}`;
             return (
               <div key={spellId} className="ab-spell-row">
-                <button className={`btn btn-sm ${selected ? 'btn-primary' : ''}`} onClick={() => selectSpell(label)}>
+                <button className={`btn btn-sm ${selected ? 'btn-primary' : ''}`} onClick={() => selectSpell(spell.id)}>
                   {spell.label} <span className="bp-spell-ni">({ni})</span>
                   <span className="ab-spell-meta">{meta}</span>
                 </button>
                 <CodexRef category="spells" label={label} className="ab-codex-info">ℹ️</CodexRef>
                 {canFocus && (
-                  <button className="btn btn-sm" onClick={() => focusSpell(label)} title="Test étendu de Focalisation">
+                  <button className="btn btn-sm" onClick={() => focusSpell(spell.id)} title="Test étendu de Focalisation">
                     Focaliser{focusDr != null ? ` (${focusDr}/${spell.cn})` : ''}
                   </button>
                 )}

@@ -18,7 +18,7 @@ const hero = (): Combatant =>
 const setBattle = (over: Partial<{ loadoutSwapped: boolean }> = {}) =>
   useGame.setState({
     battle: {
-      combatants: [hero()], order: ['h'], turn: 0, round: 1, action: null, selectedSpell: null,
+      combatants: [hero()], order: ['h'], turn: 0, round: 1, action: null, selectedSpellId: null,
       reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false, loadoutSwapped: false,
       over: null, log: [], ...over,
     } as never,

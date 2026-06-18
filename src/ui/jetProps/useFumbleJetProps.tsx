@@ -13,14 +13,15 @@ import { TableRollLine } from '../RollLine';
  * Maladresse en attente.
  */
 export function useFumbleJetProps(): ComponentProps<typeof RollFlowShell> | null {
-  const pf = useGame((s) => s.pendingFumble);
+  const pc = useGame((s) => s.pendingCascade);
   const battle = useGame((s) => s.battle);
   const roll = useGame((s) => s.fumbleRoll);
   const confirm = useGame((s) => s.fumbleConfirm);
-  if (!pf || !battle) return null;
-  const combatant = battle.combatants.find((c) => c.id === pf.combatantId);
+  const step = pc?.participants[pc.cursor]; // SOURCE UNIQUE : l'étape courante PORTE la maladresse (`step.fumble`)
+  if (!battle || !pc || step?.jet !== 'fumble' || !step.fumble) return null;
+  const combatant = battle.combatants.find((c) => c.id === step.actorId);
   if (!combatant) return null;
-  const r = pf.result;
+  const r = step.fumble.result;
   return {
     variant: 'test',
     title: '🎲 Maladresse',

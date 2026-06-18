@@ -31,7 +31,7 @@ const scene = (mur?: number): Scene => {
 const mkGet = (combatants: Combatant[], battleOver: Partial<Record<string, unknown>> = {}, sc = scene()): (() => GameState) =>
   (() => ({
     scene: sc,
-    battle: { combatants, order: combatants.map((c) => c.id), turn: 0, movementUsed: 0, action: null, selectedSpell: null, acted: false, over: null, ...battleOver },
+    battle: { combatants, order: combatants.map((c) => c.id), turn: 0, movementUsed: 0, action: null, selectedSpellId: null, acted: false, over: null, ...battleOver },
     facing: {}, gameTime: 0, log: () => {},
   })) as unknown as () => GameState;
 
@@ -75,12 +75,12 @@ describe('hoverTargeting — mode neutre (attaque implicite)', () => {
 });
 
 describe('hoverTargeting — mode incantation', () => {
-  const castBattle = (label: string) => ({ action: 'cast', selectedSpell: label });
+  const castBattle = (spellId: string) => ({ action: 'cast', selectedSpellId: spellId });
 
   it('Projectile sur un ennemi visible → ok pointillé, Langue (Magick), dégâts sort + BFM', () => {
     const a = combatant({ id: 'A' });
     const b = combatant({ id: 'B', kind: 'enemy', pos: { x: 2, y: 0 } });
-    const ht = hoverTargeting(mkGet([a, b], castBattle('Carreau')), a, b);
+    const ht = hoverTargeting(mkGet([a, b], castBattle('carreau')), a, b);
     const dmg = parseSpellDamage(findSpell('Carreau')!.desc)!.damage + bonus(40); // FM 40
     expect(ht).toMatchObject({ kind: 'ok', line: 'dashed', title: 'Carreau', skill: 'Langue (Magick)', dmg });
   });
@@ -88,16 +88,16 @@ describe('hoverTargeting — mode incantation', () => {
   it('Projectile sur un ALLIÉ → none ; ennemi derrière un mur → invalid los', () => {
     const a = combatant({ id: 'A' });
     const friend = combatant({ id: 'H2', pos: { x: 2, y: 0 } });
-    expect(hoverTargeting(mkGet([a, friend], castBattle('Carreau')), a, friend).kind).toBe('none');
+    expect(hoverTargeting(mkGet([a, friend], castBattle('carreau')), a, friend).kind).toBe('none');
     const hidden = combatant({ id: 'B', kind: 'enemy', pos: { x: 6, y: 0 } });
-    expect(hoverTargeting(mkGet([a, hidden], castBattle('Carreau'), scene(3)), a, hidden)).toMatchObject({ kind: 'invalid', reason: 'los' });
+    expect(hoverTargeting(mkGet([a, hidden], castBattle('carreau'), scene(3)), a, hidden)).toMatchObject({ kind: 'invalid', reason: 'los' });
   });
 
   it('sort « Vous » : sur soi → ok SANS ligne de dégâts ; sur un allié → invalid range', () => {
     const a = combatant({ id: 'A' });
     const friend = combatant({ id: 'H2', pos: { x: 2, y: 0 } });
-    const self = hoverTargeting(mkGet([a, friend], castBattle('Bouclier magique')), a, a);
+    const self = hoverTargeting(mkGet([a, friend], castBattle('bouclier-magique')), a, a);
     expect(self).toMatchObject({ kind: 'ok', dmg: null });
-    expect(hoverTargeting(mkGet([a, friend], castBattle('Bouclier magique')), a, friend)).toMatchObject({ kind: 'invalid', reason: 'range' });
+    expect(hoverTargeting(mkGet([a, friend], castBattle('bouclier-magique')), a, friend)).toMatchObject({ kind: 'invalid', reason: 'range' });
   });
 });

@@ -145,7 +145,7 @@ describe('Boucle de jeu (store)', () => {
     } as unknown as Combatant;
     const battle: BattleState = {
       combatants: [enemy, hero], order: [enemy.id, hero.id], baseOrder: [enemy.id, hero.id],
-      turn: 0, round: 1, action: null, selectedSpell: null, reachable: new Map(),
+      turn: 0, round: 1, action: null, selectedSpellId: null, reachable: new Map(),
       movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
     };
     useGame.setState({ battle, mode: 'battle' });
@@ -209,7 +209,7 @@ describe('Boucle de jeu (store)', () => {
     } as unknown as Combatant;
     const battle: BattleState = {
       combatants: [hero, enemy], order: [hero.id, enemy.id], baseOrder: [hero.id, enemy.id],
-      turn: 0, round: 1, action: null, selectedSpell: null, reachable: new Map(),
+      turn: 0, round: 1, action: null, selectedSpellId: null, reachable: new Map(),
       movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
     };
     useGame.setState({
@@ -361,11 +361,11 @@ describe('Boucle de jeu (store)', () => {
     const b = useGame.getState().battle!;
     const h = b.combatants.find((c) => c.kind === 'hero')!;
     h.wounds.current = 10;
-    useGame.setState({ battle: { ...b }, pendingFumble: { combatantId: h.id, weapon: h.weapons[0], result: { roll: 11, kind: 'selfWound', label: 'x' } } });
+    useGame.setState({ battle: { ...b }, pendingCascade: { title: '', icon: '', purpose: 'combat', cursor: 0, log: [], participants: [{ id: `cons-fumble-${h.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: h.id, fumble: { weapon: h.weapons[0], result: { roll: 11, kind: 'selfWound', label: 'x' } } }] } as any });
     useGame.getState().fumbleConfirm();
     const after = useGame.getState().battle!.combatants.find((c) => c.id === h.id)!;
     expect(after.wounds.current).toBe(9); // -1, ignore BE+PA
-    expect(useGame.getState().pendingFumble).toBeNull();
+    expect(useGame.getState().pendingCascade).toBeNull(); // l'étape Maladresse unique se ferme (donnée portée par l'étape)
   });
 
   it('Maladresse — trauma (Oups! 81-90) pose une Déchirure de jambe + 1 Blessure critique', () => {
@@ -377,7 +377,7 @@ describe('Boucle de jeu (store)', () => {
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
     const h = b.combatants.find((c) => c.kind === 'hero')!;
-    useGame.setState({ battle: { ...b }, pendingFumble: { combatantId: h.id, weapon: h.weapons[0], result: { roll: 85, kind: 'trauma', label: 'x' } } });
+    useGame.setState({ battle: { ...b }, pendingCascade: { title: '', icon: '', purpose: 'combat', cursor: 0, log: [], participants: [{ id: `cons-fumble-${h.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: h.id, fumble: { weapon: h.weapons[0], result: { roll: 85, kind: 'trauma', label: 'x' } } }] } as any });
     useGame.getState().fumbleConfirm();
     const after = useGame.getState().battle!.combatants.find((c) => c.id === h.id)!;
     expect(after.criticalWounds).toBe(1);
@@ -436,10 +436,11 @@ describe('Boucle de jeu (store)', () => {
     });
     useGame.getState().defenseConfirm();
     const st = useGame.getState();
-    expect(st.pendingFumble?.combatantId).toBe(h.id);
-    // La Maladresse est désormais l'étape COURANTE de la cascade combat (plus de modale séparée / resumeAfter).
+    // La Maladresse est l'étape COURANTE de la cascade combat ; sa donnée (arme/résultat) vit SUR l'étape.
     const cur = st.pendingCascade?.participants[st.pendingCascade!.cursor];
     expect(cur?.jet).toBe('fumble');
+    expect(cur?.actorId).toBe(h.id);
+    expect(cur?.fumble?.weapon).toBeTruthy();
   });
 
   it('Maladresse — « agir en dernier » (21-40) ne dure qu’UN Round (ordre canonique restauré)', () => {
@@ -482,7 +483,7 @@ describe('Boucle de jeu (store)', () => {
     const witem = h.items!.find((i) => (i.kind === 'melee' || i.kind === 'ranged') && h.weapons.some((w) => w.uid === i.uid))!;
     const weapon = h.weapons.find((w) => w.uid === witem.uid) ?? h.weapons[0];
     // (1) Maladresse 21-40 → 1 Dégât d'arme, écrit sur l'ItemInstance source.
-    useGame.setState({ battle: { ...b }, pendingFumble: { combatantId: h.id, weapon, result: { roll: 25, kind: 'weaponDamageActLast', label: 'x' } } });
+    useGame.setState({ battle: { ...b }, pendingCascade: { title: '', icon: '', purpose: 'combat', cursor: 0, log: [], participants: [{ id: `cons-fumble-${h.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: h.id, fumble: { weapon, result: { roll: 25, kind: 'weaponDamageActLast', label: 'x' } } }] } as any });
     useGame.getState().fumbleConfirm();
     const hMid = useGame.getState().battle!.combatants.find((c) => c.id === h.id)!;
     expect(hMid.items!.find((i) => i.name === witem.name)!.damageTaken).toBe(1);
@@ -537,7 +538,7 @@ describe('Boucle de jeu (store)', () => {
     const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const enemy = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
     const turn = st.battle!.order.indexOf(heroC.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: 'cast', selectedSpell: 'Fléchette', acted: false } });
+    useGame.setState({ battle: { ...st.battle!, turn, action: 'cast', selectedSpellId: 'flechette', acted: false } });
     // Flux par modale : cliquer la cible OUVRE l'incantation (jet différé), n'applique rien.
     useGame.getState().battleClickEntity(enemy.id);
     expect(useGame.getState().pendingCast).not.toBeNull();
@@ -564,7 +565,7 @@ describe('Boucle de jeu (store)', () => {
     let st = useGame.getState();
     const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const turn = st.battle!.order.indexOf(heroC.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: 'cast', selectedSpell: 'Bénédiction de Bataille', acted: false } });
+    useGame.setState({ battle: { ...st.battle!, turn, action: 'cast', selectedSpellId: 'benediction-de-bataille', acted: false } });
     useGame.getState().battleClickEntity(heroC.id); // se cibler soi-même → ouvre la modale
     useGame.getState().castRoll(); // « Lancer »
     useGame.getState().castConfirm(); // « Appliquer »
@@ -1738,7 +1739,7 @@ describe('Utiliser un consommable en combat (store)', () => {
     turn: 0,
     round: 1,
     action: null,
-    selectedSpell: null,
+    selectedSpellId: null,
     reachable: new Map(),
     movementUsed: 0, movedPreAction: false,
     acted: false,
@@ -1846,7 +1847,7 @@ describe('Détermination (Resolve) — retirer un État (LDB ch.17 l.62-66)', ()
   beforeEach(() => reset());
 
   const mkBattle = (h: Combatant, over = {}): BattleState => ({
-    combatants: [h], order: [h.id], turn: 0, round: 1, action: null, selectedSpell: null,
+    combatants: [h], order: [h.id], turn: 0, round: 1, action: null, selectedSpellId: null,
     reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null, ...over,
   });
 
@@ -1906,7 +1907,7 @@ describe('Ramasser un objet au sol en combat (un à la fois, LDB ch.13 l.115-116
     });
     const bh: Combatant = JSON.parse(JSON.stringify(hero));
     const battle: BattleState = {
-      combatants: [bh], order: [bh.id], turn: 0, round: 1, action: null, selectedSpell: null,
+      combatants: [bh], order: [bh.id], turn: 0, round: 1, action: null, selectedSpellId: null,
       reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
     };
     useGame.setState({ party: [hero], scene, mode: 'battle', battle, flags: {} });
@@ -1958,7 +1959,7 @@ describe('Chance — 3e usage : pré-emption d’initiative en début de Round (
     E.fortune = 0;
     E.pos = { x: 5, y: 5 };
     const battle: BattleState = {
-      combatants: [H, E], order: [E.id, H.id], turn: 1, round: 1, action: null, selectedSpell: null,
+      combatants: [H, E], order: [E.id, H.id], turn: 1, round: 1, action: null, selectedSpellId: null,
       reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
     };
     useGame.setState({ party: [H], mode: 'battle', battle, scene: emptyScene(8, 8) });
@@ -2073,7 +2074,7 @@ describe('Blessures critiques & mort en combat (LDB 18-Traumatisme)', () => {
     const E: Combatant = JSON.parse(JSON.stringify(H));
     E.id = 'enemy-0'; E.name = 'Brigand'; E.kind = 'enemy'; E.fortune = 0; Object.assign(E, enemyOver);
     const battle: BattleState = {
-      combatants: [H, E], order: [H.id, E.id], turn: 0, round: 1, action: null, selectedSpell: null,
+      combatants: [H, E], order: [H.id, E.id], turn: 0, round: 1, action: null, selectedSpellId: null,
       reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
     };
     useGame.setState({ party: [H], mode: 'battle', battle, scene: emptyScene(8, 8) });
@@ -2115,7 +2116,7 @@ describe('Destin sacrifié (LDB ch.17 l.31-35)', () => {
     const E: Combatant = JSON.parse(JSON.stringify(H));
     E.id = 'enemy-0'; E.name = 'Brigand'; E.kind = 'enemy'; E.fortune = 0; E.fate = 0;
     const battle: BattleState = {
-      combatants: [H, E], order: [E.id, H.id], turn: 1, round: 1, action: null, selectedSpell: null,
+      combatants: [H, E], order: [E.id, H.id], turn: 1, round: 1, action: null, selectedSpellId: null,
       reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
     };
     useGame.setState({ party: [H], mode: 'battle', battle, scene: emptyScene(8, 8) });
@@ -2204,7 +2205,7 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     E.items = [];
     E.weapons = [{ name: 'Mains nues', type: 'melee', damage: '+BF', qualities: [] }];
     const battle: BattleState = {
-      combatants: [H, E], order: [H.id, E.id], turn: 0, round: 1, action: null, selectedSpell: null,
+      combatants: [H, E], order: [H.id, E.id], turn: 0, round: 1, action: null, selectedSpellId: null,
       reachable: new Map(), movementUsed: 99, movedPreAction: false, acted: false, log: [], over: null,
     };
     useGame.setState({ party: [H], mode: 'battle', battle, scene: emptyScene(8, 8), pendingReload: null, pendingAttack: null });
@@ -2492,7 +2493,6 @@ describe('Nouvelle partie / scénario — reset complet de l’état (anti-déri
       document: { title: 'x', text: 'y' },
       dialogue: { dialogue: { id: 'd', start: 'n', nodes: [{ id: 'n', text: '', choices: [] }] }, nodeId: 'n' } as any,
       pendingFateSave: { heroId: 'mort', source: 'slow' } as any,
-      pendingFumble: { combatantId: 'mort', weapon: {}, result: {} } as any,
       pendingCast: { x: 1 } as any,
       pendingRoundStart: { round: 7 },
       flags: { vieuxFlag: true },
@@ -2521,7 +2521,6 @@ describe('Nouvelle partie / scénario — reset complet de l’état (anti-déri
     expect(st.facing).toEqual({});
     expect(st.previousScene).toBeNull();
     expect(st.pendingFateSave).toBeNull();
-    expect(st.pendingFumble).toBeNull();
     expect(st.pendingCast).toBeNull();
     expect(st.pendingRoundStart).toBeNull();
     // Préservés / dérivés bien appliqués :

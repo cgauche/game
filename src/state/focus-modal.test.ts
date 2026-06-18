@@ -19,7 +19,7 @@ describe('Focalisation en modale (store)', () => {
   it('battleFocusSpell ouvre pendingFocus sans tirer ; focusRoll tire ; focusConfirm cumule le DR + consomme l’Action', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', name: 'Mage', rng: makeRNG(3) });
     hero.characteristics.FM = 80;
-    hero.spells = ['Arme aethyrique'];
+    hero.spells = ['arme-aethyrique'];
     if (!hero.skills.some((s) => s.skillId === 'focalisation')) hero.skills.push({ skillId: 'focalisation', advances: 20, characteristic: 'FM' } as never);
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(2);
@@ -30,9 +30,9 @@ describe('Focalisation en modale (store)', () => {
     let st = useGame.getState();
     const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const turn = st.battle!.order.indexOf(heroC.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: null, selectedSpell: 'Arme aethyrique', acted: false } });
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, selectedSpellId: 'arme-aethyrique', acted: false } });
 
-    useGame.getState().battleFocusSpell('Arme aethyrique');
+    useGame.getState().battleFocusSpell('arme-aethyrique');
     expect(useGame.getState().pendingFocus).toBeTruthy();
     expect(useGame.getState().pendingFocus!.result).toBeNull(); // pas encore lancé
 
@@ -42,13 +42,13 @@ describe('Focalisation en modale (store)', () => {
     useGame.getState().focusConfirm();
     st = useGame.getState();
     expect(st.pendingFocus).toBeNull();
-    expect(st.battle!.combatants.find((c) => c.id === heroC.id)!.focus?.spell).toBe('Arme aethyrique'); // DR cumulé
+    expect(st.battle!.combatants.find((c) => c.id === heroC.id)!.focus?.spell).toBe('arme-aethyrique'); // DR cumulé (id stable)
     expect(st.battle!.acted).toBe(true); // la Focalisation consomme l'Action
   });
 
   it('un sort non focalisable (Magie mineure) n’ouvre pas la modale', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', name: 'Mage', rng: makeRNG(3) });
-    hero.spells = ['Fléchette'];
+    hero.spells = ['flechette'];
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -58,7 +58,7 @@ describe('Focalisation en modale (store)', () => {
     const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const turn = st.battle!.order.indexOf(heroC.id);
     useGame.setState({ battle: { ...st.battle!, turn, action: null, acted: false } });
-    useGame.getState().battleFocusSpell('Fléchette'); // Magie mineure → non focalisable
+    useGame.getState().battleFocusSpell('flechette'); // Magie mineure → non focalisable
     expect(useGame.getState().pendingFocus).toBeNull();
   });
 });

@@ -98,7 +98,7 @@ describe('castSetForcedRoll — même choix sur une INCANTATION forcée (parité
     useGame.setState({
       battle: { combatants: [caster, target], log: [] } as never,
       pendingCast: {
-        casterId: 'A', targetId: 'A', spellLabel: 'Drain', missile: false, focused: false,
+        casterId: 'A', targetId: 'A', spellId: 'drain', missile: false, focused: false,
         result: { cast: false, roll: 88, target: 45, sl: -4, isCritical: false, isFumble: false, log: 'raté' },
       } as never,
     });

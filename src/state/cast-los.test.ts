@@ -39,7 +39,7 @@ function setup() {
   const hidden = spawnEnemy('Bandit de Grand Chemin', undefined, 'e-cache', { x: 16, y: 4 });
   const battle = {
     combatants: [w, seen, hidden], order: [w.id, 'e-vu', 'e-cache'], baseOrder: [w.id, 'e-vu', 'e-cache'],
-    turn: 0, round: 1, action: 'cast', selectedSpell: 'Carreau', reachable: new Map(),
+    turn: 0, round: 1, action: 'cast', selectedSpellId: 'carreau', reachable: new Map(),
     movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
   } as never;
   useGame.setState({ battle, scene: wallScene(), party: [] });
@@ -87,7 +87,7 @@ describe('ZdE « jet puis pose » — LdV vers la case centre À LA POSE', () =>
   it('centre derrière le mur → refus (pose toujours en cours), brèche → zone posée', () => {
     const { w } = setup();
     const b = useGame.getState().battle!;
-    useGame.setState({ battle: { ...b, selectedSpell: 'Explosion' } });
+    useGame.setState({ battle: { ...b, selectedSpellId: 'explosion' } });
     useGame.getState().battleClickTile({ x: 3, y: 0 }); // tout clic ouvre la modale (centre null)
     const pc = useGame.getState().pendingCast!;
     expect(pc.zone).toMatchObject({ center: null });

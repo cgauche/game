@@ -47,8 +47,8 @@ export interface ModalDef {
 export const MODAL_DEFS = [
   { key: 'fateSave', when: (s) => !!s.pendingFateSave, owner: (s) => s.pendingFateSave?.heroId, auto: { mode: 'choice' } },
   // (La Maladresse n'a PLUS d'entrée propre : c'est une étape `jet:'fumble'` de la cascade `combat`, rendue
-  //  par `cascade` (CascadeModal → useFumbleJetProps) — `pendingFumble` coexiste comme porteur de données.
-  //  Comme le Critique, la Maladresse vit DANS la fenêtre d'attaque/défense ; `fumbleConfirm` enchaîne le curseur.)
+  //  par `cascade` (CascadeModal → useFumbleJetProps). La donnée (arme/résultat) vit SUR l'étape (`step.fumble`),
+  //  source unique — plus de `pendingFumble` parallèle. `fumbleConfirm` enchaîne le curseur.)
   // (Le Renversement (Déstabilisante) n'a PLUS d'entrée propre : c'est une étape de CHOIX de la
   //  cascade d'ATTAQUE — comme Déviation/Piège-lame — rendue par `cascade`.)
   { key: 'renounce', when: (s) => !!s.pendingRenounce, owner: (s) => s.pendingRenounce?.heroId, auto: { mode: 'choice' } },

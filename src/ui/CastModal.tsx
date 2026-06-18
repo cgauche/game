@@ -2,7 +2,7 @@ import { useGame } from '../state/store';
 import { ownsLocally } from '../state/netFlow';
 import { FLOWS } from '../state/rollFlows';
 import { overcastTargetCandidates, previewCast } from '../state/combatFlow';
-import { findSpell } from '../data/index';
+import { findSpellById } from '../data/index';
 import { spellEffectOps } from '../state/flow';
 import { conjureFormOptions } from '../engine/conjuredWeapons';
 import { testValue } from '../engine/skills';
@@ -72,7 +72,7 @@ export function CastModal() {
   const pool = battle?.combatants ?? party; // même modale en combat (file) et hors combat (groupe)
   const caster = pool.find((c) => c.id === pc.casterId);
   const target = pool.find((c) => c.id === pc.targetId);
-  const spell = findSpell(pc.spellLabel);
+  const spell = findSpellById(pc.spellId);
   if (!caster || !target || !spell) return null;
   const res = pc.result;
   const rerollable = !!res && canReroll(res.roll > res.target, !!pc.rerolled);

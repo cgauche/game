@@ -1389,7 +1389,39 @@
     "source": {
       "book": "LDB",
       "page": 343
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "self",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "attackKind",
+            "is": "morsure"
+          },
+          "then": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "caster",
+                  "ops": [
+                    {
+                      "op": "lifeSteal",
+                      "num": 1,
+                      "den": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
   },
   {
     "id": "rongeur",

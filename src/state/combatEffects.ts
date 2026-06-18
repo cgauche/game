@@ -356,7 +356,7 @@ export function runSpellFlow(target: Combatant, caster: Combatant | undefined, f
         // Condition `compare` : `target` = la cible du sous-Flow, `caster` = le lanceur/porteur.
         // `location`/`woundsDealt` : contexte de la touche courante (Assommante Tête, Venin sur PB).
         if (evalCondition(f.cond, { flags: {}, gameTime: ctx.now ?? 0, party: [target], sl: ctx.sl,
-          location: ctx.location, woundsDealt: ctx.woundsDealt, target: actorView(target), caster: actorView(caster) })) walk(f.then);
+          location: ctx.location, woundsDealt: ctx.woundsDealt, attackKind: ctx.attackKind, target: actorView(target), caster: actorView(caster) })) walk(f.then);
         else if (f.else) walk(f.else);
         break;
       case 'test': walk(f.success); break;

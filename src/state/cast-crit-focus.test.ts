@@ -71,7 +71,7 @@ describe('Incantation CRITIQUE (LDB 46 l.52-59)', () => {
   // d'incantation ACTIVE (comme l'attaque enchaîne Critique/Déviation), plus une cascade séparée.
   it('FOLD : une Imparfaite via castConfirm APPEND à la cascade d\'incantation (pas de cascade séparée)', () => {
     const w = wiz();
-    w.spells = ['Armure Aethyrique', ...(w.spells ?? [])];
+    w.spells = ['armure-aethyrique', ...(w.spells ?? [])];
     useGame.setState({ party: [w] as Combatant[], pendingCast: null, pendingCascade: null, pendingReveals: [] });
     // Situation d'incantation HÔTÉE par la cascade (comme l'aurait ouverte castSpell → openCastCascade).
     openCastCascade(useGame.getState, useGame.setState, w);
@@ -79,7 +79,7 @@ describe('Incantation CRITIQUE (LDB 46 l.52-59)', () => {
     // Jet figé : Maladresse d'un Sort → Imparfaite Mineure (LDB 46) — appendue par applyMiscast.
     useGame.setState({
       pendingCast: {
-        casterId: w.id, targetId: w.id, spellLabel: 'Armure Aethyrique', missile: false, focused: false,
+        casterId: w.id, targetId: w.id, spellId: 'armure-aethyrique', missile: false, focused: false,
         result: { cast: false, roll: 99, target: 40, sl: -3, isCritical: false, isFumble: true, log: 'Maladresse !' },
       },
     });
@@ -95,12 +95,12 @@ describe('Incantation CRITIQUE (LDB 46 l.52-59)', () => {
 
   it('FOLD : un Sort SANS conséquence ferme la cascade d\'incantation (rien à enchaîner)', () => {
     const w = wiz();
-    w.spells = ['Armure Aethyrique', ...(w.spells ?? [])];
+    w.spells = ['armure-aethyrique', ...(w.spells ?? [])];
     useGame.setState({ party: [w] as Combatant[], pendingCast: null, pendingCascade: null, pendingReveals: [] });
     openCastCascade(useGame.getState, useGame.setState, w);
     useGame.setState({
       pendingCast: {
-        casterId: w.id, targetId: w.id, spellLabel: 'Armure Aethyrique', missile: false, focused: false,
+        casterId: w.id, targetId: w.id, spellId: 'armure-aethyrique', missile: false, focused: false,
         result: { cast: true, roll: 21, target: 60, sl: 2, isCritical: false, isFumble: false, log: 'ok' },
       },
     });
@@ -114,10 +114,10 @@ describe('Focalisation CRITIQUE (l.185-186)', () => {
   it('double réussi → le sort est lançable au prochain Round (focus.dr = NI) + Imparfaite Mineure', () => {
     const w = wiz();
     w.talents = w.talents.filter((t) => t.talentId !== 'harmonisation-aethyrique'); // le pré-tiré l'a déjà
-    w.spells = ['Armure Aethyrique', ...(w.spells ?? [])];
+    w.spells = ['armure-aethyrique', ...(w.spells ?? [])];
     w.skills.push({ skillId: 'focalisation', characteristic: 'FM', advances: 8 } as never);
     useGame.setState({ party: [w] as Combatant[] });
-    useGame.setState({ pendingFocus: { casterId: w.id, spellLabel: 'Armure Aethyrique', result: { dr: 0, isCritical: true, isFumble: false, roll: 33, log: 'Focalisation critique !' } } });
+    useGame.setState({ pendingFocus: { casterId: w.id, spellId: 'armure-aethyrique', result: { dr: 0, isCritical: true, isFumble: false, roll: 33, log: 'Focalisation critique !' } } });
     useGame.getState().focusConfirm();
     const after = useGame.getState().party.find((h) => h.id === w.id)!;
     expect(after.focus?.dr).toBeGreaterThanOrEqual(findSpell('Armure Aethyrique')!.cn ?? 0);
@@ -127,11 +127,11 @@ describe('Focalisation CRITIQUE (l.185-186)', () => {
 
   it('Harmonisation aethyrique : pas de contrecoup sur la Focalisation Critique', () => {
     const w = wiz();
-    w.spells = ['Armure Aethyrique'];
+    w.spells = ['armure-aethyrique'];
     w.skills.push({ skillId: 'focalisation', characteristic: 'FM', advances: 8 } as never);
     w.talents.push({ talentId: 'harmonisation-aethyrique', times: 1 });
     useGame.setState({ party: [w] as Combatant[] });
-    useGame.setState({ pendingFocus: { casterId: w.id, spellLabel: 'Armure Aethyrique', result: { dr: 0, isCritical: true, isFumble: false, roll: 33, log: 'crit' } } });
+    useGame.setState({ pendingFocus: { casterId: w.id, spellId: 'armure-aethyrique', result: { dr: 0, isCritical: true, isFumble: false, roll: 33, log: 'crit' } } });
     useGame.getState().focusConfirm();
     const j = useGame.getState().journal.join('\n');
     expect(j).toMatch(/Harmonisation aethyrique/);
@@ -143,7 +143,7 @@ describe('Interruption de Focalisation (l.193-194)', () => {
   it('Calme raté → DR perdus + Imparfaite Mineure + révélation témoin', () => {
     const w = wiz();
     w.characteristics.FM = 1; // Calme ~imbattable à rater
-    w.focus = { spell: 'Armure Aethyrique', dr: 3 };
+    w.focus = { spell: 'armure-aethyrique', dr: 3 };
     useGame.setState({ party: [w] as Combatant[] });
     const lines = checkFocusInterruption(useGame.getState, useGame.setState, w);
     expect(w.focus).toBeUndefined();
@@ -155,7 +155,7 @@ describe('Interruption de Focalisation (l.193-194)', () => {
     const w = wiz();
     w.characteristics.FM = 100;
     w.skills.push({ skillId: 'calme', characteristic: 'FM', advances: 20 } as never);
-    w.focus = { spell: 'Armure Aethyrique', dr: 3 };
+    w.focus = { spell: 'armure-aethyrique', dr: 3 };
     useGame.setState({ party: [w] as Combatant[] });
     checkFocusInterruption(useGame.getState, useGame.setState, w);
     expect(w.focus?.dr).toBe(3);
@@ -175,7 +175,7 @@ describe('Convergence de Domaine (+1 Avantage, l.176)', () => {
     const target = { ...wiz(), id: 't', name: 'Cible', kind: 'enemy' } as Combatant;
     const battle = {
       combatants: [w, w2, target], order: [w.id, w2.id, target.id], turn: 0, round: 1,
-      action: null, selectedSpell: null, reachable: new Map(), movementUsed: 0, movedPreAction: false,
+      action: null, selectedSpellId: null, reachable: new Map(), movementUsed: 0, movedPreAction: false,
       acted: false, log: [], over: null,
     } as never;
     useGame.setState({ battle, party: [] });

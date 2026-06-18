@@ -24,7 +24,7 @@ function setup() {
   const hidden = spawnEnemy('Bandit de Grand Chemin', undefined, 'e-cache', { x: 16, y: 4 }); // mur intercalé
   const battle = {
     combatants: [a, seen, hidden], order: [a.id, 'e-vu', 'e-cache'], baseOrder: [a.id, 'e-vu', 'e-cache'],
-    turn: 0, round: 1, action: null, selectedSpell: null, reachable: new Map(),
+    turn: 0, round: 1, action: null, selectedSpellId: null, reachable: new Map(),
     movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
   } as never;
   useGame.setState({ battle, scene: wallScene(), party: [] });
