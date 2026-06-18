@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Modal } from './Modal';
 import { OPTIONAL_RULES, rule, type OptionalRule, type RuleValue } from '../engine/policy';
 import { setHouseRule, resetHouseRule } from '../state/houseRules';
+import { useGame } from '../state/store';
 
 /**
  * Panneau « Règles maison » — GÉNÉRÉ depuis le registre `OPTIONAL_RULES`. Il ne connaît aucune règle
@@ -43,31 +44,42 @@ function HouseRuleRow({
   const val = rule(def.id);
   const dirty = val !== def.default;
   const tip = def.hint ? `${def.ref} — ${def.hint}` : def.ref;
+  const restoreFortuneNow = useGame((s) => s.restoreFortuneNow);
   return (
-    <div className="hr-row" title={tip}>
-      <span className="hr-label">
-        {def.label}
-        {dirty && (
-          <button className="hr-reset" onClick={() => onReset(def.id)} title="Revenir au défaut (RAW)">↺</button>
-        )}
-      </span>
-      <span className="hr-control">
-        {def.kind === 'flag' && (
-          <input type="checkbox" checked={val === true} onChange={(e) => onChange(def.id, e.target.checked)} />
-        )}
-        {def.kind === 'mode' && (
-          <select value={String(val)} onChange={(e) => onChange(def.id, e.target.value)}>
-            {(def.options ?? []).map((o) => <option key={o} value={o}>{o}</option>)}
-          </select>
-        )}
-        {def.kind === 'param' && (
-          <input
-            type="number" value={Number(val)} min={def.min} max={def.max} step={def.step ?? 1}
-            onChange={(e) => onChange(def.id, Number(e.target.value))}
-          />
-        )}
-      </span>
-      <span className="hr-ref">{def.ref}</span>
-    </div>
+    <>
+      <div className="hr-row" title={tip}>
+        <span className="hr-label">
+          {def.label}
+          {dirty && (
+            <button className="hr-reset" onClick={() => onReset(def.id)} title="Revenir au défaut (RAW)">↺</button>
+          )}
+        </span>
+        <span className="hr-control">
+          {def.kind === 'flag' && (
+            <input type="checkbox" checked={val === true} onChange={(e) => onChange(def.id, e.target.checked)} />
+          )}
+          {def.kind === 'mode' && (
+            <select value={String(val)} onChange={(e) => onChange(def.id, e.target.value)}>
+              {(def.options ?? []).map((o) => <option key={o} value={o}>{o}</option>)}
+            </select>
+          )}
+          {def.kind === 'param' && (
+            <input
+              type="number" value={Number(val)} min={def.min} max={def.max} step={def.step ?? 1}
+              onChange={(e) => onChange(def.id, Number(e.target.value))}
+            />
+          )}
+        </span>
+        <span className="hr-ref">{def.ref}</span>
+      </div>
+      {/* Longues Séances de Jeu (LDB 17 l.52) en mode 'manual' : bouton MJ à la demande sous la règle. */}
+      {def.id === 'fortune-mid-session' && val === 'manual' && (
+        <div className="hr-action">
+          <button className="btn btn-resource" onClick={restoreFortuneNow}>
+            🍀 Regagner la Chance maintenant
+          </button>
+        </div>
+      )}
+    </>
   );
 }

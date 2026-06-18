@@ -13,6 +13,7 @@ import { SIZE_ORDER, effectiveSize } from '../engine/size';
 import { campOf } from '../engine/relations';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, actorHasSkill } from '../engine/skills';
 import { easeDifficulty } from '../engine/tests';
+import { restoreFortune } from '../engine/fortune';
 import { hasTalent } from '../engine/magic';
 import { recomputeLoadout, itemFromGive, giveTrappingLabel } from '../engine/items';
 import { findCreatureById } from '../data';
@@ -384,9 +385,7 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
         break;
       case 'restoreFortune':
         // Début de session (LDB 17 l.47) : Chance regagnée jusqu'au maximum = Destin actuel.
-        set((s: GameState) => ({
-          party: s.party.map((h) => (h.kind === 'hero' && h.fate != null ? { ...h, fortune: h.fate } : h)),
-        }));
+        set((s: GameState) => ({ party: restoreFortune(s.party) }));
         get().log('Début de session : Points de Chance regagnés (maximum = Destin).');
         break;
       case 'interlude':

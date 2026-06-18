@@ -35,6 +35,17 @@ export function describeTest(pt: PendingTest): string {
   return pt.success ? `${pt.actorName} réussit.` : `${pt.actorName} échoue.`;
 }
 
+/**
+ * Option « Succès / échec stupéfiants » (LDB 12 l.151) : hors combat, un Test résolu sur un DOUBLE
+ * est un Succès Stupéfiant (réussite) ou un Échec Stupéfiant (échec). PUREMENT un libellé (aucune
+ * mécanique nouvelle). Retourne `null` quand il n'y a rien à afficher : avant le jet, sans double,
+ * ou sur une réussite FORCÉE par Résilience (le « double » n'a pas eu lieu sur un vrai dé). La règle
+ * elle-même (`rule('test-critiques-doubles')`) est lue par l'appelant — cette fonction reste pure. */
+export function amazingTestLabel(pt: PendingTest): { success: boolean; text: string } | null {
+  if (pt.roll == null || !pt.isDouble || pt.forced) return null;
+  return { success: pt.success, text: pt.success ? 'Succès Stupéfiant' : 'Échec Stupéfiant' };
+}
+
 // (Psychologie EN COMBAT : PLUS de `describePsych` — l'issue des étapes de la cascade de Round est
 //  produite par l'applier 'combatPsych' (state/combatFlow), comme la psy de rencontre.)
 

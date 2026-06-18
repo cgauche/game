@@ -394,6 +394,11 @@
   line-height: 1.35;
   text-align: left; /* ligne de journal : toujours à gauche, même dans .test-modal qui centre tout le reste */
 }
+/* Badge « Succès / Échec Stupéfiant » (option LDB 12 l.151) : libellé du double, sous l'issue du Test. */
+.amazing-row { display: flex; justify-content: center; margin: -2px 0 8px; }
+.amazing-chip { font-weight: 700; letter-spacing: 0.02em; }
+.amazing-chip.amazing-success { color: var(--gold2); border-color: var(--gold); background: color-mix(in srgb, var(--gold) 14%, transparent); }
+.amazing-chip.amazing-failure { color: var(--danger-soft); border-color: var(--danger-soft); background: color-mix(in srgb, var(--danger-soft) 14%, transparent); }
 
 .test-scenarios { max-width: 720px; }
 .ts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }

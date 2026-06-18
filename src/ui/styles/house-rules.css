@@ -20,6 +20,12 @@
 .house-rules .hr-row:nth-child(even) {
   background: rgba(255, 255, 255, 0.03);
 }
+/* Action MJ sous une règle (ex. « Regagner la Chance » du mode 'manual', LDB 17 l.52). */
+.house-rules .hr-action {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 0.5rem 0.4rem;
+}
 .house-rules .hr-label {
   display: flex;
   align-items: center;

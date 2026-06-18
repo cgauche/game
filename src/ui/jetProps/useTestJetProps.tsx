@@ -8,7 +8,8 @@ import { PortraitPicker } from '../PortraitPicker';
 import { testBreakdown, testPending } from '../breakdown';
 import { JournalLine } from '../NarratedLine';
 import { ev } from '../../state/combatLog';
-import { describeTest } from '../../state/flowOutcomes';
+import { describeTest, amazingTestLabel } from '../../state/flowOutcomes';
+import { rule } from '../../engine/policy';
 
 /**
  * PARAMÉTRAGE de la coquille partagée `RollFlowShell` pour le JET d'un Test de compétence de scène
@@ -38,6 +39,8 @@ export function useTestJetProps(): ComponentProps<typeof RollFlowShell> | null {
   const multi = !rolled && !!pt.candidates && pt.candidates.length > 1;
   const skillLabel = pt.skill ?? pt.label;
   const pendingLine = testPending(skillLabel, pt.skillValue, pt.target, pt.difficulty);
+  // Option « Succès / échec stupéfiants » (LDB 12 l.151) : badge du double, pilotée par la règle.
+  const amazing = rule('test-critiques-doubles') ? amazingTestLabel(pt) : null;
 
   return {
     variant: 'test',
@@ -74,6 +77,18 @@ export function useTestJetProps(): ComponentProps<typeof RollFlowShell> | null {
     /* Post-jet : la ligne de jet PORTE le portrait de l'acteur (comme la cascade) — on voit qui a lancé. */
     rows: rolled ? [{ combatant: actor, d: testBreakdown(skillLabel, pt.skillValue, { roll: pt.roll!, target: pt.target, sl: pt.sl, success: pt.success }, pt.difficulty) }] : undefined,
     outcome: rolled ? <JournalLine className="rm-journal" event={ev('info', describeTest(pt), pt.actorId)} combatants={party} /> : undefined,
+    /* Option « Succès / échec stupéfiants » (LDB 12 l.151) : un Test résolu sur un DOUBLE devient un
+       Succès / Échec Stupéfiant (libellé seul — aucune mécanique nouvelle). Badge gated par la règle. */
+    postRollExtra: amazing ? (
+      <div className="amazing-row">
+        <span
+          className={`chip amazing-chip ${amazing.success ? 'amazing-success' : 'amazing-failure'}`}
+          title="Test réussi/raté sur un double (LDB 12 l.151)"
+        >
+          ✦ {amazing.text}
+        </span>
+      </div>
+    ) : undefined,
     fortune: actor?.fortune ?? 0,
     freeReroll: freeRerollOf(actor),
     rerollable: rolled && pt.roll != null && canReroll(pt.roll > pt.target, !!pt.rerolled),

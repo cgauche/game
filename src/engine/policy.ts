@@ -52,6 +52,15 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'normal = 01-05 réussite auto / 96-00 échec auto (RAW) ; inverted = l’inverse ; off = aucune bande.',
   },
   {
+    id: 'test-critiques-doubles',
+    label: 'Succès / échec stupéfiants',
+    ref: 'LDB 12 l.151',
+    group: 'Tests',
+    kind: 'flag',
+    default: false,
+    hint: 'Hors combat, un Test réussi sur un DOUBLE est un Succès Stupéfiant (✦) ; raté sur un double, un Échec Stupéfiant. Purement narratif (libellé) : aucun effet mécanique nouveau.',
+  },
+  {
     id: 'test-fast-sl',
     label: 'Calculer rapidement un DR',
     ref: 'LDB 12 l.128',
@@ -107,6 +116,16 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     default: 'F',
     options: ['F', 'max', 'FM', 'Int'],
     hint: 'Caractéristique de base d’Intimidation. F = Force (RAW) ; max = la meilleure de F/FM/Int ; FM = Force Mentale ; Int = Intelligence.',
+  },
+  {
+    id: 'fortune-mid-session',
+    label: 'Chance regagnée en cours de session',
+    ref: 'LDB 17 l.52',
+    group: 'Destin & Résistance',
+    kind: 'mode',
+    default: 'off',
+    options: ['off', 'manual', 'auto'],
+    hint: 'Longues Séances de Jeu : regagner des Points de Chance en cours de session (≈ 1×/h). off = seulement en début de session (RAW, via l’Effet de scène) ; manual = un bouton « Regagner la Chance maintenant » ici, à la demande ; auto = informationnel (le temps réel n’est pas traçable par le moteur — déclenchez-le à la main).',
   },
   {
     id: 'combat-advantage-cap',
