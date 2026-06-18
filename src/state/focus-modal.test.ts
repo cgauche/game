@@ -30,7 +30,7 @@ describe('Focalisation en modale (store)', () => {
     let st = useGame.getState();
     const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const turn = st.battle!.order.indexOf(heroC.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: 'focus', selectedSpell: 'Arme aethyrique', acted: false } });
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, selectedSpell: 'Arme aethyrique', acted: false } });
 
     useGame.getState().battleFocusSpell('Arme aethyrique');
     expect(useGame.getState().pendingFocus).toBeTruthy();
@@ -57,7 +57,7 @@ describe('Focalisation en modale (store)', () => {
     const st = useGame.getState();
     const heroC = st.battle!.combatants.find((c) => c.kind === 'hero')!;
     const turn = st.battle!.order.indexOf(heroC.id);
-    useGame.setState({ battle: { ...st.battle!, turn, action: 'focus', acted: false } });
+    useGame.setState({ battle: { ...st.battle!, turn, action: null, acted: false } });
     useGame.getState().battleFocusSpell('Fléchette'); // Magie mineure → non focalisable
     expect(useGame.getState().pendingFocus).toBeNull();
   });

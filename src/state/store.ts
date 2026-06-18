@@ -161,8 +161,10 @@ export interface BattleState {
   round: number;
   /** Mode d'action À BOUTON en cours (panneau ouvert). Le déplacement et l'attaque n'ont PAS de mode :
    *  ils sont implicites au clic (sol/ennemi) quand `action === null` — cf. battleClickTile/Entity.
-   *  'teleport' = ciblage de case d'une Téléportation (op de sort) en attente. */
-  action: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'heal' | 'teleport' | null;
+   *  'cast' = ciblage d'un sort · 'teleport' = case d'arrivée d'une Téléportation · 'resolve'/'ammo'/'heal'
+   *  = panneaux (Détermination / munition / soin). La Focalisation / l'usage d'objet / le ramassage NE sont
+   *  PAS des modes : ils passent par `battleFocusSpell`→`pendingFocus`, `battleUseItem`, `battlePickup`. */
+  action: 'cast' | 'resolve' | 'ammo' | 'heal' | 'teleport' | null;
   /** Sort sélectionné pour l'action d'incantation en cours. */
   selectedSpell: string | null;
   /** Attaque ARMÉE pour le clic-ennemi (id d'`AttackOption` : 'arme' | 'morsure' | … — cf. `availableAttacks`).
@@ -384,6 +386,10 @@ export interface GameState {
   startInterlude: (weeks?: number) => void;
   /** Clôt l'interlude : « Avec le pouvoir », Argent à gaspiller, Revenus, le temps passe. */
   interludeEnd: () => void;
+  /** Regagne MAINTENANT les Points de Chance du groupe (LDB 17 l.52 « Longues Séances de Jeu » —
+   *  règle optionnelle `fortune-mid-session` en mode 'manual'). Réutilise l'Effet `restoreFortune`
+   *  (logique partagée via `engine/fortune.restoreFortune`) — pas de duplication. */
+  restoreFortuneNow: () => void;
   /** Jet d'Activité en attente (Revenus / lancer d'Artisanat — modale, fabrique rollFlow). */
   pendingActivity: PendingActivity | null;
   activityRoll: () => void;
@@ -543,7 +549,7 @@ export interface GameState {
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
   seedRng: (seed: number) => void;
   startCombat: (encounterId: string, onVictory?: Effect[], opts?: { noSurprise?: boolean }) => void;
-  battleSelectAction: (a: 'cast' | 'focus' | 'use' | 'resolve' | 'pickup' | 'ammo' | 'heal' | null) => void;
+  battleSelectAction: (a: 'cast' | 'resolve' | 'ammo' | 'heal' | null) => void;
   /** Guérison (LDB 09-Compétences) — ouvre la modale de soin EN COMBAT (soi/allié adjacent). */
   battleHeal: (targetId: string, mode: HealMode) => void;
   /** INFIRMERIE (hors combat, state/medicFlow) : modale de soins persistante — patients, actes
@@ -1056,6 +1062,9 @@ export const useGame = create<GameState>((set, get) => ({
   pendingOrders: [],
   startInterlude: (weeks) => interludeFlow.startInterlude(get, set, weeks),
   interludeEnd: () => interludeFlow.interludeEnd(get, set),
+  // Longues Séances de Jeu (LDB 17 l.52) : réutilise l'Effet `restoreFortune` (NE DUPLIQUE PAS la
+  // logique — même case que le début de session, qui appelle `engine/fortune.restoreFortune`).
+  restoreFortuneNow: () => applyEffects(get, set, [{ type: 'restoreFortune' }]),
   pendingActivity: null,
   activityRoll: () => FLOWS.activity.roll(get, set),
   activityReroll: () => FLOWS.activity.reroll(get, set),
@@ -1538,7 +1547,7 @@ export const useGame = create<GameState>((set, get) => ({
     // Quitter le mode incantation oublie le sort sélectionné. Le déplacement et l'attaque n'ont PLUS de
     // mode : ils sont implicites au clic (battleClickTile/battleClickEntity) — le reachable stocké ne
     // porte que les budgets spéciaux (Course, post-Désengagement), on ne le touche pas ici.
-    const selectedSpell = a === 'cast' || a === 'focus' ? battle.selectedSpell : null;
+    const selectedSpell = a === 'cast' ? battle.selectedSpell : null;
     set({ battle: { ...battle, action: a, selectedSpell, preview: null } });
     bus.emit(EVT.SCENE_DIRTY);
   },

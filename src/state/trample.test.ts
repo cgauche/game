@@ -62,7 +62,9 @@ describe('Piétinement en combat (store)', () => {
     E.wounds = { current: 30, max: 30, base: 30 } as Combatant['wounds'];
     E.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
     const turn = b.order.indexOf(H.id);
-    useGame.setState({ battle: { ...b, turn, action: 'trample', movementUsed: 0, acted: false } });
+    // Le Piétinement est une attaque GRATUITE déclenchée par `battleTrample` (pas un mode `action`) :
+    // `action: null` = aucun mode actif (l'ancien mode `action: 'trample'` armé a été retiré au modèle unifié).
+    useGame.setState({ battle: { ...b, turn, action: null, movementUsed: 0, acted: false } });
     return { H, E };
   }
 

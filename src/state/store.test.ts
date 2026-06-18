@@ -1737,7 +1737,7 @@ describe('Utiliser un consommable en combat (store)', () => {
     order: [h.id],
     turn: 0,
     round: 1,
-    action: 'use',
+    action: null,
     selectedSpell: null,
     reachable: new Map(),
     movementUsed: 0, movedPreAction: false,
@@ -1906,7 +1906,7 @@ describe('Ramasser un objet au sol en combat (un à la fois, LDB ch.13 l.115-116
     });
     const bh: Combatant = JSON.parse(JSON.stringify(hero));
     const battle: BattleState = {
-      combatants: [bh], order: [bh.id], turn: 0, round: 1, action: 'pickup', selectedSpell: null,
+      combatants: [bh], order: [bh.id], turn: 0, round: 1, action: null, selectedSpell: null,
       reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
     };
     useGame.setState({ party: [hero], scene, mode: 'battle', battle, flags: {} });
