@@ -1,13 +1,14 @@
 /**
- * Registre des qualités d'objet (arme/armure/artisanat) — DÉRIVÉ du registre `defs/` (gen-registry.mjs).
- * Ajouter une qualité = déposer `defs/<slug>.ts` (`export const quality: QualityDef = { key, … }`, la clé
- * étant le label FR canonique) puis `npm run gen` (auto en dev). Plus de table à éditer à la main.
- * Les helpers de `dispatch.ts` lisent `QUALITIES` ; combat.ts/items.ts l'appellent aux moments de jeu.
+ * Registre des qualités d'objet (arme/armure/artisanat) — DÉRIVÉ de la DONNÉE (`src/data/qualities.json`,
+ * via `data.qualities`). Plus de `defs/` mécaniques : toute la mécanique (passive/effects/capabilities)
+ * vit dans `qualities.json`, lue PAR ID. `QUALITIES` ne porte plus que le libellé d'affichage (`{ key }`).
+ * Sa clé reste le LIBELLÉ FR canonique (porté par chaque entrée de données) — `normalize`/`describe`
+ * indexent par libellé et par id. Les helpers de `dispatch.ts` lisent la mécanique dans `qualities.json`.
  */
 import type { QualityDef } from './types';
-import { QUALITY_DEFS } from './_registry.generated';
+import { qualities } from '../../data';
 
 export type { QualityCtx, QualityDef } from './types';
 
-/** Table des qualités. Clé = label FR canonique (porté par chaque def). */
-export const QUALITIES: Record<string, QualityDef> = Object.fromEntries(QUALITY_DEFS.map((q) => [q.key, q]));
+/** Table des qualités. Clé = label FR canonique. Dérivée 1:1 de `qualities.json` (`{ key: label }`). */
+export const QUALITIES: Record<string, QualityDef> = Object.fromEntries(qualities.map((q) => [q.label, { key: q.label }]));

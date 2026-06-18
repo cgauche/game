@@ -8,7 +8,14 @@
     "source": {
       "book": "LDB",
       "page": 297
-    }
+    },
+    "passive": [
+      {
+        "op": "weaponRollMod",
+        "phase": "parryAgainstAttacker",
+        "drMod": -1
+      }
+    ]
   },
   {
     "id": "a-poudre-noire",
@@ -19,6 +26,9 @@
     "source": {
       "book": "LDB",
       "page": 297
+    },
+    "capabilities": {
+      "firearm": true
     }
   },
   {
@@ -30,6 +40,9 @@
     "source": {
       "book": "LDB",
       "page": 297
+    },
+    "capabilities": {
+      "magazine": true
     }
   },
   {
@@ -86,7 +99,14 @@
     "source": {
       "book": "LDB",
       "page": 298
-    }
+    },
+    "passive": [
+      {
+        "op": "weaponRollMod",
+        "phase": "parryByDefender",
+        "drMod": 1
+      }
+    ]
   },
   {
     "id": "devastatrice",
@@ -97,7 +117,13 @@
     "source": {
       "book": "LDB",
       "page": 298
-    }
+    },
+    "passive": [
+      {
+        "op": "weaponDamageMod",
+        "mode": "maxUnits"
+      }
+    ]
   },
   {
     "id": "empaleuse",
@@ -108,7 +134,14 @@
     "source": {
       "book": "LDB",
       "page": 298
-    }
+    },
+    "passive": [
+      {
+        "op": "critOnRoll",
+        "mod": 10,
+        "equals": 0
+      }
+    ]
   },
   {
     "id": "a-explosion",
@@ -119,6 +152,9 @@
     "source": {
       "book": "LDB",
       "page": 298
+    },
+    "capabilities": {
+      "firearm": true
     }
   },
   {
@@ -170,6 +206,9 @@
     "source": {
       "book": "LDB",
       "page": 298
+    },
+    "capabilities": {
+      "unbreakable": true
     }
   },
   {
@@ -181,7 +220,13 @@
     "source": {
       "book": "LDB",
       "page": 298
-    }
+    },
+    "passive": [
+      {
+        "op": "weaponDamageMod",
+        "plusUnits": true
+      }
+    ]
   },
   {
     "id": "perforante",
@@ -192,7 +237,13 @@
     "source": {
       "book": "LDB",
       "page": 298
-    }
+    },
+    "passive": [
+      {
+        "op": "armourPierce",
+        "amount": 1
+      }
+    ]
   },
   {
     "id": "perturbante",
@@ -203,6 +254,9 @@
     "source": {
       "book": "LDB",
       "page": 298
+    },
+    "capabilities": {
+      "pushback": true
     }
   },
   {
@@ -214,6 +268,9 @@
     "source": {
       "book": "LDB",
       "page": 298
+    },
+    "capabilities": {
+      "bladeTrap": true
     }
   },
   {
@@ -225,6 +282,9 @@
     "source": {
       "book": "LDB",
       "page": 298
+    },
+    "capabilities": {
+      "canFireWhileEngaged": true
     }
   },
   {
@@ -236,7 +296,13 @@
     "source": {
       "book": "LDB",
       "page": 298
-    }
+    },
+    "passive": [
+      {
+        "op": "weaponDamageMod",
+        "dr": 1
+      }
+    ]
   },
   {
     "id": "precise",
@@ -247,7 +313,14 @@
     "source": {
       "book": "LDB",
       "page": 298
-    }
+    },
+    "passive": [
+      {
+        "op": "weaponRollMod",
+        "phase": "attack",
+        "flatMod": 10
+      }
+    ]
   },
   {
     "id": "protectrice",
@@ -258,6 +331,9 @@
     "source": {
       "book": "LDB",
       "page": 298
+    },
+    "capabilities": {
+      "parryAP": true
     }
   },
   {
@@ -269,6 +345,9 @@
     "source": {
       "book": "LDB",
       "page": 298
+    },
+    "capabilities": {
+      "fastStrike": true
     }
   },
   {
@@ -280,6 +359,14 @@
     "source": {
       "book": "AA",
       "page": 89
+    },
+    "capabilities": {
+      "onHitKnockdown": {
+        "advantageCost": 2,
+        "char": "F",
+        "skill": "Athlétisme",
+        "condition": "a-terre"
+      }
     }
   },
   {
@@ -291,6 +378,9 @@
     "source": {
       "book": "AA",
       "page": 89
+    },
+    "capabilities": {
+      "onCritCondition": "hemorragique"
     }
   },
   {
@@ -302,6 +392,9 @@
     "source": {
       "book": "AA",
       "page": 89
+    },
+    "capabilities": {
+      "areaFire": true
     }
   },
   {
@@ -313,6 +406,9 @@
     "source": {
       "book": "AA",
       "page": 126
+    },
+    "capabilities": {
+      "salvo": true
     }
   },
   {
@@ -324,6 +420,9 @@
     "source": {
       "book": "LDB",
       "page": 299
+    },
+    "capabilities": {
+      "damagesArmour": true
     }
   },
   {
@@ -335,7 +434,14 @@
     "source": {
       "book": "AA",
       "page": 89
-    }
+    },
+    "passive": [
+      {
+        "op": "weaponRollMod",
+        "phase": "parryByDefender",
+        "drMod": -1
+      }
+    ]
   },
   {
     "id": "arme-d-equipe",
@@ -346,6 +452,9 @@
     "source": {
       "book": "AA",
       "page": 124
+    },
+    "capabilities": {
+      "crewedTeam": true
     }
   },
   {
@@ -357,6 +466,9 @@
     "source": {
       "book": "LDB",
       "page": 299
+    },
+    "capabilities": {
+      "fumbleOn9": true
     }
   },
   {
@@ -368,7 +480,13 @@
     "source": {
       "book": "LDB",
       "page": 299
-    }
+    },
+    "passive": [
+      {
+        "op": "weaponDamageMod",
+        "chargeGated": true
+      }
+    ]
   },
   {
     "id": "imprecise",
@@ -379,6 +497,18 @@
     "source": {
       "book": "LDB",
       "page": 299
+    },
+    "passive": [
+      {
+        "op": "weaponRollMod",
+        "phase": "attack",
+        "drMod": -1
+      }
+    ],
+    "capabilities": {
+      "beats": [
+        "precise"
+      ]
     }
   },
   {
@@ -390,7 +520,13 @@
     "source": {
       "book": "LDB",
       "page": 299
-    }
+    },
+    "passive": [
+      {
+        "op": "weaponDamageMod",
+        "negateAtouts": true
+      }
+    ]
   },
   {
     "id": "lente",
@@ -401,6 +537,19 @@
     "source": {
       "book": "LDB",
       "page": 299
+    },
+    "passive": [
+      {
+        "op": "weaponRollMod",
+        "phase": "vsDefense",
+        "drMod": 1
+      }
+    ],
+    "capabilities": {
+      "slowStrike": true,
+      "beats": [
+        "rapide"
+      ]
     }
   },
   {
@@ -423,6 +572,9 @@
     "source": {
       "book": "LDB",
       "page": 300
+    },
+    "capabilities": {
+      "layerable": true
     }
   },
   {
@@ -434,6 +586,9 @@
     "source": {
       "book": "LDB",
       "page": 300
+    },
+    "capabilities": {
+      "critImmuneOdd": true
     }
   },
   {
@@ -445,6 +600,9 @@
     "source": {
       "book": "LDB",
       "page": 300
+    },
+    "capabilities": {
+      "apIgnoredOnEven": true
     }
   },
   {
@@ -456,6 +614,9 @@
     "source": {
       "book": "LDB",
       "page": 300
+    },
+    "capabilities": {
+      "apIgnoredOnImpaleCrit": true
     }
   },
   {
@@ -489,6 +650,9 @@
     "source": {
       "book": "LDB",
       "page": 286
+    },
+    "capabilities": {
+      "encDelta": -1
     }
   },
   {
@@ -500,7 +664,14 @@
     "source": {
       "book": "LDB",
       "page": 286
-    }
+    },
+    "passive": [
+      {
+        "op": "weaponRollMod",
+        "phase": "testFail",
+        "drMod": 1
+      }
+    ]
   },
   {
     "id": "raffine",
@@ -562,7 +733,14 @@
     "source": {
       "book": "LDB",
       "page": 286
-    }
+    },
+    "passive": [
+      {
+        "op": "weaponRollMod",
+        "phase": "testFail",
+        "drMod": -1
+      }
+    ]
   },
   {
     "id": "volumineux",
@@ -573,6 +751,9 @@
     "source": {
       "book": "LDB",
       "page": 286
+    },
+    "capabilities": {
+      "encDelta": 1
     }
   },
   {
@@ -584,6 +765,9 @@
     "source": {
       "book": "LDB",
       "page": 339
+    },
+    "capabilities": {
+      "magic": true
     }
   },
   {
@@ -595,6 +779,15 @@
     "source": {
       "book": "ADE2",
       "page": 76
+    },
+    "passive": [
+      {
+        "op": "weaponDamageMod",
+        "mode": "maxUnits"
+      }
+    ],
+    "capabilities": {
+      "magic": true
     }
   },
   {

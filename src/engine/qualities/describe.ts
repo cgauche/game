@@ -4,8 +4,8 @@
  * **LDB 63 « Armures »**, qualités d'artisanat **LDB 60 « Fabrication »**, magie **ADE II**. Aucune
  * invention : chaque texte résume fidèlement le passage cité. Le `type` (Atout/Défaut) vient du registre.
  */
-import { QUALITIES } from './registry';
 import { parseQuality } from './normalize';
+import { qualityByLabel } from '../../data';
 import qualitiesJson from '../../data/qualities.json';
 
 /** Descriptions issues de la DONNÉE app-owned (`qualities.json`) — SOURCE UNIQUE des qualités
@@ -36,10 +36,10 @@ export interface QualityInfo {
 export function describeQuality(raw: string): QualityInfo | null {
   const p = parseQuality(raw);
   if (!p) return null;
-  const def = QUALITIES[p.key];
+  const type = qualityByLabel.get(p.key)?.type; // Atout/Défaut depuis la DONNÉE (registre = libellé seul)
   return {
     key: p.key,
-    type: def?.type,
+    type: type === 'Atout' || type === 'Défaut' ? type : undefined,
     indice: p.indice,
     label: p.indice != null ? `${p.key} ${p.indice}` : p.key,
     desc: QUALITY_DESC[p.key],

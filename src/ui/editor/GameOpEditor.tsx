@@ -40,6 +40,10 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   charMod: '📊 Modif. de caractéristique',
   apAll: '🛡️ +PA à toutes les Localisations',
   testMod: '📉 Modif. à tous les Tests',
+  skillDRBonus: '🥷 +DR à une Compétence (passif)',
+  incomingAttackMod: '🛡️ Modif. au toucher de l’attaquant',
+  attackKeyword: '✨ Mot-clé d’attaque (ex. magique)',
+  mitigateIncoming: '🌫️ Mitige les Dégâts entrants (Éthéré)',
   ignoreStatePenalties: '🚫 Ignore les pénalités d’État',
   freeReroll: '🔁 Relance gratuite (prochain échec)',
   critTwice: '🎯 Deux lancers de Critique (meilleur)',
@@ -82,6 +86,11 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   maxWeaponHands: '✋ Plafond de mains d’arme',
   senseLoss: '👁️ Perte sensorielle (œil/oreille)',
   loseTurn: '⏭️ Perdre Action + Mouvement',
+  weaponRollMod: '⚔️ Atout d’arme — modif. de jet (passif)',
+  weaponDamageMod: '💥 Atout d’arme — modif. de Dégâts (passif)',
+  armourPierce: '🗡️ Atout d’arme — Perforante (passif)',
+  critOnRoll: '🎯 Atout d’arme — Critique sur jet (passif)',
+  spendAdvantage: '⬇️ Dépenser de l’Avantage',
   rollThreshold: '🎲 Jet à paliers (un dé → ops par seuil)',
   narrative: '📝 Effet narratif (texte libre)',
 };
@@ -98,7 +107,8 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['🩹 Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound']],
   ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'loseTurn']],
   ['🩼 Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'maxWeaponHands', 'senseLoss']],
-  ['🎲 Contrôle', ['test', 'opposedTest', 'rollThreshold']],
+  ['⚔️ Atouts/Défauts d’arme (passifs)', ['weaponRollMod', 'weaponDamageMod', 'armourPierce', 'critOnRoll']],
+  ['🎲 Contrôle', ['test', 'opposedTest', 'rollThreshold', 'spendAdvantage']],
   ['📝 Narration', ['narrative']],
 ];
 
@@ -240,6 +250,11 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'maxWeaponHands': return { op: 'maxWeaponHands', hands: 1 };
     case 'senseLoss': return { op: 'senseLoss', sense: 'vue' };
     case 'loseTurn': return { op: 'loseTurn' };
+    case 'weaponRollMod': return { op: 'weaponRollMod', phase: 'attack', drMod: -1 };
+    case 'weaponDamageMod': return { op: 'weaponDamageMod', dr: 1 };
+    case 'armourPierce': return { op: 'armourPierce', amount: 1 };
+    case 'critOnRoll': return { op: 'critOnRoll', mod: 10, equals: 0 };
+    case 'spendAdvantage': return { op: 'spendAdvantage', amount: 1 };
     case 'rollThreshold': return { op: 'rollThreshold', sides: 10, thresholds: [] };
     case 'narrative': return { op: 'narrative', text: '' };
     default: return { op: 'wounds', amount: 5 };

@@ -18,7 +18,7 @@ import { rollTest, opposedTest } from './tests';
 import { testValue } from './skills';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
 import { addCondition, addTimedCondition, removeCondition, loseWounds, hasCondition } from './conditions';
-import { conditionLabel, talentConcrete, qualityRefLabel } from '../data';
+import { conditionLabel, talentConcrete, qualityRefLabel, traitById } from '../data';
 import { groupMatch } from './groups';
 import { bypassedAP } from './armourBypass';
 import { grantTrait } from './grantedTraits';
@@ -90,6 +90,54 @@ export interface PerSL {
 export function slBonus(sl: number | undefined, p?: PerSL): number {
   if (!p || sl == null) return 0;
   return Math.floor(Math.max(0, sl) / Math.max(1, p.every)) * p.amount;
+}
+
+/** Somme des bonus de DR à une Compétence (`skillId`) conférés par les Traits du porteur — op PASSIVE
+ *  `skillDRBonus` portée par `TraitData.passive`, lue PAR ID (jamais par libellé). Furtif : +Bonus
+ *  d'Agilité au DR de Discrétion (LDB 85). Distincte de `skillMod` (valeur du Test) — consommée au
+ *  calcul du DR (ex. Test de Discrétion de la Surprise). */
+export function skillDRBonus(c: Combatant, skillId: string): number {
+  let n = 0;
+  for (const t of c.traits ?? []) {
+    for (const op of traitById.get(t.id)?.passive ?? []) {
+      if (op.op === 'skillDRBonus' && op.skill === skillId) n += resolveFormula(op.bonus, c);
+    }
+  }
+  return n;
+}
+
+/** Somme des modificateurs au Test d'un ATTAQUANT visant `c` (op PASSIVE `incomingAttackMod`, par id) pour
+ *  un mode d'attaque (`melee`/`ranged`) — inclut les ops `all`. Parasité : −10 en mêlée (LDB 85 p.340). */
+export function incomingAttackMod(c: Combatant, mode: 'melee' | 'ranged'): number {
+  let n = 0;
+  for (const t of c.traits ?? []) {
+    for (const op of traitById.get(t.id)?.passive ?? []) {
+      if (op.op === 'incomingAttackMod' && (op.mode === mode || op.mode === 'all')) n += op.amount;
+    }
+  }
+  return n;
+}
+
+/** L'attaque du porteur compte-t-elle comme `keyword` (op passive `attackKeyword`, par id) ? Magique/
+ *  Démoniaque/Fabriqué → 'magic'. (La qualité d'arme 'magic' est vérifiée à part par `isMagicWeapon`.) */
+export function attackHasKeyword(c: Combatant, keyword: 'magic'): boolean {
+  for (const t of c.traits ?? []) for (const op of traitById.get(t.id)?.passive ?? []) if (op.op === 'attackKeyword' && op.keyword === keyword) return true;
+  return false;
+}
+
+/** Les Dégâts entrants sur `defender` sont-ils NULLIFIÉS (op passive `mitigateIncoming{mode:'nullify'}`,
+ *  Éthéré) ? `unlessKeyword:'magic'` laisse passer l'attaque si elle est magique (l'`attacker` porte le
+ *  mot-clé OU l'arme est magique → `weaponHasMagic`). */
+export function incomingDamageNullified(defender: Combatant, attacker: Combatant, weaponHasMagic: boolean): boolean {
+  for (const t of defender.traits ?? []) {
+    for (const op of traitById.get(t.id)?.passive ?? []) {
+      if (op.op === 'mitigateIncoming' && op.mode === 'nullify') {
+        if (op.unlessKeyword === 'magic' && (weaponHasMagic || attackHasKeyword(attacker, 'magic'))) continue;
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -326,6 +374,22 @@ export type GameOp =
    *  PASSIF par les helpers de trauma depuis `t.ops` (annulable par prothèse), et — si posé par un sort
    *  via `applyOps` — par `ActiveEffect.skillMods` (testValue/defenseValue). Une op, n'importe quelle compétence. */
   | { op: 'skillMod'; skill: string; mod: number }
+  /** +N DR à un Test de Compétence nommé (Furtif : +Bonus d'Agilité au DR de Discrétion, LDB 85 p.339).
+   *  PASSIF — lu par `skillDRBonus` depuis les `TraitData.passive` du porteur (par id) ; DISTINCT de
+   *  `skillMod` (qui modifie la VALEUR du Test, pas le DR obtenu). Inerte dans `applyOps`. */
+  | { op: 'skillDRBonus'; skill: string; bonus: Formula }
+  /** Modificateur au Test de l'ATTAQUANT qui vise le porteur (Parasité : −10 au toucher en mêlée, LDB 85
+   *  p.340). PASSIF, lu par `incomingAttackMod` à la collecte des mods d'attaque — DISTINCT de `testMod`
+   *  (qui modifie les Tests du porteur LUI-MÊME). `mode` : portée concernée (`all` = mêlée ET distance).
+   *  Inerte dans `applyOps`. */
+  | { op: 'incomingAttackMod'; mode: 'melee' | 'ranged' | 'all'; amount: number }
+  /** L'attaque du porteur porte un MOT-CLÉ (Magique/Démoniaque/Fabriqué → 'magic', LDB 85). PASSIF, lu par
+   *  `attackHasKeyword` — sert la mitigation (Éthéré : seules les attaques 'magic' blessent). Inerte dans applyOps. */
+  | { op: 'attackKeyword'; keyword: 'magic' }
+  /** MITIGE les Dégâts ENTRANTS du porteur (Éthéré : nullifie sauf attaque 'magic', LDB 85 p.339). PASSIF, lu
+   *  par `incomingDamageNullified` à la résolution de touche. `mode:'nullify'` = 0 Blessure (critique inclus) ;
+   *  `unlessKeyword` = laisse passer une attaque portant ce mot-clé. Inerte dans applyOps. */
+  | { op: 'mitigateIncoming'; mode: 'nullify'; unlessKeyword?: 'magic' }
   /** Échelle MULTIPLICATIVE du Mouvement — GÉNÉRALISE le drapeau `movementHalved` (= 1/2). `num/den` = la
    *  fraction appliquée à `c.movement` (amputation de jambe : 1/2). Trauma : lu par `traumaMovementHalved` ;
    *  sort : `ActiveEffect.moveScale`. (`M` n'est pas une Caractéristique → op de mouvement dédiée.) */
@@ -342,6 +406,27 @@ export type GameOp =
   /** Perd sa prochaine Action ET son prochain Mouvement (Affamé : « festoie » ; généralisable à tout
    *  effet qui fait sauter le tour). Pose les drapeaux lus au début du Round du porteur. */
   | { op: 'loseTurn' }
+  /** PASSIF d'ARME (Atout/Défaut, LDB 62-63) : modificateur de DR/plat à une PHASE de jet de combat —
+   *  Précise (+10 `flatMod` en attaque), Imprécise (−1 DR en attaque), Défensive (+1 DR parade du défenseur),
+   *  À Enroulement (−1 DR parade adverse), Lente (+1 DR à TOUTE défense adverse), Pratique/Peu Fiable (±1 DR à
+   *  un Test raté). Lu PAR ID par `engine/qualities/dispatch` (attackDRAdjust/parryDRAdjust/vsDefenseDRAdjust/
+   *  qualitySum/craftTestDRAdjust). INERTE dans `applyOps`. */
+  | { op: 'weaponRollMod'; phase: 'attack' | 'parryByDefender' | 'parryAgainstAttacker' | 'vsDefense' | 'testFail'; drMod?: number; flatMod?: number }
+  /** PASSIF d'ARME : modificateur de DÉGÂTS (LDB 62-63) — Pointue (+1 DR `dr`), Dévastatrice (DR = max(DR,
+   *  dé des unités), `mode:'maxUnits'`), Percutante (+ dé des unités, `plusUnits`), Inoffensive (annule les
+   *  Atouts de Dégâts, `negateAtouts`), Épuisante (`chargeGated` : Percutante/Dévastatrice de l'arme inertes
+   *  hors Charge). Lu PAR ID par `qualitySum('damageDR')`/`qualityDamageStep`. INERTE dans `applyOps`. */
+  | { op: 'weaponDamageMod'; dr?: number; mode?: 'maxUnits'; plusUnits?: boolean; negateAtouts?: boolean; chargeGated?: boolean }
+  /** PASSIF d'ARME : Perforante (LDB 62) — ignore `amount` PA (+ la matière non-métal) à la mitigation. Lu
+   *  PAR ID par `qualitySum('armourReduction')`. INERTE dans `applyOps`. */
+  | { op: 'armourPierce'; amount: number }
+  /** PASSIF d'ARME : Empaleuse (LDB 62) — déclenche un Coup Critique quand `roll % mod === equals`
+   *  (`{mod:10, equals:0}` = multiple de 10). Forme DÉCLARATIVE sérialisable (remplace le hook fonction
+   *  `critTrigger`). Lu PAR ID par `qualityCritTriggered`. INERTE dans `applyOps`. */
+  | { op: 'critOnRoll'; mod: number; equals: number }
+  /** Dépense `amount` Points d'Avantage du RÉFÉRENT (Déstabilisante : coût d'un Test de renversement).
+   *  Effet PUR appliqué par `applyOps` (jamais sous 0). */
+  | { op: 'spendAdvantage'; amount: number }
   /** Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). */
   | { op: 'narrative'; text: string };
 
@@ -1056,6 +1141,18 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.loseNextMovement = true;
         lines.push(`${target.name} perd sa prochaine Action et son prochain Mouvement.`);
         break;
+      case 'weaponRollMod':
+      case 'weaponDamageMod':
+      case 'armourPierce':
+      case 'critOnRoll':
+        // PASSIFS d'arme (Atouts/Défauts) lus PAR ID par `engine/qualities/dispatch` aux moments de combat —
+        // INERTES dans le moteur d'ops (comme skillDRBonus/incomingAttackMod/attackKeyword/mitigateIncoming).
+        break;
+      case 'spendAdvantage': {
+        const who = ctx.caster ?? target;
+        who.advantage = Math.max(0, (who.advantage ?? 0) - o.amount);
+        break;
+      }
       case 'narrative':
         lines.push(o.text);
         break;

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { Weapon } from '../types';
 import { QUALITIES } from './registry';
 import { hasQuality, qualitySum, qualityCritTriggered, parryDRAdjust, isUnbreakable, attackDRAdjust, dangerousNine, reloadDRTarget, magazineSize } from './dispatch';
+import { findQualityById } from '../../data';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -60,11 +61,11 @@ describe('Aux Armes p.89 — qualités de mêlée câblées', () => {
     expect(parryDRAdjust(w(['Déséquilibrée']), w([]))).toBe(-1);
     expect(parryDRAdjust(w(['Défensive']), w(['Déséquilibrée']))).toBe(1);
   });
-  it('Taillade : ajoute un État Hémorragique sur Critique (onCritCondition)', () => {
-    expect(QUALITIES['Taillade'].onCritCondition).toBe('hemorragique');
+  it('Taillade : ajoute un État Hémorragique sur Critique (capabilities.onCritCondition, donnée)', () => {
+    expect(findQualityById('taillade')?.capabilities?.onCritCondition).toBe('hemorragique');
   });
-  it('Déstabilisante : dépense d’Avantages + Test opposé Force → À Terre (onHitKnockdown)', () => {
-    const kd = QUALITIES['Déstabilisante'].onHitKnockdown!;
+  it('Déstabilisante : dépense d’Avantages + Test opposé Force → À Terre (capabilities.onHitKnockdown, donnée)', () => {
+    const kd = findQualityById('destabilisante')?.capabilities?.onHitKnockdown!;
     expect(kd.advantageCost).toBe(2);
     expect(kd.condition).toBe('a-terre');
     expect(kd.char).toBe('F');
@@ -87,8 +88,8 @@ describe('Aux Armes — qualités d’artillerie câblées', () => {
     expect(magazineSize(w(['Salve 7']))).toBe(7);
     expect(magazineSize(w(['Recharge 3']))).toBeUndefined();
   });
-  it('Tir de zone : qualité de zone reconnue au registre (areaFire)', () => {
-    expect(QUALITIES['Tir de zone'].areaFire).toBe(true);
+  it('Tir de zone : qualité de zone reconnue dans la donnée (capabilities.areaFire)', () => {
+    expect(findQualityById('tir-de-zone')?.capabilities?.areaFire).toBe(true);
   });
 });
 

@@ -9,15 +9,15 @@ export type Availability = 'Commune' | 'Limitée' | 'Rare' | 'Exotique';
 /** Échelle du plus COURANT au plus RARE (LDB 59). */
 export const AVAILABILITY_LADDER: Availability[] = ['Commune', 'Limitée', 'Rare', 'Exotique'];
 
-const craftDefs = (c: QualityCarrier | undefined) => resolveQualities(c).filter((r) => r.def.subType === 'Objet');
+const craftDefs = (c: QualityCarrier | undefined) => resolveQualities(c).filter((r) => r.data?.subType === 'Objet');
 
 /** Nombre d'Atouts d'objet (multiplicité = répétition dans la liste). */
 export function craftAtoutCount(c: QualityCarrier | undefined): number {
-  return craftDefs(c).filter((r) => r.def.type === 'Atout').length;
+  return craftDefs(c).filter((r) => r.data?.type === 'Atout').length;
 }
 /** Nombre de Défauts d'objet. */
 export function craftDefautCount(c: QualityCarrier | undefined): number {
-  return craftDefs(c).filter((r) => r.def.type === 'Défaut').length;
+  return craftDefs(c).filter((r) => r.data?.type === 'Défaut').length;
 }
 
 /** Facteur multiplicatif du prix : chaque Atout ×2, chaque Défaut ÷2 (LDB 60 l.47/75). */
@@ -27,7 +27,7 @@ export function craftPriceFactor(c: QualityCarrier | undefined): number {
 
 /** Délta d'Encombrement dû à l'artisanat (Léger -1 / Volumineux +1, LDB 60 l.56/91). */
 export function craftEncDelta(c: QualityCarrier | undefined): number {
-  return resolveQualities(c).reduce((s, r) => s + (r.def.encDelta ?? 0), 0);
+  return resolveQualities(c).reduce((s, r) => s + (r.caps?.encDelta ?? 0), 0);
 }
 
 /**

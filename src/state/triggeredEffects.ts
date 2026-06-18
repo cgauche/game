@@ -17,7 +17,7 @@ import { resolveQualities } from '../engine/qualities/dispatch';
 import { isOutOfAction } from '../engine/conditions';
 import { isEngagedWith } from '../engine/engagement';
 import { combatDistance } from './footprint';
-import { traitById, qualityByLabel, findManeuverById, findTalentById } from '../data';
+import { traitById, qualityById, findManeuverById, findTalentById } from '../data';
 import { difficultyFromLabel } from '../engine/tests';
 import { runSpellFlow } from './combatEffects';
 import { RNG, defaultRNG } from '../engine/dice';
@@ -50,7 +50,7 @@ function effectsOf(actor: Combatant, weapon?: Weapon): TriggeredEffect[] {
   const out: TriggeredEffect[] = [];
   if (weapon?.onHitEffects) out.push(...weapon.onHitEffects);
   for (const raw of actor.traits ?? []) { const inst = raw; out.push(...withArg(traitById.get(inst.id)?.effects ?? [], inst.arg)); }
-  if (weapon) for (const { def } of resolveQualities(weapon)) out.push(...(qualityByLabel.get(def.key)?.effects ?? []));
+  if (weapon) for (const { id } of resolveQualities(weapon)) out.push(...(qualityById.get(id)?.effects ?? []));
   // Talents POSSÉDÉS portant des effets déclenchés (Assaut féroce onHit, Frappe réactive onCharged…) —
   // mêmes `TriggeredEffect` que les traits. Appendus en fin (ordre RNG existant enchant→traits→atouts préservé).
   for (const t of actor.talents ?? []) out.push(...(findTalentById(t.talentId)?.effects ?? []));

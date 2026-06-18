@@ -3,84 +3,131 @@
  * du registre + Indice typé), puis expose des helpers que combat.ts/items.ts/combatFlow appellent
  * au lieu de tester des chaînes en dur. Aucune mutation. Accepte tout porteur de `qualities`
  * (Weapon ou ItemInstance).
+ *
+ * Plus de `defs/` mécaniques : la MÉCANIQUE de chaque qualité vit dans `qualities.json`, lue PAR ID —
+ * `passive: GameOp[]` (weaponRollMod/weaponDamageMod/armourPierce/critOnRoll/testMod) pour les
+ * modificateurs, `capabilities` pour les drapeaux irréductibles. `QUALITIES` ne porte plus que le libellé.
  */
 import type { Weapon } from '../types';
-import { QUALITIES, QualityDef, QualityCtx } from './registry';
+import { QUALITIES, QualityDef } from './registry';
 import { parseQuality } from './normalize';
 import { qualityIdOf } from './ids';
-import { qualityByLabel } from '../../data';
+import { qualityById, type QualityCapabilities, type QualityData } from '../../data';
+import type { GameOp } from '../ops';
 
 /** Tout porteur de qualités (Weapon ou ItemInstance) — seul `qualities` est requis. */
 export type QualityCarrier = { qualities: string[] };
 
-/** Une qualité résolue présente sur un objet : sa définition de registre + son Indice éventuel. */
+/** Une qualité résolue présente sur un objet : sa définition de registre (libellé), son id STABLE, sa
+ *  donnée mécanique (`qualities.json` → passive/capabilities/effects) et son Indice éventuel. */
 export interface ResolvedQuality {
   def: QualityDef;
+  /** id STABLE (slug) de la qualité — clé de lecture de la mécanique dans la donnée. */
+  id: string;
+  /** Donnée mécanique (`qualities.json`) — `undefined` si la qualité n'a pas d'entrée de données. */
+  data?: QualityData;
+  /** Drapeaux/marqueurs de capacité (raccourci `data.capabilities`). */
+  caps?: QualityCapabilities;
   indice?: number;
 }
 
-/** Qualités du registre présentes sur l'objet (normalisées, avec Indice). Chaînes inconnues ignorées.
- *  Applique la PRÉSÉANCE `beats` : une qualité vaincue par une autre présente est retirée
- *  (« Imprécise prend le dessus » sur Précise, LDB 63 l.20 ; Lente sur Rapide, LDB 62 l.321). */
+/** Ops passives de la qualité (lecture par id dans la donnée). */
+const passiveOf = (id: string): GameOp[] => qualityById.get(id)?.passive ?? [];
+
+/** Qualités du registre présentes sur l'objet (normalisées, avec id/donnée/Indice). Chaînes inconnues
+ *  ignorées. Applique la PRÉSÉANCE `capabilities.beats` (ids) : une qualité vaincue par une autre présente
+ *  est retirée (« Imprécise prend le dessus » sur Précise, LDB 63 l.20 ; Lente sur Rapide, LDB 62 l.321). */
 export function resolveQualities(w: QualityCarrier | undefined): ResolvedQuality[] {
   if (!w) return [];
   const out: ResolvedQuality[] = [];
   for (const raw of w.qualities) {
     const p = parseQuality(raw);
-    if (p) out.push({ def: QUALITIES[p.key], indice: p.indice });
+    if (!p) continue;
+    const id = qualityIdOf(p.key);
+    const data = qualityById.get(id);
+    out.push({ def: QUALITIES[p.key], id, data, caps: data?.capabilities, indice: p.indice });
   }
-  const beaten = new Set(out.flatMap((r) => r.def.beats ?? []));
-  return beaten.size ? out.filter((r) => !beaten.has(r.def.key)) : out;
+  const beaten = new Set(out.flatMap((r) => r.caps?.beats ?? []));
+  return beaten.size ? out.filter((r) => !beaten.has(r.id)) : out;
 }
 
 /** L'objet possède-t-il la qualité d'`id` STABLE (`QUALITY_IDS.X`) ? Compare par id (≠ littéral FR). */
 export function hasQuality(w: QualityCarrier | undefined, id: string): boolean {
-  return resolveQualities(w).some((r) => qualityIdOf(r.def.key) === id);
+  return resolveQualities(w).some((r) => r.id === id);
 }
 
 /** Indice de la qualité d'`id` sur l'objet (ex. Solide/Recharge → N), ou undefined si absente/sans Indice. */
 export function qualityIndice(w: QualityCarrier | undefined, id: string): number | undefined {
-  return resolveQualities(w).find((r) => qualityIdOf(r.def.key) === id)?.indice;
+  return resolveQualities(w).find((r) => r.id === id)?.indice;
 }
 
-/** Somme d'un champ numérique du registre sur les qualités présentes (0 si aucune). */
+/** Somme d'un modificateur numérique sur les qualités présentes (0 si aucune) — lu dans les ops PASSIVES
+ *  de la donnée. `attackMod` = `weaponRollMod{phase:'attack'}.flatMod` (Précise +10) ; `armourReduction` =
+ *  `armourPierce.amount` (Perforante 1) ; `damageDR` = `weaponDamageMod.dr` (Pointue +1). */
 export function qualitySum(w: QualityCarrier | undefined, field: 'attackMod' | 'armourReduction' | 'damageDR'): number {
-  return resolveQualities(w).reduce((s, r) => s + (r.def[field] ?? 0), 0);
+  let n = 0;
+  for (const r of resolveQualities(w)) {
+    for (const op of passiveOf(r.id)) {
+      if (field === 'attackMod' && op.op === 'weaponRollMod' && op.phase === 'attack') n += op.flatMod ?? 0;
+      else if (field === 'armourReduction' && op.op === 'armourPierce') n += op.amount;
+      else if (field === 'damageDR' && op.op === 'weaponDamageMod') n += op.dr ?? 0;
+    }
+  }
+  return n;
 }
 
-/** Une qualité de l'arme déclenche-t-elle un Critique pour ce jet ? (Empaleuse multiple de 10). */
+/** Une qualité de l'arme déclenche-t-elle un Critique pour ce jet ? (Empaleuse `critOnRoll` multiple de 10). */
 export function qualityCritTriggered(w: QualityCarrier | undefined, roll: number): boolean {
-  const ctx: QualityCtx = { roll };
-  return resolveQualities(w).some((r) => r.def.critTrigger?.(ctx) ?? false);
+  for (const r of resolveQualities(w))
+    for (const op of passiveOf(r.id)) if (op.op === 'critOnRoll' && roll % op.mod === op.equals) return true;
+  return false;
+}
+
+type RollPhase = Extract<GameOp, { op: 'weaponRollMod' }>['phase'];
+/** Somme des `weaponRollMod` d'une PHASE de jet de combat sur les qualités présentes (DR par défaut). */
+function rollModSum(w: QualityCarrier | undefined, phase: RollPhase, kind: 'drMod' | 'flatMod' = 'drMod'): number {
+  let n = 0;
+  for (const r of resolveQualities(w))
+    for (const op of passiveOf(r.id)) if (op.op === 'weaponRollMod' && op.phase === phase) n += (kind === 'drMod' ? op.drMod : op.flatMod) ?? 0;
+  return n;
 }
 
 /** Ajustement de DR de la PARADE (Test opposé) : Défensive (arme du défenseur) +1, À Enroulement (arme de l'attaquant) -1. */
 export function parryDRAdjust(defenderWeapon: QualityCarrier | undefined, attackerWeapon: QualityCarrier | undefined): number {
-  const def = resolveQualities(defenderWeapon).reduce((s, r) => s + (r.def.defenderParryDR ?? 0), 0);
-  const atk = resolveQualities(attackerWeapon).reduce((s, r) => s + (r.def.attackerParryDR ?? 0), 0);
-  return def + atk;
+  return rollModSum(defenderWeapon, 'parryByDefender') + rollModSum(attackerWeapon, 'parryAgainstAttacker');
+}
+
+/** ±DR au Test d'ATTAQUE avec l'arme (Imprécise -1, LDB 63 l.19) — réussi ou raté. Inclut le sous-
+ *  effectif d'une Arme d'équipe d'Indice ≥ 3 (Imprécise, Aux Armes p.124). */
+export function attackDRAdjust(w: QualityCarrier | undefined): number {
+  return rollModSum(w, 'attack') + (crewedSoloIndice(w) >= 3 ? -1 : 0);
+}
+
+/** +DR à TOUT Test de défense (Parade ET Esquive) contre l'arme de l'attaquant (Lente +1, LDB 63 l.26). */
+export function vsDefenseDRAdjust(attackerWeapon: QualityCarrier | undefined): number {
+  return rollModSum(attackerWeapon, 'vsDefense');
 }
 
 /** L'arme peut-elle tirer au Combat rapproché (Atout Pistolet) ? */
 export function canFireWhileEngaged(w: Weapon | undefined): boolean {
-  return !!w && w.type === 'ranged' && resolveQualities(w).some((r) => r.def.canFireWhileEngaged);
+  return !!w && w.type === 'ranged' && resolveQualities(w).some((r) => r.caps?.canFireWhileEngaged);
 }
 
 /** L'objet est-il insensible aux dégâts/destruction (Incassable) ? (remplace les regex /incassable/i). */
 export function isUnbreakable(w: QualityCarrier | undefined): boolean {
-  return resolveQualities(w).some((r) => r.def.unbreakable);
+  return resolveQualities(w).some((r) => r.caps?.unbreakable);
 }
 
 /** L'arme est-elle une arme à feu (Poudre noire / Explosion) ? (remplace les regex /poudre|explos/i sur les qualités). */
 export function isFirearmQuality(w: QualityCarrier | undefined): boolean {
-  return resolveQualities(w).some((r) => r.def.firearm);
+  return resolveQualities(w).some((r) => r.caps?.firearm);
 }
 
 /** Ajustement de DR d'un Test RATÉ utilisant l'objet : Pratique +1, Peu Fiable -1 (LDB 60 l.59/88).
  *  Renvoie 0 si le test est RÉUSSI (la règle ne vise que les échecs). */
 export function craftTestDRAdjust(w: QualityCarrier | undefined, success: boolean): number {
   if (success) return 0;
-  return resolveQualities(w).reduce((s, r) => s + (r.def.testFailDR ?? 0), 0);
+  return rollModSum(w, 'testFail');
 }
 
 /** Somme des modificateurs de Sociabilité (Laid -10, LDB 60 l.85) des qualités du porteur — lus dans la DONNÉE
@@ -88,13 +135,13 @@ export function craftTestDRAdjust(w: QualityCarrier | undefined, success: boolea
 export function qualitySocMod(w: QualityCarrier | undefined): number {
   let d = 0;
   for (const r of resolveQualities(w))
-    for (const op of qualityByLabel.get(r.def.key)?.passive ?? []) if (op.op === 'testMod' && op.char === 'Soc') d += op.amount;
+    for (const op of passiveOf(r.id)) if (op.op === 'testMod' && op.char === 'Soc') d += op.amount;
   return d;
 }
 
 /** Indice d'une Arme d'équipe maniée en sous-effectif (toujours, faute d'équipe modélisée), ou 0. */
 function crewedSoloIndice(w: QualityCarrier | undefined): number {
-  return resolveQualities(w).find((r) => r.def.crewedTeam)?.indice ?? 0;
+  return resolveQualities(w).find((r) => r.caps?.crewedTeam)?.indice ?? 0;
 }
 
 /** DR cible du rechargement (Recharge Indice), DOUBLÉ pour une Arme d'équipe maniée seul
@@ -103,38 +150,27 @@ export function reloadDRTarget(w: (QualityCarrier & { reload?: number }) | undef
   return (w?.reload ?? 0) * (crewedSoloIndice(w) >= 2 ? 2 : 1);
 }
 
-/** ±DR au Test d'ATTAQUE avec l'arme (Imprécise -1, LDB 63 l.19) — réussi ou raté. Inclut le sous-
- *  effectif d'une Arme d'équipe d'Indice ≥ 3 (Imprécise, Aux Armes p.124). */
-export function attackDRAdjust(w: QualityCarrier | undefined): number {
-  return resolveQualities(w).reduce((s, r) => s + (r.def.attackDR ?? 0), 0) + (crewedSoloIndice(w) >= 3 ? -1 : 0);
-}
-
-/** +DR à TOUT Test de défense (Parade ET Esquive) contre l'arme de l'attaquant (Lente +1, LDB 63 l.26). */
-export function vsDefenseDRAdjust(attackerWeapon: QualityCarrier | undefined): number {
-  return resolveQualities(attackerWeapon).reduce((s, r) => s + (r.def.vsDefenseDR ?? 0), 0);
-}
-
 /** Rapide (LDB 62 l.320-321) : −10 à la PARADE contre une arme Rapide si l'arme de parade n'est
  *  pas Rapide elle-même. 0 sinon (l'Esquive et les autres Compétences défendent normalement). */
 export function rapideParryMod(attackerWeapon: QualityCarrier | undefined, parryWeapon: QualityCarrier | undefined): number {
-  if (!resolveQualities(attackerWeapon).some((r) => r.def.fastStrike)) return 0;
-  return resolveQualities(parryWeapon).some((r) => r.def.fastStrike) ? 0 : -10;
+  if (!resolveQualities(attackerWeapon).some((r) => r.caps?.fastStrike)) return 0;
+  return resolveQualities(parryWeapon).some((r) => r.caps?.fastStrike) ? 0 : -10;
 }
 
 /** Lente (LDB 63 l.25) : le porteur d'une arme Lente (active) frappe en dernier dans le Round. */
 export function strikesLast(weapons: QualityCarrier[] | undefined): boolean {
-  return (weapons ?? []).some((w) => resolveQualities(w).some((r) => r.def.slowStrike));
+  return (weapons ?? []).some((w) => resolveQualities(w).some((r) => r.caps?.slowStrike));
 }
 
 /** Rapide (LDB 62 l.318-319) : le porteur peut attaquer hors de l'ordre d'Initiative (pré-emption gratuite). */
 export function canStrikeFirst(weapons: QualityCarrier[] | undefined): boolean {
-  return (weapons ?? []).some((w) => resolveQualities(w).some((r) => r.def.fastStrike));
+  return (weapons ?? []).some((w) => resolveQualities(w).some((r) => r.caps?.fastStrike));
 }
 
 /** Dangereuse (LDB 63 l.13-14) : ce jet RATÉ avec cette arme inclut-il un 9 (dizaines ou unités) ?
  *  Une Arme d'équipe d'Indice ≥ 4 maniée en sous-effectif devient Dangereuse (Aux Armes p.124). */
 export function dangerousNine(w: QualityCarrier | undefined, roll: number, success: boolean): boolean {
-  const dangerous = resolveQualities(w).some((r) => r.def.fumbleOn9) || crewedSoloIndice(w) >= 4;
+  const dangerous = resolveQualities(w).some((r) => r.caps?.fumbleOn9) || crewedSoloIndice(w) >= 4;
   if (success || !dangerous) return false;
   return roll % 10 === 9 || Math.floor(roll / 10) % 10 === 9;
 }
@@ -142,14 +178,14 @@ export function dangerousNine(w: QualityCarrier | undefined, roll: number, succe
 /** Chargeur (Indice) avant rechargement complet : À Répétition (LDB 62 l.264) ou Salve (Aux Armes
  *  p.126) — l'arme tire Indice fois avant d'exiger un rechargement. undefined si l'arme n'en a pas. */
 export function magazineSize(w: QualityCarrier | undefined): number | undefined {
-  const r = resolveQualities(w).find((x) => x.def.magazine || x.def.salvo);
+  const r = resolveQualities(w).find((x) => x.caps?.magazine || x.caps?.salvo);
   return r ? r.indice ?? 1 : undefined;
 }
 
 /** Protectrice (Indice) : PA conférés à TOUTES les localisations quand on OPPOSE l'attaque avec
  *  cette arme (LDB 62 l.306). 0 si la qualité est absente. */
 export function protectriceAP(parryWeapon: QualityCarrier | undefined): number {
-  const r = resolveQualities(parryWeapon).find((x) => x.def.parryAP);
+  const r = resolveQualities(parryWeapon).find((x) => x.caps?.parryAP);
   return r ? r.indice ?? 1 : 0;
 }
 
@@ -157,24 +193,24 @@ export function protectriceAP(parryWeapon: QualityCarrier | undefined): number {
  *  Renvoie l'arme protectrice utilisable, ou undefined. */
 export function rangedOpposeWeapon(weapons: Weapon[] | undefined): Weapon | undefined {
   return (weapons ?? []).find((w) => {
-    const r = resolveQualities(w).find((x) => x.def.parryAP);
+    const r = resolveQualities(w).find((x) => x.caps?.parryAP);
     return r && (r.indice ?? 1) >= 2;
   });
 }
 
 /** Perturbante (LDB 62 l.275-276) : l'arme peut repousser au lieu de blesser. */
 export function canPushback(w: QualityCarrier | undefined): boolean {
-  return resolveQualities(w).some((r) => r.def.pushback);
+  return resolveQualities(w).some((r) => r.caps?.pushback);
 }
 
 /** Piège-lame (LDB 62 l.292-294) : l'arme peut piéger une lame sur un Critique défensif. */
 export function hasBladeTrap(w: QualityCarrier | undefined): boolean {
-  return resolveQualities(w).some((r) => r.def.bladeTrap);
+  return resolveQualities(w).some((r) => r.caps?.bladeTrap);
 }
 
 /** Arme MAGIQUE (qualité enchantée, ADE2) : ses attaques comptent comme magiques (Éthéré, LDB 85). */
 export function isMagicWeapon(w: QualityCarrier | undefined): boolean {
-  return resolveQualities(w).some((r) => r.def.magic);
+  return resolveQualities(w).some((r) => r.caps?.magic);
 }
 
 export interface DamageStepCtx {
@@ -192,22 +228,28 @@ export interface DamageStep {
   bonus: number;
 }
 
-/** Ajustement de Dégâts dû aux qualités : Dévastatrice (DR = max(DR, dé des unités)), Percutante
- *  (+ dé des unités) ; **annulés** si une qualité Inoffensive est présente. `extra` = qualités
- *  conférées hors arme (ex. par la Taille, LDB 85 l.295). Épuisante (LDB 63 l.16-17) : les Atouts
- *  de Dégâts DE L'ARME ne valent qu'en Charge (`ctx.charged`) — pas ceux conférés par la Taille. Pur. */
+/** Ajustement de Dégâts dû aux qualités (ops PASSIVES `weaponDamageMod`) : Dévastatrice (DR = max(DR, dé
+ *  des unités)), Percutante (+ dé des unités) ; **annulés** si une qualité Inoffensive est présente. `extra` =
+ *  qualités conférées hors arme (ex. par la Taille, LDB 85 l.295). Épuisante (`chargeGated`, LDB 63 l.16-17) :
+ *  les Atouts de Dégâts DE L'ARME ne valent qu'en Charge (`ctx.charged`) — pas ceux conférés par la Taille. Pur. */
 export function qualityDamageStep(w: QualityCarrier | undefined, ctx: DamageStepCtx, extra: string[] = []): DamageStep {
-  // Épuisante : hors Charge, Percutante/Dévastatrice portées par l'ARME sont inertes (LDB 63 l.16-17).
-  const tiring = resolveQualities(w).some((r) => r.def.chargeGatedDamageAtouts) && !ctx.charged;
-  const defs = tiring
-    ? resolveQualities(w).filter((r) => r.def.dmgDRMode !== 'maxUnits' && !r.def.damageBonusUnits)
-    : resolveQualities(w);
+  // Ops `weaponDamageMod` de l'ARME (id → passif). Épuisante : hors Charge, on retire les Atouts de Dégâts
+  // de l'arme (maxUnits / plusUnits) — pas ceux conférés par la Taille (`extra`).
+  const tiring = resolveQualities(w).some((r) => passiveOf(r.id).some((op) => op.op === 'weaponDamageMod' && op.chargeGated)) && !ctx.charged;
+  const armOps: Extract<GameOp, { op: 'weaponDamageMod' }>[] = [];
+  for (const r of resolveQualities(w))
+    for (const op of passiveOf(r.id))
+      if (op.op === 'weaponDamageMod' && !(tiring && (op.mode === 'maxUnits' || op.plusUnits))) armOps.push(op);
+  // Qualités conférées hors arme (Taille → Percutante, etc.) : non gatées par Épuisante.
+  const extraOps: Extract<GameOp, { op: 'weaponDamageMod' }>[] = [];
   for (const raw of extra) {
     const p = parseQuality(raw);
-    if (p) defs.push({ def: QUALITIES[p.key], indice: p.indice });
+    if (!p) continue;
+    for (const op of passiveOf(qualityIdOf(p.key))) if (op.op === 'weaponDamageMod') extraOps.push(op);
   }
-  if (defs.some((r) => r.def.negatesDamageAtouts)) return { dmgDR: ctx.effDR, bonus: 0 };
-  const dmgDR = defs.some((r) => r.def.dmgDRMode === 'maxUnits') ? Math.max(ctx.effDR, ctx.units) : ctx.effDR;
-  const bonus = defs.some((r) => r.def.damageBonusUnits) ? ctx.units : 0;
+  const ops = [...armOps, ...extraOps];
+  if (ops.some((op) => op.negateAtouts)) return { dmgDR: ctx.effDR, bonus: 0 };
+  const dmgDR = ops.some((op) => op.mode === 'maxUnits') ? Math.max(ctx.effDR, ctx.units) : ctx.effDR;
+  const bonus = ops.some((op) => op.plusUnits) ? ctx.units : 0;
   return { dmgDR, bonus };
 }

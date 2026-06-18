@@ -2389,6 +2389,11 @@ export const useGame = create<GameState>((set, get) => ({
       active.chargedThisTurn = true; // Charge → Atouts de Dégâts d'une arme Épuisante actifs (LDB 63 l.16-17) ; consommé en fin de tour
       set({ battle: { ...get().battle!, movementUsed: mountMovement(battle, active), action: null, preview: null, log: [...battle.log, ev('charge', `${active.name} charge ${target.name}${plan.adv ? ` (+${plan.adv} Avantage)` : ''}.`, active.id, target.id)] } });
       set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null, fromCharge: true, ...(option.freeKind ? { freeKind: option.freeKind, ...(option.weaponUid ? { weaponUid: option.weaponUid } : {}) } : {}) } });
+      // Ouvre la SÉQUENCE de combat (comme l'attaque normale/gratuite) : sans elle, le jet de Charge serait
+      // une modale d'arbitre `attack` autonome et ses conséquences (Critique/Maladresse) déborderaient dans
+      // une popin « Conséquences » séparée — d'où l'entrée `attack` qu'on peut désormais retirer (tous les
+      // chemins d'attaque ouvrent une cascade ; cleave/dual réutilisent celle-ci).
+      startCascade(get, set, { title: 'Attaque', icon: '⚔️', purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: active.id }] });
       return;
     }
     if (plan.kind === 'moveAttack') {
@@ -2555,6 +2560,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   battleDefendTotal: () => {
+    if (!rule('combat-defensive-stance')) return; // règle optionnelle : Action « Sur la Défensive » désactivée (LDB 13 l.118)
     if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
     const battle = get().battle;
     if (!battle || battle.over || battle.acted) return;

@@ -292,6 +292,38 @@ export interface ManeuverDef {
    *  multi-cible, état onHit applicable). Défaut 1 ; 0 = jamais auto-choisie (reste manuelle). */
   priority?: number;
 }
+/** Drapeaux de CAPACITÉ IRRÉDUCTIBLES d'un trait (LDB 85) — décisions d'IA/psychologie, règles de
+ *  résolution de combat, capacités de construction/déplacement/vision : NI un modificateur (`passive`)
+ *  NI un effet déclenché (`effects`), mais une règle que le moteur INTERROGE. Édité au Codex. Le
+ *  seuil/type éventuel (Démoniaque 8+, Immunité (Poison)) vient de l'INDICE/arg de l'INSTANCE, pas d'ici. */
+export interface TraitCapabilities {
+  // Construction / spawn
+  bonusWoundsBE?: boolean;
+  mutationAtSpawn?: 'physique' | 'mentale';
+  swarm?: boolean;
+  // Résolution de combat (seuil/type éventuel depuis l'instance)
+  wardSave?: boolean;
+  magicResistance?: boolean;
+  damageImmunity?: boolean;
+  banishedAtZero?: boolean;
+  championDefense?: boolean;
+  unstable?: boolean;
+  painless?: boolean;
+  // Psychologie / IA
+  psychImmuneIfAhead?: boolean;
+  mindless?: boolean;
+  bestial?: boolean;
+  coldBlooded?: boolean;
+  stupid?: boolean;
+  rage?: boolean;
+  territorial?: boolean;
+  // Déplacement / vision
+  fly?: boolean;
+  leap?: boolean;
+  stride?: boolean;
+  seesInDark?: boolean;
+  perturbingAura?: boolean;
+}
 /** Trait de créature (LDB 85) : libellé canonique + desc VERBATIM (affichée à l'inspecteur). */
 export interface TraitData {
   /** Identifiant STABLE (slug du libellé) — clé d'instance/lookup, indépendant de la langue. */
@@ -318,6 +350,47 @@ export interface TraitData {
    *  fusionnée sur le rig quand le trait est présent (cf. `combatantVisuals`). Même fragment éditable
    *  (`AppearanceField`) que les créatures/mutations. */
   appearance?: EntityAppearance;
+  /** Drapeaux de CAPACITÉ irréductibles (décisions IA/psy, résolution, build/déplacement/vision) —
+   *  migrés des `defs/` mécaniques, lus PAR ID par `engine/traits/dispatch`. Édité au Codex. */
+  capabilities?: TraitCapabilities;
+}
+/** Drapeaux/marqueurs de CAPACITÉ IRRÉDUCTIBLES d'une qualité d'arme/armure/objet (LDB 62-63) — règles
+ *  que le moteur INTERROGE (résolution de combat, économie d'artisanat) : NI un modificateur (`passive`)
+ *  NI un effet déclenché (`effects`). Migrés des `defs/` mécaniques, lus PAR ID par `engine/qualities/dispatch`.
+ *  Les INDICES (Salve N, Protectrice N, Arme d'équipe N…) restent lus du RUNTIME string (`parseQuality().indice`)
+ *  — la capability n'est qu'un marqueur de PRÉSENCE, jamais le porteur de l'Indice. Édité au Codex. */
+export interface QualityCapabilities {
+  // Résolution de combat (mêlée)
+  fastStrike?: boolean;   // Rapide : pré-emption d'initiative + −10 parade adverse non-Rapide
+  slowStrike?: boolean;   // Lente : frappe en dernier
+  fumbleOn9?: boolean;    // Dangereuse : Maladresse sur tout Test raté incluant un 9
+  pushback?: boolean;     // Perturbante : repousse au lieu de blesser
+  bladeTrap?: boolean;    // Piège-lame : piéger/briser une lame sur un Critique défensif
+  damagesArmour?: boolean;// Taille : endommage l'armure/le bouclier frappé
+  /** Empaleuse n'est PAS ici (op passive `critOnRoll`) ; Taillade ajoute un État sur Critique. */
+  onCritCondition?: string;
+  /** Déstabilisante : dépense d'Avantages + Test opposé → renversement (forme structurée, choix joueur en combat). */
+  onHitKnockdown?: { advantageCost: number; char: import('../engine/types').CharKey; skill?: string; condition: string };
+  // Armes à feu / chargeurs
+  firearm?: boolean;            // Poudre noire / Explosion : Incident de Tir + terreur (Nerveux)
+  canFireWhileEngaged?: boolean;// Pistolet : tir au contact
+  magazine?: boolean;           // À Répétition : chargeur (Indice)
+  salvo?: boolean;              // Salve : chargeur (Indice)
+  areaFire?: boolean;           // Tir de zone : nuage de projectiles (Indice)
+  crewedTeam?: boolean;         // Arme d'équipe : sous-effectif (Indice)
+  parryAP?: boolean;            // Protectrice : Indice PA en opposant (Indice)
+  // Objet / artisanat (LDB 60)
+  encDelta?: number;            // Léger −1 / Volumineux +1 Encombrement
+  // Armure (LDB 63)
+  layerable?: boolean;          // Flexible : superposition sous une couche non Flexible
+  critImmuneOdd?: boolean;      // Impénétrable : Critiques sur jet impair ignorés
+  apIgnoredOnEven?: boolean;    // Partielle : PA ignorés sur jet pair ou Critique
+  apIgnoredOnImpaleCrit?: boolean; // Points faibles : PA ignorés sur Critique Empaleuse
+  // Marqueurs
+  unbreakable?: boolean;        // Incassable : insensible aux dégâts/destruction
+  magic?: boolean;              // Magique : attaques magiques (blesse l'Éthéré)
+  /** Préséance : cette qualité l'emporte sur les `beats` (ids) si toutes deux présentes (Imprécise > Précise, Lente > Rapide). */
+  beats?: string[];
 }
 /** Atout/Défaut d'arme (LDB 62-63) : libellé + desc VERBATIM + effets déclenchés authorés (mêmes
  *  `TriggeredEffect` que les Traits — un Atout « à la touche : 1d10 + Empêtré » s'édite au Codex). */
@@ -329,9 +402,13 @@ export interface QualityData {
   subType: string | null;
   desc: string;
   effects?: import('../state/flow').TriggeredEffect[];
-  /** Modificateurs PASSIFS continus (objet Laid : −10 aux Tests de Soc) en `GameOp[]` — MÊME vocab/éditeur
-   *  (`GameOpEditor`) que les traits et les sorts ; lus par `qualitySocMod`/le collecteur passif. */
+  /** Modificateurs PASSIFS continus (objet Laid : −10 aux Tests de Soc ; PASSIFS d'arme : weaponRollMod/
+   *  weaponDamageMod/armourPierce/critOnRoll) en `GameOp[]` — MÊME vocab/éditeur (`GameOpEditor`) que les
+   *  traits et les sorts ; lus par `engine/qualities/dispatch` (par id) et le collecteur passif. */
   passive?: import('../engine/ops').GameOp[];
+  /** Drapeaux/marqueurs de CAPACITÉ irréductibles (résolution combat, artisanat) — migrés des `defs/`,
+   *  lus PAR ID par `engine/qualities/dispatch`. Édité au Codex. */
+  capabilities?: QualityCapabilities;
 }
 /** Domaine de magie (Couleur, LDB 48) : ses ATTRIBUTS éditables au Codex — riders « à la touche »
  *  (`onHitEffects`, gatés par les Conditions Flow `relation`/`has`), mitigation de Projectile
@@ -488,6 +565,8 @@ export const findTraitById = (id: string): TraitData | undefined => traitById.ge
 export const qualities = qualitiesJson as QualityData[];
 /** Index des Atouts/Défauts par libellé — lecture des `effects` déclenchés au runtime (triggeredEffects). */
 export const qualityByLabel: Map<string, QualityData> = new Map(qualities.map((q) => [q.label, q]));
+/** Index des Atouts/Défauts par `id` STABLE (slug) — lookup runtime indépendant de la langue (dispatch). */
+export const qualityById: Map<string, QualityData> = new Map(qualities.map((q) => [q.id, q]));
 /** Mutations (entités) + Tables de Corruption (plages d100 → réf), DÉCOUPLÉES (cf. data/mutations.ts) —
  *  app-owned éditables au Codex. Le runtime du tirage (`rollMutation`) vit dans `mutations.ts`. */
 export const mutations = mutationsJson as MutationData[];
@@ -693,10 +772,9 @@ const TRAPPING_BY_ID = new Map(trappings.map((t) => [t.id, t]));
 export function findTrappingById(id: string): TrappingData | undefined {
   return TRAPPING_BY_ID.get(id);
 }
-const QUALITY_BY_ID = new Map(qualities.map((q) => [q.id, q]));
 /** Résout une Qualité par son `id` STABLE. */
 export function findQualityById(id: string): QualityData | undefined {
-  return QUALITY_BY_ID.get(id);
+  return qualityById.get(id);
 }
 const SPELL_BY_ID = new Map(spells.map((s) => [s.id, s]));
 /** Résout un Sort par son `id` STABLE. */

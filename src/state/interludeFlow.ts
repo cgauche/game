@@ -19,13 +19,12 @@ import { fromBrass, toBrass, formatMoney } from '../engine/money';
 import { itemFromTrappingById, recomputeLoadout } from '../engine/items';
 import { sleepParty } from './restFlow';
 import { craftTarget, craftSpecOf, metierOf, statusIncome, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost, type PriceTier, type Availability } from '../engine/activities';
-import { QUALITIES } from '../engine/qualities/registry';
 import { testValue } from '../engine/skills';
 import { rule } from '../engine/policy';
 import { effectiveChar } from '../engine/characteristics';
 import { buyTalent as engineBuyTalent, talentCost } from '../engine/advancement';
 import { applyTalentAcquisition, fortuneMax, resolveMax, heroMaxWounds } from '../engine/talentEffects';
-import { findCareerById, levelsForCareer, findTrappingById, findTalent, findSkillById, skillInstanceLabel, advancementLabel, qualityRefLabel } from '../data';
+import { findCareerById, levelsForCareer, findTrappingById, findTalent, findSkillById, skillInstanceLabel, advancementLabel, qualityRefLabel, qualities } from '../data';
 import { CHAR_BY_LABEL, CHAR_LABELS, type CharKey, type Combatant, type Difficulty } from '../engine/types';
 import type { PendingBase } from './rollFlow';
 
@@ -325,10 +324,10 @@ export function openIdentify(get: Get, set: Set, heroId: string, itemUid: string
  *  une/au moins deux Particularité(s) qu'il n'a pas réellement ») : Atouts plausibles du registre,
  *  hors qualités réellement portées par l'objet. */
 function falseQualities(item: { kind: string; qualities: string[] }, count: number): string[] {
-  const pool = Object.values(QUALITIES)
+  const pool = qualities
     .filter((q) => q.type === 'Atout')
     .filter((q) => (item.kind === 'armor' ? q.subType !== 'Arme' : q.subType !== 'Armure'))
-    .map((q) => q.key)
+    .map((q) => q.label)
     .filter((k) => !item.qualities.includes(k));
   const out: string[] = [];
   while (out.length < count && pool.length) {

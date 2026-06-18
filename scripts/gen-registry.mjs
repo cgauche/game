@@ -148,24 +148,6 @@ export const REGISTRIES = [
     typeFrom: './types',
   },
   {
-    // Qualités d'objet (arme/armure/artisanat) : 1 qualité = 1 fichier defs/ (slug ASCII, clé FR dans la def).
-    dir: 'src/engine/qualities/defs',
-    out: 'src/engine/qualities/_registry.generated.ts',
-    exportName: 'quality',
-    arrayName: 'QUALITY_DEFS',
-    type: 'QualityDef',
-    typeFrom: './types',
-  },
-  {
-    // Traits de créature (LDB 85) : 1 trait = 1 fichier defs/ (slug ASCII, clé FR dans la def).
-    dir: 'src/engine/traits/defs',
-    out: 'src/engine/traits/_registry.generated.ts',
-    exportName: 'trait',
-    arrayName: 'TRAIT_DEFS',
-    type: 'TraitDef',
-    typeFrom: './types',
-  },
-  {
     // Sons (assets CC0 Kenney dans public/audio) : 1 son (avec variantes) = 1 fichier defs/.
     dir: 'src/audio/defs',
     out: 'src/audio/_registry.generated.ts',
