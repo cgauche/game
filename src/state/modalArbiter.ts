@@ -31,7 +31,9 @@ export const MODAL_DEFS = [
   { key: 'trample', when: (s) => !!s.pendingTrample, owner: (s) => s.pendingTrample?.attackerId },
   { key: 'maneuver', when: (s) => !!s.pendingManeuver, owner: (s) => s.pendingManeuver?.attackerId },
   { key: 'reveal', when: (s) => (s.pendingReveals?.length ?? 0) > 0, owner: (s) => s.pendingReveals?.[0]?.subjectId }, // sans sujet (entretien) → hôte
-  { key: 'defense', when: (s) => !!s.pendingDefense, owner: (s) => s.pendingDefense?.defenderId },
+  // (La Défense n'a PLUS d'entrée propre : c'est une étape `jet:'defense'` de la cascade `combat`,
+  //  rendue par `cascade` ci-dessous — `pendingDefense` coexiste comme porteur de données. La défense
+  //  ET son Critique/Maladresse vivent dans UNE seule fenêtre. Owner = `actorId` (le défenseur) de l'étape.)
   // (La Psychologie n'a PLUS d'entrée propre : EN COMBAT comme À LA RENCONTRE, c'est une cascade à N
   //  étapes — une par héros — rendue par `cascade`. Combat : Traits/Terreur au DÉBUT de Round, Peur à la
   //  FIN (openRoundStartPsych/openRoundEndPsych). Rencontre : openEncounterPsych à l'entrée de scène.)

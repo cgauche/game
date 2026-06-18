@@ -4,6 +4,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollFlowShell } from './RollFlowShell';
 import { useAttackJetProps } from './jetProps/useAttackJetProps';
+import { useDefenseJetProps } from './jetProps/useDefenseJetProps';
 import { useTestJetProps } from './jetProps/useTestJetProps';
 import { useExtendedTestJetProps } from './jetProps/useExtendedTestJetProps';
 import { DisengageModal } from './DisengageModal';
@@ -47,6 +48,7 @@ export function CascadeModal() {
   const resolveAll = useGame((s) => s.cascadeResolveAll); // « Tout lancer » → bilan
   const finish = useGame((s) => s.cascadeFinish); // « Terminer » du bilan
   const attackProps = useAttackJetProps(); // étape-jet d'attaque : rendue dans CETTE coquille (une fenêtre)
+  const defenseProps = useDefenseJetProps(); // étape-jet de défense réactive : défense + son Critique dans UNE fenêtre
   const testProps = useTestJetProps(); // étape-jet de Test de scène : même coquille, une seule fenêtre
   const extendedProps = useExtendedTestJetProps(); // étape-jet de Test étendu (Rounds cumulés)
 
@@ -115,6 +117,9 @@ export function CascadeModal() {
   // ÉTAPE-JET de combat : le jet (attaque) est rendu via son hook de props dans la MÊME coquille
   // restée montée → le jet et ses conséquences vivent dans UNE seule fenêtre, jusqu'à « Terminer ».
   if (cur.jet === 'attack') return attackProps ? <RollFlowShell {...attackProps} /> : null;
+  // ÉTAPE-JET de défense réactive : rendue via son hook dans la MÊME coquille → la défense ET son
+  // Critique/Maladresse vivent dans UNE seule fenêtre (`defenseConfirm`/`defenseCancel` enchaînent le curseur).
+  if (cur.jet === 'defense') return defenseProps ? <RollFlowShell {...defenseProps} /> : null;
   // ÉTAPE-JET de Test de scène : rendue via son hook dans la MÊME coquille (`resolveTest` ferme la cascade).
   if (cur.jet === 'test') return testProps ? <RollFlowShell {...testProps} /> : null;
   // ÉTAPE-JET de Test ÉTENDU : Rounds cumulés via `extendedTestNext` (ferme la cascade à la réussite).

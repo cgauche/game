@@ -5,7 +5,6 @@ import type { JSX } from 'react';
 import { RollModal } from './RollModal';
 import { ReloadModal } from './ReloadModal';
 import { StateRecoveryModal } from './StateRecoveryModal';
-import { DefenseModal } from './DefenseModal';
 import { RenounceModal } from './RenounceModal';
 import { MountTargetModal } from './MountTargetModal';
 import { FateSaveModal } from './FateSaveModal';
@@ -33,7 +32,7 @@ import { pickActiveModalKey, type ModalKey } from '../state/modalArbiter';
 
 const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
   fateSave: FateSaveModal, fumble: FumbleModal, renounce: RenounceModal,
-  trample: TrampleModal, maneuver: ManeuverModal, reveal: RevealModal, defense: DefenseModal,
+  trample: TrampleModal, maneuver: ManeuverModal, reveal: RevealModal,
   mountTarget: MountTargetModal, frenzy: FrenzyModal, approach: ApproachModal, run: RunModal, focus: FocusModal,
   medic: MedicModal, rest: RestModal, heal: HealModal, cascade: CascadeModal, reload: ReloadModal, stateRecovery: StateRecoveryModal,
   attack: RollModal, corruption: CorruptionModal, activity: ActivityModal,

@@ -3257,7 +3257,11 @@ export const useGame = create<GameState>((set, get) => ({
     if (attacker && !pd.free) aiFrenzyAttack(get, set, attacker);
     // Attaques gratuites de créature : enchaîne la file (peut rouvrir une modale → ne pas reprendre).
     if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return;
-    resumeEnemyTurn(get, set);
+    // « une situation = une modale » : la défense est l'étape de SA cascade combat → enchaîner le curseur
+    // (les conséquences empilées — Critique/Maladresse — s'affichent inline ; la clôture reprend l'IA).
+    const seq = get().pendingCascade;
+    if (seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'defense' && !get().pendingDefense) get().cascadeNext();
+    else resumeEnemyTurn(get, set);
   },
   defenseCancel: () => {
     // « Subir » : défense passive (aucune réaction), puis reprise du tour de l'IA.
@@ -3279,7 +3283,10 @@ export const useGame = create<GameState>((set, get) => ({
     if (attacker && !pd.free) aiFrenzyAttack(get, set, attacker);
     // Attaques gratuites de créature : enchaîne la file (peut rouvrir une modale → ne pas reprendre).
     if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return;
-    resumeEnemyTurn(get, set);
+    // « une situation = une modale » : la défense est l'étape de SA cascade combat → enchaîner le curseur.
+    const seq = get().pendingCascade;
+    if (seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'defense' && !get().pendingDefense) get().cascadeNext();
+    else resumeEnemyTurn(get, set);
   },
   renounceResolve: (renounce: boolean) => resolveRenounce(get, set, renounce),
 

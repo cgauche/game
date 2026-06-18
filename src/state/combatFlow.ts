@@ -1607,6 +1607,7 @@ export function maybeOpenDefense(
         ...(free ? { free: true, freeKind: free.kind, prevActed: free.prevActed } : {}),
       },
     });
+    startCascade(get, set, { title: 'Défense', icon: '🛡️', purpose: 'combat', steps: [{ id: 'defense-jet', kind: 'defenseJet', jet: 'defense', actorId: target.id }] });
     return true;
   }
   if (weapon?.type !== 'melee') return false;
@@ -1632,6 +1633,7 @@ export function maybeOpenDefense(
       ...(free ? { free: true, freeKind: free.kind, prevActed: free.prevActed } : {}),
     },
   });
+  startCascade(get, set, { title: 'Défense', icon: '🛡️', purpose: 'combat', steps: [{ id: 'defense-jet', kind: 'defenseJet', jet: 'defense', actorId: target.id }] });
   return true;
 }
 
