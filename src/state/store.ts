@@ -23,7 +23,7 @@ import {
   castSightBlocked, spellSightOf, castZoneSpell, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone,
   counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition,
   openRoundStartPsych, displaceSmaller, applySurprise,
-  displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget,
+  displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative,
 } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 import { EMPTY_FLOW, flowEffects } from './flow';
@@ -79,13 +79,13 @@ import { gainAdvantage } from '../engine/advantage';
 import { rule } from '../engine/policy';
 import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, hasTalent, zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
 import { rollTest, resolveOpposed, evaluateTest } from '../engine/tests';
-import { effectiveChar, bonus, baseWithTraits } from '../engine/characteristics';
+import { effectiveChar, bonus } from '../engine/characteristics';
 import { isFrenzyCapable, isPsychImmune, spendResolveForPsychImmunity } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, compatibleAmmo, loadoutSetActive } from '../engine/items';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import { attackModesFor } from '../engine/combatFeatures/dispatch';
 import { craftTestDRAdjust, hasQuality, isUnbreakable, magazineSize, canPushback, strikesLast, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
-import { talentInitiativeBonus, talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, runMovementBonus } from '../engine/combatFeatures/dispatch';
+import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, runMovementBonus } from '../engine/combatFeatures/dispatch';
 import { runMultiplier } from '../engine/traits/dispatch';
 import { itemUse, applyItemUse } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
@@ -1438,9 +1438,9 @@ export const useGame = create<GameState>((set, get) => ({
     // Surprise (LDB 13) : si l'encounter le déclare, le camp embusqué teste Perception vs Discrétion.
     // `noSurprise` : le voyage annule l'embuscade quand le groupe « les voit venir » (Perception réussie).
     const surpriseLines = enc.surprise && !opts?.noSurprise ? applySurprise(all, enc.surprise) : [];
-    // Initiative : on fixe l'Initiative de chaque combattant (I + 1d10 simplifié).
-    // Combat instinctif (LDB 10) : +10 × niveau à l'Initiative de combat.
-    for (const c of all) c.initiative = baseWithTraits(c, 'I') + battleRng().int(1, 10) + talentInitiativeBonus(c);
+    // Initiative : on fixe l'Initiative de chaque combattant (point nommé `rollInitiative` — seam de la
+    // règle « méthode d'Initiative »). Combat instinctif (LDB 10) : +10 × niveau, via talentInitiativeBonus.
+    for (const c of all) c.initiative = rollInitiative(c, battleRng());
     // Effrayant (LDB 10) : le porteur inspire Peur (Indice = niveau) — comme un statbloc « Peur N ».
     for (const c of all) {
       const fear = talentFearIndice(c);

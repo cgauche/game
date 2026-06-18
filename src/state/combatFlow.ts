@@ -162,6 +162,9 @@ export * from './combatEffects';
 import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, runSpellFlow } from './combatEffects';
 // --- Manœuvres de créature (énumération + résolveurs roll/apply) extraites → combatManeuvers.ts (baril) ---
 export * from './combatManeuvers';
+// --- Refonte par coutures : registre de hooks de cycle de vie + mise en place (barils, modules FEUILLES) ---
+export * from './combatHooks';
+export * from './combatSetup';
 import {
   emitCreatureAttackAnim, trampleTarget, bestDefenseMode,
   rollManeuverAttacker, maneuverAttackerDifficulty, resolveManeuver,
