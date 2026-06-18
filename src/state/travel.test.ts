@@ -2,7 +2,7 @@
  * #T2 Voyage — flux store : trajets sur la carte du monde (temps, rations, paiement, péripéties
  * d'auteur, interruption/reprise). RAW : section « Voyage » du LDB (`51 - Magie du Chaos.md`).
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
 import { emptyScene, Scene } from './scene';
@@ -11,6 +11,7 @@ import { WorldMap } from './worldMap';
 import { CAMPAIGN_START } from '../engine/clock';
 import { toBrass } from '../engine/money';
 import { rationCount } from '../engine/provisions';
+import { setRule, resetRule } from '../engine/policy';
 import type { Combatant, ItemInstance } from '../engine/types';
 
 const ration = (uid: string): ItemInstance => ({ uid, name: 'Ration', kind: 'misc', qualities: [], enc: 0, equipped: false });
@@ -327,5 +328,81 @@ describe('récapitulatif de voyage (audit M4) — modale à l’arrivée/interru
     useGame.getState().startTravel('r1', 'pied');
     expect(useGame.getState().travelRecap?.status).toBe('stalled');
     expect(useGame.getState().travelPlan?.interrupted).toBe(true);
+  });
+});
+
+/**
+ * Sous-système OPTIONNEL « Voyage par Étapes » (EDOC ch.5). Défaut OFF = voyage jour-par-jour
+ * INCHANGÉ (aucune ligne de Météo/Étape) ; ON = jet de Météo par jour, Approvisionnement et
+ * Exposition de fin d'Étape optionnels.
+ */
+describe('Voyage par Étapes (EDOC ch.5, règle optionnelle)', () => {
+  afterEach(() => {
+    resetRule('travel-etapes');
+    resetRule('travel-etapes-count-bonus');
+    resetRule('travel-attraper-froid');
+    resetRule('travel-forage');
+  });
+
+  it('OFF (défaut) : voyage INCHANGÉ — aucune ligne de Météo/Étape, arrivée identique au chemin de base', () => {
+    setup(map({ km: 12, perilDie: 0 }));
+    const t0 = useGame.getState().gameTime;
+    useGame.getState().startTravel('r1', 'pied');
+    const st = useGame.getState();
+    // Comportement de base : arrive le jour même (12 km à M4 = 3 h), comme le test de référence.
+    expect(st.scene?.id).toBe('lieu-b-scene');
+    expect(st.gameTime - t0).toBe(180);
+    expect(st.journal.some((l) => l.includes('Arrivée à Bourg B'))).toBe(true);
+    // Aucune trace du sous-système d'Étapes (la règle est éteinte → chemin court-circuité).
+    expect(st.journal.some((l) => l.includes("Météo de l'Étape"))).toBe(false);
+    expect(st.journal.some((l) => l.includes('Approvisionnement'))).toBe(false);
+    expect(st.journal.some((l) => l.includes("Exposition de fin d'Étape"))).toBe(false);
+  });
+
+  it('ON : un jet de Météo est journalisé pour la journée de route', () => {
+    setRule('travel-etapes', true);
+    setup(map({ km: 12, perilDie: 0 }));
+    useGame.getState().startTravel('r1', 'pied');
+    const st = useGame.getState();
+    expect(st.scene?.id).toBe('lieu-b-scene'); // arrive toujours (l'enrichissement ne bloque pas la route)
+    expect(st.journal.some((l) => l.includes("Météo de l'Étape"))).toBe(true);
+  });
+
+  it('ON sans les sous-options : pas d’Approvisionnement ni d’Exposition (toggles enfants éteints)', () => {
+    setRule('travel-etapes', true);
+    setup(map({ km: 12, perilDie: 0 }));
+    useGame.getState().startTravel('r1', 'pied');
+    const st = useGame.getState();
+    expect(st.journal.some((l) => l.includes('Approvisionnement'))).toBe(false);
+    expect(st.journal.some((l) => l.includes("Exposition de fin d'Étape"))).toBe(false);
+  });
+
+  it('ON + travel-forage : l’Approvisionnement (Survie en extérieur) est tenté et journalisé', () => {
+    setRule('travel-etapes', true);
+    setRule('travel-forage', true);
+    // Héros avec Survie en extérieur pour que partyBest trouve un testeur.
+    const h = hero({ items: [], skills: [{ skillId: 'survie-en-exterieur', advances: 20 } as any] });
+    setup(map({ km: 12, perilDie: 0 }), [h]);
+    useGame.getState().startTravel('r1', 'pied');
+    const st = useGame.getState();
+    expect(st.journal.some((l) => l.includes('Approvisionnement'))).toBe(true);
+  });
+
+  it('ON + travel-attraper-froid : un Test d’Exposition de fin d’Étape est tenté (héros sans manteau)', () => {
+    setRule('travel-etapes', true);
+    setRule('travel-attraper-froid', true);
+    // Hiver garantit pluie/neige/blizzard fréquents ; on balaie quelques graines pour en obtenir un
+    // (la météo est seedée — au moins une graine produit des intempéries imposant un Test).
+    let exposed = false;
+    for (let seed = 1; seed <= 20 && !exposed; seed++) {
+      seedBattleRng(seed);
+      // Mois d'hiver : Ulriczeit → saison froide, pas de temps sec.
+      const winter = CAMPAIGN_START + 0; // la date par défaut (fin Jahrdrung) suffit : printemps a aussi pluie/neige
+      setup(map({ km: 12, perilDie: 0 }));
+      useGame.setState({ gameTime: winter });
+      useGame.getState().startTravel('r1', 'pied');
+      if (useGame.getState().journal.some((l) => l.includes("Exposition de fin d'Étape"))) exposed = true;
+    }
+    expect(exposed).toBe(true);
   });
 });

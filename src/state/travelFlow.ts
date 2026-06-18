@@ -36,6 +36,15 @@ import { partyBest } from '../engine/skills';
 import { addCondition, removeCondition, stacks } from '../engine/conditions';
 import { subtract as moneySub, canAfford, formatMoney } from '../engine/money';
 import { d10, d100 } from '../engine/dice';
+import { rule } from '../engine/policy';
+import { toDate } from '../engine/clock';
+import { testValue } from '../engine/skills';
+import {
+  seasonOfMonth, rollStageWeather, stageExposureDifficulty, isColdSeason,
+  pleinAirModifier, forageWeatherModifier, forageYield, WEATHER_LABEL, type Weather, type Season,
+} from '../engine/travelStages';
+import { hasCoat, partyHasTent, applyExposureFailure, isWeatherWarded } from '../engine/exposure';
+import { rationCount } from '../engine/provisions';
 
 import type { Get, Set } from './flowTypes';
 
@@ -246,6 +255,13 @@ function runTravelDays(get: Get, set: Set): void {
       log(get, set, lines);
     };
 
+    // Sous-système OPTIONNEL « Voyage par Étapes » (EDOC ch.5, parent `travel-etapes`). Quand il est
+    // ÉTEINT (défaut), ce bloc est entièrement court-circuité → le chemin jour-par-jour du LdB reste
+    // BYTE-IDENTIQUE. Quand il est allumé, chaque journée de route EST une Étape : jet de Météo
+    // (l.42), puis Approvisionnement (l.108, si `travel-forage`) et Exposition de fin d'Étape
+    // (l.73, si `travel-attraper-froid`). L'ordre RAW (l.10) est Météo → activités → péripéties.
+    if (rule('travel-etapes')) resolveStage(get, set, recapDay);
+
     // Péripéties du jour (d'auteur puis table d10 RAW). Peut interrompre le voyage — une
     // EMBUSCADE est alors DIFFÉRÉE derrière le récit (`recap.then`) : le joueur lit d'abord
     // ce qui lui arrive, le combat démarre à l'acquittement du recap.
@@ -362,6 +378,91 @@ function resolvePerils(get: Get, set: Set, route: MapRoute, destLabel: string, d
     }
   }
   return false;
+}
+
+/** Saison courante (table de Météo EDOC ch.5 l.44) depuis l'horloge du jeu. */
+function currentSeason(get: Get): Season {
+  return seasonOfMonth(toDate(get().gameTime).month);
+}
+
+/**
+ * Résout UNE Étape de voyage (EDOC ch.5) — appelée par jour de route quand `travel-etapes` est on.
+ * Ordre RAW (l.10) : jet de Météo → activités (Approvisionnement, l.108) → Exposition de fin
+ * d'Étape (option « Attraper Froid », l.73). Écrit dans le journal ET le recap du jour (mêmes lignes).
+ * Mute le groupe (rations gagnées par l'Approvisionnement, pénalités/Blessures d'Exposition).
+ */
+function resolveStage(get: Get, set: Set, day: TravelRecapDay): void {
+  const season = currentSeason(get);
+  const tell = (lines: string[]) => { log(get, set, lines); day.lines.push(...lines); };
+
+  // 1. Jet de Météo de l'Étape (l.42 : « au début de chaque étape »).
+  const w = rollStageWeather(battleRng(), season);
+  const weather: Weather = w.weather;
+  tell([`Météo de l'Étape (🎲 ${w.roll}) : ${WEATHER_LABEL[weather]}.`]);
+
+  const party = get().party;
+  const livingHeroes = party.filter((h) => !h.dead && !h.outOfRencontre);
+
+  // 2. Activité d'Approvisionnement (l.108) — UNIQUEMENT si `travel-forage`. Un Test de Survie en
+  // extérieur du meilleur du groupe (LDB 09 l.565, « Trouver de la nourriture et des herbes ») :
+  // chaque DR procure une ration de plus (l.568). Modifié par temps sec (-10, l.56).
+  if (rule('travel-forage') && livingHeroes.length) {
+    const best = partyBest(party, 'Survie en extérieur');
+    if (best) {
+      const mod = forageWeatherModifier(weather);
+      const t = rollTest(best.value, 'intermediaire', battleRng(), mod);
+      const fed = t.success ? forageYield(t.sl, 'recherche') : 0;
+      tell([`${best.actor.name} — Approvisionnement (Survie en extérieur${mod ? ` ${mod}` : ''}) : 🎲 ${t.roll}/${t.target} → ${t.success ? `nourriture pour ${fed} personne(s).` : 'ÉCHEC, rien à se mettre sous la dent.'}`]);
+      day.entries?.push({ actorId: best.actor.id, icon: '🍖', label: 'Approvisionnement', d: testDetail('Survie en extérieur', best.value + mod, t), text: t.success ? `${fed} ration(s)` : 'bredouille', tone: t.success ? 'ok' : 'bad' });
+      // Les rations trouvées sont distribuées aux héros qui en manquent (au plus 1 ration/jour/personne).
+      if (fed > 0) {
+        let remaining = fed;
+        const lines: string[] = [];
+        for (const h of livingHeroes) {
+          if (remaining <= 0) break;
+          if (rationCount(h) >= 1) continue; // déjà de quoi manger ce jour-là
+          h.items = [...(h.items ?? []), { uid: `forage-${h.id}-${get().gameTime}`, name: 'Ration', kind: 'misc', qualities: [], enc: 0, equipped: false }];
+          remaining -= 1;
+          lines.push(`${h.name} reçoit une ration trouvée en chemin.`);
+        }
+        if (lines.length) { set({ party: [...get().party] }); tell(lines); }
+      }
+    }
+  }
+
+  // 3. Exposition de fin d'Étape — option « Attraper Froid » (l.73), UNIQUEMENT si
+  // `travel-attraper-froid`. Réutilise le mécanisme de FROID EXISTANT (`applyExposureFailure`,
+  // engine/exposure.ts — escalade cumulative l.415 : 1ᵉʳ échec −10 CT/Ag/Dex, 2ᵉ −10 le reste, 3ᵉ+
+  // Blessures). Un SEUL Test de Résistance par Étape (l.73), dont la difficulté (Complexe −10 /
+  // Difficile −20 selon manteau/tente) vient de `stageExposureDifficulty`. On roule le Test ICI (pas
+  // via `exposureNight`) pour ne PAS cumuler le malus de manteau de la version LdB avec celui d'EDOC.
+  if (rule('travel-attraper-froid') && livingHeroes.length) {
+    const tent = partyHasTent(party);
+    const lines: string[] = [];
+    let anyExposed = false;
+    for (const h of livingHeroes) {
+      const diff = stageExposureDifficulty(weather, hasCoat(h), tent);
+      if (!diff) continue; // bien équipé sous pluie/neige normale, ou beau temps → aucun Test
+      if (isWeatherWarded(h)) { lines.push(`${h.name} ignore le froid et les intempéries (protection magique).`); anyExposed = true; continue; }
+      const resVal = testValue(h, 'Résistance', 'E');
+      const t = rollTest(resVal, diff, battleRng()); // Test de Résistance de fin d'Étape (l.73)
+      anyExposed = true;
+      lines.push(`${h.name} — Exposition de fin d'Étape (${WEATHER_LABEL[weather]}) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'tient le coup.' : 'transi par le froid.'}`);
+      if (!t.success) {
+        // Escalade cumulative (l.415) : le rang d'échec = nombre de paliers de froid déjà subis + 1.
+        const prior = (h.activeEffects ?? []).filter((e) => e.label === 'Exposition (froid)').length;
+        // Distinct des deux paliers d'effet : 0 effet = 1ᵉʳ échec ; 3 effets (CT/Ag/Dex) = 2ᵉ ; 10 = 3ᵉ+.
+        const rank = prior >= 10 ? 3 : prior >= 3 ? 2 : 1;
+        lines.push(...applyExposureFailure(h, rank, battleRng()).log);
+        // Saison froide (l.75) : « tout Personnage ayant souffert de cette exposition … contracte un
+        // rhume ». Aucune maladie « rhume » n'existe dans `maladies.json` (LDB 20 ne la liste pas) → on
+        // n'INVENTE pas de maladie : on le RACONTE (le froid mécanique est déjà appliqué ci-dessus).
+        if (isColdSeason(season)) lines.push(`${h.name} grelotte et tousse — un rhume couve (saison froide).`);
+      }
+      day.entries?.push({ actorId: h.id, icon: '🥶', label: 'Exposition', d: testDetail('Résistance', resVal, t), text: t.success ? 'tient' : 'froid', tone: t.success ? 'ok' : 'bad' });
+    }
+    if (anyExposed) { set({ party: [...get().party] }); tell(lines); }
+  }
 }
 
 /** « Voyage éreintant » raté : +1 jour de retard (le groupe erre) et +1 Exténué chacun.
