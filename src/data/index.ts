@@ -34,9 +34,17 @@ import booksJson from './books.json';
 import namesJson from './names.json';
 import raceAppearanceJson from './raceAppearance.json';
 import godsJson from './gods.json';
+import pregensJson from './pregens.json';
+import oupsJson from './oups.json';
+import interludeEventsJson from './interludeEvents.json';
+import peripetiesJson from './peripeties.json';
 import { CharKey, Weapon } from '../engine/types';
 import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
 import type { DiseaseDef } from '../engine/disease'; // type-only (le runtime de disease.ts importe `maladies` d'ici)
+import type { PregenDef } from './pregens'; // type-only (pregens.ts importe la donnée d'ici)
+import type { OupsEntry } from './oups';
+import type { InterludeEvent } from './interludeEvents';
+import type { Peripetie } from './peripeties';
 
 export interface SpeciesData {
   /** id STABLE (slug du libellé) — cible de `Combatant.species`, pregens, draft. Le `label` ne sert
@@ -521,6 +529,15 @@ export interface GodData {
 }
 export const gods = godsJson as GodData[];
 export const names = namesJson as Record<string, NamePool>;
+/** Personnages pré-tirés (DÉFINITIONS) — app-owned éditable au Codex ; la FABRIQUE (`createHero`)
+ *  vit dans `pregens.ts`, qui consomme CE tableau (même référence → mutation live de l'éditeur). */
+export const pregens = pregensJson as PregenDef[];
+/** Tableau des Oups ! (LDB Maladresses) — app-owned éditable ; consommé par `oups.ts` (même référence). */
+export const oups = oupsJson as OupsEntry[];
+/** Événements « Entre deux aventures » (LDB d100) — app-owned éditable ; consommé par `interludeEvents.ts`. */
+export const interludeEvents = interludeEventsJson as InterludeEvent[];
+/** Péripéties de voyage (1d10) — app-owned éditable ; consommé par `peripeties.ts` (même référence). */
+export const peripeties = peripetiesJson as Peripetie[];
 
 const ETAT_BY_ID = new Map(etats.map((e) => [e.id, e]));
 /** Résout un État par son `id` STABLE (`ConditionId`). */

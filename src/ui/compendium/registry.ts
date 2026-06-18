@@ -10,8 +10,9 @@
 import {
   species, careers, characteristics, classes, skills, talents,
   qualities, trappings, weaponGroups, etats, maladies, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
-  stars, locations, books, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, weaponGroupLabel,
-  skillInstanceLabel, talentConcrete, careersForSpecies, findClassById, eyes, hairs, details,
+  stars, locations, books, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, weaponGroupLabel,
+  skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details,
+  pregens, oups, interludeEvents, peripeties,
 } from '../../data';
 import { statName } from '../../engine/statEntry';
 import { splitTopLevelOu } from '../../engine/careerSlots';
@@ -25,10 +26,24 @@ import type { EntityAppearance } from '../../state/scene';
 import type { MutationData } from '../../data/mutations';
 import { passiveSection, effectsSection } from './describe';
 
-export type CodexGroup = 'Personnage' | 'Compétences' | 'Équipement' | 'Effets' | 'Magie' | 'Monde';
+export type CodexGroup = 'Personnage' | 'Compétences' | 'Équipement' | 'Effets' | 'Magie' | 'Monde' | 'Tables';
 
 /** Ordre d'affichage des familles (onglets du haut). */
-export const CODEX_GROUPS: CodexGroup[] = ['Personnage', 'Compétences', 'Équipement', 'Effets', 'Magie', 'Monde'];
+export const CODEX_GROUPS: CodexGroup[] = ['Personnage', 'Compétences', 'Équipement', 'Effets', 'Magie', 'Monde', 'Tables'];
+
+/**
+ * Identité GÉNÉRIQUE d'une entrée de dataset — clé STABLE servant À LA FOIS de `CodexItem.label`
+ * (ce que le navigateur passe à l'éditeur) ET de cible du `findIndex` côté `CodexEdit`. Précédence
+ * `label → name → key → id` (couvre gods keyé `key`, maladies keyées `name`, raceAppearance keyé `id`,
+ * pregens keyés `name`…). EXCEPTION careerLevels : pas de clé mono-champ UNIQUE (le même libellé de
+ * niveau « Recrue » revient sur plusieurs carrières) → composite carrière + niveau, identique des deux
+ * côtés (l'éditeur réécrit la bonne entrée, plus de collision sur le 1er homonyme).
+ */
+export function entryKey(e: Record<string, unknown>): string {
+  if (typeof e.career === 'string' && typeof e.level === 'number')
+    return `${findCareerById(e.career)?.label ?? e.career} · N${e.level} ${e.label ?? ''}`.trim();
+  return String(e.label ?? e.name ?? e.key ?? e.id ?? '');
+}
 
 export interface CodexSource {
   book: string;
@@ -417,7 +432,64 @@ export const CODEX: CodexCategory[] = [
     key: 'books', label: 'Livres', group: 'Monde',
     items: books.map((b) => ({ label: b.label, sub: b.abr ?? b.folder ?? undefined, group: b.folder ?? undefined, desc: b.desc ?? undefined, html: true })),
   },
+  // ── Tables & gabarits éditables (E3a) ─────────────────────────────────────────
+  {
+    key: 'careerLevels', label: 'Niveaux de carrière', group: 'Tables',
+    items: careerLevels.map((lv) => ({
+      label: entryKey(lv as unknown as Record<string, unknown>),
+      sub: lv.status, group: findCareerById(lv.career)?.label ?? lv.career,
+      sections: sections(
+        lv.characteristics.length ? { title: 'Caractéristiques avancées', layout: 'chips', rows: [{ t: 'text', text: lv.characteristics.map((k) => CHAR_LABELS[k]).join(', ') }] } : null,
+        chips('Compétences', 'skills', lv.skills.map((a) => advancementLabel('skills', a))),
+        chips('Talents', 'talents', lv.talents.map((a) => advancementLabel('talents', a))),
+        chips('Possessions', 'trappings', lv.trappings.map(trappingRefLabel)),
+      ),
+    })),
+  },
+  {
+    key: 'eyes', label: 'Couleur des yeux', group: 'Tables',
+    items: eyes.map((e) => ({ label: e.label, sub: `2d10 ≤ ${e.rand}`, sections: sections(colorTableSection(e)) })),
+  },
+  {
+    key: 'hairs', label: 'Couleur des cheveux', group: 'Tables',
+    items: hairs.map((h) => ({ label: h.label, sub: `2d10 ≤ ${h.rand}`, sections: sections(colorTableSection(h)) })),
+  },
+  {
+    key: 'raceAppearance', label: 'Apparences (rig)', group: 'Tables',
+    items: raceAppearance.map((r) => ({
+      label: r.id, sub: r.gabarit, appearance: { species: r.id },
+      meta: facts(fact('Gabarit', r.gabarit), fact('Tenue', r.tenue), fact('Tête', r.head), fact('Jambes', r.legs)),
+    })),
+  },
+  {
+    key: 'pregens', label: 'Pré-tirés', group: 'Tables',
+    items: pregens.map((p) => ({
+      label: p.name, sub: join(findSpeciesById(p.species)?.label ?? p.species, findCareerById(p.career)?.label ?? p.career),
+      meta: facts(fact('Motivation', p.motivation), fact('Graine', p.seed)),
+      sections: p.spells?.length ? sections(chips('Sorts/Prières', 'spells', p.spells)) : undefined,
+    })),
+  },
+  {
+    key: 'oups', label: 'Oups !', group: 'Tables',
+    items: oups.map((o) => ({ label: o.label, sub: `d100 ${o.min}–${o.max}` })),
+  },
+  {
+    key: 'interludeEvents', label: 'Entre deux aventures', group: 'Tables',
+    items: interludeEvents.map((e) => ({ label: e.label, sub: `d100 ${e.min}–${e.max}`, desc: e.text })),
+  },
+  {
+    key: 'peripeties', label: 'Péripéties de voyage', group: 'Tables',
+    items: peripeties.map((p) => ({ label: p.label, sub: `1d10 = ${p.roll} · ${p.kind}`, desc: p.text })),
+  },
 ];
+
+/** Section « table 2d10 » d'une couleur (yeux/cheveux) — borne + couleur par colonne d'espèce. */
+function colorTableSection(c: (typeof eyes)[number]): CodexSection {
+  return {
+    title: 'Couleur par espèce (colonne refChar)', layout: 'list',
+    rows: Object.entries(c.color).filter(([, v]) => v).map(([sp, v]) => ({ t: 'kv', k: sp, v } as CodexRow)),
+  };
+}
 
 /** Catégories d'une famille, dans l'ordre de déclaration. */
 export const categoriesIn = (group: CodexGroup): CodexCategory[] => CODEX.filter((c) => c.group === group);

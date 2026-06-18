@@ -9,7 +9,7 @@
  * Lettrés, Riverains, Roublards, Ruraux. (Le texte dit « Voleurs » pour les Roublards.)
  */
 import { findTableEntry } from '../engine/tables';
-import interludeEventsJson from './interludeEvents.json';
+import { interludeEvents } from './index';
 
 export interface InterludeEventFx {
   /** % appliqué à la bourse du groupe AVANT les Activités (le Prévôt −30, Kleptomane −50). */
@@ -41,7 +41,7 @@ export interface InterludeEvent {
   fx?: InterludeEventFx;
 }
 
-export const INTERLUDE_EVENTS = interludeEventsJson as InterludeEvent[];
+export const INTERLUDE_EVENTS = interludeEvents;
 
 /** Entrée du tableau pour un jet d100 (01-00). */
 export function interludeEventFor(roll: number): InterludeEvent {

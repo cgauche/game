@@ -10,6 +10,7 @@ import { datasetArray, setDataset, type DatasetKey } from '../../data/overrides'
 import { serializeDataset } from '../../data/serialize';
 import * as fs from '../../data/fsPersist';
 import { inferFields, type FieldDesc } from './editFields';
+import { entryKey } from './registry';
 import { RefField, refFieldCfg } from './RefField';
 import { MonsterPartsFields } from '../editor/MonsterPartsFields';
 import { FlowEditor } from '../editor/FlowEditor';
@@ -26,7 +27,9 @@ import { WeaponField } from '../editor/WeaponField';
 import { PsychTraitsField } from '../editor/PsychTraitsField';
 import type { Weapon } from '../../engine/types';
 import type { PsychTrait } from '../../engine/psychology';
-import { SymptomsField, CombatField, AdvancementRefField, TrappingRefField } from './StructFields';
+import { SymptomsField, CombatField, AdvancementRefField, TrappingRefField, CharKeysField, StarSubField, DomainEffectsField } from './StructFields';
+import type { DomainData } from '../../data';
+import type { CharKey } from '../../engine/types';
 import type { DiseaseSymptom } from '../../engine/disease';
 import type { CombatFeature } from '../../engine/combatFeatures/types';
 import type { AdvancementRef, TrappingRef } from '../../data';
@@ -37,6 +40,9 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   stars: 'stars', skills: 'skills', talents: 'talents', trappings: 'trappings', weaponGroups: 'weaponGroups', qualities: 'qualities',
   etats: 'etats', maladies: 'maladies', spells: 'spells', maneuvers: 'maneuvers', creatures: 'creatures', traits: 'traits', locations: 'locations', books: 'books',
   mutations: 'mutations', mutationTables: 'mutationTables', gods: 'gods', domains: 'domains',
+  // E3a : tables & gabarits éditables (catégorie Codex = clé identique au dataset).
+  careerLevels: 'careerLevels', eyes: 'eyes', hairs: 'hairs', raceAppearance: 'raceAppearance',
+  pregens: 'pregens', oups: 'oups', interludeEvents: 'interludeEvents', peripeties: 'peripeties',
 };
 export const editableDataset = (categoryKey: string): DatasetKey | undefined => CATEGORY_DATASET[categoryKey];
 
@@ -53,8 +59,9 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const arr = datasetArray(dsKey) as Entry[];
   // `isNew` : on part d'une entrée VIERGE (index -1 → le formulaire infère les champs du dataset) et le
   // save APPEND au lieu de remplacer — création générique d'une nouvelle entité (domaine, trait…).
-  // Identité d'affichage = `label`, SAUF maladies (keyées par `name`, sans `label`) → matcher les deux.
-  const index = useMemo(() => (isNew ? -1 : arr.findIndex((e) => (e.label ?? e.name) === label)), [arr, label, isNew]);
+  // Identité GÉNÉRIQUE via `entryKey` (label/name/key/id, composite careerLevels) — MÊME clé que le
+  // navigateur passe en `label` → le findIndex vise la bonne entrée même pour gods/pregens/careerLevels.
+  const index = useMemo(() => (isNew ? -1 : arr.findIndex((e) => entryKey(e) === label)), [arr, label, isNew]);
   const [entry, setEntry] = useState<Entry>(() => structuredClone(arr[index] ?? {}));
   const [dir, setDir] = useState<FileSystemDirectoryHandle | null>(null);
   const [needsGrant, setNeedsGrant] = useState(false);
@@ -95,6 +102,12 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const hasAdvancement = categoryKey === 'races';
   // Possessions de DÉPART (classe) : `trappings` = TrappingRef[] (id catalogue + quantité, ou texte).
   const hasTrappings = categoryKey === 'classes';
+  // Niveau de carrière : `characteristics` = CharKey[] (vocab fermé) → multi-sélection (pas de saisie libre).
+  const hasCharKeys = categoryKey === 'careerLevels';
+  // Étoile : `sub` = sous-fourchette d100 [min,max] (Étoile du Sorcier) → deux inputs number.
+  const hasStarSub = categoryKey === 'stars';
+  // Domaine de magie : `castBonus`/`missile`/`afterCast` = petits objets d'effet typés (éditeur dédié).
+  const hasDomainEffects = categoryKey === 'domains';
   // Axes du PROFIL de manœuvre rendus par `ManeuverDefField` (selects/checkbox) → exclus du repli générique.
   const MANEUVER_PROFILE_KEYS = ['kind', 'activation', 'advantageCost', 'advantageMode', 'stat', 'defense', 'targeting', 'range', 'blast', 'magic'];
   const fields = useMemo(
@@ -103,9 +116,11 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         && !(isManeuver && MANEUVER_PROFILE_KEYS.includes(f.key)) && !(isPassive && f.key === 'passive') && !(isStarEffect && f.key === 'effect') && !(isMutationTable && f.key === 'ranges')
         && !(isMutation && f.key === 'psychTraits') && !(hasDerivedWeapon && f.key === 'derivedWeapon')
         && !(isDisease && f.key === 'symptoms') && !(hasCombat && f.key === 'combat')
-        && !(hasAdvancement && (f.key === 'skills' || f.key === 'talents')) && !(hasTrappings && f.key === 'trappings'),
+        && !(hasAdvancement && (f.key === 'skills' || f.key === 'talents')) && !(hasTrappings && f.key === 'trappings')
+        && !(hasCharKeys && f.key === 'characteristics') && !(hasStarSub && f.key === 'sub')
+        && !(hasDomainEffects && (f.key === 'castBonus' || f.key === 'missile' || f.key === 'afterCast')),
     ),
-    [arr, hasAppearance, isSpell, isTriggered, isManeuver, isPassive, isStarEffect, isMutationTable, isMutation, hasDerivedWeapon, isDisease, hasCombat, hasAdvancement, hasTrappings], // eslint-disable-line react-hooks/exhaustive-deps
+    [arr, hasAppearance, isSpell, isTriggered, isManeuver, isPassive, isStarEffect, isMutationTable, isMutation, hasDerivedWeapon, isDisease, hasCombat, hasAdvancement, hasTrappings, hasCharKeys, hasStarSub, hasDomainEffects], // eslint-disable-line react-hooks/exhaustive-deps
   );
   const edit = (key: string, v: unknown) => { setEntry((e) => ({ ...e, [key]: v })); setDirty(true); };
 
@@ -158,6 +173,21 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {hasAdvancement && <AdvancementRefField ds="skills" label="Compétences" value={entry.skills as AdvancementRef[] | undefined} onChange={(v) => edit('skills', v)} />}
         {hasAdvancement && <AdvancementRefField ds="talents" label="Talents" value={entry.talents as AdvancementRef[] | undefined} onChange={(v) => edit('talents', v)} />}
         {hasTrappings && <TrappingRefField value={entry.trappings as TrappingRef[] | undefined} onChange={(v) => edit('trappings', v)} />}
+        {hasCharKeys && <CharKeysField value={entry.characteristics as CharKey[] | undefined} onChange={(v) => edit('characteristics', v)} />}
+        {hasStarSub && <StarSubField value={entry.sub as [number, number] | undefined} onChange={(v) => edit('sub', v)} />}
+        {hasDomainEffects && (
+          <>
+            <DomainEffectsField
+              castBonus={entry.castBonus as DomainData['castBonus']}
+              missile={entry.missile as DomainData['missile']}
+              afterCast={entry.afterCast as DomainData['afterCast']}
+              onCastBonus={(v) => edit('castBonus', v)}
+              onMissile={(v) => edit('missile', v)}
+              onAfterCast={(v) => edit('afterCast', v)}
+            />
+            <RefDatalist ds="etats" /* alimente l'autocomplétion « par État » de castBonus */ />
+          </>
+        )}
         {fields.map((f) => {
           const cfg = refFieldCfg(categoryKey, f.key);
           return cfg

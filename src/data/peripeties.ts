@@ -15,7 +15,7 @@
  *                       sans rencontre configurée → narratif au journal) ;
  *  - 'narratif'  (2,3,5-9) : matière à narration (PNJ, vols, rivaux…), journalisée telle quelle.
  */
-import peripetiesJson from './peripeties.json';
+import { peripeties } from './index';
 
 export interface Peripetie {
   roll: number;
@@ -24,4 +24,4 @@ export interface Peripetie {
   kind: 'reposant' | 'narratif' | 'ereintant' | 'attaque';
 }
 
-export const PERIPETIES = peripetiesJson as Peripetie[];
+export const PERIPETIES = peripeties;

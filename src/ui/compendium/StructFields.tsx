@@ -8,10 +8,11 @@
  * que le moteur lit (DiseaseSymptom / CombatFeature / AdvancementRef / TrappingRef).
  */
 import { RefField } from './RefField';
-import { DIFFICULTY_LABELS, type Difficulty } from '../../engine/types';
+import { datasetArray } from '../../data/overrides';
+import { DIFFICULTY_LABELS, CHAR_KEYS, CHAR_LABELS, type Difficulty, type CharKey } from '../../engine/types';
 import type { DiseaseSymptom, DiseaseSymptomKind } from '../../engine/disease';
 import type { CombatFeature, CastingKind } from '../../engine/combatFeatures/types';
-import type { AdvancementRef, TrappingRef, Ref, CountSpec } from '../../data';
+import type { AdvancementRef, TrappingRef, Ref, CountSpec, DomainData } from '../../data';
 
 const DIFFICULTIES = Object.keys(DIFFICULTY_LABELS) as Difficulty[];
 
@@ -242,6 +243,130 @@ export function TrappingRefField({ value, onChange }: { value: TrappingRef[] | u
         </div>
       ))}
       <button className="btn small" onClick={() => onChange([...list, { id: '' }])}>+ Possession</button>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 5) careerLevels.characteristics — CharKey[] (vocabulaire FERMÉ) : multi-sélection
+ *    de `CHAR_KEYS` (pas de saisie libre — un id de carac ≠ libellé multilangue).
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+export function CharKeysField({ value, onChange }: { value: CharKey[] | undefined; onChange: (v: CharKey[]) => void }) {
+  const set = new Set(value ?? []);
+  const toggle = (k: CharKey, on: boolean) => {
+    const next = new Set(set);
+    if (on) next.add(k); else next.delete(k);
+    onChange(CHAR_KEYS.filter((c) => next.has(c))); // ordre canon stable, peu importe l'ordre de clic
+  };
+  return (
+    <div className="ed-field">
+      <span>caractéristiques avancées (LDB 07 — vocabulaire fermé, cocher celles du Niveau)</span>
+      <div className="de-grid de-flags">
+        {CHAR_KEYS.map((k) => (
+          <label className="ed-check" key={k}>
+            <input type="checkbox" checked={set.has(k)} onChange={(e) => toggle(k, e.target.checked)} />
+            <span>{k} — {CHAR_LABELS[k]}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 6) stars.sub — tuple [number, number] : sous-fourchette d100 (1d10 interne) → min/max.
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+export function StarSubField({ value, onChange }: { value: [number, number] | undefined; onChange: (v: [number, number] | undefined) => void }) {
+  const on = value != null;
+  const lo = value?.[0] ?? 1;
+  const hi = value?.[1] ?? 1;
+  const clamp = (s: string) => Math.max(1, Math.min(100, Number(s) || 1));
+  return (
+    <div className="ed-field">
+      <span>sous-fourchette du 1d10 interne (Étoile du Sorcier — ADE2) : décocher = signe simple</span>
+      <div className="tf-row">
+        <label className="dr"><input type="checkbox" checked={on} onChange={(e) => onChange(e.target.checked ? [lo, hi] : undefined)} /> sous-tirage</label>
+        {on && (
+          <label className="dr">d100&nbsp;
+            <input type="number" min={1} max={100} value={lo} onChange={(e) => onChange([clamp(e.target.value), hi])} />–
+            <input type="number" min={1} max={100} value={hi} onChange={(e) => onChange([lo, clamp(e.target.value)])} />
+          </label>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 7) domains.castBonus / missile / afterCast — petits objets d'effet typés.
+ *    `castBonus` { perCondition (label État), radiusStat (CharKey fermé), bonus }
+ *    `missile`   { bypass ('metal'|'nonMagic'), bonusFromBypass? }
+ *    `afterCast` { grantTrait (label de trait + Indice, ex. « Peur 1 »), durationDice }
+ *  `grantTrait` reste un LIBELLÉ (parsé par `parseTraitInstance` côté moteur, indice inclus) → input
+ *   texte avec autocomplétion des libellés de trait, PAS un RefField (qui stockerait un id sans indice).
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+const BYPASS_LABEL: Record<NonNullable<DomainData['missile']>['bypass'], string> = {
+  metal: 'PA métalliques', nonMagic: 'PA non magiques',
+};
+
+export function DomainEffectsField(
+  { castBonus, missile, afterCast, onCastBonus, onMissile, onAfterCast }:
+  {
+    castBonus: DomainData['castBonus']; missile: DomainData['missile']; afterCast: DomainData['afterCast'];
+    onCastBonus: (v: DomainData['castBonus']) => void; onMissile: (v: DomainData['missile']) => void; onAfterCast: (v: DomainData['afterCast']) => void;
+  },
+) {
+  // `grantTrait` = LIBELLÉ + indice (« Peur 1 »), parsé par `parseTraitInstance` → autocomplétion des
+  // libellés de trait (champ auto-suffisant, pas de prop plombée) ; pas un RefField (qui perdrait l'indice).
+  const traitLabels = (datasetArray('traits') as { label: string }[]).map((t) => t.label);
+  const dlTraits = 'dl-domain-grant-traits';
+  return (
+    <div className="ed-field">
+      <span>attributs du domaine (LDB 48 — bonus d'incantation conditionnel / mitigation de Projectile / effet post-incantation)</span>
+      <div className="ed-subfield">
+        <label className="dr"><input type="checkbox" checked={!!castBonus} onChange={(e) => onCastBonus(e.target.checked ? { perCondition: '', radiusStat: 'FM', bonus: 10 } : undefined)} /> Bonus d'incantation conditionnel</label>
+        {castBonus && (
+          <div className="tf-row">
+            <label className="dr">par État
+              <input list="dl-etats" placeholder="ex. En flammes" value={castBonus.perCondition} onChange={(e) => onCastBonus({ ...castBonus, perCondition: e.target.value })} />
+            </label>
+            <label className="dr">rayon B-carac.
+              <select value={castBonus.radiusStat} onChange={(e) => onCastBonus({ ...castBonus, radiusStat: e.target.value as CharKey })}>
+                {CHAR_KEYS.map((k) => <option key={k} value={k}>{k}</option>)}
+              </select>
+            </label>
+            <label className="dr">bonus<input type="number" value={castBonus.bonus} onChange={(e) => onCastBonus({ ...castBonus, bonus: Number(e.target.value) || 0 })} /></label>
+          </div>
+        )}
+      </div>
+      <div className="ed-subfield">
+        <label className="dr"><input type="checkbox" checked={!!missile} onChange={(e) => onMissile(e.target.checked ? { bypass: 'metal' } : undefined)} /> Mitigation de Projectile</label>
+        {missile && (
+          <div className="tf-row">
+            <label className="dr">ignore
+              <select value={missile.bypass} onChange={(e) => onMissile({ ...missile, bypass: e.target.value as NonNullable<DomainData['missile']>['bypass'] })}>
+                {(Object.keys(BYPASS_LABEL) as NonNullable<DomainData['missile']>['bypass'][]).map((b) => <option key={b} value={b}>{BYPASS_LABEL[b]}</option>)}
+              </select>
+            </label>
+            <label className="dr"><input type="checkbox" checked={!!missile.bonusFromBypass} onChange={(e) => onMissile({ ...missile, bonusFromBypass: e.target.checked || undefined })} /> + ajoute aux Dégâts</label>
+          </div>
+        )}
+      </div>
+      <div className="ed-subfield">
+        <label className="dr"><input type="checkbox" checked={!!afterCast} onChange={(e) => onAfterCast(e.target.checked ? { grantTrait: '', durationDice: 10 } : undefined)} /> Effet post-incantation (Trait au lanceur)</label>
+        {afterCast && (
+          <div className="tf-row">
+            <label className="dr">Trait octroyé
+              <input list={dlTraits} placeholder="ex. Peur 1" value={afterCast.grantTrait ?? ''} onChange={(e) => onAfterCast({ ...afterCast, grantTrait: e.target.value || undefined })} />
+              <datalist id={dlTraits}>{traitLabels.map((l) => <option key={l} value={l} />)}</datalist>
+            </label>
+            <label className="dr">durée 1d<input type="number" min={1} value={afterCast.durationDice ?? 1} onChange={(e) => onAfterCast({ ...afterCast, durationDice: Math.max(1, Number(e.target.value) || 1) })} /></label>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

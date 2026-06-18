@@ -5,7 +5,7 @@
  * La DONNÉE vit dans `oups.json` (éditable, comme `creatures.json`) ; ce module = type + chargement.
  * Ajouter/régler une entrée = éditer le JSON, jamais ce fichier.
  */
-import oupsJson from './oups.json';
+import { oups } from './index';
 
 export type OupsKind =
   | 'selfWound' | 'weaponDamageActLast' | 'actionPenalty'
@@ -13,4 +13,4 @@ export type OupsKind =
 
 export interface OupsEntry { min: number; max: number; kind: OupsKind; label: string; }
 
-export const OUPS_TABLE = oupsJson as OupsEntry[];
+export const OUPS_TABLE = oups;

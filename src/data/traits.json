@@ -439,7 +439,16 @@
     "source": {
       "book": "LDB",
       "page": 339
-    }
+    },
+    "passive": [
+      {
+        "op": "skillDRBonus",
+        "skill": "discretion",
+        "bonus": {
+          "bonusOf": "Ag"
+        }
+      }
+    ]
   },
   {
     "id": "grand",

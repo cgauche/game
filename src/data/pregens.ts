@@ -9,10 +9,9 @@
 import { Combatant } from '../engine/types';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { findSpell, findSpeciesById } from './index';
-import pregensJson from './pregens.json';
+import { findSpell, findSpeciesById, pregens } from './index';
 
-interface PregenDef {
+export interface PregenDef {
   name: string;
   /** `id` STABLE de l'espèce (`SpeciesData.id`). */
   species: string;
@@ -31,12 +30,10 @@ interface PregenDef {
   build?: number;
 }
 
-const DEFS = pregensJson as PregenDef[];
-
 export function makePregens(): Combatant[] {
   // Résilient : un pré-tiré fautif est ignoré plutôt que de faire planter l'écran.
   const out: Combatant[] = [];
-  for (const d of DEFS) {
+  for (const d of pregens) {
     try {
       const hero = createHero({
         speciesId: d.species,

@@ -5,18 +5,21 @@
  *  - l'éditeur de données in-app (preview live avant écriture disque) ;
  *  - la future couche de surcharges PAR CAMPAGNE (apply au chargement, reset à la sortie).
  *
- * Couvre les 19 datasets-tableaux. `details` (objet imbriqué) et `names` (record, CRLF importé) sont
- * hors v1 — à ajouter ici quand ils auront un éditeur.
+ * Couvre les 23 datasets-tableaux. `details` (objet imbriqué) et `names` (record, CRLF importé) sont
+ * hors v1 — à ajouter ici quand ils auront un éditeur. `criticals` (record keyé par Localisation) est
+ * pour E3b (pas un tableau).
  */
 import {
   characteristics, species, classes, careers, careerLevels, skills, talents, etats, maladies, traits,
   qualities, mutations, mutationTables, trappings, weaponGroups, creatures, spells, maneuvers, domains, eyes, hairs, stars, locations, books, raceAppearance, gods,
+  pregens, oups, interludeEvents, peripeties,
 } from './index';
 
 /** Datasets-tableaux mutables (clé éditeur → MÊME référence d'array que l'export de la façade). */
 const ARRAYS = {
   characteristics, species, classes, careers, careerLevels, skills, talents, etats, maladies, traits,
   qualities, mutations, mutationTables, trappings, weaponGroups, creatures, spells, maneuvers, domains, eyes, hairs, stars, locations, books, raceAppearance, gods,
+  pregens, oups, interludeEvents, peripeties,
 } as const;
 
 export type DatasetKey = keyof typeof ARRAYS;
