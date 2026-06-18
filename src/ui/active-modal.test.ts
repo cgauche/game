@@ -15,7 +15,6 @@ describe('pickActiveModalKey — priorité des modales de combat', () => {
 
   it('un seul pending → sa modale', () => {
     expect(pickActiveModalKey({ pendingAttack: {} })).toBe('attack');
-    expect(pickActiveModalKey({ pendingDefense: {} })).toBe('defense');
     expect(pickActiveModalKey({ pendingReveals: [{}] })).toBe('reveal');
   });
 
@@ -23,12 +22,19 @@ describe('pickActiveModalKey — priorité des modales de combat', () => {
     expect(pickActiveModalKey({ pendingReveals: [] })).toBeNull();
   });
 
-  it('défense réactive l’emporte sur le jet d’attaque du joueur', () => {
-    expect(pickActiveModalKey({ pendingDefense: {}, pendingAttack: {} })).toBe('defense');
+  it('la défense n’est PLUS une modale propre : étape `jet:\'defense\'` de la cascade `combat` (wrapper-fold)', () => {
+    // pendingDefense SEUL (sans cascade) → plus d'entrée 'defense' (retirée) → null. La SITUATION est portée
+    // par la cascade-hôte ouverte par maybeOpenDefense (CascadeModal → useDefenseJetProps).
+    expect(pickActiveModalKey({ pendingDefense: {} })).toBeNull();
+    const defCascade = { participants: [{ jet: 'defense', actorId: 'h1' }], cursor: 0 };
+    expect(pickActiveModalKey({ pendingDefense: {}, pendingCascade: defCascade })).toBe('cascade');
+    // Défense réactive (cascade) l'emporte sur le jet d'attaque du joueur : `cascade` avant `attack` au registre.
+    expect(pickActiveModalKey({ pendingDefense: {}, pendingCascade: defCascade, pendingAttack: {} })).toBe('cascade');
   });
 
-  it('une révélation témoin passe avant la défense', () => {
-    expect(pickActiveModalKey({ pendingReveals: [{}], pendingDefense: {} })).toBe('reveal');
+  it('une révélation témoin passe avant la cascade de défense', () => {
+    const defCascade = { participants: [{ jet: 'defense', actorId: 'h1' }], cursor: 0 };
+    expect(pickActiveModalKey({ pendingReveals: [{}], pendingDefense: {}, pendingCascade: defCascade })).toBe('reveal');
   });
 
   it('le sauvetage par Destin domine tout', () => {

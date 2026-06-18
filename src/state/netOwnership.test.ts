@@ -28,7 +28,12 @@ describe('possession réseau (netOwnership)', () => {
   });
 
   it('modale ouverte : seul son CONCERNÉ agit (défense du héros de l’invité)', () => {
-    const s = base({ pendingDefense: { attackerId: 'e1', defenderId: 'h2' } as GameState['pendingDefense'] });
+    // La défense est désormais une étape `jet:'defense'` de la cascade `combat` (pendingDefense = porteur de
+    // données) ; l'owner de la modale `cascade` = l'actorId de l'étape (le défenseur h2).
+    const s = base({
+      pendingDefense: { attackerId: 'e1', defenderId: 'h2' } as GameState['pendingDefense'],
+      pendingCascade: { participants: [{ jet: 'defense', kind: 'defenseJet', actorId: 'h2' }], cursor: 0 } as unknown as GameState['pendingCascade'],
+    });
     expect(modalOwnerOf(s)).toBe('h2');
     expect(intentAllowedFor(s, 1, 'defenseRoll')).toBe(true);
     expect(intentAllowedFor(s, 0, 'defenseRoll')).toBe(false);
