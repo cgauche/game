@@ -24,7 +24,7 @@ import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, cra
 import { QUALITY_IDS } from './qualities/ids';
 import { weaponGroupLabel } from '../data';
 import { offHandPenalty, talentDamageBonus, isSlayer, talentDamageReduction, talentRangedAPIgnore, ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust, talentInitiativeBonus, fearImmuneVs } from './combatFeatures/dispatch';
-import { isEngagedWith } from './engagement';
+import { isEngagedWith, reachRank } from './engagement';
 import { rule } from './policy';
 
 /** Inverse le jet du toucher (23 → 32 ; « 00 » → 100). */
@@ -219,6 +219,14 @@ export function combineMods(mods: ModLine[]): number {
   return free + Math.min(capBonus, pos) + Math.max(-capMalus, neg);
 }
 
+/** Option « Longueur d'Arme » (LDB 62 l.215, règle optionnelle `combat-weapon-reach`) : si l'arme de
+ *  mêlée de l'adversaire a une Allonge SUPÉRIEURE à la vôtre, vous subissez −10 pour le toucher. Renvoie
+ *  0 si la règle est inactive, l'adversaire désarmé/mains nues, ou votre arme aussi longue. Pure. */
+export function weaponReachPenalty(attackerWeapon: Weapon, targetMelee: Weapon | undefined): number {
+  if (!rule('combat-weapon-reach') || !targetMelee) return 0;
+  return reachRank(targetMelee.reach) > reachRank(attackerWeapon.reach) ? -10 : 0;
+}
+
 /**
  * Modificateurs étiquetés d'un Test d'attaque (source UNIQUE : le moteur les somme pour le jet,
  * l'UI les affiche). Toutes les valeurs sont sourcées dans la table des Difficultés de Combat
@@ -275,6 +283,9 @@ export function attackModifiers(
     // Parasité (LDB 85 p.340) : −10 pour toucher la créature en Corps à corps (vermine perturbante).
     const para = incomingAttackMod(target, 'melee');
     if (para) out.push({ label: 'Parasité', value: para });
+    // Option « Longueur d'Arme » (LDB 62 l.215) : arme adverse plus longue → −10 pour la toucher.
+    const reach = weaponReachPenalty(weapon, target.weapons.find((w) => w.type === 'melee'));
+    if (reach) out.push({ label: "Allonge de l'adversaire", value: reach });
   }
   // +10 au plus petit, mêlée ET tir (LDB 85 l.301-303). Une Nuée ignore TOUTES les règles de Taille (l.200).
   if (target && !attacker.swarm && !target.swarm && sizeGap(attacker.size, target.size) < 0) out.push({ label: 'Taille (plus petit)', value: 10 });

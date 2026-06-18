@@ -12,13 +12,24 @@ import { Combatant, Weapon } from './types';
  * Portée d'ENGAGEMENT / d'attaque d'une arme de MÊLÉE, en CASES. RAW : LDB 62 l.211 (Allonge
  * « Très longue » → Engage jusqu'à 4 m) et l.213 (« Considérable » → 6 m), avec 1 case = 2 m
  * (LDB 15 l.55) → 2 et 3 cases. Toute autre Allonge (ou arme à distance / mains nues) = contact = 1.
- * NE PAS implémenter l'Option « Longueur d'Arme / Combat au Contact » (LDB 62 l.215-222, optionnelle). Pure.
+ * L'Option « Longueur d'Arme » (LDB 62 l.215 : −10 à l'adversaire) est une règle optionnelle dont le
+ * modificateur de Test vit dans combat.ts (`weaponReachPenalty`) ; l'engagement reste basé sur les cases. Pure.
  */
 export function reachTiles(weapon: Weapon | null | undefined): number {
   if (!weapon || weapon.type !== 'melee') return 1;
   if (weapon.reach === 'Très longue') return 2;
   if (weapon.reach === 'Considérable') return 3;
   return 1;
+}
+
+/** Échelle d'Allonge des armes de mêlée (LDB 62), de la plus COURTE à la plus LONGUE. Sert à l'Option
+ *  « Longueur d'Arme » (`weaponReachPenalty`, combat.ts). Allonge null/Variable/inconnue = « Moyenne ». */
+export const REACH_ORDER = ['Personnelle', 'Très courte', 'Courte', 'Moyenne', 'Longue', 'Très longue', 'Considérable'] as const;
+
+/** Rang d'Allonge d'une arme (index dans REACH_ORDER) ; défaut « Moyenne » si null/Variable/inconnu. */
+export function reachRank(reach: string | null | undefined): number {
+  const i = (REACH_ORDER as readonly string[]).indexOf(reach ?? '');
+  return i >= 0 ? i : (REACH_ORDER as readonly string[]).indexOf('Moyenne');
 }
 
 /** Portée de mêlée d'un combattant = Allonge de son arme de mêlée employée (la 1ʳᵉ, comme `attackWeapon`).

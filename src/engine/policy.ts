@@ -228,6 +228,15 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'Sur un coup fatal (Dégâts > PB), la cible meurt ou tombe Inconsciente sans passer par les Blessures critiques. figurants = figurants seuls (défaut) ; tous = aussi les PNJ importants ; off = personne (tout passe par les critiques). Jamais les PJ.',
   },
   {
+    id: 'combat-weapon-reach',
+    label: 'Longueur d’arme',
+    ref: 'LDB 62 l.215',
+    group: 'Combat',
+    kind: 'flag',
+    default: false,
+    hint: 'En mêlée, une arme plus longue impose −10 à l’adversaire pour vous toucher (selon l’Allonge des armes). Désactivé par défaut.',
+  },
+  {
     id: 'combat-cadence',
     label: 'Cadence de combat',
     ref: 'maison',

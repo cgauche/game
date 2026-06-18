@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { combineMods, defenseModifiers, rangeBandModifier, rangeBandName } from './combat';
+import { combineMods, defenseModifiers, rangeBandModifier, rangeBandName, weaponReachPenalty } from './combat';
 import { setRule, resetRule } from './policy';
-import type { Combatant } from './types';
+import type { Combatant, Weapon } from './types';
 
 describe('combineMods — Combiner les Difficultés (LDB 14 l.126-131)', () => {
   it('plafonne la somme des malus à -30', () => {
@@ -39,6 +39,24 @@ describe('combineMods — plafonds de Difficulté réglables (LDB 14 l.126, règ
     expect(combineMods([{ label: 'a', value: -20 }, { label: 'b', value: -20 }])).toBe(-30);
     setRule('combat-diff-cap-malus', 10);
     expect(combineMods([{ label: 'a', value: -20 }, { label: 'b', value: -20 }])).toBe(-10);
+  });
+});
+
+describe("weaponReachPenalty — Longueur d'arme (LDB 62 l.215, règle optionnelle)", () => {
+  afterEach(() => resetRule('combat-weapon-reach'));
+  const w = (reach: string | null) => ({ type: 'melee', reach }) as unknown as Weapon;
+  it('off (défaut) : aucun malus de longueur', () => {
+    expect(weaponReachPenalty(w('Très courte'), w('Longue'))).toBe(0);
+  });
+  it('on : arme adverse PLUS LONGUE → −10 pour la toucher', () => {
+    setRule('combat-weapon-reach', true);
+    expect(weaponReachPenalty(w('Très courte'), w('Longue'))).toBe(-10);
+  });
+  it('on : mon arme plus longue ou égale → pas de malus ; adversaire mains nues → pas de malus', () => {
+    setRule('combat-weapon-reach', true);
+    expect(weaponReachPenalty(w('Longue'), w('Très courte'))).toBe(0);
+    expect(weaponReachPenalty(w('Moyenne'), w('Moyenne'))).toBe(0);
+    expect(weaponReachPenalty(w('Moyenne'), undefined)).toBe(0);
   });
 });
 
