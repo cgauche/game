@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { makeRNG } from './dice';
+import { setRule, resetRule } from './policy';
 import { CHAR_KEYS, CharKey } from './types';
 import {
   randomSpeciesTable,
@@ -97,35 +98,53 @@ describe('applyStarEffect — effet d\'un signe aux ATTRIBUTS DE DÉPART (ADE2 c
   });
 });
 
-describe('Tableau des Races aléatoires (LDB 04 l.90) — dérivé des données (species.rand)', () => {
-  it('bornes croissantes jusqu\'à 100, représentantes du Livre de base en priorité', () => {
+describe('Tableau des Races aléatoires (LDB 04 l.90) — borne = CHOIX (species.rand partagé)', () => {
+  it('bornes croissantes jusqu\'à 100 ; chaque borne porte TOUTES ses espèces (choix RAW)', () => {
     const table = randomSpeciesTable();
     const bounds = table.map((e) => e.max);
     expect(bounds).toEqual([...bounds].sort((a, b) => a - b));
     expect(bounds[bounds.length - 1]).toBe(100);
-    // Les bornes du Livre de base sont représentées par les espèces LDB (pas une variante ADE).
-    const byMax = Object.fromEntries(table.map((e) => [e.max, e.id]));
-    expect(byMax[90]).toBe('humains-reiklander');
-    expect(byMax[94]).toBe('halflings');
-    expect(byMax[99]).toBe('hauts-elfes');
-    expect(byMax[100]).toBe('elfes-sylvains');
-    for (const e of table) expect(findSpeciesById(e.id), e.id).toBeTruthy();
+    // Le jet désigne une borne ; le joueur choisit librement parmi ses espèces (plus de représentante).
+    const byMax = Object.fromEntries(table.map((e) => [e.max, e.ids]));
+    expect(byMax[90]).toContain('humains-reiklander');
+    expect(byMax[94]).toContain('halflings');
+    expect(byMax[99]).toContain('hauts-elfes');
+    expect(byMax[100]).toContain('elfes-sylvains');
+    // Toute id de toute borne doit résoudre vers une espèce existante.
+    for (const e of table) for (const id of e.ids) expect(findSpeciesById(id), id).toBeTruthy();
   });
-  it('rollSpecies : déterministe (RNG seedé) et cohérent avec son jet', () => {
+  it('rollSpecies : déterministe (RNG seedé) et cohérent — le jet tombe dans la borne renvoyée', () => {
     const a = rollSpecies(makeRNG(7));
     expect(a).toEqual(rollSpecies(makeRNG(7)));
     const entry = randomSpeciesTable().find((e) => a.roll <= e.max)!;
-    expect(a.id).toBe(entry.id);
+    expect(a.ids).toEqual(entry.ids);
+  });
+});
+
+describe('Gnome jouable — règle optionnelle (NADJ appendice I l.10)', () => {
+  afterEach(() => resetRule('creation-gnome-jouable'));
+  it('off (défaut) : le Gnome (NADJ) n\'est dans AUCUNE borne du Tableau des Races aléatoires', () => {
+    expect(randomSpeciesTable().some((e) => e.ids.includes('gnomes'))).toBe(false);
+  });
+  it('on : le Gnome est une option NORMALE de sa borne 98 — Gnome ET Ogre y co-existent (choix)', () => {
+    setRule('creation-gnome-jouable', true);
+    const t = randomSpeciesTable();
+    const b98 = t.find((e) => e.max === 98)!;
+    expect(b98.ids).toContain('gnomes'); // ajouté par la règle
+    expect(b98.ids).toContain('ogres'); // l'Ogre ADE2 reste présent (aucune priorité)
   });
 });
 
 describe('Tableau des Classes et Carrières aléatoires (LDB 05 l.197+)', () => {
-  it('rollCareer : retourne une carrière ACCESSIBLE à l\'espèce', () => {
+  it('rollCareer : la borne renvoie des carrières TOUTES accessibles à l\'espèce', () => {
     const sylvain = findSpeciesById('elfes-sylvains')!;
     for (let seed = 1; seed <= 20; seed++) {
       const r = rollCareer(careers, sylvain, makeRNG(seed))!;
-      const career = careers.find((c) => c.id === r.id)!;
-      expect(career.rand[sylvain.refCareer], r.id).not.toBeNull();
+      expect(r.ids.length).toBeGreaterThan(0);
+      for (const id of r.ids) {
+        const career = careers.find((c) => c.id === id)!;
+        expect(career.rand[sylvain.refCareer], id).not.toBeNull();
+      }
     }
   });
 });

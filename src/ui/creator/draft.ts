@@ -50,14 +50,17 @@ export interface CreatorDraft {
   // 1) Espèce
   /** `id` STABLE de l'espèce (`SpeciesData.id`) — ≠ libellé. */
   speciesId: string;
-  /** Tirage d'espèce figé (id) — absent tant que le d100 n'a pas été lancé. */
-  speciesRoll?: { roll: number; id: string };
+  /** Tirage d'espèce figé — le d100 désigne une BORNE (LDB 04 l.90) ; `ids` = toutes les espèces
+   *  de cette borne, parmi lesquelles le joueur choisit librement (bonus de PX conservé). Absent
+   *  tant que le d100 n'a pas été lancé. */
+  speciesRoll?: { roll: number; ids: string[] };
   // 2) Carrière
   /** `id` STABLE de la carrière (`CareerData.id`) — ≠ libellé. */
   careerId: string;
   ignoreRestrictions: boolean;
-  /** Jets de carrière figés (1 puis 3) ; au-delà : relances libres (0 PX, RAW l.195). */
-  careerRolls: { roll: number; id: string }[];
+  /** Jets de carrière figés (1 puis 3) ; au-delà : relances libres (0 PX, RAW l.195). Chaque jet
+   *  désigne une BORNE → `ids` = toutes les carrières de cette borne (choix libre, PX conservé). */
+  careerRolls: { roll: number; ids: string[] }[];
   /** Nombre de relances LIBRES effectuées (annule tout bonus). */
   careerFreeRolls: number;
   // 3) Caractéristiques
@@ -195,10 +198,12 @@ export const draftLevel = (d: CreatorDraft): CareerLevelData | undefined =>
 export function rollDraftSpecies(d: CreatorDraft): CreatorDraft {
   if (d.speciesRoll) return d; // FIGÉ : pas de relance (LDB 04 — aucune n'est offerte)
   const r = rollSpecies(makeRNG(d.seed ^ 0x51ec));
-  return withSpecies({ ...d, speciesRoll: r }, r.id);
+  // La borne tirée propose `ids` ; on sélectionne la 1ʳᵉ par défaut, le joueur peut choisir une autre.
+  return withSpecies({ ...d, speciesRoll: r }, r.ids[0]);
 }
+// +20 PX tant que l'espèce choisie appartient à la BORNE tirée (le bonus récompense le tirage, l.87).
 export const speciesXp = (d: CreatorDraft): number =>
-  d.speciesRoll && d.speciesId === d.speciesRoll.id ? XP_SPECIES_ACCEPTED : 0;
+  d.speciesRoll && d.speciesRoll.ids.includes(d.speciesId) ? XP_SPECIES_ACCEPTED : 0;
 
 export function withSpecies(d: CreatorDraft, id: string): CreatorDraft {
   if (id === d.speciesId) return d;
@@ -222,7 +227,8 @@ export function rollDraftCareer(d: CreatorDraft): CreatorDraft {
   const n = d.careerRolls.length;
   if (n === 0) {
     const r = rollCareer(careers, sp, makeRNG(d.seed ^ 0xca1));
-    return r ? withCareer({ ...d, careerRolls: [r] }, r.id) : d;
+    // Chaque jet désigne une borne (`ids`) ; défaut = 1ʳᵉ carrière, le joueur peut en choisir une autre.
+    return r ? withCareer({ ...d, careerRolls: [r] }, r.ids[0]) : d;
   }
   if (n === 1) {
     // « Faites deux lancers de plus, ce qui porte votre total à 3 choix » (LDB 05 l.193).
@@ -234,12 +240,13 @@ export function rollDraftCareer(d: CreatorDraft): CreatorDraft {
   }
   // « continuez à relancer jusqu'à obtenir quelque chose qui vous plaît » (l.195) — 0 PX.
   const r = rollCareer(careers, sp, makeRNG(d.seed ^ (0xca3 + d.careerFreeRolls)));
-  return r ? withCareer({ ...d, careerFreeRolls: d.careerFreeRolls + 1 }, r.id) : d;
+  return r ? withCareer({ ...d, careerFreeRolls: d.careerFreeRolls + 1 }, r.ids[0]) : d;
 }
 export function careerXp(d: CreatorDraft): number {
   if (d.careerFreeRolls > 0) return 0;
-  if (d.careerRolls.length === 1 && d.careerId === d.careerRolls[0].id) return XP_CAREER_FIRST;
-  if (d.careerRolls.length === 3 && d.careerRolls.some((r) => r.id === d.careerId)) return XP_CAREER_TOP3;
+  // +50 si la carrière choisie est dans la borne du 1ᵉʳ jet ; +25 si elle est dans l'une des 3 bornes.
+  if (d.careerRolls.length === 1 && d.careerRolls[0].ids.includes(d.careerId)) return XP_CAREER_FIRST;
+  if (d.careerRolls.length === 3 && d.careerRolls.some((r) => r.ids.includes(d.careerId))) return XP_CAREER_TOP3;
   return 0;
 }
 export function withCareer(d: CreatorDraft, id: string): CreatorDraft {

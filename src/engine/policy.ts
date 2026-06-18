@@ -172,6 +172,15 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'Sur un coup fatal (Dégâts > PB), la cible meurt ou tombe Inconsciente sans passer par les Blessures critiques. figurants = figurants seuls (défaut) ; tous = aussi les PNJ importants ; off = personne (tout passe par les critiques). Jamais les PJ.',
   },
   {
+    id: 'creation-gnome-jouable',
+    label: 'Gnome jouable (NADJ)',
+    ref: 'NADJ appendice I l.10',
+    group: 'Création',
+    kind: 'flag',
+    default: false,
+    hint: 'Ajoute le Gnome (Nuits agitées) comme race jouable : il devient une option du Tableau des Races aléatoires (borne 98, partagée avec l’Ogre) et apparaît dans la grille de sélection. Désactivé par défaut.',
+  },
+  {
     id: 'creation-signes-astraux',
     label: 'Signes astraux à la création',
     ref: 'ADE2 ch.03',

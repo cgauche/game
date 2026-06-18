@@ -80,19 +80,23 @@ describe('aléatoire FIGÉ (anti-savescum)', () => {
 });
 
 describe('bonus de PX (LDB 04/05)', () => {
-  it('espèce : +20 uniquement si on garde le tirage', () => {
+  it('espèce : +20 tant qu\'on choisit une espèce de la borne tirée, 0 sinon', () => {
     const d1 = rollDraftSpecies(draft());
     expect(speciesXp(d1)).toBe(20);
-    expect(speciesXp(withSpecies(d1, d1.speciesRoll!.id === 'nains' ? 'halflings' : 'nains'))).toBe(0);
+    // Une espèce HORS de la borne tirée perd le bonus (la borne d100 ne contient pas tout).
+    const outside = ['nains', 'halflings', 'hauts-elfes'].find((id) => !d1.speciesRoll!.ids.includes(id))!;
+    expect(speciesXp(withSpecies(d1, outside))).toBe(0);
   });
   it('carrière : +50 (1er jet), +25 (parmi 3), 0 (libre / relances)', () => {
     const d1 = rollDraftCareer(draft());
     expect(careerXp(d1)).toBe(50);
-    const other = d1.careerRolls[0].id === 'soldat' ? 'artisan' : 'soldat';
-    expect(careerXp(withCareer(d1, other))).toBe(0); // refusé sans relancer → choix libre
+    // Une carrière hors des bornes tirées (refusée sans relancer) → choix libre, 0 PX.
+    const rolledIds = new Set(d1.careerRolls.flatMap((r) => r.ids));
+    const other = ['soldat', 'artisan', 'apothicaire'].find((id) => !rolledIds.has(id))!;
+    expect(careerXp(withCareer(d1, other))).toBe(0);
     const d3 = rollDraftCareer(d1);
     expect(d3.careerRolls).toHaveLength(3);
-    expect(careerXp(withCareer(d3, d3.careerRolls[2].id))).toBe(25);
+    expect(careerXp(withCareer(d3, d3.careerRolls[2].ids[0]))).toBe(25);
     const dFree = rollDraftCareer(d3); // « continuez à relancer » (l.195)
     expect(careerXp(dFree)).toBe(0);
   });

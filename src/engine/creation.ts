@@ -19,6 +19,7 @@ import { findTableEntry } from './tables';
 import { CharKey, CHAR_KEYS, Characteristics } from './types';
 import { Money } from './money';
 import { SpeciesData, CareerData, species as allSpecies, eyes as eyesTable, hairs as hairsTable, details as detailTables, stars as starsTable, findStar, talentConcrete } from '../data';
+import { rule } from './policy';
 
 // Bonus de PX des choix aléatoires acceptés (citations en tête de fichier).
 export const XP_SPECIES_ACCEPTED = 20; // LDB 04 l.87
@@ -31,46 +32,50 @@ export const XP_STAR_ROLLED = 25; // ADE2 ch.03 l.36 (signe astral tiré et acce
 /**
  * Tableau des Races aléatoires (LDB 04 l.90) — DÉRIVÉ des données : chaque espèce porte sa
  * borne haute d100 (`SpeciesData.rand`, suppléments inclus). Plusieurs espèces partagent une
- * même borne (variantes régionales d'ADE) : la représentante d'une borne est l'espèce du
- * Livre de base si elle existe, sinon la première en priorité de livre (LDB > ADE1 > ADE2 >
- * autres suppléments).
+ * même borne (variantes régionales d'ADE, Gnome/Ogre…) : c'est VOULU par le RAW. Un jet désigne
+ * une BORNE, et le joueur CHOISIT librement parmi toutes les espèces de cette borne en conservant
+ * le bonus de PX (l'acceptation récompense d'avoir accepté le TIRAGE, pas une option imposée).
+ * On renvoie donc, pour chaque borne, TOUTES les espèces éligibles — sans priorité codée.
  */
-const BOOK_PRIORITY = ['LDB', 'ADE1', 'ADE2'];
-export function randomSpeciesTable(): { max: number; id: string }[] {
-  const byBound = new Map<number, SpeciesData[]>();
+export function randomSpeciesTable(): { max: number; ids: string[] }[] {
+  // Règle optionnelle « Gnome jouable » (NADJ appendice I) : le Gnome (et tout contenu NADJ) n'entre
+  // dans le tableau que si la règle est active. C'est le SEUL effet sur le tirage — quand elle est
+  // active, le Gnome est une option NORMALE de sa borne (98, partagée avec l'Ogre ADE2), sans priorité.
+  const gnomeOn = !!rule('creation-gnome-jouable');
+  const byBound = new Map<number, string[]>();
   for (const s of allSpecies) {
     if (typeof s.rand !== 'number') continue;
-    byBound.set(s.rand, [...(byBound.get(s.rand) ?? []), s]);
+    if (s.source.book === 'NADJ' && !gnomeOn) continue; // gating d'éligibilité (pas de priorité)
+    byBound.set(s.rand, [...(byBound.get(s.rand) ?? []), s.id]);
   }
-  const rank = (s: SpeciesData) => {
-    const i = BOOK_PRIORITY.indexOf(s.source.book);
-    return i === -1 ? BOOK_PRIORITY.length : i;
-  };
   return [...byBound.entries()]
     .sort(([a], [b]) => a - b)
-    .map(([max, list]) => ({ max, id: list.sort((a, b) => rank(a) - rank(b))[0].id }));
+    .map(([max, ids]) => ({ max, ids }));
 }
 
-export function rollSpecies(rng: RNG = defaultRNG): { roll: number; id: string } {
+export function rollSpecies(rng: RNG = defaultRNG): { roll: number; ids: string[] } {
   const table = randomSpeciesTable();
   const r = roll(1, 100, rng);
   const entry = table.find((e) => r <= e.max) ?? table[table.length - 1];
-  return { roll: r, id: entry.id };
+  return { roll: r, ids: entry.ids };
 }
 
 /**
  * Tire une Carrière sur le Tableau des Classes et Carrières aléatoires (LDB 05 l.197+), colonne
- * de l'espèce (`refCareer`). Les bornes des données sont les bornes HAUTES par carrière.
+ * de l'espèce (`refCareer`). Les bornes des données sont les bornes HAUTES par carrière. Comme
+ * pour les espèces, plusieurs carrières peuvent partager une borne : un jet désigne la borne et
+ * le joueur CHOISIT librement parmi toutes ses carrières (le bonus de PX récompense le tirage).
  */
-export function rollCareer(careers: CareerData[], sp: SpeciesData, rng: RNG = defaultRNG): { roll: number; id: string } | null {
+export function rollCareer(careers: CareerData[], sp: SpeciesData, rng: RNG = defaultRNG): { roll: number; ids: string[] } | null {
   const col = sp.refCareer;
   const table = careers
     .filter((c) => c.rand?.[col] != null)
     .sort((a, b) => (a.rand[col] as number) - (b.rand[col] as number));
   if (!table.length) return null;
   const r = roll(1, 100, rng);
-  const entry = table.find((c) => r <= (c.rand[col] as number)) ?? table[table.length - 1];
-  return { roll: r, id: entry.id };
+  const max = (table.find((c) => r <= (c.rand[col] as number)) ?? table[table.length - 1]).rand[col] as number;
+  const ids = table.filter((c) => (c.rand[col] as number) === max).map((c) => c.id);
+  return { roll: r, ids };
 }
 
 /** Répartition manuelle (LDB 05 l.385) : 100 Points, min 4 / max 18 par Caractéristique. */

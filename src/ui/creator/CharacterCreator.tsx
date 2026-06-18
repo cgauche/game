@@ -37,6 +37,7 @@ import {
   CareerData,
 } from '../../data';
 import { CHAR_KEYS, CharKey, CHAR_LABELS, CHAR_BY_LABEL, Characteristics } from '../../engine/types';
+import { rule } from '../../engine/policy';
 import { bonus } from '../../engine/characteristics';
 import { formatMoney } from '../../engine/money';
 import { makeRNG } from '../../engine/dice';
@@ -311,8 +312,11 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
 
   // Groupes par race (les variantes des suppléments perdent leur préfixe répétitif),
   // les races du Livre de base d'abord — l'ordre des familles suit les données.
+  // Le Gnome (et tout contenu NADJ) n'apparaît dans la grille que si la règle optionnelle l'autorise.
+  const gnomeOn = !!rule('creation-gnome-jouable');
   const families: { family: string; list: SpeciesData[] }[] = [];
   for (const s of allSpecies) {
+    if (s.source.book === 'NADJ' && !gnomeOn) continue;
     const { family } = speciesFamily(s.label);
     const g = families.find((f) => f.family === family);
     if (g) g.list.push(s);
@@ -357,16 +361,20 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
             </button>
           </div>
         ) : (
-          <div className="row-flex">
-            <span>
-              Jet : <b>{d.speciesRoll.roll}</b> → <b>{findSpeciesById(d.speciesRoll.id)?.label}</b>
-            </span>
-            {d.speciesId !== d.speciesRoll.id && (
-              <button className="btn small" onClick={() => setD(withSpecies(d, d.speciesRoll!.id))}>
-                Accepter {findSpeciesById(d.speciesRoll.id)?.label} (+20 PX)
-              </button>
-            )}
-          </div>
+          <>
+            <p className="hint" style={{ marginTop: 0 }}>
+              Jet : <b>{d.speciesRoll.roll}</b>
+              {d.speciesRoll.ids.length > 1 && ' — choisissez librement parmi les races de cette borne (le bonus est conservé)'}
+            </p>
+            <div className="talent-choices">
+              {d.speciesRoll.ids.map((id) => (
+                <label className="radio" key={id}>
+                  <input type="radio" name="species-roll" checked={d.speciesId === id} onChange={() => setD(withSpecies(d, id))} />
+                  <b>{findSpeciesById(id)?.label ?? id}</b> (+20 PX)
+                </label>
+              ))}
+            </div>
+          </>
         )}
       </Section>
       <div className="derived" style={{ margin: '2px 0 8px' }}>
@@ -474,15 +482,23 @@ function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
         )}
         {d.careerRolls.length > 0 && (
           <div className="talent-choices">
-            {d.careerRolls.map((r, i) => {
-              const rc = findCareerById(r.id);
-              return (
-                <label className="radio" key={`${r.id}-${i}`}>
-                  <input type="radio" name="career-roll" checked={d.careerId === r.id} onChange={() => setD(withCareer(d, r.id))} />
-                  Jet {i + 1} : {r.roll} → <b>{rc?.label}</b> ({findClassById(rc?.class)?.label})
-                </label>
-              );
-            })}
+            {d.careerRolls.map((r, i) => (
+              <div key={`roll-${i}`} style={{ marginBottom: 4 }}>
+                <div className="mini-title">
+                  Jet {i + 1} : {r.roll}
+                  {r.ids.length > 1 && <em className="hint"> — choisissez parmi les carrières de cette borne</em>}
+                </div>
+                {r.ids.map((id) => {
+                  const rc = findCareerById(id);
+                  return (
+                    <label className="radio" key={`${id}-${i}`}>
+                      <input type="radio" name="career-roll" checked={d.careerId === id} onChange={() => setD(withCareer(d, id))} />
+                      <b>{rc?.label}</b> ({findClassById(rc?.class)?.label})
+                    </label>
+                  );
+                })}
+              </div>
+            ))}
           </div>
         )}
         {d.careerRolls.length === 1 && (
