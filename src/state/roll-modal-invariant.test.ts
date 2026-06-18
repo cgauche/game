@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 /**
- * Garde-fou « un jet = une modale » (invariante projet), v2 — DÉTECTEUR de jets cachés.
+ * Garde-fou « une situation = une modale » (invariante projet), v2 — DÉTECTEUR de jets cachés.
  *
  * Règle : aucun point d'entrée JOUEUR ne résout un jet aléatoire en silence. Un jet est soit
  *  1. DIFFÉRÉ : une modale `pending*` (fabrique rollFlow — Lancer/Chance/Pacte/Résilience) ;
@@ -132,7 +132,7 @@ function moduleActions(src: string): { name: string; body: string }[] {
   return out;
 }
 
-describe('Invariante « un jet = une modale » (détecteur de jets cachés, v2)', () => {
+describe('Invariante « une situation = une modale » (détecteur de jets cachés, v2)', () => {
   // ── 1. Carte des fonctions de flux qui TIRENT (directement) ──
   const rollers = new Map<string, string>(); // nom → module
   const flowFns = new Map<string, { module: string; body: string }>();

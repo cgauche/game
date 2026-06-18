@@ -75,7 +75,7 @@ export function Modal({
   variant?: 'roll' | 'test' | 'plain';
   className?: string;
   /** Échap = ce callback (l'équivalent du bouton Fermer/Annuler visible). Absent → modale
-   *  NON annulable (un jet posé doit être résolu — invariant « un jet = une modale »). */
+   *  NON annulable (un jet posé doit être résolu). */
   onClose?: () => void;
   /** Cliquer le voile ferme aussi (lecteurs passifs : document, fiche…) — jamais par défaut. */
   backdropClose?: boolean;

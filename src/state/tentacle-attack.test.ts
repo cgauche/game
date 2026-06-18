@@ -88,7 +88,7 @@ describe('Attaque gratuite de Tentacule (store)', () => {
     const pa = useGame.getState().pendingAttack;
     expect(pa?.freeKind).toBe('tentacules');
     expect(pa?.weaponUid).toBe('nat-tentacule');
-    expect(pa?.result).toBeNull(); // « un jet = une modale » : rien n'est tiré avant Lancer
+    expect(pa?.result).toBeNull(); // rien n'est tiré avant Lancer
     useGame.getState().attackRoll();
     expect(useGame.getState().pendingAttack?.result).toBeTruthy();
     useGame.getState().attackConfirm();

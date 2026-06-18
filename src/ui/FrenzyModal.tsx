@@ -11,7 +11,7 @@ import { describeFrenzy } from '../state/flowOutcomes';
 /**
  * Modale d'entrée en Frénésie (LDB 21 l.32) : « Lancer » jette le Test de Force Mentale,
  * « Relancer »/« Réussite garantie » dépensent Chance/Résilience, « Appliquer » fige le résultat
- * (entre en Frénésie sur succès). Test binaire (pas de DR) → pas de « +1 DR ». Invariante « un jet = une modale ».
+ * (entre en Frénésie sur succès). Test binaire (pas de DR) → pas de « +1 DR ».
  */
 export function FrenzyModal() {
   const pf = useGame((s) => s.pendingFrenzy);

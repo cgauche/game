@@ -189,7 +189,7 @@ describe('Boucle de jeu (store)', () => {
     expect(h.armour.corps).toBe(3);          // PA intacte (rien dévié)
   });
 
-  // ── Phase A — « une situation = une modale » : le JET d'attaque est l'ÉTAPE 0 de la séquence ──
+  // ── Phase A — le JET d'attaque est l'ÉTAPE 0 de la séquence ──
   // L'attaque ouvre un pendingCascade purpose 'combat' dont l'étape 0 (`jet:'attack'`) est rendue par
   // CascadeModal via useAttackJetProps ; ses conséquences s'empilent DANS la même séquence (une fenêtre).
   function mkAttackSeq(res: AttackResult) {

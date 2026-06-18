@@ -184,7 +184,7 @@ src/state/
                               butin attribuable, checkTriggers, pushReveal). NE PAS extraire le preview
                               (previewAttack/Defense) : il partage attackEnv/bestDefenseMode avec la
                               résolution → cycle. La cohésion preview↔résolution est voulue.
-  rollFlow.ts / rollFlows.ts  FABRIQUE générique des flux de jet différé (« un jet = une modale ») +
+  rollFlow.ts / rollFlows.ts  FABRIQUE générique des flux de jet différé (« une situation = une modale ») +
                               specs des flux (attack/defense/cast/disengage/trample/run/focus/psych/
                               frenzy/approach/test/heal + reload/recover/activity/corruption/appraise/
                               bargain) — un nouveau jet = 1 spec + 1 xConfirm. Résilience « Je ne

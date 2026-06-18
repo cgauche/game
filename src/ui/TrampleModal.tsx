@@ -11,7 +11,7 @@ import { ev } from '../state/combatLog';
 /**
  * Modale de Piétinement (LDB 85 - Traits de créature.md l.320-321) : action gratuite à 1 Avantage.
  * « Lancer » résout l'attaque de Bagarre (BF), « Chance » la rejoue, « Appliquer » l'inflige.
- * Invariante « un jet = une modale ».
+ *
  */
 export function TrampleModal() {
   const pt = useGame((s) => s.pendingTrample);

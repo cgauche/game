@@ -86,7 +86,7 @@ export function MedicModal() {
         ))}
       </div>
 
-      {/* Zone de JET : exclusive tant que le jet posé n'est pas résolu (un jet = une modale). */}
+      {/* Zone de JET : exclusive tant que le jet posé n'est pas résolu. */}
       {ph && <HealRollFlow embedded />}
 
       {/* DOSSIER du patient : les actes (l'opération en cours s'affiche au-dessus des actes). */}

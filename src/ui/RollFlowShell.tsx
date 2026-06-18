@@ -14,7 +14,7 @@ import { Modal } from './Modal';
 export { Dice } from './Dice';
 
 /**
- * Coquille PARTAGÉE des modales de jet différé (invariante « un jet = une modale ») — pendant UI de
+ * Coquille PARTAGÉE des modales de jet différé — pendant UI de
  * la fabrique `state/rollFlow.ts`. Toutes suivent le même squelette :
  *
  *   overlay → titre → sous-titre → panneau de jet (`RollPanel`, pré-rempli ou rempli) → issue

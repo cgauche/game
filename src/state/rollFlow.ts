@@ -1,5 +1,5 @@
 /**
- * Fabrique générique des « flux de jet différé » (invariante « un jet = une modale »).
+ * Fabrique générique des « flux de jet différé ».
  *
  * Chaque modale de jet (Piétinement, Course, Focalisation, Psychologie, Frénésie, Rechargement,
  * Se libérer/Étouffer, Test de compétence, Évaluation, Marchandage, Soin…) suit le MÊME cycle de

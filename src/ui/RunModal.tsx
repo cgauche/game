@@ -11,7 +11,7 @@ import { describeRun } from '../state/flowOutcomes';
 /**
  * Modale de Course (LDB 15-Déplacement l.79-82) : « Lancer » jette le Test d'Athlétisme (+20),
  * « Relancer »/« Réussite garantie » dépensent Chance/Résilience, « Appliquer » ouvre le déplacement
- * étendu (Marche + Course + DR). Test binaire → pas de « +1 DR ». Invariante « un jet = une modale ».
+ * étendu (Marche + Course + DR). Test binaire → pas de « +1 DR ».
  */
 export function RunModal() {
   const pr = useGame((s) => s.pendingRun);

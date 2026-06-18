@@ -14,7 +14,7 @@ import { ev } from '../state/combatLog';
  * Modale de MANŒUVRE de créature (Souffle/Vomi/Langue/Regard/Étreinte — LDB 85 - Traits de
  * créature.md) qu'un héros active (mutation/polymorphie). La modale influence le SEUL jet de
  * l'ATTAQUANT (CC ou CT) ; « Appliquer » roule les défenseurs et résout l'opposition au feed.
- * Invariante « un jet = une modale ». Regard pétrifiant (l.238) : Avantage variable → un sélecteur
+ * Regard pétrifiant (l.238) : Avantage variable → un sélecteur
  * (pré-jet) fixe le DR ajouté. (Le Hurlement n'ouvre PAS de modale — pas de jet d'attaquant.)
  */
 export function ManeuverModal() {

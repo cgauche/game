@@ -131,7 +131,7 @@ describe('manœuvres en combat (store)', () => {
     useGame.getState().battleSelectAttack('souffle');
     useGame.getState().battleClickEntity(E.id);
     const pm = useGame.getState().pendingManeuver;
-    expect(pm).toBeTruthy(); // « un jet = une modale » : le Souffle ouvre la modale de jet d’attaquant
+    expect(pm).toBeTruthy(); // le Souffle ouvre la modale de jet d’attaquant
     expect(pm!.kind).toBe('souffle');
     expect(pm!.targetId).toBe(E.id); // point d’impact = entité cliquée
     expect(pm!.result).toBeNull(); // rien n’est tiré avant Lancer
@@ -150,7 +150,7 @@ describe('manœuvres en combat (store)', () => {
     expect(pa).toBeTruthy();
     expect(pa!.freeKind).toBe('morsure');
     expect(pa!.targetId).toBe(E.id);
-    expect(pa!.result).toBeNull(); // « un jet = une modale » : rien n’est tiré avant Lancer
+    expect(pa!.result).toBeNull(); // rien n’est tiré avant Lancer
     // L’Avantage est dépensé à la FRAPPE (coût RAW 1), après tous les portails — chemin d'attaque unifié.
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.advantage).toBe(1);
   });

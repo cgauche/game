@@ -12,7 +12,7 @@
  *   - re-rendu après mutation EN PLACE (Chance/Résilience) : `…touchActors(get())` dans le `set` ;
  *   - sortie : en combat → `battle.log` (+ conso de l'Action, `checkBattleOver`) ; hors combat → `journal`.
  *
- * Module-level : NON scanné par le garde-fou « un jet = une modale » (qui n'inspecte que les actions du store).
+ * Module-level : NON scanné par le garde-fou (qui n'inspecte que les actions du store).
  */
 import type { Combatant } from '../engine/types';
 import type { GameState } from './store';

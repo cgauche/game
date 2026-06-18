@@ -6,7 +6,7 @@ import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import type { AttackResult } from '../engine/combat';
 
-// Coup Critique / Assommante en révélation + gel de l'IA (« un jet = une modale »).
+// Coup Critique / Assommante en révélation + gel de l'IA.
 describe('Conséquences d’attaque en révélation (store)', () => {
   beforeEach(() => {
     vi.useFakeTimers();

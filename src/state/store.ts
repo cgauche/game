@@ -2000,7 +2000,7 @@ export const useGame = create<GameState>((set, get) => ({
       get().log(`${active.name} ne peut pas focaliser : ${fblocked}.`);
       return;
     }
-    // OUVRE la modale (le Test étendu se fait au clic « Lancer ») — « un jet = une modale ».
+    // OUVRE la modale (le Test étendu se fait au clic « Lancer »)
     set({ pendingFocus: { casterId: active.id, spellLabel: label, result: null } });
   },
   // Focalisation COMMUNE combat/hors-combat (couture D) : acteur via `actorIn`, sortie journal hors combat.
@@ -2069,7 +2069,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!battle || battle.over || battle.acted) return;
     const active = activeCombatant(battle);
     if (!active || active.kind !== 'hero' || active.frenzied || !isFrenzyCapable(active)) return;
-    // OUVRE la modale — le Test de FM se fait au clic « Lancer » (« un jet = une modale »).
+    // OUVRE la modale — le Test de FM se fait au clic « Lancer ».
     set({ pendingFrenzy: { combatantId: active.id, result: null }, battle: { ...battle, action: null } });
   },
   frenzyRoll: () => FLOWS.frenzy.roll(get, set),
@@ -2285,7 +2285,7 @@ export const useGame = create<GameState>((set, get) => ({
       }
     }
     // Aiguillage par NATURE de l'attaque : Piétinement (Taille) → flux dédié ; zone ciblée (Souffle/Vomi/
-    // Langue/Regard/Étreinte) → `pendingManeuver` (jet d'ATTAQUANT influençable, « un jet = une modale » ;
+    // Langue/Regard/Étreinte) → `pendingManeuver` (jet d'ATTAQUANT influençable ;
     // `targetId` = clic = victime/point d'impact ; Avantage variable de Regard → 1) ; la MÊLÉE (Arme +
     // Morsure/Caudale/Tentacule) passe par l'approche-puis-frappe ci-dessous.
     if (option.targeting === 'trample') return get().battleTrample(target.id);
@@ -2342,7 +2342,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (battle.preview) set({ battle: { ...get().battle!, preview: null } });
     // Bénédiction de Protection (LDB 41 — L13) : Test de FM Accessible (+20) AVANT d'engager quoi
     // que ce soit (charge comprise) ; échec → « choisir une cible ou une Action différente » —
-    // rien n'est consommé, le jet est montré (file de révélation, « un jet = une modale »).
+    // rien n'est consommé, le jet est montré (file de révélation).
     {
       const ward = attackWardGate(active, target);
       if (ward.lines.length) {
@@ -3006,7 +3006,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!active || active.kind !== 'hero' || active.advantage < 1) return; // exige ≥1 Avantage (LDB 85 l.320)
     const target = trampleTarget(battle, active, targetId); // adversaire adjacent plus petit
     if (!target) return;
-    // OUVRE la modale (le jet se fait au clic « Lancer ») — « un jet = une modale ».
+    // OUVRE la modale (le jet se fait au clic « Lancer »)
     set({ pendingTrample: { attackerId: active.id, targetId: target.id, result: null }, battle: { ...battle, action: null } });
   },
   // ── Sélection d'ATTAQUE (« Attaque ▾ ») : arme une `AttackOption` (Arme + gratuites/zone/Piétinement/
@@ -3257,7 +3257,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (attacker && !pd.free) aiFrenzyAttack(get, set, attacker);
     // Attaques gratuites de créature : enchaîne la file (peut rouvrir une modale → ne pas reprendre).
     if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return;
-    // « une situation = une modale » : la défense est l'étape de SA cascade combat → enchaîner le curseur
+    // la défense est l'étape de SA cascade combat → enchaîner le curseur
     // (les conséquences empilées — Critique/Maladresse — s'affichent inline ; la clôture reprend l'IA).
     const seq = get().pendingCascade;
     if (seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'defense' && !get().pendingDefense) get().cascadeNext();
@@ -3283,7 +3283,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (attacker && !pd.free) aiFrenzyAttack(get, set, attacker);
     // Attaques gratuites de créature : enchaîne la file (peut rouvrir une modale → ne pas reprendre).
     if (attacker && aiCreatureFreeAttacks(get, set, attacker)) return;
-    // « une situation = une modale » : la défense est l'étape de SA cascade combat → enchaîner le curseur.
+    // la défense est l'étape de SA cascade combat → enchaîner le curseur.
     const seq = get().pendingCascade;
     if (seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'defense' && !get().pendingDefense) get().cascadeNext();
     else resumeEnemyTurn(get, set);

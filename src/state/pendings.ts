@@ -1,5 +1,5 @@
 /**
- * Types des jets/flux DIFFÉRÉS du store (« un jet = une modale ») + récompenses de victoire et
+ * Types des jets/flux DIFFÉRÉS du store + récompenses de victoire et
  * monnaie — types PURS, sans logique, extraits de store.ts pour le garder navigable.
  * Le store les ré-exporte (les imports existants `from './store'` restent valides).
  */

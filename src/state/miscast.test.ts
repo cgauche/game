@@ -6,7 +6,7 @@ import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 
 // Colère des dieux / Incantation Imparfaite — conséquence INLINE dans la séquence partagée
-// (« un jet = une modale » : étape d'affichage, plus de RevealModal séparée).
+// (étape d'affichage, plus de RevealModal séparée).
 // FOLD (2026-06-16) : la conséquence est désormais APPENDUE à la cascade d'incantation ACTIVE
 // (parité avec le Critique d'attaque) via `pushCombatStep` ; hors cascade d'incantation (ces tests
 // appellent `applyMiscast` à nu, sans openCastCascade) le fallback démarre une cascade GÉNÉRIQUE

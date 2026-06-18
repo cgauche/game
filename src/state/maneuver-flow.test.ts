@@ -1,7 +1,7 @@
 /**
  * Flux de MANŒUVRE de créature par modale (`pendingManeuver` + `FLOWS.maneuver`). Un héros qui
  * possède un trait d'attaque de créature (mutation/polymorphie) active Souffle/Vomi/Langue/Regard/
- * Étreinte via la modale de jet d'ATTAQUANT (« un jet = une modale ») ; Hurlement reste immédiat
+ * Étreinte via la modale de jet d'ATTAQUANT ; Hurlement reste immédiat
  * (pas de jet d'attaquant). Couvre : ouverture sans jet (result===null), Lancer→Appliquer (Avantage
  * dépensé, `acted` selon l'activation, Dégâts/effets), Avantage variable du Regard (+DR → Pétrifié),
  * influence du jet d'attaquant (Résilience/Chance +1 DR).
@@ -64,7 +64,7 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
     expect(pm).toBeTruthy();
     expect(pm!.kind).toBe('souffle');
     expect(pm!.avantageSpent).toBe(2); // coût RAW (fixe)
-    expect(pm!.result).toBeNull(); // « un jet = une modale » : rien n’est tiré avant Lancer
+    expect(pm!.result).toBeNull(); // rien n’est tiré avant Lancer
     useGame.getState().maneuverRoll();
     expect(useGame.getState().pendingManeuver!.result).toBeTruthy();
     useGame.getState().maneuverConfirm();

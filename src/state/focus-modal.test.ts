@@ -4,7 +4,7 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 
-// Focalisation par modale (LDB — Test étendu) : « un jet = une modale ».
+// Focalisation par modale (LDB — Test étendu).
 describe('Focalisation en modale (store)', () => {
   beforeEach(() => {
     vi.useFakeTimers();

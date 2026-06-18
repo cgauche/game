@@ -77,7 +77,7 @@ export function openMedic(get: Get, set: Set, opts?: { patientId?: string; npc?:
 
 export function medicSelectPatient(get: Get, set: Set, id: string): void {
   const m = get().medic;
-  // Verrouillé pendant un jet posé (invariant « un jet = une modale ») et pendant une opération.
+  // Verrouillé pendant un jet posé et pendant une opération.
   if (!m || get().pendingHeal || m.surgery) return;
   if (!get().party.some((h) => h.id === id)) return;
   set({ medic: { ...m, patientId: id } });

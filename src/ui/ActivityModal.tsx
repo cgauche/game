@@ -9,7 +9,7 @@ import { DrBar } from './DrBar';
 /**
  * Jet d'Activité d'interlude (LDB 23) : Revenus (Test Accessible de la compétence de carrière,
  * LDB 08 l.135) ou lancer d'Artisanat (Test ÉTENDU de Métier — barre de DR cumulé). Même coquille
- * que les autres modales de jet (« un jet = une modale »).
+ * que les autres modales de jet.
  */
 export function ActivityModal() {
   const pa = useGame((s) => s.pendingActivity);

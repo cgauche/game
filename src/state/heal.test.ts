@@ -110,7 +110,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
     expect(useGame.getState().medic).toBeNull();
   });
 
-  it('patients/sortie verrouillés pendant un jet posé (un jet = une modale)', () => {
+  it('patients/sortie verrouillés pendant un jet posé', () => {
     const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'Int' }] });
     const al = hero({ id: 'al', wounds: { current: 4, max: 12 }, skills: [] });
     const bob = hero({ id: 'bob', wounds: { current: 2, max: 12 }, skills: [] });

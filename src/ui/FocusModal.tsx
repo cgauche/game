@@ -12,7 +12,7 @@ import { DrBar } from './DrBar';
 
 /**
  * Modale de Focalisation (LDB — Test étendu de Focalisation) : « Lancer » accumule du DR vers le NI,
- * « Chance » rejoue/ajoute, « Appliquer » fige l'accumulation. Invariante « un jet = une modale ».
+ * « Chance » rejoue/ajoute, « Appliquer » fige l'accumulation.
  */
 export function FocusModal() {
   const pf = useGame((s) => s.pendingFocus);

@@ -57,7 +57,7 @@ import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
   wardSaves, hasChampionDefense, banishedAtZero,
   isStupid, hasRage, isUnstable, isBestial, isTerritorial, hasPerturbingAura,
-  traitSeesInDark, isColdBlooded, bellicosePsychImmune, magicResistanceOf, hasStealthAgBonus, flyMeters, runMultiplier,
+  traitSeesInDark, isColdBlooded, bellicosePsychImmune, magicResistanceOf, flyMeters, runMultiplier,
   hasTraitKey,
 } from '../engine/traits/dispatch';
 import {
@@ -83,7 +83,7 @@ import {
   type MissileResult,
   type CounterspellOutcome,
 } from '../engine/magic';
-import { applyOps, resolveFormula, COMBAT_PERSIST, type GameOp } from '../engine/ops';
+import { applyOps, resolveFormula, skillDRBonus, COMBAT_PERSIST, type GameOp } from '../engine/ops';
 import { spellSpecFor } from '../data/spellspecs';
 import { applySummon, purgeExpiredSummons } from './summonFlow';
 import type { ConjureForm } from '../engine/conjuredWeapons';
@@ -287,7 +287,7 @@ export function applySurprise(combatants: Combatant[], surprisedSide: 'party' | 
   // p.339) : « Ajoutez son bonus d'Agilité au DR de tous ses Tests de Discrétion ».
   const sneak = ambushers.reduce((a, b) => (testValue(b, 'Discrétion') < testValue(a, 'Discrétion') ? b : a));
   const sneakVal = testValue(sneak, 'Discrétion');
-  const sneakDR = hasStealthAgBonus(sneak.traits) ? bonus(effectiveChar(sneak, 'Ag')) : 0;
+  const sneakDR = skillDRBonus(sneak, 'discretion'); // Furtif : +Bonus d'Agilité au DR (donnée : passive skillDRBonus)
   const lines: string[] = [];
   for (const c of surprised) {
     // Embusqueur (Discrétion) vs guetteur (Perception) : si l'embusqueur l'emporte → le guetteur est Surpris.
@@ -3331,7 +3331,7 @@ export function advanceTurn(get: Get, set: SetFn) {
       zonesRoundTick(battle.zones, battle.combatants, battleRng()).forEach((t) => tickLine(t.line, t.combatant)); // zones perRound (Grands feux d'U'Zhul, LDB 47 : « au début d'un Round »)
       for (const c of battle.combatants) if (isOutOfAction(c)) clearPsychOf(battle.combatants, c.id); // effets psy d'une créature morte → fin (catch-all toutes causes de mort)
       purgeExpiredSummons(battle, round).forEach((l) => tickLine(l)); // invocations à durée écoulée OU lanceur tombé (state/summonFlow)
-      if (heroRoundLines.length) pushReveal(set, { kind: 'round', title: `Fin du Round ${round - 1}`, lines: heroRoundLines, severity: 'minor' }); // « un jet = une modale » (entretien HÉROS — auto-fermée)
+      if (heroRoundLines.length) pushReveal(set, { kind: 'round', title: `Fin du Round ${round - 1}`, lines: heroRoundLines, severity: 'minor' }); // (entretien HÉROS — auto-fermée)
       // Maniement de deux armes : le −10 défensif expire au DÉBUT du prochain Tour de son porteur. Si ce
       // porteur est order[0] (il rejoue en premier), c'est ICI (le franchissement de Round) que son Tour démarre.
       const firstNext = battle.combatants.find((c) => c.id === battle.order[0]);

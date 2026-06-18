@@ -320,7 +320,7 @@ export function buildApi() {
       return { open, pilote: flux ? names : open.includes('pendingReveals') ? ['dismissReveal'] : open.includes('pendingRoundStart') ? ['confirmRoundStart'] : [] };
     },
 
-    /** Lance le jet de LA modale ouverte (convention <flux>Roll) — « un jet = une modale ». */
+    /** Lance le jet de LA modale ouverte (convention <flux>Roll) */
     roll: () => devDriveModal('Roll'),
     /** Applique/acquitte LA modale ouverte (reveals → dismissReveal, Round → confirmRoundStart, sinon <flux>Confirm). */
     confirm: () => devDriveModal('Confirm'),

@@ -38,7 +38,7 @@ import { evLines } from './combatLog';
  * Ajoute `n` Points de Corruption à `hero`, applique seuil → mutation → limites.
  * Mute le héros EN PLACE (l'appelant pousse le patch de re-rendu) et renvoie les
  * lignes de journal. La révélation (dés du Test/de la table) est poussée dans la
- * file `pendingReveals` (« un jet = une modale », jet SUBI → révélation témoin).
+ * file `pendingReveals` (jet SUBI → révélation témoin).
  */
 export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number): string[] {
   const rng = battleRng();
