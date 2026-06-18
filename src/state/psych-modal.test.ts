@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
-import { openRoundStartPsych, openRoundEndPsych } from './combatFlow';
+import { openRoundStartPsych, openRoundEndCascade } from './combatFlow';
 import { FLOWS } from './rollFlows';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -70,7 +70,7 @@ describe('Psychologie de combat héros — cascade de Round (Peur/Terreur)', () 
   it('Peur : openRoundEndPsych ouvre la cascade (kind peur) et cumule le DR', () => {
     useGame.getState().seedRng(2);
     const { E } = setup('grande'); // gap 1 → Peur 1
-    openRoundEndPsych(useGame.getState, useGame.setState);
+    openRoundEndCascade(useGame.getState, useGame.setState);
     const c = useGame.getState().pendingCascade;
     expect(c).toBeTruthy();
     const step = c!.participants[0];
@@ -86,7 +86,7 @@ describe('Psychologie de combat héros — cascade de Round (Peur/Terreur)', () 
     useGame.getState().seedRng(2);
     const { H } = setup('grande'); // Peur 1 (Indice 1)
     H.resilience = 2;
-    openRoundEndPsych(useGame.getState, useGame.setState);
+    openRoundEndCascade(useGame.getState, useGame.setState);
     const step = useGame.getState().pendingCascade!.participants[0];
     expect(step.combatPsych?.kind).toBe('peur');
 
@@ -112,7 +112,7 @@ describe('Psychologie de combat héros — cascade de Round (Peur/Terreur)', () 
     const round = useGame.getState().battle!.round;
     // Peur déjà ENTAMÉE (Test étendu) : 1 DR cumulé sur 3 requis, pas encore testée ce Round.
     H.psychState = [{ type: 'peur', sourceId: E.id, indice: 3, calmeDR: 1, lastTestRound: round - 1 }];
-    openRoundEndPsych(useGame.getState, useGame.setState);
+    openRoundEndCascade(useGame.getState, useGame.setState);
     const step = useGame.getState().pendingCascade!.participants[0];
     expect(step.combatPsych?.kind).toBe('peur');
     expect(step.combatPsych?.prevDR).toBe(1); // l'étape part du DR déjà cumulé
@@ -140,7 +140,7 @@ describe('Psychologie de combat héros — cascade de Round (Peur/Terreur)', () 
     H.resilience = 2;
     const round = useGame.getState().battle!.round;
     H.psychState = [{ type: 'peur', sourceId: E.id, indice: 6, calmeDR: 0, lastTestRound: round - 1 }];
-    openRoundEndPsych(useGame.getState, useGame.setState);
+    openRoundEndCascade(useGame.getState, useGame.setState);
     const step = useGame.getState().pendingCascade!.participants[0];
     expect(step.combatPsych?.kind).toBe('peur');
 
@@ -179,7 +179,7 @@ describe('Psychologie de combat héros — cascade de Round (Peur/Terreur)', () 
     setup('moyenne');
     openRoundStartPsych(useGame.getState, useGame.setState);
     expect(useGame.getState().pendingCascade).toBeNull();
-    openRoundEndPsych(useGame.getState, useGame.setState);
+    openRoundEndCascade(useGame.getState, useGame.setState);
     expect(useGame.getState().pendingCascade).toBeNull();
   });
 
@@ -190,7 +190,7 @@ describe('Psychologie de combat héros — cascade de Round (Peur/Terreur)', () 
     expect(useGame.getState().pendingCascade).toBeNull();
 
     setup('enorme'); // Terreur 2
-    openRoundEndPsych(useGame.getState, useGame.setState); // Terreur exclue de la fin → aucune cascade
+    openRoundEndCascade(useGame.getState, useGame.setState); // Terreur exclue de la fin → aucune cascade
     expect(useGame.getState().pendingCascade).toBeNull();
   });
 });

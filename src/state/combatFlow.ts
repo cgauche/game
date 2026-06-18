@@ -166,7 +166,8 @@ export * from './combatManeuvers';
 export * from './combatHooks';
 export * from './combatSetup';
 import { runCombatHooks } from './combatHooks';
-export { brokenRecovery } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export de brokenRecovery (broken-recovery.test)
+import { collectHeroRoundEndUpkeep } from './combat/roundHooks';
+export { brokenRecovery, collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour broken-recovery.test / cascade d'upkeep
 import {
   emitCreatureAttackAnim, trampleTarget, bestDefenseMode,
   rollManeuverAttacker, maneuverAttackerDifficulty, resolveManeuver,
@@ -1173,7 +1174,7 @@ export function applyAttackResult(
     pushCombatStep(set, {
       id: `cons-deviation-${target.id}`, kind: 'deviation', actorId: target.id, icon: '💥',
       label: 'Coup Critique — dévier ?', options: [{ key: 'devier', label: '🛡️ Dévier (−1 PA)' }, { key: 'subir', label: 'Subir' }],
-      defaultChoice: 'subir', deviation: dev, reveal, interactive: true,
+      defaultChoice: 'devier', deviation: dev, reveal, interactive: true, // défaut = DÉVIER (sacrifie 1 PA, évite le Critique)
     });
     return true; // suspendu — la résolution part de l'applier 'deviation' (resolveDeviation, resume:false)
   }
@@ -3407,7 +3408,7 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
   //     résolution. À sa fermeture (`roundBoundary`), le store enchaîne DIRECTEMENT sur `enterRoundStartPause`
   //     — surtout PAS `resolveRoundBoundary` (qui re-jouerait ces décomptes). Sinon (aucune Peur), on
   //     enchaîne ici même.
-  openRoundEndPsych(get, set);
+  openRoundEndCascade(get, set);
   if (get().pendingCascade) return;
   enterRoundStartPause(get, set);
 }
@@ -3596,6 +3597,35 @@ export function collectHeroRoundEndPsych(get: Get, c: Combatant): HeroPsychDue |
   return null;
 }
 
+/** Une étape de Psychologie de combat (`combatPsych`) pour le héros `c` si un Test est dû selon
+ *  `collect` (début ou fin de Round). `endFrenzyIfDone` est joué d'abord (sortie de Frénésie avant
+ *  tout test). Renvoie `null` sinon. Pur de cascade — la fusion (avec l'upkeep) vit chez l'appelant. */
+function psychStepFor(get: Get, set: SetFn, c: Combatant, collect: (get: Get, c: Combatant) => HeroPsychDue | null): import('./pendings').CascadeStep | null {
+  endFrenzyIfDone(get, set, c); // une Frénésie finie (plus d'ennemi / Sonné) sort le héros (Exténué) avant tout test
+  const t = collect(get, c);
+  if (!t) return null;
+  const isCible = CIBLE_TYPES.has(t.kind);
+  const cl = isCible ? CIBLE_LABEL[t.kind] : null;
+  const calme = calmeValue(c);
+  return {
+    id: `psych-${c.id}`,
+    kind: 'combatPsych',
+    actorId: c.id,
+    icon: cl?.emoji ?? (t.kind === 'terreur' ? '😱' : '😨'),
+    rollLabel: 'Calme',
+    base: calme,
+    target: calme, // Test de Calme Intermédiaire (+0)
+    label: cl ? `${cl.emoji} ${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? '😱 Terreur' : '😨 Peur'} ${t.indice}`,
+    combatPsych: { kind: t.kind, sourceId: t.sourceId, sourceName: t.sourceName, indice: t.indice, cible: t.cible, prevDR: t.prevDR },
+  };
+}
+
+/** Une cascade de Round est-elle interdite (modale/cascade bloquante déjà ouverte) ? */
+function roundCascadeBlocked(get: Get): boolean {
+  const battle = get().battle;
+  return !battle || !!battle.over || !!get().pendingCascade || get().pendingReveals.length > 0 || !!get().pendingFateSave;
+}
+
 /** Construit la cascade de Psychologie de combat (UNE étape par héros DÛ) à partir d'un collecteur.
  *  No-op si une cascade/modale bloquante est ouverte. Met l'IA en pause (purpose:'combat') jusqu'à
  *  résolution ; la reprise est gérée par `cascadeNext`/`cascadeFinish` (→ resumeSuspendedAI). */
@@ -3607,28 +3637,12 @@ function openCombatPsychCascade(
   icon: string,
   roundBoundary = false,
 ): void {
-  const battle = get().battle;
-  if (!battle || battle.over || get().pendingCascade || get().pendingReveals.length || get().pendingFateSave) return; // Maladresse = étape de pendingCascade (déjà couverte)
+  if (roundCascadeBlocked(get)) return; // Maladresse = étape de pendingCascade (déjà couverte)
   const steps: import('./pendings').CascadeStep[] = [];
-  for (const c of battle.combatants) {
+  for (const c of get().battle!.combatants) {
     if (c.kind !== 'hero' || isOutOfAction(c)) continue;
-    endFrenzyIfDone(get, set, c); // une Frénésie finie (plus d'ennemi / Sonné) sort le héros (Exténué) avant tout test
-    const t = collect(get, c);
-    if (!t) continue;
-    const isCible = CIBLE_TYPES.has(t.kind);
-    const cl = isCible ? CIBLE_LABEL[t.kind] : null;
-    const calme = calmeValue(c);
-    steps.push({
-      id: `psych-${c.id}`,
-      kind: 'combatPsych',
-      actorId: c.id,
-      icon: cl?.emoji ?? (t.kind === 'terreur' ? '😱' : '😨'),
-      rollLabel: 'Calme',
-      base: calme,
-      target: calme, // Test de Calme Intermédiaire (+0)
-      label: cl ? `${cl.emoji} ${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? '😱 Terreur' : '😨 Peur'} ${t.indice}`,
-      combatPsych: { kind: t.kind, sourceId: t.sourceId, sourceName: t.sourceName, indice: t.indice, cible: t.cible, prevDR: t.prevDR },
-    });
+    const st = psychStepFor(get, set, c, collect);
+    if (st) steps.push(st);
   }
   if (!steps.length) return;
   startCascade(get, set, { title, icon, purpose: 'combat', steps, roundBoundary });
@@ -3640,10 +3654,39 @@ export function openRoundStartPsych(get: Get, set: SetFn): void {
   openCombatPsychCascade(get, set, collectHeroRoundStartPsych, 'Sang-froid', '😤');
 }
 
-/** Cascade de Psychologie de FIN de Round (Peur — Test étendu de Calme, LDB 21 l.27) — un héros par
- *  étape. Appelée au franchissement de Round APRÈS l'entretien/le Destin ; suspend l'IA jusqu'à résolution. */
-export function openRoundEndPsych(get: Get, set: SetFn): void {
-  openCombatPsychCascade(get, set, collectHeroRoundEndPsych, 'Peur — fin de Round', '😨', true);
+/**
+ * Cascade de FIN de Round (combat) — un SEUL `pendingCascade` fusionnant, PAR HÉROS, ses Tests
+ * d'upkeep INFLUENÇABLES (Mâchoires d'acier → récupération du Brisé → se-fatiguer, LDB 10/16) PUIS
+ * son Test de Peur (Test étendu de Calme, LDB 21 l.27). Les ENNEMIS sont déjà résolus en silence par
+ * les hooks `roundBoundary` (steel-jaw/broken-recovery/se-fatiguer). Ordre choisi : upkeep AVANT la
+ * Peur (les effets de Round RAW — dont les hooks ennemi — précèdent la révélation/Psychologie de fin
+ * de Round, et la sortie d'un État Sonné/Brisé peut influer sur l'état d'esprit). Appelée au
+ * franchissement de Round APRÈS l'entretien/le Destin ; suspend l'IA jusqu'à résolution.
+ *
+ * Les conséquences d'upkeep RNG-free (retrait « caché » du Brisé, Exténué sans-Test) sont appliquées
+ * DÉTERMINISTEment par le collecteur via le `sink` ci-dessous (journal de combat).
+ */
+export function openRoundEndCascade(get: Get, set: SetFn): void {
+  if (roundCascadeBlocked(get)) return;
+  const upkeepLines: { line: string; id?: string }[] = [];
+  const sink = (line: string, c?: Combatant) => upkeepLines.push({ line, id: c?.id });
+  const steps: import('./pendings').CascadeStep[] = [];
+  for (const c of get().battle!.combatants) {
+    if (c.kind !== 'hero' || isOutOfAction(c)) continue;
+    // 1) Upkeep du héros (le collecteur applique au passage ses effets RNG-free + `endFrenzyIfDone`
+    //    est joué par `psychStepFor` juste après, idempotent). 2) Peur de fin de Round.
+    steps.push(...collectHeroRoundEndUpkeep(get, c, sink));
+    const psych = psychStepFor(get, set, c, collectHeroRoundEndPsych);
+    if (psych) steps.push(psych);
+  }
+  // Lignes déterministes d'upkeep → journal de combat (les Tests influençables iront au journal de la
+  // cascade à leur validation). On applique AVANT d'ouvrir la cascade pour garder l'ordre de lecture.
+  if (upkeepLines.length) {
+    const b = get().battle!;
+    set({ battle: { ...b, log: [...b.log, ...upkeepLines.map((u) => ev('condition', u.line, u.id))] } });
+  }
+  if (!steps.length) return;
+  startCascade(get, set, { title: 'Fin de Round', icon: '⏳', purpose: 'combat', steps, roundBoundary: true });
 }
 
 /** Conséquence d'un Test de Calme de COMBAT (étape de cascade) : pose/mets à jour le `psychState`.

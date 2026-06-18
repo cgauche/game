@@ -7,6 +7,7 @@
  * l'import. Le golden `roundBoundary.golden.test.ts` fige l'ordre + les tirages RNG byte-pour-byte.
  */
 import { registerCombatHook } from '../combatHooks';
+import { registerCascadeApplier } from '../cascade';
 import { battleRng } from '../battleRng';
 import { rollTest } from '../../engine/tests';
 import { testValue } from '../../engine/skills';
@@ -23,8 +24,11 @@ import { chebyshev } from '../path';
 import { isEngaged } from '../../engine/engagement';
 import { lineOfSightCover } from '../lineOfSight';
 import { smokeOf } from '../combatGeometry';
+import { rule } from '../../engine/policy';
+import { DIFFICULTY_MODIFIERS } from '../../engine/types';
 import type { Combatant, Difficulty } from '../../engine/types';
-import type { Get } from '../flowTypes';
+import type { CascadeStep } from '../pendings';
+import type { Get, Set as SetFn } from '../flowTypes';
 
 // ============================================================================================
 // Séquence RAW de franchissement de Round, migrée ISO-COMPORTEMENT depuis advanceTurn (corps copiés
@@ -117,19 +121,30 @@ registerCombatHook({
     }
   },
 });
+/** Mâchoires d'acier (LDB 10) DUE pour `c` ce Round : capable + au moins un État Sonné. */
+function steelJawDue(c: Combatant): boolean {
+  return !isOutOfAction(c) && hasStunSave(c) && stacks(c, COND.sonne) > 0;
+}
+/** Conséquence d'un Test de Résistance « Mâchoires d'acier » réussi : retire 1 + DR États Sonné.
+ *  Partagée par le hook (ENNEMIS, en masse) et l'applier de cascade (HÉROS, influençable). */
+function steelJawApply(c: Combatant, success: boolean, sl: number): string | null {
+  if (!success) return null;
+  const n = Math.min(stacks(c, COND.sonne), 1 + Math.max(0, sl));
+  if (n <= 0) return null;
+  removeCondition(c, COND.sonne, n);
+  return `${c.name} secoue la tête (Mâchoires d'acier) : ${n} État(s) Sonné retiré(s).`;
+}
 registerCombatHook({
   id: 'steel-jaw', // Mâchoires d'acier (LDB 10) : Test de Résistance → retire 1 + DR États Sonné (RNG)
   phase: 'roundBoundary',
   order: 60,
   run: ({ battle, sink }) => {
     for (const c of battle.combatants) {
-      if (isOutOfAction(c) || !hasStunSave(c) || !stacks(c, COND.sonne)) continue;
+      // HÉROS : différé à la cascade de fin de Round (Test influençable Chance/Résilience). ENNEMIS : silence.
+      if (c.kind === 'hero' || !steelJawDue(c)) continue;
       const t = rollTest(testValue(c, 'Résistance'), 'intermediaire', battleRng());
-      if (t.success) {
-        const n = Math.min(stacks(c, COND.sonne), 1 + Math.max(0, t.sl));
-        removeCondition(c, COND.sonne, n);
-        sink(`${c.name} secoue la tête (Mâchoires d'acier) : ${n} État(s) Sonné retiré(s).`, c);
-      }
+      const line = steelJawApply(c, t.success, t.sl);
+      if (line) sink(line, c);
     }
   },
 });
@@ -149,41 +164,68 @@ registerCombatHook({
 });
 
 /**
- * Récupération du Brisé en fin de Round (LDB 16 l.57-59 ; Cœur vaillant LDB 10). Déplacé ICI depuis
- * combatFlow (qui le ré-exporte pour `broken-recovery.test`). Émet chaque ligne via `sink(line, c)`.
+ * Contexte RNG-free de récupération du Brisé pour `c` (LDB 16 l.57-59 ; Cœur vaillant LDB 10) :
+ * « caché hors de vue » (tous les ennemis ont la Ligne de Vue bloquée → retire 1 Brisé sans Test) et
+ * la difficulté du Test de Calme. Pur de RNG → calculé à l'IDENTIQUE par le hook ENNEMI (roll inline)
+ * et le collecteur HÉROS (étape de cascade). N'applique PAS encore le retrait « caché » ni l'Exténué.
  */
-export function brokenRecovery(get: Get, sink: (line: string, c: Combatant) => void): void {
+function brokenContext(get: Get, c: Combatant): { hidden: boolean; testDue: boolean; difficulty: Difficulty } | null {
   const battle = get().battle;
   const scene = get().scene;
+  if (!battle || !stacks(c, COND.brise) || isOutOfAction(c) || !c.pos) return null;
+  const enemies = battle.combatants.filter((e) => e.kind !== c.kind && !isOutOfAction(e) && e.pos);
+  const hidden = !!scene && enemies.length > 0 && enemies.every((e) => lineOfSightCover(scene, e.pos!, c.pos!, [], smokeOf(battle)).blocked);
+  // Restera-t-il du Brisé à tester APRÈS l'éventuel retrait « caché » (1 stack) ? Le Test n'a lieu que
+  // si pas Engagé (l.57) — sauf Cœur vaillant (LDB 10, sans restriction d'Engagement).
+  const briseAfterHidden = stacks(c, COND.brise) - (hidden ? 1 : 0);
+  const testDue = briseAfterHidden > 0 && (!isEngaged(c) || hasBraveheart(c));
+  const nearest = enemies.length ? Math.min(...enemies.map((e) => chebyshev(c.pos!, e.pos!))) : Infinity;
+  const difficulty: Difficulty = hidden ? 'accessible' : nearest <= 3 ? 'tresDifficile' : 'intermediaire';
+  return { hidden, testDue, difficulty };
+}
+/** « Une fois que vous n'avez plus d'États Brisé, vous gagnez 1 État Exténué » (LDB 16 l.80). */
+function brokenExhaustIfClear(c: Combatant, sink: (line: string, c: Combatant) => void): void {
+  if (!stacks(c, COND.brise)) { addCondition(c, COND.extenue); sink(`${c.name} est Exténué (après s'être ressaisi).`, c); }
+}
+/** Conséquence d'un Test de Calme de récupération du Brisé : retire 1 + DR Brisé sur succès (LDB 16 l.59).
+ *  Partagée par le hook (ENNEMIS) et l'applier de cascade (HÉROS). */
+function brokenRecoveryApply(c: Combatant, success: boolean, sl: number, sink: (line: string, c: Combatant) => void): void {
+  if (success) {
+    const removed = Math.min(stacks(c, COND.brise), 1 + Math.max(0, sl));
+    removeCondition(c, COND.brise, removed);
+    sink(`${c.name} se ressaisit : retire ${removed} État(s) Brisé (Test de Calme réussi).`, c);
+  } else {
+    sink(`${c.name} reste Brisé (Test de Calme raté).`, c);
+  }
+  brokenExhaustIfClear(c, sink);
+}
+/**
+ * Récupération du Brisé en fin de Round (LDB 16 l.57-59 ; Cœur vaillant LDB 10). Déplacé ICI depuis
+ * combatFlow (qui le ré-exporte pour `broken-recovery.test`). Émet chaque ligne via `sink(line, c)`.
+ * `onlyKind` restreint la résolution INLINE (le hook combat ne résout que les ENNEMIS — les héros
+ * passent par la cascade influençable) ; absent → tous (broken-recovery.test l'appelle sans filtre).
+ */
+export function brokenRecovery(get: Get, sink: (line: string, c: Combatant) => void, onlyKind?: Combatant['kind']): void {
+  const battle = get().battle;
   if (!battle) return;
   for (const c of battle.combatants) {
-    if (!stacks(c, COND.brise) || isOutOfAction(c) || !c.pos) continue;
-    const enemies = battle.combatants.filter((e) => e.kind !== c.kind && !isOutOfAction(e) && e.pos);
-    const hidden = !!scene && enemies.length > 0 && enemies.every((e) => lineOfSightCover(scene, e.pos!, c.pos!, [], smokeOf(battle)).blocked);
-    if (hidden) { removeCondition(c, COND.brise, 1); sink(`${c.name} est resté caché hors de vue : retire 1 État Brisé.`, c); }
-    // Récupération par Test de Calme : seulement si pas Engagé (l.57) — sauf Cœur vaillant
-    // (LDB 10 : Test de Calme en fin de Round, sans restriction d'Engagement) — et qu'il reste du Brisé.
-    if ((!isEngaged(c) || hasBraveheart(c)) && stacks(c, COND.brise)) {
-      const nearest = enemies.length ? Math.min(...enemies.map((e) => chebyshev(c.pos!, e.pos!))) : Infinity;
-      const diff: Difficulty = hidden ? 'accessible' : nearest <= 3 ? 'tresDifficile' : 'intermediaire';
-      const t = rollTest(calmeValue(c), diff, battleRng());
-      if (t.success) {
-        const removed = Math.min(stacks(c, COND.brise), 1 + Math.max(0, t.sl));
-        removeCondition(c, COND.brise, removed);
-        sink(`${c.name} se ressaisit : retire ${removed} État(s) Brisé (Test de Calme réussi).`, c);
-      } else {
-        sink(`${c.name} reste Brisé (Test de Calme raté).`, c);
-      }
+    if (onlyKind && c.kind !== onlyKind) continue;
+    const ctx = brokenContext(get, c);
+    if (!ctx) continue;
+    if (ctx.hidden) { removeCondition(c, COND.brise, 1); sink(`${c.name} est resté caché hors de vue : retire 1 État Brisé.`, c); }
+    if (ctx.testDue) {
+      const t = rollTest(calmeValue(c), ctx.difficulty, battleRng());
+      brokenRecoveryApply(c, t.success, t.sl, sink);
+    } else {
+      brokenExhaustIfClear(c, sink);
     }
-    // « Une fois que vous n'avez plus d'États Brisé, vous gagnez 1 État Exténué » (LDB 16 l.80).
-    if (!stacks(c, COND.brise)) { addCondition(c, COND.extenue); sink(`${c.name} est Exténué (après s'être ressaisi).`, c); }
   }
 }
 registerCombatHook({
   id: 'broken-recovery', // récupération du Brisé en fin de Round (LDB 16 l.57-59) — RNG (Test de Calme)
   phase: 'roundBoundary',
   order: 74,
-  run: ({ get, sink }) => brokenRecovery(get, sink),
+  run: ({ get, sink }) => brokenRecovery(get, sink, 'enemy'), // HÉROS différés à la cascade influençable
 });
 
 // --- Migration ISO-COMPORTEMENT des derniers blocs du franchissement de Round (corps copiés tel quel,
@@ -226,6 +268,21 @@ registerCombatHook({
  * réussite → le délai avant le prochain Test est repoussé de 1 + DR Rounds. Inerte tant que la règle
  * `combat-se-fatiguer` est inactive (aucun tirage RNG consommé → franchissement de Round iso-comportement).
  */
+/** Seuil de « se-fatiguer » : Bonus d'Endurance Rounds d'effort cumulés (min 1) avant un Test (LDB 16 l.99). */
+function fatigueThreshold(c: Combatant): number {
+  return Math.max(1, bonus(effectiveChar(c, 'E')));
+}
+/** Conséquence d'un Test de Résistance « se-fatiguer » : succès → recule le délai (−1−DR Rounds) ;
+ *  échec → Exténué + compteur remis à zéro. Partagée par le hook (ENNEMIS) et l'applier (HÉROS). */
+function fatigueApply(c: Combatant, success: boolean, sl: number): string | null {
+  if (success) {
+    c.effortRounds = Math.max(0, (c.effortRounds ?? 0) - (1 + Math.max(0, sl)));
+    return null;
+  }
+  addCondition(c, COND.extenue);
+  c.effortRounds = 0;
+  return `${c.name} s'épuise (effort soutenu) : Exténué.`;
+}
 registerCombatHook({
   id: 'se-fatiguer',
   phase: 'roundBoundary',
@@ -234,17 +291,93 @@ registerCombatHook({
   run: ({ battle, sink }) => {
     for (const c of battle.combatants) {
       if (isOutOfAction(c)) continue;
-      const seuil = Math.max(1, bonus(effectiveChar(c, 'E')));
+      // L'incrément du compteur d'effort est DÉTERMINISTE (RNG-free) : il a lieu pour TOUT le monde,
+      // héros compris (le collecteur de cascade lit `effortRounds` ≥ seuil pour émettre l'étape).
       c.effortRounds = (c.effortRounds ?? 0) + 1;
-      if (c.effortRounds < seuil) continue;
+      if (c.effortRounds < fatigueThreshold(c)) continue;
+      // HÉROS au seuil : Test différé à la cascade influençable. ENNEMIS : résolus en silence ici.
+      if (c.kind === 'hero') continue;
       const t = rollTest(testValue(c, 'Résistance'), 'intermediaire', battleRng());
-      if (t.success) {
-        c.effortRounds = Math.max(0, c.effortRounds - (1 + Math.max(0, t.sl)));
-      } else {
-        addCondition(c, COND.extenue);
-        c.effortRounds = 0;
-        sink(`${c.name} s'épuise (effort soutenu) : Exténué.`, c);
-      }
+      const line = fatigueApply(c, t.success, t.sl);
+      if (line) sink(line, c);
     }
   },
+});
+
+// ============================================================================================
+// JETS D'UPKEEP de fin de Round concernant un HÉROS → étapes de CASCADE influençable (Chance/
+// Résilience), fusionnées dans la cascade de fin de Round (cf. combatFlow `openRoundEndCascade`).
+// Les ENNEMIS restent résolus en silence dans les hooks ci-dessus (IA, en masse). Le JET d'une étape
+// est kind-agnostique (`FLOWS.cascade` → Test +0 sur `step.target`) ; l'APPLIER ci-dessous interprète
+// `step.result` par `kind`. Modules feuilles : RIEN n'importe combatFlow (pas de cycle).
+// ============================================================================================
+
+/** Cible EFFECTIVE d'un Test (difficulté repliée → `FLOWS.cascade` applique +0 sur `target`). */
+function effTarget(base: number, difficulty: Difficulty): number {
+  return base + DIFFICULTY_MODIFIERS[difficulty];
+}
+
+/**
+ * Tests d'upkeep de fin de Round DUS pour le héros `c` ce Round, en ÉTAPES de cascade (jumeau des
+ * collecteurs de Psychologie). Ordre : Mâchoires d'acier → récupération du Brisé → se-fatiguer (du
+ * plus mécanique au plus optionnel). Side-effect ASSUMÉ (comme `endFrenzyIfDone` côté psy) : le
+ * retrait « caché » du Brisé et l'Exténué SANS-Test sont appliqués ICI (RNG-free, déterministes via
+ * `sink`) ; seuls les Tests réellement dus deviennent des étapes influençables.
+ */
+export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, sink: (line: string, c: Combatant) => void): CascadeStep[] {
+  if (c.kind !== 'hero' || isOutOfAction(c)) return [];
+  const steps: CascadeStep[] = [];
+  // 1) Mâchoires d'acier (LDB 10) — Test de Résistance Intermédiaire (+0).
+  if (steelJawDue(c)) {
+    const res = testValue(c, 'Résistance');
+    steps.push({ id: `steelJaw-${c.id}`, kind: 'steelJaw', actorId: c.id, icon: '🦷', rollLabel: 'Résistance', base: res, target: res, label: '🦷 Mâchoires d’acier' });
+  }
+  // 2) Récupération du Brisé (LDB 16) — retrait « caché » + Exténué SANS-Test appliqués ici ; le Test
+  //    de Calme (difficulté variable) devient une étape si dû.
+  const bctx = brokenContext(get, c);
+  if (bctx) {
+    if (bctx.hidden) { removeCondition(c, COND.brise, 1); sink(`${c.name} est resté caché hors de vue : retire 1 État Brisé.`, c); }
+    if (bctx.testDue) {
+      const calme = calmeValue(c);
+      steps.push({ id: `brokenRecovery-${c.id}`, kind: 'brokenRecovery', actorId: c.id, icon: '😱', rollLabel: 'Calme', base: calme, target: effTarget(calme, bctx.difficulty), label: '😱 Récupération du Brisé' });
+    } else {
+      brokenExhaustIfClear(c, sink); // pas de Test (caché a tout retiré, ou Engagé) → Exténué déterministe
+    }
+  }
+  // 3) Se-fatiguer (règle optionnelle) — l'incrément du compteur a déjà eu lieu dans le hook ; ici on
+  //    n'émet l'étape que si le seuil est atteint (Test de Résistance différé).
+  if (rule('combat-se-fatiguer') && (c.effortRounds ?? 0) >= fatigueThreshold(c)) {
+    const res = testValue(c, 'Résistance');
+    steps.push({ id: `fatigue-${c.id}`, kind: 'fatigue', actorId: c.id, icon: '💢', rollLabel: 'Résistance', base: res, target: res, label: '💢 Effort soutenu' });
+  }
+  return steps;
+}
+
+/** Applique la conséquence d'une étape d'upkeep (mute le héros, renvoie les lignes de journal). Mirroir
+ *  du refresh d'état de `combatPsych` (le collecteur ne possède pas `set`, l'applier oui). */
+function syncCombatant(get: Get, set: SetFn): void {
+  set({ party: [...get().party] });
+  if (get().battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
+}
+
+registerCascadeApplier('steelJaw', (get, set, step, hero) => {
+  if (!hero || !step.result) return;
+  const line = steelJawApply(hero, step.result.success, step.result.sl);
+  syncCombatant(get, set);
+  return { journal: line ? [line] : [`${hero.name} reste Sonné (Mâchoires d’acier ratée).`] };
+});
+
+registerCascadeApplier('brokenRecovery', (get, set, step, hero) => {
+  if (!hero || !step.result) return;
+  const lines: string[] = [];
+  brokenRecoveryApply(hero, step.result.success, step.result.sl, (l) => lines.push(l));
+  syncCombatant(get, set);
+  return { journal: lines };
+});
+
+registerCascadeApplier('fatigue', (get, set, step, hero) => {
+  if (!hero || !step.result) return;
+  const line = fatigueApply(hero, step.result.success, step.result.sl);
+  syncCombatant(get, set);
+  return { journal: line ? [line] : [`${hero.name} tient bon malgré l’effort.`] };
 });
