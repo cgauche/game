@@ -196,6 +196,10 @@ export interface FlowTest {
   tool?: string;
   /** Groupes de l'interlocuteur : malus Animosité/Préjugé sur un Test de Sociabilité (LDB 21). */
   vsGroups?: string[];
+  /** Statut de la cible (« Argent 3 ») : mod social d'Échelon/Standing sur un Test social (LDB 08). */
+  vsStatus?: string;
+  /** Le Test social est une mendicité (option « Mendicité et Statut », LDB 08 l.92). */
+  begging?: boolean;
   /** Difficulté réduite si un héros possède la compétence/le talent requis. */
   easierIf?: { hasSkill?: string; hasTalent?: string; steps?: number };
 }

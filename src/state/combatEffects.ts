@@ -12,6 +12,8 @@ import { effectiveChar } from '../engine/characteristics';
 import { SIZE_ORDER, effectiveSize } from '../engine/size';
 import { campOf } from '../engine/relations';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, actorHasSkill } from '../engine/skills';
+import { statusCharmMod, statusCharmLabel, actorStatus } from '../engine/social';
+import { parseStatus } from '../engine/creation';
 import { easeDifficulty } from '../engine/tests';
 import { restoreFortune } from '../engine/fortune';
 import { hasTalent } from '../engine/magic';
@@ -232,10 +234,23 @@ function effectTargets(get: Get, target: 'party' | 'hero', heroId?: string): Com
  *  branche (suite d'un `seq`). Choix du meilleur PJ effectif (malus social compris), candidats,
  *  `easierIf`, outil. Retourne false si aucun héros vivant ne peut tenter (le flux continue sans Test). */
 export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: Flow, onFailure: Flow, after: Flow): boolean {
-  const socialMod =
-    spec.vsGroups?.length && isSocialTest(spec.skill, spec.characteristic)
-      ? (c: Combatant) => socialPsychMod(c, spec.vsGroups!)
-      : undefined;
+  // Modulateurs sociaux PAR ACTEUR (un Test social vs un interlocuteur) : malus psy Animosité/Préjugé
+  // (LDB 21) + mod de Statut Échelon/Standing (LDB 08). Le Statut compare l'acteur à la cible `vsStatus`.
+  const isSocial = isSocialTest(spec.skill, spec.characteristic);
+  const tgtStatus = isSocial && spec.vsStatus ? parseStatus(spec.vsStatus) : undefined;
+  const psychMod = spec.vsGroups?.length && isSocial ? (c: Combatant) => socialPsychMod(c, spec.vsGroups!) : undefined;
+  const statusMod = tgtStatus ? (c: Combatant) => statusCharmMod(actorStatus(c), tgtStatus, { begging: spec.begging }) : undefined;
+  const socialMod = psychMod || statusMod
+    ? (c: Combatant) => (psychMod ? psychMod(c) : 0) + (statusMod ? statusMod(c) : 0)
+    : undefined;
+  const socialDetail = (c: Combatant): string | undefined => {
+    const parts: string[] = [];
+    const pl = psychMod ? socialPsychLabel(c, spec.vsGroups!) : undefined;
+    if (pl) parts.push(`${pl} envers ${spec.vsGroups!.join('/')}`);
+    const sl = tgtStatus ? statusCharmLabel(actorStatus(c), tgtStatus, { begging: spec.begging }) : undefined;
+    if (sl) parts.push(sl);
+    return parts.length ? parts.join(' · ') : undefined;
+  };
   const best = partyBest(get().party, spec.skill, spec.characteristic, socialMod);
   if (!best) return false;
   const baseDifficulty = spec.difficulty ?? 'intermediaire';
@@ -246,13 +261,12 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
   const difficulty = eased ? easeDifficulty(baseDifficulty, spec.easierIf!.steps ?? 1) : baseDifficulty;
   const candidates = get().party.filter((c) => !c.dead).map((actor) => {
     const value = testValue(actor, spec.skill, spec.characteristic) + (socialMod ? socialMod(actor) : 0);
-    const pl = socialMod ? socialPsychLabel(actor, spec.vsGroups!) : undefined;
     const tool = spec.tool ? actor.items?.find((i) => i.name === spec.tool && !i.destroyed) : undefined;
     return {
       id: actor.id, name: actor.name, value,
       target: Math.max(1, Math.min(99, value + DIFFICULTY_MODIFIERS[difficulty])),
       psychMod: (socialMod ? socialMod(actor) : 0) || undefined,
-      psychDetail: pl ? `${pl} envers ${spec.vsGroups!.join('/')}` : undefined,
+      psychDetail: socialDetail(actor),
       itemUid: tool?.uid,
     };
   });
