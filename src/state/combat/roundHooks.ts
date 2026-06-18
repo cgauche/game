@@ -8,7 +8,11 @@ import { battleRng } from '../battleRng';
 import { rollTest } from '../../engine/tests';
 import { testValue } from '../../engine/skills';
 import { bonus, effectiveChar } from '../../engine/characteristics';
-import { addCondition, isOutOfAction, COND } from '../../engine/conditions';
+import { addCondition, isOutOfAction, COND, tickDeath } from '../../engine/conditions';
+import { suffocationTick } from '../../engine/suffocation';
+import { clearPsychOf } from '../../engine/psychology';
+import { zonesRoundTick } from '../zones';
+import { purgeExpiredSummons } from '../summonFlow';
 
 /**
  * Règle optionnelle « Se fatiguer » (LDB 16 l.99) : un effort physique soutenu finit par épuiser.
@@ -38,4 +42,38 @@ registerCombatHook({
       }
     }
   },
+});
+
+// --- Migration ISO-COMPORTEMENT des 5 derniers blocs du franchissement de Round (anciennement inline
+//     dans advanceTurn, juste avant le dispatch → ordre EXACT préservé par les `order` 76→79.5). Le corps
+//     est copié tel quel ; `ctx.sink` remplace la `tickLine` locale. Pas de hook suspensif (aucun pending). ---
+registerCombatHook({
+  id: 'tick-death', // 0 PB → Inconscient (LDB 18 l.28)
+  phase: 'roundBoundary',
+  order: 76,
+  run: ({ battle, sink }) => { for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => sink(l, c)); },
+});
+registerCombatHook({
+  id: 'suffocation-tick', // Noyade et Suffocation (LDB 18 l.424-425)
+  phase: 'roundBoundary',
+  order: 78,
+  run: ({ battle, sink }) => { for (const c of battle.combatants) suffocationTick(c).forEach((l) => sink(l, c)); },
+});
+registerCombatHook({
+  id: 'zones-round-tick', // zones perRound (Grands feux d'U'Zhul, LDB 47 : « au début d'un Round »)
+  phase: 'roundBoundary',
+  order: 79,
+  run: ({ battle, sink }) => { zonesRoundTick(battle.zones, battle.combatants, battleRng()).forEach((t) => sink(t.line, t.combatant)); },
+});
+registerCombatHook({
+  id: 'clear-psych-of-dead', // effets psy d'une créature morte → fin (catch-all toutes causes de mort)
+  phase: 'roundBoundary',
+  order: 79.3,
+  run: ({ battle }) => { for (const c of battle.combatants) if (isOutOfAction(c)) clearPsychOf(battle.combatants, c.id); },
+});
+registerCombatHook({
+  id: 'purge-expired-summons', // invocations à durée écoulée OU lanceur tombé (state/summonFlow) ; round = battle.round+1 (set après le dispatch)
+  phase: 'roundBoundary',
+  order: 79.5,
+  run: ({ battle, sink }) => { purgeExpiredSummons(battle, battle.round + 1).forEach((l) => sink(l)); },
 });

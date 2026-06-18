@@ -3391,13 +3391,9 @@ export function advanceTurn(get: Get, set: SetFn) {
       for (const c of battle.combatants) if (c.ignoreCritMods) c.ignoreCritMods = false; // Détermination : « ignorer modifs de critique » expire au début du prochain Round (LDB 17 l.64)
       for (const c of battle.combatants) if (c.psychImmuneRoundsLeft) c.psychImmuneRoundsLeft -= 1; // Détermination : l'immunité psy décompte 1 Round (LDB 17 l.62)
       brokenRecovery(get, tickLine); // récupération du Brisé en fin de Round (LDB 16 l.57-59)
-      for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => tickLine(l, c)); // 0 PB→Inconscient (LDB 18 l.28)
-      for (const c of battle.combatants) suffocationTick(c).forEach((l) => tickLine(l, c)); // Noyade et Suffocation (LDB 18 l.424-425) ; la mort passe par inDeathCondition (Destin inclus)
-      zonesRoundTick(battle.zones, battle.combatants, battleRng()).forEach((t) => tickLine(t.line, t.combatant)); // zones perRound (Grands feux d'U'Zhul, LDB 47 : « au début d'un Round »)
-      for (const c of battle.combatants) if (isOutOfAction(c)) clearPsychOf(battle.combatants, c.id); // effets psy d'une créature morte → fin (catch-all toutes causes de mort)
-      purgeExpiredSummons(battle, round).forEach((l) => tickLine(l)); // invocations à durée écoulée OU lanceur tombé (state/summonFlow)
-      // Couture d'extension du franchissement de Round (refonte par hooks) : les règles/features de fin de
-      // Round s'enregistrent en hooks `roundBoundary` (ex. se-fatiguer). Inerte tant qu'aucun hook actif.
+      // Fin de séquence de franchissement de Round → hooks `roundBoundary` (state/combat/roundHooks) :
+      // tickDeath(76)/suffocation(78)/zones(79)/clearPsychOf(79.3)/purge(79.5) migrés ISO-COMPORTEMENT
+      // (ils étaient les derniers blocs inline → ordre exact préservé), + règles optionnelles (se-fatiguer 80).
       runCombatHooks('roundBoundary', { get, set, battle, sink: tickLine });
       if (heroRoundLines.length) pushReveal(set, { kind: 'round', title: `Fin du Round ${round - 1}`, lines: heroRoundLines, severity: 'minor' }); // (entretien HÉROS — auto-fermée)
       // Maniement de deux armes : le −10 défensif expire au DÉBUT du prochain Tour de son porteur. Si ce
