@@ -520,6 +520,15 @@ export function applyActiveEffect(target: Combatant, effect: ActiveEffect) {
   if (effect.char === 'F' || effect.char === 'E' || effect.char === 'FM') refreshWounds(target);
 }
 
+/** Ligne de journal d'un Test résolu inline — SOURCE UNIQUE du format « X — Test de Y Difficulté :
+ *  🎲 roll / cible → réussite/échec. » Réutilisée par l'op `test` ET par la branche inline de
+ *  `resolveFlowTest` (parité du journal des jets de trigger résolus en silence). */
+export function describeTestRoll(
+  name: string, what: string, difficulty: Difficulty, t: { roll: number; target: number; success: boolean },
+): string {
+  return `${name} — Test de ${what} ${DIFFICULTY_LABELS[difficulty]} : 🎲 ${t.roll} / ${t.target} → ${t.success ? 'réussite' : 'échec'}.`;
+}
+
 /**
  * Exécute une liste d'ops sur `target`. Les `charMod` consécutifs d'une même
  * source sont appliqués individuellement mais journalisés en UNE ligne (format
@@ -640,9 +649,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // Pénalité d'États RAW (−10 Sonné/Empoisonné… LDB 16) appliquée au jet du Test routé.
         const t = rollTest(testValue(target, o.skill, o.characteristic), o.difficulty, rng, combatTestPenalty(target));
         const what = o.skill ? refLabel('skills', { id: o.skill }) : (o.characteristic ? CHAR_LABELS[o.characteristic] : '?');
-        lines.push(
-          `${target.name} — Test de ${what} ${DIFFICULTY_LABELS[o.difficulty]} : 🎲 ${t.roll} / ${t.target} → ${t.success ? 'réussite' : 'échec'}.`,
-        );
+        lines.push(describeTestRoll(target.name, what, o.difficulty, t));
         // Propage le DR du Test aux échelles `valuePerSL`/`perSL` d'onSuccess (« chaque DR supprime un
         // État Sonné supplémentaire ») ; onFail garde le contexte d'origine (pas de DR utile à l'échec).
         lines.push(...applyOps(target, t.success ? o.onSuccess ?? [] : o.onFail, t.success ? { ...ctx, sl: t.sl } : ctx));

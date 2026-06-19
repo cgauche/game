@@ -608,6 +608,10 @@ export interface CascadeStepMeta {
   onSuccess?: Flow;
   /** Branche d'échec d'une étape `triggeredTest`. */
   onFail?: Flow;
+  /** CONTINUATION reprise APRÈS la branche d'un `triggeredTest` enfoui dans un Flow (le reste du `seq`
+   *  qui suivait le `test`). Pur-donnée (voyage en coop, à côté de `onSuccess`/`onFail`) ; rejouée par
+   *  l'applier via `runCombatFlow`. Absent (= EMPTY_FLOW) pour un Test top-level (Mâchoires) → aucune suite. */
+  after?: Flow;
 }
 /** Le jet d'UNE étape de cascade (slot du flux multi SÉQUENTIEL `FLOWS.cascade`). */
 export interface CascadeRoll {
