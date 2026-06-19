@@ -52,6 +52,9 @@ export const REF_FIELD: Record<string, RefFieldCfg> = {
   refChar: { vocabFrom: 'species.refChar' },
   refCareer: { vocabFrom: 'species.refCareer' },
   'qualities.subType': { vocabFrom: 'qualities.subType' },
+  // Attribut +5/dérivé conféré par un talent : clé STABLE (CharKey 'Soc'… ou dérivé wounds/fortune/
+  // resolve/move/corruption), JAMAIS un libellé. Vocabulaire = valeurs distinctes du champ.
+  'talents.addCharacteristic': { vocabFrom: 'talents.addCharacteristic' },
 };
 
 /** Résout la config d'un champ : clé (catégorie, champ) puis repli global par champ. */

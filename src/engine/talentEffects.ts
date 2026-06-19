@@ -3,17 +3,16 @@
  * chaque talent de talents.json porte `addCharacteristic` / `addSkill`, posés par l'extraction
  * des livres ; un supplément qui ajoute un talent étiqueté pareil est couvert sans code.
  *
- * Sémantique des `addCharacteristic` (descriptions LDB 10, verbatim) :
- *  - une des 10 Caractéristiques (« Force », « Sociabilité »…) : « Vous gagnez un bonus
- *    permanent de +5 à votre Caractéristique X de départ (ne compte pas comme des
- *    Augmentations) » — Guerrier né, Tireur de précision, Très fort, Très résistant, Vivacité,
- *    Réflexes foudroyants, Doigts de fée, Perspicace, Imperturbable, Affable (tous Maxi 1) ;
- *  - « Blessure » : « autant de Points de Blessure supplémentaires que votre Bonus
- *    d'Endurance » (Dur à cuire) — recalculé si le BE augmente, par acquisition ;
- *  - « Chance » : « maximum de Points de Chance = Points de Destin + nombre de fois » (Chanceux) ;
- *  - « Détermination » : « Ajoutez votre niveau au maximum de votre réserve » (Obstiné) ;
- *  - « Mouvement » : « Vous gagnez +1 à votre Attribut de Mouvement » (Véloce) ;
- *  - « Corruption » (Âme pure) : seuil de Corruption +niveau — câblé dans corruption.ts
+ * Sémantique des `addCharacteristic` (clé STABLE, ≠ libellé — multilangue ; descriptions LDB 10) :
+ *  - une CharKey (F, Soc…) : « Vous gagnez un bonus permanent de +5 à votre Caractéristique X de
+ *    départ (ne compte pas comme des Augmentations) » — Guerrier né, Tireur de précision, Très fort,
+ *    Très résistant, Vivacité, Réflexes foudroyants, Doigts de fée, Perspicace, Imperturbable, Affable ;
+ *  - `wounds` (Dur à cuire) : « autant de Points de Blessure supplémentaires que votre Bonus
+ *    d'Endurance » — recalculé si le BE augmente, par acquisition ;
+ *  - `fortune` (Chanceux) : « maximum de Points de Chance = Points de Destin + nombre de fois » ;
+ *  - `resolve` (Obstiné) : « Ajoutez votre niveau au maximum de votre réserve » ;
+ *  - `move` (Véloce) : « Vous gagnez +1 à votre Attribut de Mouvement » ;
+ *  - `corruption` (Âme pure) : seuil de Corruption +niveau — câblé dans corruption.ts
  *    (corruptionThresholdExceeded), pas ici.
  *
  * `addSkill` : « Ajoutez la Compétence X à n'importe quelle Carrière que vous entamez. Si la
@@ -25,7 +24,7 @@
  * Costaud (Encombrement) est déjà appliqué par items.maxEncumbrance ; Petit/Massif (Taille)
  * par l'espèce. Les autres talents (combat, social…) sont hors périmètre.
  */
-import { Combatant, CHAR_BY_LABEL, CharKey } from './types';
+import { Combatant, CHAR_KEYS, CharKey } from './types';
 import { bonus, maxWounds } from './characteristics';
 import { findTalent, findTalentById, blessingsOf, refLabel } from '../data';
 import { splitLabel, concreteLabel } from './careerSlots';
@@ -44,7 +43,7 @@ function timesWithAddChar(hero: Combatant, attr: string): number {
 /** Caractéristique « +5 de départ » conférée par un talent (clé courte), sinon null, par `id`. */
 export function talentCharBonusById(talentId: string): CharKey | null {
   const attr = addCharById(talentId);
-  return attr ? CHAR_BY_LABEL[attr] ?? null : null;
+  return attr && (CHAR_KEYS as readonly string[]).includes(attr) ? (attr as CharKey) : null;
 }
 
 /** Idem par LIBELLÉ — bord UI (créateur) / tests ; résout l'id puis délègue. */
@@ -63,7 +62,7 @@ export function talentCharBonus(talentLabel: string): CharKey | null {
 export function applyTalentAcquisition(hero: Combatant, talentId: string, spec?: string): void {
   const key = talentCharBonusById(talentId);
   if (key) hero.characteristics[key] += 5;
-  if (addCharById(talentId) === 'Mouvement') hero.movement += 1;
+  if (addCharById(talentId) === 'move') hero.movement += 1;
   // Béni (Culte) — LDB 10/41 : « reçoit les SIX Bénédictions de son culte » → octroi AUTOMATIQUE
   // à l'acquisition (création + achat PX), pas un achat à 0 PX par clic. Un « Béni » au culte non
   // résolu (« Au choix ») n'octroie rien. Le signal vient du REGISTRE (grantsCultBlessings), plus de name-match.
@@ -75,7 +74,7 @@ export function applyTalentAcquisition(hero: Combatant, talentId: string, spec?:
 
 /** Points de Blessure supplémentaires : BE par acquisition d'un talent « Blessure » (Dur à cuire). */
 export function extraWounds(hero: Combatant): number {
-  return timesWithAddChar(hero, 'Blessure') * bonus(hero.characteristics.E);
+  return timesWithAddChar(hero, 'wounds') * bonus(hero.characteristics.E);
 }
 
 /** Blessures max d'un héros = formule des Attributs (BF+2×BE+BFM × Taille) + talents « Blessure ». */
@@ -85,12 +84,12 @@ export function heroMaxWounds(hero: Combatant): number {
 
 /** Maximum de Points de Chance : Destin + niveaux des talents « Chance » (Chanceux, LDB 10). */
 export function fortuneMax(hero: Combatant): number {
-  return (hero.fate ?? 0) + timesWithAddChar(hero, 'Chance');
+  return (hero.fate ?? 0) + timesWithAddChar(hero, 'fortune');
 }
 
 /** Maximum de Détermination : Résilience + niveaux des talents « Détermination » (Obstiné). */
 export function resolveMax(hero: Combatant): number {
-  return (hero.resilience ?? 0) + timesWithAddChar(hero, 'Détermination');
+  return (hero.resilience ?? 0) + timesWithAddChar(hero, 'resolve');
 }
 
 /**

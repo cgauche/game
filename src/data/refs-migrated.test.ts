@@ -214,6 +214,14 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     for (const s of skills) expect(CHAR_KEYS as readonly string[], `${s.label} → ${s.characteristic}`).toContain(s.characteristic);
   });
 
+  it('talents.addCharacteristic = CharKey ou clé d\'attribut dérivé stable (jamais un libellé)', () => {
+    const ok = new Set<string>([...CHAR_KEYS, 'wounds', 'fortune', 'resolve', 'move', 'corruption']);
+    for (const t of talents) {
+      const a = (t as { addCharacteristic?: string }).addCharacteristic;
+      if (a != null) expect(ok.has(a), `${t.label} → ${a}`).toBe(true);
+    }
+  });
+
   it('domains.castBonus.perCondition = id d\'État qui résout (jamais un libellé inter-table)', () => {
     for (const d of domains) {
       const pc = (d as { castBonus?: { perCondition?: string } }).castBonus?.perCondition;

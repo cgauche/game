@@ -39,7 +39,7 @@
     "desc": "Vous gagnez un bonus permanent de +5 à votre Caractéristique Sociabilité de départ (qui ne compte pas comme des Augmentations).",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "Sociabilité",
+    "addCharacteristic": "Soc",
     "specs": [],
     "rand": 3,
     "source": {
@@ -93,7 +93,7 @@
     "desc": "Votre âme est pure, très résistante aux déprédations du Chaos. Vous pouvez gagner un nombre de Points de Corruption supplémentaires égal à votre niveau d'Âme pure avant d'avoir à effectuer un Test pour savoir si vous êtes corrompu.",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "Corruption",
+    "addCharacteristic": "corruption",
     "specs": [],
     "rand": 13,
     "source": {
@@ -403,7 +403,7 @@
     "desc": "On prétend que lorsque vous êtes né, Ranald a souri. Votre maximum de Points de Chance est à présent égal à votre nombre actuel de Points de Destin, plus le nombre de fois que vous avez pris Chanceux.",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "Chance",
+    "addCharacteristic": "fortune",
     "specs": [],
     "rand": 26,
     "source": {
@@ -864,7 +864,7 @@
     "desc": "Vous gagnez un bonus permanent de +5 à votre Dextérité de départ (ne compte pas comme des Augmentations).",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "Dextérité",
+    "addCharacteristic": "Dex",
     "specs": [],
     "rand": 32,
     "source": {
@@ -912,7 +912,7 @@
     "desc": "Vous gagnez autant de Points de Blessure supplémentaires que votre Bonus d'Endurance. Si ce dernier augmente, le nombre de Points de Blessure conféré par Dur à cuire augmente également.",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "Blessure",
+    "addCharacteristic": "wounds",
     "specs": [],
     "rand": 40,
     "source": {
@@ -1319,7 +1319,7 @@
     "desc": "Vous gagnez un bonus permanent de +5 à votre Caractéristique CC de départ (ne compte pas comme des Augmentations).",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "Capacité de Combat",
+    "addCharacteristic": "CC",
     "specs": [],
     "rand": 46,
     "source": {
@@ -1443,7 +1443,7 @@
     "desc": "Vous gagnez un bonus permanent de +5 à votre Caractéristique FM de départ (cela ne compte pas comme des Augmentations).",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "Force Mentale",
+    "addCharacteristic": "FM",
     "specs": [],
     "rand": 52,
     "source": {
@@ -2104,7 +2104,7 @@
     "desc": "Vous êtes la quintessence de la détermination et de la résolution. Ajoutez votre niveau d'Obstiné au maximum de votre réserve de Détermination.",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "Détermination",
+    "addCharacteristic": "resolve",
     "specs": [],
     "rand": null,
     "source": {
@@ -2257,7 +2257,7 @@
     "desc": "Vous gagnez un bonus permanent de +5 à votre Caractéristique Intelligence de départ (ne compte pas comme Augmentation).",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "Intelligence",
+    "addCharacteristic": "Int",
     "specs": [],
     "rand": 69,
     "source": {
@@ -2428,7 +2428,7 @@
     "desc": "Vous gagnez un bonus permanent de +5 à votre Caractéristique Agilité de départ (ne compte pas comme des Augmentations).",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "Agilité",
+    "addCharacteristic": "Ag",
     "specs": [],
     "rand": 72,
     "source": {
@@ -2908,7 +2908,7 @@
     "desc": "Vous gagnez un bonus permanent de +5 à votre Capacité de Tir de départ (ne compte pas comme des Augmentations).",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "Capacité de Tir",
+    "addCharacteristic": "CT",
     "specs": [],
     "rand": 88,
     "source": {
@@ -3112,7 +3112,7 @@
     "desc": "Vous gagnez un bonus permanent de +5 à votre Caractéristique Force de départ (ne compte pas comme des Augmentations).",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "Force",
+    "addCharacteristic": "F",
     "specs": [],
     "rand": 91,
     "source": {
@@ -3128,7 +3128,7 @@
     "desc": "Vous gagnez un bonus permanent de +5 à votre Caractéristique Endurance de départ (ne compte pas comme des Augmentations).",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "Endurance",
+    "addCharacteristic": "E",
     "specs": [],
     "rand": 94,
     "source": {
@@ -3179,7 +3179,7 @@
     "desc": "Vous gagnez +1 à votre Attribut de Mouvement.",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "Mouvement",
+    "addCharacteristic": "move",
     "specs": [],
     "rand": null,
     "source": {
@@ -3246,7 +3246,7 @@
     "desc": "Vous gagnez un bonus permanent de +5 à votre Caractéristique Initiative de départ (ne compte pas comme des Augmentations).",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "Initiative",
+    "addCharacteristic": "I",
     "specs": [],
     "rand": 100,
     "source": {
