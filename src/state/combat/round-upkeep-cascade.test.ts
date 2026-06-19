@@ -141,14 +141,27 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
     expect(hasCondition(h, COND.extenue)).toBe(true);      // … → 1 Exténué (LDB 16 l.72)
   });
 
-  it('endOfRound(skipPoisonResist) : les DÉGÂTS d’Empoisonné sont subis, le Test est différé (héros)', () => {
+  it('endOfRound n’applique QUE les dégâts d’Empoisonné — le Test est un hook séparé (poison-resist), pas un param', () => {
     const { H } = setup();
     addCondition(H, COND.empoisonne, 2);
     const hpBefore = H.wounds.current;
-    // Le hook `end-of-round` appelle endOfRound avec skipPoisonResist=true pour un héros : DÉGÂTS oui, Test non.
-    endOfRound(H, makeRNG(1), { skipPoisonResist: true });
+    endOfRound(H, makeRNG(1)); // dégâts périodiques SEULS ; le Test de Résistance vit dans le hook `poison-resist`
     expect(H.wounds.current).toBe(hpBefore - 2);          // 2 Blessures subies (Empoisonné×2)
-    expect(stacks(H, COND.empoisonne)).toBe(2);           // aucun pion retiré (Test différé à la cascade)
-    expect(hasCondition(H, COND.extenue)).toBe(false);    // pas d'Exténué (le Test n'a pas eu lieu)
+    expect(stacks(H, COND.empoisonne)).toBe(2);           // aucun pion retiré (endOfRound ne teste plus)
+    expect(hasCondition(H, COND.extenue)).toBe(false);    // pas d'Exténué
+  });
+
+  it('cadence AUTO : un héros empoisonné N’ouvre PAS d’étape de cascade (auto-résolu comme un monstre — roundTestInteractive)', () => {
+    setRule('combat-cadence', 'auto');
+    try {
+      const { H } = setup();
+      addCondition(H, COND.empoisonne, 1);
+      openRoundEndCascade(useGame.getState, useGame.setState);
+      const c = useGame.getState().pendingCascade;
+      // En rapide/auto le héros est joué/auto-résolu → son Test ne passe PAS par la cascade (silence côté hook).
+      expect(c?.participants.some((s) => s.kind === 'poisonResist')).toBeFalsy();
+    } finally {
+      resetRule('combat-cadence');
+    }
   });
 });

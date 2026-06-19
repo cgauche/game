@@ -198,7 +198,7 @@ export function poisonResistApply(c: Combatant, success: boolean, sl: number): s
  * de cascade influençable (cf. `collectHeroRoundEndUpkeep`). Les DÉGÂTS restent ici pour tous ; seul
  * le Test est différé. ENNEMIS : `opts` absent → comportement (et ORDRE RNG) inchangé.
  */
-export function endOfRound(c: Combatant, rng: RNG = defaultRNG, opts?: { skipPoisonResist?: boolean }): string[] {
+export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
   const log: string[] = [];
   // Hémorragique : 1 Blessure par point, en ignorant les modificateurs (l.104).
   // Endurci (LDB 10) : ignore niveau Point(s) de Blessure perdus par l'État Hémorragique.
@@ -212,13 +212,12 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG, opts?: { skipPoi
   if (poison) {
     loseWounds(c, poison);
     log.push(`${c.name} subit ${poison} Blessure(s) (Empoisonné).`);
-    // Test de Résistance en fin de Round → retire 1 + DR États ; une fois tous retirés, 1 Exténué (l.70-72).
-    // (Difficulté « dictée par le poison » non modélisée → Intermédiaire +0 par défaut.) Différé à la
-    // cascade pour un HÉROS (`skipPoisonResist`) — les DÉGÂTS ci-dessus, eux, restent appliqués.
-    if (!opts?.skipPoisonResist) {
-      const res = rollTest(poisonResistValue(c), 'intermediaire', rng, combatTestPenalty(c));
-      poisonResistApply(c, res.success, res.sl)?.split('\n').forEach((l) => log.push(l));
-    }
+    // Le Test de Résistance qui ÉLIMINE l'Empoisonné (LDB 16 l.70-72) n'est PLUS ici : c'est un hook
+    // `roundBoundary` (`poison-resist`, state/combat/roundHooks) qui décide silence (non-interactif :
+    // monstre OU héros en cadence rapide/auto) vs étape de cascade influençable (héros en manuel),
+    // via `roundTestInteractive` — exactement comme Mâchoires/Brisé. `endOfRound` ne fait QUE les
+    // dégâts périodiques (pur, ignorant du joueur/monstre et de la cadence). Logique partagée :
+    // `poisonResistValue`/`poisonResistApply` (helpers purs ci-dessus).
   }
   // En flammes : 1d10 − BE − PA de la localisation la moins protégée (min 1), +1 par État en plus (l.77).
   const fire = stacks(c, COND.enFlammes);

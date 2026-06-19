@@ -25,10 +25,22 @@ import { isEngaged } from '../../engine/engagement';
 import { lineOfSightCover } from '../lineOfSight';
 import { smokeOf } from '../combatGeometry';
 import { rule } from '../../engine/policy';
+import { cadenceAuto } from '../../engine/cadence';
 import { DIFFICULTY_MODIFIERS } from '../../engine/types';
 import type { Combatant, Difficulty } from '../../engine/types';
 import type { CascadeStep } from '../pendings';
 import type { Get, Set as SetFn } from '../flowTypes';
+
+/**
+ * Un Test de fin de Round de `c` doit-il être une étape de CASCADE influençable (modale) plutôt qu'un
+ * jet silencieux résolu dans le hook ? VRAI uniquement pour un HÉROS en cadence MANUELLE — en rapide/auto
+ * (`cadenceAuto`), le héros est auto-résolu COMME un monstre → jet silencieux dans le hook (pas de cascade
+ * redondante). C'est l'axe RÉEL de l'interactivité (kind × cadence), PAS `kind` seul (un héros auto-piloté
+ * n'est pas « interactif »). Une seule source pour tous les hooks d'upkeep + le collecteur de cascade.
+ */
+function roundTestInteractive(c: Combatant): boolean {
+  return c.kind === 'hero' && !cadenceAuto();
+}
 
 // ============================================================================================
 // Séquence RAW de franchissement de Round, migrée ISO-COMPORTEMENT depuis advanceTurn (corps copiés
@@ -40,9 +52,21 @@ registerCombatHook({
   id: 'end-of-round', // dégâts/effets périodiques d'États (Empoisonné, En flammes, Hémorragique…) — RNG
   phase: 'roundBoundary',
   order: 10,
-  // Pour un HÉROS, le Test de Résistance d'Empoisonné est DIFFÉRÉ à la cascade influençable (les
-  // DÉGÂTS restent appliqués ici) — `skipPoisonResist`. ENNEMIS : jet silencieux interne (ordre RNG inchangé).
-  run: ({ battle, sink }) => { for (const c of battle.combatants) endOfRound(c, battleRng(), { skipPoisonResist: c.kind === 'hero' }).forEach((l) => sink(l, c)); },
+  run: ({ battle, sink }) => { for (const c of battle.combatants) endOfRound(c, battleRng()).forEach((l) => sink(l, c)); },
+});
+registerCombatHook({
+  id: 'poison-resist', // Résistance à l'Empoisonné (LDB 16 l.70-72) : retire 1+DR pions sur succès, puis Exténué quand vidé
+  phase: 'roundBoundary',
+  order: 15, // juste après les DÉGÂTS périodiques (end-of-round 10)
+  run: ({ battle, sink }) => {
+    for (const c of battle.combatants) {
+      // Non-interactif (monstre OU héros en rapide/auto) → jet SILENCIEUX ici. Héros MANUEL → différé à
+      // la cascade influençable (étape `poisonResist`, cf. collectHeroRoundEndUpkeep) → on le saute.
+      if (roundTestInteractive(c) || stacks(c, COND.empoisonne) <= 0) continue;
+      const t = rollTest(poisonResistValue(c), 'intermediaire', battleRng(), combatTestPenalty(c));
+      poisonResistApply(c, t.success, t.sl)?.split('\n').forEach((l) => sink(l, c));
+    }
+  },
 });
 registerCombatHook({
   id: 'refresh-wounds', // dissipation d'un buff F/E/FM → recale les Blessures (LDB 85)
@@ -142,8 +166,8 @@ registerCombatHook({
   order: 60,
   run: ({ battle, sink }) => {
     for (const c of battle.combatants) {
-      // HÉROS : différé à la cascade de fin de Round (Test influençable Chance/Résilience). ENNEMIS : silence.
-      if (c.kind === 'hero' || !steelJawDue(c)) continue;
+      // Héros MANUEL : différé à la cascade influençable. Non-interactif (monstre / rapide / auto) : silence.
+      if (roundTestInteractive(c) || !steelJawDue(c)) continue;
       const t = rollTest(testValue(c, 'resistance'), 'intermediaire', battleRng());
       const line = steelJawApply(c, t.success, t.sl);
       if (line) sink(line, c);
@@ -204,14 +228,15 @@ function brokenRecoveryApply(c: Combatant, success: boolean, sl: number, sink: (
 /**
  * Récupération du Brisé en fin de Round (LDB 16 l.57-59 ; Cœur vaillant LDB 10). Déplacé ICI depuis
  * combatFlow (qui le ré-exporte pour `broken-recovery.test`). Émet chaque ligne via `sink(line, c)`.
- * `onlyKind` restreint la résolution INLINE (le hook combat ne résout que les ENNEMIS — les héros
- * passent par la cascade influençable) ; absent → tous (broken-recovery.test l'appelle sans filtre).
+ * `shouldResolveInline` restreint la résolution SILENCIEUSE : le hook combat ne résout INLINE que les
+ * combattants NON-interactifs (monstres + héros en rapide/auto) — les héros MANUELS passent par la
+ * cascade influençable ; absent → tous (broken-recovery.test l'appelle sans filtre).
  */
-export function brokenRecovery(get: Get, sink: (line: string, c: Combatant) => void, onlyKind?: Combatant['kind']): void {
+export function brokenRecovery(get: Get, sink: (line: string, c: Combatant) => void, shouldResolveInline?: (c: Combatant) => boolean): void {
   const battle = get().battle;
   if (!battle) return;
   for (const c of battle.combatants) {
-    if (onlyKind && c.kind !== onlyKind) continue;
+    if (shouldResolveInline && !shouldResolveInline(c)) continue;
     const ctx = brokenContext(get, c);
     if (!ctx) continue;
     if (ctx.hidden) { removeCondition(c, COND.brise, 1); sink(`${c.name} est resté caché hors de vue : retire 1 État Brisé.`, c); }
@@ -227,7 +252,7 @@ registerCombatHook({
   id: 'broken-recovery', // récupération du Brisé en fin de Round (LDB 16 l.57-59) — RNG (Test de Calme)
   phase: 'roundBoundary',
   order: 74,
-  run: ({ get, sink }) => brokenRecovery(get, sink, 'enemy'), // HÉROS différés à la cascade influençable
+  run: ({ get, sink }) => brokenRecovery(get, sink, (c) => !roundTestInteractive(c)), // héros MANUEL → cascade ; non-interactif (monstre/rapide/auto) → silence
 });
 
 // --- Migration ISO-COMPORTEMENT des derniers blocs du franchissement de Round (corps copiés tel quel,
@@ -297,8 +322,8 @@ registerCombatHook({
       // héros compris (le collecteur de cascade lit `effortRounds` ≥ seuil pour émettre l'étape).
       c.effortRounds = (c.effortRounds ?? 0) + 1;
       if (c.effortRounds < fatigueThreshold(c)) continue;
-      // HÉROS au seuil : Test différé à la cascade influençable. ENNEMIS : résolus en silence ici.
-      if (c.kind === 'hero') continue;
+      // Héros MANUEL au seuil : différé à la cascade influençable. Non-interactif (monstre/rapide/auto) : silence ici.
+      if (roundTestInteractive(c)) continue;
       const t = rollTest(testValue(c, 'resistance'), 'intermediaire', battleRng());
       const line = fatigueApply(c, t.success, t.sl);
       if (line) sink(line, c);
@@ -327,11 +352,13 @@ function effTarget(base: number, difficulty: Difficulty): number {
  * `sink`) ; seuls les Tests réellement dus deviennent des étapes influençables.
  */
 export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, sink: (line: string, c: Combatant) => void): CascadeStep[] {
-  if (c.kind !== 'hero' || isOutOfAction(c)) return [];
+  // Étapes de cascade SEULEMENT pour un Test INTERACTIF (héros en cadence manuelle) ; en rapide/auto, le
+  // héros est auto-résolu COMME un monstre → ses Tests se résolvent silencieusement dans les hooks ci-dessus.
+  if (!roundTestInteractive(c) || isOutOfAction(c)) return [];
   const steps: CascadeStep[] = [];
   // 0) Résistance à l'Empoisonné (LDB 16 l.70-72) — Test de Résistance Intermédiaire (+0). Les DÉGÂTS
-  //    périodiques ont DÉJÀ été appliqués par `endOfRound` (hook `end-of-round`, `skipPoisonResist`) ;
-  //    seul le Test passe en cascade. Placé en TÊTE (physiologique, groupé avec les dégâts de poison).
+  //    périodiques ont DÉJÀ été appliqués par `endOfRound` (hook `end-of-round`) ; seul le TEST passe en
+  //    cascade. Placé en TÊTE (physiologique, groupé avec les dégâts de poison).
   //    La pénalité d'États (−10 Empoisonné/Sonné/Exténué…) est repliée dans `target`, comme pour le Brisé.
   if (stacks(c, COND.empoisonne) > 0) {
     const base = poisonResistValue(c);
