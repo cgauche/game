@@ -157,7 +157,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     const o = slot.options[0];
     if (knows(o.name, o.spec)) continue;
     if (skills.some((r) => !r.known && r.name === o.name && (r.spec ?? '') === (o.spec ?? ''))) continue;
-    const characteristic = CHAR_BY_LABEL[findSkill(o.name)?.characteristic ?? ''] ?? 'Int';
+    const characteristic = findSkill(o.name)?.characteristic ?? 'Int';
     skills.push({ name: o.name, spec: o.spec, characteristic, advances: 0, known: false, inCareer: true, nextCost: advanceCost(0, 'skill', true) });
   }
   // Emplacements de Compétence « (Au choix) » non désignés → choix de spec (désigner/apprendre).
@@ -170,7 +170,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     const options = specPool
       .filter((spec) => !taken.has(concreteLabel(o.name, spec)))
       .map((spec) => ({ spec, ownedAdvances: hero.skills.find((s) => (findSkillById(s.skillId)?.label ?? s.skillId) === o.name && (s.spec ?? '') === spec)?.advances ?? 0 }));
-    const characteristic = CHAR_BY_LABEL[findSkill(o.name)?.characteristic ?? ''] ?? 'Int';
+    const characteristic = findSkill(o.name)?.characteristic ?? 'Int';
     skillSlotsOpen.push({ slotKey: slot.key, entry: slot.entry, group: o.name, characteristic, options, nextCost: advanceCost(0, 'skill', true) });
   }
 

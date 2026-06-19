@@ -274,7 +274,7 @@ export const CODEX: CodexCategory[] = [
   },
   {
     key: 'skills', label: 'Compétences', group: 'Compétences',
-    items: skills.map((s) => ({ label: s.label, sub: join(s.characteristic, s.type), desc: s.desc, source: src(s.source) })),
+    items: skills.map((s) => ({ label: s.label, sub: join(CHAR_LABELS[s.characteristic], s.type), desc: s.desc, source: src(s.source) })),
   },
   {
     key: 'talents', label: 'Talents', group: 'Compétences',

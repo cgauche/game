@@ -59,8 +59,7 @@ const SKILL_CHAR: Record<string, CharKey> = {
  *  Caractéristique + avances. (≠ re-lookup par libellé — multilangue-safe.) */
 export function skillCharacteristicById(id: string): CharKey {
   const data = findSkillById(id);
-  if (data && SKILL_CHAR[data.characteristic]) return SKILL_CHAR[data.characteristic];
-  return 'Dex'; // repli prudent
+  return data?.characteristic ?? 'Dex'; // CharKey stable portée par la donnée (repli prudent)
 }
 
 /**

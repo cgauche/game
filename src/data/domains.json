@@ -51,7 +51,7 @@
     ],
     "breathType": "Feu",
     "castBonus": {
-      "perCondition": "En flammes",
+      "perCondition": "en-flammes",
       "radiusStat": "FM",
       "bonus": 10
     }

@@ -109,7 +109,7 @@ export interface SkillData {
    *  renommage du `label`. Source unique pour `findSkillById`. */
   id: string;
   label: string;
-  characteristic: string;
+  characteristic: import('../engine/types').CharKey;
   type: string;
   specs: string[];
   desc: string;

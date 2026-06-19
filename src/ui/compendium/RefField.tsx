@@ -13,7 +13,7 @@ import { datasetArray, type DatasetKey } from '../../data/overrides';
 
 /** Config d'un champ-réf, par (catégorie, champ). Dataset réel (liste/single) OU vocabulaire d'un champ. */
 export type RefFieldCfg =
-  | { ds: DatasetKey; value?: boolean; single?: boolean; valueKey?: 'id' | 'label'; labelOf?: 'label' | 'name'; spec?: boolean }
+  | { ds: DatasetKey; value?: boolean; single?: boolean; valueKey?: 'id' | 'label' | 'abr'; labelOf?: 'label' | 'name'; spec?: boolean }
   | { vocabFrom: string };
 
 /**
@@ -45,7 +45,7 @@ export const REF_FIELD: Record<string, RefFieldCfg> = {
   // Caractéristique d'une compétence : SÉLECTEUR (pas d'input libre) — le dataset `characteristics` n'a
   // pas d'`id`, il est keyé par `label` ; la valeur STOCKÉE lue par l'engine (CHAR_BY_LABEL) est le label
   // complet (« Dextérité ») → single-ref keyé `label`, format inchangé.
-  'skills.characteristic': { ds: 'characteristics', single: true, valueKey: 'label' },
+  'skills.characteristic': { ds: 'characteristics', single: true, valueKey: 'abr' },
   // ── vocab (valeurs distinctes d'un champ) ───────────────────────────────────
   // refChar/refCareer n'existent QUE sur les espèces → repli global par nom (la catégorie Codex
   // d'`species.json` est `races`, pas `species` ; un nom de champ unique évite de la coder en dur).
@@ -65,7 +65,7 @@ const isVocab = (cfg: RefFieldCfg): cfg is { vocabFrom: string } => 'vocabFrom' 
 const entryLabel = (e: Record<string, unknown>, labelOf: 'label' | 'name' = 'label'): string =>
   String(e[labelOf] ?? e.label ?? e.id ?? '');
 /** Valeur stockée d'une entrée (lieux keyés par `label` → `label`, sinon `id`). */
-const valueOf = (e: Record<string, unknown>, valueKey: 'id' | 'label' = 'id'): string =>
+const valueOf = (e: Record<string, unknown>, valueKey: 'id' | 'label' | 'abr' = 'id'): string =>
   String(e[valueKey] ?? '');
 
 interface RefEntry { id: string; value?: number }
@@ -81,7 +81,7 @@ export function RefField(
 }
 
 /** Options triées d'un dataset (valeur stockée + libellé), pour single/liste. */
-function useOptions(cfg: { ds: DatasetKey; valueKey?: 'id' | 'label'; labelOf?: 'label' | 'name' }) {
+function useOptions(cfg: { ds: DatasetKey; valueKey?: 'id' | 'label' | 'abr'; labelOf?: 'label' | 'name' }) {
   return useMemo(
     () => (datasetArray(cfg.ds) as Record<string, unknown>[])
       .map((e) => ({ v: valueOf(e, cfg.valueKey), label: entryLabel(e, cfg.labelOf) }))
@@ -94,7 +94,7 @@ function useOptions(cfg: { ds: DatasetKey; valueKey?: 'id' | 'label'; labelOf?: 
  *  `spec` → un `<input>` texte à côté, on stocke `{ id, spec? }` (spec omis si vide) ; sinon la chaîne brute. */
 function SingleRefField(
   { label, cfg, value, onChange, nullable }:
-  { label?: string; cfg: { ds: DatasetKey; valueKey?: 'id' | 'label'; labelOf?: 'label' | 'name'; spec?: boolean }; value: unknown; onChange: (v: unknown) => void; nullable?: boolean },
+  { label?: string; cfg: { ds: DatasetKey; valueKey?: 'id' | 'label' | 'abr'; labelOf?: 'label' | 'name'; spec?: boolean }; value: unknown; onChange: (v: unknown) => void; nullable?: boolean },
 ) {
   const options = useOptions(cfg);
   const cur: SpecRef = cfg.spec
@@ -149,7 +149,7 @@ function VocabField(
 /** Mode `liste` (défaut) : `Ref[]` = {id, value?} — choix dans le dataset, +Ajouter / ✕, `value` (Indice) si `cfg.value`. */
 function ListRefField(
   { label, cfg, value, onChange }:
-  { label?: string; cfg: { ds: DatasetKey; value?: boolean; valueKey?: 'id' | 'label'; labelOf?: 'label' | 'name' }; value: unknown; onChange: (v: unknown) => void },
+  { label?: string; cfg: { ds: DatasetKey; value?: boolean; valueKey?: 'id' | 'label' | 'abr'; labelOf?: 'label' | 'name' }; value: unknown; onChange: (v: unknown) => void },
 ) {
   const options = useOptions(cfg);
   const list = (value as RefEntry[]) ?? [];

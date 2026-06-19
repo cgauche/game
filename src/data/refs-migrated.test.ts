@@ -6,7 +6,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   trappings, qualities, spells, creatures, classes, careers, careerLevels, species, gods, etats, maladies, weaponGroups,
-  traits, stars, talents, maneuvers,
+  traits, stars, talents, maneuvers, skills, domains,
   findSkillById, findTalentById, findTrappingById, findQualityById, findSpellById,
   findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById,
 } from './index';
@@ -208,5 +208,16 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
       if (o.type === 'extendedTest' && o.skill != null) expect(findSkillById(o.skill as string), `extendedTest → ${String(o.skill)}`).toBeTruthy();
       if (o.type === 'corruptionExposure' && o.skill != null) expect(['resistance', 'calme'], String(o.skill)).toContain(o.skill);
     });
+  });
+
+  it('skills.characteristic = CharKey stable (jamais un libellé inter-table)', () => {
+    for (const s of skills) expect(CHAR_KEYS as readonly string[], `${s.label} → ${s.characteristic}`).toContain(s.characteristic);
+  });
+
+  it('domains.castBonus.perCondition = id d\'État qui résout (jamais un libellé inter-table)', () => {
+    for (const d of domains) {
+      const pc = (d as { castBonus?: { perCondition?: string } }).castBonus?.perCondition;
+      if (pc) expect(findConditionById(pc), `${d.label} → ${pc}`).toBeTruthy();
+    }
   });
 });

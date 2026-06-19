@@ -2,7 +2,7 @@
  * Valeur d'une Compétence/Caractéristique pour les Tests « dans le monde »
  * (hors combat) : Caractéristique + Augmentations de la compétence.
  */
-import { Combatant, CharKey, CHAR_BY_LABEL } from './types';
+import { Combatant, CharKey } from './types';
 import { findSkillById } from '../data';
 import { groupMatch } from './groups';
 import { effectiveChar } from './characteristics';
@@ -27,11 +27,10 @@ function altCharKey(c: Combatant, skillId: string, ck: CharKey): CharKey {
   return ck;
 }
 
-/** Caractéristique associée à une compétence par son `id` STABLE (la `SkillData.characteristic`
- *  est un libellé — « Agilité »… — converti en `CharKey` via `CHAR_BY_LABEL`). */
+/** Caractéristique (CharKey STABLE) d'une compétence par son `id`. `SkillData.characteristic` EST
+ *  une CharKey ('Dex'…), multilangue-safe — plus de conversion par libellé. */
 export function skillCharKeyById(skillId: string): CharKey | undefined {
-  const d = findSkillById(skillId);
-  return d ? CHAR_BY_LABEL[d.characteristic] : undefined;
+  return findSkillById(skillId)?.characteristic;
 }
 
 /** Valeur de test d'un personnage pour une compétence ou une caractéristique. Mêmes modulations qu'en

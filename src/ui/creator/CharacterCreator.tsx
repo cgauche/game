@@ -124,7 +124,7 @@ function blurb(html: string | null | undefined, max = 160): string {
 const skillTip = (name: string) => {
   const data = findSkill(splitLabel(name).name);
   if (!data) return '';
-  return `${data.characteristic} · Compétence ${data.type === 'base' ? 'de Base' : 'Avancée'}\n${blurb(data.desc, 280)}`;
+  return `${CHAR_LABELS[data.characteristic]} · Compétence ${data.type === 'base' ? 'de Base' : 'Avancée'}\n${blurb(data.desc, 280)}`;
 };
 const talentTip = (name: string) => blurb(findTalent(splitLabel(name).name)?.desc, 300);
 /** Description des Caractéristiques (characteristics.json — LDB 05). */
@@ -132,7 +132,7 @@ const CHAR_DESC: Record<string, string> = Object.fromEntries(
   (charData as { abr?: string; desc?: string }[]).filter((c) => c.abr && CHAR_KEYS.includes(c.abr as CharKey)).map((c) => [c.abr!, blurb(c.desc, 240)]),
 );
 /** Clé de la Caractéristique liée à une compétence (« Ag »), pour annoter les listes. */
-const skillCharKey = (name: string): CharKey | null => CHAR_BY_LABEL[findSkill(splitLabel(name).name)?.characteristic ?? ''] ?? null;
+const skillCharKey = (name: string): CharKey | null => findSkill(splitLabel(name).name)?.characteristic ?? null;
 
 /** Stepper +/− avec compteur — l'outil d'allocation standard des créateurs de RPG. */
 function Stepper({ value, min = 0, max, onChange, disabled }: { value: number; min?: number; max: number; onChange: (v: number) => void; disabled?: boolean }) {
