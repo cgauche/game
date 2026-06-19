@@ -195,6 +195,9 @@ export function conditionCtx(s: { flags: Record<string, boolean>; gameTime: numb
  *  vers cette forme à l'exécution (un seul ouvreur de modale `openSkillTest`). */
 export interface FlowTest {
   skill?: string;
+  /** Spécialisation ciblée (Métier (Serrurier), Savoir (Magie)…) — précise QUELLE instance de `skill`
+   *  est testée quand le héros en possède plusieurs ; sinon la première suffit. */
+  spec?: string;
   characteristic?: CharKey;
   difficulty?: Difficulty;
   /** DR minimum requis (défaut 0 = simple réussite). */

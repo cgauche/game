@@ -251,7 +251,7 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
     if (sl) parts.push(sl);
     return parts.length ? parts.join(' · ') : undefined;
   };
-  const best = partyBest(get().party, spec.skill, spec.characteristic, socialMod);
+  const best = partyBest(get().party, spec.skill, spec.characteristic, socialMod, spec.spec);
   if (!best) return false;
   const baseDifficulty = spec.difficulty ?? 'intermediaire';
   const eased = !!spec.easierIf && get().party.some((c) => !c.dead && (
@@ -260,7 +260,7 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
   ));
   const difficulty = eased ? easeDifficulty(baseDifficulty, spec.easierIf!.steps ?? 1) : baseDifficulty;
   const candidates = get().party.filter((c) => !c.dead).map((actor) => {
-    const value = testValue(actor, spec.skill, spec.characteristic) + (socialMod ? socialMod(actor) : 0);
+    const value = testValue(actor, spec.skill, spec.characteristic, spec.spec) + (socialMod ? socialMod(actor) : 0);
     const tool = spec.tool ? actor.items?.find((i) => i.name === spec.tool && !i.destroyed) : undefined;
     return {
       id: actor.id, name: actor.name, value,
@@ -273,7 +273,7 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
   const def = candidates.find((c) => c.id === best.actor.id) ?? candidates[0];
   if (!def) return false;
   // Compétence/Caractéristique RÉELLE (cadre de jet) ≠ intitulé de situation (titre). Char → libellé long.
-  const skill = spec.skill || (spec.characteristic ? CHAR_LABELS[spec.characteristic] : undefined);
+  const skill = spec.skill ? refLabel('skills', { id: spec.skill, spec: spec.spec }) : (spec.characteristic ? CHAR_LABELS[spec.characteristic] : undefined);
   const label = spec.label || skill || 'Test';
   set({
     pendingTest: {

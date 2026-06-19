@@ -10,6 +10,7 @@ import { opSummary } from '../editor/GameOpEditor';
 import { condSummary } from '../editor/ConditionEditor';
 import type { GameOp } from '../../engine/ops';
 import type { Flow, TriggeredEffect, EffectTrigger } from '../../state/flow';
+import { refLabel } from '../../data';
 
 const TRIGGER_LABEL: Record<EffectTrigger, string> = {
   onHit: 'À la touche',
@@ -63,7 +64,7 @@ function flowSummary(f: Flow): string {
     case 'do': return f.effect.type === 'ops' ? f.effect.ops.map(describeOp).join(', ') : f.effect.type;
     case 'seq': return f.steps.map(flowSummary).filter(Boolean).join(' ; ');
     case 'if': return `si ${condSummary(f.cond)} → ${flowSummary(f.then)}${f.else ? ` (sinon ${flowSummary(f.else)})` : ''}`;
-    case 'test': return `jet ${f.test.skill ?? f.test.characteristic ?? ''} → réussite : ${flowSummary(f.success)} / échec : ${flowSummary(f.fail)}`;
+    case 'test': return `jet ${f.test.skill ? refLabel('skills', { id: f.test.skill, spec: f.test.spec }) : (f.test.characteristic ?? '')} → réussite : ${flowSummary(f.success)} / échec : ${flowSummary(f.fail)}`;
   }
 }
 

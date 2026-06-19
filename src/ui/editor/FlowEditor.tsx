@@ -14,6 +14,7 @@ import { Flow, FlowTest, EMPTY_FLOW } from '../../state/flow';
 import { DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
 import { isSocialTest } from '../../engine/skills';
 import { RefField } from '../compendium/RefField';
+import { refLabel } from '../../data';
 import {
   EffectFields,
   Ctx,
@@ -37,7 +38,7 @@ function nodeSummary(node: Flow, ctx: Ctx): string {
   switch (node.kind) {
     case 'do': return effectSummary(node.effect, ctx);
     case 'if': return `🔀 Si ${condSummary(node.cond)}${node.else != null ? ' · sinon…' : ''}`;
-    case 'test': return `🎲 Test ${node.test.skill || node.test.characteristic || '?'} → ✓ / ✗`;
+    case 'test': return `🎲 Test ${node.test.skill ? refLabel('skills', { id: node.test.skill, spec: node.test.spec }) : (node.test.characteristic || '?')} → ✓ / ✗`;
     case 'seq': return `▸ ${node.steps.length} bloc(s)`;
   }
 }
@@ -52,7 +53,7 @@ function TestFields({ test, onChange }: { test: FlowTest; onChange: (t: FlowTest
   return (
     <>
       <div className="tf-row">
-        <RefField cfg={{ ds: 'skills', single: true }} fieldKey="Compétence" value={test.skill} onChange={(v) => upd({ skill: (v as string) || undefined })} nullable />
+        <RefField cfg={{ ds: 'skills', single: true, spec: true }} fieldKey="Compétence" value={test.skill ? { id: test.skill, spec: test.spec } : undefined} onChange={(v) => { const r = v as { id: string; spec?: string } | null; upd({ skill: r?.id || undefined, spec: r?.spec || undefined }); }} nullable />
         <select value={test.difficulty ?? 'intermediaire'} onChange={(e) => upd({ difficulty: e.target.value as Difficulty })}>
           {(Object.keys(DIFFICULTY_LABELS) as Difficulty[]).map((d) => (
             <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>
