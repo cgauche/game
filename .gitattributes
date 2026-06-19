@@ -1,0 +1,21 @@
+# Fins de ligne NORMALISÉES en LF dans le dépôt ET le working tree.
+# Sans ça, `core.autocrlf=true` réécrit les fichiers en CRLF au checkout/stash/merge, ce qui CASSE le
+# garde-fou byte-exact `src/data/serialize.test.ts` (les datasets JSON doivent rester en LF). Foot-gun
+# observé en session : un `git stash` avait flippé tout l'arbre en CRLF.
+* text=auto eol=lf
+
+# Binaires : jamais de conversion de fins de ligne.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.pdf  binary
+*.zip  binary
+*.odt  binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.mp3  binary
+*.ogg  binary
+*.wav  binary

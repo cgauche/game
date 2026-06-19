@@ -383,7 +383,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
       const count = exposureTestCount(severity, true); // tente : extrême = 2 Tests, difficile = 0
       if (count > 0) steps.push(...buildExposureSteps(party, camperIds, count));
     } else {
-      const best = partyBest(party.filter((h) => !h.dead), 'Survie en extérieur');
+      const best = partyBest(party.filter((h) => !h.dead), 'survie-en-exterieur');
       if (best) {
         steps.push({ id: 'abri', kind: 'shelter', actorId: best.actor.id, label: 'Abri de fortune', icon: '⛺',
           rollLabel: 'Survie en extérieur', base: best.value, target: best.value, result: null, interactive: true,
@@ -584,7 +584,7 @@ export function restSleep(get: Get, set: Set): void {
         out.push({ icon: '⛺', label: 'Campement', text: 'La tente est montée — le groupe dort à l’abri.', tone: 'info' });
       } else if (severity !== 'clement') {
         // Abri de fortune : Survie en extérieur (« construire un abri », ch.09 l.559).
-        const best = partyBest(party.filter((h) => !h.dead), 'Survie en extérieur');
+        const best = partyBest(party.filter((h) => !h.dead), 'survie-en-exterieur');
         if (best) {
           const res = rollTest(best.value, 'intermediaire', rng);
           sheltered = res.success;

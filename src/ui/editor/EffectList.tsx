@@ -10,7 +10,7 @@ import { Effect, EncounterDef, Dialogue, Scene } from '../../state/scene';
 import { EMPTY_FLOW } from '../../state/flow';
 import { DAY_PHASES, DayPhaseKey } from '../../engine/clock';
 import { DISEASE_DEFS } from '../../engine/disease';
-import { spells, etats, trappings as trappingsData } from '../../data';
+import { spells, etats, trappings as trappingsData, refLabel } from '../../data';
 import { giveTrappingLabel } from '../../engine/items';
 import { FlowEditor } from './FlowEditor';
 import { GameOpEditor, opSummary } from './GameOpEditor';
@@ -148,7 +148,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'startDialogue': return `${icon} Dialogue : ${e.dialogue || '?'}`;
     case 'openMerchant': return `${icon} Boutique : ${e.entityId || '?'}`;
     case 'medicalAid': return `${icon} Soins payants (${(e.acts ?? (e.act ? [0] : [])).length} acte(s))`;
-    case 'extendedTest': return `${icon} Test Étendu ${e.skill || e.characteristic || '?'} → DR cumulé ${e.targetDR ?? 0}${e.flag ? ` (flag ${e.flag})` : ''}`;
+    case 'extendedTest': return `${icon} Test Étendu ${e.skill ? refLabel('skills', { id: e.skill }) : (e.characteristic || '?')} → DR cumulé ${e.targetDR ?? 0}${e.flag ? ` (flag ${e.flag})` : ''}`;
     case 'forceDoor': return `${icon} Enfoncer « ${e.label || '?'} » (BE ${e.doorBE ?? 0}, B ${e.doorB ?? 0})${e.flag ? ` → flag ${e.flag}` : ''}`;
     case 'setTime': return `${icon} Heure → ${DAY_PHASES.find((p) => p.key === e.phase)?.label ?? e.phase}`;
     case 'delayedEffect': {
@@ -214,7 +214,7 @@ export function newEffect(type: Effect['type']): Effect {
     case 'giveSin':
       return { type: 'giveSin', amount: 1, heroId: '' };
     case 'corruptionExposure':
-      return { type: 'corruptionExposure', level: 'mineure', skill: 'Résistance', heroId: '' };
+      return { type: 'corruptionExposure', level: 'mineure', skill: 'resistance', heroId: '' };
     case 'giveCorruption':
       return { type: 'giveCorruption', amount: 1, heroId: '' };
     case 'learnSpell':
@@ -363,10 +363,10 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             </select>
             {/* Compétence déterminée en amont (verrouillée en jeu) ou « au choix » (nature indéterminée,
                 LDB 19 l.26 → le joueur tranche dans la modale, comme la Défense). */}
-            <select value={e.skill ?? ''} onChange={(ev) => upd({ skill: ev.target.value || undefined })}>
+            <select value={e.skill ?? ''} onChange={(ev) => upd({ skill: (ev.target.value || undefined) as 'resistance' | 'calme' | undefined })}>
               <option value="">Au choix du joueur (nature indéterminée)</option>
-              <option value="Résistance">Résistance (Influence physique)</option>
-              <option value="Calme">Calme (Corruption spirituelle)</option>
+              <option value="resistance">Résistance (Influence physique)</option>
+              <option value="calme">Calme (Corruption spirituelle)</option>
             </select>
             <input placeholder="id du héros (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
           </>

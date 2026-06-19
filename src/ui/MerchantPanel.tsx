@@ -30,7 +30,7 @@ const AVAIL_RANK: Record<string, number> = { Commune: 0, Limitée: 1, Rare: 2, E
 function familyOf(id: string): string {
   const t = findTrappingById(id);
   if (!t) return 'divers';
-  if (isShieldItem({ name: t.label, qualities: (t.qualities ?? []).map(qualityRuntime) })) return 'boucliers';
+  if (isShieldItem({ qualities: (t.qualities ?? []).map(qualityRuntime) })) return 'boucliers';
   if (t.type === 'melee') return 'melee';
   if (t.type === 'ranged') return 'ranged';
   if (t.type === 'ammunition') return 'ammo';

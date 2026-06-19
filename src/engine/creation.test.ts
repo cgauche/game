@@ -36,10 +36,10 @@ describe('bonus de PX des choix aléatoires (LDB 04 l.87 / 05 l.191-385)', () =>
 });
 
 describe('rollStar — signe astral (ADE2, table d100)', () => {
-  it('renvoie toujours un signe existant', () => {
-    const labels = new Set(stars.map((s) => s.label));
+  it('renvoie toujours un signe existant (par id STABLE)', () => {
+    const ids = new Set(stars.map((s) => s.id));
     for (let seed = 0; seed < 200; seed++) {
-      expect(labels.has(rollStar(makeRNG(seed)))).toBe(true);
+      expect(ids.has(rollStar(makeRNG(seed)))).toBe(true);
     }
   });
 
@@ -52,12 +52,12 @@ describe('rollStar — signe astral (ADE2, table d100)', () => {
   });
 
   it('l\'Étoile du Sorcier : le 1d10 interne produit les 4 variantes (ADE2 l.62)', () => {
-    const variants = stars.filter((s) => /Étoile du Sorcier/.test(s.label)).map((s) => s.label);
+    const variants = stars.filter((s) => /Étoile du Sorcier/.test(s.label)).map((s) => s.id);
     expect(variants.length).toBe(4);
     const seen = new Set<string>();
     for (let seed = 0; seed < 3000; seed++) {
       const r = rollStar(makeRNG(seed));
-      if (/Étoile du Sorcier/.test(r)) {
+      if (/etoile-du-sorcier/.test(r)) {
         expect(variants).toContain(r); // jamais une variante hors des 4 bandes
         seen.add(r);
       }
@@ -76,7 +76,7 @@ describe('applyStarEffect — effet d\'un signe aux ATTRIBUTS DE DÉPART (ADE2 c
   it('applique les charMod (±carac) — Wymund : +2 Soc, +2 I, -3 Int', () => {
     const chars = baseChars();
     const talents: string[] = [];
-    applyStarEffect("Wymund l'Anachorète", chars, (t) => talents.push(t));
+    applyStarEffect('wymund-l-anachorete', chars, (t) => talents.push(t)); // id STABLE
     expect(chars.Soc).toBe(32);
     expect(chars.I).toBe(32);
     expect(chars.Int).toBe(27);
@@ -86,7 +86,7 @@ describe('applyStarEffect — effet d\'un signe aux ATTRIBUTS DE DÉPART (ADE2 c
   it('octroie le Talent + applique la pénalité — Mummit le Fou : Chanceux, -3 FM', () => {
     const chars = baseChars();
     const talents: string[] = [];
-    applyStarEffect('Mummit le Fou', chars, (t) => talents.push(t));
+    applyStarEffect('mummit-le-fou', chars, (t) => talents.push(t)); // id STABLE
     expect(chars.FM).toBe(27);
     expect(talents).toEqual(['Chanceux']);
   });

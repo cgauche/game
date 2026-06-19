@@ -64,7 +64,7 @@ import type { Get, Set } from './flowTypes';
 /** Meilleur soigneur du groupe pour un acte (Opérer exige AUSSI le Talent Chirurgie, LDB 10). */
 export function bestHealerFor(party: Combatant[], act: HealMode): { actor: Combatant; value: number } | null {
   const pool = act === 'surgery' ? party.filter((c) => hasHealSkill(c) && hasSurgerySkill(c)) : party.filter(hasHealSkill);
-  return partyBest(pool, 'Guérison');
+  return partyBest(pool, 'guerison');
 }
 
 /** Ouvre l'infirmerie (hors combat). Patient par défaut : celui demandé, sinon le premier soignable. */

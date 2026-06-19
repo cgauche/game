@@ -103,9 +103,9 @@ describe('effets de mutation lus à la volée', () => {
     const c = hero({ skills: [{ skillId: 'pistage', advances: 5 } as never, { skillId: 'charme', advances: 0 } as never] });
     attachMutation(c, { id: 'groin-poilu', label: 'Groin poilu', kind: 'physique', roll: 93, passive: [{ op: 'skillMod', skill: 'pistage', mod: 10 }] });
     attachMutation(c, { id: 'visage-inverse', label: 'Visage inversé', kind: 'physique', roll: 53, passive: [{ op: 'testMod', amount: -20, char: 'Soc' }] });
-    expect(passiveSkillSum(c, 'Pistage')).toBe(10); // compétence nommée → collecteur passif (Σ, intrinsèque)
+    expect(passiveSkillSum(c, 'pistage')).toBe(10); // compétence nommée → collecteur passif (Σ, intrinsèque)
     expect(passiveTestMod(c, 'Soc')).toBe(-20); // Tests char-qualifiés (Visage inversé) → collecteur passif
-    expect(testValue(c, 'Charme')).toBe(30 - 20); // Soc 30, Tests de Sociabilité −20 (bout en bout)
+    expect(testValue(c, 'charme')).toBe(30 - 20); // Soc 30, Tests de Sociabilité −20 (bout en bout)
   });
   it('attachMutation pousse les Traits dérivés (créature + psychologie)', () => {
     const c = hero();

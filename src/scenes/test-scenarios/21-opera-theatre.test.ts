@@ -80,7 +80,7 @@ describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', ()
 
   it('la plante piégée est posée dans la loge royale (z1) et se détecte mieux avec la Poudre noire', () => {
     expect(plante.z).toBe(1);
-    expect(detect.test.easierIf?.hasSkill).toBe('Projectiles (Poudre noire)');
+    expect(detect.test.easierIf?.hasSkill).toEqual({ id: 'projectiles', spec: 'Poudre noire' });
   });
 
   it('entrer dans l’auditorium baisse les lumières et programme la soirée (pétards + mèche)', () => {

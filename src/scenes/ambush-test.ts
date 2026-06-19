@@ -85,18 +85,18 @@ function build(): Scene {
     },
   ];
 
-  // Embuscade : les COMBATTANTS (statblocs ch.2) restent CACHÉS en exploration — les mutants
-  // AMBIANTS (entités animées ci-dessous) sont la couche visible ; le combat spawn aux mêmes cases.
+  // VISIBLE (plus de double calque) : les mutants qu'on voit se repaître SONT les combattants. L'entité
+  // enrôlée porte TOUT — rig 'mutant' + mutation visible + arme + anim d'ambiance + statbloc ch.2. Le fix
+  // embuscade les masque pendant le combat (leur combattant les rend) et les retire de la scène à la victoire.
   const enc = buildEncounter({
     id: 'enc-mutants',
-    hidden: true,
-    // Statblocs CUSTOM fidèles à L'ennemi dans l'Ombre ch.2 (stats VF vérifiées). L'arme vient
-    // des Traits ; l'apparence (mutation) est séparée des stats ; mêmes positions qu'en exploration.
+    // Statblocs CUSTOM fidèles à L'ennemi dans l'Ombre ch.2 (stats VF vérifiées). `ref:'mutant'` = base rig
+    // en exploration ; l'apparence (mutation) et l'anim d'ambiance sont séparées des stats.
     enemies: [
       {
         // Chef : reste en retrait, tire à l'arbalète (À distance dans le Trait).
-        pos: { x: 17, y: 6 },
-        appearance: { monster: { tete: 'lezard' } },
+        pos: { x: 17, y: 6 }, ref: 'mutant', appearance: { monster: { tete: 'lezard' } }, weapon: 'Arbalète', anim: 'standing',
+        label: 'Knud Cratinx — chef à la peau écailleuse',
         statblock: {
           name: 'Knud Cratinx',
           char: { M: 4, CC: 36, CT: 43, F: 39, E: 32, I: 35, Ag: 33, Dex: 29, Int: 33, FM: 35, Soc: 30, B: 12 },
@@ -104,24 +104,24 @@ function build(): Scene {
         },
       },
       {
-        pos: { x: 16, y: 7 },
-        appearance: { monster: { tete: 'chien' } },
+        pos: { x: 16, y: 7 }, ref: 'mutant', appearance: { monster: { tete: 'chien' } }, anim: 'howl',
+        label: 'Mikael — tête de chien, hurle à la mort',
         statblock: { name: 'Mikael', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 1 }, traits: [{ id: 'arme', value: 7 }, { id: 'corruption', arg: 'Mineure' }, { id: 'mutation', arg: 'Tête de chien' }] },
       },
       {
-        pos: { x: 14, y: 8 },
-        appearance: { monster: { jambes: 'chevre' } },
+        pos: { x: 14, y: 8 }, ref: 'mutant', appearance: { monster: { jambes: 'chevre' } }, anim: 'feeding',
+        label: 'Erik — pattes de chèvre, dévore un cadavre',
         statblock: { name: 'Erik', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 2 }, traits: [{ id: 'arme', value: 7 }, { id: 'corruption', arg: 'Mineure' }, { id: 'mutation', arg: 'Pattes de chèvre' }] },
       },
       {
-        pos: { x: 15, y: 7 },
-        appearance: { monster: { tete: 'ogive' } },
+        pos: { x: 15, y: 7 }, ref: 'mutant', appearance: { monster: { tete: 'ogive' } }, anim: 'standing',
+        label: 'Johann — tête en ogive, panse Mikael',
         statblock: { name: 'Johann', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 4 }, traits: [{ id: 'arme', value: 7 }, { id: 'corruption', arg: 'Mineure' }, { id: 'mutation', arg: 'Tête en ogive' }] },
       },
       {
         // « Mutile l'attelage à la hache » → arme dans le Trait (type Hache).
-        pos: { x: 12, y: 7 },
-        appearance: { monster: { tete: 'minuscule' } },
+        pos: { x: 12, y: 7 }, ref: 'mutant', appearance: { monster: { tete: 'minuscule' } }, weapon: 'Hache', anim: 'standing',
+        label: 'Terenz — crétin, mutile l’attelage',
         statblock: { name: 'Terenz', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 3 }, traits: [{ id: 'arme', value: 7, arg: 'Hache' }, { id: 'corruption', arg: 'Mineure' }, { id: 'mutation', arg: 'Crétin' }] },
       },
     ],
@@ -155,15 +155,8 @@ function build(): Scene {
       { id: 'sang2', kind: 'prop', pos: { x: 15, y: 7 }, ref: 'mare-sang', anim: 'gush' },
       { id: 'sang3', kind: 'prop', pos: { x: 16, y: 8 }, ref: 'mare-sang' },
       { id: 'sang4', kind: 'prop', pos: { x: 12, y: 8 }, ref: 'mare-sang' },
-      // — La bande de Knud Cratinx (fidèle à « L'ennemi dans l'Ombre » ch.2). Mutants
-      //   HUMANOÏDES riggés : mutation = part monstrueuse (tête de chien, écailles…),
-      //   arme = équipement (l'arbalète du reptilien, la hache qui mutile l'attelage).
-      //   Mêmes positions que l'encounter (raccord visuel à l'entrée en combat). —
-      { id: 'knud', kind: 'personnage', pos: { x: 17, y: 6 }, ref: 'mutant', appearance: { monster: { tete: 'lezard' } }, weapon: 'Arbalète', anim: 'standing', label: 'Knud Cratinx — chef à la peau écailleuse' },
-      { id: 'mikael', kind: 'personnage', pos: { x: 16, y: 7 }, ref: 'mutant', appearance: { monster: { tete: 'chien' } }, anim: 'howl', label: 'Mikael — tête de chien, hurle à la mort' },
-      { id: 'erik', kind: 'personnage', pos: { x: 14, y: 8 }, ref: 'mutant', appearance: { monster: { jambes: 'chevre' } }, anim: 'feeding', label: 'Erik — pattes de chèvre, dévore un cadavre' },
-      { id: 'johann', kind: 'personnage', pos: { x: 15, y: 7 }, ref: 'mutant', appearance: { monster: { tete: 'ogive' } }, anim: 'standing', label: 'Johann — tête en ogive, panse Mikael' },
-      { id: 'terenz', kind: 'personnage', pos: { x: 12, y: 7 }, ref: 'mutant', appearance: { monster: { tete: 'minuscule' } }, weapon: 'Hache', anim: 'standing', label: 'Terenz — crétin, mutile l’attelage' },
+      // — La bande de Knud Cratinx (fidèle à « L'ennemi dans l'Ombre » ch.2) : entités VISIBLES enrôlées,
+      //   portées par l'encounter (mutation visible + arme + anim + statbloc). Plus de calque ambiant séparé. —
       ...enc.entities,
     ],
     dialogues,

@@ -28,6 +28,7 @@ export const QUALITY_IDS = {
   Taille: 'taille',
   Salve: 'salve',
   Defensive: 'defensive',
+  Protectrice: 'protectrice',
   Assommante: 'assommante',
   Precise: 'precise',
   Pratique: 'pratique',

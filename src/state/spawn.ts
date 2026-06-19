@@ -3,19 +3,19 @@
  * personnalisé d'une scène. Sert au combat tactique.
  */
 import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints, BodyShape, SkillInstance, TalentInstance } from '../engine/types';
-import { skillCharacteristic } from '../engine/character';
+import { skillCharacteristicById } from '../engine/character';
 import { type TraitInstance, type TraitList } from '../engine/statEntry';
 import { findCreatureById, findSkillById, findTalentById, findSpellById, CreatureData, type SkillRef, type TalentRef } from '../data';
 import { CustomStatblock, EntityAppearance } from './scene';
-import { emptyArmour, buildWeapon, type WeaponDamageSpec } from '../engine/items';
+import { emptyArmour, buildWeapon } from '../engine/items';
 import { maxWounds, bonus } from '../engine/characteristics';
 import { parseSizeLabel, resizeBySteps, SIZE_ORDER, SizeCategory } from '../engine/size';
 import { parsePsychTraits } from '../engine/psychology';
-import { traitCharMods, traitBonusWoundsBE, isMindless, mutationsAtSpawn, isSwarm, resolveTraits, traitLabelById } from '../engine/traits/dispatch';
+import { traitCharMods, traitBonusWoundsBE, isMindless, mutationsAtSpawn, isSwarm, resolveTraits } from '../engine/traits/dispatch';
 import { rollMutation, mutationById } from '../data/mutations';
 import { makeRNG } from '../engine/dice';
 import { groupsFor } from '../engine/groups';
-import { norm as normTrait } from '../lib/normalize';
+import { weaponsFromTraits, armourFromTraits } from '../engine/creatureEquip';
 import { riggedAppearance, weaponFromLabel } from '../gameIso/rig/enemyProfile';
 import { hashSeed } from '../gameIso/appearance';
 import { bodyPlanOf } from '../gameIso/rig/bodyPlan';
@@ -46,66 +46,9 @@ function charsFrom(src: Partial<Record<string, number | null>>, fallback = 30): 
   return chars;
 }
 
-/**
- * Attaques NATURELLES (FR) : pas d'arme tenue par le rig (la « part » du corps fait
- * foi — griffes, morsure, tentacule…). Le rendu n'affiche donc pas d'objet en main.
- * SOURCE UNIQUE (clé normalisée → { ranged? }) : sert et à filtrer le type « Arme (griffes) »
- * et à reconnaître un trait d'attaque naturelle (« Morsure +9 ») — plus de regex dupliquée.
- */
-const NATURAL_WEAPON = new Map<string, { ranged?: boolean }>([
-  ['morsure', {}], ['griffes', {}], ['griffe', {}], ['poings', {}], ['mains nues', {}],
-  ['tentacule', {}], ['tentacules', {}], ['bec', {}], ['dard', {}], ['corne', {}], ['cornes', {}],
-  ['queue', {}], ['pietinement', {}], ['crachat', { ranged: true }],
-]);
-
-/**
- * Parse UN trait d'arme WFRP4 (français) en arme jouable, ou null. Gère le TYPE
- * entre parenthèses (l'armement des monstres est dans les Traits) :
- *   « Arme +7 », « Arme (Épée) +7 », « Arme (Dague) +4 », « Arme (griffes) »,
- *   « À distance (Arbalète) +9 (60) », « À distance +8 (50) », « Morsure +9 ».
- * Le `name` = le TYPE quand il est manufacturé (→ le rig tient cette arme) ; sinon
- * une étiquette naturelle (→ weaponFamily renvoie '' = aucune arme dessinée).
- */
-export function weaponFromTrait(t: TraitInstance): Weapon | null {
-  // Indice de créature = SB déjà inclus → PAS de token BF (« +N », « -N » négatif) ; à défaut d'Indice,
-  // arme générique « +BF » nu (SB-relatif). Le constructeur d'arme UNIQUE porte les deux conventions.
-  const dmg: WeaponDamageSpec = t.value != null ? { plusBF: false, flat: t.value } : { plusBF: true, flat: 0, bare: true };
-  if (t.id === 'a-distance') {
-    if (t.value == null) return null; // « À distance » sans Indice de Dégâts : pas une arme jouable (RAW)
-    const type = t.arg;
-    return buildWeapon({
-      name: type && !NATURAL_WEAPON.has(normTrait(type)) ? type : 'Attaque à distance',
-      type: 'ranged', damage: dmg, range: t.range ?? undefined,
-    });
-  }
-  if (t.id === 'arme') return buildWeapon({ name: t.arg ?? 'Arme', damage: dmg }); // mêlée par défaut
-  // Attaque naturelle (« Morsure +9 », « 8 Tentacules +9 ») : la clé est une arme naturelle CONNUE
-  // (source UNIQUE NATURAL_WEAPON). L'arme reste UNE (l'Action d'attaque) ; le compte joue sur les
-  // Attaques GRATUITES (aiCreatureFreeAttacks), LDB 85 l.354.
-  const word = traitLabelById(t.id).split(/\s+/)[0];
-  const meta = NATURAL_WEAPON.get(normTrait(word));
-  if (meta) return buildWeapon({ name: word, type: meta.ranged ? 'ranged' : 'melee', damage: dmg });
-  return null;
-}
-
-/** Parse les traits d'arme d'une créature en armes jouables (mêlée + distance). */
-function weaponsFromTraits(traits: TraitList): Weapon[] {
-  const weapons: Weapon[] = [];
-  for (const t of traits) {
-    const w = weaponFromTrait(t);
-    if (w) weapons.push(w);
-  }
-  if (weapons.length === 0) weapons.push(buildWeapon({ name: 'Arme', damage: { literal: '+BF' } })); // uid universel
-  return weapons;
-}
-
-/** PA plats du trait « Armure (Indice) » (LDB 85, profils d'éditeur) — lus par le REGISTRE des
- *  Traits (Indice ou argument), plus de regex propre. 0 si absent. */
-function armourFromTraits(traits: TraitList): ArmourPoints {
-  const r = resolveTraits(traits).find((x) => x.def.key === 'Armure');
-  const n = r ? Number(r.indice ?? r.arg ?? 0) : 0;
-  return emptyArmour(Number.isFinite(n) ? n : 0);
-}
+// Dérivation traits → armes/armure : SOURCE UNIQUE déplacée dans `engine/creatureEquip` (pure), pour
+// être partagée avec le RENDU d'exploration sans cycle de couches. Re-exportée pour les importeurs.
+export { weaponFromTrait } from '../engine/creatureEquip';
 
 /** Catégorie de Taille depuis le trait « Taille (X) » (LDB 85) — lue par le REGISTRE des Traits
  *  (`resolveTraits` → arg), plus de regex propre. Une plage (« Taille (de Petite à Énorme) ») est
@@ -163,9 +106,10 @@ function randomizeChars(chars: Characteristics, id: string): Characteristics {
  *  un profil retouché ensuite (carac. aléatoires LDB 78, Taille) garde les mêmes avances.
  *  Entrée sans valeur chiffrée : ignorée (rien d'inventé). Réf STRUCTURÉE `SkillRef` (id stable +
  *  valeur imprimée) — plus de parsing de chaînes. */
-/** Une `SkillInstance` (id + spec) depuis le LIBELLÉ (pour la Caractéristique) + valeur de Test IMPRIMÉE. */
-function skillInstance(skillId: string, label: string, spec: string | undefined, value: number, printedChars: Characteristics): SkillInstance {
-  const ch = skillCharacteristic(label);
+/** Une `SkillInstance` (id + spec) depuis l'`id` STABLE (pour la Caractéristique) + valeur de Test
+ *  IMPRIMÉE. Carac résolue par id (`skillCharacteristicById`, ≠ re-lookup par libellé — multilangue-safe). */
+function skillInstance(skillId: string, spec: string | undefined, value: number, printedChars: Characteristics): SkillInstance {
+  const ch = skillCharacteristicById(skillId);
   return { skillId, spec, characteristic: ch, advances: Math.max(0, value - printedChars[ch]) };
 }
 
@@ -175,7 +119,7 @@ export function skillsFromBook(list: SkillRef[] | undefined, printedChars: Chara
   const out: SkillInstance[] = [];
   for (const ref of list ?? []) {
     const sk = findSkillById(ref.id);
-    if (sk) out.push(skillInstance(sk.id, sk.label, ref.spec, ref.value, printedChars));
+    if (sk) out.push(skillInstance(sk.id, ref.spec, ref.value, printedChars));
   }
   return out;
 }

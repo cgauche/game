@@ -11,7 +11,7 @@
 import { Formula, GameOp } from '../../engine/ops';
 import { CHAR_LABELS, CharKey, type Difficulty, DIFFICULTY_LABELS } from '../../engine/types';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
-import { etats, talentConcrete, findTalent, qualityRefLabel } from '../../data';
+import { etats, talentConcrete, findTalent, qualityRefLabel, refLabel } from '../../data';
 import { slugId } from '../../data/slug';
 import { splitLabel } from '../../engine/statEntry';
 import { giveTrappingLabel } from '../../engine/items';
@@ -213,7 +213,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'critTwice': return { op: 'critTwice' };
     case 'gainResource': return { op: 'gainResource', resource: 'fortune', amount: 1 };
     case 'corruption': return { op: 'corruption', amount: 1 };
-    case 'test': return { op: 'test', skill: 'Résistance', difficulty: 'intermediaire', onFail: [], onSuccess: [] };
+    case 'test': return { op: 'test', skill: 'resistance', difficulty: 'intermediaire', onFail: [], onSuccess: [] };
     case 'opposedTest': return { op: 'opposedTest', attacker: 'F', defender: 'F', onWin: [] };
     case 'castPenalty': return { op: 'castPenalty', skill: 'all', mod: -10 };
     case 'castWard': return { op: 'castWard', radius: 5 };
@@ -244,7 +244,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'zone': return { op: 'zone', shape: 'disc', radiusMeters: { bonusOf: 'FM' } };
     case 'polymorph': return { op: 'polymorph', ref: 'Ours' };
     case 'lifeSteal': return { op: 'lifeSteal', num: 1, den: 2, round: 'floor' };
-    case 'skillMod': return { op: 'skillMod', skill: 'Esquive', mod: -10 };
+    case 'skillMod': return { op: 'skillMod', skill: 'esquive', mod: -10 };
     case 'moveScale': return { op: 'moveScale', num: 1, den: 2 };
     case 'moveMod': return { op: 'moveMod', mod: -1 };
     case 'maxWeaponHands': return { op: 'maxWeaponHands', hands: 1 };
@@ -274,7 +274,7 @@ export function opSummary(o: GameOp): string {
     case 'condition': return `${L} ${o.name}${o.value && o.value !== 1 ? ` ×${formulaSummary(o.value)}` : ''}${o.perRound ? '/Round' : ''}`;
     case 'removeCondition': return `${L} ${o.name ?? '(au choix)'}`;
     case 'charMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} ${CHAR_LABELS[o.char] ?? o.char}`;
-    case 'skillMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} ${o.skill}`;
+    case 'skillMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} ${refLabel('skills', { id: o.skill })}`;
     case 'moveMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} Mouvement`;
     case 'apAll': return `${L} +${formulaSummary(o.amount)} PA`;
     case 'testMod': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests${o.char ? ` de ${CHAR_LABELS[o.char] ?? o.char}` : ''}`;
@@ -283,7 +283,7 @@ export function opSummary(o: GameOp): string {
     case 'critTwice': return `${L} deux lancers de Critique`;
     case 'gainResource': return `${L} +${o.amount} ${o.resource === 'fate' ? 'Destin' : 'Chance'}${o.temporary ? ' (temp.)' : ''}`;
     case 'corruption': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount}`;
-    case 'test': return `${L} ${o.skill} → ${o.onSuccess?.length ?? 0} si réussite / ${o.onFail.length} si échec`;
+    case 'test': return `${L} ${o.skill ? refLabel('skills', { id: o.skill }) : o.characteristic ? CHAR_LABELS[o.characteristic] : '?'} → ${o.onSuccess?.length ?? 0} si réussite / ${o.onFail.length} si échec`;
     case 'opposedTest': return `${L} ${o.attacker} vs ${o.defender} → ${o.onWin.length} si gagné`;
     case 'castPenalty': return `${L} ${o.blocked ? 'magie interdite' : o.maxZeroDR ? 'Prière plafonnée' : `${o.mod ?? 0} ${o.skill}`}`;
     case 'castWard': return `${L} −20 Langue, rayon ${formulaSummary(o.radius)} m`;

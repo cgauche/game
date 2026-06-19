@@ -406,7 +406,7 @@ export const FLOWS = {
     actor: (s, r) => actorIn(s, r.id),
     resolve: (s, r, actor, _get, forced, p) => {
       if (!actor || !p) return null;
-      const value = testValue(actor, 'Corps à corps'); // Bagarre (CC + avances)
+      const value = testValue(actor, 'corps-a-corps'); // Bagarre (CC + avances)
       const bf = bonus(effectiveChar(actor, 'F'));
       if (forced) {
         // Résilience « Je ne faillirai pas ! » : DR maximal (dé 01) → dégâts max (LDB 17 l.73).
@@ -546,7 +546,7 @@ export const FLOWS = {
         return { result: { success: true, roll: base?.roll ?? 1, target: base?.target, dr: Math.max(0, base?.dr ?? 0), bonusCases: Math.max(base?.bonusCases ?? 0, 2 * m) } };
       }
       // Sprinter (LDB 10) : « Votre Attribut de Mouvement compte comme plus élevé de 1 lorsque vous Courez. »
-      return { result: resolveRun(testValue(actor, actor.mountId ? 'Chevaucher' : 'Athlétisme'), mountMovement(s.battle, actor) + runMovementBonus(actor), battleRng()) };
+      return { result: resolveRun(testValue(actor, actor.mountId ? 'chevaucher' : 'athletisme'), mountMovement(s.battle, actor) + runMovementBonus(actor), battleRng()) };
     },
     failed: (p) => !p.result?.success,
   }),

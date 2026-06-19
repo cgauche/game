@@ -112,7 +112,7 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
         ? (spec) => opts.onDeferTest!({ heroId: h.id, kind: spec.kind, label: spec.label, base: spec.base, target: spec.base + DIFFICULTY_MODIFIERS[spec.difficulty] + (spec.penalty ?? 0), meta: spec.meta })
         : undefined;
       // 1. Nourriture (LDB 18 l.417-422).
-      const r = dailyFoodUpkeep(h, testValue(h, 'Résistance', 'E'), bonus(effectiveChar(h, 'E')), battleRng(), defer);
+      const r = dailyFoodUpkeep(h, testValue(h, 'resistance', 'E'), bonus(effectiveChar(h, 'E')), battleRng(), defer);
       if (r.rationConsumed) rations++;
       if (r.damage > 0) loseWounds(h, r.damage);
       lines.push(...r.log);

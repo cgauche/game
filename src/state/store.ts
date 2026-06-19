@@ -541,7 +541,7 @@ export interface GameState {
   /** Choisit Résistance/Calme AVANT le jet d'exposition (LDB 19 l.26 : « ou … comme déterminé par le
    *  MJ » — RAW indéterminé pour le trait de créature ; le joueur tranche, comme la Défense). Le SEUIL
    *  (l.80) reste figé sur Résistance et ignore cet appel. */
-  corruptionSetSkill: (skill: 'Résistance' | 'Calme') => void;
+  corruptionSetSkill: (skill: 'resistance' | 'calme') => void;
   corruptionReroll: () => void;
   corruptionBonusSL: () => void;
   corruptionDarkPact: () => void;
@@ -1566,7 +1566,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!healer || healer.kind !== 'hero' || !hasHealSkill(healer) || battle.acted || !canTakeAction(healer)) return;
     const target = battle.combatants.find((c) => c.id === targetId);
     if (!target || !availableHealModes(target).includes(mode)) return;
-    const skillValue = testValue(healer, 'Guérison');
+    const skillValue = testValue(healer, 'guerison');
     set({
       pendingHeal: {
         healerId: healer.id, healerName: healer.name, targetId: target.id, targetName: target.name,
@@ -2704,7 +2704,7 @@ export const useGame = create<GameState>((set, get) => ({
         opposed = true; opponentValue = testValue(src, undefined, 'F'); opponentName = src.name;
       }
     }
-    const skillValue = state === COND.empetre ? testValue(active, undefined, 'F') : testValue(active, 'Athlétisme');
+    const skillValue = state === COND.empetre ? testValue(active, undefined, 'F') : testValue(active, 'athletisme');
     set({
       pendingStateRecovery: {
         actorId: active.id, actorName: active.name, state,

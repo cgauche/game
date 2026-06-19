@@ -3,7 +3,7 @@
  * (hors combat) : Caractéristique + Augmentations de la compétence.
  */
 import { Combatant, CharKey, CHAR_BY_LABEL } from './types';
-import { findSkill, findSkillById } from '../data';
+import { findSkillById } from '../data';
 import { groupMatch } from './groups';
 import { effectiveChar } from './characteristics';
 import { testStatePenalty } from './conditions';
@@ -14,9 +14,9 @@ import { rule } from './policy';
 /** Règles optionnelles « caractéristique alternative » (LDB 09) : Métier comme Savoir → Int (l.352) ;
  *  Intimidation → carac réglable F/FM/Int (l.266). Renvoie la CharKey de base à utiliser pour le Test
  *  (inchangée si aucune règle ne s'applique). N'opère que sur une COMPÉTENCE nommée (pas une carac brute). */
-function altCharKey(c: Combatant, low: string, ck: CharKey): CharKey {
-  if (ck === 'Dex' && (low.startsWith('métier') || low.startsWith('metier')) && rule('test-metier-int')) return 'Int';
-  if (low === 'intimidation') {
+function altCharKey(c: Combatant, skillId: string, ck: CharKey): CharKey {
+  if (ck === 'Dex' && skillId === 'metier' && rule('test-metier-int')) return 'Int';
+  if (skillId === 'intimidation') {
     const mode = rule('test-intimidation-char') as string;
     if (mode === 'FM' || mode === 'Int') return mode;
     if (mode === 'max') {
@@ -34,24 +34,19 @@ export function skillCharKeyById(skillId: string): CharKey | undefined {
   return d ? CHAR_BY_LABEL[d.characteristic] : undefined;
 }
 
-/** Caractéristique associée à une compétence (par son label) — bord UI / lookup hors instance. */
-export function skillCharKey(skillLabel: string): CharKey | undefined {
-  const base = skillLabel.replace(/\s*\([^)]*\)\s*$/, '').trim(); // retire la spécialisation
-  const d = findSkill(base);
-  return d ? CHAR_BY_LABEL[d.characteristic] : undefined;
-}
-
 /** Valeur de test d'un personnage pour une compétence ou une caractéristique. Mêmes modulations qu'en
  *  combat (le canon ne distingue pas) : Caractéristique EFFECTIVE (buffs magiques + pénalités de
  *  Traumatisme, LDB 18, via `effectiveChar`), pénalités d'États (LDB 16, `testStatePenalty`), pénalité
  *  d'Encombrement sur l'Agilité (LDB 61), port d'armure (LDB 63) et objet Laid sur la Sociabilité (LDB 60). */
-export function testValue(c: Combatant, skill?: string, characteristic?: CharKey): number {
+export function testValue(c: Combatant, skill?: string, characteristic?: CharKey, spec?: string): number {
   if (!skill && !characteristic) return 0;
-  const low = skill?.toLowerCase();
-  const sk = low ? c.skills.find((s) => { const n = (findSkillById(s.skillId)?.label ?? s.skillId).toLowerCase(); return low === n || low.startsWith(n); }) : undefined;
-  // Caractéristique : explicite > id de la SkillInstance possédée (par id, RAW) > libellé (repli hors instance) > Dex.
-  let ck = characteristic ?? (sk ? skillCharKeyById(sk.skillId) : undefined) ?? (skill ? skillCharKey(skill) : undefined) ?? 'Dex';
-  if (low && !characteristic) ck = altCharKey(c, low, ck); // carac alternative (Métier/Intimidation, règle optionnelle)
+  // `skill` = skillId STABLE (multilingue : jamais un libellé). La compétence possédée est trouvée par id ;
+  // `spec` cible une spécialisation précise (Savoir (Magie), Métier (Forgeron)…) quand le héros en possède
+  // plusieurs avec des avances différentes — sinon (spec absent) la première instance de l'id suffit.
+  const sk = skill ? c.skills.find((s) => s.skillId === skill && (spec == null || s.spec === spec)) : undefined;
+  // Caractéristique : explicite > carac de la compétence possédée > carac de la compétence (par id, hors instance) > Dex.
+  let ck = characteristic ?? (sk ? skillCharKeyById(sk.skillId) : undefined) ?? (skill ? skillCharKeyById(skill) : undefined) ?? 'Dex';
+  if (skill && !characteristic) ck = altCharKey(c, skill, ck); // carac alternative (Métier/Intimidation, règle optionnelle)
   const base = effectiveChar(c, ck);
   const states = testStatePenalty(c, skill);
   const enc = ck === 'Ag' ? agilityTestPenalty(c) : 0; // charge : couche d'ÉTAT orthogonale (≠ passif d'élément)
@@ -63,15 +58,10 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
   return base + (sk?.advances ?? 0) + states + enc + traumaSkill + passive;
 }
 
-/** Le personnage possède-t-il la compétence `label` (nom seul OU « Nom (Spécialisation) », ex.
- *  « Projectiles (Poudre noire) ») ? Insensible à la casse. Sert aux modulateurs (ex. `easierIf`). */
-export function actorHasSkill(c: Combatant, label: string): boolean {
-  const low = label.trim().toLowerCase();
-  return c.skills.some((s) => {
-    const base = findSkillById(s.skillId)?.label ?? s.skillId;
-    const full = s.spec ? `${base} (${s.spec})` : base;
-    return full.toLowerCase() === low || base.toLowerCase() === low;
-  });
+/** Le personnage possède-t-il la compétence `skillId` (et, si `spec` fourni, cette spécialisation —
+ *  ex. Projectiles (Poudre noire)) ? Par id STABLE. Sert aux modulateurs (ex. `easierIf`). */
+export function actorHasSkill(c: Combatant, skillId: string, spec?: string): boolean {
+  return c.skills.some((s) => s.skillId === skillId && (spec == null || s.spec === spec));
 }
 
 /** Le malus social « contenu » de `type` s'applique-t-il envers `targetGroups` ? (LDB 21) Vrai si le
@@ -104,7 +94,7 @@ export function socialPsychLabel(tester: Combatant, targetGroups: string[]): str
  *  Vrai si la caractéristique sous-jacente est `Soc` (Charme, Marchandage, Intimidation, Commérage…). */
 export function isSocialTest(skill?: string, characteristic?: CharKey): boolean {
   if (characteristic) return characteristic === 'Soc';
-  if (skill) return skillCharKey(skill) === 'Soc';
+  if (skill) return skillCharKeyById(skill) === 'Soc';
   return false;
 }
 

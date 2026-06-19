@@ -29,7 +29,7 @@ describe('Scénario « Opéra — Bombe » : le câblage en données compose', (
   it('le scénario expose bien le trigger d’armement et la plante interactive', () => {
     expect(armTrigger).toBeTruthy();
     expect(detectTest.kind).toBe('test');
-    expect(detectTest.test.easierIf?.hasSkill).toBe('Projectiles (Poudre noire)');
+    expect(detectTest.test.easierIf?.hasSkill).toEqual({ id: 'projectiles', spec: 'Poudre noire' });
   });
 
   it('entrer dans la loge arme la mèche (delayedEffect programmé)', () => {

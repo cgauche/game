@@ -24,7 +24,7 @@ import { rule } from '../engine/policy';
 import { effectiveChar } from '../engine/characteristics';
 import { buyTalent as engineBuyTalent, talentCost } from '../engine/advancement';
 import { applyTalentAcquisition, fortuneMax, resolveMax, heroMaxWounds } from '../engine/talentEffects';
-import { findCareerById, levelsForCareer, findTrappingById, findTalentById, refLabel, findSkillById, skillInstanceLabel, advancementLabel, qualityRefLabel, qualities } from '../data';
+import { findCareerById, levelsForCareer, findTrappingById, findTalentById, refLabel, skillInstanceLabel, advancementBaseId, qualityRefLabel, qualities } from '../data';
 import { CHAR_BY_LABEL, CHAR_LABELS, type CharKey, type Combatant, type Difficulty } from '../engine/types';
 import type { PendingBase } from './rollFlow';
 
@@ -170,9 +170,9 @@ export function heroClass(h: Combatant): string {
  *  Niveau 1 que le héros POSSÈDE, sinon la première listée. Approximation documentée). */
 function incomeSkillOf(h: Combatant): string {
   const lvl1 = levelsForCareer(h.career ?? '')[0];
-  const skills = (lvl1?.skills ?? []).map((a) => advancementLabel('skills', a)); // AdvancementRef → libellés
-  const owned = skills.find((s) => h.skills.some((k) => s.toLowerCase().startsWith((findSkillById(k.skillId)?.label ?? k.skillId).toLowerCase())));
-  return owned ?? skills[0] ?? 'Athlétisme';
+  const ids = (lvl1?.skills ?? []).map(advancementBaseId).filter((x): x is string => !!x); // AdvancementRef → skillId
+  const owned = ids.find((id) => h.skills.some((k) => k.skillId === id));
+  return owned ?? ids[0] ?? 'athletisme';
 }
 
 const heroState = (s: GameState, heroId: string) => s.interlude?.perHero[heroId];
@@ -192,7 +192,7 @@ export function openRevenus(get: Get, set: Set, heroId: string): void {
   set({
     pendingActivity: {
       heroId, kind: 'revenus', label: 'Revenus — une semaine de travail',
-      skillLabel: skill, skillValue: testValue(h, skill), difficulty: 'accessible',
+      skillLabel: refLabel('skills', { id: skill }), skillValue: testValue(h, skill), difficulty: 'accessible',
       roll: null, target: 0, sl: 0, success: false,
     },
   });
@@ -251,7 +251,7 @@ export function openCraftRoll(get: Get, set: Set, heroId: string): void {
   set({
     pendingActivity: {
       heroId, kind: 'craft', label: `Artisanat — ${trappingLabelOf(st.craft.trappingId)}`,
-      skillLabel: metierLabel, skillValue: testValue(h, metierLabel), difficulty: st.craft.difficulty,
+      skillLabel: metierLabel, skillValue: testValue(h, 'metier', undefined, metier?.spec), difficulty: st.craft.difficulty,
       roll: null, target: 0, sl: 0, success: false,
       drBefore: st.craft.drDone, drTarget: st.craft.drTarget,
     },
@@ -315,7 +315,7 @@ export function openIdentify(get: Get, set: Set, heroId: string, itemUid: string
   set({
     pendingActivity: {
       heroId, kind: 'identify', label: `Identifier un artefact — ${item.name}`,
-      skillLabel: 'Savoir (Magie)', skillValue: testValue(h, 'Savoir (Magie)'), difficulty: 'intermediaire',
+      skillLabel: skillInstanceLabel(savoir), skillValue: testValue(h, savoir.skillId, undefined, savoir.spec), difficulty: 'intermediaire',
       roll: null, target: 0, sl: 0, success: false, itemUid,
     },
   });

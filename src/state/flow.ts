@@ -209,7 +209,7 @@ export interface FlowTest {
   /** Le Test social est une mendicité (option « Mendicité et Statut », LDB 08 l.92). */
   begging?: boolean;
   /** Difficulté réduite si un héros possède la compétence/le talent requis. */
-  easierIf?: { hasSkill?: string; hasTalent?: string; steps?: number };
+  easierIf?: { hasSkill?: { id: string; spec?: string }; hasTalent?: string; steps?: number };
 }
 
 /**

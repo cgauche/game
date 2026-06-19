@@ -271,17 +271,17 @@ export function applySurprise(combatants: Combatant[], surprisedSide: 'party' | 
   if (!surprised.length || !ambushers.length) return [];
   // L'embusqueur de référence = la Discrétion la plus FAIBLE du groupe (l.77). Furtif (LDB 85
   // p.339) : « Ajoutez son bonus d'Agilité au DR de tous ses Tests de Discrétion ».
-  const sneak = ambushers.reduce((a, b) => (testValue(b, 'Discrétion') < testValue(a, 'Discrétion') ? b : a));
-  const sneakVal = testValue(sneak, 'Discrétion');
+  const sneak = ambushers.reduce((a, b) => (testValue(b, 'discretion') < testValue(a, 'discretion') ? b : a));
+  const sneakVal = testValue(sneak, 'discretion');
   const sneakDR = skillDRBonus(sneak, 'discretion'); // Furtif : +Bonus d'Agilité au DR (donnée : passive skillDRBonus)
   const lines: string[] = [];
   for (const c of surprised) {
     // Embusqueur (Discrétion) vs guetteur (Perception) : si l'embusqueur l'emporte → le guetteur est Surpris.
     const aT = rollTest(sneakVal, 'intermediaire', battleRng());
-    const dT = rollTest(testValue(c, 'Perception'), 'intermediaire', battleRng());
+    const dT = rollTest(testValue(c, 'perception'), 'intermediaire', battleRng());
     if (resolveOpposed({ ...aT, sl: aT.sl + sneakDR }, dT).winner === 'attacker') {
       // Vigilance (LDB 10) : Test de Perception Intermédiaire (+0) pour ignorer la Surprise.
-      if (hasSurpriseSave(c) && rollTest(testValue(c, 'Perception'), 'intermediaire', battleRng()).success) {
+      if (hasSurpriseSave(c) && rollTest(testValue(c, 'perception'), 'intermediaire', battleRng()).success) {
         lines.push(`${c.name} flaire l'embuscade (Vigilance) : pas de Surprise.`);
         continue;
       }
@@ -776,7 +776,7 @@ export function aiApproachPlan(
   const charge = chooseEnemyAction({ ...input, movement: courseBudget });
   if (charge.kind === 'move' && atContact(charge)) return { plan: charge, ran: null };
   // Course (LDB 15 l.79-82) : Test d'Athlétisme/Chevaucher, budget = Marche + Course + DR ; pas d'attaque.
-  const r = resolveRun(testValue(enemy, enemy.mountId ? 'Chevaucher' : 'Athlétisme'), M, rng);
+  const r = resolveRun(testValue(enemy, enemy.mountId ? 'chevaucher' : 'athletisme'), M, rng);
   const runBudget = M + r.bonusCases;
   const run = runBudget > input.movement ? chooseEnemyAction({ ...input, movement: runBudget }) : action;
   if (run.kind === 'move' && (run.to.x !== action.to.x || run.to.y !== action.to.y))
@@ -1414,7 +1414,7 @@ export function applyAttackResult(
  */
 export function checkFocusInterruption(get: Get, set: SetFn, target: Combatant): string[] {
   if (!target.focus || target.focus.dr <= 0) return [];
-  const t = rollTest(testValue(target, 'Calme'), 'difficile', battleRng());
+  const t = rollTest(testValue(target, 'calme'), 'difficile', battleRng());
   const lines = [
     `${target.name}, frappé en pleine Focalisation — Test de Calme Difficile (−20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'concentration maintenue' : 'concentration BRISÉE'}.`,
   ];
@@ -3066,7 +3066,7 @@ export function finalizeBattle(get: Get, set: SetFn): void {
     const level = worst.toLowerCase() === 'majeure' ? 'majeure' : worst.toLowerCase() === 'modérée' ? 'moderee' : 'mineure';
     for (const c of battle.combatants) {
       if (c.kind !== 'hero' || c.dead) continue;
-      const t = rollTest(testValue(c, 'Résistance'), 'intermediaire', battleRng());
+      const t = rollTest(testValue(c, 'resistance'), 'intermediaire', battleRng());
       const gain = corruptionGain(level, t.success, Math.max(0, t.sl));
       infectLog.push(`${c.name} — exposition à la Corruption (${worst}) : Résistance ${t.roll}/${t.target}${gain ? '' : ', résiste'}.`);
       if (gain > 0) infectLog.push(...gainCorruption(get, set, c, gain));
@@ -3840,7 +3840,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         if (src) { const opp = opposedTest(testValue(enemy, undefined, 'F'), testValue(src, undefined, 'F'), battleRng()); success = opp.attackerWins; netSL = opp.netSL; }
         else { const t = rollTest(testValue(enemy, undefined, 'F'), 'intermediaire', battleRng()); success = t.success; netSL = Math.max(0, t.sl); }
       } else {
-        const t = rollTest(testValue(enemy, 'Athlétisme'), 'intermediaire', battleRng()); success = t.success; netSL = Math.max(0, t.sl);
+        const t = rollTest(testValue(enemy, 'athletisme'), 'intermediaire', battleRng()); success = t.success; netSL = Math.max(0, t.sl);
       }
       const removed = recoveredStacks(netSL, stacks(enemy, action.state), success);
       if (removed > 0) removeCondition(enemy, action.state, removed);

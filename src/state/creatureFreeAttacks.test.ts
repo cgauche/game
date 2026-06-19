@@ -122,7 +122,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     // Corrosion = op `damageArmour {material:'cuir'}` (GameOp authoré) : endommage une pièce de CUIR portée
     // (RAW « toute matière » non modélisée → cuir seul). On en équipe une pour l'observer (≠ ex-décrément
     // direct du champ plat `armour.corps`).
-    H.items = [{ uid: 'jaque', name: 'Jaque de cuir', kind: 'armor', equipped: true, locs: ['corps'], pa: 2, damageTaken: 0, enc: 1, qualities: [] } as never];
+    H.items = [{ uid: 'jaque', name: 'Jaque de cuir', subType: 'cuir-bouilli', kind: 'armor', equipped: true, locs: ['corps'], pa: 2, damageTaken: 0, enc: 1, qualities: [] } as never];
     const before = H.wounds.current;
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;

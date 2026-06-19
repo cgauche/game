@@ -103,7 +103,7 @@ describe('lecture au grimoire (LDB 47 l.34)', () => {
   it('sort de son Domaine NON mémorisé + grimoire porté → lançable (NI ×2 côté flux)', () => {
     const c = hero({
       talents: [{ talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 }],
-      items: [{ uid: 'g1', name: 'Grimoire', kind: 'misc', enc: 1, qualities: [] } as never],
+      items: [{ uid: 'g1', name: 'Grimoire', isGrimoire: true, kind: 'misc', enc: 1, qualities: [] } as never],
     });
     expect(canCastFromGrimoire(c, sp('Arme aethyrique'))).toBe(true);
     // mémorisé → inutile ; sans grimoire → impossible ; Prière → jamais.

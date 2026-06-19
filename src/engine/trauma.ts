@@ -494,17 +494,12 @@ export function passiveMoveMod(c: Combatant): number {
   return pmods(c, 'moveMod').reduce((s, o) => s + o.mod, 0);
 }
 
-/** Σ des `skillMod` ADDITIFS (mutation/qualité, kind `intrinsèque`) s'appliquant au Test `skill` — match par
- *  préfixe `skill.startsWith(op.skill)` (« Pistage » ⊇ clé « pistage »), comme l'ex-`mutationTestMod`. Lu par
- *  `testValue` (couche test-time) ; distinct du POOL non-cumul des séquelles (`traumaSkillPenalty`). */
+/** Σ des `skillMod` ADDITIFS (mutation/qualité/port d'armure, kind `intrinsèque`) s'appliquant au Test `skill`
+ *  (skillId STABLE) — match EXACT par id. Lu par `testValue` ; distinct du POOL non-cumul des séquelles
+ *  (`traumaSkillPenalty`). */
 export function passiveSkillSum(c: Combatant, skill?: string): number {
   if (!skill) return 0;
-  // Match par BASE (spécialisation retirée des deux côtés) : « Pistage (Forêt) » ⊇ clé mutation « pistage »,
-  // et le port d'armure « discrétion » n'over-matche PAS « Discrétion » d'un autre intitulé (exact, pas préfixe).
-  const base = skill.replace(/\s*\([^)]*\)\s*$/, '').trim().toLowerCase();
-  return pmods(c, 'skillMod', true)
-    .filter((o) => o.skill.replace(/\s*\([^)]*\)\s*$/, '').trim().toLowerCase() === base)
-    .reduce((s, o) => s + o.mod, 0);
+  return pmods(c, 'skillMod', true).filter((o) => o.skill === skill).reduce((s, o) => s + o.mod, 0);
 }
 
 /** Σ des modificateurs de TEST char-qualifiés (`testMod{char}`, kind `intrinsèque`) pour la Caractéristique
@@ -538,10 +533,9 @@ export function traumaDodgePenalty(c: Combatant): number {
  *  l.300/309 — ex. −5/−10 « Langue » après une fracture à la Tête). Non-cumul (l.20) ; ≤ 0. */
 export function traumaSkillPenalty(c: Combatant, skill?: string): number {
   if (!skill) return 0;
-  const low = skill.toLowerCase();
   // Esquive est porté par traumaDodgePenalty (defenseValue) → EXCLU ici pour préserver la séparation historique.
   const pens = pmods(c, 'skillMod', false)
-    .filter((o) => { const sl = o.skill.toLowerCase(); return sl !== 'esquive' && (low === sl || low.startsWith(sl)) && o.mod < 0; }) // « langue (reikspiel) » → « langue »
+    .filter((o) => o.skill !== 'esquive' && o.skill === skill && o.mod < 0)
     .map((o) => o.mod);
   return pens.length ? Math.min(...pens) : 0;
 }

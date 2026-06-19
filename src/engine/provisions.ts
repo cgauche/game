@@ -49,9 +49,10 @@ export function hasBrouet(c: Combatant): boolean {
   return (c.talents ?? []).some((t) => t.talentId === 'brouet' && (t.times ?? 1) >= 1);
 }
 
-/** L'objet est-il une ration de voyage (« Ration (1 jour) », LDB p.302) ? */
-export function isRation(it: Pick<ItemInstance, 'name'>): boolean {
-  return /^rations?\b/i.test(it.name);
+/** L'objet est-il une ration de voyage (« Ration (1 jour) », LDB p.302) ? Détecté par le marqueur
+ *  STABLE `isRations` du trapping (≠ nom — multilangue-safe). */
+export function isRation(it: Pick<ItemInstance, 'isRations'>): boolean {
+  return !!it.isRations;
 }
 
 /** Nombre de rations portées par un héros. */

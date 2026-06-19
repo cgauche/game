@@ -94,7 +94,7 @@ describe('lecture au grimoire — NI doublé dans le flux', () => {
     const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
     w.talents.push({ talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 });
     w.spells = (w.spells ?? []).filter((s) => s !== 'arme-aethyrique'); // id de sort (runtime)
-    w.items = [...(w.items ?? []), { uid: 'g1', name: 'Grimoire', kind: 'misc', enc: 1, qualities: [] } as never];
+    w.items = [...(w.items ?? []), { uid: 'g1', name: 'Grimoire', isGrimoire: true, kind: 'misc', enc: 1, qualities: [] } as never];
     useGame.setState({ party: [w] as Combatant[] });
     useGame.getState().oocCastSpell(w.id, 'Arme aethyrique', w.id, true);
     expect(useGame.getState().pendingCast?.grimoire).toBe(true);

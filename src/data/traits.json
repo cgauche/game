@@ -1477,7 +1477,7 @@
                 {
                   "op": "test",
                   "characteristic": "E",
-                  "skill": "Résistance",
+                  "skill": "resistance",
                   "difficulty": "intermediaire",
                   "argDifficulty": true,
                   "unlessImmune": "poison",

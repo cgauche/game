@@ -21,7 +21,7 @@ const hero = (p: Partial<Combatant>): Combatant =>
     characteristics: { CC: 30, CT: 30, F: 30, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 35, Soc: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], skills: [], talents: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
-    items: ['r1', 'r2', 'r3'].map((uid) => ({ uid, name: 'Ration', kind: 'misc' as const, qualities: [], enc: 0, equipped: false })),
+    items: ['r1', 'r2', 'r3'].map((uid) => ({ uid, name: 'Ration', isRations: true, kind: 'misc' as const, qualities: [], enc: 0, equipped: false })),
     ...p,
   } as Combatant);
 

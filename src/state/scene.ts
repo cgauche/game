@@ -283,7 +283,7 @@ export type Effect =
    *  désigné, sinon le premier vivant. Au-delà de BFM+BE : Test de Résistance ou MUTATION. */
   // `skill` ABSENT = nature indéterminée (l.26 « comme déterminé par le MJ ») → le joueur choisit
   // Résistance/Calme dans la modale ; PRÉSENT = déterminé en amont → verrouillé (pas de choix).
-  | { type: 'corruptionExposure'; level: 'mineure' | 'moderee' | 'majeure'; skill?: 'Résistance' | 'Calme'; heroId?: string }
+  | { type: 'corruptionExposure'; level: 'mineure' | 'moderee' | 'majeure'; skill?: 'resistance' | 'calme'; heroId?: string }
   /** Points de Corruption DIRECTS (LDB 19) — contact d'un artefact maudit, Sombre Pacte scénarisé…
    *  (sans Test ; pour l'exposition testée, utiliser `corruptionExposure`). */
   | { type: 'giveCorruption'; amount?: number; heroId?: string }

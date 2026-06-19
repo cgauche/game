@@ -58,6 +58,9 @@ export interface WeaponSpec {
   uid?: string | { prefix: string };
   skin?: Record<string, string>;
   form?: string;
+  /** Nature d'attaque naturelle STAMPÉE (morsure/cornes/caudale/tentacules/pietinement…) — pour la
+   *  pose/anim et la Condition `attackKind` ; le constructeur la connaît. Cf. `Weapon.attackKind`. */
+  attackKind?: string;
 }
 
 function specUid(uid: WeaponSpec['uid']): string {
@@ -83,6 +86,7 @@ export function buildWeapon(spec: WeaponSpec): Weapon {
   w.uid = specUid(spec.uid); // TOUJOURS défini (universel : Pendings d'arme par uid)
   if (spec.skin !== undefined) w.skin = spec.skin;
   if (spec.form !== undefined) w.form = spec.form;
+  if (spec.attackKind !== undefined) w.attackKind = spec.attackKind;
   return w;
 }
 
@@ -151,6 +155,11 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
     subType: t.subType ?? undefined,
     hands: kind === 'melee' || kind === 'ranged' ? (twoHandMark ? 2 : 1) : undefined, // marqueur (2M), uniforme
     qty: kind === 'ammo' ? (qtyMatch ? parseInt(qtyMatch[1], 10) : 1) : undefined,
+    // Marqueurs fonctionnels de catégorie (multilangue-safe) — propagés tels quels du catalogue.
+    ...(t.weatherProtection ? { weatherProtection: true } : {}),
+    ...(t.isShelter ? { isShelter: true } : {}),
+    ...(t.isRations ? { isRations: true } : {}),
+    ...(t.isGrimoire ? { isGrimoire: true } : {}),
   };
 }
 
@@ -199,11 +208,14 @@ export function emptyArmour(ap = 0): ArmourPoints {
 
 /** Latéralité d'une arme. La donnée canonique marque le 2-mains par le préfixe `(2M)` — UNIFORME mêlée ET
  *  distance (Arc/Arbalète/Arquebuse/Tromblon = (2M) ; Arbalète de poing/Pistolet/Fronde = 1 main).
- *  itemFromTrapping pose `hands` depuis ce marqueur → il fait foi ici. Fallback (objets legacy sans `hands`) :
- *  marqueur `(2M)` dans le nom, ou Groupe « Deux-mains ». */
+ *  `itemFromTrapping` pose `hands` depuis ce marqueur → c'est la SOURCE de vérité (multilangue-safe :
+ *  le champ typé `hands`, pas le nom). FALLBACK legacy (ItemInstance/Weapon sans `hands` : statbloc,
+ *  synthétiques) : Groupe « Deux-mains » (id stable) ; sinon le marqueur `(2M)` du nom — language-specific,
+ *  mais NÉCESSAIRE car `subType==='deux-mains'` ne couvre PAS les arcs/arbalètes/armes à feu (subType
+ *  arc/poudre-noire…) qui portent aussi `(2M)`. Repli toléré : il n'est atteint que sans `hands` typé. */
 export function weaponHands(it: { hands?: 1 | 2; name: string; subType?: string }): 1 | 2 {
   if (it.hands === 1 || it.hands === 2) return it.hands;
-  if (/\(2m\)/i.test(it.name) || it.subType === 'deux-mains') return 2; // Groupe « Deux-mains » (id)
+  if (it.subType === 'deux-mains' || /\(2m\)/i.test(it.name)) return 2; // Groupe « Deux-mains » (id) ; repli legacy (2M)
   return 1;
 }
 
@@ -224,9 +236,11 @@ export function armourLayer(it: ItemInstance): ArmourLayer {
 }
 
 /** Cape/manteau (« Vêtements et Accessoires », sans stats) : PORTABLE dans l'emplacement Cape de la
- *  fiche — purement cosmétique (rendu dorsal du rig), une seule à la fois. */
+ *  fiche — purement cosmétique (rendu dorsal du rig), une seule à la fois. Détecté par le marqueur
+ *  STABLE `weatherProtection` du trapping (≠ nom — multilangue-safe ; un objet sans stats qui protège
+ *  des intempéries = un vêtement de dos). */
 export function isCapeItem(it: ItemInstance): boolean {
-  return it.kind === 'misc' && /^(cape|manteau)\b/i.test(it.name.trim());
+  return it.kind === 'misc' && !!it.weatherProtection;
 }
 
 /** Objets ÉQUIPÉS en conflit de port avec `it` : armure de MÊME couche sur ≥1 localisation commune
@@ -331,7 +345,7 @@ export function recomputeLoadout(c: Combatant): void {
   // Tentacule (trait Tentacules, LDB 85 p.343) : AUSSI une Attaque gratuite 1/tour (battleTentacle) ;
   // ici utilisable comme arme ordinaire. La mutation « Tentacule épais » confère le trait → couvert.
   if (hasTraitKey(c.traits, 'tentacules')) {
-    weapons.push({ ...buildWeapon({ name: 'Tentacule', subType: 'base', uid: 'nat-tentacule', damage: { plusBF: true, flat: 0, bare: true } }), hand: 'main' });
+    weapons.push({ ...buildWeapon({ name: 'Tentacule', attackKind: 'tentacules', subType: 'base', uid: 'nat-tentacule', damage: { plusBF: true, flat: 0, bare: true } }), hand: 'main' });
   }
   // Armes NATURELLES de MUTATION (LDB 19 : « Compte comme une Arme de Créature », Dégâts = BF) —
   // DÉCLARATIF sur la def de mutation (`fx.derivedWeapon`). Ajouter une mutation-arme = la donnée.
@@ -515,10 +529,12 @@ export function damageArmour(c: Combatant, loc: HitLocation): boolean {
 
 /** Putréfaction (LDB 47) : « le cuir se racornit (perdant 1 PA à 1 Localisation) » — endommage de
  *  1 PA la première pièce de CUIR portée encore intacte, re-dérive l'armure. Retourne la
- *  localisation touchée, ou null si rien en cuir (ennemi à armure plate : matière inconnue → MJ). */
+ *  localisation touchée, ou null si rien en cuir (ennemi à armure plate : matière inconnue → MJ).
+ *  Matière détectée par l'id de TYPE d'armure `subType` (« cuir-souple »/« cuir-bouilli ») — réf STABLE
+ *  qui PORTE le matériau (≠ nom — multilangue-safe ; cohérent avec l'op `damageArmour{material:'cuir'}`). */
 export function damageLeatherArmour(c: Combatant): HitLocation | null {
   const piece = (c.items ?? []).find(
-    (i) => i.equipped && i.kind === 'armor' && /cuir/i.test(i.name) && (i.pa ?? 0) - (i.damageTaken ?? 0) > 0,
+    (i) => i.equipped && i.kind === 'armor' && !!i.subType?.startsWith('cuir') && (i.pa ?? 0) - (i.damageTaken ?? 0) > 0,
   );
   if (!piece) return null;
   piece.damageTaken = (piece.damageTaken ?? 0) + 1;

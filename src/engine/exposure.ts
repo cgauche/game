@@ -32,14 +32,16 @@ export function weatherExposure(weather?: string): ExposureSeverity {
   return 'clement';
 }
 
-/** Le personnage porte-t-il un bon manteau (ch.66 l.46) ? Cape « protège contre les éléments » aussi. */
+/** Le personnage porte-t-il une protection contre les intempéries (Manteau/Cape, ch.66 l.46) ? Détecté
+ *  par le marqueur STABLE `weatherProtection` du trapping (≠ nom — multilangue-safe). */
 export function hasCoat(c: Combatant): boolean {
-  return (c.items ?? []).some((it) => /^(manteau|cape)\b/i.test(it.name));
+  return (c.items ?? []).some((it) => it.weatherProtection);
 }
 
-/** Une Tente dans le paquetage du groupe ? (abri pour le campement — application déclarée). */
+/** Un abri (Tente) dans le paquetage du groupe ? (campement — application déclarée). Détecté par le
+ *  marqueur STABLE `isShelter` du trapping (≠ nom — multilangue-safe). */
 export function partyHasTent(party: Combatant[]): boolean {
-  return party.some((h) => (h.items ?? []).some((it) => /^tente\b/i.test(it.name)));
+  return party.some((h) => (h.items ?? []).some((it) => it.isShelter));
 }
 
 export interface ExposureRoll {

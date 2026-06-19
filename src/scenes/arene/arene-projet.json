@@ -1134,7 +1134,7 @@
                   "flow": {
                     "kind": "test",
                     "test": {
-                      "skill": "Crochetage",
+                      "skill": "crochetage",
                       "difficulty": "intermediaire",
                       "label": "Crocheter le coffre"
                     },
@@ -3470,7 +3470,7 @@
                   "flow": {
                     "kind": "test",
                     "test": {
-                      "skill": "Discrétion",
+                      "skill": "discretion",
                       "difficulty": "difficile",
                       "label": "Piller le tronc sous l’œil de Sigmar"
                     },
@@ -4901,7 +4901,7 @@
           "flow": {
             "kind": "test",
             "test": {
-              "skill": "Résistance",
+              "skill": "resistance",
               "difficulty": "facile",
               "label": "Miasmes des égouts"
             },
@@ -5717,7 +5717,7 @@
             "flow": {
               "kind": "test",
               "test": {
-                "skill": "Résistance",
+                "skill": "resistance",
                 "difficulty": "intermediaire",
                 "label": "Fouiller les morts du charnier"
               },
@@ -8651,7 +8651,7 @@
             "flow": {
               "kind": "test",
               "test": {
-                "skill": "Athlétisme",
+                "skill": "athletisme",
                 "difficulty": "intermediaire",
                 "label": "Éventrer le cocon sans s’y prendre"
               },
@@ -11987,7 +11987,7 @@
                   "flow": {
                     "kind": "test",
                     "test": {
-                      "skill": "Crochetage",
+                      "skill": "crochetage",
                       "difficulty": "accessible",
                       "label": "Crocheter la cage du garde-manger"
                     },
@@ -13307,7 +13307,7 @@
                 "effect": {
                   "type": "corruptionExposure",
                   "level": "mineure",
-                  "skill": "Calme"
+                  "skill": "calme"
                 }
               },
               {
@@ -15355,7 +15355,7 @@
             "flow": {
               "kind": "test",
               "test": {
-                "skill": "Discrétion",
+                "skill": "discretion",
                 "difficulty": "difficile",
                 "label": "Chiper l’or sous l’œil clos du dragon"
               },
@@ -18621,7 +18621,7 @@
             "flow": {
               "kind": "test",
               "test": {
-                "skill": "Résistance",
+                "skill": "resistance",
                 "difficulty": "facile",
                 "label": "Fouiller le noyé sans frémir"
               },
@@ -20102,7 +20102,7 @@
           "flow": {
             "kind": "test",
             "test": {
-              "skill": "Résistance",
+              "skill": "resistance",
               "difficulty": "intermediaire",
               "label": "Les remontées du puits maudit"
             },

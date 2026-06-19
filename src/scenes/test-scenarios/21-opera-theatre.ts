@@ -124,7 +124,7 @@ const ents: SceneEntity[] = [
       flow: testFlow(
         {
           skill: 'Perception', difficulty: 'complexe',
-          easierIf: { hasSkill: 'Projectiles (Poudre noire)', steps: 1 },
+          easierIf: { hasSkill: { id: 'projectiles', spec: 'Poudre noire' }, steps: 1 },
           label: 'Examiner la plante en pot',
         },
         flowFromEffects([

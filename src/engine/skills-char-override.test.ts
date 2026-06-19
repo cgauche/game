@@ -13,33 +13,33 @@ const c = () =>
 describe('testValue — Métier (Savoir) : Int au lieu de Dex (LDB 09 l.352, règle optionnelle)', () => {
   afterEach(() => resetRule('test-metier-int'));
   it('défaut : Métier utilise la Dextérité', () => {
-    expect(testValue(c(), 'Métier (Forgeron)')).toBe(35);
+    expect(testValue(c(), 'metier')).toBe(35);
   });
   it('règle ON : Métier utilise l’Intelligence', () => {
     setRule('test-metier-int', true);
-    expect(testValue(c(), 'Métier (Forgeron)')).toBe(50);
+    expect(testValue(c(), 'metier')).toBe(50);
   });
   it('règle ON : n’affecte PAS les autres compétences (Intimidation reste Force)', () => {
     setRule('test-metier-int', true);
-    expect(testValue(c(), 'Intimidation')).toBe(30);
+    expect(testValue(c(), 'intimidation')).toBe(30);
   });
 });
 
 describe('testValue — Intimidation : caractéristique alternative (LDB 09 l.266, règle optionnelle)', () => {
   afterEach(() => resetRule('test-intimidation-char'));
   it('défaut F : Intimidation utilise la Force', () => {
-    expect(testValue(c(), 'Intimidation')).toBe(30);
+    expect(testValue(c(), 'intimidation')).toBe(30);
   });
   it('FM : Force Mentale', () => {
     setRule('test-intimidation-char', 'FM');
-    expect(testValue(c(), 'Intimidation')).toBe(60);
+    expect(testValue(c(), 'intimidation')).toBe(60);
   });
   it('Int : Intelligence', () => {
     setRule('test-intimidation-char', 'Int');
-    expect(testValue(c(), 'Intimidation')).toBe(50);
+    expect(testValue(c(), 'intimidation')).toBe(50);
   });
   it('max : la meilleure des trois (F/FM/Int) → FM ici', () => {
     setRule('test-intimidation-char', 'max');
-    expect(testValue(c(), 'Intimidation')).toBe(60);
+    expect(testValue(c(), 'intimidation')).toBe(60);
   });
 });

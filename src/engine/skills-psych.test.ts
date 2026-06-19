@@ -42,9 +42,9 @@ describe('isSocialTest — un Test est-il de Sociabilité ? (LDB 21)', () => {
     expect(isSocialTest(undefined, 'F')).toBe(false);
   });
   it('Compétence basée sur Soc (Charme, Marchandage) → vrai ; autre → faux', () => {
-    expect(isSocialTest('Charme')).toBe(true);
-    expect(isSocialTest('Marchandage')).toBe(true);
-    expect(isSocialTest('Escalade')).toBe(false);
+    expect(isSocialTest('charme')).toBe(true);
+    expect(isSocialTest('marchandage')).toBe(true);
+    expect(isSocialTest('escalade')).toBe(false);
   });
 });
 

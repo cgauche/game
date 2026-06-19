@@ -123,7 +123,7 @@ describe('applyOps — opérations unitaires', () => {
     // Résistance = E 45 ; Intermédiaire +0 → cible 45. RNG fixé : on force les deux issues.
     const fail = hero({ characteristics: { ...hero().characteristics, E: 1 } }); // cible ~1 → échec quasi sûr
     const ok = hero({ characteristics: { ...hero().characteristics, E: 100 } }); // cible 100 → réussite sûre
-    const ops = [{ op: 'test', skill: 'Résistance', difficulty: 'intermediaire', onFail: [{ op: 'condition', name: 'sonne' }], onSuccess: [{ op: 'narrative', text: 'tenu bon' }] } as const];
+    const ops = [{ op: 'test', skill: 'resistance', difficulty: 'intermediaire', onFail: [{ op: 'condition', name: 'sonne' }], onSuccess: [{ op: 'narrative', text: 'tenu bon' }] } as const];
     const linesFail = applyOps(fail, ops as never, { rng: makeRNG(6) }); // jet 53 : échec vs cible 1 (hors bande auto 01-05)
     expect(fail.conditions.some((x) => x.name === 'sonne')).toBe(true);
     expect(linesFail[0]).toMatch(/Test de Résistance/);

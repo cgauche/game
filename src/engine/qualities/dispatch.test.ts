@@ -69,7 +69,7 @@ describe('Aux Armes p.89 — qualités de mêlée câblées', () => {
     expect(kd.advantageCost).toBe(2);
     expect(kd.condition).toBe('a-terre');
     expect(kd.char).toBe('F');
-    expect(kd.skill).toBe('Athlétisme');
+    expect(kd.skill).toBe('athletisme'); // id stable (≠ libellé — multilangue-safe)
   });
 });
 

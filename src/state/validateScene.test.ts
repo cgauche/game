@@ -91,7 +91,7 @@ describe('validateScene', () => {
     s.triggers.push({
       id: 't-2',
       rect: { x: 0, y: 0, w: 1, h: 1 },
-      flow: testFlow({ skill: 'Perception' }, flowFromEffects([{ type: 'startDialogue', dialogue: 'absent' }]), EMPTY_FLOW),
+      flow: testFlow({ skill: 'perception' }, flowFromEffects([{ type: 'startDialogue', dialogue: 'absent' }]), EMPTY_FLOW),
     });
     expect(msgs(validateScene([s])).some((m) => /dialogue inexistant/.test(m))).toBe(true);
   });

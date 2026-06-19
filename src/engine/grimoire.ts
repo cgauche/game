@@ -122,9 +122,10 @@ export function learnableSpells(c: Combatant): { spell: SpellData; cost: number 
   return out;
 }
 
-/** Un objet-grimoire PORTÉ (LDB 47 l.34 — lecture à deux mains). */
+/** Un objet-grimoire PORTÉ (LDB 47 l.34 — lecture à deux mains). Détecté par le marqueur STABLE
+ *  `isGrimoire` du trapping (≠ nom — multilangue-safe). */
 export function carriedGrimoire(c: Combatant): { name: string } | undefined {
-  return (c.items ?? []).find((i) => /grimoire|livre de sorts/i.test(i.name) && !i.destroyed);
+  return (c.items ?? []).find((i) => i.isGrimoire && !i.destroyed);
 }
 
 /** Sort lançable DEPUIS le grimoire porté (LDB 47 l.34) : non mémorisé, du Domaine

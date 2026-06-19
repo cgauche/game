@@ -1327,7 +1327,7 @@
             "ops": [
               {
                 "op": "test",
-                "skill": "Dextérité",
+                "characteristic": "Dex",
                 "difficulty": "accessible",
                 "onFail": [
                   {
@@ -1735,7 +1735,7 @@
             "ops": [
               {
                 "op": "test",
-                "skill": "Dextérité",
+                "characteristic": "Dex",
                 "difficulty": "intermediaire",
                 "onFail": [
                   {
@@ -2947,7 +2947,7 @@
               },
               {
                 "op": "test",
-                "skill": "Calme",
+                "skill": "calme",
                 "difficulty": "intermediaire",
                 "onFail": [
                   {
@@ -3845,7 +3845,7 @@
               },
               {
                 "op": "test",
-                "skill": "Résistance",
+                "skill": "resistance",
                 "difficulty": "difficile",
                 "onFail": [],
                 "onSuccess": [
@@ -5872,7 +5872,7 @@
             "ops": [
               {
                 "op": "test",
-                "skill": "Calme",
+                "skill": "calme",
                 "difficulty": "intermediaire",
                 "onFail": [
                   {
@@ -6123,7 +6123,7 @@
             "ops": [
               {
                 "op": "test",
-                "skill": "Résistance",
+                "skill": "resistance",
                 "difficulty": "intermediaire",
                 "onFail": [
                   {
@@ -6244,7 +6244,7 @@
             "ops": [
               {
                 "op": "test",
-                "skill": "Résistance",
+                "skill": "resistance",
                 "difficulty": "intermediaire",
                 "onFail": [
                   {
@@ -6549,7 +6549,7 @@
             "ops": [
               {
                 "op": "test",
-                "skill": "Résistance",
+                "skill": "resistance",
                 "difficulty": "intermediaire",
                 "onFail": [
                   {
@@ -6667,7 +6667,7 @@
             "ops": [
               {
                 "op": "test",
-                "skill": "Calme",
+                "skill": "calme",
                 "difficulty": "intermediaire",
                 "onFail": [
                   {
@@ -9369,7 +9369,7 @@
                         "ops": [
                           {
                             "op": "test",
-                            "skill": "Résistance",
+                            "skill": "resistance",
                             "difficulty": "intermediaire",
                             "exceptGroups": [
                               "Mort-vivant",
@@ -9512,7 +9512,7 @@
                         "ops": [
                           {
                             "op": "test",
-                            "skill": "Résistance",
+                            "skill": "resistance",
                             "difficulty": "accessible",
                             "onlyGroups": [
                               "Criminel"

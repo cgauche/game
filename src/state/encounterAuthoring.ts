@@ -21,6 +21,9 @@ export interface AuthoredEnemy {
   weapon?: string;
   facing?: Dir8;
   label?: string;
+  /** Animation d'ambiance en boucle (clé de AMBIENT_CLIPS, ex. 'feeding'/'howl') — portée par l'entité
+   *  VISIBLE enrôlée (l'ennemi se repaît/hurle en exploration, puis combat aux mêmes cases). */
+  anim?: string;
   /** Camp au spawn (défaut 'enemy'). */
   side?: 'enemy' | 'ally';
   /** Monture rideable. */
@@ -62,6 +65,7 @@ export function buildEncounter(a: AuthoredEncounter): BuiltEncounter {
     if (e.weapon) ent.weapon = e.weapon;
     if (e.facing) ent.facing = e.facing;
     if (e.label) ent.label = e.label;
+    if (e.anim) ent.anim = e.anim;
     const hidden = e.hidden ?? a.hidden ?? false;
     const combat: NonNullable<SceneEntity['combat']> = {};
     if (hidden) combat.hiddenUntilCombat = true;

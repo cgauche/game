@@ -57,7 +57,7 @@ describe('compareEquip (accordéon « équiper » du marchand)', () => {
   });
 
   it('bouclier : compare la Protection (Protectrice N), exclut l’objet lui-même', () => {
-    expect(isShieldItem({ name: 'Bouclier (Targe)', qualities: ['Protectrice 1'] })).toBe(true);
+    expect(isShieldItem({ qualities: ['Protectrice 1'] })).toBe(true);
     const h = hero({ weapons: [{ uid: 'cur', name: 'Bouclier (Targe)', type: 'melee', qualities: ['Protectrice 1', 'Défensive'] }] });
     const grand = it_({ uid: 'new', name: 'Bouclier (Grand)', kind: 'melee', qualities: ['Protectrice 3', 'Défensive'] });
     const c = compareEquip(grand, h);

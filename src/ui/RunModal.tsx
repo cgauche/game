@@ -2,6 +2,7 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { testValue } from '../engine/skills';
+import { refLabel } from '../data';
 import { RollFlowShell } from './RollFlowShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
@@ -27,21 +28,22 @@ export function RunModal() {
   if (!c) return null;
   const r = pr.result;
   // À cheval, la Course se teste sur Chevaucher (LDB 14 l.215) — même compétence que le flux `run`.
-  const skill = c.mountId ? 'Chevaucher' : 'Athlétisme';
+  const skillId = c.mountId ? 'chevaucher' : 'athletisme';
+  const skillLabel = refLabel('skills', { id: skillId });
 
   return (
     <RollFlowShell
       title="🏃 Course"
       subtitle={
         <>
-          <strong>{c.name}</strong> s'élance (Test {skill === 'Chevaucher' ? 'de Chevaucher' : "d'Athlétisme"} +20)
+          <strong>{c.name}</strong> s'élance (Test {c.mountId ? 'de Chevaucher' : "d'Athlétisme"} +20)
         </>
       }
       rolled={!!r}
       onRoll={roll}
       onCancel={cancel}
-      breakdown={r ? testBreakdown(skill, testValue(c, skill), { roll: r.roll, target: r.target, sl: r.dr, success: r.success }, 'accessible') : undefined}
-      pending={testPending(skill, testValue(c, skill), undefined, 'accessible')}
+      breakdown={r ? testBreakdown(skillLabel, testValue(c, skillId), { roll: r.roll, target: r.target, sl: r.dr, success: r.success }, 'accessible') : undefined}
+      pending={testPending(skillLabel, testValue(c, skillId), undefined, 'accessible')}
       outcome={r && (
         <JournalLine
           className="rm-journal"

@@ -30,5 +30,13 @@ public/qc/
 *.exe
 *.log
 
+# Logs de serveurs de dev lancés en arrière-plan (vite/wrangler) — éphémères, régénérés
+vite-*.out
+vite-*.err
+wrangler-*.err
+
+# Patches transitoires (transfert manuel entre sessions) — intégrés puis supprimés
+*.patch
+
 # Bundles git transitoires (transfert de sessions cloud) : intégrés par merge puis supprimés
 *.bundle

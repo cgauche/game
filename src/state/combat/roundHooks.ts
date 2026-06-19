@@ -142,7 +142,7 @@ registerCombatHook({
     for (const c of battle.combatants) {
       // HÉROS : différé à la cascade de fin de Round (Test influençable Chance/Résilience). ENNEMIS : silence.
       if (c.kind === 'hero' || !steelJawDue(c)) continue;
-      const t = rollTest(testValue(c, 'Résistance'), 'intermediaire', battleRng());
+      const t = rollTest(testValue(c, 'resistance'), 'intermediaire', battleRng());
       const line = steelJawApply(c, t.success, t.sl);
       if (line) sink(line, c);
     }
@@ -297,7 +297,7 @@ registerCombatHook({
       if (c.effortRounds < fatigueThreshold(c)) continue;
       // HÉROS au seuil : Test différé à la cascade influençable. ENNEMIS : résolus en silence ici.
       if (c.kind === 'hero') continue;
-      const t = rollTest(testValue(c, 'Résistance'), 'intermediaire', battleRng());
+      const t = rollTest(testValue(c, 'resistance'), 'intermediaire', battleRng());
       const line = fatigueApply(c, t.success, t.sl);
       if (line) sink(line, c);
     }
@@ -329,7 +329,7 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, sink: (line: s
   const steps: CascadeStep[] = [];
   // 1) Mâchoires d'acier (LDB 10) — Test de Résistance Intermédiaire (+0).
   if (steelJawDue(c)) {
-    const res = testValue(c, 'Résistance');
+    const res = testValue(c, 'resistance');
     steps.push({ id: `steelJaw-${c.id}`, kind: 'steelJaw', actorId: c.id, icon: '🦷', rollLabel: 'Résistance', base: res, target: res, label: '🦷 Mâchoires d’acier' });
   }
   // 2) Récupération du Brisé (LDB 16) — retrait « caché » + Exténué SANS-Test appliqués ici ; le Test
@@ -347,7 +347,7 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, sink: (line: s
   // 3) Se-fatiguer (règle optionnelle) — l'incrément du compteur a déjà eu lieu dans le hook ; ici on
   //    n'émet l'étape que si le seuil est atteint (Test de Résistance différé).
   if (rule('combat-se-fatiguer') && (c.effortRounds ?? 0) >= fatigueThreshold(c)) {
-    const res = testValue(c, 'Résistance');
+    const res = testValue(c, 'resistance');
     steps.push({ id: `fatigue-${c.id}`, kind: 'fatigue', actorId: c.id, icon: '💢', rollLabel: 'Résistance', base: res, target: res, label: '💢 Effort soutenu' });
   }
   return steps;

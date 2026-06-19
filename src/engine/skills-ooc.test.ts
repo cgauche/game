@@ -29,9 +29,9 @@ describe('testValue HORS COMBAT — mêmes modulations qu’en combat (audit, LD
   it('Brisé : −10 sur un Test normal, EXEMPTÉ pour course (Athlétisme) / dissimulation (Discrétion) (l.55)', () => {
     const broke = mk({ conditions: [{ name: 'brise', value: 1 }] });
     const ok = mk();
-    expect(testValue(ok, 'Perception') - testValue(broke, 'Perception')).toBe(10); // Test normal pénalisé
-    expect(testValue(broke, 'Athlétisme')).toBe(testValue(ok, 'Athlétisme')); // course → pas de malus
-    expect(testValue(broke, 'Discrétion')).toBe(testValue(ok, 'Discrétion')); // dissimulation → pas de malus
+    expect(testValue(ok, 'perception') - testValue(broke, 'perception')).toBe(10); // Test normal pénalisé
+    expect(testValue(broke, 'athletisme')).toBe(testValue(ok, 'athletisme')); // course → pas de malus
+    expect(testValue(broke, 'discretion')).toBe(testValue(ok, 'discretion')); // dissimulation → pas de malus
   });
 
   it('Caractéristique EFFECTIVE : un malus actif (effet/Traumatisme via effectiveChar) baisse la valeur (LDB 18)', () => {
@@ -48,6 +48,6 @@ describe('testValue HORS COMBAT — mêmes modulations qu’en combat (audit, LD
 
   it('combattant sain → valeur brute (aucune régression)', () => {
     expect(testValue(mk(), undefined, 'Int')).toBe(30);
-    expect(testValue(mk({ skills: [{ skillId: 'perception', advances: 10 } as never] }), 'Perception')).toBeGreaterThanOrEqual(30);
+    expect(testValue(mk({ skills: [{ skillId: 'perception', advances: 10 } as never] }), 'perception')).toBeGreaterThanOrEqual(30);
   });
 });

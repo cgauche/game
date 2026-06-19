@@ -95,7 +95,7 @@ describe('flowFromEffects / flattenFlow — séquence + branches if résolues', 
 });
 
 describe('flowHasTest / flattenFlow refuse les nœuds interactifs', () => {
-  const test: Flow = { kind: 'test', test: { skill: 'Crochetage' }, success: { kind: 'do', effect: { type: 'setFlag', flag: 'ouvert' } }, fail: EMPTY_FLOW };
+  const test: Flow = { kind: 'test', test: { skill: 'crochetage' }, success: { kind: 'do', effect: { type: 'setFlag', flag: 'ouvert' } }, fail: EMPTY_FLOW };
   it('flowHasTest détecte un test imbriqué', () => {
     expect(flowHasTest({ kind: 'seq', steps: [{ kind: 'do', effect: { type: 'setFlag', flag: 'x' } }, test] })).toBe(true);
     expect(flowHasTest(flowFromEffects([{ type: 'setFlag', flag: 'x' }]))).toBe(false);

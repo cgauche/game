@@ -21,7 +21,7 @@ describe('Test de Sociabilité vs groupe haï (dialogue) — malus psy appliqué
   it('un Test de Charme vs « Elfes » : le PJ haineux subit −20, target réduite', () => {
     const a = hero('Gotrek', 50, [{ type: 'animosite', cible: 'Elfes' }]);
     useGame.setState({ party: [a] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'Charme', difficulty: 'intermediaire', vsGroups: ['Elfe'] }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'charme', difficulty: 'intermediaire', vsGroups: ['Elfe'] }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
     expect(pt.actorId).toBe(a.id);
     expect(pt.skillValue).toBe(30); // 50 − 20 (Animosité)
@@ -34,7 +34,7 @@ describe('Test de Sociabilité vs groupe haï (dialogue) — malus psy appliqué
     const haineux = hero('Gotrek', 50, [{ type: 'animosite', cible: 'Elfes' }]); // 50 − 20 = 30
     const neutre = hero('Felix', 40); // 40, pas de malus
     useGame.setState({ party: [haineux, neutre] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'Charme', vsGroups: ['Elfe'] }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'charme', vsGroups: ['Elfe'] }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
     expect(pt.actorId).toBe(neutre.id); // Felix (40) > Gotrek (30 après malus)
     expect(pt.psychMod ?? 0).toBe(0); // l'acteur choisi n'a pas de malus
@@ -52,7 +52,7 @@ describe('Test de Sociabilité vs groupe haï (dialogue) — malus psy appliqué
     const a = hero('Gotrek', 50, [{ type: 'animosite', cible: 'Elfes' }]);
     a.psychState = [{ type: 'animosite', cible: 'Elfes', active: true }] as never; // état actif (échec)
     useGame.setState({ party: [a] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'Charme', vsGroups: ['Elfe'] }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'charme', vsGroups: ['Elfe'] }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
     expect(pt.psychMod ?? 0).toBe(0); // actif → compulsion, pas le −20 contenu
     expect(pt.skillValue).toBe(50);

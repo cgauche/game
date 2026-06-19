@@ -48,3 +48,42 @@ describe('Cadence Rapide — auto-résolution des cascades par le driver', () =>
     expect(useGame.getState().pendingCascade!.cursor).toBe(2);
   });
 });
+
+/**
+ * Auto-combat (cadence 'auto') — un CHOIX de cascade combat (ex. déviation Critique) est tranché par son
+ * DÉFAUT authoré (`defaultChoice`), pas laissé en hang ; un choix SANS défaut reste au joueur.
+ */
+describe('Auto-combat — choix de cascade tranché par le défaut authoré', () => {
+  const chosen: (string | undefined)[] = [];
+  beforeEach(() => {
+    chosen.length = 0;
+    useGame.setState({ battle: null, pendingCascade: null, net: { ...useGame.getState().net, mode: 'local' } });
+    registerCascadeApplier('tally-choix', (_g, _s, step) => { chosen.push(step.chosen); return {}; });
+    setRule('combat-cadence', 'auto');
+  });
+  afterEach(() => resetRule('combat-cadence'));
+
+  const choix = (id: string, actorId: string, withDefault: boolean): CascadeStep => ({
+    id, kind: 'tally-choix', actorId, label: id, interactive: true,
+    options: [{ key: 'devier', label: 'Dévier' }, { key: 'subir', label: 'Subir' }],
+    ...(withDefault ? { defaultChoice: 'devier' } : {}),
+  });
+
+  it('choix AVEC défaut → auto-tranché sur le défaut (pas de hang)', () => {
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
+    useGame.setState({ party: [h] });
+    startCascade(useGame.getState, useGame.setState, { title: 'C', purpose: 'combat', steps: [choix('dev', h.id, true)] });
+    tickCombatAuto(useGame.getState, useGame.setState);
+    expect(chosen).toEqual(['devier']);                 // tranché via defaultChoice
+    expect(useGame.getState().pendingCascade).toBeNull(); // l'étape unique se ferme
+  });
+
+  it('choix SANS défaut → NON auto-résolu (décision au joueur, la modale reste)', () => {
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
+    useGame.setState({ party: [h] });
+    startCascade(useGame.getState, useGame.setState, { title: 'C', purpose: 'combat', steps: [choix('dev', h.id, false)] });
+    tickCombatAuto(useGame.getState, useGame.setState);
+    expect(chosen).toHaveLength(0);                      // rien tranché
+    expect(useGame.getState().pendingCascade!.cursor).toBe(0); // reste sur le choix (visible)
+  });
+});

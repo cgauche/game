@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { pickActiveModalKey as pick } from './ActiveModal';
+import type { GameState } from '../state/store';
 
 /**
  * Arbitre de modales (R2, désormais REGISTRE state/modalArbiter) : une seule modale de combat à
@@ -7,7 +8,9 @@ import { pickActiveModalKey as pick } from './ActiveModal';
  * prioritaire dont le `pending` est posé n'apparaît qu'une fois les plus prioritaires fermées.
  * Les tests passent des pendings MINCES (la forme suffit à l'arbitre).
  */
-const pickActiveModalKey = (s: object) => pick(s as Parameters<typeof pick>[0]);
+// CLÉS contraintes à `keyof GameState` (un pending typo'd ou SUPPRIMÉ → erreur tsc), VALEURS libres
+// (`unknown`) pour garder les pendings MINCES. L'ancien `s: object` + cast masquait toute faute de clé.
+const pickActiveModalKey = (s: Partial<Record<keyof GameState, unknown>>) => pick(s as Parameters<typeof pick>[0]);
 describe('pickActiveModalKey — priorité des modales de combat', () => {
   it('aucun pending → null', () => {
     expect(pickActiveModalKey({})).toBeNull();

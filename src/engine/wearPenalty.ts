@@ -8,6 +8,8 @@ import { Combatant } from './types';
 import type { PassiveMod } from './ops';
 import { hasQuality, qualitySocMod } from './qualities/dispatch';
 import { QUALITY_IDS } from './qualities/ids';
+import { findSkill } from '../data';
+import { slugId } from '../data/slug';
 
 const WEAR_RE = /^\s*([+-]?\d+)\s*%?\s*en\s+(.+?)\s*$/i;
 
@@ -30,16 +32,15 @@ function wearEntries(c: Combatant): { skill: string; value: number }[] {
       let v = p.value; // négatif
       if (hasQuality(piece, QUALITY_IDS.Pratique)) v = Math.min(0, v + 10); // Atout : -1 niveau (LDB 60 l.59)
       if (hasQuality(piece, QUALITY_IDS.PeuFiable)) v = v * 2; // Défaut : doublée (LDB 60 l.88)
-      if (v) out.push({ skill: p.skill.toLowerCase(), value: v });
+      if (v) out.push({ skill: findSkill(p.skill)?.id ?? slugId(p.skill), value: v }); // libellé parsé → skillId stable
     }
   }
   return out;
 }
 
-/** Somme des pénalités de port (≤ 0) des armures ÉQUIPÉES de `c` pour la compétence `skill` (spéc. ignorée). */
-export function wornArmourPenalty(c: Combatant, skill: string): number {
-  const base = skill.replace(/\s*\([^)]*\)\s*$/, '').trim().toLowerCase();
-  return wearEntries(c).filter((e) => e.skill === base).reduce((s, e) => s + e.value, 0);
+/** Somme des pénalités de port (≤ 0) des armures ÉQUIPÉES de `c` pour la compétence `skillId` stable. */
+export function wornArmourPenalty(c: Combatant, skillId: string): number {
+  return wearEntries(c).filter((e) => e.skill === skillId).reduce((s, e) => s + e.value, 0);
 }
 
 /** Pénalités de port → ops `skillMod` skill-qualifiées (kind `intrinsèque`, Σ) pour le collecteur passif unifié. */

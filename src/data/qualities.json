@@ -71,7 +71,7 @@
                   "op": "opposedTest",
                   "attacker": "F",
                   "defender": "E",
-                  "defenderSkill": "Résistance",
+                  "defenderSkill": "resistance",
                   "onWin": [
                     {
                       "op": "condition",
@@ -364,7 +364,7 @@
       "onHitKnockdown": {
         "advantageCost": 2,
         "char": "F",
-        "skill": "Athlétisme",
+        "skill": "athletisme",
         "condition": "a-terre"
       }
     }

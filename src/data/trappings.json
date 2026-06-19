@@ -2677,6 +2677,7 @@
   {
     "id": "cape",
     "label": "Cape",
+    "weatherProtection": true,
     "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
@@ -2941,6 +2942,7 @@
   {
     "id": "manteau",
     "label": "Manteau",
+    "weatherProtection": true,
     "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
@@ -3421,6 +3423,7 @@
   {
     "id": "ration",
     "label": "Ration",
+    "isRations": true,
     "prefix": "(1 jour)",
     "type": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
@@ -4669,6 +4672,7 @@
   {
     "id": "grimoire",
     "label": "Grimoire",
+    "isGrimoire": true,
     "prefix": null,
     "type": "trapping",
     "subType": "livres-et-documents",
@@ -6958,6 +6962,7 @@
   {
     "id": "tente",
     "label": "Tente",
+    "isShelter": true,
     "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",

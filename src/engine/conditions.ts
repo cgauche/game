@@ -119,8 +119,10 @@ export function combatTestPenalty(c: Combatant): number {
  * portée sensorielle/déplacement (Aveuglé=vue, Assourdi=audition, À Terre/Empêtré=déplacement) ne sont
  * PAS appliqués ici faute de classification du Test (rare hors combat ; raffinement futur).
  */
-const BRISE_EXEMPT = /athl[ée]tisme|discr[ée]tion/i; // course / dissimulation (LDB 16 l.55)
-const MOVEMENT_SKILL = /athl[ée]tisme|esquive|escalade|acrobat|[ée]quitation|nage/i; // Tests « impliquant un déplacement »
+const BRISE_EXEMPT = new Set(['athletisme', 'discretion']); // course / dissimulation (LDB 16 l.55), par skillId
+// Tests « impliquant un déplacement » (LDB 16 l.37/l.85), par skillId. Les Acrobaties (spécialisation de
+// Représentation) ne sont pas classables au niveau de l'id de base → non couvertes (rare hors combat).
+const MOVEMENT_SKILL = new Set(['athletisme', 'esquive', 'escalade', 'chevaucher', 'natation']);
 export function testStatePenalty(c: Combatant, skill?: string): number {
   const effMod = effectTestMod(c); // modificateur de Sort (stacke, hors non-cumul d'État)
   if (!c.conditions?.length) return effMod;
@@ -131,9 +133,9 @@ export function testStatePenalty(c: Combatant, skill?: string): number {
   if (hasCondition(c, COND.sonne)) cand.push(-10);
   const ext = stacks(c, COND.extenue);
   if (ext > 0) cand.push(-10 * ext);
-  if (hasCondition(c, COND.brise) && !BRISE_EXEMPT.test(skill ?? '')) cand.push(-10);
+  if (hasCondition(c, COND.brise) && !BRISE_EXEMPT.has(skill ?? '')) cand.push(-10);
   // À Terre / Empêtré : pénalité aux Tests impliquant un déplacement (LDB 16 l.37 / l.85).
-  if (MOVEMENT_SKILL.test(skill ?? '')) {
+  if (MOVEMENT_SKILL.has(skill ?? '')) {
     if (hasCondition(c, COND.aTerre)) cand.push(-20);
     if (hasCondition(c, COND.empetre)) cand.push(-10);
   }

@@ -84,8 +84,19 @@ function autoResolveCascade(get: Get, set: Set): void {
     if (pol.mode === 'choice' && cadenceAutoCombat() && pol.autoDrive) driveSelf(get, set, pol.autoDrive);
     return;
   }
-  // Étape GÉNÉRIQUE (nuit/voyage/test) : un CHOIX du joueur est laissé en Rapide ; sinon tout résoudre → bilan.
-  if (stepInteraction(cur) === 'choix' && !cadenceAutoCombat()) return;
+  // Étape GÉNÉRIQUE non-jet. Un CHOIX : laissé au joueur en Rapide. En Auto-combat, tranché via le DÉFAUT
+  // authoré (`defaultChoice`, ex. déviation Critique → 'devier') ; SANS défaut authoré → laissé au joueur
+  // (jamais de hang : `stepAutoResolved` ne masque pas une telle modale).
+  if (stepInteraction(cur) === 'choix') {
+    if (!cadenceAutoCombat()) return;
+    if (cur.chosen == null) {
+      if (cur.defaultChoice == null) return; // pas de défaut → décision au joueur (la modale reste visible)
+      get().cascadeChoose(cur.id, cur.defaultChoice);
+    }
+    // Combat : avancer d'UNE étape (comme le joueur) → les étapes-jet en aval (Maladresse…) gardent leur
+    // driver bespoke au tick suivant, au lieu d'être écrasées par un `cascadeResolveAll` global.
+    if (pc.purpose === 'combat') { get().cascadeNext(); setTimeout(() => tickCombatAuto(get, set), TEMPO.autoResolve); return; }
+  }
   get().cascadeResolveAll();
   setTimeout(() => tickCombatAuto(get, set), TEMPO.autoResolve); // gérer le bilan / l'étape suivante
 }
@@ -97,7 +108,7 @@ function stepAutoResolved(step: CascadeStep): boolean {
     if (pol.mode === 'self') return true;
     return pol.mode === 'choice' && cadenceAutoCombat() && !!pol.autoDrive; // incantation en Auto
   }
-  if (stepInteraction(step) === 'choix') return cadenceAutoCombat(); // choix générique : auto seulement
+  if (stepInteraction(step) === 'choix') return cadenceAutoCombat() && step.defaultChoice != null; // choix : auto SEULEMENT si un défaut est authoré (sinon décision au joueur, pas de hang)
   return true; // jet/affichage générique (nuit/voyage) → cascadeResolveAll
 }
 

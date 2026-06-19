@@ -99,7 +99,7 @@ describe('initiative / économie d’action (LDB 10)', () => {
 describe('défense / récupération (LDB 10)', () => {
   it('Porte-Bouclier (au bouclier seulement) / Riposte / Renversement', () => {
     const c = mk([{ name: 'Porte-Bouclier', times: 2 }]);
-    expect(shieldAdvantageLevel(c, w({ name: 'Bouclier' }))).toBe(2);
+    expect(shieldAdvantageLevel(c, w({ name: 'Bouclier', qualities: ['protectrice 2'] }))).toBe(2); // bouclier = Atout Protectrice (id stable)
     expect(shieldAdvantageLevel(c, w({ name: 'Épée' }))).toBe(0);
     expect(hasRiposte(mk([{ name: 'Riposte', times: 1 }]))).toBe(true);
     expect(hasStealAdvantage(mk([{ name: 'Renversement', times: 1 }]))).toBe(true);

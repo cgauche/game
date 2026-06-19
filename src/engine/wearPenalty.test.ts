@@ -30,23 +30,24 @@ function mkWearer(qualities: string[]): Combatant {
 
 describe('wornArmourPenalty', () => {
   it('somme la pénalité de la compétence portée (Perception -20 sur un Heaume)', () => {
-    expect(wornArmourPenalty(mkWearer(['-10% en Discrétion', '-20% en Perception']), 'Perception')).toBe(-20);
-    expect(wornArmourPenalty(mkWearer(['-10% en Discrétion', '-20% en Perception']), 'Discrétion')).toBe(-10);
+    expect(wornArmourPenalty(mkWearer(['-10% en Discrétion', '-20% en Perception']), 'perception')).toBe(-20);
+    expect(wornArmourPenalty(mkWearer(['-10% en Discrétion', '-20% en Perception']), 'discretion')).toBe(-10);
   });
   it('ignore une pièce NON équipée', () => {
     const c = mkWearer(['-20% en Perception']);
     c.items![0].equipped = false;
-    expect(wornArmourPenalty(c, 'Perception')).toBe(0);
+    expect(wornArmourPenalty(c, 'perception')).toBe(0);
   });
   it('Pratique réduit la pénalité d’un niveau (+10, plancher 0)', () => {
-    expect(wornArmourPenalty(mkWearer(['-20% en Perception', 'Pratique']), 'Perception')).toBe(-10);
-    expect(wornArmourPenalty(mkWearer(['-10% en Discrétion', 'Pratique']), 'Discrétion')).toBe(0);
+    expect(wornArmourPenalty(mkWearer(['-20% en Perception', 'Pratique']), 'perception')).toBe(-10);
+    expect(wornArmourPenalty(mkWearer(['-10% en Discrétion', 'Pratique']), 'discretion')).toBe(0);
   });
   it('Peu Fiable double la pénalité', () => {
-    expect(wornArmourPenalty(mkWearer(['-10% en Discrétion', 'Peu Fiable']), 'Discrétion')).toBe(-20);
+    expect(wornArmourPenalty(mkWearer(['-10% en Discrétion', 'Peu Fiable']), 'discretion')).toBe(-20);
   });
-  it('match insensible à la spécialisation et à la casse', () => {
-    expect(wornArmourPenalty(mkWearer(['-10% en Discrétion']), 'discrétion (Urbaine)')).toBe(-10);
+  it('le libellé accentué « Discrétion » est stocké en skillId stable (discretion, sans accent)', () => {
+    expect(wornArmourPenalty(mkWearer(['-10% en Discrétion']), 'discretion')).toBe(-10);
+    expect(wornArmourPenalty(mkWearer(['-10% en Discrétion']), 'discrétion')).toBe(0); // pas de match par libellé
   });
 });
 
@@ -62,12 +63,12 @@ describe('testValue + port d’armure', () => {
   }
   it('testValue soustrait la pénalité de Discrétion d’une cotte équipée', () => {
     const c = hero('h1', 40, [{ uid: 'a', name: 'Cotte de mailles', kind: 'armor', qualities: ['-10% en Discrétion'], enc: 3, equipped: true }]);
-    expect(testValue(c, 'Discrétion')).toBe(30); // Ag 40 − 10
+    expect(testValue(c, 'discretion')).toBe(30); // Ag 40 − 10
   });
   it('partyBest préfère le héros NON armuré pour un Test de Discrétion', () => {
     const armure = hero('arm', 45, [{ uid: 'a', name: 'Cotte de mailles', kind: 'armor', qualities: ['-10% en Discrétion'], enc: 3, equipped: true }]); // 35
     const leste = hero('leste', 40, []); // 40
-    expect(partyBest([armure, leste], 'Discrétion')!.actor.id).toBe('leste');
+    expect(partyBest([armure, leste], 'discretion')!.actor.id).toBe('leste');
   });
 });
 
@@ -99,8 +100,8 @@ describe('testValue + Laid (Sociabilité)', () => {
       skills: [{ skillId: 'charme', characteristic: 'Soc', advances: 0 }, { skillId: 'discretion', characteristic: 'Ag', advances: 0 }],
       items: [{ uid: 'a', name: 'X', kind: 'armor', qualities: ['Laid'], enc: 1, equipped: true }],
     } as unknown as Combatant;
-    expect(testValue(c, 'Charme')).toBe(30); // Soc 40 − 10
-    expect(testValue(c, 'Discrétion')).toBe(40); // non-Soc, pas de pénalité d'armure → inchangé
+    expect(testValue(c, 'charme')).toBe(30); // Soc 40 − 10
+    expect(testValue(c, 'discretion')).toBe(40); // non-Soc, pas de pénalité d'armure → inchangé
   });
 });
 

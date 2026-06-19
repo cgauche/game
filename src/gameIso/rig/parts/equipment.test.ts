@@ -106,7 +106,7 @@ describe('equipFromCombatant', () => {
   });
 
   it('cape/manteau porté → EquipCtx.cape (cosmétique) ; non porté → absent', () => {
-    const cape = { uid: 'c', name: 'Cape', kind: 'misc', qualities: [], enc: 0, equipped: true } as ItemInstance;
+    const cape = { uid: 'c', name: 'Cape', weatherProtection: true, kind: 'misc', qualities: [], enc: 0, equipped: true } as ItemInstance;
     const c = { weapons: [], items: [cape] } as unknown as Combatant;
     expect(equipFromCombatant(c).cape?.name).toBe('Cape');
     cape.equipped = false;

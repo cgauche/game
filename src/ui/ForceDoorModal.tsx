@@ -42,7 +42,7 @@ export function ForceDoorModal() {
           const actor = pool.find((c) => c.id === part.id);
           if (!actor) return null;
           const res = part.result;
-          const val = testValue(actor, 'Corps à corps');
+          const val = testValue(actor, 'corps-a-corps');
           const row = res
             ? { combatant: actor, d: { label: 'Bagarre', base: res.target, modifier: 0, target: res.target, roll: res.roll, success: res.roll <= res.target, sl: res.sl } }
             : { combatant: actor, pending: { label: 'Bagarre', base: val, mods: [] } };

@@ -97,7 +97,7 @@ describe('augmentWeapon — enchantement porté par l’arme, replié dans c.wea
     const c = wielder(weaponItem('w', 'Épée', '+BF+4'));
     applyOps(c, [{
       op: 'augmentWeapon', addQualities: ['Magique'],
-      onHitEffects: [onHitFlow([{ op: 'test', skill: 'Résistance', difficulty: 'accessible', onlyGroups: ['Criminel'], onFail: [{ op: 'condition', name: 'inconscient' }] }])],
+      onHitEffects: [onHitFlow([{ op: 'test', skill: 'resistance', difficulty: 'accessible', onlyGroups: ['Criminel'], onFail: [{ op: 'condition', name: 'inconscient' }] }])],
     }], { label: 'Épée de justice', defaultDurationRounds: 4 });
     // Cible NON-Criminel : le Test est gaté par Groupe → aucun effet, indépendamment du jet.
     const civilian = dummy({ id: 'civ' });

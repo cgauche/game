@@ -118,10 +118,10 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
     tickTraumaRecovery(c, 50, fail, 0); // fin de convalescence, Test raté
     const seq = c.traumas![0];
     expect(seq.ops).toContainEqual({ op: 'skillMod', skill: 'langue', mod: -10 }); // majeure
-    expect(traumaSkillPenalty(c, 'Langue (Reikspiel)')).toBe(-10); // matché par préfixe
-    expect(traumaSkillPenalty(c, 'Charme')).toBe(0);
+    expect(traumaSkillPenalty(c, 'langue')).toBe(-10); // séquelle de Langue (par id stable)
+    expect(traumaSkillPenalty(c, 'charme')).toBe(0);
     // testValue intègre la séquelle : Int 30 + 20 avances − 10 = 40.
-    expect(testValue(c, 'Langue (Reikspiel)')).toBe(40);
+    expect(testValue(c, 'langue')).toBe(40);
   });
 
   it('Chirurgie : une fracture MAJEURE exige la chirurgie ; removeSurgicalTrauma la retire (criticalWounds--)', () => {

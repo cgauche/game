@@ -36,7 +36,7 @@ describe('ItemIcon', () => {
   });
 
   it('cape → glyphe 🧥', () => {
-    expect(html(mk({ kind: 'misc', name: 'Cape' }))).toContain('🧥');
+    expect(html(mk({ kind: 'misc', name: 'Cape', weatherProtection: true }))).toContain('🧥');
   });
 
   it('consommable (desc soin) → glyphe 🧪', () => {

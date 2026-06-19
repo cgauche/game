@@ -174,6 +174,18 @@ export interface TrappingData {
    *  considéré comme une Dague » en mêlée). Lue par recomputeLoadout : ajouter une prothèse-arme =
    *  remplir ce champ dans la donnée, plus de name-match `i.name === 'Crochet'`. */
   derivedWeapon?: Weapon;
+  // ── Marqueurs FONCTIONNELS de catégorie (multilangue-safe : la règle lit le flag, plus le nom FR).
+  //    Propagés tels quels sur `ItemInstance` par `itemFromTrappingById`. Ajouter un objet de la
+  //    catégorie = poser le flag dans `trappings.json` (éditable au Compendium).
+  /** Protège des intempéries (Cape/Manteau, LDB ch.66 l.46) — annule le malus de Test d'Exposition au
+   *  froid et fait office de protection pluie. */
+  weatherProtection?: boolean;
+  /** Abri de campement (Tente, LDB p.308) — annule/atténue l'Exposition d'une nuit dehors. */
+  isShelter?: boolean;
+  /** Ration de voyage (« Ration (1 jour) », LDB p.302) — consommée par l'entretien de Faim. */
+  isRations?: boolean;
+  /** Grimoire / livre de Sorts (LDB 47 l.34) — un Sort non mémorisé du Domaine peut y être lu. */
+  isGrimoire?: boolean;
 }
 /** Groupe d'objet (taxonomie `subType` id-ifiée) : Groupe d'ARME (Base, Escrime, Deux-mains, Armes
  *  d'hast…), famille de MUNITION (Arc, Arbalète, Poudre noire…), type d'ARMURE (Plate, Mailles, Cuir
@@ -379,6 +391,8 @@ export interface QualityCapabilities {
   /** Empaleuse n'est PAS ici (op passive `critOnRoll`) ; Taillade ajoute un État sur Critique. */
   onCritCondition?: string;
   /** Déstabilisante : dépense d'Avantages + Test opposé → renversement (forme structurée, choix joueur en combat). */
+  /** Déstabilisante (AA p.89) : Test opposé `char`/`skill` après touche → `condition`. `skill` = ID STABLE
+   *  de compétence (« athletisme »), `condition` = id d'État (« a-terre ») — multilangue-safe. */
   onHitKnockdown?: { advantageCost: number; char: import('../engine/types').CharKey; skill?: string; condition: string };
   // Armes à feu / chargeurs
   firearm?: boolean;            // Poudre noire / Explosion : Incident de Tir + terreur (Nerveux)
@@ -476,6 +490,9 @@ export interface SpellData {
 
 /** Signe astral (ADE2) : table d100 (`rand` = borne haute cumulée), flavor + effet de création. */
 export interface StarData {
+  /** id STABLE (slug du libellé) — `Combatant.star` le stocke, le runtime résout par `findStarById`
+   *  (≠ libellé — multilangue-safe). */
+  id: string;
   label: string;
   rand: number;
   signe: string | null;
@@ -776,8 +793,14 @@ export function findCreature(label: string): CreatureData | undefined {
 export function findSpell(label: string): SpellData | undefined {
   return spells.find((s) => s.label === label);
 }
+/** Signe astral par LIBELLÉ — bord AUTHORING/affichage (l'éditeur, le tirage qui produit un libellé). */
 export function findStar(label: string): StarData | undefined {
   return stars.find((s) => s.label === label);
+}
+const STAR_BY_ID = new Map(stars.map((s) => [s.id, s]));
+/** Signe astral par `id` STABLE — lookup RUNTIME indépendant de la langue (`Combatant.star` = id). */
+export function findStarById(id: string | null | undefined): StarData | undefined {
+  return id ? STAR_BY_ID.get(id) : undefined;
 }
 
 const TRAPPING_BY_ID = new Map(trappings.map((t) => [t.id, t]));
@@ -885,6 +908,13 @@ export function advancementLabel(category: string, a: AdvancementRef): string {
     : `${refLabel(category, a.wildcard)} (Au choix)`;
   if ('choice' in a) return a.choice.map((x) => advancementLabel(category, x)).join(' ou ');
   return a.random === 1 ? 'Talent aléatoire' : `${a.random} Talent aléatoire`;
+}
+/** id de base d'un `AdvancementRef` simple (ref/wildcard) — pour matcher par id une compétence/un talent
+ *  POSSÉDÉ (ex. compétence de revenus). undefined pour choice/random (pas un id unique). */
+export function advancementBaseId(a: AdvancementRef): string | undefined {
+  if ('ref' in a) return a.ref.id;
+  if ('wildcard' in a) return a.wildcard.id;
+  return undefined;
 }
 /** Libellé d'affichage d'une `TrappingRef` : « Marteau », « Pamphlétaire (3) », « Chiffon (1d10) », ou
  *  texte narratif hors catalogue. SOURCE UNIQUE (Codex, créateur, marchand, inventaire). */

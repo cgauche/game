@@ -45,6 +45,7 @@ import {
 } from '../engine/travelStages';
 import { hasCoat, partyHasTent, applyExposureFailure, isWeatherWarded } from '../engine/exposure';
 import { rationCount } from '../engine/provisions';
+import { itemFromGive } from '../engine/items';
 
 import type { Get, Set } from './flowTypes';
 
@@ -341,7 +342,7 @@ function resolvePerils(get: Get, set: Set, route: MapRoute, destLabel: string, d
       }
       case 'ereintant': {
         // Test de Survie en extérieur Accessible (+20), sinon +1 jour de retard et +1 Exténué chacun.
-        const best = partyBest(party, 'Survie en extérieur');
+        const best = partyBest(party, 'survie-en-exterieur');
         const t = best ? rollTest(best.value, 'accessible', battleRng()) : null;
         if (t && best) {
           log(get, set, [`${best.actor.name} — Survie en extérieur (+20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'un itinéraire de substitution est trouvé.' : 'ÉCHEC.'}`]);
@@ -355,7 +356,7 @@ function resolvePerils(get: Get, set: Set, route: MapRoute, destLabel: string, d
         // Test de Perception Accessible (+20) raté → EMBUSCADE (rencontre d'auteur sur la route) ;
         // réussi → le combat a quand même lieu, mais SANS surprise (« le groupe les voit venir »).
         const configured = !!(route.ambush?.scene && route.ambush.encounter);
-        const best = partyBest(party, 'Perception');
+        const best = partyBest(party, 'perception');
         const t = best ? rollTest(best.value, 'accessible', battleRng()) : null;
         if (t && best) {
           log(get, set, [`${best.actor.name} — Perception (+20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'le groupe les voit venir !' : configured ? 'ÉCHEC — embuscade !' : 'ÉCHEC.'}`]);
@@ -407,7 +408,7 @@ function resolveStage(get: Get, set: Set, day: TravelRecapDay): void {
   // extérieur du meilleur du groupe (LDB 09 l.565, « Trouver de la nourriture et des herbes ») :
   // chaque DR procure une ration de plus (l.568). Modifié par temps sec (-10, l.56).
   if (rule('travel-forage') && livingHeroes.length) {
-    const best = partyBest(party, 'Survie en extérieur');
+    const best = partyBest(party, 'survie-en-exterieur');
     if (best) {
       const mod = forageWeatherModifier(weather);
       const t = rollTest(best.value, 'intermediaire', battleRng(), mod);
@@ -421,7 +422,7 @@ function resolveStage(get: Get, set: Set, day: TravelRecapDay): void {
         for (const h of livingHeroes) {
           if (remaining <= 0) break;
           if (rationCount(h) >= 1) continue; // déjà de quoi manger ce jour-là
-          h.items = [...(h.items ?? []), { uid: `forage-${h.id}-${get().gameTime}`, name: 'Ration', kind: 'misc', qualities: [], enc: 0, equipped: false }];
+          h.items = [...(h.items ?? []), itemFromGive({ trappingId: 'ration' })]; // ration de catalogue (porte `isRations`)
           remaining -= 1;
           lines.push(`${h.name} reçoit une ration trouvée en chemin.`);
         }
@@ -444,7 +445,7 @@ function resolveStage(get: Get, set: Set, day: TravelRecapDay): void {
       const diff = stageExposureDifficulty(weather, hasCoat(h), tent);
       if (!diff) continue; // bien équipé sous pluie/neige normale, ou beau temps → aucun Test
       if (isWeatherWarded(h)) { lines.push(`${h.name} ignore le froid et les intempéries (protection magique).`); anyExposed = true; continue; }
-      const resVal = testValue(h, 'Résistance', 'E');
+      const resVal = testValue(h, 'resistance', 'E');
       const t = rollTest(resVal, diff, battleRng()); // Test de Résistance de fin d'Étape (l.73)
       anyExposed = true;
       lines.push(`${h.name} — Exposition de fin d'Étape (${WEATHER_LABEL[weather]}) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'tient le coup.' : 'transi par le froid.'}`);

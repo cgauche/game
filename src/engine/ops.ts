@@ -18,7 +18,7 @@ import { rollTest, opposedTest } from './tests';
 import { testValue } from './skills';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
 import { addCondition, addTimedCondition, removeCondition, loseWounds, hasCondition } from './conditions';
-import { conditionLabel, talentConcrete, qualityRefLabel, traitById } from '../data';
+import { conditionLabel, talentConcrete, qualityRefLabel, traitById, refLabel } from '../data';
 import { groupMatch } from './groups';
 import { bypassedAP } from './armourBypass';
 import { grantTrait } from './grantedTraits';
@@ -636,7 +636,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // Immunité de type (Immunité (Poison) → Venin sans effet) : la cible ne teste même pas.
         if (o.unlessImmune && immunityTypes(target.traits ?? []).some((ty) => ty.includes(o.unlessImmune!.toLowerCase()))) break;
         const t = rollTest(testValue(target, o.skill, o.characteristic), o.difficulty, rng);
-        const what = o.skill ?? (o.characteristic ? CHAR_LABELS[o.characteristic] : '?');
+        const what = o.skill ? refLabel('skills', { id: o.skill }) : (o.characteristic ? CHAR_LABELS[o.characteristic] : '?');
         lines.push(
           `${target.name} — Test de ${what} ${DIFFICULTY_LABELS[o.difficulty]} : 🎲 ${t.roll} / ${t.target} → ${t.success ? 'réussite' : 'échec'}.`,
         );
@@ -647,7 +647,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       }
       case 'opposedTest': {
         const opp = opposedTest(testValue(ref, o.attackerSkill, o.attacker), testValue(target, o.defenderSkill, o.defender), rng);
-        lines.push(`${ref.name} (${o.attacker}) vs ${target.name} (${o.defender}${o.defenderSkill ? `/${o.defenderSkill}` : ''}) — Test opposé : ${opp.attackerWins ? 'l’emporte' : 'résiste'}.`);
+        lines.push(`${ref.name} (${o.attacker}) vs ${target.name} (${o.defender}${o.defenderSkill ? `/${refLabel('skills', { id: o.defenderSkill })}` : ''}) — Test opposé : ${opp.attackerWins ? 'l’emporte' : 'résiste'}.`);
         lines.push(...applyOps(target, opp.attackerWins ? o.onWin : (o.onLose ?? []), ctx));
         break;
       }

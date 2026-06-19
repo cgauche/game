@@ -6,7 +6,7 @@
 import type { Combatant, Weapon } from '../types';
 import { groupMatch } from '../groups';
 import { isShieldItem } from '../equipCompare';
-import { findTalentById } from '../../data';
+import { findTalentById, domainByLabel } from '../../data';
 import type { CombatFeature, CombatFeatureCtx, CastingKind } from './types';
 
 /** Famille d'incantation d'un Talent par son `id` STABLE (« magie-mineure », « beni ») via sa DONNÉE
@@ -21,6 +21,15 @@ export function castingKindOf(talentId: string): CastingKind | undefined {
 export function arcaneDomainOf(c: Combatant): string | undefined {
   for (const t of c.talents ?? []) if (findTalentById(t.talentId)?.combat?.castingKind === 'arcane') return t.spec;
   return undefined;
+}
+
+/** `id` STABLE du Domaine d'Arcane du lanceur — résout la spec (libellé authoré du Talent, « Feu ») en
+ *  `DomainData.id` à la FRONTIÈRE (`domainByLabel`). Le RUNTIME en aval (breathType, attributs de Domaine)
+ *  lit par `findDomainById` (≠ re-lookup par libellé — multilangue-safe). undefined si pas de Domaine /
+ *  spec non encore spécialisée. */
+export function arcaneDomainIdOf(c: Combatant): string | undefined {
+  const spec = arcaneDomainOf(c);
+  return spec ? domainByLabel.get(spec)?.id : undefined;
 }
 
 /** Capacités de combat présentes sur le combattant, lues de la DONNÉE (`TalentData.combat`) : talents

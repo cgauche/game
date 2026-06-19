@@ -8,6 +8,9 @@
  */
 import { Combatant, ItemInstance } from './types';
 import { recomputeLoadout, itemFromTrappingById, ensureDefaultLoadout, newLoadoutId } from './items';
+import { isShieldItem } from './equipCompare';
+import { QUALITY_IDS } from './qualities/ids';
+import { hasQuality } from './qualities/dispatch';
 import { trappings, weaponGroupIdByLabel } from '../data';
 
 type ConjuredSet = NonNullable<NonNullable<Combatant['activeEffects']>[number]['conjuredSet']>;
@@ -62,12 +65,15 @@ export interface ConjureForm {
   group: string; // `id` du Groupe / Spé de Corps à corps appliquée par combatValue
 }
 
-/** Une arme de mêlée est-elle un objet À INVOQUER ? Exclut les boucliers, armes improvisées, mains
- *  nues et armes Inoffensives — PAS « Arme simple » (= épée/hache/marteau/masse/lance courte, l'arme
- *  de base la plus commune, cf. sa description). */
-function isConjurableWeapon(it: { name: string; qualities?: string[] }): boolean {
-  if (/bouclier|improvis|mains nues/i.test(it.name)) return false;
-  if (it.qualities?.some((q) => /inoffensiv/i.test(q))) return false;
+/** Une arme de mêlée est-elle un objet À INVOQUER ? Exclut les boucliers, l'Arme improvisée, les Mains
+ *  nues et les armes Inoffensives — PAS « Arme simple » (= épée/hache/marteau/masse/lance courte, l'arme
+ *  de base la plus commune, cf. sa description). Détection par CHAMPS STABLES (multilangue-safe) :
+ *  `trappingId` de catalogue (arme-improvisee / mains-nues), Atout Protectrice (bouclier), Atout
+ *  Inoffensive — plus de name-parse `/bouclier|improvis|mains nues/`. */
+function isConjurableWeapon(it: { trappingId?: string; qualities: string[] }): boolean {
+  if (it.trappingId === 'arme-improvisee' || it.trappingId === 'mains-nues') return false;
+  if (isShieldItem(it)) return false;
+  if (hasQuality(it, QUALITY_IDS.Inoffensive)) return false;
   return true;
 }
 

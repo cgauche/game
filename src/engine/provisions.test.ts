@@ -10,7 +10,7 @@ const chars = (E = 30): Characteristics => ({
   CC: 30, CT: 30, F: 30, E, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30,
 });
 
-const ration = (uid: string): ItemInstance => ({ uid, name: 'Ration', kind: 'misc', qualities: [], enc: 0, equipped: false });
+const ration = (uid: string): ItemInstance => ({ uid, name: 'Ration', isRations: true, kind: 'misc', qualities: [], enc: 0, equipped: false });
 
 function hero(opts: { E?: number; rations?: number; brouet?: boolean } = {}): Combatant {
   return {
@@ -111,10 +111,10 @@ describe('dailyFoodUpkeep — rations (LDB p.302) et faim (LDB 18 l.422)', () =>
     expect(j3.log.join(' ')).toContain('Test de Résistance');
   });
 
-  it('isRation : « Ration » / « Rations », pas « Rationnel »', () => {
-    expect(isRation({ name: 'Ration' })).toBe(true);
-    expect(isRation({ name: 'Rations (1 jour)' })).toBe(true);
-    expect(isRation({ name: 'Rationnel' })).toBe(false);
+  it('isRation : marqueur STABLE `isRations` (≠ nom — multilangue-safe)', () => {
+    expect(isRation({ isRations: true })).toBe(true);
+    expect(isRation({ isRations: undefined })).toBe(false);
+    expect(isRation({})).toBe(false);
   });
 
   it('deferTest (cascade de nuit) : un Test de Faim DÛ est DIFFÉRÉ, pas roulé ici', () => {

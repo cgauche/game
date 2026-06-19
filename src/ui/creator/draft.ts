@@ -39,7 +39,7 @@ import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLeve
 import { careerSkillAdditions, talentCharBonus } from '../../engine/talentEffects';
 import { castingKindOf } from '../../engine/combatFeatures/dispatch';
 import { bonus } from '../../engine/characteristics';
-import { findSpeciesById, findTalent, careers, careersForSpecies, species as allSpecies, levelsForCareer, findSpell, advancementLabel, SpeciesData, CareerLevelData } from '../../data';
+import { findSpeciesById, findTalent, careers, careersForSpecies, species as allSpecies, levelsForCareer, findSpell, advancementLabel, findStarById, SpeciesData, CareerLevelData } from '../../data';
 import type { Appearance } from '../../gameIso/rig/appearance';
 
 export type CharMode = 'rolled' | 'reassigned' | 'pointBuy';
@@ -99,9 +99,9 @@ export interface CreatorDraft {
   eyes?: string;
   hair?: string;
   // 3bis) Signe astral (ADE2 ch.03 — étape optionnelle, gated par la règle creation-signes-astraux)
-  /** Signe astral choisi (libellé concret) — son `effect` est appliqué aux attributs de départ. */
+  /** Signe astral choisi — `id` STABLE (≠ libellé) ; son `effect` est appliqué aux attributs de départ. */
   star?: string;
-  /** Signe TIRÉ (1d100 figé) : si `star` lui reste égal → +25 PX (RAW l.36) ; un choix libre l'écarte. */
+  /** Signe TIRÉ (1d100 figé, `id`) : si `star` lui reste égal → +25 PX (RAW l.36) ; un choix libre l'écarte. */
   starRoll?: string;
   /** Ascendant + 5 demeures célestes (ADE2 l.331-360) — flavor pur, aucun effet mécanique. */
   ascendant?: string;
@@ -290,14 +290,16 @@ const CELESTIAL_HOUSES = ['Demeure du Sens', 'Demeure des Épreuves', 'Demeure d
 /** Tirage 1d100 FIGÉ du signe (anti-savescum, comme l'espèce) : on le garde (+25 PX) ou on choisit
  *  librement ensuite (+0 PX, RAW l.36). Pas de relance — RAW n'en offre aucune. */
 export function rollDraftStar(d: CreatorDraft): CreatorDraft {
-  const label = rollStar(makeRNG(d.seed ^ 0x57a2));
-  return { ...d, starRoll: label, star: label };
+  const id = rollStar(makeRNG(d.seed ^ 0x57a2)); // `id` STABLE du signe (≠ libellé)
+  return { ...d, starRoll: id, star: id };
 }
 
-/** Ascendant + demeures célestes (ADE2 l.331-360) — flavor pur, tirages figés par le seed. */
+/** Ascendant + demeures célestes (ADE2 l.331-360) — flavor pur, tirages figés par le seed. `rollStar`
+ *  renvoie un `id` ; pour cette astrologie purement NARRATIVE on stocke le LIBELLÉ lisible. */
 export function rollDraftAstrology(d: CreatorDraft): CreatorDraft {
   const rng = makeRNG(d.seed ^ 0xa57e);
-  return { ...d, ascendant: rollStar(rng), dwellings: CELESTIAL_HOUSES.map((house) => ({ house, sign: rollStar(rng) })) };
+  const signLabel = (): string => findStarById(rollStar(rng))?.label ?? '';
+  return { ...d, ascendant: signLabel(), dwellings: CELESTIAL_HOUSES.map((house) => ({ house, sign: signLabel() })) };
 }
 
 // ── 4) Compétences & Talents ──
@@ -473,7 +475,7 @@ export function buildHero(d: CreatorDraft, id?: string): Combatant {
     speciesSkillAdvances: { plus5, plus3 },
     speciesTalentsResolved: resolvedSpeciesTalents(d),
     specChoices: d.specChoices,
-    starLabel: d.star,
+    starId: d.star,
     fateSplit: d.fateSplit,
     xpBonus: xpTotal(d),
     details: {

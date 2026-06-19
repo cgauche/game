@@ -18,7 +18,7 @@ import { RNG, defaultRNG, roll } from './dice';
 import { findTableEntry } from './tables';
 import { CharKey, CHAR_KEYS, Characteristics } from './types';
 import { Money } from './money';
-import { SpeciesData, CareerData, species as allSpecies, eyes as eyesTable, hairs as hairsTable, details as detailTables, stars as starsTable, findStar, talentConcrete } from '../data';
+import { SpeciesData, CareerData, species as allSpecies, eyes as eyesTable, hairs as hairsTable, details as detailTables, stars as starsTable, findStarById, talentConcrete } from '../data';
 import { rule } from './policy';
 
 // Bonus de PX des choix aléatoires acceptés (citations en tête de fichier).
@@ -156,27 +156,29 @@ function rollDetail(table: { rand: number; color: Record<string, string> }[], sp
   return entry.color[sp.refChar] ?? entry.color['Humain'] ?? '';
 }
 
-/** Signe astral (Tableau des Signes astrologiques, ADE2 ch.03 l.40) → libellé concret du signe.
- *  `rand` = borne haute cumulée du 1d100. L'Étoile du Sorcier (l.62) regroupe plusieurs variantes
- *  sur la même borne, départagées par un 1d10 interne (`sub` = [min, max]) → table partagée. */
+/** Signe astral (Tableau des Signes astrologiques, ADE2 ch.03 l.40) → `id` STABLE du signe (≠ libellé —
+ *  multilangue-safe ; `Combatant.star` stocke l'id). `rand` = borne haute cumulée du 1d100. L'Étoile du
+ *  Sorcier (l.62) regroupe plusieurs variantes sur la même borne, départagées par un 1d10 interne
+ *  (`sub` = [min, max]) → table partagée. */
 export function rollStar(rng: RNG = defaultRNG): string {
   const sorted = [...starsTable].sort((a, b) => a.rand - b.rand);
   const r = roll(1, 100, rng);
   const hit = sorted.find((e) => r <= e.rand) ?? sorted[0];
   const variants = sorted.filter((e) => e.rand === hit.rand && e.sub);
   if (variants.length > 1) {
-    const table = variants.map((e) => ({ min: e.sub![0], max: e.sub![1], label: e.label }));
-    return findTableEntry(table, roll(1, 10, rng)).label;
+    const table = variants.map((e) => ({ min: e.sub![0], max: e.sub![1], id: e.id }));
+    return findTableEntry(table, roll(1, 10, rng)).id;
   }
-  return hit.label;
+  return hit.id;
 }
 
 /** Applique l'effet ADE2 d'un signe astral AUX ATTRIBUTS DE DÉPART (ch.03 l.38) : `charMod` ajuste
  *  une Caractéristique de départ, `grantTalent` octroie un Talent via `addTalent` (le résolveur de la
- *  création). Le Talent est passé en LIBELLÉ CONCRET (`talentConcrete` : id+spec → « Maître artisan
- *  (Au choix) ») que le consommateur re-résout. Effet baked une fois à la création — PAS un passif. */
-export function applyStarEffect(starLabel: string, chars: Characteristics, addTalent: (label: string) => void): void {
-  for (const op of findStar(starLabel)?.effect ?? []) {
+ *  création). Le signe est résolu par son `id` STABLE (`findStarById` — ≠ libellé). Le Talent est passé
+ *  en LIBELLÉ CONCRET (`talentConcrete` : id+spec → « Maître artisan (Au choix) ») que le consommateur
+ *  re-résout. Effet baked une fois à la création — PAS un passif. */
+export function applyStarEffect(starId: string, chars: Characteristics, addTalent: (label: string) => void): void {
+  for (const op of findStarById(starId)?.effect ?? []) {
     if (op.op === 'charMod') chars[op.char] += op.mod;
     else if (op.op === 'grantTalent') addTalent(talentConcrete(op));
   }

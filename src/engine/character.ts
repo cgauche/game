@@ -55,14 +55,8 @@ const SKILL_CHAR: Record<string, CharKey> = {
   Sociabilité: 'Soc',
 };
 
-/** Caractéristique d'une Compétence (skills.json) — LDB 09 : valeur de Test = Caractéristique + avances. */
-export function skillCharacteristic(name: string): CharKey {
-  const data = findSkill(name);
-  if (data && SKILL_CHAR[data.characteristic]) return SKILL_CHAR[data.characteristic];
-  return 'Dex'; // repli prudent
-}
-
-/** Idem par `id` STABLE de la Compétence (réf structurée — pas de re-lookup par libellé). */
+/** Caractéristique d'une Compétence (skills.json) par `id` STABLE — LDB 09 : valeur de Test =
+ *  Caractéristique + avances. (≠ re-lookup par libellé — multilangue-safe.) */
 export function skillCharacteristicById(id: string): CharKey {
   const data = findSkillById(id);
   if (data && SKILL_CHAR[data.characteristic]) return SKILL_CHAR[data.characteristic];
@@ -208,9 +202,9 @@ export interface CreateHeroOptions {
   /** Résolution des entrées « (Au choix) » : entrée brute → libellé concret
    *  (ex. « Métier (Au choix) » → « Métier (Forgeron) »). */
   specChoices?: Record<string, string>;
-  /** Signe astral choisi (ADE2, libellé concret) — son `effect` (charMod / grantTalent) est appliqué
-   *  aux attributs de départ via applyStarEffect. Absent = pas de signe. */
-  starLabel?: string;
+  /** Signe astral choisi (ADE2) — `id` STABLE (≠ libellé) ; son `effect` (charMod / grantTalent) est
+   *  appliqué aux attributs de départ via applyStarEffect. Absent = pas de signe. */
+  starId?: string;
   /** Les 5 Augmentations gratuites réparties sur les 3 Caractéristiques de carrière (LDB 05
    *  l.488). Défaut : 2/2/1 sur les 3 Caractéristiques du Niveau 1. */
   charAdvancesAlloc?: Partial<Record<CharKey, number>>;
@@ -303,7 +297,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   // Signe astral (ADE2 ch.03) : effet appliqué AUX ATTRIBUTS DE DÉPART (±carac) + Talents octroyés.
   // AVANT heroSoFar (careerSkillAdditions voit un « Maître artisan » du signe) et avant les effets
   // d'acquisition des Talents (l. ~377). Talent « (Au choix) » résolu via specChoices (resolveEntry).
-  if (opts.starLabel) applyStarEffect(opts.starLabel, chars, (label) => addTalent(resolveEntry(label, opts.specChoices)));
+  if (opts.starId) applyStarEffect(opts.starId, chars, (label) => addTalent(resolveEntry(label, opts.specChoices)));
 
   for (const t of talents) {
     if (isUnresolvedChoice(talentConcrete(t))) throw new Error(`Talent non résolu : ${talentConcrete(t)}`);

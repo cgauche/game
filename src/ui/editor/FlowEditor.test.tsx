@@ -13,13 +13,13 @@ const testFlow = (skill: string, vsGroups?: string[]): Flow => ({
 
 describe('FlowEditor — nœud Test : champ Interlocuteur/groupes (P3)', () => {
   it('un Test de SOCIABILITÉ (Charme) expose le champ des groupes de l’interlocuteur', () => {
-    const html = renderToStaticMarkup(<FlowEditor flow={testFlow('Charme', ['Elfe'])} onChange={() => {}} ctx={ctx} />);
+    const html = renderToStaticMarkup(<FlowEditor flow={testFlow('charme', ['Elfe'])} onChange={() => {}} ctx={ctx} />);
     expect(html).toMatch(/Interlocuteur/i);
     expect(html).toContain('Elfe'); // la valeur courante est affichée
   });
 
   it('un Test NON-social (Escalade) MASQUE le champ (pas de no-op silencieux)', () => {
-    const html = renderToStaticMarkup(<FlowEditor flow={testFlow('Escalade')} onChange={() => {}} ctx={ctx} />);
+    const html = renderToStaticMarkup(<FlowEditor flow={testFlow('escalade')} onChange={() => {}} ctx={ctx} />);
     expect(html).not.toMatch(/Interlocuteur/i);
   });
 });

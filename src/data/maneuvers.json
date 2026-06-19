@@ -772,7 +772,7 @@
               },
               {
                 "op": "test",
-                "skill": "Résistance",
+                "skill": "resistance",
                 "difficulty": "accessible",
                 "onFail": [
                   {

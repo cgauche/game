@@ -13,6 +13,7 @@ import type { MouseEvent } from 'react';
 import { Flow, FlowTest, EMPTY_FLOW } from '../../state/flow';
 import { DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
 import { isSocialTest } from '../../engine/skills';
+import { RefField } from '../compendium/RefField';
 import {
   EffectFields,
   Ctx,
@@ -74,7 +75,7 @@ function TestFields({ test, onChange }: { test: FlowTest; onChange: (t: FlowTest
       )}
       <div className="tf-row">
         <span className="dr">Plus facile si</span>
-        <input placeholder="compétence (ex. Projectiles (Poudre noire))" value={test.easierIf?.hasSkill ?? ''} onChange={(e) => setEase({ hasSkill: e.target.value || undefined })} />
+        <RefField cfg={{ ds: 'skills', single: true, spec: true }} fieldKey="compétence" value={test.easierIf?.hasSkill} onChange={(v) => setEase({ hasSkill: (v as { id: string; spec?: string } | null) ?? undefined })} nullable />
         <input placeholder="ou talent" value={test.easierIf?.hasTalent ?? ''} onChange={(e) => setEase({ hasTalent: e.target.value || undefined })} />
         <label className="dr">−<input type="number" min={1} value={test.easierIf?.steps ?? 1} onChange={(e) => setEase({ steps: Number(e.target.value) })} /> cran(s)</label>
       </div>

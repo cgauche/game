@@ -7,6 +7,8 @@
  */
 import type { Combatant, ItemInstance, HitLocation } from './types';
 import { damageScore } from './items';
+import { QUALITY_IDS } from './qualities/ids';
+import { indiceOf } from './qualities/normalize';
 
 export type Trend = 'up' | 'down' | 'same';
 export interface CompareRow {
@@ -33,9 +35,12 @@ const ZONES: { label: string; locs: HitLocation[] }[] = [
   { label: 'Jambes', locs: ['jambeG', 'jambeD'] },
 ];
 
-/** Un bouclier = même prédicat que le rendu (Atout « Bouclier » ou nom « Bouclier… »). Pur (pas d'import rig). */
-export function isShieldItem(i: { name: string; qualities?: string[] }): boolean {
-  return (i.qualities ?? []).some((q) => /bouclier/i.test(q)) || /bouclier/i.test(i.name);
+/** Un bouclier = l'arme portant l'Atout « Protectrice N » (LDB 62 l.272 — c'est la PA d'un bouclier en
+ *  parade ; cet Atout est exclusif aux boucliers dans le catalogue). Détection par ID STABLE de qualité
+ *  via `indiceOf` (gère la forme runtime « protectrice 2 ») — multilangue-safe : ne dépend plus du
+ *  libellé « Bouclier ». Pur (pas d'import rig). */
+export function isShieldItem(i: { qualities?: string[] }): boolean {
+  return indiceOf(i.qualities ?? [], QUALITY_IDS.Protectrice) != null;
 }
 
 const trendOf = (n: number): Trend => (n > 0 ? 'up' : n < 0 ? 'down' : 'same');

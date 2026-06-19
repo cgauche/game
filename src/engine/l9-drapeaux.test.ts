@@ -68,9 +68,9 @@ describe("Endurance de l'anachorète — « ne subit aucune pénalité causée p
     const c = mk();
     addCondition(c, 'empoisonne');
     addCondition(c, 'a-terre');
-    expect(testStatePenalty(c, 'Athlétisme')).toBe(-20);
+    expect(testStatePenalty(c, 'athletisme')).toBe(-20);
     c.activeEffects = [{ label: 'Endurance', bonus: 0, roundsLeft: 3, ignoreStatePenalties: true }];
-    expect(testStatePenalty(c, 'Athlétisme')).toBe(0);
+    expect(testStatePenalty(c, 'athletisme')).toBe(0);
   });
   it("op ignoreStatePenalties : pose l'effet actif à la durée du sort + journal", () => {
     const c = mk();
@@ -185,7 +185,7 @@ describe("N'écoutez point la Sorcière — « −20 aux Tests de Langue (Magick
 
 describe('Putréfaction — « le cuir se racornit (perdant 1 PA à 1 Localisation) » (LDB 47)', () => {
   const leather = (over: Partial<ItemInstance> = {}): ItemInstance => ({
-    uid: 'a1', name: 'Armure de cuir souple', kind: 'armor', pa: 1, locs: ['corps'], equipped: true, enc: 1, qualities: [], ...over,
+    uid: 'a1', name: 'Armure de cuir souple', subType: 'cuir-souple', kind: 'armor', pa: 1, locs: ['corps'], equipped: true, enc: 1, qualities: [], ...over,
   } as unknown as ItemInstance);
   it('endommage de 1 PA une pièce de cuir portée (et re-dérive l’armure)', () => {
     const c = mk({ items: [leather()] });

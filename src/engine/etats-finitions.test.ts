@@ -16,9 +16,9 @@ describe('Finitions d\'États (LDB 16)', () => {
   });
 
   it('testStatePenalty : À Terre −20 / Empêtré −10 sur un Test de déplacement (l.37 / l.85)', () => {
-    expect(testStatePenalty(C({ conditions: [{ name: 'a-terre', value: 1 }] }), 'Athlétisme')).toBe(-20);
-    expect(testStatePenalty(C({ conditions: [{ name: 'empetre', value: 1 }] }), 'Esquive')).toBe(-10);
-    expect(testStatePenalty(C({ conditions: [{ name: 'a-terre', value: 1 }] }), 'Charme')).toBe(0); // Charme ≠ déplacement
+    expect(testStatePenalty(C({ conditions: [{ name: 'a-terre', value: 1 }] }), 'athletisme')).toBe(-20);
+    expect(testStatePenalty(C({ conditions: [{ name: 'empetre', value: 1 }] }), 'esquive')).toBe(-10);
+    expect(testStatePenalty(C({ conditions: [{ name: 'a-terre', value: 1 }] }), 'charme')).toBe(0); // Charme ≠ déplacement
   });
 
   it('testMod (Malédiction de malchance −10) : stacke par-dessus l\'État, hors non-cumul/ignoreState', () => {

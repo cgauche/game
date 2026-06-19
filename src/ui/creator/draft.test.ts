@@ -218,7 +218,7 @@ describe('signe astral (ADE2 ch.03) — étape, tirage, PX et effet', () => {
   it('starXp : +25 si le tirage est gardé, 0 si choix libre (l.36)', () => {
     const rolled = rollDraftStar(draft());
     expect(starXp(rolled)).toBe(25);
-    const other = stars.find((s) => s.label !== rolled.starRoll)!.label;
+    const other = stars.find((s) => s.id !== rolled.starRoll)!.id;
     expect(starXp({ ...rolled, star: other })).toBe(0);
     expect(starXp(draft())).toBe(0); // aucun tirage
   });
@@ -226,10 +226,10 @@ describe('signe astral (ADE2 ch.03) — étape, tirage, PX et effet', () => {
   it('buildHero applique les ±carac du signe aux attributs de départ', () => {
     const base = readyDraft();
     const a = buildHero(base, 'h-nostar');
-    const b = buildHero({ ...base, star: "Wymund l'Anachorète" }, 'h-star'); // +2 Soc, +2 I, -3 Int
+    const b = buildHero({ ...base, star: 'wymund-l-anachorete' }, 'h-star'); // id ; +2 Soc, +2 I, -3 Int
     expect(b.characteristics.Soc - a.characteristics.Soc).toBe(2);
     expect(b.characteristics.I - a.characteristics.I).toBe(2);
     expect(b.characteristics.Int - a.characteristics.Int).toBe(-3);
-    expect(b.star).toBe("Wymund l'Anachorète");
+    expect(b.star).toBe('wymund-l-anachorete');
   });
 });

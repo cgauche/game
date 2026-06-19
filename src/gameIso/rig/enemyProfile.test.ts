@@ -167,4 +167,16 @@ describe('entityRigProfile (entité de scène, ambiance hors combat)', () => {
   it('déterministe sur le seed', () => {
     expect(entityRigProfile('Mutant', 7)!.appearance).toEqual(entityRigProfile('Mutant', 7)!.appearance);
   });
+
+  it('équipement de combat AFFICHÉ en explo (parité avec le combat) : armes + armure dérivées du profil', () => {
+    const p = entityRigProfile('Soldat', 1, { traits: [{ id: 'arme', value: 7, arg: 'Hache' }] as never, armour: 2 })!;
+    expect(p.equip.weapons.some((w) => /hache/i.test(w.name))).toBe(true); // arme EXPLICITE tenue en main
+    expect(p.equip.armour.length).toBeGreaterThan(0);                       // armure dessinée (PA → pièces)
+  });
+
+  it('entité SANS arme/armure (villageois, ambiance) → mains libres préservées', () => {
+    const p = entityRigProfile('Soldat', 1, { traits: [] as never })!;
+    expect(p.equip.weapons).toEqual([]); // pas de repli « Arme » générique (qui serait dessiné en épée)
+    expect(p.equip.armour).toEqual([]);
+  });
 });

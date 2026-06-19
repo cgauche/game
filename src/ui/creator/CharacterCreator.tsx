@@ -710,7 +710,7 @@ function SpecSelect({ d, setD, raw }: StepProps & { raw: string }) {
 
 // ════ 3bis) Signe astral (ADE2 ch.03, optionnel) — rail : tirage/choix + effet ; détail : sens + astrologie ════
 function StarZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode } {
-  const sign = d.star ? starsTable.find((s) => s.label === d.star) : undefined;
+  const sign = d.star ? starsTable.find((s) => s.id === d.star) : undefined; // d.star = id STABLE
   // Talent « (Au choix) » octroyé par le signe (ex. Maître artisan) → spec à préciser (réutilise specChoices).
   const grantChoice = sign?.effect?.flatMap((o) => (o.op === 'grantTalent' && isUnresolvedChoice(talentConcrete(o)) ? [talentConcrete(o)] : []))[0];
   const grantOpts = grantChoice ? specOptionsFor(grantChoice) : [];
@@ -723,7 +723,7 @@ function StarZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode }
         <select value={d.star ?? ''} onChange={(e) => setD({ ...d, star: e.target.value || undefined })}>
           <option value="">— aucun —</option>
           {starsTable.map((s) => (
-            <option key={s.label} value={s.label}>{s.label}</option>
+            <option key={s.id} value={s.id}>{s.label}</option>
           ))}
         </select>
       </label>

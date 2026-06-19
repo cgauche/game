@@ -3,6 +3,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { EXPOSURE_LABELS } from '../engine/corruption';
 import { testValue } from '../engine/skills';
+import { refLabel } from '../data';
 import { RollFlowShell } from './RollFlowShell';
 import { OptionChooser } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
@@ -37,6 +38,7 @@ export function CorruptionModal() {
   // Pré-jet (audit M6) : `pc.target` n'existe qu'après resolve → base réelle du Test affichée
   // AVANT le jet (même parité que les autres flux RollFlowShell).
   const base = hero ? testValue(hero, pc.skill) : 0;
+  const skillLabel = refLabel('skills', { id: pc.skill }); // 'Résistance' / 'Calme' (affichage)
 
   return (
     <RollFlowShell
@@ -44,7 +46,7 @@ export function CorruptionModal() {
       title={seuil ? <>🧬 Seuil de Corruption ({hero?.corruption ?? '?'} Points)</> : <>🕯️ Influence corruptrice ({EXPOSURE_LABELS[pc.level ?? 'mineure']})</>}
       subtitle={
         <>
-          <strong>{hero?.name ?? '?'}</strong> — Test de {pc.skill} Intermédiaire (+0)
+          <strong>{hero?.name ?? '?'}</strong> — Test de {skillLabel} Intermédiaire (+0)
         </>
       }
       rolled={rolled}
@@ -58,15 +60,15 @@ export function CorruptionModal() {
               layout="seg"
               groupLabel="Compétence"
               options={[
-                { key: 'Résistance', label: 'Résistance', value: testValue(hero, 'Résistance'), selected: pc.skill === 'Résistance', title: 'Influence physique', onSelect: () => setSkill('Résistance') },
-                { key: 'Calme', label: 'Calme', value: testValue(hero, 'Calme'), selected: pc.skill === 'Calme', title: 'Corruption spirituelle', onSelect: () => setSkill('Calme') },
+                { key: 'resistance', label: refLabel('skills', { id: 'resistance' }), value: testValue(hero, 'resistance'), selected: pc.skill === 'resistance', title: 'Influence physique', onSelect: () => setSkill('resistance') },
+                { key: 'calme', label: refLabel('skills', { id: 'calme' }), value: testValue(hero, 'calme'), selected: pc.skill === 'calme', title: 'Corruption spirituelle', onSelect: () => setSkill('calme') },
               ]}
             />
           </div>
         ) : undefined
       }
-      breakdown={rolled ? testBreakdown(`Test de ${pc.skill}`, base, { roll: pc.roll!, target: pc.target, sl: pc.sl, success: pc.success }, 'intermediaire') : undefined}
-      pending={testPending(`Test de ${pc.skill}`, base, undefined, 'intermediaire')}
+      breakdown={rolled ? testBreakdown(`Test de ${skillLabel}`, base, { roll: pc.roll!, target: pc.target, sl: pc.sl, success: pc.success }, 'intermediaire') : undefined}
+      pending={testPending(`Test de ${skillLabel}`, base, undefined, 'intermediaire')}
       outcome={rolled && <JournalLine className="rm-journal" event={ev('info', describeCorruption(pc, hero?.name ?? '?'), pc.heroId)} combatants={pool} />}
       fortune={hero?.fortune ?? 0}
       freeReroll={freeRerollOf(hero)}

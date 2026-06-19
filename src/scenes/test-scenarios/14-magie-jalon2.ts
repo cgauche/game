@@ -30,7 +30,7 @@ scene.triggers = [
     once: true,
     flow: flowFromEffects([
       { type: 'journal', text: 'Une malepierre suinte entre les pavés — l’air poisse (Influence corruptrice modérée).' },
-      { type: 'corruptionExposure', level: 'moderee', skill: 'Résistance' },
+      { type: 'corruptionExposure', level: 'moderee', skill: 'resistance' },
     ]),
   },
 ];

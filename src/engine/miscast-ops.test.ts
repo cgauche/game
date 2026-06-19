@@ -78,7 +78,7 @@ describe('Tests imbriqués des tables', () => {
     const gained: number[] = [];
     applyOps(
       c,
-      [{ op: 'test', skill: 'Force Mentale', difficulty: 'accessible', onFail: [{ op: 'corruption', amount: 1 }] }],
+      [{ op: 'test', characteristic: 'FM', difficulty: 'accessible', onFail: [{ op: 'corruption', amount: 1 }] }],
       { rng: makeRNG(3), onCorruption: (n) => { gained.push(n); return [`+${n} Corruption`]; } },
     );
     expect(gained).toEqual([1]);
@@ -88,7 +88,7 @@ describe('Tests imbriqués des tables', () => {
     const c = hero({ characteristics: { ...hero().characteristics, E: 1 } }); // cible ~1 → échec dur garanti
     applyOps(
       c,
-      [{ op: 'test', skill: 'Résistance', difficulty: 'difficile', onFail: [{ op: 'condition', name: 'sonne' }], onFailHard: { dr: -4, ops: [{ op: 'condition', name: 'inconscient' }] } }],
+      [{ op: 'test', skill: 'resistance', difficulty: 'difficile', onFail: [{ op: 'condition', name: 'sonne' }], onFailHard: { dr: -4, ops: [{ op: 'condition', name: 'inconscient' }] } }],
       { rng: makeRNG(1) }, // d100 = 63 vs cible ~1 → échec à −6 DR (≤ −4 : palier dur)
     );
     expect(c.conditions.some((x) => x.name === 'sonne')).toBe(true);

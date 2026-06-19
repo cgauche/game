@@ -357,7 +357,7 @@ export interface PendingCorruption {
   kind?: 'exposition' | 'seuil';
   /** Niveau d'exposition — EXPOSITION seulement (absent au seuil). */
   level?: import('../engine/corruption').ExposureLevel;
-  skill: 'Résistance' | 'Calme';
+  skill: 'resistance' | 'calme'; // skillId stable (libellé dérivé par refLabel à l'affichage)
   /** Compétence déterminée en amont (source ou seuil) → pas de choix joueur. Absent/false = nature
    *  indéterminée (LDB 19 l.26) → la modale propose Résistance/Calme (cf. `corruptionSetSkill`). */
   skillLocked?: boolean;

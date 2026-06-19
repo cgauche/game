@@ -255,7 +255,7 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
   if (!best) return false;
   const baseDifficulty = spec.difficulty ?? 'intermediaire';
   const eased = !!spec.easierIf && get().party.some((c) => !c.dead && (
-    (!!spec.easierIf!.hasSkill && actorHasSkill(c, spec.easierIf!.hasSkill)) ||
+    (!!spec.easierIf!.hasSkill && actorHasSkill(c, spec.easierIf!.hasSkill.id, spec.easierIf!.hasSkill.spec)) ||
     (!!spec.easierIf!.hasTalent && hasTalent(c, spec.easierIf!.hasTalent))
   ));
   const difficulty = eased ? easeDifficulty(baseDifficulty, spec.easierIf!.steps ?? 1) : baseDifficulty;
@@ -461,7 +461,7 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
         const hero = corruptionTarget(get(), e.heroId);
         // `e.skill` présent = déterminé en amont (verrouillé) ; absent = nature indéterminée → le
         // joueur choisira Résistance/Calme dans la modale (défaut affiché : Résistance).
-        if (hero) set({ pendingCorruption: { heroId: hero.id, level: e.level, skill: e.skill ?? 'Résistance', skillLocked: e.skill != null } });
+        if (hero) set({ pendingCorruption: { heroId: hero.id, level: e.level, skill: e.skill ?? 'resistance', skillLocked: e.skill != null } });
         break;
       }
       case 'giveCorruption': {
