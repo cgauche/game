@@ -6,7 +6,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   trappings, qualities, spells, creatures, classes, careers, careerLevels, species, gods, etats, maladies, weaponGroups,
-  traits, stars, talents,
+  traits, stars, talents, maneuvers,
   findSkillById, findTalentById, findTrappingById, findQualityById, findSpellById,
   findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById,
 } from './index';
@@ -15,6 +15,7 @@ import { COND } from '../engine/conditions';
 import { DISEASES } from '../engine/disease';
 import pregensJson from './pregens.json';
 import interludeEventsJson from './interludeEvents.json';
+import areneProject from '../scenes/arene/arene-projet.json';
 import { CHAR_KEYS } from '../engine/types';
 
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x != null;
@@ -178,5 +179,34 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
         expect(findTalentById((t.addTalent as { id: string }).id), `${t.label}.addTalent`).toBeTruthy();
       }
     }
+  });
+
+  // ── Spine des Tests : aucune compétence résolue par LIBELLÉ (multilangue) ──
+  it('ops test/opposedTest/skillMod/skillDRBonus → skill par skillId qui résout (jamais un libellé)', () => {
+    const skillCarrying = [...spells, ...traits, ...maneuvers, ...qualities, ...creatures, ...stars];
+    walk(skillCarrying, (o) => {
+      const ids: unknown[] = [];
+      if ((o.op === 'test' || o.op === 'skillMod' || o.op === 'skillDRBonus') && o.skill != null) ids.push(o.skill);
+      if (o.op === 'opposedTest') { if (o.attackerSkill != null) ids.push(o.attackerSkill); if (o.defenderSkill != null) ids.push(o.defenderSkill); }
+      for (const s of ids) {
+        expect(typeof s, JSON.stringify(o)).toBe('string');
+        expect(findSkillById(s as string), `${JSON.stringify(o)} → ${String(s)}`).toBeTruthy();
+      }
+    });
+  });
+
+  it('scènes : FlowTest.skill / extendedTest.skill = skillId qui résout ; corruptionExposure.skill ∈ {resistance,calme}', () => {
+    walk(areneProject, (o) => {
+      if (o.kind === 'test' && isObj(o.test)) {
+        const s = (o.test as Record<string, unknown>).skill;
+        if (s != null) expect(findSkillById(s as string), `FlowTest → ${String(s)}`).toBeTruthy();
+        const hs = (o.test as Record<string, unknown>).easierIf;
+        if (isObj(hs) && isObj((hs as Record<string, unknown>).hasSkill)) {
+          expect(findSkillById(((hs as Record<string, unknown>).hasSkill as { id: string }).id)).toBeTruthy();
+        }
+      }
+      if (o.type === 'extendedTest' && o.skill != null) expect(findSkillById(o.skill as string), `extendedTest → ${String(o.skill)}`).toBeTruthy();
+      if (o.type === 'corruptionExposure' && o.skill != null) expect(['resistance', 'calme'], String(o.skill)).toContain(o.skill);
+    });
   });
 });
