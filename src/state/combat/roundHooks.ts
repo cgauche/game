@@ -379,9 +379,6 @@ registerCascadeApplier('poisonResist', (get, set, step, hero) => {
   return { journal: line ? line.split('\n') : [`${hero.name} ne surmonte pas le poison (Résistance ratée).`] };
 });
 
-// (L'applier de cascade 'steelJaw' a disparu : Mâchoires passe par l'applier GÉNÉRIQUE 'triggeredTest'
-//  — conséquence en DONNÉE, zéro applier par talent. Cf. brique `combat/triggeredTest`.)
-
 registerCascadeApplier('brokenRecovery', (get, set, step, hero) => {
   if (!hero || !step.result) return;
   const lines: string[] = [];

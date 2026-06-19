@@ -186,9 +186,6 @@ export function outnumberCountBonus(c: Combatant): number {
   return levelSum(c, (d) => !!d.outnumberCount);
 }
 
-// (Mâchoires d'acier — anciennement `hasStunSave`/`def.stunSave` — est devenu un effet `onGainCondition`
-//  data-driven : talents.json `effects` résolu par la brique `state/combat/triggeredTest`.)
-
 /** Cœur vaillant (LDB 10) : récupération du Brisé même Engagé. */
 export function hasBraveheart(c: Combatant): boolean {
   return featuresOf(c).some(({ def }) => def.braveheart);
