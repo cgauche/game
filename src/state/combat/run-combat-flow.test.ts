@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from '../store';
 import { runCombatFlow } from './triggeredTest';
-import '../combatFlow'; // effet de bord : installe l'applier `triggeredTest` + le routeur + le hook onGainCondition
+import { openCastCascade } from '../combatFlow'; // effet de bord : installe l'applier `triggeredTest` + le routeur + le hook onGainCondition
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { seedBattleRng } from '../battleRng';
@@ -134,5 +134,58 @@ describe('runCombatFlow — test enfoui + continuation after (combat)', () => {
     } finally {
       resetRule('combat-cadence');
     }
+  });
+
+  /**
+   * Lot 2 — voie nested cast↔test : un sous-Flow de sort SYNTHÉTIQUE `seq[ do, test, do ]` lancé via
+   * `runCombatFlow` EN CONTEXTE D'INCANTATION (cascade `jet:'cast'` déjà OUVERTE par openCastCascade,
+   * comme pendant un vrai `applyCast`). Le nœud `test` enfoui n'OUVRE PAS une seconde cascade : il
+   * APPEND une étape `triggeredTest` à la MÊME cascade `cast` active (preuve « une seule cascade
+   * enrichie »), comme Critique/Maladresse de sort. Sa validation (cascadeRoll+cascadeNext) joue la
+   * branche PUIS la continuation `after` (le `do` final). C'est la machinerie que le Lot 4 utilisera
+   * quand un sort portera un nœud Flow `test` ; aucun sort n'en a ENCORE → la voie est juste prête. */
+  it('CONTEXTE CAST : test enfoui APPEND à la cascade `cast` ouverte (une seule cascade enrichie)', () => {
+    seedBattleRng(5);
+    const { H } = setup();
+    H.characteristics.F = 90; // Force élevée → branche succès (−5) à la validation
+    const before = live(H.id).wounds.current;
+
+    // Un vrai applyCast ouvre cette cascade `jet:'cast'` AVANT de jouer les effets du sort.
+    openCastCascade(useGame.getState, useGame.setState, H);
+    const castCasc = useGame.getState().pendingCascade!;
+    expect(castCasc.purpose).toBe('combat');
+    expect(castCasc.participants).toHaveLength(1);
+    expect(castCasc.participants[0].jet).toBe('cast'); // l'étape d'incantation, curseur dessus
+
+    // Le sous-Flow du sort (avec un Test interne) joué EN CONTEXTE CAST (opsCtx propagé : sl/label).
+    runCombatFlow(
+      { mode: 'combat', get: useGame.getState, set: useGame.setState, target: H, caster: H, label: 'Sort', opsCtx: { sl: 2, label: 'Sort', caster: H } },
+      flow(3, 5, 99, 7),
+    );
+
+    // Le `do` AVANT le test s'applique tout de suite ; le test SUSPEND en appendant une étape à la
+    // MÊME cascade (toujours `cast`, jamais une nouvelle) ; la continuation `after` attend dans le meta.
+    expect(live(H.id).wounds.current).toBe(before - 3);
+    const enriched = useGame.getState().pendingCascade!;
+    expect(enriched.purpose).toBe('combat');
+    expect(enriched.participants).toHaveLength(2); // étape `cast` + étape `triggeredTest` APPENDUE (une seule cascade)
+    expect(enriched.participants[0].jet).toBe('cast');
+    const step = enriched.participants[1];
+    expect(step.kind).toBe('triggeredTest');
+    expect(step.actorId).toBe(H.id);
+    expect(step.result).toBeFalsy();        // pas encore lancé → influençable
+    expect(step.meta?.after).toBeTruthy();  // la continuation voyage dans le meta (sérialisable, coop)
+
+    // castConfirm (combatSlice:1771-1777) avance le curseur AU-DELÀ de l'étape `jet:'cast'` quand des
+    // conséquences se sont appendues (`participants.length > castStepIdx + 1`) → la cascade JOUE l'étape
+    // `triggeredTest`. On reproduit ce seul pas d'orchestration (le test bypass `castConfirm`).
+    expect(enriched.cursor).toBe(0); // curseur encore sur l'étape `cast` (résolue par CastModal, hors test)
+    useGame.setState({ pendingCascade: { ...enriched, cursor: 1 } }); // = castConfirm : cursor → castStepIdx + 1
+
+    // Validation : la branche succès (−5) PUIS la continuation after (−7) s'appliquent.
+    useGame.getState().cascadeRoll(step.id);
+    useGame.getState().cascadeNext();
+    expect(live(H.id).wounds.current).toBe(before - (3 + 5 + 7)); // pre + branche + continuation
+    expect(useGame.getState().pendingCascade).toBeNull();          // cascade enrichie close (toutes étapes jouées)
   });
 });

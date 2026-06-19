@@ -84,7 +84,7 @@ import {
   type CounterspellOutcome,
   type SpellLike,
 } from '../engine/magic';
-import { applyOps, resolveFormula, skillDRBonus, COMBAT_PERSIST, type GameOp } from '../engine/ops';
+import { applyOps, resolveFormula, skillDRBonus, COMBAT_PERSIST, type GameOp, type OpsCtx } from '../engine/ops';
 import { spellSpecFor } from '../data/spellspecs';
 import { applySummon, purgeExpiredSummons } from './summonFlow';
 import type { ConjureForm } from '../engine/conjuredWeapons';
@@ -160,7 +160,7 @@ export function activeCombatant(battle: BattleState): Combatant | undefined {
 
 // --- Effets de scène/campagne extraits → combatEffects.ts (baril) ---
 export * from './combatEffects';
-import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, runSpellFlow, drainPendingLog } from './combatEffects';
+import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, drainPendingLog } from './combatEffects';
 // --- Manœuvres de créature (énumération + résolveurs roll/apply) extraites → combatManeuvers.ts (baril) ---
 export * from './combatManeuvers';
 // --- Refonte par coutures : registre de hooks de cycle de vie + mise en place (barils, modules FEUILLES) ---
@@ -171,6 +171,7 @@ import { collectHeroRoundEndUpkeep } from './combat/roundHooks';
 import { endFrenzyIfDone } from './combat/turnHooks'; // usage interne (cascade psy héros, psychStepFor)
 export { brokenRecovery, collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour broken-recovery.test / cascade d'upkeep
 export * from './combat/triggeredTest'; // baril : enregistre l'applier de cascade `triggeredTest` + installe le routeur de Test des triggers (effet de bord)
+import { runCombatFlow } from './combat/triggeredTest'; // usage interne (applyCast : exécuteur de Flow de sort EN COMBAT, after-aware → canal de journal unifié + voie nested cast↔test)
 export { endFrenzyIfDone, aiMaybeFrenzy, resolvePsychAI } from './combat/turnHooks'; // baril : enregistre les hooks de début de tour ennemi (effet de bord) + ré-export pour frenzy*.test / psych*.test
 // Sauvegardes post-touche en registre `HitModifier` ordonné (state/combat/hitModifiers, module FEUILLE).
 import { runHitModifiers, martyrGuardOf, wardedAgainst } from './combat/hitModifiers'; // usage interne (applyAttackResult + applyCast)
@@ -2154,7 +2155,12 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
 export function finishPlayerAction(get: Get, set: SetFn, lines: string[], kind: CombatEventKind = 'info'): void {
   const battle = get().battle;
   if (battle) {
-    set({ battle: { ...battle, acted: true, action: null, selectedSpellId: null, log: [...battle.log, ...evLines(lines, kind)] } });
+    // Filet de sécurité (cf. applyAttackResult) : un hook profond (ex. `onGainCondition` d'un ennemi
+    // touché par les ops d'un sort de soutien, OU un rider de Domaine) a pu pousser des lignes dans la
+    // file différée APRÈS les drains inline d'`applyCast` → on les folde dans le MÊME `log` réécrit,
+    // avant que ce `set` ne le clobbere. File vide (cas commun heal/focus) → no-op.
+    const log = [...battle.log, ...evLines(lines, kind), ...drainPendingLog(get, set)];
+    set({ battle: { ...battle, acted: true, action: null, selectedSpellId: null, log } });
     bus.emit(EVT.SCENE_DIRTY);
     checkBattleOver(get, set);
   } else {
@@ -2576,6 +2582,24 @@ export function applyCounterspell(get: Get, set: SetFn, counter: Combatant): boo
 /** Choix du lanceur sur une Incantation CRITIQUE (LDB 46 l.52-59). */
 export type CastCritChoice = 'critique' | 'puissance' | 'ineluctable';
 
+/**
+ * Exécute un sous-Flow de sort EN COMBAT via l'exécuteur UNIQUE `runCombatFlow` (after-aware) puis
+ * RAMÈNE ses lignes de journal pour qu'`applyCast` les place INLINE dans son `logLines` — à la place
+ * EXACTE qu'occupait le `runSpellFlow(...)` qu'il remplace (ordre du journal de sort préservé).
+ *
+ * Pourquoi ce détour file→drain plutôt que `runSpellFlow` direct : `runCombatFlow` est le seul
+ * exécuteur qui porte la CONTINUATION `after` d'un nœud `test` enfoui (un sort à Test interne — Lot 4)
+ * suspend alors en APPENDANT une étape `triggeredTest` à la cascade `cast` active (openCastCascade),
+ * comme Critique/Maladresse de sort. Il pousse son journal dans la file différée `pendingLogQueue` ;
+ * `drainPendingLog` la vide ici et rend les lignes (`.text`) — la file capte AUSSI les lignes des
+ * hooks profonds déclenchés par les ops du sort (`onGainCondition` d'un ennemi → Mâchoires), donc
+ * elles ne sont plus orphelines. Aucun sort n'ayant ENCORE de nœud Flow `test`, `runCombatFlow`
+ * s'exécute de bout en bout (do/if seulement) → comportement INCHANGÉ vs `runSpellFlow`. */
+function runCastFlow(get: Get, set: SetFn, target: Combatant, caster: Combatant, flow: Flow, opsCtx: OpsCtx): string[] {
+  runCombatFlow({ mode: 'combat', get, set, target, caster, label: opsCtx.label ?? caster.name, opsCtx }, flow);
+  return drainPendingLog(get, set).map((e) => e.text);
+}
+
 /** Applique un résultat d'incantation DÉJÀ obtenu (mute caster/cible, consomme l'Action). */
 export function applyCast(
   get: Get,
@@ -2693,7 +2717,7 @@ export function applyCast(
       if (missileSpec.curated && spellOps(spell.effects, 'target').length) {
         const rounds = missileSpec.durationRounds != null ? resolveFormula(missileSpec.durationRounds, caster, battleRng()) : null;
         const clockMin = rounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
-        logLines.push(...runSpellFlow(t, caster, spellFlowFor(spell.effects, 'target'), {
+        logLines.push(...runCastFlow(get, set, t, caster, spellFlowFor(spell.effects, 'target'), {
           rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
           defaultDurationRounds: rounds ?? COMBAT_PERSIST,
           ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
@@ -2786,8 +2810,9 @@ export function applyCast(
         if (opp?.resisted) { logLines.push(`${t.name} résiste à ${spell.label} (Test opposé).`); continue; }
         logLines.push(
           // Tout sort passe par le système Flow/EffectOp : `spell.effects` (Flow éditable, feuilles
-          // `on:'target'`) → `runSpellFlow` → applyOps. Les feuilles `on:'caster'` sont appliquées à part.
-          ...runSpellFlow(t, caster, spellFlowFor(spell.effects, 'target'), {
+          // `on:'target'`) → `runCombatFlow` (exécuteur unique, after-aware) → applyOps. Les feuilles
+          // `on:'caster'` sont appliquées à part.
+          ...runCastFlow(get, set, t, caster, spellFlowFor(spell.effects, 'target'), {
             rng: battleRng(),
             caster,
             label: spell.label,
@@ -2908,7 +2933,7 @@ export function applyCast(
     if (spellOps(spell.effects, 'caster').length) {
       const baseRounds = castSpec.durationRounds != null ? resolveFormula(castSpec.durationRounds, caster, battleRng()) : null;
       const clockMin = baseRounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
-      logLines.push(...runSpellFlow(caster, caster, spellFlowFor(spell.effects, 'caster'), {
+      logLines.push(...runCastFlow(get, set, caster, caster, spellFlowFor(spell.effects, 'caster'), {
         rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
         defaultDurationRounds: baseRounds ?? COMBAT_PERSIST,
         ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
