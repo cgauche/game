@@ -8,7 +8,7 @@
 import { describe, it, expect } from 'vitest';
 import { resolveFormula, applyOps } from '../engine/ops';
 import { evalCondition, type Flow } from './flow';
-import { runSpellFlow } from './combatEffects';
+import { runSpellFlowLines } from './combatEffects';
 import { makeRNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
 
@@ -50,10 +50,10 @@ describe('Condition {slThreshold} — issue échelonnée sur la marge', () => {
       else: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', name: 'sonne' }] } },
     };
     const hi = mk({ id: 'h' });
-    runSpellFlow(hi, mk({ id: 'a' }), flow, { sl: 6 });
+    runSpellFlowLines(hi, mk({ id: 'a' }), flow, { sl: 6 });
     expect(hi.conditions.find((c) => c.name === 'Pétrifié')).toBeTruthy();
     const lo = mk({ id: 'l' });
-    runSpellFlow(lo, mk({ id: 'a' }), flow, { sl: 3 });
+    runSpellFlowLines(lo, mk({ id: 'a' }), flow, { sl: 3 });
     expect(lo.conditions.find((c) => c.name === 'sonne')).toBeTruthy();
     expect(lo.conditions.find((c) => c.name === 'Pétrifié')).toBeUndefined();
   });

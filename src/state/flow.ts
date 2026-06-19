@@ -242,7 +242,7 @@ export type EffectTrigger = 'onHit' | 'onWoundLoss' | 'onRoundStart' | 'onStartl
 /** Effet DÉCLENCHÉ authoré (donnée éditable) : un Flow d'ops appliqué à `on` quand `trigger` se produit.
  *  GÉNÉRIQUE — porté indifféremment par `TraitData.effects` (Toile, Sang corrosif…) ET `QualityData.effects`
  *  (Atout d'arme : « à la touche, 1d10 + Empêtré »). Même vocabulaire que les sorts (réutilise
- *  `runSpellFlow`/`applyOps`) → plus de handler en dur. `on` : le porteur lui-même (`self`), la victime
+ *  `runSpellFlowLines`/`applyOps`) → plus de handler en dur. `on` : le porteur lui-même (`self`), la victime
  *  touchée (`victim`), ou les adversaires Engagés du porteur (`engaged`). */
 /** CIBLE(S) d'un effet déclenché : le porteur (`self`), la victime touchée (`victim`), les adversaires
  *  Engagés (`engaged`), ou — géométrie — TOUS les combattants à `radiusMeters` d'un centre (l'arc d'Azyr :
@@ -288,7 +288,7 @@ export function flowEffects(flow: Flow): Effect[] {
 
 /** GameOps des feuilles EffectOp d'un Flow de sort, filtrées par cible (`target`/`caster`). SOURCE
  *  UNIQUE de l'extraction des effets d'un sort depuis `SpellData.effects` : le cast flow applique un
- *  sous-Flow (target vs caster) via `runSpellFlow`, mais les badges UI (`spellSupport`) ont besoin de
+ *  sous-Flow (target vs caster) via `runCombatFlow`, mais les badges UI (`spellSupport`) ont besoin de
  *  la liste d'ops. Visite récursive (les feuilles peuvent vivre sous if/test). `on` absent ⇒ `target`. */
 export function spellOps(flow: Flow | undefined, on: 'target' | 'caster'): import('../engine/ops').GameOp[] {
   if (!flow) return [];

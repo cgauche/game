@@ -4,7 +4,7 @@
  *
  * Module FEUILLE (chargé par effet de bord depuis combatFlow, qui le `export *`) : il n'importe RIEN
  * de combatFlow. Il REJOINT la voie unifiée existante (`pushCombatStep` → cascade `purpose:'combat'`
- * influençable + `registerCascadeApplier` + `runSpellFlow`) au lieu d'inventer un système.
+ * influençable + `registerCascadeApplier` + `runSpellFlowLines`) au lieu d'inventer un système.
  *
  * Trois entrées, UN résolveur :
  *  - `resolveFlowTest(ctx, node, after)` — point de décision unique sur un nœud `test` :
@@ -33,7 +33,7 @@ import { refLabel } from '../../data';
 import { type Flow, type ActorView, type ConditionCtx, evalCondition, conditionCtx, EMPTY_FLOW } from '../flow';
 import type { Get, Set as SetFn } from '../flowTypes';
 import { battleRng } from '../battleRng';
-import { runSpellFlow, runFlow, pushCombatStep, openSkillTest } from '../combatEffects';
+import { runSpellFlowLines, runFlow, pushCombatStep, openSkillTest } from '../combatEffects';
 import { registerCascadeApplier } from '../cascade';
 import { fireTriggers } from '../triggeredEffects';
 import { roundTestInteractive } from './roundHooks';
@@ -97,14 +97,16 @@ export function condCtxFor(ctx: ExecCtx): ConditionCtx {
 }
 
 /** Conséquence PARTAGÉE des deux branches (héros cascade ⇄ ennemi/auto inline) : exécute la branche
- *  `onSuccess`/`onFail` via `runSpellFlow` sur `c` (référent = lui-même), `ctx.sl = t.sl` alimentant les
- *  échelles `valuePerSL` (« chaque DR supprime un État Sonné supplémentaire »). Renvoie le journal de la
- *  BRANCHE. La continuation `after` est jouée À PART par l'appelant (`playAfter`) — APRÈS que les lignes
- *  de branche aient été placées dans le bon canal (return cascade / file inline) → ordre du journal correct. */
+ *  `onSuccess`/`onFail` via `runSpellFlowLines` sur `c` (référent = lui-même), `ctx.sl = t.sl` alimentant
+ *  les échelles `valuePerSL` (« chaque DR supprime un État Sonné supplémentaire »). Renvoie le journal de
+ *  la BRANCHE (string[] tissé au bon canal : return cascade `{ journal }` / file inline) — la branche est
+ *  un Flow de feuilles `do`/`if` (aucun nœud `test` enfoui aujourd'hui ; un Test chaîné serait une
+ *  continuation `after`, pas une branche). La continuation `after` est jouée À PART (`playAfter`), APRÈS
+ *  les lignes de branche → ordre du journal correct. */
 export function applyTriggeredTestBranch(
   c: Combatant, t: Pick<TestResult, 'success' | 'sl'>, branches: { onSuccess: Flow; onFail: Flow },
 ): string[] {
-  return runSpellFlow(c, c, t.success ? branches.onSuccess : branches.onFail, { rng: battleRng(), caster: c, sl: t.sl });
+  return runSpellFlowLines(c, c, t.success ? branches.onSuccess : branches.onFail, { rng: battleRng(), caster: c, sl: t.sl });
 }
 
 /** Rejoue la CONTINUATION `after` d'un `test` (le reste du `seq`) sur `c` EN COMBAT (peut ré-appender

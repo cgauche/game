@@ -78,10 +78,10 @@ registerCombatHook({
   id: 'fire-round-start-triggers', // effets « début de Round » authorés (Régénération…) — dispatcher générique (RNG)
   phase: 'roundBoundary',
   order: 25,
-  run: ({ get, battle, sink }) => {
+  run: ({ get, set, battle, sink }) => {
     for (const c of battle.combatants) {
       if (c.dead || c.outOfRencontre) continue;
-      for (const line of fireTriggers(get, c, 'onRoundStart', { rng: battleRng() })) sink(line, c);
+      for (const line of fireTriggers(get, c, 'onRoundStart', { rng: battleRng(), set })) sink(line, c);
     }
   },
 });

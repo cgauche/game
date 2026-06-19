@@ -79,7 +79,7 @@ export const isLiving = (c: Combatant): boolean => !isUndead(c) && !isDaemon(c);
 /** Riders « à la touche » d'un Sort du Domaine (Feu → En flammes ; Lumière → Aveuglé + frappe ;
  *  Mort → Exténué ; Vie → purge/flétrissure) — DONNÉE éditable (`DomainData.onHitEffects`, `TriggeredEffect[]`).
  *  Le gating (cible adverse / vivante / mort-vivante / résistance par Talent) vit dans les Conditions Flow
- *  `relation`/`has`. Appliqués par le dispatcher `state/triggeredEffects` (qui détient `runSpellFlow`). */
+ *  `relation`/`has`. Appliqués par le dispatcher `state/triggeredEffects` (qui détient `runSpellFlowLines`). */
 export function domainOnHitEffects(spell: SpellDomainRef): TriggeredEffect[] {
   return findDomainById(spell.domainId)?.effects ?? [];
 }

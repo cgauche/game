@@ -273,7 +273,7 @@ export function resolveManeuver(
       margin = opp.netSL + (def.advantageMode === 'variable' ? spent : 0);
     }
     const before = tgt.wounds.current;
-    lines.push(...applyTriggeredEffects(get, attacker, def.effects ?? [], 'onHit', { victim: tgt, margin, indice, rng }));
+    lines.push(...applyTriggeredEffects(get, attacker, def.effects ?? [], 'onHit', { victim: tgt, margin, indice, rng, set }));
     const wl = before - tgt.wounds.current;
     if (wl > 0) floatDamage(tgt, wl);
     if (tgt.wounds.current <= 0) applyZeroWounds(tgt);

@@ -482,7 +482,7 @@ export interface SpellData {
   /**
    * EFFETS du sort — `Flow` ÉDITABLE (système logique unique : `do`/`if`/`test`), source des effets
    * mécaniques appliqués à l'incantation (feuilles EffectOp `{type:'ops', on:'target'|'caster', ops}`).
-   * Édité dans le Compendium (CodexEdit → FlowEditor), exécuté par `runSpellFlow`. SOURCE UNIQUE des
+   * Édité dans le Compendium (CodexEdit → FlowEditor), exécuté par `runCombatFlow`. SOURCE UNIQUE des
    * effets — les MÉTADONNÉES de résolution (durée/ZdE/opposition/invocation/métamorphose) restent dans
    * la spec engine curée (`spellSpecFor`). Import TYPE seul (effacé à la compilation) → la couche data
    * NE dépend PAS d'une valeur de `state` (pureté préservée). Absent = aucun effet mécanique (narratif).

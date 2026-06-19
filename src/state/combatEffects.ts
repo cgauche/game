@@ -341,12 +341,6 @@ export function runFlow(get: Get, set: SetFn, flow: Flow, label = 'Effet'): void
   flush();
 }
 
-/** Exécute le Flow d'un sort contre une CIBLE (et le lanceur pour les feuilles `on:'caster'`), appliquant
- *  chaque feuille EffectOp via `applyOps` avec le contexte d'incantation (caster/sl/durée/Corruption…).
- *  SOURCE UNIQUE d'exécution des effets de sort : tout sort lit ses effets depuis `SpellData.effects`
- *  (Flow ÉDITABLE, donnée app-owned) — le cast flow en extrait le sous-Flow `target`/`caster`
- *  (`spellFlowFor`) et le passe ici. Renvoie le journal. Le `test` interactif du Flow n'a pas cours en
- *  résolution synchrone de sort (la cible jette dans l'op mécanique `test`) → branche RÉUSSITE par défaut. */
 /** Vue d'un combattant pour la Condition `compare` (PB + Taille/Avantage + valeur d'États par nom). */
 const actorView = (c: Combatant | undefined) =>
   c ? { id: c.id, woundsCurrent: c.wounds.current, woundsMax: c.wounds.max, size: SIZE_ORDER[effectiveSize(c.size)],
@@ -354,7 +348,20 @@ const actorView = (c: Combatant | undefined) =>
         groups: c.groups ?? [], talents: (c.talents ?? []).map((t) => ({ id: t.talentId, spec: t.spec })), traits: (c.traits ?? []).map((t) => t.id),
         conditions: Object.fromEntries(c.conditions.map((x) => [x.name, x.value ?? 1])) } : undefined;
 
-export function runSpellFlow(target: Combatant, caster: Combatant | undefined, flow: Flow, ctx: OpsCtx): string[] {
+/**
+ * Exécute un Flow EN COMBAT contre une CIBLE (et le lanceur/porteur pour les feuilles `on:'caster'`) en
+ * accumulant son journal dans un `string[]` RENDU — variante PURE de `runCombatFlow` pour les sites qui
+ * tissent ces lignes INLINE dans leur propre journal à une position précise (effets de manœuvre, traits/
+ * atouts onHit, branches de Test), sans `get`/`set`. Couvre `seq`/`do`/`if` (Condition `compare` lue sur
+ * `target`/`caster` + `sl`/`location`/`woundsDealt`/`attackKind` du contexte d'incantation).
+ *
+ * GARDE-FOU anti-jet-silencieux (calque `flattenFlow:280`) : un nœud `test` LÈVE — un Test EN COMBAT est
+ * interactif/cadence-aware (étape de cascade ou jet inline avec branche honorée), résolu par
+ * `resolveFlowTest`/`runCombatFlow`, JAMAIS en avalant la branche succès. Les sites de ce module sont
+ * PROUVÉS sans nœud `test` au 1ᵉʳ niveau (un trigger `test` top-level est routé en amont par `testRouter`,
+ * une branche de Test n'en contient pas) ; si un `test` enfoui apparaît un jour (Lot 4), l'erreur le rend
+ * détectable au lieu de redevenir un jet silencieux. */
+export function runSpellFlowLines(target: Combatant, caster: Combatant | undefined, flow: Flow, ctx: OpsCtx): string[] {
   const lines: string[] = [];
   const walk = (f: Flow): void => {
     switch (f.kind) {
@@ -372,7 +379,8 @@ export function runSpellFlow(target: Combatant, caster: Combatant | undefined, f
           location: ctx.location, woundsDealt: ctx.woundsDealt, attackKind: ctx.attackKind, target: actorView(target), caster: actorView(caster) })) walk(f.then);
         else if (f.else) walk(f.else);
         break;
-      case 'test': walk(f.success); break;
+      case 'test':
+        throw new Error('runSpellFlowLines: un nœud `test` est cadence-aware — utiliser runCombatFlow/resolveFlowTest.');
     }
   };
   walk(flow);

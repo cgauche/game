@@ -4,7 +4,7 @@ import { recomputeLoadout } from './items';
 import { isMagicWeapon } from './qualities/dispatch';
 import { applyOps } from './ops';
 import { endOfRound } from './conditions';
-import { runSpellFlow } from '../state/combatEffects';
+import { runSpellFlowLines } from '../state/combatEffects';
 import type { Combatant, ItemInstance, Weapon } from './types';
 import type { TriggeredEffect } from '../state/flow';
 
@@ -62,7 +62,7 @@ describe('augmentWeapon — enchantement porté par l’arme, replié dans c.wea
     expect(isMagicWeapon(fighter.weapons[0])).toBe(true);
     // L'onHit est replié sur l'arme (weapon.onHitEffects) ; exécuté par le dispatcher → 2 États sur la cible.
     const victim = dummy({ id: 'v' });
-    runSpellFlow(victim, fighter, fighter.weapons[0].onHitEffects![0].flow, {});
+    runSpellFlowLines(victim, fighter, fighter.weapons[0].onHitEffects![0].flow, {});
     expect(victim.conditions.map((c) => c.name).sort()).toEqual(['en-flammes', 'a-terre'].sort());
   });
 
@@ -101,7 +101,7 @@ describe('augmentWeapon — enchantement porté par l’arme, replié dans c.wea
     }], { label: 'Épée de justice', defaultDurationRounds: 4 });
     // Cible NON-Criminel : le Test est gaté par Groupe → aucun effet, indépendamment du jet.
     const civilian = dummy({ id: 'civ' });
-    runSpellFlow(civilian, c, c.weapons[0].onHitEffects![0].flow, {});
+    runSpellFlowLines(civilian, c, c.weapons[0].onHitEffects![0].flow, {});
     expect(civilian.conditions).toHaveLength(0);
     endOfRound(c); endOfRound(c); endOfRound(c); endOfRound(c);
     expect(heldEnchants(c)).toBeUndefined(); // dissipé avec l'enchantement

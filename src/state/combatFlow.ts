@@ -1241,7 +1241,7 @@ export function applyAttackResult(
   // Effet DÉCLENCHÉ « à la perte de PB en mêlée » authoré (Sang corrosif : 1d10 aux Engagés, BE+PA,
   // min 1) — dispatcher générique (state/triggeredEffects), plus de handler en dur.
   if (res.hit && res.woundsLost && weapon.type === 'melee') {
-    for (const line of fireTriggers(get, target, 'onWoundLoss', { rng: battleRng() })) critLog.push(line);
+    for (const line of fireTriggers(get, target, 'onWoundLoss', { rng: battleRng(), set })) critLog.push(line);
   }
   // Démoniaque (LDB 85 p.339) : à 0 PB, « son âme retourne immédiatement dans les Royaumes du
   // Chaos, ce qui la retire du jeu » — pas de corps, pas d'Inconscient.
@@ -1252,7 +1252,7 @@ export function applyAttackResult(
   // Effet déclenché « à la mise hors de combat d'un adversaire » authoré (Affamé : Test de FM ou
   // festoie — perd Action + Mouvement) — dispatcher générique (state/triggeredEffects).
   if (res.hit && isOutOfAction(target) && !isOutOfAction(attacker)) {
-    for (const line of fireTriggers(get, attacker, 'onKill', { rng: battleRng() })) critLog.push(line);
+    for (const line of fireTriggers(get, attacker, 'onKill', { rng: battleRng(), set })) critLog.push(line);
   }
   // Taille (arme) : sur une touche réussie, endommage de 1 PA l'armure frappée (LDB 63 l.8).
   if (res.hit && hasQuality(weapon, QUALITY_IDS.Taille)) damageArmour(target, res.location ?? 'corps');
@@ -1321,14 +1321,14 @@ export function applyAttackResult(
   if (weapon.type === 'ranged' && isFirearmQuality(weapon)) {
     for (const c of battle.combatants) {
       // Nerveux (effet déclenché onStartled : +3 Brisé) — fired par le dispatcher générique (no-op si absent).
-      if (!isOutOfAction(c)) for (const line of fireTriggers(get, c, 'onStartled', {})) log.push(ev('condition', line, c.id));
+      if (!isOutOfAction(c)) for (const line of fireTriggers(get, c, 'onStartled', { set })) log.push(ev('condition', line, c.id));
     }
   }
   // Effets DÉCLENCHÉS « à la touche » authorés (donnée éditable) : Traits de l'attaquant (Toile, Venin…),
   // Atouts de l'arme (Assommante, Immobilisante…) et Enchantements actifs — agrégés et appliqués par UN
   // dispatcher générique (state/triggeredEffects). `location` (Assommante Tête) et `woundsDealt` (Venin
   // sur PB) alimentent les Conditions Flow de gating.
-  if (res.hit) for (const line of fireTriggers(get, attacker, 'onHit', { victim: target, weapon, woundsDealt: res.woundsLost, location: res.location, attackKind: creatureAttackKind(weapon), rng: battleRng() })) log.push(ev('condition', line, target.id));
+  if (res.hit) for (const line of fireTriggers(get, attacker, 'onHit', { victim: target, weapon, woundsDealt: res.woundsLost, location: res.location, attackKind: creatureAttackKind(weapon), rng: battleRng(), set })) log.push(ev('condition', line, target.id));
   // Déstabilisante (Aux Armes p.89) : après une touche, l'attaquant PEUT dépenser des Avantages pour
   // un Test opposé Force/Athlétisme ; gagné, la cible est mise À Terre. HÉROS → étape de CHOIX de la
   // cascade d'attaque (pushCombatStep, applier 'knockdown') ; IA → déclenché d'office.
@@ -2584,17 +2584,16 @@ export type CastCritChoice = 'critique' | 'puissance' | 'ineluctable';
 
 /**
  * Exécute un sous-Flow de sort EN COMBAT via l'exécuteur UNIQUE `runCombatFlow` (after-aware) puis
- * RAMÈNE ses lignes de journal pour qu'`applyCast` les place INLINE dans son `logLines` — à la place
- * EXACTE qu'occupait le `runSpellFlow(...)` qu'il remplace (ordre du journal de sort préservé).
+ * RAMÈNE ses lignes de journal pour qu'`applyCast` les place INLINE dans son `logLines` (ordre du
+ * journal de sort préservé).
  *
- * Pourquoi ce détour file→drain plutôt que `runSpellFlow` direct : `runCombatFlow` est le seul
- * exécuteur qui porte la CONTINUATION `after` d'un nœud `test` enfoui (un sort à Test interne — Lot 4)
- * suspend alors en APPENDANT une étape `triggeredTest` à la cascade `cast` active (openCastCascade),
- * comme Critique/Maladresse de sort. Il pousse son journal dans la file différée `pendingLogQueue` ;
- * `drainPendingLog` la vide ici et rend les lignes (`.text`) — la file capte AUSSI les lignes des
- * hooks profonds déclenchés par les ops du sort (`onGainCondition` d'un ennemi → Mâchoires), donc
- * elles ne sont plus orphelines. Aucun sort n'ayant ENCORE de nœud Flow `test`, `runCombatFlow`
- * s'exécute de bout en bout (do/if seulement) → comportement INCHANGÉ vs `runSpellFlow`. */
+ * Pourquoi ce détour file→drain : `runCombatFlow` est le seul exécuteur qui porte la CONTINUATION
+ * `after` d'un nœud `test` enfoui — un sort à Test interne (Lot 4) suspend alors en APPENDANT une étape
+ * `triggeredTest` à la cascade `cast` active (openCastCascade), comme Critique/Maladresse de sort. Il
+ * pousse son journal dans la file différée `pendingLogQueue` ; `drainPendingLog` la vide ici et rend les
+ * lignes (`.text`) — la file capte AUSSI les lignes des hooks profonds déclenchés par les ops du sort
+ * (`onGainCondition` d'un ennemi → Mâchoires), donc elles ne sont plus orphelines. Aucun sort n'ayant
+ * ENCORE de nœud Flow `test`, `runCombatFlow` s'exécute de bout en bout (do/if seulement). */
 function runCastFlow(get: Get, set: SetFn, target: Combatant, caster: Combatant, flow: Flow, opsCtx: OpsCtx): string[] {
   runCombatFlow({ mode: 'combat', get, set, target, caster, label: opsCtx.label ?? caster.name, opsCtx }, flow);
   return drainPendingLog(get, set).map((e) => e.text);
@@ -2740,7 +2739,7 @@ export function applyCast(
     applyMissileHit(target, res);
     // Nerveux (effet déclenché onStartled : magie → +3 Brisé) — dispatcher générique (state/triggeredEffects).
     for (const t of [target, ...extraTargets]) {
-      if (res.cast && !isOutOfAction(t)) for (const line of fireTriggers(get, t, 'onStartled', {})) logLines.push(line);
+      if (res.cast && !isOutOfAction(t)) for (const line of fireTriggers(get, t, 'onStartled', { set })) logLines.push(line);
     }
     // Surincantation « Cible » (LDB 47 l.28-31) : le MÊME jet frappe les cibles supplémentaires.
     for (const t2 of extraTargets) {
@@ -2825,7 +2824,7 @@ export function applyCast(
           }),
         );
         // Métamorphose (Forme bestiale, LDB 48) : op `polymorph` du Flow (on:'target') — appliquée
-        // ci-dessus par runSpellFlow → applyOps (expansion charMod différentiel + grantTrait via
+        // ci-dessus par runCastFlow → applyOps (expansion charMod différentiel + grantTrait via
         // engine/polymorph, auto-restitués à l'expiration). Plus de site dédié.
       }
       // POUSSÉE (Jalon 2.6 — « Toutes les créatures à BFM mètres sont repoussées de BFM
@@ -2910,7 +2909,7 @@ export function applyCast(
       if (extras?.opposedOutcome?.[t.id]?.resisted) continue;
       // Riders « à la touche » du Domaine = DONNÉE (`domains.json`), dispatchés comme les autres onHit ;
       // le gating « cible adverse / vivante / résiste par Talent » vit dans les Conditions Flow.
-      logLines.push(...applyTriggeredEffects(get, caster, domainOnHitEffects(spell), 'onHit', { victim: t, rng: battleRng() }));
+      logLines.push(...applyTriggeredEffects(get, caster, domainOnHitEffects(spell), 'onHit', { victim: t, rng: battleRng(), set }));
     }
     // (L'arc de zone des Cieux/Azyr est un `effects` AUTHORÉ du domaine — ciblage `on:{near:'victim'}` +
     //  op `wounds bypassArmour:'metal'` — dispatché par le `domainOnHitEffects` ci-dessus, plus de code dédié.)
@@ -2922,7 +2921,7 @@ export function applyCast(
     // INVOCATION (op `summon` du Flow éditable — Nécromancie, Hurlement du loup, Manifestation de démon,
     // Roi de la Nature…) : la/les créature(s) entrent en combat près du lanceur et se dissipent à
     // l'expiration (state/summonFlow). Effet IMPUR du Flow résolu ici (grille/initiative) ; les feuilles
-    // `on:'caster'` sont par ailleurs jouées par runSpellFlow (où `summon` reste inerte → pas de doublon).
+    // `on:'caster'` sont par ailleurs jouées par runCastFlow (où `summon` reste inerte → pas de doublon).
     const sumRounds = castSpec.durationRounds != null ? resolveFormula(castSpec.durationRounds, caster, battleRng()) : null;
     for (const sOp of spellOps(spell.effects, 'caster')) {
       if (sOp.op !== 'summon') continue;
