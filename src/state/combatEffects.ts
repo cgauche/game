@@ -18,7 +18,7 @@ import { easeDifficulty } from '../engine/tests';
 import { restoreFortune } from '../engine/fortune';
 import { hasTalent } from '../engine/magic';
 import { recomputeLoadout, itemFromGive, giveTrappingLabel } from '../engine/items';
-import { findCreatureById } from '../data';
+import { findCreatureById, refLabel } from '../data';
 import { harvestSizeOf, harvestYield } from '../engine/harvest';
 import { contractDisease } from '../engine/disease';
 import { type HealMode } from '../engine/healing';
@@ -618,7 +618,7 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
         if (!best) break;
         const difficulty = e.difficulty ?? 'intermediaire';
         const target = Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS[difficulty]));
-        get().startExtendedTest({ actorId: best.actor.id, label: e.label, skillLabel: e.skill ?? e.characteristic ?? 'Test', target, targetDR: e.targetDR, flag: e.flag });
+        get().startExtendedTest({ actorId: best.actor.id, label: e.label, skillLabel: e.skill ? refLabel('skills', { id: e.skill }) : (e.characteristic ?? 'Test'), target, targetDR: e.targetDR, flag: e.flag });
         return;
       }
       case 'forceDoor': {

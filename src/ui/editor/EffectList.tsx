@@ -14,6 +14,8 @@ import { spells, etats, trappings as trappingsData, refLabel } from '../../data'
 import { giveTrappingLabel } from '../../engine/items';
 import { FlowEditor } from './FlowEditor';
 import { GameOpEditor, opSummary } from './GameOpEditor';
+import { RefField } from '../compendium/RefField';
+import { CHAR_KEYS, CHAR_LABELS, CharKey, DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
 
 /** Noms des maladies câblées (LDB 20) proposés dans l'éditeur. */
 const DISEASE_NAMES = Object.keys(DISEASE_DEFS);
@@ -608,6 +610,27 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             </div>
           );
         })()}
+        {effect.type === 'extendedTest' && (
+          <>
+            <input placeholder="Libellé (ex. Crocheter la serrure)" value={e.label ?? ''} onChange={(ev) => upd({ label: ev.target.value })} />
+            <div className="tf-row">
+              <RefField cfg={{ ds: 'skills', single: true }} fieldKey="Compétence" value={e.skill} onChange={(v) => upd({ skill: (v as string) || undefined })} nullable />
+              <label className="dr">Carac.
+                <select value={e.characteristic ?? ''} onChange={(ev) => upd({ characteristic: (ev.target.value || undefined) as CharKey | undefined })}>
+                  <option value="">— (de la compétence) —</option>
+                  {CHAR_KEYS.map((c) => <option key={c} value={c}>{CHAR_LABELS[c]}</option>)}
+                </select>
+              </label>
+              <label className="dr">Difficulté
+                <select value={e.difficulty ?? 'intermediaire'} onChange={(ev) => upd({ difficulty: ev.target.value as Difficulty })}>
+                  {(Object.keys(DIFFICULTY_LABELS) as Difficulty[]).map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
+                </select>
+              </label>
+              <label className="dr">DR cible<input type="number" value={e.targetDR ?? 5} onChange={(ev) => upd({ targetDR: Number(ev.target.value) || 0 })} /></label>
+            </div>
+            <input placeholder="flag posé à la réussite (option)" value={e.flag ?? ''} onChange={(ev) => upd({ flag: ev.target.value || undefined })} />
+          </>
+        )}
       </div>
     </div>
   );
