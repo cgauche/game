@@ -1,0 +1,172 @@
+/**
+ * Hooks de DÉBUT DE TOUR ENNEMI (`turnStart`) enregistrés sur la couture `combatHooks`. Module FEUILLE
+ * chargé par effet de bord depuis combatFlow (comme roundHooks/restFlow peuplent leurs registres) : la
+ * séquence de début de tour de l'IA (anciennement 4 appels inline en tête de `runEnemyAI`) vit ICI,
+ * chaque étape étant un hook ordonné par `order`. N'importe RIEN de combatFlow → pas de cycle (les
+ * fonctions déplacées ne dépendent que des modules feuilles `engine/*`, `combatLog`, `combatGeometry`,
+ * `lineOfSight`, `battleRng`). combatFlow ré-exporte ces fonctions (baril) pour les tests existants.
+ *
+ * DÉPENDANCE D'ORDRE RAW (commentée à l'origine dans `runEnemyAI`, encodée ici par `order`) : fin de
+ * Frénésie (10) → Rage (20) → tentative de Frénésie IA (30) AVANT la psychologie (40) — la Frénésie
+ * rend immunisé au test psy, donc elle doit être résolue d'abord. Le golden `turnStart.golden.test.ts`
+ * fige l'ordre + les tirages RNG byte-pour-byte.
+ *
+ * Ces hooks ne tournent que pour l'ENNEMI actif (`runEnemyAI` est enemy-only) ; les fonctions ont en
+ * plus leurs propres gardes `kind`/capacité internes (no-op pour un héros), comportement conservé.
+ */
+import { registerCombatHook } from '../combatHooks';
+import { battleRng } from '../battleRng';
+import { ev, evLines } from '../combatLog';
+import { effectiveChar } from '../../engine/characteristics';
+import { isOutOfAction, addCondition, COND } from '../../engine/conditions';
+import { lineOfSightCover } from '../lineOfSight';
+import { smokeOf } from '../combatGeometry';
+import { groupMatch } from '../../engine/groups';
+import {
+  fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune,
+  resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES,
+} from '../../engine/psychology';
+import { isColdBlooded, hasRage } from '../../engine/traits/dispatch';
+import type { Combatant } from '../../engine/types';
+import type { Get, Set as SetFn } from '../flowTypes';
+
+// ============================================================================================
+// Fonctions de cycle de tour ennemi, déplacées ISO-COMPORTEMENT depuis combatFlow (corps copiés tel
+// quel). combatFlow les ré-exporte via le baril pour ses importeurs/tests (frenzy.test, frenzy-ia.test,
+// psych-ia.test, psych-cible.test). Elles journalisent ELLES-MÊMES (kinds `frenzy`/`fear` via `ev`) —
+// le `sink` du ctx n'est pas requis ici (contrairement à roundHooks).
+// ============================================================================================
+
+/** Fin de Frénésie (LDB 21 l.36) : si plus aucun adversaire vivant en Ligne de Vue, ou si Sonné /
+ *  Inconscient → quitte la Frénésie et gagne **Exténué**. À appeler au début du tour du combattant. */
+export function endFrenzyIfDone(get: Get, set: SetFn, c: Combatant): void {
+  if (!c.frenzied) return;
+  const battle = get().battle;
+  const scene = get().scene;
+  if (!battle || !scene || !c.pos) return;
+  const stunned = c.conditions.some((x) => x.name === COND.sonne || x.name === COND.inconscient);
+  const foeInLoS = battle.combatants.some(
+    (f) => f.kind !== c.kind && !isOutOfAction(f) && f.pos && !lineOfSightCover(scene, c.pos!, f.pos, [], smokeOf(battle)).blocked,
+  );
+  if (stunned || !foeInLoS) {
+    c.frenzied = false;
+    addCondition(c, COND.extenue);
+    set({ battle: { ...get().battle!, log: [...get().battle!.log, ev('frenzy', `${c.name} sort de Frénésie (Exténué).`, c.id)] } });
+  }
+}
+
+/** L'IA tente d'entrer en Frénésie au début de son tour (LDB 21 l.32) : combattant capable, pas déjà
+ *  frenzied ni immunisé à la Psychologie, avec un adversaire vivant en Ligne de Vue → Test de Force
+ *  Mentale ; sur un succès, il entre en Frénésie (gérée ensuite par les drapeaux). Instantané, journalisé. */
+export function aiMaybeFrenzy(get: Get, set: SetFn, enemy: Combatant): void {
+  if (enemy.kind !== 'enemy' || enemy.frenzied || enemy.psychImmune || isOutOfAction(enemy) || !isFrenzyCapable(enemy)) return;
+  const battle = get().battle;
+  const scene = get().scene;
+  if (!battle || !scene || !enemy.pos) return;
+  const foeInLoS = battle.combatants.some(
+    (f) => f.kind !== enemy.kind && !isOutOfAction(f) && f.pos && !lineOfSightCover(scene, enemy.pos!, f.pos, [], smokeOf(battle)).blocked,
+  );
+  if (!foeInLoS) return;
+  if (resolveFrenzyEntry(effectiveChar(enemy, 'FM'), battleRng()).success) {
+    enemy.frenzied = true;
+    set({ battle: { ...get().battle!, log: [...get().battle!.log, ev('frenzy', `${enemy.name} entre en Frénésie !`, enemy.id)] } });
+  }
+}
+
+/** Psychologie d'un ENNEMI (IA) au début de son tour (LDB 21) : teste Peur/Terreur des sources
+ *  adverses en Ligne de Vue. Terreur ratée → Brisé ; Peur → Test étendu de Calme (cumul). Instantané
+ *  et JOURNALISÉ (pas de modale/révélation pour l'IA — le joueur voit l'État Brisé). */
+export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
+  if (enemy.kind !== 'enemy' || isOutOfAction(enemy)) return;
+  const battle = get().battle;
+  const scene = get().scene;
+  if (!battle || !scene || !enemy.pos) return;
+  // Belliqueux (LDB 85 p.338) : immunité psy tant qu'il a plus d'Avantages que son adversaire ENGAGÉ.
+  const engagedFoesAdv = (enemy.engagedWith ?? [])
+    .map((id) => battle.combatants.find((x) => x.id === id))
+    .filter((e): e is Combatant => !!e && e.kind !== enemy.kind && !isOutOfAction(e))
+    .map((e) => e.advantage ?? 0);
+  if (isPsychImmune(enemy, engagedFoesAdv.length ? Math.max(...engagedFoesAdv) : undefined)) return; // Immunité (Psychologie) / Frénésie / Détermination temp / Belliqueux
+  enemy.psychState ??= [];
+  const log: string[] = [];
+  // Nouvelles sources de peur/terreur en Ligne de Vue (non encore rencontrées).
+  for (const foe of battle.combatants) {
+    if (foe.kind === enemy.kind || isOutOfAction(foe) || !foe.pos) continue;
+    if (lineOfSightCover(scene, enemy.pos, foe.pos, [], smokeOf(battle)).blocked) continue;
+    const src = fearSourceFor(enemy, foe);
+    if (!src || enemy.psychState.some((p) => p.sourceId === foe.id)) continue;
+    if (src.kind === 'terreur') {
+      const r = resolveTerreurTest(calmeValue(enemy), src.indice, battleRng(), isColdBlooded(enemy.traits)); // À sang-froid : inverse un raté (LDB 85)
+      if (!r.success) {
+        addCondition(enemy, COND.brise, r.brise);
+        log.push(`${enemy.name} est terrifié par ${foe.name} : ${r.brise} Brisé.`);
+      }
+      enemy.psychState.push({ type: 'peur', sourceId: foe.id, indice: r.success ? 0 : r.devientPeur, calmeDR: 0, lastTestRound: battle.round }); // Terreur → Peur
+    } else {
+      enemy.psychState.push({ type: 'peur', sourceId: foe.id, indice: src.indice, calmeDR: 0, lastTestRound: battle.round });
+      log.push(`${enemy.name} a peur de ${foe.name}.`);
+    }
+  }
+  // Test ÉTENDU de Calme des Peur actives (calmeDR < indice) — UNE fois par Round.
+  for (const p of enemy.psychState) {
+    if (p.type !== 'peur' || (p.calmeDR ?? 0) >= (p.indice ?? 0) || p.lastTestRound === battle.round) continue;
+    const r = resolvePeurTest(calmeValue(enemy), p.indice ?? 1, p.calmeDR ?? 0, battleRng(), isColdBlooded(enemy.traits)); // À sang-froid (LDB 85)
+    p.calmeDR = r.calmeDR;
+    p.lastTestRound = battle.round;
+    if (r.vaincue) log.push(`${enemy.name} surmonte sa peur.`);
+  }
+  // ── Traits psy CIBLÉS (Animosité/Haine/… — LDB 21), instantané pour l'IA ──
+  const visible = battle.combatants.filter((v) => v.id !== enemy.id && v.pos && !isOutOfAction(v) && !lineOfSightCover(scene, enemy.pos!, v.pos, [], smokeOf(battle)).blocked);
+  for (const p of enemy.psychState) {
+    // Re-test (fin de Round) des afflictions ciblées actives, tant qu'un membre du groupe est visible.
+    if (!p.active || !CIBLE_TYPES.has(p.type) || !p.cible || p.lastTestRound === battle.round) continue;
+    if (!visible.some((v) => groupMatch(p.cible!, v.groups ?? []))) continue;
+    p.lastTestRound = battle.round;
+    if (resolveCalmeSimple(calmeValue(enemy), battleRng()).success) { p.active = false; log.push(`${enemy.name} se ressaisit (${p.type}).`); }
+  }
+  const tt = targetedTrigger(enemy, visible); // nouveau Trait ciblé déclenché par un membre du groupe visible
+  if (tt) {
+    const r = resolveCalmeSimple(calmeValue(enemy), battleRng());
+    enemy.psychState.push({ type: tt.type, cible: tt.cible, sourceId: tt.sourceId, active: !r.success, lastTestRound: battle.round });
+    if (!r.success) log.push(`${enemy.name} est en proie à son ${tt.type} (${tt.cible}).`);
+  }
+  if (log.length) set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(log, 'fear', enemy.id)] } });
+}
+
+// ============================================================================================
+// Hooks `turnStart` : la séquence RAW de début de tour ennemi, migrée ISO-COMPORTEMENT depuis la tête
+// de `runEnemyAI`. Les `order` encodent la dépendance d'ordre (Frénésie/Rage AVANT la psychologie).
+// Chaque `run()` appelle au RUNTIME la fonction/le bloc correspondant (pas de souci de cycle à l'import).
+// ============================================================================================
+
+registerCombatHook({
+  id: 'end-frenzy', // Frénésie finie (plus d'ennemi / Sonné) → Exténué, AVANT de tester la psychologie
+  phase: 'turnStart',
+  order: 10,
+  run: ({ get, set, self }) => { if (self) endFrenzyIfDone(get, set, self); },
+});
+registerCombatHook({
+  id: 'rage', // Rage (LDB 85 p.341) : « dépenser tous ses Avantages (minimum 3) pour entrer en Frénésie »
+  phase: 'turnStart',
+  order: 20,
+  run: ({ get, set, battle, self }) => {
+    const enemy = self;
+    if (!enemy || !hasRage(enemy.traits) || enemy.frenzied || (enemy.advantage ?? 0) < 3) return;
+    enemy.advantage = 0;
+    enemy.frenzied = true;
+    battle.log.push(ev('frenzy', `${enemy.name} entre dans une rage dévorante (Frénésie) !`, enemy.id));
+    set({ battle: { ...battle } });
+  },
+});
+registerCombatHook({
+  id: 'ai-maybe-frenzy', // l'IA tente d'entrer en Frénésie (LDB 21 l.32) AVANT le test psy (la Frénésie en rend immunisé)
+  phase: 'turnStart',
+  order: 30,
+  run: ({ get, set, self }) => { if (self) aiMaybeFrenzy(get, set, self); },
+});
+registerCombatHook({
+  id: 'resolve-psych-ai', // Peur/Terreur de l'IA au début de son tour (instantané, journalisé)
+  phase: 'turnStart',
+  order: 40,
+  run: ({ get, set, self }) => { if (self) resolvePsychAI(get, set, self); },
+});
