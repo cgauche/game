@@ -46,6 +46,7 @@ import type { NetState } from './netFlow';
 import type { InterludeState, BankDeposit, PendingActivity } from './interludeFlow';
 export type { PendingActivity } from './interludeFlow';
 import { snapshotSave, saveToSlot, readSlot, importSave, type SaveSlot, type SaveGame } from './saves';
+import { initialFields, resetFields } from './stateFields';
 
 /** Charge une save (Jalon 5) : reset zéro-maintenance (état de création sans les actions — le
  *  JSON round-trip écarte les fonctions) + données de la save par-dessus, écran campagne.
@@ -908,45 +909,10 @@ export const useGame = create<GameState>((set, get) => ({
   battle: null,
   campaignSceneId: null,
   money: { gold: 0, silver: 0, brass: 0 },
-  pendingTest: null,
-  pendingCorruption: null,
-  pendingBargain: null,
-  pendingAppraise: null,
-  pendingAttack: null,
-  actorAim: null,
-  hoverDelta: null,
-  pendingReload: null,
-  pendingStateRecovery: null,
-  pendingDefense: null,
-  pendingRenounce: null,
-  pendingMountTarget: null,
-  pendingDisengage: null,
-  pendingInteract: null,
-  pendingCast: null,
-  pendingCounterspell: null,
-  pendingExtendedTest: null,
-  pendingForceDoor: null,
-  pendingCascade: null,
-  pendingCastOpposition: null,
-  pendingHeal: null,
-  medic: null,
-  pendingRest: null,
-  pendingCleave: null,
-  pendingDualStrike: null,
-  pendingReveals: [],
-  scheduledEffects: [],
-  pendingTrample: null,
-  pendingManeuver: null,
-  pendingRun: null,
-  pendingApproach: null,
-  pendingFocus: null,
-  pendingFrenzy: null,
-  pendingRoundStart: null,
-  pendingFateSave: null,
-  pendingVictory: null,
-  pendingLoot: null,
-  document: null,
-  previousScene: null,
+  // Champs transitoires (pendings, modales de jet, files de révélation, vue éphémère) : valeurs
+  // initiales issues du manifeste UNIQUE (stateFields.ts) — même source que les patchs de reset
+  // (`resetFields`). Forme à plat IDENTIQUE (snapshotSave/coop itèrent les clés, ordre indifférent).
+  ...initialFields(),
 
   setScreen: (s) => set({ screen: s }),
   editingHeroId: null,
@@ -1107,28 +1073,14 @@ export const useGame = create<GameState>((set, get) => ({
       // flags persistants : on conserve l'état narratif et on ajoute les
       // valeurs par défaut de la nouvelle scène pour les clés absentes.
       flags: { ...target.flags, ...s.flags },
+      // Reset des champs transitoires du changement de scène (manifeste UNIQUE, scope 'scene') :
+      // tous les pending* d'exploration/combat + `document`. `dialogue`/`battle` (état coeur) et
+      // `pendingReveals` (calculé, ≠ init) restent explicites ci-dessous.
+      ...resetFields('scene'),
       dialogue: null,
       battle: null,
-      pendingTest: null,
-      pendingCorruption: null,
-      pendingAttack: null,
-      pendingReload: null,
-      pendingStateRecovery: null,
-      pendingDefense: null,
-      pendingDisengage: null,
-      pendingInteract: null,
-      pendingCleave: null,
-      pendingDualStrike: null,
       // N1 : entrée de zone (transition) en MODALE — reveal sceneEntry skippable (Journal = archive).
       pendingReveals: target.startMessage ? [{ kind: 'sceneEntry' as const, title: target.nom, lines: [target.startMessage] }] : [],
-      pendingTrample: null,
-      pendingManeuver: null,
-      pendingRun: null,
-      pendingApproach: null,
-      pendingFocus: null,
-      pendingFrenzy: null,
-      pendingCascade: null,
-      document: null,
       campaignSceneId: target.id,
       journal: target.startMessage ? [...s.journal.slice(-40), target.startMessage] : s.journal,
     }));
@@ -1365,7 +1317,7 @@ export const useGame = create<GameState>((set, get) => ({
     // Ouverture = pause de début du Round 1 (pendingRoundStart) : champ visible, ordre d'Initiative dans la
     // frise, pré-emption « agir en premier » (Chance, #12a) — IA gelée. Un seul bouton « Commencer le combat »
     // (pas de phase « plan d'ensemble » séparée : c'était redondant avec la pause de Round).
-    set({ battle, mode: 'battle', pendingRoundStart: { round: battle.round }, pendingVictory: null, pendingAttack: null, pendingReload: null, pendingStateRecovery: null, pendingDefense: null, pendingMountTarget: null, pendingDisengage: null, pendingCast: null, pendingCounterspell: null, actorAim: null, pendingHeal: null, pendingCleave: null, pendingReveals: [], pendingTrample: null, pendingManeuver: null, pendingRun: null, pendingFocus: null, pendingFrenzy: null, pendingCascade: null });
+    set({ ...resetFields('combatStart'), battle, mode: 'battle', pendingRoundStart: { round: battle.round } });
     get().faceAtCombatStart();
     bus.emit(EVT.SCENE_DIRTY);
   },
