@@ -12,6 +12,7 @@ import { Formula, GameOp } from '../../engine/ops';
 import { CHAR_LABELS, CharKey, type Difficulty, DIFFICULTY_LABELS } from '../../engine/types';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
 import { etats, talentConcrete, findTalent, qualityRefLabel, refLabel } from '../../data';
+import { RefField } from '../compendium/RefField';
 import { slugId } from '../../data/slug';
 import { splitLabel } from '../../engine/statEntry';
 import { giveTrappingLabel } from '../../engine/items';
@@ -394,7 +395,7 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {op.op === 'skillMod' && (
           <>
-            <input placeholder="Compétence (ex. Esquive, Pistage)" value={o.skill ?? ''} onChange={(e) => upd({ skill: e.target.value })} />
+            <RefField cfg={{ ds: 'skills', single: true }} fieldKey="Compétence" value={o.skill} onChange={(v) => upd({ skill: (v as string) ?? '' })} />
             <label className="dr">Modif.<input type="number" value={o.mod ?? 0} onChange={(e) => upd({ mod: Number(e.target.value) || 0 })} /></label>
           </>
         )}
@@ -467,7 +468,7 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {op.op === 'test' && (
           <>
-            <input placeholder="Compétence (ex. Résistance) — option" value={o.skill ?? ''} onChange={(e) => upd({ skill: e.target.value || undefined })} />
+            <RefField cfg={{ ds: 'skills', single: true }} fieldKey="Compétence (option)" value={o.skill} onChange={(v) => upd({ skill: (v as string) || undefined })} nullable />
             <label className="dr">Carac.
               <select value={o.characteristic ?? ''} onChange={(e) => upd({ characteristic: (e.target.value || undefined) as CharKey | undefined })}>
                 <option value="">— (de la compétence) —</option>
@@ -499,11 +500,11 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
             <label className="dr">Attaquant
               <select value={o.attacker} onChange={(e) => upd({ attacker: e.target.value as CharKey })}>{CHARS.map((c) => <option key={c} value={c}>{CHAR_LABELS[c]}</option>)}</select>
             </label>
-            <input placeholder="Compétence attaquant — option" value={o.attackerSkill ?? ''} onChange={(e) => upd({ attackerSkill: e.target.value || undefined })} />
+            <RefField cfg={{ ds: 'skills', single: true }} fieldKey="Compétence attaquant" value={o.attackerSkill} onChange={(v) => upd({ attackerSkill: (v as string) || undefined })} nullable />
             <label className="dr">Défenseur
               <select value={o.defender} onChange={(e) => upd({ defender: e.target.value as CharKey })}>{CHARS.map((c) => <option key={c} value={c}>{CHAR_LABELS[c]}</option>)}</select>
             </label>
-            <input placeholder="Compétence défenseur — option" value={o.defenderSkill ?? ''} onChange={(e) => upd({ defenderSkill: e.target.value || undefined })} />
+            <RefField cfg={{ ds: 'skills', single: true }} fieldKey="Compétence défenseur" value={o.defenderSkill} onChange={(v) => upd({ defenderSkill: (v as string) || undefined })} nullable />
             <div className="eff-sub"><div className="mini-title">Si l'attaquant l'emporte</div><GameOpEditor ops={o.onWin ?? []} onChange={(ops) => upd({ onWin: ops })} /></div>
             <div className="eff-sub"><div className="mini-title">Sinon (option)</div><GameOpEditor ops={o.onLose ?? []} onChange={(ops) => upd({ onLose: ops.length ? ops : undefined })} /></div>
           </>

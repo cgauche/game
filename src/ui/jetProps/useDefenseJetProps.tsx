@@ -2,6 +2,7 @@ import type { ComponentProps } from 'react';
 import { useGame } from '../../state/store';
 import { FLOWS } from '../../state/rollFlows';
 import { defenseValue, defenseModifiers, DEFENSE_LABEL, FREE_ATTACK_LABEL } from '../../engine/combat';
+import { isUnarmed } from '../../engine/items';
 import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
 import { RollFlowShell } from '../RollFlowShell';
@@ -42,7 +43,7 @@ export function useDefenseJetProps(): ComponentProps<typeof RollFlowShell> | nul
   const res = pd.result;
   const rerollable = !!res && canReroll(!pd.def?.success, !!pd.rerolled);
   // Armes pouvant parer (hors Mains nues) ; arme de parade choisie (défaut = main principale).
-  const parryPickable = defender.weapons.filter((w) => w.name !== 'Mains nues' && !!w.uid);
+  const parryPickable = defender.weapons.filter((w) => !isUnarmed(w) && !!w.uid);
   const chosenParry = pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : defender.weapons[0];
   // MA ligne pré-remplie : valeur + mods de la défense CHOISIE (recalculés à chaque changement).
   const myMods = defenseModifiers(defender, pd.mode, 0, pd.mode === 'parade' ? chosenParry : undefined);

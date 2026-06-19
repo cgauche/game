@@ -61,6 +61,8 @@ export interface WeaponSpec {
   /** Nature d'attaque naturelle STAMPÉE (morsure/cornes/caudale/tentacules/pietinement…) — pour la
    *  pose/anim et la Condition `attackKind` ; le constructeur la connaît. Cf. `Weapon.attackKind`. */
   attackKind?: string;
+  /** id de trapping source d'une arme built-in (Mains nues) — porté sur `Weapon.builtinId`. */
+  builtinId?: string;
 }
 
 function specUid(uid: WeaponSpec['uid']): string {
@@ -87,8 +89,13 @@ export function buildWeapon(spec: WeaponSpec): Weapon {
   if (spec.skin !== undefined) w.skin = spec.skin;
   if (spec.form !== undefined) w.form = spec.form;
   if (spec.attackKind !== undefined) w.attackKind = spec.attackKind;
+  if (spec.builtinId !== undefined) w.builtinId = spec.builtinId;
   return w;
 }
+
+/** Arme « Mains nues » canonique reconnue par son marqueur STABLE (`builtinId`), pas par son nom
+ *  (multilangue-safe). Utilisé pour exclure les Mains nues des armes « wielded » / choisissables. */
+export const isUnarmed = (w: Weapon): boolean => w.builtinId === 'mains-nues';
 
 /** Variante ItemInstance (objet d'inventaire) : RÉUTILISE `buildWeapon` pour le cœur (Dégâts, uid,
  *  qualities copiées, défauts) puis ne fait que la bascule `Weapon`→`ItemInstance` (`type`→`kind` + les
@@ -265,8 +272,8 @@ export function unarmedWeapon(): Weapon {
   if (!_unarmed) {
     const it = itemFromTrappingById('mains-nues');
     _unarmed = it
-      ? buildWeapon({ name: it.name, damage: { literal: it.damage ?? '+BF+0' }, reach: it.reach, qualities: it.qualities, subType: it.subType })
-      : buildWeapon({ name: 'Mains nues', damage: { literal: '+BF+0' }, reach: 'Personnelle', qualities: [QUALITY_IDS.Inoffensive], subType: 'bagarre' });
+      ? buildWeapon({ name: it.name, damage: { literal: it.damage ?? '+BF+0' }, reach: it.reach, qualities: it.qualities, subType: it.subType, builtinId: 'mains-nues' })
+      : buildWeapon({ name: 'Mains nues', damage: { literal: '+BF+0' }, reach: 'Personnelle', qualities: [QUALITY_IDS.Inoffensive], subType: 'bagarre', builtinId: 'mains-nues' });
   }
   return { ..._unarmed, hand: 'main' };
 }

@@ -23,7 +23,7 @@ describe('compareEquip (accordéon « équiper » du marchand)', () => {
   });
 
   it('mêlée sans arme tenue (mains nues seules) : compare aux mains nues, pas de currentName', () => {
-    const h = hero({ weapons: [{ uid: 'mn', name: 'Mains nues', type: 'melee', damage: '+BF+0', qualities: [] }] });
+    const h = hero({ weapons: [{ uid: 'mn', name: 'Mains nues', type: 'melee', damage: '+BF+0', qualities: [], builtinId: 'mains-nues' }] });
     const c = compareEquip(it_({ name: 'Dague', damage: '+BF', reach: 'Très courte' }), h);
     expect(c.currentName).toBeNull(); // les Mains nues ne comptent pas comme arme « actuelle »
     expect(c.rows.find((r) => r.label === 'Dégâts')!.trend).toBe('up'); // +BF (0) > +BF-2 (-2)

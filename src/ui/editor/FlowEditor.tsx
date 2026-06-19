@@ -52,7 +52,7 @@ function TestFields({ test, onChange }: { test: FlowTest; onChange: (t: FlowTest
   return (
     <>
       <div className="tf-row">
-        <input placeholder="Compétence (ex. Crochetage)" value={test.skill ?? ''} onChange={(e) => upd({ skill: e.target.value })} />
+        <RefField cfg={{ ds: 'skills', single: true }} fieldKey="Compétence" value={test.skill} onChange={(v) => upd({ skill: (v as string) || undefined })} nullable />
         <select value={test.difficulty ?? 'intermediaire'} onChange={(e) => upd({ difficulty: e.target.value as Difficulty })}>
           {(Object.keys(DIFFICULTY_LABELS) as Difficulty[]).map((d) => (
             <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>

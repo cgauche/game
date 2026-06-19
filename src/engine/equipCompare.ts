@@ -6,7 +6,7 @@
  * Protection des boucliers via l'Atout « Protectrice N »). Présentation pure → testable hors UI.
  */
 import type { Combatant, ItemInstance, HitLocation } from './types';
-import { damageScore } from './items';
+import { damageScore, isUnarmed } from './items';
 import { QUALITY_IDS } from './qualities/ids';
 import { indiceOf } from './qualities/normalize';
 
@@ -57,7 +57,7 @@ export function compareEquip(item: ItemInstance, hero: Combatant): EquipComparis
   const items = hero.items ?? [];
   // « Actuellement équipé » pour une ARME = l'arme tenue dans le set actif (les Weapon dérivés `hero.weapons`),
   // plus `it.equipped` (devenu le seul seed du loadout par défaut). L'armure, elle, reste pilotée par `equipped`.
-  const wielded = (hero.weapons ?? []).filter((w) => w.name !== 'Mains nues');
+  const wielded = (hero.weapons ?? []).filter((w) => !isUnarmed(w));
 
   if (isShieldItem(item)) {
     const cur = wielded.find((w) => isShieldItem(w) && w.uid !== item.uid);

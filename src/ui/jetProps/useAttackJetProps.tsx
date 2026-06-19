@@ -3,6 +3,7 @@ import { useGame, movementRemaining } from '../../state/store';
 import { FLOWS } from '../../state/rollFlows';
 import { HitLocation, HIT_LOCATION_LABELS } from '../../engine/types';
 import { combatValue, crowdMod, bestRangedDefense, DEFENSE_LABEL, defenseModifiers } from '../../engine/combat';
+import { isUnarmed } from '../../engine/items';
 import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
 import { combatDistance } from '../../state/footprint';
@@ -48,7 +49,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollFlowShell> | null
   if (!attacker || !target) return null;
   const weapon = firedWeapon(attacker, target, pa.weaponUid); // arme choisie (ou auto, mêlée au contact / distance) + munition
   // Armes choisissables du loadout actif (hors Mains nues) : ≥2 → sélecteur d'arme d'attaque (main secondaire -20).
-  const pickable = attacker.weapons.filter((w) => w.name !== 'Mains nues' && !!w.uid);
+  const pickable = attacker.weapons.filter((w) => !isUnarmed(w) && !!w.uid);
   const res = pa.result;
   // Maniement de deux armes (LDB 10 l.638) : proposé seulement à un héros qui a le talent ET tient 2 armes de
   // MÊLÉE à 1 main, sur l'attaque-ACTION (jamais une frappe gratuite/enchaînée — ni cleave, ni 2ᵉ frappe).

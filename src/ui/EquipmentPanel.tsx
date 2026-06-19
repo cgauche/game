@@ -1,6 +1,6 @@
 import { useGame } from '../state/store';
 import type { Combatant, HitLocation, ItemInstance } from '../engine/types';
-import { armourLayer, isCapeItem, weaponHands, compatibleAmmo, WEAPON_SET_NAMES, type ArmourLayer } from '../engine/items';
+import { armourLayer, isCapeItem, weaponHands, compatibleAmmo, WEAPON_SET_NAMES, isUnarmed, type ArmourLayer } from '../engine/items';
 import { RigSprite } from '../gameIso/rig/composeRig';
 import { DEFS } from '../gameIso/sprites';
 import { defaultAppearance } from '../gameIso/rig/appearance';
@@ -144,7 +144,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
   const appearance = combatantAppearance(hero.appearance ?? defaultAppearance(hero), hero);
   const equip = equipFromCombatant(hero);
 
-  const activeWeapons = hero.weapons.filter((w) => w.name !== 'Mains nues');
+  const activeWeapons = hero.weapons.filter((w) => !isUnarmed(w));
 
   /** `fallback` popover d'une arme (stats + qualités) — sert l'invoquée/enchantée hors catalogue. */
   const weaponFallback = (it?: ItemInstance, conjured?: boolean) =>

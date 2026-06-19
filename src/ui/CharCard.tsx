@@ -1,5 +1,6 @@
 import type { KeyboardEvent } from 'react';
 import { Combatant, CHAR_KEYS, CharKey, CHAR_LABELS } from '../engine/types';
+import { isUnarmed } from '../engine/items';
 import { PortraitTile } from './PortraitTile';
 import { speciesSingular, findSpeciesById, findCareerById } from '../data';
 import { CodexRef } from './compendium/CodexRef';
@@ -21,7 +22,7 @@ const SHORT: Record<CharKey, string> = {
 
 export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?: boolean; onOpen?: () => void }) {
   // F4 : aperçu d'équipement sur la mini-carte — armes en main + PA du corps.
-  const arms = hero.weapons.filter((w) => w.name !== 'Mains nues');
+  const arms = hero.weapons.filter((w) => !isUnarmed(w));
   const bodyPA = hero.armour?.corps ?? 0;
   return (
     <div className={`char-card panel ${compact ? 'compact' : ''}`}>

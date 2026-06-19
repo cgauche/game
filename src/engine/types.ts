@@ -119,6 +119,9 @@ export interface Weapon {
   hand?: 'main' | 'off';
   /** uid de l'ItemInstance source (loadout) — pour matcher un choix d'arme. Absent : Mains nues/Crochet. */
   uid?: string;
+  /** id de trapping SOURCE d'une arme « built-in » (Mains nues = 'mains-nues') — marqueur STABLE,
+   *  multilangue (≠ test par nom `w.name === 'Mains nues'`). Absent pour les armes manufacturées. */
+  builtinId?: string;
   /** Rechargement : Indice DR à cumuler (Test étendu de Projectiles) ; 0 = aucun, tire chaque Round. */
   reload?: number;
   /** Ignorance de PA de l'arme (Épée de justice → 'all', etc.) — fusionnée par `enchantedWeapon`,
