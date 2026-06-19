@@ -2,7 +2,7 @@ import { useGame } from './store';
 import { checkBattleOver } from './combatFlow';
 import { bus, EVT } from './bus';
 import { ev } from './combatLog';
-import { isOutOfAction } from '../engine/conditions';
+import { isOutOfAction, addCondition } from '../engine/conditions';
 import { formatImperial } from '../engine/clock';
 import { testScenarios } from '../scenes/test-scenarios';
 import { hoverTargeting } from './targeting';
@@ -394,6 +394,31 @@ export function buildApi() {
     flag: (id: string, value = true) => {
       useGame.setState((s) => ({ flags: { ...s.flags, [id]: value } }));
       return g().flags;
+    },
+
+    /** RECETTE : octroie un Talent à un combattant (par id) — ex. Mâchoires d'acier pour tester son trigger. */
+    talent: (id: string, talentId: string, times = 1) => {
+      const grant = (c: Combatant): Combatant =>
+        c.id === id ? { ...c, talents: [...(c.talents ?? []), { talentId, times }] } : c;
+      useGame.setState((s) => ({
+        party: s.party.map(grant),
+        battle: s.battle ? { ...s.battle, combatants: s.battle.combatants.map(grant) } : s.battle,
+      }));
+      return `✅ ${id} → ${talentId}`;
+    },
+
+    /** RECETTE : applique un État à un combattant (par id) via le VRAI addCondition → déclenche les
+     *  triggers onGainCondition (Mâchoires d'acier ouvre alors sa modale de Résistance influençable). */
+    condition: (id: string, name = 'sonne', n = 1) => {
+      const s = g();
+      const c = s.battle?.combatants.find((x) => x.id === id) ?? s.party.find((x) => x.id === id);
+      if (!c) return `❌ combattant ${id} introuvable`;
+      addCondition(c, name, n);
+      useGame.setState((st) => ({
+        party: [...st.party],
+        battle: st.battle ? { ...st.battle, combatants: [...st.battle.combatants] } : st.battle,
+      }));
+      return `✅ ${c.name} : +${n} ${name}`;
     },
 
     /** RECETTE : saute vers une scène du projet/de la campagne par id (machinerie de transition). */
