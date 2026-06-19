@@ -11,11 +11,13 @@ import { buildAdvancementView } from '../state/advancement';
 import { hasHealSkill, isHealable } from '../engine/healing';
 import { itemUse } from '../engine/consumables';
 import { isMagicMissile, isArcaneSpell } from '../engine/magic';
+import { rule } from '../engine/policy';
+import { canAfford, toMoney, formatMoney } from '../engine/money';
 import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine/grimoire';
 import { spellSupport } from '../engine/spellspec';
 import { spellSpecFor } from '../data/spellspecs';
 import { spellEffectOps } from '../state/flow';
-import { careers, findSpellById, findStar, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel, findSpeciesById, findCareerById, findClassById, talentConcrete } from '../data';
+import { careers, findSpellById, findStarById, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel, findSpeciesById, findCareerById, findClassById, talentConcrete } from '../data';
 import { formatTrait } from '../engine/traits/dispatch';
 import { CodexRef } from './compendium/CodexRef';
 import { TalentChip } from './EntityChip';
@@ -152,15 +154,16 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
                 <CodexRef category="races" label={findSpeciesById(hero.species)?.label ?? ''}>{speciesSingular(findSpeciesById(hero.species)?.label ?? hero.species)}</CodexRef> · <CodexRef category="careers" label={findCareerById(hero.career)?.label ?? ''}>{findCareerById(hero.career)?.label ?? hero.career}</CodexRef>
                 {hero.careerLevel ? ` (niv. ${hero.careerLevel})` : ''}
               </span>
-              {hero.star && (
-                <span className="char-sub star-sub">
-                  🌟 <CodexRef category="stars" label={hero.star}>{hero.star}</CodexRef>
-                  {(() => {
-                    const s = findStar(hero.star);
-                    return s?.signe ? ` — ${s.signe}` : '';
-                  })()}
-                </span>
-              )}
+              {hero.star && (() => {
+                const s = findStarById(hero.star); // `hero.star` = id STABLE → libellé à l'affichage
+                const label = s?.label ?? hero.star;
+                return (
+                  <span className="char-sub star-sub">
+                    🌟 <CodexRef category="stars" label={label}>{label}</CodexRef>
+                    {s?.signe ? ` — ${s.signe}` : ''}
+                  </span>
+                );
+              })()}
             </div>
             <FicheBody hero={hero} section="profil" />
           </aside>
@@ -194,6 +197,9 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
   const party = useGame((s) => s.party);
   const oocCastSpell = useGame((s) => s.oocCastSpell);
   const oocFocusSpell = useGame((s) => s.oocFocusSpell);
+  const buySpellComponent = useGame((s) => s.buySpellComponent);
+  const removeSpellComponent = useGame((s) => s.removeSpellComponent);
+  const money = useGame((s) => s.money);
   const [targetId, setTargetId] = useState(hero.id);
   const spells = (hero.spells ?? [])
     .map((x) => findSpellById(x)) // hero.spells = ids de sort (runtime)
@@ -283,6 +289,52 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
           </div>
         ))}
       </div>
+      {rule('magic-composant') === true && (() => {
+        // Composants d'incantation (LDB 46 l.158-163) : achetés PAR Sort d'Arcane/Domaine connu,
+        // coût = NI pistoles d'argent ; absorbent le contrecoup (Imparfaite Majeure→Mineure,
+        // Mineure→annulée) puis sont consumés à l'incantation. Visible seulement règle ON.
+        const arcane = spells.filter((sp) => isArcaneSpell(sp) && sp.cn != null);
+        if (!arcane.length) return null;
+        const owned = hero.componentSpells ?? [];
+        const countOf = (id: string) => owned.filter((x) => x === id).length;
+        return (
+          <div className="spell-components">
+            <span className="mini-title" title="Sacrifié à l'incantation pour dégrader une Incantation Imparfaite (Majeure → Mineure, Mineure → aucun effet) — LDB 46 l.158-163. Coût = NI pistoles d'argent.">
+              🜂 Composants d'incantation
+            </span>
+            <div className="spell-list">
+              {arcane.map((sp) => {
+                const n = countOf(sp.id);
+                const cost = toMoney({ silver: sp.cn! });
+                const afford = canAfford(money, cost);
+                return (
+                  <div className="spell-row" key={`comp-${sp.id}`}>
+                    <span className="spell-name">
+                      <CodexRef category="spells" label={sp.label}>{sp.label}</CodexRef>
+                      {n > 0 ? <span className="muted"> · ×{n}</span> : null}
+                    </span>
+                    <span className="spell-actions">
+                      {n > 0 && (
+                        <button className="btn small" title="Jeter un composant (pas de remboursement)" onClick={() => removeSpellComponent(hero.id, sp.id)}>
+                          −
+                        </button>
+                      )}
+                      <button
+                        className="btn small"
+                        disabled={!afford}
+                        title={afford ? `Acheter un composant pour ${sp.label} (${formatMoney(cost)})` : `Bourse insuffisante (${formatMoney(cost)})`}
+                        onClick={() => buySpellComponent(hero.id, sp.id)}
+                      >
+                        + {formatMoney(cost)}
+                      </button>
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

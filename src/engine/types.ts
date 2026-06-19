@@ -138,6 +138,11 @@ export interface Weapon {
   /** Effets « à la touche » repliés depuis l'enchantement de l'arme (op `augmentWeapon` / arme
    *  invoquée) par `recomputeLoadout` → lus par `effectsOf` (state/triggeredEffects). */
   onHitEffects?: import('../state/flow').TriggeredEffect[];
+  /** Nature d'attaque NATURELLE (morsure/cornes/caudale/tentacules/pietinement…) STAMPÉE à la
+   *  construction de l'arme (depuis le `kind` de la manœuvre/attaque gratuite qui la connaît). Clé de
+   *  POSE (même domaine que le retour de `creatureAttackKind`) lue pour l'anim et la Condition Flow
+   *  `attackKind` — ≠ name-parse (multilangue-safe). Absent = arme manufacturée (pose générique). */
+  attackKind?: string;
 }
 
 /** Enchantement d'ARME (op `augmentWeapon` — B. de Droiture, Marteau ardent, Épée de justice ;
@@ -425,6 +430,16 @@ export interface ItemInstance {
    *  rareté × dangerosité × Taille × Conservation déjà nettes. Revendu en DIRECT (sans le taux de
    *  revente catalogue), cf. `merchantFlow.sellGain`. Absent pour un objet ordinaire (prix = catalogue). */
   price?: import('./money').Money;
+  // ── Marqueurs FONCTIONNELS de catégorie (propagés du `TrappingData` par itemFromTrappingById) —
+  //    les règles détectent par flag STABLE, plus par nom FR (multilangue-safe). Cf. data/index.ts.
+  /** Protège des intempéries (Cape/Manteau) — Exposition au froid (exposure.ts) + cape de fiche (items.ts). */
+  weatherProtection?: boolean;
+  /** Abri de campement (Tente) — atténue l'Exposition d'une nuit dehors (exposure.ts). */
+  isShelter?: boolean;
+  /** Ration de voyage — consommée par l'entretien de Faim (provisions.ts). */
+  isRations?: boolean;
+  /** Grimoire / livre de Sorts — lecture d'un Sort non mémorisé (grimoire.ts). */
+  isGrimoire?: boolean;
 }
 
 /** Set d'armes nommé (les 2 mains). `off` ignoré si l'arme `main` est à 2 mains. uids → ItemInstance. */
@@ -520,6 +535,12 @@ export interface Combatant {
   activeLoadoutId?: string;
   /** Sorts/prières connus (libellés référençant src/data/spells.json). */
   spells?: string[];
+  /** Composants d'incantation possédés (LDB 46 l.158-163) — `id` des Sorts d'Arcane/Domaine pour
+   *  lesquels le héros a acheté un composant (coût = NI pistoles d'argent, « acheté pour un Sort
+   *  spécifique »). Sous la règle optionnelle `magic-composant`, le composant absorbe les pires
+   *  effets du contrecoup : Imparfaite Majeure → Mineure, Mineure → annulée ; consommé à l'incantation
+   *  (succès OU échec, Imparfaite OU PAS). Persisté entre combats. */
+  componentSpells?: string[];
   /** Points de Péché (LDB 40 l.30-36) — Bienheureux ayant violé les commandements de
    *  son dieu. Octroyés par le MJ/l'auteur (Effet `giveSin`), jamais inventés ; pas de
    *  maximum ; chaque jet de Colère des dieux en retire 1 (l.53). Persisté entre combats. */
@@ -541,7 +562,8 @@ export interface Combatant {
   resilience?: number;
   resolve?: number;
   motivation?: string;
-  /** Signe astral (« Naissance sous les Étoiles », ADE2) — libellé du signe ; flavor. */
+  /** Signe astral (« Naissance sous les Étoiles », ADE2) — `id` STABLE du signe (≠ libellé —
+   *  multilangue-safe) ; résolu à l'affichage par `findStarById`. */
   star?: string;
   /** Détails supplémentaires (âge, taille, yeux, cheveux, ambitions — LDB 05 étape 6). */
   details?: HeroDetails;

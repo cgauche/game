@@ -15,7 +15,7 @@ import {
   applyEffects, applyEffectsLoot, runFlow, assignGearAt, harvestVictoryCreature, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, attackWardGate,
   effectiveSpellOf, finishPlayerAction,
-  applyMiscast, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven,
+  applyMiscast, useSpellComponent, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven,
   attackerFumbled, defenderFumbled, applyOups,
   autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates,
   aiCreatureFreeAttacks, aiFrenzyAttack, resolveTalentFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan,
@@ -460,6 +460,10 @@ export interface GameState {
   designateCareerSlot: (heroId: string, slotKey: string, label: string) => void;
   /** Apprentissage/mémorisation d'un sort (LDB 46/10) — coût PX via engine/grimoire. */
   buySpell: (heroId: string, label: string) => void;
+  /** Achète un composant d'incantation pour un Sort d'Arcane/Domaine connu (LDB 46 l.163 — NI pistoles). */
+  buySpellComponent: (heroId: string, spellId: string) => void;
+  /** Retire un composant d'incantation possédé pour un Sort (sans remboursement). */
+  removeSpellComponent: (heroId: string, spellId: string) => void;
   /** Entraîne une prothèse portée par dépense de PX (Fausse jambe → réapprendre l'Esquive, 200 PX, LDB 73). */
   trainProsthesis: (heroId: string, uid: string) => void;
   /** Change de Carrière/Niveau (validation LDB 07 l.137 / LDB 08 : complétion, +100 hors Classe). */
@@ -1139,6 +1143,8 @@ export const useGame = create<GameState>((set, get) => ({
       }
     }
   },
+  buySpellComponent: (heroId, spellId) => partyFlow.buySpellComponent(get, set, heroId, spellId),
+  removeSpellComponent: (heroId, spellId) => partyFlow.removeSpellComponent(get, set, heroId, spellId),
   trainProsthesis: (heroId, uid) => partyFlow.trainProsthesis(get, set, heroId, uid),
   changeCareer: (heroId, newCareer, newLevel) => partyFlow.changeCareer(get, set, heroId, newCareer, newLevel),
   creditPartyMoney: (m, note) => partyFlow.creditPartyMoney(get, set, m, note),
@@ -2043,19 +2049,22 @@ export const useGame = create<GameState>((set, get) => ({
     caster.focus = { spell: pf.spellId, dr: prev + res.dr };
     const ni = spell.cn ?? 0;
     const logLines = [res.log];
+    // Composant d'incantation (LDB 46 l.158-163) : la Focalisation est une incantation en cours —
+    // un composant adapté au Sort est consumé (si un contrecoup survient) et dégrade l'Imparfaite.
+    const compUsed = (res.isCritical || res.isFumble) && useSpellComponent(caster, pf.spellId, logLines);
     // Focalisation CRITIQUE (LDB 46 l.185-186) : le sort est lançable au prochain Round
     // QUEL QUE SOIT le DR accumulé — mais tant de magie si vite concentrée provoque un
     // contrecoup : Imparfaite Mineure, sauf Talent Harmonisation aethyrique.
     if (res.isCritical) {
       caster.focus = { spell: pf.spellId, dr: Math.max(caster.focus.dr, ni) };
       logLines.push(`${caster.name} — Focalisation CRITIQUE : ${spell.label} est lançable au prochain Round (NI 0) !`);
-      if (!hasTalent(caster, 'Harmonisation aethyrique')) logLines.push(...applyMiscast(get, set, caster, 'mineure'));
+      if (!hasTalent(caster, 'Harmonisation aethyrique')) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: compUsed }));
       else logLines.push(`Harmonisation aethyrique : le contrecoup est maîtrisé (pas d'Imparfaite).`);
     }
     logLines.push(caster.focus.dr >= ni ? `${caster.name} a focalisé assez de magie pour lancer ${spell.label} (NI 0).` : `Focalisation : ${caster.focus.dr}/${ni} DR.`);
     // Maladresse en Focalisation → Incantation Imparfaite Majeure (LDB l.190-191 :
     // tout double OU tout résultat en 0 au-delà de la Compétence).
-    if (res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'majeure'));
+    if (res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'majeure', { componentDowngrade: compUsed }));
     finishPlayerAction(get, set, logLines, 'focus'); // sortie commune combat / hors combat
   },
   focusCancel: () => set({ pendingFocus: null }),
@@ -3284,8 +3293,10 @@ export const useGame = create<GameState>((set, get) => ({
     // Maladresse du DÉFENSEUR héros (sa défense ratée sur un double, LDB 14 l.48-51) → étape Oups! de SA
     // cascade combat (donnée SUR l'étape — plus de `pendingFumble` à orpheliner), SANS déclencher la
     // Frénésie de l'attaquant (comme avant le fold).
-    if (defender && defender.kind === 'hero' && defenderFumbled(pd.result, pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : defender.weapons[0]) && !isOutOfAction(defender)) {
-      pushCombatStep(set, { id: `cons-fumble-${defender.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: defender.id, fumble: { weapon: defender.weapons[0], result: null } });
+    const parryWeapon = defender ? (pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : undefined) ?? defender.weapons[0] : undefined;
+    if (defender && defender.kind === 'hero' && defenderFumbled(pd.result, parryWeapon) && !isOutOfAction(defender)) {
+      // L'Oups ! porte sur l'ARME DE PARADE réellement utilisée (dégât d'arme / quelle arme casse), pas weapons[0].
+      pushCombatStep(set, { id: `cons-fumble-${defender.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: defender.id, fumble: { weapon: parryWeapon!, result: null } });
       // Positionne le curseur défense → Maladresse quand la défense est l'étape courante (sinon
       // `pushCombatStep` a créé une cascade neuve déjà au curseur 0 sur la Maladresse).
       const casc = get().pendingCascade;

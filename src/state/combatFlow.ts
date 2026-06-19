@@ -51,7 +51,7 @@ import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, occupiesTile } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSize, hasBladeTrap, canPushback, strikesLast, isFirearmQuality } from '../engine/qualities/dispatch';
 import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf } from './triggeredEffects';
-import { hasStealAdvantage, shieldAdvantageLevel, hasRiposte, talentCritExtraWounds, hasSurpriseSave, talentMagicResistance, hasBraveheart, outnumberCountBonus, hasStunSave, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainOf } from '../engine/combatFeatures/dispatch';
+import { hasStealAdvantage, shieldAdvantageLevel, hasRiposte, talentCritExtraWounds, hasSurpriseSave, talentMagicResistance, hasBraveheart, outnumberCountBonus, hasStunSave, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf } from '../engine/combatFeatures/dispatch';
 import { canStrikeFirst } from '../engine/qualities/dispatch';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
@@ -90,11 +90,11 @@ import type { ConjureForm } from '../engine/conjuredWeapons';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
 import { eligibleTalent, canCastFromGrimoire } from '../engine/grimoire';
-import { rollMiscast, type MiscastSeverity } from '../engine/miscast';
+import { rollMiscast, componentDowngrade, type MiscastSeverity } from '../engine/miscast';
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } from '../engine/skills';
-import { findSkill, findManeuverById, findDomain, findDomainById, findTalentById } from '../data';
+import { findSkill, findSkillById, findManeuverById, findDomainById, findTalentById } from '../data';
 import { norm } from '../lib/normalize';
 import { slugId } from '../data/slug';
 import { recomputeLoadout, weaponWithAmmo, compatibleAmmo, damageArmour, buildWeapon } from '../engine/items';
@@ -1144,7 +1144,7 @@ export function applyAttackResult(
     if (attacker.pos && target.pos) {
       set((s: GameState) => ({ facing: { ...s.facing, [attacker.id]: facingToward(attacker.pos!, target.pos!), [target.id]: facingToward(target.pos!, attacker.pos!) } }));
     }
-    bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: target.id, result: res, kind: 'melee', defense: 'none', weapon, parryWeapon: res.parryWeapon, creatureAttack: creatureAttackKind(weapon.name) });
+    bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: target.id, result: res, kind: 'melee', defense: 'none', weapon, parryWeapon: res.parryWeapon, creatureAttack: creatureAttackKind(weapon) });
     const log = [...battle.log, ev('attack', `${attacker.name} achève ${target.name}, sans défense.`, attacker.id, target.id)];
     if (isOutOfAction(target)) log.push(ev('death', `${target.name} est mis hors de combat !`, target.id));
     set({ battle: { ...battle, acted: true, action: null, log } });
@@ -1380,7 +1380,7 @@ export function applyAttackResult(
   // `weapon`/`parryWeapon` voyagent dans l'événement : le rig joue le geste de l'arme EMPLOYÉE
   // (2e frappe de dague gauche, tentacule…) et la parade de l'arme QUI A PARÉ (main-gauche,
   // bouclier) — pas ceux de l'arme principale.
-  bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: target.id, result: res, kind, defense, weapon, parryWeapon: res.parryWeapon, creatureAttack: creatureAttackKind(weapon.name) });
+  bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: target.id, result: res, kind, defense, weapon, parryWeapon: res.parryWeapon, creatureAttack: creatureAttackKind(weapon) });
   const evKind: CombatEventKind = weapon.type === 'ranged' ? 'shoot' : 'attack';
   const log = [...battle.log, ev(evKind, res.log, attacker.id, target.id)];
   log.push(...evLines(critLog, 'crit', attacker.id, target.id));
@@ -1396,7 +1396,7 @@ export function applyAttackResult(
   // Atouts de l'arme (Assommante, Immobilisante…) et Enchantements actifs — agrégés et appliqués par UN
   // dispatcher générique (state/triggeredEffects). `location` (Assommante Tête) et `woundsDealt` (Venin
   // sur PB) alimentent les Conditions Flow de gating.
-  if (res.hit) for (const line of fireTriggers(get, attacker, 'onHit', { victim: target, weapon, woundsDealt: res.woundsLost, location: res.location, attackKind: creatureAttackKind(weapon.name), rng: battleRng() })) log.push(ev('condition', line, target.id));
+  if (res.hit) for (const line of fireTriggers(get, attacker, 'onHit', { victim: target, weapon, woundsDealt: res.woundsLost, location: res.location, attackKind: creatureAttackKind(weapon), rng: battleRng() })) log.push(ev('condition', line, target.id));
   // Déstabilisante (Aux Armes p.89) : après une touche, l'attaquant PEUT dépenser des Avantages pour
   // un Test opposé Force/Athlétisme ; gagné, la cible est mise À Terre. HÉROS → étape de CHOIX de la
   // cascade d'attaque (pushCombatStep, applier 'knockdown') ; IA → déclenché d'office.
@@ -1418,7 +1418,7 @@ export function applyAttackResult(
         break; // un seul renversement proposé par touche
       }
       attacker.advantage = (attacker.advantage ?? 0) - kd.advantageCost;
-      const kdSkillId = kd.skill ? (findSkill(kd.skill)?.id ?? slugId(kd.skill)) : '';
+      const kdSkillId = kd.skill ? (findSkillById(kd.skill) ? kd.skill : (findSkill(kd.skill)?.id ?? slugId(kd.skill))) : ''; // id stable d'abord
       const aSk = kd.skill ? (attacker.skills.find((s) => s.skillId === kdSkillId)?.advances ?? 0) : 0;
       const dSk = kd.skill ? (target.skills.find((s) => s.skillId === kdSkillId)?.advances ?? 0) : 0;
       const won = opposedTest(effectiveChar(attacker, kd.char) + aSk, effectiveChar(target, kd.char) + dSk, battleRng()).winner === 'attacker';
@@ -1490,9 +1490,11 @@ export function checkFocusInterruption(get: Get, set: SetFn, target: Combatant):
     `${target.name}, frappé en pleine Focalisation — Test de Calme Difficile (−20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'concentration maintenue' : 'concentration BRISÉE'}.`,
   ];
   if (!t.success) {
-    lines.push(`${target.name} perd les ${target.focus.dr} DR focalisés sur ${findSpellById(target.focus.spell)?.label ?? target.focus.spell}.`);
+    const focusedSpellId = target.focus.spell; // Sort focalisé interrompu → couvert par son composant (LDB 46 l.161)
+    lines.push(`${target.name} perd les ${target.focus.dr} DR focalisés sur ${findSpellById(focusedSpellId)?.label ?? focusedSpellId}.`);
     target.focus = undefined;
-    lines.push(...applyMiscast(get, set, target, 'mineure', { suppressReveal: true })); // la révélation « Calme » ci-dessous porte déjà ces lignes
+    const compUsed = useSpellComponent(target, focusedSpellId, lines); // un composant couvre aussi la Focalisation (incantation en cours)
+    lines.push(...applyMiscast(get, set, target, 'mineure', { suppressReveal: true, componentDowngrade: compUsed })); // la révélation « Calme » ci-dessous porte déjà ces lignes
   }
   if (target.kind === 'hero')
     pushReveal(set, { kind: 'calme', title: 'Focalisation interrompue', dice: t.roll, lines: [...lines], subjectId: target.id, severity: 'minor' });
@@ -1807,7 +1809,7 @@ export function maybeHeroCleave(get: Get, set: SetFn, attacker: Combatant, targe
 // ---------------------------------------------------------------------------
 
 /** Arme abstraite du Piétinement : Corps à corps (Bagarre), Dégâts = Bonus de Force (+0). */
-export const TRAMPLE_WEAPON: Weapon = buildWeapon({ name: 'Piétinement', damage: { plusBF: true, flat: 0, bare: true } });
+export const TRAMPLE_WEAPON: Weapon = buildWeapon({ name: 'Piétinement', attackKind: 'pietinement', damage: { plusBF: true, flat: 0, bare: true } });
 
 /** Résout un Piétinement : dépense 1 Avantage (coût de l'action gratuite) puis applique
  *  `resolveTrample` (BF +0, Corps à corps). Ne consomme PAS l'Action (« action gratuite »). */
@@ -1909,17 +1911,21 @@ export function resolveTalentFreeAttacks(get: Get, set: SetFn, actor: Combatant,
 // Morsure/Caudale (Indice) avant Piétinement (BF+0) — cf. exemple Aventures à Ubersreik.
 // ---------------------------------------------------------------------------
 
-/** Arme abstraite d'une attaque gratuite : Piétinement = BF+0 ; Morsure/Caudale/Tentacules = +Indice (BF inclus). */
+/** Arme abstraite d'une attaque gratuite : Piétinement = BF+0 ; Morsure/Caudale/Tentacules = +Indice
+ *  (BF inclus). STAMPE `attackKind: kind` → la pose/Condition lit le champ STABLE, pas le nom. */
 export function freeAttackWeapon(kind: string, bonus: number): Weapon {
-  if (kind === 'pietinement') return TRAMPLE_WEAPON;
+  if (kind === 'pietinement') return TRAMPLE_WEAPON; // déjà stampé attackKind:'pietinement'
   const name = kind === 'caudale' ? 'Attaque caudale' : kind === 'cornes' ? 'Cornes' : kind === 'tentacules' ? 'Tentacules' : 'Morsure';
-  return buildWeapon({ name, damage: { plusBF: false, flat: bonus } }); // Indice de créature (SB déjà inclus) → « +N »
+  return buildWeapon({ name, attackKind: kind, damage: { plusBF: false, flat: bonus } }); // Indice de créature (SB déjà inclus) → « +N »
 }
 
-/** Type de pose d'attaque (rendu créature) déduit du NOM de l'arme naturelle, ou undefined (arme
- *  manufacturée → pose générique du gabarit). Sert au tintage de l'animation d'attaque (AnimatedPlanToken). */
-export function creatureAttackKind(weaponName: string): string | undefined {
-  const n = weaponName.toLowerCase();
+/** Type de pose d'attaque (rendu créature) : le champ STABLE `weapon.attackKind` stampé à la
+ *  construction (multilangue-safe), sinon repli par NOM (armes de statbloc/dérivées/grantNatural non
+ *  stampées : « Griffe »/« Morsure »…). undefined = arme manufacturée → pose générique du gabarit.
+ *  Sert au tintage de l'animation d'attaque (AnimatedPlanToken) et à la Condition Flow `attackKind`. */
+export function creatureAttackKind(weapon: { attackKind?: string; name: string }): string | undefined {
+  if (weapon.attackKind) return weapon.attackKind;
+  const n = weapon.name.toLowerCase();
   if (n.includes('morsure')) return 'morsure';
   if (n.includes('caudale') || n.includes('queue')) return 'caudale';
   if (n.includes('piétin') || n.includes('pietin')) return 'pietinement';
@@ -2124,11 +2130,48 @@ export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): b
 // partagés par l'applicateur d'ops (sorts, tables de contrecoup, mutations).
 
 /**
+ * Composant d'incantation (LDB 46 l.158-163, règle optionnelle `magic-composant`) — appelé UNE fois
+ * au point d'incantation d'un Sort d'Arcane/Domaine par un HÉROS. Si un composant pour ce Sort est
+ * possédé : il est CONSUMÉ « même si aucune Incantation Imparfaite n'a été obtenue » (l.161), une
+ * ligne est journalisée, et `true` est renvoyé → toute Imparfaite de ce lancement sera dégradée
+ * (passé en `componentDowngrade` à `applyMiscast`). Mute `caster.componentSpells`. Renvoie `false`
+ * (sans effet) si la règle est éteinte, le lanceur n'est pas un héros, ou aucun composant ne couvre
+ * le Sort. `lines` reçoit la ligne « composant consumé » le cas échéant.
+ */
+export function useSpellComponent(caster: Combatant, spellId: string, lines: string[]): boolean {
+  if (caster.kind !== 'hero' || rule('magic-composant') !== true) return false;
+  const owned = caster.componentSpells ?? [];
+  if (!owned.includes(spellId)) return false;
+  const i = owned.indexOf(spellId);
+  const next = [...owned];
+  next.splice(i, 1); // retire UNE occurrence (consommée par l'incantation)
+  caster.componentSpells = next;
+  lines.push(`${caster.name} : composant d'incantation consumé (LDB 46 l.161).`);
+  return true;
+}
+
+/**
  * Tire sur la table d'Incantation Imparfaite / Colère des dieux et applique au
  * LANCEUR les effets mécaniques modélisés (États, Blessures ignorant BE+PA,
  * réduction à 0 + Inconscient). Retourne les lignes de journal.
  */
-export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: MiscastSeverity, opts?: { suppressReveal?: boolean }): string[] {
+export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: MiscastSeverity, opts?: { suppressReveal?: boolean; componentDowngrade?: boolean }): string[] {
+  // Composant d'incantation (LDB 46 l.161, règle optionnelle) : si un composant adapté a été
+  // SACRIFIÉ pour ce Sort (consommation décidée et journalisée au point d'incantation — cf.
+  // `useSpellComponent`), il absorbe les pires effets du contrecoup : « toute Incantation Imparfaite
+  // Majeure devient Mineure, et aucune Incantation Imparfaite Mineure n'a d'effet ». La transformation
+  // de sévérité est PURE (engine/miscast.componentDowngrade) ; ne touche pas la Colère des dieux.
+  if (opts?.componentDowngrade && severity !== 'colere') {
+    const downgraded = componentDowngrade(severity);
+    if (downgraded === null) {
+      // Mineure → aucun effet : le composant a tout absorbé, on n'ouvre PAS d'Imparfaite.
+      return [`${caster.name} : le composant absorbe l'Incantation Imparfaite Mineure (aucun effet).`];
+    }
+    return [
+      `${caster.name} : le composant dégrade l'Incantation Imparfaite (Majeure → Mineure).`,
+      ...applyMiscast(get, set, caster, downgraded, { suppressReveal: opts.suppressReveal }),
+    ];
+  }
   // Colère des dieux : +10 au jet par Point de Péché du lanceur (LDB 40 l.53).
   const sinPoints = severity === 'colere' ? caster.sinPoints ?? 0 : 0;
   const m = rollMiscast(severity, battleRng(), sinPoints);
@@ -2636,6 +2679,11 @@ export function applyCast(
     }
   }
   const logLines: string[] = [res.log];
+  // Composant d'incantation (LDB 46 l.158-163, règle optionnelle) : consommé UNE fois par lancement
+  // d'un Sort d'Arcane/Domaine couvert, « même si aucune Incantation Imparfaite n'a été obtenue »
+  // (l.161). `componentUsed` → toute Imparfaite de ce lancement est dégradée (Majeure→Mineure,
+  // Mineure→annulée). N'a pas lieu pour une Prière (l.163 : composants = Sorts d'Arcane/Domaine).
+  const componentUsed = isSort && useSpellComponent(caster, spell.id, logLines);
   if (crit) {
     logLines.push(
       choice === 'critique'
@@ -2644,7 +2692,7 @@ export function applyCast(
           ? 'Puissance totale : le sort est lancé quels que soient NI et DR (mais peut être Dissipé).'
           : 'Force inéluctable : le sort ne peut pas être Dissipé.',
     );
-    if (!hasTalent(caster, 'Diction instinctive')) logLines.push(...applyMiscast(get, set, caster, 'mineure'));
+    if (!hasTalent(caster, 'Diction instinctive')) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed }));
     else logLines.push('Diction instinctive : aucune Imparfaite sur le double réussi.');
   }
   // « Avantages et Magie » (LDB 46 l.176) : si la cible a déjà été visée par un Sort du
@@ -2775,8 +2823,8 @@ export function applyCast(
     if (res.cast) placeSpellZone(get, caster, target, spell, missileSpec, res.sl, durationMult, logLines);
     // Maladresse d'un Sort → Incantation Imparfaite Mineure ; sort focalisé dont
     // l'incantation échoue → Imparfaite Mineure également (Livre de base l.183).
-    if (res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'mineure'));
-    else if (focusedNI0 && !res.cast) logLines.push(...applyMiscast(get, set, caster, 'mineure'));
+    if (res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed }));
+    else if (focusedNI0 && !res.cast) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed }));
     // Sort offensif : lanceur vers la cible, cible vers le lanceur.
     if (caster.pos && target.pos && caster.id !== target.id) {
       set((s: GameState) => ({ facing: { ...s.facing, [caster.id]: facingToward(caster.pos!, target.pos!), [target.id]: facingToward(target.pos!, caster.pos!) } }));
@@ -2881,10 +2929,10 @@ export function applyCast(
       }
     } else if (res.isFumble) {
       // Prière → Colère des dieux ; Sort → Incantation Imparfaite Mineure.
-      logLines.push(...applyMiscast(get, set, caster, castInfoIsPrayer(spell.type) ? 'colere' : 'mineure'));
+      logLines.push(...applyMiscast(get, set, caster, castInfoIsPrayer(spell.type) ? 'colere' : 'mineure', { componentDowngrade: componentUsed }));
     } else if (focusedNI0) {
       // Sort focalisé dont l'incantation échoue (sans Maladresse) → Imparfaite Mineure.
-      logLines.push(...applyMiscast(get, set, caster, 'mineure'));
+      logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed }));
     }
     // Sort de SOUTIEN (bénédiction/soin/buff) ou prière non-projectile : émet aussi l'event
     // d'incantation → geste de canalisation (RigToken) + halo/aura tinté à l'école (IsoStage).
@@ -3000,7 +3048,7 @@ function placeSpellZone(
  *  Arcanes ») — jeu sans MJ : seuls les Domaines au Type canonique évident sont mappés
  *  (Feu→Feu, Cieux→Électricité, Métal→Corrosif, Ombres→Fumée) ; les autres soufflent des Dégâts purs. */
 function domainBreathType(caster: Combatant): string | undefined {
-  return findDomain(arcaneDomainOf(caster))?.breathType;
+  return findDomainById(arcaneDomainIdOf(caster))?.breathType;
 }
 
 /** Bonus d'incantation CONDITIONNEL du Domaine (Aqshy l.157 : +`bonus` par État `perCondition` situé à
@@ -3065,10 +3113,12 @@ export function finalizeBattle(get: Get, set: SetFn): void {
       const resVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
       if (c.woundedByInfected) infectLog.push(...rollContraction(c, 'blessure-purulente', resVal, 'facile', battleRng()));
       if (c.woundedByRodent) infectLog.push(...rollContraction(c, 'fievre-du-rongeur', resVal, 'accessible', battleRng()));
-      for (const name of c.diseaseExposure ?? []) {
-        const def = DISEASE_DEFS[name] ?? Object.values(DISEASE_DEFS).find((d) => d.name.toLowerCase() === name.toLowerCase());
-        if (def) infectLog.push(...rollContraction(c, def.name, resVal, def.contractDifficulty, battleRng()));
-        else infectLog.push(`${c.name} a été exposé à : ${name} (maladie non répertoriée — arbitrage MJ).`);
+      for (const diseaseId of c.diseaseExposure ?? []) {
+        // `diseaseExposure` stocke des IDS de maladie (trait `maladie` arg = id stable, multilangue-safe) :
+        // résolution par id SEULE (plus de repli par libellé).
+        const def = DISEASE_DEFS[diseaseId];
+        if (def) infectLog.push(...rollContraction(c, def.id, resVal, def.contractDifficulty, battleRng()));
+        else infectLog.push(`${c.name} a été exposé à : ${diseaseId} (maladie non répertoriée — arbitrage MJ).`);
       }
     }
     c.woundedByInfected = false;
@@ -3238,7 +3288,7 @@ export function resolveKnockdown(get: Get, set: SetFn, accept: boolean, pk: Pend
   const lines: string[] = [];
   if (accept && (attacker.advantage ?? 0) >= pk.advantageCost && !isOutOfAction(target) && !hasCondition(target, pk.condition)) {
     attacker.advantage = (attacker.advantage ?? 0) - pk.advantageCost;
-    const pkSkillId = pk.skill ? (findSkill(pk.skill)?.id ?? slugId(pk.skill)) : '';
+    const pkSkillId = pk.skill ? (findSkillById(pk.skill) ? pk.skill : (findSkill(pk.skill)?.id ?? slugId(pk.skill))) : ''; // id stable d'abord
     const aSk = pk.skill ? (attacker.skills.find((s) => s.skillId === pkSkillId)?.advances ?? 0) : 0;
     const dSk = pk.skill ? (target.skills.find((s) => s.skillId === pkSkillId)?.advances ?? 0) : 0;
     const aT = rollTest(effectiveChar(attacker, pk.char) + aSk, 'intermediaire', battleRng());

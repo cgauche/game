@@ -155,6 +155,19 @@ const WRATH: Row[] = [
 
 const TABLES: Record<MiscastSeverity, Row[]> = { mineure: MINOR, majeure: MAJOR, colere: WRATH };
 
+/**
+ * Composant d'incantation (LDB 46 l.161, règle optionnelle) — transformation PURE de la sévérité
+ * d'une Incantation Imparfaite quand le lanceur a sacrifié un composant adapté au Sort :
+ * « toute Incantation Imparfaite Majeure devient Mineure, et aucune Incantation Imparfaite Mineure
+ * n'a d'effet ». `null` = annulée (aucun effet). N'affecte PAS la Colère des dieux (l.163 : les
+ * composants ne concernent que les Sorts d'Arcane et de Domaine, pas les Prières).
+ */
+export function componentDowngrade(severity: MiscastSeverity): MiscastSeverity | null {
+  if (severity === 'majeure') return 'mineure'; // Majeure → Mineure
+  if (severity === 'mineure') return null; // Mineure → aucun effet
+  return severity; // Colère : hors périmètre des composants (RAW)
+}
+
 function label(sev: MiscastSeverity): string {
   return sev === 'colere' ? 'Colère des dieux' : sev === 'majeure' ? 'Incantation Imparfaite Majeure' : 'Incantation Imparfaite Mineure';
 }

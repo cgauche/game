@@ -348,6 +348,15 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'Un personnage elfe perd 1 Activité (interlude ≥ 3 semaines) pour son devoir envers les siens. Désactiver lève cette restriction.',
   },
   {
+    id: 'magic-composant',
+    label: "Composants d'incantation",
+    ref: 'LDB 46 l.159',
+    group: 'Magie',
+    kind: 'flag',
+    default: false,
+    hint: "Un lanceur peut focaliser sa magie via un composant adapté à un Sort d'Arcane/Domaine (acheté pour ce Sort, coût = NI pistoles d'argent). Sur une Incantation Imparfaite, le composant l'absorbe : Majeure → Mineure, Mineure → annulée. Consumé à l'incantation, même sans Imparfaite. Composants gérés sur la fiche du personnage. Désactivé par défaut.",
+  },
+  {
     id: 'disease-mode',
     label: 'Utilisation des maladies',
     ref: 'LDB 20 l.36',

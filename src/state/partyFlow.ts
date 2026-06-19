@@ -31,7 +31,8 @@ import { skillCharacteristicById } from '../engine/character';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { castingKindOf } from '../engine/combatFeatures/dispatch';
 import { itemUse, applyItemUse } from '../engine/consumables';
-import { add as moneyAdd, Money, formatMoney } from '../engine/money';
+import { add as moneyAdd, subtract as moneySub, canAfford, toMoney, Money, formatMoney } from '../engine/money';
+import { isArcaneSpell } from '../engine/magic';
 import { spellCost } from '../engine/grimoire';
 import { levelsForCareer, findSkill, findTalent, findCareerById, findSpell as findSpellData, findSpellById } from '../data/index';
 import { slugId } from '../data/slug';
@@ -389,6 +390,40 @@ export function buySpell(get: Get, set: Set, heroId: string, label: string): { o
   }));
   if (msg) get().log(msg);
   return result;
+}
+
+/** Composant d'incantation (LDB 46 l.158-163, règle optionnelle `magic-composant`) : achète un
+ *  composant pour un Sort d'Arcane/Domaine CONNU du héros — coût = NI pistoles d'argent (l.163),
+ *  prélevé sur la bourse du groupe. « acheté pour un Sort spécifique […], ne marche que pour ce
+ *  Sort. » Le composant absorbe le contrecoup à l'incantation (consumé) — cf. applyMiscast. */
+export function buySpellComponent(get: Get, set: Set, heroId: string, spellId: string): void {
+  const hero = get().party.find((h) => h.id === heroId);
+  const sp = findSpellById(spellId);
+  if (!hero || !sp) { get().log('Composant : sort introuvable.'); return; }
+  if (!isArcaneSpell(sp) || sp.cn == null) { get().log(`${sp.label} : un composant ne s'applique qu'aux Sorts d'Arcane/Domaine (LDB 46 l.163).`); return; }
+  if (!(hero.spells ?? []).includes(spellId)) { get().log(`${hero.name} ne connaît pas ${sp.label}.`); return; }
+  // Coût = NI (cn) pistoles d'argent (silver), prélevé sur la bourse du groupe.
+  const cost = toMoney({ silver: sp.cn });
+  if (!canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour un composant de ${sp.label} (${formatMoney(cost)}).`); return; }
+  set((s) => ({
+    money: moneySub(s.money, cost)!,
+    party: s.party.map((h) => h.id === heroId ? { ...h, componentSpells: [...(h.componentSpells ?? []), spellId] } : h),
+  }));
+  get().log(`${hero.name} achète un composant pour ${sp.label} (−${formatMoney(cost)}).`);
+}
+
+/** Retire UN composant d'incantation possédé pour un Sort (sans remboursement). */
+export function removeSpellComponent(_get: Get, set: Set, heroId: string, spellId: string): void {
+  set((s) => ({
+    party: s.party.map((h) => {
+      if (h.id !== heroId) return h;
+      const list = [...(h.componentSpells ?? [])];
+      const i = list.indexOf(spellId);
+      if (i < 0) return h;
+      list.splice(i, 1); // retire une seule occurrence
+      return { ...h, componentSpells: list };
+    }),
+  }));
 }
 
 export function trainProsthesis(get: Get, set: Set, heroId: string, uid: string): void {
