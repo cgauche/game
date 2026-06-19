@@ -598,6 +598,17 @@ export interface PendingExtendedTest extends PendingBase {
   flag?: string;
 }
 
+/** Paramètres SÉRIALISABLES de la conséquence d'une étape (jamais de closure — coop : le pending est
+ *  snapshoté/transmis). Index primitif (`days`/`count`/`severity`/… lus par `String()`/`Number()`) +
+ *  deux Flows OPTIONNELS pour l'étape GÉNÉRIQUE `triggeredTest` (la conséquence `onSuccess`/`onFail`
+ *  voyage dans le `meta`, exécutée par l'applier — un Flow est pur-donnée, donc sérialisable). */
+export interface CascadeStepMeta {
+  [key: string]: number | string | boolean | Flow | undefined;
+  /** Branche de réussite d'une étape `triggeredTest` (exécutée via `applyTriggeredTestBranch`). */
+  onSuccess?: Flow;
+  /** Branche d'échec d'une étape `triggeredTest`. */
+  onFail?: Flow;
+}
 /** Le jet d'UNE étape de cascade (slot du flux multi SÉQUENTIEL `FLOWS.cascade`). */
 export interface CascadeRoll {
   roll: number;
@@ -637,8 +648,9 @@ export interface CascadeStep extends RollParticipant {
   /** Cible EFFECTIVE (difficulté déjà appliquée → Test « +0 » sur `target`). Absent → étape sans jet. */
   target?: number;
   result?: CascadeRoll | null;
-  /** Paramètres sérialisables de la conséquence (jamais de closure — coop). */
-  meta?: Record<string, number | string | boolean>;
+  /** Paramètres sérialisables de la conséquence (jamais de closure — coop) ; cf. `CascadeStepMeta`
+   *  (primitives + Flows `onSuccess`/`onFail` de l'étape générique `triggeredTest`). */
+  meta?: CascadeStepMeta;
   /** Étape déjà validée (conséquence appliquée). */
   committed?: boolean;
   /** Conséquence appliquée à la validation (journal) — gardée pour rester lisible dans la pile. */

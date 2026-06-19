@@ -29,7 +29,7 @@ type FieldKey =
   | 'pendingRenounce' | 'pendingMountTarget' | 'pendingDisengage' | 'pendingInteract' | 'pendingCast'
   | 'pendingCounterspell' | 'pendingExtendedTest' | 'pendingForceDoor' | 'pendingCascade'
   | 'pendingCastOpposition' | 'pendingHeal' | 'medic' | 'pendingRest' | 'pendingCleave'
-  | 'pendingDualStrike' | 'pendingReveals' | 'scheduledEffects' | 'pendingTrample' | 'pendingManeuver'
+  | 'pendingDualStrike' | 'pendingReveals' | 'pendingLogQueue' | 'scheduledEffects' | 'pendingTrample' | 'pendingManeuver'
   | 'pendingRun' | 'pendingApproach' | 'pendingFocus' | 'pendingFrenzy' | 'pendingRoundStart'
   | 'pendingFateSave' | 'pendingVictory' | 'pendingLoot' | 'document' | 'previousScene';
 
@@ -64,6 +64,7 @@ const STATE_FIELDS: Manifest = {
   pendingCleave: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingDualStrike: { init: null, resetOn: ['scene'] },
   pendingReveals: { init: [], resetOn: ['combatStart'] },
+  pendingLogQueue: { init: [], resetOn: ['scene', 'combatStart'] },
   scheduledEffects: { init: [], resetOn: [] },
   pendingTrample: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingManeuver: { init: null, resetOn: ['scene', 'combatStart'] },

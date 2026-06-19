@@ -51,7 +51,7 @@ import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, occupiesTile } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality } from '../engine/qualities/dispatch';
 import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf } from './triggeredEffects';
-import { hasStealAdvantage, shieldAdvantageLevel, hasRiposte, talentCritExtraWounds, hasSurpriseSave, talentMagicResistance, hasBraveheart, outnumberCountBonus, hasStunSave, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf } from '../engine/combatFeatures/dispatch';
+import { hasStealAdvantage, shieldAdvantageLevel, hasRiposte, talentCritExtraWounds, hasSurpriseSave, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf } from '../engine/combatFeatures/dispatch';
 import { canStrikeFirst } from '../engine/qualities/dispatch';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
@@ -160,7 +160,7 @@ export function activeCombatant(battle: BattleState): Combatant | undefined {
 
 // --- Effets de scène/campagne extraits → combatEffects.ts (baril) ---
 export * from './combatEffects';
-import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, runSpellFlow } from './combatEffects';
+import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, runSpellFlow, drainPendingLog } from './combatEffects';
 // --- Manœuvres de créature (énumération + résolveurs roll/apply) extraites → combatManeuvers.ts (baril) ---
 export * from './combatManeuvers';
 // --- Refonte par coutures : registre de hooks de cycle de vie + mise en place (barils, modules FEUILLES) ---
@@ -170,6 +170,7 @@ import { runCombatHooks } from './combatHooks';
 import { collectHeroRoundEndUpkeep } from './combat/roundHooks';
 import { endFrenzyIfDone } from './combat/turnHooks'; // usage interne (cascade psy héros, psychStepFor)
 export { brokenRecovery, collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour broken-recovery.test / cascade d'upkeep
+export * from './combat/triggeredTest'; // baril : enregistre l'applier de cascade `triggeredTest` + installe le routeur de Test des triggers (effet de bord)
 export { endFrenzyIfDone, aiMaybeFrenzy, resolvePsychAI } from './combat/turnHooks'; // baril : enregistre les hooks de début de tour ennemi (effet de bord) + ré-export pour frenzy*.test / psych*.test
 // Sauvegardes post-touche en registre `HitModifier` ordonné (state/combat/hitModifiers, module FEUILLE).
 import { runHitModifiers, martyrGuardOf, wardedAgainst } from './combat/hitModifiers'; // usage interne (applyAttackResult + applyCast)
@@ -1395,6 +1396,9 @@ export function applyAttackResult(
   // Salve (Aux Armes p.126) : un héros qui tire une arme à Salve gardant des tirs (chambered > 0) ne
   // consomme PAS son Action — il peut tirer encore ce tour (chaque tir suivant à −10 cumulatif).
   const salvoContinues = attacker.kind === 'hero' && weapon.type === 'ranged' && hasQuality(weapon, QUALITY_IDS.Salve) && (attacker.chambered ?? 0) > 0;
+  // Lignes de journal différées par un hook profond (ex. `onGainCondition` ennemi/auto déclenché plus
+  // haut dans cette résolution) → foldées dans le MÊME `log` réécrit, avant que ce `set` ne le clobbere.
+  log.push(...drainPendingLog(get, set));
   set({ battle: { ...battle, acted: !salvoContinues, action: null, log } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
@@ -3301,9 +3305,10 @@ export function advanceTurn(get: Get, set: SetFn) {
         if (c?.kind === 'hero') heroRoundLines.push(line);
       };
       // TOUTE la séquence de franchissement de Round est déléguée aux hooks `roundBoundary`
-      // (state/combat/roundHooks), ordonnés par `order` : end-of-round 10 → refresh-wounds 20 →
-      // triggers 25 → Instable 30 → Bestial 40 → Perturbant 50 → Surnombre 55 → Mâchoires 60 →
+      // (state/combat/roundHooks), ordonnés par `order` : end-of-round 10 → poison-resist 15 →
+      // refresh-wounds 20 → triggers 25 → Instable 30 → Bestial 40 → Perturbant 50 → Surnombre 55 →
       // Détermination 70/72 → broken-recovery 74 → tail 76-79.5 → règles optionnelles (se-fatiguer 80).
+      // (Mâchoires d'acier n'est plus un hook de Round : c'est un effet `onGainCondition` data-driven.)
       // advanceTurn n'orchestre plus que le CADRE (Round, ordre, révélation) ; le CONTENU vit en hooks.
       // (Frénésie : l'Arme libre est un grant de DONNÉE plafonné par freeAttacksThisTurn, remis à zéro au tour.)
       runCombatHooks('roundBoundary', { get, set, battle, sink: tickLine });
@@ -3579,9 +3584,9 @@ export function openRoundStartPsych(get: Get, set: SetFn): void {
 
 /**
  * Cascade de FIN de Round (combat) — un SEUL `pendingCascade` fusionnant, PAR HÉROS, ses Tests
- * d'upkeep INFLUENÇABLES (Mâchoires d'acier → récupération du Brisé → se-fatiguer, LDB 10/16) PUIS
- * son Test de Peur (Test étendu de Calme, LDB 21 l.27). Les ENNEMIS sont déjà résolus en silence par
- * les hooks `roundBoundary` (steel-jaw/broken-recovery/se-fatiguer). Ordre choisi : upkeep AVANT la
+ * d'upkeep INFLUENÇABLES (Empoisonné → récupération du Brisé → se-fatiguer, LDB 16) PUIS son Test de
+ * Peur (Test étendu de Calme, LDB 21 l.27). Les ENNEMIS sont déjà résolus en silence par les hooks
+ * `roundBoundary` (poison-resist/broken-recovery/se-fatiguer). Ordre choisi : upkeep AVANT la
  * Peur (les effets de Round RAW — dont les hooks ennemi — précèdent la révélation/Psychologie de fin
  * de Round, et la sortie d'un État Sonné/Brisé peut influer sur l'état d'esprit). Appelée au
  * franchissement de Round APRÈS l'entretien/le Destin ; suspend l'IA jusqu'à résolution.

@@ -264,6 +264,11 @@ export interface GameState extends RollFlowActionsMap {
   pendingDualStrike: PendingDualStrike | null;
   /** File de révélation témoin (jets subis/sur table/entretien montrés au joueur, FIFO). */
   pendingReveals: RevealEntry[];
+  /** File de LIGNES de journal de combat différées (hors `battle.log`) : un hook profond (ex.
+   *  `onGainCondition` ennemi/auto, déclenché AVANT le `set` final qui remplace `battle.log`) y pousse
+   *  ses lignes ; `drainPendingLog` les déverse dans le MÊME `set` atomique qui réécrit `battle.log`
+   *  (bon ordre, zéro clobber). `cid` = combattant concerné (couleur/portrait du feed). */
+  pendingLogQueue: { line: string; cid?: string }[];
   /** File d'effets PROGRAMMÉS (Lot 0 : minuteries `delayedEffect`) — déclenchés au franchissement de
    *  leur échéance dans `advanceTime`. */
   scheduledEffects: ScheduledEffect[];

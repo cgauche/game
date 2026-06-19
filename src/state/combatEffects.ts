@@ -37,6 +37,7 @@ import { inRect } from './combatGeometry';
 import { startCascade } from './cascade';
 import { loseWounds, addCondition } from '../engine/conditions';
 import { touchActors } from './combatOrParty';
+import { ev } from './combatLog';
 
 /**
  * Effets de scène/campagne (`Effect[]`) appliqués par le store : le grand `applyEffects`
@@ -83,6 +84,18 @@ export function pushReveal(set: SetFn, entry: RevealEntry): void {
     return;
   }
   set((s: GameState) => ({ pendingReveals: [...s.pendingReveals, entry] }));
+}
+
+/** Vide la file de lignes de journal différées (`pendingLogQueue`) → événements de combat. SOURCE
+ *  UNIQUE : appelée JUSTE AVANT chaque couture qui réécrit `battle.log` (le `set` y replace `log` →
+ *  les lignes poussées par un hook profond — `onGainCondition` ennemi/auto — seraient sinon clobberées).
+ *  Clôt la file (set) et RENVOIE les événements pour que l'appelant les FOLDE dans le MÊME `log` réécrit
+ *  (bon ordre, zéro double `set` sur `battle`). File vide → no-op (tableau vide, pas de `set`). */
+export function drainPendingLog(get: Get, set: SetFn): import('./combatLog').CombatEvent[] {
+  const q = get().pendingLogQueue;
+  if (!q.length) return [];
+  set({ pendingLogQueue: [] });
+  return q.map((e) => ev('condition', e.line, e.cid));
 }
 
 /** Pousse une ÉTAPE de séquence de combat déjà formée (ex. choix de déviation foldé, P3a) : append à
