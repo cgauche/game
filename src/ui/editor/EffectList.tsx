@@ -19,14 +19,14 @@ import { GameOpEditor, opSummary } from './GameOpEditor';
 const DISEASE_NAMES = Object.keys(DISEASE_DEFS);
 
 /** Sorts de la base groupés pour le select de `learnSpell` (audit M9 : fini « libellé exact »). */
-const SPELL_GROUPS: [string, string[]][] = (() => {
-  const m = new Map<string, string[]>();
+const SPELL_GROUPS: [string, { id: string; label: string }[]][] = (() => {
+  const m = new Map<string, { id: string; label: string }[]>();
   for (const sp of spells) {
     const g = `${sp.type ?? 'Sorts'}${sp.subType ? ` — ${sp.subType}` : ''}`;
     if (!m.has(g)) m.set(g, []);
-    m.get(g)!.push(sp.label);
+    m.get(g)!.push({ id: sp.id, label: sp.label });
   }
-  for (const list of m.values()) list.sort((a, b) => a.localeCompare(b));
+  for (const list of m.values()) list.sort((a, b) => a.label.localeCompare(b.label));
   return [...m.entries()].sort(([a], [b]) => a.localeCompare(b));
 })();
 
@@ -134,7 +134,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'giveSin': return `${icon} ${e.amount ?? 1} point(s) de Péché`;
     case 'corruptionExposure': return `${icon} Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ?? 'au choix'})`;
     case 'giveCorruption': return `${icon} ${e.amount ?? 1} point(s) de Corruption`;
-    case 'learnSpell': return `${icon} Apprendre : ${e.spell || '?'}`;
+    case 'learnSpell': return `${icon} Apprendre : ${e.spell ? refLabel('spells', { id: e.spell }) : '?'}`;
     case 'rest': return `${icon} Repos ${e.days ?? 1} nuit(s) (${e.lodging ?? 'maison'}${e.quality === 'pietre' ? ', piètre' : ''})`;
     case 'mealParty': return `${icon} Repas du groupe`;
     case 'interlude': return `${icon} Interlude : ${e.weeks ?? 1} semaine(s)`;
@@ -384,7 +384,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
               {SPELL_GROUPS.map(([g, list]) => (
                 <optgroup key={g} label={g}>
                   {list.map((sp) => (
-                    <option key={sp} value={sp}>{sp}</option>
+                    <option key={sp.id} value={sp.id}>{sp.label}</option>
                   ))}
                 </optgroup>
               ))}

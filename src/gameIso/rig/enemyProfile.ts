@@ -169,7 +169,12 @@ export function entityRigProfile(
   seed: number,
   opts?: { species?: string; tenue?: string; monster?: MonsterParts; features?: string[]; weapon?: string; colors?: import('./palette').Palette; parts?: Appearance['parts']; sex?: 'M' | 'F'; build?: number; eyes?: { G?: string; D?: string };
     /** Profil de combat de l'entité (statbloc d'éditeur) → équipement affiché en explo, comme au combat. */
-    traits?: TraitList; armour?: number },
+    traits?: TraitList; armour?: number;
+    /** L'entité est ENRÔLÉE dans une rencontre (membre d'un `EncounterDef`) → c'est un combattant : on
+     *  affiche son équipement par défaut DÉRIVÉ du record (parité avec le spawn `creatureToCombatant`),
+     *  même sans statbloc. Une entité d'AMBIANCE (non enrôlée, défaut `false`) reste mains libres, quitte
+     *  à ce que son record porte un trait « Arme » (un villageois ne dégaine pas pour décorer la scène). */
+    enrolled?: boolean },
 ): EnemyRigProfile | null {
   const rec = findCreatureById(name);
   if (classifyBy(opts?.species ?? rec?.appearance?.species, rec?.traits, name) === 'creature') return null; // espèce explicite (data) → repli id/nom
@@ -181,10 +186,13 @@ export function entityRigProfile(
     species: opts?.species, sex: opts?.sex, build: opts?.build, monster: opts?.monster,
     features: opts?.features, colors: opts?.colors, parts: opts?.parts, eyes: eyesArtFromKeys(opts?.eyes),
   };
-  // Équipement : MÊME dérivation qu'au combat (parité explo↔combat). Le profil de combat vient du statbloc
-  // d'éditeur (`opts.traits`/`opts.armour`) ou du record créature (`rec.traits`). Armes EXPLICITES seulement
-  // (`renderWeaponsFromTraits` — pas de repli générique) → une entité d'ambiance sans arme reste mains libres.
-  const traits = opts?.traits ?? rec?.traits ?? [];
+  // Équipement : MÊME dérivation qu'au combat (parité explo↔combat). Précédence des traits de combat :
+  //   statbloc d'éditeur (`opts.traits`) → record créature SI ENRÔLÉE (`rec.traits`) → mains libres.
+  // Le repli sur `rec.traits` est RÉSERVÉ aux entités enrôlées (combattantes) — c'est exactement la
+  // dérivation du spawn `creatureToCombatant` (ref sans statbloc). Une entité d'AMBIANCE (non enrôlée)
+  // reste mains libres même si son record porte un trait « Arme ». Armes EXPLICITES seulement
+  // (`renderWeaponsFromTraits` — pas de repli « Arme » générique qui serait dessiné en épée).
+  const traits = opts?.traits ?? (opts?.enrolled ? rec?.traits ?? [] : []);
   const labelWeapon = opts?.weapon ? [weaponFromLabel(opts.weapon)] : [];
   const armourPA: ArmourPoints = opts?.armour != null ? emptyArmour(opts.armour) : armourFromTraits(traits);
   return {

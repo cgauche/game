@@ -27,18 +27,18 @@ describe('gates d\'incantation', () => {
     const p = priest();
     p.castPenalties = [{ label: 'Vous abusez de ma patience', skill: 'Prière', blocked: true, roundsLeft: 5 }];
     useGame.setState({ party: [p] as Combatant[] });
-    useGame.getState().oocCastSpell(p.id, 'Bénédiction de Guérison', p.id);
+    useGame.getState().oocCastSpell(p.id, 'benediction-de-guerison', p.id);
     expect(useGame.getState().pendingCast).toBeNull();
     expect(useGame.getState().journal.join('\n')).toMatch(/ne peut pas prier/);
   });
 
   it('blocage de Focalisation → oocFocusSpell refuse', () => {
     const wiz = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
-    wiz.spells = ['Arme aethyrique'];
+    wiz.spells = ['arme-aethyrique'];
     wiz.skills.push({ skillId: 'focalisation', characteristic: 'FM', advances: 5 } as never);
     wiz.castPenalties = [{ label: 'Vue assombrie', skill: 'Focalisation', blocked: true, roundsLeft: 3 }];
     useGame.setState({ party: [wiz] as Combatant[] });
-    useGame.getState().oocFocusSpell(wiz.id, 'Arme aethyrique');
+    useGame.getState().oocFocusSpell(wiz.id, 'arme-aethyrique');
     expect(useGame.getState().pendingFocus).toBeNull();
   });
 });

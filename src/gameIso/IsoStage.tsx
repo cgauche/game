@@ -561,6 +561,10 @@ export function IsoStage() {
       ) : (
         el
       );
+    // Entités ENRÔLÉES (membres d'une rencontre) → combattantes : elles affichent leur équipement dérivé
+    // du record en exploration (parité avec le spawn). Source UNIQUE = `scene.encounters` (pas de drapeau
+    // miroir sur l'entité). Une entité d'ambiance non enrôlée reste mains libres.
+    const enrolledIds = new Set(scene.encounters.flatMap((e) => (e.members ?? []).map((m) => m.entityId)));
     for (const ent of scene.entities) {
       if (ent.kind === 'heroStart' || ent.kind === 'prop') continue;
       if (ent.combat?.hiddenUntilCombat) continue; // ennemi d'embuscade : invisible avant le combat
@@ -568,7 +572,7 @@ export function IsoStage() {
       const ez = ent.z ?? 0;
       if (viewZ != null ? ez !== viewZ : ez > activeZ) continue; // viewLevel(z) isole ; sinon actif + dessous (pas au-dessus)
       if (!ez && covered(ent.pos.x, ent.pos.y)) continue; // l'occlusion par décor ne vaut qu'au sol
-      const r = pickBackend({ kind: 'sceneEntity', ent }, viewMode);
+      const r = pickBackend({ kind: 'sceneEntity', ent, enrolled: enrolledIds.has(ent.id) }, viewMode);
       if (r.backend === 'sprite') {
         out.push({
           d: depth(ent.pos.x, ent.pos.y, d, ez),

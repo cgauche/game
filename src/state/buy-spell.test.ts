@@ -68,7 +68,7 @@ describe('Effet learnSpell (trouvaille de campagne)', () => {
     w.talents.push({ talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 }); // rend le sort d'Arcane apprenable
     w.xp = 0;
     useGame.setState({ party: [other, w] as Combatant[] });
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'learnSpell', spell: 'Arme aethyrique' }]);
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'learnSpell', spell: 'arme-aethyrique' }]);
     const after = useGame.getState().party.find((h) => h.id === w.id)!;
     expect(after.spells).toContain('arme-aethyrique'); // id de sort (runtime) ; pas le guerrier : le Talent guide la cible
     expect(after.xp).toBe(0);
@@ -85,7 +85,7 @@ describe('lecture au grimoire — NI doublé dans le flux', () => {
   it('oocCastSpell(fromGrimoire) refuse sans grimoire porté', () => {
     const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
     useGame.setState({ party: [w] as Combatant[] });
-    useGame.getState().oocCastSpell(w.id, 'Arme aethyrique', w.id, true);
+    useGame.getState().oocCastSpell(w.id, 'arme-aethyrique', w.id, true);
     expect(useGame.getState().pendingCast).toBeNull();
     expect(useGame.getState().journal.join('\n')).toMatch(/grimoire/);
   });
@@ -96,7 +96,7 @@ describe('lecture au grimoire — NI doublé dans le flux', () => {
     w.spells = (w.spells ?? []).filter((s) => s !== 'arme-aethyrique'); // id de sort (runtime)
     w.items = [...(w.items ?? []), { uid: 'g1', name: 'Grimoire', isGrimoire: true, kind: 'misc', enc: 1, qualities: [] } as never];
     useGame.setState({ party: [w] as Combatant[] });
-    useGame.getState().oocCastSpell(w.id, 'Arme aethyrique', w.id, true);
+    useGame.getState().oocCastSpell(w.id, 'arme-aethyrique', w.id, true);
     expect(useGame.getState().pendingCast?.grimoire).toBe(true);
   });
 });

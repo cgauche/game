@@ -335,7 +335,7 @@ export function EditorCanvas({
                             strokeDasharray={hidden ? '4 3' : undefined}
                           />
                         ))}
-                        <EntityToken ent={en} dims={dims} />
+                        <EntityToken ent={en} dims={dims} enrolled />
                       </g>
                     ),
                   });

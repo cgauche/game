@@ -451,7 +451,7 @@ function resolveStage(get: Get, set: Set, day: TravelRecapDay): void {
       lines.push(`${h.name} — Exposition de fin d'Étape (${WEATHER_LABEL[weather]}) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'tient le coup.' : 'transi par le froid.'}`);
       if (!t.success) {
         // Escalade cumulative (l.415) : le rang d'échec = nombre de paliers de froid déjà subis + 1.
-        const prior = (h.activeEffects ?? []).filter((e) => e.label === 'Exposition (froid)').length;
+        const prior = (h.activeEffects ?? []).filter((e) => e.effectId === 'exposition-froid').length;
         // Distinct des deux paliers d'effet : 0 effet = 1ᵉʳ échec ; 3 effets (CT/Ag/Dex) = 2ᵉ ; 10 = 3ᵉ+.
         const rank = prior >= 10 ? 3 : prior >= 3 ? 2 : 1;
         lines.push(...applyExposureFailure(h, rank, battleRng()).log);

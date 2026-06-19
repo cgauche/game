@@ -258,12 +258,12 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
                     <button
                       className="btn small"
                       title="Test étendu de Focalisation : accumule du DR pour lancer au NI 0"
-                      onClick={() => oocFocusSpell(hero.id, sp.label)}
+                      onClick={() => oocFocusSpell(hero.id, sp.id)}
                     >
                       ✨ Focaliser
                     </button>
                   )}
-                  <button className="btn small" onClick={() => oocCastSpell(hero.id, sp.label, targetId)}>
+                  <button className="btn small" onClick={() => oocCastSpell(hero.id, sp.id, targetId)}>
                     🎲 Lancer
                   </button>
                 </span>
@@ -281,7 +281,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
               <span className="muted">en combat</span>
             ) : (
               <span className="spell-actions">
-                <button className="btn small" onClick={() => oocCastSpell(hero.id, sp.label, targetId, true)}>
+                <button className="btn small" onClick={() => oocCastSpell(hero.id, sp.id, targetId, true)}>
                   📖 Lancer (grimoire)
                 </button>
               </span>

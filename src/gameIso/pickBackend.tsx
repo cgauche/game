@@ -25,7 +25,7 @@ import type { RigOverlay } from './rig/bones';
  */
 export type TokenSubject =
   | { kind: 'combatant'; combatant: Combatant }
-  | { kind: 'sceneEntity'; ent: SceneEntity }
+  | { kind: 'sceneEntity'; ent: SceneEntity; enrolled?: boolean }
   | { kind: 'partyLeader'; leader?: Combatant };
 
 export interface PickedBackend {
@@ -125,7 +125,7 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
   const r = resolveRender(ent.appearance?.species, findCreatureById(refName)?.traits, refName);
   const prof =
     ent.kind === 'personnage'
-      ? entityRigProfile(refName, seed, { species: ent.appearance?.species, tenue: ent.appearance?.tenue, monster: ent.appearance?.monster, features: ent.appearance?.features, weapon: ent.weapon, colors: ent.appearance?.colors, parts: ent.appearance?.parts, sex: ent.appearance?.sex, build: ent.appearance?.build, eyes: ent.appearance?.eyes, traits: ent.statblock?.traits, armour: ent.statblock?.armour })
+      ? entityRigProfile(refName, seed, { species: ent.appearance?.species, tenue: ent.appearance?.tenue, monster: ent.appearance?.monster, features: ent.appearance?.features, weapon: ent.weapon, colors: ent.appearance?.colors, parts: ent.appearance?.parts, sex: ent.appearance?.sex, build: ent.appearance?.build, eyes: ent.appearance?.eyes, traits: ent.statblock?.traits, armour: ent.statblock?.armour, enrolled: subject.enrolled })
       : null;
   if (prof) {
     if (top) {

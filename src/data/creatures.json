@@ -51471,6 +51471,9 @@
     "label": "Jetsam - la Gelée Intelligente",
     "title": null,
     "folder": "Zoo Impérial",
+    "appearance": {
+      "species": "Amibe"
+    },
     "char": {
       "M": 3,
       "CC": 40,

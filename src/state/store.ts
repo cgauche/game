@@ -117,7 +117,7 @@ import type {
 import {
   openEncounterPsych,
 } from './encounterPsychFlow';
-import { findSpell, findSpellById } from '../data/index';
+import { findSpellById } from '../data/index';
 import { subtract as moneySub, add as moneyAdd, canAfford, toMoney } from '../engine/money';
 import * as medicFlow from './medicFlow';
 import type { MedicState, MedicNpc } from './medicFlow';
@@ -716,7 +716,7 @@ export interface GameState {
   /** « Appliquer » : agrège les oppositions → `pendingCast.opposedOutcome` (résisté + marge par cible) → castConfirm. */
   oppositionConfirm: () => void;
   /** Incantation HORS COMBAT (couture D) : un héros lanceur cible self/allié ; sorts non-offensifs. */
-  oocCastSpell: (casterId: string, label: string, targetId: string, fromGrimoire?: boolean) => void;
+  oocCastSpell: (casterId: string, spellId: string, targetId: string, fromGrimoire?: boolean) => void;
   battleFocusSpell: (spellId: string) => void;
   battleClickTile: (pt: Pt, opts?: { confirm?: boolean }) => void;
   battleClickEntity: (id: string, opts?: { confirm?: boolean; skipMountChoice?: boolean; forceAttackId?: string }) => void;
@@ -833,7 +833,7 @@ export interface GameState {
   focusConfirm: () => void;
   focusCancel: () => void;
   /** Focalisation HORS COMBAT (couture D) : ouvre la modale de Focalisation pour un héros lanceur du groupe. */
-  oocFocusSpell: (casterId: string, label: string) => void;
+  oocFocusSpell: (casterId: string, spellId: string) => void;
   // (Psychologie de combat (Peur/Terreur/Traits ciblés, LDB 21) : CASCADE de Round — Traits/Terreur au
   //  DÉBUT (openRoundStartPsych), Peur à la FIN (openRoundEndPsych) — résolue par les handlers `cascade*`,
   //  applier 'combatPsych'.)
@@ -1996,18 +1996,18 @@ export const useGame = create<GameState>((set, get) => ({
   },
   /** Ouvre une incantation HORS COMBAT (couture D) : un héros lanceur du groupe cible self/allié.
    *  Réservé aux sorts NON-offensifs — les Projectiles magiques exigent une cible ennemie (combat). */
-  oocCastSpell: (casterId, label, targetId, fromGrimoire) => {
+  oocCastSpell: (casterId, spellId, targetId, fromGrimoire) => {
     const { battle, party } = get();
     if (battle) return; // en combat : l'incantation passe par l'action de combat
     const caster = party.find((c) => c.id === casterId);
-    const spell = findSpell(label);
+    const spell = findSpellById(spellId);
     if (!caster || !spell) return;
     if (isMagicMissile(spell)) {
       get().log(`${spell.label} est un Projectile magique — il faut une cible ennemie (en combat).`);
       return;
     }
     const target = party.find((c) => c.id === targetId) ?? caster;
-    castSpell(get, set, caster, target, label, fromGrimoire); // pose `pendingCast` (missile:false, focused selon caster.focus)
+    castSpell(get, set, caster, target, spellId, fromGrimoire); // pose `pendingCast` (missile:false, focused selon caster.focus)
   },
 
   /** Focalise un sort d'Arcane/Domaine (Test étendu de Focalisation). */
@@ -2069,11 +2069,11 @@ export const useGame = create<GameState>((set, get) => ({
   },
   focusCancel: () => set({ pendingFocus: null }),
   /** Ouvre une Focalisation HORS COMBAT (couture D) : accumule `caster.focus` pour un Sort d'Arcane/Domaine. */
-  oocFocusSpell: (casterId, label) => {
+  oocFocusSpell: (casterId, spellId) => {
     const { battle, party } = get();
     if (battle) return; // en combat : Focalisation = action de combat
     const caster = party.find((c) => c.id === casterId);
-    const spell = findSpell(label);
+    const spell = findSpellById(spellId);
     if (!caster || !spell) return;
     if (!isArcaneSpell(spell)) {
       get().log('Ce sort ne peut pas être focalisé.');

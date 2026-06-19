@@ -13,9 +13,9 @@ import type { SceneEntity } from '../state/scene';
  * En vue du dessus (`dims.view==='top'`), un acteur (rig/plan) devient un disque-portrait centré ;
  * le décor (sprite) reste un billboard de face.
  */
-export function EntityToken({ ent, dims, scale = 0.55 }: { ent: SceneEntity; dims: Dims; scale?: number }) {
+export function EntityToken({ ent, dims, scale = 0.55, enrolled }: { ent: SceneEntity; dims: Dims; scale?: number; enrolled?: boolean }) {
   const top = dims.view === 'top';
-  const r = pickBackend({ kind: 'sceneEntity', ent }, dims.view);
+  const r = pickBackend({ kind: 'sceneEntity', ent, enrolled }, dims.view);
   // Centrée + mise à l'échelle de son empreinte par Taille (LDB 15 l.55) : une grande créature est
   // aussi grande dans l'éditeur qu'en combat. Objets/statiques : Taille indéfinie ⇒ ×1, inchangé.
   // Décor à empreinte rectangulaire (`foot {w,h}` : tente 2×2, tribune 3×1…) : même principe —

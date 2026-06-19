@@ -29,7 +29,7 @@ import { traumaFromKind } from '../engine/trauma';
 import { DAY_PHASES, minutesUntilNext } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
 import { feedFromMeal } from '../engine/provisions';
-import { findSpell } from '../data/index';
+import { findSpellById } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
 import { Effect } from './scene';
 import { type Flow, type FlowTest, flowFromEffects, flowEffects, testFlow, evalCondition, conditionCtx } from './flow';
@@ -477,7 +477,7 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
       case 'learnSpell': {
         // Trouvaille de campagne : le sort est appris SANS PX (l'auteur l'octroie — le coût
         // en PX ne vaut que pour la mémorisation volontaire, LDB 46 l.44-47).
-        const sp = findSpell(e.spell);
+        const sp = findSpellById(e.spell);
         if (!sp) break;
         let who = '';
         set((s: GameState) => {

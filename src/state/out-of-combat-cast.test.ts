@@ -41,7 +41,7 @@ describe('Incantation hors combat (couture D)', () => {
     ally.wounds.current = ally.wounds.max - 3;
     useGame.setState({ party });
 
-    useGame.getState().oocCastSpell(priest.id, 'Bénédiction de Guérison', ally.id);
+    useGame.getState().oocCastSpell(priest.id, 'benediction-de-guerison', ally.id);
     const pc = useGame.getState().pendingCast;
     expect(pc).toBeTruthy();
     expect(pc!.missile).toBe(false);
@@ -63,14 +63,14 @@ describe('Incantation hors combat (couture D)', () => {
   it('un Projectile magique (« Fléchette ») est refusé hors combat (offensif → combat-only)', () => {
     const wiz = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
     useGame.setState({ party: [wiz] });
-    useGame.getState().oocCastSpell(wiz.id, 'Fléchette', wiz.id);
+    useGame.getState().oocCastSpell(wiz.id, 'flechette', wiz.id);
     expect(useGame.getState().pendingCast).toBeNull(); // aucune modale ouverte
   });
 
   it('oocCastSpell est un no-op EN combat (l\'incantation passe par l\'action de combat)', () => {
     const { priest, party } = casterParty();
     useGame.setState({ party, battle: { combatants: [], over: false, log: [], round: 1, turn: 0, order: [], acted: false } } as never);
-    useGame.getState().oocCastSpell(priest.id, 'Bénédiction de Guérison', priest.id);
+    useGame.getState().oocCastSpell(priest.id, 'benediction-de-guerison', priest.id);
     expect(useGame.getState().pendingCast).toBeNull();
   });
 
@@ -83,7 +83,7 @@ describe('Incantation hors combat (couture D)', () => {
     useGame.setState({ party: [wiz], battle: null, pendingFocus: null });
     useGame.getState().seedRng(3);
 
-    useGame.getState().oocFocusSpell(wiz.id, 'Arme aethyrique');
+    useGame.getState().oocFocusSpell(wiz.id, 'arme-aethyrique');
     const pf = useGame.getState().pendingFocus;
     expect(pf).toBeTruthy();
     expect(pf!.casterId).toBe(wiz.id);

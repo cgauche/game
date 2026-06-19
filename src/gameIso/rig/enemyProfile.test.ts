@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { classifyEnemy, enemyRigProfile, entityRigProfile } from './enemyProfile';
 import { combatantOverlays } from './parts/combatantVisuals';
+import { creatures } from '../../data';
 import { mutationById } from '../../data/mutations';
 import { raceById } from './races';
 import { bipedDef } from './creatures';
@@ -178,5 +179,22 @@ describe('entityRigProfile (entité de scène, ambiance hors combat)', () => {
     const p = entityRigProfile('Soldat', 1, { traits: [] as never })!;
     expect(p.equip.weapons).toEqual([]); // pas de repli « Arme » générique (qui serait dessiné en épée)
     expect(p.equip.armour).toEqual([]);
+  });
+
+  it('repli record GATÉ par l’enrôlement : enrôlée (combattante) → équipée ; ambiance → mains libres', () => {
+    // Sans statbloc, l'équipement par défaut ne vient du record QUE si l'entité est ENRÔLÉE (membre d'une
+    // rencontre) — parité avec le spawn `creatureToCombatant`. Non enrôlée = ambiance = mains libres,
+    // même si le record porte un trait « Arme »/« Armure » (un villageois ne dégaine pas pour décorer).
+    // Cible : un id de créature rig dont le record produit une arme une fois enrôlé (découvert au runtime).
+    const target = creatures.find((c) => {
+      if (classifyEnemy(c.id) !== 'rig') return false;
+      const enrolled = entityRigProfile(c.id, 1, { enrolled: true });
+      return !!enrolled && enrolled.equip.weapons.length > 0;
+    });
+    expect(target, 'au moins une créature rig armée par son record').toBeTruthy();
+    const id = target!.id;
+    expect(entityRigProfile(id, 1, { enrolled: true })!.equip.weapons.length).toBeGreaterThan(0); // enrôlée → kit
+    expect(entityRigProfile(id, 1)!.equip.weapons).toEqual([]); // ambiance (défaut non enrôlée) → mains libres
+    expect(entityRigProfile(id, 1)!.equip.armour).toEqual([]);
   });
 });

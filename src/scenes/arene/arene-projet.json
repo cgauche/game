@@ -13167,7 +13167,7 @@
                   "kind": "do",
                   "effect": {
                     "type": "learnSpell",
-                    "spell": "Éblouissant"
+                    "spell": "eblouissant"
                   }
                 },
                 {
