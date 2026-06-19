@@ -12,7 +12,7 @@ import type { Dir8 } from './dir8';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import {
   activeCombatant, occupied, findFreeTile, removeEntity, checkTriggers, entityPickables, fireScheduledEffects,
-  applyEffects, applyEffectsLoot, runFlow, assignGearAt, harvestVictoryCreature, applySonneMeleeAdvantage, selectedAmmo, firedWeapon, resolveAttack,
+  applyEffects, applyEffectsLoot, runFlow, assignGearAt, harvestVictoryCreature, applySonneMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack,
   disengageOutcome, startDisengage, bestAdjacentReachable, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, attackWardGate,
   effectiveSpellOf, finishPlayerAction,
   applyMiscast, useSpellComponent, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven,
@@ -99,7 +99,7 @@ import { CAMPAIGN_START } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
 import { actorIn, touchActors } from './combatOrParty';
-import { FLOWS } from './rollFlows';
+import { FLOWS, rollFlowActions, rollFlowActionsMulti, type RollFlowActionsMap } from './rollFlows';
 import { gainCorruption, resolveRenounce, applyMutation } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
 import { spellSpecFor } from '../data/spellspecs';
@@ -218,7 +218,7 @@ export interface BattleState {
     | null;
 }
 
-export interface GameState {
+export interface GameState extends RollFlowActionsMap {
   screen: Screen;
   /** Codex : entrée ciblée à l'ouverture (depuis un `CodexRef`), null = page d'accueil du Codex.
    *  `instance` = libellé paramétré porté par le lien (« 8 Tentacules +8 ») affiché en tête de fiche. */
@@ -388,12 +388,9 @@ export interface GameState {
    *  règle optionnelle `fortune-mid-session` en mode 'manual'). Réutilise l'Effet `restoreFortune`
    *  (logique partagée via `engine/fortune.restoreFortune`) — pas de duplication. */
   restoreFortuneNow: () => void;
-  /** Jet d'Activité en attente (Revenus / lancer d'Artisanat — modale, fabrique rollFlow). */
+  /** Jet d'Activité en attente (Revenus / lancer d'Artisanat — modale, fabrique rollFlow).
+   *  Délégués `activity{Roll,Reroll,BonusSL,DarkPact}` : générés (RollFlowActionsMap). */
   pendingActivity: PendingActivity | null;
-  activityRoll: () => void;
-  activityReroll: () => void;
-  activityBonusSL: () => void;
-  activityDarkPact: () => void;
   activityCancel: () => void;
   activityConfirm: () => void;
   /** Activités (LDB 23) : Revenus, Artisanat (engager l'ouvrage puis lancer), banque. */
@@ -508,27 +505,16 @@ export interface GameState {
   repairArmour: (uid: string, heroId: string) => void;
   /** Marchandage (LDB 60 l.12) : ouvre un Test opposé (1/visite) ; réduit ensuite les prix de 10-20 %. */
   startBargain: (mode: 'buy' | 'sell') => void;
-  bargainRoll: () => void;
-  bargainReroll: () => void;
-  bargainBonusSL: () => void;
-  bargainDarkPact: () => void;
+  // bargain{Roll,Reroll,BonusSL,DarkPact} : générés (RollFlowActionsMap).
   bargainConfirm: () => void;
   bargainCancel: () => void;
   /** Évaluation (LDB 60 l.10) : Test d'Évaluation (Int) ; un succès révèle l'objet + estime son prix.
    *  `mode:'detect'` = Détection d'artefact (LDB 10) : Intuition au toucher, une tentative par objet. */
   appraiseItem: (uid: string, heroId: string, mode?: 'evaluate' | 'detect') => void;
-  appraiseRoll: () => void;
-  appraiseReroll: () => void;
-  appraiseBonusSL: () => void;
-  appraiseDarkPact: () => void;
+  // appraise{Roll,Reroll,BonusSL,DarkPact} : générés (RollFlowActionsMap).
   resolveAppraise: () => void;
   appraiseCancel: () => void;
-  testRoll: () => void;
-  testReroll: () => void;
-  /** Chance « +1 DR » (LDB ch.17 l.26) : ajoute un Degré de Réussite au Test figé, cumulable. */
-  testBonusSL: () => void;
-  /** Sombre Pacte (LDB 19 l.41) : +1 Corruption pour relancer le Test raté (même déjà relancé). */
-  testDarkPact: () => void;
+  // test{Roll,Reroll,BonusSL,DarkPact,ForceSuccess} : générés (RollFlowActionsMap).
   /** Détermination (LDB 17 l.62) : insensible à la Psychologie — retire le malus social
    *  (Animosité/Préjugé) du Test en cours, AVANT le jet. */
   testDetermination: () => void;
@@ -536,15 +522,12 @@ export interface GameState {
    *  d'une désignation automatique du meilleur. Re-cible valeur/cible/malus/outil. */
   testSetActor: (id: string) => void;
   resolveTest: () => void;
-  /** Exposition à une Influence corruptrice (LDB 19) : Lancer → Chance → Appliquer (gain selon DR). */
-  corruptionRoll: () => void;
+  /** Exposition à une Influence corruptrice (LDB 19) : Lancer → Chance → Appliquer (gain selon DR).
+   *  Délégués `corruption{Roll,Reroll,BonusSL,DarkPact}` : générés (RollFlowActionsMap). */
   /** Choisit Résistance/Calme AVANT le jet d'exposition (LDB 19 l.26 : « ou … comme déterminé par le
    *  MJ » — RAW indéterminé pour le trait de créature ; le joueur tranche, comme la Défense). Le SEUIL
    *  (l.80) reste figé sur Résistance et ignore cet appel. */
   corruptionSetSkill: (skill: 'resistance' | 'calme') => void;
-  corruptionReroll: () => void;
-  corruptionBonusSL: () => void;
-  corruptionDarkPact: () => void;
   resolveCorruption: () => void;
   closeDocument: () => void;
 
@@ -575,35 +558,19 @@ export interface GameState {
   restSleep: () => void;
   restCancel: () => void;
   restContinue: () => void;
-  healRoll: () => void;
-  healReroll: () => void;
-  healBonusSL: () => void;
-  healDarkPact: () => void;
-  healForceSuccess: () => void;
+  // heal{Roll,Reroll,BonusSL,DarkPact,ForceSuccess} : générés (RollFlowActionsMap).
   healConfirm: () => void;
   healCancel: () => void;
   /** Recharger l'arme à distance (LDB 63-Armures l.28-29) : OUVRE la modale de Test étendu de Projectiles. */
   battleReload: () => void;
-  /** Modale rechargement : « Lancer » effectue le Test de Projectiles (DR). */
-  reloadRoll: () => void;
-  /** Chance : relance le jet de rechargement raté (1 max). */
-  reloadReroll: () => void;
-  /** Chance « +1 DR » sur le jet de rechargement figé. */
-  reloadBonusSL: () => void;
-  reloadDarkPact: () => void;
+  // reload{Roll,Reroll,BonusSL,DarkPact} (Lancer/Chance/+1 DR/Pacte) : générés (RollFlowActionsMap).
   /** « Appliquer » : cumule le DR (Test étendu), recharge si ≥ Indice, consomme l'Action. */
   reloadConfirm: () => void;
   /** Ferme la modale de rechargement sans coût (avant le jet). */
   reloadCancel: () => void;
   /** Se libérer (Empêtré, Test opposé de Force) / se rouler au sol (En flammes, Athlétisme) : OUVRE la modale (LDB 16 l.61/77). */
   battleRecoverState: (state: 'empetre' | 'en-flammes') => void;
-  /** Modale « se libérer/se rouler » : « Lancer » effectue le Test (DR / opposition). */
-  recoverRoll: () => void;
-  /** Chance : relance le jet de récupération raté (1 max). */
-  recoverReroll: () => void;
-  /** Chance « +1 DR » sur le jet de récupération figé. */
-  recoverBonusSL: () => void;
-  recoverDarkPact: () => void;
+  // recover{Roll,Reroll,BonusSL,DarkPact} (Lancer/Chance/+1 DR/Pacte) : générés (RollFlowActionsMap).
   /** « Appliquer » : retire 1 + DR pions de l'État, consomme l'Action. */
   recoverConfirm: () => void;
   /** Ferme la modale de récupération sans coût (avant le jet). */
@@ -631,10 +598,7 @@ export interface GameState {
   usePartyItem: (heroId: string, uid: string) => void;
   /** Incantation par modale : « Lancer » fige le jet, Chance le relance, « Appliquer » résout. */
   castRoll: () => void;
-  castReroll: () => void;
-  castBonusSL: () => void;
-  /** Sombre Pacte (LDB 19 l.41) : +1 Corruption pour relancer l'incantation ratée. */
-  castDarkPact: () => void;
+  // cast{Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
   /** Incantation CRITIQUE (LDB 46 l.52-59) : choix de l'effet bonus (modale). */
   castSetCritChoice: (choice: 'critique' | 'puissance' | 'ineluctable') => void;
   /** Arme invoquée à forme libre (Arme aethyrique) : le lanceur choisit la forme/Spé de Corps à corps. */
@@ -652,47 +616,27 @@ export interface GameState {
   castConfirm: () => void;
   castCancel: () => void;
   /** Contre-sort à PLUSIEURS (flux multi `FLOWS.counterspell`) : chaque héros contre-lanceur a son
-   *  jet + son cycle Chance/+1 DR/Pacte/Résilience (ciblé par `pid`). */
-  counterspellRoll: (pid: string) => void;
-  counterspellReroll: (pid: string) => void;
-  counterspellBonusSL: (pid: string) => void;
-  counterspellDarkPact: (pid: string) => void;
-  counterspellForceSuccess: (pid: string) => void;
-  counterspellSetForcedRoll: (pid: string, roll: number) => void;
+   *  jet + son cycle Chance/+1 DR/Pacte/Résilience (ciblé par `pid`).
+   *  Délégués `counterspell{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll}` : générés (RollFlowActionsMap, MULTI). */
   /** « Appliquer » : agrège (dissipé si UN gagne ; sinon le Sort se résout au meilleur DR net) → castConfirm. */
   counterspellConfirm: () => void;
   /** « Laisser passer » : aucun Contre-sort retenu → le Sort se résout tel quel (castConfirm). */
   counterspellCancel: () => void;
   /** Test Étendu SÉQUENTIEL (LDB 12) : ouvre le flux (ex. crocheter DR 5) ; un Round à la fois. */
   startExtendedTest: (opts: { actorId: string; label: string; skillLabel: string; target: number; targetDR: number; flag?: string }) => void;
-  extendedTestRoll: (pid: string) => void;
-  extendedTestReroll: (pid: string) => void;
-  extendedTestBonusSL: (pid: string) => void;
-  extendedTestDarkPact: (pid: string) => void;
-  extendedTestForceSuccess: (pid: string) => void;
-  extendedTestSetForcedRoll: (pid: string, roll: number) => void;
+  // extendedTest{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap, MULTI).
   /** Cumule le DR du Round courant (LDB 12 l.200) ; total < 0 → recommence ; total ≥ cible → réussite. */
   extendedTestNext: () => void;
   extendedTestCancel: () => void;
   /** Enfoncer une porte à PLUSIEURS (EDO Appendice 2) : ouvre le flux (objet BE/B) ; chacun frappe. */
   startForceDoor: (opts: { label: string; doorBE: number; doorB: number; heroIds: string[]; flag?: string }) => void;
-  forceDoorRoll: (pid: string) => void;
-  forceDoorReroll: (pid: string) => void;
-  forceDoorBonusSL: (pid: string) => void;
-  forceDoorDarkPact: (pid: string) => void;
-  forceDoorForceSuccess: (pid: string) => void;
-  forceDoorSetForcedRoll: (pid: string, roll: number) => void;
+  // forceDoor{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap, MULTI).
   /** Applique les dégâts du Round (somme) ; porte à ≤ 0 B → cède (flag posé) ; sinon nouveau Round. */
   forceDoorConfirm: () => void;
   forceDoorCancel: () => void;
   /** CASCADE séquentielle (`FLOWS.cascade`) : jet de l'étape courante + cycle Chance/+1 DR/Pacte/
-   *  Résilience (ciblé par `pid` = id d'étape). */
-  cascadeRoll: (pid: string) => void;
-  cascadeReroll: (pid: string) => void;
-  cascadeBonusSL: (pid: string) => void;
-  cascadeDarkPact: (pid: string) => void;
-  cascadeForceSuccess: (pid: string) => void;
-  cascadeSetForcedRoll: (pid: string, roll: number) => void;
+   *  Résilience (ciblé par `pid` = id d'étape).
+   *  Délégués `cascade{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll}` : générés (RollFlowActionsMap, MULTI). */
   /** « Choix » d'une étape de séquence (analogue de cascadeRoll côté jet) : pose l'option retenue. */
   cascadeChoose: (pid: string, key: string) => void;
   /** « Étape suivante » : valide l'étape courante (conséquence + insertions), avance ; à la fin,
@@ -706,13 +650,8 @@ export interface GameState {
   /** Détermination (LDB 17 l.62) : immunité Psychologie sur l'étape `pid` (dépense 1 Détermination). */
   cascadeDetermine: (pid: string) => void;
   /** Incantation OPPOSÉE (`FLOWS.castOpposition`) : chaque CIBLE oppose son Test (FM/Int) — son jet
-   *  + cycle Chance/+1 DR/Pacte/Résilience (ciblé par `pid`). Cible IA = rangée témoin auto-roulée. */
-  oppositionRoll: (pid: string) => void;
-  oppositionReroll: (pid: string) => void;
-  oppositionBonusSL: (pid: string) => void;
-  oppositionDarkPact: (pid: string) => void;
-  oppositionForceSuccess: (pid: string) => void;
-  oppositionSetForcedRoll: (pid: string, roll: number) => void;
+   *  + cycle Chance/+1 DR/Pacte/Résilience (ciblé par `pid`). Cible IA = rangée témoin auto-roulée.
+   *  Délégués `opposition{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll}` : générés (RollFlowActionsMap, MULTI). */
   /** « Appliquer » : agrège les oppositions → `pendingCast.opposedOutcome` (résisté + marge par cible) → castConfirm. */
   oppositionConfirm: () => void;
   /** Incantation HORS COMBAT (couture D) : un héros lanceur cible self/allié ; sorts non-offensifs. */
@@ -755,15 +694,10 @@ export interface GameState {
   attackSetHeldGround: (v: boolean) => void;
   /** « Je ne faillirai pas ! » (RAW-2, LDB 17 l.73) : choisit la Localisation d'un Coup Critique forcé. */
   attackSetCritLocation: (loc: HitLocation) => void;
-  /** « Je ne faillirai pas ! » (LDB 17 l.73 : « vous choisissez le résultat ») : choisit la VALEUR du dé
-   *  d'un succès forcé (un double ≤ cible → Coup Critique, comme l'exemple Salundra l.75) et re-dérive
-   *  l'attaque. Refusé si la valeur ne serait pas une réussite. */
-  attackSetForcedRoll: (roll: number) => void;
   attackRoll: () => void;
-  attackReroll: () => void;
-  attackBonusSL: () => void;
-  /** Sombre Pacte (LDB 19 l.41) : +1 Corruption pour relancer l'attaque ratée (même déjà relancée). */
-  attackDarkPact: () => void;
+  // attack{Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
+  // `attackSetForcedRoll(roll)` (LDB 17 l.73 « vous choisissez le résultat ») : valeur du dé d'un succès
+  //  forcé (un double ≤ cible → Coup Critique, ex. Salundra l.75) ; re-dérive l'attaque, refusé si raté.
   attackConfirm: () => void;
   attackCancel: () => void;
   /** Balayage (Frappe Mortelle, LDB 14 l.12) : enchaîne l'attaque sur une cible adjacente (ouvre une
@@ -788,48 +722,29 @@ export interface GameState {
   /** Acquitte la révélation en tête de file (montre le dé du jet subi/sur table) ; reprend l'IA si vide. */
   dismissReveal: () => void;
   /** Piétinement par modale (LDB 85 l.320-321) : Lancer le jet, dépenser une Chance, appliquer (gratuit). */
-  trampleRoll: () => void;
-  trampleReroll: () => void;
-  trampleBonusSL: () => void;
-  trampleDarkPact: () => void;
-  trampleForceSuccess: () => void;
+  // trample{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
   trampleConfirm: () => void;
   trampleCancel: () => void;
   /** Manœuvre de créature par modale (LDB 85) : Lancer le jet d'ATTAQUANT (CC/CT), Chance/Pacte/
    *  Résilience l'influencent, Appliquer roule les défenseurs et résout l'opposition au feed. */
-  maneuverRoll: () => void;
-  maneuverReroll: () => void;
-  maneuverBonusSL: () => void;
-  maneuverDarkPact: () => void;
-  maneuverForceSuccess: () => void;
-  maneuverSetForcedRoll: (roll: number) => void;
+  // maneuver{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
   maneuverConfirm: () => void;
   maneuverCancel: () => void;
   /** Avantage dépensé par le Regard pétrifiant (variable, LDB 85 l.238) : 1..advantage → +N DR. */
   maneuverSetAvantage: (n: number) => void;
   /** Course (LDB 15 l.79-82) : ouvrir la modale, lancer le Test d'Athlétisme, Chance/Résilience, appliquer (déplacement étendu). */
   battleRun: (dest?: Pt) => void;
-  runRoll: () => void;
-  runReroll: () => void;
-  runForceSuccess: () => void;
-  runDarkPact: () => void;
+  // run{Roll,Reroll,ForceSuccess,DarkPact} : générés (RollFlowActionsMap).
   runConfirm: () => void;
   runCancel: () => void;
   /** Approche d'une source de Peur (LDB 21 l.29) : Test de Calme (+0) ; succès → l'intention différée est relancée. */
-  approachRoll: () => void;
-  approachReroll: () => void;
-  approachForceSuccess: () => void;
-  approachDarkPact: () => void;
+  // approach{Roll,Reroll,ForceSuccess,DarkPact} : générés (RollFlowActionsMap).
   approachConfirm: () => void;
   approachCancel: () => void;
   /** Se relever d'À Terre (LDB 16 l.37) : consomme le Mouvement (pas l'Action) ; impossible à 0 PB (LDB 18 l.28). */
   battleStandUp: () => void;
   /** Focalisation par modale (Test étendu) : Lancer, Chance, Appliquer (cumule le DR). */
-  focusRoll: () => void;
-  focusReroll: () => void;
-  focusBonusSL: () => void;
-  focusDarkPact: () => void;
-  focusForceSuccess: () => void;
+  // focus{Roll,Reroll,BonusSL,DarkPact,ForceSuccess} : générés (RollFlowActionsMap).
   focusConfirm: () => void;
   focusCancel: () => void;
   /** Focalisation HORS COMBAT (couture D) : ouvre la modale de Focalisation pour un héros lanceur du groupe. */
@@ -839,10 +754,7 @@ export interface GameState {
   //  applier 'combatPsych'.)
   /** Entrée en Frénésie d'un héros (LDB 21 l.32) : ouvrir la modale, lancer le Test de FM, Chance/Résilience, appliquer. */
   battleFrenzy: () => void;
-  frenzyRoll: () => void;
-  frenzyReroll: () => void;
-  frenzyForceSuccess: () => void;
-  frenzyDarkPact: () => void;
+  // frenzy{Roll,Reroll,ForceSuccess,DarkPact} : générés (RollFlowActionsMap).
   frenzyConfirm: () => void;
   frenzyCancel: () => void;
   /** Maladresse (modale héros, LDB 14) : lancer sur le Tableau des Oups !, puis appliquer l'effet. */
@@ -853,11 +765,7 @@ export interface GameState {
   defenseSetMode: (mode: 'parade' | 'esquive') => void;
   /** Choisit l'arme de parade (uid d'ItemInstance ; null = main principale) — avant le jet de défense. */
   defenseSetParryWeapon: (uid: string | null) => void;
-  defenseRoll: () => void;
-  defenseReroll: () => void;
-  defenseBonusSL: () => void;
-  /** Sombre Pacte du défenseur (LDB 19 l.41) : +1 Corruption pour relancer sa défense ratée. */
-  defenseDarkPact: () => void;
+  // defense{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
   defenseConfirm: () => void;
   defenseCancel: () => void;
   /** « Je te renie ! » (LDB 17 l.71) : résout le choix (true = refuser la mutation, 1 Résilience). */
@@ -875,20 +783,9 @@ export interface GameState {
   battleDisengage: () => void;
   disengageConfirmA: () => void; // Sacrifier l'Avantage
   disengageRoll: () => void; // Esquiver (lance le Test opposé)
-  disengageReroll: () => void;
-  disengageBonusSL: () => void;
-  /** Sombre Pacte du mover (LDB 19 l.41) : +1 Corruption pour relancer son Esquive ratée. */
-  disengageDarkPact: () => void;
-  // Résilience « Je ne faillirai pas ! » (LDB ch.17 l.73) : réussite garantie (opposé : DR +1).
-  testForceSuccess: () => void;
-  attackForceSuccess: () => void;
-  defenseForceSuccess: () => void;
-  castForceSuccess: () => void;
-  disengageForceSuccess: () => void;
-  // « vous choisissez le résultat » (l.73) : valeur du dé d'un Test forcé (11 → Critique, 01 → DR max).
-  defenseSetForcedRoll: (roll: number) => void;
-  castSetForcedRoll: (roll: number) => void;
-  trampleSetForcedRoll: (roll: number) => void;
+  // disengage{Reroll,BonusSL,DarkPact,ForceSuccess} : générés (RollFlowActionsMap).
+  // Résilience « Je ne faillirai pas ! » (LDB ch.17 l.73) + « vous choisissez le résultat » (dé forcé) :
+  // {test,attack,defense,cast,disengage}ForceSuccess et {defense,cast,trample}SetForcedRoll sont aussi générés.
   disengageConfirm: () => void; // Appliquer l'issue de l'Esquive
   disengageFlee: () => void; // Fuir : attaque dans le dos + Course
   disengageFleeAck: () => void; // « Continuer » après le coup dans le dos montré INLINE
@@ -1067,10 +964,7 @@ export const useGame = create<GameState>((set, get) => ({
   // logique — même case que le début de session, qui appelle `engine/fortune.restoreFortune`).
   restoreFortuneNow: () => applyEffects(get, set, [{ type: 'restoreFortune' }]),
   pendingActivity: null,
-  activityRoll: () => FLOWS.activity.roll(get, set),
-  activityReroll: () => FLOWS.activity.reroll(get, set),
-  activityBonusSL: () => FLOWS.activity.bonusSL(get, set),
-  activityDarkPact: () => FLOWS.activity.darkPact(get, set),
+  ...rollFlowActions('activity', FLOWS.activity, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
   activityCancel: () => FLOWS.activity.cancel(get, set),
   activityConfirm: () => interludeFlow.confirmActivity(get, set),
   interludeRevenus: (heroId) => interludeFlow.openRevenus(get, set, heroId),
@@ -1354,19 +1248,13 @@ export const useGame = create<GameState>((set, get) => ({
   confirmSell: () => merchantFlow.confirmSell(get, set),
   repairArmour: (uid, heroId) => merchantFlow.repairArmour(get, set, uid, heroId),
   startBargain: (mode) => merchantFlow.startBargain(get, set, mode),
-  bargainRoll: () => FLOWS.bargain.roll(get, set),
-  bargainReroll: () => FLOWS.bargain.reroll(get, set),
-  bargainBonusSL: () => FLOWS.bargain.bonusSL(get, set),
-  bargainDarkPact: () => FLOWS.bargain.darkPact(get, set),
+  ...rollFlowActions('bargain', FLOWS.bargain, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
   bargainConfirm: () => merchantFlow.bargainConfirm(get, set),
   bargainCancel: () => set({ pendingBargain: null }),
 
   appraiseItem: (uid, heroId, mode) => merchantFlow.appraiseItem(get, set, uid, heroId, mode),
   appraiseGear: (scope, index, mode) => merchantFlow.appraiseGear(get, set, scope, index, mode),
-  appraiseRoll: () => FLOWS.appraise.roll(get, set),
-  appraiseReroll: () => FLOWS.appraise.reroll(get, set),
-  appraiseBonusSL: () => FLOWS.appraise.bonusSL(get, set),
-  appraiseDarkPact: () => FLOWS.appraise.darkPact(get, set),
+  ...rollFlowActions('appraise', FLOWS.appraise, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
   resolveAppraise: () => merchantFlow.resolveAppraise(get, set),
   appraiseCancel: () => set({ pendingAppraise: null }),
 
@@ -1594,13 +1482,8 @@ export const useGame = create<GameState>((set, get) => ({
   restCancel: () => restFlow.restCancel(get, set),
   restContinue: () => restFlow.restContinue(get, set),
 
-  /** « Lancer » : effectue le jet de Guérison (Intermédiaire +0). */
-  healRoll: () => FLOWS.heal.roll(get, set),
-  /** Chance (relance / +1 DR) et Résilience : cf. spec `heal` de rollFlows. */
-  healReroll: () => FLOWS.heal.reroll(get, set),
-  healBonusSL: () => FLOWS.heal.bonusSL(get, set),
-  healDarkPact: () => FLOWS.heal.darkPact(get, set),
-  healForceSuccess: () => FLOWS.heal.forceSuccess(get, set),
+  // Guérison (LDB 09) : Lancer / Chance (relance / +1 DR) / Pacte / Résilience — cf. spec `heal`.
+  ...rollFlowActions('heal', FLOWS.heal, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
 
   /** « Appliquer » : applique le soin (le jet est déjà figé). Coûte l'Action en combat. L'infirmerie
    *  (`medic`) n'est PAS touchée : la modale persistante reste ouverte pour l'acte suivant. */
@@ -1704,10 +1587,8 @@ export const useGame = create<GameState>((set, get) => ({
     }
   },
   /** Contre-sort d'un HÉROS contre l'incantation ennemie figée (Dissipation, LDB 46 l.201-202). */
-  // Cycle Chance/Pacte/Résilience UNIFIÉ (fabrique rollFlow — spec `cast` de rollFlows.ts).
-  castReroll: () => FLOWS.cast.reroll(get, set),
-  castBonusSL: () => FLOWS.cast.bonusSL(get, set),
-  castDarkPact: () => FLOWS.cast.darkPact(get, set),
+  // Cycle Chance/Pacte UNIFIÉ (spec `cast`) — Résilience (forceSuccess/setForcedRoll) plus bas.
+  ...rollFlowActions('cast', FLOWS.cast, get, set, ['reroll', 'bonusSL', 'darkPact']),
   castConfirm: () => {
     const { pendingCast: pc } = get();
     if (!pc || !pc.result) return;
@@ -1834,12 +1715,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (caster && aiDriven(get(), caster) && get().battle) resumeEnemyTurn(get, set);
   },
   // Contre-sort à plusieurs (flux multi) : chaque verbe cible un participant via `pid` (fabrique unique).
-  counterspellRoll: (pid) => FLOWS.counterspell.roll(get, set, pid),
-  counterspellReroll: (pid) => FLOWS.counterspell.reroll(get, set, pid),
-  counterspellBonusSL: (pid) => FLOWS.counterspell.bonusSL(get, set, pid),
-  counterspellDarkPact: (pid) => FLOWS.counterspell.darkPact(get, set, pid),
-  counterspellForceSuccess: (pid) => FLOWS.counterspell.forceSuccess(get, set, pid),
-  counterspellSetForcedRoll: (pid, roll) => FLOWS.counterspell.setForcedRoll(get, set, roll, pid),
+  ...rollFlowActionsMulti('counterspell', FLOWS.counterspell, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll']),
   counterspellConfirm: () => {
     const pcs = get().pendingCounterspell;
     if (!pcs) return;
@@ -1867,12 +1743,7 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingExtendedTest: { ...opts, total: 0, rounds: [{ id: 'round-1', interactive: true, result: null }] } });
     startCascade(get, set, { title: opts.label, icon: '🗝️', purpose: 'test', steps: [{ id: 'ext-jet', kind: 'extendedJet', jet: 'extended', actorId: opts.actorId }] });
   },
-  extendedTestRoll: (pid) => FLOWS.extendedTest.roll(get, set, pid),
-  extendedTestReroll: (pid) => FLOWS.extendedTest.reroll(get, set, pid),
-  extendedTestBonusSL: (pid) => FLOWS.extendedTest.bonusSL(get, set, pid),
-  extendedTestDarkPact: (pid) => FLOWS.extendedTest.darkPact(get, set, pid),
-  extendedTestForceSuccess: (pid) => FLOWS.extendedTest.forceSuccess(get, set, pid),
-  extendedTestSetForcedRoll: (pid, roll) => FLOWS.extendedTest.setForcedRoll(get, set, roll, pid),
+  ...rollFlowActionsMulti('extendedTest', FLOWS.extendedTest, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll']),
   extendedTestNext: () => {
     const p = get().pendingExtendedTest;
     if (!p) return;
@@ -1906,12 +1777,7 @@ export const useGame = create<GameState>((set, get) => ({
     // '*' (action de GROUPE : chacun pilote ses héros), faute d'acteur unique sur l'étape.
     startCascade(get, set, { title: 'Enfoncer la porte', icon: '🔨', purpose: 'combat', steps: [{ id: 'forceDoor', kind: 'forceDoorStep', jet: 'forceDoor', groupOwner: true }] });
   },
-  forceDoorRoll: (pid) => FLOWS.forceDoor.roll(get, set, pid),
-  forceDoorReroll: (pid) => FLOWS.forceDoor.reroll(get, set, pid),
-  forceDoorBonusSL: (pid) => FLOWS.forceDoor.bonusSL(get, set, pid),
-  forceDoorDarkPact: (pid) => FLOWS.forceDoor.darkPact(get, set, pid),
-  forceDoorForceSuccess: (pid) => FLOWS.forceDoor.forceSuccess(get, set, pid),
-  forceDoorSetForcedRoll: (pid, roll) => FLOWS.forceDoor.setForcedRoll(get, set, roll, pid),
+  ...rollFlowActionsMulti('forceDoor', FLOWS.forceDoor, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll']),
   forceDoorConfirm: () => {
     const p = get().pendingForceDoor;
     if (!p) return;
@@ -1932,12 +1798,7 @@ export const useGame = create<GameState>((set, get) => ({
   // CASCADE séquentielle (jets de NUIT / VOYAGE) : flux multi SÉQUENTIEL générique (fabrique UNIQUE).
   // L'étape courante = `participants[cursor]` ; la conséquence par `kind` + l'avancée vivent dans
   // `advanceCascade` (state/cascade.ts), la finalisation propre au `purpose` ici.
-  cascadeRoll: (pid) => FLOWS.cascade.roll(get, set, pid),
-  cascadeReroll: (pid) => FLOWS.cascade.reroll(get, set, pid),
-  cascadeBonusSL: (pid) => FLOWS.cascade.bonusSL(get, set, pid),
-  cascadeDarkPact: (pid) => FLOWS.cascade.darkPact(get, set, pid),
-  cascadeForceSuccess: (pid) => FLOWS.cascade.forceSuccess(get, set, pid),
-  cascadeSetForcedRoll: (pid, roll) => FLOWS.cascade.setForcedRoll(get, set, roll, pid),
+  ...rollFlowActionsMulti('cascade', FLOWS.cascade, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll']),
   cascadeChoose: (pid, key) => setCascadeChoice(get, set, pid, key),
   cascadeNext: () => {
     const done = advanceCascade(get, set);
@@ -1978,12 +1839,8 @@ export const useGame = create<GameState>((set, get) => ({
   },
   // Incantation OPPOSÉE (multijet `FLOWS.castOpposition`) : chaque cible oppose son Test ; cible IA
   // = rangée témoin (jet auto-roulé à l'ouverture, cf. openCastOpposition). Mêmes 6 verbes que les autres flux.
-  oppositionRoll: (pid) => FLOWS.castOpposition.roll(get, set, pid),
-  oppositionReroll: (pid) => FLOWS.castOpposition.reroll(get, set, pid),
-  oppositionBonusSL: (pid) => FLOWS.castOpposition.bonusSL(get, set, pid),
-  oppositionDarkPact: (pid) => FLOWS.castOpposition.darkPact(get, set, pid),
-  oppositionForceSuccess: (pid) => FLOWS.castOpposition.forceSuccess(get, set, pid),
-  oppositionSetForcedRoll: (pid, roll) => FLOWS.castOpposition.setForcedRoll(get, set, roll, pid),
+  // Préfixe store `opposition` ≠ clé de flux `castOpposition` (handler passé explicitement).
+  ...rollFlowActionsMulti('opposition', FLOWS.castOpposition, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll']),
   oppositionConfirm: () => {
     const pco = get().pendingCastOpposition;
     const pc = get().pendingCast;
@@ -2032,11 +1889,7 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingFocus: { casterId: active.id, spellId: spell.id, result: null } });
   },
   // Focalisation COMMUNE combat/hors-combat (couture D) : acteur via `actorIn`, sortie journal hors combat.
-  focusRoll: () => FLOWS.focus.roll(get, set),
-  focusReroll: () => FLOWS.focus.reroll(get, set),
-  focusBonusSL: () => FLOWS.focus.bonusSL(get, set),
-  focusDarkPact: () => FLOWS.focus.darkPact(get, set),
-  focusForceSuccess: () => FLOWS.focus.forceSuccess(get, set),
+  ...rollFlowActions('focus', FLOWS.focus, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
   focusConfirm: () => {
     const { pendingFocus: pf } = get();
     if (!pf || !pf.result) return;
@@ -2103,10 +1956,7 @@ export const useGame = create<GameState>((set, get) => ({
     // OUVRE la modale — le Test de FM se fait au clic « Lancer ».
     set({ pendingFrenzy: { combatantId: active.id, result: null }, battle: { ...battle, action: null } });
   },
-  frenzyRoll: () => FLOWS.frenzy.roll(get, set),
-  frenzyReroll: () => FLOWS.frenzy.reroll(get, set),
-  frenzyForceSuccess: () => FLOWS.frenzy.forceSuccess(get, set),
-  frenzyDarkPact: () => FLOWS.frenzy.darkPact(get, set),
+  ...rollFlowActions('frenzy', FLOWS.frenzy, get, set, ['roll', 'reroll', 'forceSuccess', 'darkPact']),
   frenzyConfirm: () => {
     const { battle, pendingFrenzy: pf } = get();
     if (!battle || !pf || !pf.result) return;
@@ -2337,6 +2187,19 @@ export const useGame = create<GameState>((set, get) => ({
       bus.emit(EVT.SCENE_DIRTY);
       return;
     }
+    // Tir refusé faute de RESSOURCE (arme à Recharge non chargée / plus de munition) : on coupe AVANT
+    // l'aperçu (tap-1) pour que l'affordance ne mente pas — même prédicat que le réticule au survol
+    // (firedAttackBlock). Concerne UNIQUEMENT l'attaque directe (plan 'attack') avec l'arme tenue : une
+    // Charge/rejoindre (mêlée) ou une attaque gratuite (freeKind) n'emploie jamais l'arme à distance.
+    if (plan.kind === 'attack' && !option.freeKind) {
+      const block = firedAttackBlock(active, target);
+      if (block) {
+        get().log(block.detail);
+        if (battle.preview) set({ battle: { ...battle, preview: null } });
+        bus.emit(EVT.SCENE_DIRTY);
+        return;
+      }
+    }
     // Tap 1 : APERÇU — sauf confirmation (tests), ré-entrée du choix cavalier/monture,
     // ou re-tap de la même cible avec le même plan.
     const prev = battle.preview;
@@ -2455,18 +2318,8 @@ export const useGame = create<GameState>((set, get) => ({
       get().log('Cible hors de portée de mêlée.'); // aucune arme à distance dispo → mêlée hors de portée
       return;
     }
-    // Tir héros : une munition compatible est toujours requise ; l'arme « chargée » ne concerne QUE les
-    // armes à défaut Recharge (un Arc, sans Recharge, tire chaque Round sans recharger — LDB Armes).
-    if (w.type === 'ranged' && active.kind === 'hero') {
-      if ((w.reload ?? 0) > 0 && !active.loaded) {
-        get().log(`${active.name} doit recharger ${w.name}.`);
-        return;
-      }
-      if (!selectedAmmo(active, w)) {
-        get().log(`${active.name} n'a plus de munitions pour ${w.name}.`);
-        return;
-      }
-    }
+    // Le gate de RESSOURCE (Recharge non chargée / plus de munition) a déjà été appliqué plus haut, dès le
+    // plan 'attack', par firedAttackBlock — même prédicat que le réticule de survol (affordance honnête).
     // Ouvre la SÉQUENCE de combat : le jet d'attaque est l'ÉTAPE 0 (rendu par CascadeModal via
     // useAttackJetProps), ses conséquences s'empileront APRÈS dans la MÊME fenêtre. Les données du
     // jet vivent dans pendingAttack (coexistant) ; les actions attack* restent inchangées.
@@ -2653,10 +2506,7 @@ export const useGame = create<GameState>((set, get) => ({
       },
     });
   },
-  reloadRoll: () => FLOWS.reload.roll(get, set),
-  reloadReroll: () => FLOWS.reload.reroll(get, set),
-  reloadBonusSL: () => FLOWS.reload.bonusSL(get, set),
-  reloadDarkPact: () => FLOWS.reload.darkPact(get, set),
+  ...rollFlowActions('reload', FLOWS.reload, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
   reloadConfirm: () => {
     const { battle, pendingReload: pr } = get();
     if (!battle || !pr || pr.roll == null) return;
@@ -2715,10 +2565,7 @@ export const useGame = create<GameState>((set, get) => ({
       },
     });
   },
-  recoverRoll: () => FLOWS.recover.roll(get, set),
-  recoverReroll: () => FLOWS.recover.reroll(get, set),
-  recoverBonusSL: () => FLOWS.recover.bonusSL(get, set),
-  recoverDarkPact: () => FLOWS.recover.darkPact(get, set),
+  ...rollFlowActions('recover', FLOWS.recover, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
   recoverConfirm: () => {
     const { battle, pendingStateRecovery: sr } = get();
     if (!battle || !sr || sr.roll == null) return;
@@ -2905,10 +2752,8 @@ export const useGame = create<GameState>((set, get) => ({
     }
     set({ pendingAttack: { ...pa, result: r.res, victimId: r.victim?.id } });
   },
-  // Cycle Chance/Pacte/Résilience UNIFIÉ (fabrique rollFlow — spec `attack` de rollFlows.ts).
-  attackReroll: () => FLOWS.attack.reroll(get, set),
-  attackBonusSL: () => FLOWS.attack.bonusSL(get, set),
-  attackDarkPact: () => FLOWS.attack.darkPact(get, set),
+  // Cycle Chance/Pacte UNIFIÉ (spec `attack`) — Résilience (forceSuccess/setForcedRoll) plus bas.
+  ...rollFlowActions('attack', FLOWS.attack, get, set, ['reroll', 'bonusSL', 'darkPact']),
   attackConfirm: () => {
     const { battle, pendingAttack: pa } = get();
     if (!battle || !pa || !pa.result) return;
@@ -3075,12 +2920,7 @@ export const useGame = create<GameState>((set, get) => ({
     // wrapper roule les jets subis + checkBattleOver). Dépense TOUS les Avantages (min 2).
     if (kind === 'hurlement') applyWail(get, set, active);
   },
-  trampleRoll: () => FLOWS.trample.roll(get, set),
-  trampleReroll: () => FLOWS.trample.reroll(get, set),
-  trampleBonusSL: () => FLOWS.trample.bonusSL(get, set),
-  trampleDarkPact: () => FLOWS.trample.darkPact(get, set),
-  trampleForceSuccess: () => FLOWS.trample.forceSuccess(get, set),
-  trampleSetForcedRoll: (roll) => FLOWS.trample.setForcedRoll(get, set, roll),
+  ...rollFlowActions('trample', FLOWS.trample, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll']),
   trampleConfirm: () => {
     const { battle, pendingTrample: pt } = get();
     if (!battle || !pt || !pt.result) return;
@@ -3098,12 +2938,7 @@ export const useGame = create<GameState>((set, get) => ({
   // ── Manœuvre de créature par modale (Souffle/Vomi/Langue/Regard/Étreinte — LDB 85) : le jet de
   //    l'ATTAQUANT passe par FLOWS.maneuver (Lancer/Chance/Pacte/Résilience) ; « Appliquer » roule les
   //    défenseurs et résout l'opposition au feed via le RÉSOLVEUR GÉNÉRIQUE `resolveManeuver`. ──
-  maneuverRoll: () => FLOWS.maneuver.roll(get, set),
-  maneuverReroll: () => FLOWS.maneuver.reroll(get, set),
-  maneuverBonusSL: () => FLOWS.maneuver.bonusSL(get, set),
-  maneuverDarkPact: () => FLOWS.maneuver.darkPact(get, set),
-  maneuverForceSuccess: () => FLOWS.maneuver.forceSuccess(get, set),
-  maneuverSetForcedRoll: (roll) => FLOWS.maneuver.setForcedRoll(get, set, roll),
+  ...rollFlowActions('maneuver', FLOWS.maneuver, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll']),
   maneuverConfirm: () => {
     const { battle, pendingManeuver: pm } = get();
     if (!battle || !pm || !pm.result) return;
@@ -3148,10 +2983,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!active || active.kind !== 'hero' || isEngaged(active) || hasCondition(active, COND.aTerre) || !canTakeAction(active)) return; // Engagé/À Terre → pas de Course (LDB 16 l.37)
     set({ pendingRun: { combatantId: active.id, dest, result: null }, battle: { ...battle, action: null, preview: null } });
   },
-  runRoll: () => FLOWS.run.roll(get, set),
-  runReroll: () => FLOWS.run.reroll(get, set),
-  runForceSuccess: () => FLOWS.run.forceSuccess(get, set),
-  runDarkPact: () => FLOWS.run.darkPact(get, set),
+  ...rollFlowActions('run', FLOWS.run, get, set, ['roll', 'reroll', 'forceSuccess', 'darkPact']),
   runConfirm: () => {
     const { battle, scene, pendingRun: pr } = get();
     if (!battle || !scene || !pr || !pr.result || !pr.dest) return;
@@ -3201,10 +3033,7 @@ export const useGame = create<GameState>((set, get) => ({
   // ── Approche d'une source de Peur (LDB 21 l.29) : Test de Calme Intermédiaire (+0) qui DIFFÈRE le
   //    clic d'approche. Succès → fearGate 'passed' (approches libres ce Tour) + l'intention est relancée ;
   //    échec → fearGate 'failed' (aucune approche ce Tour). « Un jet = une modale ». ──
-  approachRoll: () => FLOWS.approach.roll(get, set),
-  approachReroll: () => FLOWS.approach.reroll(get, set),
-  approachForceSuccess: () => FLOWS.approach.forceSuccess(get, set),
-  approachDarkPact: () => FLOWS.approach.darkPact(get, set),
+  ...rollFlowActions('approach', FLOWS.approach, get, set, ['roll', 'reroll', 'forceSuccess', 'darkPact']),
   approachConfirm: () => {
     const { battle, pendingApproach: pa } = get();
     if (!battle || !pa || !pa.result) return;
@@ -3269,12 +3098,9 @@ export const useGame = create<GameState>((set, get) => ({
     if (!pd || pd.result) return; // choix d'arme de parade avant le jet seulement
     set({ pendingDefense: { ...pd, parryWeaponUid: uid ?? undefined } });
   },
-  // Cycle COMPLET unifié (fabrique rollFlow — spec `defense` de rollFlows.ts) : le jet initial
-  // est une résolution pure (le jet d'attaque `atk` reste figé dans tous les cas).
-  defenseRoll: () => FLOWS.defense.roll(get, set),
-  defenseReroll: () => FLOWS.defense.reroll(get, set),
-  defenseBonusSL: () => FLOWS.defense.bonusSL(get, set),
-  defenseDarkPact: () => FLOWS.defense.darkPact(get, set),
+  // Cycle unifié (spec `defense`) : jet initial = résolution pure (`atk` figé) ; Chance/Pacte ici,
+  // Résilience (forceSuccess/setForcedRoll) plus bas.
+  ...rollFlowActions('defense', FLOWS.defense, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
   defenseConfirm: () => {
     // « Appliquer » : applique le résultat puis REPREND le tour de l'IA suspendu.
     const { battle, pendingDefense: pd } = get();
@@ -3419,23 +3245,16 @@ export const useGame = create<GameState>((set, get) => ({
     const opp = resolveOpposed(def, pd.atk!); // mover = « attaquant » du Test opposé
     set({ pendingDisengage: { ...pd, phase: 'esquive', def, result: disengageOutcome(opp.winner) } });
   },
-  // Cycle Chance/Pacte/Résilience UNIFIÉ (fabrique rollFlow — spec `disengage` de rollFlows.ts) :
-  // le jet du foe (atk) reste figé, seule l'Esquive du mover se (re)joue.
-  disengageReroll: () => FLOWS.disengage.reroll(get, set),
-  disengageBonusSL: () => FLOWS.disengage.bonusSL(get, set),
-  disengageDarkPact: () => FLOWS.disengage.darkPact(get, set),
+  // Cycle Chance/Pacte UNIFIÉ (spec `disengage`) : foe (atk) figé, seule l'Esquive du mover se (re)joue.
+  ...rollFlowActions('disengage', FLOWS.disengage, get, set, ['reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
 
   // ── Résilience « Je ne faillirai pas ! » (LDB ch.17 l.73) : réussite garantie (opposé : DR +1)
   // et « vous choisissez le résultat » (dé choisi) — cycle UNIFIÉ par la fabrique rollFlow,
   // une spec par flux dans rollFlows.ts. Plus AUCUNE implémentation sur mesure ici. ──
-  testForceSuccess: () => FLOWS.test.forceSuccess(get, set),
-  attackForceSuccess: () => FLOWS.attack.forceSuccess(get, set),
-  attackSetForcedRoll: (roll) => FLOWS.attack.setForcedRoll(get, set, roll),
-  defenseForceSuccess: () => FLOWS.defense.forceSuccess(get, set),
-  defenseSetForcedRoll: (roll) => FLOWS.defense.setForcedRoll(get, set, roll),
-  castForceSuccess: () => FLOWS.cast.forceSuccess(get, set),
-  castSetForcedRoll: (roll) => FLOWS.cast.setForcedRoll(get, set, roll),
-  disengageForceSuccess: () => FLOWS.disengage.forceSuccess(get, set),
+  ...rollFlowActions('test', FLOWS.test, get, set, ['forceSuccess']),
+  ...rollFlowActions('attack', FLOWS.attack, get, set, ['forceSuccess', 'setForcedRoll']),
+  ...rollFlowActions('defense', FLOWS.defense, get, set, ['forceSuccess', 'setForcedRoll']),
+  ...rollFlowActions('cast', FLOWS.cast, get, set, ['forceSuccess', 'setForcedRoll']),
 
   // « Appliquer » : l'Esquive consomme l'Action dans les DEUX issues (l.89).
   disengageConfirm: () => {
@@ -3539,12 +3358,8 @@ export const useGame = create<GameState>((set, get) => ({
       ...(pc ? { pendingCascade: { ...pc, participants: pc.participants.map((st, k) => (k === pc.cursor ? { ...st, actorId: cand.id } : st)) } } : {}),
     });
   },
-  /** « Lancer » : effectue le jet du test en attente (hors combat). */
-  testRoll: () => FLOWS.test.roll(get, set),
-  /** Chance : relance (LDB Destin) / « +1 DR » (LDB ch.17 l.26), cf. spec `test` de rollFlows. */
-  testReroll: () => FLOWS.test.reroll(get, set),
-  testBonusSL: () => FLOWS.test.bonusSL(get, set),
-  testDarkPact: () => FLOWS.test.darkPact(get, set),
+  // Test de scène (hors combat) : Lancer / Chance (relance / +1 DR) / Pacte — Résilience plus haut.
+  ...rollFlowActions('test', FLOWS.test, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
   testDetermination: () => {
     const pt = get().pendingTest;
     if (!pt || pt.roll != null || !pt.psychMod) return; // AVANT le jet, et seulement si un malus psy pèse
@@ -3560,16 +3375,13 @@ export const useGame = create<GameState>((set, get) => ({
   },
 
   /** Exposition à une Influence corruptrice (LDB 19) — flux différé, cf. spec `corruption`. */
-  corruptionRoll: () => FLOWS.corruption.roll(get, set),
+  ...rollFlowActions('corruption', FLOWS.corruption, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact']),
   corruptionSetSkill: (skill) => {
     const pc = get().pendingCorruption;
     // Pré-jet uniquement, et JAMAIS si la compétence est déterminée en amont (source ou seuil).
     if (!pc || pc.roll != null || pc.skillLocked) return;
     set({ pendingCorruption: { ...pc, skill } });
   },
-  corruptionReroll: () => FLOWS.corruption.reroll(get, set),
-  corruptionBonusSL: () => FLOWS.corruption.bonusSL(get, set),
-  corruptionDarkPact: () => FLOWS.corruption.darkPact(get, set),
   /** Acquitte l'exposition (Points selon niveau + DR, puis seuil) OU le Test du SEUIL
    *  (kind 'seuil', LDB 19 l.80) : succès = Corruption contenue « pour cette fois » ;
    *  échec = « Je te renie ! » (Résilience) ou mutation (révélation 🧬). */

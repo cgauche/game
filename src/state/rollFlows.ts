@@ -21,7 +21,8 @@ import type {
 } from './store';
 import type { PendingActivity } from './interludeFlow';
 import type { Combatant, Weapon } from '../engine/types';
-import { makeRollFlow } from './rollFlow';
+import type { Get, Set } from './flowTypes';
+import { makeRollFlow, type RollFlowHandlers } from './rollFlow';
 import { battleRng } from './battleRng';
 import { actorIn, touchActors } from './combatOrParty';
 import {
@@ -64,6 +65,90 @@ function finishDefenseResult(attacker: Combatant, defender: Combatant, p: Pendin
     ? finishRanged(attacker, defender, p.weapon, p.atk, def, p.mode, p.distanceTiles, p.location ?? undefined, [], parry, dodgeMod)
     : finishMelee(attacker, defender, p.weapon, p.atk, def, p.mode, p.location ?? undefined, [], dodgeMod, undefined, parry);
 }
+
+// ── Délégués de jet du store : générateur + types (fin de la duplication ~113 lignes) ──
+//
+// Chaque flux de `FLOWS` est câblé dans le store sous des noms canoniques `<prefix><Verbe>`
+// (`trampleRoll`, `trampleReroll`…). Ces délégués étaient écrits À LA MAIN, un par ligne — un
+// SOUS-ENSEMBLE hétérogène des 6 verbes par flux (un flux sans `caps.forced` n'expose pas
+// `…ForceSuccess`/`…SetForcedRoll`, etc.). `rollFlowActions`/`rollFlowActionsMulti` reproduisent
+// EXACTEMENT le même ensemble de clés (le store passe la liste des verbes voulus) sans rien
+// recopier ; le runtime est byte-identique (mêmes appels `FLOWS.<x>.<m>(get, set[, …])`).
+
+/** Les 6 verbes du cycle de jet différé (cf. `RollFlowHandlers`). */
+export type RollVerb = 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll';
+
+const capitalize = <S extends string>(s: S): Capitalize<S> =>
+  (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<S>;
+
+/** Délégués MONO : `setForcedRoll` prend `(roll)`, les autres `()`. Clé = `${prefix}${Verbe}`. */
+export type MonoRollActions<P extends string, A extends RollVerb> = {
+  [K in A as `${P}${Capitalize<K>}`]: K extends 'setForcedRoll' ? (roll: number) => void : () => void;
+};
+/** Délégués MULTI : `pid` en tête (slot ciblé) ; `setForcedRoll` prend `(pid, roll)`. */
+export type MultiRollActions<P extends string, A extends RollVerb> = {
+  [K in A as `${P}${Capitalize<K>}`]: K extends 'setForcedRoll' ? (pid: string, roll: number) => void : (pid: string) => void;
+};
+
+/** Délégués MONO d'un flux : les verbes listés, byte-identiques aux anciens `() => FLOWS.x.m(get, set)`. */
+export function rollFlowActions<P extends string, const A extends readonly RollVerb[]>(
+  prefix: P, flow: RollFlowHandlers, get: Get, set: Set, verbs: A,
+): MonoRollActions<P, A[number]> {
+  const out: Record<string, (roll?: number) => void> = {};
+  for (const v of verbs) {
+    out[`${prefix}${capitalize(v)}`] = v === 'setForcedRoll'
+      ? (roll?: number) => flow.setForcedRoll(get, set, roll as number)
+      : () => flow[v](get, set);
+  }
+  return out as MonoRollActions<P, A[number]>;
+}
+
+/** Délégués MULTI d'un flux : `pid` en tête, byte-identiques aux anciens `(pid) => FLOWS.x.m(get, set, pid)`. */
+export function rollFlowActionsMulti<P extends string, const A extends readonly RollVerb[]>(
+  prefix: P, flow: RollFlowHandlers, get: Get, set: Set, verbs: A,
+): MultiRollActions<P, A[number]> {
+  const out: Record<string, (a?: string | number, b?: number) => void> = {};
+  for (const v of verbs) {
+    out[`${prefix}${capitalize(v)}`] = v === 'setForcedRoll'
+      ? (pid?: string | number, roll?: number) => flow.setForcedRoll(get, set, roll as number, pid as string)
+      : (pid?: string | number) => flow[v](get, set, pid as string);
+  }
+  return out as MultiRollActions<P, A[number]>;
+}
+
+/**
+ * Surface EXACTE des délégués de jet exposés par le store (113 clés), dédupliquée. Chaque flux
+ * applique le SOUS-ENSEMBLE de verbes qu'il exposait à la main (un flux sans `caps.forced`
+ * n'expose ni `…ForceSuccess` ni `…SetForcedRoll` ; certains n'ont ni `…BonusSL`, etc.). Les 5
+ * flux MULTI (`counterspell`/`extendedTest`/`forceDoor`/`cascade`/`opposition`) ajoutent `pid`.
+ * `GameState extends RollFlowActionsMap` — clés/signatures byte-identiques aux anciennes décls.
+ * ⚠️ Le SOUS-ENSEMBLE déclaré ici DOIT coïncider avec celui passé à `rollFlowActions(Multi)` dans
+ * le store (typecheck l'impose : l'objet du store doit satisfaire `GameState`).
+ */
+export type RollFlowActionsMap =
+  & MonoRollActions<'activity', 'roll' | 'reroll' | 'bonusSL' | 'darkPact'>
+  & MonoRollActions<'appraise', 'roll' | 'reroll' | 'bonusSL' | 'darkPact'>
+  & MonoRollActions<'approach', 'roll' | 'reroll' | 'darkPact' | 'forceSuccess'>
+  & MonoRollActions<'attack', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
+  & MonoRollActions<'bargain', 'roll' | 'reroll' | 'bonusSL' | 'darkPact'>
+  & MonoRollActions<'cast', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
+  & MonoRollActions<'corruption', 'roll' | 'reroll' | 'bonusSL' | 'darkPact'>
+  & MonoRollActions<'defense', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
+  & MonoRollActions<'disengage', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
+  & MonoRollActions<'focus', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
+  & MonoRollActions<'frenzy', 'roll' | 'reroll' | 'darkPact' | 'forceSuccess'>
+  & MonoRollActions<'heal', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
+  & MonoRollActions<'maneuver', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
+  & MonoRollActions<'recover', 'roll' | 'reroll' | 'bonusSL' | 'darkPact'>
+  & MonoRollActions<'reload', 'roll' | 'reroll' | 'bonusSL' | 'darkPact'>
+  & MonoRollActions<'run', 'roll' | 'reroll' | 'darkPact' | 'forceSuccess'>
+  & MonoRollActions<'test', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
+  & MonoRollActions<'trample', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
+  & MultiRollActions<'counterspell', RollVerb>
+  & MultiRollActions<'extendedTest', RollVerb>
+  & MultiRollActions<'forceDoor', RollVerb>
+  & MultiRollActions<'cascade', RollVerb>
+  & MultiRollActions<'opposition', RollVerb>;
 
 export const FLOWS = {
   /**
