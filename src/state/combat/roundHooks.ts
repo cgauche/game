@@ -12,7 +12,7 @@ import { battleRng } from '../battleRng';
 import { rollTest } from '../../engine/tests';
 import { testValue } from '../../engine/skills';
 import { bonus, effectiveChar, refreshWounds } from '../../engine/characteristics';
-import { addCondition, isOutOfAction, COND, tickDeath, stacks, removeCondition, endOfRound, loseWounds, hasCondition } from '../../engine/conditions';
+import { addCondition, isOutOfAction, COND, tickDeath, stacks, removeCondition, endOfRound, loseWounds, hasCondition, poisonResistValue, poisonResistApply, combatTestPenalty } from '../../engine/conditions';
 import { suffocationTick } from '../../engine/suffocation';
 import { clearPsychOf, calmeValue } from '../../engine/psychology';
 import { zonesRoundTick } from '../zones';
@@ -40,7 +40,9 @@ registerCombatHook({
   id: 'end-of-round', // dégâts/effets périodiques d'États (Empoisonné, En flammes, Hémorragique…) — RNG
   phase: 'roundBoundary',
   order: 10,
-  run: ({ battle, sink }) => { for (const c of battle.combatants) endOfRound(c, battleRng()).forEach((l) => sink(l, c)); },
+  // Pour un HÉROS, le Test de Résistance d'Empoisonné est DIFFÉRÉ à la cascade influençable (les
+  // DÉGÂTS restent appliqués ici) — `skipPoisonResist`. ENNEMIS : jet silencieux interne (ordre RNG inchangé).
+  run: ({ battle, sink }) => { for (const c of battle.combatants) endOfRound(c, battleRng(), { skipPoisonResist: c.kind === 'hero' }).forEach((l) => sink(l, c)); },
 });
 registerCombatHook({
   id: 'refresh-wounds', // dissipation d'un buff F/E/FM → recale les Blessures (LDB 85)
@@ -327,6 +329,14 @@ function effTarget(base: number, difficulty: Difficulty): number {
 export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, sink: (line: string, c: Combatant) => void): CascadeStep[] {
   if (c.kind !== 'hero' || isOutOfAction(c)) return [];
   const steps: CascadeStep[] = [];
+  // 0) Résistance à l'Empoisonné (LDB 16 l.70-72) — Test de Résistance Intermédiaire (+0). Les DÉGÂTS
+  //    périodiques ont DÉJÀ été appliqués par `endOfRound` (hook `end-of-round`, `skipPoisonResist`) ;
+  //    seul le Test passe en cascade. Placé en TÊTE (physiologique, groupé avec les dégâts de poison).
+  //    La pénalité d'États (−10 Empoisonné/Sonné/Exténué…) est repliée dans `target`, comme pour le Brisé.
+  if (stacks(c, COND.empoisonne) > 0) {
+    const base = poisonResistValue(c);
+    steps.push({ id: `poisonResist-${c.id}`, kind: 'poisonResist', actorId: c.id, icon: '☠️', rollLabel: 'Résistance', base, target: base + DIFFICULTY_MODIFIERS.intermediaire + combatTestPenalty(c), label: '☠️ Résistance à l’Empoisonné' });
+  }
   // 1) Mâchoires d'acier (LDB 10) — Test de Résistance Intermédiaire (+0).
   if (steelJawDue(c)) {
     const res = testValue(c, 'resistance');
@@ -359,6 +369,14 @@ function syncCombatant(get: Get, set: SetFn): void {
   set({ party: [...get().party] });
   if (get().battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
 }
+
+registerCascadeApplier('poisonResist', (get, set, step, hero) => {
+  if (!hero || !step.result) return;
+  const line = poisonResistApply(hero, step.result.success, step.result.sl);
+  syncCombatant(get, set);
+  // `poisonResistApply` peut renvoyer 2 lignes jointes (« éliminé » + « Exténué ») → on les sépare.
+  return { journal: line ? line.split('\n') : [`${hero.name} ne surmonte pas le poison (Résistance ratée).`] };
+});
 
 registerCascadeApplier('steelJaw', (get, set, step, hero) => {
   if (!hero || !step.result) return;

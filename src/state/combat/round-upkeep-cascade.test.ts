@@ -4,7 +4,7 @@ import { openRoundEndCascade } from '../combatFlow';
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { seedBattleRng } from '../battleRng';
-import { addCondition, stacks, COND } from '../../engine/conditions';
+import { addCondition, stacks, hasCondition, endOfRound, COND } from '../../engine/conditions';
 import { setRule, resetRule } from '../../engine/policy';
 import { testScene } from '../../scenes/test-fixture';
 import type { Combatant } from '../../engine/types';
@@ -102,9 +102,53 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
     expect(step.actorId).toBe(H.id);
   });
 
-  it('Aucun Test dû → aucune cascade ouverte', () => {
-    setup();
+  it('Empoisonné : héros → étape poisonResist (influençable, non lancée) ; ennemi JAMAIS une étape (silence)', () => {
+    seedBattleRng(3);
+    const { H, E } = setup();
+    addCondition(H, COND.empoisonne, 2);
+    addCondition(E, COND.empoisonne, 2);
+
     openRoundEndCascade(useGame.getState, useGame.setState);
-    expect(useGame.getState().pendingCascade).toBeNull();
+    const c = useGame.getState().pendingCascade!;
+    expect(c).toBeTruthy();
+    expect(c.purpose).toBe('combat');
+    expect(c.roundBoundary).toBe(true);
+    // UNE seule étape poisonResist (le héros) — l'ennemi n'est JAMAIS une étape (silence côté hook).
+    expect(c.participants).toHaveLength(1);
+    const step = c.participants[0];
+    expect(step.kind).toBe('poisonResist');
+    expect(step.actorId).toBe(H.id);
+    expect(step.rollLabel).toBe('Résistance');
+    expect(step.result).toBeFalsy(); // pas encore lancé → influençable (Chance/Résilience)
+    expect(c.participants.some((s) => s.actorId === E.id)).toBe(false);
+  });
+
+  it('Empoisonné : la validation de l’étape applique le retrait (E élevé → Résistance réussie + Exténué)', () => {
+    seedBattleRng(5); // graine où le Test (cible 85) réussit (roll 9)
+    const { H } = setup();
+    H.characteristics.E = 90; // Endurance élevée → Test de Résistance réussi
+    addCondition(H, COND.empoisonne, 1);
+
+    openRoundEndCascade(useGame.getState, useGame.setState);
+    const c = useGame.getState().pendingCascade!;
+    const step = c.participants.find((s) => s.kind === 'poisonResist')!;
+    expect(step).toBeTruthy();
+
+    useGame.getState().cascadeRoll(step.id);
+    useGame.getState().cascadeNext();
+    const h = useGame.getState().battle!.combatants.find((x) => x.id === H.id)!;
+    expect(hasCondition(h, COND.empoisonne)).toBe(false); // poison surmonté
+    expect(hasCondition(h, COND.extenue)).toBe(true);      // … → 1 Exténué (LDB 16 l.72)
+  });
+
+  it('endOfRound(skipPoisonResist) : les DÉGÂTS d’Empoisonné sont subis, le Test est différé (héros)', () => {
+    const { H } = setup();
+    addCondition(H, COND.empoisonne, 2);
+    const hpBefore = H.wounds.current;
+    // Le hook `end-of-round` appelle endOfRound avec skipPoisonResist=true pour un héros : DÉGÂTS oui, Test non.
+    endOfRound(H, makeRNG(1), { skipPoisonResist: true });
+    expect(H.wounds.current).toBe(hpBefore - 2);          // 2 Blessures subies (Empoisonné×2)
+    expect(stacks(H, COND.empoisonne)).toBe(2);           // aucun pion retiré (Test différé à la cascade)
+    expect(hasCondition(H, COND.extenue)).toBe(false);    // pas d'Exténué (le Test n'a pas eu lieu)
   });
 });

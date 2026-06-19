@@ -167,11 +167,38 @@ export function canTakeAction(c: Combatant): boolean {
   return !hasCondition(c, COND.sonne);
 }
 
+/** Valeur « brute » du Test de Résistance contre l'État Empoisonné (LDB 16 l.70 : Endurance +
+ *  Augmentations de Résistance). SOURCE UNIQUE, partagée par `endOfRound` (jet silencieux) et le
+ *  collecteur de cascade des HÉROS (étape influençable) — la difficulté Intermédiaire (+0) et la
+ *  pénalité d'États (`combatTestPenalty`) sont appliquées par l'appelant. */
+export function poisonResistValue(c: Combatant): number {
+  return effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
+}
+
+/** Conséquence d'un Test de Résistance contre l'État Empoisonné (LDB 16 l.70-72) : sur un succès,
+ *  retire 1 + DR pions ; une fois tous retirés, 1 État Exténué. PUR (mute `c`, renvoie la ligne de
+ *  journal ou null). Partagé par `endOfRound` (ENNEMIS, jet silencieux interne) et l'applier de
+ *  cascade (HÉROS, jet influençable) — exactement comme `steelJawApply`. */
+export function poisonResistApply(c: Combatant, success: boolean, sl: number): string | null {
+  const poison = stacks(c, COND.empoisonne);
+  if (!success || poison <= 0) return null;
+  const removed = Math.min(poison, 1 + Math.max(0, sl));
+  removeCondition(c, COND.empoisonne, removed);
+  const lines = [`${c.name} : ${removed} État(s) Empoisonné éliminé(s) (Résistance réussie).`];
+  if (!hasCondition(c, COND.empoisonne)) { addCondition(c, COND.extenue); lines.push(`${c.name} est Exténué (poison surmonté).`); }
+  return lines.join('\n');
+}
+
 /**
  * Fin de Round : dégâts périodiques (Hémorragique/Empoisonné/En flammes) et
  * dissipation des États temporaires (LDB ch.16). Retourne un journal.
+ *
+ * `opts.skipPoisonResist` : NE roule PAS le Test de Résistance d'Empoisonné (les DÉGÂTS sont
+ * appliqués quand même). Posé par le hook `end-of-round` pour un HÉROS → le Test devient une étape
+ * de cascade influençable (cf. `collectHeroRoundEndUpkeep`). Les DÉGÂTS restent ici pour tous ; seul
+ * le Test est différé. ENNEMIS : `opts` absent → comportement (et ORDRE RNG) inchangé.
  */
-export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
+export function endOfRound(c: Combatant, rng: RNG = defaultRNG, opts?: { skipPoisonResist?: boolean }): string[] {
   const log: string[] = [];
   // Hémorragique : 1 Blessure par point, en ignorant les modificateurs (l.104).
   // Endurci (LDB 10) : ignore niveau Point(s) de Blessure perdus par l'État Hémorragique.
@@ -186,14 +213,11 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
     loseWounds(c, poison);
     log.push(`${c.name} subit ${poison} Blessure(s) (Empoisonné).`);
     // Test de Résistance en fin de Round → retire 1 + DR États ; une fois tous retirés, 1 Exténué (l.70-72).
-    // (Difficulté « dictée par le poison » non modélisée → Intermédiaire +0 par défaut.)
-    const resistVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
-    const res = rollTest(resistVal, 'intermediaire', rng, combatTestPenalty(c));
-    if (res.success) {
-      const removed = Math.min(poison, 1 + Math.max(0, res.sl));
-      removeCondition(c, COND.empoisonne, removed);
-      log.push(`${c.name} : ${removed} État(s) Empoisonné éliminé(s) (Résistance réussie).`);
-      if (!hasCondition(c, COND.empoisonne)) { addCondition(c, COND.extenue); log.push(`${c.name} est Exténué (poison surmonté).`); }
+    // (Difficulté « dictée par le poison » non modélisée → Intermédiaire +0 par défaut.) Différé à la
+    // cascade pour un HÉROS (`skipPoisonResist`) — les DÉGÂTS ci-dessus, eux, restent appliqués.
+    if (!opts?.skipPoisonResist) {
+      const res = rollTest(poisonResistValue(c), 'intermediaire', rng, combatTestPenalty(c));
+      poisonResistApply(c, res.success, res.sl)?.split('\n').forEach((l) => log.push(l));
     }
   }
   // En flammes : 1d10 − BE − PA de la localisation la moins protégée (min 1), +1 par État en plus (l.77).
