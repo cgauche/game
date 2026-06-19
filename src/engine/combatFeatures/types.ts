@@ -77,8 +77,8 @@ export interface CombatFeature {
   stealAdvantage?: boolean;
   /** Maîtrise du combat : compte pour 1+niveau personnes au calcul du surnombre. */
   outnumberCount?: boolean;
-  /** Mâchoires d'acier : Test de Résistance pour ignorer des États Sonné gagnés (1 + DR). */
-  stunSave?: boolean;
+  // (Mâchoires d'acier n'est PLUS une CombatFeature : c'est un effet `onGainCondition` data-driven —
+  //  talents.json `effects` + brique `state/combat/triggeredTest` — résolu cadence-aware.)
   /** Cœur vaillant : tente de retirer le Brisé même Engagé (Calme en fin de Round). */
   braveheart?: boolean;
   /** Sans peur (LDB 10 l.859) : ignore Peur/Terreur de l'Ennemi spécifié (`ctx.spec` ; sans

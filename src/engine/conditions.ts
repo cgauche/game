@@ -29,6 +29,17 @@ export const COND = {
 /** Nombre de pions (cumul) d'un État donné. */
 export const stacks = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name)?.value ?? 0;
 
+/**
+ * Hook injecté (inversion de dépendance) appelé quand `c` GAGNE un État (nouveau ou empilé) — le
+ * moteur reste PUR (il ne connaît ni le store, ni les triggers). Le store le remplit (module feuille)
+ * pour câbler le déclencheur `onGainCondition` (Mâchoires d'acier : « chaque fois que vous gagnez un
+ * État Sonné »). Absent ⇒ aucune réaction (création de perso, effets hors combat, tests purs).
+ */
+let onConditionGained: ((c: Combatant, name: string) => void) | undefined;
+export function setConditionGainedHook(fn: ((c: Combatant, name: string) => void) | undefined): void {
+  onConditionGained = fn;
+}
+
 /** Retrait d'États « 1 + DR » borné au nombre de pions présents (LDB 16 : Empêtré l.61,
  *  En flammes l.77, Empoisonné l.70, Sonné l.125, arrêt d'Hémorragie l.107). Un Test raté n'en retire aucun. */
 export function recoveredStacks(dr: number, stacks: number, success: boolean): number {
@@ -51,6 +62,8 @@ export function addCondition(c: Combatant, name: string, value = 1, escapeStreng
   } else {
     c.conditions.push({ name, value, ...(escapeStrength != null ? { escapeStrength } : {}) });
   }
+  // L'État vient d'être GAGNÉ (nouveau ou empilé) → déclenche `onGainCondition` (Mâchoires d'acier).
+  onConditionGained?.(c, name);
 }
 
 /** Ajout d'un État À DURÉE (posé par un sort : « 1 État Sonné qui dure N Rounds », LDB).
@@ -64,8 +77,9 @@ export function addTimedCondition(c: Combatant, name: string, value: number, rou
     if (escapeStrength != null) existing.escapeStrength = Math.max(existing.escapeStrength ?? 0, escapeStrength);
     if (existing.roundsLeft != null) existing.roundsLeft = Math.max(existing.roundsLeft, rounds);
     // sinon : instance non temporisée — elle le reste.
+    onConditionGained?.(c, name); // État empilé (gagné) → déclenche `onGainCondition`
   } else {
-    addCondition(c, name, value, escapeStrength);
+    addCondition(c, name, value, escapeStrength); // (déclenche déjà `onGainCondition`)
     c.conditions.find((x) => x.name === name)!.roundsLeft = rounds;
   }
 }
@@ -178,7 +192,7 @@ export function poisonResistValue(c: Combatant): number {
 /** Conséquence d'un Test de Résistance contre l'État Empoisonné (LDB 16 l.70-72) : sur un succès,
  *  retire 1 + DR pions ; une fois tous retirés, 1 État Exténué. PUR (mute `c`, renvoie la ligne de
  *  journal ou null). Partagé par `endOfRound` (ENNEMIS, jet silencieux interne) et l'applier de
- *  cascade (HÉROS, jet influençable) — exactement comme `steelJawApply`. */
+ *  cascade `poisonResist` (HÉROS, jet influençable). */
 export function poisonResistApply(c: Combatant, success: boolean, sl: number): string | null {
   const poison = stacks(c, COND.empoisonne);
   if (!success || poison <= 0) return null;

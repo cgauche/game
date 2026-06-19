@@ -45,27 +45,8 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
     return { H, E };
   }
 
-  it('Mâchoires d’acier : héros Sonné → étape steelJaw dans la cascade ; ennemi Sonné non testé ici', () => {
-    seedBattleRng(7);
-    const { H, E } = setup();
-    H.talents = [...(H.talents ?? []), { talentId: 'machoires-d-acier', times: 1 }];
-    E.talents = [...(E.talents ?? []), { talentId: 'machoires-d-acier', times: 1 }];
-    addCondition(H, COND.sonne, 2);
-    addCondition(E, COND.sonne, 2);
-
-    openRoundEndCascade(useGame.getState, useGame.setState);
-    const c = useGame.getState().pendingCascade!;
-    expect(c).toBeTruthy();
-    expect(c.purpose).toBe('combat');
-    expect(c.roundBoundary).toBe(true);
-    // UNE seule étape (le héros) — l'ennemi n'est JAMAIS une étape de cascade (silence côté hook).
-    expect(c.participants).toHaveLength(1);
-    const step = c.participants[0];
-    expect(step.kind).toBe('steelJaw');
-    expect(step.actorId).toBe(H.id);
-    expect(step.result).toBeFalsy(); // pas encore lancé → influençable
-    expect(c.participants.some((s) => s.actorId === E.id)).toBe(false);
-  });
+  // (Mâchoires d'acier n'est plus un Test de FIN de Round : c'est un effet `onGainCondition` data-driven,
+  //  déclenché À L'ACQUISITION du Sonné — couvert par `triggered-test.test.ts` (brique cadence-aware).)
 
   it('Récupération du Brisé : héros Brisé (non Engagé) → étape brokenRecovery ; succès retire ≥ 1 Brisé', () => {
     seedBattleRng(1);

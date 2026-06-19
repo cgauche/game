@@ -3,7 +3,7 @@ import {
   talentDamageBonus, isSlayer, talentDamageReduction, talentCritExtraWounds, talentRangedAPIgnore,
   ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust, talentInitiativeBonus,
   canPreemptRanged, hasSurpriseSave, reloadDRBonus, runMovementBonus, fleeMovementBonus,
-  shieldAdvantageLevel, hasRiposte, hasStealAdvantage, outnumberCountBonus, hasStunSave,
+  shieldAdvantageLevel, hasRiposte, hasStealAdvantage, outnumberCountBonus,
   hasBraveheart, bleedIgnoreLevel, talentMagicResistance, talentFearIndice, talentTestDR,
   talentReverseFailed, offHandPenalty,
 } from './dispatch';
@@ -110,8 +110,9 @@ describe('défense / récupération (LDB 10)', () => {
     expect(c.wounds.current).toBe(11); // 2 pions − 1 ignoré = 1 PB perdu
     expect(bleedIgnoreLevel(c)).toBe(1);
   });
-  it('Mâchoires d’acier / Cœur vaillant / Résistance à la Magie (talent) / Effrayant', () => {
-    expect(hasStunSave(mk([{ name: "Mâchoires d'acier", times: 1 }]))).toBe(true);
+  // (Mâchoires d'acier n'est plus une CombatFeature `stunSave` : c'est un effet `onGainCondition`
+  //  data-driven — couvert par les tests de la brique `state/combat/triggeredTest`.)
+  it('Cœur vaillant / Résistance à la Magie (talent) / Effrayant', () => {
     expect(hasBraveheart(mk([{ name: 'Cœur vaillant', times: 1 }]))).toBe(true);
     expect(talentMagicResistance(mk([{ name: 'Résistance à la Magie', times: 2 }]))).toBe(4);
     expect(talentFearIndice(mk([{ name: 'Effrayant', times: 2 }]))).toBe(2);

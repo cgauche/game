@@ -232,10 +232,12 @@ export type Flow =
 export const EMPTY_FLOW: Flow = { kind: 'seq', steps: [] };
 
 /** DÉCLENCHEUR d'un effet « sur événement » — le pendant du « au lancement » des sorts. Partagé par
- *  TOUT porteur d'effets déclenchés (Trait de créature, Atout d'arme…). `onHit` : après une touche
- *  réussie (du porteur ou de l'arme) ; `onWoundLoss` : quand le porteur PERD des PB ; `onRoundStart` :
- *  au début de son Round ; `onStartled` : magie / bruit fort ; `onKill` : adversaire mis hors de combat. */
-export type EffectTrigger = 'onHit' | 'onWoundLoss' | 'onRoundStart' | 'onStartled' | 'onKill' | 'onCharged';
+ *  TOUT porteur d'effets déclenchés (Trait de créature, Atout d'arme, Talent…). `onHit` : après une
+ *  touche réussie (du porteur ou de l'arme) ; `onWoundLoss` : quand le porteur PERD des PB ;
+ *  `onRoundStart` : au début de son Round ; `onStartled` : magie / bruit fort ; `onKill` : adversaire
+ *  mis hors de combat ; `onGainCondition` : le porteur vient de GAGNER un État (filtré par `condition` —
+ *  Mâchoires d'acier : « chaque fois que vous gagnez un État Sonné »). */
+export type EffectTrigger = 'onHit' | 'onWoundLoss' | 'onRoundStart' | 'onStartled' | 'onKill' | 'onCharged' | 'onGainCondition';
 
 /** Effet DÉCLENCHÉ authoré (donnée éditable) : un Flow d'ops appliqué à `on` quand `trigger` se produit.
  *  GÉNÉRIQUE — porté indifféremment par `TraitData.effects` (Toile, Sang corrosif…) ET `QualityData.effects`
@@ -250,6 +252,10 @@ export interface TriggeredEffect {
   trigger: EffectTrigger;
   on: EffectTargeting;
   flow: Flow;
+  /** Filtre du déclencheur `onGainCondition` : ne réagit que si l'État GAGNÉ a cet `id` (Mâchoires
+   *  d'acier : `condition:'sonne'`). Absent = réagit à n'importe quel État gagné. Inerte pour les
+   *  autres triggers. */
+  condition?: string;
 }
 
 /** Enveloppe une liste d'`Effect` (ancien format) en un Flow `seq` de `do` — pont de migration des

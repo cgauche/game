@@ -19,7 +19,7 @@ import { zonesRoundTick } from '../zones';
 import { purgeExpiredSummons } from '../summonFlow';
 import { fireTriggers } from '../triggeredEffects';
 import { isUnstable, isBestial, hasPerturbingAura } from '../../engine/traits/dispatch';
-import { outnumberCountBonus, hasStunSave, hasBraveheart } from '../../engine/combatFeatures/dispatch';
+import { outnumberCountBonus, hasBraveheart } from '../../engine/combatFeatures/dispatch';
 import { chebyshev } from '../path';
 import { isEngaged } from '../../engine/engagement';
 import { lineOfSightCover } from '../lineOfSight';
@@ -38,7 +38,7 @@ import type { Get, Set as SetFn } from '../flowTypes';
  * redondante). C'est l'axe RÉEL de l'interactivité (kind × cadence), PAS `kind` seul (un héros auto-piloté
  * n'est pas « interactif »). Une seule source pour tous les hooks d'upkeep + le collecteur de cascade.
  */
-function roundTestInteractive(c: Combatant): boolean {
+export function roundTestInteractive(c: Combatant): boolean {
   return c.kind === 'hero' && !cadenceAuto();
 }
 
@@ -147,33 +147,10 @@ registerCombatHook({
     }
   },
 });
-/** Mâchoires d'acier (LDB 10) DUE pour `c` ce Round : capable + au moins un État Sonné. */
-function steelJawDue(c: Combatant): boolean {
-  return !isOutOfAction(c) && hasStunSave(c) && stacks(c, COND.sonne) > 0;
-}
-/** Conséquence d'un Test de Résistance « Mâchoires d'acier » réussi : retire 1 + DR États Sonné.
- *  Partagée par le hook (ENNEMIS, en masse) et l'applier de cascade (HÉROS, influençable). */
-function steelJawApply(c: Combatant, success: boolean, sl: number): string | null {
-  if (!success) return null;
-  const n = Math.min(stacks(c, COND.sonne), 1 + Math.max(0, sl));
-  if (n <= 0) return null;
-  removeCondition(c, COND.sonne, n);
-  return `${c.name} secoue la tête (Mâchoires d'acier) : ${n} État(s) Sonné retiré(s).`;
-}
-registerCombatHook({
-  id: 'steel-jaw', // Mâchoires d'acier (LDB 10) : Test de Résistance → retire 1 + DR États Sonné (RNG)
-  phase: 'roundBoundary',
-  order: 60,
-  run: ({ battle, sink }) => {
-    for (const c of battle.combatants) {
-      // Héros MANUEL : différé à la cascade influençable. Non-interactif (monstre / rapide / auto) : silence.
-      if (roundTestInteractive(c) || !steelJawDue(c)) continue;
-      const t = rollTest(testValue(c, 'resistance'), 'intermediaire', battleRng());
-      const line = steelJawApply(c, t.success, t.sl);
-      if (line) sink(line, c);
-    }
-  },
-});
+// Mâchoires d'acier (LDB 10) NE vit PLUS comme un hook de franchissement de Round : c'est un effet
+// DÉCLENCHÉ `onGainCondition` data-driven (talents.json) — « chaque fois que vous gagnez un État Sonné »,
+// résolu cadence-aware par la brique `combat/triggeredTest` (héros manuel → cascade influençable ;
+// ennemi/auto → jet inline). L'ordre 60 du franchissement de Round est désormais libre.
 
 // Détermination (LDB 17 l.62/64) : décomptes de fin de Round (flags, RNG-free).
 registerCombatHook({
@@ -346,8 +323,8 @@ function effTarget(base: number, difficulty: Difficulty): number {
 
 /**
  * Tests d'upkeep de fin de Round DUS pour le héros `c` ce Round, en ÉTAPES de cascade (jumeau des
- * collecteurs de Psychologie). Ordre : Mâchoires d'acier → récupération du Brisé → se-fatiguer (du
- * plus mécanique au plus optionnel). Side-effect ASSUMÉ (comme `endFrenzyIfDone` côté psy) : le
+ * collecteurs de Psychologie). Ordre : Empoisonné → récupération du Brisé → se-fatiguer (du plus
+ * mécanique au plus optionnel). Side-effect ASSUMÉ (comme `endFrenzyIfDone` côté psy) : le
  * retrait « caché » du Brisé et l'Exténué SANS-Test sont appliqués ICI (RNG-free, déterministes via
  * `sink`) ; seuls les Tests réellement dus deviennent des étapes influençables.
  */
@@ -364,11 +341,8 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, sink: (line: s
     const base = poisonResistValue(c);
     steps.push({ id: `poisonResist-${c.id}`, kind: 'poisonResist', actorId: c.id, icon: '☠️', rollLabel: 'Résistance', base, target: base + DIFFICULTY_MODIFIERS.intermediaire + combatTestPenalty(c), label: '☠️ Résistance à l’Empoisonné' });
   }
-  // 1) Mâchoires d'acier (LDB 10) — Test de Résistance Intermédiaire (+0).
-  if (steelJawDue(c)) {
-    const res = testValue(c, 'resistance');
-    steps.push({ id: `steelJaw-${c.id}`, kind: 'steelJaw', actorId: c.id, icon: '🦷', rollLabel: 'Résistance', base: res, target: res, label: '🦷 Mâchoires d’acier' });
-  }
+  // (Mâchoires d'acier n'est PLUS un Test de fin de Round : c'est un effet `onGainCondition` data-driven,
+  //  déclenché à l'acquisition du Sonné — cf. talents.json + brique `combat/triggeredTest`.)
   // 2) Récupération du Brisé (LDB 16) — retrait « caché » + Exténué SANS-Test appliqués ici ; le Test
   //    de Calme (difficulté variable) devient une étape si dû.
   const bctx = brokenContext(get, c);
@@ -405,12 +379,8 @@ registerCascadeApplier('poisonResist', (get, set, step, hero) => {
   return { journal: line ? line.split('\n') : [`${hero.name} ne surmonte pas le poison (Résistance ratée).`] };
 });
 
-registerCascadeApplier('steelJaw', (get, set, step, hero) => {
-  if (!hero || !step.result) return;
-  const line = steelJawApply(hero, step.result.success, step.result.sl);
-  syncCombatant(get, set);
-  return { journal: line ? [line] : [`${hero.name} reste Sonné (Mâchoires d’acier ratée).`] };
-});
+// (L'applier de cascade 'steelJaw' a disparu : Mâchoires passe par l'applier GÉNÉRIQUE 'triggeredTest'
+//  — conséquence en DONNÉE, zéro applier par talent. Cf. brique `combat/triggeredTest`.)
 
 registerCascadeApplier('brokenRecovery', (get, set, step, hero) => {
   if (!hero || !step.result) return;

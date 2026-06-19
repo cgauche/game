@@ -1661,9 +1661,42 @@
       "book": "LDB",
       "page": 140
     },
-    "combat": {
-      "stunSave": true
-    }
+    "effects": [
+      {
+        "trigger": "onGainCondition",
+        "condition": "sonne",
+        "on": "self",
+        "flow": {
+          "kind": "test",
+          "test": {
+            "skill": "resistance",
+            "difficulty": "intermediaire"
+          },
+          "success": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "self",
+              "ops": [
+                {
+                  "op": "removeCondition",
+                  "name": "sonne",
+                  "value": 1,
+                  "valuePerSL": {
+                    "every": 1,
+                    "amount": 1
+                  }
+                }
+              ]
+            }
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": []
+          }
+        }
+      }
+    ]
   },
   {
     "id": "mage-de-guerre",

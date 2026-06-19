@@ -10,7 +10,7 @@
  * « Force de la source » = sa Force.
  */
 import type { Combatant, Weapon, HitLocation } from '../engine/types';
-import type { Get } from './flowTypes';
+import type { Get, Set as SetFn } from './flowTypes';
 import type { EffectTrigger, TriggeredEffect, Flow } from './flow';
 import type { GameOp } from '../engine/ops';
 import { resolveQualities } from '../engine/qualities/dispatch';
@@ -82,11 +82,28 @@ export interface TriggerCtx { victim?: Combatant; weapon?: Weapon; rng?: RNG; ma
   location?: HitLocation;
   /** KIND de l'attaque courante (`creatureAttackKind` : 'morsure'/'cornes'/…) — alimente la Condition Flow
    *  `attackKind` (Vampirique : Vol de vie sur Morsure seulement). */
-  attackKind?: string }
+  attackKind?: string;
+  /** ID de l'État qui vient d'être GAGNÉ (déclencheur `onGainCondition`) — filtre les effets dont
+   *  `condition` ne le matche pas (Mâchoires d'acier : `condition:'sonne'`). */
+  conditionName?: string;
+  /** `set` du store — fourni UNIQUEMENT quand un Test de trigger peut être routé en cascade
+   *  influençable (hook `onGainCondition` côté store). Absent → résolution synchrone (`runSpellFlow`,
+   *  branche succès) comme aujourd'hui pour tous les triggers existants (onHit/onWoundLoss/…). */
+  set?: SetFn }
+
+/** ROUTEUR d'un Test de trigger vers la voie CADENCE-AWARE (héros manuel → cascade influençable ;
+ *  sinon → jet inline). Injecté par la brique `state/combat/triggeredTest.ts` (inversion de dépendance :
+ *  ce module reste pur, sans import de la brique → pas de cycle). Absent ⇒ aucun routage (les triggers
+ *  existants restent en `runSpellFlow`, branche succès silencieuse). */
+type TestRouter = (get: Get, set: SetFn, target: Combatant, actor: Combatant, node: Extract<Flow, { kind: 'test' }>) => void;
+let testRouter: TestRouter | undefined;
+export function setTriggeredTestRouter(fn: TestRouter): void { testRouter = fn; }
 
 /** CŒUR d'application : applique une LISTE d'effets `TriggeredEffect` de `actor` correspondant à
  *  `trigger`, chacun via `runSpellFlow` aux cibles résolues (`on`). Source UNIQUE : utilisé par
- *  `fireTriggers` (effets de traits/atouts) ET par les manœuvres (effets du profil de manœuvre). */
+ *  `fireTriggers` (effets de traits/atouts) ET par les manœuvres (effets du profil de manœuvre).
+ *  Un effet dont le Flow est un nœud `test` ET pour lequel `ctx.set` + le routeur sont fournis (hook
+ *  `onGainCondition`) est ROUTÉ vers la voie cadence-aware (jamais la branche succès silencieuse). */
 export function applyTriggeredEffects(
   get: Get, actor: Combatant, effects: TriggeredEffect[], trigger: EffectTrigger, ctx: TriggerCtx = {},
 ): string[] {
@@ -94,8 +111,13 @@ export function applyTriggeredEffects(
   const rng = ctx.rng ?? defaultRNG;
   for (const eff of effects) {
     if (eff.trigger !== trigger) continue;
+    // Filtre `onGainCondition` : ne réagit qu'à l'État effectivement gagné (Mâchoires → 'sonne').
+    if (eff.condition && eff.condition !== ctx.conditionName) continue;
     for (const t of targetsFor(get, actor, eff.on, ctx.victim)) {
       if (isOutOfAction(t)) continue;
+      // Test routable (héros manuel → cascade ; ennemi/auto → inline) plutôt que la branche succès
+      // silencieuse de `runSpellFlow` — seulement si l'appelant fournit `set` + un routeur installé.
+      if (eff.flow.kind === 'test' && ctx.set && testRouter) { testRouter(get, ctx.set, t, actor, eff.flow); continue; }
       lines.push(...runSpellFlow(t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, location: ctx.location, attackKind: ctx.attackKind }));
     }
   }

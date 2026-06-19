@@ -354,6 +354,7 @@ const TRIGGER_LABEL: Record<EffectTrigger, string> = {
   onStartled: 'magie / bruit fort',
   onKill: 'quand il neutralise un adversaire',
   onCharged: 'quand le porteur est Chargé',
+  onGainCondition: 'quand le porteur gagne un État',
 };
 const ON_LABEL: Record<'self' | 'victim' | 'engaged', string> = {
   self: 'le porteur lui-même',
