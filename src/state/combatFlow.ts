@@ -49,13 +49,13 @@ import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, cle
 import { gainAdvantage } from '../engine/advantage';
 import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, occupiesTile } from './footprint';
-import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSize, hasBladeTrap, canPushback, strikesLast, isFirearmQuality } from '../engine/qualities/dispatch';
+import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality } from '../engine/qualities/dispatch';
 import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf } from './triggeredEffects';
 import { hasStealAdvantage, shieldAdvantageLevel, hasRiposte, talentCritExtraWounds, hasSurpriseSave, talentMagicResistance, hasBraveheart, outnumberCountBonus, hasStunSave, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf } from '../engine/combatFeatures/dispatch';
 import { canStrikeFirst } from '../engine/qualities/dispatch';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
-  wardSaves, hasChampionDefense, banishedAtZero,
+  hasChampionDefense, banishedAtZero,
   isStupid, isUnstable, isBestial, isTerritorial, hasPerturbingAura,
   traitSeesInDark, bellicosePsychImmune, magicResistanceOf, flyMeters, runMultiplier,
   hasTraitKey,
@@ -139,7 +139,7 @@ import { bus, EVT } from './bus';
 // Géométrie de combat extraite (placement/déplacement/zones/flanc-dos/vision) — importée pour
 // l'usage interne ET ré-exportée (baril) pour les importeurs de combatFlow.
 import {
-  occupied, pushBackTiles, findFreeTile, displaceSmaller, removeEntity, removeEntities, inRect,
+  occupied, findFreeTile, displaceSmaller, removeEntity, removeEntities, inRect,
   applyZoneCrossings, isFlankOrRear, seesInDark, smokeOf,
 } from './combatGeometry';
 export * from './combatGeometry';
@@ -170,6 +170,9 @@ import { collectHeroRoundEndUpkeep } from './combat/roundHooks';
 import { endFrenzyIfDone } from './combat/turnHooks'; // usage interne (cascade psy héros, psychStepFor)
 export { brokenRecovery, collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour broken-recovery.test / cascade d'upkeep
 export { endFrenzyIfDone, aiMaybeFrenzy, resolvePsychAI } from './combat/turnHooks'; // baril : enregistre les hooks de début de tour ennemi (effet de bord) + ré-export pour frenzy*.test / psych*.test
+// Sauvegardes post-touche en registre `HitModifier` ordonné (state/combat/hitModifiers, module FEUILLE).
+import { runHitModifiers, martyrGuardOf, wardedAgainst } from './combat/hitModifiers'; // usage interne (applyAttackResult + applyCast)
+export { runHitModifiers, registerHitModifier, martyrGuardOf, wardedAgainst, organicProjectile } from './combat/hitModifiers'; // baril : enregistre les modifiers (effet de bord) + ré-export pour applyCast / les tests (l11-sorts-zones, etc.)
 import {
   emitCreatureAttackAnim, trampleTarget, bestDefenseMode,
   rollManeuverAttacker, maneuverAttackerDifficulty, resolveManeuver,
@@ -253,37 +256,8 @@ export function attackWardGate(attacker: Combatant, target: Combatant, rng: RNG 
   };
 }
 
-/** Martyr (LDB 42 — L13) : le prêtre (vivant, présent) qui encaisse à la place de `target`, ou null. */
-export function martyrGuardOf(battle: BattleState, target: Combatant): Combatant | null {
-  const id = (target.activeEffects ?? []).find((e) => e.martyrGuard)?.martyrGuard;
-  if (!id || id === target.id) return null;
-  const priest = battle.combatants.find((c) => c.id === id);
-  return priest && !isOutOfAction(priest) && !priest.dead ? priest : null;
-}
-
-/** Aura portée (L11 — Bouclier anti-flèches / Dôme) : vrai si la CIBLE est dans le rayon d'un
- *  porteur vivant de l'aura `field` ET l'attaquant HORS de ce rayon (« provenant de l'extérieur » /
- *  « s'ils entrent dans la Zone d'Effet »). */
-export function wardedAgainst(
-  combatants: Combatant[],
-  attacker: Combatant,
-  target: Combatant,
-  field: 'arrowWard' | 'domeWard',
-): boolean {
-  return combatants.some((w) => !isOutOfAction(w) && w.pos && (w.activeEffects ?? []).some((e) => {
-    const ward = e[field];
-    if (!ward) return false;
-    const r = Math.max(1, Math.ceil(ward.radiusMeters / 2));
-    return combatDistance(w, target) <= r && combatDistance(w, attacker) > r;
-  }));
-}
-
-/** Projectile « constitué de matière organique » (Bouclier anti-flèches, LDB 47 : « comme des
- *  flèches en bois ») : flèches (arcs), carreaux (arbalètes), javelots. Balles de poudre,
- *  pierres de fronde et couteaux de lancer ne le sont pas (« matière non organique »). */
-export function organicProjectile(w: Weapon): boolean {
-  return /\barc\b|arbal|javelot|fl[èe]che|carreau/i.test(`${w.name} ${w.subType ?? ''}`);
-}
+// martyrGuardOf / wardedAgainst / organicProjectile (sauvegardes post-touche) déplacés →
+// state/combat/hitModifiers (ré-exportés via le baril ci-dessus pour applyCast / les tests).
 
 // applyZoneCrossings → combatGeometry.ts
 
@@ -1074,60 +1048,13 @@ export function applyAttackResult(
   // groupées d'une créature (Morsure+Piétinement, deviated===false) forment UN assaut-surprise : on garde
   // l'État jusqu'à la fin du Round (sinon la 2ᵉ attaque gratuite rouvrirait une défense en plein milieu).
   if (deviated === undefined && hasCondition(target, COND.surpris)) removeCondition(target, COND.surpris, 1);
-  // Démoniaque (Indice+) / Protection (Indice) — LDB 85 p.339/341 : « Lancez 1d10 après chaque coup
-  // reçu ; si la créature obtient le nombre de l'Indice ou plus, le coup est ignoré, même critique. »
-  // (Les héros n'ont pas ces traits → pas de double-jet sur les reprises de déviation.)
-  if (res.hit && res.woundsLost) {
-    for (const thr of wardSaves(target.traits)) {
-      const d = d10(battleRng());
-      if (d >= thr) {
-        res = { ...res, woundsLost: 0, damage: 0, critical: false, log: `${target.name} ignore le coup — sauvegarde ${d} ≥ ${thr} (Démoniaque/Protection).` };
-        break;
-      }
-    }
-  }
-  // Bouclier anti-flèches (LDB 47 — L11) : projectile ORGANIQUE entrant dans la zone → détruit,
-  // « n'infligeant aucun Dégât à leur cible ». Le tir et la munition sont consommés normalement.
-  if (res.hit && weapon.type === 'ranged' && organicProjectile(weapon)
-    && wardedAgainst(get().battle?.combatants ?? [], attacker, target, 'arrowWard')) {
-    res = { ...res, woundsLost: 0, damage: 0, critical: false, log: `Le projectile se désagrège en entrant dans la zone — ${target.name} est indemne (Bouclier anti-flèches).` };
-  }
-  // Dôme (LDB 47 — L11) : Protection (6+) contre une attaque À DISTANCE venant de l'extérieur.
-  else if (res.hit && res.woundsLost && weapon.type === 'ranged'
-    && wardedAgainst(get().battle?.combatants ?? [], attacker, target, 'domeWard')) {
-    const d = d10(battleRng());
-    if (d >= 6) res = { ...res, woundsLost: 0, damage: 0, critical: false, log: `${target.name} est couvert par le Dôme — sauvegarde ${d} ≥ 6, le tir est dévié.` };
-  }
-  // Martyr (LDB 42 — L13) : « Vous recevez tous les Dégâts subis en principe par vos cibles » —
-  // le prêtre encaisse les Dégâts BRUTS de la frappe, mitigés par 2×SON BE + ses PA à la
-  // localisation touchée ; la cible ne perd rien (les États de la touche restent sur elle).
-  if (res.hit && res.woundsLost) {
-    const priest = martyrGuardOf(get().battle!, target);
-    if (priest) {
-      const loc = res.location ?? 'corps';
-      const raw = res.damage ?? res.woundsLost;
-      const taken = Math.max(0, raw - 2 * bonus(effectiveChar(priest, 'E')) - Math.max(0, priest.armour[loc] ?? 0));
-      if (taken > 0) {
-        loseWounds(priest, taken);
-        if (priest.wounds.current <= 0) applyZeroWounds(priest);
-      }
-      res = { ...res, woundsLost: 0, log: `${res.log} Martyr : ${priest.name} reçoit les Dégâts à la place de ${target.name}${taken > 0 ? ` (${taken} PB, BE doublé)` : ' (encaissés sans dommage, BE doublé)'}.` };
-    }
-  }
-  // Perturbante (LDB 62 l.275-276) : mode « Repousser » armé → l'attaque réussie ne cause PAS de
-  // Dégâts, l'adversaire recule d'1 m par DR du Test opposé (1 case = 2 m, LDB Déplacement l.55).
-  if (attacker.pushbackMode && weapon.type === 'melee' && canPushback(weapon)) {
-    attacker.pushbackMode = false; // consommé par cette attaque (réussie ou non)
-    if (res.hit) {
-      const meters = Math.max(0, res.netSL);
-      const wanted = Math.floor(meters / 2);
-      const moved = pushBackTiles(get, attacker, target, wanted);
-      res = {
-        ...res, woundsLost: 0, damage: 0, critical: false,
-        log: `${attacker.name} repousse ${target.name} de ${meters} m (Perturbante${moved < wanted ? ' — recul bloqué' : ''}).`,
-      };
-    }
-  }
+  // Sauvegardes SYNCHRONES « après la touche » en registre ordonné (state/combat/hitModifiers) :
+  // Démoniaque/Protection (`wardSaves`, RNG) → Bouclier anti-flèches → Dôme (RNG) → Martyr → Perturbante.
+  // Chaque modifier RE-TESTE l'état courant de `res` et le TRANSFORME — ordre RAW encodé par `order`,
+  // figé byte-pour-byte par `hitSaves.golden.test`. AUCUN ne SUSPEND (pas de pending) ; autoKill et
+  // l'offre de Déviation Critique restent INLINE ci-dessous. Les saves posent leur ligne dans `res.log`
+  // (journalisé par l'`ev(evKind, res.log, …)` final) → `sink` no-op ici.
+  res = runHitModifiers({ get, set, attacker, target, weapon, res, sink: () => {} });
   // Cible Inconsciente — règle optionnelle « mort-auto » (LDB 16 l.112) : en CORPS À CORPS la cible est
   // tuée automatiquement. On applique la mort par le MÊME chemin que les morts normales (`finalizeHeroDeath`
   // → un héros à Destin est suspendu via pendingFateSave, sinon `dead = true`), pas un early-return brutal.
