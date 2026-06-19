@@ -17,7 +17,7 @@ import { RNG, defaultRNG, roll as rollDice } from './dice';
 import { rollTest, opposedTest } from './tests';
 import { testValue } from './skills';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
-import { addCondition, addTimedCondition, removeCondition, loseWounds, hasCondition } from './conditions';
+import { addCondition, addTimedCondition, removeCondition, loseWounds, hasCondition, combatTestPenalty } from './conditions';
 import { conditionLabel, talentConcrete, qualityRefLabel, traitById, refLabel } from '../data';
 import { groupMatch } from './groups';
 import { bypassedAP } from './armourBypass';
@@ -176,8 +176,10 @@ export type GameOp =
        *  ou un littéral (`60`). Absente ⇒ le flux de récupération garde son défaut (Force de la source
        *  vivante, ou Test simple). */
       escapeStrength?: Formula }
-  /** Retrait d'États : `name` absent = au choix de la cible (1er État porté). */
-  | { op: 'removeCondition'; name?: string; value?: Formula }
+  /** Retrait d'États : `name` absent = au choix de la cible (1er État porté). `valuePerSL` : échelle
+   *  « +1 par +N DR » ajoutée à `value` (Mâchoires d'acier : « chaque DR supprime un État Sonné
+   *  supplémentaire », LDB 10) — inerte si absent (calque op `condition`). */
+  | { op: 'removeCondition'; name?: string; value?: Formula; valuePerSL?: PerSL }
   /** Modificateur de caractéristique temporisé (ActiveEffect — meilleur bonus +
    *  pire pénalité sans cumul, LDB l.168). `durationRounds` absent = durée du
    *  contexte (sort) ou persistance hors-échelle (COMBAT_PERSIST). */
@@ -598,7 +600,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'removeCondition': {
-        const v = Math.max(1, resolveFormula(o.value ?? 1, ref, rng));
+        const v = Math.max(1, resolveFormula(o.value ?? 1, ref, rng) + slBonus(ctx.sl, o.valuePerSL));
         const name = o.name ?? target.conditions[0]?.name;
         if (name) {
           removeCondition(target, name, v);
@@ -635,12 +637,15 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         if (!groupGate(o.onlyGroups, o.exceptGroups)) break; // Test gaté par Groupe (Épée de justice : Criminel)
         // Immunité de type (Immunité (Poison) → Venin sans effet) : la cible ne teste même pas.
         if (o.unlessImmune && immunityTypes(target.traits ?? []).some((ty) => ty.includes(o.unlessImmune!.toLowerCase()))) break;
-        const t = rollTest(testValue(target, o.skill, o.characteristic), o.difficulty, rng);
+        // Pénalité d'États RAW (−10 Sonné/Empoisonné… LDB 16) appliquée au jet du Test routé.
+        const t = rollTest(testValue(target, o.skill, o.characteristic), o.difficulty, rng, combatTestPenalty(target));
         const what = o.skill ? refLabel('skills', { id: o.skill }) : (o.characteristic ? CHAR_LABELS[o.characteristic] : '?');
         lines.push(
           `${target.name} — Test de ${what} ${DIFFICULTY_LABELS[o.difficulty]} : 🎲 ${t.roll} / ${t.target} → ${t.success ? 'réussite' : 'échec'}.`,
         );
-        lines.push(...applyOps(target, t.success ? o.onSuccess ?? [] : o.onFail, ctx));
+        // Propage le DR du Test aux échelles `valuePerSL`/`perSL` d'onSuccess (« chaque DR supprime un
+        // État Sonné supplémentaire ») ; onFail garde le contexte d'origine (pas de DR utile à l'échec).
+        lines.push(...applyOps(target, t.success ? o.onSuccess ?? [] : o.onFail, t.success ? { ...ctx, sl: t.sl } : ctx));
         // Palier d'échec aggravé (« si vous échouez avec −N DR ou moins ») — EN PLUS d'onFail.
         if (!t.success && o.onFailHard && t.sl <= o.onFailHard.dr) lines.push(...applyOps(target, o.onFailHard.ops, ctx));
         break;
