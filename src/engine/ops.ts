@@ -212,7 +212,7 @@ export type GameOp =
   /** Pénalité/blocage d'incantation temporisé (contrecoups, LDB 46/40) : −N à une
    *  Compétence de magie, Tests interdits, ou DR de Prière plafonné à 0. Durée en
    *  Rounds (combat + entretien hors combat) OU en minutes/jours d'horloge. */
-  | { op: 'castPenalty'; skill: 'Prière' | 'Langue' | 'Focalisation' | 'all'; mod?: number; blocked?: boolean; maxZeroDR?: boolean; rounds?: Formula; minutes?: Formula; hours?: Formula; days?: Formula }
+  | { op: 'castPenalty'; skill: 'priere' | 'langue' | 'focalisation' | 'all'; mod?: number; blocked?: boolean; maxZeroDR?: boolean; rounds?: Formula; minutes?: Formula; hours?: Formula; days?: Formula }
   /** Trait de créature TEMPORISÉ (Jalon 2.6 — « vous gagnez le Trait X tant que le Sort est
    *  actif ») : posé dans `c.traits` (vu par TOUS les consommateurs — dispatch, psy, IA,
    *  déplacement), retiré à l'expiration de l'ActiveEffect porteur. `indice` : Indice du trait
@@ -712,11 +712,12 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           dureeTxt = `${d} jour${d > 1 ? 's' : ''}`;
         }
         target.castPenalties = [...(target.castPenalties ?? []), cp];
+        const skillTxt = cp.skill === 'all' ? 'magie' : refLabel('skills', { id: cp.skill });
         const what = cp.blocked
-          ? `Tests de ${cp.skill === 'all' ? 'magie' : cp.skill} interdits`
+          ? `Tests de ${skillTxt} interdits`
           : cp.maxZeroDR
             ? 'Tests de Prière plafonnés à 0 DR'
-            : `${cp.mod} aux Tests de ${cp.skill === 'all' ? 'magie' : cp.skill}`;
+            : `${cp.mod} aux Tests de ${skillTxt}`;
         lines.push(`${target.name} : ${what}${dureeTxt ? ` pendant ${dureeTxt}` : ''} (${cp.label}).`);
         break;
       }

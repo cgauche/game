@@ -476,12 +476,12 @@ const ARCANE: SpellLike = { label: 'Boule de feu', type: 'Magie des Arcanes', fa
 describe('Magie — routage du test par branche', () => {
   it('les Prières (Béni/Invocation) utilisent Prière (Soc), sans NI', () => {
     const info = castInfo(PRIERE);
-    expect(info.skill).toBe('Prière');
+    expect(info.skill).toBe('priere');
     expect(info.requireNI).toBe(false);
   });
   it('les Sorts utilisent Langue (Magick) (Int), avec NI', () => {
     const info = castInfo(ARCANE);
-    expect(info.skill).toBe('Langue');
+    expect(info.skill).toBe('langue');
     expect(info.spec).toBe('Magick');
     expect(info.requireNI).toBe(true);
   });
@@ -517,15 +517,15 @@ describe('Magie — analyse des descriptions', () => {
 describe('Magie — valeur d’incantation', () => {
   it('Langue (Magick) = Int + avances', () => {
     const c = caster({ Int: 40 }, [{ skillId: 'langue', spec: 'Magick', characteristic: 'Int', advances: 15 }]);
-    expect(castingValue(c, 'Langue', 'Magick')).toBe(55);
+    expect(castingValue(c, 'langue', 'Magick')).toBe(55);
   });
   it('Prière = Soc + avances', () => {
     const c = caster({ Soc: 35 }, [{ skillId: 'priere', characteristic: 'Soc', advances: 10 }]);
-    expect(castingValue(c, 'Prière')).toBe(45);
+    expect(castingValue(c, 'priere')).toBe(45);
   });
   it('sans la compétence, la Caractéristique seule est utilisée', () => {
     const c = caster({ Int: 33 });
-    expect(castingValue(c, 'Langue', 'Magick')).toBe(33);
+    expect(castingValue(c, 'langue', 'Magick')).toBe(33);
   });
 });
 
@@ -663,9 +663,9 @@ describe('Magie — compétences Avancées (gating)', () => {
     const sansSkill = caster({ Int: 80 });
     const zero = caster({ Int: 80 }, [{ skillId: 'langue', spec: 'Magick', characteristic: 'Int', advances: 0 }]);
     const ok = caster({ Int: 80 }, [{ skillId: 'langue', spec: 'Magick', characteristic: 'Int', advances: 1 }]);
-    expect(knowsCastingSkill(sansSkill, 'Langue', 'Magick')).toBe(false);
-    expect(knowsCastingSkill(zero, 'Langue', 'Magick')).toBe(false);
-    expect(knowsCastingSkill(ok, 'Langue', 'Magick')).toBe(true);
+    expect(knowsCastingSkill(sansSkill, 'langue', 'Magick')).toBe(false);
+    expect(knowsCastingSkill(zero, 'langue', 'Magick')).toBe(false);
+    expect(knowsCastingSkill(ok, 'langue', 'Magick')).toBe(true);
   });
   it('un Sort est refusé sans la compétence Avancée (pas de repli sur la Caractéristique)', () => {
     const c = caster({ Int: 95 }); // aucune compétence Langue
@@ -736,7 +736,7 @@ describe('Magie — compétences Avancées (gating)', () => {
   it('le Trait « Lanceur de Sorts » (LDB 85 : « La créature peut lancer des Sorts ») dispense de la Compétence', () => {
     const c = caster({ Int: 95 }); // statbloc de bestiaire : aucune Compétence
     c.traits = [{ id: 'lanceur-de-sorts', arg: 'Sorcellerie' }];
-    expect(knowsCastingSkill(c, 'Langue', 'Magick')).toBe(true);
+    expect(knowsCastingSkill(c, 'langue', 'Magick')).toBe(true);
     const res = resolveCasting(c, FLECHETTE, makeRNG(1));
     expect(res.log).not.toContain('ne maîtrise pas'); // le Test se fait sur Int seule
   });

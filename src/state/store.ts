@@ -1699,7 +1699,7 @@ export const useGame = create<GameState>((set, get) => ({
     // moins inventive : le LANCEUR (même clause de distance FM mètres ; le RAW est muet).
     if (caster.kind === 'hero' && isDispellableSpell(spell) && !res.isCritical) {
       const best = counterspellCandidates(get().battle, get().scene, caster, unplacedZone ? caster : target)
-        .sort((a, b) => castingValue(b, 'Langue', 'Magick') - castingValue(a, 'Langue', 'Magick'))[0];
+        .sort((a, b) => castingValue(b, 'langue', 'Magick') - castingValue(a, 'langue', 'Magick'))[0];
       if (best) applyCounterspell(get, set, best);
     }
   },
@@ -2023,7 +2023,7 @@ export const useGame = create<GameState>((set, get) => ({
       return;
     }
     // Contrecoup bloquant la Focalisation (LDB 46/40), s'il y en a un d'actif.
-    const fblocked = castBlockedBy(active, 'Focalisation');
+    const fblocked = castBlockedBy(active, 'focalisation');
     if (fblocked) {
       get().log(`${active.name} ne peut pas focaliser : ${fblocked}.`);
       return;
@@ -2079,7 +2079,7 @@ export const useGame = create<GameState>((set, get) => ({
       get().log('Ce sort ne peut pas être focalisé.');
       return;
     }
-    const fblocked = castBlockedBy(caster, 'Focalisation');
+    const fblocked = castBlockedBy(caster, 'focalisation');
     if (fblocked) {
       get().log(`${caster.name} ne peut pas focaliser : ${fblocked}.`);
       return;

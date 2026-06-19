@@ -57,7 +57,7 @@ export function classifySpellByLabel(label: string): { school: SpellSchool; miss
   const spell = findSpell(label);
   if (!spell) return { school: 'arcane', missile: false };
   return {
-    school: castInfo(spell).skill === 'Prière' ? 'divine' : 'arcane',
+    school: castInfo(spell).skill === 'priere' ? 'divine' : 'arcane',
     missile: isMagicMissile(spell),
   };
 }

@@ -31,36 +31,36 @@ function hero(p: Partial<Combatant> = {}): Combatant {
 describe('castPenalty — pénalités/blocages temporisés', () => {
   it('Langue maladroite : −10 aux Tests de Langue pendant N Rounds, dissipé par endOfRound', () => {
     const c = hero();
-    const base = castingValue(c, 'Langue', 'Magick');
-    applyOps(c, [{ op: 'castPenalty', skill: 'Langue', mod: -10, rounds: 2 }], { label: 'Langue maladroite' });
-    expect(castingValue(c, 'Langue', 'Magick')).toBe(base - 10);
-    expect(castPenaltyMod(c, 'Prière')).toBe(0); // ne touche pas la Prière
+    const base = castingValue(c, 'langue', 'Magick');
+    applyOps(c, [{ op: 'castPenalty', skill: 'langue', mod: -10, rounds: 2 }], { label: 'Langue maladroite' });
+    expect(castingValue(c, 'langue', 'Magick')).toBe(base - 10);
+    expect(castPenaltyMod(c, 'priere')).toBe(0); // ne touche pas la Prière
     endOfRound(c, makeRNG(1));
-    expect(castingValue(c, 'Langue', 'Magick')).toBe(base - 10); // round 1 restant
+    expect(castingValue(c, 'langue', 'Magick')).toBe(base - 10); // round 1 restant
     const log = endOfRound(c, makeRNG(1));
-    expect(castingValue(c, 'Langue', 'Magick')).toBe(base); // expiré
+    expect(castingValue(c, 'langue', 'Magick')).toBe(base); // expiré
     expect(log.join('\n')).toMatch(/Langue maladroite se dissipe/);
   });
 
   it('blocage : « Vous abusez de ma patience » interdit les Tests de Prière', () => {
     const c = hero();
-    applyOps(c, [{ op: 'castPenalty', skill: 'Prière', blocked: true, rounds: 3 }], { label: 'Vous abusez de ma patience' });
-    expect(castBlockedBy(c, 'Prière')).toBe('Vous abusez de ma patience');
-    expect(castBlockedBy(c, 'Langue')).toBeNull();
+    applyOps(c, [{ op: 'castPenalty', skill: 'priere', blocked: true, rounds: 3 }], { label: 'Vous abusez de ma patience' });
+    expect(castBlockedBy(c, 'priere')).toBe('Vous abusez de ma patience');
+    expect(castBlockedBy(c, 'langue')).toBeNull();
   });
 
   it('durée d\'horloge : untilTime = now + minutes/heures/jours', () => {
     const c = hero();
-    applyOps(c, [{ op: 'castPenalty', skill: 'Langue', blocked: true, minutes: 5 }], { label: 'Drain de puissance', now: 1000 });
+    applyOps(c, [{ op: 'castPenalty', skill: 'langue', blocked: true, minutes: 5 }], { label: 'Drain de puissance', now: 1000 });
     expect(c.castPenalties![0].untilTime).toBe(1005);
     const c2 = hero();
-    applyOps(c2, [{ op: 'castPenalty', skill: 'Prière', maxZeroDR: true, days: 7 }], { label: 'Pensez à vos actes', now: 0 });
+    applyOps(c2, [{ op: 'castPenalty', skill: 'priere', maxZeroDR: true, days: 7 }], { label: 'Pensez à vos actes', now: 0 });
     expect(c2.castPenalties![0].untilTime).toBe(7 * 24 * 60);
   });
 
   it('« Pensez à vos actes » : tout Test de Prière RÉUSSI plafonné à 0 DR', () => {
     const c = hero();
-    applyOps(c, [{ op: 'castPenalty', skill: 'Prière', maxZeroDR: true, days: 7 }], { label: 'Pensez à vos actes', now: 0 });
+    applyOps(c, [{ op: 'castPenalty', skill: 'priere', maxZeroDR: true, days: 7 }], { label: 'Pensez à vos actes', now: 0 });
     expect(prayerMaxZeroDR(c)).toBe(true);
     const prayer = { label: 'Bénédiction de Guérison', type: 'Béni', isPrayer: true, cn: null, desc: 'soin' };
     const res = evaluateCasting(c, prayer, { roll: 5, target: 55, success: true, sl: 5, isDouble: false });
@@ -118,7 +118,7 @@ describe('tables migrées — sweep d\'application', () => {
       const c = hero();
       applyOps(c, r.ops, { rng: makeRNG(1), label: r.name });
       const p = c.castPenalties![0];
-      expect(p.skill).toBe('Prière');
+      expect(p.skill).toBe('priere');
       expect(p.mod).toBe(-10);
       expect(p.roundsLeft).toBeGreaterThanOrEqual(1);
       expect(p.roundsLeft).toBeLessThanOrEqual(10);

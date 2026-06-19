@@ -79,7 +79,7 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
       kind: 'ok',
       line: 'dashed',
       title: spell.label,
-      skill: castInfo(spell).skill === 'Prière' ? 'Prière' : 'Langue (Magick)',
+      skill: castInfo(spell).skill === 'priere' ? 'Prière' : 'Langue (Magick)',
       base: pv.base,
       mod: pv.target - pv.base,
       // Dégâts d'un Projectile AVANT DR (evaluateMissile : sort + DR + BFM) — parité arme (Force incluse).

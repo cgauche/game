@@ -47,8 +47,8 @@ export function FocusModal() {
       onRoll={roll}
       onCancel={cancel}
       cancelAfterRoll
-      breakdown={r ? testBreakdown('Focalisation', castingValue(caster, 'Focalisation'), { roll: r.roll, target: r.target, sl: r.sl ?? r.dr, success: r.dr > 0 }) : undefined}
-      pending={testPending('Focalisation', castingValue(caster, 'Focalisation'))}
+      breakdown={r ? testBreakdown('Focalisation', castingValue(caster, 'focalisation'), { roll: r.roll, target: r.target, sl: r.sl ?? r.dr, success: r.dr > 0 }) : undefined}
+      pending={testPending('Focalisation', castingValue(caster, 'focalisation'))}
       outcome={r && (
         <JournalLine
           className="rm-journal"

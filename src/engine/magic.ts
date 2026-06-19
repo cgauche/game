@@ -26,7 +26,7 @@ import { arcaneDomainOf } from './combatFeatures/dispatch';
 import { domainMissileMods } from './domainAttributes';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
 import { Combatant, HitLocation, Difficulty, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from './types';
-import { findTalent, findTalentById, findSkill } from '../data';
+import { findTalent, findTalentById } from '../data';
 import { slugId } from '../data/slug';
 
 /** Sous-ensemble des champs de sort nécessaires au moteur (cf. src/data/spells.json). */
@@ -55,8 +55,8 @@ export function hasTalent(c: Combatant, name: string): boolean {
 
 /** Branche d'incantation déduite du type de sort. */
 export interface CastInfo {
-  /** Compétence de test (nom tel que stocké sur le Combatant). */
-  skill: 'Prière' | 'Langue';
+  /** id STABLE de la Compétence de test (skills.json — `'priere'` / `'langue'`), multilangue. */
+  skill: 'priere' | 'langue';
   /** Spécialisation requise pour la compétence, le cas échéant. */
   spec?: string;
   /** Faut-il comparer le DR au Niveau d'Incantation ? (faux pour les Prières.) */
@@ -66,9 +66,9 @@ export interface CastInfo {
 /** Détermine la branche (et donc la Compétence) selon le sort : Prière (`isPrayer`, donnée) vs Sort. */
 export function castInfo(spell: SpellLike): CastInfo {
   if (spell.isPrayer) {
-    return { skill: 'Prière', requireNI: false };
+    return { skill: 'priere', requireNI: false };
   }
-  return { skill: 'Langue', spec: 'Magick', requireNI: true };
+  return { skill: 'langue', spec: 'Magick', requireNI: true };
 }
 
 /** Vrai pour les Sorts d'Arcane/Domaine pouvant être alimentés par Focalisation. */
@@ -76,13 +76,13 @@ export function isArcaneSpell(spell: SpellLike): boolean {
   return spell.family === 'arcane' || spell.family === 'chaos';
 }
 
-/** La pénalité `p` vise-t-elle la compétence de magie `skill` ? */
-function penaltyMatches(p: { skill: string }, skill: 'Prière' | 'Langue' | 'Focalisation'): boolean {
+/** La pénalité `p` vise-t-elle la compétence de magie `skill` (id stable) ? */
+function penaltyMatches(p: { skill: string }, skill: 'priere' | 'langue' | 'focalisation'): boolean {
   return p.skill === 'all' || p.skill === skill;
 }
 
 /** Somme des modificateurs d'incantation actifs (contrecoups : « Langue maladroite −10 »…). */
-export function castPenaltyMod(c: Combatant, skill: 'Prière' | 'Langue' | 'Focalisation'): number {
+export function castPenaltyMod(c: Combatant, skill: 'priere' | 'langue' | 'focalisation'): number {
   let m = 0;
   for (const p of c.castPenalties ?? []) if (penaltyMatches(p, skill) && p.mod != null) m += p.mod;
   return m;
@@ -90,13 +90,13 @@ export function castPenaltyMod(c: Combatant, skill: 'Prière' | 'Langue' | 'Foca
 
 /** Libellé du contrecoup qui INTERDIT les Tests de `skill`, ou null si rien ne bloque.
  *  (Les pénalités expirées sont purgées par l'entretien — fin de Round / horloge.) */
-export function castBlockedBy(c: Combatant, skill: 'Prière' | 'Langue' | 'Focalisation'): string | null {
+export function castBlockedBy(c: Combatant, skill: 'priere' | 'langue' | 'focalisation'): string | null {
   return (c.castPenalties ?? []).find((p) => penaltyMatches(p, skill) && p.blocked)?.label ?? null;
 }
 
 /** « Pensez à vos actes » (Colère, LDB 40) : tout Test de Prière réussi plafonné à 0 DR. */
 export function prayerMaxZeroDR(c: Combatant): boolean {
-  return (c.castPenalties ?? []).some((p) => penaltyMatches(p, 'Prière') && p.maxZeroDR);
+  return (c.castPenalties ?? []).some((p) => penaltyMatches(p, 'priere') && p.maxZeroDR);
 }
 
 /**
@@ -107,16 +107,16 @@ export function prayerMaxZeroDR(c: Combatant): boolean {
  * Tests de Focalisation », LDB 46 l.176).
  */
 export function castingValue(c: Combatant, skillName: string, spec?: string): number {
-  const charKey = skillName === 'Prière' ? 'Soc' : skillName === 'Focalisation' ? 'FM' : 'Int';
+  const charKey = skillName === 'priere' ? 'Soc' : skillName === 'focalisation' ? 'FM' : 'Int';
   const base = effectiveChar(c, charKey);
-  const sid = findSkill(skillName)?.id ?? slugId(skillName);
+  // `skillName` EST déjà l'id stable de la Compétence (skills.json) — lookup direct.
   const sk = c.skills.find(
-    (s) => s.skillId === sid && (spec == null || s.spec === spec),
+    (s) => s.skillId === skillName && (spec == null || s.spec === spec),
   );
-  const penalty = skillName === 'Prière' || skillName === 'Langue' || skillName === 'Focalisation'
+  const penalty = skillName === 'priere' || skillName === 'langue' || skillName === 'focalisation'
     ? castPenaltyMod(c, skillName)
     : 0;
-  const advantage = skillName === 'Focalisation' ? 0 : 10 * (c.advantage ?? 0);
+  const advantage = skillName === 'focalisation' ? 0 : 10 * (c.advantage ?? 0);
   return base + (sk?.advances ?? 0) + penalty + advantage;
 }
 
@@ -174,9 +174,9 @@ export function focusSkillFor(c: Combatant, spell: SpellLike) {
  */
 export function knowsCastingSkill(c: Combatant, skillName: string, spec?: string): boolean {
   if (hasTraitKey(c.traits, 'lanceur-de-sorts')) return true;
-  const sid = findSkill(skillName)?.id ?? slugId(skillName);
+  // `skillName` EST déjà l'id stable de la Compétence (skills.json) — lookup direct.
   return c.skills.some(
-    (s) => s.skillId === sid && (spec == null || s.spec === spec) && s.advances >= 1,
+    (s) => s.skillId === skillName && (spec == null || s.spec === spec) && s.advances >= 1,
   );
 }
 
@@ -401,7 +401,7 @@ export function resolveCasting(
   // LDB 10 l.20 : +1 DR par acquisition d'un Talent lié au Test, sur utilisation RÉUSSIE
   // (Diction instinctive ×N → +N DR au Test d'Incantation). Appliqué au JET (pas à
   // l'évaluation : rederiveCastSL — Chance « +1 DR » — repart du DR déjà boosté).
-  const tal = t.success ? castTestTalentDR(caster, info.skill === 'Prière' ? 'Prière' : 'Langue (Magick)') : 0;
+  const tal = t.success ? castTestTalentDR(caster, info.skill === 'priere' ? 'Prière' : 'Langue (Magick)') : 0;
   return evaluateCasting(caster, spell, pen || tal ? { ...t, sl: t.sl - pen + tal } : t, focusedNI0);
 }
 
@@ -418,7 +418,7 @@ export function evaluateCasting(
   const info = castInfo(spell);
   // « Pensez à vos actes » (Colère des dieux, LDB 40) : tout Test de PRIÈRE réussi
   // ne peut pas obtenir plus de 0 DR pendant la durée du contrecoup.
-  if (info.skill === 'Prière' && t.success && t.sl > 0 && prayerMaxZeroDR(caster)) {
+  if (info.skill === 'priere' && t.success && t.sl > 0 && prayerMaxZeroDR(caster)) {
     t = { ...t, sl: 0 };
   }
   const ni = focusedNI0 ? 0 : spell.cn ?? 0;
@@ -488,7 +488,7 @@ export function counterspellOutcomeFrom(counter: Combatant, counterT: TestResult
 }
 
 export function resolveCounterspell(counter: Combatant, castT: TestResult, rng: RNG = defaultRNG): CounterspellOutcome {
-  const value = castingValue(counter, 'Langue', 'Magick');
+  const value = castingValue(counter, 'langue', 'Magick');
   const t = rollTest(value, 'intermediaire', rng);
   const adj = t.success ? castTestTalentDR(counter, 'Langue (Magick)') - armourCastDRPenalty(counter) : 0;
   const counterT = adj ? { ...t, sl: t.sl + adj } : t;
@@ -610,7 +610,7 @@ export function resolveFocus(
       log: `${caster.name} ne maîtrise pas Focalisation${spec ? ` (${spec})` : ''}.`,
     };
   }
-  const value = castingValue(caster, 'Focalisation', sk.spec);
+  const value = castingValue(caster, 'focalisation', sk.spec);
   const t = rollTest(value, difficulty, rng);
   // « Repousser les Vents » : −1 DR par PA de la localisation la mieux protégée (l.199).
   // LDB 10 l.20 : +1 DR par acquisition d'un Talent lié au Test réussi (Harmonisation aethyrique ×N).

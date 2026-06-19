@@ -65,7 +65,7 @@ describe('#T3 — cascade d’horloge (maladies/convalescence/purge sur franchis
 
   it('un contrecoup d’incantation à durée d’horloge expiré est purgé par le REPOS (bug A1)', () => {
     const t0 = 12 * 60;
-    const c = hero({ castPenalties: [{ label: 'Pensez à vos actes', skill: 'Prière', maxZeroDR: true, untilTime: t0 + 60 }] });
+    const c = hero({ castPenalties: [{ label: 'Pensez à vos actes', skill: 'priere', maxZeroDR: true, untilTime: t0 + 60 }] });
     useGame.setState({ party: [c], gameTime: t0, lastUpkeepDay: 0 });
     useGame.getState().restParty(); // le repos pose gameTime directement (pas advanceTime)
     expect(useGame.getState().party[0].castPenalties ?? []).toHaveLength(0);

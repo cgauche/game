@@ -51905,6 +51905,9 @@
     "label": "Sangsue Caméléon",
     "title": null,
     "folder": "Zoo Impérial",
+    "appearance": {
+      "species": "Sangsue"
+    },
     "char": {
       "M": 3,
       "CC": 28,
@@ -54585,6 +54588,9 @@
     "label": "Chevalier Mort-Vivant (Revenant)",
     "title": null,
     "folder": "Zoo Impérial",
+    "appearance": {
+      "species": "Squelette"
+    },
     "char": {
       "M": 4,
       "CC": 50,

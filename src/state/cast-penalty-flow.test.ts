@@ -25,7 +25,7 @@ beforeEach(() => {
 describe('gates d\'incantation', () => {
   it('blocage de Prière actif → oocCastSpell refuse (pas de modale), journal explicite', () => {
     const p = priest();
-    p.castPenalties = [{ label: 'Vous abusez de ma patience', skill: 'Prière', blocked: true, roundsLeft: 5 }];
+    p.castPenalties = [{ label: 'Vous abusez de ma patience', skill: 'priere', blocked: true, roundsLeft: 5 }];
     useGame.setState({ party: [p] as Combatant[] });
     useGame.getState().oocCastSpell(p.id, 'benediction-de-guerison', p.id);
     expect(useGame.getState().pendingCast).toBeNull();
@@ -36,7 +36,7 @@ describe('gates d\'incantation', () => {
     const wiz = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
     wiz.spells = ['arme-aethyrique'];
     wiz.skills.push({ skillId: 'focalisation', characteristic: 'FM', advances: 5 } as never);
-    wiz.castPenalties = [{ label: 'Vue assombrie', skill: 'Focalisation', blocked: true, roundsLeft: 3 }];
+    wiz.castPenalties = [{ label: 'Vue assombrie', skill: 'focalisation', blocked: true, roundsLeft: 3 }];
     useGame.setState({ party: [wiz] as Combatant[] });
     useGame.getState().oocFocusSpell(wiz.id, 'arme-aethyrique');
     expect(useGame.getState().pendingFocus).toBeNull();
@@ -47,7 +47,7 @@ describe('purge par l\'horloge (advanceTime)', () => {
   it('un contrecoup à untilTime expiré est purgé et journalisé', () => {
     const p = priest();
     const now = useGame.getState().gameTime;
-    p.castPenalties = [{ label: 'Drain de puissance', skill: 'Langue', blocked: true, untilTime: now + 10 }];
+    p.castPenalties = [{ label: 'Drain de puissance', skill: 'langue', blocked: true, untilTime: now + 10 }];
     useGame.setState({ party: [p] as Combatant[] });
     useGame.getState().advanceTime(5);
     expect(useGame.getState().party[0].castPenalties).toHaveLength(1); // pas encore
@@ -60,7 +60,7 @@ describe('purge par l\'horloge (advanceTime)', () => {
 describe('persistance', () => {
   it('carryOverState transporte les castPenalties (durées d\'horloge survivent au combat)', () => {
     const p = priest();
-    p.castPenalties = [{ label: 'Pensez à vos actes', skill: 'Prière', maxZeroDR: true, untilTime: 99999 }];
+    p.castPenalties = [{ label: 'Pensez à vos actes', skill: 'priere', maxZeroDR: true, untilTime: 99999 }];
     const carried = carryOverState(p);
     expect(carried.castPenalties).toHaveLength(1);
     expect(carried.castPenalties![0].label).toBe('Pensez à vos actes');

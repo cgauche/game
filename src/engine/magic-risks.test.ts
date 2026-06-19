@@ -92,7 +92,7 @@ describe('« Repousser les Vents » — armure portée (l.199 + exemptions l.188
 describe('Avantage et magie (l.176)', () => {
   it('l\'Avantage s\'applique à l\'Incantation (+10/point), PAS à la Focalisation', () => {
     const c = wiz({ advantage: 2 });
-    expect(castingValue(c, 'Langue', 'Magick')).toBe(50 + 10 + 20);
-    expect(castingValue(c, 'Focalisation', 'Feu')).toBe(45 + 10);
+    expect(castingValue(c, 'langue', 'Magick')).toBe(50 + 10 + 20);
+    expect(castingValue(c, 'focalisation', 'Feu')).toBe(45 + 10);
   });
 });

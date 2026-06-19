@@ -192,8 +192,8 @@ export interface ConditionInstance {
  *  `roundsLeft` (échelle tactique) ou `untilTime` (minutes d'horloge `gameTime`). */
 export interface CastPenalty {
   label: string;
-  /** Compétence visée ; 'all' = toute magie (Prière + Langue + Focalisation). */
-  skill: 'Prière' | 'Langue' | 'Focalisation' | 'all';
+  /** Compétence visée (id stable skills.json) ; 'all' = toute magie (priere + langue + focalisation). */
+  skill: 'priere' | 'langue' | 'focalisation' | 'all';
   /** Modificateur (négatif) à la valeur de Test (« Langue maladroite −10 »). */
   mod?: number;
   /** Tests interdits (« Vous abusez de ma patience », « Propos ésotériques »…). */

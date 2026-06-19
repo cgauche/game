@@ -145,8 +145,8 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
 
   it('incante par la voie NORMALE (Langue (Magick) 63, sans le Trait Lanceur de Sorts)', () => {
     const c = creatureToCombatant(eusapia, 'e1', at);
-    expect(knowsCastingSkill(c, 'Langue', 'Magick')).toBe(true);
-    expect(castingValue(c, 'Langue', 'Magick')).toBe(63);
+    expect(knowsCastingSkill(c, 'langue', 'Magick')).toBe(true);
+    expect(castingValue(c, 'langue', 'Magick')).toBe(63);
   });
 
   it('arme du trait : « Arme (Bâton de combat) +7 » → arme tenue', () => {

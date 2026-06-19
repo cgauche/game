@@ -82,6 +82,7 @@ import {
   type CastResult,
   type MissileResult,
   type CounterspellOutcome,
+  type SpellLike,
 } from '../engine/magic';
 import { applyOps, resolveFormula, skillDRBonus, COMBAT_PERSIST, type GameOp } from '../engine/ops';
 import { spellSpecFor } from '../data/spellspecs';
@@ -2176,9 +2177,9 @@ export function castSpell(
     return;
   }
   // Contrecoups bloquants (LDB 46/40) : « Propos ésotériques », « Vous abusez de ma patience »…
-  const blocked = castBlockedBy(caster, castInfoIsPrayer(spell.type) ? 'Prière' : 'Langue');
+  const blocked = castBlockedBy(caster, castInfoIsPrayer(spell) ? 'priere' : 'langue');
   if (blocked) {
-    get().log(`${caster.name} ne peut pas ${castInfoIsPrayer(spell.type) ? 'prier' : 'incanter'} : ${blocked}.`);
+    get().log(`${caster.name} ne peut pas ${castInfoIsPrayer(spell) ? 'prier' : 'incanter'} : ${blocked}.`);
     return;
   }
   // Lecture au grimoire (LDB 47 l.34) : sort NON mémorisé de son Domaine, NI doublé.
@@ -2285,9 +2286,9 @@ export function castZoneSpell(get: Get, set: SetFn, caster: Combatant, label: st
   if (!spell) return false;
   const r0m = zoneRadiusMeters(spell, caster);
   if (r0m == null) return false;
-  const blocked = castBlockedBy(caster, castInfoIsPrayer(spell.type) ? 'Prière' : 'Langue');
+  const blocked = castBlockedBy(caster, castInfoIsPrayer(spell) ? 'priere' : 'langue');
   if (blocked) {
-    get().log(`${caster.name} ne peut pas ${castInfoIsPrayer(spell.type) ? 'prier' : 'incanter'} : ${blocked}.`);
+    get().log(`${caster.name} ne peut pas ${castInfoIsPrayer(spell) ? 'prier' : 'incanter'} : ${blocked}.`);
     return true; // c'était bien une zone — l'entrée est consommée (refus journalisé)
   }
   const focusedNI0 = caster.focus?.spell === spell.id && caster.focus.dr >= (spell.cn ?? 0);
@@ -2433,7 +2434,7 @@ export function aiBestMissile(enemy: Combatant): string | undefined {
     const info = castInfo(sp as any);
     // SL max d'un jet = valeur/10, + les DR de Talent lié au Test réussi (LDB 10 l.20 —
     // Diction instinctive ×N) : c'est ce qui détermine les NI passables SANS Focalisation.
-    const tal = castTestTalentDR(enemy, info.skill === 'Prière' ? 'Prière' : 'Langue (Magick)');
+    const tal = castTestTalentDR(enemy, info.skill === 'priere' ? 'Prière' : 'Langue (Magick)');
     return Math.floor(castingValue(enemy, info.skill, info.spec) / 10) + tal;
   };
   const feasible = known.filter((sp) => (sp.cn ?? 0) <= maxSL(sp));
@@ -2513,7 +2514,7 @@ export function counterspellCandidates(
   if (!battle || battle.over) return [];
   return battle.combatants.filter((c) => {
     if (c.kind === caster.kind || c.id === caster.id || isOutOfAction(c) || c.dispelledThisRound) return false;
-    if (!knowsCastingSkill(c, 'Langue', 'Magick')) return false;
+    if (!knowsCastingSkill(c, 'langue', 'Magick')) return false;
     if (c.id === target.id) return true;
     if (!c.pos || !target.pos) return false;
     if (combatDistance(c, target) > Math.max(1, Math.floor(effectiveChar(c, 'FM') / 2))) return false;
@@ -2592,7 +2593,7 @@ export function applyCast(
   // Incantation CRITIQUE (LDB 46 l.52-59) — SORTS seulement (Test de Langue (Magick)) :
   // les Vents octroient une puissance supplémentaire (choix du lanceur), mais cela a un
   // prix — Imparfaite Mineure, sauf Talent Diction instinctive.
-  const isSort = !castInfoIsPrayer(spell.type);
+  const isSort = !castInfoIsPrayer(spell);
   // Un Sort DISSIPÉ (Contre-sort gagnant, LDB 46 l.201-202) n'est pas lancé : pas d'effet Critique
   // — « Puissance totale » (l.57) repêche un DR insuffisant, pas une Dissipation.
   const crit = !!res.isCritical && isSort && !res.dispelled;
@@ -2858,7 +2859,7 @@ export function applyCast(
       }
     } else if (res.isFumble) {
       // Prière → Colère des dieux ; Sort → Incantation Imparfaite Mineure.
-      logLines.push(...applyMiscast(get, set, caster, castInfoIsPrayer(spell.type) ? 'colere' : 'mineure', { componentDowngrade: componentUsed }));
+      logLines.push(...applyMiscast(get, set, caster, castInfoIsPrayer(spell) ? 'colere' : 'mineure', { componentDowngrade: componentUsed }));
     } else if (focusedNI0) {
       // Sort focalisé dont l'incantation échoue (sans Maladresse) → Imparfaite Mineure.
       logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed }));
@@ -2915,7 +2916,7 @@ export function applyCast(
   // Péché et Colère Divine (LDB 40 l.44-45) : à CHAQUE Test de Prière, si le dé des
   // unités ≤ Points de Péché → Colère des dieux, MÊME si le Test est réussi (la
   // Maladresse, elle, a déjà déclenché la sienne ci-dessus).
-  if (castInfoIsPrayer(spell.type) && !res.isFumble && res.roll > 0 && prayerWrathTriggered(res.roll, caster.sinPoints ?? 0)) {
+  if (castInfoIsPrayer(spell) && !res.isFumble && res.roll > 0 && prayerWrathTriggered(res.roll, caster.sinPoints ?? 0)) {
     logLines.push(`Le dé des unités (${res.roll % 10}) trahit les Péchés de ${caster.name} (${caster.sinPoints}) — Colère des dieux !`);
     logLines.push(...applyMiscast(get, set, caster, 'colere'));
   }
@@ -2930,9 +2931,9 @@ export function applyCast(
   }
 }
 
-/** Renvoie vrai si le type de sort relève d'une Prière (Béni/Invocation). */
-export function castInfoIsPrayer(type: string): boolean {
-  return type === 'Béni' || type === 'Invocation';
+/** Renvoie vrai si le sort relève d'une Prière (Béni/Invocation) — discriminant STABLE `family`. */
+export function castInfoIsPrayer(spell: SpellLike): boolean {
+  return spell.family === 'beni' || spell.family === 'invocation';
 }
 
 /** Pose la ZONE PERSISTANTE d'un sort (op `zone` du Flow, on:'caster' — L11 Mur de feu : mur
@@ -3000,8 +3001,8 @@ export function domainCastBonus(s: GameState, caster: Combatant, spell: { domain
  *  de l'aura (`ActiveEffect.castWard`) encore en état de combattre. Sorts seulement (les Prières
  *  passent par Prière, pas Langue). Une fois, même sous plusieurs auras (toutes à −20). Hors
  *  combat (pas de géométrie), l'aura ne s'applique pas — limitation documentée. */
-export function castWardPenalty(s: GameState, target: Combatant, spell: { type: string }): number {
-  if (castInfoIsPrayer(spell.type)) return 0;
+export function castWardPenalty(s: GameState, target: Combatant, spell: SpellLike): number {
+  if (castInfoIsPrayer(spell)) return 0;
   if (!target.pos) return 0;
   const warded = (s.battle?.combatants ?? []).some(
     (w) => !isOutOfAction(w) && w.pos && (w.activeEffects ?? []).some(

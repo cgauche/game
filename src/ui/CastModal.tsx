@@ -314,7 +314,7 @@ export function CastModal() {
                 const actor = pool.find((c) => c.id === part.id);
                 if (!actor) return null;
                 const r = part.result;
-                const val = castingValue(actor, 'Langue', 'Magick');
+                const val = castingValue(actor, 'langue', 'Magick');
                 const row = r
                   ? { combatant: actor, d: { label: 'Langue (Magick)', base: r.counter.target, modifier: 0, target: r.counter.target, roll: r.counter.roll, success: r.counter.success, sl: r.counter.sl } }
                   : { combatant: actor, pending: { label: 'Langue (Magick)', base: val, mods: [] } };

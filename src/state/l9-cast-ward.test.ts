@@ -49,7 +49,7 @@ describe('castWard — pénalité −20 aux Sorts ciblant la zone du prêtre', (
     const { E } = setup({ x: 10, y: 10 }); // prêtre adjacent à la cible (2 m ≤ 4 m)
     useGame.getState().castRoll();
     const res = useGame.getState().pendingCast!.result!;
-    const base = castingValue(E as Combatant, 'Langue', 'Magick');
+    const base = castingValue(E as Combatant, 'langue', 'Magick');
     expect(res.target).toBe(base - 20);
   });
 
@@ -57,7 +57,7 @@ describe('castWard — pénalité −20 aux Sorts ciblant la zone du prêtre', (
     const { E } = setup({ x: 2, y: 2 }); // prêtre loin de la cible
     useGame.getState().castRoll();
     const res = useGame.getState().pendingCast!.result!;
-    const base = castingValue(E as Combatant, 'Langue', 'Magick');
+    const base = castingValue(E as Combatant, 'langue', 'Magick');
     expect(res.target).toBe(base);
   });
 });
