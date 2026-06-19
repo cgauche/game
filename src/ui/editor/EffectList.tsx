@@ -186,7 +186,7 @@ export function newEffect(type: Effect['type']): Effect {
       // tarif par défaut : « aide médicale 4-6 pistoles » (LDB 75) → 5 pa
       return { type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }], skill: 50, intBonus: 4 };
     case 'extendedTest':
-      return { type: 'extendedTest', skill: 'Crochetage', difficulty: 'intermediaire', label: 'Crocheter la serrure', targetDR: 5, flag: '' };
+      return { type: 'extendedTest', skill: 'crochetage', difficulty: 'intermediaire', label: 'Crocheter la serrure', targetDR: 5, flag: '' };
     case 'forceDoor':
       return { type: 'forceDoor', label: 'Porte', doorBE: 3, doorB: 10, flag: '' };
     case 'openWorldMap':
