@@ -201,6 +201,9 @@ export type Effect =
   | {
       type: 'extendedTest';
       skill?: string;
+      /** Spécialisation ciblée (Métier (Serrurier), Savoir (Magie)…) — précise QUELLE instance du
+       *  `skill` est testée quand le héros en possède plusieurs ; sinon la première suffit. */
+      spec?: string;
       characteristic?: CharKey;
       difficulty?: Difficulty;
       label: string;

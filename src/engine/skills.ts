@@ -104,10 +104,11 @@ export function partyBest(
   skill?: string,
   characteristic?: CharKey,
   extraMod?: (c: Combatant) => number,
+  spec?: string, // spécialisation ciblée (Métier (Serrurier)…) — transmise à `testValue` pour la bonne instance
 ): { actor: Combatant; value: number } | null {
   let best: { actor: Combatant; value: number } | null = null;
   for (const c of party) {
-    const v = testValue(c, skill, characteristic) + (extraMod?.(c) ?? 0);
+    const v = testValue(c, skill, characteristic, spec) + (extraMod?.(c) ?? 0);
     if (!best || v > best.value) best = { actor: c, value: v };
   }
   return best;

@@ -150,7 +150,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'startDialogue': return `${icon} Dialogue : ${e.dialogue || '?'}`;
     case 'openMerchant': return `${icon} Boutique : ${e.entityId || '?'}`;
     case 'medicalAid': return `${icon} Soins payants (${(e.acts ?? (e.act ? [0] : [])).length} acte(s))`;
-    case 'extendedTest': return `${icon} Test Étendu ${e.skill ? refLabel('skills', { id: e.skill }) : (e.characteristic || '?')} → DR cumulé ${e.targetDR ?? 0}${e.flag ? ` (flag ${e.flag})` : ''}`;
+    case 'extendedTest': return `${icon} Test Étendu ${e.skill ? refLabel('skills', { id: e.skill, spec: e.spec }) : (e.characteristic || '?')} → DR cumulé ${e.targetDR ?? 0}${e.flag ? ` (flag ${e.flag})` : ''}`;
     case 'forceDoor': return `${icon} Enfoncer « ${e.label || '?'} » (BE ${e.doorBE ?? 0}, B ${e.doorB ?? 0})${e.flag ? ` → flag ${e.flag}` : ''}`;
     case 'setTime': return `${icon} Heure → ${DAY_PHASES.find((p) => p.key === e.phase)?.label ?? e.phase}`;
     case 'delayedEffect': {
@@ -614,7 +614,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
           <>
             <input placeholder="Libellé (ex. Crocheter la serrure)" value={e.label ?? ''} onChange={(ev) => upd({ label: ev.target.value })} />
             <div className="tf-row">
-              <RefField cfg={{ ds: 'skills', single: true }} fieldKey="Compétence" value={e.skill} onChange={(v) => upd({ skill: (v as string) || undefined })} nullable />
+              <RefField cfg={{ ds: 'skills', single: true, spec: true }} fieldKey="Compétence" value={e.skill ? { id: e.skill, spec: e.spec } : undefined} onChange={(v) => { const r = v as { id: string; spec?: string } | null; upd({ skill: r?.id || undefined, spec: r?.spec || undefined }); }} nullable />
               <label className="dr">Carac.
                 <select value={e.characteristic ?? ''} onChange={(ev) => upd({ characteristic: (ev.target.value || undefined) as CharKey | undefined })}>
                   <option value="">— (de la compétence) —</option>

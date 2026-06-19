@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { testValue, partyBest, skillCharKeyById } from './skills';
 import { Combatant, SkillInstance } from './types';
 
-const mk = (chars: Partial<Record<string, number>>, skills: { skillId: string; advances: number }[] = []): Combatant =>
+const mk = (chars: Partial<Record<string, number>>, skills: { skillId: string; advances: number; spec?: string }[] = []): Combatant =>
   ({
     characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30, ...chars },
     skills: skills.map((s) => ({ ...s, characteristic: 'Dex' }) as SkillInstance),
@@ -27,6 +27,15 @@ describe('skills — testValue / partyBest / skillCharKeyById', () => {
   });
   it('partyBest sur groupe vide → null', () => {
     expect(partyBest([], undefined, 'Soc')).toBeNull();
+  });
+  it('partyBest transmet la spécialisation à testValue (bonne instance de Métier)', () => {
+    const h = mk({}, [
+      { skillId: 'metier', advances: 10, spec: 'Forgeron' },
+      { skillId: 'metier', advances: 40, spec: 'Serrurier' },
+    ]);
+    const forgeron = partyBest([h], 'metier', undefined, undefined, 'Forgeron')!;
+    const serrurier = partyBest([h], 'metier', undefined, undefined, 'Serrurier')!;
+    expect(serrurier.value - forgeron.value).toBe(30); // 40 − 10 d'avances, même caractéristique de base
   });
   it('skillCharKeyById : compétence inconnue → undefined', () => {
     expect(skillCharKeyById('competence-totalement-imaginaire')).toBeUndefined();
