@@ -1,10 +1,10 @@
 import type { GameState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
 import type { LootGear, CascadeStep } from './pendings';
-import { Combatant, ItemInstance, DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
+import { Combatant, DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
 import { battleRng } from './battleRng';
 import { d10, rollExpr, defaultRNG } from '../engine/dice';
-import { applyOps, type GameOp, type OpsCtx } from '../engine/ops';
+import { applyOps, type OpsCtx } from '../engine/ops';
 import { rule } from '../engine/policy';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { eligibleTalent } from '../engine/grimoire';
@@ -20,7 +20,7 @@ import { hasTalent } from '../engine/magic';
 import { recomputeLoadout, itemFromGive, giveTrappingLabel } from '../engine/items';
 import { findCreatureById, refLabel } from '../data';
 import { harvestSizeOf, harvestYield } from '../engine/harvest';
-import { contractDisease } from '../engine/disease';
+import { contractDisease, DISEASE_DEFS } from '../engine/disease';
 import { type HealMode } from '../engine/healing';
 import { openMedic } from './medicFlow';
 import { openRest, placesOfKind } from './restFlow';
@@ -32,7 +32,7 @@ import { feedFromMeal } from '../engine/provisions';
 import { findSpellById } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
 import { Effect } from './scene';
-import { type Flow, type FlowTest, flowFromEffects, flowEffects, testFlow, evalCondition, conditionCtx } from './flow';
+import { type Flow, type FlowTest, flowFromEffects, flowEffects, testFlow, evalCondition, conditionCtx, EMPTY_FLOW } from './flow';
 import { inRect } from './combatGeometry';
 import { startCascade } from './cascade';
 import { loseWounds, addCondition } from '../engine/conditions';
@@ -366,354 +366,563 @@ export function runSpellFlow(target: Combatant, caster: Combatant | undefined, f
   return lines;
 }
 
+/**
+ * Environnement d'exécution d'un Effet : l'état (get/set) + les helpers FACTORISÉS du switch d'origine.
+ * `mutateHero` capture le motif RÉPÉTÉ « héros désigné par heroId, sinon une cible par défaut → clone →
+ * muter le party » (7 cas) ; `targets` = `effectTargets` (cibles party/hero, file de combat ou groupe) ;
+ * `log`/`pushReveal` = raccourcis. Aucune logique de domaine ici (chaque conséquence vit dans son handler).
+ */
+export interface EffectEnv {
+  get: Get;
+  set: SetFn;
+  log(line: string): void;
+  pushReveal(entry: RevealEntry): void;
+  /** Cibles d'un effet `party`/`hero` (héros vivants concernés, bon ensemble) — `effectTargets`. */
+  targets(on: 'party' | 'hero', heroId?: string): Combatant[];
+  /**
+   * Applique `mutate` au héros choisi (heroId, sinon `pick`/le premier vivant) et renvoie l'ORIGINAL
+   * muté (pour le journal). `mutate(hero)` renvoie le NOUVEAU héros (immuable) ; renvoyer `hero`
+   * inchangé = pas de mutation (le héros reste, ex. maladie déjà présente). `pick(party)` choisit
+   * l'index défaut quand `heroId` est absent (−1 = abandon) ; absent → le premier (index 0).
+   */
+  mutateHero(
+    heroId: string | undefined,
+    mutate: (hero: Combatant) => Combatant,
+    pick?: (party: Combatant[]) => number,
+  ): Combatant | null;
+}
+
+function makeEffectEnv(get: Get, set: SetFn): EffectEnv {
+  return {
+    get,
+    set,
+    log: (line) => get().log(line),
+    pushReveal: (entry) => pushReveal(set, entry),
+    targets: (on, heroId) => effectTargets(get, on, heroId),
+    mutateHero: (heroId, mutate, pick) => {
+      let chosen: Combatant | null = null;
+      set((s: GameState) => {
+        if (!s.party.length) return {};
+        const idx = heroId
+          ? s.party.findIndex((h) => h.id === heroId)
+          : pick
+            ? pick(s.party)
+            : 0;
+        if (idx < 0) return {};
+        chosen = s.party[idx];
+        return { party: s.party.map((h, i) => (i === idx ? mutate(h) : h)) };
+      });
+      return chosen;
+    },
+  };
+}
+
+/** Issue de l'`apply` d'un handler : `'suspend'` STOPPE la boucle `applyEffects` (l'effet a ouvert une
+ *  modale/pending qui reprend la suite — extendedTest, forceDoor) ; sinon (void) la boucle continue. */
+type EffectApplyResult = void | 'suspend';
+
+/** Contexte de validation des réfs d'un effet (id-sets de la scène/projet + bornes de la carte). Fourni
+ *  par `validateScene` ; `refs` produit des avertissements génériques (sans scope/refId — re-décorés par
+ *  l'appelant), ce qui co-localise la validation d'un effet AVEC son application (fin du switch parallèle). */
+export interface EffectRefCtx {
+  sceneIds: ReadonlySet<string>;
+  dialogueIds: ReadonlySet<string>;
+  encounterIds: ReadonlySet<string>;
+  within(x: number, y: number): boolean;
+}
+export interface EffectRefIssue {
+  level: 'error' | 'warn';
+  message: string;
+}
+
+/**
+ * Un effet = UN handler portant TOUTES ses facettes (fin des Records parallèles `EFFECT_LABEL`/
+ * `EFFECT_ICON`/`EFFECT_GROUPS`/`newEffect` + du switch `checkEffect`) : son APPLICATION (`apply`), ses
+ * métadonnées d'auteur (`label`/`icon`/`group` pour le picker de l'éditeur), sa FABRIQUE par défaut
+ * (`make`) et sa VALIDATION de réfs (`refs`). Le RENDU des champs (`EffectFields`) et le `summary`
+ * restent dans l'UI (`EffectList`) car ils dépendent de React / `opSummary` (sib. éditeur) : l'inverser
+ * tirerait l'UI dans le moteur (cycle). `T` = la variante d'Effet narrowée (apply/make typés sur elle).
+ */
+export interface EffectHandler<T extends Effect = Effect> {
+  /** Groupe d'INTENTION d'auteur (libellé affiché dans le picker « + Effet », cf. `EFFECT_GROUP_ORDER`). */
+  group: string;
+  /** Libellé long (picker) et icône (rangée repliée). */
+  label: string;
+  icon: string;
+  /** Effet par défaut posé quand l'auteur ajoute ce type (ex-`newEffect`). */
+  make(): T;
+  /** Conséquence appliquée par `applyEffects`. `'suspend'` = stoppe la boucle (modale/pending ouvert). */
+  apply(e: T, env: EffectEnv): EffectApplyResult;
+  /** Réfs cassées / valeurs invalides (ex-`checkEffect`). Absent = rien à valider. */
+  refs?(e: T, ctx: EffectRefCtx): EffectRefIssue[];
+}
+
+/** Noms des maladies câblées (LDB 20) — défaut de la fabrique `inflictDisease.make`. */
+const DISEASE_NAMES = Object.keys(DISEASE_DEFS);
+
+/** Ordre des groupes d'intention dans le picker « + Effet » (l'ordre des handlers ci-dessous donne
+ *  l'ordre INTRA-groupe — la déclaration suit l'ancien `EFFECT_GROUPS` aplati). */
+export const EFFECT_GROUP_ORDER = [
+  '📜 Narration',
+  '🎁 Récompenses',
+  '☠️ Afflictions',
+  '🕰 Temps & repos',
+  '🚪 Navigation',
+  '⚔️ Combat & social',
+  '🎲 Tests',
+] as const;
+
+/** Mappe chaque `type` d'Effet à son handler narrowé — garantit l'EXHAUSTIVITÉ (tsc échoue si un type
+ *  manque) ET le typage par variante de `apply`/`make`/`refs`. */
+type EffectHandlerMap = {
+  [K in Effect['type']]: EffectHandler<Extract<Effect, { type: K }>>;
+};
+
+/**
+ * REGISTRE des effets — source unique data-driven (fin du god-switch `applyEffects`). Déclaré dans
+ * l'ordre du picker (groupes de `EFFECT_GROUP_ORDER`, ordre intra-groupe = ordre de déclaration).
+ */
+export const EFFECT_HANDLERS: EffectHandlerMap = {
+  // ── 📜 Narration ──────────────────────────────────────────────────────────
+  journal: {
+    group: '📜 Narration', label: 'Journal', icon: '📜',
+    make: () => ({ type: 'journal', text: '' }),
+    apply: (e, env) => { env.log(e.text); },
+  },
+  document: {
+    group: '📜 Narration', label: 'Document (handout)', icon: '📄',
+    make: () => ({ type: 'document', title: '', text: '' }),
+    apply: (e, env) => { env.set({ document: { title: e.title, text: e.text } }); },
+  },
+  startDialogue: {
+    group: '📜 Narration', label: 'Ouvrir un dialogue', icon: '💬',
+    make: () => ({ type: 'startDialogue', dialogue: '' }),
+    apply: (e, env) => {
+      const dlg = env.get().scene?.dialogues.find((d) => d.id === e.dialogue);
+      if (dlg) env.set({ dialogue: { dialogue: dlg, nodeId: dlg.start } });
+    },
+    refs: (e, ctx) => ctx.dialogueIds.has(e.dialogue) ? [] : [{ level: 'error', message: `Effet → dialogue inexistant « ${e.dialogue} »` }],
+  },
+  endDialogue: {
+    group: '📜 Narration', label: 'Fermer le dialogue', icon: '✖️',
+    make: () => ({ type: 'endDialogue' }),
+    apply: (_e, env) => {
+      if (env.get().dialogue) env.get().advanceTime(TIME_COST.dialogue); // clôture d'une conversation ≈ dialogue min
+      env.set({ dialogue: null });
+    },
+  },
+  setFlag: {
+    group: '📜 Narration', label: 'Définir un flag', icon: '🚩',
+    make: () => ({ type: 'setFlag', flag: '', value: true }),
+    apply: (e, env) => { env.set((s: GameState) => ({ flags: { ...s.flags, [e.flag]: e.value ?? true } })); },
+  },
+  setLight: {
+    group: '📜 Narration', label: 'Lumière de scène (les lumières baissent / se rallument)', icon: '💡',
+    make: () => ({ type: 'setLight', level: 0.3 }),
+    apply: (e, env) => { env.set({ lightLevel: Math.max(0, Math.min(1, e.level)) }); }, // mise en scène (Lot L) : niveau borné [0,1]
+  },
+
+  // ── 🎁 Récompenses ────────────────────────────────────────────────────────
+  giveTrapping: {
+    group: '🎁 Récompenses', label: 'Donner un objet (équipement/potion/babiole — réel ou custom)', icon: '🎒',
+    make: () => ({ type: 'giveTrapping', custom: '' }),
+    apply: (e, env) => {
+      // Objet de CATALOGUE (`trappingId`) sinon objet CUSTOM (`custom`, misc) — source unique itemFromGive.
+      const it = itemFromGive(e);
+      // Butin MAGIQUE (optionnel) : qualités ajoutées, objet non identifié (qualités masquées jusqu'à
+      // Évaluation, #2), skin légendaire. Les qualités restent ACTIVES mécaniquement (registre).
+      if (e.qualities?.length) it.qualities = [...it.qualities, ...e.qualities];
+      if (e.identified === false) it.identified = false;
+      if (e.skin) it.skin = e.skin;
+      if (e.magicKnown) it.magicKnown = true; // aura détectée en fenêtre de loot → suit l'objet
+      if (e.detectTried) it.detectTried = true;
+      if (e.appraiseTriedDay != null) it.appraiseTriedDay = e.appraiseTriedDay;
+      if (e.price) it.price = { gold: e.price.gold ?? 0, silver: e.price.silver ?? 0, brass: e.price.brass ?? 0 };
+      const who = env.mutateHero(e.heroId, (h) => {
+        const clone: Combatant = JSON.parse(JSON.stringify(h));
+        clone.items = [...(clone.items ?? []), it]; // arrive NON équipé
+        recomputeLoadout(clone); // met à jour l'encombrement
+        return clone;
+      });
+      env.log(`${who?.name || 'Le groupe'} récupère : ${it.name}.`);
+    },
+  },
+  giveMoney: {
+    group: '🎁 Récompenses', label: 'Donner/retirer de l’argent', icon: '🪙',
+    make: () => ({ type: 'giveMoney', gold: 0, silver: 0, brass: 0 }),
+    apply: (e, env) => {
+      env.set((s: GameState) => ({
+        money: {
+          gold: s.money.gold + (e.gold ?? 0),
+          silver: s.money.silver + (e.silver ?? 0),
+          brass: s.money.brass + (e.brass ?? 0),
+        },
+      }));
+      const parts = [e.gold && `${e.gold} CO`, e.silver && `${e.silver} pa`, e.brass && `${e.brass} sc`].filter(Boolean); // noms canon FR (couronne/pistole/sou)
+      if (parts.length) env.log(`Bourse : ${(e.gold ?? 0) < 0 || (e.silver ?? 0) < 0 ? '' : '+'}${parts.join(' ')}.`);
+    },
+  },
+  giveXp: {
+    group: '🎁 Récompenses', label: 'Donner des PX (groupe)', icon: '✨',
+    make: () => ({ type: 'giveXp', amount: 50 }),
+    apply: (e, env) => {
+      env.set((s: GameState) => ({
+        party: s.party.map((h) => {
+          const clone: Combatant = JSON.parse(JSON.stringify(h));
+          clone.xp = (clone.xp ?? 0) + e.amount;
+          return clone;
+        }),
+      }));
+      env.log(`Groupe : +${e.amount} PX.`);
+    },
+  },
+  learnSpell: {
+    group: '🎁 Récompenses', label: 'Apprendre un sort (trouvaille, sans PX)', icon: '🪄',
+    make: () => ({ type: 'learnSpell', spell: '', heroId: '' }),
+    apply: (e, env) => {
+      // Trouvaille de campagne : le sort est appris SANS PX (l'auteur l'octroie — le coût
+      // en PX ne vaut que pour la mémorisation volontaire, LDB 46 l.44-47).
+      const sp = findSpellById(e.spell);
+      if (!sp) return;
+      // `c.spells` = IDS de sort (résolus par findSpellById dans l'ActionBar/IA/grimoire) ; le libellé
+      // ne sert qu'à l'affichage (log ci-dessous). Même convention que pregens/buySpell/Béni.
+      const who = env.mutateHero(
+        e.heroId,
+        (h) => ((h.spells ?? []).includes(sp.id) ? h : { ...h, spells: [...(h.spells ?? []), sp.id] }),
+        (party) => party.findIndex((h) => !!eligibleTalent(h, sp) && !(h.spells ?? []).includes(sp.id)),
+      );
+      if (who) env.log(`${who.name} apprend ${sp.label}.`);
+    },
+  },
+  restoreFortune: {
+    group: '🎁 Récompenses', label: 'Regagner la Chance (début de session, max = Destin)', icon: '🍀',
+    make: () => ({ type: 'restoreFortune' }),
+    apply: (_e, env) => {
+      // Début de session (LDB 17 l.47) : Chance regagnée jusqu'au maximum = Destin actuel.
+      env.set((s: GameState) => ({ party: restoreFortune(s.party) }));
+      env.log('Début de session : Points de Chance regagnés (maximum = Destin).');
+    },
+  },
+
+  // ── ☠️ Afflictions ────────────────────────────────────────────────────────
+  ops: {
+    group: '☠️ Afflictions', label: 'Effets mécaniques (Blessures / État / buffs… — vocabulaire des sorts)', icon: '✨',
+    make: () => ({ type: 'ops', on: 'party', ops: [{ op: 'wounds', amount: 5 }] }),
+    apply: (e, env) => {
+      // EffectOp : applique les GameOps (vocabulaire mécanique des sorts) à la cible de SCÈNE
+      // (`party`/`hero`). `caster`/`target` = contexte d'incantation, résolu par le flux de sort → ignoré ici.
+      const on = e.on ?? 'party';
+      if (on !== 'party' && on !== 'hero') return;
+      const targets = env.targets(on, e.heroId);
+      if (!targets.length) return;
+      const lines = targets.flatMap((c) => applyOps(c, e.ops, { rng: defaultRNG }));
+      env.set(touchActors(env.get()));
+      lines.forEach((l) => env.log(l));
+    },
+  },
+  zoneBlast: {
+    group: '☠️ Afflictions', label: 'Souffle de zone (dégâts tirés + États, rayon)', icon: '🧨',
+    make: () => ({ type: 'zoneBlast', center: { x: 0, y: 0 }, radius: 2, damage: '1d10+15', conditions: [] }),
+    apply: (e, env) => {
+      // Cibles dans le rayon (Chebyshev) : en combat par position de chaque combattant ; hors
+      // combat, le groupe entier est à partyPos. Dégâts TIRÉS par cible (révélés au journal).
+      const inBattle = !!env.get().battle;
+      const pool: Combatant[] = inBattle ? env.get().battle!.combatants : env.get().party;
+      const pp = env.get().partyPos;
+      const cheb = (p: { x: number; y: number }) => Math.max(Math.abs(p.x - e.center.x), Math.abs(p.y - e.center.y));
+      const targets = pool.filter((c) => {
+        if (c.dead || (!inBattle && c.kind !== 'hero')) return false;
+        const pos = inBattle ? (c as Combatant & { pos?: { x: number; y: number } }).pos : pp;
+        return !!pos && cheb(pos) <= e.radius;
+      });
+      if (!targets.length) return;
+      const lines = targets.map((c) => {
+        const dmg = Math.max(0, rollExpr(e.damage, battleRng()));
+        loseWounds(c, dmg);
+        for (const cond of e.conditions ?? []) addCondition(c, cond.name, cond.value ?? 1);
+        return `${c.name} ${dmg}${e.conditions?.length ? ` +${e.conditions.map((x) => x.name).join('/')}` : ''}`;
+      });
+      env.set(touchActors(env.get()));
+      env.log(`💥 Souffle (${e.damage}) : ${lines.join(' · ')}.`);
+    },
+    refs: (e, ctx) => {
+      const out: EffectRefIssue[] = [];
+      if (!ctx.within(e.center.x, e.center.y)) out.push({ level: 'warn', message: `Souffle de zone : centre (${e.center.x},${e.center.y}) hors de la carte` });
+      if (!e.damage?.trim()) out.push({ level: 'error', message: `Souffle de zone : formule de dégâts manquante` });
+      if (e.radius < 0) out.push({ level: 'error', message: `Souffle de zone : rayon négatif` });
+      return out;
+    },
+  },
+  fall: {
+    group: '☠️ Afflictions', label: 'Chute (dégâts/m + 1d10, À Terre, repositionne le groupe)', icon: '🪂',
+    make: () => ({ type: 'fall', target: 'party', metres: 4 }),
+    apply: (e, env) => {
+      // Chute (LDB 15 l.117-122) : 3 Dégâts/mètre + 1d10, réduits par le Bonus d'Endurance mais
+      // PAS par les PA ; si les Blessures subies > BE → État À Terre. `to` repose le groupe (hors
+      // combat). Dégâts TIRÉS par cible et révélés au journal (involontaire : pas de Test d'Athlétisme).
+      const targets = env.targets(e.target, e.heroId);
+      const m = Math.max(0, e.metres);
+      const lines = targets.map((c) => {
+        const be = Math.floor(effectiveChar(c, 'E') / 10);
+        const lost = Math.max(0, 3 * m + d10(battleRng()) - be);
+        loseWounds(c, lost);
+        if (lost > be) addCondition(c, 'a-terre');
+        return `${c.name} ${lost}${lost > be ? ' (À Terre)' : ''}`;
+      });
+      if (targets.length) {
+        env.set({ ...touchActors(env.get()), ...(e.to && !env.get().battle ? { partyPos: e.to } : {}) });
+        env.log(`🪂 Chute de ${m} m : ${lines.join(' · ')}.`);
+      } else if (e.to && !env.get().battle) env.set({ partyPos: e.to });
+    },
+  },
+  inflictDisease: {
+    group: '☠️ Afflictions', label: 'Infliger une maladie (LDB 20)', icon: '🤢',
+    make: () => ({ type: 'inflictDisease', disease: DISEASE_NAMES[0] ?? '', heroId: '' }),
+    apply: (e, env) => {
+      // Maladie (LDB 20) infligée par l'auteur (nourriture avariée, contact infecté…). Incubation/durée
+      // tirées à la contraction ; les symptômes se déclareront au repos. Dédoublonnée par nom.
+      let whoId = '';
+      const who = env.mutateHero(e.heroId, (h) => {
+        if ((h.diseases ?? []).some((d) => d.name === e.disease)) return h; // déjà présente → no-op
+        const dz = contractDisease(e.disease, battleRng());
+        if (!dz) return h;
+        whoId = h.id;
+        return { ...h, diseases: [...(h.diseases ?? []), dz] };
+      });
+      if (who && whoId) {
+        const line = `${who.name} a contracté : ${e.disease} (symptômes au repos).`;
+        env.log(line);
+        // VISIBLE (le journal seul ne suffit pas) : effet d'AUTEUR → révélation témoin.
+        env.pushReveal({ kind: 'effet', title: `Maladie — ${e.disease}`, lines: [line], subjectId: whoId, severity: 'grave' });
+      }
+    },
+  },
+  inflictTrauma: {
+    group: '☠️ Afflictions', label: 'Infliger une Blessure Critique (LDB 18)', icon: '🦴',
+    make: () => ({ type: 'inflictTrauma', kind: 'fracture', severity: 'mineur', location: 'brasD', heroId: '' }),
+    apply: (e, env) => {
+      // Blessure Critique posée rétroactivement par l'éditeur (LDB 18) : déchirure/fracture via la
+      // factory partagée (traumaFromKind, effets en-combat + convalescence), amputation via les
+      // séquelles permanentes (permanentAmputations). criticalWounds suit (compteur LDB 18).
+      let labels: string[] = [];
+      let whoId = '';
+      const who = env.mutateHero(e.heroId, (h) => {
+        whoId = h.id;
+        const be = Math.floor(effectiveChar(h, 'E') / 10);
+        // Amputation : permanentAmputations lit la PARTIE dans le texte → on synthétise un libellé
+        // par localisation (bras → main/bras ; jambe → membre inférieur ; tête → œil, choix d'éditeur).
+        const ampNote = e.location === 'tete' ? 'Perte de l’œil — Amputation (Intermédiaire)' : 'Main/bras inutilisable — Amputation (Intermédiaire)';
+        const traumas = e.kind === 'amputation'
+          ? permanentAmputations('Amputation', ampNote, e.location, battleRng())
+          : [traumaFromKind(e.kind, e.severity ?? 'mineur', e.location, { be, d10: d10(battleRng()) })];
+        labels = traumas.map((t) => t.label);
+        return { ...h, traumas: [...(h.traumas ?? []), ...traumas], criticalWounds: (h.criticalWounds ?? 0) + 1 };
+      });
+      if (who) {
+        const line = `${who.name} subit une Blessure Critique (${e.kind}, ${e.location}).`;
+        env.log(line);
+        // VISIBLE (le journal seul ne suffit pas) : effet d'AUTEUR → révélation témoin.
+        env.pushReveal({ kind: 'effet', title: `Blessure Critique — ${e.kind}`, lines: [line, ...labels], subjectId: whoId, severity: 'grave' });
+      }
+    },
+  },
+  inflictNightmares: {
+    group: '☠️ Afflictions', label: 'Infliger des cauchemars (trauma nocturne)', icon: '😱',
+    make: () => ({ type: 'inflictNightmares', heroId: '' }),
+    apply: (e, env) => {
+      // Trauma « Cauchemars » (LDB 21 l.92) posé sur un héros (défaut : le premier).
+      const who = env.mutateHero(e.heroId, (h) => ({ ...h, nightmares: true }));
+      if (who) env.log(`${who.name} est marqué par un trauma : des cauchemars le hanteront chaque nuit.`);
+    },
+  },
+  giveCorruption: {
+    group: '☠️ Afflictions', label: 'Points de Corruption directs (LDB 19)', icon: '🧬',
+    make: () => ({ type: 'giveCorruption', amount: 1, heroId: '' }),
+    apply: (e, env) => {
+      // Gain direct (artefact maudit, Pacte scénarisé…) — applique aussi seuil → mutation.
+      const hero = corruptionTarget(env.get(), e.heroId);
+      if (hero) {
+        const lines = gainCorruption(env.get, env.set, hero, Math.max(1, e.amount ?? 1));
+        for (const l of lines) env.log(l);
+        env.set({ party: [...env.get().party] });
+      }
+    },
+  },
+  corruptionExposure: {
+    group: '☠️ Afflictions', label: 'Influence corruptrice (Test, LDB 19)', icon: '🧿',
+    make: () => ({ type: 'corruptionExposure', level: 'mineure', skill: 'resistance', heroId: '' }),
+    apply: (e, env) => {
+      // Influence corruptrice (LDB 19 l.23-75) : ouvre le Test différé par modale
+      // (Lancer → Chance → Appliquer) ; le gain dépendra du niveau et du DR.
+      const hero = corruptionTarget(env.get(), e.heroId);
+      // `e.skill` présent = déterminé en amont (verrouillé) ; absent = nature indéterminée → le
+      // joueur choisira Résistance/Calme dans la modale (défaut affiché : Résistance).
+      if (hero) env.set({ pendingCorruption: { heroId: hero.id, level: e.level, skill: e.skill ?? 'resistance', skillLocked: e.skill != null } });
+    },
+  },
+  giveSin: {
+    group: '☠️ Afflictions', label: 'Points de Péché (prêtre fautif, LDB 40)', icon: '⚖️',
+    make: () => ({ type: 'giveSin', amount: 1, heroId: '' }),
+    apply: (e, env) => {
+      // Points de Péché (LDB 40 l.36) : sanction d'auteur, 1 à 3 selon la gravité.
+      // Cible : héros désigné, sinon le premier sachant Prier (le Péché vise un Bienheureux).
+      const amount = Math.max(1, e.amount ?? 1);
+      const who = env.mutateHero(
+        e.heroId,
+        (h) => ({ ...h, sinPoints: (h.sinPoints ?? 0) + amount }),
+        (party) => {
+          const i = party.findIndex((h) => h.skills.some((sk) => sk.skillId === 'priere' && sk.advances >= 1));
+          return i >= 0 ? i : 0;
+        },
+      );
+      if (who) env.log(`${who.name} a péché contre son dieu : +${amount} Point(s) de Péché.`);
+    },
+  },
+
+  // ── 🕰 Temps & repos ──────────────────────────────────────────────────────
+  rest: {
+    group: '🕰 Temps & repos', label: 'Repos (Dormir / Se reposer N jours)', icon: '🌙',
+    make: () => ({ type: 'rest', days: 1 }),
+    apply: (e, env) => {
+      // Repos déclenché par l'éditeur (trigger/dialogue) : ouvre la MODALE DE NUIT (couchage +
+      // pitance par héros, prix RAW, bilan globalisé). LEGACY sans `lodging` : contexte maison.
+      openRest(env.get, env.set, { places: placesOfKind(e.lodging ?? 'maison'), quality: e.quality, days: e.days ?? 1 });
+    },
+  },
+  mealParty: {
+    group: '🕰 Temps & repos', label: 'Repas (nourrit le groupe sans ration — faim à zéro)', icon: '🍲',
+    make: () => ({ type: 'mealParty' }),
+    apply: (_e, env) => {
+      // Repas (#T2) : tout le groupe est nourri pour la journée sans consommer de ration —
+      // compteurs/malus de Faim remis à zéro (LDB 18 l.417-422 ; prix éventuel porté par le choix).
+      const diners = env.get().party;
+      for (const h of diners) if (!h.dead) feedFromMeal(h);
+      env.set({ party: [...diners] });
+      env.log('Le groupe prend un vrai repas — chacun mange à sa faim.');
+    },
+  },
+  interlude: {
+    group: '🕰 Temps & repos', label: 'Entre deux aventures (Événements + Activités, N semaines)', icon: '📆',
+    make: () => ({ type: 'interlude', weeks: 1 }),
+    apply: (e, env) => {
+      // « Entre deux aventures » (LDB 22-23) — via l'action store (pas d'import direct : cycle).
+      // Règle optionnelle (LDB 22 l.14) : tout le chapitre est facultatif → désactivable.
+      if (rule('interlude-enabled')) env.get().startInterlude(e.weeks ?? 1);
+    },
+  },
+  setTime: {
+    group: '🕰 Temps & repos', label: 'Régler l’heure (jour/nuit)', icon: '🕰',
+    make: () => ({ type: 'setTime', phase: 'nuit' }),
+    apply: (e, env) => {
+      // Saut EN AVANT jusqu'à la prochaine occurrence de la phase/heure visée (le temps ne recule jamais).
+      const target = 'phase' in e
+        ? (DAY_PHASES.find((p) => p.key === e.phase)?.start ?? 0)
+        : e.hour * 60 + (e.minute ?? 0);
+      env.get().advanceTime(minutesUntilNext(env.get().gameTime, target));
+    },
+  },
+  delayedEffect: {
+    group: '🕰 Temps & repos', label: 'Effet différé (minuterie / heure)', icon: '⏳',
+    make: () => ({ type: 'delayedEffect', afterMinutes: 60, flow: EMPTY_FLOW, cancelFlag: '' }),
+    apply: (e, env) => {
+      // Échéance absolue (minute `gameTime`) : compte à rebours relatif `afterMinutes`, sinon la
+      // prochaine occurrence de l'heure du jour `atHour:atMinute`.
+      const now = env.get().gameTime;
+      const executeAt = e.afterMinutes != null
+        ? now + Math.max(0, e.afterMinutes)
+        : now + minutesUntilNext(now, (e.atHour ?? 0) * 60 + (e.atMinute ?? 0));
+      env.set((s: GameState) => ({ scheduledEffects: [...s.scheduledEffects, { executeAt, flow: e.flow, cancelFlag: e.cancelFlag }] }));
+    },
+  },
+
+  // ── 🚪 Navigation ─────────────────────────────────────────────────────────
+  transition: {
+    group: '🚪 Navigation', label: 'Transition de scène', icon: '🚪',
+    make: () => ({ type: 'transition', scene: '', entry: '' }),
+    apply: (e, env) => {
+      const cur = env.get();
+      if (cur.scene) env.set({ previousScene: { id: cur.scene.id, pos: { ...cur.partyPos } } });
+      env.get().transitionTo(e.scene, e.entry);
+    },
+    refs: (e, ctx) => ctx.sceneIds.has(e.scene) ? [] : [{ level: 'error', message: `Effet → scène inexistante « ${e.scene} »` }],
+  },
+  transitionBack: {
+    group: '🚪 Navigation', label: 'Retour scène précédente', icon: '↩️',
+    make: () => ({ type: 'transitionBack' }),
+    apply: (_e, env) => {
+      const prev = env.get().previousScene;
+      if (prev) {
+        env.set({ previousScene: null });
+        env.get().transitionTo(prev.id, undefined, prev.pos);
+      }
+    },
+  },
+  openWorldMap: {
+    group: '🚪 Navigation', label: 'Ouvrir la carte du monde (partir en voyage)', icon: '🗺️',
+    make: () => ({ type: 'openWorldMap' }),
+    apply: (_e, env) => {
+      // « Partir en voyage » depuis une porte/route de la scène (#T2) — l'action est déjà gardée
+      // (no-op sans carte ou en combat).
+      env.get().openWorldMap();
+    },
+  },
+
+  // ── ⚔️ Combat & social ────────────────────────────────────────────────────
+  startCombat: {
+    group: '⚔️ Combat & social', label: 'Démarrer un combat', icon: '⚔️',
+    make: () => ({ type: 'startCombat', encounter: '' }),
+    apply: (e, env) => { env.get().startCombat(e.encounter); },
+    refs: (e, ctx) => ctx.encounterIds.has(e.encounter) ? [] : [{ level: 'error', message: `Effet → rencontre inexistante « ${e.encounter} »` }],
+  },
+  openMerchant: {
+    group: '⚔️ Combat & social', label: 'Ouvrir une boutique (marchand)', icon: '🛒',
+    make: () => ({ type: 'openMerchant', entityId: '' }),
+    apply: (e, env) => { env.get().openMerchant(e.entityId); }, // ouvre la boutique de l'entité (Marchand inclus dans un dialogue, #2)
+  },
+  medicalAid: {
+    group: '⚔️ Combat & social', label: 'Acte de soin payant (PNJ médecin/guérisseur)', icon: '🩺',
+    // tarif par défaut : « aide médicale 4-6 pistoles » (LDB 75) → 5 pa
+    make: () => ({ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }], skill: 50, intBonus: 4 }),
+    apply: (e, env) => { openMedicalAidEffect(env.get, env.set, e); }, // soins payants d'un PNJ : ouvre son infirmerie (actes tarifés)
+  },
+
+  // ── 🎲 Tests ──────────────────────────────────────────────────────────────
+  extendedTest: {
+    group: '🎲 Tests', label: 'Test Étendu (DR cumulé : crocheter/forcer un mécanisme)', icon: '🗝️',
+    make: () => ({ type: 'extendedTest', skill: 'crochetage', difficulty: 'intermediaire', label: 'Crocheter la serrure', targetDR: 5, flag: '' }),
+    apply: (e, env) => {
+      // Test ÉTENDU (LDB 12) : le meilleur du groupe pour la Compétence enchaîne les Rounds.
+      const best = partyBest(env.get().party, e.skill, e.characteristic, undefined, e.spec);
+      if (!best) return;
+      const difficulty = e.difficulty ?? 'intermediaire';
+      const target = Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS[difficulty]));
+      env.get().startExtendedTest({ actorId: best.actor.id, label: e.label, skillLabel: e.skill ? refLabel('skills', { id: e.skill, spec: e.spec }) : (e.characteristic ?? 'Test'), target, targetDR: e.targetDR, flag: e.flag });
+      return 'suspend';
+    },
+  },
+  forceDoor: {
+    group: '🎲 Tests', label: 'Enfoncer une porte à plusieurs (objet BE/B)', icon: '🔨',
+    make: () => ({ type: 'forceDoor', label: 'Porte', doorBE: 3, doorB: 10, flag: '' }),
+    apply: (e, env) => {
+      // Enfoncer une PORTE/objet à plusieurs (EDO Append. 2) : tout le groupe vivant frappe.
+      const heroes = env.get().party.filter((h) => !h.dead).map((h) => h.id);
+      if (!heroes.length) return;
+      env.get().startForceDoor({ label: e.label, doorBE: e.doorBE, doorB: e.doorB, heroIds: heroes, flag: e.flag });
+      return 'suspend';
+    },
+  },
+};
+
+/**
+ * Applique une liste d'Effets via le REGISTRE `EFFECT_HANDLERS` (1 effet = 1 handler). Un handler qui
+ * renvoie `'suspend'` (extendedTest/forceDoor → modale/pending) STOPPE la boucle, comme l'ancien
+ * `return` au milieu du switch — l'ORDRE, les journaux et les révélations restent identiques.
+ */
 export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
+  const env = makeEffectEnv(get, set);
   for (const e of effects) {
-    switch (e.type) {
-      case 'setFlag':
-        set((s: GameState) => ({ flags: { ...s.flags, [e.flag]: e.value ?? true } }));
-        break;
-      case 'journal':
-        get().log(e.text);
-        break;
-      case 'giveMoney': {
-        set((s: GameState) => ({
-          money: {
-            gold: s.money.gold + (e.gold ?? 0),
-            silver: s.money.silver + (e.silver ?? 0),
-            brass: s.money.brass + (e.brass ?? 0),
-          },
-        }));
-        const parts = [e.gold && `${e.gold} CO`, e.silver && `${e.silver} pa`, e.brass && `${e.brass} sc`].filter(Boolean); // noms canon FR (couronne/pistole/sou)
-        if (parts.length) get().log(`Bourse : ${(e.gold ?? 0) < 0 || (e.silver ?? 0) < 0 ? '' : '+'}${parts.join(' ')}.`);
-        break;
-      }
-      case 'giveXp':
-        set((s: GameState) => ({
-          party: s.party.map((h) => {
-            const clone: Combatant = JSON.parse(JSON.stringify(h));
-            clone.xp = (clone.xp ?? 0) + e.amount;
-            return clone;
-          }),
-        }));
-        get().log(`Groupe : +${e.amount} PX.`);
-        break;
-      case 'restoreFortune':
-        // Début de session (LDB 17 l.47) : Chance regagnée jusqu'au maximum = Destin actuel.
-        set((s: GameState) => ({ party: restoreFortune(s.party) }));
-        get().log('Début de session : Points de Chance regagnés (maximum = Destin).');
-        break;
-      case 'interlude':
-        // « Entre deux aventures » (LDB 22-23) — via l'action store (pas d'import direct : cycle).
-        // Règle optionnelle (LDB 22 l.14) : tout le chapitre est facultatif → désactivable.
-        if (rule('interlude-enabled')) get().startInterlude(e.weeks ?? 1);
-        break;
-      case 'openWorldMap':
-        // « Partir en voyage » depuis une porte/route de la scène (#T2) — l'action est déjà gardée
-        // (no-op sans carte ou en combat).
-        get().openWorldMap();
-        break;
-      case 'rest':
-        // Repos déclenché par l'éditeur (trigger/dialogue) : ouvre la MODALE DE NUIT (couchage +
-        // pitance par héros, prix RAW, bilan globalisé). LEGACY sans `lodging` : contexte maison.
-        openRest(get, set, { places: placesOfKind(e.lodging ?? 'maison'), quality: e.quality, days: e.days ?? 1 });
-        break;
-      case 'mealParty': {
-        // Repas (#T2) : tout le groupe est nourri pour la journée sans consommer de ration —
-        // compteurs/malus de Faim remis à zéro (LDB 18 l.417-422 ; prix éventuel porté par le choix).
-        const diners = get().party;
-        for (const h of diners) if (!h.dead) feedFromMeal(h);
-        set({ party: [...diners] });
-        get().log('Le groupe prend un vrai repas — chacun mange à sa faim.');
-        break;
-      }
-      case 'inflictNightmares': {
-        // Trauma « Cauchemars » (LDB 21 l.92) posé sur un héros (défaut : le premier).
-        let who = '';
-        set((s: GameState) => {
-          if (!s.party.length) return {};
-          const idx = e.heroId ? s.party.findIndex((h) => h.id === e.heroId) : 0;
-          const target = idx >= 0 ? idx : 0;
-          who = s.party[target].name;
-          return { party: s.party.map((h, i) => (i === target ? { ...h, nightmares: true } : h)) };
-        });
-        if (who) get().log(`${who} est marqué par un trauma : des cauchemars le hanteront chaque nuit.`);
-        break;
-      }
-      case 'giveSin': {
-        // Points de Péché (LDB 40 l.36) : sanction d'auteur, 1 à 3 selon la gravité.
-        // Cible : héros désigné, sinon le premier sachant Prier (le Péché vise un Bienheureux).
-        const amount = Math.max(1, e.amount ?? 1);
-        let who = '';
-        set((s: GameState) => {
-          if (!s.party.length) return {};
-          let idx = e.heroId ? s.party.findIndex((h) => h.id === e.heroId) : -1;
-          if (idx < 0) idx = s.party.findIndex((h) => h.skills.some((sk) => sk.skillId === 'priere' && sk.advances >= 1));
-          if (idx < 0) idx = 0;
-          who = s.party[idx].name;
-          return { party: s.party.map((h, i) => (i === idx ? { ...h, sinPoints: (h.sinPoints ?? 0) + amount } : h)) };
-        });
-        if (who) get().log(`${who} a péché contre son dieu : +${amount} Point(s) de Péché.`);
-        break;
-      }
-      case 'corruptionExposure': {
-        // Influence corruptrice (LDB 19 l.23-75) : ouvre le Test différé par modale
-        // (Lancer → Chance → Appliquer) ; le gain dépendra du niveau et du DR.
-        const hero = corruptionTarget(get(), e.heroId);
-        // `e.skill` présent = déterminé en amont (verrouillé) ; absent = nature indéterminée → le
-        // joueur choisira Résistance/Calme dans la modale (défaut affiché : Résistance).
-        if (hero) set({ pendingCorruption: { heroId: hero.id, level: e.level, skill: e.skill ?? 'resistance', skillLocked: e.skill != null } });
-        break;
-      }
-      case 'giveCorruption': {
-        // Gain direct (artefact maudit, Pacte scénarisé…) — applique aussi seuil → mutation.
-        const hero = corruptionTarget(get(), e.heroId);
-        if (hero) {
-          const lines = gainCorruption(get, set, hero, Math.max(1, e.amount ?? 1));
-          for (const l of lines) get().log(l);
-          set({ party: [...get().party] });
-        }
-        break;
-      }
-      case 'learnSpell': {
-        // Trouvaille de campagne : le sort est appris SANS PX (l'auteur l'octroie — le coût
-        // en PX ne vaut que pour la mémorisation volontaire, LDB 46 l.44-47).
-        const sp = findSpellById(e.spell);
-        if (!sp) break;
-        let who = '';
-        set((s: GameState) => {
-          let idx = e.heroId ? s.party.findIndex((h) => h.id === e.heroId) : -1;
-          if (idx < 0) idx = s.party.findIndex((h) => !!eligibleTalent(h, sp) && !(h.spells ?? []).includes(sp.id));
-          if (idx < 0) return {};
-          who = s.party[idx].name;
-          // `c.spells` = IDS de sort (résolus par findSpellById dans l'ActionBar/IA/grimoire) ; le libellé
-          // ne sert qu'à l'affichage (log ci-dessous). Même convention que pregens/buySpell/Béni.
-          return { party: s.party.map((h, i) => (i === idx && !(h.spells ?? []).includes(sp.id) ? { ...h, spells: [...(h.spells ?? []), sp.id] } : h)) };
-        });
-        if (who) get().log(`${who} apprend ${sp.label}.`);
-        break;
-      }
-      case 'inflictTrauma': {
-        // Blessure Critique posée rétroactivement par l'éditeur (LDB 18) : déchirure/fracture via la
-        // factory partagée (traumaFromKind, effets en-combat + convalescence), amputation via les
-        // séquelles permanentes (permanentAmputations). criticalWounds suit (compteur LDB 18).
-        let who = '';
-        let whoId = '';
-        let labels: string[] = [];
-        set((s: GameState) => {
-          if (!s.party.length) return {};
-          const idx = e.heroId ? s.party.findIndex((h) => h.id === e.heroId) : 0;
-          const target = idx >= 0 ? idx : 0;
-          return {
-            party: s.party.map((h, i) => {
-              if (i !== target) return h;
-              who = h.name;
-              whoId = h.id;
-              const be = Math.floor(effectiveChar(h, 'E') / 10);
-              // Amputation : permanentAmputations lit la PARTIE dans le texte → on synthétise un libellé
-              // par localisation (bras → main/bras ; jambe → membre inférieur ; tête → œil, choix d'éditeur).
-              const ampNote = e.location === 'tete' ? 'Perte de l’œil — Amputation (Intermédiaire)' : 'Main/bras inutilisable — Amputation (Intermédiaire)';
-              const traumas = e.kind === 'amputation'
-                ? permanentAmputations('Amputation', ampNote, e.location, battleRng())
-                : [traumaFromKind(e.kind, e.severity ?? 'mineur', e.location, { be, d10: d10(battleRng()) })];
-              labels = traumas.map((t) => t.label);
-              return { ...h, traumas: [...(h.traumas ?? []), ...traumas], criticalWounds: (h.criticalWounds ?? 0) + 1 };
-            }),
-          };
-        });
-        if (who) {
-          const line = `${who} subit une Blessure Critique (${e.kind}, ${e.location}).`;
-          get().log(line);
-          // VISIBLE (le journal seul ne suffit pas) : effet d'AUTEUR → révélation témoin.
-          pushReveal(set, { kind: 'effet', title: `Blessure Critique — ${e.kind}`, lines: [line, ...labels], subjectId: whoId, severity: 'grave' });
-        }
-        break;
-      }
-      case 'inflictDisease': {
-        // Maladie (LDB 20) infligée par l'auteur (nourriture avariée, contact infecté…). Incubation/durée
-        // tirées à la contraction ; les symptômes se déclareront au repos. Dédoublonnée par nom.
-        let who = '';
-        let whoId = '';
-        set((s: GameState) => {
-          if (!s.party.length) return {};
-          const idx = e.heroId ? s.party.findIndex((h) => h.id === e.heroId) : 0;
-          const target = idx >= 0 ? idx : 0;
-          return {
-            party: s.party.map((h, i) => {
-              if (i !== target || (h.diseases ?? []).some((d) => d.name === e.disease)) return h;
-              const dz = contractDisease(e.disease, battleRng());
-              if (!dz) return h;
-              who = h.name;
-              whoId = h.id;
-              return { ...h, diseases: [...(h.diseases ?? []), dz] };
-            }),
-          };
-        });
-        if (who) {
-          const line = `${who} a contracté : ${e.disease} (symptômes au repos).`;
-          get().log(line);
-          // VISIBLE (le journal seul ne suffit pas) : effet d'AUTEUR → révélation témoin.
-          pushReveal(set, { kind: 'effet', title: `Maladie — ${e.disease}`, lines: [line], subjectId: whoId, severity: 'grave' });
-        }
-        break;
-      }
-      case 'giveTrapping': {
-        // Objet de CATALOGUE (`trappingId`) sinon objet CUSTOM (`custom`, misc) — source unique itemFromGive.
-        const it = itemFromGive(e);
-        // Butin MAGIQUE (optionnel) : qualités ajoutées, objet non identifié (qualités masquées jusqu'à
-        // Évaluation, #2), skin légendaire. Les qualités restent ACTIVES mécaniquement (registre).
-        if (e.qualities?.length) it.qualities = [...it.qualities, ...e.qualities];
-        if (e.identified === false) it.identified = false;
-        if (e.skin) it.skin = e.skin;
-        if (e.magicKnown) it.magicKnown = true; // aura détectée en fenêtre de loot → suit l'objet
-        if (e.detectTried) it.detectTried = true;
-        if (e.appraiseTriedDay != null) it.appraiseTriedDay = e.appraiseTriedDay;
-        if (e.price) it.price = { gold: e.price.gold ?? 0, silver: e.price.silver ?? 0, brass: e.price.brass ?? 0 };
-        let who = '';
-        set((s: GameState) => {
-          if (!s.party.length) return {};
-          const idx = e.heroId ? s.party.findIndex((h) => h.id === e.heroId) : 0;
-          const target = idx >= 0 ? idx : 0;
-          who = s.party[target].name;
-          return {
-            party: s.party.map((h, i) => {
-              if (i !== target) return h;
-              const clone: Combatant = JSON.parse(JSON.stringify(h));
-              clone.items = [...(clone.items ?? []), it]; // arrive NON équipé
-              recomputeLoadout(clone); // met à jour l'encombrement
-              return clone;
-            }),
-          };
-        });
-        get().log(`${who || 'Le groupe'} récupère : ${it.name}.`);
-        break;
-      }
-      case 'document':
-        set({ document: { title: e.title, text: e.text } });
-        break;
-      case 'startDialogue': {
-        const dlg = get().scene?.dialogues.find((d) => d.id === e.dialogue);
-        if (dlg) set({ dialogue: { dialogue: dlg, nodeId: dlg.start } });
-        break;
-      }
-      case 'startCombat':
-        get().startCombat(e.encounter);
-        break;
-      case 'transition': {
-        const cur = get();
-        if (cur.scene) set({ previousScene: { id: cur.scene.id, pos: { ...cur.partyPos } } });
-        get().transitionTo(e.scene, e.entry);
-        break;
-      }
-      case 'transitionBack': {
-        const prev = get().previousScene;
-        if (prev) {
-          set({ previousScene: null });
-          get().transitionTo(prev.id, undefined, prev.pos);
-        }
-        break;
-      }
-      case 'extendedTest': {
-        // Test ÉTENDU (LDB 12) : le meilleur du groupe pour la Compétence enchaîne les Rounds.
-        const best = partyBest(get().party, e.skill, e.characteristic, undefined, e.spec);
-        if (!best) break;
-        const difficulty = e.difficulty ?? 'intermediaire';
-        const target = Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS[difficulty]));
-        get().startExtendedTest({ actorId: best.actor.id, label: e.label, skillLabel: e.skill ? refLabel('skills', { id: e.skill, spec: e.spec }) : (e.characteristic ?? 'Test'), target, targetDR: e.targetDR, flag: e.flag });
-        return;
-      }
-      case 'forceDoor': {
-        // Enfoncer une PORTE/objet à plusieurs (EDO Append. 2) : tout le groupe vivant frappe.
-        const heroes = get().party.filter((h) => !h.dead).map((h) => h.id);
-        if (!heroes.length) break;
-        get().startForceDoor({ label: e.label, doorBE: e.doorBE, doorB: e.doorB, heroIds: heroes, flag: e.flag });
-        return;
-      }
-      case 'setTime': {
-        // Saut EN AVANT jusqu'à la prochaine occurrence de la phase/heure visée (le temps ne recule jamais).
-        const target = 'phase' in e
-          ? (DAY_PHASES.find((p) => p.key === e.phase)?.start ?? 0)
-          : e.hour * 60 + (e.minute ?? 0);
-        get().advanceTime(minutesUntilNext(get().gameTime, target));
-        break;
-      }
-      case 'delayedEffect': {
-        // Échéance absolue (minute `gameTime`) : compte à rebours relatif `afterMinutes`, sinon la
-        // prochaine occurrence de l'heure du jour `atHour:atMinute`.
-        const now = get().gameTime;
-        const executeAt = e.afterMinutes != null
-          ? now + Math.max(0, e.afterMinutes)
-          : now + minutesUntilNext(now, (e.atHour ?? 0) * 60 + (e.atMinute ?? 0));
-        set((s: GameState) => ({ scheduledEffects: [...s.scheduledEffects, { executeAt, flow: e.flow, cancelFlag: e.cancelFlag }] }));
-        break;
-      }
-      case 'ops': {
-        // EffectOp : applique les GameOps (vocabulaire mécanique des sorts) à la cible de SCÈNE
-        // (`party`/`hero`). `caster`/`target` = contexte d'incantation, résolu par le flux de sort → ignoré ici.
-        const on = e.on ?? 'party';
-        if (on !== 'party' && on !== 'hero') break;
-        const targets = effectTargets(get, on, e.heroId);
-        if (!targets.length) break;
-        const lines = targets.flatMap((c) => applyOps(c, e.ops, { rng: defaultRNG }));
-        set(touchActors(get()));
-        lines.forEach((l) => get().log(l));
-        break;
-      }
-      case 'zoneBlast': {
-        // Cibles dans le rayon (Chebyshev) : en combat par position de chaque combattant ; hors
-        // combat, le groupe entier est à partyPos. Dégâts TIRÉS par cible (révélés au journal).
-        const inBattle = !!get().battle;
-        const pool: Combatant[] = inBattle ? get().battle!.combatants : get().party;
-        const pp = get().partyPos;
-        const cheb = (p: { x: number; y: number }) => Math.max(Math.abs(p.x - e.center.x), Math.abs(p.y - e.center.y));
-        const targets = pool.filter((c) => {
-          if (c.dead || (!inBattle && c.kind !== 'hero')) return false;
-          const pos = inBattle ? (c as Combatant & { pos?: { x: number; y: number } }).pos : pp;
-          return !!pos && cheb(pos) <= e.radius;
-        });
-        if (!targets.length) break;
-        const lines = targets.map((c) => {
-          const dmg = Math.max(0, rollExpr(e.damage, battleRng()));
-          loseWounds(c, dmg);
-          for (const cond of e.conditions ?? []) addCondition(c, cond.name, cond.value ?? 1);
-          return `${c.name} ${dmg}${e.conditions?.length ? ` +${e.conditions.map((x) => x.name).join('/')}` : ''}`;
-        });
-        set(touchActors(get()));
-        get().log(`💥 Souffle (${e.damage}) : ${lines.join(' · ')}.`);
-        break;
-      }
-      case 'fall': {
-        // Chute (LDB 15 l.117-122) : 3 Dégâts/mètre + 1d10, réduits par le Bonus d'Endurance mais
-        // PAS par les PA ; si les Blessures subies > BE → État À Terre. `to` repose le groupe (hors
-        // combat). Dégâts TIRÉS par cible et révélés au journal (involontaire : pas de Test d'Athlétisme).
-        const targets = effectTargets(get, e.target, e.heroId);
-        const m = Math.max(0, e.metres);
-        const lines = targets.map((c) => {
-          const be = Math.floor(effectiveChar(c, 'E') / 10);
-          const lost = Math.max(0, 3 * m + d10(battleRng()) - be);
-          loseWounds(c, lost);
-          if (lost > be) addCondition(c, 'a-terre');
-          return `${c.name} ${lost}${lost > be ? ' (À Terre)' : ''}`;
-        });
-        if (targets.length) {
-          set({ ...touchActors(get()), ...(e.to && !get().battle ? { partyPos: e.to } : {}) });
-          get().log(`🪂 Chute de ${m} m : ${lines.join(' · ')}.`);
-        } else if (e.to && !get().battle) set({ partyPos: e.to });
-        break;
-      }
-      case 'setLight':
-        set({ lightLevel: Math.max(0, Math.min(1, e.level)) }); // mise en scène (Lot L) : niveau de lumière borné [0,1]
-        break;
-      case 'openMerchant':
-        get().openMerchant(e.entityId); // ouvre la boutique de l'entité (Marchand inclus dans un dialogue, #2)
-        break;
-      case 'medicalAid':
-        openMedicalAidEffect(get, set, e); // soins payants d'un PNJ : ouvre son infirmerie (actes tarifés)
-        break;
-      case 'endDialogue':
-        if (get().dialogue) get().advanceTime(TIME_COST.dialogue); // clôture d'une conversation ≈ dialogue min
-        set({ dialogue: null });
-        break;
-    }
+    const handler = EFFECT_HANDLERS[e.type] as EffectHandler;
+    if (handler.apply(e, env) === 'suspend') return;
   }
 }
 

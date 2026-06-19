@@ -8,6 +8,7 @@
  */
 import { Effect, EncounterDef, Dialogue, Scene } from '../../state/scene';
 import { EMPTY_FLOW } from '../../state/flow';
+import { EFFECT_HANDLERS, EFFECT_GROUP_ORDER } from '../../state/combatEffects';
 import { DAY_PHASES, DayPhaseKey } from '../../engine/clock';
 import { DISEASE_DEFS } from '../../engine/disease';
 import { spells, etats, trappings as trappingsData, refLabel } from '../../data';
@@ -19,6 +20,11 @@ import { CHAR_KEYS, CHAR_LABELS, CharKey, DIFFICULTY_LABELS, Difficulty } from '
 
 /** Noms des maladies câblées (LDB 20) proposés dans l'éditeur. */
 const DISEASE_NAMES = Object.keys(DISEASE_DEFS);
+
+/** Toutes les facettes d'AUTEUR (libellé/icône/groupe/fabrique) sont lues sur le REGISTRE unique
+ *  `EFFECT_HANDLERS` (state/combatEffects) — fin des Records parallèles. Le `summary` (qui dépend
+ *  d'`opSummary`) et le RENDU des champs (`EffectFields`, JSX) restent ici, côté UI. */
+const EFFECT_TYPES = Object.keys(EFFECT_HANDLERS) as Effect['type'][];
 
 /** Sorts de la base groupés pour le select de `learnSpell` (audit M9 : fini « libellé exact »). */
 const SPELL_GROUPS: [string, { id: string; label: string }[]][] = (() => {
@@ -49,62 +55,21 @@ export interface Ctx {
   scenes?: { id: string; nom?: string; entries: string[] }[];
 }
 
-export const EFFECT_LABEL: Record<Effect['type'], string> = {
-  journal: 'Journal',
-  setFlag: 'Définir un flag',
-  document: 'Document (handout)',
-  giveTrapping: 'Donner un objet (équipement/potion/babiole — réel ou custom)',
-  giveMoney: 'Donner/retirer de l’argent',
-  giveXp: 'Donner des PX (groupe)',
-  restoreFortune: 'Regagner la Chance (début de session, max = Destin)',
-  inflictNightmares: 'Infliger des cauchemars (trauma nocturne)',
-  inflictDisease: 'Infliger une maladie (LDB 20)',
-  inflictTrauma: 'Infliger une Blessure Critique (LDB 18)',
-  ops: 'Effets mécaniques (Blessures / État / buffs… — vocabulaire des sorts)',
-  zoneBlast: 'Souffle de zone (dégâts tirés + États, rayon)',
-  fall: 'Chute (dégâts/m + 1d10, À Terre, repositionne le groupe)',
-  setLight: 'Lumière de scène (les lumières baissent / se rallument)',
-  giveSin: 'Points de Péché (prêtre fautif, LDB 40)',
-  corruptionExposure: 'Influence corruptrice (Test, LDB 19)',
-  giveCorruption: 'Points de Corruption directs (LDB 19)',
-  learnSpell: 'Apprendre un sort (trouvaille, sans PX)',
-  rest: 'Repos (Dormir / Se reposer N jours)',
-  mealParty: 'Repas (nourrit le groupe sans ration — faim à zéro)',
-  interlude: 'Entre deux aventures (Événements + Activités, N semaines)',
-  startCombat: 'Démarrer un combat',
-  transition: 'Transition de scène',
-  transitionBack: 'Retour scène précédente',
-  openWorldMap: 'Ouvrir la carte du monde (partir en voyage)',
-  startDialogue: 'Ouvrir un dialogue',
-  openMerchant: 'Ouvrir une boutique (marchand)',
-  medicalAid: 'Acte de soin payant (PNJ médecin/guérisseur)',
-  extendedTest: 'Test Étendu (DR cumulé : crocheter/forcer un mécanisme)',
-  forceDoor: 'Enfoncer une porte à plusieurs (objet BE/B)',
-  setTime: 'Régler l’heure (jour/nuit)',
-  delayedEffect: 'Effet différé (minuterie / heure)',
-  endDialogue: 'Fermer le dialogue',
-};
+/** Libellé / icône d'un type d'effet — dérivés du REGISTRE unique (plus de Record parallèle à
+ *  maintenir : la source de vérité est `EFFECT_HANDLERS[t].label/icon`). */
+export const EFFECT_LABEL = Object.fromEntries(
+  EFFECT_TYPES.map((t) => [t, EFFECT_HANDLERS[t].label]),
+) as Record<Effect['type'], string>;
+export const EFFECT_ICON = Object.fromEntries(
+  EFFECT_TYPES.map((t) => [t, EFFECT_HANDLERS[t].icon]),
+) as Record<Effect['type'], string>;
 
-/** Picker « + Effet » : les 27 types groupés par intention d'auteur. */
-export const EFFECT_GROUPS: [string, Effect['type'][]][] = [
-  ['📜 Narration', ['journal', 'document', 'startDialogue', 'endDialogue', 'setFlag', 'setLight']],
-  ['🎁 Récompenses', ['giveTrapping', 'giveMoney', 'giveXp', 'learnSpell', 'restoreFortune']],
-  ['☠️ Afflictions', ['ops', 'zoneBlast', 'fall', 'inflictDisease', 'inflictTrauma', 'inflictNightmares', 'giveCorruption', 'corruptionExposure', 'giveSin']],
-  ['🕰 Temps & repos', ['rest', 'mealParty', 'interlude', 'setTime', 'delayedEffect']],
-  ['🚪 Navigation', ['transition', 'transitionBack', 'openWorldMap']],
-  ['⚔️ Combat & social', ['startCombat', 'openMerchant', 'medicalAid']],
-  ['🎲 Tests', ['extendedTest', 'forceDoor']],
-];
-
-export const EFFECT_ICON: Record<Effect['type'], string> = {
-  journal: '📜', setFlag: '🚩', document: '📄', giveTrapping: '🎒', giveMoney: '🪙', giveXp: '✨',
-  restoreFortune: '🍀', inflictNightmares: '😱', inflictDisease: '🤢', inflictTrauma: '🦴', giveSin: '⚖️',
-  corruptionExposure: '🧿', giveCorruption: '🧬', learnSpell: '🪄', rest: '🌙', mealParty: '🍲',
-  ops: '✨', zoneBlast: '🧨', fall: '🪂', setLight: '💡',
-  interlude: '📆', startCombat: '⚔️', transition: '🚪', transitionBack: '↩️', openWorldMap: '🗺️',
-  startDialogue: '💬', openMerchant: '🛒', medicalAid: '🩺', extendedTest: '🗝️', forceDoor: '🔨',
-  setTime: '🕰', delayedEffect: '⏳', endDialogue: '✖️',
-};
+/** Picker « + Effet » : les types groupés par intention d'auteur — reconstruit depuis le `group` de
+ *  chaque handler, dans l'ordre des groupes (`EFFECT_GROUP_ORDER`) et l'ordre de déclaration intra-groupe. */
+export const EFFECT_GROUPS: [string, Effect['type'][]][] = EFFECT_GROUP_ORDER.map((g) => [
+  g,
+  EFFECT_TYPES.filter((t) => EFFECT_HANDLERS[t].group === g),
+]);
 
 const cut = (s: string, n = 46) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
@@ -164,74 +129,9 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
   }
 }
 
+/** Effet par défaut d'un type — délégué à la FABRIQUE du registre (`EFFECT_HANDLERS[t].make`). */
 export function newEffect(type: Effect['type']): Effect {
-  switch (type) {
-    case 'setFlag':
-      return { type: 'setFlag', flag: '', value: true };
-    case 'document':
-      return { type: 'document', title: '', text: '' };
-    case 'giveTrapping':
-      return { type: 'giveTrapping', custom: '' };
-    case 'giveMoney':
-      return { type: 'giveMoney', gold: 0, silver: 0, brass: 0 };
-    case 'giveXp':
-      return { type: 'giveXp', amount: 50 };
-    case 'startCombat':
-      return { type: 'startCombat', encounter: '' };
-    case 'transition':
-      return { type: 'transition', scene: '', entry: '' };
-    case 'startDialogue':
-      return { type: 'startDialogue', dialogue: '' };
-    case 'openMerchant':
-      return { type: 'openMerchant', entityId: '' };
-    case 'medicalAid':
-      // tarif par défaut : « aide médicale 4-6 pistoles » (LDB 75) → 5 pa
-      return { type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }], skill: 50, intBonus: 4 };
-    case 'extendedTest':
-      return { type: 'extendedTest', skill: 'crochetage', difficulty: 'intermediaire', label: 'Crocheter la serrure', targetDR: 5, flag: '' };
-    case 'forceDoor':
-      return { type: 'forceDoor', label: 'Porte', doorBE: 3, doorB: 10, flag: '' };
-    case 'openWorldMap':
-      return { type: 'openWorldMap' };
-    case 'endDialogue':
-      return { type: 'endDialogue' };
-    case 'restoreFortune':
-      return { type: 'restoreFortune' };
-    case 'interlude':
-      return { type: 'interlude', weeks: 1 };
-    case 'inflictNightmares':
-      return { type: 'inflictNightmares', heroId: '' };
-    case 'inflictDisease':
-      return { type: 'inflictDisease', disease: DISEASE_NAMES[0] ?? '', heroId: '' };
-    case 'inflictTrauma':
-      return { type: 'inflictTrauma', kind: 'fracture', severity: 'mineur', location: 'brasD', heroId: '' };
-    case 'ops':
-      return { type: 'ops', on: 'party', ops: [{ op: 'wounds', amount: 5 }] };
-    case 'zoneBlast':
-      return { type: 'zoneBlast', center: { x: 0, y: 0 }, radius: 2, damage: '1d10+15', conditions: [] };
-    case 'fall':
-      return { type: 'fall', target: 'party', metres: 4 };
-    case 'setLight':
-      return { type: 'setLight', level: 0.3 };
-    case 'giveSin':
-      return { type: 'giveSin', amount: 1, heroId: '' };
-    case 'corruptionExposure':
-      return { type: 'corruptionExposure', level: 'mineure', skill: 'resistance', heroId: '' };
-    case 'giveCorruption':
-      return { type: 'giveCorruption', amount: 1, heroId: '' };
-    case 'learnSpell':
-      return { type: 'learnSpell', spell: '', heroId: '' };
-    case 'rest':
-      return { type: 'rest', days: 1 };
-    case 'mealParty':
-      return { type: 'mealParty' };
-    case 'setTime':
-      return { type: 'setTime', phase: 'nuit' };
-    case 'delayedEffect':
-      return { type: 'delayedEffect', afterMinutes: 60, flow: EMPTY_FLOW, cancelFlag: '' };
-    default:
-      return { type: 'journal', text: '' };
-  }
+  return EFFECT_HANDLERS[type].make();
 }
 
 /** Corps DÉPLIÉ d'un effet (feuille `do` d'un Flow) : select de type (groupé) + champs spécifiques. */

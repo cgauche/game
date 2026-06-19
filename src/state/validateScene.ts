@@ -1,6 +1,11 @@
 import type { Scene, Effect } from './scene';
 import { isWalkable } from './scene';
 import { type Flow, type Condition, walkFlow, walkConditionTimes, flowFromEffects } from './flow';
+// Registre des effets (réfs de validation `handler.refs`) — importé via le BARIL `combatFlow` (qui
+// ré-exporte combatEffects), comme le store : entrer le cycle d'effets/combat par le MÊME nœud
+// canonique préserve l'ordre d'évaluation (un import direct de `combatEffects` ici casse la
+// liaison vive `fireScheduledEffects` que le store lit du baril sous le bundler).
+import { EFFECT_HANDLERS, type EffectHandler, type EffectRefCtx } from './combatFlow';
 import type { WorldMap } from './worldMap';
 import { allMusicDefs } from '../audio/music';
 
@@ -45,15 +50,12 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
     const within = (x: number, y: number) => x >= 0 && y >= 0 && x < w && y < h;
     const add = (level: Warning['level'], scope: Warning['scope'], refId: string | undefined, message: string) =>
       out.push({ level, sceneId: s.id, scope, refId, message });
+    // Contexte de réfs PARTAGÉ pour cette scène : les `refs?` des handlers (state/combatEffects) le lisent
+    // pour valider leurs réfs cassées (dialogue/rencontre/scène) et valeurs invalides (souffle de zone).
+    const refCtx: EffectRefCtx = { sceneIds, dialogueIds: dlgIds, encounterIds: encIds, within };
     const checkEffect = (eff: Effect, refId: string, scope: Warning['scope']) => {
-      if (eff.type === 'startDialogue' && !dlgIds.has(eff.dialogue)) add('error', scope, refId, `Effet → dialogue inexistant « ${eff.dialogue} »`);
-      if (eff.type === 'startCombat' && !encIds.has(eff.encounter)) add('error', scope, refId, `Effet → rencontre inexistante « ${eff.encounter} »`);
-      if (eff.type === 'transition' && !sceneIds.has(eff.scene)) add('error', scope, refId, `Effet → scène inexistante « ${eff.scene} »`);
-      if (eff.type === 'zoneBlast') {
-        if (!within(eff.center.x, eff.center.y)) add('warn', scope, refId, `Souffle de zone : centre (${eff.center.x},${eff.center.y}) hors de la carte`);
-        if (!eff.damage?.trim()) add('error', scope, refId, `Souffle de zone : formule de dégâts manquante`);
-        if (eff.radius < 0) add('error', scope, refId, `Souffle de zone : rayon négatif`);
-      }
+      const refs = (EFFECT_HANDLERS[eff.type] as EffectHandler).refs;
+      if (refs) for (const issue of refs(eff, refCtx)) add(issue.level, scope, refId, issue.message);
     };
     const dup = (ids: string[], scope: Warning['scope']) => {
       const seen = new Set<string>();
