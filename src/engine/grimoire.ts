@@ -45,12 +45,7 @@ export function casterTalents(c: Combatant): CasterTalent[] {
 
 /** Famille d'achat d'un sort (pour le comptage et l'éligibilité). */
 function familyOf(spell: SpellData): CasterTalent['kind'] | null {
-  if (spell.type === 'Magie mineure') return 'mineure';
-  if (spell.type === 'Magie des Arcanes') return 'arcane';
-  if (spell.type === 'Invocation') return 'invocation';
-  if (spell.type === 'Béni') return 'beni';
-  if (spell.type === 'Magie du Chaos') return 'chaos';
-  return null;
+  return spell.family; // famille STABLE portée par la donnée (multilangue ; ex-switch sur le libellé `type`)
 }
 
 /** Nombre de sorts CONNUS de la famille (référence des bandes de coût). */
@@ -133,6 +128,6 @@ export function carriedGrimoire(c: Combatant): { name: string } | undefined {
 export function canCastFromGrimoire(c: Combatant, spell: SpellData): boolean {
   if ((c.spells ?? []).some((x) => x === spell.id)) return false; // mémorisé : pas besoin du livre
   if (!carriedGrimoire(c)) return false;
-  if (spell.type !== 'Magie des Arcanes') return false; // un grimoire transcrit des Sorts (pas des Prières)
+  if (spell.family !== 'arcane') return false; // un grimoire transcrit des Sorts d'Arcane (pas des Prières)
   return !!eligibleTalent(c, spell);
 }

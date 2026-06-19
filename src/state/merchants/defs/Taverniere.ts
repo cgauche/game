@@ -12,5 +12,5 @@ export const merchantArchetype: MerchantArchetypeDef = {
   settlement: 'village',
   resaleRate: 0.5, // base ½ du prix listé (LDB 60 l.22)
   bargainSkill: 45,
-  curated: ['Ration', 'Repas, auberge', 'Bière, pinte', 'Vin, bouteille', 'Nourriture, courses/journée'],
+  curated: ['ration', 'repas-auberge', 'biere-pinte', 'vin-bouteille', 'nourriture-courses-journee'],
 };

@@ -337,7 +337,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     expect(arch).toBeTruthy();
     expect(arch.category.subTypes).toContain('herbes-et-potions'); // id de Groupe
     expect(arch.category.subTypes).toContain('protheses');
-    // tous les articles garantis (curated, par libellé) référencent un vrai trapping de la base
-    for (const label of arch.curated ?? []) expect(trappings.some((t) => t.label === label), label).toBe(true);
+    // tous les articles garantis (curated, par id) référencent un vrai trapping de la base
+    for (const id of arch.curated ?? []) expect(trappings.some((t) => t.id === id), id).toBe(true);
   });
 });

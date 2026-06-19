@@ -43,6 +43,8 @@ export interface SpellLike {
   desc: string;
   /** Prière (Béni/Invocation) plutôt qu'un Sort arcanique — porté par la DONNÉE (spells.json). */
   isPrayer?: boolean;
+  /** Famille d'incantation STABLE (discriminant moteur, multilangue) — cf. SpellData.family. */
+  family?: import('./combatFeatures/types').CastingKind;
 }
 
 /** Le personnage possède-t-il le Talent nommé ? (Diction instinctive, Harmonisation aethyrique…) */
@@ -71,7 +73,7 @@ export function castInfo(spell: SpellLike): CastInfo {
 
 /** Vrai pour les Sorts d'Arcane/Domaine pouvant être alimentés par Focalisation. */
 export function isArcaneSpell(spell: SpellLike): boolean {
-  return !spell.isPrayer && spell.type !== 'Magie mineure';
+  return spell.family === 'arcane' || spell.family === 'chaos';
 }
 
 /** La pénalité `p` vise-t-elle la compétence de magie `skill` ? */

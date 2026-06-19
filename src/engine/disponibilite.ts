@@ -61,7 +61,7 @@ export function rollStock(catalog: CatalogItem[], settlement: Settlement, rng: R
   const out: StockLine[] = [];
   for (const it of catalog) {
     const av = it.availability;
-    if (curated.includes(it.label)) {
+    if (curated.includes(it.id)) {
       out.push({ id: it.id, label: it.label, qty: Math.max(1, classQty(av ?? 'Commune', baseQty(settlement, rng))) });
       continue;
     }

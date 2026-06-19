@@ -45,7 +45,7 @@ describe('disponibilite — Disponibilité RAW (LDB 59 p.292)', () => {
     expect(a).toEqual(b); // déterministe
     expect(a.find((l) => l.label === 'Épée')!.qty).toBeGreaterThan(0); // Commune toujours
     expect(a.find((l) => l.label === 'Clavecin')).toBeUndefined(); // Exotique exclu
-    const withCurated = rollStock(cat, 'ville', makeRNG(7), ['Clavecin']);
+    const withCurated = rollStock(cat, 'ville', makeRNG(7), ['clavecin']); // curated = ids stables
     expect(withCurated.find((l) => l.label === 'Clavecin')!.qty).toBeGreaterThan(0); // curaté forcé
   });
   it('fullStock (système simplifié, LDB 59 l.15) : tout sauf Exotique/null en stock sans Test', () => {

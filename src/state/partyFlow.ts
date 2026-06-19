@@ -384,7 +384,7 @@ export function buySpell(get: Get, set: Set, heroId: string, label: string): { o
       msg = cost > 0
         ? `${clone.name} mémorise ${sp.label} (−${cost} PX).`
         : `${clone.name} reçoit ${sp.label} (inclus au Talent).`;
-      result = { ok: true, chaos: sp.type === 'Magie du Chaos' };
+      result = { ok: true, chaos: sp.family === 'chaos' };
       return clone;
     }),
   }));

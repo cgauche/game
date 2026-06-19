@@ -958,7 +958,7 @@ function SkillZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode 
 export function PettySpellsSection({ d, setD }: StepProps) {
   const quota = pettySpellQuota(d);
   if (!quota) return null;
-  const minors = allSpells.filter((s) => s.type === 'Magie mineure');
+  const minors = allSpells.filter((s) => s.family === 'mineure');
   const toggle = (label: string) => {
     if (d.pettySpells.includes(label)) setD({ ...d, pettySpells: d.pettySpells.filter((x) => x !== label) });
     else if (d.pettySpells.length < quota) setD({ ...d, pettySpells: [...d.pettySpells, label] });

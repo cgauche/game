@@ -469,9 +469,9 @@ function caster(chars: Partial<Characteristics>, skills: SkillInstance[] = [], w
   };
 }
 
-const FLECHETTE: SpellLike = { label: 'Fléchette', type: 'Magie mineure', cn: 0, duration: 'Instantanée', desc: 'Il s’agit d’un Projectile magique avec Dégât +0.' };
-const PRIERE: SpellLike = { label: 'Bénédiction de Bataille', type: 'Béni', isPrayer: true, cn: null, duration: '6 rounds', desc: 'Votre cible gagne +10 en Capacité de Combat.' };
-const ARCANE: SpellLike = { label: 'Boule de feu', type: 'Magie des Arcanes', cn: 8, duration: 'Instantanée', desc: 'Projectile magique avec Dégâts +8.' };
+const FLECHETTE: SpellLike = { label: 'Fléchette', type: 'Magie mineure', family: 'mineure', cn: 0, duration: 'Instantanée', desc: 'Il s’agit d’un Projectile magique avec Dégât +0.' };
+const PRIERE: SpellLike = { label: 'Bénédiction de Bataille', type: 'Béni', family: 'beni', isPrayer: true, cn: null, duration: '6 rounds', desc: 'Votre cible gagne +10 en Capacité de Combat.' };
+const ARCANE: SpellLike = { label: 'Boule de feu', type: 'Magie des Arcanes', family: 'arcane', cn: 8, duration: 'Instantanée', desc: 'Projectile magique avec Dégâts +8.' };
 
 describe('Magie — routage du test par branche', () => {
   it('les Prières (Béni/Invocation) utilisent Prière (Soc), sans NI', () => {

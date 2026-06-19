@@ -32,7 +32,8 @@
     "source": {
       "book": "LDB",
       "page": 221
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "benediction-de-chance",
@@ -65,7 +66,8 @@
     "source": {
       "book": "LDB",
       "page": 221
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "benediction-de-charisme",
@@ -100,7 +102,8 @@
     "source": {
       "book": "LDB",
       "page": 221
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "benediction-de-conscience",
@@ -134,7 +137,8 @@
     "source": {
       "book": "LDB",
       "page": 221
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "benediction-de-convalescence",
@@ -168,7 +172,8 @@
     "source": {
       "book": "LDB",
       "page": 221
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "benediction-de-courage",
@@ -203,7 +208,8 @@
     "source": {
       "book": "LDB",
       "page": 221
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "benediction-de-droiture",
@@ -239,7 +245,8 @@
     "source": {
       "book": "LDB",
       "page": 221
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "benediction-de-finesse",
@@ -274,7 +281,8 @@
     "source": {
       "book": "LDB",
       "page": 221
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "benediction-de-grace",
@@ -309,7 +317,8 @@
     "source": {
       "book": "LDB",
       "page": 221
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "benediction-de-guerison",
@@ -343,7 +352,8 @@
     "source": {
       "book": "LDB",
       "page": 221
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "benediction-de-la-chasse",
@@ -378,7 +388,8 @@
     "source": {
       "book": "LDB",
       "page": 221
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "benediction-de-protection",
@@ -411,7 +422,8 @@
     "source": {
       "book": "LDB",
       "page": 221
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "benediction-de-puissance",
@@ -446,7 +458,8 @@
     "source": {
       "book": "LDB",
       "page": 221
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "benediction-de-sagesse",
@@ -481,7 +494,8 @@
     "source": {
       "book": "LDB",
       "page": 221
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "benediction-de-sauvagerie",
@@ -514,7 +528,8 @@
     "source": {
       "book": "LDB",
       "page": 221
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "benediction-de-souffle",
@@ -547,7 +562,8 @@
     "source": {
       "book": "LDB",
       "page": 221
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "benediction-de-tenacite",
@@ -580,7 +596,8 @@
     "source": {
       "book": "LDB",
       "page": 221
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "benediction-de-vigueur",
@@ -615,7 +632,8 @@
     "source": {
       "book": "LDB",
       "page": 221
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "benediction-de-vivacite",
@@ -650,7 +668,8 @@
     "source": {
       "book": "LDB",
       "page": 221
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "alerte",
@@ -683,7 +702,8 @@
     "source": {
       "book": "LDB",
       "page": 240
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "amitie-animale",
@@ -716,7 +736,8 @@
     "source": {
       "book": "LDB",
       "page": 240
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "bruits",
@@ -749,7 +770,8 @@
     "source": {
       "book": "LDB",
       "page": 240
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "choc",
@@ -782,7 +804,8 @@
     "source": {
       "book": "LDB",
       "page": 240
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "conservation",
@@ -815,7 +838,8 @@
     "source": {
       "book": "LDB",
       "page": 240
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "coup-de-vent",
@@ -848,7 +872,8 @@
     "source": {
       "book": "LDB",
       "page": 240
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "creer-un-petit-animal",
@@ -881,7 +906,8 @@
     "source": {
       "book": "LDB",
       "page": 240
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "drain",
@@ -914,7 +940,8 @@
     "source": {
       "book": "LDB",
       "page": 240
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "eblouissant",
@@ -952,7 +979,8 @@
     "source": {
       "book": "LDB",
       "page": 241
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "en-catimini",
@@ -985,7 +1013,8 @@
     "source": {
       "book": "LDB",
       "page": 241
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "feux-follets",
@@ -1018,7 +1047,8 @@
     "source": {
       "book": "LDB",
       "page": 241
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "flamme-magique",
@@ -1051,7 +1081,8 @@
     "source": {
       "book": "LDB",
       "page": 241
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "flechette",
@@ -1070,7 +1101,8 @@
     "source": {
       "book": "LDB",
       "page": 241
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "lumiere",
@@ -1103,7 +1135,8 @@
     "source": {
       "book": "LDB",
       "page": 241
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "murmures",
@@ -1136,7 +1169,8 @@
     "source": {
       "book": "LDB",
       "page": 241
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "pas-leger",
@@ -1169,7 +1203,8 @@
     "source": {
       "book": "LDB",
       "page": 241
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "protection-contre-la-pluie",
@@ -1201,7 +1236,8 @@
     "source": {
       "book": "LDB",
       "page": 241
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "purification-de-l-eau",
@@ -1234,7 +1270,8 @@
     "source": {
       "book": "LDB",
       "page": 241
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "putrefaction",
@@ -1271,7 +1308,8 @@
     "source": {
       "book": "LDB",
       "page": 241
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "reperes",
@@ -1304,7 +1342,8 @@
     "source": {
       "book": "LDB",
       "page": 242
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "secousse",
@@ -1344,7 +1383,8 @@
     "source": {
       "book": "LDB",
       "page": 242
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "serrure-ouverte",
@@ -1377,7 +1417,8 @@
     "source": {
       "book": "LDB",
       "page": 242
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "sommeil",
@@ -1423,7 +1464,8 @@
     "source": {
       "book": "LDB",
       "page": 242
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "source",
@@ -1456,7 +1498,8 @@
     "source": {
       "book": "LDB",
       "page": 242
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "tendre-l-oreille",
@@ -1489,7 +1532,8 @@
     "source": {
       "book": "LDB",
       "page": 242
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "arme-aethyrique",
@@ -1540,7 +1584,8 @@
     "source": {
       "book": "LDB",
       "page": 242
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "armure-aethyrique",
@@ -1573,7 +1618,8 @@
     "source": {
       "book": "LDB",
       "page": 242
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "attaques-en-chaine",
@@ -1592,7 +1638,8 @@
     "source": {
       "book": "LDB",
       "page": 243
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "aura-ordinaire",
@@ -1625,7 +1672,8 @@
     "source": {
       "book": "LDB",
       "page": 243
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "bouclier-anti-fleches",
@@ -1660,7 +1708,8 @@
     "source": {
       "book": "LDB",
       "page": 243
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "bouclier-magique",
@@ -1693,7 +1742,8 @@
     "source": {
       "book": "LDB",
       "page": 243
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "carreau",
@@ -1712,7 +1762,8 @@
     "source": {
       "book": "LDB",
       "page": 243
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "chute",
@@ -1752,7 +1803,8 @@
     "source": {
       "book": "LDB",
       "page": 243
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "deplacement-d-objet",
@@ -1785,7 +1837,8 @@
     "source": {
       "book": "LDB",
       "page": 243
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "dome",
@@ -1820,7 +1873,8 @@
     "source": {
       "book": "LDB",
       "page": 243
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "effrayant",
@@ -1858,7 +1912,8 @@
     "source": {
       "book": "LDB",
       "page": 243
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "enchevetrement",
@@ -1898,7 +1953,8 @@
     "source": {
       "book": "LDB",
       "page": 244
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "envol",
@@ -1934,7 +1990,8 @@
     "source": {
       "book": "LDB",
       "page": 244
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "explosion",
@@ -1953,7 +2010,8 @@
     "source": {
       "book": "LDB",
       "page": 244
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "perturbant",
@@ -1986,7 +2044,8 @@
     "source": {
       "book": "LDB",
       "page": 244
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "pont",
@@ -2019,7 +2078,8 @@
     "source": {
       "book": "LDB",
       "page": 244
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "poussee",
@@ -2052,7 +2112,8 @@
     "source": {
       "book": "LDB",
       "page": 244
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "protection",
@@ -2086,7 +2147,8 @@
     "source": {
       "book": "LDB",
       "page": 244
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "sang-corrosif",
@@ -2119,7 +2181,8 @@
     "source": {
       "book": "LDB",
       "page": 244
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "souffle",
@@ -2138,7 +2201,8 @@
     "source": {
       "book": "LDB",
       "page": 244
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "teleportation",
@@ -2157,7 +2221,8 @@
     "source": {
       "book": "LDB",
       "page": 244
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "terrifiant",
@@ -2191,7 +2256,8 @@
     "source": {
       "book": "LDB",
       "page": 244
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "vision-dans-l-obscurite",
@@ -2224,7 +2290,8 @@
     "source": {
       "book": "LDB",
       "page": 244
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "forme-bestiale",
@@ -2271,7 +2338,8 @@
       "book": "LDB",
       "page": 245
     },
-    "domainId": "bete"
+    "domainId": "bete",
+    "family": "arcane"
   },
   {
     "id": "incarnation-de-wyssan",
@@ -2336,7 +2404,8 @@
       "book": "LDB",
       "page": 245
     },
-    "domainId": "bete"
+    "domainId": "bete",
+    "family": "arcane"
   },
   {
     "id": "la-lance-d-ambre",
@@ -2374,7 +2443,8 @@
       "book": "LDB",
       "page": 245
     },
-    "domainId": "bete"
+    "domainId": "bete",
+    "family": "arcane"
   },
   {
     "id": "langue-bestiale",
@@ -2408,7 +2478,8 @@
       "book": "LDB",
       "page": 245
     },
-    "domainId": "bete"
+    "domainId": "bete",
+    "family": "arcane"
   },
   {
     "id": "maitre-de-la-bete",
@@ -2442,7 +2513,8 @@
       "book": "LDB",
       "page": 245
     },
-    "domainId": "bete"
+    "domainId": "bete",
+    "family": "arcane"
   },
   {
     "id": "peau-de-chasseur",
@@ -2490,7 +2562,8 @@
       "book": "LDB",
       "page": 246
     },
-    "domainId": "bete"
+    "domainId": "bete",
+    "family": "arcane"
   },
   {
     "id": "serres-d-ambre",
@@ -2549,7 +2622,8 @@
       "book": "LDB",
       "page": 246
     },
-    "domainId": "bete"
+    "domainId": "bete",
+    "family": "arcane"
   },
   {
     "id": "vol-du-destin",
@@ -2609,7 +2683,8 @@
       "book": "LDB",
       "page": 246
     },
-    "domainId": "bete"
+    "domainId": "bete",
+    "family": "arcane"
   },
   {
     "id": "arc-de-t-essla",
@@ -2643,7 +2718,8 @@
       "book": "LDB",
       "page": 246
     },
-    "domainId": "cieux"
+    "domainId": "cieux",
+    "family": "arcane"
   },
   {
     "id": "bouclier-ceruleen",
@@ -2677,7 +2753,8 @@
       "book": "LDB",
       "page": 246
     },
-    "domainId": "cieux"
+    "domainId": "cieux",
+    "family": "arcane"
   },
   {
     "id": "comete-de-cassandora",
@@ -2719,7 +2796,8 @@
       "book": "LDB",
       "page": 247
     },
-    "domainId": "cieux"
+    "domainId": "cieux",
+    "family": "arcane"
   },
   {
     "id": "ironie-du-destin",
@@ -2753,7 +2831,8 @@
       "book": "LDB",
       "page": 247
     },
-    "domainId": "cieux"
+    "domainId": "cieux",
+    "family": "arcane"
   },
   {
     "id": "le-premier-signe-d-amul",
@@ -2793,7 +2872,8 @@
       "book": "LDB",
       "page": 247
     },
-    "domainId": "cieux"
+    "domainId": "cieux",
+    "family": "arcane"
   },
   {
     "id": "le-second-signe-d-amul",
@@ -2837,7 +2917,8 @@
       "book": "LDB",
       "page": 247
     },
-    "domainId": "cieux"
+    "domainId": "cieux",
+    "family": "arcane"
   },
   {
     "id": "le-troisieme-signe-d-amul",
@@ -2873,7 +2954,8 @@
       "book": "LDB",
       "page": 247
     },
-    "domainId": "cieux"
+    "domainId": "cieux",
+    "family": "arcane"
   },
   {
     "id": "maudit",
@@ -2907,7 +2989,8 @@
       "book": "LDB",
       "page": 247
     },
-    "domainId": "cieux"
+    "domainId": "cieux",
+    "family": "arcane"
   },
   {
     "id": "cauteriser",
@@ -2974,7 +3057,8 @@
       "book": "LDB",
       "page": 247
     },
-    "domainId": "feu"
+    "domainId": "feu",
+    "family": "arcane"
   },
   {
     "id": "coeurs-ardents",
@@ -3026,7 +3110,8 @@
       "book": "LDB",
       "page": 247
     },
-    "domainId": "feu"
+    "domainId": "feu",
+    "family": "arcane"
   },
   {
     "id": "couronne-de-flammes",
@@ -3073,7 +3158,8 @@
       "book": "LDB",
       "page": 247
     },
-    "domainId": "feu"
+    "domainId": "feu",
+    "family": "arcane"
   },
   {
     "id": "grands-feux-d-u-zhul",
@@ -3149,7 +3235,8 @@
       "book": "LDB",
       "page": 248
     },
-    "domainId": "feu"
+    "domainId": "feu",
+    "family": "arcane"
   },
   {
     "id": "l-egide-d-aqshy",
@@ -3183,7 +3270,8 @@
       "book": "LDB",
       "page": 248
     },
-    "domainId": "feu"
+    "domainId": "feu",
+    "family": "arcane"
   },
   {
     "id": "l-epee-ardente-de-rhuin",
@@ -3260,7 +3348,8 @@
       "book": "LDB",
       "page": 248
     },
-    "domainId": "feu"
+    "domainId": "feu",
+    "family": "arcane"
   },
   {
     "id": "mur-de-feu",
@@ -3315,7 +3404,8 @@
       "book": "LDB",
       "page": 248
     },
-    "domainId": "feu"
+    "domainId": "feu",
+    "family": "arcane"
   },
   {
     "id": "purification",
@@ -3358,7 +3448,8 @@
       "book": "LDB",
       "page": 248
     },
-    "domainId": "feu"
+    "domainId": "feu",
+    "family": "arcane"
   },
   {
     "id": "bouf-crane",
@@ -3396,7 +3487,8 @@
     "source": {
       "book": "ADE2",
       "page": 32
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "broyeur-d-os",
@@ -3429,7 +3521,8 @@
     "source": {
       "book": "ADE2",
       "page": 32
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "festin-des-damnes",
@@ -3466,7 +3559,8 @@
     "source": {
       "book": "ADE2",
       "page": 32
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "goinfre-costaud",
@@ -3504,7 +3598,8 @@
     "source": {
       "book": "ADE2",
       "page": 33
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "goutemort",
@@ -3537,7 +3632,8 @@
     "source": {
       "book": "ADE2",
       "page": 33
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "la-gueule",
@@ -3570,7 +3666,8 @@
     "source": {
       "book": "ADE2",
       "page": 33
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "trollboyaux",
@@ -3607,7 +3704,8 @@
     "source": {
       "book": "ADE2",
       "page": 33
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "bannissement",
@@ -3649,7 +3747,8 @@
       "book": "LDB",
       "page": 248
     },
-    "domainId": "lumiere"
+    "domainId": "lumiere",
+    "family": "arcane"
   },
   {
     "id": "clarte-d-esprit",
@@ -3689,7 +3788,8 @@
       "book": "LDB",
       "page": 249
     },
-    "domainId": "lumiere"
+    "domainId": "lumiere",
+    "family": "arcane"
   },
   {
     "id": "fauche-demon",
@@ -3729,7 +3829,8 @@
       "book": "LDB",
       "page": 249
     },
-    "domainId": "lumiere"
+    "domainId": "lumiere",
+    "family": "arcane"
   },
   {
     "id": "filet-d-amyntok",
@@ -3767,7 +3868,8 @@
       "book": "LDB",
       "page": 249
     },
-    "domainId": "lumiere"
+    "domainId": "lumiere",
+    "family": "arcane"
   },
   {
     "id": "lumiere-aveuglante",
@@ -3810,7 +3912,8 @@
       "book": "LDB",
       "page": 249
     },
-    "domainId": "lumiere"
+    "domainId": "lumiere",
+    "family": "arcane"
   },
   {
     "id": "lumiere-de-guerison",
@@ -3868,7 +3971,8 @@
       "book": "LDB",
       "page": 249
     },
-    "domainId": "lumiere"
+    "domainId": "lumiere",
+    "family": "arcane"
   },
   {
     "id": "pensee-rapide",
@@ -3908,7 +4012,8 @@
       "book": "LDB",
       "page": 249
     },
-    "domainId": "lumiere"
+    "domainId": "lumiere",
+    "family": "arcane"
   },
   {
     "id": "protection-de-pha",
@@ -3942,7 +4047,8 @@
       "book": "LDB",
       "page": 249
     },
-    "domainId": "lumiere"
+    "domainId": "lumiere",
+    "family": "arcane"
   },
   {
     "id": "arme-enchantee",
@@ -3986,7 +4092,8 @@
       "book": "LDB",
       "page": 249
     },
-    "domainId": "metal"
+    "domainId": "metal",
+    "family": "arcane"
   },
   {
     "id": "creuset-de-chamon",
@@ -4020,7 +4127,8 @@
       "book": "LDB",
       "page": 249
     },
-    "domainId": "metal"
+    "domainId": "metal",
+    "family": "arcane"
   },
   {
     "id": "ecaille-d-acier",
@@ -4059,7 +4167,8 @@
       "book": "LDB",
       "page": 250
     },
-    "domainId": "metal"
+    "domainId": "metal",
+    "family": "arcane"
   },
   {
     "id": "forge-de-chamon",
@@ -4093,7 +4202,8 @@
       "book": "LDB",
       "page": 250
     },
-    "domainId": "metal"
+    "domainId": "metal",
+    "family": "arcane"
   },
   {
     "id": "l-or-des-fous",
@@ -4127,7 +4237,8 @@
       "book": "LDB",
       "page": 250
     },
-    "domainId": "metal"
+    "domainId": "metal",
+    "family": "arcane"
   },
   {
     "id": "metal-changeant",
@@ -4161,7 +4272,8 @@
       "book": "LDB",
       "page": 250
     },
-    "domainId": "metal"
+    "domainId": "metal",
+    "family": "arcane"
   },
   {
     "id": "plume-de-plomb",
@@ -4195,7 +4307,8 @@
       "book": "LDB",
       "page": 250
     },
-    "domainId": "metal"
+    "domainId": "metal",
+    "family": "arcane"
   },
   {
     "id": "transmutation-de-chamon",
@@ -4257,7 +4370,8 @@
       "book": "LDB",
       "page": 250
     },
-    "domainId": "metal"
+    "domainId": "metal",
+    "family": "arcane"
   },
   {
     "id": "caresse-de-laniph",
@@ -4293,7 +4407,8 @@
       "book": "LDB",
       "page": 251
     },
-    "domainId": "mort"
+    "domainId": "mort",
+    "family": "arcane"
   },
   {
     "id": "dernieres-paroles",
@@ -4327,7 +4442,8 @@
       "book": "LDB",
       "page": 251
     },
-    "domainId": "mort"
+    "domainId": "mort",
+    "family": "arcane"
   },
   {
     "id": "la-faux-de-shyish",
@@ -4387,7 +4503,8 @@
       "book": "LDB",
       "page": 251
     },
-    "domainId": "mort"
+    "domainId": "mort",
+    "family": "arcane"
   },
   {
     "id": "le-voile-violet-de-shyish",
@@ -4432,7 +4549,8 @@
       "book": "LDB",
       "page": 251
     },
-    "domainId": "mort"
+    "domainId": "mort",
+    "family": "arcane"
   },
   {
     "id": "mort-rapide",
@@ -4466,7 +4584,8 @@
       "book": "LDB",
       "page": 251
     },
-    "domainId": "mort"
+    "domainId": "mort",
+    "family": "arcane"
   },
   {
     "id": "sanctifier",
@@ -4500,7 +4619,8 @@
       "book": "LDB",
       "page": 251
     },
-    "domainId": "mort"
+    "domainId": "mort",
+    "family": "arcane"
   },
   {
     "id": "vol-de-vie",
@@ -4563,7 +4683,8 @@
       "book": "LDB",
       "page": 251
     },
-    "domainId": "mort"
+    "domainId": "mort",
+    "family": "arcane"
   },
   {
     "id": "vortex-d-ames",
@@ -4601,7 +4722,8 @@
       "book": "LDB",
       "page": 251
     },
-    "domainId": "mort"
+    "domainId": "mort",
+    "family": "arcane"
   },
   {
     "id": "destrier-d-ombre",
@@ -4659,7 +4781,8 @@
       "book": "LDB",
       "page": 252
     },
-    "domainId": "ombres"
+    "domainId": "ombres",
+    "family": "arcane"
   },
   {
     "id": "illusion",
@@ -4693,7 +4816,8 @@
       "book": "LDB",
       "page": 252
     },
-    "domainId": "ombres"
+    "domainId": "ombres",
+    "family": "arcane"
   },
   {
     "id": "jumeau-malefique",
@@ -4727,7 +4851,8 @@
       "book": "LDB",
       "page": 252
     },
-    "domainId": "ombres"
+    "domainId": "ombres",
+    "family": "arcane"
   },
   {
     "id": "linceul-d-invisibilite",
@@ -4761,7 +4886,8 @@
       "book": "LDB",
       "page": 252
     },
-    "domainId": "ombres"
+    "domainId": "ombres",
+    "family": "arcane"
   },
   {
     "id": "miasme-mystifiant",
@@ -4816,7 +4942,8 @@
       "book": "LDB",
       "page": 252
     },
-    "domainId": "ombres"
+    "domainId": "ombres",
+    "family": "arcane"
   },
   {
     "id": "ombres-etrangleuses",
@@ -4865,7 +4992,8 @@
       "book": "LDB",
       "page": 252
     },
-    "domainId": "ombres"
+    "domainId": "ombres",
+    "family": "arcane"
   },
   {
     "id": "perte-de-memoire",
@@ -4899,7 +5027,8 @@
       "book": "LDB",
       "page": 252
     },
-    "domainId": "ombres"
+    "domainId": "ombres",
+    "family": "arcane"
   },
   {
     "id": "portail-d-ombre",
@@ -4933,7 +5062,8 @@
       "book": "LDB",
       "page": 252
     },
-    "domainId": "ombres"
+    "domainId": "ombres",
+    "family": "arcane"
   },
   {
     "id": "configuration-du-terrain",
@@ -4967,7 +5097,8 @@
       "book": "LDB",
       "page": 253
     },
-    "domainId": "vie"
+    "domainId": "vie",
+    "family": "arcane"
   },
   {
     "id": "don-de-vie",
@@ -5001,7 +5132,8 @@
       "book": "LDB",
       "page": 253
     },
-    "domainId": "vie"
+    "domainId": "vie",
+    "family": "arcane"
   },
   {
     "id": "eau-de-la-terre",
@@ -5035,7 +5167,8 @@
       "book": "LDB",
       "page": 253
     },
-    "domainId": "vie"
+    "domainId": "vie",
+    "family": "arcane"
   },
   {
     "id": "ecorce",
@@ -5080,7 +5213,8 @@
       "book": "LDB",
       "page": 253
     },
-    "domainId": "vie"
+    "domainId": "vie",
+    "family": "arcane"
   },
   {
     "id": "foret-d-epines",
@@ -5140,7 +5274,8 @@
       "book": "LDB",
       "page": 253
     },
-    "domainId": "vie"
+    "domainId": "vie",
+    "family": "arcane"
   },
   {
     "id": "graisse-de-la-terre",
@@ -5177,7 +5312,8 @@
       "book": "LDB",
       "page": 254
     },
-    "domainId": "vie"
+    "domainId": "vie",
+    "family": "arcane"
   },
   {
     "id": "regeneration",
@@ -5211,7 +5347,8 @@
       "book": "LDB",
       "page": 254
     },
-    "domainId": "vie"
+    "domainId": "vie",
+    "family": "arcane"
   },
   {
     "id": "sang-de-la-terre",
@@ -5268,7 +5405,8 @@
       "book": "LDB",
       "page": 254
     },
-    "domainId": "vie"
+    "domainId": "vie",
+    "family": "arcane"
   },
   {
     "id": "bonne-volonte",
@@ -5301,7 +5439,8 @@
     "source": {
       "book": "LDB",
       "page": 254
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "charme-protecteur",
@@ -5334,7 +5473,8 @@
     "source": {
       "book": "LDB",
       "page": 254
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "chevaucher-l-obscurite",
@@ -5367,7 +5507,8 @@
     "source": {
       "book": "LDB",
       "page": 254
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "nepenthes",
@@ -5400,7 +5541,8 @@
     "source": {
       "book": "LDB",
       "page": 254
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "panacee",
@@ -5433,7 +5575,8 @@
     "source": {
       "book": "LDB",
       "page": 254
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "separer-les-branches",
@@ -5466,7 +5609,8 @@
     "source": {
       "book": "LDB",
       "page": 255
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "degradation",
@@ -5499,7 +5643,8 @@
     "source": {
       "book": "LDB",
       "page": 255
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "horreur-obsedante",
@@ -5532,7 +5677,8 @@
     "source": {
       "book": "LDB",
       "page": 255
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "malediction-de-douleur-paralysante",
@@ -5565,7 +5711,8 @@
     "source": {
       "book": "LDB",
       "page": 255
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "malediction-de-malchance",
@@ -5602,7 +5749,8 @@
     "source": {
       "book": "LDB",
       "page": 255
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "mauvais-oeil",
@@ -5639,7 +5787,8 @@
     "source": {
       "book": "LDB",
       "page": 255
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "menace-rampante",
@@ -5692,7 +5841,8 @@
     "source": {
       "book": "LDB",
       "page": 256
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "destruction-de-demon-mineur",
@@ -5734,7 +5884,8 @@
     "source": {
       "book": "LDB",
       "page": 256
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "detection-de-demon",
@@ -5767,7 +5918,8 @@
     "source": {
       "book": "LDB",
       "page": 256
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "manifestation-de-demon-mineur",
@@ -5816,7 +5968,8 @@
     "source": {
       "book": "LDB",
       "page": 256
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "octogramme",
@@ -5849,7 +6002,8 @@
     "source": {
       "book": "LDB",
       "page": 256
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "crane-hurlant",
@@ -5893,7 +6047,8 @@
     "source": {
       "book": "LDB",
       "page": 256
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "l-appel-de-vanhel",
@@ -5926,7 +6081,8 @@
     "source": {
       "book": "LDB",
       "page": 256
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "reanimation",
@@ -5981,7 +6137,8 @@
     "source": {
       "book": "LDB",
       "page": 257
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "relever-les-morts",
@@ -6034,7 +6191,8 @@
     "source": {
       "book": "LDB",
       "page": 257
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "allure-demoniaque",
@@ -6067,7 +6225,8 @@
     "source": {
       "book": "EDO",
       "page": 79
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "aspect-sublime",
@@ -6100,7 +6259,8 @@
     "source": {
       "book": "EDO",
       "page": 79
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "decharge-de-corruption",
@@ -6140,7 +6300,8 @@
     "source": {
       "book": "EDO",
       "page": 80
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "dechirer-l-aethyr",
@@ -6188,7 +6349,8 @@
     "source": {
       "book": "EDO",
       "page": 80
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "esclave-des-tenebres",
@@ -6221,7 +6383,8 @@
     "source": {
       "book": "EDO",
       "page": 80
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "explosion-de-corruption",
@@ -6261,7 +6424,8 @@
     "source": {
       "book": "EDO",
       "page": 80
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "obsession",
@@ -6294,7 +6458,8 @@
     "source": {
       "book": "EDO",
       "page": 80
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "odieux-messager",
@@ -6327,7 +6492,8 @@
     "source": {
       "book": "EDO",
       "page": 81
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "pouvoir-du-chaos",
@@ -6360,7 +6526,8 @@
     "source": {
       "book": "EDO",
       "page": 81
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "flot-de-corruption",
@@ -6393,7 +6560,8 @@
     "source": {
       "book": "LDB",
       "page": 257
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "consentement",
@@ -6426,7 +6594,8 @@
     "source": {
       "book": "LDB",
       "page": 257
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "trahison-de-tzeentch",
@@ -6459,7 +6628,8 @@
     "source": {
       "book": "LDB",
       "page": 257
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "aura-doree-de-tzeentch",
@@ -6493,7 +6663,8 @@
     "source": {
       "book": "EDO",
       "page": 81
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "avantage-de-tzeentch",
@@ -6526,7 +6697,8 @@
     "source": {
       "book": "EDO",
       "page": 81
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "eclair-du-changement",
@@ -6570,7 +6742,8 @@
     "source": {
       "book": "EDO",
       "page": 81
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "feu-bleu-de-tzeentch",
@@ -6607,7 +6780,8 @@
     "source": {
       "book": "EDO",
       "page": 82
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "feu-rose-de-tzeentch",
@@ -6644,7 +6818,8 @@
     "source": {
       "book": "EDO",
       "page": 82
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "feu-spirituel",
@@ -6688,7 +6863,8 @@
     "source": {
       "book": "EDO",
       "page": 82
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "flammes-vacillantes-du-capricieux-destin",
@@ -6721,7 +6897,8 @@
     "source": {
       "book": "EDO",
       "page": 82
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "la-main-pourpre",
@@ -6754,7 +6931,8 @@
     "source": {
       "book": "EDO",
       "page": 82
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "malediction-de-tzeentch",
@@ -6787,7 +6965,8 @@
     "source": {
       "book": "EDO",
       "page": 82
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "maitre-du-destin",
@@ -6830,7 +7009,8 @@
     "source": {
       "book": "EDO",
       "page": 82
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "parole-de-tzeentch",
@@ -6872,7 +7052,8 @@
     "source": {
       "book": "EDO",
       "page": 83
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "percevoir-l-echeveau",
@@ -6905,7 +7086,8 @@
     "source": {
       "book": "EDO",
       "page": 83
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "tempete-de-feu-de-tzeentch",
@@ -6942,7 +7124,8 @@
     "source": {
       "book": "EDO",
       "page": 83
-    }
+    },
+    "family": "chaos"
   },
   {
     "id": "encalmine",
@@ -6976,7 +7159,8 @@
     "source": {
       "book": "LDB",
       "page": 222
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "generosite-de-manann",
@@ -7018,7 +7202,8 @@
     "source": {
       "book": "LDB",
       "page": 222
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "marcher-sur-les-eaux",
@@ -7052,7 +7237,8 @@
     "source": {
       "book": "LDB",
       "page": 222
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "mer-dechainee",
@@ -7098,7 +7284,8 @@
     "source": {
       "book": "LDB",
       "page": 222
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "vents-favorables",
@@ -7132,7 +7319,8 @@
     "source": {
       "book": "LDB",
       "page": 222
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "visage-de-l-homme-noye",
@@ -7173,7 +7361,8 @@
     "source": {
       "book": "LDB",
       "page": 223
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "aneantir-les-morts-vivants",
@@ -7219,7 +7408,8 @@
     "source": {
       "book": "LDB",
       "page": 223
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "condamne",
@@ -7253,7 +7443,8 @@
     "source": {
       "book": "LDB",
       "page": 223
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "main-de-morr",
@@ -7287,7 +7478,8 @@
     "source": {
       "book": "LDB",
       "page": 223
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "masque-mortuaire",
@@ -7322,7 +7514,8 @@
     "source": {
       "book": "LDB",
       "page": 223
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "rites-funeraires",
@@ -7356,7 +7549,8 @@
     "source": {
       "book": "LDB",
       "page": 223
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "seuil-du-portail",
@@ -7390,7 +7584,8 @@
     "source": {
       "book": "LDB",
       "page": 223
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "appel-a-la-fureur",
@@ -7428,7 +7623,8 @@
     "source": {
       "book": "LDB",
       "page": 223
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "bouclier-de-myrmidia",
@@ -7462,7 +7658,8 @@
     "source": {
       "book": "LDB",
       "page": 223
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "inspirant",
@@ -7500,7 +7697,8 @@
     "source": {
       "book": "LDB",
       "page": 223
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "lance-de-myrmidia",
@@ -7538,7 +7736,8 @@
     "source": {
       "book": "LDB",
       "page": 224
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "oeil-de-l-aigle",
@@ -7572,7 +7771,8 @@
     "source": {
       "book": "LDB",
       "page": 224
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "soleil-flamboyant",
@@ -7615,7 +7815,8 @@
     "source": {
       "book": "LDB",
       "page": 224
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "commander-la-legion",
@@ -7649,7 +7850,8 @@
     "source": {
       "book": "AA",
       "page": 79
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "terrifier-l-ennemi",
@@ -7684,7 +7886,8 @@
     "source": {
       "book": "AA",
       "page": 79
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "en-bon-ordre",
@@ -7718,7 +7921,8 @@
     "source": {
       "book": "AA",
       "page": 79
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "connais-ton-ennemi",
@@ -7752,7 +7956,8 @@
     "source": {
       "book": "AA",
       "page": 79
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "en-terrain-dangereux",
@@ -7786,7 +7991,8 @@
     "source": {
       "book": "AA",
       "page": 79
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "frappe-rapide",
@@ -7820,7 +8026,8 @@
     "source": {
       "book": "AA",
       "page": 79
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "devotion-de-la-vierge-guerriere",
@@ -7858,7 +8065,8 @@
     "source": {
       "book": "AA",
       "page": 79
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "prouesses-martiales",
@@ -7898,7 +8106,8 @@
     "source": {
       "book": "AA",
       "page": 79
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "fureur-vengeresse",
@@ -7932,7 +8141,8 @@
     "source": {
       "book": "AA",
       "page": 79
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "grace-de-ranald",
@@ -7975,7 +8185,8 @@
     "source": {
       "book": "LDB",
       "page": 224
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "invitation",
@@ -8009,7 +8220,8 @@
     "source": {
       "book": "LDB",
       "page": 224
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "que-la-chance-persiste",
@@ -8052,7 +8264,8 @@
     "source": {
       "book": "LDB",
       "page": 224
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "riche-pauvre-mendiant-voleur",
@@ -8086,7 +8299,8 @@
     "source": {
       "book": "LDB",
       "page": 224
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "vous-ne-m-avez-pas-vu-n-est-ce-pas",
@@ -8120,7 +8334,8 @@
     "source": {
       "book": "LDB",
       "page": 224
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "yeux-de-chat",
@@ -8154,7 +8369,8 @@
     "source": {
       "book": "LDB",
       "page": 224
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "abri-de-rhya",
@@ -8188,7 +8404,8 @@
     "source": {
       "book": "LDB",
       "page": 225
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "caresse-de-rhya",
@@ -8228,7 +8445,8 @@
     "source": {
       "book": "LDB",
       "page": 225
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "enfants-de-rhya",
@@ -8262,7 +8480,8 @@
     "source": {
       "book": "LDB",
       "page": 225
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "recolte-de-rhya",
@@ -8301,7 +8520,8 @@
     "source": {
       "book": "LDB",
       "page": 225
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "secours-de-rhya",
@@ -8338,7 +8558,8 @@
     "source": {
       "book": "LDB",
       "page": 225
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "union-de-rhya",
@@ -8372,7 +8593,8 @@
     "source": {
       "book": "LDB",
       "page": 225
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "amere-catharsis",
@@ -8419,7 +8641,8 @@
     "source": {
       "book": "LDB",
       "page": 225
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "baume-pour-un-esprit-blesse",
@@ -8456,7 +8679,8 @@
     "source": {
       "book": "LDB",
       "page": 225
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "endurance-de-l-anachorete",
@@ -8493,7 +8717,8 @@
     "source": {
       "book": "LDB",
       "page": 225
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "innocence-immaculee",
@@ -8535,7 +8760,8 @@
     "source": {
       "book": "LDB",
       "page": 225
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "larmes-de-shallya",
@@ -8577,7 +8803,8 @@
     "source": {
       "book": "LDB",
       "page": 226
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "martyr",
@@ -8610,7 +8837,8 @@
     "source": {
       "book": "LDB",
       "page": 226
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "comete-a-deux-queues",
@@ -8661,7 +8889,8 @@
     "source": {
       "book": "LDB",
       "page": 226
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "feu-de-l-ame",
@@ -8712,7 +8941,8 @@
     "source": {
       "book": "LDB",
       "page": 226
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "flambeau-de-vertu",
@@ -8755,7 +8985,8 @@
     "source": {
       "book": "LDB",
       "page": 226
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "marteau-ardent-de-sigmar",
@@ -8817,7 +9048,8 @@
     "source": {
       "book": "LDB",
       "page": 226
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "n-ecoutez-point-la-sorciere",
@@ -8859,7 +9091,8 @@
     "source": {
       "book": "LDB",
       "page": 226
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "vaincre-les-impies",
@@ -8904,7 +9137,8 @@
     "source": {
       "book": "LDB",
       "page": 226
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "bondissant-comme-un-cerf",
@@ -8942,7 +9176,8 @@
     "source": {
       "book": "LDB",
       "page": 227
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "dent-et-griffe",
@@ -8988,7 +9223,8 @@
     "source": {
       "book": "LDB",
       "page": 227
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "enchevetrement-2",
@@ -9034,7 +9270,8 @@
     "source": {
       "book": "LDB",
       "page": 227
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "instincts-animaux",
@@ -9072,7 +9309,8 @@
     "source": {
       "book": "LDB",
       "page": 227
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "roi-de-la-nature",
@@ -9121,7 +9359,8 @@
     "source": {
       "book": "LDB",
       "page": 227
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "seigneur-de-la-chasse",
@@ -9155,7 +9394,8 @@
     "source": {
       "book": "LDB",
       "page": 227
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "frisson-du-givre",
@@ -9194,7 +9434,8 @@
     "source": {
       "book": "LDB",
       "page": 227
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "fureur-d-ulric",
@@ -9228,7 +9469,8 @@
     "source": {
       "book": "LDB",
       "page": 227
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "hurlement-du-loup",
@@ -9286,7 +9528,8 @@
     "source": {
       "book": "LDB",
       "page": 227
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "jugement-du-roi-de-la-neige",
@@ -9329,7 +9572,8 @@
     "source": {
       "book": "LDB",
       "page": 227
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "morsure-de-l-hiver",
@@ -9400,7 +9644,8 @@
     "source": {
       "book": "LDB",
       "page": 227
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "peau-de-loup-d-hiver",
@@ -9433,7 +9678,8 @@
     "source": {
       "book": "LDB",
       "page": 228
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "entraves-a-la-verite",
@@ -9471,7 +9717,8 @@
     "source": {
       "book": "LDB",
       "page": 228
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "epee-de-justice",
@@ -9542,7 +9789,8 @@
     "source": {
       "book": "LDB",
       "page": 228
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "justice-aveugle",
@@ -9576,7 +9824,8 @@
     "source": {
       "book": "LDB",
       "page": 228
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "la-verite-eclatera",
@@ -9610,7 +9859,8 @@
     "source": {
       "book": "LDB",
       "page": 228
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "sagesse-de-la-chouette",
@@ -9653,7 +9903,8 @@
     "source": {
       "book": "LDB",
       "page": 228
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "verena-est-mon-temoin",
@@ -9687,7 +9938,8 @@
     "source": {
       "book": "LDB",
       "page": 228
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "bon-baiser-d-la-fosse-noire",
@@ -9735,7 +9987,8 @@
     "source": {
       "book": "ZI",
       "page": 10
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "nuee-d-escampette",
@@ -9777,7 +10030,8 @@
     "source": {
       "book": "ZI",
       "page": 10
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "toile-surprise",
@@ -9823,6 +10077,7 @@
     "source": {
       "book": "ZI",
       "page": 10
-    }
+    },
+    "family": "invocation"
   }
 ]

@@ -854,7 +854,7 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
                   <span className="adv-meta" />
                   <button className="btn small" disabled={cost > 0 && !afford(cost)} onClick={() => buySpell(hero.id, spell.id)}>
                     {cost > 0 ? `Mémoriser · ${cost} PX` : 'Inclus au Talent'}
-                    {spell.type === 'Magie du Chaos' ? ' · +1 Corruption' : ''}
+                    {spell.family === 'chaos' ? ' · +1 Corruption' : ''}
                   </button>
                 </div>
                 );

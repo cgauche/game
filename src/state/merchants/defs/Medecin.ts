@@ -13,5 +13,5 @@ export const merchantArchetype: MerchantArchetypeDef = {
   settlement: 'ville',
   resaleRate: 0.5, // base ½ du prix listé (LDB 60 l.22) ; Marchandage la module ¼–½
   bargainSkill: 40,
-  curated: ['Potion de guérison', 'Faxtoryll', 'Cataplasme de guérison', 'Potion de vitalité', 'Œil de verre', 'Crochet', 'Fausse jambe'],
+  curated: ['potion-de-guerison', 'faxtoryll', 'cataplasme-de-guerison', 'potion-de-vitalite', 'oeil-de-verre', 'crochet', 'fausse-jambe'],
 };

@@ -27,10 +27,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Troll",
   },
   "Amibe": {
-    "def": null,
-    "plan": "biped",
+    "def": "Amibe",
+    "plan": "amorphous",
     "scale": 1,
-    "species": "Humain",
+    "species": "Amibe",
   },
   "Amphisbaena": {
     "def": "Serpent",
@@ -1137,10 +1137,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Jabberslythe",
   },
   "Jetsam - la Gelée Intelligente": {
-    "def": null,
-    "plan": "biped",
+    "def": "Amibe",
+    "plan": "amorphous",
     "scale": 1,
-    "species": "Humain",
+    "species": "Amibe",
   },
   "Jeune Araignée Géante": {
     "def": "Araignée",
@@ -2443,6 +2443,12 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
 
 exports[`golden — résolution nom→apparence (anti-régression de-POC match-par-nom) > defs du registre : name → (plan, espèce, def, échelle) 1`] = `
 {
+  "Amibe": {
+    "def": "Amibe",
+    "plan": "amorphous",
+    "scale": 1,
+    "species": "Amibe",
+  },
   "Araignée": {
     "def": "Araignée",
     "plan": "arachnid",

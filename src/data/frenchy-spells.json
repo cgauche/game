@@ -16,7 +16,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 155
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "agression-aethyrique",
@@ -35,7 +36,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 584
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "alarme",
@@ -54,7 +56,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 454
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "algues-cruelles",
@@ -73,7 +76,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 502
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "ame-devoilee",
@@ -92,7 +96,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 329
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "apaisement",
@@ -111,7 +116,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 78
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "appel-de-vanhel",
@@ -130,7 +136,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 519
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "arme-souillee",
@@ -149,7 +156,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 305
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "armure-d-aethyr",
@@ -168,7 +176,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 522
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "armure-d-obscurite",
@@ -187,7 +196,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 376
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "arriere-sorciere",
@@ -206,7 +216,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 89
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "aux-innocents-les-mains-pleines",
@@ -225,7 +236,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 118
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "avatar-du-rat-cornu",
@@ -244,7 +256,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 417
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "baratin",
@@ -263,7 +276,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 119
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "belier",
@@ -282,7 +296,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 246
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "benedicite-de-taal",
@@ -301,7 +316,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 161
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "berceuse-soporifique-ua-ii",
@@ -320,7 +336,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 289
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "bienveillance",
@@ -339,7 +356,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 142
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "blizzard",
@@ -358,7 +376,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 92
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "bon-debarras",
@@ -377,7 +396,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 118
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "bond-furtif",
@@ -396,7 +416,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 373
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "bouclier",
@@ -415,7 +436,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 246
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "bouillon-revigorant",
@@ -434,7 +456,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 142
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "bruit",
@@ -453,7 +476,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 323
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "brume-acide",
@@ -472,7 +496,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 393
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "brume-mystique",
@@ -491,7 +516,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 501
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "cacophonie-scabreuse",
@@ -510,7 +536,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 289
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "catharsis",
@@ -529,7 +556,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 78
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "chaleur-de-la-fourrure",
@@ -548,7 +576,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 92
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "chuchotis",
@@ -567,7 +596,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 144
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "cogne-fort",
@@ -586,7 +616,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 472
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "conserve",
@@ -605,7 +636,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 139
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "contamination",
@@ -624,7 +656,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 389
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "coup-d-boule",
@@ -643,7 +676,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 472
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "courage-du-loup",
@@ -662,7 +696,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 92
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "courant-d-air",
@@ -681,7 +716,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 569
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "crepitement-funeste",
@@ -700,7 +736,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 361
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "crepitements-vengeurs",
@@ -719,7 +756,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 448
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "crevasse",
@@ -738,7 +776,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 367
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "crue-mortelle",
@@ -757,7 +796,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 502
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "culpabilite",
@@ -776,7 +816,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 78
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "decharge-cerebrale",
@@ -795,7 +836,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 289
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "demangeaison-agacante",
@@ -814,7 +856,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 448
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "depecage",
@@ -833,7 +876,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 361
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "desarroi",
@@ -852,7 +896,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 297
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "disparition",
@@ -871,7 +916,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 380
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "douces-paroles",
@@ -890,7 +936,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 448
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "dressage-de-rhya",
@@ -909,7 +956,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 155
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "duplicite-de-tzeentch",
@@ -928,7 +976,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 326
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "eau-pure",
@@ -947,7 +996,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 139
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "eclat",
@@ -966,7 +1016,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 246
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "effigie-maudite",
@@ -985,7 +1036,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 147
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "entrave",
@@ -1004,7 +1056,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 570
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "espionnage",
@@ -1023,7 +1076,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 267
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "esprit-enfievre",
@@ -1042,7 +1096,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 329
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "explosion-de-dhar",
@@ -1061,7 +1116,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 253
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "fatigue",
@@ -1080,7 +1136,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 144
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "faux-semblant",
@@ -1099,7 +1156,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 147
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "faveur-du-rat-cornu",
@@ -1118,7 +1176,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 416
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "felure-aethyrique",
@@ -1137,7 +1196,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 249
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "fers-de",
@@ -1156,7 +1216,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 94
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "fertilisation",
@@ -1175,7 +1236,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 142
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "feu-follet",
@@ -1194,7 +1256,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 139
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "flamme",
@@ -1213,7 +1276,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 246
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "flamme-verdatre",
@@ -1232,7 +1296,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 361
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "flammes-bleues-de-tzeentch",
@@ -1251,7 +1316,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 321
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "flammes-roses-de-tzeentch",
@@ -1270,7 +1336,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 320
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "forme-spectrale",
@@ -1289,7 +1356,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 522
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "frenesie-artificielle",
@@ -1308,7 +1376,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 516
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "furoncle-infecte",
@@ -1327,7 +1396,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 305
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "haine-du-faible",
@@ -1346,7 +1416,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 92
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "haleine-fetide",
@@ -1365,7 +1436,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 310
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "hebetement",
@@ -1384,7 +1456,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 361
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "immuno-deficience",
@@ -1403,7 +1476,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 386
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "instinct-animal",
@@ -1422,7 +1496,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 161
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "introspection",
@@ -1441,7 +1516,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 289
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "justice",
@@ -1460,7 +1536,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 89
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "la-verite-finit-toujours-par-sortir",
@@ -1479,7 +1556,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 96
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "langue-aceree",
@@ -1498,7 +1576,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 289
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "langue-des-gors",
@@ -1517,7 +1596,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 267
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "langue-des-pestigors",
@@ -1536,7 +1616,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 302
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "langue-des-slaangors",
@@ -1555,7 +1636,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 286
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "langue-des-tzaangors",
@@ -1574,7 +1656,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 323
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "les-voies-de-la-nature",
@@ -1593,7 +1676,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 161
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "lune-de-malheur",
@@ -1612,7 +1696,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 455
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "main-de-rhya",
@@ -1631,7 +1716,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 155
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "maitrise-du-destin",
@@ -1650,7 +1736,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 326
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "malveillance-absolue",
@@ -1669,7 +1756,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 455
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "marque-du-rat-cornu",
@@ -1688,7 +1776,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 416
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "marteau-de-justice",
@@ -1707,7 +1796,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 89
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "modele-de-vertu",
@@ -1726,7 +1816,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 89
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "morsure-d-hiver",
@@ -1745,7 +1836,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 92
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "mouchard",
@@ -1764,7 +1856,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 570
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "nostrum",
@@ -1783,7 +1876,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 142
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "nuee",
@@ -1802,7 +1896,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 147
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "nuee-de-mouches",
@@ -1821,7 +1916,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 305
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "oeil-de-lynx",
@@ -1840,7 +1936,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 118
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "ouverture",
@@ -1859,7 +1956,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 267
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "pattes-gluantes",
@@ -1878,7 +1976,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 379
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "pied-leger",
@@ -1897,7 +1996,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 139
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "pierre-de-souffrance",
@@ -1916,7 +2016,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 497
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "piste-froide",
@@ -1935,7 +2036,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 119
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "poids-plume",
@@ -1954,7 +2056,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 376
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "position",
@@ -1973,7 +2076,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 139
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "poudre-d-escampette",
@@ -1992,7 +2096,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 373
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "pourriture",
@@ -2011,7 +2116,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 144
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "prise-de-tete",
@@ -2030,7 +2136,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 472
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "projectile",
@@ -2049,7 +2156,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 246
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "projectile-de-dhar",
@@ -2068,7 +2176,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 267
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "projectile-mineur",
@@ -2087,7 +2196,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 144
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "rafale-hurlante",
@@ -2106,7 +2216,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 364
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "rage-meurtriere",
@@ -2125,7 +2236,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 373
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "ramanchage",
@@ -2144,7 +2256,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 142
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "rapidite",
@@ -2163,7 +2276,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 94
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "rat-esclave",
@@ -2182,7 +2296,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 373
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "regard-lubrique",
@@ -2201,7 +2316,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 288
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "rejeton-de-slaanesh",
@@ -2220,7 +2336,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 293
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "resistance-du-penitent",
@@ -2239,7 +2356,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 78
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "robustesse",
@@ -2258,7 +2376,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 89
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "ruine",
@@ -2277,7 +2396,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 147
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "saccade",
@@ -2296,7 +2416,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 292
-    }
+    },
+    "family": "mineure"
   },
   {
     "id": "sagesse-du-hibou",
@@ -2315,7 +2436,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 96
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "sanctuaire",
@@ -2334,7 +2456,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 89
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "saut-de-cabri",
@@ -2353,7 +2476,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 161
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "secousse-tellurique",
@@ -2372,7 +2496,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 253
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "shurikens-enchantes",
@@ -2391,7 +2516,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 379
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "soins",
@@ -2410,7 +2536,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 78
-    }
+    },
+    "family": "beni"
   },
   {
     "id": "soleil-noir",
@@ -2429,7 +2556,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 480
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "sus-a-l-ennemi",
@@ -2448,7 +2576,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 89
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "telekinesie",
@@ -2467,7 +2596,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 570
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "terreur-nocturne",
@@ -2486,7 +2616,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 147
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "treve-de-taal-dsfl",
@@ -2505,7 +2636,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 161
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "trouble",
@@ -2524,7 +2656,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 246
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "vague-scelerate",
@@ -2543,7 +2676,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 502
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "verena-m-est-temoin",
@@ -2562,7 +2696,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 94
-    }
+    },
+    "family": "invocation"
   },
   {
     "id": "vol",
@@ -2581,7 +2716,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 146
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "waaagh",
@@ -2600,7 +2736,8 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 480
-    }
+    },
+    "family": "arcane"
   },
   {
     "id": "z-oeils-de-mork",
@@ -2619,6 +2756,7 @@
     "source": {
       "book": "frenchy.bzh",
       "page": 472
-    }
+    },
+    "family": "arcane"
   }
 ]
