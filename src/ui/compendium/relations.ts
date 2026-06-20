@@ -19,6 +19,8 @@ import {
   locations, stars, advancementBaseId, careersForSpecies, findCareerById,
 } from '../../data';
 import type { AdvancementRef } from '../../data';
+import { spellEffectOps } from '../../state/flow';
+import type { Flow, TriggeredEffect } from '../../state/flow';
 
 /** Un référant (entité QUI pointe vers la cible) — ouvrable au Codex via (category, label). */
 export interface Referrer {
@@ -143,6 +145,18 @@ for (const g of gods) {
   for (const mi of g.miracles) addReverse('spells', mi.id, { ...by, detail: 'Miracle' });
 }
 
+// 13) États INFLIGÉS — ops `condition` des effets (Sort = Flow ; Trait/Qualité/Talent/Domaine =
+//     TriggeredEffect[].flow). On réutilise le walker `spellEffectOps` (zéro parsing maison).
+const conditionIdsInFlow = (flow: Flow | undefined): string[] =>
+  spellEffectOps(flow).flatMap((o) => (o.op === 'condition' ? [o.name] : []));
+const conditionIdsInEffects = (effects: TriggeredEffect[] | undefined): string[] =>
+  (effects ?? []).flatMap((e) => conditionIdsInFlow(e.flow));
+for (const s of spells) for (const id of conditionIdsInFlow(s.effects)) addReverse('etats', id, { category: 'spells', label: s.label });
+for (const t of traits) for (const id of conditionIdsInEffects(t.effects)) addReverse('etats', id, { category: 'traits', label: t.label });
+for (const q of qualities) for (const id of conditionIdsInEffects(q.effects)) addReverse('etats', id, { category: 'qualities', label: q.label });
+for (const t of talents) for (const id of conditionIdsInEffects(t.effects)) addReverse('etats', id, { category: 'talents', label: t.label });
+for (const d of domains) for (const id of conditionIdsInEffects(d.effects)) addReverse('etats', id, { category: 'domains', label: d.label });
+
 // ── Titres FR des sections inverses (display — couche UI, pas de sémantique de jeu) ──────────────
 // Clé `${targetCat}:${refCat}` ; repli = nom pluriel générique du référant.
 const GENERIC_PLURAL: Record<string, string> = {
@@ -165,6 +179,8 @@ const REVERSE_TITLE: Record<string, string> = {
   'domains:spells': 'Sorts du domaine',
   'maneuvers:traits': 'Traits l’accordant',
   'weaponGroups:trappings': 'Objets du groupe',
+  'etats:spells': 'Sorts l’infligeant', 'etats:traits': 'Traits l’infligeant', 'etats:qualities': 'Qualités d’arme l’infligeant',
+  'etats:talents': 'Talents l’infligeant', 'etats:domains': 'Domaines l’infligeant',
 };
 const reverseTitle = (targetCat: string, refCat: string): string =>
   REVERSE_TITLE[`${targetCat}:${refCat}`] ?? GENERIC_PLURAL[refCat] ?? refCat;

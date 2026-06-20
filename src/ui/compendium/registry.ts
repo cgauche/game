@@ -368,7 +368,10 @@ export const CODEX: CodexCategory[] = [
   },
   {
     key: 'etats', label: 'États', group: 'Effets',
-    items: etats.map((e) => ({ label: e.label, desc: e.desc, source: src(e.source) })),
+    items: etats.map((e) => ({
+      label: e.label, desc: e.desc, source: src(e.source),
+      sections: sections(...reverseSections('etats', e.id)), // Sorts/Traits/Qualités/Talents/Domaines l'infligeant
+    })),
   },
   {
     key: 'maladies', label: 'Maladies', group: 'Effets',

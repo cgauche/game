@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { reverseGroups, bookContents, labelIndex, tokenizeLinks } from './relations';
-import { creatures, traits, gods, trappings, skills, careerLevels, findCareerById } from '../../data';
+import { creatures, traits, gods, trappings, skills, careerLevels, etats, findCareerById } from '../../data';
 
 /** Un groupe inverse de catégorie `cat` contient-il `label` ? */
 const groupHas = (groups: ReturnType<typeof reverseGroups>, cat: string, label: string): boolean =>
@@ -47,6 +47,13 @@ describe('relations — graphe inverse id-based', () => {
     const careerRef = groups.find((g) => g.category === 'careers')?.referrers.find((r) => r.label === career.label);
     expect(careerRef).toBeTruthy();
     expect(careerRef!.detail).toMatch(/N\d/);
+  });
+
+  it('état → ce qui l’inflige (inversion des ops `condition` des effets Flow/TriggeredEffect)', () => {
+    // Au moins un état est infligé par un Sort (op condition dans spell.effects) → groupe inverse 'spells'.
+    const e = etats.find((x) => reverseGroups('etats', x.id).some((g) => g.category === 'spells'));
+    expect(e, 'un état infligé par un sort').toBeTruthy();
+    expect(reverseGroups('etats', e!.id).find((g) => g.category === 'spells')?.title).toBe('Sorts l’infligeant');
   });
 
   it('entité non référencée → aucun groupe', () => {
