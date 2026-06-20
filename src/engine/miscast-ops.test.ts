@@ -72,27 +72,68 @@ describe('castPenalty — pénalités/blocages temporisés', () => {
   });
 });
 
-describe('Tests imbriqués des tables', () => {
-  it('« Murmures mortels » : Test de FM Accessible raté → +1 Corruption (via onCorruption)', () => {
-    const c = hero({ characteristics: { ...hero().characteristics, FM: 1 } }); // échec quasi sûr
-    const gained: number[] = [];
-    applyOps(
-      c,
-      [{ op: 'test', characteristic: 'FM', difficulty: 'accessible', onFail: [{ op: 'corruption', amount: 1 }] }],
-      { rng: makeRNG(3), onCorruption: (n) => { gained.push(n); return [`+${n} Corruption`]; } },
-    );
-    expect(gained).toEqual([1]);
+// Les Tests imbriqués des tables (« Résistance Accessible ou Sonné », « FM ou Corruption ») ne sont PLUS
+// des op `test` (supprimée Lot 4d) : `rollMiscast` les expose en `MiscastResult.testFlow` (nœud Flow
+// `{kind:'test'}`), résolu CADENCE-AWARE par `applyMiscast`→`runCombatFlow` (héros manuel = jet
+// influençable ; ennemi = inline). On vérifie ici la STRUCTURE produite (skill/carac/difficulté, branche
+// d'échec, palier `onFailHard` via Condition `slThreshold ≤ −4`) ; la RÉSOLUTION cadence-aware (étape
+// influençable, onCorruption, Inconscient à −4 DR) est testée au niveau store (`state/miscast-test.test`).
+describe('Tests imbriqués des tables → nœud Flow `test`', () => {
+  /** Premier `rollMiscast(sev, ...)` dont le nom commence par `prefix` (échantillonne les graines). */
+  function rowNamed(sev: Parameters<typeof rollMiscast>[0], prefix: string, sin = 0) {
+    for (let seed = 0; seed < 600; seed++) {
+      const r = rollMiscast(sev, makeRNG(seed), sin);
+      if (r.name.startsWith(prefix)) return r;
+    }
+    throw new Error(`entrée « ${prefix} » introuvable`);
+  }
+
+  it('« Murmures mortels » : testFlow = Test de FM Accessible → +1 Corruption sur échec', () => {
+    const r = rowNamed('mineure', 'Murmures mortels');
+    expect(r.testFlow).toBeTruthy();
+    const node = r.testFlow!;
+    expect(node.kind).toBe('test');
+    if (node.kind !== 'test') return;
+    expect(node.test.characteristic).toBe('FM');
+    expect(node.test.difficulty).toBe('accessible');
+    // Branche d'échec = un `do` ops {corruption +1}.
+    expect(node.fail.kind).toBe('do');
+    if (node.fail.kind === 'do' && node.fail.effect.type === 'ops') {
+      expect(node.fail.effect.ops).toContainEqual({ op: 'corruption', amount: 1 });
+    }
   });
 
-  it('« Purifier la chair » : échec → Sonné ; échec à −4 DR ou moins → Inconscient EN PLUS', () => {
-    const c = hero({ characteristics: { ...hero().characteristics, E: 1 } }); // cible ~1 → échec dur garanti
-    applyOps(
-      c,
-      [{ op: 'test', skill: 'resistance', difficulty: 'difficile', onFail: [{ op: 'condition', name: 'sonne' }], onFailHard: { dr: -4, ops: [{ op: 'condition', name: 'inconscient' }] } }],
-      { rng: makeRNG(1) }, // d100 = 63 vs cible ~1 → échec à −6 DR (≤ −4 : palier dur)
-    );
-    expect(c.conditions.some((x) => x.name === 'sonne')).toBe(true);
-    expect(c.conditions.some((x) => x.name === 'inconscient')).toBe(true);
+  it('« Choc aethyrique » : 1d10 Blessures IMMÉDIATES (ops) + testFlow Résistance → Sonné', () => {
+    const r = rowNamed('majeure', 'Choc aethyrique');
+    expect(r.ops.some((o) => o.op === 'wounds')).toBe(true); // Dégâts AVANT le Test (ops immédiats)
+    const node = r.testFlow!;
+    expect(node.kind).toBe('test');
+    if (node.kind !== 'test') return;
+    expect(node.test.skill).toBe('resistance');
+    expect(node.test.difficulty).toBe('accessible');
+  });
+
+  it('« Purifier la chair » : testFlow Résistance Difficile, palier −4 DR → Inconscient (slThreshold)', () => {
+    const r = rowNamed('colere', 'Purifier la chair');
+    expect(r.ops.some((o) => o.op === 'wounds')).toBe(true); // 2d10 Blessures immédiates
+    const node = r.testFlow!;
+    expect(node.kind).toBe('test');
+    if (node.kind !== 'test') return;
+    expect(node.test.skill).toBe('resistance');
+    expect(node.test.difficulty).toBe('difficile');
+    // Branche d'échec = seq[ do{Sonné}, if slThreshold(≤ −4) → do{Inconscient} ] (palier onFailHard).
+    expect(node.fail.kind).toBe('seq');
+    if (node.fail.kind !== 'seq') return;
+    const sonne = node.fail.steps[0];
+    expect(sonne.kind).toBe('do');
+    if (sonne.kind === 'do' && sonne.effect.type === 'ops') expect(sonne.effect.ops.some((o) => o.op === 'condition' && o.name === 'sonne')).toBe(true);
+    const hard = node.fail.steps[1];
+    expect(hard.kind).toBe('if');
+    if (hard.kind === 'if') {
+      expect(hard.cond).toEqual({ kind: 'slThreshold', op: '<=', value: -4 });
+      expect(hard.then.kind).toBe('do');
+      if (hard.then.kind === 'do' && hard.then.effect.type === 'ops') expect(hard.then.effect.ops.some((o) => o.op === 'condition' && o.name === 'inconscient')).toBe(true);
+    }
   });
 });
 

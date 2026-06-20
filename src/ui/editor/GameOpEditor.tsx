@@ -50,7 +50,6 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   critTwice: '🎯 Deux lancers de Critique (meilleur)',
   gainResource: '🍀 Points de Chance / Destin',
   corruption: '🧬 Points de Corruption',
-  test: '🎲 Test imbriqué (succès/échec)',
   castPenalty: '🔮 Contrecoup d’incantation',
   castWard: '🔮 Aura anti-Sort (−20 Langue)',
   arrowWard: '🏹 Bouclier anti-projectiles',
@@ -108,7 +107,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'loseTurn']],
   ['🩼 Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'maxWeaponHands', 'senseLoss']],
   ['⚔️ Atouts/Défauts d’arme (passifs)', ['weaponRollMod', 'weaponDamageMod', 'armourPierce', 'critOnRoll']],
-  ['🎲 Contrôle', ['test', 'rollThreshold', 'spendAdvantage']],
+  ['🎲 Contrôle', ['rollThreshold', 'spendAdvantage']],
   ['📝 Narration', ['narrative']],
 ];
 
@@ -213,7 +212,6 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'critTwice': return { op: 'critTwice' };
     case 'gainResource': return { op: 'gainResource', resource: 'fortune', amount: 1 };
     case 'corruption': return { op: 'corruption', amount: 1 };
-    case 'test': return { op: 'test', skill: 'resistance', difficulty: 'intermediaire', onFail: [], onSuccess: [] };
     case 'castPenalty': return { op: 'castPenalty', skill: 'all', mod: -10 };
     case 'castWard': return { op: 'castWard', radius: 5 };
     case 'arrowWard': return { op: 'arrowWard', radius: 5 };
@@ -282,7 +280,6 @@ export function opSummary(o: GameOp): string {
     case 'critTwice': return `${L} deux lancers de Critique`;
     case 'gainResource': return `${L} +${o.amount} ${o.resource === 'fate' ? 'Destin' : 'Chance'}${o.temporary ? ' (temp.)' : ''}`;
     case 'corruption': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount}`;
-    case 'test': return `${L} ${o.skill ? refLabel('skills', { id: o.skill }) : o.characteristic ? CHAR_LABELS[o.characteristic] : '?'} → ${o.onSuccess?.length ?? 0} si réussite / ${o.onFail.length} si échec`;
     case 'castPenalty': return `${L} ${o.blocked ? 'magie interdite' : o.maxZeroDR ? 'Prière plafonnée' : `${o.mod ?? 0} ${o.skill}`}`;
     case 'castWard': return `${L} −20 Langue, rayon ${formulaSummary(o.radius)} m`;
     case 'arrowWard': return `${L} rayon ${formulaSummary(o.radius)} m`;
@@ -326,7 +323,7 @@ export function opSummary(o: GameOp): string {
 const DEDICATED: ReadonlySet<GameOp['op']> = new Set([
   'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'skillMod', 'moveMod', 'apAll', 'testMod',
   'corruption', 'gainResource', 'grantTrait', 'grantTalent', 'grantNaturalWeapon', 'narrative',
-  'summon', 'polymorph', 'lifeSteal', 'test',
+  'summon', 'polymorph', 'lifeSteal',
 ]);
 
 function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void }) {
@@ -463,35 +460,8 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         {op.op === 'narrative' && (
           <textarea placeholder="Texte journalisé (arbitrage MJ)" value={o.text ?? ''} onChange={(e) => upd({ text: e.target.value })} />
         )}
-        {op.op === 'test' && (
-          <>
-            <RefField cfg={{ ds: 'skills', single: true }} fieldKey="Compétence (option)" value={o.skill} onChange={(v) => upd({ skill: (v as string) || undefined })} nullable />
-            <label className="dr">Carac.
-              <select value={o.characteristic ?? ''} onChange={(e) => upd({ characteristic: (e.target.value || undefined) as CharKey | undefined })}>
-                <option value="">— (de la compétence) —</option>
-                {CHARS.map((c) => <option key={c} value={c}>{CHAR_LABELS[c]}</option>)}
-              </select>
-            </label>
-            <label className="dr">Difficulté
-              <select value={o.difficulty} disabled={!!o.argDifficulty} onChange={(e) => upd({ difficulty: e.target.value })}>
-                {DIFFICULTIES.map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
-              </select>
-            </label>
-            <label className="dr"><input type="checkbox" checked={!!o.argDifficulty} onChange={(e) => upd({ argDifficulty: e.target.checked || undefined })} /> Difficulté de l'arg d'instance</label>
-            <input placeholder="Immunité qui annule (ex. poison)" value={o.unlessImmune ?? ''} onChange={(e) => upd({ unlessImmune: e.target.value || undefined })} />
-            <input placeholder="Groupes requis (CSV — ex. Criminel)" value={(o.onlyGroups ?? []).join(', ')} onChange={(e) => { const a = csv(e.target.value); upd({ onlyGroups: a.length ? a : undefined }); }} />
-            <input placeholder="Groupes exclus (CSV — ex. Mort-vivant)" value={(o.exceptGroups ?? []).join(', ')} onChange={(e) => { const a = csv(e.target.value); upd({ exceptGroups: a.length ? a : undefined }); }} />
-            <div className="eff-sub"><div className="mini-title">Sur ÉCHEC</div><GameOpEditor ops={o.onFail ?? []} onChange={(ops) => upd({ onFail: ops })} /></div>
-            <div className="eff-sub"><div className="mini-title">Sur RÉUSSITE (option)</div><GameOpEditor ops={o.onSuccess ?? []} onChange={(ops) => upd({ onSuccess: ops.length ? ops : undefined })} /></div>
-            <label className="dr"><input type="checkbox" checked={!!o.onFailHard} onChange={(e) => upd({ onFailHard: e.target.checked ? { dr: -2, ops: [] } : undefined })} /> Palier d'échec aggravé</label>
-            {o.onFailHard && (
-              <div className="eff-sub">
-                <label className="dr">si DR ≤ <input type="number" style={{ width: '3.4em' }} value={o.onFailHard.dr} onChange={(e) => upd({ onFailHard: { ...o.onFailHard, dr: Number(e.target.value) || 0 } })} /></label>
-                <GameOpEditor ops={o.onFailHard.ops} onChange={(ops) => upd({ onFailHard: { ...o.onFailHard, ops } })} />
-              </div>
-            )}
-          </>
-        )}
+        {/* Un Test imbriqué n'est PLUS une op (`{op:'test'}` supprimé, Lot 4d) mais un nœud de la STRUCTURE
+            Flow `{kind:'test'}` (édité par le FlowEditor, succès/échec cadence-aware). */}
         {/* Repli JSON pour toute op sans éditeur dédié — paramètres TOUJOURS lisibles/modifiables sans perte. */}
         {!DEDICATED.has(op.op) && (
           <JsonField label="paramètres de l’op" value={o} rows={6} onChange={(v) => onChange(v as GameOp)} />

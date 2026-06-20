@@ -20,6 +20,10 @@ const seqOps = (...o) => ({ kind: 'seq', steps: o.map((x) => ({ kind: 'do', effe
 const onHit = (flow) => [{ trigger: 'onHit', on: 'victim', flow }];
 
 const cond = (name, extra = {}) => ({ op: 'condition', name, ...extra });
+/** Nœud de Flow `test` (« Test de X ou onFail ») — un Test imbriqué n'est PAS une op (`op:'test'` SUPPRIMÉE,
+ *  Lot 4d) mais un nœud de la STRUCTURE Flow `{kind:'test'}`, résolu cadence-aware (héros = jet influençable,
+ *  ennemi = inline) par `resolveFlowTest`. `onFail` = ops appliqués à la victime sur un échec. */
+const testNode = (test, onFail) => ({ kind: 'test', test, success: { kind: 'seq', steps: [] }, fail: doOps(...onFail) });
 const SRC = (page) => ({ book: 'LDB', page });
 
 // Dégâts « Indice » d'une manœuvre (`{indiceOf}`) ; ignoreTB/ignoreAP pilotent la mitigation.
@@ -149,12 +153,16 @@ const MANEUVERS = [
     id: 'hurlement-fantomatique', label: 'Hurlement fantomatique', kind: 'hurlement', activation: 'free', advantageCost: 2,
     targeting: 'allFoes', defense: 'resist', advantageMode: 'all',
     // PAS de jet d'attaquant : chaque cible vivante (≠ Mort-vivant, filtré moteur) subit 1d10 ignore BE+PA,
-    // un Test de Résistance ou Brisé, + 3 Assourdi.
-    effects: onHit(doOps(
-      { op: 'wounds', amount: { dice: { n: 1, sides: 10 } }, ignoreTB: true, ignoreAP: true },
-      { op: 'test', skill: 'Résistance', difficulty: 'accessible', onFail: [{ op: 'condition', name: 'Brisé' }] },
-      { op: 'condition', name: 'Assourdi', value: 3 },
-    )),
+    // un Test de Résistance (nœud Flow `test` cadence-aware) ou Brisé, + 3 Assourdi. Le Test est un nœud de
+    // STRUCTURE Flow `{kind:'test'}` (plus une op `test` — supprimée Lot 4d) → `seq[ do{wounds}, test, do{assourdi} ]`.
+    effects: onHit({
+      kind: 'seq',
+      steps: [
+        doOps({ op: 'wounds', amount: { dice: { n: 1, sides: 10 } }, ignoreTB: true, ignoreAP: true }),
+        testNode({ skill: 'resistance', difficulty: 'accessible' }, [cond('brise')]),
+        doOps(cond('assourdi', { value: 3 })),
+      ],
+    }),
     desc: 'Tous les ennemis vivants à Initiative mètres : 1d10 (ignore BE+PA) + Test de Résistance ou Brisé + 3 Assourdi. LDB 85 l.136.',
     source: SRC(85),
   },

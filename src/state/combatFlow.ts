@@ -2117,16 +2117,16 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
     caster.sinPoints = sinPoints - 1;
     lines.push(`${caster.name} : 1 Point de Péché expié (reste ${caster.sinPoints}).`);
   }
-  // Ops de la table (États, Blessures ignorant BE+PA, Tests imbriqués, Corruption,
-  // pénalités/blocages d'incantation temporisés, réduction à 0) — applicateur unique.
-  lines.push(
-    ...applyOps(caster, m.ops, {
-      rng: battleRng(),
-      label: m.name,
-      now: get().gameTime,
-      onCorruption: caster.kind === 'hero' ? (n) => gainCorruption(get, set, caster, n) : undefined,
-    }),
-  );
+  // Ops IMMÉDIATS de la table (États, Blessures ignorant BE+PA, Corruption, pénalités/blocages
+  // d'incantation temporisés, réduction à 0) — applicateur unique, AVANT le Test imbriqué (RAW :
+  // « 1d10 Blessures […]. Résistance ou Sonné » — les Dégâts/sin tombent d'abord, puis le Test).
+  const opsCtx: OpsCtx = {
+    rng: battleRng(),
+    label: m.name,
+    now: get().gameTime,
+    onCorruption: caster.kind === 'hero' ? (n) => gainCorruption(get, set, caster, n) : undefined,
+  };
+  lines.push(...applyOps(caster, m.ops, opsCtx));
   // « Un jet = une modale » : le héros voit la conséquence (Colère/Imparfaite) INLINE dans la séquence
   // partagée (étape d'affichage) — plus de RevealModal séparée. `suppressReveal` : la Focalisation
   // interrompue (qui pousse déjà sa propre révélation « Calme » portant ces lignes) n'ouvre rien.
@@ -2142,6 +2142,13 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
     // aucune (Focalisation interrompue suppressReveal / contextes hors-cast) — fallback identique à l'ex-startCascade.
     pushCombatStep(set, { id: 'cons-miscast-0', kind: 'miscast', actorId: caster.id, icon, label: colere ? 'Colère des dieux' : 'Imparfaite', outcome: lines, reveal, interactive: true });
   }
+  // Test imbriqué de l'entrée (« Résistance ou Sonné ») — résolu CADENCE-AWARE par l'exécuteur de Flow
+  // UNIQUE, APRÈS les ops immédiats et l'étape de révélation : un lanceur HÉROS manuel le subit comme une
+  // étape de cascade INFLUENÇABLE (Chance/Pacte/Résilience), appendue à la cascade d'incantation active ;
+  // un ENNEMI/cadence auto le jette inline. Plus de jet imbriqué silencieux (fin du goal « aucun jet
+  // silencieux héros »). `onFailHard` (Purifier la chair −4 DR → Inconscient) est honoré dans la branche
+  // d'échec via la Condition Flow `slThreshold ≤ −4` (cf. `mkTest`).
+  if (m.testFlow) runCombatFlow({ mode: 'combat', get, set, target: caster, caster, label: m.name, opsCtx }, m.testFlow);
   return lines;
 }
 

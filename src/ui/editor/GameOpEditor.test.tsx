@@ -60,7 +60,7 @@ describe('GameOpEditor — menu « + op » COMPLET', () => {
 
   it('toutes les op du vocabulaire ont un défaut valide et un libellé', () => {
     const OPS: GameOp['op'][] = [
-      'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'apAll', 'test',
+      'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'apAll',
       'corruption', 'gainResource', 'castPenalty', 'grantTrait', 'grantTalent',
       'augmentWeapon', 'cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound',
       'reduceToZero', 'ignoreStatePenalties', 'freeReroll', 'critTwice', 'damageArmour', 'suppressPsych',
@@ -92,11 +92,7 @@ describe('GameOpEditor — éditeur pour TOUTE op (dédié ou repli JSON)', () =
     expect(opSummary(ops[0])).toContain('Le sol tremble.');
   });
 
-  it('une op test (à sous-ops) a un éditeur DÉDIÉ : champs + sous-ops imbriquées visibles', () => {
-    const test: GameOp = { op: 'test', skill: 'calme', difficulty: 'difficile', onFail: [{ op: 'condition', name: 'sonne' }], onSuccess: [] };
-    const html = renderToStaticMarkup(<GameOpEditor ops={[test]} onChange={() => {}} />);
-    expect(html).toContain('Calme'); // compétence (input du formulaire dédié)
-    expect(html).toContain('sonne'); // sous-op onFail rendue par le GameOpEditor IMBRIQUÉ
-    expect(opSummary(test)).toContain('Calme');
-  });
+  // (L'ancien test « une op test (à sous-ops) a un éditeur DÉDIÉ » a été RETIRÉ : l'op `test` n'existe
+  //  plus — un Test imbriqué est un nœud de la STRUCTURE Flow `{kind:'test'}` (édité par le FlowEditor,
+  //  pas le GameOpEditor), résolu cadence-aware.)
 });

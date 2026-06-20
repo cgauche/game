@@ -6,7 +6,7 @@ import { applyOps } from './ops';
 import { endOfRound } from './conditions';
 import { runSpellFlowLines } from '../state/combatEffects';
 import type { Combatant, ItemInstance, Weapon } from './types';
-import type { TriggeredEffect } from '../state/flow';
+import type { TriggeredEffect, Flow } from '../state/flow';
 
 /** Construit un `TriggeredEffect` onHit→victim portant `ops` (forme unifiée des onHit d'arme). */
 const onHitFlow = (ops: unknown[]): TriggeredEffect =>
@@ -93,16 +93,28 @@ describe('augmentWeapon — enchantement porté par l’arme, replié dans c.wea
     expect(woundsFromHit(c.weapons[0], armored, 'corps', 12)).toBe(12 - 3); // épée enchantée : ignore les 5 PA
   });
 
-  it('Épée de justice : Test à la touche GATÉ par le Groupe « Criminel » (Inconscient sur échec)', () => {
+  it('Épée de justice : onHit porte un NŒUD FLOW `test` GATÉ par le Groupe « Criminel » (Inconscient sur échec)', () => {
+    // Le Test « à la touche » de l'Épée de justice est un nœud de STRUCTURE Flow `{kind:'test'}` (plus
+    // une op `test` — supprimée Lot 4d), gaté par `onlyGroups:['Criminel']` sur le FlowTest. L'enchant
+    // doit PORTER ce nœud sur l'arme active. La RÉSOLUTION cadence-aware du gate `onlyGroups` (no-op si la
+    // victime n'est pas du Groupe) est couverte par `venin-test.test.ts` (même `resolveFlowTest`).
+    const justiceTest: Flow = {
+      kind: 'test',
+      test: { skill: 'resistance', difficulty: 'accessible', onlyGroups: ['Criminel'] },
+      success: { kind: 'seq', steps: [] },
+      fail: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', name: 'inconscient' }] } },
+    };
     const c = wielder(weaponItem('w', 'Épée', '+BF+4'));
     applyOps(c, [{
       op: 'augmentWeapon', addQualities: ['Magique'],
-      onHitEffects: [onHitFlow([{ op: 'test', skill: 'resistance', difficulty: 'accessible', onlyGroups: ['Criminel'], onFail: [{ op: 'condition', name: 'inconscient' }] }])],
+      onHitEffects: [{ trigger: 'onHit', on: 'victim', flow: justiceTest }],
     }], { label: 'Épée de justice', defaultDurationRounds: 4 });
-    // Cible NON-Criminel : le Test est gaté par Groupe → aucun effet, indépendamment du jet.
-    const civilian = dummy({ id: 'civ' });
-    runSpellFlowLines(civilian, c, c.weapons[0].onHitEffects![0].flow, {});
-    expect(civilian.conditions).toHaveLength(0);
+    const node = c.weapons[0].onHitEffects![0].flow;
+    expect(node.kind).toBe('test');
+    if (node.kind === 'test') {
+      expect(node.test.skill).toBe('resistance');
+      expect(node.test.onlyGroups).toEqual(['Criminel']); // gate porté par le FlowTest
+    }
     endOfRound(c); endOfRound(c); endOfRound(c); endOfRound(c);
     expect(heldEnchants(c)).toBeUndefined(); // dissipé avec l'enchantement
   });

@@ -14,10 +14,8 @@
  * modélisable reste une op `narrative` (journalisée, arbitrage MJ, rien d'inventé).
  */
 import { RNG, defaultRNG, roll as rollDice } from './dice';
-import { rollTest } from './tests';
-import { testValue } from './skills';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
-import { addCondition, addTimedCondition, removeCondition, loseWounds, hasCondition, combatTestPenalty } from './conditions';
+import { addCondition, addTimedCondition, removeCondition, loseWounds, hasCondition } from './conditions';
 import { conditionLabel, talentConcrete, qualityRefLabel, traitById, refLabel } from '../data';
 import { groupMatch } from './groups';
 import { bypassedAP } from './armourBypass';
@@ -47,7 +45,7 @@ import {
   HIT_LOCATION_LABELS,
   ItemInstance,
 } from './types';
-import { immunityTypes, formatTrait } from './traits/dispatch';
+import { formatTrait } from './traits/dispatch';
 import type { TraitInstance } from './statEntry';
 
 // ---------------------------------------------------------------------------
@@ -187,20 +185,12 @@ export type GameOp =
   /** PA TEMPORISÉS à toutes les localisations (Armure Aethyrique « +1 PA à toutes les
    *  Localisations ») — ActiveEffect.apAll, lu par effectiveArmourAt à la mitigation. */
   | { op: 'apAll'; amount: Formula }
-  /** Test imbriqué (« Test de Résistance Accessible (+20) ou … ») : résolu immédiatement contre la CIBLE
-   *  (jet INLINE), puis applique `onFail` / `onSuccess`. Réservé aux tables d'Imparfaites & Colère des
-   *  dieux (`engine/miscast.ts`, verbatim LDB 46/40) appliquées au LANCEUR via `applyMiscast`→`applyOps`
-   *  (contrecoup INLINE, jamais routé en cadence) — PAS un effet déclenché authoré : ceux-là sont des
-   *  nœuds de STRUCTURE Flow `{kind:'test'}`, cadence-aware via `resolveFlowTest`.
-   *  `onFailHard` : palier d'échec aggravé (« si vous échouez avec −4 DR ou moins… », Purifier la chair
-   *  LDB 40) — appliqué EN PLUS d'`onFail`. */
-  | { op: 'test'; skill?: string; characteristic?: CharKey; difficulty: Difficulty;
-      /** La difficulté EFFECTIVE vient de l'argument d'instance du porteur (« Venin (Difficile) ») —
-       *  substituée à la collecte (`effectsOf`) ; `difficulty` ci-dessus est le défaut (arg absent). */
-      argDifficulty?: boolean;
-      /** Saute le Test si la cible est IMMUNISÉE au type donné (Immunité (Poison) → Venin sans effet). */
-      unlessImmune?: string;
-      onlyGroups?: string[]; exceptGroups?: string[]; onFail: GameOp[]; onSuccess?: GameOp[]; onFailHard?: { dr: number; ops: GameOp[] } }
+  // (Il n'existe PLUS d'op `test` : un Test est un nœud de la STRUCTURE Flow `{kind:'test'}`, jamais une
+  //  feuille d'effet — résolu CADENCE-AWARE par `resolveFlowTest` (héros manuel = jet influençable ;
+  //  ennemi/auto = inline), avec sa branche `onFail` et sa continuation honorées. Les derniers usages
+  //  inline — les Tests imbriqués des tables d'Imparfaites/Colère, LDB 46/40 — sont désormais des nœuds
+  //  Flow `test` produits par `engine/miscast` et joués par `applyMiscast`→`runCombatFlow` (Lot 4d).
+  //  « vocabulaire de Test UNIQUE » : aucun jet de héros ne se résout en silence.)
   /** Points de Corruption (LDB 19). Le store branche `ctx.onCorruption` (seuil →
    *  mutation → damnation) ; sans contexte, simple incrément du compteur. */
   | { op: 'corruption'; amount: number; perSL?: PerSL }
@@ -639,21 +629,6 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
         });
         lines.push(`${target.name} : +${n} PA à toutes les Localisations (${ctx.label ?? 'sort'}${rounds !== COMBAT_PERSIST ? `, ${rounds} rounds` : ''}).`);
-        break;
-      }
-      case 'test': {
-        if (!groupGate(o.onlyGroups, o.exceptGroups)) break; // Test gaté par Groupe (Épée de justice : Criminel)
-        // Immunité de type (Immunité (Poison) → Venin sans effet) : la cible ne teste même pas.
-        if (o.unlessImmune && immunityTypes(target.traits ?? []).some((ty) => ty.includes(o.unlessImmune!.toLowerCase()))) break;
-        // Pénalité d'États RAW (−10 Sonné/Empoisonné… LDB 16) appliquée au jet du Test routé.
-        const t = rollTest(testValue(target, o.skill, o.characteristic), o.difficulty, rng, combatTestPenalty(target));
-        const what = o.skill ? refLabel('skills', { id: o.skill }) : (o.characteristic ? CHAR_LABELS[o.characteristic] : '?');
-        lines.push(describeTestRoll(target.name, what, o.difficulty, t));
-        // Propage le DR du Test aux échelles `valuePerSL`/`perSL` d'onSuccess (« chaque DR supprime un
-        // État Sonné supplémentaire ») ; onFail garde le contexte d'origine (pas de DR utile à l'échec).
-        lines.push(...applyOps(target, t.success ? o.onSuccess ?? [] : o.onFail, t.success ? { ...ctx, sl: t.sl } : ctx));
-        // Palier d'échec aggravé (« si vous échouez avec −N DR ou moins ») — EN PLUS d'onFail.
-        if (!t.success && o.onFailHard && t.sl <= o.onFailHard.dr) lines.push(...applyOps(target, o.onFailHard.ops, ctx));
         break;
       }
       case 'corruption': {

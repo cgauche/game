@@ -36,30 +36,12 @@ export function passiveSection(ops: GameOp[] | undefined, title = 'Modificateurs
   return { title, layout: 'list', rows: ops.map((o) => ({ t: 'text', text: opSummary(o) }) as CodexRow) };
 }
 
-/** Décrit UNE op en clair — RÉCURSIF pour l'op `test` à sous-ops (tables de miscast), avec son gating,
- *  en réutilisant `opSummary` pour les ops simples (zéro vocabulaire dupliqué). Le Test OPPOSÉ n'est
- *  PLUS une op : c'est un nœud de STRUCTURE Flow (`{kind:'test', test.opposed}`) décrit par
- *  `flowSummary` ci-dessous. */
-function describeOp(o: GameOp): string {
-  if (o.op === 'test') {
-    const what = o.skill ?? (o.characteristic ? o.characteristic : '?');
-    const gate = [
-      o.argDifficulty ? 'difficulté de l’arg' : null,
-      o.onlyGroups?.length ? `groupe ${o.onlyGroups.join('/')}` : null,
-      o.exceptGroups?.length ? `hors ${o.exceptGroups.join('/')}` : null,
-      o.unlessImmune ? `sauf immunité ${o.unlessImmune}` : null,
-    ].filter(Boolean).join(', ');
-    const fail = (o.onFail ?? []).map(describeOp).join(', ') || '—';
-    const succ = o.onSuccess?.length ? ` · réussite : ${o.onSuccess.map(describeOp).join(', ')}` : '';
-    return `Test de ${what}${gate ? ` (${gate})` : ''} → échec : ${fail}${succ}`;
-  }
-  return opSummary(o);
-}
-
-/** Résumé LISIBLE d'un Flow d'effet (conditions `if` + ops `do`) — réutilise `condSummary`/`describeOp`. */
+/** Résumé LISIBLE d'un Flow d'effet (conditions `if` + ops `do`, jet `test`) — réutilise `condSummary`/
+ *  `opSummary`. Le Test (SIMPLE ou OPPOSÉ) n'est PLUS une op : c'est un nœud de STRUCTURE Flow
+ *  (`{kind:'test'}`) décrit ci-dessous (zéro vocabulaire dupliqué). */
 function flowSummary(f: Flow): string {
   switch (f.kind) {
-    case 'do': return f.effect.type === 'ops' ? f.effect.ops.map(describeOp).join(', ') : f.effect.type;
+    case 'do': return f.effect.type === 'ops' ? f.effect.ops.map(opSummary).join(', ') : f.effect.type;
     case 'seq': return f.steps.map(flowSummary).filter(Boolean).join(' ; ');
     case 'if': return `si ${condSummary(f.cond)} → ${flowSummary(f.then)}${f.else ? ` (sinon ${flowSummary(f.else)})` : ''}`;
     case 'test': {
