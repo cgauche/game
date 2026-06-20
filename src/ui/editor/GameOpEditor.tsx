@@ -9,7 +9,7 @@
  * « 0 » puis écrasé). Un nouveau type d'op = 1 entrée dans `OP_GROUPS` + 1 défaut dans `newOp`.
  */
 import { Formula, GameOp } from '../../engine/ops';
-import { CHAR_LABELS, CharKey, type Difficulty, DIFFICULTY_LABELS } from '../../engine/types';
+import { CHAR_LABELS, CharKey } from '../../engine/types';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
 import { etats, talentConcrete, findTalent, qualityRefLabel, refLabel } from '../../data';
 import { RefField } from '../compendium/RefField';
@@ -23,7 +23,6 @@ import { JsonField } from './JsonField';
 const SIZES = Object.keys(SIZE_LABEL) as SizeCategory[];
 
 const CHARS = Object.keys(CHAR_LABELS) as CharKey[];
-const DIFFICULTIES = Object.keys(DIFFICULTY_LABELS) as Difficulty[];
 /** Liste de Groupes saisie en CSV (« Criminel, Mort-vivant ») ↔ tableau (undefined si vide). */
 const csv = (s: string): string[] => s.split(',').map((x) => x.trim()).filter(Boolean);
 
