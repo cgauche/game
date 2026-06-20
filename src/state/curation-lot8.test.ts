@@ -50,10 +50,12 @@ describe('couverture de curation', () => {
     expect(sup(choc, isMagicMissile(choc))).toBe('mecanique');
     const lumiere = findSpell('Lumière')!;
     expect(sup(lumiere, false)).toBe('narratif');
-    // Cautériser est devenu 100 % mécanique (op preventInfection, Jalon 2.6) — l'exemple
-    // « partiel » est désormais Couronne de Flammes (grantTrait + volet talent journalisé).
+    // Cautériser : mécanique (heal/removeCondition/preventInfection/Inconscient sur −6 DR) + un volet
+    // « arbitrage MJ » (le hurlement de douleur). Le Test interne a migré en nœud Flow `test` (Lot 4b) :
+    // sa narration vit désormais dans la branche `fail`, où `spellEffectOps` la voit (avant, elle était
+    // enfouie dans l'op `test` et invisible) → la classification reflète maintenant ce volet → « partiel ».
     const cauteriser = findSpell('Cautériser')!;
-    expect(sup(cauteriser, false)).toBe('mecanique');
+    expect(sup(cauteriser, false)).toBe('partiel');
     const couronne = findSpell('Couronne de Flammes')!;
     expect(sup(couronne, false)).toBe('partiel');
   });

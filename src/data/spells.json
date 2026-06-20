@@ -1359,23 +1359,27 @@
       "kind": "seq",
       "steps": [
         {
-          "kind": "do",
-          "effect": {
-            "type": "ops",
-            "on": "target",
-            "ops": [
-              {
-                "op": "test",
-                "characteristic": "Dex",
-                "difficulty": "accessible",
-                "onFail": [
-                  {
-                    "op": "narrative",
-                    "text": "Secousse : l’objet tenu tombe (arme au sol — arbitrage MJ)."
-                  }
-                ]
-              }
-            ]
+          "kind": "test",
+          "test": {
+            "characteristic": "Dex",
+            "difficulty": "accessible"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "narrative",
+                  "text": "Secousse : l’objet tenu tombe (arme au sol — arbitrage MJ)."
+                }
+              ]
+            }
           }
         }
       ]
@@ -1779,23 +1783,27 @@
       "kind": "seq",
       "steps": [
         {
-          "kind": "do",
-          "effect": {
-            "type": "ops",
-            "on": "target",
-            "ops": [
-              {
-                "op": "test",
-                "characteristic": "Dex",
-                "difficulty": "intermediaire",
-                "onFail": [
-                  {
-                    "op": "narrative",
-                    "text": "Chute : l’objet tenu tombe (arme au sol — arbitrage MJ)."
-                  }
-                ]
-              }
-            ]
+          "kind": "test",
+          "test": {
+            "characteristic": "Dex",
+            "difficulty": "intermediaire"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "narrative",
+                  "text": "Chute : l’objet tenu tombe (arme au sol — arbitrage MJ)."
+                }
+              ]
+            }
           }
         }
       ]
@@ -3027,25 +3035,55 @@
               },
               {
                 "op": "preventInfection"
-              },
+              }
+            ]
+          }
+        },
+        {
+          "kind": "test",
+          "test": {
+            "skill": "calme",
+            "difficulty": "intermediaire"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
               {
-                "op": "test",
-                "skill": "calme",
-                "difficulty": "intermediaire",
-                "onFail": [
-                  {
-                    "op": "narrative",
-                    "text": "La cible hurle de douleur (Aqshy brûle en guérissant)."
-                  }
-                ],
-                "onFailHard": {
-                  "dr": -6,
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "target",
                   "ops": [
                     {
-                      "op": "condition",
-                      "name": "inconscient"
+                      "op": "narrative",
+                      "text": "La cible hurle de douleur (Aqshy brûle en guérissant)."
                     }
                   ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -6
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "on": "target",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "name": "inconscient"
+                      }
+                    ]
+                  }
                 }
               }
             ]
@@ -3945,19 +3983,40 @@
                 "amount": {
                   "bonusOf": "FM"
                 }
-              },
-              {
-                "op": "test",
-                "skill": "resistance",
-                "difficulty": "difficile",
-                "onFail": [],
-                "onSuccess": [
-                  {
-                    "op": "corruption",
-                    "amount": -1
-                  }
-                ]
-              },
+              }
+            ]
+          }
+        },
+        {
+          "kind": "test",
+          "test": {
+            "skill": "resistance",
+            "difficulty": "difficile"
+          },
+          "success": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "corruption",
+                  "amount": -1
+                }
+              ]
+            }
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": []
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
               {
                 "op": "narrative",
                 "text": "Lumière de guérison : le retrait de Corruption ne vaut que pour 1 Point gagné dans l’heure précédente — arbitrage MJ."
@@ -6019,22 +6078,35 @@
       "kind": "seq",
       "steps": [
         {
+          "kind": "test",
+          "test": {
+            "skill": "calme",
+            "difficulty": "intermediaire"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "condition",
+                  "name": "brise"
+                }
+              ]
+            }
+          }
+        },
+        {
           "kind": "do",
           "effect": {
             "type": "ops",
             "on": "target",
             "ops": [
-              {
-                "op": "test",
-                "skill": "calme",
-                "difficulty": "intermediaire",
-                "onFail": [
-                  {
-                    "op": "condition",
-                    "name": "brise"
-                  }
-                ]
-              },
               {
                 "op": "narrative",
                 "text": "Crâne hurlant : n’affecte que les cibles SANS le Trait Mort-vivant ; le Test de Calme se répète pour chaque Blessure infligée — arbitrage MJ."
@@ -6276,23 +6348,27 @@
       "kind": "seq",
       "steps": [
         {
-          "kind": "do",
-          "effect": {
-            "type": "ops",
-            "on": "target",
-            "ops": [
-              {
-                "op": "test",
-                "skill": "resistance",
-                "difficulty": "intermediaire",
-                "onFail": [
-                  {
-                    "op": "corruption",
-                    "amount": 1
-                  }
-                ]
-              }
-            ]
+          "kind": "test",
+          "test": {
+            "skill": "resistance",
+            "difficulty": "intermediaire"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "corruption",
+                  "amount": 1
+                }
+              ]
+            }
           }
         }
       ]
@@ -6400,23 +6476,27 @@
       "kind": "seq",
       "steps": [
         {
-          "kind": "do",
-          "effect": {
-            "type": "ops",
-            "on": "target",
-            "ops": [
-              {
-                "op": "test",
-                "skill": "resistance",
-                "difficulty": "intermediaire",
-                "onFail": [
-                  {
-                    "op": "corruption",
-                    "amount": 1
-                  }
-                ]
-              }
-            ]
+          "kind": "test",
+          "test": {
+            "skill": "resistance",
+            "difficulty": "intermediaire"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "corruption",
+                  "amount": 1
+                }
+              ]
+            }
           }
         }
       ]
@@ -6714,22 +6794,35 @@
       "kind": "seq",
       "steps": [
         {
+          "kind": "test",
+          "test": {
+            "skill": "resistance",
+            "difficulty": "intermediaire"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "corruption",
+                  "amount": 1
+                }
+              ]
+            }
+          }
+        },
+        {
           "kind": "do",
           "effect": {
             "type": "ops",
             "on": "target",
             "ops": [
-              {
-                "op": "test",
-                "skill": "resistance",
-                "difficulty": "intermediaire",
-                "onFail": [
-                  {
-                    "op": "corruption",
-                    "amount": 1
-                  }
-                ]
-              },
               {
                 "op": "narrative",
                 "text": "Éclair du changement : sur une Maladresse, la Cible effectue un jet de Mutation immédiat et gagne le Talent Magie du Chaos (Tzeentch) ; un Point de Détermination permet de résister à la Mutation — arbitrage MJ."
@@ -6835,22 +6928,35 @@
       "kind": "seq",
       "steps": [
         {
+          "kind": "test",
+          "test": {
+            "skill": "calme",
+            "difficulty": "intermediaire"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "corruption",
+                  "amount": 1
+                }
+              ]
+            }
+          }
+        },
+        {
           "kind": "do",
           "effect": {
             "type": "ops",
             "on": "target",
             "ops": [
-              {
-                "op": "test",
-                "skill": "calme",
-                "difficulty": "intermediaire",
-                "onFail": [
-                  {
-                    "op": "corruption",
-                    "amount": 1
-                  }
-                ]
-              },
               {
                 "op": "narrative",
                 "text": "Feu spirituel : +1 Corruption supplémentaire par +2 DR si le Test de Calme échoue ; une Mutation déclenche un jet sur le tableau des Mutations mentales et +1 État En flammes — arbitrage MJ."
