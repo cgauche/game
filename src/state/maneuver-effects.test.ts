@@ -4,9 +4,14 @@
  * + `applyTriggeredEffects`). Preuve : Attaque caudale → À Terre si la cible est plus petite ;
  * Tentacules → Empêtré.
  */
-import { describe, it, expect } from 'vitest';
-import { applyFreeAttackEffects } from './combatFlow';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { applyFreeAttackEffects, applyWail } from './combatFlow';
 import { applyTriggeredEffects, maneuverEffectsOf } from './triggeredEffects';
+import { useGame } from './store';
+import { seedBattleRng } from './battleRng';
+import { resetRule } from '../engine/policy';
+import { createHero } from '../engine/character';
+import { testScene } from '../scenes/test-fixture';
 import { makeRNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
 import type { AttackResult } from '../engine/combat';
@@ -56,6 +61,7 @@ describe('effets onHit de manœuvre (data) appliqués par applyFreeAttackEffects
 });
 
 describe('effets onHit des manœuvres de zone/action (data) — appliqués par leur résolution moteur', () => {
+  // Manœuvres SANS nœud `test` dans leur Flow → résolues inline par `applyTriggeredEffects` (string[]).
   const fire = (kind: string, attacker: Combatant, victim: Combatant, margin?: number) =>
     applyTriggeredEffects((() => ({ battle: undefined })) as never, attacker, maneuverEffectsOf(attacker, kind), 'onHit', { victim, margin, rng: makeRNG(2) });
 
@@ -66,16 +72,67 @@ describe('effets onHit des manœuvres de zone/action (data) — appliqués par l
     expect(empetre(foe)?.escapeStrength).toBe(jab.characteristics.F);
   });
 
-  it('Hurlement fantomatique → 3 Assourdi (+ Test de Résistance ou Brisé)', () => {
-    const banshee = mk({ traits: [{ id: 'hurlement-fantomatique', value: 0 }] }); const foe = mk({ id: 'f' });
-    const lines = fire('hurlement', banshee, foe);
-    expect(foe.conditions.find((c) => c.name === 'assourdi')?.value).toBe(3);
-    expect(lines.join(' ')).toMatch(/Résistance/); // le Test s’est joué (op test)
-  });
-
   it('Regard pétrifiant → Sonné échelonné sur la marge (1 par 2 DR, via valuePerSL ← ctx.sl)', () => {
     const basilic = mk({ traits: [{ id: 'regard-petrifiant', value: 0 }] }); const foe = mk({ id: 'f' });
     fire('regard', basilic, foe, 4); // marge 4 → floor(4/2) = 2 Sonné
     expect(foe.conditions.find((c) => c.name === 'sonne')?.value).toBe(2);
+  });
+});
+
+/**
+ * Hurlement fantomatique porte désormais un nœud Flow `test` (Lot 4a) enfoui dans son Flow
+ * `seq[ do(1d10) , test{Résistance → Brisé} , do(3 Assourdi) ]`. Routé via le store (un `test` non routé
+ * LÈVE). La manœuvre cible `allFoes` → un banshee ENNEMI hurle sur le HÉROS : héros MANUEL → le Test
+ * suspend en ÉTAPE de cascade `triggeredTest` INFLUENÇABLE (avec `meta.after` = le `do(3 Assourdi)`) ; le
+ * `do(1d10)` AVANT s'applique tout de suite ; après `cascadeRoll`+`cascadeNext`, la branche PUIS la
+ * continuation `after` (3 Assourdi) s'appliquent — preuve que l'ordre du Flow `seq` est préservé.
+ */
+describe('Hurlement fantomatique — Test de trigger enfoui routé (cadence-aware)', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.clearAllTimers();
+    resetRule('combat-cadence');
+    useGame.setState({ pendingCascade: null, battle: null, pendingLogQueue: [] });
+  });
+  afterEach(() => {
+    vi.clearAllTimers();
+    vi.useRealTimers();
+  });
+
+  it('banshee ENNEMIE hurle sur le HÉROS → étape triggeredTest (after = 3 Assourdi), rejouée à la résolution', () => {
+    seedBattleRng(5);
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(testScene);
+    useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
+    vi.clearAllTimers();
+    const b = useGame.getState().battle!;
+    const H = b.combatants.find((c) => c.kind === 'hero')!;
+    H.characteristics.E = 90; H.wounds.max = 100; H.wounds.current = 100; // Résistance réussie (pas de Brisé)
+    const enemies = b.combatants.filter((c) => c.kind === 'enemy');
+    const banshee = enemies[0];
+    enemies.slice(1).forEach((e) => (e.dead = true));
+    banshee.traits = [...(banshee.traits ?? []), { id: 'hurlement-fantomatique', value: 0 }];
+    banshee.pos = { x: 10, y: 10 };
+    H.pos = { x: 11, y: 10 };
+    banshee.advantage = 3;
+    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+
+    applyWail(useGame.getState, useGame.setState, banshee);
+
+    // Le `do(1d10)` AVANT le test s'est appliqué tout de suite ; le test a suspendu en étape de cascade.
+    const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'triggeredTest')!;
+    expect(step).toBeTruthy();
+    expect(step.actorId).toBe(H.id);
+    expect(step.result).toBeFalsy();        // pas encore lancé → influençable
+    expect(step.meta?.after).toBeTruthy();  // la continuation (3 Assourdi) voyage dans le meta (sérialisable)
+    expect(useGame.getState().pendingLogQueue.some((q) => /Blessure/.test(q.line))).toBe(true); // 1d10 déjà subi
+
+    useGame.getState().cascadeRoll(step.id);
+    useGame.getState().cascadeNext();
+
+    const live = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(live.conditions.find((c) => c.name === 'assourdi')?.value).toBe(3); // continuation `after` rejouée
   });
 });

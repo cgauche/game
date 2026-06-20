@@ -754,40 +754,67 @@
         "trigger": "onHit",
         "on": "victim",
         "flow": {
-          "kind": "do",
-          "effect": {
-            "type": "ops",
-            "on": "victim",
-            "ops": [
-              {
-                "op": "wounds",
-                "amount": {
-                  "dice": {
-                    "n": 1,
-                    "sides": 10
-                  }
-                },
-                "ignoreTB": true,
-                "ignoreAP": true
-              },
-              {
-                "op": "test",
-                "skill": "resistance",
-                "difficulty": "accessible",
-                "onFail": [
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
                   {
-                    "op": "condition",
-                    "name": "brise"
+                    "op": "wounds",
+                    "amount": {
+                      "dice": {
+                        "n": 1,
+                        "sides": 10
+                      }
+                    },
+                    "ignoreTB": true,
+                    "ignoreAP": true
                   }
                 ]
-              },
-              {
-                "op": "condition",
-                "name": "assourdi",
-                "value": 3
               }
-            ]
-          }
+            },
+            {
+              "kind": "test",
+              "test": {
+                "skill": "resistance",
+                "difficulty": "accessible"
+              },
+              "success": {
+                "kind": "seq",
+                "steps": []
+              },
+              "fail": {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "victim",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "name": "brise"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "name": "assourdi",
+                    "value": 3
+                  }
+                ]
+              }
+            }
+          ]
         }
       }
     ],

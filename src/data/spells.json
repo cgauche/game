@@ -9606,27 +9606,31 @@
                     "trigger": "onHit",
                     "on": "victim",
                     "flow": {
-                      "kind": "do",
-                      "effect": {
-                        "type": "ops",
-                        "on": "victim",
-                        "ops": [
-                          {
-                            "op": "test",
-                            "skill": "resistance",
-                            "difficulty": "intermediaire",
-                            "exceptGroups": [
-                              "Mort-vivant",
-                              "Démon"
-                            ],
-                            "onFail": [
-                              {
-                                "op": "condition",
-                                "name": "sonne"
-                              }
-                            ]
-                          }
+                      "kind": "test",
+                      "test": {
+                        "skill": "resistance",
+                        "difficulty": "intermediaire",
+                        "exceptGroups": [
+                          "Mort-vivant",
+                          "Démon"
                         ]
+                      },
+                      "success": {
+                        "kind": "seq",
+                        "steps": []
+                      },
+                      "fail": {
+                        "kind": "do",
+                        "effect": {
+                          "type": "ops",
+                          "on": "victim",
+                          "ops": [
+                            {
+                              "op": "condition",
+                              "name": "sonne"
+                            }
+                          ]
+                        }
                       }
                     }
                   }
@@ -9752,26 +9756,30 @@
                     "trigger": "onHit",
                     "on": "victim",
                     "flow": {
-                      "kind": "do",
-                      "effect": {
-                        "type": "ops",
-                        "on": "victim",
-                        "ops": [
-                          {
-                            "op": "test",
-                            "skill": "resistance",
-                            "difficulty": "accessible",
-                            "onlyGroups": [
-                              "Criminel"
-                            ],
-                            "onFail": [
-                              {
-                                "op": "condition",
-                                "name": "inconscient"
-                              }
-                            ]
-                          }
+                      "kind": "test",
+                      "test": {
+                        "skill": "resistance",
+                        "difficulty": "accessible",
+                        "onlyGroups": [
+                          "Criminel"
                         ]
+                      },
+                      "success": {
+                        "kind": "seq",
+                        "steps": []
+                      },
+                      "fail": {
+                        "kind": "do",
+                        "effect": {
+                          "type": "ops",
+                          "on": "victim",
+                          "ops": [
+                            {
+                              "op": "condition",
+                              "name": "inconscient"
+                            }
+                          ]
+                        }
                       }
                     }
                   }

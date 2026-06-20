@@ -213,6 +213,19 @@ export interface FlowTest {
   begging?: boolean;
   /** Difficulté réduite si un héros possède la compétence/le talent requis. */
   easierIf?: { hasSkill?: { id: string; spec?: string }; hasTalent?: string; steps?: number };
+  /** La difficulté EFFECTIVE vient de l'argument d'instance du porteur (« Venin (Difficile) ») —
+   *  substituée à la collecte (`withArg`/`effectsOf`) ; `difficulty` ci-dessus est le défaut (arg absent).
+   *  GATE reportée de l'op `test` (sémantique IDENTIQUE) — honorée par `resolveFlowTest`. */
+  argDifficulty?: boolean;
+  /** Saute le Test (= no-op, ni étape ni branche) si la cible est IMMUNISÉE au type donné — Immunité
+   *  (Poison) → Venin sans effet. Même `immunityTypes()` que l'op `test`. */
+  unlessImmune?: string;
+  /** Le Test n'a lieu que si la cible appartient à l'un de ces Groupes (Épée de justice : « Criminel »).
+   *  Sinon = no-op. Même `groupMatch` que l'op `test`. */
+  onlyGroups?: string[];
+  /** Le Test est sauté si la cible appartient à l'un de ces Groupes (Morsure de l'hiver : hors
+   *  Mort-vivant/Démon). Même `groupMatch` que l'op `test`. */
+  exceptGroups?: string[];
 }
 
 /**

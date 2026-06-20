@@ -14,8 +14,9 @@
  *      poussées dans la file de journal différée (`pendingLogQueue`, déversée au rendu).
  *  - `runCombatFlow(ctx, flow)` — exécuteur à PILE d'un Flow EN COMBAT (calque `runFlow` côté scène) :
  *    porte la continuation `after` (sur un `test`, `after = reste de la pile`).
- *  - `routeTriggeredTest` — l'entrée des triggers `onGainCondition` (Mâchoires d'acier) : délègue à
- *    `resolveFlowTest` avec `after = EMPTY_FLOW` → comportement IDENTIQUE au Lot 0.
+ *  - `routeTriggeredTest` — l'entrée des triggers portant un nœud `test` (Mâchoires `onGainCondition`,
+ *    Venin/Hurlement/2 enchants `onHit`) : délègue à `runCombatFlow` (test top-level = IDENTIQUE au Lot 0 ;
+ *    test enfoui = suspendu avec `after`).
  *
  * Les branches `onSuccess`/`onFail` + la continuation `after` voyagent dans le `meta` (sérialisable,
  * coop) ; l'applier `triggeredTest` les rejoue (branche PUIS `after`) — l'`ExecCtx` est RECONSTRUIT
@@ -29,6 +30,8 @@ import { DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../../engine/types';
 import type { Combatant, Difficulty } from '../../engine/types';
 import { SIZE_ORDER, effectiveSize } from '../../engine/size';
 import { campOf } from '../../engine/relations';
+import { immunityTypes } from '../../engine/traits/dispatch';
+import { groupMatch } from '../../engine/groups';
 import { refLabel } from '../../data';
 import { type Flow, type ActorView, type ConditionCtx, evalCondition, conditionCtx, EMPTY_FLOW } from '../flow';
 import type { Get, Set as SetFn } from '../flowTypes';
@@ -166,6 +169,14 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
     return;
   }
   const c = ctx.target!;
+  // Gates de l'op `test` reportées sur le nœud (sémantique IDENTIQUE) — évaluées AVANT de poser l'étape /
+  // jeter : la cible est connue (combat). Gate non passée ⇒ no-op (ni étape ni branche, comme l'op
+  // `break`) MAIS la continuation `after` est jouée (= ops suivantes du `do` d'origine).
+  const gated =
+    (ft.unlessImmune != null && immunityTypes(c.traits ?? []).some((ty) => ty.includes(ft.unlessImmune!.toLowerCase())))
+    || (ft.onlyGroups != null && !ft.onlyGroups.some((g) => groupMatch(g, c.groups ?? [])))
+    || (ft.exceptGroups != null && ft.exceptGroups.some((g) => groupMatch(g, c.groups ?? [])));
+  if (gated) { playAfter(ctx.get, ctx.set, c, after, ctx.label); return; }
   const base = testValue(c, ft.skill, ft.characteristic, ft.spec);
   const difficulty: Difficulty = ft.difficulty ?? 'intermediaire';
   const skillLabel = ft.skill ? refLabel('skills', { id: ft.skill, spec: ft.spec }) : (ft.characteristic ? CHAR_LABELS[ft.characteristic] : 'Test');
@@ -212,15 +223,19 @@ registerCascadeApplier('triggeredTest', (get, set, step, hero) => {
 });
 
 /**
- * ROUTEUR d'un Test de trigger vers la voie cadence-aware — installé dans `triggeredEffects` (inversion
- * de dépendance) par le STORE au runtime (`createCombatSlice`, comme le hook `onGainCondition`), PAS au
- * top-level de ce module : l'injecteur `setTriggeredTestRouter` vit en amont d'un cycle d'imports
- * (`triggeredEffects`→`combatEffects`→…→`combatFlow`→ce module) → l'appeler à l'init donnerait une TDZ.
- * Délègue à `resolveFlowTest` avec `after = EMPTY_FLOW` (un trigger top-level n'a pas de continuation) →
- * Mâchoires d'acier IDENTIQUE au Lot 0. Cible = `target` (qui a gagné l'État ; `on:'self'` ⇒ = porteur).
+ * ROUTEUR d'un Flow de trigger PORTANT un nœud `test` vers la voie cadence-aware — installé dans
+ * `triggeredEffects` (inversion de dépendance) par le STORE au runtime (`createCombatSlice`, comme le
+ * hook `onGainCondition`), PAS au top-level de ce module : l'injecteur `setTriggeredTestRouter` vit en
+ * amont d'un cycle d'imports (`triggeredEffects`→`combatEffects`→…→`combatFlow`→ce module) → l'appeler à
+ * l'init donnerait une TDZ. Délègue au `runCombatFlow` à PILE (after-aware) : un `test` top-level
+ * (Mâchoires, `onGainCondition`) est traité IDENTIQUEMENT au Lot 0 (`after` = pile vide) ; un `test`
+ * ENFOUI (Venin sous `if`, Hurlement dans un `seq`) suspend en empaquetant le reste de la pile dans
+ * `after`. Le `caster`/référent = `actor` (le porteur de l'effet : Force de la source pour les formules) ;
+ * `target` = la cible de l'effet (qui jette le Test). `opsCtx` porte le contexte de la touche
+ * (`woundsDealt`/`sl`/`location`/`attackKind`) lu par les Conditions `if` du Flow (Venin sur PB perdus).
  */
-export function routeTriggeredTest(get: Get, set: SetFn, target: Combatant, _actor: Combatant, node: Extract<Flow, { kind: 'test' }>): void {
-  resolveFlowTest({ mode: 'combat', get, set, target, caster: target, label: node.test.label ?? 'Effet' }, node, EMPTY_FLOW);
+export function routeTriggeredTest(get: Get, set: SetFn, target: Combatant, actor: Combatant, flow: Flow, opsCtx?: OpsCtx): void {
+  runCombatFlow({ mode: 'combat', get, set, target, caster: actor, label: opsCtx?.label ?? 'Effet', opsCtx }, flow);
 }
 
 /** Combattants en cours de notification `onGainCondition` — garde ANTI-RÉCURSION : un `onSuccess` qui

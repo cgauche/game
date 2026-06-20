@@ -11,8 +11,8 @@
  */
 import type { Combatant, Weapon, HitLocation } from '../engine/types';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { EffectTrigger, TriggeredEffect, Flow } from './flow';
-import type { GameOp } from '../engine/ops';
+import { type EffectTrigger, type TriggeredEffect, type Flow, flowHasTest } from './flow';
+import type { GameOp, OpsCtx } from '../engine/ops';
 import { resolveQualities } from '../engine/qualities/dispatch';
 import { isOutOfAction } from '../engine/conditions';
 import { isEngagedWith } from '../engine/engagement';
@@ -36,7 +36,12 @@ function withArg(effects: TriggeredEffect[], arg?: string): TriggeredEffect[] {
     }
     if (f.kind === 'seq') return { ...f, steps: f.steps.map(visit) };
     if (f.kind === 'if') return { ...f, then: visit(f.then), ...(f.else ? { else: visit(f.else) } : {}) };
-    if (f.kind === 'test') return { ...f, success: visit(f.success), fail: visit(f.fail) };
+    if (f.kind === 'test') {
+      // Nœud Flow `test` dont la difficulté vient de l'arg d'instance (« Venin (Difficile) ») : on
+      // substitue `test.difficulty` (mêmes sémantique/gate que l'op `test.argDifficulty`).
+      const test = f.test.argDifficulty ? { ...f.test, difficulty: diff } : f.test;
+      return { ...f, test, success: visit(f.success), fail: visit(f.fail) };
+    }
     return f;
   };
   return effects.map((eff) => ({ ...eff, flow: visit(eff.flow) }));
@@ -94,11 +99,14 @@ export interface TriggerCtx { victim?: Combatant; weapon?: Weapon; rng?: RNG; ma
    *  `runSpellFlowLines`, qui rend le `string[]` tissé inline par l'appelant). */
   set?: SetFn }
 
-/** ROUTEUR d'un Test de trigger vers la voie CADENCE-AWARE (héros manuel → cascade influençable ;
- *  sinon → jet inline). Injecté par la brique `state/combat/triggeredTest.ts` (inversion de dépendance :
- *  ce module reste pur, sans import de la brique → pas de cycle). Absent ⇒ aucun routage : un nœud `test`
- *  non routé tombe sur `runSpellFlowLines`, qui LÈVE (plus jamais de branche succès silencieuse). */
-type TestRouter = (get: Get, set: SetFn, target: Combatant, actor: Combatant, node: Extract<Flow, { kind: 'test' }>) => void;
+/** ROUTEUR d'un Flow de trigger PORTANT un nœud `test` (à n'importe quelle profondeur) vers la voie
+ *  CADENCE-AWARE (héros manuel → cascade influençable ; sinon → jet inline) via `runCombatFlow`
+ *  (after-aware : un `test` enfoui sous `if`/`seq` suspend en empaquetant le reste). Injecté par la
+ *  brique `state/combat/triggeredTest.ts` (inversion de dépendance : ce module reste pur, sans import de
+ *  la brique → pas de cycle). Absent ⇒ aucun routage : un nœud `test` non routé tombe sur
+ *  `runSpellFlowLines`, qui LÈVE (plus jamais de branche succès silencieuse). `opsCtx` porte le contexte
+ *  de la touche (`woundsDealt`/`sl`/`location`/`attackKind`) lu par les Conditions `if` du Flow. */
+type TestRouter = (get: Get, set: SetFn, target: Combatant, actor: Combatant, flow: Flow, opsCtx?: OpsCtx) => void;
 let testRouter: TestRouter | undefined;
 export function setTriggeredTestRouter(fn: TestRouter): void { testRouter = fn; }
 
@@ -118,10 +126,16 @@ export function applyTriggeredEffects(
     if (eff.condition && eff.condition !== ctx.conditionName) continue;
     for (const t of targetsFor(get, actor, eff.on, ctx.victim)) {
       if (isOutOfAction(t)) continue;
-      // Test routable (héros manuel → cascade ; ennemi/auto → inline) plutôt qu'avalé silencieusement —
-      // seulement si l'appelant fournit `set` + un routeur installé. Un nœud `test` non routé (pas de
-      // `set`) atteindrait `runSpellFlowLines`, qui LÈVE (jamais de branche succès muette).
-      if (eff.flow.kind === 'test' && ctx.set && testRouter) { testRouter(get, ctx.set, t, actor, eff.flow); continue; }
+      // Flow PORTANT un nœud `test` (à n'importe quelle profondeur — top-level Mâchoires, ou enfoui sous
+      // `if`/`seq` : Venin/Hurlement/2 enchants) routé vers la voie cadence-aware (héros manuel → cascade
+      // influençable ; ennemi/auto → inline) plutôt qu'avalé silencieusement — seulement si l'appelant
+      // fournit `set` + un routeur installé. Un Flow `test` non routé (pas de `set`) atteindrait
+      // `runSpellFlowLines`, qui LÈVE (jamais de branche succès muette). Le contexte de la touche
+      // (`woundsDealt`/`margin→sl`/`location`/`attackKind`) voyage dans l'opsCtx pour les Conditions `if`.
+      if (flowHasTest(eff.flow) && ctx.set && testRouter) {
+        testRouter(get, ctx.set, t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, location: ctx.location, attackKind: ctx.attackKind });
+        continue;
+      }
       lines.push(...runSpellFlowLines(t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, location: ctx.location, attackKind: ctx.attackKind }));
     }
   }

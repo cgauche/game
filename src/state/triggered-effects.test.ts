@@ -3,9 +3,15 @@
  * les Traits de créature (Toile) ET les Atouts d'arme (Immobilisante), via UN dispatcher (`fireTriggers`)
  * réutilisant l'exécuteur des sorts (`runSpellFlowLines`). Plus de handler en dur par trait/atout.
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { fireTriggers } from './triggeredEffects';
+import './combatFlow'; // effet de bord : installe le routeur de Test + l'applier triggeredTest
 import { runSpellFlowLines } from './combatEffects';
+import { useGame } from './store';
+import { seedBattleRng } from './battleRng';
+import { resetRule } from '../engine/policy';
+import { createHero } from '../engine/character';
+import { testScene } from '../scenes/test-fixture';
 import { evalCondition } from './flow';
 import { applyOps } from '../engine/ops';
 import { makeRNG } from '../engine/dice';
@@ -63,11 +69,8 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
     expect(before - foe.wounds.current).toBeGreaterThanOrEqual(1);
   });
 
-  it('TRAIT Affamé : déclencheur onKill → Test de FM (op test) ; échec → perd Action+Mouvement (op loseTurn)', () => {
-    const hungry = mk({ traits: [{ id: 'affame' }] });
-    const lines = fireTriggers(noBattle(), hungry, 'onKill', { rng: makeRNG(1) });
-    expect(lines.join(' ')).toMatch(/Force Mentale/); // le test FM s'est joué (op test, non-interactif)
-  });
+  // NB : Affamé porte désormais un nœud Flow `test` (Lot 4a) → routé cadence-aware, plus un jet inline
+  // silencieux. Testé sur une VRAIE bataille dans le describe « Affamé — Test de trigger routé » ci-dessous.
 
   it('TRAIT Vampirique : Morsure infligeant N PB → l’attaquant draine N PB (Vol de vie, gaté par attackKind)', () => {
     const vampire = mk({ id: 'vp', traits: [{ id: 'vampirique' }], wounds: { current: 10, max: 30 } });
@@ -145,5 +148,47 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
     runSpellFlowLines(victim, attacker, flow, { rng: makeRNG(3), caster: attacker });
     expect(victim.wounds.current).toBeLessThan(15); // 1d10 Dégâts appliqués (ignore BE/PA par défaut)
     expect(empetre(victim)?.value).toBe(1);
+  });
+});
+
+/**
+ * Affamé (LDB 85) porte désormais un nœud Flow `test` (Lot 4a) : `onKill` → Test de FM Accessible →
+ * échec = `loseTurn`. Routé cadence-aware via le store (un `test` non routé LÈVE) : une créature ENNEMIE
+ * → jet INLINE + branche. On le vérifie sur une VRAIE bataille (FM basse → échec → perd Action+Mouvement).
+ */
+describe('Affamé — Test de trigger onKill routé (cadence-aware)', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.clearAllTimers();
+    resetRule('combat-cadence');
+    useGame.setState({ pendingCascade: null, battle: null, pendingLogQueue: [] });
+  });
+  afterEach(() => {
+    vi.clearAllTimers();
+    vi.useRealTimers();
+  });
+
+  it('créature ENNEMIE Affamée tue → Test de FM inline ; échec (FM basse) → loseTurn', () => {
+    seedBattleRng(1); // → jet de FM 97 / 21 → échec → festoie (loseTurn)
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(testScene);
+    useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
+    vi.clearAllTimers();
+    const b = useGame.getState().battle!;
+    const enemies = b.combatants.filter((c) => c.kind === 'enemy');
+    const hungry = enemies[0];
+    enemies.slice(1).forEach((e) => (e.dead = true));
+    hungry.traits = [...(hungry.traits ?? []), { id: 'affame' }];
+    hungry.characteristics.FM = 1; // FM minimale → Test Accessible (+20) échoué → festoie (loseTurn)
+    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+
+    fireTriggers(useGame.getState, hungry, 'onKill', { rng: makeRNG(1), set: useGame.setState });
+
+    const live = useGame.getState().battle!.combatants.find((c) => c.id === hungry.id)!;
+    expect(live.loseNextAction).toBe(true);   // échec FM → festoie (op loseTurn)
+    expect(live.loseNextMovement).toBe(true);
+    expect(useGame.getState().pendingLogQueue.some((q) => /Force Mentale/.test(q.line))).toBe(true);
   });
 });

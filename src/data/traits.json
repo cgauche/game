@@ -39,29 +39,27 @@
         "trigger": "onKill",
         "on": "self",
         "flow": {
-          "kind": "seq",
-          "steps": [
-            {
-              "kind": "do",
-              "effect": {
-                "type": "ops",
-                "on": "target",
-                "ops": [
-                  {
-                    "op": "test",
-                    "characteristic": "FM",
-                    "difficulty": "accessible",
-                    "onFail": [
-                      {
-                        "op": "loseTurn"
-                      }
-                    ],
-                    "onSuccess": []
-                  }
-                ]
-              }
+          "kind": "test",
+          "test": {
+            "characteristic": "FM",
+            "difficulty": "accessible"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "loseTurn"
+                }
+              ]
             }
-          ]
+          }
         }
       }
     ]
@@ -1469,26 +1467,30 @@
             ]
           },
           "then": {
-            "kind": "do",
-            "effect": {
-              "type": "ops",
-              "on": "victim",
-              "ops": [
-                {
-                  "op": "test",
-                  "characteristic": "E",
-                  "skill": "resistance",
-                  "difficulty": "intermediaire",
-                  "argDifficulty": true,
-                  "unlessImmune": "poison",
-                  "onFail": [
-                    {
-                      "op": "condition",
-                      "name": "empoisonne"
-                    }
-                  ]
-                }
-              ]
+            "kind": "test",
+            "test": {
+              "characteristic": "E",
+              "skill": "resistance",
+              "difficulty": "intermediaire",
+              "argDifficulty": true,
+              "unlessImmune": "poison"
+            },
+            "success": {
+              "kind": "seq",
+              "steps": []
+            },
+            "fail": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "victim",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "name": "empoisonne"
+                  }
+                ]
+              }
             }
           }
         }
