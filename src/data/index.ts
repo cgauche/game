@@ -329,6 +329,11 @@ export interface TraitCapabilities {
   painless?: boolean;
   // Psychologie / IA
   psychImmuneIfAhead?: boolean;
+  /** Psychologie portée par le trait (LDB 21), lue par `parsePsychTraits` (data-driven). L'Indice
+   *  (Peur/Terreur) vient de l'instance (`value`) ; la Cible (Animosité…) de l'instance (`arg`). */
+  psychType?: 'peur' | 'terreur' | 'animosite' | 'haine' | 'prejuge' | 'amour' | 'camaraderie' | 'phobie';
+  psychImmune?: boolean; // Immunité (Psychologie) — annule Peur/Terreur (LDB 85 l.143-144)
+  psychIndice?: number; // Indice FIXE si absent de l'instance (Phobie = 1, Effrayé = 0)
   mindless?: boolean;
   bestial?: boolean;
   coldBlooded?: boolean;

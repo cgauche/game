@@ -84,9 +84,10 @@ export function fearSourceFor(self: Combatant, foe: Combatant): { kind: 'peur' |
   return (terr.length ? terr : cands).reduce((a, b) => (b.indice > a.indice ? b : a));
 }
 
-/** Lecture des libellés de traits de Psychologie (Peur/Terreur/Immunité + ciblés Animosité/Haine/
- *  Préjugé/Amour/Camaraderie/Phobie/Effrayé) → registre `psych/defs/` (plus de regex en dur ici).
- *  SOURCE UNIQUE : ajouter un trait psy = déposer un fichier dans `engine/psych/defs/`. */
+/** Psychologie DATA-DRIVEN (Peur/Terreur/Immunité + ciblés Animosité/Haine/Préjugé/Amour/Camaraderie/
+ *  Phobie/Effrayé) : `parsePsychTraits` lit `TraitData.capabilities` (`psychType`/`psychImmune`/
+ *  `psychIndice` de `traits.json`) + l'instance structurée. SOURCE UNIQUE = la DONNÉE (éditable au
+ *  Codex) ; plus aucun fichier de code par trait. */
 export { parsePsychTraits } from './psych/registry';
 
 /** Baume pour un esprit blessé (LDB 42) : « Tous les Traits Psychologiques sont retirés pour la
