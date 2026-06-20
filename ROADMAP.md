@@ -1347,14 +1347,31 @@ complète verte + typecheck 0 à chaque commit) :
   conséquence laissée au MJ, plus de dé orphelin).
 - **Garde-fous (tests)** : non-cumul `effectiveChar` (meilleur bonus + pire pénalité), `creatureEquip`
   (dérivation traits→armes = armement ennemi), `dropExpiredGrantedResources`.
+- **Seam i18n posé (fondation multi-langue)** : `src/i18n/` (`t(key, params)`, `MsgKey` typé, catalogue
+  `messages/fr.ts` ; **conception `docs/i18n-seam.md`**). **Phase B** : les 7 maps de labels du moteur
+  (carac/difficulté/localisations/défense/attaques gratuites/formes de corps/traits psy ciblés) sorties
+  du dur. **Phase D** : 6 écrans UI (menu principal, menu ☰, groupe+recrutement, sauvegarde/chargement,
+  lobby coop, interlude) — chacun **vérifié par un test de RENDU** (`renderToStaticMarkup`). Extraction
+  de masse (combat/applyOps) explicitement DIFFÉRÉE.
+- **Nettoyage transversal (suite)** : shim `AmbientRigToken` inliné dans `pickBackend` (fichier supprimé) ;
+  double install `window.__game` dédupliquée (devtools seul installateur) ; réf fantôme `migrate-refs.mts`
+  (slug.ts) et `TERRAIN_OVERLAYS` (métadonnée structurelle = code, hors catalogue) annotés. `policy.ts`
+  vérifié : déjà sans `RuleKind 'flow'` mort, `rangeBand*` dédupliqués, caps `combineMods` en `param`.
+- **Robustesse save/règles (Lot 6)** : règles maison (surcharges `policy`) PORTÉES dans la save ET
+  synchronisées hôte→invité en coop (clé réservée du snapshot) — fini la save non-portable et la
+  divergence coop ; `parseProject` valide `schema:2` au runtime ; **`migrateSave`** = point d'upgrade
+  UNIQUE (readSlot/importSave, table `MIGRATIONS`) → un futur bump de `SAVE_VERSION` migre au lieu de jeter.
+- **Correctness RAW — Sans Peur (Ennemi), LDB 10 l.864** : n'était PAS RAW (immunité automatique). Le
+  talent donne « un seul Test de Calme Accessible (+20) » pour IGNORER la Peur/Terreur de l'ennemi
+  spécifié — implémenté de bout en bout (cascade psy héros + IA `turnHooks` + modificateur −10 suivant
+  l'ÉTAT réel `psychState`), zéro jet silencieux. Tests moteur (`sans-peur.test`) + cascade (`psych-modal`).
 
-Coordination : la **session parallèle tient la lane Flow/combat/cascade** (Flow `choice` node, `freeAttack`,
-Frappe réactive `onCharged`, « no silent roll »). Lui reviennent : les **unifications jet/narration**
-(`flowOutcomes`, fold FateSave/Renounce, `flowFromEffects`), les **jets silencieux résiduels**, et
-`fearImmune` (Test de Calme via le flux Psychologie). Le **seam i18n suit leur unification de narration**
-(ses labels alimentent la narration — à ne pas keyer en parallèle ; **conception : `docs/i18n-seam.md`**). Reste hors-lane à planifier :
-robustesse (`migrateSave` quand le schéma de save bumpe ; policy synchro coop) · pureté des types
-moteur↔`state/flow` (après stabilisation de leur refacto).
+Coordination : la **session parallèle tient la lane Flow/combat/cascade** — désormais sur les **triggers
+de cycle de vie + fin de combat (Corruption + maladie)** ainsi que les unifications jet/narration
+(`flowOutcomes`, fold FateSave/Renounce, `flowFromEffects`) et les jets silencieux résiduels (Surprise ✓,
+Corruption post-combat). **Cette session s'en tient à l'écart.** Reste hors-lane à planifier : extraction
+i18n de masse (après stabilisation de leur narration) · `no-unused-vars`→error (sweep) · pureté des types
+moteur↔`state/flow` (après leur refacto).
 
 ### Reste à faire — synthèse *(màj 2026-06-05 — vérifié contre le code)*
 
