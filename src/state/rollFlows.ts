@@ -11,7 +11,7 @@
  */
 import type {
   GameState,
-  PendingTrample, PendingManeuver, PendingRun, PendingFocus, PendingFrenzy, PendingApproach,
+  PendingTrample, PendingManeuver, PendingRun, PendingFocus, PendingFrenzy, PendingApproach, PendingWard,
   PendingReload, PendingStateRecovery, PendingTest, PendingAppraise, PendingBargain, PendingHeal,
   PendingCorruption, PendingAttack, PendingDefense, PendingCast, PendingDisengage,
   PendingCounterspell, CounterParticipant, PendingExtendedTest, ExtendedTestRound,
@@ -142,6 +142,7 @@ export type RollFlowActionsMap =
   & MonoRollActions<'activity', 'roll' | 'reroll' | 'bonusSL' | 'darkPact'>
   & MonoRollActions<'appraise', 'roll' | 'reroll' | 'bonusSL' | 'darkPact'>
   & MonoRollActions<'approach', 'roll' | 'reroll' | 'darkPact' | 'forceSuccess'>
+  & MonoRollActions<'ward', 'roll' | 'reroll' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'attack', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
   & MonoRollActions<'bargain', 'roll' | 'reroll' | 'bonusSL' | 'darkPact'>
   & MonoRollActions<'cast', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
@@ -725,6 +726,25 @@ export const FLOWS = {
       // RAW LDB 17 l.73 : avant le jet (result==null → choisit 01) OU après un échec.
       if (forced) return p.result?.success ? null : { result: { success: true, roll: p.result?.roll ?? 1, target: p.result?.target, sl: Math.max(p.result?.sl ?? 0, 0) } };
       const t = rollTest(calmeValue(actor), 'intermediaire', battleRng());
+      return { result: { success: t.success, roll: t.roll, target: t.target, sl: t.sl } };
+    },
+    failed: (p) => !p.result?.success,
+  }),
+
+  /** Bénédiction de Protection (LDB 41 l.105) : Test de Force Mentale Accessible (+20) qui DIFFÈRE la
+   *  déclaration d'attaque d'un héros sur une cible bénie — succès → l'attaque est relancée ; échec →
+   *  l'attaque n'a pas lieu (« choisir une cible ou une Action différente »). Frère du flux `approach`. */
+  ward: makeRollFlow<PendingWard>({
+    key: 'pendingWard',
+    rolled: (p) => !!p.result,
+    actor: (s, p) => actorIn(s, p.attackerId),
+    caps: { forced: true },
+    resolve: (_s, p, actor, _get, forced) => {
+      if (!actor) return null;
+      // Résilience « Je ne faillirai pas ! » (LDB 17 l.73) : avant le jet (result==null → choisit 01)
+      // OU après un échec — réussite garantie sans modifier un jet déjà réussi.
+      if (forced) return p.result?.success ? null : { result: { success: true, roll: p.result?.roll ?? 1, target: p.result?.target, sl: Math.max(p.result?.sl ?? 0, 0) } };
+      const t = rollTest(effectiveChar(actor, 'FM'), 'accessible', battleRng());
       return { result: { success: t.success, roll: t.roll, target: t.target, sl: t.sl } };
     },
     failed: (p) => !p.result?.success,

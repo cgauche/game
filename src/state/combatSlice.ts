@@ -16,7 +16,7 @@ import * as travelFlow from './travelFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, occupied, removeEntity, entityPickables, applyEffects, applySonneMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, attackWardGate, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiFrenzyAttack, resolveTalentFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook } from './combatFlow';
+import { activeCombatant, occupied, removeEntity, entityPickables, applyEffects, applySonneMeleeAdvantage, firedWeapon, firedAttackBlock, resolveAttack, disengageOutcome, startDisengage, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, maybeRunEnemyTurn, resumeSuspendedAI, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiFrenzyAttack, resolveTalentFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, selectedAttackOption, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, zoneRadiusTilesAt, placingZoneOf, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, attackPlan, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook } from './combatFlow';
 import { setTriggeredTestRouter } from './triggeredEffects';
 import { EMPTY_FLOW, flowEffects } from './flow';
 import { pickActiveModalKey } from './modalArbiter';
@@ -29,6 +29,7 @@ import { rule } from '../engine/policy';
 import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, hasTalent } from '../engine/magic';
 import { rollTest, resolveOpposed, evaluateTest } from '../engine/tests';
 import { effectiveChar, bonus } from '../engine/characteristics';
+import { hasActiveFlag } from '../engine/activeFlags';
 import { isFrenzyCapable, spendResolveForPsychImmunity } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, compatibleAmmo, loadoutSetActive } from '../engine/items';
 import { magazineSize, canPushback, strikesLast, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
@@ -416,7 +417,7 @@ export function createCombatSlice(get: Get, set: Set) {
       bus.emit(EVT.SCENE_DIRTY);
     },
 
-    battleClickEntity: (id: string, opts?: { confirm?: boolean; skipMountChoice?: boolean; forceAttackId?: string }) => {
+    battleClickEntity: (id: string, opts?: { confirm?: boolean; skipMountChoice?: boolean; forceAttackId?: string; wardCleared?: boolean }) => {
       const { battle, scene } = get();
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
@@ -527,19 +528,15 @@ export function createCombatSlice(get: Get, set: Set) {
         }
       }
       if (battle.preview) set({ battle: { ...get().battle!, preview: null } });
-      // Bénédiction de Protection (LDB 41 — L13) : Test de FM Accessible (+20) AVANT d'engager quoi
-      // que ce soit (charge comprise) ; échec → « choisir une cible ou une Action différente » —
-      // rien n'est consommé, le jet est montré (file de révélation).
-      {
-        const ward = attackWardGate(active, target);
-        if (ward.lines.length) {
-          const b1 = get().battle!;
-          set({ battle: { ...b1, log: [...b1.log, ...evLines(ward.lines, 'info', active.id)] } });
-          if (!ward.allowed) {
-            pushReveal(set, { kind: 'round', title: 'Bénédiction de Protection', lines: ward.lines });
-            return;
-          }
-        }
+      // Bénédiction de Protection (LDB 41 l.105) : la cible bénie impose un Test de FM Accessible (+20)
+      // AVANT d'engager quoi que ce soit (charge comprise). Le jet du HÉROS est INFLUENÇABLE (Chance/
+      // Résilience) → il DIFFÈRE la déclaration derrière `pendingWard` (comme l'approche d'une source de
+      // Peur juste au-dessus) ; `wardConfirm` relance l'attaque sur un succès (`wardCleared`), l'échec
+      // l'abandonne. `wardCleared` = ce gate a déjà été franchi pour CE clic (relance) → on le saute.
+      if (!opts?.wardCleared && hasActiveFlag(target, 'attackWardFM')) {
+        set({ pendingWard: { attackerId: active.id, targetId: target.id, result: null }, battle: { ...get().battle!, preview: null } });
+        bus.emit(EVT.SCENE_DIRTY);
+        return;
       }
       // Avantage de la manœuvre dépensé UNE fois, à la frappe (après TOUS les portails — aperçu/monture/Peur/
       // ward) : gratuites de mêlée (Morsure/Caudale… coût RAW). L'Arme (cost.advantage 0) ne dépense rien.
@@ -796,6 +793,28 @@ export function createCombatSlice(get: Get, set: Set) {
       bus.emit(EVT.SCENE_DIRTY);
     },
     approachCancel: () => set({ pendingApproach: null }), // renonce avant le jet : aucune trace, re-cliquable
+
+    // ── Bénédiction de Protection (LDB 41 l.105) : Test de FM Accessible (+20) qui DIFFÈRE la déclaration
+    //    d'attaque sur une cible bénie. Succès → l'attaque est relancée (`wardCleared` saute ce gate) ;
+    //    échec → l'attaque n'a pas lieu (rien n'est consommé). « Un jet = une modale ». ──
+    ...rollFlowActions('ward', FLOWS.ward, get, set, ['roll', 'reroll', 'forceSuccess', 'darkPact']),
+    wardConfirm: () => {
+      const { battle, pendingWard: pw } = get();
+      if (!battle || !pw || !pw.result) return;
+      const attacker = battle.combatants.find((x) => x.id === pw.attackerId);
+      const target = battle.combatants.find((x) => x.id === pw.targetId);
+      set({ pendingWard: null });
+      if (!attacker || !target) return;
+      const ok = pw.result.success;
+      const log = [...battle.log, ev('info', ok
+        ? `${attacker.name} surmonte sa honte (FM 🎲 ${pw.result.roll}/${pw.result.target ?? '?'}) et attaque ${target.name} malgré la Bénédiction de Protection.`
+        : `${attacker.name} ne peut se résoudre à frapper ${target.name} (Bénédiction de Protection) — il doit choisir une autre cible ou une autre Action.`, attacker.id, target.id)];
+      set({ battle: { ...get().battle!, log } });
+      // Succès : relance la déclaration d'attaque (le gate est franchi pour CE clic via `wardCleared`).
+      if (ok) get().battleClickEntity(pw.targetId, { confirm: true, wardCleared: true });
+      bus.emit(EVT.SCENE_DIRTY);
+    },
+    wardCancel: () => set({ pendingWard: null }), // renonce avant le jet : aucune trace, re-cliquable
 
     // ── Se relever d'À Terre (LDB 16-États l.37) : utilise le Mouvement pour se mettre debout. Impossible
     //    tant qu'on n'a pas regagné ≥1 PB (LDB 18 l.28 : à 0 PB on reste au sol). Ne consomme PAS l'Action. ──

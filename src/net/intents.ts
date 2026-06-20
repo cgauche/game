@@ -57,6 +57,8 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'runRoll', 'runReroll', 'runDarkPact', 'runForceSuccess',
   'runConfirm', 'runCancel', 'focusRoll', 'focusReroll', 'focusBonusSL', 'focusDarkPact',
   'focusForceSuccess', 'focusConfirm', 'focusCancel',
+  // Bénédiction de Protection : Test de FM différant la déclaration d'attaque (cible bénie)
+  'wardRoll', 'wardReroll', 'wardDarkPact', 'wardForceSuccess', 'wardConfirm', 'wardCancel',
   // (Psychologie de COMBAT : PLUS d'intents `psych*` — cascade de Round, via les intents `cascade*` ci-dessus.)
   'frenzyRoll', 'frenzyReroll', 'frenzyDarkPact', 'frenzyForceSuccess', 'frenzyConfirm',
   'frenzyCancel', 'reloadRoll', 'reloadReroll', 'reloadBonusSL', 'reloadDarkPact',
