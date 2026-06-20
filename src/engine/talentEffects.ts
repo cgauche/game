@@ -120,13 +120,13 @@ export function resolveMax(hero: Combatant): number {
 export function careerSkillAdditions(hero: Combatant): string[] {
   const out: string[] = [];
   for (const t of hero.talents) {
-    const spec = t.spec;
-    const add = findTalentById(t.talentId)?.addSkill;
-    if (!add) continue;
-    const base = refLabel('skills', { id: add.id }); // id → libellé de base (sans spec)
-    // Le talent porte une spec concrète et la compétence ajoutée est « au choix » → reporter.
-    if (spec && add.spec && /au choix/i.test(add.spec)) out.push(concreteLabel(base, spec));
-    else out.push(refLabel('skills', add)); // libellé concret (base + spec éventuel)
+    for (const op of findTalentById(t.talentId)?.passive ?? []) {
+      if (op.op !== 'grantCareerSkill') continue;
+      const base = refLabel('skills', { id: op.skillId }); // id → libellé de base (sans spec)
+      // Spec « Au choix » de l'op reportée sur la spec concrète choisie du talent (Maître artisan (Forgeron)).
+      if (t.spec && op.spec && /au choix/i.test(op.spec)) out.push(concreteLabel(base, t.spec));
+      else out.push(refLabel('skills', { id: op.skillId, spec: op.spec }));
+    }
   }
   return out;
 }

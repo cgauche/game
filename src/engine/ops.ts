@@ -215,6 +215,10 @@ export type GameOp =
    *  Réf par `talentId` STABLE (+ `spec` éventuel « Sans Peur (Vampires) ») — résolu en libellé
    *  concret (clé du registre `combatFeatures`) par `talentConcrete` côté consommateur/affichage. */
   | { op: 'grantTalent'; talentId: string; spec?: string }
+  /** Ajoute une Compétence aux listes de TOUTE carrière entamée (Maître artisan/Sorcier!/… LDB 10) —
+   *  ref par `skillId` (jamais libellé). `spec='Au choix'` = reportée sur la spec choisie du talent.
+   *  Lu par `careerSkillAdditions` (création/avancement), pas appliqué au combattant. */
+  | { op: 'grantCareerSkill'; skillId: string; spec?: string }
   /** Enchantement d'ARME temporisé (Jalon 2.6 — B. de Droiture : Magique ; Marteau ardent :
    *  Magique +BSoc + En flammes/À Terre à la touche ; Épée ardente : +6 + Percutante + En
    *  flammes). Porté par le PORTEUR (ActiveEffect.weaponEnchant), fusionné à l'arme à la

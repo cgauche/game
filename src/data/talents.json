@@ -129,10 +129,6 @@
     "max": "Bonus de Dextérité",
     "test": "Art (Au choix)",
     "desc": "Vous possédez un talent naturel pour l'art, et vous pouvez produire des dessins précis avec un peu de temps et le support approprié. Cette capacité offre plusieurs usages dans le jeu, allant de la création d'avis de recherche à l'illustration de journaux spécialisés, et présente des Avantages spécifiques déterminés par le MJ. Ajoutez également Art (Au choix) à n'importe quelle Carrière que vous entamez ; si c'est déjà inclus dans la Carrière, vous pouvez à la place acheter la Compétence pour 5 PX de moins par Augmentation.",
-    "addSkill": {
-      "id": "art",
-      "spec": "Au choix"
-    },
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [
@@ -151,7 +147,14 @@
     "source": {
       "book": "LDB",
       "page": 132
-    }
+    },
+    "passive": [
+      {
+        "op": "grantCareerSkill",
+        "skillId": "art",
+        "spec": "Au choix"
+      }
+    ]
   },
   {
     "id": "assaut-feroce",
@@ -1857,10 +1860,6 @@
     "max": "Bonus de Dextérité",
     "test": "Métier (Au choix)",
     "desc": "Vous possédez un vrai talent créatif. Ajoutez la Compétence Métier associée à n'importe quelle Carrière que vous entamez. Si la Compétence Métier est déjà incluse dans votre Carrière, vous pouvez à la place acheter la Compétence pour 5 PX de moins par Augmentation.",
-    "addSkill": {
-      "id": "metier",
-      "spec": "Au choix"
-    },
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [
@@ -1913,7 +1912,14 @@
     "source": {
       "book": "LDB",
       "page": 141
-    }
+    },
+    "passive": [
+      {
+        "op": "grantCareerSkill",
+        "skillId": "metier",
+        "spec": "Au choix"
+      }
+    ]
   },
   {
     "id": "maitre-en-deguisement",
@@ -2220,10 +2226,6 @@
     "max": "Bonus d'Initiative",
     "test": "Divertissement (Chant), Langue (Langues tonales, telles que l'elthárin, le cathayan, le Magick)",
     "desc": "Vous avez l'oreille absolue, capable de reproduire parfaitement les notes et de les identifier sans jamais avoir besoin d'effectuer de Test. De plus, ajoutez Divertissement (Chant) à n'importe quelle Carrière que vous entamez ; si la Compétence est déjà dans votre Carrière, vous pouvez à la place acheter la Compétence pour 5 PX de moins par Augmentation.",
-    "addSkill": {
-      "id": "divertissement",
-      "spec": "Chant"
-    },
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
@@ -2231,7 +2233,14 @@
     "source": {
       "book": "LDB",
       "page": 143
-    }
+    },
+    "passive": [
+      {
+        "op": "grantCareerSkill",
+        "skillId": "divertissement",
+        "spec": "Chant"
+      }
+    ]
   },
   {
     "id": "pansement-de-fortune",
@@ -2866,10 +2875,6 @@
     "max": "Bonus de Force Mentale",
     "test": null,
     "desc": "Vous êtes un lanceur de Sorts autodidacte qui a compris peu à peu comment utiliser la magie, par tâtonnements. Ajoutez Langue (Magick) à n'importe quelle Carrière que vous entamez ; si elle est déjà comprise dans votre Carrière, vous pouvez, à la place, acheter la Compétence pour 5 PX de moins par Augmentation. De plus, vous pouvez dépenser un Point de Résilience pour lancer (et mémoriser) un Sort provenant de n'importe quel Domaine de Magie, pour 0 PX. Vous pouvez le faire un nombre de fois égal à votre Niveau dans ce Talent.",
-    "addSkill": {
-      "id": "langue",
-      "spec": "Magick"
-    },
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
@@ -2877,7 +2882,14 @@
     "source": {
       "book": "LDB",
       "page": 146
-    }
+    },
+    "passive": [
+      {
+        "op": "grantCareerSkill",
+        "skillId": "langue",
+        "spec": "Magick"
+      }
+    ]
   },
   {
     "id": "souplesse-feline",
@@ -3346,10 +3358,6 @@
     "max": "Bonus d'Intelligence",
     "test": "N'importe quel Test concernant les particularités locales",
     "desc": "Vous êtes une âme curieuse qui a voyagé partout, et appris toutes sortes d'informations locales. Ajoutez Savoir (Région) à n'importe quelle Carrière que vous entamez. Si elle est déjà incluse dans la Carrière, vous pouvez acheter la Compétence deux fois – avec une Spécialisation différente chaque fois, telle qu'Altdorf, Vorbergland ou Ubersreik – pour 5 PX de moins par Augmentation.",
-    "addSkill": {
-      "id": "savoir",
-      "spec": "Région"
-    },
     "addTalent": null,
     "addCharacteristic": null,
     "specs": [],
@@ -3357,7 +3365,14 @@
     "source": {
       "book": "LDB",
       "page": 147
-    }
+    },
+    "passive": [
+      {
+        "op": "grantCareerSkill",
+        "skillId": "savoir",
+        "spec": "Région"
+      }
+    ]
   },
   {
     "id": "massif",

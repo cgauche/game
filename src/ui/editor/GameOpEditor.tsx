@@ -63,6 +63,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
 
   grantTrait: '🐾 Accorder un Trait',
   grantTalent: '🐾 Accorder un Talent',
+  grantCareerSkill: '🎓 Compétence ajoutée aux carrières',
   augmentWeapon: '🗡️ Enchanter l’arme',
   cureDisease: '🩹 Guérir des maladies',
   reduceDiseaseDays: '🩹 Raccourcir une maladie',
@@ -225,6 +226,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'grantFreeAttack': return { op: 'grantFreeAttack', weapon: 'held', when: 'immediate', cost: { advantageOrMovement: true } };
     case 'grantTrait': return { op: 'grantTrait', traitId: 'armure' };
     case 'grantTalent': return { op: 'grantTalent', talentId: 'sang-froid' };
+    case 'grantCareerSkill': return { op: 'grantCareerSkill', skillId: 'metier', spec: 'Au choix' };
     case 'augmentWeapon': return { op: 'augmentWeapon', addQualities: ['magique'] };
     case 'cureDisease': return { op: 'cureDisease', count: 1 };
     case 'reduceDiseaseDays': return { op: 'reduceDiseaseDays', days: 1 };
@@ -294,6 +296,7 @@ export function opSummary(o: GameOp): string {
     case 'grantNaturalWeapon': return `${L} ${o.name} (${o.plusBF !== false ? 'BF+' : ''}${formulaSummary(o.damage)})`;
     case 'grantTrait': return `${L} ${formatTrait({ id: o.traitId, arg: o.arg })}${o.indice != null ? ` ${formulaSummary(o.indice)}` : ''}`;
     case 'grantTalent': return `${L} ${talentConcrete(o)}`;
+    case 'grantCareerSkill': return `${L} ${refLabel('skills', { id: o.skillId, spec: o.spec })}`;
     case 'augmentWeapon': return `${L} ${[...(o.addQualities ?? []).map((id) => qualityRefLabel({ id })), o.damageBonus != null ? `+${formulaSummary(o.damageBonus)} Dégâts` : ''].filter(Boolean).join(', ') || '(vide)'}`;
     case 'cureDisease': return `${L} ${o.count ?? 1} maladie(s)`;
     case 'reduceDiseaseDays': return `${L} −${o.days ?? 1} jour(s)`;
