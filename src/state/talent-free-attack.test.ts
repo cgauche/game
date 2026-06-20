@@ -81,7 +81,7 @@ describe('Talents d’attaque déclenchée (grantFreeAttack en donnée)', () => 
     H.characteristics.I = 99; // Test d'Initiative Intermédiaire quasi-garanti
 
     resolveTalentFreeAttacks(useGame.getState, useGame.setState, H, 'onCharged', E);
-    // 1) Étape de CHOIX opt-in (aucune frappe en silence) — calque l'étape `knockdown`.
+    // 1) Étape de CHOIX opt-in `triggeredChoice` (aucune frappe en silence).
     const choice = useGame.getState().pendingCascade!;
     expect(choice.participants[choice.cursor].kind).toBe('triggeredChoice');
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.freeAttacksThisTurn?.['frappe-reactive']).toBeUndefined();

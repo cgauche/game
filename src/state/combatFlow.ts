@@ -5,7 +5,7 @@
  */
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { LootGear, PendingCast, PendingDeviation, PendingBladeTrap, PendingKnockdown, FreeAttackFreeze } from './pendings';
+import type { LootGear, PendingCast, PendingDeviation, PendingBladeTrap, FreeAttackFreeze } from './pendings';
 import { Combatant, ItemInstance, HitLocation, Weapon, DIFFICULTY_MODIFIERS, HIT_LOCATION_LABELS } from '../engine/types';
 import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
@@ -95,9 +95,8 @@ import { rollMiscast, componentDowngrade, type MiscastSeverity } from '../engine
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } from '../engine/skills';
-import { findSkill, findSkillById, findManeuverById, findDomainById, findTalentById } from '../data';
+import { findManeuverById, findDomainById, findTalentById } from '../data';
 import { norm } from '../lib/normalize';
-import { slugId } from '../data/slug';
 import { recomputeLoadout, weaponWithAmmo, compatibleAmmo, ammoFamily, damageArmour, buildWeapon } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, COND } from '../engine/conditions';
@@ -1348,41 +1347,6 @@ export function applyAttackResult(
   // dispatcher générique (state/triggeredEffects). `location` (Assommante Tête) et `woundsDealt` (Venin
   // sur PB) alimentent les Conditions Flow de gating.
   if (res.hit) for (const line of fireTriggers(get, attacker, 'onHit', { victim: target, weapon, woundsDealt: res.woundsLost, location: res.location, attackKind: creatureAttackKind(weapon), rng: battleRng(), set })) log.push(ev('condition', line, target.id));
-  // Déstabilisante (Aux Armes p.89) : après une touche, l'attaquant PEUT dépenser des Avantages pour
-  // un Test opposé Force/Athlétisme ; gagné, la cible est mise À Terre. HÉROS → étape de CHOIX de la
-  // cascade d'attaque (pushCombatStep, applier 'knockdown') ; IA → déclenché d'office.
-  if (res.hit && weapon.type === 'melee' && !isOutOfAction(target)) {
-    for (const { def, caps } of resolveQualities(weapon)) {
-      const kd = caps?.onHitKnockdown;
-      if (!kd || (attacker.advantage ?? 0) < kd.advantageCost || hasCondition(target, kd.condition)) continue;
-      if (attacker.kind === 'hero') {
-        // Folding (comme Déviation/Piège-lame) : le choix du Renversement est une ÉTAPE de CHOIX de la
-        // cascade d'ATTAQUE. L'applier 'knockdown' rejoue
-        // resolveKnockdown sur l'option. L'attaquant/cible sont déjà montrés par la ligne d'attaque figée.
-        pushCombatStep(set, {
-          id: `cons-knockdown-${target.id}`, kind: 'knockdown', actorId: attacker.id, icon: '🤜',
-          label: `🤜 ${def.key} — renverser ?`,
-          options: [{ key: 'yes', label: `Renverser (${kd.advantageCost} Av)` }, { key: 'no', label: 'Renoncer' }],
-          defaultChoice: 'no', interactive: true,
-          knockdown: { attackerId: attacker.id, targetId: target.id, weaponUid: weapon.uid!, quality: def.key, advantageCost: kd.advantageCost, char: kd.char, skill: kd.skill, condition: kd.condition },
-        });
-        break; // un seul renversement proposé par touche
-      }
-      attacker.advantage = (attacker.advantage ?? 0) - kd.advantageCost;
-      const kdSkillId = kd.skill ? (findSkillById(kd.skill) ? kd.skill : (findSkill(kd.skill)?.id ?? slugId(kd.skill))) : ''; // id stable d'abord
-      const aSk = kd.skill ? (attacker.skills.find((s) => s.skillId === kdSkillId)?.advances ?? 0) : 0;
-      const dSk = kd.skill ? (target.skills.find((s) => s.skillId === kdSkillId)?.advances ?? 0) : 0;
-      const won = opposedTest(effectiveChar(attacker, kd.char) + aSk, effectiveChar(target, kd.char) + dSk, battleRng()).winner === 'attacker';
-      if (won) {
-        addCondition(target, kd.condition);
-        const dline = `${target.name} est ${kd.condition} (${def.key}, ${kd.advantageCost} Avantages).`;
-        log.push(ev('condition', dline, target.id));
-        if (target.kind === 'hero') pushReveal(set, { kind: 'assommante', title: def.key, lines: [dline], subjectId: target.id, severity: 'minor' });
-      } else {
-        log.push(ev('detail', `${attacker.name} cherche à renverser ${target.name} (${def.key}, ${kd.advantageCost} Avantages) — sans succès.`, target.id));
-      }
-    }
-  }
   // Tir de zone (Aux Armes p.89) : nuage de projectiles. À bout portant (≤ 1 case ≈ 2 m) → +Indice
   // Dégâts sur la cible ; à portée → la touche frappe AUSSI les Indice créatures les plus proches
   // (≤ Indice mètres, 1 case = 2 m). Réutilise la géométrie de zone (comme le Souffle de créature).
@@ -3262,40 +3226,6 @@ export function resolveBladeTrap(get: Get, set: SetFn, pbt: PendingBladeTrap, tr
  *  séquence (P2) ; `resume:false` → reprise par la fermeture de séquence. */
 registerCascadeApplier('bladeTrap', (get, set, step) => {
   if (step.bladeTrap) resolveBladeTrap(get, set, step.bladeTrap, step.chosen === 'trap');
-});
-
-/** Déstabilisante (Aux Armes p.89) : résout le choix du héros de renverser (dépense d'Avantages +
- *  Test opposé Force/Athlétisme → À Terre). `accept=false` : il renonce, rien n'est dépensé. */
-export function resolveKnockdown(get: Get, set: SetFn, accept: boolean, pk: PendingKnockdown): void {
-  const { battle } = get();
-  if (!battle) return;
-  const attacker = battle.combatants.find((c) => c.id === pk.attackerId);
-  const target = battle.combatants.find((c) => c.id === pk.targetId);
-  if (!attacker || !target) return;
-  const lines: string[] = [];
-  if (accept && (attacker.advantage ?? 0) >= pk.advantageCost && !isOutOfAction(target) && !hasCondition(target, pk.condition)) {
-    attacker.advantage = (attacker.advantage ?? 0) - pk.advantageCost;
-    const pkSkillId = pk.skill ? (findSkillById(pk.skill) ? pk.skill : (findSkill(pk.skill)?.id ?? slugId(pk.skill))) : ''; // id stable d'abord
-    const aSk = pk.skill ? (attacker.skills.find((s) => s.skillId === pkSkillId)?.advances ?? 0) : 0;
-    const dSk = pk.skill ? (target.skills.find((s) => s.skillId === pkSkillId)?.advances ?? 0) : 0;
-    const aT = rollTest(effectiveChar(attacker, pk.char) + aSk, 'intermediaire', battleRng());
-    const dT = rollTest(effectiveChar(target, pk.char) + dSk, 'intermediaire', battleRng());
-    const opp = resolveOpposed(aT, dT);
-    lines.push(`Renversement (${pk.quality}) — Test opposé : ${attacker.name} 🎲 ${aT.roll}/${aT.target} (DR ${aT.sl}) contre ${target.name} 🎲 ${dT.roll}/${dT.target} (DR ${dT.sl}).`);
-    lines.push(opp.winner === 'attacker' ? `${target.name} est ${pk.condition} !` : `${target.name} garde son équilibre.`);
-    if (opp.winner === 'attacker') addCondition(target, pk.condition);
-  } else if (accept) {
-    lines.push(`${attacker.name} ne peut plus tenter le renversement.`);
-  }
-  const b = get().battle!;
-  if (lines.length) set({ battle: { ...b, log: [...b.log, ...evLines(lines, 'info', attacker.id, target.id)] } });
-  bus.emit(EVT.SCENE_DIRTY);
-  checkBattleOver(get, set);
-  // PAS de resumeEnemyTurn : la cascade d'attaque (purpose:'combat') reprend l'IA à sa finalisation.
-}
-/** Applier de l'étape de CHOIX « renversement » (Déstabilisante) — folding façon Déviation/Piège-lame. */
-registerCascadeApplier('knockdown', (get, set, step) => {
-  if (step.knockdown) resolveKnockdown(get, set, step.chosen === 'yes', step.knockdown);
 });
 
 /** Reprend le tour de l'IA suspendu par la modale de défense (= ce qu'aurait fait

@@ -390,10 +390,6 @@ export interface QualityCapabilities {
   damagesArmour?: boolean;// Taille : endommage l'armure/le bouclier frappé
   /** Empaleuse n'est PAS ici (op passive `critOnRoll`) ; Taillade ajoute un État sur Critique. */
   onCritCondition?: string;
-  /** Déstabilisante : dépense d'Avantages + Test opposé → renversement (forme structurée, choix joueur en combat). */
-  /** Déstabilisante (AA p.89) : Test opposé `char`/`skill` après touche → `condition`. `skill` = ID STABLE
-   *  de compétence (« athletisme »), `condition` = id d'État (« a-terre ») — multilangue-safe. */
-  onHitKnockdown?: { advantageCost: number; char: import('../engine/types').CharKey; skill?: string; condition: string };
   // Armes à feu / chargeurs
   firearm?: boolean;            // Poudre noire / Explosion : Incident de Tir + terreur (Nerveux)
   canFireWhileEngaged?: boolean;// Pistolet : tir au contact

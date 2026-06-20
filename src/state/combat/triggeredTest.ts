@@ -315,7 +315,7 @@ function choiceAffordable(decider: Combatant | undefined, cost?: { advantage: nu
  * est `ctx.caster` (le porteur de l'effet : Frappe réactive = le héros Chargé). `after` = continuation
  * reprise APRÈS la branche choisie.
  *  - HÉROS décideur en cadence MANUELLE → étape de CHOIX `triggeredChoice` dans la cascade de combat
- *    (calque l'étape `knockdown` : `options` yes/no, `interactive`, `defaultChoice:'no'`) ; les Flows
+ *    (`options` yes/no, `interactive`, `defaultChoice:'no'`) ; les Flows
  *    `yes`/`no`, le `cost`, l'`after` et le contexte `freeAttack` voyagent dans le `meta` (sérialisable).
  *    On ne touche QUE `pendingCascade`.
  *  - ENNEMI / cadence auto → décision AUTO inline : oui si le coût est payable (heuristique simple — l'IA
@@ -325,9 +325,13 @@ function choiceAffordable(decider: Combatant | undefined, cost?: { advantage: nu
 export function resolveFlowChoice(ctx: ExecCtx, node: Extract<Flow, { kind: 'choice' }>, after: Flow): void {
   const decider = ctx.caster ?? ctx.target;
   if (ctx.mode === 'combat' && decider && roundTestInteractive(decider)) {
-    // Héros manuel : étape de CHOIX influençable (rendue par le chemin CHOIX générique de CascadeModal,
-    // comme `knockdown`). Le coût (en libellé) est joint au « Oui » ; l'option est tranchée par `cascadeChoose`.
+    // Héros manuel : étape de CHOIX influençable (rendue par le chemin CHOIX générique de CascadeModal).
+    // Le coût (en libellé) est joint au « Oui » ; l'option est tranchée par `cascadeChoose`.
     const yesLabel = node.cost ? `${node.prompt} (${node.cost.advantage} Av)` : node.prompt;
+    // CIBLE de la branche : quand la branche vise une AUTRE unité que le décideur (`on:'victim'` —
+    // Déstabilisante : le porteur décide, le Test opposé vise la VICTIME), on sérialise son id pour le
+    // restaurer en `ctx.target` côté applier (sinon la branche viserait le décideur → Test sur soi-même).
+    const branchTargetId = ctx.target && ctx.target.id !== decider.id ? ctx.target.id : undefined;
     pushCombatStep(ctx.set, {
       id: `triggeredChoice-${decider.id}-${node.prompt}`,
       kind: 'triggeredChoice', actorId: decider.id, icon: node.icon ?? '🤔', label: node.prompt,
@@ -336,6 +340,7 @@ export function resolveFlowChoice(ctx: ExecCtx, node: Extract<Flow, { kind: 'cho
       meta: {
         choiceYes: node.yes, choiceNo: node.no ?? EMPTY_FLOW, after,
         ...(node.cost ? { choiceCost: node.cost.advantage } : {}),
+        ...(branchTargetId ? { choiceTargetId: branchTargetId } : {}),
         ...(ctx.freeAttack ? { freeAttack: ctx.freeAttack } : {}),
       },
     });
@@ -365,7 +370,11 @@ registerCascadeApplier('triggeredChoice', (get, set, step, hero) => {
   const freeAttack = fa && typeof fa === 'object' && 'targetId' in fa ? fa : undefined;
   const can = yes && (cost == null || (hero.advantage ?? 0) >= cost);
   if (yes && can && cost != null) { hero.advantage = Math.max(0, (hero.advantage ?? 0) - cost); syncCombatant(get, set); }
-  const ctx: ExecCtx = { mode: 'combat', get, set, target: hero, caster: hero, label: step.label ?? 'Réaction', ...(freeAttack ? { freeAttack } : {}) };
+  // Le DÉCIDEUR (`hero`) est le `caster` (porteur). La branche vise `choiceTargetId` (la VICTIME, Déstabilisante)
+  // si présent, sinon le décideur lui-même (Frappe réactive : Test sur soi). Reconstruit depuis get() — jamais capturé.
+  const tid = typeof step.meta?.choiceTargetId === 'string' ? step.meta.choiceTargetId : undefined;
+  const branchTarget = (tid ? get().battle?.combatants.find((c) => c.id === tid) : undefined) ?? hero;
+  const ctx: ExecCtx = { mode: 'combat', get, set, target: branchTarget, caster: hero, label: step.label ?? 'Réaction', ...(freeAttack ? { freeAttack } : {}) };
   if (can) runCombatFlow(ctx, yesFlow ?? EMPTY_FLOW);
   else if (noFlow) runCombatFlow(ctx, noFlow);
   playAfter(get, set, hero, step.meta?.after, step.label ?? 'Réaction');

@@ -245,8 +245,8 @@ export interface FlowTest {
  *  - `choice` : DÉCISION du joueur opt-in (≠ `test` aléatoire, ≠ `if` état) → `yes` / `no`. Coût
  *    d'Avantage optionnel dépensé sur `yes`. Primitive FONDAMENTALE des réactions de combat
  *    (Frappe Réactive « vous POUVEZ tenter », Déstabilisante « vous POUVEZ dépenser 2 Av ») et, à
- *    terme, des choix de dialogue/pièges. Son exécuteur RÉUTILISE l'étape-choix de cascade existante
- *    (motif `knockdown` : `pushCombatStep` yes/no + applier) — il n'invente pas de mécanisme.
+ *    terme, des choix de dialogue/pièges. Son exécuteur (`resolveFlowChoice`) pousse une étape-choix
+ *    GÉNÉRIQUE `triggeredChoice` (`pushCombatStep` yes/no + applier unique) — il n'invente pas de mécanisme.
  */
 export type Flow =
   | { kind: 'seq'; steps: Flow[] }

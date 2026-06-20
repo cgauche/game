@@ -408,19 +408,6 @@ export interface PendingBladeTrap {
   /** d100 du jet de défense critique (localisation du Coup Critique si refusé). */
   roll: number;
 }
-/** Déstabilisante (Aux Armes p.89) : un HÉROS a touché avec une arme Déstabilisante et a les
- *  Avantages requis. Il CHOISIT de les dépenser pour un Test opposé (`char`/`skill`) qui, gagné,
- *  met la cible `condition` (À Terre). L'IA, elle, déclenche d'office (pas de modale). */
-export interface PendingKnockdown {
-  attackerId: string; // le héros qui a touché
-  targetId: string;   // la cible à renverser
-  weaponUid: string;  // l'arme du renversement (loadout) — résolue en NOM à l'affichage
-  quality: string;    // « Déstabilisante »
-  advantageCost: number;
-  char: CharKey;
-  skill?: string;
-  condition: string;  // « À Terre »
-}
 /** Défense réactive : un ennemi (IA) a figé son jet d'attaque (`atk`) contre un héros ;
  *  le joueur choisit le mode, lance SA défense (`def`), peut la relancer (Chance = défense
  *  uniquement), puis applique. `atk` est figé et n'est JAMAIS relancé. Le tour de l'IA est
@@ -635,6 +622,11 @@ export interface CascadeStepMeta {
   choiceNo?: Flow;
   /** Coût d'Avantage d'une étape `triggeredChoice` (dépensé sur OUI si payable) — absent = gratuit. */
   choiceCost?: number;
+  /** CIBLE de la branche d'un `triggeredChoice` quand elle DIFFÈRE du décideur (`on:'victim'` : le décideur
+   *  est le porteur/attaquant `caster`, mais la branche `yes` vise la VICTIME — Déstabilisante : Test opposé
+   *  contre la cible touchée). Id sérialisable, restauré en `ctx.target` par l'applier. Absent ⇒ la cible =
+   *  le décideur (Frappe réactive : Test sur soi, le tiers voyage dans `freeAttack`). */
+  choiceTargetId?: string;
   /** CONTINUATION reprise APRÈS la branche d'un `triggeredTest`/`triggeredChoice` enfoui dans un Flow (le
    *  reste du `seq` qui suivait le nœud). Pur-donnée (voyage en coop) ; rejouée par l'applier via
    *  `runCombatFlow`. Absent (= EMPTY_FLOW) pour un nœud top-level (Mâchoires) → aucune suite. */
@@ -701,9 +693,6 @@ export interface CascadeStep extends RollParticipant {
   /** Étape de CHOIX « piège-lame » (folding P3b) : contexte du Test opposé ; l'applier appelle
    *  `resolveBladeTrap(step.bladeTrap, chosen === 'trap')`. */
   bladeTrap?: PendingBladeTrap;
-  /** Étape de CHOIX « renversement » (Déstabilisante, Aux Armes p.89) : contexte du Test opposé ;
-   *  l'applier 'knockdown' appelle `resolveKnockdown(step.knockdown, chosen === 'yes')`. */
-  knockdown?: PendingKnockdown;
   /** Étape-JET « Maladresse » (LDB 14, Tableau des Oups !) : SOURCE UNIQUE de la maladresse — l'arme
    *  utilisée + le résultat tiré vivent ICI (l'acteur est `actorId`). Plus de `pendingFumble` top-level
    *  parallèle à désynchroniser : si l'étape existe la donnée existe, si la cascade ferme la maladresse
