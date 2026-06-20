@@ -63,7 +63,7 @@ export const EYE_OPTIONS: Record<string, { label: string; art: string }> = {
 /** Remplace l'œil `side` du visage par `art` (centré sur l'ancre `data-ec` de l'orbite).
  *  Visage sans marqueur (têtes monstrueuses, races sans tête générée) → no-op. */
 export function swapEye(visage: string, side: 'G' | 'D', art: string): string {
-  const re = new RegExp(`<g data-eye="${side}" data-ec="(-?[\\d.]+) ([\\d.]+)">.*?</g>`);
+  const re = new RegExp(`<g data-eye="${side}" data-ec="(-?[\\d.]+) (-?[\\d.]+)">.*?</g>`);
   return visage.replace(re, (_m, x: string, y: string) =>
     `<g data-eye="${side}" data-ec="${x} ${y}" transform="translate(${x},${y})">${art}</g>`);
 }
