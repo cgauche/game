@@ -5,7 +5,7 @@
  */
 import { Combatant } from '../engine/types';
 import { combineMods } from '../engine/combat';
-import { castInfo, isMagicMissile, parseSpellDamage, spellRangeTiles } from '../engine/magic';
+import { castInfo, isMagicMissile, missileDamage, spellRangeTiles } from '../engine/magic';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { isOutOfAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
@@ -75,7 +75,7 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
       missile,
       focused: active.focus?.spell === spell.id && active.focus.dr >= (spell.cn ?? 0),
     });
-    const dmg = missile ? parseSpellDamage(spell.desc) : null;
+    const dmg = missile ? missileDamage(spell) : null;
     return {
       kind: 'ok',
       line: 'dashed',

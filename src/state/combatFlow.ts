@@ -77,7 +77,7 @@ import {
   resolveCounterspell,
   castTestOf,
   rederiveCastSL,
-  parseSpellDamage,
+  missileDamage,
   zdeDiameterMeters,
   type CastResult,
   type MissileResult,
@@ -2452,7 +2452,7 @@ export function aiBestMissile(enemy: Combatant): string | undefined {
     .map((id) => resolveSpell(id))
     .filter((sp): sp is NonNullable<ReturnType<typeof findSpell>> => !!sp && isMagicMissile(sp));
   if (!known.length) return undefined;
-  const dmg = (sp: { desc: string }) => parseSpellDamage(sp.desc)?.damage ?? 0;
+  const dmg = (sp: NonNullable<ReturnType<typeof findSpell>>) => missileDamage(sp)?.damage ?? 0;
   const maxSL = (sp: { type: string }) => {
     const info = castInfo(sp as any);
     // SL max d'un jet = valeur/10, + les DR de Talent lié au Test réussi (LDB 10 l.20 —

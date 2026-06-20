@@ -677,7 +677,8 @@
       "book": "frenchy.bzh",
       "page": 472
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "courage-du-loup",
@@ -757,7 +758,8 @@
       "book": "frenchy.bzh",
       "page": 448
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "crevasse",
@@ -877,7 +879,8 @@
       "book": "frenchy.bzh",
       "page": 361
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "desarroi",
@@ -1117,7 +1120,8 @@
       "book": "frenchy.bzh",
       "page": 253
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "fatigue",
@@ -1317,7 +1321,8 @@
       "book": "frenchy.bzh",
       "page": 321
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "flammes-roses-de-tzeentch",
@@ -1337,7 +1342,8 @@
       "book": "frenchy.bzh",
       "page": 320
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "forme-spectrale",
@@ -2157,7 +2163,8 @@
       "book": "frenchy.bzh",
       "page": 246
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "projectile-de-dhar",
@@ -2177,7 +2184,8 @@
       "book": "frenchy.bzh",
       "page": 267
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "projectile-mineur",

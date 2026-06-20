@@ -45,6 +45,11 @@ export interface SpellLike {
   isPrayer?: boolean;
   /** Famille d'incantation STABLE (discriminant moteur, multilangue) — cf. SpellData.family. */
   family?: import('./combatFeatures/types').CastingKind;
+  /** Projectile magique + Dégâts — DONNÉE (multilangue), cf. SpellData. Remplace les regex sur la desc. */
+  missile?: boolean;
+  damage?: number;
+  ignorePA?: boolean;
+  ignoreBE?: boolean;
 }
 
 /** Le personnage possède-t-il le Talent nommé ? (Diction instinctive, Harmonisation aethyrique…) */
@@ -181,26 +186,21 @@ export function knowsCastingSkill(c: Combatant, skillName: string, spec?: string
 }
 
 /**
- * Dégâts d'un Projectile magique : « Dégât(s) +N ». Détecte les sorts qui
- * ignorent les PA et/ou le Bonus d'Endurance (ex. drain de Shyish, Vortex d'âmes,
- * sorts de Chamon — Livre de base, Magie des Couleurs).
+ * Dégâts d'un Projectile magique, LUS DANS LA DONNÉE (`SpellData.missile`/`damage`/`ignorePA`/
+ * `ignoreBE`) — plus de regex sur la desc FR (data-driven + multilangue). `null` si non-missile.
+ * Les Dégâts sont ADDITIFS (+ DR + BFM) — cf. `evaluateMissile`.
  */
-export function parseSpellDamage(
-  desc: string,
+export function missileDamage(
+  spell: SpellLike,
 ): { damage: number; ignorePA: boolean; ignoreBE: boolean } | null {
-  const m = desc.match(/D[ée]g[âa]ts?\s*\+(\d+)/i);
-  if (!m) return null;
-  return {
-    damage: parseInt(m[1], 10),
-    ignorePA: /ignore[^.]*\bPA\b/i.test(desc),
-    ignoreBE: /ignore[^.]*Bonus d['’]Endurance/i.test(desc),
-  };
+  if (!spell.missile) return null;
+  return { damage: spell.damage ?? 0, ignorePA: !!spell.ignorePA, ignoreBE: !!spell.ignoreBE };
 }
 
 
-/** Vrai si le sort est un Projectile magique (Dégâts résolus comme une attaque). */
+/** Vrai si le sort est un Projectile magique (Dégâts résolus comme une attaque) — DONNÉE `missile`. */
 export function isMagicMissile(spell: SpellLike): boolean {
-  return /projectile magique/i.test(spell.desc);
+  return spell.missile === true;
 }
 
 /**
@@ -527,7 +527,7 @@ export function evaluateMissile(
     return { ...cr, hit: false, defenderDefeated: false };
   }
   const loc = hitLocationByShape(reverseRoll(cr.roll), target.bodyShape);
-  const spellDmg = parseSpellDamage(spell.desc);
+  const spellDmg = missileDamage(spell);
   const bfm = bonus(effectiveChar(caster, 'FM'));
   // Attribut de Domaine (LDB 48 — L14) : Métal ignore les PA métalliques ET les ajoute en Dégâts ;
   // Cieux ignore les PA métalliques ; Ombres ignore tous les PA non magiques.

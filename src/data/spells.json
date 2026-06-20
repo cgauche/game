@@ -941,7 +941,9 @@
       "book": "LDB",
       "page": 240
     },
-    "family": "mineure"
+    "family": "mineure",
+    "missile": true,
+    "ignorePA": true
   },
   {
     "id": "eblouissant",
@@ -1102,7 +1104,8 @@
       "book": "LDB",
       "page": 241
     },
-    "family": "mineure"
+    "family": "mineure",
+    "missile": true
   },
   {
     "id": "lumiere",
@@ -1643,7 +1646,9 @@
       "book": "LDB",
       "page": 243
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true,
+    "damage": 4
   },
   {
     "id": "aura-ordinaire",
@@ -1767,7 +1772,9 @@
       "book": "LDB",
       "page": 243
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true,
+    "damage": 4
   },
   {
     "id": "chute",
@@ -2019,7 +2026,8 @@
       "book": "LDB",
       "page": 244
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "perturbant",
@@ -2210,7 +2218,8 @@
       "book": "LDB",
       "page": 244
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "teleportation",
@@ -2452,7 +2461,9 @@
       "page": 245
     },
     "domainId": "bete",
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true,
+    "damage": 12
   },
   {
     "id": "langue-bestiale",
@@ -2727,7 +2738,9 @@
       "page": 246
     },
     "domainId": "cieux",
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true,
+    "damage": 10
   },
   {
     "id": "bouclier-ceruleen",
@@ -2805,7 +2818,9 @@
       "page": 247
     },
     "domainId": "cieux",
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true,
+    "damage": 12
   },
   {
     "id": "ironie-du-destin",
@@ -3274,7 +3289,10 @@
       "page": 248
     },
     "domainId": "feu",
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true,
+    "damage": 10,
+    "ignorePA": true
   },
   {
     "id": "l-egide-d-aqshy",
@@ -3443,7 +3461,8 @@
       "page": 248
     },
     "domainId": "feu",
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "purification",
@@ -3560,7 +3579,10 @@
       "book": "ADE2",
       "page": 32
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true,
+    "damage": 4,
+    "ignorePA": true
   },
   {
     "id": "festin-des-damnes",
@@ -4187,7 +4209,8 @@
       "page": 249
     },
     "domainId": "metal",
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "ecaille-d-acier",
@@ -4430,7 +4453,8 @@
       "page": 250
     },
     "domainId": "metal",
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "caresse-de-laniph",
@@ -4467,7 +4491,11 @@
       "page": 251
     },
     "domainId": "mort",
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true,
+    "damage": 6,
+    "ignorePA": true,
+    "ignoreBE": true
   },
   {
     "id": "dernieres-paroles",
@@ -4743,7 +4771,10 @@
       "page": 251
     },
     "domainId": "mort",
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true,
+    "damage": 6,
+    "ignorePA": true
   },
   {
     "id": "vortex-d-ames",
@@ -4782,7 +4813,11 @@
       "page": 251
     },
     "domainId": "mort",
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true,
+    "damage": 10,
+    "ignorePA": true,
+    "ignoreBE": true
   },
   {
     "id": "destrier-d-ombre",
@@ -6120,7 +6155,8 @@
       "book": "LDB",
       "page": 256
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "l-appel-de-vanhel",
@@ -6377,7 +6413,9 @@
       "book": "EDO",
       "page": 80
     },
-    "family": "chaos"
+    "family": "chaos",
+    "missile": true,
+    "damage": 6
   },
   {
     "id": "dechirer-l-aethyr",
@@ -6505,7 +6543,9 @@
       "book": "EDO",
       "page": 80
     },
-    "family": "chaos"
+    "family": "chaos",
+    "missile": true,
+    "damage": 5
   },
   {
     "id": "obsession",
@@ -6641,7 +6681,8 @@
       "book": "LDB",
       "page": 257
     },
-    "family": "chaos"
+    "family": "chaos",
+    "missile": true
   },
   {
     "id": "consentement",
@@ -6836,7 +6877,9 @@
       "book": "EDO",
       "page": 81
     },
-    "family": "chaos"
+    "family": "chaos",
+    "missile": true,
+    "damage": 7
   },
   {
     "id": "feu-bleu-de-tzeentch",
@@ -6874,7 +6917,8 @@
       "book": "EDO",
       "page": 82
     },
-    "family": "chaos"
+    "family": "chaos",
+    "missile": true
   },
   {
     "id": "feu-rose-de-tzeentch",
@@ -6912,7 +6956,9 @@
       "book": "EDO",
       "page": 82
     },
-    "family": "chaos"
+    "family": "chaos",
+    "missile": true,
+    "damage": 6
   },
   {
     "id": "feu-spirituel",
