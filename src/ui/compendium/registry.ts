@@ -416,7 +416,7 @@ export const CODEX: CodexCategory[] = [
       meta: facts(
         fact('NI', s.cn), fact('Portée', s.range), fact('Cible', s.target), fact('Durée', s.duration),
         // Projectile magique (#2 data-driven) : Dégâts additifs + DR + BFM, ignore éventuellement PA/BE.
-        fact('Projectile', s.missile ? `Dégâts ${s.damage ?? 0} + DR + BFM${s.ignorePA ? ' · ignore PA' : ''}${s.ignoreBE ? ' · ignore BE' : ''}` : null),
+        fact('Projectile', s.missile ? `Dégâts ${s.damage ? `${s.damage} + ` : ''}DR + BFM${s.ignorePA ? ' · ignore PA' : ''}${s.ignoreBE ? ' · ignore BE' : ''}` : null),
       ),
       sections: sections(
         spellFlowSection(s.effects), // Effet mécanique (Flow) — #5 data-driven
