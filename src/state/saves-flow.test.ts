@@ -4,7 +4,7 @@
  */
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { useGame } from './store';
-import { readSlot, deleteSlot, exportSave, importSave, listSaves, saveToSlot, SAVE_VERSION } from './saves';
+import { readSlot, deleteSlot, exportSave, importSave, listSaves, saveToSlot, migrateSave, SAVE_VERSION } from './saves';
 import { rule, setRule, loadRuleOverrides } from '../engine/policy';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -117,5 +117,23 @@ describe('Sauvegarde / chargement (Jalon 5)', () => {
     useGame.setState({ flags: {}, scene: null, screen: 'menu' });
     expect(useGame.getState().importGame(json)).toBe(true);
     expect(useGame.getState().scene?.id).toBe(testScene.id);
+  });
+});
+
+describe('migrateSave — point d’upgrade unique (un bump de version ne jette plus les saves)', () => {
+  const v1 = { version: SAVE_VERSION, savedAt: '2026', sceneLabel: 's', gameTime: 0, data: {} };
+  it('save à la version courante : passe telle quelle (aucune migration en v1)', () => {
+    expect(migrateSave(v1)).toEqual(v1);
+  });
+  it('version FUTURE (plus récente que l’app) → null : on ne devine pas une structure inconnue', () => {
+    expect(migrateSave({ ...v1, version: SAVE_VERSION + 1 })).toBeNull();
+  });
+  it('version antérieure sans migrateur → null (refus net plutôt que corruption silencieuse)', () => {
+    expect(migrateSave({ ...v1, version: 0 })).toBeNull();
+  });
+  it('objet malformé / version absente → null', () => {
+    expect(migrateSave(null)).toBeNull();
+    expect(migrateSave('pas un objet')).toBeNull();
+    expect(migrateSave({ savedAt: 'x', data: {} })).toBeNull(); // version absente
   });
 });

@@ -97,6 +97,33 @@ export function isValidSave(s: unknown): s is SaveGame {
     && !!(s as SaveGame).data && typeof (s as SaveGame).data === 'object';
 }
 
+/** Migrations SÉQUENTIELLES : la clé N met à niveau une save vN → v(N+1). À CHAQUE bump de
+ *  `SAVE_VERSION`, ajouter ici l'entrée correspondante — sinon les saves antérieures seront refusées
+ *  (jamais corrompues en silence). Vide tant qu'on est en v1 (aucune version antérieure n'existe). */
+const MIGRATIONS: Record<number, (data: Record<string, unknown>) => Record<string, unknown>> = {
+  // 1: (d) => ({ ...d, version: 2, /* champ ajouté en v2 avec son défaut */ }),
+};
+
+/** Met une save parsée au niveau `SAVE_VERSION` AVANT validation (point d'upgrade UNIQUE). Un bump de
+ *  version ne jette donc plus les anciennes saves en silence : elles passent par la chaîne `MIGRATIONS`.
+ *  Renvoie null si : pas un objet, version absente/non numérique, version FUTURE (on ne devine pas une
+ *  structure plus récente), trou dans la chaîne, ou forme finale invalide. */
+export function migrateSave(parsed: unknown): SaveGame | null {
+  if (!parsed || typeof parsed !== 'object') return null;
+  let save = parsed as Record<string, unknown>;
+  let v = typeof save.version === 'number' ? save.version : NaN;
+  if (!Number.isFinite(v) || v > SAVE_VERSION) return null; // version inconnue ou plus récente que l'app
+  while (v < SAVE_VERSION) {
+    const up = MIGRATIONS[v];
+    if (!up) return null; // pas de migrateur pour cette version → on refuse (plutôt que corrompre)
+    save = up(save);
+    const next = typeof save.version === 'number' ? save.version : NaN;
+    if (!Number.isFinite(next) || next <= v) return null; // un migrateur DOIT faire progresser la version
+    v = next;
+  }
+  return isValidSave(save) ? save : null;
+}
+
 export function saveToSlot(slot: SaveSlot, save: SaveGame): boolean {
   try {
     storage()?.setItem(KEY(slot), JSON.stringify(save));
@@ -112,8 +139,7 @@ export function readSlot(slot: SaveSlot): SaveGame | null {
   try {
     const raw = s.getItem(KEY(slot));
     if (!raw) return null;
-    const parsed: unknown = JSON.parse(raw);
-    return isValidSave(parsed) ? parsed : null;
+    return migrateSave(JSON.parse(raw)); // upgrade éventuel puis validation
   } catch {
     return null;
   }
@@ -140,11 +166,10 @@ export function exportSave(save: SaveGame): string {
   return JSON.stringify(save, null, 2);
 }
 
-/** Import : parse + validation stricte (null si invalide ou version inconnue). */
+/** Import : parse + migration éventuelle + validation (null si invalide ou version inconnue/future). */
 export function importSave(json: string): SaveGame | null {
   try {
-    const parsed: unknown = JSON.parse(json);
-    return isValidSave(parsed) ? parsed : null;
+    return migrateSave(JSON.parse(json));
   } catch {
     return null;
   }
