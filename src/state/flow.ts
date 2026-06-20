@@ -238,7 +238,12 @@ export interface FlowTest {
      *  (LDB 62 l.295 : « en ajoutant votre DR obtenu au précédent Test de Corps à corps »). Modifie À LA
      *  FOIS le vainqueur et la marge nette (il s'additionne au `sl` du défenseur dans `resolveOpposed`).
      *  Absent = 0 (Assommante). */
-    bonusSL?: number };
+    bonusSL?: number;
+    /** Bonus de DR ajouté au jet de l'ATTAQUANT figé (`aT`) AVANT l'opposition — Furtif (LDB 85) sur le
+     *  Test de Discrétion de l'embusqueur : « Ajoutez son bonus d'Agilité au DR de tous ses Tests de
+     *  Discrétion ». Baké dans `aT.sl` au pré-jet → suit la voie cascade (meta `aT`) ET inline à
+     *  l'identique. Absent = 0. */
+    attackerBonusSL?: number };
 }
 
 /**

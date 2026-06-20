@@ -13,6 +13,7 @@ import type {
   PendingCorruption,
   PendingRun,
   PendingApproach,
+  PendingWard,
   PendingFocus,
   PendingFrenzy,
   PendingReload,
@@ -159,6 +160,15 @@ export function describeAppraise(pa: PendingAppraise): string {
 export function describeApproach(pa: PendingApproach): string {
   if (!pa.result) return '';
   return pa.result.success ? 'Le cran tient : il peut approcher ce Tour.' : 'La Peur le cloue : aucune approche ce Tour.';
+}
+
+/** Bénédiction de Protection (LDB 41 l.105) : issue du Test de FM (popin). Le fil journalise la
+ *  conséquence (attaque relancée / refusée) à part. `targetName` = la cible bénie. */
+export function describeWard(pw: PendingWard, targetName: string): string {
+  if (!pw.result) return '';
+  return pw.result.success
+    ? `Il surmonte sa honte et peut frapper ${targetName} malgré la Bénédiction de Protection.`
+    : `Il ne peut se résoudre à frapper ${targetName} : il doit choisir une autre cible ou une autre Action.`;
 }
 
 /** Course (LDB 15-Dépl l.79-82) : issue du Test d'Athlétisme/Chevaucher (popin). Le fil journalise le

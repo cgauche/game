@@ -1,9 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { applySurprise, computeMoveReach } from './combatFlow';
 import { chooseEnemyAction } from './ai';
 import { effectiveMovement } from '../engine/encumbrance';
 import { seedBattleRng } from './battleRng';
 import { hasCondition } from '../engine/conditions';
+import { setRule, resetRule } from '../engine/policy';
 import { useGame } from './store';
 import type { Combatant } from '../engine/types';
 
@@ -12,15 +13,21 @@ const C = (over: Partial<Combatant>): Combatant =>
   ({ id: 'x', kind: 'hero', name: 'X', conditions: [], skills: [], characteristics: {}, wounds: { current: 10, max: 10 }, items: [], movement: 4, advantage: 0, ...over } as unknown as Combatant);
 
 describe('Surprise — établissement & comportement (LDB 13 l.52-81 / 16 l.130-136)', () => {
+  afterEach(() => resetRule('combat-cadence'));
+
   it('applySurprise : le camp embusqué qui perd le Test opposé Perception vs Discrétion → Surpris', () => {
+    setRule('combat-cadence', 'rapide'); // héros auto-résolu inline (pas de cascade différée à piloter)
     seedBattleRng(1);
     const LOW = { CC: 5, CT: 5, F: 5, E: 5, I: 5, Ag: 5, Dex: 5, Int: 5, FM: 5, Soc: 5 } as never;
     const HIGH = { CC: 90, CT: 90, F: 90, E: 90, I: 90, Ag: 90, Dex: 90, Int: 90, FM: 90, Soc: 90 } as never;
     const hero = C({ id: 'h', kind: 'hero', characteristics: LOW }); // Perception faible
     const enemy = C({ id: 'e', kind: 'enemy', characteristics: HIGH }); // Discrétion forte (embusqueur)
-    applySurprise([hero, enemy], 'party'); // les héros sont pris en embuscade
-    expect(hasCondition(hero, 'surpris')).toBe(true);
-    expect(hasCondition(enemy, 'surpris')).toBe(false);
+    useGame.setState({ battle: { combatants: [hero, enemy], order: ['h', 'e'], turn: -1, round: 1, log: [], over: null } as never, pendingLogQueue: [] });
+    applySurprise(useGame.getState, useGame.setState, 'party'); // les héros sont pris en embuscade
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === 'h')!;
+    const e = useGame.getState().battle!.combatants.find((c) => c.id === 'e')!;
+    expect(hasCondition(h, 'surpris')).toBe(true);
+    expect(hasCondition(e, 'surpris')).toBe(false);
   });
 
   it('effectiveMovement = 0 quand Surpris (LDB 16 l.132)', () => {

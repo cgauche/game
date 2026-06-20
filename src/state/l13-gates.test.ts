@@ -81,6 +81,56 @@ describe('L13 — gates & redirections', () => {
     expect(useGame.getState().battle!.log.map((e) => e.text).join('\n')).toMatch(/Bénédiction de Protection/);
   });
 
+  it('B. de Protection (héros attaquant) : le clic DIFFÈRE l’attaque derrière un Test de FM influençable', () => {
+    const { hero, foes } = setup();
+    const E = foes[0];
+    E.activeEffects = [{ label: 'Bénédiction de Protection', bonus: 0, roundsLeft: 6, attackWardFM: true }];
+    hero.pos = { x: 10, y: 10 };
+    E.pos = { x: 11, y: 10 }; // adjacent → frappe directe (pas de charge/approche)
+    const turn = useGame.getState().battle!.order.indexOf(hero.id);
+    useGame.setState({ battle: { ...useGame.getState().battle!, turn, action: null, acted: false } });
+    // Tap-2 (confirm) sur la cible bénie → AUCUNE attaque encore : on diffère derrière pendingWard.
+    useGame.getState().battleClickEntity(E.id, { confirm: true });
+    expect(useGame.getState().pendingWard).toMatchObject({ attackerId: hero.id, targetId: E.id });
+    expect(useGame.getState().pendingAttack).toBeNull();
+    expect(useGame.getState().pendingCascade).toBeNull();
+  });
+
+  it('B. de Protection (héros) : Test réussi → l’attaque est relancée ; Action non consommée tant que pas frappée', () => {
+    const { hero, foes } = setup();
+    const E = foes[0];
+    E.activeEffects = [{ label: 'Bénédiction de Protection', bonus: 0, roundsLeft: 6, attackWardFM: true }];
+    hero.pos = { x: 10, y: 10 };
+    E.pos = { x: 11, y: 10 };
+    const turn = useGame.getState().battle!.order.indexOf(hero.id);
+    useGame.setState({ battle: { ...useGame.getState().battle!, turn, action: null, acted: false } });
+    useGame.getState().battleClickEntity(E.id, { confirm: true });
+    // Force le succès du Test de FM puis valide → l’attaque se relance (cascade d’attaque ouverte).
+    useGame.setState({ pendingWard: { ...useGame.getState().pendingWard!, result: { success: true, roll: 5, target: 50, sl: 4 } } });
+    useGame.getState().wardConfirm();
+    expect(useGame.getState().pendingWard).toBeNull();
+    expect(useGame.getState().pendingCascade).not.toBeNull(); // l’attaque a été relancée
+    expect(useGame.getState().battle!.log.map((e) => e.text).join('\n')).toMatch(/surmonte sa honte/);
+  });
+
+  it('B. de Protection (héros) : Test raté → l’attaque n’a pas lieu, rien n’est consommé', () => {
+    const { hero, foes } = setup();
+    const E = foes[0];
+    E.activeEffects = [{ label: 'Bénédiction de Protection', bonus: 0, roundsLeft: 6, attackWardFM: true }];
+    hero.pos = { x: 10, y: 10 };
+    E.pos = { x: 11, y: 10 };
+    const turn = useGame.getState().battle!.order.indexOf(hero.id);
+    useGame.setState({ battle: { ...useGame.getState().battle!, turn, action: null, acted: false } });
+    useGame.getState().battleClickEntity(E.id, { confirm: true });
+    useGame.setState({ pendingWard: { ...useGame.getState().pendingWard!, result: { success: false, roll: 96, target: 50, sl: -4 } } });
+    useGame.getState().wardConfirm();
+    expect(useGame.getState().pendingWard).toBeNull();
+    expect(useGame.getState().pendingAttack).toBeNull();
+    expect(useGame.getState().pendingCascade).toBeNull();
+    expect(useGame.getState().battle!.acted).toBe(false); // l’Action n’est PAS consommée
+    expect(useGame.getState().battle!.log.map((e) => e.text).join('\n')).toMatch(/ne peut se résoudre/);
+  });
+
   it('Martyr : le prêtre encaisse les Dégâts bruts à 2×BE, la cible ne perd rien', () => {
     const { hero, priest, foes } = setup();
     const E = foes[0];

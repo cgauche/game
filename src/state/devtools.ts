@@ -1,5 +1,5 @@
 import { useGame } from './store';
-import { checkBattleOver, resolveTalentFreeAttacks } from './combatFlow';
+import { checkBattleOver, resolveTalentFreeAttacks, approachFearTrigger } from './combatFlow';
 import { pushCombatStep } from './combatEffects';
 import type { PendingBladeTrap } from './pendings';
 import { bus, EVT } from './bus';
@@ -40,6 +40,7 @@ import type { Cadence } from '../engine/cadence';
  *   __wfrp.give(co)       → crédite la bourse (couronnes d'or) ; __wfrp.xp(n) → +PX au groupe
  *   __wfrp.flags()        → drapeaux de scénario ; __wfrp.flag('id', true) → force un drapeau
  *   __wfrp.go('scene-id') → saute vers une scène du projet ; __wfrp.fight() → liste/lance une rencontre
+ *   __wfrp.fear(h,e,i?)   → pose une Peur (Indice) de h envers e puis simule l'approche (Test de Calme ou Brisé)
  *   __wfrp.time(min)      → avance l'horloge ; __wfrp.rest(jours) → dort (cascade quotidienne #T3)
  *   __wfrp.quality(id,label,av?) → ajoute un Atout d'arme à l'arme active + Avantages (test renversement…)
  */
@@ -503,6 +504,29 @@ export function buildApi() {
         battle: st.battle ? { ...st.battle, combatants: [...st.battle.combatants] } : st.battle,
       }));
       return `✅ ${c.name} : Focalisation ${spell} (DR ${dr})`;
+    },
+
+    /** RECETTE : pose une Peur active de `heroId` envers `enemyId` (Indice) puis simule l'APPROCHE de la
+     *  source (LDB 21 l.29) — `fear('hero-1','enemy-1', 2)`. C'est le MÊME appel que le mouvement d'IA quand
+     *  une source de Peur se rapproche (`approachFearTrigger`) : le héros doit réussir un Test de Calme
+     *  Intermédiaire (héros manuel → étape de cascade INFLUENÇABLE) ou gagner un État Brisé. */
+    fear: (heroId: string, enemyId: string, indice = 2) => {
+      const b = g().battle;
+      if (!b || b.over) return '❌ pas de combat en cours';
+      const hero = b.combatants.find((c) => c.id === heroId);
+      const enemy = b.combatants.find((c) => c.id === enemyId);
+      if (!hero || !enemy) return `❌ héros/source introuvable (${heroId}/${enemyId})`;
+      if (!hero.pos || !enemy.pos) return '❌ positions inconnues';
+      hero.psychState = [
+        ...(hero.psychState ?? []).filter((p) => !(p.type === 'peur' && p.sourceId === enemyId)),
+        { type: 'peur', sourceId: enemyId, indice, calmeDR: 0 }, // Peur active (non vaincue) envers la source
+      ];
+      // `fromPos` plus loin que la position actuelle → l'approche est mesurée comme un rapprochement réel.
+      const fromPos = { x: enemy.pos.x + Math.sign(enemy.pos.x - hero.pos.x || 1) * 5, y: enemy.pos.y };
+      useGame.setState((s) => ({ battle: s.battle ? { ...s.battle, combatants: [...s.battle.combatants] } : s.battle }));
+      approachFearTrigger(() => useGame.getState(), useGame.setState, enemy, fromPos);
+      bus.emit(EVT.SCENE_DIRTY);
+      return `✅ ${enemy.name} (Peur ${indice}) s'approche de ${hero.name} → Test de Calme ou Brisé`;
     },
 
     /** RECETTE : saute vers une scène du projet/de la campagne par id (machinerie de transition). */

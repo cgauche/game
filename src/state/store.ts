@@ -61,7 +61,7 @@ import * as merchantFlow from './merchantFlow';
 import type { MerchantState, MerchantStocks } from './merchantFlow';
 import type {
   Money, PendingVictory, PendingLoot, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
-  PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingManeuver, PendingRun, PendingApproach, PendingFocus,
+  PendingAppraise, PendingAttack, PendingCleave, PendingDualStrike, PendingTrample, PendingManeuver, PendingRun, PendingApproach, PendingWard, PendingFocus,
   PendingFrenzy, RevealEntry, PendingRenounce, PendingDefense,
   PendingDisengage, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingCorruption,
   PendingCastOpposition, PendingCascade, ScheduledEffect,
@@ -283,6 +283,8 @@ export interface GameState extends RollFlowActionsMap {
   pendingRun: PendingRun | null;
   /** Approche d'une source de Peur en cours (Test de Calme +0 différant le clic — LDB 21 l.29). */
   pendingApproach: PendingApproach | null;
+  /** Bénédiction de Protection en cours (Test de FM +20 différant la déclaration d'attaque — LDB 41 l.105). */
+  pendingWard: PendingWard | null;
   /** Focalisation en cours (modale interactive). */
   pendingFocus: PendingFocus | null;
   // (Psychologie de combat : cascade de Round, cf. openRoundStartPsych/openRoundEndPsych.)
@@ -611,7 +613,7 @@ export interface GameState extends RollFlowActionsMap {
   oocCastSpell: (casterId: string, spellId: string, targetId: string, fromGrimoire?: boolean) => void;
   battleFocusSpell: (spellId: string) => void;
   battleClickTile: (pt: Pt, opts?: { confirm?: boolean }) => void;
-  battleClickEntity: (id: string, opts?: { confirm?: boolean; skipMountChoice?: boolean; forceAttackId?: string }) => void;
+  battleClickEntity: (id: string, opts?: { confirm?: boolean; skipMountChoice?: boolean; forceAttackId?: string; wardCleared?: boolean }) => void;
   /** Annule TOUT le déplacement décomposé du Tour (R6/LOT 6) tant qu'aucune Action n'a été prise :
    *  restaure positions/orientation depuis `battle.moveSnapshot`. No-op après l'Action. */
   cancelMove: () => void;
@@ -694,6 +696,10 @@ export interface GameState extends RollFlowActionsMap {
   // approach{Roll,Reroll,ForceSuccess,DarkPact} : générés (RollFlowActionsMap).
   approachConfirm: () => void;
   approachCancel: () => void;
+  /** Bénédiction de Protection (LDB 41 l.105) : Test de FM Accessible (+20) ; succès → l'attaque est relancée. */
+  // ward{Roll,Reroll,ForceSuccess,DarkPact} : générés (RollFlowActionsMap).
+  wardConfirm: () => void;
+  wardCancel: () => void;
   /** Se relever d'À Terre (LDB 16 l.37) : consomme le Mouvement (pas l'Action) ; impossible à 0 PB (LDB 18 l.28). */
   battleStandUp: () => void;
   /** Focalisation par modale (Test étendu) : Lancer, Chance, Appliquer (cumule le DR). */
