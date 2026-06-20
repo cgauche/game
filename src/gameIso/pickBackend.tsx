@@ -4,7 +4,7 @@ import type { Combatant } from '../engine/types';
 import type { SceneEntity } from '../state/scene';
 import { isOutOfAction } from '../engine/conditions';
 import { AnimatedRigToken } from './AnimatedRigToken';
-import { AmbientRigToken } from './AmbientRigToken';
+import { RigToken } from './RigToken';
 import { AnimatedPlanToken } from './AnimatedPlanToken';
 import { enemyRigProfile, entityRigProfile } from './rig/enemyProfile';
 import { resolveRender } from './rig/bodyPlan';
@@ -132,7 +132,7 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
       const f = faceFrame(prof.appearance, prof.equip, prof.tenue, []);
       return { backend: 'rig', id, speciesScale: r.scale, portraitBox: f.box, flat: true, body: f.body };
     }
-    return { backend: 'rig', id, speciesScale: r.scale, portraitBox: FACE_BOX, flat: false, body: <AmbientRigToken profile={prof} anim={ent.anim ?? ''} id={id} facing={ent.facing} pos={ent.pos} /> };
+    return { backend: 'rig', id, speciesScale: r.scale, portraitBox: FACE_BOX, flat: false, body: <RigToken id={id} appearance={prof.appearance} equip={prof.equip} career={prof.tenue} ambientAnim={ent.anim ?? ''} facing={ent.facing} pos={ent.pos} /> };
   }
   if (r.kind === 'plan') {
     // ent.appearance.eyes = CLÉS du catalogue (donnée éditeur) → résolues en arts ici

@@ -27,6 +27,8 @@ export { terrainGradient } from './catalog/terrain';
  * Source UNIQUE pour le jeu (IsoStage) ET l'éditeur — fini les branches
  * `if (t === 'mur') … if (t === 'bois')` dupliquées à l'identique dans les deux.
  * Ajouter un terrain en relief = une entrée ici (plus de `switch` inline).
+ * NB : métadonnée STRUCTURELLE (les valeurs portent des fonctions `render` = du code, pas de la
+ * donnée éditable) — hors du catalogue visuel data-driven, à dessein.
  */
 const TERRAIN_OVERLAYS: Record<string, { render: (x: number, y: number, dims: Dims) => string; depthBias: number }> = {
   mur: { render: (x, y, d) => wallBlock(x, y, d), depthBias: 0 },

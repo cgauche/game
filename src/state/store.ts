@@ -1421,9 +1421,3 @@ export const useGame = create<GameState>((set, get) => ({
     }
   },
 }));
-
-// Exposition DEV-ONLY du store pour le pilotage en vérification navigateur (Playwright/Puppeteer) :
-// permet d'ouvrir les flux (battleClickEntity, etc.) sans simuler la projection isométrique du clic.
-if (typeof window !== 'undefined' && import.meta.env?.DEV) {
-  (window as unknown as { __game?: typeof useGame }).__game = useGame;
-}
