@@ -487,13 +487,53 @@ export interface SpellData {
   damage?: number;
   ignorePA?: boolean;
   ignoreBE?: boolean;
+  // ── MÉTADONNÉES DE RÉSOLUTION (migrées depuis src/data/spellspecs/*.ts — migration #5) ──────────
+  // Ces champs sont multilingue-safe (ids/formules, jamais du texte d'affichage).
+  // Présents sur toutes les entrées OFFICIELLES (curated:true) ; absents sur les sorts homebrew (frenchy.bzh).
+  /** Vrai pour une entrée curée de la base officielle. Absent/false pour les sorts homebrew (frenchy.bzh).
+   *  Permet au test de couverture de vérifier que TOUS les sorts officiels ont une spec complète. */
+  curated?: boolean;
+  /** Durée en Rounds si exprimable (littéral / « (Bonus de X) Rounds » du lanceur) ;
+   *  null = Instantané ou durée hors échelle tactique (minutes/heures/jours) — on n'invente PAS un
+   *  nombre de rounds (LDB). Formula = `number | {bonusOf:CharKey} | {charOf:CharKey} | …` (engine/ops). */
+  durationRounds?: import('../engine/ops').Formula | null;
+  /** RAYON de Zone d'Effet en MÈTRES (sorts de zone avec rayon dans la desc —
+   *  « dans un rayon de (Bonus de Sociabilité) mètres », Feu de l'âme, Comète…) ;
+   *  prioritaire sur le parsing du champ Cible (zdeRadiusTiles). */
+  zdeRadiusMeters?: import('../engine/ops').Formula;
+  /** La zone ÉPARGNE le lanceur (Poussée repousse « toutes les créatures » autour de SOI ;
+   *  Feu de l'âme châtie les ennemis) — il est exclu de la collecte des cibles. */
+  zdeExcludesCaster?: boolean;
+  /** TÉLÉPORTATION du lanceur (Jalon 2.6 — « vous vous téléportez de BFM mètres ») : après
+   *  l'Appliquer, le jeu propose le choix d'une case d'arrivée dans ce rayon (survol des
+   *  obstacles, atterrissage libre). */
+  teleportMeters?: import('../engine/ops').Formula;
+  /** Bonus de téléportation par surincantation : `+metersFormula` mètres tous les `every` DR. */
+  teleportPerSL?: { every: number; metersFormula: import('../engine/ops').Formula };
+  /** POUSSÉE — chaque cible affectée est repoussée en ligne (direction lanceur→cible)
+   *  de ce nombre de mètres jusqu'à l'obstacle ; la collision est journalisée (LDB). */
+  pushMeters?: import('../engine/ops').Formula;
+  /** Sort « Souffle » (LDB 47 p.244) : délégué à l'attaque de ZONE du Trait Souffle. */
+  breathAttack?: true;
+  /** Attaques en chaîne (LDB 47) : rebond si réduit la cible à 0 Blessure,
+   *  jusqu'à `maxBounces` fois, chaque rebond à `hopMeters` mètres. */
+  chainOnKill?: { maxBounces: import('../engine/ops').Formula; hopMeters: import('../engine/ops').Formula };
+  /** OPPOSITION de la cible (multijet dans la modale d'incantation).
+   *  `resist` : Test opposé par la caractéristique/compétence `char`/`skill` de la cible.
+   *  `contact` : Sort de Portée Contact — frappe via Test opposé de Corps à corps (Bagarre). */
+  opposed?: {
+    kind: 'resist' | 'contact';
+    /** Caractéristique opposée (`resist` uniquement). */
+    char?: import('../engine/types').CharKey;
+    /** Compétence opposée en libellé (`resist` uniquement, rare — FM, Intelligence, Calme…). */
+    skill?: string;
+  };
   /**
    * EFFETS du sort — `Flow` ÉDITABLE (système logique unique : `do`/`if`/`test`), source des effets
    * mécaniques appliqués à l'incantation (feuilles EffectOp `{type:'ops', on:'target'|'caster', ops}`).
    * Édité dans le Compendium (CodexEdit → FlowEditor), exécuté par `runCombatFlow`. SOURCE UNIQUE des
-   * effets — les MÉTADONNÉES de résolution (durée/ZdE/opposition/invocation/métamorphose) restent dans
-   * la spec engine curée (`spellSpecFor`). Import TYPE seul (effacé à la compilation) → la couche data
-   * NE dépend PAS d'une valeur de `state` (pureté préservée). Absent = aucun effet mécanique (narratif).
+   * effets. Import TYPE seul (effacé à la compilation) → la couche data NE dépend PAS d'une valeur
+   * de `state` (pureté préservée). Absent = aucun effet mécanique (narratif).
    */
   effects?: import('../state/flow').Flow;
   source: { book: string; page: number };

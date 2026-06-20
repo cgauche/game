@@ -33,7 +33,9 @@
       "book": "LDB",
       "page": 221
     },
-    "family": "beni"
+    "family": "beni",
+    "durationRounds": 6,
+    "curated": true
   },
   {
     "id": "benediction-de-chance",
@@ -67,7 +69,9 @@
       "book": "LDB",
       "page": 221
     },
-    "family": "beni"
+    "family": "beni",
+    "durationRounds": 6,
+    "curated": true
   },
   {
     "id": "benediction-de-charisme",
@@ -103,7 +107,9 @@
       "book": "LDB",
       "page": 221
     },
-    "family": "beni"
+    "family": "beni",
+    "durationRounds": 6,
+    "curated": true
   },
   {
     "id": "benediction-de-conscience",
@@ -138,7 +144,9 @@
       "book": "LDB",
       "page": 221
     },
-    "family": "beni"
+    "family": "beni",
+    "durationRounds": 6,
+    "curated": true
   },
   {
     "id": "benediction-de-convalescence",
@@ -173,7 +181,9 @@
       "book": "LDB",
       "page": 221
     },
-    "family": "beni"
+    "family": "beni",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "benediction-de-courage",
@@ -209,7 +219,9 @@
       "book": "LDB",
       "page": 221
     },
-    "family": "beni"
+    "family": "beni",
+    "durationRounds": 6,
+    "curated": true
   },
   {
     "id": "benediction-de-droiture",
@@ -246,7 +258,9 @@
       "book": "LDB",
       "page": 221
     },
-    "family": "beni"
+    "family": "beni",
+    "durationRounds": 6,
+    "curated": true
   },
   {
     "id": "benediction-de-finesse",
@@ -282,7 +296,9 @@
       "book": "LDB",
       "page": 221
     },
-    "family": "beni"
+    "family": "beni",
+    "durationRounds": 6,
+    "curated": true
   },
   {
     "id": "benediction-de-grace",
@@ -318,7 +334,9 @@
       "book": "LDB",
       "page": 221
     },
-    "family": "beni"
+    "family": "beni",
+    "durationRounds": 6,
+    "curated": true
   },
   {
     "id": "benediction-de-guerison",
@@ -353,7 +371,9 @@
       "book": "LDB",
       "page": 221
     },
-    "family": "beni"
+    "family": "beni",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "benediction-de-la-chasse",
@@ -389,7 +409,9 @@
       "book": "LDB",
       "page": 221
     },
-    "family": "beni"
+    "family": "beni",
+    "durationRounds": 6,
+    "curated": true
   },
   {
     "id": "benediction-de-protection",
@@ -423,7 +445,9 @@
       "book": "LDB",
       "page": 221
     },
-    "family": "beni"
+    "family": "beni",
+    "durationRounds": 6,
+    "curated": true
   },
   {
     "id": "benediction-de-puissance",
@@ -459,7 +483,9 @@
       "book": "LDB",
       "page": 221
     },
-    "family": "beni"
+    "family": "beni",
+    "durationRounds": 6,
+    "curated": true
   },
   {
     "id": "benediction-de-sagesse",
@@ -495,7 +521,9 @@
       "book": "LDB",
       "page": 221
     },
-    "family": "beni"
+    "family": "beni",
+    "durationRounds": 6,
+    "curated": true
   },
   {
     "id": "benediction-de-sauvagerie",
@@ -529,7 +557,9 @@
       "book": "LDB",
       "page": 221
     },
-    "family": "beni"
+    "family": "beni",
+    "durationRounds": 6,
+    "curated": true
   },
   {
     "id": "benediction-de-souffle",
@@ -563,7 +593,9 @@
       "book": "LDB",
       "page": 221
     },
-    "family": "beni"
+    "family": "beni",
+    "durationRounds": 6,
+    "curated": true
   },
   {
     "id": "benediction-de-tenacite",
@@ -597,7 +629,9 @@
       "book": "LDB",
       "page": 221
     },
-    "family": "beni"
+    "family": "beni",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "benediction-de-vigueur",
@@ -633,7 +667,9 @@
       "book": "LDB",
       "page": 221
     },
-    "family": "beni"
+    "family": "beni",
+    "durationRounds": 6,
+    "curated": true
   },
   {
     "id": "benediction-de-vivacite",
@@ -669,7 +705,9 @@
       "book": "LDB",
       "page": 221
     },
-    "family": "beni"
+    "family": "beni",
+    "durationRounds": 6,
+    "curated": true
   },
   {
     "id": "alerte",
@@ -703,7 +741,9 @@
       "book": "LDB",
       "page": 240
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "amitie-animale",
@@ -737,7 +777,9 @@
       "book": "LDB",
       "page": 240
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "bruits",
@@ -771,7 +813,11 @@
       "book": "LDB",
       "page": 240
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "choc",
@@ -805,7 +851,9 @@
       "book": "LDB",
       "page": 240
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "conservation",
@@ -839,7 +887,9 @@
       "book": "LDB",
       "page": 240
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "coup-de-vent",
@@ -873,7 +923,9 @@
       "book": "LDB",
       "page": 240
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "creer-un-petit-animal",
@@ -907,7 +959,9 @@
       "book": "LDB",
       "page": 240
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "drain",
@@ -943,7 +997,9 @@
     },
     "family": "mineure",
     "missile": true,
-    "ignorePA": true
+    "ignorePA": true,
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "eblouissant",
@@ -982,7 +1038,11 @@
       "book": "LDB",
       "page": 241
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "en-catimini",
@@ -1016,7 +1076,11 @@
       "book": "LDB",
       "page": 241
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "feux-follets",
@@ -1050,7 +1114,9 @@
       "book": "LDB",
       "page": 241
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "flamme-magique",
@@ -1084,7 +1150,11 @@
       "book": "LDB",
       "page": 241
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "flechette",
@@ -1105,7 +1175,9 @@
       "page": 241
     },
     "family": "mineure",
-    "missile": true
+    "missile": true,
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "lumiere",
@@ -1139,7 +1211,9 @@
       "book": "LDB",
       "page": 241
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "murmures",
@@ -1173,7 +1247,11 @@
       "book": "LDB",
       "page": 241
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "pas-leger",
@@ -1207,7 +1285,9 @@
       "book": "LDB",
       "page": 241
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "protection-contre-la-pluie",
@@ -1240,7 +1320,9 @@
       "book": "LDB",
       "page": 241
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "purification-de-l-eau",
@@ -1274,7 +1356,9 @@
       "book": "LDB",
       "page": 241
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "putrefaction",
@@ -1312,7 +1396,9 @@
       "book": "LDB",
       "page": 241
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "reperes",
@@ -1346,7 +1432,9 @@
       "book": "LDB",
       "page": 242
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "secousse",
@@ -1391,7 +1479,9 @@
       "book": "LDB",
       "page": 242
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "serrure-ouverte",
@@ -1425,7 +1515,9 @@
       "book": "LDB",
       "page": 242
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "sommeil",
@@ -1472,7 +1564,11 @@
       "book": "LDB",
       "page": 242
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "source",
@@ -1506,7 +1602,11 @@
       "book": "LDB",
       "page": 242
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "tendre-l-oreille",
@@ -1540,7 +1640,9 @@
       "book": "LDB",
       "page": 242
     },
-    "family": "mineure"
+    "family": "mineure",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "arme-aethyrique",
@@ -1592,7 +1694,11 @@
       "book": "LDB",
       "page": 242
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "armure-aethyrique",
@@ -1626,7 +1732,11 @@
       "book": "LDB",
       "page": 242
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "attaques-en-chaine",
@@ -1648,7 +1758,17 @@
     },
     "family": "arcane",
     "missile": true,
-    "damage": 4
+    "damage": 4,
+    "durationRounds": null,
+    "chainOnKill": {
+      "maxBounces": {
+        "bonusOf": "FM"
+      },
+      "hopMeters": {
+        "bonusOf": "FM"
+      }
+    },
+    "curated": true
   },
   {
     "id": "aura-ordinaire",
@@ -1682,7 +1802,9 @@
       "book": "LDB",
       "page": 243
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "bouclier-anti-fleches",
@@ -1718,7 +1840,11 @@
       "book": "LDB",
       "page": 243
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "bouclier-magique",
@@ -1752,7 +1878,11 @@
       "book": "LDB",
       "page": 243
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "carreau",
@@ -1774,7 +1904,9 @@
     },
     "family": "arcane",
     "missile": true,
-    "damage": 4
+    "damage": 4,
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "chute",
@@ -1819,7 +1951,9 @@
       "book": "LDB",
       "page": 243
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "deplacement-d-objet",
@@ -1853,7 +1987,9 @@
       "book": "LDB",
       "page": 243
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "dome",
@@ -1889,7 +2025,11 @@
       "book": "LDB",
       "page": 243
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "effrayant",
@@ -1928,7 +2068,11 @@
       "book": "LDB",
       "page": 243
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "enchevetrement",
@@ -1969,7 +2113,9 @@
       "book": "LDB",
       "page": 244
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "envol",
@@ -2006,7 +2152,11 @@
       "book": "LDB",
       "page": 244
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "explosion",
@@ -2027,7 +2177,9 @@
       "page": 244
     },
     "family": "arcane",
-    "missile": true
+    "missile": true,
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "perturbant",
@@ -2061,7 +2213,11 @@
       "book": "LDB",
       "page": 244
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "pont",
@@ -2095,7 +2251,11 @@
       "book": "LDB",
       "page": 244
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "poussee",
@@ -2129,7 +2289,15 @@
       "book": "LDB",
       "page": 244
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "zdeRadiusMeters": {
+      "bonusOf": "FM"
+    },
+    "pushMeters": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "protection",
@@ -2164,7 +2332,11 @@
       "book": "LDB",
       "page": 244
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "sang-corrosif",
@@ -2198,7 +2370,11 @@
       "book": "LDB",
       "page": 244
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "souffle",
@@ -2219,7 +2395,10 @@
       "page": 244
     },
     "family": "arcane",
-    "missile": true
+    "missile": true,
+    "durationRounds": null,
+    "breathAttack": true,
+    "curated": true
   },
   {
     "id": "teleportation",
@@ -2239,7 +2418,18 @@
       "book": "LDB",
       "page": 244
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "teleportMeters": {
+      "bonusOf": "FM"
+    },
+    "teleportPerSL": {
+      "every": 2,
+      "metersFormula": {
+        "bonusOf": "FM"
+      }
+    },
+    "curated": true
   },
   {
     "id": "terrifiant",
@@ -2274,7 +2464,11 @@
       "book": "LDB",
       "page": 244
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "vision-dans-l-obscurite",
@@ -2308,7 +2502,11 @@
       "book": "LDB",
       "page": 244
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "forme-bestiale",
@@ -2356,7 +2554,9 @@
       "page": 245
     },
     "domainId": "bete",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "incarnation-de-wyssan",
@@ -2422,7 +2622,11 @@
       "page": 245
     },
     "domainId": "bete",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "la-lance-d-ambre",
@@ -2463,7 +2667,9 @@
     "domainId": "bete",
     "family": "arcane",
     "missile": true,
-    "damage": 12
+    "damage": 12,
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "langue-bestiale",
@@ -2498,7 +2704,9 @@
       "page": 245
     },
     "domainId": "bete",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "maitre-de-la-bete",
@@ -2533,7 +2741,9 @@
       "page": 245
     },
     "domainId": "bete",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "peau-de-chasseur",
@@ -2582,7 +2792,11 @@
       "page": 246
     },
     "domainId": "bete",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "serres-d-ambre",
@@ -2642,7 +2856,11 @@
       "page": 246
     },
     "domainId": "bete",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "vol-du-destin",
@@ -2703,7 +2921,11 @@
       "page": 246
     },
     "domainId": "bete",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "arc-de-t-essla",
@@ -2740,7 +2962,9 @@
     "domainId": "cieux",
     "family": "arcane",
     "missile": true,
-    "damage": 10
+    "damage": 10,
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "bouclier-ceruleen",
@@ -2775,7 +2999,11 @@
       "page": 246
     },
     "domainId": "cieux",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "comete-de-cassandora",
@@ -2820,7 +3048,9 @@
     "domainId": "cieux",
     "family": "arcane",
     "missile": true,
-    "damage": 12
+    "damage": 12,
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "ironie-du-destin",
@@ -2855,7 +3085,11 @@
       "page": 247
     },
     "domainId": "cieux",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "le-premier-signe-d-amul",
@@ -2896,7 +3130,11 @@
       "page": 247
     },
     "domainId": "cieux",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "I"
+    },
+    "curated": true
   },
   {
     "id": "le-second-signe-d-amul",
@@ -2941,7 +3179,11 @@
       "page": 247
     },
     "domainId": "cieux",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "I"
+    },
+    "curated": true
   },
   {
     "id": "le-troisieme-signe-d-amul",
@@ -2978,7 +3220,11 @@
       "page": 247
     },
     "domainId": "cieux",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "I"
+    },
+    "curated": true
   },
   {
     "id": "maudit",
@@ -3013,7 +3259,11 @@
       "page": 247
     },
     "domainId": "cieux",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "I"
+    },
+    "curated": true
   },
   {
     "id": "cauteriser",
@@ -3111,7 +3361,9 @@
       "page": 247
     },
     "domainId": "feu",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "coeurs-ardents",
@@ -3164,7 +3416,11 @@
       "page": 247
     },
     "domainId": "feu",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "couronne-de-flammes",
@@ -3212,7 +3468,11 @@
       "page": 247
     },
     "domainId": "feu",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "grands-feux-d-u-zhul",
@@ -3292,7 +3552,11 @@
     "family": "arcane",
     "missile": true,
     "damage": 10,
-    "ignorePA": true
+    "ignorePA": true,
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "l-egide-d-aqshy",
@@ -3327,7 +3591,11 @@
       "page": 248
     },
     "domainId": "feu",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "l-epee-ardente-de-rhuin",
@@ -3405,7 +3673,11 @@
       "page": 248
     },
     "domainId": "feu",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "mur-de-feu",
@@ -3462,7 +3734,11 @@
     },
     "domainId": "feu",
     "family": "arcane",
-    "missile": true
+    "missile": true,
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "purification",
@@ -3506,7 +3782,11 @@
       "page": 248
     },
     "domainId": "feu",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "bouf-crane",
@@ -3545,7 +3825,11 @@
       "book": "ADE2",
       "page": 32
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "broyeur-d-os",
@@ -3582,7 +3866,9 @@
     "family": "arcane",
     "missile": true,
     "damage": 4,
-    "ignorePA": true
+    "ignorePA": true,
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "festin-des-damnes",
@@ -3620,7 +3906,11 @@
       "book": "ADE2",
       "page": 32
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "goinfre-costaud",
@@ -3659,7 +3949,11 @@
       "book": "ADE2",
       "page": 33
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "goutemort",
@@ -3693,7 +3987,9 @@
       "book": "ADE2",
       "page": 33
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "la-gueule",
@@ -3727,7 +4023,11 @@
       "book": "ADE2",
       "page": 33
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "trollboyaux",
@@ -3765,7 +4065,11 @@
       "book": "ADE2",
       "page": 33
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "charOf": "E"
+    },
+    "curated": true
   },
   {
     "id": "bannissement",
@@ -3808,7 +4112,9 @@
       "page": 248
     },
     "domainId": "lumiere",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "clarte-d-esprit",
@@ -3849,7 +4155,9 @@
       "page": 249
     },
     "domainId": "lumiere",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "fauche-demon",
@@ -3890,7 +4198,13 @@
       "page": 249
     },
     "domainId": "lumiere",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "opposed": {
+      "kind": "resist",
+      "char": "FM"
+    },
+    "curated": true
   },
   {
     "id": "filet-d-amyntok",
@@ -3929,7 +4243,9 @@
       "page": 249
     },
     "domainId": "lumiere",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "lumiere-aveuglante",
@@ -3973,7 +4289,9 @@
       "page": 249
     },
     "domainId": "lumiere",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "lumiere-de-guerison",
@@ -4053,7 +4371,9 @@
       "page": 249
     },
     "domainId": "lumiere",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "pensee-rapide",
@@ -4094,7 +4414,11 @@
       "page": 249
     },
     "domainId": "lumiere",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "protection-de-pha",
@@ -4129,7 +4453,11 @@
       "page": 249
     },
     "domainId": "lumiere",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "arme-enchantee",
@@ -4174,7 +4502,11 @@
       "page": 249
     },
     "domainId": "metal",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "creuset-de-chamon",
@@ -4210,7 +4542,9 @@
     },
     "domainId": "metal",
     "family": "arcane",
-    "missile": true
+    "missile": true,
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "ecaille-d-acier",
@@ -4250,7 +4584,11 @@
       "page": 250
     },
     "domainId": "metal",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "E"
+    },
+    "curated": true
   },
   {
     "id": "forge-de-chamon",
@@ -4285,7 +4623,9 @@
       "page": 250
     },
     "domainId": "metal",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "l-or-des-fous",
@@ -4320,7 +4660,9 @@
       "page": 250
     },
     "domainId": "metal",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "metal-changeant",
@@ -4355,7 +4697,11 @@
       "page": 250
     },
     "domainId": "metal",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "plume-de-plomb",
@@ -4390,7 +4736,11 @@
       "page": 250
     },
     "domainId": "metal",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "transmutation-de-chamon",
@@ -4454,7 +4804,11 @@
     },
     "domainId": "metal",
     "family": "arcane",
-    "missile": true
+    "missile": true,
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "caresse-de-laniph",
@@ -4495,7 +4849,9 @@
     "missile": true,
     "damage": 6,
     "ignorePA": true,
-    "ignoreBE": true
+    "ignoreBE": true,
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "dernieres-paroles",
@@ -4530,7 +4886,11 @@
       "page": 251
     },
     "domainId": "mort",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "la-faux-de-shyish",
@@ -4591,7 +4951,11 @@
       "page": 251
     },
     "domainId": "mort",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "le-voile-violet-de-shyish",
@@ -4637,7 +5001,11 @@
       "page": 251
     },
     "domainId": "mort",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "mort-rapide",
@@ -4672,7 +5040,9 @@
       "page": 251
     },
     "domainId": "mort",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "sanctifier",
@@ -4707,7 +5077,9 @@
       "page": 251
     },
     "domainId": "mort",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "vol-de-vie",
@@ -4774,7 +5146,9 @@
     "family": "arcane",
     "missile": true,
     "damage": 6,
-    "ignorePA": true
+    "ignorePA": true,
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "vortex-d-ames",
@@ -4817,7 +5191,9 @@
     "missile": true,
     "damage": 10,
     "ignorePA": true,
-    "ignoreBE": true
+    "ignoreBE": true,
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "destrier-d-ombre",
@@ -4876,7 +5252,9 @@
       "page": 252
     },
     "domainId": "ombres",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "illusion",
@@ -4911,7 +5289,9 @@
       "page": 252
     },
     "domainId": "ombres",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "jumeau-malefique",
@@ -4946,7 +5326,9 @@
       "page": 252
     },
     "domainId": "ombres",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "linceul-d-invisibilite",
@@ -4981,7 +5363,11 @@
       "page": 252
     },
     "domainId": "ombres",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "miasme-mystifiant",
@@ -5037,7 +5423,11 @@
       "page": 252
     },
     "domainId": "ombres",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "ombres-etrangleuses",
@@ -5087,7 +5477,11 @@
       "page": 252
     },
     "domainId": "ombres",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "perte-de-memoire",
@@ -5122,7 +5516,9 @@
       "page": 252
     },
     "domainId": "ombres",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "portail-d-ombre",
@@ -5157,7 +5553,12 @@
       "page": 252
     },
     "domainId": "ombres",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "teleportMeters": {
+      "charOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "configuration-du-terrain",
@@ -5192,7 +5593,9 @@
       "page": 253
     },
     "domainId": "vie",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "don-de-vie",
@@ -5227,7 +5630,9 @@
       "page": 253
     },
     "domainId": "vie",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "eau-de-la-terre",
@@ -5262,7 +5667,18 @@
       "page": 253
     },
     "domainId": "vie",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "teleportMeters": {
+      "charOf": "FM"
+    },
+    "teleportPerSL": {
+      "every": 2,
+      "metersFormula": {
+        "charOf": "FM"
+      }
+    },
+    "curated": true
   },
   {
     "id": "ecorce",
@@ -5308,7 +5724,11 @@
       "page": 253
     },
     "domainId": "vie",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "foret-d-epines",
@@ -5369,7 +5789,11 @@
       "page": 253
     },
     "domainId": "vie",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "graisse-de-la-terre",
@@ -5407,7 +5831,9 @@
       "page": 254
     },
     "domainId": "vie",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "regeneration",
@@ -5442,7 +5868,11 @@
       "page": 254
     },
     "domainId": "vie",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "sang-de-la-terre",
@@ -5500,7 +5930,11 @@
       "page": 254
     },
     "domainId": "vie",
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "bonne-volonte",
@@ -5534,7 +5968,11 @@
       "book": "LDB",
       "page": 254
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "charme-protecteur",
@@ -5568,7 +6006,9 @@
       "book": "LDB",
       "page": 254
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "chevaucher-l-obscurite",
@@ -5602,7 +6042,9 @@
       "book": "LDB",
       "page": 254
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "nepenthes",
@@ -5636,7 +6078,9 @@
       "book": "LDB",
       "page": 254
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "panacee",
@@ -5670,7 +6114,9 @@
       "book": "LDB",
       "page": 254
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "separer-les-branches",
@@ -5704,7 +6150,9 @@
       "book": "LDB",
       "page": 255
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "degradation",
@@ -5738,7 +6186,9 @@
       "book": "LDB",
       "page": 255
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "horreur-obsedante",
@@ -5772,7 +6222,9 @@
       "book": "LDB",
       "page": 255
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "malediction-de-douleur-paralysante",
@@ -5806,7 +6258,11 @@
       "book": "LDB",
       "page": 255
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "malediction-de-malchance",
@@ -5844,7 +6300,9 @@
       "book": "LDB",
       "page": 255
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "mauvais-oeil",
@@ -5882,7 +6340,9 @@
       "book": "LDB",
       "page": 255
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "menace-rampante",
@@ -5936,7 +6396,11 @@
       "book": "LDB",
       "page": 256
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "destruction-de-demon-mineur",
@@ -5979,7 +6443,11 @@
       "book": "LDB",
       "page": 256
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "detection-de-demon",
@@ -6013,7 +6481,9 @@
       "book": "LDB",
       "page": 256
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "manifestation-de-demon-mineur",
@@ -6063,7 +6533,11 @@
       "book": "LDB",
       "page": 256
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "octogramme",
@@ -6097,7 +6571,9 @@
       "book": "LDB",
       "page": 256
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "crane-hurlant",
@@ -6156,7 +6632,9 @@
       "page": 256
     },
     "family": "arcane",
-    "missile": true
+    "missile": true,
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "l-appel-de-vanhel",
@@ -6190,7 +6668,9 @@
       "book": "LDB",
       "page": 256
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "reanimation",
@@ -6246,7 +6726,9 @@
       "book": "LDB",
       "page": 257
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "relever-les-morts",
@@ -6300,7 +6782,9 @@
       "book": "LDB",
       "page": 257
     },
-    "family": "arcane"
+    "family": "arcane",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "allure-demoniaque",
@@ -6334,7 +6818,11 @@
       "book": "EDO",
       "page": 79
     },
-    "family": "chaos"
+    "family": "chaos",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "aspect-sublime",
@@ -6368,7 +6856,11 @@
       "book": "EDO",
       "page": 79
     },
-    "family": "chaos"
+    "family": "chaos",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "decharge-de-corruption",
@@ -6415,7 +6907,9 @@
     },
     "family": "chaos",
     "missile": true,
-    "damage": 6
+    "damage": 6,
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "dechirer-l-aethyr",
@@ -6464,7 +6958,11 @@
       "book": "EDO",
       "page": 80
     },
-    "family": "chaos"
+    "family": "chaos",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "esclave-des-tenebres",
@@ -6498,7 +6996,9 @@
       "book": "EDO",
       "page": 80
     },
-    "family": "chaos"
+    "family": "chaos",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "explosion-de-corruption",
@@ -6545,7 +7045,9 @@
     },
     "family": "chaos",
     "missile": true,
-    "damage": 5
+    "damage": 5,
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "obsession",
@@ -6579,7 +7081,9 @@
       "book": "EDO",
       "page": 80
     },
-    "family": "chaos"
+    "family": "chaos",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "odieux-messager",
@@ -6613,7 +7117,9 @@
       "book": "EDO",
       "page": 81
     },
-    "family": "chaos"
+    "family": "chaos",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "pouvoir-du-chaos",
@@ -6647,7 +7153,11 @@
       "book": "EDO",
       "page": 81
     },
-    "family": "chaos"
+    "family": "chaos",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "flot-de-corruption",
@@ -6682,7 +7192,10 @@
       "page": 257
     },
     "family": "chaos",
-    "missile": true
+    "missile": true,
+    "durationRounds": null,
+    "breathAttack": true,
+    "curated": true
   },
   {
     "id": "consentement",
@@ -6716,7 +7229,11 @@
       "book": "LDB",
       "page": 257
     },
-    "family": "chaos"
+    "family": "chaos",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "trahison-de-tzeentch",
@@ -6750,7 +7267,11 @@
       "book": "LDB",
       "page": 257
     },
-    "family": "chaos"
+    "family": "chaos",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "aura-doree-de-tzeentch",
@@ -6785,7 +7306,11 @@
       "book": "EDO",
       "page": 81
     },
-    "family": "chaos"
+    "family": "chaos",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "avantage-de-tzeentch",
@@ -6819,7 +7344,9 @@
       "book": "EDO",
       "page": 81
     },
-    "family": "chaos"
+    "family": "chaos",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "eclair-du-changement",
@@ -6879,7 +7406,9 @@
     },
     "family": "chaos",
     "missile": true,
-    "damage": 7
+    "damage": 7,
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "feu-bleu-de-tzeentch",
@@ -6918,7 +7447,9 @@
       "page": 82
     },
     "family": "chaos",
-    "missile": true
+    "missile": true,
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "feu-rose-de-tzeentch",
@@ -6958,7 +7489,9 @@
     },
     "family": "chaos",
     "missile": true,
-    "damage": 6
+    "damage": 6,
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "feu-spirituel",
@@ -7016,7 +7549,9 @@
       "book": "EDO",
       "page": 82
     },
-    "family": "chaos"
+    "family": "chaos",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "flammes-vacillantes-du-capricieux-destin",
@@ -7050,7 +7585,11 @@
       "book": "EDO",
       "page": 82
     },
-    "family": "chaos"
+    "family": "chaos",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "la-main-pourpre",
@@ -7084,7 +7623,9 @@
       "book": "EDO",
       "page": 82
     },
-    "family": "chaos"
+    "family": "chaos",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "malediction-de-tzeentch",
@@ -7118,7 +7659,9 @@
       "book": "EDO",
       "page": 82
     },
-    "family": "chaos"
+    "family": "chaos",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "maitre-du-destin",
@@ -7162,7 +7705,9 @@
       "book": "EDO",
       "page": 82
     },
-    "family": "chaos"
+    "family": "chaos",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "parole-de-tzeentch",
@@ -7205,7 +7750,15 @@
       "book": "EDO",
       "page": 83
     },
-    "family": "chaos"
+    "family": "chaos",
+    "durationRounds": {
+      "bonusOf": "Int"
+    },
+    "opposed": {
+      "kind": "resist",
+      "char": "Int"
+    },
+    "curated": true
   },
   {
     "id": "percevoir-l-echeveau",
@@ -7239,7 +7792,9 @@
       "book": "EDO",
       "page": 83
     },
-    "family": "chaos"
+    "family": "chaos",
+    "durationRounds": 1,
+    "curated": true
   },
   {
     "id": "tempete-de-feu-de-tzeentch",
@@ -7277,7 +7832,11 @@
       "book": "EDO",
       "page": 83
     },
-    "family": "chaos"
+    "family": "chaos",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "encalmine",
@@ -7312,7 +7871,9 @@
       "book": "LDB",
       "page": 222
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "generosite-de-manann",
@@ -7355,7 +7916,9 @@
       "book": "LDB",
       "page": 222
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "marcher-sur-les-eaux",
@@ -7390,7 +7953,9 @@
       "book": "LDB",
       "page": 222
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "mer-dechainee",
@@ -7437,7 +8002,11 @@
       "book": "LDB",
       "page": 222
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "vents-favorables",
@@ -7472,7 +8041,9 @@
       "book": "LDB",
       "page": 222
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "visage-de-l-homme-noye",
@@ -7514,7 +8085,11 @@
       "book": "LDB",
       "page": 223
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "aneantir-les-morts-vivants",
@@ -7561,7 +8136,9 @@
       "book": "LDB",
       "page": 223
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "condamne",
@@ -7596,7 +8173,9 @@
       "book": "LDB",
       "page": 223
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "main-de-morr",
@@ -7631,7 +8210,9 @@
       "book": "LDB",
       "page": 223
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "masque-mortuaire",
@@ -7667,7 +8248,11 @@
       "book": "LDB",
       "page": 223
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "rites-funeraires",
@@ -7702,7 +8287,9 @@
       "book": "LDB",
       "page": 223
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "seuil-du-portail",
@@ -7737,7 +8324,9 @@
       "book": "LDB",
       "page": 223
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "appel-a-la-fureur",
@@ -7776,7 +8365,11 @@
       "book": "LDB",
       "page": 223
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "bouclier-de-myrmidia",
@@ -7811,7 +8404,11 @@
       "book": "LDB",
       "page": 223
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "inspirant",
@@ -7850,7 +8447,11 @@
       "book": "LDB",
       "page": 223
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "lance-de-myrmidia",
@@ -7889,7 +8490,11 @@
       "book": "LDB",
       "page": 224
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "oeil-de-l-aigle",
@@ -7924,7 +8529,11 @@
       "book": "LDB",
       "page": 224
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "soleil-flamboyant",
@@ -7968,7 +8577,9 @@
       "book": "LDB",
       "page": 224
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "commander-la-legion",
@@ -8003,7 +8614,9 @@
       "book": "AA",
       "page": 79
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "terrifier-l-ennemi",
@@ -8039,7 +8652,9 @@
       "book": "AA",
       "page": 79
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": 1,
+    "curated": true
   },
   {
     "id": "en-bon-ordre",
@@ -8074,7 +8689,11 @@
       "book": "AA",
       "page": 79
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "connais-ton-ennemi",
@@ -8109,7 +8728,9 @@
       "book": "AA",
       "page": 79
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "en-terrain-dangereux",
@@ -8144,7 +8765,11 @@
       "book": "AA",
       "page": 79
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "FM"
+    },
+    "curated": true
   },
   {
     "id": "frappe-rapide",
@@ -8179,7 +8804,9 @@
       "book": "AA",
       "page": 79
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": 3,
+    "curated": true
   },
   {
     "id": "devotion-de-la-vierge-guerriere",
@@ -8218,7 +8845,9 @@
       "book": "AA",
       "page": 79
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": 4,
+    "curated": true
   },
   {
     "id": "prouesses-martiales",
@@ -8259,7 +8888,9 @@
       "book": "AA",
       "page": 79
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": 4,
+    "curated": true
   },
   {
     "id": "fureur-vengeresse",
@@ -8294,7 +8925,9 @@
       "book": "AA",
       "page": 79
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": 6,
+    "curated": true
   },
   {
     "id": "grace-de-ranald",
@@ -8338,7 +8971,11 @@
       "book": "LDB",
       "page": 224
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Ag"
+    },
+    "curated": true
   },
   {
     "id": "invitation",
@@ -8373,7 +9010,9 @@
       "book": "LDB",
       "page": 224
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "que-la-chance-persiste",
@@ -8417,7 +9056,9 @@
       "book": "LDB",
       "page": 224
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "riche-pauvre-mendiant-voleur",
@@ -8452,7 +9093,9 @@
       "book": "LDB",
       "page": 224
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "vous-ne-m-avez-pas-vu-n-est-ce-pas",
@@ -8487,7 +9130,11 @@
       "book": "LDB",
       "page": 224
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "yeux-de-chat",
@@ -8522,7 +9169,11 @@
       "book": "LDB",
       "page": 224
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "abri-de-rhya",
@@ -8557,7 +9208,9 @@
       "book": "LDB",
       "page": 225
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "caresse-de-rhya",
@@ -8598,7 +9251,9 @@
       "book": "LDB",
       "page": 225
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "enfants-de-rhya",
@@ -8633,7 +9288,11 @@
       "book": "LDB",
       "page": 225
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "recolte-de-rhya",
@@ -8673,7 +9332,9 @@
       "book": "LDB",
       "page": 225
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": 1,
+    "curated": true
   },
   {
     "id": "secours-de-rhya",
@@ -8711,7 +9372,9 @@
       "book": "LDB",
       "page": 225
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "union-de-rhya",
@@ -8746,7 +9409,9 @@
       "book": "LDB",
       "page": 225
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "amere-catharsis",
@@ -8794,7 +9459,9 @@
       "book": "LDB",
       "page": 225
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "baume-pour-un-esprit-blesse",
@@ -8832,7 +9499,9 @@
       "book": "LDB",
       "page": 225
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "endurance-de-l-anachorete",
@@ -8870,7 +9539,11 @@
       "book": "LDB",
       "page": 225
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "innocence-immaculee",
@@ -8913,7 +9586,9 @@
       "book": "LDB",
       "page": 225
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "larmes-de-shallya",
@@ -8956,7 +9631,9 @@
       "book": "LDB",
       "page": 226
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "martyr",
@@ -8990,7 +9667,11 @@
       "book": "LDB",
       "page": 226
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "comete-a-deux-queues",
@@ -9042,7 +9723,13 @@
       "book": "LDB",
       "page": 226
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "zdeRadiusMeters": {
+      "bonusOf": "Soc"
+    },
+    "zdeExcludesCaster": true,
+    "curated": true
   },
   {
     "id": "feu-de-l-ame",
@@ -9094,7 +9781,13 @@
       "book": "LDB",
       "page": 226
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "zdeRadiusMeters": {
+      "bonusOf": "Soc"
+    },
+    "zdeExcludesCaster": true,
+    "curated": true
   },
   {
     "id": "flambeau-de-vertu",
@@ -9138,7 +9831,11 @@
       "book": "LDB",
       "page": 226
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "marteau-ardent-de-sigmar",
@@ -9201,7 +9898,11 @@
       "book": "LDB",
       "page": 226
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "n-ecoutez-point-la-sorciere",
@@ -9244,7 +9945,11 @@
       "book": "LDB",
       "page": 226
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "vaincre-les-impies",
@@ -9290,7 +9995,11 @@
       "book": "LDB",
       "page": 226
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "bondissant-comme-un-cerf",
@@ -9329,7 +10038,11 @@
       "book": "LDB",
       "page": 227
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "dent-et-griffe",
@@ -9376,7 +10089,11 @@
       "book": "LDB",
       "page": 227
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "enchevetrement-2",
@@ -9423,7 +10140,9 @@
       "book": "LDB",
       "page": 227
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "instincts-animaux",
@@ -9462,7 +10181,9 @@
       "book": "LDB",
       "page": 227
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "roi-de-la-nature",
@@ -9512,7 +10233,11 @@
       "book": "LDB",
       "page": 227
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "seigneur-de-la-chasse",
@@ -9547,7 +10272,9 @@
       "book": "LDB",
       "page": 227
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "frisson-du-givre",
@@ -9587,7 +10314,11 @@
       "book": "LDB",
       "page": 227
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "fureur-d-ulric",
@@ -9622,7 +10353,11 @@
       "book": "LDB",
       "page": 227
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "hurlement-du-loup",
@@ -9681,7 +10416,11 @@
       "book": "LDB",
       "page": 227
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "jugement-du-roi-de-la-neige",
@@ -9725,7 +10464,9 @@
       "book": "LDB",
       "page": 227
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "morsure-de-l-hiver",
@@ -9801,7 +10542,11 @@
       "book": "LDB",
       "page": 227
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "peau-de-loup-d-hiver",
@@ -9835,7 +10580,9 @@
       "book": "LDB",
       "page": 228
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "entraves-a-la-verite",
@@ -9874,7 +10621,11 @@
       "book": "LDB",
       "page": 228
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "epee-de-justice",
@@ -9950,7 +10701,11 @@
       "book": "LDB",
       "page": 228
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "justice-aveugle",
@@ -9985,7 +10740,11 @@
       "book": "LDB",
       "page": 228
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "la-verite-eclatera",
@@ -10020,7 +10779,9 @@
       "book": "LDB",
       "page": 228
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "curated": true
   },
   {
     "id": "sagesse-de-la-chouette",
@@ -10064,7 +10825,11 @@
       "book": "LDB",
       "page": 228
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "verena-est-mon-temoin",
@@ -10099,7 +10864,11 @@
       "book": "LDB",
       "page": 228
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "curated": true
   },
   {
     "id": "bon-baiser-d-la-fosse-noire",
@@ -10148,7 +10917,13 @@
       "book": "ZI",
       "page": 10
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "zdeRadiusMeters": {
+      "bonusOf": "Soc"
+    },
+    "zdeExcludesCaster": true,
+    "curated": true
   },
   {
     "id": "nuee-d-escampette",
@@ -10191,7 +10966,15 @@
       "book": "ZI",
       "page": 10
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": {
+      "bonusOf": "Soc"
+    },
+    "zdeRadiusMeters": {
+      "bonusOf": "Soc"
+    },
+    "zdeExcludesCaster": true,
+    "curated": true
   },
   {
     "id": "toile-surprise",
@@ -10238,6 +11021,12 @@
       "book": "ZI",
       "page": 10
     },
-    "family": "invocation"
+    "family": "invocation",
+    "durationRounds": null,
+    "zdeRadiusMeters": {
+      "bonusOf": "Soc"
+    },
+    "zdeExcludesCaster": true,
+    "curated": true
   }
 ]

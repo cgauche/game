@@ -10,7 +10,6 @@ import { bonus, effectiveChar } from '../engine/characteristics';
 import { isOutOfAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
 import { findSpellById } from '../data';
-import { spellSpecFor } from '../data/spellspecs';
 import { combatDistance } from './footprint';
 import type { GameState } from './store';
 import { attackPlan, previewAttack, previewCast, castSightBlocked, selectedAttackOption, trampleTarget, firedAttackBlock } from './combatFlow';
@@ -65,7 +64,7 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
       return { kind: 'none' };
     if (target.id !== active.id) {
       // Souffle : la portée suit le TRAIT (BE+20 m), pas le champ Portée — même calcul que castSpell.
-      const range = spellSpecFor(spell).breathAttack
+      const range = spell.breathAttack
         ? Math.max(1, Math.ceil((bonus(effectiveChar(active, 'E')) + 20) / 2))
         : spellRangeTiles(spell.range, active);
       if (range != null && combatDistance(active, target) > range) return { kind: 'invalid', reason: 'range' };

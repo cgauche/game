@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { runSpellFlowLines } from './combatFlow';
 import { flowEffects, spellOps, type Flow } from './flow';
 import { spells } from '../data';
-import { curatedSpec } from '../data/spellspecs';
 import type { Combatant } from '../engine/types';
 
 /**
@@ -15,7 +14,7 @@ import type { Combatant } from '../engine/types';
  */
 describe('Complétude : tout sort porte ses effets dans un Flow exécutable (SpellData.effects)', () => {
   // Sorts OFFICIELS (les homebrew frenchy.bzh n'ont pas de spec curée → effets vides assumés).
-  const curated = spells.filter((s) => curatedSpec(s.label, s.type)?.curated);
+  const curated = spells.filter((s) => s.curated);
 
   it('la base est bien fournie (≥ 220 sorts curés)', () => {
     expect(curated.length).toBeGreaterThanOrEqual(220);

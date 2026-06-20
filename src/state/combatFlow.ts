@@ -85,7 +85,6 @@ import {
   type SpellLike,
 } from '../engine/magic';
 import { applyOps, resolveFormula, skillDRBonus, COMBAT_PERSIST, type GameOp, type OpsCtx } from '../engine/ops';
-import { spellSpecFor } from '../data/spellspecs';
 import { applySummon, purgeExpiredSummons } from './summonFlow';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
@@ -2212,7 +2211,7 @@ export function castSpell(
   }
   // Sort « Souffle » (LDB 47 p.244) : délégué à l'attaque de ZONE du Trait — la portée suit le
   // TRAIT (BE+20 m, LDB 85), pas le champ Portée du sort ; résolu comme zone, pas comme Projectile.
-  const breathSpell = !!spellSpecFor(spell).breathAttack;
+  const breathSpell = !!spell.breathAttack;
   // Portée (LDB 47) : cible directe hors de portée du sort → refus AVANT la modale (parité ZdE/tir).
   // `range` null = portée non chiffrable (« le lanceur », « au toucher », spécial) → pas de gate.
   if (get().battle && caster.pos && target.pos && caster.id !== target.id) {
@@ -2274,7 +2273,7 @@ export function routeEnemyCast(get: Get, set: SetFn): void {
  *  s'applique normalement) si le Sort n'oppose pas ou s'il n'y a aucune cible. GARDE `pendingCast`. */
 export function openCastOpposition(get: Get, set: SetFn, pc: PendingCast, targets: Combatant[]): boolean {
   const spell = effectiveSpellOf(pc);
-  const opposed = spell ? spellSpecFor(spell).opposed : undefined;
+  const opposed = spell?.opposed;
   if (!opposed) return false;
   const participants = targets
     .filter((t) => !isOutOfAction(t))
@@ -2289,7 +2288,7 @@ export function openCastOpposition(get: Get, set: SetFn, pc: PendingCast, target
 /** Rayon INITIAL d'un sort de ZONE en mètres (spec curée prioritaire sur le champ Cible —
  *  même précédence que l'application). `null` = pas un sort de ZdE chiffrable. */
 export function zoneRadiusMeters(spell: NonNullable<ReturnType<typeof findSpell>>, caster: Combatant): number | null {
-  const specRadius = spellSpecFor(spell).zdeRadiusMeters;
+  const specRadius = spell.zdeRadiusMeters;
   if (specRadius != null) return Math.max(0, resolveFormula(specRadius, caster));
   const d = zdeDiameterMeters(spell.target, caster);
   return d == null ? null : d / 2;
@@ -2679,7 +2678,7 @@ export function applyCast(
 
   if (missile) {
     // Touche d'un Projectile : application des Blessures + Critique (choix/overkill).
-    const missileSpec = spellSpecFor(spell);
+    const missileSpec = spell;
     const applyMissileHit = (t: Combatant, mres: CastResult & Partial<MissileResult>) => {
       // Résistance à la Magie (Indice) (LDB 85 p.341) : « Le DR de tous les Sorts l'affectant est
       // réduit du nombre indiqué » → autant de Blessures en moins (dégâts du Projectile = dérivés du DR).
@@ -2807,7 +2806,7 @@ export function applyCast(
       // COMBAT_PERSIST (échelle tactique) AVEC son échéance d'HORLOGE `untilTime` (cascade #T3 —
       // « 1 heure » expire en 60 min de gameTime, plus au bout de 9999 Rounds) ; on n'invente
       // PAS un nombre de rounds. Surincantation « Durée » : ×(1+n) (LDB 47).
-      const spec = spellSpecFor(spell);
+      const spec = spell;
       const baseRounds = spec.durationRounds != null ? resolveFormula(spec.durationRounds, caster, battleRng()) : null;
       const rounds = baseRounds != null ? baseRounds * durationMult : null;
       const baseClockMin = baseRounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
@@ -2930,7 +2929,7 @@ export function applyCast(
     logLines.push(...domainAfterCast(caster, spell, battleRng()));
     // Effets sur le LANCEUR (op casterOps — Vol de vie « retirez tout État Exténué dont vous
     // souffrez », buffs de soi d'un sort offensif) : appliqués une seule fois par lancement.
-    const castSpec = spellSpecFor(spell);
+    const castSpec = spell;
     // INVOCATION (op `summon` du Flow éditable — Nécromancie, Hurlement du loup, Manifestation de démon,
     // Roi de la Nature…) : la/les créature(s) entrent en combat près du lanceur et se dissipent à
     // l'expiration (state/summonFlow). Effet IMPUR du Flow résolu ici (grille/initiative) ; les feuilles
@@ -2985,8 +2984,8 @@ function placeSpellZone(
   get: Get,
   caster: Combatant,
   target: Combatant,
-  spell: { label: string; effects?: Flow },
-  spec: ReturnType<typeof spellSpecFor>,
+  spell: { label: string; effects?: Flow; durationRounds?: import('../engine/ops').Formula | null },
+  _spec: unknown,
   sl: number,
   durationMult: number,
   logLines: string[],
@@ -2998,7 +2997,7 @@ function placeSpellZone(
     logLines.push(`${spell.label} : la zone persiste — hors grille de combat, arbitrage MJ.`);
     return;
   }
-  const baseRounds = spec.durationRounds != null ? resolveFormula(spec.durationRounds, caster, battleRng()) : 1;
+  const baseRounds = spell.durationRounds != null ? resolveFormula(spell.durationRounds, caster, battleRng()) : 1;
   const rounds = Math.max(1, baseRounds * Math.max(1, durationMult));
   const tiles = pz.shape === 'wall'
     ? wallTiles(caster.pos, target.pos, metersToTiles(resolveZoneMeters(pz.lengthMeters ?? 2, pz.lengthPerSL, caster, sl, battleRng())))

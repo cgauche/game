@@ -16,7 +16,6 @@ import { maxJumpTiles } from '../engine/movement';
 import { effectiveMovement } from '../engine/encumbrance';
 import { zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
 import { resolveFormula } from '../engine/ops';
-import { spellSpecFor } from '../data/spellspecs';
 import { findSpellById } from '../data';
 import { bus, EVT } from '../state/bus';
 import { isOutOfAction, canTakeAction, hasCondition } from '../engine/conditions';
@@ -1154,11 +1153,11 @@ export function IsoStage() {
             ok = placedZoneValidAt(useGame.getState, pz, hover);
           } else if (battle.action === 'cast' && battle.selectedSpellId && activeC?.kind === 'hero' && !pendingCast) {
             const spell = findSpellById(battle.selectedSpellId);
-            // Même calcul que castZoneSpell : rayon de spec curée prioritaire sur le champ Cible.
-            const specRadius = spell ? spellSpecFor(spell).zdeRadiusMeters : undefined;
+            // Même calcul que castZoneSpell : rayon de la donnée (spell.zdeRadiusMeters) prioritaire
+            // sur le parsing du champ Cible (zdeRadiusTiles).
             radius = spell
-              ? specRadius != null
-                ? Math.max(0, Math.floor(resolveFormula(specRadius, activeC) / 2))
+              ? spell.zdeRadiusMeters != null
+                ? Math.max(0, Math.floor(resolveFormula(spell.zdeRadiusMeters, activeC) / 2))
                 : zdeRadiusTiles(spell.target, activeC)
               : null;
             caster = activeC;

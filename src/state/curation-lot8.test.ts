@@ -9,7 +9,6 @@ import { useGame } from './store';
 import { applyCast } from './combatFlow';
 import { makePregens } from '../data/pregens';
 import { spells, findSpell, findSpellById } from '../data';
-import { curatedSpec, spellSpecFor } from '../data/spellspecs';
 import { spellSupport } from '../engine/spellspec';
 import { spellEffectOps } from './flow';
 import { woundsFromHit } from '../engine/combat';
@@ -25,27 +24,28 @@ beforeEach(() => {
 });
 
 describe('couverture de curation', () => {
-  it('TOUS les sorts OFFICIELS (243) sont curés — plus aucun repli regex', () => {
-    // Les sorts homebrew fan (source.book = frenchy.bzh) sont EXEMPTS : ils assument le repli regex
-    // (fallbackSpec sur leur Effet), comme tout sort non curé. La curation ne couvre que l'officiel.
+  it('TOUS les sorts OFFICIELS sont curés — champ `curated:true` dans SpellData (JSON)', () => {
+    // Les sorts homebrew fan (source.book = frenchy.bzh) sont EXEMPTS.
+    // La curation ne couvre que l'officiel.
     for (const s of spells) {
       if (s.source?.book === 'frenchy.bzh') continue;
-      expect(spellSpecFor(s).curated, `${s.label} (${s.type} / ${s.subType ?? '—'})`).toBe(true);
+      expect(s.curated, `${s.label} (${s.type} / ${s.subType ?? '—'})`).toBe(true);
     }
   });
 
   it('labels en double : « Enchevêtrement » résolu par type (Arcane vs miracle de Taal, tous deux curés)', () => {
-    const arcane = curatedSpec('Enchevêtrement', 'Magie des Arcanes');
-    const taal = curatedSpec('Enchevêtrement', 'Invocation');
+    const arcane = spells.find((s) => s.label === 'Enchevêtrement' && s.type === 'Magie des Arcanes');
+    const taal = spells.find((s) => s.label === 'Enchevêtrement' && s.type === 'Invocation');
     expect(arcane?.type).toBe('Magie des Arcanes'); // discriminant du Sort d'Arcane
     expect(taal?.type).toBe('Invocation'); // discriminant du miracle de Taal
     const taalSpell = findSpellById('enchevetrement-2')!; // miracle de Taal (le label « Enchevêtrement » est en double)
-    expect(spellSpecFor(taalSpell).curated).toBe(true);
+    expect(taalSpell.curated).toBe(true);
   });
 
   it('spellSupport : classification mécanique / partiel / narratif', () => {
     // Les EFFETS (ops) vivent sur `spell.effects` (Flow) → on les extrait (target + caster) par `spellEffectOps`.
-    const sup = (s: typeof spells[number], missile: boolean) => spellSupport(spellEffectOps(s.effects), spellSpecFor(s), missile);
+    // `spellSupport` reçoit désormais `spell` directement (SpellData — données JSON).
+    const sup = (s: typeof spells[number], missile: boolean) => spellSupport(spellEffectOps(s.effects), s, missile);
     const choc = findSpellById('choc')!; // Magie mineure
     expect(sup(choc, isMagicMissile(choc))).toBe('mecanique');
     const lumiere = findSpell('Lumière')!;

@@ -1,11 +1,11 @@
 /**
- * engine/spellspec + data/spellspecs — specs CURÉES de sorts. Les 243 sorts de la base ont une
- * entrée relue de la source (plus de repli regex) ; ces tests vérifient que la résolution applique
- * bien les effets curés et que la désambiguïsation par type fonctionne.
+ * engine/spellspec + SpellData — métadonnées de résolution curées.
+ * Migration #5 : les specs curées vivent désormais dans SpellData (spells.json) — plus de registre
+ * src/data/spellspecs/. Ces tests vérifient que la résolution applique bien les effets curés et que
+ * la désambiguïsation par type fonctionne directement sur les données JSON.
  */
 import { describe, it, expect } from 'vitest';
 import type { Combatant } from './types';
-import { spellSpecFor, curatedSpec } from '../data/spellspecs';
 import { applyOps, resolveFormula, COMBAT_PERSIST } from './ops';
 import { spells, findSpellById, type SpellData } from '../data';
 import { spellOps } from '../state/flow';
@@ -22,11 +22,10 @@ function hero(p: Partial<Combatant> = {}): Combatant {
 }
 
 /** Applique les effets d'un sort comme applyCast le fait (ops `on:'target'` de `spell.effects`, durée
- *  résolue contre le lanceur). Les effets vivent désormais sur la DONNÉE (Flow), plus sur la spec. */
+ *  résolue contre le lanceur). La durée et les effets vivent désormais sur SpellData (données JSON). */
 function castVia(spell: SpellData, caster: Combatant, target: Combatant): string[] {
-  const spec = spellSpecFor(spell);
-  const rounds = spec.durationRounds != null ? resolveFormula(spec.durationRounds, caster) : null;
-  return applyOps(target, spellOps(spell.effects, 'target'), { caster, label: spec.label, defaultDurationRounds: rounds ?? COMBAT_PERSIST });
+  const rounds = spell.durationRounds != null ? resolveFormula(spell.durationRounds, caster) : null;
+  return applyOps(target, spellOps(spell.effects, 'target'), { caster, label: spell.label, defaultDurationRounds: rounds ?? COMBAT_PERSIST });
 }
 
 describe('specs curées — résolution', () => {
@@ -59,11 +58,13 @@ describe('registre curé — couverture & désambiguïsation', () => {
   it('les 19 Bénédictions sont toutes curées', () => {
     const blessed = spells.filter((s) => s.type === 'Béni');
     expect(blessed).toHaveLength(19);
-    for (const s of blessed) expect(curatedSpec(s.label), s.label).toBeDefined();
+    for (const s of blessed) expect(s.curated, s.label).toBe(true);
   });
 
   it('labels en double : « Enchevêtrement » résolu par type (Arcane vs miracle de Taal)', () => {
-    expect(curatedSpec('Enchevêtrement', 'Magie des Arcanes')?.type).toBe('Magie des Arcanes');
-    expect(curatedSpec('Enchevêtrement', 'Invocation')?.type).toBe('Invocation');
+    const arcane = spells.find((s) => s.label === 'Enchevêtrement' && s.type === 'Magie des Arcanes');
+    const taal = spells.find((s) => s.label === 'Enchevêtrement' && s.type === 'Invocation');
+    expect(arcane?.type).toBe('Magie des Arcanes');
+    expect(taal?.type).toBe('Invocation');
   });
 });
