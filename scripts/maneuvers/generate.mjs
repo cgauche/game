@@ -58,7 +58,7 @@ const MANEUVERS = [
     effects: onHit({
       kind: 'if',
       cond: { kind: 'compare', subject: { who: 'target', field: 'size' }, op: '<', value: { who: 'caster', field: 'size' } },
-      then: doOps(cond('À Terre', { unlessCondition: 'À Terre' })),
+      then: doOps(cond('a-terre', { unlessCondition: 'a-terre' })),
     }),
     desc: 'Attaque gratuite (1 Avantage). Une cible plus petite qui perd des PB subit À Terre. LDB 85 l.38.',
     source: SRC(85),
@@ -73,7 +73,7 @@ const MANEUVERS = [
     id: 'tentacules', label: 'Tentacules', kind: 'tentacules', activation: 'free', advantageCost: 0,
     stat: 'CC', defense: 'auto', targeting: 'melee',
     // Une Action d'Attaque gratuite PAR tentacule (coût 0) ; sur Dégâts → Empêtré (Force d'évasion = F).
-    effects: onHit(doOps(cond('Empêtré', { escapeStrength: { charOf: 'F' }, unlessCondition: 'Empêtré' }))),
+    effects: onHit(doOps(cond('empetre', { escapeStrength: { charOf: 'F' }, unlessCondition: 'empetre' }))),
     desc: 'Une Attaque gratuite par tentacule (coût 0). Sur Dégâts → Empêtré (Force d’évasion = Force). LDB 85 l.355.',
     source: SRC(85),
   },
@@ -83,7 +83,7 @@ const MANEUVERS = [
     // À distance : Dégâts Indice (mitigés BE+PA) puis Empêtré.
     effects: onHit(seqOps(
       indiceWounds({ ignoreTB: false, ignoreAP: false }),
-      cond('Empêtré', { escapeStrength: { charOf: 'F' } }),
+      cond('empetre', { escapeStrength: { charOf: 'F' } }),
     )),
     desc: 'Attaque gratuite à distance (1 Avantage). Dégâts Indice + Empêtré. LDB 85 l.186/188.',
     source: SRC(85),
@@ -104,33 +104,33 @@ const MANEUVERS = [
     // Marge ≥ 6 DR → Pétrifié + 0 PB ; sinon ≥ 2 DR → Sonné échelonné (1 par 2 DR). ctx.sl = marge.
     effects: onHit({
       kind: 'if',
-      cond: { kind: 'slThreshold', atLeast: 6 },
-      then: seqOps({ op: 'condition', name: 'Pétrifié' }, { op: 'reduceToZero' }),
+      cond: { kind: 'slThreshold', op: '>=', value: 6 },
+      then: seqOps({ op: 'condition', name: 'petrifie' }, { op: 'reduceToZero' }),
       else: {
         kind: 'if',
-        cond: { kind: 'slThreshold', atLeast: 2 },
-        then: doOps({ op: 'condition', name: 'Sonné', value: 0, valuePerSL: { every: 2, amount: 1 } }),
+        cond: { kind: 'slThreshold', op: '>=', value: 2 },
+        then: doOps({ op: 'condition', name: 'sonne', value: 0, valuePerSL: { every: 2, amount: 1 } }),
       },
     }),
     desc: 'Action, +1 DR par Avantage. Marge ≥ 6 DR → Pétrifié (0 PB) ; ≥ 2 DR → Sonné (1 par 2 DR). LDB 85 l.238.',
     source: SRC(85),
   },
   souffle('souffle-feu', 'Souffle (Feu)',
-    onHit(seqOps(indiceWounds({ ignoreTB: false, ignoreAP: true }), cond('En flammes'))),
+    onHit(seqOps(indiceWounds({ ignoreTB: false, ignoreAP: true }), cond('en-flammes'))),
     'Zone, jet CT/Esquive. Dégâts Indice (ignore PA) + En flammes. LDB 85 l.249-269.'),
   souffle('souffle-froid', 'Souffle (Froid)',
     // NOTE RAW: "1 Sonné par 5 PB" non exprimable (pas de condition mise à l'échelle par PB) → Sonné forfaitaire.
-    onHit(seqOps(indiceWounds({ ignoreTB: false, ignoreAP: false }), cond('Sonné'))),
+    onHit(seqOps(indiceWounds({ ignoreTB: false, ignoreAP: false }), cond('sonne'))),
     'Zone, jet CT/Esquive. Dégâts Indice + Sonné (RAW : 1 Sonné/5 PB → forfaitaire). LDB 85 l.249-269.'),
   souffle('souffle-corrosif', 'Souffle (Corrosif)',
     // Corrosion via damageArmour=cuir seul. NOTE RAW: corrosion toute matière non modélisée.
-    onHit(seqOps(indiceWounds({ ignoreTB: false, ignoreAP: false }), cond('Sonné'), { op: 'damageArmour', material: 'cuir' })),
+    onHit(seqOps(indiceWounds({ ignoreTB: false, ignoreAP: false }), cond('sonne'), { op: 'damageArmour', material: 'cuir' })),
     'Zone, jet CT/Esquive. Dégâts Indice + Sonné + corrosion (cuir seul, RAW : toute matière). LDB 85 l.249-269.'),
   souffle('souffle-electrique', 'Souffle (Électrique)',
-    onHit(seqOps(indiceWounds({ ignoreTB: false, ignoreAP: true }), cond('Sonné'))),
+    onHit(seqOps(indiceWounds({ ignoreTB: false, ignoreAP: true }), cond('sonne'))),
     'Zone, jet CT/Esquive. Dégâts Indice (ignore PA) + Sonné. LDB 85 l.249-269.'),
   souffle('souffle-poison', 'Souffle (Poison)',
-    onHit(seqOps(indiceWounds({ ignoreTB: false, ignoreAP: true }), cond('Empoisonné'))),
+    onHit(seqOps(indiceWounds({ ignoreTB: false, ignoreAP: true }), cond('empoisonne'))),
     'Zone, jet CT/Esquive. Dégâts Indice (ignore PA) + Empoisonné. LDB 85 l.249-269.'),
   souffle('souffle-fumee', 'Souffle (Fumée)',
     // La zone de fumée (blocksLoS, BE Rounds) RESTE géométrie moteur (pas un GameOp).
@@ -143,7 +143,7 @@ const MANEUVERS = [
     effects: onHit(seqOps(
       { op: 'wounds', amount: { bonusOf: 'E' }, ignoreTB: false, ignoreAP: false },
       { op: 'wounds', amount: 4, ignoreTB: false, ignoreAP: false },
-      cond('Sonné'),
+      cond('sonne'),
       { op: 'damageArmour', material: 'cuir' },
     )),
     desc: 'Zone (3 Avantages). Dégâts BE+4 + Sonné + corrosion (cuir). LDB 85 l.374-378.',
