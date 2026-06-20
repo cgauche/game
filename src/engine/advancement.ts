@@ -9,6 +9,7 @@ import { Combatant, CharKey } from './types';
 import { CareerSlot, slotCovers, concreteLabel, splitLabel } from './careerSlots';
 import { findSkill, findTalent } from '../data';
 import { slugId } from '../data/slug';
+import advancementCostsJson from '../data/advancementCosts.json';
 
 /**
  * Détection « in-carrière » (07-Carrières l.95) : une Augmentation est au coût standard si la
@@ -23,26 +24,13 @@ export function inCareerChar(careerChars: CharKey[], char: CharKey): boolean {
 }
 
 /**
- * Tableau de Coût des Augmentations de Caractéristique et Compétence (07-Carrières l.45-62).
+ * Type d'une bande du Tableau de Coût des Augmentations (07-Carrières l.45-62).
  * La bande = nombre d'Augmentations DÉJÀ achetées ; `max` est la borne haute INCLUSIVE de la bande.
+ * La donnée vit dans `src/data/advancementCosts.json` — ne pas éditer ici.
  */
-const ADVANCE_COST_TABLE: { max: number; char: number; skill: number }[] = [
-  { max: 5, char: 25, skill: 10 }, // 0 à 5
-  { max: 10, char: 30, skill: 15 }, // 6 à 10
-  { max: 15, char: 40, skill: 20 }, // 11 à 15
-  { max: 20, char: 50, skill: 30 }, // 16 à 20
-  { max: 25, char: 70, skill: 40 }, // 21 à 25
-  { max: 30, char: 90, skill: 60 }, // 26 à 30
-  { max: 35, char: 120, skill: 80 }, // 31 à 35
-  { max: 40, char: 150, skill: 110 }, // 36 à 40
-  { max: 45, char: 190, skill: 140 }, // 41 à 45
-  { max: 50, char: 230, skill: 180 }, // 46 à 50
-  { max: 55, char: 280, skill: 220 }, // 51 à 55
-  { max: 60, char: 330, skill: 270 }, // 56 à 60
-  { max: 65, char: 390, skill: 320 }, // 61 à 65
-  { max: 70, char: 450, skill: 380 }, // 66 à 70
-  { max: Infinity, char: 520, skill: 440 }, // 71 et +
-];
+export interface AdvanceCostBand { max: number; char: number; skill: number }
+
+const ADVANCE_COST_TABLE: AdvanceCostBand[] = advancementCostsJson as AdvanceCostBand[];
 
 /** Coût en PX de la PROCHAINE Augmentation (la N+1ᵉ), `advancesAlready` = N déjà achetées.
  *  Hors carrière, le coût est DOUBLÉ (07-Carrières l.95). `discount` : « 5 PX de moins par
