@@ -36,6 +36,8 @@ import type { Cadence } from '../engine/cadence';
  *   __wfrp.modal()        → modale(s) ouvertes ; __wfrp.roll()/confirm()/cancel() → pilote LA modale
  *                           (convention <flux>Roll/Confirm/Cancel ; reveals/Round ont leur verbe propre)
  *   __wfrp.killEnemies()  → élimine tous les ennemis du combat et déclenche la victoire (flux normal)
+ *   __wfrp.combatEnd({…}) → arme les conséquences de fin de combat (critique infectant + exposition
+ *                           Corruption) puis termine le combat en LAISSANT la cascade ouverte (influençable)
  *   __wfrp.healParty()    → groupe à neuf (PB max, états/critiques/maladies purgés)
  *   __wfrp.give(co)       → crédite la bourse (couronnes d'or) ; __wfrp.xp(n) → +PX au groupe
  *   __wfrp.flags()        → drapeaux de scénario ; __wfrp.flag('id', true) → force un drapeau
@@ -364,6 +366,49 @@ export function buildApi() {
         useGame.getState().cascadeFinish();
       }
       return `✅ ${slain.length} ennemi(s) éliminé(s) — ${useGame.getState().battle?.over ?? 'combat en cours'}`;
+    },
+
+    /** RECETTE : ARME les conséquences de fin de combat (LDB 18/19/20) puis termine le combat par le
+     *  flux NORMAL (`checkBattleOver`) en LAISSANT la cascade OUVERTE — contrairement à `killEnemies`
+     *  qui la résout d'office. C'est la mise en place de la recette « cascade de fin de combat » :
+     *   - `tookCriticalThisFight` posé sur le héros → Test d'Infection post-critique (LDB 20 l.72) ;
+     *   - trait `corruption` (Mineure/Modérée/Majeure) posé sur un ennemi présent → Test d'exposition
+     *     à la Corruption (LDB 19) pour TOUS les héros survivants ;
+     *   - Destin/Résilience CRÉDITÉS au héros (≥1 chacun) → les boutons Chance/Résilience sont visibles
+     *     dans la modale (preuve que le Test est INFLUENÇABLE avant l'écran de victoire).
+     *  Puis tous les ennemis sont mis hors d'action et `checkBattleOver` ouvre la cascade
+     *  (`combatEndBoundary`) AVANT `pendingVictory` — à conduire à la main (cascadeRoll/Next, Chance/
+     *  Résilience), sa fermeture enchaîne sur l'écran de victoire. `level` ∈ Mineure|Modérée|Majeure. */
+    combatEnd: (opts?: { heroId?: string; critical?: boolean; corruption?: string | false }) => {
+      const s = g();
+      if (!s.battle || s.battle.over) return '❌ pas de combat en cours';
+      const level = opts?.corruption === undefined ? 'Modérée' : opts.corruption;
+      const hero = (opts?.heroId
+        ? s.battle.combatants.find((c) => c.id === opts.heroId && c.kind === 'hero')
+        : s.battle.combatants.find((c) => c.kind === 'hero' && !isOutOfAction(c)));
+      if (!hero) return '❌ aucun héros survivant ciblable';
+      if (opts?.critical !== false) hero.tookCriticalThisFight = true; // Infection post-critique (LDB 20 l.72)
+      hero.woundDressed = false; // pas de pansement → l'Infection s'applique
+      hero.fortune = Math.max(1, hero.fortune ?? 0); // Chance visible (relance)
+      hero.resilience = Math.max(1, hero.resilience ?? 0); // Résilience visible (« Je ne faillirai pas ! »)
+      const enemy = s.battle.combatants.find((c) => c.kind === 'enemy');
+      if (level && enemy) {
+        const traits = (enemy.traits ?? []).filter((t) => t.id !== 'corruption');
+        enemy.traits = [...traits, { id: 'corruption', arg: level }]; // exposition à la Corruption (LDB 85 → 19)
+      }
+      const combatants = s.battle.combatants.map((c) =>
+        c.kind === 'enemy' && !isOutOfAction(c) ? { ...c, dead: true, wounds: { ...c.wounds, current: 0 } } : c,
+      );
+      useGame.setState({
+        battle: { ...s.battle, combatants, log: [...s.battle.log, ev('info', '🩸 Recette : conséquences de fin de combat armées.')] },
+      });
+      // Flux NORMAL : ouvre la cascade de fin de combat ; si elle s'ouvre (héros manuel), la victoire est
+      // DIFFÉRÉE à sa fermeture (on NE la résout PAS ici — c'est tout l'intérêt de la recette).
+      checkBattleOver(() => useGame.getState(), useGame.setState);
+      const pc = useGame.getState().pendingCascade;
+      return pc?.combatEndBoundary
+        ? `✅ cascade de fin de combat OUVERTE (${pc.participants.length} jet(s)) AVANT la victoire — conduire à la main`
+        : `⚠️ pas de cascade ouverte (over=${useGame.getState().battle?.over ?? '—'}) — héros non-interactif ?`;
     },
 
     /** RECETTE : remet le groupe à neuf — PB max, états purgés, critiques/maladies effacés,
