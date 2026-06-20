@@ -152,10 +152,10 @@ export function condCtxFor(ctx: ExecCtx): ConditionCtx {
  *  - Branche PURE (Mâchoires/Venin : feuilles `do`/`if`) → `runSpellFlowLines` (string[] rendu inline).
  *  - Branche IMPURE (op adossée à un hook : `grantFreeAttack` → frappe gratuite, `interruptFocus` →
  *    interruption de Focalisation, `breakBlade` → désarmement/bris de Piège-lame) → `runCombatFlow` (le
- *    do-loop y résout les hooks injectés), journal poussé dans la file différée → return vide. Détectée par
- *    `flowHasImpureOp` (≠ « freeAttack présent » spécifiquement : tout marqueur à hook). Le contexte `exec`
- *    (get/set [+ freeAttack/bladeTrap pour cibler le TIERS]) est requis dans ce cas. La continuation `after`
- *    est jouée À PART (`playAfter`), APRÈS les lignes de branche → ordre correct. */
+ *    do-loop y résout les hooks injectés), qui EMPILENT leur propre conséquence (frappe / Imparfaite / étape
+ *    d'affichage « lame brisée ») → return vide. Détectée par `flowHasImpureOp` (≠ « freeAttack présent » :
+ *    tout marqueur à hook). Le contexte `exec` (get/set [+ freeAttack/bladeTrap pour cibler le TIERS]) est
+ *    requis. La continuation `after` est jouée À PART (`playAfter`), APRÈS les lignes de branche → ordre correct. */
 export function applyTriggeredTestBranch(
   c: Combatant, t: Pick<TestResult, 'success' | 'sl'>, branches: { onSuccess: Flow; onFail: Flow },
   exec?: { get: Get; set: SetFn; freeAttack?: ExecCtx['freeAttack']; bladeTrap?: ExecCtx['bladeTrap'] },
@@ -200,7 +200,8 @@ export function runCombatFlow(ctx: ExecCtx, flow: Flow): void {
             if (focusInterruptHook) for (const op of node.effect.ops) if (op.op === 'interruptFocus') focusInterruptHook(ctx.get, ctx.set, unit);
             // Op IMPURE `breakBlade` (LDB 62 l.295) : le hook injecté (combatFlow) désarme/brise la lame de
             // l'attaquant ciblé (`ctx.bladeTrap`). `unit` = le défenseur piégeur ; son DR final (`ctx.opsCtx.sl`)
-            // alimente la marge nette (= victoire Stupéfiante → bris).
+            // alimente la marge nette (= victoire Stupéfiante → bris). Le hook EMPILE sa conséquence comme étape
+            // d'affichage propre (mirroir du Coup Critique) → rien à journaliser ici.
             if (bladeTrapHook && ctx.bladeTrap) for (const op of node.effect.ops) if (op.op === 'breakBlade') bladeTrapHook(ctx.get, ctx.set, unit, ctx.bladeTrap, ctx.opsCtx?.sl ?? 0);
             const lines = applyOps(unit, node.effect.ops, oc); syncCombatant(ctx.get, ctx.set); queueLines(ctx.get, ctx.set, lines, unit.id);
           }
