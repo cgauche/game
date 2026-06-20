@@ -1340,12 +1340,21 @@ complète verte + typecheck 0 à chaque commit) :
   du domaine (réservé aux ogres), pas dans le code.
 - **Code mort / commentaires** : référence fantôme `asTrait` (`data/index.ts`) et `critical.ts` (cumul
   yeux/oreilles déjà géré par `escalateSensoryLoss`) corrigés ; 12 codemods one-shot terminés supprimés
-  (`scripts/migrate-*`, `strip-spec-ops` — ~1090 l.) ; commentaire `build:data` périmé retiré.
+  (`scripts/migrate-*`, `strip-spec-ops` — ~1090 l.) ; commentaire `build:data` périmé retiré ; plan de
+  rendu **`'monolithic'` mort retiré** (type + gardes `pickBackend`/`usePlanAnim` + scripts QC ; golden inchangé).
+- **Correctness RAW (maladies, LDB 20)** : gangrène — seuil d'échecs = le vrai **Bonus d'Endurance**
+  (fin de l'inflation par les avances de Résistance) ; symptôme **`toxine`** journalisé (RAW tronqué →
+  conséquence laissée au MJ, plus de dé orphelin).
+- **Garde-fous (tests)** : non-cumul `effectiveChar` (meilleur bonus + pire pénalité), `creatureEquip`
+  (dérivation traits→armes = armement ennemi), `dropExpiredGrantedResources`.
 
-Reste (par lot, cf. plan) : finir les unifications jet/narration (`flowOutcomes` 0/15, fold
-FateSave/Renounce dans la cascade, résorber `flowFromEffects`) · seam i18n (events structurés clé+params)
-· jets silencieux résiduels révélés · pureté des types moteur↔state · correctness RAW (`fearImmune`,
-symptôme `toxine`, gangrène BE) · robustesse (migration de saves, policy synchro coop, tests `combat.ts`/`magic.ts`).
+Coordination : la **session parallèle tient la lane Flow/combat/cascade** (Flow `choice` node, `freeAttack`,
+Frappe réactive `onCharged`, « no silent roll »). Lui reviennent : les **unifications jet/narration**
+(`flowOutcomes`, fold FateSave/Renounce, `flowFromEffects`), les **jets silencieux résiduels**, et
+`fearImmune` (Test de Calme via le flux Psychologie). Le **seam i18n suit leur unification de narration**
+(ses labels alimentent la narration — à ne pas keyer en parallèle). Reste hors-lane à planifier :
+robustesse (`migrateSave` quand le schéma de save bumpe ; policy synchro coop) · pureté des types
+moteur↔`state/flow` (après stabilisation de leur refacto).
 
 ### Reste à faire — synthèse *(màj 2026-06-05 — vérifié contre le code)*
 
