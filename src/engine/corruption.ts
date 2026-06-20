@@ -19,6 +19,7 @@
 import { Combatant, CharKey, HitLocation, Weapon } from './types';
 import { bonus, effectiveChar } from './characteristics';
 import { talentCorruptionThreshold } from './combatFeatures/dispatch';
+import { mutationBodyMaxForSpecies } from '../data';
 import type { PsychTrait } from './psychology';
 import type { GameOp } from './ops';
 import type { TraitInstance } from './statEntry';
@@ -92,16 +93,13 @@ export function corruptionThresholdExceeded(c: Combatant): boolean {
 // ---------------------------------------------------------------------------
 
 /**
- * Corps ou esprit, selon l'espèce et le d100 (Tableau l.87-91) :
- *  Corps — Elfe : jamais ; Halfling : 01-10 ; Humain : 01-50 ; Nain : 01-05.
- *  (Les variantes « Haut Elfe », « Elfe sylvain », « Nain (Norse) »… retombent sur
- *  leur racine ; toute autre espèce est traitée comme Humain — le Tableau ne
- *  couvre que les quatre espèces jouables.)
+ * Corps ou esprit, selon l'espèce (`id` STABLE) et le d100 (Tableau l.87-91) — le seuil par espèce
+ * vit en DONNÉE (`SpeciesData.mutationBodyMax`, lu par `mutationBodyMaxForSpecies`), plus de match sur
+ * le nom : Corps si d100 ≤ seuil, sinon Esprit. Seuils SOURCÉS : Elfe 0, Nain 5, Halfling 10, Humain 50
+ * (LDB ch.19) ; Ogre 10 (ADE2 « Ogres et Mutations ») ; Gnome 50 = Humain (NADJ « Gnomes et Corruption »).
  */
 export function mutationKindFor(species: string | undefined, roll: number): 'physique' | 'mentale' {
-  const s = (species ?? '').toLowerCase();
-  const bodyMax = s.includes('elfe') ? 0 : s.includes('halfling') ? 10 : s.includes('nain') ? 5 : 50;
-  return roll <= bodyMax ? 'physique' : 'mentale';
+  return roll <= mutationBodyMaxForSpecies(species) ? 'physique' : 'mentale';
 }
 
 /** Limites de Corruption (l.95) : mutations physiques > BE OU mentales > BFM → damné. */

@@ -67,6 +67,10 @@ export interface SpeciesData {
   /** Racial de Groupe ÉDITABLE (Traits psy ciblés, LDB 21) — surcharge la dérivation par label
    *  (`engine/groups`). Absent = racial auto-dérivé du `label` d'espèce. */
   group?: string;
+  /** Seuil d100 de mutation PHYSIQUE (LDB 19 l.87-91 : d100 ≤ seuil → corps, sinon esprit) :
+   *  Elfe 0, Nain 5, Halfling 10, Humain 50. Ogre 10 (ADE2 « Ogres et Mutations »). ABSENT = défaut
+   *  Humain (50) — le Gnome y est rattaché par NADJ « Gnomes et Corruption » (« mutent comme les humains »). */
+  mutationBodyMax?: number;
 }
 export interface ClassData {
   /** id STABLE (slug du libellé) — cible de `CareerData.class`. */
@@ -715,6 +719,12 @@ const SPECIES_BY_ID = new Map(species.map((s) => [s.id, s]));
  *  pregens, draft). Le libellé ne sert qu'à l'affichage (`speciesSingular`). */
 export function findSpeciesById(id: string | undefined): SpeciesData | undefined {
   return id ? SPECIES_BY_ID.get(id) : undefined;
+}
+/** Seuil d100 de mutation PHYSIQUE d'une espèce par `id` (LDB 19 l.87-91). Défaut **50** = colonne
+ *  Humain (LDB) — couvre aussi le Gnome (NADJ « Gnomes et Corruption » : « mutent comme les humains »)
+ *  et toute espèce hors Tableau. Les valeurs ≠ 50 (Elfe 0, Nain 5, Halfling 10, Ogre 10) sont en donnée. */
+export function mutationBodyMaxForSpecies(id: string | undefined): number {
+  return findSpeciesById(id)?.mutationBodyMax ?? 50;
 }
 
 /** Affichage SINGULIER de l'espèce d'un INDIVIDU : les `label` du catalogue sont des libellés de

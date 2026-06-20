@@ -61,20 +61,30 @@ describe('seuil & limites (l.80/95)', () => {
   });
 });
 
-describe('mutationKindFor — d100 corps/esprit par espèce (l.87-91)', () => {
-  it('Humain : corps 01-50, esprit 51-100', () => {
-    expect(mutationKindFor('Humain', 50)).toBe('physique');
-    expect(mutationKindFor('Humain', 51)).toBe('mentale');
+describe('mutationKindFor — d100 corps/esprit par espèce (data-driven, ids STABLES, l.87-91)', () => {
+  it('Humain (id) : corps 01-50, esprit 51-100 (LDB ch.19)', () => {
+    expect(mutationKindFor('humains-reiklander', 50)).toBe('physique');
+    expect(mutationKindFor('humains-reiklander', 51)).toBe('mentale');
   });
-  it('Nain 01-05, Halfling 01-10, Elfe jamais physique', () => {
-    expect(mutationKindFor('Nain', 5)).toBe('physique');
-    expect(mutationKindFor('Nain', 6)).toBe('mentale');
-    expect(mutationKindFor('Halfling', 10)).toBe('physique');
-    expect(mutationKindFor('Haut Elfe', 1)).toBe('mentale');
-    expect(mutationKindFor('Elfe sylvain', 100)).toBe('mentale');
+  it('Nain 01-05, Halfling 01-10, Elfe jamais physique (LDB ch.19)', () => {
+    expect(mutationKindFor('nains', 5)).toBe('physique');
+    expect(mutationKindFor('nains', 6)).toBe('mentale');
+    expect(mutationKindFor('halflings', 10)).toBe('physique');
+    expect(mutationKindFor('halflings', 11)).toBe('mentale');
+    expect(mutationKindFor('hauts-elfes', 1)).toBe('mentale');
+    expect(mutationKindFor('elfes-sylvains', 100)).toBe('mentale');
   });
-  it('espèce inconnue → traité comme Humain', () => {
+  it('Ogre 01-10 (ADE2 « Ogres et Mutations ») — corrige le défaut Humain erroné', () => {
+    expect(mutationKindFor('ogres', 10)).toBe('physique');
+    expect(mutationKindFor('ogres', 11)).toBe('mentale');
+  });
+  it('Gnome = Humain 01-50 (NADJ « Gnomes et Corruption »)', () => {
+    expect(mutationKindFor('gnomes', 50)).toBe('physique');
+    expect(mutationKindFor('gnomes', 51)).toBe('mentale');
+  });
+  it('espèce inconnue/absente → défaut Humain (50)', () => {
     expect(mutationKindFor(undefined, 30)).toBe('physique');
+    expect(mutationKindFor('inexistant', 51)).toBe('mentale');
   });
 });
 

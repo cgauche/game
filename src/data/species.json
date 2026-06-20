@@ -1913,7 +1913,8 @@
     "source": {
       "book": "LDB",
       "page": 26
-    }
+    },
+    "mutationBodyMax": 10
   },
   {
     "id": "halflings-cendreplaine",
@@ -2047,7 +2048,8 @@
     "source": {
       "book": "ADE1",
       "page": 23
-    }
+    },
+    "mutationBodyMax": 10
   },
   {
     "id": "halflings-basseronce",
@@ -2179,7 +2181,8 @@
     "source": {
       "book": "ADE1",
       "page": 24
-    }
+    },
+    "mutationBodyMax": 10
   },
   {
     "id": "halflings-tuilecaramel",
@@ -2313,7 +2316,8 @@
     "source": {
       "book": "ADE1",
       "page": 25
-    }
+    },
+    "mutationBodyMax": 10
   },
   {
     "id": "halflings-piedfoin",
@@ -2446,7 +2450,8 @@
     "source": {
       "book": "ADE1",
       "page": 25
-    }
+    },
+    "mutationBodyMax": 10
   },
   {
     "id": "halflings-piedpaille",
@@ -2578,7 +2583,8 @@
     "source": {
       "book": "ADE1",
       "page": 26
-    }
+    },
+    "mutationBodyMax": 10
   },
   {
     "id": "halflings-piedfoin-piedpaille",
@@ -2710,7 +2716,8 @@
     "source": {
       "book": "ADE1",
       "page": 26
-    }
+    },
+    "mutationBodyMax": 10
   },
   {
     "id": "halflings-pochegaree",
@@ -2841,7 +2848,8 @@
     "source": {
       "book": "ADE1",
       "page": 27
-    }
+    },
+    "mutationBodyMax": 10
   },
   {
     "id": "halflings-havrebas",
@@ -2977,7 +2985,8 @@
     "source": {
       "book": "ADE1",
       "page": 28
-    }
+    },
+    "mutationBodyMax": 10
   },
   {
     "id": "halflings-rumster",
@@ -3110,7 +3119,8 @@
     "source": {
       "book": "ADE1",
       "page": 29
-    }
+    },
+    "mutationBodyMax": 10
   },
   {
     "id": "halflings-bordecharde",
@@ -3243,7 +3253,8 @@
     "source": {
       "book": "ADE1",
       "page": 30
-    }
+    },
+    "mutationBodyMax": 10
   },
   {
     "id": "halflings-pavederonces",
@@ -3380,7 +3391,8 @@
     "source": {
       "book": "ADE1",
       "page": 31
-    }
+    },
+    "mutationBodyMax": 10
   },
   {
     "id": "halflings-fraisedebois",
@@ -3513,7 +3525,8 @@
     "source": {
       "book": "ADE1",
       "page": 32
-    }
+    },
+    "mutationBodyMax": 10
   },
   {
     "id": "nains",
@@ -3657,7 +3670,8 @@
     "source": {
       "book": "LDB",
       "page": 25
-    }
+    },
+    "mutationBodyMax": 5
   },
   {
     "id": "nains-altdorfer",
@@ -3800,7 +3814,8 @@
     "source": {
       "book": "ADE3",
       "page": 83
-    }
+    },
+    "mutationBodyMax": 5
   },
   {
     "id": "nains-norse",
@@ -3943,7 +3958,8 @@
     "source": {
       "book": "SOC",
       "page": 41
-    }
+    },
+    "mutationBodyMax": 5
   },
   {
     "id": "nains-cragforge-clan",
@@ -4088,7 +4104,8 @@
     "source": {
       "book": "Salzemund",
       "page": 142
-    }
+    },
+    "mutationBodyMax": 5
   },
   {
     "id": "nains-grumsson-clan",
@@ -4220,7 +4237,8 @@
     "source": {
       "book": "Salzemund",
       "page": 142
-    }
+    },
+    "mutationBodyMax": 5
   },
   {
     "id": "gnomes",
@@ -4532,7 +4550,8 @@
     "source": {
       "book": "ADE2",
       "page": 15
-    }
+    },
+    "mutationBodyMax": 10
   },
   {
     "id": "hauts-elfes",
@@ -4675,7 +4694,8 @@
     "source": {
       "book": "LDB",
       "page": 27
-    }
+    },
+    "mutationBodyMax": 0
   },
   {
     "id": "elfes-sylvains",
@@ -4819,6 +4839,7 @@
     "source": {
       "book": "LDB",
       "page": 28
-    }
+    },
+    "mutationBodyMax": 0
   }
 ]
