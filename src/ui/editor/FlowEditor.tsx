@@ -39,6 +39,7 @@ function nodeSummary(node: Flow, ctx: Ctx): string {
     case 'do': return effectSummary(node.effect, ctx);
     case 'if': return `🔀 Si ${condSummary(node.cond)}${node.else != null ? ' · sinon…' : ''}`;
     case 'test': return `🎲 Test ${node.test.skill ? refLabel('skills', { id: node.test.skill, spec: node.test.spec }) : (node.test.characteristic || '?')} → ✓ / ✗`;
+    case 'choice': return `⚖️ Choix${node.cost ? ` (${node.cost.advantage} Av)` : ''} « ${node.prompt} » → ✓ / ✗`;
     case 'seq': return `▸ ${node.steps.length} bloc(s)`;
   }
 }
