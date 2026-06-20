@@ -99,7 +99,6 @@
     "desc": "Votre âme est pure, très résistante aux déprédations du Chaos. Vous pouvez gagner un nombre de Points de Corruption supplémentaires égal à votre niveau d'Âme pure avant d'avoir à effectuer un Test pour savoir si vous êtes corrompu.",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "corruption",
     "specs": [],
     "rand": 13,
     "source": {

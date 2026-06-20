@@ -13,8 +13,8 @@
  *  - `attrMod{attr:'fortune',mod:1}` (Chanceux) : « maximum de Points de Chance = Points de Destin + niveaux » ;
  *  - `attrMod{attr:'resolve',mod:1}` (Obstiné) : « Ajoutez votre niveau au maximum de votre réserve » ;
  *  - `moveMod{mod:1}` (Véloce) : « Vous gagnez +1 à votre Attribut de Mouvement » ;
- *  - `addCharacteristic:'corruption'` (Âme pure) : seuil de Corruption +niveau — câblé dans corruption.ts
- *    (corruptionThresholdExceeded), pas ici. CONSERVÉ dans les données (non migré).
+ *  - Âme pure (seuil de Corruption +niveau) : via `combat.corruptionThreshold` (combatFeatures/dispatch,
+ *    `talentCorruptionThreshold`), PAS un `addCharacteristic`. → plus AUCUN talent ne porte `addCharacteristic`.
  *
  * `addSkill` : « Ajoutez la Compétence X à n'importe quelle Carrière que vous entamez. Si la
  * Compétence est déjà incluse dans votre Carrière, vous pouvez à la place acheter la Compétence
