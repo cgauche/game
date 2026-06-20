@@ -300,7 +300,7 @@ registerCascadeApplier('diseaseBlesse', (_get, _set, step, hero) => {
 
 registerCascadeApplier('diseaseGangrene', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
-  return { journal: applyDiseaseGangrene(hero, String(step.meta?.diseaseName ?? ''), step.result.success, Number(step.meta?.resistVal ?? 0)) };
+  return { journal: applyDiseaseGangrene(hero, String(step.meta?.diseaseName ?? ''), step.result.success, Number(step.meta?.be ?? 0)) };
 }, (ok, n) => (ok ? `${n} contient la gangrène.` : `${n} : la gangrène progresse.`));
 
 registerCascadeApplier('diseasePersist', (_get, _set, step, hero) => {

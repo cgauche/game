@@ -56,7 +56,7 @@ export function restResistVal(c: Combatant): number {
 export function dailyDiseaseUpkeep(c: Combatant, rng: RNG = defaultRNG, caredFor = false, defer?: UpkeepDeferTest): string[] {
   if (c.dead || !c.diseases?.length) return [];
   const malaiseStart = activeMalaiseCount(c);
-  const log = tickDisease(c, 1, rng, restResistVal(c), defer);
+  const log = tickDisease(c, 1, rng, restResistVal(c), defer, bonus(effectiveChar(c, 'E')));
   if (caredFor) {
     for (const dz of c.diseases ?? []) {
       if (dz.phase === 'active' && dz.daysLeft > 1) dz.daysLeft -= 1;
