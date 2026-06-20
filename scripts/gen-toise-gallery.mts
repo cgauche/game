@@ -28,7 +28,7 @@ function sizeOf(traits: TraitList | undefined): SizeCategory {
 /** Os STATIQUES (repos) d'une créature — bipède de face (rig), gabarit en profil. */
 function restBones(name: string): ResolvedBone[] {
   const planId = bodyPlanOf(name);
-  if (planId !== 'monolithic' && planId !== 'biped') {
+  if (planId !== 'biped') {
     const plan = planById(planId as BodyPlanId);
     const species = resolveByName(name).species;
     return plan.resolve(species, 'profile', plan.restPose(), {});

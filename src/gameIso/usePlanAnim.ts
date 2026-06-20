@@ -39,7 +39,7 @@ const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
  * `plan` (null si monolithique), l'espèce, la `pose` courante, et `view`+`mirror`. EXTRAIT
  * d'AnimatedPlanToken pour être PARTAGÉ — le token seul ET MountedToken (monture) le consomment.
  */
-export function usePlanAnim(id: string, planId: BodyPlanId | 'monolithic', species: string, dead?: boolean, facing?: Dir8, pos?: { x: number; y: number }, prone?: boolean): {
+export function usePlanAnim(id: string, planId: BodyPlanId, species: string, dead?: boolean, facing?: Dir8, pos?: { x: number; y: number }, prone?: boolean): {
   plan: BodyPlan | null;
   species: string;
   pose: Record<string, number>;
@@ -58,7 +58,7 @@ export function usePlanAnim(id: string, planId: BodyPlanId | 'monolithic', speci
   const posRef = useRef(pos); // CULLING : tuile lue dans le rAF sans re-souscrire (pos stable)
   posRef.current = pos;
 
-  const plan = planId === 'monolithic' ? null : planById(planId);
+  const plan = planById(planId);
   const hasIdle = !!plan?.idlePose;
 
   useEffect(() => {

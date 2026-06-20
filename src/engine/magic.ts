@@ -20,13 +20,14 @@ import { RNG, defaultRNG } from './dice';
 import { rollTest, resolveOpposed, isDoubleRoll, TestResult } from './tests';
 import { hasTraitKey } from './traits/dispatch';
 import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
+import { effectiveSkillCharKey } from './skills';
 import { reverseRoll, hitLocationByShape } from './combat';
 import { Formula, resolveFormula } from './ops';
-import { arcaneDomainOf } from './combatFeatures/dispatch';
+import { arcaneDomainOf, arcaneDomainIdOf } from './combatFeatures/dispatch';
 import { domainMissileMods } from './domainAttributes';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
-import { Combatant, HitLocation, Difficulty, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from './types';
-import { findTalent, findTalentById } from '../data';
+import { Combatant, HitLocation, Difficulty, CHAR_BY_LABEL } from './types';
+import { findTalent, findTalentById, findDomainById } from '../data';
 import { slugId } from '../data/slug';
 
 /** Sous-ensemble des champs de sort nécessaires au moteur (cf. src/data/spells.json). */
@@ -107,7 +108,15 @@ export function prayerMaxZeroDR(c: Combatant): boolean {
  * Tests de Focalisation », LDB 46 l.176).
  */
 export function castingValue(c: Combatant, skillName: string, spec?: string): number {
-  const charKey = skillName === 'priere' ? 'Soc' : skillName === 'focalisation' ? 'FM' : 'Int';
+  // Carac de la compétence d'incantation via le POINT UNIQUE (skills.ts) : carac d'instance (data-driven)
+  // sinon défaut LDB (Prière→Soc, Focalisation→FM, Langue→Int).
+  // Surcharge DATA du Domaine pour Langue (Magick) : la Magie de la Gueule (réservée aux ogres) se lance
+  // sur l'Endurance (ADE II l.653) — attribut `castingChar` du domaine, AUCUN sniff d'espèce.
+  const domChar = skillName === 'langue' ? findDomainById(arcaneDomainIdOf(c))?.castingChar : undefined;
+  const charKey = domChar ?? effectiveSkillCharKey(c, skillName, {
+    spec,
+    fallback: skillName === 'priere' ? 'Soc' : skillName === 'focalisation' ? 'FM' : 'Int',
+  });
   const base = effectiveChar(c, charKey);
   // `skillName` EST déjà l'id stable de la Compétence (skills.json) — lookup direct.
   const sk = c.skills.find(

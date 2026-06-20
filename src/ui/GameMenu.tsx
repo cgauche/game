@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { formatMoney, type Money } from '../engine/money';
+import { t } from '../i18n';
 
 /**
  * Menu ☰ du jeu (haut-gauche, COMBAT et EXPLORATION — mobile-first). Regroupe ce qui a quitté
@@ -23,7 +24,7 @@ export function GameMenu({ sceneName, money, dateLine, onQuit, onSaveLoad, onHou
   const [open, setOpen] = useState(initialOpen);
   return (
     <div className={`game-menu ${open ? 'open' : ''}`}>
-      <button type="button" className="gm-btn" aria-label={open ? 'Fermer le menu' : 'Menu'} aria-expanded={open} onClick={() => setOpen(!open)} title={open ? 'Fermer le menu' : 'Menu'}>
+      <button type="button" className="gm-btn" aria-label={open ? t('gameMenu.close') : t('gameMenu.menu')} aria-expanded={open} onClick={() => setOpen(!open)} title={open ? t('gameMenu.close') : t('gameMenu.menu')}>
         ☰
       </button>
       {open && (
@@ -31,21 +32,21 @@ export function GameMenu({ sceneName, money, dateLine, onQuit, onSaveLoad, onHou
           {sceneName && <h3 className="gm-scene">{sceneName}</h3>}
           <div className="gm-date">{dateLine}</div>
           <div className="gm-section">
-            <span className="mini-title">Bourse</span>
+            <span className="mini-title">{t('gameMenu.purse')}</span>
             <span className="coins">{formatMoney(money)}</span>
           </div>
           {coop}
           {onSaveLoad && (
             <button type="button" className="btn small" onClick={() => { setOpen(false); onSaveLoad(); }}>
-              💾 Sauvegarder / Charger
+              {t('gameMenu.saveLoad')}
             </button>
           )}
           {onHouseRules && (
             <button type="button" className="btn small" onClick={() => { setOpen(false); onHouseRules(); }}>
-              📜 Règles maison
+              {t('gameMenu.houseRules')}
             </button>
           )}
-          <button type="button" className="btn small gm-quit" onClick={onQuit}>← Quitter la partie</button>
+          <button type="button" className="btn small gm-quit" onClick={onQuit}>{t('gameMenu.quit')}</button>
         </div>
       )}
     </div>

@@ -29,7 +29,7 @@ function scaleBones(bones: ResolvedBone[], z: number, cx = 60, cy = 78): Resolve
 /** Échantillons d'os d'une attaque (profil, face à la cible) ou null si bipède/monolithique. */
 function attackFrames(name: string, kind: AttackKind): { samples: ResolvedBone[][] } | null {
   const planId = bodyPlanOf(name);
-  if (planId === 'monolithic' || planId === 'biped') return null;
+  if (planId === 'biped') return null;
   const plan = planById(planId as BodyPlanId);
   const species = resolveByName(name).species;
   const sc = resolveByName(name).scale;
@@ -55,7 +55,7 @@ const rows: string[] = [];
 let nCreatures = 0, nAttacks = 0;
 for (const c of creatures) {
   const planId = bodyPlanOf(c.label);
-  if (planId === 'monolithic' || planId === 'biped') continue; // bipèdes → armes (anim-gallery)
+  if (planId === 'biped') continue; // bipèdes → armes (anim-gallery)
   const attacks = creatureAttacks(c.traits ?? []);
   if (!attacks.length) continue;
   nCreatures++;

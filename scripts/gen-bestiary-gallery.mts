@@ -41,7 +41,7 @@ function scaleBones(bones: ResolvedBone[], z: number, cx = 60, cy = 78): Resolve
 function creatureFrames(name: string): { samples: ResolvedBone[][]; dur: number } {
   const z = (() => { const s = resolveByName(name).scale; return s > 1 ? +(1 / s).toFixed(3) : 1; })();
   const planId = bodyPlanOf(name);
-  if (planId !== 'monolithic' && planId !== 'biped') {
+  if (planId !== 'biped') {
     const plan = planById(planId as BodyPlanId);
     const species = resolveByName(name).species;
     if (plan.idlePose) {

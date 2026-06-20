@@ -14,6 +14,7 @@ import type { Combatant } from '../engine/types';
 import { ActiveModal } from './ActiveModal';
 import { Modal } from './Modal';
 import { CharFrame } from './CharFrame';
+import { t } from '../i18n';
 
 /** Atouts/Défauts d'artisanat (LDB 60 l.55-90) — dérivés de la DONNÉE éditable (`qualities.json`,
  *  qualités d'Objet) par `id` ; tooltips/libellés via le registre (`describeQuality`). */
@@ -83,7 +84,7 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
   return (
     <div className="menu interlude-screen">
       <div className="menu-card interlude-card">
-        <h1 className="title">Entre deux aventures</h1>
+        <h1 className="title">{t('interlude.title')}</h1>
         <p className="subtitle">
           {interlude.weeks} semaine{interlude.weeks > 1 ? 's' : ''} · Bourse du groupe {formatMoney(money)}
         </p>
@@ -112,12 +113,12 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
               </section>
             )}
             <div className="interlude-close">
-              <p className="interlude-warning" title="« Tout l'argent non sécurisé disparaît » (Argent à gaspiller) : seuls les dépôts bancaires et les Revenus survivent à la clôture.">
-                💸 À la clôture, l'or non déposé sera dilapidé.
+              <p className="interlude-warning" title={t('interlude.close.warning.title')}>
+                {t('interlude.close.warning')}
               </p>
               {isGuest
-                ? <p className="interlude-warning">⏳ L'hôte clôt l'interlude pour tout le monde.</p>
-                : <button className="btn btn-primary" onClick={() => setPhase('closing')}>Clore l'interlude…</button>}
+                ? <p className="interlude-warning">{t('interlude.close.guest')}</p>
+                : <button className="btn btn-primary" onClick={() => setPhase('closing')}>{t('interlude.close.btn')}</button>}
             </div>
           </>
         )}
@@ -152,7 +153,7 @@ function EventsIntro({ heroes, interlude, onDone }: { heroes: Combatant[]; inter
   return (
     <>
       <p className="interlude-phase-hint">
-        Pendant que le groupe souffle, la vie suit son cours — chacun tire un Événement (d100).
+        {t('interlude.events.hint')}
       </p>
       <div className="interlude-heroes">
         {heroes.map((h) => {
@@ -175,7 +176,7 @@ function EventsIntro({ heroes, interlude, onDone }: { heroes: Combatant[]; inter
         })}
       </div>
       <div className="modal-actions">
-        <button className="btn btn-primary" onClick={onDone}>Passer aux Activités →</button>
+        <button className="btn btn-primary" onClick={onDone}>{t('interlude.events.next')}</button>
       </div>
     </>
   );
@@ -561,7 +562,7 @@ function CloseRecap({ heroes, interlude, money, bank, pendingOrders, onCancel }:
   const kept = bank.reduce((a, b) => a + b.brass, 0);
   const crafts = heroes.filter((h) => interlude.perHero[h.id]?.craft);
   return (
-    <Modal title="Clore l'interlude ?" variant="plain" className="interlude-recap" onClose={onCancel}>
+    <Modal title={t('interlude.recap.title')} variant="plain" className="interlude-recap" onClose={onCancel}>
       <ul className="interlude-recap-list">
         <li>
           💸 {wasted > 0
@@ -585,8 +586,8 @@ function CloseRecap({ heroes, interlude, money, bank, pendingOrders, onCancel }:
         <li>🌙 Le temps passe : {interlude.weeks * 7} jours (récupération et convalescence comprises).</li>
       </ul>
       <div className="modal-actions">
-        <button className="btn" onClick={onCancel}>Pas encore</button>
-        <button className="btn btn-primary" onClick={end}>Clore l'interlude</button>
+        <button className="btn" onClick={onCancel}>{t('interlude.recap.cancel')}</button>
+        <button className="btn btn-primary" onClick={end}>{t('interlude.recap.confirm')}</button>
       </div>
     </Modal>
   );

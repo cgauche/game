@@ -102,15 +102,18 @@ describe('moveReachFor — Vol héros (Envol, Jalon 2.6)', () => {
 });
 
 describe('op grantTalent — talents temporisés (Flambeau de Vertu / Cœurs ardents, Jalon 2.6)', () => {
-  it('Sans peur accordé : featuresOf le voit, fearImmuneVs ignore la Peur de TOUTE source ; expire', async () => {
+  it('Sans peur accordé : featuresOf/sansPeurVs le voit (Test de Calme +20, PAS immunité auto) ; expire', async () => {
     const { fearImmuneVs } = await import('../engine/combatFeatures/dispatch');
-    const { fearSourceFor } = await import('../engine/psychology');
+    const { fearSourceFor, sansPeurVs } = await import('../engine/psychology');
     const c = dummy({});
     const ogre = dummy({ id: 'o', causesPeur: 2, groups: ['Ogre'] });
     expect(fearSourceFor(c, ogre)?.kind).toBe('peur'); // avant le sort : la Peur mord
     applyOps(c, [{ op: 'grantTalent', talentId: 'sans-peur' }], { label: 'Flambeau de Vertu', defaultDurationRounds: 1 });
-    expect(fearImmuneVs(c, ogre)).toBe(true);
-    expect(fearSourceFor(c, ogre)).toBeNull(); // plus aucune source de Peur/Terreur
+    expect(fearImmuneVs(c, ogre)).toBe(true); // le talent (temporisé) est détecté
+    expect(sansPeurVs(c, ogre)).toBe(true);
+    // RAW (LDB 10 l.864) : Sans Peur n'immunise PAS d'office — la source RESTE détectée, le porteur
+    // la teste par un seul Calme Accessible (+20). (Avant : bug d'immunité automatique → null.)
+    expect(fearSourceFor(c, ogre)?.kind).toBe('peur');
     expect(c.talents).toHaveLength(0); // PAS posé dans les talents possédés (fiche intacte)
     endOfRound(c);
     expect(fearImmuneVs(c, ogre)).toBe(false); // dissipé avec l'effet

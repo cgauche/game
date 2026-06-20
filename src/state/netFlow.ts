@@ -19,7 +19,8 @@
  */
 import type { GameState } from './store';
 import { useGame, registerScene } from './store';
-import { snapshotSave } from './saves';
+import { snapshotSave, packHouseRules, unpackHouseRules } from './saves';
+import { ruleOverrides, loadRuleOverrides } from '../engine/policy';
 import { HostSession, GuestSession } from '../net/session';
 import { GUEST_INTENTS, sanitizeIntentArgs } from '../net/intents';
 import { intentAllowedFor } from './netOwnership';
@@ -86,7 +87,9 @@ function netSnapshot(get: Get): Record<string, unknown> {
   (data as Record<string, unknown>).pendingCampaign = pc
     ? { name: pc.name, scenes: [], startSceneId: pc.startSceneId, worldMap: null }
     : null;
-  return data;
+  // Les règles maison de l'HÔTE voyagent avec l'état → parité hôte/invité (sinon l'invité calcule
+  // sur SES propres surcharges localStorage et diverge).
+  return packHouseRules(data, ruleOverrides());
 }
 
 function campaignMessage(pc: NonNullable<GameState['pendingCampaign']>): NetMessage {
@@ -125,11 +128,13 @@ function scheduleBroadcast(get: Get): void {
 function applyNetSnapshot(set: Set, data: Record<string, unknown>): void {
   const base = JSON.parse(JSON.stringify(useGame.getInitialState())) as Partial<GameState>;
   const mine = useGame.getState();
-  const incoming = (data as { net?: NetState }).net;
-  const keepCreator = mine.screen === 'creator' && (data as Partial<GameState>).screen === 'party';
+  const { game, rules } = unpackHouseRules(data);
+  if (rules) loadRuleOverrides(rules); // l'invité adopte les règles maison de l'hôte (parité)
+  const incoming = (game as { net?: NetState }).net;
+  const keepCreator = mine.screen === 'creator' && (game as Partial<GameState>).screen === 'party';
   set({
     ...base,
-    ...(data as Partial<GameState>),
+    ...(game as Partial<GameState>),
     ...(keepCreator ? { screen: 'creator' as const } : null),
     net: {
       ...(incoming ?? mine.net),

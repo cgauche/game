@@ -1,4 +1,5 @@
 /** Types partagés du moteur de règles WFRP v4. */
+import { t } from '../i18n';
 
 /** Les 10 Caractéristiques (abréviations du Livre de base). */
 export type CharKey =
@@ -15,17 +16,18 @@ export type CharKey =
 
 export const CHAR_KEYS: CharKey[] = ['CC', 'CT', 'F', 'E', 'I', 'Ag', 'Dex', 'Int', 'FM', 'Soc'];
 
+// Libellés FR dérivés du catalogue i18n (source unique des textes — cf. docs/i18n-seam.md).
 export const CHAR_LABELS: Record<CharKey, string> = {
-  CC: 'Capacité de Combat',
-  CT: 'Capacité de Tir',
-  F: 'Force',
-  E: 'Endurance',
-  I: 'Initiative',
-  Ag: 'Agilité',
-  Dex: 'Dextérité',
-  Int: 'Intelligence',
-  FM: 'Force Mentale',
-  Soc: 'Sociabilité',
+  CC: t('char.CC'),
+  CT: t('char.CT'),
+  F: t('char.F'),
+  E: t('char.E'),
+  I: t('char.I'),
+  Ag: t('char.Ag'),
+  Dex: t('char.Dex'),
+  Int: t('char.Int'),
+  FM: t('char.FM'),
+  Soc: t('char.Soc'),
 };
 
 export type Characteristics = Record<CharKey, number>;
@@ -39,12 +41,12 @@ export const CHAR_BY_LABEL: Record<string, CharKey> = Object.fromEntries(
 export type HitLocation = 'tete' | 'brasG' | 'brasD' | 'corps' | 'jambeG' | 'jambeD';
 
 export const HIT_LOCATION_LABELS: Record<HitLocation, string> = {
-  tete: 'Tête',
-  brasG: 'Bras gauche',
-  brasD: 'Bras droit',
-  corps: 'Corps',
-  jambeG: 'Jambe gauche',
-  jambeD: 'Jambe droite',
+  tete: t('hitloc.tete'),
+  brasG: t('hitloc.brasG'),
+  brasD: t('hitloc.brasD'),
+  corps: t('hitloc.corps'),
+  jambeG: t('hitloc.jambeG'),
+  jambeD: t('hitloc.jambeD'),
 };
 
 /**
@@ -58,10 +60,10 @@ export type BodyShape = 'humanoide' | 'quadrupede' | 'oiseau' | 'serpent' | 'ara
 /** Étiquettes de localisation propres à une forme (surchargent HIT_LOCATION_LABELS ; LDB p.312). */
 export const BODY_SHAPE_LOC_LABELS: Record<BodyShape, Partial<Record<HitLocation, string>>> = {
   humanoide: {},
-  quadrupede: { brasG: 'Membre antérieur gauche', brasD: 'Membre antérieur droit', jambeG: 'Membre postérieur gauche', jambeD: 'Membre postérieur droit' },
-  oiseau: { brasG: 'Aile gauche', brasD: 'Aile droite', jambeG: 'Patte gauche', jambeD: 'Patte droite' },
+  quadrupede: { brasG: t('hitloc.quadrupede.brasG'), brasD: t('hitloc.quadrupede.brasD'), jambeG: t('hitloc.quadrupede.jambeG'), jambeD: t('hitloc.quadrupede.jambeD') },
+  oiseau: { brasG: t('hitloc.oiseau.brasG'), brasD: t('hitloc.oiseau.brasD'), jambeG: t('hitloc.oiseau.jambeG'), jambeD: t('hitloc.oiseau.jambeD') },
   serpent: {}, // n'expose que Tête / Corps
-  araignee: { jambeD: 'Patte', corps: 'Abdomen' }, // n'expose que Tête / Pattes / Abdomen
+  araignee: { jambeD: t('hitloc.araignee.jambeD'), corps: t('hitloc.araignee.corps') }, // n'expose que Tête / Pattes / Abdomen
 };
 
 export interface SkillInstance {
@@ -734,11 +736,11 @@ export type UpkeepDeferTest = (spec: {
 }) => void;
 
 export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
-  tresFacile: 'Très facile (+60)',
-  facile: 'Facile (+40)',
-  accessible: 'Accessible (+20)',
-  intermediaire: 'Intermédiaire (+0)',
-  complexe: 'Complexe (−10)',
-  difficile: 'Difficile (−20)',
-  tresDifficile: 'Très difficile (−30)',
+  tresFacile: t('difficulty.tresFacile'),
+  facile: t('difficulty.facile'),
+  accessible: t('difficulty.accessible'),
+  intermediaire: t('difficulty.intermediaire'),
+  complexe: t('difficulty.complexe'),
+  difficile: t('difficulty.difficile'),
+  tresDifficile: t('difficulty.tresDifficile'),
 };

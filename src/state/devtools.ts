@@ -595,5 +595,5 @@ export function buildApi() {
 export function installDevtools() {
   const w = window as unknown as { __wfrp?: ReturnType<typeof buildApi>; __game?: typeof useGame };
   w.__wfrp = buildApi();
-  w.__game = useGame; // rétro-compat (recettes antérieures)
+  w.__game = useGame; // handle brut du store (à côté de __wfrp) pour les recettes navigateur
 }

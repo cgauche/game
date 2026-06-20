@@ -10,6 +10,7 @@ import { Combatant } from '../engine/types';
 import { Money, formatMoney } from '../engine/money';
 import { CharCard } from './CharCard';
 import { CharacterSheet } from './CharacterSheet';
+import { t } from '../i18n';
 
 /**
  * Écran d'équipe — solo ET coop. En coop, l'hôte attribue chaque EMPLACEMENT (Aventurier 1-4)
@@ -74,7 +75,7 @@ export function PartyScreen() {
       <PartyScreenView
         party={party}
         net={net}
-        title="Votre groupe d'aventuriers"
+        title={t('party.title')}
         campaignName={pendingCampaign ? pendingCampaign.name : BUILTIN_CAMPAIGN_NAME}
         onChangeCampaign={canPickCampaign ? () => setCampaignPick(true) : undefined}
         inProgress={inProgress}
@@ -106,12 +107,12 @@ function CampaignSelect({ currentName, onClose }: { currentName: string | null; 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3 className="picker-title">Choisir la campagne</h3>
+        <h3 className="picker-title">{t('party.campaign.pick.title')}</h3>
         <div className="pregen-list">
           <div className="pregen-row">
             <span className="campaign-row-name">⚔️ {BUILTIN_CAMPAIGN_NAME}</span>
             <button className="btn small btn-primary" disabled={currentName == null} onClick={() => pick(null)}>
-              {currentName == null ? 'Actuelle' : 'Choisir'}
+              {currentName == null ? t('party.campaign.pick.current') : t('party.campaign.pick.choose')}
             </button>
           </div>
           {published.map((p) => (
@@ -122,13 +123,13 @@ function CampaignSelect({ currentName, onClose }: { currentName: string | null; 
                 disabled={currentName === p.name}
                 onClick={() => pick({ name: p.name, scenes: p.project.scenes, startSceneId: p.startSceneId, worldMap: p.project.worldMap ?? null })}
               >
-                {currentName === p.name ? 'Actuelle' : 'Choisir'}
+                {currentName === p.name ? t('party.campaign.pick.current') : t('party.campaign.pick.choose')}
               </button>
             </div>
           ))}
         </div>
         <button className="btn" onClick={onClose}>
-          Fermer
+          {t('party.campaign.pick.close')}
         </button>
       </div>
     </div>
@@ -223,11 +224,11 @@ export function PartyScreenView({
       <header className="bar">
         {net.mode === 'guest' ? (
           <button className="btn small" onClick={onQuitCoop}>
-            ← Quitter
+            {t('party.back.quit')}
           </button>
         ) : (
           <button className="btn small" onClick={onMenu}>
-            ← Menu
+            {t('party.back.menu')}
           </button>
         )}
         <h2>{title} ({party.length}/4)</h2>
@@ -237,17 +238,17 @@ export function PartyScreenView({
             <span className="campaign-pill-name">{campaignName}</span>
             {onChangeCampaign && (
               <button className="btn small" onClick={onChangeCampaign}>
-                Changer
+                {t('party.campaign.change')}
               </button>
             )}
           </div>
         )}
         {net.mode === 'guest' && (
-          <span className="hint">⏳ L'hôte lance la partie</span>
+          <span className="hint">{t('party.guest.waiting')}</span>
         )}
       </header>
       {isHost && guestPending && (
-        <p className="hint party-coop-hint">⏳ En attente que chaque joueur remplisse ses emplacements…</p>
+        <p className="hint party-coop-hint">{t('party.coop.pending')}</p>
       )}
 
       <div className="party-grid">
@@ -258,7 +259,7 @@ export function PartyScreenView({
               {coop && (
                 net.mode === 'host' && !h ? (
                   <label className="slot-owner">
-                    <span>Joueur :</span>
+                    <span>{t('party.slot.player')}</span>
                     <select value={seat} onChange={(e) => onAssignSlot(i, Number(e.target.value))}>
                       {seats.map(({ seat: s, name: n }) => (
                         <option key={s} value={s}>{s === 0 ? `👑 ${n}` : n}</option>
@@ -266,7 +267,7 @@ export function PartyScreenView({
                     </select>
                   </label>
                 ) : (
-                  <div className="slot-owner hint">👤 {seatName(seat)}{coop && seat === net.mySeat ? ' (vous)' : ''}</div>
+                  <div className="slot-owner hint">👤 {seatName(seat)}{coop && seat === net.mySeat ? t('party.slot.you') : ''}</div>
                 )
               )}
               {h ? (
@@ -276,29 +277,29 @@ export function PartyScreenView({
                     <div className="row-flex slot-actions">
                       {onEditHero && (
                         <button className="btn small" onClick={() => onEditHero(h.id)}>
-                          Modifier
+                          {t('party.hero.edit')}
                         </button>
                       )}
                       <button className="btn small danger" onClick={() => onRemoveHero(h.id)}>
-                        Retirer
+                        {t('party.hero.remove')}
                       </button>
                     </div>
                   )}
                 </>
               ) : mine ? (
                 <div className="empty-slot">
-                  <span className="slot-num">Aventurier {i + 1}</span>
+                  <span className="slot-num">{t('party.slot.adventurer', { n: i + 1 })}</span>
                   <button className="btn" onClick={onCreate}>
-                    Créer un personnage
+                    {t('party.slot.create')}
                   </button>
                   <button className="btn" onClick={() => setPicker(true)}>
-                    Choisir un personnage
+                    {t('party.slot.pick')}
                   </button>
                 </div>
               ) : (
                 <div className="empty-slot">
-                  <span className="slot-num">Aventurier {i + 1}</span>
-                  <span className="hint">⏳ En attente de {seatName(seat)}…</span>
+                  <span className="slot-num">{t('party.slot.adventurer', { n: i + 1 })}</span>
+                  <span className="hint">{t('party.slot.waiting', { name: seatName(seat) })}</span>
                 </div>
               )}
             </div>
@@ -310,18 +311,18 @@ export function PartyScreenView({
         <footer className="party-actions">
           {inProgress && (
             <button className="btn btn-primary" onClick={onResume}>
-              Reprendre →
+              {t('party.action.resume')}
             </button>
           )}
           <button
             className={`btn ${inProgress ? '' : 'btn-primary'} party-start`}
             disabled={party.length === 0 || guestPending}
             title={guestPending
-              ? 'Des emplacements attribués aux autres joueurs sont encore vides.'
-              : inProgress ? 'Relance la campagne au début — la partie en cours sera perdue.' : undefined}
+              ? t('party.action.start.guestPending')
+              : inProgress ? t('party.action.start.willReset') : undefined}
             onClick={onStart}
           >
-            Commencer →
+            {t('party.action.start')}
           </button>
         </footer>
       )}
@@ -360,7 +361,7 @@ export function PartyPicker({
     if (!file) return;
     const entry = rosterImport(await file.text());
     if (!entry) {
-      setImportErr('Fichier de personnage invalide.');
+      setImportErr(t('picker.import.error'));
       return;
     }
     rosterAdd(entry);
@@ -372,13 +373,13 @@ export function PartyPicker({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3 className="picker-title">Recruter — {party.length}/4</h3>
+        <h3 className="picker-title">{t('picker.title', { n: party.length })}</h3>
         <div className="sheet-tabs">
           <button className={`tab ${tab === 'roster' ? 'on' : ''}`} onClick={() => setTab('roster')}>
-            Mes personnages
+            {t('picker.tab.roster')}
           </button>
           <button className={`tab ${tab === 'pregens' ? 'on' : ''}`} onClick={() => setTab('pregens')}>
-            Pré-tirés
+            {t('picker.tab.pregens')}
           </button>
         </div>
 
@@ -386,7 +387,7 @@ export function PartyPicker({
           <div className="pregen-list">
             {roster.length === 0 && (
               <button className="btn" onClick={() => setScreen('creator')}>
-                ➕ Créer un personnage
+                {t('picker.roster.create')}
               </button>
             )}
             {roster.map(({ hero, wealth }) => (
@@ -398,19 +399,19 @@ export function PartyPicker({
                   disabled={inParty(hero.id)}
                   onClick={() => onPick(hero, wealth)}
                 >
-                  {inParty(hero.id) ? 'Déjà choisi' : 'Choisir'}
+                  {inParty(hero.id) ? t('picker.hero.inParty') : t('picker.hero.choose')}
                 </button>
-                <button className="btn small" onClick={() => exportHero({ hero, wealth })} title="Télécharger ce personnage (JSON) — backup, autre appareil, ou coop d'un ami">
-                  Exporter
+                <button className="btn small" onClick={() => exportHero({ hero, wealth })} title={t('picker.hero.export.title')}>
+                  {t('picker.hero.export')}
                 </button>
                 <button className="btn small danger" onClick={() => removeSaved(hero.id)}>
-                  Supprimer
+                  {t('picker.hero.delete')}
                 </button>
               </div>
             ))}
             <div className="party-import">
-              <button className="btn small" onClick={() => fileRef.current?.click()} title="Importer un personnage depuis un fichier JSON exporté">
-                📥 Importer un personnage…
+              <button className="btn small" onClick={() => fileRef.current?.click()} title={t('picker.import.btn.title')}>
+                {t('picker.import.btn')}
               </button>
               {importErr && <span className="hint danger">{importErr}</span>}
               <input
@@ -428,7 +429,7 @@ export function PartyPicker({
               <div key={h.id} className="pregen-row">
                 <CharCard hero={h} compact />
                 <button className="btn small btn-primary" disabled={inParty(h.id)} onClick={() => onPick(h)}>
-                  {inParty(h.id) ? 'Déjà choisi' : 'Choisir'}
+                  {inParty(h.id) ? t('picker.hero.inParty') : t('picker.hero.choose')}
                 </button>
               </div>
             ))}
@@ -436,7 +437,7 @@ export function PartyPicker({
         )}
 
         <button className="btn" onClick={onClose}>
-          Terminé
+          {t('picker.done')}
         </button>
       </div>
     </div>

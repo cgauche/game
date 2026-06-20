@@ -175,6 +175,26 @@ describe('Psychologie de combat héros — cascade de Round (Peur/Terreur)', () 
     expect(FLOWS.cascade.picker?.(useGame.getState().pendingCascade!.participants[0], H)).toBeNull();
   });
 
+  it('Sans Peur (Ennemi, LDB 10 l.864) : Peur testée par UN seul Calme Accessible (+20) ; réussite → ignorée', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup('grande'); // source de Peur 1 (Taille)
+    E.groups = ['Ogre'];
+    H.talents = [...(H.talents ?? []), { talentId: 'sans-peur', spec: 'Ogre', times: 1 }]; // Sans Peur (Ogre)
+    openRoundEndCascade(useGame.getState, useGame.setState);
+    const step = useGame.getState().pendingCascade!.participants[0];
+    expect(step.combatPsych?.kind).toBe('peur');
+    expect(step.combatPsych?.sansPeur).toBe(true); // marqué Sans Peur
+    expect(step.target).toBe(step.base! + 20); // Test de Calme Accessible (+20), pas Intermédiaire (+0)
+
+    // Une réussite IGNORE la Peur d'emblée (un seul Test) → DR porté à l'Indice (Peur surmontée).
+    useGame.getState().cascadeForceSuccess(step.id);
+    useGame.getState().cascadeNext();
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    const peur = (h.psychState ?? []).find((p) => p.type === 'peur' && p.sourceId === E.id)!;
+    expect(peur).toBeTruthy();
+    expect(peur.calmeDR! >= peur.indice!).toBe(true); // ignorée (vaincue) en un seul Test
+  });
+
   it('pas de source de peur (ennemi de même Taille) → aucune cascade (ni début ni fin de Round)', () => {
     setup('moyenne');
     openRoundStartPsych(useGame.getState, useGame.setState);

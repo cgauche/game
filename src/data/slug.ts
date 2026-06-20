@@ -1,7 +1,7 @@
 /**
  * Slug d'`id` STABLE d'un libellé — convention des `id` de `skills.json`/`talents.json`
- * (« Talent aléatoire » → « talent-aleatoire », « Art » → « art »). SOURCE UNIQUE, réutilisée par le
- * script de migration (`scripts/migrate-refs.mts`) ET l'éditeur (id d'une entrée créée au Codex).
+ * (« Talent aléatoire » → « talent-aleatoire », « Art » → « art »). SOURCE UNIQUE, réutilisée par
+ * l'éditeur (id d'une entrée créée au Codex).
  * L'`id` est la cible des références structurées : robuste au renommage du `label`.
  */
 export function slugId(label: string): string {

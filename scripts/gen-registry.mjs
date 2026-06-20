@@ -6,7 +6,7 @@
  *
  *   node scripts/gen-registry.mjs
  *
- * Câblé dans `npm run gen` (+ build:data / build). Ajouter une entrée = déposer un fichier
+ * Câblé dans `npm run gen` (+ `npm run build`). Ajouter une entrée = déposer un fichier
  * dans le `defs/` correspondant, puis relancer (auto en dev via le plugin Vite).
  */
 import { readdirSync, writeFileSync, readFileSync } from 'node:fs';
