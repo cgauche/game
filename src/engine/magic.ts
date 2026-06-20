@@ -20,12 +20,13 @@ import { RNG, defaultRNG } from './dice';
 import { rollTest, resolveOpposed, isDoubleRoll, TestResult } from './tests';
 import { hasTraitKey } from './traits/dispatch';
 import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
+import { effectiveSkillCharKey } from './skills';
 import { reverseRoll, hitLocationByShape } from './combat';
 import { Formula, resolveFormula } from './ops';
 import { arcaneDomainOf } from './combatFeatures/dispatch';
 import { domainMissileMods } from './domainAttributes';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
-import { Combatant, HitLocation, Difficulty, CharKey, CHAR_LABELS, CHAR_BY_LABEL } from './types';
+import { Combatant, HitLocation, Difficulty, CHAR_BY_LABEL } from './types';
 import { findTalent, findTalentById } from '../data';
 import { slugId } from '../data/slug';
 
@@ -107,7 +108,13 @@ export function prayerMaxZeroDR(c: Combatant): boolean {
  * Tests de Focalisation », LDB 46 l.176).
  */
 export function castingValue(c: Combatant, skillName: string, spec?: string): number {
-  const charKey = skillName === 'priere' ? 'Soc' : skillName === 'focalisation' ? 'FM' : 'Int';
+  // Carac de la compétence d'incantation via le POINT UNIQUE (skills.ts) : carac d'instance (data-driven,
+  // ex. ogre → Endurance pour Langue (Magick), ADE II l.653) sinon défaut LDB (Prière→Soc, Focalisation→FM,
+  // Langue→Int) — plus de ternaire qui ignorait SkillInstance.characteristic.
+  const charKey = effectiveSkillCharKey(c, skillName, {
+    spec,
+    fallback: skillName === 'priere' ? 'Soc' : skillName === 'focalisation' ? 'FM' : 'Int',
+  });
   const base = effectiveChar(c, charKey);
   // `skillName` EST déjà l'id stable de la Compétence (skills.json) — lookup direct.
   const sk = c.skills.find(

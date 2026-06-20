@@ -11,8 +11,9 @@ import { agilityTestPenalty } from './encumbrance';
 import { traumaSkillPenalty, passiveSkillSum, passiveTestMod } from './trauma';
 import { rule } from './policy';
 
-/** Règles optionnelles « caractéristique alternative » (LDB 09) : Métier comme Savoir → Int (l.352) ;
- *  Intimidation → carac réglable F/FM/Int (l.266). Renvoie la CharKey de base à utiliser pour le Test
+/** Règles optionnelles « caractéristique alternative » — POINT UNIQUE de la famille : Métier comme Savoir
+ *  → Int (LDB 09 l.352) ; Intimidation → carac réglable F/FM/Int (LDB 09 l.266) ; Magie ogre → Langue
+ *  (Magick) sur Endurance (ADE II ch.02 l.653). Renvoie la CharKey de base à utiliser pour le Test
  *  (inchangée si aucune règle ne s'applique). N'opère que sur une COMPÉTENCE nommée (pas une carac brute). */
 function altCharKey(c: Combatant, skillId: string, ck: CharKey): CharKey {
   if (ck === 'Dex' && skillId === 'metier' && rule('test-metier-int')) return 'Int';
@@ -24,6 +25,9 @@ function altCharKey(c: Combatant, skillId: string, ck: CharKey): CharKey {
       return f >= fm && f >= i ? 'F' : fm >= i ? 'FM' : 'Int';
     }
   }
+  // Magie ogre (ADE II ch.02 « Les ogres » l.653) : « Les lanceurs de sorts ogres utilisent l'Endurance
+  // au lieu de l'Intelligence pour leur Compétence Langue (Magick). » Ancré sur ^ogre → exclut le « Rat ogre » (Skaven).
+  if (skillId === 'langue' && rule('magic-ogre-langue-e') && /^ogres?\b/i.test((c.species ?? '').trim())) return 'E';
   return ck;
 }
 
@@ -31,6 +35,23 @@ function altCharKey(c: Combatant, skillId: string, ck: CharKey): CharKey {
  *  une CharKey ('Dex'…), multilangue-safe — plus de conversion par libellé. */
 export function skillCharKeyById(skillId: string): CharKey | undefined {
   return findSkillById(skillId)?.characteristic;
+}
+
+/** Caractéristique EFFECTIVE d'un Test de compétence — POINT UNIQUE (consommé par `testValue` ET
+ *  `castingValue`) : explicite > carac de l'INSTANCE possédée (défaut DATA-DRIVEN : un statbloc peut
+ *  porter une carac alternative) > carac de la Compétence (JSON, par id) > repli ; PUIS surcharge par
+ *  règle optionnelle « caractéristique alternative » (`altCharKey` : Métier/Intimidation/Magie ogre). */
+export function effectiveSkillCharKey(
+  c: Combatant,
+  skillId: string | undefined,
+  opts: { explicit?: CharKey; spec?: string; fallback?: CharKey } = {},
+): CharKey {
+  const { explicit, spec, fallback = 'Dex' } = opts;
+  if (explicit) return explicit;
+  const sk = skillId ? c.skills.find((s) => s.skillId === skillId && (spec == null || s.spec === spec)) : undefined;
+  let ck: CharKey = sk?.characteristic ?? (skillId ? skillCharKeyById(skillId) : undefined) ?? fallback;
+  if (skillId) ck = altCharKey(c, skillId, ck);
+  return ck;
 }
 
 /** Valeur de test d'un personnage pour une compétence ou une caractéristique. Mêmes modulations qu'en
@@ -43,9 +64,8 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
   // `spec` cible une spécialisation précise (Savoir (Magie), Métier (Forgeron)…) quand le héros en possède
   // plusieurs avec des avances différentes — sinon (spec absent) la première instance de l'id suffit.
   const sk = skill ? c.skills.find((s) => s.skillId === skill && (spec == null || s.spec === spec)) : undefined;
-  // Caractéristique : explicite > carac de la compétence possédée > carac de la compétence (par id, hors instance) > Dex.
-  let ck = characteristic ?? (sk ? skillCharKeyById(sk.skillId) : undefined) ?? (skill ? skillCharKeyById(skill) : undefined) ?? 'Dex';
-  if (skill && !characteristic) ck = altCharKey(c, skill, ck); // carac alternative (Métier/Intimidation, règle optionnelle)
+  // Caractéristique : POINT UNIQUE partagé avec castingValue (carac d'instance data-driven + carac alternative).
+  const ck = effectiveSkillCharKey(c, skill, { explicit: characteristic, spec });
   const base = effectiveChar(c, ck);
   const states = testStatePenalty(c, skill);
   const enc = ck === 'Ag' ? agilityTestPenalty(c) : 0; // charge : couche d'ÉTAT orthogonale (≠ passif d'élément)
