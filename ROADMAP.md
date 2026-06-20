@@ -1321,6 +1321,32 @@ pilote = **menu principal + écran de groupe**, validé à l'œil avant généra
 
 ## Dette technique connue
 
+### ✅ Consolidation data-driven *(en cours — 2026-06-20, audit multi-agents 8 lentilles)*
+
+Audit complet de l'arbre (8 agents Explore // : data-driven/règles optionnelles · duplication/code
+mort/Ennemi-Joueur · i18n/jets silencieux · archi state/flow · pureté moteur+tests · primitives UI ·
+rendu/rig/éditeur · contenu/coop/build) → plan de consolidation priorisé. Premiers lots livrés (suite
+complète verte + typecheck 0 à chaque commit) :
+
+- **Caractéristique d'incantation alternative, 100 % DATA-DRIVEN** : `castingValue` ignorait
+  `SkillInstance.characteristic` et codait en dur priere→Soc/focalisation→FM/langue→Int. Unifié en UN
+  point (`engine/skills.ts:effectiveSkillCharKey`, partagé par `testValue` ET `castingValue`) : carac
+  d'instance (défaut donnée) + surcharge optionnelle (`altCharKey` : Métier/Intimidation). **Aucun sniff
+  d'espèce ni regexp dans le moteur.**
+- **Domaine « Gueule » (Magie Ogre, ADE II) migré dans la donnée** (`domains.json`, depuis `all-data.json`)
+  : répare le lien sort→domaine (les 7 sorts portaient `subType:"Gueule"` sans `domainId`). Nouvel
+  attribut **donnée** `DomainData.castingChar` → la Magie de la Gueule se lance sur l'**Endurance**
+  (ADE II l.653), lu par `castingValue` via le domaine du lanceur — la règle « ogre » vit dans la donnée
+  du domaine (réservé aux ogres), pas dans le code.
+- **Code mort / commentaires** : référence fantôme `asTrait` (`data/index.ts`) et `critical.ts` (cumul
+  yeux/oreilles déjà géré par `escalateSensoryLoss`) corrigés ; 12 codemods one-shot terminés supprimés
+  (`scripts/migrate-*`, `strip-spec-ops` — ~1090 l.) ; commentaire `build:data` périmé retiré.
+
+Reste (par lot, cf. plan) : finir les unifications jet/narration (`flowOutcomes` 0/15, fold
+FateSave/Renounce dans la cascade, résorber `flowFromEffects`) · seam i18n (events structurés clé+params)
+· jets silencieux résiduels révélés · pureté des types moteur↔state · correctness RAW (`fearImmune`,
+symptôme `toxine`, gangrène BE) · robustesse (migration de saves, policy synchro coop, tests `combat.ts`/`magic.ts`).
+
 ### Reste à faire — synthèse *(màj 2026-06-05 — vérifié contre le code)*
 
 - ✅ **Avancement XP — boucle complète** : moteur **+ câblage store** (grant/dépense/détection in-carrière) **+ panneau UI** (onglets Fiche/Avancement) **+ Effet `giveXp`** **+ octroi à la victoire éditable** (`EncounterDef.onVictory` → `applyEffects` au groupe, **authorable dans l'éditeur de rencontres** « À la victoire ») **+ octroi par jalon** (`giveXp` dans triggers/dialogues). Tout testé (engine + vue + actions store + rendu + éditeur).
