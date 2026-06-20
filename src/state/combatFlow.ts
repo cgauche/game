@@ -3199,9 +3199,10 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
  * NETTE `(DR final du défenseur + bt.defSL) − bt.attackerSL` ≥ 6 (Succès Stupéfiant, LDB 62 l.295) → la lame
  * est BRISÉE à moins qu'elle ne possède l'Atout Incassable (sauvegarde Solide gérée par `wearActiveWeapon`).
  * Échec/égalité au Test ⇒ branche `fail` (pas d'op, l'adversaire libère sa lame) → cette fonction n'est pas
- * appelée. Les lignes partent dans la file différée (`pendingLogQueue`), drainée par l'appelant qui réécrit
- * `battle.log`. `defenderSL` = le DR PROPRE du jet résolu (la marge nette se recompose avec `bt`).
- */
+ * appelée. La conséquence est EMPILÉE comme étape d'AFFICHAGE propre dans la cascade (`pushCombatStep` →
+ * `bladeTrapResult`, applier muet) — MÊME paradigme que le Coup Critique (une étape visible « l'un sous
+ * l'autre », acquittée par « Continuer/Terminer ») plutôt qu'une ligne noyée. `defenderSL` = le DR PROPRE du
+ * jet résolu (la marge nette se recompose avec `bt`). */
 export function applyBladeTrap(get: Get, set: SetFn, defender: Combatant, bt: BladeTrapFreeze, defenderSL: number): void {
   const battle = get().battle;
   if (!battle) return;
@@ -3210,21 +3211,28 @@ export function applyBladeTrap(get: Get, set: SetFn, defender: Combatant, bt: Bl
   const drop = attacker.weapons.find((w) => w.uid === bt.weaponUid);
   if (!drop) return;
   const netSL = defenderSL + bt.defSL - bt.attackerSL; // marge nette du défenseur vainqueur (LDB 62 l.295)
-  const lines: string[] = [];
+  let line: string;
   if (netSL >= 6) {
     // Succès Stupéfiant : la lame est BRISÉE, à moins qu'elle ne possède l'Atout Incassable (l.295).
     wearActiveWeapon(attacker, drop, true);
-    lines.push(drop.destroyed
+    line = drop.destroyed
       ? `La lame de ${attacker.name} (${drop.name}) est BRISÉE par la manœuvre !`
-      : `${drop.name} résiste à la casse (Incassable/Solide) mais est arrachée des mains de ${attacker.name}.`);
+      : `${drop.name} résiste à la casse (Incassable/Solide) mais est arrachée des mains de ${attacker.name}.`;
   } else {
-    lines.push(`${attacker.name} laisse tomber ${drop.name}, arrachée de ses mains !`);
+    line = `${attacker.name} laisse tomber ${drop.name}, arrachée de ses mains !`;
   }
   attacker.weapons = attacker.weapons.filter((w) => w !== drop);
-  set({ pendingLogQueue: [...get().pendingLogQueue, ...lines.map((line) => ({ line, cid: defender.id }))] });
+  // Étape d'AFFICHAGE empilée (comme un Coup Critique) : visible « l'un sous l'autre », acquittée par le
+  // joueur. `actorId` = le défenseur piégeur (propriétaire de la modale en coop). Applier muet (préserve `outcome`).
+  pushCombatStep(set, { id: `cons-bladetrap-result-${defender.id}`, kind: 'bladeTrapResult', actorId: defender.id, icon: '🗡️', label: 'Piège-lame', outcome: [line], interactive: true });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
 }
+
+/** Applier MUET de l'étape d'AFFICHAGE de la conséquence Piège-lame : l'`outcome` (« lame brisée/arrachée »)
+ *  est pré-posé sur l'étape (la mutation a déjà eu lieu dans `applyBladeTrap`) → rien à appliquer ici, seul
+ *  l'affichage empilé reste (mirroir d'une révélation de Critique en étape de séquence). */
+registerCascadeApplier('bladeTrapResult', () => {});
 
 /** Applier de l'étape de CHOIX « piège-lame » (LDB 62 l.292-295). « Coup Critique » (défaut) inflige le
  *  critique normal sur sa défense (LDB 14 l.7). « Piéger » route un Test opposé de Force CADENCE-AWARE
