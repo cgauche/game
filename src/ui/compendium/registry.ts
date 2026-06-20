@@ -338,7 +338,7 @@ export const CODEX: CodexCategory[] = [
     key: 'talents', label: 'Talents', group: 'Compétences',
     items: talents.map((t) => ({
       label: t.label, desc: t.desc, source: src(t.source),
-      meta: facts(fact('Max', t.max), fact('Test', t.test)),
+      meta: facts(fact('Max', t.max), fact('Test', t.test), fact('Spécialisations', t.specs?.length ? t.specs.join(', ') : null)),
       sections: sections(
         careerGrantSection(t.passive), // Compétence/Talent ajouté à toute carrière (Maître artisan, Flagellant…)
         passiveSection(t.passive),
