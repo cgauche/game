@@ -123,9 +123,10 @@ export function quadSkeletonForView(sk: QuadSkeleton, view: View): QuadSkeleton 
   const set = (id: QuadBoneId, x: number, z: number) => {
     out[id] = { ...sk[id], pivot: { x, y: sk[id].pivot.y }, angle: 0, z };
   };
-  // La paire face à l'œil (avant en face / arrière de dos) est ÉCARTÉE et devant ; l'autre
-  // paire est resserrée et derrière (profondeur) → on lit bien 4 pattes, pas 2 fusionnées.
-  const zNear = 4, zFar = 2, wNear = 15, wFar = 6;
+  // La paire face à l'œil (avant en face / arrière de dos) est devant et SOUS le corps (les
+  // antérieurs émergent du bréchet, pas écartés en tréteau) ; l'autre paire est resserrée et
+  // derrière (profondeur) → on lit bien 4 pattes d'aplomb, pas 2 fusionnées ni un chevalet.
+  const zNear = 4, zFar = 2, wNear = 10, wFar = 4;
   set('hautAvD', front ? wNear : wFar, front ? zNear : zFar); set('hautAvG', front ? -wNear : -wFar, front ? zNear : zFar);
   set('hautArD', front ? wFar : wNear, front ? zFar : zNear); set('hautArG', front ? -wFar : -wNear, front ? zFar : zNear);
   for (const id of ['basAvD', 'basAvG', 'basArD', 'basArG', 'piedAvD', 'piedAvG', 'piedArD', 'piedArG'] as QuadBoneId[]) {
