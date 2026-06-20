@@ -355,6 +355,11 @@ const TRIGGER_LABEL: Record<EffectTrigger, string> = {
   onKill: 'quand il neutralise un adversaire',
   onCharged: 'quand le porteur est Chargé',
   onGainCondition: 'quand le porteur gagne un État',
+  onCombatStart: 'au début du combat',
+  onCombatEnd: 'à la fin du combat',
+  onRoundEnd: 'à la fin du Round',
+  onTurnStart: 'au début de son tour',
+  onTurnEnd: 'à la fin de son tour',
 };
 const ON_LABEL: Record<'self' | 'victim' | 'engaged', string> = {
   self: 'le porteur lui-même',

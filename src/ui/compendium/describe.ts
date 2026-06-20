@@ -20,6 +20,11 @@ const TRIGGER_LABEL: Record<EffectTrigger, string> = {
   onKill: 'En tuant un adversaire',
   onCharged: 'Quand Chargé',
   onGainCondition: 'En gagnant un État',
+  onCombatStart: 'Au début du combat',
+  onCombatEnd: 'À la fin du combat',
+  onRoundEnd: 'À la fin du Round',
+  onTurnStart: 'Au début de son tour',
+  onTurnEnd: 'À la fin de son tour',
 };
 const ON_LABEL: Record<'self' | 'victim' | 'engaged', string> = {
   self: 'soi-même',

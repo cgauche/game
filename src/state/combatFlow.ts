@@ -167,11 +167,11 @@ export * from './combatHooks';
 export * from './combatSetup';
 import { runCombatHooks } from './combatHooks';
 import { collectHeroRoundEndUpkeep } from './combat/roundHooks';
-import { endFrenzyIfDone } from './combat/turnHooks'; // usage interne (cascade psy héros, psychStepFor)
+import { endFrenzyIfDone, fireTurnStartTriggers, fireTurnEndTriggers } from './combat/turnHooks'; // usage interne (cascade psy héros, psychStepFor ; effets de bord de tour)
 export { brokenRecovery, collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour broken-recovery.test / cascade d'upkeep
 export * from './combat/triggeredTest'; // baril : enregistre l'applier de cascade `triggeredTest` + installe le routeur de Test des triggers (effet de bord)
 import { runCombatFlow } from './combat/triggeredTest'; // usage interne (applyCast : exécuteur de Flow de sort EN COMBAT, after-aware → canal de journal unifié + voie nested cast↔test)
-export { endFrenzyIfDone, aiMaybeFrenzy, resolvePsychAI } from './combat/turnHooks'; // baril : enregistre les hooks de début de tour ennemi (effet de bord) + ré-export pour frenzy*.test / psych*.test
+export { endFrenzyIfDone, aiMaybeFrenzy, resolvePsychAI, fireTurnStartTriggers, fireTurnEndTriggers } from './combat/turnHooks'; // baril : enregistre les hooks de début de tour ennemi (effet de bord) + ré-export pour frenzy*.test / psych*.test + effets de bord de tour
 // Sauvegardes post-touche en registre `HitModifier` ordonné (state/combat/hitModifiers, module FEUILLE).
 import { runHitModifiers, martyrGuardOf, wardedAgainst } from './combat/hitModifiers'; // usage interne (applyAttackResult + applyCast)
 export { runHitModifiers, registerHitModifier, martyrGuardOf, wardedAgainst, organicProjectile } from './combat/hitModifiers'; // baril : enregistre les modifiers (effet de bord) + ré-export pour applyCast / les tests (l11-sorts-zones, etc.)
@@ -3072,6 +3072,13 @@ export function castWardPenalty(s: GameState, target: Combatant, spell: SpellLik
 export function finalizeBattle(get: Get, set: SetFn): void {
   const { battle, party } = get();
   if (!battle) return;
+  // Effets « fin de combat » authorés de chaque combattant survivant (inerte tant qu'aucune donnée ne
+  // porte un effet `onCombatEnd`) → collectés dans le journal de fin de combat.
+  const infectLog: string[] = [];
+  for (const c of battle.combatants) {
+    if (isOutOfAction(c)) continue;
+    infectLog.push(...fireTriggers(get, c, 'onCombatEnd', { rng: battleRng(), set }));
+  }
   // « Après un combat où vous avez subi une Blessure critique » (LDB 20 l.72) : Test de Résistance Très
   // Facile (+60) ou Infection Mineure. Auto-résolu (comme le Test de Résistance interne d'un critique) sur
   // les héros survivants ; mute le combattant AVANT le report d'état (carryOverState copie `diseases`).
@@ -3079,7 +3086,6 @@ export function finalizeBattle(get: Get, set: SetFn): void {
   // d'Infection Mineure post-critique mais garde Infecté/Maladie — Skavens/Nurgle) / off (aucune maladie ;
   // les marqueurs sont quand même purgés pour ne pas reporter au combat suivant).
   const dm = rule('disease-mode') as string;
-  const infectLog: string[] = [];
   for (const c of battle.combatants) {
     if (c.kind !== 'hero' || !c.tookCriticalThisFight) continue;
     const dressed = c.woundDressed; // pansement/Guérison pendant le combat → pas d'Infection (LDB 18 l.382)
@@ -3320,6 +3326,7 @@ export function advanceTurn(get: Get, set: SetFn) {
   const prevActive = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
   if (prevActive?.chargedThisTurn) prevActive.chargedThisTurn = false;
   if (prevActive?.freeAttacksThisTurn) prevActive.freeAttacksThisTurn = undefined; // Attaques gratuites de manœuvre : 1/tour (compteur remis à zéro)
+  fireTurnEndTriggers(get, set, prevActive); // effets de bord « fin de tour » authorés (inerte sans donnée)
 
   let turn = battle.turn;
   for (let i = 0; i < battle.order.length; i++) {
@@ -3375,6 +3382,7 @@ export function advanceTurn(get: Get, set: SetFn) {
     // Maladresse (Oups! 61-80) : perte du Mouvement / de l'Action ce tour-ci.
     if (newActive.loseNextMovement) { movementUsed = mountMovement(battle, newActive); newActive.loseNextMovement = false; battle.log.push(ev('detail', `${newActive.name} perd son Mouvement (Maladresse).`, newActive.id)); }
     if (newActive.loseNextAction) { acted = true; newActive.loseNextAction = false; battle.log.push(ev('detail', `${newActive.name} perd son Action (Maladresse).`, newActive.id)); }
+    fireTurnStartTriggers(get, set, newActive); // effets de bord « début de tour » authorés (inerte sans donnée)
   }
   set({ battle: { ...battle, turn, action: null, movementUsed, movedPreAction: false, acted, loadoutSwapped: false, reachable: new Map(), preview: null, runBudget: null, fearGate: null } });
   if (checkBattleOver(get, set)) return;

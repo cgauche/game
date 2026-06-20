@@ -273,8 +273,13 @@ export const EMPTY_FLOW: Flow = { kind: 'seq', steps: [] };
  *  touche réussie (du porteur ou de l'arme) ; `onWoundLoss` : quand le porteur PERD des PB ;
  *  `onRoundStart` : au début de son Round ; `onStartled` : magie / bruit fort ; `onKill` : adversaire
  *  mis hors de combat ; `onGainCondition` : le porteur vient de GAGNER un État (filtré par `condition` —
- *  Mâchoires d'acier : « chaque fois que vous gagnez un État Sonné »). */
-export type EffectTrigger = 'onHit' | 'onWoundLoss' | 'onRoundStart' | 'onStartled' | 'onKill' | 'onCharged' | 'onGainCondition';
+ *  Mâchoires d'acier : « chaque fois que vous gagnez un État Sonné »).
+ *  Cycle de vie du COMBAT (au point de hook correspondant — cf. `combatHooks`) : `onCombatStart` (le
+ *  combat débute), `onCombatEnd` (le combat se résout, AVANT l'écran de victoire), `onRoundEnd` (fin de
+ *  Round, après l'entretien), `onTurnStart`/`onTurnEnd` (début/fin du tour du porteur). */
+export type EffectTrigger =
+  | 'onHit' | 'onWoundLoss' | 'onRoundStart' | 'onStartled' | 'onKill' | 'onCharged' | 'onGainCondition'
+  | 'onCombatStart' | 'onCombatEnd' | 'onRoundEnd' | 'onTurnStart' | 'onTurnEnd';
 
 /** Effet DÉCLENCHÉ authoré (donnée éditable) : un Flow d'ops appliqué à `on` quand `trigger` se produit.
  *  GÉNÉRIQUE — porté indifféremment par `TraitData.effects` (Toile, Sang corrosif…) ET `QualityData.effects`

@@ -27,8 +27,32 @@ import {
   resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES,
 } from '../../engine/psychology';
 import { isColdBlooded, hasRage } from '../../engine/traits/dispatch';
+import { fireTriggers } from '../triggeredEffects';
 import type { Combatant } from '../../engine/types';
 import type { Get, Set as SetFn } from '../flowTypes';
+
+/** Effets « début de tour » authorés du combattant qui DEVIENT actif (`onTurnStart`) — point unique
+ *  appelé par `advanceTurn` (tour suivant du Round) ET `confirmRoundStart` (1ᵉʳ combattant du Round),
+ *  pour ne pas dupliquer le déclenchement. Inerte tant qu'aucune donnée ne porte un effet `onTurnStart`.
+ *  Journalisé en `detail` (kind agnostique — l'IA comme le héros). No-op si hors d'action. */
+export function fireTurnStartTriggers(get: Get, set: SetFn, c: Combatant | undefined): void {
+  fireTurnEdgeTriggers(get, set, c, 'onTurnStart');
+}
+
+/** Effets « fin de tour » authorés du combattant qui CESSE d'être actif (`onTurnEnd`) — appelé par
+ *  `advanceTurn` au passage au combattant suivant. Même canal/garde que `onTurnStart`. */
+export function fireTurnEndTriggers(get: Get, set: SetFn, c: Combatant | undefined): void {
+  fireTurnEdgeTriggers(get, set, c, 'onTurnEnd');
+}
+
+/** Point UNIQUE de déclenchement des effets de bord de tour (début/fin) — kind agnostique, journalisé
+ *  en `detail`, no-op hors d'action. Inerte tant qu'aucune donnée ne porte l'effet correspondant. */
+function fireTurnEdgeTriggers(get: Get, set: SetFn, c: Combatant | undefined, trigger: 'onTurnStart' | 'onTurnEnd'): void {
+  if (!c || isOutOfAction(c)) return;
+  const battle = get().battle;
+  if (!battle) return;
+  for (const line of fireTriggers(get, c, trigger, { rng: battleRng(), set })) battle.log.push(ev('detail', line, c.id));
+}
 
 // ============================================================================================
 // Fonctions de cycle de tour ennemi, déplacées ISO-COMPORTEMENT depuis combatFlow (corps copiés tel

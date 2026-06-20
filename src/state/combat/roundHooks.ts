@@ -264,6 +264,17 @@ registerCombatHook({
   order: 79.5,
   run: ({ battle, sink }) => { purgeExpiredSummons(battle, battle.round + 1).forEach((l) => sink(l)); },
 });
+registerCombatHook({
+  id: 'fire-round-end-triggers', // effets « fin de Round » authorés — dispatcher générique (RNG) ; inerte sans donnée
+  phase: 'roundBoundary',
+  order: 79.6, // après les décomptes/purges de fin de Round, avant la règle optionnelle se-fatiguer (80)
+  run: ({ get, set, battle, sink }) => {
+    for (const c of battle.combatants) {
+      if (c.dead || c.outOfRencontre) continue;
+      for (const line of fireTriggers(get, c, 'onRoundEnd', { rng: battleRng(), set })) sink(line, c);
+    }
+  },
+});
 
 /**
  * Règle optionnelle « Se fatiguer » (LDB 16 l.99) : un effort physique soutenu finit par épuiser.
