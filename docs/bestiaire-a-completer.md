@@ -48,8 +48,13 @@ par défaut **à tort**. Les 3 derniers candidats ont été tranchés :
 
 - **Choses du Bois Mort** pourrait recevoir des features de mutation visibles (cornes/tentacules).
 - **Trégara** est approximé par le crabe (faute de gabarit insecte/mante dédié) — acceptable.
-- Le rendu de l'espèce **Géant** lui-même est sommaire (humanoïde nu) — l'enrichir profiterait à
-  Halagrundsor comme aux autres géants.
+
+### Fait : enrichissement du Géant
+
+L'espèce **Géant** (qui n'était qu'un humanoïde nu) a une tenue dédiée `parts/tenues/defs/Geant.ts`
+(« habits dépareillés marqués de plusieurs blasons » — canon Halagrundsor) : pagne loqueteux ceinturé,
+baudrier de cuir, rapiéçages héraldiques dépareillés, pieds nus (`bareFoot`), sur carrure `brute`.
+Profite à tous les géants (Halagrundsor inclus, via `appearance.species:"Géant"`).
 
 ## Comment traiter (rappel)
 
