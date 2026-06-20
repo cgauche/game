@@ -71,9 +71,11 @@ function finishDefenseResult(attacker: Combatant, defender: Combatant, p: Pendin
  *  position (la victoire RAW « Si vous [attaquant] remportez le Test » et le départage par valeur la
  *  plus haute sont du côté attaquant). Le défenseur RÉSISTE (`success`) si l'attaquant ne l'emporte PAS
  *  — c'est-à-dire défenseur vainqueur OU ÉGALITÉ (LDB 62 l.268 : l'attaquant doit REMPORTER, pas faire
- *  nul). Le `sl` reporté est le DR PROPRE du défenseur (échelle des branches). Calque `disengageOutcome`. */
-function opposedCascadeRoll(def: TestResult, aT: TestResult, target: number): { roll: number; target: number; sl: number; success: boolean } {
-  const o = resolveOpposed(aT, def);
+ *  nul). Le `sl` reporté est le DR PROPRE du défenseur (échelle des branches). `bonusSL` (Piège-lame, LDB 62
+ *  l.295) s'AJOUTE au DR du défenseur AVANT l'opposition — modifie le vainqueur ET la marge nette, mais PAS
+ *  le `sl` reporté (= DR propre, la conséquence recompose la marge via le contexte figé). Calque `disengageOutcome`. */
+function opposedCascadeRoll(def: TestResult, aT: TestResult, target: number, bonusSL = 0): { roll: number; target: number; sl: number; success: boolean } {
+  const o = resolveOpposed(aT, { ...def, sl: def.sl + bonusSL });
   return { roll: def.roll, target, sl: def.sl, success: o.winner !== 'attacker' };
 }
 
@@ -474,7 +476,7 @@ export const FLOWS = {
       // Test OPPOSÉ : l'issue success/sl du défenseur vient de `resolveOpposed(jetDéfenseur, aT figé)`
       // (l'attaquant garde son jet — calque `recover`/`disengage`), PAS de `roll ≤ target`. Le défenseur
       // RÉSISTE si l'attaquant ne l'emporte PAS (défenseur OU égalité). Simple sinon (réussite ≤ cible).
-      if (opp) return { result: opposedCascadeRoll(t, opp.aT, st.target) };
+      if (opp) return { result: opposedCascadeRoll(t, opp.aT, st.target, opp.bonusSL ?? 0) };
       return { result: { roll: t.roll, target: st.target, sl: t.sl, success: t.success } };
     },
     failed: (st) => !!st.result && !st.result.success,
@@ -496,9 +498,11 @@ export const FLOWS = {
         const opp = st.meta?.opposed;
         // Chance « +1 DR » (LDB 17 l.26) sur un Test OPPOSÉ : on RE-OPPOSE le jet défenseur amélioré (+1 DR)
         // à l'attaquant FIGÉ (1ʳᵉ position) — le +1 peut FAIRE BASCULER l'issue (calque `disengage.bonus.derive`).
+        // `bonusSL` (Piège-lame, LDB 62 l.295) s'AJOUTE en plus au DR du défenseur dans l'opposition (pas au
+        // `sl` reporté, qui reste le DR propre +1).
         if (opp) {
           const def2: TestResult = { roll: st.result.roll, target: st.target!, success: st.result.success, sl: st.result.sl + 1, isDouble: isDoubleRoll(st.result.roll) };
-          const o = resolveOpposed(opp.aT, def2);
+          const o = resolveOpposed(opp.aT, { ...def2, sl: def2.sl + (opp.bonusSL ?? 0) });
           return { result: { roll: def2.roll, target: st.target!, sl: def2.sl, success: o.winner !== 'attacker' } };
         }
         return { result: { ...st.result, sl: st.result.sl + 1 } };

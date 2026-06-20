@@ -1,5 +1,7 @@
 import { useGame } from './store';
 import { checkBattleOver, resolveTalentFreeAttacks } from './combatFlow';
+import { pushCombatStep } from './combatEffects';
+import type { PendingBladeTrap } from './pendings';
 import { bus, EVT } from './bus';
 import { ev } from './combatLog';
 import { isOutOfAction, addCondition } from '../engine/conditions';
@@ -461,6 +463,31 @@ export function buildApi() {
         battle: st.battle ? { ...st.battle, combatants: [...st.battle.combatants] } : st.battle,
       }));
       return `✅ ${c.name} : +${n} ${name}`;
+    },
+
+    /** RECETTE : ouvre l'étape de CHOIX « Piège-lame » (LDB 62 l.292-295) — `bladeTrap('hero-1','enemy-1', 2)`.
+     *  Le héros `defenderId` a paré avec une arme Piège-lame face à la lame de `attackerId` (uid assigné si
+     *  besoin) ; `defSL` = DR de la défense ajouté au Test opposé. Choisir « Piéger » ouvre alors un Test
+     *  opposé de Force CADENCE-AWARE (héros manuel → étape influençable) ; succès → désarme (Stupéfiant →
+     *  brise sauf Incassable). Reproduit l'entrée de production sans avoir à forcer un Critique défensif. */
+    bladeTrap: (defenderId: string, attackerId: string, defSL = 4) => {
+      const b = g().battle;
+      if (!b) return '❌ pas en combat';
+      const defender = b.combatants.find((c) => c.id === defenderId);
+      const attacker = b.combatants.find((c) => c.id === attackerId);
+      if (!defender || !attacker) return `❌ défenseur/attaquant introuvable (${defenderId}/${attackerId})`;
+      const weapon = attacker.weapons?.[0];
+      if (!weapon) return `❌ ${attacker.name} n'a pas d'arme active`;
+      if (!weapon.uid) weapon.uid = `dev-blade-${attackerId}`; // uid universel requis pour cibler la lame
+      const pbt: PendingBladeTrap = { defenderId, attackerId, weapon, parryWeaponUid: defender.weapons?.[0]?.uid ?? 'parry', defSL, roll: 33 };
+      pushCombatStep(useGame.setState, {
+        id: `cons-bladetrap-${defenderId}`, kind: 'bladeTrap', actorId: defenderId, icon: '🗡️',
+        label: 'Parade — piéger la lame ?',
+        options: [{ key: 'trap', label: '🗡️ Piéger la lame' }, { key: 'crit', label: '💥 Coup Critique' }],
+        defaultChoice: 'crit', bladeTrap: pbt, interactive: true,
+      });
+      useGame.setState((s) => ({ battle: s.battle ? { ...s.battle, combatants: [...s.battle.combatants] } : s.battle }));
+      return `✅ Piège-lame : ${defender.name} pare ${attacker.name} (${weapon.name}, +${defSL} DR) → choix Piéger/Critique`;
     },
 
     /** RECETTE : met un combattant en FOCALISATION (DR cumulé sur un sort) — `focus('hero-1')` →

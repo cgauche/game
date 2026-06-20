@@ -5,7 +5,7 @@
  */
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { LootGear, PendingCast, PendingDeviation, PendingBladeTrap, FreeAttackFreeze } from './pendings';
+import type { LootGear, PendingCast, PendingDeviation, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze } from './pendings';
 import { Combatant, ItemInstance, HitLocation, Weapon, DIFFICULTY_MODIFIERS, HIT_LOCATION_LABELS } from '../engine/types';
 import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
@@ -3193,59 +3193,75 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
   return false;
 }
 
-/** Résolution du choix Piège-lame (LDB 62 l.292-294). `trap=false` → Coup Critique normal (LDB 14 l.7) ;
- *  `trap=true` → Test opposé de Force (+DR de la défense) : victoire = désarme, Succès Stupéfiant (DR
- *  net ≥ 6) = brise la lame sauf Incassable (sauvegarde Solide), échec = l'adversaire se libère. */
-/** Résout un Piège-lame — invoqué par l'applier de l'étape de séquence 'bladeTrap' (la reprise de l'IA
- *  part de la fermeture de séquence, pas ici). */
-export function resolveBladeTrap(get: Get, set: SetFn, pbt: PendingBladeTrap, trap: boolean): void {
+/**
+ * Conséquence PROCÉDURALE d'un Test opposé de Piège-lame GAGNÉ par le défenseur (op `breakBlade`, hook
+ * `bladeTrap`) : l'adversaire est désarmé de la lame visée (`bt.weaponUid`), arrachée de ses mains. Marge
+ * NETTE `(DR final du défenseur + bt.defSL) − bt.attackerSL` ≥ 6 (Succès Stupéfiant, LDB 62 l.295) → la lame
+ * est BRISÉE à moins qu'elle ne possède l'Atout Incassable (sauvegarde Solide gérée par `wearActiveWeapon`).
+ * Échec/égalité au Test ⇒ branche `fail` (pas d'op, l'adversaire libère sa lame) → cette fonction n'est pas
+ * appelée. Les lignes partent dans la file différée (`pendingLogQueue`), drainée par l'appelant qui réécrit
+ * `battle.log`. `defenderSL` = le DR PROPRE du jet résolu (la marge nette se recompose avec `bt`).
+ */
+export function applyBladeTrap(get: Get, set: SetFn, defender: Combatant, bt: BladeTrapFreeze, defenderSL: number): void {
   const battle = get().battle;
   if (!battle) return;
-  const defender = battle.combatants.find((c) => c.id === pbt.defenderId);
-  const attacker = battle.combatants.find((c) => c.id === pbt.attackerId);
-  if (!defender || !attacker) return;
-  const parryWeaponName = defender.weapons.find((w) => w.uid === pbt.parryWeaponUid)?.name ?? 'arme'; // uid → NOM (affichage)
+  const attacker = battle.combatants.find((c) => c.id === bt.attackerId);
+  if (!attacker || isOutOfAction(attacker)) return;
+  const drop = attacker.weapons.find((w) => w.uid === bt.weaponUid);
+  if (!drop) return;
+  const netSL = defenderSL + bt.defSL - bt.attackerSL; // marge nette du défenseur vainqueur (LDB 62 l.295)
   const lines: string[] = [];
-  if (!trap) {
-    lines.push(`${defender.name} place un Critique sur sa défense.`);
-    applyOpposedCritical(get, set, attacker, pbt.roll, { attackerId: defender.id, weapon: parryWeaponName }, lines);
-  } else if (!isOutOfAction(attacker)) {
-    // Test opposé de Force, le piégeur ajoutant son DR du Test de Corps à corps précédent (l.293).
-    const dT = rollTest(effectiveChar(defender, 'F'), 'intermediaire', battleRng());
-    const aT = rollTest(effectiveChar(attacker, 'F'), 'intermediaire', battleRng());
-    const opp = resolveOpposed({ ...dT, sl: dT.sl + pbt.defSL }, aT);
-    lines.push(`Test opposé de Force : ${defender.name} 🎲 ${dT.roll}/${dT.target} (DR ${dT.sl}+${pbt.defSL}) contre ${attacker.name} 🎲 ${aT.roll}/${aT.target} (DR ${aT.sl}).`);
-    if (opp.winner === 'attacker') {
-      const drop = attacker.weapons.find((w) => w.uid === pbt.weapon.uid); // uid universel : plus de repli par nom
-      if (drop && opp.netSL >= 6) {
-        // Succès Stupéfiant : la lame est BRISÉE, à moins qu'elle ne possède l'Atout Incassable (l.294).
-        wearActiveWeapon(attacker, drop, true);
-        lines.push(drop.destroyed
-          ? `La lame de ${attacker.name} (${drop.name}) est BRISÉE par la manœuvre !`
-          : `${drop.name} résiste à la casse (Incassable/Solide) mais est arrachée des mains de ${attacker.name}.`);
-        attacker.weapons = attacker.weapons.filter((w) => w !== drop);
-      } else if (drop) {
-        attacker.weapons = attacker.weapons.filter((w) => w !== drop);
-        lines.push(`${attacker.name} laisse tomber ${drop.name}, arrachée de ses mains !`);
-      }
-    } else {
-      lines.push(`${attacker.name} libère sa lame et peut combattre normalement.`);
-    }
+  if (netSL >= 6) {
+    // Succès Stupéfiant : la lame est BRISÉE, à moins qu'elle ne possède l'Atout Incassable (l.295).
+    wearActiveWeapon(attacker, drop, true);
+    lines.push(drop.destroyed
+      ? `La lame de ${attacker.name} (${drop.name}) est BRISÉE par la manœuvre !`
+      : `${drop.name} résiste à la casse (Incassable/Solide) mais est arrachée des mains de ${attacker.name}.`);
+  } else {
+    lines.push(`${attacker.name} laisse tomber ${drop.name}, arrachée de ses mains !`);
   }
-  const b = get().battle!;
-  set({ battle: { ...b, log: [...b.log, ...evLines(lines, 'info', defender.id, attacker.id)] } });
-  // Modale seulement si un héros est d'un côté du piège (spec coop §4bis) — déjà journalisé ci-dessus.
-  if (attacker.kind === 'hero' || defender.kind === 'hero')
-    pushReveal(set, { kind: 'assommante', title: 'Piège-lame', lines: [...lines], subjectId: attacker.id, actorId: defender.id, weapon: parryWeaponName, severity: 'minor' });
+  attacker.weapons = attacker.weapons.filter((w) => w !== drop);
+  set({ pendingLogQueue: [...get().pendingLogQueue, ...lines.map((line) => ({ line, cid: defender.id }))] });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
 }
 
-/** Applier de l'étape de CHOIX « piège-lame » (folding P3b) : « Piéger » tente le Test opposé de Force,
- *  « Coup Critique » inflige le critique normal. Le RÉSULTAT (kind 'assommante') route lui-même dans la
- *  séquence (P2) ; `resume:false` → reprise par la fermeture de séquence. */
+/** Applier de l'étape de CHOIX « piège-lame » (LDB 62 l.292-295). « Coup Critique » (défaut) inflige le
+ *  critique normal sur sa défense (LDB 14 l.7). « Piéger » route un Test opposé de Force CADENCE-AWARE
+ *  (le héros défenseur PEUT dépenser Chance/Résilience) via `runCombatFlow` : le défenseur jette, l'attaquant
+ *  (porteur) oppose sa Force, en ajoutant le DR de la défense (`defSL`) au jet du défenseur (l.295) ; la
+ *  branche de VICTOIRE porte l'op IMPURE `breakBlade` (désarme/brise, conséquence procédurale APRÈS le Test). */
 registerCascadeApplier('bladeTrap', (get, set, step) => {
-  if (step.bladeTrap) resolveBladeTrap(get, set, step.bladeTrap, step.chosen === 'trap');
+  const pbt = step.bladeTrap;
+  if (!pbt) return;
+  const battle = get().battle;
+  const defender = battle?.combatants.find((c) => c.id === pbt.defenderId);
+  const attacker = battle?.combatants.find((c) => c.id === pbt.attackerId);
+  if (!defender || !attacker) return;
+  if (step.chosen !== 'trap') {
+    // Coup Critique normal sur la défense (le défenseur place le Critique sur l'attaquant).
+    const parryWeaponName = defender.weapons.find((w) => w.uid === pbt.parryWeaponUid)?.name ?? 'arme';
+    const lines = [`${defender.name} place un Critique sur sa défense.`];
+    applyOpposedCritical(get, set, attacker, pbt.roll, { attackerId: defender.id, weapon: parryWeaponName }, lines);
+    const b = get().battle!;
+    set({ battle: { ...b, log: [...b.log, ...evLines(lines, 'info', defender.id, attacker.id)] } });
+    bus.emit(EVT.SCENE_DIRTY);
+    checkBattleOver(get, set);
+    return;
+  }
+  if (isOutOfAction(attacker)) return;
+  // Test opposé de Force CADENCE-AWARE : la branche success porte `breakBlade` (désarme/brise). Le bonus de DR
+  // de la défense (`defSL`, l.295) s'ajoute au jet du défenseur via `opposed.bonusSL` (modifie vainqueur ET
+  // marge nette) ; le contexte `bladeTrap` cible la lame de l'attaquant. `resolveFlowTest` complète le freeze
+  // avec le DR de l'attaquant qu'IL jette (`attackerSL`) → la conséquence recompose la marge nette, sans
+  // double-jet. `runCombatFlow` route le Test (héros manuel → cascade influençable ; ennemi/auto → inline).
+  const bt: BladeTrapFreeze = { attackerId: attacker.id, weaponUid: pbt.weapon.uid!, defSL: pbt.defSL, attackerSL: 0 };
+  const flow = testFlow(
+    { characteristic: 'F', label: 'Piège-lame', opposed: { attacker: 'F', attackerLabel: 'Force', bonusSL: pbt.defSL } },
+    { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'breakBlade' }] } },
+    EMPTY_FLOW,
+  );
+  runCombatFlow({ mode: 'combat', get, set, target: defender, caster: attacker, label: 'Piège-lame', bladeTrap: bt }, flow);
 });
 
 /** Reprend le tour de l'IA suspendu par la modale de défense (= ce qu'aurait fait

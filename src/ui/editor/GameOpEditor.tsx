@@ -58,6 +58,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   grantNaturalWeapon: '🐾 Accorder une arme naturelle',
   grantFreeAttack: '⚔️ Accorder une attaque gratuite',
   interruptFocus: '🔮 Interrompre la Focalisation', // marqueur combat-interne (branche d’échec du Test de Calme) — non author-pickable
+  breakBlade: '🗡️ Désarmer / briser la lame', // marqueur combat-interne (victoire du Test de Piège-lame) — non author-pickable
 
   grantTrait: '🐾 Accorder un Trait',
   grantTalent: '🐾 Accorder un Talent',
