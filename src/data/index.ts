@@ -207,8 +207,8 @@ export interface CreatureData {
   title: string | null;
   folder: string | null;
   char: Record<string, number | null>;
-  /** Traits STRUCTURÉS (`TraitInstance`) — source app-owned migrée du parsing de chaînes (de-POC).
-   *  Union transitoire : chaînes legacy tolérées et normalisées par `asTrait` à la consommation. */
+  /** Traits STRUCTURÉS (`TraitInstance[]`) — source app-owned migrée du parsing de chaînes (de-POC).
+   *  Lus sans aucun parsing (`resolveTraits`/`hasTraitKey`) ; plus de chaîne legacy. */
   traits: import('../engine/statEntry').TraitList;
   /** Traits FACULTATIFS (`TraitInstance` structurés) — affichés au Codex, choisissables au spawn. */
   optionals: import('../engine/statEntry').TraitInstance[];
