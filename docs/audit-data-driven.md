@@ -6,6 +6,11 @@ juin 2026) recense les îlots restants. **Verdict : le dépôt est très majorit
 (traits/`combatFeatures` à 100 % via `capabilities`/`passive` ; effets de sorts 393/393 dans
 `spells.json.effects` ; mutations/création/criticals/oups dérivés de JSON). Restent des îlots bornés.
 
+**Bilan (juin 2026) : les 7 îlots substantiels (#1 #2 #3 #4 #5 #6 #7) sont migrés et poussés** — toute
+sémantique de jeu (psy, missile/dégâts de sort, tables d100 d'incantation, effets de talent, spec de
+résolution de sort, coût PX, mod de Taille) vit désormais en JSON, lue par le moteur. Seuls #8/#9
+(bornés, faible ROI) restent différés. La fondation data-driven mandatée est en place → Partie 3 (Codex).
+
 ## État
 
 | # | Îlot | Fichiers | Sévérité | État | Migration |
@@ -16,7 +21,7 @@ juin 2026) recense les îlots restants. **Verdict : le dépôt est très majorit
 | 7 | Mod de tir / Taille | `engine/size.ts` | Moyenne | ✅ FAIT | `src/data/sizes.json` |
 | 2 | Dégâts/Missile de sort par regex sur `desc` | `engine/magic.ts` (`parseSpellDamage`→`missileDamage`, `isMagicMissile`) | **Haute (BUG)** | ✅ FAIT | champs `missile`/`damage`/`ignorePA`/`ignoreBE` dans `SpellData`/`SpellLike` ; 32 sorts taggés (comportement préservé) ; **FIX `broyeur-d-os`** (Dégâts 4 + ignore PA). Suivi : modèle « Dégâts FIXES » des sorts frenchy (« 10 Points de Dégâts ») non géré (additif) ; classement IA des missiles BFM — à trancher séparément. |
 | 4 | Effets de création de Talent | `engine/talentEffects.ts` `addCharacteristic`/`addSkill`/`addTalent` | Moyenne | ✅ FAIT | `addCharacteristic` ÉLIMINÉ : +5 carac/+1 Mvt → `charMod`/`moveMod` continus (collecteur) ; wounds/fortune/resolve → `attrMod` ; addSkill → `grantCareerSkill` ; Âme pure (corruption) = `combat.corruptionThreshold`. Résiduel assumé : `addTalent` (Flagellant) = ref AFFICHÉE seulement (octroi permanent = feature à part). Champs de TYPE vestigiaux `addCharacteristic?/addSkill?` à retirer au rebuild registry (Partie 3). |
-| 5 | Métadonnées de spec de sort en TS | `src/data/spellspecs/*.ts` (30 fichiers, 228 entrées) | Moyenne (volumineux) | ⏳ À FAIRE | `durationRounds`/`zdeRadiusMeters`/… → champs `SpellData` ; supprimer les .ts |
+| 5 | Métadonnées de spec de sort en TS | `src/data/spellspecs/*.ts` (30 fichiers, 228 entrées) | Moyenne (volumineux) | ✅ FAIT | champs `curated`/`durationRounds`/`zdeRadiusMeters`/`zdeExcludesCaster`/`teleportMeters`/`teleportPerSL`/`pushMeters`/`breathAttack`/`chainOnKill`/`opposed` dans `SpellData` ; `spellspec.ts` = `SpellResolutionMeta` (sous-ensemble duck-typé) + `spellSupport` ; `spellSpecFor` retiré, `spellspecs/` supprimé |
 | 8 | Seuil Corps/Esprit par espèce | `engine/corruption.ts:101-105` | Basse | ⏸️ DIFFÉRÉ | 4 valeurs, match par sous-chaîne couvrant 35 variantes — migrer dupliquerait la valeur ×35 ou inventerait une table de groupe ; code = mapping de règle LDB documenté, non éditable. À confirmer. |
 | 9 | Paliers d'Encombrement | `engine/encumbrance.ts:46-52` | Basse | ⏸️ DIFFÉRÉ | 3 paliers dont un `Infinity` (non-JSON) ; faible ROI, code clair (constantes LDB). À confirmer. |
 
