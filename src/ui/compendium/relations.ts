@@ -169,8 +169,10 @@ const REVERSE_TITLE: Record<string, string> = {
 const reverseTitle = (targetCat: string, refCat: string): string =>
   REVERSE_TITLE[`${targetCat}:${refCat}`] ?? GENERIC_PLURAL[refCat] ?? refCat;
 
-/** Ordre stable des catégories de référants dans une fiche (les plus parlantes d'abord). */
-const REF_CAT_ORDER = ['races', 'classes', 'careers', 'talents', 'skills', 'creatures', 'mutations', 'trappings', 'qualities', 'gods', 'spells', 'domains', 'traits', 'maneuvers', 'weaponGroups', 'characteristics'];
+/** Ordre stable des catégories (référants d'une fiche ET contenu d'un livre) — les plus parlantes
+ *  d'abord ; une catégorie hors liste est repoussée en fin (via `orderOf`). */
+const REF_CAT_ORDER = ['races', 'classes', 'careers', 'characteristics', 'skills', 'talents', 'creatures', 'mutations', 'trappings', 'qualities', 'weaponGroups', 'spells', 'domains', 'gods', 'traits', 'maneuvers', 'etats', 'maladies', 'stars', 'locations'];
+const orderOf = (cat: string): number => (REF_CAT_ORDER.indexOf(cat) + 1) || 99;
 
 /**
  * Références INVERSES d'une entité (category, id) — GROUPÉES par catégorie de référant, dédupliquées
@@ -192,7 +194,7 @@ export function reverseGroups(category: string, id: string): ReverseGroup[] {
     byCat.set(r.category, m);
   }
   const groups: ReverseGroup[] = [];
-  for (const cat of [...byCat.keys()].sort((a, b) => REF_CAT_ORDER.indexOf(a) - REF_CAT_ORDER.indexOf(b))) {
+  for (const cat of [...byCat.keys()].sort((a, b) => orderOf(a) - orderOf(b))) {
     const referrers = [...byCat.get(cat)!.values()].sort((a, b) => a.label.localeCompare(b.label, 'fr'));
     groups.push({ category: cat, title: reverseTitle(category, cat), referrers });
   }
@@ -228,19 +230,21 @@ pushCatalog('characteristics', characteristics as { label: string }[]);
 CATALOG.push(...gods.map((g) => ({ category: 'gods', label: g.key, book: g.source?.book, page: g.source?.page })));
 CATALOG.push(...maladies.map((m) => ({ category: 'maladies', label: m.name })));
 
-/** Contenu d'un livre, GROUPÉ par catégorie (« par type ») — pour la fiche Livre. Match par libellé
- *  de livre (l'identité d'un `BookData`). Trié par catégorie (ordre de `CODEX`) puis alpha. */
-export function bookContents(bookLabel: string): { category: string; labels: string[] }[] {
+/** Contenu d'un livre, GROUPÉ par catégorie (« par type ») — pour la fiche Livre. Les entités portent
+ *  leur livre dans `source.book` (ABRÉVIATION, ex. « LDB ») ; on accepte plusieurs clés d'identité
+ *  (abr ET libellé) pour tolérer les deux conventions. Trié par catégorie (`orderOf`) puis alpha. */
+export function bookContents(...bookKeys: (string | undefined)[]): { category: string; labels: string[] }[] {
+  const keys = new Set(bookKeys.filter((k): k is string => !!k));
   const byCat = new Map<string, string[]>();
   for (const e of CATALOG) {
-    if (e.book !== bookLabel) continue;
+    if (!e.book || !keys.has(e.book)) continue;
     const arr = byCat.get(e.category) ?? [];
     arr.push(e.label);
     byCat.set(e.category, arr);
   }
   return [...byCat.entries()]
     .map(([category, labels]) => ({ category, labels: labels.sort((a, b) => a.localeCompare(b, 'fr')) }))
-    .sort((a, b) => REF_CAT_ORDER.indexOf(a.category) - REF_CAT_ORDER.indexOf(b.category));
+    .sort((a, b) => orderOf(a.category) - orderOf(b.category));
 }
 
 /**

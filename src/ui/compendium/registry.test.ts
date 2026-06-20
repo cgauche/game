@@ -65,6 +65,13 @@ describe('Codex registry — références INVERSES (relations.ts → fiches)', (
     expect(skills.some((s) => refLabelsOf(s).length > 0)).toBe(true);
   });
 
+  it('la fiche d’un Livre liste son contenu PAR TYPE (bookContents câblé, cross-réf cliquables)', () => {
+    const books = categoryByKey('books')!.items;
+    const withContent = books.find((b) => (b.sections?.length ?? 0) > 0);
+    expect(withContent, 'au moins un livre a du contenu').toBeTruthy();
+    expect(withContent!.sections!.some((s) => s.rows.some((r) => r.t === 'ref'))).toBe(true);
+  });
+
   it('catégorie « Psychologie » = filtre data-driven des traits à capacité psy, groupée par type', () => {
     const psy = categoryByKey('psychologie');
     expect(psy?.group).toBe('Effets');

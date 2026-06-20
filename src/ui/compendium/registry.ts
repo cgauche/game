@@ -25,7 +25,7 @@ import { formatMoney, priceToMoney } from '../../engine/money';
 import type { EntityAppearance } from '../../state/scene';
 import type { MutationData } from '../../data/mutations';
 import { passiveSection, effectsSection, careerGrantSection, spellFlowSection } from './describe';
-import { reverseGroups } from './relations';
+import { reverseGroups, bookContents } from './relations';
 
 export type CodexGroup = 'Personnage' | 'Compétences' | 'Équipement' | 'Effets' | 'Magie' | 'Monde' | 'Tables';
 
@@ -601,6 +601,19 @@ export const categoriesIn = (group: CodexGroup): CodexCategory[] => CODEX.filter
 
 /** Catégorie par clé. */
 export const categoryByKey = (key: string): CodexCategory | undefined => CODEX.find((c) => c.key === key);
+
+// ── Fiche Livre : « contenu, par type » (index `bookContents`) câblé APRÈS coup — les libellés de
+//    catégorie ne sont connus qu'une fois `CODEX` construit. Les entités référencent leur livre par
+//    son ABR (`source.book`) → on matche sur abr + libellé. Chaque type = une section de chips cross-réf.
+for (const b of books) {
+  const it = categoryByKey('books')?.items.find((x) => x.label === b.label);
+  if (!it) continue;
+  it.sections = bookContents(b.abr ?? undefined, b.label).map((g) => ({
+    title: categoryByKey(g.category)?.label ?? g.category,
+    layout: 'chips' as const,
+    rows: g.labels.map((label) => ({ t: 'ref', category: g.category, label, show: label } as CodexRow)),
+  }));
+}
 
 /** Résout une entrée (catégorie + libellé) → sa fiche, pour les liens `CodexRef`.
  *  Exact d'abord, puis casse ignorée (les libellés à spécialisation s'écrivent parfois autrement). */
