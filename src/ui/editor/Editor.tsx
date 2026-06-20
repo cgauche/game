@@ -203,7 +203,7 @@ export function Editor() {
     file.text().then((txt) => {
       try {
         const data = JSON.parse(txt);
-        const { scenes, worldMap: wm } = parseProject(data); // projet v2, legacy (tableau) ou scène unique
+        const { scenes, worldMap: wm } = parseProject(data); // projet v2 ({ schema: 2, scenes, worldMap? })
         if (!scenes.length) return;
         setOtherScenes(scenes.slice(1).map(clone));
         setWorldMap(wm ?? null);

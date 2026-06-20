@@ -117,7 +117,7 @@ export interface ProjectDoc {
  *  invalide — les anciens formats (tableau de scènes, scène unique) ne sont plus supportés. */
 export function parseProject(data: unknown): { scenes: Scene[]; worldMap?: WorldMap } {
   const obj = data as Record<string, unknown> | null;
-  if (!obj || typeof obj !== 'object' || !Array.isArray(obj.scenes)) {
+  if (!obj || typeof obj !== 'object' || obj.schema !== 2 || !Array.isArray(obj.scenes)) {
     throw new Error('Projet invalide : format attendu { schema: 2, scenes: [...] }.');
   }
   return { scenes: obj.scenes as Scene[], worldMap: (obj.worldMap as WorldMap) ?? undefined };
