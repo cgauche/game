@@ -126,6 +126,14 @@ const HAIR_VIEWS: Record<string, HairViews> = {
       '<path d="M-9.6 6 Q-10 -1 -7.4 -3 Q-3 -5 0 -5 Q3 -5 7.4 -3 Q10 -1 9.6 6 Q9.4 11.5 6.4 14 Q0 16 -6.4 14 Q-9.4 11.5 -9.6 6Z" fill="@cheveux"/>' +
       '<path d="M-9.6 6 Q-10 -1 -7.4 -3 Q-5 -4 -2 -4 Q-6 -2 -7.4 2 Q-8.6 4 -9.6 6Z" fill="@cheveuxH" opacity="0.55"/>',
   },
+  // crâne rasé : AUCUN cheveu, le crâne nu (peau) transparaît ; juste une ombre de stubble.
+  rase: {
+    profile:
+      '<path d="M-9 4 Q-9.6 -5 -3 -8 Q1 -9.2 5 -7.6 Q8 -6 7.6 0 Q5 -2 0 -2.4 Q-5 -2 -8 0 Q-8.8 2 -9 4Z" fill="@cheveuxO" opacity="0.22"/>',
+    back:
+      '<path d="M-9.6 6 Q-10.4 -8 0 -9 Q10.4 -8 9.6 6 Q8 0 6 -2 Q0 -3.6 -6 -2 Q-8 0 -9.6 6Z" fill="@cheveuxO" opacity="0.22"/>' +
+      '<circle cx="-4" cy="-2" r="0.35" fill="@cheveuxO" opacity="0.4"/><circle cx="4" cy="-2" r="0.35" fill="@cheveuxO" opacity="0.4"/><circle cx="0" cy="-4" r="0.3" fill="@cheveuxO" opacity="0.4"/>',
+  },
   // mi-long en arrière / cheveux lâchés : la masse descend bas dans le dos et le long de la nuque.
   milong: {
     profile:
@@ -231,6 +239,7 @@ const HAIR_VIEWS: Record<string, HairViews> = {
 /** Archétype de coiffure déduit du NOM (pour choisir le profil/dos adéquat). */
 function hairArchetype(name: string): string {
   const n = name.toLowerCase();
+  if (/ras[ée]|crâne ras|crane ras/.test(n)) return 'rase';
   if (/calvitie|dégarni|degarni|chauve/.test(n)) return 'chauve';
   if (/chignon/.test(n)) return 'chignon';
   if (/tresse/.test(n)) return 'tresses';
