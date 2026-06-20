@@ -48,6 +48,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   freeReroll: '🔁 Relance gratuite (prochain échec)',
   critTwice: '🎯 Deux lancers de Critique (meilleur)',
   gainResource: '🍀 Points de Chance / Destin',
+  attrMod: '🎲 Modif. d’attribut secondaire',
   corruption: '🧬 Points de Corruption',
   castPenalty: '🔮 Contrecoup d’incantation',
   castWard: '🔮 Aura anti-Sort (−20 Langue)',
@@ -246,6 +247,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'skillMod': return { op: 'skillMod', skill: 'esquive', mod: -10 };
     case 'moveScale': return { op: 'moveScale', num: 1, den: 2 };
     case 'moveMod': return { op: 'moveMod', mod: -1 };
+    case 'attrMod': return { op: 'attrMod', attr: 'fortune', mod: 1 };
     case 'maxWeaponHands': return { op: 'maxWeaponHands', hands: 1 };
     case 'senseLoss': return { op: 'senseLoss', sense: 'vue' };
     case 'loseTurn': return { op: 'loseTurn' };
@@ -275,6 +277,7 @@ export function opSummary(o: GameOp): string {
     case 'charMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} ${CHAR_LABELS[o.char] ?? o.char}`;
     case 'skillMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} ${refLabel('skills', { id: o.skill })}`;
     case 'moveMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} Mouvement`;
+    case 'attrMod': return `${L} +${formulaSummary(o.mod)} ${({ wounds: 'Blessures', fortune: 'Chance', resolve: 'Détermination', fate: 'Destin', resilience: 'Résilience' } as const)[o.attr]}`;
     case 'apAll': return `${L} +${formulaSummary(o.amount)} PA`;
     case 'testMod': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests${o.char ? ` de ${CHAR_LABELS[o.char] ?? o.char}` : ''}`;
     case 'ignoreStatePenalties': return `${L} ignore les pénalités d’État`;

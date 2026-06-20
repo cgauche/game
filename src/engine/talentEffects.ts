@@ -40,6 +40,19 @@ function timesWithAddChar(hero: Combatant, attr: string): number {
   return hero.talents.reduce((a, t) => a + ((findTalentById(t.talentId)?.addCharacteristic ?? null) === attr ? t.times : 0), 0);
 }
 
+/** Σ des `attrMod{attr}` (mod NUMÉRIQUE) portés par les talents du héros, × `times` — Chance (Chanceux),
+ *  Détermination (Obstiné). DATA-DRIVEN : lit `TalentData.passive`, jamais un libellé. (Les mod-FORMULE,
+ *  ex. Dur à cuire +BE, sont résolus par leur lecteur dédié — pas ici.) */
+function talentAttrSum(hero: Combatant, attr: 'fortune' | 'resolve'): number {
+  let n = 0;
+  for (const t of hero.talents ?? []) {
+    for (const op of findTalentById(t.talentId)?.passive ?? []) {
+      if (op.op === 'attrMod' && op.attr === attr && typeof op.mod === 'number') n += op.mod * (t.times ?? 1);
+    }
+  }
+  return n;
+}
+
 /** Caractéristique « +5 de départ » conférée par un talent (clé courte), sinon null, par `id`. */
 export function talentCharBonusById(talentId: string): CharKey | null {
   const attr = addCharById(talentId);
@@ -84,12 +97,12 @@ export function heroMaxWounds(hero: Combatant): number {
 
 /** Maximum de Points de Chance : Destin + niveaux des talents « Chance » (Chanceux, LDB 10). */
 export function fortuneMax(hero: Combatant): number {
-  return (hero.fate ?? 0) + timesWithAddChar(hero, 'fortune');
+  return (hero.fate ?? 0) + talentAttrSum(hero, 'fortune');
 }
 
 /** Maximum de Détermination : Résilience + niveaux des talents « Détermination » (Obstiné). */
 export function resolveMax(hero: Combatant): number {
-  return (hero.resilience ?? 0) + timesWithAddChar(hero, 'resolve');
+  return (hero.resilience ?? 0) + talentAttrSum(hero, 'resolve');
 }
 
 /**

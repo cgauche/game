@@ -402,6 +402,10 @@ export type GameOp =
   /** Modificateur ADDITIF de Mouvement (trait Brutal −1 / Rapide +1, mutation ±1, encombrement) — distinct de
    *  `moveScale` (multiplicatif). `effectiveMovement` somme les `moveMod` PUIS applique les `moveScale`. */
   | { op: 'moveMod'; mod: number }
+  /** Modif. d'un ATTRIBUT SECONDAIRE (≠ CharKey, ≠ Mouvement) : Blessures (Dur à cuire +BE), Chance
+   *  (Chanceux), Détermination (Obstiné), Destin, Résilience. `mod` = Formula (`{bonusOf:'E'}` pour Dur
+   *  à cuire). Lu par heroMaxWounds/fortuneMax/resolveMax — data-driven, jamais par libellé. */
+  | { op: 'attrMod'; attr: 'wounds' | 'fortune' | 'resolve' | 'fate' | 'resilience'; mod: Formula }
   /** Plafond de mains d'arme maniables — GÉNÉRALISE `noTwoHanded` (hands:1 = pas d'arme à deux mains).
    *  Une amputation de main/bras pose `maxWeaponHands:1`. Lu par `cannotWieldTwoHanded`/`recomputeLoadout`. */
   | { op: 'maxWeaponHands'; hands: number }

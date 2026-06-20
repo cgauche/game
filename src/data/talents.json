@@ -403,13 +403,19 @@
     "desc": "On prétend que lorsque vous êtes né, Ranald a souri. Votre maximum de Points de Chance est à présent égal à votre nombre actuel de Points de Destin, plus le nombre de fois que vous avez pris Chanceux.",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "fortune",
     "specs": [],
     "rand": 26,
     "source": {
       "book": "LDB",
       "page": 134
-    }
+    },
+    "passive": [
+      {
+        "op": "attrMod",
+        "attr": "fortune",
+        "mod": 1
+      }
+    ]
   },
   {
     "id": "charge-berserk",
@@ -2154,13 +2160,19 @@
     "desc": "Vous êtes la quintessence de la détermination et de la résolution. Ajoutez votre niveau d'Obstiné au maximum de votre réserve de Détermination.",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "resolve",
     "specs": [],
     "rand": null,
     "source": {
       "book": "LDB",
       "page": 142
-    }
+    },
+    "passive": [
+      {
+        "op": "attrMod",
+        "attr": "resolve",
+        "mod": 1
+      }
+    ]
   },
   {
     "id": "oeil-du-chasseur",
