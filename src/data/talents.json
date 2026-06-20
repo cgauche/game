@@ -918,13 +918,21 @@
     "desc": "Vous gagnez autant de Points de Blessure supplémentaires que votre Bonus d'Endurance. Si ce dernier augmente, le nombre de Points de Blessure conféré par Dur à cuire augmente également.",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "wounds",
     "specs": [],
     "rand": 40,
     "source": {
       "book": "LDB",
       "page": 136
-    }
+    },
+    "passive": [
+      {
+        "op": "attrMod",
+        "attr": "wounds",
+        "mod": {
+          "bonusOf": "E"
+        }
+      }
+    ]
   },
   {
     "id": "effraction",

@@ -35,11 +35,6 @@ function addCharById(talentId: string): string | null {
   return findTalentById(talentId)?.addCharacteristic ?? null;
 }
 
-/** Somme des `times` des talents du héros dont addCharacteristic === attr. */
-function timesWithAddChar(hero: Combatant, attr: string): number {
-  return hero.talents.reduce((a, t) => a + ((findTalentById(t.talentId)?.addCharacteristic ?? null) === attr ? t.times : 0), 0);
-}
-
 /** Σ des `attrMod{attr}` (mod NUMÉRIQUE) portés par les talents du héros, × `times` — Chance (Chanceux),
  *  Détermination (Obstiné). DATA-DRIVEN : lit `TalentData.passive`, jamais un libellé. (Les mod-FORMULE,
  *  ex. Dur à cuire +BE, sont résolus par leur lecteur dédié — pas ici.) */
@@ -87,7 +82,18 @@ export function applyTalentAcquisition(hero: Combatant, talentId: string, spec?:
 
 /** Points de Blessure supplémentaires : BE par acquisition d'un talent « Blessure » (Dur à cuire). */
 export function extraWounds(hero: Combatant): number {
-  return timesWithAddChar(hero, 'wounds') * bonus(hero.characteristics.E);
+  let n = 0;
+  for (const t of hero.talents ?? []) {
+    for (const op of findTalentById(t.talentId)?.passive ?? []) {
+      if (op.op === 'attrMod' && op.attr === 'wounds') {
+        // Dur à cuire = +Bonus d'Endurance par acquisition : mod-formule `{bonusOf:'E'}` résolu sur la
+        // BASE (caractéristiques brutes), comme l'ancien `bonus(hero.characteristics.E)` — pas d'effectif.
+        const per = typeof op.mod === 'number' ? op.mod : 'bonusOf' in op.mod ? bonus(hero.characteristics[op.mod.bonusOf]) : 0;
+        n += per * (t.times ?? 1);
+      }
+    }
+  }
+  return n;
 }
 
 /** Blessures max d'un héros = formule des Attributs (BF+2×BE+BFM × Taille) + talents « Blessure ». */
