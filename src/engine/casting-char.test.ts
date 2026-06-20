@@ -1,7 +1,6 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { castingValue } from './magic';
 import { effectiveSkillCharKey, testValue } from './skills';
-import { setRule, resetRule } from './policy';
 import type { Combatant, CharKey } from './types';
 
 /** Combatant minimal : Int 30 ≠ E 40 → la valeur de Test révèle quelle Caractéristique a servi. */
@@ -14,35 +13,25 @@ function mk(opts: Partial<Combatant> = {}): Combatant {
   } as Combatant;
 }
 
-const langue = (characteristic: CharKey = 'Int') => ({ skillId: 'langue', spec: 'Magick', characteristic, advances: 0 });
+const langue = (characteristic: CharKey) => ({ skillId: 'langue', spec: 'Magick', characteristic, advances: 0 });
 
-afterEach(() => resetRule('magic-ogre-langue-e'));
-
-describe('castingValue — caractéristique de la compétence d’incantation (POINT UNIQUE)', () => {
-  it('non-ogre : Langue (Magick) sur Intelligence (défaut LDB)', () => {
-    expect(castingValue(mk({ skills: [langue()] }), 'langue', 'Magick')).toBe(30);
+describe('caractéristique d’incantation — DATA-DRIVEN (point unique, zéro valeur en dur)', () => {
+  it('défaut : Langue (Magick) sur la carac de la compétence (Intelligence)', () => {
+    expect(castingValue(mk({ skills: [langue('Int')] }), 'langue', 'Magick')).toBe(30);
   });
 
-  it('ogre : Langue (Magick) sur Endurance (ADE II l.653, règle ON par défaut)', () => {
-    expect(castingValue(mk({ species: 'Ogre', skills: [langue()] }), 'langue', 'Magick')).toBe(40);
+  it('carac alternative PORTÉE PAR LA DONNÉE : l’instance sur Endurance → Endurance (ex. lanceur ogre, ADE II l.653)', () => {
+    // Aucun sniff d'espèce, aucune règle en dur : le moteur lit SkillInstance.characteristic.
+    expect(castingValue(mk({ skills: [langue('E')] }), 'langue', 'Magick')).toBe(40);
   });
 
-  it('ogre + règle désactivée : retour à l’Intelligence', () => {
-    setRule('magic-ogre-langue-e', false);
-    expect(castingValue(mk({ species: 'Ogre', skills: [langue()] }), 'langue', 'Magick')).toBe(30);
+  it('sans instance possédée : repli sur la carac de la compétence (défaut LDB)', () => {
+    expect(effectiveSkillCharKey(mk(), 'langue', { spec: 'Magick', fallback: 'Int' })).toBe('Int');
   });
 
-  it('« Rat ogre » (Skaven) : NON concerné — ancrage ^ogre (Intelligence)', () => {
-    expect(castingValue(mk({ species: 'Rat ogre', skills: [langue()] }), 'langue', 'Magick')).toBe(30);
-  });
-
-  it('données sur l’entité : une instance portant une carac alternative est respectée (data-driven)', () => {
-    // non-ogre dont l’instance Langue porte explicitement E → E, sans aucune règle.
-    expect(effectiveSkillCharKey(mk({ skills: [langue('E')] }), 'langue', { spec: 'Magick' })).toBe('E');
-  });
-
-  it('testValue et castingValue partagent le même point (ogre Langue → E des deux côtés)', () => {
-    const ogre = mk({ species: 'Ogre', skills: [langue()] });
-    expect(testValue(ogre, 'langue', undefined, 'Magick')).toBe(castingValue(ogre, 'langue', 'Magick'));
+  it('testValue et castingValue partagent LE MÊME point (carac d’instance respectée des deux côtés)', () => {
+    const c = mk({ skills: [langue('E')] });
+    expect(testValue(c, 'langue', undefined, 'Magick')).toBe(castingValue(c, 'langue', 'Magick'));
+    expect(testValue(c, 'langue', undefined, 'Magick')).toBe(40);
   });
 });

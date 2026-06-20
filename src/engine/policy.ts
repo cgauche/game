@@ -118,15 +118,6 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'Caractéristique de base d’Intimidation. F = Force (RAW) ; max = la meilleure de F/FM/Int ; FM = Force Mentale ; Int = Intelligence.',
   },
   {
-    id: 'magic-ogre-langue-e',
-    label: 'Magie ogre : Langue (Magick) sur Endurance',
-    ref: 'ADE II ch.02 l.653',
-    group: 'Magie',
-    kind: 'flag',
-    default: true,
-    hint: 'Les lanceurs de sorts ogres utilisent l’Endurance au lieu de l’Intelligence pour leur Compétence Langue (Magick) (ADE II « Les ogres »). N’affecte que les ogres (le « Rat ogre » Skaven est exclu).',
-  },
-  {
     id: 'fortune-mid-session',
     label: 'Chance regagnée en cours de session',
     ref: 'LDB 17 l.52',

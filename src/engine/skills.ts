@@ -11,10 +11,12 @@ import { agilityTestPenalty } from './encumbrance';
 import { traumaSkillPenalty, passiveSkillSum, passiveTestMod } from './trauma';
 import { rule } from './policy';
 
-/** Règles optionnelles « caractéristique alternative » — POINT UNIQUE de la famille : Métier comme Savoir
- *  → Int (LDB 09 l.352) ; Intimidation → carac réglable F/FM/Int (LDB 09 l.266) ; Magie ogre → Langue
- *  (Magick) sur Endurance (ADE II ch.02 l.653). Renvoie la CharKey de base à utiliser pour le Test
- *  (inchangée si aucune règle ne s'applique). N'opère que sur une COMPÉTENCE nommée (pas une carac brute). */
+/** Règles optionnelles « caractéristique alternative » via policy (POINT UNIQUE de la famille) : Métier
+ *  comme Savoir → Int (LDB 09 l.352) ; Intimidation → carac réglable F/FM/Int (LDB 09 l.266). Renvoie la
+ *  CharKey à utiliser (inchangée si aucune règle ne s'applique). N'opère que sur une COMPÉTENCE nommée.
+ *  (Les carac alternatives PAR ENTITÉ — ex. lanceur ogre : Langue (Magick) sur Endurance, ADE II l.653 —
+ *  sont portées par la DONNÉE — `SkillInstance.characteristic` — lue par effectiveSkillCharKey en amont,
+ *  pas ici : aucun sniff d'espèce dans le moteur.) */
 function altCharKey(c: Combatant, skillId: string, ck: CharKey): CharKey {
   if (ck === 'Dex' && skillId === 'metier' && rule('test-metier-int')) return 'Int';
   if (skillId === 'intimidation') {
@@ -25,9 +27,6 @@ function altCharKey(c: Combatant, skillId: string, ck: CharKey): CharKey {
       return f >= fm && f >= i ? 'F' : fm >= i ? 'FM' : 'Int';
     }
   }
-  // Magie ogre (ADE II ch.02 « Les ogres » l.653) : « Les lanceurs de sorts ogres utilisent l'Endurance
-  // au lieu de l'Intelligence pour leur Compétence Langue (Magick). » Ancré sur ^ogre → exclut le « Rat ogre » (Skaven).
-  if (skillId === 'langue' && rule('magic-ogre-langue-e') && /^ogres?\b/i.test((c.species ?? '').trim())) return 'E';
   return ck;
 }
 
