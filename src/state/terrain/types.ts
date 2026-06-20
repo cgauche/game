@@ -8,6 +8,9 @@ export interface TerrainMeta {
   /** Précédence de raccord d'arêtes : un terrain de priorité plus haute « déborde »
    *  sur ses voisins de priorité plus basse (façon crossers NWN). */
   priority: number;
+  /** Bloque la Ligne de Vue (mur de pierre, porte) — lu par `lineOfSightCover` (couvert total,
+   *  brouillard). Absent = transparent. */
+  opaque?: boolean;
 }
 
 export interface TerrainDef extends TerrainMeta {

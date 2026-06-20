@@ -1,0 +1,106 @@
+import { describe, it, expect } from 'vitest';
+import { computeVisible, computeLightField, type LightField } from './vision';
+import { Scene, WallSeg } from './scene';
+
+function scene(w: number, h: number, tiles?: Record<string, string>, walls?: WallSeg[]): Scene {
+  const grid = new Array(w * h).fill('herbe');
+  if (tiles)
+    for (const [k, v] of Object.entries(tiles)) {
+      const [x, y] = k.split(',').map(Number);
+      grid[y * w + x] = v;
+    }
+  return {
+    id: 's',
+    name: 's',
+    dimensions: { w, h },
+    ambiance: 'jour',
+    levels: [{ z: 0, tiles: grid }],
+    entities: [],
+    buildings: [],
+    dialogues: [],
+    triggers: [],
+    encounters: [],
+    walls,
+  } as unknown as Scene;
+}
+
+/** Champ de lumière constant (tout éclairé) pour isoler la géométrie de vision. */
+const BRIGHT: LightField = { at: () => 1 };
+/** Champ de lumière nul (ténèbres totales). */
+const DARK: LightField = { at: () => 0 };
+
+describe('computeVisible — rayon de vue (plein jour)', () => {
+  it('voit dans le rayon, pas au-delà (Chebyshev)', () => {
+    const v = computeVisible(scene(8, 1), [{ pos: { x: 0, y: 0 }, radiusTiles: 3, darkTiles: 0 }], BRIGHT);
+    expect(v.has('3,0,0')).toBe(true);
+    expect(v.has('4,0,0')).toBe(false);
+  });
+  it('voit toujours sa propre case', () => {
+    const v = computeVisible(scene(5, 1), [{ pos: { x: 2, y: 0 }, radiusTiles: 0, darkTiles: 0 }], DARK);
+    expect(v.has('2,0,0')).toBe(true);
+  });
+});
+
+describe('computeVisible — murs bloquent la vue', () => {
+  it('ne voit pas au-delà d\'un mur d\'arête', () => {
+    const s = scene(6, 1, {}, [{ x: 2, y: 0, side: 'E' }]); // arête entre (2,0) et (3,0)
+    const v = computeVisible(s, [{ pos: { x: 0, y: 0 }, radiusTiles: 5, darkTiles: 0 }], BRIGHT);
+    expect(v.has('2,0,0')).toBe(true);
+    expect(v.has('3,0,0')).toBe(false);
+  });
+});
+
+describe('computeVisible — obscurité & vision nocturne', () => {
+  it('dans le noir sans vision nocturne → ne voit que sa case', () => {
+    const v = computeVisible(scene(6, 1), [{ pos: { x: 0, y: 0 }, radiusTiles: 5, darkTiles: 0 }], DARK);
+    expect(v.has('0,0,0')).toBe(true);
+    expect(v.has('1,0,0')).toBe(false);
+  });
+  it('vision nocturne (darkTiles) perce le noir jusqu\'à sa portée', () => {
+    const v = computeVisible(scene(8, 1), [{ pos: { x: 0, y: 0 }, radiusTiles: 0, darkTiles: 4 }], DARK);
+    expect(v.has('4,0,0')).toBe(true);
+    expect(v.has('5,0,0')).toBe(false);
+  });
+});
+
+describe('computeVisible — lumière requise hors vision nocturne', () => {
+  it('voit une case éclairée par une source, pas les cases sombres voisines', () => {
+    // ambiant noir ; une torche rayon 3 en (0,0)
+    const light = computeLightField(scene(8, 1), 0, [{ pos: { x: 0, y: 0 }, radiusTiles: 3 }]);
+    const v = computeVisible(scene(8, 1), [{ pos: { x: 0, y: 0 }, radiusTiles: 6, darkTiles: 0 }], light);
+    expect(v.has('2,0,0')).toBe(true); // éclairée
+    expect(v.has('5,0,0')).toBe(false); // hors halo → sombre → invisible
+  });
+});
+
+describe('computeVisible — union de tous les viewers', () => {
+  it('voit ce qu\'au moins un viewer voit', () => {
+    const viewers = [
+      { pos: { x: 0, y: 0 }, radiusTiles: 1, darkTiles: 0 },
+      { pos: { x: 9, y: 0 }, radiusTiles: 1, darkTiles: 0 },
+    ];
+    const v = computeVisible(scene(10, 1), viewers, BRIGHT);
+    expect(v.has('1,0,0')).toBe(true); // près du viewer A
+    expect(v.has('8,0,0')).toBe(true); // près du viewer B
+    expect(v.has('5,0,0')).toBe(false); // entre les deux, hors des deux rayons
+  });
+});
+
+describe('computeLightField — ambiance plancher + halo de source', () => {
+  it('l\'ambiant est le plancher partout', () => {
+    const f = computeLightField(scene(5, 1), 0.3, []);
+    expect(f.at(4, 0)).toBeCloseTo(0.3);
+  });
+  it('une source éclaire en dégradé (1 au centre, décroît avec la distance)', () => {
+    const f = computeLightField(scene(6, 1), 0, [{ pos: { x: 0, y: 0 }, radiusTiles: 4 }]);
+    expect(f.at(0, 0)).toBeCloseTo(1);
+    expect(f.at(2, 0)).toBeCloseTo(0.5); // 1 - 2/4
+    expect(f.at(4, 0)).toBeCloseTo(0); // bord du halo
+  });
+  it('un mur occulte la lumière (la torche n\'éclaire pas derrière)', () => {
+    const s = scene(6, 1, {}, [{ x: 1, y: 0, side: 'E' }]); // arête (1,0)|(2,0)
+    const f = computeLightField(s, 0, [{ pos: { x: 0, y: 0 }, radiusTiles: 5 }]);
+    expect(f.at(1, 0)).toBeGreaterThan(0); // avant le mur : éclairé
+    expect(f.at(3, 0)).toBe(0); // derrière le mur : noir
+  });
+});

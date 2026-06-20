@@ -5,8 +5,9 @@
  * (cf. combatFlow). La table de couvert n'est pas exhaustive (LDB l.75 : « servez-vous de ces exemples
  * comme guide ») — la classification des décors/créatures est une extrapolation des exemplaires canon.
  */
-import { Scene, SceneEntity, tileAt } from './scene';
+import { Scene, SceneEntity, tileAt, wallBetween } from './scene';
 import { buildingBlockedAt } from './buildings';
+import { TERRAINS } from './terrain';
 import { Pt } from './path';
 
 export type CoverClass = 'none' | 'imparfaite' | 'moyenne' | 'totale';
@@ -15,8 +16,6 @@ const COVER_MOD: Record<CoverClass, number> = { none: 0, imparfaite: -10, moyenn
 export const coverModifier = (c: CoverClass): number => COVER_MOD[c];
 const worst = (a: CoverClass, b: CoverClass): CoverClass => (COVER_MOD[b] < COVER_MOD[a] ? b : a);
 
-/** Terrains bloquant la vue (mur de pierre / porte fermée). `bois` (sous-bois) ne bloque pas → couvert léger. */
-const SIGHT_BLOCK_TERRAIN = new Set(['mur', 'porte']);
 /** Couvert d'un terrain partiel. */
 const TERRAIN_COVER: Record<string, CoverClass> = { bois: 'imparfaite' };
 /** Couvert d'un décor (par id de catalogue), exemplaires canon `14` l.103/114/120 + extrapolation l.75. */
@@ -50,6 +49,32 @@ export function tilesBetween(a: Pt, b: Pt): Pt[] {
 }
 
 const adjacent = (p: Pt, q: Pt): boolean => Math.max(Math.abs(p.x - q.x), Math.abs(p.y - q.y)) <= 1;
+
+/** Suite COMPLÈTE des cases de `a` à `b`, extrémités INCLUSES (supercover, pour tester les arêtes
+ *  franchies entre cases consécutives — ce que `tilesBetween` (strictement entre) ne donne pas). */
+function cellPath(a: Pt, b: Pt): Pt[] {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const steps = Math.max(Math.abs(dx), Math.abs(dy));
+  if (steps === 0) return [{ x: a.x, y: a.y }];
+  const out: Pt[] = [];
+  for (let i = 0; i <= steps; i++) {
+    out.push({ x: Math.round(a.x + (dx * i) / steps), y: Math.round(a.y + (dy * i) / steps) });
+  }
+  return out;
+}
+
+/** Un mur d'arête (`Scene.walls`) est-il franchi par la ligne `from`→`to` ? Bloque la vue
+ *  (« pas à travers les murs ») — réutilise `wallBetween` (mur non-porte sur l'arête cardinale ;
+ *  une porte = ouverture transparente en V1). Les diagonales ne croisent pas d'arête cardinale. */
+function wallOnSight(scene: Scene, from: Pt, to: Pt, z = 0): boolean {
+  if (!scene.walls?.length) return false;
+  const path = cellPath(from, to);
+  for (let i = 0; i + 1 < path.length; i++) {
+    if (wallBetween(scene, path[i].x, path[i].y, path[i + 1].x, path[i + 1].y, z)) return true;
+  }
+  return false;
+}
 
 /**
  * Cases d'un nuage de fumée (Souffle (Fumée)) : disque de Chebyshev `radius` autour de `center`
@@ -102,11 +127,13 @@ export function lineOfSightCover(
     const smoky = (p: Pt) => smoke.some((s) => s.x === p.x && s.y === p.y);
     if (smoky(from) || smoky(to) || tilesBetween(from, to).some(smoky)) return { blocked: true, cover: 'totale' };
   }
+  // Murs d'arête (Scene.walls) : barrière pleine entre deux cases → vue entièrement bloquée.
+  if (wallOnSight(scene, from, to)) return { blocked: true, cover: 'totale' };
   let cover: CoverClass = 'none';
   for (const t of tilesBetween(from, to)) {
     const terr = tileAt(scene, t.x, t.y);
     const decor = decorAt(scene, t.x, t.y);
-    const blocks = SIGHT_BLOCK_TERRAIN.has(terr) || buildingBlockedAt(scene, t.x, t.y) || (!!decor && SIGHT_BLOCK_DECOR.has(decor.ref ?? ''));
+    const blocks = (TERRAINS[terr]?.opaque ?? false) || buildingBlockedAt(scene, t.x, t.y) || (!!decor && SIGHT_BLOCK_DECOR.has(decor.ref ?? ''));
     if (blocks) {
       if (adjacent(t, to)) {
         cover = worst(cover, 'totale'); // cible collée au couvert → −30, tir possible

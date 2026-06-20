@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { tilesBetween, coverModifier, lineOfSightCover, smokeZone } from './lineOfSight';
-import { Scene, SceneEntity } from './scene';
+import { Scene, SceneEntity, WallSeg } from './scene';
 
 function scene(w: number, h: number, tiles?: Record<string, string>, entities: SceneEntity[] = []): Scene {
   const grid = new Array(w * h).fill('herbe');
@@ -102,6 +102,31 @@ describe('lineOfSightCover — Fumée (Souffle (Fumée)) bloque la vue', () => {
   });
   it('sans argument fumée → comportement inchangé (rétro-compatible)', () => {
     expect(lineOfSightCover(scene(5, 1), { x: 0, y: 0 }, { x: 4, y: 0 }, [])).toEqual({ blocked: false, cover: 'none' });
+  });
+});
+
+describe('lineOfSightCover — murs d\'arête (Scene.walls) bloquent la vue', () => {
+  const withWalls = (s: Scene, walls: WallSeg[]): Scene => ({ ...s, walls });
+
+  it('mur d\'arête sur le trajet → vue bloquée (on ne voit pas à travers les murs)', () => {
+    const s = withWalls(scene(5, 1), [{ x: 2, y: 0, side: 'E' }]); // arête entre (2,0) et (3,0)
+    expect(lineOfSightCover(s, { x: 0, y: 0 }, { x: 4, y: 0 }, []).blocked).toBe(true);
+  });
+  it('mur d\'arête entre deux cases ADJACENTES → vue bloquée', () => {
+    const s = withWalls(scene(2, 1), [{ x: 0, y: 0, side: 'E' }]); // arête entre (0,0) et (1,0)
+    expect(lineOfSightCover(s, { x: 0, y: 0 }, { x: 1, y: 0 }, []).blocked).toBe(true);
+  });
+  it('porte (door) sur le trajet → vue NON bloquée (ouverture, V1)', () => {
+    const s = withWalls(scene(5, 1), [{ x: 2, y: 0, side: 'E', door: true }]);
+    expect(lineOfSightCover(s, { x: 0, y: 0 }, { x: 4, y: 0 }, []).blocked).toBe(false);
+  });
+  it('mur d\'arête HORS du trajet → aucun effet', () => {
+    const s = withWalls(scene(5, 2), [{ x: 2, y: 1, side: 'E' }]); // sur la ligne y=1, pas y=0
+    expect(lineOfSightCover(s, { x: 0, y: 0 }, { x: 4, y: 0 }, [])).toEqual({ blocked: false, cover: 'none' });
+  });
+  it('mur d\'arête sur un AUTRE étage (z) → aucun effet sur z=0', () => {
+    const s = withWalls(scene(5, 1), [{ x: 2, y: 0, side: 'E', z: 1 }]);
+    expect(lineOfSightCover(s, { x: 0, y: 0 }, { x: 4, y: 0 }, []).blocked).toBe(false);
   });
 });
 
