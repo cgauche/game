@@ -75,4 +75,11 @@ export const fr = {
   'menu.testScenarios': '🧪 Scénarios de test',
   'menu.galleries': "🎨 Galeries d'art",
   'menu.footnote': "Adapté du Livre de base et des Archives de l'Empire I & II (WFRP 4ᵉ édition).",
+  // Menu ☰ en jeu (UI) — Phase D.
+  'gameMenu.menu': 'Menu',
+  'gameMenu.close': 'Fermer le menu',
+  'gameMenu.purse': 'Bourse',
+  'gameMenu.saveLoad': '💾 Sauvegarder / Charger',
+  'gameMenu.houseRules': '📜 Règles maison',
+  'gameMenu.quit': '← Quitter la partie',
 } as const;
