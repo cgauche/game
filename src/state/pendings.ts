@@ -614,19 +614,37 @@ export interface OpposedFreeze {
   /** Libellé du côté attaquant (« Force ») — affichage. */
   attackerLabel?: string;
 }
+/** Contexte SÉRIALISABLE d'une ATTAQUE GRATUITE de talent (op `grantFreeAttack`) porté par une étape de
+ *  cascade : la CIBLE de la frappe (`targetId` — un TIERS : le chargeur pour Frappe réactive), le plafond
+ *  /Round (`cap` = niveau du talent) et la `key` d'imputation (`freeAttacksThisTurn`). Reconstruit l'`exec`
+ *  impur de l'applier (la frappe est ouverte via `runCombatFlow` + le hook `freeAttack`). */
+export interface FreeAttackFreeze {
+  targetId: string;
+  cap: number;
+  key: string;
+}
 export interface CascadeStepMeta {
-  [key: string]: number | string | boolean | Flow | OpposedFreeze | undefined;
+  [key: string]: number | string | boolean | Flow | OpposedFreeze | FreeAttackFreeze | undefined;
   /** Branche de réussite d'une étape `triggeredTest` (exécutée via `applyTriggeredTestBranch`). */
   onSuccess?: Flow;
   /** Branche d'échec d'une étape `triggeredTest`. */
   onFail?: Flow;
-  /** CONTINUATION reprise APRÈS la branche d'un `triggeredTest` enfoui dans un Flow (le reste du `seq`
-   *  qui suivait le `test`). Pur-donnée (voyage en coop, à côté de `onSuccess`/`onFail`) ; rejouée par
-   *  l'applier via `runCombatFlow`. Absent (= EMPTY_FLOW) pour un Test top-level (Mâchoires) → aucune suite. */
+  /** Branche OUI d'une étape `triggeredChoice` (décision opt-in acceptée — Frappe réactive « tenter »). */
+  choiceYes?: Flow;
+  /** Branche NON d'une étape `triggeredChoice` (décision refusée — défaut = renoncer). */
+  choiceNo?: Flow;
+  /** Coût d'Avantage d'une étape `triggeredChoice` (dépensé sur OUI si payable) — absent = gratuit. */
+  choiceCost?: number;
+  /** CONTINUATION reprise APRÈS la branche d'un `triggeredTest`/`triggeredChoice` enfoui dans un Flow (le
+   *  reste du `seq` qui suivait le nœud). Pur-donnée (voyage en coop) ; rejouée par l'applier via
+   *  `runCombatFlow`. Absent (= EMPTY_FLOW) pour un nœud top-level (Mâchoires) → aucune suite. */
   after?: Flow;
   /** Jet ATTAQUANT FIGÉ d'un `triggeredTest` OPPOSÉ — présent ⇒ l'issue du défenseur vient de
    *  `resolveOpposed(jetDéfenseur, aT)` au lieu de `roll ≤ target` (Assommante). Absent ⇒ Test simple. */
   opposed?: OpposedFreeze;
+  /** Contexte d'attaque gratuite (Frappe réactive : la branche success porte `grantFreeAttack`) — la frappe
+   *  vise le tiers `targetId`. Reconstruit l'`exec` impur de l'applier. Absent ⇒ branche purement data. */
+  freeAttack?: FreeAttackFreeze;
 }
 /** Le jet d'UNE étape de cascade (slot du flux multi SÉQUENTIEL `FLOWS.cascade`). */
 export interface CascadeRoll {

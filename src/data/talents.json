@@ -1210,22 +1210,39 @@
         "trigger": "onCharged",
         "on": "self",
         "flow": {
-          "kind": "do",
-          "effect": {
-            "type": "ops",
-            "on": "self",
-            "ops": [
-              {
-                "op": "grantFreeAttack",
-                "weapon": "mainHand",
-                "when": "immediate",
-                "test": {
-                  "characteristic": "I",
-                  "difficulty": "intermediaire"
-                },
-                "perChargerOncePerRound": true
+          "kind": "choice",
+          "prompt": "Frappe réactive",
+          "icon": "⚔️",
+          "yes": {
+            "kind": "test",
+            "test": {
+              "characteristic": "I",
+              "difficulty": "intermediaire",
+              "label": "Frappe réactive"
+            },
+            "success": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "self",
+                "ops": [
+                  {
+                    "op": "grantFreeAttack",
+                    "weapon": "mainHand",
+                    "when": "immediate",
+                    "perChargerOncePerRound": true
+                  }
+                ]
               }
-            ]
+            },
+            "fail": {
+              "kind": "seq",
+              "steps": []
+            }
+          },
+          "no": {
+            "kind": "seq",
+            "steps": []
           }
         }
       }

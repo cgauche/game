@@ -315,15 +315,16 @@ export type GameOp =
   | { op: 'grantNaturalWeapon'; name: string; damage: Formula; damagePlus?: number; plusBF?: boolean; qualities?: string[] }
   /** ATTAQUE GRATUITE accordée par un talent/état (Frénésie : 1 attaque d'Arme/Round ; Assaut féroce :
    *  attaque supplémentaire à la touche ; Frappe réactive : riposte quand on est Chargé). Effet IMPUR (ouvre
-   *  une frappe) RÉSOLU par la couche state (`state/freeAttackFlow`) ; INERTE dans `applyOps`. `weapon` : arme
-   *  tenue / main principale / naturelle. `when` : 'available' = surfacée comme OPTION du Tour (Frénésie, lue
-   *  par `availableAttacks`) ou 'immediate' = résolue tout de suite (depuis un effet déclenché). `cost` :
-   *  Avantage et/ou Mouvement. `test` : jet préalable (Frappe réactive : Initiative +0). `activeIf` : condition
+   *  une frappe) RÉSOLU par la couche state (le hook `freeAttack` de `combatFlow`, appelé par `runCombatFlow`
+   *  sur ce `do`) ; INERTE dans `applyOps`. `weapon` : arme tenue / main principale / naturelle. `when` :
+   *  'available' = surfacée comme OPTION du Tour (Frénésie, lue par `availableAttacks`) ou 'immediate' = résolue
+   *  tout de suite (depuis un effet déclenché). `cost` : Avantage et/ou Mouvement. `activeIf` : condition
    *  d'activation d'une grant 'available' (l'état `frenzied`). `perChargerOncePerRound` : 1× par chargeur. Le
-   *  plafond /Round est porté par la couche state (= niveau du talent). */
+   *  plafond /Round est porté par la couche state (= niveau du talent). Un éventuel jet PRÉALABLE (Frappe
+   *  réactive : Test d'Initiative) est un nœud Flow `test` EN AMONT du `do`, pas un champ de l'op (cadence-aware
+   *  via `resolveFlowTest`). */
   | { op: 'grantFreeAttack'; weapon: 'held' | 'mainHand' | 'natural'; when: 'available' | 'immediate';
       cost?: { advantage?: number; movement?: boolean; advantageOrMovement?: boolean };
-      test?: { characteristic: CharKey; difficulty: Difficulty };
       activeIf?: 'frenzied'; perChargerOncePerRound?: boolean; label?: string }
   /** Effet RÉCURRENT multi-Rounds : pose un effet actif porteur qui re-joue `ops` à CHAQUE fin de
    *  Round tant que le sort dure (`ctx.defaultDurationRounds`, Surincantation de Durée incluse —
@@ -1053,8 +1054,8 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'zone':
       case 'grantFreeAttack':
         // Effets IMPURS (grille + initiative / zones de bataille / ouverture d'une frappe) — résolus par la
-        // couche state (combatFlow : applySummon / placeSpellZone ; freeAttackFlow : applyGrantFreeAttack),
-        // qui détient get/set et le combattant. `applyOps` (moteur pur) les laisse INERTES.
+        // couche state (combatFlow : applySummon / placeSpellZone ; le hook `freeAttack` appelé par
+        // `runCombatFlow`), qui détient get/set et le combattant. `applyOps` (moteur pur) les laisse INERTES.
         break;
       case 'polymorph':
         // Métamorphose : développée en charMod différentiel + grantTrait (auto-restitués) — pure.

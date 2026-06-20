@@ -237,17 +237,23 @@ export interface FlowTest {
 }
 
 /**
- * Un nœud de Flow. Quatre formes, RÉCURSIVES, jamais cycliques :
- *  - `seq`  : exécute `steps` dans l'ordre (l'ancien `Effect[]`) ;
- *  - `do`   : une feuille — applique un `Effect` (action) ;
- *  - `if`   : évalue `cond` (PUR) → `then` / `else` ;
- *  - `test` : jet interactif → `success` / `fail` (l'ancien `Effect.test`, sorti d'`Effect`).
+ * Un nœud de Flow. Cinq formes, RÉCURSIVES, jamais cycliques :
+ *  - `seq`    : exécute `steps` dans l'ordre (l'ancien `Effect[]`) ;
+ *  - `do`     : une feuille — applique un `Effect` (action) ;
+ *  - `if`     : évalue `cond` (PUR) → `then` / `else` ;
+ *  - `test`   : jet ALÉATOIRE interactif → `success` / `fail` (l'ancien `Effect.test`) ;
+ *  - `choice` : DÉCISION du joueur opt-in (≠ `test` aléatoire, ≠ `if` état) → `yes` / `no`. Coût
+ *    d'Avantage optionnel dépensé sur `yes`. Primitive FONDAMENTALE des réactions de combat
+ *    (Frappe Réactive « vous POUVEZ tenter », Déstabilisante « vous POUVEZ dépenser 2 Av ») et, à
+ *    terme, des choix de dialogue/pièges. Son exécuteur RÉUTILISE l'étape-choix de cascade existante
+ *    (motif `knockdown` : `pushCombatStep` yes/no + applier) — il n'invente pas de mécanisme.
  */
 export type Flow =
   | { kind: 'seq'; steps: Flow[] }
   | { kind: 'do'; effect: Effect }
   | { kind: 'if'; cond: Condition; then: Flow; else?: Flow }
-  | { kind: 'test'; test: FlowTest; success: Flow; fail: Flow };
+  | { kind: 'test'; test: FlowTest; success: Flow; fail: Flow }
+  | { kind: 'choice'; prompt: string; cost?: { advantage: number }; icon?: string; yes: Flow; no?: Flow };
 
 /** Flow vide (séquence sans étape) — neutre, sûr comme valeur par défaut d'un consommateur. */
 export const EMPTY_FLOW: Flow = { kind: 'seq', steps: [] };
@@ -299,6 +305,8 @@ export function flattenFlow(flow: Flow, ctx: ConditionCtx): Effect[] {
     }
     case 'test':
       throw new Error('flattenFlow: un nœud `test` est interactif — utiliser runFlow (store).');
+    case 'choice':
+      throw new Error('flattenFlow: un nœud `choice` est interactif — utiliser runFlow (store).');
   }
 }
 
@@ -341,6 +349,7 @@ export function spellFlowFor(flow: Flow | undefined, on: 'target' | 'caster'): F
       case 'seq': return { kind: 'seq', steps: f.steps.map(keep) };
       case 'if': return { kind: 'if', cond: f.cond, then: keep(f.then), ...(f.else ? { else: keep(f.else) } : {}) };
       case 'test': return { kind: 'test', test: f.test, success: keep(f.success), fail: keep(f.fail) };
+      case 'choice': return { kind: 'choice', prompt: f.prompt, ...(f.cost ? { cost: f.cost } : {}), ...(f.icon ? { icon: f.icon } : {}), yes: keep(f.yes), ...(f.no ? { no: keep(f.no) } : {}) };
     }
   };
   return keep(flow);
@@ -355,13 +364,15 @@ export function walkConditionTimes(cond: Condition, cb: (w: TemporalCondition) =
   }
 }
 
-/** Le Flow contient-il un nœud `test` (→ exécution interactive nécessaire, pas un simple aplatissage) ? */
+/** Le Flow contient-il un nœud INTERACTIF — `test` (jet) ou `choice` (décision joueur) ? Si oui, son
+ *  exécution doit passer par l'exécuteur interactif (`runFlow`/`runCombatFlow`), pas un aplatissage. */
 export function flowHasTest(flow: Flow): boolean {
   switch (flow.kind) {
     case 'do': return false;
     case 'seq': return flow.steps.some(flowHasTest);
     case 'if': return flowHasTest(flow.then) || (flow.else ? flowHasTest(flow.else) : false);
     case 'test': return true;
+    case 'choice': return true;
   }
 }
 
@@ -379,6 +390,7 @@ export function walkFlow(flow: Flow, visit: (node: Flow) => void): void {
     case 'seq': flow.steps.forEach((s) => walkFlow(s, visit)); break;
     case 'if': walkFlow(flow.then, visit); if (flow.else) walkFlow(flow.else, visit); break;
     case 'test': walkFlow(flow.success, visit); walkFlow(flow.fail, visit); break;
+    case 'choice': walkFlow(flow.yes, visit); if (flow.no) walkFlow(flow.no, visit); break;
     case 'do': break;
   }
 }

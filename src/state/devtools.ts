@@ -1,5 +1,5 @@
 import { useGame } from './store';
-import { checkBattleOver } from './combatFlow';
+import { checkBattleOver, resolveTalentFreeAttacks } from './combatFlow';
 import { bus, EVT } from './bus';
 import { ev } from './combatLog';
 import { isOutOfAction, addCondition } from '../engine/conditions';
@@ -405,6 +405,30 @@ export function buildApi() {
         battle: s.battle ? { ...s.battle, combatants: s.battle.combatants.map(grant) } : s.battle,
       }));
       return `✅ ${id} → ${talentId}`;
+    },
+
+    /** RECETTE : simule une CHARGE de `enemyId` sur un héros (défaut : le plus proche) — déclenche le
+     *  trigger `onCharged` (Frappe réactive : modale de choix puis Test d'Initiative influençable). C'est
+     *  le MÊME appel que le mouvement d'IA quand un ennemi se rue au contact (resolveTalentFreeAttacks). */
+    charge: (enemyId: string, heroId?: string) => {
+      const s = g();
+      const b = s.battle;
+      if (!b || b.over) return '❌ pas de combat en cours';
+      const enemy = b.combatants.find((c) => c.id === enemyId);
+      if (!enemy) return `❌ ennemi « ${enemyId} » introuvable`;
+      const heroes = b.combatants.filter((c) => c.kind === 'hero' && !isOutOfAction(c));
+      const target = heroId
+        ? heroes.find((c) => c.id === heroId)
+        : (enemy.pos
+            ? heroes.slice().sort((a, c) => {
+                const d = (h: Combatant) => h.pos ? Math.max(Math.abs(h.pos.x - enemy.pos!.x), Math.abs(h.pos.y - enemy.pos!.y)) : 1e9;
+                return d(a) - d(c);
+              })[0]
+            : heroes[0]);
+      if (!target) return '❌ aucun héros chargeable';
+      resolveTalentFreeAttacks(() => useGame.getState(), useGame.setState, target, 'onCharged', enemy);
+      bus.emit(EVT.SCENE_DIRTY);
+      return `✅ ${enemy.name} charge ${target.name} (onCharged)`;
     },
 
     /** RECETTE : applique un État à un combattant (par id) via le VRAI addCondition → déclenche les
