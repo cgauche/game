@@ -47,6 +47,7 @@ export interface QuadProps {
   mane?: QuadMane; // crinière d'encolure (défaut : 'crin' si tail==='crin', sinon 'sans')
   ridge?: 'epines' | 'crete' | 'plaques' | 'sans'; // dorsale (défaut : 'epines' si draconic, sinon 'sans')
   markings?: 'taches' | 'rayures' | 'balzanes' | 'sans'; // robe : taches/rayures de flanc, balzanes aux membres
+  headgear?: 'bois' | 'cornes'; // coiffe de crâne : bois ramifiés (cerf) ou cornes courbées — défaut aucun
   headScale?: number; // × sur l'art de tête (défaut 1)
   tailLen?: number; // × sur l'art de queue (défaut 1)
   stored: StoredPalette; // robe/pelage par défaut (corps/cheveux/cuir…)

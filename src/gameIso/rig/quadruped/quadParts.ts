@@ -261,6 +261,31 @@ function earProfile(p: QuadProps, x: number, s: number): string {
     return `<circle cx="${x + 2 * s}" cy="-7" r="3.2" fill="@corps" stroke="@corpsO" stroke-width="0.5"/><circle cx="${x + 2 * s}" cy="-7" r="1.4" fill="@corpsO"/>`;
   return `<path d="M${x} -5 q${3 * s} -8 ${6 * s} -6 q${-1 * s} 5 ${-3 * s} 7 z" fill="@corps" stroke="@corpsO" stroke-width="0.5"/>`;
 }
+/** Coiffe de crâne (bois ramifiés du cerf / cornes courbées) attachée au sommet-arrière de l'os tete.
+ *  '' si la créature n'en porte pas. Teinte os/corne = @cheveux (secondaire de la robe). */
+function headgear(p: QuadProps, view: 'front' | 'profile' | 'back'): string {
+  if (!p.headgear) return '';
+  const C = '@cheveux', O = '@cheveuxO';
+  if (p.headgear === 'cornes') {
+    if (view === 'profile')
+      return `<path d="M-1 -5 Q-8 -11 -7 -21 Q-2 -13 -2 -7 Z" fill="${C}" stroke="${O}" stroke-width="0.5"/>` +
+        `<path d="M2 -5 Q-5 -12 -3 -23 Q3 -14 1 -7 Z" fill="${C}" stroke="${O}" stroke-width="0.5"/>`;
+    return `<path d="M-3 -10 Q-11 -16 -9 -26 Q-4 -18 -4 -12 Z" fill="${C}" stroke="${O}" stroke-width="0.5"/>` +
+      `<path d="M3 -10 Q11 -16 9 -26 Q4 -18 4 -12 Z" fill="${C}" stroke="${O}" stroke-width="0.5"/>`;
+  }
+  // bois (ramure de cerf) : perche incurvée qui s'élève PUIS balaie vers l'arrière + andouillers (tines)
+  const beam = (sx: number, near: boolean): string => {
+    const o = near ? 1 : 0.6, sw = near ? 2.8 : 2.1;
+    const perche = `M${sx * 2} -5 Q${sx * 10} -15 ${sx * 12} -26 Q${sx * 13} -33 ${sx * 8} -38`;
+    const tines = `M${sx * 6} -11 Q${sx * 13} -12 ${sx * 16} -19 M${sx * 9} -18 Q${sx * 16} -20 ${sx * 18} -27 M${sx * 11} -25 Q${sx * 16} -28 ${sx * 16} -34 M${sx * 9} -36 Q${sx * 5} -39 ${sx * 2} -39`;
+    return `<g opacity="${o}" stroke="${C}" stroke-linecap="round" fill="none">` +
+      `<path d="${perche}" stroke-width="${sw}"/>` +
+      `<path d="${tines}" stroke-width="${(sw * 0.78).toFixed(1)}"/>` +
+      `<path d="${perche}" stroke="${O}" stroke-width="0.6" opacity="0.5"/></g>`;
+  };
+  if (view === 'profile') return beam(-1.12, false) + beam(-1, true); // les deux perches vers l'arrière, décalées
+  return beam(-1, true) + beam(1, true); // ramure symétrique (face/dos)
+}
 function headProfile(p: QuadProps): string {
   if (p.head === 'hydre') return ''; // têtes dessinées dans l'os encolure (cluster)
   const eye = `<g data-eye="D" data-ec="6 2"><ellipse cx="6" cy="2" rx="1.6" ry="1.9" fill="#15100a"/><circle cx="6.4" cy="1.4" r="0.6" fill="#fff" opacity="0.7"/></g>`;
@@ -586,7 +611,7 @@ export function quadParts(p: QuadProps, view: View = 'profile', wings: 'folded' 
     const n = legPartsFront(p, false, frontFoot), f = legPartsFront(p, true, p.foot);
     return {
       ...spreadWings,
-      tronc: bodyFront(p), tete: headW(headFront(p)),
+      tronc: bodyFront(p), tete: headW(headgear(p, 'front') + headFront(p)),
       hautAvD: n.haut, basAvD: n.bas, piedAvD: n.pied, hautAvG: n.haut, basAvG: n.bas, piedAvG: n.pied,
       hautArD: f.haut, basArD: f.bas, piedArD: f.pied, hautArG: f.haut, basArG: f.bas, piedArG: f.pied,
     };
@@ -595,7 +620,7 @@ export function quadParts(p: QuadProps, view: View = 'profile', wings: 'folded' 
     const n = legPartsFront(p, false, p.foot), f = legPartsFront(p, true, frontFoot);
     return {
       ...spreadWings,
-      tronc: bodyBack(p), tete: headW(napeBack(p)), queue: tailW(tailBack(p)),
+      tronc: bodyBack(p), tete: headW(headgear(p, 'back') + napeBack(p)), queue: tailW(tailBack(p)),
       hautArD: n.haut, basArD: n.bas, piedArD: n.pied, hautArG: n.haut, basArG: n.bas, piedArG: n.pied,
       hautAvD: f.haut, basAvD: f.bas, piedAvD: f.pied, hautAvG: f.haut, basAvG: f.bas, piedAvG: f.pied,
     };
@@ -609,7 +634,7 @@ export function quadParts(p: QuadProps, view: View = 'profile', wings: 'folded' 
     ...profWings,
     // Tête de PROFIL agrandie (1.3) : à l'échelle nue elle lisait « minuscule/sombre » au bout
     // de l'encolure. Ancrée à la jonction tête-cou (0,0) → grandit sans se détacher du cou.
-    tronc: barrel(p), encolure: neck(p), tete: headW(`<g transform="scale(1.3)">${headProfile(p)}</g>`), queue: tailW(tail(p)),
+    tronc: barrel(p), encolure: neck(p), tete: headW(`<g transform="scale(1.3)">${headgear(p, 'profile')}${headProfile(p)}</g>`), queue: tailW(tail(p)),
     hautAvD: nearAv.haut, basAvD: nearAv.bas, piedAvD: nearAv.pied,
     hautArD: nearAr.haut, basArD: nearAr.bas, piedArD: nearAr.pied,
     hautAvG: farAv.haut, basAvG: farAv.bas, piedAvG: farAv.pied,

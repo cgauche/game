@@ -19,10 +19,11 @@ import type { SquigProps } from '../squig/composeSquig';
 import type { HulkProps } from '../amorphous/composeHulk';
 import type { JabberProps } from '../jabberslythe/composeJabber';
 import type { CrabProps } from '../crustace/composeCrab';
+import type { FishProps } from '../fish/composeFish';
 
 export type CreatureBodyPlan =
   | 'biped' | 'quadruped' | 'winged'
-  | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' | 'spectral' | 'squig' | 'amorphous' | 'jabberslythe' | 'crustace' // nouveaux squelettes
+  | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' | 'spectral' | 'squig' | 'amorphous' | 'jabberslythe' | 'crustace' | 'fish' // nouveaux squelettes
   | 'monolithic';
 
 /** Surcharges d'apparence propres à CETTE créature (par-dessus les défauts de sa Race).
@@ -74,4 +75,5 @@ export interface CreatureDef {
   hulk?: HulkProps; // plan = amorphous
   jabber?: JabberProps; // plan = jabberslythe
   crab?: CrabProps; // plan = crustace
+  fish?: FishProps; // plan = fish
 }

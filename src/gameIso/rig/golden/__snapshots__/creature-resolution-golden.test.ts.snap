@@ -189,10 +189,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Ours",
   },
   "Brochet du Stir": {
-    "def": null,
-    "plan": "biped",
-    "scale": 1,
-    "species": "Humain",
+    "def": "Brochet du Stir",
+    "plan": "fish",
+    "scale": 1.05,
+    "species": "Brochet du Stir",
   },
   "Buveur de Sang Exalté de Khorne": {
     "def": "Démon",
@@ -2466,6 +2466,12 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "plan": "quadruped",
     "scale": 1.1,
     "species": "Basilic",
+  },
+  "Brochet du Stir": {
+    "def": "Brochet du Stir",
+    "plan": "fish",
+    "scale": 1.05,
+    "species": "Brochet du Stir",
   },
   "Bête Impériale": {
     "def": "Bête Impériale",
