@@ -1,4 +1,5 @@
 /** Types partagés du moteur de règles WFRP v4. */
+import { t } from '../i18n';
 
 /** Les 10 Caractéristiques (abréviations du Livre de base). */
 export type CharKey =
@@ -15,17 +16,18 @@ export type CharKey =
 
 export const CHAR_KEYS: CharKey[] = ['CC', 'CT', 'F', 'E', 'I', 'Ag', 'Dex', 'Int', 'FM', 'Soc'];
 
+// Libellés FR dérivés du catalogue i18n (source unique des textes — cf. docs/i18n-seam.md).
 export const CHAR_LABELS: Record<CharKey, string> = {
-  CC: 'Capacité de Combat',
-  CT: 'Capacité de Tir',
-  F: 'Force',
-  E: 'Endurance',
-  I: 'Initiative',
-  Ag: 'Agilité',
-  Dex: 'Dextérité',
-  Int: 'Intelligence',
-  FM: 'Force Mentale',
-  Soc: 'Sociabilité',
+  CC: t('char.CC'),
+  CT: t('char.CT'),
+  F: t('char.F'),
+  E: t('char.E'),
+  I: t('char.I'),
+  Ag: t('char.Ag'),
+  Dex: t('char.Dex'),
+  Int: t('char.Int'),
+  FM: t('char.FM'),
+  Soc: t('char.Soc'),
 };
 
 export type Characteristics = Record<CharKey, number>;
@@ -734,11 +736,11 @@ export type UpkeepDeferTest = (spec: {
 }) => void;
 
 export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
-  tresFacile: 'Très facile (+60)',
-  facile: 'Facile (+40)',
-  accessible: 'Accessible (+20)',
-  intermediaire: 'Intermédiaire (+0)',
-  complexe: 'Complexe (−10)',
-  difficile: 'Difficile (−20)',
-  tresDifficile: 'Très difficile (−30)',
+  tresFacile: t('difficulty.tresFacile'),
+  facile: t('difficulty.facile'),
+  accessible: t('difficulty.accessible'),
+  intermediaire: t('difficulty.intermediaire'),
+  complexe: t('difficulty.complexe'),
+  difficile: t('difficulty.difficile'),
+  tresDifficile: t('difficulty.tresDifficile'),
 };
