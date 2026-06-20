@@ -139,32 +139,90 @@ describe('Focalisation CRITIQUE (l.185-186)', () => {
   });
 });
 
-describe('Interruption de Focalisation (l.193-194)', () => {
-  it('Calme raté → DR perdus + Imparfaite Mineure + révélation témoin', () => {
+/**
+ * Interruption de Focalisation (LDB 46 l.194) : le Test de Calme Difficile (−20) du focaliseur est routé
+ * CADENCE-AWARE (comme tout jet héros). Héros MANUEL → étape de cascade `triggeredTest` INFLUENÇABLE
+ * (le joueur PEUT dépenser sa Chance pour garder son sort) ; ennemi / cadence auto → jet INLINE. La
+ * conséquence d'échec (perte des DR + Imparfaite Mineure, op `interruptFocus`) s'exécute APRÈS le Test.
+ */
+describe('Interruption de Focalisation (l.194) — cadence-aware', () => {
+  /** Place le focaliseur dans un combat minimal (un ennemi figurant) → le routage cadence s'applique. */
+  function inCombat(w: Combatant, foe?: Combatant): Combatant {
+    const enemy = foe ?? ({ ...wiz(), id: 'foe', name: 'Brute', kind: 'enemy' } as Combatant);
+    const battle = {
+      combatants: [w, enemy], order: [w.id, enemy.id], turn: 0, round: 1,
+      action: null, selectedSpellId: null, reachable: new Map(), movementUsed: 0, movedPreAction: false,
+      acted: false, log: [], over: null,
+    } as never;
+    useGame.setState({ battle, party: [], pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    return enemy;
+  }
+
+  it('héros MANUEL frappé en Focalisation → étape de cascade triggeredTest (non lancée, influençable)', () => {
+    const w = wiz();
+    w.focus = { spell: 'armure-aethyrique', dr: 3 };
+    inCombat(w);
+    checkFocusInterruption(useGame.getState, useGame.setState, w);
+    const c = useGame.getState().pendingCascade!;
+    expect(c).toBeTruthy();
+    expect(c.purpose).toBe('combat');
+    const step = c.participants.find((s) => s.kind === 'triggeredTest')!;
+    expect(step).toBeTruthy();
+    expect(step.actorId).toBe(w.id);
+    expect(step.rollLabel).toBe('Calme'); // le Test RÉEL (≠ le libellé de situation)
+    expect(step.result).toBeFalsy(); // pas encore lancé → Chance/Résilience possibles
+    expect(w.focus?.dr).toBe(3); // DR encore intacts : la conséquence est différée
+  });
+
+  it('héros MANUEL : Calme RATÉ (cascadeRoll+Next) → DR perdus + Imparfaite Mineure', () => {
     const w = wiz();
     w.characteristics.FM = 1; // Calme ~imbattable à rater
     w.focus = { spell: 'armure-aethyrique', dr: 3 };
-    useGame.setState({ party: [w] as Combatant[] });
-    const lines = checkFocusInterruption(useGame.getState, useGame.setState, w);
-    expect(w.focus).toBeUndefined();
-    expect(lines.join('\n')).toMatch(/perd les 3 DR/);
-    expect(useGame.getState().pendingReveals.some((r) => r.kind === 'calme' && r.title.includes('Focalisation'))).toBe(true);
+    inCombat(w);
+    checkFocusInterruption(useGame.getState, useGame.setState, w);
+    const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'triggeredTest')!;
+    useGame.getState().cascadeRoll(step.id);
+    useGame.getState().cascadeNext(); // valide l'échec → applier `triggeredTest` → branche fail → hook
+    const h = useGame.getState().battle!.combatants.find((x) => x.id === w.id)!;
+    expect(h.focus).toBeUndefined(); // concentration BRISÉE : DR perdus
+    // L'Imparfaite Mineure (conséquence d'échec) est appendue comme une étape `miscast` à la MÊME cascade.
+    expect(useGame.getState().pendingCascade!.participants.some((s) => s.kind === 'miscast')).toBe(true);
   });
 
-  it('Calme réussi → concentration maintenue, DR conservés', () => {
+  it('héros MANUEL : Calme RÉUSSI → concentration maintenue, DR conservés, aucune Imparfaite', () => {
     const w = wiz();
     w.characteristics.FM = 100;
     w.skills.push({ skillId: 'calme', characteristic: 'FM', advances: 20 } as never);
     w.focus = { spell: 'armure-aethyrique', dr: 3 };
-    useGame.setState({ party: [w] as Combatant[] });
+    inCombat(w);
     checkFocusInterruption(useGame.getState, useGame.setState, w);
-    expect(w.focus?.dr).toBe(3);
+    const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'triggeredTest')!;
+    useGame.getState().cascadeRoll(step.id);
+    useGame.getState().cascadeNext();
+    const h = useGame.getState().battle!.combatants.find((x) => x.id === w.id)!;
+    expect(h.focus?.dr).toBe(3); // succès : focalisation gardée
+    expect(useGame.getState().pendingCascade?.participants.some((s) => s.kind === 'miscast') ?? false).toBe(false);
+  });
+
+  it('ENNEMI focaliseur frappé → Test de Calme résolu INLINE (jamais d’étape de cascade)', () => {
+    const foe = { ...wiz(), id: 'caster-foe', name: 'Sorcier ennemi', kind: 'enemy' } as Combatant;
+    foe.characteristics.FM = 1; // Calme raté → conséquence inline
+    foe.focus = { spell: 'armure-aethyrique', dr: 2 };
+    const w = wiz();
+    inCombat(w, foe);
+    checkFocusInterruption(useGame.getState, useGame.setState, foe);
+    expect(useGame.getState().pendingCascade).toBeNull(); // ennemi → aucune étape influençable
+    const e = useGame.getState().battle!.combatants.find((x) => x.id === foe.id)!;
+    expect(e.focus).toBeUndefined(); // DR perdus inline
+    // La ligne de l'effet inline part dans la file différée (drainée par l'appelant).
+    expect(useGame.getState().pendingLogQueue.length).toBeGreaterThan(0);
   });
 
   it('sans Focalisation en cours : no-op', () => {
     const w = wiz();
-    useGame.setState({ party: [w] as Combatant[] });
+    inCombat(w);
     expect(checkFocusInterruption(useGame.getState, useGame.setState, w)).toEqual([]);
+    expect(useGame.getState().pendingCascade).toBeNull();
   });
 });
 

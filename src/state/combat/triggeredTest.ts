@@ -33,7 +33,7 @@ import { campOf } from '../../engine/relations';
 import { immunityTypes } from '../../engine/traits/dispatch';
 import { groupMatch } from '../../engine/groups';
 import { refLabel } from '../../data';
-import { type Flow, type ActorView, type ConditionCtx, evalCondition, conditionCtx, EMPTY_FLOW } from '../flow';
+import { type Flow, type ActorView, type ConditionCtx, evalCondition, conditionCtx, flowHasImpureOp, EMPTY_FLOW } from '../flow';
 import type { Get, Set as SetFn } from '../flowTypes';
 import type { FreeAttackFreeze } from '../pendings';
 import { battleRng } from '../battleRng';
@@ -93,6 +93,16 @@ type FreeAttackHook = (
 let freeAttackHook: FreeAttackHook | undefined;
 export function setFreeAttackHook(fn: FreeAttackHook): void { freeAttackHook = fn; }
 
+/** HOOK de la branche d'ÉCHEC du Test de Calme d'interruption de Focalisation (op `interruptFocus`, IMPURE)
+ *  — injecté par le store (`setFocusInterruptHook` dans `createCombatSlice`), pointe sur
+ *  `applyFocusInterruption` (combatFlow). Appelé par `runCombatFlow` lorsqu'un `do`/`ops` porte un
+ *  `interruptFocus` : la cible perd ses DR focalisés (couverts par son composant) + subit une Imparfaite
+ *  Mineure (LDB 46 l.194). Inversion de dépendance (cette brique reste sans import de combatFlow → pas de
+ *  cycle). Absent (hors store) ⇒ no-op (l'op reste inerte, comme dans `applyOps`). */
+type FocusInterruptHook = (get: Get, set: SetFn, focuser: Combatant) => void;
+let focusInterruptHook: FocusInterruptHook | undefined;
+export function setFocusInterruptHook(fn: FocusInterruptHook): void { focusInterruptHook = fn; }
+
 /** Vue d'un combattant pour la Condition `compare`/`relation`/`has` (PB + Taille/Avantage + camp +
  *  Groupes/Talents/Traits + valeur d'États par nom). Source unique (combat). */
 function actorView(c: Combatant | undefined): ActorView | undefined {
@@ -124,17 +134,19 @@ export function condCtxFor(ctx: ExecCtx): ConditionCtx {
  *  (« chaque DR supprime un État Sonné supplémentaire »). Renvoie le journal de la BRANCHE (string[] tissé
  *  au bon canal : return cascade `{ journal }` / file inline).
  *  - Branche PURE (Mâchoires/Venin : feuilles `do`/`if`) → `runSpellFlowLines` (string[] rendu inline).
- *  - Branche IMPURE (Frappe réactive : `grantFreeAttack`, ouverture de frappe) → `runCombatFlow` (le hook
- *    `freeAttack` y vit), journal poussé dans la file différée → return vide. Le contexte `exec`
- *    (get/set/freeAttack) est fourni dans ce cas seulement (la frappe vise le TIERS `freeAttack.targetId`).
- *  La continuation `after` est jouée À PART (`playAfter`), APRÈS les lignes de branche → ordre correct. */
+ *  - Branche IMPURE (op adossée à un hook : `grantFreeAttack` → frappe gratuite, `interruptFocus` →
+ *    interruption de Focalisation) → `runCombatFlow` (le do-loop y résout les hooks injectés), journal
+ *    poussé dans la file différée → return vide. Détectée par `flowHasImpureOp` (≠ « freeAttack présent »
+ *    spécifiquement : tout marqueur à hook). Le contexte `exec` (get/set [+ freeAttack pour cibler le
+ *    TIERS]) est requis dans ce cas. La continuation `after` est jouée À PART (`playAfter`), APRÈS les
+ *    lignes de branche → ordre correct. */
 export function applyTriggeredTestBranch(
   c: Combatant, t: Pick<TestResult, 'success' | 'sl'>, branches: { onSuccess: Flow; onFail: Flow },
-  exec?: { get: Get; set: SetFn; freeAttack: ExecCtx['freeAttack'] },
+  exec?: { get: Get; set: SetFn; freeAttack?: ExecCtx['freeAttack'] },
 ): string[] {
   const branch = t.success ? branches.onSuccess : branches.onFail;
-  if (exec?.freeAttack) {
-    runCombatFlow({ mode: 'combat', get: exec.get, set: exec.set, target: c, caster: c, label: 'Effet', opsCtx: { sl: t.sl }, freeAttack: exec.freeAttack }, branch);
+  if (exec && flowHasImpureOp(branch)) {
+    runCombatFlow({ mode: 'combat', get: exec.get, set: exec.set, target: c, caster: c, label: 'Effet', opsCtx: { sl: t.sl }, ...(exec.freeAttack ? { freeAttack: exec.freeAttack } : {}) }, branch);
     return [];
   }
   return runSpellFlowLines(c, c, branch, { rng: battleRng(), caster: c, sl: t.sl });
@@ -167,6 +179,9 @@ export function runCombatFlow(ctx: ExecCtx, flow: Flow): void {
             // vise le TIERS de `ctx.freeAttack` (chargeur/victime), pas `unit` (le porteur). `applyOps` les
             // laisse inertes → on les passe quand même (no-op) pour garder le journal des autres ops.
             if (freeAttackHook && ctx.freeAttack) for (const op of node.effect.ops) if (op.op === 'grantFreeAttack') freeAttackHook(ctx.get, ctx.set, unit, op, ctx.freeAttack);
+            // Op IMPURE `interruptFocus` (LDB 46 l.194) : le hook injecté (combatFlow) résout l'interruption
+            // sur `unit` (le focaliseur) — perte des DR + Imparfaite Mineure (qui peut appender sa propre étape).
+            if (focusInterruptHook) for (const op of node.effect.ops) if (op.op === 'interruptFocus') focusInterruptHook(ctx.get, ctx.set, unit);
             const lines = applyOps(unit, node.effect.ops, oc); syncCombatant(ctx.get, ctx.set); queueLines(ctx.get, ctx.set, lines, unit.id);
           }
         }
@@ -256,7 +271,10 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
     });
     return;
   }
-  const exec = ctx.freeAttack ? { get: ctx.get, set: ctx.set, freeAttack: ctx.freeAttack } : undefined;
+  // `exec` (get/set [+ freeAttack]) TOUJOURS fourni : une branche IMPURE (à hook : interruptFocus / la
+  // success freeAttack) est routée vers `runCombatFlow` par `applyTriggeredTestBranch` (cf. flowHasImpureOp) ;
+  // une branche PURE retombe sur `runSpellFlowLines` (inchangé). `freeAttack` n'est joint que s'il existe.
+  const exec = { get: ctx.get, set: ctx.set, ...(ctx.freeAttack ? { freeAttack: ctx.freeAttack } : {}) };
   // Ennemi OU héros rapide/auto : jet INLINE + branche + continuation ; ligne de parité.
   // `skillLabel` = la Compétence/Caractéristique RÉELLE (cadre de jet), distincte du `label` de situation.
   const t = rollTest(base, difficulty, battleRng(), penalty);
@@ -293,10 +311,11 @@ registerCascadeApplier('triggeredTest', (get, set, step, hero) => {
   const onSuccess = step.meta?.onSuccess;
   const onFail = step.meta?.onFail;
   if (!onSuccess || !onFail) return;
-  // `freeAttack` sérialisé (Frappe réactive) → reconstruit l'`exec` impur : la branche success ouvre la
-  // VRAIE frappe contre le tiers (chargeur), via `runCombatFlow` + le hook. Absent → branche pure.
+  // `exec` (get/set) TOUJOURS fourni : une branche IMPURE à hook (interruptFocus / la success freeAttack)
+  // est routée vers `runCombatFlow` par `applyTriggeredTestBranch` (cf. flowHasImpureOp). `freeAttack`
+  // sérialisé (Frappe réactive) → joint pour cibler le TIERS (chargeur) ; absent → branche sur soi.
   const fa = step.meta?.freeAttack;
-  const exec = fa && typeof fa === 'object' && 'targetId' in fa ? { get, set, freeAttack: fa } : undefined;
+  const exec = { get, set, ...(fa && typeof fa === 'object' && 'targetId' in fa ? { freeAttack: fa } : {}) };
   const journal = applyTriggeredTestBranch(hero, step.result, { onSuccess, onFail }, exec);
   syncCombatant(get, set); // refléter la mutation du héros (États) dans party/battle
   // Continuation `after` (le reste du `seq` qui suivait le `test`) — peut ré-appender une étape

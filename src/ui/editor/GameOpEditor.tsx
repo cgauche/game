@@ -57,6 +57,8 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   grantWeapon: '🐾 Invoquer une arme magique',
   grantNaturalWeapon: '🐾 Accorder une arme naturelle',
   grantFreeAttack: '⚔️ Accorder une attaque gratuite',
+  interruptFocus: '🔮 Interrompre la Focalisation', // marqueur combat-interne (branche d’échec du Test de Calme) — non author-pickable
+
   grantTrait: '🐾 Accorder un Trait',
   grantTalent: '🐾 Accorder un Talent',
   augmentWeapon: '🗡️ Enchanter l’arme',

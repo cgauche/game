@@ -463,6 +463,21 @@ export function buildApi() {
       return `✅ ${c.name} : +${n} ${name}`;
     },
 
+    /** RECETTE : met un combattant en FOCALISATION (DR cumulé sur un sort) — `focus('hero-1')` →
+     *  Armure Aethyrique DR 3. Frapper ensuite le focaliseur (attaque ennemie / `__wfrp.condition` +
+     *  dégâts) déclenche `checkFocusInterruption` : Test de Calme Difficile INFLUENÇABLE (héros manuel). */
+    focus: (id: string, spell = 'armure-aethyrique', dr = 3) => {
+      const s = g();
+      const c = s.battle?.combatants.find((x) => x.id === id) ?? s.party.find((x) => x.id === id);
+      if (!c) return `❌ combattant ${id} introuvable`;
+      c.focus = { spell, dr };
+      useGame.setState((st) => ({
+        party: [...st.party],
+        battle: st.battle ? { ...st.battle, combatants: [...st.battle.combatants] } : st.battle,
+      }));
+      return `✅ ${c.name} : Focalisation ${spell} (DR ${dr})`;
+    },
+
     /** RECETTE : saute vers une scène du projet/de la campagne par id (machinerie de transition). */
     go: (sceneId: string, entry?: string) => {
       g().transitionTo(sceneId, entry);

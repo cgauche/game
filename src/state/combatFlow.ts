@@ -179,7 +179,7 @@ import {
   emitCreatureAttackAnim, trampleTarget, bestDefenseMode,
   rollManeuverAttacker, maneuverAttackerDifficulty, resolveManeuver,
 } from './combatManeuvers';
-import { spellFlowFor, spellOps, type Flow, type EffectTrigger } from './flow';
+import { spellFlowFor, spellOps, testFlow, EMPTY_FLOW, type Flow, type EffectTrigger } from './flow';
 import { startCascade, registerCascadeApplier } from './cascade';
 
 /** Sonné : tout adversaire qui frappe la cible en CORPS À CORPS gagne +1 Avantage
@@ -1395,28 +1395,48 @@ export function applyAttackResult(
 }
 
 /**
- * Interruption de Focalisation (LDB 46 l.193-194) : « Si vous êtes perturbé par
- * quelque chose — bruits forts, Dégâts subis… — vous devrez réussir un Test de
- * Calme Difficile (−20) ou subir une Incantation Imparfaite Mineure et perdre
- * tous les DR accumulés au Test étendu de Focalisation. » Jet SUBI auto-résolu,
- * révélé au joueur pour un héros (kind 'calme' — précédent : Calme de Fuite).
+ * Interruption de Focalisation (LDB 46 l.194) : « La concentration est vitale pour focaliser. Si vous êtes
+ * perturbé par quelque chose – bruits forts, Dégâts subis… –, vous devrez réussir un Test de Calme Difficile
+ * (-20) ou subir une Incantation Imparfaite Mineure et perdre tous les DR accumulés jusque-là au Test étendu
+ * de Focalisation. »
+ *
+ * Le Test de Calme du focaliseur est ROUTÉ par l'exécuteur de Flow CADENCE-AWARE (`runCombatFlow`) : héros en
+ * cadence MANUELLE → étape de cascade INFLUENÇABLE (il PEUT dépenser sa Chance / sa Résilience pour garder son
+ * sort) ; ennemi / cadence auto → jet inline. La branche d'ÉCHEC porte le marqueur `interruptFocus`, dont la
+ * conséquence PROCÉDURALE (perte des DR + Imparfaite Mineure) s'exécute APRÈS le Test résolu, via le hook
+ * `focusInterrupt` (→ `applyFocusInterruption`). Plus de jet inline silencieux : c'est l'étape (manuel) ou la
+ * ligne inline (auto) qui porte le résultat. Le journal inline part dans la file différée (`pendingLogQueue`,
+ * drainée par l'appelant — `applyAttackResult` / `applyCast`).
  */
 export function checkFocusInterruption(get: Get, set: SetFn, target: Combatant): string[] {
   if (!target.focus || target.focus.dr <= 0) return [];
-  const t = rollTest(testValue(target, 'calme'), 'difficile', battleRng());
-  const lines = [
-    `${target.name}, frappé en pleine Focalisation — Test de Calme Difficile (−20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'concentration maintenue' : 'concentration BRISÉE'}.`,
-  ];
-  if (!t.success) {
-    const focusedSpellId = target.focus.spell; // Sort focalisé interrompu → couvert par son composant (LDB 46 l.161)
-    lines.push(`${target.name} perd les ${target.focus.dr} DR focalisés sur ${findSpellById(focusedSpellId)?.label ?? focusedSpellId}.`);
-    target.focus = undefined;
-    const compUsed = useSpellComponent(target, focusedSpellId, lines); // un composant couvre aussi la Focalisation (incantation en cours)
-    lines.push(...applyMiscast(get, set, target, 'mineure', { suppressReveal: true, componentDowngrade: compUsed })); // la révélation « Calme » ci-dessous porte déjà ces lignes
-  }
-  if (target.kind === 'hero')
-    pushReveal(set, { kind: 'calme', title: 'Focalisation interrompue', dice: t.roll, lines: [...lines], subjectId: target.id, severity: 'minor' });
-  return lines;
+  // Branche d'échec : marqueur `interruptFocus` sur la cible (le focaliseur) → hook injecté. Succès = rien
+  // (concentration maintenue, DR conservés). Le nœud `test` est résolu cadence-aware par `runCombatFlow`.
+  const flow = testFlow(
+    { skill: 'calme', difficulty: 'difficile', label: 'Focalisation interrompue' },
+    EMPTY_FLOW,
+    { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'interruptFocus' }] } },
+  );
+  runCombatFlow({ mode: 'combat', get, set, target, caster: target, label: 'Focalisation interrompue' }, flow);
+  return []; // le journal voyage par la cascade (manuel) ou la file différée (inline) — pas de retour inline
+}
+
+/**
+ * Conséquence PROCÉDURALE d'un Test de Calme d'interruption RATÉ (op `interruptFocus`, hook `focusInterrupt`) :
+ * le focaliseur perd tous les DR accumulés sur son Sort focalisé (couverts par son composant — LDB 46 l.161) et
+ * subit une Incantation Imparfaite Mineure (LDB 46 l.194). L'Imparfaite garde son rendu propre (étape de cascade
+ * `miscast` pour un héros / lignes pour un ennemi) — plus de `suppressReveal` : le Test de Calme est désormais
+ * l'étape influençable visible, l'Imparfaite est sa conséquence en aval. Les lignes partent dans la file
+ * différée (`pendingLogQueue`), drainée par l'appelant qui réécrit `battle.log`.
+ */
+export function applyFocusInterruption(get: Get, set: SetFn, focuser: Combatant): void {
+  if (!focuser.focus || focuser.focus.dr <= 0) return; // garde (le composant/DR a pu changer entre Test et conséquence)
+  const focusedSpellId = focuser.focus.spell;
+  const lines = [`${focuser.name} perd les ${focuser.focus.dr} DR focalisés sur ${findSpellById(focusedSpellId)?.label ?? focusedSpellId}.`];
+  focuser.focus = undefined;
+  const compUsed = useSpellComponent(focuser, focusedSpellId, lines); // un composant couvre aussi la Focalisation (incantation en cours)
+  lines.push(...applyMiscast(get, set, focuser, 'mineure', { componentDowngrade: compUsed }));
+  set({ pendingLogQueue: [...get().pendingLogQueue, ...lines.map((line) => ({ line, cid: focuser.id }))] });
 }
 
 /** Une Maladresse de l'attaquant dans un résultat d'attaque ? (jet propre raté + double, LDB 14 l.53 ;

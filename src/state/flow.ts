@@ -376,6 +376,24 @@ export function flowHasTest(flow: Flow): boolean {
   }
 }
 
+/** Ops IMPURES adossées à un HOOK de `runCombatFlow` (`grantFreeAttack` → frappe gratuite ;
+ *  `interruptFocus` → interruption de Focalisation) : `applyOps` les laisse inertes, seul le do-loop de
+ *  `runCombatFlow` les résout (via le hook injecté). Source UNIQUE pour router une branche de `test`
+ *  contenant l'une d'elles vers l'exécuteur IMPUR plutôt que `runSpellFlowLines` (qui les avalerait). */
+const HOOK_BACKED_OPS = new Set(['grantFreeAttack', 'interruptFocus']);
+
+/** Le Flow porte-t-il une op IMPURE adossée à un hook de `runCombatFlow` (cf. `HOOK_BACKED_OPS`) ? Si oui,
+ *  son exécution doit passer par `runCombatFlow` (le hook y vit), jamais par `runSpellFlowLines`. */
+export function flowHasImpureOp(flow: Flow): boolean {
+  switch (flow.kind) {
+    case 'do': return flow.effect.type === 'ops' && flow.effect.ops.some((o) => HOOK_BACKED_OPS.has(o.op));
+    case 'seq': return flow.steps.some(flowHasImpureOp);
+    case 'if': return flowHasImpureOp(flow.then) || (flow.else ? flowHasImpureOp(flow.else) : false);
+    case 'test': return flowHasImpureOp(flow.success) || flowHasImpureOp(flow.fail);
+    case 'choice': return flowHasImpureOp(flow.yes) || (flow.no ? flowHasImpureOp(flow.no) : false);
+  }
+}
+
 /** Constructeur d'un nœud `test` (jet → réussite/échec). Sucre pour les PRODUCTEURS de Flow (récolte,
  *  saut…) : remplace l'ancien `Effect.test` qu'on poussait dans une liste d'effets. */
 export function testFlow(test: FlowTest, success: Flow, fail: Flow): Flow {
