@@ -71,7 +71,18 @@ function wallOnSight(scene: Scene, from: Pt, to: Pt, z = 0): boolean {
   if (!scene.walls?.length) return false;
   const path = cellPath(from, to);
   for (let i = 0; i + 1 < path.length; i++) {
-    if (wallBetween(scene, path[i].x, path[i].y, path[i + 1].x, path[i + 1].y, z)) return true;
+    const a = path[i], b = path[i + 1];
+    const dx = b.x - a.x, dy = b.y - a.y;
+    if (dx !== 0 && dy !== 0) {
+      // Pas DIAGONAL : le rayon franchit le coin partagé. Bloqué si les DEUX contournements
+      // orthogonaux du coin (via (b.x,a.y) et via (a.x,b.y)) sont murés — un mur droit bloque, mais
+      // on peut « jeter un œil » au-delà de l'EXTRÉMITÉ d'un mur (un seul côté muré).
+      const blocked1 = wallBetween(scene, a.x, a.y, b.x, a.y, z) || wallBetween(scene, b.x, a.y, b.x, b.y, z);
+      const blocked2 = wallBetween(scene, a.x, a.y, a.x, b.y, z) || wallBetween(scene, a.x, b.y, b.x, b.y, z);
+      if (blocked1 && blocked2) return true;
+    } else if (wallBetween(scene, a.x, a.y, b.x, b.y, z)) {
+      return true;
+    }
   }
   return false;
 }
@@ -107,6 +118,16 @@ const decorAt = (scene: Scene, x: number, y: number): SceneEntity | undefined =>
     (e) => e.kind === 'prop' && entityTiles(e).some((p) => p.x === x && p.y === y),
   );
 
+/** Une CASE bloque-t-elle la vue ? (terrain opaque `mur/porte`, empreinte de bâtiment, décor opaque
+ *  `statue`). Prédicat UNIQUE d'opacité de tuile — utilisé par le couvert (`lineOfSightCover`) ET la
+ *  vision (échantillonnage anti-fuite). N'inclut PAS les murs d'arête (cf. `wallBetween`). */
+export function tileBlocksSight(scene: Scene, x: number, y: number): boolean {
+  if (TERRAINS[tileAt(scene, x, y)]?.opaque) return true;
+  if (buildingBlockedAt(scene, x, y)) return true;
+  const dc = decorAt(scene, x, y);
+  return !!dc && SIGHT_BLOCK_DECOR.has(dc.ref ?? '');
+}
+
 /**
  * Couvert + Ligne de Vue du tireur `from` vers la cible `to`. `occupants` = cases occupées par
  * d'autres combattants (couvert imparfait, extrapolation `14` l.75). `smoke` = cases enfumées
@@ -133,8 +154,7 @@ export function lineOfSightCover(
   for (const t of tilesBetween(from, to)) {
     const terr = tileAt(scene, t.x, t.y);
     const decor = decorAt(scene, t.x, t.y);
-    const blocks = (TERRAINS[terr]?.opaque ?? false) || buildingBlockedAt(scene, t.x, t.y) || (!!decor && SIGHT_BLOCK_DECOR.has(decor.ref ?? ''));
-    if (blocks) {
+    if (tileBlocksSight(scene, t.x, t.y)) {
       if (adjacent(t, to)) {
         cover = worst(cover, 'totale'); // cible collée au couvert → −30, tir possible
         continue;

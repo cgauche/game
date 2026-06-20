@@ -51,6 +51,22 @@ describe('computeVisible — murs bloquent la vue', () => {
     expect(v.has('2,0,0')).toBe(true);
     expect(v.has('3,0,0')).toBe(false);
   });
+  it('ne voit pas une case COLLÉE derrière un mur de tuile (couvert total ≠ visible)', () => {
+    // mur de tuile en (2,0) ; la case (3,0) lui est ADJACENTE de l'autre côté → couvert total au combat,
+    // mais pour la VISION elle doit rester invisible (on ne voit pas à travers le mur).
+    const s = scene(6, 1, { '2,0': 'mur' });
+    const v = computeVisible(s, [{ pos: { x: 0, y: 0 }, radiusTiles: 5, darkTiles: 0 }], BRIGHT);
+    expect(v.has('2,0,0')).toBe(true); // on voit le mur lui-même
+    expect(v.has('3,0,0')).toBe(false); // la case derrière : invisible
+    expect(v.has('4,0,0')).toBe(false);
+  });
+  it('ne voit pas une case EFFLEURÉE au coin d\'un mur de tuile (anti-fuite diagonale)', () => {
+    // mur vertical de tuiles en x=2, lignes y=2..5 ; viewer en haut (0,0). La case (3,2) est derrière
+    // le coin du mur : le rayon (0,0)→(3,2) EFFLEURE la tuile (2,2) sans qu'un supercover entier ne la voie.
+    const s = scene(6, 6, { '2,2': 'mur', '2,3': 'mur', '2,4': 'mur', '2,5': 'mur' });
+    const v = computeVisible(s, [{ pos: { x: 0, y: 0 }, radiusTiles: 8, darkTiles: 0 }], BRIGHT);
+    expect(v.has('3,2,0')).toBe(false); // derrière le coin du mur : invisible
+  });
 });
 
 describe('computeVisible — obscurité & vision nocturne', () => {

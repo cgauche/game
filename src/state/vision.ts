@@ -12,7 +12,7 @@
  * sont canon, convertis à l'échelle 1 case = 2 m (`LDB Déplacement l.55`).
  */
 import { Scene } from './scene';
-import { lineOfSightCover } from './lineOfSight';
+import { lineOfSightCover, tileBlocksSight } from './lineOfSight';
 import { sceneIsDark } from './sceneRules';
 import { Pt } from './path';
 import { LIGHT_LEVEL_BY_ID, findTraitById } from '../data';
@@ -42,6 +42,26 @@ export interface LightField {
 export const LIT_THRESHOLD = 0.18;
 
 const chebyshev = (a: Pt, b: Pt): number => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+
+/** La vue de `from` vers `to` est-elle OCCULTÉE (pour la vision/lumière) ? Plus strict que le combat :
+ *  un couvert TOTAL (mur/bâtiment/statue, même collé à la cible) cache la case — on ne voit PAS à
+ *  travers un mur, alors qu'au combat on peut tirer sur une cible plaquée derrière (RAW). Les couverts
+ *  partiels (haie, tonneau…) laissent voir. */
+function occluded(scene: Scene, from: Pt, to: Pt, smoke: Pt[]): boolean {
+  const r = lineOfSightCover(scene, from, to, [], smoke);
+  if (r.blocked || r.cover === 'totale') return true;
+  // Anti-fuite au COIN d'un mur : un supercover entier rate une tuile que le rayon ne fait qu'EFFLEURER
+  // au coin. On échantillonne finement le segment (≈4 points/case) sur le prédicat d'opacité partagé.
+  const dx = to.x - from.x, dy = to.y - from.y;
+  const n = Math.ceil(Math.hypot(dx, dy) * 4);
+  for (let i = 1; i < n; i++) {
+    const t = i / n;
+    const cx = Math.round(from.x + dx * t), cy = Math.round(from.y + dy * t);
+    if ((cx === from.x && cy === from.y) || (cx === to.x && cy === to.y)) continue;
+    if (tileBlocksSight(scene, cx, cy)) return true;
+  }
+  return false;
+}
 
 /** Niveau de lumière effectif d'une scène : `Scene.ambientLight` explicite, sinon `auto`/absent →
  *  dérivé de l'horloge (`sceneIsDark` : extérieur de nuit = sombre). */
@@ -98,7 +118,7 @@ export function computeLightField(scene: Scene, ambient: number, sources: LightS
         const d = chebyshev(s.pos, { x, y });
         const c = falloff(d, R);
         if (c <= 0) continue;
-        if (d > 0 && lineOfSightCover(scene, s.pos, { x, y }, [], smoke).blocked) continue;
+        if (d > 0 && occluded(scene, s.pos, { x, y }, smoke)) continue;
         const k = `${x},${y},${z}`;
         const prev = grid.get(k) ?? 0;
         if (c > prev) grid.set(k, c);
@@ -129,7 +149,7 @@ export function computeVisible(scene: Scene, viewers: Viewer[], light: LightFiel
         const inDark = d <= v.darkTiles;
         const lit = d <= v.radiusTiles && light.at(x, y, z) >= LIT_THRESHOLD;
         if (!inDark && !lit) continue;
-        if (d > 0 && lineOfSightCover(scene, v.pos, { x, y }, [], smoke).blocked) continue;
+        if (d > 0 && occluded(scene, v.pos, { x, y }, smoke)) continue;
         vis.add(k);
       }
   }

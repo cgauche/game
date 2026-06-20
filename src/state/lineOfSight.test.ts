@@ -128,6 +128,15 @@ describe('lineOfSightCover — murs d\'arête (Scene.walls) bloquent la vue', ()
     const s = withWalls(scene(5, 1), [{ x: 2, y: 0, side: 'E', z: 1 }]);
     expect(lineOfSightCover(s, { x: 0, y: 0 }, { x: 4, y: 0 }, []).blocked).toBe(false);
   });
+  it('un mur droit bloque AUSSI une ligne de vue DIAGONALE (pas de coin qui fuit)', () => {
+    // mur horizontal sur l'arête N de (1,1) et (2,1) → sépare la rangée 0 de la rangée 1
+    const s = withWalls(scene(4, 4), [{ x: 1, y: 1, side: 'N' }, { x: 2, y: 1, side: 'N' }]);
+    expect(lineOfSightCover(s, { x: 1, y: 0 }, { x: 2, y: 2 }, []).blocked).toBe(true);
+  });
+  it('une diagonale SANS mur reste dégagée (pas de sur-blocage)', () => {
+    const s = withWalls(scene(4, 4), [{ x: 0, y: 1, side: 'N' }]); // mur ailleurs, hors du trajet
+    expect(lineOfSightCover(s, { x: 1, y: 0 }, { x: 2, y: 2 }, []).blocked).toBe(false);
+  });
 });
 
 describe('smokeZone — emprise d\'un nuage de Souffle (Fumée)', () => {

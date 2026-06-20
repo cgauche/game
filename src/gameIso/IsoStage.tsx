@@ -10,6 +10,7 @@ import { Scene as GameScene, tileAt, isWalkable, elevAt } from '../state/scene';
 import { sceneIsDark } from '../state/sceneRules';
 import { pathTo, type Pt } from '../state/path';
 import { exploreMoveDest } from '../state/exploreNav';
+import { computeStateVisible } from '../state/visionState';
 import { planJump } from '../state/jumpMove';
 import { runFlow } from '../state/combatEffects';
 import { maxJumpTiles } from '../engine/movement';
@@ -43,6 +44,7 @@ import {
   entitySprite,
 } from './sprites';
 import { BodyToken } from './BodyToken';
+import { FogLayer } from './FogLayer';
 import { pickBackend } from './pickBackend';
 import { MountedToken } from './MountedToken';
 import { groundTile } from './ground';
@@ -61,6 +63,7 @@ import { crowdEligible, eligibleAttackTargetIds, outOfSightTargetIds, castOutOfS
 import { bestAttack } from '../state/attackRelevance';
 import { hoverTargeting } from '../state/targeting';
 import { controlsActive } from '../state/netOwnership';
+import { combatantClickActs } from '../state/combatOrParty';
 import { hoverClickCommits } from '../ui/pointerCaps';
 import { TargetReticle } from './TargetReticle';
 import { entitySize } from '../state/spawn';
@@ -108,6 +111,8 @@ export function IsoStage() {
   const battle = useGame((s) => s.battle);
   const gameTime = useGame((s) => s.gameTime);
   const lightLevel = useGame((s) => s.lightLevel);
+  const explored = useGame((s) => s.explored);
+  const markExplored = useGame((s) => s.markExplored);
   const dialogue = useGame((s) => s.dialogue);
   // Télégraphe ENNEMI (« qui l'adversaire vise ») — le ciblage du JOUEUR a son propre réticule
   // (survol hoverAim + jets à cible pendants), même rendu partagé (TargetReticle).
@@ -142,6 +147,9 @@ export function IsoStage() {
   const camPan = useGame((s) => s.camPan);
   const panCamBy = useGame((s) => s.panCamBy);
   const resetCamPan = useGame((s) => s.resetCamPan);
+  // Combattant survolé depuis un PORTRAIT (frise) : pilote le réticule sur la carte + le peek caméra,
+  // à parité du survol d'un token. Read-only (jamais réseau).
+  const hoverCombatantId = useGame((s) => s.hoverCombatantId);
   const [shownRot, setShownRot] = useState<0 | 1 | 2 | 3>(camRot);
   const [shownEdge, setShownEdge] = useState(camEdge);
   const [turning, setTurning] = useState(false);
@@ -335,6 +343,20 @@ export function IsoStage() {
     return outOfSightTargetIds(useGame.getState);
   }, [scene, mode, battle]);
 
+  // BROUILLARD DE GUERRE — cases actuellement visibles (union des alliés/groupe) et déjà explorées.
+  // Dérivé de l'état (positions LOGIQUES), pas du glissement → memo STABLE pendant la marche : les
+  // couches lourdes (sol/décor/FogLayer) ne se reconstruisent pas à 60 Hz. Les créatures hors-vue
+  // sont COUPÉES au rendu (ci-dessous) ; le décor/terrain est recouvert par le FogLayer.
+  const visible = useMemo(
+    () => computeStateVisible({ scene, battle, party, partyPos, gameTime, lightLevel }),
+    [scene, battle, party, partyPos, gameTime, lightLevel],
+  );
+  const exploredSet = useMemo(() => new Set(explored[scene?.id ?? ''] ?? []), [explored, scene?.id]);
+  // Accumulation persistante de l'exploré (no-op si rien de neuf → pas de boucle de rendu).
+  useEffect(() => {
+    if (visible.size) markExplored([...visible]);
+  }, [visible, markExplored]);
+
   // Ciblage du JOUEUR au survol — MEMOÏSÉ (previewAttack/LdV ne tournent pas à 60 Hz pendant les
   // glissements de token). Rejoue les MÊMES prédicats que le clic : réticule présent = clic valide.
   const hoverAim = useMemo<{
@@ -349,10 +371,14 @@ export function IsoStage() {
     preview?: { kind: 'attack' | 'charge' | 'moveAttack'; targetId: string; path?: { x: number; y: number }[]; dest?: { x: number; y: number }; cost?: number; adv?: 0 | 1 };
     reticle: boolean;
   } | null>(() => {
-    if (mode !== 'battle' || !battle || battle.over || !hover || !myTurn) return null;
+    if (mode !== 'battle' || !battle || battle.over || (!hover && !hoverCombatantId) || !myTurn) return null;
     // Un jet à cible est déjà en cours (modale) : le réticule PERSISTANT prend le relais au rendu.
     if (pendingAttack || pendingDefense || pendingTrample || pendingHeal || (pendingCast && !pendingCast.pickingTargets)) return null;
-    const occ = battle.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, c.size, hover.x, hover.y));
+    // Source du survol : un PORTRAIT de la frise (hoverCombatantId) prime sur la tuile sous la souris
+    // (hover) → le réticule + l'infobulle se rendent à l'identique, qu'on survole le token ou son portrait.
+    const occ = hoverCombatantId
+      ? battle.combatants.find((c) => c.id === hoverCombatantId && c.pos && !isOutOfAction(c))
+      : hover ? battle.combatants.find((c) => c.pos && !isOutOfAction(c) && occupiesTile(c.pos, c.size, hover.x, hover.y)) : null;
     if (!occ) return null;
     const st = useGame.getState;
     // Flux différés (bandeau TargetPrompt) : validité = appartenance aux ensembles candidats existants.
@@ -399,7 +425,7 @@ export function IsoStage() {
       return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text }, reticle: false };
     }
     return { fromId: activeH.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note }, preview: ht.preview, reticle: true };
-  }, [hover, mode, battle, scene, myTurn, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
+  }, [hover, hoverCombatantId, mode, battle, scene, myTurn, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
 
   // Aperçu de DÉPLACEMENT au SURVOL (desktop) : le chemin + le coût se matérialisent sous la
   // souris, le clic UNIQUE commet — le tap-1 (battle.preview) reste le flux tactile. Mêmes
@@ -577,6 +603,8 @@ export function IsoStage() {
       const ez = ent.z ?? 0;
       if (viewZ != null ? ez !== viewZ : ez > activeZ) continue; // viewLevel(z) isole ; sinon actif + dessous (pas au-dessus)
       if (!ez && covered(ent.pos.x, ent.pos.y)) continue; // l'occlusion par décor ne vaut qu'au sol
+      // Brouillard : une créature/PNJ hors-vue n'est PAS dessinée (le décor/prop, lui, reste « mémorisé »).
+      if (!visible.has(`${ent.pos.x},${ent.pos.y},${ez}`)) continue;
       const r = pickBackend({ kind: 'sceneEntity', ent, enrolled: enrolledIds.has(ent.id) }, viewMode);
       if (r.backend === 'sprite') {
         out.push({
@@ -605,7 +633,7 @@ export function IsoStage() {
       }
     }
     return out;
-  }, [scene, shownRot, shownEdge, viewMode, mode, battle, viewZ, activeZ]);
+  }, [scene, shownRot, shownEdge, viewMode, mode, battle, viewZ, activeZ, visible]);
 
   if (!scene) return null;
   const dims: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
@@ -759,6 +787,9 @@ export function IsoStage() {
     for (const c of battle.combatants) {
       if (!c.pos) continue;
       const isHero = c.kind === 'hero';
+      // Brouillard : un ennemi/PNJ que PERSONNE du groupe ne voit n'est pas dessiné (les alliés, qui
+      // SONT les viewers, restent toujours rendus). Les combattants n'ont pas de `z` → clé z=0.
+      if (!isHero && !visible.has(`${c.pos.x},${c.pos.y},0`)) continue;
       // Combat monté (iso seulement) : un CAVALIER n'est pas dessiné au sol — il est rendu EN SELLE
       // sur sa monture (ci-dessous). En vue du dessus, cavalier et monture sont deux pions distincts.
       if (!top && isRider(c)) { if (isHero) hi++; continue; }
@@ -883,6 +914,14 @@ export function IsoStage() {
     else if (active?.pos) focus = walkPosOf(active.id, active.pos.x, active.pos.y);
     else focus = centroid;
   }
+  // Peek caméra (survol d'un portrait dans la FRISE d'initiative) : recadre temporairement sur le
+  // combattant survolé ; au relâchement (hoverCombatantId = null), focus revient sur l'actif → la
+  // transition CSS (0.3 s) ramène la vue là où elle était. Local/read-only — actif même hors de son
+  // tour (coop) ; le survol d'un TOKEN sur la carte, lui, ne bouge pas la caméra (peek = frise only).
+  if (mode === 'battle' && battle && hoverCombatantId) {
+    const peeked = battle.combatants.find((c) => c.id === hoverCombatantId && c.pos);
+    if (peeked?.pos) focus = walkPosOf(peeked.id, peeked.pos.x, peeked.pos.y);
+  }
   const fc = tileCenter(focus.x, focus.y, dims);
   // Caméra libre tactique : le suivi auto-cadre le point focal, + un décalage manuel (camPan) qu'on
   // accumule au glisser. Remis à zéro quand l'unité active change (refocus « sur celui qui joue après »).
@@ -946,11 +985,12 @@ export function IsoStage() {
     if (st.mode === 'battle') {
       if (!controlsActive(st)) return; // coop : tour du héros d'un AUTRE joueur — clics inertes
       const occ = st.battle?.combatants.find((c) => c.pos && occupiesTile(c.pos, c.size, x, y) && !isOutOfAction(c)); // clic sur N'IMPORTE quelle tuile de l'empreinte
-      // En mode incantation — ou pendant le choix des cibles de Surincantation (carte) — on peut
-      // cibler n'importe quel combattant (allié, ennemi ou soi) ; sinon seuls les ennemis sont
-      // cliquables pour attaquer. Desktop (survol) : la visée a déjà tout montré → un clic COMMET
-      // l'attaque ; tactile : deux-taps (tap 1 = aperçu) — cf. pointerCaps.
-      if (occ && (occ.kind === 'enemy' || st.battle?.action === 'cast' || st.pendingCast?.pickingTargets)) st.battleClickEntity(occ.id, { confirm: hoverClickCommits() });
+      // Décision PARTAGÉE avec le clic d'un portrait de frise (`combatantClickActs`) : un ennemi
+      // s'attaque en mode neutre, tout combattant se cible en mode sort / choix de cibles ; sinon
+      // (allié/soi non actionnable) on inspecte. Desktop (survol) : la visée a déjà tout montré → un
+      // clic COMMET ; tactile : deux-taps (tap 1 = aperçu) — cf. pointerCaps.
+      if (occ && combatantClickActs(st.battle, st.pendingCast, occ)) st.battleClickEntity(occ.id, { confirm: hoverClickCommits() });
+      else if (occ) { if (st.inspectEnabled) st.setInspectId(occ.id); } // allié/soi non-actionnable → inspecter (parité frise : « inspection depuis le token »)
       else st.battleClickTile({ x, y }, { confirm: hoverClickCommits() });
       return;
     }
@@ -1114,6 +1154,9 @@ export function IsoStage() {
       <defs dangerouslySetInnerHTML={{ __html: DEFS + AMBIANCE_DEFS }} />
       <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.97 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: turning ? 'opacity 0.13s ease-out' : anyWalking ? 'opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out', opacity: turning ? 0.6 : 1 }}>
         <g>{objs.map((o) => o.el)}</g>
+        {/* Brouillard de guerre : voile sombre sur l'inconnu / grisé sur l'exploré-hors-vue / clair en
+            vue. Au-dessus du décor+tokens, SOUS les FX/réticules (les infos de combat restent lisibles). */}
+        <FogLayer w={scene.dimensions.w} h={scene.dimensions.h} z={activeZ} rot={shownRot} view={viewMode} edge={shownEdge} visible={visible} explored={exploredSet} />
         {/* Télégraphe ENNEMI (actorAim) : réticule + ligne — PLEINE en mêlée, pointillée tir/sort. */}
         {targeting && (
           <TargetReticle
