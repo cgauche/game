@@ -1113,10 +1113,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Horreur rose",
   },
   "Il Potente Granchio": {
-    "def": null,
-    "plan": "biped",
-    "scale": 1,
-    "species": "Humain",
+    "def": "Il Potente Granchio",
+    "plan": "crustace",
+    "scale": 1.1,
+    "species": "Il Potente Granchio",
   },
   "Incendiaire de Tzeentch": {
     "def": "Bête des marais",
@@ -1335,10 +1335,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Cheval",
   },
   "La Bête de l'Oblast": {
-    "def": null,
-    "plan": "biped",
-    "scale": 1,
-    "species": "Humain",
+    "def": "Chimère",
+    "plan": "winged",
+    "scale": 1.2,
+    "species": "Chimère",
   },
   "Le Déchiqueteur de Cadavres": {
     "def": "Le Déchiqueteur de Cadavres",
@@ -1383,10 +1383,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Loup",
   },
   "Léviathan": {
-    "def": null,
-    "plan": "biped",
-    "scale": 1,
-    "species": "Humain",
+    "def": "Léviathan",
+    "plan": "crustace",
+    "scale": 1.15,
+    "species": "Léviathan",
   },
   "Macareux à Bec Tranchant": {
     "def": "Macareux à Bec Tranchant",
@@ -1701,10 +1701,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Humain",
   },
   "Peau-de-Loup": {
-    "def": null,
+    "def": "Peau-de-Loup",
     "plan": "biped",
     "scale": 1,
-    "species": "Humain",
+    "species": "Peau-de-Loup",
   },
   "Pieuvre des tourbières": {
     "def": "Pieuvre",
@@ -2265,10 +2265,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Troll",
   },
   "Trégara": {
-    "def": null,
-    "plan": "biped",
-    "scale": 1,
-    "species": "Humain",
+    "def": "Trégara",
+    "plan": "crustace",
+    "scale": 0.95,
+    "species": "Trégara",
   },
   "Tueur À Gages": {
     "def": null,
@@ -2725,6 +2725,12 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "scale": 1.2,
     "species": "Hydre",
   },
+  "Il Potente Granchio": {
+    "def": "Il Potente Granchio",
+    "plan": "crustace",
+    "scale": 1.1,
+    "species": "Il Potente Granchio",
+  },
   "Jabberslythe": {
     "def": "Jabberslythe",
     "plan": "jabberslythe",
@@ -2760,6 +2766,12 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "plan": "quadruped",
     "scale": 0.82,
     "species": "Loup",
+  },
+  "Léviathan": {
+    "def": "Léviathan",
+    "plan": "crustace",
+    "scale": 1.15,
+    "species": "Léviathan",
   },
   "Macareux à Bec Tranchant": {
     "def": "Macareux à Bec Tranchant",
@@ -2802,6 +2814,12 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "plan": "quadruped",
     "scale": 1.05,
     "species": "Ours",
+  },
+  "Peau-de-Loup": {
+    "def": "Peau-de-Loup",
+    "plan": "biped",
+    "scale": 1,
+    "species": "Peau-de-Loup",
   },
   "Pieuvre": {
     "def": "Pieuvre",
@@ -2922,6 +2940,12 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "plan": "biped",
     "scale": 1,
     "species": "Troll",
+  },
+  "Trégara": {
+    "def": "Trégara",
+    "plan": "crustace",
+    "scale": 0.95,
+    "species": "Trégara",
   },
   "Ungor": {
     "def": "Ungor",

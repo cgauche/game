@@ -12,6 +12,7 @@ import type { SpectreProps } from '../spectral/composeSpectre';
 import type { SquigProps } from '../squig/composeSquig';
 import type { HulkProps } from '../amorphous/composeHulk';
 import type { JabberProps } from '../jabberslythe/composeJabber';
+import type { CrabProps } from '../crustace/composeCrab';
 import type { CreatureDef, CreatureBodyPlan } from './types';
 import { CREATURES } from './_registry.generated';
 import { raceById } from '../races';
@@ -40,7 +41,7 @@ export function speciesScale(species: string): number {
   const d = DEF_BY_NAME[species];
   if (!d) return 1;
   if (d.plan === 'biped') return d.perso?.scale ?? raceById(d.race ?? baseSpeciesOf(species)).scale ?? 1;
-  return (d.quad ?? d.serpent ?? d.spider ?? d.bird ?? d.octopus ?? d.spectre ?? d.squig ?? d.hulk ?? d.jabber)?.sl ?? 1;
+  return (d.quad ?? d.serpent ?? d.spider ?? d.bird ?? d.octopus ?? d.spectre ?? d.squig ?? d.hulk ?? d.jabber ?? d.crab)?.sl ?? 1;
 }
 
 /** Tables de props de rendu par espèce — dérivées des fichiers defs. */
@@ -60,6 +61,7 @@ export const SPECTRE_SPECIES: Record<string, SpectreProps> = Object.fromEntries(
 export const SQUIG_SPECIES: Record<string, SquigProps> = Object.fromEntries(CREATURES.filter((c) => c.plan === 'squig').map((c) => [c.name, c.squig!]));
 export const HULK_SPECIES: Record<string, HulkProps> = Object.fromEntries(CREATURES.filter((c) => c.plan === 'amorphous').map((c) => [c.name, c.hulk!]));
 export const JABBER_SPECIES: Record<string, JabberProps> = Object.fromEntries(CREATURES.filter((c) => c.plan === 'jabberslythe').map((c) => [c.name, c.jabber!]));
+export const CRAB_SPECIES: Record<string, CrabProps> = Object.fromEntries(CREATURES.filter((c) => c.plan === 'crustace').map((c) => [c.name, c.crab!]));
 
 /** Noms canon des créatures riggées — source du sélecteur d'apparence de l'éditeur
  *  (remplace l'ex-`creatureNames()` qui listait les clés du bestiaire monolithique). */

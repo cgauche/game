@@ -177,9 +177,13 @@ export function entityRigProfile(
     enrolled?: boolean },
 ): EnemyRigProfile | null {
   const rec = findCreatureById(name);
-  if (classifyBy(opts?.species ?? rec?.appearance?.species, rec?.traits, name) === 'creature') return null; // espèce explicite (data) → repli id/nom
+  // Résolution d'espèce CANONIQUE (id→label→def, label-aware) — IDENTIQUE à resolveByName/resolveRender :
+  // un record dont l'id (kebab) ≠ le nom de def (libellé canon, ex. « Peau-de-Loup ») doit quand même
+  // résoudre vers ce def (sinon repli Humain → perso.head/race du def perdus). `r.species` porte ce résultat.
+  const r = resolveRender(opts?.species ?? rec?.appearance?.species, rec?.traits, name);
+  if (r.kind === 'plan') return null; // non-humanoïde → gabarit corporel
   const cd = rec?.appearance; // apparence par défaut UNIFIÉE du record créature
-  const base = bipedBase(opts?.species, name, cd); // résolution PARTAGÉE espèce→def/race/perso
+  const base = bipedBase(r.species, name, cd); // espèce RÉSOLUE (label-aware) → def/race/perso corrects
   // Override d'AUTHORING → `Partial<Appearance>` (yeux clés→art) passé au CONSTRUCTEUR UNIQUE `rigAppearance`.
   // Une entité d'ambiance « mutée » déclare ses parts/overlays dans son apparence (monster), pas via le nom.
   const override: Partial<Appearance> = {

@@ -1,71 +1,70 @@
 # Bestiaire — créatures à compléter
 
-Suivi des créatures du bestiaire dont le **rendu** n'est pas (encore) fidèle, pour traitement
-ultérieur. Le reste du bestiaire est rendu par son gabarit corporel correct (cf.
-`docs/creer-une-creature.md` pour la marche à suivre, et `src/gameIso/rig/creatures/defs/` pour les
-defs existantes).
-
-## Contexte
+Suivi des créatures du bestiaire dont le **rendu** n'est pas (encore) fidèle. Cf.
+`docs/creer-une-creature.md` pour la marche à suivre, `src/gameIso/rig/creatures/defs/` pour les defs.
 
 Une créature est rendue **bipède Humain par défaut** (`resolveRender`, `src/gameIso/rig/bodyPlan.ts`)
-si elle ne déclare ni espèce mappée à un gabarit non-bipède (`appearance.species` → def avec `plan`
-≠ `biped`), ni trait `Nuée`. Les créatures importées (frenchy.bzh, Zoo Impérial) arrivaient sans
-`appearance.species` → toutes dessinées en humanoïdes. La passe de juin 2026 en a routé la majorité
-vers les bons gabarits (quadruped / avian / winged / serpentine / amorphous) en **réutilisant les
-pièces de catalogue existantes** (un def = `name` + `plan` + props ; cf. les defs ZI déjà en place :
-`ChatSauvage`, `Stegadon`, `GrandAigle`, `Cockatrice`, etc.).
+si elle ne déclare ni espèce mappée à un gabarit non-bipède (`appearance.species` → def `plan` ≠ `biped`,
+OU un def homonyme de son label), ni trait `Nuée`. Les créatures importées (frenchy / Zoo Impérial)
+arrivaient sans cela → toutes dessinées en humanoïdes.
 
-Restent ci-dessous les cas qui demandent un **nouveau gabarit**, une **nouvelle pièce de catalogue**,
-ou une **désambiguïsation** de forme — pas traités pour ne rien **inventer** à l'aveugle.
+> **Réfs d'art** : illustrations officielles extraites du Zoo Impérial dans `art-ref/zi/`
+> (gitignoré, droits Cubicle 7). Script : `python art-ref/_extract_zi.py` (scan par mot-clé →
+> `pageNNN_full.png` + `pageNNN_imgK.png`). QC d'un rendu : `npx tsx scripts/_qc-zoo.mts <id,id,…>`
+> → `public/qc/zoo.png`.
 
-## 1. Gabarit corporel absent (à créer)
+## Reste à faire
 
-Aucun squelette/plan ne correspond → il faut un nouveau `plan` (cf. les plans existants dans
-`src/gameIso/rig/plans/defs/` + leur `compose<X>.ts`), puis router le record via `appearance.species`.
+### 1. Gabarit POISSON (nouveau plan `fish`) — Brochet du Stir
 
-| Créature (`id`) | Forme | Gabarit à créer |
+`brochet-du-stir` = **brochet géant** (vrai poisson fusiforme, ~3,5 m, jusqu'à 6 m+), nageant à
+l'horizontale, mû par une grosse **queue/nageoire caudale** (« Queue mortelle » + Attaque caudale),
+gueule à dents (Morsure). Dos gris-verdâtre, ventre clair. Réf art : `art-ref/zi/page039_full.png`
+(ZI p.36-38). Aucun des 13 plans n'est un poisson.
+
+À créer (calqué sur la MÉCANIQUE de `serpentine/composeSerpent.ts` — FK/palette/facing — PAS son
+art lové) : `src/gameIso/rig/fish/composeFish.ts` (squelette HORIZONTAL : corps fusiforme + pédoncule
++ grande caudale verticale ; nageoires dorsale/pectorales en art ; gueule dentée ; poses godille /
+coup de queue / mort sur le flanc), `plans/defs/fish.ts` (1 ligne), champ `fish?: FishProps` dans
+`creatures/types.ts` + `FISH_SPECIES` dans `creatures/index.ts` (+ `?? d.fish` dans `speciesScale`),
+def `creatures/defs/BrochetDuStir.ts` (`plan:'fish'`). Le label « Brochet du Stir » == nom de def →
+auto-routage (pas d'`appearance.species` à poser). `npm run gen` puis QC + goldens `-u`.
+
+### 2. Pièce de catalogue BOIS / CORNES (quadruped + winged)
+
+Le catalogue `quad` (`src/gameIso/rig/quadruped/quadParts.ts`) n'a pas de ramure/cornes. Ces trois
+créatures sont déjà routées vers le **bon gabarit** mais rendues **sans leur attribut de tête** :
+
+| Créature (`id`) | Manque | Réf art |
 | --- | --- | --- |
-| Brochet du Stir (`brochet-du-stir`) | Poisson (brochet géant) | **poisson** (corps fuselé, nageoires, pas de pattes) |
-| Il Potente Granchio (`il-potente-granchio`) | Crabe géant | **crustacé** (carapace, pinces, pattes latérales) — `arachnid` est une araignée, pas réutilisable tel quel |
+| Grand Cerf (`grand-cerf`) | Bois (« 6 à 14 ramifications, perce l'armure », ZI) | `art-ref/zi/page014_full.png` |
+| Cornu (`cornu`) | Cornes | `art-ref/zi/page021_full.png` |
+| Preyton (`preyton`) | Bois (cerf ailé) | `art-ref/zi/page046_full.png` |
 
-## 2. Forme ambiguë (à trancher avant de router)
+À faire : ajouter une clé optionnelle (`headgear?: 'bois' | 'cornes'`) à `QuadProps`, rendue par
+`quadParts` près de l'os tête, puis l'activer sur ces trois defs.
 
-Pas assez d'info de forme dans le record/source pour choisir un gabarit sans risque de contresens.
-Vérifier la source (ZI / Compagnon) puis router (souvent un simple `appearance.species` vers un
-gabarit existant suffira).
+## Résolu (passe juin 2026, source + art ZI)
 
-| Créature (`id`) | Hésitation |
-| --- | --- |
-| Léviathan (`leviathan`) | Monstre marin — serpent de mer (`serpentine`) ? baleine ? kraken (`cephalopod`) ? |
-| Peau-de-Loup (`peau-de-loup`) | Loup-garou — bipède (humanoïde-loup) **ou** quadrupède (loup) selon l'interprétation |
-| Trégara (`tregara`) | Bête grimpante de Taille Grande — forme non décrite clairement |
-| La Bête de l'Oblast (`la-bete-de-l-oblast`) | Bête magique du Chaos — forme non décrite clairement |
-| Choses du Bois Mort (`choses-du-bois-mort`) | Entités du bois mort corrompu — végétal/treant ? `amorphous` ? essaim ? |
-
-## 3. Pièce de catalogue manquante : bois / cornes (quadruped + winged)
-
-Le catalogue `quad` (`src/gameIso/rig/quadruped/quadParts.ts`) n'a **pas** de ramure/cornes. Les
-créatures suivantes sont déjà routées vers le **bon gabarit** (silhouette correcte) mais rendues
-**sans leur attribut de tête caractéristique** :
-
-| Créature (`id`) | Manque |
-| --- | --- |
-| Grand Cerf (`grand-cerf`) | Andouillers (bois de cerf) |
-| Cornu (`cornu`) | Cornes |
-| Preyton (`preyton`) | Bois (cerf ailé) |
-
-À faire : ajouter une feature `bois` / `cornes` au catalogue quad (clé optionnelle dans `QuadProps`,
-rendue par `quadParts`), puis l'activer sur ces defs. Idéalement réutilisable par d'autres cornus.
+- **Gabarit CRUSTACÉ** (`src/gameIso/rig/crustace/composeCrab.ts`, plan `crustace`) : carapace large +
+  pattes radiales + 2 grosses pinces + yeux pédonculés. Crée pour **Léviathan** (`art-ref/zi/page088`),
+  **Il Potente Granchio** (`page088`), **Trégara** (arthropode à pinces, approximé). Les images ont
+  tranché : le Léviathan est un **crabe géant**, PAS un serpent de mer.
+- **La Bête de l'Oblast** → variante de **Chimère** (ZI p.69-70) → `appearance.species:"Chimère"` (winged).
+- **Peau-de-Loup** → **loup-garou** : def biped `perso.head:'chien'` + nu (pelage gris-brun).
+- **Choses du Bois Mort** → **humains mutés** (bûcherons, Mutation 3) → reste bipède (correct ; pourrait
+  recevoir des features de mutation plus tard).
+- **Bugfix** `entityRigProfile` : la résolution d'espèce est désormais **label-aware** (id→label→def,
+  comme `resolveByName`) → un record dont l'id (kebab) ≠ le nom de def (libellé) résout enfin vers son
+  def (sinon repli Humain → `perso.head`/race perdus). Sans ça, Peau-de-Loup restait un humain.
 
 ## Comment traiter (rappel)
 
-- **Router une créature vers un gabarit existant** : ajouter `"appearance": { "species": "<NomDef>" }`
-  au record dans `src/data/creatures.json`, où `<NomDef>` est le `name` d'un def `plan` ≠ `biped`.
-  (Si le **label** du record == un `name` de def, le routage est automatique — pas besoin d'éditer
-  le JSON.)
-- **Créer un gabarit/def** : suivre `docs/creer-une-creature.md`. Après ajout d'un def, lancer
-  `npm run gen` (régénère `_registry.generated.ts`) puis vérifier le rendu (golden + QC visuel via un
-  script `scripts/_qc-*.mts` à la `_qc-quad.mts` / `_qc-bird.mts`).
+- **Router vers un gabarit existant** : `"appearance": { "species": "<NomDef>" }` dans le record
+  (`src/data/creatures.json`), `<NomDef>` = `name` d'un def `plan` ≠ `biped`. (Label == nom de def →
+  auto-routage, pas d'édition JSON.)
+- **Créer un gabarit/def** : `docs/creer-une-creature.md`, puis `npm run gen` + QC (`scripts/_qc-zoo.mts`).
 - **Vérifier** : `npx vitest run src/gameIso/rig/golden/` (render + resolution + combat). Toute
-  reclassification change les snapshots des créatures concernées → régénérer (`-u`) après contrôle
-  visuel, en confirmant que le diff est limité aux créatures voulues.
+  reclassification change les snapshots des créatures concernées → `-u` après contrôle VISUEL, en
+  confirmant que le diff est limité aux créatures voulues. Ajouter un nouveau `plan` = l'inscrire aussi
+  dans la liste `PLANS`/`PROPS` de `creatures.test.ts` (garde-fou de bonne formation).

@@ -52765,6 +52765,9 @@
     "label": "La Bête de l'Oblast",
     "title": null,
     "folder": "Zoo Impérial",
+    "appearance": {
+      "species": "Chimère"
+    },
     "char": {
       "M": 6,
       "CC": 75,

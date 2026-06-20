@@ -1,0 +1,16 @@
+import type { CreatureDef } from '../types';
+
+// Peau-de-Loup (ZI) — loup-garou : « l'humain sort à coups de griffes », Frénésie permanente,
+// Griffes + Morsure. Corps humanoïde musclé à TÊTE DE LOUP (perso.head='chien' = canidé) + pelage
+// gris-brun. Bipède anthropomorphe (PAS le quadrupède loup ni le Varghulf ailé). Sans ce def, le
+// record (sp=—) était rendu en Humain générique tenant une épée.
+export const creature: CreatureDef = {
+  name: 'Peau-de-Loup',
+  plan: 'biped',
+  perso: {
+    head: 'chien', // tête de canidé sur corps humanoïde
+    gabarit: 'brute', // carrure massive et voûtée
+    tenue: 'Nu', // bête féroce : pas d'armure/casque, le pelage à nu
+    colors: { peau: '#6a5e4c', cheveux: '#352c22' }, // pelage gris-brun
+  },
+};
