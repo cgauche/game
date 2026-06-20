@@ -52,11 +52,14 @@ beforeEach(() => {
 });
 
 describe('castSpell — Ligne de Vue (LDB 46 l.170)', () => {
-  it('cible derrière un mur → refus journalisé, pas de modale', () => {
+  it('cible derrière un mur → refus dans le FEED de combat (pas le journal), pas de modale', () => {
     const { w, hidden } = setup();
     castSpell(useGame.getState, useGame.setState, w, hidden, 'Carreau');
     expect(useGame.getState().pendingCast).toBeNull();
-    expect(useGame.getState().journal.join('\n')).toMatch(/pas de ligne de vue/i);
+    // EN COMBAT, le refus est VISIBLE dans le feed (battle.log) — pas dans le journal d'exploration
+    // invisible pendant le combat (B4 : un refus muet passait pour un bug).
+    expect(useGame.getState().battle!.log.map((e) => e.text).join('\n')).toMatch(/pas de ligne de vue/i);
+    expect(useGame.getState().journal.join('\n')).not.toMatch(/pas de ligne de vue/i);
   });
 
   it('ligne dégagée (brèche) → la modale s’ouvre', () => {
@@ -73,13 +76,24 @@ describe('castSpell — Ligne de Vue (LDB 46 l.170)', () => {
     useGame.setState({ battle: { ...b, combatants: [...b.combatants, ally] } });
     castSpell(useGame.getState, useGame.setState, w, ally, 'Carreau');
     expect(useGame.getState().pendingCast).toBeNull();
-    expect(useGame.getState().journal.join('\n')).toMatch(/pas de ligne de vue/i);
+    expect(useGame.getState().battle!.log.map((e) => e.text).join('\n')).toMatch(/pas de ligne de vue/i);
   });
 
   it('sur SOI-MÊME : jamais bloqué par la LdV', () => {
     const { w } = setup();
     castSpell(useGame.getState, useGame.setState, w, w, 'Carreau');
     expect(useGame.getState().pendingCast?.targetId).toBe(w.id);
+  });
+});
+
+describe('castSpell — Portée (LDB 47) : refus VISIBLE en combat (B4)', () => {
+  it('cible hors de portée → message dans le FEED de combat, pas de modale', () => {
+    const { w, seen } = setup();
+    w.characteristics.FM = 2; // Carreau = FM/2 → 1 case ; e-vu est à 14 cases (LdV dégagée en y=0)
+    castSpell(useGame.getState, useGame.setState, w, seen, 'Carreau');
+    expect(useGame.getState().pendingCast).toBeNull();
+    expect(useGame.getState().battle!.log.map((e) => e.text).join('\n')).toMatch(/hors de portée/i);
+    expect(useGame.getState().journal.join('\n')).not.toMatch(/hors de portée/i);
   });
 });
 

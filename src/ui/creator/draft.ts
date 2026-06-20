@@ -338,6 +338,13 @@ export function careerSkillEntries(d: CreatorDraft): string[] {
   return [...base, ...careerSkillAdditions(probeHero(d))];
 }
 
+/** « Répartition simple » (étape 5) : +5 sur chacune des 8 Compétences de carrière du Niveau
+ *  (LDB 05). Keyé par LIBELLÉ — comme la grille, `careerAdvTotal` et `validateStep` ; une clé
+ *  par objet `AdvancementRef` donnerait « [object Object] », illisible (jamais comptée). */
+export function evenCareerSkillAdvances(d: CreatorDraft): Record<string, number> {
+  return Object.fromEntries((draftLevel(d)?.skills ?? []).map((a) => [advancementLabel('skills', a), 5]));
+}
+
 /** Options de spec d'une entrée « (Au choix) » (liste restreinte, sinon `wildcardSpecs` partagé). */
 export function specOptionsFor(entry: string): string[] {
   const opt = parseEntry(entry)[0];

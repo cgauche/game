@@ -13,6 +13,8 @@ import {
   draftChars,
   resolvedSpeciesTalents,
   careerSkillEntries,
+  careerAdvTotal,
+  evenCareerSkillAdvances,
   validateStep,
   stepIds,
   starXp,
@@ -56,6 +58,30 @@ function readyDraft() {
     name: 'Testeur',
   };
 }
+
+describe('B3 — Répartition simple des Compétences de carrière (étape 5)', () => {
+  it('produit des LIBELLÉS (jamais "[object Object]") totalisant 40, lus par la grille/validation', () => {
+    const d = draft(); // Soldat (Recrue) : 8 Compétences de Niveau 1
+    const alloc = evenCareerSkillAdvances(d);
+    expect(Object.keys(alloc)).not.toContain('[object Object]');
+    // Toutes les clés sont des entrées RECONNUES de la grille (careerSkillEntries) → lisibles.
+    expect(Object.keys(alloc).every((k) => careerSkillEntries(d).includes(k))).toBe(true);
+    // +5 × 8 Compétences = 40, compté par careerAdvTotal (la grille ET validateStep).
+    expect(careerAdvTotal({ ...d, skillAdvances: alloc })).toBe(40);
+  });
+  it('n\'est PAS effacée par la répartition des Compétences de race (champs disjoints)', () => {
+    const d = draft();
+    const sp = draftSpecies(d);
+    // Carrière remplie, PUIS répartition de race appliquée (le symptôme rapporté).
+    const after = {
+      ...d,
+      skillAdvances: evenCareerSkillAdvances(d),
+      speciesPlus5: sp.skills.slice(0, 3).map((a) => advancementLabel('skills', a)),
+      speciesPlus3: sp.skills.slice(3, 6).map((a) => advancementLabel('skills', a)),
+    };
+    expect(careerAdvTotal(after)).toBe(40); // la carrière RESTE à 40
+  });
+});
 
 describe('aléatoire FIGÉ (anti-savescum)', () => {
   it('les dix jets 2d10 sont identiques à chaque lecture ; une relance change le lot', () => {

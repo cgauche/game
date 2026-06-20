@@ -12,6 +12,7 @@ import { isEngaged } from '../engine/engagement';
 import { findSpellById } from '../data';
 import { spellSpecFor } from '../data/spellspecs';
 import { combatDistance } from './footprint';
+import { spellOps } from './flow';
 import type { GameState } from './store';
 import { attackPlan, previewAttack, previewCast, castSightBlocked, selectedAttackOption, trampleTarget, firedAttackBlock } from './combatFlow';
 
@@ -46,6 +47,39 @@ export type HoverTargeting =
 const weaponSkillLabel = (kind: 'melee' | 'ranged', subType?: string): string =>
   `${kind === 'ranged' ? 'Projectiles' : 'Corps à corps'}${subType ? ` (${subType})` : ''}`;
 
+/** Ops « cible » qui rendent un sort OFFENSIF → ciblable sur un ennemi (réticule + ⛔ hors portée,
+ *  comme le tir). Tous les États WFRP sont négatifs (`condition`) ; `wounds` = Dégâts. Liste tenue
+ *  COMPLÈTE côté offensif : un offensif oublié = sort injouable sur l'ennemi (le bug d'origine). */
+const HARMFUL_TARGET_OPS = new Set<string>([
+  'condition', 'wounds', 'corruption', 'lifeSteal', 'suffocate', 'senseLoss', 'loseTurn',
+  'breakBlade', 'damageArmour', 'armourPierce', 'reduceToZero', 'castPenalty',
+]);
+/** Ops « cible » BÉNÉFIQUES → buff sur allié/soi. Liste partielle ASSUMÉE : un buff non listé retombe
+ *  en 'any' (réticule des deux côtés, jamais caché) — pire cas anodin (buff montrable sur un ennemi). */
+const HELPFUL_TARGET_OPS = new Set<string>([
+  'apAll', 'heal', 'cureCriticalWound', 'cureDisease', 'removeCondition', 'grantTrait', 'grantTalent',
+  'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'augmentWeapon', 'giveTrapping', 'freeReroll',
+  'gainResource', 'arrowWard', 'attackWardFM', 'castWard', 'domeWard', 'weatherWard', 'mitigateIncoming',
+  'ignoreStatePenalties', 'noBreath', 'noHunger', 'preventInfection', 'reduceDiseaseDays', 'skillDRBonus',
+  'martyr', 'maxWeaponHands',
+]);
+
+export type SpellAffinity = 'enemy' | 'ally' | 'any';
+
+/** Côté qu'un sort VISE, DÉRIVÉ de ses effets modélisés (aucun champ manuel sur les 243 sorts) :
+ *  Projectile / Test opposé / Souffle / Poussée, ou un op « cible » NOCIF → 'enemy' (ciblable sur
+ *  l'ennemi, réticule + ⛔ hors portée comme le tir) ; un op « cible » BÉNÉFIQUE seul → 'ally' ; sinon
+ *  (narratif, mixte, sans op de cible) → 'any' (réticule permissif des deux côtés). La SOURCE est
+ *  l'effet canon du sort (spells.json), pas une heuristique de mots-clés sur la description. */
+export function spellAffinity(spell: NonNullable<ReturnType<typeof findSpellById>>): SpellAffinity {
+  const spec = spellSpecFor(spell);
+  if (isMagicMissile(spell) || spec.opposed || spec.breathAttack || spec.pushMeters != null) return 'enemy';
+  const ops = spellOps(spell.effects, 'target').map((o) => o.op);
+  if (ops.some((o) => HARMFUL_TARGET_OPS.has(o))) return 'enemy';
+  if (ops.some((o) => HELPFUL_TARGET_OPS.has(o))) return 'ally';
+  return 'any';
+}
+
 /**
  * Évalue le survol de `target` par le héros `active` selon le mode courant :
  *  • mode neutre → attaque implicite (mêlée / tir / Charge / rejoindre) ;
@@ -61,7 +95,12 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
     const spell = findSpellById(battle.selectedSpellId);
     if (!spell) return { kind: 'none' };
     const missile = isMagicMissile(spell);
-    if (missile ? target.kind === active.kind || isOutOfAction(target) : target.kind !== active.kind || target.dead || target.outOfRencontre)
+    // Côté ciblable dérivé de l'EFFET du sort (spellAffinity), plus du seul flag Projectile : un sort
+    // offensif non-Projectile (Choc, Sommeil…) se cible désormais sur l'ennemi, comme le tir.
+    const aff = spellAffinity(spell);
+    const enemyOk = target.kind !== active.kind && !isOutOfAction(target);
+    const allyOk = target.kind === active.kind && !target.dead && !target.outOfRencontre;
+    if (!(aff === 'enemy' ? enemyOk : aff === 'ally' ? allyOk : enemyOk || allyOk))
       return { kind: 'none' };
     if (target.id !== active.id) {
       // Souffle : la portée suit le TRAIT (BE+20 m), pas le champ Portée — même calcul que castSpell.

@@ -2198,6 +2198,16 @@ export function finishPlayerAction(get: Get, set: SetFn, lines: string[], kind: 
 
 // (Le sommeil de groupe vit dans state/restFlow — `sleepParty`, source unique de la nuit.)
 
+/** Refus d'un cast (sort introuvable, contrecoup bloquant, hors portée/LdV…) : EN COMBAT, poussé
+ *  dans le FEED de combat (`battle.log`) — là où le joueur lit — au lieu du `journal` d'exploration
+ *  (invisible pendant le combat). Hors combat (incantation hors combat, couture D), repli sur le
+ *  journal. Sans ça, un cast refusé faisait un « clic muet » qui passait pour un bug (B4). */
+function castRefused(get: Get, set: SetFn, actor: Combatant, msg: string): void {
+  const battle = get().battle;
+  if (battle) set({ battle: { ...battle, log: [...battle.log, ev('cast', msg, actor.id)] } });
+  else get().log(msg);
+}
+
 /** Incante un sort/prière sur une cible (résolution via src/engine/magic). */
 /** Ouvre la modale d'incantation (jet différé, façon attaque) : pose `pendingCast` sans lancer. */
 export function castSpell(
@@ -2210,18 +2220,18 @@ export function castSpell(
 ) {
   const spell = resolveSpell(label);
   if (!spell) {
-    get().log(`Sort « ${label} » introuvable.`);
+    castRefused(get, set, caster, `Sort « ${label} » introuvable.`);
     return;
   }
   // Contrecoups bloquants (LDB 46/40) : « Propos ésotériques », « Vous abusez de ma patience »…
   const blocked = castBlockedBy(caster, castInfoIsPrayer(spell) ? 'priere' : 'langue');
   if (blocked) {
-    get().log(`${caster.name} ne peut pas ${castInfoIsPrayer(spell) ? 'prier' : 'incanter'} : ${blocked}.`);
+    castRefused(get, set, caster, `${caster.name} ne peut pas ${castInfoIsPrayer(spell) ? 'prier' : 'incanter'} : ${blocked}.`);
     return;
   }
   // Lecture au grimoire (LDB 47 l.34) : sort NON mémorisé de son Domaine, NI doublé.
   if (fromGrimoire && !canCastFromGrimoire(caster, spell)) {
-    get().log(`${caster.name} ne peut pas lancer ${label} depuis un grimoire (mémorisé, hors Domaine ou pas de grimoire porté).`);
+    castRefused(get, set, caster, `${caster.name} ne peut pas lancer ${label} depuis un grimoire (mémorisé, hors Domaine ou pas de grimoire porté).`);
     return;
   }
   // Sort « Souffle » (LDB 47 p.244) : délégué à l'attaque de ZONE du Trait — la portée suit le
@@ -2234,13 +2244,13 @@ export function castSpell(
       ? Math.max(1, Math.ceil((bonus(effectiveChar(caster, 'E')) + 20) / 2))
       : spellRangeTiles(spell.range, caster);
     if (range != null && combatDistance(caster, target) > range) {
-      get().log(`${spell.label} : cible hors de portée (${range} cases).`);
+      castRefused(get, set, caster, `${spell.label} : cible hors de portée (${range} cases).`);
       return;
     }
     // Ligne de Vue (LDB 46 l.170 : « vous devez toujours être capable de voir […] votre cible ») —
     // buff sur allié compris ; binaire, pas de malus de couvert pour un Sort. Couvre héros ET IA.
     if (castSightBlocked(get, caster.pos, target.pos)) {
-      get().log(`${spell.label} : pas de ligne de vue.`);
+      castRefused(get, set, caster, `${spell.label} : pas de ligne de vue.`);
       return;
     }
   }
@@ -2325,8 +2335,8 @@ export function castZoneSpell(get: Get, set: SetFn, caster: Combatant, label: st
   if (r0m == null) return false;
   const blocked = castBlockedBy(caster, castInfoIsPrayer(spell) ? 'priere' : 'langue');
   if (blocked) {
-    get().log(`${caster.name} ne peut pas ${castInfoIsPrayer(spell) ? 'prier' : 'incanter'} : ${blocked}.`);
-    return true; // c'était bien une zone — l'entrée est consommée (refus journalisé)
+    castRefused(get, set, caster, `${caster.name} ne peut pas ${castInfoIsPrayer(spell) ? 'prier' : 'incanter'} : ${blocked}.`);
+    return true; // c'était bien une zone — l'entrée est consommée (refus signalé)
   }
   const focusedNI0 = caster.focus?.spell === spell.id && caster.focus.dr >= (spell.cn ?? 0);
   set({

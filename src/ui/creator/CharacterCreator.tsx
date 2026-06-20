@@ -71,6 +71,7 @@ import {
   careerCharKeys,
   careerSkillEntries,
   careerAdvTotal,
+  evenCareerSkillAdvances,
   careerTalentOptions,
   specOptionsFor,
   pettySpellQuota,
@@ -890,7 +891,7 @@ function SkillZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode 
   const main = (
     <>
       <Section title="Compétences de carrière" right={<b className={total === 40 ? 'ok-text' : 'warn-text'}>{total}/40 · max 10</b>}>
-        <button className="btn small" style={{ marginBottom: 8 }} onClick={() => setD({ ...d, skillAdvances: Object.fromEntries((draftLevel(d)?.skills ?? []).map((s) => [s, 5])) })}>
+        <button className="btn small" style={{ marginBottom: 8 }} onClick={() => setD({ ...d, skillAdvances: evenCareerSkillAdvances(d) })}>
           Répartition simple : +5 sur les 8 Compétences
         </button>
         <div className="skill-adv-grid">

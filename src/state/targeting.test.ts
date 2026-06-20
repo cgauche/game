@@ -3,8 +3,8 @@
  * prédicats que le clic : ok ⇔ le clic aboutirait ; invalid porte la raison (⛔ LdV / portée).
  */
 import { describe, it, expect } from 'vitest';
-import { hoverTargeting } from './targeting';
-import { findSpell } from '../data';
+import { hoverTargeting, spellAffinity } from './targeting';
+import { findSpell, findSpellById } from '../data';
 import { parseSpellDamage } from '../engine/magic';
 import { bonus } from '../engine/characteristics';
 import type { Combatant } from '../engine/types';
@@ -121,4 +121,20 @@ describe('hoverTargeting — mode incantation', () => {
     expect(self).toMatchObject({ kind: 'ok', dmg: null });
     expect(hoverTargeting(mkGet([a, friend], castBattle('bouclier-magique')), a, friend)).toMatchObject({ kind: 'invalid', reason: 'range' });
   });
+
+  it('Choc (offensif non-Projectile, Contact) sur un ennemi : adjacent → ok, hors portée → invalid range', () => {
+    const a = combatant({ id: 'A' });
+    const adj = combatant({ id: 'B', kind: 'enemy', pos: { x: 1, y: 0 } }); // Contact = 1 case
+    expect(hoverTargeting(mkGet([a, adj], castBattle('choc')), a, adj).kind).toBe('ok');
+    const far = combatant({ id: 'C', kind: 'enemy', pos: { x: 5, y: 0 } });
+    expect(hoverTargeting(mkGet([a, far], castBattle('choc')), a, far)).toMatchObject({ kind: 'invalid', reason: 'range' });
+  });
+});
+
+describe('spellAffinity — côté visé DÉRIVÉ des effets modélisés (parité magie/tir)', () => {
+  it('Choc (Contact, inflige Sonné) → enemy', () => expect(spellAffinity(findSpellById('choc')!)).toBe('enemy'));
+  it('Fléchette (Projectile magique) → enemy', () => expect(spellAffinity(findSpellById('flechette')!)).toBe('enemy'));
+  it('Enchevêtrement (État Empêtré) → enemy', () => expect(spellAffinity(findSpellById('enchevetrement')!)).toBe('enemy'));
+  it('Armure aethyrique (apAll +1 sur la cible) → ally', () => expect(spellAffinity(findSpellById('armure-aethyrique')!)).toBe('ally'));
+  it('Lumière (effet narratif seul) → any', () => expect(spellAffinity(findSpellById('lumiere')!)).toBe('any'));
 });
