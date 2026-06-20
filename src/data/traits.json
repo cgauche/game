@@ -661,7 +661,8 @@
       "page": 340
     },
     "capabilities": {
-      "seesInDark": true
+      "seesInDark": true,
+      "darkSightTiles": 999
     }
   },
   {
@@ -1512,7 +1513,8 @@
       "page": 343
     },
     "capabilities": {
-      "seesInDark": true
+      "seesInDark": true,
+      "darkSightTiles": 10
     }
   },
   {

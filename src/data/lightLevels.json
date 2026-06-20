@@ -1,0 +1,32 @@
+[
+  {
+    "id": "jour",
+    "label": "Plein jour",
+    "scalar": 1,
+    "baseSightTiles": 40
+  },
+  {
+    "id": "couvert",
+    "label": "Couvert",
+    "scalar": 0.75,
+    "baseSightTiles": 40
+  },
+  {
+    "id": "crepuscule",
+    "label": "Crépuscule",
+    "scalar": 0.45,
+    "baseSightTiles": 12
+  },
+  {
+    "id": "nuit",
+    "label": "Nuit",
+    "scalar": 0.18,
+    "baseSightTiles": 5
+  },
+  {
+    "id": "tenebres",
+    "label": "Ténèbres",
+    "scalar": 0,
+    "baseSightTiles": 0
+  }
+]

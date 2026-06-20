@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { computeVisible, computeLightField, type LightField } from './vision';
+import { computeVisible, computeLightField, ambientScalar, baseSightTiles, darkSightTiles, type LightField } from './vision';
 import { Scene, WallSeg } from './scene';
+
+const DAY = 12 * 60; // 12:00 → jour
+const NIGHT = 23 * 60; // 23:00 → nuit (NIGHT_WINDOW 22:00-05:00)
 
 function scene(w: number, h: number, tiles?: Record<string, string>, walls?: WallSeg[]): Scene {
   const grid = new Array(w * h).fill('herbe');
@@ -83,6 +86,48 @@ describe('computeVisible — union de tous les viewers', () => {
     expect(v.has('1,0,0')).toBe(true); // près du viewer A
     expect(v.has('8,0,0')).toBe(true); // près du viewer B
     expect(v.has('5,0,0')).toBe(false); // entre les deux, hors des deux rayons
+  });
+});
+
+describe('ambientScalar — niveau de lumière de la scène (dataset)', () => {
+  const out = (ambientLight?: string) => ({ ...scene(2, 2), ambiance: 'exterieur', ambientLight } as unknown as Scene);
+  it('niveau explicite lit le dataset', () => {
+    expect(ambientScalar(out('jour'), DAY)).toBeCloseTo(1);
+    expect(ambientScalar(out('nuit'), DAY)).toBeCloseTo(0.18);
+    expect(ambientScalar(out('tenebres'), DAY)).toBeCloseTo(0);
+  });
+  it('auto (ou absent) suit l\'horloge en extérieur', () => {
+    expect(ambientScalar(out('auto'), DAY)).toBeCloseTo(1); // jour
+    expect(ambientScalar(out(), NIGHT)).toBeCloseTo(0.18); // nuit
+  });
+  it('override (setLight runtime) prime sur tout', () => {
+    expect(ambientScalar(out('jour'), DAY, 0.3)).toBeCloseTo(0.3);
+  });
+});
+
+describe('baseSightTiles — rayon de vue de base du niveau (MAISON, dataset)', () => {
+  const out = (ambientLight?: string) => ({ ...scene(2, 2), ambiance: 'exterieur', ambientLight } as unknown as Scene);
+  it('jour porte loin, nuit court, ténèbres nul', () => {
+    expect(baseSightTiles(out('jour'), DAY)).toBeGreaterThanOrEqual(20);
+    expect(baseSightTiles(out('nuit'), DAY)).toBeLessThanOrEqual(6);
+    expect(baseSightTiles(out('tenebres'), DAY)).toBe(0);
+  });
+});
+
+describe('darkSightTiles — vision nocturne (capability data)', () => {
+  const c = (traits: string[] = [], talents: string[] = []) =>
+    ({ traits: traits.map((id) => ({ id })), talents: talents.map((talentId) => ({ talentId })) }) as any;
+  it('Infravision → illimité (grande portée)', () => {
+    expect(darkSightTiles(c(['infravision']))).toBeGreaterThanOrEqual(100);
+  });
+  it('trait Vision nocturne → 10 cases (20 m canon)', () => {
+    expect(darkSightTiles(c(['vision-nocturne']))).toBe(10);
+  });
+  it('talent Vision nocturne → 10 cases (lit la donnée du trait homonyme)', () => {
+    expect(darkSightTiles(c([], ['vision-nocturne']))).toBe(10);
+  });
+  it('sans capacité → 0', () => {
+    expect(darkSightTiles(c())).toBe(0);
   });
 });
 

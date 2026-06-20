@@ -13,7 +13,9 @@
  */
 import { Scene } from './scene';
 import { lineOfSightCover } from './lineOfSight';
+import { sceneIsDark } from './sceneRules';
 import { Pt } from './path';
+import { LIGHT_LEVEL_BY_ID, findTraitById } from '../data';
 
 /** Un observateur : sa case, son rayon de vue (cases éclairées qu'il distingue) et sa portée de
  *  vision nocturne (cases qu'il distingue même dans le noir). */
@@ -40,6 +42,37 @@ export interface LightField {
 export const LIT_THRESHOLD = 0.18;
 
 const chebyshev = (a: Pt, b: Pt): number => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+
+/** Niveau de lumière effectif d'une scène : `Scene.ambientLight` explicite, sinon `auto`/absent →
+ *  dérivé de l'horloge (`sceneIsDark` : extérieur de nuit = sombre). */
+function levelOf(scene: Scene, gameTime: number) {
+  const id = scene.ambientLight && scene.ambientLight !== 'auto' ? scene.ambientLight : sceneIsDark(scene, gameTime) ? 'nuit' : 'jour';
+  return LIGHT_LEVEL_BY_ID.get(id) ?? LIGHT_LEVEL_BY_ID.get('jour')!;
+}
+
+/** Scalaire d'éclairement 0..1 de la scène (assombrissement du rendu + plancher du champ de lumière).
+ *  `override` = `setLight` runtime (prime sur le niveau authored). */
+export function ambientScalar(scene: Scene, gameTime: number, override: number | null = null): number {
+  if (override != null) return Math.max(0, Math.min(1, override));
+  return levelOf(scene, gameTime).scalar;
+}
+
+/** Rayon de vue de base (cases) du niveau de lumière — réglage MAISON (data, éditable au Codex). */
+export function baseSightTiles(scene: Scene, gameTime: number): number {
+  return levelOf(scene, gameTime).baseSightTiles;
+}
+
+/** Portée de vision dans le noir (cases) d'un combattant : max des `darkSightTiles` de ses traits
+ *  (Infravision illimité, Vision nocturne 10) ; le talent Vision nocturne réutilise la valeur du trait
+ *  homonyme (donnée, pas de littéral). 0 = aveugle dans le noir. */
+export function darkSightTiles(c: { traits?: { id: string }[]; talents?: { talentId: string }[] }): number {
+  let m = 0;
+  for (const t of c.traits ?? []) m = Math.max(m, findTraitById(t.id)?.capabilities?.darkSightTiles ?? 0);
+  if ((c.talents ?? []).some((t) => t.talentId === 'vision-nocturne')) {
+    m = Math.max(m, findTraitById('vision-nocturne')?.capabilities?.darkSightTiles ?? 0);
+  }
+  return m;
+}
 
 /** Contribution d'une source à une case à distance `d` (dégradé linéaire, 1 au centre → 0 au bord). */
 function falloff(d: number, radius: number): number {

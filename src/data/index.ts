@@ -25,6 +25,7 @@ import frenchySpellsJson from './frenchy-spells.json';
 import spellsJson from './spells.json';
 import maneuversJson from './maneuvers.json';
 import domainsJson from './domains.json';
+import lightLevelsJson from './lightLevels.json';
 import eyesJson from './eyes.json';
 import hairsJson from './hairs.json';
 import detailsJson from './details.json';
@@ -340,6 +341,9 @@ export interface TraitCapabilities {
   leap?: boolean;
   stride?: boolean;
   seesInDark?: boolean;
+  /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.147` ;
+   *  Infravision = illimité, grande valeur — `LDB 85 l.165`). Lue par `darkSightTiles`. */
+  darkSightTiles?: number;
   perturbingAura?: boolean;
 }
 /** Trait de créature (LDB 85) : libellé canonique + desc VERBATIM (affichée à l'inspecteur). */
@@ -618,6 +622,13 @@ export const spells = [...(spellsJson as SpellData[]), ...(frenchySpellsJson as 
 /** Manœuvres app-owned (attaques naturelles activées — LDB 85) : ENTITÉ de 1ʳᵉ classe éditable au Codex,
  *  effets en GameOp. Octroyées aux créatures via `TraitData.grantsManeuvers` ; résolues par id. */
 export const maneuvers = maneuversJson as ManeuverDef[];
+/** Niveaux de lumière ambiante app-owned (brouillard de guerre) : `scalar` 0..1 (assombrissement du
+ *  rendu) + `baseSightTiles` (rayon de vue de base en cases — réglage MAISON : le LDB ne stat pas la
+ *  portée de vue). Édité au Codex. `Scene.ambientLight` réfère un `id` (ou `auto` = suit l'horloge). */
+export interface LightLevelDef { id: string; label: string; scalar: number; baseSightTiles: number }
+export const lightLevels = lightLevelsJson as LightLevelDef[];
+export const LIGHT_LEVEL_BY_ID = new Map(lightLevels.map((l) => [l.id, l]));
+export const findLightLevelById = (id: string): LightLevelDef | undefined => LIGHT_LEVEL_BY_ID.get(id);
 /** Domaines de magie app-owned (LDB 48) — ENTITÉ éditable au Codex (attributs en données : onHit,
  *  projectile, post-incantation). Le RUNTIME résout par `id` STABLE (= `SpellData.domainId`, cf.
  *  `findDomainById`) ; `domainByLabel`/`findDomain` restent pour l'authoring/affichage. */

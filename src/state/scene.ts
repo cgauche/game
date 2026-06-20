@@ -425,6 +425,9 @@ export interface Scene {
   /** Météo (LDB 14 l.94-116) — orthogonal à `ambiance`. Défaut 'clair'. Pénalise le combat
    *  (brouillard/tempête/neige) ; lu par `sceneCombatModifiers`. */
   weather?: 'clair' | 'pluie' | 'brouillard' | 'neige' | 'tempete';
+  /** Niveau de lumière ambiante (brouillard de guerre) : `id` d'un `lightLevels` (jour/nuit/ténèbres…)
+   *  ou `'auto'`/absent = suit l'horloge via `ambiance` (extérieur de nuit = sombre). Lu par `ambientScalar`. */
+  ambientLight?: string;
   /** OFFRE DE REPOS de la scène (bouton 🌙 d'exploration → modale de Repos) : lieux disponibles
    *  (auberge/chez soi/camp, combinables) + qualité (piètre = ½ prix, nourriture à risque).
    *  Absent = camp seulement ; tout à false = repos interdit ici. La météo ci-dessus donne la
