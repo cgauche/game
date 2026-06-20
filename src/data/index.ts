@@ -456,6 +456,10 @@ export interface DomainData {
   /** Bonus d'incantation CONDITIONNEL (Aqshy l.157) : +`bonus` par État `perCondition` porté par un
    *  combattant situé à `radiusStat` (Bonus de carac.) mètres du lanceur (géométrie résolue par state). */
   castBonus?: { perCondition: string; radiusStat: import('../engine/types').CharKey; bonus: number };
+  /** Caractéristique des Tests d'Incantation (Langue (Magick)) des Sorts de ce Domaine, à la place de la
+   *  carac par défaut (ADE II l.653 : la Magie de la Gueule, réservée aux ogres, se lance sur l'Endurance).
+   *  Lue par `castingValue` — porté par la DONNÉE du domaine, aucun sniff d'espèce dans le moteur. */
+  castingChar?: import('../engine/types').CharKey;
 }
 export interface SpellData {
   /** id STABLE (slug du libellé) — cible des `Ref` de sort (sorts de créature, bénédictions/miracles). */
