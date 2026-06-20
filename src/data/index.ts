@@ -124,15 +124,6 @@ export interface TalentData {
   max: string | number | null;
   test: string | null;
   desc: string;
-  /** Compétence ajoutée à « n'importe quelle Carrière que vous entamez » (LDB 10 : Maître
-   *  artisan, Oreille absolue, Sorcier !, Voyageur aguerri, Artiste) — réf par id (+ spec « Au
-   *  choix »/« Chant »…). Résolue en libellé concret par `refLabel('skills', …)`. */
-  addSkill?: Ref | null;
-  /** Caractéristique/attribut modifié à l'acquisition (LDB 10 : « +5 à votre Caractéristique de
-   *  départ », Blessure, Chance, Détermination, Mouvement, Corruption). Libellé long (hors id). */
-  addCharacteristic?: string | null;
-  /** Talent conféré (LDB 10 : Flagellant → Frénésie) — réf par id (+ spec éventuel). */
-  addTalent?: Ref | null;
   specs?: string[];
   /** Borne haute de plage d100 sur le Tableau des Talents aléatoires (null = hors table). */
   rand?: number | null;

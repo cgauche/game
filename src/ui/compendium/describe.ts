@@ -11,6 +11,7 @@ import { condSummary } from '../editor/ConditionEditor';
 import type { GameOp } from '../../engine/ops';
 import type { Flow, TriggeredEffect, EffectTrigger } from '../../state/flow';
 import { refLabel } from '../../data';
+import { statName } from '../../engine/statEntry';
 
 const TRIGGER_LABEL: Record<EffectTrigger, string> = {
   onHit: 'À la touche',
@@ -30,10 +31,28 @@ const ON_LABEL: Record<'self' | 'victim' | 'engaged', string> = {
 const onLabel = (on: TriggeredEffect['on']): string =>
   typeof on === 'object' ? `les cibles à ≤ ${on.radiusMeters} m de ${on.near === 'self' ? 'soi' : 'la victime'}` : ON_LABEL[on];
 
-/** Modificateurs PASSIFS continus (`GameOp[]`) → section lisible (« +5 F », « −20 aux Tests de Soc »…). */
+/** Octrois de carrière (`grantCareerSkill`/`grantCareerTalent`) — affichés à part (cross-réf cliquable),
+ *  jamais comme « modificateur continu ». Filtrés ici pour ne pas doublonner avec `careerGrantSection`. */
+const CAREER_GRANT_OPS = new Set<GameOp['op']>(['grantCareerSkill', 'grantCareerTalent']);
+
+/** Modificateurs PASSIFS continus (`GameOp[]`) → section lisible (« +5 F », « −20 aux Tests de Soc »…).
+ *  Les octrois de carrière (compétence/talent ajouté à toute carrière) sont EXCLUS → `careerGrantSection`. */
 export function passiveSection(ops: GameOp[] | undefined, title = 'Modificateurs passifs'): CodexSection | null {
-  if (!ops?.length) return null;
-  return { title, layout: 'list', rows: ops.map((o) => ({ t: 'text', text: opSummary(o) }) as CodexRow) };
+  const mods = (ops ?? []).filter((o) => !CAREER_GRANT_OPS.has(o.op));
+  if (!mods.length) return null;
+  return { title, layout: 'list', rows: mods.map((o) => ({ t: 'text', text: opSummary(o) }) as CodexRow) };
+}
+
+/** Compétence/Talent ajouté à « n'importe quelle Carrière » (LDB 10, ops `grantCareerSkill`/
+ *  `grantCareerTalent`) → chips CROSS-RÉF cliquables (id → libellé ; le lookup ignore la spec « Au choix »
+ *  via `statName`). Source unique de la projection des octrois de carrière (talents Maître artisan, Flagellant…). */
+export function careerGrantSection(ops: GameOp[] | undefined, title = 'Ajouté à vos carrières'): CodexSection | null {
+  const rows: CodexRow[] = (ops ?? []).flatMap((o): CodexRow[] => {
+    if (o.op === 'grantCareerSkill') { const l = refLabel('skills', { id: o.skillId, spec: o.spec }); return [{ t: 'ref', category: 'skills', label: statName(l), show: l }]; }
+    if (o.op === 'grantCareerTalent') { const l = refLabel('talents', { id: o.talentId, spec: o.spec }); return [{ t: 'ref', category: 'talents', label: statName(l), show: l }]; }
+    return [];
+  });
+  return rows.length ? { title, layout: 'chips', rows } : null;
 }
 
 /** Résumé LISIBLE d'un Flow d'effet (conditions `if` + ops `do`, jet `test`) — réutilise `condSummary`/

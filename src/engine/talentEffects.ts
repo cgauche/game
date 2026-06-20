@@ -1,8 +1,9 @@
 /**
  * Effets des Talents qui influencent la création / les attributs — PILOTÉS PAR LES DONNÉES :
- * chaque talent de talents.json porte `passive: GameOp[]` (charMod/moveMod/attrMod…) et `addSkill`,
- * posés par l'extraction des livres ; un supplément qui ajoute un talent étiqueté pareil est couvert
- * sans code.
+ * chaque talent de talents.json porte `passive: GameOp[]` (charMod/moveMod/attrMod/grantCareerSkill/
+ * grantCareerTalent…), posés par l'extraction des livres ; un supplément qui ajoute un talent étiqueté
+ * pareil est couvert sans code. Plus AUCUN champ bespoke (`addCharacteristic`/`addSkill`/`addTalent`
+ * ont été éliminés au profit du vocabulaire `GameOp` unifié).
  *
  * Sémantique des passifs de Caractéristique (clés STABLES, ≠ libellés — multilangue ; descriptions LDB 10) :
  *  - `charMod{char,mod:5}` : « Vous gagnez un bonus permanent de +5 à votre Caractéristique X de
@@ -16,11 +17,11 @@
  *  - Âme pure (seuil de Corruption +niveau) : via `combat.corruptionThreshold` (combatFeatures/dispatch,
  *    `talentCorruptionThreshold`), PAS un `addCharacteristic`. → plus AUCUN talent ne porte `addCharacteristic`.
  *
- * `addSkill` : « Ajoutez la Compétence X à n'importe quelle Carrière que vous entamez. Si la
- * Compétence est déjà incluse dans votre Carrière, vous pouvez à la place acheter la Compétence
+ * `grantCareerSkill` (op) : « Ajoutez la Compétence X à n'importe quelle Carrière que vous entamez.
+ * Si la Compétence est déjà incluse dans votre Carrière, vous pouvez à la place acheter la Compétence
  * pour 5 PX de moins par Augmentation » — Maître artisan (Métier), Oreille absolue
  * (Divertissement (Chant)), Sorcier ! (Langue (Magick)), Voyageur aguerri (Savoir (Région)),
- * Artiste (Art).
+ * Artiste (Art). Son analogue `grantCareerTalent` ajoute un TALENT à toute carrière (Flagellant → Frénésie).
  *
  * Costaud (Encombrement) est déjà appliqué par items.maxEncumbrance ; Petit/Massif (Taille)
  * par l'espèce. Les autres talents (combat, social…) sont hors périmètre.
@@ -151,6 +152,22 @@ export function careerSkillAdditions(hero: Combatant): string[] {
       // Spec « Au choix » de l'op reportée sur la spec concrète choisie du talent (Maître artisan (Forgeron)).
       if (t.spec && op.spec && /au choix/i.test(op.spec)) out.push(concreteLabel(base, t.spec));
       else out.push(refLabel('skills', { id: op.skillId, spec: op.spec }));
+    }
+  }
+  return out;
+}
+
+/**
+ * Talents ajoutés aux listes de carrière par les talents possédés (« Le Talent X est ajouté à la
+ * liste des Talents de n'importe laquelle de vos Carrières », LDB 10 — Flagellant → Frénésie).
+ * Analogue Talent de `careerSkillAdditions` : lit l'op `grantCareerTalent` (data-driven, par id).
+ */
+export function careerTalentAdditions(hero: Combatant): string[] {
+  const out: string[] = [];
+  for (const t of hero.talents) {
+    for (const op of findTalentById(t.talentId)?.passive ?? []) {
+      if (op.op !== 'grantCareerTalent') continue;
+      out.push(refLabel('talents', { id: op.talentId, spec: op.spec }));
     }
   }
   return out;

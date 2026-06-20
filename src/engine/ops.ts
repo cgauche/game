@@ -219,6 +219,10 @@ export type GameOp =
    *  ref par `skillId` (jamais libellé). `spec='Au choix'` = reportée sur la spec choisie du talent.
    *  Lu par `careerSkillAdditions` (création/avancement), pas appliqué au combattant. */
   | { op: 'grantCareerSkill'; skillId: string; spec?: string }
+  /** Ajoute un Talent aux listes de TOUTE carrière entamée (Flagellant → Frénésie « est ajouté à la
+   *  liste des Talents de n'importe laquelle de vos Carrières », LDB 10) — analogue Talent de
+   *  `grantCareerSkill`, ref par `talentId` STABLE. Lu par `careerTalentAdditions`, pas appliqué au combattant. */
+  | { op: 'grantCareerTalent'; talentId: string; spec?: string }
   /** Enchantement d'ARME temporisé (Jalon 2.6 — B. de Droiture : Magique ; Marteau ardent :
    *  Magique +BSoc + En flammes/À Terre à la touche ; Épée ardente : +6 + Percutante + En
    *  flammes). Porté par le PORTEUR (ActiveEffect.weaponEnchant), fusionné à l'arme à la

@@ -24,7 +24,7 @@ import { costPerEnc } from '../../engine/harvest';
 import { formatMoney } from '../../engine/money';
 import type { EntityAppearance } from '../../state/scene';
 import type { MutationData } from '../../data/mutations';
-import { passiveSection, effectsSection } from './describe';
+import { passiveSection, effectsSection, careerGrantSection } from './describe';
 
 export type CodexGroup = 'Personnage' | 'Compétences' | 'Équipement' | 'Effets' | 'Magie' | 'Monde' | 'Tables';
 
@@ -282,16 +282,7 @@ export const CODEX: CodexCategory[] = [
       label: t.label, desc: t.desc, source: src(t.source),
       meta: facts(fact('Max', t.max), fact('Test', t.test)),
       sections: sections(
-        t.addCharacteristic || t.addSkill || t.addTalent
-          ? {
-              title: 'Effet mécanique', layout: 'chips',
-              rows: [
-                ...(t.addCharacteristic ? [{ t: 'kv', k: '+5 à', v: t.addCharacteristic } as CodexRow] : []),
-                ...(t.addSkill ? [refRow('skills', refLabel('skills', t.addSkill))] : []),
-                ...(t.addTalent ? [refRow('talents', refLabel('talents', t.addTalent))] : []),
-              ],
-            }
-          : null,
+        careerGrantSection(t.passive), // Compétence/Talent ajouté à toute carrière (Maître artisan, Flagellant…)
         passiveSection(t.passive),
         effectsSection(t.effects, 'Effets déclenchés'),
       ),

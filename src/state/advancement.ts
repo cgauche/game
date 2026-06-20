@@ -30,7 +30,7 @@ import {
   talentMaxReached,
   wildcardSpecs,
 } from '../engine/careerSlots';
-import { careerSkillAdditions, baseWithTalents } from '../engine/talentEffects';
+import { careerSkillAdditions, careerTalentAdditions, baseWithTalents } from '../engine/talentEffects';
 import { levelsForCareer, findSkill, findSkillById, findCareerById, findClassById, careers, talentConcrete } from '../data';
 
 export interface CharAdvanceRow {
@@ -194,6 +194,13 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     }
     return { slotKey: slot.key, entry: slot.entry, times: 0, nextCost: talentCost(0), maxReached: false, options };
   });
+  // Talents AJOUTÉS aux carrières par un talent possédé (Flagellant → Frénésie, LDB 10) : apprenables
+  // en carrière même hors emplacement de niveau. Dédupe contre les slots déjà projetés (par libellé).
+  for (const label of careerTalentAdditions(hero)) {
+    if (talents.some((r) => r.label === label || r.options?.some((o) => o.label === label))) continue;
+    const times = hero.talents.find((t) => talentConcrete(t) === label)?.times ?? 0;
+    talents.push({ slotKey: `add:${label}`, entry: label, label, times, nextCost: talentCost(times), maxReached: talentMaxReached(hero, label) });
+  }
 
   const completed = cur
     ? isCareerLevelComplete(hero, careerLevel, { skillSlots: sSlots, talentSlots: tSlots, careerChars, designations })

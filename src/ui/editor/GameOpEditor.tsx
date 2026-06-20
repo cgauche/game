@@ -64,6 +64,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   grantTrait: '🐾 Accorder un Trait',
   grantTalent: '🐾 Accorder un Talent',
   grantCareerSkill: '🎓 Compétence ajoutée aux carrières',
+  grantCareerTalent: '🎓 Talent ajouté aux carrières',
   augmentWeapon: '🗡️ Enchanter l’arme',
   cureDisease: '🩹 Guérir des maladies',
   reduceDiseaseDays: '🩹 Raccourcir une maladie',
@@ -112,6 +113,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['🩼 Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'maxWeaponHands', 'senseLoss']],
   ['⚔️ Atouts/Défauts d’arme (passifs)', ['weaponRollMod', 'weaponDamageMod', 'armourPierce', 'critOnRoll']],
   ['🎲 Contrôle', ['rollThreshold', 'spendAdvantage']],
+  ['🎓 Création de personnage (Talents)', ['attrMod', 'grantCareerSkill', 'grantCareerTalent']],
   ['📝 Narration', ['narrative']],
 ];
 
@@ -227,6 +229,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'grantTrait': return { op: 'grantTrait', traitId: 'armure' };
     case 'grantTalent': return { op: 'grantTalent', talentId: 'sang-froid' };
     case 'grantCareerSkill': return { op: 'grantCareerSkill', skillId: 'metier', spec: 'Au choix' };
+    case 'grantCareerTalent': return { op: 'grantCareerTalent', talentId: 'frenesie' };
     case 'augmentWeapon': return { op: 'augmentWeapon', addQualities: ['magique'] };
     case 'cureDisease': return { op: 'cureDisease', count: 1 };
     case 'reduceDiseaseDays': return { op: 'reduceDiseaseDays', days: 1 };
@@ -297,6 +300,7 @@ export function opSummary(o: GameOp): string {
     case 'grantTrait': return `${L} ${formatTrait({ id: o.traitId, arg: o.arg })}${o.indice != null ? ` ${formulaSummary(o.indice)}` : ''}`;
     case 'grantTalent': return `${L} ${talentConcrete(o)}`;
     case 'grantCareerSkill': return `${L} ${refLabel('skills', { id: o.skillId, spec: o.spec })}`;
+    case 'grantCareerTalent': return `${L} ${refLabel('talents', { id: o.talentId, spec: o.spec })}`;
     case 'augmentWeapon': return `${L} ${[...(o.addQualities ?? []).map((id) => qualityRefLabel({ id })), o.damageBonus != null ? `+${formulaSummary(o.damageBonus)} Dégâts` : ''].filter(Boolean).join(', ') || '(vide)'}`;
     case 'cureDisease': return `${L} ${o.count ?? 1} maladie(s)`;
     case 'reduceDiseaseDays': return `${L} −${o.days ?? 1} jour(s)`;

@@ -8,6 +8,7 @@ import {
   fortuneMax,
   resolveMax,
   careerSkillAdditions,
+  careerTalentAdditions,
   baseWithTalents,
 } from './talentEffects';
 import { effectiveMovement } from './encumbrance';
@@ -101,5 +102,12 @@ describe('« Ajoutez la Compétence X à n\'importe quelle Carrière que vous en
     expect(adds).toContain('Divertissement (Chant)');
     expect(adds).toContain('Savoir (Région)');
     expect(adds).toHaveLength(4);
+  });
+});
+
+describe('« Le Talent X est ajouté à la liste des Talents de vos Carrières » (LDB 10, op grantCareerTalent)', () => {
+  it('Flagellant → Frénésie ajoutée aux carrières ; un talent sans op → rien', () => {
+    expect(careerTalentAdditions(hero({ talents: [{ talentId: 'flagellant', times: 1 }] }))).toEqual(['Frénésie']);
+    expect(careerTalentAdditions(hero({ talents: [{ talentId: 'baratiner', times: 1 }] }))).toEqual([]);
   });
 });
