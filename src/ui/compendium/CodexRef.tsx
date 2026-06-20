@@ -9,10 +9,15 @@
  * contexte d'empilement. `pointer-events: none` → pur tooltip, pas de pont de survol ; le clic
  * (déclencheur) ouvre le Codex.
  */
-import { useCallback, useRef, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useGame } from '../../state/store';
 import { codexLookup } from './registry';
+
+/** Contexte « popover-seul » : sous ce fournisseur, tout `CodexRef` informe au survol mais son clic
+ *  n'ouvre PAS la fiche plein écran (équivaut à `tooltipOnly`). Posé autour de l'assistant de création
+ *  pour qu'une référence de règle ne fasse pas quitter le flux — ce qui réinitialisait le brouillon. */
+export const CodexTooltipOnly = createContext(false);
 
 const stripHtml = (s: string): string => s.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 const truncate = (s: string, n = 260): string => (s.length > n ? `${s.slice(0, n).trimEnd()}…` : s);
@@ -52,6 +57,7 @@ export function CodexRef({
   fallback?: { sub?: string; body?: string };
 }) {
   const openCodex = useGame((s) => s.openCodex);
+  const ctxTooltipOnly = useContext(CodexTooltipOnly);
   const item = codexLookup(category, label);
   const ref = useRef<HTMLSpanElement>(null);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
@@ -76,8 +82,9 @@ export function CodexRef({
   const popSub = item?.sub ?? fallback?.sub;
   const src = item?.source;
   const inst = instance && instance !== title ? instance : undefined;
-  // Clic → fiche Codex UNIQUEMENT pour une vraie entrée catalogue, hors mode popover-seul.
-  const interactive = !tooltipOnly && !!item;
+  // Clic → fiche Codex UNIQUEMENT pour une vraie entrée catalogue, hors mode popover-seul
+  // (prop `tooltipOnly` ou contexte `CodexTooltipOnly`, ex. assistant de création).
+  const interactive = !tooltipOnly && !ctxTooltipOnly && !!item;
   const open = () => { if (item) openCodex({ category, label: item.label, instance: inst }); };
 
   return (

@@ -21,6 +21,7 @@ import {
   draftWealth,
   draftSpecies,
   draftLevel,
+  careerCharKeys,
 } from './draft';
 import { CHAR_KEYS } from '../../engine/types';
 import { findSpeciesById } from '../../data';
@@ -106,6 +107,19 @@ describe('bonus de PX (LDB 04/05)', () => {
     expect(charsXp({ ...d, charMode: 'reassigned' })).toBe(25);
     expect(charsXp({ ...d, charRerolls: 1 })).toBe(0);
     expect(charsXp({ ...d, charMode: 'pointBuy' })).toBe(0);
+  });
+});
+
+describe('careerCharKeys (Augmentations de carrière)', () => {
+  it('renvoie les Caractéristiques de carrière en clés CharKey (jamais vide pour une carrière réelle)', () => {
+    const d = withCareer(draft(), 'soldat');
+    const keys = careerCharKeys(d);
+    expect(keys.length).toBeGreaterThan(0); // sinon la grille d'allocation est vide → étape infranchissable
+    // La donnée EST déjà en abréviations : chaque clé doit être un CharKey valide (régression #566 :
+    // un mapping libellé→clé renvoyait `undefined` pour tout → liste vide).
+    for (const k of keys) expect(CHAR_KEYS).toContain(k);
+    expect(keys).toContain('CC'); // Soldat : Capacité de Combat est de carrière
+    expect(keys).toEqual(draftLevel(d)!.characteristics);
   });
 });
 

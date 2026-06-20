@@ -194,6 +194,13 @@ export const draftSpecies = (d: CreatorDraft): SpeciesData => findSpeciesById(d.
 export const draftLevel = (d: CreatorDraft): CareerLevelData | undefined =>
   levelsForCareer(d.careerId).find((l) => l.level === 1);
 
+/** Caractéristiques de carrière du Niveau 1 (clés `CharKey` stables) sur lesquelles se répartissent
+ *  les 5 Augmentations gratuites de création (LDB 05 l.379). La donnée EST déjà en `CharKey`
+ *  (« CT », « F »… ; cf. CareerLevelData.characteristics) ; on filtre par sûreté. SOURCE UNIQUE
+ *  partagée par la grille d'allocation et `validateStep` (plus de re-dérivation divergente). */
+export const careerCharKeys = (d: CreatorDraft): CharKey[] =>
+  (draftLevel(d)?.characteristics ?? []).filter((k): k is CharKey => CHAR_KEYS.includes(k as CharKey));
+
 // ── 1) Espèce ──
 export function rollDraftSpecies(d: CreatorDraft): CreatorDraft {
   if (d.speciesRoll) return d; // FIGÉ : pas de relance (LDB 04 — aucune n'est offerte)
@@ -416,7 +423,7 @@ export function validateStep(d: CreatorDraft, id: StepId): string | null {
         const idx = CHAR_KEYS.map((k) => d.assignment[k]);
         if (new Set(idx).size !== 10) return 'Réassignation : chaque jet doit être utilisé une seule fois.';
       }
-      const careerChars = (level?.characteristics ?? []).length;
+      const careerChars = careerCharKeys(d).length;
       const alloc = Object.values(d.charAdvancesAlloc).reduce((a, b) => a + (b ?? 0), 0);
       if (careerChars && alloc !== 5) return `Répartissez 5 Augmentations sur les Caractéristiques de carrière (actuel : ${alloc}).`;
       const split = d.fateSplit.fate + d.fateSplit.resilience;

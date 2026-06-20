@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { CharacterCreator, PettySpellsSection } from './CharacterCreator';
+import { CharacterCreator, CareerZones, CharZones, PettySpellsSection } from './CharacterCreator';
 import { CreatorSummary } from './CreatorSummary';
 import { newDraft, withCareer } from './draft';
 import { findCareerById } from '../../data';
+import { CHAR_LABELS } from '../../engine/types';
 
 describe('CharacterCreator (assistant) — rendu statique', () => {
   it('étape 1 : trois zones (rail de sélection, profil, fiche vivante) + tirage d100', () => {
@@ -39,6 +40,31 @@ describe('CharacterCreator (assistant) — rendu statique', () => {
     expect(html).toMatch(/0\/\d/); // compteur de quota (BFM)
     // Sans le Talent : aucune section.
     expect(renderToStaticMarkup(<PettySpellsSection d={withCareer(newDraft(7), 'soldat')} setD={() => {}} />)).toBe('');
+  });
+
+  it('étape 3 — la grille des 5 Augmentations propose un stepper par Caractéristique de carrière (bug bloquant)', () => {
+    // Régression : `level.characteristics` est déjà en CharKey ; un mapping libellé→clé renvoyait
+    // une liste vide → aucun stepper → « Suivant » jamais actif → création infranchissable.
+    const { rail } = CharZones({ d: withCareer(newDraft(7), 'soldat'), setD: () => {} });
+    const html = renderToStaticMarkup(<>{rail}</>);
+    expect(html).toContain('Augmentations gratuites');
+    expect(html).toContain(CHAR_LABELS.CC); // Soldat : Capacité de Combat est de carrière → ligne présente
+    expect(html).toContain('class="stepper"'); // contrôle d'allocation réellement rendu
+  });
+
+  it('étape 2 — Possessions et tooltip d\'évolution affichent des libellés, jamais [object Object]', () => {
+    const { main } = CareerZones({ d: withCareer(newDraft(7), 'soldat'), setD: () => {} });
+    const html = renderToStaticMarkup(<>{main}</>);
+    expect(html).not.toContain('[object Object]');
+    expect(html).toContain('Possessions &amp; Statut');
+    expect(html).toContain('title="Compétences : '); // tooltip d'évolution → libellés résolus
+  });
+
+  it('les références Codex de l\'assistant sont popover-seul (clic n\'ouvre pas le Compendium → pas de perte de brouillon)', () => {
+    const html = renderToStaticMarkup(<CharacterCreator />);
+    expect(html).toContain('codex-static'); // ≥1 ref résolue, rendue en popover-seul
+    // Aucune ref Codex ne doit être un bouton de navigation sous l'assistant.
+    expect(html).not.toMatch(/class="codex-ref[^"]*"[^>]*role="button"/);
   });
 
   it('CreatorSummary : caractéristiques EN DIRECT du héros prévisualisé (talents/augmentations inclus)', () => {

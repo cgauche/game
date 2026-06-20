@@ -36,7 +36,7 @@ import {
   SpeciesData,
   CareerData,
 } from '../../data';
-import { CHAR_KEYS, CharKey, CHAR_LABELS, CHAR_BY_LABEL, Characteristics } from '../../engine/types';
+import { CHAR_KEYS, CharKey, CHAR_LABELS, Characteristics } from '../../engine/types';
 import { rule } from '../../engine/policy';
 import { bonus } from '../../engine/characteristics';
 import { formatMoney } from '../../engine/money';
@@ -45,7 +45,7 @@ import { generateName } from '../../engine/names';
 import { RigSprite } from '../../gameIso/rig/composeRig';
 import { DEFS } from '../../gameIso/sprites';
 import { AppearancePanel } from '../AppearancePanel';
-import { CodexRef } from '../compendium/CodexRef';
+import { CodexRef, CodexTooltipOnly } from '../compendium/CodexRef';
 import { TabbedEntry } from '../TabbedEntry';
 import { CodexSections } from '../compendium/CodexEntry';
 import { EntityRef, EntityChoice, SkillChip, TalentChip } from '../EntityChip';
@@ -68,6 +68,7 @@ import {
   charRolls,
   draftChars,
   resolvedSpeciesTalents,
+  careerCharKeys,
   careerSkillEntries,
   careerAdvTotal,
   careerTalentOptions,
@@ -228,7 +229,10 @@ export function CharacterCreator() {
 
   const zone = STEP_META[curId].zone({ d, setD });
 
+  // Les références Codex de l'assistant sont popover-SEUL : un clic ne doit pas ouvrir le Compendium
+  // plein écran (ce qui démontait l'assistant et perdait le brouillon, en cours de création).
   return (
+    <CodexTooltipOnly.Provider value={true}>
     <div className="screen creator">
       <header className="bar">
         <button className="btn small" onClick={closeCreator}>
@@ -289,6 +293,7 @@ export function CharacterCreator() {
         )}
       </footer>
     </div>
+    </CodexTooltipOnly.Provider>
   );
 }
 
@@ -416,7 +421,7 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
 }
 
 // ════ 2) Carrière (LDB 05 l.186-365) — rail : classes + liste ; détail : plan complet ════
-function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode } {
+export function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode } {
   const sp = draftSpecies(d);
   const accessible = careersForSpecies(sp.refCareer, d.ignoreRestrictions);
   const career = findCareerById(d.careerId);
@@ -515,7 +520,7 @@ function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
       <Section title="Évolution de carrière">
         <div className="career-path">
           {levels.map((l) => (
-            <span key={l.level} className={`path-node ${l.level === 1 ? 'current' : ''}`} title={`Compétences : ${l.skills.join(', ')}\nTalents : ${l.talents.join(', ')}`}>
+            <span key={l.level} className={`path-node ${l.level === 1 ? 'current' : ''}`} title={`Compétences : ${l.skills.map((a) => advancementLabel('skills', a)).join(', ')}\nTalents : ${l.talents.map((a) => advancementLabel('talents', a)).join(', ')}`}>
               <b>{l.level}.</b> {l.label}
               <em>{l.status}</em>
             </span>
@@ -547,7 +552,7 @@ function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
           </Section>
           <Section title="Possessions & Statut">
             <p className="hint" style={{ margin: 0 }}>
-              {lvl1.trappings.join(', ') || '—'} · Statut <b>{lvl1.status}</b>
+              {lvl1.trappings.map(trappingRefLabel).join(', ') || '—'} · Statut <b>{lvl1.status}</b>
             </p>
           </Section>
         </>
@@ -558,12 +563,11 @@ function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
 }
 
 // ════ 3) Caractéristiques (LDB 05 l.370-491) — rail : méthode + répartitions ; détail : grille ════
-function CharZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode } {
+export function CharZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode } {
   const sp = draftSpecies(d);
-  const level = draftLevel(d);
   const rolls = charRolls(d);
   const chars = draftChars(d);
-  const careerCharKeys = (level?.characteristics ?? []).map((l) => CHAR_BY_LABEL[l]).filter(Boolean) as CharKey[];
+  const careerKeys = careerCharKeys(d);
   const allocTotal = Object.values(d.charAdvancesAlloc).reduce((a, b) => a + (b ?? 0), 0);
   const pbTotal = CHAR_KEYS.reduce((a, k) => a + d.pointBuy[k], 0);
   const splitTotal = d.fateSplit.fate + d.fateSplit.resilience;
@@ -595,7 +599,7 @@ function CharZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode }
         <p className="hint" style={{ marginTop: 0 }}>
           À répartir sur les Caractéristiques de votre carrière.
         </p>
-        {careerCharKeys.map((k) => (
+        {careerKeys.map((k) => (
           <div key={k} className="rail-line">
             <span><CodexRef category="characteristics" label={CHAR_LABELS[k]}>{CHAR_LABELS[k]}</CodexRef></span>
             <Stepper
@@ -647,7 +651,7 @@ function CharZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode }
               <CodexRef category="characteristics" label={CHAR_LABELS[k]} className="char-key">{k}</CodexRef>
               <span className="char-name">
                 {CHAR_LABELS[k]}
-                {careerCharKeys.includes(k) && <span className="tag char">carrière</span>}
+                {careerKeys.includes(k) && <span className="tag char">carrière</span>}
               </span>
               <em>base {sp.baseChar[k] ?? 20}</em>
               {d.charMode === 'rolled' && <span className="char-roll">+{rolls[i]}</span>}
