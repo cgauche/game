@@ -5,7 +5,11 @@
  * la Taille de la CIBLE : `14 - _GoBack.md` l.151-170. « Moyenne » = standard implicite des
  * espèces jouables (l.163), sans Trait. Cf. analyse :
  * docs/superpowers/specs/2026-06-07-taille-analyse-reference.md
+ *
+ * Données règles (rangedMod) dans `src/data/sizes.json`.
  */
+import sizesJson from '../data/sizes.json';
+
 export type SizeCategory =
   | 'minuscule'
   | 'tresPetite'
@@ -25,15 +29,8 @@ export const SIZE_ORDER: Record<SizeCategory, number> = {
   monstrueuse: 6,
 };
 
-export const SIZE_RANGED_MOD: Record<SizeCategory, number> = {
-  minuscule: -30,
-  tresPetite: -20,
-  petite: -10,
-  moyenne: 0,
-  grande: 20,
-  enorme: 40,
-  monstrueuse: 60,
-};
+export const SIZE_RANGED_MOD: Record<SizeCategory, number> =
+  sizesJson.rangedMod as Record<SizeCategory, number>;
 
 export const SIZE_LABEL: Record<SizeCategory, string> = {
   minuscule: 'Minuscule',
