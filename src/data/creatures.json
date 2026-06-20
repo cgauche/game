@@ -50663,7 +50663,13 @@
     "title": null,
     "folder": "Zoo Impérial",
     "appearance": {
-      "species": "Géant"
+      "species": "Géant",
+      "parts": {
+        "cheveux": 2
+      },
+      "features": [
+        "barbe-naine"
+      ]
     },
     "char": {
       "M": 6,
