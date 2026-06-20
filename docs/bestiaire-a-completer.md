@@ -36,14 +36,20 @@ Gabarits créés : `src/gameIso/rig/crustace/composeCrab.ts` (plan `crustace`),
 Bugfix en cours de route : `entityRigProfile` résout désormais l'espèce **label-aware** (id→label→def,
 comme `resolveByName`) → un record dont l'id (kebab) ≠ le nom de def (libellé) résout enfin vers son def.
 
-## Pistes ultérieures (pas bloquantes)
+## Balayage frenchy/import terminé
 
-- **Reste du lot frenchy.bzh** : d'autres créatures importées sans `appearance.species` peuvent encore
-  retomber sur le bipède Humain (cf. le chantier frenchy d'origine). Les router au fil de l'eau : la
-  plupart mappent à un gabarit EXISTANT (avian/quadruped/winged/serpentine) — un simple
-  `appearance.species` suffit ; vérifier au QC.
-- **Choses du Bois Mort** pourrait recevoir des features de mutation visibles (cornes/tentacules) — cosmétique.
+Vérifié (diagnostic sur `resolveByName`) : il ne reste **aucune** créature rendue en bipède Humain
+par défaut **à tort**. Les 3 derniers candidats ont été tranchés :
+- **« L'abominable » Halagrundsor** = géant errant (ZI) → `appearance.species:"Géant"`.
+- **Choses du Bois Mort** = humains mutés → reste bipède (correct).
+- **Sirène** = torse humanoïde (+ queue de poisson, pas de gabarit dédié) → reste bipède (acceptable).
+
+## Pistes ultérieures (pas bloquantes, cosmétiques)
+
+- **Choses du Bois Mort** pourrait recevoir des features de mutation visibles (cornes/tentacules).
 - **Trégara** est approximé par le crabe (faute de gabarit insecte/mante dédié) — acceptable.
+- Le rendu de l'espèce **Géant** lui-même est sommaire (humanoïde nu) — l'enrichir profiterait à
+  Halagrundsor comme aux autres géants.
 
 ## Comment traiter (rappel)
 

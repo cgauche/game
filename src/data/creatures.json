@@ -50663,6 +50663,9 @@
     "label": "« L'abominable » Halagrundsor",
     "title": null,
     "folder": "Zoo Impérial",
+    "appearance": {
+      "species": "Géant"
+    },
     "char": {
       "M": 6,
       "CC": 42,

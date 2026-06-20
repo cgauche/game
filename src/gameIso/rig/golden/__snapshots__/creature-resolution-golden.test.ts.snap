@@ -2403,10 +2403,10 @@ exports[`golden — résolution nom→apparence (anti-régression de-POC match-p
     "species": "Zombie",
   },
   "« L'abominable » Halagrundsor": {
-    "def": null,
+    "def": "Géant",
     "plan": "biped",
-    "scale": 1,
-    "species": "Humain",
+    "scale": 1.2,
+    "species": "Géant",
   },
   "« Prototype » du Clan Skryre": {
     "def": "Rat ogre",
