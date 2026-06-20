@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, codexLookup, type CodexItem } from './registry';
 import { codexMatch, deburr } from './search';
+import { isEditableCategory } from './CodexEdit';
 import { creatures, findTraitById } from '../../data';
 
 /** Toutes les lignes 'ref' (cross-réf) d'une fiche, sections + onglets confondus. */
@@ -62,6 +63,18 @@ describe('Codex registry — références INVERSES (relations.ts → fiches)', (
     // Une compétence très référencée (carac la cite toujours) → au moins une cross-réf inverse.
     const skills = categoryByKey('skills')!.items;
     expect(skills.some((s) => refLabelsOf(s).length > 0)).toBe(true);
+  });
+
+  it('catégorie « Psychologie » = filtre data-driven des traits à capacité psy, groupée par type', () => {
+    const psy = categoryByKey('psychologie');
+    expect(psy?.group).toBe('Effets');
+    expect(psy!.items.length).toBeGreaterThan(0);
+    // Peur DOIT en faire partie, groupée « Peur ».
+    const peur = psy!.items.find((i) => i.label.toLowerCase() === 'peur');
+    expect(peur, 'Peur dans Psychologie').toBeTruthy();
+    expect(peur!.group).toBe('Peur');
+    // C'est un VIEW de traits (pas un dataset) → l'édition DEV passe par « Traits », pas ici.
+    expect(isEditableCategory('psychologie')).toBe(false);
   });
 });
 

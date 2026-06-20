@@ -164,6 +164,11 @@ const SYMPTOM_LABEL: Record<string, string> = {
 };
 /** Libellé d'un jet de dés (`{n,d,plus?}`) — « 1d10 », « 2d10+2 ». */
 const diceLabel = (dc: { n: number; d: number; plus?: number }): string => `${dc.n}d${dc.d}${dc.plus ? `+${dc.plus}` : ''}`;
+/** Libellés FR des types de Psychologie (LDB 21) — affichage (la donnée porte le `psychType` STABLE). */
+const PSYCH_TYPE_LABEL: Record<string, string> = {
+  peur: 'Peur', terreur: 'Terreur', animosite: 'Animosité', haine: 'Haine', prejuge: 'Préjugé',
+  amour: 'Amour', camaraderie: 'Camaraderie', phobie: 'Phobie',
+};
 
 /**
  * SOURCE UNIQUE du contenu structuré d'une fiche de race — onglets Profil / Carrières / Détails.
@@ -243,6 +248,26 @@ export function raceFicheTabs(s: (typeof species)[number]): CodexTab[] {
     { title: 'Détails', sections: [raceDetailSection(s)] },
   ];
 }
+
+/** SOURCE UNIQUE de la fiche d'un Trait (partagée par la catégorie « Traits » ET le filtre
+ *  « Psychologie ») : manœuvres conférées + passifs + effets + réfs INVERSES (créatures/mutations) ;
+ *  la capacité psy (LDB 21) remonte en méta (type + immunité + Indice fixe). */
+const traitItem = (t: (typeof traits)[number]): CodexItem => {
+  const cap = t.capabilities;
+  return {
+    label: t.label, sub: t.prefix ?? undefined, desc: t.desc, html: true, source: src(t.source), appearance: t.appearance,
+    meta: facts(
+      cap?.psychType ? fact('Psychologie', PSYCH_TYPE_LABEL[cap.psychType] ?? cap.psychType) : null,
+      cap?.psychImmune ? fact('Immunité', '(Psychologie)') : null,
+      cap?.psychIndice != null ? fact('Indice', cap.psychIndice) : null,
+    ),
+    sections: sections(
+      chips('Manœuvres conférées', 'maneuvers', (t.grantsManeuvers ?? []).map((r) => refLabel('maneuvers', r))),
+      passiveSection(t.passive), effectsSection(t.effects),
+      ...reverseSections('traits', t.id), // Créatures ayant ce trait · Mutations le conférant
+    ),
+  };
+};
 
 export const CODEX: CodexCategory[] = [
   {
@@ -398,6 +423,15 @@ export const CODEX: CodexCategory[] = [
     })),
   },
   {
+    key: 'psychologie', label: 'Psychologie', group: 'Effets',
+    // Filtre DATA-DRIVEN des Traits à capacité psychologique (LDB 21, migration #1) : réutilise la
+    // fiche de Trait (traitItem) — « Créatures ayant ce trait » montre QUI cause/possède la Psychologie.
+    // Groupés par type (Peur, Terreur, Animosité…). Édition = catégorie « Traits » (source unique).
+    items: traits
+      .filter((t) => t.capabilities?.psychType || t.capabilities?.psychImmune)
+      .map((t) => ({ ...traitItem(t), group: t.capabilities?.psychType ? PSYCH_TYPE_LABEL[t.capabilities.psychType] ?? t.capabilities.psychType : 'Immunité' })),
+  },
+  {
     key: 'domains', label: 'Domaines', group: 'Magie',
     items: domains.map((d) => ({
       label: d.label, desc: d.desc, source: src(d.source),
@@ -465,14 +499,7 @@ export const CODEX: CodexCategory[] = [
   },
   {
     key: 'traits', label: 'Traits', group: 'Monde',
-    items: traits.map((t) => ({
-      label: t.label, sub: t.prefix ?? undefined, desc: t.desc, html: true, source: src(t.source), appearance: t.appearance,
-      sections: sections(
-        chips('Manœuvres conférées', 'maneuvers', (t.grantsManeuvers ?? []).map((r) => refLabel('maneuvers', r))),
-        passiveSection(t.passive), effectsSection(t.effects),
-        ...reverseSections('traits', t.id), // Créatures ayant ce trait · Mutations le conférant
-      ),
-    })),
+    items: traits.map(traitItem),
   },
   {
     key: 'locations', label: 'Lieux', group: 'Monde',
