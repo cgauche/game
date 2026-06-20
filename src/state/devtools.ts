@@ -39,6 +39,7 @@ import type { Cadence } from '../engine/cadence';
  *   __wfrp.flags()        → drapeaux de scénario ; __wfrp.flag('id', true) → force un drapeau
  *   __wfrp.go('scene-id') → saute vers une scène du projet ; __wfrp.fight() → liste/lance une rencontre
  *   __wfrp.time(min)      → avance l'horloge ; __wfrp.rest(jours) → dort (cascade quotidienne #T3)
+ *   __wfrp.quality(id,label,av?) → ajoute un Atout d'arme à l'arme active + Avantages (test renversement…)
  */
 /** Flux « jet différé » pilotable parmi des `pending*` ouverts — convention pending<Flux> ↔
  *  <flux>Roll/Confirm/Cancel. Les files à verbe propre (révélations, pause de Round, victoire)
@@ -429,6 +430,23 @@ export function buildApi() {
       resolveTalentFreeAttacks(() => useGame.getState(), useGame.setState, target, 'onCharged', enemy);
       bus.emit(EVT.SCENE_DIRTY);
       return `✅ ${enemy.name} charge ${target.name} (onCharged)`;
+    },
+
+    /** RECETTE : ajoute un Atout/Défaut (par libellé OU id de qualité) à l'arme ACTIVE d'un combattant
+     *  et, optionnellement, lui crédite des Avantages — ex. `quality('hero-1','Déstabilisante',2)` pour
+     *  tester le renversement onHit influençable. La qualité est reconnue label/id/casse (resolveQualities). */
+    quality: (id: string, label = 'Déstabilisante', advantage?: number) => {
+      const tweak = (c: Combatant): Combatant => {
+        if (c.id !== id) return c;
+        const weapons = (c.weapons ?? []).map((w, i) => (i === 0 ? { ...w, qualities: [...(w.qualities ?? []), label] } : w));
+        return { ...c, weapons, ...(advantage != null ? { advantage } : {}) };
+      };
+      useGame.setState((s) => ({
+        party: s.party.map(tweak),
+        battle: s.battle ? { ...s.battle, combatants: s.battle.combatants.map(tweak) } : s.battle,
+      }));
+      const c = g().battle?.combatants.find((x) => x.id === id) ?? g().party.find((x) => x.id === id);
+      return c ? `✅ ${c.name} : arme « ${c.weapons?.[0]?.name} » + ${label}${advantage != null ? ` · ${advantage} Av` : ''}` : `❌ ${id} introuvable`;
     },
 
     /** RECETTE : applique un État à un combattant (par id) via le VRAI addCondition → déclenche les
