@@ -362,17 +362,56 @@
     "type": "Atout",
     "subType": "Arme",
     "desc": "Les armes Déstabilisantes sont conçues pour s'accrocher à la jambe de l'adversaire ou pour le faire tomber de toute autre manière. Après avoir touché votre opposant, vous pouvez dépenser 2 Avantages et effectuer un Test opposé de Force/Athlétisme.<br><br>Si vous l'emportez, votre adversaire subit l'État À Terre (s'il est monté, il fait une chute de 2 mètres puis subit l'État À Terre). Si vous perdez, rien ne se passe en dehors des effets standards du résultat de l'opposition.",
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "choice",
+          "prompt": "Renverser",
+          "icon": "🤜",
+          "cost": {
+            "advantage": 2
+          },
+          "yes": {
+            "kind": "test",
+            "test": {
+              "characteristic": "F",
+              "skill": "athletisme",
+              "opposed": {
+                "attacker": "F",
+                "attackerSkill": "athletisme",
+                "attackerLabel": "Force/Athlétisme"
+              }
+            },
+            "success": {
+              "kind": "seq",
+              "steps": []
+            },
+            "fail": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "target",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "name": "a-terre"
+                  }
+                ]
+              }
+            }
+          },
+          "no": {
+            "kind": "seq",
+            "steps": []
+          }
+        }
+      }
+    ],
     "source": {
       "book": "AA",
       "page": 89
-    },
-    "capabilities": {
-      "onHitKnockdown": {
-        "advantageCost": 2,
-        "char": "F",
-        "skill": "athletisme",
-        "condition": "a-terre"
-      }
     }
   },
   {

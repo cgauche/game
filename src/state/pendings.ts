@@ -408,19 +408,6 @@ export interface PendingBladeTrap {
   /** d100 du jet de défense critique (localisation du Coup Critique si refusé). */
   roll: number;
 }
-/** Déstabilisante (Aux Armes p.89) : un HÉROS a touché avec une arme Déstabilisante et a les
- *  Avantages requis. Il CHOISIT de les dépenser pour un Test opposé (`char`/`skill`) qui, gagné,
- *  met la cible `condition` (À Terre). L'IA, elle, déclenche d'office (pas de modale). */
-export interface PendingKnockdown {
-  attackerId: string; // le héros qui a touché
-  targetId: string;   // la cible à renverser
-  weaponUid: string;  // l'arme du renversement (loadout) — résolue en NOM à l'affichage
-  quality: string;    // « Déstabilisante »
-  advantageCost: number;
-  char: CharKey;
-  skill?: string;
-  condition: string;  // « À Terre »
-}
 /** Défense réactive : un ennemi (IA) a figé son jet d'attaque (`atk`) contre un héros ;
  *  le joueur choisit le mode, lance SA défense (`def`), peut la relancer (Chance = défense
  *  uniquement), puis applique. `atk` est figé et n'est JAMAIS relancé. Le tour de l'IA est
@@ -613,6 +600,9 @@ export interface OpposedFreeze {
   attackerName?: string;
   /** Libellé du côté attaquant (« Force ») — affichage. */
   attackerLabel?: string;
+  /** Bonus de DR ajouté au jet du DÉFENSEUR avant l'opposition (Piège-lame, LDB 62 l.295) — `FlowTest.
+   *  opposed.bonusSL` figé : chaque (re)résolution oppose `def.sl + bonusSL` à `aT`. Absent/0 = Assommante. */
+  bonusSL?: number;
 }
 /** Contexte SÉRIALISABLE d'une ATTAQUE GRATUITE de talent (op `grantFreeAttack`) porté par une étape de
  *  cascade : la CIBLE de la frappe (`targetId` — un TIERS : le chargeur pour Frappe réactive), le plafond
@@ -623,8 +613,20 @@ export interface FreeAttackFreeze {
   cap: number;
   key: string;
 }
+/** Contexte SÉRIALISABLE de la CONSÉQUENCE d'un Test opposé de Piège-lame GAGNÉ (op `breakBlade`) porté par
+ *  une étape de cascade : l'attaquant désarmé (`attackerId`), la lame visée (`weaponUid`, uid universel), le
+ *  bonus de DR de la défense (`defSL`, LDB 62 l.295) et le DR FIGÉ de l'attaquant (`attackerSL`). La marge
+ *  nette = `(DR du défenseur + defSL) − attackerSL` ≥ 6 → la lame est BRISÉE (sauf Incassable), sinon
+ *  ARRACHÉE. Reconstruit l'`exec` impur de l'applier (le bris/désarmement passe par `runCombatFlow` + le
+ *  hook `bladeTrap`). Tout est primitif → mirroir dans `meta.bladeTrap` pour la voie cascade (héros manuel). */
+export interface BladeTrapFreeze {
+  attackerId: string;
+  weaponUid: string;
+  defSL: number;
+  attackerSL: number;
+}
 export interface CascadeStepMeta {
-  [key: string]: number | string | boolean | Flow | OpposedFreeze | FreeAttackFreeze | undefined;
+  [key: string]: number | string | boolean | Flow | OpposedFreeze | FreeAttackFreeze | BladeTrapFreeze | undefined;
   /** Branche de réussite d'une étape `triggeredTest` (exécutée via `applyTriggeredTestBranch`). */
   onSuccess?: Flow;
   /** Branche d'échec d'une étape `triggeredTest`. */
@@ -635,6 +637,11 @@ export interface CascadeStepMeta {
   choiceNo?: Flow;
   /** Coût d'Avantage d'une étape `triggeredChoice` (dépensé sur OUI si payable) — absent = gratuit. */
   choiceCost?: number;
+  /** CIBLE de la branche d'un `triggeredChoice` quand elle DIFFÈRE du décideur (`on:'victim'` : le décideur
+   *  est le porteur/attaquant `caster`, mais la branche `yes` vise la VICTIME — Déstabilisante : Test opposé
+   *  contre la cible touchée). Id sérialisable, restauré en `ctx.target` par l'applier. Absent ⇒ la cible =
+   *  le décideur (Frappe réactive : Test sur soi, le tiers voyage dans `freeAttack`). */
+  choiceTargetId?: string;
   /** CONTINUATION reprise APRÈS la branche d'un `triggeredTest`/`triggeredChoice` enfoui dans un Flow (le
    *  reste du `seq` qui suivait le nœud). Pur-donnée (voyage en coop) ; rejouée par l'applier via
    *  `runCombatFlow`. Absent (= EMPTY_FLOW) pour un nœud top-level (Mâchoires) → aucune suite. */
@@ -645,6 +652,9 @@ export interface CascadeStepMeta {
   /** Contexte d'attaque gratuite (Frappe réactive : la branche success porte `grantFreeAttack`) — la frappe
    *  vise le tiers `targetId`. Reconstruit l'`exec` impur de l'applier. Absent ⇒ branche purement data. */
   freeAttack?: FreeAttackFreeze;
+  /** Contexte de Piège-lame GAGNÉ (la branche success porte `breakBlade`) — désarme/brise la lame de
+   *  l'attaquant ciblé. Reconstruit l'`exec` impur de l'applier. Absent ⇒ branche purement data. */
+  bladeTrap?: BladeTrapFreeze;
 }
 /** Le jet d'UNE étape de cascade (slot du flux multi SÉQUENTIEL `FLOWS.cascade`). */
 export interface CascadeRoll {
@@ -701,9 +711,6 @@ export interface CascadeStep extends RollParticipant {
   /** Étape de CHOIX « piège-lame » (folding P3b) : contexte du Test opposé ; l'applier appelle
    *  `resolveBladeTrap(step.bladeTrap, chosen === 'trap')`. */
   bladeTrap?: PendingBladeTrap;
-  /** Étape de CHOIX « renversement » (Déstabilisante, Aux Armes p.89) : contexte du Test opposé ;
-   *  l'applier 'knockdown' appelle `resolveKnockdown(step.knockdown, chosen === 'yes')`. */
-  knockdown?: PendingKnockdown;
   /** Étape-JET « Maladresse » (LDB 14, Tableau des Oups !) : SOURCE UNIQUE de la maladresse — l'arme
    *  utilisée + le résultat tiré vivent ICI (l'acteur est `actorId`). Plus de `pendingFumble` top-level
    *  parallèle à désynchroniser : si l'étape existe la donnée existe, si la cascade ferme la maladresse

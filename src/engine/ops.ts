@@ -326,6 +326,19 @@ export type GameOp =
   | { op: 'grantFreeAttack'; weapon: 'held' | 'mainHand' | 'natural'; when: 'available' | 'immediate';
       cost?: { advantage?: number; movement?: boolean; advantageOrMovement?: boolean };
       activeIf?: 'frenzied'; perChargerOncePerRound?: boolean; label?: string }
+  /** Marqueur IMPUR de la branche d'ÉCHEC du Test de Calme d'interruption de Focalisation (LDB 46 l.194) :
+   *  la cible perd tous les DR focalisés (couverts par son composant) et subit une Incantation Imparfaite
+   *  Mineure. Résolu par la couche state (combatFlow : `applyFocusInterruption` via le hook injecté
+   *  `focusInterrupt` appelé par `runCombatFlow`), qui détient get/set et le combattant. `applyOps` (moteur
+   *  pur) le laisse INERTE — comme `grantFreeAttack`/`summon`/`zone`. */
+  | { op: 'interruptFocus' }
+  /** Marqueur IMPUR de la branche de VICTOIRE d'un Test opposé de Piège-lame (LDB 62 l.295) : l'adversaire
+   *  est désarmé (sa lame arrachée) et, sur un Succès Stupéfiant (marge nette ≥ 6 DR), sa lame est BRISÉE à
+   *  moins qu'elle ne possède l'Atout Incassable. Résolu par la couche state (combatFlow : `applyBladeTrap`
+   *  via le hook injecté `bladeTrap` appelé par `runCombatFlow`), qui détient get/set, l'attaquant ciblé et
+   *  l'arme visée (contexte sérialisé `ctx.bladeTrap`). `applyOps` (moteur pur) le laisse INERTE — comme
+   *  `grantFreeAttack`/`interruptFocus`/`summon`/`zone`. */
+  | { op: 'breakBlade' }
   /** Effet RÉCURRENT multi-Rounds : pose un effet actif porteur qui re-joue `ops` à CHAQUE fin de
    *  Round tant que le sort dure (`ctx.defaultDurationRounds`, Surincantation de Durée incluse —
    *  LDB 47). Généralise l'ancien « État par Round » : 1 Ration/Round (Récolte de Rhya), 1 État
@@ -1053,8 +1066,11 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'summon':
       case 'zone':
       case 'grantFreeAttack':
-        // Effets IMPURS (grille + initiative / zones de bataille / ouverture d'une frappe) — résolus par la
-        // couche state (combatFlow : applySummon / placeSpellZone ; le hook `freeAttack` appelé par
+      case 'interruptFocus':
+      case 'breakBlade':
+        // Effets IMPURS (grille + initiative / zones de bataille / ouverture d'une frappe / interruption de
+        // Focalisation / désarmement-bris de Piège-lame) — résolus par la couche state (combatFlow :
+        // applySummon / placeSpellZone ; les hooks `freeAttack`/`focusInterrupt`/`bladeTrap` appelés par
         // `runCombatFlow`), qui détient get/set et le combattant. `applyOps` (moteur pur) les laisse INERTES.
         break;
       case 'polymorph':

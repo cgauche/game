@@ -5,7 +5,7 @@
  */
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { LootGear, PendingCast, PendingDeviation, PendingBladeTrap, PendingKnockdown, FreeAttackFreeze } from './pendings';
+import type { LootGear, PendingCast, PendingDeviation, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze } from './pendings';
 import { Combatant, ItemInstance, HitLocation, Weapon, DIFFICULTY_MODIFIERS, HIT_LOCATION_LABELS } from '../engine/types';
 import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
@@ -95,9 +95,8 @@ import { rollMiscast, componentDowngrade, type MiscastSeverity } from '../engine
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } from '../engine/skills';
-import { findSkill, findSkillById, findManeuverById, findDomainById, findTalentById } from '../data';
+import { findManeuverById, findDomainById, findTalentById } from '../data';
 import { norm } from '../lib/normalize';
-import { slugId } from '../data/slug';
 import { recomputeLoadout, weaponWithAmmo, compatibleAmmo, ammoFamily, damageArmour, buildWeapon } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, COND } from '../engine/conditions';
@@ -180,7 +179,7 @@ import {
   emitCreatureAttackAnim, trampleTarget, bestDefenseMode,
   rollManeuverAttacker, maneuverAttackerDifficulty, resolveManeuver,
 } from './combatManeuvers';
-import { spellFlowFor, spellOps, type Flow, type EffectTrigger } from './flow';
+import { spellFlowFor, spellOps, testFlow, EMPTY_FLOW, type Flow, type EffectTrigger } from './flow';
 import { startCascade, registerCascadeApplier } from './cascade';
 
 /** Sonné : tout adversaire qui frappe la cible en CORPS À CORPS gagne +1 Avantage
@@ -1348,41 +1347,6 @@ export function applyAttackResult(
   // dispatcher générique (state/triggeredEffects). `location` (Assommante Tête) et `woundsDealt` (Venin
   // sur PB) alimentent les Conditions Flow de gating.
   if (res.hit) for (const line of fireTriggers(get, attacker, 'onHit', { victim: target, weapon, woundsDealt: res.woundsLost, location: res.location, attackKind: creatureAttackKind(weapon), rng: battleRng(), set })) log.push(ev('condition', line, target.id));
-  // Déstabilisante (Aux Armes p.89) : après une touche, l'attaquant PEUT dépenser des Avantages pour
-  // un Test opposé Force/Athlétisme ; gagné, la cible est mise À Terre. HÉROS → étape de CHOIX de la
-  // cascade d'attaque (pushCombatStep, applier 'knockdown') ; IA → déclenché d'office.
-  if (res.hit && weapon.type === 'melee' && !isOutOfAction(target)) {
-    for (const { def, caps } of resolveQualities(weapon)) {
-      const kd = caps?.onHitKnockdown;
-      if (!kd || (attacker.advantage ?? 0) < kd.advantageCost || hasCondition(target, kd.condition)) continue;
-      if (attacker.kind === 'hero') {
-        // Folding (comme Déviation/Piège-lame) : le choix du Renversement est une ÉTAPE de CHOIX de la
-        // cascade d'ATTAQUE. L'applier 'knockdown' rejoue
-        // resolveKnockdown sur l'option. L'attaquant/cible sont déjà montrés par la ligne d'attaque figée.
-        pushCombatStep(set, {
-          id: `cons-knockdown-${target.id}`, kind: 'knockdown', actorId: attacker.id, icon: '🤜',
-          label: `🤜 ${def.key} — renverser ?`,
-          options: [{ key: 'yes', label: `Renverser (${kd.advantageCost} Av)` }, { key: 'no', label: 'Renoncer' }],
-          defaultChoice: 'no', interactive: true,
-          knockdown: { attackerId: attacker.id, targetId: target.id, weaponUid: weapon.uid!, quality: def.key, advantageCost: kd.advantageCost, char: kd.char, skill: kd.skill, condition: kd.condition },
-        });
-        break; // un seul renversement proposé par touche
-      }
-      attacker.advantage = (attacker.advantage ?? 0) - kd.advantageCost;
-      const kdSkillId = kd.skill ? (findSkillById(kd.skill) ? kd.skill : (findSkill(kd.skill)?.id ?? slugId(kd.skill))) : ''; // id stable d'abord
-      const aSk = kd.skill ? (attacker.skills.find((s) => s.skillId === kdSkillId)?.advances ?? 0) : 0;
-      const dSk = kd.skill ? (target.skills.find((s) => s.skillId === kdSkillId)?.advances ?? 0) : 0;
-      const won = opposedTest(effectiveChar(attacker, kd.char) + aSk, effectiveChar(target, kd.char) + dSk, battleRng()).winner === 'attacker';
-      if (won) {
-        addCondition(target, kd.condition);
-        const dline = `${target.name} est ${kd.condition} (${def.key}, ${kd.advantageCost} Avantages).`;
-        log.push(ev('condition', dline, target.id));
-        if (target.kind === 'hero') pushReveal(set, { kind: 'assommante', title: def.key, lines: [dline], subjectId: target.id, severity: 'minor' });
-      } else {
-        log.push(ev('detail', `${attacker.name} cherche à renverser ${target.name} (${def.key}, ${kd.advantageCost} Avantages) — sans succès.`, target.id));
-      }
-    }
-  }
   // Tir de zone (Aux Armes p.89) : nuage de projectiles. À bout portant (≤ 1 case ≈ 2 m) → +Indice
   // Dégâts sur la cible ; à portée → la touche frappe AUSSI les Indice créatures les plus proches
   // (≤ Indice mètres, 1 case = 2 m). Réutilise la géométrie de zone (comme le Souffle de créature).
@@ -1431,28 +1395,48 @@ export function applyAttackResult(
 }
 
 /**
- * Interruption de Focalisation (LDB 46 l.193-194) : « Si vous êtes perturbé par
- * quelque chose — bruits forts, Dégâts subis… — vous devrez réussir un Test de
- * Calme Difficile (−20) ou subir une Incantation Imparfaite Mineure et perdre
- * tous les DR accumulés au Test étendu de Focalisation. » Jet SUBI auto-résolu,
- * révélé au joueur pour un héros (kind 'calme' — précédent : Calme de Fuite).
+ * Interruption de Focalisation (LDB 46 l.194) : « La concentration est vitale pour focaliser. Si vous êtes
+ * perturbé par quelque chose – bruits forts, Dégâts subis… –, vous devrez réussir un Test de Calme Difficile
+ * (-20) ou subir une Incantation Imparfaite Mineure et perdre tous les DR accumulés jusque-là au Test étendu
+ * de Focalisation. »
+ *
+ * Le Test de Calme du focaliseur est ROUTÉ par l'exécuteur de Flow CADENCE-AWARE (`runCombatFlow`) : héros en
+ * cadence MANUELLE → étape de cascade INFLUENÇABLE (il PEUT dépenser sa Chance / sa Résilience pour garder son
+ * sort) ; ennemi / cadence auto → jet inline. La branche d'ÉCHEC porte le marqueur `interruptFocus`, dont la
+ * conséquence PROCÉDURALE (perte des DR + Imparfaite Mineure) s'exécute APRÈS le Test résolu, via le hook
+ * `focusInterrupt` (→ `applyFocusInterruption`). Le résultat est porté par l'étape de cascade (manuel) ou la
+ * ligne inline (auto). Le journal inline part dans la file différée (`pendingLogQueue`,
+ * drainée par l'appelant — `applyAttackResult` / `applyCast`).
  */
 export function checkFocusInterruption(get: Get, set: SetFn, target: Combatant): string[] {
   if (!target.focus || target.focus.dr <= 0) return [];
-  const t = rollTest(testValue(target, 'calme'), 'difficile', battleRng());
-  const lines = [
-    `${target.name}, frappé en pleine Focalisation — Test de Calme Difficile (−20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'concentration maintenue' : 'concentration BRISÉE'}.`,
-  ];
-  if (!t.success) {
-    const focusedSpellId = target.focus.spell; // Sort focalisé interrompu → couvert par son composant (LDB 46 l.161)
-    lines.push(`${target.name} perd les ${target.focus.dr} DR focalisés sur ${findSpellById(focusedSpellId)?.label ?? focusedSpellId}.`);
-    target.focus = undefined;
-    const compUsed = useSpellComponent(target, focusedSpellId, lines); // un composant couvre aussi la Focalisation (incantation en cours)
-    lines.push(...applyMiscast(get, set, target, 'mineure', { suppressReveal: true, componentDowngrade: compUsed })); // la révélation « Calme » ci-dessous porte déjà ces lignes
-  }
-  if (target.kind === 'hero')
-    pushReveal(set, { kind: 'calme', title: 'Focalisation interrompue', dice: t.roll, lines: [...lines], subjectId: target.id, severity: 'minor' });
-  return lines;
+  // Branche d'échec : marqueur `interruptFocus` sur la cible (le focaliseur) → hook injecté. Succès = rien
+  // (concentration maintenue, DR conservés). Le nœud `test` est résolu cadence-aware par `runCombatFlow`.
+  const flow = testFlow(
+    { skill: 'calme', difficulty: 'difficile', label: 'Focalisation interrompue' },
+    EMPTY_FLOW,
+    { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'interruptFocus' }] } },
+  );
+  runCombatFlow({ mode: 'combat', get, set, target, caster: target, label: 'Focalisation interrompue' }, flow);
+  return []; // le journal voyage par la cascade (manuel) ou la file différée (inline) — pas de retour inline
+}
+
+/**
+ * Conséquence PROCÉDURALE d'un Test de Calme d'interruption RATÉ (op `interruptFocus`, hook `focusInterrupt`) :
+ * le focaliseur perd tous les DR accumulés sur son Sort focalisé (couverts par son composant — LDB 46 l.161) et
+ * subit une Incantation Imparfaite Mineure (LDB 46 l.194). L'Imparfaite garde son rendu propre (étape de cascade
+ * `miscast` pour un héros / lignes pour un ennemi) : le Test de Calme est l'étape influençable visible,
+ * l'Imparfaite est sa conséquence en aval. Les lignes partent dans la file
+ * différée (`pendingLogQueue`), drainée par l'appelant qui réécrit `battle.log`.
+ */
+export function applyFocusInterruption(get: Get, set: SetFn, focuser: Combatant): void {
+  if (!focuser.focus || focuser.focus.dr <= 0) return; // garde (le composant/DR a pu changer entre Test et conséquence)
+  const focusedSpellId = focuser.focus.spell;
+  const lines = [`${focuser.name} perd les ${focuser.focus.dr} DR focalisés sur ${findSpellById(focusedSpellId)?.label ?? focusedSpellId}.`];
+  focuser.focus = undefined;
+  const compUsed = useSpellComponent(focuser, focusedSpellId, lines); // un composant couvre aussi la Focalisation (incantation en cours)
+  lines.push(...applyMiscast(get, set, focuser, 'mineure', { componentDowngrade: compUsed }));
+  set({ pendingLogQueue: [...get().pendingLogQueue, ...lines.map((line) => ({ line, cid: focuser.id }))] });
 }
 
 /** Une Maladresse de l'attaquant dans un résultat d'attaque ? (jet propre raté + double, LDB 14 l.53 ;
@@ -3209,93 +3193,75 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
   return false;
 }
 
-/** Résolution du choix Piège-lame (LDB 62 l.292-294). `trap=false` → Coup Critique normal (LDB 14 l.7) ;
- *  `trap=true` → Test opposé de Force (+DR de la défense) : victoire = désarme, Succès Stupéfiant (DR
- *  net ≥ 6) = brise la lame sauf Incassable (sauvegarde Solide), échec = l'adversaire se libère. */
-/** Résout un Piège-lame — invoqué par l'applier de l'étape de séquence 'bladeTrap' (la reprise de l'IA
- *  part de la fermeture de séquence, pas ici). */
-export function resolveBladeTrap(get: Get, set: SetFn, pbt: PendingBladeTrap, trap: boolean): void {
+/**
+ * Conséquence PROCÉDURALE d'un Test opposé de Piège-lame GAGNÉ par le défenseur (op `breakBlade`, hook
+ * `bladeTrap`) : l'adversaire est désarmé de la lame visée (`bt.weaponUid`), arrachée de ses mains. Marge
+ * NETTE `(DR final du défenseur + bt.defSL) − bt.attackerSL` ≥ 6 (Succès Stupéfiant, LDB 62 l.295) → la lame
+ * est BRISÉE à moins qu'elle ne possède l'Atout Incassable (sauvegarde Solide gérée par `wearActiveWeapon`).
+ * Échec/égalité au Test ⇒ branche `fail` (pas d'op, l'adversaire libère sa lame) → cette fonction n'est pas
+ * appelée. Les lignes partent dans la file différée (`pendingLogQueue`), drainée par l'appelant qui réécrit
+ * `battle.log`. `defenderSL` = le DR PROPRE du jet résolu (la marge nette se recompose avec `bt`).
+ */
+export function applyBladeTrap(get: Get, set: SetFn, defender: Combatant, bt: BladeTrapFreeze, defenderSL: number): void {
   const battle = get().battle;
   if (!battle) return;
-  const defender = battle.combatants.find((c) => c.id === pbt.defenderId);
-  const attacker = battle.combatants.find((c) => c.id === pbt.attackerId);
-  if (!defender || !attacker) return;
-  const parryWeaponName = defender.weapons.find((w) => w.uid === pbt.parryWeaponUid)?.name ?? 'arme'; // uid → NOM (affichage)
+  const attacker = battle.combatants.find((c) => c.id === bt.attackerId);
+  if (!attacker || isOutOfAction(attacker)) return;
+  const drop = attacker.weapons.find((w) => w.uid === bt.weaponUid);
+  if (!drop) return;
+  const netSL = defenderSL + bt.defSL - bt.attackerSL; // marge nette du défenseur vainqueur (LDB 62 l.295)
   const lines: string[] = [];
-  if (!trap) {
-    lines.push(`${defender.name} place un Critique sur sa défense.`);
-    applyOpposedCritical(get, set, attacker, pbt.roll, { attackerId: defender.id, weapon: parryWeaponName }, lines);
-  } else if (!isOutOfAction(attacker)) {
-    // Test opposé de Force, le piégeur ajoutant son DR du Test de Corps à corps précédent (l.293).
-    const dT = rollTest(effectiveChar(defender, 'F'), 'intermediaire', battleRng());
-    const aT = rollTest(effectiveChar(attacker, 'F'), 'intermediaire', battleRng());
-    const opp = resolveOpposed({ ...dT, sl: dT.sl + pbt.defSL }, aT);
-    lines.push(`Test opposé de Force : ${defender.name} 🎲 ${dT.roll}/${dT.target} (DR ${dT.sl}+${pbt.defSL}) contre ${attacker.name} 🎲 ${aT.roll}/${aT.target} (DR ${aT.sl}).`);
-    if (opp.winner === 'attacker') {
-      const drop = attacker.weapons.find((w) => w.uid === pbt.weapon.uid); // uid universel : plus de repli par nom
-      if (drop && opp.netSL >= 6) {
-        // Succès Stupéfiant : la lame est BRISÉE, à moins qu'elle ne possède l'Atout Incassable (l.294).
-        wearActiveWeapon(attacker, drop, true);
-        lines.push(drop.destroyed
-          ? `La lame de ${attacker.name} (${drop.name}) est BRISÉE par la manœuvre !`
-          : `${drop.name} résiste à la casse (Incassable/Solide) mais est arrachée des mains de ${attacker.name}.`);
-        attacker.weapons = attacker.weapons.filter((w) => w !== drop);
-      } else if (drop) {
-        attacker.weapons = attacker.weapons.filter((w) => w !== drop);
-        lines.push(`${attacker.name} laisse tomber ${drop.name}, arrachée de ses mains !`);
-      }
-    } else {
-      lines.push(`${attacker.name} libère sa lame et peut combattre normalement.`);
-    }
+  if (netSL >= 6) {
+    // Succès Stupéfiant : la lame est BRISÉE, à moins qu'elle ne possède l'Atout Incassable (l.295).
+    wearActiveWeapon(attacker, drop, true);
+    lines.push(drop.destroyed
+      ? `La lame de ${attacker.name} (${drop.name}) est BRISÉE par la manœuvre !`
+      : `${drop.name} résiste à la casse (Incassable/Solide) mais est arrachée des mains de ${attacker.name}.`);
+  } else {
+    lines.push(`${attacker.name} laisse tomber ${drop.name}, arrachée de ses mains !`);
   }
-  const b = get().battle!;
-  set({ battle: { ...b, log: [...b.log, ...evLines(lines, 'info', defender.id, attacker.id)] } });
-  // Modale seulement si un héros est d'un côté du piège (spec coop §4bis) — déjà journalisé ci-dessus.
-  if (attacker.kind === 'hero' || defender.kind === 'hero')
-    pushReveal(set, { kind: 'assommante', title: 'Piège-lame', lines: [...lines], subjectId: attacker.id, actorId: defender.id, weapon: parryWeaponName, severity: 'minor' });
+  attacker.weapons = attacker.weapons.filter((w) => w !== drop);
+  set({ pendingLogQueue: [...get().pendingLogQueue, ...lines.map((line) => ({ line, cid: defender.id }))] });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
 }
 
-/** Applier de l'étape de CHOIX « piège-lame » (folding P3b) : « Piéger » tente le Test opposé de Force,
- *  « Coup Critique » inflige le critique normal. Le RÉSULTAT (kind 'assommante') route lui-même dans la
- *  séquence (P2) ; `resume:false` → reprise par la fermeture de séquence. */
+/** Applier de l'étape de CHOIX « piège-lame » (LDB 62 l.292-295). « Coup Critique » (défaut) inflige le
+ *  critique normal sur sa défense (LDB 14 l.7). « Piéger » route un Test opposé de Force CADENCE-AWARE
+ *  (le héros défenseur PEUT dépenser Chance/Résilience) via `runCombatFlow` : le défenseur jette, l'attaquant
+ *  (porteur) oppose sa Force, en ajoutant le DR de la défense (`defSL`) au jet du défenseur (l.295) ; la
+ *  branche de VICTOIRE porte l'op IMPURE `breakBlade` (désarme/brise, conséquence procédurale APRÈS le Test). */
 registerCascadeApplier('bladeTrap', (get, set, step) => {
-  if (step.bladeTrap) resolveBladeTrap(get, set, step.bladeTrap, step.chosen === 'trap');
-});
-
-/** Déstabilisante (Aux Armes p.89) : résout le choix du héros de renverser (dépense d'Avantages +
- *  Test opposé Force/Athlétisme → À Terre). `accept=false` : il renonce, rien n'est dépensé. */
-export function resolveKnockdown(get: Get, set: SetFn, accept: boolean, pk: PendingKnockdown): void {
-  const { battle } = get();
-  if (!battle) return;
-  const attacker = battle.combatants.find((c) => c.id === pk.attackerId);
-  const target = battle.combatants.find((c) => c.id === pk.targetId);
-  if (!attacker || !target) return;
-  const lines: string[] = [];
-  if (accept && (attacker.advantage ?? 0) >= pk.advantageCost && !isOutOfAction(target) && !hasCondition(target, pk.condition)) {
-    attacker.advantage = (attacker.advantage ?? 0) - pk.advantageCost;
-    const pkSkillId = pk.skill ? (findSkillById(pk.skill) ? pk.skill : (findSkill(pk.skill)?.id ?? slugId(pk.skill))) : ''; // id stable d'abord
-    const aSk = pk.skill ? (attacker.skills.find((s) => s.skillId === pkSkillId)?.advances ?? 0) : 0;
-    const dSk = pk.skill ? (target.skills.find((s) => s.skillId === pkSkillId)?.advances ?? 0) : 0;
-    const aT = rollTest(effectiveChar(attacker, pk.char) + aSk, 'intermediaire', battleRng());
-    const dT = rollTest(effectiveChar(target, pk.char) + dSk, 'intermediaire', battleRng());
-    const opp = resolveOpposed(aT, dT);
-    lines.push(`Renversement (${pk.quality}) — Test opposé : ${attacker.name} 🎲 ${aT.roll}/${aT.target} (DR ${aT.sl}) contre ${target.name} 🎲 ${dT.roll}/${dT.target} (DR ${dT.sl}).`);
-    lines.push(opp.winner === 'attacker' ? `${target.name} est ${pk.condition} !` : `${target.name} garde son équilibre.`);
-    if (opp.winner === 'attacker') addCondition(target, pk.condition);
-  } else if (accept) {
-    lines.push(`${attacker.name} ne peut plus tenter le renversement.`);
+  const pbt = step.bladeTrap;
+  if (!pbt) return;
+  const battle = get().battle;
+  const defender = battle?.combatants.find((c) => c.id === pbt.defenderId);
+  const attacker = battle?.combatants.find((c) => c.id === pbt.attackerId);
+  if (!defender || !attacker) return;
+  if (step.chosen !== 'trap') {
+    // Coup Critique normal sur la défense (le défenseur place le Critique sur l'attaquant).
+    const parryWeaponName = defender.weapons.find((w) => w.uid === pbt.parryWeaponUid)?.name ?? 'arme';
+    const lines = [`${defender.name} place un Critique sur sa défense.`];
+    applyOpposedCritical(get, set, attacker, pbt.roll, { attackerId: defender.id, weapon: parryWeaponName }, lines);
+    const b = get().battle!;
+    set({ battle: { ...b, log: [...b.log, ...evLines(lines, 'info', defender.id, attacker.id)] } });
+    bus.emit(EVT.SCENE_DIRTY);
+    checkBattleOver(get, set);
+    return;
   }
-  const b = get().battle!;
-  if (lines.length) set({ battle: { ...b, log: [...b.log, ...evLines(lines, 'info', attacker.id, target.id)] } });
-  bus.emit(EVT.SCENE_DIRTY);
-  checkBattleOver(get, set);
-  // PAS de resumeEnemyTurn : la cascade d'attaque (purpose:'combat') reprend l'IA à sa finalisation.
-}
-/** Applier de l'étape de CHOIX « renversement » (Déstabilisante) — folding façon Déviation/Piège-lame. */
-registerCascadeApplier('knockdown', (get, set, step) => {
-  if (step.knockdown) resolveKnockdown(get, set, step.chosen === 'yes', step.knockdown);
+  if (isOutOfAction(attacker)) return;
+  // Test opposé de Force CADENCE-AWARE : la branche success porte `breakBlade` (désarme/brise). Le bonus de DR
+  // de la défense (`defSL`, l.295) s'ajoute au jet du défenseur via `opposed.bonusSL` (modifie vainqueur ET
+  // marge nette) ; le contexte `bladeTrap` cible la lame de l'attaquant. `resolveFlowTest` complète le freeze
+  // avec le DR de l'attaquant qu'IL jette (`attackerSL`) → la conséquence recompose la marge nette, sans
+  // double-jet. `runCombatFlow` route le Test (héros manuel → cascade influençable ; ennemi/auto → inline).
+  const bt: BladeTrapFreeze = { attackerId: attacker.id, weaponUid: pbt.weapon.uid!, defSL: pbt.defSL, attackerSL: 0 };
+  const flow = testFlow(
+    { characteristic: 'F', label: 'Piège-lame', opposed: { attacker: 'F', attackerLabel: 'Force', bonusSL: pbt.defSL } },
+    { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'breakBlade' }] } },
+    EMPTY_FLOW,
+  );
+  runCombatFlow({ mode: 'combat', get, set, target: defender, caster: attacker, label: 'Piège-lame', bladeTrap: bt }, flow);
 });
 
 /** Reprend le tour de l'IA suspendu par la modale de défense (= ce qu'aurait fait

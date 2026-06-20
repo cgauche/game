@@ -1,5 +1,7 @@
 import { useGame } from './store';
 import { checkBattleOver, resolveTalentFreeAttacks } from './combatFlow';
+import { pushCombatStep } from './combatEffects';
+import type { PendingBladeTrap } from './pendings';
 import { bus, EVT } from './bus';
 import { ev } from './combatLog';
 import { isOutOfAction, addCondition } from '../engine/conditions';
@@ -39,6 +41,7 @@ import type { Cadence } from '../engine/cadence';
  *   __wfrp.flags()        → drapeaux de scénario ; __wfrp.flag('id', true) → force un drapeau
  *   __wfrp.go('scene-id') → saute vers une scène du projet ; __wfrp.fight() → liste/lance une rencontre
  *   __wfrp.time(min)      → avance l'horloge ; __wfrp.rest(jours) → dort (cascade quotidienne #T3)
+ *   __wfrp.quality(id,label,av?) → ajoute un Atout d'arme à l'arme active + Avantages (test renversement…)
  */
 /** Flux « jet différé » pilotable parmi des `pending*` ouverts — convention pending<Flux> ↔
  *  <flux>Roll/Confirm/Cancel. Les files à verbe propre (révélations, pause de Round, victoire)
@@ -431,6 +434,23 @@ export function buildApi() {
       return `✅ ${enemy.name} charge ${target.name} (onCharged)`;
     },
 
+    /** RECETTE : ajoute un Atout/Défaut (par libellé OU id de qualité) à l'arme ACTIVE d'un combattant
+     *  et, optionnellement, lui crédite des Avantages — ex. `quality('hero-1','Déstabilisante',2)` pour
+     *  tester le renversement onHit influençable. La qualité est reconnue label/id/casse (resolveQualities). */
+    quality: (id: string, label = 'Déstabilisante', advantage?: number) => {
+      const tweak = (c: Combatant): Combatant => {
+        if (c.id !== id) return c;
+        const weapons = (c.weapons ?? []).map((w, i) => (i === 0 ? { ...w, qualities: [...(w.qualities ?? []), label] } : w));
+        return { ...c, weapons, ...(advantage != null ? { advantage } : {}) };
+      };
+      useGame.setState((s) => ({
+        party: s.party.map(tweak),
+        battle: s.battle ? { ...s.battle, combatants: s.battle.combatants.map(tweak) } : s.battle,
+      }));
+      const c = g().battle?.combatants.find((x) => x.id === id) ?? g().party.find((x) => x.id === id);
+      return c ? `✅ ${c.name} : arme « ${c.weapons?.[0]?.name} » + ${label}${advantage != null ? ` · ${advantage} Av` : ''}` : `❌ ${id} introuvable`;
+    },
+
     /** RECETTE : applique un État à un combattant (par id) via le VRAI addCondition → déclenche les
      *  triggers onGainCondition (Mâchoires d'acier ouvre alors sa modale de Résistance influençable). */
     condition: (id: string, name = 'sonne', n = 1) => {
@@ -443,6 +463,46 @@ export function buildApi() {
         battle: st.battle ? { ...st.battle, combatants: [...st.battle.combatants] } : st.battle,
       }));
       return `✅ ${c.name} : +${n} ${name}`;
+    },
+
+    /** RECETTE : ouvre l'étape de CHOIX « Piège-lame » (LDB 62 l.292-295) — `bladeTrap('hero-1','enemy-1', 2)`.
+     *  Le héros `defenderId` a paré avec une arme Piège-lame face à la lame de `attackerId` (uid assigné si
+     *  besoin) ; `defSL` = DR de la défense ajouté au Test opposé. Choisir « Piéger » ouvre alors un Test
+     *  opposé de Force CADENCE-AWARE (héros manuel → étape influençable) ; succès → désarme (Stupéfiant →
+     *  brise sauf Incassable). Reproduit l'entrée de production sans avoir à forcer un Critique défensif. */
+    bladeTrap: (defenderId: string, attackerId: string, defSL = 4) => {
+      const b = g().battle;
+      if (!b) return '❌ pas en combat';
+      const defender = b.combatants.find((c) => c.id === defenderId);
+      const attacker = b.combatants.find((c) => c.id === attackerId);
+      if (!defender || !attacker) return `❌ défenseur/attaquant introuvable (${defenderId}/${attackerId})`;
+      const weapon = attacker.weapons?.[0];
+      if (!weapon) return `❌ ${attacker.name} n'a pas d'arme active`;
+      if (!weapon.uid) weapon.uid = `dev-blade-${attackerId}`; // uid universel requis pour cibler la lame
+      const pbt: PendingBladeTrap = { defenderId, attackerId, weapon, parryWeaponUid: defender.weapons?.[0]?.uid ?? 'parry', defSL, roll: 33 };
+      pushCombatStep(useGame.setState, {
+        id: `cons-bladetrap-${defenderId}`, kind: 'bladeTrap', actorId: defenderId, icon: '🗡️',
+        label: 'Parade — piéger la lame ?',
+        options: [{ key: 'trap', label: '🗡️ Piéger la lame' }, { key: 'crit', label: '💥 Coup Critique' }],
+        defaultChoice: 'crit', bladeTrap: pbt, interactive: true,
+      });
+      useGame.setState((s) => ({ battle: s.battle ? { ...s.battle, combatants: [...s.battle.combatants] } : s.battle }));
+      return `✅ Piège-lame : ${defender.name} pare ${attacker.name} (${weapon.name}, +${defSL} DR) → choix Piéger/Critique`;
+    },
+
+    /** RECETTE : met un combattant en FOCALISATION (DR cumulé sur un sort) — `focus('hero-1')` →
+     *  Armure Aethyrique DR 3. Frapper ensuite le focaliseur (attaque ennemie / `__wfrp.condition` +
+     *  dégâts) déclenche `checkFocusInterruption` : Test de Calme Difficile INFLUENÇABLE (héros manuel). */
+    focus: (id: string, spell = 'armure-aethyrique', dr = 3) => {
+      const s = g();
+      const c = s.battle?.combatants.find((x) => x.id === id) ?? s.party.find((x) => x.id === id);
+      if (!c) return `❌ combattant ${id} introuvable`;
+      c.focus = { spell, dr };
+      useGame.setState((st) => ({
+        party: [...st.party],
+        battle: st.battle ? { ...st.battle, combatants: [...st.battle.combatants] } : st.battle,
+      }));
+      return `✅ ${c.name} : Focalisation ${spell} (DR ${dr})`;
     },
 
     /** RECETTE : saute vers une scène du projet/de la campagne par id (machinerie de transition). */

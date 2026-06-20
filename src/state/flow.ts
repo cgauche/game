@@ -233,7 +233,12 @@ export interface FlowTest {
    *  défenseur RÉSISTE (branche `success`) si l'attaquant ne l'emporte PAS (défenseur OU égalité) ;
    *  l'attaquant l'emporte → défenseur PERD → branche `fail`. Calque la mécanique figée de `recover`/
    *  `disengage` (l'opposant garde son jet, reroll-aware). */
-  opposed?: { attacker: CharKey; attackerSkill?: string; attackerLabel?: string };
+  opposed?: { attacker: CharKey; attackerSkill?: string; attackerLabel?: string;
+    /** Bonus de DR ajouté au jet du DÉFENSEUR (celui qui passe CE Test) AVANT l'opposition — Piège-lame
+     *  (LDB 62 l.295 : « en ajoutant votre DR obtenu au précédent Test de Corps à corps »). Modifie À LA
+     *  FOIS le vainqueur et la marge nette (il s'additionne au `sl` du défenseur dans `resolveOpposed`).
+     *  Absent = 0 (Assommante). */
+    bonusSL?: number };
 }
 
 /**
@@ -245,8 +250,8 @@ export interface FlowTest {
  *  - `choice` : DÉCISION du joueur opt-in (≠ `test` aléatoire, ≠ `if` état) → `yes` / `no`. Coût
  *    d'Avantage optionnel dépensé sur `yes`. Primitive FONDAMENTALE des réactions de combat
  *    (Frappe Réactive « vous POUVEZ tenter », Déstabilisante « vous POUVEZ dépenser 2 Av ») et, à
- *    terme, des choix de dialogue/pièges. Son exécuteur RÉUTILISE l'étape-choix de cascade existante
- *    (motif `knockdown` : `pushCombatStep` yes/no + applier) — il n'invente pas de mécanisme.
+ *    terme, des choix de dialogue/pièges. Son exécuteur (`resolveFlowChoice`) pousse une étape-choix
+ *    GÉNÉRIQUE `triggeredChoice` (`pushCombatStep` yes/no + applier unique) — il n'invente pas de mécanisme.
  */
 export type Flow =
   | { kind: 'seq'; steps: Flow[] }
@@ -373,6 +378,24 @@ export function flowHasTest(flow: Flow): boolean {
     case 'if': return flowHasTest(flow.then) || (flow.else ? flowHasTest(flow.else) : false);
     case 'test': return true;
     case 'choice': return true;
+  }
+}
+
+/** Ops IMPURES adossées à un HOOK de `runCombatFlow` (`grantFreeAttack` → frappe gratuite ;
+ *  `interruptFocus` → interruption de Focalisation) : `applyOps` les laisse inertes, seul le do-loop de
+ *  `runCombatFlow` les résout (via le hook injecté). Source UNIQUE pour router une branche de `test`
+ *  contenant l'une d'elles vers l'exécuteur IMPUR plutôt que `runSpellFlowLines` (qui les avalerait). */
+const HOOK_BACKED_OPS = new Set(['grantFreeAttack', 'interruptFocus', 'breakBlade']);
+
+/** Le Flow porte-t-il une op IMPURE adossée à un hook de `runCombatFlow` (cf. `HOOK_BACKED_OPS`) ? Si oui,
+ *  son exécution doit passer par `runCombatFlow` (le hook y vit), jamais par `runSpellFlowLines`. */
+export function flowHasImpureOp(flow: Flow): boolean {
+  switch (flow.kind) {
+    case 'do': return flow.effect.type === 'ops' && flow.effect.ops.some((o) => HOOK_BACKED_OPS.has(o.op));
+    case 'seq': return flow.steps.some(flowHasImpureOp);
+    case 'if': return flowHasImpureOp(flow.then) || (flow.else ? flowHasImpureOp(flow.else) : false);
+    case 'test': return flowHasImpureOp(flow.success) || flowHasImpureOp(flow.fail);
+    case 'choice': return flowHasImpureOp(flow.yes) || (flow.no ? flowHasImpureOp(flow.no) : false);
   }
 }
 

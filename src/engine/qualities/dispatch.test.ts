@@ -64,12 +64,28 @@ describe('Aux Armes p.89 — qualités de mêlée câblées', () => {
   it('Taillade : ajoute un État Hémorragique sur Critique (capabilities.onCritCondition, donnée)', () => {
     expect(findQualityById('taillade')?.capabilities?.onCritCondition).toBe('hemorragique');
   });
-  it('Déstabilisante : dépense d’Avantages + Test opposé Force → À Terre (capabilities.onHitKnockdown, donnée)', () => {
-    const kd = findQualityById('destabilisante')?.capabilities?.onHitKnockdown!;
-    expect(kd.advantageCost).toBe(2);
-    expect(kd.condition).toBe('a-terre');
-    expect(kd.char).toBe('F');
-    expect(kd.skill).toBe('athletisme'); // id stable (≠ libellé — multilangue-safe)
+  it('Déstabilisante : effet onHit data-driven — choix (2 Av) → Test opposé Force/Athlétisme → À Terre (effects, donnée)', () => {
+    const eff = findQualityById('destabilisante')?.effects?.[0];
+    expect(eff?.trigger).toBe('onHit');
+    expect(eff?.on).toBe('victim');
+    // Nœud `choice` opt-in coûtant 2 Avantages (cadence-aware : modale héros / auto IA).
+    const choice = eff?.flow;
+    expect(choice?.kind).toBe('choice');
+    if (choice?.kind !== 'choice') throw new Error('flow doit être un choice');
+    expect(choice.cost?.advantage).toBe(2);
+    // Branche `yes` = Test OPPOSÉ Force/Athlétisme des deux côtés (défenseur jette F+athletisme,
+    // attaquant pré-jeté opposed{F+athletisme}).
+    const test = choice.yes;
+    expect(test.kind).toBe('test');
+    if (test.kind !== 'test') throw new Error('yes doit être un test');
+    expect(test.test.characteristic).toBe('F');
+    expect(test.test.skill).toBe('athletisme'); // id stable (≠ libellé — multilangue-safe)
+    expect(test.test.opposed?.attacker).toBe('F');
+    expect(test.test.opposed?.attackerSkill).toBe('athletisme');
+    // Défenseur PERD l'opposition (branche `fail`) → l'attaquant l'emporte → cible À Terre.
+    expect(test.fail.kind).toBe('do');
+    if (test.fail.kind !== 'do' || test.fail.effect.type !== 'ops') throw new Error('fail doit poser un État');
+    expect(test.fail.effect.ops[0]).toMatchObject({ op: 'condition', name: 'a-terre' });
   });
 });
 
@@ -97,7 +113,7 @@ describe('registry — entrées attendues', () => {
   it('contient les qualités d’arme implémentées', () => {
     for (const k of ['Précise', 'Perforante', 'Pointue', 'Empaleuse', 'Défensive', 'À Enroulement', 'Pistolet', 'Incassable', 'Inoffensive', 'Dévastatrice', 'Percutante',
       'Léger', 'Pratique', 'Raffiné', 'Solide', 'Bâclé', 'Laid', 'Peu Fiable', 'Volumineux',
-      'Taillade', 'Déséquilibrée', 'Déstabilisante', // Aux Armes p.89 — câblées (onCritCondition / defenderParryDR / onHitKnockdown)
+      'Taillade', 'Déséquilibrée', 'Déstabilisante', // Aux Armes p.89 — câblées (onCritCondition / defenderParryDR / effet onHit renversement)
       "Arme d'équipe", 'Salve', 'Tir de zone']) { // Aux Armes p.124/126/89 — artillerie câblée (sous-effectif / chargeur / zone)
       expect(QUALITIES[k]).toBeTruthy();
     }

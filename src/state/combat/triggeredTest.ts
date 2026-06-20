@@ -33,9 +33,9 @@ import { campOf } from '../../engine/relations';
 import { immunityTypes } from '../../engine/traits/dispatch';
 import { groupMatch } from '../../engine/groups';
 import { refLabel } from '../../data';
-import { type Flow, type ActorView, type ConditionCtx, evalCondition, conditionCtx, EMPTY_FLOW } from '../flow';
+import { type Flow, type ActorView, type ConditionCtx, evalCondition, conditionCtx, flowHasImpureOp, EMPTY_FLOW } from '../flow';
 import type { Get, Set as SetFn } from '../flowTypes';
-import type { FreeAttackFreeze } from '../pendings';
+import type { FreeAttackFreeze, BladeTrapFreeze } from '../pendings';
 import { battleRng } from '../battleRng';
 import { runSpellFlowLines, runFlow, pushCombatStep, openSkillTest } from '../combatEffects';
 import { registerCascadeApplier } from '../cascade';
@@ -79,6 +79,11 @@ export interface ExecCtx {
    *  (couche combatFlow) l'emploie quand `runCombatFlow` rencontre un `do` portant `grantFreeAttack`. Tout
    *  est sérialisable (ids/nombres) → mirroir dans `meta.freeAttack` pour la voie cascade (héros manuel). */
   freeAttack?: FreeAttackFreeze;
+  /** Contexte de la CONSÉQUENCE d'un Test opposé de Piège-lame GAGNÉ (op `breakBlade`) : l'attaquant désarmé,
+   *  la lame visée, le bonus de DR de la défense et le DR figé de l'attaquant — le hook `bladeTrap` (couche
+   *  combatFlow) l'emploie quand `runCombatFlow` rencontre un `do` portant `breakBlade`. Tout est sérialisable
+   *  (ids/nombres) → mirroir dans `meta.bladeTrap` pour la voie cascade (héros manuel). */
+  bladeTrap?: BladeTrapFreeze;
 }
 
 /** HOOK de résolution d'une ATTAQUE GRATUITE (`grantFreeAttack`, op IMPURE) — injecté par le store
@@ -92,6 +97,27 @@ type FreeAttackHook = (
 ) => void;
 let freeAttackHook: FreeAttackHook | undefined;
 export function setFreeAttackHook(fn: FreeAttackHook): void { freeAttackHook = fn; }
+
+/** HOOK de la branche d'ÉCHEC du Test de Calme d'interruption de Focalisation (op `interruptFocus`, IMPURE)
+ *  — injecté par le store (`setFocusInterruptHook` dans `createCombatSlice`), pointe sur
+ *  `applyFocusInterruption` (combatFlow). Appelé par `runCombatFlow` lorsqu'un `do`/`ops` porte un
+ *  `interruptFocus` : la cible perd ses DR focalisés (couverts par son composant) + subit une Imparfaite
+ *  Mineure (LDB 46 l.194). Inversion de dépendance (cette brique reste sans import de combatFlow → pas de
+ *  cycle). Absent (hors store) ⇒ no-op (l'op reste inerte, comme dans `applyOps`). */
+type FocusInterruptHook = (get: Get, set: SetFn, focuser: Combatant) => void;
+let focusInterruptHook: FocusInterruptHook | undefined;
+export function setFocusInterruptHook(fn: FocusInterruptHook): void { focusInterruptHook = fn; }
+
+/** HOOK de la branche de VICTOIRE d'un Test opposé de Piège-lame (op `breakBlade`, IMPURE) — injecté par le
+ *  store (`setBladeTrapHook` dans `createCombatSlice`), pointe sur `applyBladeTrap` (combatFlow). Appelé par
+ *  `runCombatFlow` lorsqu'un `do`/`ops` porte un `breakBlade` : l'attaquant ciblé (`bt.attackerId`) est
+ *  désarmé de la lame `bt.weaponUid` ; marge nette `(DR défenseur + bt.defSL) − bt.attackerSL` ≥ 6 → lame
+ *  BRISÉE sauf Incassable (LDB 62 l.295). Le DR du défenseur vient du Test résolu (`defSL` ci-dessous = celui
+ *  du jet). Inversion de dépendance (cette brique reste sans import de combatFlow → pas de cycle). Absent
+ *  (hors store) ⇒ no-op (l'op reste inerte, comme dans `applyOps`). */
+type BladeTrapHook = (get: Get, set: SetFn, defender: Combatant, bt: BladeTrapFreeze, defenderSL: number) => void;
+let bladeTrapHook: BladeTrapHook | undefined;
+export function setBladeTrapHook(fn: BladeTrapHook): void { bladeTrapHook = fn; }
 
 /** Vue d'un combattant pour la Condition `compare`/`relation`/`has` (PB + Taille/Avantage + camp +
  *  Groupes/Talents/Traits + valeur d'États par nom). Source unique (combat). */
@@ -124,17 +150,19 @@ export function condCtxFor(ctx: ExecCtx): ConditionCtx {
  *  (« chaque DR supprime un État Sonné supplémentaire »). Renvoie le journal de la BRANCHE (string[] tissé
  *  au bon canal : return cascade `{ journal }` / file inline).
  *  - Branche PURE (Mâchoires/Venin : feuilles `do`/`if`) → `runSpellFlowLines` (string[] rendu inline).
- *  - Branche IMPURE (Frappe réactive : `grantFreeAttack`, ouverture de frappe) → `runCombatFlow` (le hook
- *    `freeAttack` y vit), journal poussé dans la file différée → return vide. Le contexte `exec`
- *    (get/set/freeAttack) est fourni dans ce cas seulement (la frappe vise le TIERS `freeAttack.targetId`).
- *  La continuation `after` est jouée À PART (`playAfter`), APRÈS les lignes de branche → ordre correct. */
+ *  - Branche IMPURE (op adossée à un hook : `grantFreeAttack` → frappe gratuite, `interruptFocus` →
+ *    interruption de Focalisation, `breakBlade` → désarmement/bris de Piège-lame) → `runCombatFlow` (le
+ *    do-loop y résout les hooks injectés), journal poussé dans la file différée → return vide. Détectée par
+ *    `flowHasImpureOp` (≠ « freeAttack présent » spécifiquement : tout marqueur à hook). Le contexte `exec`
+ *    (get/set [+ freeAttack/bladeTrap pour cibler le TIERS]) est requis dans ce cas. La continuation `after`
+ *    est jouée À PART (`playAfter`), APRÈS les lignes de branche → ordre correct. */
 export function applyTriggeredTestBranch(
   c: Combatant, t: Pick<TestResult, 'success' | 'sl'>, branches: { onSuccess: Flow; onFail: Flow },
-  exec?: { get: Get; set: SetFn; freeAttack: ExecCtx['freeAttack'] },
+  exec?: { get: Get; set: SetFn; freeAttack?: ExecCtx['freeAttack']; bladeTrap?: ExecCtx['bladeTrap'] },
 ): string[] {
   const branch = t.success ? branches.onSuccess : branches.onFail;
-  if (exec?.freeAttack) {
-    runCombatFlow({ mode: 'combat', get: exec.get, set: exec.set, target: c, caster: c, label: 'Effet', opsCtx: { sl: t.sl }, freeAttack: exec.freeAttack }, branch);
+  if (exec && flowHasImpureOp(branch)) {
+    runCombatFlow({ mode: 'combat', get: exec.get, set: exec.set, target: c, caster: c, label: 'Effet', opsCtx: { sl: t.sl }, ...(exec.freeAttack ? { freeAttack: exec.freeAttack } : {}), ...(exec.bladeTrap ? { bladeTrap: exec.bladeTrap } : {}) }, branch);
     return [];
   }
   return runSpellFlowLines(c, c, branch, { rng: battleRng(), caster: c, sl: t.sl });
@@ -167,6 +195,13 @@ export function runCombatFlow(ctx: ExecCtx, flow: Flow): void {
             // vise le TIERS de `ctx.freeAttack` (chargeur/victime), pas `unit` (le porteur). `applyOps` les
             // laisse inertes → on les passe quand même (no-op) pour garder le journal des autres ops.
             if (freeAttackHook && ctx.freeAttack) for (const op of node.effect.ops) if (op.op === 'grantFreeAttack') freeAttackHook(ctx.get, ctx.set, unit, op, ctx.freeAttack);
+            // Op IMPURE `interruptFocus` (LDB 46 l.194) : le hook injecté (combatFlow) résout l'interruption
+            // sur `unit` (le focaliseur) — perte des DR + Imparfaite Mineure (qui peut appender sa propre étape).
+            if (focusInterruptHook) for (const op of node.effect.ops) if (op.op === 'interruptFocus') focusInterruptHook(ctx.get, ctx.set, unit);
+            // Op IMPURE `breakBlade` (LDB 62 l.295) : le hook injecté (combatFlow) désarme/brise la lame de
+            // l'attaquant ciblé (`ctx.bladeTrap`). `unit` = le défenseur piégeur ; son DR final (`ctx.opsCtx.sl`)
+            // alimente la marge nette (= victoire Stupéfiante → bris).
+            if (bladeTrapHook && ctx.bladeTrap) for (const op of node.effect.ops) if (op.op === 'breakBlade') bladeTrapHook(ctx.get, ctx.set, unit, ctx.bladeTrap, ctx.opsCtx?.sl ?? 0);
             const lines = applyOps(unit, node.effect.ops, oc); syncCombatant(ctx.get, ctx.set); queueLines(ctx.get, ctx.set, lines, unit.id);
           }
         }
@@ -238,6 +273,9 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
   const aT: TestResult | undefined = opp && attacker
     ? rollTest(testValue(attacker, opp.attackerSkill, opp.attacker), 'intermediaire', battleRng())
     : undefined;
+  // Piège-lame : on COMPLÈTE le freeze avec le DR de l'attaquant que CE Test jette (`aT`), pour que la
+  // conséquence `breakBlade` recompose la marge nette sans re-jeter l'attaquant.
+  const btFreeze = ctx.bladeTrap && aT ? { ...ctx.bladeTrap, attackerSL: aT.sl } : ctx.bladeTrap;
   if (roundTestInteractive(c)) {
     // Héros en cadence manuelle : étape INFLUENÇABLE, suspendue dans la cascade de combat. La branche +
     // la continuation `after` voyagent dans le meta (sérialisable) → rejouées par l'applier. En Test
@@ -248,26 +286,35 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
       base, target: base + DIFFICULTY_MODIFIERS[difficulty] + penalty, label,
       meta: {
         onSuccess: node.success, onFail: node.fail, after,
-        ...(aT && attacker ? { opposed: { aT, attackerName: attacker.name, attackerLabel: opp!.attackerLabel ?? CHAR_LABELS[opp!.attacker] } } : {}),
+        ...(aT && attacker ? { opposed: { aT, attackerName: attacker.name, attackerLabel: opp!.attackerLabel ?? CHAR_LABELS[opp!.attacker], ...(opp!.bonusSL ? { bonusSL: opp!.bonusSL } : {}) } } : {}),
         // Contexte de frappe gratuite (Frappe réactive : la branche success porte `grantFreeAttack`) →
         // sérialisé pour que l'applier rejoue la VRAIE frappe contre le tiers après le Test influencé.
         ...(ctx.freeAttack ? { freeAttack: ctx.freeAttack } : {}),
+        // Contexte de Piège-lame (la branche success porte `breakBlade`) → sérialisé pour que l'applier
+        // désarme/brise la lame de l'attaquant ciblé après le Test influencé.
+        ...(btFreeze ? { bladeTrap: btFreeze } : {}),
       },
     });
     return;
   }
-  const exec = ctx.freeAttack ? { get: ctx.get, set: ctx.set, freeAttack: ctx.freeAttack } : undefined;
+  // `exec` (get/set [+ freeAttack/bladeTrap]) TOUJOURS fourni : une branche IMPURE (à hook : interruptFocus /
+  // la success freeAttack / le breakBlade de Piège-lame) est routée vers `runCombatFlow` par
+  // `applyTriggeredTestBranch` (cf. flowHasImpureOp) ; une branche PURE retombe sur `runSpellFlowLines`
+  // (inchangé). `freeAttack`/`bladeTrap` ne sont joints que s'ils existent.
+  const exec = { get: ctx.get, set: ctx.set, ...(ctx.freeAttack ? { freeAttack: ctx.freeAttack } : {}), ...(btFreeze ? { bladeTrap: btFreeze } : {}) };
   // Ennemi OU héros rapide/auto : jet INLINE + branche + continuation ; ligne de parité.
   // `skillLabel` = la Compétence/Caractéristique RÉELLE (cadre de jet), distincte du `label` de situation.
   const t = rollTest(base, difficulty, battleRng(), penalty);
   if (opp && aT && attacker) {
     // Test OPPOSÉ inline : l'attaquant figé (1ʳᵉ position) vs le jet du défenseur → le défenseur RÉSISTE
     // (success) si l'attaquant ne l'emporte PAS (défenseur vainqueur OU égalité). `t.success`/`t.sl` du
-    // jet simple sont REMPLACÉS par l'issue opposée (LDB 62 l.268).
-    const o = resolveOpposed(aT, t);
+    // jet simple sont REMPLACÉS par l'issue opposée (LDB 62 l.268). Le bonus de DR du défenseur (Piège-lame,
+    // LDB 62 l.295) s'AJOUTE à son `sl` AVANT l'opposition (modifie le vainqueur ET la marge nette).
+    const bonusSL = opp.bonusSL ?? 0;
+    const o = resolveOpposed(aT, { ...t, sl: t.sl + bonusSL });
     const defenderResists = o.winner !== 'attacker';
     queueLines(ctx.get, ctx.set, [
-      `${attacker.name} (${opp.attackerLabel ?? CHAR_LABELS[opp.attacker]}) 🎲 ${aT.roll}/${aT.target} (DR ${aT.sl}) vs ${c.name} (${skillLabel}) 🎲 ${t.roll}/${t.target} (DR ${t.sl}) — ${defenderResists ? 'résiste' : 'l’emporte'}.`,
+      `${attacker.name} (${opp.attackerLabel ?? CHAR_LABELS[opp.attacker]}) 🎲 ${aT.roll}/${aT.target} (DR ${aT.sl}) vs ${c.name} (${skillLabel}) 🎲 ${t.roll}/${t.target} (DR ${t.sl}${bonusSL ? `+${bonusSL}` : ''}) — ${defenderResists ? 'résiste' : 'l’emporte'}.`,
     ], c.id);
     const lines = applyTriggeredTestBranch(c, { success: defenderResists, sl: t.sl }, { onSuccess: node.success, onFail: node.fail }, exec);
     syncCombatant(ctx.get, ctx.set);
@@ -293,10 +340,17 @@ registerCascadeApplier('triggeredTest', (get, set, step, hero) => {
   const onSuccess = step.meta?.onSuccess;
   const onFail = step.meta?.onFail;
   if (!onSuccess || !onFail) return;
-  // `freeAttack` sérialisé (Frappe réactive) → reconstruit l'`exec` impur : la branche success ouvre la
-  // VRAIE frappe contre le tiers (chargeur), via `runCombatFlow` + le hook. Absent → branche pure.
+  // `exec` (get/set) TOUJOURS fourni : une branche IMPURE à hook (interruptFocus / la success freeAttack /
+  // le breakBlade de Piège-lame) est routée vers `runCombatFlow` par `applyTriggeredTestBranch` (cf.
+  // flowHasImpureOp). `freeAttack` sérialisé (Frappe réactive) → joint pour cibler le TIERS (chargeur) ;
+  // `bladeTrap` sérialisé → joint pour cibler la lame de l'attaquant ; absents → branche sur soi.
   const fa = step.meta?.freeAttack;
-  const exec = fa && typeof fa === 'object' && 'targetId' in fa ? { get, set, freeAttack: fa } : undefined;
+  const bt = step.meta?.bladeTrap;
+  const exec = {
+    get, set,
+    ...(fa && typeof fa === 'object' && 'targetId' in fa ? { freeAttack: fa } : {}),
+    ...(bt && typeof bt === 'object' && 'attackerId' in bt ? { bladeTrap: bt } : {}),
+  };
   const journal = applyTriggeredTestBranch(hero, step.result, { onSuccess, onFail }, exec);
   syncCombatant(get, set); // refléter la mutation du héros (États) dans party/battle
   // Continuation `after` (le reste du `seq` qui suivait le `test`) — peut ré-appender une étape
@@ -315,7 +369,7 @@ function choiceAffordable(decider: Combatant | undefined, cost?: { advantage: nu
  * est `ctx.caster` (le porteur de l'effet : Frappe réactive = le héros Chargé). `after` = continuation
  * reprise APRÈS la branche choisie.
  *  - HÉROS décideur en cadence MANUELLE → étape de CHOIX `triggeredChoice` dans la cascade de combat
- *    (calque l'étape `knockdown` : `options` yes/no, `interactive`, `defaultChoice:'no'`) ; les Flows
+ *    (`options` yes/no, `interactive`, `defaultChoice:'no'`) ; les Flows
  *    `yes`/`no`, le `cost`, l'`after` et le contexte `freeAttack` voyagent dans le `meta` (sérialisable).
  *    On ne touche QUE `pendingCascade`.
  *  - ENNEMI / cadence auto → décision AUTO inline : oui si le coût est payable (heuristique simple — l'IA
@@ -325,9 +379,13 @@ function choiceAffordable(decider: Combatant | undefined, cost?: { advantage: nu
 export function resolveFlowChoice(ctx: ExecCtx, node: Extract<Flow, { kind: 'choice' }>, after: Flow): void {
   const decider = ctx.caster ?? ctx.target;
   if (ctx.mode === 'combat' && decider && roundTestInteractive(decider)) {
-    // Héros manuel : étape de CHOIX influençable (rendue par le chemin CHOIX générique de CascadeModal,
-    // comme `knockdown`). Le coût (en libellé) est joint au « Oui » ; l'option est tranchée par `cascadeChoose`.
+    // Héros manuel : étape de CHOIX influençable (rendue par le chemin CHOIX générique de CascadeModal).
+    // Le coût (en libellé) est joint au « Oui » ; l'option est tranchée par `cascadeChoose`.
     const yesLabel = node.cost ? `${node.prompt} (${node.cost.advantage} Av)` : node.prompt;
+    // CIBLE de la branche : quand la branche vise une AUTRE unité que le décideur (`on:'victim'` —
+    // Déstabilisante : le porteur décide, le Test opposé vise la VICTIME), on sérialise son id pour le
+    // restaurer en `ctx.target` côté applier (sinon la branche viserait le décideur → Test sur soi-même).
+    const branchTargetId = ctx.target && ctx.target.id !== decider.id ? ctx.target.id : undefined;
     pushCombatStep(ctx.set, {
       id: `triggeredChoice-${decider.id}-${node.prompt}`,
       kind: 'triggeredChoice', actorId: decider.id, icon: node.icon ?? '🤔', label: node.prompt,
@@ -336,6 +394,7 @@ export function resolveFlowChoice(ctx: ExecCtx, node: Extract<Flow, { kind: 'cho
       meta: {
         choiceYes: node.yes, choiceNo: node.no ?? EMPTY_FLOW, after,
         ...(node.cost ? { choiceCost: node.cost.advantage } : {}),
+        ...(branchTargetId ? { choiceTargetId: branchTargetId } : {}),
         ...(ctx.freeAttack ? { freeAttack: ctx.freeAttack } : {}),
       },
     });
@@ -365,7 +424,11 @@ registerCascadeApplier('triggeredChoice', (get, set, step, hero) => {
   const freeAttack = fa && typeof fa === 'object' && 'targetId' in fa ? fa : undefined;
   const can = yes && (cost == null || (hero.advantage ?? 0) >= cost);
   if (yes && can && cost != null) { hero.advantage = Math.max(0, (hero.advantage ?? 0) - cost); syncCombatant(get, set); }
-  const ctx: ExecCtx = { mode: 'combat', get, set, target: hero, caster: hero, label: step.label ?? 'Réaction', ...(freeAttack ? { freeAttack } : {}) };
+  // Le DÉCIDEUR (`hero`) est le `caster` (porteur). La branche vise `choiceTargetId` (la VICTIME, Déstabilisante)
+  // si présent, sinon le décideur lui-même (Frappe réactive : Test sur soi). Reconstruit depuis get() — jamais capturé.
+  const tid = typeof step.meta?.choiceTargetId === 'string' ? step.meta.choiceTargetId : undefined;
+  const branchTarget = (tid ? get().battle?.combatants.find((c) => c.id === tid) : undefined) ?? hero;
+  const ctx: ExecCtx = { mode: 'combat', get, set, target: branchTarget, caster: hero, label: step.label ?? 'Réaction', ...(freeAttack ? { freeAttack } : {}) };
   if (can) runCombatFlow(ctx, yesFlow ?? EMPTY_FLOW);
   else if (noFlow) runCombatFlow(ctx, noFlow);
   playAfter(get, set, hero, step.meta?.after, step.label ?? 'Réaction');
