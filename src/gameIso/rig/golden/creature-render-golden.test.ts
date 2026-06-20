@@ -26,7 +26,7 @@ function renderSvg(name: string, view: View): string {
     return p ? bonesToSvg(resolveRig(p.appearance, p.equip, {}, p.tenue, view, [])) : '∅rig';
   }
   const plan = planById(r.plan);
-  if (!plan) return '∅monolithic';
+  if (!plan) return '∅noplan';
   if (!plan.hasView(r.species, view)) return `∅noview:${view}`;
   return bonesToSvg(plan.resolve(r.species, view, plan.restPose()));
 }

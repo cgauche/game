@@ -23,7 +23,7 @@ import { lineOfSightCover } from '../lineOfSight';
 import { smokeOf } from '../combatGeometry';
 import { groupMatch } from '../../engine/groups';
 import {
-  fearSourceFor, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune,
+  fearSourceFor, sansPeurVs, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune,
   resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES,
 } from '../../engine/psychology';
 import { isColdBlooded, hasRage } from '../../engine/traits/dispatch';
@@ -119,13 +119,19 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
     if (lineOfSightCover(scene, enemy.pos, foe.pos, [], smokeOf(battle)).blocked) continue;
     const src = fearSourceFor(enemy, foe);
     if (!src || enemy.psychState.some((p) => p.sourceId === foe.id)) continue;
+    const sansPeur = sansPeurVs(enemy, foe); // Sans Peur (Ennemi, LDB 10 l.864) : Test de Calme +20 à la rencontre
     if (src.kind === 'terreur') {
-      const r = resolveTerreurTest(calmeValue(enemy), src.indice, battleRng(), isColdBlooded(enemy.traits)); // À sang-froid : inverse un raté (LDB 85)
+      const r = resolveTerreurTest(calmeValue(enemy), src.indice, battleRng(), isColdBlooded(enemy.traits), sansPeur); // À sang-froid : inverse un raté (LDB 85)
       if (!r.success) {
         addCondition(enemy, COND.brise, r.brise);
         log.push(`${enemy.name} est terrifié par ${foe.name} : ${r.brise} Brisé.`);
       }
-      enemy.psychState.push({ type: 'peur', sourceId: foe.id, indice: r.success ? 0 : r.devientPeur, calmeDR: 0, lastTestRound: battle.round }); // Terreur → Peur
+      enemy.psychState.push({ type: 'peur', sourceId: foe.id, indice: r.success ? 0 : r.devientPeur, calmeDR: 0, lastTestRound: battle.round }); // Terreur → Peur (ignorée si Sans Peur réussit)
+    } else if (sansPeur) {
+      // Sans Peur : UN seul Test de Calme Accessible (+20) à la rencontre ; réussi → Peur ignorée d'emblée.
+      const r = resolvePeurTest(calmeValue(enemy), src.indice, 0, battleRng(), isColdBlooded(enemy.traits), true);
+      enemy.psychState.push({ type: 'peur', sourceId: foe.id, indice: src.indice, calmeDR: r.calmeDR, lastTestRound: battle.round });
+      log.push(r.vaincue ? `${enemy.name} ignore la peur de ${foe.name} (Sans Peur).` : `${enemy.name} a peur de ${foe.name}.`);
     } else {
       enemy.psychState.push({ type: 'peur', sourceId: foe.id, indice: src.indice, calmeDR: 0, lastTestRound: battle.round });
       log.push(`${enemy.name} a peur de ${foe.name}.`);

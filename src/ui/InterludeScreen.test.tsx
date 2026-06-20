@@ -101,3 +101,42 @@ describe('InterludeScreen — coop (audit M7) : chacun mène SES héros', () => 
     expect(html).toContain('Clore l&#x27;interlude…');
   });
 });
+
+describe("InterludeScreen -- libelles i18n Phase D", () => {
+  beforeEach(() => { vi.useFakeTimers(); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  it("affiche le titre, le hint d'evenements et le CTA Passer aux Activites", () => {
+    const seam = buildSeam();
+    const html = renderToStaticMarkup(<InterludeScreen seam={seam} />);
+    expect(html).toContain("Entre deux aventures");
+    expect(html).toContain("Pendant que le groupe souffle");
+    expect(html).toContain("Passer aux Activités →");
+  });
+
+  it("phase activites : bouton Clore l'interlude visible pour l'hote", () => {
+    const seam = buildSeam(2);
+    const html = renderToStaticMarkup(<InterludeScreen seam={{ ...seam, phase: "activities" }} />);
+    expect(html).toMatch(/Clore l\S*interlude\S*/);
+  });
+
+  it("phase closing : titre recapitulatif et boutons de confirmation", () => {
+    const seam = buildSeam(2);
+    const html = renderToStaticMarkup(<InterludeScreen seam={{ ...seam, phase: "closing" }} />);
+    expect(html).toMatch(/Clore l\S*interlude \?/);
+    expect(html).toContain("Pas encore");
+  });
+
+  it("invite : message d'attente hote visible", () => {
+    const seam = buildSeam(2);
+    const [a, b] = seam.party;
+    const html = renderToStaticMarkup(
+      <InterludeScreen seam={{
+        ...seam,
+        phase: "activities",
+        net: { mode: "guest", mySeat: 1, ownership: { [a.id]: 0, [b.id]: 1 }, seatNames: { 0: "Hote", 1: "Moi" } },
+      }} />,
+    );
+    expect(html).toMatch(/L\S*h\S*te cl\S*t l\S*interlude/);
+  });
+});

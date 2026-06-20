@@ -4,6 +4,7 @@ import { listSaves, readSlot, deleteSlot, exportSave, SAVE_SLOTS, type SaveSlot 
 import { downloadText } from '../state/fileIo';
 import { formatImperial } from '../engine/clock';
 import { Modal } from './Modal';
+import { t } from '../i18n';
 
 /**
  * Sauvegarde / chargement (Jalon 5) — 3 emplacements localStorage + export/import JSON.
@@ -20,12 +21,12 @@ export function SaveLoadModal({ mode, onClose }: { mode: 'save' | 'load'; onClos
   const refresh = () => setMetas(listSaves());
 
   const onSave = (slot: SaveSlot) => {
-    setError(saveGame(slot) ? null : 'Sauvegarde impossible (stockage indisponible ou plein).');
+    setError(saveGame(slot) ? null : t('saveload.error.save'));
     refresh();
   };
   const onLoad = (slot: SaveSlot) => {
     if (loadGame(slot)) onClose();
-    else setError('Emplacement vide ou incompatible.');
+    else setError(t('saveload.error.load'));
   };
   const onExport = (slot: SaveSlot) => {
     const save = readSlot(slot);
@@ -39,37 +40,37 @@ export function SaveLoadModal({ mode, onClose }: { mode: 'save' | 'load'; onClos
     if (!file) return;
     const json = await file.text();
     if (importGame(json)) onClose();
-    else setError('Fichier de sauvegarde invalide ou de version inconnue.');
+    else setError(t('saveload.error.import'));
   };
 
   return (
-    <Modal title={mode === 'save' ? '💾 Sauvegarder' : '📂 Charger une partie'} variant="test" onClose={onClose}>
+    <Modal title={mode === 'save' ? t('saveload.title.save') : t('saveload.title.load')} variant="test" onClose={onClose}>
       <div className="save-slots">
         {SAVE_SLOTS.map((slot) => {
           const m = metas[slot - 1];
           return (
             <div className="save-slot" key={slot}>
               <div className="save-slot-meta">
-                <strong>Emplacement {slot}</strong>
+                <strong>{t('saveload.slot.label', { n: slot })}</strong>
                 {m ? (
                   <span className="save-slot-info">
                     {m.sceneLabel} · {formatImperial(m.gameTime)} · {new Date(m.savedAt).toLocaleString('fr-FR')}
                   </span>
                 ) : (
-                  <span className="save-slot-info empty">— vide —</span>
+                  <span className="save-slot-info empty">{t('saveload.slot.empty')}</span>
                 )}
               </div>
               <div className="save-slot-actions">
                 {mode === 'save' && (
                   <button type="button" className="btn small btn-primary" onClick={() => onSave(slot)}>
-                    Sauvegarder
+                    {t('saveload.btn.save')}
                   </button>
                 )}
                 {m && (
                   <>
-                    <button type="button" className="btn small" onClick={() => onLoad(slot)}>Charger</button>
-                    <button type="button" className="btn small" onClick={() => onExport(slot)} title="Télécharger la sauvegarde (JSON)">Exporter</button>
-                    <button type="button" className="btn small" onClick={() => onDelete(slot)} title="Effacer cet emplacement">✕</button>
+                    <button type="button" className="btn small" onClick={() => onLoad(slot)}>{t('saveload.btn.load')}</button>
+                    <button type="button" className="btn small" onClick={() => onExport(slot)} title={t('saveload.btn.export.title')}>{t('saveload.btn.export')}</button>
+                    <button type="button" className="btn small" onClick={() => onDelete(slot)} title={t('saveload.btn.delete.title')}>{t('saveload.btn.delete')}</button>
                   </>
                 )}
               </div>
@@ -78,8 +79,8 @@ export function SaveLoadModal({ mode, onClose }: { mode: 'save' | 'load'; onClos
         })}
       </div>
       <div className="modal-actions">
-        <button type="button" className="btn small" onClick={() => fileRef.current?.click()} title="Charger une sauvegarde depuis un fichier JSON exporté">
-          📥 Importer un fichier…
+        <button type="button" className="btn small" onClick={() => fileRef.current?.click()} title={t('saveload.import.btn.title')}>
+          {t('saveload.import.btn')}
         </button>
         <input
           ref={fileRef}
@@ -88,7 +89,7 @@ export function SaveLoadModal({ mode, onClose }: { mode: 'save' | 'load'; onClos
           style={{ display: 'none' }}
           onChange={(e) => void onImportFile(e.target.files?.[0])}
         />
-        <button type="button" className="btn" onClick={onClose}>Fermer</button>
+        <button type="button" className="btn" onClick={onClose}>{t('saveload.btn.close')}</button>
       </div>
       {error && <p className="save-error">{error}</p>}
     </Modal>

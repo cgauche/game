@@ -16,12 +16,14 @@ describe('GameMenu', () => {
 
   it('ouvert : scène, bourse, date complète, Quitter', () => {
     const html = renderToStaticMarkup(
-      <GameMenu sceneName="La taverne" money={money} dateLine="🌄 Matin — Marktag · 33 Jahrdrung 2512 CI · 08:00" onQuit={() => {}} initialOpen />,
+      <GameMenu sceneName="La taverne" money={money} dateLine="🌄 Matin — Marktag · 33 Jahrdrung 2512 CI · 08:00" onQuit={() => {}} onSaveLoad={() => {}} onHouseRules={() => {}} initialOpen />,
     );
     expect(html).toContain('La taverne');
     expect(html).toContain('Bourse');
     expect(html).toContain(formatMoney(money));
     expect(html).toContain('Marktag');
     expect(html).toContain('Quitter');
+    expect(html).toContain('Sauvegarder');
+    expect(html).toContain('Règles maison');
   });
 });

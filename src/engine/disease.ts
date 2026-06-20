@@ -229,12 +229,11 @@ export function applyDiseaseBlesse(c: Combatant, success: boolean, rng: RNG = de
 }
 
 /** Conséquence d'un Test de Gangrène DIFFÉRÉ (l.135+) : échec → +1 échec ; au-delà du BE → Localisation perdue. */
-export function applyDiseaseGangrene(c: Combatant, diseaseName: string, success: boolean, resistVal: number): string[] {
+export function applyDiseaseGangrene(c: Combatant, diseaseName: string, success: boolean, be: number): string[] {
   if (success) return [];
   const dz = (c.diseases ?? []).find((d) => d.name === diseaseName && d.phase === 'active');
   if (!dz) return [];
   dz.gangreneFails = (dz.gangreneFails ?? 0) + 1;
-  const be = Math.floor(resistVal / 10); // BE ≈ Endurance/10 (resistVal = E + avances)
   if (dz.gangreneFails > be) {
     dz.gangreneLost = true;
     return [`${c.name} : la Gangrène a gagné — la Localisation atteinte est inutilisable (Amputation requise).`];
@@ -261,10 +260,11 @@ export function applyDiseasePersist(c: Combatant, diseaseName: string, success: 
 
 /**
  * Décompte de `days` jours de maladie pour `c` (appelé jour par jour par le repos). Mute `c.diseases`,
- * renvoie le journal. `resistVal` = Résistance effective (passée par l'appelant, cycle évité). Par jour :
+ * renvoie le journal. `resistVal` = Résistance effective (E + augmentations de Résistance) ; `beForGangrene`
+ * = Bonus d'Endurance SEUL (seuil de Gangrène, ≠ resistVal). Tous deux passés par l'appelant (cycle évité). Par jour :
  *  - incubation : −1 jour ; à 0 → symptômes ACTIFS (durée mémorisée) ;
  *  - active : symptôme « blessé » → Test de Résistance Accessible (+20) ou Blessure Purulente (l.110) ;
- *             symptôme « toxine » → Test de Résistance Très Facile (+60) journalier (l.172, conséquence non modélisée) ;
+ *             symptôme « toxine » → Test de Résistance Très Facile (+60) journalier JOURNALISÉ (l.172, RAW tronqué : conséquence laissée au MJ) ;
  *             −1 jour ; à 0 → résolution du symptôme « persistant » (l.162), sinon guérison naturelle.
  *
  * `defer` (CASCADE de nuit, journée unique) : les Tests de Résistance (blessé/gangrène/persistant)
@@ -272,7 +272,7 @@ export function applyDiseasePersist(c: Combatant, diseaseName: string, success: 
  * la maladie en fin de durée reste `endTestPending` jusqu'à la validation de son étape. Les
  * conséquences vivent dans `applyDiseaseBlesse/Gangrene/Persist` (réutilisées par la cascade).
  */
-export function tickDisease(c: Combatant, days: number, rng: RNG = defaultRNG, resistVal = 0, defer?: UpkeepDeferTest): string[] {
+export function tickDisease(c: Combatant, days: number, rng: RNG = defaultRNG, resistVal = 0, defer?: UpkeepDeferTest, beForGangrene = Math.floor(resistVal / 10)): string[] {
   if (!c.diseases?.length || days <= 0) return [];
   const log: string[] = [];
   // On boucle jour par jour ; les nouvelles maladies (Blessure Purulente / Infection du Sang) sont
@@ -307,16 +307,19 @@ export function tickDisease(c: Combatant, days: number, rng: RNG = defaultRNG, r
         else { const res = rollTest(resistVal, 'accessible', rng); if (!res.success) contractOnce('blessure-purulente'); } // l.110
       }
       if (hasSymptom(dz, 'toxine') && !defer) {
-        rollTest(resistVal, 'tresFacile', rng); // l.172 : conséquence non modélisée → pas d'étape de cascade
+        // LDB 20 l.172-173 : Test de Résistance Très Facile (+60) journalier. Le texte source est TRONQUÉ
+        // (la conséquence d'échec n'y figure pas — coupure de page) → on roule le Test prescrit et on le
+        // JOURNALISE ; la conséquence est laissée au MJ (rien d'inventé).
+        const t = rollTest(resistVal, 'tresFacile', rng);
+        log.push(`${c.name} : symptôme « toxine » (${diseaseLabel(dz.name)}) — Résistance ${t.roll}/${t.target} → ${t.success ? 'résisté' : 'échec (conséquence arbitrée par le MJ — RAW tronqué)'}.`);
       }
       // Gangrène (l.135+) : Test de Résistance Accessible (+20) journalier ; plus d'échecs que le
       // Bonus d'Endurance → la Localisation est PERDUE (règles d'Amputation — journalisé, MJ/Chirurgie).
       if (hasSymptom(dz, 'gangrene') && !dz.gangreneLost) {
-        if (defer) defer({ kind: 'diseaseGangrene', label: 'Gangrène', base: resistVal, difficulty: 'accessible', meta: { diseaseName: dz.name, resistVal } });
+        if (defer) defer({ kind: 'diseaseGangrene', label: 'Gangrène', base: resistVal, difficulty: 'accessible', meta: { diseaseName: dz.name, be: beForGangrene } });
         else if (!rollTest(resistVal, 'accessible', rng).success) {
           dz.gangreneFails = (dz.gangreneFails ?? 0) + 1;
-          const be = Math.floor(resistVal / 10); // approximation BE ≈ Endurance/10 (resistVal = E + avances)
-          if (dz.gangreneFails > be) {
+          if (dz.gangreneFails > beForGangrene) {
             dz.gangreneLost = true;
             log.push(`${c.name} : la Gangrène a gagné — la Localisation atteinte est inutilisable (Amputation requise).`);
           } else log.push(`${c.name} : la Gangrène progresse (${dz.gangreneFails} échec(s)).`);

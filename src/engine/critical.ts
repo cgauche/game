@@ -38,8 +38,9 @@ const MERVEILLE = { trappingId: 'merveille-d-ingenierie', cancels: 'all' as cons
  * la partie de tête (lues dans `name`+`note` : œil/oreille/nez/langue/dents) SONT connues, donc on mécanise —
  * hypothèse de jeu : **tout le monde est DROITIER** (main principale = brasD). Une tête peut perdre PLUSIEURS
  * parties d'un coup (Coup défigurant = œil+nez ; Mâchoire mutilée = langue+dents) → on renvoie un tableau.
- * Non modélisé (comptage cumulatif) : DEUX yeux/oreilles (−30 vue / −20 ouïe), plusieurs doigts/dents — on
- * pose l'effet d'UNE perte (chaque critique en ajoute une).
+ * La perte du SECOND œil/oreille (Cécité −30 vue / Surdité −20 ouïe) est agrégée à part par
+ * `escalateSensoryLoss` (trauma.ts). Ici, chaque critique pose l'effet d'UNE perte ; les pertes
+ * répétées de doigts/dents ne sont pas cumulées.
  */
 export function permanentAmputations(name: string, note: string, location: HitLocation, rng: RNG = defaultRNG): Trauma[] {
   const t = `${name} ${note}`.toLowerCase();

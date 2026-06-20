@@ -23,8 +23,7 @@ import type { FishProps } from '../fish/composeFish';
 
 export type CreatureBodyPlan =
   | 'biped' | 'quadruped' | 'winged'
-  | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' | 'spectral' | 'squig' | 'amorphous' | 'jabberslythe' | 'crustace' | 'fish' // nouveaux squelettes
-  | 'monolithic';
+  | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' | 'spectral' | 'squig' | 'amorphous' | 'jabberslythe' | 'crustace' | 'fish'; // nouveaux squelettes
 
 /** Surcharges d'apparence propres à CETTE créature (par-dessus les défauts de sa Race).
  *  Réservé aux espèces NON-canoniques qui se replient sur une race partagée via baseSpeciesOf

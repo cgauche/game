@@ -1321,6 +1321,58 @@ pilote = **menu principal + écran de groupe**, validé à l'œil avant généra
 
 ## Dette technique connue
 
+### ✅ Consolidation data-driven *(en cours — 2026-06-20, audit multi-agents 8 lentilles)*
+
+Audit complet de l'arbre (8 agents Explore // : data-driven/règles optionnelles · duplication/code
+mort/Ennemi-Joueur · i18n/jets silencieux · archi state/flow · pureté moteur+tests · primitives UI ·
+rendu/rig/éditeur · contenu/coop/build) → plan de consolidation priorisé. Premiers lots livrés (suite
+complète verte + typecheck 0 à chaque commit) :
+
+- **Caractéristique d'incantation alternative, 100 % DATA-DRIVEN** : `castingValue` ignorait
+  `SkillInstance.characteristic` et codait en dur priere→Soc/focalisation→FM/langue→Int. Unifié en UN
+  point (`engine/skills.ts:effectiveSkillCharKey`, partagé par `testValue` ET `castingValue`) : carac
+  d'instance (défaut donnée) + surcharge optionnelle (`altCharKey` : Métier/Intimidation). **Aucun sniff
+  d'espèce ni regexp dans le moteur.**
+- **Domaine « Gueule » (Magie Ogre, ADE II) migré dans la donnée** (`domains.json`, depuis `all-data.json`)
+  : répare le lien sort→domaine (les 7 sorts portaient `subType:"Gueule"` sans `domainId`). Nouvel
+  attribut **donnée** `DomainData.castingChar` → la Magie de la Gueule se lance sur l'**Endurance**
+  (ADE II l.653), lu par `castingValue` via le domaine du lanceur — la règle « ogre » vit dans la donnée
+  du domaine (réservé aux ogres), pas dans le code.
+- **Code mort / commentaires** : référence fantôme `asTrait` (`data/index.ts`) et `critical.ts` (cumul
+  yeux/oreilles déjà géré par `escalateSensoryLoss`) corrigés ; 12 codemods one-shot terminés supprimés
+  (`scripts/migrate-*`, `strip-spec-ops` — ~1090 l.) ; commentaire `build:data` périmé retiré ; plan de
+  rendu **`'monolithic'` mort retiré** (type + gardes `pickBackend`/`usePlanAnim` + scripts QC ; golden inchangé).
+- **Correctness RAW (maladies, LDB 20)** : gangrène — seuil d'échecs = le vrai **Bonus d'Endurance**
+  (fin de l'inflation par les avances de Résistance) ; symptôme **`toxine`** journalisé (RAW tronqué →
+  conséquence laissée au MJ, plus de dé orphelin).
+- **Garde-fous (tests)** : non-cumul `effectiveChar` (meilleur bonus + pire pénalité), `creatureEquip`
+  (dérivation traits→armes = armement ennemi), `dropExpiredGrantedResources`.
+- **Seam i18n posé (fondation multi-langue)** : `src/i18n/` (`t(key, params)`, `MsgKey` typé, catalogue
+  `messages/fr.ts` ; **conception `docs/i18n-seam.md`**). **Phase B** : les 7 maps de labels du moteur
+  (carac/difficulté/localisations/défense/attaques gratuites/formes de corps/traits psy ciblés) sorties
+  du dur. **Phase D** : 6 écrans UI (menu principal, menu ☰, groupe+recrutement, sauvegarde/chargement,
+  lobby coop, interlude) — chacun **vérifié par un test de RENDU** (`renderToStaticMarkup`). Extraction
+  de masse (combat/applyOps) explicitement DIFFÉRÉE.
+- **Nettoyage transversal (suite)** : shim `AmbientRigToken` inliné dans `pickBackend` (fichier supprimé) ;
+  double install `window.__game` dédupliquée (devtools seul installateur) ; réf fantôme `migrate-refs.mts`
+  (slug.ts) et `TERRAIN_OVERLAYS` (métadonnée structurelle = code, hors catalogue) annotés. `policy.ts`
+  vérifié : déjà sans `RuleKind 'flow'` mort, `rangeBand*` dédupliqués, caps `combineMods` en `param`.
+- **Robustesse save/règles (Lot 6)** : règles maison (surcharges `policy`) PORTÉES dans la save ET
+  synchronisées hôte→invité en coop (clé réservée du snapshot) — fini la save non-portable et la
+  divergence coop ; `parseProject` valide `schema:2` au runtime ; **`migrateSave`** = point d'upgrade
+  UNIQUE (readSlot/importSave, table `MIGRATIONS`) → un futur bump de `SAVE_VERSION` migre au lieu de jeter.
+- **Correctness RAW — Sans Peur (Ennemi), LDB 10 l.864** : n'était PAS RAW (immunité automatique). Le
+  talent donne « un seul Test de Calme Accessible (+20) » pour IGNORER la Peur/Terreur de l'ennemi
+  spécifié — implémenté de bout en bout (cascade psy héros + IA `turnHooks` + modificateur −10 suivant
+  l'ÉTAT réel `psychState`), zéro jet silencieux. Tests moteur (`sans-peur.test`) + cascade (`psych-modal`).
+
+Coordination : la **session parallèle tient la lane Flow/combat/cascade** — désormais sur les **triggers
+de cycle de vie + fin de combat (Corruption + maladie)** ainsi que les unifications jet/narration
+(`flowOutcomes`, fold FateSave/Renounce, `flowFromEffects`) et les jets silencieux résiduels (Surprise ✓,
+Corruption post-combat). **Cette session s'en tient à l'écart.** Reste hors-lane à planifier : extraction
+i18n de masse (après stabilisation de leur narration) · `no-unused-vars`→error (sweep) · pureté des types
+moteur↔`state/flow` (après leur refacto).
+
 ### Reste à faire — synthèse *(màj 2026-06-05 — vérifié contre le code)*
 
 - ✅ **Avancement XP — boucle complète** : moteur **+ câblage store** (grant/dépense/détection in-carrière) **+ panneau UI** (onglets Fiche/Avancement) **+ Effet `giveXp`** **+ octroi à la victoire éditable** (`EncounterDef.onVictory` → `applyEffects` au groupe, **authorable dans l'éditeur de rencontres** « À la victoire ») **+ octroi par jalon** (`giveXp` dans triggers/dialogues). Tout testé (engine + vue + actions store + rendu + éditeur).

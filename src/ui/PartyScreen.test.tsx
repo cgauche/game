@@ -152,3 +152,61 @@ describe('PartyScreen — emplacements coop (l’hôte attribue, chacun remplit 
     expect(html).not.toContain('Retirer'); // pas à l'hôte → pas de retrait
   });
 });
+
+describe("PartyScreen -- libelles i18n Phase D", () => {
+  beforeEach(() => {
+    (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
+  });
+  afterEach(() => {
+    delete (globalThis as { localStorage?: Storage }).localStorage;
+  });
+
+  const noop = () => {};
+  const renderView = (party: Combatant[], net: NetState) =>
+    renderToStaticMarkup(
+      <PartyScreenView
+        party={party}
+        net={net}
+        title="Votre groupe d'aventuriers"
+        onMenu={noop}
+        onQuitCoop={noop}
+        onCreate={noop}
+        onAddHero={noop}
+        onRemoveHero={noop}
+        onAssignSlot={noop}
+        onStart={noop}
+      />,
+    );
+
+  it("libelles solo : navigation, emplacements, actions", () => {
+    const html = renderView([], initialNet());
+    expect(html).toContain("← Menu");
+    expect(html).toContain("Aventurier 1");
+    expect(html).toContain("Aventurier 4");
+    expect(html).toContain("Créer un personnage");
+    expect(html).toContain("Choisir un personnage");
+    expect(html).toContain("Commencer →");
+  });
+
+  it("libelles invite : bouton Quitter, message attente hote", () => {
+    const html = renderView([], { ...initialNet(), mode: "guest", mySeat: 1, slots: [0, 1, 0, 0] });
+    expect(html).toContain("← Quitter");
+    expect(html).toMatch(/L\S*h\S*te lance la partie/);
+  });
+
+  it("libelles hote avec slot invite vide : Commencer, message en attente", () => {
+    const html = renderView([], {
+      ...initialNet(), mode: "host", mySeat: 0, seatNames: { 0: "Hote", 1: "Antoine" }, ownership: {}, slots: [0, 1, 0, 0],
+    });
+    expect(html).toContain("Commencer →");
+    expect(html).toContain("En attente que chaque joueur remplisse ses emplacements");
+  });
+
+  it("libelles PartyPicker : onglets, bouton Termine", () => {
+    const html = renderToStaticMarkup(<PartyPicker party={[]} onPick={() => {}} onClose={() => {}} />);
+    expect(html).toContain("Mes personnages");
+    expect(html).toContain("Pré-tirés");
+    expect(html).toContain("Terminé");
+    expect(html).toContain("Choisir");
+  });
+});

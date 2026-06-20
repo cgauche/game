@@ -9,7 +9,12 @@
  *
  * Sauvegarde HORS COMBAT uniquement (battle non-null refusé par l'action store) : l'état
  * tactique suspendu (IA, modales de combat) n'est pas un point de reprise sûr.
+ *
+ * Les règles maison (surcharges de `policy.ts`, hors GameState) voyagent à part dans `rules` :
+ * une save reste portable d'une machine à l'autre AVEC ses règles (le localStorage ne suffit pas).
  */
+import type { RuleValue } from '../engine/policy';
+
 export const SAVE_VERSION = 1;
 
 export interface SaveMeta {
@@ -25,6 +30,9 @@ export interface SaveMeta {
 export interface SaveGame extends SaveMeta {
   /** Clés de données de GameState (deep-copiées, JSON-sûres). */
   data: Record<string, unknown>;
+  /** Surcharges de règles maison (`policy.ts`) actives à la sauvegarde — optionnel : une save
+   *  d'avant ce champ n'en a pas (on garde alors les règles courantes de la machine au chargement). */
+  rules?: Record<string, RuleValue>;
 }
 
 export type SaveSlot = 1 | 2 | 3;
@@ -44,6 +52,7 @@ export function snapshotSave(
   state: Record<string, unknown>,
   initial: Record<string, unknown>,
   savedAt: string,
+  rules: Record<string, RuleValue> = {},
 ): SaveGame {
   const data: Record<string, unknown> = {};
   for (const k of Object.keys(initial)) {
@@ -58,7 +67,26 @@ export function snapshotSave(
     sceneLabel: scene?.nom ?? scene?.id ?? 'Sans scène',
     gameTime: typeof state.gameTime === 'number' ? state.gameTime : 0,
     data: JSON.parse(JSON.stringify(data)) as Record<string, unknown>, // deep copy JSON-sûre
+    rules: { ...rules },
   };
+}
+
+// ── Règles maison dans le snapshot COOP (parité hôte/invité) ──────────────────────────────────
+// Le snapshot réseau n'a qu'un champ `data` opaque (cf. net/session) : les surcharges de `policy.ts`
+// y voyagent sous une clé RÉSERVÉE. Helpers PURS (testés), réutilisés par netFlow.
+
+/** Clé réservée du payload coop transportant les règles maison (hors GameState). */
+export const HOUSE_RULES_KEY = '__houseRules';
+
+/** Joint les règles maison au snapshot coop (sous la clé réservée). */
+export function packHouseRules(data: Record<string, unknown>, rules: Record<string, RuleValue>): Record<string, unknown> {
+  return { ...data, [HOUSE_RULES_KEY]: rules };
+}
+
+/** Sépare les règles maison du reste de l'état (clé réservée retirée de `game` → pas de pollution). */
+export function unpackHouseRules(data: Record<string, unknown>): { game: Record<string, unknown>; rules?: Record<string, RuleValue> } {
+  const { [HOUSE_RULES_KEY]: rules, ...game } = data;
+  return { game, rules: rules as Record<string, RuleValue> | undefined };
 }
 
 /** Validation de forme d'une save (version + data objet). */
@@ -67,6 +95,33 @@ export function isValidSave(s: unknown): s is SaveGame {
     && (s as SaveGame).version === SAVE_VERSION
     && typeof (s as SaveGame).savedAt === 'string'
     && !!(s as SaveGame).data && typeof (s as SaveGame).data === 'object';
+}
+
+/** Migrations SÉQUENTIELLES : la clé N met à niveau une save vN → v(N+1). À CHAQUE bump de
+ *  `SAVE_VERSION`, ajouter ici l'entrée correspondante — sinon les saves antérieures seront refusées
+ *  (jamais corrompues en silence). Vide tant qu'on est en v1 (aucune version antérieure n'existe). */
+const MIGRATIONS: Record<number, (data: Record<string, unknown>) => Record<string, unknown>> = {
+  // 1: (d) => ({ ...d, version: 2, /* champ ajouté en v2 avec son défaut */ }),
+};
+
+/** Met une save parsée au niveau `SAVE_VERSION` AVANT validation (point d'upgrade UNIQUE). Un bump de
+ *  version ne jette donc plus les anciennes saves en silence : elles passent par la chaîne `MIGRATIONS`.
+ *  Renvoie null si : pas un objet, version absente/non numérique, version FUTURE (on ne devine pas une
+ *  structure plus récente), trou dans la chaîne, ou forme finale invalide. */
+export function migrateSave(parsed: unknown): SaveGame | null {
+  if (!parsed || typeof parsed !== 'object') return null;
+  let save = parsed as Record<string, unknown>;
+  let v = typeof save.version === 'number' ? save.version : NaN;
+  if (!Number.isFinite(v) || v > SAVE_VERSION) return null; // version inconnue ou plus récente que l'app
+  while (v < SAVE_VERSION) {
+    const up = MIGRATIONS[v];
+    if (!up) return null; // pas de migrateur pour cette version → on refuse (plutôt que corrompre)
+    save = up(save);
+    const next = typeof save.version === 'number' ? save.version : NaN;
+    if (!Number.isFinite(next) || next <= v) return null; // un migrateur DOIT faire progresser la version
+    v = next;
+  }
+  return isValidSave(save) ? save : null;
 }
 
 export function saveToSlot(slot: SaveSlot, save: SaveGame): boolean {
@@ -84,8 +139,7 @@ export function readSlot(slot: SaveSlot): SaveGame | null {
   try {
     const raw = s.getItem(KEY(slot));
     if (!raw) return null;
-    const parsed: unknown = JSON.parse(raw);
-    return isValidSave(parsed) ? parsed : null;
+    return migrateSave(JSON.parse(raw)); // upgrade éventuel puis validation
   } catch {
     return null;
   }
@@ -112,11 +166,10 @@ export function exportSave(save: SaveGame): string {
   return JSON.stringify(save, null, 2);
 }
 
-/** Import : parse + validation stricte (null si invalide ou version inconnue). */
+/** Import : parse + migration éventuelle + validation (null si invalide ou version inconnue/future). */
 export function importSave(json: string): SaveGame | null {
   try {
-    const parsed: unknown = JSON.parse(json);
-    return isValidSave(parsed) ? parsed : null;
+    return migrateSave(JSON.parse(json));
   } catch {
     return null;
   }

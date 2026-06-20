@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { CoopRoomPanel, CoopSeatList, CoopAssignList } from './CoopPanels';
 import { SaveLoadModal } from './SaveLoadModal';
+import { t } from '../i18n';
 
 /**
  * Lobby coop — connexion par CODE DE ROOM court (relay WebSocket, spec coop v2).
@@ -61,35 +62,35 @@ export function CoopLobby() {
 
   if (net.mode === 'local') {
     return (
-      <CoopShell title="Jouer en ligne" backLabel="← Menu" onBack={() => { leave(); setScreen('menu'); }}>
+      <CoopShell title={t("coop.title.local")} backLabel={t("coop.back.menu")} onBack={() => { leave(); setScreen('menu'); }}>
         <label className="field coop-name">
-          <span>Votre nom</span>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nom de joueur" autoFocus />
+          <span>{t("coop.name.label")}</span>
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("coop.name.placeholder")} autoFocus />
         </label>
         <div className="coop-roles">
           <section className="panel coop-role">
-            <div className="mini-title">Héberger une partie</div>
-            <p className="hint">Le groupe se compose ensemble : vous attribuerez les emplacements aux joueurs connectés.</p>
+            <div className="mini-title">{t("coop.host.section")}</div>
+            <p className="hint">{t("coop.host.hint")}</p>
             <button
               className="btn btn-primary"
               disabled={!name.trim() || busy}
               onClick={async () => {
                 setError('');
                 setBusy(true);
-                if (!(await hostStart(name.trim()))) setError('Service coop injoignable — réessayez.');
+                if (!(await hostStart(name.trim()))) setError(t("coop.host.error"));
                 setBusy(false);
               }}
             >
-              Héberger
+              {t("coop.host.btn")}
             </button>
           </section>
           <section className="panel coop-role">
-            <div className="mini-title">Rejoindre une partie</div>
+            <div className="mini-title">{t("coop.join.section")}</div>
             <input
               className="coop-code-input"
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-              placeholder="Code (6 caractères)"
+              placeholder={t("coop.join.placeholder")}
               maxLength={6}
             />
             <button
@@ -103,7 +104,7 @@ export function CoopLobby() {
                 setBusy(false);
               }}
             >
-              Rejoindre
+              {t("coop.join.btn")}
             </button>
             {error && <p className="hint coop-error">{error}</p>}
           </section>
@@ -114,15 +115,15 @@ export function CoopLobby() {
 
   if (net.mode === 'guest') {
     return (
-      <CoopShell title="Salon — invité" backLabel="← Quitter" onBack={() => { leave(); setScreen('menu'); }}>
+      <CoopShell title={t("coop.title.guest")} backLabel={t("coop.back.quit")} onBack={() => { leave(); setScreen('menu'); }}>
         <section className="panel coop-role">
           <div className="mini-title">Partie {net.roomCode}</div>
           <CoopSeatList />
         </section>
         <p className="hint coop-waiting">
-          {net.hostAway ? '⏳ L’hôte est déconnecté — la partie reprendra à son retour.'
-            : net.connection === 'reconnecting' ? '🔌 Reconnexion en cours…'
-            : '⏳ En attente de l’hôte…'}
+          {net.hostAway ? t("coop.guest.waiting.hostAway")
+            : net.connection === 'reconnecting' ? t("coop.guest.waiting.reconnecting")
+            : t("coop.guest.waiting.default")}
         </p>
       </CoopShell>
     );
@@ -130,25 +131,25 @@ export function CoopLobby() {
 
   // ── HÔTE ──
   return (
-    <CoopShell title="Salon — hôte" backLabel="← Quitter" onBack={() => { leave(); setScreen('menu'); }} wide>
+    <CoopShell title={t("coop.title.host")} backLabel={t("coop.back.quit")} onBack={() => { leave(); setScreen('menu'); }} wide>
       <section className="panel coop-role">
-        <div className="mini-title">Inviter — partagez le code</div>
+        <div className="mini-title">{t("coop.host.invite.section")}</div>
         <CoopRoomPanel />
       </section>
       <section className="panel coop-role">
-        <div className="mini-title">Joueurs connectés</div>
+        <div className="mini-title">{t("coop.host.players.section")}</div>
         <CoopSeatList />
       </section>
       <section className="panel coop-role">
-        <div className="mini-title">Attribution des héros</div>
+        <div className="mini-title">{t("coop.host.assign.section")}</div>
         <CoopAssignList />
       </section>
       {/* Charger en session : le salon survit (`applyLoadedSave` préserve `net`), l'invité
           suit au snapshot — c'est LE chemin pour reprendre une partie coop sauvegardée. */}
       <div className="coop-actions">
-        <button className="btn" onClick={() => setLoadOpen(true)}>📂 Charger une partie</button>
+        <button className="btn" onClick={() => setLoadOpen(true)}>{t("coop.host.loadGame")}</button>
         <button className="btn btn-primary" onClick={() => setScreen('party')}>
-          Composer le groupe →
+          {t("coop.host.compose")}
         </button>
       </div>
       {loadOpen && <SaveLoadModal mode="load" onClose={() => setLoadOpen(false)} />}

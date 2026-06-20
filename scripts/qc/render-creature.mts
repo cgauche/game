@@ -17,7 +17,7 @@ import type { View } from '../../src/gameIso/rig/facing';
 
 const args = process.argv.slice(2);
 if (args[0] === '--list') {
-  const list = CREATURES.filter((c) => c.plan !== 'biped' && c.plan !== 'monolithic')
+  const list = CREATURES.filter((c) => c.plan !== 'biped')
     .map((c) => ({ name: c.name, plan: c.plan }));
   console.log(JSON.stringify(list, null, 1));
   process.exit(0);
@@ -26,7 +26,7 @@ if (args[0] === '--list') {
 const name = args[0];
 if (!name) { console.error('usage: render-creature.mts "<Nom>" [outdir] [prefix]'); process.exit(1); }
 const def = CREATURES.find((c) => c.name === name); // lookup EXACT (plus de match flou)
-if (!def || def.plan === 'biped' || def.plan === 'monolithic') { console.error(`créature riguée introuvable: ${name}`); process.exit(1); }
+if (!def || def.plan === 'biped') { console.error(`créature riguée introuvable: ${name}`); process.exit(1); }
 const plan = planById(def.plan);
 const outDir = args[1] ?? 'public/qc/creatures';
 const prefix = args[2] ?? norm(def.name).replace(/[^a-z0-9]+/g, '-');
