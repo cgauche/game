@@ -57,6 +57,7 @@ import { FLOWS, rollFlowActions, rollFlowActionsMulti, type RollFlowActionsMap }
 import { gainCorruption, applyMutation } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
 import * as partyFlow from './partyFlow';
+import * as visionStateMod from './visionState';
 import * as merchantFlow from './merchantFlow';
 import type { MerchantState, MerchantStocks } from './merchantFlow';
 import type {
@@ -205,6 +206,11 @@ export interface GameState extends RollFlowActionsMap {
    *  (horloge/ambiance). Posé par l'Effet `setLight`, lu par le rendu (overlay d'assombrissement). */
   lightLevel: number | null;
   flags: Record<string, boolean>;
+  /** Brouillard de guerre : cases déjà explorées par scène (`sceneId` → clés "x,y,z"). PERSISTE entre
+   *  transitions (hors manifeste de reset `stateFields`) ; vidé en nouvelle partie (`startScene`). */
+  explored: Record<string, string[]>;
+  /** Fond les cases visibles courantes dans l'ensemble exploré de la scène (appelé par le rendu). */
+  markExplored: (keys: string[]) => void;
   journal: string[];
   dialogue: { dialogue: Dialogue; nodeId: string; speakerId?: string } | null;
   /** Marchand ouvert (#2) : instantané du stock pour la visite (Disponibilité figée). */
@@ -854,6 +860,8 @@ export const useGame = create<GameState>((set, get) => ({
   partyPos: { x: 0, y: 0 },
   lightLevel: null,
   flags: {},
+  explored: {},
+  markExplored: (keys) => visionStateMod.recordExplored(get, set, keys),
   journal: [],
   dialogue: null,
   merchant: null,
