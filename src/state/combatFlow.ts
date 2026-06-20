@@ -3462,10 +3462,14 @@ export function maybeRunEnemyTurn(get: Get, set: SetFn) {
   setTimeout(() => runEnemyAI(get, set, active.id), TEMPO.turnHandoff);
 }
 
-/** LDB 21 l.29 : « Si la source de votre Peur se rapproche de vous, vous devez réussir un Test de Calme
- *  Intermédiaire (+0) ou gagner un État Brisé. » Appelé APRÈS le déplacement de `mover` (IA) : tout héros
- *  qui le craint (Peur active non vaincue) ET dont il s'est rapproché fait un Test de Calme ; échec → Brisé.
- *  Jet montré en révélation témoin (comme la Fuite). */
+/** LDB 21 (Psychologie) l.29 : « Si la source de votre Peur se rapproche de vous, vous devez réussir un
+ *  Test de Calme Intermédiaire (+0) ou gagner un État Brisé. » Appelé APRÈS le déplacement de `mover` (IA) :
+ *  tout héros qui le craint (Peur active non vaincue) ET dont il s'est rapproché fait un Test de Calme,
+ *  ROUTÉ par l'exécuteur de Flow CADENCE-AWARE (`runCombatFlow`) — héros en cadence MANUELLE → étape de
+ *  cascade INFLUENÇABLE (Chance/Résilience) ; ennemi/héros auto → jet inline. La conséquence PURE de
+ *  l'échec (1 État Brisé) est une op `condition` portée par la branche `fail`. Plusieurs héros craintifs
+ *  testent sur un même déplacement (garde `lastApproachKey` : 1 Test par Tour de la source) ; chaque
+ *  `runCombatFlow` APPEND son étape à la MÊME cascade `purpose:'combat'` → file naturelle. */
 export function approachFearTrigger(get: Get, set: SetFn, mover: Combatant, fromPos: Pt): void {
   const battle = get().battle;
   if (!battle || !mover.pos) return;
@@ -3477,12 +3481,16 @@ export function approachFearTrigger(get: Get, set: SetFn, mover: Combatant, from
     if (!peur || peur.lastApproachKey === approachKey) continue;
     if (chebyshev(mover.pos, c.pos) >= chebyshev(fromPos, c.pos)) continue; // ne s'est pas rapproché
     peur.lastApproachKey = approachKey;
-    const t = rollTest(calmeValue(c), 'intermediaire', battleRng());
-    const line = t.success ? `${c.name} garde son sang-froid alors que ${mover.name} s'approche.` : `${c.name} panique alors que ${mover.name} s'approche : 1 État Brisé.`;
-    if (!t.success) addCondition(c, COND.brise, 1);
-    battle.log.push(ev('fear', line, c.id, mover.id));
-    if (c.kind === 'hero') pushReveal(set, { kind: 'calme', title: 'Approche menaçante', dice: t.roll, lines: [line], subjectId: c.id, severity: 'minor' });
+    const flow = testFlow(
+      { skill: 'calme', difficulty: 'intermediaire', label: 'Approche menaçante' },
+      EMPTY_FLOW, // réussite : garde son sang-froid, rien à faire
+      { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', name: COND.brise, value: 1 }] } },
+    );
+    runCombatFlow({ mode: 'combat', get, set, target: c, caster: c, label: 'Approche menaçante' }, flow);
   }
+  // Inline (mover ennemi → héros auto/ennemi craintif) : les lignes partent dans la file différée. Le héros
+  // manuel suspend (cascade) et n'en pousse aucune. On les folde dans le `battle.log` que le `move` réécrit.
+  battle.log.push(...drainPendingLog(get, set));
 }
 
 // brokenRecovery (récupération du Brisé en fin de Round, LDB 16 l.57-59) déplacé → state/combat/roundHooks
