@@ -226,6 +226,14 @@ export interface FlowTest {
   /** Le Test est sauté si la cible appartient à l'un de ces Groupes (Morsure de l'hiver : hors
    *  Mort-vivant/Démon). Même `groupMatch` que l'op `test`. */
   exceptGroups?: string[];
+  /** Test OPPOSÉ (Assommante, LDB 62 l.268 : « Test opposé Force/Résistance ») : le côté qui jette CE
+   *  Test (`skill`/`characteristic` ci-dessus) est le DÉFENSEUR (la cible/victime) ; l'ATTAQUANT (le
+   *  porteur de l'effet) oppose `attacker`[+`attackerSkill`], pré-jeté et FIGÉ. L'issue success/sl du
+   *  défenseur vient de `resolveOpposed(jetDéfenseur, jetAttaquantFigé)` (PAS `roll ≤ target`) — le
+   *  défenseur RÉSISTE (branche `success`) si l'attaquant ne l'emporte PAS (défenseur OU égalité) ;
+   *  l'attaquant l'emporte → défenseur PERD → branche `fail`. Calque la mécanique figée de `recover`/
+   *  `disengage` (l'opposant garde son jet, reroll-aware). */
+  opposed?: { attacker: CharKey; attackerSkill?: string; attackerLabel?: string };
 }
 
 /**

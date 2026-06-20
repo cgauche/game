@@ -12,7 +12,7 @@
 import type { Combatant, Weapon, HitLocation } from '../engine/types';
 import type { Get, Set as SetFn } from './flowTypes';
 import { type EffectTrigger, type TriggeredEffect, type Flow, flowHasTest } from './flow';
-import type { GameOp, OpsCtx } from '../engine/ops';
+import type { OpsCtx } from '../engine/ops';
 import { resolveQualities } from '../engine/qualities/dispatch';
 import { isOutOfAction } from '../engine/conditions';
 import { isEngagedWith } from '../engine/engagement';
@@ -29,20 +29,15 @@ function withArg(effects: TriggeredEffect[], arg?: string): TriggeredEffect[] {
   if (!arg) return effects;
   const diff = difficultyFromLabel(arg);
   const visit = (f: Flow): Flow => {
-    if (f.kind === 'do' && f.effect.type === 'ops') {
-      let touched = false;
-      const ops = f.effect.ops.map((o: GameOp) => (o.op === 'test' && o.argDifficulty ? (touched = true, { ...o, difficulty: diff }) : o));
-      return touched ? { ...f, effect: { ...f.effect, ops } } : f;
-    }
     if (f.kind === 'seq') return { ...f, steps: f.steps.map(visit) };
     if (f.kind === 'if') return { ...f, then: visit(f.then), ...(f.else ? { else: visit(f.else) } : {}) };
     if (f.kind === 'test') {
       // Nœud Flow `test` dont la difficulté vient de l'arg d'instance (« Venin (Difficile) ») : on
-      // substitue `test.difficulty` (mêmes sémantique/gate que l'op `test.argDifficulty`).
+      // substitue `test.difficulty` (mêmes sémantique/gate que l'ancienne op `test.argDifficulty`).
       const test = f.test.argDifficulty ? { ...f.test, difficulty: diff } : f.test;
       return { ...f, test, success: visit(f.success), fail: visit(f.fail) };
     }
-    return f;
+    return f; // `do` (feuille) : inchangé
   };
   return effects.map((eff) => ({ ...eff, flow: visit(eff.flow) }));
 }

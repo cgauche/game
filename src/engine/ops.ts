@@ -14,7 +14,7 @@
  * modélisable reste une op `narrative` (journalisée, arbitrage MJ, rien d'inventé).
  */
 import { RNG, defaultRNG, roll as rollDice } from './dice';
-import { rollTest, opposedTest } from './tests';
+import { rollTest } from './tests';
 import { testValue } from './skills';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
 import { addCondition, addTimedCondition, removeCondition, loseWounds, hasCondition, combatTestPenalty } from './conditions';
@@ -187,10 +187,13 @@ export type GameOp =
   /** PA TEMPORISÉS à toutes les localisations (Armure Aethyrique « +1 PA à toutes les
    *  Localisations ») — ActiveEffect.apAll, lu par effectiveArmourAt à la mitigation. */
   | { op: 'apAll'; amount: Formula }
-  /** Test imbriqué (« Test de Résistance Accessible (+20) ou … ») : résolu
-   *  immédiatement contre la CIBLE, puis applique `onFail` / `onSuccess`.
-   *  `onFailHard` : palier d'échec aggravé (« si vous échouez avec −4 DR ou
-   *  moins… », Purifier la chair LDB 40) — appliqué EN PLUS d'`onFail`. */
+  /** Test imbriqué (« Test de Résistance Accessible (+20) ou … ») : résolu immédiatement contre la CIBLE
+   *  (jet INLINE), puis applique `onFail` / `onSuccess`. Réservé aux tables d'Imparfaites & Colère des
+   *  dieux (`engine/miscast.ts`, verbatim LDB 46/40) appliquées au LANCEUR via `applyMiscast`→`applyOps`
+   *  (contrecoup INLINE, jamais routé en cadence) — PAS un effet déclenché authoré : ceux-là sont des
+   *  nœuds de STRUCTURE Flow `{kind:'test'}`, cadence-aware via `resolveFlowTest`.
+   *  `onFailHard` : palier d'échec aggravé (« si vous échouez avec −4 DR ou moins… », Purifier la chair
+   *  LDB 40) — appliqué EN PLUS d'`onFail`. */
   | { op: 'test'; skill?: string; characteristic?: CharKey; difficulty: Difficulty;
       /** La difficulté EFFECTIVE vient de l'argument d'instance du porteur (« Venin (Difficile) ») —
        *  substituée à la collecte (`effectsOf`) ; `difficulty` ci-dessus est le défaut (arg absent). */
@@ -198,10 +201,6 @@ export type GameOp =
       /** Saute le Test si la cible est IMMUNISÉE au type donné (Immunité (Poison) → Venin sans effet). */
       unlessImmune?: string;
       onlyGroups?: string[]; exceptGroups?: string[]; onFail: GameOp[]; onSuccess?: GameOp[]; onFailHard?: { dr: number; ops: GameOp[] } }
-  /** Test OPPOSÉ à la touche (Assommante : F vs F ; Épée de justice : Soc vs Résistance) : l'attaquant
-   *  (`caster`/`ref`) oppose `attacker`[+`attackerSkill`] à la `defender`[+`defenderSkill`] de la cible ;
-   *  victoire de l'attaquant → `onWin`, sinon `onLose`. Réutilise `opposedTest()` (engine/tests). */
-  | { op: 'opposedTest'; attacker: CharKey; attackerSkill?: string; defender: CharKey; defenderSkill?: string; onWin: GameOp[]; onLose?: GameOp[] }
   /** Points de Corruption (LDB 19). Le store branche `ctx.onCorruption` (seuil →
    *  mutation → damnation) ; sans contexte, simple incrément du compteur. */
   | { op: 'corruption'; amount: number; perSL?: PerSL }
@@ -655,12 +654,6 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         lines.push(...applyOps(target, t.success ? o.onSuccess ?? [] : o.onFail, t.success ? { ...ctx, sl: t.sl } : ctx));
         // Palier d'échec aggravé (« si vous échouez avec −N DR ou moins ») — EN PLUS d'onFail.
         if (!t.success && o.onFailHard && t.sl <= o.onFailHard.dr) lines.push(...applyOps(target, o.onFailHard.ops, ctx));
-        break;
-      }
-      case 'opposedTest': {
-        const opp = opposedTest(testValue(ref, o.attackerSkill, o.attacker), testValue(target, o.defenderSkill, o.defender), rng);
-        lines.push(`${ref.name} (${o.attacker}) vs ${target.name} (${o.defender}${o.defenderSkill ? `/${refLabel('skills', { id: o.defenderSkill })}` : ''}) — Test opposé : ${opp.attackerWins ? 'l’emporte' : 'résiste'}.`);
-        lines.push(...applyOps(target, opp.attackerWins ? o.onWin : (o.onLose ?? []), ctx));
         break;
       }
       case 'corruption': {

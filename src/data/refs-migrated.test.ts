@@ -182,12 +182,20 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
   });
 
   // ── Spine des Tests : aucune compétence résolue par LIBELLÉ (multilangue) ──
-  it('ops test/opposedTest/skillMod/skillDRBonus → skill par skillId qui résout (jamais un libellé)', () => {
+  // Un Test déclenché authoré est désormais un nœud de STRUCTURE Flow (`{kind:'test', test:FlowTest}`) ;
+  // ses Compétences (côté défenseur `test.skill`, côté attaquant OPPOSÉ `test.opposed.attackerSkill`)
+  // sont des skillId stables. L'op `test` SUBSISTE pour les tables d'Imparfaites/Colère (miscast, code).
+  // Les ops `test`/`skillMod`/`skillDRBonus` portent aussi un skillId. Tous doivent RÉSOUDRE.
+  it('FlowTest.skill / FlowTest.opposed.attackerSkill / ops test·skillMod·skillDRBonus → skillId qui résout (jamais un libellé)', () => {
     const skillCarrying = [...spells, ...traits, ...maneuvers, ...qualities, ...creatures, ...stars];
     walk(skillCarrying, (o) => {
       const ids: unknown[] = [];
       if ((o.op === 'test' || o.op === 'skillMod' || o.op === 'skillDRBonus') && o.skill != null) ids.push(o.skill);
-      if (o.op === 'opposedTest') { if (o.attackerSkill != null) ids.push(o.attackerSkill); if (o.defenderSkill != null) ids.push(o.defenderSkill); }
+      if (o.kind === 'test' && isObj(o.test)) {
+        const t = o.test as Record<string, unknown>;
+        if (t.skill != null) ids.push(t.skill);
+        if (isObj(t.opposed) && (t.opposed as Record<string, unknown>).attackerSkill != null) ids.push((t.opposed as Record<string, unknown>).attackerSkill);
+      }
       for (const s of ids) {
         expect(typeof s, JSON.stringify(o)).toBe('string');
         expect(findSkillById(s as string), `${JSON.stringify(o)} → ${String(s)}`).toBeTruthy();

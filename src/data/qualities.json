@@ -62,24 +62,30 @@
             "is": "tete"
           },
           "then": {
-            "kind": "do",
-            "effect": {
-              "type": "ops",
-              "on": "victim",
-              "ops": [
-                {
-                  "op": "opposedTest",
-                  "attacker": "F",
-                  "defender": "E",
-                  "defenderSkill": "resistance",
-                  "onWin": [
-                    {
-                      "op": "condition",
-                      "name": "sonne"
-                    }
-                  ]
-                }
-              ]
+            "kind": "test",
+            "test": {
+              "skill": "resistance",
+              "opposed": {
+                "attacker": "F",
+                "attackerLabel": "Force"
+              }
+            },
+            "success": {
+              "kind": "seq",
+              "steps": []
+            },
+            "fail": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "target",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "name": "sonne"
+                  }
+                ]
+              }
             }
           }
         }

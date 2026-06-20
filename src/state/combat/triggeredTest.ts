@@ -22,7 +22,7 @@
  * coop) ; l'applier `triggeredTest` les rejoue (branche PUIS `after`) — l'`ExecCtx` est RECONSTRUIT
  * depuis `get()`/`hero`, jamais capturé (zéro closure dans le pending).
  */
-import { rollTest, type TestResult } from '../../engine/tests';
+import { rollTest, resolveOpposed, type TestResult } from '../../engine/tests';
 import { combatTestPenalty } from '../../engine/conditions';
 import { testValue } from '../../engine/skills';
 import { applyOps, describeTestRoll, type OpsCtx } from '../../engine/ops';
@@ -159,6 +159,13 @@ export function runCombatFlow(ctx: ExecCtx, flow: Flow): void {
  *  - combat + héros MANUEL → étape de cascade `triggeredTest` INFLUENÇABLE (Chance/Pacte/Résilience) ;
  *    on ne touche QUE `pendingCascade` (jamais `battle.log` depuis ce hook profond).
  *  - combat sinon (ennemi / cadence auto) → jet INLINE + branche + `after`, lignes → file différée.
+ *
+ * Test OPPOSÉ (`ft.opposed`, Assommante LDB 62 l.268) : l'ATTAQUANT (`ctx.caster`, le porteur) est
+ * PRÉ-JETÉ et FIGÉ (`aT`) AVANT que le défenseur (`c`) ne jette — l'issue success/sl du défenseur vient
+ * de `resolveOpposed(jetDéfenseur, aT)` (PAS `roll ≤ target`). Côté héros manuel, `aT` voyage dans
+ * `meta.opposed` (sérialisable, coop) et la cascade re-oppose à chaque influence (calque `recover`/
+ * `disengage`) ; côté ennemi/auto, on re-oppose INLINE. Le défenseur RÉSISTE (branche `success`) si
+ * l'attaquant ne l'emporte PAS (défenseur OU ÉGALITÉ).
  */
 export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test' }>, after: Flow): void {
   const ft = node.test;
@@ -177,25 +184,54 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
     || (ft.onlyGroups != null && !ft.onlyGroups.some((g) => groupMatch(g, c.groups ?? [])))
     || (ft.exceptGroups != null && ft.exceptGroups.some((g) => groupMatch(g, c.groups ?? [])));
   if (gated) { playAfter(ctx.get, ctx.set, c, after, ctx.label); return; }
+  const opp = ft.opposed;
   const base = testValue(c, ft.skill, ft.characteristic, ft.spec);
   const difficulty: Difficulty = ft.difficulty ?? 'intermediaire';
   const skillLabel = ft.skill ? refLabel('skills', { id: ft.skill, spec: ft.spec }) : (ft.characteristic ? CHAR_LABELS[ft.characteristic] : 'Test');
   const label = ft.label ?? skillLabel;
-  const penalty = combatTestPenalty(c);
+  // Test OPPOSÉ : aucune pénalité d'État supplémentaire (l'op `opposedTest` jetait `testValue` brut des
+  // deux côtés — `testValue` porte DÉJÀ les pénalités d'États ; pas de `combatTestPenalty` en plus). Test
+  // SIMPLE : `combatTestPenalty` comme l'ancien op `test` (byte-fidèle aux chemins Venin/Mâchoires).
+  const penalty = opp ? 0 : combatTestPenalty(c);
+  // Test OPPOSÉ : PRÉ-JET de l'attaquant (porteur), FIGÉ, AVANT le jet du défenseur — même ordre RNG que
+  // `opposedTest()` (attaquant puis défenseur). Référent = `ctx.caster` (Force du porteur).
+  const attacker = opp ? ctx.caster : undefined;
+  const aT: TestResult | undefined = opp && attacker
+    ? rollTest(testValue(attacker, opp.attackerSkill, opp.attacker), 'intermediaire', battleRng())
+    : undefined;
   if (roundTestInteractive(c)) {
     // Héros en cadence manuelle : étape INFLUENÇABLE, suspendue dans la cascade de combat. La branche +
-    // la continuation `after` voyagent dans le meta (sérialisable) → rejouées par l'applier.
+    // la continuation `after` voyagent dans le meta (sérialisable) → rejouées par l'applier. En Test
+    // OPPOSÉ, l'attaquant figé `aT` voyage aussi dans le meta → la cascade re-oppose à chaque influence.
     pushCombatStep(ctx.set, {
       id: `triggeredTest-${c.id}-${skillLabel}`,
       kind: 'triggeredTest', actorId: c.id, icon: '🎲', rollLabel: skillLabel,
       base, target: base + DIFFICULTY_MODIFIERS[difficulty] + penalty, label,
-      meta: { onSuccess: node.success, onFail: node.fail, after },
+      meta: {
+        onSuccess: node.success, onFail: node.fail, after,
+        ...(aT && attacker ? { opposed: { aT, attackerName: attacker.name, attackerLabel: opp!.attackerLabel ?? CHAR_LABELS[opp!.attacker] } } : {}),
+      },
     });
     return;
   }
-  // Ennemi OU héros rapide/auto : jet INLINE + branche + continuation ; ligne de parité (describeTestRoll).
+  // Ennemi OU héros rapide/auto : jet INLINE + branche + continuation ; ligne de parité.
   // `skillLabel` = la Compétence/Caractéristique RÉELLE (cadre de jet), distincte du `label` de situation.
   const t = rollTest(base, difficulty, battleRng(), penalty);
+  if (opp && aT && attacker) {
+    // Test OPPOSÉ inline : l'attaquant figé (1ʳᵉ position) vs le jet du défenseur → le défenseur RÉSISTE
+    // (success) si l'attaquant ne l'emporte PAS (défenseur vainqueur OU égalité). `t.success`/`t.sl` du
+    // jet simple sont REMPLACÉS par l'issue opposée (LDB 62 l.268).
+    const o = resolveOpposed(aT, t);
+    const defenderResists = o.winner !== 'attacker';
+    queueLines(ctx.get, ctx.set, [
+      `${attacker.name} (${opp.attackerLabel ?? CHAR_LABELS[opp.attacker]}) 🎲 ${aT.roll}/${aT.target} (DR ${aT.sl}) vs ${c.name} (${skillLabel}) 🎲 ${t.roll}/${t.target} (DR ${t.sl}) — ${defenderResists ? 'résiste' : 'l’emporte'}.`,
+    ], c.id);
+    const lines = applyTriggeredTestBranch(c, { success: defenderResists, sl: t.sl }, { onSuccess: node.success, onFail: node.fail });
+    syncCombatant(ctx.get, ctx.set);
+    queueLines(ctx.get, ctx.set, lines, c.id);
+    playAfter(ctx.get, ctx.set, c, after, ctx.label);
+    return;
+  }
   queueLines(ctx.get, ctx.set, [describeTestRoll(c.name, skillLabel, difficulty, t)], c.id);
   const lines = applyTriggeredTestBranch(c, t, { onSuccess: node.success, onFail: node.fail });
   syncCombatant(ctx.get, ctx.set); // les combattants ont muté (États retirés)

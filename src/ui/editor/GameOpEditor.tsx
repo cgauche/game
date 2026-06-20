@@ -51,7 +51,6 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   gainResource: '🍀 Points de Chance / Destin',
   corruption: '🧬 Points de Corruption',
   test: '🎲 Test imbriqué (succès/échec)',
-  opposedTest: '⚔️ Test opposé → effets',
   castPenalty: '🔮 Contrecoup d’incantation',
   castWard: '🔮 Aura anti-Sort (−20 Langue)',
   arrowWard: '🏹 Bouclier anti-projectiles',
@@ -109,7 +108,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'loseTurn']],
   ['🩼 Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'maxWeaponHands', 'senseLoss']],
   ['⚔️ Atouts/Défauts d’arme (passifs)', ['weaponRollMod', 'weaponDamageMod', 'armourPierce', 'critOnRoll']],
-  ['🎲 Contrôle', ['test', 'opposedTest', 'rollThreshold', 'spendAdvantage']],
+  ['🎲 Contrôle', ['test', 'rollThreshold', 'spendAdvantage']],
   ['📝 Narration', ['narrative']],
 ];
 
@@ -215,7 +214,6 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'gainResource': return { op: 'gainResource', resource: 'fortune', amount: 1 };
     case 'corruption': return { op: 'corruption', amount: 1 };
     case 'test': return { op: 'test', skill: 'resistance', difficulty: 'intermediaire', onFail: [], onSuccess: [] };
-    case 'opposedTest': return { op: 'opposedTest', attacker: 'F', defender: 'F', onWin: [] };
     case 'castPenalty': return { op: 'castPenalty', skill: 'all', mod: -10 };
     case 'castWard': return { op: 'castWard', radius: 5 };
     case 'arrowWard': return { op: 'arrowWard', radius: 5 };
@@ -285,7 +283,6 @@ export function opSummary(o: GameOp): string {
     case 'gainResource': return `${L} +${o.amount} ${o.resource === 'fate' ? 'Destin' : 'Chance'}${o.temporary ? ' (temp.)' : ''}`;
     case 'corruption': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount}`;
     case 'test': return `${L} ${o.skill ? refLabel('skills', { id: o.skill }) : o.characteristic ? CHAR_LABELS[o.characteristic] : '?'} → ${o.onSuccess?.length ?? 0} si réussite / ${o.onFail.length} si échec`;
-    case 'opposedTest': return `${L} ${o.attacker} vs ${o.defender} → ${o.onWin.length} si gagné`;
     case 'castPenalty': return `${L} ${o.blocked ? 'magie interdite' : o.maxZeroDR ? 'Prière plafonnée' : `${o.mod ?? 0} ${o.skill}`}`;
     case 'castWard': return `${L} −20 Langue, rayon ${formulaSummary(o.radius)} m`;
     case 'arrowWard': return `${L} rayon ${formulaSummary(o.radius)} m`;
@@ -329,7 +326,7 @@ export function opSummary(o: GameOp): string {
 const DEDICATED: ReadonlySet<GameOp['op']> = new Set([
   'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'skillMod', 'moveMod', 'apAll', 'testMod',
   'corruption', 'gainResource', 'grantTrait', 'grantTalent', 'grantNaturalWeapon', 'narrative',
-  'summon', 'polymorph', 'lifeSteal', 'test', 'opposedTest',
+  'summon', 'polymorph', 'lifeSteal', 'test',
 ]);
 
 function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void }) {
@@ -493,20 +490,6 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
                 <GameOpEditor ops={o.onFailHard.ops} onChange={(ops) => upd({ onFailHard: { ...o.onFailHard, ops } })} />
               </div>
             )}
-          </>
-        )}
-        {op.op === 'opposedTest' && (
-          <>
-            <label className="dr">Attaquant
-              <select value={o.attacker} onChange={(e) => upd({ attacker: e.target.value as CharKey })}>{CHARS.map((c) => <option key={c} value={c}>{CHAR_LABELS[c]}</option>)}</select>
-            </label>
-            <RefField cfg={{ ds: 'skills', single: true }} fieldKey="Compétence attaquant" value={o.attackerSkill} onChange={(v) => upd({ attackerSkill: (v as string) || undefined })} nullable />
-            <label className="dr">Défenseur
-              <select value={o.defender} onChange={(e) => upd({ defender: e.target.value as CharKey })}>{CHARS.map((c) => <option key={c} value={c}>{CHAR_LABELS[c]}</option>)}</select>
-            </label>
-            <RefField cfg={{ ds: 'skills', single: true }} fieldKey="Compétence défenseur" value={o.defenderSkill} onChange={(v) => upd({ defenderSkill: (v as string) || undefined })} nullable />
-            <div className="eff-sub"><div className="mini-title">Si l'attaquant l'emporte</div><GameOpEditor ops={o.onWin ?? []} onChange={(ops) => upd({ onWin: ops })} /></div>
-            <div className="eff-sub"><div className="mini-title">Sinon (option)</div><GameOpEditor ops={o.onLose ?? []} onChange={(ops) => upd({ onLose: ops.length ? ops : undefined })} /></div>
           </>
         )}
         {/* Repli JSON pour toute op sans éditeur dédié — paramètres TOUJOURS lisibles/modifiables sans perte. */}

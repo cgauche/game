@@ -66,6 +66,17 @@ function finishDefenseResult(attacker: Combatant, defender: Combatant, p: Pendin
     : finishMelee(attacker, defender, p.weapon, p.atk, def, p.mode, p.location ?? undefined, [], dodgeMod, undefined, parry);
 }
 
+/** Issue d'une étape de cascade `triggeredTest` OPPOSÉE : le DÉFENSEUR (victime) vient de jeter `def` ;
+ *  l'ATTAQUANT (porteur) garde son jet FIGÉ `aT`. `resolveOpposed(aT, def)` met l'ATTAQUANT en 1ʳᵉ
+ *  position (la victoire RAW « Si vous [attaquant] remportez le Test » et le départage par valeur la
+ *  plus haute sont du côté attaquant). Le défenseur RÉSISTE (`success`) si l'attaquant ne l'emporte PAS
+ *  — c'est-à-dire défenseur vainqueur OU ÉGALITÉ (LDB 62 l.268 : l'attaquant doit REMPORTER, pas faire
+ *  nul). Le `sl` reporté est le DR PROPRE du défenseur (échelle des branches). Calque `disengageOutcome`. */
+function opposedCascadeRoll(def: TestResult, aT: TestResult, target: number): { roll: number; target: number; sl: number; success: boolean } {
+  const o = resolveOpposed(aT, def);
+  return { roll: def.roll, target, sl: def.sl, success: o.winner !== 'attacker' };
+}
+
 // ── Délégués de jet du store : générateur + types (fin de la duplication ~113 lignes) ──
 //
 // Chaque flux de `FLOWS` est câblé dans le store sous des noms canoniques `<prefix><Verbe>`
@@ -449,20 +460,26 @@ export const FLOWS = {
     actor: (s, st) => (st.actorId ? actorIn(s, st.actorId) : undefined),
     resolve: (_s, st, _actor, _get, forced) => {
       if (st.target == null) return null; // étape sans jet → rien à lancer
+      const opp = st.meta?.opposed; // Test OPPOSÉ figé (Assommante) → l'issue vient de resolveOpposed.
       if (forced) {
         // Résilience « Je ne faillirai pas ! » (LDB 17 l.73) : « au lieu de lancer les dés, vous
         // choisissez le résultat ». Dé CHOISI (`forced.roll`, picker des Peurs étendues — le DR gagné
-        // suit le dé) sinon dé PAR DÉFAUT (01 → DR maximal). Le choix doit RESTER une réussite.
+        // suit le dé) sinon dé PAR DÉFAUT (01 → DR maximal). Le choix doit RESTER une réussite. En Test
+        // OPPOSÉ, le défenseur RÉSISTE (binaire, comme `disengage` forcé) — l'attaquant figé ne l'emporte plus.
         const die = forced.roll != null ? Math.min(Math.max(1, forced.roll), maxForcedRoll(st.target)) : 1;
         const e = evaluateTest(die, st.target);
         return { result: { roll: die, target: st.target, sl: e.sl, success: true } };
       }
       const t = rollTest(st.target, 'intermediaire', battleRng());
+      // Test OPPOSÉ : l'issue success/sl du défenseur vient de `resolveOpposed(jetDéfenseur, aT figé)`
+      // (l'attaquant garde son jet — calque `recover`/`disengage`), PAS de `roll ≤ target`. Le défenseur
+      // RÉSISTE si l'attaquant ne l'emporte PAS (défenseur OU égalité). Simple sinon (réussite ≤ cible).
+      if (opp) return { result: opposedCascadeRoll(t, opp.aT, st.target) };
       return { result: { roll: t.roll, target: st.target, sl: t.sl, success: t.success } };
     },
     failed: (st) => !!st.result && !st.result.success,
     // Résilience GLOBALE ; `picker` (dé choisi) UNIQUEMENT sur une Peur de COMBAT (Test ÉTENDU, le DR
-    // gagné dépend du dé, LDB 21 l.27) — pas sur une étape BINAIRE (Terreur/cible/Test de scène/nuit).
+    // gagné dépend du dé, LDB 21 l.27) — pas sur une étape BINAIRE (Terreur/cible/Test de scène/nuit/opposé).
     caps: {
       forced: true,
       picker: (st) => {
@@ -474,7 +491,18 @@ export const FLOWS = {
       },
     },
     bonus: {
-      derive: (_s, st) => (st.result ? { result: { ...st.result, sl: st.result.sl + 1 } } : null),
+      derive: (_s, st) => {
+        if (!st.result) return null;
+        const opp = st.meta?.opposed;
+        // Chance « +1 DR » (LDB 17 l.26) sur un Test OPPOSÉ : on RE-OPPOSE le jet défenseur amélioré (+1 DR)
+        // à l'attaquant FIGÉ (1ʳᵉ position) — le +1 peut FAIRE BASCULER l'issue (calque `disengage.bonus.derive`).
+        if (opp) {
+          const def2: TestResult = { roll: st.result.roll, target: st.target!, success: st.result.success, sl: st.result.sl + 1, isDouble: isDoubleRoll(st.result.roll) };
+          const o = resolveOpposed(opp.aT, def2);
+          return { result: { roll: def2.roll, target: st.target!, sl: def2.sl, success: o.winner !== 'attacker' } };
+        }
+        return { result: { ...st.result, sl: st.result.sl + 1 } };
+      },
     },
   }),
 

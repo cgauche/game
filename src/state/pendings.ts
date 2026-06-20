@@ -602,8 +602,20 @@ export interface PendingExtendedTest extends PendingBase {
  *  snapshoté/transmis). Index primitif (`days`/`count`/`severity`/… lus par `String()`/`Number()`) +
  *  deux Flows OPTIONNELS pour l'étape GÉNÉRIQUE `triggeredTest` (la conséquence `onSuccess`/`onFail`
  *  voyage dans le `meta`, exécutée par l'applier — un Flow est pur-donnée, donc sérialisable). */
+/** Jet ATTAQUANT FIGÉ d'une étape `triggeredTest` OPPOSÉE (Assommante : Force du porteur vs Résistance
+ *  de la victime). Pré-jeté par `resolveFlowTest`, il voyage dans le `meta` (TestResult = pur-donnée,
+ *  sérialisable/coop) et reste FIGÉ pendant que le défenseur (héros) influence SON jet ; chaque
+ *  (re)résolution recalcule l'issue via `resolveOpposed(jetDéfenseur, aT)` — calque exact de `recover`. */
+export interface OpposedFreeze {
+  /** Jet COMPLET de l'attaquant (porteur), figé. */
+  aT: TestResult;
+  /** Nom de l'attaquant (affichage de la ligne d'opposition). */
+  attackerName?: string;
+  /** Libellé du côté attaquant (« Force ») — affichage. */
+  attackerLabel?: string;
+}
 export interface CascadeStepMeta {
-  [key: string]: number | string | boolean | Flow | undefined;
+  [key: string]: number | string | boolean | Flow | OpposedFreeze | undefined;
   /** Branche de réussite d'une étape `triggeredTest` (exécutée via `applyTriggeredTestBranch`). */
   onSuccess?: Flow;
   /** Branche d'échec d'une étape `triggeredTest`. */
@@ -612,6 +624,9 @@ export interface CascadeStepMeta {
    *  qui suivait le `test`). Pur-donnée (voyage en coop, à côté de `onSuccess`/`onFail`) ; rejouée par
    *  l'applier via `runCombatFlow`. Absent (= EMPTY_FLOW) pour un Test top-level (Mâchoires) → aucune suite. */
   after?: Flow;
+  /** Jet ATTAQUANT FIGÉ d'un `triggeredTest` OPPOSÉ — présent ⇒ l'issue du défenseur vient de
+   *  `resolveOpposed(jetDéfenseur, aT)` au lieu de `roll ≤ target` (Assommante). Absent ⇒ Test simple. */
+  opposed?: OpposedFreeze;
 }
 /** Le jet d'UNE étape de cascade (slot du flux multi SÉQUENTIEL `FLOWS.cascade`). */
 export interface CascadeRoll {

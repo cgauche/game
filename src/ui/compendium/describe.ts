@@ -36,8 +36,10 @@ export function passiveSection(ops: GameOp[] | undefined, title = 'Modificateurs
   return { title, layout: 'list', rows: ops.map((o) => ({ t: 'text', text: opSummary(o) }) as CodexRow) };
 }
 
-/** Décrit UNE op en clair — RÉCURSIF pour les ops à sous-ops (Test/Test opposé), avec leur gating, en
- *  réutilisant `opSummary` pour les ops simples (zéro vocabulaire dupliqué). */
+/** Décrit UNE op en clair — RÉCURSIF pour l'op `test` à sous-ops (tables de miscast), avec son gating,
+ *  en réutilisant `opSummary` pour les ops simples (zéro vocabulaire dupliqué). Le Test OPPOSÉ n'est
+ *  PLUS une op : c'est un nœud de STRUCTURE Flow (`{kind:'test', test.opposed}`) décrit par
+ *  `flowSummary` ci-dessous. */
 function describeOp(o: GameOp): string {
   if (o.op === 'test') {
     const what = o.skill ?? (o.characteristic ? o.characteristic : '?');
@@ -51,11 +53,6 @@ function describeOp(o: GameOp): string {
     const succ = o.onSuccess?.length ? ` · réussite : ${o.onSuccess.map(describeOp).join(', ')}` : '';
     return `Test de ${what}${gate ? ` (${gate})` : ''} → échec : ${fail}${succ}`;
   }
-  if (o.op === 'opposedTest') {
-    const win = (o.onWin ?? []).map(describeOp).join(', ') || '—';
-    const lose = o.onLose?.length ? ` · sinon : ${o.onLose.map(describeOp).join(', ')}` : '';
-    return `Test opposé ${o.attacker}${o.attackerSkill ? `/${o.attackerSkill}` : ''} vs ${o.defender}${o.defenderSkill ? `/${o.defenderSkill}` : ''} → ${win}${lose}`;
-  }
   return opSummary(o);
 }
 
@@ -65,7 +62,11 @@ function flowSummary(f: Flow): string {
     case 'do': return f.effect.type === 'ops' ? f.effect.ops.map(describeOp).join(', ') : f.effect.type;
     case 'seq': return f.steps.map(flowSummary).filter(Boolean).join(' ; ');
     case 'if': return `si ${condSummary(f.cond)} → ${flowSummary(f.then)}${f.else ? ` (sinon ${flowSummary(f.else)})` : ''}`;
-    case 'test': return `jet ${f.test.skill ? refLabel('skills', { id: f.test.skill, spec: f.test.spec }) : (f.test.characteristic ?? '')} → réussite : ${flowSummary(f.success)} / échec : ${flowSummary(f.fail)}`;
+    case 'test': {
+      const who = f.test.skill ? refLabel('skills', { id: f.test.skill, spec: f.test.spec }) : (f.test.characteristic ?? '');
+      const opp = f.test.opposed ? ` opposé (${f.test.opposed.attackerLabel ?? f.test.opposed.attacker})` : '';
+      return `jet${opp} ${who} → réussite : ${flowSummary(f.success)} / échec : ${flowSummary(f.fail)}`;
+    }
   }
 }
 
