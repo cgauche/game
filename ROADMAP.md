@@ -1352,7 +1352,7 @@ Coordination : la **session parallèle tient la lane Flow/combat/cascade** (Flow
 Frappe réactive `onCharged`, « no silent roll »). Lui reviennent : les **unifications jet/narration**
 (`flowOutcomes`, fold FateSave/Renounce, `flowFromEffects`), les **jets silencieux résiduels**, et
 `fearImmune` (Test de Calme via le flux Psychologie). Le **seam i18n suit leur unification de narration**
-(ses labels alimentent la narration — à ne pas keyer en parallèle). Reste hors-lane à planifier :
+(ses labels alimentent la narration — à ne pas keyer en parallèle ; **conception : `docs/i18n-seam.md`**). Reste hors-lane à planifier :
 robustesse (`migrateSave` quand le schéma de save bumpe ; policy synchro coop) · pureté des types
 moteur↔`state/flow` (après stabilisation de leur refacto).
 
