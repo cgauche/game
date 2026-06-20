@@ -144,10 +144,12 @@ function barrel(p: QuadProps): string {
       hi = `<path d="M${X(-16)} -21 Q${X(2)} -27 ${X(16)} -23 L${X(15)} -18 Q${X(2)} -22 ${X(-15)} -16 Z" fill="@corpsH" opacity="0.55"/>`;
       lo = `<path d="M${X(-42)} 12 Q${X(-8)} 22 ${X(24)} 14 L${X(26)} 8 Q${X(-6)} 18 ${X(-41)} 6 Z" fill="@corpsO" opacity="0.85"/>`;
       break;
-    case 'canine': // garrot haut, dos qui file, VENTRE LEVRETTÉ (remonte fort), hanches sveltes
-      path = `M${X(30)} -14 Q${X(34)} -7 ${X(33)} 0 Q${X(31)} 8 ${X(24)} 10 Q${X(12)} 12 ${X(2)} 9 Q${X(-12)} 5 ${X(-24)} 7 Q${X(-36)} 9 ${X(-42)} 4 Q${X(-46)} -2 ${X(-44)} -9 Q${X(-42)} -15 ${X(-34)} -16 Q${X(-16)} -18 ${X(-2)} -19 Q${X(14)} -22 ${X(24)} -19 Q${X(29)} -17 ${X(30)} -14 Z`;
-      hi = `<path d="M${X(-30)} -14 Q${X(-6)} -18 ${X(20)} -18 L${X(19)} -14 Q${X(-6)} -15 ${X(-29)} -10 Z" fill="@corpsH" opacity="0.5"/>`;
-      lo = `<path d="M${X(-38)} 4 Q${X(-22)} 8 ${X(-4)} 6 Q${X(14)} 9 ${X(26)} 4 L${X(24)} 0 Q${X(12)} 6 ${X(-4)} 3 Q${X(-22)} 5 ${X(-37)} 0 Z" fill="@corpsO" opacity="0.8"/>`;
+    case 'canine': // loup/chien : garrot haut, DOS qui plonge vers la croupe, poitrail PROFOND
+      // descendu au coude, fort RELEVÉ de ventre (flanc creusé) au niveau du rein — silhouette
+      // lévrier/lupin, pas un tube. +x = avant.
+      path = `M${X(30)} 2 Q${X(33)} -8 ${X(31)} -12 Q${X(28)} -17 ${X(22)} -17 Q${X(4)} -16 ${X(-12)} -14 Q${X(-30)} -12 ${X(-40)} -7 Q${X(-45)} -2 ${X(-43)} 3 Q${X(-40)} 6 ${X(-33)} 6 Q${X(-24)} 6 ${X(-18)} 3 Q${X(-8)} 7 ${X(4)} 11 Q${X(16)} 14 ${X(25)} 13 Q${X(31)} 8 ${X(30)} 2 Z`;
+      hi = `<path d="M${X(-28)} -13 Q${X(-4)} -16 ${X(18)} -16 L${X(17)} -12 Q${X(-4)} -13 ${X(-27)} -9 Z" fill="@corpsH" opacity="0.5"/>`;
+      lo = `<path d="M${X(-33)} 5 Q${X(-22)} 5 ${X(-16)} 2.5 Q${X(-6)} 6 ${X(6)} 10 Q${X(18)} 13 ${X(24)} 11 L${X(22)} 7 Q${X(14)} 9 ${X(4)} 6 Q${X(-8)} 3 ${X(-18)} 0 Q${X(-26)} 1.5 ${X(-32)} 1 Z" fill="@corpsO" opacity="0.7"/>`;
       break;
     case 'feline': // poitrail profond + TAILLE creusée + haunches arrière rondes et musclées
       path = `M${X(30)} -15 Q${X(34)} -8 ${X(33)} 0 Q${X(31)} 8 ${X(23)} 10 Q${X(10)} 11 ${X(0)} 8 Q${X(-12)} 5 ${X(-22)} 8 Q${X(-36)} 12 ${X(-43)} 6 Q${X(-48)} -1 ${X(-45)} -9 Q${X(-42)} -16 ${X(-32)} -17 Q${X(-16)} -19 ${X(-2)} -20 Q${X(12)} -23 ${X(23)} -20 Q${X(29)} -18 ${X(30)} -15 Z`;
@@ -286,8 +288,16 @@ function headProfile(p: QuadProps): string {
       `<circle cx="7" cy="2" r="0.9" fill="@corpsO"/><circle cx="12" cy="4" r="0.8" fill="@corpsO"/><circle cx="4" cy="5" r="0.7" fill="@corpsO"/></g>`;
   if (p.head === 'cheval')
     return `<g transform="rotate(8)"><path d="M-7 -6 Q-9 6 -3 12 Q4 20 12 22 Q18 22 19 17 Q18 12 12 10 Q4 6 2 -4 Q0 -9 -7 -6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/><path d="M12 10 Q18 12 19 17 Q18 20 14 20 Q10 18 11 12 Z" fill="@corpsO"/><ellipse cx="16" cy="17" rx="2" ry="1.5" fill="#1a0f08"/>${earProfile(p, -5, -1)}${earProfile(p, 0, 1)}<path d="M-6 -4 Q-2 -7 1 -3" fill="none" stroke="@cheveux" stroke-width="2" opacity="0.8"/>${eye}</g>`;
-  if (p.head === 'loup')
-    return `<g transform="rotate(14)"><path d="M-7 -5 Q-9 5 -2 9 Q4 13 13 13 Q18 12 18 9 Q15 7 9 7 Q2 5 0 -3 Q-1 -8 -7 -5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/><path d="M9 7 Q15 7 18 9 Q16 11 12 10 Q9 9 9 7 Z" fill="@corpsO"/><ellipse cx="16.5" cy="9" rx="1.7" ry="1.3" fill="#120a06"/>${earProfile(p, -5, -1)}${earProfile(p, 0.5, 1)}<path d="M2 4 Q8 5 13 8" fill="none" stroke="@corpsO" stroke-width="0.6" opacity="0.6"/>${eye}</g>`;
+  if (p.head === 'loup') // crâne BOMBÉ court + stop marqué + museau effilé MODÉRÉ (≠ « banane »)
+    return `<g transform="rotate(4)">` +
+      `<path d="M-8 -3 Q-9 -8.5 -2.5 -8 Q1.5 -7.6 3 -3.8 Q5 -1.8 9 -1 Q12.5 -0.2 13.6 2.6 Q14 5 11.6 5.6 Q9 6 6 5.6 L4.2 7.8 Q0 10.6 -4.5 8.4 Q-9.2 5.6 -8 -3 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+      `<path d="M3 -3.4 Q8 -2.2 12 1.4" fill="none" stroke="@corpsH" stroke-width="1.5" opacity="0.5"/>` + // chanfrein clair (dessus du museau)
+      `<path d="M-7 -4 Q-3 -1 -5.5 6" fill="none" stroke="@corpsH" stroke-width="1.6" opacity="0.4"/>` + // bajoue claire
+      `<ellipse cx="12.8" cy="3.6" rx="1.7" ry="1.4" fill="#120a06"/>` + // truffe
+      `<path d="M6 5.6 Q9 6.8 12.2 4.8" stroke="@corpsO" stroke-width="0.6" fill="none"/>` + // ligne de gueule
+      `<path d="M10.4 5.4 l0.35 1.4 l0.7 -1.2 Z" fill="#d8d0bc" opacity="0.85"/>` + // petit croc discret au coin de la gueule
+      earProfile(p, -5.5, -1) + earProfile(p, -0.5, 1) +
+      `<g data-eye="D" data-ec="0.6 -2"><ellipse cx="0.6" cy="-2" rx="1.7" ry="1.9" fill="#15100a"/><circle cx="1.1" cy="-2.6" r="0.6" fill="#fff" opacity="0.7"/></g></g>`;
   if (p.head === 'rat')
     return `<g transform="rotate(16)"><path d="M-6 -4 Q-8 5 -1 8 Q5 11 16 12 Q21 11 21 9 Q18 8 12 7 Q3 5 1 -3 Q0 -7 -6 -4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><ellipse cx="20" cy="10" rx="1.5" ry="1.2" fill="#d8a0a0"/><ellipse cx="14" cy="6" rx="1.4" ry="1.7" fill="#1a0808"/><path d="M14 13 q-2 4 -4 2" fill="none" stroke="#e8e0c8" stroke-width="0.9"/>${earProfile(p, -4, -1)}${earProfile(p, 1, 1)}</g>`;
   if (p.head === 'ours')
@@ -373,7 +383,24 @@ function headFront(p: QuadProps): string {
   // sanglier : groin large + défenses
   return `<g>${ears}<path d="M-10 -10 Q-12 5 -5 12 Q0 16 5 12 Q12 5 10 -10 Q0 -13 -10 -10 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/><ellipse cx="0" cy="12" rx="5.2" ry="3.6" fill="@corpsO"/><ellipse cx="-2" cy="12" rx="1" ry="1.4" fill="#140a06"/><ellipse cx="2" cy="12" rx="1" ry="1.4" fill="#140a06"/><path d="M-4 14 Q-6 19 -3 19" fill="none" stroke="#e8e0c8" stroke-width="1.5" stroke-linecap="round"/><path d="M4 14 Q6 19 3 19" fill="none" stroke="#e8e0c8" stroke-width="1.5" stroke-linecap="round"/>${eyeF(-6, -3, 1.4)}${eyeF(6, -3, 1.4)}</g>`;
 }
+// Poitrail FACE des CANIDÉS/FÉLINS : étroit et PROFOND (quille au bréchet) + fraise de fourrure
+// au garrot (loup d'hiver) — pas le barillet rond des ongulés/ursidés (qui faisait « tonneau »).
+function bodyFrontCanine(p: QuadProps): string {
+  const w = p.build === 'feline' ? 14 : 13; // épaule étroite
+  const body = `<path d="M${-w} -4 Q${-w} -20 -6 -26 Q0 -28 6 -26 Q${w} -20 ${w} -4 Q${w - 1} 11 5 21 Q0 25 -5 21 Q${-(w - 1)} 11 ${-w} -4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>`;
+  // ombres de flanc (poitrail bombé) + quille claire centrale (poils du bréchet).
+  const flanks = `<path d="M${-w} -4 Q${-w} 11 -5 21 L-6 18 Q${-(w - 2)} 9 ${-(w - 2)} -3 Z" fill="@corpsO" opacity="0.42"/>` +
+    `<path d="M${w} -4 Q${w} 11 5 21 L6 18 Q${w - 2} 9 ${w - 2} -3 Z" fill="@corpsO" opacity="0.5"/>`;
+  const bib = `<path d="M-3.6 -18 Q0 -21 3.6 -18 Q4.4 -2 2 15 Q0 18 -2 15 Q-4.4 -2 -3.6 -18 Z" fill="@corpsH" opacity="0.3"/>`;
+  // fraise hirsute (loup) : lobes de fourrure dentelés débordant le haut du poitrail.
+  const ruff = p.mane === 'hirsute'
+    ? `<path d="M-3 -19 Q-13 -16 -16 -3 Q-17 5 -13 12 Q-12.5 4 -9 -2 l-3.5 5.5 Q-9.5 -5 -5.5 -11 l-3 4.5 Q-6 -10 -2.5 -16 Z" fill="@corps" stroke="@corpsO" stroke-width="0.5"/>` +
+      `<path d="M3 -19 Q13 -16 16 -3 Q17 5 13 12 Q12.5 4 9 -2 l3.5 5.5 Q9.5 -5 5.5 -11 l3 4.5 Q6 -10 2.5 -16 Z" fill="@corps" stroke="@corpsO" stroke-width="0.5"/>`
+    : '';
+  return `<g>${body}${flanks}${ruff}${bib}</g>`;
+}
 function bodyFront(p: QuadProps): string {
+  if (p.build === 'canine' || p.build === 'feline') return bodyFrontCanine(p);
   if (p.build === 'batracien') { // crapaud : corps LARGE et BAS (la carrure↑ ne l'étire pas en colonne)
     const W = 26;
     return `<g><path d="M${-W} -8 Q${-W} -14 ${-W * 0.5} -15 Q0 -16 ${W * 0.5} -15 Q${W} -14 ${W} -8 L${W - 3} 8 Q${W - 8} 14 0 15 Q${-(W - 8)} 14 ${-(W - 3)} 8 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
@@ -425,7 +452,22 @@ function napeBack(p: QuadProps): string {
     : m === 'hirsute' ? `<path d="M0 -14 l-2.5 -3 l0.6 3.4 l-3 -1.6 l1.4 3.4 Q-2 0 -1.4 9 L1.4 9 Q2 0 1.4 -8 l3 -2 l-2.6 -0.4 l1.6 -3 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>` : '';
   return `<g>${earBack}${skull}${shade}${mane}</g>`;
 }
+// Arrière-train DOS des CANIDÉS/FÉLINS : SVELTE et HAUT (cuisses musclées mais pas de grosses
+// « fesses » d'ongulé), queue touffue tombante au centre, jarrets qui se devinent. ≠ croupe large.
+function bodyBackCanine(p: QuadProps): string {
+  const w = p.build === 'feline' ? 16 : 15;
+  const body = `<path d="M${-w} -6 Q${-w} -19 -6 -23 Q0 -25 6 -23 Q${w} -19 ${w} -6 Q${w - 1} 9 7 19 Q0 23 -7 19 Q${-(w - 1)} 9 ${-w} -6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>`;
+  // deux cuisses fuselées (reflet vertical) + sillon central + ombres de flanc.
+  const haunch = `<ellipse cx="${-w * 0.42}" cy="-3" rx="${w * 0.4}" ry="13" fill="@corpsH" opacity="0.28"/>` +
+    `<ellipse cx="${w * 0.42}" cy="-3" rx="${w * 0.4}" ry="13" fill="@corpsH" opacity="0.2"/>`;
+  const cleft = `<path d="M0 -20 Q1.4 -2 0 19" fill="none" stroke="@corpsO" stroke-width="1" opacity="0.55"/>`;
+  const shade = `<path d="M${w} -6 Q${w - 1} 9 7 19 L8 16 Q${w - 2} 8 ${w - 2} -4 Z" fill="@corpsO" opacity="0.42"/>`;
+  // fourrure dorsale dressée (loup hirsute) au sommet de la croupe.
+  const ridge = p.mane === 'hirsute' ? `<path d="M0 -23 l-2 -3 l0.5 3.2 l-2.4 -1.4 l1.1 3 Q-1.4 -8 -1 -2 L1 -2 Q1.4 -8 1 -5 l2.4 -1.6 l-2.1 -0.4 l1.3 -2.6 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4" opacity="0.8"/>` : '';
+  return `<g>${body}${haunch}${cleft}${shade}${ridge}</g>`;
+}
 function bodyBack(p: QuadProps): string {
+  if (p.build === 'canine' || p.build === 'feline') return bodyBackCanine(p);
   // Arrière-train vu de DOS : DEUX FESSES rondes séparées par un sillon central profond,
   // masse LARGE et BASSE (plus large que haute) → lit comme une croupe de quadrupède, pas une
   // colonne « debout ». Chaque hanche prend un reflet bombé ; le sillon est creusé (ombre).
