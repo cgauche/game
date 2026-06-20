@@ -24,7 +24,7 @@ import { costPerEnc } from '../../engine/harvest';
 import { formatMoney, priceToMoney } from '../../engine/money';
 import type { EntityAppearance } from '../../state/scene';
 import type { MutationData } from '../../data/mutations';
-import { passiveSection, effectsSection, careerGrantSection, spellFlowSection } from './describe';
+import { passiveSection, effectsSection, careerGrantSection, spellFlowSection, capabilitySection } from './describe';
 import { reverseGroups, bookContents } from './relations';
 
 export type CodexGroup = 'Personnage' | 'Compétences' | 'Équipement' | 'Effets' | 'Magie' | 'Monde' | 'Tables';
@@ -164,10 +164,33 @@ const SYMPTOM_LABEL: Record<string, string> = {
 };
 /** Libellé d'un jet de dés (`{n,d,plus?}`) — « 1d10 », « 2d10+2 ». */
 const diceLabel = (dc: { n: number; d: number; plus?: number }): string => `${dc.n}d${dc.d}${dc.plus ? `+${dc.plus}` : ''}`;
+/** Libellés FR des types de résultat « Oups ! » (Maladresse, LDB 12) — affichage (donnée = `kind` STABLE). */
+const OUPS_KIND_LABEL: Record<string, string> = {
+  selfWound: 'Auto-blessure', weaponDamageActLast: 'Arme abîmée + agit en dernier', actionPenalty: 'Malus d’Action',
+  loseMovement: 'Perte de Mouvement', loseAction: 'Perte d’Action', trauma: 'Traumatisme', hitAlly: 'Touche un allié',
+};
 /** Libellés FR des types de Psychologie (LDB 21) — affichage (la donnée porte le `psychType` STABLE). */
 const PSYCH_TYPE_LABEL: Record<string, string> = {
   peur: 'Peur', terreur: 'Terreur', animosite: 'Animosité', haine: 'Haine', prejuge: 'Préjugé',
   amour: 'Amour', camaraderie: 'Camaraderie', phobie: 'Phobie',
+};
+/** Libellés FR des CAPACITÉS de Trait (drapeaux booléens lus par le moteur — `TraitCapabilities`).
+ *  Les capacités psy (psychType/psychImmune/psychIndice) sont surfacées à part (méta). */
+const TRAIT_CAP_LABEL: Record<string, string> = {
+  bonusWoundsBE: 'Blessures bonifiées (+BE)', swarm: 'Nuée', wardSave: 'Sauvegarde invulnérable',
+  magicResistance: 'Résistance à la magie', damageImmunity: 'Immunité aux dégâts', banishedAtZero: 'Banni à 0 PB',
+  championDefense: 'Défense de champion', unstable: 'Instable', painless: 'Insensible à la douleur',
+  psychImmuneIfAhead: 'Immunité psy si en avantage', mindless: 'Sans esprit', bestial: 'Bestial',
+  coldBlooded: 'Sang-froid', stupid: 'Stupidité', rage: 'Rage', territorial: 'Territorial',
+  fly: 'Vol', leap: 'Bond', stride: 'Foulée', seesInDark: 'Vision nocturne', perturbingAura: 'Aura perturbante',
+};
+/** Libellés FR des CAPACITÉS de Qualité d'arme/armure (`QualityCapabilities`). */
+const QUALITY_CAP_LABEL: Record<string, string> = {
+  fastStrike: 'Rapide', slowStrike: 'Lente', fumbleOn9: 'Dangereuse', pushback: 'Perturbante',
+  bladeTrap: 'Piège-lame', damagesArmour: 'Endommage l’armure', firearm: 'Arme à feu', canFireWhileEngaged: 'Tir au contact',
+  magazine: 'À répétition', salvo: 'Salve', areaFire: 'Tir de zone', crewedTeam: 'Arme d’équipe', parryAP: 'Protectrice',
+  layerable: 'Flexible', critImmuneOdd: 'Impénétrable', apIgnoredOnEven: 'Partielle', apIgnoredOnImpaleCrit: 'Points faibles',
+  unbreakable: 'Incassable', magic: 'Magique',
 };
 
 /**
@@ -262,6 +285,7 @@ const traitItem = (t: (typeof traits)[number]): CodexItem => {
       cap?.psychIndice != null ? fact('Indice', cap.psychIndice) : null,
     ),
     sections: sections(
+      capabilitySection(cap as Record<string, unknown> | undefined, TRAIT_CAP_LABEL),
       chips('Manœuvres conférées', 'maneuvers', (t.grantsManeuvers ?? []).map((r) => refLabel('maneuvers', r))),
       passiveSection(t.passive), effectsSection(t.effects),
       ...reverseSections('traits', t.id), // Créatures ayant ce trait · Mutations le conférant
@@ -306,8 +330,10 @@ export const CODEX: CodexCategory[] = [
   },
   {
     key: 'characteristics', label: 'Caractéristiques', group: 'Personnage',
-    items: (characteristics as { label: string; abr?: string; desc?: string; source?: CodexSource }[]).map((c) => ({
+    items: (characteristics as { label: string; abr?: string; type?: string; desc?: string; source?: CodexSource }[]).map((c) => ({
       label: c.label, sub: c.abr, desc: c.desc, source: src(c.source),
+      // Bonus de Caractéristique = chiffre des dizaines (LDB 03) — rappel sur les caracs à jet (d100).
+      meta: c.type === 'roll' ? facts(fact('Bonus', 'chiffre des dizaines')) : undefined,
       sections: sections(...reverseSections('characteristics', c.abr)),
     })),
   },
@@ -349,11 +375,25 @@ export const CODEX: CodexCategory[] = [
   },
   {
     key: 'trappings', label: 'Possessions', group: 'Équipement',
-    items: trappings.map((t) => ({
-      label: t.label, sub: join(t.type, weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, html: true, source: src(t.source),
-      meta: facts(fact('Prix', priceLabel(t.price)), fact('Enc', t.enc), fact('Disponibilité', t.availability), fact('Dégâts', t.damage), fact('PA', t.pa), fact('Allonge', t.reach)),
-      sections: sections(chips('Qualités', 'qualities', t.qualities.map(qualityRefLabel)), ...reverseSections('trappings', t.id)),
-    })),
+    items: trappings.map((t) => {
+      // Propriétés FONCTIONNELLES (flags multilangue-safe) + arme dérivée tant qu'équipée.
+      const props = [
+        t.weatherProtection ? 'Protège des intempéries' : null,
+        t.isShelter ? 'Abri de campement' : null,
+        t.isRations ? 'Ration de voyage' : null,
+        t.isGrimoire ? 'Grimoire (lecture de Sorts)' : null,
+        t.derivedWeapon ? `Arme dérivée : ${t.derivedWeapon.name} (${t.derivedWeapon.damage})` : null,
+      ].filter(Boolean) as string[];
+      return {
+        label: t.label, sub: join(t.type, weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, html: true, source: src(t.source),
+        meta: facts(fact('Prix', priceLabel(t.price)), fact('Enc', t.enc), fact('Disponibilité', t.availability), fact('Emplacement', t.loc), fact('Dégâts', t.damage), fact('PA', t.pa), fact('Allonge', t.reach)),
+        sections: sections(
+          chips('Qualités', 'qualities', t.qualities.map(qualityRefLabel)),
+          props.length ? { title: 'Propriétés', layout: 'list', rows: [{ t: 'text', text: props.join(' · ') }] } : null,
+          ...reverseSections('trappings', t.id),
+        ),
+      };
+    }),
   },
   {
     key: 'weaponGroups', label: 'Groupes d’objet', group: 'Équipement',
@@ -361,9 +401,9 @@ export const CODEX: CodexCategory[] = [
   },
   {
     key: 'qualities', label: 'Qualités', group: 'Équipement',
-    items: (qualities as { id: string; label: string; type?: string; subType?: string; desc?: string; source?: CodexSource; passive?: import('../../engine/ops').GameOp[]; effects?: import('../../state/flow').TriggeredEffect[] }[]).map((q) => ({
+    items: (qualities as { id: string; label: string; type?: string; subType?: string; desc?: string; source?: CodexSource; passive?: import('../../engine/ops').GameOp[]; effects?: import('../../state/flow').TriggeredEffect[]; capabilities?: Record<string, unknown> }[]).map((q) => ({
       label: q.label, sub: join(q.type, q.subType), desc: q.desc, html: true, source: src(q.source),
-      sections: sections(passiveSection(q.passive), effectsSection(q.effects, 'Effets déclenchés'), ...reverseSections('qualities', q.id)),
+      sections: sections(capabilitySection(q.capabilities, QUALITY_CAP_LABEL), passiveSection(q.passive), effectsSection(q.effects, 'Effets déclenchés'), ...reverseSections('qualities', q.id)),
     })),
   },
   {
@@ -405,12 +445,26 @@ export const CODEX: CodexCategory[] = [
         fact('PA localisé', m.apLocations ? Object.entries(m.apLocations).map(([loc, n]) => `${HIT_LOCATION_LABELS[loc as HitLocation] ?? loc} +${n}`).join(', ') : null),
         fact('Arme naturelle', m.derivedWeapon ? `${m.derivedWeapon.name} (${m.derivedWeapon.damage})` : null),
       ),
-      sections: sections(passiveSection(m.passive), chips('Traits conférés', 'traits', traitLabels(m.traits))),
+      sections: sections(
+        passiveSection(m.passive),
+        chips('Traits conférés', 'traits', traitLabels(m.traits)),
+        ...reverseSections('mutations', m.id), // Tables de Corruption la tirant
+      ),
     })),
   },
   {
     key: 'mutationTables', label: 'Tables de Corruption', group: 'Effets',
-    items: (mutationTables as { label: string; ranges: unknown[] }[]).map((t) => ({ label: t.label, sub: `${t.ranges.length} plages d100` })),
+    items: (mutationTables as { label: string; ranges: { min: number; max: number; mutation: string }[] }[]).map((t) => ({
+      label: t.label, sub: `${t.ranges.length} plages d100`,
+      // Tirage d100 → Mutation : chaque plage est un lien cross-réf vers la fiche de mutation.
+      sections: sections({
+        title: 'Tirage (d100 → Mutation)', layout: 'list',
+        rows: t.ranges.map((r) => {
+          const label = (mutations as MutationData[]).find((mu) => mu.id === r.mutation)?.label ?? r.mutation;
+          return { t: 'ref', category: 'mutations', label, show: label, badge: `${r.min}–${r.max}` } as CodexRow;
+        }),
+      }),
+    })),
   },
   {
     key: 'maneuvers', label: 'Manœuvres', group: 'Effets',
@@ -506,7 +560,11 @@ export const CODEX: CodexCategory[] = [
   },
   {
     key: 'locations', label: 'Lieux', group: 'Monde',
-    items: locations.map((l) => ({ label: l.label, sub: l.parent ?? undefined, group: l.parent ?? undefined, desc: l.desc ?? undefined, source: src(l.source) })),
+    // Lieux keyés par LIBELLÉ (pas d'id dans la donnée) → la réf inverse « Sous-lieux » l'utilise comme clé.
+    items: locations.map((l) => ({
+      label: l.label, sub: l.parent ?? undefined, group: l.parent ?? undefined, desc: l.desc ?? undefined, source: src(l.source),
+      sections: sections(...reverseSections('locations', l.label)),
+    })),
   },
   {
     key: 'books', label: 'Livres', group: 'Monde',
@@ -551,7 +609,12 @@ export const CODEX: CodexCategory[] = [
   },
   {
     key: 'oups', label: 'Oups !', group: 'Tables',
-    items: oups.map((o) => ({ label: o.label, sub: `d100 ${o.min}–${o.max}` })),
+    // Le `label` EST le texte du résultat (et la clé d'édition `entryKey`) → on le garde tel quel ;
+    // on enrichit par la plage d100 et le TYPE d'effet (kind) en méta.
+    items: oups.map((o) => ({
+      label: o.label, sub: `d100 ${o.min}–${o.max}`,
+      meta: facts(fact('d100', `${o.min}–${o.max}`), fact('Type', OUPS_KIND_LABEL[o.kind] ?? o.kind)),
+    })),
   },
   {
     key: 'interludeEvents', label: 'Entre deux aventures', group: 'Tables',

@@ -16,7 +16,7 @@
 import {
   species, careers, careerLevels, skills, talents, trappings, creatures, traits, mutations,
   spells, gods, domains, classes, maneuvers, qualities, weaponGroups, characteristics, etats, maladies,
-  locations, stars, advancementBaseId, careersForSpecies, findCareerById,
+  locations, stars, mutationTables, advancementBaseId, careersForSpecies, findCareerById,
 } from '../../data';
 import type { AdvancementRef } from '../../data';
 import { spellEffectOps } from '../../state/flow';
@@ -157,6 +157,11 @@ for (const q of qualities) for (const id of conditionIdsInEffects(q.effects)) ad
 for (const t of talents) for (const id of conditionIdsInEffects(t.effects)) addReverse('etats', id, { category: 'talents', label: t.label });
 for (const d of domains) for (const id of conditionIdsInEffects(d.effects)) addReverse('etats', id, { category: 'domains', label: d.label });
 
+// 14) Mutation ← Table de Corruption qui la tire (inversion de mutationTable.ranges[].mutation).
+for (const tab of mutationTables) for (const r of tab.ranges) addReverse('mutations', r.mutation, { category: 'mutationTables', label: tab.label, detail: `${r.min}–${r.max}` });
+// 15) Lieu ← sous-lieux (inversion de location.parent — les lieux sont keyés par LIBELLÉ, pas d'id).
+for (const l of locations) if (l.parent) addReverse('locations', l.parent, { category: 'locations', label: l.label });
+
 // ── Titres FR des sections inverses (display — couche UI, pas de sémantique de jeu) ──────────────
 // Clé `${targetCat}:${refCat}` ; repli = nom pluriel générique du référant.
 const GENERIC_PLURAL: Record<string, string> = {
@@ -181,13 +186,14 @@ const REVERSE_TITLE: Record<string, string> = {
   'weaponGroups:trappings': 'Objets du groupe',
   'etats:spells': 'Sorts l’infligeant', 'etats:traits': 'Traits l’infligeant', 'etats:qualities': 'Qualités d’arme l’infligeant',
   'etats:talents': 'Talents l’infligeant', 'etats:domains': 'Domaines l’infligeant',
+  'mutations:mutationTables': 'Tables de Corruption la tirant', 'locations:locations': 'Sous-lieux',
 };
 const reverseTitle = (targetCat: string, refCat: string): string =>
   REVERSE_TITLE[`${targetCat}:${refCat}`] ?? GENERIC_PLURAL[refCat] ?? refCat;
 
 /** Ordre stable des catégories (référants d'une fiche ET contenu d'un livre) — les plus parlantes
  *  d'abord ; une catégorie hors liste est repoussée en fin (via `orderOf`). */
-const REF_CAT_ORDER = ['races', 'classes', 'careers', 'characteristics', 'skills', 'talents', 'creatures', 'mutations', 'trappings', 'qualities', 'weaponGroups', 'spells', 'domains', 'gods', 'traits', 'maneuvers', 'etats', 'maladies', 'stars', 'locations'];
+const REF_CAT_ORDER = ['races', 'classes', 'careers', 'characteristics', 'skills', 'talents', 'creatures', 'mutations', 'mutationTables', 'trappings', 'qualities', 'weaponGroups', 'spells', 'domains', 'gods', 'traits', 'maneuvers', 'etats', 'maladies', 'stars', 'locations'];
 const orderOf = (cat: string): number => (REF_CAT_ORDER.indexOf(cat) + 1) || 99;
 
 /**

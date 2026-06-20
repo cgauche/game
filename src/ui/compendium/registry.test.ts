@@ -65,6 +65,23 @@ describe('Codex registry — références INVERSES (relations.ts → fiches)', (
     expect(skills.some((s) => refLabelsOf(s).length > 0)).toBe(true);
   });
 
+  it('la fiche d’une Table de Corruption rend le tirage d100 → Mutation (cross-réf + badge de plage)', () => {
+    const tables = categoryByKey('mutationTables')!.items;
+    const t = tables[0];
+    const sec = t.sections?.find((s) => /Tirage/.test(s.title));
+    expect(sec, 'section de tirage').toBeTruthy();
+    const refRow = sec!.rows.find((r) => r.t === 'ref');
+    expect(refRow && refRow.t === 'ref' && refRow.category).toBe('mutations');
+    expect(refRow && refRow.t === 'ref' && /\d+–\d+/.test(refRow.badge ?? '')).toBe(true);
+  });
+
+  it('la fiche d’un Lieu-parent liste ses Sous-lieux (inversion location.parent)', () => {
+    const locs = categoryByKey('locations')!.items;
+    const parent = locs.find((l) => locs.some((c) => c.sub === l.label)); // un lieu dont le label est le parent d'un autre
+    expect(parent, 'un lieu-parent').toBeTruthy();
+    expect(parent!.sections?.some((s) => s.title === 'Sous-lieux' && s.rows.some((r) => r.t === 'ref'))).toBe(true);
+  });
+
   it('la fiche d’un Livre liste son contenu PAR TYPE (bookContents câblé, cross-réf cliquables)', () => {
     const books = categoryByKey('books')!.items;
     const withContent = books.find((b) => (b.sections?.length ?? 0) > 0);
