@@ -40,4 +40,22 @@ export const fr = {
   'freeAttack.pietinement': 'Piétinement',
   'freeAttack.langue': 'Langue',
   'freeAttack.hurlement': 'Hurlement',
+  // Localisations par forme de corps (LDB p.312) — migré de engine/types.ts (BODY_SHAPE_LOC_LABELS).
+  'hitloc.quadrupede.brasG': 'Membre antérieur gauche',
+  'hitloc.quadrupede.brasD': 'Membre antérieur droit',
+  'hitloc.quadrupede.jambeG': 'Membre postérieur gauche',
+  'hitloc.quadrupede.jambeD': 'Membre postérieur droit',
+  'hitloc.oiseau.brasG': 'Aile gauche',
+  'hitloc.oiseau.brasD': 'Aile droite',
+  'hitloc.oiseau.jambeG': 'Patte gauche',
+  'hitloc.oiseau.jambeD': 'Patte droite',
+  'hitloc.araignee.jambeD': 'Patte',
+  'hitloc.araignee.corps': 'Abdomen',
+  // Traits psy ciblés (LDB 21) — migré de engine/psychology.ts (CIBLE_LABEL, partie label ; emoji inline).
+  'cible.animosite': 'Animosité',
+  'cible.haine': 'Haine',
+  'cible.prejuge': 'Préjugé',
+  'cible.amour': 'Amour',
+  'cible.camaraderie': 'Camaraderie',
+  'cible.phobie': 'Phobie',
 } as const;

@@ -60,10 +60,10 @@ export type BodyShape = 'humanoide' | 'quadrupede' | 'oiseau' | 'serpent' | 'ara
 /** Étiquettes de localisation propres à une forme (surchargent HIT_LOCATION_LABELS ; LDB p.312). */
 export const BODY_SHAPE_LOC_LABELS: Record<BodyShape, Partial<Record<HitLocation, string>>> = {
   humanoide: {},
-  quadrupede: { brasG: 'Membre antérieur gauche', brasD: 'Membre antérieur droit', jambeG: 'Membre postérieur gauche', jambeD: 'Membre postérieur droit' },
-  oiseau: { brasG: 'Aile gauche', brasD: 'Aile droite', jambeG: 'Patte gauche', jambeD: 'Patte droite' },
+  quadrupede: { brasG: t('hitloc.quadrupede.brasG'), brasD: t('hitloc.quadrupede.brasD'), jambeG: t('hitloc.quadrupede.jambeG'), jambeD: t('hitloc.quadrupede.jambeD') },
+  oiseau: { brasG: t('hitloc.oiseau.brasG'), brasD: t('hitloc.oiseau.brasD'), jambeG: t('hitloc.oiseau.jambeG'), jambeD: t('hitloc.oiseau.jambeD') },
   serpent: {}, // n'expose que Tête / Corps
-  araignee: { jambeD: 'Patte', corps: 'Abdomen' }, // n'expose que Tête / Pattes / Abdomen
+  araignee: { jambeD: t('hitloc.araignee.jambeD'), corps: t('hitloc.araignee.corps') }, // n'expose que Tête / Pattes / Abdomen
 };
 
 export interface SkillInstance {

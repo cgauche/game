@@ -5,6 +5,7 @@
  * docs/superpowers/specs/2026-06-07-psychologie-design.md
  */
 import { Combatant } from './types';
+import { t } from '../i18n';
 import { RNG, defaultRNG } from './dice';
 import { rollTest, evaluateTest } from './tests';
 import { effectiveChar } from './characteristics';
@@ -60,12 +61,12 @@ export const CIBLE_TYPES = new Set<PsychType>(['animosite', 'haine', 'prejuge', 
 /** Libellés des Traits psy ciblés (LDB 21) — partagé par les modales psy (combat + rencontre) ET la
  *  narration d'issue (state). Déplacé depuis ui/psychLabels pour que la couche state y accède. */
 export const CIBLE_LABEL: Record<string, { emoji: string; label: string }> = {
-  animosite: { emoji: '😤', label: 'Animosité' },
-  haine: { emoji: '😡', label: 'Haine' },
-  prejuge: { emoji: '🙄', label: 'Préjugé' },
-  amour: { emoji: '❤️', label: 'Amour' },
-  camaraderie: { emoji: '🤝', label: 'Camaraderie' },
-  phobie: { emoji: '🕷️', label: 'Phobie' },
+  animosite: { emoji: '😤', label: t('cible.animosite') },
+  haine: { emoji: '😡', label: t('cible.haine') },
+  prejuge: { emoji: '🙄', label: t('cible.prejuge') },
+  amour: { emoji: '❤️', label: t('cible.amour') },
+  camaraderie: { emoji: '🤝', label: t('cible.camaraderie') },
+  phobie: { emoji: '🕷️', label: t('cible.phobie') },
 };
 
 /** Source de Peur/Terreur que `foe` représente pour `self` : combine la Taille (LDB 85) et l'Indice

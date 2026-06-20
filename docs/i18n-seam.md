@@ -5,6 +5,11 @@
 > de la session parallèle (qui unifie `flowOutcomes`/`result.log`). À brancher **par phases**.
 > Ancré sur l'audit multi-agents du 2026-06-20 (symboles réels du dépôt).
 
+**État (2026-06-20)** : **Phase A ✅** (primitive `src/i18n/` livrée) + **Phase B ✅** pour les **7 maps de
+labels du moteur** (`CHAR_LABELS`/`DIFFICULTY_LABELS`/`HIT_LOCATION_LABELS`/`DEFENSE_LABEL`/`FREE_ATTACK_LABEL`/
+`BODY_SHAPE_LOC_LABELS`/`CIBLE_LABEL` → catalogue, parité verbatim, suite verte). Restent : `refLabel`
+locale-aware · **Phase D** (UI) · **Phase C** (narration de combat, *gated* sur la session //).
+
 ## But & contraintes
 
 - Multi-langue à terme → **aucun label/clé en dur** ; chaque texte utilisateur passe par une **clé stable**.
