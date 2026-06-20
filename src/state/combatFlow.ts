@@ -5,7 +5,7 @@
  */
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { LootGear, PendingCast, PendingDeviation, PendingBladeTrap, PendingKnockdown } from './pendings';
+import type { LootGear, PendingCast, PendingDeviation, PendingBladeTrap, PendingKnockdown, FreeAttackFreeze } from './pendings';
 import { Combatant, ItemInstance, HitLocation, Weapon, DIFFICULTY_MODIFIERS, HIT_LOCATION_LABELS } from '../engine/types';
 import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
@@ -1808,52 +1808,55 @@ export function aiFrenzyAttack(get: Get, set: SetFn, enemy: Combatant): void {
 
 // ── Attaques GRATUITES accordées par un TALENT déclenché (Assaut féroce `onHit`, Frappe réactive
 //    `onCharged`) : op `grantFreeAttack{when:'immediate'}` portée en DONNÉE par le talent. Résolution
-//    INSTANTANÉE (motif aiFrenzyAttack — pas de modale), arme TENUE, Action PRÉSERVÉE. ──
+//    INSTANTANÉE (motif aiFrenzyAttack — pas de modale), arme TENUE, Action PRÉSERVÉE. La frappe est
+//    OUVERTE par le hook `freeAttack` que `runCombatFlow` appelle sur le `do`/`grantFreeAttack` — un
+//    éventuel jet préalable (Frappe réactive : Test d'Initiative LDB 10 l.429-432) est un nœud Flow
+//    `test` EN AMONT (cadence-aware : héros manuel = jet influençable ; ennemi/auto = inline). ──
 
-/** Collecte les ops `grantFreeAttack` d'un Flow (walk seq/do/if/test). Le grant doit être TOP-LEVEL,
- *  gaté par ses propres champs (test/cost/cap) — même convention impure que summon/zone. */
-function freeAttackOpsOf(flow: Flow): Extract<GameOp, { op: 'grantFreeAttack' }>[] {
-  const out: Extract<GameOp, { op: 'grantFreeAttack' }>[] = [];
-  const walk = (f: Flow): void => {
-    if (f.kind === 'do' && f.effect.type === 'ops') { for (const op of f.effect.ops) if (op.op === 'grantFreeAttack') out.push(op); }
-    else if (f.kind === 'seq') f.steps.forEach(walk);
-    else if (f.kind === 'if') { walk(f.then); if (f.else) walk(f.else); }
-    else if (f.kind === 'test') { walk(f.success); walk(f.fail); }
-  };
-  walk(flow);
-  return out;
-}
-
-/** Résout UNE attaque gratuite de talent contre `target` : plafond /Round (= `level`, via
- *  `freeAttacksThisTurn[key]`) + 1× par chargeur ; coût (Avantage) ; jet préalable (`op.test`, Frappe
- *  réactive : Init) ; puis frappe INSTANTANÉE à l'arme tenue, Action préservée. Le plafond borne aussi la
- *  récursion (un onHit qui touche → +1 attaque, recomptée → s'arrête au niveau). */
-function applyTalentFreeAttack(get: Get, set: SetFn, actor: Combatant, op: Extract<GameOp, { op: 'grantFreeAttack' }>, target: Combatant | undefined, level: number, key: string): void {
+/** Résout UNE attaque gratuite de talent contre la cible `fa.targetId` (un TIERS : le chargeur pour Frappe
+ *  réactive, la victime touchée pour Assaut féroce) : plafond /Round (`fa.cap` = niveau, via
+ *  `freeAttacksThisTurn[fa.key]`) + 1× par chargeur ; coût (Avantage) ; puis frappe INSTANTANÉE à l'arme
+ *  tenue, Action préservée. Le plafond borne aussi la récursion (un onHit qui touche → +1 attaque, recomptée
+ *  → s'arrête au niveau). Appelée par le hook `freeAttack` quand `runCombatFlow` exécute le `do`/`grantFreeAttack`
+ *  (le Test préalable a déjà réussi en amont, c'est un nœud Flow). */
+function applyTalentFreeAttack(get: Get, set: SetFn, actor: Combatant, op: Extract<GameOp, { op: 'grantFreeAttack' }>, fa: FreeAttackFreeze): void {
+  const target = get().battle?.combatants.find((c) => c.id === fa.targetId);
   if (!target || isOutOfAction(actor) || isOutOfAction(target) || !actor.pos || !target.pos) return;
   if ((actor.weapons[0]?.type ?? 'melee') !== 'melee') return; // attaque d'arme de mêlée (l'arme tenue)
   const uses = actor.freeAttacksThisTurn ?? {};
-  if ((uses[key] ?? 0) >= level) return; // plafond /Round atteint (= niveau du talent)
-  const ck = `${key}:${target.id}`;
+  if ((uses[fa.key] ?? 0) >= fa.cap) return; // plafond /Round atteint (= niveau du talent)
+  const ck = `${fa.key}:${target.id}`;
   if (op.perChargerOncePerRound && (uses[ck] ?? 0) >= 1) return; // 1 riposte par chargeur (Frappe réactive)
   if (op.cost?.advantage != null && actor.advantage < op.cost.advantage) return; // Avantage insuffisant
   if (op.cost?.advantageOrMovement && actor.advantage <= 0) return; // simplifié : Avantage requis (« ou Mouvement » = raffinement)
-  if (op.test && !rollTest(effectiveChar(actor, op.test.characteristic), op.test.difficulty, battleRng()).success) return; // jet préalable raté
   if (op.cost?.advantage != null) actor.advantage = Math.max(0, actor.advantage - op.cost.advantage);
   else if (op.cost?.advantageOrMovement) actor.advantage = Math.max(0, actor.advantage - 1);
-  actor.freeAttacksThisTurn = { ...uses, [key]: (uses[key] ?? 0) + 1, ...(op.perChargerOncePerRound ? { [ck]: 1 } : {}) };
+  actor.freeAttacksThisTurn = { ...uses, [fa.key]: (uses[fa.key] ?? 0) + 1, ...(op.perChargerOncePerRound ? { [ck]: 1 } : {}) };
   const prevActed = get().battle?.acted ?? false; // gratuite : Action préservée
   const r = resolveAttack(get, actor, target);
   if (r) applyAttackResult(get, set, actor, r.victim ?? target, r.weapon, r.res, false);
   set({ battle: { ...get().battle!, acted: prevActed } });
 }
 
-/** Résout les attaques gratuites DÉCLENCHÉES des talents de `actor` pour `trigger` (against `victim`) —
- *  source : les `effects` du talent (donnée), ops `grantFreeAttack{when:'immediate'}`. Vaut héros ET IA. */
+/** HOOK `freeAttack` (injecté dans la brique `combat/triggeredTest` par `createCombatSlice`) : pont
+ *  exécuteur de Flow → vraie frappe. Appelé par `runCombatFlow` sur un `do`/`grantFreeAttack`. */
+export function freeAttackHookImpl(get: Get, set: SetFn, actor: Combatant, op: Extract<GameOp, { op: 'grantFreeAttack' }>, fa: FreeAttackFreeze): void {
+  applyTalentFreeAttack(get, set, actor, op, fa);
+}
+
+/** Résout les attaques gratuites DÉCLENCHÉES des talents de `actor` pour `trigger` (contre `victim`) —
+ *  source : les `effects` du talent (donnée). Le Flow de chaque talent est JOUÉ par `runCombatFlow` (le
+ *  nœud `choice`/`test` éventuel y est cadence-aware ; le `do`/`grantFreeAttack` ouvre la frappe via le
+ *  hook contre `victim`, le tiers threadé dans `ctx.freeAttack`). Vaut héros ET IA. */
 export function resolveTalentFreeAttacks(get: Get, set: SetFn, actor: Combatant, trigger: EffectTrigger, victim: Combatant | undefined): void {
+  if (!victim) return;
   for (const t of actor.talents ?? []) {
     for (const eff of findTalentById(t.talentId)?.effects ?? []) {
       if (eff.trigger !== trigger) continue;
-      for (const op of freeAttackOpsOf(eff.flow)) if (op.when === 'immediate') applyTalentFreeAttack(get, set, actor, op, victim, t.times ?? 1, t.talentId);
+      runCombatFlow(
+        { mode: 'combat', get, set, target: actor, caster: actor, label: findTalentById(t.talentId)?.label ?? 'Réaction', freeAttack: { targetId: victim.id, cap: t.times ?? 1, key: t.talentId } },
+        eff.flow,
+      );
     }
   }
 }
