@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { t, interpolate, getLocale } from './index';
-import { CHAR_LABELS, DIFFICULTY_LABELS } from '../engine/types';
+import { CHAR_LABELS, DIFFICULTY_LABELS, HIT_LOCATION_LABELS } from '../engine/types';
+import { DEFENSE_LABEL, FREE_ATTACK_LABEL } from '../engine/combat';
 
 describe('i18n — primitive t() + catalogue FR (seam, docs/i18n-seam.md)', () => {
   it('résout une clé en texte FR', () => {
@@ -23,5 +24,10 @@ describe('i18n — primitive t() + catalogue FR (seam, docs/i18n-seam.md)', () =
     expect(CHAR_LABELS.Soc).toBe('Sociabilité');
     expect(DIFFICULTY_LABELS.tresFacile).toBe(t('difficulty.tresFacile'));
     expect(DIFFICULTY_LABELS.intermediaire).toBe('Intermédiaire (+0)');
+    expect(HIT_LOCATION_LABELS.tete).toBe(t('hitloc.tete'));
+    expect(HIT_LOCATION_LABELS.jambeD).toBe('Jambe droite');
+    expect(DEFENSE_LABEL.parade).toBe('Parade');
+    expect(FREE_ATTACK_LABEL.morsure).toBe(t('freeAttack.morsure'));
+    expect(FREE_ATTACK_LABEL.caudale).toBe('Attaque caudale');
   });
 });

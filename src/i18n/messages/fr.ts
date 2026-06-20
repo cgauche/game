@@ -23,4 +23,21 @@ export const fr = {
   'difficulty.complexe': 'Complexe (−10)',
   'difficulty.difficile': 'Difficile (−20)',
   'difficulty.tresDifficile': 'Très difficile (−30)',
+  // Localisations d'impact (LDB) — migré de engine/types.ts (HIT_LOCATION_LABELS).
+  'hitloc.tete': 'Tête',
+  'hitloc.brasG': 'Bras gauche',
+  'hitloc.brasD': 'Bras droit',
+  'hitloc.corps': 'Corps',
+  'hitloc.jambeG': 'Jambe gauche',
+  'hitloc.jambeD': 'Jambe droite',
+  // Modes de défense (LDB 13) — migré de engine/combat.ts (DEFENSE_LABEL).
+  'defense.parade': 'Parade',
+  'defense.esquive': 'Esquive',
+  // Attaques gratuites de créature (LDB 85) — migré de engine/combat.ts (FREE_ATTACK_LABEL).
+  'freeAttack.morsure': 'Morsure',
+  'freeAttack.caudale': 'Attaque caudale',
+  'freeAttack.cornes': 'Cornes (charge)',
+  'freeAttack.pietinement': 'Piétinement',
+  'freeAttack.langue': 'Langue',
+  'freeAttack.hurlement': 'Hurlement',
 } as const;

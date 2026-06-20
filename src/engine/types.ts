@@ -41,12 +41,12 @@ export const CHAR_BY_LABEL: Record<string, CharKey> = Object.fromEntries(
 export type HitLocation = 'tete' | 'brasG' | 'brasD' | 'corps' | 'jambeG' | 'jambeD';
 
 export const HIT_LOCATION_LABELS: Record<HitLocation, string> = {
-  tete: 'Tête',
-  brasG: 'Bras gauche',
-  brasD: 'Bras droit',
-  corps: 'Corps',
-  jambeG: 'Jambe gauche',
-  jambeD: 'Jambe droite',
+  tete: t('hitloc.tete'),
+  brasG: t('hitloc.brasG'),
+  brasD: t('hitloc.brasD'),
+  corps: t('hitloc.corps'),
+  jambeG: t('hitloc.jambeG'),
+  jambeD: t('hitloc.jambeD'),
 };
 
 /**

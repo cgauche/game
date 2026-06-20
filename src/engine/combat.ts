@@ -7,6 +7,7 @@
  *          4) Application = Dégâts − (Bonus d'Endurance + PA de la localisation)
  */
 import { RNG, defaultRNG } from './dice';
+import { t } from '../i18n';
 import { rollTest, resolveOpposed, evaluateTest, TestResult } from './tests';
 import { bonus, effectiveChar, effectiveArmourAt, baseWithTraits } from './characteristics';
 import { bypassedAP } from './armourBypass';
@@ -194,13 +195,13 @@ const bd = (label: string, base: number, t: TestResult, mods?: ModLine[], mode?:
   success: t.success,
   sl: t.sl,
 });
-export const DEFENSE_LABEL: Record<'parade' | 'esquive', string> = { parade: 'Parade', esquive: 'Esquive' };
+export const DEFENSE_LABEL: Record<'parade' | 'esquive', string> = { parade: t('defense.parade'), esquive: t('defense.esquive') };
 
 /** Libellé FR de la nature d'une attaque gratuite de créature (`freeKind`) — terminologie de combat,
  *  source UNIQUE (utilisée par la modale de défense). */
 export const FREE_ATTACK_LABEL: Record<string, string> = {
-  morsure: 'Morsure', caudale: 'Attaque caudale', cornes: 'Cornes (charge)', pietinement: 'Piétinement',
-  langue: 'Langue', hurlement: 'Hurlement',
+  morsure: t('freeAttack.morsure'), caudale: t('freeAttack.caudale'), cornes: t('freeAttack.cornes'), pietinement: t('freeAttack.pietinement'),
+  langue: t('freeAttack.langue'), hurlement: t('freeAttack.hurlement'),
 };
 
 /**
