@@ -10,6 +10,7 @@ import { resolveTalentFreeAttacks } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
+import { setRule, resetRule } from '../engine/policy';
 import type { AttackResult } from '../engine/combat';
 
 const HIT: AttackResult = {
@@ -57,16 +58,69 @@ describe('Talents d’attaque déclenchée (grantFreeAttack en donnée)', () => 
     expect(h.freeAttacksThisTurn?.['assaut-feroce']).toBeUndefined();
   });
 
-  it('Frappe réactive (onCharged) : la cible Chargée riposte hors séquence si le Test d’Init réussit', () => {
+  // Frappe réactive (LDB 10 l.429-432) = CHOIX opt-in (« vous POUVEZ ») + Test d'Initiative. Pour un HÉROS
+  // en cadence MANUELLE, ces deux jets sont CADENCE-AWARE : ils s'ouvrent en étapes de cascade influençables
+  // (modale de choix puis Test d'Init), pas en silence — c'est le principe « aucun jet de héros muet ».
+  function driveChoice(key: string) {
+    const pc = useGame.getState().pendingCascade!;
+    const cur = pc.participants[pc.cursor];
+    useGame.getState().cascadeChoose(cur.id, key);
+    useGame.getState().cascadeNext();
+  }
+  function driveTest() {
+    const pc = useGame.getState().pendingCascade!;
+    const cur = pc.participants[pc.cursor];
+    useGame.getState().cascadeRoll(cur.id); // jet d'Initiative
+    useGame.getState().cascadeNext(); // applique la branche (success → frappe via le hook)
+  }
+
+  it('Frappe réactive (onCharged) : héros MANUEL → modale de CHOIX puis Test d’Init INFLUENÇABLE ; succès → riposte', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     H.talents = [...(H.talents ?? []), { talentId: 'frappe-reactive', times: 1 }];
     H.characteristics.I = 99; // Test d'Initiative Intermédiaire quasi-garanti
+
     resolveTalentFreeAttacks(useGame.getState, useGame.setState, H, 'onCharged', E);
-    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
-    expect(h.freeAttacksThisTurn?.['frappe-reactive']).toBe(1); // a riposté 1× contre ce chargeur
-    // 2ᵉ tentative contre le MÊME chargeur ce Round : refusée (1× par chargeur).
-    resolveTalentFreeAttacks(useGame.getState, useGame.setState, H, 'onCharged', E);
+    // 1) Étape de CHOIX opt-in (aucune frappe en silence) — calque l'étape `knockdown`.
+    const choice = useGame.getState().pendingCascade!;
+    expect(choice.participants[choice.cursor].kind).toBe('triggeredChoice');
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.freeAttacksThisTurn?.['frappe-reactive']).toBeUndefined();
+    driveChoice('yes');
+    // 2) Test d'Init INFLUENÇABLE (étape `triggeredTest`).
+    const test = useGame.getState().pendingCascade!;
+    expect(test.participants[test.cursor].kind).toBe('triggeredTest');
+    driveTest();
+    // 3) Succès → la frappe gratuite s'est résolue (imputée 1× contre ce chargeur).
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.freeAttacksThisTurn?.['frappe-reactive']).toBe(1);
+  });
+
+  it('Frappe réactive : « Renoncer » → aucune riposte (décision opt-in respectée)', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    H.talents = [...(H.talents ?? []), { talentId: 'frappe-reactive', times: 1 }];
+    resolveTalentFreeAttacks(useGame.getState, useGame.setState, H, 'onCharged', E);
+    driveChoice('no');
+    expect(useGame.getState().pendingCascade).toBeNull(); // pas de Test d'Init
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.freeAttacksThisTurn?.['frappe-reactive']).toBeUndefined();
+  });
+
+  it('Frappe réactive (auto) : un héros en cadence AUTO riposte INLINE si le Test d’Init réussit, 1× par chargeur', () => {
+    setRule('combat-cadence', 'auto');
+    try {
+      useGame.getState().seedRng(2);
+      const { H, E } = setup();
+      H.talents = [...(H.talents ?? []), { talentId: 'frappe-reactive', times: 1 }];
+      H.characteristics.I = 99; // Test d'Initiative quasi-garanti
+      resolveTalentFreeAttacks(useGame.getState, useGame.setState, H, 'onCharged', E);
+      // Cadence auto : pas de cascade — choix + Test résolus inline (comme un ennemi).
+      expect(useGame.getState().pendingCascade).toBeNull();
+      const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+      expect(h.freeAttacksThisTurn?.['frappe-reactive']).toBe(1); // a riposté 1× contre ce chargeur
+      // 2ᵉ tentative contre le MÊME chargeur ce Round : refusée (1× par chargeur).
+      resolveTalentFreeAttacks(useGame.getState, useGame.setState, H, 'onCharged', E);
+      expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.freeAttacksThisTurn?.['frappe-reactive']).toBe(1);
+    } finally {
+      resetRule('combat-cadence');
+    }
   });
 });
