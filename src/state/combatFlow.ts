@@ -1404,8 +1404,8 @@ export function applyAttackResult(
  * cadence MANUELLE → étape de cascade INFLUENÇABLE (il PEUT dépenser sa Chance / sa Résilience pour garder son
  * sort) ; ennemi / cadence auto → jet inline. La branche d'ÉCHEC porte le marqueur `interruptFocus`, dont la
  * conséquence PROCÉDURALE (perte des DR + Imparfaite Mineure) s'exécute APRÈS le Test résolu, via le hook
- * `focusInterrupt` (→ `applyFocusInterruption`). Plus de jet inline silencieux : c'est l'étape (manuel) ou la
- * ligne inline (auto) qui porte le résultat. Le journal inline part dans la file différée (`pendingLogQueue`,
+ * `focusInterrupt` (→ `applyFocusInterruption`). Le résultat est porté par l'étape de cascade (manuel) ou la
+ * ligne inline (auto). Le journal inline part dans la file différée (`pendingLogQueue`,
  * drainée par l'appelant — `applyAttackResult` / `applyCast`).
  */
 export function checkFocusInterruption(get: Get, set: SetFn, target: Combatant): string[] {
@@ -1425,8 +1425,8 @@ export function checkFocusInterruption(get: Get, set: SetFn, target: Combatant):
  * Conséquence PROCÉDURALE d'un Test de Calme d'interruption RATÉ (op `interruptFocus`, hook `focusInterrupt`) :
  * le focaliseur perd tous les DR accumulés sur son Sort focalisé (couverts par son composant — LDB 46 l.161) et
  * subit une Incantation Imparfaite Mineure (LDB 46 l.194). L'Imparfaite garde son rendu propre (étape de cascade
- * `miscast` pour un héros / lignes pour un ennemi) — plus de `suppressReveal` : le Test de Calme est désormais
- * l'étape influençable visible, l'Imparfaite est sa conséquence en aval. Les lignes partent dans la file
+ * `miscast` pour un héros / lignes pour un ennemi) : le Test de Calme est l'étape influençable visible,
+ * l'Imparfaite est sa conséquence en aval. Les lignes partent dans la file
  * différée (`pendingLogQueue`), drainée par l'appelant qui réécrit `battle.log`.
  */
 export function applyFocusInterruption(get: Get, set: SetFn, focuser: Combatant): void {
