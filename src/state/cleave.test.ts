@@ -181,7 +181,10 @@ describe('Balayage en combat (store)', () => {
     const b = setupBattle(1);
     const H = b.combatants.find((c) => c.kind === 'hero')!;
     const E1 = b.combatants.find((c) => c.kind === 'enemy')!;
-    H.characteristics.CC = 25; // BCC = 2
+    // Le héros peut avoir des talents charMod (+5 CC via guerrier-né…) : vider les talents pour
+    // isoler ce test du quota et rendre BCC=2 déterministe (CC=25 brut, effectiveChar=25, BCC=2).
+    H.talents = [];
+    H.characteristics.CC = 25; // BCC = 2 (bonus(25) = 2, sans passif talent)
     H.pos = { x: 10, y: 10 };
     E1.pos = { x: 11, y: 10 };
     useGame.setState({

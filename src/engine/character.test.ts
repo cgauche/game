@@ -7,6 +7,7 @@ import {
   resolveSpeciesTalents,
   createHero,
 } from './character';
+import { baseWithTalents } from './talentEffects';
 
 const REIK = 'humains-reiklander';
 const sp = () => findSpeciesById(REIK)!;
@@ -108,7 +109,7 @@ describe('createHero — applique compétences et talents raciaux', () => {
     expect(manual.characteristics.CC).toBe(35);
   });
 
-  it('« +5 Caractéristique de départ » appliqué (Affable → Soc +5), sans Augmentation comptée', () => {
+  it('« +5 Caractéristique de départ » passif (Affable → Soc +5 via charMod), sans Augmentation comptée', () => {
     const hero = createHero({
       speciesId: REIK,
       careerId: 'soldat',
@@ -118,7 +119,9 @@ describe('createHero — applique compétences et talents raciaux', () => {
       speciesTalentsResolved: ['Affable', 'Destinée'],
       rng: makeRNG(3),
     });
-    expect(hero.characteristics.Soc).toBe(35);
+    // La valeur brute reste 30 (passif non cuit) ; baseWithTalents lit le charMod du talent.
+    expect(hero.characteristics.Soc).toBe(30); // base INCHANGÉE
+    expect(baseWithTalents(hero, 'Soc')).toBe(35); // base + passif Affable = 35
     expect(hero.charAdvances?.Soc ?? 0).toBe(0);
   });
 

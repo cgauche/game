@@ -5,6 +5,7 @@ import { CharKey, Characteristics, Combatant } from './types';
 import { traumaCharPenalties, passiveCharSum } from './trauma';
 import { traitCharMods } from './traits/dispatch';
 import { SizeCategory, woundsForSize, effectiveSize } from './size';
+import { findTalentById } from '../data';
 
 /** Bonus de Caractéristique = chiffre des dizaines (ex. 37 → 3). */
 export function bonus(value: number): number {
@@ -70,20 +71,37 @@ export function maxWounds(chars: Characteristics, size: SizeCategory = 'moyenne'
   return woundsForSize(bonus(chars.F), bonus(chars.E), bonus(chars.FM), size);
 }
 
+/** Σ des `charMod` passifs de TALENT (× `times`) pour la Caractéristique `key` — lecture LOCALE
+ *  sans importer `talentEffects` (qui importe `characteristics` → cycle). Identique à `baseWithTalents`
+ *  moins `c.characteristics[key]`. Utilisé par `effectiveMaxWounds` pour la référence de delta. */
+function talentCharModSum(c: Combatant, key: CharKey): number {
+  let n = 0;
+  for (const t of c.talents ?? []) {
+    const passive = findTalentById(t.talentId)?.passive;
+    if (passive) for (const op of passive) if (op.op === 'charMod' && op.char === key) n += op.mod * (t.times ?? 1);
+  }
+  return n;
+}
+
 /**
  * Blessures max DYNAMIQUES (LDB 85 — exigence : les sorts modifiant F/E/FM impactent les Blessures).
  * = base (Blessures à vide, snapshot ou surcharge au spawn) + le DELTA dû aux buffs F/E/FM, multiplié
  * par la Taille (via `woundsForSize`). À vide, le delta = 0 → on rend exactement `wounds.base` (préserve
  * les valeurs livre traitées : Coriace, mort-vivant…). La base elle-même n'est jamais recalculée.
+ *
+ * Référence du delta = MÊME BASE que `wounds.base` : `characteristics + liveTraits + talents`, sans
+ * mutations (post-création → contribuent au delta). `eff − raw` = delta VOLATILE (mutations + sorts).
  */
 export function effectiveMaxWounds(c: Combatant): number {
   const size = effectiveSize(c.size);
   const base = c.wounds.base ?? c.wounds.max;
   const eff = woundsForSize(bonus(effectiveChar(c, 'F')), bonus(effectiveChar(c, 'E')), bonus(effectiveChar(c, 'FM')), size);
-  // Référence = base + traits de profil (`baseWithTraits`) : `wounds.base` a été calculé AU SPAWN sur ce profil
-  // (Coriace/Élite inclus) → le delta ne porte que les effets volatils (mutations/buffs/traumas), sans recompter
-  // les traits déjà dans `base`.
-  const raw = woundsForSize(bonus(baseWithTraits(c, 'F')), bonus(baseWithTraits(c, 'E')), bonus(baseWithTraits(c, 'FM')), size);
+  // Référence = base au spawn : characteristics + liveTraitCharMods (créatures) + talentCharMods (héros).
+  // Les mutations viennent APRÈS la création → elles restent dans le delta pour affecter effectiveMaxWounds.
+  const rawF = c.characteristics.F + (traitCharMods(c.liveTraits).F ?? 0) + talentCharModSum(c, 'F');
+  const rawE = c.characteristics.E + (traitCharMods(c.liveTraits).E ?? 0) + talentCharModSum(c, 'E');
+  const rawFM = c.characteristics.FM + (traitCharMods(c.liveTraits).FM ?? 0) + talentCharModSum(c, 'FM');
+  const raw = woundsForSize(bonus(rawF), bonus(rawE), bonus(rawFM), size);
   return base + (eff - raw);
 }
 

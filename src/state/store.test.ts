@@ -20,6 +20,7 @@ import { setRule, resetRule } from '../engine/policy';
 import { TIME_COST } from '../engine/timeCost';
 import { toBrass } from '../engine/money';
 import { talentConcrete } from '../data';
+import { baseWithTalents } from '../engine/talentEffects';
 
 function reset() {
   useGame.setState({
@@ -1372,10 +1373,12 @@ describe('Avancement par PX (store) — câblage moteur', () => {
     expect(h0().xp).toBe(900);
   });
 
-  it('buyTalent : « +5 Caractéristique de départ » appliqué à l\'achat (Guerrier né, LDB 10)', () => {
+  it('buyTalent : « +5 Caractéristique de départ » passif à l\'achat (Guerrier né, LDB 10)', () => {
     set1(mkHero({ xp: 1000, career: 'soldat' })); // Recrue : Guerrier né in-carrière
     useGame.getState().buyTalent('h', 'Guerrier né');
-    expect(h0().characteristics.CC).toBe(35);
+    // La valeur brute reste inchangée (passif non cuit) ; baseWithTalents lit le charMod du talent.
+    expect(h0().characteristics.CC).toBe(30); // base INCHANGÉE
+    expect(baseWithTalents(h0(), 'CC')).toBe(35); // base + passif Guerrier né = 35
     expect(h0().charAdvances?.CC ?? 0).toBe(0); // « ne compte pas comme des Augmentations »
     expect(h0().xp).toBe(900);
   });

@@ -39,13 +39,19 @@
     "desc": "Vous gagnez un bonus permanent de +5 à votre Caractéristique Sociabilité de départ (qui ne compte pas comme des Augmentations).",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "Soc",
     "specs": [],
     "rand": 3,
     "source": {
       "book": "LDB",
       "page": 132
-    }
+    },
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": 5
+      }
+    ]
   },
   {
     "id": "affinite-avec-les-animaux",
@@ -873,13 +879,19 @@
     "desc": "Vous gagnez un bonus permanent de +5 à votre Dextérité de départ (ne compte pas comme des Augmentations).",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "Dex",
     "specs": [],
     "rand": 32,
     "source": {
       "book": "LDB",
       "page": 136
-    }
+    },
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Dex",
+        "mod": 5
+      }
+    ]
   },
   {
     "id": "double-vie",
@@ -1353,13 +1365,19 @@
     "desc": "Vous gagnez un bonus permanent de +5 à votre Caractéristique CC de départ (ne compte pas comme des Augmentations).",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "CC",
     "specs": [],
     "rand": 46,
     "source": {
       "book": "LDB",
       "page": 138
-    }
+    },
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "CC",
+        "mod": 5
+      }
+    ]
   },
   {
     "id": "guide-fluvial",
@@ -1477,13 +1495,19 @@
     "desc": "Vous gagnez un bonus permanent de +5 à votre Caractéristique FM de départ (cela ne compte pas comme des Augmentations).",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "FM",
     "specs": [],
     "rand": 52,
     "source": {
       "book": "LDB",
       "page": 139
-    }
+    },
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "FM",
+        "mod": 5
+      }
+    ]
   },
   {
     "id": "impitoyable",
@@ -2336,13 +2360,19 @@
     "desc": "Vous gagnez un bonus permanent de +5 à votre Caractéristique Intelligence de départ (ne compte pas comme Augmentation).",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "Int",
     "specs": [],
     "rand": 69,
     "source": {
       "book": "LDB",
       "page": 143
-    }
+    },
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Int",
+        "mod": 5
+      }
+    ]
   },
   {
     "id": "petit",
@@ -2507,13 +2537,19 @@
     "desc": "Vous gagnez un bonus permanent de +5 à votre Caractéristique Agilité de départ (ne compte pas comme des Augmentations).",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "Ag",
     "specs": [],
     "rand": 72,
     "source": {
       "book": "LDB",
       "page": 144
-    }
+    },
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Ag",
+        "mod": 5
+      }
+    ]
   },
   {
     "id": "renversement",
@@ -2990,13 +3026,19 @@
     "desc": "Vous gagnez un bonus permanent de +5 à votre Capacité de Tir de départ (ne compte pas comme des Augmentations).",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "CT",
     "specs": [],
     "rand": 88,
     "source": {
       "book": "LDB",
       "page": 146
-    }
+    },
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "CT",
+        "mod": 5
+      }
+    ]
   },
   {
     "id": "tireur-embusque",
@@ -3194,13 +3236,19 @@
     "desc": "Vous gagnez un bonus permanent de +5 à votre Caractéristique Force de départ (ne compte pas comme des Augmentations).",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "F",
     "specs": [],
     "rand": 91,
     "source": {
       "book": "LDB",
       "page": 147
-    }
+    },
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "F",
+        "mod": 5
+      }
+    ]
   },
   {
     "id": "tres-resistant",
@@ -3210,13 +3258,19 @@
     "desc": "Vous gagnez un bonus permanent de +5 à votre Caractéristique Endurance de départ (ne compte pas comme des Augmentations).",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "E",
     "specs": [],
     "rand": 94,
     "source": {
       "book": "LDB",
       "page": 147
-    }
+    },
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "E",
+        "mod": 5
+      }
+    ]
   },
   {
     "id": "tricheur",
@@ -3261,13 +3315,18 @@
     "desc": "Vous gagnez +1 à votre Attribut de Mouvement.",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "move",
     "specs": [],
     "rand": null,
     "source": {
       "book": "LDB",
       "page": 147
-    }
+    },
+    "passive": [
+      {
+        "op": "moveMod",
+        "mod": 1
+      }
+    ]
   },
   {
     "id": "vigilance",
@@ -3328,13 +3387,19 @@
     "desc": "Vous gagnez un bonus permanent de +5 à votre Caractéristique Initiative de départ (ne compte pas comme des Augmentations).",
     "addSkill": null,
     "addTalent": null,
-    "addCharacteristic": "I",
     "specs": [],
     "rand": 100,
     "source": {
       "book": "LDB",
       "page": 147
-    }
+    },
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "I",
+        "mod": 5
+      }
+    ]
   },
   {
     "id": "volonte-de-fer",

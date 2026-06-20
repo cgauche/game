@@ -30,7 +30,7 @@ import {
   talentMaxReached,
   wildcardSpecs,
 } from '../engine/careerSlots';
-import { careerSkillAdditions } from '../engine/talentEffects';
+import { careerSkillAdditions, baseWithTalents } from '../engine/talentEffects';
 import { levelsForCareer, findSkill, findSkillById, findCareerById, findClassById, careers, talentConcrete } from '../data';
 
 export interface CharAdvanceRow {
@@ -125,7 +125,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
   const chars: CharAdvanceRow[] = CHAR_KEYS.map((key) => {
     const advances = hero.charAdvances?.[key] ?? 0;
     const inCareer = inCareerChar(careerChars, key);
-    return { key, label: CHAR_LABELS[key], value: hero.characteristics[key], advances, inCareer, nextCost: advanceCost(advances, 'characteristic', inCareer) };
+    return { key, label: CHAR_LABELS[key], value: baseWithTalents(hero, key), advances, inCareer, nextCost: advanceCost(advances, 'characteristic', inCareer) };
   });
 
   // Compétences connues — identité (name, spec) : chaque Spécialisation est une Compétence

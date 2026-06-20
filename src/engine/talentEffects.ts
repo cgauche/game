@@ -1,19 +1,20 @@
 /**
  * Effets des Talents qui influencent la création / les attributs — PILOTÉS PAR LES DONNÉES :
- * chaque talent de talents.json porte `addCharacteristic` / `addSkill`, posés par l'extraction
- * des livres ; un supplément qui ajoute un talent étiqueté pareil est couvert sans code.
+ * chaque talent de talents.json porte `passive: GameOp[]` (charMod/moveMod/attrMod…) et `addSkill`,
+ * posés par l'extraction des livres ; un supplément qui ajoute un talent étiqueté pareil est couvert
+ * sans code.
  *
- * Sémantique des `addCharacteristic` (clé STABLE, ≠ libellé — multilangue ; descriptions LDB 10) :
- *  - une CharKey (F, Soc…) : « Vous gagnez un bonus permanent de +5 à votre Caractéristique X de
+ * Sémantique des passifs de Caractéristique (clés STABLES, ≠ libellés — multilangue ; descriptions LDB 10) :
+ *  - `charMod{char,mod:5}` : « Vous gagnez un bonus permanent de +5 à votre Caractéristique X de
  *    départ (ne compte pas comme des Augmentations) » — Guerrier né, Tireur de précision, Très fort,
  *    Très résistant, Vivacité, Réflexes foudroyants, Doigts de fée, Perspicace, Imperturbable, Affable ;
- *  - `wounds` (Dur à cuire) : « autant de Points de Blessure supplémentaires que votre Bonus
- *    d'Endurance » — recalculé si le BE augmente, par acquisition ;
- *  - `fortune` (Chanceux) : « maximum de Points de Chance = Points de Destin + nombre de fois » ;
- *  - `resolve` (Obstiné) : « Ajoutez votre niveau au maximum de votre réserve » ;
- *  - `move` (Véloce) : « Vous gagnez +1 à votre Attribut de Mouvement » ;
- *  - `corruption` (Âme pure) : seuil de Corruption +niveau — câblé dans corruption.ts
- *    (corruptionThresholdExceeded), pas ici.
+ *  - `attrMod{attr:'wounds',mod:{bonusOf:'E'}}` (Dur à cuire) : « autant de Points de Blessure
+ *    supplémentaires que votre Bonus d'Endurance » — recalculé si le BE augmente, par acquisition ;
+ *  - `attrMod{attr:'fortune',mod:1}` (Chanceux) : « maximum de Points de Chance = Points de Destin + niveaux » ;
+ *  - `attrMod{attr:'resolve',mod:1}` (Obstiné) : « Ajoutez votre niveau au maximum de votre réserve » ;
+ *  - `moveMod{mod:1}` (Véloce) : « Vous gagnez +1 à votre Attribut de Mouvement » ;
+ *  - `addCharacteristic:'corruption'` (Âme pure) : seuil de Corruption +niveau — câblé dans corruption.ts
+ *    (corruptionThresholdExceeded), pas ici. CONSERVÉ dans les données (non migré).
  *
  * `addSkill` : « Ajoutez la Compétence X à n'importe quelle Carrière que vous entamez. Si la
  * Compétence est déjà incluse dans votre Carrière, vous pouvez à la place acheter la Compétence
@@ -30,9 +31,21 @@ import { findTalent, findTalentById, blessingsOf, refLabel } from '../data';
 import { splitLabel, concreteLabel } from './careerSlots';
 import type { PassiveMod } from './ops';
 
-/** `addCharacteristic` d'un talent par son `id` STABLE (libellé long des données), sinon null. */
-function addCharById(talentId: string): string | null {
-  return findTalentById(talentId)?.addCharacteristic ?? null;
+/**
+ * Valeur « base + bonus permanents de talents » pour une CharKey, SANS les modificateurs
+ * de mutations/traumas/sorts/maladies. Utilisé par les lecteurs BRUTS hors-combat
+ * (affichage de fiche, calcul PX, Blessures max initiales) qui ont besoin du « vrai départ »
+ * incluant les +5 de talent (désormais passifs, plus cuits dans `characteristics`).
+ * On ne peut PAS importer `passiveCharSum`/`characteristics` ici (cycle) → lecture LOCALE.
+ */
+export function baseWithTalents(c: Combatant, key: CharKey): number {
+  let val = c.characteristics[key] ?? 0;
+  for (const t of c.talents ?? []) {
+    for (const op of findTalentById(t.talentId)?.passive ?? []) {
+      if (op.op === 'charMod' && op.char === key) val += op.mod * (t.times ?? 1);
+    }
+  }
+  return val;
 }
 
 /** Σ des `attrMod{attr}` (mod NUMÉRIQUE) portés par les talents du héros, × `times` — Chance (Chanceux),
@@ -48,10 +61,15 @@ function talentAttrSum(hero: Combatant, attr: 'fortune' | 'resolve'): number {
   return n;
 }
 
-/** Caractéristique « +5 de départ » conférée par un talent (clé courte), sinon null, par `id`. */
+/**
+ * Caractéristique « +5 de départ » conférée par un talent (clé courte), sinon null, par `id`.
+ * Lit le premier `charMod{char, mod}` dont `char` est une CharKey dans `passive` du talent.
+ */
 export function talentCharBonusById(talentId: string): CharKey | null {
-  const attr = addCharById(talentId);
-  return attr && (CHAR_KEYS as readonly string[]).includes(attr) ? (attr as CharKey) : null;
+  for (const op of findTalentById(talentId)?.passive ?? []) {
+    if (op.op === 'charMod' && (CHAR_KEYS as readonly string[]).includes(op.char)) return op.char as CharKey;
+  }
+  return null;
 }
 
 /** Idem par LIBELLÉ — bord UI (créateur) / tests ; résout l'id puis délègue. */
@@ -63,14 +81,12 @@ export function talentCharBonus(talentLabel: string): CharKey | null {
 /**
  * Applique l'effet d'acquisition d'un Talent (création OU achat PX) — mute le héros. Référence
  * STRUCTURÉE : `talentId` STABLE + `spec` concret (cult de « Béni » : « Sigmar »…).
- * +5 Caractéristique de départ (PAS une Augmentation → charAdvances intacts) ; Mouvement : +1.
+ * Le +5 Caractéristique et le +1 Mouvement sont désormais des PASSIFS CONTINUS dans `passive: GameOp[]`
+ * (charMod/moveMod), lus par le collecteur `passiveMods` — plus cuits dans `characteristics`/`movement`.
  * Les effets dérivés (Blessures, Chance, Détermination) sont des helpers recalculés par
  * l'appelant (heroMaxWounds / fortuneMax / resolveMax).
  */
 export function applyTalentAcquisition(hero: Combatant, talentId: string, spec?: string): void {
-  const key = talentCharBonusById(talentId);
-  if (key) hero.characteristics[key] += 5;
-  if (addCharById(talentId) === 'move') hero.movement += 1;
   // Béni (Culte) — LDB 10/41 : « reçoit les SIX Bénédictions de son culte » → octroi AUTOMATIQUE
   // à l'acquisition (création + achat PX), pas un achat à 0 PX par clic. Un « Béni » au culte non
   // résolu (« Au choix ») n'octroie rien. Le signal vient du REGISTRE (grantsCultBlessings), plus de name-match.
@@ -80,15 +96,16 @@ export function applyTalentAcquisition(hero: Combatant, talentId: string, spec?:
   }
 }
 
-/** Points de Blessure supplémentaires : BE par acquisition d'un talent « Blessure » (Dur à cuire). */
+/** Points de Blessure supplémentaires : BE par acquisition d'un talent « Blessure » (Dur à cuire).
+ *  Le BE utilisé est `baseWithTalents(hero,'E')` pour inclure un éventuel +5 E de « Très résistant ». */
 export function extraWounds(hero: Combatant): number {
   let n = 0;
   for (const t of hero.talents ?? []) {
     for (const op of findTalentById(t.talentId)?.passive ?? []) {
       if (op.op === 'attrMod' && op.attr === 'wounds') {
-        // Dur à cuire = +Bonus d'Endurance par acquisition : mod-formule `{bonusOf:'E'}` résolu sur la
-        // BASE (caractéristiques brutes), comme l'ancien `bonus(hero.characteristics.E)` — pas d'effectif.
-        const per = typeof op.mod === 'number' ? op.mod : 'bonusOf' in op.mod ? bonus(hero.characteristics[op.mod.bonusOf]) : 0;
+        // Dur à cuire = +Bonus d'Endurance par acquisition : mod-formule `{bonusOf:'E'}` résolu sur
+        // baseWithTalents (inclut le +5 E de Très résistant si possédé), pas sur la valeur brute.
+        const per = typeof op.mod === 'number' ? op.mod : 'bonusOf' in op.mod ? bonus(baseWithTalents(hero, op.mod.bonusOf)) : 0;
         n += per * (t.times ?? 1);
       }
     }
@@ -96,9 +113,17 @@ export function extraWounds(hero: Combatant): number {
   return n;
 }
 
-/** Blessures max d'un héros = formule des Attributs (BF+2×BE+BFM × Taille) + talents « Blessure ». */
+/** Blessures max d'un héros = formule des Attributs (BF+2×BE+BFM × Taille) + talents « Blessure ».
+ *  Les +5 de talents (Très fort → F, Très résistant → E, Imperturbable → FM) sont des PASSIFS :
+ *  on passe `baseWithTalents` pour chaque carac impliquée afin de ne pas les perdre. */
 export function heroMaxWounds(hero: Combatant): number {
-  return maxWounds(hero.characteristics, hero.size ?? 'moyenne') + extraWounds(hero);
+  const chars = {
+    ...hero.characteristics,
+    F: baseWithTalents(hero, 'F'),
+    E: baseWithTalents(hero, 'E'),
+    FM: baseWithTalents(hero, 'FM'),
+  };
+  return maxWounds(chars, hero.size ?? 'moyenne') + extraWounds(hero);
 }
 
 /** Maximum de Points de Chance : Destin + niveaux des talents « Chance » (Chanceux, LDB 10). */
