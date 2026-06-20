@@ -546,7 +546,9 @@ export function ActionBar() {
               </button>
             )}
             {needsReload && !frenzied && (
-              <button className="ab-slot" disabled={battle.acted || stunned || broken} onClick={reload} title="Recharger (Test étendu de Projectiles — coûte l'Action)">
+              // Arme à distance déchargée → bouton MIS EN ÉVIDENCE (or pulsé tant que recharger est jouable),
+              // sinon le « il faut recharger » passe inaperçu parmi les slots (le réticule de tir le dit aussi).
+              <button className={`ab-slot ab-alert${!battle.acted && !stunned && !broken ? ' pulse' : ''}`} disabled={battle.acted || stunned || broken} onClick={reload} title="Arme déchargée : recharger (Test étendu de Projectiles — coûte l'Action)">
                 <span className="ab-ico">🔄</span><span className="ab-lbl">Recharger{active.reloadProgress ? ` (${active.reloadProgress}/${rangedW!.reload})` : ''}</span>
               </button>
             )}

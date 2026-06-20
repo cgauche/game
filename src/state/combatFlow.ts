@@ -98,7 +98,7 @@ import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } 
 import { findSkill, findSkillById, findManeuverById, findDomainById, findTalentById } from '../data';
 import { norm } from '../lib/normalize';
 import { slugId } from '../data/slug';
-import { recomputeLoadout, weaponWithAmmo, compatibleAmmo, damageArmour, buildWeapon } from '../engine/items';
+import { recomputeLoadout, weaponWithAmmo, compatibleAmmo, ammoFamily, damageArmour, buildWeapon } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, COND } from '../engine/conditions';
 import { creatureAttacks, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
@@ -212,6 +212,24 @@ export function firedWeapon(attacker: Combatant, target: Combatant, weaponUid?: 
     if (ammo) return weaponWithAmmo(w, ammo);
   }
   return w;
+}
+
+/** Tir héros refusé faute de RESSOURCE : arme à défaut Recharge non chargée (LDB 63 l.28-29) ou plus
+ *  de munition compatible — `null` si le tir peut partir. Concern ORTHOGONAL à la géométrie (`attackPlan`),
+ *  rejoué À L'IDENTIQUE par le clic (`battleClickEntity`) ET le survol (`hoverTargeting`) pour que
+ *  l'affordance ne mente jamais : un réticule de tir sur une arbalète vide DOIT dire « recharger », pas
+ *  proposer une attaque qui se solderait par un log silencieux. Mêlée / pas d'arme à distance → `null`
+ *  (la Recharge ne concerne que l'arme effectivement tirée, `firedWeapon`). */
+export function firedAttackBlock(active: Combatant, target: Combatant): { reason: 'unloaded' | 'noammo'; detail: string } | null {
+  if (active.kind !== 'hero') return null;
+  const adj = combatDistance(active, target) <= meleeReachTiles(active.weapons); // même arbitrage d'arme que firedWeapon
+  const w = attackWeapon(active.weapons, adj);
+  if (w.type !== 'ranged') return null;
+  if ((w.reload ?? 0) > 0 && !active.loaded) return { reason: 'unloaded', detail: `${active.name} doit recharger ${w.name}.` };
+  // Munition requise UNIQUEMENT si l'arme en consomme (famille de munition) ; un tir sans munition suivie
+  // (ex. arme sans Groupe) reste possible. `ammoFamily` falsy ⇒ pas de suivi de munition (cf. compatibleAmmo).
+  if (ammoFamily(w.subType) && !selectedAmmo(active, w)) return { reason: 'noammo', detail: `${active.name} n'a plus de munitions pour ${w.name}.` };
+  return null;
 }
 
 /** Résout une attaque (le JET) SANS l'appliquer — pour le flux par modale (« Lancer »
@@ -837,7 +855,8 @@ export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?
   // L'arme du SET ACTIF décide : une arme à distance présente → tir. Gate PRÉ-clic (parité sort) :
   // sans Ligne de Vue (LDB 13 l.123) ou au-delà de la bande Extrême (Portée ×3), refuser AVANT la
   // modale — sinon « Lancer » fabrique un raté garanti qui consomme l'Action. Les gates de la
-  // résolution restent (défense en profondeur) ; rechargement/munitions restent gérés au commit.
+  // résolution restent (défense en profondeur). Le gate de RESSOURCE (Recharge/munition) est porté
+  // par `firedAttackBlock` (concern orthogonal), rejoué par le clic ET le survol sur ce `{kind:'attack'}`.
   if (!opts?.forceMelee && attackWeapon(active.weapons, false).type === 'ranged') {
     const p = previewAttack(get, active, target);
     if (p.blocked) return { kind: 'blocked', reason: 'Pas de ligne de vue (cible masquée).' };

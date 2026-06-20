@@ -13,12 +13,13 @@ import { findSpellById } from '../data';
 import { spellSpecFor } from '../data/spellspecs';
 import { combatDistance } from './footprint';
 import type { GameState } from './store';
-import { attackPlan, previewAttack, previewCast, castSightBlocked, selectedAttackOption, trampleTarget } from './combatFlow';
+import { attackPlan, previewAttack, previewCast, castSightBlocked, selectedAttackOption, trampleTarget, firedAttackBlock } from './combatFlow';
 
 export type HoverTargeting =
   | { kind: 'none' }
-  /** Cible refusée au clic — `engaged` = mêlée verrouillée par l'Engagement (Désengagement requis). */
-  | { kind: 'invalid'; reason: 'los' | 'range' | 'engaged' }
+  /** Cible refusée au clic — `engaged` = mêlée verrouillée par l'Engagement (Désengagement requis) ;
+   *  `unloaded` = arme à Recharge non chargée (recharger d'abord) ; `noammo` = plus de munition. */
+  | { kind: 'invalid'; reason: 'los' | 'range' | 'engaged' | 'unloaded' | 'noammo' }
   | {
       kind: 'ok';
       /** Style de la ligne de visée : pointillée (tir/sort) ou pleine (mêlée, déplacement compris). */
@@ -104,6 +105,13 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
   if (plan.kind === 'blocked') {
     const p = previewAttack(get, active, target);
     return { kind: 'invalid', reason: p.blocked ? 'los' : p.kind === 'melee' && isEngaged(active) ? 'engaged' : 'range' };
+  }
+  // Tir direct (pas une Charge/rejoindre, pas une attaque gratuite) refusé faute de ressource : MÊME
+  // prédicat que le clic (firedAttackBlock) → le réticule annonce « recharger »/« plus de munitions »
+  // au lieu d'une attaque qui se solderait par un log silencieux.
+  if (plan.kind === 'attack' && !option.freeKind) {
+    const block = firedAttackBlock(active, target);
+    if (block) return { kind: 'invalid', reason: block.reason };
   }
   const from = plan.kind === 'attack' ? active : { ...active, pos: plan.dest };
   const p = previewAttack(get, from, target);

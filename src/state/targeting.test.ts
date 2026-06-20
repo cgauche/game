@@ -74,6 +74,27 @@ describe('hoverTargeting — mode neutre (attaque implicite)', () => {
   });
 });
 
+describe('hoverTargeting — tir à Recharge / munition (affordance ≠ log silencieux)', () => {
+  const xbow = { name: 'Arbalète', type: 'ranged', subType: 'arbalete', damage: '+8', range: 4, reload: 3, qualities: [] };
+  const bolts = { uid: 'am1', name: 'Carreaux', kind: 'ammo', subType: 'arbalete', qty: 10, damage: '', qualities: [] };
+  const enemy = () => combatant({ id: 'B', kind: 'enemy', pos: { x: 2, y: 0 } });
+
+  it('arme à Recharge NON chargée → invalid unloaded (le réticule réclame le rechargement)', () => {
+    const a = combatant({ id: 'A', weapons: [xbow] as never, items: [bolts] as never }); // loaded indéfini ⇒ déchargé
+    expect(hoverTargeting(mkGet([a, enemy()]), a, enemy())).toMatchObject({ kind: 'invalid', reason: 'unloaded' });
+  });
+
+  it('même arme CHARGÉE + munition → ok pointillé (le tir part)', () => {
+    const a = combatant({ id: 'A', weapons: [xbow] as never, items: [bolts] as never, loaded: true });
+    expect(hoverTargeting(mkGet([a, enemy()]), a, enemy())).toMatchObject({ kind: 'ok', line: 'dashed', title: 'Arbalète' });
+  });
+
+  it('arme à munition suivie, carquois VIDE → invalid noammo', () => {
+    const a = combatant({ id: 'A', weapons: [xbow] as never, items: [] as never, loaded: true });
+    expect(hoverTargeting(mkGet([a, enemy()]), a, enemy())).toMatchObject({ kind: 'invalid', reason: 'noammo' });
+  });
+});
+
 describe('hoverTargeting — mode incantation', () => {
   const castBattle = (spellId: string) => ({ action: 'cast', selectedSpellId: spellId });
 

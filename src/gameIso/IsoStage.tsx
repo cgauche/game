@@ -390,7 +390,12 @@ export function IsoStage() {
     const ht = hoverTargeting(st, activeH, occ);
     if (ht.kind === 'none') return null;
     if (ht.kind === 'invalid') {
-      const text = ht.reason === 'los' ? '⛔ pas de ligne de vue' : ht.reason === 'engaged' ? '⛔ Engagé — se désengager' : '⛔ hors de portée';
+      const text =
+        ht.reason === 'los' ? '⛔ pas de ligne de vue'
+        : ht.reason === 'engaged' ? '⛔ Engagé — se désengager'
+        : ht.reason === 'unloaded' ? '⛔ Arme déchargée — recharger'
+        : ht.reason === 'noammo' ? '⛔ Plus de munitions'
+        : '⛔ hors de portée';
       return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text }, reticle: false };
     }
     return { fromId: activeH.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note }, preview: ht.preview, reticle: true };
