@@ -51,7 +51,7 @@ import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, occupiesTile } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality } from '../engine/qualities/dispatch';
 import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf } from './triggeredEffects';
-import { hasStealAdvantage, shieldAdvantageLevel, hasRiposte, talentCritExtraWounds, hasSurpriseSave, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf } from '../engine/combatFeatures/dispatch';
+import { hasStealAdvantage, shieldAdvantageLevel, hasRiposte, talentCritExtraWounds, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf } from '../engine/combatFeatures/dispatch';
 import { canStrikeFirst } from '../engine/qualities/dispatch';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
@@ -282,34 +282,48 @@ export function attackWardGate(attacker: Combatant, target: Combatant, rng: RNG 
 // applyZoneCrossings → combatGeometry.ts
 
 /** Surprise au début du combat (LDB 13 l.52-81) : le camp pris en EMBUSCADE (`surprisedSide`) fait, pour
- *  chaque combattant, un Test opposé de Perception vs la Discrétion la plus FAIBLE des embusqueurs (l.77) ;
- *  les vaincus gagnent l'État `Surpris`. Mute les combatants, retourne le journal. */
-export function applySurprise(combatants: Combatant[], surprisedSide: 'party' | 'enemies'): string[] {
+ *  chaque combattant, un Test opposé de Perception vs la Discrétion la plus FAIBLE des embusqueurs (l.77).
+ *  Le Test (héros-atteignable) est ROUTÉ par l'exécuteur de Flow CADENCE-AWARE (`runCombatFlow`) : héros en
+ *  cadence MANUELLE → étape de cascade INFLUENÇABLE (Chance/Résilience) ; embusqué ennemi / héros auto → jet
+ *  inline. L'embusqueur (`sneak`) est le `caster` → l'opposition jette SA Discrétion (figée), Furtif (LDB 85)
+ *  baké en `attackerBonusSL`. Sur défaite du guetteur (branche `fail`) : Vigilance (talent, LDB 10) tente un
+ *  Test de Perception (+0) pour ignorer la Surprise, sinon l'État `Surpris`. Appelée APRÈS la pose du `battle`
+ *  (sujet HORS-TOUR : Round 1 pas encore commencé) ; à la fermeture de la cascade, `resumeSuspendedAI` est un
+ *  no-op (turn -1 = aucun acteur). Plusieurs guetteurs testent : chaque `runCombatFlow` APPEND son étape à la
+ *  MÊME cascade `purpose:'combat'`. Les lignes inline (ennemi/auto) partent dans la file différée → drainées ici. */
+export function applySurprise(get: Get, set: SetFn, surprisedSide: 'party' | 'enemies'): void {
+  const battle = get().battle;
+  if (!battle) return;
   const surprisedKind = surprisedSide === 'party' ? 'hero' : 'enemy';
-  const surprised = combatants.filter((c) => (surprisedKind === 'hero' ? c.kind === 'hero' : c.kind !== 'hero') && !isOutOfAction(c));
-  const ambushers = combatants.filter((c) => (surprisedKind === 'hero' ? c.kind !== 'hero' : c.kind === 'hero') && !isOutOfAction(c));
-  if (!surprised.length || !ambushers.length) return [];
+  const surprised = battle.combatants.filter((c) => (surprisedKind === 'hero' ? c.kind === 'hero' : c.kind !== 'hero') && !isOutOfAction(c));
+  const ambushers = battle.combatants.filter((c) => (surprisedKind === 'hero' ? c.kind !== 'hero' : c.kind === 'hero') && !isOutOfAction(c));
+  if (!surprised.length || !ambushers.length) return;
   // L'embusqueur de référence = la Discrétion la plus FAIBLE du groupe (l.77). Furtif (LDB 85
-  // p.339) : « Ajoutez son bonus d'Agilité au DR de tous ses Tests de Discrétion ».
+  // p.339) : « Ajoutez son bonus d'Agilité au DR de tous ses Tests de Discrétion » → attackerBonusSL.
   const sneak = ambushers.reduce((a, b) => (testValue(b, 'discretion') < testValue(a, 'discretion') ? b : a));
-  const sneakVal = testValue(sneak, 'discretion');
   const sneakDR = skillDRBonus(sneak, 'discretion'); // Furtif : +Bonus d'Agilité au DR (donnée : passive skillDRBonus)
-  const lines: string[] = [];
+  // Conséquence d'une défaite du guetteur : l'État Surpris. Vigilance (talent `vigilance`) interpose AVANT un
+  // Test de Perception (+0) cadence-aware — réussite = pas de Surprise, échec = Surpris.
+  const surprise: Flow = { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', name: COND.surpris, value: 1 }] } };
+  const onLose: Flow = {
+    kind: 'if', cond: { kind: 'has', who: 'target', what: 'talent', value: 'vigilance' },
+    then: testFlow({ skill: 'perception', difficulty: 'intermediaire', label: 'Vigilance' }, EMPTY_FLOW, surprise),
+    else: surprise,
+  };
   for (const c of surprised) {
-    // Embusqueur (Discrétion) vs guetteur (Perception) : si l'embusqueur l'emporte → le guetteur est Surpris.
-    const aT = rollTest(sneakVal, 'intermediaire', battleRng());
-    const dT = rollTest(testValue(c, 'perception'), 'intermediaire', battleRng());
-    if (resolveOpposed({ ...aT, sl: aT.sl + sneakDR }, dT).winner === 'attacker') {
-      // Vigilance (LDB 10) : Test de Perception Intermédiaire (+0) pour ignorer la Surprise.
-      if (hasSurpriseSave(c) && rollTest(testValue(c, 'perception'), 'intermediaire', battleRng()).success) {
-        lines.push(`${c.name} flaire l'embuscade (Vigilance) : pas de Surprise.`);
-        continue;
-      }
-      addCondition(c, COND.surpris);
-      lines.push(`${c.name} est pris par surprise !`);
-    }
+    // Embusqueur (Discrétion, FIGÉE comme attaquant opposé) vs guetteur (Perception, le défenseur qui jette).
+    const flow = testFlow(
+      { skill: 'perception', difficulty: 'intermediaire', label: 'Surprise',
+        opposed: { attacker: 'Ag', attackerSkill: 'discretion', attackerLabel: 'Discrétion', attackerBonusSL: sneakDR } },
+      EMPTY_FLOW, // le guetteur résiste → pas de Surprise
+      onLose,
+    );
+    runCombatFlow({ mode: 'combat', get, set, target: c, caster: sneak, label: 'Surprise' }, flow);
   }
-  return lines;
+  // Inline (embusqué ennemi / héros auto) : les lignes partent dans la file différée → on les folde dans le
+  // journal de combat. Le héros manuel suspend (cascade) et n'en pousse aucune.
+  const drained = drainPendingLog(get, set);
+  if (drained.length) set({ battle: { ...get().battle!, log: [...get().battle!.log, ...drained] } });
 }
 
 // DIR8_RING / isFlankOrRear → combatGeometry.ts

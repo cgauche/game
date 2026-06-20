@@ -271,8 +271,10 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
   // Test OPPOSÉ : PRÉ-JET de l'attaquant (porteur), FIGÉ, AVANT le jet du défenseur — même ordre RNG que
   // `opposedTest()` (attaquant puis défenseur). Référent = `ctx.caster` (Force du porteur).
   const attacker = opp ? ctx.caster : undefined;
+  // L'attaquant figé porte SON éventuel bonus de DR (Furtif sur la Discrétion de l'embusqueur, LDB 85)
+  // baké dans `aT.sl` dès le pré-jet → la voie cascade (meta `aT`) ET la voie inline ré-opposent à l'identique.
   const aT: TestResult | undefined = opp && attacker
-    ? rollTest(testValue(attacker, opp.attackerSkill, opp.attacker), 'intermediaire', battleRng())
+    ? (() => { const r = rollTest(testValue(attacker, opp.attackerSkill, opp.attacker), 'intermediaire', battleRng()); return { ...r, sl: r.sl + (opp.attackerBonusSL ?? 0) }; })()
     : undefined;
   // Piège-lame : on COMPLÈTE le freeze avec le DR de l'attaquant que CE Test jette (`aT`), pour que la
   // conséquence `breakBlade` recompose la marge nette sans re-jeter l'attaquant.

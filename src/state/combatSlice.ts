@@ -1547,7 +1547,9 @@ export function createCombatSlice(get: Get, set: Set) {
       const all = [...heroes, ...enemies];
       // Surprise (LDB 13) : si l'encounter le déclare, le camp embusqué teste Perception vs Discrétion.
       // `noSurprise` : le voyage annule l'embuscade quand le groupe « les voit venir » (Perception réussie).
-      const surpriseLines = enc.surprise && !opts?.noSurprise ? applySurprise(all, enc.surprise) : [];
+      // Le Test (héros-atteignable) est ROUTÉ cadence-aware par `applySurprise` APRÈS la pose du `battle`
+      // (héros manuel → cascade influençable ; embusqué ennemi → inline) — d'où le drapeau retenu ici.
+      const doSurprise = !!enc.surprise && !opts?.noSurprise;
       // Initiative : on fixe l'Initiative de chaque combattant (point nommé `rollInitiative` — seam de la
       // règle « méthode d'Initiative »). Combat instinctif (LDB 10) : +10 × niveau, via talentInitiativeBonus.
       for (const c of all) c.initiative = rollInitiative(c, battleRng());
@@ -1574,7 +1576,7 @@ export function createCombatSlice(get: Get, set: Set) {
         movementUsed: 0,
         movedPreAction: false,
         acted: false,
-        log: [ev('round', `Le combat commence ! (Round 1)`), ...evLines(surpriseLines, 'info')],
+        log: [ev('round', `Le combat commence ! (Round 1)`)],
         over: null,
         onVictory: onVictory ?? enc.onVictory,
         // Pièges/hasards authorés de la scène → zones de bataille PERMANENTES (même runtime que les sorts).
@@ -1585,6 +1587,9 @@ export function createCombatSlice(get: Get, set: Set) {
       // frise, pré-emption « agir en premier » (Chance, #12a) — IA gelée. Un seul bouton « Commencer le combat »
       // (pas de phase « plan d'ensemble » séparée : c'était redondant avec la pause de Round).
       set({ ...resetFields('combatStart'), battle, mode: 'battle', pendingRoundStart: { round: battle.round } });
+      // Surprise APRÈS la pose du `battle` : le Test du guetteur est cadence-aware (héros manuel → cascade
+      // influençable, qui s'OUVRE par-dessus la pause d'ouverture ; embusqué ennemi → inline dans le journal).
+      if (doSurprise) applySurprise(get, set, enc.surprise!);
       get().faceAtCombatStart();
       bus.emit(EVT.SCENE_DIRTY);
     },

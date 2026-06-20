@@ -99,14 +99,17 @@ export function drainPendingLog(get: Get, set: SetFn): import('./combatLog').Com
 }
 
 /** Pousse une ÉTAPE de séquence de combat déjà formée (ex. choix de déviation foldé, P3a) : append à
- *  la séquence `purpose:'combat'` en cours, sinon en démarre une. Même placement que les conséquences. */
+ *  la séquence `purpose:'combat'` en cours, sinon en démarre une. Même placement que les conséquences.
+ *  Quand l'étape OUVRE la cascade (aucune en cours), elle PRÊTE son `label`/`icon` au titre de la
+ *  fenêtre (« Surprise », « Imparfaite »…) — la situation qui l'a ouverte est le titre juste ; repli
+ *  générique « Conséquences » si l'étape n'en porte pas. */
 export function pushCombatStep(set: SetFn, step: CascadeStep): void {
   set((s: GameState) => {
     const c = s.pendingCascade;
     const active = c && c.purpose === 'combat' && c.cursor < c.participants.length ? c : null;
     return active
       ? { pendingCascade: { ...active, participants: [...active.participants, step] } }
-      : { pendingCascade: { title: 'Conséquences', icon: '⚔️', purpose: 'combat', cursor: 0, log: [], participants: [step] } };
+      : { pendingCascade: { title: step.label ?? 'Conséquences', icon: step.icon ?? '⚔️', purpose: 'combat', cursor: 0, log: [], participants: [step] } };
   });
 }
 
