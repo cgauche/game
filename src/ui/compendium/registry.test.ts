@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, codexLookup } from './registry';
+import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, codexLookup, type CodexItem } from './registry';
 import { codexMatch, deburr } from './search';
+import { creatures, findTraitById } from '../../data';
+
+/** Toutes les lignes 'ref' (cross-réf) d'une fiche, sections + onglets confondus. */
+const refLabelsOf = (item: CodexItem): string[] =>
+  [...(item.sections ?? []), ...(item.tabs ?? []).flatMap((t) => t.sections)]
+    .flatMap((s) => s.rows)
+    .flatMap((r) => (r.t === 'ref' ? [r.label] : r.t === 'choice' ? r.options.map((o) => o.label) : []));
 
 describe('Codex registry', () => {
   it('a des catégories, toutes peuplées, à clés uniques', () => {
@@ -36,6 +43,25 @@ describe('Codex registry', () => {
     expect(codexLookup('etats', first.label.toUpperCase())).toBe(first);
     expect(codexLookup('etats', 'libellé inexistant')).toBeUndefined();
     expect(codexLookup('categorie-inexistante', first.label)).toBeUndefined();
+  });
+});
+
+describe('Codex registry — références INVERSES (relations.ts → fiches)', () => {
+  it('la fiche d’un trait liste « Créatures ayant ce trait » (inversion bout-en-bout)', () => {
+    // Donnée → attendu : une créature réelle + son 1er trait → la fiche du trait DOIT la lister.
+    const c = creatures.find((x) => x.traits.length > 0 && findTraitById(x.traits[0].id))!;
+    const trait = findTraitById(c.traits[0].id)!;
+    const item = codexLookup('traits', trait.label);
+    expect(item, trait.label).toBeTruthy();
+    const sec = item!.sections?.find((s) => s.title === 'Créatures ayant ce trait');
+    expect(sec, `${trait.label} → section inverse`).toBeTruthy();
+    expect(sec!.rows.some((r) => r.t === 'ref' && r.label === c.label)).toBe(true);
+  });
+
+  it('la fiche d’une compétence porte des sections inverses (cross-réf cliquables)', () => {
+    // Une compétence très référencée (carac la cite toujours) → au moins une cross-réf inverse.
+    const skills = categoryByKey('skills')!.items;
+    expect(skills.some((s) => refLabelsOf(s).length > 0)).toBe(true);
   });
 });
 

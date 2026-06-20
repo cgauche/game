@@ -18,13 +18,14 @@ import { statName } from '../../engine/statEntry';
 import { splitTopLevelOu } from '../../engine/careerSlots';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import { traitLabels } from '../../engine/traits/dispatch';
-import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, type Combatant, type HitLocation } from '../../engine/types';
+import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, DIFFICULTY_LABELS, type Combatant, type HitLocation } from '../../engine/types';
 import { SIZE_LABEL, effectiveSize } from '../../engine/size';
 import { costPerEnc } from '../../engine/harvest';
-import { formatMoney } from '../../engine/money';
+import { formatMoney, priceToMoney } from '../../engine/money';
 import type { EntityAppearance } from '../../state/scene';
 import type { MutationData } from '../../data/mutations';
-import { passiveSection, effectsSection, careerGrantSection } from './describe';
+import { passiveSection, effectsSection, careerGrantSection, spellFlowSection } from './describe';
+import { reverseGroups } from './relations';
 
 export type CodexGroup = 'Personnage' | 'Compétences' | 'Équipement' | 'Effets' | 'Magie' | 'Monde' | 'Tables';
 
@@ -58,8 +59,9 @@ export type CodexRow =
   | { t: 'text'; text: string; html?: boolean }
   | { t: 'kv'; k: string; v: string }
   /** Lien vers une autre fiche. `label` = clé de résolution (base) ; `show` = libellé affiché,
-   *  qui PORTE les Indices (« 8 Tentacules +8 ») et est transmis au Codex/popover comme instance. */
-  | { t: 'ref'; category: string; label: string; show: string }
+   *  qui PORTE les Indices (« 8 Tentacules +8 ») et est transmis au Codex/popover comme instance.
+   *  `badge` = annotation de fin NON cliquable (rang « N2 », « facultatif », « Bénédiction »…). */
+  | { t: 'ref'; category: string; label: string; show: string; badge?: string }
   /** CHOIX « A ou B » : chaque option est un lien cross-réf cliquable, séparées par « ou ». */
   | { t: 'choice'; category: string; options: { label: string; show: string }[] }
   /** Mini sous-en-tête à l'intérieur d'une section (« Compétences », « Talents »…). */
@@ -115,6 +117,10 @@ const join = (...parts: (string | null | undefined)[]): string | undefined => {
   return s || undefined;
 };
 
+/** Prix d'une possession (`{gold,silver,bronze}`) → libellé monnaie canon, ou null si gratuit/absent. */
+const priceLabel = (p: { gold: number; silver: number; bronze: number } | null | undefined): string | null =>
+  p && (p.gold || p.silver || p.bronze) ? formatMoney(priceToMoney(p)) : null;
+
 /** Famille d'une race/variante : « Humains (Reiklander) » → « Humains ». */
 const family = (label: string): string => label.split(' (')[0].trim();
 
@@ -135,10 +141,29 @@ const chips = (title: string, category: string, items?: string[] | null): CodexS
 const sections = (...xs: (CodexSection | null | undefined | false)[]): CodexSection[] =>
   xs.filter((s): s is CodexSection => !!s && s.rows.length > 0);
 
+/** Sections INVERSES d'une entité (« Créatures ayant ce trait », « Carrières par rang », « Talents le
+ *  conférant »…) dérivées de la brique relationnelle id-based (`relations.ts`). Chaque groupe = une
+ *  section de chips cross-réf cliquables ; le détail (rang/facultatif/Bénédiction) = badge non cliquable.
+ *  Vide si l'entité n'est référencée nulle part. À SPREAD dans `sections(...)`. */
+const reverseSections = (category: string, id: string | undefined): CodexSection[] =>
+  id == null ? [] : reverseGroups(category, id).map((g) => ({
+    title: g.title,
+    layout: 'chips' as const,
+    rows: g.referrers.map((r) => ({ t: 'ref', category: r.category, label: r.label, show: r.label, badge: r.detail } as CodexRow)),
+  }));
+
 /** Libellés FR du déclenchement / ciblage d'une Manœuvre (Codex). */
 const MANEUVER_ACTIVATION_LABEL: Record<string, string> = { action: 'Action', free: 'Gratuite', charge: 'À la Charge' };
 const MANEUVER_TARGETING_LABEL: Record<string, string> = { melee: 'Mêlée', ranged: 'Distance', zone: 'Zone', allFoes: 'Tous les ennemis' };
 const WEAPON_GROUP_KIND_LABEL: Record<string, string> = { weapon: 'Groupe d’arme', ammo: 'Munitions', armour: 'Armure', inventory: 'Inventaire' };
+/** Libellés FR des Symptômes de maladie (LDB 20) — affichage (la donnée porte le `kind` STABLE). */
+const SYMPTOM_LABEL: Record<string, string> = {
+  malaise: 'Malaise', blesse: 'Blessé', fievre: 'Fièvre', persistant: 'Persistant', toxine: 'Toxine',
+  bubons: 'Bubons', convulsions: 'Convulsions', demangeaisons: 'Démangeaisons', gangrene: 'Gangrène',
+  intoxication: 'Intoxication', nausee: 'Nausée', touxEternuements: 'Toux & éternuements',
+};
+/** Libellé d'un jet de dés (`{n,d,plus?}`) — « 1d10 », « 2d10+2 ». */
+const diceLabel = (dc: { n: number; d: number; plus?: number }): string => `${dc.n}d${dc.d}${dc.plus ? `+${dc.plus}` : ''}`;
 
 /**
  * SOURCE UNIQUE du contenu structuré d'une fiche de race — onglets Profil / Carrières / Détails.
@@ -239,29 +264,33 @@ export const CODEX: CodexCategory[] = [
     key: 'careers', label: 'Carrières', group: 'Personnage',
     items: careers.map((c) => ({
       label: c.label, sub: findClassById(c.class)?.label ?? c.class, group: findClassById(c.class)?.label ?? c.class, desc: c.desc, source: src(c.source),
-      sections: levelsForCareer(c.id).map((lv) => ({
-        title: `Niveau ${lv.level} : ${lv.label} — ${lv.status}`,
-        layout: 'chips' as const,
-        rows: [
-          ...(lv.characteristics.length ? [{ t: 'sub', label: 'Caractéristiques avancées' } as CodexRow, { t: 'text', text: lv.characteristics.map((k) => CHAR_LABELS[k]).join(', ') } as CodexRow] : []),
-          ...(lv.skills.length ? [{ t: 'sub', label: 'Compétences' } as CodexRow, ...refRows('skills', lv.skills.map((a) => advancementLabel('skills', a)))] : []),
-          ...(lv.talents.length ? [{ t: 'sub', label: 'Talents' } as CodexRow, ...refRows('talents', lv.talents.map((a) => advancementLabel('talents', a)))] : []),
-          ...(lv.trappings.length ? [{ t: 'sub', label: 'Possessions' } as CodexRow, ...refRows('trappings', lv.trappings.map(trappingRefLabel))] : []),
-        ],
-      })),
+      sections: [
+        ...levelsForCareer(c.id).map((lv) => ({
+          title: `Niveau ${lv.level} : ${lv.label} — ${lv.status}`,
+          layout: 'chips' as const,
+          rows: [
+            ...(lv.characteristics.length ? [{ t: 'sub', label: 'Caractéristiques avancées' } as CodexRow, { t: 'text', text: lv.characteristics.map((k) => CHAR_LABELS[k]).join(', ') } as CodexRow] : []),
+            ...(lv.skills.length ? [{ t: 'sub', label: 'Compétences' } as CodexRow, ...refRows('skills', lv.skills.map((a) => advancementLabel('skills', a)))] : []),
+            ...(lv.talents.length ? [{ t: 'sub', label: 'Talents' } as CodexRow, ...refRows('talents', lv.talents.map((a) => advancementLabel('talents', a)))] : []),
+            ...(lv.trappings.length ? [{ t: 'sub', label: 'Possessions' } as CodexRow, ...refRows('trappings', lv.trappings.map(trappingRefLabel))] : []),
+          ],
+        })),
+        ...reverseSections('careers', c.id), // Races y accédant
+      ],
     })),
   },
   {
     key: 'characteristics', label: 'Caractéristiques', group: 'Personnage',
     items: (characteristics as { label: string; abr?: string; desc?: string; source?: CodexSource }[]).map((c) => ({
       label: c.label, sub: c.abr, desc: c.desc, source: src(c.source),
+      sections: sections(...reverseSections('characteristics', c.abr)),
     })),
   },
   {
     key: 'classes', label: 'Classes', group: 'Personnage',
     items: classes.map((c) => ({
       label: c.label, desc: c.desc, source: src(c.source),
-      sections: sections(chips('Possessions de départ', 'trappings', c.trappings.map(trappingRefLabel))),
+      sections: sections(chips('Possessions de départ', 'trappings', c.trappings.map(trappingRefLabel)), ...reverseSections('classes', c.id)),
     })),
   },
   {
@@ -274,7 +303,11 @@ export const CODEX: CodexCategory[] = [
   },
   {
     key: 'skills', label: 'Compétences', group: 'Compétences',
-    items: skills.map((s) => ({ label: s.label, sub: join(CHAR_LABELS[s.characteristic], s.type), desc: s.desc, source: src(s.source) })),
+    items: skills.map((s) => ({
+      label: s.label, sub: join(CHAR_LABELS[s.characteristic], s.type), desc: s.desc, source: src(s.source),
+      meta: facts(fact('Caractéristique', CHAR_LABELS[s.characteristic]), fact('Type', s.type), fact('Spécialisations', s.specs.length ? s.specs.join(', ') : null)),
+      sections: sections(...reverseSections('skills', s.id)),
+    })),
   },
   {
     key: 'talents', label: 'Talents', group: 'Compétences',
@@ -285,6 +318,7 @@ export const CODEX: CodexCategory[] = [
         careerGrantSection(t.passive), // Compétence/Talent ajouté à toute carrière (Maître artisan, Flagellant…)
         passiveSection(t.passive),
         effectsSection(t.effects, 'Effets déclenchés'),
+        ...reverseSections('talents', t.id), // Races · Carrières (rang) · Créatures · Talents le conférant
       ),
     })),
   },
@@ -292,19 +326,19 @@ export const CODEX: CodexCategory[] = [
     key: 'trappings', label: 'Possessions', group: 'Équipement',
     items: trappings.map((t) => ({
       label: t.label, sub: join(t.type, weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, html: true, source: src(t.source),
-      meta: facts(fact('Enc', t.enc), fact('Disponibilité', t.availability), fact('Dégâts', t.damage), fact('PA', t.pa), fact('Allonge', t.reach)),
-      sections: sections(chips('Qualités', 'qualities', t.qualities.map(qualityRefLabel))),
+      meta: facts(fact('Prix', priceLabel(t.price)), fact('Enc', t.enc), fact('Disponibilité', t.availability), fact('Dégâts', t.damage), fact('PA', t.pa), fact('Allonge', t.reach)),
+      sections: sections(chips('Qualités', 'qualities', t.qualities.map(qualityRefLabel)), ...reverseSections('trappings', t.id)),
     })),
   },
   {
     key: 'weaponGroups', label: 'Groupes d’objet', group: 'Équipement',
-    items: weaponGroups.map((g) => ({ label: g.label, sub: WEAPON_GROUP_KIND_LABEL[g.kind] })),
+    items: weaponGroups.map((g) => ({ label: g.label, sub: WEAPON_GROUP_KIND_LABEL[g.kind], sections: sections(...reverseSections('weaponGroups', g.id)) })),
   },
   {
     key: 'qualities', label: 'Qualités', group: 'Équipement',
-    items: (qualities as { label: string; type?: string; subType?: string; desc?: string; source?: CodexSource; passive?: import('../../engine/ops').GameOp[] }[]).map((q) => ({
+    items: (qualities as { id: string; label: string; type?: string; subType?: string; desc?: string; source?: CodexSource; passive?: import('../../engine/ops').GameOp[]; effects?: import('../../state/flow').TriggeredEffect[] }[]).map((q) => ({
       label: q.label, sub: join(q.type, q.subType), desc: q.desc, html: true, source: src(q.source),
-      sections: sections(passiveSection(q.passive)),
+      sections: sections(passiveSection(q.passive), effectsSection(q.effects, 'Effets déclenchés'), ...reverseSections('qualities', q.id)),
     })),
   },
   {
@@ -313,7 +347,22 @@ export const CODEX: CodexCategory[] = [
   },
   {
     key: 'maladies', label: 'Maladies', group: 'Effets',
-    items: maladies.map((m) => ({ label: m.name, sub: m.symptoms.map((s) => s.kind).join(', ') })),
+    items: maladies.map((m) => ({
+      label: m.name,
+      sub: m.symptoms.map((s) => SYMPTOM_LABEL[s.kind] ?? s.kind).join(', '),
+      meta: facts(
+        fact('Contraction', DIFFICULTY_LABELS[m.contractDifficulty]),
+        fact('Incubation', `${diceLabel(m.incubation)} jours`),
+        fact('Durée', `${diceLabel(m.duration)} jours`),
+      ),
+      sections: sections({
+        title: 'Symptômes', layout: 'list',
+        rows: m.symptoms.map((s) => ({
+          t: 'kv', k: SYMPTOM_LABEL[s.kind] ?? s.kind,
+          v: [s.severity === 'grave' ? 'Grave' : s.severity === 'moderee' ? 'Modérée' : null, s.difficulty ? `Test ${DIFFICULTY_LABELS[s.difficulty]}` : null].filter(Boolean).join(' · ') || '—',
+        } as CodexRow)),
+      }),
+    })),
   },
   {
     key: 'mutations', label: 'Mutations', group: 'Effets',
@@ -345,6 +394,7 @@ export const CODEX: CodexCategory[] = [
         fact('Portée', m.range),
         fact('Cible', MANEUVER_TARGETING_LABEL[m.targeting]),
       ),
+      sections: sections(...reverseSections('maneuvers', m.id)),
     })),
   },
   {
@@ -356,14 +406,22 @@ export const CODEX: CodexCategory[] = [
         fact('Bonus d’incantation', d.castBonus ? `+${d.castBonus.bonus} par « ${d.castBonus.perCondition} » à ≤ B${d.castBonus.radiusStat} m` : null),
         fact('Post-incantation', d.afterCast?.grantTrait ? `${d.afterCast.grantTrait} (1d${d.afterCast.durationDice ?? 1} Rounds)` : null),
       ),
-      sections: sections(effectsSection(d.effects, 'Riders à la touche')),
+      sections: sections(effectsSection(d.effects, 'Riders à la touche'), ...reverseSections('domains', d.id)),
     })),
   },
   {
     key: 'spells', label: 'Sorts', group: 'Magie',
     items: spells.map((s) => ({
       label: s.label, sub: join(s.type, s.subType), desc: s.desc, html: true, source: src(s.source),
-      meta: facts(fact('NI', s.cn), fact('Portée', s.range), fact('Cible', s.target), fact('Durée', s.duration)),
+      meta: facts(
+        fact('NI', s.cn), fact('Portée', s.range), fact('Cible', s.target), fact('Durée', s.duration),
+        // Projectile magique (#2 data-driven) : Dégâts additifs + DR + BFM, ignore éventuellement PA/BE.
+        fact('Projectile', s.missile ? `Dégâts ${s.damage ?? 0} + DR + BFM${s.ignorePA ? ' · ignore PA' : ''}${s.ignoreBE ? ' · ignore BE' : ''}` : null),
+      ),
+      sections: sections(
+        spellFlowSection(s.effects), // Effet mécanique (Flow) — #5 data-driven
+        ...reverseSections('spells', s.id), // Cultes (Bénédictions/Miracles) · Créatures · Domaine
+      ),
     })),
   },
   {
@@ -412,6 +470,7 @@ export const CODEX: CodexCategory[] = [
       sections: sections(
         chips('Manœuvres conférées', 'maneuvers', (t.grantsManeuvers ?? []).map((r) => refLabel('maneuvers', r))),
         passiveSection(t.passive), effectsSection(t.effects),
+        ...reverseSections('traits', t.id), // Créatures ayant ce trait · Mutations le conférant
       ),
     })),
   },

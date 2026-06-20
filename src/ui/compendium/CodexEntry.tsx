@@ -32,7 +32,7 @@ function CodexRowView({ row }: { row: CodexRow }) {
         <p className="codex-rowtext">{row.text}</p>
       );
     case 'ref':
-      return <EntityRef category={row.category} label={row.label} show={row.show} instance={row.show} />;
+      return <EntityRef category={row.category} label={row.label} show={row.show} instance={row.show} badge={row.badge} />;
     case 'choice':
       // « A ou B » : rendu via la brique PARTAGÉE (identique partout — Codex et écrans).
       return <ChoiceChips category={row.category} options={row.options} />;

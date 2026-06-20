@@ -1,0 +1,75 @@
+import { describe, it, expect } from 'vitest';
+import { reverseGroups, bookContents, labelIndex } from './relations';
+import { creatures, traits, gods, trappings, skills, careerLevels, findCareerById } from '../../data';
+
+/** Un groupe inverse de catégorie `cat` contient-il `label` ? */
+const groupHas = (groups: ReturnType<typeof reverseGroups>, cat: string, label: string): boolean =>
+  groups.find((g) => g.category === cat)?.referrers.some((r) => r.label === label) ?? false;
+
+describe('relations — graphe inverse id-based', () => {
+  it('trait → créatures le portant (inversion de creature.traits)', () => {
+    // Prend une créature réelle + son 1er trait → l'inverse DOIT la lister.
+    const c = creatures.find((x) => x.traits.length > 0)!;
+    const traitId = c.traits[0].id;
+    const groups = reverseGroups('traits', traitId);
+    expect(groupHas(groups, 'creatures', c.label)).toBe(true);
+    // Le titre de la section est la phrase descriptive (display), pas le nom brut.
+    expect(groups.find((g) => g.category === 'creatures')?.title).toBe('Créatures ayant ce trait');
+  });
+
+  it('sort → culte qui l’accorde (inversion de gods.blessings/miracles), avec détail', () => {
+    const g = gods.find((x) => x.blessings.length > 0)!;
+    const spellId = g.blessings[0].id;
+    const groups = reverseGroups('spells', spellId);
+    const godGroup = groups.find((gr) => gr.category === 'gods');
+    expect(godGroup?.referrers.some((r) => r.label === g.key && r.detail === 'Bénédiction')).toBe(true);
+  });
+
+  it('qualité → équipements la portant (inversion de trapping.qualities)', () => {
+    const t = trappings.find((x) => x.qualities.length > 0)!;
+    const qid = t.qualities[0].id;
+    const groups = reverseGroups('qualities', qid);
+    expect(groupHas(groups, 'trappings', t.label)).toBe(true);
+  });
+
+  it('caractéristique → compétences liées (inversion de skill.characteristic)', () => {
+    const s = skills[0];
+    const groups = reverseGroups('characteristics', s.characteristic);
+    expect(groupHas(groups, 'skills', s.label)).toBe(true);
+  });
+
+  it('compétence → carrière par rang, détail « N{level} » fusionné', () => {
+    // Une compétence d'un niveau de carrière → l'inverse liste la CARRIÈRE avec son rang.
+    const lv = careerLevels.find((l) => l.skills.some((a) => 'ref' in a))!;
+    const career = findCareerById(lv.career)!;
+    const skillId = lv.skills.flatMap((a) => ('ref' in a ? [a.ref.id] : []))[0];
+    const groups = reverseGroups('skills', skillId);
+    const careerRef = groups.find((g) => g.category === 'careers')?.referrers.find((r) => r.label === career.label);
+    expect(careerRef).toBeTruthy();
+    expect(careerRef!.detail).toMatch(/N\d/);
+  });
+
+  it('entité non référencée → aucun groupe', () => {
+    expect(reverseGroups('traits', '___inexistant___')).toEqual([]);
+  });
+
+  it('bookContents(LDB) groupe le contenu par catégorie', () => {
+    const contents = bookContents('LDB');
+    expect(contents.length).toBeGreaterThan(0);
+    // Les talents du LDB doivent apparaître.
+    const tCat = contents.find((c) => c.category === 'talents');
+    expect(tCat && tCat.labels.length).toBeGreaterThan(0);
+    // Trié alpha à l'intérieur d'une catégorie.
+    if (tCat) expect([...tCat.labels]).toEqual([...tCat.labels].sort((a, b) => a.localeCompare(b, 'fr')));
+  });
+
+  it('labelIndex résout un libellé connu, écarte les ambigus/courts', () => {
+    const idx = labelIndex();
+    const t = traits.find((x) => x.label.length >= 4)!;
+    // Un libellé unique se résout vers sa catégorie ; un libellé absent → undefined.
+    const hit = idx.get(t.label.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase());
+    // (peut être absent si homonyme entre catégories — mais alors c'est volontairement écarté, pas une fausse résolution)
+    if (hit) expect(hit.label).toBe(t.label);
+    expect([...idx.keys()].every((k) => k.length >= 4)).toBe(true);
+  });
+});

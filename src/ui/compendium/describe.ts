@@ -89,3 +89,11 @@ export function effectsSection(effects: TriggeredEffect[] | undefined, title = '
   const rows = effectRows(effects);
   return rows.length ? { title, layout: 'list', rows } : null;
 }
+
+/** Effet MÉCANIQUE d'un Sort (`Flow` éditable : do/if/test) → section lisible (réutilise `flowSummary`).
+ *  Source unique de la projection des effets de sort au Codex (≠ desc narrative). Vide → null. */
+export function spellFlowSection(flow: Flow | undefined, title = 'Effet mécanique'): CodexSection | null {
+  if (!flow) return null;
+  const text = flowSummary(flow);
+  return text ? { title, layout: 'list', rows: [{ t: 'text', text }] } : null;
+}
