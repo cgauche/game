@@ -51,6 +51,19 @@ function reset() {
   });
 }
 
+/** Résout la cascade de fin de combat (Tests de Résistance maladie/Corruption influençables, ouverte AVANT
+ *  l'écran de victoire quand un héros survivant est conscient et a affronté des créatures corrompues /
+ *  porte un marqueur de maladie). Lance chaque étape puis valide, jusqu'à `finishCombatEnd` → victoire. */
+function drainCombatEndCascade() {
+  for (let guard = 0; guard < 30; guard++) {
+    const p = useGame.getState().pendingCascade;
+    if (!p?.combatEndBoundary) break;
+    const cur = p.participants[p.cursor];
+    if (cur?.target != null && !cur.result) useGame.getState().cascadeRoll(cur.id);
+    useGame.getState().cascadeNext();
+  }
+}
+
 describe('Boucle de jeu (store)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -114,7 +127,8 @@ describe('Boucle de jeu (store)', () => {
     const order = [...enemyIds, heroId];
     useGame.setState({ battle: { ...b, combatants, order, turn: order.length - 2 }, pendingReveals: [] });
 
-    useGame.getState().battleEndTurn(); // → advanceTurn → prochain acteur = héros → checkBattleOver → victoire → writeback
+    useGame.getState().battleEndTurn(); // → advanceTurn → prochain acteur = héros → checkBattleOver → cascade de fin de combat
+    drainCombatEndCascade(); // mutants Corrompus → Test de Résistance influençable AVANT victoire → on le résout
 
     const st = useGame.getState();
     expect(st.battle?.over).toBe('victory');
@@ -493,6 +507,7 @@ describe('Boucle de jeu (store)', () => {
     const order = [...combatants.filter((c) => c.kind === 'enemy').map((c) => c.id), h.id];
     useGame.setState({ battle: { ...b, combatants, order, turn: order.length - 2 }, pendingReveals: [] });
     useGame.getState().battleEndTurn();
+    drainCombatEndCascade(); // mutants Corrompus → cascade de fin de combat AVANT victoire
     expect(useGame.getState().battle?.over).toBe('victory');
     expect(useGame.getState().party[0].items!.find((i) => i.name === witem.name)!.damageTaken).toBe(1);
     // (3) Combat suivant : l'usure est ré-importée (carry-in + recomputeLoadout).

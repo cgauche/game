@@ -357,6 +357,12 @@ export function buildApi() {
         },
       });
       checkBattleOver(() => useGame.getState(), useGame.setState);
+      // La victoire peut ouvrir une cascade de fin de combat (Tests de Résistance maladie/Corruption) AVANT
+      // l'écran de victoire — recette : on la résout d'office (sans influence) pour atteindre la victoire.
+      if (useGame.getState().pendingCascade?.combatEndBoundary) {
+        useGame.getState().cascadeResolveAll();
+        useGame.getState().cascadeFinish();
+      }
       return `✅ ${slain.length} ennemi(s) éliminé(s) — ${useGame.getState().battle?.over ?? 'combat en cours'}`;
     },
 

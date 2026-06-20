@@ -91,13 +91,13 @@ export function setCascadeChoice(get: Get, set: Set, stepId: string, key: string
 export function startCascade(
   get: Get,
   set: Set,
-  opts: { title: string; icon?: string; purpose: PendingCascade['purpose']; steps: CascadeStep[]; log?: string[]; travelHalt?: boolean; roundBoundary?: boolean },
+  opts: { title: string; icon?: string; purpose: PendingCascade['purpose']; steps: CascadeStep[]; log?: string[]; travelHalt?: boolean; roundBoundary?: boolean; combatEndBoundary?: boolean },
 ): void {
   if (!opts.steps.length) return;
   set({
     pendingCascade: {
       title: opts.title, icon: opts.icon, purpose: opts.purpose,
-      participants: opts.steps, cursor: 0, log: opts.log ?? [], travelHalt: opts.travelHalt, roundBoundary: opts.roundBoundary,
+      participants: opts.steps, cursor: 0, log: opts.log ?? [], travelHalt: opts.travelHalt, roundBoundary: opts.roundBoundary, combatEndBoundary: opts.combatEndBoundary,
     },
   });
 }

@@ -775,6 +775,10 @@ export interface PendingCascade extends MultiPending<CascadeStep> {
   /** Cascade de PEUR de FIN de Round (combat) : à sa fermeture, le store ré-appelle `resolveRoundBoundary`
    *  pour enchaîner sur la pause de début de Round (la Peur est désormais marquée testée ce Round). */
   roundBoundary?: boolean;
+  /** Cascade de FIN DE COMBAT (Tests de Résistance maladie/Corruption des héros survivants, LDB 18/19/20)
+   *  ouverte AVANT l'écran de victoire : à sa fermeture, le store enchaîne sur `finishCombatEnd` (writeback
+   *  + écran de victoire/défaite) au lieu de reprendre l'IA. */
+  combatEndBoundary?: boolean;
 }
 
 /** Soin de Guérison en attente (LDB 09-Compétences) : flux modale — « Lancer » (healRoll) → Chance

@@ -6,7 +6,7 @@
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
 import type { LootGear, PendingCast, PendingDeviation, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze } from './pendings';
-import { Combatant, ItemInstance, HitLocation, Weapon, DIFFICULTY_MODIFIERS, HIT_LOCATION_LABELS } from '../engine/types';
+import { Combatant, ItemInstance, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS, HIT_LOCATION_LABELS } from '../engine/types';
 import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
 import { ev, evLines, type CombatEventKind } from './combatLog';
@@ -95,18 +95,18 @@ import { rollMiscast, componentDowngrade, type MiscastSeverity } from '../engine
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } from '../engine/skills';
-import { findManeuverById, findDomainById, findTalentById } from '../data';
+import { findManeuverById, findDomainById, findTalentById, diseaseLabel } from '../data';
 import { norm } from '../lib/normalize';
 import { recomputeLoadout, weaponWithAmmo, compatibleAmmo, ammoFamily, damageArmour, buildWeapon } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, COND } from '../engine/conditions';
+import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, combatTestPenalty, COND } from '../engine/conditions';
 import { creatureAttacks, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { suffocationTick } from '../engine/suffocation';
 import { domainOnHitEffects, domainMissileMods, domainAfterCast, hasArcaneTalent } from '../engine/domainAttributes';
 import { losBlockingTiles, decayZones, zonesRoundTick, crossZones, discTiles, wallTiles, metersToTiles, resolveZoneMeters, type BattleZone } from './zones';
 import { carryOverState } from '../engine/persistence';
-import { rollContraction, contractDisease, hasActiveSymptom, contagiousDiseases, DISEASE_DEFS } from '../engine/disease';
+import { rollContraction, contractDisease, contractionDue, applyContraction, hasActiveSymptom, contagiousDiseases, DISEASE_DEFS } from '../engine/disease';
 import { hasHealSkill, type HealMode } from '../engine/healing';
 import { openMedic } from './medicFlow';
 import { openRest, placesOfKind } from './restFlow';
@@ -166,7 +166,7 @@ export * from './combatManeuvers';
 export * from './combatHooks';
 export * from './combatSetup';
 import { runCombatHooks } from './combatHooks';
-import { collectHeroRoundEndUpkeep } from './combat/roundHooks';
+import { collectHeroRoundEndUpkeep, roundTestInteractive } from './combat/roundHooks';
 import { endFrenzyIfDone, fireTurnStartTriggers, fireTurnEndTriggers } from './combat/turnHooks'; // usage interne (cascade psy héros, psychStepFor ; effets de bord de tour)
 export { brokenRecovery, collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour broken-recovery.test / cascade d'upkeep
 export * from './combat/triggeredTest'; // baril : enregistre l'applier de cascade `triggeredTest` + installe le routeur de Test des triggers (effet de bord)
@@ -3067,78 +3067,179 @@ export function castWardPenalty(s: GameState, target: Combatant, spell: SpellLik
   return warded ? -20 : 0;
 }
 
+/** Un Test de Contraction de fin de combat DÛ pour un héros (LDB 18/20) : la maladie, sa difficulté de
+ *  Résistance et le libellé d'exposition. Le `resistVal` (Résistance effective) est figé à la décision. */
+interface CombatEndDiseaseTest { disease: string; difficulty: Difficulty; label: string }
+
+/** Valeur de Résistance d'un héros pour les Tests de Contraction (E + avances de Résistance) — figée à la
+ *  décision pour rester stable entre la pose de l'étape et sa résolution. */
+function combatEndResistVal(c: Combatant): number {
+  return effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
+}
+
+/**
+ * DÉCIDE et CONSOMME les Tests de fin de combat DUS pour le héros `c` (LDB 18 l.382/20 l.72/20 l.32-49 +
+ * LDB 19 Corruption) — SOURCE UNIQUE de la décision : les marqueurs (`tookCriticalThisFight`/`woundDressed`/
+ * `woundedByInfected`/`woundedByRodent`/`diseaseExposure`) sont purgés ICI (idempotent). Retourne la LISTE
+ * des Tests de Contraction de maladie dus + le NIVEAU d'exposition à la Corruption (worst des créatures
+ * affrontées), ou `null` pour la Corruption si aucune. PUR de RNG (aucun jet) : le jet vit dans l'étape de
+ * cascade (héros manuel) OU dans la résolution inline (non-interactif).
+ */
+function decideCombatEndHeroTests(
+  c: Combatant, worstCorruption: import('../engine/corruption').ExposureLevel | null,
+): { diseases: CombatEndDiseaseTest[]; corruption: import('../engine/corruption').ExposureLevel | null } {
+  const dm = rule('disease-mode') as string;
+  const diseases: CombatEndDiseaseTest[] = [];
+  // Infection Mineure post-critique (LDB 20 l.72) : Résistance Très Facile (+60) — sauf blessure PANSÉE
+  // (LDB 18 l.382). Règle « Utilisation des Maladies » : seul 'full' (RAW) applique l'Infection Mineure.
+  if (c.tookCriticalThisFight) {
+    const dressed = c.woundDressed;
+    if (!c.dead && !dressed && dm === 'full' && contractionDue(c, 'infection-mineure'))
+      diseases.push({ disease: 'infection-mineure', difficulty: 'tresFacile', label: 'Infection (Blessure critique)' });
+  }
+  c.tookCriticalThisFight = false; // consommé (idempotent)
+  c.woundDressed = false;
+  // Traits Infecté / Maladie (Type) (LDB 20 l.32/49 ; LDB 85 p.340) — 'off' : aucune contraction.
+  if (dm !== 'off' && !c.dead) {
+    if (c.woundedByInfected && contractionDue(c, 'blessure-purulente'))
+      diseases.push({ disease: 'blessure-purulente', difficulty: 'facile', label: 'Blessure Purulente (Infecté)' });
+    if (c.woundedByRodent && contractionDue(c, 'fievre-du-rongeur'))
+      diseases.push({ disease: 'fievre-du-rongeur', difficulty: 'accessible', label: 'Fièvre du Rongeur' });
+    for (const diseaseId of c.diseaseExposure ?? []) {
+      const def = DISEASE_DEFS[diseaseId];
+      if (def && contractionDue(c, def.id)) diseases.push({ disease: def.id, difficulty: def.contractDifficulty, label: `Contagion (${diseaseLabel(def.id)})` });
+    }
+  }
+  c.woundedByInfected = false;
+  c.woundedByRodent = false;
+  c.diseaseExposure = undefined;
+  return { diseases, corruption: c.dead ? null : worstCorruption };
+}
+
+/** Pire Degré d'EXPOSITION à la Corruption des créatures affrontées (LDB 85 p.338 → LDB 19) — `null`
+ *  si aucune créature corrompue. Le niveau s'applique à TOUS les héros survivants (avoir affronté). */
+function worstCorruptionExposure(battle: BattleState): { level: import('../engine/corruption').ExposureLevel; label: string } | null {
+  const degrees = battle.combatants
+    .filter((c) => c.kind !== 'hero')
+    .flatMap((c) => (c.traits ?? []).filter((t) => t.id === 'corruption').map((t) => t.arg).filter(Boolean));
+  if (!degrees.length) return null;
+  const rank = { mineure: 0, modérée: 1, majeure: 2 } as Record<string, number>;
+  const worst = degrees.reduce((a, b) => (rank[b!.toLowerCase()] > rank[a!.toLowerCase()] ? b : a))!;
+  const level = worst.toLowerCase() === 'majeure' ? 'majeure' : worst.toLowerCase() === 'modérée' ? 'moderee' : 'mineure';
+  return { level, label: worst };
+}
+
+/** Résout INLINE (jet silencieux + conséquence) les Tests de fin de combat d'un héros NON-INTERACTIF
+ *  (monstre/héros auto, ou cible hors d'action / défaite) — même conséquence que les appliers de cascade,
+ *  lignes au journal. Le worst d'exposition à la Corruption est passé (figé). */
+function resolveCombatEndHeroTestsInline(
+  get: Get, set: SetFn, c: Combatant,
+  corr: { level: import('../engine/corruption').ExposureLevel; label: string } | null,
+): string[] {
+  const lines: string[] = [];
+  const decided = decideCombatEndHeroTests(c, corr?.level ?? null);
+  const resVal = combatEndResistVal(c);
+  for (const d of decided.diseases) {
+    const t = rollTest(resVal, d.difficulty, battleRng());
+    lines.push(...applyContraction(c, d.disease, t.success, battleRng()));
+  }
+  if (decided.corruption && corr) {
+    const t = rollTest(testValue(c, 'resistance'), 'intermediaire', battleRng());
+    const gain = corruptionGain(decided.corruption, t.success, Math.max(0, t.sl));
+    lines.push(`${c.name} — exposition à la Corruption (${corr.label}) : Résistance ${t.roll}/${t.target}${gain ? '' : ', résiste'}.`);
+    if (gain > 0) lines.push(...gainCorruption(get, set, c, gain));
+  }
+  return lines;
+}
+
+/**
+ * CASCADE de fin de combat (LDB 18/19/20) — extrait les JETS HÉROS de fin de combat de `finalizeBattle`
+ * pour les rendre cadence-aware AVANT l'écran de victoire. Pour chaque héros vivant :
+ *  - INTERACTIF (héros en cadence MANUELLE, conscient) → étapes INFLUENÇABLES (`combatEndDisease` par
+ *    maladie, `combatEndCorruption` si exposition) — Chance/Résilience offertes, conséquence à la validation.
+ *  - sinon (auto/rapide, ou hors d'action — défaite) → jet SILENCIEUX inline (journal), comme avant.
+ * Les marqueurs sont CONSOMMÉS ici (source unique). La cascade ouverte porte `combatEndBoundary:true` :
+ * à sa fermeture, le store enchaîne sur `finishCombatEnd` (writeback + écran de victoire). RNG-free pour
+ * les héros interactifs (le jet vit dans l'étape) ; les non-interactifs consomment `battleRng` inline.
+ */
+export function openCombatEndCascade(get: Get, set: SetFn): void {
+  const battle = get().battle;
+  if (!battle) return;
+  const corr = worstCorruptionExposure(battle);
+  const steps: import('./pendings').CascadeStep[] = [];
+  const inlineLines: string[] = [];
+  for (const c of battle.combatants) {
+    if (c.kind !== 'hero' || c.dead) continue;
+    // Non-interactif (auto/rapide) OU hors d'action (Inconscient — défaite) → jet inline silencieux.
+    if (!roundTestInteractive(c) || isOutOfAction(c)) { inlineLines.push(...resolveCombatEndHeroTestsInline(get, set, c, corr)); continue; }
+    const decided = decideCombatEndHeroTests(c, corr?.level ?? null);
+    const resVal = combatEndResistVal(c);
+    for (const d of decided.diseases) {
+      steps.push({
+        id: `combatEndDisease-${c.id}-${d.disease}`, kind: 'combatEndDisease', actorId: c.id, icon: '🤢',
+        rollLabel: 'Résistance', base: resVal, target: resVal + DIFFICULTY_MODIFIERS[d.difficulty] + combatTestPenalty(c),
+        label: `🤢 ${d.label}`, meta: { disease: d.disease },
+      });
+    }
+    if (decided.corruption && corr) {
+      const res = testValue(c, 'resistance');
+      steps.push({
+        id: `combatEndCorruption-${c.id}`, kind: 'combatEndCorruption', actorId: c.id, icon: '🧬',
+        rollLabel: 'Résistance', base: res, target: res + DIFFICULTY_MODIFIERS.intermediaire + combatTestPenalty(c),
+        label: `🧬 Exposition à la Corruption (${corr.label})`, meta: { level: corr.level, exposureLabel: corr.label },
+      });
+    }
+  }
+  if (inlineLines.length) set({ journal: [...get().journal.slice(-40), ...inlineLines] });
+  if (steps.length) startCascade(get, set, { title: 'Conséquences du combat', icon: '🩸', purpose: 'combat', steps, combatEndBoundary: true });
+}
+
+/** Applier d'une étape `combatEndDisease` (LDB 18/20) : Test de Résistance RÉSOLU → échec = contracte la
+ *  maladie (`applyContraction`). Lit `step.result` (posé par `FLOWS.cascade`) + `step.meta.disease`. */
+registerCascadeApplier('combatEndDisease', (get, set, step, hero) => {
+  if (!hero || !step.result) return;
+  const disease = typeof step.meta?.disease === 'string' ? step.meta.disease : undefined;
+  if (!disease) return;
+  const lines = applyContraction(hero, disease, step.result.success, battleRng());
+  set({ party: [...get().party] });
+  if (get().battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
+  return { journal: lines.length ? lines : [`${hero.name} résiste à l’infection.`] };
+});
+
+/** Applier d'une étape `combatEndCorruption` (LDB 19) : Test de Résistance RÉSOLU → `corruptionGain` selon
+ *  le niveau et le DR, puis `gainCorruption` (seuil/mutation via sa propre modale). */
+registerCascadeApplier('combatEndCorruption', (get, set, step, hero) => {
+  if (!hero || !step.result) return;
+  const level = step.meta?.level as import('../engine/corruption').ExposureLevel | undefined;
+  const label = typeof step.meta?.exposureLabel === 'string' ? step.meta.exposureLabel : '';
+  if (!level) return;
+  const gain = corruptionGain(level, step.result.success, Math.max(0, step.result.sl));
+  const lines = [`${hero.name} — exposition à la Corruption (${label}) : Résistance ${step.result.roll}/${step.result.target}${gain ? '' : ', résiste'}.`];
+  if (gain > 0) lines.push(...gainCorruption(get, set, hero, gain));
+  set({ party: [...get().party] });
+  if (get().battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
+  return { journal: lines };
+});
+
 /** Fin de combat : réécrit l'état persistant de chaque héros (Blessures, critiques, mort, États
- *  persistants) vers `party`. Idempotent ; les champs non persistants du membre party sont conservés. */
+ *  persistants) vers `party`. Idempotent ; les champs non persistants du membre party sont conservés.
+ *  Les JETS HÉROS de fin de combat (maladie/Corruption) sont résolus AVANT (cascade `openCombatEndCascade`
+ *  ou inline) — ici, on ne fait QUE le writeback (les marqueurs ont déjà été consommés). */
 export function finalizeBattle(get: Get, set: SetFn): void {
   const { battle, party } = get();
   if (!battle) return;
   // Effets « fin de combat » authorés de chaque combattant survivant (inerte tant qu'aucune donnée ne
   // porte un effet `onCombatEnd`) → collectés dans le journal de fin de combat.
-  const infectLog: string[] = [];
+  const endLines: string[] = [];
   for (const c of battle.combatants) {
     if (isOutOfAction(c)) continue;
-    infectLog.push(...fireTriggers(get, c, 'onCombatEnd', { rng: battleRng(), set }));
-  }
-  // « Après un combat où vous avez subi une Blessure critique » (LDB 20 l.72) : Test de Résistance Très
-  // Facile (+60) ou Infection Mineure. Auto-résolu (comme le Test de Résistance interne d'un critique) sur
-  // les héros survivants ; mute le combattant AVANT le report d'état (carryOverState copie `diseases`).
-  // Règle optionnelle « Utilisation des Maladies » (LDB 20 l.36) : full (RAW) / situational (pas
-  // d'Infection Mineure post-critique mais garde Infecté/Maladie — Skavens/Nurgle) / off (aucune maladie ;
-  // les marqueurs sont quand même purgés pour ne pas reporter au combat suivant).
-  const dm = rule('disease-mode') as string;
-  for (const c of battle.combatants) {
-    if (c.kind !== 'hero' || !c.tookCriticalThisFight) continue;
-    const dressed = c.woundDressed; // pansement/Guérison pendant le combat → pas d'Infection (LDB 18 l.382)
-    c.tookCriticalThisFight = false; // consommé (idempotent même si finalizeBattle est rappelé)
-    c.woundDressed = false;
-    if (c.dead || dressed || dm !== 'full') continue; // 'situational'/'off' : pas d'Infection Mineure post-critique
-    const resVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
-    infectLog.push(...rollContraction(c, 'infection-mineure', resVal, 'tresFacile', battleRng()));
-  }
-  // Trait Infecté (LDB 20 l.32/49) : blessé par une créature Infectée → Résistance Facile (+40) ou
-  // Blessure Purulente ; blessé par un RONGEUR Infecté → aussi Résistance Accessible (+20) ou Fièvre
-  // du Rongeur. Trait Maladie (Type) (LDB 85 p.340) : Test de Contraction de la maladie portée.
-  for (const c of battle.combatants) {
-    if (c.kind !== 'hero' || c.dead) continue;
-    if (dm !== 'off') { // 'off' : aucune contraction (les marqueurs sont purgés ci-dessous quoi qu'il arrive)
-      const resVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
-      if (c.woundedByInfected) infectLog.push(...rollContraction(c, 'blessure-purulente', resVal, 'facile', battleRng()));
-      if (c.woundedByRodent) infectLog.push(...rollContraction(c, 'fievre-du-rongeur', resVal, 'accessible', battleRng()));
-      for (const diseaseId of c.diseaseExposure ?? []) {
-        // `diseaseExposure` stocke des IDS de maladie (trait `maladie` arg = id stable, multilangue-safe) :
-        // résolution par id SEULE (plus de repli par libellé).
-        const def = DISEASE_DEFS[diseaseId];
-        if (def) infectLog.push(...rollContraction(c, def.id, resVal, def.contractDifficulty, battleRng()));
-        else infectLog.push(`${c.name} a été exposé à : ${diseaseId} (maladie non répertoriée — arbitrage MJ).`);
-      }
-    }
-    c.woundedByInfected = false;
-    c.woundedByRodent = false;
-    c.diseaseExposure = undefined;
-  }
-  // Trait Corruption (Degré) (LDB 85 p.338 → LDB 19) : avoir AFFRONTÉ une créature corrompue est une
-  // EXPOSITION du Degré indiqué — Test de Résistance Intermédiaire auto-résolu en fin de combat,
-  // gain de Points selon le niveau et le DR (corruptionGain), puis seuil/mutation via gainCorruption.
-  const degrees = battle.combatants
-    .filter((c) => c.kind !== 'hero')
-    .flatMap((c) => (c.traits ?? []).filter((t) => t.id === 'corruption').map((t) => t.arg).filter(Boolean));
-  if (degrees.length) {
-    const rank = { mineure: 0, modérée: 1, majeure: 2 } as Record<string, number>;
-    const worst = degrees.reduce((a, b) => (rank[b!.toLowerCase()] > rank[a!.toLowerCase()] ? b : a))!;
-    const level = worst.toLowerCase() === 'majeure' ? 'majeure' : worst.toLowerCase() === 'modérée' ? 'moderee' : 'mineure';
-    for (const c of battle.combatants) {
-      if (c.kind !== 'hero' || c.dead) continue;
-      const t = rollTest(testValue(c, 'resistance'), 'intermediaire', battleRng());
-      const gain = corruptionGain(level, t.success, Math.max(0, t.sl));
-      infectLog.push(`${c.name} — exposition à la Corruption (${worst}) : Résistance ${t.roll}/${t.target}${gain ? '' : ', résiste'}.`);
-      if (gain > 0) infectLog.push(...gainCorruption(get, set, c, gain));
-    }
+    endLines.push(...fireTriggers(get, c, 'onCombatEnd', { rng: battleRng(), set }));
   }
   const newParty = party.map((h) => {
     const c = battle.combatants.find((x) => x.id === h.id && x.kind === 'hero');
     return c ? { ...h, ...carryOverState(c) } : h;
   });
-  set({ party: newParty, ...(infectLog.length ? { journal: [...get().journal.slice(-40), ...infectLog] } : {}) });
+  set({ party: newParty, ...(endLines.length ? { journal: [...get().journal.slice(-40), ...endLines] } : {}) });
   // Réconciliation de la scène : tout combattant ISSU d'une entité de scène (identité unifiée,
   // Combatant.id === SceneEntity.id) et hors d'action quitte la scène. Victoire → les ennemis sont tous
   // hors d'action = retirés ; défaite → ennemis vivants = conservés ; les héros du groupe ne sont jamais
@@ -3167,50 +3268,83 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
   const heroesAlive = battle.combatants.some((c) => c.kind === 'hero' && !isOutOfAction(c));
   const enemiesAlive = battle.combatants.some((c) => c.kind === 'enemy' && !isOutOfAction(c));
   if (!enemiesAlive) {
-    finalizeBattle(get, set); // writeback AVANT onVictory (qui ajoute XP/butin au groupe)
-    set({ battle: { ...get().battle!, over: 'victory', log: [...battle.log, ev('info', 'Victoire !')] } });
-    bus.emit(EVT.BATTLE_OVER, { victory: true }); // gong audio + hooks futurs
-    // Capture des récompenses pour l'écran de victoire : on mesure ce que onVictory octroie (XP/or/butin)
-    // par diff avant/après, + la liste des vaincus (groupée par nom). L'écran (VictoryScreen) lit `pendingVictory`.
-    const xpBefore = get().party[0]?.xp ?? 0;
-    const brassBefore = toBrass(get().money);
-    // #9 : on sépare les effets onVictory. Récompenses/flags/journal s'appliquent MAINTENANT (pour peupler
-    // l'écran) ; ceux qui CHANGENT le contexte (téléport/dialogue/combat) sont DIFFÉRÉS au clic « Continuer »
-    // (dismissVictory) — sinon le téléport masque l'écran de victoire (cas de l'arène).
-    const CONTEXT = new Set(['transition', 'transitionBack', 'startDialogue', 'startCombat']);
-    const all = battle.onVictory ?? [];
-    const deferred = all.filter((e) => CONTEXT.has(e.type));
-    // L'ÉQUIPEMENT (giveTrapping sans heroId) devient du butin ATTRIBUABLE sur l'écran (qualités
-    // conservées) au lieu d'aller d'office au 1er héros — même brique que la fenêtre de loot
-    // (gearFromEffects). Un giveTrapping ciblé (heroId d'auteur) s'applique directement.
-    const { gear, rest: immediate } = gearFromEffects(all.filter((e) => !CONTEXT.has(e.type)));
-    const messages = immediate.filter((e) => e.type === 'journal').map((e) => (e as { text: string }).text);
-    if (immediate.length) applyEffects(get, set, immediate);
-    const after = get();
-    const counts = new Map<string, { name: string; count: number; creatureId?: string }>();
-    for (const c of battle.combatants) if (c.kind === 'enemy') {
-      const key = c.creatureId ?? c.name; // regroupe par identité bestiaire (id), repli nom (statbloc custom)
-      const e = counts.get(key);
-      if (e) e.count++; else counts.set(key, { name: c.name, count: 1, creatureId: c.creatureId });
-    }
-    set({
-      pendingVictory: {
-        xp: Math.max(0, (after.party[0]?.xp ?? 0) - xpBefore),
-        gold: fromBrass(Math.max(0, toBrass(after.money) - brassBefore)),
-        gear: gear.length ? gear : undefined,
-        defeated: [...counts.values()].map(({ name, count, creatureId }) => ({ name, count, creatureId })),
-        messages: messages.length ? messages : undefined,
-        onContinue: deferred.length ? deferred : undefined,
-      },
-    });
+    // Tests de fin de combat des héros survivants (maladie/Corruption) AVANT l'écran de victoire (décision
+    // utilisateur) : cadence-aware (héros manuel → cascade influençable). Si une cascade s'ouvre, on DIFFÈRE
+    // la victoire — sa fermeture (`combatEndBoundary`) enchaîne sur `finishCombatEnd`/`finishVictory`.
+    openCombatEndCascade(get, set);
+    if (get().pendingCascade?.combatEndBoundary) return true; // l'écran de victoire suit la cascade
+    finishVictory(get, set);
     return true;
   }
   if (!heroesAlive) {
+    // Défaite : tous les héros hors d'action → les Tests de fin de combat se résolvent inline (aucun héros
+    // interactif → pas de cascade), puis writeback. Pas d'écran de victoire à gater.
+    openCombatEndCascade(get, set);
     finalizeBattle(get, set);
     set({ battle: { ...get().battle!, over: 'defeat', log: [...battle.log, ev('info', 'Défaite…')] } });
     return true;
   }
   return false;
+}
+
+/**
+ * Finalisation de la VICTOIRE : writeback (`finalizeBattle`) PUIS pose de `over:'victory'` + capture des
+ * récompenses dans `pendingVictory` (l'écran de victoire les lit). Appelée DIRECTEMENT par `checkBattleOver`
+ * quand aucun Test de fin de combat n'est influençable, OU par `finishCombatEnd` à la fermeture de la
+ * cascade de fin de combat. Idempotente vis-à-vis d'un `battle.over` déjà posé (garde en tête).
+ */
+export function finishVictory(get: Get, set: SetFn): void {
+  const battle = get().battle;
+  if (!battle || battle.over) return;
+  finalizeBattle(get, set); // writeback AVANT onVictory (qui ajoute XP/butin au groupe)
+  set({ battle: { ...get().battle!, over: 'victory', log: [...get().battle!.log, ev('info', 'Victoire !')] } });
+  bus.emit(EVT.BATTLE_OVER, { victory: true }); // gong audio + hooks futurs
+  // Capture des récompenses pour l'écran de victoire : on mesure ce que onVictory octroie (XP/or/butin)
+  // par diff avant/après, + la liste des vaincus (groupée par nom). L'écran (VictoryScreen) lit `pendingVictory`.
+  const xpBefore = get().party[0]?.xp ?? 0;
+  const brassBefore = toBrass(get().money);
+  // #9 : on sépare les effets onVictory. Récompenses/flags/journal s'appliquent MAINTENANT (pour peupler
+  // l'écran) ; ceux qui CHANGENT le contexte (téléport/dialogue/combat) sont DIFFÉRÉS au clic « Continuer »
+  // (dismissVictory) — sinon le téléport masque l'écran de victoire (cas de l'arène).
+  const CONTEXT = new Set(['transition', 'transitionBack', 'startDialogue', 'startCombat']);
+  const all = battle.onVictory ?? [];
+  const deferred = all.filter((e) => CONTEXT.has(e.type));
+  // L'ÉQUIPEMENT (giveTrapping sans heroId) devient du butin ATTRIBUABLE sur l'écran (qualités
+  // conservées) au lieu d'aller d'office au 1er héros — même brique que la fenêtre de loot
+  // (gearFromEffects). Un giveTrapping ciblé (heroId d'auteur) s'applique directement.
+  const { gear, rest: immediate } = gearFromEffects(all.filter((e) => !CONTEXT.has(e.type)));
+  const messages = immediate.filter((e) => e.type === 'journal').map((e) => (e as { text: string }).text);
+  if (immediate.length) applyEffects(get, set, immediate);
+  const after = get();
+  const counts = new Map<string, { name: string; count: number; creatureId?: string }>();
+  for (const c of battle.combatants) if (c.kind === 'enemy') {
+    const key = c.creatureId ?? c.name; // regroupe par identité bestiaire (id), repli nom (statbloc custom)
+    const e = counts.get(key);
+    if (e) e.count++; else counts.set(key, { name: c.name, count: 1, creatureId: c.creatureId });
+  }
+  set({
+    pendingVictory: {
+      xp: Math.max(0, (after.party[0]?.xp ?? 0) - xpBefore),
+      gold: fromBrass(Math.max(0, toBrass(after.money) - brassBefore)),
+      gear: gear.length ? gear : undefined,
+      defeated: [...counts.values()].map(({ name, count, creatureId }) => ({ name, count, creatureId })),
+      messages: messages.length ? messages : undefined,
+      onContinue: deferred.length ? deferred : undefined,
+    },
+  });
+}
+
+/** Continuation à la FERMETURE de la cascade de fin de combat (`combatEndBoundary`) : l'écran de victoire
+ *  suit les Tests de fin de combat influencés. Re-dérive l'issue depuis l'état COURANT (une damnation par
+ *  mutation a pu tuer un héros) : ennemis tous hors d'action → victoire ; sinon (héros tombé) → défaite. */
+export function finishCombatEnd(get: Get, set: SetFn): void {
+  const battle = get().battle;
+  if (!battle || battle.over) return;
+  const heroesAlive = battle.combatants.some((c) => c.kind === 'hero' && !isOutOfAction(c));
+  if (heroesAlive) { finishVictory(get, set); return; }
+  // Cas-limite : la mutation/damnation a achevé le dernier héros pendant la cascade → défaite.
+  finalizeBattle(get, set);
+  set({ battle: { ...get().battle!, over: 'defeat', log: [...get().battle!.log, ev('info', 'Défaite…')] } });
 }
 
 /**
