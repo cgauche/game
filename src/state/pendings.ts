@@ -738,7 +738,7 @@ export interface CascadeStep extends RollParticipant {
    *  est un Test ÉTENDU testé à la FIN de chaque Round (l.27) → `prevDR` = DR déjà cumulé, l'applier
    *  'combatPsych' cumule `prevDR + DR` vers l'Indice (vainc à ≥ Indice, retire la Peur). Distinct de
    *  `encounterPsych` (simple) car la Peur de combat est ÉTENDUE. Détermination = immunité (LDB 17 l.62). */
-  combatPsych?: { kind: PsychType; sourceId: string; sourceName: string; indice: number; cible?: string; prevDR: number };
+  combatPsych?: { kind: PsychType; sourceId: string; sourceName: string; indice: number; cible?: string; prevDR: number; sansPeur?: boolean };
   /** DÉTERMINATION (LDB 17 l.62) sur une étape de Psychologie : le héros gagne une immunité TEMPORAIRE
    *  (≈ 1 Round, `psychImmuneRoundsLeft`) — la Peur/Terreur/Trait est IGNORÉE ce Round, PAS vaincue.
    *  L'applier psy lit ce flag pour NE PAS cumuler le DR (Peur) ni poser le Brisé (Terreur) : il

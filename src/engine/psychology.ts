@@ -70,11 +70,11 @@ export const CIBLE_LABEL: Record<string, { emoji: string; label: string }> = {
 };
 
 /** Source de Peur/Terreur que `foe` représente pour `self` : combine la Taille (LDB 85) et l'Indice
- *  inspiré au statbloc (`causesPeur`/`causesTerreur`). Terreur prime ; sinon le plus haut Indice. Pur. */
+ *  inspiré au statbloc (`causesPeur`/`causesTerreur`). Terreur prime ; sinon le plus haut Indice. Pur.
+ *  NB : « Sans Peur (Ennemi) » (LDB 10 l.864) ne supprime PLUS la source ici (ce n'était pas RAW : le
+ *  talent n'accorde pas l'immunité automatique mais « un seul Test de Calme Accessible (+20) » pour
+ *  l'ignorer) — la source est donc détectée, et le porteur la teste à +20 (cf. `sansPeurVs`). */
 export function fearSourceFor(self: Combatant, foe: Combatant): { kind: 'peur' | 'terreur'; indice: number } | null {
-  // Sans peur (LDB 10 l.859, talent possédé ciblé OU accordé par Flambeau de Vertu/Cœurs
-  // ardents) : la Peur/Terreur de cet adversaire est ignorée — aucune source.
-  if (fearImmuneVs(self, foe)) return null;
   const cands: { kind: 'peur' | 'terreur'; indice: number }[] = [];
   const size = peurTerreurFromSize(foe.size, self.size);
   if (size) cands.push(size);
@@ -83,6 +83,13 @@ export function fearSourceFor(self: Combatant, foe: Combatant): { kind: 'peur' |
   if (!cands.length) return null;
   const terr = cands.filter((c) => c.kind === 'terreur');
   return (terr.length ? terr : cands).reduce((a, b) => (b.indice > a.indice ? b : a));
+}
+
+/** `self` possède-t-il « Sans Peur (Ennemi) » (LDB 10 l.864) contre `foe` ? Le porteur n'est PAS
+ *  immunisé d'office : il teste la Peur/Terreur de cet ennemi par UN seul Test de Calme Accessible
+ *  (+20). Nom sémantique pour la couche state (le prédicat sous-jacent vit dans combatFeatures). */
+export function sansPeurVs(self: Combatant, foe: Pick<Combatant, 'groups'>): boolean {
+  return fearImmuneVs(self, foe);
 }
 
 /** Lecture des libellés de traits de Psychologie (Peur/Terreur/Immunité + ciblés Animosité/Haine/
@@ -184,17 +191,22 @@ export function calmeValue(c: Combatant): number {
 }
 
 /** Un Round de Test ÉTENDU de Calme contre la Peur (LDB 21 l.27) : cumule le DR jusqu'à l'Indice.
- *  `prevDR` = DR déjà accumulé. `vaincue` = la Peur est surmontée (DR cumulé ≥ Indice). */
+ *  `prevDR` = DR déjà accumulé. `vaincue` = la Peur est surmontée (DR cumulé ≥ Indice).
+ *  `sansPeur` (Sans Peur (Ennemi), LDB 10 l.864) : « un seul Test de Calme Accessible (+20)… vous
+ *  pouvez IGNORER les effets » → Test UNIQUE (binaire) à +20 ; une réussite vainc d'emblée la Peur
+ *  (DR porté à l'Indice), un échec laisse le porteur sujet (re-tests ultérieurs = Peur normale +0). */
 export function resolvePeurTest(
   calme: number,
   indice: number,
   prevDR: number,
   rng: RNG = defaultRNG,
   coldBlooded = false, // À sang-froid (LDB 85 p.338) : inverse un Test de FM raté
+  sansPeur = false,
 ): { dr: number; calmeDR: number; vaincue: boolean; roll: number; target: number; sl: number; success: boolean } {
-  const t = coldBloodedAdjust(rollTest(calme, 'intermediaire', rng), coldBlooded);
+  const t = coldBloodedAdjust(rollTest(calme, sansPeur ? 'accessible' : 'intermediaire', rng), coldBlooded);
   const dr = t.success ? Math.max(0, t.sl) : 0;
-  const calmeDR = prevDR + dr;
+  // Sans Peur : une réussite IGNORE la Peur (vaincue d'emblée → DR ≥ Indice) ; sinon cumul étendu RAW.
+  const calmeDR = sansPeur && t.success ? Math.max(prevDR, indice) : prevDR + dr;
   return { dr, calmeDR, vaincue: calmeDR >= indice, roll: t.roll, target: t.target, sl: t.sl, success: t.success };
 }
 
@@ -232,13 +244,16 @@ export function terreurBrise(indice: number, success: boolean, sl: number): numb
 }
 
 /** Test de Terreur à la 1ʳᵉ rencontre (LDB 21 l.55-57) : échec → Brisé = Indice + |DR négatifs| ;
- *  ensuite la créature cause une Peur d'Indice équivalent (`devientPeur`). */
+ *  ensuite la créature cause une Peur d'Indice équivalent (`devientPeur`).
+ *  `sansPeur` (Sans Peur (Ennemi), LDB 10 l.864) : le Test de Calme est Accessible (+20) — une
+ *  réussite ignore la Terreur (et la Peur subséquente, via `devientPeur: 0`). */
 export function resolveTerreurTest(
   calme: number,
   indice: number,
   rng: RNG = defaultRNG,
   coldBlooded = false, // À sang-froid (LDB 85 p.338) : inverse un Test de FM raté
+  sansPeur = false,
 ): { success: boolean; brise: number; devientPeur: number; roll: number; target: number; sl: number } {
-  const t = coldBloodedAdjust(rollTest(calme, 'intermediaire', rng), coldBlooded);
-  return { success: t.success, brise: terreurBrise(indice, t.success, t.sl), devientPeur: indice, roll: t.roll, target: t.target, sl: t.sl };
+  const t = coldBloodedAdjust(rollTest(calme, sansPeur ? 'accessible' : 'intermediaire', rng), coldBlooded);
+  return { success: t.success, brise: terreurBrise(indice, t.success, t.sl), devientPeur: sansPeur && t.success ? 0 : indice, roll: t.roll, target: t.target, sl: t.sl };
 }

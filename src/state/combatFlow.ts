@@ -128,7 +128,7 @@ import { toBrass, fromBrass } from '../engine/money';
 import { Scene, Effect, isWalkable } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
 import { lineOfSightCover, coverModifier, tilesBetween } from './lineOfSight';
-import { fearSourceFor, terreurBrise, calmeValue, isPsychImmune, clearPsychOf, targetedTrigger, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
+import { fearSourceFor, sansPeurVs, terreurBrise, calmeValue, isPsychImmune, clearPsychOf, targetedTrigger, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import { reachable, moveReachFor, flyReachable, pushAway, pathTo, chebyshev, Pt } from './path';
@@ -3584,6 +3584,13 @@ function psychStepFor(get: Get, set: SetFn, c: Combatant, collect: (get: Get, c:
   const isCible = CIBLE_TYPES.has(t.kind);
   const cl = isCible ? CIBLE_LABEL[t.kind] : null;
   const calme = calmeValue(c);
+  // Sans Peur (Ennemi) (LDB 10 l.864) : face à une NOUVELLE Peur/Terreur de l'ennemi spécifié, « un
+  // seul Test de Calme Accessible (+20) » pour l'ignorer. Pas sur les re-tests d'une Peur déjà subie
+  // (entrée psychState existante → Test étendu normal +0) ni sur les Traits ciblés.
+  const sourceFoe = !isCible ? get().battle?.combatants.find((x) => x.id === t.sourceId) : undefined;
+  const isNewSource = !(c.psychState ?? []).some((p) => p.type === 'peur' && p.sourceId === t.sourceId);
+  const sansPeur = !!sourceFoe && isNewSource && sansPeurVs(c, sourceFoe);
+  const target = sansPeur ? calme + 20 : calme; // Accessible (+20) pour le porteur de Sans Peur
   return {
     id: `psych-${c.id}`,
     kind: 'combatPsych',
@@ -3591,9 +3598,9 @@ function psychStepFor(get: Get, set: SetFn, c: Combatant, collect: (get: Get, c:
     icon: cl?.emoji ?? (t.kind === 'terreur' ? '😱' : '😨'),
     rollLabel: 'Calme',
     base: calme,
-    target: calme, // Test de Calme Intermédiaire (+0)
-    label: cl ? `${cl.emoji} ${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? '😱 Terreur' : '😨 Peur'} ${t.indice}`,
-    combatPsych: { kind: t.kind, sourceId: t.sourceId, sourceName: t.sourceName, indice: t.indice, cible: t.cible, prevDR: t.prevDR },
+    target, // Test de Calme Intermédiaire (+0), ou Accessible (+20) avec Sans Peur
+    label: `${cl ? `${cl.emoji} ${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? '😱 Terreur' : '😨 Peur'} ${t.indice}`}${sansPeur ? ' · Sans Peur (+20)' : ''}`,
+    combatPsych: { kind: t.kind, sourceId: t.sourceId, sourceName: t.sourceName, indice: t.indice, cible: t.cible, prevDR: t.prevDR, sansPeur },
   };
 }
 
@@ -3703,13 +3710,17 @@ registerCascadeApplier(
       line = r.success ? `${hero.name} maîtrise son ${cl?.label.toLowerCase() ?? cp.kind}.` : `${hero.name} est en proie à son ${cl?.label.toLowerCase() ?? cp.kind}.`;
     } else {
       // Peur = Test ÉTENDU de Calme (LDB 21 l.27) : cumuler le DR vers l'Indice (calque resolvePeurTest).
+      // Sans Peur (LDB 10 l.864) : « un seul Test (+20) » → une réussite IGNORE la Peur d'emblée
+      // (DR porté à l'Indice) ; un échec laisse le porteur sujet (re-tests suivants = Peur normale +0).
       const dr = r.success ? Math.max(0, r.sl) : 0;
-      const calmeDR = cp.prevDR + dr;
+      const calmeDR = cp.sansPeur && r.success ? Math.max(cp.prevDR, cp.indice) : cp.prevDR + dr;
       let e = hero.psychState.find((p) => p.sourceId === cp.sourceId && p.type === 'peur');
       if (!e) { e = { type: 'peur', sourceId: cp.sourceId, indice: cp.indice, calmeDR: 0 }; hero.psychState.push(e); }
       e.calmeDR = calmeDR;
       e.lastTestRound = battle?.round;
-      line = calmeDR >= cp.indice ? `${hero.name} surmonte sa peur${cp.sourceName ? ` de ${cp.sourceName}` : ''}.` : `${hero.name} reste sous l'emprise de la Peur (${calmeDR}/${cp.indice} DR).`;
+      line = calmeDR >= cp.indice
+        ? `${hero.name} ${cp.sansPeur ? 'ignore la Peur' : 'surmonte sa peur'}${cp.sourceName ? ` de ${cp.sourceName}` : ''}${cp.sansPeur ? ' (Sans Peur)' : ''}.`
+        : `${hero.name} reste sous l'emprise de la Peur (${calmeDR}/${cp.indice} DR).`;
     }
     set({ party: [...get().party] });
     if (battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });

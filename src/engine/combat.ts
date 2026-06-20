@@ -24,7 +24,7 @@ import { isPsychImmune } from './psychology';
 import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, rangedOpposeWeapon, isMagicWeapon } from './qualities/dispatch';
 import { QUALITY_IDS } from './qualities/ids';
 import { weaponGroupLabel } from '../data';
-import { offHandPenalty, talentDamageBonus, isSlayer, talentDamageReduction, talentRangedAPIgnore, ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust, talentInitiativeBonus, fearImmuneVs } from './combatFeatures/dispatch';
+import { offHandPenalty, talentDamageBonus, isSlayer, talentDamageReduction, talentRangedAPIgnore, ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust, talentInitiativeBonus } from './combatFeatures/dispatch';
 import { isEngagedWith, reachRank } from './engagement';
 import { rule } from './policy';
 
@@ -257,8 +257,10 @@ export function attackModifiers(
     const psy = attacker.psychState ?? [];
     const groups = target.groups ?? [];
     const hatesTarget = psy.some((p) => p.type === 'haine' && p.active && p.cible && groupMatch(p.cible, groups));
-    // Haine (du groupe) / Amour → immunité Peur ; Sans peur (LDB 10, possédé ciblé ou accordé) aussi.
-    const peurImmune = hatesTarget || psy.some((p) => p.type === 'amour' && p.active) || fearImmuneVs(attacker, target);
+    // Haine (du groupe, LDB 21 l.41) / Amour → immunité Peur. Sans Peur (LDB 10 l.864) ne donne PAS
+    // d'immunité d'office : le −10 suit l'ÉTAT réel (une Peur active non vaincue dans psychState) — le
+    // porteur qui a réussi son Test de Calme (+20) n'a pas d'entrée Peur active, donc aucun malus ici.
+    const peurImmune = hatesTarget || psy.some((p) => p.type === 'amour' && p.active);
     if (!peurImmune && psy.some((p) => p.type === 'peur' && p.sourceId === target.id && (p.calmeDR ?? 0) < (p.indice ?? 1))) out.push({ label: 'Peur', value: -10 });
     if (hatesTarget || psy.some((p) => p.type === 'animosite' && p.active && p.cible && groupMatch(p.cible, groups))) out.push({ label: 'Haine/Animosité', value: 10 });
     if (psy.some((p) => (p.type === 'amour' || p.type === 'camaraderie') && p.active)) out.push({ label: 'Amour/Camaraderie', value: 10 });
