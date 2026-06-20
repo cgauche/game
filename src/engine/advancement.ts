@@ -26,9 +26,10 @@ export function inCareerChar(careerChars: CharKey[], char: CharKey): boolean {
 /**
  * Type d'une bande du Tableau de Coût des Augmentations (07-Carrières l.45-62).
  * La bande = nombre d'Augmentations DÉJÀ achetées ; `max` est la borne haute INCLUSIVE de la bande.
+ * `max: null` = bande FINALE « et au-delà » (capte tout excès — JSON n'a pas d'Infinity).
  * La donnée vit dans `src/data/advancementCosts.json` — ne pas éditer ici.
  */
-export interface AdvanceCostBand { max: number; char: number; skill: number }
+export interface AdvanceCostBand { max: number | null; char: number; skill: number }
 
 const ADVANCE_COST_TABLE: AdvanceCostBand[] = advancementCostsJson as AdvanceCostBand[];
 
@@ -37,7 +38,7 @@ const ADVANCE_COST_TABLE: AdvanceCostBand[] = advancementCostsJson as AdvanceCos
  *  Augmentation » des talents Maître artisan / Oreille absolue / etc. (LDB 10) quand la
  *  Compétence ajoutée est déjà incluse dans la Carrière — appliqué in-carrière seulement. */
 export function advanceCost(advancesAlready: number, kind: 'characteristic' | 'skill', inCareer = true, discount = 0): number {
-  const band = ADVANCE_COST_TABLE.find((b) => advancesAlready <= b.max)!;
+  const band = ADVANCE_COST_TABLE.find((b) => b.max === null || advancesAlready <= b.max)!;
   const base = kind === 'characteristic' ? band.char : band.skill;
   return inCareer ? Math.max(1, base - discount) : base * 2;
 }

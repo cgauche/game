@@ -20,12 +20,13 @@ import { Combatant } from './types';
 import { maxEncumbrance, totalEncumbrance } from './items';
 import { hasCondition } from './conditions';
 import { traumaMovementHalved, passiveMoveMod } from './trauma';
+import encumbranceTiersJson from '../data/encumbranceTiers.json';
 
 export interface EncumbrancePenalties {
   /** Palier de surcharge : 0 (aucune) à 3 (immobilisé). */
   tier: 0 | 1 | 2 | 3;
-  /** Réduction de Mouvement (cases) à appliquer. */
-  movePenalty: number;
+  /** Réduction de Mouvement (cases) à appliquer ; `null` = palier immobilisé (cf. `immobile`). */
+  movePenalty: number | null;
   /** Plancher de Mouvement du palier (le Mouvement ne descend pas en dessous). */
   moveFloor: number;
   /** Modificateur signé aux tests d'Agilité (0 / −10 / −20). */
@@ -36,19 +37,22 @@ export interface EncumbrancePenalties {
   immobile: boolean;
 }
 
-/** Pénalités d'Encombrement d'un combattant selon le Livre de base (p.295). */
+/** Profils de pénalité par palier (LDB p.295) — DONNÉE (`src/data/encumbranceTiers.json`). Le palier 3
+ *  porte `movePenalty: null` (immobilisé : le flag `immobile` court-circuite, plus d'`Infinity`). */
+const ENCUMBRANCE_TIERS = encumbranceTiersJson as EncumbrancePenalties[];
+
+/** Pénalités d'Encombrement d'un combattant selon le Livre de base (p.295). Le PALIER (multiples de la
+ *  capacité) est calculé ici ; les VALEURS du palier viennent de la donnée. */
 export function encumbrancePenalties(c: Combatant): EncumbrancePenalties {
   const cap = maxEncumbrance(c);
   const enc = totalEncumbrance(c);
 
   // Capacité non finie (combattant sans F/E — données incomplètes) : aucun palier (et surtout pas
   // « immobile », ce que donneraient les comparaisons `enc <= NaN` toutes fausses).
-  if (!Number.isFinite(cap) || enc <= cap) return { tier: 0, movePenalty: 0, moveFloor: 0, agilityPenalty: 0, travelFatigue: 0, immobile: false };
-  if (enc <= cap * 2) return { tier: 1, movePenalty: 1, moveFloor: 3, agilityPenalty: -10, travelFatigue: 1, immobile: false };
-  if (enc <= cap * 3) return { tier: 2, movePenalty: 2, moveFloor: 2, agilityPenalty: -20, travelFatigue: 2, immobile: false };
-  // > 3× la capacité : « Vous ne pouvez pas vous déplacer. » Le LDB ne précise
-  // pas de malus d'Agilité distinct ici ; on conserve celui du palier 2.
-  return { tier: 3, movePenalty: Infinity, moveFloor: 0, agilityPenalty: -20, travelFatigue: 2, immobile: true };
+  if (!Number.isFinite(cap) || enc <= cap) return { ...ENCUMBRANCE_TIERS[0] };
+  if (enc <= cap * 2) return { ...ENCUMBRANCE_TIERS[1] };
+  if (enc <= cap * 3) return { ...ENCUMBRANCE_TIERS[2] };
+  return { ...ENCUMBRANCE_TIERS[3] }; // > 3× la capacité : « Vous ne pouvez pas vous déplacer. »
 }
 
 /**
@@ -63,7 +67,8 @@ export function effectiveMovement(c: Combatant): number {
   // `moveMod` ADDITIF du collecteur passif unifié : mutation PERMANENTE (Pattes d'animaux +1 / Corpulent /
   // Court sur pattes −1, kind `intrinsèque`) + sort actif (kind `magique`) — sommés avant tout demi-Mouvement.
   const mv = Math.max(0, c.movement + passiveMoveMod(c));
-  const base = p.tier === 0 ? mv : Math.min(mv, Math.max(mv - p.movePenalty, p.moveFloor));
+  // `movePenalty` n'est null que sur le palier immobilisé (déjà court-circuité ci-dessus) → `?? 0` sûr.
+  const base = p.tier === 0 ? mv : Math.min(mv, Math.max(mv - (p.movePenalty ?? 0), p.moveFloor));
   // Demi-Mouvement : Sonné (LDB 16 l.123), À Terre (= ramper à ½ Mouvement, l.37), OU traumatisme de
   // jambe/torse (LDB 18 : Déchirure/Fracture). Un seul halving (pas de cumul inventé).
   return (hasCondition(c, 'sonne') || hasCondition(c, 'a-terre') || traumaMovementHalved(c)) ? Math.floor(base / 2) : base;

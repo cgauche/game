@@ -159,7 +159,7 @@ for (const d of domains) for (const id of conditionIdsInEffects(d.effects)) addR
 
 // 14) Mutation ← Table de Corruption qui la tire (inversion de mutationTable.ranges[].mutation).
 for (const tab of mutationTables) for (const r of tab.ranges) addReverse('mutations', r.mutation, { category: 'mutationTables', label: tab.label, detail: `${r.min}–${r.max}` });
-// 15) Lieu ← sous-lieux (inversion de location.parent — les lieux sont keyés par LIBELLÉ, pas d'id).
+// 15) Lieu ← sous-lieux (inversion de location.parent, désormais un id de parent).
 for (const l of locations) if (l.parent) addReverse('locations', l.parent, { category: 'locations', label: l.label });
 
 // ── Titres FR des sections inverses (display — couche UI, pas de sémantique de jeu) ──────────────

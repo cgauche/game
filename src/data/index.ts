@@ -559,7 +559,10 @@ export interface StarData {
 }
 /** Lieu (Glorieux Reikland, LDB) : hiérarchie par `parent` (label d'un autre lieu). */
 export interface LocationData {
+  /** id STABLE (slug du libellé) — cible de `parent` (réf id, ≠ libellé) et des réfs inverses. */
+  id: string;
   label: string;
+  /** `id` du lieu parent (`LocationData.id`), ou null si racine — réf d'entité, ≠ libellé. */
   parent: string | null;
   prefix: string | null;
   suffix: string | null;
@@ -677,6 +680,11 @@ export const stars = starsJson as StarData[];
 /** Apparences d'espèce de rig (app-owned, éditable) — SOURCE lue+résolue par `raceById` (rig). */
 export const raceAppearance = raceAppearanceJson as RaceAppearanceData[];
 export const locations = locationsJson as LocationData[];
+const LOCATION_BY_ID = new Map(locations.map((l) => [l.id, l]));
+/** Résout un Lieu par son `id` STABLE (cible de `LocationData.parent`). Le libellé ne sert qu'à l'affichage. */
+export function findLocationById(id: string | null | undefined): LocationData | undefined {
+  return id ? LOCATION_BY_ID.get(id) : undefined;
+}
 export const books = booksJson as BookData[];
 /** Culte/Dieu (LDB 41) : `key` = clé STABLE (« Sigmar »), Bénédictions/Miracles en `Ref[]` (sorts par id),
  *  desc = lore HTML (Codex). Dataset éditable (Compendium) — remplace les `cults/defs/*.ts` (codegen retiré). */

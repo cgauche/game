@@ -10,7 +10,7 @@
 import {
   species, careers, characteristics, classes, skills, talents,
   qualities, trappings, weaponGroups, etats, maladies, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
-  stars, locations, books, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, weaponGroupLabel,
+  stars, locations, findLocationById, books, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, weaponGroupLabel,
   skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names,
   pregens, oups, interludeEvents, peripeties,
 } from '../../data';
@@ -560,11 +560,14 @@ export const CODEX: CodexCategory[] = [
   },
   {
     key: 'locations', label: 'Lieux', group: 'Monde',
-    // Lieux keyés par LIBELLÉ (pas d'id dans la donnée) → la réf inverse « Sous-lieux » l'utilise comme clé.
-    items: locations.map((l) => ({
-      label: l.label, sub: l.parent ?? undefined, group: l.parent ?? undefined, desc: l.desc ?? undefined, source: src(l.source),
-      sections: sections(...reverseSections('locations', l.label)),
-    })),
+    // `parent` est un id → résolu en libellé pour l'affichage ; la réf inverse « Sous-lieux » clé par id.
+    items: locations.map((l) => {
+      const parentLabel = findLocationById(l.parent)?.label;
+      return {
+        label: l.label, sub: parentLabel, group: parentLabel, desc: l.desc ?? undefined, source: src(l.source),
+        sections: sections(...reverseSections('locations', l.id)),
+      };
+    }),
   },
   {
     key: 'books', label: 'Livres', group: 'Monde',

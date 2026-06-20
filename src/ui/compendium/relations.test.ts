@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { reverseGroups, bookContents, labelIndex, tokenizeLinks } from './relations';
-import { creatures, traits, gods, trappings, skills, careerLevels, etats, findCareerById } from '../../data';
+import { creatures, traits, gods, trappings, skills, careerLevels, etats, locations, findCareerById, findLocationById } from '../../data';
 
 /** Un groupe inverse de catégorie `cat` contient-il `label` ? */
 const groupHas = (groups: ReturnType<typeof reverseGroups>, cat: string, label: string): boolean =>
@@ -47,6 +47,16 @@ describe('relations — graphe inverse id-based', () => {
     const careerRef = groups.find((g) => g.category === 'careers')?.referrers.find((r) => r.label === career.label);
     expect(careerRef).toBeTruthy();
     expect(careerRef!.detail).toMatch(/N\d/);
+  });
+
+  it('lieux : tout `parent` est un id qui RÉSOUT (migration id-based, zéro orphelin)', () => {
+    for (const l of locations) {
+      expect(typeof l.id, l.label).toBe('string');
+      if (l.parent) expect(findLocationById(l.parent), `${l.label} → parent ${l.parent}`).toBeTruthy();
+    }
+    // Au moins un lieu-parent expose ses sous-lieux (inversion vivante).
+    const parent = locations.find((l) => locations.some((c) => c.parent === l.id));
+    expect(parent && reverseGroups('locations', parent.id).some((g) => g.category === 'locations')).toBe(true);
   });
 
   it('état → ce qui l’inflige (inversion des ops `condition` des effets Flow/TriggeredEffect)', () => {

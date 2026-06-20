@@ -70,7 +70,7 @@
     "skill": 380
   },
   {
-    "max": 1e+308,
+    "max": null,
     "char": 520,
     "skill": 440
   }
