@@ -9,7 +9,12 @@
  *
  * Sauvegarde HORS COMBAT uniquement (battle non-null refusé par l'action store) : l'état
  * tactique suspendu (IA, modales de combat) n'est pas un point de reprise sûr.
+ *
+ * Les règles maison (surcharges de `policy.ts`, hors GameState) voyagent à part dans `rules` :
+ * une save reste portable d'une machine à l'autre AVEC ses règles (le localStorage ne suffit pas).
  */
+import type { RuleValue } from '../engine/policy';
+
 export const SAVE_VERSION = 1;
 
 export interface SaveMeta {
@@ -25,6 +30,9 @@ export interface SaveMeta {
 export interface SaveGame extends SaveMeta {
   /** Clés de données de GameState (deep-copiées, JSON-sûres). */
   data: Record<string, unknown>;
+  /** Surcharges de règles maison (`policy.ts`) actives à la sauvegarde — optionnel : une save
+   *  d'avant ce champ n'en a pas (on garde alors les règles courantes de la machine au chargement). */
+  rules?: Record<string, RuleValue>;
 }
 
 export type SaveSlot = 1 | 2 | 3;
@@ -44,6 +52,7 @@ export function snapshotSave(
   state: Record<string, unknown>,
   initial: Record<string, unknown>,
   savedAt: string,
+  rules: Record<string, RuleValue> = {},
 ): SaveGame {
   const data: Record<string, unknown> = {};
   for (const k of Object.keys(initial)) {
@@ -58,7 +67,26 @@ export function snapshotSave(
     sceneLabel: scene?.nom ?? scene?.id ?? 'Sans scène',
     gameTime: typeof state.gameTime === 'number' ? state.gameTime : 0,
     data: JSON.parse(JSON.stringify(data)) as Record<string, unknown>, // deep copy JSON-sûre
+    rules: { ...rules },
   };
+}
+
+// ── Règles maison dans le snapshot COOP (parité hôte/invité) ──────────────────────────────────
+// Le snapshot réseau n'a qu'un champ `data` opaque (cf. net/session) : les surcharges de `policy.ts`
+// y voyagent sous une clé RÉSERVÉE. Helpers PURS (testés), réutilisés par netFlow.
+
+/** Clé réservée du payload coop transportant les règles maison (hors GameState). */
+export const HOUSE_RULES_KEY = '__houseRules';
+
+/** Joint les règles maison au snapshot coop (sous la clé réservée). */
+export function packHouseRules(data: Record<string, unknown>, rules: Record<string, RuleValue>): Record<string, unknown> {
+  return { ...data, [HOUSE_RULES_KEY]: rules };
+}
+
+/** Sépare les règles maison du reste de l'état (clé réservée retirée de `game` → pas de pollution). */
+export function unpackHouseRules(data: Record<string, unknown>): { game: Record<string, unknown>; rules?: Record<string, RuleValue> } {
+  const { [HOUSE_RULES_KEY]: rules, ...game } = data;
+  return { game, rules: rules as Record<string, RuleValue> | undefined };
 }
 
 /** Validation de forme d'une save (version + data objet). */

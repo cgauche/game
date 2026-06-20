@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { useGame } from './store';
 import { readSlot, deleteSlot, exportSave, importSave, listSaves, saveToSlot, SAVE_VERSION } from './saves';
+import { rule, setRule, loadRuleOverrides } from '../engine/policy';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
@@ -33,7 +34,7 @@ describe('Sauvegarde / chargement (Jalon 5)', () => {
     useGame.getState().startScene(testScene);
     vi.clearAllTimers();
   });
-  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); deleteSlot(1); deleteSlot(2); deleteSlot(3); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); deleteSlot(1); deleteSlot(2); deleteSlot(3); loadRuleOverrides({}); });
 
   it('saveGame → slot rempli avec métadonnées (scène, horloge) ; listSaves le voit', () => {
     useGame.setState({ flags: { ...useGame.getState().flags, 'drapeau-test': true } });
@@ -82,6 +83,19 @@ describe('Sauvegarde / chargement (Jalon 5)', () => {
     saveToSlot(2, slot);
     expect(useGame.getState().loadGame(2)).toBe(true);
     expect(useGame.getState().worldMap?.places.length).toBeGreaterThan(0);
+  });
+
+  it('règles maison : la save porte les surcharges et les restaure au chargement (portabilité)', () => {
+    const id = 'test-critiques-doubles'; // un flag optionnel quelconque
+    loadRuleOverrides({}); // baseline propre
+    const def = rule(id) as boolean; // défaut RAW du registre
+    setRule(id, !def); // l'utilisateur active la règle maison
+    expect(useGame.getState().saveGame(1)).toBe(true);
+    expect(readSlot(1)!.rules?.[id]).toBe(!def); // la surcharge voyage DANS la save
+    loadRuleOverrides({}); // « autre machine » : aucune règle maison locale → défaut
+    expect(rule(id)).toBe(def);
+    expect(useGame.getState().loadGame(1)).toBe(true);
+    expect(rule(id)).toBe(!def); // … restaurée par le chargement
   });
 
   it('en combat : sauvegarde refusée, le slot reste vide', () => {

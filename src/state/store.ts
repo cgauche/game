@@ -39,10 +39,13 @@ function applyLoadedSave(set: (s: Partial<GameState>) => void, save: SaveGame): 
   // `net` : la SESSION coop courante prime sur celle figée dans la save (ne pas ressusciter un
   // salon mort, ne pas dissoudre un salon vivant — l'hôte peut charger une save en ligne).
   set({ ...base, ...data, screen: 'campaign', net: useGame.getState().net });
+  // Règles maison de la save : on les applique au registre (parité avec la partie sauvegardée).
+  // Save d'avant ce champ (rules absent) → on garde les règles courantes de la machine.
+  if (save.rules) loadRuleOverrides(save.rules);
   bus.emit(EVT.SCENE_DIRTY);
 }
 import { ev, type CombatEvent } from './combatLog';
-import { rule } from '../engine/policy';
+import { rule, ruleOverrides, loadRuleOverrides } from '../engine/policy';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualities/dispatch';
 import { type HealMode } from '../engine/healing';
@@ -901,7 +904,7 @@ export const useGame = create<GameState>((set, get) => ({
       get().log('Impossible de sauvegarder en plein combat.');
       return false;
     }
-    const save = snapshotSave(s as unknown as Record<string, unknown>, useGame.getInitialState() as unknown as Record<string, unknown>, new Date().toISOString());
+    const save = snapshotSave(s as unknown as Record<string, unknown>, useGame.getInitialState() as unknown as Record<string, unknown>, new Date().toISOString(), ruleOverrides());
     const ok = saveToSlot(slot, save);
     get().log(ok ? `Partie sauvegardée (emplacement ${slot}).` : 'Sauvegarde impossible (stockage indisponible ou plein).');
     return ok;
