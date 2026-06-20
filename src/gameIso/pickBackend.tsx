@@ -134,7 +134,7 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
     }
     return { backend: 'rig', id, speciesScale: r.scale, portraitBox: FACE_BOX, flat: false, body: <AmbientRigToken profile={prof} anim={ent.anim ?? ''} id={id} facing={ent.facing} pos={ent.pos} /> };
   }
-  if (r.kind === 'plan' && r.plan !== 'monolithic') {
+  if (r.kind === 'plan') {
     // ent.appearance.eyes = CLÉS du catalogue (donnée éditeur) → résolues en arts ici
     // (les combattants passent par riggedAppearance au spawn, qui résout déjà).
     return { backend: 'plan', id, speciesScale: r.scale, portraitBox: CREATURE_BOX, flat: top, body: <AnimatedPlanToken id={id} planId={r.plan} species={r.species} colors={ent.appearance?.colors} eyes={eyesArtFromKeys(ent.appearance?.eyes)} facing={ent.facing} pos={ent.pos} /> };

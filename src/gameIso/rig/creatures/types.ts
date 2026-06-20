@@ -21,8 +21,7 @@ import type { JabberProps } from '../jabberslythe/composeJabber';
 
 export type CreatureBodyPlan =
   | 'biped' | 'quadruped' | 'winged'
-  | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' | 'spectral' | 'squig' | 'amorphous' | 'jabberslythe' // nouveaux squelettes
-  | 'monolithic';
+  | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' | 'spectral' | 'squig' | 'amorphous' | 'jabberslythe'; // nouveaux squelettes
 
 /** Surcharges d'apparence propres à CETTE créature (par-dessus les défauts de sa Race).
  *  Réservé aux espèces NON-canoniques qui se replient sur une race partagée via baseSpeciesOf

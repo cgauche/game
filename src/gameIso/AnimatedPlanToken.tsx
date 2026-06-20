@@ -11,7 +11,7 @@ import type { ColorsSel } from '../state/scene';
  * (poses du plan, vue 8-dir, marche/attaque bus) est déléguée à `usePlanAnim` (partagé avec
  * MountedToken). Hébergé dans la boîte 120×150 par tokenNode.
  */
-export function AnimatedPlanToken({ id, planId, species, colors, eyes, dead, prone, facing, pos }: { id: string; planId: BodyPlanId | 'monolithic'; species: string; colors?: ColorsSel; eyes?: { G?: string; D?: string }; dead?: boolean; prone?: boolean; facing?: Dir8; pos?: { x: number; y: number } }) {
+export function AnimatedPlanToken({ id, planId, species, colors, eyes, dead, prone, facing, pos }: { id: string; planId: BodyPlanId; species: string; colors?: ColorsSel; eyes?: { G?: string; D?: string }; dead?: boolean; prone?: boolean; facing?: Dir8; pos?: { x: number; y: number } }) {
   const { plan, species: sp, pose, view, mirror, wings } = usePlanAnim(id, planId, species, dead, facing, pos, prone);
   if (!plan) return null;
   const svg = bonesToSvg(plan.resolve(sp, view, pose, { colors, wings, eyes }));

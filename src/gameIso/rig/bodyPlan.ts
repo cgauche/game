@@ -1,6 +1,6 @@
 /**
- * Registre des GABARITS CORPORELS — indirige le rendu d'une créature vers son plan, ou
- * 'monolithic' (legacy : pas de plan). UNE machinerie (FK générique + palette + facing) ; chaque
+ * Registre des GABARITS CORPORELS — indirige le rendu d'une créature vers son plan corporel.
+ * UNE machinerie (FK générique + palette + facing) ; chaque
  * plan apporte son squelette + ses anims (poses). TOUT est registry-driven : `bodyPlanOf` dérive
  * le plan du nom via `creatures/defs/`, et la table PLANS est AUTO-ENREGISTRÉE depuis
  * `plans/defs/` — AJOUTER un gabarit = un module compose (BodyPlan exporté) + un `plans/defs/<id>.ts`
@@ -65,11 +65,11 @@ export function planById(id: BodyPlanId): BodyPlan {
 
 /**
  * Plan corporel cosmétique d'un nom de créature. ENTIÈREMENT dérivé des `defs/` : chaque def
- * non-bipède porte son `plan` (gabarit rigué OU `monolithic`). Ajouter/router une créature =
+ * non-bipède porte son `plan` (gabarit rigué). Ajouter/router une créature =
  * un fichier def, ZÉRO édition ici (plus aucune liste de noms en dur). Défaut = bipède (tout
  * humanoïde nommé ou générique non couvert par un def rigué).
  */
-export function bodyPlanOf(name: string): BodyPlanId | 'monolithic' {
+export function bodyPlanOf(name: string): BodyPlanId {
   return resolveByName(name).plan; // délègue au résolveur unique
 }
 
@@ -86,7 +86,7 @@ export function resolveByName(idOrName: string): RenderResolution {
  *  3ᵉ arg = `id` de créature (scènes/spawn) OU un nom d'auteur (statbloc custom nommé d'après une espèce). */
 export interface RenderResolution {
   kind: 'rig' | 'plan';
-  plan: BodyPlanId | 'monolithic';
+  plan: BodyPlanId;
   species: string;
   scale: number;
 }
