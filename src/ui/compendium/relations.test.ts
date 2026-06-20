@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { reverseGroups, bookContents, labelIndex } from './relations';
+import { reverseGroups, bookContents, labelIndex, tokenizeLinks } from './relations';
 import { creatures, traits, gods, trappings, skills, careerLevels, findCareerById } from '../../data';
 
 /** Un groupe inverse de catégorie `cat` contient-il `label` ? */
@@ -61,6 +61,19 @@ describe('relations — graphe inverse id-based', () => {
     expect(tCat && tCat.labels.length).toBeGreaterThan(0);
     // Trié alpha à l'intérieur d'une catégorie.
     if (tCat) expect([...tCat.labels]).toEqual([...tCat.labels].sort((a, b) => a.localeCompare(b, 'fr')));
+  });
+
+  it('tokenizeLinks lie le vocabulaire de règles, écarte soi-même et l’inconnu', () => {
+    // Une compétence dont le libellé est auto-liable (≥4, non ambigu) doit être tokenisée en lien.
+    const s = skills.find((x) => x.label.length >= 4 && labelIndex().get(x.label.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase())?.category === 'skills')!;
+    const toks = tokenizeLinks(`Effectuez un Test de ${s.label} pour réussir.`);
+    const link = toks.find((t) => typeof t === 'object' && t.label === s.label);
+    expect(link).toBeTruthy();
+    expect((link as { category: string }).category).toBe('skills');
+    // Lien vers SOI écarté → tout reste en texte (aucun token objet).
+    expect(tokenizeLinks(`${s.label} est une compétence.`, s.label).every((t) => typeof t === 'string')).toBe(true);
+    // Prose sans vocabulaire connu → un seul segment texte, inchangé.
+    expect(tokenizeLinks('Zzz qqq wxyz vvv.')).toEqual(['Zzz qqq wxyz vvv.']);
   });
 
   it('labelIndex résout un libellé connu, écarte les ambigus/courts', () => {

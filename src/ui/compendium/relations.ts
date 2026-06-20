@@ -262,3 +262,43 @@ export function labelIndex(): Map<string, { category: string; label: string }> {
   LABEL_INDEX = new Map([...seen.entries()].filter((x): x is [string, { category: string; label: string }] => x[1] != null));
   return LABEL_INDEX;
 }
+
+/** Catégories dont le VOCABULAIRE apparaît en prose (règles) → auto-liées dans les descriptions.
+ *  On EXCLUT les noms propres (créatures/sorts/objets/lieux…) : ils bloatent le matcher et sur-lient. */
+const LINKABLE_CATS = new Set(['characteristics', 'skills', 'talents', 'etats', 'maneuvers', 'traits', 'qualities', 'domains']);
+/** Un fragment de prose tokenisé : texte brut, OU une mention d'entité à lier (category+label). */
+export type LinkToken = string | { category: string; label: string; text: string };
+const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+let LINK_RE: RegExp | null = null;
+/** Regex (construite UNE fois) des libellés auto-liables, plus longs d'abord (« Magie des Arcanes »
+ *  avant « Magie »), bornée aux frontières de mot Unicode (gère accents/apostrophes français). */
+function linkRe(): RegExp {
+  if (LINK_RE) return LINK_RE;
+  const labels = [...new Set([...labelIndex().values()].filter((v) => LINKABLE_CATS.has(v.category)).map((v) => v.label))]
+    .sort((a, b) => b.length - a.length);
+  LINK_RE = new RegExp(`(?<![\\p{L}\\p{N}])(${labels.map(escapeRe).join('|')})(?![\\p{L}\\p{N}])`, 'giu');
+  return LINK_RE;
+}
+
+/**
+ * Tokenise une prose en alternant texte brut et mentions d'entité à LIER (auto-liage du Codex,
+ * façon `dev.html`). PUR & locale-scoped (matcher dérivé des libellés de la locale active, jamais
+ * une chaîne FR en dur → multilingue de principe). Écarte les liens vers SOI (`selfLabel`) et les
+ * libellés ambigus/courts (déjà filtrés par `labelIndex`). Seul le vocabulaire de RÈGLES est lié.
+ */
+export function tokenizeLinks(text: string, selfLabel?: string): LinkToken[] {
+  const re = linkRe();
+  re.lastIndex = 0;
+  const out: LinkToken[] = [];
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text))) {
+    const hit = labelIndex().get(deburrLower(m[1]));
+    if (!hit || hit.label === selfLabel) continue; // inconnu / auto-référence → laissé en texte
+    if (m.index > last) out.push(text.slice(last, m.index));
+    out.push({ category: hit.category, label: hit.label, text: m[1] });
+    last = m.index + m[1].length;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
