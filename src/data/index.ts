@@ -323,6 +323,10 @@ export interface TraitCapabilities {
   bonusWoundsBE?: boolean;
   mutationAtSpawn?: 'physique' | 'mentale';
   swarm?: boolean;
+  /** Attaque NATURELLE (LDB 85) : le trait EST une arme (morsure, cornes, tentacules…) — pas d'objet
+   *  tenu par le rig. Remplace l'ancienne reconnaissance par découpe du libellé + Map FR au runtime
+   *  (`statEntry` interdit le parsing de chaîne au runtime). `ranged` pour les attaques à distance (crachat). */
+  naturalWeapon?: { ranged?: boolean };
   // Résolution de combat (seuil/type éventuel depuis l'instance)
   wardSave?: boolean;
   magicResistance?: boolean;

@@ -324,7 +324,10 @@
       {
         "id": "cornes"
       }
-    ]
+    ],
+    "capabilities": {
+      "naturalWeapon": {}
+    }
   },
   {
     "id": "corruption",
@@ -845,7 +848,10 @@
       {
         "id": "morsure"
       }
-    ]
+    ],
+    "capabilities": {
+      "naturalWeapon": {}
+    }
   },
   {
     "id": "mort-vivant",
@@ -1331,7 +1337,10 @@
       {
         "id": "tentacules"
       }
-    ]
+    ],
+    "capabilities": {
+      "naturalWeapon": {}
+    }
   },
   {
     "id": "terreur",
