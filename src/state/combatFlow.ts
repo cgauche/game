@@ -146,6 +146,7 @@ export * from './combatGeometry';
 // --- Garde de reprise unique (« une modale / une pause bloque l'IA ? ») extraite → combatGate.ts (baril) ---
 export * from './combatGate';
 import { combatAdvanceBlocked, aiDriven } from './combatGate';
+import { perceivedTiles } from './visionState';
 import { cadenceAutoCombat } from '../engine/cadence';
 
 
@@ -3951,6 +3952,12 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   // remplace la Marche s'il porte plus loin. (Les obstacles traversés sont ignorés via `flying`.)
   const flyM = flyMeters(enemy.traits);
   if (!justMounted && flyM != null) moveBudget = Math.max(moveBudget, Math.floor(flyM / 2));
+  // Vision RÉCIPROQUE (LDB 13 l.123 + lumière) : l'ennemi ne cible/poursuit que les héros qu'il PERÇOIT
+  // réellement (Ligne de Vue + lumière, vision nocturne incluse) — même moteur que la vue du groupe.
+  const perceived = perceivedTiles(
+    { scene, battle, party: get().party, partyPos: get().partyPos, gameTime: get().gameTime, lightLevel: get().lightLevel },
+    enemy,
+  );
   const action = chooseEnemyAction({
     enemy,
     heroes,
@@ -3961,6 +3968,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
     spellRange,
     smoke: smokeOf(battle),
     flying: flyM != null, // Vol : ignore terrains/obstacles/personnages traversés (LDB 85 p.343)
+    perceived,
   });
   const targetOf = (id: string) => battle.combatants.find((c) => c.id === id)!;
   const canAct = canTakeAction(enemy); // Sonné : pas d'Action — déplacement seul (LDB États l.123)

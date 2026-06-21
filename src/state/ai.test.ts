@@ -137,3 +137,24 @@ describe("IA d'ennemi (chooseEnemyAction, pure)", () => {
     expect(chooseEnemyAction(input(e, [h], { blocked })).kind).toBe('end');
   });
 });
+
+describe('IA — vision réciproque (perceived)', () => {
+  it('ne cible PAS un héros hors de sa perception, même proche et faible (mêlée)', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 });
+    const seen = mk('seen', 'hero', { x: 7, y: 5 });
+    const unseen = mk('unseen', 'hero', { x: 6, y: 5 }, { wounds: { current: 1, max: 10 } }); // adjacent + faible
+    const action = chooseEnemyAction(input(e, [seen, unseen], { perceived: new Set(['7,5,0']) }));
+    const tid = (action as { targetId?: string; thenTargetId?: string }).targetId ?? (action as { thenTargetId?: string }).thenTargetId;
+    expect(tid).toBe('seen'); // l'invisible (pourtant adjacent/faible) est ignoré
+  });
+  it('aucun héros perçu → passe la main (furtivité)', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 });
+    const h = mk('h', 'hero', { x: 6, y: 5 });
+    expect(chooseEnemyAction(input(e, [h], { perceived: new Set() })).kind).toBe('end');
+  });
+  it('perçoit une cible au tir → la vise', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [RANGED] });
+    const seen = mk('seen', 'hero', { x: 5, y: 9 });
+    expect(chooseEnemyAction(input(e, [seen], { perceived: new Set(['5,9,0']) })).kind).toBe('shoot');
+  });
+});

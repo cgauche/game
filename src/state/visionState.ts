@@ -22,32 +22,54 @@ export interface VisionInput {
   lightLevel: number | null;
 }
 
+/** Champ de lumière + fumée de la scène (SOURCE UNIQUE pour la vue du groupe ET la perception ennemie) :
+ *  ambiant + lumières posées (carte) + lumières portées (les deux camps en combat, le groupe en
+ *  exploration — une torche révèle son porteur). */
+function sceneLightField(s: VisionInput): { light: ReturnType<typeof computeLightField>; smoke: Pt[] } {
+  const scene = s.scene!;
+  const ambient = ambientScalar(scene, s.gameTime, s.lightLevel);
+  const sources = mapLights(scene);
+  let smoke: Pt[] = [];
+  if (s.battle) {
+    if (s.battle.zones) smoke = smokeOf(s.battle as never);
+    for (const c of s.battle.combatants) sources.push(...combatantLights(c));
+  } else {
+    sources.push(...combatantLights({ pos: s.partyPos, items: (s.party ?? []).flatMap((p) => p.items ?? []) }));
+  }
+  return { light: computeLightField(scene, ambient, sources, smoke), smoke };
+}
+
 /** Ensemble des cases (`"x,y,z"`) actuellement visibles par le groupe : union des alliés vivants en
  *  combat, sinon depuis la position du groupe en exploration. PUR (dérivé de l'état). */
 export function computeStateVisible(s: VisionInput): Set<string> {
   const scene = s.scene;
   if (!scene) return new Set();
-  const ambient = ambientScalar(scene, s.gameTime, s.lightLevel);
   const baseR = baseSightTiles(scene, s.gameTime);
+  const { light, smoke } = sceneLightField(s);
   const viewers = [];
-  const sources = mapLights(scene); // lumières POSÉES sur la carte (brasero, feu de camp…)
-  let smoke: Pt[] = [];
   if (s.battle) {
-    if (s.battle.zones) smoke = smokeOf(s.battle as never);
     for (const c of s.battle.combatants) {
-      sources.push(...combatantLights(c)); // LES DEUX camps éclairent (une torche ennemie se révèle)
       if (c.kind !== 'hero' || isOutOfAction(c) || !c.pos) continue;
       viewers.push({ pos: c.pos, radiusTiles: baseR, darkTiles: darkSightTiles(c) });
     }
   } else {
-    const party = s.party ?? [];
-    const dark = party.reduce((m, c) => Math.max(m, darkSightTiles(c)), 0);
+    const dark = (s.party ?? []).reduce((m, c) => Math.max(m, darkSightTiles(c)), 0);
     viewers.push({ pos: s.partyPos, z: s.partyPos.z, radiusTiles: baseR, darkTiles: dark });
-    // exploration : objets portés par le groupe, émis depuis la position du groupe
-    sources.push(...combatantLights({ pos: s.partyPos, items: party.flatMap((p) => p.items ?? []) }));
   }
-  const light = computeLightField(scene, ambient, sources, smoke);
   return computeVisible(scene, viewers, light, smoke);
+}
+
+/** Cases qu'un combattant donné PERÇOIT (Ligne de Vue + lumière, vision nocturne incluse), avec le MÊME
+ *  champ de lumière que le groupe → vision réciproque de l'IA. PUR. */
+export function perceivedTiles(s: VisionInput, viewer: Combatant): Set<string> {
+  if (!s.scene || !viewer.pos) return new Set();
+  const { light, smoke } = sceneLightField(s);
+  return computeVisible(
+    s.scene,
+    [{ pos: viewer.pos, radiusTiles: baseSightTiles(s.scene, s.gameTime), darkTiles: darkSightTiles(viewer) }],
+    light,
+    smoke,
+  );
 }
 
 /** Fond les cases `keys` dans l'ensemble exploré de la scène courante (accumulation persistante, ne

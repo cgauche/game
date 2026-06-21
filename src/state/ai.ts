@@ -49,6 +49,10 @@ export interface EnemyTurnInput {
   flying?: boolean;
   /** Cases enfumées (Souffle (Fumée)) qui bloquent la Ligne de Vue. */
   smoke?: Pt[];
+  /** Vision RÉCIPROQUE : cases (`"x,y,0"`) que CET ennemi perçoit réellement (Ligne de Vue + lumière,
+   *  vision nocturne incluse) — calculé par l'appelant via le moteur de vision. L'ennemi ne cible/poursuit
+   *  que les héros sur ces cases (furtivité). ABSENT = pas de gate (comportement historique / tests purs). */
+  perceived?: Set<string>;
 }
 
 /**
@@ -74,7 +78,12 @@ function nearest(enemyPos: Pt, heroes: Combatant[]): Combatant {
 
 /** Choisit l'action d'un ennemi pour son tour. Pure et déterministe. */
 export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
-  const { enemy, heroes, scene, blocked, movement, offensiveSpell, spellRange, smoke, flying } = input;
+  const { enemy, scene, blocked, movement, offensiveSpell, spellRange, smoke, flying } = input;
+  // Vision réciproque : l'ennemi ne cible/poursuit que les héros qu'il PERÇOIT (LoS + lumière, comme le
+  // groupe). `perceived` absent = aucun gate (comportement historique / tests purs).
+  const heroes = input.perceived
+    ? input.heroes.filter((h) => h.pos && input.perceived!.has(`${h.pos.x},${h.pos.y},0`))
+    : input.heroes;
   if (heroes.length === 0) return { kind: 'end' };
   if (hasCondition(enemy, 'surpris')) return { kind: 'end' }; // Surpris (LDB 16 l.132) : ni Mouvement ni Action ce tour
   // En flammes (LDB 16 l.77) : un ennemi NON frénétique se roule au sol pour éteindre le feu (1d10/Round
