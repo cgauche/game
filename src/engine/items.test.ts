@@ -22,18 +22,17 @@ describe('weaponHands (latéralité)', () => {
     expect(weaponHands(it_({ name: 'Hallebarde', subType: "Armes d'hast", hands: 2 }))).toBe(2);
     expect(weaponHands(it_({ name: 'Epee', subType: 'Base', hands: 1 }))).toBe(1);
   });
-  it('fallback sans `hands` : marqueur (2M) dans le nom, ou Groupe Deux-mains', () => {
-    expect(weaponHands(it_({ name: '(2M) Lance', subType: "Armes d'hast" }))).toBe(2);
+  it('fallback sans `hands` typé : Groupe Deux-mains (subType)', () => {
     expect(weaponHands(it_({ name: 'Espadon', subType: 'deux-mains' }))).toBe(2); // id de Groupe
     expect(weaponHands(it_({ name: 'Epee', subType: 'Base' }))).toBe(1);
   });
-  it('itemFromTrapping pose `hands` depuis le marqueur (2M) — mêlée ET distance', () => {
+  it('itemFromTrapping pose `hands` depuis le champ typé — mêlée ET distance', () => {
     expect(itemFromTrapping('Arc')?.hands).toBe(2);
     expect(itemFromTrapping('Arbalète de poing')?.hands).toBe(1);
     expect(itemFromTrapping('Pistolet')?.hands).toBe(1);
     expect(itemFromTrapping('Hallebarde')?.hands).toBe(2);
   });
-  it('Poudre noire/Ingénierie classées par le marqueur canonique (LDB 62 « (2M) ») : arquebuses 2 mains, pistolets 1 main', () => {
+  it('Poudre noire/Ingénierie classées par le champ typé `hands` (LDB 62) : arquebuses 2 mains, pistolets 1 main', () => {
     expect(itemFromTrapping('Arquebuse')?.hands).toBe(2);
     expect(itemFromTrapping('Tromblon')?.hands).toBe(2);
     expect(itemFromTrapping("Long fusil d'Hochland")?.hands).toBe(2);

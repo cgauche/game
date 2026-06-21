@@ -151,7 +151,11 @@ export interface TrappingData {
   /** id STABLE (slug du libellé) — cible des `TrappingRef`, robuste au renommage. */
   id: string;
   label: string;
-  prefix: string | null;
+  /** Latéralité TYPÉE (LDB 62) : `2` = arme à deux mains, absent = une main. Remplace l'ancien marqueur
+   *  d'affichage `(2M)` re-parsé par regex — source de vérité unique, multilangue-safe. */
+  hands?: 1 | 2;
+  /** Taille TYPÉE du paquet de munitions (« 12 flèches », LDB 290) : remplace l'ancien marqueur `(12)`. */
+  packSize?: number;
   type: string;
   /** `id` du Groupe d'objet (`WeaponGroupData.id`) : Groupe d'arme (Base/Escrime…), famille de munition
    *  (Arc/Poudre noire…), type d'armure (Plate/Mailles…) ou catégorie d'inventaire — réf d'entité, ≠ libellé. */

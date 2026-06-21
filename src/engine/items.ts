@@ -143,8 +143,6 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
           .map((s) => s.trim())
           .flatMap((p) => ARMOUR_LOC[p] ?? [])
       : undefined;
-  const qtyMatch = (t.prefix ?? '').match(/\((\d+)\)/); // « (12) » → 12 (taille du paquet de munitions)
-  const twoHandMark = /\(2m\)/i.test(t.prefix ?? '') || /\(2m\)/i.test(t.label); // marqueur « (2M) » = 2 mains
   return {
     uid: newUid(),
     trappingId: t.id,
@@ -160,8 +158,8 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
     equipped: false,
     desc: t.desc,
     subType: t.subType ?? undefined,
-    hands: kind === 'melee' || kind === 'ranged' ? (twoHandMark ? 2 : 1) : undefined, // marqueur (2M), uniforme
-    qty: kind === 'ammo' ? (qtyMatch ? parseInt(qtyMatch[1], 10) : 1) : undefined,
+    hands: kind === 'melee' || kind === 'ranged' ? (t.hands === 2 ? 2 : 1) : undefined, // champ typé (LDB 62)
+    qty: kind === 'ammo' ? (t.packSize ?? 1) : undefined, // taille de paquet typée
     // Marqueurs fonctionnels de catégorie (multilangue-safe) — propagés tels quels du catalogue.
     ...(t.weatherProtection ? { weatherProtection: true } : {}),
     ...(t.isShelter ? { isShelter: true } : {}),
@@ -215,14 +213,13 @@ export function emptyArmour(ap = 0): ArmourPoints {
 
 /** Latéralité d'une arme. La donnée canonique marque le 2-mains par le préfixe `(2M)` — UNIFORME mêlée ET
  *  distance (Arc/Arbalète/Arquebuse/Tromblon = (2M) ; Arbalète de poing/Pistolet/Fronde = 1 main).
- *  `itemFromTrapping` pose `hands` depuis ce marqueur → c'est la SOURCE de vérité (multilangue-safe :
- *  le champ typé `hands`, pas le nom). FALLBACK legacy (ItemInstance/Weapon sans `hands` : statbloc,
- *  synthétiques) : Groupe « Deux-mains » (id stable) ; sinon le marqueur `(2M)` du nom — language-specific,
- *  mais NÉCESSAIRE car `subType==='deux-mains'` ne couvre PAS les arcs/arbalètes/armes à feu (subType
- *  arc/poudre-noire…) qui portent aussi `(2M)`. Repli toléré : il n'est atteint que sans `hands` typé. */
-export function weaponHands(it: { hands?: 1 | 2; name: string; subType?: string }): 1 | 2 {
+ *  La donnée canonique porte la latéralité TYPÉE : `TrappingData.hands` (LDB 62), propagée par
+ *  `itemFromTrapping` sur l'ItemInstance. Repli pour les armes BRUTES sans `hands` typé (statblocs
+ *  d'ennemis, armes synthétiques) : Groupe « Deux-mains » typé (`subType==='deux-mains'`). Aucun parse
+ *  de chaîne d'affichage — l'ancien marqueur `(2M)` re-parsé par regex a été supprimé. */
+export function weaponHands(it: { hands?: 1 | 2; subType?: string }): 1 | 2 {
   if (it.hands === 1 || it.hands === 2) return it.hands;
-  if (it.subType === 'deux-mains' || /\(2m\)/i.test(it.name)) return 2; // Groupe « Deux-mains » (id) ; repli legacy (2M)
+  if (it.subType === 'deux-mains') return 2; // Groupe « Deux-mains » (id stable, donnée typée)
   return 1;
 }
 
