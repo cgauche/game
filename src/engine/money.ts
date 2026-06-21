@@ -1,8 +1,9 @@
 /**
  * Monnaie impériale (pur). RAW LDB 57 « La monnaie » p.290 : 1 couronne d'or (CO) = 20 pistoles
  * d'argent = 240 sous de cuivre ; 1 pistole = 12 sous. Le champ `brass` du store = le sou de cuivre
- * (= `price.bronze` des données). Interface structurellement identique au `Money` du store (pas
- * d'import → moteur pur). Affichage canon (LDB 57) : CO (couronne d'or), notation `/` pour les
+ * (= `price.bronze` des données). SOURCE UNIQUE du type `Money` : le state (`pendings.ts`) le
+ * ré-importe d'ici (sens autorisé state→engine), pas de copie. Affichage canon (LDB 57) : CO
+ * (couronne d'or), notation `/` pour les
  * pistoles d'argent (« 6/8 », « 20/– »), sc (sou de cuivre). `formatMoney` = SOURCE UNIQUE d'affichage.
  */
 export interface Money { gold: number; silver: number; brass: number; }
