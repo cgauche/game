@@ -2477,8 +2477,8 @@ export function aiBestMissile(enemy: Combatant): string | undefined {
     .filter((sp): sp is NonNullable<ReturnType<typeof findSpell>> => !!sp && isMagicMissile(sp));
   if (!known.length) return undefined;
   const dmg = (sp: NonNullable<ReturnType<typeof findSpell>>) => missileDamage(sp)?.damage ?? 0;
-  const maxSL = (sp: { type: string }) => {
-    const info = castInfo(sp as any);
+  const maxSL = (sp: NonNullable<ReturnType<typeof findSpell>>) => {
+    const info = castInfo(sp);
     // SL max d'un jet = valeur/10, + les DR de Talent lié au Test réussi (LDB 10 l.20 —
     // Diction instinctive ×N) : c'est ce qui détermine les NI passables SANS Focalisation.
     const tal = castTestTalentDR(enemy, info.skill === 'priere' ? 'Prière' : 'Langue (Magick)');
