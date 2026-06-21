@@ -21,7 +21,7 @@ import * as netFlow from './netFlow';
 import type { NetState } from './netFlow';
 import type { InterludeState, BankDeposit, PendingActivity } from './interludeFlow';
 export type { PendingActivity } from './interludeFlow';
-import { snapshotSave, saveToSlot, readSlot, importSave, type SaveSlot, type SaveGame } from './saves';
+import { snapshotSave, saveToSlot, readSlot, importSave, AUTO_SLOT, type SaveSlot, type AnySlot, type SaveGame } from './saves';
 import { initialFields, resetFields } from './stateFields';
 
 /** Charge une save (Jalon 5) : reset zéro-maintenance (état de création sans les actions — le
@@ -392,8 +392,11 @@ export interface GameState extends RollFlowActionsMap {
   partyRemoveHero: (heroId: string) => void;
   /** Sauvegarde la partie dans un slot localStorage (Jalon 5). Refusée en combat. */
   saveGame: (slot: SaveSlot) => boolean;
-  /** Charge un slot : reset zéro-maintenance + données de la save (écran campagne). */
-  loadGame: (slot: SaveSlot) => boolean;
+  /** Auto-save silencieuse vers l'emplacement AUTO (checkpoint d'entrée de scène). Hors combat,
+   *  jamais l'invité coop. Réutilise le même snapshot que `saveGame`. */
+  autoSave: () => boolean;
+  /** Charge un slot (manuel OU auto) : reset zéro-maintenance + données de la save (écran campagne). */
+  loadGame: (slot: AnySlot) => boolean;
   /** Applique une save importée (export/import JSON). */
   importGame: (json: string) => boolean;
   setParty: (p: Combatant[]) => void;
@@ -936,6 +939,12 @@ export const useGame = create<GameState>((set, get) => ({
     get().log(ok ? `Partie sauvegardée (emplacement ${slot}).` : 'Sauvegarde impossible (stockage indisponible ou plein).');
     return ok;
   },
+  autoSave: () => {
+    const s = get();
+    if (s.battle || s.net.mode === 'guest') return false; // hors combat ; jamais l'invité (la save vit chez l'hôte)
+    const save = snapshotSave(s as unknown as Record<string, unknown>, useGame.getInitialState() as unknown as Record<string, unknown>, new Date().toISOString(), ruleOverrides());
+    return saveToSlot(AUTO_SLOT, save);
+  },
   loadGame: (slot) => {
     const save = readSlot(slot);
     if (!save) return false;
@@ -1059,6 +1068,7 @@ export const useGame = create<GameState>((set, get) => ({
     }));
     get().advanceTime(TIME_COST.sceneTransition); // seam « tout est horodaté » : 0 en intérieur (paramétrable, #T2 extérieur/voyage)
     bus.emit(EVT.SCENE_DIRTY);
+    get().autoSave(); // checkpoint d'ENTRÉE de scène (hors combat) — avant qu'une rencontre ne démarre le combat
     openEncounterPsych(get, set); // couture C : Psychologie à la rencontre dans la nouvelle scène
   },
 

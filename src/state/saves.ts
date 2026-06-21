@@ -37,7 +37,10 @@ export interface SaveGame extends SaveMeta {
 
 export type SaveSlot = 1 | 2 | 3;
 export const SAVE_SLOTS: SaveSlot[] = [1, 2, 3];
-const KEY = (slot: SaveSlot) => `wfrp4.save.v${SAVE_VERSION}.${slot}`;
+/** Emplacement AUTO (écrit par l'auto-save aux checkpoints ; chargeable, jamais écrit à la main). */
+export const AUTO_SLOT = 'auto' as const;
+export type AnySlot = SaveSlot | typeof AUTO_SLOT;
+const KEY = (slot: AnySlot) => `wfrp4.save.v${SAVE_VERSION}.${slot}`;
 
 function storage(): Storage | null {
   try {
@@ -124,7 +127,7 @@ export function migrateSave(parsed: unknown): SaveGame | null {
   return isValidSave(save) ? save : null;
 }
 
-export function saveToSlot(slot: SaveSlot, save: SaveGame): boolean {
+export function saveToSlot(slot: AnySlot, save: SaveGame): boolean {
   try {
     storage()?.setItem(KEY(slot), JSON.stringify(save));
     return readSlot(slot) != null; // confirme l'écriture (quota plein → null)
@@ -133,7 +136,7 @@ export function saveToSlot(slot: SaveSlot, save: SaveGame): boolean {
   }
 }
 
-export function readSlot(slot: SaveSlot): SaveGame | null {
+export function readSlot(slot: AnySlot): SaveGame | null {
   const s = storage();
   if (!s) return null;
   try {
@@ -145,7 +148,7 @@ export function readSlot(slot: SaveSlot): SaveGame | null {
   }
 }
 
-export function deleteSlot(slot: SaveSlot): void {
+export function deleteSlot(slot: AnySlot): void {
   try {
     storage()?.removeItem(KEY(slot));
   } catch {
