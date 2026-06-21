@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
+import { hotbar } from '../state/hotbarBridge';
 import { useGame, activeCombatant, entityPickables, movementRemaining, canMove } from '../state/store';
 import { hasMeaningfulOption } from '../state/turnEconomy';
 import { findSpellById } from '../data/index';
@@ -24,6 +25,9 @@ import { CodexRef } from './compendium/CodexRef';
 import { ItemIcon } from './ItemIcon';
 
 const bleedStacks = (c: Combatant) => c.conditions.find((x) => x.name === 'hemorragique')?.value ?? 0;
+
+/** Descripteur d'une capacité de la barre : source du rendu ET du clavier (1-9 = n-ième slot). */
+type HotbarSlot = { id: string; icon: ReactNode; label: ReactNode; title: string; cls?: string; disabled?: boolean; run: () => void };
 
 /**
  * Barre d'action (hotbar) du combattant ACTIF, façon Baldur's Gate / NWN. Désencombrée :
@@ -296,6 +300,37 @@ export function ActionBar() {
   const canHeal = isHero && hasHealSkill(active) && !battle.acted && !stunned && !frenzied;
   const healTargets = canHeal ? healableTargets(active, battle.combatants.filter((c) => c.kind === 'hero'), { adjacency: true }) : [];
 
+  // ── Capacités de la barre, DATA-DRIVEN : UNE liste de descripteurs, source du rendu ET des
+  // raccourcis clavier 1-9 (positionnels, rien en dur). Construite au tour d'un héros, publiée au pont. ──
+  const slots: HotbarSlot[] = [];
+  if (isHero) {
+    if (moveStarted && !battle.acted) slots.push({ id: 'undo-move', cls: 'ab-undo', icon: '↩️', label: 'Annuler dépl.', title: "Annuler tout le déplacement de ce tour et revenir au point de départ (possible tant qu'aucune Action n'est prise)", run: cancelMove });
+    if (hasSpells && !frenzied) slots.push({ id: 'cast', cls: battle.action === 'cast' ? 'on' : '', disabled: battle.acted || stunned || broken, icon: '✨', label: `Incanter${battle.acted ? ' ✓' : ''}`, title: "Incanter un sort (Test de Langage mystique) — coûte l'Action", run: () => selectAction(battle.action === 'cast' ? null : 'cast') });
+    if (canHeal && healTargets.length > 0) slots.push({ id: 'heal', cls: battle.action === 'heal' ? 'on' : '', disabled: battle.acted || stunned || broken, icon: '🩹', label: 'Soigner', title: "Soigner (Compétence Guérison) : rend des PB ou stoppe une hémorragie — coûte l'Action", run: () => selectAction(battle.action === 'heal' ? null : 'heal') });
+    if (!frenzied) slots.push({ id: 'defend', disabled: battle.acted || stunned || broken, icon: '🛡️', label: `Défensive${battle.acted ? ' ✓' : ''}`, title: '+20 à tous vos Tests de défense jusqu’à votre prochain tour', run: defendTotal });
+    if (onFire) slots.push({ id: 'roll-fire', disabled: battle.acted || stunned, icon: '🔥', label: `Se rouler${battle.acted ? ' ✓' : ''}`, title: "Se rouler au sol pour éteindre les flammes (Test d'Athlétisme — coûte l'Action)", run: () => recoverState('en-flammes') });
+    if (entangled) slots.push({ id: 'free-entangle', disabled: battle.acted || stunned, icon: '🪢', label: `Se libérer${battle.acted ? ' ✓' : ''}`, title: "Se libérer de l'entrave (Test opposé de Force contre la source — coûte l'Action)", run: () => recoverState('empetre') });
+    if (canStandUp) slots.push({ id: 'stand', icon: '🧍', label: 'Se relever', title: "Se relever de l'État À Terre — utilise le Mouvement", run: standUp });
+    if (engaged && !frenzied) slots.push({ id: 'disengage', disabled: battle.acted && !canFreeDisengage, icon: '🚪', label: 'Se désengager', title: "Quitter le corps à corps (Esquive si Action dispo, sinon sacrifice d'Avantage)", run: disengage });
+    if (mountCandidate) slots.push({ id: 'mount', disabled: moveStarted || broken, icon: '🐎', label: 'Monter', title: `Enfourcher ${mountCandidate.name} (combat monté) — coûte le Mouvement`, run: mountUp });
+    if (mounted) slots.push({ id: 'dismount', disabled: moveStarted || broken, icon: '🥾', label: 'Descendre', title: 'Descendre de sa monture — coûte le Mouvement', run: dismount });
+    if (rangedW && !frenzied) slots.push({ id: 'aim', disabled: battle.acted || stunned || active.aiming, icon: '🎯', label: active.aiming ? 'En joue ✓' : 'Viser', title: "Viser : +20 (Accessible) au prochain tir — coûte l'Action", run: aim });
+    if (canPush) slots.push({ id: 'pushback', icon: '↩️', label: active.pushbackMode ? 'Repousser ✓' : 'Repousser', title: "Perturbante : la prochaine attaque réussie repousse d'1 m par DR au lieu de causer des Dégâts", run: togglePushback });
+    if (needsReload && !frenzied) slots.push({ id: 'reload', cls: `ab-alert${!battle.acted && !stunned && !broken ? ' pulse' : ''}`, disabled: battle.acted || stunned || broken, icon: '🔄', label: `Recharger${active.reloadProgress ? ` (${active.reloadProgress}/${rangedW.reload})` : ''}`, title: "Arme déchargée : recharger (Test étendu de Projectiles — coûte l'Action)", run: reload });
+    if (ammoChoices.length > 1 && !frenzied) slots.push({ id: 'ammo', cls: battle.action === 'ammo' ? 'on' : '', icon: '🏹', label: 'Munition ▾', title: 'Choisir la munition à tirer', run: () => selectAction(battle.action === 'ammo' ? null : 'ammo') });
+    if (canFrenzy) slots.push({ id: 'frenzy', icon: '🐗', label: 'Frénésie', title: "Entrer en Frénésie : Test de Force Mentale — coûte l'Action", run: frenzy });
+    if (attacks.length > 1) slots.push({ id: 'attacks', cls: showManeuvers || (battle.action === null && (battle.selectedAttack ?? 'arme') !== 'arme') ? 'on' : '', icon: '⚔️', label: 'Attaque ▾', title: "Choisir l'attaque (arme ou attaque spéciale d'un trait de créature)", run: () => setShowManeuvers((v) => !v) });
+    if (!frenzied) for (const g of usableGroups) {
+      const it = active.items?.find((i) => i.uid === g.uids[0]);
+      slots.push({ id: `item-${g.name}`, disabled: battle.acted || stunned || broken, icon: it ? <ItemIcon item={it} size={22} /> : '🧪', label: `${g.name}${g.uids.length > 1 ? ` ×${g.uids.length}` : ''}`, title: g.desc || `Utiliser ${g.name}`, run: () => useItem(g.uids[0]) });
+    }
+    if (!frenzied) for (const g of groundItems) slots.push({ id: `pickup-${g.entityId}:${g.key}`, disabled: battle.acted || stunned || broken, icon: '✋', label: g.label, title: "Ramasser cet objet au sol (coûte l'Action)", run: () => pickup(g.entityId, g.key) });
+    if (removableConditions.length > 0) slots.push({ id: 'resolve', cls: `ab-alert ${battle.action === 'resolve' ? 'on' : ''}`, icon: '✊', label: `Détermination (${resolve})`, title: "Détermination : retirer un État (ne coûte pas l'Action)", run: () => selectAction(battle.action === 'resolve' ? null : 'resolve') });
+    if (net.mode !== 'local') slots.push({ id: 'raise-hand', cls: battle.handRaised ? 'on' : '', disabled: !!battle.handRaised, icon: '✋', label: battle.handRaised ? 'Pause demandée' : 'Pause Round', title: 'Demander la pause au prochain début de Round (fenêtre Chance « agir en premier »)', run: () => useGame.getState().raiseHand() });
+    slots.push({ id: 'end-turn', cls: `ab-end ${!meaningfulLeft ? 'pulse' : ''} ${confirmEnd ? 'warn' : ''}`, icon: confirmEnd ? '⚠️' : '⏭️', label: confirmEnd ? 'Finir quand même ?' : 'Fin du tour', title: confirmEnd ? 'Tu n’as pas encore agi ce tour — clique encore pour finir quand même' : !meaningfulLeft ? 'Plus rien à faire ce tour' : 'Finir le tour', run: onEndTurn });
+  }
+  hotbar.slots = slots.map((s) => ({ run: s.run, disabled: s.disabled })); // pont clavier (1-9 = n-ième slot) — cf. hotbarBridge
+
   return (
     <div className="action-bar">
       {hasSpells && battle.action === 'cast' && !pendingCast && (
@@ -447,175 +482,13 @@ export function ActionBar() {
 
         {isHero ? (
           <div className="ab-slots">
-            {/* Annuler le déplacement (R6/LOT 6) : tant qu'aucune Action n'est prise, revenir au point de départ. */}
-            {moveStarted && !battle.acted && (
-              <button
-                className="ab-slot ab-undo"
-                onClick={cancelMove}
-                title="Annuler tout le déplacement de ce tour et revenir au point de départ (possible tant qu'aucune Action n'est prise)"
-              >
-                <span className="ab-ico">↩️</span>
-                <span className="ab-lbl">Annuler dépl.</span>
-              </button>
-            )}
-            {hasSpells && !frenzied && (
-              <button
-                className={`ab-slot ${battle.action === 'cast' ? 'on' : ''}`}
-                disabled={battle.acted || stunned || broken}
-                onClick={() => selectAction(battle.action === 'cast' ? null : 'cast')}
-                title="Incanter un sort (Test de Langage mystique) — coûte l'Action"
-              >
-                <span className="ab-ico">✨</span>
-                <span className="ab-lbl">Incanter{battle.acted && ' ✓'}</span>
-              </button>
-            )}
-            {canHeal && healTargets.length > 0 && (
-              <button
-                className={`ab-slot ${battle.action === 'heal' ? 'on' : ''}`}
-                disabled={battle.acted || stunned || broken}
-                onClick={() => selectAction(battle.action === 'heal' ? null : 'heal')}
-                title="Soigner (Compétence Guérison) : rend des PB ou stoppe une hémorragie — coûte l'Action"
-              >
-                <span className="ab-ico">🩹</span>
-                <span className="ab-lbl">Soigner</span>
-              </button>
-            )}
-            {!frenzied && (
-              <button
-                className="ab-slot"
-                disabled={battle.acted || stunned || broken}
-                onClick={defendTotal}
-                title="+20 à tous vos Tests de défense jusqu'à votre prochain tour"
-              >
-                <span className="ab-ico">🛡️</span>
-                <span className="ab-lbl">Défensive{battle.acted && ' ✓'}</span>
-              </button>
-            )}
-            {onFire && (
-              <button
-                className="ab-slot"
-                disabled={battle.acted || stunned}
-                onClick={() => recoverState('en-flammes')}
-                title="Se rouler au sol pour éteindre les flammes (Test d'Athlétisme — coûte l'Action)"
-              >
-                <span className="ab-ico">🔥</span>
-                <span className="ab-lbl">Se rouler{battle.acted && ' ✓'}</span>
-              </button>
-            )}
-            {entangled && (
-              <button
-                className="ab-slot"
-                disabled={battle.acted || stunned}
-                onClick={() => recoverState('empetre')}
-                title="Se libérer de l'entrave (Test opposé de Force contre la source — coûte l'Action)"
-              >
-                <span className="ab-ico">🪢</span>
-                <span className="ab-lbl">Se libérer{battle.acted && ' ✓'}</span>
-              </button>
-            )}
-
-            {/* ── Manœuvres situationnelles : slots DIRECTS (plus de catégorie « Spécial ») ── */}
-            {canStandUp && (
-              <button className="ab-slot" onClick={standUp} title="Se relever de l'État À Terre — utilise le Mouvement">
-                <span className="ab-ico">🧍</span><span className="ab-lbl">Se relever</span>
-              </button>
-            )}
-            {engaged && !frenzied && (
-              <button className="ab-slot" disabled={battle.acted && !canFreeDisengage} onClick={disengage} title="Quitter le corps à corps (Esquive si Action dispo, sinon sacrifice d'Avantage)">
-                <span className="ab-ico">🚪</span><span className="ab-lbl">Se désengager</span>
-              </button>
-            )}
-            {mountCandidate && (
-              <button className="ab-slot" disabled={moveStarted || broken} onClick={mountUp} title={`Enfourcher ${mountCandidate.name} (combat monté) — coûte le Mouvement`}>
-                <span className="ab-ico">🐎</span><span className="ab-lbl">Monter</span>
-              </button>
-            )}
-            {mounted && (
-              <button className="ab-slot" disabled={moveStarted || broken} onClick={dismount} title="Descendre de sa monture — coûte le Mouvement">
-                <span className="ab-ico">🥾</span><span className="ab-lbl">Descendre</span>
-              </button>
-            )}
-            {rangedW && !frenzied && (
-              <button className="ab-slot" disabled={battle.acted || stunned || active.aiming} onClick={aim} title="Viser : +20 (Accessible) au prochain tir — coûte l'Action">
-                <span className="ab-ico">🎯</span><span className="ab-lbl">{active.aiming ? 'En joue ✓' : 'Viser'}</span>
-              </button>
-            )}
-            {canPush && (
-              <button className="ab-slot" onClick={togglePushback} title="Perturbante : la prochaine attaque réussie repousse d'1 m par DR au lieu de causer des Dégâts">
-                <span className="ab-ico">↩️</span><span className="ab-lbl">{active.pushbackMode ? 'Repousser ✓' : 'Repousser'}</span>
-              </button>
-            )}
-            {needsReload && !frenzied && (
-              // Arme à distance déchargée → bouton MIS EN ÉVIDENCE (or pulsé tant que recharger est jouable),
-              // sinon le « il faut recharger » passe inaperçu parmi les slots (le réticule de tir le dit aussi).
-              <button className={`ab-slot ab-alert${!battle.acted && !stunned && !broken ? ' pulse' : ''}`} disabled={battle.acted || stunned || broken} onClick={reload} title="Arme déchargée : recharger (Test étendu de Projectiles — coûte l'Action)">
-                <span className="ab-ico">🔄</span><span className="ab-lbl">Recharger{active.reloadProgress ? ` (${active.reloadProgress}/${rangedW!.reload})` : ''}</span>
-              </button>
-            )}
-            {ammoChoices.length > 1 && !frenzied && (
-              <button className={`ab-slot ${battle.action === 'ammo' ? 'on' : ''}`} onClick={() => selectAction(battle.action === 'ammo' ? null : 'ammo')} title="Choisir la munition à tirer">
-                <span className="ab-ico">🏹</span><span className="ab-lbl">Munition ▾</span>
-              </button>
-            )}
-            {canFrenzy && (
-              <button className="ab-slot" onClick={frenzy} title="Entrer en Frénésie : Test de Force Mentale — coûte l'Action">
-                <span className="ab-ico">🐗</span><span className="ab-lbl">Frénésie</span>
-              </button>
-            )}
-            {/* Attaques (« Attaque ▾ ») : contrôle UNIQUE qui énumère availableAttacks (Arme + gratuites/zone
-                de trait + Piétinement + mutation Tentacule). Apparaît dès qu'il y a une attaque SPÉCIALE en
-                plus de l'Arme. Sélectionner arme `selectedAttack` (clic-ennemi = approche-puis-frappe) ;
-                Hurlement (zone/soi) se résout directement. */}
-            {attacks.length > 1 && (
-              <button className={`ab-slot ${showManeuvers || (battle.action === null && (battle.selectedAttack ?? 'arme') !== 'arme') ? 'on' : ''}`} onClick={() => setShowManeuvers((v) => !v)} title="Choisir l'attaque (arme ou attaque spéciale d'un trait de créature)">
-                <span className="ab-ico">⚔️</span><span className="ab-lbl">Attaque ▾</span>
-              </button>
-            )}
-            {!frenzied && usableGroups.map((g) => {
-              const it = active.items?.find((i) => i.uid === g.uids[0]);
-              return (
-                <button key={g.name} className="ab-slot" disabled={battle.acted || stunned || broken} onClick={() => useItem(g.uids[0])} title={g.desc || `Utiliser ${g.name}`}>
-                  {it ? <ItemIcon item={it} size={22} /> : <span className="ab-ico">🧪</span>}<span className="ab-lbl">{g.name}{g.uids.length > 1 ? ` ×${g.uids.length}` : ''}</span>
-                </button>
-              );
-            })}
-            {!frenzied && groundItems.map((g) => (
-              <button key={`${g.entityId}:${g.key}`} className="ab-slot" disabled={battle.acted || stunned || broken} onClick={() => pickup(g.entityId, g.key)} title="Ramasser cet objet au sol (coûte l'Action)">
-                <span className="ab-ico">✋</span><span className="ab-lbl">{g.label}</span>
+            {slots.map((s, i) => (
+              <button key={s.id} className={'ab-slot ' + (s.cls ?? '')} disabled={s.disabled} onClick={s.run} title={s.title}>
+                {i < 9 && <span className="ab-key">{i + 1}</span>}
+                <span className="ab-ico">{s.icon}</span>
+                <span className="ab-lbl">{s.label}</span>
               </button>
             ))}
-
-            {/* ── Alerte visible (Détermination) ── */}
-            {removableConditions.length > 0 && (
-              <button
-                className={`ab-slot ab-alert ${battle.action === 'resolve' ? 'on' : ''}`}
-                onClick={() => selectAction(battle.action === 'resolve' ? null : 'resolve')}
-                title="Détermination : retirer un État (ne coûte pas l'Action)"
-              >
-                <span className="ab-ico">✊</span>
-                <span className="ab-lbl">Détermination ({resolve})</span>
-              </button>
-            )}
-
-            {net.mode !== 'local' && (
-              <button
-                className={`ab-slot${battle.handRaised ? ' on' : ''}`}
-                disabled={!!battle.handRaised}
-                onClick={() => useGame.getState().raiseHand()}
-                title="Demander la pause au prochain début de Round (fenêtre Chance « agir en premier »)"
-              >
-                <span className="ab-ico">✋</span>
-                <span className="ab-lbl">{battle.handRaised ? 'Pause demandée' : 'Pause Round'}</span>
-              </button>
-            )}
-            <button
-              className={`ab-slot ab-end ${!meaningfulLeft ? 'pulse' : ''} ${confirmEnd ? 'warn' : ''}`}
-              onClick={onEndTurn}
-              title={confirmEnd ? 'Tu n’as pas encore agi ce tour — clique encore pour finir quand même' : !meaningfulLeft ? 'Plus rien à faire ce tour' : 'Finir le tour'}
-            >
-              <span className="ab-ico">{confirmEnd ? '⚠️' : '⏭️'}</span>
-              <span className="ab-lbl">{confirmEnd ? 'Finir quand même ?' : 'Fin du tour'}</span>
-            </button>
           </div>
         ) : (
           <div className="ab-enemy">⚔️ {active.kind === 'enemy' ? 'Tour de l’ennemi' : `L’IA joue ${active.name}`}…</div>

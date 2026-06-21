@@ -11,6 +11,7 @@ import type { GameState } from './store';
 import { useGame } from './store';
 import { controlsActive } from './netOwnership';
 import { pickActiveModalKey } from './modalArbiter';
+import { hotbar } from './hotbarBridge';
 
 export interface KeyBinding {
   id: string;
@@ -43,6 +44,13 @@ export const KEYBINDINGS: KeyBinding[] = [
     when: (s) => !!s.battle?.preview,
     run: (g) => { const s = g(); if (s.battle?.preview) useGame.setState({ battle: { ...s.battle, preview: null } }); },
   },
+  // Capacités de la barre d'action : 1-9 = n-ième slot VISIBLE (positionnel, rien en dur), via le pont
+  // `hotbar` publié par l'ActionBar. Inactif hors de son tour / pendant une modale.
+  ...Array.from({ length: 9 }, (_, i): KeyBinding => ({
+    id: `hotbar-${i + 1}`, codes: [`Digit${i + 1}`], label: `Capacité ${i + 1} de la barre d’action`,
+    when: (s) => inBattle(s) && controlsActive(s) && noModal(s),
+    run: () => { const sl = hotbar.slots[i]; if (sl && !sl.disabled) sl.run(); },
+  })),
 ];
 
 /** Touche(s) EFFECTIVE(s) d'un raccourci : la surcharge utilisateur remplace les codes par défaut. */
