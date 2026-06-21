@@ -4,6 +4,7 @@ import { useGame, activeCombatant, entityPickables, movementRemaining, canMove }
 import { hasMeaningfulOption } from '../state/turnEconomy';
 import { findSpellById } from '../data/index';
 import { isArcaneSpell } from '../engine/magic';
+import { formatSpellRange, formatSpellTarget } from '../engine/spellRangeFormat';
 import { canTakeAction, hasCondition, isOutOfAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
 import { isFrenzyCapable } from '../engine/psychology';
@@ -343,9 +344,11 @@ export function ActionBar() {
             const ni = spell.cn != null ? `NI ${spell.cn}` : 'Prière';
             const canFocus = isArcaneSpell(spell) && (spell.cn ?? 0) > 0;
             const focusDr = active.focus?.spell === spell.id ? active.focus.dr : null;
-            // Découvrabilité (R4) : portée / durée / cibles d'un sort, AVANT de l'incanter (données SpellData).
-            const tgtLabel = typeof spell.target === 'number' ? (spell.target === 1 ? '1 cible' : `${spell.target} cibles`) : spell.target;
-            const meta = `📏 ${spell.range} · ⏳ ${spell.duration} · 🎯 ${tgtLabel}`;
+            // Découvrabilité (R4) : portée / durée / cibles d'un sort, AVANT de l'incanter — prose DÉRIVÉE
+            // de la donnée structurée (spellRangeFormat, source unique de l'affichage).
+            const rangeLabel = spell.range ? formatSpellRange(spell.range) : '—';
+            const tgtLabel = spell.target ? formatSpellTarget(spell.target) : '—';
+            const meta = `📏 ${rangeLabel} · ⏳ ${spell.duration} · 🎯 ${tgtLabel}`;
             return (
               <div key={spellId} className="ab-spell-row">
                 <button className={`btn btn-sm ${selected ? 'btn-primary' : ''}`} onClick={() => selectSpell(spell.id)}>

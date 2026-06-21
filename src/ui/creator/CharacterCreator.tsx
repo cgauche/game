@@ -39,6 +39,7 @@ import {
 import { CHAR_KEYS, CharKey, CHAR_LABELS, Characteristics } from '../../engine/types';
 import { rule } from '../../engine/policy';
 import { bonus } from '../../engine/characteristics';
+import { formatSpellRange } from '../../engine/spellRangeFormat';
 import { formatMoney } from '../../engine/money';
 import { makeRNG } from '../../engine/dice';
 import { generateName } from '../../engine/names';
@@ -981,7 +982,7 @@ export function PettySpellsSection({ d, setD }: StepProps) {
               <label className="radio">
                 <input type="checkbox" checked={picked} disabled={!picked && d.pettySpells.length >= quota} onChange={() => toggle(s.label)} />
                 <b>{s.label}</b>
-                <em className="hint">NI {s.cn ?? 0} · {s.range} · {s.duration}</em>
+                <em className="hint">NI {s.cn ?? 0} · {s.range ? formatSpellRange(s.range) : '—'} · {s.duration}</em>
               </label>
               <p className="hint talent-desc">{blurb(s.desc, 220)}</p>
             </div>

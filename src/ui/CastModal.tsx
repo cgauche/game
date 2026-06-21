@@ -197,7 +197,7 @@ export function CastModal() {
             const oc = pc.overcast ?? { duration: 0, targets: 0 };
             const left = budget - oc.duration - oc.targets - (oc.zone ?? 0);
             const canDuration = spell.duration != null && /rounds?/i.test(spell.duration ?? '');
-            const canTargets = !pc.zone && typeof spell.target === 'number' && spell.target >= 1 && spell.range !== 'Vous';
+            const canTargets = !pc.zone && spell.target?.kind === 'count' && spell.range?.kind !== 'self';
             // « +Zone d'Effet » (LDB 47 l.29) : chaque allocation ajoute le Ø initial — gabarit agrandi.
             const canZone = zoneUnplaced;
             if (!canDuration && !canTargets && !canZone) return null;

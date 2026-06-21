@@ -23,6 +23,7 @@ import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { effectiveSkillCharKey } from './skills';
 import { reverseRoll, hitLocationByShape } from './combat';
 import { Formula, resolveFormula } from './ops';
+import type { SpellRange, SpellTarget } from './spellRange';
 import { arcaneDomainOf, arcaneDomainIdOf } from './combatFeatures/dispatch';
 import { domainMissileMods } from './domainAttributes';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
@@ -232,56 +233,35 @@ export function castTestTalentDR(c: Combatant, needle: 'Langue (Magick)' | 'Foca
 }
 
 /**
- * Zone d'Effet (LDB 47 l.44) : « les Sorts marqués ZdE affectent tous les individus
- * à l'intérieur de ce DIAMÈTRE ». Diamètre en mètres depuis le champ Cible
- * (« ZdE (Bonus de Force Mentale) mètres », « ZdE (4) mètres »…), résolu contre le
- * lanceur. Null si pas de ZdE chiffrable (« ZdE (Spécial) », « un lieu unique »…).
+ * Zone d'Effet (LDB 47 l.44) : « les Sorts marqués ZdE affectent tous les individus à l'intérieur de
+ * ce DIAMÈTRE ». Diamètre en mètres depuis la cible STRUCTURÉE (`{kind:'area'}`), résolu contre le
+ * lanceur. Null si la cible n'est pas une aire chiffrable. Zéro parsing de chaîne (cf. `spellRange.ts`).
  */
-export function zdeDiameterMeters(target: number | string | null | undefined, caster: Combatant): number | null {
-  if (typeof target !== 'string') return null;
-  // « ZdE (…) mètres » OU diamètre nu « (Bonus de X) mètres » (Explosion, Dôme… — l'extraction
-  // a parfois perdu le marqueur ZdE) ; jamais les cibles dénombrées (« (BInt) alliés »், « Vous »…).
-  if (!/ZdE/i.test(target) && !/mètres?\s*$/i.test(target.trim())) return null;
-  if (/alli[ée]s|voilier|lieu unique|sp[ée]cial/i.test(target)) return null;
-  const bon = target.match(/\(Bonus d[e'’]\s*([^)]+?)\)/i);
-  if (bon) {
-    const key = CHAR_BY_LABEL[bon[1].trim()];
-    if (key) return bonus(effectiveChar(caster, key));
-  }
-  const lit = target.match(/\((\d+)\)|(\d+)\s*mètres?/i);
-  if (lit) return parseInt(lit[1] ?? lit[2], 10);
-  return null;
+export function zdeDiameterMeters(target: SpellTarget | null | undefined, caster: Combatant): number | null {
+  if (!target || target.kind !== 'area') return null;
+  const m = resolveFormula(target.meters, caster);
+  return target.span === 'radius' ? m * 2 : m;
 }
 
 /** Rayon de la ZdE en CASES (grille 2 m/case) : diamètre/2 mètres → ÷2 m/case,
  *  arrondi à l'entier inférieur (min 0 = la seule case du centre). */
-export function zdeRadiusTiles(target: number | string | null | undefined, caster: Combatant): number | null {
+export function zdeRadiusTiles(target: SpellTarget | null | undefined, caster: Combatant): number | null {
   const diam = zdeDiameterMeters(target, caster);
   return diam == null ? null : Math.max(0, Math.floor(diam / 2 / 2));
 }
 
 /**
- * Portée d'un sort en CASES (2 m/case) : « 6 mètres », « (Force Mentale) mètres »
- * (caractéristique pleine), « (Bonus de X) mètres », « Vous » → 0, « Contact »/
- * « Toucher » → 1. Null = non chiffrable (pas de garde-fou, comportement historique).
+ * Portée d'un sort en CASES (2 m/case) depuis la portée STRUCTURÉE : `self` → 0, `touch` → 1,
+ * `distance` → ⌊mètres/2⌋ (km ×1000). Null = non chiffrable (`special`/absente). Zéro parsing.
  */
-export function spellRangeTiles(range: string | null | undefined, caster: Combatant): number | null {
+export function spellRangeTiles(range: SpellRange | null | undefined, caster: Combatant): number | null {
   if (!range) return null;
-  if (/^vous$/i.test(range.trim())) return 0;
-  if (/contact|toucher/i.test(range)) return 1;
-  const bon = range.match(/\(Bonus d[e'’]\s*([^)]+?)\)/i);
-  if (bon) {
-    const key = CHAR_BY_LABEL[bon[1].trim()];
-    if (key) return Math.max(1, Math.floor(bonus(effectiveChar(caster, key)) / 2));
+  switch (range.kind) {
+    case 'self': return 0;
+    case 'touch': return 1;
+    case 'distance': return Math.max(1, Math.floor((resolveFormula(range.value, caster) * (range.unit === 'km' ? 1000 : 1)) / 2));
+    case 'special': return null;
   }
-  const full = range.match(/\(([^)]+)\)\s*mètres?/i);
-  if (full) {
-    const key = CHAR_BY_LABEL[full[1].trim()];
-    if (key) return Math.max(1, Math.floor(effectiveChar(caster, key) / 2));
-  }
-  const lit = range.match(/(\d+)\s*mètres?/i);
-  if (lit) return Math.max(1, Math.floor(parseInt(lit[1], 10) / 2));
-  return null;
 }
 
 /**

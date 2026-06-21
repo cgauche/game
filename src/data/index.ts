@@ -491,8 +491,13 @@ export interface SpellData {
   family: import('../engine/combatFeatures/types').CastingKind;
   /** Niveau d'Incantation (NI). `null` pour les Prières (Béni/Invocation). */
   cn: number | null;
-  range: string;
-  target: number | string;
+  /** Portée STRUCTURÉE (LDB 46/47) — d'où le sort peut être lancé. `null` = donnée absente (homebrew
+   *  non extrait). Remplace l'ancienne prose re-parsée au runtime ; l'affichage est DÉRIVÉ
+   *  (`engine/spellRangeFormat`). */
+  range: import('../engine/spellRange').SpellRange | null;
+  /** Cible STRUCTURÉE (LDB 47) — qui/quoi est affecté (compte, ZONE par rayon/diamètre, cône, spécial).
+   *  `null` = donnée absente. L'aire (ex-`zdeRadiusMeters`) vit désormais ICI (source unique). */
+  target: import('../engine/spellRange').SpellTarget | null;
   duration: string;
   desc: string;
   /** Projectile magique (Dégâts résolus façon attaque) — DONNÉE (multilangue ; remplace la regex
@@ -512,13 +517,6 @@ export interface SpellData {
    *  null = Instantané ou durée hors échelle tactique (minutes/heures/jours) — on n'invente PAS un
    *  nombre de rounds (LDB). Formula = `number | {bonusOf:CharKey} | {charOf:CharKey} | …` (engine/ops). */
   durationRounds?: import('../engine/ops').Formula | null;
-  /** RAYON de Zone d'Effet en MÈTRES (sorts de zone avec rayon dans la desc —
-   *  « dans un rayon de (Bonus de Sociabilité) mètres », Feu de l'âme, Comète…) ;
-   *  prioritaire sur le parsing du champ Cible (zdeRadiusTiles). */
-  zdeRadiusMeters?: import('../engine/ops').Formula;
-  /** La zone ÉPARGNE le lanceur (Poussée repousse « toutes les créatures » autour de SOI ;
-   *  Feu de l'âme châtie les ennemis) — il est exclu de la collecte des cibles. */
-  zdeExcludesCaster?: boolean;
   /** TÉLÉPORTATION du lanceur (Jalon 2.6 — « vous vous téléportez de BFM mètres ») : après
    *  l'Appliquer, le jeu propose le choix d'une case d'arrivée dans ce rayon (survol des
    *  obstacles, atterrissage libre). */

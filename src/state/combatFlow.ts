@@ -84,6 +84,7 @@ import {
   type CounterspellOutcome,
   type SpellLike,
 } from '../engine/magic';
+import type { SpellRange } from '../engine/spellRange';
 import { applyOps, resolveFormula, skillDRBonus, type GameOp, type OpsCtx } from '../engine/ops';
 import { applySummon, purgeExpiredSummons } from './summonFlow';
 import type { ConjureForm } from '../engine/conjuredWeapons';
@@ -2310,11 +2311,9 @@ export function openCastOpposition(get: Get, set: SetFn, pc: PendingCast, target
   return true;
 }
 
-/** Rayon INITIAL d'un sort de ZONE en mètres (spec curée prioritaire sur le champ Cible —
- *  même précédence que l'application). `null` = pas un sort de ZdE chiffrable. */
+/** Rayon INITIAL d'un sort de ZONE en mètres, depuis la cible STRUCTURÉE (`target.area`, source unique —
+ *  l'ex-`zdeRadiusMeters` y est plié). `null` = pas un sort de ZdE chiffrable. */
 export function zoneRadiusMeters(spell: NonNullable<ReturnType<typeof findSpell>>, caster: Combatant): number | null {
-  const specRadius = spell.zdeRadiusMeters;
-  if (specRadius != null) return Math.max(0, resolveFormula(specRadius, caster));
   const d = zdeDiameterMeters(spell.target, caster);
   return d == null ? null : d / 2;
 }
@@ -2497,7 +2496,7 @@ export function aiBestMissile(enemy: Combatant): string | undefined {
 export function aiOvercastPlan(
   caster: Combatant,
   targetId: string,
-  spell: { cn: number | null; range: string | null },
+  spell: { cn: number | null; range: SpellRange | null },
   res: { cast: boolean; sl: number },
   combatants: Combatant[],
   focusedNI0 = false,
@@ -2526,7 +2525,7 @@ export function overcastTargetCandidates(
   pool: Combatant[],
   caster: Combatant,
   targetId: string,
-  spell: { range: string | null },
+  spell: { range: SpellRange | null },
   missile: boolean,
   sight?: SpellSight,
 ): Combatant[] {
