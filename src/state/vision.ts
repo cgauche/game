@@ -11,7 +11,7 @@
  * Lanterne 20 m — `LDB 74 l.72`, `LDB 75 l.15`) et la Vision nocturne (20 m/niv — `LDB 11 l.143-147`)
  * sont canon, convertis à l'échelle 1 case = 2 m (`LDB Déplacement l.55`).
  */
-import { Scene, tileAt } from './scene';
+import { Scene, tileAt, edgeOf, doorIsOpen } from './scene';
 import { wallOnSight } from './lineOfSight';
 import { buildingBlockedAt } from './buildings';
 import { TERRAINS } from './terrain';
@@ -51,7 +51,7 @@ const chebyshev = (a: Pt, b: Pt): number => Math.max(Math.abs(a.x - b.x), Math.a
 /** Grille d'opacité de la scène (1 = bloque la vue), précalculée UNE FOIS par recompute → lookups O(1)
  *  dans le rayon, au lieu d'un `.find` O(entités) par échantillon (la cause des 64 ms/recompute).
  *  Terrain opaque + empreintes de bâtiment + décor opaque (`props.json`). PUR. */
-interface Occ { g: Uint8Array; w: number; h: number }
+interface Occ { g: Uint8Array; w: number; h: number; walls: Set<string> }
 function buildOpaque(scene: Scene): Occ {
   const { w, h } = scene.dimensions;
   const g = new Uint8Array(w * h);
@@ -67,7 +67,16 @@ function buildOpaque(scene: Scene): Occ {
         if (x >= 0 && y >= 0 && x < w && y < h) g[y * w + x] = 1;
       }
   }
-  return { g, w, h };
+  // Arêtes bloquantes (z0) en SET → test O(1) au rayon (au lieu de `scene.walls.some` O(murs) : 171 ms
+  // sur l'Opéra à 999 murs). Mur non-porte OU porte FERMÉE ; N/E seulement (les diagonales n'occultent
+  // pas une LdV cardinale, cf. wallOnSight).
+  const walls = new Set<string>();
+  for (const seg of scene.walls ?? []) {
+    if ((seg.z ?? 0) !== 0 || (seg.side !== 'N' && seg.side !== 'E')) continue;
+    if (seg.door && doorIsOpen(scene, seg)) continue;
+    walls.add(`${seg.x},${seg.y},${seg.side}`);
+  }
+  return { g, w, h, walls };
 }
 
 /** Échantillons par case du segment (anti-fuite au COIN d'un mur : un supercover entier rate une tuile
@@ -79,7 +88,13 @@ const SAMPLES_PER_TILE = 4;
  *  voit pas à travers un mur. Les couverts PARTIELS (haie, tonneau…) ne sont pas opaques → laissent voir. */
 function rayBlocked(scene: Scene, occ: Occ, smoke: Set<string>, from: Pt, to: Pt): boolean {
   if (smoke.size && (smoke.has(`${from.x},${from.y}`) || smoke.has(`${to.x},${to.y}`))) return true;
-  if (scene.walls?.length && wallOnSight(scene, from, to)) return true;
+  if (occ.walls.size) {
+    const eb = (ax: number, ay: number, bx: number, by: number) => {
+      const e = edgeOf(ax, ay, bx, by);
+      return e ? occ.walls.has(`${e.x},${e.y},${e.side}`) : false;
+    };
+    if (wallOnSight(scene, from, to, 0, eb)) return true;
+  }
   const dx = to.x - from.x, dy = to.y - from.y;
   const n = Math.ceil(Math.hypot(dx, dy) * SAMPLES_PER_TILE);
   for (let i = 1; i < n; i++) {

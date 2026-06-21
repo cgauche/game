@@ -52,10 +52,12 @@ function cellPath(a: Pt, b: Pt): Pt[] {
 }
 
 /** Un mur d'arête (`Scene.walls`) est-il franchi par la ligne `from`→`to` ? Bloque la vue
- *  (« pas à travers les murs ») — réutilise `wallBetween` (mur non-porte sur l'arête cardinale ;
- *  une porte = ouverture transparente en V1). Les diagonales ne croisent pas d'arête cardinale. */
-export function wallOnSight(scene: Scene, from: Pt, to: Pt, z = 0): boolean {
+ *  (« pas à travers les murs »). Le test PAR ARÊTE est injectable (`edgeBlocks`) : défaut = `wallBetween`
+ *  (O(murs), combat) ; la vision passe un prédicat O(1) (Set d'arêtes précalculé) pour les scènes très
+ *  murées. Les diagonales ne croisent pas d'arête cardinale. */
+export function wallOnSight(scene: Scene, from: Pt, to: Pt, z = 0, edgeBlocks?: (ax: number, ay: number, bx: number, by: number) => boolean): boolean {
   if (!scene.walls?.length) return false;
+  const blk = edgeBlocks ?? ((ax, ay, bx, by) => wallBetween(scene, ax, ay, bx, by, z));
   const path = cellPath(from, to);
   for (let i = 0; i + 1 < path.length; i++) {
     const a = path[i], b = path[i + 1];
@@ -64,10 +66,10 @@ export function wallOnSight(scene: Scene, from: Pt, to: Pt, z = 0): boolean {
       // Pas DIAGONAL : le rayon franchit le coin partagé. Bloqué si les DEUX contournements
       // orthogonaux du coin (via (b.x,a.y) et via (a.x,b.y)) sont murés — un mur droit bloque, mais
       // on peut « jeter un œil » au-delà de l'EXTRÉMITÉ d'un mur (un seul côté muré).
-      const blocked1 = wallBetween(scene, a.x, a.y, b.x, a.y, z) || wallBetween(scene, b.x, a.y, b.x, b.y, z);
-      const blocked2 = wallBetween(scene, a.x, a.y, a.x, b.y, z) || wallBetween(scene, a.x, b.y, b.x, b.y, z);
+      const blocked1 = blk(a.x, a.y, b.x, a.y) || blk(b.x, a.y, b.x, b.y);
+      const blocked2 = blk(a.x, a.y, a.x, b.y) || blk(a.x, b.y, b.x, b.y);
       if (blocked1 && blocked2) return true;
-    } else if (wallBetween(scene, a.x, a.y, b.x, b.y, z)) {
+    } else if (blk(a.x, a.y, b.x, b.y)) {
       return true;
     }
   }
