@@ -73,7 +73,7 @@ function buffChips(effects: ActiveEffect[]): EffectChip[] {
     label: e.label,
     kind: 'buff',
     severity: 50,
-    rounds: e.roundsLeft,
+    rounds: e.duration.scale === 'rounds' ? e.duration.left : undefined,
     bonus: e.bonus,
     char: e.char,
   }));

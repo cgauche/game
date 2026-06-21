@@ -2,6 +2,7 @@ import { useRef, useState, type ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { bestDetector } from '../state/merchantFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
+import type { Duration } from '../engine/duration';
 import { useModalA11y } from './Modal';
 import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem, giveTrappingLabel } from '../engine/items';
 import { CHAR_KEYS, CHAR_LABELS, CharKey, HitLocation, ItemInstance, Combatant, Weapon } from '../engine/types';
@@ -93,8 +94,11 @@ function ActiveEffectsPanel({ hero }: { hero: Combatant }) {
   const fx = hero.activeEffects ?? [];
   const cp = hero.castPenalties ?? [];
   if (!fx.length && !cp.length) return null;
-  const dur = (e: { roundsLeft?: number; untilTime?: number }) =>
-    e.roundsLeft != null && e.roundsLeft < 9999 ? ` · ${e.roundsLeft} R` : e.untilTime != null ? ' · durée' : '';
+  // ActiveEffect porte `duration` (échelle discriminée) ; CastPenalty garde `roundsLeft`/`untilTime`.
+  const dur = (e: { duration?: Duration; roundsLeft?: number; untilTime?: number }) => {
+    if (e.duration) return e.duration.scale === 'rounds' ? ` · ${e.duration.left} R` : e.duration.scale === 'clock' ? ' · durée' : '';
+    return e.roundsLeft != null ? ` · ${e.roundsLeft} R` : e.untilTime != null ? ' · durée' : '';
+  };
   return (
     <>
       <div className="mini-title">Effets actifs</div>

@@ -60,10 +60,10 @@ export function purgeClockEffects(get: Get, set: Set): string[] {
       for (const p of exp) expiredLog.push(`${h.name} : ${p.label} se dissipe.`);
       h.castPenalties = h.castPenalties!.filter((p) => !(p.untilTime != null && p.untilTime <= now));
     }
-    const fx = (h.activeEffects ?? []).filter((e) => e.untilTime != null && e.untilTime <= now);
+    const fx = (h.activeEffects ?? []).filter((e) => e.duration.scale === 'clock' && e.duration.until <= now);
     if (fx.length) {
       for (const e of fx) expiredLog.push(`${h.name} : ${e.label} se dissipe.`);
-      h.activeEffects = h.activeEffects!.filter((e) => !(e.untilTime != null && e.untilTime <= now));
+      h.activeEffects = h.activeEffects!.filter((e) => !(e.duration.scale === 'clock' && e.duration.until <= now));
       dropExpiredGrantedTraits(h, fx); // traits accordés (op grantTrait) retirés avec leur effet
       dropExpiredGrantedResources(h, fx); // Chance/Destin accordés (gainResource) non dépensés
       dropExpiredGrantedWeapons(h, fx); // armes invoquées/naturelles accordées : loadout recomposé

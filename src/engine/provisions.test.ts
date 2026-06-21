@@ -39,7 +39,7 @@ describe('dailyFoodUpkeep — rations (LDB p.302) et faim (LDB 18 l.422)', () =>
   it('Graisse de la terre (noHunger) : exempte de la Faim — aucune ration consommée, faim purgée', () => {
     const c = hero({ rations: 0 });
     c.hunger = { days: 3, tests: 2, failures: 1 }; // affamé avant le Sort
-    c.activeEffects = [{ label: 'Graisse de la terre', bonus: 0, roundsLeft: 9999, noHunger: true }];
+    c.activeEffects = [{ label: 'Graisse de la terre', bonus: 0, duration: { scale: 'permanent' }, noHunger: true }];
     const r = dailyFoodUpkeep(c, 30, 3, fixed(95));
     expect(r.ate).toBe(true);
     expect(r.rationConsumed).toBe(false); // rien à consommer (sustentation magique)

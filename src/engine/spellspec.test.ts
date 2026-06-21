@@ -6,7 +6,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import type { Combatant } from './types';
-import { applyOps, resolveFormula, COMBAT_PERSIST } from './ops';
+import { applyOps, resolveFormula } from './ops';
 import { spells, findSpellById, type SpellData } from '../data';
 import { spellOps } from '../state/flow';
 
@@ -25,7 +25,7 @@ function hero(p: Partial<Combatant> = {}): Combatant {
  *  résolue contre le lanceur). La durée et les effets vivent désormais sur SpellData (données JSON). */
 function castVia(spell: SpellData, caster: Combatant, target: Combatant): string[] {
   const rounds = spell.durationRounds != null ? resolveFormula(spell.durationRounds, caster) : null;
-  return applyOps(target, spellOps(spell.effects, 'target'), { caster, label: spell.label, defaultDurationRounds: rounds ?? COMBAT_PERSIST });
+  return applyOps(target, spellOps(spell.effects, 'target'), { caster, label: spell.label, ...(rounds != null ? { defaultDurationRounds: rounds } : {}) });
 }
 
 describe('specs curées — résolution', () => {

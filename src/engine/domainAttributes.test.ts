@@ -65,7 +65,7 @@ describe('Métal / Cieux / Ombres — mitigation des Projectiles (LDB 48 l.87/30
     const t = mk({
       items: [mail(2)],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 2, jambeG: 0, jambeD: 0 } as Combatant['armour'],
-      activeEffects: [{ label: 'Armure Aethyrique', bonus: 0, roundsLeft: 5, apAll: 1 }],
+      activeEffects: [{ label: 'Armure Aethyrique', bonus: 0, duration: { scale: 'rounds', left: 5 }, apAll: 1 }],
     });
     expect(domainMissileMods(t, { domainId: 'ombres' }, 'corps', 3)).toEqual({ apIgnored: 2, bonusDamage: 0 });
   });
@@ -167,7 +167,7 @@ describe('Bête — Peur 1 pour 1d10 Rounds après un Sort de la Bête réussi (
     const w = mk({ id: 'w', traits: [] });
     const lines = domainAfterCast(w, { domainId: 'bete' }, seq([7]));
     expect(w.traits).toContainEqual({ id: 'peur', value: 1 });
-    expect(w.activeEffects?.[0]).toMatchObject({ grantedTrait: { id: 'peur', value: 1 }, roundsLeft: 7 });
+    expect(w.activeEffects?.[0]).toMatchObject({ grantedTrait: { id: 'peur', value: 1 }, duration: { scale: 'rounds', left: 7 } });
     expect(lines.join(' ')).toMatch(/Peur 1 pendant 7/);
   });
   it('aucun effet pour un autre Domaine', () => {

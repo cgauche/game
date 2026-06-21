@@ -93,6 +93,6 @@ export function domainAfterCast(caster: Combatant, spell: SpellDomainRef, rng: R
   const tr = parseTraitInstance(after.grantTrait);
   grantTrait(caster, tr);
   caster.activeEffects = caster.activeEffects ?? [];
-  caster.activeEffects.push({ label: `Attribut de domaine (${after.grantTrait})`, bonus: 0, roundsLeft: rounds, grantedTrait: tr });
+  caster.activeEffects.push({ label: `Attribut de domaine (${after.grantTrait})`, bonus: 0, duration: { scale: 'rounds', left: rounds }, grantedTrait: tr });
   return [`${caster.name} gagne ${after.grantTrait} pendant ${rounds} Round(s) (attribut de domaine).`];
 }

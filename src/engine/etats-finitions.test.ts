@@ -29,7 +29,7 @@ describe('Finitions d\'États (LDB 16)', () => {
     addCondition(c, 'sonne'); // État −10 → STACKE avec le −10 du Sort (sources distinctes)
     expect(combatTestPenalty(c)).toBe(-20);
     // « ne subit aucune pénalité d'État » (Endurance de l'anachorète) n'efface PAS le malus de Sort.
-    c.activeEffects!.push({ label: 'Anachorète', bonus: 0, roundsLeft: 9999, ignoreStatePenalties: true });
+    c.activeEffects!.push({ label: 'Anachorète', bonus: 0, duration: { scale: 'permanent' }, ignoreStatePenalties: true });
     expect(combatTestPenalty(c)).toBe(-10); // l'État est effacé, le −10 du Sort demeure
   });
 

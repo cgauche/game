@@ -575,14 +575,14 @@ describe('Magie — effets actifs (buffs temporisés)', () => {
   it('effectiveChar applique le meilleur bonus, sans cumul', () => {
     const c = caster({ CC: 35 });
     c.activeEffects = [
-      { label: 'A', char: 'CC', bonus: 10, roundsLeft: 6 },
-      { label: 'B', char: 'CC', bonus: 20, roundsLeft: 6 },
+      { label: 'A', char: 'CC', bonus: 10, duration: { scale: 'rounds', left: 6 } },
+      { label: 'B', char: 'CC', bonus: 20, duration: { scale: 'rounds', left: 6 } },
     ];
     expect(effectiveChar(c, 'CC')).toBe(55); // 35 + max(10,20)
   });
   it('endOfRound décrémente et dissipe les effets expirés', () => {
     const c = caster({ CC: 35 });
-    const eff: ActiveEffect = { label: 'Bénédiction de Bataille', char: 'CC', bonus: 10, roundsLeft: 1 };
+    const eff: ActiveEffect = { label: 'Bénédiction de Bataille', char: 'CC', bonus: 10, duration: { scale: 'rounds', left: 1 } };
     c.activeEffects = [eff];
     endOfRound(c);
     expect(c.activeEffects.length).toBe(0);
@@ -592,17 +592,17 @@ describe('Magie — effets actifs (buffs temporisés)', () => {
   it('effectiveChar applique le meilleur bonus ET la pire pénalité (l.168)', () => {
     const c = caster({ Ag: 40 });
     c.activeEffects = [
-      { label: 'buff', char: 'Ag', bonus: 10, roundsLeft: 6 },
-      { label: 'autre buff', char: 'Ag', bonus: 20, roundsLeft: 6 },
-      { label: 'Écorce', char: 'Ag', bonus: -10, roundsLeft: 6 },
+      { label: 'buff', char: 'Ag', bonus: 10, duration: { scale: 'rounds', left: 6 } },
+      { label: 'autre buff', char: 'Ag', bonus: 20, duration: { scale: 'rounds', left: 6 } },
+      { label: 'Écorce', char: 'Ag', bonus: -10, duration: { scale: 'rounds', left: 6 } },
     ];
     expect(effectiveChar(c, 'Ag')).toBe(50); // 40 + max(10,20) + min(-10) = 40+20-10
   });
   it('effectiveChar garde la pénalité la PIRE entre deux malus', () => {
     const c = caster({ Dex: 45 });
     c.activeEffects = [
-      { label: 'a', char: 'Dex', bonus: -10, roundsLeft: 6 },
-      { label: 'b', char: 'Dex', bonus: -20, roundsLeft: 6 },
+      { label: 'a', char: 'Dex', bonus: -10, duration: { scale: 'rounds', left: 6 } },
+      { label: 'b', char: 'Dex', bonus: -20, duration: { scale: 'rounds', left: 6 } },
     ];
     expect(effectiveChar(c, 'Dex')).toBe(25); // 45 + 0 - 20
   });

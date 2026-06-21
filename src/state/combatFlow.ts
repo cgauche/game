@@ -84,7 +84,7 @@ import {
   type CounterspellOutcome,
   type SpellLike,
 } from '../engine/magic';
-import { applyOps, resolveFormula, skillDRBonus, COMBAT_PERSIST, type GameOp, type OpsCtx } from '../engine/ops';
+import { applyOps, resolveFormula, skillDRBonus, type GameOp, type OpsCtx } from '../engine/ops';
 import { applySummon, purgeExpiredSummons } from './summonFlow';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
@@ -2081,7 +2081,7 @@ export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): b
 }
 
 
-// applyActiveEffect / COMBAT_PERSIST vivent désormais dans le moteur (engine/ops) —
+// applyActiveEffect / durationFromCtx vivent désormais dans le moteur (engine/ops) —
 // partagés par l'applicateur d'ops (sorts, tables de contrecoup, mutations).
 
 /**
@@ -2755,7 +2755,7 @@ export function applyCast(
         const clockMin = rounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
         logLines.push(...runCastFlow(get, set, t, caster, spellFlowFor(spell.effects, 'target'), {
           rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
-          defaultDurationRounds: rounds ?? COMBAT_PERSIST,
+          ...(rounds != null ? { defaultDurationRounds: rounds } : {}),
           ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
           onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
         }));
@@ -2827,10 +2827,9 @@ export function applyCast(
   } else {
     if (res.cast) {
       // Effets structurés du sort (spec curée du registre, sinon repli regex sur la
-      // desc — iso-POC). Durée hors-rounds (minutes/heures/jours, LDB 47) : l'effet est posé à
-      // COMBAT_PERSIST (échelle tactique) AVEC son échéance d'HORLOGE `untilTime` (cascade #T3 —
-      // « 1 heure » expire en 60 min de gameTime, plus au bout de 9999 Rounds) ; on n'invente
-      // PAS un nombre de rounds. Surincantation « Durée » : ×(1+n) (LDB 47).
+      // desc — iso-POC). Durée hors-rounds (minutes/heures/jours, LDB 47) : l'effet reçoit une durée
+      // `{scale:'clock'}` (échéance d'HORLOGE `gameTime`, purgée par l'horloge), pas un nombre de
+      // Rounds — on n'en invente PAS. Surincantation « Durée » : ×(1+n) (LDB 47).
       const spec = spell;
       const baseRounds = spec.durationRounds != null ? resolveFormula(spec.durationRounds, caster, battleRng()) : null;
       const rounds = baseRounds != null ? baseRounds * durationMult : null;
@@ -2854,7 +2853,7 @@ export function applyCast(
             label: spell.label,
             now: get().gameTime,
             sl: opp ? opp.margin : res.sl,
-            defaultDurationRounds: rounds ?? COMBAT_PERSIST,
+            ...(rounds != null ? { defaultDurationRounds: rounds } : {}),
             ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
             ...(extras?.conjureForm ? { conjureForm: extras.conjureForm } : {}),
             onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
@@ -2971,7 +2970,7 @@ export function applyCast(
       const clockMin = baseRounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
       logLines.push(...runCastFlow(get, set, caster, caster, spellFlowFor(spell.effects, 'caster'), {
         rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
-        defaultDurationRounds: baseRounds ?? COMBAT_PERSIST,
+        ...(baseRounds != null ? { defaultDurationRounds: baseRounds } : {}),
         ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
         onCorruption: caster.kind === 'hero' ? (n) => gainCorruption(get, set, caster, n) : undefined,
       }));

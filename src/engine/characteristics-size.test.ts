@@ -28,11 +28,11 @@ describe('effectiveMaxWounds — base + delta des buffs F/E/FM × Taille', () =>
     expect(effectiveMaxWounds(base({ wounds: { current: 20, max: 20, base: 20 } }))).toBe(20);
   });
   it('buff +10 Endurance → +2 Blessures (Moyenne)', () => {
-    const c = base({ activeEffects: [{ label: 'Soin', char: 'E', bonus: 10, roundsLeft: 3 }] });
+    const c = base({ activeEffects: [{ label: 'Soin', char: 'E', bonus: 10, duration: { scale: 'rounds', left: 3 } }] });
     expect(effectiveMaxWounds(c)).toBe(14); // base 12 + (BE 4 vs 3 → +2)
   });
   it('buff +10 E sur un Énorme → +2×4 = +8 (delta ×Taille)', () => {
-    const c = base({ size: 'enorme', wounds: { current: 48, max: 48, base: 48 }, activeEffects: [{ label: 'Soin', char: 'E', bonus: 10, roundsLeft: 3 }] });
+    const c = base({ size: 'enorme', wounds: { current: 48, max: 48, base: 48 }, activeEffects: [{ label: 'Soin', char: 'E', bonus: 10, duration: { scale: 'rounds', left: 3 } }] });
     expect(effectiveMaxWounds(c)).toBe(56); // 48 + (woundsForSize(...,enorme) delta = +8)
   });
 });
@@ -43,7 +43,7 @@ describe('refreshWounds — recale max + ajuste current (buff/expiration)', () =
       characteristics: { F: 30, E: 30, FM: 30 } as Characteristics,
       size: 'moyenne',
       wounds: { current: 10, max: 12, base: 12 },
-      activeEffects: [{ label: 'Soin', char: 'E', bonus: 10, roundsLeft: 3 }],
+      activeEffects: [{ label: 'Soin', char: 'E', bonus: 10, duration: { scale: 'rounds', left: 3 } }],
     } as unknown as Combatant;
     refreshWounds(c);
     expect(c.wounds.max).toBe(14); // +2 (BE 4 vs 3)

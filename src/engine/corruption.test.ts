@@ -93,7 +93,7 @@ describe('effets de mutation lus à la volée', () => {
     const c = hero();
     attachMutation(c, { id: 'corpulent', label: 'Corpulent', kind: 'physique', roll: 8, passive: [{ op: 'charMod', char: 'F', mod: 5 }, { op: 'charMod', char: 'E', mod: 5 }, { op: 'moveMod', mod: -1 }] });
     expect(effectiveChar(c, 'F')).toBe(35);
-    c.activeEffects = [{ label: 'Puissance', char: 'F', bonus: 10, roundsLeft: 3 }];
+    c.activeEffects = [{ label: 'Puissance', char: 'F', bonus: 10, duration: { scale: 'rounds', left: 3 } }];
     expect(effectiveChar(c, 'F')).toBe(45); // base mutée 35 + buff 10 (pas d'écrasement)
     expect(effectiveChar(c, 'E')).toBe(c.characteristics.E + 5); // Corpulent E+5 via le collecteur (base + delta)
   });

@@ -29,6 +29,7 @@ import { norm } from '../lib/normalize';
 import { ConjureForm, conjureFormOptions, equipConjuredWeapon } from './conjuredWeapons';
 import { polymorphOps } from './polymorph';
 import type { SizeCategory } from './size';
+import type { Duration } from './duration';
 import type { ZoneEffect } from './zones';
 // Type-only (effacé à la compilation) : la FORME unifiée des effets « à la touche » d'une arme
 // enchantée/invoquée = un `TriggeredEffect`, dispatché par `state/triggeredEffects` (pas ici).
@@ -180,7 +181,7 @@ export type GameOp =
   | { op: 'removeCondition'; name?: string; value?: Formula; valuePerSL?: PerSL }
   /** Modificateur de caractéristique temporisé (ActiveEffect — meilleur bonus +
    *  pire pénalité sans cumul, LDB l.168). `durationRounds` absent = durée du
-   *  contexte (sort) ou persistance hors-échelle (COMBAT_PERSIST). */
+   *  contexte (sort : Rounds, horloge, ou permanent — cf. `durationFromCtx`). */
   | { op: 'charMod'; char: CharKey; mod: number; durationRounds?: Formula }
   /** PA TEMPORISÉS à toutes les localisations (Armure Aethyrique « +1 PA à toutes les
    *  Localisations ») — ActiveEffect.apAll, lu par effectiveArmourAt à la mitigation. */
@@ -475,8 +476,8 @@ export interface OpsCtx {
   /** Durée (en Rounds) des `charMod` sans durée propre — celle du sort. */
   defaultDurationRounds?: number;
   /** Échéance d'HORLOGE (minutes `gameTime`) des effets actifs d'un sort à durée en
-   *  minutes/heures/jours (LDB 47) : posée sur l'ActiveEffect (`untilTime`), purgée par la
-   *  cascade #T3. À fournir AVEC `defaultDurationRounds = COMBAT_PERSIST`. */
+   *  minutes/heures/jours (LDB 47) : devient une durée `{scale:'clock'}` (cf. `durationFromCtx`),
+   *  purgée par l'horloge (`purgeClockEffects`). Exclusif de `defaultDurationRounds`. */
   defaultUntilTime?: number;
   /** Horloge de jeu (minutes) — base des `castPenalty` à durée en minutes/jours. */
   now?: number;
@@ -501,19 +502,27 @@ export interface OpsCtx {
 }
 
 /** Rounds attribués à un effet dont la durée (minutes/heures/jours) dépasse le combat. */
-export const COMBAT_PERSIST = 9999;
+/**
+ * Durée d'un effet actif posé au cours d'une incantation, dérivée du contexte. Échelles mutuellement
+ * exclusives (cf. `engine/duration.ts`) : horloge (minutes/heures/jours, LDB 47) prime ; sinon Rounds ;
+ * sinon permanent (effet sans durée déclarée, retiré explicitement). Remplace l'ancien `?? COMBAT_PERSIST`.
+ */
+export function durationFromCtx(ctx: OpsCtx): Duration {
+  if (ctx.defaultUntilTime != null) return { scale: 'clock', until: ctx.defaultUntilTime };
+  if (ctx.defaultDurationRounds != null) return { scale: 'rounds', left: ctx.defaultDurationRounds };
+  return { scale: 'permanent' };
+}
 
 /** Applique un effet actif sans cumul : un seul bonus (le meilleur) ET une seule
  *  pénalité (la pire) coexistent par caractéristique (Livre de base l.168). */
 /** Pose un effet actif porteur d'ops RÉCURRENTES (re-jouées chaque fin de Round par `endOfRound`).
- *  Durée = celle du sort (`ctx.defaultDurationRounds`), Surincantation de Durée incluse. Les `ops`
- *  doivent être round-safe (valeurs littérales) — pas de résolution de formule/`perSL` au tick. */
+ *  Durée = celle du sort (`ctx`), Surincantation de Durée incluse. Les `ops` doivent être round-safe
+ *  (valeurs littérales) — pas de résolution de formule/`perSL` au tick. */
 function pushPerRound(target: Combatant, ops: GameOp[], ctx: OpsCtx): void {
   target.activeEffects = target.activeEffects ?? [];
   target.activeEffects.push({
     label: ctx.label ?? 'Effet', bonus: 0,
-    roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-    ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+    duration: durationFromCtx(ctx),
     opsPerRound: ops,
   });
 }
@@ -558,7 +567,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
   let charRounds: number | null = null;
   const flushCharMods = () => {
     if (!charParts.length) return;
-    const dur = charRounds != null && charRounds !== COMBAT_PERSIST ? `${charRounds} rounds` : 'durée hors combat';
+    const dur = charRounds != null ? `${charRounds} rounds` : 'durée hors combat';
     lines.push(`${target.name} : ${ctx.label ?? 'Effet'} (${charParts.join(', ')}, ${dur}).`);
     charParts.length = 0;
   };
@@ -635,26 +644,25 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'charMod': {
-        const rounds = o.durationRounds != null
-          ? resolveFormula(o.durationRounds, ref, rng)
-          : ctx.defaultDurationRounds ?? COMBAT_PERSIST;
+        // Le charMod peut porter SA propre durée en Rounds (sinon il suit la durée du sort, ctx).
+        const dur: Duration = o.durationRounds != null
+          ? { scale: 'rounds', left: resolveFormula(o.durationRounds, ref, rng) }
+          : durationFromCtx(ctx);
         applyActiveEffect(target, {
-          label: ctx.label ?? 'Effet', char: o.char, bonus: o.mod, roundsLeft: rounds,
-          ...(o.durationRounds == null && ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          label: ctx.label ?? 'Effet', char: o.char, bonus: o.mod, duration: dur,
         });
         charParts.push(`${o.mod >= 0 ? '+' : ''}${o.mod} ${CHAR_LABELS[o.char]}`);
-        charRounds = rounds;
+        charRounds = dur.scale === 'rounds' ? dur.left : null;
         break;
       }
       case 'apAll': {
         const n = Math.max(0, resolveFormula(o.amount, ref, rng));
-        const rounds = ctx.defaultDurationRounds ?? COMBAT_PERSIST;
+        const dur = durationFromCtx(ctx);
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
-          label: ctx.label ?? 'Effet', bonus: 0, roundsLeft: rounds, apAll: n,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          label: ctx.label ?? 'Effet', bonus: 0, duration: dur, apAll: n,
         });
-        lines.push(`${target.name} : +${n} PA à toutes les Localisations (${ctx.label ?? 'sort'}${rounds !== COMBAT_PERSIST ? `, ${rounds} rounds` : ''}).`);
+        lines.push(`${target.name} : +${n} PA à toutes les Localisations (${ctx.label ?? 'sort'}${dur.scale === 'rounds' ? `, ${dur.left} rounds` : ''}).`);
         break;
       }
       case 'corruption': {
@@ -684,8 +692,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           target.activeEffects = target.activeEffects ?? [];
           target.activeEffects.push({
             label: ctx.label ?? 'Effet', bonus: 0,
-            roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-            ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+            duration: durationFromCtx(ctx),
             ...(fate ? { grantedFate: n } : { grantedFortune: n }),
           });
         }
@@ -735,8 +742,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           grantedTrait: inst,
         });
         lines.push(`${target.name} gagne le Trait ${formatTrait(inst)} (${ctx.label ?? 'sort'}).`);
@@ -769,8 +775,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           enchantRef: { itemUid: item.uid, enchantId },
         });
         recomputeLoadout(target); // replie l'enchant dans l'arme active (visible + appliqué)
@@ -807,8 +812,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           grantedTalent: { talentId: o.talentId, ...(o.spec ? { spec: o.spec } : {}) },
         });
         lines.push(`${target.name} gagne le Talent ${talentConcrete(o)} (${ctx.label ?? 'sort'}).`);
@@ -825,8 +829,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           ignoreStatePenalties: true,
         });
         lines.push(`${target.name} ne subit plus aucune pénalité d'État (${ctx.label ?? 'sort'}).`);
@@ -836,8 +839,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           freeReroll: true,
         });
         lines.push(`${target.name} pourra relancer le prochain Test auquel il échoue (${ctx.label ?? 'sort'}).`);
@@ -847,8 +849,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           critRollTwice: true,
         });
         lines.push(`${target.name} : ses Blessures Critiques infligées tireront deux lancers — le meilleur conservé (${ctx.label ?? 'sort'}).`);
@@ -870,8 +871,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           suppressedPsych: suppressed,
         });
         lines.push(`${target.name} : Traits psychologiques apaisés pour la durée (${ctx.label ?? 'sort'}).`);
@@ -881,8 +881,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           suffocates: true,
         });
         lines.push(`${target.name} suffoque (${ctx.label ?? 'sort'}) — −1 PB par Round.`);
@@ -892,8 +891,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           noHunger: true,
         });
         lines.push(`${target.name} n'a plus besoin de manger ni de boire (${ctx.label ?? 'sort'}).`);
@@ -903,8 +901,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           testMod: o.amount,
         });
         lines.push(`${target.name} : ${o.amount >= 0 ? '+' : ''}${o.amount} à tous les Tests (${ctx.label ?? 'sort'}).`);
@@ -914,8 +911,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           noBreath: true,
         });
         lines.push(`${target.name} n'a plus besoin de respirer (${ctx.label ?? 'sort'}).`);
@@ -925,8 +921,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           weatherImmune: true,
         });
         lines.push(`${target.name} est protégé des intempéries (${ctx.label ?? 'sort'}).`);
@@ -960,8 +955,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? o.name, bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           naturalWeapon: weapon,
         });
         recomputeLoadout(target);
@@ -1001,8 +995,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? o.name, bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           conjuredSet,
         });
         const conjQuals = item.qualities.map((id) => qualityRefLabel({ id })).join(', '); // ids → libellés
@@ -1018,8 +1011,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           castWard: { radiusMeters: radius },
         });
         lines.push(`${target.name} : les Sorts visant la zone (${radius} m) subissent −20 en Langue (Magick) (${ctx.label ?? 'sort'}).`);
@@ -1030,8 +1022,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           arrowWard: { radiusMeters: radius },
         });
         lines.push(`${target.name} : les projectiles organiques entrant dans la zone (${radius} m) sont détruits (${ctx.label ?? 'sort'}).`);
@@ -1042,8 +1033,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           domeWard: { radiusMeters: radius },
         });
         lines.push(`${target.name} : un dôme (${radius} m) protège la zone — Protection (6+) contre les attaques extérieures à distance/magiques (${ctx.label ?? 'sort'}).`);
@@ -1053,8 +1043,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           attackWardFM: true,
         });
         lines.push(`${target.name} : l'attaquer exige un Test de Force Mentale Accessible (+20) (${ctx.label ?? 'sort'}).`);
@@ -1068,8 +1057,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           martyrGuard: ctx.caster.id,
         });
         lines.push(`${ctx.caster.name} recevra les Dégâts subis par ${target.name} (${ctx.label ?? 'sort'}).`);
@@ -1105,8 +1093,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           skillMods: { [o.skill]: o.mod },
         });
         lines.push(`${target.name} : ${o.mod >= 0 ? '+' : ''}${o.mod} aux Tests de ${o.skill} (${ctx.label ?? 'sort'}).`);
@@ -1116,8 +1103,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           moveScale: { num: o.num, den: o.den },
         });
         lines.push(`${target.name} : Mouvement ×${o.num}/${o.den} (${ctx.label ?? 'sort'}).`);
@@ -1127,8 +1113,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           moveMod: o.mod,
         });
         lines.push(`${target.name} : ${o.mod >= 0 ? '+' : ''}${o.mod} Mouvement (${ctx.label ?? 'sort'}).`);
@@ -1138,8 +1123,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          roundsLeft: ctx.defaultDurationRounds ?? COMBAT_PERSIST,
-          ...(ctx.defaultUntilTime != null ? { untilTime: ctx.defaultUntilTime } : {}),
+          duration: durationFromCtx(ctx),
           maxWeaponHands: o.hands,
         });
         lines.push(`${target.name} : armes limitées à ${o.hands} main(s) (${ctx.label ?? 'sort'}).`);

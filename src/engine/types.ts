@@ -1,5 +1,6 @@
 /** Types partagés du moteur de règles WFRP v4. */
 import { t } from '../i18n';
+import type { Duration } from './duration';
 
 /** Les 10 Caractéristiques (abréviations du Livre de base). */
 export type CharKey =
@@ -223,16 +224,15 @@ export interface ActiveEffect {
   char?: CharKey;
   /** Valeur du bonus (ex. +10). */
   bonus: number;
-  /** Rounds restants avant dissipation. */
-  roundsLeft: number;
-  /** Échéance d'HORLOGE (minutes `gameTime`) d'un buff à durée en minutes/heures/jours (LDB 47 —
-   *  « (Bonus de FM) heures », « Jusqu'au lever du soleil »…) : purgé par la cascade #T3
-   *  (`purgeClockEffects`) ; `roundsLeft` reste à COMBAT_PERSIST en attendant. */
-  untilTime?: number;
+  /** Durée de l'effet (échelle Rounds, horloge `gameTime`, ou permanent) — représentation UNIQUE
+   *  (cf. `engine/duration.ts`). Remplace l'ancien couple `roundsLeft` + `untilTime` (+ sentinelle
+   *  `COMBAT_PERSIST`) : un buff en Rounds = `{scale:'rounds'}`, en heures = `{scale:'clock'}` (purgé
+   *  par l'horloge), sans durée = `{scale:'permanent'}`. */
+  duration: Duration;
   /** Ops RÉCURRENTES re-jouées à CHAQUE fin de Round tant que l'effet dure (op `perRound` — sorts
    *  multi-Rounds : 1 État X par Round, 1 Ration par Round de « Récolte de Rhya », etc.). Les valeurs
    *  sont déjà résolues à l'incantation (littérales) — `endOfRound` les ré-applique via `applyOps`
-   *  sans avoir besoin du lanceur. La durée (donc le nombre de répétitions) suit `roundsLeft`, qui
+   *  sans avoir besoin du lanceur. La durée (donc le nombre de répétitions) suit `duration`, qui
    *  intègre la Surincantation de Durée (LDB 47). */
   opsPerRound?: import('./ops').GameOp[];
   /** PA temporisés à TOUTES les localisations (Armure Aethyrique : « +1 PA à toutes les

@@ -2,7 +2,8 @@
  * États (conditions) — Livre de base, chapitre « États ».
  * Gestion minimale pour le combat tactique : ajout, empilement, retrait.
  */
-import { Combatant } from './types';
+import { Combatant, ActiveEffect } from './types';
+import { tickRound } from './duration';
 import { conditionLabel } from '../data';
 import { rule } from './policy';
 import { bleedIgnoreLevel } from './combatFeatures/dispatch';
@@ -274,7 +275,7 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
   // « Récolte de Rhya »/Round… Le nombre de répétitions suit roundsLeft (Surincantation de Durée
   // comprise). Snapshot de la liste : les ops récurrentes n'ajoutent pas d'effet actif (cas littéraux).
   for (const e of [...(c.activeEffects ?? [])]) {
-    if (!e.opsPerRound || e.roundsLeft <= 0) continue;
+    if (!e.opsPerRound || (e.duration.scale === 'rounds' && e.duration.left <= 0)) continue;
     applyOps(c, e.opsPerRound, { label: e.label, rng }).forEach((l) => log.push(l));
   }
   // Décrément des durées (effets/États de sort/contrecoups) — SOURCE UNIQUE extraite, même emplacement
@@ -292,12 +293,15 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
  */
 export function tickDurations(c: Combatant): string[] {
   const log: string[] = [];
-  // Effets magiques temporisés (Bénédictions, Sorts de bonus).
+  // Effets magiques temporisés (Bénédictions, Sorts de bonus) : décrément des durées en Rounds.
+  // `tickRound` n'agit que sur l'échelle `rounds` ; les durées d'horloge/permanentes sont inertes ici
+  // (les premières sont purgées par l'horloge `purgeClockEffects`).
   if (c.activeEffects?.length) {
-    for (const e of c.activeEffects) e.roundsLeft -= 1;
-    const expired = c.activeEffects.filter((e) => e.roundsLeft <= 0);
+    for (const e of c.activeEffects) e.duration = tickRound(e.duration);
+    const isDone = (e: ActiveEffect) => e.duration.scale === 'rounds' && e.duration.left <= 0;
+    const expired = c.activeEffects.filter(isDone);
     for (const e of expired) log.push(`${c.name} : ${e.label} se dissipe.`);
-    c.activeEffects = c.activeEffects.filter((e) => e.roundsLeft > 0);
+    c.activeEffects = c.activeEffects.filter((e) => !isDone(e));
     dropExpiredGrantedTraits(c, expired); // traits accordés (op grantTrait) retirés avec leur effet
     dropExpiredGrantedResources(c, expired); // Chance/Destin accordés (gainResource) non dépensés
     dropExpiredGrantedWeapons(c, expired); // armes invoquées/naturelles accordées : loadout recomposé
