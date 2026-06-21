@@ -13,7 +13,8 @@ import { GameOp } from './ops';
  *  types sont inline (chaînes littérales / primitives). */
 export interface SpellResolutionMeta {
   curated?: boolean;
-  zdeRadiusMeters?: unknown;
+  /** Cible structurée — `{kind:'area'}` signale une Zone d'Effet (ex-`zdeRadiusMeters`, désormais ici). */
+  target?: { kind?: string } | null;
   breathAttack?: boolean | true;
   teleportMeters?: unknown;
   pushMeters?: unknown;
@@ -39,7 +40,7 @@ export function spellSupport(
   // Les EFFETS (ops) vivent sur la donnée app-owned (`SpellData.effects`, Flow éditable) ;
   // l'appelant les extrait du Flow (feuilles EffectOp) et les passe ici. Les métadonnées de
   // résolution (zone/téléportation/poussée/souffle…) qualifient également le support mécanique.
-  const mech = ops.filter((o) => o.op !== 'narrative').length > 0 || missile || spell.zdeRadiusMeters != null
+  const mech = ops.filter((o) => o.op !== 'narrative').length > 0 || missile || spell.target?.kind === 'area'
     || spell.breathAttack != null || spell.teleportMeters != null || spell.pushMeters != null;
   const narr = ops.some((o) => o.op === 'narrative') || (!spell.curated && ops.length === 0);
   if (mech && narr) return 'partiel';
