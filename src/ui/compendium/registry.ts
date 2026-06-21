@@ -417,7 +417,7 @@ export const CODEX: CodexCategory[] = [
   {
     key: 'maladies', label: 'Maladies', group: 'Effets',
     items: maladies.map((m) => ({
-      label: m.name,
+      label: m.label,
       sub: m.symptoms.map((s) => SYMPTOM_LABEL[s.kind] ?? s.kind).join(', '),
       meta: facts(
         fact('Contraction', DIFFICULTY_LABELS[m.contractDifficulty]),

@@ -47,8 +47,8 @@ export interface DiseaseSymptom {
 export interface DiseaseDef {
   /** id STABLE (slug du nom) — clé de `maladies.json`, cible de `Disease.name` et des refs. */
   id: string;
-  /** Nom d'affichage (français) — résolu via `diseaseLabel` ; ≠ id. */
-  name: string;
+  /** Libellé d'affichage (français) — résolu via `diseaseLabel` ; ≠ id. Convention `label` des catalogues. */
+  label: string;
   /** Difficulté du Test de Contraction (pour mémoire/journal — la contraction est déclenchée par l'appelant). */
   contractDifficulty: Difficulty;
   incubation: DiceSpec;

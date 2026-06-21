@@ -654,7 +654,7 @@ export function findDiseaseById(id: string): DiseaseDef | undefined {
 }
 /** Libellé d'affichage d'une Maladie par son id (repli sur l'id). */
 export function diseaseLabel(id: string): string {
-  return DISEASE_BY_ID.get(id)?.name ?? id;
+  return DISEASE_BY_ID.get(id)?.label ?? id;
 }
 // Traits app-owned + traits curés hors-extraction mergés ici : homebrew frenchy.bzh (Aura de Dhar/
 // Mort, Charnier) + traits de suppléments autorisés référencés par le bestiaire mais absents
@@ -968,7 +968,7 @@ export function findById(category: string, id: string): { label: string } | unde
     case 'classes': return findClassById(id);
     case 'races': return findSpeciesById(id);
     case 'etats': return findConditionById(id);
-    case 'maladies': return findDiseaseById(id) ? { label: findDiseaseById(id)!.name } : undefined;
+    case 'maladies': return findDiseaseById(id) ? { label: findDiseaseById(id)!.label } : undefined;
     default: return undefined;
   }
 }
