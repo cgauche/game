@@ -86,6 +86,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'mutationTables') add('ranges');
   if (categoryKey === 'mutations') add('psychTraits');
   if (['mutations', 'trappings'].includes(categoryKey)) add('derivedWeapon');
+  if (categoryKey === 'trappings') add('consumable');
   if (categoryKey === 'maladies') add('symptoms');
   if (categoryKey === 'talents') add('combat');
   if (categoryKey === 'races' || categoryKey === 'careerLevels') add('skills', 'talents');
@@ -186,6 +187,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const isMutation = categoryKey === 'mutations';
   // Arme DÉRIVÉE (WeaponField) : portée par une Mutation (Tentacule…) OU une Possession (prothèse-arme).
   const hasDerivedWeapon = categoryKey === 'mutations' || categoryKey === 'trappings';
+  const hasConsumable = categoryKey === 'trappings';
   // Maladie : ses `symptoms` (DiseaseSymptom[]) ont un éditeur dédié (type + sévérité + difficulté).
   const isDisease = categoryKey === 'maladies';
   // Talent : sa capacité de combat `combat` (CombatFeature : drapeaux + castingKind/attackModes/offHand).
@@ -263,6 +265,12 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {isManeuver && <ManeuverDefField entry={entry} edit={edit} />}
         {isMutationTable && <MutationTableField value={entry.ranges as MutationRange[] | undefined} onChange={(v) => edit('ranges', v)} />}
         {hasDerivedWeapon && <WeaponField value={entry.derivedWeapon as Weapon | undefined} onChange={(v) => edit('derivedWeapon', v)} />}
+        {hasConsumable && (
+          <div className="ed-field">
+            <span>effet d’un CONSOMMABLE (potion/bandage) — ops appliqués au buveur (heal / removeCondition / preventInfection)</span>
+            <GameOpEditor ops={(entry.consumable as GameOp[] | undefined) ?? []} onChange={(ops) => edit('consumable', ops.length ? ops : undefined)} />
+          </div>
+        )}
         {isMutation && <PsychTraitsField value={entry.psychTraits as PsychTrait[] | undefined} onChange={(v) => edit('psychTraits', v)} />}
         {isDisease && <SymptomsField value={entry.symptoms as DiseaseSymptom[] | undefined} onChange={(v) => edit('symptoms', v)} />}
         {hasCombat && <CombatField value={entry.combat as Partial<CombatFeature> | undefined} allFeatures={src.entries.map((e) => e.combat as Partial<CombatFeature> | undefined)} onChange={(v) => edit('combat', v)} />}

@@ -30,7 +30,7 @@ import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSk
 import { skillCharacteristicById } from '../engine/character';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { castingKindOf } from '../engine/combatFeatures/dispatch';
-import { itemUse, applyItemUse } from '../engine/consumables';
+import { isConsumable, useConsumable } from '../engine/consumables';
 import { add as moneyAdd, subtract as moneySub, canAfford, toMoney, Money, formatMoney } from '../engine/money';
 import { isArcaneSpell } from '../engine/magic';
 import { spellCost } from '../engine/grimoire';
@@ -508,16 +508,15 @@ export function partyRemoveHero(get: Get, set: Set, heroId: string): void {
 
 
 /** HORS COMBAT : un héros utilise un consommable (bandages, potion) depuis sa fiche — même effet
- *  qu'en combat (`applyItemUse`), consommé, journalisé. Le combat passe par `battleUseItem` (coûte l'Action). */
+ *  qu'en combat (`useConsumable`), consommé, journalisé. Le combat passe par `battleUseItem` (coûte l'Action). */
 export function usePartyItem(get: Get, set: Set, heroId: string, uid: string): void {
   if (get().battle) return; // en combat → battleUseItem
   const party = get().party;
   const hero = party.find((h) => h.id === heroId);
   const it = hero?.items?.find((i) => i.uid === uid);
   if (!hero || !it) return;
-  const eff = itemUse(it, hero);
-  if (!eff) return;
-  const log = [`${hero.name} utilise : ${it.name}.`, ...applyItemUse(hero, eff)];
+  if (!isConsumable(it)) return;
+  const log = [`${hero.name} utilise : ${it.name}.`, ...useConsumable(hero, it)];
   hero.items = (hero.items ?? []).filter((i) => i.uid !== uid);
   set({ party: [...party], journal: [...get().journal.slice(-40), ...log] });
   bus.emit(EVT.SCENE_DIRTY);

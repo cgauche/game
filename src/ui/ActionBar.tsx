@@ -8,7 +8,7 @@ import { formatSpellRange, formatSpellTarget, formatSpellDuration } from '../eng
 import { canTakeAction, hasCondition, isOutOfAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
 import { isFrenzyCapable } from '../engine/psychology';
-import { itemUse } from '../engine/consumables';
+import { isConsumable } from '../engine/consumables';
 import { compatibleAmmo } from '../engine/items';
 import { canPushback } from '../engine/qualities/dispatch';
 import { hasHealSkill, healableTargets, availableHealModes } from '../engine/healing';
@@ -257,7 +257,7 @@ export function ActionBar() {
     : 0;
 
   // Consommables utilisables du combattant actif, groupés par nom (plusieurs potions → ×N).
-  const usable = isHero ? (active.items ?? []).filter((it) => itemUse(it, active) != null) : [];
+  const usable = isHero ? (active.items ?? []).filter(isConsumable) : [];
   const usableGroups = Object.values(
     usable.reduce<Record<string, { name: string; uids: string[]; desc?: string }>>((acc, it) => {
       (acc[it.name] ??= { name: it.name, uids: [], desc: it.desc ?? undefined }).uids.push(it.uid);

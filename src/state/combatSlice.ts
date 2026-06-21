@@ -34,7 +34,7 @@ import { isFrenzyCapable, spendResolveForPsychImmunity } from '../engine/psychol
 import { recomputeLoadout, itemFromGive, compatibleAmmo, loadoutSetActive } from '../engine/items';
 import { magazineSize, canPushback, strikesLast, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
 import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus } from '../engine/combatFeatures/dispatch';
-import { itemUse, applyItemUse } from '../engine/consumables';
+import { isConsumable, useConsumable } from '../engine/consumables';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, loseWounds, stacks, recoveredStacks, COND, setConditionGainedHook } from '../engine/conditions';
 import { hasHealSkill, availableHealModes, resolveWoundsHeal, resolveBleedHeal, type HealMode } from '../engine/healing';
@@ -1712,9 +1712,8 @@ export function createCombatSlice(get: Get, set: Set) {
       if (battle.acted || !canTakeAction(active)) return; // boire = une Action ; Sonné = pas d'Action
       const it = (active.items ?? []).find((i) => i.uid === uid);
       if (!it) return;
-      const eff = itemUse(it, active);
-      if (!eff) return;
-      const log = [`${active.name} utilise : ${it.name}.`, ...applyItemUse(active, eff)];
+      if (!isConsumable(it)) return;
+      const log = [`${active.name} utilise : ${it.name}.`, ...useConsumable(active, it)];
       active.items = (active.items ?? []).filter((i) => i.uid !== uid); // consommé
       active.aiming = false; // une autre action que le tir gâche la visée
       set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ...evLines(log, 'item', active.id)] } });

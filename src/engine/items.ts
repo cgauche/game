@@ -157,6 +157,7 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
     enc: t.enc ?? 0,
     equipped: false,
     desc: t.desc,
+    ...(t.consumable?.length ? { consumable: t.consumable } : {}), // effet de consommable (GameOp[]) copié du catalogue
     subType: t.subType ?? undefined,
     hands: kind === 'melee' || kind === 'ranged' ? (t.hands === 2 ? 2 : 1) : undefined, // champ typé (LDB 62)
     qty: kind === 'ammo' ? (t.packSize ?? 1) : undefined, // taille de paquet typée

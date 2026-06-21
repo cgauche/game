@@ -178,7 +178,7 @@ export type GameOp =
   /** Retrait d'États : `name` absent = au choix de la cible (1er État porté). `valuePerSL` : échelle
    *  « +1 par +N DR » ajoutée à `value` (Mâchoires d'acier : « chaque DR supprime un État Sonné
    *  supplémentaire », LDB 10) — inerte si absent (calque op `condition`). */
-  | { op: 'removeCondition'; name?: string; value?: Formula; valuePerSL?: PerSL }
+  | { op: 'removeCondition'; name?: string; value?: Formula; valuePerSL?: PerSL; all?: boolean }
   /** Modificateur de caractéristique temporisé (ActiveEffect — meilleur bonus +
    *  pire pénalité sans cumul, LDB l.168). `durationRounds` absent = durée du
    *  contexte (sort : Rounds, horloge, ou permanent — cf. `durationFromCtx`). */
@@ -633,11 +633,14 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'removeCondition': {
-        const v = Math.max(1, resolveFormula(o.value ?? 1, ref, rng) + slBonus(ctx.sl, o.valuePerSL));
         const name = o.name ?? target.conditions[0]?.name;
         if (name) {
+          // `all` : retire TOUT l'État (Potion de vitalité « tout État Exténué ») ; sinon `value` pions (défaut 1).
+          const v = o.all
+            ? (target.conditions.find((x) => x.name === name)?.value ?? 1)
+            : Math.max(1, resolveFormula(o.value ?? 1, ref, rng) + slBonus(ctx.sl, o.valuePerSL));
           removeCondition(target, name, v);
-          lines.push(`${target.name} retire ${v} État ${conditionLabel(name)}.`);
+          lines.push(`${target.name} retire ${o.all ? "tout l'État" : `${v} État`} ${conditionLabel(name)}.`);
         } else {
           lines.push(`${target.name} n'a aucun État à retirer.`);
         }

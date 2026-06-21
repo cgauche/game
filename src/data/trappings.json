@@ -4008,7 +4008,14 @@
     "source": {
       "book": "LDB",
       "page": 303
-    }
+    },
+    "consumable": [
+      {
+        "op": "removeCondition",
+        "name": "empoisonne",
+        "all": true
+      }
+    ]
   },
   {
     "id": "necessaire-d-ecriture",
@@ -5919,7 +5926,17 @@
     "source": {
       "book": "LDB",
       "page": 307
-    }
+    },
+    "consumable": [
+      {
+        "op": "removeCondition",
+        "name": "hemorragique",
+        "all": true
+      },
+      {
+        "op": "preventInfection"
+      }
+    ]
   },
   {
     "id": "potion-de-guerison",
@@ -5942,7 +5959,15 @@
     "source": {
       "book": "LDB",
       "page": 307
-    }
+    },
+    "consumable": [
+      {
+        "op": "heal",
+        "amount": {
+          "bonusOf": "E"
+        }
+      }
+    ]
   },
   {
     "id": "potion-de-vitalite",
@@ -5965,7 +5990,14 @@
     "source": {
       "book": "LDB",
       "page": 307
-    }
+    },
+    "consumable": [
+      {
+        "op": "removeCondition",
+        "name": "extenue",
+        "all": true
+      }
+    ]
   },
   {
     "id": "racine-de-terre",
@@ -6011,7 +6043,14 @@
     "source": {
       "book": "LDB",
       "page": 307
-    }
+    },
+    "consumable": [
+      {
+        "op": "removeCondition",
+        "name": "sonne",
+        "value": 1
+      }
+    ]
   },
   {
     "id": "tonique-digestif",
@@ -6345,7 +6384,17 @@
     "source": {
       "book": "LDB",
       "page": 308
-    }
+    },
+    "consumable": [
+      {
+        "op": "removeCondition",
+        "name": "hemorragique",
+        "value": 1
+      },
+      {
+        "op": "preventInfection"
+      }
+    ]
   },
   {
     "id": "batonnet-de-fusain",

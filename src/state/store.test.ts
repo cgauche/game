@@ -1749,8 +1749,8 @@ describe('Utiliser un consommable en combat (store)', () => {
       ...over,
     }) as unknown as Combatant;
 
-  const potion = (uid: string, name: string, desc: string) =>
-    ({ uid, name, kind: 'misc', qualities: [], enc: 0, equipped: false, desc }) as ItemInstance;
+  const potion = (uid: string, name: string, consumable: ItemInstance['consumable']) =>
+    ({ uid, name, kind: 'misc', qualities: [], enc: 0, equipped: false, consumable }) as ItemInstance;
 
   const mkBattle = (h: Combatant, over = {}): BattleState => ({
     combatants: [h],
@@ -1770,7 +1770,7 @@ describe('Utiliser un consommable en combat (store)', () => {
   it('Potion de guérison : soigne du Bonus d’Endurance, consomme l’objet, coûte l’Action', () => {
     const h = combatHero({
       wounds: { current: 5, max: 12 },
-      items: [potion('p1', 'Potion de guérison', "récupérez immédiatement un nombre de Points de Blessure égal à votre Bonus d'Endurance.")],
+      items: [potion('p1', 'Potion de guérison', [{ op: 'heal', amount: { bonusOf: 'E' } }])],
     });
     useGame.setState({ mode: 'battle', battle: mkBattle(h) });
     useGame.getState().battleUseItem('p1');
@@ -1783,7 +1783,7 @@ describe('Utiliser un consommable en combat (store)', () => {
   it('Potion de vitalité : retire l’État Exténué (toutes les piles)', () => {
     const h = combatHero({
       conditions: [{ name: 'extenue', value: 2 }],
-      items: [potion('p2', 'Potion de vitalité', 'Boire cette décoction retire instantanément tout État Exténué.')],
+      items: [potion('p2', 'Potion de vitalité', [{ op: 'removeCondition', name: 'extenue', all: true }])],
     });
     useGame.setState({ mode: 'battle', battle: mkBattle(h) });
     useGame.getState().battleUseItem('p2');
@@ -1795,7 +1795,7 @@ describe('Utiliser un consommable en combat (store)', () => {
   it('Action déjà consommée : aucune utilisation (objet conservé)', () => {
     const h = combatHero({
       wounds: { current: 5, max: 12 },
-      items: [potion('p3', 'Potion de guérison', "récupérez un nombre de Points de Blessure égal à votre Bonus d'Endurance.")],
+      items: [potion('p3', 'Potion de guérison', [{ op: 'heal', amount: { bonusOf: 'E' } }])],
     });
     useGame.setState({ mode: 'battle', battle: mkBattle(h, { acted: true }) });
     useGame.getState().battleUseItem('p3');

@@ -11,7 +11,7 @@ import { baseWithTalents } from '../engine/talentEffects';
 import { effectiveWeaponDamage } from '../engine/weaponDamage';
 import { buildAdvancementView } from '../state/advancement';
 import { hasHealSkill, isHealable } from '../engine/healing';
-import { itemUse } from '../engine/consumables';
+import { isConsumable } from '../engine/consumables';
 import { isMagicMissile, isArcaneSpell } from '../engine/magic';
 import { rule } from '../engine/policy';
 import { canAfford, toMoney, formatMoney } from '../engine/money';
@@ -531,7 +531,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
             // Surbrillance « équipé » : arme tenue dans le set ACTIF (plus de flag `equipped` d'arme) ; sinon armure portée.
             const highlighted = isWeaponItem ? isWeaponActive(hero, it.uid) : it.equipped;
             const isSkinnable = it.kind === 'melee' || it.kind === 'ranged' || it.kind === 'armor';
-            const consumable = itemUse(it, hero) != null; // bandages / potion : utilisable depuis la fiche
+            const consumable = isConsumable(it); // bandages / potion : utilisable depuis la fiche
             const skinned = !!it.skin && Object.keys(it.skin).length > 0;
             const open = isSkinnable && skinFor === it.uid;
             return (
@@ -648,7 +648,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
           const GROUPS: { label: string; pred: (it: ItemInstance) => boolean }[] = [
             { label: 'Armes', pred: (it) => it.kind === 'melee' || it.kind === 'ranged' },
             { label: 'Armures & protections', pred: (it) => it.kind === 'armor' || isCapeItem(it) },
-            { label: 'Consommables', pred: (it) => itemUse(it, hero) != null },
+            { label: 'Consommables', pred: isConsumable },
             { label: 'Divers', pred: () => true },
           ];
           const partition: ItemInstance[][] = GROUPS.map(() => []);

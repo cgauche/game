@@ -173,6 +173,10 @@ export interface TrappingData {
   /** Qualités d'arme/armure (`QualityRef` : id + Indice éventuel « Solide 3 » → value, spec = arg éventuel). */
   qualities: QualityRef[];
   desc: string | null;
+  /** Effet d'un CONSOMMABLE (potion/bandage, LDB 307) en `GameOp[]` — MÊME vocabulaire que sorts/passifs
+   *  (`heal`/`removeCondition`/`preventInfection`), exécuté par `applyOps`. Remplace le parsing du `desc`
+   *  au runtime ; édité au Codex via `GameOpEditor`. Copié sur `ItemInstance.consumable` à la construction. */
+  consumable?: import('../engine/ops').GameOp[];
   price: { gold: number; silver: number; bronze: number };
   source: { book: string; page: number };
   /** Arme DÉRIVÉE conférée tant que l'objet est ÉQUIPÉ (prothèse-arme, LDB 73 : le Crochet « est

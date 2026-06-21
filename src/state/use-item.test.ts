@@ -16,9 +16,9 @@ function hero(p: Partial<Combatant>): Combatant {
   } as Combatant;
 }
 
-// Descriptions VERBATIM du Livre de base p.307 (cf. consumables.test.ts).
-const BANDAGE = item({ uid: 'b1', name: 'Bandages', desc: 'Un Test de Guérison ou de Dextérité réussi retire +1 État Hémorragique supplémentaire.' });
-const POTION = item({ uid: 'p1', name: 'Potion de guérison', desc: "Si vous avez plus de 0 Blessure, récupérez immédiatement un nombre de Points de Blessure égal à votre Bonus d'Endurance. Dose: 1 par rencontre." });
+// Effets STRUCTURÉS (GameOp[]) — comme le catalogue migré (LDB 307).
+const BANDAGE = item({ uid: 'b1', name: 'Bandages', consumable: [{ op: 'removeCondition', name: 'hemorragique', value: 1 }, { op: 'preventInfection' }] });
+const POTION = item({ uid: 'p1', name: 'Potion de guérison', consumable: [{ op: 'heal', amount: { bonusOf: 'E' } }] });
 
 describe('usePartyItem — consommables hors combat (fiche)', () => {
   beforeEach(() => {

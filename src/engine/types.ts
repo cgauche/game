@@ -412,6 +412,9 @@ export interface ItemInstance {
   enc: number; // encombrement
   equipped: boolean;
   desc?: string | null;
+  /** Effet d'un CONSOMMABLE (potion/bandage) en `GameOp[]` — copié du trapping (`TrappingData.consumable`).
+   *  Exécuté par `applyOps` (`useConsumable`). `isConsumable` = présence d'au moins un op. */
+  consumable?: import('./ops').GameOp[];
   /** `id` du Groupe/famille (`WeaponGroupData.id`) — munition : famille compatible (arc/arbalete/
    *  poudre-noire) ; armure : type (plate/mailles/cuir-souple…). Correspond à `Weapon.subType`. */
   subType?: string;
