@@ -931,12 +931,13 @@ export function IsoStage() {
   // CULLING d'animation : publie le cadre VISIBLE (AABB en tuiles des 4 coins de la fenêtre projetés)
   // pour que les hooks d'anim (usePlanAnim/useRigClip) sautent le rAF des acteurs hors-champ. Recalculé
   // à chaque rendu (donc suit la caméra pendant la marche). Écriture dans un module = pas de re-rendu.
-  {
-    const toTile = (sx: number, sy: number) => screenToTile((sx - VW / 2) / zoom + VW / 2 - cam.x, (sy - VH / 2) / zoom + VH / 2 - cam.y, dims);
-    const cs = [toTile(0, 0), toTile(VW, 0), toTile(0, VH), toTile(VW, VH)];
-    const xs = cs.map((c) => c.x), ys = cs.map((c) => c.y);
-    setVisibleTileBounds({ minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) });
-  }
+  const _toTile = (sx: number, sy: number) => screenToTile((sx - VW / 2) / zoom + VW / 2 - cam.x, (sy - VH / 2) / zoom + VH / 2 - cam.y, dims);
+  const _cs = [_toTile(0, 0), _toTile(VW, 0), _toTile(0, VH), _toTile(VW, VH)];
+  const _xs = _cs.map((c) => c.x), _ys = _cs.map((c) => c.y);
+  // Cadre VISIBLE en tuiles (entiers) : culling d'animation (setVisibleTileBounds) ET du brouillard
+  // (FogLayer ne dessine que les tuiles à l'écran → chemin borné par la fenêtre, pas par la scène).
+  const viewBounds = { minX: Math.floor(Math.min(..._xs)), maxX: Math.ceil(Math.max(..._xs)), minY: Math.floor(Math.min(..._ys)), maxY: Math.ceil(Math.max(..._ys)) };
+  setVisibleTileBounds(viewBounds);
 
   // --- Interaction (clic / survol → tuile) ---
   // Écran → tuile : annule le zoom (scale autour du centre viewport) puis la translation caméra.
@@ -1172,7 +1173,7 @@ export function IsoStage() {
         <g>{objs.map((o) => o.el)}</g>
         {/* Brouillard de guerre : voile sombre sur l'inconnu / grisé sur l'exploré-hors-vue / clair en
             vue. Au-dessus du décor+tokens, SOUS les FX/réticules (les infos de combat restent lisibles). */}
-        <FogLayer w={scene.dimensions.w} h={scene.dimensions.h} z={activeZ} rot={shownRot} view={viewMode} edge={shownEdge} visible={visible} explored={exploredSet} />
+        <FogLayer w={scene.dimensions.w} h={scene.dimensions.h} z={activeZ} rot={shownRot} view={viewMode} edge={shownEdge} visible={visible} explored={exploredSet} bounds={viewBounds} />
         {/* Portes dynamiques : cliquer une porte VISIBLE et ADJACENTE l'ouvre/ferme (exploration : le
             groupe ; combat : le héros actif, à son tour). Une porte fermée bloque vue ET passage. */}
         {(() => {

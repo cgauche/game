@@ -5,12 +5,15 @@
  * reçoivent aucun voile. Bords ADOUCIS par flou SVG. Les créatures hors-vue sont coupées en amont
  * (IsoStage) ; ce voile gère le décor/terrain (qu'il recouvre) en un seul overlay.
  *
- * Mémoïsé (React.memo + useMemo) sur des props STABLES (Sets `visible`/`explored` à réf stable,
- * primitives de caméra) → ne se reconstruit PAS pendant la marche (qui re-rend IsoStage à 60 Hz).
+ * PERF : on ne dessine QUE les tuiles dans le cadre VISIBLE (`bounds` + marge) — le chemin est borné
+ * par la FENÊTRE, pas par la scène (sinon une grande carte murée = chemin de 300k chars re-rastérisé
+ * à chaque frame de caméra → ~100 ms/frame). Les bornes sont des ENTIERS : le memo ne reconstruit
+ * qu'au changement de cadre-tuile (pas à chaque pixel de pan) ; la marge couvre le glissement sous-tuile.
  */
 import React, { useMemo } from 'react';
 import { Dims, ViewMode, diamondPath } from './iso';
 
+interface Bounds { minX: number; maxX: number; minY: number; maxY: number }
 interface FogLayerProps {
   w: number;
   h: number;
@@ -20,15 +23,21 @@ interface FogLayerProps {
   edge: boolean;
   visible: Set<string>;
   explored: Set<string>;
+  bounds: Bounds;
 }
 
-export const FogLayer = React.memo(function FogLayer({ w, h, z, rot, view, edge, visible, explored }: FogLayerProps) {
+const MARGIN = 5; // tuiles autour du cadre : couvre le pan sous-tuile + l'étalement du flou
+
+export const FogLayer = React.memo(function FogLayer({ w, h, z, rot, view, edge, visible, explored, bounds }: FogLayerProps) {
+  const { minX, maxX, minY, maxY } = bounds;
   const { unknown, remembered } = useMemo(() => {
     const dims: Dims = { w, h, rot, view, edge };
+    const x0 = Math.max(0, minX - MARGIN), x1 = Math.min(w - 1, maxX + MARGIN);
+    const y0 = Math.max(0, minY - MARGIN), y1 = Math.min(h - 1, maxY + MARGIN);
     let unknownP = '';
     let rememberedP = '';
-    for (let y = 0; y < h; y++)
-      for (let x = 0; x < w; x++) {
+    for (let y = y0; y <= y1; y++)
+      for (let x = x0; x <= x1; x++) {
         const k = `${x},${y},${z}`;
         if (visible.has(k)) continue;
         const d = diamondPath(x, y, dims);
@@ -36,7 +45,8 @@ export const FogLayer = React.memo(function FogLayer({ w, h, z, rot, view, edge,
         else unknownP += d;
       }
     return { unknown: unknownP, remembered: rememberedP };
-  }, [w, h, z, rot, view, edge, visible, explored]);
+    // Deps sur les ENTIERS du cadre (pas l'objet `bounds`) → pas de rebuild tant que le cadre-tuile est stable.
+  }, [w, h, z, rot, view, edge, visible, explored, minX, maxX, minY, maxY]);
 
   if (!unknown && !remembered) return null;
   return (
