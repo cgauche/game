@@ -24,8 +24,9 @@ import { effectiveSkillCharKey } from './skills';
 import { reverseRoll, hitLocationByShape } from './combat';
 import { Formula, resolveFormula } from './ops';
 import type { SpellRange, SpellTarget } from './spellRange';
-import { arcaneDomainOf, arcaneDomainIdOf } from './combatFeatures/dispatch';
+import { arcaneDomainIdOf } from './combatFeatures/dispatch';
 import { domainMissileMods } from './domainAttributes';
+import { armourMaterialOf } from './armourBypass';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
 import { Combatant, HitLocation, Difficulty, CHAR_BY_LABEL } from './types';
 import { findTalent, findTalentById, findDomainById } from '../data';
@@ -143,18 +144,18 @@ export function castingValue(c: Combatant, skillName: string, spec?: string): nu
  * ignore les armures de cuir.
  */
 export function armourCastDRPenalty(c: Combatant): number {
-  // Domaine d'Arcane (spec du talent à castingKind:'arcane') — Métal ignore le métal, Bête le cuir.
-  const arc = arcaneDomainOf(c) ?? '';
-  const ignoreMetal = /^M[ée]tal$/.test(arc);
-  const ignoreLeather = /^Bêtes?$/.test(arc);
+  // Domaine d'Arcane par ID STABLE (`arcaneDomainIdOf`) + matériau de l'armure par CAPACITÉ TYPÉE du
+  // Groupe (`armourMaterialOf`) — plus AUCUNE devinette par regex (ni sur le nom de l'armure, ni sur le
+  // libellé du Domaine). Métal ignore le métal, Bête le cuir (LDB 46 l.188).
+  const domId = arcaneDomainIdOf(c);
+  const ignoreMetal = domId === 'metal';
+  const ignoreLeather = domId === 'bete';
   let maxPA = 0;
   for (const it of c.items ?? []) {
     if (!it.equipped || it.kind !== 'armor' || !it.pa) continue;
-    const name = `${it.name} ${it.subType ?? ''}`.toLowerCase();
-    const metal = /maille|plate|métal|metal|gambison.*métal/.test(name);
-    const leather = /cuir/.test(name);
-    if (metal && ignoreMetal) continue;
-    if (leather && ignoreLeather) continue;
+    const mat = armourMaterialOf(it);
+    if (mat === 'metal' && ignoreMetal) continue;
+    if (mat === 'leather' && ignoreLeather) continue;
     maxPA = Math.max(maxPA, Math.max(0, it.pa - (it.damageTaken ?? 0)));
   }
   return maxPA;

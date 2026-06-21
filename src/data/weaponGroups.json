@@ -87,22 +87,26 @@
   {
     "id": "cuir-souple",
     "label": "Cuir souple",
-    "kind": "armour"
+    "kind": "armour",
+    "material": "leather"
   },
   {
     "id": "cuir-bouilli",
     "label": "Cuir bouilli",
-    "kind": "armour"
+    "kind": "armour",
+    "material": "leather"
   },
   {
     "id": "mailles",
     "label": "Mailles",
-    "kind": "armour"
+    "kind": "armour",
+    "material": "metal"
   },
   {
     "id": "plate",
     "label": "Plate",
-    "kind": "armour"
+    "kind": "armour",
+    "material": "metal"
   },
   {
     "id": "sacs-et-contenants",

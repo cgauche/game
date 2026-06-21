@@ -65,8 +65,8 @@ describe('Focalisation — maladresse élargie (l.190-191)', () => {
 });
 
 describe('« Repousser les Vents » — armure portée (l.199 + exemptions l.188)', () => {
-  const mailles: ItemInstance = { uid: 'a1', name: 'Chemise de mailles', kind: 'armor', enc: 2, equipped: true, pa: 2, locs: ['corps'], qualities: [] } as never;
-  const cuir: ItemInstance = { uid: 'a2', name: 'Veste de cuir', kind: 'armor', enc: 1, equipped: true, pa: 1, locs: ['corps'], qualities: [] } as never;
+  const mailles: ItemInstance = { uid: 'a1', name: 'Chemise de mailles', subType: 'mailles', kind: 'armor', enc: 2, equipped: true, pa: 2, locs: ['corps'], qualities: [] } as never;
+  const cuir: ItemInstance = { uid: 'a2', name: 'Veste de cuir', subType: 'cuir-souple', kind: 'armor', enc: 1, equipped: true, pa: 1, locs: ['corps'], qualities: [] } as never;
   it('−1 DR par PA de la pièce la mieux protégée', () => {
     expect(armourCastDRPenalty(wiz())).toBe(0);
     expect(armourCastDRPenalty(wiz({ items: [mailles, cuir] }))).toBe(2);
@@ -74,10 +74,10 @@ describe('« Repousser les Vents » — armure portée (l.199 + exemptions l.188
   it('Magie des Arcanes (Métal) ignore le métal ; (Bêtes) ignore le cuir', () => {
     const metalMage = wiz({ items: [mailles], talents: [{ talentId: 'magie-des-arcanes', spec: 'Métal', times: 1 }] });
     expect(armourCastDRPenalty(metalMage)).toBe(0);
-    const beastMage = wiz({ items: [cuir], talents: [{ talentId: 'magie-des-arcanes', spec: 'Bêtes', times: 1 }] });
+    const beastMage = wiz({ items: [cuir], talents: [{ talentId: 'magie-des-arcanes', spec: 'Bête', times: 1 }] });
     expect(armourCastDRPenalty(beastMage)).toBe(0);
     // …mais pas l'inverse.
-    expect(armourCastDRPenalty(wiz({ items: [mailles], talents: [{ talentId: 'magie-des-arcanes', spec: 'Bêtes', times: 1 }] }))).toBe(2);
+    expect(armourCastDRPenalty(wiz({ items: [mailles], talents: [{ talentId: 'magie-des-arcanes', spec: 'Bête', times: 1 }] }))).toBe(2);
   });
   it('le DR d\'incantation est réduit par l\'armure (succès conservé)', () => {
     // Valeur 60 (Int 50 + 10) ; jet 10 → DR +5 ; armure 2 PA → DR +3.

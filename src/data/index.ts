@@ -199,6 +199,9 @@ export interface WeaponGroupData {
   id: string;
   label: string;
   kind: 'weapon' | 'ammo' | 'armour' | 'inventory';
+  /** Matériau d'une armure (groupes `kind:'armour'`) — source TYPÉE des exemptions de Magie des Arcanes
+   *  (Chamon/Azyr ignorent le métal, Ghur le cuir, LDB 46 l.188). Remplace la devinette par regex sur le nom. */
+  material?: 'metal' | 'leather';
 }
 export type HarvestRarity = 'Commune' | 'Limitée' | 'Rare' | 'Exotique' | 'Unique';
 export type HarvestDanger = 'Inoffensive' | 'Inquiétante' | 'Menaçante' | 'Mortelle';

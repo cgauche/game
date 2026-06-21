@@ -36,10 +36,10 @@ function mk(over: Partial<Combatant> = {}): Combatant {
 }
 
 const mail = (pa: number): ItemInstance => ({
-  uid: 'm1', name: 'Chemise de mailles', kind: 'armor', pa, locs: ['corps'], equipped: true, qualities: [],
+  uid: 'm1', name: 'Chemise de mailles', subType: 'mailles', kind: 'armor', pa, locs: ['corps'], equipped: true, qualities: [],
 } as unknown as ItemInstance);
 const leather = (pa: number): ItemInstance => ({
-  uid: 'l1', name: 'Armure de cuir souple', kind: 'armor', pa, locs: ['corps'], equipped: true, qualities: [],
+  uid: 'l1', name: 'Armure de cuir souple', subType: 'cuir-souple', kind: 'armor', pa, locs: ['corps'], equipped: true, qualities: [],
 } as unknown as ItemInstance);
 
 describe('hasArcaneTalent', () => {
