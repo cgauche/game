@@ -21,7 +21,7 @@ import { RACES } from '../../gameIso/rig/races';
 import { CreaturePreview } from './CreaturePreview';
 import type { EntityAppearance } from '../../state/scene';
 import { type Flow, EMPTY_FLOW, type TriggeredEffect, type EffectTrigger } from '../../state/flow';
-import type { ManeuverDef } from '../../data';
+import type { ManeuverDef, ManeuverMeasure } from '../../data';
 import { ATTACK_LABEL, type AttackKind } from '../../engine/creatureAttacks';
 import { WeaponField } from '../editor/WeaponField';
 import { PsychTraitsField } from '../editor/PsychTraitsField';
@@ -31,6 +31,7 @@ import { SymptomsField, CombatField, AdvancementRefField, TrappingRefField, Char
 import type { TraitInstance } from '../../engine/statEntry';
 import type { DomainData } from '../../data';
 import type { CharKey } from '../../engine/types';
+import { CHAR_KEYS, CHAR_LABELS } from '../../engine/types';
 import type { DiseaseSymptom } from '../../engine/disease';
 import type { CombatFeature } from '../../engine/combatFeatures/types';
 import type { AdvancementRef, TrappingRef } from '../../data';
@@ -427,6 +428,29 @@ const TARGETING_LABEL: Record<ManeuverDef['targeting'], string> = {
  *  jet/défense/ciblage/portée/magie) + ses effets AUTHORÉS (Dégâts + États en GameOp, via
  *  `TriggeredEffectsField`). Édite les champs TOP-LEVEL de `ManeuverDef` (id/label/desc/source restent
  *  au repli générique). Source UNIQUE de résolution : ces effets sont joués tels quels par `resolveManeuver`. */
+/** Éditeur d'une `ManeuverMeasure` (Portée/Souffle) : Bonus de carac + constante (mètres). Structuré —
+ *  plus de saisie prose « Bonus de Force mètres » re-parsée au runtime. */
+function MeasureField({ label, value, onChange }: { label: string; value: ManeuverMeasure | undefined; onChange: (v: ManeuverMeasure | undefined) => void }) {
+  const v = value ?? {};
+  const upd = (p: Partial<ManeuverMeasure>) => {
+    const bonusOf = 'bonusOf' in p ? p.bonusOf : v.bonusOf;
+    const plus = 'plus' in p ? p.plus : v.plus;
+    const next: ManeuverMeasure = {};
+    if (bonusOf) next.bonusOf = bonusOf;
+    if (plus != null) next.plus = plus;
+    onChange(next.bonusOf || next.plus != null ? next : undefined);
+  };
+  return (
+    <label className="dr">{label}
+      <select value={v.bonusOf ?? ''} onChange={(e) => upd({ bonusOf: (e.target.value || undefined) as CharKey | undefined })}>
+        <option value="">— (aucun)</option>
+        {CHAR_KEYS.map((k) => <option key={k} value={k}>Bonus de {CHAR_LABELS[k]}</option>)}
+      </select>
+      <input type="number" placeholder="+ m" style={{ width: 64 }} value={v.plus ?? ''} onChange={(e) => upd({ plus: e.target.value === '' ? undefined : (Number(e.target.value) || 0) })} /> m
+    </label>
+  );
+}
+
 function ManeuverDefField({ entry, edit }: { entry: Entry; edit: (key: string, v: unknown) => void }) {
   const m = entry as Partial<ManeuverDef>;
   return (
@@ -470,8 +494,8 @@ function ManeuverDefField({ entry, edit }: { entry: Entry; edit: (key: string, v
         <label className="dr"><input type="checkbox" checked={!!m.magic} onChange={(e) => edit('magic', e.target.checked || undefined)} /> Magique</label>
       </div>
       <div className="tf-row">
-        <label className="dr">Portée<input value={m.range ?? ''} placeholder="ex. Bonus d’Endurance + 20 mètres" onChange={(e) => edit('range', e.target.value || undefined)} /></label>
-        <label className="dr">Souffle/zone<input value={m.blast ?? ''} placeholder="ex. Bonus de Force mètres" onChange={(e) => edit('blast', e.target.value || undefined)} /></label>
+        <MeasureField label="Portée" value={m.range} onChange={(v) => edit('range', v)} />
+        <MeasureField label="Souffle/zone" value={m.blast} onChange={(v) => edit('blast', v)} />
       </div>
       <span>effets AUTHORÉS de la manœuvre (Dégâts + États, appliqués quand ELLE touche)</span>
       <TriggeredEffectsField value={m.effects} onChange={(effects) => edit('effects', effects.length ? effects : undefined)} />

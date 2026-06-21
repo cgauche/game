@@ -288,6 +288,13 @@ export interface DetailsData {
  *  générique (`state/combatManeuvers.resolveManeuver`) la joue ENTIÈREMENT depuis cette donnée — plus
  *  de table en dur ni d'applier par type. `kind` ne sert QU'À l'anim/pose/icône (jamais à résoudre).
  *  La géométrie/portée/opposition restent moteur (règle 3) ; Dégâts (`wounds`) + États = data. */
+/** Mesure de géométrie de manœuvre en MÈTRES (Portée/Souffle) : `bonus(ref)` de la carac `bonusOf` (référent
+ *  = Attaquant pour la Portée, Cible au centre pour le Souffle, RAW l.251) + constante `plus`. Résolue par
+ *  `measureMeters` (`combatManeuvers`) — remplace la formule-chaîne FR re-parsée par regex au runtime. */
+export interface ManeuverMeasure {
+  bonusOf?: CharKey;
+  plus?: number;
+}
 export interface ManeuverDef {
   id: string;
   label: string;
@@ -306,9 +313,10 @@ export interface ManeuverDef {
   defense?: 'esquive' | 'parade' | 'init' | 'resist' | 'auto';
   /** Mode de ciblage (le résolveur en dérive la géométrie moteur). */
   targeting: 'melee' | 'ranged' | 'zone' | 'allFoes';
-  /** Portée / Souffle (formules-chaînes résolues par le résolveur, ex. « Bonus d'Endurance + 20 mètres »). */
-  range?: string;
-  blast?: string;
+  /** Portée / Souffle STRUCTURÉS (`ManeuverMeasure`) — mètres = `bonus(ref) + plus`. `range` résolu contre
+   *  l'Attaquant, `blast` contre la cible au centre (RAW l.251). Remplace la formule-chaîne re-parsée au runtime. */
+  range?: ManeuverMeasure;
+  blast?: ManeuverMeasure;
   /** Attaque magique (Souffle, Étreinte glaciale) → soumise à la Résistance à la Magie, etc. */
   magic?: boolean;
   /** Effets AUTHORÉS (Dégâts `wounds` + États) appliqués quand la manœuvre touche (`onHit`) — MÊME

@@ -160,9 +160,13 @@ src/engine/                 Règles WFRP4, PUR + testé :
   items.ts                    inventaire/équipement : itemFromTrapping, recomputeLoadout, encombrement
   skills.ts                   valeur d'un test de compétence (partyBest) hors combat
   conditions.ts               États (+ durées d'États de sort, États récurrents)
-  ops.ts                      vocabulaire GameOp PARTAGÉ (sorts/contrecoups/mutations) + applyOps ;
-                              Jalon 2.6 : PerSL (échelle par DR), onlyGroups, grantTrait/grantTalent/
-                              augmentWeapon/cureDisease/… ; SpellSpec.teleportMeters/pushMeters
+  ops.ts                      **`GameOp` = LA langue UNIQUE de tout EFFET mécanique** (soin, retrait/pose
+                              d'État, octroi de trait/talent/arme, dégâts, modificateurs, corruption…),
+                              exécutée par `applyOps(target, ops, ctx)` et éditée par `GameOpEditor`.
+                              AVANT de modéliser un effet en type/champ ad hoc → l'exprimer en `GameOp[]`.
+                              Consommée par : sorts, Imparfaites (miscast), mutations, traits, qualités
+                              (`passive`), effets déclenchés (`Flow`/`Trigger`), CONSOMMABLES. Jalon 2.6 :
+                              PerSL (échelle par DR), onlyGroups, grantTrait/grantTalent/augmentWeapon/…
   spellspec.ts                SpellSpec (effets structurés d'un sort) + repli regex (fallbackSpec)
   magic.ts                    incantation/Focalisation/Péché/ZdE/portée/armure (« Repousser les Vents »)
   miscast.ts                  tables d'Imparfaites & Colère des dieux (d100 → GameOps, verbatim)
@@ -310,7 +314,8 @@ fait DANS la primitive, pas dans une nième copie.
 | Modificateurs de combat « brut » (Avantage×10 + État) | `baseTestMods` | `src/engine/combat.ts` |
 | Libellé d'attaque gratuite de créature (`freeKind`) | `FREE_ATTACK_LABEL` | `src/engine/combat.ts` |
 | Combattant par id (combat ou groupe) | `actorIn` / `inBattle` | `src/state/combatOrParty.ts` |
-| Éditer une **liste de `GameOp[]`** (sorts, effets déclenchés, **PASSIFS** de trait/mutation/qualité) | `GameOpEditor` (liste) — repris par `EffectList`/`FlowEditor` | `src/ui/editor/GameOpEditor.tsx` |
+| **Tout EFFET mécanique** (soin, État, octroi, dégâts, corruption…) — *réflexe avant tout type ad hoc* | **`GameOp[]`** exécuté par `applyOps(target, ops, ctx)` (`ctx.caster` = référent des `Formula`) | `src/engine/ops.ts` |
+| Éditer une **liste de `GameOp[]`** (sorts, effets déclenchés, **PASSIFS** de trait/mutation/qualité, **consommables**) | `GameOpEditor` (liste) — repris par `EffectList`/`FlowEditor` | `src/ui/editor/GameOpEditor.tsx` |
 | Modificateur **PASSIF** d'un élément (trait/mutation/qualité/trauma/maladie/faim/sort) | `passiveMods(c)` collecteur UNIQUE + `passive: GameOp[]` en donnée | `src/engine/trauma.ts` |
 
 > Pistes ÉVALUÉES puis ÉCARTÉES (sites trop divergents pour une source unique propre — ne pas

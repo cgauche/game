@@ -26,7 +26,7 @@ import { effectiveChar, bonus } from '../engine/characteristics';
 import { isOutOfAction, applyZeroWounds } from '../engine/conditions';
 import { hasTraitKey, isBestial } from '../engine/traits/dispatch';
 import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../engine/creatureAttacks';
-import { findTalentById, type ManeuverDef } from '../data';
+import { findTalentById, type ManeuverDef, type ManeuverMeasure } from '../data';
 import { sizeGap } from '../engine/size';
 import { combatDistance } from './footprint';
 import { chebyshev, type Pt } from './path';
@@ -199,18 +199,12 @@ export function maneuverAttackerDifficulty(kind: AttackKind): Difficulty {
 // RÉSOLVEUR GÉNÉRIQUE — UNE fonction joue TOUTE manœuvre depuis sa `ManeuverDef`
 // ---------------------------------------------------------------------------
 
-/** Portée d'une manœuvre en MÈTRES depuis sa formule-chaîne (« Bonus d'Endurance + 20 mètres »,
- *  « Bonus de Force mètres », « 2 mètres »). PUR/moteur (règle 3) — géométrie de la manœuvre, les
- *  Dégâts/États restent data. Non chiffrable → null. */
-function maneuverMeters(formula: string | undefined, ref: Combatant): number | null {
-  if (!formula) return null;
-  let m = 0;
-  if (/bonus d[e'’]\s*endurance/i.test(formula)) m += bonus(effectiveChar(ref, 'E'));
-  if (/bonus d[e'’]\s*force/i.test(formula)) m += bonus(effectiveChar(ref, 'F'));
-  const plus = formula.match(/\+\s*(\d+)/);
-  if (plus) m += parseInt(plus[1], 10);
-  // « N mètres » nu (sans « Bonus de … ») : littéral.
-  if (!/bonus/i.test(formula)) { const lit = formula.match(/(\d+)\s*m/i); if (lit) m = parseInt(lit[1], 10); }
+/** Géométrie d'une manœuvre en MÈTRES depuis sa mesure STRUCTURÉE (`{bonusOf?, plus?}`). `ref` = référent
+ *  du Bonus (Attaquant pour la Portée, Cible au centre pour le Souffle — RAW l.251). PUR/moteur (règle 3) ;
+ *  Dégâts/États restent data (`GameOp`). Vide ou ≤ 0 → null. Zéro regex (donnée déjà structurée). */
+function measureMeters(spec: ManeuverMeasure | undefined, ref: Combatant): number | null {
+  if (!spec) return null;
+  const m = (spec.bonusOf ? bonus(effectiveChar(ref, spec.bonusOf)) : 0) + (spec.plus ?? 0);
   return m > 0 ? m : null;
 }
 /** Mètres → CASES (grille 2 m/case), min 1 ; null conservé. */
@@ -280,13 +274,14 @@ export function resolveManeuver(
   };
 
   if (def.targeting === 'zone') {
-    const rangeTiles = tilesOf(maneuverMeters(def.range, attacker)) ?? Math.max(1, Math.ceil(bonus(effectiveChar(attacker, 'E')) / 2));
+    const rangeTiles = tilesOf(measureMeters(def.range, attacker)) ?? Math.max(1, Math.ceil(bonus(effectiveChar(attacker, 'E')) / 2));
     const foes = battle.combatants.filter((c) => alive(c) && chebyshev(attacker.pos!, c.pos!) <= rangeTiles);
     const center = chosenTarget && alive(chosenTarget) && chebyshev(attacker.pos!, chosenTarget.pos!) <= rangeTiles
       ? chosenTarget : foes.length ? nearest(foes) : null;
     if (!center) { set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id)] } }); return; }
-    // Rayon de Souffle : `blast` « Bonus de Force mètres » → BF de la CIBLE (RAW l.251) ; Vomi « 2 mètres » → 1 case.
-    const blast = /force/i.test(def.blast ?? '') ? Math.max(1, Math.ceil(bonus(effectiveChar(center, 'F')) / 2)) : (tilesOf(maneuverMeters(def.blast, attacker)) ?? 1);
+    // Rayon de Souffle : `blast` résolu contre la CIBLE au centre (« Bonus de Force » → BF de la cible, RAW l.251 ;
+    // Vomi « 2 mètres » → littéral, 1 case). Plus de regex `/force/i` — la mesure structurée porte le référent.
+    const blast = tilesOf(measureMeters(def.blast, center)) ?? 1;
     emitAoe(get, center.pos!, blast, def.kind, def.label);
     const affected = battle.combatants.filter((c) => alive(c) && chebyshev(center.pos!, c.pos!) <= blast);
     for (const tgt of affected) hitOne(tgt);
