@@ -44,14 +44,9 @@ export function isShieldItem(i: { qualities?: string[] }): boolean {
 }
 
 const trendOf = (n: number): Trend => (n > 0 ? 'up' : n < 0 ? 'down' : 'same');
-/** Indice de l'Atout « Protectrice N » (PA d'un bouclier en parade, LDB 62 l.272). */
-const protectrice = (q: string[]): number => {
-  for (const s of q) {
-    const m = s.match(/protectrice\s*(\d+)/i);
-    if (m) return parseInt(m[1], 10);
-  }
-  return 0;
-};
+/** Indice de l'Atout « Protectrice N » (PA d'un bouclier en parade, LDB 62 l.272) — via le parseur UNIQUE
+ *  `indiceOf` (id stable), plus de regex maison dupliquée. */
+const protectrice = (q: string[]): number => indiceOf(q, QUALITY_IDS.Protectrice) ?? 0;
 
 export function compareEquip(item: ItemInstance, hero: Combatant): EquipComparison {
   const items = hero.items ?? [];
