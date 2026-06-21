@@ -722,11 +722,11 @@ export function IsoStage() {
     </BodyToken>
   );
 
-  type TokenExtras = { hp?: { current: number; max: number }; icons?: string[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number; ghost?: boolean; cid?: string };
+  type TokenExtras = { hp?: { current: number; max: number }; icons?: string[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number; ghost?: boolean; cid?: string; highlight?: boolean };
   const tokenNode = (id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean, walking?: boolean, extras?: TokenExtras, z = 0) => (
     <BodyToken key={id} x={x} y={y} z={feetZ(x, y, z)} dims={dims} scale={scale} ring={ringColor} ringDash={extras?.ringDash} dim={dim} ghost={extras?.ghost} walking={walking} bakedDeath
       hp={extras?.hp} icons={extras?.icons} iconsMore={extras?.iconsMore} veil={extras?.veil} active={extras?.active}
-      flat={extras?.flat} portraitBox={extras?.portraitBox} discR={extras?.discR} cid={extras?.cid}>
+      flat={extras?.flat} portraitBox={extras?.portraitBox} discR={extras?.discR} cid={extras?.cid} highlight={extras?.highlight}>
       {child}
     </BodyToken>
   );
@@ -816,6 +816,7 @@ export function IsoStage() {
         discR: discR(c.size),
         ghost: ghostIds.has(c.id), // hors-LdV du tireur actif → fantomatique
         cid: c.id, // ciblage DOM (recettes Playwright : survol/clic par data-cid)
+        highlight: hoverAim?.toId === c.id, // cible courante (survol carte OU portrait) → halo silhouette
       });
       objs.push({ d: depth(cx, cy, dims) + 0.5, el });
     }
@@ -962,6 +963,21 @@ export function IsoStage() {
     return null;
   };
 
+  // Picking SPRITE-aware (combat) : si un TOKEN est réellement dessiné sous le curseur (hit-test natif
+  // du navigateur via `data-cid`), on cible SA tuile — pas la tuile « derrière » le sprite (ancré
+  // au-dessus de sa case en iso, d'où l'ancienne « chasse aux pieds »). Empilement géré nativement :
+  // le token de DEVANT (le plus haut dans le tri de profondeur) gagne. Hors d'un token (sol visible)
+  // → la tuile du sol (tileFromEvent) pour le déplacement. Hors combat → sol direct.
+  const pickTile = (ev: React.PointerEvent): Pt | null => {
+    const st = useGame.getState();
+    if (st.mode === 'battle' && st.battle) {
+      const cid = (document.elementFromPoint(ev.clientX, ev.clientY) as Element | null)?.closest('[data-cid]')?.getAttribute('data-cid');
+      const c = cid ? st.battle.combatants.find((x) => x.id === cid) : undefined;
+      if (c?.pos) return { x: c.pos.x, y: c.pos.y };
+    }
+    return tileFromEvent(ev);
+  };
+
   // Survol : suit la tuile sous le curseur quand on vise (infobulle de portée). Ne met à jour
   // l'état que sur changement de tuile (pas à chaque pixel) → re-rendus bornés.
   // Écran → coordonnées SVG (repère viewBox), via la CTM — base du panoramique (delta de glissement).
@@ -1028,7 +1044,7 @@ export function IsoStage() {
   const onPointerDown = (ev: React.PointerEvent) => {
     if (useGame.getState().dialogue) return;
     const p = clientToSvg(ev);
-    dragRef.current = { sx: ev.clientX, sy: ev.clientY, lastX: p?.x ?? 0, lastY: p?.y ?? 0, panned: false, button: ev.button, tile: tileFromEvent(ev) };
+    dragRef.current = { sx: ev.clientX, sy: ev.clientY, lastX: p?.x ?? 0, lastY: p?.y ?? 0, panned: false, button: ev.button, tile: pickTile(ev) };
     svgRef.current?.setPointerCapture?.(ev.pointerId);
   };
 
@@ -1047,7 +1063,7 @@ export function IsoStage() {
         return; // pendant un panoramique : pas d'affordance ni de hover de visée
       }
     }
-    const t = tileFromEvent(ev);
+    const t = pickTile(ev);
     // Affordance : curseur main au survol d'un décor interactif / dialogue (DOM direct, sans re-render).
     const sc = useGame.getState().scene;
     const overInteractive =
