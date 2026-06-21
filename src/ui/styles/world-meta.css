@@ -150,6 +150,12 @@
 .save-slot-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .save-error { color: #e36c6c; font-size: 13px; margin: 6px 0 0; }
 
+/* Écran Options — remap clavier (rangées libellé ↔ touche). */
+.opt-keys { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 10px; }
+.opt-key-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.opt-key-label { color: var(--text); }
+.opt-key-row .btn { min-width: 132px; text-align: center; }
+
 /* ── Entre deux aventures (Jalon 5) ────────────────────────────────────────── */
 .interlude-card { max-width: min(720px, 94vw); border-top: 4px solid var(--gold); }
 .interlude-heroes { display: flex; flex-direction: column; gap: 10px; margin: 10px 0; text-align: left; }

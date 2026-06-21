@@ -142,7 +142,6 @@ export function IsoStage() {
   // creux d'opacité de la transition « dim-and-turn ».
   const camRot = useGame((s) => s.camRot);
   const camEdge = useGame((s) => s.camEdge); // cran impair : vue « de face » (edge-on) — grille axis-alignée 3D
-  const rotateCam = useGame((s) => s.rotateCam);
   const viewMode = useGame((s) => s.viewMode);
   const camPan = useGame((s) => s.camPan);
   const panCamBy = useGame((s) => s.panCamBy);
@@ -178,25 +177,6 @@ export function IsoStage() {
       window.clearTimeout(t2);
     };
   }, [camRot, camEdge]);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (useGame.getState().dialogue) return;
-      const ae = document.activeElement as HTMLElement | null;
-      if (ae && (/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) || ae.isContentEditable)) return;
-      // e.code = POSITION physique de la touche (indépendant de la disposition) : rotation sur les
-      // touches au même ENDROIT que Q/E sur QWERTY — soit A/E sur AZERTY. (e.key lirait le caractère
-      // → la mauvaise touche sur AZERTY, où « Q » est déplacé en rangée du milieu.)
-      if (e.code === 'KeyE') rotateCam(1);
-      else if (e.code === 'KeyQ') rotateCam(-1);
-      else if (e.code === 'Escape') {
-        // Échap purge l'aperçu tap-1 du modèle de clic implicite.
-        const st = useGame.getState();
-        if (st.battle?.preview) useGame.setState({ battle: { ...st.battle, preview: null } });
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [rotateCam]);
 
   // Marche visuelle (token qui GLISSE le long du chemin) — extraite dans fx/useWalkAnim.
   const walksRef = useWalkAnim();

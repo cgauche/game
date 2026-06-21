@@ -32,6 +32,7 @@ import { hoverClickCommits } from './pointerCaps';
 import { controlsActive } from '../state/netOwnership';
 import { combatantClickActs } from '../state/combatOrParty';
 import { useGameKeyboard } from './useGameKeyboard';
+import { OptionsModal } from './OptionsModal';
 import { campaign } from '../scenes/campaign';
 
 export function CampaignView() {
@@ -74,6 +75,7 @@ export function CampaignView() {
   const pendingCast = useGame((s) => s.pendingCast);
   const [saveOpen, setSaveOpen] = useState(false); // modale Sauvegarder/Charger (Jalon 5)
   const [rulesOpen, setRulesOpen] = useState(false); // panneau « Règles maison » (dont Cadence de combat)
+  const [optionsOpen, setOptionsOpen] = useState(false); // écran Options (remap clavier)
   const clockDate = toDate(gameTime);
   const phase = dayPhase(gameTime);
   const dateLine = `${phase.icon} ${phase.label} — ${clockDate.weekday ? `${clockDate.weekday} · ` : ''}${formatImperial(gameTime)}`;
@@ -142,9 +144,10 @@ export function CampaignView() {
         {/* Ciblage par carte (Frappe Mortelle / Deux armes / Surincantation / pose de zone) :
             la BARRE D'ACTION se transforme en bandeau d'interlude (cf. ActionBar). */}
         {/* Sauvegarder : exploration seulement (refusée en combat) et jamais l'invité (la save vit chez l'hôte). */}
-        <GameMenu sceneName={scene?.nom} money={money} dateLine={dateLine} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' && netMode !== 'guest' ? () => setSaveOpen(true) : undefined} onHouseRules={() => setRulesOpen(true)} coop={<><CoopMenuSection /><AudioControls /></>} />
+        <GameMenu sceneName={scene?.nom} money={money} dateLine={dateLine} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' && netMode !== 'guest' ? () => setSaveOpen(true) : undefined} onHouseRules={() => setRulesOpen(true)} onOptions={() => setOptionsOpen(true)} coop={<><CoopMenuSection /><AudioControls /></>} />
         {saveOpen && <SaveLoadModal mode="save" onClose={() => setSaveOpen(false)} />}
         {rulesOpen && <HouseRulesModal onClose={() => setRulesOpen(false)} />}
+        {optionsOpen && <OptionsModal onClose={() => setOptionsOpen(false)} />}
         {/* Carte du monde (#T2) : visible en exploration quand la scène est un lieu connu, ou
             qu'un voyage interrompu attend sa reprise. */}
         {mode === 'exploration' && worldMap && (placeOfScene(worldMap, scene?.id) || travelPlan) && (

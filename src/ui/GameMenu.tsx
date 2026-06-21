@@ -8,7 +8,7 @@ import { t } from '../i18n';
  * (retour à l'écran de groupe — parité avec l'ancien bouton toujours visible). `initialOpen` = aide
  * de test. Pur à props.
  */
-export function GameMenu({ sceneName, money, dateLine, onQuit, onSaveLoad, onHouseRules, coop, initialOpen = false }: {
+export function GameMenu({ sceneName, money, dateLine, onQuit, onSaveLoad, onHouseRules, onOptions, coop, initialOpen = false }: {
   sceneName?: string;
   money: Money;
   dateLine: string;
@@ -17,6 +17,8 @@ export function GameMenu({ sceneName, money, dateLine, onQuit, onSaveLoad, onHou
   onSaveLoad?: () => void;
   /** Ouvre le panneau « Règles maison » (mêmes réglages qu'au menu principal, dont la Cadence de combat). */
   onHouseRules?: () => void;
+  /** Ouvre l'écran Options (remap clavier, etc.). */
+  onOptions?: () => void;
   /** Section coop de l'HÔTE (réinviter un déconnecté, réattribuer les héros — Jalon 7 P3c). */
   coop?: ReactNode;
   initialOpen?: boolean;
@@ -44,6 +46,11 @@ export function GameMenu({ sceneName, money, dateLine, onQuit, onSaveLoad, onHou
           {onHouseRules && (
             <button type="button" className="btn small" onClick={() => { setOpen(false); onHouseRules(); }}>
               {t('gameMenu.houseRules')}
+            </button>
+          )}
+          {onOptions && (
+            <button type="button" className="btn small" onClick={() => { setOpen(false); onOptions(); }}>
+              ⚙️ Options
             </button>
           )}
           <button type="button" className="btn small gm-quit" onClick={onQuit}>{t('gameMenu.quit')}</button>

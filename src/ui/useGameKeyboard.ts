@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useGame } from '../state/store';
-import { KEYBINDINGS } from '../state/keybindings';
+import { KEYBINDINGS, effectiveCodes } from '../state/keybindings';
 
 /**
  * Hook UNIQUE des raccourcis clavier de JEU : un seul listener `keydown`, ignore les champs de saisie,
@@ -17,7 +17,7 @@ export function useGameKeyboard() {
       if (s.dialogue) return; // pas de raccourci pendant un dialogue
       const controlFocused = /^(BUTTON|A)$/.test(tag); // Espace/Entrée doivent activer ce contrôle, pas le raccourci
       const b = KEYBINDINGS.find(
-        (k) => k.codes.includes(e.code) && (!k.notWhenControlFocused || !controlFocused) && k.when(s),
+        (k) => effectiveCodes(k, s.keyOverrides).includes(e.code) && (!k.notWhenControlFocused || !controlFocused) && k.when(s),
       );
       if (!b) return;
       e.preventDefault();

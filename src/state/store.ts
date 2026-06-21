@@ -22,6 +22,7 @@ import type { NetState } from './netFlow';
 import type { InterludeState, BankDeposit, PendingActivity } from './interludeFlow';
 export type { PendingActivity } from './interludeFlow';
 import { snapshotSave, saveToSlot, readSlot, importSave, AUTO_SLOT, type SaveSlot, type AnySlot, type SaveGame } from './saves';
+import { loadKeyOverrides, saveKeyOverrides } from './keybindingsPrefs';
 import { initialFields, resetFields } from './stateFields';
 
 /** Charge une save (Jalon 5) : reset zéro-maintenance (état de création sans les actions — le
@@ -210,6 +211,11 @@ export interface GameState extends RollFlowActionsMap {
    *  réseau), read-only : actif même hors de son tour. null = aucun survol de portrait. */
   hoverCombatantId: string | null;
   setHoverCombatant: (id: string | null) => void;
+  /** Surcharges de touches du remap clavier (id de raccourci → event.code), persistées en
+   *  localStorage ; lues par `useGameKeyboard` via `effectiveCodes`. */
+  keyOverrides: Record<string, string>;
+  setKeyBinding: (id: string, code: string) => void;
+  resetKeyBindings: () => void;
   partyPos: Pt;
   /** Niveau de lumière de scène (Lot L, mise en scène) : 0 = noir, 1 = plein jour ; null = auto
    *  (horloge/ambiance). Posé par l'Effet `setLight`, lu par le rendu (overlay d'assombrissement). */
@@ -873,6 +879,9 @@ export const useGame = create<GameState>((set, get) => ({
   setInspectId: (id) => set((s) => (s.inspectId === id ? {} : { inspectId: id })),
   hoverCombatantId: null,
   setHoverCombatant: (id) => set((s) => (s.hoverCombatantId === id ? {} : { hoverCombatantId: id })),
+  keyOverrides: loadKeyOverrides(),
+  setKeyBinding: (id, code) => set((s) => { const o = { ...s.keyOverrides, [id]: code }; saveKeyOverrides(o); return { keyOverrides: o }; }),
+  resetKeyBindings: () => { saveKeyOverrides({}); set({ keyOverrides: {} }); },
   partyPos: { x: 0, y: 0 },
   lightLevel: null,
   flags: {},
