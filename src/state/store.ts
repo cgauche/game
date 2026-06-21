@@ -435,7 +435,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Désigne GRATUITEMENT un emplacement « (Au choix) » de la carrière courante (LDB 09 l.38). */
   designateCareerSlot: (heroId: string, slotKey: string, label: string) => void;
   /** Apprentissage/mémorisation d'un sort (LDB 46/10) — coût PX via engine/grimoire. */
-  buySpell: (heroId: string, label: string) => void;
+  buySpell: (heroId: string, spellId: string) => void;
   /** Achète un composant d'incantation pour un Sort d'Arcane/Domaine connu (LDB 46 l.163 — NI pistoles). */
   buySpellComponent: (heroId: string, spellId: string) => void;
   /** Retire un composant d'incantation possédé pour un Sort (sans remboursement). */
@@ -984,8 +984,8 @@ export const useGame = create<GameState>((set, get) => ({
   buyTalent: (heroId, talentName) => partyFlow.buyTalent(get, set, heroId, talentName),
   designateCareerSlot: (heroId, slotKey, label) => partyFlow.designateCareerSlot(get, set, heroId, slotKey, label),
   /** Mémorise un sort (PX selon le Talent, LDB 46/10) ; un sort du Chaos corrompt (+1, seuil → mutation). */
-  buySpell: (heroId, label) => {
-    const r = partyFlow.buySpell(get, set, heroId, label);
+  buySpell: (heroId, spellId) => {
+    const r = partyFlow.buySpell(get, set, heroId, spellId);
     if (r.ok && r.chaos) {
       const hero = get().party.find((h) => h.id === heroId);
       if (hero) {
