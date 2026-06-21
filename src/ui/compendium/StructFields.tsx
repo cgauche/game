@@ -11,6 +11,7 @@ import { RefField } from './RefField';
 import { datasetArray } from '../../data/overrides';
 import { DIFFICULTY_LABELS, CHAR_KEYS, CHAR_LABELS, type Difficulty, type CharKey } from '../../engine/types';
 import type { DiseaseSymptom, DiseaseSymptomKind } from '../../engine/disease';
+import { formatDice, parseDice } from '../../engine/dice';
 import type { CombatFeature, CastingKind } from '../../engine/combatFeatures/types';
 import type { AdvancementRef, TrappingRef, Ref, CountSpec, DomainData, HarvestRarity, HarvestDanger } from '../../data';
 import type { TraitInstance } from '../../engine/statEntry';
@@ -220,11 +221,12 @@ export function TrappingRefField({ value, onChange }: { value: TrappingRef[] | u
   const set = (i: number, t: TrappingRef) => onChange(list.map((x, j) => (j === i ? t : x)));
   const refCfg = { ds: 'trappings' as const, single: true as const };
   // Quantité : nombre fixe « (3) » OU jet « (1d10) » — une seule entrée texte, jet si elle contient un d.
-  const countOf = (t: TrappingRef): string => (t.count ? ('fixed' in t.count ? String(t.count.fixed) : t.count.roll) : '');
+  const countOf = (t: TrappingRef): string => (t.count ? ('fixed' in t.count ? String(t.count.fixed) : formatDice(t.count.roll)) : '');
   const parseCount = (s: string): CountSpec | undefined => {
     const v = s.trim();
     if (!v) return undefined;
-    return /[dD]/.test(v) ? { roll: v } : { fixed: Number(v) || 1 };
+    const dc = parseDice(v);
+    return dc ? { roll: dc } : { fixed: Number(v) || 1 };
   };
   return (
     <div className="ed-field">

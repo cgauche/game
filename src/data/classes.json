@@ -140,7 +140,10 @@
       {
         "id": "feuille-de-parchemin",
         "count": {
-          "roll": "1d10"
+          "roll": {
+            "n": 1,
+            "sides": 10
+          }
         }
       }
     ],
@@ -204,7 +207,10 @@
       {
         "text": "Alumette",
         "count": {
-          "roll": "1d10"
+          "roll": {
+            "n": 1,
+            "sides": 10
+          }
         }
       },
       {

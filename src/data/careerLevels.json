@@ -363,7 +363,10 @@
       {
         "text": "Chiffon",
         "count": {
-          "roll": "1d10"
+          "roll": {
+            "n": 1,
+            "sides": 10
+          }
         }
       }
     ],
@@ -1225,7 +1228,10 @@
       {
         "text": "Pistoles d'argent",
         "count": {
-          "roll": "3d10"
+          "roll": {
+            "n": 3,
+            "sides": 10
+          }
         }
       }
     ],
@@ -2950,7 +2956,10 @@
       {
         "id": "bandages",
         "count": {
-          "roll": "1d10"
+          "roll": {
+            "n": 1,
+            "sides": 10
+          }
         }
       }
     ],
@@ -20314,7 +20323,10 @@
       {
         "text": "Porte-bonheurs",
         "count": {
-          "roll": "1d10"
+          "roll": {
+            "n": 1,
+            "sides": 10
+          }
         }
       },
       {

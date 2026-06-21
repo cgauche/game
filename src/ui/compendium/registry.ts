@@ -20,7 +20,7 @@ import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import { traitLabels } from '../../engine/traits/dispatch';
 import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, DIFFICULTY_LABELS, type Combatant, type HitLocation } from '../../engine/types';
 import { SIZE_LABEL, effectiveSize } from '../../engine/size';
-import type { DiceSpec } from '../../engine/dice';
+import { formatDice } from '../../engine/dice';
 import { costPerEnc } from '../../engine/harvest';
 import { formatMoney, priceToMoney } from '../../engine/money';
 import type { EntityAppearance } from '../../state/scene';
@@ -164,7 +164,7 @@ const SYMPTOM_LABEL: Record<string, string> = {
   intoxication: 'Intoxication', nausee: 'Nausée', touxEternuements: 'Toux & éternuements',
 };
 /** Libellé d'un jet de dés (`{n,d,plus?}`) — « 1d10 », « 2d10+2 ». */
-const diceLabel = (dc: DiceSpec): string => `${dc.n}d${dc.sides}${dc.plus ? `+${dc.plus}` : ''}`;
+const diceLabel = formatDice;
 /** Libellés FR des types de résultat « Oups ! » (Maladresse, LDB 12) — affichage (donnée = `kind` STABLE). */
 const OUPS_KIND_LABEL: Record<string, string> = {
   selfWound: 'Auto-blessure', weaponDamageActLast: 'Arme abîmée + agit en dernier', actionPenalty: 'Malus d’Action',

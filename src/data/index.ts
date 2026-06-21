@@ -43,6 +43,7 @@ import peripetiesJson from './peripeties.json';
 import { CharKey, Weapon } from '../engine/types';
 import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
 import type { DiseaseDef } from '../engine/disease'; // type-only (le runtime de disease.ts importe `maladies` d'ici)
+import { type DiceSpec, formatDice } from '../engine/dice';
 import type { PregenDef } from './pregens'; // type-only (pregens.ts importe la donnée d'ici)
 import type { OupsEntry } from './oups';
 import type { InterludeEvent } from './interludeEvents';
@@ -940,8 +941,8 @@ export function miraclesOf(cult: string): string[] {
 export interface QualityRef extends Ref {
   value?: number;
 }
-/** Quantité d'une possession conférée : nombre fixe (« (3) ») ou jet (« (1d10) »). */
-export type CountSpec = { fixed: number } | { roll: string };
+/** Quantité d'une possession conférée : nombre fixe (« (3) ») ou jet de dés structuré (« (1d10) »). */
+export type CountSpec = { fixed: number } | { roll: DiceSpec };
 /** Référence à une Possession : par `id` du catalogue (+ quantité éventuelle) OU texte NARRATIF hors
  *  catalogue (statblocs de créature : « collection d'alcool sans pareille »). */
 export type TrappingRef = (Ref & { count?: CountSpec }) | { text: string; count?: CountSpec };
@@ -1017,6 +1018,6 @@ export function advancementBaseId(a: AdvancementRef): string | undefined {
  *  texte narratif hors catalogue. SOURCE UNIQUE (Codex, créateur, marchand, inventaire). */
 export function trappingRefLabel(ref: TrappingRef): string {
   const base = 'text' in ref ? ref.text : (findTrappingById(ref.id)?.label ?? ref.id);
-  const count = ref.count ? ('fixed' in ref.count ? ` (${ref.count.fixed})` : ` (${ref.count.roll})`) : '';
+  const count = ref.count ? ('fixed' in ref.count ? ` (${ref.count.fixed})` : ` (${formatDice(ref.count.roll)})`) : '';
   return base + count;
 }
