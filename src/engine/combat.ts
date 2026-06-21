@@ -121,7 +121,7 @@ export function defenseValue(c: Combatant, mode: 'parade' | 'esquive', weapon?: 
 }
 
 /** Détail d'un jet (pour l'affichage : base, modificateurs, cible, d100 et DR). */
-/** Un modificateur étiqueté du jet (pour l'affichage détaillé : « Courte portée +40 »). */
+/** Un modificateur étiqueté du jet (pour l'affichage détaillé : « Courte portée +20 »). */
 export interface ModLine {
   label: string;
   value: number;
@@ -627,13 +627,13 @@ export function resolveMelee(
 
 /**
  * Bandes de portée d'un tir (table des Difficultés de Combat, LDB `14 - _GoBack.md` l.82-118) :
- * Bout portant (≤ Portée÷10) +60, Courte (≤ Portée÷2) +40, Moyenne (≤ Portée) +0, Longue (≤ Portée×2)
+ * Bout portant (≤ Portée÷10) +40, Courte (≤ Portée÷2) +20, Moyenne (≤ Portée) +0, Longue (≤ Portée×2)
  * −10, Extrême (≤ Portée×3) −30 ; au-delà = hors de portée. Échelle 1 case = 2 m (LDB Déplacement l.55).
  * SOURCE UNIQUE des seuils : le modificateur ET le nom y lisent. `rangeMeters` = Portée de l'arme en m.
  */
 const RANGE_BANDS: { maxFactor: number; mod: number; name: string }[] = [
-  { maxFactor: 1 / 10, mod: 60, name: 'Bout portant' },
-  { maxFactor: 1 / 2, mod: 40, name: 'Courte portée' },
+  { maxFactor: 1 / 10, mod: 40, name: 'Bout portant' },
+  { maxFactor: 1 / 2, mod: 20, name: 'Courte portée' },
   { maxFactor: 1, mod: 0, name: 'Moyenne' },
   { maxFactor: 2, mod: -10, name: 'Longue' },
   { maxFactor: 3, mod: -30, name: 'Extrême' },

@@ -63,8 +63,8 @@ describe("weaponReachPenalty — Longueur d'arme (LDB 62 l.215, règle optionnel
 describe('rangeBandModifier / rangeBandName — table de portée unique (identité du refactor)', () => {
   const R = 10; // Portée 10 m ; échelle 1 case = 2 m
   it('modificateurs aux 5 bandes + hors de portée', () => {
-    expect(rangeBandModifier(0, R)).toBe(60); // bout portant (m=0 ≤ 1)
-    expect(rangeBandModifier(2, R)).toBe(40); // courte (m=4 ≤ 5)
+    expect(rangeBandModifier(0, R)).toBe(40); // bout portant (m=0 ≤ 1)
+    expect(rangeBandModifier(2, R)).toBe(20); // courte (m=4 ≤ 5)
     expect(rangeBandModifier(5, R)).toBe(0); // moyenne (m=10 ≤ 10)
     expect(rangeBandModifier(8, R)).toBe(-10); // longue (m=16 ≤ 20)
     expect(rangeBandModifier(14, R)).toBe(-30); // extrême (m=28 ≤ 30)

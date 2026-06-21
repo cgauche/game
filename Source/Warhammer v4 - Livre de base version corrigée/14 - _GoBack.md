@@ -75,49 +75,16 @@ Les Tests de Combat peuvent être modifiés de la même façon que les autres Te
 pour refléter les effets dus au terrain, aux conditions météorologiques et à tout un tas d’autres facteurs. Les modificateurs ci-après sont parmi les plus courants rencontrés en combat. Si vous vous retrouvez dans une situation qui n’apparaît pas ici, servez-vous de ces exemples comme guide. Souvenez-vous que c’est le MJ qui décide en dernier lieu de la Difficulté d’un Test. 
 
 ## Difficulté de Combat
-Difficulté Modificateur Exemple
-Tirer sur une cible monstrueuse (Taille géant).
-Très Facile +60
-Tirer dans une foule (13+ cibles).
-Tirer sur une cible à Distance Bout Portant (voir page 297).
-Tirer sur une cible énorme (Taille griffon).
-Facile +40
-Attaquer en surnombre un adversaire, à 3 contre 1.
-Tirer sur un groupe important (7-12 cibles).
-Tirer sur une cible grande (Taille ogre).
-Tirer à Distance Courte, à moins de la moitié de la portée de l’arme.
-Tirer sur un petit groupe (3-6 cibles).
-Accessible +20 Tirer alors que vous avez passé votre dernière action à viser (pas de Test exigé pour viser).
-Attaquer un adversaire  Engagé  dans le dos ou sur les côtés.
-Attaquer en surnombre un adversaire, à 2 contre 1.
-Attaquer une cible  À Terre (voir page 168).
-Une attaque standard.
-Intermédiaire +0
-Tire sur une cible normale (Taille humain).
-Attaquer alors que vous êtes  À Terre (voir page 168) ou en-dessous de votre cible.
-Attaquer alors que vous êtes dans la boue, sous la pluie battante ou sur un terrain difficile.
-Tirer à Distance Longue, jusqu’à deux fois la portée de l’arme.
-Complexe -10
-Tirer pendant un Round où vous utilisez aussi votre Mouvement.
-Tirer sur une petite cible (Taille enfant).
-La cible est sous couverture imparfaite (derrière une haie, par exemple).
-Une attaque ou un tir qui cherche à atteindre une Localisation particulière. Sur un succès, vous
-touchez à l’endroit désiré.
-Combat dans un espace clos avec une arme à l’Allonge Supérieure à Moyenne.
-La cible du tir est dissimulée par le brouillard, la brume ou l’obscurité.
-Attaquer sous la mousson, dans un ouragan, le blizzard ou toute autre condition climatique
-Difficile -20 extrême.
-Esquiver alors que vous êtes  À Terre (voir page 168) ou sur une monture (voir p.163).
-Attaquer avec votre main secondaire.
-Combat rapproché dans le noir.
-Tirer sur une cible très petite (Taille chat).
-Cible protégée par une couverture moyenne (une barrière en bois, par exemple).
-Attaquer ou esquiver dans une haute épaisseur de neige, dans l’eau ou sur tout autre terrain
-difficile.
-Tirer sur une cible minuscule (Taille souris).
-Très Difficile -30 Tirer à Distance Extrême, jusqu’à trois fois la portée de l’arme.
-Tirer dans l’obscurité.
-Cible en couverture totale (derrière un mur de pierre, par exemple).
+
+| Difficulté | Modificateur | Exemples |
+|---|---|---|
+| Très Facile | +60 | Tirer sur une cible monstrueuse (Taille géant) ; Tirer dans une foule (13+ cibles). |
+| Facile | +40 | Tirer sur une cible énorme (Taille griffon) ; Tirer sur un groupe important (7-12 cibles) ; Tirer à Distance Bout Portant (voir page 297) ; Attaquer en surnombre un adversaire, à 3 contre 1. |
+| Accessible | +20 | Tirer sur une cible grande (Taille ogre) ; Tirer sur un petit groupe (3-6 cibles) ; Tirer à Distance Courte, à moins de la moitié de la portée de l’arme ; Attaquer un adversaire Engagé dans le dos ou sur les côtés ; Attaquer en surnombre un adversaire, à 2 contre 1 ; Attaquer une cible À Terre (voir page 168) ; Tirer alors que vous avez passé votre dernière action à viser (pas de Test exigé pour viser). |
+| Intermédiaire | +0 | Une attaque standard ; Tirer sur une cible normale (Taille humain). |
+| Complexe | -10 | Attaquer alors que vous êtes À Terre (voir page 168) ou en-dessous de votre cible ; Attaquer alors que vous êtes dans la boue, sous la pluie battante ou sur un terrain difficile ; Tirer à Distance Longue, jusqu’à deux fois la portée de l’arme ; Tirer pendant un Round où vous utilisez aussi votre Mouvement ; Tirer sur une petite cible (Taille enfant) ; La cible est sous couverture imparfaite (derrière une haie, par exemple) ; Une attaque ou un tir qui cherche à atteindre une Localisation particulière (sur un succès, vous touchez à l’endroit désiré) ; Combat dans un espace clos avec une arme à l’Allonge supérieure à Moyenne ; La cible du tir est dissimulée par le brouillard, la brume ou l’obscurité. |
+| Difficile | -20 | Attaquer sous la mousson, dans un ouragan, le blizzard ou toute autre condition climatique extrême ; Esquiver alors que vous êtes À Terre (voir page 168) ou sur une monture (voir p.163) ; Attaquer avec votre main secondaire ; Combat rapproché dans le noir ; Tirer sur une cible très petite (Taille chat) ; Cible protégée par une couverture moyenne (une barrière en bois, par exemple) ; Attaquer ou esquiver dans une haute épaisseur de neige, dans l’eau ou sur tout autre terrain difficile. |
+| Très Difficile | -30 | Tirer sur une cible minuscule (Taille souris) ; Tirer à Distance Extrême, jusqu’à trois fois la portée de l’arme ; Tirer dans l’obscurité ; Cible en couverture totale (derrière un mur de pierre, par exemple). |
 
 Antoine Droste - antoine.droste@gmail.com 
 
