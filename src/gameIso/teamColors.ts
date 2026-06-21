@@ -25,6 +25,14 @@ export const HERO_RING = ['#4f8fe0', '#37c07a', '#36b6c0', '#7a6cff'];
 export const ALLY_TINT = '#37c07a';
 export const ENEMY_TINT = '#c0392b';
 export const ACTIVE_TINT = '#ffe066';
+/** Cible NEUTRE (npc) : or/jaune — distinct du jaune ACTIF réservé (#ffe066). */
+export const NEUTRAL_TINT = '#ffd75e';
+
+/** Couleur de la RELATION d'une cible au survol/visée (réticule + halo) : adversaire rouge, allié
+ *  vert, neutre or. Source unique consommée par le rendu de ciblage (IsoStage). */
+export function relationColor(kind: 'hero' | 'enemy' | 'npc'): string {
+  return kind === 'enemy' ? ENEMY_TINT : kind === 'hero' ? ALLY_TINT : NEUTRAL_TINT;
+}
 
 /** Couleur de teinte d'une CASE selon l'appartenance (l'actif prime). */
 export function tileTint(isHero: boolean, active: boolean): string {

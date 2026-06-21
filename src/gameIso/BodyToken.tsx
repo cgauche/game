@@ -39,7 +39,7 @@ export function BodyToken({
   portraitBox,
   discR,
   cid,
-  highlight = false,
+  highlight,
 }: {
   x: number;
   y: number;
@@ -75,9 +75,10 @@ export function BodyToken({
   discR?: number;
   /** Id du combattant exposé en `data-cid` (ciblage DOM des recettes Playwright). */
   cid?: string;
-  /** Cible courante du joueur (survol/visée) → halo doré qui suit la SILHOUETTE — désambiguë deux
-   *  tokens empilés en iso (celui de devant, mis en évidence, ressort). */
-  highlight?: boolean;
+  /** Cible courante du joueur (survol/visée) → halo de cette COULEUR qui suit la SILHOUETTE (couleur
+   *  de relation : rouge adversaire / vert allié / or neutre). Désambiguë deux tokens empilés en iso
+   *  (celui de devant, mis en évidence, ressort). Absent = pas de halo. */
+  highlight?: string;
 }) {
   const { cx, cy } = tileCenter(x, y, dims, z); // feetY = cy : pieds au centre de la tuile (étage z)
   const s = scale * billboardScale(dims); // échelle effective du billboard : réduite en vue « de face »
@@ -90,7 +91,7 @@ export function BodyToken({
   const badgeY = flat ? -R : -150 * s;
   const clipId = `disc-${Math.round(cx)}-${Math.round(cy)}`;
   return (
-    <g data-cid={cid} style={{ transform: `translate(${cx}px,${cy}px)`, transition: walking ? 'none' : 'transform 0.14s linear', opacity: dim ? (flat ? 0.5 : 0.82) : ghost ? 0.45 : 1, filter: [ghost && !dim ? 'grayscale(0.85)' : '', highlight ? 'drop-shadow(0 0 3px #ffe27a) drop-shadow(0 0 7px #ffd75e)' : ''].filter(Boolean).join(' ') || undefined }}>
+    <g data-cid={cid} style={{ transform: `translate(${cx}px,${cy}px)`, transition: walking ? 'none' : 'transform 0.14s linear', opacity: dim ? (flat ? 0.5 : 0.82) : ghost ? 0.45 : 1, filter: [ghost && !dim ? 'grayscale(0.85)' : '', highlight ? `drop-shadow(0 0 3px ${highlight}) drop-shadow(0 0 7px ${highlight})` : ''].filter(Boolean).join(' ') || undefined }}>
       {flat ? (
         // Pion-portrait (vue du dessus) : disque clippé centré sur la case, anneau circulaire.
         <>

@@ -68,7 +68,7 @@ import { hoverClickCommits } from '../ui/pointerCaps';
 import { TargetReticle } from './TargetReticle';
 import { entitySize } from '../state/spawn';
 import { isRider, isMount, riderOf } from '../state/mount';
-import { HERO_RING, ENEMY_RING, tileTint, veilTint, teamShape } from './teamColors';
+import { HERO_RING, ENEMY_RING, tileTint, veilTint, teamShape, relationColor } from './teamColors';
 import { summarizeEffects, combatantFlags } from './effectIcons';
 import { setVisibleTileBounds } from './viewport';
 /** Distance de combat (Chebyshev, cases). 1 case = 2 m (LDB Déplacement). */
@@ -722,7 +722,7 @@ export function IsoStage() {
     </BodyToken>
   );
 
-  type TokenExtras = { hp?: { current: number; max: number }; icons?: string[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number; ghost?: boolean; cid?: string; highlight?: boolean };
+  type TokenExtras = { hp?: { current: number; max: number }; icons?: string[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number; ghost?: boolean; cid?: string; highlight?: string };
   const tokenNode = (id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean, walking?: boolean, extras?: TokenExtras, z = 0) => (
     <BodyToken key={id} x={x} y={y} z={feetZ(x, y, z)} dims={dims} scale={scale} ring={ringColor} ringDash={extras?.ringDash} dim={dim} ghost={extras?.ghost} walking={walking} bakedDeath
       hp={extras?.hp} icons={extras?.icons} iconsMore={extras?.iconsMore} veil={extras?.veil} active={extras?.active}
@@ -816,7 +816,7 @@ export function IsoStage() {
         discR: discR(c.size),
         ghost: ghostIds.has(c.id), // hors-LdV du tireur actif → fantomatique
         cid: c.id, // ciblage DOM (recettes Playwright : survol/clic par data-cid)
-        highlight: hoverAim?.toId === c.id, // cible courante (survol carte OU portrait) → halo silhouette
+        highlight: hoverAim?.toId === c.id ? relationColor(c.kind) : undefined, // cible courante → halo couleur de relation (rouge/vert/or)
       });
       objs.push({ d: depth(cx, cy, dims) + 0.5, el });
     }
@@ -1347,10 +1347,11 @@ export function IsoStage() {
           const pathPts = (hoverAim.path?.length ?? 0) > 1
             ? hoverAim.path!.map((p) => tileCenter(p.x, p.y, dims)).map((p) => `${p.cx},${p.cy}`).join(' ')
             : null;
+          const relCol = relationColor(t.kind); // couleur de relation de la cible : rouge adversaire / vert allié / or neutre
           return (
             <g pointerEvents="none">
-              {pathPts && <polyline points={pathPts} fill="none" stroke="#ffd75e" strokeWidth={3} opacity={0.9} />}
-              {hoverAim.reticle && <TargetReticle from={pathPts ? null : a ? reticleAnchor(a) : null} to={to} line={pathPts ? null : hoverAim.line} lineColor="#ffd75e" />}
+              {pathPts && <polyline points={pathPts} fill="none" stroke={relCol} strokeWidth={3} opacity={0.9} />}
+              {hoverAim.reticle && <TargetReticle from={pathPts ? null : a ? reticleAnchor(a) : null} to={to} line={pathPts ? null : hoverAim.line} lineColor={relCol} />}
               {tip?.kind === 'err' && (() => {
                 const w = tip.text.length * 6.4 + 14;
                 return (
