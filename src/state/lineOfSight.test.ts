@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { tilesBetween, coverModifier, lineOfSightCover, smokeZone } from './lineOfSight';
-import { Scene, SceneEntity, WallSeg } from './scene';
+import { Scene, SceneEntity, WallSeg, wallBetween, doorKey } from './scene';
 
 function scene(w: number, h: number, tiles?: Record<string, string>, entities: SceneEntity[] = []): Scene {
   const grid = new Array(w * h).fill('herbe');
@@ -80,6 +80,29 @@ describe('lineOfSightCover', () => {
     const s = scene(6, 1, { '1,0': 'bois' }, [prop('cloture', 3, 0)]);
     // bois (imparfaite) + clôture (moyenne) → pire = moyenne
     expect(lineOfSightCover(s, { x: 0, y: 0 }, { x: 5, y: 0 }, [])).toEqual({ blocked: false, cover: 'moyenne' });
+  });
+});
+
+describe('portes dynamiques (ouvert / fermé) — vue ET passage', () => {
+  const doorScene = (closed?: boolean, flagOpen?: boolean): Scene => {
+    const s = scene(3, 1) as Scene & { walls: WallSeg[]; flags: Record<string, boolean> };
+    s.walls = [{ x: 1, y: 0, side: 'E', door: true, ...(closed ? { closed: true } : {}) }];
+    s.flags = flagOpen === undefined ? {} : { [doorKey(1, 0, 'E', 0)]: flagOpen };
+    return s;
+  };
+  it('porte OUVERTE (défaut) → ne bloque NI la vue NI le passage', () => {
+    const s = doorScene();
+    expect(wallBetween(s, 1, 0, 2, 0)).toBe(false);
+    expect(lineOfSightCover(s, { x: 0, y: 0 }, { x: 2, y: 0 }, []).blocked).toBe(false);
+  });
+  it('porte FERMÉE (authored) → bloque la vue ET le passage', () => {
+    const s = doorScene(true);
+    expect(wallBetween(s, 1, 0, 2, 0)).toBe(true);
+    expect(lineOfSightCover(s, { x: 0, y: 0 }, { x: 2, y: 0 }, []).blocked).toBe(true);
+  });
+  it('flag runtime ouvre une porte fermée / ferme une porte ouverte', () => {
+    expect(wallBetween(doorScene(true, true), 1, 0, 2, 0)).toBe(false); // fermée+flag ouvert → ouverte
+    expect(wallBetween(doorScene(false, false), 1, 0, 2, 0)).toBe(true); // ouverte+flag fermé → fermée
   });
 });
 

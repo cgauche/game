@@ -279,6 +279,9 @@ export type Effect =
    *  lumières baissent, le rideau se lève ». Lu par le rendu (overlay d'assombrissement). Générique :
    *  tout intérieur (donjon, salle, théâtre). null implicite = auto (horloge/ambiance) tant qu'aucun setLight. */
   | { type: 'setLight'; level: number }
+  /** Porte dynamique (brouillard de guerre) : ouvre/ferme la porte de l'arête (x,y,side) — une porte
+   *  fermée bloque vue ET passage. Pour un levier/piège/scripted authored. */
+  | { type: 'setDoor'; x: number; y: number; side: WallSide; z?: number; open: boolean }
   /** Points de Péché (LDB 40 l.30-36) : l'auteur/MJ sanctionne une infraction aux commandements du dieu
    *  d'un Bienheureux — 1 à 3 selon la gravité (l.36). Défaut : le premier héros sachant Prier. Le dé des
    *  unités d'un Test de Prière ≤ Péchés déclenche la Colère des dieux même sur Test réussi (l.45) ;
@@ -510,6 +513,41 @@ export interface WallSeg {
   side: WallSide;
   z?: number;
   door?: boolean;
+  /** Porte FERMÉE par défaut à l'ouverture de la scène (bloque vue+passage tant qu'on ne l'ouvre pas).
+   *  Absent = ouverte par défaut (comportement historique : une porte est une ouverture franchissable). */
+  closed?: boolean;
+}
+
+/** Clé de flag d'état d'une porte (`scene.flags`) — `true` = OUVERTE, `false` = FERMÉE (override runtime
+ *  de l'état authored `closed`). Absent du flag = défaut authored (`!closed`). */
+export function doorKey(x: number, y: number, side: WallSide, z = 0): string {
+  return `__door_${x}_${y}_${side}_${z}`;
+}
+
+/** Une porte est-elle OUVERTE ? Flag runtime (`scene.flags[doorKey]`) prioritaire, sinon défaut authored
+ *  (`!seg.closed`). Une porte ouverte ne bloque ni la vue ni le passage ; fermée, elle bloque les deux. */
+export function doorIsOpen(scene: Pick<Scene, 'flags'>, seg: WallSeg): boolean {
+  const f = scene.flags?.[doorKey(seg.x, seg.y, seg.side, seg.z ?? 0)];
+  return f !== undefined ? f : !seg.closed;
+}
+
+/** Le segment de PORTE sur l'arête (x,y,side,z), ou undefined. */
+export function doorAt(scene: Pick<Scene, 'walls'>, x: number, y: number, side: WallSide, z = 0): WallSeg | undefined {
+  return scene.walls?.find((w) => !!w.door && w.x === x && w.y === y && w.side === side && (w.z ?? 0) === z);
+}
+
+/** Pose l'état OUVERT/FERMÉ d'une porte (flag runtime) — renvoie une NOUVELLE Scène (réf changée →
+ *  recompute de la vue + re-rendu). No-op (même réf) si pas de porte à cette arête. PUR. */
+export function setDoorOpen<S extends Pick<Scene, 'walls' | 'flags'>>(scene: S, x: number, y: number, side: WallSide, z: number, open: boolean): S {
+  if (!doorAt(scene, x, y, side, z)) return scene;
+  return { ...scene, flags: { ...scene.flags, [doorKey(x, y, side, z)]: open } };
+}
+
+/** Bascule une porte (ouverte ↔ fermée). PUR (nouvelle Scène). */
+export function toggleDoorIn<S extends Pick<Scene, 'walls' | 'flags'>>(scene: S, x: number, y: number, side: WallSide, z = 0): S {
+  const seg = doorAt(scene, x, y, side, z);
+  if (!seg) return scene;
+  return setDoorOpen(scene, x, y, side, z, !doorIsOpen(scene, seg));
 }
 
 /** Arête CANONIQUE (cellule + side N/E) séparant deux cases ADJACENTES en cardinal — null si non
@@ -522,12 +560,15 @@ export function edgeOf(ax: number, ay: number, bx: number, by: number): { x: num
   return null;
 }
 
-/** Un mur (non-porte) sépare-t-il deux cases adjacentes du même étage ? (bloque le passage, pas la case). */
+/** Un mur sépare-t-il deux cases adjacentes du même étage ? (bloque le passage, pas la case). Un mur
+ *  plein bloque toujours ; une PORTE bloque seulement si elle est FERMÉE (`doorIsOpen` faux). */
 export function wallBetween(scene: Scene, ax: number, ay: number, bx: number, by: number, z = 0): boolean {
   if (!scene.walls?.length) return false;
   const e = edgeOf(ax, ay, bx, by);
   if (!e) return false;
-  return scene.walls.some((w) => w.x === e.x && w.y === e.y && w.side === e.side && (w.z ?? 0) === z && !w.door);
+  return scene.walls.some(
+    (w) => w.x === e.x && w.y === e.y && w.side === e.side && (w.z ?? 0) === z && (!w.door || !doorIsOpen(scene, w)),
+  );
 }
 
 export function emptyScene(w = 20, h = 15): Scene {

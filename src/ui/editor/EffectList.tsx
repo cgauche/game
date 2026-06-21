@@ -98,6 +98,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'zoneBlast': return `${icon} Souffle ${e.damage || '?'} rayon ${e.radius ?? 0} @(${e.center?.x ?? 0},${e.center?.y ?? 0})${e.conditions?.length ? ` +${e.conditions.map((c: any) => c.name).join('/')}` : ''}`;
     case 'fall': return `${icon} Chute ${e.metres ?? 0} m → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}${e.to ? ` ⤓(${e.to.x},${e.to.y}${e.to.z ? `,z${e.to.z}` : ''})` : ''}`;
     case 'setLight': return `${icon} Lumière ${Math.round((e.level ?? 1) * 100)} %`;
+    case 'setDoor': return `${icon} Porte (${e.x ?? 0},${e.y ?? 0},${e.side ?? 'N'}) ${e.open ? 'ouverte' : 'fermée'}`;
     case 'giveSin': return `${icon} ${e.amount ?? 1} point(s) de Péché`;
     case 'corruptionExposure': return `${icon} Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ?? 'au choix'})`;
     case 'giveCorruption': return `${icon} ${e.amount ?? 1} point(s) de Corruption`;
@@ -389,6 +390,16 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             {e.to && (
               <label className="dr">→ <input type="number" style={{ width: '3.2em' }} value={e.to.x} onChange={(ev) => upd({ to: { ...e.to, x: Number(ev.target.value) } })} />,<input type="number" style={{ width: '3.2em' }} value={e.to.y} onChange={(ev) => upd({ to: { ...e.to, y: Number(ev.target.value) } })} /> z<input type="number" style={{ width: '3em' }} value={e.to.z ?? 0} onChange={(ev) => upd({ to: { ...e.to, z: Number(ev.target.value) } })} /></label>
             )}
+          </div>
+        )}
+        {effect.type === 'setDoor' && (
+          <div className="tf-row">
+            <label className="dr">Porte <input type="number" style={{ width: '3.2em' }} value={e.x ?? 0} onChange={(ev) => upd({ x: Number(ev.target.value) })} />,<input type="number" style={{ width: '3.2em' }} value={e.y ?? 0} onChange={(ev) => upd({ y: Number(ev.target.value) })} /></label>
+            <select value={e.side ?? 'N'} onChange={(ev) => upd({ side: ev.target.value })}>
+              <option value="N">arête N</option>
+              <option value="E">arête E</option>
+            </select>
+            <label className="dr"><input type="checkbox" checked={e.open !== false} onChange={(ev) => upd({ open: ev.target.checked })} /> Ouverte</label>
           </div>
         )}
         {effect.type === 'zoneBlast' && (

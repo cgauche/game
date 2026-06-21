@@ -31,7 +31,7 @@ import { TIME_COST } from '../engine/timeCost';
 import { feedFromMeal } from '../engine/provisions';
 import { findSpellById } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
-import { Effect } from './scene';
+import { Effect, setDoorOpen } from './scene';
 import { type Flow, type FlowTest, flowFromEffects, flowEffects, testFlow, evalCondition, conditionCtx, EMPTY_FLOW } from './flow';
 import { inRect } from './combatGeometry';
 import { startCascade } from './cascade';
@@ -544,6 +544,11 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     group: '📜 Narration', label: 'Lumière de scène (les lumières baissent / se rallument)', icon: '💡',
     make: () => ({ type: 'setLight', level: 0.3 }),
     apply: (e, env) => { env.set({ lightLevel: Math.max(0, Math.min(1, e.level)) }); }, // mise en scène (Lot L) : niveau borné [0,1]
+  },
+  setDoor: {
+    group: '📜 Narration', label: 'Porte (ouvrir / fermer — bloque vue et passage)', icon: '🚪',
+    make: () => ({ type: 'setDoor', x: 0, y: 0, side: 'N', open: true }),
+    apply: (e, env) => { env.set((s: GameState) => (s.scene ? { scene: setDoorOpen(s.scene, e.x, e.y, e.side, e.z ?? 0, e.open) } : {})); },
   },
 
   // ── 🎁 Récompenses ────────────────────────────────────────────────────────

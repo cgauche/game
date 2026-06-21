@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import './anim.css';
 import { useGame } from '../state/store';
-import { Scene as GameScene, tileAt, isWalkable, elevAt } from '../state/scene';
+import { Scene as GameScene, tileAt, isWalkable, elevAt, doorIsOpen, toggleDoorIn } from '../state/scene';
 import { sceneIsDark } from '../state/sceneRules';
 import { pathTo, type Pt } from '../state/path';
 import { exploreMoveDest } from '../state/exploreNav';
@@ -28,6 +28,7 @@ import {
   CELL,
   Dims,
   tileCenter,
+  tileEdge,
   diamondPath,
   diamondCorners,
   stageSize,
@@ -1157,6 +1158,37 @@ export function IsoStage() {
         {/* Brouillard de guerre : voile sombre sur l'inconnu / grisé sur l'exploré-hors-vue / clair en
             vue. Au-dessus du décor+tokens, SOUS les FX/réticules (les infos de combat restent lisibles). */}
         <FogLayer w={scene.dimensions.w} h={scene.dimensions.h} z={activeZ} rot={shownRot} view={viewMode} edge={shownEdge} visible={visible} explored={exploredSet} />
+        {/* Portes dynamiques : cliquer une porte VISIBLE et ADJACENTE l'ouvre/ferme (exploration : le
+            groupe ; combat : le héros actif, à son tour). Une porte fermée bloque vue ET passage. */}
+        {(() => {
+          const ctrls: Pt[] = battle ? (myTurn && activeC?.kind === 'hero' && activeC.pos ? [activeC.pos] : []) : [partyPos];
+          if (!ctrls.length) return null;
+          const adj = (p: Pt, c: Pt) => Math.max(Math.abs(p.x - c.x), Math.abs(p.y - c.y)) <= 1;
+          return (scene.walls ?? [])
+            .filter((w) => w.door && (w.z ?? 0) === activeZ && (w.side === 'N' || w.side === 'E'))
+            .map((w) => {
+              const z = w.z ?? 0;
+              const c1 = { x: w.x, y: w.y };
+              const c2 = w.side === 'E' ? { x: w.x + 1, y: w.y } : { x: w.x, y: w.y - 1 };
+              if (!visible.has(`${c1.x},${c1.y},${z}`) && !visible.has(`${c2.x},${c2.y},${z}`)) return null;
+              if (!ctrls.some((p) => adj(p, c1) || adj(p, c2))) return null;
+              const [a, b] = tileEdge(w.x, w.y, w.side as 'N' | 'E', dims, z);
+              const open = doorIsOpen(scene, w);
+              return (
+                <line key={`door-${w.x}-${w.y}-${w.side}-${z}`} x1={a.cx} y1={a.cy} x2={b.cx} y2={b.cy}
+                  stroke={open ? '#caa14a' : '#d4534a'} strokeWidth={11} strokeLinecap="round" opacity={0.45}
+                  className="door-toggle" style={{ cursor: 'pointer' }}
+                  onPointerDown={(ev) => {
+                    ev.stopPropagation();
+                    useGame.setState((s) => (s.scene ? { scene: toggleDoorIn(s.scene, w.x, w.y, w.side, z) } : {}));
+                    bus.emit(EVT.SCENE_DIRTY);
+                  }}
+                >
+                  <title>{open ? 'Fermer la porte' : 'Ouvrir la porte'}</title>
+                </line>
+              );
+            });
+        })()}
         {/* Télégraphe ENNEMI (actorAim) : réticule + ligne — PLEINE en mêlée, pointillée tir/sort. */}
         {targeting && (
           <TargetReticle
