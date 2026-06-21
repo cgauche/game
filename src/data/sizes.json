@@ -1,0 +1,11 @@
+{
+  "rangedMod": {
+    "minuscule": -30,
+    "tresPetite": -20,
+    "petite": -10,
+    "moyenne": 0,
+    "grande": 20,
+    "enorme": 40,
+    "monstrueuse": 60
+  }
+}

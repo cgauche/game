@@ -19,9 +19,9 @@ export interface CombatFeatureCtx {
  * source ; les helpers de `dispatch.ts` les agrègent et les consommateurs (combat.ts, combatFlow,
  * rollFlows, store) les appellent aux moments de jeu. `level` = nombre de fois pris (times).
  *
- * Les talents de CRÉATION (+5 carac., addSkill, Blessures/Chance/Détermination/Mouvement) restent
- * pilotés par les données via `talentEffects.ts` ; les talents NARRATIFS sont allowlistés par le
- * test de parité (`parity.test.ts`) — rien d'inventé.
+ * Les talents de CRÉATION (+5 carac., compétence/talent ajouté aux carrières, Blessures/Chance/
+ * Détermination/Mouvement) restent pilotés par les données via `talentEffects.ts` (ops `GameOp`) ;
+ * les talents NARRATIFS sont allowlistés par le test de parité (`parity.test.ts`) — rien d'inventé.
  */
 export interface CombatFeature {
   /** Pénalité de main secondaire transformée par niveau (Ambidextre, LDB 10 : -20 → -10 à 1×, 0 à `zeroAt`).

@@ -48,6 +48,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   freeReroll: '🔁 Relance gratuite (prochain échec)',
   critTwice: '🎯 Deux lancers de Critique (meilleur)',
   gainResource: '🍀 Points de Chance / Destin',
+  attrMod: '🎲 Modif. d’attribut secondaire',
   corruption: '🧬 Points de Corruption',
   castPenalty: '🔮 Contrecoup d’incantation',
   castWard: '🔮 Aura anti-Sort (−20 Langue)',
@@ -62,6 +63,8 @@ const OP_LABEL: Record<GameOp['op'], string> = {
 
   grantTrait: '🐾 Accorder un Trait',
   grantTalent: '🐾 Accorder un Talent',
+  grantCareerSkill: '🎓 Compétence ajoutée aux carrières',
+  grantCareerTalent: '🎓 Talent ajouté aux carrières',
   augmentWeapon: '🗡️ Enchanter l’arme',
   cureDisease: '🩹 Guérir des maladies',
   reduceDiseaseDays: '🩹 Raccourcir une maladie',
@@ -110,6 +113,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['🩼 Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'maxWeaponHands', 'senseLoss']],
   ['⚔️ Atouts/Défauts d’arme (passifs)', ['weaponRollMod', 'weaponDamageMod', 'armourPierce', 'critOnRoll']],
   ['🎲 Contrôle', ['rollThreshold', 'spendAdvantage']],
+  ['🎓 Création de personnage (Talents)', ['attrMod', 'grantCareerSkill', 'grantCareerTalent']],
   ['📝 Narration', ['narrative']],
 ];
 
@@ -224,6 +228,8 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'grantFreeAttack': return { op: 'grantFreeAttack', weapon: 'held', when: 'immediate', cost: { advantageOrMovement: true } };
     case 'grantTrait': return { op: 'grantTrait', traitId: 'armure' };
     case 'grantTalent': return { op: 'grantTalent', talentId: 'sang-froid' };
+    case 'grantCareerSkill': return { op: 'grantCareerSkill', skillId: 'metier', spec: 'Au choix' };
+    case 'grantCareerTalent': return { op: 'grantCareerTalent', talentId: 'frenesie' };
     case 'augmentWeapon': return { op: 'augmentWeapon', addQualities: ['magique'] };
     case 'cureDisease': return { op: 'cureDisease', count: 1 };
     case 'reduceDiseaseDays': return { op: 'reduceDiseaseDays', days: 1 };
@@ -246,6 +252,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'skillMod': return { op: 'skillMod', skill: 'esquive', mod: -10 };
     case 'moveScale': return { op: 'moveScale', num: 1, den: 2 };
     case 'moveMod': return { op: 'moveMod', mod: -1 };
+    case 'attrMod': return { op: 'attrMod', attr: 'fortune', mod: 1 };
     case 'maxWeaponHands': return { op: 'maxWeaponHands', hands: 1 };
     case 'senseLoss': return { op: 'senseLoss', sense: 'vue' };
     case 'loseTurn': return { op: 'loseTurn' };
@@ -275,6 +282,7 @@ export function opSummary(o: GameOp): string {
     case 'charMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} ${CHAR_LABELS[o.char] ?? o.char}`;
     case 'skillMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} ${refLabel('skills', { id: o.skill })}`;
     case 'moveMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} Mouvement`;
+    case 'attrMod': return `${L} +${formulaSummary(o.mod)} ${({ wounds: 'Blessures', fortune: 'Chance', resolve: 'Détermination', fate: 'Destin', resilience: 'Résilience' } as const)[o.attr]}`;
     case 'apAll': return `${L} +${formulaSummary(o.amount)} PA`;
     case 'testMod': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests${o.char ? ` de ${CHAR_LABELS[o.char] ?? o.char}` : ''}`;
     case 'ignoreStatePenalties': return `${L} ignore les pénalités d’État`;
@@ -291,6 +299,8 @@ export function opSummary(o: GameOp): string {
     case 'grantNaturalWeapon': return `${L} ${o.name} (${o.plusBF !== false ? 'BF+' : ''}${formulaSummary(o.damage)})`;
     case 'grantTrait': return `${L} ${formatTrait({ id: o.traitId, arg: o.arg })}${o.indice != null ? ` ${formulaSummary(o.indice)}` : ''}`;
     case 'grantTalent': return `${L} ${talentConcrete(o)}`;
+    case 'grantCareerSkill': return `${L} ${refLabel('skills', { id: o.skillId, spec: o.spec })}`;
+    case 'grantCareerTalent': return `${L} ${refLabel('talents', { id: o.talentId, spec: o.spec })}`;
     case 'augmentWeapon': return `${L} ${[...(o.addQualities ?? []).map((id) => qualityRefLabel({ id })), o.damageBonus != null ? `+${formulaSummary(o.damageBonus)} Dégâts` : ''].filter(Boolean).join(', ') || '(vide)'}`;
     case 'cureDisease': return `${L} ${o.count ?? 1} maladie(s)`;
     case 'reduceDiseaseDays': return `${L} −${o.days ?? 1} jour(s)`;

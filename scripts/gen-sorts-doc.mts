@@ -1,14 +1,16 @@
 /**
- * Génère docs/sorts-implementation.md — INVENTAIRE des 221 sorts/miracles :
+ * Génère docs/sorts-implementation.md — INVENTAIRE des sorts/miracles :
  * pour chacun, son niveau de prise en charge mécanique et CE QUI RESTE à
- * implémenter (le texte « arbitrage MJ » journalisé en jeu). C'est le backlog
- * de curation du Jalon 2 (cf. data/spellspecs/ — 1 fichier par famille).
+ * implémenter (le texte « arbitrage MJ » journalisé en jeu).
+ *
+ * Migration #5 : les métadonnées de résolution (durée, ZdE, etc.) vivent désormais
+ * dans SpellData (spells.json) — plus de src/data/spellspecs/. La colonne « Curé »
+ * lit s.curated directement depuis la donnée JSON.
  *
  *   npx tsx scripts/gen-sorts-doc.mts
  */
 import { writeFileSync } from 'node:fs';
 import { spells } from '../src/data';
-import { spellSpecFor } from '../src/data/spellspecs';
 import { spellSupport } from '../src/engine/spellspec';
 import { isMagicMissile } from '../src/engine/magic';
 import { spellOps } from '../src/state/flow';
@@ -19,10 +21,9 @@ const lines: string[] = [
   '# Sorts & Miracles — état d\'implémentation',
   '',
   '> GÉNÉRÉ par `npx tsx scripts/gen-sorts-doc.mts` — ne pas éditer à la main.',
-  '> Backlog de curation du Jalon 2 : ✅ = effets connus appliqués par le moteur ·',
+  '> ✅ = effets connus appliqués par le moteur ·',
   '> 🟡 = partiel (volet « arbitrage MJ » journalisé en jeu) · 📜 = rien de mécanique',
-  '> (effet journalisé verbatim). « curé » = spec relue de la source (`data/spellspecs/`),',
-  '> sinon repli regex iso-POC. Implémenter un sort = le curer dans son fichier de famille.',
+  '> (effet journalisé verbatim). « curé » = spec complète dans SpellData (spells.json).',
   '',
 ];
 
@@ -39,19 +40,18 @@ for (const [group, list] of [...groups.entries()].sort(([a], [b]) => a.localeCom
   lines.push('| Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |');
   lines.push('|---|---|---|---|');
   for (const s of [...list].sort((a, b) => a.label.localeCompare(b.label, 'fr'))) {
-    const spec = spellSpecFor(s);
     // Les EFFETS (ops) vivent sur `SpellData.effects` (Flow) ; on les extrait par cible.
     const ops = [...spellOps(s.effects, 'target'), ...spellOps(s.effects, 'caster')];
-    const support = spellSupport(spellOps(s.effects, 'target'), spec, isMagicMissile(s));
+    const support = spellSupport(spellOps(s.effects, 'target'), s, isMagicMissile(s));
     totals[support]++;
-    if (spec.curated) totals.curated++;
+    if (s.curated) totals.curated++;
     const reste = ops
       .filter((o) => o.op === 'narrative')
       .map((o) => (o as { text: string }).text)
       .join(' ')
       .replace(/\|/g, '/');
-    const fallbackNote = !spec.curated && ops.length === 0 ? 'Non curé : desc journalisée telle quelle.' : '';
-    lines.push(`| ${s.label} | ${ICON[support]} | ${spec.curated ? 'oui' : 'repli'} | ${reste || fallbackNote} |`);
+    const fallbackNote = !s.curated && ops.length === 0 ? 'Non curé : desc journalisée telle quelle.' : '';
+    lines.push(`| ${s.label} | ${ICON[support]} | ${s.curated ? 'oui' : 'repli'} | ${reste || fallbackNote} |`);
   }
   lines.push('');
 }

@@ -85,7 +85,10 @@
       "book": "LDB",
       "page": 338
     },
-    "standard": true
+    "standard": true,
+    "capabilities": {
+      "psychType": "animosite"
+    }
   },
   {
     "id": "arboricole",
@@ -390,7 +393,11 @@
       "book": "LDB",
       "page": 339
     },
-    "standard": true
+    "standard": true,
+    "capabilities": {
+      "psychType": "phobie",
+      "psychIndice": 0
+    }
   },
   {
     "id": "elite",
@@ -585,7 +592,10 @@
       "book": "LDB",
       "page": 339
     },
-    "standard": true
+    "standard": true,
+    "capabilities": {
+      "psychType": "haine"
+    }
   },
   {
     "id": "hurlement-fantomatique",
@@ -626,6 +636,9 @@
     "source": {
       "book": "LDB",
       "page": 340
+    },
+    "capabilities": {
+      "psychImmune": true
     }
   },
   {
@@ -951,6 +964,9 @@
     "source": {
       "book": "LDB",
       "page": 341
+    },
+    "capabilities": {
+      "psychType": "peur"
     }
   },
   {
@@ -974,7 +990,10 @@
       "book": "LDB",
       "page": 341
     },
-    "standard": true
+    "standard": true,
+    "capabilities": {
+      "psychType": "prejuge"
+    }
   },
   {
     "id": "protection",
@@ -1323,6 +1342,9 @@
     "source": {
       "book": "LDB",
       "page": 343
+    },
+    "capabilities": {
+      "psychType": "terreur"
     }
   },
   {
@@ -1578,6 +1600,49 @@
     "source": {
       "book": "EDO",
       "page": 84
+    }
+  },
+  {
+    "id": "amour",
+    "label": "Amour",
+    "prefix": "(Cible)",
+    "suffix": null,
+    "desc": "Les poètes parlent tout le temps d'amour, et même les bardes du Reikland connaissent des dizaines de chansons qui sont autant d'odes au pouvoir de l'amour. Si votre Personnage possède le Trait Amour envers un ou plusieurs individus, ce dernier reflète une très forte relation émotionnelle entre les deux. Cela peut être l'amour romantique qu'il va éprouver envers sa femme, son mari ou son amoureux, un profond amour familial envers un frère, une sœur, un parent ou un enfant, ou encore une très forte amitié. Vous devez venir en aide à quelqu'un que vous aimez s'il se retrouve menacé, que ce soit physiquement ou verbalement. Vous êtes immunisé à la Peur et l'Intimidation tant que vous défendez les êtres aimés, et vous gagnez +1 DR à tous les Tests en rapport.",
+    "source": {
+      "book": "LDB",
+      "page": 190
+    },
+    "capabilities": {
+      "psychType": "amour"
+    }
+  },
+  {
+    "id": "camaraderie",
+    "label": "Camaraderie",
+    "prefix": "(Cible)",
+    "suffix": null,
+    "desc": "La Camaraderie reflète les sentiments positifs ressentis envers un groupe d'individus. Vous devez alors leur venir en aide si ce groupe est menacé (que ce soit verbalement ou physiquement), et vous gagnez +1 DR lors des Tests effectués pour défendre ce groupe.",
+    "source": {
+      "book": "LDB",
+      "page": 190
+    },
+    "capabilities": {
+      "psychType": "camaraderie"
+    }
+  },
+  {
+    "id": "phobie",
+    "label": "Phobie",
+    "prefix": "(Type)",
+    "suffix": null,
+    "desc": "Une phobie reflète une peur spécifique ; cela peut-être envers un Type de créature, ou envers un objet ou une situation particulière, tel que Phobie (Insectes), Phobie (Livres) ou Phobie (Espaces clos). Traitez l'objet de la Phobie comme causant Peur 1. Vous pouvez vouloir augmenter l'Indice de Peur si la Phobie est particulièrement forte.",
+    "source": {
+      "book": "LDB",
+      "page": 190
+    },
+    "capabilities": {
+      "psychType": "phobie",
+      "psychIndice": 1
     }
   }
 ]

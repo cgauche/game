@@ -44,6 +44,9 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Haine', 'trait psy ciblé (parsePsychTraits)'],
   ['Préjugé', 'trait psy ciblé (parsePsychTraits)'],
   ['Effrayé', 'trait psy ciblé ≈ Peur 0 (parsePsychTraits)'],
+  ['Amour', 'trait psy ciblé (parsePsychTraits)'],
+  ['Camaraderie', 'trait psy ciblé (parsePsychTraits)'],
+  ['Phobie', 'trait psy ciblé ≈ Peur 1 (parsePsychTraits)'],
   ['Immunité Psychologique', 'psychImmune (parsePsychTraits)'],
   // Afflictions transmises — engine/disease.ts + state/corruptionFlow.ts
   ['Maladie', 'contraction post-combat (disease.ts — Lot D)'],

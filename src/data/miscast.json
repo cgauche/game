@@ -1,0 +1,826 @@
+{
+  "minor": [
+    {
+      "min": 1,
+      "max": 5,
+      "name": "Signe de Sorcière"
+    },
+    {
+      "min": 6,
+      "max": 10,
+      "name": "Lait caillé"
+    },
+    {
+      "min": 11,
+      "max": 15,
+      "name": "Mildiou"
+    },
+    {
+      "min": 16,
+      "max": 20,
+      "name": "Cérumen",
+      "ops": [
+        {
+          "op": "condition",
+          "name": "assourdi",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "min": 21,
+      "max": 25,
+      "name": "Lueur occulte"
+    },
+    {
+      "min": 26,
+      "max": 30,
+      "name": "Murmures mortels",
+      "test": {
+        "characteristic": "FM",
+        "difficulty": "accessible",
+        "onFail": [
+          {
+            "op": "corruption",
+            "amount": 1
+          }
+        ]
+      }
+    },
+    {
+      "min": 31,
+      "max": 35,
+      "name": "Rupture",
+      "ops": [
+        {
+          "op": "condition",
+          "name": "hemorragique",
+          "value": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          }
+        }
+      ]
+    },
+    {
+      "min": 36,
+      "max": 40,
+      "name": "Secousse spirituelle",
+      "ops": [
+        {
+          "op": "condition",
+          "name": "a-terre",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "min": 41,
+      "max": 45,
+      "name": "Délié"
+    },
+    {
+      "min": 46,
+      "max": 50,
+      "name": "Tenue indisciplinée",
+      "ops": [
+        {
+          "op": "condition",
+          "name": "Enchevêtré",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "min": 51,
+      "max": 55,
+      "name": "Malédiction de la sobriété"
+    },
+    {
+      "min": 56,
+      "max": 60,
+      "name": "Drain de l'âme",
+      "ops": [
+        {
+          "op": "condition",
+          "name": "extenue",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "min": 61,
+      "max": 65,
+      "name": "Distraction",
+      "ops": [
+        {
+          "op": "condition",
+          "name": "surpris",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "min": 66,
+      "max": 70,
+      "name": "Visions impies",
+      "ops": [
+        {
+          "op": "condition",
+          "name": "aveugle",
+          "value": 1
+        }
+      ],
+      "test": {
+        "skill": "calme",
+        "difficulty": "intermediaire",
+        "onFail": [
+          {
+            "op": "condition",
+            "name": "aveugle",
+            "value": 1
+          }
+        ]
+      }
+    },
+    {
+      "min": 71,
+      "max": 75,
+      "name": "Langue maladroite",
+      "ops": [
+        {
+          "op": "castPenalty",
+          "skill": "langue",
+          "mod": -10,
+          "rounds": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          }
+        }
+      ]
+    },
+    {
+      "min": 76,
+      "max": 80,
+      "name": "L'horreur !",
+      "test": {
+        "skill": "calme",
+        "difficulty": "difficile",
+        "onFail": [
+          {
+            "op": "condition",
+            "name": "brise",
+            "value": 1
+          }
+        ]
+      }
+    },
+    {
+      "min": 81,
+      "max": 85,
+      "name": "Malédiction de corruption",
+      "ops": [
+        {
+          "op": "corruption",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "min": 86,
+      "max": 90,
+      "name": "Double problème"
+    },
+    {
+      "min": 91,
+      "max": 95,
+      "name": "Multiplication d'infortune",
+      "reroll": "mineure-x2"
+    },
+    {
+      "min": 96,
+      "max": 100,
+      "name": "Chaos en cascade",
+      "reroll": "majeure"
+    }
+  ],
+  "major": [
+    {
+      "min": 1,
+      "max": 5,
+      "name": "Voix fantomatiques",
+      "test": {
+        "skill": "calme",
+        "difficulty": "accessible",
+        "onFail": [
+          {
+            "op": "corruption",
+            "amount": 1
+          }
+        ]
+      }
+    },
+    {
+      "min": 6,
+      "max": 10,
+      "name": "Regard maudit",
+      "ops": [
+        {
+          "op": "condition",
+          "name": "aveugle",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "min": 11,
+      "max": 15,
+      "name": "Choc aethyrique",
+      "ops": [
+        {
+          "op": "wounds",
+          "amount": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          }
+        }
+      ],
+      "test": {
+        "skill": "resistance",
+        "difficulty": "accessible",
+        "onFail": [
+          {
+            "op": "condition",
+            "name": "sonne",
+            "value": 1
+          }
+        ]
+      }
+    },
+    {
+      "min": 16,
+      "max": 20,
+      "name": "Marche de la mort"
+    },
+    {
+      "min": 21,
+      "max": 25,
+      "name": "Rébellion intestinale",
+      "ops": [
+        {
+          "op": "condition",
+          "name": "extenue",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "min": 26,
+      "max": 30,
+      "name": "Feu de l'âme",
+      "ops": [
+        {
+          "op": "condition",
+          "name": "Enflammé",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "min": 31,
+      "max": 35,
+      "name": "Propos ésotériques",
+      "ops": [
+        {
+          "op": "castPenalty",
+          "skill": "langue",
+          "blocked": true,
+          "rounds": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          }
+        }
+      ]
+    },
+    {
+      "min": 36,
+      "max": 40,
+      "name": "Essaim"
+    },
+    {
+      "min": 41,
+      "max": 45,
+      "name": "Poupée de chiffon",
+      "ops": [
+        {
+          "op": "wounds",
+          "amount": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          }
+        },
+        {
+          "op": "condition",
+          "name": "a-terre",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "min": 46,
+      "max": 50,
+      "name": "Membre gelé"
+    },
+    {
+      "min": 51,
+      "max": 55,
+      "name": "Vue assombrie",
+      "ops": [
+        {
+          "op": "castPenalty",
+          "skill": "focalisation",
+          "mod": -20,
+          "hours": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          }
+        }
+      ]
+    },
+    {
+      "min": 56,
+      "max": 60,
+      "name": "Lévitation"
+    },
+    {
+      "min": 61,
+      "max": 65,
+      "name": "Lévitation (suite)"
+    },
+    {
+      "min": 66,
+      "max": 70,
+      "name": "Régurgitation",
+      "ops": [
+        {
+          "op": "condition",
+          "name": "sonne",
+          "durationRounds": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          }
+        }
+      ]
+    },
+    {
+      "min": 71,
+      "max": 75,
+      "name": "Cœur de traître"
+    },
+    {
+      "min": 76,
+      "max": 80,
+      "name": "Cœur de traître (suite)"
+    },
+    {
+      "min": 81,
+      "max": 85,
+      "name": "Terrible affaiblissement",
+      "ops": [
+        {
+          "op": "corruption",
+          "amount": 1
+        },
+        {
+          "op": "condition",
+          "name": "a-terre",
+          "value": 1
+        },
+        {
+          "op": "condition",
+          "name": "extenue",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "min": 86,
+      "max": 90,
+      "name": "Puanteur infernale"
+    },
+    {
+      "min": 91,
+      "max": 95,
+      "name": "Drain de puissance",
+      "ops": [
+        {
+          "op": "castPenalty",
+          "skill": "langue",
+          "blocked": true,
+          "minutes": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          }
+        }
+      ]
+    },
+    {
+      "min": 96,
+      "max": 100,
+      "name": "Contre-réaction aethyrique"
+    }
+  ],
+  "wrath": [
+    {
+      "min": 1,
+      "max": 5,
+      "name": "Visions sacrées",
+      "test": {
+        "skill": "resistance",
+        "difficulty": "accessible",
+        "onFail": [
+          {
+            "op": "condition",
+            "name": "sonne",
+            "value": 1
+          }
+        ]
+      }
+    },
+    {
+      "min": 6,
+      "max": 10,
+      "name": "Pensez à vos actes",
+      "ops": [
+        {
+          "op": "castPenalty",
+          "skill": "priere",
+          "maxZeroDR": true,
+          "days": 7
+        }
+      ]
+    },
+    {
+      "min": 11,
+      "max": 15,
+      "name": "Tenez compte de mes enseignements",
+      "ops": [
+        {
+          "op": "castPenalty",
+          "skill": "priere",
+          "mod": -10,
+          "rounds": {
+            "dice": {
+              "n": 1,
+              "sides": 10,
+              "sinPlus": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "min": 16,
+      "max": 20,
+      "name": "Prouvez votre dévotion",
+      "ops": [
+        {
+          "op": "condition",
+          "name": "a-terre",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "min": 21,
+      "max": 25,
+      "name": "Vous abusez de ma patience",
+      "ops": [
+        {
+          "op": "castPenalty",
+          "skill": "priere",
+          "blocked": true,
+          "rounds": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          }
+        }
+      ]
+    },
+    {
+      "min": 26,
+      "max": 30,
+      "name": "Vous ne comprenez pas ma volonté"
+    },
+    {
+      "min": 31,
+      "max": 35,
+      "name": "Je trouve inquiétant votre manque de foi",
+      "ops": [
+        {
+          "op": "castPenalty",
+          "skill": "priere",
+          "blocked": true,
+          "rounds": {
+            "dice": {
+              "n": 1,
+              "sides": 10,
+              "sinPlus": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "min": 36,
+      "max": 40,
+      "name": "Partagez ma douleur",
+      "ops": [
+        {
+          "op": "wounds",
+          "amount": {
+            "sinPlus1": true
+          }
+        }
+      ],
+      "test": {
+        "skill": "resistance",
+        "difficulty": "accessible",
+        "onFail": [
+          {
+            "op": "condition",
+            "name": "sonne",
+            "value": 1
+          }
+        ]
+      }
+    },
+    {
+      "min": 41,
+      "max": 45,
+      "name": "Votre cause est indigne"
+    },
+    {
+      "min": 46,
+      "max": 50,
+      "name": "Cessez vos babillages",
+      "ops": [
+        {
+          "op": "castPenalty",
+          "skill": "priere",
+          "blocked": true,
+          "rounds": {
+            "dice": {
+              "n": 2,
+              "sides": 10,
+              "sinPlus": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "min": 51,
+      "max": 55,
+      "name": "Ressentez ma colère",
+      "ops": [
+        {
+          "op": "wounds",
+          "amount": {
+            "dice": {
+              "n": 1,
+              "sides": 10,
+              "sinPlus": true
+            }
+          }
+        }
+      ],
+      "test": {
+        "skill": "resistance",
+        "difficulty": "intermediaire",
+        "onFail": [
+          {
+            "op": "condition",
+            "name": "sonne",
+            "value": 1
+          }
+        ]
+      }
+    },
+    {
+      "min": 56,
+      "max": 60,
+      "name": "Je ne vous aiderai pas"
+    },
+    {
+      "min": 61,
+      "max": 65,
+      "name": "Blessures divines",
+      "ops": [
+        {
+          "op": "condition",
+          "name": "hemorragique",
+          "sinPlus1Value": true
+        }
+      ]
+    },
+    {
+      "min": 66,
+      "max": 70,
+      "name": "Frappé de cécité",
+      "ops": [
+        {
+          "op": "condition",
+          "name": "a-terre",
+          "value": 1
+        },
+        {
+          "op": "condition",
+          "name": "aveugle",
+          "sinPlus1Value": true
+        }
+      ]
+    },
+    {
+      "min": 71,
+      "max": 75,
+      "name": "Qu'allez-vous sacrifier ?",
+      "ops": [
+        {
+          "op": "wounds",
+          "amount": {
+            "dice": {
+              "n": 1,
+              "sides": 10,
+              "sinPlus": true
+            }
+          }
+        }
+      ],
+      "test": {
+        "skill": "resistance",
+        "difficulty": "complexe",
+        "onFail": [
+          {
+            "op": "condition",
+            "name": "sonne",
+            "value": 1
+          }
+        ]
+      }
+    },
+    {
+      "min": 76,
+      "max": 80,
+      "name": "Vous avez péché contre moi"
+    },
+    {
+      "min": 81,
+      "max": 87,
+      "name": "Purifier la chair",
+      "ops": [
+        {
+          "op": "wounds",
+          "amount": {
+            "dice": {
+              "n": 2,
+              "sides": 10,
+              "sinPlus": true
+            }
+          }
+        }
+      ],
+      "test": {
+        "skill": "resistance",
+        "difficulty": "difficile",
+        "onFail": [
+          {
+            "op": "condition",
+            "name": "sonne",
+            "value": 1
+          }
+        ],
+        "onFailHard": {
+          "dr": -4,
+          "ops": [
+            {
+              "op": "condition",
+              "name": "inconscient",
+              "value": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "min": 88,
+      "max": 88,
+      "name": "Interférences démoniaques"
+    },
+    {
+      "min": 89,
+      "max": 95,
+      "name": "Redoutez ma colère",
+      "ops": [
+        {
+          "op": "condition",
+          "name": "brise",
+          "sinPlus1Value": true
+        }
+      ]
+    },
+    {
+      "min": 96,
+      "max": 100,
+      "name": "Faites pénitence"
+    },
+    {
+      "min": 101,
+      "max": 105,
+      "name": "Châtiment",
+      "ops": [
+        {
+          "op": "reduceToZero"
+        }
+      ]
+    },
+    {
+      "min": 106,
+      "max": 110,
+      "name": "Ne prononcez pas mon nom en vain"
+    },
+    {
+      "min": 111,
+      "max": 115,
+      "name": "Ne vous attachez pas aux futilités"
+    },
+    {
+      "min": 116,
+      "max": 120,
+      "name": "Vous abusez de ma miséricorde"
+    },
+    {
+      "min": 121,
+      "max": 125,
+      "name": "Contemplez votre cruauté"
+    },
+    {
+      "min": 126,
+      "max": 130,
+      "name": "Tonnerre et foudre",
+      "ops": [
+        {
+          "op": "reduceToZero"
+        },
+        {
+          "op": "condition",
+          "name": "Enflammé",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "min": 131,
+      "max": 135,
+      "name": "Souffrez comme je souffre"
+    },
+    {
+      "min": 136,
+      "max": 140,
+      "name": "Excommunication"
+    },
+    {
+      "min": 141,
+      "max": 145,
+      "name": "Prouvez votre valeur"
+    },
+    {
+      "min": 146,
+      "max": 150,
+      "name": "Je te chasse"
+    },
+    {
+      "min": 151,
+      "max": 999,
+      "name": "Appelé à rendre des comptes"
+    }
+  ]
+}

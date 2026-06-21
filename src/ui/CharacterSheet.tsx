@@ -6,6 +6,7 @@ import { useModalA11y } from './Modal';
 import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem, giveTrappingLabel } from '../engine/items';
 import { CHAR_KEYS, CHAR_LABELS, CharKey, HitLocation, ItemInstance, Combatant, Weapon } from '../engine/types';
 import { effectiveChar, charBonus } from '../engine/characteristics';
+import { baseWithTalents } from '../engine/talentEffects';
 import { effectiveWeaponDamage } from '../engine/weaponDamage';
 import { buildAdvancementView } from '../state/advancement';
 import { hasHealSkill, isHealable } from '../engine/healing';
@@ -15,7 +16,6 @@ import { rule } from '../engine/policy';
 import { canAfford, toMoney, formatMoney } from '../engine/money';
 import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine/grimoire';
 import { spellSupport } from '../engine/spellspec';
-import { spellSpecFor } from '../data/spellspecs';
 import { spellEffectOps } from '../state/flow';
 import { careers, findSpellById, findStarById, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel, findSpeciesById, findCareerById, findClassById, talentConcrete } from '../data';
 import { formatTrait } from '../engine/traits/dispatch';
@@ -240,7 +240,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
       <div className="spell-list">
         {spells.map((sp) => {
           const offensive = isMagicMissile(sp);
-          const support = spellSupport(spellEffectOps(sp.effects), spellSpecFor(sp), offensive);
+          const support = spellSupport(spellEffectOps(sp.effects), sp, offensive);
           return (
             <div className="spell-row" key={sp.label} title={support !== 'mecanique' ? '📜 Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé (cf. docs/sorts-implementation.md).' : undefined}>
               <span className="spell-name">
@@ -414,7 +414,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
         <div className="mini-title">Caractéristiques</div>
         <div className="char-stats sheet-stats">
           {CHAR_KEYS.map((k) => {
-            const base = hero.characteristics[k] ?? 0;
+            const base = baseWithTalents(hero, k);
             const eff = effectiveChar(hero, k);
             const cls = eff > base ? ' ok-text' : eff < base ? ' warn-text' : '';
             return (
@@ -768,7 +768,7 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
         {v.skills.map((s) => (
           <div className={`adv-row ${s.known ? '' : 'acquire'}`} key={skillLabel(s.name, s.spec)}>
             <span className="adv-name">
-              {skillLabel(s.name, s.spec)} <em>{(hero.characteristics[s.characteristic] ?? 0) + s.advances}</em> {pill(s.inCareer)}
+              {skillLabel(s.name, s.spec)} <em>{baseWithTalents(hero, s.characteristic) + s.advances}</em> {pill(s.inCareer)}
               {s.known ? '' : <span className="acquire-tag">à apprendre</span>}
             </span>
             <span className="adv-meta">+{s.advances}</span>
@@ -844,7 +844,7 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
           <AdvSection title="Sorts — mémorisation" count={learnable.length}>
             <div className="adv-grid">
               {learnable.map(({ spell, cost }) => {
-                const support = spellSupport(spellEffectOps(spell.effects), spellSpecFor(spell), isMagicMissile(spell));
+                const support = spellSupport(spellEffectOps(spell.effects), spell, isMagicMissile(spell));
                 return (
                 <div className="adv-row acquire" key={spell.label} title={support !== 'mecanique' ? '📜 Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé.' : undefined}>
                   <span className="adv-name">

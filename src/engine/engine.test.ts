@@ -269,7 +269,7 @@ import { endOfRound } from './conditions';
 import {
   castInfo,
   castingValue,
-  parseSpellDamage,
+  missileDamage,
   parseDurationRounds,
   buffDurationRounds,
   durationClockMinutes,
@@ -469,7 +469,7 @@ function caster(chars: Partial<Characteristics>, skills: SkillInstance[] = [], w
   };
 }
 
-const FLECHETTE: SpellLike = { label: 'Fléchette', type: 'Magie mineure', family: 'mineure', cn: 0, duration: 'Instantanée', desc: 'Il s’agit d’un Projectile magique avec Dégât +0.' };
+const FLECHETTE: SpellLike = { label: 'Fléchette', type: 'Magie mineure', family: 'mineure', missile: true, damage: 0, cn: 0, duration: 'Instantanée', desc: 'Il s’agit d’un Projectile magique avec Dégât +0.' };
 const PRIERE: SpellLike = { label: 'Bénédiction de Bataille', type: 'Béni', family: 'beni', isPrayer: true, cn: null, duration: '6 rounds', desc: 'Votre cible gagne +10 en Capacité de Combat.' };
 const ARCANE: SpellLike = { label: 'Boule de feu', type: 'Magie des Arcanes', family: 'arcane', cn: 8, duration: 'Instantanée', desc: 'Projectile magique avec Dégâts +8.' };
 
@@ -493,16 +493,12 @@ describe('Magie — routage du test par branche', () => {
 });
 
 describe('Magie — analyse des descriptions', () => {
-  it('parseSpellDamage lit « Dégâts +N » et les flags ignore PA / Bonus d’Endurance', () => {
-    expect(parseSpellDamage('Projectile magique avec Dégâts +8.')).toEqual({ damage: 8, ignorePA: false, ignoreBE: false });
-    expect(parseSpellDamage('Dégât +0 qui ignore les PA.')).toEqual({ damage: 0, ignorePA: true, ignoreBE: false });
-    // B1 : Vortex d’âmes / drain de Shyish — ignore le Bonus d’Endurance ET les PA.
-    expect(parseSpellDamage('Projectile magique avec Dégâts +10 qui ignore le Bonus d’Endurance et les PA.')).toEqual({
-      damage: 10,
-      ignorePA: true,
-      ignoreBE: true,
-    });
-    expect(parseSpellDamage('Votre cible gagne +10 en Agilité.')).toBeNull();
+  it('missileDamage lit les champs de données (Dégâts / ignore PA / ignore BE)', () => {
+    const sp = (o: Partial<SpellLike>): SpellLike => ({ label: 'X', type: 'T', cn: 0, desc: '', ...o });
+    expect(missileDamage(sp({ missile: true, damage: 8 }))).toEqual({ damage: 8, ignorePA: false, ignoreBE: false });
+    expect(missileDamage(sp({ missile: true, damage: 0, ignorePA: true }))).toEqual({ damage: 0, ignorePA: true, ignoreBE: false });
+    expect(missileDamage(sp({ missile: true, damage: 10, ignorePA: true, ignoreBE: true }))).toEqual({ damage: 10, ignorePA: true, ignoreBE: true });
+    expect(missileDamage(sp({ missile: false }))).toBeNull();
   });
   it('isMagicMissile détecte les Projectiles magiques', () => {
     expect(isMagicMissile(FLECHETTE)).toBe(true);
@@ -556,7 +552,7 @@ describe('Magie — Projectile magique', () => {
   it('Dégâts = Dégâts du sort + DR + BFM, Localisation = jet inversé', () => {
     const c = caster({ Int: 80, FM: 40 }, [{ skillId: 'langue', spec: 'Magick', characteristic: 'Int', advances: 1 }]);
     const target = caster({ E: 30 }, [], 15);
-    const spell: SpellLike = { ...FLECHETTE, desc: 'Projectile magique avec Dégâts +4.' };
+    const spell: SpellLike = { ...FLECHETTE, damage: 4 };
     const res = resolveMagicMissile(c, target, spell, makeRNG(5));
     if (res.hit) {
       expect(res.location).toBe(hitLocation(reverseRoll(res.roll)));
@@ -622,6 +618,10 @@ describe('Magie — correctifs de fidélité (audit)', () => {
       type: 'Magie des Arcanes',
       cn: 0,
       duration: 'Instantanée',
+      missile: true,
+      damage: 10,
+      ignorePA: true,
+      ignoreBE: true,
       desc: 'Projectile magique avec Dégâts +10 qui ignore le Bonus d’Endurance et les PA.',
     };
     const res = resolveMagicMissile(c, target, spell, makeRNG(5));

@@ -7,7 +7,7 @@ describe('Psychologie (pur)', () => {
   it('parsePsychTraits : « Peur N » / « Terreur N » / Immunité', () => {
     expect(parsePsychTraits([{ id: 'peur', value: 4 }, { id: 'arme', value: 7 }])).toEqual({ causesPeur: 4 });
     expect(parsePsychTraits([{ id: 'terreur', value: 3 }])).toEqual({ causesTerreur: 3 });
-    expect(parsePsychTraits([{ id: 'immunite', arg: 'Psychologie' }])).toEqual({ psychImmune: true });
+    expect(parsePsychTraits([{ id: 'immunite-psychologique' }])).toEqual({ psychImmune: true });
     expect(parsePsychTraits([{ id: 'arme', value: 7 }])).toEqual({});
   });
   it('parsePsychTraits : traits ciblés → psychTraits (Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie)', () => {

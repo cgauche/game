@@ -6,9 +6,9 @@ import { findCreature } from '../data';
 
 // Dérivation des propriétés psychologiques au spawn (parse des traits, LDB 21+85).
 describe('spawn — propriétés psychologiques', () => {
-  it('statbloc « Terreur 2 » → causesTerreur ; « Immunité (Psychologie) » → psychImmune', () => {
+  it('statbloc « Terreur 2 » → causesTerreur ; « Immunité Psychologique » → psychImmune', () => {
     const c = statblockToCombatant(
-      { name: 'X', char: { F: 30, E: 30, FM: 30 }, traits: [{ id: 'terreur', value: 2 }, { id: 'immunite', arg: 'Psychologie' }] },
+      { name: 'X', char: { F: 30, E: 30, FM: 30 }, traits: [{ id: 'terreur', value: 2 }, { id: 'immunite-psychologique' }] },
       'x',
       { x: 0, y: 0 },
     );

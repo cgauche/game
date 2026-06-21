@@ -46,5 +46,8 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.test.{ts,tsx}', 'server/src/**/*.test.ts'],
+    // Filet d'isolation GLOBAL : restaure les vrais timers après chaque test (cf. src/test-setup.ts) —
+    // empêche tout fake timer fantôme de fuir d'un test à l'autre (flake de combat).
+    setupFiles: ['./src/test-setup.ts'],
   },
 });

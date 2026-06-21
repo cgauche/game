@@ -5,12 +5,11 @@
  */
 import { Combatant } from '../engine/types';
 import { combineMods } from '../engine/combat';
-import { castInfo, isMagicMissile, parseSpellDamage, spellRangeTiles } from '../engine/magic';
+import { castInfo, isMagicMissile, missileDamage, spellRangeTiles } from '../engine/magic';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { isOutOfAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
 import { findSpellById } from '../data';
-import { spellSpecFor } from '../data/spellspecs';
 import { combatDistance } from './footprint';
 import { spellOps } from './flow';
 import type { GameState } from './store';
@@ -72,8 +71,7 @@ export type SpellAffinity = 'enemy' | 'ally' | 'any';
  *  (narratif, mixte, sans op de cible) → 'any' (réticule permissif des deux côtés). La SOURCE est
  *  l'effet canon du sort (spells.json), pas une heuristique de mots-clés sur la description. */
 export function spellAffinity(spell: NonNullable<ReturnType<typeof findSpellById>>): SpellAffinity {
-  const spec = spellSpecFor(spell);
-  if (isMagicMissile(spell) || spec.opposed || spec.breathAttack || spec.pushMeters != null) return 'enemy';
+  if (isMagicMissile(spell) || spell.opposed || spell.breathAttack || spell.pushMeters != null) return 'enemy';
   const ops = spellOps(spell.effects, 'target').map((o) => o.op);
   if (ops.some((o) => HARMFUL_TARGET_OPS.has(o))) return 'enemy';
   if (ops.some((o) => HELPFUL_TARGET_OPS.has(o))) return 'ally';
@@ -104,7 +102,7 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
       return { kind: 'none' };
     if (target.id !== active.id) {
       // Souffle : la portée suit le TRAIT (BE+20 m), pas le champ Portée — même calcul que castSpell.
-      const range = spellSpecFor(spell).breathAttack
+      const range = spell.breathAttack
         ? Math.max(1, Math.ceil((bonus(effectiveChar(active, 'E')) + 20) / 2))
         : spellRangeTiles(spell.range, active);
       if (range != null && combatDistance(active, target) > range) return { kind: 'invalid', reason: 'range' };
@@ -114,7 +112,7 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
       missile,
       focused: active.focus?.spell === spell.id && active.focus.dr >= (spell.cn ?? 0),
     });
-    const dmg = missile ? parseSpellDamage(spell.desc) : null;
+    const dmg = missile ? missileDamage(spell) : null;
     return {
       kind: 'ok',
       line: 'dashed',

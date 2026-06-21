@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import { hoverTargeting, spellAffinity } from './targeting';
 import { findSpell, findSpellById } from '../data';
-import { parseSpellDamage } from '../engine/magic';
+import { missileDamage } from '../engine/magic';
 import { bonus } from '../engine/characteristics';
 import type { Combatant } from '../engine/types';
 import type { GameState } from './store';
@@ -102,7 +102,7 @@ describe('hoverTargeting — mode incantation', () => {
     const a = combatant({ id: 'A' });
     const b = combatant({ id: 'B', kind: 'enemy', pos: { x: 2, y: 0 } });
     const ht = hoverTargeting(mkGet([a, b], castBattle('carreau')), a, b);
-    const dmg = parseSpellDamage(findSpell('Carreau')!.desc)!.damage + bonus(40); // FM 40
+    const dmg = missileDamage(findSpell('Carreau')!)!.damage + bonus(40); // FM 40
     expect(ht).toMatchObject({ kind: 'ok', line: 'dashed', title: 'Carreau', skill: 'Langue (Magick)', dmg });
   });
 

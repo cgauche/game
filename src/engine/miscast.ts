@@ -14,6 +14,9 @@
  * inline) — plus de jet imbriqué silencieux, plus d'op `test`. Tout le reste
  * (Pénitence, perte de Talents, invocation, lévitation…) n'est PAS inventé : son
  * texte canonique est journalisé et laissé à l'arbitrage du MJ.
+ *
+ * La DONNÉE vit dans `src/data/miscast.json` (éditable) ; ce module = types +
+ * chargement + résolution. Ajouter/régler une entrée = éditer le JSON, jamais ce fichier.
  */
 import { RNG, defaultRNG, d100 } from './dice';
 import { findTableEntry } from './tables';
@@ -24,6 +27,7 @@ import { Difficulty } from './types';
 // partagée du jeu (state/flow), exécutée cadence-aware par `runCombatFlow`. AUCUNE dépendance runtime au
 // store : les tables restent du moteur pur (`rollMiscast` testable seul).
 import type { Flow } from '../state/flow';
+import miscastJson from '../data/miscast.json';
 
 export type MiscastSeverity = 'mineure' | 'majeure' | 'colere';
 
@@ -56,6 +60,157 @@ interface NestedTest {
   onFailHard?: { dr: number; ops: GameOp[] };
 }
 
+// ---------------------------------------------------------------------------
+// JSON data types — supersets of GameOp/Formula that encode sin-parameterisation
+// ---------------------------------------------------------------------------
+
+/**
+ * Dice descriptor as it appears in the JSON. Extends the engine's `{ n, sides, plus? }` shape
+ * with an optional `sinPlus` flag: when `true`, the resolved `plus` is the caller's `sinPoints`
+ * value (e.g. `d(1,10,sin)` in the old inline code → `{ n:1, sides:10, sinPlus:true }` in JSON).
+ */
+interface JsonDice {
+  n: number;
+  sides: number;
+  /** When true, `plus` = sinPoints at resolution time (replaces the old closure `d(n,s,sin)`). */
+  sinPlus?: boolean;
+}
+
+/**
+ * Formula as it appears in the JSON.  A plain number stays a plain number; a dice descriptor
+ * uses `JsonDice` (with optional `sinPlus`); `{ sinPlus1: true }` encodes the pattern `1 + sin`
+ * (old inline: `amount: 1 + sin`).
+ */
+type JsonFormula =
+  | number
+  | { dice: JsonDice }
+  | { sinPlus1: true };
+
+/**
+ * A single GameOp as stored in the JSON.  Mirrors the runtime `GameOp` union but with
+ * `JsonFormula` in place of `Formula`, and two extra optional fields:
+ * - `sinPlus1Value`: when true the `value` of a `condition` op is `1 + sinPoints` at runtime
+ *   (old inline: `cond('name', 1 + sin)`).
+ * - `durationRounds`: a `JsonFormula` for the `durationRounds` field of a timed-condition op
+ *   (old inline: `{ op:'condition', name:'sonne', durationRounds: d(1,10) }`).
+ */
+type JsonOp = {
+  op: string;
+  // condition
+  name?: string;
+  value?: JsonFormula;
+  durationRounds?: JsonFormula;
+  /** When true the condition `value` is `1 + sinPoints` (cannot be expressed as a plain Formula). */
+  sinPlus1Value?: boolean;
+  // wounds / corruption
+  amount?: JsonFormula;
+  // castPenalty
+  skill?: string;
+  mod?: number;
+  blocked?: boolean;
+  maxZeroDR?: boolean;
+  rounds?: JsonFormula;
+  hours?: JsonFormula;
+  minutes?: JsonFormula;
+  days?: number;
+};
+
+/** Spec of a nested test as stored in the JSON (same shape as NestedTest but with JsonOp[]). */
+interface JsonNestedTest {
+  skill?: string;
+  characteristic?: string;
+  difficulty: string;
+  onFail: JsonOp[];
+  onFailHard?: { dr: number; ops: JsonOp[] };
+}
+
+/** A table row as stored in the JSON. */
+interface JsonRow {
+  min: number;
+  max: number;
+  name: string;
+  ops?: JsonOp[];
+  test?: JsonNestedTest;
+  reroll?: 'majeure' | 'mineure-x2';
+}
+
+// ---------------------------------------------------------------------------
+// JSON → runtime resolution
+// ---------------------------------------------------------------------------
+
+/** Resolve a `JsonFormula` to a runtime `Formula` (engine/ops), substituting sinPoints where flagged. */
+function resolveJsonFormula(f: JsonFormula, sin: number): unknown {
+  if (typeof f === 'number') return f;
+  if ('sinPlus1' in f) return 1 + sin;
+  // dice descriptor — sinPlus replaces the `plus` field with the current sinPoints
+  const { n, sides, sinPlus } = f.dice;
+  return sinPlus ? { dice: { n, sides, plus: sin } } : { dice: { n, sides } };
+}
+
+/**
+ * Expand a single `JsonOp` into a runtime `GameOp`, binding `sinPoints` for all
+ * sin-parameterised fields. This is the ONLY place where sin enters the ops pipeline.
+ */
+function expandOp(op: JsonOp, sin: number): GameOp {
+  switch (op.op) {
+    case 'condition': {
+      // sinPlus1Value → value = 1 + sin; plain value → resolve formula; absent → omit (e.g. durationRounds-only op)
+      const base: Record<string, unknown> = { op: 'condition', name: op.name };
+      if (op.sinPlus1Value) {
+        base.value = 1 + sin;
+      } else if (op.value !== undefined) {
+        base.value = resolveJsonFormula(op.value, sin);
+      }
+      if (op.durationRounds !== undefined) {
+        base.durationRounds = resolveJsonFormula(op.durationRounds, sin);
+      }
+      return base as unknown as GameOp;
+    }
+    case 'wounds':
+      return { op: 'wounds', amount: resolveJsonFormula(op.amount!, sin) } as unknown as GameOp;
+    case 'corruption':
+      return { op: 'corruption', amount: op.amount as number } as unknown as GameOp;
+    case 'reduceToZero':
+      return { op: 'reduceToZero' } as unknown as GameOp;
+    case 'castPenalty': {
+      const base: Record<string, unknown> = { op: 'castPenalty', skill: op.skill };
+      if (op.mod !== undefined) base.mod = op.mod;
+      if (op.blocked) base.blocked = true;
+      if (op.maxZeroDR) base.maxZeroDR = true;
+      if (op.rounds !== undefined) base.rounds = resolveJsonFormula(op.rounds, sin);
+      if (op.hours !== undefined) base.hours = resolveJsonFormula(op.hours, sin);
+      if (op.minutes !== undefined) base.minutes = resolveJsonFormula(op.minutes, sin);
+      if (op.days !== undefined) base.days = op.days;
+      return base as unknown as GameOp;
+    }
+    default:
+      return op as unknown as GameOp;
+  }
+}
+
+/** Expand a `JsonOp[]` into `GameOp[]`, substituting sinPoints. */
+function expandOps(jsonOps: JsonOp[], sin: number): GameOp[] {
+  return jsonOps.map((o) => expandOp(o, sin));
+}
+
+/** Expand a `JsonNestedTest` into a runtime `NestedTest`, binding sinPoints (tests never use sin directly). */
+function expandNestedTest(t: JsonNestedTest): NestedTest {
+  const result: NestedTest = {
+    ...(t.skill ? { skill: t.skill } : {}),
+    ...(t.characteristic ? { characteristic: t.characteristic as 'FM' } : {}),
+    difficulty: t.difficulty as Difficulty,
+    onFail: expandOps(t.onFail, 0), // test onFail ops never reference sin
+  };
+  if (t.onFailHard) {
+    result.onFailHard = { dr: t.onFailHard.dr, ops: expandOps(t.onFailHard.ops, 0) };
+  }
+  return result;
+}
+
+// ---------------------------------------------------------------------------
+// Runtime Row type (after JSON expansion)
+// ---------------------------------------------------------------------------
+
 interface Row {
   min: number;
   max: number;
@@ -68,9 +223,35 @@ interface Row {
   reroll?: 'majeure' | 'mineure-x2';
 }
 
-const cond = (name: string, value: number | { dice: { n: number; sides: number; plus?: number } } = 1): GameOp =>
-  ({ op: 'condition', name, value });
-const d = (n: number, sides: number, plus = 0) => ({ dice: { n, sides, plus } });
+/** Build a runtime `Row` from a `JsonRow`. */
+function buildRow(jr: JsonRow): Row {
+  const row: Row = { min: jr.min, max: jr.max, name: jr.name };
+  if (jr.reroll) row.reroll = jr.reroll;
+  if (jr.ops && jr.ops.length > 0) {
+    const jsonOps = jr.ops;
+    row.ops = (sin: number) => expandOps(jsonOps, sin);
+  }
+  if (jr.test) {
+    row.test = expandNestedTest(jr.test);
+  }
+  return row;
+}
+
+// ---------------------------------------------------------------------------
+// Tables built from JSON at module load time
+// ---------------------------------------------------------------------------
+
+const data = miscastJson as { minor: JsonRow[]; major: JsonRow[]; wrath: JsonRow[] };
+
+const MINOR: Row[] = data.minor.map(buildRow);
+const MAJOR: Row[] = data.major.map(buildRow);
+const WRATH: Row[] = data.wrath.map(buildRow);
+
+const TABLES: Record<MiscastSeverity, Row[]> = { mineure: MINOR, majeure: MAJOR, colere: WRATH };
+
+// ---------------------------------------------------------------------------
+// mkTest — unchanged resolution code (factory, not data)
+// ---------------------------------------------------------------------------
 
 /** Enveloppe une liste de GameOps en une feuille de Flow `do` appliquée au lanceur (`on:'target'` =
  *  le combattant qui subit la maladresse — c'est lui la « cible » du sous-Flow joué par `applyMiscast`). */
@@ -97,116 +278,9 @@ function mkTest(t: NestedTest): Flow {
   };
 }
 
-// --- Tableau des Incantations Imparfaites Mineures (LDB 46 l.61-92) ----------
-const MINOR: Row[] = [
-  { min: 1, max: 5, name: 'Signe de Sorcière' },
-  { min: 6, max: 10, name: 'Lait caillé' },
-  { min: 11, max: 15, name: 'Mildiou' },
-  // « Gagnez 1 État Assourdi, qui ne peut être retiré [que par] Guérison » (l.66).
-  { min: 16, max: 20, name: 'Cérumen', ops: () => [cond('assourdi')] },
-  { min: 21, max: 25, name: 'Lueur occulte' },
-  // « Réussissez un Test de FM Accessible (+20) ou gagnez 1 Point de Corruption » (l.70).
-  { min: 26, max: 30, name: 'Murmures mortels', test: { characteristic: 'FM', difficulty: 'accessible', onFail: [{ op: 'corruption', amount: 1 }] } },
-  // « Gagnez 1d10 États Hémorragique » (l.71).
-  { min: 31, max: 35, name: 'Rupture', ops: () => [cond('hemorragique', d(1, 10))] },
-  { min: 36, max: 40, name: 'Secousse spirituelle', ops: () => [cond('a-terre')] },
-  { min: 41, max: 45, name: 'Délié' },
-  { min: 46, max: 50, name: 'Tenue indisciplinée', ops: () => [cond('Enchevêtré')] },
-  { min: 51, max: 55, name: 'Malédiction de la sobriété' },
-  { min: 56, max: 60, name: "Drain de l'âme", ops: () => [cond('extenue')] },
-  { min: 61, max: 65, name: 'Distraction', ops: () => [cond('surpris')] }, // si Engagé
-  // « Recevez l'État Aveuglé ; réussissez un Test de Calme Intermédiaire (+0) ou gagnez-en un autre » (l.83).
-  { min: 66, max: 70, name: 'Visions impies', ops: () => [cond('aveugle')], test: { skill: 'calme', difficulty: 'intermediaire', onFail: [cond('aveugle')] } },
-  // « Tous les Tests de Langue (y compris d'Incantation) subissent −10 pendant 1d10 Rounds » (l.85).
-  { min: 71, max: 75, name: 'Langue maladroite', ops: () => [{ op: 'castPenalty', skill: 'langue', mod: -10, rounds: d(1, 10) }] },
-  // « Réussissez un Test de Calme Difficile (−20) ou gagnez 1 État Brisé » (l.86).
-  { min: 76, max: 80, name: "L'horreur !", test: { skill: 'calme', difficulty: 'difficile', onFail: [cond('brise')] } },
-  // « Gagnez 1 Point de Corruption » (l.87).
-  { min: 81, max: 85, name: 'Malédiction de corruption', ops: () => [{ op: 'corruption', amount: 1 }] },
-  { min: 86, max: 90, name: 'Double problème' },
-  { min: 91, max: 95, name: "Multiplication d'infortune", reroll: 'mineure-x2' },
-  { min: 96, max: 100, name: 'Chaos en cascade', reroll: 'majeure' },
-];
-
-// --- Tableau des Incantations Imparfaites Majeures (LDB 46 l.96-136) ----------
-const MAJOR: Row[] = [
-  // « Test de Calme Accessible (+20) ou 1 Point de Corruption » (l.100).
-  { min: 1, max: 5, name: 'Voix fantomatiques', test: { skill: 'calme', difficulty: 'accessible', onFail: [{ op: 'corruption', amount: 1 }] } },
-  { min: 6, max: 10, name: 'Regard maudit', ops: () => [cond('aveugle')] },
-  // « 1d10 Blessures ignorant BE et PA. Résistance Accessible (+20) ou 1 État Sonné » (l.104).
-  { min: 11, max: 15, name: 'Choc aethyrique', ops: () => [{ op: 'wounds', amount: d(1, 10) }], test: { skill: 'resistance', difficulty: 'accessible', onFail: [cond('sonne')] } },
-  { min: 16, max: 20, name: 'Marche de la mort' },
-  { min: 21, max: 25, name: 'Rébellion intestinale', ops: () => [cond('extenue')] },
-  { min: 26, max: 30, name: "Feu de l'âme", ops: () => [cond('Enflammé')] },
-  // « Vous ne pouvez pas effectuer de Test d'Incantation [pendant] 1d10 Rounds » (l.112).
-  { min: 31, max: 35, name: 'Propos ésotériques', ops: () => [{ op: 'castPenalty', skill: 'langue', blocked: true, rounds: d(1, 10) }] },
-  { min: 36, max: 40, name: 'Essaim' },
-  { min: 41, max: 45, name: 'Poupée de chiffon', ops: () => [{ op: 'wounds', amount: d(1, 10) }, cond('a-terre')] },
-  { min: 46, max: 50, name: 'Membre gelé' },
-  // « Les Tests de Focalisation subissent −20 pour la durée de l'effet [1d10 heures] » (l.120).
-  { min: 51, max: 55, name: 'Vue assombrie', ops: () => [{ op: 'castPenalty', skill: 'focalisation', mod: -20, hours: d(1, 10) }] },
-  { min: 56, max: 60, name: 'Lévitation' },
-  { min: 61, max: 65, name: 'Lévitation (suite)' },
-  // « Gagnez l'État Sonné, qui dure 1d10 Rounds » (l.126).
-  { min: 66, max: 70, name: 'Régurgitation', ops: () => [{ op: 'condition', name: 'sonne', durationRounds: d(1, 10) }] },
-  { min: 71, max: 75, name: 'Cœur de traître' },
-  { min: 76, max: 80, name: 'Cœur de traître (suite)' },
-  // « Gagnez 1 Point de Corruption, 1 État À Terre et 1 État Exténué » (l.132).
-  { min: 81, max: 85, name: 'Terrible affaiblissement', ops: () => [{ op: 'corruption', amount: 1 }, cond('a-terre'), cond('extenue')] },
-  { min: 86, max: 90, name: 'Puanteur infernale' },
-  // « Incapable d'utiliser le Talent vous permettant de lancer des Sorts pendant 1d10 minutes » (l.134).
-  { min: 91, max: 95, name: 'Drain de puissance', ops: () => [{ op: 'castPenalty', skill: 'langue', blocked: true, minutes: d(1, 10) }] },
-  { min: 96, max: 100, name: 'Contre-réaction aethyrique' }, // affecte les autres / tête explose → MJ
-];
-
-// --- Tableau de la Colère des dieux (LDB 40 l.58-138) -------------------------
-// (le jet peut dépasser 100 via +10 par Point de Péché.)
-const WRATH: Row[] = [
-  // « Résistance Accessible (+20). Sur un échec, 1 État Sonné » (l.60).
-  { min: 1, max: 5, name: 'Visions sacrées', test: { skill: 'resistance', difficulty: 'accessible', onFail: [cond('sonne')] } },
-  // « Tout Test de Prière réussi ne peut pas obtenir plus de 0 DR pour la semaine suivante » (l.63).
-  { min: 6, max: 10, name: 'Pensez à vos actes', ops: () => [{ op: 'castPenalty', skill: 'priere', maxZeroDR: true, days: 7 }] },
-  // « −10 à votre Compétence Prière pour les 1d10 + Péchés prochains Rounds » (l.64).
-  { min: 11, max: 15, name: 'Tenez compte de mes enseignements', ops: (sin) => [{ op: 'castPenalty', skill: 'priere', mod: -10, rounds: d(1, 10, sin) }] },
-  { min: 16, max: 20, name: 'Prouvez votre dévotion', ops: () => [cond('a-terre')] },
-  // « Vous ne pouvez pas effectuer de Tests de Prière pendant 1d10 Rounds » (l.68).
-  { min: 21, max: 25, name: 'Vous abusez de ma patience', ops: () => [{ op: 'castPenalty', skill: 'priere', blocked: true, rounds: d(1, 10) }] },
-  { min: 26, max: 30, name: 'Vous ne comprenez pas ma volonté' }, // compétences choisies par le MJ
-  // « Pas de Tests de Prière pendant 1d10 + Péchés Rounds » (l.72).
-  { min: 31, max: 35, name: 'Je trouve inquiétant votre manque de foi', ops: (sin) => [{ op: 'castPenalty', skill: 'priere', blocked: true, rounds: d(1, 10, sin) }] },
-  // « 1 + Péchés Blessures ignorant BE et PA. Résistance Accessible (+20) ou Sonné » (l.75).
-  { min: 36, max: 40, name: 'Partagez ma douleur', ops: (sin) => [{ op: 'wounds', amount: 1 + sin }], test: { skill: 'resistance', difficulty: 'accessible', onFail: [cond('sonne')] } },
-  { min: 41, max: 45, name: 'Votre cause est indigne' },
-  // « Pas de Tests de Prière pendant 2d10 + Péchés Rounds » (l.79).
-  { min: 46, max: 50, name: 'Cessez vos babillages', ops: (sin) => [{ op: 'castPenalty', skill: 'priere', blocked: true, rounds: d(2, 10, sin) }] },
-  // « 1d10 + Péchés Blessures. Résistance Intermédiaire (+0) ou Sonné » (l.86).
-  { min: 51, max: 55, name: 'Ressentez ma colère', ops: (sin) => [{ op: 'wounds', amount: d(1, 10, sin) }], test: { skill: 'resistance', difficulty: 'intermediaire', onFail: [cond('sonne')] } },
-  { min: 56, max: 60, name: 'Je ne vous aiderai pas' }, // compétence choisie par le MJ
-  { min: 61, max: 65, name: 'Blessures divines', ops: (sin) => [cond('hemorragique', 1 + sin)] },
-  { min: 66, max: 70, name: 'Frappé de cécité', ops: (sin) => [cond('a-terre'), cond('aveugle', 1 + sin)] },
-  // « 1d10 + Péchés Blessures ignorant BE/PA. Résistance Complexe (−10) ou Sonné » (l.95).
-  { min: 71, max: 75, name: "Qu'allez-vous sacrifier ?", ops: (sin) => [{ op: 'wounds', amount: d(1, 10, sin) }], test: { skill: 'resistance', difficulty: 'complexe', onFail: [cond('sonne')] } },
-  { min: 76, max: 80, name: 'Vous avez péché contre moi' }, // Tests de Prière forcés → MJ
-  // « 2d10 + Péchés Blessures ignorant BE/PA. Résistance Difficile (−20) ou Sonné ;
-  //   échec à −4 DR ou moins → 1 État Inconscient (min 1d10 Rounds) » (l.99-101).
-  { min: 81, max: 87, name: 'Purifier la chair', ops: (sin) => [{ op: 'wounds', amount: d(2, 10, sin) }], test: { skill: 'resistance', difficulty: 'difficile', onFail: [cond('sonne')], onFailHard: { dr: -4, ops: [cond('inconscient')] } } },
-  { min: 88, max: 88, name: 'Interférences démoniaques' },
-  { min: 89, max: 95, name: 'Redoutez ma colère', ops: (sin) => [cond('brise', 1 + sin)] },
-  { min: 96, max: 100, name: 'Faites pénitence' },
-  { min: 101, max: 105, name: 'Châtiment', ops: () => [{ op: 'reduceToZero' }] },
-  { min: 106, max: 110, name: 'Ne prononcez pas mon nom en vain' }, // perte de Talents 1d10+Péchés jours → MJ
-  { min: 111, max: 115, name: 'Ne vous attachez pas aux futilités' },
-  { min: 116, max: 120, name: 'Vous abusez de ma miséricorde' },
-  { min: 121, max: 125, name: 'Contemplez votre cruauté' },
-  { min: 126, max: 130, name: 'Tonnerre et foudre', ops: () => [{ op: 'reduceToZero' }, cond('Enflammé')] },
-  { min: 131, max: 135, name: 'Souffrez comme je souffre' },
-  { min: 136, max: 140, name: 'Excommunication' },
-  { min: 141, max: 145, name: 'Prouvez votre valeur' },
-  { min: 146, max: 150, name: 'Je te chasse' },
-  { min: 151, max: 999, name: 'Appelé à rendre des comptes' },
-];
-
-const TABLES: Record<MiscastSeverity, Row[]> = { mineure: MINOR, majeure: MAJOR, colere: WRATH };
+// ---------------------------------------------------------------------------
+// Public API — unchanged signatures
+// ---------------------------------------------------------------------------
 
 /**
  * Composant d'incantation (LDB 46 l.161, règle optionnelle) — transformation PURE de la sévérité

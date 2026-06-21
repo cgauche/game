@@ -11,6 +11,7 @@ import { condSummary } from '../editor/ConditionEditor';
 import type { GameOp } from '../../engine/ops';
 import type { Flow, TriggeredEffect, EffectTrigger } from '../../state/flow';
 import { refLabel } from '../../data';
+import { statName } from '../../engine/statEntry';
 
 const TRIGGER_LABEL: Record<EffectTrigger, string> = {
   onHit: 'À la touche',
@@ -35,10 +36,28 @@ const ON_LABEL: Record<'self' | 'victim' | 'engaged', string> = {
 const onLabel = (on: TriggeredEffect['on']): string =>
   typeof on === 'object' ? `les cibles à ≤ ${on.radiusMeters} m de ${on.near === 'self' ? 'soi' : 'la victime'}` : ON_LABEL[on];
 
-/** Modificateurs PASSIFS continus (`GameOp[]`) → section lisible (« +5 F », « −20 aux Tests de Soc »…). */
+/** Octrois de carrière (`grantCareerSkill`/`grantCareerTalent`) — affichés à part (cross-réf cliquable),
+ *  jamais comme « modificateur continu ». Filtrés ici pour ne pas doublonner avec `careerGrantSection`. */
+const CAREER_GRANT_OPS = new Set<GameOp['op']>(['grantCareerSkill', 'grantCareerTalent']);
+
+/** Modificateurs PASSIFS continus (`GameOp[]`) → section lisible (« +5 F », « −20 aux Tests de Soc »…).
+ *  Les octrois de carrière (compétence/talent ajouté à toute carrière) sont EXCLUS → `careerGrantSection`. */
 export function passiveSection(ops: GameOp[] | undefined, title = 'Modificateurs passifs'): CodexSection | null {
-  if (!ops?.length) return null;
-  return { title, layout: 'list', rows: ops.map((o) => ({ t: 'text', text: opSummary(o) }) as CodexRow) };
+  const mods = (ops ?? []).filter((o) => !CAREER_GRANT_OPS.has(o.op));
+  if (!mods.length) return null;
+  return { title, layout: 'list', rows: mods.map((o) => ({ t: 'text', text: opSummary(o) }) as CodexRow) };
+}
+
+/** Compétence/Talent ajouté à « n'importe quelle Carrière » (LDB 10, ops `grantCareerSkill`/
+ *  `grantCareerTalent`) → chips CROSS-RÉF cliquables (id → libellé ; le lookup ignore la spec « Au choix »
+ *  via `statName`). Source unique de la projection des octrois de carrière (talents Maître artisan, Flagellant…). */
+export function careerGrantSection(ops: GameOp[] | undefined, title = 'Ajouté à vos carrières'): CodexSection | null {
+  const rows: CodexRow[] = (ops ?? []).flatMap((o): CodexRow[] => {
+    if (o.op === 'grantCareerSkill') { const l = refLabel('skills', { id: o.skillId, spec: o.spec }); return [{ t: 'ref', category: 'skills', label: statName(l), show: l }]; }
+    if (o.op === 'grantCareerTalent') { const l = refLabel('talents', { id: o.talentId, spec: o.spec }); return [{ t: 'ref', category: 'talents', label: statName(l), show: l }]; }
+    return [];
+  });
+  return rows.length ? { title, layout: 'chips', rows } : null;
 }
 
 /** Résumé LISIBLE d'un Flow d'effet (conditions `if` + ops `do`, jet `test`) — réutilise `condSummary`/
@@ -74,4 +93,21 @@ const effectRows = (effects: TriggeredEffect[] | undefined): CodexRow[] =>
 export function effectsSection(effects: TriggeredEffect[] | undefined, title = 'Effets déclenchés'): CodexSection | null {
   const rows = effectRows(effects);
   return rows.length ? { title, layout: 'list', rows } : null;
+}
+
+/** Capacités-marqueurs IRRÉDUCTIBLES (TraitCapabilities/QualityCapabilities — flags booléens lus par
+ *  le moteur) → section lisible. Le mapping flag→libellé (display) est fourni par l'appelant ; l'ordre
+ *  suit le mapping. Ignore les non-booléens (Indices, encDelta…) — surfacés ailleurs s'il le faut. */
+export function capabilitySection(caps: Record<string, unknown> | undefined, labels: Record<string, string>, title = 'Capacités'): CodexSection | null {
+  if (!caps) return null;
+  const present = Object.keys(labels).filter((k) => caps[k] === true).map((k) => labels[k]);
+  return present.length ? { title, layout: 'list', rows: [{ t: 'text', text: present.join(' · ') }] } : null;
+}
+
+/** Effet MÉCANIQUE d'un Sort (`Flow` éditable : do/if/test) → section lisible (réutilise `flowSummary`).
+ *  Source unique de la projection des effets de sort au Codex (≠ desc narrative). Vide → null. */
+export function spellFlowSection(flow: Flow | undefined, title = 'Effet mécanique'): CodexSection | null {
+  if (!flow) return null;
+  const text = flowSummary(flow);
+  return text ? { title, layout: 'list', rows: [{ t: 'text', text }] } : null;
 }

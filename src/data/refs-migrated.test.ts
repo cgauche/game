@@ -168,15 +168,11 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     });
   });
 
-  it('talents.addSkill/addTalent = réf par id qui résout (libellé concret hors donnée)', () => {
+  it('ops grantCareerSkill/grantCareerTalent (talent → carrière) = réf par id qui résout (jamais un libellé)', () => {
     for (const t of talents) {
-      if (t.addSkill != null) {
-        expect(isObj(t.addSkill), `${t.label}.addSkill`).toBe(true);
-        expect(findSkillById((t.addSkill as { id: string }).id), `${t.label}.addSkill`).toBeTruthy();
-      }
-      if (t.addTalent != null) {
-        expect(isObj(t.addTalent), `${t.label}.addTalent`).toBe(true);
-        expect(findTalentById((t.addTalent as { id: string }).id), `${t.label}.addTalent`).toBeTruthy();
+      for (const op of t.passive ?? []) {
+        if (op.op === 'grantCareerSkill') expect(findSkillById(op.skillId), `${t.label}.grantCareerSkill`).toBeTruthy();
+        if (op.op === 'grantCareerTalent') expect(findTalentById(op.talentId), `${t.label}.grantCareerTalent`).toBeTruthy();
       }
     }
   });

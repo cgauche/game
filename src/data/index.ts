@@ -69,6 +69,10 @@ export interface SpeciesData {
   /** Racial de Groupe ÉDITABLE (Traits psy ciblés, LDB 21) — surcharge la dérivation par label
    *  (`engine/groups`). Absent = racial auto-dérivé du `label` d'espèce. */
   group?: string;
+  /** Seuil d100 de mutation PHYSIQUE (LDB 19 l.87-91 : d100 ≤ seuil → corps, sinon esprit) :
+   *  Elfe 0, Nain 5, Halfling 10, Humain 50. Ogre 10 (ADE2 « Ogres et Mutations »). ABSENT = défaut
+   *  Humain (50) — le Gnome y est rattaché par NADJ « Gnomes et Corruption » (« mutent comme les humains »). */
+  mutationBodyMax?: number;
 }
 export interface ClassData {
   /** id STABLE (slug du libellé) — cible de `CareerData.class`. */
@@ -126,15 +130,6 @@ export interface TalentData {
   max: string | number | null;
   test: string | null;
   desc: string;
-  /** Compétence ajoutée à « n'importe quelle Carrière que vous entamez » (LDB 10 : Maître
-   *  artisan, Oreille absolue, Sorcier !, Voyageur aguerri, Artiste) — réf par id (+ spec « Au
-   *  choix »/« Chant »…). Résolue en libellé concret par `refLabel('skills', …)`. */
-  addSkill?: Ref | null;
-  /** Caractéristique/attribut modifié à l'acquisition (LDB 10 : « +5 à votre Caractéristique de
-   *  départ », Blessure, Chance, Détermination, Mouvement, Corruption). Libellé long (hors id). */
-  addCharacteristic?: string | null;
-  /** Talent conféré (LDB 10 : Flagellant → Frénésie) — réf par id (+ spec éventuel). */
-  addTalent?: Ref | null;
   specs?: string[];
   /** Borne haute de plage d100 sur le Tableau des Talents aléatoires (null = hors table). */
   rand?: number | null;
@@ -334,6 +329,11 @@ export interface TraitCapabilities {
   painless?: boolean;
   // Psychologie / IA
   psychImmuneIfAhead?: boolean;
+  /** Psychologie portée par le trait (LDB 21), lue par `parsePsychTraits` (data-driven). L'Indice
+   *  (Peur/Terreur) vient de l'instance (`value`) ; la Cible (Animosité…) de l'instance (`arg`). */
+  psychType?: 'peur' | 'terreur' | 'animosite' | 'haine' | 'prejuge' | 'amour' | 'camaraderie' | 'phobie';
+  psychImmune?: boolean; // Immunité (Psychologie) — annule Peur/Terreur (LDB 85 l.143-144)
+  psychIndice?: number; // Indice FIXE si absent de l'instance (Phobie = 1, Effrayé = 0)
   mindless?: boolean;
   bestial?: boolean;
   coldBlooded?: boolean;
@@ -487,13 +487,60 @@ export interface SpellData {
   target: number | string;
   duration: string;
   desc: string;
+  /** Projectile magique (Dégâts résolus façon attaque) — DONNÉE (multilangue ; remplace la regex
+   *  `/projectile magique/` sur la desc). `damage` = bonus ADDITIF (+ DR + BFM, LDB 46) ; `ignorePA`/
+   *  `ignoreBE` = ignore les PA / le Bonus d'Endurance de la cible. Lus par `evaluateMissile`/IA. */
+  missile?: boolean;
+  damage?: number;
+  ignorePA?: boolean;
+  ignoreBE?: boolean;
+  // ── MÉTADONNÉES DE RÉSOLUTION (migrées depuis src/data/spellspecs/*.ts — migration #5) ──────────
+  // Ces champs sont multilingue-safe (ids/formules, jamais du texte d'affichage).
+  // Présents sur toutes les entrées OFFICIELLES (curated:true) ; absents sur les sorts homebrew (frenchy.bzh).
+  /** Vrai pour une entrée curée de la base officielle. Absent/false pour les sorts homebrew (frenchy.bzh).
+   *  Permet au test de couverture de vérifier que TOUS les sorts officiels ont une spec complète. */
+  curated?: boolean;
+  /** Durée en Rounds si exprimable (littéral / « (Bonus de X) Rounds » du lanceur) ;
+   *  null = Instantané ou durée hors échelle tactique (minutes/heures/jours) — on n'invente PAS un
+   *  nombre de rounds (LDB). Formula = `number | {bonusOf:CharKey} | {charOf:CharKey} | …` (engine/ops). */
+  durationRounds?: import('../engine/ops').Formula | null;
+  /** RAYON de Zone d'Effet en MÈTRES (sorts de zone avec rayon dans la desc —
+   *  « dans un rayon de (Bonus de Sociabilité) mètres », Feu de l'âme, Comète…) ;
+   *  prioritaire sur le parsing du champ Cible (zdeRadiusTiles). */
+  zdeRadiusMeters?: import('../engine/ops').Formula;
+  /** La zone ÉPARGNE le lanceur (Poussée repousse « toutes les créatures » autour de SOI ;
+   *  Feu de l'âme châtie les ennemis) — il est exclu de la collecte des cibles. */
+  zdeExcludesCaster?: boolean;
+  /** TÉLÉPORTATION du lanceur (Jalon 2.6 — « vous vous téléportez de BFM mètres ») : après
+   *  l'Appliquer, le jeu propose le choix d'une case d'arrivée dans ce rayon (survol des
+   *  obstacles, atterrissage libre). */
+  teleportMeters?: import('../engine/ops').Formula;
+  /** Bonus de téléportation par surincantation : `+metersFormula` mètres tous les `every` DR. */
+  teleportPerSL?: { every: number; metersFormula: import('../engine/ops').Formula };
+  /** POUSSÉE — chaque cible affectée est repoussée en ligne (direction lanceur→cible)
+   *  de ce nombre de mètres jusqu'à l'obstacle ; la collision est journalisée (LDB). */
+  pushMeters?: import('../engine/ops').Formula;
+  /** Sort « Souffle » (LDB 47 p.244) : délégué à l'attaque de ZONE du Trait Souffle. */
+  breathAttack?: true;
+  /** Attaques en chaîne (LDB 47) : rebond si réduit la cible à 0 Blessure,
+   *  jusqu'à `maxBounces` fois, chaque rebond à `hopMeters` mètres. */
+  chainOnKill?: { maxBounces: import('../engine/ops').Formula; hopMeters: import('../engine/ops').Formula };
+  /** OPPOSITION de la cible (multijet dans la modale d'incantation).
+   *  `resist` : Test opposé par la caractéristique/compétence `char`/`skill` de la cible.
+   *  `contact` : Sort de Portée Contact — frappe via Test opposé de Corps à corps (Bagarre). */
+  opposed?: {
+    kind: 'resist' | 'contact';
+    /** Caractéristique opposée (`resist` uniquement). */
+    char?: import('../engine/types').CharKey;
+    /** Compétence opposée en libellé (`resist` uniquement, rare — FM, Intelligence, Calme…). */
+    skill?: string;
+  };
   /**
    * EFFETS du sort — `Flow` ÉDITABLE (système logique unique : `do`/`if`/`test`), source des effets
    * mécaniques appliqués à l'incantation (feuilles EffectOp `{type:'ops', on:'target'|'caster', ops}`).
    * Édité dans le Compendium (CodexEdit → FlowEditor), exécuté par `runCombatFlow`. SOURCE UNIQUE des
-   * effets — les MÉTADONNÉES de résolution (durée/ZdE/opposition/invocation/métamorphose) restent dans
-   * la spec engine curée (`spellSpecFor`). Import TYPE seul (effacé à la compilation) → la couche data
-   * NE dépend PAS d'une valeur de `state` (pureté préservée). Absent = aucun effet mécanique (narratif).
+   * effets. Import TYPE seul (effacé à la compilation) → la couche data NE dépend PAS d'une valeur
+   * de `state` (pureté préservée). Absent = aucun effet mécanique (narratif).
    */
   effects?: import('../state/flow').Flow;
   source: { book: string; page: number };
@@ -524,7 +571,10 @@ export interface StarData {
 }
 /** Lieu (Glorieux Reikland, LDB) : hiérarchie par `parent` (label d'un autre lieu). */
 export interface LocationData {
+  /** id STABLE (slug du libellé) — cible de `parent` (réf id, ≠ libellé) et des réfs inverses. */
+  id: string;
   label: string;
+  /** `id` du lieu parent (`LocationData.id`), ou null si racine — réf d'entité, ≠ libellé. */
   parent: string | null;
   prefix: string | null;
   suffix: string | null;
@@ -657,6 +707,11 @@ export const stars = starsJson as StarData[];
 /** Apparences d'espèce de rig (app-owned, éditable) — SOURCE lue+résolue par `raceById` (rig). */
 export const raceAppearance = raceAppearanceJson as RaceAppearanceData[];
 export const locations = locationsJson as LocationData[];
+const LOCATION_BY_ID = new Map(locations.map((l) => [l.id, l]));
+/** Résout un Lieu par son `id` STABLE (cible de `LocationData.parent`). Le libellé ne sert qu'à l'affichage. */
+export function findLocationById(id: string | null | undefined): LocationData | undefined {
+  return id ? LOCATION_BY_ID.get(id) : undefined;
+}
 export const books = booksJson as BookData[];
 /** Culte/Dieu (LDB 41) : `key` = clé STABLE (« Sigmar »), Bénédictions/Miracles en `Ref[]` (sorts par id),
  *  desc = lore HTML (Codex). Dataset éditable (Compendium) — remplace les `cults/defs/*.ts` (codegen retiré). */
@@ -699,6 +754,12 @@ const SPECIES_BY_ID = new Map(species.map((s) => [s.id, s]));
  *  pregens, draft). Le libellé ne sert qu'à l'affichage (`speciesSingular`). */
 export function findSpeciesById(id: string | undefined): SpeciesData | undefined {
   return id ? SPECIES_BY_ID.get(id) : undefined;
+}
+/** Seuil d100 de mutation PHYSIQUE d'une espèce par `id` (LDB 19 l.87-91). Défaut **50** = colonne
+ *  Humain (LDB) — couvre aussi le Gnome (NADJ « Gnomes et Corruption » : « mutent comme les humains »)
+ *  et toute espèce hors Tableau. Les valeurs ≠ 50 (Elfe 0, Nain 5, Halfling 10, Ogre 10) sont en donnée. */
+export function mutationBodyMaxForSpecies(id: string | undefined): number {
+  return findSpeciesById(id)?.mutationBodyMax ?? 50;
 }
 
 /** Affichage SINGULIER de l'espèce d'un INDIVIDU : les `label` du catalogue sont des libellés de

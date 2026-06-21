@@ -215,6 +215,14 @@ export type GameOp =
    *  Réf par `talentId` STABLE (+ `spec` éventuel « Sans Peur (Vampires) ») — résolu en libellé
    *  concret (clé du registre `combatFeatures`) par `talentConcrete` côté consommateur/affichage. */
   | { op: 'grantTalent'; talentId: string; spec?: string }
+  /** Ajoute une Compétence aux listes de TOUTE carrière entamée (Maître artisan/Sorcier!/… LDB 10) —
+   *  ref par `skillId` (jamais libellé). `spec='Au choix'` = reportée sur la spec choisie du talent.
+   *  Lu par `careerSkillAdditions` (création/avancement), pas appliqué au combattant. */
+  | { op: 'grantCareerSkill'; skillId: string; spec?: string }
+  /** Ajoute un Talent aux listes de TOUTE carrière entamée (Flagellant → Frénésie « est ajouté à la
+   *  liste des Talents de n'importe laquelle de vos Carrières », LDB 10) — analogue Talent de
+   *  `grantCareerSkill`, ref par `talentId` STABLE. Lu par `careerTalentAdditions`, pas appliqué au combattant. */
+  | { op: 'grantCareerTalent'; talentId: string; spec?: string }
   /** Enchantement d'ARME temporisé (Jalon 2.6 — B. de Droiture : Magique ; Marteau ardent :
    *  Magique +BSoc + En flammes/À Terre à la touche ; Épée ardente : +6 + Percutante + En
    *  flammes). Porté par le PORTEUR (ActiveEffect.weaponEnchant), fusionné à l'arme à la
@@ -402,6 +410,10 @@ export type GameOp =
   /** Modificateur ADDITIF de Mouvement (trait Brutal −1 / Rapide +1, mutation ±1, encombrement) — distinct de
    *  `moveScale` (multiplicatif). `effectiveMovement` somme les `moveMod` PUIS applique les `moveScale`. */
   | { op: 'moveMod'; mod: number }
+  /** Modif. d'un ATTRIBUT SECONDAIRE (≠ CharKey, ≠ Mouvement) : Blessures (Dur à cuire +BE), Chance
+   *  (Chanceux), Détermination (Obstiné), Destin, Résilience. `mod` = Formula (`{bonusOf:'E'}` pour Dur
+   *  à cuire). Lu par heroMaxWounds/fortuneMax/resolveMax — data-driven, jamais par libellé. */
+  | { op: 'attrMod'; attr: 'wounds' | 'fortune' | 'resolve' | 'fate' | 'resilience'; mod: Formula }
   /** Plafond de mains d'arme maniables — GÉNÉRALISE `noTwoHanded` (hands:1 = pas d'arme à deux mains).
    *  Une amputation de main/bras pose `maxWeaponHands:1`. Lu par `cannotWieldTwoHanded`/`recomputeLoadout`. */
   | { op: 'maxWeaponHands'; hands: number }

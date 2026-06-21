@@ -677,7 +677,8 @@
       "book": "frenchy.bzh",
       "page": 472
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "courage-du-loup",
@@ -731,7 +732,53 @@
     "desc": "Le sorcier provoque un arc d’énergie verdâtre qui frappe sa cible et inflige 6 Points de Dégâts (armure OK). La cible effectue un Test de Résistance (+0) VS 1 État « Étourdi ».",
     "effects": {
       "kind": "seq",
-      "steps": []
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "wounds",
+                "amount": 6,
+                "ignoreTB": false,
+                "ignoreAP": false
+              }
+            ]
+          }
+        },
+        {
+          "kind": "test",
+          "test": {
+            "skill": "resistance",
+            "difficulty": "intermediaire"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "target",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "name": "sonne",
+                      "value": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
     },
     "source": {
       "book": "frenchy.bzh",
@@ -757,7 +804,8 @@
       "book": "frenchy.bzh",
       "page": 448
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "crevasse",
@@ -877,7 +925,8 @@
       "book": "frenchy.bzh",
       "page": 361
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "desarroi",
@@ -1117,7 +1166,8 @@
       "book": "frenchy.bzh",
       "page": 253
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "fatigue",
@@ -1317,7 +1367,8 @@
       "book": "frenchy.bzh",
       "page": 321
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "flammes-roses-de-tzeentch",
@@ -1337,7 +1388,8 @@
       "book": "frenchy.bzh",
       "page": 320
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "forme-spectrale",
@@ -1571,7 +1623,23 @@
     "desc": "Le démon projette sa langue devenue un instant protractile. La cible subit 11 Points de Dégâts (pas d’armure).",
     "effects": {
       "kind": "seq",
-      "steps": []
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "wounds",
+                "amount": 11,
+                "ignoreTB": false,
+                "ignoreAP": true
+              }
+            ]
+          }
+        }
+      ]
     },
     "source": {
       "book": "frenchy.bzh",
@@ -2157,7 +2225,8 @@
       "book": "frenchy.bzh",
       "page": 246
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "projectile-de-dhar",
@@ -2177,7 +2246,8 @@
       "book": "frenchy.bzh",
       "page": 267
     },
-    "family": "arcane"
+    "family": "arcane",
+    "missile": true
   },
   {
     "id": "projectile-mineur",
@@ -2191,7 +2261,23 @@
     "desc": "Le projectile inflige 3 Points de Dégâts.",
     "effects": {
       "kind": "seq",
-      "steps": []
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "wounds",
+                "amount": 3,
+                "ignoreTB": false,
+                "ignoreAP": false
+              }
+            ]
+          }
+        }
+      ]
     },
     "source": {
       "book": "frenchy.bzh",

@@ -28,15 +28,6 @@ export const REGISTRIES = [
     typeFrom: './types',
   },
   {
-    // Traits de Psychologie (LDB 21/85) : 1 trait = 1 fichier defs/ (reconnaît son libellé).
-    dir: 'src/engine/psych/defs',
-    out: 'src/engine/psych/_registry.generated.ts',
-    exportName: 'psych',
-    arrayName: 'PSYCH_DEFS',
-    type: 'PsychTraitDef',
-    typeFrom: './types',
-  },
-  {
     // Scénarios de test : fichiers À PLAT dans le dossier (pas de sous-dossier defs/).
     dir: 'src/scenes/test-scenarios',
     out: 'src/scenes/test-scenarios/_registry.generated.ts',

@@ -8,7 +8,10 @@ import {
   fortuneMax,
   resolveMax,
   careerSkillAdditions,
+  careerTalentAdditions,
+  baseWithTalents,
 } from './talentEffects';
+import { effectiveMovement } from './encumbrance';
 
 const hero = (over: Partial<Combatant> = {}): Combatant =>
   ({
@@ -47,16 +50,20 @@ describe('« +5 à votre Caractéristique de départ » (LDB 10 — ne compte pa
     expect(talentCharBonus('Dur à cuire')).toBe(null);
     expect(talentCharBonus('Chanceux')).toBe(null);
   });
-  it('applyTalentAcquisition : +5 à la valeur, AUCUNE Augmentation comptée', () => {
-    const h = hero();
-    applyTalentAcquisition(h, 'tres-fort'); // id stable du Talent
-    expect(h.characteristics.F).toBe(35);
+  it('applyTalentAcquisition : +5 passif, valeur effective = 35, AUCUNE Augmentation comptée', () => {
+    const h = hero({ talents: [{ talentId: 'tres-fort', times: 1 }] });
+    applyTalentAcquisition(h, 'tres-fort'); // id stable du Talent — le talent est déjà dans la liste
+    // La valeur brute reste 30 (non cuite) ; le passif charMod la porte — baseWithTalents = 35.
+    expect(h.characteristics.F).toBe(30); // base INCHANGÉE (passif, plus cuit)
+    expect(baseWithTalents(h, 'F')).toBe(35); // base + passif talent = 35
     expect(h.charAdvances?.F ?? 0).toBe(0);
   });
-  it('Véloce : +1 Mouvement (LDB 10)', () => {
-    const h = hero();
+  it('Véloce : +1 Mouvement via passif moveMod (LDB 10)', () => {
+    const h = hero({ talents: [{ talentId: 'veloce', times: 1 }] });
     applyTalentAcquisition(h, 'veloce'); // id stable du Talent
-    expect(h.movement).toBe(5);
+    // Le Mouvement brut reste 4 ; le passif moveMod le porte — effectiveMovement = 5.
+    expect(h.movement).toBe(4); // base INCHANGÉE (passif, plus muté)
+    expect(effectiveMovement(h)).toBe(5); // base + passif moveMod = 5
   });
 });
 
@@ -95,5 +102,12 @@ describe('« Ajoutez la Compétence X à n\'importe quelle Carrière que vous en
     expect(adds).toContain('Divertissement (Chant)');
     expect(adds).toContain('Savoir (Région)');
     expect(adds).toHaveLength(4);
+  });
+});
+
+describe('« Le Talent X est ajouté à la liste des Talents de vos Carrières » (LDB 10, op grantCareerTalent)', () => {
+  it('Flagellant → Frénésie ajoutée aux carrières ; un talent sans op → rien', () => {
+    expect(careerTalentAdditions(hero({ talents: [{ talentId: 'flagellant', times: 1 }] }))).toEqual(['Frénésie']);
+    expect(careerTalentAdditions(hero({ talents: [{ talentId: 'baratiner', times: 1 }] }))).toEqual([]);
   });
 });

@@ -1,0 +1,77 @@
+[
+  {
+    "max": 5,
+    "char": 25,
+    "skill": 10
+  },
+  {
+    "max": 10,
+    "char": 30,
+    "skill": 15
+  },
+  {
+    "max": 15,
+    "char": 40,
+    "skill": 20
+  },
+  {
+    "max": 20,
+    "char": 50,
+    "skill": 30
+  },
+  {
+    "max": 25,
+    "char": 70,
+    "skill": 40
+  },
+  {
+    "max": 30,
+    "char": 90,
+    "skill": 60
+  },
+  {
+    "max": 35,
+    "char": 120,
+    "skill": 80
+  },
+  {
+    "max": 40,
+    "char": 150,
+    "skill": 110
+  },
+  {
+    "max": 45,
+    "char": 190,
+    "skill": 140
+  },
+  {
+    "max": 50,
+    "char": 230,
+    "skill": 180
+  },
+  {
+    "max": 55,
+    "char": 280,
+    "skill": 220
+  },
+  {
+    "max": 60,
+    "char": 330,
+    "skill": 270
+  },
+  {
+    "max": 65,
+    "char": 390,
+    "skill": 320
+  },
+  {
+    "max": 70,
+    "char": 450,
+    "skill": 380
+  },
+  {
+    "max": null,
+    "char": 520,
+    "skill": 440
+  }
+]

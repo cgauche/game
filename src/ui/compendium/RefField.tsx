@@ -40,8 +40,6 @@ export const REF_FIELD: Record<string, RefFieldCfg> = {
   'locations.parent': { ds: 'locations', single: true, valueKey: 'label' },
   'pregens.species': { ds: 'species', single: true },
   'pregens.career': { ds: 'careers', single: true },
-  'talents.addSkill': { ds: 'skills', single: true, spec: true },
-  'talents.addTalent': { ds: 'talents', single: true, spec: true },
   // Caractéristique d'une compétence : SÉLECTEUR (pas d'input libre) — le dataset `characteristics` n'a
   // pas d'`id`, il est keyé par `label` ; la valeur STOCKÉE lue par l'engine (CHAR_BY_LABEL) est le label
   // complet (« Dextérité ») → single-ref keyé `label`, format inchangé.
@@ -52,9 +50,6 @@ export const REF_FIELD: Record<string, RefFieldCfg> = {
   refChar: { vocabFrom: 'species.refChar' },
   refCareer: { vocabFrom: 'species.refCareer' },
   'qualities.subType': { vocabFrom: 'qualities.subType' },
-  // Attribut +5/dérivé conféré par un talent : clé STABLE (CharKey 'Soc'… ou dérivé wounds/fortune/
-  // resolve/move/corruption), JAMAIS un libellé. Vocabulaire = valeurs distinctes du champ.
-  'talents.addCharacteristic': { vocabFrom: 'talents.addCharacteristic' },
 };
 
 /** Résout la config d'un champ : clé (catégorie, champ) puis repli global par champ. */

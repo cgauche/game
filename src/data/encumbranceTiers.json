@@ -1,0 +1,34 @@
+[
+  {
+    "tier": 0,
+    "movePenalty": 0,
+    "moveFloor": 0,
+    "agilityPenalty": 0,
+    "travelFatigue": 0,
+    "immobile": false
+  },
+  {
+    "tier": 1,
+    "movePenalty": 1,
+    "moveFloor": 3,
+    "agilityPenalty": -10,
+    "travelFatigue": 1,
+    "immobile": false
+  },
+  {
+    "tier": 2,
+    "movePenalty": 2,
+    "moveFloor": 2,
+    "agilityPenalty": -20,
+    "travelFatigue": 2,
+    "immobile": false
+  },
+  {
+    "tier": 3,
+    "movePenalty": null,
+    "moveFloor": 0,
+    "agilityPenalty": -20,
+    "travelFatigue": 2,
+    "immobile": true
+  }
+]

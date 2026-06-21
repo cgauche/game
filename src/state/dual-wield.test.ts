@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
+import { initialFields } from './stateFields';
 import { resolveDualSecond, applyAttackResult } from './combatFlow';
 import { reverseRoll, rollMeleeDefender, type AttackResult } from '../engine/combat';
 import { makeRNG } from '../engine/dice';
@@ -41,6 +42,13 @@ function setupBattle(heroOver: Partial<Combatant> = {}) {
     f2: b.combatants.find((c) => c.id === 'f2')!,
   };
 }
+
+// ISOLATION — `useGame` est un singleton de MODULE partagé entre tests (et entre fichiers d'un même
+// worker Vitest). Sans reset, un `pending*` laissé par un test/fichier précédent fuit selon l'ordre
+// d'exécution (le RNG, lui, est seedé → déterministe : le flake venait de CET état partagé, pas du hasard).
+// On remet à zéro TOUS les champs transitoires (`initialFields`, copies fraîches) + le combat AVANT
+// chaque test ; ce hook de TÊTE DE FICHIER s'exécute avant les `beforeEach` de describe (setupBattle / timers).
+beforeEach(() => useGame.setState({ ...initialFields(), battle: null, scene: null, gameTime: 0, party: [] }));
 
 describe('resolveDualSecond : 2ᵉ attaque du Maniement de deux armes (LDB 10 l.638)', () => {
   beforeEach(() => setupBattle());

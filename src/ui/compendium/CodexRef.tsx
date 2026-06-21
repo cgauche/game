@@ -80,6 +80,9 @@ export function CodexRef({
   const title = item?.label ?? label;
   const body = item ? (item.desc ? truncate(item.html ? stripHtml(item.desc) : item.desc) : null) : (fallback?.body || null);
   const popSub = item?.sub ?? fallback?.sub;
+  // Faits-clés (Dégâts/PA/Prix/NI/Portée…) DANS le tooltip — pas seulement la prose : le survol
+  // d'une arme/d'un sort devient informatif sans ouvrir la fiche. Compact, 4 max.
+  const metaLine = item?.meta?.length ? item.meta.slice(0, 4).map((m) => `${m.label} ${m.value}`).join(' · ') : null;
   const src = item?.source;
   const inst = instance && instance !== title ? instance : undefined;
   // Clic → fiche Codex UNIQUEMENT pour une vraie entrée catalogue, hors mode popover-seul
@@ -112,6 +115,7 @@ export function CodexRef({
             <span className="codex-pop-title">{inst ?? title}</span>
             {inst && <span className="codex-pop-sub">{title}</span>}
             {popSub && <span className="codex-pop-sub">{popSub}</span>}
+            {metaLine && <span className="codex-pop-meta">{metaLine}</span>}
             {body && <span className="codex-pop-body">{body}</span>}
             {src && (
               <span className="codex-pop-foot">

@@ -4,7 +4,7 @@
  * ennemi↔ennemi reste au journal/bandeau ; les révélations gardées portent leur gravité
  * (auto-fermeture : 'grave' = critique/mutation, 'minor' = entretien/informatif).
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { applyCriticalToTarget } from './combatFlow';
 import { createHero } from '../engine/character';
@@ -20,6 +20,10 @@ const mkEnemy = (id: string): Combatant =>
     wounds: { current: 12, max: 12, base: 12 }, conditions: [], skills: [], talents: [], items: [],
     weapons: [], armour: {}, advantage: 0, traits: [], bodyShape: 'biped',
   }) as unknown as Combatant;
+
+// Les deux describes arment `vi.useFakeTimers()` en beforeEach : on RESTAURE les vrais timers après
+// chaque test pour ne pas laisser de timer fantôme (setTimeout de l'IA combat) fuir vers un test suivant.
+afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
 describe('routage des révélations (spec coop §4bis)', () => {
   beforeEach(() => {
