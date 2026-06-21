@@ -5,11 +5,11 @@
     "contractDifficulty": "tresFacile",
     "incubation": {
       "n": 1,
-      "d": 10
+      "sides": 10
     },
     "duration": {
       "n": 1,
-      "d": 10
+      "sides": 10
     },
     "symptoms": [
       {
@@ -30,11 +30,11 @@
     "contractDifficulty": "facile",
     "incubation": {
       "n": 1,
-      "d": 10
+      "sides": 10
     },
     "duration": {
       "n": 1,
-      "d": 10
+      "sides": 10
     },
     "symptoms": [
       {
@@ -58,12 +58,12 @@
     "contractDifficulty": "tresFacile",
     "incubation": {
       "n": 0,
-      "d": 1,
+      "sides": 1,
       "plus": -1
     },
     "duration": {
       "n": 1,
-      "d": 10
+      "sides": 10
     },
     "symptoms": [
       {
@@ -84,11 +84,11 @@
     "contractDifficulty": "facile",
     "incubation": {
       "n": 0,
-      "d": 1
+      "sides": 1
     },
     "duration": {
       "n": 1,
-      "d": 10
+      "sides": 10
     },
     "symptoms": [
       {
@@ -109,12 +109,12 @@
     "contractDifficulty": "accessible",
     "incubation": {
       "n": 3,
-      "d": 10,
+      "sides": 10,
       "plus": 5
     },
     "duration": {
       "n": 3,
-      "d": 10,
+      "sides": 10,
       "plus": 10
     },
     "symptoms": [
@@ -145,11 +145,11 @@
     "contractDifficulty": "facile",
     "incubation": {
       "n": 2,
-      "d": 10
+      "sides": 10
     },
     "duration": {
       "n": 1,
-      "d": 10
+      "sides": 10
     },
     "symptoms": [
       {
@@ -177,11 +177,11 @@
     "contractDifficulty": "accessible",
     "incubation": {
       "n": 0,
-      "d": 1
+      "sides": 1
     },
     "duration": {
       "n": 3,
-      "d": 10
+      "sides": 10
     },
     "symptoms": [
       {
@@ -208,11 +208,11 @@
     "contractDifficulty": "facile",
     "incubation": {
       "n": 1,
-      "d": 10
+      "sides": 10
     },
     "duration": {
       "n": 5,
-      "d": 10
+      "sides": 10
     },
     "symptoms": [
       {
@@ -230,11 +230,11 @@
     "contractDifficulty": "accessible",
     "incubation": {
       "n": 1,
-      "d": 10
+      "sides": 10
     },
     "duration": {
       "n": 1,
-      "d": 10,
+      "sides": 10,
       "plus": 7
     },
     "symptoms": [

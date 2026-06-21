@@ -13,7 +13,7 @@
  * citation est portée par la spec/table qui l'emploie ; ce qui n'est pas
  * modélisable reste une op `narrative` (journalisée, arbitrage MJ, rien d'inventé).
  */
-import { RNG, defaultRNG, roll as rollDice } from './dice';
+import { RNG, defaultRNG, roll, type DiceSpec, rollDice } from './dice';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
 import { addCondition, addTimedCondition, removeCondition, loseWounds, hasCondition } from './conditions';
 import { conditionLabel, talentConcrete, qualityRefLabel, traitById, refLabel } from '../data';
@@ -59,7 +59,7 @@ export type Formula =
   | number
   | { bonusOf: CharKey }
   | { charOf: CharKey }
-  | { dice: { n: number; sides: number; plus?: number } }
+  | { dice: DiceSpec }
   | { rolled: true }
   /** INDICE de l'attaque NATURELLE en cours (« Morsure +10 », « Souffle +15 ») — injecté par le
    *  résolveur de manœuvre (`ctx.indice`). Permet d'authorer les Dégâts « Indice » d'une manœuvre en
@@ -75,7 +75,7 @@ export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG
   if ('charOf' in f) return effectiveChar(ref, f.charOf);
   if ('rolled' in f) return rolled ?? 0;
   if ('indiceOf' in f) return indice ?? 0;
-  return rollDice(f.dice.n, f.dice.sides, rng) + (f.dice.plus ?? 0);
+  return rollDice(f.dice, rng);
 }
 
 /** Échelle « par +N DR » d'un sort (LDB 41/42/47 — « +1 par +2 DR », « +DR Dégâts ») :
@@ -939,9 +939,9 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'rollThreshold': {
-        const roll = rollDice(1, o.sides, rng);
+        const rolled = roll(1, o.sides, rng);
         for (const th of o.thresholds) {
-          if (roll >= th.atLeast) lines.push(...applyOps(target, th.ops, { ...ctx, rolled: roll }));
+          if (rolled >= th.atLeast) lines.push(...applyOps(target, th.ops, { ...ctx, rolled }));
         }
         break;
       }

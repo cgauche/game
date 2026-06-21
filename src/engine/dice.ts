@@ -37,6 +37,17 @@ export const roll = (n: number, sides: number, rng: RNG = defaultRNG) => {
   return total;
 };
 
+/** Descripteur de jet de dés en DONNÉE (forme canonique partagée : « NdM(+P ») — `n`d`sides`+`plus`).
+ *  Source UNIQUE réutilisée par la Formula `{dice}` (ops), les maladies (incubation/durée) et les
+ *  Imparfaites (miscast, qui l'étend d'un `sinPlus`). */
+export interface DiceSpec {
+  n: number;
+  sides: number;
+  plus?: number;
+}
+/** Roule un `DiceSpec` (n dés à `sides` faces + `plus`). PUR (RNG injecté). */
+export const rollDice = (dc: DiceSpec, rng: RNG = defaultRNG): number => roll(dc.n, dc.sides, rng) + (dc.plus ?? 0);
+
 /** Évalue une expression de dés signée (« 1d10+15 », « 2d10 », « d10 », « 15 », « 1d6-1 ») → total
  *  tiré. Termes additionnés ; « NdM » roule N dés à M faces (N implicite = 1). PUR (RNG injecté). */
 export function rollExpr(expr: string, rng: RNG = defaultRNG): number {
