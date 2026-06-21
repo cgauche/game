@@ -18,10 +18,16 @@
  * carrière rouvre tous les choix). Cas réels en données : Érudit a « Savoir (Au choix) » aux
  * 4 niveaux ; jokers RESTREINTS « Corps à corps (Fléau ou À deux mains) » ; entrée talent
  * « Guide fluvial ou Bonnes jambes ».
+ *
+ * MOTEUR : `slotsOfLevel` construit ses `SlotOption[]` DIRECTEMENT depuis l'`AdvancementRef` structuré
+ * (`slotOptionsFromRef`) — plus de round-trip `advancementLabel→parseEntry` au runtime. `parseAdvancement`
+ * (prose→ref) et `parseEntry`/`parseOption`/`splitTopLevelOu` restent les helpers d'AUTHORING/CRÉATION :
+ * l'assistant de création (`draft`/`CharacterCreator`) travaille sur des LIBELLÉS concrets (clés de
+ * `specChoices`), le Codex sur la prose — c'est leur modèle, pas un chemin de résolution de règle.
  */
 import { Combatant, CharKey, CHAR_LABELS } from './types';
 import { bonus } from './characteristics';
-import { findTalent, findTalentById, findSkill, spells, advancementLabel, CareerLevelData, type AdvancementRef } from '../data';
+import { findTalent, findTalentById, findSkill, spells, advancementLabel, refLabel, CareerLevelData, type AdvancementRef } from '../data';
 import { slugId } from '../data/slug';
 import { CULT_KEYS } from '../data';
 import { splitLabel } from './statEntry';
@@ -138,12 +144,22 @@ export function parseAdvancement(entry: string): AdvancementRef {
   return opts.length > 1 ? { choice: opts } : opts[0];
 }
 
+/** `AdvancementRef` STRUCTURÉ → `SlotOption[]` — lecture DIRECTE de la donnée (id→libellé via `refLabel`,
+ *  jamais de re-parse de prose). `name` reste un LIBELLÉ (consommé par `findSkill`/`concreteLabel`).
+ *  Remplace le round-trip `advancementLabel(ref) → parseEntry(prose)`. */
+export function slotOptionsFromRef(category: string, a: AdvancementRef): SlotOption[] {
+  if ('ref' in a) return [{ name: refLabel(category, { id: a.ref.id }), ...(a.ref.spec ? { spec: a.ref.spec } : {}), wildcard: false }];
+  if ('wildcard' in a) return [{ name: refLabel(category, { id: a.wildcard.id }), wildcard: true, ...(a.specOptions ? { specOptions: a.specOptions } : {}) }];
+  if ('choice' in a) return a.choice.flatMap((x) => slotOptionsFromRef(category, x));
+  return [{ name: advancementLabel(category, a), wildcard: false }]; // tirage aléatoire (« N Talent aléatoire »)
+}
+
 function slotsOfLevel(level: CareerLevelData, kind: 'skill' | 'talent'): CareerSlot[] {
   const refs = kind === 'skill' ? level.skills : level.talents;
   const cat = kind === 'skill' ? 'skills' : 'talents';
   return refs.map((ref, i) => {
-    const entry = advancementLabel(cat, ref); // AdvancementRef → libellé, puis parseEntry (logique inchangée)
-    const options = parseEntry(entry);
+    const options = slotOptionsFromRef(cat, ref); // DIRECT depuis la structure (zéro re-parse)
+    const entry = advancementLabel(cat, ref); // libellé d'AFFICHAGE seulement (formateur)
     const needsChoice = options.length > 1 || options.some((o) => o.wildcard);
     const summary = options.map((o) => o.name).join('|');
     return { key: `${level.level}:${kind}:${i}:${summary}`, level: level.level, kind, entry, options, needsChoice };

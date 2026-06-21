@@ -15,7 +15,8 @@ import {
   pregens, oups, interludeEvents, peripeties,
 } from '../../data';
 import { statName } from '../../engine/statEntry';
-import { splitTopLevelOu, talentMaxLabel } from '../../engine/careerSlots';
+import { talentMaxLabel } from '../../engine/careerSlots';
+import type { AdvancementRef } from '../../data';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import { traitLabels } from '../../engine/traits/dispatch';
 import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, DIFFICULTY_LABELS, type Combatant, type HitLocation } from '../../engine/types';
@@ -201,13 +202,13 @@ const QUALITY_CAP_LABEL: Record<string, string> = {
  * (`careersForSpecies`, `details`, `eyes`, `hairs`). Les faits-clés (M/Destin/Résilience) restent en
  * en-tête (méta), pas ici ; le tirage aléatoire (création) est ajouté PAR le créateur.
  */
-/** Une ENTRÉE de compétence/talent de race : « A ou B » → ligne de CHOIX (chaque option cliquable),
- *  sinon un simple lien cross-réf. PARTAGÉE (Codex + créateur) → split identique des deux côtés. */
-const choiceOrRef = (category: string, entry: string): CodexRow => {
-  const opts = splitTopLevelOu(entry);
-  return opts.length > 1
-    ? { t: 'choice', category, options: opts.map((o) => ({ label: statName(o), show: o })) }
-    : refRow(category, entry);
+/** Une ENTRÉE de compétence/talent de race : « A ou B » (`choice`) → ligne de CHOIX (chaque option
+ *  cliquable), sinon un simple lien cross-réf. Lit l'`AdvancementRef` STRUCTURÉ (plus de split de prose). */
+const choiceOrRef = (category: string, a: AdvancementRef): CodexRow => {
+  if ('choice' in a) {
+    return { t: 'choice', category, options: a.choice.map((x) => { const lbl = advancementLabel(category, x); return { label: statName(lbl), show: lbl }; }) };
+  }
+  return refRow(category, advancementLabel(category, a));
 };
 
 /** Section « Caractéristiques de base » d'une race — chaque carac affiche son écart racial (±). */
@@ -222,13 +223,13 @@ export function raceCharSection(s: (typeof species)[number]): CodexSection {
 
 /** Section « Compétences de race » — chips cliquables, « A ou B » éclaté en choix. */
 export function raceSkillSection(s: (typeof species)[number]): CodexSection | null {
-  const rows = s.skills.map((a) => choiceOrRef('skills', advancementLabel('skills', a)));
+  const rows = s.skills.map((a) => choiceOrRef('skills', a));
   return rows.length ? { title: 'Compétences de race', layout: 'chips', rows } : null;
 }
 
 /** Section « Talents de race » — chips cliquables, « A ou B » éclaté en choix. */
 export function raceTalentSection(s: (typeof species)[number]): CodexSection | null {
-  const rows = s.talents.map((a) => choiceOrRef('talents', advancementLabel('talents', a)));
+  const rows = s.talents.map((a) => choiceOrRef('talents', a));
   return rows.length ? { title: 'Talents de race', layout: 'chips', rows } : null;
 }
 
