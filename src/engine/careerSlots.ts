@@ -19,7 +19,7 @@
  * 4 niveaux ; jokers RESTREINTS « Corps à corps (Fléau ou À deux mains) » ; entrée talent
  * « Guide fluvial ou Bonnes jambes ».
  */
-import { Combatant, CharKey } from './types';
+import { Combatant, CharKey, CHAR_LABELS } from './types';
 import { bonus } from './characteristics';
 import { findTalent, findTalentById, findSkill, spells, advancementLabel, CareerLevelData, type AdvancementRef } from '../data';
 import { slugId } from '../data/slug';
@@ -280,17 +280,16 @@ export function designateSlot(
  * compte PAR spécialisation (côté appelant : le libellé concret porte la spec).
  */
 export function talentMaxById(hero: Combatant, talentId: string): number | null {
-  const data = findTalentById(talentId);
-  if (!data || data.max == null || data.max === 'Aucun') return null;
-  if (typeof data.max === 'number') return data.max;
-  const m = String(data.max).match(/^Bonus (?:de |d')(.*)$/i);
-  if (!m) return null;
-  const charLabel = m[1].trim();
-  const entry = (Object.entries(CHAR_LABEL_TO_KEY) as [string, keyof Combatant['characteristics']][]).find(
-    ([l]) => l.toLowerCase() === charLabel.toLowerCase(),
-  );
-  if (!entry) return null;
-  return bonus(hero.characteristics[entry[1]]);
+  const max = findTalentById(talentId)?.max;
+  if (max == null) return null; // sans limite (ex-« Aucun »)
+  if (typeof max === 'number') return max;
+  return bonus(hero.characteristics[max.bonusOf]); // Maxi = Bonus de carac (valeur de base du héros)
+}
+
+/** Affichage FR du Maxi d'un talent (Compendium), DÉRIVÉ de la donnée structurée — plus de chaîne stockée. */
+export function talentMaxLabel(max: number | { bonusOf: CharKey } | null): string {
+  if (max == null) return 'Aucun';
+  return typeof max === 'number' ? String(max) : `Bonus de ${CHAR_LABELS[max.bonusOf]}`;
 }
 
 /** Maxi par LIBELLÉ — bord authoring/tests : résout l'id (nom seul) puis délègue. */
@@ -308,20 +307,3 @@ export function talentMaxReached(hero: Combatant, label: string): boolean {
   const times = hero.talents.find((t) => t.talentId === id && (t.spec ?? '') === (spec ?? ''))?.times ?? 0;
   return times >= max;
 }
-
-// Libellés longs (et abréviations historiques CC/CT utilisées par certains Maxi) → clé.
-const CHAR_LABEL_TO_KEY: Record<string, keyof Combatant['characteristics']> = {
-  'Capacité de Combat': 'CC',
-  'Capacité de Tir': 'CT',
-  CC: 'CC',
-  CT: 'CT',
-  Force: 'F',
-  Endurance: 'E',
-  Initiative: 'I',
-  Agilité: 'Ag',
-  Dextérité: 'Dex',
-  Intelligence: 'Int',
-  'Force Mentale': 'FM',
-  FM: 'FM',
-  Sociabilité: 'Soc',
-};

@@ -126,8 +126,10 @@ export interface TalentData {
    *  renommage du `label`. Source unique pour `findTalentById`. */
   id: string;
   label: string;
-  /** Maxi d'acquisitions (LDB 10 « Schéma des Talents ») : 1, « Bonus de X », « Aucun » ou null. */
-  max: string | number | null;
+  /** Maxi d'acquisitions (LDB 10 « Schéma des Talents ») : un nombre fixe, ou le BONUS d'une
+   *  caractéristique (`{bonusOf}`, structuré — remplace la chaîne « Bonus de X » re-parsée par regex),
+   *  ou `null` = sans limite (ex-« Aucun »). */
+  max: number | { bonusOf: import('../engine/types').CharKey } | null;
   test: string | null;
   desc: string;
   specs?: string[];

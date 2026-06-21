@@ -15,7 +15,7 @@ import {
   pregens, oups, interludeEvents, peripeties,
 } from '../../data';
 import { statName } from '../../engine/statEntry';
-import { splitTopLevelOu } from '../../engine/careerSlots';
+import { splitTopLevelOu, talentMaxLabel } from '../../engine/careerSlots';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import { traitLabels } from '../../engine/traits/dispatch';
 import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, DIFFICULTY_LABELS, type Combatant, type HitLocation } from '../../engine/types';
@@ -364,7 +364,7 @@ export const CODEX: CodexCategory[] = [
     key: 'talents', label: 'Talents', group: 'Compétences',
     items: talents.map((t) => ({
       label: t.label, desc: t.desc, source: src(t.source),
-      meta: facts(fact('Max', t.max), fact('Test', t.test), fact('Spécialisations', t.specs?.length ? t.specs.join(', ') : null)),
+      meta: facts(fact('Max', talentMaxLabel(t.max)), fact('Test', t.test), fact('Spécialisations', t.specs?.length ? t.specs.join(', ') : null)),
       sections: sections(
         careerGrantSection(t.passive), // Compétence/Talent ajouté à toute carrière (Maître artisan, Flagellant…)
         passiveSection(t.passive),

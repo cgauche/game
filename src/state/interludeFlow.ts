@@ -25,7 +25,7 @@ import { effectiveChar } from '../engine/characteristics';
 import { buyTalent as engineBuyTalent, talentCost } from '../engine/advancement';
 import { applyTalentAcquisition, fortuneMax, resolveMax, heroMaxWounds } from '../engine/talentEffects';
 import { findCareerById, levelsForCareer, findTrappingById, findTalentById, refLabel, skillInstanceLabel, advancementBaseId, qualityRefLabel, qualities } from '../data';
-import { CHAR_BY_LABEL, CHAR_LABELS, type CharKey, type Combatant, type Difficulty } from '../engine/types';
+import { CHAR_LABELS, type CharKey, type Combatant, type Difficulty } from '../engine/types';
 import type { PendingBase } from './rollFlow';
 
 import type { Get, Set } from './flowTypes';
@@ -283,8 +283,7 @@ export function openLearn(get: Get, set: Set, heroId: string, talentId: string):
     get().log(`Le tuteur demande ${formatMoney(fromBrass(tutorBrass))} — la bourse ne suit pas.`);
     return;
   }
-  const m = typeof t.max === 'string' ? t.max.match(/Bonus d[e'’]\s*(.+)/i) : null;
-  const ck: CharKey = (m && CHAR_BY_LABEL[m[1].trim()]) || 'Int';
+  const ck: CharKey = t.max && typeof t.max !== 'number' ? t.max.bonusOf : 'Int'; // Maxi « Bonus de X » → carac (structuré)
   const fails = st.learnFails?.[t.id] ?? 0; // clé = id stable du Talent
   set({
     pendingActivity: {
