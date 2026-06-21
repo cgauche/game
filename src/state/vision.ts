@@ -15,7 +15,7 @@ import { Scene } from './scene';
 import { lineOfSightCover, tileBlocksSight } from './lineOfSight';
 import { sceneIsDark } from './sceneRules';
 import { Pt } from './path';
-import { LIGHT_LEVEL_BY_ID, findTraitById } from '../data';
+import { LIGHT_LEVEL_BY_ID, findTraitById, findPropById, findTrappingById } from '../data';
 
 /** Un observateur : sa case, son rayon de vue (cases éclairées qu'il distingue) et sa portée de
  *  vision nocturne (cases qu'il distingue même dans le noir). */
@@ -33,9 +33,12 @@ export interface LightSource {
   radiusTiles: number;
 }
 
-/** Champ de lumière : niveau d'éclairement 0..1 d'une case. */
+/** Champ de lumière : niveau d'éclairement 0..1 d'une case. `sourceLit` = cases éclairées par une
+ *  SOURCE ponctuelle (hors plancher ambiant) — visibles si on y a la Ligne de Vue, même au-delà du
+ *  rayon ambiant (on voit un feu dans le noir). */
 export interface LightField {
   at(x: number, y: number, z?: number): number;
+  sourceLit?: Set<string>;
 }
 
 /** Seuil d'éclairement (MAISON) au-dessus duquel une case est « éclairée » pour la vue. */
@@ -82,6 +85,30 @@ export function baseSightTiles(scene: Scene, gameTime: number): number {
   return levelOf(scene, gameTime).baseSightTiles;
 }
 
+/** Sources de lumière POSÉES sur la carte : props dont le TYPE (`props.json` `light`) émet, ou
+ *  override d'instance `SceneEntity.light`. PUR. */
+export function mapLights(scene: Scene): LightSource[] {
+  const out: LightSource[] = [];
+  for (const e of scene.entities) {
+    if (e.kind !== 'prop') continue;
+    const r = e.light?.radiusTiles ?? (e.ref ? findPropById(e.ref)?.light?.radiusTiles : undefined);
+    if (r && r > 0) out.push({ pos: e.pos, z: e.z, radiusTiles: r });
+  }
+  return out;
+}
+
+/** Source de lumière PORTÉE par un combattant/groupe : le plus grand rayon parmi ses objets émetteurs
+ *  (`TrappingData.light`), émis depuis `pos`. PUR. (Un interrupteur « allumé » est un raffinement futur.) */
+export function combatantLights(c: { pos?: Pt; items?: { trappingId?: string }[] }): LightSource[] {
+  if (!c.pos) return [];
+  let r = 0;
+  for (const it of c.items ?? []) {
+    const lr = it.trappingId ? findTrappingById(it.trappingId)?.light?.radiusTiles : undefined;
+    if (lr && lr > r) r = lr;
+  }
+  return r > 0 ? [{ pos: c.pos, radiusTiles: r }] : [];
+}
+
 /** Portée de vision dans le noir (cases) d'un combattant : max des `darkSightTiles` de ses traits
  *  (Infravision illimité, Vision nocturne 10) ; le talent Vision nocturne réutilise la valeur du trait
  *  homonyme (donnée, pas de littéral). 0 = aveugle dans le noir. */
@@ -124,7 +151,9 @@ export function computeLightField(scene: Scene, ambient: number, sources: LightS
         if (c > prev) grid.set(k, c);
       }
   }
-  return { at: (x, y, z = 0) => Math.max(ambient, grid.get(`${x},${y},${z}`) ?? 0) };
+  const sourceLit = new Set<string>();
+  for (const [k, v] of grid) if (v >= LIT_THRESHOLD) sourceLit.add(k);
+  return { at: (x, y, z = 0) => Math.max(ambient, grid.get(`${x},${y},${z}`) ?? 0), sourceLit };
 }
 
 /**
@@ -153,5 +182,20 @@ export function computeVisible(scene: Scene, viewers: Viewer[], light: LightFiel
         vis.add(k);
       }
   }
+  // Cases éclairées par une SOURCE (torche/brasero) : visibles dès qu'un viewer y a la Ligne de Vue,
+  // même hors du rayon ambiant (on voit un feu dans le noir, ou la bulle de sa propre lanterne).
+  if (light.sourceLit)
+    for (const k of light.sourceLit) {
+      if (vis.has(k)) continue;
+      const c = k.split(',');
+      const x = +c[0], y = +c[1], z = +c[2];
+      for (const v of viewers) {
+        if ((v.z ?? 0) !== z) continue;
+        if (chebyshev(v.pos, { x, y }) === 0 || !occluded(scene, v.pos, { x, y }, smoke)) {
+          vis.add(k);
+          break;
+        }
+      }
+    }
   return vis;
 }

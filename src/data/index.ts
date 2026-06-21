@@ -26,6 +26,7 @@ import spellsJson from './spells.json';
 import maneuversJson from './maneuvers.json';
 import domainsJson from './domains.json';
 import lightLevelsJson from './lightLevels.json';
+import propsJson from './props.json';
 import eyesJson from './eyes.json';
 import hairsJson from './hairs.json';
 import detailsJson from './details.json';
@@ -187,6 +188,9 @@ export interface TrappingData {
   isRations?: boolean;
   /** Grimoire / livre de Sorts (LDB 47 l.34) — un Sort non mémorisé du Domaine peut y être lu. */
   isGrimoire?: boolean;
+  /** Source de lumière PORTÉE (brouillard de guerre) : rayon d'éclairage en cases tant que l'objet est
+   *  dans l'inventaire. Bougie 5 / Lanterne 10 (= 10/20 m, `LDB 74 l.72`/`LDB 75 l.15`, échelle 1 case=2 m). */
+  light?: { radiusTiles: number };
 }
 /** Groupe d'objet (taxonomie `subType` id-ifiée) : Groupe d'ARME (Base, Escrime, Deux-mains, Armes
  *  d'hast…), famille de MUNITION (Arc, Arbalète, Poudre noire…), type d'ARMURE (Plate, Mailles, Cuir
@@ -629,6 +633,14 @@ export interface LightLevelDef { id: string; label: string; scalar: number; base
 export const lightLevels = lightLevelsJson as LightLevelDef[];
 export const LIGHT_LEVEL_BY_ID = new Map(lightLevels.map((l) => [l.id, l]));
 export const findLightLevelById = (id: string): LightLevelDef | undefined => LIGHT_LEVEL_BY_ID.get(id);
+/** Type de PROP/décor app-owned : couche SÉMANTIQUE (physique `solid`, opacité `opaque`, classe de
+ *  `cover`, émission de lumière `light`) — le rendu SVG/label reste dans le catalogue gameIso. Lu par
+ *  la walkability (`sceneRules`), la Ligne de Vue/couvert (`lineOfSight`) et la lumière (`vision`).
+ *  Édité au Codex. Un prop ABSENT de ce dataset = passable, transparent, sans couvert ni lumière. */
+export interface PropData { id: string; solid?: boolean; opaque?: boolean; cover?: 'imparfaite' | 'moyenne' | 'totale'; light?: { radiusTiles: number } }
+export const props = propsJson as PropData[];
+export const PROP_BY_ID = new Map(props.map((p) => [p.id, p]));
+export const findPropById = (id: string): PropData | undefined => PROP_BY_ID.get(id);
 /** Domaines de magie app-owned (LDB 48) — ENTITÉ éditable au Codex (attributs en données : onHit,
  *  projectile, post-incantation). Le RUNTIME résout par `id` STABLE (= `SpellData.domainId`, cf.
  *  `findDomainById`) ; `domainByLabel`/`findDomain` restent pour l'authoring/affichage. */

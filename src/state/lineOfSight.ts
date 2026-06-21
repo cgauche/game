@@ -8,6 +8,7 @@
 import { Scene, SceneEntity, tileAt, wallBetween } from './scene';
 import { buildingBlockedAt } from './buildings';
 import { TERRAINS } from './terrain';
+import { findPropById } from '../data';
 import { Pt } from './path';
 
 export type CoverClass = 'none' | 'imparfaite' | 'moyenne' | 'totale';
@@ -18,23 +19,9 @@ const worst = (a: CoverClass, b: CoverClass): CoverClass => (COVER_MOD[b] < COVE
 
 /** Couvert d'un terrain partiel. */
 const TERRAIN_COVER: Record<string, CoverClass> = { bois: 'imparfaite' };
-/** Couvert d'un décor (par id de catalogue), exemplaires canon `14` l.103/114/120 + extrapolation l.75. */
-const DECOR_COVER: Record<string, CoverClass> = {
-  statue: 'totale',
-  cloture: 'moyenne',
-  charrette: 'moyenne',
-  tonneau: 'moyenne',
-  caisse: 'moyenne',
-  'etal-marche': 'moyenne',
-  'epave-carrosse': 'moyenne',
-  puits: 'moyenne',
-  fontaine: 'moyenne',
-  arbre: 'imparfaite',
-  'tas-foin': 'imparfaite',
-  'cheval-mort': 'imparfaite',
-};
-/** Décors opaques (couverture totale = bloquent la vue). */
-const SIGHT_BLOCK_DECOR = new Set(['statue']);
+/** Couvert/opacité d'un décor : lus sur le dataset `props.json` (`cover`/`opaque`), exemplaires canon
+ *  `14` l.103/114/120 + extrapolation l.75. Édité au Codex. */
+const decorCover = (ref: string | undefined): CoverClass | undefined => (ref ? findPropById(ref)?.cover : undefined);
 
 /** Cases STRICTEMENT entre `a` et `b` (supercover simple sur grille carrée). */
 export function tilesBetween(a: Pt, b: Pt): Pt[] {
@@ -125,7 +112,7 @@ export function tileBlocksSight(scene: Scene, x: number, y: number): boolean {
   if (TERRAINS[tileAt(scene, x, y)]?.opaque) return true;
   if (buildingBlockedAt(scene, x, y)) return true;
   const dc = decorAt(scene, x, y);
-  return !!dc && SIGHT_BLOCK_DECOR.has(dc.ref ?? '');
+  return !!dc && !!findPropById(dc.ref ?? '')?.opaque;
 }
 
 /**
@@ -162,7 +149,8 @@ export function lineOfSightCover(
       return { blocked: true, cover: 'totale' }; // bloqueur à distance → pas de Ligne de Vue
     }
     if (TERRAIN_COVER[terr]) cover = worst(cover, TERRAIN_COVER[terr]);
-    if (decor && DECOR_COVER[decor.ref ?? '']) cover = worst(cover, DECOR_COVER[decor.ref ?? '']);
+    const dcov = decor && decorCover(decor.ref);
+    if (dcov) cover = worst(cover, dcov);
     if (occupants.some((o) => o.x === t.x && o.y === t.y)) cover = worst(cover, 'imparfaite');
   }
   return { blocked: false, cover };

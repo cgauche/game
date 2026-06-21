@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeVisible, computeLightField, ambientScalar, baseSightTiles, darkSightTiles, type LightField } from './vision';
+import { computeVisible, computeLightField, ambientScalar, baseSightTiles, darkSightTiles, mapLights, type LightField } from './vision';
 import { Scene, WallSeg } from './scene';
 
 const DAY = 12 * 60; // 12:00 → jour
@@ -144,6 +144,28 @@ describe('darkSightTiles — vision nocturne (capability data)', () => {
   });
   it('sans capacité → 0', () => {
     expect(darkSightTiles(c())).toBe(0);
+  });
+});
+
+describe('mapLights — sources de lumière POSÉES (dataset props)', () => {
+  it('un brasero éclaire ses alentours et rend les cases vues dans le noir', () => {
+    const s = { ...scene(9, 1), entities: [{ id: 'b', kind: 'prop', pos: { x: 5, y: 0 }, ref: 'brasero' }] } as unknown as Scene;
+    const sources = mapLights(s);
+    expect(sources.length).toBe(1); // brasero émetteur (props.json light)
+    const light = computeLightField(s, 0, sources); // ténèbres + brasero
+    expect(light.at(5, 0)).toBeGreaterThan(0.9); // foyer
+    expect(light.at(1, 0)).toBe(0); // hors halo → noir
+    const v = computeVisible(s, [{ pos: { x: 0, y: 0 }, radiusTiles: 9, darkTiles: 0 }], light);
+    expect(v.has('5, 0, 0'.replace(/ /g, ''))).toBe(true); // foyer éclairé + en vue
+    expect(v.has('1,0,0')).toBe(false); // près du viewer mais sombre → invisible
+  });
+  it('en ténèbres (rayon ambiant 0), on voit une source DISTANTE en vue (feu dans le noir)', () => {
+    const s = { ...scene(13, 1), entities: [{ id: 'b', kind: 'prop', pos: { x: 8, y: 0 }, ref: 'brasero' }] } as unknown as Scene;
+    const light = computeLightField(s, 0, mapLights(s)); // ténèbres + brasero
+    const v = computeVisible(s, [{ pos: { x: 0, y: 0 }, radiusTiles: 0, darkTiles: 0 }], light);
+    expect(v.has('8,0,0')).toBe(true); // foyer distant éclairé + en vue → visible MALGRÉ rayon 0
+    expect(v.has('0,0,0')).toBe(true); // sa propre case
+    expect(v.has('2,0,0')).toBe(false); // entre les deux : sombre → invisible
   });
 });
 

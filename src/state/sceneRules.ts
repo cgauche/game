@@ -6,6 +6,7 @@
 import type { Scene, SceneEntity } from './scene';
 import { isIndoor } from './scene';
 import { isNight } from '../engine/clock';
+import { findPropById } from '../data';
 
 export interface SceneCombatMods {
   /** Cible dissimulée (obscurité de nuit ou brouillard) → −20 au tir (LDB 14 l.107). */
@@ -47,39 +48,21 @@ export function sceneCombatModifiers(scene: Pick<Scene, 'ambiance' | 'weather'>,
   return { concealed, attackMod, dodgeMod, label };
 }
 
-/** Décors SOLIDES par TYPE (objets pleins infranchissables : on ne se tient pas DESSUS). Physique du
- *  décor → vit en `state` (lue par la walkability), à côté de l'empreinte `foot` ; le rendu SVG reste
- *  dans le catalogue gameIso. Liste éditable d'un coup d'œil ; un `ref` ABSENT = passable (sol, flaque,
- *  ossements, gravats, bannière, objet ramassable…). Couvre combat ET exploration (via `isWalkable`). */
-export const SOLID_PROPS = new Set<string>([
-  // Feu & éclairage au sol
-  'feu-camp', 'brasero', 'chandelier', 'lampadaire', 'pupitre-chef',
-  // Barrières, clôtures, gradins, balustrades
-  'barriere', 'cloture', 'palissade', 'tribune', 'balustrade-loge', 'rangee-sieges', 'rideau-scene',
-  // Pierre & structures
-  'statue', 'gargouille', 'menhir', 'rocher', 'stalagmite', 'colonne-brisee',
-  'autel', 'idole-chaos', 'fontaine', 'puits', 'abreuvoir', 'sarcophage', 'tombe', 'gibet', 'pilori', 'cage',
-  // Arbres & nature volumineuse
-  'arbre', 'arbre-mort', 'souche',
-  // Contenants & charges
-  'tonneau', 'tonneaux-pile', 'caisse', 'coffre', 'urne', 'marmite', 'oeuf-dragon',
-  // Véhicules
-  'charrette', 'epave-carrosse', 'barque',
-  // Mobilier
-  'table', 'chaise', 'tabouret', 'armoire', 'bureau', 'etabli', 'lit', 'miroir',
-  'etagere', 'rack-armes', 'rack-lances', 'mannequin', 'fauteuil-loge', 'plante-pot', 'etal-marche', 'tente',
-]);
+/** Un décor est SOLIDE (objet plein infranchissable : on ne se tient pas DESSUS) si son TYPE le déclare
+ *  dans le dataset `props.json` (`solid`). Physique éditable au Codex ; un `ref` ABSENT du dataset =
+ *  passable. Couvre combat ET exploration (via `isWalkable`). Le rendu SVG reste au catalogue gameIso. */
+export const propIsSolid = (ref: string | undefined): boolean => !!ref && !!findPropById(ref)?.solid;
 
 /** La case (x,y) est-elle couverte par l'empreinte (`foot {w,h}`) d'un décor ? Pour la walkability.
  *  Un décor 1×1 (sans `foot`) ne bloque PAS — SAUF s'il est :
  *   • INTERACTIF (coffre, stèle, dépouille fouillable…) : on ne se tient pas SUR lui, on l'aborde en
  *     case adjacente (exploration P5 comme combat « Ramasser », LDB ch.13 l.115-116) ; ou
- *   • SOLIDE par son TYPE (`SOLID_PROPS` : feu de camp, brasero, barrière, statue, tonneau…) : objet
+ *   • SOLIDE par son TYPE (`props.json` `solid` : feu de camp, brasero, statue, tonneau…) : objet
  *     plein infranchissable. */
 export function entityBlockedAt(scene: Scene, x: number, y: number): boolean {
   return scene.entities.some((e: SceneEntity) => {
     if (e.kind !== 'prop') return false;
-    const solid = !!e.ref && SOLID_PROPS.has(e.ref);
+    const solid = propIsSolid(e.ref);
     if (!e.foot && !e.interact && !solid) return false;
     const w = e.foot?.w ?? 1;
     const h = e.foot?.h ?? 1;

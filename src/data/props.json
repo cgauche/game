@@ -1,0 +1,261 @@
+[
+  {
+    "id": "feu-camp",
+    "solid": true,
+    "light": {
+      "radiusTiles": 5
+    }
+  },
+  {
+    "id": "brasero",
+    "solid": true,
+    "light": {
+      "radiusTiles": 4
+    }
+  },
+  {
+    "id": "chandelier",
+    "solid": true,
+    "light": {
+      "radiusTiles": 3
+    }
+  },
+  {
+    "id": "lampadaire",
+    "solid": true,
+    "light": {
+      "radiusTiles": 5
+    }
+  },
+  {
+    "id": "pupitre-chef",
+    "solid": true
+  },
+  {
+    "id": "barriere",
+    "solid": true
+  },
+  {
+    "id": "cloture",
+    "solid": true,
+    "cover": "moyenne"
+  },
+  {
+    "id": "palissade",
+    "solid": true
+  },
+  {
+    "id": "tribune",
+    "solid": true
+  },
+  {
+    "id": "balustrade-loge",
+    "solid": true
+  },
+  {
+    "id": "rangee-sieges",
+    "solid": true
+  },
+  {
+    "id": "rideau-scene",
+    "solid": true
+  },
+  {
+    "id": "statue",
+    "solid": true,
+    "opaque": true,
+    "cover": "totale"
+  },
+  {
+    "id": "gargouille",
+    "solid": true
+  },
+  {
+    "id": "menhir",
+    "solid": true
+  },
+  {
+    "id": "rocher",
+    "solid": true
+  },
+  {
+    "id": "stalagmite",
+    "solid": true
+  },
+  {
+    "id": "colonne-brisee",
+    "solid": true
+  },
+  {
+    "id": "autel",
+    "solid": true
+  },
+  {
+    "id": "idole-chaos",
+    "solid": true
+  },
+  {
+    "id": "fontaine",
+    "solid": true,
+    "cover": "moyenne"
+  },
+  {
+    "id": "puits",
+    "solid": true,
+    "cover": "moyenne"
+  },
+  {
+    "id": "abreuvoir",
+    "solid": true
+  },
+  {
+    "id": "sarcophage",
+    "solid": true
+  },
+  {
+    "id": "tombe",
+    "solid": true
+  },
+  {
+    "id": "gibet",
+    "solid": true
+  },
+  {
+    "id": "pilori",
+    "solid": true
+  },
+  {
+    "id": "cage",
+    "solid": true
+  },
+  {
+    "id": "arbre",
+    "solid": true,
+    "cover": "imparfaite"
+  },
+  {
+    "id": "arbre-mort",
+    "solid": true
+  },
+  {
+    "id": "souche",
+    "solid": true
+  },
+  {
+    "id": "tonneau",
+    "solid": true,
+    "cover": "moyenne"
+  },
+  {
+    "id": "tonneaux-pile",
+    "solid": true
+  },
+  {
+    "id": "caisse",
+    "solid": true,
+    "cover": "moyenne"
+  },
+  {
+    "id": "coffre",
+    "solid": true
+  },
+  {
+    "id": "urne",
+    "solid": true
+  },
+  {
+    "id": "marmite",
+    "solid": true
+  },
+  {
+    "id": "oeuf-dragon",
+    "solid": true
+  },
+  {
+    "id": "charrette",
+    "solid": true,
+    "cover": "moyenne"
+  },
+  {
+    "id": "epave-carrosse",
+    "solid": true,
+    "cover": "moyenne"
+  },
+  {
+    "id": "barque",
+    "solid": true
+  },
+  {
+    "id": "table",
+    "solid": true
+  },
+  {
+    "id": "chaise",
+    "solid": true
+  },
+  {
+    "id": "tabouret",
+    "solid": true
+  },
+  {
+    "id": "armoire",
+    "solid": true
+  },
+  {
+    "id": "bureau",
+    "solid": true
+  },
+  {
+    "id": "etabli",
+    "solid": true
+  },
+  {
+    "id": "lit",
+    "solid": true
+  },
+  {
+    "id": "miroir",
+    "solid": true
+  },
+  {
+    "id": "etagere",
+    "solid": true
+  },
+  {
+    "id": "rack-armes",
+    "solid": true
+  },
+  {
+    "id": "rack-lances",
+    "solid": true
+  },
+  {
+    "id": "mannequin",
+    "solid": true
+  },
+  {
+    "id": "fauteuil-loge",
+    "solid": true
+  },
+  {
+    "id": "plante-pot",
+    "solid": true
+  },
+  {
+    "id": "etal-marche",
+    "solid": true,
+    "cover": "moyenne"
+  },
+  {
+    "id": "tente",
+    "solid": true
+  },
+  {
+    "id": "tas-foin",
+    "cover": "imparfaite"
+  },
+  {
+    "id": "cheval-mort",
+    "cover": "imparfaite"
+  }
+]
