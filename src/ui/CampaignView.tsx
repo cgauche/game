@@ -31,9 +31,11 @@ import { restPlacesHere } from '../state/restFlow';
 import { hoverClickCommits } from './pointerCaps';
 import { controlsActive } from '../state/netOwnership';
 import { combatantClickActs } from '../state/combatOrParty';
+import { useGameKeyboard } from './useGameKeyboard';
 import { campaign } from '../scenes/campaign';
 
 export function CampaignView() {
+  useGameKeyboard(); // raccourcis clavier de jeu (registre unique)
   const scene = useGame((s) => s.scene);
   const mode = useGame((s) => s.mode);
   const journal = useGame((s) => s.journal);
