@@ -240,6 +240,14 @@ src/scenes/                 Documents de scène + campaign.ts (campagne = l'Arè
                             embuscade ; AUTHORING par `scripts/arene/generate.mjs`, cartes ASCII → JSON canonique
                             qui RESTE la source éditable dans l'éditeur)
                             + test-fixture.ts (scène neutre `testScene` + rencontre `enc-mutants` des tests de combat)
+src/state/asciiMap.ts       AUTHORING de map en ASCII — la MÉTHODE À PRIVILÉGIER pour tout contenu de
+                            map (scène/scénario) plutôt que poser les tuiles une à une. `parseAsciiRows(rows,
+                            base, legend)` → {w,h,tiles} (1 char = 1 tuile) ; `parseWalledAscii` (box-drawing
+                            (2W+1)×(2H+1) : tuiles + MURS d'arête, `:` = porte). Légende de base : `#`mur
+                            `~`eau `D`porte `_`fosse `=`planches (surchargeable). Garde-fou : lignes de
+                            largeurs inégales / char inconnu → throw. Entités/props/départ : poser des
+                            MARQUEURS custom dans l'ASCII (ex. `@BFLr`), nettoyer avant le parse (`replace`)
+                            puis scanner leurs positions. Ex. `src/scenes/test-scenarios/23-vision-lumiere.ts`.
 src/net/                    Coop en ligne (relay WebSocket) : relay.ts (RelayClient heartbeat/backoff,
                             RoomHost = un Transport virtuel par siège, RoomGuest), session.ts (hôte-
                             autoritaire : intents allowlist + snapshots), protocol.ts, compress.ts,
