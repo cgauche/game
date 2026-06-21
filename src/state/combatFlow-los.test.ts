@@ -14,7 +14,7 @@ const shooter = (over: Partial<Combatant> = {}): Combatant =>
     wounds: { current: 12, max: 12 },
     advantage: 0,
     conditions: [],
-    weapons: [{ name: 'Arc', type: 'ranged', damage: '+8', range: 60, qualities: [] }],
+    weapons: [{ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] }],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [],
     talents: [],
@@ -102,8 +102,8 @@ describe('resolveAttack — gate Ligne de Vue + Couvert (LDB 13 l.123 / 14)', ()
 });
 
 describe('resolveAttack — Allonge en mêlée (RAW-3, LDB 62 l.211/213)', () => {
-  const lance = { name: 'Pique', type: 'melee', damage: '+BF+2', reach: 'Très longue', qualities: [] };
-  const dague = { name: 'Dague', type: 'melee', damage: '+BF', reach: 'Très courte', qualities: [] };
+  const lance = { name: 'Pique', type: 'melee', damage: { plusBF: true, flat: 2 }, reach: 'Très longue', qualities: [] };
+  const dague = { name: 'Dague', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, reach: 'Très courte', qualities: [] };
 
   it('arme « Très longue » engage et touche à 2 cases', () => {
     seedBattleRng(1);

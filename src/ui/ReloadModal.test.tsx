@@ -19,7 +19,7 @@ const pr = (o: Partial<PendingReload> & { weaponName?: string }): PendingReload 
 const actorWith = (weaponName: string, uid = 'w-arb'): Combatant =>
   ({
     id: 'h1', name: 'Archère', kind: 'hero', fortune: 0, items: [], armour: emptyArmour(0),
-    weapons: [{ uid, name: weaponName, type: 'ranged', damage: '+0', qualities: [] }],
+    weapons: [{ uid, name: weaponName, type: 'ranged', damage: { plusBF: false, flat: 0 }, qualities: [] }],
   } as unknown as Combatant);
 
 function render(p: PendingReload & { _name?: string }, fortune = 1, weaponName = 'Arbalète') {

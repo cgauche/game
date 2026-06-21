@@ -68,7 +68,7 @@ describe('L11 — zones persistantes posées par les sorts', () => {
   });
 
   it('organicProjectile : flèches/carreaux/javelots oui — poudre/fronde/couteaux non', () => {
-    const w = (name: string, subType = ''): Weapon => ({ name, subType, type: 'ranged', damage: '+7', qualities: [] } as unknown as Weapon);
+    const w = (name: string, subType = ''): Weapon => ({ name, subType, type: 'ranged', damage: { plusBF: false, flat: 7 }, qualities: [] } as unknown as Weapon);
     expect(organicProjectile(w('Arc long'))).toBe(true);
     expect(organicProjectile(w('Arbalète'))).toBe(true);
     expect(organicProjectile(w('Javelot'))).toBe(true);

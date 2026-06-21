@@ -32,7 +32,7 @@ describe('clearPsychOf — les effets psy d\'une créature finissent à sa mort'
 
 describe('Immunité psy → AUCUN modificateur de combat psy (attackModifiers, LDB 17 l.62)', () => {
   it('une Peur active donne −1 DR, mais sous immunité Détermination ce malus disparaît', () => {
-    const weapon = { name: 'Épée', type: 'melee', damage: '+4', qualities: [] } as never;
+    const weapon = { name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] } as never;
     const target = C({ id: 't', groups: [], conditions: [], size: 'moyenne' });
     const afraid = C({ advantage: 0, conditions: [], psychState: [{ type: 'peur', sourceId: 't', indice: 2, calmeDR: 0 } as never] });
     const mods = attackModifiers(afraid, target, weapon, { kind: 'melee' });

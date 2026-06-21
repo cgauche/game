@@ -44,7 +44,7 @@ const kind = A.kind ?? 'hair';
 const species = A.species ?? 'Humain';
 const sex = (A.sex ?? 'M') as 'M' | 'F';
 const career = A.career ?? (kind === 'tenue' ? 'Soldat' : 'Mendiant');
-const wpn: Weapon[] = A.weapon ? [{ name: A.weapon, type: A.weapon === 'Arc' || A.weapon === 'Arbalète' ? 'ranged' : 'melee', damage: '+0', qualities: [] }] : [];
+const wpn: Weapon[] = A.weapon ? [{ name: A.weapon, type: A.weapon === 'Arc' || A.weapon === 'Arbalète' ? 'ranged' : 'melee', damage: { plusBF: false, flat: 0 }, qualities: [] }] : [];
 
 // Overrides isolés : si fournis, on rend une tête composée À LA MAIN (tokens résolus) sans
 // passer par cosmeticPart → ne dépend QUE de cet élément, sans impacter le fichier partagé.

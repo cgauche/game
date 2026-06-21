@@ -68,7 +68,7 @@ describe('Armure Aethyrique — PA temporisés', () => {
     const before = effectiveArmourAt(w, 'corps');
     applyCast(useGame.getState, useGame.setState, w, w, findSpell('Armure Aethyrique')!, ok(3), false, false);
     expect(effectiveArmourAt(w, 'corps')).toBe(before + 1);
-    const arme: Weapon = { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [], subType: 'Base' } as never;
+    const arme: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], subType: 'Base' } as never;
     const sans = { ...w, activeEffects: [] } as Combatant;
     expect(woundsFromHit(arme, w, 'corps', 10)).toBe(woundsFromHit(arme, sans, 'corps', 10) - 1);
   });

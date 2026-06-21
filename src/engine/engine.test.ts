@@ -40,7 +40,7 @@ describe("Atouts d'arme (LDB Les armes)", () => {
       wounds: { current: 20, max: 20 },
       advantage: 0,
       conditions: [],
-      weapons: [{ name: 'W', type: 'melee', damage: '+5', qualities: [], ...weapon } as Weapon],
+      weapons: [{ name: 'W', type: 'melee', damage: { plusBF: false, flat: 5 }, qualities: [], ...weapon } as Weapon],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
       skills: [],
       talents: [],
@@ -51,7 +51,7 @@ describe("Atouts d'arme (LDB Les armes)", () => {
     const def = fighter(30);
     def.armour.brasD = 3; // jet 44 → reverseRoll 44 → Bras droit
     const hit = (q: string[]) => {
-      const atk = fighter(50, { qualities: q, damage: '+10' });
+      const atk = fighter(50, { qualities: q, damage: { plusBF: false, flat: 10 } });
       return resolveMelee(atk, def, atk.weapons[0], rngOf(44), { defense: 'none' });
     };
     expect(hit(['Perforante']).woundsLost! - hit([]).woundsLost!).toBe(1);
@@ -91,7 +91,7 @@ describe('Découpe de la résolution de mêlée (split attaquant/défenseur)', (
       wounds: { current: 20, max: 20 },
       advantage: 0,
       conditions: [],
-      weapons: [{ name: 'W', type: 'melee', damage: '+5', qualities: [], ...weapon } as Weapon],
+      weapons: [{ name: 'W', type: 'melee', damage: { plusBF: false, flat: 5 }, qualities: [], ...weapon } as Weapon],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
       skills: [],
       talents: [],
@@ -150,7 +150,7 @@ describe('Sur la défensive (+20 en défense, LDB Combat l.118)', () => {
       wounds: { current: 20, max: 20 },
       advantage: 0,
       conditions: [],
-      weapons: [{ name: 'W', type: 'melee', damage: '+5', qualities: [] }],
+      weapons: [{ name: 'W', type: 'melee', damage: { plusBF: false, flat: 5 }, qualities: [] }],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
       skills: [],
       talents: [],
@@ -246,7 +246,7 @@ describe('Avantage en combat (LDB Déplacement l.37 : +10 par point)', () => {
     wounds: { current: 10, max: 10 },
     advantage,
     conditions: [],
-    weapons: [{ name: 'Épée', type: 'melee', damage: '+BF', qualities: [] }],
+    weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [],
     talents: [],
@@ -366,10 +366,10 @@ describe('Localisation par forme du corps (LDB « Point d’Impact des Créature
 
 describe('Dégâts d’arme (parsing via effectiveWeaponDamage)', () => {
   it('+BF+4 avec BF=3 → 7', () => {
-    expect(effectiveWeaponDamage({ name: 'x', type: 'melee', damage: '+BF+4', qualities: [] }, 3)).toBe(7);
+    expect(effectiveWeaponDamage({ name: 'x', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] }, 3)).toBe(7);
   });
   it('+9 (distance) ignore BF', () => {
-    expect(effectiveWeaponDamage({ name: 'x', type: 'ranged', damage: '+9', qualities: [] }, 3)).toBe(9);
+    expect(effectiveWeaponDamage({ name: 'x', type: 'ranged', damage: { plusBF: false, flat: 9 }, qualities: [] }, 3)).toBe(9);
   });
 });
 
@@ -394,7 +394,7 @@ function dummy(name: string, chars: Partial<Characteristics>, wounds: number, we
 describe('Résolution de mêlée', () => {
   it('produit un résultat cohérent et déterministe avec une graine', () => {
     const rng = makeRNG(42);
-    const sword: Weapon = { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [] };
+    const sword: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
     const a = dummy('Attaquant', { CC: 60, F: 40 }, 15, sword);
     const d = dummy('Défenseur', { CC: 25, E: 30 }, 12, sword);
     const res = resolveMelee(a, d, sword, rng);
@@ -437,7 +437,7 @@ describe('Test opposé (départage canon)', () => {
 
 describe('Coup Critique au niveau moteur (LDB 18-Traumatisme : double uniquement)', () => {
   it('le moteur ne marque le critique que sur un double — l’OVERKILL est posé par le store (sur PB courants)', () => {
-    const heavy: Weapon = { name: 'Maillet', type: 'melee', damage: '+BF+20', qualities: [] };
+    const heavy: Weapon = { name: 'Maillet', type: 'melee', damage: { plusBF: true, flat: 20 }, qualities: [] };
     const a = dummy('Brute', { CC: 90, F: 40 }, 20, heavy);
     const d = dummy('Frêle', { CC: 20, E: 20 }, 3, heavy); // Blessures max 3
     const res = resolveMelee(a, d, heavy, makeRNG(1), { defense: 'none' });

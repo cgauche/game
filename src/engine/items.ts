@@ -4,7 +4,7 @@
  * (`Combatant.weapons` / `armour`) sont DÉRIVÉES de l'équipement via
  * recomputeLoadout : équiper une hache ou une armure change donc le combat.
  */
-import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout } from './types';
+import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout, WeaponDamageSpec } from './types';
 import { bonus, baseWithTraits } from './characteristics';
 import { talentEncumbranceBonus } from './combatFeatures/dispatch';
 import { applyEnchants } from './weaponDamage';
@@ -22,24 +22,25 @@ export function newUid(): string {
   return `it-${++uidCounter}`;
 }
 
-/** Spécification UNIFIÉE de Dégâts d'arme. La présence du token `BF` est PORTEUSE de sens
- *  (`effectiveWeaponDamage` teste `/BF/i` pour ajouter le Bonus de Force) → on l'exprime EXPLICITEMENT,
- *  jamais par accident de chaîne. La résolution `Formula`→`flat` se fait AU SITE D'APPEL (référent/rng
- *  propres) ; ici on ne reçoit qu'un entier déjà résolu. `literal` court-circuite (Dégâts déjà finis :
- *  trapping de catalogue). */
-export type WeaponDamageSpec =
-  /** Chaîne de Dégâts finie, utilisée verbatim (catalogue) — court-circuite la convention. */
-  | { literal: string }
-  /** `plusBF` : `true` → « +BF… » (SB-relatif : naturelles/invoquées/mains nues) ; `false` → pas de token
-   *  BF (Indice de créature, Bonus de Force déjà inclus : gratuites + traits). `flat` DÉJÀ résolu (négatif
-   *  autorisé : Indice −2). `bare` : « +BF » NU (Tentacule/Piétinement) au lieu de « +BF+0 ». */
-  | { plusBF: boolean; flat: number; bare?: true };
-
-/** Source UNIQUE de la convention de Dégâts (la SEULE fonction qui décide « +BF » vs « +N » vs « +BF+N »). */
-function damageString(d: WeaponDamageSpec): string {
+/** Convention d'AFFICHAGE des Dégâts (spec → chaîne) : la SEULE fonction qui décide « +BF » vs « +N »
+ *  vs « +BF+N ». DÉRIVE l'affichage de la donnée structurée (`WeaponDamageSpec`, dans `types.ts`). */
+export function damageString(d: WeaponDamageSpec): string {
   if ('literal' in d) return d.literal;
   if (d.plusBF) return d.flat === 0 && d.bare ? '+BF' : `+BF+${d.flat}`;
   return d.flat < 0 ? `${d.flat}` : `+${d.flat}`; // Indice négatif : « -2 », pas « +-2 »
+}
+
+/** INVERSE de `damageString` (chaîne → spec) — pour la migration des données et la saisie éditeur,
+ *  JAMAIS au runtime. « +BF+4 »→{plusBF,flat:4}, « +9 »→{plusBF:false,flat:9}, « +BF »→{plusBF,flat:0,bare},
+ *  « -2 »→{plusBF:false,flat:-2}, sinon « Spécial » → {literal}. */
+export function parseDamage(s: string): WeaponDamageSpec {
+  const t = s.trim();
+  const plusBF = /BF/i.test(t);
+  const nums = t.replace(/BF/gi, '').match(/[+-]?\d+/g);
+  if (!plusBF && !nums) return { literal: t }; // non chiffrable (« Spécial »)
+  const flat = (nums ?? []).reduce((a, n) => a + parseInt(n, 10), 0);
+  if (plusBF) return flat === 0 && !/\+\s*BF\s*[+-]\s*\d/i.test(t) ? { plusBF: true, flat: 0, bare: true } : { plusBF: true, flat };
+  return { plusBF: false, flat };
 }
 
 /** Spécification d'une arme SYNTHÉTIQUE (≠ catalogue) : sert `buildWeapon` (→ Weapon) ET `weaponItem`
@@ -78,7 +79,7 @@ export function buildWeapon(spec: WeaponSpec): Weapon {
   const w: Weapon = {
     name: spec.name,
     type: spec.type ?? 'melee',
-    damage: damageString(spec.damage),
+    damage: spec.damage, // spec STRUCTURÉE stockée telle quelle (affichage dérivé par damageString)
     qualities: [...(spec.qualities ?? [])],
     hands: spec.hands ?? 1,
   };
@@ -269,7 +270,7 @@ export function unarmedWeapon(): Weapon {
   if (!_unarmed) {
     const it = itemFromTrappingById('mains-nues');
     _unarmed = it
-      ? buildWeapon({ name: it.name, damage: { literal: it.damage ?? '+BF+0' }, reach: it.reach, qualities: it.qualities, subType: it.subType, builtinId: 'mains-nues' })
+      ? buildWeapon({ name: it.name, damage: it.damage ?? { plusBF: true, flat: 0 }, reach: it.reach, qualities: it.qualities, subType: it.subType, builtinId: 'mains-nues' })
       : buildWeapon({ name: 'Mains nues', damage: { literal: '+BF+0' }, reach: 'Personnelle', qualities: [QUALITY_IDS.Inoffensive], subType: 'bagarre', builtinId: 'mains-nues' });
   }
   return { ..._unarmed, hand: 'main' };
@@ -307,7 +308,7 @@ export function recomputeLoadout(c: Combatant): void {
     const reload = indiceOf(it.qualities, QUALITY_IDS.Recharge) ?? 0;
     // Enchantements PORTÉS PAR L'OBJET (op augmentWeapon / arme invoquée) repliés ici → l'arme active
     // est déjà Magique/+Dégâts/onHit, donc visible partout ET appliquée à la résolution (pas de merge ailleurs).
-    return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? '+BF', reach: it.reach,
+    return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
       range: it.range, qualities: it.qualities, subType: it.subType, reload, damageTaken: it.damageTaken,
       skin: it.skin, form: it.form, hands, hand, uid: it.uid }, it.enchants ?? []);
   };
@@ -546,10 +547,9 @@ export function damageLeatherArmour(c: Combatant): HitLocation | null {
   return piece.locs?.[0] ?? 'corps';
 }
 
-/** Score de dégâts approximatif (somme des nombres, ex. "+BF+4" → 4). */
-export function damageScore(d?: string): number {
-  if (!d) return 0;
-  return (d.replace(/BF/gi, '').match(/[+-]?\d+/g) ?? []).reduce((a, n) => a + parseInt(n, 10), 0);
+/** Score de dégâts approximatif pour le tri (composante fixe ; « Spécial » → 0). */
+export function damageScore(d?: WeaponDamageSpec): number {
+  return d && 'flat' in d ? d.flat : 0;
 }
 
 /** Construit l'inventaire d'un héros depuis des `TrappingRef[]` (possessions de Classe + niveau de
@@ -598,11 +598,15 @@ export function compatibleAmmo(c: Combatant, weapon: Weapon): ItemInstance[] {
   return (c.items ?? []).filter((i) => i.kind === 'ammo' && (i.qty ?? 0) > 0 && ammoFamily(i.subType) === fam);
 }
 
-/** Arme à distance « augmentée » par la munition tirée : Dégâts combinés (concaténés —
- *  `effectiveWeaponDamage` somme les nombres) et Atouts fusionnés (ex. Empaleuse de la Flèche). */
+/** Arme à distance « augmentée » par la munition tirée : Dégâts combinés (flats additionnés, BF si l'un
+ *  l'utilise) et Atouts fusionnés (ex. Empaleuse de la Flèche). */
 export function weaponWithAmmo(weapon: Weapon, ammo: ItemInstance): Weapon {
-  const extra = ammo.damage ?? '';
+  const w = weapon.damage;
+  const a = ammo.damage;
   const qualities = [...weapon.qualities];
   for (const q of ammo.qualities) if (!qualities.includes(q)) qualities.push(q);
-  return { ...weapon, damage: `${weapon.damage}${extra}`, qualities };
+  const damage: WeaponDamageSpec = 'flat' in w
+    ? { plusBF: w.plusBF || (a != null && 'plusBF' in a && a.plusBF), flat: w.flat + (a != null && 'flat' in a ? a.flat : 0) }
+    : w; // arme « Spécial » (literal) → inchangée
+  return { ...weapon, damage, qualities };
 }

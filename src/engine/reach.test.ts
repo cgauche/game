@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { reachTiles, meleeReachTiles } from './engagement';
 import type { Weapon } from './types';
 
-const w = (over: Partial<Weapon>): Weapon => ({ name: 'X', type: 'melee', damage: '+BF', qualities: [], ...over } as Weapon);
+const w = (over: Partial<Weapon>): Weapon => ({ name: 'X', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], ...over } as Weapon);
 
 /**
  * Allonge = portée d'ENGAGEMENT/d'attaque de mêlée (LDB 62 l.211 « Très longue » → 4 m ; l.213

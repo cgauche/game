@@ -4,7 +4,7 @@ import { pickView } from './types';
 import type { Combatant, Weapon, ItemInstance } from '../../../engine/types';
 
 const wep = (name: string, type: 'melee' | 'ranged', q: string[] = []): Weapon =>
-  ({ name, type, damage: '+4', qualities: q } as Weapon);
+  ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: q } as Weapon);
 const wpv = (name: string, type: 'melee' | 'ranged' = 'melee') => pickView(weaponPart(wep(name, type)), 'front');
 const fam = (name: string, type: 'melee' | 'ranged' = 'melee') => weaponFamily(wep(name, type));
 

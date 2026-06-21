@@ -11,7 +11,7 @@ import type { Weapon } from '../src/engine/types';
 import type { View } from '../src/gameIso/rig/facing';
 
 const W_ = (name: string, hand: 'main' | 'off', q: string[] = []): Weapon =>
-  ({ name, type: 'melee', damage: '+0', qualities: q, hand, hands: 1 } as Weapon);
+  ({ name, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: q, hand, hands: 1 } as Weapon);
 
 type Cfg = { label: string; weapons: Weapon[]; shield?: Weapon };
 const sword = W_('Épée', 'main');

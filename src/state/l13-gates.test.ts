@@ -140,7 +140,7 @@ describe('L13 — gates & redirections', () => {
     priest.wounds = { current: 12, max: 12 } as Combatant['wounds'];
     const heroBefore = hero.wounds.current;
     const res = { hit: true, damage: 10, woundsLost: 7, location: 'corps', critical: false, log: 'touche.' } as unknown as AttackResult;
-    const weapon = { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [] } as unknown as Weapon;
+    const weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] } as unknown as Weapon;
     applyAttackResult(useGame.getState, useGame.setState, E, hero, weapon, res);
     expect(hero.wounds.current).toBe(heroBefore); // la cible est épargnée
     expect(priest.wounds.current).toBe(12 - Math.max(0, 10 - 6)); // 10 bruts − 2×BE(3) = 4

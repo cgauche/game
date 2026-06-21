@@ -28,7 +28,7 @@ const ARMOUR_SLOTS: Slot[] = ['torse', 'tete', 'bras', 'jambes'];
  *  Porte `skin` ET `form` (+`subType`) — le `form` route l'art spécial (épée ardente invoquée…) :
  *  sans lui, un ItemInstance retombait sur l'art générique alors que l'arme dérivée (Weapon) l'avait. */
 function asWeapon(item: ItemInstance): Weapon {
-  return { name: item.name, type: item.kind === 'ranged' ? 'ranged' : 'melee', damage: '+0', qualities: item.qualities ?? [], skin: item.skin, form: item.form, subType: item.subType };
+  return { name: item.name, type: item.kind === 'ranged' ? 'ranged' : 'melee', damage: { plusBF: false, flat: 0 }, qualities: item.qualities ?? [], skin: item.skin, form: item.form, subType: item.subType };
 }
 
 function resolve(item: ItemInstance | Weapon): Resolved {

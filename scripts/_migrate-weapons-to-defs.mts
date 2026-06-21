@@ -14,7 +14,7 @@ mkdirSync(dir, { recursive: true });
 
 let n = 0;
 for (const f of WEAPON_FORMS) {
-  const art = weaponPart({ name: f.label, type: f.type, damage: '+0', qualities: [] } as Weapon);
+  const art = weaponPart({ name: f.label, type: f.type, damage: { plusBF: false, flat: 0 }, qualities: [] } as Weapon);
   if (typeof art !== 'string' || !art) throw new Error(`art absent/directionnel pour ${f.slug}`);
   const body =
     `import type { WeaponDef } from '../types';\n\n` +

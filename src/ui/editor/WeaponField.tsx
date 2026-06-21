@@ -4,12 +4,13 @@
  * (hand/uid/reload/bypass/skin) sont runtime et hors édition : on ne décrit ici que l'arme elle-même.
  */
 import type { Weapon } from '../../engine/types';
+import { damageString, parseDamage } from '../../engine/items';
 
 export function WeaponField({ value, onChange }: { value: Weapon | undefined; onChange: (v: Weapon | undefined) => void }) {
   if (!value) {
     return (
       <div className="ed-field">
-        <label className="dr"><input type="checkbox" checked={false} onChange={() => onChange({ name: '', type: 'melee', damage: '+BF', qualities: [] })} /> confère une ARME (naturelle / dérivée)</label>
+        <label className="dr"><input type="checkbox" checked={false} onChange={() => onChange({ name: '', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] })} /> confère une ARME (naturelle / dérivée)</label>
       </div>
     );
   }
@@ -26,7 +27,7 @@ export function WeaponField({ value, onChange }: { value: Weapon | undefined; on
             <option value="ranged">Distance</option>
           </select>
         </label>
-        <label className="dr">Dégâts<input placeholder="+BF / +BF+4 / +9" value={w.damage} onChange={(e) => patch({ damage: e.target.value })} /></label>
+        <label className="dr">Dégâts<input placeholder="+BF / +BF+4 / +9" value={damageString(w.damage)} onChange={(e) => patch({ damage: parseDamage(e.target.value) })} /></label>
         <label className="dr">Mains
           <select value={w.hands ?? 1} onChange={(e) => patch({ hands: Number(e.target.value) === 2 ? 2 : 1 })}>
             <option value={1}>1</option>

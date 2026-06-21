@@ -14,7 +14,7 @@ import { slugId } from '../../data/slug';
 import type { Combatant, Weapon } from '../types';
 
 /** Lot G — Talents à effet de jeu (LDB 10) : helpers du registre + câblages moteur purs. */
-const w = (over: Partial<Weapon> = {}): Weapon => ({ name: 'Épée', type: 'melee', damage: '+BF', qualities: [], ...over });
+const w = (over: Partial<Weapon> = {}): Weapon => ({ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], ...over });
 
 function mk(talents: { name: string; times: number }[] = [], over: Partial<Combatant> = {}): Combatant {
   return {

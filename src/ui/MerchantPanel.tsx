@@ -6,7 +6,8 @@ import { craftPriceFactor } from '../engine/qualities/craftEconomy';
 import { repairCostBrass } from '../engine/repair';
 import { bargainBuyFactor } from '../engine/bargain';
 import { compareEquip, isShieldItem } from '../engine/equipCompare';
-import { itemFromTrappingById, isWeaponActive } from '../engine/items';
+import { itemFromTrappingById, isWeaponActive, damageString } from '../engine/items';
+import type { WeaponDamageSpec } from '../engine/types';
 import { describeQuality } from '../engine/qualities/describe';
 import { sellGain } from '../state/merchantFlow';
 import type { Combatant, ItemInstance } from '../engine/types';
@@ -42,18 +43,19 @@ function availRank(id: string): number {
 }
 
 /** Colonnes de stats par famille (tableau comparatif). 1re colonne (`emph`) = info clé mise en avant. */
-type TrapRow = { damage?: string | null; reach?: string | null; pa?: number | null; qualities?: QualityRef[] };
+type TrapRow = { damage?: WeaponDamageSpec | null; reach?: string | null; pa?: number | null; qualities?: QualityRef[] };
 const DASH = '—';
+const dmg = (t: TrapRow) => (t.damage ? damageString(t.damage) : DASH);
 const FAMILY_COLS: Record<string, { label: string; get: (t: TrapRow) => string; emph?: boolean }[]> = {
   melee: [
-    { label: 'Dégâts', get: (t) => t.damage || DASH, emph: true },
+    { label: 'Dégâts', get: dmg, emph: true },
     { label: 'Allonge', get: (t) => t.reach || DASH },
   ],
   ranged: [
-    { label: 'Dégâts', get: (t) => t.damage || DASH, emph: true },
+    { label: 'Dégâts', get: dmg, emph: true },
     { label: 'Portée', get: (t) => { const r = Number(t.reach); return r ? `${r} m` : DASH; } },
   ],
-  ammo: [{ label: 'Dégâts', get: (t) => t.damage || DASH, emph: true }],
+  ammo: [{ label: 'Dégâts', get: dmg, emph: true }],
   boucliers: [{ label: 'Protection', get: (t) => { const q = (t.qualities ?? []).find((x) => x.id === 'protectrice'); return q ? `Protectrice ${q.value ?? ''}`.trim() : DASH; }, emph: true }],
   armor: [{ label: 'PA', get: (t) => (t.pa != null ? String(t.pa) : DASH), emph: true }],
   divers: [],

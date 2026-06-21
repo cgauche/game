@@ -5,7 +5,7 @@ import type { Weapon } from '../../../engine/types';
 
 // Libellés CANONIQUES → résolus par la FORME (handlingClass), pas par le Groupe de règles.
 const w = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon =>
-  ({ name, type, damage: '+4', qualities: [] } as Weapon);
+  ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
 
 const windUp = (clip: ReturnType<typeof weaponAttackClip>) => clip.steps[0].pose;
 const anyStep = (clip: ReturnType<typeof weaponAttackClip>, pred: (p: Record<string, number>) => boolean) =>

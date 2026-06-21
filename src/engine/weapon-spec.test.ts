@@ -20,7 +20,7 @@ function hero(over: Partial<Combatant> = {}): Combatant {
 }
 // `groupLabel` = libellé de Groupe (lisibilité) → résolu en id pour `Weapon.subType` (réf).
 const wpn = (groupLabel: string, type: Weapon['type'] = 'melee'): Weapon =>
-  ({ name: groupLabel, type, damage: '+BF', qualities: [], subType: weaponGroupIdByLabel(groupLabel) ?? groupLabel });
+  ({ name: groupLabel, type, damage: { plusBF: true, flat: 0, bare: true }, qualities: [], subType: weaponGroupIdByLabel(groupLabel) ?? groupLabel });
 
 describe('combatValue — Spécialisation de Corps à corps (LDB 09 l.44)', () => {
   const sk = (spec: string, advances: number) =>

@@ -9,11 +9,11 @@ import { knowsCastingSkill, castingValue } from '../engine/magic';
 /** Traits d'arme FR vérifiés dans L'ennemi dans l'Ombre ch.2 (Knud Cratinx & co). */
 describe('weaponFromTrait — armement des monstres dans les Traits (FR)', () => {
   it('Arme +7 (sans type) → mêlée générique', () => {
-    expect(weaponFromTrait({ id: 'arme', value: 7 })).toMatchObject({ name: 'Arme', type: 'melee', damage: '+7' });
+    expect(weaponFromTrait({ id: 'arme', value: 7 })).toMatchObject({ name: 'Arme', type: 'melee', damage: { plusBF: false, flat: 7 } });
   });
   it('Arme (Épée) +7 → arme tenue « Épée »', () => {
     const w = weaponFromTrait({ id: 'arme', value: 7, arg: 'Épée' })!;
-    expect(w).toMatchObject({ name: 'Épée', type: 'melee', damage: '+7' });
+    expect(w).toMatchObject({ name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 7 } });
     expect(weaponFamily(w)).toBe('epee'); // le rig tient une épée
   });
   it('Arme (Dague) +4 → dague', () => {
@@ -21,11 +21,11 @@ describe('weaponFromTrait — armement des monstres dans les Traits (FR)', () =>
   });
   it('À distance (Arbalète) +9 (60) → arbalète à distance, portée 60', () => {
     const w = weaponFromTrait({ id: 'a-distance', value: 9, arg: 'Arbalète', range: 60 })!;
-    expect(w).toMatchObject({ name: 'Arbalète', type: 'ranged', damage: '+9', range: 60 });
+    expect(w).toMatchObject({ name: 'Arbalète', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60 });
     expect(weaponFamily(w)).toBe('arbalete');
   });
   it('À distance +8 (50) (sans type) → distance générique', () => {
-    expect(weaponFromTrait({ id: 'a-distance', value: 8, range: 50 })).toMatchObject({ type: 'ranged', damage: '+8', range: 50 });
+    expect(weaponFromTrait({ id: 'a-distance', value: 8, range: 50 })).toMatchObject({ type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 50 });
   });
   it('Arme (griffes) → attaque NATURELLE, aucune arme dessinée', () => {
     const w = weaponFromTrait({ id: 'arme', arg: 'griffes' })!;
@@ -34,7 +34,7 @@ describe('weaponFromTrait — armement des monstres dans les Traits (FR)', () =>
   });
   it('Morsure +9 → attaque naturelle (pas d’arme tenue)', () => {
     const w = weaponFromTrait({ id: 'morsure', value: 9 })!;
-    expect(w).toMatchObject({ name: 'Morsure', type: 'melee', damage: '+9' });
+    expect(w).toMatchObject({ name: 'Morsure', type: 'melee', damage: { plusBF: false, flat: 9 } });
     expect(weaponFamily(w)).toBe('');
   });
   it('un trait non-arme → null', () => {
@@ -43,7 +43,7 @@ describe('weaponFromTrait — armement des monstres dans les Traits (FR)', () =>
   });
   it('« 8 Tentacules +9 » (Pieuvre) → UNE arme naturelle Tentacules +9 (pas d’« Arme +BF »)', () => {
     const w = weaponFromTrait({ id: 'tentacules', count: 8, value: 9 })!;
-    expect(w).toMatchObject({ name: 'Tentacules', type: 'melee', damage: '+9' });
+    expect(w).toMatchObject({ name: 'Tentacules', type: 'melee', damage: { plusBF: false, flat: 9 } });
     expect(weaponFamily(w)).toBe(''); // attaque naturelle : rien en main
   });
 });
@@ -58,7 +58,7 @@ describe('creatureToCombatant — fidélité du profil du bestiaire (LDB 76/78)'
 
   it('Pieuvre des tourbières : arme Tentacules +9 dérivée du trait compté', () => {
     const c = creatureToCombatant(findCreature('Pieuvre des tourbières')!, 'e1', at);
-    expect(c.weapons[0]).toMatchObject({ name: 'Tentacules', damage: '+9' });
+    expect(c.weapons[0]).toMatchObject({ name: 'Tentacules', damage: { plusBF: false, flat: 9 } });
   });
 
   it('traits FACULTATIFS (LDB 76) fusionnés : Armure, psychologie ciblée, arme à distance', () => {
@@ -66,7 +66,7 @@ describe('creatureToCombatant — fidélité du profil du bestiaire (LDB 76/78)'
       optionals: [{ id: 'haine', arg: 'Sigmarites' }, { id: 'a-distance', value: 8, range: 50 }],
     });
     expect(c.traits).toContainEqual({ id: 'haine', arg: 'Sigmarites' }); // traits STRUCTURÉS au spawn (de-POC)
-    expect(c.weapons.some((w) => w.type === 'ranged' && w.damage === '+8')).toBe(true);
+    expect(c.weapons.some((w) => w.type === 'ranged' && w.damage && 'flat' in w.damage && !w.damage.plusBF && w.damage.flat === 8)).toBe(true);
     expect(c.psychTraits?.some((p) => p.type === 'haine')).toBe(true);
   });
 
@@ -151,7 +151,7 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
 
   it('arme du trait : « Arme (Bâton de combat) +7 » → arme tenue', () => {
     const c = creatureToCombatant(eusapia, 'e1', at);
-    expect(c.weapons[0]).toMatchObject({ name: 'Bâton de combat', damage: '+7' });
+    expect(c.weapons[0]).toMatchObject({ name: 'Bâton de combat', damage: { plusBF: false, flat: 7 } });
   });
 
   it('statbloc personnalisé : skills/talents portés par CustomStatblock (mêmes règles)', () => {

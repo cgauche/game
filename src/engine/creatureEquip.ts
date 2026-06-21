@@ -7,7 +7,8 @@
  */
 import type { Weapon, ArmourPoints } from './types';
 import type { TraitInstance, TraitList } from './statEntry';
-import { buildWeapon, emptyArmour, type WeaponDamageSpec } from './items';
+import { buildWeapon, emptyArmour } from './items';
+import type { WeaponDamageSpec } from './types';
 import { resolveTraits, traitLabelById } from './traits/dispatch';
 import { findTraitById } from '../data/index';
 

@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { canFireWhileEngaged, attackWeapon } from './combat';
 import { Weapon } from './types';
 
-const arbalete: Weapon = { name: 'Arbalète', type: 'ranged', damage: '+9', range: 60, qualities: [] };
-const pistolet: Weapon = { name: 'Pistolet', type: 'ranged', damage: '+8', range: 20, qualities: ['Pistolet', 'Recharge'] };
-const epee: Weapon = { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [] };
+const arbalete: Weapon = { name: 'Arbalète', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [] };
+const pistolet: Weapon = { name: 'Pistolet', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 20, qualities: ['Pistolet', 'Recharge'] };
+const epee: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
 
 describe('canFireWhileEngaged — Atout Pistolet (LDB Armes l.297-298)', () => {
   it('seule une arme à distance « Pistolet » tire en Combat rapproché', () => {

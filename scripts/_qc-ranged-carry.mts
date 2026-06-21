@@ -13,7 +13,7 @@ const SAMPLE: [string, 'melee' | 'ranged'][] = [
   ['Arbalète lourde', 'ranged'], ['Arc long', 'ranged'], ['Pistolet', 'ranged'], ['Arquebuse', 'ranged'], ['Épée', 'melee'],
 ];
 const cells = SAMPLE.map(([name, type], i) => {
-  const w = { name, type, damage: '+4', qualities: [] } as Weapon;
+  const w = { name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon;
   const svg = renderToStaticMarkup(
     React.createElement(RigSprite, { appearance: { species: 'Humain', sex: 'M', build: 0.5, seed: 4 }, equip: { weapons: [w], armour: [] }, career: 'Soldat', pose: weaponRest(w) }),
   );

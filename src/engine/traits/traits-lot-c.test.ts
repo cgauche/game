@@ -115,7 +115,7 @@ describe('câblages moteur', () => {
   it('Parasité : −10 pour toucher en mêlée (attackModifiers)', () => {
     const atk = mk({ id: 'a' });
     const tgt = mk({ id: 't', traits: [{ id: 'parasite' }] });
-    const mods = attackModifiers(atk, tgt, { name: 'Épée', type: 'melee', damage: '+BF', qualities: [] }, { kind: 'melee' });
+    const mods = attackModifiers(atk, tgt, { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }, { kind: 'melee' });
     expect(mods.find((m) => m.label === 'Parasité')?.value).toBe(-10);
   });
   it('À sang-froid : un Test de FM raté est inversé s’il devient réussi', () => {

@@ -13,7 +13,7 @@ function mkEnemy(name: string, over: Partial<Combatant> = {}): Combatant {
     id: 'e1', name, kind: 'enemy',
     characteristics: {} as Combatant['characteristics'],
     wounds: { current: 10, max: 10 }, advantage: 0, conditions: [],
-    weapons: [{ name: 'Épée', type: 'melee', damage: '+4', qualities: [] } as Weapon],
+    weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon],
     armour: { ...noArmour }, skills: [], talents: [], movement: 4,
     ...over,
   } as Combatant;

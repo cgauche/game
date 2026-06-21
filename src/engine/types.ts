@@ -104,11 +104,20 @@ export interface HeroDetails {
  *  magique — Ulgu). Calcul : engine/armourBypass.bypassedAP. */
 export type ArmourBypass = number | 'all' | 'metal' | 'leather' | 'nonMagic';
 
+/** Spécification STRUCTURÉE des Dégâts d'arme (LDB 62). La présence du token `BF` (Bonus de Force) est
+ *  PORTEUSE de sens — exprimée explicitement par `plusBF`, jamais par accident de chaîne. `flat` DÉJÀ
+ *  résolu (négatif autorisé : Indice −2). `bare` : « +BF » NU (Tentacule/Piétinement) ≠ « +BF+0 ».
+ *  `literal` = escape hatch pour les Dégâts non chiffrables (« Spécial »). Affichage dérivé par
+ *  `damageString` ; remplace la chaîne « +BF+4 » re-parsée par regex au runtime. */
+export type WeaponDamageSpec =
+  | { literal: string }
+  | { plusBF: boolean; flat: number; bare?: true };
+
 export interface Weapon {
   name: string;
   type: 'melee' | 'ranged';
-  /** Chaîne de dégâts d'arme, ex. "+BF+4" (mêlée) ou "+9" (distance). */
-  damage: string;
+  /** Dégâts d'arme STRUCTURÉS (cf. `WeaponDamageSpec`) — ex. `{plusBF:true,flat:4}` (« +BF+4 »). */
+  damage: WeaponDamageSpec;
   reach?: string | null;
   /** Portée en mètres (distance uniquement). */
   range?: number | null;
@@ -380,7 +389,7 @@ export interface ItemInstance {
   trappingId?: string;
   name: string;
   kind: ItemKind;
-  damage?: string; // armes
+  damage?: WeaponDamageSpec; // armes
   reach?: string | null;
   range?: number | null;
   qualities: string[];

@@ -4,7 +4,7 @@ import { WEAPON_FORMS } from '../parts/weaponForms';
 import type { Weapon } from '../../../engine/types';
 
 const w = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon =>
-  ({ name, type, damage: '+4', qualities: [] } as Weapon);
+  ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
 
 describe('handlingClass — dérivé de la FORME, pas du Groupe de règles', () => {
   it('mappe un représentant de chaque classe', () => {

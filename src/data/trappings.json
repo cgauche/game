@@ -10,7 +10,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "assommante"
@@ -41,7 +44,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "defensive"
@@ -75,7 +81,10 @@
     "reach": "Très longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -103,7 +112,10 @@
     "reach": "Considérable",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -130,7 +142,10 @@
     "reach": "Personnelle",
     "loc": null,
     "pa": null,
-    "damage": "+BF+0",
+    "damage": {
+      "plusBF": true,
+      "flat": 0
+    },
     "qualities": [
       {
         "id": "inoffensive"
@@ -157,7 +172,10 @@
     "reach": "Personnelle",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [],
     "desc": null,
     "price": {
@@ -180,7 +198,10 @@
     "reach": "Variable",
     "loc": null,
     "pa": null,
-    "damage": "+BF+1",
+    "damage": {
+      "plusBF": true,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "inoffensive"
@@ -207,7 +228,10 @@
     "reach": "Moyenne",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [],
     "desc": "Le terme « Arme simple » est utilisé pour décrire un certain nombre d'armes de base qui, bien que différentes, sont considérées comme étant effectivement les mêmes pour le jeu, y compris les épées, les haches, les marteaux, les masses, les lances courtes etc. ",
     "price": {
@@ -230,7 +254,10 @@
     "reach": "Très courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "protectrice",
@@ -264,7 +291,10 @@
     "reach": "Très courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+3",
+    "damage": {
+      "plusBF": true,
+      "flat": 3
+    },
     "qualities": [
       {
         "id": "protectrice",
@@ -298,7 +328,10 @@
     "reach": "Personnelle",
     "loc": null,
     "pa": null,
-    "damage": "+BF+1",
+    "damage": {
+      "plusBF": true,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "protectrice",
@@ -332,7 +365,10 @@
     "reach": "Très courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+1",
+    "damage": {
+      "plusBF": true,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "inoffensive"
@@ -359,7 +395,10 @@
     "reach": "Très courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [],
     "desc": null,
     "price": {
@@ -382,7 +421,10 @@
     "reach": "Très longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+6",
+    "damage": {
+      "plusBF": true,
+      "flat": 6
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -413,7 +455,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+5",
+    "damage": {
+      "plusBF": true,
+      "flat": 5
+    },
     "qualities": [
       {
         "id": "assommante"
@@ -441,7 +486,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+5",
+    "damage": {
+      "plusBF": true,
+      "flat": 5
+    },
     "qualities": [
       {
         "id": "devastatrice"
@@ -472,7 +520,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+6",
+    "damage": {
+      "plusBF": true,
+      "flat": 6
+    },
     "qualities": [
       {
         "id": "epuisante"
@@ -506,7 +557,10 @@
     "reach": "Moyenne",
     "loc": null,
     "pa": null,
-    "damage": "+BF+6",
+    "damage": {
+      "plusBF": true,
+      "flat": 6
+    },
     "qualities": [
       {
         "id": "assommante"
@@ -540,7 +594,10 @@
     "reach": "Moyenne",
     "loc": null,
     "pa": null,
-    "damage": "+BF+5",
+    "damage": {
+      "plusBF": true,
+      "flat": 5
+    },
     "qualities": [
       {
         "id": "devastatrice"
@@ -574,7 +631,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+5",
+    "damage": {
+      "plusBF": true,
+      "flat": 5
+    },
     "qualities": [
       {
         "id": "devastatrice"
@@ -604,7 +664,10 @@
     "reach": "Moyenne",
     "loc": null,
     "pa": null,
-    "damage": "+BF+3",
+    "damage": {
+      "plusBF": true,
+      "flat": 3
+    },
     "qualities": [
       {
         "id": "rapide"
@@ -640,7 +703,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "rapide"
@@ -670,7 +736,10 @@
     "reach": "Moyenne",
     "loc": null,
     "pa": null,
-    "damage": "+BF+5",
+    "damage": {
+      "plusBF": true,
+      "flat": 5
+    },
     "qualities": [
       {
         "id": "perturbante"
@@ -700,7 +769,10 @@
     "reach": "Moyenne",
     "loc": null,
     "pa": null,
-    "damage": "+BF+3",
+    "damage": {
+      "plusBF": true,
+      "flat": 3
+    },
     "qualities": [
       {
         "id": "perturbante"
@@ -734,7 +806,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+6",
+    "damage": {
+      "plusBF": true,
+      "flat": 6
+    },
     "qualities": [
       {
         "id": "perturbante"
@@ -770,7 +845,10 @@
     "reach": "Courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+3",
+    "damage": {
+      "plusBF": true,
+      "flat": 3
+    },
     "qualities": [
       {
         "id": "defensive"
@@ -800,7 +878,10 @@
     "reach": "Très courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "defensive"
@@ -828,7 +909,10 @@
     "reach": 60,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "recharge",
@@ -856,7 +940,10 @@
     "reach": 10,
     "loc": null,
     "pa": null,
-    "damage": "+7",
+    "damage": {
+      "plusBF": false,
+      "flat": 7
+    },
     "qualities": [
       {
         "id": "pistolet"
@@ -884,7 +971,10 @@
     "reach": 100,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "devastatrice"
@@ -916,7 +1006,10 @@
     "reach": 50,
     "loc": null,
     "pa": null,
-    "damage": "+BF+3",
+    "damage": {
+      "plusBF": true,
+      "flat": 3
+    },
     "qualities": [],
     "desc": null,
     "price": {
@@ -940,7 +1033,10 @@
     "reach": 20,
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [],
     "desc": null,
     "price": {
@@ -964,7 +1060,10 @@
     "reach": 150,
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "devastatrice"
@@ -995,7 +1094,10 @@
     "reach": 100,
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "devastatrice"
@@ -1022,7 +1124,10 @@
     "reach": 6,
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "immobilisante"
@@ -1076,7 +1181,10 @@
     "reach": "BF",
     "loc": null,
     "pa": null,
-    "damage": "+12",
+    "damage": {
+      "plusBF": false,
+      "flat": 12
+    },
     "qualities": [
       {
         "id": "a-explosion",
@@ -1110,7 +1218,9 @@
     "reach": "BF",
     "loc": null,
     "pa": null,
-    "damage": "Spécial",
+    "damage": {
+      "literal": "Spécial"
+    },
     "qualities": [
       {
         "id": "a-explosion",
@@ -1141,7 +1251,10 @@
     "reach": 60,
     "loc": null,
     "pa": null,
-    "damage": "+6",
+    "damage": {
+      "plusBF": false,
+      "flat": 6
+    },
     "qualities": [],
     "desc": null,
     "price": {
@@ -1165,7 +1278,10 @@
     "reach": 100,
     "loc": null,
     "pa": null,
-    "damage": "+7",
+    "damage": {
+      "plusBF": false,
+      "flat": 7
+    },
     "qualities": [],
     "desc": null,
     "price": {
@@ -1188,7 +1304,11 @@
     "reach": "BFx3",
     "loc": null,
     "pa": null,
-    "damage": "+BF",
+    "damage": {
+      "plusBF": true,
+      "flat": 0,
+      "bare": true
+    },
     "qualities": [
       {
         "id": "immobilisante"
@@ -1215,7 +1335,10 @@
     "reach": "BFx2",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [],
     "desc": null,
     "price": {
@@ -1238,7 +1361,10 @@
     "reach": "BFx2",
     "loc": null,
     "pa": null,
-    "damage": "+BF+1",
+    "damage": {
+      "plusBF": true,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -1265,7 +1391,10 @@
     "reach": "BFx2",
     "loc": null,
     "pa": null,
-    "damage": "+BF+3",
+    "damage": {
+      "plusBF": true,
+      "flat": 3
+    },
     "qualities": [
       {
         "id": "taille"
@@ -1292,7 +1421,10 @@
     "reach": "BFx3",
     "loc": null,
     "pa": null,
-    "damage": "+BF+3",
+    "damage": {
+      "plusBF": true,
+      "flat": 3
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -1319,7 +1451,11 @@
     "reach": "BFx3",
     "loc": null,
     "pa": null,
-    "damage": "+BF",
+    "damage": {
+      "plusBF": true,
+      "flat": 0,
+      "bare": true
+    },
     "qualities": [],
     "desc": null,
     "price": {
@@ -1343,7 +1479,10 @@
     "reach": 30,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -1384,7 +1523,10 @@
     "reach": 10,
     "loc": null,
     "pa": null,
-    "damage": "+8",
+    "damage": {
+      "plusBF": false,
+      "flat": 8
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -1429,7 +1571,10 @@
     "reach": 50,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -1467,7 +1612,10 @@
     "reach": 100,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "devastatrice"
@@ -1507,7 +1655,10 @@
     "reach": 20,
     "loc": null,
     "pa": null,
-    "damage": "+8",
+    "damage": {
+      "plusBF": false,
+      "flat": 8
+    },
     "qualities": [
       {
         "id": "devastatrice"
@@ -1545,7 +1696,10 @@
     "reach": 20,
     "loc": null,
     "pa": null,
-    "damage": "+8",
+    "damage": {
+      "plusBF": false,
+      "flat": 8
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -1642,7 +1796,10 @@
     "reach": "+50",
     "loc": null,
     "pa": null,
-    "damage": "+1",
+    "damage": {
+      "plusBF": false,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "precise"
@@ -1676,7 +1833,10 @@
     "reach": "-10",
     "loc": null,
     "pa": null,
-    "damage": "+1",
+    "damage": {
+      "plusBF": false,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "assommante"
@@ -1732,7 +1892,10 @@
     "reach": "Comme l'arme",
     "loc": null,
     "pa": null,
-    "damage": "+1",
+    "damage": {
+      "plusBF": false,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -5899,7 +6062,10 @@
     "derivedWeapon": {
       "name": "Crochet",
       "type": "melee",
-      "damage": "+BF+2",
+      "damage": {
+        "plusBF": true,
+        "flat": 2
+      },
       "reach": "Très courte",
       "qualities": [],
       "subType": "Base",
@@ -6971,7 +7137,10 @@
     "reach": null,
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "defensive"
@@ -7003,7 +7172,10 @@
     "reach": "Courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+0",
+    "damage": {
+      "plusBF": true,
+      "flat": 0
+    },
     "qualities": [
       {
         "id": "a-enroulement"
@@ -7046,7 +7218,10 @@
     "reach": 150,
     "loc": null,
     "pa": null,
-    "damage": "+12",
+    "damage": {
+      "plusBF": false,
+      "flat": 12
+    },
     "qualities": [
       {
         "id": "pointue"
@@ -7081,7 +7256,10 @@
     "reach": 75,
     "loc": null,
     "pa": null,
-    "damage": "+10",
+    "damage": {
+      "plusBF": false,
+      "flat": 10
+    },
     "qualities": [
       {
         "id": "imprecise"
@@ -7116,7 +7294,10 @@
     "reach": 100,
     "loc": null,
     "pa": null,
-    "damage": "+15",
+    "damage": {
+      "plusBF": false,
+      "flat": 15
+    },
     "qualities": [
       {
         "id": "imprecise"
@@ -7151,7 +7332,10 @@
     "reach": 175,
     "loc": null,
     "pa": null,
-    "damage": "+18",
+    "damage": {
+      "plusBF": false,
+      "flat": 18
+    },
     "qualities": [
       {
         "id": "imprecise"
@@ -7186,7 +7370,10 @@
     "reach": 185,
     "loc": null,
     "pa": null,
-    "damage": "+12",
+    "damage": {
+      "plusBF": false,
+      "flat": 12
+    },
     "qualities": [
       {
         "id": "a-explosion",
@@ -7232,7 +7419,10 @@
     "reach": 50,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -7267,7 +7457,10 @@
     "reach": 100,
     "loc": null,
     "pa": null,
-    "damage": "+10",
+    "damage": {
+      "plusBF": false,
+      "flat": 10
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -7306,7 +7499,10 @@
     "reach": 50,
     "loc": null,
     "pa": null,
-    "damage": "+10",
+    "damage": {
+      "plusBF": false,
+      "flat": 10
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -7341,7 +7537,10 @@
     "reach": 75,
     "loc": null,
     "pa": null,
-    "damage": "+14",
+    "damage": {
+      "plusBF": false,
+      "flat": 14
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -7376,7 +7575,10 @@
     "reach": 150,
     "loc": null,
     "pa": null,
-    "damage": "+16",
+    "damage": {
+      "plusBF": false,
+      "flat": 16
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -7443,7 +7645,10 @@
     "reach": 30,
     "loc": null,
     "pa": null,
-    "damage": "+14",
+    "damage": {
+      "plusBF": false,
+      "flat": 14
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -7474,7 +7679,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+5",
+    "damage": {
+      "plusBF": true,
+      "flat": 5
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -7504,7 +7712,10 @@
     "reach": "Moyenne",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "taillade",
@@ -7532,7 +7743,10 @@
     "reach": "Courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -7565,7 +7779,10 @@
     "reach": "Courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "destabilisante"
@@ -7595,7 +7812,10 @@
     "reach": "Personnelle",
     "loc": null,
     "pa": null,
-    "damage": "+BF+3",
+    "damage": {
+      "plusBF": true,
+      "flat": 3
+    },
     "qualities": [
       {
         "id": "desequilibree"
@@ -7625,7 +7845,10 @@
     "reach": "Personnelle",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "inoffensive"
@@ -7653,7 +7876,10 @@
     "reach": "Personnelle",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "desequilibree"
@@ -7689,7 +7915,10 @@
     "reach": "Courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+0",
+    "damage": {
+      "plusBF": true,
+      "flat": 0
+    },
     "qualities": [
       {
         "id": "defensive"
@@ -7723,7 +7952,10 @@
     "reach": "Très longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+3",
+    "damage": {
+      "plusBF": true,
+      "flat": 3
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -7754,7 +7986,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "defensive"
@@ -7785,7 +8020,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "taille"
@@ -7822,7 +8060,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "defensive"
@@ -7857,7 +8098,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "defensive"
@@ -7891,7 +8135,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+5",
+    "damage": {
+      "plusBF": true,
+      "flat": 5
+    },
     "qualities": [
       {
         "id": "devastatrice"
@@ -7925,7 +8172,10 @@
     "reach": "Moitié de l'arme",
     "loc": null,
     "pa": null,
-    "damage": "-2",
+    "damage": {
+      "plusBF": false,
+      "flat": -2
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -8019,7 +8269,10 @@
     "reach": "-10",
     "loc": null,
     "pa": null,
-    "damage": "+1",
+    "damage": {
+      "plusBF": false,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "assommante"
@@ -8046,7 +8299,10 @@
     "reach": "-10",
     "loc": null,
     "pa": null,
-    "damage": "-2",
+    "damage": {
+      "plusBF": false,
+      "flat": -2
+    },
     "qualities": [
       {
         "id": "imprecise"
@@ -8077,7 +8333,10 @@
     "reach": 50,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "a-repetition",
@@ -8113,7 +8372,10 @@
     "reach": 50,
     "loc": null,
     "pa": null,
-    "damage": "+8",
+    "damage": {
+      "plusBF": false,
+      "flat": 8
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -8145,7 +8407,10 @@
     "reach": 30,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -8180,7 +8445,10 @@
     "reach": 30,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -8215,7 +8483,10 @@
     "reach": 40,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -8249,7 +8520,10 @@
     "reach": 10,
     "loc": null,
     "pa": null,
-    "damage": "+7",
+    "damage": {
+      "plusBF": false,
+      "flat": 7
+    },
     "qualities": [
       {
         "id": "imprecise"
@@ -8285,7 +8559,10 @@
     "reach": 20,
     "loc": null,
     "pa": null,
-    "damage": "+7",
+    "damage": {
+      "plusBF": false,
+      "flat": 7
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -8320,7 +8597,10 @@
     "reach": 10,
     "loc": null,
     "pa": null,
-    "damage": "+8",
+    "damage": {
+      "plusBF": false,
+      "flat": 8
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -8355,7 +8635,10 @@
     "reach": 30,
     "loc": null,
     "pa": null,
-    "damage": "+7",
+    "damage": {
+      "plusBF": false,
+      "flat": 7
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -8389,7 +8672,10 @@
     "reach": 10,
     "loc": null,
     "pa": null,
-    "damage": "+8",
+    "damage": {
+      "plusBF": false,
+      "flat": 8
+    },
     "qualities": [
       {
         "id": "a-repetition",
@@ -8427,7 +8713,10 @@
     "reach": "Comme l'arme",
     "loc": null,
     "pa": null,
-    "damage": "+2",
+    "damage": {
+      "plusBF": false,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -8460,7 +8749,10 @@
     "reach": "Comme l'arme",
     "loc": null,
     "pa": null,
-    "damage": "+5",
+    "damage": {
+      "plusBF": false,
+      "flat": 5
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -8494,7 +8786,10 @@
     "reach": "Comme l'arme",
     "loc": null,
     "pa": null,
-    "damage": "+1",
+    "damage": {
+      "plusBF": false,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -8524,7 +8819,10 @@
     "reach": "Comme l'arme",
     "loc": null,
     "pa": null,
-    "damage": "+1",
+    "damage": {
+      "plusBF": false,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -8557,7 +8855,10 @@
     "reach": "Moitié de l'arme",
     "loc": null,
     "pa": null,
-    "damage": "-1",
+    "damage": {
+      "plusBF": false,
+      "flat": -1
+    },
     "qualities": [
       {
         "id": "infecte"
@@ -8587,7 +8888,10 @@
     "reach": "Moitié de l'arme",
     "loc": null,
     "pa": null,
-    "damage": "+2",
+    "damage": {
+      "plusBF": false,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "perforante"
@@ -8617,7 +8921,10 @@
     "reach": "+10",
     "loc": null,
     "pa": null,
-    "damage": "+2",
+    "damage": {
+      "plusBF": false,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -8656,7 +8963,10 @@
     "reach": 100,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "pointue"
@@ -8693,7 +9003,10 @@
     "reach": 40,
     "loc": null,
     "pa": null,
-    "damage": "+10",
+    "damage": {
+      "plusBF": false,
+      "flat": 10
+    },
     "qualities": [
       {
         "id": "a-poudre-noire"
@@ -8736,7 +9049,10 @@
     "reach": 20,
     "loc": null,
     "pa": null,
-    "damage": "+8",
+    "damage": {
+      "plusBF": false,
+      "flat": 8
+    },
     "qualities": [
       {
         "id": "pistolet"
@@ -9219,7 +9535,10 @@
     "reach": "Très courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [],
     "enc": 0
   },
@@ -9275,7 +9594,10 @@
     "reach": "Moyenne",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [],
     "enc": 1
   },
@@ -9316,7 +9638,10 @@
     "reach": "Très courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [],
     "enc": 0
   },
@@ -9371,7 +9696,10 @@
     "reach": "+50",
     "loc": null,
     "pa": null,
-    "damage": "+1",
+    "damage": {
+      "plusBF": false,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -9433,7 +9761,10 @@
     "reach": "Moyenne",
     "loc": null,
     "pa": null,
-    "damage": "+BF+6",
+    "damage": {
+      "plusBF": true,
+      "flat": 6
+    },
     "qualities": [
       {
         "id": "assommante"
@@ -9466,7 +9797,10 @@
     "reach": "Moyenne",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "devastatrice"
@@ -9493,7 +9827,10 @@
     "reach": "Très courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "protectrice",

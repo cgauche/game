@@ -45,7 +45,7 @@ for (const g of GROUPS) {
     .map((t) => {
       const isShield = /bouclier/i.test(t.label);
       const type = (RANGED.has(g) ? 'ranged' : 'melee') as 'melee' | 'ranged';
-      return fig({ name: t.label, type, damage: '+4', qualities: [] } as Weapon, isShield);
+      return fig({ name: t.label, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon, isShield);
     })
     .join('');
   body += `<h2 style="color:#d8a93b;font:14px sans-serif;margin:18px 0 6px">${g} <span style="color:#6a7384;font-size:11px">(${ws.length})</span></h2>

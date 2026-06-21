@@ -5,7 +5,7 @@ import { weaponPart } from '../src/gameIso/rig/parts/equipment';
 import { pickView } from '../src/gameIso/rig/parts/types';
 import type { Weapon } from '../src/engine/types';
 
-const wep = (name: string): Weapon => ({ name, type: 'melee', damage: '+4', qualities: [] } as Weapon);
+const wep = (name: string): Weapon => ({ name, type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
 const W: [string, string][] = [
   ['epee', 'Épée'], ['hache', 'Hache'], ['masse', 'Masse'], ['dague', 'Dague'], ['lance', 'Lance'],
   ['baton', 'Bâton de combat'], ['arc', 'Arc long'], ['arbalete', 'Arbalète'], ['poudre', 'Pistolet'],

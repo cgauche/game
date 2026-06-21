@@ -1,6 +1,6 @@
 import { useGame } from '../state/store';
 import type { Combatant, HitLocation, ItemInstance } from '../engine/types';
-import { armourLayer, isCapeItem, weaponHands, compatibleAmmo, WEAPON_SET_NAMES, isUnarmed, type ArmourLayer } from '../engine/items';
+import { armourLayer, isCapeItem, weaponHands, compatibleAmmo, WEAPON_SET_NAMES, isUnarmed, damageString, type ArmourLayer } from '../engine/items';
 import { RigSprite } from '../gameIso/rig/composeRig';
 import { DEFS } from '../gameIso/sprites';
 import { defaultAppearance } from '../gameIso/rig/appearance';
@@ -281,7 +281,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
                   <ItemIcon item={w} size="sm" />
                   <span className="weap-text">
                     <CodexRef category="trappings" label={w.name}>{w.name}</CodexRef>{' '}
-                    <em>{w.damage} = {effectiveWeaponDamage(w, strBonus)}</em>
+                    <em>{damageString(w.damage)} = {effectiveWeaponDamage(w, strBonus)}</em>
                     {quals && <span className="weap-quals"> · {quals}</span>}
                     {ammo != null && <span className="eq-ammo" title="Munitions compatibles dans le sac"> · 🏹 {ammo}</span>}
                   </span>

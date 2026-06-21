@@ -19,7 +19,7 @@ describe('ItemIcon', () => {
   });
 
   it('arme générique hors-catalogue (Weapon directe) : repli avec gradient → <defs> injecté', () => {
-    const w: Weapon = { name: 'Masse', type: 'melee', damage: '+0', qualities: [] }; // synonyme → art de repli url(#g_steelD)
+    const w: Weapon = { name: 'Masse', type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [] }; // synonyme → art de repli url(#g_steelD)
     const h = renderToStaticMarkup(<ItemIcon item={w} />);
     expect(h).toContain('item-icon-weapon');
     expect(h).toContain('<defs');

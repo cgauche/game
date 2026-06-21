@@ -796,7 +796,7 @@ export function resolveStrayRangedHit(
 /** Attaque de Piétinement (LDB 85 l.320-321) : créature plus grande, Dégâts = Bonus de Force (+0),
  *  via Corps à corps (Bagarre). Action gratuite — le coût de 1 Avantage est géré par le store. */
 export function resolveTrample(attacker: Combatant, target: Combatant, rng: RNG = defaultRNG): AttackResult {
-  const fist: Weapon = { name: 'Piétinement', type: 'melee', damage: '+BF', qualities: [] };
+  const fist: Weapon = { name: 'Piétinement', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
   const mods = attackModifiers(attacker, target, fist, { kind: 'melee' });
   const atk = rollTest(combatValue(attacker, 'melee'), 'intermediaire', rng, combineMods(mods));
   const atkBd = bd('Corps à corps (Piétinement)', combatValue(attacker, 'melee'), atk, mods);

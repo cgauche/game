@@ -82,7 +82,7 @@ describe('Boucle de jeu (store)', () => {
       characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
       wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
       weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
-      items: [{ uid: 'w1', name: 'Épée bâtarde', kind: 'melee', damage: '+BF+5', qualities: [], enc: 1, equipped: true } as ItemInstance],
+      items: [{ uid: 'w1', name: 'Épée bâtarde', kind: 'melee', damage: { plusBF: true, flat: 5 }, qualities: [], enc: 1, equipped: true } as ItemInstance],
     } as unknown as Combatant;
     useGame.setState({ party: [hero] });
 
@@ -149,7 +149,7 @@ describe('Boucle de jeu (store)', () => {
     const enemy = {
       id: 'e1', name: 'Brute', kind: 'enemy', characteristics: chars, wounds: { current: 20, max: 20 },
       advantage: 0, conditions: [], movement: 4, skills: [], talents: [], engagedWith: [], pos: { x: 1, y: 0 },
-      size: 'moyenne', weapons: [{ name: 'Gourdin', type: 'melee', damage: '+BF', qualities: [] }],
+      size: 'moyenne', weapons: [{ name: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, items: [],
     } as unknown as Combatant;
     const hero = {
@@ -164,7 +164,7 @@ describe('Boucle de jeu (store)', () => {
       movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
     };
     useGame.setState({ battle, mode: 'battle' });
-    const weapon: Weapon = { name: 'Gourdin', type: 'melee', damage: '+BF', qualities: [] };
+    const weapon: Weapon = { name: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
     const res: AttackResult = {
       hit: true, attackerRoll: 12, netSL: 4, location: 'corps', damage: 8, woundsLost: 3,
       critical: true, advantageTo: null, defenderDefeated: false, log: 'Coup Critique (corps)',
@@ -214,12 +214,12 @@ describe('Boucle de jeu (store)', () => {
     const hero = {
       id: 'h1', name: 'Hardi', kind: 'hero', characteristics: chars, wounds: { current: 15, max: 15 },
       advantage: 0, conditions: [], movement: 4, skills: [], talents: [], engagedWith: [], pos: { x: 0, y: 0 },
-      size: 'moyenne', weapons: [{ name: 'Épée', type: 'melee', damage: '+BF', qualities: [] }], items: [], fate: 0,
+      size: 'moyenne', weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }], items: [], fate: 0,
     } as unknown as Combatant;
     const enemy = {
       id: 'e1', name: 'Brute', kind: 'enemy', characteristics: chars, wounds: { current: 40, max: 40 },
       advantage: 0, conditions: [], movement: 4, skills: [], talents: [], engagedWith: [], pos: { x: 1, y: 0 },
-      size: 'moyenne', weapons: [{ name: 'Gourdin', type: 'melee', damage: '+BF', qualities: [] }],
+      size: 'moyenne', weapons: [{ name: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, items: [], criticalWounds: 0,
     } as unknown as Combatant;
     const battle: BattleState = {
@@ -2211,7 +2211,7 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
 
   function archer() {
     const H = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
-    H.weapons = [{ uid: 'w-arb', name: 'Arbalète', type: 'ranged', damage: '+9', range: 60, qualities: ['Recharge 1'], subType: 'Arbalète', reload: 1 }];
+    H.weapons = [{ uid: 'w-arb', name: 'Arbalète', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: ['Recharge 1'], subType: 'Arbalète', reload: 1 }];
     H.items = [{ uid: 'am1', name: 'Carreau', kind: 'ammo', qualities: ['Empaleuse'], enc: 0, equipped: false, subType: 'Arbalète', qty: 2 } as ItemInstance];
     H.loaded = true;
     H.pos = { x: 0, y: 0 };
@@ -2221,7 +2221,7 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     E.kind = 'enemy';
     E.pos = { x: 4, y: 0 };
     E.items = [];
-    E.weapons = [{ name: 'Mains nues', type: 'melee', damage: '+BF', qualities: [] }];
+    E.weapons = [{ name: 'Mains nues', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }];
     const battle: BattleState = {
       combatants: [H, E], order: [H.id, E.id], turn: 0, round: 1, action: null, selectedSpellId: null,
       reachable: new Map(), movementUsed: 99, movedPreAction: false, acted: false, log: [], over: null,
@@ -2286,7 +2286,7 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
 
   it('reloadConfirm : un DR insuffisant (Recharge 2) laisse l’arme déchargée et garde le progrès', () => {
     const { H } = archer();
-    H.weapons = [{ name: 'Arbalète lourde', type: 'ranged', damage: '+9', range: 100, qualities: ['Recharge 2'], subType: 'Arbalète', reload: 2 }];
+    H.weapons = [{ name: 'Arbalète lourde', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 100, qualities: ['Recharge 2'], subType: 'Arbalète', reload: 2 }];
     H.loaded = false;
     H.reloadProgress = 0;
     useGame.getState().seedRng(2);
@@ -2325,8 +2325,8 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
   it('héros mixte (mêlée en weapons[0] + arc) peut tirer une cible éloignée (gate via attackWeapon)', () => {
     const { H, E } = archer();
     H.weapons = [
-      { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [] },
-      { name: 'Arc', type: 'ranged', damage: '+BF+3', range: 60, qualities: [], subType: 'Arc', reload: 0 },
+      { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] },
+      { name: 'Arc', type: 'ranged', damage: { plusBF: true, flat: 3 }, range: 60, qualities: [], subType: 'Arc', reload: 0 },
     ];
     H.items = [{ uid: 'fl1', name: 'Flèche', kind: 'ammo', qualities: ['Empaleuse'], enc: 0, equipped: false, subType: 'Arc', qty: 5 } as ItemInstance];
     H.loaded = true;
@@ -2371,7 +2371,7 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
 
   it('Viser refusé sans arme à distance', () => {
     const { H } = archer();
-    H.weapons = [{ name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [] }];
+    H.weapons = [{ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] }];
     useGame.getState().battleAim();
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.aiming).toBeFalsy();
   });
@@ -2387,7 +2387,7 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     useGame.setState({
       pendingDefense: {
         attackerId: E.id, defenderId: H.id,
-        weapon: { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [] },
+        weapon: { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] },
         location: 'corps', atk, mode: 'esquive', def: null, result: null,
       },
     });

@@ -22,9 +22,9 @@ const rig = (equip: { weapons: Weapon[]; armour: never[]; shield?: Weapon }) =>
   renderToStaticMarkup(React.createElement(RigSprite, { appearance: APP, equip, career: 'Soldat', pose: weaponRest(equip.weapons[0]) }));
 
 const cells: Cell[] = [
-  ...WEAPON_FORMS.map((f) => ({ slug: f.slug, label: f.label, svg: rig({ weapons: [{ name: f.label, type: f.type, damage: '+4', qualities: [] } as Weapon], armour: [] }) })),
+  ...WEAPON_FORMS.map((f) => ({ slug: f.slug, label: f.label, svg: rig({ weapons: [{ name: f.label, type: f.type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon], armour: [] }) })),
   ...SHIELD_FORMS.map((s) => {
-    const sh = { name: s.label, type: 'melee', damage: '+0', qualities: ['Bouclier'] } as Weapon;
+    const sh = { name: s.label, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: ['Bouclier'] } as Weapon;
     return { slug: `shield_${s.slug}`, label: s.label, svg: rig({ weapons: [], armour: [], shield: sh }) };
   }),
 ];

@@ -18,12 +18,6 @@ export function weaponMatchesFamily(w: { name: string; subType?: string } | unde
   return norm(`${w.name} ${w.subType ?? ''}`).includes(norm(requires));
 }
 
-/** Composante fixe (signée) des Dégâts, hors BF. Ex. '+BF+4' → 4, '+9' → 9, '+BF-2' → -2. */
-function flatDamage(damage: string): number {
-  const rest = (damage ?? '').replace(/BF/gi, '');
-  return (rest.match(/[+-]?\d+/g) ?? []).reduce((s, n) => s + parseInt(n, 10), 0);
-}
-
 /** Dégâts d'arme encaissés EFFECTIFS (pour la pénalité) : l'Atout Solide(N) absorbe les N premiers
  *  Points de Dégâts sans pénalité (LDB 60 l.64). */
 function effectiveDamageTaken(w: Weapon): number {
@@ -31,10 +25,12 @@ function effectiveDamageTaken(w: Weapon): number {
 }
 
 /** Dégâts d'arme effectifs après réduction par `damageTaken` (la composante fixe positive est
- *  réduite, plancher 0 → BF+0 improvisée ; une composante négative — mains nues — est préservée). */
+ *  réduite, plancher 0 → BF+0 improvisée ; une composante négative — mains nues — est préservée).
+ *  Lit la donnée STRUCTURÉE (`WeaponDamageSpec`) — zéro parsing de chaîne ; « Spécial » (literal) → 0. */
 export function effectiveWeaponDamage(w: Weapon, strengthBonus: number): number {
-  const usesBF = /BF/i.test(w.damage ?? '');
-  const flat = flatDamage(w.damage ?? '');
+  const d = w.damage;
+  const usesBF = 'plusBF' in d && d.plusBF;
+  const flat = 'flat' in d ? d.flat : 0;
   const dt = effectiveDamageTaken(w); // Solide(N) absorbe les N premiers points (LDB 60 l.64)
   const reduced = flat >= 0 ? Math.max(0, flat - dt) : flat;
   return Math.max(0, (usesBF ? strengthBonus : 0) + reduced);
@@ -42,8 +38,8 @@ export function effectiveWeaponDamage(w: Weapon, strengthBonus: number): number 
 
 /**
  * Replie les ENCHANTEMENTS d'une arme (op `augmentWeapon` / arme invoquée) dans son profil de combat :
- * Atouts ajoutés (Magique → `isMagicWeapon` → touche l'Éthéré ; Percutante…), bonus de Dégâts (sommé
- * par `flatDamage`), ignorance de PA, et effets « à la touche » (→ `w.onHitEffects`, lus par
+ * Atouts ajoutés (Magique → `isMagicWeapon` → touche l'Éthéré ; Percutante…), bonus de Dégâts (ajouté
+ * au `flat` de la `WeaponDamageSpec`), ignorance de PA, et effets « à la touche » (→ `w.onHitEffects`, lus par
  * `effectsOf`). Appelé par `recomputeLoadout` → l'arme dérivée `c.weapons` est DÉJÀ enchantée, donc
  * visible partout (récap, popover, preview) ET appliquée à la résolution. Sans enchant : arme inchangée.
  */
@@ -57,7 +53,7 @@ export function applyEnchants(w: Weapon, enchants: WeaponEnchant[]): Weapon {
     dmgPlus += e.damageBonus ?? 0;
     if (e.onHitEffects?.length) onHit.push(...e.onHitEffects);
   }
-  if (dmgPlus > 0) out.damage = `${out.damage ?? '+BF'}+${dmgPlus}`;
+  if (dmgPlus > 0 && 'flat' in out.damage) out.damage = { ...out.damage, flat: out.damage.flat + dmgPlus };
   const bypasses = enchants.map((e) => e.bypass).filter((b): b is ArmourBypass => b != null);
   if (bypasses.length) out.bypass = bypasses.includes('all') ? 'all' : bypasses[bypasses.length - 1]; // 'all' prime
   if (onHit.length) out.onHitEffects = onHit;
@@ -66,7 +62,8 @@ export function applyEnchants(w: Weapon, enchants: WeaponEnchant[]): Weapon {
 
 /** L'arme est-elle réduite à l'état improvisé (bonus de Dégâts à +0 par usure) ? */
 export function isImprovised(w: Weapon): boolean {
-  const flat = flatDamage(w.damage ?? '');
+  if (!('flat' in w.damage)) return false; // « Spécial » (literal) : jamais improvisé
+  const flat = w.damage.flat;
   return flat >= 0 && flat - effectiveDamageTaken(w) <= 0;
 }
 
@@ -78,7 +75,7 @@ export function isImprovised(w: Weapon): boolean {
  */
 export function effectiveWeapon(w: Weapon): Weapon {
   if (!isImprovised(w)) return w;
-  return { ...w, damage: '+BF+1', qualities: ['Inoffensive'], damageTaken: 0, reach: 'Moyenne' };
+  return { ...w, damage: { plusBF: true, flat: 1 }, qualities: ['Inoffensive'], damageTaken: 0, reach: 'Moyenne' };
 }
 
 /** Inflige 1 point de Dégât à l'arme (sauf Incassable). */

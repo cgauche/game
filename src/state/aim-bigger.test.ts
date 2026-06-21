@@ -5,7 +5,7 @@ import type { Weapon } from '../engine/types';
 
 // LDB « Point d'Impact des Créatures » p.312 / 76 l.39 : contre une créature de Taille ≥ 2 catégories
 // supérieure, on CHOISIT gratuitement la zone (la plus proche / en Ligne de Vue) — pas le −10 « Complexe ».
-const sword: Weapon = { name: 'Épée', type: 'melee', damage: '+BF', qualities: [] };
+const sword: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
 
 describe('Localisation visée vs créature ≥ 2 catégories plus grande (LDB 76 l.39)', () => {
   const atk = statblockToCombatant({ name: 'A', char: {} }, 'a', { x: 0, y: 0 }); // Moyenne

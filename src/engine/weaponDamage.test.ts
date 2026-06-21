@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { effectiveWeaponDamage, isImprovised, damageWeapon, destroyWeapon, effectiveWeapon, solideSaveThreshold } from './weaponDamage';
-import { recomputeLoadout } from './items';
+import { recomputeLoadout, damageString } from './items';
 import type { Weapon, Combatant } from './types';
 
-const sword = (over: Partial<Weapon> = {}): Weapon => ({ name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [], ...over });
-const bow = (over: Partial<Weapon> = {}): Weapon => ({ name: 'Arc', type: 'ranged', damage: '+9', qualities: [], range: 30, ...over });
+const sword = (over: Partial<Weapon> = {}): Weapon => ({ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], ...over });
+const bow = (over: Partial<Weapon> = {}): Weapon => ({ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, qualities: [], range: 30, ...over });
 
 describe('effectiveWeaponDamage (LDB 62 l.178)', () => {
   it('réduit les Dégâts de damageTaken', () => {
@@ -18,7 +18,7 @@ describe('effectiveWeaponDamage (LDB 62 l.178)', () => {
     expect(isImprovised(bow({ damageTaken: 9 }))).toBe(true);
   });
   it("préserve une arme non endommagée (mains nues +BF-2 inchangées)", () => {
-    const fists: Weapon = { name: 'Mains nues', type: 'melee', damage: '+BF-2', qualities: [] };
+    const fists: Weapon = { name: 'Mains nues', type: 'melee', damage: { plusBF: true, flat: -2 }, qualities: [] };
     expect(effectiveWeaponDamage(fists, 3)).toBe(1); // 3 - 2
   });
 });
@@ -26,7 +26,7 @@ describe('effectiveWeaponDamage (LDB 62 l.178)', () => {
 describe('effectiveWeapon — bascule Arme improvisée à +0 (LDB 62 l.178)', () => {
   it('arme usée à +0 → +BF+1, Inoffensive, sans Atout (Empaleuse/Perforante perdus)', () => {
     const w = effectiveWeapon(sword({ damageTaken: 4, qualities: ['Empaleuse', 'Perforante'] }));
-    expect(w.damage).toBe('+BF+1');
+    expect(damageString(w.damage)).toBe('+BF+1');
     expect(w.qualities).toEqual(['Inoffensive']);
     expect(effectiveWeaponDamage(w, 3)).toBe(4); // BF3 + 1
   });
@@ -73,13 +73,13 @@ function hero(items: Combatant['items']): Combatant {
 
 describe("recomputeLoadout — propagation des Dégâts d'arme", () => {
   it("propage damageTaken de l'ItemInstance vers le Weapon actif", () => {
-    const c = hero([{ uid: 'w1', name: 'Épée', kind: 'melee', damage: '+BF+4', qualities: [], enc: 1, equipped: true, damageTaken: 2 }]);
+    const c = hero([{ uid: 'w1', name: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], enc: 1, equipped: true, damageTaken: 2 }]);
     recomputeLoadout(c);
     const s = c.weapons.find((w) => w.name === 'Épée');
     expect(s?.damageTaken).toBe(2);
   });
   it("une arme détruite n'est pas équipée (repli mains nues)", () => {
-    const c = hero([{ uid: 'w1', name: 'Épée', kind: 'melee', damage: '+BF+4', qualities: [], enc: 1, equipped: true, destroyed: true }]);
+    const c = hero([{ uid: 'w1', name: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], enc: 1, equipped: true, destroyed: true }]);
     recomputeLoadout(c);
     expect(c.weapons.some((w) => w.name === 'Épée')).toBe(false);
     expect(c.weapons.some((w) => w.name === 'Mains nues')).toBe(true);

@@ -23,7 +23,7 @@ const at = (kind: 'hero' | 'enemy', id: string, x: number, y: number, over: Part
     wounds: { current: 12, max: 12 },
     advantage: 0,
     conditions: [],
-    weapons: [{ name: 'Griffe', type: 'melee', damage: '+BF', qualities: [] }],
+    weapons: [{ name: 'Griffe', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [],
     talents: [],
@@ -84,7 +84,7 @@ describe('Balayage en combat (store)', () => {
     E.characteristics.CC = 80;
     E.characteristics.F = 45;
     E.pos = { x: 10, y: 10 };
-    E.weapons = [{ name: 'Gourdin', type: 'melee', damage: '+BF', qualities: [] }];
+    E.weapons = [{ name: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }];
     const [H1, H2] = heroes;
     H1.pos = { x: 9, y: 10 };
     H2.pos = { x: 11, y: 10 };
@@ -116,7 +116,7 @@ describe('Balayage en combat (store)', () => {
     E.characteristics.CC = 90;
     E.characteristics.F = 50;
     E.pos = { x: 10, y: 10 };
-    E.weapons = [{ name: 'Gourdin', type: 'melee', damage: '+BF', qualities: [] }];
+    E.weapons = [{ name: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }];
     const [primary, h2] = heroes;
     primary.dead = true; // cible primaire TUÉE en un coup (déclencheur Frappe Mortelle)
     primary.pos = { x: 9, y: 10 }; // E se recale ICI après le kill (LDB 14 l.10)

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { applyOps } from './ops';
 import { endOfRound } from './conditions';
 import { effectiveWeaponDamage } from './weaponDamage';
+import { damageString } from './items';
 import { conjureFormOptions } from './conjuredWeapons';
 import { runSpellFlowLines } from '../state/combatEffects';
 import { bonus } from './characteristics';
@@ -34,7 +35,7 @@ describe('grantWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)', (
     expect(c.items?.some((it) => it.conjured && it.name === 'Arme aethyrique')).toBe(true); // objet réel
     expect(c.weapons[0].name).toBe('Arme aethyrique'); // arme directrice
     expect(c.weapons[0].qualities).toContain('Magique');
-    expect(c.weapons[0].damage).toBe('+4'); // BFM, pas de +BF
+    expect(damageString(c.weapons[0].damage)).toBe('+4'); // BFM, pas de +BF
     expect(effectiveWeaponDamage(c.weapons[0], bonus(c.characteristics.F))).toBe(4);
   });
 
@@ -53,7 +54,7 @@ describe('grantWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)', (
       { label: 'Arme aethyrique', defaultDurationRounds: 4, conjureForm: opt });
     expect(c.weapons[0].subType?.toLowerCase()).toBe('escrime'); // Groupe = la Spé choisie (profil réel)
     expect(c.weapons[0].name).toContain('Arme aethyrique');
-    expect(c.weapons[0].damage).toBe('+4'); // Dégâts toujours = BFM (le gabarit ne donne que le profil)
+    expect(damageString(c.weapons[0].damage)).toBe('+4'); // Dégâts toujours = BFM (le gabarit ne donne que le profil)
   });
 
   it('vit dans un SET dédié actif, retiré à l’expiration (set + objet + restauration)', () => {
@@ -81,8 +82,8 @@ describe('grantNaturalWeapon — armes naturelles accordées (Dent et griffe)', 
     ], { label: 'Dent et griffe', defaultDurationRounds: 1 });
     const bite = c.weapons.find((w) => w.name === 'Morsure');
     const claw = c.weapons.find((w) => w.name === 'Griffe');
-    expect(bite?.damage).toBe('+BF+3');
-    expect(claw?.damage).toBe('+BF+4');
+    expect(damageString(bite!.damage)).toBe('+BF+3');
+    expect(damageString(claw!.damage)).toBe('+BF+4');
     expect(bite?.qualities).toContain('Magique');
     expect(c.weapons.some((w) => w.name === 'Mains nues')).toBe(true); // ADDITIONNELLE (mains nues conservées)
     endOfRound(c); // 1 Round → expire
@@ -98,14 +99,14 @@ describe('grantWeapon — variantes de domaine (stats fixes du Sort)', () => {
     expect(c.weapons[0].name).toBe('Faux de Shyish');
     expect(c.weapons[0].hands).toBe(2);
     expect(c.weapons[0].subType).toBe('armes-d-hast'); // id de Groupe
-    expect(c.weapons[0].damage).toBe('+7'); // BFM 4 + 3
+    expect(damageString(c.weapons[0].damage)).toBe('+7'); // BFM 4 + 3
   });
 
   it('Épée ardente de Rhuin : Dégâts +6, Percutante + En flammes à la touche', () => {
     const c = mage();
     applyOps(c, [{ op: 'grantWeapon', name: 'Épée ardente de Rhuin', damage: 6, subType: 'base', reach: 'Moyenne', hands: 1, qualities: ['Magique', 'Percutante'], onHitEffects: [onHitFlow([{ op: 'condition', name: 'en-flammes' }])] }],
       { label: "L'Épée ardente de Rhuin", defaultDurationRounds: 4 });
-    expect(c.weapons[0].damage).toBe('+6');
+    expect(damageString(c.weapons[0].damage)).toBe('+6');
     expect(c.weapons[0].qualities).toEqual(expect.arrayContaining(['Magique', 'Percutante']));
     // L'onHit de l'arme invoquée est replié sur l'arme active (weapon.onHitEffects), appliqué par le dispatcher.
     const eff = c.weapons[0].onHitEffects![0];

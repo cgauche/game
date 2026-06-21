@@ -7,7 +7,7 @@ import type { EquipCtx } from './equipment';
 import type { ItemInstance, Weapon } from '../../../engine/types';
 
 const empty: EquipCtx = { weapons: [], armour: [] };
-const wep = (name: string, type: 'melee' | 'ranged'): Weapon => ({ name, type, damage: '+4', qualities: [] } as Weapon);
+const wep = (name: string, type: 'melee' | 'ranged'): Weapon => ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
 const plastron: ItemInstance = { uid: '1', name: 'Plastron', kind: 'armor', qualities: [], pa: 4, locs: ['corps'], enc: 1, equipped: true };
 
 describe('resolveParts — priorité', () => {
@@ -44,7 +44,7 @@ describe('resolveParts — priorité', () => {
 });
 
 describe('resolveParts — dual-wield (main secondaire dessinée)', () => {
-  const wh = (name: string, hand: 'main' | 'off', q: string[] = []): Weapon => ({ name, type: 'melee', damage: '+4', qualities: q, hand } as Weapon);
+  const wh = (name: string, hand: 'main' | 'off', q: string[] = []): Weapon => ({ name, type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: q, hand } as Weapon);
 
   it('épée + dague (hand off) → la 2e arme est dessinée à la main secondaire (os bouclier)', () => {
     const r = resolveParts('Humain', 'M', 'Soldat', { weapons: [wh('Épée', 'main'), wh('Dague', 'off')], armour: [] }, {}, 1);
@@ -58,7 +58,7 @@ describe('resolveParts — dual-wield (main secondaire dessinée)', () => {
   });
 
   it('épée + bouclier → le bouclier prime sur une arme à la main secondaire', () => {
-    const shield = { name: 'Bouclier', type: 'melee', damage: '+4', qualities: ['Bouclier'], hand: 'off' } as unknown as Weapon;
+    const shield = { name: 'Bouclier', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: ['Bouclier'], hand: 'off' } as unknown as Weapon;
     const r = resolveParts('Humain', 'M', 'Soldat', { weapons: [wh('Épée', 'main'), shield], armour: [], shield }, {}, 1);
     expect(r.bouclier?.svg).toContain('<');
   });

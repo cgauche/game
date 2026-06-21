@@ -11,7 +11,7 @@ import type { Weapon } from '../src/engine/types';
 
 const tag = process.argv[2] ?? 'x';
 const skin: Record<string, string> | undefined = process.argv[3] ? JSON.parse(process.argv[3]) : undefined;
-const W = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ name, type, damage: '+4', qualities: [], skin } as Weapon);
+const W = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [], skin } as Weapon);
 const NAMES: Array<[string, 'melee' | 'ranged']> = [
   ['Épée bâtarde', 'melee'], ['Hallebarde', 'melee'], ['Zweihänder', 'melee'], ['Fléau d\'armes', 'melee'],
   ['Dague', 'melee'], ['Arc long', 'ranged'], ['Arbalète', 'ranged'], ['Arquebuse', 'ranged'],

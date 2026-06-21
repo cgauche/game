@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { attackModifiers } from './combat';
 import type { Combatant, Weapon } from './types';
 
-const SWORD: Weapon = { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [] };
+const SWORD: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
 
 function mk(opts: Partial<Combatant>): Combatant {
   return {

@@ -6,7 +6,7 @@ import { DEFS } from '../src/gameIso/sprites';
 import type { Appearance } from '../src/gameIso/rig/appearance';
 import type { Weapon } from '../src/engine/types';
 
-const wep = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ name, type, damage: '+4', qualities: [] } as Weapon);
+const wep = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
 
 function cell(label: string, app: Appearance, w?: Weapon) {
   const svg = renderToStaticMarkup(

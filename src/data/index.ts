@@ -167,7 +167,8 @@ export interface TrappingData {
   reach: string | null;
   loc: string | null;
   pa: number | null;
-  damage: string | null;
+  /** Dégâts d'arme STRUCTURÉS (cf. `WeaponDamageSpec`) — remplace la chaîne « +BF+4 » re-parsée au runtime. */
+  damage: import('../engine/types').WeaponDamageSpec | null;
   /** Qualités d'arme/armure (`QualityRef` : id + Indice éventuel « Solide 3 » → value, spec = arg éventuel). */
   qualities: QualityRef[];
   desc: string | null;

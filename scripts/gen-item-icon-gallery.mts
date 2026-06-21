@@ -20,13 +20,13 @@ const grid = (cells: string[]) =>
 
 // Armes : tout le registre (1 fichier defs/ = 1 arme), via ItemIcon(Weapon).
 const weaponCells = WEAPON_DEFS.map((d) =>
-  cell(d.label, React.createElement(ItemIcon, { item: { name: d.label, type: d.type, damage: '+0', qualities: [] } as Weapon, size: 64 })),
+  cell(d.label, React.createElement(ItemIcon, { item: { name: d.label, type: d.type, damage: { plusBF: false, flat: 0 }, qualities: [] } as Weapon, size: 64 })),
 );
 
 // Boucliers (art dédié à gradients → ItemIcon injecte ses <defs>).
 const SHIELDS = ['Bouclier', 'Bouclier (Grand)', 'Bouclier (Targe)'];
 const shieldCells = SHIELDS.map((name) =>
-  cell(name, React.createElement(ItemIcon, { item: { name, type: 'melee', damage: '+0', qualities: ['Bouclier'] } as Weapon, size: 64 })),
+  cell(name, React.createElement(ItemIcon, { item: { name, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: ['Bouclier'] } as Weapon, size: 64 })),
 );
 
 // Armures : matériau × emplacement (ItemIcon choisit le slot réellement couvert par la pièce).

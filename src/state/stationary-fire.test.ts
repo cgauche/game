@@ -37,7 +37,7 @@ describe('Tir immobile (heldGround)', () => {
     const b = useGame.getState().battle!;
     const H = b.combatants.find((c) => c.kind === 'hero')!;
     const E = b.combatants.find((c) => c.kind === 'enemy')!;
-    H.weapons = [{ name: 'Arc', type: 'ranged', damage: '+8', range: 60, qualities: [] }] as never;
+    H.weapons = [{ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] }] as never;
     H.pos = { x: 6, y: 10 };
     E.pos = { x: 12, y: 10 }; // à distance → arme à distance employée
     return { H, E };

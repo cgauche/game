@@ -6,7 +6,7 @@ import { findQualityById } from '../../data';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const w = (qualities: string[], over: Partial<Weapon> = {}): Weapon => ({ name: 'W', type: 'melee', damage: '+BF', qualities, ...over });
+const w = (qualities: string[], over: Partial<Weapon> = {}): Weapon => ({ name: 'W', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities, ...over });
 
 describe('dispatch — hasQuality compare par ID de qualité (label/casse/Indice tolérés en entrée)', () => {
   it('hasQuality(porteur, qualityId) reconnaît la qualité quelle que soit la forme stockée', () => {

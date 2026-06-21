@@ -15,7 +15,7 @@ import type { Combatant, Weapon } from '../types';
  * Dangereuse, Épuisante, Imprécise, Lente. Tests PURS (moteur).
  */
 const w = (qualities: string[], over: Partial<Weapon> = {}): Weapon =>
-  ({ name: 'Arme', type: 'melee', damage: '+BF', qualities, ...over });
+  ({ name: 'Arme', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities, ...over });
 
 function fighter(over: Partial<Combatant> = {}): Combatant {
   return {
