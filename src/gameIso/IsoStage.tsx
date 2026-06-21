@@ -252,16 +252,16 @@ export function IsoStage() {
   // `viewLevel(z)` isole un seul étage. Le tri de profondeur (z-aware) empile les étages correctement.
   const renderLevels = useMemo(() => (scene ? (viewZ != null ? scene.levels.filter((l) => l.z === viewZ) : scene.levels.filter((l) => l.z <= activeZ)) : []), [scene, viewZ, activeZ]);
 
-  const floorObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
+  const floorObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number }[]>(() => {
     if (!scene) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
-    const out: { d: number; el: JSX.Element }[] = [];
+    const out: { d: number; el: JSX.Element; x: number; y: number }[] = [];
     for (const lvl of renderLevels) {
       const fd = floorDepth(d, lvl.z);
       for (let y = 0; y < d.h; y++)
         for (let x = 0; x < d.w; x++) {
           const html = groundTile(scene, x, y, d, lvl.z);
-          if (html) out.push({ d: fd, el: <g key={`f${lvl.z}-${x}-${y}`} dangerouslySetInnerHTML={{ __html: html }} /> });
+          if (html) out.push({ d: fd, x, y, el: <g key={`f${lvl.z}-${x}-${y}`} dangerouslySetInnerHTML={{ __html: html }} /> });
         }
     }
     return out;
@@ -269,14 +269,14 @@ export function IsoStage() {
 
   // Murs sur arêtes (cloisons fines) : quads verticaux dressés sur les arêtes de case, fusionnés dans
   // le tri de profondeur global (un mur avant occulte ce qui est derrière ; les portes sont ajourées).
-  const wallObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
+  const wallObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number }[]>(() => {
     if (!scene?.walls?.length) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
     const zs = new Set(renderLevels.map((l) => l.z));
     // Cloisons des étages rendus (raised par leur z) → les murs des loges se dressent au-dessus du parterre.
     return scene.walls.filter((w) => zs.has(w.z ?? 0)).map((w, i) => {
       const seg = wallSeg(w, d);
-      return { d: seg.d, el: <g key={`wall-${i}`} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
+      return { d: seg.d, x: w.x, y: w.y, el: <g key={`wall-${i}`} dangerouslySetInnerHTML={{ __html: seg.svg }} /> };
     });
   }, [scene, shownRot, shownEdge, viewMode, renderLevels]);
 
@@ -293,7 +293,7 @@ export function IsoStage() {
     });
   }, [scene, shownRot, shownEdge, viewMode, renderLevels]);
 
-  const decorObjs = useMemo<{ d: number; el: JSX.Element }[]>(() => {
+  const decorObjs = useMemo<{ d: number; el: JSX.Element; x: number; y: number }[]>(() => {
     if (!scene) return [];
     const d: Dims = { ...scene.dimensions, rot: shownRot, view: viewMode, edge: shownEdge };
     // Tuiles occupées par un ACTEUR — pour estomper l'arbre/mur qui masquerait un personnage derrière.
@@ -306,13 +306,15 @@ export function IsoStage() {
     }
     const occludesActor = (tx: number, ty: number) =>
       actorTiles.some((a) => a.x + a.y < tx + ty && Math.abs(a.x - a.y - (tx - ty)) <= 1 && tx + ty - (a.x + a.y) <= 7);
-    const out: { d: number; el: JSX.Element }[] = [];
+    const out: { d: number; el: JSX.Element; x: number; y: number }[] = [];
     for (let y = 0; y < d.h; y++)
       for (let x = 0; x < d.w; x++) {
         const ov = terrainOverlay(tileAt(scene, x, y), x, y, d);
         if (ov)
           out.push({
             d: ov.d,
+            x,
+            y,
             el: (
               <g key={`ov${x}-${y}`} style={{ opacity: occludesActor(x, y) ? 0.4 : 1, transition: 'opacity 0.25s' }} dangerouslySetInnerHTML={{ __html: ov.html }} />
             ),
@@ -702,7 +704,7 @@ export function IsoStage() {
     highlights.push(<path key="party-pos" d={diamondPath(partyPos.x, partyPos.y, dims, liftAt(partyPos.x, partyPos.y, partyPos.z ?? 0))} fill="none" stroke="#ffe066" strokeWidth={1.5} opacity={0.5} />);
 
   // --- Objets triés par profondeur (murs, arbres, entités, tokens) ---
-  type Obj = { d: number; el: JSX.Element };
+  type Obj = { d: number; el: JSX.Element; x?: number; y?: number };
   const objs: Obj[] = [];
 
   // décor statique + bâtiments multi-tuiles : éléments memoïsés (cf. decorObjs/buildingObjs), juste
@@ -1171,7 +1173,23 @@ export function IsoStage() {
     >
       <defs dangerouslySetInnerHTML={{ __html: DEFS + AMBIANCE_DEFS }} />
       <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.97 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: turning ? 'opacity 0.13s ease-out' : anyWalking ? 'opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out', opacity: turning ? 0.6 : 1 }}>
-        <g>{objs.map((o) => o.el)}</g>
+        {/* CULLING au viewport (espace ÉCRAN, PAS l'AABB de tuiles — qui en iso couvre quasi toute la
+            scène) : on projette la tuile de chaque objet lourd tagué (sol/décor/murs) et on ne rend que
+            ceux dont le centre tombe dans le rectangle écran (+ marge pour les corps/murs HAUTS). Le
+            navigateur ne rastérise alors que l'écran à chaque frame → fini le re-raster de toute la carte. */}
+        {(() => {
+          const hw = VW / (2 * zoom), hh = VH / (2 * zoom), M = 220;
+          const cl = VW / 2 - cam.x - hw - M, cr = VW / 2 - cam.x + hw + M;
+          const ct = VH / 2 - cam.y - hh - M, cb = VH / 2 - cam.y + hh + M;
+          const onScreen = (o: Obj) => {
+            if (o.x === undefined) return true; // non tagué (tokens/FX) : toujours rendu
+            const c = tileCenter(o.x, o.y!, dims);
+            return c.cx >= cl && c.cx <= cr && c.cy >= ct && c.cy <= cb;
+          };
+          // .filter().map() (PAS map→null) : React ne réconcilie que les ~centaines d'éléments à l'écran,
+          // pas les milliers de la scène entière.
+          return <g>{objs.filter(onScreen).map((o) => o.el)}</g>;
+        })()}
         {/* Brouillard de guerre : voile sombre sur l'inconnu / grisé sur l'exploré-hors-vue / clair en
             vue. Au-dessus du décor+tokens, SOUS les FX/réticules (les infos de combat restent lisibles). */}
         <FogLayer w={scene.dimensions.w} h={scene.dimensions.h} z={activeZ} rot={shownRot} view={viewMode} edge={shownEdge} visible={visible} explored={exploredSet} bounds={viewBounds} />
