@@ -1064,7 +1064,11 @@ export function IsoStage() {
       if (hover) setHover(null);
       return;
     }
-    if (!hover || hover.x !== t.x || hover.y !== t.y) setHover(t);
+    if (!hover || hover.x !== t.x || hover.y !== t.y) {
+      setHover(t);
+      const st = useGame.getState();
+      if (st.hoverCombatantId) st.setHoverCombatant(null); // la souris (nouvelle tuile) reprend la main sur le ciblage clavier (Tab) / frise
+    }
   };
 
   const onPointerUp = (ev: React.PointerEvent) => {

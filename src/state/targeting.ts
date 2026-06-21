@@ -169,3 +169,24 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
       : { kind: plan.kind, targetId: target.id, path: plan.path, dest: plan.dest, ...(plan.kind === 'moveAttack' ? { cost: plan.cost } : { adv: plan.adv }) },
   };
 }
+
+/** Combattants que le héros ACTIF peut cibler au survol (hoverTargeting ≠ 'none' — bonne équipe pour
+ *  l'action courante), triés du PLUS PROCHE au plus loin. Base du ciblage clavier (Tab). */
+export function validTargets(get: () => GameState): Combatant[] {
+  const battle = get().battle;
+  if (!battle || battle.over) return [];
+  const active = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
+  if (!active || active.kind !== 'hero' || !active.pos) return [];
+  return battle.combatants
+    .filter((c) => c.id !== active.id && c.pos && !isOutOfAction(c) && hoverTargeting(get, active, c).kind !== 'none')
+    .sort((a, b) => combatDistance(active, a) - combatDistance(active, b));
+}
+
+/** Cible SUIVANTE (Tab) : la plus proche valide, ou la suivante par distance si une est déjà visée —
+ *  cycle complet sur toutes les cibles valides puis retour à la première. Null si aucune. */
+export function cycleTarget(get: () => GameState, currentId: string | null): Combatant | null {
+  const sorted = validTargets(get);
+  if (!sorted.length) return null;
+  const idx = sorted.findIndex((c) => c.id === currentId);
+  return sorted[(idx + 1) % sorted.length];
+}

@@ -12,6 +12,7 @@ import { useGame } from './store';
 import { controlsActive } from './netOwnership';
 import { pickActiveModalKey } from './modalArbiter';
 import { hotbar } from './hotbarBridge';
+import { cycleTarget, validTargets } from './targeting';
 
 export interface KeyBinding {
   id: string;
@@ -35,6 +36,13 @@ export const KEYBINDINGS: KeyBinding[] = [
   { id: 'cam-left', codes: ['KeyQ'], label: 'Caméra : tourner à gauche', when: () => true, run: (g) => g().rotateCam(-1) },
   { id: 'cam-right', codes: ['KeyE'], label: 'Caméra : tourner à droite', when: () => true, run: (g) => g().rotateCam(1) },
   { id: 'cam-recenter', codes: ['KeyC'], label: 'Caméra : recentrer sur l’actif', when: inBattle, run: (g) => g().resetCamPan() },
+  // Tab : cible la plus proche valide (comme un survol) puis CYCLE sur toutes les cibles valides et
+  // revient à la première. Gardé sur l'existence d'au moins une cible (sinon Tab garde sa nav normale).
+  {
+    id: 'target-next', codes: ['Tab'], label: 'Cibler la cible valide suivante',
+    when: (s) => inBattle(s) && controlsActive(s) && noModal(s) && validTargets(() => s).length > 0,
+    run: (g) => { const t = cycleTarget(g, g().hoverCombatantId); if (t) g().setHoverCombatant(t.id); },
+  },
   {
     id: 'end-turn', codes: ['Space', 'Enter', 'NumpadEnter'], label: 'Fin du tour', notWhenControlFocused: true,
     when: (s) => inBattle(s) && controlsActive(s) && noModal(s), run: (g) => g().battleEndTurn(),
