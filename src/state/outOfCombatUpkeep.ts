@@ -32,7 +32,7 @@ export function outOfCombatUpkeep(party: Combatant[], rounds: number, rng: RNG):
     for (const c of party) {
       if (c.dead || !needsUpkeep(c)) continue;
       active = true;
-      endOfRound(c, rng).forEach((l) => log.push(l)); // dégâts périodiques (loseWounds → −Avantage + À Terre)
+      endOfRound(c, rng).forEach((l) => log.push(l)); // dégâts périodiques + décrément des durées (tickDurations)
       const bd = bleedDeathRoll(c, rng); // mort par Hémorragique (10 %/pion, double = coagule)
       bd.log.forEach((l) => log.push(l));
       if (bd.died) {

@@ -277,6 +277,21 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
     if (!e.opsPerRound || e.roundsLeft <= 0) continue;
     applyOps(c, e.opsPerRound, { label: e.label, rng }).forEach((l) => log.push(l));
   }
+  // Décrément des durées (effets/États de sort/contrecoups) — SOURCE UNIQUE extraite, même emplacement
+  // qu'avant (fin d'`endOfRound`, après les ops récurrentes). RNG-free.
+  tickDurations(c).forEach((l) => log.push(l));
+  return log;
+}
+
+/**
+ * Décrément des DURÉES à la frontière de Round — SOURCE UNIQUE (effets magiques temporisés, États de
+ * sort, contrecoups d'incantation en Rounds). Extrait d'`endOfRound` : un seul point décrémente les
+ * `roundsLeft`, branché par le hook `tick-durations` (order 15.5, après les dégâts périodiques, avant
+ * `refresh-wounds`). RNG-FREE (décrément + filtre + retraits) → n'altère pas le flux déterministe.
+ * Rejoué hors combat par `outOfCombatUpkeep` (les durées en Rounds tickent aussi à l'horloge).
+ */
+export function tickDurations(c: Combatant): string[] {
+  const log: string[] = [];
   // Effets magiques temporisés (Bénédictions, Sorts de bonus).
   if (c.activeEffects?.length) {
     for (const e of c.activeEffects) e.roundsLeft -= 1;
@@ -295,8 +310,7 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
     for (const x of done) log.push(`${c.name} : l'État ${conditionLabel(x.name)} (sort) se dissipe.`);
     c.conditions = c.conditions.filter((x) => !(x.roundsLeft != null && x.roundsLeft <= 0));
   }
-  // Contrecoups d'incantation à durée en Rounds (tables d'Imparfaites/Colère, LDB 46/40) —
-  // l'entretien hors combat rejoue endOfRound (couture A) → ils tickent aussi hors combat.
+  // Contrecoups d'incantation à durée en Rounds (tables d'Imparfaites/Colère, LDB 46/40).
   if (c.castPenalties?.some((p) => p.roundsLeft != null)) {
     for (const p of c.castPenalties) if (p.roundsLeft != null) p.roundsLeft -= 1;
     const done = c.castPenalties.filter((p) => p.roundsLeft != null && p.roundsLeft <= 0);
