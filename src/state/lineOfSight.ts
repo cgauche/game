@@ -54,7 +54,7 @@ function cellPath(a: Pt, b: Pt): Pt[] {
 /** Un mur d'arête (`Scene.walls`) est-il franchi par la ligne `from`→`to` ? Bloque la vue
  *  (« pas à travers les murs ») — réutilise `wallBetween` (mur non-porte sur l'arête cardinale ;
  *  une porte = ouverture transparente en V1). Les diagonales ne croisent pas d'arête cardinale. */
-function wallOnSight(scene: Scene, from: Pt, to: Pt, z = 0): boolean {
+export function wallOnSight(scene: Scene, from: Pt, to: Pt, z = 0): boolean {
   if (!scene.walls?.length) return false;
   const path = cellPath(from, to);
   for (let i = 0; i + 1 < path.length; i++) {

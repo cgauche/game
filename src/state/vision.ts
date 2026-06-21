@@ -11,8 +11,10 @@
  * Lanterne 20 m — `LDB 74 l.72`, `LDB 75 l.15`) et la Vision nocturne (20 m/niv — `LDB 11 l.143-147`)
  * sont canon, convertis à l'échelle 1 case = 2 m (`LDB Déplacement l.55`).
  */
-import { Scene } from './scene';
-import { lineOfSightCover, tileBlocksSight } from './lineOfSight';
+import { Scene, tileAt } from './scene';
+import { wallOnSight } from './lineOfSight';
+import { buildingBlockedAt } from './buildings';
+import { TERRAINS } from './terrain';
 import { sceneIsDark } from './sceneRules';
 import { Pt } from './path';
 import { LIGHT_LEVEL_BY_ID, findTraitById, findPropById, findTrappingById } from '../data';
@@ -46,22 +48,46 @@ export const LIT_THRESHOLD = 0.18;
 
 const chebyshev = (a: Pt, b: Pt): number => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 
-/** La vue de `from` vers `to` est-elle OCCULTÉE (pour la vision/lumière) ? Plus strict que le combat :
- *  un couvert TOTAL (mur/bâtiment/statue, même collé à la cible) cache la case — on ne voit PAS à
- *  travers un mur, alors qu'au combat on peut tirer sur une cible plaquée derrière (RAW). Les couverts
- *  partiels (haie, tonneau…) laissent voir. */
-function occluded(scene: Scene, from: Pt, to: Pt, smoke: Pt[]): boolean {
-  const r = lineOfSightCover(scene, from, to, [], smoke);
-  if (r.blocked || r.cover === 'totale') return true;
-  // Anti-fuite au COIN d'un mur : un supercover entier rate une tuile que le rayon ne fait qu'EFFLEURER
-  // au coin. On échantillonne finement le segment (≈4 points/case) sur le prédicat d'opacité partagé.
+/** Grille d'opacité de la scène (1 = bloque la vue), précalculée UNE FOIS par recompute → lookups O(1)
+ *  dans le rayon, au lieu d'un `.find` O(entités) par échantillon (la cause des 64 ms/recompute).
+ *  Terrain opaque + empreintes de bâtiment + décor opaque (`props.json`). PUR. */
+interface Occ { g: Uint8Array; w: number; h: number }
+function buildOpaque(scene: Scene): Occ {
+  const { w, h } = scene.dimensions;
+  const g = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++)
+      if (TERRAINS[tileAt(scene, x, y)]?.opaque || buildingBlockedAt(scene, x, y)) g[y * w + x] = 1;
+  for (const e of scene.entities) {
+    if (e.kind !== 'prop' || !e.ref || !findPropById(e.ref)?.opaque) continue;
+    const fw = e.foot?.w ?? 1, fh = e.foot?.h ?? 1;
+    for (let yy = 0; yy < fh; yy++)
+      for (let xx = 0; xx < fw; xx++) {
+        const x = e.pos.x + xx, y = e.pos.y + yy;
+        if (x >= 0 && y >= 0 && x < w && y < h) g[y * w + x] = 1;
+      }
+  }
+  return { g, w, h };
+}
+
+/** Échantillons par case du segment (anti-fuite au COIN d'un mur : un supercover entier rate une tuile
+ *  que le rayon ne fait qu'EFFLEURER). */
+const SAMPLES_PER_TILE = 4;
+
+/** La vue `from`→`to` est-elle OCCULTÉE (vision) ? RAPIDE : grille d'opacité O(1) + murs d'arête + fumée.
+ *  Plus strict que le combat : TOUTE case opaque sur la ligne (même collée à la cible) cache — on ne
+ *  voit pas à travers un mur. Les couverts PARTIELS (haie, tonneau…) ne sont pas opaques → laissent voir. */
+function rayBlocked(scene: Scene, occ: Occ, smoke: Set<string>, from: Pt, to: Pt): boolean {
+  if (smoke.size && (smoke.has(`${from.x},${from.y}`) || smoke.has(`${to.x},${to.y}`))) return true;
+  if (scene.walls?.length && wallOnSight(scene, from, to)) return true;
   const dx = to.x - from.x, dy = to.y - from.y;
-  const n = Math.ceil(Math.hypot(dx, dy) * 4);
+  const n = Math.ceil(Math.hypot(dx, dy) * SAMPLES_PER_TILE);
   for (let i = 1; i < n; i++) {
     const t = i / n;
     const cx = Math.round(from.x + dx * t), cy = Math.round(from.y + dy * t);
     if ((cx === from.x && cy === from.y) || (cx === to.x && cy === to.y)) continue;
-    if (tileBlocksSight(scene, cx, cy)) return true;
+    if (cx < 0 || cy < 0 || cx >= occ.w || cy >= occ.h) continue;
+    if (occ.g[cy * occ.w + cx] || smoke.has(`${cx},${cy}`)) return true;
   }
   return false;
 }
@@ -134,6 +160,8 @@ function falloff(d: number, radius: number): number {
  */
 export function computeLightField(scene: Scene, ambient: number, sources: LightSource[], smoke: Pt[] = []): LightField {
   const { w, h } = scene.dimensions;
+  const occ = buildOpaque(scene);
+  const smokeSet = new Set(smoke.map((s) => `${s.x},${s.y}`));
   const grid = new Map<string, number>(); // "x,y,z" → contribution des sources (> ambient seulement)
   for (const s of sources) {
     const z = s.z ?? 0;
@@ -145,7 +173,7 @@ export function computeLightField(scene: Scene, ambient: number, sources: LightS
         const d = chebyshev(s.pos, { x, y });
         const c = falloff(d, R);
         if (c <= 0) continue;
-        if (d > 0 && occluded(scene, s.pos, { x, y }, smoke)) continue;
+        if (d > 0 && rayBlocked(scene, occ, smokeSet, s.pos, { x, y })) continue;
         const k = `${x},${y},${z}`;
         const prev = grid.get(k) ?? 0;
         if (c > prev) grid.set(k, c);
@@ -163,6 +191,8 @@ export function computeLightField(scene: Scene, ambient: number, sources: LightS
  */
 export function computeVisible(scene: Scene, viewers: Viewer[], light: LightField, smoke: Pt[] = []): Set<string> {
   const { w, h } = scene.dimensions;
+  const occ = buildOpaque(scene);
+  const smokeSet = new Set(smoke.map((s) => `${s.x},${s.y}`));
   const vis = new Set<string>();
   for (const v of viewers) {
     const z = v.z ?? 0;
@@ -178,7 +208,7 @@ export function computeVisible(scene: Scene, viewers: Viewer[], light: LightFiel
         const inDark = d <= v.darkTiles;
         const lit = d <= v.radiusTiles && light.at(x, y, z) >= LIT_THRESHOLD;
         if (!inDark && !lit) continue;
-        if (d > 0 && occluded(scene, v.pos, { x, y }, smoke)) continue;
+        if (d > 0 && rayBlocked(scene, occ, smokeSet, v.pos, { x, y })) continue;
         vis.add(k);
       }
   }
@@ -191,7 +221,7 @@ export function computeVisible(scene: Scene, viewers: Viewer[], light: LightFiel
       const x = +c[0], y = +c[1], z = +c[2];
       for (const v of viewers) {
         if ((v.z ?? 0) !== z) continue;
-        if (chebyshev(v.pos, { x, y }) === 0 || !occluded(scene, v.pos, { x, y }, smoke)) {
+        if (chebyshev(v.pos, { x, y }) === 0 || !rayBlocked(scene, occ, smokeSet, v.pos, { x, y })) {
           vis.add(k);
           break;
         }
