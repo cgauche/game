@@ -227,7 +227,7 @@ export function confirmDistribution(_get: Get, set: Set): void {
     for (const d of dist) (byHero[d.heroId] ??= []).push(d.item);
     const party = s.party.map((h) => {
       const add = byHero[h.id]; if (!add) return h;
-      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      const clone: Combatant = structuredClone(h);
       clone.items = [...(clone.items ?? []), ...add.map((it) => ({ ...it, equipped: false }))];
       recomputeLoadout(clone);
       return clone;
@@ -255,7 +255,7 @@ function removeSold(party: Combatant[], entries: { uid: string; heroId: string }
   return party.map((h) => {
     const uids = entries.filter((e) => e.heroId === h.id).map((e) => e.uid);
     if (!uids.length) return h;
-    const clone: Combatant = JSON.parse(JSON.stringify(h));
+    const clone: Combatant = structuredClone(h);
     clone.items = (clone.items ?? []).filter((i) => !uids.includes(i.uid));
     recomputeLoadout(clone);
     return clone;
@@ -327,7 +327,7 @@ export function repairArmour(get: Get, set: Set, uid: string, heroId: string): v
     money: moneySub(s.money, cost)!,
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
-      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      const clone: Combatant = structuredClone(h);
       const it = clone.items?.find((i) => i.uid === uid); if (it) it.damageTaken = 0;
       recomputeLoadout(clone);
       return clone;
@@ -452,7 +452,7 @@ function patchAppraiseTarget(get: Get, set: Set, pa: { itemUid?: string; gear?: 
   set((s) => ({
     party: s.party.map((h) => {
       if (!(h.items ?? []).some((i) => i.uid === pa.itemUid)) return h; // clone uniquement le porteur de l'objet
-      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      const clone: Combatant = structuredClone(h);
       const it = clone.items?.find((i) => i.uid === pa.itemUid);
       if (it) {
         Object.assign(it, patch);

@@ -1179,8 +1179,8 @@ export function createCombatSlice(get: Get, set: Set) {
         set((s) => ({
           party: s.party.map((h) => {
             if (h.id !== active.id) return h;
-            const clone: Combatant = JSON.parse(JSON.stringify(h));
-            clone.items = [...(clone.items ?? []), JSON.parse(JSON.stringify(it))];
+            const clone: Combatant = structuredClone(h);
+            clone.items = [...(clone.items ?? []), structuredClone(it)];
             recomputeLoadout(clone);
             return clone;
           }),
@@ -1493,7 +1493,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const livingParty = party.filter((h) => !h.dead && !h.outOfRencontre);
       const heroes = livingParty.map((h, i) => {
         const c = {
-          ...JSON.parse(JSON.stringify(h)),
+          ...structuredClone(h),
           pos: { x: Math.max(0, partyPos.x - 1), y: Math.min(scene.dimensions.h - 1, partyPos.y + i) },
           advantage: 0,
           conditions: persistentConditions(h), // États persistants seuls (le transitoire est jeté)

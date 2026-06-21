@@ -96,6 +96,7 @@ const JUSTIFIED: Record<string, string> = {
   openLearn: 'apprentissage en interlude : le d100 fixe le PRIX du tuteur (monde ambiant, LDB 23) — affiché avant de payer',
   confirmActivity: 'résolveur « Appliquer » de la modale d’Activité : le TEST a eu lieu en modale ; les dés de Statut (montant des Revenus, LDB 08) sont la conséquence affichée',
   bankDeposit: 'placement en interlude : l’Indice d’intérêts est tiré par le monde (ambiant) et AFFICHÉ (gains/risque de faillite)',
+  openSkillTest: 'ouvre pendingTest (modale) ; le 1d10 « réaction au Statut » (option LDB 08 l.54/90, monde ambiant) est tiré UNE fois et appliqué comme MODIFICATEUR du Test révélé dans la modale',
 };
 
 /** Extrait `nom: (args) => corps` des actions du store. */

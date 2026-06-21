@@ -457,7 +457,7 @@ export function loadoutSetSlot(c: Combatant, id: string, slot: 'main' | 'off', u
 export function addItemToHero(hero: Combatant, trappingId: string): Combatant {
   const it = itemFromTrappingById(trappingId);
   if (!it) return hero;
-  const clone: Combatant = JSON.parse(JSON.stringify(hero));
+  const clone: Combatant = structuredClone(hero);
   clone.items = [...(clone.items ?? []), it];
   recomputeLoadout(clone);
   return clone;

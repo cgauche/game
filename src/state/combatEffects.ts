@@ -255,7 +255,10 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
   const isSocial = isSocialTest(spec.skill, spec.characteristic);
   const tgtStatus = isSocial && spec.vsStatus ? parseStatus(spec.vsStatus) : undefined;
   const psychMod = spec.vsGroups?.length && isSocial ? (c: Combatant) => socialPsychMod(c, spec.vsGroups!) : undefined;
-  const statusMod = tgtStatus ? (c: Combatant) => statusCharmMod(actorStatus(c), tgtStatus, { begging: spec.begging }) : undefined;
+  // 1d10 « réaction au Statut » (option, LDB 08 l.54/90) tiré UNE fois par Test (RNG seedé) — appliqué à
+  // tous les candidats de façon cohérente (la réaction de l'interlocuteur ne dépend pas du héros choisi).
+  const reactionRoll = tgtStatus && rule('social-status-reaction-roll') ? battleRng().int(1, 10) : undefined;
+  const statusMod = tgtStatus ? (c: Combatant) => statusCharmMod(actorStatus(c), tgtStatus, { begging: spec.begging, reactionRoll }) : undefined;
   const socialMod = psychMod || statusMod
     ? (c: Combatant) => (psychMod ? psychMod(c) : 0) + (statusMod ? statusMod(c) : 0)
     : undefined;
@@ -568,7 +571,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       if (e.appraiseTriedDay != null) it.appraiseTriedDay = e.appraiseTriedDay;
       if (e.price) it.price = { gold: e.price.gold ?? 0, silver: e.price.silver ?? 0, brass: e.price.brass ?? 0 };
       const who = env.mutateHero(e.heroId, (h) => {
-        const clone: Combatant = JSON.parse(JSON.stringify(h));
+        const clone: Combatant = structuredClone(h);
         clone.items = [...(clone.items ?? []), it]; // arrive NON équipé
         recomputeLoadout(clone); // met à jour l'encombrement
         return clone;
@@ -597,7 +600,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     apply: (e, env) => {
       env.set((s: GameState) => ({
         party: s.party.map((h) => {
-          const clone: Combatant = JSON.parse(JSON.stringify(h));
+          const clone: Combatant = structuredClone(h);
           clone.xp = (clone.xp ?? 0) + e.amount;
           return clone;
         }),
