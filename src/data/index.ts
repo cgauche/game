@@ -503,7 +503,9 @@ export interface SpellData {
   /** Cible STRUCTURÉE (LDB 47) — qui/quoi est affecté (compte, ZONE par rayon/diamètre, cône, spécial).
    *  `null` = donnée absente. L'aire (ex-`zdeRadiusMeters`) vit désormais ICI (source unique). */
   target: import('../engine/spellRange').SpellTarget | null;
-  duration: string;
+  /** Durée STRUCTURÉE (LDB 47) — instant/Rounds/horloge/lever-du-soleil/spécial. `null` = donnée absente.
+   *  L'échelle Rounds (ex-`durationRounds`) vit désormais ICI (source unique). */
+  duration: import('../engine/spellDuration').SpellDuration | null;
   desc: string;
   /** Projectile magique (Dégâts résolus façon attaque) — DONNÉE (multilangue ; remplace la regex
    *  `/projectile magique/` sur la desc). `damage` = bonus ADDITIF (+ DR + BFM, LDB 46) ; `ignorePA`/
@@ -518,10 +520,6 @@ export interface SpellData {
   /** Vrai pour une entrée curée de la base officielle. Absent/false pour les sorts homebrew (frenchy.bzh).
    *  Permet au test de couverture de vérifier que TOUS les sorts officiels ont une spec complète. */
   curated?: boolean;
-  /** Durée en Rounds si exprimable (littéral / « (Bonus de X) Rounds » du lanceur) ;
-   *  null = Instantané ou durée hors échelle tactique (minutes/heures/jours) — on n'invente PAS un
-   *  nombre de rounds (LDB). Formula = `number | {bonusOf:CharKey} | {charOf:CharKey} | …` (engine/ops). */
-  durationRounds?: import('../engine/ops').Formula | null;
   /** TÉLÉPORTATION du lanceur (Jalon 2.6 — « vous vous téléportez de BFM mètres ») : après
    *  l'Appliquer, le jeu propose le choix d'une case d'arrivée dans ce rayon (survol des
    *  obstacles, atterrissage libre). */

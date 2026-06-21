@@ -2750,7 +2750,7 @@ export function applyCast(
       // Terre ; « Drain » : soigne le lanceur) — lus depuis `spell.effects` (Flow éditable, feuilles
       // `on:'target'`). Réservé aux sorts CURÉS : un sort sans spec n'a pas d'effet missile parsé (iso-POC).
       if (missileSpec.curated && spellOps(spell.effects, 'target').length) {
-        const rounds = missileSpec.durationRounds != null ? resolveFormula(missileSpec.durationRounds, caster, battleRng()) : null;
+        const rounds = missileSpec.duration?.kind === 'rounds' ? resolveFormula(missileSpec.duration.value, caster, battleRng()) : null;
         const clockMin = rounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
         logLines.push(...runCastFlow(get, set, t, caster, spellFlowFor(spell.effects, 'target'), {
           rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
@@ -2830,7 +2830,7 @@ export function applyCast(
       // `{scale:'clock'}` (échéance d'HORLOGE `gameTime`, purgée par l'horloge), pas un nombre de
       // Rounds — on n'en invente PAS. Surincantation « Durée » : ×(1+n) (LDB 47).
       const spec = spell;
-      const baseRounds = spec.durationRounds != null ? resolveFormula(spec.durationRounds, caster, battleRng()) : null;
+      const baseRounds = spec.duration?.kind === 'rounds' ? resolveFormula(spec.duration.value, caster, battleRng()) : null;
       const rounds = baseRounds != null ? baseRounds * durationMult : null;
       const baseClockMin = baseRounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
       const clockMin = baseClockMin != null ? baseClockMin * durationMult : null;
@@ -2957,7 +2957,7 @@ export function applyCast(
     // Roi de la Nature…) : la/les créature(s) entrent en combat près du lanceur et se dissipent à
     // l'expiration (state/summonFlow). Effet IMPUR du Flow résolu ici (grille/initiative) ; les feuilles
     // `on:'caster'` sont par ailleurs jouées par runCastFlow (où `summon` reste inerte → pas de doublon).
-    const sumRounds = castSpec.durationRounds != null ? resolveFormula(castSpec.durationRounds, caster, battleRng()) : null;
+    const sumRounds = castSpec.duration?.kind === 'rounds' ? resolveFormula(castSpec.duration.value, caster, battleRng()) : null;
     for (const sOp of spellOps(spell.effects, 'caster')) {
       if (sOp.op !== 'summon') continue;
       logLines.push(...applySummon(get, set, caster, sOp, { sl: res.sl, rounds: sumRounds, label: spell.label, rng: battleRng() }));
@@ -2965,7 +2965,7 @@ export function applyCast(
     // Effets sur le LANCEUR (feuilles `on:'caster'` de `spell.effects` — Vol de vie « retirez tout État
     // Exténué dont vous souffrez », buffs de soi d'un sort offensif) : appliqués UNE seule fois par lancement.
     if (spellOps(spell.effects, 'caster').length) {
-      const baseRounds = castSpec.durationRounds != null ? resolveFormula(castSpec.durationRounds, caster, battleRng()) : null;
+      const baseRounds = castSpec.duration?.kind === 'rounds' ? resolveFormula(castSpec.duration.value, caster, battleRng()) : null;
       const clockMin = baseRounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
       logLines.push(...runCastFlow(get, set, caster, caster, spellFlowFor(spell.effects, 'caster'), {
         rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
@@ -3001,13 +3001,13 @@ export function castInfoIsPrayer(spell: SpellLike): boolean {
 
 /** Pose la ZONE PERSISTANTE d'un sort (op `zone` du Flow, on:'caster' — L11 Mur de feu : mur
  *  perpendiculaire à l'axe lanceur→cible centré sur la cible ; Grands feux : disque autour de la
- *  cible). Durée = celle du sort (`spec.durationRounds` × Surincantation), formules résolues contre
+ *  cible). Durée = celle du sort (`duration.kind==='rounds'` × Surincantation), formules résolues contre
  *  le LANCEUR. Effet IMPUR du Flow résolu ici (grille) ; hors combat : narratif. */
 function placeSpellZone(
   get: Get,
   caster: Combatant,
   target: Combatant,
-  spell: { label: string; effects?: Flow; durationRounds?: import('../engine/ops').Formula | null },
+  spell: { label: string; effects?: Flow; duration?: import('../engine/spellDuration').SpellDuration | null },
   _spec: unknown,
   sl: number,
   durationMult: number,
@@ -3020,7 +3020,7 @@ function placeSpellZone(
     logLines.push(`${spell.label} : la zone persiste — hors grille de combat, arbitrage MJ.`);
     return;
   }
-  const baseRounds = spell.durationRounds != null ? resolveFormula(spell.durationRounds, caster, battleRng()) : 1;
+  const baseRounds = spell.duration?.kind === 'rounds' ? resolveFormula(spell.duration.value, caster, battleRng()) : 1;
   const rounds = Math.max(1, baseRounds * Math.max(1, durationMult));
   const tiles = pz.shape === 'wall'
     ? wallTiles(caster.pos, target.pos, metersToTiles(resolveZoneMeters(pz.lengthMeters ?? 2, pz.lengthPerSL, caster, sl, battleRng())))

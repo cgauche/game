@@ -270,8 +270,6 @@ import {
   castInfo,
   castingValue,
   missileDamage,
-  parseDurationRounds,
-  buffDurationRounds,
   durationClockMinutes,
   isMagicMissile,
   isArcaneSpell,
@@ -469,9 +467,9 @@ function caster(chars: Partial<Characteristics>, skills: SkillInstance[] = [], w
   };
 }
 
-const FLECHETTE: SpellLike = { label: 'Fléchette', type: 'Magie mineure', family: 'mineure', missile: true, damage: 0, cn: 0, duration: 'Instantanée', desc: 'Il s’agit d’un Projectile magique avec Dégât +0.' };
-const PRIERE: SpellLike = { label: 'Bénédiction de Bataille', type: 'Béni', family: 'beni', isPrayer: true, cn: null, duration: '6 rounds', desc: 'Votre cible gagne +10 en Capacité de Combat.' };
-const ARCANE: SpellLike = { label: 'Boule de feu', type: 'Magie des Arcanes', family: 'arcane', cn: 8, duration: 'Instantanée', desc: 'Projectile magique avec Dégâts +8.' };
+const FLECHETTE: SpellLike = { label: 'Fléchette', type: 'Magie mineure', family: 'mineure', missile: true, damage: 0, cn: 0, duration: { kind: 'instant' }, desc: 'Il s’agit d’un Projectile magique avec Dégât +0.' };
+const PRIERE: SpellLike = { label: 'Bénédiction de Bataille', type: 'Béni', family: 'beni', isPrayer: true, cn: null, duration: { kind: 'rounds', value: 6 }, desc: 'Votre cible gagne +10 en Capacité de Combat.' };
+const ARCANE: SpellLike = { label: 'Boule de feu', type: 'Magie des Arcanes', family: 'arcane', cn: 8, duration: { kind: 'instant' }, desc: 'Projectile magique avec Dégâts +8.' };
 
 describe('Magie — routage du test par branche', () => {
   it('les Prières (Béni/Invocation) utilisent Prière (Soc), sans NI', () => {
@@ -504,10 +502,8 @@ describe('Magie — analyse des descriptions', () => {
     expect(isMagicMissile(FLECHETTE)).toBe(true);
     expect(isMagicMissile(PRIERE)).toBe(false);
   });
-  it('parseDurationRounds lit « N rounds »', () => {
-    expect(parseDurationRounds('6 rounds')).toBe(6);
-    expect(parseDurationRounds('Instantanée')).toBeNull();
-  });
+  // (parseDurationRounds/buffDurationRounds supprimés : la durée Rounds vient de la donnée structurée
+  //  `SpellDuration`, dont le parser est testé dans spellDuration.test.ts.)
 });
 
 describe('Magie — valeur d’incantation', () => {
@@ -617,7 +613,7 @@ describe('Magie — correctifs de fidélité (audit)', () => {
       label: 'Vortex d’âmes',
       type: 'Magie des Arcanes',
       cn: 0,
-      duration: 'Instantanée',
+      duration: { kind: 'instant' },
       missile: true,
       damage: 10,
       ignorePA: true,
@@ -631,30 +627,21 @@ describe('Magie — correctifs de fidélité (audit)', () => {
     }
   });
 
-  // I1 — pas d'invention d'1 round ; résolution des durées-formule « (Bonus de X) Rounds ».
-  it('I1 : buffDurationRounds résout littéral et formule, null hors-rounds', () => {
-    const c = caster({ FM: 45, Ag: 39 }); // BFM 4, BAg 3
-    expect(buffDurationRounds('6 rounds', c)).toBe(6);
-    expect(buffDurationRounds('(Bonus de Force Mentale) Rounds', c)).toBe(4);
-    expect(buffDurationRounds('(Bonus d’Agilité) Rounds', c)).toBe(3);
-    expect(buffDurationRounds('1 minute', c)).toBeNull(); // hors-rounds : pas de défaut inventé
-    expect(buffDurationRounds(undefined, c)).toBeNull();
-  });
-
-  // A4 (cascade #T3) — durées d'HORLOGE (LDB 47) : minutes/heures/jours/« lever du soleil ».
-  it('durationClockMinutes : littéral, (Bonus de X), (X), lever du soleil ; null hors-horloge', () => {
+  // A4 (cascade #T3) — durées d'HORLOGE (LDB 47) : minutes/heures/jours/« lever du soleil », depuis la
+  // durée STRUCTURÉE. (L'échelle Rounds est portée par `{kind:'rounds'}`, hors de durationClockMinutes.)
+  it('durationClockMinutes : clock littéral/(Bonus de X)/(X), untilDawn ; null hors-horloge', () => {
     const c = caster({ FM: 45, Int: 38 }); // BFM 4 ; Int 38
-    expect(durationClockMinutes('1 heure', c, 0)).toBe(60);
-    expect(durationClockMinutes('(Bonus de Force Mentale) jours', c, 0)).toBe(4 * 24 * 60);
-    expect(durationClockMinutes('(Bonus de Force Mentale) minutes', c, 0)).toBe(4);
-    expect(durationClockMinutes('(Intelligence) minutes', c, 0)).toBe(38); // caractéristique PLEINE
+    expect(durationClockMinutes({ kind: 'clock', value: 1, unit: 'hours' }, c, 0)).toBe(60);
+    expect(durationClockMinutes({ kind: 'clock', value: { bonusOf: 'FM' }, unit: 'days' }, c, 0)).toBe(4 * 24 * 60);
+    expect(durationClockMinutes({ kind: 'clock', value: { bonusOf: 'FM' }, unit: 'minutes' }, c, 0)).toBe(4);
+    expect(durationClockMinutes({ kind: 'clock', value: { charOf: 'Int' }, unit: 'minutes' }, c, 0)).toBe(38); // carac PLEINE
     // « Jusqu'au lever du soleil » : prochaine aube (05:00) ; à l'aube pile → un cycle entier.
-    expect(durationClockMinutes("Jusqu'au lever du soleil", c, 0)).toBe(5 * 60);
-    expect(durationClockMinutes("Jusqu'au prochain lever de soleil", c, 5 * 60)).toBe(24 * 60);
-    // Hors-horloge : Rounds (échelle tactique), Instantanée, Spécial → null (rien d'inventé).
-    expect(durationClockMinutes('6 rounds', c, 0)).toBeNull();
-    expect(durationClockMinutes('Instantanée', c, 0)).toBeNull();
-    expect(durationClockMinutes('Spécial', c, 0)).toBeNull();
+    expect(durationClockMinutes({ kind: 'untilDawn' }, c, 0)).toBe(5 * 60);
+    expect(durationClockMinutes({ kind: 'untilDawn' }, c, 5 * 60)).toBe(24 * 60);
+    // Hors-horloge : Rounds (échelle tactique), Instantané, Spécial → null (rien d'inventé).
+    expect(durationClockMinutes({ kind: 'rounds', value: 6 }, c, 0)).toBeNull();
+    expect(durationClockMinutes({ kind: 'instant' }, c, 0)).toBeNull();
+    expect(durationClockMinutes({ kind: 'special', text: 'Spécial' }, c, 0)).toBeNull();
   });
 });
 
@@ -730,7 +717,7 @@ describe('Magie — compétences Avancées (gating)', () => {
 
   it('Dissipation : seul un SORT se dissipe — pas une Prière (LDB 46 « Si un Sort vous cible »)', () => {
     expect(isDispellableSpell(FLECHETTE)).toBe(true);
-    expect(isDispellableSpell({ label: 'Bénédiction', type: 'Béni', isPrayer: true, cn: null, duration: '', desc: '' })).toBe(false);
+    expect(isDispellableSpell({ label: 'Bénédiction', type: 'Béni', isPrayer: true, cn: null, duration: null, desc: '' })).toBe(false);
   });
 
   it('le Trait « Lanceur de Sorts » (LDB 85 : « La créature peut lancer des Sorts ») dispense de la Compétence', () => {

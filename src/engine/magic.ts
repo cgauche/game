@@ -24,11 +24,12 @@ import { effectiveSkillCharKey } from './skills';
 import { reverseRoll, hitLocationByShape } from './combat';
 import { Formula, resolveFormula } from './ops';
 import type { SpellRange, SpellTarget } from './spellRange';
+import type { SpellDuration } from './spellDuration';
 import { arcaneDomainIdOf } from './combatFeatures/dispatch';
 import { domainMissileMods } from './domainAttributes';
 import { armourMaterialOf } from './armourBypass';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
-import { Combatant, HitLocation, Difficulty, CHAR_BY_LABEL } from './types';
+import { Combatant, HitLocation, Difficulty } from './types';
 import { findTalent, findTalentById, findDomainById } from '../data';
 import { slugId } from '../data/slug';
 
@@ -42,7 +43,7 @@ export interface SpellLike {
    *  Domaine (LDB 48), indépendante de la langue. Dérivé du `subType` à l'authoring. */
   domainId?: string | null;
   cn: number | null;
-  duration?: string;
+  duration?: SpellDuration | null;
   desc: string;
   /** Prière (Béni/Invocation) plutôt qu'un Sort arcanique — porté par la DONNÉE (spells.json). */
   isPrayer?: boolean;
@@ -279,66 +280,21 @@ export function prayerWrathTriggered(roll: number, sinPoints: number): boolean {
 }
 
 /** Durée d'un sort exprimée en Rounds (« 6 rounds »), sinon null. */
-export function parseDurationRounds(duration?: string): number | null {
-  if (!duration) return null;
-  const m = duration.match(/(\d+)\s*rounds?/i);
-  return m ? parseInt(m[1], 10) : null;
-}
-
 /**
- * Durée d'un sort en Rounds, au niveau FORMULE : « N rounds » (littéral) ou
- * « (Bonus de X) Rounds » (résolu contre le lanceur à l'application). Retourne
- * null pour les durées hors-rounds (minutes/heures/jours/Instantanée) : l'appelant
- * NE DOIT PAS inventer un nombre de rounds dans ce cas (Livre de base : la durée est
- * celle indiquée par le sort, aucun défaut d'1 round).
+ * Durée d'un sort à l'échelle de l'HORLOGE (LDB 47), en minutes à partir de `now`, depuis la durée
+ * STRUCTURÉE : `{clock}` (« 1 heure », « (Bonus de FM) jours »…) résolu contre le lanceur, `{untilDawn}`
+ * (« Jusqu'au lever du soleil » = prochaine aube ; à l'aube pile, un cycle entier). Null pour les autres
+ * échelles (Rounds / Instantané / Spécial) — l'appelant n'invente RIEN. Zéro parsing de chaîne.
  */
-export function durationRoundsFormula(duration: string | undefined): Formula | null {
-  const lit = parseDurationRounds(duration);
-  if (lit != null) return lit;
+export function durationClockMinutes(duration: SpellDuration | null | undefined, caster: Combatant, now: number): number | null {
   if (!duration) return null;
-  const f = duration.match(/\(Bonus d[e'’]\s*([^)]+)\)\s*Rounds?/i);
-  if (f) {
-    const key = CHAR_BY_LABEL[f[1].trim()];
-    if (key) return { bonusOf: key };
-  }
-  return null;
-}
-
-/** Durée d'un buff en Rounds, résolue contre le lanceur (cf. durationRoundsFormula). */
-export function buffDurationRounds(duration: string | undefined, caster: Combatant): number | null {
-  const f = durationRoundsFormula(duration);
-  return f == null ? null : resolveFormula(f, caster);
-}
-
-/**
- * Durée d'un sort à l'échelle de l'HORLOGE (LDB 47), en minutes à partir de `now` — pour les
- * durées hors-rounds : « 1 heure », « (Bonus de Force Mentale) jours », « (Intelligence)
- * minutes », « Jusqu'au (prochain) lever du soleil » (= prochaine aube ; à l'aube pile, un
- * cycle entier — même convention que le repos). Renvoie null si la durée n'est pas une durée
- * d'horloge (Rounds / Instantanée / Spécial) — l'appelant n'invente RIEN.
- */
-export function durationClockMinutes(duration: string | undefined, caster: Combatant, now: number): number | null {
-  if (!duration) return null;
-  if (durationRoundsFormula(duration) != null) return null; // échelle tactique : gérée en Rounds
-  const UNIT: Record<string, number> = { minute: 1, heure: 60, jour: MINUTES_PER_DAY };
-  const unitOf = (s: string) => UNIT[s.toLowerCase().replace(/s$/, '')];
-  // « Jusqu'au (prochain) lever du soleil » (Tour de guet, LDB 47).
-  if (/jusqu.au\s+(prochain\s+)?lever\s+d[eu]\s*soleil/i.test(duration)) {
+  if (duration.kind === 'untilDawn') {
     const toDawn = minutesUntilNext(now, DAWN_MINUTE);
     return toDawn === 0 ? MINUTES_PER_DAY : toDawn;
   }
-  // Littéral : « 1 heure », « 3 jours ».
-  const lit = duration.match(/^(\d+)\s*(minutes?|heures?|jours?)/i);
-  if (lit) return parseInt(lit[1], 10) * unitOf(lit[2]);
-  // « (Bonus de X) unités » ou « (X) unités » — valeur du lanceur.
-  const f = duration.match(/^\((Bonus d[e'’]\s*)?([^)]+)\)\s*(minutes?|heures?|jours?)/i);
-  if (f) {
-    const key = CHAR_BY_LABEL[f[2].trim()];
-    if (!key) return null;
-    const val = f[1] ? bonus(effectiveChar(caster, key)) : effectiveChar(caster, key);
-    return Math.max(1, val) * unitOf(f[3]);
-  }
-  return null;
+  if (duration.kind !== 'clock') return null;
+  const UNIT = { minutes: 1, hours: 60, days: MINUTES_PER_DAY };
+  return Math.max(1, resolveFormula(duration.value, caster)) * UNIT[duration.unit];
 }
 
 export interface CastResult {
