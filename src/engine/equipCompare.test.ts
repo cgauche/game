@@ -12,7 +12,7 @@ const it_ = (p: Partial<ItemInstance>): ItemInstance =>
 describe('compareEquip (accordéon « équiper » du marchand)', () => {
   it('mêlée : améliore les Dégâts et l’Allonge vs l’arme actuelle', () => {
     const h = hero({ weapons: [{ uid: 'cur', name: 'Dague', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, reach: 'Très courte', qualities: [] }] });
-    const epee = it_({ uid: 'new', name: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', qualities: ['Équilibrée'] });
+    const epee = it_({ uid: 'new', name: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', qualities: [{ id: 'precise' }] });
     const c = compareEquip(epee, h);
     expect(c.slot).toBe('melee');
     expect(c.currentName).toBe('Dague');
@@ -57,9 +57,9 @@ describe('compareEquip (accordéon « équiper » du marchand)', () => {
   });
 
   it('bouclier : compare la Protection (Protectrice N), exclut l’objet lui-même', () => {
-    expect(isShieldItem({ qualities: ['Protectrice 1'] })).toBe(true);
-    const h = hero({ weapons: [{ uid: 'cur', name: 'Bouclier (Targe)', type: 'melee', qualities: ['Protectrice 1', 'Défensive'] }] });
-    const grand = it_({ uid: 'new', name: 'Bouclier (Grand)', kind: 'melee', qualities: ['Protectrice 3', 'Défensive'] });
+    expect(isShieldItem({ qualities: [{ id: 'protectrice', value: 1 }] })).toBe(true);
+    const h = hero({ weapons: [{ uid: 'cur', name: 'Bouclier (Targe)', type: 'melee', qualities: [{ id: 'protectrice', value: 1 }, { id: 'defensive' }] }] });
+    const grand = it_({ uid: 'new', name: 'Bouclier (Grand)', kind: 'melee', qualities: [{ id: 'protectrice', value: 3 }, { id: 'defensive' }] });
     const c = compareEquip(grand, h);
     expect(c.slot).toBe('shield');
     expect(c.currentName).toBe('Bouclier (Targe)');

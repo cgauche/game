@@ -21,7 +21,7 @@ function negociant(): Combatant {
   // + skin bleuté ; identified:false → ses qualités sont MASQUÉES tant qu'une Évaluation ne l'a pas révélée
   // (elles restent ACTIVES en combat).
   const epee = itemFromTrappingById('epee-batarde')!;
-  epee.qualities = [...epee.qualities, 'de-plaies-atroces']; // id de qualité runtime
+  epee.qualities = [...epee.qualities, { id: 'de-plaies-atroces' }]; // QualityInstance runtime
   epee.identified = false;
   epee.skin = { metal: '#7faaff' };
   epee.equipped = true;

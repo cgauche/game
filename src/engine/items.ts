@@ -4,17 +4,16 @@
  * (`Combatant.weapons` / `armour`) sont DÉRIVÉES de l'équipement via
  * recomputeLoadout : équiper une hache ou une armure change donc le combat.
  */
-import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout, WeaponDamageSpec } from './types';
+import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout, WeaponDamageSpec, QualityInstance } from './types';
 import { bonus, baseWithTraits } from './characteristics';
 import { talentEncumbranceBonus } from './combatFeatures/dispatch';
 import { applyEnchants } from './weaponDamage';
 import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { mutationArmourBonus } from './corruption';
-import { findTrappingById, qualityRuntime, type TrappingRef, trappingRefLabel } from '../data';
+import { findTrappingById, qualityInstance, type TrappingRef, trappingRefLabel } from '../data';
 import { QUALITY_IDS } from './qualities/ids';
-import { indiceOf } from './qualities/normalize';
 import { craftEncDelta } from './qualities/craftEconomy';
-import { hasQuality } from './qualities/dispatch';
+import { hasQuality, qualityIndice } from './qualities/dispatch';
 import { hasTraitKey } from './traits/dispatch';
 
 let uidCounter = 0;
@@ -51,7 +50,7 @@ export interface WeaponSpec {
   name: string;
   type?: 'melee' | 'ranged';
   damage: WeaponDamageSpec;
-  qualities?: string[];
+  qualities?: QualityInstance[];
   subType?: string;
   reach?: string | null;
   range?: number | null;
@@ -152,7 +151,7 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
     damage: t.damage ?? undefined,
     reach: t.reach,
     range: kind === 'ranged' ? Number(t.reach) || null : null,
-    qualities: (t.qualities ?? []).map(qualityRuntime), // QualityRef[] (donnée) → ids runtime (stables)
+    qualities: (t.qualities ?? []).map(qualityInstance), // QualityRef[] (donnée) → QualityInstance[] runtime (structuré, frais)
     pa: t.pa ?? undefined,
     locs: locs && locs.length ? locs : undefined,
     enc: t.enc ?? 0,
@@ -271,7 +270,7 @@ export function unarmedWeapon(): Weapon {
     const it = itemFromTrappingById('mains-nues');
     _unarmed = it
       ? buildWeapon({ name: it.name, damage: it.damage ?? { plusBF: true, flat: 0 }, reach: it.reach, qualities: it.qualities, subType: it.subType, builtinId: 'mains-nues' })
-      : buildWeapon({ name: 'Mains nues', damage: { literal: '+BF+0' }, reach: 'Personnelle', qualities: [QUALITY_IDS.Inoffensive], subType: 'bagarre', builtinId: 'mains-nues' });
+      : buildWeapon({ name: 'Mains nues', damage: { literal: '+BF+0' }, reach: 'Personnelle', qualities: [{ id: QUALITY_IDS.Inoffensive }], subType: 'bagarre', builtinId: 'mains-nues' });
   }
   return { ..._unarmed, hand: 'main' };
 }
@@ -305,7 +304,7 @@ export function recomputeLoadout(c: Combatant): void {
     if (it.destroyed) return null; // arme détruite : inutilisable (LDB 14 — Incident de Tir)
     const hands = weaponHands(it);
     if (hands === 2 && cannotWieldTwoHanded(c)) return null; // amputation : pas d'arme à 2 mains (LDB 18 l.352)
-    const reload = indiceOf(it.qualities, QUALITY_IDS.Recharge) ?? 0;
+    const reload = qualityIndice(it, QUALITY_IDS.Recharge) ?? 0;
     // Enchantements PORTÉS PAR L'OBJET (op augmentWeapon / arme invoquée) repliés ici → l'arme active
     // est déjà Magique/+Dégâts/onHit, donc visible partout ET appliquée à la résolution (pas de merge ailleurs).
     return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
@@ -604,7 +603,7 @@ export function weaponWithAmmo(weapon: Weapon, ammo: ItemInstance): Weapon {
   const w = weapon.damage;
   const a = ammo.damage;
   const qualities = [...weapon.qualities];
-  for (const q of ammo.qualities) if (!qualities.includes(q)) qualities.push(q);
+  for (const q of ammo.qualities) if (!qualities.some((x) => x.id === q.id)) qualities.push(q);
   const damage: WeaponDamageSpec = 'flat' in w
     ? { plusBF: w.plusBF || (a != null && 'plusBF' in a && a.plusBF), flat: w.flat + (a != null && 'flat' in a ? a.flat : 0) }
     : w; // arme « Spécial » (literal) → inchangée

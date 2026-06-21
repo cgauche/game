@@ -24,7 +24,7 @@ import type { Weapon } from '../../engine/types';
  *      test simple plié aurait conclu « réussite » sur le jet de l'attaquant, ici l'égalité ne suffit pas).
  *  (b) victime ENNEMIE → jet INLINE + Sonné si l'attaquant l'emporte.
  */
-const assommante = (): Weapon => ({ name: "Marteau de guerre", type: 'melee', damage: { plusBF: true, flat: 6 }, qualities: ['assommante'] });
+const assommante = (): Weapon => ({ name: "Marteau de guerre", type: 'melee', damage: { plusBF: true, flat: 6 }, qualities: [{ id: 'assommante' }] });
 
 describe('Assommante — nœud Flow test OPPOSÉ (Force figée vs Résistance, resolveOpposed)', () => {
   beforeEach(() => {

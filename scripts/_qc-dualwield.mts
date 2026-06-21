@@ -10,12 +10,12 @@ import { weaponRest } from '../src/gameIso/rig/anim/weaponClips';
 import type { Weapon } from '../src/engine/types';
 import type { View } from '../src/gameIso/rig/facing';
 
-const W_ = (name: string, hand: 'main' | 'off', q: string[] = []): Weapon =>
+const W_ = (name: string, hand: 'main' | 'off', q: { id: string; value?: number }[] = []): Weapon =>
   ({ name, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: q, hand, hands: 1 } as Weapon);
 
 type Cfg = { label: string; weapons: Weapon[]; shield?: Weapon };
 const sword = W_('Épée', 'main');
-const shield = W_('Bouclier', 'off', ['Bouclier']);
+const shield = W_('Bouclier', 'off', [{ id: 'protectrice', value: 1 }]);
 const CFGS: Cfg[] = [
   { label: 'Épée + Bouclier', weapons: [sword, shield], shield },
   { label: 'Épée + Dague (off)', weapons: [sword, W_('Dague', 'off')] },

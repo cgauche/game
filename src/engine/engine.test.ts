@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG, RNG } from './dice';
 import { addCondition, combatTestPenalty, meleeAttackerBonus, cannotDefend } from './conditions';
+import { parseQualityInstance } from './qualities/normalize';
 import { evaluateTest, resolveOpposed } from './tests';
 import { bonus, maxWounds } from './characteristics';
 import { effectiveWeaponDamage } from './weaponDamage';
@@ -51,7 +52,7 @@ describe("Atouts d'arme (LDB Les armes)", () => {
     const def = fighter(30);
     def.armour.brasD = 3; // jet 44 → reverseRoll 44 → Bras droit
     const hit = (q: string[]) => {
-      const atk = fighter(50, { qualities: q, damage: { plusBF: false, flat: 10 } });
+      const atk = fighter(50, { qualities: q.map((s) => parseQualityInstance(s)!), damage: { plusBF: false, flat: 10 } });
       return resolveMelee(atk, def, atk.weapons[0], rngOf(44), { defense: 'none' });
     };
     expect(hit(['Perforante']).woundsLost! - hit([]).woundsLost!).toBe(1);
@@ -59,13 +60,13 @@ describe("Atouts d'arme (LDB Les armes)", () => {
   it('Pointue : +1 DR sur une touche (→ +1 Blessure)', () => {
     const def = fighter(30);
     const hit = (q: string[]) => {
-      const atk = fighter(50, { qualities: q });
+      const atk = fighter(50, { qualities: q.map((s) => parseQualityInstance(s)!) });
       return resolveMelee(atk, def, atk.weapons[0], rngOf(44), { defense: 'none' });
     };
     expect(hit(['Pointue']).woundsLost! - hit([]).woundsLost!).toBe(1);
   });
   it('Empaleuse : Critique sur un multiple de 10', () => {
-    const emp = fighter(60, { qualities: ['Empaleuse'] });
+    const emp = fighter(60, { qualities: [{ id: 'empaleuse' }] });
     const r = resolveMelee(emp, fighter(30), emp.weapons[0], rngOf(20), { defense: 'none' });
     expect(r.hit).toBe(true);
     expect(r.critical).toBe(true);
@@ -75,7 +76,7 @@ describe("Atouts d'arme (LDB Les armes)", () => {
   it("Précise : +10 au Test (touche là où l'arme nue échoue, même jet)", () => {
     const def = fighter(30);
     const plain = fighter(40); // CC 40, jet 45 → échec
-    const prec = fighter(40, { qualities: ['Précise'] }); // +10 → cible 50, jet 45 → réussite
+    const prec = fighter(40, { qualities: [{ id: 'precise' }] }); // +10 → cible 50, jet 45 → réussite
     expect(resolveMelee(plain, def, plain.weapons[0], rngOf(45), { defense: 'none' }).hit).toBe(false);
     expect(resolveMelee(prec, def, prec.weapons[0], rngOf(45), { defense: 'none' }).hit).toBe(true);
   });

@@ -5,6 +5,7 @@ import type { PendingBladeTrap } from './pendings';
 import { bus, EVT } from './bus';
 import { ev } from './combatLog';
 import { isOutOfAction, addCondition } from '../engine/conditions';
+import { parseQualityInstance } from '../engine/qualities/normalize';
 import { formatImperial } from '../engine/clock';
 import { testScenarios } from '../scenes/test-scenarios';
 import { hoverTargeting } from './targeting';
@@ -492,7 +493,7 @@ export function buildApi() {
     quality: (id: string, label = 'Déstabilisante', advantage?: number) => {
       const tweak = (c: Combatant): Combatant => {
         if (c.id !== id) return c;
-        const weapons = (c.weapons ?? []).map((w, i) => (i === 0 ? { ...w, qualities: [...(w.qualities ?? []), label] } : w));
+        const weapons = (c.weapons ?? []).map((w, i) => (i === 0 ? { ...w, qualities: [...(w.qualities ?? []), parseQualityInstance(label) ?? { id: label }] } : w));
         return { ...c, weapons, ...(advantage != null ? { advantage } : {}) };
       };
       useGame.setState((s) => ({

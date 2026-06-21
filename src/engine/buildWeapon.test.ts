@@ -38,7 +38,7 @@ describe('buildWeapon — défauts, uid, copie', () => {
     expect(buildWeapon({ name: 'G', damage: { plusBF: true, flat: 3 }, uid: { prefix: 'nat-griffe' } }).uid).toMatch(/^nat-griffe-it-\d+$/);
   });
   it('qualities est COPIÉ (pas aliasé)', () => {
-    const src = ['Magique'];
+    const src = [{ id: 'magique' }];
     const w = buildWeapon({ name: 'X', damage: { plusBF: true, flat: 0, bare: true }, qualities: src });
     expect(w.qualities).toEqual(src);
     expect(w.qualities).not.toBe(src);
@@ -47,8 +47,8 @@ describe('buildWeapon — défauts, uid, copie', () => {
 
 describe('weaponItem — RÉUTILISE buildWeapon, bascule en ItemInstance', () => {
   it('type→kind, ajoute enc/equipped/conjured ; partage la convention de Dégâts et l\'uid', () => {
-    const item = weaponItem({ name: 'Arme aethyrique', damage: { plusBF: true, flat: 4 }, qualities: ['Magique'], uid: { prefix: 'conjure' }, conjured: true });
-    expect(item).toMatchObject({ kind: 'melee', damage: { plusBF: true, flat: 4 }, qualities: ['Magique'], enc: 0, equipped: false, conjured: true });
+    const item = weaponItem({ name: 'Arme aethyrique', damage: { plusBF: true, flat: 4 }, qualities: [{ id: 'magique' }], uid: { prefix: 'conjure' }, conjured: true });
+    expect(item).toMatchObject({ kind: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [{ id: 'magique' }], enc: 0, equipped: false, conjured: true });
     expect(item.uid).toMatch(/^conjure-it-\d+$/);
     expect((item as { type?: unknown }).type).toBeUndefined(); // pas de fuite du champ Weapon.type
   });

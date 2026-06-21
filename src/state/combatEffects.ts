@@ -560,7 +560,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const it = itemFromGive(e);
       // Butin MAGIQUE (optionnel) : qualités ajoutées, objet non identifié (qualités masquées jusqu'à
       // Évaluation, #2), skin légendaire. Les qualités restent ACTIVES mécaniquement (registre).
-      if (e.qualities?.length) it.qualities = [...it.qualities, ...e.qualities];
+      if (e.qualities?.length) it.qualities = [...it.qualities, ...e.qualities.map((id) => ({ id }))]; // e.qualities = ids (donnée de scène)
       if (e.identified === false) it.identified = false;
       if (e.skin) it.skin = e.skin;
       if (e.magicKnown) it.magicKnown = true; // aura détectée en fenêtre de loot → suit l'objet

@@ -24,7 +24,7 @@ const rig = (equip: { weapons: Weapon[]; armour: never[]; shield?: Weapon }) =>
 const cells: Cell[] = [
   ...WEAPON_FORMS.map((f) => ({ slug: f.slug, label: f.label, svg: rig({ weapons: [{ name: f.label, type: f.type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon], armour: [] }) })),
   ...SHIELD_FORMS.map((s) => {
-    const sh = { name: s.label, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: ['Bouclier'] } as Weapon;
+    const sh = { name: s.label, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [{ id: 'protectrice', value: 1 }] } as Weapon;
     return { slug: `shield_${s.slug}`, label: s.label, svg: rig({ weapons: [], armour: [], shield: sh }) };
   }),
 ];

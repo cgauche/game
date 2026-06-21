@@ -6,7 +6,7 @@ import type { Combatant, Weapon } from './types';
 // Portée 20 m → Bout Portant si dist×2 ≤ 20/10 = 2, donc à ≤ 1 tuile (combat.ts rangeBandName).
 const bow = (): Weapon => ({ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 0 }, range: 20, qualities: [] } as unknown as Weapon);
 const shield = (indice: number): Weapon =>
-  ({ name: 'Bouclier', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [`Protectrice ${indice}`] } as unknown as Weapon);
+  ({ name: 'Bouclier', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'protectrice', value: indice }] } as unknown as Weapon);
 
 const atk = (over: Partial<Combatant> = {}): Combatant =>
   ({ id: 'a', name: 'Tireur', kind: 'hero', conditions: [], engagedWith: [], weapons: [], ...over } as unknown as Combatant);
@@ -60,7 +60,7 @@ describe('bestRangedDefense — meilleure défense AUTO contre un tir', () => {
   it('bouclier Protectrice 2+ → parade avec le bouclier', () => {
     const r = bestRangedDefense(atk(), def({ weapons: [shield(2)] }), w, 5, true);
     expect(r?.mode).toBe('parade');
-    expect(r?.parryWeapon?.qualities).toContain('Protectrice 2');
+    expect(r?.parryWeapon?.qualities.some((q) => q.id === 'protectrice' && q.value === 2)).toBe(true);
   });
 });
 

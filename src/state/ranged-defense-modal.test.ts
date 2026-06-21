@@ -15,7 +15,7 @@ const mk = (id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, w
      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4 } as unknown as Combatant);
 const bow: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 4 }, range: 60, qualities: [] } as unknown as Weapon;
 const sword: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, uid: 'sw', qualities: [] } as unknown as Weapon;
-const shield: Weapon = { name: 'Bouclier', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, uid: 'sh', qualities: ['Protectrice 2'] } as unknown as Weapon;
+const shield: Weapon = { name: 'Bouclier', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, uid: 'sh', qualities: [{ id: 'protectrice', value: 2 }] } as unknown as Weapon;
 
 function setup(heroWeapons: Weapon[], enemyPos: { x: number; y: number }) {
   seedBattleRng(7);

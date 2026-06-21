@@ -1,6 +1,6 @@
 import { useState, useMemo, Fragment } from 'react';
 import { useGame } from '../state/store';
-import { findTrappingById, weaponGroupLabel, qualityRuntime, type QualityRef } from '../data/index';
+import { findTrappingById, weaponGroupLabel, type QualityRef } from '../data/index';
 import { priceToMoney, fromBrass, toBrass, formatMoney, canAfford, add as moneyAdd, type Money } from '../engine/money';
 import { craftPriceFactor } from '../engine/qualities/craftEconomy';
 import { repairCostBrass } from '../engine/repair';
@@ -31,7 +31,7 @@ const AVAIL_RANK: Record<string, number> = { Commune: 0, Limitée: 1, Rare: 2, E
 function familyOf(id: string): string {
   const t = findTrappingById(id);
   if (!t) return 'divers';
-  if (isShieldItem({ qualities: (t.qualities ?? []).map(qualityRuntime) })) return 'boucliers';
+  if (isShieldItem({ qualities: t.qualities })) return 'boucliers';
   if (t.type === 'melee') return 'melee';
   if (t.type === 'ranged') return 'ranged';
   if (t.type === 'ammunition') return 'ammo';
@@ -65,7 +65,7 @@ const FAMILY_COLS: Record<string, { label: string; get: (t: TrapRow) => string; 
 function lineCost(id: string, factor: number): Money | null {
   const t = findTrappingById(id);
   if (!t) return null;
-  const brass = toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities.map(qualityRuntime) }) * factor;
+  const brass = toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * factor;
   if (!Number.isFinite(brass)) return null;
   return fromBrass(Math.round(brass));
 }

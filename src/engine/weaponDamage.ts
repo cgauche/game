@@ -49,7 +49,7 @@ export function applyEnchants(w: Weapon, enchants: WeaponEnchant[]): Weapon {
   let dmgPlus = 0;
   const onHit: TriggeredEffect[] = [...(w.onHitEffects ?? [])];
   for (const e of enchants) {
-    for (const q of e.addQualities ?? []) if (!out.qualities.includes(q)) out.qualities.push(q);
+    for (const id of e.addQualities ?? []) if (!out.qualities.some((x) => x.id === id)) out.qualities.push({ id }); // addQualities = ids (valueless)
     dmgPlus += e.damageBonus ?? 0;
     if (e.onHitEffects?.length) onHit.push(...e.onHitEffects);
   }
@@ -75,7 +75,7 @@ export function isImprovised(w: Weapon): boolean {
  */
 export function effectiveWeapon(w: Weapon): Weapon {
   if (!isImprovised(w)) return w;
-  return { ...w, damage: { plusBF: true, flat: 1 }, qualities: ['Inoffensive'], damageTaken: 0, reach: 'Moyenne' };
+  return { ...w, damage: { plusBF: true, flat: 1 }, qualities: [{ id: QUALITY_IDS.Inoffensive }], damageTaken: 0, reach: 'Moyenne' };
 }
 
 /** Inflige 1 point de Dégât à l'arme (sauf Incassable). */

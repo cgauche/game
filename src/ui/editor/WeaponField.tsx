@@ -3,8 +3,10 @@
  * objet…). Édite le VRAI objet `Weapon` — pas de structure intermédiaire. Les champs de LOADOUT
  * (hand/uid/reload/bypass/skin) sont runtime et hors édition : on ne décrit ici que l'arme elle-même.
  */
-import type { Weapon } from '../../engine/types';
+import type { Weapon, QualityInstance } from '../../engine/types';
 import { damageString, parseDamage } from '../../engine/items';
+import { parseQualityInstance } from '../../engine/qualities/normalize';
+import { qualityRefLabel } from '../../data';
 
 export function WeaponField({ value, onChange }: { value: Weapon | undefined; onChange: (v: Weapon | undefined) => void }) {
   if (!value) {
@@ -41,8 +43,8 @@ export function WeaponField({ value, onChange }: { value: Weapon | undefined; on
           <label className="dr">Portée (m)<input type="number" min={0} value={w.range ?? ''} onChange={(e) => patch({ range: e.target.value === '' ? undefined : Math.max(0, Number(e.target.value) || 0) })} /></label>
         )}
       </div>
-      <label className="dr">Qualités<input placeholder="Perçante, Magique… (séparées par des virgules)" value={w.qualities.join(', ')}
-        onChange={(e) => patch({ qualities: e.target.value.split(',').map((s) => s.trim()).filter(Boolean) })} /></label>
+      <label className="dr">Qualités<input placeholder="Perçante, Solide 3… (séparées par des virgules)" value={w.qualities.map(qualityRefLabel).join(', ')}
+        onChange={(e) => patch({ qualities: e.target.value.split(',').map((s) => parseQualityInstance(s.trim())).filter((q): q is QualityInstance => q != null) })} /></label>
     </div>
   );
 }

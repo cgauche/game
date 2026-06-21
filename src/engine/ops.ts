@@ -22,7 +22,7 @@ import { bypassedAP } from './armourBypass';
 import { grantTrait } from './grantedTraits';
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { cureCriticalWounds } from './trauma';
-import { damageLeatherArmour, itemFromTrappingById, itemFromGive, giveTrappingLabel, recomputeLoadout, buildWeapon, weaponItem, newUid, activeLoadout } from './items';
+import { damageLeatherArmour, itemFromTrappingById, itemFromGive, giveTrappingLabel, recomputeLoadout, buildWeapon, weaponItem, newUid, activeLoadout, damageString } from './items';
 import { weaponMatchesFamily } from './weaponDamage';
 import { suppressPsychTraits } from './psychology';
 import { norm } from '../lib/normalize';
@@ -950,7 +950,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const plusBF = o.plusBF !== false; // attaques naturelles = SB-relatives par défaut
         const weapon = buildWeapon({
           name: o.name, damage: { plusBF, flat: n },
-          qualities: o.qualities, uid: { prefix: `nat-${norm(o.name)}` },
+          qualities: (o.qualities ?? []).map((id) => ({ id })), uid: { prefix: `nat-${norm(o.name)}` },
         });
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
@@ -959,8 +959,8 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           naturalWeapon: weapon,
         });
         recomputeLoadout(target);
-        const natQuals = weapon.qualities.map((id) => qualityRefLabel({ id })).join(', '); // ids → libellés
-        lines.push(`${target.name} gagne l'attaque naturelle ${o.name} (Dégâts ${weapon.damage}${weapon.qualities.length ? `, ${natQuals}` : ''}) (${ctx.label ?? 'sort'}).`);
+        const natQuals = weapon.qualities.map(qualityRefLabel).join(', ');
+        lines.push(`${target.name} gagne l'attaque naturelle ${o.name} (Dégâts ${damageString(weapon.damage)}${weapon.qualities.length ? `, ${natQuals}` : ''}) (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'grantWeapon': {
@@ -979,7 +979,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           subType: form ? tpl?.subType : o.subType,
           reach: form ? tpl?.reach : (o.reach ?? null),
           hands: form ? (tpl?.hands ?? 1) : (o.hands ?? 1),
-          qualities: o.qualities, // Atouts du Sort (Magique, Percutante) — PAS ceux du gabarit ; copiés par buildWeapon
+          qualities: (o.qualities ?? []).map((id) => ({ id })), // Atouts du Sort (ids) — PAS ceux du gabarit ; copiés par buildWeapon
           conjured: true,
           uid: { prefix: 'conjure' },
           ...(o.skin ? { skin: o.skin } : {}), // teinte magique unique (aethyrique/améthyste/ardente)
@@ -998,8 +998,8 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           duration: durationFromCtx(ctx),
           conjuredSet,
         });
-        const conjQuals = item.qualities.map((id) => qualityRefLabel({ id })).join(', '); // ids → libellés
-        lines.push(`${target.name} invoque ${item.name} (Dégâts ${item.damage}${item.qualities.length ? `, ${conjQuals}` : ''}) (${ctx.label ?? 'sort'}).`);
+        const conjQuals = item.qualities.map(qualityRefLabel).join(', ');
+        lines.push(`${target.name} invoque ${item.name} (Dégâts ${item.damage ? damageString(item.damage) : '—'}${item.qualities.length ? `, ${conjQuals}` : ''}) (${ctx.label ?? 'sort'}).`);
         break;
       }
       case 'castWard': {

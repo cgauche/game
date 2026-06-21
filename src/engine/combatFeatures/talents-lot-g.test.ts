@@ -53,9 +53,9 @@ describe('modificateurs de Test (LDB 10)', () => {
   it('Frappe assommante : pas de −10 à la Tête avec une arme Assommante', () => {
     const c = mk([{ name: 'Frappe assommante', times: 1 }]);
     const tgt = mk([], { id: 't' });
-    const mods = attackModifiers(c, tgt, w({ qualities: ['Assommante'] }), { kind: 'melee', location: 'tete' });
+    const mods = attackModifiers(c, tgt, w({ qualities: [{ id: 'assommante' }] }), { kind: 'melee', location: 'tete' });
     expect(mods.find((m) => m.label === 'Localisation visée')).toBeUndefined();
-    const sans = attackModifiers(mk([]), tgt, w({ qualities: ['Assommante'] }), { kind: 'melee', location: 'tete' });
+    const sans = attackModifiers(mk([]), tgt, w({ qualities: [{ id: 'assommante' }] }), { kind: 'melee', location: 'tete' });
     expect(sans.find((m) => m.label === 'Localisation visée')?.value).toBe(-10);
   });
   it('Tir mortel : pas de −10 de Localisation à distance', () => {
@@ -99,7 +99,7 @@ describe('initiative / économie d’action (LDB 10)', () => {
 describe('défense / récupération (LDB 10)', () => {
   it('Porte-Bouclier (au bouclier seulement) / Riposte / Renversement', () => {
     const c = mk([{ name: 'Porte-Bouclier', times: 2 }]);
-    expect(shieldAdvantageLevel(c, w({ name: 'Bouclier', qualities: ['protectrice 2'] }))).toBe(2); // bouclier = Atout Protectrice (id stable)
+    expect(shieldAdvantageLevel(c, w({ name: 'Bouclier', qualities: [{ id: 'protectrice', value: 2 }] }))).toBe(2); // bouclier = Atout Protectrice (id stable)
     expect(shieldAdvantageLevel(c, w({ name: 'Épée' }))).toBe(0);
     expect(hasRiposte(mk([{ name: 'Riposte', times: 1 }]))).toBe(true);
     expect(hasStealAdvantage(mk([{ name: 'Renversement', times: 1 }]))).toBe(true);

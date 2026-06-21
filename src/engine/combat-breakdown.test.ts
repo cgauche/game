@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { parseQualityInstance } from './qualities/normalize';
 import { resolveMelee, resolveRanged, rangeBandModifier, rangeBandName, attackModifiers, resolveStrayRangedHit, defenseModifiers, rollMeleeDefender, finishMelee, resolveMeleePassive, resolveTrample } from './combat';
 import { evaluateTest } from './tests';
 import { makeRNG } from './dice';
@@ -54,7 +55,7 @@ describe('attackModifiers : pénalité de main secondaire (LDB 14 l.181)', () =>
 
 describe('parade : pénalité de main secondaire + exception Parade/Défensive (LDB 62 l.192)', () => {
   const parrySpec = { skillId: 'corps-a-corps', spec: 'Parade', characteristic: 'CC', advances: 0 } as any;
-  const offShield: Weapon = { name: 'Bouclier', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: ['Défensive'], hand: 'off', hands: 1 };
+  const offShield: Weapon = { name: 'Bouclier', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'defensive' }], hand: 'off', hands: 1 };
   it('parade main secondaire : bouclier Défensive + spé Parade → AUCUNE pénalité', () => {
     const mods = defenseModifiers(mk({ skills: [parrySpec] }), 'parade', 0, offShield);
     expect(mods.some((m) => m.label === 'Main secondaire')).toBe(false);
@@ -125,7 +126,7 @@ describe('Esquive sous la neige −20 (LDB 14 l.115-116)', () => {
 describe('Atouts Dévastatrice / Percutante (LDB 62 l.279/313)', () => {
   // roll 34 vs cible 52 → DR (sl) = 5−3 = 2 ; dé des unités = 4. Arme '+8' (ranged) ; cible mk() E30 → BE3, PA0.
   // Sans Atout : dégâts = 8 + 2 = 10 → woundsLost 7. Dévastatrice : 8 + max(2,4)=12 → 9. Percutante : 8+2+4=14 → 11.
-  const ranged = (qualities: string[]) => ({ name: 'X', type: 'ranged' as const, damage: { plusBF: false, flat: 8 }, qualities });
+  const ranged = (qualities: string[]) => ({ name: 'X', type: 'ranged' as const, damage: { plusBF: false, flat: 8 }, qualities: qualities.map((s) => parseQualityInstance(s)!) });
   it('Dévastatrice : dégâts utilisent max(DR, dé des unités)', () => {
     expect(resolveStrayRangedHit(mk(), mk(), ranged([]), 34, 52).woundsLost).toBe(7);
     expect(resolveStrayRangedHit(mk(), mk(), ranged(['Dévastatrice']), 34, 52).woundsLost).toBe(9);

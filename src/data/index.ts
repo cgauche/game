@@ -979,12 +979,12 @@ export function refLabel(category: string, ref: Ref): string {
   const base = findById(category, ref.id)?.label ?? ref.id;
   return ref.spec ? `${base} (${ref.spec})` : base;
 }
-/** Forme RUNTIME d'une qualité (Weapon/ItemInstance.qualities) : id STABLE, + Indice « id 3 ».
- *  Le moteur (`parseQuality`) la relit par id ; l'affichage la repasse en libellé. PAS le libellé. */
-export function qualityRuntime(q: QualityRef): string {
-  return q.value != null ? `${q.id} ${q.value}` : q.id;
+/** Copie une `QualityRef` de catalogue en `QualityInstance` RUNTIME FRAÎCHE (`{id, value?}`) — objet neuf
+ *  (le runtime mute `qualities` : enchantements, munitions). Plus d'aplatissement en chaîne « id value ». */
+export function qualityInstance(q: QualityRef): import('../engine/types').QualityInstance {
+  return q.value != null ? { id: q.id, value: q.value } : { id: q.id };
 }
-/** Libellé d'affichage d'une `QualityRef` : « Solide 3 », « Tranchante » (id → libellé + Indice). */
+/** Libellé d'affichage d'une `QualityRef` (ou `QualityInstance` runtime) : « Solide 3 », « Tranchante ». */
 export function qualityRefLabel(q: QualityRef): string {
   return q.value != null ? `${refLabel('qualities', q)} ${q.value}` : refLabel('qualities', q);
 }

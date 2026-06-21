@@ -17,7 +17,7 @@ import { makeRNG } from '../engine/dice';
 import { rollStock, fullStock, type Settlement, type CatalogItem } from '../engine/disponibilite';
 import { priceToMoney, subtract as moneySub, add as moneyAdd, canAfford, fromBrass, toBrass, formatMoney } from '../engine/money';
 import { MINUTES_PER_DAY } from '../engine/clock';
-import { findTrappingById, trappings, qualityRuntime } from '../data/index';
+import { findTrappingById, trappings } from '../data/index';
 import { slugId } from '../data/slug';
 import { MERCHANTS } from './merchants/index';
 import { describeBargain } from './flowOutcomes';
@@ -80,7 +80,7 @@ export function openMerchant(get: Get, set: Set, entityId: string): void {
       .filter((t) => (!arch.category.types || arch.category.types.includes(t.type)) && (!arch.category.subTypes || (t.subType != null && arch.category.subTypes.includes(t.subType))))
       .map((t) => {
         const base = (t.availability as CatalogItem['availability']) ?? null;
-        const av = guild && base ? shiftAvailability(base, { qualities: t.qualities.map(qualityRuntime) }, { guild: true }) : base;
+        const av = guild && base ? shiftAvailability(base, { qualities: t.qualities }, { guild: true }) : base;
         return { id: t.id, label: t.label, availability: av };
       });
     // Seed dérivé de l'entité ET de la PÉRIODE de réassort → chaque réassort a un stock frais déterministe.
@@ -115,7 +115,7 @@ export function buyItem(get: Get, set: Set, id: string, heroId?: string): void {
   const line = m.stock.find((l) => l.id === id); if (!line || line.qty <= 0) return;
   const t = findTrappingById(id); if (!t) return;
   const factor = m.bargainBuy ? bargainBuyFactor(m.bargainBuy.won, m.bargainBuy.drNet, m.bargainBuy.negotiator) : 1;
-  const cost = fromBrass(Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities.map(qualityRuntime) }) * (m.buyMarkup ?? 1) * factor));
+  const cost = fromBrass(Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * (m.buyMarkup ?? 1) * factor));
   if (!canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour ${t.label}.`); return; }
   const it = itemFromTrappingById(id); if (!it) return;
   const dest = heroId ?? get().party[0]?.id;
@@ -184,7 +184,7 @@ export function payCart(get: Get, set: Set): void {
   const factor = m.bargainBuy ? bargainBuyFactor(m.bargainBuy.won, m.bargainBuy.drNet, m.bargainBuy.negotiator) : 1;
   const unitBrass = (id: string) => {
     const t = findTrappingById(id); if (!t) return 0;
-    return Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities.map(qualityRuntime) }) * (m.buyMarkup ?? 1) * factor);
+    return Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * (m.buyMarkup ?? 1) * factor);
   };
   let totalBrass = 0;
   for (const c of cart) totalBrass += unitBrass(c.id) * c.qty;

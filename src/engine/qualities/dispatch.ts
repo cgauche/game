@@ -1,22 +1,20 @@
 /**
- * Dispatcher PUR des qualités d'objet : NORMALISE chaque chaîne via `parseQuality` (clé canonique
- * du registre + Indice typé), puis expose des helpers que combat.ts/items.ts/combatFlow appellent
- * au lieu de tester des chaînes en dur. Aucune mutation. Accepte tout porteur de `qualities`
- * (Weapon ou ItemInstance).
+ * Dispatcher PUR des qualités d'objet : lit les `QualityInstance` STRUCTURÉES (`{id, value?}`) portées
+ * par l'objet (plus de chaîne « id value » re-parsée), résout leur donnée mécanique PAR ID, puis expose
+ * des helpers que combat.ts/items.ts/combatFlow appellent au lieu de tester des chaînes en dur. Aucune
+ * mutation. Accepte tout porteur de `qualities` (Weapon ou ItemInstance).
  *
  * Plus de `defs/` mécaniques : la MÉCANIQUE de chaque qualité vit dans `qualities.json`, lue PAR ID —
  * `passive: GameOp[]` (weaponRollMod/weaponDamageMod/armourPierce/critOnRoll/testMod) pour les
  * modificateurs, `capabilities` pour les drapeaux irréductibles. `QUALITIES` ne porte plus que le libellé.
  */
-import type { Weapon } from '../types';
-import { QUALITIES, QualityDef } from './registry';
-import { parseQuality } from './normalize';
-import { qualityIdOf } from './ids';
+import type { Weapon, QualityInstance } from '../types';
+import { QualityDef } from './registry';
 import { qualityById, type QualityCapabilities, type QualityData } from '../../data';
 import type { GameOp } from '../ops';
 
 /** Tout porteur de qualités (Weapon ou ItemInstance) — seul `qualities` est requis. */
-export type QualityCarrier = { qualities: string[] };
+export type QualityCarrier = { qualities: QualityInstance[] };
 
 /** Une qualité résolue présente sur un objet : sa définition de registre (libellé), son id STABLE, sa
  *  donnée mécanique (`qualities.json` → passive/capabilities/effects) et son Indice éventuel. */
@@ -40,12 +38,9 @@ const passiveOf = (id: string): GameOp[] => qualityById.get(id)?.passive ?? [];
 export function resolveQualities(w: QualityCarrier | undefined): ResolvedQuality[] {
   if (!w) return [];
   const out: ResolvedQuality[] = [];
-  for (const raw of w.qualities) {
-    const p = parseQuality(raw);
-    if (!p) continue;
-    const id = qualityIdOf(p.key);
-    const data = qualityById.get(id);
-    out.push({ def: QUALITIES[p.key], id, data, caps: data?.capabilities, indice: p.indice });
+  for (const q of w.qualities) {
+    const data = qualityById.get(q.id);
+    out.push({ def: { key: data?.label ?? q.id }, id: q.id, data, caps: data?.capabilities, indice: q.value });
   }
   const beaten = new Set(out.flatMap((r) => r.caps?.beats ?? []));
   return beaten.size ? out.filter((r) => !beaten.has(r.id)) : out;
@@ -240,13 +235,10 @@ export function qualityDamageStep(w: QualityCarrier | undefined, ctx: DamageStep
   for (const r of resolveQualities(w))
     for (const op of passiveOf(r.id))
       if (op.op === 'weaponDamageMod' && !(tiring && (op.mode === 'maxUnits' || op.plusUnits))) armOps.push(op);
-  // Qualités conférées hors arme (Taille → Percutante, etc.) : non gatées par Épuisante.
+  // Qualités conférées hors arme (Taille → Percutante, etc.) : non gatées par Épuisante. `extra` = ids stables.
   const extraOps: Extract<GameOp, { op: 'weaponDamageMod' }>[] = [];
-  for (const raw of extra) {
-    const p = parseQuality(raw);
-    if (!p) continue;
-    for (const op of passiveOf(qualityIdOf(p.key))) if (op.op === 'weaponDamageMod') extraOps.push(op);
-  }
+  for (const id of extra)
+    for (const op of passiveOf(id)) if (op.op === 'weaponDamageMod') extraOps.push(op);
   const ops = [...armOps, ...extraOps];
   if (ops.some((op) => op.negateAtouts)) return { dmgDR: ctx.effDR, bonus: 0 };
   const dmgDR = ops.some((op) => op.mode === 'maxUnits') ? Math.max(ctx.effDR, ctx.units) : ctx.effDR;

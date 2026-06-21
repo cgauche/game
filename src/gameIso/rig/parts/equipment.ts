@@ -1,5 +1,6 @@
-import type { Combatant, Weapon, ItemInstance, HitLocation } from '../../../engine/types';
+import type { Combatant, Weapon, ItemInstance, HitLocation, QualityInstance } from '../../../engine/types';
 import { isCapeItem } from '../../../engine/items';
+import { QUALITY_IDS } from '../../../engine/qualities/ids';
 import type { Slot } from '../bones';
 import type { PartArt } from './types';
 import { GENERATED_ARMOUR, ARMOUR_PALETTES } from './generated/armour';
@@ -23,8 +24,8 @@ export interface EquipCtx {
   cape?: ItemInstance;              // cape/manteau porté (cosmétique — rendu dorsal)
 }
 
-export const isShield = (x: { name: string; qualities?: string[] }) =>
-  (x.qualities ?? []).some((q) => /bouclier/i.test(q)) || /bouclier/i.test(x.name);
+export const isShield = (x: { name: string; qualities?: QualityInstance[] }) =>
+  (x.qualities ?? []).some((q) => q.id === QUALITY_IDS.Protectrice) || /bouclier/i.test(x.name);
 
 /** Rang d'affichage des matériaux : la couche du DESSUS s'affiche (plaque sur maille sur cuir). */
 const MATERIAL_RANK: Record<ReturnType<typeof armourMaterial>, number> = { plaque: 3, maille: 2, cuir: 1, rembourre: 0 };

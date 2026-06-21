@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { parseQualityInstance } from './qualities/normalize';
 import { finishMelee } from './combat';
 import { evaluateTest } from './tests';
 import type { Combatant, Weapon } from './types';
@@ -12,7 +13,7 @@ const fighter = (cc: number, weapon: Weapon): Combatant =>
     skills: [], talents: [], movement: 4,
   }) as unknown as Combatant;
 
-const sword = (qualities: string[] = []): Weapon => ({ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities });
+const sword = (qualities: string[] = []): Weapon => ({ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: qualities.map((s) => parseQualityInstance(s)!) });
 
 describe('Pratique / Peu Fiable en mêlée — Test opposé (LDB 60 l.59/88)', () => {
   // atk raté (DR -1) mais def raté pire (DR -2) → l'attaquant GAGNE l'opposé malgré son échec (DR net 1).

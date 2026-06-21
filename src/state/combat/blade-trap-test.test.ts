@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { parseQualityInstance } from '../../engine/qualities/normalize';
 import { useGame } from '../store';
 import '../combatFlow'; // effet de bord : enregistre l'applier 'bladeTrap' + installe les hooks (breakBlade…)
 import { pushCombatStep } from '../combatEffects';
@@ -19,7 +20,7 @@ import type { Weapon } from '../../engine/types';
  * lame. » Le HÉROS défenseur PEUT influencer le Test (Chance/Résilience) — l'étape `triggeredTest` est
  * INFLUENÇABLE ; la conséquence (désarme/bris) est PROCÉDURALE après le Test résolu (op `breakBlade`).
  */
-const bladedWeapon = (uid: string, qualities: string[] = []): Weapon => ({ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities, uid });
+const bladedWeapon = (uid: string, qualities: string[] = []): Weapon => ({ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: qualities.map((s) => parseQualityInstance(s)!), uid });
 
 describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, désarme/bris procédural)', () => {
   beforeEach(() => {

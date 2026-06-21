@@ -2104,7 +2104,8 @@
         "id": "flexible"
       },
       {
-        "id": "en-discretion"
+        "id": "en-discretion",
+        "value": -10
       }
     ],
     "desc": null,
@@ -2134,7 +2135,8 @@
         "id": "flexible"
       },
       {
-        "id": "en-discretion"
+        "id": "en-discretion",
+        "value": -10
       }
     ],
     "desc": null,
@@ -2167,10 +2169,12 @@
         "id": "partielle"
       },
       {
-        "id": "en-discretion"
+        "id": "en-discretion",
+        "value": -10
       },
       {
-        "id": "en-perception"
+        "id": "en-perception",
+        "value": -10
       }
     ],
     "desc": null,
@@ -2200,7 +2204,8 @@
         "id": "flexible"
       },
       {
-        "id": "en-discretion"
+        "id": "en-discretion",
+        "value": -10
       }
     ],
     "desc": null,
@@ -2233,7 +2238,8 @@
         "id": "points-faibles"
       },
       {
-        "id": "en-discretion"
+        "id": "en-discretion",
+        "value": -10
       }
     ],
     "desc": null,
@@ -2266,10 +2272,12 @@
         "id": "points-faibles"
       },
       {
-        "id": "en-discretion"
+        "id": "en-discretion",
+        "value": -10
       },
       {
-        "id": "en-perception"
+        "id": "en-perception",
+        "value": -20
       }
     ],
     "desc": null,
@@ -2299,10 +2307,12 @@
         "id": "partielle"
       },
       {
-        "id": "en-discretion"
+        "id": "en-discretion",
+        "value": -10
       },
       {
-        "id": "en-perception"
+        "id": "en-perception",
+        "value": -10
       }
     ],
     "desc": null,
@@ -2335,7 +2345,8 @@
         "id": "points-faibles"
       },
       {
-        "id": "en-discretion"
+        "id": "en-discretion",
+        "value": -10
       }
     ],
     "desc": null,
@@ -2368,7 +2379,8 @@
         "id": "points-faibles"
       },
       {
-        "id": "en-discretion"
+        "id": "en-discretion",
+        "value": -10
       }
     ],
     "desc": null,
@@ -9570,7 +9582,8 @@
         "id": "points-faibles"
       },
       {
-        "id": "en-discretion"
+        "id": "en-discretion",
+        "value": -10
       }
     ],
     "enc": 8

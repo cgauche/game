@@ -24,7 +24,7 @@ describe('resolveParts — priorité', () => {
   });
 
   it('arme et bouclier suivent l’équipement', () => {
-    const equip: EquipCtx = { weapons: [wep('Hache', 'melee')], armour: [], shield: { name: 'Bouclier', qualities: ['Bouclier'] } as unknown as Weapon };
+    const equip: EquipCtx = { weapons: [wep('Hache', 'melee')], armour: [], shield: { name: 'Bouclier', qualities: [] } as unknown as Weapon };
     const r = resolveParts('Humain', 'M', 'Soldat', equip, {}, 1);
     expect(r.arme?.svg).toContain('<');
     expect(r.bouclier?.svg).toContain('<');
@@ -44,7 +44,7 @@ describe('resolveParts — priorité', () => {
 });
 
 describe('resolveParts — dual-wield (main secondaire dessinée)', () => {
-  const wh = (name: string, hand: 'main' | 'off', q: string[] = []): Weapon => ({ name, type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: q, hand } as Weapon);
+  const wh = (name: string, hand: 'main' | 'off', q: { id: string; value?: number }[] = []): Weapon => ({ name, type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: q, hand } as Weapon);
 
   it('épée + dague (hand off) → la 2e arme est dessinée à la main secondaire (os bouclier)', () => {
     const r = resolveParts('Humain', 'M', 'Soldat', { weapons: [wh('Épée', 'main'), wh('Dague', 'off')], armour: [] }, {}, 1);
@@ -58,7 +58,7 @@ describe('resolveParts — dual-wield (main secondaire dessinée)', () => {
   });
 
   it('épée + bouclier → le bouclier prime sur une arme à la main secondaire', () => {
-    const shield = { name: 'Bouclier', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: ['Bouclier'], hand: 'off' } as unknown as Weapon;
+    const shield = { name: 'Bouclier', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [], hand: 'off' } as unknown as Weapon;
     const r = resolveParts('Humain', 'M', 'Soldat', { weapons: [wh('Épée', 'main'), shield], armour: [], shield }, {}, 1);
     expect(r.bouclier?.svg).toContain('<');
   });

@@ -4,8 +4,8 @@
  * **LDB 63 « Armures »**, qualités d'artisanat **LDB 60 « Fabrication »**, magie **ADE II**. Aucune
  * invention : chaque texte résume fidèlement le passage cité. Le `type` (Atout/Défaut) vient du registre.
  */
-import { parseQuality } from './normalize';
-import { qualityByLabel } from '../../data';
+import type { QualityInstance } from '../types';
+import { qualityById } from '../../data';
 import qualitiesJson from '../../data/qualities.json';
 
 /** Descriptions issues de la DONNÉE app-owned (`qualities.json`) — SOURCE UNIQUE des qualités
@@ -31,17 +31,17 @@ export interface QualityInfo {
   desc?: string;
 }
 
-/** Décrit une chaîne de qualité (« Recharge 1 », « précise ») pour l'affichage : clé, type, Indice, desc.
- *  null si la qualité est inconnue du registre. */
-export function describeQuality(raw: string): QualityInfo | null {
-  const p = parseQuality(raw);
-  if (!p) return null;
-  const type = qualityByLabel.get(p.key)?.type; // Atout/Défaut depuis la DONNÉE (registre = libellé seul)
+/** Décrit une `QualityInstance` runtime (`{id, value?}`) pour l'affichage : clé, type, Indice, desc.
+ *  null si la qualité est inconnue du registre. Lecture PAR ID (plus de parse de chaîne). */
+export function describeQuality(q: QualityInstance): QualityInfo | null {
+  const data = qualityById.get(q.id);
+  if (!data) return null;
+  const key = data.label; // clé canonique = libellé FR du registre
   return {
-    key: p.key,
-    type: type === 'Atout' || type === 'Défaut' ? type : undefined,
-    indice: p.indice,
-    label: p.indice != null ? `${p.key} ${p.indice}` : p.key,
-    desc: QUALITY_DESC[p.key],
+    key,
+    type: data.type === 'Atout' || data.type === 'Défaut' ? data.type : undefined,
+    indice: q.value,
+    label: q.value != null ? `${key} ${q.value}` : key,
+    desc: QUALITY_DESC[key],
   };
 }

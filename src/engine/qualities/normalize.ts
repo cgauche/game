@@ -1,12 +1,15 @@
 /**
- * Normalisation des qualités d'objet : une chaîne libre (« Solide 3 », « précise »,
- * « Recharge (2) ») → forme canonique { clé du registre, Indice? }. Correspondance **exacte**
- * sur le label (casse ignorée) — fini le `startsWith` fragile (ex. 'Précise' vs 'Précision').
- * L'Indice typé (Solide N, Recharge N) est extrait une seule fois, au lieu d'un `parseInt`
- * dupliqué à chaque site d'usage.
+ * Parseur d'AUTHORING des qualités d'objet : une chaîne libre saisie à l'éditeur (« Solide 3 »,
+ * « précise », « Recharge (2) ») → `QualityInstance` STRUCTURÉE `{id, value?}`. Symétrique de
+ * `qualityRefLabel` (id+Indice → libellé) — la même paire prose↔structure que `parseDamage`/
+ * `damageString`. **Authoring uniquement** : le runtime porte déjà des `QualityInstance` structurées
+ * (le dispatch lit `q.id`/`q.value` sans parser). Correspondance EXACTE sur le label (casse ignorée)
+ * OU sur l'id stable (slug).
  */
 import { QUALITIES } from './registry';
+import { qualityIdOf } from './ids';
 import { slugId } from '../../data/slug';
+import type { QualityInstance } from '../types';
 
 const KEY_BY_LOWER = new Map(Object.keys(QUALITIES).map((k) => [k.toLowerCase(), k]));
 // Résolution par `id` STABLE (slug du libellé) — la donnée/runtime stocke l'id, pas le libellé.
@@ -26,20 +29,18 @@ export function splitIndice(raw: string): { label: string; indice?: number } {
   return { label: raw.trim() };
 }
 
-/** Normalise une qualité (id STABLE du runtime/donnée OU libellé d'un littéral/test) en { clé canonique,
- *  Indice? }, ou null si inconnue. Résout d'abord par libellé (casse ignorée), sinon par id (slug). */
+/** Normalise une qualité (id STABLE OU libellé saisi à l'éditeur) en { clé canonique, Indice? }, ou null
+ *  si inconnue. Résout d'abord par libellé (casse ignorée), sinon par id (slug). AUTHORING uniquement. */
 export function parseQuality(raw: string): ParsedQuality | null {
   const { label, indice } = splitIndice(raw);
   const key = KEY_BY_LOWER.get(label.toLowerCase()) ?? KEY_BY_ID.get(slugId(label));
   return key ? { key, indice } : null;
 }
 
-/** Indice de la qualité d'`id` STABLE (`QUALITY_IDS.X`) dans une liste de chaînes runtime (ids + Indice :
- *  ['recharge 2'] → 2), sinon undefined. Compare par id (`slugId` de la clé de registre). */
-export function indiceOf(qualities: string[], id: string): number | undefined {
-  for (const raw of qualities) {
-    const p = parseQuality(raw);
-    if (p && slugId(p.key) === id) return p.indice;
-  }
-  return undefined;
+/** Parse une qualité saisie en prose (« Solide 3 ») → `QualityInstance` structurée `{id, value?}`, ou null
+ *  si inconnue. Inverse de `qualityRefLabel`. AUTHORING uniquement (éditeur d'arme conférée). */
+export function parseQualityInstance(raw: string): QualityInstance | null {
+  const p = parseQuality(raw);
+  if (!p) return null;
+  return p.indice != null ? { id: qualityIdOf(p.key), value: p.indice } : { id: qualityIdOf(p.key) };
 }

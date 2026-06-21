@@ -113,6 +113,17 @@ export type WeaponDamageSpec =
   | { literal: string }
   | { plusBF: boolean; flat: number; bare?: true };
 
+/** Atout/Défaut d'arme ou d'armure PORTÉ par un objet/arme au runtime. Forme STRUCTURÉE (id stable du
+ *  registre + Indice éventuel) — miroir runtime de `QualityRef` de la donnée, sans l'aplatissement en
+ *  chaîne « id value » re-parsée par regex. `value` = Indice (Solide N, Recharge N, Protectrice N) OU
+ *  magnitude d'une pénalité de port (`en-discretion` −10). Affichage dérivé par `qualityRefLabel`. */
+export interface QualityInstance {
+  /** id STABLE du registre de qualités (`QualityData.id` / `QualityRef.id`) — jamais un libellé FR. */
+  id: string;
+  /** Indice / magnitude éventuelle (Solide 3, Recharge 2, « -10% en Discrétion » → −10). */
+  value?: number;
+}
+
 export interface Weapon {
   name: string;
   type: 'melee' | 'ranged';
@@ -121,7 +132,7 @@ export interface Weapon {
   reach?: string | null;
   /** Portée en mètres (distance uniquement). */
   range?: number | null;
-  qualities: string[];
+  qualities: QualityInstance[];
   /** `id` du Groupe d'arme/famille de munition (`WeaponGroupData.id`) — réf, ≠ libellé. Pilote la
    *  Spécialisation de combat (`combatValue`), la famille de munition (`ammoFamily`), le rendu (rig). */
   subType?: string;
@@ -392,7 +403,7 @@ export interface ItemInstance {
   damage?: WeaponDamageSpec; // armes
   reach?: string | null;
   range?: number | null;
-  qualities: string[];
+  qualities: QualityInstance[];
   /** Enchantements actifs portés par l'ARME (op `augmentWeapon` / arme invoquée) — SOURCE DE VÉRITÉ,
    *  repliés dans l'arme dérivée par `recomputeLoadout` (`applyEnchants`). Temporisés via `ActiveEffect.enchantRef`. */
   enchants?: WeaponEnchant[];

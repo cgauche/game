@@ -25,28 +25,28 @@ describe('effectiveWeaponDamage (LDB 62 l.178)', () => {
 
 describe('effectiveWeapon — bascule Arme improvisée à +0 (LDB 62 l.178)', () => {
   it('arme usée à +0 → +BF+1, Inoffensive, sans Atout (Empaleuse/Perforante perdus)', () => {
-    const w = effectiveWeapon(sword({ damageTaken: 4, qualities: ['Empaleuse', 'Perforante'] }));
+    const w = effectiveWeapon(sword({ damageTaken: 4, qualities: [{ id: 'empaleuse' }, { id: 'perforante' }] }));
     expect(damageString(w.damage)).toBe('+BF+1');
-    expect(w.qualities).toEqual(['Inoffensive']);
+    expect(w.qualities).toEqual([{ id: 'inoffensive' }]);
     expect(effectiveWeaponDamage(w, 3)).toBe(4); // BF3 + 1
   });
   it('arme non usée renvoyée telle quelle (même référence)', () => {
-    const w = sword({ damageTaken: 2, qualities: ['Empaleuse'] });
+    const w = sword({ damageTaken: 2, qualities: [{ id: 'empaleuse' }] });
     expect(effectiveWeapon(w)).toBe(w);
   });
 });
 
 describe('Solide (Indice) — absorption des Dégâts d’arme + sauvegarde (LDB 60 l.64-67)', () => {
   it('Solide(N) absorbe les N premiers points de damageTaken (pas de pénalité)', () => {
-    expect(effectiveWeaponDamage(sword({ damageTaken: 3, qualities: ['Solide 3'] }), 3)).toBe(7); // BF3+4 (3 absorbés)
-    expect(effectiveWeaponDamage(sword({ damageTaken: 4, qualities: ['Solide 3'] }), 3)).toBe(6); // BF3 + (4 - max(0,4-3))
-    expect(isImprovised(sword({ damageTaken: 4, qualities: ['Solide 3'] }))).toBe(false);
-    expect(isImprovised(sword({ damageTaken: 7, qualities: ['Solide 3'] }))).toBe(true);
+    expect(effectiveWeaponDamage(sword({ damageTaken: 3, qualities: [{ id: 'solide', value: 3 }] }), 3)).toBe(7); // BF3+4 (3 absorbés)
+    expect(effectiveWeaponDamage(sword({ damageTaken: 4, qualities: [{ id: 'solide', value: 3 }] }), 3)).toBe(6); // BF3 + (4 - max(0,4-3))
+    expect(isImprovised(sword({ damageTaken: 4, qualities: [{ id: 'solide', value: 3 }] }))).toBe(false);
+    expect(isImprovised(sword({ damageTaken: 7, qualities: [{ id: 'solide', value: 3 }] }))).toBe(true);
   });
   it('seuil de sauvegarde : 9+ (Solide 1), 8+ (Solide 2), null sans Solide', () => {
-    expect(solideSaveThreshold(sword({ qualities: ['Solide 1'] }))).toBe(9);
-    expect(solideSaveThreshold(sword({ qualities: ['Solide 2'] }))).toBe(8);
-    expect(solideSaveThreshold(sword({ qualities: ['Solide 4'] }))).toBe(6);
+    expect(solideSaveThreshold(sword({ qualities: [{ id: 'solide', value: 1 }] }))).toBe(9);
+    expect(solideSaveThreshold(sword({ qualities: [{ id: 'solide', value: 2 }] }))).toBe(8);
+    expect(solideSaveThreshold(sword({ qualities: [{ id: 'solide', value: 4 }] }))).toBe(6);
     expect(solideSaveThreshold(sword())).toBeNull();
   });
 });
@@ -54,7 +54,7 @@ describe('Solide (Indice) — absorption des Dégâts d’arme + sauvegarde (LDB
 describe('damageWeapon / destroyWeapon', () => {
   it('incrémente damageTaken', () => { const w = sword(); damageWeapon(w); expect(w.damageTaken).toBe(1); });
   it('Incassable exempte des dégâts ET de la destruction', () => {
-    const w = sword({ qualities: ['Incassable'] });
+    const w = sword({ qualities: [{ id: 'incassable' }] });
     damageWeapon(w); expect(w.damageTaken ?? 0).toBe(0);
     destroyWeapon(w); expect(w.destroyed).toBeFalsy();
   });
