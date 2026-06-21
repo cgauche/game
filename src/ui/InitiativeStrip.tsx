@@ -27,7 +27,12 @@ export interface InitiativeStripProps {
   /** Action de CIBLAGE en cours (#21) : le clic sur une tuile CIBLE ce combattant (titre adapté). */
   targeting?: boolean;
   onToggleInspect: () => void;
-  onInspect?: (id: string) => void;
+  /** Clic d'un portrait = MÊME comportement que cliquer le token sur la carte (attaque/charge/cast,
+   *  ou inspection si rien n'est actionnable). Toujours présent — la frise n'est jamais inerte. */
+  onActivate: (id: string) => void;
+  /** Survol d'un portrait (frise uniquement) : pilote le réticule sur la carte + le peek caméra.
+   *  `null` au relâchement. Souris seulement (le tactile n'a pas de survol). */
+  onHover?: (id: string | null) => void;
   onPromote: (id: string) => void;
 }
 
@@ -40,7 +45,12 @@ export function InitiativeStrip(p: InitiativeStripProps) {
           if (!c) return null;
           const isHero = c.kind === 'hero';
           return (
-            <div key={id} className="is-cell">
+            <div
+              key={id}
+              className="is-cell"
+              onMouseEnter={() => p.onHover?.(id)}
+              onMouseLeave={() => p.onHover?.(null)}
+            >
               <PortraitTile
                 c={c}
                 ring={isHero ? ALLY_TINT : ENEMY_TINT}
@@ -48,8 +58,8 @@ export function InitiativeStrip(p: InitiativeStripProps) {
                 variant="full"
                 size="sm"
                 active={!p.over && i === p.turn}
-                onClick={p.onInspect ? () => p.onInspect!(id) : undefined}
-                title={p.targeting ? `${c.name} — cibler` : p.onInspect ? `${c.name} — inspecter` : c.name}
+                onClick={() => p.onActivate(id)}
+                title={p.targeting ? `${c.name} — cibler` : c.name}
               />
               {p.canFirstIds.includes(id) && (
                 <button

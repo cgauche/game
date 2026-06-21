@@ -30,6 +30,7 @@ import { placeOfScene } from '../state/worldMap';
 import { restPlacesHere } from '../state/restFlow';
 import { hoverClickCommits } from './pointerCaps';
 import { controlsActive } from '../state/netOwnership';
+import { combatantClickActs } from '../state/combatOrParty';
 import { campaign } from '../scenes/campaign';
 
 export function CampaignView() {
@@ -65,7 +66,10 @@ export function CampaignView() {
   // Offre de repos LÀ OÙ SE TIENT le groupe (zone d'auteur > scène > camp ; null = interdit).
   const restHere = mode === 'exploration' && scene ? restPlacesHere({ scene, partyPos } as Parameters<typeof restPlacesHere>[0]) : null;
   const [sheetId, setSheetId] = useState<string | null>(null);
-  const [inspectId, setInspectId] = useState<string | null>(null);
+  const inspectId = useGame((s) => s.inspectId); // statbloc inspecté (store : frise ET token l'ouvrent)
+  const setInspectId = useGame((s) => s.setInspectId);
+  const setHoverCombatant = useGame((s) => s.setHoverCombatant);
+  const pendingCast = useGame((s) => s.pendingCast);
   const [saveOpen, setSaveOpen] = useState(false); // modale Sauvegarder/Charger (Jalon 5)
   const [rulesOpen, setRulesOpen] = useState(false); // panneau « Règles maison » (dont Cadence de combat)
   const clockDate = toDate(gameTime);
@@ -94,7 +98,14 @@ export function CampaignView() {
   const targetingAction = battle && !battle.over ? battle.action : null;
   const isTargeting = controls && !!targetingAction && ['attack', 'cast', 'charge', 'trample'].includes(targetingAction as string);
   const onStripPortrait = (id: string) => {
-    if (isTargeting) { battleClickEntity(id, { confirm: hoverClickCommits() }); return; } // desktop : un clic commet (cf. pointerCaps)
+    const c = battle?.combatants.find((x) => x.id === id);
+    // MÊME comportement que cliquer le token sur la carte (IsoStage) : action de combat si la cible est
+    // actionnable ET qu'on contrôle l'actif (coop : ton tour), sinon inspection (read-only, tout joueur).
+    // `combatantClickActs` = condition PARTAGÉE carte ⇄ frise — elles ne peuvent plus diverger.
+    if (c && controls && combatantClickActs(battle, pendingCast, c)) {
+      battleClickEntity(id, { confirm: hoverClickCommits() }); // desktop : un clic commet (cf. pointerCaps)
+      return;
+    }
     if (inspectEnabled) setInspectId(id);
   };
   const onDockPortrait = (id: string) => {
@@ -120,7 +131,8 @@ export function CampaignView() {
             inspectEnabled={inspectEnabled}
             targeting={isTargeting}
             onToggleInspect={toggleInspect}
-            onInspect={isTargeting || inspectEnabled ? onStripPortrait : undefined}
+            onActivate={onStripPortrait}
+            onHover={setHoverCombatant}
             onPromote={roundStartPromote}
           />
         )}

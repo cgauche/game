@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { actorIn, touchActors } from './combatOrParty';
+import { actorIn, touchActors, combatantClickActs } from './combatOrParty';
 import type { GameState } from './store';
 import type { Combatant } from '../engine/types';
 
@@ -20,6 +20,27 @@ describe('combatOrParty — base des actions joueur combat ⇄ hors combat', () 
     });
     it('id inconnu → undefined', () => {
       expect(actorIn(state({ party: [c('a')] }), 'zzz')).toBeUndefined();
+    });
+  });
+
+  describe('combatantClickActs : décideur PARTAGÉ carte ⇄ frise (action vs inspection)', () => {
+    const enemy = { kind: 'enemy' } as Combatant;
+    const ally = { kind: 'hero' } as Combatant;
+    it('ennemi → action dans TOUS les modes (attaque/charge en neutre)', () => {
+      expect(combatantClickActs({ action: null }, null, enemy)).toBe(true);
+      expect(combatantClickActs({ action: 'attack' }, null, enemy)).toBe(true);
+    });
+    it('allié en mode NEUTRE → pas d’action (→ inspection)', () => {
+      expect(combatantClickActs({ action: null }, null, ally)).toBe(false);
+    });
+    it('allié en mode SORT → action (buff/cast sur l’allié)', () => {
+      expect(combatantClickActs({ action: 'cast' }, null, ally)).toBe(true);
+    });
+    it('allié pendant le choix de cibles (Surincantation) → action', () => {
+      expect(combatantClickActs({ action: null }, { pickingTargets: true }, ally)).toBe(true);
+    });
+    it('battle absent → pas d’action sur un allié', () => {
+      expect(combatantClickActs(null, null, ally)).toBe(false);
     });
   });
 

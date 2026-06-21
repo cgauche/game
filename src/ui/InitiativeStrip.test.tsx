@@ -18,7 +18,7 @@ describe('InitiativeStrip', () => {
     const { h, foe } = fixtures();
     const html = renderToStaticMarkup(
       <InitiativeStrip order={['e1', 'h1']} turn={1} round={2} combatants={[h, foe]} over={false}
-        pendingRound={null} canFirstIds={[]} inspectEnabled={false} onToggleInspect={noop} onPromote={noop} />,
+        pendingRound={null} canFirstIds={[]} inspectEnabled={false} onToggleInspect={noop} onActivate={noop} onPromote={noop} />,
     );
     expect(html.indexOf('Brigand')).toBeGreaterThan(-1);
     expect(html.indexOf('Brigand')).toBeLessThan(html.indexOf('Gunnar')); // ordre = order[]
@@ -30,7 +30,7 @@ describe('InitiativeStrip', () => {
     h.fortune = 2;
     const html = renderToStaticMarkup(
       <InitiativeStrip order={['e1', 'h1']} turn={0} round={3} combatants={[h, foe]} over={false}
-        pendingRound={3} canFirstIds={['h1']} inspectEnabled={false} onToggleInspect={noop} onPromote={noop} />,
+        pendingRound={3} canFirstIds={['h1']} inspectEnabled={false} onToggleInspect={noop} onActivate={noop} onPromote={noop} />,
     );
     expect(html).toContain('⏫'); // badge de pré-emption sur le héros éligible
   });
@@ -39,12 +39,12 @@ describe('InitiativeStrip', () => {
     const { h, foe } = fixtures();
     const off = renderToStaticMarkup(
       <InitiativeStrip order={['h1']} turn={0} round={1} combatants={[h, foe]} over={false}
-        pendingRound={null} canFirstIds={[]} inspectEnabled={false} onToggleInspect={noop} onPromote={noop} />,
+        pendingRound={null} canFirstIds={[]} inspectEnabled={false} onToggleInspect={noop} onActivate={noop} onPromote={noop} />,
     );
     expect(off).toContain('🔍');
     const on = renderToStaticMarkup(
       <InitiativeStrip order={['h1']} turn={0} round={1} combatants={[h, foe]} over={false}
-        pendingRound={null} canFirstIds={[]} inspectEnabled={true} onToggleInspect={noop} onPromote={noop} />,
+        pendingRound={null} canFirstIds={[]} inspectEnabled={true} onToggleInspect={noop} onActivate={noop} onPromote={noop} />,
     );
     expect(on).toContain('On');
   });

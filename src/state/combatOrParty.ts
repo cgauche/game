@@ -26,3 +26,19 @@ export function actorIn(state: GameState, id: string): Combatant | undefined {
 export function touchActors(state: GameState): Partial<GameState> {
   return state.battle ? { battle: { ...state.battle } } : { party: [...state.party] };
 }
+
+/**
+ * Cliquer un combattant — son TOKEN sur la carte OU son PORTRAIT dans la frise/dock — déclenche-t-il
+ * une ACTION de combat (attaque/charge, cast sur allié/ennemi, sous-ciblage de Surincantation) plutôt
+ * qu'une simple inspection ? Condition UNIQUE partagée par la carte (`IsoStage.performClick`) et la
+ * frise (`CampaignView.onStripPortrait`) : les deux surfaces ne peuvent plus diverger (un ennemi
+ * s'attaque en mode neutre ; tout combattant se cible en mode sort ou pendant le choix de cibles).
+ * N.B. l'autorisation COOP (`controlsActive` = c'est bien ton tour) reste gardée par l'APPELANT.
+ */
+export function combatantClickActs(
+  battle: { action: string | null } | null | undefined,
+  pendingCast: { pickingTargets?: boolean } | null | undefined,
+  combatant: Pick<Combatant, 'kind'>,
+): boolean {
+  return combatant.kind === 'enemy' || battle?.action === 'cast' || !!pendingCast?.pickingTargets;
+}

@@ -201,6 +201,15 @@ export interface GameState extends RollFlowActionsMap {
    *  (préférence du joueur — l'inspection casse un peu l'immersion) ; préférence persistante (comme la vue). */
   inspectEnabled: boolean;
   toggleInspectEnabled: () => void;
+  /** Combattant dont on regarde le statbloc (InspectPanel) — porté par le STORE pour que la frise ET
+   *  le token sur la carte ouvrent la même inspection (clic non-actionnable). null = panneau fermé. */
+  inspectId: string | null;
+  setInspectId: (id: string | null) => void;
+  /** Combattant SURVOLÉ depuis un PORTRAIT (frise/dock) — pilote, à parité du survol du token,
+   *  le réticule de visée sur la carte ET le « peek » caméra (recadrage temporaire). Local (jamais
+   *  réseau), read-only : actif même hors de son tour. null = aucun survol de portrait. */
+  hoverCombatantId: string | null;
+  setHoverCombatant: (id: string | null) => void;
   partyPos: Pt;
   /** Niveau de lumière de scène (Lot L, mise en scène) : 0 = noir, 1 = plein jour ; null = auto
    *  (horloge/ambiance). Posé par l'Effet `setLight`, lu par le rendu (overlay d'assombrissement). */
@@ -857,6 +866,10 @@ export const useGame = create<GameState>((set, get) => ({
   resetCamPan: () => set((s) => (s.camPan.x === 0 && s.camPan.y === 0 ? {} : { camPan: { x: 0, y: 0 } })),
   inspectEnabled: false,
   toggleInspectEnabled: () => set((s) => ({ inspectEnabled: !s.inspectEnabled })),
+  inspectId: null,
+  setInspectId: (id) => set((s) => (s.inspectId === id ? {} : { inspectId: id })),
+  hoverCombatantId: null,
+  setHoverCombatant: (id) => set((s) => (s.hoverCombatantId === id ? {} : { hoverCombatantId: id })),
   partyPos: { x: 0, y: 0 },
   lightLevel: null,
   flags: {},
