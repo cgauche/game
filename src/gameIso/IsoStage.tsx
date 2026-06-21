@@ -183,11 +183,12 @@ export function IsoStage() {
       if (useGame.getState().dialogue) return;
       const ae = document.activeElement as HTMLElement | null;
       if (ae && (/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) || ae.isContentEditable)) return;
-      // e.key (la LETTRE) → touches Q/E étiquetées, AZERTY comme QWERTY.
-      const k = e.key.toLowerCase();
-      if (k === 'e') rotateCam(1);
-      else if (k === 'q') rotateCam(-1);
-      else if (e.key === 'Escape') {
+      // e.code = POSITION physique de la touche (indépendant de la disposition) : rotation sur les
+      // touches au même ENDROIT que Q/E sur QWERTY — soit A/E sur AZERTY. (e.key lirait le caractère
+      // → la mauvaise touche sur AZERTY, où « Q » est déplacé en rangée du milieu.)
+      if (e.code === 'KeyE') rotateCam(1);
+      else if (e.code === 'KeyQ') rotateCam(-1);
+      else if (e.code === 'Escape') {
         // Échap purge l'aperçu tap-1 du modèle de clic implicite.
         const st = useGame.getState();
         if (st.battle?.preview) useGame.setState({ battle: { ...st.battle, preview: null } });
