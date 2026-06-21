@@ -44,9 +44,9 @@ function charKey(label: string): CharKey | undefined {
   return CHAR_BY_LABEL[label.trim()];
 }
 
-/** Mesure d'une distance/diamètre depuis une chaîne : « (Bonus de X) » → {bonusOf}, « (X) » (carac) →
- *  {charOf}, « N » → number. Renvoie null si non reconnu. */
-function parseMeasure(s: string): Formula | null {
+/** Mesure (Formula) depuis une chaîne : « (Bonus de X) » → {bonusOf}, « (X) » (carac) → {charOf},
+ *  « N » → number. Renvoie null si non reconnu. PARTAGÉ (portée, cible, durée — `spellDuration.ts`). */
+export function parseFormulaMeasure(s: string): Formula | null {
   const bonus = s.match(/Bonus d[e'’]\s*([^)]+?)\s*\)/i);
   if (bonus) {
     const k = charKey(bonus[1]);
@@ -70,7 +70,7 @@ export function parseSpellRange(raw: string): SpellRange {
   const km = /kilom[èe]tres?/i.test(s);
   const m = /(?<!kilo)m[èe]tres?/i.test(s);
   if (km || m) {
-    const measure = parseMeasure(s);
+    const measure = parseFormulaMeasure(s);
     if (measure != null) return { kind: 'distance', value: measure, unit: km ? 'km' : 'm' };
   }
   return { kind: 'special', text: raw };
@@ -87,8 +87,8 @@ export function parseSpellTarget(raw: number | string): SpellTarget {
   // Cône : « Cône Longueur (8 Mètres) x Largeur (2 Mètres) ».
   const cone = s.match(/c[ôo]ne.*longueur\s*\(?([^)x]+?)\)?\s*x\s*largeur\s*\(?([^)]+?)\)?$/i);
   if (cone) {
-    const l = parseMeasure(`(${cone[1]})`) ?? parseMeasure(cone[1]);
-    const w = parseMeasure(`(${cone[2]})`) ?? parseMeasure(cone[2]);
+    const l = parseFormulaMeasure(`(${cone[1]})`) ?? parseFormulaMeasure(cone[1]);
+    const w = parseFormulaMeasure(`(${cone[2]})`) ?? parseFormulaMeasure(cone[2]);
     if (l != null && w != null) return { kind: 'cone', lengthMeters: l, widthMeters: w };
   }
   // Zone : « Zone Diamètre N mètres », « ZdE (Bonus de X) mètres », « (Bonus de X) mètres ». Les cibles
@@ -96,7 +96,7 @@ export function parseSpellTarget(raw: number | string): SpellTarget {
   // chiffrables → escape hatch (prose verbatim préservée, mécanique nulle = comportement actuel).
   const isZone = /\b(zde|zone)\b/i.test(s) || /m[èe]tres?\s*$/i.test(s);
   if (isZone && !/sp[ée]cial|lieu unique|voilier|alli[ée]s?/i.test(s)) {
-    const measure = parseMeasure(s);
+    const measure = parseFormulaMeasure(s);
     // La prose « Zone Diamètre N » / « ZdE (X) mètres » exprime un DIAMÈTRE (LDB 47) ; « rayon » un rayon
     // (forme régénérée des sorts à `zdeRadiusMeters`). Le défaut est le diamètre (toute la prose d'origine).
     if (measure != null) return { kind: 'area', span: /rayon/i.test(s) ? 'radius' : 'diameter', meters: measure };

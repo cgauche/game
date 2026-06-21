@@ -7,6 +7,7 @@
 import type { Formula } from './ops';
 import { CHAR_LABELS } from './types';
 import type { SpellRange, SpellTarget } from './spellRange';
+import type { SpellDuration } from './spellDuration';
 
 /** Mesure → prose : `6` → « 6 », `{charOf}` → « (Force Mentale) », `{bonusOf}` → « (Bonus de Force Mentale) ». */
 function fmtMeasure(f: Formula): string {
@@ -40,5 +41,19 @@ export function formatSpellTarget(t: SpellTarget): string {
     case 'area': return `ZdE ${t.span === 'radius' ? 'rayon' : 'diamètre'} ${fmtMeasure(t.meters)} mètres`;
     case 'cone': return `Cône Longueur (${fmtMeasure(t.lengthMeters)} mètres) x Largeur (${fmtMeasure(t.widthMeters)} mètres)`;
     case 'special': return t.text;
+  }
+}
+
+const CLOCK_UNIT: Record<'minutes' | 'hours' | 'days', [string, string]> = {
+  minutes: ['minute', 'minutes'], hours: ['heure', 'heures'], days: ['jour', 'jours'],
+};
+
+export function formatSpellDuration(d: SpellDuration): string {
+  switch (d.kind) {
+    case 'instant': return 'Instantané';
+    case 'rounds': return `${fmtMeasure(d.value)} ${d.value === 1 ? 'Round' : 'Rounds'}`;
+    case 'clock': { const [sg, pl] = CLOCK_UNIT[d.unit]; return `${fmtMeasure(d.value)} ${d.value === 1 ? sg : pl}`; }
+    case 'untilDawn': return 'Jusqu\'au lever du soleil';
+    case 'special': return d.text;
   }
 }
