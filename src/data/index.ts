@@ -401,7 +401,6 @@ export interface TraitCapabilities {
   /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.147` ;
    *  Infravision = illimité, grande valeur — `LDB 85 l.165`). Lue par `darkSightTiles`. */
   darkSightTiles?: number;
-  perturbingAura?: boolean;
 }
 /** Trait de créature (LDB 85) : libellé canonique + desc VERBATIM (affichée à l'inspecteur). */
 export interface TraitData {
@@ -436,6 +435,11 @@ export interface TraitData {
    *  X » — LDB 85 : Dressé (Dompté) ignore Bestial). Mécanisme GÉNÉRIQUE de suppression, lu par
    *  `traitCapability` : une capacité supprimée par n'importe quel trait porté répond false. */
   suppressesCapabilities?: (keyof TraitCapabilities)[];
+  /** AURA de combat : projette des `passive` GameOp[] sur les combattants À PORTÉE (Perturbant : −20 aux
+   *  Tests à `rangeChar` mètres, LDB 85 p.341 ; `affects` = qui est touché). Recalculée chaque Round par le
+   *  hook GÉNÉRIQUE `recompute-auras`, accumulée dans `Combatant.auraMods` (lu par `passiveMods`, kind `etat`
+   *  NON-CUMUL — « une seule fois, peu importe le nombre d'ennemis Perturbants »). Aucun code par-nom. */
+  aura?: { rangeChar?: CharKey; rangeMeters?: number; affects?: 'enemies' | 'allies' | 'all'; passive: import('../engine/ops').GameOp[] };
   /** Trait STANDARD (LDB 76 l.28-31 : « ajoutés à la liste Facultative de TOUTES les créatures ») —
    *  proposé par le picker de Traits facultatifs sur n'importe quel bestiaire. Édité au Codex. */
   standard?: boolean;

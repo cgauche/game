@@ -55,7 +55,7 @@ import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf, freeAttackSourc
 import { hasStealAdvantage, shieldAdvantageLevel, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf } from '../engine/combatFeatures/dispatch';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
-  isStupid, isUnstable, isBestial, isTerritorial, hasPerturbingAura,
+  isStupid,
   traitSeesInDark, bellicosePsychImmune, magicResistanceOf, flyMeters, runMultiplier,
   isSkittishMount,
 } from '../engine/traits/dispatch';

@@ -7,7 +7,7 @@
 import type { CharKey, Combatant } from '../types';
 import { TRAITS, TraitDef } from './registry';
 import { parseStatEntry, type TraitInstance, type TraitList } from '../statEntry';
-import { traitByLabel, traitById, type TraitCapabilities } from '../../data';
+import { traitByLabel, traitById, type TraitCapabilities, type TraitData } from '../../data';
 import { slugId } from '../../data/slug';
 import type { PassiveMod } from '../ops';
 
@@ -193,9 +193,11 @@ export function wardSaves(traits: TraitList | undefined): number[] {
 // `canCounterOnDefenseWin` (combatFeatures/dispatch) — plus de prédicat par-nom `hasChampionDefense`.
 
 
-/** Perturbant (LDB 85 p.341) : aura de −20 aux Tests à Bonus d'Endurance mètres. */
-export function hasPerturbingAura(traits: TraitList | undefined): boolean {
-  return traitCapability(traits, 'perturbingAura');
+/** AURAS de combat déclarées par les traits du porteur (Perturbant : −20 à BE m, LDB 85 p.341 ; toute
+ *  future aura). GÉNÉRIQUE — lue par le hook `recompute-auras`, qui projette leurs `passive` sur les
+ *  combattants à portée. Aucun trait nommé en dur. */
+export function traitAuras(traits: TraitList | undefined): NonNullable<TraitData['aura']>[] {
+  return (traits ?? []).map((t) => traitById.get(t.id)?.aura).filter((a): a is NonNullable<TraitData['aura']> => !!a);
 }
 
 /** Résistance à la Magie (Indice) : réduction du DR des Sorts (défaut 1 si l'Indice manque). */

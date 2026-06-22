@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   traitCharMods, traitMovementMod, traitBonusWoundsBE, wardSaves,
-  hasPerturbingAura,
+  traitAuras,
   magicResistanceOf, immunityTypes, isUnstable, isPainless,
   bellicosePsychImmune, isMindless, isBestial, isColdBlooded, isStupid, hasRage,
   isTerritorial, flyMeters, runMultiplier, traitSeesInDark, mutationsAtSpawn,
@@ -45,7 +45,10 @@ describe('dispatch — parsing et prédicats (LDB 85)', () => {
   });
   it('divers combat : Champion, Parasité, Perturbant, Instable', () => {
     expect(canCounterOnDefenseWin({ traits: [{ id: 'champion' }] } as never, undefined)).toBe(true); // Champion : sans condition d'arme
-    expect(hasPerturbingAura([{ id: 'perturbant' }])).toBe(true);
+    // Perturbant : l'aura (−20 à BE m) vit en DONNÉE (`TraitData.aura`), projetée par le hook générique.
+    const aura = traitAuras([{ id: 'perturbant' }])[0];
+    expect(aura?.rangeChar).toBe('E');
+    expect(aura?.passive).toEqual([{ op: 'testMod', amount: -20 }]);
     expect(isUnstable([{ id: 'instable' }])).toBe(true);
   });
   it('magie : Résistance à la Magie, Immunité (Poison)', () => {

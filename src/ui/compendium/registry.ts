@@ -184,7 +184,7 @@ const TRAIT_CAP_LABEL: Record<string, string> = {
   counterOnDefenseWin: 'Contre-attaque (défense gagnée)', counterRequiresFastParry: 'Contre exige arme Rapide', unstable: 'Instable', painless: 'Insensible à la douleur',
   psychImmuneIfAhead: 'Immunité psy si en avantage', mindless: 'Sans esprit', bestial: 'Bestial',
   coldBlooded: 'Sang-froid', stupid: 'Stupidité', rage: 'Rage', territorial: 'Territorial', skittishMount: 'Monture ombrageuse',
-  fly: 'Vol', leap: 'Bond', stride: 'Foulée', seesInDark: 'Vision nocturne', perturbingAura: 'Aura perturbante',
+  fly: 'Vol', leap: 'Bond', stride: 'Foulée', seesInDark: 'Vision nocturne',
 };
 /** Libellés FR des CAPACITÉS de Qualité d'arme/armure (`QualityCapabilities`). */
 const QUALITY_CAP_LABEL: Record<string, string> = {

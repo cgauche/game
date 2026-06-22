@@ -73,8 +73,8 @@ const TARGETS: Target[] = [
     // entité éditable, comme `tick-death`/`tick-durations`. Les hooks `determination-*` sont des décréments
     // de DURÉE (flags RNG-free) = machinerie ; comptés tant qu'ils nomment le talent (id), résorbés en
     // basculant leurs flags sur le système de Durée unifié (Lot 4bis).
-    reactive: /isBestial|hasPerturbingAura|id: '(bestial-fire-fear|perturbing-aura|determination)/,
-    baseline: 4, // …→6 (suffocation machinerie) →4 (Instable → données : trait effects onRoundEnd, valeur relationnelle `engagedAdvantageGap`). Reste : perturbing-aura ×2, determination ×2 (Lot 4bis)
+    reactive: /isBestial|id: '(bestial-fire-fear|determination)/,
+    baseline: 2, // …→4 (Instable → données) →2 (Perturbant → DONNÉES : `TraitData.aura` lue par le hook GÉNÉRIQUE `recompute-auras` + `passiveMods`). Reste : determination ×2 (décréments de durée — Lot 4bis)
     lot: 'Lot 4bis',
   },
   {

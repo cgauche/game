@@ -129,8 +129,10 @@ export function combatTestPenalty(c: Combatant): number {
       cand.push(m.amount); // magnitude/portée en données (etats.json) ; déjà ×pions (Exténué)
     }
   }
-  // Aura d'une créature Perturbante (LDB 85 p.341) : −20 à tous les Tests (non cumulable — flag, ≠ État).
-  if (c.perturbed) cand.push(-20);
+  // Auras de combat (Perturbant : −20 à BE m, LDB 85 p.341) — `testMod` projetés dans `auraMods` par le hook
+  // `recompute-auras`. HORS du gate `ignoreStatePenalties` : une aura est un TRAIT, pas un État (Endurance de
+  // l'anachorète ne l'annule pas, LDB 42). Non-cumul = même pool `min` (« une seule fois », LDB 85 l.208).
+  for (const op of c.auraMods ?? []) if (op.op === 'testMod' && op.char == null) cand.push(op.amount);
   const state = cand.length ? Math.min(...cand) : 0;
   return state + effectTestMod(c); // modificateur de Sort (Malédiction de malchance) : STACKE avec l'État
 }

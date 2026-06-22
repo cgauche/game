@@ -1261,8 +1261,15 @@
       "book": "LDB",
       "page": 341
     },
-    "capabilities": {
-      "perturbingAura": true
+    "aura": {
+      "rangeChar": "E",
+      "affects": "enemies",
+      "passive": [
+        {
+          "op": "testMod",
+          "amount": -20
+        }
+      ]
     }
   },
   {

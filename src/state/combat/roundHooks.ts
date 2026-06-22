@@ -18,7 +18,7 @@ import { clearPsychOf, calmeValue } from '../../engine/psychology';
 import { zonesRoundTick } from '../zones';
 import { purgeExpiredSummons } from '../summonFlow';
 import { fireTriggers } from '../triggeredEffects';
-import { hasPerturbingAura } from '../../engine/traits/dispatch';
+import { traitAuras } from '../../engine/traits/dispatch';
 import { outnumberCountBonus, hasBraveheart } from '../../engine/combatFeatures/dispatch';
 import { chebyshev } from '../path';
 import { isEngaged } from '../../engine/engagement';
@@ -102,15 +102,26 @@ registerCombatHook({
 // Bestial (LDB 85 p.338) « peur du feu → gagne Brisé » MIGRÉ en données : trait `bestial` effects
 // onRoundEnd (if En Flammes ∧ pas déjà Brisé → condition Brisé), dispatché par le dispatcher unique.
 registerCombatHook({
-  id: 'perturbing-aura', // Perturbant (LDB 85 p.341) : −20 aux Tests à BE mètres d'une créature Perturbante (aura recalculée/Round)
+  // Auras de combat — machinerie GÉOMÉTRIQUE GÉNÉRIQUE : projette les `passive` de toute `TraitData.aura`
+  // (Perturbant : −20 aux Tests à BE mètres, LDB 85 p.341) sur les combattants à portée, accumulés dans
+  // `auraMods` (lus par `passiveMods`, kind `etat` non-cumul). Aucun trait nommé en dur ; recalcul/Round.
+  id: 'recompute-auras',
   phase: 'onRoundEnd',
   order: 50,
   run: ({ battle }) => {
-    for (const c of battle.combatants) {
-      c.perturbed = !isOutOfAction(c) && !!c.pos && battle.combatants.some(
-        (p) => p.id !== c.id && p.kind !== c.kind && !isOutOfAction(p) && p.pos
-          && hasPerturbingAura(p.traits) && chebyshev(p.pos, c.pos!) * 2 <= bonus(effectiveChar(p, 'E')),
-      );
+    for (const c of battle.combatants) c.auraMods = undefined; // recalcul intégral chaque Round
+    for (const src of battle.combatants) {
+      if (isOutOfAction(src) || !src.pos) continue;
+      for (const aura of traitAuras(src.traits)) {
+        const rangeM = aura.rangeChar ? bonus(effectiveChar(src, aura.rangeChar)) : (aura.rangeMeters ?? 0);
+        for (const c of battle.combatants) {
+          if (c.id === src.id || isOutOfAction(c) || !c.pos) continue;
+          const sameCamp = c.kind === src.kind;
+          if (aura.affects === 'enemies' && sameCamp) continue; // « désoriente ses ENNEMIS » (LDB 85 l.208)
+          if (aura.affects === 'allies' && !sameCamp) continue;
+          if (chebyshev(src.pos, c.pos) * 2 <= rangeM) c.auraMods = [...(c.auraMods ?? []), ...aura.passive];
+        }
+      }
     }
   },
 });
