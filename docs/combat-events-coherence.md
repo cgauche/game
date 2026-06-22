@@ -124,3 +124,39 @@ prédicat unique « neutralisé » lu par l'IA.
 ## 5. Liens
 - Plan de chantier (séquencé) : `~/.claude/plans/` (session) — à reporter ici si on le matérialise.
 - Voir aussi : `docs/audit-systemes.md`, `docs/systeme-passifs.md`, `docs/i18n-seam.md`.
+
+## 6. Recensement Lot 0 (la liste « tout migrer » — baseline gelée)
+
+> Garde-fou cliquet : `src/state/combat-hardcode-guard.test.ts` (report-only ; baselines 30/11/14 ;
+> abaissées à chaque lot, → 0 au Lot 8). Baseline mesurée sur `chore/audit-cleanup` après suite verte
+> (typecheck + 5352 tests). Chaque entrée = une branche réactive codée par-nom à porter en données.
+
+### Lot 4 — `engine/conditions.ts` (30 sites)
+- **Pénalités de Test** : `combatTestPenalty` L118-122 (aveugle/brise/empoisonne/sonne −10 ; extenue
+  −10/stack) ; `testStatePenalty` L148-156 (empoisonne/sonne/extenue/brise ; aTerre −20 / empetre −10
+  mouvement) → `passive: [{op:'testMod'|'skillMod'}]`.
+- **Bonus à l'attaquant** L168-170 (aTerre +20 / surpris +20 / aveugle +10) → `incomingAttackMod` sur le
+  `passive` de l'État victime.
+- **Par-round** `endOfRound` L199-269 (empoisonne/hemorragique `wounds 1`×stacks ; en-flammes `1d10+…` ;
+  sonne récup. ; auto-dissipation aveugle/assourdi/surpris) + jet de mort hémorragique L349 →
+  `effects:[{trigger:'onRoundEnd', …}]`.
+- **Restent machinerie** (prédicats génériques, hors compte) : `isOutOfAction` L377, `inDeathCondition`
+  L388, gating L177/183, `applyZeroWounds` L408, `tickDeath` L427.
+
+### Lot 4bis — `state/combat/roundHooks.ts` (11 sites) — contenu d'entité masqué en hook
+- `unstable` L89-94 → trait Instable `effects:onRoundEnd` ; `bestial-fire-fear` L109-116 → trait Bestial ;
+  `perturbing-aura` L122-127 → passif trait Perturbant ; `determination-*` L157-163 → talent Détermination ;
+  `suffocation-tick` L244-247 → **nouvel État interne suffocation** (`etats.json`).
+- **Restent machinerie** : `refresh-wounds`, `outnumbered` (règle), `tick-death`, `zones-round-tick`,
+  `clear-psych-of-dead`, `purge-expired-summons`, dispatchers `fire-round-start/end-triggers`.
+- NB `broken-recovery`/`poison-resist` (Brisé/Empoisonné) = États → relèvent du Lot 4.
+
+### Lot 6 — `state/combatFlow.ts` (14 sites) — réactions hardcodées
+- `applySonneMeleeAdvantage` L190 (appels L1622/1663) ; Riposte L1238-1245 (`hasRiposte`/`hasChampionDefense`) ;
+  infection L1257-1259 (`hasTraitKey 'infecte'/'rongeur'`) ; atouts `Bacle` L1023/1524 & `Salve` L1398 ;
+  `autoCleave`/`maybeHeroCleave` L1673/1696/1735/2021 ; `banishedAtZero` (démoniaque) ; `nerveux` L4002.
+- Cibles + extensions de vocabulaire requises : cf. plan « Table de migration des réactions (Lot 6) ».
+
+### Bug différé (cf. §4) — bénéficiaire du Lot 1+IA
+- Acharnement IA sur héros à 0 PB + intégrité hors-combat : à traiter une fois l'état « neutralisé »
+  unifié (prédicat générique) + politique de ciblage IA. Hors chemin critique.
