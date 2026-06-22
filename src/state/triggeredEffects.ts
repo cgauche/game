@@ -111,6 +111,9 @@ export interface TriggerCtx { victim?: Combatant; weapon?: Weapon; rng?: RNG; ma
   /** Nombre de PIONS de l'État qui déclenche un `effects: onRoundEnd` — alimente les Formula `{stacks:'self'}`
    *  (Empoisonné « 1 PB/pion »). Posé par `fireConditionEffects`. */
   stacks?: number;
+  /** Écart d'Avantage avec les adversaires Engagés — alimente la Formula `{engagedAdvantageGap}` ET la
+   *  Condition `engagedAdvantageGap` (Instable). Calculé par `applyTriggeredEffects` sur la `battle`. */
+  engagedAdvantageGap?: number;
   /** Localisation de la touche courante (dé inversé) — alimente la Condition Flow `location` (Assommante). */
   location?: HitLocation;
   /** KIND de l'attaque courante (`creatureAttackKind` : 'morsure'/'cornes'/…) — alimente la Condition Flow
@@ -145,6 +148,17 @@ type TestRouter = (get: Get, set: SetFn, target: Combatant, actor: Combatant, fl
 let testRouter: TestRouter | undefined;
 export function setTriggeredTestRouter(fn: TestRouter): void { testRouter = fn; }
 
+/** Écart d'Avantage de `actor` avec ses adversaires ENGAGÉS : `max(0, meilleur Avantage ennemi engagé −
+ *  le sien)` (Instable, LDB 85 l.177 : « la différence entre son Avantage et celui supérieur de son
+ *  adversaire »). Hors combat / sans foe engagé = 0. Calculé sur la `battle` (valeur relationnelle). */
+function engagedAdvantageGap(get: Get, actor: Combatant): number {
+  const battle = get().battle;
+  if (!battle) return 0;
+  const foes = battle.combatants.filter((e) => e.kind !== actor.kind && !isOutOfAction(e) && isEngagedWith(e, actor.id));
+  if (!foes.length) return 0;
+  return Math.max(0, Math.max(...foes.map((e) => e.advantage ?? 0)) - (actor.advantage ?? 0));
+}
+
 /** CŒUR d'application : applique une LISTE d'effets `TriggeredEffect` de `actor` correspondant à
  *  `trigger`, chacun via `runSpellFlowLines` aux cibles résolues (`on`). Source UNIQUE : utilisé par
  *  `fireTriggers` (effets de traits/atouts) ET par les manœuvres (effets du profil de manœuvre).
@@ -155,6 +169,9 @@ export function applyTriggeredEffects(
 ): string[] {
   const lines: string[] = [];
   const rng = ctx.rng ?? defaultRNG;
+  // Valeur RELATIONNELLE de combat calculée UNE fois pour le porteur (battle-aware) : écart d'Avantage
+  // avec ses adversaires Engagés (Instable, LDB 85 l.177). Voyage dans l'opsCtx → Formula/Condition.
+  const gap = ctx.engagedAdvantageGap ?? engagedAdvantageGap(get, actor);
   for (const eff of effects) {
     if (eff.trigger !== trigger) continue;
     // Filtre `onGainCondition` : ne réagit qu'à l'État effectivement gagné (Mâchoires → 'sonne').
@@ -174,10 +191,10 @@ export function applyTriggeredEffects(
       // `runSpellFlowLines`, qui LÈVE (jamais de branche succès muette). Le contexte de la touche
       // (`woundsDealt`/`margin→sl`/`location`/`attackKind`) voyage dans l'opsCtx pour les Conditions `if`.
       if (flowHasTest(eff.flow) && ctx.set && testRouter) {
-        testRouter(get, ctx.set, t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause });
+        testRouter(get, ctx.set, t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, engagedAdvantageGap: gap, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause });
         continue;
       }
-      lines.push(...runSpellFlowLines(t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause }));
+      lines.push(...runSpellFlowLines(t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, engagedAdvantageGap: gap, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause }));
     }
   }
   return lines;

@@ -211,6 +211,7 @@ export const fr = {
   'op.grantTalent': '{name} gagne le Talent {talent} ({src}).',
   'op.reduceToZero': '{name} : Blessures réduites à 0 (Inconscient).',
   'op.banish': '{name} est bannie — son essence retourne aux Royaumes du Chaos !',
+  'op.banish.unravel': '{name} se délite — les magies qui la maintenaient s\'effondrent.',
   'op.ignoreStatePenalties': "{name} ne subit plus aucune pénalité d'État ({src}).",
   'op.freeReroll': '{name} pourra relancer le prochain Test auquel il échoue ({src}).',
   'op.critTwice': '{name} : ses Blessures Critiques infligées tireront deux lancers — le meilleur conservé ({src}).',

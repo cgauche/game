@@ -12,13 +12,13 @@ import { battleRng } from '../battleRng';
 import { rollTest } from '../../engine/tests';
 import { testValue } from '../../engine/skills';
 import { bonus, effectiveChar, refreshWounds } from '../../engine/characteristics';
-import { addCondition, isOutOfAction, COND, tickDeath, stacks, removeCondition, endOfRound, loseWounds, hasCondition, poisonResistValue, poisonResistApply, combatTestPenalty } from '../../engine/conditions';
+import { addCondition, isOutOfAction, COND, tickDeath, stacks, removeCondition, endOfRound, hasCondition, poisonResistValue, poisonResistApply, combatTestPenalty } from '../../engine/conditions';
 import { suffocationTick } from '../../engine/suffocation';
 import { clearPsychOf, calmeValue } from '../../engine/psychology';
 import { zonesRoundTick } from '../zones';
 import { purgeExpiredSummons } from '../summonFlow';
 import { fireTriggers } from '../triggeredEffects';
-import { isUnstable, hasPerturbingAura } from '../../engine/traits/dispatch';
+import { hasPerturbingAura } from '../../engine/traits/dispatch';
 import { outnumberCountBonus, hasBraveheart } from '../../engine/combatFeatures/dispatch';
 import { chebyshev } from '../path';
 import { isEngaged } from '../../engine/engagement';
@@ -96,26 +96,9 @@ registerCombatHook({
     }
   },
 });
-registerCombatHook({
-  id: 'unstable', // Instable (LDB 85 p.340) : Engagé avec un Avantage SUPÉRIEUR → perd la différence en PB ; à 0, « meurt »
-  phase: 'onRoundEnd',
-  order: 30,
-  run: ({ battle, sink }) => {
-    for (const c of battle.combatants) {
-      if (isOutOfAction(c) || !isUnstable(c.traits)) continue;
-      const foesAdv = (c.engagedWith ?? [])
-        .map((id) => battle.combatants.find((x) => x.id === id))
-        .filter((e): e is Combatant => !!e && e.kind !== c.kind && !isOutOfAction(e))
-        .map((e) => e.advantage ?? 0);
-      const diff = (foesAdv.length ? Math.max(...foesAdv) : 0) - (c.advantage ?? 0);
-      if (diff > 0) {
-        loseWounds(c, diff);
-        sink(`${c.name} (Instable) est repoussée : −${diff} PB.`, c);
-        if (c.wounds.current <= 0) { c.dead = true; sink(`${c.name} se délite — les magies qui la maintenaient s'effondrent.`, c); }
-      }
-    }
-  },
-});
+// Instable (LDB 85 p.340) MIGRÉ en DONNÉES : trait `instable` effects onRoundEnd — `if engagedAdvantageGap
+// > 0` → wounds {engagedAdvantageGap} (perd la différence d'Avantage) puis `if woundsCurrent<=0` → banish
+// {narration:'unravel'} (« se délite »). La valeur relationnelle est calculée par le dispatcher. Plus de hook.
 // Bestial (LDB 85 p.338) « peur du feu → gagne Brisé » MIGRÉ en données : trait `bestial` effects
 // onRoundEnd (if En Flammes ∧ pas déjà Brisé → condition Brisé), dispatché par le dispatcher unique.
 registerCombatHook({

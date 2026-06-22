@@ -140,7 +140,7 @@ export function condCtxFor(ctx: ExecCtx): ConditionCtx {
   const o = ctx.opsCtx ?? {};
   return {
     flags: {}, gameTime: o.now ?? 0, party: ctx.target ? [ctx.target] : [], sl: o.sl,
-    location: o.location, woundsDealt: o.woundsDealt, attackKind: o.attackKind, startleCause: o.startleCause,
+    location: o.location, woundsDealt: o.woundsDealt, engagedAdvantageGap: o.engagedAdvantageGap, attackKind: o.attackKind, startleCause: o.startleCause,
     target: actorView(ctx.target), caster: actorView(ctx.caster),
   };
 }

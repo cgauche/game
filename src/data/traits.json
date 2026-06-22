@@ -886,7 +886,66 @@
     },
     "capabilities": {
       "unstable": true
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "engagedAdvantageGap",
+            "op": ">",
+            "value": 0
+          },
+          "then": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "target",
+                  "ops": [
+                    {
+                      "op": "wounds",
+                      "amount": {
+                        "engagedAdvantageGap": true
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "compare",
+                  "subject": {
+                    "who": "target",
+                    "field": "woundsCurrent"
+                  },
+                  "op": "<=",
+                  "value": 0
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "on": "target",
+                    "ops": [
+                      {
+                        "op": "banish",
+                        "narration": "unravel"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
   },
   {
     "id": "intelligent",

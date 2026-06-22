@@ -69,6 +69,10 @@ export type Formula =
   /** Nombre de PIONS de l'État qui DÉCLENCHE l'effet (Empoisonné « 1 PB/pion », En Flammes « +1/pion ») —
    *  injecté par le bus d'événements (`ctx.stacks`) quand un `effects: onRoundEnd` d'État est joué. 0 hors contexte. */
   | { stacks: 'self' }
+  /** ÉCART d'Avantage avec les adversaires ENGAGÉS (`max(0, meilleur Avantage ennemi engagé − le sien)`) —
+   *  injecté par le dispatcher de combat (`ctx.engagedAdvantageGap`, calculé sur la `battle`). Valeur
+   *  RELATIONNELLE de l'arène (Instable « perd la différence d'Avantage », LDB 85 l.177). 0 hors contexte. */
+  | { engagedAdvantageGap: true }
   /** SOMME de termes (composition) — « 1d10 + (pions − 1) » des Dégâts d'En Flammes (LDB 16 l.77). Permet
    *  d'authorer une formule composée sans coder en dur l'addition au moteur. Récursif. */
   | { sum: Formula[] };
@@ -76,14 +80,15 @@ export type Formula =
 /** Résout une formule contre son référent (`ref`) — RNG seedable pour les dés. `rolled` = valeur du
  *  jet courant d'un `rollThreshold` (injectée par l'op ; 0 hors de ce contexte) ; `indice` = Indice
  *  de l'attaque naturelle d'une manœuvre (`{indiceOf}`, 0 hors contexte). */
-export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG, rolled?: number, indice?: number, stacks?: number): number {
+export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG, rolled?: number, indice?: number, stacks?: number, gap?: number): number {
   if (typeof f === 'number') return f;
   if ('bonusOf' in f) return bonus(effectiveChar(ref, f.bonusOf));
   if ('charOf' in f) return effectiveChar(ref, f.charOf);
   if ('rolled' in f) return rolled ?? 0;
   if ('indiceOf' in f) return indice ?? 0;
   if ('stacks' in f) return stacks ?? 0;
-  if ('sum' in f) return f.sum.reduce<number>((acc, term) => acc + resolveFormula(term, ref, rng, rolled, indice, stacks), 0);
+  if ('engagedAdvantageGap' in f) return gap ?? 0;
+  if ('sum' in f) return f.sum.reduce<number>((acc, term) => acc + resolveFormula(term, ref, rng, rolled, indice, stacks, gap), 0);
   return rollDice(f.dice, rng);
 }
 
@@ -263,11 +268,12 @@ export type GameOp =
   /** PB réduits à 0 + Inconscient (Châtiment, Tonnerre et foudre — LDB 40). `onlyGroups` : gaté par
    *  Groupe (Fauche-démon → cible Démoniaque seulement). */
   | { op: 'reduceToZero'; onlyGroups?: string[] }
-  /** BANNISSEMENT : la cible est RETIRÉE du jeu, sa forme se dissipe (Démoniaque réduit à 0 PB — son âme
-   *  retourne immédiatement dans les Royaumes du Chaos, LDB 85 p.339) : pas de corps, pas d'Inconscient,
-   *  pas de Critique. Op IMPURE (marque `dead`), idempotente (déjà retirée → no-op). Portée par l'`effects`
-   *  du trait Démoniaque (déclenchée à 0 PB), édité au Codex — plus de branche en dur dans applyAttackResult. */
-  | { op: 'banish' }
+  /** RETRAIT DU JEU : la cible est destituée, sa forme se dissipe — la force qui la soutenait cède.
+   *  `narration` choisit la prose : défaut/`'chaos'` = Démoniaque banni (« son âme retourne dans les
+   *  Royaumes du Chaos », LDB 85 p.339) ; `'unravel'` = Instable qui se délite (« les magies la maintenant
+   *  s'effondrent », LDB 85 l.177). Op IMPURE (marque `dead`), portée par l'`effects` du trait (édité au
+   *  Codex) — plus de branche en dur. L'unicité est garantie en amont (déclencheur `onSlain` / `if` à 0 PB). */
+  | { op: 'banish'; narration?: 'chaos' | 'unravel' }
   /** « Ne subit aucune pénalité causée par les États » (Endurance de l'anachorète, LDB 42) —
    *  drapeau d'effet actif lu par combatTestPenalty/testStatePenalty. */
   | { op: 'ignoreStatePenalties' }
@@ -521,6 +527,9 @@ export interface OpsCtx {
   /** Nombre de PIONS de l'État qui déclenche un `effects: onRoundEnd` — résout les Formula `{stacks:'self'}`
    *  (Empoisonné « 1 PB/pion », En Flammes « +1/pion »). Posé par le bus à la diffusion d'un effet d'État. */
   stacks?: number;
+  /** Écart d'Avantage avec les adversaires Engagés — résout `{engagedAdvantageGap:true}` ET la Condition
+   *  `engagedAdvantageGap` (Instable). Calculé sur la `battle` par le dispatcher de combat. */
+  engagedAdvantageGap?: number;
   /** Localisation de la touche courante (dé inversé) — lue par la Condition Flow `location` (Assommante). */
   location?: HitLocation;
   /** KIND de l'attaque courante (`creatureAttackKind` : 'morsure'/'cornes'/…) — lu par la Condition Flow
@@ -618,7 +627,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
     switch (o.op) {
       case 'wounds': {
         if (!groupGate(o.onlyGroups)) break;
-        const raw = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled, ctx.indice, ctx.stacks) + slBonus(ctx.sl, o.perSL));
+        const raw = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled, ctx.indice, ctx.stacks, ctx.engagedAdvantageGap) + slBonus(ctx.sl, o.perSL));
         // Défaut : ignore BE+PA. `ignoreTB:false` → déduit le Bonus d'Endurance ; `ignoreAP:false` → déduit les PA.
         const tb = o.ignoreTB === false ? bonus(effectiveChar(target, 'E')) : 0;
         // `apFrom:'least'` → PA de la Localisation la moins protégée (En Flammes) ; sinon le Corps.
@@ -873,11 +882,11 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'banish': {
-        // Retrait du jeu (LDB 85 p.339) — pas de corps/Inconscient/Critique. Émet TOUJOURS la narration
-        // (la cible peut être déjà `dead` d'un Critique létal : le bannissement est l'issue NARRÉE de SA
-        // mort). L'unicité est garantie en amont par le déclencheur `onSlain` (`slainNotified`).
+        // Retrait du jeu — pas de corps/Inconscient/Critique. Émet TOUJOURS la narration (la cible peut être
+        // déjà `dead` d'un Critique létal : le retrait est l'issue NARRÉE de SA mort). L'unicité est garantie
+        // en amont (déclencheur `onSlain` pour le Démoniaque, `if woundsCurrent<=0` pour l'Instable).
         target.dead = true;
-        lines.push(t('op.banish', { name: target.name }));
+        lines.push(t(o.narration === 'unravel' ? 'op.banish.unravel' : 'op.banish', { name: target.name }));
         break;
       }
       case 'ignoreStatePenalties': {

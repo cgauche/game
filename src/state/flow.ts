@@ -86,6 +86,9 @@ export type Condition =
   /** Blessures infligées par l'attaque/lancement courant (`ctx.woundsDealt`), comparées par `op` à
    *  `value` (Venin : `> 0` → Empoisonné ; un rider « coup lourd » : `>= 3`). Hors contexte = 0. */
   | { kind: 'woundsDealt'; op: CompareOp; value: number }
+  /** Écart d'Avantage avec les adversaires Engagés (`ctx.engagedAdvantageGap`), comparé par `op` à `value`
+   *  (Instable : `> 0` → la créature est repoussée et perd des PB, LDB 85 l.177). Hors combat = 0. */
+  | { kind: 'engagedAdvantageGap'; op: CompareOp; value: number }
   /** Camp / RELATION d'un acteur (`who`) — gate « seulement les ennemis / les alliés / les neutres »
    *  (riders de domaine offensifs : `who:'target', is:'opponent'`). `ally`/`opponent` sont RELATIFS à
    *  l'autre acteur (même camp / camp différent) ; `party`/`neutral`/`hostile` sont ABSOLUS (le `kind`).
@@ -116,6 +119,8 @@ export interface ConditionCtx {
   location?: HitLocation;
   /** Blessures infligées par l'attaque courante — lue par la Condition `woundsDealt`. */
   woundsDealt?: number;
+  /** Écart d'Avantage avec les adversaires Engagés — lu par la Condition `engagedAdvantageGap` (Instable). */
+  engagedAdvantageGap?: number;
   /** KIND de l'attaque courante (`creatureAttackKind` : 'morsure'/'cornes'/…) — lu par la Condition `attackKind`. */
   attackKind?: string;
   /** CAUSE de l'effarouchement courant ('noise'/'magic') — lue par la Condition `startleCause` (exemption Dressé). */
@@ -168,6 +173,7 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
     case 'attackKind': return ctx.attackKind != null && ctx.attackKind === cond.is;
     case 'startleCause': return ctx.startleCause != null && ctx.startleCause === cond.is;
     case 'woundsDealt': return applyCompareOp(ctx.woundsDealt ?? 0, cond.op, cond.value);
+    case 'engagedAdvantageGap': return applyCompareOp(ctx.engagedAdvantageGap ?? 0, cond.op, cond.value);
     case 'relation': {
       const a = cond.who === 'caster' ? ctx.caster : ctx.target;
       if (!a) return false;

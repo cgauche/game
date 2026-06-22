@@ -26,7 +26,8 @@ const mk = (over: Partial<Combatant> = {}): Combatant => ({
   ...over,
 } as Combatant);
 
-const noBattle = () => ({ battle: undefined }) as never;
+// `get` est une FONCTION (getter du store) ; un stub hors-combat renvoie donc `() => ({ battle: undefined })`.
+const noBattle = () => (() => ({ battle: undefined })) as never;
 const empetre = (c: Combatant) => c.conditions.find((x) => x.name === 'empetre');
 
 describe('fireTriggers — Traits et Atouts sur le même système flow+déclencheur', () => {
