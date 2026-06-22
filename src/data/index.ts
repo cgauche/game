@@ -258,6 +258,19 @@ export interface EtatData {
   label: string;
   desc: string;
   source: { book: string; page: number };
+  /** Modificateurs PASSIFS continus de l'État (pénalité de Test, bonus à l'attaquant via `incomingAttackMod`,
+   *  échelle de Mouvement…) en `GameOp[]` — MÊME vocabulaire/éditeur (`GameOpEditor`) que traits/atouts. Lus
+   *  par le collecteur passif (`passiveMods`, kind `etat` : pool non-cumul, le pire seul, LDB 16 l.20).
+   *  VIDE aujourd'hui : migration des 12 États en cours (cf. docs/combat-events-coherence.md, Lot 4). */
+  passive?: import('../engine/ops').GameOp[];
+  /** Effets DÉCLENCHÉS de l'État (dégâts par round → `onRoundEnd` ; test d'évasion/récupération → flow
+   *  `test`…) en `TriggeredEffect[]` — MÊME vocabulaire que traits/atouts, diffusés par le bus d'événements
+   *  de combat (`emitCombatEvent`). VIDE aujourd'hui (Lot 4). */
+  effects?: import('../state/flow').TriggeredEffect[];
+  /** Restriction d'Action / de Mouvement / de défense imposée par l'État (À Terre/Sonné/Inconscient/
+   *  Surpris/Empêtré…), lue par les prédicats moteur EXISTANTS (`canTakeAction`/`effectiveMovement`/
+   *  `cannotDefend`) au lieu des branches par-nom. VIDE aujourd'hui (Lot 4). */
+  gating?: { action?: 'none'; movement?: 'none' | 'half' | 'crawl'; cannotDefend?: true };
 }
 /** Tables Couleur des Yeux / Cheveux (LDB 05 l.698-744) : 2d10, libellé par refChar. */
 export interface DetailColorData {
