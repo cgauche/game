@@ -25,10 +25,12 @@ import { fileURLToPath } from 'node:url';
 const here = (f: string) => fileURLToPath(new URL(f, import.meta.url));
 const read = (f: string) => readFileSync(here(f), 'utf8');
 
-/** Retire les commentaires (les ids/noms en commentaire ne sont pas du code réactif). */
+/** Retire commentaires ET imports (les ids/noms en commentaire ou en `import {…}` — y compris
+ *  multi-lignes — ne sont PAS du code réactif : seuls les SITES d'appel comptent). */
 function stripComments(src: string): string {
   return src
     .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/import\s+(?:type\s+)?\{[\s\S]*?\}\s+from\s+['"][^'"]*['"];?/g, '') // imports nommés (multi-lignes)
     .split('\n')
     .map((l) => {
       const i = l.indexOf('//');
@@ -67,7 +69,7 @@ const TARGETS: Target[] = [
     name: 'state/combat/roundHooks.ts',
     src: read('./combat/roundHooks.ts'),
     reactive: /isUnstable|isBestial|hasPerturbingAura|suffocationTick|id: '(unstable|bestial-fire-fear|perturbing-aura|determination)/,
-    baseline: 9, // 11→9 : Bestial (peur du feu → Brisé) migré en données (trait `bestial` effects onRoundEnd, dispatcher unique)
+    baseline: 7, // 11→9 (Bestial → données) →7 (imports multi-lignes ne sont plus comptés : faux positifs retirés). Reste : unstable/perturbing/determination/suffocation (Lot 4bis)
     lot: 'Lot 4bis',
   },
   {
@@ -75,7 +77,7 @@ const TARGETS: Target[] = [
     src: read('./combatFlow.ts'),
     reactive: /hasRiposte|hasChampionDefense|hasTraitKey\(|banishedAtZero|autoCleave|maybeHeroCleave|isUnstable|isBestial|hasPerturbingAura|suffocationTick/,
     exclude: /^\s*import|export function (autoCleave|maybeHeroCleave)/,
-    baseline: 10, // Sonné→Avantage migré en données (passive incomingAdvantage, lu par incomingMeleeAdvantage) — plus de branche par-nom
+    baseline: 8, // 14→10 (Sonné→Avantage en données : passive incomingAdvantage) →8 (imports multi-lignes plus comptés). Reste : Riposte/Cleave/infection/banish/nerveux (Lot 6)
     lot: 'Lot 6',
   },
 ];
