@@ -161,7 +161,7 @@ export function spendResolveForPsychImmunity(c: Combatant): string | null {
   if ((c.resolve ?? 0) <= 0) return null;
   c.resolve = (c.resolve ?? 0) - 1;
   c.psychImmuneRoundsLeft = 2;
-  return `${c.name} : immunisé à la Psychologie jusqu'à la fin du prochain Round (Détermination).`;
+  return t('psy.determinationImmune', { name: c.name });
 }
 
 /** Retire de TOUS les combattants les afflictions psychologiques (Peur/Terreur/traits ciblés)
