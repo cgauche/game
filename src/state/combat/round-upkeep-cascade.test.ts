@@ -123,6 +123,33 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
     expect(hasCondition(h, COND.extenue)).toBe(true);      // … vidé → 1 Exténué (LDB 16 l.72, via `if`/`condition`)
   });
 
+  it('Sonné data-driven : héros → étape triggeredTest ; succès → Sonné vidé + 1 Exténué (RAW l.123-127)', () => {
+    seedBattleRng(5);
+    const { H } = setup();
+    H.characteristics.E = 90; // Résistance haute → réussite
+    addCondition(H, COND.sonne, 1);
+
+    openRoundEndCascade(useGame.getState, useGame.setState);
+    const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'triggeredTest')!;
+    expect(step).toBeTruthy();
+    useGame.getState().cascadeRoll(step.id);
+    useGame.getState().cascadeNext();
+    const h = useGame.getState().battle!.combatants.find((x) => x.id === H.id)!;
+    expect(hasCondition(h, COND.sonne)).toBe(false);  // 1+DR retiré → vidé
+    expect(hasCondition(h, COND.extenue)).toBe(true); // vidé → 1 Exténué
+  });
+
+  it('Sonné : caveat RAW « 1 Exténué si pas déjà » — déjà Exténué → la Résistance vide le Sonné SANS empiler d’Exténué (l.127)', () => {
+    const { H } = setup();
+    H.characteristics.E = 90;
+    addCondition(H, COND.sonne, 1);
+    addCondition(H, COND.extenue, 1); // DÉJÀ Exténué
+    // Résolution INLINE (hors cascade) avec un jet réussi forcé → on isole le caveat sur l’Exténué.
+    fireConditionEffects(useGame.getState, H, 'onRoundEnd', { rng: { int: () => 1 } as never });
+    expect(hasCondition(H, COND.sonne)).toBe(false); // Sonné vaincu
+    expect(stacks(H, COND.extenue)).toBe(1);         // PAS de 2ᵉ Exténué (caveat `if all[sonne<=0, extenue<=0]`)
+  });
+
   it('Empoisonné data-driven : fireConditionEffects applique les DÉGÂTS puis résout le Test de Résistance INLINE (hors-combat, RAW l.66-72)', () => {
     const { H } = setup();
     addCondition(H, COND.empoisonne, 2);

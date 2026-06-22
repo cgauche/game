@@ -234,25 +234,10 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
   // En Flammes : dégâts par-round MIGRÉS en données (etats.json `effects: onRoundEnd → wounds`,
   // amount {sum:[1d10, pions, −1]} − BE − PA de la Localisation la moins protégée, min 1 ; LDB 16 l.77),
   // joués par fireConditionEffects. Plus de branche by-name de DÉGÂTS d'En Flammes ici.
-  // Sonné : Test de Résistance Intermédiaire (+0) en fin de Round ; sur un succès, retire
-  // 1 État + 1 par DR ; une fois tous retirés, on gagne 1 Exténué (LDB États l.125-127).
-  // Le « -10 à tous les Tests » du Sonné s'applique au jet (l.123, via combatTestPenalty).
-  const sonne = stacks(c, COND.sonne);
-  if (sonne) {
-    const resistVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
-    const res = rollTest(resistVal, 'intermediaire', rng, combatTestPenalty(c));
-    if (res.success) {
-      const removed = Math.min(sonne, 1 + Math.max(0, res.sl));
-      removeCondition(c, COND.sonne, removed);
-      log.push(t('cond.stunDissipated', { name: c.name, removed }));
-      if (!hasCondition(c, COND.sonne) && !hasCondition(c, COND.extenue)) {
-        addCondition(c, COND.extenue);
-        log.push(t('cond.stunToExhausted', { name: c.name }));
-      }
-    } else {
-      log.push(t('cond.stunPersists', { name: c.name }));
-    }
-  }
+  // Sonné : Test de Résistance Intermédiaire (+0) en fin de Round (retire 1+DR ; vidé → 1 Exténué « si pas
+  // déjà », LDB 16 l.123-127) MIGRÉ en DONNÉES — `etats.json` sonne `effects: onRoundEnd → {test → removeCondition
+  // 1+DR, `if` sonne∧extenue vidés → condition extenue}`, résolu par le DISPATCHER UNIQUE (cadence-aware en
+  // combat, inline hors-combat). Le −10 du Sonné s'applique au jet via `combatTestPenalty` (rawCombatTestBase).
   // Auto-dissipation en fin de Round (Aveuglé l.48 / Assourdi l.32 / Surpris l.136) MIGRÉE en données :
   // `effects: [{trigger:'onRoundEnd', flow:…removeCondition}]` dans etats.json, jouée par fireConditionEffects.
   // Effets RÉCURRENTS portés par un effet actif de sort (op `perRound`) — re-joués tant que l'effet

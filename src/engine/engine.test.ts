@@ -206,7 +206,7 @@ describe('États en combat (LDB ch.16)', () => {
     endOfRound(c, { int: () => 4 }); // dégâts de feu désormais data-driven (cf. state/etat-perround.test)
     expect(c.wounds.current).toBe(20); // endOfRound seul : aucun dégât de feu
   });
-  it('Sonné : Résistance réussie retire 1 État +1/DR puis octroie Exténué une fois nettoyé (l.125-127)', () => {
+  it('Sonné : endOfRound NE touche plus le Sonné — Test de Résistance migré en DONNÉES (l.125-127)', () => {
     const c = {
       name: 'x',
       conditions: [],
@@ -216,24 +216,8 @@ describe('États en combat (LDB ch.16)', () => {
       wounds: { current: 10, max: 10 },
     } as unknown as Combatant;
     addCondition(c, 'sonne', 2);
-    // E 50, Sonné −10 → cible 40 ; jet 5 → réussite, DR = 4 → retire min(2, 1+4) = 2 → nettoyé.
-    endOfRound(c, { int: () => 5 });
-    expect(c.conditions.some((x) => x.name === 'sonne')).toBe(false);
-    expect(c.conditions.some((x) => x.name === 'extenue')).toBe(true);
-  });
-  it('Sonné : Résistance ratée conserve l’État et n’octroie pas d’Exténué (l.125)', () => {
-    const c = {
-      name: 'x',
-      conditions: [],
-      skills: [],
-      characteristics: { E: 30 },
-      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
-      wounds: { current: 10, max: 10 },
-    } as unknown as Combatant;
-    addCondition(c, 'sonne', 1);
-    // E 30, Sonné −10 → cible 20 ; jet 95 → échec → reste Sonné, pas d’Exténué.
-    endOfRound(c, { int: () => 95 });
-    expect(c.conditions.some((x) => x.name === 'sonne')).toBe(true);
+    endOfRound(c, { int: () => 5 }); // la Résistance au Sonné est `effects: onRoundEnd test` (etats.json), résolue par le dispatcher
+    expect(c.conditions.some((x) => x.name === 'sonne')).toBe(true);   // endOfRound ne retire aucun pion (cf. state/round-upkeep-cascade.test)
     expect(c.conditions.some((x) => x.name === 'extenue')).toBe(false);
   });
 });

@@ -342,6 +342,86 @@
         "mode": "melee",
         "amount": 1
       }
+    ],
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "test",
+          "test": {
+            "skill": "resistance",
+            "difficulty": "intermediaire",
+            "label": "💫 Résistance au Sonné"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "target",
+                  "ops": [
+                    {
+                      "op": "removeCondition",
+                      "name": "sonne",
+                      "value": 1,
+                      "valuePerSL": {
+                        "every": 1,
+                        "amount": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "all",
+                  "of": [
+                    {
+                      "kind": "compare",
+                      "subject": {
+                        "who": "target",
+                        "condition": "sonne"
+                      },
+                      "op": "<=",
+                      "value": 0
+                    },
+                    {
+                      "kind": "compare",
+                      "subject": {
+                        "who": "target",
+                        "condition": "extenue"
+                      },
+                      "op": "<=",
+                      "value": 0
+                    }
+                  ]
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "on": "target",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "name": "extenue"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": []
+          }
+        }
+      }
     ]
   },
   {

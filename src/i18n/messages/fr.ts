@@ -164,11 +164,8 @@ export const fr = {
   'interlude.recap.cancel': 'Pas encore',
   'interlude.recap.confirm': "Clore l'interlude",
   // ── Phase C : narration moteur (États/upkeep). Patrons byte-identiques aux littéraux d'origine. ──
-  // (La Résistance à l'Empoisonné est désormais data-driven — son journal vient des ops `removeCondition`/
-  //  `condition` ; plus de clés `cond.poison*` dédiées.)
-  'cond.stunDissipated': '{name} : {removed} État(s) Sonné dissipé(s) (Résistance réussie).',
-  'cond.stunToExhausted': '{name} est Exténué (après avoir surmonté le dernier État Sonné).',
-  'cond.stunPersists': '{name} reste Sonné (Résistance ratée).',
+  // (Les Résistances Empoisonné/Sonné sont désormais data-driven — leur journal vient des ops
+  //  `removeCondition`/`condition` ; plus de clés `cond.poison*`/`cond.stun*` dédiées.)
   'cond.dissipate': '{name} : un État {cond} se dissipe.',
   'cond.effectExpire': '{name} : {label} se dissipe.',
   'cond.spellCondExpire': "{name} : l'État {cond} (sort) se dissipe.",
