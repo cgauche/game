@@ -172,13 +172,13 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
 
 registerCombatHook({
   id: 'end-frenzy', // Frénésie finie (plus d'ennemi / Sonné) → Exténué, AVANT de tester la psychologie
-  phase: 'turnStart',
+  phase: 'onTurnStart',
   order: 10,
   run: ({ get, set, self }) => { if (self) endFrenzyIfDone(get, set, self); },
 });
 registerCombatHook({
   id: 'rage', // Rage (LDB 85 p.341) : « dépenser tous ses Avantages (minimum 3) pour entrer en Frénésie »
-  phase: 'turnStart',
+  phase: 'onTurnStart',
   order: 20,
   run: ({ get, set, battle, self }) => {
     const enemy = self;
@@ -191,13 +191,13 @@ registerCombatHook({
 });
 registerCombatHook({
   id: 'ai-maybe-frenzy', // l'IA tente d'entrer en Frénésie (LDB 21 l.32) AVANT le test psy (la Frénésie en rend immunisé)
-  phase: 'turnStart',
+  phase: 'onTurnStart',
   order: 30,
   run: ({ get, set, self }) => { if (self) aiMaybeFrenzy(get, set, self); },
 });
 registerCombatHook({
   id: 'resolve-psych-ai', // Peur/Terreur de l'IA au début de son tour (instantané, journalisé)
-  phase: 'turnStart',
+  phase: 'onTurnStart',
   order: 40,
   run: ({ get, set, self }) => { if (self) resolvePsychAI(get, set, self); },
 });

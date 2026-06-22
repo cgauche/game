@@ -50,13 +50,13 @@ export function roundTestInteractive(c: Combatant): boolean {
 
 registerCombatHook({
   id: 'end-of-round', // dégâts/effets périodiques d'États (Empoisonné, En flammes, Hémorragique…) — RNG
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 10,
   run: ({ battle, sink }) => { for (const c of battle.combatants) endOfRound(c, battleRng()).forEach((l) => sink(l, c)); },
 });
 registerCombatHook({
   id: 'poison-resist', // Résistance à l'Empoisonné (LDB 16 l.70-72) : retire 1+DR pions sur succès, puis Exténué quand vidé
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 15, // juste après les DÉGÂTS périodiques (end-of-round 10)
   run: ({ battle, sink }) => {
     for (const c of battle.combatants) {
@@ -70,13 +70,13 @@ registerCombatHook({
 });
 registerCombatHook({
   id: 'refresh-wounds', // dissipation d'un buff F/E/FM → recale les Blessures (LDB 85)
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 20,
   run: ({ battle }) => { for (const c of battle.combatants) refreshWounds(c); },
 });
 registerCombatHook({
   id: 'fire-round-start-triggers', // effets « début de Round » authorés (Régénération…) — dispatcher générique (RNG)
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 25,
   run: ({ get, set, battle, sink }) => {
     for (const c of battle.combatants) {
@@ -87,7 +87,7 @@ registerCombatHook({
 });
 registerCombatHook({
   id: 'unstable', // Instable (LDB 85 p.340) : Engagé avec un Avantage SUPÉRIEUR → perd la différence en PB ; à 0, « meurt »
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 30,
   run: ({ battle, sink }) => {
     for (const c of battle.combatants) {
@@ -107,7 +107,7 @@ registerCombatHook({
 });
 registerCombatHook({
   id: 'bestial-fire-fear', // Bestial (LDB 85 p.338) : En flammes → gagne Brisé (approximation granularité Round)
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 40,
   run: ({ battle, sink }) => {
     for (const c of battle.combatants) {
@@ -120,7 +120,7 @@ registerCombatHook({
 });
 registerCombatHook({
   id: 'perturbing-aura', // Perturbant (LDB 85 p.341) : −20 aux Tests à BE mètres d'une créature Perturbante (aura recalculée/Round)
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 50,
   run: ({ battle }) => {
     for (const c of battle.combatants) {
@@ -133,7 +133,7 @@ registerCombatHook({
 });
 registerCombatHook({
   id: 'outnumbered', // Surnombre (LDB 14 l.149) : ≥2 ennemis Engagés → −1 Avantage en fin de Round
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 55,
   run: ({ battle, sink }) => {
     for (const c of battle.combatants) {
@@ -155,13 +155,13 @@ registerCombatHook({
 // Détermination (LDB 17 l.62/64) : décomptes de fin de Round (flags, RNG-free).
 registerCombatHook({
   id: 'determination-ignore-crit-expire', // « ignorer modifs de critique » expire au début du prochain Round
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 70,
   run: ({ battle }) => { for (const c of battle.combatants) if (c.ignoreCritMods) c.ignoreCritMods = false; },
 });
 registerCombatHook({
   id: 'determination-psych-immune-tick', // l'immunité psychologique décompte 1 Round
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 72,
   run: ({ battle }) => { for (const c of battle.combatants) if (c.psychImmuneRoundsLeft) c.psychImmuneRoundsLeft -= 1; },
 });
@@ -227,7 +227,7 @@ export function brokenRecovery(get: Get, sink: (line: string, c: Combatant) => v
 }
 registerCombatHook({
   id: 'broken-recovery', // récupération du Brisé en fin de Round (LDB 16 l.57-59) — RNG (Test de Calme)
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 74,
   run: ({ get, sink }) => brokenRecovery(get, sink, (c) => !roundTestInteractive(c)), // héros MANUEL → cascade ; non-interactif (monstre/rapide/auto) → silence
 });
@@ -236,37 +236,37 @@ registerCombatHook({
 //     `ctx.sink` remplace `tickLine`). Pas de hook suspensif (aucun pending). ---
 registerCombatHook({
   id: 'tick-death', // 0 PB → Inconscient (LDB 18 l.28)
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 76,
   run: ({ battle, sink }) => { for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => sink(l, c)); },
 });
 registerCombatHook({
   id: 'suffocation-tick', // Noyade et Suffocation (LDB 18 l.424-425)
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 78,
   run: ({ battle, sink }) => { for (const c of battle.combatants) suffocationTick(c).forEach((l) => sink(l, c)); },
 });
 registerCombatHook({
   id: 'zones-round-tick', // zones perRound (Grands feux d'U'Zhul, LDB 47 : « au début d'un Round »)
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 79,
   run: ({ battle, sink }) => { zonesRoundTick(battle.zones, battle.combatants, battleRng()).forEach((t) => sink(t.line, t.combatant)); },
 });
 registerCombatHook({
   id: 'clear-psych-of-dead', // effets psy d'une créature morte → fin (catch-all toutes causes de mort)
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 79.3,
   run: ({ battle }) => { for (const c of battle.combatants) if (isOutOfAction(c)) clearPsychOf(battle.combatants, c.id); },
 });
 registerCombatHook({
   id: 'purge-expired-summons', // invocations à durée écoulée OU lanceur tombé ; round = battle.round+1 (set après le dispatch)
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 79.5,
   run: ({ battle, sink }) => { purgeExpiredSummons(battle, battle.round + 1).forEach((l) => sink(l)); },
 });
 registerCombatHook({
   id: 'fire-round-end-triggers', // effets « fin de Round » authorés — dispatcher générique (RNG) ; inerte sans donnée
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 79.6, // après les décomptes/purges de fin de Round, avant la règle optionnelle se-fatiguer (80)
   run: ({ get, set, battle, sink }) => {
     for (const c of battle.combatants) {
@@ -300,7 +300,7 @@ function fatigueApply(c: Combatant, success: boolean, sl: number): string | null
 }
 registerCombatHook({
   id: 'se-fatiguer',
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 80, // après tous les effets de Round RAW, avant la révélation héros
   enabledIf: 'combat-se-fatiguer',
   run: ({ battle, sink }) => {

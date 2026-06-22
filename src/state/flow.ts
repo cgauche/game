@@ -279,7 +279,8 @@ export const EMPTY_FLOW: Flow = { kind: 'seq', steps: [] };
  *  Round, après l'entretien), `onTurnStart`/`onTurnEnd` (début/fin du tour du porteur). */
 export type EffectTrigger =
   | 'onHit' | 'onWoundLoss' | 'onRoundStart' | 'onStartled' | 'onKill' | 'onCharged' | 'onGainCondition'
-  | 'onCombatStart' | 'onCombatEnd' | 'onRoundEnd' | 'onTurnStart' | 'onTurnEnd';
+  | 'onCombatStart' | 'onCombatEnd' | 'onRoundEnd' | 'onTurnStart' | 'onTurnEnd'
+  | 'onAttackResolved' | 'onCastResolved' | 'onMiscast';
 
 /** Effet DÉCLENCHÉ authoré (donnée éditable) : un Flow d'ops appliqué à `on` quand `trigger` se produit.
  *  GÉNÉRIQUE — porté indifféremment par `TraitData.effects` (Toile, Sang corrosif…) ET `QualityData.effects`

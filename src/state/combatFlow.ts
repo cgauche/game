@@ -3502,7 +3502,7 @@ export function advanceTurn(get: Get, set: SetFn) {
       // (Mâchoires d'acier n'est plus un hook de Round : c'est un effet `onGainCondition` data-driven.)
       // advanceTurn n'orchestre plus que le CADRE (Round, ordre, révélation) ; le CONTENU vit en hooks.
       // (Frénésie : l'Arme libre est un grant de DONNÉE plafonné par freeAttacksThisTurn, remis à zéro au tour.)
-      runCombatHooks('roundBoundary', { get, set, battle, sink: tickLine });
+      runCombatHooks('onRoundEnd', { get, set, battle, sink: tickLine });
       if (heroRoundLines.length) pushReveal(set, { kind: 'round', title: tr('cf.roundEndTitle', { n: round - 1 }), lines: heroRoundLines, severity: 'minor' }); // (entretien HÉROS — auto-fermée)
       // Maniement de deux armes : le −10 défensif expire au DÉBUT du prochain Tour de son porteur. Si ce
       // porteur est order[0] (il rejoue en premier), c'est ICI (le franchissement de Round) que son Tour démarre.
@@ -3892,7 +3892,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   // Frénésie 10 → Rage 20 → tentative de Frénésie IA 30 → psychologie 40. La dépendance d'ordre RAW
   // (Frénésie/Rage AVANT la psychologie — la Frénésie en rend immunisé) est encodée par les `order`.
   // Ces hooks journalisent eux-mêmes (kinds `frenzy`/`fear`) ; `sink` n'est pas utilisé par eux.
-  runCombatHooks('turnStart', { get, set, battle: get().battle!, self: enemy, sink: (line, c) => { get().battle!.log.push(ev('detail', line, c?.id)); } });
+  runCombatHooks('onTurnStart', { get, set, battle: get().battle!, self: enemy, sink: (line, c) => { get().battle!.log.push(ev('detail', line, c?.id)); } });
   // Stupide (LDB 85 p.341) : sans allié non-Stupide à ses côtés (adjacent), Test d'Intelligence Facile
   // (+40) au début du Round ; sur un échec, elle perd son Mouvement ET son Action. RESTE INLINE (pas un
   // hook) : c'est un CONTRÔLE DE FLUX (`return advanceTurn` saute le tour) — un hook `run(ctx):void` ne

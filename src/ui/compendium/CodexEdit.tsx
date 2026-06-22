@@ -369,6 +369,9 @@ const TRIGGER_LABEL: Record<EffectTrigger, string> = {
   onRoundEnd: 'à la fin du Round',
   onTurnStart: 'au début de son tour',
   onTurnEnd: 'à la fin de son tour',
+  onAttackResolved: 'après une attaque résolue',
+  onCastResolved: 'après une incantation résolue',
+  onMiscast: 'sur une Imparfaite',
 };
 const ON_LABEL: Record<'self' | 'victim' | 'engaged', string> = {
   self: 'le porteur lui-même',
