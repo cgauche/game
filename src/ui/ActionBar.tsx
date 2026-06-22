@@ -7,7 +7,7 @@ import { isArcaneSpell } from '../engine/magic';
 import { formatSpellRange, formatSpellTarget, formatSpellDuration } from '../engine/spellRangeFormat';
 import { canTakeAction, hasCondition, isOutOfAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
-import { isFrenzyCapable } from '../engine/psychology';
+import { isFrenzyCapable, isFrenzied } from '../engine/psychology';
 import { isConsumable } from '../engine/consumables';
 import { compatibleAmmo } from '../engine/items';
 import { canPushback } from '../engine/qualities/dispatch';
@@ -234,16 +234,16 @@ export function ActionBar() {
   // résout l'attaque armée (approche-puis-frappe). La hotbar ne fait que rendre ces descripteurs.
   const attacks = isHero ? availableAttacks(active, battle) : [];
   // Frénésie (LDB 21 l.31-32) : un héros capable peut tenter d'entrer en Frénésie (Test de FM, coûte l'Action).
-  const canFrenzy = isHero && isFrenzyCapable(active) && !active.frenzied && !battle.acted && !stunned;
+  const canFrenzy = isHero && isFrenzyCapable(active) && !isFrenzied(active) && !battle.acted && !stunned;
   // Frénésie : l'attaque d'Arme gratuite (talent, LDB 21 l.34) reste possible même l'Action dépensée (donnée).
   const freeFrenzy = isHero && hasFreeWeaponAttack(active);
   // Frénésie (LDB 21 l.34) : « La seule Action possible est un Test de Capacité de Combat ou un Test
   // d'Athlétisme » + « sous aucun prétexte vous ne fuirez, ni ne battrez en retraite » → en Frénésie,
   // la hotbar masque Incanter/Soigner/Défensive/Tir/Objets/Se désengager (restent : attaque au clic,
   // Course vers la cible, Se relever, Piétiner, Détermination — qui ne coûte pas l'Action).
-  const frenzied = isHero && !!active.frenzied;
+  const frenzied = isHero && isFrenzied(active);
   // Jauge d'Action : 1 Action de base (+1 attaque gratuite si frénétique). Pleins = encore disponibles.
-  const actMax = 1 + (active.frenzied ? 1 : 0);
+  const actMax = 1 + (isFrenzied(active) ? 1 : 0);
   const actAvail = (battle.acted ? 0 : 1) + (freeFrenzy ? 1 : 0);
   // Coût/gain de l'INTENTION en cours : aperçu tap-1 (tactile) prioritaire, sinon SURVOL (desktop,
   // hoverDelta posé par IsoStage) — même source previewResourceDelta, les jauges clignotent pareil.

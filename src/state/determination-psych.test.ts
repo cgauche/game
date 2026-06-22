@@ -10,7 +10,7 @@ const C = (o: Partial<Combatant>): Combatant => o as unknown as Combatant;
 describe('isPsychImmune — prédicat central (trait / Frénésie / Détermination temp)', () => {
   it('trait Immunité ou Frénésie → immunisé', () => {
     expect(isPsychImmune(C({ psychImmune: true }))).toBe(true);
-    expect(isPsychImmune(C({ frenzied: true }))).toBe(true);
+    expect(isPsychImmune(C({ psychState: [{ type: 'frenesie' }] }))).toBe(true);
     expect(isPsychImmune(C({}))).toBe(false);
   });
   it('Détermination temporaire : immunisé tant qu\'un ActiveEffect `psychImmune` est porté (LDB 17 l.62)', () => {

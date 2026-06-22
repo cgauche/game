@@ -145,7 +145,7 @@ export function isPsychImmune(c: Combatant, foesMaxAdvantage?: number): boolean 
   // Immunité par DONNÉE : trait « Immunité (Psychologie) » (`c.psychImmune`), Détermination temporaire
   // (`ActiveEffect.psychImmune`), OU un état psy porté qui l'accorde (Frénésie → `psychology.json`
   // `psychImmune:true`, LDB 21 l.34) — lu GÉNÉRIQUEMENT, jamais par-nom.
-  return !!c.psychImmune || !!c.frenzied
+  return !!c.psychImmune
     || (c.activeEffects ?? []).some((e) => e.psychImmune)
     || (c.psychState ?? []).some((p) => findPsychologyById(p.type)?.psychImmune);
 }
@@ -187,6 +187,13 @@ export function clearPsychOf(all: Combatant[], deadId: string): void {
 /** Le combattant peut-il entrer en Frénésie (LDB 21 l.31) ? Trait de créature OU Talent « Frénésie ». */
 export function isFrenzyCapable(c: Combatant): boolean {
   return hasTraitKey(c.traits, 'frenesie') || (c.talents ?? []).some((t) => t.talentId === 'frenesie');
+}
+
+/** Le combattant est-il EN Frénésie (LDB 21 l.34) ? État psychologique porté `frenesie` (`psychState`,
+ *  posé par l'entrée — Action héros / décision IA / Rage) — remplace l'ancien drapeau `Combatant.frenzied`.
+ *  Lu par le combat (charge, gating, +1 BF via données, immunité psy, attaque libre). */
+export function isFrenzied(c: Combatant): boolean {
+  return (c.psychState ?? []).some((p) => p.type === 'frenesie');
 }
 
 /** Test de Force Mentale pour entrer en Frénésie (LDB 21 l.32). Succès → on entre. */

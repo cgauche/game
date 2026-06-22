@@ -32,7 +32,7 @@ import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isD
 import { rollTest, resolveOpposed, evaluateTest } from '../engine/tests';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { hasActiveFlag } from '../engine/activeFlags';
-import { isFrenzyCapable, spendResolveForPsychImmunity } from '../engine/psychology';
+import { isFrenzyCapable, isFrenzied, spendResolveForPsychImmunity } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, compatibleAmmo, loadoutSetActive } from '../engine/items';
 import { magazineSize, canPushback, strikesLast, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
 import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus } from '../engine/combatFeatures/dispatch';
@@ -342,7 +342,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // Frénésie (LDB 21 l.34) : « vous devez vous déplacer à votre maximum en direction de l'ennemi
       // le plus proche dans votre Ligne de Vue » → seules les cases qui RAPPROCHENT de cette cible.
       const frenzyBlocks = (): boolean => {
-        if (!active.frenzied) return false;
+        if (!isFrenzied(active)) return false;
         const ft = frenzyTarget(get, active);
         if (!ft?.pos || chebyshev(pt, ft.pos) < chebyshev(active.pos!, ft.pos)) return false;
         get().log(t('cs.frenzyMustCharge', { name: active.name, foe: ft.name }));
@@ -453,7 +453,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (target.kind === 'hero') return; // l'attaque ne vise que les ennemis (soin/sort via leurs modes)
       if (!canTakeAction(active) || hasCondition(active, COND.brise)) return; // Sonné/Brisé : pas d'attaque (parité boutons)
       // Frénésie (LDB 21 l.34) : la cible est IMPOSÉE — l'ennemi le plus proche en Ligne de Vue.
-      if (active.frenzied) {
+      if (isFrenzied(active)) {
         const ft = frenzyTarget(get, active);
         if (ft && ft.id !== id) {
           get().log(t('cs.frenzyMustAttack', { name: active.name, foe: ft.name }));
@@ -2077,7 +2077,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const battle = get().battle;
       if (!battle || battle.over || battle.acted) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || active.frenzied || !isFrenzyCapable(active)) return;
+      if (!active || active.kind !== 'hero' || isFrenzied(active) || !isFrenzyCapable(active)) return;
       // OUVRE la modale — le Test de FM se fait au clic « Lancer ».
       set({ pendingFrenzy: { combatantId: active.id, result: null }, battle: { ...battle, action: null } });
     },
@@ -2090,7 +2090,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!c) return;
       // Issue = source UNIQUE avec la popin (describeFrenzy).
       const log = [describeFrenzy(pf, c.name)];
-      if (pf.result.success) c.frenzied = true;
+      if (pf.result.success) (c.psychState ??= []).push({ type: 'frenesie' });
       set({ battle: { ...get().battle!, acted: true, action: null, log: [...battle.log, ...evLines(log, 'frenzy', c.id)] } });
       checkBattleOver(get, set);
     },

@@ -15,7 +15,7 @@ import { agilityTestPenalty } from './encumbrance';
 import { Combatant, HitLocation, Weapon, BodyShape, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS } from './types';
 import { combatTestPenalty, meleeAttackerBonus, cannotDefend, hasCondition } from './conditions';
 import { effectiveWeaponDamage, effectiveWeapon } from './weaponDamage';
-import { traumaDodgePenalty } from './trauma';
+import { traumaDodgePenalty, damageSBBonus } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
 import { groupMatch } from './groups';
 import { ignoredArmourAP, impenetrableAt } from './items';
@@ -829,7 +829,7 @@ function applyHit(
     };
   }
   // Charge montée (LDB 14 l.223) : DÉGÂTS calculés avec la Force (Bonus) et la Taille de la MONTURE.
-  let sb = (dmgProxy ? dmgProxy.sb : bonus(effectiveChar(attacker, 'F'))) + (attacker.frenzied ? 1 : 0); // +1 Bonus de Force en Frénésie (LDB 21 l.34)
+  let sb = (dmgProxy ? dmgProxy.sb : bonus(effectiveChar(attacker, 'F'))) + damageSBBonus(attacker); // +1 BF en Frénésie via `sbBonus` (psychology.json, LDB 21 l.34)
   // Tueur (LDB 10) : « utilisez le Bonus d'Endurance de votre adversaire comme votre Bonus de Force
   // s'il est plus élevé ; déterminez toujours ce point avant toute autre règle ».
   if (isSlayer(attacker)) sb = Math.max(sb, bonus(effectiveChar(defender, 'E')));

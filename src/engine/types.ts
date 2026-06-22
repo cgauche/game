@@ -502,9 +502,9 @@ export interface Combatant {
   causesTerreur?: number;
   psychImmune?: boolean;
   /** Afflictions psychologiques ACTIVES en combat (Peur en cours, etc.). */
+  /** États psychologiques portés (LDB 21) — Peur/Terreur/Animosité/Haine ET **Frénésie** (`type:'frenesie'`,
+   *  posée à l'entrée, lue par `isFrenzied` ; +1 BF / immunité psy / sortie en DONNÉES `psychology.json`). */
   psychState?: import('./psychology').PsychAffliction[];
-  /** Frénésie active (LDB 21 l.31-36) : +1 BF, attaque obligatoire, immunité psy ; fin → Exténué. */
-  frenzied?: boolean;
   /** (Détermination : l'immunité psy temporaire + l'ignorance des modifs de Critique sont désormais
    *  portées par des `ActiveEffect` à `duration` Rounds — `psychImmune`/`ignoreCritMods` — expirées par
    *  le système de Durée unifié, plus de compteur/flag round-scopé ad hoc.) */

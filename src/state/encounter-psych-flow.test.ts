@@ -140,7 +140,7 @@ describe('encounterPsychFlow — Psychologie à la rencontre HORS COMBAT (cascad
 
   it('immunité (Frénésie) → aucune cascade même sociale', () => {
     const h = animosite('H');
-    h.frenzied = true;
+    (h.psychState ??= []).push({ type: 'frenesie' });
     useGame.setState({ party: [h] });
     useGame.getState().startScene(scene([ent({ id: 'elfe', statblock: ELFE })]));
     expect(useGame.getState().pendingCascade).toBeNull();

@@ -23,7 +23,7 @@ import { lineOfSightCover } from '../lineOfSight';
 import { smokeOf } from '../combatGeometry';
 import { groupMatch } from '../../engine/groups';
 import {
-  fearSourceFor, sansPeurVs, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isPsychImmune,
+  fearSourceFor, sansPeurVs, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isFrenzied, isPsychImmune,
   resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES,
 } from '../../engine/psychology';
 import { isColdBlooded, hasRage } from '../../engine/traits/dispatch';
@@ -62,29 +62,12 @@ function fireTurnEdgeTriggers(get: Get, set: SetFn, c: Combatant | undefined, tr
 // le `sink` du ctx n'est pas requis ici (contrairement à roundHooks).
 // ============================================================================================
 
-/** Fin de Frénésie (LDB 21 l.36) : si plus aucun adversaire vivant en Ligne de Vue, ou si Sonné /
- *  Inconscient → quitte la Frénésie et gagne **Exténué**. À appeler au début du tour du combattant. */
-export function endFrenzyIfDone(get: Get, set: SetFn, c: Combatant): void {
-  if (!c.frenzied) return;
-  const battle = get().battle;
-  const scene = get().scene;
-  if (!battle || !scene || !c.pos) return;
-  const stunned = c.conditions.some((x) => x.name === COND.sonne || x.name === COND.inconscient);
-  const foeInLoS = battle.combatants.some(
-    (f) => f.kind !== c.kind && !isOutOfAction(f) && f.pos && !lineOfSightCover(scene, c.pos!, f.pos, [], smokeOf(battle)).blocked,
-  );
-  if (stunned || !foeInLoS) {
-    c.frenzied = false;
-    addCondition(c, COND.extenue);
-    set({ battle: { ...get().battle!, log: [...get().battle!.log, ev('frenzy', t('turn.frenzyEnd', { name: c.name }), c.id)] } });
-  }
-}
-
 /** L'IA tente d'entrer en Frénésie au début de son tour (LDB 21 l.32) : combattant capable, pas déjà
- *  frenzied ni immunisé à la Psychologie, avec un adversaire vivant en Ligne de Vue → Test de Force
- *  Mentale ; sur un succès, il entre en Frénésie (gérée ensuite par les drapeaux). Instantané, journalisé. */
+ *  frénétique ni immunisé à la Psychologie, avec un adversaire vivant en Ligne de Vue → Test de Force
+ *  Mentale ; sur un succès, il entre en Frénésie (état psy `frenesie` posé en `psychState`). La SORTIE est
+ *  un effet déclenché `onTurnStart` en DONNÉES (`psychology.json`) — plus de hook `end-frenzy` par-nom. */
 export function aiMaybeFrenzy(get: Get, set: SetFn, enemy: Combatant): void {
-  if (enemy.kind !== 'enemy' || enemy.frenzied || enemy.psychImmune || isOutOfAction(enemy) || !isFrenzyCapable(enemy)) return;
+  if (enemy.kind !== 'enemy' || isFrenzied(enemy) || enemy.psychImmune || isOutOfAction(enemy) || !isFrenzyCapable(enemy)) return;
   const battle = get().battle;
   const scene = get().scene;
   if (!battle || !scene || !enemy.pos) return;
@@ -93,7 +76,7 @@ export function aiMaybeFrenzy(get: Get, set: SetFn, enemy: Combatant): void {
   );
   if (!foeInLoS) return;
   if (resolveFrenzyEntry(effectiveChar(enemy, 'FM'), battleRng()).success) {
-    enemy.frenzied = true;
+    (enemy.psychState ??= []).push({ type: 'frenesie' });
     set({ battle: { ...get().battle!, log: [...get().battle!.log, ev('frenzy', t('turn.frenzyEnter', { name: enemy.name }), enemy.id)] } });
   }
 }
@@ -170,21 +153,18 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
 // Chaque `run()` appelle au RUNTIME la fonction/le bloc correspondant (pas de souci de cycle à l'import).
 // ============================================================================================
 
-registerCombatHook({
-  id: 'end-frenzy', // Frénésie finie (plus d'ennemi / Sonné) → Exténué, AVANT de tester la psychologie
-  phase: 'onTurnStart',
-  order: 10,
-  run: ({ get, set, self }) => { if (self) endFrenzyIfDone(get, set, self); },
-});
+// Sortie de Frénésie (LDB 21 l.36) : plus de hook `end-frenzy` par-nom — c'est un effet déclenché
+// `onTurnStart` en DONNÉES (`psychology.json` : Sonné/Inconscient ∨ plus d'ennemi en LdV → Exténué),
+// diffusé UNIFORMÉMENT (héros + IA) par `fireTurnStartTriggers` AVANT les hooks d'entrée ci-dessous.
 registerCombatHook({
   id: 'rage', // Rage (LDB 85 p.341) : « dépenser tous ses Avantages (minimum 3) pour entrer en Frénésie »
   phase: 'onTurnStart',
   order: 20,
   run: ({ get, set, battle, self }) => {
     const enemy = self;
-    if (!enemy || !hasRage(enemy.traits) || enemy.frenzied || (enemy.advantage ?? 0) < 3) return;
+    if (!enemy || !hasRage(enemy.traits) || isFrenzied(enemy) || (enemy.advantage ?? 0) < 3) return;
     enemy.advantage = 0;
-    enemy.frenzied = true;
+    (enemy.psychState ??= []).push({ type: 'frenesie' });
     battle.log.push(ev('frenzy', t('turn.rageEnter', { name: enemy.name }), enemy.id));
     set({ battle: { ...battle } });
   },

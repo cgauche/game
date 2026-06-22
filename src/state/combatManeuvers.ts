@@ -25,6 +25,7 @@ import { rollTest, resolveOpposed, type TestResult } from '../engine/tests';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { isOutOfAction, applyZeroWounds } from '../engine/conditions';
 import { hasTraitKey, isBestial } from '../engine/traits/dispatch';
+import { isFrenzied } from '../engine/psychology';
 import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../engine/creatureAttacks';
 import { findTalentById, type ManeuverDef, type ManeuverMeasure } from '../data';
 import { sizeGap } from '../engine/size';
@@ -114,7 +115,7 @@ export interface AttackOption {
 export const hasFreeWeaponAttack = (c: Combatant): boolean => {
   for (const t of c.talents ?? [])
     for (const op of findTalentById(t.talentId)?.passive ?? [])
-      if (op.op === 'grantFreeAttack' && op.when === 'available' && (op.activeIf !== 'frenzied' || c.frenzied) && (c.freeAttacksThisTurn?.['arme'] ?? 0) < (t.times ?? 1))
+      if (op.op === 'grantFreeAttack' && op.when === 'available' && (op.activeIf !== 'frenzied' || isFrenzied(c)) && (c.freeAttacksThisTurn?.['arme'] ?? 0) < (t.times ?? 1))
         return true;
   return false;
 };

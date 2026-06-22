@@ -20,6 +20,7 @@ import { hasCondition } from '../engine/conditions';
 import { isEngaged, meleeReachTiles } from '../engine/engagement';
 import { groupMatch } from '../engine/groups';
 import { isBestial, isTerritorial } from '../engine/traits/dispatch';
+import { isFrenzied } from '../engine/psychology';
 
 export type EnemyAction =
   | { kind: 'cast'; targetId: string; spell: string } // incantation offensive sur la cible
@@ -88,7 +89,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   if (hasCondition(enemy, 'surpris')) return { kind: 'end' }; // Surpris (LDB 16 l.132) : ni Mouvement ni Action ce tour
   // En flammes (LDB 16 l.77) : un ennemi NON frénétique se roule au sol pour éteindre le feu (1d10/Round
   // est mortel). Un frénétique ignore le danger et continue d'attaquer (Frénésie, LDB 21 l.34).
-  if (hasCondition(enemy, 'en-flammes') && !enemy.frenzied) return { kind: 'recover', state: 'en-flammes' };
+  if (hasCondition(enemy, 'en-flammes') && !isFrenzied(enemy)) return { kind: 'recover', state: 'en-flammes' };
   const pos = enemy.pos!;
   // Portée de mêlée = Allonge de l'arme (RAW-3, LDB 62 l.211/213) ; 1 case par défaut. Diagonale incluse
   // (Chebyshev). Source unique partagée avec le héros et la résolution → symétrie héros/ennemi.
@@ -124,7 +125,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const shootPool = maxWeaponRange > 0 ? shootableHeroes.filter((h) => rangeBandModifier(fpDist(h), maxWeaponRange) != null) : shootableHeroes;
   const castPool = spellRange != null ? shootableHeroes.filter((h) => fpDist(h) <= spellRange) : shootableHeroes;
   // Frénésie (LDB 21 l.34) : la seule Action est un Test de Capacité de Combat / Athlétisme — ni tir ni sort.
-  const frenzied = !!enemy.frenzied;
+  const frenzied = isFrenzied(enemy);
   const canShoot = !frenzied && hasRanged && !reloadNeeded && !(adjacentFoes.length > 0 && hasMeleeWeapon) && shootPool.length > 0;
   const canCast = !frenzied && offensiveSpell != null && castPool.length > 0;
 
@@ -149,7 +150,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // Bestial (LDB 85 p.338) : « Si elle perd plus de la moitié de ses Blessures, elle tente de fuir »
   // — sauf Territorial (combat jusqu'à la mort) ou acculée/Engagée (elle reste — Frénésie gérée par
   // le drapeau frenzied de l'appelant).
-  if (isBestial(enemy.traits) && !isTerritorial(enemy.traits) && !enemy.frenzied
+  if (isBestial(enemy.traits) && !isTerritorial(enemy.traits) && !isFrenzied(enemy)
       && enemy.wounds.current < enemy.wounds.max / 2 && !isEngaged(enemy)) return fleeMove();
 
   // Un héros est « frappable ce tour » en mêlée s'il est déjà adjacent OU si une

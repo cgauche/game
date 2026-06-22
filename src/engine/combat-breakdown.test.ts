@@ -105,7 +105,7 @@ describe('Taille en combat (T1) + env injecté — attackModifiers (LDB 14 l.151
   });
   it('Frénésie : +1 Bonus de Force au calcul des Dégâts (LDB 21 l.34)', () => {
     const tgt = mk({ id: 'T' });
-    const fr = resolveMelee(mk({ frenzied: true }), tgt, sword, makeRNG(2), { defense: 'none' });
+    const fr = resolveMelee(mk({ psychState: [{ type: 'frenesie' }] }), tgt, sword, makeRNG(2), { defense: 'none' });
     const no = resolveMelee(mk(), tgt, sword, makeRNG(2), { defense: 'none' });
     if (fr.hit && no.hit) expect(fr.woundsLost!).toBe(no.woundsLost! + 1);
   });

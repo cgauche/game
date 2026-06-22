@@ -39,7 +39,7 @@ describe('Frénésie du héros — attaque de CC GRATUITE chaque Round (LDB 21 l
 
   it('1re attaque du Round = gratuite (Action préservée) + comptée (freeAttacksThisTurn)', () => {
     const { H, E } = setup();
-    H.frenzied = true;
+    (H.psychState ??= []).push({ type: 'frenesie' });
     useGame.setState({ battle: { ...useGame.getState().battle!, acted: false }, pendingAttack: { attackerId: H.id, targetId: E.id, location: null, result: HIT } });
     useGame.getState().attackConfirm();
     const st = useGame.getState();
@@ -50,7 +50,7 @@ describe('Frénésie du héros — attaque de CC GRATUITE chaque Round (LDB 21 l
 
   it('2e attaque du même Round (gratuite déjà utilisée) → consomme l’Action', () => {
     const { H, E } = setup();
-    H.frenzied = true;
+    (H.psychState ??= []).push({ type: 'frenesie' });
     H.freeAttacksThisTurn = { arme: 1 }; // attaque d'arme libre déjà utilisée ce Round (plafond atteint)
     useGame.setState({ battle: { ...useGame.getState().battle!, acted: false }, pendingAttack: { attackerId: H.id, targetId: E.id, location: null, result: HIT } });
     useGame.getState().attackConfirm();
@@ -66,7 +66,7 @@ describe('Frénésie du héros — attaque de CC GRATUITE chaque Round (LDB 21 l
 
   it('attaque libre de Frénésie INITIABLE même Action dépensée (entrée en Frénésie ce tour)', () => {
     const { H, E } = setup();
-    H.frenzied = true;
+    (H.psychState ??= []).push({ type: 'frenesie' });
     const b = useGame.getState().battle!;
     const turn = b.order.indexOf(H.id);
     useGame.setState({ battle: { ...b, turn, action: null, acted: true } }); // Action déjà dépensée (Test de FM d'entrée)

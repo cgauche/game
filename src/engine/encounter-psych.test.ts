@@ -28,7 +28,7 @@ describe('encounterPsych — Psychologie à la rencontre, HORS COMBAT (Peur/Terr
   it('Immunité (Psychologie) bloque même un Trait social ; Frénésie aussi', () => {
     const immune = hero({ psychImmune: true, psychTraits: [{ type: 'animosite', cible: 'Elfes' }] });
     expect(encounterPsych(immune, [npc('elfe', { groups: ['Elfe'] })])).toBeNull();
-    const frenzied = hero({ frenzied: true, psychTraits: [{ type: 'animosite', cible: 'Elfes' }] });
+    const frenzied = hero({ psychState: [{ type: 'frenesie' }], psychTraits: [{ type: 'animosite', cible: 'Elfes' }] });
     expect(encounterPsych(frenzied, [npc('elfe', { groups: ['Elfe'] })])).toBeNull();
   });
 });

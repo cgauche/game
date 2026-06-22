@@ -127,7 +127,7 @@ import { toBrass, fromBrass } from '../engine/money';
 import { Scene, Effect, isWalkable } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
 import { lineOfSightCover, coverModifier, tilesBetween } from './lineOfSight';
-import { fearSourceFor, sansPeurVs, terreurBrise, calmeValue, isPsychImmune, clearPsychOf, targetedTrigger, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
+import { fearSourceFor, sansPeurVs, terreurBrise, calmeValue, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import { reachable, moveReachFor, flyReachable, pushAway, pathTo, chebyshev, Pt } from './path';
@@ -168,11 +168,11 @@ export * from './combatHooks';
 export * from './combatSetup';
 import { runCombatHooks } from './combatHooks';
 import { collectHeroRoundEndUpkeep, roundTestInteractive } from './combat/roundHooks';
-import { endFrenzyIfDone, fireTurnStartTriggers, fireTurnEndTriggers } from './combat/turnHooks'; // usage interne (cascade psy héros, psychStepFor ; effets de bord de tour)
+import { fireTurnStartTriggers, fireTurnEndTriggers } from './combat/turnHooks'; // effets de bord de tour (onTurnStart/onTurnEnd, dont la sortie de Frénésie en données)
 export { brokenRecovery, collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour broken-recovery.test / cascade d'upkeep
 export * from './combat/triggeredTest'; // baril : enregistre l'applier de cascade `triggeredTest` + installe le routeur de Test des triggers (effet de bord)
 import { runCombatFlow } from './combat/triggeredTest'; // usage interne (applyCast : exécuteur de Flow de sort EN COMBAT, after-aware → canal de journal unifié + voie nested cast↔test)
-export { endFrenzyIfDone, aiMaybeFrenzy, resolvePsychAI, fireTurnStartTriggers, fireTurnEndTriggers } from './combat/turnHooks'; // baril : enregistre les hooks de début de tour ennemi (effet de bord) + ré-export pour frenzy*.test / psych*.test + effets de bord de tour
+export { aiMaybeFrenzy, resolvePsychAI, fireTurnStartTriggers, fireTurnEndTriggers } from './combat/turnHooks'; // baril : enregistre les hooks de début de tour ennemi (effet de bord) + ré-export pour frenzy*.test / psych*.test + effets de bord de tour
 // Sauvegardes post-touche en registre `HitModifier` ordonné (state/combat/hitModifiers, module FEUILLE).
 import { runHitModifiers, martyrGuardOf, wardedAgainst } from './combat/hitModifiers'; // usage interne (applyAttackResult + applyCast)
 export { runHitModifiers, registerHitModifier, martyrGuardOf, wardedAgainst, organicProjectile } from './combat/hitModifiers'; // baril : enregistre les modifiers (effet de bord) + ré-export pour applyCast / les tests (l11-sorts-zones, etc.)
@@ -827,7 +827,7 @@ export function aiApproachPlan(
  *  aucun ennemi visible (alors pas de contrainte). */
 export function frenzyTarget(get: Get, c: Combatant): Combatant | null {
   const { battle, scene } = get();
-  if (!battle || !scene || !c.frenzied || !c.pos) return null;
+  if (!battle || !scene || !isFrenzied(c) || !c.pos) return null;
   const visible = battle.combatants.filter(
     (e) => e.kind !== c.kind && !isOutOfAction(e) && e.pos && !lineOfSightCover(scene, c.pos!, e.pos!, [], smokeOf(battle)).blocked,
   );
@@ -1798,7 +1798,7 @@ export function aiMaybeTrample(get: Get, set: SetFn, enemy: Combatant): void {
  *  adjacent. Elle NE consomme ni Avantage ni Action. Résolution instantanée — comme autoCleave /
  *  aiMaybeTrample, l'IA ne déclenche pas de modale de défense (simplification documentée). */
 export function aiFrenzyAttack(get: Get, set: SetFn, enemy: Combatant): void {
-  if (enemy.kind !== 'enemy' || !enemy.frenzied || isOutOfAction(enemy)) return;
+  if (enemy.kind !== 'enemy' || !isFrenzied(enemy) || isOutOfAction(enemy)) return;
   const battle = get().battle;
   if (!battle || battle.over || !enemy.pos) return;
   if ((enemy.weapons[0]?.type ?? 'melee') !== 'melee') return; // CC Test = corps à corps
@@ -3745,10 +3745,9 @@ export function collectHeroRoundEndPsych(get: Get, c: Combatant): HeroPsychDue |
 }
 
 /** Une étape de Psychologie de combat (`combatPsych`) pour le héros `c` si un Test est dû selon
- *  `collect` (début ou fin de Round). `endFrenzyIfDone` est joué d'abord (sortie de Frénésie avant
- *  tout test). Renvoie `null` sinon. Pur de cascade — la fusion (avec l'upkeep) vit chez l'appelant. */
+ *  `collect` (début ou fin de Round). La sortie de Frénésie est désormais un effet `onTurnStart` en
+ *  DONNÉES (diffusé par `fireTurnStartTriggers`) — plus de force-exit ici. Renvoie `null` sinon. */
 function psychStepFor(get: Get, set: SetFn, c: Combatant, collect: (get: Get, c: Combatant) => HeroPsychDue | null): import('./pendings').CascadeStep | null {
-  endFrenzyIfDone(get, set, c); // une Frénésie finie (plus d'ennemi / Sonné) sort le héros (Exténué) avant tout test
   const t = collect(get, c);
   if (!t) return null;
   const isCible = CIBLE_TYPES.has(t.kind);
@@ -3827,8 +3826,8 @@ export function openRoundEndCascade(get: Get, set: SetFn): void {
   const steps: import('./pendings').CascadeStep[] = [];
   for (const c of get().battle!.combatants) {
     if (c.kind !== 'hero' || isOutOfAction(c)) continue;
-    // 1) Upkeep du héros (le collecteur applique au passage ses effets RNG-free + `endFrenzyIfDone`
-    //    est joué par `psychStepFor` juste après, idempotent). 2) Peur de fin de Round.
+    // 1) Upkeep du héros (effets RNG-free). 2) Peur de fin de Round. (La sortie de Frénésie est un
+    //    effet `onTurnStart` en données, jouée au début du tour du héros — plus ici.)
     steps.push(...collectHeroRoundEndUpkeep(get, c, sink));
     const psych = psychStepFor(get, set, c, collectHeroRoundEndPsych);
     if (psych) steps.push(psych);

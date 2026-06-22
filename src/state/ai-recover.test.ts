@@ -27,7 +27,7 @@ describe('IA — auto-récupération d’État (LDB 16 l.61/77)', () => {
   });
 
   it('En flammes + frénétique : ignore le feu et attaque (Frénésie)', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ name: 'en-flammes', value: 1 }], frenzied: true });
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ name: 'en-flammes', value: 1 }], psychState: [{ type: 'frenesie' }] });
     const h = mk('h', 'hero', { x: 5, y: 6 });
     const action = chooseEnemyAction(input(e, [h]));
     expect(action.kind).toBe('melee');

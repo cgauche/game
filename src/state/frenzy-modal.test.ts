@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
+import { isFrenzied } from '../engine/psychology';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
@@ -52,7 +53,7 @@ describe('Entrée en Frénésie du héros — modale (Test de FM)', () => {
   it('héros déjà frenzied → battleFrenzy n’ouvre rien', () => {
     const { H } = setup();
     H.traits = [{ id: 'frenesie' }];
-    H.frenzied = true;
+    (H.psychState ??= []).push({ type: 'frenesie' });
     useGame.getState().battleFrenzy();
     expect(useGame.getState().pendingFrenzy).toBeNull();
   });
@@ -69,7 +70,7 @@ describe('Entrée en Frénésie du héros — modale (Test de FM)', () => {
     useGame.getState().frenzyForceSuccess(); // garantit le succès (Résilience)
     useGame.getState().frenzyConfirm();
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
-    expect(h.frenzied).toBe(true);
+    expect(isFrenzied(h)).toBe(true);
     expect(useGame.getState().battle!.acted).toBe(true);
     expect(useGame.getState().pendingFrenzy).toBeNull();
   });
@@ -84,7 +85,7 @@ describe('Entrée en Frénésie du héros — modale (Test de FM)', () => {
     const r = useGame.getState().pendingFrenzy!.result!;
     useGame.getState().frenzyConfirm();
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
-    expect(!!h.frenzied).toBe(r.success); // suit le résultat (FM 1 → échec attendu)
+    expect(isFrenzied(h)).toBe(r.success); // suit le résultat (FM 1 → échec attendu)
     expect(useGame.getState().battle!.acted).toBe(true);
   });
 });

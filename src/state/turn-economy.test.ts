@@ -40,7 +40,7 @@ describe('hasMeaningfulOption — garde-fou « tour gâché » (R6)', () => {
   });
 
   it('tout dépensé mais attaque libre de Frénésie disponible → true', () => {
-    const h = hero({ frenzied: true, talents: [{ talentId: 'frenesie', times: 1 }] });
+    const h = hero({ psychState: [{ type: 'frenesie' }], talents: [{ talentId: 'frenesie', times: 1 }] });
     expect(hasMeaningfulOption(h, battle(h, { acted: true, movementUsed: 99, movedPreAction: true }))).toBe(true);
   });
 
