@@ -458,7 +458,10 @@
     "source": {
       "book": "LDB",
       "page": 339
-    }
+    },
+    "suppressesCapabilities": [
+      "bestial"
+    ]
   },
   {
     "id": "dresse-monture",
@@ -480,6 +483,9 @@
     "source": {
       "book": "LDB",
       "page": 339
+    },
+    "capabilities": {
+      "territorial": true
     }
   },
   {

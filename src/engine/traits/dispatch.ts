@@ -162,7 +162,11 @@ export function traitMovementMod(traits: TraitList | undefined): number {
  *  SOURCE UNIQUE des helpers de capacité (bestial/stupide/rage/…). Le seuil/type éventuel (Démoniaque 8+,
  *  Immunité (Poison)) vient de l'INDICE/arg de l'INSTANCE, lu par les helpers dédiés (wardSaves, etc.). */
 export function traitCapability(traits: TraitList | undefined, cap: keyof TraitCapabilities): boolean {
-  return (traits ?? []).some((t) => !!traitById.get(t.id)?.capabilities?.[cap]);
+  const list = traits ?? [];
+  // Suppression GÉNÉRIQUE (Dressé (Dompté) « ignore son Trait Bestial », LDB 85 l.85) : un trait porté
+  // peut annuler la capacité d'un AUTRE trait du même porteur — aucun code par-nom de discipline.
+  if (list.some((t) => traitById.get(t.id)?.suppressesCapabilities?.includes(cap))) return false;
+  return list.some((t) => !!traitById.get(t.id)?.capabilities?.[cap]);
 }
 
 /** Endurant (LDB 85 p.339) : +Bonus d'Endurance Blessures. */

@@ -429,6 +429,10 @@ export interface TraitData {
   /** Drapeaux de CAPACITÉ irréductibles (décisions IA/psy, résolution, build/déplacement/vision) —
    *  migrés des `defs/` mécaniques, lus PAR ID par `engine/traits/dispatch`. Édité au Codex. */
   capabilities?: TraitCapabilities;
+  /** Capacités d'AUTRES traits du même porteur ANNULÉES par ce trait (« entraîné à IGNORER son Trait
+   *  X » — LDB 85 : Dressé (Dompté) ignore Bestial). Mécanisme GÉNÉRIQUE de suppression, lu par
+   *  `traitCapability` : une capacité supprimée par n'importe quel trait porté répond false. */
+  suppressesCapabilities?: (keyof TraitCapabilities)[];
   /** Trait STANDARD (LDB 76 l.28-31 : « ajoutés à la liste Facultative de TOUTES les créatures ») —
    *  proposé par le picker de Traits facultatifs sur n'importe quel bestiaire. Édité au Codex. */
   standard?: boolean;

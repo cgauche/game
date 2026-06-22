@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { fireTriggers } from './triggeredEffects';
 import { hasCondition, stacks, COND } from '../engine/conditions';
 import { effectiveChar } from '../engine/characteristics';
+import { isBestial, isTerritorial } from '../engine/traits/dispatch';
 import { creatureToCombatant } from './spawn';
 import { findCreatureById } from '../data';
 import type { Combatant } from '../engine/types';
@@ -77,6 +78,28 @@ describe('Dressé (Guerre) — passive +10 CC (charMod, LDB 85 l.89) quand la di
   it('sans la discipline → CC de base', () => {
     const c = mk({ characteristics: { CC: 30 } as never });
     expect(effectiveChar(c, 'CC')).toBe(30);
+  });
+});
+
+describe('Dressé (Dompté) — ignore le Trait Bestial (suppression générique, LDB 85 l.85)', () => {
+  it('Bestial + Dompté → isBestial false (capacité supprimée)', () => {
+    const c = mk({ traits: [{ id: 'bestial' }, { id: 'dresse-dompte' }] as never });
+    expect(isBestial(c.traits)).toBe(false);
+  });
+  it('Bestial seul → isBestial true (la suppression vient de Dompté)', () => {
+    const c = mk({ traits: [{ id: 'bestial' }] as never });
+    expect(isBestial(c.traits)).toBe(true);
+  });
+});
+
+describe('Dressé (Garde) — octroie le Trait Territorial (capability, LDB 85 l.87)', () => {
+  it('Garde → isTerritorial true sans lister Territorial à part', () => {
+    const c = mk({ traits: [{ id: 'dresse-garde' }] as never });
+    expect(isTerritorial(c.traits)).toBe(true);
+  });
+  it('sans Garde ni Territorial → isTerritorial false', () => {
+    const c = mk({ traits: [{ id: 'nerveux' }] as never });
+    expect(isTerritorial(c.traits)).toBe(false);
   });
 });
 
