@@ -241,7 +241,11 @@ registerCombatHook({
   run: ({ battle, sink }) => { for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => sink(l, c)); },
 });
 registerCombatHook({
-  id: 'suffocation-tick', // Noyade et Suffocation (LDB 18 l.424-425)
+  // Noyade et Suffocation (LDB 18 l.424-425) : MACHINERIE environnementale UNIVERSELLE — la règle de mort
+  // par manque d'air s'applique à TOUT combattant portant le drapeau d'effet `suffocates` (posé par les
+  // sorts d'étouffement / l'environnement — la DONNÉE éditable), `noBreath` immunise. Ne NOMME aucune
+  // entité éditable (trait/talent/État) ; comme `tick-death`/`tick-durations`, c'est une règle de l'arène.
+  id: 'suffocation-tick',
   phase: 'onRoundEnd',
   order: 78,
   run: ({ battle, sink }) => { for (const c of battle.combatants) suffocationTick(c).forEach((l) => sink(l, c)); },

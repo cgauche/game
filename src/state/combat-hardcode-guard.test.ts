@@ -68,8 +68,13 @@ const TARGETS: Target[] = [
   {
     name: 'state/combat/roundHooks.ts',
     src: read('./combat/roundHooks.ts'),
-    reactive: /isUnstable|isBestial|hasPerturbingAura|suffocationTick|id: '(unstable|bestial-fire-fear|perturbing-aura|determination)/,
-    baseline: 7, // 11→9 (Bestial → données) →7 (imports multi-lignes ne sont plus comptés : faux positifs retirés). Reste : unstable/perturbing/determination/suffocation (Lot 4bis)
+    // `suffocationTick` RETIRÉ : MACHINERIE environnementale universelle (règle de mort par manque d'air,
+    // LDB 18) pilotée par le drapeau d'effet `suffocates` (DONNÉE posée par les sorts) — ne nomme aucune
+    // entité éditable, comme `tick-death`/`tick-durations`. Les hooks `determination-*` sont des décréments
+    // de DURÉE (flags RNG-free) = machinerie ; comptés tant qu'ils nomment le talent (id), résorbés en
+    // basculant leurs flags sur le système de Durée unifié (Lot 4bis).
+    reactive: /isUnstable|isBestial|hasPerturbingAura|id: '(unstable|bestial-fire-fear|perturbing-aura|determination)/,
+    baseline: 6, // 11→9 (Bestial → données) →7 (imports multi-lignes) →6 (suffocation reclassée machinerie environnementale). Reste : unstable, perturbing-aura ×2, determination ×2 (Lot 4bis)
     lot: 'Lot 4bis',
   },
   {
