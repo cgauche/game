@@ -51,7 +51,7 @@ import { gainAdvantage } from '../engine/advantage';
 import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, occupiesTile } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality } from '../engine/qualities/dispatch';
-import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf } from './triggeredEffects';
+import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf, freeAttackSourcesOf } from './triggeredEffects';
 import { hasStealAdvantage, shieldAdvantageLevel, hasRiposte, talentCritExtraWounds, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf } from '../engine/combatFeatures/dispatch';
 import { canStrikeFirst } from '../engine/qualities/dispatch';
 import { QUALITY_IDS } from '../engine/qualities/ids';
@@ -182,7 +182,7 @@ import {
   emitCreatureAttackAnim, trampleTarget, bestDefenseMode,
   rollManeuverAttacker, maneuverAttackerDifficulty, resolveManeuver,
 } from './combatManeuvers';
-import { spellFlowFor, spellOps, testFlow, EMPTY_FLOW, type Flow, type EffectTrigger } from './flow';
+import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, EMPTY_FLOW, type Flow, type EffectTrigger } from './flow';
 import { startCascade, registerCascadeApplier } from './cascade';
 
 /** Sonné : tout adversaire qui frappe la cible en CORPS À CORPS gagne +1 Avantage
@@ -1849,13 +1849,17 @@ export function freeAttackHookImpl(get: Get, set: SetFn, actor: Combatant, op: E
  *  source : les `effects` du talent (donnée). Le Flow de chaque talent est JOUÉ par `runCombatFlow` (le
  *  nœud `choice`/`test` éventuel y est cadence-aware ; le `do`/`grantFreeAttack` ouvre la frappe via le
  *  hook contre `victim`, le tiers threadé dans `ctx.freeAttack`). Vaut héros ET IA. */
-export function resolveTalentFreeAttacks(get: Get, set: SetFn, actor: Combatant, trigger: EffectTrigger, victim: Combatant | undefined): void {
+export function resolveFreeAttacks(get: Get, set: SetFn, actor: Combatant, trigger: EffectTrigger, victim: Combatant | undefined): void {
   if (!victim) return;
-  for (const t of actor.talents ?? []) {
-    for (const eff of findTalentById(t.talentId)?.effects ?? []) {
-      if (eff.trigger !== trigger) continue;
+  // TOUTES les sources (Talent/Trait/Atout/État), pas seulement les talents : une réaction `grantFreeAttack`
+  // (Frappe réactive `onCharged`, Assaut féroce `onHit`, et demain un Trait de créature) est jouée
+  // indifféremment du KIND. On NE garde que les Flows qui accordent une attaque gratuite (`flowHasFreeAttack`) :
+  // ils ciblent le TIERS via `freeAttack` ; les autres effets de ces triggers sont déjà joués par `fireTriggers`.
+  for (const src of freeAttackSourcesOf(actor)) {
+    for (const eff of src.effects) {
+      if (eff.trigger !== trigger || !flowHasFreeAttack(eff.flow)) continue;
       runCombatFlow(
-        { mode: 'combat', get, set, target: actor, caster: actor, label: findTalentById(t.talentId)?.label ?? 'Réaction', freeAttack: { targetId: victim.id, cap: t.times ?? 1, key: t.talentId } },
+        { mode: 'combat', get, set, target: actor, caster: actor, label: src.label, freeAttack: { targetId: victim.id, cap: src.cap, key: src.key } },
         eff.flow,
       );
     }
@@ -4117,7 +4121,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
             enemy.chargedThisTurn = true; // Charge → Attaque gratuite de Cornes (LDB 85), résolue par aiCreatureFreeAttacks
             // Frappe réactive (LDB 10) : la cible CHARGÉE peut riposter HORS séquence (Test d'Init) avant
             // l'attaque du chargeur — talent d'attaque déclenchée en donnée (`grantFreeAttack onCharged`).
-            resolveTalentFreeAttacks(get, set, tgt, 'onCharged', enemy);
+            resolveFreeAttacks(get, set, tgt, 'onCharged', enemy);
           }
         }
         attackThenAdvance(tgt, Math.max(TEMPO.preAttack, walkMs(path ?? []) + TEMPO.afterMove));

@@ -75,7 +75,7 @@ export interface ExecCtx {
   /** Contexte d'une ATTAQUE GRATUITE de talent (op `grantFreeAttack`) : la CIBLE de la frappe (un TIERS —
    *  le chargeur pour Frappe réactive `onCharged`, la victime touchée pour Assaut féroce `onHit` — distinct
    *  de `target`/`caster` qui sont le porteur), + le plafond /Round (`cap` = niveau du talent) et la `key`
-   *  d'imputation (`freeAttacksThisTurn`). Threadé par `resolveTalentFreeAttacks` ; le hook `freeAttack`
+   *  d'imputation (`freeAttacksThisTurn`). Threadé par `resolveFreeAttacks` ; le hook `freeAttack`
    *  (couche combatFlow) l'emploie quand `runCombatFlow` rencontre un `do` portant `grantFreeAttack`. Tout
    *  est sérialisable (ids/nombres) → mirroir dans `meta.freeAttack` pour la voie cascade (héros manuel). */
   freeAttack?: FreeAttackFreeze;

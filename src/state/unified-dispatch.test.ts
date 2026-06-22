@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { fireTriggers } from './triggeredEffects';
+import { fireTriggers, freeAttackSourcesOf } from './triggeredEffects';
+import { flowHasFreeAttack } from './flow';
 import { addCondition, hasCondition, stacks, COND } from '../engine/conditions';
 import type { Combatant } from '../engine/types';
 
@@ -49,5 +50,29 @@ describe('Dispatcher unique — Traits ET États réagissent au même Trigger, s
     fire(c, { int: () => 8 }); // d10=8 → En Flammes : max(1, 8 − 4 − 0) = 4 PB
     expect(hasCondition(c, COND.brise)).toBe(true); // effet de TRAIT (donnée)
     expect(before - c.wounds.current).toBe(4);      // effet d'ÉTAT (donnée) — MÊME appel
+  });
+});
+
+describe('Attaques gratuites — résolveur kind-agnostique (plus de chemin talent-only)', () => {
+  it('freeAttackSourcesOf énumère TOUTES les sources (Trait, Talent, État), chacune taguée `key`', () => {
+    const c = mk({
+      traits: [{ id: 'bestial' }] as never, // a des effects
+      talents: [{ talentId: 'assaut-feroce', times: 2 }] as never, // free-attack onHit
+      conditions: [{ name: 'empoisonne', value: 1 }] as never, // a des effects
+    });
+    const keys = freeAttackSourcesOf(c).map((s) => s.key);
+    expect(keys).toContain('trait:bestial');
+    expect(keys).toContain('assaut-feroce'); // talent : clé brute = imputation /Round inchangée
+    expect(keys).toContain('cond:empoisonne');
+    // Le plafond du talent suit ses niveaux (times) ; le défaut des autres = 1.
+    expect(freeAttackSourcesOf(c).find((s) => s.key === 'assaut-feroce')!.cap).toBe(2);
+    expect(freeAttackSourcesOf(c).find((s) => s.key === 'trait:bestial')!.cap).toBe(1);
+  });
+
+  it('flowHasFreeAttack ne retient QUE les Flows à grantFreeAttack (Assaut féroce oui ; Bestial non)', () => {
+    const af = freeAttackSourcesOf(mk({ talents: [{ talentId: 'assaut-feroce', times: 1 }] as never }))[0];
+    expect(af.effects.some((e) => flowHasFreeAttack(e.flow))).toBe(true);
+    const bestial = freeAttackSourcesOf(mk({ traits: [{ id: 'bestial' }] as never }))[0];
+    expect(bestial.effects.some((e) => flowHasFreeAttack(e.flow))).toBe(false); // Bestial = onRoundEnd → Brisé, pas une frappe
   });
 });

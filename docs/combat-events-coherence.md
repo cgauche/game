@@ -113,14 +113,18 @@ Avant : `fireConditionEffects` n'était appelé qu'à 2 endroits (`onRoundEnd` +
 MÊME `onRoundEnd`, MÊME appel) ; Bestial « peur du feu → Brisé » migré du hook `bestial-fire-fear` en
 donnée (trait `bestial` `effects: onRoundEnd`).
 
+**Attaques gratuites — kind-agnostique (FAIT).** `resolveTalentFreeAttacks` (talent-only) → **`resolveFreeAttacks`**
+qui itère `freeAttackSourcesOf` (Talents + Traits + Atouts + États, chacun tagué `key`/`cap`) et ne joue que
+les Flows à `grantFreeAttack` (`flowHasFreeAttack`) — les autres effets de ces triggers passent par le
+dispatcher générique. Un **Trait/État** de créature qui riposte `onCharged`/`onHit` fonctionne désormais
+comme le talent, sans chemin spécifique. Golden de charge byte-identiques (clé d'imputation des talents
+inchangée) ; `talent-free-attack.test` + `unified-dispatch.test` verts.
+
 **Reste à faire pour « un seul bus » complet** (ne bloque PAS l'authoring data, mais centralise) :
-- Émission encore **dispersée** : round/tour/touche appellent `fireTriggers` directement plutôt que via
-  `emitCombatEvent` (corrects, mais le bus n'est pas l'unique porte). Centraliser = Lot 1/2.
+- Émission encore **dispersée** : round/tour/touche appellent `fireTriggers`/`resolveFreeAttacks`
+  directement plutôt que via `emitCombatEvent` (corrects, mais le bus n'est pas l'unique porte). Lot 1/2.
 - **3 moments non émis** : `onAttackResolved`/`onCastResolved`/`onMiscast` (orphelins) — à brancher (inerte
   tant qu'aucune donnée/​hook ne s'y abonne ; cibles : crit opposé/déviation en **machinerie**, Lot 7bis).
-- **`onCharged`/`onHit` d'attaque GRATUITE** (`resolveTalentFreeAttacks`) = chemin **talent-only**
-  spécialisé (contexte de frappe gratuite). À fondre dans le dispatcher unique au **Lot 6** (migration des
-  réactions), avec certification des golden de charge — pas avant (mécanisme testé, ne pas casser à l'aveugle).
 
 ## 4. BUG concret relevé (exemple) — « punching-ball à 0 PB » + intégrité hors-combat
 

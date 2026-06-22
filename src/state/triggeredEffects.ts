@@ -59,6 +59,24 @@ function effectsOf(actor: Combatant, weapon?: Weapon): TriggeredEffect[] {
   return out;
 }
 
+/** Une SOURCE d'effets déclenchés du combattant, AVEC son identité (`key`) et son plafond (`cap`) —
+ *  nécessaires aux ATTAQUES GRATUITES (imputation /Round par source ; plafond par source). */
+export interface TriggerSource { effects: TriggeredEffect[]; cap: number; key: string; label: string; }
+
+/** Énumère TOUTES les sources d'attaque gratuite du combattant — MÊME couverture que `effectsOf` (Atouts
+ *  d'arme, Traits, Qualités, Talents) + les ÉTATS — chacune taguée `key`/`cap`/`label`. Permet à
+ *  `resolveFreeAttacks` de jouer un `grantFreeAttack` quel que soit le KIND de la source (plus de chemin
+ *  talent-only) : un Trait/État de créature qui riposte à la charge fonctionne comme le talent. */
+export function freeAttackSourcesOf(actor: Combatant, weapon?: Weapon): TriggerSource[] {
+  const out: TriggerSource[] = [];
+  if (weapon?.onHitEffects?.length) out.push({ effects: weapon.onHitEffects, cap: 1, key: `weapon:${weapon.name}`, label: weapon.name });
+  for (const tr of actor.traits ?? []) { const d = traitById.get(tr.id); if (d?.effects?.length) out.push({ effects: withArg(d.effects, tr.arg), cap: 1, key: `trait:${tr.id}`, label: d.label ?? tr.id }); }
+  if (weapon) for (const { id } of resolveQualities(weapon)) { const d = qualityById.get(id); if (d?.effects?.length) out.push({ effects: d.effects, cap: 1, key: `qual:${id}`, label: d.label ?? id }); }
+  for (const t of actor.talents ?? []) { const d = findTalentById(t.talentId); if (d?.effects?.length) out.push({ effects: d.effects, cap: t.times ?? 1, key: t.talentId, label: d.label ?? t.talentId }); }
+  for (const cond of actor.conditions ?? []) { const d = findConditionById(cond.name); if (d?.effects?.length) out.push({ effects: d.effects, cap: 1, key: `cond:${cond.name}`, label: d.label ?? cond.name }); }
+  return out;
+}
+
 /** Combattants visés par un effet selon `on` (le porteur, la victime touchée, ou TOUS ceux Engagés
  *  avec lui — Sang corrosif : « tous ceux qui sont Engagés avec elle », alliés compris). */
 function targetsFor(get: Get, actor: Combatant, on: TriggeredEffect['on'], victim?: Combatant): Combatant[] {

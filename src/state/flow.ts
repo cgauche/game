@@ -410,6 +410,19 @@ export function flowHasImpureOp(flow: Flow): boolean {
   }
 }
 
+/** Le Flow accorde-t-il une ATTAQUE GRATUITE (op `grantFreeAttack`, à quelque profondeur) ? Un tel Flow
+ *  cible un TIERS (le chargeur/la victime) et exige le contexte `freeAttack` → il est joué par le
+ *  résolveur d'attaques gratuites (`resolveFreeAttacks`), PAS par le dispatcher générique (où il est inerte). */
+export function flowHasFreeAttack(flow: Flow): boolean {
+  switch (flow.kind) {
+    case 'do': return flow.effect.type === 'ops' && flow.effect.ops.some((o) => o.op === 'grantFreeAttack');
+    case 'seq': return flow.steps.some(flowHasFreeAttack);
+    case 'if': return flowHasFreeAttack(flow.then) || (flow.else ? flowHasFreeAttack(flow.else) : false);
+    case 'test': return flowHasFreeAttack(flow.success) || flowHasFreeAttack(flow.fail);
+    case 'choice': return flowHasFreeAttack(flow.yes) || (flow.no ? flowHasFreeAttack(flow.no) : false);
+  }
+}
+
 /** Constructeur d'un nœud `test` (jet → réussite/échec). Sucre pour les PRODUCTEURS de Flow (récolte,
  *  saut…) : remplace l'ancien `Effect.test` qu'on poussait dans une liste d'effets. */
 export function testFlow(test: FlowTest, success: Flow, fail: Flow): Flow {

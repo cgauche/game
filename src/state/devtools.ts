@@ -1,5 +1,5 @@
 import { useGame } from './store';
-import { checkBattleOver, resolveTalentFreeAttacks, approachFearTrigger } from './combatFlow';
+import { checkBattleOver, resolveFreeAttacks, approachFearTrigger } from './combatFlow';
 import { pushCombatStep } from './combatEffects';
 import type { PendingBladeTrap } from './pendings';
 import { bus, EVT } from './bus';
@@ -465,7 +465,7 @@ export function buildApi() {
 
     /** RECETTE : simule une CHARGE de `enemyId` sur un héros (défaut : le plus proche) — déclenche le
      *  trigger `onCharged` (Frappe réactive : modale de choix puis Test d'Initiative influençable). C'est
-     *  le MÊME appel que le mouvement d'IA quand un ennemi se rue au contact (resolveTalentFreeAttacks). */
+     *  le MÊME appel que le mouvement d'IA quand un ennemi se rue au contact (resolveFreeAttacks). */
     charge: (enemyId: string, heroId?: string) => {
       const s = g();
       const b = s.battle;
@@ -482,7 +482,7 @@ export function buildApi() {
               })[0]
             : heroes[0]);
       if (!target) return '❌ aucun héros chargeable';
-      resolveTalentFreeAttacks(() => useGame.getState(), useGame.setState, target, 'onCharged', enemy);
+      resolveFreeAttacks(() => useGame.getState(), useGame.setState, target, 'onCharged', enemy);
       bus.emit(EVT.SCENE_DIRTY);
       return `✅ ${enemy.name} charge ${target.name} (onCharged)`;
     },
