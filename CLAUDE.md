@@ -15,10 +15,13 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 
 ## Règles strictes (NE PAS déroger)
 
-1. **Aucune invention de règles.** Toute règle/valeur vient des fichiers `Source/` (livres
-   autorisés — **liste exacte § Sources VF ci-dessous**). Ne pas utiliser tes connaissances WFRP.
-   En cas de doute, lire le `.md` source et **citer** le passage. Un workflow d'audit de
-   fidélité existe (cf. plus bas) — l'utiliser pour vérifier le code contre la source.
+1. **Aucune invention de règles.** Toute règle/valeur vient des livres autorisés (§ Sources VF).
+   Ne pas utiliser tes connaissances WFRP. **Point d'entrée = l'Atlas RAW [`docs/raw/`](docs/raw/00-index.md)** :
+   21 fiches de règles par domaine + 6 catalogues de données mécaniques, consolidant les 15 livres
+   (couverture **⬜0** ; gardes rejouables `node scripts/raw/coverage.mjs` & `node scripts/raw/reconcile.mjs`).
+   **Y chercher d'abord** « est-ce RAW / que dit le RAW ». `Source/` (§ ci-dessous) reste la vérité
+   **citable** (`LDB <chap> l.<ligne>`) et le recours ultime — **devoir rouvrir `Source/` = un défaut
+   de l'Atlas à corriger** (amender la fiche/le catalogue, puis re-vérifier avec les deux gardes).
 2. **Tout le contenu de campagne est éditable** dans l'éditeur (schéma de Scène unique).
    Pas de scène codée « en dur ».
 3. **Le moteur de règles (`src/engine`) reste pur et testé.** Le store, l'UI et le rendu en
@@ -35,6 +38,12 @@ Tout est en **français** sous `Source/`, dossiers préfixés **`Warhammer v4 - 
 SANS ce préfixe (Enemy Within…, Altdorf…, Archives of the Empire…) sont la **VO** (base de
 connaissance MJ du dépôt parent) — **ne jamais les lire/citer** ici (la donnée du jeu est FR :
 CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne>` / `ADE…`.
+
+> **Couche de lecture consolidée = l'Atlas [`docs/raw/`](docs/raw/00-index.md)** (cf. règle 1) : il agrège
+> ces 15 livres par domaine + catalogues de stats. Lis l'Atlas pour comprendre/vérifier ; n'ouvre `Source/`
+> que pour **citer** ou lever un doute. ⚠ **Source ré-extraite à Marker le 2026-06-22** (tables fiables,
+> remplace l'ancien OCR pymupdf4llm) → les **n° de ligne** des anciennes réfs `l.<ligne>` ont **dérivé**
+> (le **chapitre** reste juste, la **ligne** est approximative) ; pipeline `scripts/raw/marker-*` + `reextract-all.sh`.
 
 **RÈGLES & STATS** (règle 1 — seules sources autorisées) :
 - **LDB** = `Source/Warhammer v4 - Livre de base version corrigée/` — chapitres `NN - Titre.md` ;
@@ -57,6 +66,11 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
 - **ZI** (Zoo Impérial / *The Imperial Zoo*) = `Source/WH - V4 - Le zoo impérial/` — créatures exotiques + le trait
   **Redoutable** (*Grim*) (autorisé 2026-06-14). NB : AA/ZI ne sont PAS dans `all-data.json` → leur donnée est
   intégrée par **extraction curée** (`scripts/frenchy/` + datasets `src/data/*.json` taggés à leur source), pas par `build:data`.
+- **MDG** (La Mer des Griffes / *Sea of Claws*) = `Source/WH - V4 - La Mer de Griffe/` — **cadre côtier + règles navales**
+  (autorisé 2026-06-22) : navires & construction/artillerie (ch.12), navigation/manœuvres/**combat naval** + dégâts &
+  Critiques sur navire (ch.13), tests d'équipage & moral (ch.14), longs voyages/commerce/**activités & maladies en mer**
+  (ch.15), classe **Côtier** (8 carrières, ch.9) + carrières norses (ch.7), cultes **Manann/Stromfels** + miracles
+  (ch.10-11), magie des mers (ch.2), **bestiaire marin** + capitaines nommés (ch.16). Comme AA/ZI : extraction curée, pas `build:data`.
 - `Source/all-data.json` = ancienne extraction (LDB/ADE1/ADE2 + EDO/Middenheim/EDOC). **La migration
   `build:data` a été RETIRÉE** (elle régénérait `src/data/*.json` et écrasait les données curées —
   apparence des créatures, etc.). `src/data/*.json` est désormais la **SOURCE app-owned** (commitée,

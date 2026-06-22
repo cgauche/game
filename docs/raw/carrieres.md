@@ -23,6 +23,14 @@ Ce fichier couvre le **système de Classes et Carrières** (structure, avancemen
   - [LDB — 8 Classes (64 carrières)](#ldb--8-classes-64-carrières)
   - [Suppléments](#suppléments)
 
+- **La Mer des Griffes (MDG)** <!-- MDG-INTEGRATION -->
+- **Classe Côtier (MDG)** — 9ᵉ Classe ; remplace les Riverains au tirage ; 8 Carrières maritimes + table d100 par Race + Possessions de Classe.
+- **Nouveaux Talents de la Classe Côtier (MDG)** — Chanson de marin, Commandant d'équipe, Commandant émérite (Maxi/Tests + effets RAW).
+- **Chansons de marins (MDG)** — 7 chansons d'équipage (effets +10/+1 DR/État) ; lien Manann/Mathlann.
+- **Carrières norses (MDG)** — table d100 dédiée (30 Carrières existantes réinterprétées) + substitutions (Projectiles → Lancer, Escrime → Deux-mains, plates → maille).
+- **Origines norses et Personnages norses (MDG)** — création (3×+5 / 3×+3 Augm., langue Norse) ; 3 origines (bjornlings/sarls/skaelings).
+- **Trait Marque de Khorne (MDG)** — Frénésie + Savoir-vivre (Suivants de Khorne) + Animosité Slaanesh ; blocage Langue (Magick)/Focalisation ; 10 Talents en Augmentations.
+
 ---
 
 ## Classes
@@ -429,6 +437,192 @@ ADE II contient également les carrières militaires de la série **Aux Armes (A
 Middenheim introduit aussi 3 origines humaines supplémentaires (Middenheimer, Middenlander, Nordlander) avec tables de tirage de Carrière et compétences/talents d'origine distincts des Reiklanders (voir `Middenheim ANN.II`).
 
 ---
+
+
+---
+
+<!-- MDG-INTEGRATION -->
+
+## Classe Côtier (MDG)
+
+> « La Classe Côtier est une nouvelle Classe à utiliser dans **Warhammer Fantasy le Jeu de Rôle**, qui représente les Carrières suivies par les gens vivant près des littoraux du Vieux Monde. »
+> — `MDG 09 l.7`
+
+La **Classe Côtier** est une 9ᵉ Classe (en sus des 8 du LDB). Elle a beaucoup en commun avec les **Riverains** : certaines Carrières appartiennent aux deux Classes — **Nautonier, Marin et Naufrageur** (`MDG 09 l.7`). Sa table de tirage est conçue pour **remplacer la partie Riverains** du tableau des Classes et Carrières aléatoires (LDB p. 30-31) : le joueur qui détermine sa Carrière choisit, **avant de lancer les dés**, s'il remplace les Riverains par les Côtiers (`MDG 09 l.9`).
+
+Les Carrières de Riverain possédant la Compétence **Savoir (Voies fluviales)** peuvent la remplacer par **Savoir (Océans)** — beaucoup de gens prenant la mer sur de courtes distances gardent un style de vie de Batelier, Contrebandier ou Femme du fleuve (`MDG 09 l.11`).
+
+**Possessions de Classe** (`MDG 09 l.15`) :
+> « Côtiers : besace contenant 10 mètres de corde et une flasque d'alcool, bourse, cape, dague, vêtements »
+
+**Table de tirage de Carrière (d100) par Race** — remplace la portion Riverains (`MDG 09 l.21-30`) :
+
+| Carrière | Humain | Nain | Halfling | Haut elfe | Elfe sylvain |
+|---|---|---|---|---|---|
+| Artilleur de navire | 60–61 | 73–75 | 64–65 | 65 | – |
+| Chansonnier | 62 | – | – | 66 | – |
+| Marin | 63–66 | 76–78 | 66–71 | 67–76 | – |
+| Naufrageur | 67 | 79 | – | – | 61 |
+| Nautonier | 68 | 80–81 | 72–73 | 77 | – |
+| Officier | 69–70 | 82–83 | – | 78–81 | – |
+| Prêtre marin de Manann | 71 | – | – | – | – |
+| Ratisseur de plages | 72–73 | – | 74–77 | – | – |
+
+Les 8 Carrières de la Classe (Race d'accès : ligne explicite de la Carrière quand elle existe — `MDG 09 l.59`, `l.626`, `l.718` — sinon déduite de la table de tirage `l.21-30`) :
+- **Artilleur de navire** — Halfling, haut elfe, humain, nain (`MDG 09 l.59`) ; 4 niveaux : Mousse artilleur (Bronze 3) → Artilleur de navire (Argent 3) → Capitaine d'artillerie (Argent 5) → Maître artilleur (Or 1). Compétence d'acquisition (italique N1) = **Projectiles (Poudre noire)**. Variante hauts elfes : **Projectiles (Arbalète)** à la place de Poudre noire (`MDG 09 l.134`).
+- **Chansonnier** — Humain, haut elfe (déduit de la table `l.24`) ; Chanteur (Argent 1) → Chansonnier (Argent 3) → Capitaine chansonnier (Argent 5) → Maître chansonnier (Or 1). Italique N1 = **Divertissement (Chant)**.
+- **Marin** — Mousse (Argent 1) → Marin (Argent 3) → Quartier-maître (Argent 5) → Bosco (Or 2). Italique N1 = **Voile**.
+- **Naufrageur** — Pilleur d'épaves (Bronze 2) → Naufrageur (Bronze 3) → Pirate (Bronze 5) → Capitaine pirate (Argent 2). Italique N1 = **Corps à corps (Base)**.
+- **Nautonier** — Guide portuaire (Bronze 4) → Nautonier (Argent 1) → Pilote (Argent 3) → Maître pilote (Argent 5). Italique N1 = **Orientation**.
+- **Officier** — Enseigne (Argent 1) → Officier (Argent 5) → Capitaine (Or 2) → Amiral (Or 5). Italique N1 = **Commandement**.
+- **Prêtre marin de Manann** — Humain (`MDG 09 l.626`) ; Initié (Bronze 2) → Prêtre marin (Argent 1) → Prêtre capitaine (Or 1) → Seigneur des vagues (Or 2). Italique N1 = **Prière**.
+- **Ratisseur de plages** — Halfling, humain (`MDG 09 l.718`) ; Récupérateur (Bronze 1) → Ratisseur de plages (Bronze 3) → Dériveur (Bronze 5) → Maître des plages (Argent 2). Italique N1 = **Perception**.
+
+Détails complets par niveau (compétences/talents/possessions) → [`catalogue-carrieres.md`](catalogue-carrieres.md) section **[MDG 09]**.
+
+**Sources RAW** : `MDG 09 l.3-30` + `l.57-757`
+**Voir aussi** : [Index des carrières](#index-des-carrières) · [Carrières norses (MDG)](#carrières-norses-mdg) · [`talents.md`](talents.md) (Chanson de marin, Commandant d'équipe, Commandant émérite)
+**Implémente** : `src/data/careerLevels.json`, `src/data/classes.json` (Classe Côtier) — données app-owned (non implémenté à ce jour pour MDG)
+
+---
+
+## Nouveaux Talents de la Classe Côtier (MDG)
+
+La Classe Côtier introduit trois nouveaux Talents (`MDG 09 l.32-54`).
+
+**Chanson de marin** — Maxi : Bonus d'Intelligence ; Tests : Divertissement (Chant) (`MDG 09 l.34`).
+> « Ce Talent permet à un Personnage d'apprendre une chanson de marin (voir page 67). Chaque fois qu'un Personnage achète un nouveau niveau dans ce Talent, il apprend une nouvelle chanson. »
+> — `MDG 09 l.36`
+
+Une chanson de marin affecte un équipage entier. Le Personnage doit trouver un endroit d'où il peut être entendu d'autant de membres d'équipage que possible et réussir un **Test de Divertissement (Chant)**. Il met **30 secondes** à chanter ; l'effet dure ensuite **trois minutes + 1 minute par DR** sur le Test. La seule action de combat possible pendant le chant est une **Esquive** (avec accord MJ : Perception ou Calme). Subir des Dégâts ou rater un Test opposé met fin à la chanson. **Une seule chanson de marin par quart** (`MDG 09 l.38-40`).
+
+**Commandant d'équipe** — Maxi : Bonus d'Initiative ; Tests : Projectiles pour les tirs avec une arme dotée du Défaut *Arme d'équipe* (`MDG 09 l.44-46`). Le Personnage peut effectuer un **Test de Commandement Intermédiaire (+0)** pour aider une équipe à portée de voix maniant une arme à Défaut *Arme d'équipe* ; en cas de réussite, les membres de l'équipe utilisent ensuite **le score de Compétence Projectiles du Personnage** pour tirer (`MDG 09 l.48`).
+
+**Commandant émérite** — Maxi : Bonus de Sociabilité ; Tests : Commandement (`MDG 09 l.52`).
+> « Pour tout Test de Commandement approprié effectué à bord de votre bateau ou impliquant votre équipage, vous gagnez un bonus de DR égal à votre nombre de niveaux en Commandant émérite. Ce bonus s'applique aux Tests d'équipage comme aux Tests de Commandement individuels. »
+> — `MDG 09 l.54`
+
+**Sources RAW** : `MDG 09 l.32-54`
+**Voir aussi** : [Classe Côtier (MDG)](#classe-côtier-mdg) · [Chansons de marins (MDG)](#chansons-de-marins-mdg) · [`talents.md`](talents.md)
+**Implémente** : `src/data/talents.json` (TalentData.passive/effects) — `src/engine/talentEffects.ts` (non implémenté pour MDG)
+
+---
+
+## Chansons de marins (MDG)
+
+La liste des chansons utilisables via le Talent **Chanson de marin** (`MDG 09 l.218-248`).
+> « Les Chansons de marins ne sont pas des actes de vénération en tant que tels et aucun pouvoir divin ne se manifeste quand quelqu'un les entonne. Elles sont subtiles et nécessitent la participation de l'équipage du navire […] pour fonctionner. »
+> — `MDG 09 l.220`
+
+| Chanson | Effet RAW |
+|---|---|
+| **Naviguons tous ensemble, ho hisse, ho hisse…** | +10 sur les Tests individuels de chaque membre d'équipage impliqué dans un Test d'équipage (`MDG 09 l.224`). |
+| **Jacques Bret a rencontré notre acier sur les mers !** | +1 DR sur tout Test de Corps à corps réussi pour tous les membres de l'équipage (`MDG 09 l.228`). |
+| **De toutes les terreurs sur les mers…** | +1 DR sur les Tests de Calme (`MDG 09 l.232`). |
+| **Camarades d'équipage, rassemblez-vous…** | +1 DR sur tout Test de Sociabilité visant à fraterniser avec d'autres membres ou à les apaiser (`MDG 09 l.236`). |
+| **Tous à la vigie, car la nuit a des yeux…** | +20 sur tous les Tests qui endormiraient en cas d'échec, et +10 sur tout Test de Perception (`MDG 09 l.240`). |
+| **Les dames de L'Anguille…** | Toute personne qui participe peut ignorer un État (`MDG 09 l.244`). |
+| **Suivez le capitaine, suivez le héros…** | +20 à tout Test de Sociabilité tenté par le capitaine ou une figure d'autorité ciblant l'équipage (`MDG 09 l.248`). |
+
+Le **Chansonnier** est inextricablement lié au culte de **Manann** ; d'autres dieux peuvent inspirer des Chansonniers (le culte elfique de **Mathlann** est une possibilité évidente) (`MDG 09 l.206-216`).
+
+**Sources RAW** : `MDG 09 l.206-248`
+**Voir aussi** : [Nouveaux Talents de la Classe Côtier (MDG)](#nouveaux-talents-de-la-classe-côtier-mdg)
+**Implémente** : `src/data/talents.json` (variantes Chanson de marin) — `src/engine/ops.ts` (GameOp) (non implémenté)
+
+---
+
+## Carrières norses (MDG)
+
+Les Personnages norses déterminent leur Carrière de départ via un tableau dédié, plus restreint (`MDG 07 l.263-303`). Les norses sont considérés comme **des humains** pour l'acquisition de nouvelles Carrières : un norse ne peut pas *commencer* Sorcier, mais peut le devenir en cours de jeu (`MDG 07 l.265`).
+
+**Table des Classes et Carrières norses (d100)** (`MDG 07 l.271-303`) :
+
+| Classe | Carrière | d100 |
+|---|---|---|
+| CITADINS | Agitateur | 01-02 |
+| CITADINS | Artisan | 03-06 |
+| CITADINS | Marchand | 07-08 |
+| CITADINS | Mendiant | 09-10 |
+| CITADINS | Ratier | 11 |
+| CÔTIERS | Marin | 12-19 |
+| CÔTIERS | Naufrageur | 20-24 |
+| CÔTIERS | Nautonier | 25-27 |
+| CÔTIERS | Ratisseur de plages | 28-29 |
+| COURTISANS | Artiste | 30 |
+| COURTISANS | Conseiller | 31-33 |
+| COURTISANS | Noble | 34 |
+| COURTISANS | Serviteur | 35-41 |
+| GUERRIERS | Cavalier | 42-44 |
+| GUERRIERS | Gladiateur | 45-48 |
+| GUERRIERS | Soldat | 49-56 |
+| GUERRIERS | Spadassin | 57-59 |
+| ITINÉRANTS | Colporteur | 60-62 |
+| ITINÉRANTS | Messager | 63 |
+| ITINÉRANTS | Saltimbanque | 64-65 |
+| LETTRÉS | Érudit | 66-67 |
+| LETTRÉS | Nonne | 68-69 |
+| ROUBLARDS | Charlatan | 70-71 |
+| ROUBLARDS | Hors-la-loi | 72-74 |
+| ROUBLARDS | Sorcier dissident | 75-77 |
+| ROUBLARDS | Voleur | 78-81 |
+| RURAUX | Chasseur | 82-85 |
+| RURAUX | Éclaireur | 86-88 |
+| RURAUX | Herboriste | 89-91 |
+| RURAUX | Mystique | 92-94 |
+| RURAUX | Villageois | 95-00 |
+
+Ces Carrières sont les Carrières **existantes** (LDB + Côtiers), réinterprétées selon la société norse — un skald peut être Agitateur, Érudit ou Saltimbanque ; un/une vitki un Mystique, une Nonne ou un Sorcier dissident (`MDG 07 l.307`).
+
+**Substitutions RAW** (`MDG 07 l.305-311`) :
+> « Chaque fois qu'une Carrière suggère qu'un Personnage acquiert des Compétences, des Talents et des Possessions servant à utiliser Projectiles (Poudre noire, Ingénierie ou Arbalète), un Personnage norse n'a besoin d'apprendre que Projectiles (Lancer) à la place. »
+> — `MDG 07 l.309`
+
+- **Corps à corps (Escrime)** → remplacé par **Corps à corps (Deux-mains)** (`MDG 07 l.309`).
+- L'**armure de plates** est rare en Norsca → la **maille** la remplace comme Possession (`MDG 07 l.309`).
+- Toute Compétence/Talent/Possession inadaptée au style norse est facultative ou remplacée par une alternative ; un norse qui commence une nouvelle vie ailleurs ignore ces restrictions (`MDG 07 l.309-311`).
+
+**Sources RAW** : `MDG 07 l.263-311`
+**Voir aussi** : [Classe Côtier (MDG)](#classe-côtier-mdg) · [Origines norses et Personnages norses (MDG)](#origines-norses-et-personnages-norses-mdg)
+**Implémente** : `src/data/classes.json` (table de tirage norse) — `src/engine/creation.ts` (d100 espèce/carrière) (non implémenté pour MDG)
+
+---
+
+## Origines norses et Personnages norses (MDG)
+
+Règles de création d'un Personnage norse, **en remplacement** des règles Reiklander (LDB p. 36) (`MDG 07 l.222-260`).
+
+À la création, un Personnage norse peut sélectionner **3 Compétences à +5 Augmentations chacune** et **3 Compétences à +3 Augmentations chacune** ; les Talents aléatoires se tirent au tableau LDB p. 36 (relance si déjà possédé) ; langue maternelle = **Norse** (`MDG 07 l.226`).
+
+Trois origines humaines norses (`MDG 07 l.228-246`) :
+
+- **Humains (Norses bjornlings)** — Compétences : Corps à corps (Base), Évaluation, Langue (Reikspiel), Langue (Wastelander), Marchandage, Métier (Au choix), Natation, Ragot, Ramer, Résistance à l'alcool, Savoir (Norsca), Voile. Talents : Guerrier né *ou* Pied marin, Pêcheur *ou* Seigneur de guerre, **Résistance (Chaos)**, 2 Talents aléatoires (`MDG 07 l.228-232`).
+- **Humains (Norses sarls)** — Compétences : Chevaucher (Cheval), Corps à corps (Base), Langue (Reikspiel), Langue (Gospodarin), Métier (Au choix), Natation, Ragot, Ramer, Résistance à l'alcool, Soin aux animaux, Savoir (Norsca), Voile. Talents : Cavalier émérite *ou* Pied marin, Claquer le fouet *ou* Loup de mer, **Résistance (Corruption)**, 2 Talents aléatoires (`MDG 07 l.234-238`).
+- **Humains (Norses skaelings)** — Compétences : Calme, Corps à corps (Base), Corps à corps (Deux-mains), Divertissement (Narration), Langue (Reikspiel), Langue (Wastelander), Natation, Ramer, Résistance, Résistance à l'alcool, Savoir (Khorne), Voile. Talents : Charge berserk *ou* Fuite !, Déterminé *ou* Insignifiant, **Résistance (Chaos)**, 2 Talents aléatoires (`MDG 07 l.240-244`).
+
+**Règle skaeling** : un skaeling qui tire le Talent **Âme pure** comme Talent aléatoire peut prendre à la place le nouveau Trait de créature **Marque de Khorne** (`MDG 07 l.246`).
+
+**Noms de famille** : les humains norses utilisent le système de noms de famille majoritaire chez les nains (LDB p. 38) — tradition issue des liens commerciaux entre humains et nains norses — mais avec des surnoms **qui ne sont pas en khazalid**, portant surtout sur des prouesses personnelles, des vantardises intimidantes ou des prétentions d'avoir des démons ou des monstres pour cousins (`MDG 07 l.260`).
+
+**Sources RAW** : `MDG 07 l.222-260`
+**Voir aussi** : [Carrières norses (MDG)](#carrières-norses-mdg) · [Trait Marque de Khorne (MDG)](#trait-marque-de-khorne-mdg)
+**Implémente** : `src/data/races.json` / `src/engine/character.ts` (espèce + augmentations de création) (non implémenté pour MDG)
+
+---
+
+## Trait Marque de Khorne (MDG)
+
+Nouveau Trait de créature introduit pour les Personnages skaelings (`MDG 07 l.248-252`).
+> « Khorne a apposé une marque physique sur cette créature pour la proclamer fidèle à sa cause. La créature bénéficie du Talent Frénésie. Elle gagne le Talent Savoir-vivre (Suivants de Khorne) et éprouve de l'Animosité envers ceux qui sont ouvertement des suivants de Slaanesh. »
+> — `MDG 07 l.250`
+
+Les suivants de Slaanesh éprouvent aussi de l'Animosité envers la créature si la Marque est visible. Le Personnage **ne peut jamais utiliser** les Compétences **Langue (Magick)** et **Focalisation**, sauf pour dissiper un sort (`MDG 07 l.250`).
+
+De plus, le Personnage peut acheter les Talents suivants **comme s'ils étaient des Augmentations de Carrière** au coût en PX normal (`MDG 07 l.252`) : Assaut féroce, Charge berserk, Combat instinctif, Coup puissant, Déterminé, Endurci, Guerrier né, Résistance (Magie), Résistance à la magie, Vigilance.
+
+**Sources RAW** : `MDG 07 l.248-252`
+**Voir aussi** : [Origines norses et Personnages norses (MDG)](#origines-norses-et-personnages-norses-mdg) · [`talents.md`](talents.md) (Frénésie)
+**Implémente** : `src/data/creatures.json` (TraitData.passive → grantTalent) — `src/engine/trauma.ts` (collecteur passiveMods) (non implémenté pour MDG)
 
 ## Bilan
 

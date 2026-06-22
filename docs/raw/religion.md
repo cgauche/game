@@ -36,6 +36,13 @@
 - [Voir aussi](#voir-aussi)
 - [Bilan de fidélité](#bilan-de-fidélité)
 
+- **La Mer des Griffes (MDG)** <!-- MDG-INTEGRATION -->
+- **Culte de Manann (MDG)** — commandements universels (renvoi WFJDR p.205), croyances communes (domaine du dieu en mer, conter ses exploits), commandements locaux, plafond de 3 bénédictions de navires par lune (−1d10 Humeur / +1 Point de Péché au-delà).
+- **Miracles de Manann (8)** — Apaiser les eaux, Bénédiction de l'albatros (navire incoulable), Bénédiction du marinier (+1 DR Natation/Ramer/Voile), Contre-courants, Malédiction de la mer (+2 Dégâts), Navigation bénie, Repousser une créature marine, Respiration aquatique. + Sel sacré (50 %, 5 usages).
+- **Culte de Stromfels (MDG)** — Dieu Requin / Naufrageur, culte = crime capital (Traité elfe 2150 CI) ; 4 commandements (dont contrainte d'avancement Force-d'abord) ; restriction des Talents par le Péché (Invocation ≥2, Béni ≥5) ; Bénédictions identiques à Manann ; pénitences.
+- **Miracles de Stromfels (7)** — Faire fi de l'Humeur de Manann (table d10), Flairer le sang (Pistage Facile +40), Lame de fond (IC 15), Mal de mer, Malédiction de la maîtresse cruelle (Calme Complexe −10 / Exténué), Sacrifice à Stromfels (double Indice de Voie d'eau), Vents de tempête. Portées indexées sur la **Force** (≠ Sociabilité).
+- **Implémenté vs non implémenté** — effets purement navals (Humeur de Manann, Indice M, Indice de Voie d'eau, vent, IC, ne-peut-couler) hors moteur actuel → (non implémenté) ; effets sur personnages/créatures (Tests, États, +DR, Respiration aquatique) modélisables en Miracle structuré.
+
 ---
 
 ## La Foi — qui peut prier ?
@@ -323,6 +330,23 @@ Les commandements sont les préceptes spécifiques à chaque culte dont la viola
 - [`talents.md`](talents.md) — Béni, Invocation, Visions sacrées, Destinée (acquis via Miracle « Condamné »).
 
 ---
+
+
+---
+
+<!-- MDG-INTEGRATION -->
+
+VÉRIFIÉ — aucune correction nécessaire. Toutes les réfs `MDG 10/11 l.X` résolvent exactement, toutes les citations « » sont verbatim, toutes les valeurs mécaniques sont sourcées. Les 4 topics sont validés tels quels (collez l'original). Détail du contrôle ligne par ligne :
+
+TOPIC 1 (Culte de Manann) — `MDG 10 l.100` = ligne 100 (« Les commandements exposés dans WFJDR (en page 205) sont universels. ») VERBATIM ✓ ; croyance « domaine en mer » = l.102 ✓ ; croyance « conter exploits » = l.104 ✓ ; commandements locaux = l.108+110 ✓ ; `MDG 10 l.236` = ligne 236, citation plafond 3 navires VERBATIM (incl. « voir page 130 ») ✓.
+
+TOPIC 2 (Miracles de Manann) — plage `l.232-303` correcte ; chaque ligne de table vérifiée : Apaiser l.240-242 ✓, Albatros l.244-250 ✓ (citation l.250 VERBATIM), Marinier l.252-256 ✓, Contre-courants l.258-268 ✓ (−1 M / −1 DR Man, l.266-268), Malédiction de la mer l.270-278 ✓ (+2 Dégâts), Navigation bénie l.280-284 ✓ (Humeur +2d10 −1/Péché), Repousser l.286-294 ✓ (Aquatique/Créature marine), Respiration aquatique l.296-302 ✓ (BSoc minutes). Sel sacré l.112-122 ✓, citation l.116 VERBATIM, Int ≤ 15 / Calme Complexe (−10) / Brisé (l.121) ✓.
+
+TOPIC 3 (Culte de Stromfels) — `MDG 11 l.3` = titre ✓ ; `l.56-78` = COMMANDEMENTS ✓ ; `l.142` = restriction Talent ✓ ; crime capital l.19 VERBATIM ✓ ; cmd 1 l.62-66 ✓, cmd 2 l.68-70 ✓, cmd 3 l.72-74 + citation Force l.74 VERBATIM ✓, cmd 4 l.76-78 ✓ ; restriction Invocation≥2 / Béni≥5 l.142 VERBATIM ✓ ; Bénédictions l.146 ✓ ; Pénitences l.80-82 ✓. Faits (Casa Squallo / Myrmidia / Sartosa / Traité 2150 CI / pas de hiérarchie ni ordres ni livres) tous confirmés (l.5, 9, 13, 17-19, 40).
+
+TOPIC 4 (Miracles de Stromfels) — plage `l.148-219` correcte ; Faire fi l.150-165 ✓, table l.158-165 (4 lignes d10 transcrites mot pour mot ✓), Flairer le sang l.167-171 ✓ + citation l.171 VERBATIM ✓, Lame de fond l.173-179 ✓ (IC 15), Mal de mer l.181-189 ✓ (BF heures), Malédiction maîtresse cruelle l.191-199 ✓ (Calme Complexe −10 / Exténué persiste), Sacrifice à Stromfels l.201-209 ✓ (double Indice Voie d'eau), Vents de tempête l.211-219 ✓ (Force minutes, +1 cran).
+
+SEULE RÉSERVE (non bloquante, à laisser tel quel) : dans le « Voir aussi » du Topic 1, l'équivalence `WFJDR p.205 = LDB 26` est une assertion éditoriale du topic, non vérifiable depuis ces deux seuls fichiers MDG (la source dit seulement « WFJDR, page 205 »). Mapping plausible (chap. religion du LDB) ; conservé.
 
 ## Bilan de fidélité
 

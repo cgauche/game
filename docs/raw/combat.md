@@ -57,6 +57,13 @@
 - [ADE II : combat de masse (Puissance de Bataille) et machines de guerre](#ade-ii-combat-de-masse-puissance-de-bataille-et-machines-de-guerre)
 - [Armes et armures des ogres (ADE II)](#armes-et-armures-des-ogres-ade-ii)
 
+- **La Mer des Griffes (MDG)** <!-- MDG-INTEGRATION -->
+- MDG : combat naval — Endurance, Blessures et Localisation des Dégâts d'un navire
+- MDG : Coups Critiques sur un navire (Voie d'eau, Éclats, incendies)
+- MDG : Collisions, Indice de Collision et béliers
+- MDG : Artillerie navale — pièces, portées, recharge et munitions
+- MDG : nouveaux Atouts et Défauts d'arme (Arme d'équipe, Tir de zone)
+
 ---
 
 ## Structure du Round et ordre d'Initiative
@@ -5779,6 +5786,349 @@ Un ogre subit **-20 à tous les Tests** lorsqu'il tente d'utiliser des possessio
 **Implemente** : Les Atouts/Défauts cités sont tous présents en donnée (`src/data/qualities.json` : `assommante`, `dangereuse`, `defensive`, `devastatrice`, `empaleuse`, `impenetrable`, `percutante`, `perforante`, `pistolet`, `protectrice`, `taille`, `a-explosion`, et `Entraves`/`Recharge`). En revanche, les **armes et l'armure ogres elles-mêmes** (Massue ogre, Poing de fer, Grande massue ogre, Lance-harpon, Piège à chaînes, Grande lance, Canon crache-plomb, Pistolet ogre, munitions, Pansière ogre) ne sont **pas présentes** dans la base d'objets app-owned (`src/data/items.json`/`trappings`) — il s'agit d'équipement de créature, à ajouter via `giveTrapping`/Codex si nécessaire `(non implémenté)`. Les règles spéciales propres (poing de fer non désarmable, pistolet ogre incassable sauf Maladresse, corde du lance-harpon → portée 60 / perte d'Immobilisante) ne sont **pas câblées** au moteur `(non implémenté)`.
 
 ---
+
+
+---
+
+<!-- MDG-INTEGRATION -->
+
+## MDG : combat naval — Endurance, Blessures et Localisation des Dégâts d'un navire
+
+Le supplément *La Mer des Griffes* (chapitres 12-13) ajoute un sous-système de **combat naval** : un navire est traité comme une grosse cible à Caractéristiques propres (Endurance, Blessures), avec sa propre table de Localisation des Dégâts, ses Coups Critiques dédiés (topic suivant) et des règles spécifiques pour les attaques de petites armes, de corps à corps et l'artillerie. Ce topic couvre **comment un navire encaisse les Dégâts** : son profil défensif, où les coups se logent, et les cas particuliers selon la nature de l'attaque.
+
+### Profil défensif d'un navire (E / BE / B / BB)
+
+Chaque bateau a un score d'**Endurance (E)** et un score de **Blessures (B)** (`MDG 12 l.56-64`, `MDG 13 l.569`) :
+
+- **Endurance (E)** : sert à savoir s'il peut résister à des Dégâts. **Le premier chiffre de l'Endurance est le Bonus d'Endurance (BE)** du bateau, qui est **déduit de tous les Dégâts qui lui sont infligés** avant de les appliquer aux Blessures (`MDG 12 l.58`).
+- **Blessures (B)** : comme pour un Personnage, indique quelle quantité de Dégâts le bateau peut subir. **Le nombre des dizaines des Blessures restantes est le Bonus de Blessures (BB)** ; ce Bonus est basé sur les Blessures **actuelles**, donc il peut **changer au cours d'une rencontre** (`MDG 12 l.60-64`).
+
+> « Le BE d'un bateau est déduit de tous les Dégâts qui lui sont infligés avant de les appliquer aux Blessures. » — `MDG 12 l.58`
+
+Le **Blindage** (Amélioration de coque) fonctionne comme une armure : les Dégâts des coups touchant la Coque sont réduits des PA **puis** du BE. Contrairement à une armure personnelle, **le Blindage d'un navire ne peut pas être sacrifié pour éviter les Blessures Critiques** (`MDG 12 l.232`). Bronze = 1 PA à la Coque ; Fer = 2 PA, mais si le vaisseau devient *Sali* les plaques de fer rouillent et les PA sont retirés (`MDG 12 l.234-236`). Un **Bélier** fixé à la proue fournit **5 PA** protégeant contre les Dégâts d'une collision ou d'une attaque venant de l'avant (`MDG 12 l.221`).
+
+### Localisation des Dégâts sur un bateau
+
+Pour déterminer la Localisation, **inversez le résultat du jet d'attaque** comme dans un combat livré entre Personnages, **ou lancez 1d100**, puis consultez la colonne adaptée au type de propulsion (`MDG 13 l.571`) :
+
+| d100 | Bateau à avirons | Bateau à voile | Bateau à avirons et à voile |
+|---|---|---|---|
+| 01-09 | Équipage | Équipage | Équipage |
+| 10-20 | Avirons | Gréement | Gréement |
+| 21-40 | Coque | Coque | Avirons |
+| 41-65 | Coque | Coque | Coque |
+| 66-84 | Équipements | Équipements | Équipements |
+| 85-00 | Cargaison | Cargaison | Cargaison |
+
+— `MDG 13 l.575-582`
+
+Un coup sur l'**Équipage** signifie qu'un membre d'équipage **exposé** au coup est touché (résolu comme un combat normal). **Si aucun membre d'équipage n'était exposé, le coup touche la Coque.** Sur un bateau non ponté (ex. chaloupe), un coup à l'Équipage peut toucher la Cargaison au lieu d'un matelot (`MDG 13 l.584`). Sauf précision contraire, les coups d'une **collision** touchent toujours la **Coque** (`MDG 13 l.464`).
+
+### Tirs de petites armes contre un navire
+
+Les tirs de **petites armes** (armes à projectiles autres que l'artillerie) n'infligent généralement **pas assez de Dégâts pour affecter le vaisseau**, mais ils ont une chance de blesser un membre d'équipage exposé — il peut donc valoir la peine de lancer les dés au cas où un matelot serait touché (`MDG 13 l.605`). Le MJ (ou le Joueur) décide si l'on vise **un membre d'équipage précis** (souvent difficile, des parties du bateau lui servant de couvert) ou **le navire** (cible plus grande, mais la plupart des projectiles frappent des structures qui les ignorent, seuls quelques coups de chance touchant l'équipage) (`MDG 13 l.607`).
+
+### Attaques de corps à corps contre un navire
+
+Si des ennemis attaquent **directement l'équipage**, c'est géré comme un combat entre Personnages. Toute attaque de corps à corps portée contre **une autre partie du bateau touche automatiquement**, et l'attaquant peut **choisir la Localisation visée**, à condition de pouvoir l'atteindre (`MDG 13 l.612`).
+
+Les armes de corps à corps ne sont pas conçues pour endommager un bateau, mais on peut en dégrader un sur une longue période. Le **BE du navire est ajusté selon le Tableau de comparaison des Tailles** (taille du navire vs taille de l'attaquant) ; une **case vide = aucun Dégât possible**. Ce tableau **remplace** les modificateurs de Taille normaux pour les Dégâts (`MDG 13 l.614-616`) :
+
+| Taille du navire \ Attaquant | Minuscule | Très Petite | Petite | Moyenne | Grande | Énorme | Monstrueuse |
+|---|---|---|---|---|---|---|---|
+| Minuscule | – | 4 × BE | 3 × BE | 2 × BE | BE | BE−1 | BE−2 |
+| Très Petite | – | – | 4 × BE | 3 × BE | 2 × BE | BE | BE−1 |
+| Petite | – | – | – | 4 × BE | 3 × BE | 2 × BE | BE |
+| Moyenne | – | – | – | – | 4 × BE | 3 × BE | 2 × BE |
+| Grande | – | – | – | – | – | 4 × BE | 3 × BE |
+| Énorme | – | – | – | – | – | – | 4 × BE |
+| Monstrueuse | – | – | – | – | – | – | – |
+
+— `MDG 13 l.618-637` (ex. : un halfling de Petite Taille attaquant une chaloupe Minuscule → le bateau **triple** son BE ; le même halfling contre un Grand bateau → **aucun Dégât**.)
+
+### Réparer un navire
+
+Les Dégâts se réparent **définitivement** sur un Test de **Métier (Constructeur de navires)** (ou **Métier (Charpentier)** à −10). Un constructeur naval PNJ répare pour 1 CO par Blessure ; chaque Test réussi prend **1d10 heures** et restaure **1d10 Blessures**. Les Dégâts à la **Coque** ne se réparent définitivement qu'**en cale sèche / quai sec** (`MDG 13 l.641-643`). Des **réparations temporaires** (sans cale sèche) sont possibles via un Test de **Métier (Constructeur de navires/Charpentier)** de **Complexe (−10)** à **Très Difficile (−30)** : chaque réparation prend 1 h et restaure 1d10 Blessures, mais le navire doit ensuite réussir un **Test d'Endurance** par jour de voyage et avant chaque Test de Manœuvre, chaque échec infligeant **1d10−4 Dégâts** (la réparation cède) (`MDG 13 l.649-651`).
+
+**Sources RAW** :
+- `MDG 12 l.56-64` — Caractéristiques défensives d'un navire : Endurance (1er chiffre = BE déduit de tous les Dégâts), Blessures (dizaines des Blessures restantes = BB, variable en cours de rencontre).
+- `MDG 12 l.221` — Bélier : 5 PA protégeant des Dégâts d'une collision/attaque venant de l'avant (+ bonus à l'Indice de Collision, cf. topic Collisions).
+- `MDG 12 l.232-236` — Blindage de coque : réduit les Dégâts Coque des PA puis du BE ; ne peut pas être sacrifié contre un Critique ; Bronze 1 PA, Fer 2 PA (perdus si Sali).
+- `MDG 13 l.569-571` — Endurance modifie les Dégâts, Blessures = encaisse ; Localisation = jet d'attaque inversé ou 1d100.
+- `MDG 13 l.575-584` — Tableau de Localisation des Dégâts pour un bateau (3 colonnes selon propulsion) ; coup à l'Équipage = matelot exposé sinon Coque ; bateau non ponté → peut toucher la Cargaison.
+- `MDG 13 l.605-607` — Tirs de petites armes : Dégâts insuffisants contre la coque mais peuvent blesser un matelot exposé ; viser un matelot précis vs viser le navire.
+- `MDG 13 l.612-616` — Attaques de corps à corps : auto-touche d'une partie du bateau, choix de la Localisation ; BE ajusté par le Tableau de comparaison des Tailles (remplace les modificateurs de Taille normaux).
+- `MDG 13 l.618-637` — Tableau de comparaison des Tailles (navire vs attaquant → multiplicateur du BE ou aucun Dégât).
+- `MDG 13 l.641-651` — Réparer les navires : Métier (Constructeur de navires / Charpentier −10), 1d10 h / 1d10 Blessures, Coque en cale sèche ; réparations temporaires (Test d'Endurance par jour/Manœuvre, 1d10−4 Dégâts si échec).
+- `MDG 13 l.464` — Sauf précision contraire, les coups d'une collision touchent toujours la Coque.
+
+> « Les armes de corps à corps ne sont pas conçues pour infliger des Dégâts aux bateaux, mais il est tout de même possible d'en dégrader un de cette manière sur une longue période. » — `MDG 13 l.614`
+
+**Voir aussi** : Coups Critiques sur un navire (MDG) ; Collisions, Indice de Collision et béliers (MDG) ; Artillerie navale (MDG) ; Taille : catégories et modificateurs de combat ; Tableau de Localisation humanoïde ; Armures : table, PA, dégâts et réparation ; Résolution d'une attaque : les 4 étapes (jet inversé → Localisation).
+
+**Implémente** : `(non implémenté)` — aucun sous-système de Caractéristiques de navire (E/BE/B/BB), de Localisation de bateau, ni de combat naval dans `src/engine`. La résolution d'attaque (`src/engine/combat.ts`) et le BE (`src/engine/characteristics.ts`) ne modélisent que des combattants individuels.
+
+## MDG : Coups Critiques sur un navire (Voie d'eau, Éclats, incendies)
+
+Un navire subit ses propres **Blessures Critiques**, distinctes de celles d'un Personnage. Ce topic couvre leur déclenchement, les effets génériques transverses (Éclats, Voie d'eau, États *En flammes* et propagation du feu, chute du gréement) et les cinq tables de Critiques par Localisation.
+
+### Déclenchement d'un Critique
+
+Un navire subit un Critique dans **deux cas** (`MDG 13 l.656`) :
+- un **jet d'attaque réussi donne un double** ;
+- **tout coup porté une fois les Blessures du vaisseau tombées à 0** est un Critique.
+
+On détermine la Localisation endommagée, on lance le **d10** dans la table de Critiques **de cette Localisation**, et on applique les effets (`MDG 13 l.664`). Les modèles de bateau variant, si la description d'un Critique ne colle pas au vaisseau, **utiliser le Critique le plus proche en gravité** (`MDG 13 l.656`). Les Critiques sur l'**Équipage** suivent les règles de Critiques des Personnages (WFJDR p.172 ou *Aux Armes !* p.80) (`MDG 13 l.660`). La **propulsion à vapeur** : un Critique à la Coque déclenche aussi un jet sur la table *Panne de Vapeur* (`MDG 12 l.313`).
+
+### Effet générique : Éclats (Indice)
+
+Pendant un combat naval, l'équipage souffre des volées d'éclats de bois. Si un Critique donne **Éclats (Indice)**, un **nombre de membres d'équipage égal à l'Indice** sont touchés et subissent chacun **9 Dégâts** (`MDG 13 l.668`).
+
+### Effet générique : Voie d'eau (Indice)
+
+Un vaisseau percé d'une **Voie d'eau** prend l'eau. Le MJ ajoute l'Indice à un **total cumulé qui augmente à chaque Round** (`MDG 13 l.672`) :
+- quand ce total atteint **la moitié de l'Endurance** du bateau : −1 M et −1 DR à tous les Tests de Navigation (alourdi par l'eau) ; tous les **Sabords doivent être fermés**, sinon le total augmente de 1 ;
+- quand le total **égale l'Endurance** du navire : **il coule** (`MDG 13 l.674`).
+
+L'équipage écope pour faire baisser le total : chaque membre qui écope **dix Rounds** effectue un **Test de Force Intermédiaire (+0)** et réduit le total cumulé **de 1 par DR positif** (`MDG 13 l.676`). Sauf cargaison étanche, elle perd 1d10 % de sa valeur par Tour jusqu'à colmatage (`MDG 13 l.672`).
+
+> « Quand l'Indice devient égal au score d'Endurance du navire, il coule. » — `MDG 13 l.674`
+
+### Effet générique : États *En flammes* et propagation du feu
+
+Un État *En flammes* affecte un navire « à peu près de la même manière qu'un personnage » : le bateau subit **1 Blessure par tour et par État *En flammes***, et **un même État *En flammes* ne peut affecter qu'une seule Localisation à la fois** (`MDG 13 l.588`). Comme les navires sont en bois et chargés de substances inflammables, le feu peut s'emballer : on note l'**intensité initiale** (nombre d'États *En flammes* sur une Localisation autre que l'Équipage) et, à la fin de chaque Tour, on lance le d10 dans la table *Intensité du feu* (`MDG 13 l.590`). Un incendie dans la cale **gâte 1d10 points d'Encombrement de cargaison par Tour et par État** (sauf cargaison résistante au feu) (`MDG 13 l.592`).
+
+| d10 | Effet |
+|---|---|
+| 1 — Mourant | Lancez 1d10 et **soustrayez** le résultat de l'intensité ; la nouvelle intensité = nombre d'États *En flammes* à partir du prochain Tour. |
+| 2-4 — Stable | L'intensité ne change pas. |
+| 5-8 — Intense | Lancez 1d10 et **ajoutez** le résultat à l'intensité. |
+| 9-10 — Grandissant | L'intensité ne change pas mais le feu **se répand sur une 2e Localisation** (jet sur la table de Localisation des Dégâts) avec **1d10 États *En flammes***. Si la Localisation est déjà en feu ou tombe sur l'Équipage, appliquer *Intense* à la place. |
+
+— `MDG 13 l.596-601`
+
+### Effet générique : Tomber du gréement
+
+Plusieurs Critiques peuvent faire **tomber un Personnage du gréement** ; ceux dans le nid-de-pie testent aussi et tombent de plus haut (`MDG 13 l.680`) :
+
+| Taille du bateau | Chute du gréement | Chute du nid-de-pie |
+|---|---|---|
+| Minuscule à Petite | 1d10 m | 12 m |
+| Moyenne à Grande | 2d10 m | 25 m |
+| Énorme à Monstrueuse | 3d10 m | 40 m |
+
+— `MDG 13 l.684-688`
+
+### Tables de Critiques par Localisation (d10)
+
+Chaque table donne des **Blessures (T = effet temporaire), un effet et une Réparation** (Tests étendus, à n'effectuer que si la réparation est limitée dans le temps — sinon elle prend un nombre d'heures = score du d10) (`MDG 13 l.692`) :
+
+- **Cargaison** : 1-2 *Ballots à la mer* (1d100 pts Enc perdus, Éclats 2) · 3-4 *Au feu dans la cale !* (1 État *En flammes* sur la Cargaison) · 5-6 *Cargaison endommagée* (1d100 pts détruits, Éclats 4) · 7-8 *Cargaison détruite* (2d100 pts, Éclats 6) · 9-10 *Explosion du dépôt de munitions* (3 États *En flammes* sur la Cargaison **+ 1d10 Critiques sur la Coque** si poudre noire stockée ; sinon énorme incendie = 3 États *En flammes*) (`MDG 13 l.698-702`).
+- **Gréement** : 1 *Cordages rompus* · 2 *Voiles trouées* (−1 M Voile, −1 DR Voile) · 3 *Vergue détachée* (M Voile **divisé par 2**, −1 DR) · 4 *Voiles déchirées* (−2 M Voile, −1 DR) · 5 *Beaupré brisé* (plus de Clinfoc, Éclats 2) · 6 *Gréement dégradé* (−2 DR Escalade/Voile) · 7 *Voiles détruites* (**plus de déplacement à la voile**) · 8 *Mât fissuré* (Éclats 6 ; Test de Résistance Facile par Tour, échec → *Mât brisé*) · 9 *Vergue brisée* (plus de voile, Éclats 8) · 10 *Mât brisé* (plus de voile, Éclats 10 ; voile improvisée à 25 % via Test d'équipage étendu d'Entretien Difficile (−20), 80 DR) (`MDG 13 l.709-718`).
+- **Coque** : 1 *Coque abîmée* (retire le bonus de Lissage) · 2 *Barre abîmée* (prochain Test de Manœuvre raté à −3 DR ou pire → barre brisée) · 3 *Coque dégradée* (Éclats 4) · 4 *Dommages sous la ligne de flottaison* (−1 DR Man) · 5 *Gouvernail endommagé* (−1 Man, Éclats 1) · 6 *Quille déchiquetée* (−1 DR à **tous** les Tests de Navigation) · 7 *Gouvernail brisé* (−3 Man, Éclats 3) · 8 *Voie d'eau au-dessus de la ligne de flottaison* (**Voie d'eau 1**, Éclats 6) · 9 *Voie d'eau au niveau de la ligne de flottaison* (**Voie d'eau 2**, Éclats 4) · 10 *Voie d'eau en dessous de la ligne de flottaison* (**Voie d'eau 4**, Éclats 2) (`MDG 13 l.725-744`).
+- **Avirons** : 1-2 *Bancs dispersés* (plus de rame jusqu'à remise en place) · 3-4 *Avirons dégradés* (−1 M Avirons, −1 DR Ramer, Éclats 2) · 5-6 *Tolets abîmés* (−1 M Avirons, −1 DR Ramer, −2 DR Man, Éclats 4) · 7-8 *Avirons brisés* (−2 M Avirons, −2 DR Ramer, Éclats 5) · 9-10 *Bancs fracassés* (plus de rame, Éclats 6) (`MDG 13 l.749-756`).
+- **Équipements** : 1-2 *Cabestan bloqué* (ancre coincée) · 3-4 *Canon détaché* (équipage du canon : Athlétisme Intermédiaire sinon 12 Dégâts) · 5-6 *Ancre perdue* · 7-8 *Canon perdu* (un gros canon, ou un pierrier à défaut, passe par-dessus bord) · 9-10 *Embarcation de bord perdue* (`MDG 13 l.760-766`).
+
+**Sources RAW** :
+- `MDG 13 l.656` — Déclenchement d'un Critique (double sur jet réussi ; tout coup à 0 Blessure) ; utiliser le Critique le plus proche en gravité si la description ne colle pas.
+- `MDG 13 l.660` — Critiques sur l'Équipage = règles de Critiques de Personnage (WFJDR p.172 / *Aux Armes !* p.80).
+- `MDG 13 l.664` — Procédure : déterminer la Localisation, lancer le d10 dans la table de cette Localisation.
+- `MDG 13 l.668` — Éclats (Indice) : Indice membres d'équipage touchés, 9 Dégâts chacun.
+- `MDG 13 l.672-676` — Voie d'eau (Indice) : total cumulé +Indice/Round ; ½ Endurance → −1 M / −1 DR Navigation / fermer les Sabords ; = Endurance → coule ; écoper (Force Intermédiaire, −1 par DR sur 10 Rounds) ; cargaison non étanche −1d10 %/Tour.
+- `MDG 13 l.588-592` — États *En flammes* : 1 Blessure/Tour/État, un État = une Localisation ; intensité initiale ; cargaison gâtée 1d10 Enc/Tour/État.
+- `MDG 13 l.596-601` — Table *Intensité du feu* (Mourant / Stable / Intense / Grandissant, propagation sur 2e Localisation).
+- `MDG 13 l.680-688` — Tomber du gréement : table des hauteurs de chute (gréement / nid-de-pie) selon la Taille du bateau.
+- `MDG 13 l.690-692` — Réparation des Critiques : Tests étendus si temps limité, sinon heures = score du d10.
+- `MDG 13 l.696-702` — Blessures Critiques sur la Cargaison (d10).
+- `MDG 13 l.705-718` — Blessures Critiques sur le Gréement (d10).
+- `MDG 13 l.721-744` — Blessures Critiques sur la Coque (d10), dont les trois paliers de Voie d'eau.
+- `MDG 13 l.747-756` — Blessures Critiques sur les Avirons (d10).
+- `MDG 13 l.758-766` — Blessures Critiques sur les Équipements (d10).
+- `MDG 12 l.313` — Propulsion à vapeur : un Coup Critique à la Coque déclenche un jet sur la table *Panne de Vapeur*.
+
+> « Quand un jet d'attaque réussi contre un bateau donne un double, il subit un Critique. De plus, tous les coups qui touchent une fois que le score de Blessures d'un vaisseau est tombé à 0 sont des Critiques. » — `MDG 13 l.656`
+
+**Voir aussi** : Combat naval — Endurance, Blessures et Localisation (MDG) ; Artillerie navale (MDG) ; Critiques et Frappe Mortelle ; AA : système alternatif de Blessures et Critiques ; États (En flammes, À terre) ; Escalade, Saut et Chute (chute du gréement).
+
+**Implémente** : `(non implémenté)` — pas de table de Critiques de navire ni d'effets *Voie d'eau* / *Éclats* / propagation d'incendie de bateau dans `src/engine`. Les tables de Critiques existantes (`src/data/criticals.ts`) ne concernent que les Localisations humanoïdes ; l'État *En flammes* (`src/engine/conditions.ts`) ne modélise pas l'intensité/propagation navale.
+
+## MDG : Collisions, Indice de Collision et béliers
+
+Les **collisions** sont la manœuvre de combat naval offensive de référence (éperonnage volontaire ou accident). Ce topic couvre l'évitement, le calcul des Dégâts d'un choc (Indice de Collision), les facteurs atténuants/aggravants pilotés par des Tests de Manœuvre, et les béliers. Les Indices de Collision de l'environnement (icebergs, rochers, tourbillons) sont listés pour la résolution de Dégâts.
+
+### Repérer et éviter une collision
+
+Le ou les Personnages les mieux placés comme vigie ont **trois chances** de repérer un objet en route de collision. Une fois le péril aperçu, le **Personnage à la barre fait un Test de Manœuvre pour l'éviter** ; la Difficulté dépend de la distance (les périls sous la flottaison sont plus durs à voir, les périls volumineux plus durs à éviter) (`MDG 13 l.427`) :
+
+| Distance au péril | Test de Perception (repérer) | Test de Manœuvre (éviter) |
+|---|---|---|
+| 100 m | Difficile (−20) | Facile (+40) |
+| 50 m | Intermédiaire (+0) | Accessible (+20) |
+| 10 m | Accessible (+20) | Complexe (−10) |
+
+— `MDG 13 l.431-435`. Qu'il évite ou percute, le bateau dévie de sa trajectoire — un Test d'Orientation est toujours nécessaire après avoir croisé un péril (`MDG 13 l.438`).
+
+### Indice de Collision et Dégâts d'un choc
+
+Navires et périls ont un **Indice de Collision (IC)** variant selon masse et solidité. **IC = Bonus d'Endurance + nombre de Blessures restantes** (ex. E 20, 15 Blessures → BE 2 + BB 1 = IC 3) (`MDG 13 l.444`).
+
+> « Quand un vaisseau rentre dans un autre, chacun des deux reçoit un nombre de Dégâts égal à l'Indice de Collision de l'autre navire plus le M du navire qui a causé la collision. » — `MDG 13 l.446`
+
+Sauf précision contraire, les coups d'une collision touchent toujours la **Coque** (`MDG 13 l.464`).
+
+### Facteurs atténuants ou aggravants
+
+Plusieurs facteurs modifient les Dégâts d'un choc (`MDG 13 l.448`) :
+
+| Facteur | Effet |
+|---|---|
+| Le bateau frappé se déplace **en s'éloignant directement** de celui qui frappe | Réduit tous les Dégâts d'un nombre = M du navire frappé (min 0). |
+| Vaisseau(x) frappé(s) **à la poupe** | Bénéficie de **2 PA**. |
+| Vaisseau(x) frappé(s) **au milieu de la coque** | Les Dégâts infligés sont **doublés**. |
+| Le navire qui frappe **manœuvre pour limiter** les Dégâts | Test de Manœuvre du barreur ; les **DR sont soustraits de l'IC des deux navires**. |
+| Le navire qui frappe **manœuvre pour aggraver** | Test de Manœuvre ; les **DR sont ajoutés à l'IC des deux navires**. |
+| Le navire frappé **manœuvre pour limiter** | Test de Manœuvre du barreur frappé ; **DR soustraits de l'IC des deux**. |
+| Le navire frappé **manœuvre pour aggraver** | Test de Manœuvre ; **DR ajoutés à l'IC des deux**. |
+| **Collision frontale** | Chaque bateau est touché pour Dégâts = IC de l'autre **+ le M total des deux navires**. |
+
+— `MDG 13 l.452-462`
+
+### Bélier
+
+Un **Bélier** en métal fixé à l'avant fournit **5 PA** au navire contre tout Dégât d'une collision ou attaque venant de l'avant, **et ajoute 5 au Bonus d'Endurance pour calculer son Indice de Collision** si le bateau au Bélier cause la collision en frappant de sa proue (`MDG 12 l.221`).
+
+### Indices de Collision de l'environnement
+
+Pour résoudre les Dégâts d'un choc contre un péril, le RAW donne des IC types : **Iceberg** IC 25 (M1) (`MDG 13 l.479`) ; **Débris marins** IC 3 (M1, 20 % de s'empêtrer) (`MDG 13 l.485`) ; **Rocher** moyen IC 47 (20 % de s'*Échouer*) (`MDG 13 l.497`) ; **Bas-fonds** IC 10 (40 % de s'*Échouer*) (`MDG 13 l.499`). Au centre d'un **Tourbillon**, le bateau subit des Dégâts de collision **à chaque Round** selon l'IC du tourbillon (Rotation lente IC 4 → Maelstrom primordial IC 50) jusqu'à s'échapper (`MDG 13 l.526`, `MDG 13 l.533-537`, `MDG 13 l.560`).
+
+**Sources RAW** :
+- `MDG 13 l.427-438` — Repérer/éviter une collision : 3 chances de vigie, Test de Manœuvre du barreur, table Gestion des périls (Perception/Manœuvre par distance), Test d'Orientation après.
+- `MDG 13 l.442-446` — Indice de Collision : BE + Blessures restantes ; Dégâts d'un choc = IC de l'autre + M du navire qui cause la collision.
+- `MDG 13 l.448-462` — Facteurs atténuants/aggravants (éloignement, poupe 2 PA, milieu de coque ×2, manœuvres ± DR sur l'IC des deux, collision frontale + M total).
+- `MDG 13 l.464` — Les coups d'une collision touchent toujours la Coque sauf précision contraire.
+- `MDG 12 l.221` — Bélier : 5 PA à l'avant + 5 au BE pour l'IC quand il cause la collision de sa proue.
+- `MDG 13 l.479` — Iceberg : M1, IC moyen 25.
+- `MDG 13 l.485` — Débris marins : M1, IC 3, 20 % de s'empêtrer.
+- `MDG 13 l.497-499` — Rocher moyen IC 47 (20 % Échouer) ; Bas-fonds IC 10 (40 % Échouer).
+- `MDG 13 l.526` `MDG 13 l.533-537` `MDG 13 l.560` — Tourbillons : Dégâts de collision par Round selon l'IC (Rotation lente 4 → Maelstrom primordial 50).
+
+> « L'Indice de Collision se calcule en additionnant le Bonus d'Endurance du bateau et son nombre de Blessures restantes. » — `MDG 13 l.444`
+
+**Voir aussi** : Combat naval — Endurance, Blessures et Localisation (MDG) ; Coups Critiques sur un navire (MDG) ; Charge (le pendant terrestre de l'éperonnage) ; Taille : catégories et modificateurs de combat.
+
+**Implémente** : `(non implémenté)` — pas de modèle de collision navale ni d'Indice de Collision dans `src/engine`. La Charge en combat (`src/state/combatFlow.ts`) ne couvre que des combattants individuels, sans Dégâts de masse de véhicule.
+
+## MDG : Artillerie navale — pièces, portées, recharge et munitions
+
+L'artillerie de bord (balistes, canons, mortiers, pierriers) est l'arme principale du combat naval à distance. *La Mer des Griffes* renvoie à *Aux Armes !* pour le détail, mais reproduit la liste des armes les plus courantes sur les navires de l'Empire, leurs munitions spéciales et leur placement sur le pont. Ce topic couvre la **mécanique de tir** : compétences requises, portées, Dégâts, Recharge et munitions.
+
+### Maniement et compétences
+
+Les pièces d'artillerie suivent **les mêmes principes que les armes plus petites** : un tireur formé à l'arbalète peut charger et tirer une baliste, manier un canon n'est pas plus complexe qu'une arquebuse (`MDG 12 l.373`). **Il est impossible de manier une arme de siège sans la compétence du Groupe d'armes approprié** ; les armes du Groupe **Poudre noire** requièrent un équipage doté de **Projectiles (Ingénierie ou Poudre noire)** (`MDG 12 l.375`). Cas particulier des balistes : n'importe quel Personnage peut tenter un **Test de Projectiles (Arbalète)** avec sa CT, mais **l'arme perd alors tous ses Atouts tout en conservant ses Défauts** (`MDG 12 l.377`). Les pièces tirent obligatoirement des **munitions spéciales dédiées** : un canon ne tire pas de balle d'arquebuse, une baliste pas de carreau d'arbalète (`MDG 12 l.379`).
+
+> « Il est impossible de manier une arme de siège sans posséder la compétence du Groupe d'armes approprié. » — `MDG 12 l.375`
+
+### Tableau des Pièces d'Artillerie (navales)
+
+| Arme | Prix | Enc | Disponibilité | Portée | Dégâts | Atouts et Défauts |
+|---|---|---|---|---|---|---|
+| **ARBALÈTE** — Baliste | 30 CO | 20 | Limitée | 100 | +12 | Arme d'équipe 2, Pointue, Recharge 3 |
+| **POUDRE NOIRE** — Canon (petit) | 40 CO | 30 | Limitée | 50 | +10 | Arme d'équipe 2, Dangereuse, Recharge 4 |
+| **POUDRE NOIRE** — Canon (moyen) | 100 CO | 50 | Exotique | 75 | +14 | Arme d'équipe 3, Dangereuse, Recharge 6 |
+| **POUDRE NOIRE** — Canon (grand) | 250 CO | 75 | Exotique | 150 | +16 | Arme d'équipe 4, Dangereuse, Recharge 8 |
+| **POUDRE NOIRE** — Mortier | 50 CO | 50 | Exotique | 100 | – | Arme d'équipe 3, Recharge 4 |
+| **POUDRE NOIRE** — Pierrier | 20 CO | 5 | Rare | 30 | +14 | Dangereuse, Recharge 4 |
+
+— `MDG 12 l.401-407`. Note : ces stats sont identiques à celles du tableau d'artillerie d'*Aux Armes !* (cf. topic *AA : Structures et armes de Siège*) — MDG ne reprend que le sous-ensemble naval (sans catapultes ni armes d'Ingénierie). Le **mortier** tire sur trajectoire courbée : moins efficace pour percer une coque qu'un canon, mais mortel pour l'équipage sur le pont et utile pour incendier (`MDG 12 l.391`). Le **pierrier** est un gros tromblon, normalement monté sur pivot ou trépied (`MDG 12 l.395`).
+
+### Tableau des Munitions pour Pièces d'Artillerie (navales)
+
+| Arme / Munition | Prix | Enc | Disponibilité | Portée | Dégâts | Atouts et Défauts |
+|---|---|---|---|---|---|---|
+| **BALISTE** — Carreau | 4/– | 0 | Limitée | Comme l'arme | – | Empaleuse, Perforante |
+| **BALISTE** — Carreau nain norse | 8/– | 0 | Limitée | Comme l'arme | – | Brise-coque, Empaleuse, Perforante |
+| **CANON** — Boulet et poudre | 8/– | 1 | Limitée | Comme l'arme | – | Explosion 2, Percutante |
+| **CANON** — Mitraille et poudre | 6/6 | 0 | Exotique | Quart de l'arme | −5 | Tir de zone 5 |
+| **MORTIER** — Bombe | 3 CO | 0 | Rare | Comme l'arme | +12 | Dangereuse, Explosion 5, Percutante |
+| **MORTIER** — Bombe incendiaire | 1 CO | 0 | Limitée | Moitié de l'arme | Spécial\* | Dangereuse, Explosion 4 |
+| **PIERRIER** — Balles et poudre (pour 1 tir) | 2/2 | 0 | Commune | Comme l'arme | +1 | Empaleuse, Perforante, Tir de zone 3 |
+| **PIERRIER** — Petites munitions et poudre (pour 1 tir) | 2/2 | 0 | Commune | Comme l'arme | – | Tir de zone 6 |
+
+— `MDG 12 l.413-424`. \* **Bombe incendiaire** : n'inflige pas de Dégâts ; fait subir à toutes les cibles affectées **1 + DR États *En flammes*** (`MDG 12 l.426`).
+
+### Recharge
+
+Toutes ces armes portent le Défaut **Recharge (Indice)** : le rechargement complet prend un nombre d'Actions/Tests égal à l'Indice (baliste 3, canon petit/moyen/grand 4/6/8, mortier 4, pierrier 4) (`MDG 12 l.401-407`). Pour recharger une arme à **Arme d'équipe**, un membre peut apporter son **Soutien** sur les Tests déterminant la durée du rechargement (`MDG 12 l.462`) ; un équipage en sous-effectif **double le temps de recharge** (cf. topic Atouts/Défauts d'arme).
+
+### Placement des canons sur le pont
+
+Concentrer l'artillerie d'un côté (bordée) ou à la proue donne un avantage tactique mais compromet le déplacement et la manœuvre (`MDG 12 l.430`) :
+- poids des pièces sur **un côté > 25 % de la Contenance** : **−1 supplémentaire au M et à la Man**, et **−1 DR** aux Tests de Navigation ;
+- poids sur un côté **> 50 % de la Contenance** : **−2 au M et à la Man**, **−2 DR** aux Tests de Navigation (`MDG 12 l.432-433`).
+
+Un placement équilibré (ou compensé par du lest) n'impose aucune pénalité de pilotage (`MDG 12 l.435`). Les **Sabords** (trappes refermables) permettent de tirer à couvert : sans Sabord, les tirs partent du pont, qui ne fournit aucun couvert, alors qu'un Sabord donne une **couverture totale** ; ouvrir/fermer un Sabord est **une seule action** (`MDG 12 l.364`).
+
+**Sources RAW** :
+- `MDG 12 l.369-379` — Généralités d'artillerie navale : suit les principes des armes à main ; Groupe d'armes obligatoire ; Poudre noire = Projectiles (Ingénierie/Poudre noire) ; baliste via Projectiles (Arbalète) perd ses Atouts ; munitions spéciales obligatoires.
+- `MDG 12 l.381-395` — Descriptions : balistes (grandes arbalètes à torsion), canons (Nuln), mortiers (trajectoire courbe, anti-équipage/incendie), pierriers (gros tromblon sur pivot).
+- `MDG 12 l.401-407` — Tableau des Pièces d'Artillerie : Baliste, Canon (petit/moyen/grand), Mortier, Pierrier (Prix/Enc/Disponibilité/Portée/Dégâts/Atouts et Défauts, dont les Indices de Recharge).
+- `MDG 12 l.413-426` — Tableau des Munitions pour Pièces d'Artillerie (Carreau, Carreau nain norse, Boulet, Mitraille, Bombe, Bombe incendiaire, Balles/Petites munitions de pierrier) + note Bombe incendiaire = 1 + DR États *En flammes*.
+- `MDG 12 l.462` — Recharge d'une Arme d'équipe : un membre apporte son Soutien.
+- `MDG 12 l.430-435` — Placement des canons : >25 % Contenance d'un côté → −1 M/Man et −1 DR Navigation ; >50 % → −2 M/Man et −2 DR ; lest de compensation.
+- `MDG 12 l.356-364` — Sabords : tir à couvert (couverture totale) vs tir depuis le pont (aucun couvert) ; ouvrir/fermer = une action.
+
+> « Une bombe incendiaire fait subir à toutes les cibles affectées 1 +DR États En flammes. » — `MDG 12 l.426`
+
+**Voir aussi** : Atouts et Défauts d'arme (MDG : Arme d'équipe, Tir de zone) ; AA : Structures et armes de Siège (stats d'artillerie jumelles) ; Combat naval — Endurance, Blessures et Localisation (MDG) ; Coups Critiques sur un navire (MDG) ; Armes à distance et munitions (LDB) : groupes et tables ; Portée, Allonge et dégradation des armes ; Atouts et Défauts d'arme (Recharge, Dangereuse, Explosion, Percutante, Empaleuse, Perforante, Pointue).
+
+**Implémente** : `(non implémenté)` — l'artillerie navale n'est pas modélisée séparément. Les Atouts/Défauts partagés (Recharge, Dangereuse, Explosion, Empaleuse, Perforante, Pointue, Tir de zone) sont câblés dans `src/engine/qualities/dispatch.ts` et peuvent porter ces armes en donnée (`src/data/trappings.json`), mais le placement de pont, les Sabords/couvert et le Groupe d'armes Poudre noire (Ingénierie) ne le sont pas.
+
+## MDG : nouveaux Atouts et Défauts d'arme (Arme d'équipe, Tir de zone)
+
+Le chapitre 12 introduit deux qualités d'arme employées par l'artillerie navale et reprises ailleurs : le **Défaut *Arme d'équipe*** (l'arme requiert plusieurs servants) et l'**Atout *Tir de zone*** (gerbe de projectiles touchant plusieurs cibles). Ces deux définitions sont identiques à celles d'*Aux Armes !* (cf. topic *AA : Structures et armes de Siège*) ; ce topic les ancre sur la source MDG.
+
+### Défaut : *Arme d'équipe (Indice)*
+
+Une arme à *Arme d'équipe* est si imposante, lourde et complexe qu'elle **ne fonctionne bien que gérée par une équipe**. Tous les membres de l'équipe doivent posséder la **Compétence Projectiles appropriée** ; ils peuvent **nommer l'un d'eux** pour effectuer le Test de Projectiles déterminant l'efficacité du tir (`MDG 12 l.442`). La plupart des armes ont un équipage de **2, 3 ou 4** ; les membres au-delà de l'Indice n'améliorent pas l'arme mais peuvent la déplacer ou compenser les pertes (`MDG 12 l.444`).
+
+Si l'arme est maniée **en sous-effectif**, elle subit des **pénalités cumulatives** (`MDG 12 l.446`, `MDG 12 l.458`) :
+
+| Équipage présent | Arme d'équipe 2 | Arme d'équipe 3 | Arme d'équipe 4 |
+|---|---|---|---|
+| 4 | N/A | N/A | N/A |
+| 3 | N/A | N/A | Temps de Recharge doublé |
+| 2 | N/A | Temps de recharge doublé | Reçoit le Défaut *Imprécise* |
+| 1 | Temps de recharge doublé | Reçoit le Défaut *Imprécise* | Reçoit le Défaut *Dangereuse* |
+
+— `MDG 12 l.448-456`. Les pénalités se **cumulent** : une Arme d'équipe 4 maniée par une seule personne voit son temps de recharge doublé **et** reçoit *Imprécise* **et** *Dangereuse* (`MDG 12 l.458`). Si l'arme **reçoit un Défaut qu'elle possède déjà**, imposer à la place une **pénalité de −10** sur tous les Tests de Projectiles pour tirer (`MDG 12 l.460`). Pour recharger, un membre peut apporter son **Soutien** sur les Tests de durée de rechargement (`MDG 12 l.462`). Si l'arme subit un **Incident de tir**, **tous les membres de l'équipage sont affectés** (`MDG 12 l.464`).
+
+> « Les pénalités infligées par un équipage réduit sont cumulatives, ce qui signifie qu'une arme dotée d'Arme d'équipe 4, mais qui n'est maniée que par une seule personne voit son temps de recharge doublé et reçoit les Défauts *Imprécise* et *Dangereuse*. » — `MDG 12 l.458`
+
+### Atout : *Tir de zone (Indice)*
+
+Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie et peut frapper plusieurs cibles. Son comportement dépend de la **portée à laquelle se trouve la cible** (`MDG 12 l.468`) :
+
+- **Bout portant** : le tir cible un seul individu — **ajoutez l'Indice aux Dégâts** de l'arme.
+- **Portée Courte à Longue** : le tir cible un individu **et les (Indice) créatures visibles les plus proches** ; deux cibles ne peuvent pas être à plus de **(Indice) mètres** l'une de l'autre.
+- **Portée Extrême** : comme Courte à Longue, mais **réduit les Dégâts de l'arme de (Indice)**.
+
+— `MDG 12 l.470-472`
+
+**Sources RAW** :
+- `MDG 12 l.442` — *Arme d'équipe* : tous les servants doivent avoir la Compétence Projectiles appropriée ; un seul désigné effectue le Test d'efficacité.
+- `MDG 12 l.444` — Équipage de 2/3/4 ; les membres supplémentaires ne renforcent pas l'arme mais aident à la déplacer/compenser les pertes.
+- `MDG 12 l.446-456` — Table des pénalités d'équipage réduit (recharge doublée → *Imprécise* → *Dangereuse* selon l'Indice et l'effectif présent).
+- `MDG 12 l.458` — Pénalités cumulatives (Arme d'équipe 4 maniée seul = recharge doublée + *Imprécise* + *Dangereuse*).
+- `MDG 12 l.460` — Doublon de Défaut : −10 aux Tests de Projectiles au lieu d'un second exemplaire du Défaut.
+- `MDG 12 l.462` — Recharge : un membre apporte son Soutien sur les Tests de durée.
+- `MDG 12 l.464` — Incident de tir d'une Arme d'équipe : tous les membres affectés.
+- `MDG 12 l.466-472` — *Tir de zone* : bout portant (+Indice aux Dégâts), Courte à Longue (Indice cibles proches, ≤ Indice mètres), Extrême (−Indice aux Dégâts).
+
+> « Les armes possédant l'Atout *Tir de zone* tirent un nuage de projectiles qui se déploie et peut frapper plusieurs cibles. » — `MDG 12 l.468`
+
+**Voir aussi** : Artillerie navale (MDG) ; AA : Structures et armes de Siège (définitions jumelles d'*Arme d'équipe* et de *Salve*) ; Atouts et Défauts d'arme (Recharge, Dangereuse, Imprécise, Tir de zone, Explosion) ; AA : armes à poudre à canon et munitions — tables ; Combat à Distance : restrictions et règles de tir (bandes de portée).
+
+**Implémente** : Atout **Tir de zone** reconnu en donnée (`capabilities.areaFire`, `src/data/index.ts`) et porté par les armes à poudre/artillerie (`src/data/trappings.json`). Défaut **Arme d'équipe** : la pénalité de **recharge doublée en sous-effectif** est gérée par `reloadDRTarget` (`src/engine/qualities/dispatch.ts`) et le passage en **Dangereuse** d'une Arme d'équipe ≥ 4 maniée seul par `dangerousNine` ; le reste de la table (passage en *Imprécise*, cumul *Imprécise* + *Dangereuse*, −10 pour doublon de Défaut, « tous les membres affectés » sur Incident de tir) reste `(non implémenté)`. Le détail par bande de portée de *Tir de zone* (multi-cibles ≤ Indice m / +Indice à bout portant / −Indice à l'Extrême) est `(non implémenté)`.
 
 ## Bilan de fidélité — passe de vérification adversariale
 

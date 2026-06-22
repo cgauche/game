@@ -27,6 +27,13 @@
 - [Voir aussi](#voir-aussi)
 - [Implémente (refs code)](#implemente-refs-code)
 
+- **La Mer des Griffes (MDG)** <!-- MDG-INTEGRATION -->
+- Navires — profil et Caractéristiques (MDG) : Caractéristiques de bateau (Coût, Équipage, Voiles/Avirons M (É), Man, Taille, E/BE, B/BB, Contenance), table de surcharge, Traits vs Améliorations
+- Construction navale (MDG) : 4 étapes (Taille → propulsion ±2 M / min 3 → coût-Manœuvre → coût-vitesse), tables standard et de coût
+- Traits de navire (MDG) : Peu maniable, Renforcé, Robuste, Solide (effets E/B/Contenance/DR + modif. coût)
+- Améliorations de navire (MDG) : Ancre, Bélier, Blindage, Cabine de luxe, Clinfoc, Embarcation de bord, Figure de proue, Freins, Lissage, Nid-de-pie, Propulsion à vapeur, Ralentisseurs latéraux, Sabord
+- Pièces d'artillerie navale (MDG) : Balistes/Canons/Mortiers/Pierriers, munitions, placement des canons, nouveaux Atouts/Défauts (Arme d'équipe, Tir de zone)
+
 ---
 
 ## Encombrement — calcul et seuils
@@ -510,3 +517,212 @@ Les chapitres suivants contiennent essentiellement des **listes de prix** sans r
   distincte dans le moteur (le Test Guérison retire Empoisonné via `poisonResistApply` en fin de Round,
   mais le nécessaire comme objet requis n'est pas vérifié).
 - **Bésicles** : +20 Lire/Écrire et +20 Perception non intégrés (objet passif non géré).
+
+---
+
+<!-- MDG-INTEGRATION -->
+
+## Navires — profil et Caractéristiques (MDG)
+
+**Source : MDG 12 l.5–81**
+
+Comme les Personnages, les navires ont des **Caractéristiques** qui décrivent leurs capacités et peuvent porter des **Traits** leur donnant des aptitudes spéciales. Aucun bateau n'est strictement identique à un autre : son profil varie selon l'usure, la qualité de construction, l'aménagement et le style. Le profil canonique d'un navire suit le gabarit : *Nom · Coût · Équipage · Voiles M (É) · Avirons M (É) · Man · Taille · E · B · Contenance · Traits et Améliorations* (tables complètes au catalogue).
+
+> « Comme les Personnages, les bateaux ont des Caractéristiques qui décrivent leurs capacités. » — `MDG 12 l.5`
+
+**Coût** : prix d'un bateau neuf sortant du chantier (`MDG 12 l.17`).
+
+**Équipage** : nombre de membres que le navire porte sans problème de place et normalement attendu à bord. Au-delà, le surnombre inflige les pénalités liées à la **Contenance** (`MDG 12 l.21`). Chaque occupant consomme de l'espace d'Équipage **et** de la Contenance selon sa Taille :
+
+| Taille | Espaces d'équipage occupés | Enc |
+|---|---|---|
+| Minuscule | – | – |
+| Très Petite | 0,25 | 1 |
+| Petite | 0,5 | 3 |
+| Moyenne | 1 | 6 |
+| Grande | 3 | 18 |
+| Énorme | 9 | 54 |
+| Monstrueuse | 27 | 162 |
+
+Les objets personnels portés ne comptent pas, sauf très volumineux/lourds : tant qu'un objet n'atteint pas le volume d'une petite caisse (≈30 cm³), il est ignoré pour l'Encombrement du bateau ; le MJ tranche les cas limites (`MDG 12 l.35`).
+
+**Voiles M (É)** et **Avirons M (É)** : Caractéristique en deux nombres. Le premier (**M**) est le Mouvement du navire avec l'équipage minimum, temps beau, allure modérée. Le second (**É**) est l'effectif minimum requis pour tenir cette vitesse sur une **Période de travail** (8 h pour la voile ; 2 h pour la rame) — un effectif plus important est nécessaire pour une durée plus longue (`MDG 12 l.39`, `MDG 12 l.41`, `MDG 12 l.45`).
+
+**Manœuvre (Man)** : modificateur appliqué aux Tests où la réactivité et l'agilité du navire comptent — notamment les Tests de **Voile** et de **Ramer** en zone dangereuse (`MDG 12 l.50`).
+
+**Taille** : longueur du vaisseau en mètres ; influe sur la vitesse et détermine la Contenance (`MDG 12 l.54`).
+
+**Endurance (E)** : sert à résister aux Dégâts.
+
+> « Le premier chiffre de l'Endurance du bateau est aussi employé comme Bonus d'Endurance (BE). Le BE d'un bateau est déduit de tous les Dégâts qui lui sont infligés avant de les appliquer aux Blessures. » — `MDG 12 l.58`
+
+**Blessures (B)** : quantité de Dégâts encaissable.
+
+> « Le nombre des dizaines des Blessures du vaisseau est aussi employé comme Bonus de Blessures (BB). Ce Bonus est basé sur les Blessures actuelles d'un navire, c'est pourquoi il peut changer au cours d'une rencontre. » — `MDG 12 l.64`
+
+**Contenance** : Encombrement de cargaison portable sans pénalité ; au-delà, vitesse et manœuvrabilité chutent (`MDG 12 l.68`) :
+
+| Encombrement supplémentaire | Effet |
+|---|---|
+| Supérieur à la Contenance | –1 M, –1 DR Manœuvre |
+| Supérieur de 20 % à la Contenance | –2 M, –2 DR Manœuvre |
+| Supérieur de 40 % à la Contenance | –3 M, –3 DR Manœuvre |
+| Supérieur de 50 % à la Contenance | Impossible de prendre la mer |
+
+**Traits et Améliorations** : les **Traits** sont intégrés à la construction initiale (immuables), les **Améliorations** peuvent être ajoutées/retirées plus tard (`MDG 12 l.81`).
+
+**Sources RAW :** `MDG 12 l.5–81` (intro, Équipage l.21, table espaces l.23–35, Voiles/Avirons l.37–45, Manœuvre l.48–50, Taille l.52–54, E/BE l.56–58, B/BB l.60–64, Contenance + table surcharge l.66–77, Traits/Améliorations l.79–81).
+
+**Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (tables *Exemples de bateaux* et *Caractéristiques de bateau standard*) · § Construction navale (MDG) · § Traits de navire (MDG) · § Améliorations de navire (MDG) · [`deplacement.md`](deplacement.md) (voyage, vitesses).
+
+**Implémente :** (non implémenté) — schéma de navire (profil E/BE, B/BB, Contenance, Man, Voiles/Avirons) absent du moteur ; à modéliser comme entité combattante distincte si le combat naval est joué.
+
+---
+
+## Construction navale (MDG)
+
+**Source : MDG 12 l.108–164**
+
+Procédure pour qu'un Personnage construise (ou fasse construire) son vaisseau, ou que le MJ en crée un. On fixe successivement : Taille, mode de propulsion, manœuvrabilité, vitesse, puis Traits/Améliorations (`MDG 12 l.110`). Certains exemples de bateaux ne sont pas reproductibles à l'identique par ces règles — la diversité des constructeurs de la Mer des Griffes l'explique ; la table standard sert de guide approximatif (`MDG 12 l.118`).
+
+**Étape 1 – Taille** : choisir une Taille/un type donne des Caractéristiques de base (table *Caractéristiques de bateau standard*, au catalogue), à ajuster ensuite ; le prix indiqué vaut pour un navire de cette Taille sans modificateur ni élément additionnel (`MDG 12 l.116–129`).
+
+**Étape 2 – Propulsion principale (voiles ou avirons)** : beaucoup de navires ont les deux Caractéristiques mais comptent surtout sur l'une. Choisir la méthode principale et **réduire de 2 le Mouvement de l'autre** (minimum 3). Les plus grandes catégories ne peuvent pas être propulsées à la rame (`MDG 12 l.133`).
+
+**Étape 3 – Coût selon la manœuvrabilité** : un bonus de Manœuvre exige une fabrication minutieuse et coûte cher ; les défauts la réduisent et abaissent le prix (`MDG 12 l.137`) :
+
+| Modificateur de Manœuvre | Modificateur de coût |
+|---|---|
+| –2 DR | –40 % |
+| –1 DR | –20 % |
+| +1 DR | +20 % |
+
+**Étape 4 – Coût selon la vitesse** : la vitesse dérive du M des Voiles/Avirons et s'ajuste ; un gain de vitesse rogne la Contenance (et inversement), les pénalités de Manœuvre se cumulant avec l'étape 3 (`MDG 12 l.147`) :
+
+| Trait de vitesse | Mod. vitesse | Mod. Contenance | Mod. Man | Mod. coût |
+|---|---|---|---|---|
+| Escargot | –3 | Double la Contenance | –2 DR | – |
+| Très lent | –2 | +50 % de Contenance | –1 DR | – |
+| Lent | –1 | +25 % de Contenance | – | – |
+| Moyen | – | – | – | – |
+| Rapide | +1 | –25 % de Contenance | – | – |
+| Très rapide | +2 | –50 % de Contenance | – | +10 % |
+| Foudroyant | +3 | –75 % de Contenance | – | +10 % |
+
+**Sources RAW :** `MDG 12 l.108–164` (intro l.108–112, Étape 1 l.114–129, Étape 2 l.131–133, Étape 3 + table l.135–143, Étape 4 + table l.145–164).
+
+**Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (table *Caractéristiques de bateau standard*) · § Navires — profil et Caractéristiques (MDG) · § Traits de navire (MDG) · § Améliorations de navire (MDG).
+
+**Implémente :** (non implémenté) — calcul de coût/profil par assemblage Taille→propulsion→Man→vitesse non modélisé.
+
+---
+
+## Traits de navire (MDG)
+
+**Source : MDG 12 l.167–193**
+
+Les **Traits** sont intégrés à la construction initiale et, contrairement aux Améliorations, ne peuvent être ni ajoutés ni modifiés une fois la charpente terminée (`MDG 12 l.169`).
+
+**Peu maniable (Indice)** — jusqu'à **3 niveaux** ; chaque niveau impose **–1 DR** sur tous les Tests de **Ramer** et de **Voile**, et **réduit le coût de base de 10 % par niveau** (`MDG 12 l.171–175`).
+
+**Renforcé (Indice)** — bateau bâti pour le combat ; chaque niveau ajoute **+10 à l'Endurance**, jusqu'à **3 niveaux**. Par niveau : **–10 % de Contenance de base** et **+10 % au coût de base** (`MDG 12 l.177–181`).
+
+**Robuste** — modèle fiable et bien fabriqué ; **+2 DR** sur les Tests d'équipage d'**Affaler les voiles**. **+10 % au coût de base** (`MDG 12 l.183–187`).
+
+**Solide (Indice)** — construit pour endurer la guerre ; jusqu'à **3 niveaux**, chaque niveau **augmente les Blessures de 30 %**. Par niveau : **–10 % de Contenance de base** et **+20 % au coût de base** (`MDG 12 l.189–193`).
+
+**Sources RAW :** `MDG 12 l.167–193` (Peu maniable l.171–175, Renforcé l.177–181, Robuste l.183–187, Solide l.189–193).
+
+**Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (Traits dans la colonne *Traits et Améliorations* des exemples) · § Navires — profil et Caractéristiques (MDG) · § Construction navale (MDG).
+
+**Implémente :** (non implémenté) — modificateurs de Trait de navire (E, B, Contenance, DR aux Tests d'équipage) non modélisés.
+
+---
+
+## Améliorations de navire (MDG)
+
+**Source : MDG 12 l.195–364**
+
+Modifications ajoutables après coup à un vaisseau ; d'autres figurent dans le **Compagnon de Mort sur le Reik**, mais MDG ne retient que celles pertinentes pour les navires et navires de guerre **maritimes** (`MDG 12 l.197–199`). Les bateaux Minuscules et Très Petits sont souvent trop courts pour la plupart de ces Améliorations (`MDG 12 l.203`). Coûts et Poids (Enc) au catalogue.
+
+**Ancre** — fixe le bateau en place : tant qu'elle est abaissée à un emplacement approprié (l'océan est souvent trop profond), ni vents ni courants n'affectent le navire. La **lever rapidement** demande un **Test étendu de Force** au cabestan, **Complexe (–10)** (Petits/Moyens) ou **Difficile (–20)** (plus grands), DR total fonction de la profondeur (≈15 DR en général) (`MDG 12 l.205–213`).
+
+**Bélier** — éperon métallique fixé à l'avant : fournit **5 PA** contre les Dégâts de collision/attaque venant de l'avant, et ajoute **+5 au Bonus d'Endurance** pour le calcul de l'Indice de Collision quand le navire au Bélier frappe l'autre de sa proue (`MDG 12 l.215–221`).
+
+**Blindage** — posable uniquement sur chantier spécialisé (2 semaines pour Petits/Moyens, 1 mois au-delà). Fonctionne comme une armure : les coups à la **Coque** voient leurs Dégâts réduits des **PA** puis du **BE** ; contrairement à l'armure personnelle, il **ne peut pas être sacrifié pour éviter une Blessure Critique**. **Bronze : 1 PA** ; **Fer : 2 PA** mais si le navire devient *Sali*, les plaques de fer rouillent et perdent leurs PA (`MDG 12 l.223–236`).
+
+**Cabine de luxe** — occupe deux cabines normales ; sur autorisation du MJ, son occupant gagne **+10 aux Tests de Sociabilité** faits à l'intérieur (`MDG 12 l.238–244`).
+
+**Clinfoc** — misaine supplémentaire ; nécessite un beaupré (qui rallonge le navire de 10 %). Un bateau à voiles doté d'un Clinfoc utilise la table *Effet du vent (Clinfoc)* au lieu de la table standard (`MDG 12 l.246–264`).
+
+| Effet du vent (Clinfoc) — d10 | Vent arrière | Vent latéral | Vent de face |
+|---|---|---|---|
+| Calme plat | Encalminé | Encalminé | Encalminé |
+| Légère brise | +10 % | +0 % | –10 % |
+| Brise fraîche | +25 % | Virement de bord +25 % | –25 % |
+| Vent modéré | +25 % | Virement de bord +25 % | –50 % |
+| Vent violent | +50 % | Affaler les voiles | Affaler les voiles |
+| Violente tempête | Affaler les voiles | Affaler les voiles | Affaler les voiles |
+
+**Embarcation de bord** — un navire à Contenance suffisante peut embarquer un autre bateau (transbordement cargaison/passagers, canot de sauvetage, voire remorquage du grand navire à **M1 et Man –4 DR**). L'embarcation va de Taille Minuscule à Très Petite ; son Coût et son Poids sont ceux de son modèle (`MDG 12 l.266–272`).
+
+**Figure de proue** — sculpture de proue censée porter chance. Si elle est de très bonne facture (au moins deux Atouts *Raffiné*), elle **ajoute +1 au Moral total** (`MDG 12 l.274–282`).
+
+**Freins** — deux ailettes de bois dépliables sur les côtés : ouvrir les freins augmente la résistance et **réduit le M de 1 ou 2** (ouverture à moitié ou totale). Dans un Détroit ou un Tourbillon, ils augmentent d'autant le **M effectif du courant** (`MDG 12 l.284`).
+
+**Lissage** — coque polie pour réduire la résistance ; pose d'1 à 2 semaines en chantier. Confère **M +1**. Réparer une coque lissée coûte **+50 %** ; des réparations moins chères font perdre le bénéfice du Lissage (`MDG 12 l.287–295`).
+
+**Nid-de-pie** — plateforme au sommet du mât ; un Personnage qui s'y trouve gagne sur ses Tests de **Perception** pour repérer en mer **+1 DR** (Taille Petite à Moyenne) ou **+2 DR** (Grande à Monstrueuse) (`MDG 12 l.297–303`).
+
+**Propulsion à vapeur** — confère **M 4** quelle que soit la direction du vent tant qu'il reste du carburant ; entretien par un ingénieur, les Tests de **Navigation** étant remplacés par des Tests de **Métier (Ingénieur)**. Sur un double raté à ce Test, un Échec Stupéfiant ou un Coup Critique à la Coque, on lance dans la table *Panne de Vapeur* (au catalogue) (`MDG 12 l.305–313`).
+
+**Ralentisseurs latéraux** — Amélioration listée (Coût/Poids par Taille au catalogue) (`MDG 12 l.315–354`).
+
+**Sabord** — trappe refermable permettant de tirer à l'abri d'un couvert (grands Sabords : canons/balistes ; petits : arquebuses, arcs, arbalètes). Sans Sabords, on tire depuis le pont, **sans aucun couvert** ; un Sabord donne une **couverture totale**. L'ouvrir/le fermer est **une seule action** ; ouverts, ils sont un danger si le navire coule (`MDG 12 l.356–364`).
+
+**Sources RAW :** `MDG 12 l.195–364` (Ancre l.205–213, Bélier l.215–221, Blindage l.223–236, Cabine de luxe l.238–244, Clinfoc + table l.246–264, Embarcation de bord l.266–272, Figure de proue l.274–282, Freins l.284, Lissage l.287–295, Nid-de-pie l.297–303, Propulsion à vapeur l.305–313, Ralentisseurs latéraux l.315–354, Sabord l.356–364).
+
+**Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (Coûts/Poids des Améliorations, table *Panne de Vapeur*) · § Navires — profil et Caractéristiques (MDG) · § Pièces d'artillerie navale (MDG) (Sabords & tir).
+
+**Implémente :** (non implémenté) — Améliorations de navire (PA Bélier/Blindage, M +1 Lissage, M 4 vapeur, couvert Sabord, bonus Tests) non modélisées.
+
+---
+
+## Pièces d'artillerie navale (MDG)
+
+**Source : MDG 12 l.367–472**
+
+Même les petits marchands s'arment ; MDG liste les pièces les plus fréquentes sur les navires de l'Empire (liste plus complète dans **Aux Armes !**). Les pièces d'artillerie suivent les **règles des armes à main** : impossible de manier une arme de siège sans la compétence du **Groupe d'armes** approprié — les armes du Groupe **Poudre noire** exigent un équipage doté de **Projectiles (Ingénierie ou Poudre noire)** (`MDG 12 l.373–375`). Pour une **baliste**, n'importe quel Personnage peut tenter un Test de **Projectiles (Arbalète)** avec sa CT, mais l'arme **perd alors tous ses Atouts** tout en conservant ses Défauts (`MDG 12 l.377`). Les munitions sont spécifiques : un canon ne tire pas de balles d'arquebuse, ni une baliste de carreaux d'arbalète (`MDG 12 l.379`).
+
+Catégories : **Balistes** (grandes arbalètes à torsion, carreaux à pointe de fer), **Canons** (armes de précision, surtout de Nuln), **Mortiers** (tir en cloche, peu efficaces sur la coque mais mortels sur le pont et incendiaires) et **Pierriers** (tromblons géants sur pivot/trépied) (`MDG 12 l.381–395`). Stats, prix, Enc et munitions : tables au catalogue.
+
+**Placement des canons sur le pont** : concentrer les pièces d'un côté (bordée) ou à la proue donne un avantage tactique mais compromet le déplacement (`MDG 12 l.430`) :
+- poids d'un côté **> 25 % de la Contenance** → **–1** supplémentaire au M et à la Man, et **–1 DR** aux Tests de Navigation (`MDG 12 l.432`) ;
+- poids d'un côté **> 50 % de la Contenance** → **–2** au M et à la Man, et **–2 DR** aux Tests de Navigation (`MDG 12 l.433`).
+
+Un placement équilibré n'impose pas de pénalité ; du lest de compensation (sacs de sable) peut rééquilibrer la répartition (`MDG 12 l.435`).
+
+**Nouveaux Atouts et Défauts d'arme :**
+
+**Arme d'équipe (Indice)** — Défaut : l'arme n'est efficace qu'avec une équipe entière (tous dotés de la compétence Projectiles requise) ; l'un d'eux est nommé pour faire le Test (`MDG 12 l.440–444`). Un équipage incomplet inflige des pénalités cumulatives :
+
+| Équipage présent | Arme d'équipe 2 | Arme d'équipe 3 | Arme d'équipe 4 |
+|---|---|---|---|
+| 4 | N/A | N/A | N/A |
+| 3 | N/A | N/A | Temps de Recharge doublé |
+| 2 | N/A | Temps de recharge doublé | Reçoit le Défaut *Imprécise* |
+| 1 | Temps de recharge doublé | Reçoit le Défaut *Imprécise* | Reçoit le Défaut *Dangereuse* |
+
+Si un Défaut ainsi reçu est déjà présent, c'est **–10** supplémentaire à tous les Tests de Projectiles. Un membre peut apporter son **Soutien** au Test de recharge ; un Incident de tir affecte **tous** les membres de l'équipe (`MDG 12 l.458–464`).
+
+**Tir de zone (Indice)** — Atout : nuage de projectiles frappant plusieurs cibles, selon la portée (`MDG 12 l.466–472`) :
+- **Bout portant** : une seule cible ; **ajoute l'Indice aux Dégâts**.
+- **Courte à Longue** : la cible **plus les (Indice) créatures visibles les plus proches**, deux cibles ne pouvant être à plus de (Indice) mètres l'une de l'autre.
+- **Extrême** : comme Courte à Longue, mais **réduit les Dégâts de (Indice)**.
+
+**Sources RAW :** `MDG 12 l.367–472` (règles d'usage l.367–379, catégories l.381–395, tables pièces & munitions l.397–426, placement l.428–435, Arme d'équipe + table l.440–464, Tir de zone l.466–472).
+
+**Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (tables *Pièces d'artillerie* et *Munitions pour pièces d'artillerie*) · [`combat.md`](combat.md) (armes à distance, Atouts/Défauts, Portée) · § Améliorations de navire (MDG) (Sabords).
+
+**Implémente :** (non implémenté) — artillerie navale (Arme d'équipe, Tir de zone, munitions spéciales, Recharge longue) non modélisée ; à rapprocher des armes de siège AA si le combat naval est joué.
+

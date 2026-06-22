@@ -43,6 +43,13 @@
 - [Voir aussi](#voir-aussi)
 - [Implémente](#implémente)
 
+- **La Mer des Griffes (MDG)** <!-- MDG-INTEGRATION -->
+- **Activités en mer (MDG ch.15)** — 1 Activité/Personnage par semaine de 8 jours à bord ; règles d'interlude *Argent à gaspiller / Avec le pouvoir / Amélioration elfique* suspendues ; liste LDB/AA réalisable ; *Semer la dissension* contre les officiers = −2d10 Moral.
+- **Commerce d'opportunité** — investir jusqu'à la valeur d'Encombrement libre en CO ; Test étendu de Marchandage Complexe (−10), 10 DR, 3 tentatives ; gains −tout / −moitié / +10 % / +20 %.
+- **Cartographie** — Métier (Cartographe) Complexe (−10), 2 ports ; carte = DR en CO + 2 DR d'Orientation ; option Planque (découverte sur 50 ou moins).
+- **Entraînement d'équipage** — Commandement Difficile (−20) + Compétence Difficile (−20) ; +DR(Commandement) à l'équipage PNJ, plafonné aux Augmentations de l'instructeur ; 2 pistoles d'argent/membre.
+- **Entretien du navire** — au port (mer −20, chantier +20) ; Métier (Charpentier/Constructeur) Intermédiaire pour l'Usure, Difficile (−20) pour les Critiques ; pièces détachées = Taille du navire, 2 Enc/5 Blessures réparées.
+
 ---
 
 ## Cadre général « Entre deux aventures »
@@ -623,3 +630,117 @@ Requiert accès à un lieu de repos (hospice, monastère, temple). Contexte : su
 | Activités de Bataille (ADE II) | — | Non implémenté |
 | Activités de Voyage (EDOC) | `src/state/travelFlow.ts` (voyage général) | Partiellement — flux voyage sans Activités EDOC individuelles |
 | Faveurs (Mineure/Majeure/Importante) | — | Non implémenté |
+
+---
+
+<!-- MDG-INTEGRATION -->
+
+## Activités en mer — MDG ch.15
+
+**Source :** MDG 15 l.17, MDG 15 l.266-272.
+
+Cadre spécifique aux **longs voyages maritimes** : les Activités s'intercalent dans la boucle de voyage (vitesse du navire, Humeur de Manann, événements de bord tous les 1d10 jours) au rythme d'**une Activité par semaine complète passée à bord**.
+
+> « Pour chaque semaine complète de voyage, une Activité à bord peut être entreprise. » — `MDG 15 l.17`
+
+Le détail : chaque Personnage dispose d'**une Activité par semaine de 8 jours** de voyage. Ces Activités, parce qu'elles se déroulent en mer, **échappent aux règles d'interlude habituelles** *Argent à gaspiller*, *Avec le pouvoir*… et *Amélioration elfique*.
+
+> « Pour chaque semaine (8 jours) de voyage en mer, chaque Personnage a l'occasion d'effectuer une Activité. Comme elles ont lieu sur les flots, ces Activités ne sont pas soumises aux règles *Argent à gaspiller*, *Avec le pouvoir*… et *Amélioration elfique* (voir page de **WFJDR**, page 195). » — `MDG 15 l.268`
+
+**Activités LDB/AA réalisables à bord** (sous réserve d'installations et d'instructeurs adaptés) : *Apprentissage particulier, Artisanat, Entraînement, Entraînement au combat, Invention !, Recherche de savoir, Semer la dissension*, plus toutes les Activités d'entraînement du supplément *Aux Armes !*.
+
+> « Les Activités suivantes peuvent être entreprises, à condition que des installations et des instructeurs adaptés soient disponibles : *Apprentissage particulier, Artisanat, Entraînement, Entraînement au combat, Invention !, Recherche de savoir, Semer la dissension* et toutes les Activités impliquant un entraînement du supplément **Aux Armes !**. » — `MDG 15 l.270`
+
+**Cas particulier — *Semer la dissension* à bord** : une Activité *Semer la dissension* réussie et **dirigée contre les officiers du navire** coûte **2d10 de Moral** à l'équipage.
+
+> « Une Activité *Semer la dissension* réussie cause une perte de 2d10 de Moral si elle est dirigée contre les officiers du navire. » — `MDG 15 l.272`
+
+À ces Activités importées s'ajoutent **quatre Activités propres à la mer** (ci-dessous) : *Commerce d'opportunité*, *Cartographie*, *Entraînement d'équipage* et *Entretien du navire*.
+
+**Voir aussi** : [Activités Répandues (LDB 23)](#activités-répandues-ldb-23) (Apprentissage particulier, Artisanat, Entraînement, Invention !), [Activités de Classe (LDB 23)](#activités-de-classe-ldb-23) (Recherche de savoir, Semer la dissension, Entraînement au combat), [Activités de Guerrier — AA Annexe II](#activités-de-guerrier--aa-annexe-ii), [Commerce d'opportunité (en mer)](#commerce-dopportunité-en-mer), [Cartographie (Activité en mer)](#cartographie-activité-en-mer), [Entraînement d'équipage](#entraînement-déquipage), [Entretien du navire](#entretien-du-navire).
+
+**Implémente** : (non implémenté) — voyage maritime longue durée et Activités à bord absents de `src/state/travelFlow.ts` (voyage terrestre jour par jour uniquement).
+
+---
+
+## Commerce d'opportunité (en mer)
+
+**Source :** MDG 15 l.274-286.
+
+Activité de spéculation rapide lors d'une escale appropriée. Le Personnage **investit jusqu'à l'équivalent en couronnes d'or de la valeur d'Encombrement disponible et non surchargé** de son navire, puis résout un **Test étendu de Marchandage Complexe (−10) nécessitant 10 DR, en au maximum trois tentatives**.
+
+> « Vous pouvez investir jusqu'à l'équivalent de la valeur totale d'Encombrement disponible et non surchargé de votre bateau en couronnes d'or. Effectuez un Test étendu de **Marchandage Complexe (–10)** nécessitant 10 DR et autorisant jusqu'à trois tentatives. » — `MDG 15 l.276`
+
+| Résultat du Test étendu | Conséquences |
+|-------------------------|--------------|
+| **Échec de 6 DR** | Vous perdez toutes les couronnes d'or investies. |
+| **Échec** | Vous récupérez la moitié des couronnes investies. |
+| **Succès** | Vous récupérez toutes les couronnes d'or investies **+10 %**. |
+| **Succès de 6 DR** | Vous récupérez toutes les couronnes d'or investies **+20 %**. |
+
+*Exemple verbatim* : « vous disposez de 200 points d'Encombrement disponibles sur votre bateau, donc vous investissez 200 couronnes d'or, puis vous effectuez vos 3 tentatives et vous réussissez. Vous gagnez 220 couronnes d'or. » (`MDG 15 l.286`)
+
+**Voir aussi** : [Activités en mer — MDG ch.15](#activités-en-mer--mdg-ch15), [`economie.md`](economie.md) (Marchandage, couronnes d'or, Encombrement).
+
+**Implémente** : (non implémenté).
+
+---
+
+## Cartographie (Activité en mer)
+
+**Source :** MDG 15 l.288-292.
+
+Dessiner une carte revendable et utile à l'orientation. **Test de Métier (Cartographe) Complexe (−10)** en désignant **deux ports**. En cas de succès, la carte vaut en CO le **nombre de DR obtenus** et accorde **+2 DR aux Tests d'Orientation** lorsqu'on voyage entre les deux ports désignés.
+
+> « Effectuez un Test de **Métier (Cartographe) Complexe (–10)** et désignez deux ports. En cas de succès, vous produisez une carte ayant une valeur en CO égale au nombre de DR obtenus sur le Test. Quand vous voyagez entre les deux ports désignés, la carte fournit +2 DR sur les Tests d'Orientation. » — `MDG 15 l.290`
+
+**Option Planque** : pendant la confection de la carte, on peut tenter **gratuitement** l'Activité *Opérations bancaires : Planque* pour cacher un butin à un endroit indiqué sur la carte. Le trésor est sûr tant qu'on conserve la carte, mais si elle tombe en de mauvaises mains, le butin est **découvert sur un 50 ou moins** (au lieu du 10 ou moins habituel) au lancer d'1d100.
+
+> « si quelqu'un met la main dessus, il est découvert sur un 50 ou moins plutôt que le 10 ou moins habituel sur le lancer d'1d100. » — `MDG 15 l.292`
+
+**Voir aussi** : [Activités en mer — MDG ch.15](#activités-en-mer--mdg-ch15), [Opérations Bancaires](#opérations-bancaires) (Planque, découverte sur 10 ou moins), [Activités de Voyage — EDOC ch.5](#activités-de-voyage--edoc-ch5) (Établir des Cartes — équivalent terrestre).
+
+**Implémente** : (non implémenté).
+
+---
+
+## Entraînement d'équipage
+
+**Source :** MDG 15 l.294-300.
+
+Former l'équipage (PNJ) dans une **Compétence utile à la gestion du bateau**. **Test de Commandement Difficile (−20)** suivi d'un **Test Difficile (−20) dans la Compétence à enseigner**. En cas de succès, le score de l'équipage dans cette Compétence augmente du **nombre de DR obtenus au Test de Commandement** ; coût : **2 pistoles d'argent par membre entraîné** (frais et grog). Le score enseigné **ne peut dépasser les propres Augmentations** de l'instructeur, et **seuls les PNJ** profitent de l'Activité.
+
+> « Effectuez un Test de **Commandement Difficile (–20)** suivi d'un Test **Difficile (–20)** dans la Compétence à entraîner. En cas de succès, augmentez le score de l'équipage dans la Compétence que vous lui avez apprise d'un nombre égal au nombre de DR obtenus sur le Test de Commandement et dépensez 2 pistoles d'argent en frais et en grog de félicitations par membre de l'équipage entraîné. » — `MDG 15 l.296`
+
+> « Vous ne pouvez pas augmenter un score de Compétence au-delà de vos propres Augmentations dans cette Compétence. Seuls les PNJ peuvent gagner des Augmentations grâce à cette Activité. » — `MDG 15 l.296`
+
+*Exemple verbatim* : « un Personnage possédant 9 Augmentations dans Projectiles (Poudre noire) pourrait servir d'instructeur à un équipage de 30 personnes. Il obtient 5 DR sur son Test de Commandement et réussit son Test de Projectiles (Poudre noire), ce qui fait grimper la Compétence Projectiles (Poudre noire) de l'équipage de 5 Augmentations et lui fait payer 60 pistoles d'argent. » (`MDG 15 l.298`)
+
+**Voir aussi** : [Activités en mer — MDG ch.15](#activités-en-mer--mdg-ch15), [Entraînement](#entraînement) (Activité d'Augmentation LDB 23).
+
+**Implémente** : (non implémenté).
+
+---
+
+## Entretien du navire
+
+**Source :** MDG 15 l.302-306.
+
+Réparer l'usure du vaisseau (planches pourries, voiles, coque incrustée). **De préférence au port** ; en mer, **pénalité supplémentaire de −20** ; un port doté de vastes installations de construction navale donne **+20**.
+
+**Usure générale** — **Test de Métier (Charpentier *ou* Constructeur de navires) Intermédiaire (+0)**. Succès → dépenser un Encombrement de **pièces détachées de navire égal à la Taille du navire** et retirer les effets de l'événement de bord *Usure*.
+
+> « effectuez un Test de **Métier (Charpentier** *ou* **Constructeur de navires) Intermédiaire (+0)**. En cas de succès, vous dépensez un nombre de points d'Encombrement de pièces détachées de navire égal à la Taille de votre navire et vous retirez les effets de l'événement de bord Usure. » — `MDG 15 l.304`
+
+**Réparer les Blessures du navire** : **2 points d'Encombrement de pièces détachées par tranche de 5 Blessures** restaurées.
+
+> « vous pouvez les réparer pour un coût de 2 points d'Encombrement de pièces détachées de navire par tranche de 5 Blessures restaurées. » — `MDG 15 l.306`
+
+**Réparer une Blessure Critique** : **Test de Métier (Charpentier *ou* Constructeur de navires) Difficile (−20)**. Succès → dépenser un Encombrement de pièces détachées **et de bois égal à la Taille du navire** et retirer la Blessure Critique.
+
+> « Si votre navire a subi des Blessures Critiques, vous pouvez les réparer en effectuant un Test de **Métier (Charpentier** *ou* **Constructeur de navires) Difficile (–20)**. » — `MDG 15 l.306`
+
+**Voir aussi** : [Activités en mer — MDG ch.15](#activités-en-mer--mdg-ch15), [Artisanat](#artisanat) (Métier, Test étendu).
+
+**Implémente** : (non implémenté).
+

@@ -4,7 +4,7 @@
 > par une fiche `docs/raw/`) ou explicitement **hors-règle** (narratif). Un chapitre `⬜` = trou.
 > Recourir à la source pour un point = un défaut de l'Atlas à corriger ici. Régénéré par
 > `node scripts/raw/coverage.mjs`.
-**Couverture (profondeur) : ✅ 114 couverts · 🟡 4 effleurés · ⬜ 0 trous** sur 118 chapitres-règles (hors artefacts OCR). ✅ = une fiche propriétaire le traite (≥3 refs) ; 🟡 = seulement cité en renvoi ; ⬜ = absent. Par livre : LDB ✅71·🟡2·⬜0 · ADE I ✅2·🟡0·⬜0 · ADE II ✅6·🟡0·⬜0 · AA ✅1·🟡0·⬜0 · ZI ✅1·🟡0·⬜0 · Middenheim ✅5·🟡0·⬜0 · EDO ✅3·🟡0·⬜0 · EDOC ✅3·🟡1·⬜0 · T2 ✅1·🟡0·⬜0 · T2C ✅7·🟡1·⬜0 · T3 ✅4·🟡0·⬜0 · Altdorf ✅3·🟡0·⬜0 · Ubersreik ✅2·🟡0·⬜0 · NADAJ ✅5·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 124 couverts · 🟡 4 effleurés · ⬜ 0 trous** sur 128 chapitres-règles (hors artefacts OCR). ✅ = une fiche propriétaire le traite (≥3 refs) ; 🟡 = seulement cité en renvoi ; ⬜ = absent. Par livre : LDB ✅71·🟡2·⬜0 · ADE I ✅2·🟡0·⬜0 · ADE II ✅6·🟡0·⬜0 · AA ✅1·🟡0·⬜0 · ZI ✅1·🟡0·⬜0 · Middenheim ✅5·🟡0·⬜0 · EDO ✅3·🟡0·⬜0 · EDOC ✅3·🟡1·⬜0 · T2 ✅1·🟡0·⬜0 · T2C ✅7·🟡1·⬜0 · T3 ✅4·🟡0·⬜0 · Altdorf ✅3·🟡0·⬜0 · Ubersreik ✅2·🟡0·⬜0 · NADAJ ✅5·🟡0·⬜0 · MDG ✅10·🟡0·⬜0.
 
 
 ## LDB — ✅ 71 · 🟡 2 · ⬜ 0
@@ -20,23 +20,23 @@
 | 06 | Classes | ✅ | 6 (carrieres.md ×3) |
 | 07 | Carrières | ✅ | 69 (avancement.md ×45) |
 | 08 | Statut | ✅ | 42 (carrieres.md ×22) |
-| 09 | Compétences | ✅ | 150 (competences.md ×139) |
-| 10 | Talents | ✅ | 57 (tests.md ×36) |
-| 11 | *(artefact OCR)* | 🟡 | 2 (equipement.md ×1) |
-| 12 | Tests | ✅ | 47 (tests.md ×41) |
+| 09 | Compétences | ✅ | 146 (competences.md ×139) |
+| 10 | Talents | ✅ | 62 (tests.md ×36) |
+| 11 | *(artefact OCR)* | 🟡 | 4 (reconciliation.md ×2) |
+| 12 | Tests | ✅ | 45 (tests.md ×41) |
 | 13 | Combat | ✅ | 146 (combat.md ×130) |
-| 14 | *(artefact OCR)* | ✅ | 142 (combat.md ×123) |
-| 15 | Déplacement | ✅ | 110 (combat.md ×77) |
+| 14 | *(artefact OCR)* | ✅ | 140 (combat.md ×123) |
+| 15 | Déplacement | ✅ | 95 (combat.md ×77) |
 | 16 | États | ✅ | 54 (etats.md ×30) |
 | 17 | Destin et Résistance | ✅ | 53 (destin.md ×27) |
-| 18 | Traumatisme | ✅ | 169 (traumatisme.md ×90) |
+| 18 | Traumatisme | ✅ | 136 (traumatisme.md ×90) |
 | 19 | Corruption | ✅ | 32 (corruption.md ×27) |
 | 20 | Maladies et infections | ✅ | 30 (maladies.md ×30) |
-| 21 | Psychologie | ✅ | 59 (psychologie.md ×36) |
+| 21 | Psychologie | ✅ | 60 (psychologie.md ×36) |
 | 22 | Événements | ✅ | 6 (activites.md ×5) |
 | 23 | Activités | ✅ | 36 (activites.md ×36) |
 | 24 | Les dieux | ✅ |  |
-| 25 | Les cultes | ✅ | 4 (religion.md ×3) |
+| 25 | Les cultes | ✅ | 3 (religion.md ×3) |
 | 26 | Le culte de Manaan, dieu de la mer | ✅ |  |
 | 27 | Le culte de Morr, Dieu de la Mort | ✅ |  |
 | 28 | Le culte de Myrmidia, déesse de la Stratégie | ✅ |  |
@@ -51,16 +51,16 @@
 | 37 | Les dieux elfes | ✅ |  |
 | 38 | Les dieux halflings | ✅ |  |
 | 39 | Les dieux du Chaos | ✅ |  |
-| 40 | Les prières | ✅ | 53 (etats.md ×22) |
+| 40 | Les prières | ✅ | 45 (etats.md ×22) |
 | 41 | Bénédictions | ✅ | 10 (religion.md ×9) |
 | 42 | Miracles | ✅ | 2 (maladies.md ×1) |
 | 43 | Miracles de Rhya | ✅ |  |
 | 44 | L’Aethyr | 🟡 | 2 (magie.md ×2) |
 | 45 | *(artefact OCR)* | ➖ | |
-| 46 | Les règles magiques | ✅ | 106 (magie.md ×55) |
+| 46 | Les règles magiques | ✅ | 97 (magie.md ×55) |
 | 47 | Listes des sorts | ✅ | 3 (magie.md ×3) |
 | 48 | Magie des Couleurs | ✅ | 24 (magie.md ×20) |
-| 49 | Sorcellerie | ✅ | 8 (magie.md ×5) |
+| 49 | Sorcellerie | ✅ | 5 (magie.md ×5) |
 | 50 | Magie noire | ✅ |  |
 | 51 | Magie du Chaos | ✅ | 14 (deplacement.md ×14) |
 | 52 | configuration du terrain | ➖ hors-règle | |
@@ -71,10 +71,10 @@
 | 57 | La monnaie | ✅ | 1 (economie.md ×1) |
 | 58 | *(artefact OCR)* | ➖ | |
 | 59 | Faire son marché | ✅ | 8 (economie.md ×8) |
-| 60 | Fabrication | ✅ | 33 (economie.md ×23) |
+| 60 | Fabrication | ✅ | 27 (economie.md ×23) |
 | 61 | Encombrement | ✅ | 40 (equipement.md ×18) |
 | 62 | Les armes | ✅ | 125 (combat.md ×106) |
-| 63 | Armures | ✅ | 53 (combat.md ×36) |
+| 63 | Armures | ✅ | 44 (combat.md ×36) |
 | 64 | Sacs et contenants | ✅ |  |
 | 65 | Vêtements et accessoires | ✅ |  |
 | 66 | Nourriture, boisson et hébergement | ✅ |  |
@@ -83,11 +83,11 @@
 | 69 | Outils professionnels et Ateliers | ✅ |  |
 | 70 | Animaux et véhicules | ✅ |  |
 | 71 | Drogues et poisons | ✅ | 2 (equipement.md ×2) |
-| 72 | Herbes et potions | ✅ | 10 (equipement.md ×8) |
+| 72 | Herbes et potions | ✅ | 8 (equipement.md ×8) |
 | 73 | Prothèses | ✅ | 5 (equipement.md ×5) |
-| 74 | Possessions diverses | ✅ | 13 (equipement.md ×7) |
-| 75 | Mercenaires | ✅ | 5 (equipement.md ×5) |
-| 76 | Point d’Impact des Créatures | ✅ | 64 (combat.md ×30) |
+| 74 | Possessions diverses | ✅ | 8 (equipement.md ×7) |
+| 75 | Mercenaires | ✅ | 6 (equipement.md ×5) |
+| 76 | Point d’Impact des Créatures | ✅ | 56 (combat.md ×30) |
 | 77 | Les populations du Reikland | ✅ | 5 (combat.md ×5) |
 | 78 | Les Bêtes du Reikland | ✅ |  |
 | 79 | Les bêtes monstrueuses du Reikland | ✅ |  |
@@ -139,7 +139,7 @@
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | WH - V4 - Le zoo impérial | ✅ | 33 (combat.md ×31) |
+| 01 | WH - V4 - Le zoo impérial | ✅ | 34 (combat.md ×31) |
 
 ## Middenheim — ✅ 5 · 🟡 0 · ⬜ 0
 
@@ -331,3 +331,25 @@
 | 15 | _GoBack | ➖ hors-règle | |
 | 16 | JEUX DE TAVERNE | ✅ | 17 (tests.md ×14) |
 | 17 | *(artefact OCR)* | ➖ | |
+
+## MDG — ✅ 10 · 🟡 0 · ⬜ 0
+
+| Ch. | Titre | État | refs (propriétaire) |
+|---|---|---|---|
+| 00 | Index | ➖ hors-règle | |
+| 01 | La Mer des Griffes | ➖ hors-règle | |
+| 02 | La Bretonnie et le Wasteland | ✅ | 4 (magie.md ×4) |
+| 03 | La côte du Nordland | ➖ hors-règle | |
+| 04 | La côte de l'Ostland | ➖ hors-règle | |
+| 05 | Le Pays des Trolls | ➖ hors-règle | |
+| 06 | Kraka Ravnsvake | ➖ hors-règle | |
+| 07 | La côte des Skaelings | ✅ | 24 (carrieres.md ×24) |
+| 08 | La côte des Bjornlings | ➖ hors-règle | |
+| 09 | La classe Côtier | ✅ | 32 (carrieres.md ×32) |
+| 10 | Le culte de Manann | ✅ | 2 (religion.md ×2) |
+| 11 | Le culte de Stromfels | ✅ | 1 (religion.md ×1) |
+| 12 | Navires et construction navale | ✅ | 138 (equipement.md ×60) |
+| 13 | Navigation maritime | ✅ | 125 (combat.md ×83) |
+| 14 | Navigation à bord de grands vaisseaux | ✅ | 36 (maladies.md ×19) |
+| 15 | Longs voyages | ✅ | 44 (deplacement.md ×22) |
+| 16 | Bestiaire | ✅ | 66 (catalogue-creatures.md ×56) |

@@ -25,6 +25,12 @@
 - [Implémente](#implemente)
 - [Voir aussi](#voir-aussi)
 
+- **La Mer des Griffes (MDG)** <!-- MDG-INTEGRATION -->
+- Maladies à bord — contagion et tonneaux contaminés (MDG)
+- Mal de mer (maladie MDG)
+- Scorbut (maladie de privation MDG)
+- Provisions et privations en mer — eau, rations, faim (MDG)
+
 ---
 
 ## Cycle de vie d'une maladie
@@ -696,3 +702,113 @@ Source du choix : `LDB 20 l.33-35` (« Utiliser les maladies »).
 - `src/data/maladies.json` — données app-owned (9 maladies LDB 20 ; T2C Colique/Vers de Carie/Vers du Reik NON ajoutés)
 - `Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/16 - CHAPITRE 14 - Maladies transmises par l'eau.md` — maladies aquatiques + parasites + tableaux d'exposition
 - `Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/04 - CHAPITRE 2 - Les herbes et leurs usages.md` — herbes médicinales (Gesundheit, Racine des Tombes, Rouille Mouchetée)
+
+---
+
+<!-- MDG-INTEGRATION -->
+
+## Maladies à bord — contagion et tonneaux contaminés (MDG)
+
+**Sources RAW** : `MDG 14 l.204-209`
+
+La promiscuité à bord et la mauvaise qualité de la nourriture et de la boisson font qu'une maladie se répand vite dans un équipage. Deux règles de contagion spécifiques au navire s'ajoutent au cycle de maladie standard du LDB :
+
+- **Symptôme toux et éternuements à bord** : si un membre d'équipage souffre d'une maladie comportant le symptôme *toux et éternuements*, **tout le monde à bord y est exposé** (et non seulement l'environnement immédiat comme dans la règle générale du LDB chap. 20).
+- **Tonneau d'eau contaminé** : un membre d'équipage atteint de *peste noire*, de *flux sanglant*, de *courante galopante* ou de *vérole urticante* qui boit dans un tonneau d'eau doit effectuer un Test de **Résistance Intermédiaire (+0)** ; en cas d'échec, le tonneau devient une **source de contagion** pour quiconque y boit ensuite. La *petite bière* échappe à cette règle.
+
+> « Si un membre d'équipage souffre d'une maladie comportant le symptôme toux et éternuements, tout le monde à bord y est exposé. » — `MDG 14 l.208`
+
+> « Si un membre d'équipage souffrant de la *peste noire*, du *flux sanglant*, de la *courante galopante* ou de la vé*role urticante* boit dans un tonneau d'eau, il doit effectuer un Test de **Résistance Intermédiaire (+0)**. En cas d'échec, le tonneau devient une source de contagion pour quiconque boit dedans ensuite. La *petite bière* n'est pas soumise à cette règle. » — `MDG 14 l.209`
+
+**Voir aussi** : [Symptômes — 12 kinds LDB 20](#symptomes--12-kinds-ldb-20) (Toux et Éternuements) ; [Litanie de la Pestilence — 9 maladies LDB](#litanie-de-la-pestilence--9-maladies-ldb) (peste noire / flux sanglant / courante galopante / vérole urticante) ; [Provisions et privations en mer — eau, rations, faim (MDG)](#provisions-et-privations-en-mer--eau-rations-faim-mdg) (petite bière) ; `docs/raw/etats.md`.
+
+**Implémente** : (non implémenté) — contagion « à bord » et contamination de tonneau spécifiques à la vie en mer ; le cycle de maladie générique vit dans `src/engine/disease.ts` (`contagiousDiseases`, `contractDisease`).
+
+---
+
+## Mal de mer (maladie MDG)
+
+**Sources RAW** : `MDG 14 l.211-222`
+
+Maladie spécifique de la navigation. La plupart des gens en souffrent à leur première sortie en mer, mais s'y accoutument à force de naviguer ; les **elfes y sont immunisés** (au grand agacement des marins nains). Sa Contraction repose sur deux déclencheurs (premier voyage ; mauvais temps), et sa Durée distingue **deux formes** (manque d'expérience ; océan déchaîné / autre effet temporaire) par la fréquence des Tests.
+
+**Contraction** — les Personnages elfes sont immunisés ; pour les autres, éviter le mal de mer exige de réussir :
+- un Test de **Résistance Complexe (−10)** lors d'un **premier** voyage en mer ;
+- un Test de **Résistance Intermédiaire (+0)** par **mauvais temps** (Vent violent ou plus).
+
+**Durée** :
+- forme « manque d'expérience » : Test de **Résistance Intermédiaire (+0)** **après chaque jour** passé en mer ; un succès rend le Personnage définitivement immunisé à cette forme ;
+- forme « océan déchaîné / effet temporaire » : Test de **Résistance Intermédiaire (+0)** **par heure**.
+
+**Symptômes :** malaise, nausée.
+
+> « les Personnages elfes sont immunisés au mal de mer. » — `MDG 14 l.215`
+
+> « Un Test de **Résistance Complexe (-10)** s'ils entreprennent pour la première fois un voyage en mer » — `MDG 14 l.217`
+
+> « Pour le mal de mer parce que l'océan est déchaîné ou à cause d'un autre effet temporaire, effectuez un Test de **Résistance Intermédiaire (+0)** par heure. » — `MDG 14 l.220`
+
+> « **Symptômes :** malaise, nausée. » — `MDG 14 l.222`
+
+**Voir aussi** : [Symptômes — 12 kinds LDB 20](#symptomes--12-kinds-ldb-20) (Malaise → Exténué, Nausée → Sonné) ; [Cycle de vie d'une maladie](#cycle-de-vie-dune-maladie) ; `docs/raw/etats.md`.
+
+**Implémente** : (non implémenté) — maladie absente de `maladies.json` ; symptômes *malaise* / *nausée* déjà modélisés (`src/engine/disease.ts` · `diseaseCharPenalties`, `combatFlow.ts`). À ajouter si un scénario maritime est joué (immunité elfe ; contraction par jour/heure ; immunité acquise sur succès).
+
+---
+
+## Scorbut (maladie de privation MDG)
+
+**Sources RAW** : `MDG 14 l.224-234`
+
+Maladie de **privation prolongée** qui frappe ceux qui restent longtemps en mer **sans nourriture correcte**. Progression narrative : fatigue / faiblesse / ennui, puis saignements spontanés et sang trop fluide (plaies ouvertes), enfin fragilisation des os et chute des dents.
+
+**Contraction :** pour **chaque mois passé sans nourriture correcte**, le Personnage effectue un Test de **Résistance Intermédiaire (+0)** ; en cas d'échec, il contracte le scorbut. **Mitigation** — s'il mange régulièrement de la **soupe de chou fermenté**, le Test devient **Résistance Facile (+40)** pour ne pas contracter la maladie.
+
+**Durée :** persiste jusqu'à **1d10 jours après avoir recommencé à manger régulièrement des fruits et des légumes frais** (la durée ne s'écoule pas tant que le régime n'est pas corrigé).
+
+**Symptômes :** blessé, intoxication alimentaire, malaise, nausée. En outre, **1 % de chances de perdre une dent chaque jour**.
+
+> « pour chaque mois passé sans nourriture correcte, le Personnage doit effectuer un Test de **Résistance Intermédiaire (+0)**. En cas d'échec, il a contracté le scorbut. Si le Personnage mange régulièrement de la soupe de chou fermenté, il effectue un Test de **Résistance Facile (+40)**  pour ne pas contracter la maladie. » — `MDG 14 l.230`
+
+> « la maladie persiste jusqu'à 1d10 jours après avoir recommencé à manger régulièrement des fruits et des légumes frais. » — `MDG 14 l.232`
+
+> « **Symptômes :** blessé, intoxication alimentaire, malaise, nausée. 1 % de chances de perdre une dent chaque jour. » — `MDG 14 l.234`
+
+**Voir aussi** : [Provisions et privations en mer — eau, rations, faim (MDG)](#provisions-et-privations-en-mer--eau-rations-faim-mdg) (soupe de chou fermenté ; biscuits de mer ≠ nourriture correcte) ; [Symptômes — 12 kinds LDB 20](#symptomes--12-kinds-ldb-20) (Blessé, Intoxication Alimentaire, Malaise, Nausée) ; `docs/raw/etats.md`.
+
+**Implémente** : (non implémenté) — maladie absente de `maladies.json`. Spécificités à modéliser : Contraction mensuelle liée au régime, mitigation +40 par soupe de chou fermenté, durée gelée tant que le régime reste mauvais, 1 % de perte de dent/jour. Lien avec la Faim/rations : `src/engine/provisions.ts`.
+
+---
+
+## Provisions et privations en mer — eau, rations, faim (MDG)
+
+**Sources RAW** : `MDG 14 l.236-271`, `MDG 14 l.247-252`, `MDG 15 l.169-170`
+
+Planifier l'approvisionnement est vital pour un long voyage : l'équipage fournit un dur labeur et a besoin de beaucoup d'eau et de nourriture. Acheter n'importe quelle nourriture du marché risque le désastre, car elle **pourrit vite** ; seules les provisions ci-dessous sont prévues pour tenir en mer.
+
+**Consommation et eau** — un tonneau d'eau douce contient **145 litres** ; un membre d'équipage **boit 2 à 3 litres d'eau par jour**. La **petite bière** (un tonneau d'eau + un tonnelet de bière) peut remplacer l'eau : si diluée, elle hydrate et **aide à empêcher la contamination de la boisson** (et échappe à la règle du tonneau contaminé, cf. § Maladies à bord).
+
+> « Un tonneau contient 145 litres d'eau. Un membre d'équipage boit 2 à 3 litres d'eau par jour. » — `MDG 14 l.242`
+
+**Qualité du régime et famine** — les **biscuits de mer** suffisent à **éviter la famine**, mais constituent un **régime très médiocre** (ils ne valent pas une « nourriture correcte » pour le scorbut). Hiérarchie des rations : biscuits de mer < nourriture préservée (viande salée, légumes confits) < soupe de chou fermenté (prévient le scorbut, cf. § Scorbut).
+
+> « Les biscuits de mer suffisent à éviter la famine à bord, mais c'est un régime très médiocre. » — `MDG 14 l.263`
+
+**Table des provisions** (`MDG 14 l.247-252`) — coût / Enc / disponibilité :
+
+| Objet | Coût | Enc | Disponibilité |
+|---|---|---|---|
+| Tonneau d'eau douce | 8/6 | 9 | Commune |
+| Tonneau de petite bière | 11/– | 9 | Commune |
+| Ration de biscuits de mer (1 jour) | 1/– | 0 | Commune |
+| Ration de nourriture préservée (1 jour) | 2/– | 0 | Commune |
+| Ration de soupe de chou fermenté (1 jour) | 3/– | 0 | Limitée |
+
+**Avarie des provisions** — pendant un long voyage, la nourriture peut moisir ou être infestée par la vermine : l'événement de bord **Pénurie de nourriture** gâte alors **la moitié des provisions à bord**.
+
+> « Pénurie de nourriture. La nourriture a moisi ou a été infestée par de la vermine pendant le voyage. La moitié des provisions à bord<br>sont gâtées. » — `MDG 15 l.169-170`
+
+**Voir aussi** : [Scorbut (maladie de privation MDG)](#scorbut-maladie-de-privation-mdg) (soupe de chou fermenté ; biscuits ≠ nourriture correcte) ; [Maladies à bord — contagion et tonneaux contaminés (MDG)](#maladies-a-bord--contagion-et-tonneaux-contamines-mdg) (tonneau d'eau / petite bière) ; `docs/raw/voyage.md` (le cas échéant). Hors domaine : modificateurs de Moral liés à la nourriture (biscuits seuls / ration insuffisante) — `MDG 14 l.166`, `MDG 14 l.171`.
+
+**Implémente** : (non implémenté pour le contexte maritime) — règle de Faim/rations générique dans `src/engine/provisions.ts` (consommation/jour, Tests, malus). Spécificités MDG à ajouter si un voyage en mer est joué : 2-3 L d'eau/jour, hiérarchie de rations, biscuits = anti-famine mais régime médiocre, avarie « moitié des provisions ».
+

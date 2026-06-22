@@ -27,6 +27,30 @@
 - [Voir aussi](#voir-aussi)
 - [Implémente](#implemente)
 
+- **La Mer des Griffes (MDG)** <!-- MDG-INTEGRATION -->
+- Navigation maritime — Tests de Navigation (MDG)
+- Progression d'un navire (MDG)
+- Forcer le rythme et épuisement (MDG)
+- Manœuvres et vitesses maximum (MDG)
+- Salissures de coque (MDG)
+- Météo de la Mer des Griffes (MDG)
+- Vents (MDG)
+- Orientation et phares (MDG)
+- Course-poursuite navale (MDG)
+- Collisions de navires (MDG)
+- Périls en mer (MDG)
+- Détroits et tourbillons (MDG)
+- Réparer un navire (MDG)
+- Tests d'équipage (MDG)
+- Moral de l'équipage (MDG)
+- Maladies et provisions en mer (MDG)
+- Provisions et équipement de navigation (MDG)
+- Longs voyages : résolution et vitesse (MDG)
+- Humeur de Manann et événements en mer (MDG)
+- Activités en mer (MDG)
+- Entretien du navire (Activité en mer) (MDG)
+- Commerce maritime (MDG)
+
 ---
 
 ## Tableau des Mouvements
@@ -540,3 +564,421 @@ Si un participant a un **M supérieur** aux autres, il gagne autant de **DR bonu
 | Endurance monture (allures) | EDOC ch.4 : BE heures au trot, ½ BE au galop | Non implémenté (combat uniquement) | Hors périmètre actuel. |
 | Tableau Incidents de Monte | EDOC ch.4 | Non implémenté | Hors périmètre actuel. |
 | Véhicules (Problèmes de Véhicule) | EDOC ch.4 | Non implémenté | Hors périmètre actuel. |
+
+---
+
+<!-- MDG-INTEGRATION -->
+
+## Navigation maritime — Tests de Navigation (MDG)
+
+**Source :** MDG 13 l.17-20, l.22-24
+
+« Test de Navigation » est le terme générique pour les Tests de Compétence assurant qu'un navire progresse et manœuvre correctement. La Compétence dépend du mode de propulsion : **Voile** (Personnage à la barre) pour un voilier, **Ramer** (rameur au score le plus élevé, les autres en Soutien) pour un bateau à avirons. **Savoir (Océans)** donne un bonus sur les Tests de Navigation égal au **premier chiffre** du score (Savoir (Océans) 36 → +3) ; ce bonus ne s'applique que sur l'océan. Contrairement à la navigation fluviale, sans la Compétence **Voile** on ne peut piloter un voilier en mer, et des Tests sont obligatoires pour progresser.
+
+Le **Personnage à la barre** est celui le mieux placé pour influencer le mouvement du vaisseau au moment du Test ; il n'est pas forcément littéralement à la barre (gouvernail, voiles, avirons). Il peut recevoir du **Soutien**.
+
+> « *Tests de Navigation* » est un terme générique pour désigner les Tests de Compétence nécessaires afin de s'assurer qu'un navire progresse sur son trajet et effectue ses manœuvres de manière appropriée. » — `MDG 13 l.17`
+
+Autres formes de propulsion : Propulsion à vapeur → **Métier (Ingénieur)** ; Bête captive → **Dressage** ; Roue à aubes → **Commandement** (coureurs consentants) ou **Intimidation** (non consentants) ; Magie → **Langue (Magick)**. `MDG 13 l.30-36`
+
+**Voir aussi :** [Progression d'un navire (MDG)](#progression-dun-navire-mdg), [Tests d'équipage (MDG)](#tests-dequipage-mdg), [`tests.md`](tests.md) (Soutien, Difficulté).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Progression d'un navire (MDG)
+
+**Source :** MDG 13 l.41-81
+
+Comme un personnage, un navire a un Attribut **Mouvement (M)** déterminant sa vitesse. Le Test de Navigation est comparé au tableau de Progression, l'effet modifiant le M utilisé pour le déplacement :
+
+| DR du Test | Effet |
+|---|---|
+| 4 ou plus | Vitesse maximale : déplacement de **M+2** |
+| 1 à 3 | Bonne progression : **M+1** |
+| –2 à 0 | Normal : **M** |
+| –3 à –4 | Lent : **M–1** |
+| –5 ou moins | Lutte : **½ M** (arrondi inférieur) |
+
+Vitesses de Mouvement (extrait) : M = mètres/Round = M×2 ; milles par Période de travail de 2 h ≈ M (M1→2, M5→8, M10→15) ; par Période de 8 h ≈ M×... (M1→8, M5→32, M10→60). `MDG 13 l.47-60`
+
+Les **Périodes de travail** sont des laps liés à la fatigue : rameurs ≈ **2 h** avant Test contre l'épuisement, voiles/barre ≈ **8 h**. `MDG 13 l.62`
+
+Le MJ fixe la fréquence et la difficulté des Tests selon les conditions : Mer calme → **Accessible (+20)**, 1 Test/Période de travail ; Eaux agitées → **Intermédiaire (+0)**, 1/Période ; Fort vent et grosses vagues / côte rocailleuse → **Complexe (–10)**, 1/heure ; côte rocailleuse + épais brouillard → **Difficile (–20)**, 1/heure ; Gueule du dragon en tempête → **Très Difficile (–30)**, 1/Round. `MDG 13 l.85-92`
+
+**Voir aussi :** [Navigation maritime — Tests de Navigation (MDG)](#navigation-maritime--tests-de-navigation-mdg), [Forcer le rythme et épuisement (MDG)](#forcer-le-rythme-et-épuisement-mdg), [Manœuvres et vitesses maximum (MDG)](#manœuvres-et-vitesses-maximum-mdg).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Forcer le rythme et épuisement (MDG)
+
+**Source :** MDG 13 l.95-111
+
+Un équipage peut tenter d'augmenter sa vitesse via un **Test de Voile ou de Ramer** (ce n'est PAS un Test de Navigation, donc Savoir (Océans) n'aide pas) :
+- **+1 M** : Voile **Très Difficile (–30)** ou Ramer **Difficile (–20)**.
+- **+2 M** : Voile n/a ; Ramer **Très Difficile (–30)**.
+
+Le bonus dure jusqu'à la prochaine Période de travail (8 h voiles, 2 h avirons) ou jusqu'au prochain Test de Navigation imposé par les circonstances.
+
+**Épuisement** : à la fin d'une Période de travail, chaque membre d'équipage maniant voiles/avirons réussit un **Test de Résistance Accessible (+20)** ou reçoit un État *Exténué*. S'ils ont Forcé le rythme, ce Test devient **Résistance Complexe (–10)**.
+
+> « À la fin d'une Période de travail, les membres d'équipage impliqués dans le maniement des voiles ou des avirons doivent réussir un Test de **Résistance Accessible (+20)** sous peine de recevoir un État *Exténué*. » — `MDG 13 l.111`
+
+**Voir aussi :** [Progression d'un navire (MDG)](#progression-dun-navire-mdg), [`etats.md`](etats.md) (Exténué).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Manœuvres et vitesses maximum (MDG)
+
+**Source :** MDG 13 l.113-142
+
+**Test de Manœuvre** : chaque fois qu'une manœuvre est nécessaire (éviter un obstacle, pointer les canons), le Personnage à la barre effectue un Test de Navigation modifié par la **Caractéristique Man** du bateau. C'est un type de Test de Navigation (tous les modificateurs de Navigation s'y appliquent), mais les facteurs propres aux Manœuvres ne s'appliquent qu'à elles.
+
+**Vitesse maximum** : un navire peut aller jusqu'à **M+4** sans risque. Au-delà, **Test d'Endurance** sous peine de Dégâts (tableau *Ça va lâcher, capitaine !*) :
+
+| Mouvement | Test de Résistance | Régularité | Dégâts |
+|---|---|---|---|
+| M+5 | Accessible (+20) | 1/heure | 1+X |
+| M+6 | Intermédiaire (+0) | 1/heure | 2+X |
+| M+7 | Complexe (–10) | 1/minute | 3+X |
+| M+8 | Difficile (–20) | 1/Round | 5+X |
+| M+9 ou plus | Très Difficile (–30) | 1/Round | 8+X |
+
+X = nombre de DR négatifs du Test de Résistance raté. `MDG 13 l.142`
+
+**Voir aussi :** [Progression d'un navire (MDG)](#progression-dun-navire-mdg), [Collisions de navires (MDG)](#collisions-de-navires-mdg), [`tests.md`](tests.md) (DR).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Salissures de coque (MDG)
+
+**Source :** MDG 13 l.144-159
+
+Sans entretien, un navire accumule algues, coquillages, tarets et xylophages. Pour chaque **semaine** en mer sans entretien, **Test de Résistance** pour le vaisseau ; chaque échec ajoute un niveau de Salissures :
+
+| Niveau | Effets | Réparation |
+|---|---|---|
+| 1 | –1 DR Manœuvres | 5 % du coût de base |
+| 2 | –1 DR Manœuvres, –1 M | 10 % |
+| 3 | –2 DR Manœuvres, –1 M | 15 % |
+| 4 | –2 DR Manœuvres, –2 M | 20 % |
+| 5 | –3 DR Manœuvres, –2 M, –1 DR tous Tests de Navigation | 25 % |
+
+Les petits navires peuvent être nettoyés par Compétences/Sorts/Miracles ou en les échouant ; un bateau de Taille Moyenne ou plus doit aller en **cale sèche** pour gratter sa coque. `MDG 13 l.150`
+
+**Voir aussi :** [Réparer un navire (MDG)](#réparer-un-navire-mdg), [Entretien du navire (Activité en mer) (MDG)](#entretien-du-navire-activité-en-mer-mdg).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Météo de la Mer des Griffes (MDG)
+
+**Source :** MDG 13 l.162-243
+
+Lancer 1d10 pour chaque aspect (Précipitations, Température, Visibilité, Vents) au tableau *Météo de la Mer des Griffes*. Scores de base = été ; **+2** en automne/printemps, **+4** en hiver. Mer plus chaude : –2 (min 1) sur Température et Visibilité.
+
+**Effets des Précipitations** (pont) : Légères → –10 Athlétisme/Escalade/Projectiles (Poudre noire) ; Abondantes → –20 à ces Tests + –10 Commandement/Orientation/Perception/Ramer/Voile ; Très abondantes → –30 / –20 / –10 sur tous les autres Tests. `MDG 13 l.189-200`
+
+**Température** : Caniculaire → Test **Résistance Intermédiaire (+0)** toutes les 2 h (échec = Exposition à la Chaleur), 4 L d'eau/jour sinon Soif ; Chaude → **Résistance Accessible (+20)** toutes les 4 h, 3 L/jour ; Médiane → aucun effet ; Froide → **Accessible (+20)** toutes les 4 h (Exposition au Froid) ; Glaciale → **Intermédiaire (+0)** toutes les 2 h. `MDG 13 l.207-225`
+
+**Visibilité** : Dégagé → rien ; Brume → –1 DR Projectiles/Orientation/Perception à la vue au-delà de 20 m ; Brouillard → –2 DR au-delà de 10 m ; Purée de pois → –3 DR au-delà de 5 m. `MDG 13 l.231-243`
+
+**Voir aussi :** [Vents (MDG)](#vents-mdg), [Orientation et phares (MDG)](#orientation-et-phares-mdg), [`etats.md`](etats.md) (Exposition).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Vents (MDG)
+
+**Source :** MDG 13 l.246-304
+
+Le vent affecte surtout la voile. **Rose des vents** (1d10) : 1-6 dominant (ouest sur la Mer des Griffes), 7 nord, 8 sud, 9 ouest, 10 est. La direction du vent comparée à celle du bateau donne un Vent de face, arrière ou latéral (bâbord/tribord). `MDG 13 l.250-270`
+
+Force du vent tirée au début, mise à jour à l'aube/midi/crépuscule/minuit (1d10, un 1 = changement d'un cran). **Effet du vent** (% avant la barre = voiles, après = autres moyens) :
+
+| Force | Vent arrière | Vent latéral | Vent de face |
+|---|---|---|---|
+| Calme plat | Encalminé | Encalminé | Encalminé |
+| Légère brise | +0/+0 | +0/+0 | –10/+0 |
+| Brise fraîche | +10/+0 | Virement +10/+0 | –25/+0 |
+| Vent modéré | +25/+0 | Virement +25/+0 | –50/–10 |
+| Vent violent | +25/+10 | Affaler/–5 | Affaler/–25 |
+| Tempête | Affaler | Affaler | Affaler |
+
+**Affaler les voiles** : Test **Navigation Intermédiaire (+0)** ; échec = Critique immédiat sur les voiles. Tant que le vent souffle ainsi, jeter l'Ancre ou se déplacer à 25 % de la vitesse dans la direction poussée. **Encalminé** : pas de déplacement à la voile (immobile ou tiré par le courant, M1 en général ; remorquage par embarcation de bord = ensemble M1, –4 DR Man). **Virement de bord** : augmente le M via Test **Navigation Intermédiaire (+0)** réussi. `MDG 13 l.288-304`
+
+**Voir aussi :** [Météo de la Mer des Griffes (MDG)](#météo-de-la-mer-des-griffes-mdg), [Détroits et tourbillons (MDG)](#détroits-et-tourbillons-mdg).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Orientation et phares (MDG)
+
+**Source :** MDG 13 l.307-351
+
+Un **Test d'Orientation** par jour de voyage (règle de base). Tableau *Repères* :
+
+| DR | Effets |
+|---|---|
+| 4 ou plus | Le Navigateur connaît la direction et peut pointer le bateau sur une carte |
+| 0 à 3 | Le bateau avance dans la direction supposée |
+| –2 à –0 | Légère déviation : sans effet la 1ʳᵉ fois ; si répété → Changement de cap |
+| –3 à –4 | Déviation : jet sur Changement de cap |
+| –5 ou moins | Forte déviation : Changement de cap +2 |
+
+**Changement de cap** (1d10 ; direction 1-5 tribord, 6-10 bâbord) : 1-3 perd sa position sur la carte (sans conséquence) ; 4-6 +10 % de temps ; 7-9 +25 % ; 10-11 déviation de 90° ; 12 demi-tour. `MDG 13 l.322-331`
+
+**Phares** : visibles, ils donnent un bonus aux Tests d'Orientation = premier chiffre de Savoir (Océans). Voir la lumière = **Test de Perception** : Facile (+40) à ≤5 milles, Intermédiaire (+0) à 5-10, Difficile (–20) à 10-15. Phare près d'un danger : +20 pour repérer ce danger. **Clochers** (ex. Bilbali) : seulement +2 DR à l'Orientation, distances divisées par deux, mais utiles par brouillard. `MDG 13 l.333-351`
+
+**Voir aussi :** [Provisions et équipement de navigation (MDG)](#provisions-et-équipement-de-navigation-mdg) (Boussole +1 DR), [Tests d'équipage (MDG)](#tests-dequipage-mdg).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Course-poursuite navale (MDG)
+
+**Source :** MDG 13 l.354-420
+
+Adaptation des règles de Poursuite terrestres à plus grande échelle. Sauf interaction directe (canons, sorts), demander les Tests de Distance **tous les 10 Rounds** et **×10** le résultat ; revenir au Round normal dès que les équipages peuvent interagir. Chaque bateau = un individu ; on parle de **Cible** et de **Poursuivants**.
+
+**1 — Déterminer la Distance** : avance de la Cible ; 1 point = **10 mètres**. Distance d'échappement selon l'environnement : brouillard/labyrinthe rocheux 10 ; fjords/criques 30 ; brume + rochers 50 ; mer houleuse 70 ; mer d'huile/temps dégagé 100. `MDG 13 l.364-370`
+
+**2 — Test et actualisation** : par ordre d'Initiative, **Test de Navigation** pour le Mouvement ; tableau dédié (m parcourus ÷10, min 1, puis +1 / inchangé / –1 / –2 selon DR). Pénalité de petit M : M3 –1 DR, M2 –2 DR, M1 –3 DR. `MDG 13 l.378-399`
+
+**3 — Déterminer l'issue** : recalculer la Distance, retour à l'étape 2. Distance 0 = Cible attrapée → attaquer ou poursuivre un autre membre. `MDG 13 l.401-403`
+
+**Voir aussi :** [`deplacement.md`](deplacement.md#poursuites) (Poursuite terrestre LdB 15), [Tests d'équipage (MDG)](#tests-dequipage-mdg).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Collisions de navires (MDG)
+
+**Source :** MDG 13 l.423-464
+
+La vigie a **trois chances** de repérer une trajectoire de collision ; ensuite le Personnage à la barre fait un **Test de Manœuvre** pour l'éviter. *Gestion des périls* (selon distance) : 100 m → Perception Difficile (–20) / Manœuvre Facile (+40) ; 50 m → Intermédiaire (+0) / Accessible (+20) ; 10 m → Accessible (+20) / Complexe (–10). Après tout péril croisé, un **Test d'Orientation** est nécessaire. `MDG 13 l.429-438`
+
+**Indice de Collision** = Bonus d'Endurance du bateau + ses Blessures restantes (E 20, 15 Blessures → IC 3 : BE 2 + BB 1). En collision, chaque navire reçoit des Dégâts = **IC de l'autre + M du navire qui a causé la collision**. `MDG 13 l.442-446`
+
+**Facteurs** : cible qui s'éloigne → Dégâts –M (min 0) ; touché à la poupe → 2 PA ; touché au milieu de coque → Dégâts ×2 ; manœuvre pour limiter/aggraver → Test de Manœuvre, les DR ±= IC des deux navires ; collision frontale → Dégâts = IC de l'autre + **M total des deux**. Sauf précision, la collision touche la **Coque**. `MDG 13 l.452-464`
+
+**Voir aussi :** [Manœuvres et vitesses maximum (MDG)](#manœuvres-et-vitesses-maximum-mdg), [Périls en mer (MDG)](#périls-en-mer-mdg).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Périls en mer (MDG)
+
+**Source :** MDG 13 l.467-499
+
+**Échouer** : le navire s'arrête net et ne bouge plus jusqu'à dégagement ; **Test de Force** avec pénalité = total d'Encombrement du navire + cargaison ; aides possibles avec assez de cordes. `MDG 13 l.471-473`
+
+**Icebergs** : M1, Indice de Collision moyen **25**. `MDG 13 l.475-479`
+
+**Débris marins** : M1, IC **3** ; 20 % d'empêtrement selon Taille (Minuscule-Petite : –2 DR Man, –1 M ; Moyenne-Grande : –1 DR Man ; > Grande : rien). Dégagement = Test étendu **Force Accessible (+20)** pour 10 DR. `MDG 13 l.481-491`
+
+**Rochers et bas-fonds** : Rocher moyen IC **47**, 20 % de chance d'*Échouer* ; Bas-fonds IC **10**, 40 % de chance d'*Échouer*. `MDG 13 l.493-499`
+
+**Voir aussi :** [Collisions de navires (MDG)](#collisions-de-navires-mdg), [Détroits et tourbillons (MDG)](#détroits-et-tourbillons-mdg).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Détroits et tourbillons (MDG)
+
+**Source :** MDG 13 l.501-564
+
+**Détroits** : zones de fort courant, dotées d'un M. Le navire est entraîné dans la direction du courant au M du Détroit avant de progresser. Tous les Tests de Navigation y subissent une pénalité : Détroit Faible (M4) –1 DR, Moyen (M8) –2 DR, Fort (M16) –3 DR. `MDG 13 l.501-511`
+
+**Tourbillons** : caractéristiques M / Zone (distance d'attraction en m, puis longueur de spirale en M) / Man (pénalité) / IC (au centre) / Évasion. Entré dans la Zone, le navire se déplace vers le centre au M du Tourbillon chaque Round ; le Personnage à la barre réussit un Test de Manœuvre pour continuer sa route. Un nageur dans la Zone : **Natation Complexe (–10)** ou commence à se noyer. Au centre, le bateau subit des Dégâts de collision (IC) chaque Round jusqu'à évasion. `MDG 13 l.516-528`
+
+| Tourbillon | M | Zone | Man | IC | Évasion (Test étendu Manœuvre) |
+|---|---|---|---|---|---|
+| Rotation lente | 2 | 15 m/25 | – | 4 | Accessible (+20), 10 DR |
+| Tourbillon | 4 | 30 m/50 | –1 DR | 8 | Intermédiaire (+0), 20 DR |
+| Puissant vortex | 6 | 45 m/75 | –1 DR | 12 | Complexe (–10), 25 DR |
+| Maelstrom | 8 | 60 m/100 | –2 DR | 20 | Difficile (–20), 35 DR |
+| Maelstrom primordial | 10 | 100 m/150 | –2 DR | 50 | Très Difficile (–30), 45 DR |
+
+**Voir aussi :** [Vents (MDG)](#vents-mdg) (Encalminé/courant), [Périls en mer (MDG)](#périls-en-mer-mdg).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Réparer un navire (MDG)
+
+**Source :** MDG 13 l.639-651
+
+Réparation permanente : **Test de Métier (Constructeur de navires)** (ou **Métier (Charpentier)** à **–10**), avec outils et matériaux (planches, poix, toile…). Les Dégâts à la **Coque** ne se réparent définitivement qu'en **cale sèche** ou à quai sec. Un constructeur naval de port répare pour **1 CO par Blessure** restaurée ; chaque Test réussi prend **1d10 heures** et restaure **1d10 Blessures**. Les Norses (coques à clins) ne réparent correctement que coracles, chaloupes, knarrs, langskips et similaires. `MDG 13 l.641-645`
+
+**Réparations temporaires** : sans cale sèche, **Métier (Constructeur de navires/Charpentier)** de **Complexe (–10)** à **Très Difficile (–30)** ; succès = 1 heure, restaure **1d10 Blessures**. Mais le navire fait ensuite un **Test d'Endurance** par jour complet de voyage et à chaque Test de Manœuvre ; chaque échec inflige **1d10–4 Dégâts** (la réparation cède). `MDG 13 l.647-651`
+
+**Voir aussi :** [Salissures de coque (MDG)](#salissures-de-coque-mdg), [Entretien du navire (Activité en mer) (MDG)](#entretien-du-navire-activité-en-mer-mdg), [Tests d'équipage (MDG)](#tests-dequipage-mdg) (Entretien).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Tests d'équipage (MDG)
+
+**Source :** MDG 14 l.7-55
+
+Pour un grand vaisseau, remplacer les Tests individuels par un **Test d'équipage** : plusieurs Personnages tiennent des **rôles**, font leur Test individuel, et **tous les DR sont additionnés** (≥ 1 DR = succès ; 0 possible selon le MJ). Un **rôle essentiel** (en italique) compte **double** (ses DR, positifs ou négatifs, sont doublés). Le **Mousse** est le rôle par défaut, mais facultatif si la Compétence est insuffisante. `MDG 14 l.9-19`
+
+Rôles courants : **Capitaine** (Commandement), **Timonier** (Voile), **Vigie** (Perception), **Mousse** (Voile/Ramer), **Navigateur** (Orientation), **Artilleur** (Projectiles (Poudre noire)), **Cuisinier** (Métier (Cuisinier)), **Chirurgien** (Guérison), **Chansonnier** (Divertissement (Chant), peut donner des bonus via la chanson de marin). `MDG 14 l.24-32`
+
+Un Personnage tenant un rôle lance pour tous ceux du même rôle ; si les PJ tiennent les rôles importants, les PNJ ne contribuent pas. Saboteurs : pas de Test, mais **–1 à –5 DR** imposés. **Manque de bras** : cumuler deux rôles = deux jets à **+2 crans de Difficulté** ; sous le minimum d'équipage, **–2 DR** et jamais mieux qu'un Succès Minime (pour les grands navires, par tranche de 10 % d'équipage manquant). `MDG 14 l.39-55`
+
+**Types** (rôle essentiel *en italique*) : Progression (*Capitaine*) ; Progression en Poursuite (*Mousse*) ; Manœuvres (*Timonier*) ; Perception (*Vigie*) ; Orientation (*Navigateur*) ; Affaler les voiles (*Mousse*) ; Extermination des nuisibles (*Mousse* ; test étendu, nid de rats = Intermédiaire (+0)/10 DR ; Ratier en rôle essentiel via Projectiles (Fronde), chat/chien +1 DR) ; **Rude épreuve** (*Cuisinier* ; DR négatifs → réduit le Moral d'autant) ; **Entretien** (*Mousse* ; **–2 DR** s'il remplace Métier (Charpentier/Tailleur)) ; Tir de batterie (*Artilleur*). `MDG 14 l.61-130`
+
+**Voir aussi :** [Moral de l'équipage (MDG)](#moral-de-léquipage-mdg), [Réparer un navire (MDG)](#réparer-un-navire-mdg), [Course-poursuite navale (MDG)](#course-poursuite-navale-mdg).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Moral de l'équipage (MDG)
+
+**Source :** MDG 14 l.133-202
+
+Le **Moral** mesure la confiance de l'équipage envers son capitaine ; on peut l'ignorer si la majorité est très investie (ex. PJ ou dévotion fervente). Il débute en général à **75** et est **recalculé une fois par semaine**. `MDG 14 l.135-143`
+
+Modificateurs (extrait) : paie généreuse / capitaine compétent → **+2d10** ; faveur de Manann probable, ≥1 officier pour 10, capitaine vaillant, nourriture > rations, bon présage, paie régulière, relâche à terre → **+1d10** ; manque de bras, pas de port depuis une semaine, mauvais présage, paie irrégulière, eaux non cartographiées, monstre marin vu, biscuits seuls → **–1d10** ; pas de relâche après accostage, eaux hostiles, < 1 officier pour 30, déplaisir de Manann, sous-ration, maladie, capitaine lâche/irrespectueux/incompétent, paie chiche → **–2d10** ; pas de paie, < 1 officier pour 50 → **–3d10**. `MDG 14 l.149-179`
+
+**Effets du Moral** : 101+ → Tests de Commandement du capitaine +2 DR, tous les Tests d'équipage +1 DR ; 76-100 → Commandement +1 DR ; 51-75 → équipage satisfait (1d100 par membre en relâche, ≤04 ne revient pas) ; 50 ou moins → Commandement –1 DR, Tests d'équipage –1 DR, ≤16 ne revient pas en relâche. `MDG 14 l.186-202`
+
+**Voir aussi :** [Tests d'équipage (MDG)](#tests-dequipage-mdg) (Rude épreuve), [Humeur de Manann et événements en mer (MDG)](#humeur-de-manann-et-événements-en-mer-mdg).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Maladies et provisions en mer (MDG)
+
+**Source :** MDG 14 l.204-283
+
+**Maladies** : un symptôme toux/éternuements expose tout le bord ; un malade de peste noire, flux sanglant, courante galopante ou vérole urticante qui boit dans un tonneau d'eau fait un **Test de Résistance Intermédiaire (+0)** (échec = tonneau contagieux ; la petite bière y échappe). `MDG 14 l.206-209`
+
+**Mal de mer** : les elfes y sont immunisés. Sinon : **Résistance Complexe (–10)** au premier voyage, **Résistance Intermédiaire (+0)** par mauvais temps (Vent violent ou plus). Durée : Test **Intermédiaire (+0)** par jour (succès = guéri à vie de cette forme) ou par heure (cause temporaire). Symptômes : malaise, nausée. `MDG 14 l.211-222`
+
+**Scorbut** : pour chaque mois sans nourriture correcte, **Test de Résistance Intermédiaire (+0)** (**Facile (+40)** si soupe de chou fermenté régulière) ; persiste 1d10 jours après reprise de fruits/légumes frais. Symptômes : blessé, intoxication alimentaire, malaise, nausée ; 1 % de perdre une dent/jour. `MDG 14 l.224-234`
+
+**Provisions** : un **Tonneau d'eau douce** = 145 L ; un marin boit 2-3 L/jour. La **petite bière** remplace l'eau (anti-contamination). **Biscuits de mer** évitent la famine mais régime médiocre. Table : Tonneau d'eau douce 8/6 (Enc 9) ; Tonneau de petite bière 11/– ; ration biscuits 1/– ; ration préservée 2/– ; soupe de chou fermenté 3/– ; Boussole 10/– ; Peau de phoque 1 CO 10/– ; Pièces détachées de navire 10/–. `MDG 14 l.242-255`
+
+**Voir aussi :** [Provisions et équipement de navigation (MDG)](#provisions-et-équipement-de-navigation-mdg), [`provisions.md`](provisions.md) (Faim/rations), [`maladies.md`](maladies.md).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Provisions et équipement de navigation (MDG)
+
+**Source :** MDG 14 l.273-302
+
+**Boussole** : les Tests d'**Orientation** bénéficient de **+1 DR**. **Peau de phoque** : +1 DR sur les Tests de Résistance contre l'exposition au froid (mais mitaines = pas d'action de dextérité). **Pièces détachées de navire** : planches, poix, cordes, tissu ; consommées par l'Activité *Entretien du navire*. `MDG 14 l.273-283`
+
+**Mercenaires d'équipage** (coût quotidien / hebdomadaire) : Mousse 3/– (1 CO 4/–), Marin 9/– (3 CO 12/–), Nautonier 3/– (1 CO 4/–), Officier 15/– (5 CO), Mercenaire expérimenté 9/– (3 CO 12/–), Médecin de bord 15/– (5 CO). **Parts de prise** : 50 % propriétaire (ou entretien), 10 % capitaine, 40 % répartis entre l'équipage ; officiers et non-combattants y renoncent souvent. `MDG 14 l.285-302`
+
+**Voir aussi :** [Orientation et phares (MDG)](#orientation-et-phares-mdg), [Maladies et provisions en mer (MDG)](#maladies-et-provisions-en-mer-mdg).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Longs voyages : résolution et vitesse (MDG)
+
+**Source :** MDG 15 l.3-78
+
+Pour un voyage de plusieurs semaines : on calcule la vitesse moyenne (modifiée par les vents dominants) pour la distance/jour, on suit l'**Humeur de Manann**, un **événement de bord** tous les **1d10 jours** (les jours en mer ne sont pas forcément consécutifs), un **événement de port** dans les **2d10 heures** après accostage, et une **Activité à bord** par semaine complète. `MDG 15 l.11-19`
+
+**Vitesse moyenne** (milles/jour) : M1→18, M2→36, M3→54, M4→72, M5→90, M6→108, M7→126, M8→144, M9→162, M10→180, M11→198, M12→216. La distance/jour suppose un équipage permettant de voguer de nuit ; sinon **÷2**. Chaque DR du Test d'équipage de Navigation modifie la progression du jour d'environ **±10 %**. `MDG 15 l.57-78`
+
+**Longs voyages très rapides** : durée via distance/vitesse ; noter la dizaine de l'Humeur de Manann ; faire un **Test d'équipage de Rude épreuve** ; lancer 1d10 sur le tableau *Voyage rapide* en **–1 par semaine en mer**, **+** dizaine d'Humeur, **+** DR de Rude épreuve. Résultats : ≤0 désastreux (50 % PNJ manquants, 75 % cargaison perdue, –75 % Blessures, 3 Critiques) … 10+ parfait. `MDG 15 l.21-37`
+
+**Voir aussi :** [Humeur de Manann et événements en mer (MDG)](#humeur-de-manann-et-événements-en-mer-mdg), [Commerce maritime (MDG)](#commerce-maritime-mdg), [Tests d'équipage (MDG)](#tests-dequipage-mdg).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Humeur de Manann et événements en mer (MDG)
+
+**Source :** MDG 15 l.81-263
+
+Chaque jour en mer, on tient un **total cumulé d'Humeur de Manann** (chaque modificateur une seule fois, sacrifices non cumulatifs) qui modifie les jets sur le **Tableau des événements de bord** (1d10 jours d'intervalle). `MDG 15 l.83-89`
+
+**Effet sur l'Humeur** (extrait) : vaincre des suivants de Stromfels +3d10 ; grand sacrifice à Manann +5+2d10 ; coiffe de naissance +2d10 ; prêtre de Manann sans Péché +5+1d10 ; prières à chaque quart +5 à +1d10 ; Mannslieb pleine +1d10 ; chat du navire heureux +1d10 ; ciel rouge –5 ; chapeau perdu par-dessus bord –5 ; voyage commencé un Festag –1d10 ; cargaison de bananes –1d10 ; invoquer d'autres dieux que Manann –(5+1d10) ; insulter la mer –2d10 ; tuer un albatros –(5+2d10) ; invoquer les Puissances de la Ruine/Stromfels –5d10. `MDG 15 l.99-124`
+
+**Événements de bord** (d100 modifié par l'Humeur, extrait) : ≤–65 Triton ; –60/–64 Maelstrom ; –50/–53 Ouragan (Test d'équipage **Affaler les voiles Difficile (–20)** sinon 3 Critiques au Gréement) ; –35/–39 Bateau endommagé (Critique aléatoire) ; –6/–10 Infestation de rats (Test étendu Extermination Intermédiaire (+0)/10 DR) ; 00/05 Collision soudaine ; 06/09 crabes boxeurs (–1 M, –1 DR Man) ; 48/80 Navigation ordinaire ; 96/98 Rafale de Ghyran (+2 DR Focalisation (Ghyran)/Guérison/Résistance) ; 131/134 Vents favorables (+1 M). `MDG 15 l.134-236`
+
+**Événements d'escale au port** (2d10, ±1 selon Humeur, extrait) : 1 Embrigadement ; 2 Prêtre de Manann ; 3 Contrôle à quai (10 % de douane) ; 4 Tempête ; 9-12 Pas d'événement ; 13 Constructeur de navires itinérant ; 17 Rumeurs commerciales ; 18 Fête de Manann (+2d10 Humeur). `MDG 15 l.129, l.243-263`
+
+**Voir aussi :** [Longs voyages : résolution et vitesse (MDG)](#longs-voyages--résolution-et-vitesse-mdg), [Moral de l'équipage (MDG)](#moral-de-léquipage-mdg).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Activités en mer (MDG)
+
+**Source :** MDG 15 l.266-306
+
+Pour chaque **semaine (8 jours)** en mer, chaque Personnage peut faire une Activité (hors *Argent à gaspiller*, *Avec le pouvoir*, *Amélioration elfique*). Activités autorisées : Apprentissage particulier, Artisanat, Entraînement, Entraînement au combat, Invention !, Recherche de savoir, Semer la dissension, et les Activités d'entraînement d'*Aux Armes !*. *Semer la dissension* réussie contre les officiers → **–2d10 Moral**. `MDG 15 l.268-272`
+
+- **Commerce d'opportunité** : investir jusqu'à la valeur d'Enc disponible en CO ; **Test étendu Marchandage Complexe (–10)**, 10 DR, 3 tentatives ; Échec de 6 DR = tout perdu, Échec = ½, Succès = +10 %, Succès de 6 DR = +20 %. `MDG 15 l.274-286`
+- **Cartographie** : **Métier (Cartographe) Complexe (–10)** entre deux ports ; succès = carte valant en CO le nombre de DR et **+2 DR** d'Orientation entre ces ports. `MDG 15 l.288-292`
+- **Entraînement d'équipage** : **Commandement Difficile (–20)** + Test **Difficile (–20)** dans la Compétence ; succès = +DR du Commandement à la Compétence de l'équipage (plafonné à ses propres Augmentations ; seuls les PNJ progressent), 2 pistoles/membre. `MDG 15 l.294-300`
+
+**Entretien du navire** (Activité) : voir topic dédié. `MDG 15 l.302-306`
+
+**Voir aussi :** [Entretien du navire (Activité en mer) (MDG)](#entretien-du-navire-activité-en-mer-mdg), [Commerce maritime (MDG)](#commerce-maritime-mdg), [`deplacement.md`](deplacement.md#activités-de-voyage-1-par-étape) (Activités de Voyage EDOC).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Entretien du navire (Activité en mer) (MDG)
+
+**Source :** MDG 15 l.302-306
+
+Activité de réparation/usure, de préférence au port. En mer : **–20** supplémentaire ; vastes installations de chantier : **+20**. **Test de Métier (Charpentier *ou* Constructeur de navires) Intermédiaire (+0)** : succès = dépenser des pièces détachées de navire (Enc = Taille du navire) et retirer l'événement *Usure*. Réparer des Blessures : **2 Enc de pièces détachées pour 5 Blessures** restaurées. Réparer une **Blessure Critique** : **Métier Difficile (–20)** + pièces détachées et bois (Enc = Taille du navire). `MDG 15 l.304-306`
+
+**Voir aussi :** [Réparer un navire (MDG)](#réparer-un-navire-mdg), [Salissures de coque (MDG)](#salissures-de-coque-mdg), [Tests d'équipage (MDG)](#tests-dequipage-mdg) (Entretien).
+
+**Implémente :** (non implémenté)
+
+---
+
+## Commerce maritime (MDG)
+
+**Source :** MDG 15 l.309-436
+
+Deux actes : **acheter** une cargaison, la **vendre** ailleurs. Chaque port a une **Production**, un **Surplus** (toujours produit) et une **Demande** (toujours acheté).
+
+**Acheter** (3 étapes) : (1) type via colonnes Production/Surplus, ou cargaison aléatoire si « commerce » ; (2) taille = (Taille + Richesse du Lieu + Surplus) × **1d10×10** Enc (un 1 = rien) ; (3) prix = Enc × prix de base, puis **Test opposé de Marchandage** (±10 %, ±20 % avec *Négociateur*). Marchandage d'un commerçant = 3d10+40 (3d10+55 à Marienburg/Lothern). Acheter moins que disponible ou un Surplus → +1 DR au vendeur. `MDG 15 l.315-349`
+
+**Vendre** : (1) trouver un acheteur via 1d100 ≤ nombre visé = (Taille + Demande)×10 (+30 si « commerce ») ; ne pas produire la cargaison facilite la vente, la produire (–2 DR Marchandage) ou en Surplus (–3 DR) la complique. (2) **Prix d'offre** selon Richesse+Taille+Demande : 1 → –50 %, 2 → –25 %, 3 → –10 %, 4+ → prix de base ; puis Test opposé de Marchandage. En dernier recours : ¼ du prix de base là où il y a « commerce » ou Demande. `MDG 15 l.355-399`
+
+**Cargaisons aléatoires** (1d100 par saison) et **prix de base** par saison : Céréales, Armes, Produits de luxe, Métaux, Bois, Vin (3d10), Laine, Sel, Huile, Poisson salé, Pièces détachées de navire. Prix en CO par point d'Enc. `MDG 15 l.404-436`
+
+**Distances** entre ports (milles, ≥10 milles de la côte) et **Index des ports** (Taille, Richesse, Production, Surplus, Demande) figurent dans le chapitre. `MDG 15 l.40-47, l.439-507`
+
+**Voir aussi :** [Longs voyages : résolution et vitesse (MDG)](#longs-voyages--résolution-et-vitesse-mdg), [Activités en mer (MDG)](#activités-en-mer-mdg) (Commerce d'opportunité), [`merchantFlow.ts`](../../src/state/merchantFlow.ts) (Marchandage).
+
+**Implémente :** (non implémenté)
+

@@ -1,6 +1,6 @@
 # Atlas RAW — Sources & conventions
 
-Le **RAW** du projet = ces **14 livres** (VF, convertis en `.md` sous `Source/`). Référence exacte
+Le **RAW** du projet = ces **15 livres** (VF, convertis en `.md` sous `Source/`). Référence exacte
 dans [`../../CLAUDE.md`](../../CLAUDE.md) § *Sources VF*.
 
 ## Convention de référence
@@ -13,7 +13,7 @@ dans [`../../CLAUDE.md`](../../CLAUDE.md) § *Sources VF*.
 C'est la même convention que les commentaires de code `// LDB 13 l.142` (1076 occurrences dans `src/`),
 donc une ref de l'Atlas pointe le **même** endroit que le code.
 
-## Les 14 livres
+## Les 15 livres
 
 | Abrév. | Livre | Dossier `Source/` | Rôle |
 |---|---|---|---|
@@ -31,6 +31,7 @@ donc une ref de l'Atlas pointe le **même** endroit que le code.
 | **Altdorf** | Aldorf, la Couronne de l'Empire | `Warhammer v4 - Aldorf la Couronne de l'Empire/` | Objets magiques, gangs, règles de cadre |
 | **Ubersreik** | Aventures à Ubersreik | `Warhammer v4 - Aventures a Ubersreik/` | Contenu de cadre (peu de règles de combat) |
 | **NADAJ** | Nuits agitées & dures journées (*Rough Nights & Hard Days*) | `Warhammer v4 - Nuits agitees & dures journées/` | Créatures, jeux de taverne, règles spéciales |
+| **MDG** | La Mer des Griffes (*Sea of Claws*) | `WH - V4 - La Mer de Griffe/` | Cadre côtier + règles navales : navires & artillerie, navigation/combat naval, carrières Côtier, cultes Manann/Stromfels, magie des mers, bestiaire marin |
 
 > **Règle 1 du projet** : toute règle vient de ces livres ; en cas de doute, **lire le `.md` et citer**.
 > Les tomes/suppléments sont des **sources de règles** (leur donnée mécanique = RAW) ; seule leur prose

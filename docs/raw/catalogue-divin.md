@@ -2016,3 +2016,15 @@ Mais une chose inattendue s'est produite : Gridli a pris goût à la ville. Avan
 
 - 0 Conformément au pacte établi avec Tzeentch, le culte fait honneur aux membres qui ont contracté des mutations. Grâce à ses nombreuses sociétés-écrans, il dispose d'un grand entrepôt à Reikerbahn. Derrière un mur de caisses, on trouve une ribambelle misérable d'habitations en bois fin, chacune accueillant un mutant.
 - 0 Klaus von Talber est le Grand Illuminateur. Il est le gardien de bibliothèque et conseiller privilégié du duc Berndt Wechsler, qui possède un gigantesque manoir à Mauerblumchen. Grâce à son charisme, Klaus a persuadé le duc Wechsler de rejoindre le culte de Slaanesh. Il est complètement soumis à Klaus. Étant donné qu'il siège parfois aux réunions du Conseil d'Altdorf, il donne régulièrement à Klaus des informations sur les futurs plans des dirigeants de la ville.
+
+---
+
+<!-- MDG-INTEGRATION --> religion
+
+VÉRIFIÉ — aucune correction nécessaire. Les deux entrées [MDG 10] et [MDG 11] sont fidèles à la source :
+
+[MDG 10] — Pages PDF 84-92 conformes (ligne 1 du fichier) ✓. SEL SACRÉ : 50 % + 5 effets transcrits exactement (l.116-122, incl. réduction brouillard Purée de pois→Brouillard→Brume→Dégagé, +1 DR Navigation 1d10 h, créature Int max 15 / Calme Complexe (−10) / Brisé, nourriture gâtée) ✓. Plafond bénédiction 3 navires / −1d10 Humeur / 1 Point de Péché (l.236) ✓. Les 8 Miracles : stats Portée/Cible/Durée et effets tous conformes (Apaiser l.240-242, Albatros l.246-250 — fiche pigeon/Taille Petite/3 Blessures, Marinier l.254-256, Contre-courants l.260-268, Malédiction de la mer l.272-278, Navigation bénie l.282-284, Repousser l.288-294, Respiration aquatique l.298-302) ✓.
+
+[MDG 11] — Pages PDF 92-96 conformes (ligne 1) ✓. Cartouche Siège/Chef/Ordres/Festivités/Livres/Symboles transcrit exactement (l.5-15) ✓. 4 COMMANDEMENTS (l.62-78) fidèles, dont la contrainte Force-d'abord (l.74) ✓. Pénitences (l.80-82) ✓. Restriction Talent Invocation≥2 / Béni≥5 (l.142) ✓. Bénédictions (l.146) ✓. 7 Miracles : stats et effets conformes (Faire fi + table d10 l.150-165, Flairer le sang l.167-171, Lame de fond l.173-179 IC 15, Mal de mer l.181-189, Malédiction maîtresse cruelle l.191-199, Sacrifice l.201-209 double Indice Voie d'eau, Vents de tempête l.211-219) ✓.
+
+Note : la carrière complète « Prêtre de Stromfels » (statbloc d'Évolution, l.85-138) n'est PAS reprise dans le catalogue divin (hors focus religion-Miracles) — non un défaut, mais signalé si un catalogue carrières doit l'ingérer ultérieurement.

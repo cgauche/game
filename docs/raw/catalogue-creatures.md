@@ -9862,3 +9862,317 @@ Les doppelgängers semblent incapables de se reproduire. Ils ont donc sans doute
 **Description :** la « véritable » apparence d'un doppelgänger est parfaitement hideuse. Ce sont des bipèdes humanoïdes de 1,80 m en moyenne. Ils ont l'air de ne pas avoir de peau : de l'extérieur, on peut voir leurs muscles, leurs artères, et certains de leurs organes.
 
 \*\* Ne s'applique que si sa véritable apparence est révélée
+
+---
+
+<!-- MDG-INTEGRATION --> bestiaire
+
+## [MDG 16] Bestiaire
+
+*Pages PDF 144-164*
+
+# BESTIAIRE
+
+#### **Petits et grands monstres marins et plusieurs grands capitaines**
+
+Les mers du monde sont peuplées de nombreuses bêtes immondes, du terrible léviathan noir au légendaire kraken. Ces énormes monstres émergent parfois à la surface depuis les profondeurs les plus ténébreuses de l'océan, attirés par les remous dans l'eau provoqués par une bataille navale. Souvent aussi grands que les navires les plus imposants, ces horreurs gigantesques viennent se joindre au carnage dans une orgie de destruction aveugle. Leurs crocs aiguisés comme des rasoirs tranchent et mordent, et leur immense mâchoire broie aisément la chair, le bois et le métal. Les marins qui ont le malheur de tomber par-dessus bord sont condamnés, dévorés en un instant par ces horreurs voraces des fonds marins.
+
+# TRAIT DE CRÉATURE : REDOUTABLE
+
+**Redoutable (Indice) :** cette créature est particulièrement dangereuse, si bien qu'il est presque impossible de réellement prendre le dessus sur elle. Si, au début de son tour, la créature n'a pas autant d'Avantages que son *Indice* de Redoutable le voudrait (par défaut, 1), elle gagne immédiatement tous les Avantages qui lui manquent. Si la créature est sous l'effet d'un État *Empêtré*, *Inconscient* ou *Surpris*, elle ne gagne pas d'Avantage. *(`MDG 16 l.11`)*
+
+Si vous utilisez les règles d'Avantage de groupe du supplément **Aux Armes !**, la créature génère un nombre d'Avantages égal à son Indice dans le Trait *Redoutable* pour la réserve d'Avantages des adversaires. *(`MDG 16 l.13`)*
+
+# TRAIT DE CRÉATURE : CRÉATURE MARINE
+
+La créature est chez elle dans l'océan et est inadaptée à la vie sur terre. Le profil de ce type de créature part du principe qu'elle se trouve dans un environnement aquatique et qu'elle se déplace de tout son M dans l'eau. Si elle est sortie de l'eau, son M tombe à 1 et tous les Tests qu'elle effectue subissent –2 DR. *(`MDG 16 l.17`)*
+
+Les créatures possédant le Trait *Créature marine* doivent être immergées pour respirer correctement. Si elles sont sorties de l'eau, elles doivent être régulièrement aspergées d'eau, sinon elles se mettent à suffoquer comme décrit en page 181 de **WFJDR**. *(`MDG 16 l.19`)*
+
+# **Baudroye**
+
+Ces poissons hideux ne sont pas des créatures marines, mais les marins de la Mer des Griffes savent qu'ils doivent se méfier d'eux, car ils rôdent dans les fjords de Norsca et les eaux de rivières comme la Salz, la Lynsk et la Sannez. La baudroye utilise l'étrange lueur phosphorescente sur sa tête pour attirer les animaux qui vivent sur les rives. Cet appendice qui oscille doucement a des propriétés hypnotiques ; même les créatures intelligentes peuvent être envoûtées par cet appât lumineux. *(`MDG 16 l.23-25`)*
+
+| BAUDROYE | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B |
+|----------|---|----|----|----|----|----|----|-----|-----|----|-----|---|
+|          | 4 | 40 | –  | 45 | 35 | 30 | 20 | –   | 5   | 40 | –   | 3 |
+
+**Talents :** Assaut féroce 2, Charge berserk 3
+**Traits :** Affamé, Amphibie, Bestial, Infravision, Perturbant, Redoutable 1, Taille (Très Petite)
+**Traits d'attaque :** Arme (Crocs horribles) +8
+**Facultatif :** Nuée, Taille (Petite à Moyenne)
+
+**Appât de la baudroye :** les lumières bleues-vertes, ondulant doucement et visibles sur les bords d'une rivière à l'aube et au crépuscule sont parfois confondues avec des lucioles. Si un Personnage réussit un Test de **Savoir (Voies fluviales) Difficile (–20)**, il sait que ces lueurs sont probablement des appâts de baudroye. Ceux qui ratent le Test de Savoir doivent réussir un Test de **Calme Facile (+40)** sous peine d'être envoûtés par le spectacle et incapables d'entreprendre la moindre action à part se déplacer vers la lumière, ce qui en pratique revient à subir l'État *Inconscient*. *(`MDG 16 l.27`)*
+
+# **Crabe boxeur**
+
+Un crabe boxeur adulte fait la taille d'un chien. Il est doté d'une carapace portant un marquage qui évoque un crâne et de grands yeux écarlates polypeux. Cette créature fait partie de la faune de Norsca. Ils ont l'habitude de s'entraîner en se combattant entre eux et tentent souvent de désarmer ou d'empoigner leur adversaire. *(`MDG 16 l.41`)*
+
+| CRABE BOXEUR | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B |
+|--------------|---|----|----|----|----|----|----|-----|-----|----|-----|---|
+|              | 5 | 45 | –  | 35 | 25 | 10 | 35 | 30  | 5   | 35 | –   | 7 |
+
+**Talents :** Désarmer, Maîtrise du combat, Vigilance
+**Traits :** Amphibie, Armure 2 (4), Bestial, Infravision, Taille (Petite)
+**Traits d'attaque :** Arme (Pince) +6
+**Facultatif :** Nuée, Taille (Très Petite)
+
+# **Anguille mâcheprise**
+
+Les anguilles mâcheprises sont des créatures serpentines pouvant mesurer jusqu'à un mètre vingt de long. Leur corps arbore une teinte aigue-marine profonde et est doté d'une puissante mâchoire faite pour agripper. Elles peuvent aussi sécréter une gelée visqueuse qui les rend impossibles à empoigner. Une anguille mère est souvent accompagnée par une nuée de petits de trente centimètres de long. *(`MDG 16 l.56`)*
+
+| ANGUILLE MÂCHEPRISE | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B |
+|---------------------|---|----|----|----|----|----|----|-----|-----|----|-----|---|
+|                     | 6 | 45 | –  | 40 | 35 | 30 | 35 | –   | 5   | 35 | –   | 3 |
+
+**Traits :** À sang froid, Bestial, Créature marine, Infravision, Taille (Très Petite)
+**Traits d'attaque :** Arme (Crocs) +8, Morsure +10
+**Facultatif :** Affamé, Nuée, Taille (Petite)
+
+**Visqueuse :** les anguilles mâcheprises peuvent produire une quantité surprenante de gelée visqueuse, que ce soit dans ou hors de l'eau. Si une anguille mâcheprise est *Empoignée* par un adversaire, elle peut effectuer un Test d'Endurance. En cas de succès, elle produit un amas de gelée et bénéficie alors de +4 DR sur les Tests ultérieurs pour se libérer. L'adversaire doit effectuer un Test d'**Athlétisme Intermédiaire (+0)**. En cas d'échec, la gelée lui a recouvert le visage et il doit soit relâcher l'anguille mâcheprise, soit commencer à suffoquer (voir page 181 de **WFJDR**). *(`MDG 16 l.69`)*
+
+# **Stylet**
+
+Le stylet est une espèce de poisson volant. Les adultes font environ trente centimètres de longueur et leurs ailerons de « vol » environ quarante-cinq centimètres d'envergure. Le nom de ce poisson vient des épines tranchantes comme des rasoirs saillant des extrémités de ses ailerons. Sa capacité à sauter hors de l'eau jusqu'à une hauteur d'un mètre vingt, souvent en grands bancs, le rend physiquement dangereux. Ils sont attirés par les lumières vives. *(`MDG 16 l.73-75`)*
+
+| STYLET | M  | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B |
+|--------|----|----|----|----|----|----|----|-----|-----|----|-----|---|
+|        | 10 | 32 | 35 | 35 | 36 | 30 | 48 | –   | 4   | 18 | –   | 3 |
+
+**Traits :** Bestial, Bond, Créature marine, Taille (Très Petite)
+**Traits d'attaque :** À distance (son propre corps) +7 (20), Arme (Ailerons tranchants) +7
+**Facultatif :** Affamé, Nuée, Taille (Minuscule)
+
+**Vers la lumière :** les stylets sont attirés par la lumière. Si quelqu'un tente d'utiliser le feu pour leur faire peur, cela ne fait que les encourager. Ils possèdent le Trait *Bestial*, mais ils ne reculent pas devant le feu et ne subissent pas d'État *Brisé* parce qu'ils sont touchés par des attaques enflammées. *(`MDG 16 l.88`)*
+
+# **Élémentaire de mer**
+
+Là où *Ghyran* est le plus concentré, les eaux qui le portent peuvent s'animer et dessiner la silhouette grossière d'une gigantesque forme humanoïde. Un élémentaire de mer sauvage est une perspective effrayante. C'est une créature tapageuse et violente. L'élémentaire semble adorer détruire, par exemple en broyant des navires ou en invoquant des tourbillons. *(`MDG 16 l.97-99`)*
+
+| ÉLÉMENTAIRE DE MER | M  | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
+|--------------------|----|----|----|----|----|----|----|-----|-----|----|-----|----|
+|                    | 12 | 55 | –  | 59 | 59 | 55 | 55 | 21  | –   | –  | –   | 80 |
+
+**Traits :** Créature marine, Fabriqué, Infravision, Instable, Lanceur de Sorts (*Ghyran*), Protection 8, Redoutable 3, Se cabrer, Taille (Énorme), Terreur 3
+**Traits d'attaque :** Arme (Poings) +10
+**Sorts :** Bourbier vivant, Tourbillon
+
+**Immersion :** l'élémentaire de mer peut tenter d'immerger ses adversaires en effectuant une Empoignade. S'il inflige un État *Empêtré* à son opposant, il l'engloutit dans les eaux de son propre corps. Le personnage immergé suffoque comme détaillé en page 181 de **WFJDR**. Il peut essayer de s'échapper en se libérant de l'État *Empêtré* comme s'il était Empoigné par l'élémentaire de mer, en effectuant des Tests opposés de **Force** pour se dégager. Cependant, l'élémentaire de mer n'a pas besoin de maintenir activement l'Empoignade, il peut agir comme si le personnage immergé n'était pas là et n'est pas considéré comme Engagé. *(`MDG 16 l.107-109`)*
+
+**Résistant au feu :** les élémentaires de mer ne subissent jamais l'État *En flammes*. *(`MDG 16 l.111`)*
+
+**Lanceur de sorts instinctif :** les élémentaires de mer peuvent utiliser leur Caractéristique Force pour le lancement de sorts et la focalisation. *(`MDG 16 l.113`)*
+
+# **Gargantuan**
+
+Le Gargantuan est une bête serpentine d'au moins une centaine de mètres de long. Son corps est musculeux et incroyablement puissant, atteignant jusqu'à dix mètres de diamètre. Selon les elfes d'Ulthuan, il n'existe qu'un seul Gargantuan, qui vit dans les profondeurs depuis l'aube du monde. La méthode d'attaque favorite de cette créature consiste à approcher sa proie par en dessous, à enrouler ses anneaux sinueux autour de la victime et à l'écraser pour la tuer. *(`MDG 16 l.118-122`)*
+
+| GARGANTUAN | M  | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B   |
+|------------|----|----|----|----|----|----|----|-----|-----|----|-----|-----|
+|            | 12 | 60 | –  | 75 | 75 | 30 | 35 | –   | 7   | 55 | –   | 208 |
+
+**Traits :** À sang froid, Affamé, Armure 2 (9), Constricteur, Créature marine, Infravision, Redoutable 3, Régénération, Se cabrer, Taille (Monstrueuse)
+**Traits d'attaque :** Arme (Dents aiguisées comme des rasoirs) +11
+
+**Broyeur de bateaux :** le Gargantuan peut tenter d'écraser un vaisseau de Taille Grande ou moins. Pour ce faire, il doit passer un Tour à s'enrouler autour du navire par tranche de 10 points de Taille que le vaisseau possède. Une fois le bateau pris dans ses anneaux, le Gargantuan commence à les serrer et effectue un Test opposé étendu de **Force / Endurance** du bateau. Quand le DR est égal aux Blessures du vaisseau, le bateau se brise et n'est plus qu'une masse de débris flottants. Les attaques qui lui infligent plus de 7 Blessures peuvent forcer le Gargantuan à lâcher s'il rate ensuite un Test de **Calme Accessible (+20)**. Pour décrocher le Gargantuan, il faut être au moins de Taille (Énorme) et effectuer un Test opposé de **Force** contre la créature. Un résultat de 0 à 4 DR l'empêche de serrer ses anneaux autour du bateau ce Tour-ci et un résultat de 5 DR ou plus le force à relâcher le vaisseau. *(`MDG 16 l.133-135`)*
+
+**Décharge électrique :** si la créature réussit à Empoigner un adversaire, au début de chacun de ses Tours suivants, elle peut dépenser 1 Avantage pour administrer un choc électrique au personnage Empoigné. La décharge électrique inflige un coup de 10 Dégâts qui ignore les armures en métal non magiques. Si un Personnage subit des Blessures à cause de l'attaque électrique, il doit aussi réussir un Test de **Résistance Complexe (–10)** sous peine de subir un État *Sonné*. Chaque fois qu'il utilise l'électricité, il doit effectuer un Test de **Résistance Accessible (+20)**. En cas d'échec, il subit un État *Exténué*. Tant que le Gargantuan est sous l'effet d'un État *Exténué*, ses attaques de décharge électrique n'infligent que des coups de 6 Dégâts. Quand il a *Empoigné* un navire, les membres de l'équipage reçoivent tous un choc et subissent un coup de 6 Dégâts (3 Dégâts seulement si le Gargantuan subit un État *Exténué*). *(`MDG 16 l.137-143`)*
+
+# **Kharibde**
+
+Le kharibde ne fait pas partie de la faune naturelle de la Mer des Griffes. Ces bêtes hantent les profondeurs froides et obscures autour des rives de Naggaroth. De leur corps trapu et immense jaillit une couronne de cinq tentacules fouettant l'air. Les elfes noirs de Naggaroth ont appris diverses techniques leur permettant de diriger un kharibde et sont connus pour en utiliser certains comme bêtes de guerre. *(`MDG 16 l.148-150`)*
+
+| KHARIBDE | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
+|----------|---|----|----|----|----|----|----|-----|-----|----|-----|----|
+|          | 6 | 55 | –  | 65 | 55 | 40 | 15 | –   | 5   | 25 | –   | 72 |
+
+**Traits :** Affamé, Amphibie, Armure 3 (8), Bestial, Constricteur, Furtif, Infravision, Perturbant (Hurlements), Redoutable 2, Régénération, Taille (Énorme), Venin (Complexe)
+**Traits d'attaque :** Arme (Crocs et griffes) +10, Attaque caudale +8, Morsure +9
+**Traits facultatifs :** Belliqueux, Territorial
+
+**Gigue d'os :** un kharibde bouge dans tous les sens et semble être partout quand il se bat, car ses nombreuses têtes mordent, agrippent et enchevêtrent tour à tour ses adversaires. Si le kharibde gagne 1 point d'Avantage alors qu'il est Engagé pendant un combat, son Indice *Redoutable 2* monte à *Redoutable 4* et y reste tant que le kharibde reste Engagé contre un adversaire. *(`MDG 16 l.152`)*
+
+# **Wyrm des mers**
+
+La Mer des Griffes est connue pour abriter beaucoup de wyrms des mers. Ce sont de grandes créatures dont la longueur rivalise avec celle des baleines. Ils possèdent un long corps ophidien recouvert d'une couche d'écailles épaisses. Si nécessaire, ils peuvent sortir de l'eau et se traîner maladroitement sur terre à l'aide de quatre membres courtauds se terminant chacun par des griffes aiguisées comme des rasoirs. *(`MDG 16 l.174`)*
+
+| WYRM DES MERS | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
+|---------------|---|----|----|----|----|----|----|-----|-----|----|-----|----|
+|               | 6 | 62 | –  | 65 | 60 | 45 | 26 | –   | 15  | 38 | 10  | 84 |
+
+**Traits :** Affamé, Amphibie, Armure 3 (9), Créature marine, Immunité Psychologique, Infravision, Insensible à la douleur, Redoutable 2, Régénération, Taille (Énorme)
+**Traits d'attaque :** Arme (Mâchoire hérissée de crocs) +11, Attaque caudale +13, Morsure (Mâchoire hérissée de crocs) +11
+**Traits facultatifs :** Infecté, Taille (Monstrueuse)
+
+**Poison tueur de baleines :** toutes les attaques de mâchoire hérissée de crocs d'un wyrm des mers possèdent le Trait Venin (Complexe). *(`MDG 16 l.193`)*
+
+# **Syrène bleue**
+
+Les légendes parlent des syrènes bleues dont le chant mène les marins à la mort sur les récifs rocheux. Elles seraient une forme de banshee hantant les mers. Quand une sorcière est noyée, son âme reste dans ce monde sous la forme d'une ombre tourmentée. *(`MDG 16 l.197`)*
+
+| SYRÈNE BLEUE | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
+|--------------|---|----|----|----|----|----|----|-----|-----|----|-----|----|
+|              | 6 | 30 | –  | 30 | 30 | 20 | 30 | 30  | 25  | 20 | 20  | 11 |
+
+**Traits :** Amphibie, Corruption (Mineure), Éthéré, Infravision, Instable, Mort-vivant, Rage, Terreur 3
+**Traits d'attaque :** Arme (Lame spectrale) +7
+
+**Chant de la syrène bleue :** au prix d'une action, la syrène bleue peut entonner son chant hypnotique. Les Personnages situés à (Initiative de la syrène) mètres ou moins du monstre doivent réussir un Test de **Calme Complexe (–10)** sous peine d'être envoûtés par la mélodie et incapables d'entreprendre la moindre action à part se déplacer vers la syrène bleue, ce qui en pratique revient à subir l'État *Inconscient*. *(`MDG 16 l.208`)*
+
+# **Hydre d'os**
+
+En de rares occasions, les cadavres de créatures marines dérivent dans des zones où la magie malveillante de malepierres sous-marines peut les corrompre et les réanimer. L'hydre d'os est une bête créée de cette façon. Ce n'est pas le squelette d'une véritable hydre, car elle n'est dotée que de trois têtes. Elle hante la zone connue sous le nom de cimetière du Galion loin en haute mer. *(`MDG 16 l.213-217`)*
+
+| HYDRE D'OS | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B   |
+|------------|---|----|----|----|----|----|----|-----|-----|----|-----|-----|
+|            | 6 | 40 | 30 | 75 | 75 | 15 | 15 | –   | –   | –  | –   | 224 |
+
+**Traits :** Armure 2 (9), Corruption (Modérée), Créature marine, Fabriqué, Infravision, Insensible à la douleur, Instable, Mort-vivant, Peur 2, Redoutable 1, Taille (Monstrueuse)
+**Traits d'attaque :** Arme (Mâchoires tenailles) +11, Morsure +10, Souffle (Poison, Difficulté Difficile (–20)) +10
+
+# **Sangsue des abysses**
+
+Les sangsues des abysses sont un autre habitant des fonds marins corrompus par de grandes concentrations de *Dhar*. Quand les sangsues des abysses localisent un cadavre, elles s'enfouissent dans le corps et s'y multiplient. Un cadavre infesté peut se mettre à bouger de nouveau, car les créatures remplacent les tendons et les muscles de leur hôte putréfié par leur propre corps. Les sangsues des abysses sont les dépouilles animées de dragons des mers qui ont sombré dans les profondeurs. *(`MDG 16 l.230-234`)*
+
+| SANGSUE DES ABYSSES | M | CC | CT | F  | E  | I | Ag | Dex | Int | FM | Soc | B   |
+|---------------------|---|----|----|----|----|---|----|-----|-----|----|-----|-----|
+|                     | 4 | 33 | –  | 80 | 80 | 5 | 5  | –   | –   | –  | –   | 256 |
+
+**Traits :** À sang froid, Armure 2 (10), Bestial, Corruption (Modérée), Créature marine, Fabriqué, Infravision, Insensible à la douleur, Redoutable 1, Taille (Monstrueuse)
+**Traits d'attaque :** Arme (Mâchoires tenailles) +12, Attaque caudale +11, Morsure +11, Vomissement
+
+# **Léviathan-phare et léviathan noir**
+
+Il existe plusieurs espèces de léviathans dans les océans du monde. Le léviathan-phare est de couleur pâle ; c'est une petite espèce, car les adultes atteignent à peine 45 mètres de longueur. La bête porte un appât lumineux oscillant devant sa gueule béante. Le léviathan noir est un énorme poisson des abysses carnivore à la gueule caverneuse remplie de crocs dentelés. Il a sa tanière dans les profondeurs de la mer, mais il chasse en surface, s'élevant brutalement de sous les vagues pour engloutir sa victime tout rond. *(`MDG 16 l.248-252`)*
+
+| LÉVIATHAN-PHARE | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B   |
+|-----------------|---|----|----|----|----|----|----|-----|-----|----|-----|-----|
+|                 | 3 | 40 | –  | 65 | 65 | 15 | 10 | –   | 5   | 30 | –   | 168 |
+
+**Traits :** Affamé, Armure 3 (9), Bestiale, Créature marine, Infravision, Perturbant, Redoutable 2, Taille (Monstrueuse)
+**Traits d'attaque :** Arme (Crocs gigantesques) +10
+
+**Appât du léviathan :** le premier signe de l'attaque imminente d'un léviathan-phare est une lumière jaune chatoyante dérivant lentement sous l'eau. Si un Personnage réussit un Test de **Savoir (Océans) Difficile (–20)**, il a entendu parler de l'appât de cette bête et peut détourner le regard avant que la lueur fasse effet. Ceux qui ratent le Test de Savoir doivent réussir un Test de **Calme Facile (+40)** sous peine de subir l'État *Sonné*. *(`MDG 16 l.263`)*
+
+**Résistant au froid :** le monstre peut effectuer un Test de **Résistance Intermédiaire (+0)** pour ignorer tout effet négatif venant du froid et de la glace. *(`MDG 16 l.265`)*
+
+| LÉVIATHAN NOIR | M  | CC | CT | F   | E   | I  | Ag | Dex | Int | FM | Soc | B   |
+|----------------|----|----|----|-----|-----|----|----|-----|-----|----|-----|-----|
+|                | 10 | 55 | –  | 125 | 145 | 25 | 10 | –   | 5   | 45 | –   | 352 |
+
+**Traits :** Affamé, Armure 6 (20), Bestiale, Créature marine, Infravision, Redoutable 5, Taille (Monstrueuse)
+**Traits d'attaque :** Arme (Crocs gigantesques) +16, Attaque caudale +14, Morsure +14
+
+**Assaut dévastateur :** quand un léviathan noir charge un navire, il cause une collision avec un IC de 50 (voir p. 111). *(`MDG 16 l.274`)*
+
+**Différence d'échelle :** le léviathan noir possède le Trait *Bestial* et peut être effrayé par le feu. Cependant, les torches vacillantes sont trop petites pour attirer son regard. Pour bénéficier des propriétés terrifiantes du feu, il doit avoir la taille et l'intensité d'un grand feu de joie. Si une source de Peur ou de Terreur n'est pas quelque chose que le léviathan noir devrait respecter en termes de taille, elle ne va probablement pas le troubler. *(`MDG 16 l.276-278`)*
+
+# **Triton**
+
+Aucune autre créature au monde ne suscite autant de légendes et de spéculation que Triton. Au-dessus de la ceinture, il a la forme physique d'un homme à la carrure puissante ; sous le nombril, il est doté d'une queue de poisson. Il est aussi véritablement titanesque : même les immenses géants broyeurs d'os semblent petits à côté du formidable Triton. Triton maîtrise plusieurs pouvoirs mystiques : il peut contrôler les éléments et dompter les monstres des profondeurs. *(`MDG 16 l.283-287`)*
+
+| TRITON | M  | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B   |
+|--------|----|----|----|----|----|----|----|-----|-----|----|-----|-----|
+|        | 10 | 63 | 45 | 79 | 69 | 53 | 45 | 32  | 39  | 54 | 44  | 192 |
+
+**Compétences :** Athlétisme 65, Charme 74, Commandement 64, Corps à corps (Armes d'hast) 83, Emprise sur les animaux 74, Focalisation (Magie des mers de Triton) 74, Intuition 68, Langue (Magick) 69, Orientation 88, Perception 78, Résistance 94, Savoir (Elfes 59, Océans 99, Théologie 69)
+**Talents :** Affinité avec les animaux 4, Assaut féroce, Chanceux 2, Charge berserk 4, Combat instinctif 4, Contorsionniste, Coup puissant 3, Désarmer 3, Diction instinctive 3, Endurci 4, Frappe blessante 3, Frappe précise 3, Frappe réactive, Harmonisation aethyrique 3, Inébranlable 3, Mâchoires d'acier, Mage de guerre, Maîtrise du combat 4, Oreille absolue 2, Perception de la magie, Persévérant, Seconde vue, Sens aiguisé (Ouïe, Vue), Sens de l'orientation, Vigilance 3, Volonté de fer
+**Traits :** Animosité (Elfes noirs), Armure 2 (8), Béni (Manann), Champion, Créature marine, Endurant, Magique, Protection 9, Redoutable 3, Résistance à la Magie 4, Se cabrer, Taille (Monstrueuse), Terreur 3
+**Traits d'attaque :** Arme (Trident de Triton) +16, Attaque caudale +10
+**Possessions :** couronne de Triton, trident de Triton.
+
+**Magie des mers de Triton :** Triton connaît les Sorts de magie des mers suivants (voir page 15) : *Bourbier vivant, Mer d'huile, Tourbillon*. Il peut lancer les Miracles de Manann suivants comme s'ils étaient des Sorts avec un NI de 1 : *Contre-courants, Encalminé, Malédiction de la mer, Vents favorables*. Il peut également lancer le Miracle de Stromfels suivant comme s'il était un Sort avec un NI de 1 : *Lame de fond*. *(`MDG 16 l.309-311`)*
+
+**Seigneur des profondeurs :** la Compétence Emprise sur les animaux et le Talent Affinité avec les animaux de Triton ne peuvent être utilisés que sur des créatures marines. Les créatures des mers belliqueuses, territoriales, dressées ou blessées lui témoignent tout de même du respect. Seules les créatures marines dominées par magie ne respectent plus le commandement de Triton. *(`MDG 16 l.315`)*
+
+#### TRIDENT DE TRITON
+
+| Arme              | Groupe       | Enc | Allonge      | Dégâts | Atouts et Défauts                            |
+|-------------------|--------------|-----|--------------|--------|----------------------------------------------|
+| Trident de Triton | Armes d'hast | 250 | Considérable | +BF+6  | Dévastatrice, Empaleuse, Magique, Percutante |
+
+**Naufrageuse :** chaque fois que le trident de Triton inflige des Dégâts à la Coque d'un vaisseau, ce bateau doit effectuer un Test d'**Endurance Complexe (–10)**. En cas d'échec, le navire subit *Voie d'eau 1*. Chaque fois que le trident de Triton inflige des Dégâts Critiques à la Coque d'un bateau, ce vaisseau doit effectuer un Test d'**Endurance Difficile (–20)**. En cas d'échec, le navire subit *Voie d'eau 3*. *(`MDG 16 l.327`)*
+
+# **CAPITAINE JAEGO ROTH, CORSAIRE DE SARTOSA**
+
+Le capitaine Jaego Roth est considéré comme le plus grand corsaire de l'époque actuelle. Fils du cartographe et explorateur Indigio Roth, il a perdu sa famille dans l'incendie de Sartosa et traque depuis Noctilus, le seigneur vampire du *Cimetière du Galion*. Sa quête l'a récemment emmené sur la Mer des Griffes. *(`MDG 16 l.332-344`)*
+
+| JAEGO ROTH – CAPITAINE CORSAIRE (OR 2) | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
+|----------------------------------------|---|----|----|----|----|----|----|-----|-----|----|-----|----|
+|                                        | 4 | 83 | 43 | 45 | 51 | 78 | 67 | 65  | 76  | 74 | 87  | 21 |
+
+**Compétences :** Athlétisme 75, Calme 86, Commandement 102, Corps à corps (Base 87, Escrime 90), Escalade 52, Esquive 73, Guérison 84, Intimidation 63, Intuition 85, Langue (Khazalid 78, Tiléen 93), Marchandage 95, Natation 58, Orientation 98, Perception 92, Projectiles (Poudre noire) 58, Ragot 94, Ramer 67, Résistance 78, Résistance à l'alcool 60, Savoir (Guerre 97, Navigation 103, Politique 78), Survie en extérieur 83, Voile 92
+**Talents :** Battement, Ergoteur, Exaltant 5, Ferveur ardente, Frappe précise, Frappe réactive, Haine (Morts-vivants), Imperturbable, Lire/Écrire, Loup de mer, Maîtrise du combat 3, Marinier, Menaçant 3, Nageur endurant, Négociateur, Persévérant, Perspicace, Pied marin, Pilote, Présence imposante, Riposte, Savoir-vivre (Marins, Nobles, Pirates), Seigneur de guerre, Sens de l'orientation, Suborneur 3, Vigilance, Volonté de fer, Voyageur aguerri
+**Traits :** À distance (Pistolet) +8 (20), Arme (Crochet) +6, Arme (Rapière) +8, Armure 3 (8)
+**Possessions :** cadran lunaire et longue-vue enchantés, carte punaisée sur une carapace de tortue, crochet de main, outils de cartographe, pistolet, plastron, rapière.
+
+Avec sa prothèse, Jaego ne subit pas de pénalité parce qu'il lui manque une main (voir page 308 de **WFJDR**). *(`MDG 16 l.366`)*
+
+**Héritier du cartographe :** Jaego connaît parfaitement les mers du monde. Il bénéficie de +2 DR sur tous les Tests d'Orientation qu'il effectue. S'il est le Capitaine d'un vaisseau, il peut effectuer des Tests d'Orientation et non de Commandement dans le cadre des Tests d'équipage. *(`MDG 16 l.368`)*
+
+**Le Quart de nuit (navire) :** Équipage 50 · Voile M (É) 10 (25) · Avirons M (É) 6 (40) · Man – · Taille 55 · E 65 · B 200 · Contenance 1 000 · Traits et Améliorations : Bélier, Renforcé, Solide. Équipé d'un Grand canon à la proue et de huit Canons Moyens sur le pont. *(`MDG 16 l.348-350`)*
+
+# **LONG DRONG SILVER, CAPITAINE DES PIRATES TUEURS**
+
+Long Drong Silver, chef des Pirates Tueurs, est l'un des capitaines les plus respectés de Sartosa. Autrefois marin de Barak Varr, il a prêté le Serment du Tueur après la perte de son navire. Son objectif réel est de combattre les monstres marins, qu'il poursuit dans son voyage en mer vers une mort glorieuse. *(`MDG 16 l.387-393`)*
+
+| LONG DRONG SILVER – CAPITAINE DES PIRATES TUEURS | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
+|--------------------------------------------------|---|----|----|----|----|----|----|-----|-----|----|-----|----|
+|                                                  | 3 | 72 | 62 | 56 | 69 | 40 | 29 | 32  | 40  | 71 | 52  | 30 |
+
+**Compétences :** Athlétisme 59, Calme 86, Commandement 72, Corps à corps (Bagarre 82, Base 87), Divertissement (Chant 57, Narration 62), Dressage (Perroquet) 55, Escalade 66, Esquive 44, Guérison 55, Intimidation 81, Intuition 70, Langue (Reikspiel 80, Tiléen 70), Marchandage 67, Natation 71, Orientation 75, Perception 65, Projectiles (Poudre noire) 77, Ramer 61, Résistance 79, Résistance à l'alcool 89, Savoir (Guerre 70, Ingénierie 70, Navigation 90), Survie en extérieur 75, Voile 84
+**Talents :** Assaut féroce, Chanceux 5, Charge berserk, Cœur vaillant, Contrôle de la Frénésie, Coup puissant, Dur à cuire, Endurci, Frénésie, Impitoyable, Inébranlable, Infatigable 2, Lire/Écrire, Loup de mer, Mâchoires d'acier, Maîtrise du combat 3, Maniement de deux armes, Marinier, Nageur endurant, Noctambule, Persévérant, Pied marin, Pilote, Robuste 3, Sans peur (Tout), Tir précis, Tir rapide, Très fort, Très résistant, Tueur, Vision nocturne
+**Traits :** À distance (Pistolets) +8 (20), Arme (Crochet) +8, Arme (Épée) +10
+**Possessions :** bandoulière avec 12 pistolets chargés, cache-œil, crochet, épée, jambe de bois, perroquet (Pièce), poudre et munitions pour 24 tirs, rhum tord-boyaux.
+
+Avec ses prothèses, Long Drong ne subit pas de pénalité parce qu'il lui manque des membres (voir page 308 de **WFJDR**). *(`MDG 16 l.409`)*
+
+**Rhum tord-boyaux :** un mélange de rhum, de Poudre noire et de copeaux de fer. Considéré comme deux verres et celui qui le boit doit effectuer un Test de Résistance à l'alcool. En cas d'échec, il est pris de maux de ventre et de flatulences. Le Personnage subit alors une pénalité de –20 sur ses Tests de Charme et reçoit le Trait *Perturbant* jusqu'à ce qu'il redevienne sobre. *(`MDG 16 l.411`)*
+
+**La Belle Fregar (navire) :** Équipage 30 · Propulsion à vapeur M (É) 6 (10) · Man – · Taille 45 · E 85 · B 150 · Contenance 700 · Traits et Améliorations : Bélier, Propulsion à vapeur, Renforcé, Robuste, Solide. *(`MDG 16 l.417`)* **Flancs de fer :** la Coque en métal lui donne son Endurance élevée et son Trait Renforcé ; les Éclats d'un Coup Critique peuvent être ignorés, mais un Coup Critique sur le Gréement ou les Avirons fait lancer dans le tableau Panne de vapeur. **Carburant :** le moteur consomme 1 Enc de charbon par heure (2 Enc de bois si alimenté au bois). *(`MDG 16 l.423-431`)*
+
+# **WULFRIK, CHAMPION DES SARLS**
+
+Ce géant par la taille est le champion le plus craint et le plus révéré des Sarls. Il vogue sur la Mer des Griffes et au-delà, pillant et massacrant pour apporter toujours davantage de gloire à son nom. Il porte la marque des dieux du Chaos sur sa chair. Rien ne lui fait plus plaisir que vaincre d'autres champions en combat singulier. *(`MDG 16 l.438-444`)*
+
+| WULFRIK – CHAMPION DES SARLS (OR 2) | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
+|-------------------------------------|---|----|----|----|----|----|----|-----|-----|----|-----|----|
+|                                     | 4 | 83 | 34 | 62 | 51 | 48 | 62 | 64  | 39  | 78 | 53  | 28 |
+
+**Compétences :** Athlétisme 72, Calme 88, Commandement 68, Corps à corps (Base 88, Deux mains 93), Divertissement (Narration) 68, Escalade 82, Esquive 82, Intimidation 92, Intuition 68, Langue (Gospodarin 54, Reikspiel 64), Natation 74, Orientation 78, Perception 63, Pistage 73, Prière 58, Ramer 77, Résistance 81, Résistance à l'alcool 86, Savoir (Guerre 74, Histoire 54, Navigation 84, Religion 49), Survie en extérieur 68, Voile 77
+**Talents :** Ambidextre, Assaut féroce, Battement, Bonnes jambes, Chanceux 2, Charge berserk, Combat déloyal 3, Combat instinctif 2, Combattant au contact, Coup puissant, Déterminé, Dur à cuire, Effrayant 2, Endurci, Ergoteur, Guerrier né, Impitoyable, Inébranlable, Loup de mer, Maîtrise du combat 4, Maniement de deux armes, Marinier, Menaçant, Noctambule, Pied marin, Pilote, Porte-bouclier, Présence imposante, Renversement, Robuste 3, Sans peur (Tout), Vigilance, Volonté de fer
+**Traits :** Arme (Bouclier) +9, Arme (Épée bâtarde) +12, Armure 4 (9), Champion, Corruption (Mineure)
+**Possessions :** armure lourde, bouclier, crânes trophées, épée bâtarde.
+
+**Champion élu du Chaos :** tous les Tests de Charme, de Commandement ou d'Intimidation effectués par ce personnage pour tenter d'influencer un suivant du Chaos reçoivent un +10 supplémentaire. *(`MDG 16 l.466`)*
+
+**Chasseur de têtes :** quand Wulfrik inflige une Blessure Critique, il peut décider de lancer les dés dans le tableau Blessures Critiques à la Tête au lieu de celui de la localisation normale. *(`MDG 16 l.468`)*
+
+**Tueur de champions :** Wulfrik gagne un point d'Avantage quand il affronte un chef ou un champion ennemi en combat singulier. *(`MDG 16 l.470`)*
+
+**Kotfotr (navire) :** Équipage 45 · Voile M (É) 6 (5) · Avirons M (É) 8 (35) · Man +1 · Taille 25 · E 55 · B 80 · Contenance 1 000 · Traits : Bélier. **Bénédiction des dieux :** toutes les attaques à distance contre le Kotfotr sont considérées comme des Tests Complexes (–10). *(`MDG 16 l.450-452`)*
+
+# **ARCHISEIGNEUR DES MERS VRISK GRATTE-LE-FER**
+
+Vrisk Gratte-le-Fer est l'Archiseigneur des mers du clan Skorbut. Il a touché le pilier des Commandements au Grand Rassemblement de 2302 et gagné le droit de siéger au conseil des Treize. Il a fait construire une marine skaven efficace pour le clan Skorbut, dont la flotte récolte une fortune grâce à la piraterie depuis Port de l'Échine. *(`MDG 16 l.475-485`)*
+
+| VRISK GRATTE-LE-FER – ARCHISEIGNEUR DES MERS DU CLAN SKORBUT | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
+|-------------------------------------------------------------|---|----|----|----|----|----|----|-----|-----|----|-----|----|
+|                                                             | 5 | 74 | 70 | 73 | 73 | 78 | 66 | 60  | 85  | 70 | 30  | 28 |
+
+**Compétences :** Athlétisme 96, Calme 85, Commandement 55, Corps à corps (Armes d'hast 99, Base 94), Escalade 98, Esquive 96, Intimidation 98, Intuition 98, Langue (Reikspiel 90, Tiléen 90), Métier (Charpentier) 80, Natation 98, Orientation 103, Pari 105, Perception 98, Projectiles (Armes à projectiles skavens) 95, Ragot 50, Ramer 98, Résistance 83, Savoir (Guerre 95, Histoire 95, Navigation 105, Politique 105), Survie en extérieur 105, Voile 86
+**Talents :** Ambidextre, Battement, Bonnes jambes, Chanceux 13, Combat instinctif 3, Combattant en espace clos, Coup puissant, Feinte, Frappe blessante, Frappe précise, Fuite !, Grimpeur, Guerrier né, Inébranlable, Infatigable, Maîtrise du combat 3, Maniement de deux armes, Marinier, Menaçant 3, Nageur endurant, Perspicace, Pied marin, Pilote, Rat d'égout, Réflexes foudroyants, Seigneur de guerre, Sens aiguisé (Odorat), Souplesse féline, Tir précis, Tir rapide, Très fort, Très résistant, Vigilance, Vivacité
+**Traits :** À distance (Pistolet) (10) +7, Arme (Épée) +12, Arme (Hallebarde) +12, Armure 4 (11), Infecté, Vision nocturne
+**Possessions :** armure de malepierre complète, bourse contenant 425 grammes de malepierre raffinée, pistolet patte d'oie à malepierre, épée, hallebarde.
+
+**Alimenté par la malepierre (1 fragment) :** Vrisk a besoin de consommer une certaine quantité de malepierre raffinée chaque semaine. S'il passe une semaine sans consommer 1 fragment (28 grammes) de malepierre raffinée, réduisez toutes ses Caractéristiques à pourcentage de 20 et son Talent Chanceux 13 devient Chanceux 3. *(`MDG 16 l.502`)*
+
+**Favori du Rat Cornu :** Vrisk a touché le pilier des Commandements et y a survécu. Il possède 3 points de Destin et 3 points de Résilience. *(`MDG 16 l.504`)*
+
+**Armure de malepierre :** cette armure fournit une protection et constitue une Influence corruptrice Mineure pour quiconque affronte celui qui la porte au corps à corps. *(`MDG 16 l.506`)*
+
+**Pistolet patte d'oie à malepierre :** Enc 1 · Portée 10 · Dégâts +7 · Atouts et Défauts : Dangereuse, Imprécise, Malepierre, Recharge 5, Tir de zone 5. **Malepierre :** toute attaque de Vrisk infligeant une Blessure Critique cause également une Exposition Mineure à la Corruption. *(`MDG 16 l.513-515`)*
+
+**Les Crocs de Port de l'Échine (navire) :** Équipage 75 · Roue à aubes M (É) 5 (25) · Man – · Taille 60 · E 55 · B 200 · Contenance 1 000. 10 canons navals à malefoudre sur le pont. **Roue à aubes :** les Tests de Navigation utilisent l'Intimidation du capitaine plutôt que Voile ou Ramer ; pour passer en marche arrière, le capitaine effectue un Test de **Commandement** ou d'**Intimidation Intermédiaire (+0)**. *(`MDG 16 l.523-527`)*
+
+**Canon naval à malefoudre (artillerie skaven) :** Enc 80 · Portée 200 · Dégâts +15 · Atouts et Défauts : À Poudre noire, Arme d'équipe 4, Dangereuse, Malepierre, Recharge 8, ZAP ! **ZAP ! :** ces armes réduisent les PA de 1 et ignorent les PA venant d'une armure en métal. *(`MDG 16 l.534-536`)*

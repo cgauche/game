@@ -5940,3 +5940,139 @@ Tableau des munitions à poudre noire ...... 102
 | Valets de la Mort, les 11                |
 | Z                                        |
 | Zélotes de Myrmidia, les 75              |
+
+---
+
+<!-- MDG-INTEGRATION --> equipement
+
+## [MDG 12] La Mer des Griffes — Navires et construction navale
+
+*Pages PDF 96-107*
+
+### Exemples de bateaux
+
+| Nom du navire | Coût | Équipage | Voiles M (É) | Avirons M (É) | Man | Taille | E | B | Contenance | Traits et Améliorations |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Coracle | 2 CO | 1 | – | 3 (1) | – | 3 | 25 | 10 | 10 | – |
+| Chaloupe | 6 CO | 2 | – | 3 (1) | +2 DR | 10 | 35 | 10 | 60 | – |
+| Esquif | 45 CO | 3 | 3 (2) | 3 (2) | +1 DR | 15 | 40 | 20 | 120 | – |
+| Barge | 225 CO | 4 | 3 (3) | 3 (4) | – | 20 | 45 | 60 | 300 | – |
+| Grande barge | 445 CO | 4 | 3 (3) | 3 (4) | – | 30 | 45 | 90 | 500 | – |
+| Bateau de patrouille | 655 CO | 15 | 4 (4) | 4 (12) | – | 25 | 60 | 120 | 80 | Bélier, Renforcé 2, Solide 2 |
+| Knarr | 60 CO | 4 | 4 (2) | 3 (4) | –1 DR | 15 | 40 | 30 | 150 | Peu maniable |
+| Langskip | 250 CO | 32 | 4 (4) | 6 (30) | – | 25 | 50 | 60 | 100 | – |
+| Cogue | 300 CO | 15 | 5 (8) | – | –1 DR | 25 | 45 | 50 | 300 | Peu maniable, Robuste |
+| Caraque | 550 CO | 20 | 5 (10) | – | – | 35 | 55 | 90 | 600 | Robuste |
+| Galère de guerre | 600 CO | 35 | 6 (16) | 4 (30) | – | 35 | 65 | 100 | 150 | Bélier, Renforcé, Solide |
+| Loup impérial | 1 200 CO | 50 | 7 (30) | 4 (40) | – | 55 | 75 | 180 | 500 | Bélier, Renforcé, Solide |
+| Croiseur | 3 500 CO | 90 | 8 (80) | – | – | 60 | 75 | 275 | 1 400 | Renforcé, Solide |
+| Galion bretonnien | 2 500 CO | 90 | 8 (60) | – | – | 60 | 75 | 220 | 600 | Renforcé, Solide |
+| Caravelle tiléenne | 550 CO | 20 | 7 (12) | – | – | 40 | 55 | 100 | 650 | Robuste |
+| Chébec arabien | 500 CO | 35 | 7 (15) | 4 (30) | – | 40 | 60 | 80 | 400 | Solide |
+| Boutre d'Inja | 400 CO | 15 | 5 (8) | – | – | 25 | 45 | 60 | 300 | – |
+| Bateau-trésor cathayen | 10 000 CO | 220 | 9 (200) | – | – | 130 | 50 | 400 | 4 000 | – |
+
+*(Espace occupé par occupant selon Taille : Très Petite 0,25 / Petite 0,5 / Moyenne 1 / Grande 3 / Énorme 9 / Monstrueuse 27 espaces d'équipage. — MDG 12 l.25–33)*
+
+### Caractéristiques de bateau standard
+
+| Taille du navire | Coût | Équipage | Voiles M (É) | Avirons M (É) | Man | Taille | E | B | Contenance |
+|---|---|---|---|---|---|---|---|---|---|
+| Minuscule | 10 CO | 1 | 3 (1) | 3 (1) | – | 1-10 | 35 | 10 | 50 |
+| Très Petite | 50 CO | 2 | 4 (2) | 4 (2) | – | 11-15 | 40 | 20 | 100 |
+| Petite | 200 CO | 5 | 5 (4) | 5 (12) | – | 16-20 | 40 | 60 | 200 |
+| Moyenne | 500 CO | 20 | 6 (8) | 5 (20) | – | 21-35 | 40 | 90 | 400 |
+| Grande | 1 000 CO | 30 | 7 (15) | 4 (30) | – | 36-50 | 50 | 150 | 1 000 |
+| Énorme | 2 500 CO | 50 | 8 (30) | – | – | 51-80 | 50 | 250 | 2 000 |
+| Monstrueuse | 5 000 CO | 100 | 9 (80) | – | – | 81+ | 50 | 400 | 4 000 |
+
+### Construction navale — modificateurs de coût
+
+**Étape 3 — Manœuvrabilité** (`MDG 12 l.139–143`) :
+
+| Modificateur de Manœuvre | Modificateur de coût |
+|---|---|
+| –2 DR | –40 % |
+| –1 DR | –20 % |
+| +1 DR | +20 % |
+
+**Étape 4 — Vitesse** (`MDG 12 l.149–164`) :
+
+| Trait de vitesse | Mod. vitesse | Mod. Contenance | Mod. Man | Mod. coût |
+|---|---|---|---|---|
+| Escargot | –3 | Double la Contenance | –2 DR | – |
+| Très lent | –2 | +50 % de Contenance | –1 DR | – |
+| Lent | –1 | +25 % de Contenance | – | – |
+| Moyen | – | – | – | – |
+| Rapide | +1 | –25 % de Contenance | – | – |
+| Très rapide | +2 | –50 % de Contenance | – | +10 % |
+| Foudroyant | +3 | –75 % de Contenance | – | +10 % |
+
+### Coûts et Poids des Améliorations de navire
+
+| Amélioration | Coût | Poids (Enc) | Réf. |
+|---|---|---|---|
+| Ancre | 10 CO (Petits/Moyens) ; 20 CO (plus grands) | 50 (Petite-Moyenne) ; 75 (plus grands) | `MDG 12 l.207–209` |
+| Bélier | 15 CO (Min/T.Pt) ; 30 CO (Pt/Moy) ; 60 CO (Grands) ; 120 CO (Énormes) ; 240 CO (Monstrueux) | 30 / 60 / 120 / 240 / 480 (mêmes paliers) | `MDG 12 l.217–219` |
+| Blindage (bronze) | 250 CO / 5 m (Pt-Moy) ; 500 CO / 5 m (plus grands) | 175 / 5 m | `MDG 12 l.225–228` |
+| Blindage (fer) | 330 CO / 5 m (Pt-Moy) ; 560 CO / 5 m (plus grands) | 160 / 5 m | `MDG 12 l.225–228` |
+| Cabine de luxe | 155 CO / cabine | 40 / cabine | `MDG 12 l.240–242` |
+| Clinfoc | 5 / 20 / 40 / 80 / 160 / 320 / 600 CO (Min→Monstrueux) | 5 / 25 / 45 / 70 / 135 / 240 / 430 | `MDG 12 l.248–250` |
+| Embarcation de bord | = modèle de l'embarcation | = modèle de l'embarcation | `MDG 12 l.268–270` |
+| Figure de proue | 2 CO | 10 | `MDG 12 l.276–278` |
+| Lissage | 66 CO / 5 m (Min-Moy) ; 132 CO / 5 m (plus grands) | aucun | `MDG 12 l.289–291` |
+| Nid-de-pie | 5 CO (Pt-Moy) ; 20 CO (plus grands) | 5 (Pt-Moy) ; 20 (plus grands) | `MDG 12 l.299–301` |
+| Propulsion à vapeur | 500 CO | 200 | `MDG 12 l.307–309` |
+| Ralentisseurs latéraux | 10 / 45 / 75 / 140 / 200 / 350 / 500 CO (Min→Monstrueux) | 15 / 40 / 50 / 110 / 150 / 300 / 550 | `MDG 12 l.317–354` |
+| Sabord | 15 CO (Min-Moy) ; 85 CO (plus grands) | +0 | `MDG 12 l.358–360` |
+
+### Table — Panne de Vapeur (d100)
+
+| d100 | Effet |
+|---|---|
+| 01-40 | **Le moteur broute** : le moteur saute un tour et perd de la vitesse. Pendant les 1d10 prochains Rounds, le M du vaisseau est réduit de 3. |
+| 41-60 | **Fuite de vapeur** : un jet de vapeur jaillit de la chaudière. La personne qui s'occupe du moteur doit réussir un Test d'Initiative sous peine d'être ébouillantée et de subir 1d10–5 Dégâts (1 minimum), qui ignorent l'Armure. |
+| 61-70 | **Perte de pression** : le moteur cesse de fonctionner. Le M du bateau tombe à 0 jusqu'à ce que quelqu'un réussisse un Test de Métier (Ingénieur) Intermédiaire (+0) pour redémarrer l'engin. Il faut ensuite attendre 5–DR Rounds jusqu'à ce que la pression soit suffisante. |
+| 71-90 | **Feu éteint** : l'eau inonde la chambre de combustion, ce qui arrête le moteur. Le M tombe à 0. Il faut réussir un Test étendu de Force Intermédiaire (+0) avec un total de 10 DR pour retirer les morceaux de charbon humides et les remplacer, puis un Test de Métier (Ingénieur) Intermédiaire (+0) pour redémarrer le moteur, puis attendre 5–DR Rounds. |
+| 91-95 | **Rupture du réservoir** : une plaque se dévisse et laisse passer de la vapeur. Le M est réduit de 3. Le moteur ne peut être réparé qu'une fois refroidi : retirer les morceaux de charbon, attendre 20+1d10 minutes, réussir un Test de Métier (Ingénieur) Complexe (–10) pour le réparer et un autre Intermédiaire (+0) pour le redémarrer, puis attendre 5–DR Rounds. |
+| 96-00 | **Explosion** : la chaudière explose, détruisant le moteur et infligeant un Coup Critique à la Coque. Quiconque se trouve dans le même compartiment subit 12 Dégâts avec l'Atout d'arme Perforante. |
+
+### Tableau des pièces d'artillerie
+
+| Arme | Prix | Enc | Disponibilité | Portée | Dégâts | Atouts et Défauts |
+|---|---|---|---|---|---|---|
+| Baliste *(Arbalète)* | 30 CO | 20 | Limitée | 100 | +12 | Arme d'équipe 2, Pointue, Recharge 3 |
+| Canon (petit) *(Poudre noire)* | 40 CO | 30 | Limitée | 50 | +10 | Arme d'équipe 2, Dangereuse, Recharge 4 |
+| Canon (moyen) *(Poudre noire)* | 100 CO | 50 | Exotique | 75 | +14 | Arme d'équipe 3, Dangereuse, Recharge 6 |
+| Canon (grand) *(Poudre noire)* | 250 CO | 75 | Exotique | 150 | +16 | Arme d'équipe 4, Dangereuse, Recharge 8 |
+| Mortier *(Poudre noire)* | 50 CO | 50 | Exotique | 100 | – | Arme d'équipe 3, Recharge 4 |
+| Pierrier *(Poudre noire)* | 20 CO | 5 | Rare | 30 | +14 | Dangereuse, Recharge 4 |
+
+### Tableau des munitions pour pièces d'artillerie
+
+| Arme | Prix | Enc | Disponibilité | Portée | Dégâts | Atouts et Défauts |
+|---|---|---|---|---|---|---|
+| Carreau *(Baliste)* | 4/– | 0 | Limitée | Comme l'arme | – | Empaleuse, Perforante |
+| Carreau nain norse *(Baliste)* | 8/– | 0 | Limitée | Comme l'arme | – | Brise-coque, Empaleuse, Perforante |
+| Boulet et poudre *(Canon)* | 8/– | 1 | Limitée | Comme l'arme | – | Explosion 2, Percutante |
+| Mitraille et poudre *(Canon)* | 6/6 | 0 | Exotique | Quart de l'arme | –5 | Tir de zone 5 |
+| Bombe *(Mortier)* | 3 CO | 0 | Rare | Comme l'arme | +12 | Dangereuse, Explosion 5, Percutante |
+| Bombe incendiaire *(Mortier)* | 1 CO | 0 | Limitée | Moitié de l'arme | Spécial* | Dangereuse, Explosion 4 |
+| Balles et poudre pour 1 tir *(Pierrier)* | 2/2 | 0 | Commune | Comme l'arme | +1 | Empaleuse, Perforante, Tir de zone 3 |
+| Petites munitions et poudre pour 1 tir *(Pierrier)* | 2/2 | 0 | Commune | Comme l'arme | – | Tir de zone 6 |
+
+\* Une bombe incendiaire fait subir à toutes les cibles affectées 1 +DR États *En flammes* (`MDG 12 l.426`).
+
+### Placement des canons sur le pont (`MDG 12 l.432–433`)
+
+- Poids des pièces d'un côté **> 25 % de la Contenance** → **–1** au M et à la Man, **–1 DR** aux Tests de Navigation.
+- Poids des pièces d'un côté **> 50 % de la Contenance** → **–2** au M et à la Man, **–2 DR** aux Tests de Navigation.
+
+### Arme d'équipe — équipage incomplet (`MDG 12 l.448–456`)
+
+| Équipage présent | Arme d'équipe 2 | Arme d'équipe 3 | Arme d'équipe 4 |
+|---|---|---|---|
+| 4 | N/A | N/A | N/A |
+| 3 | N/A | N/A | Temps de Recharge doublé |
+| 2 | N/A | Temps de recharge doublé | Reçoit le Défaut Imprécise |
+| 1 | Temps de recharge doublé | Reçoit le Défaut Imprécise | Reçoit le Défaut Dangereuse |

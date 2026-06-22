@@ -2133,3 +2133,80 @@ Tout démon portant l'anneau peut ignorer le Trait de créature Instable et ne p
 Les mortels portant l'anneau gagnent à la place tous les effets du sort Aura ordinaire.
 
 Malheureusement, comme l'anneau est maintenant, et depuis de nombreuses années, imprégné des énergies démoniaques de Gideon, il est dangereux. Pour chaque mois pendant lequel il est porté par un mortel, un Test de **Résistance** à une exposition mineure à la Corruption doit être effectué. Cette souillure ne peut être supprimée que par de rares rituels et sorts de du Domaine de la Lumière.
+
+---
+
+<!-- MDG-INTEGRATION --> magie
+
+## [MDG 02] Magie des mers
+
+*Pages PDF 12-22*
+
+# **Magie des mers**
+
+Le collège du baron Henryk (Marienburg) enseigne des Sorts particulièrement bien adaptés à la vie en mer, peu connus en dehors de Marienburg, rattachés au Domaine de la Vie (*Ghyran*) et au Domaine des Cieux (*Azyr*). Les modificateurs des Vents en mer (Bête, Feu, Cieux, Vie) sont détaillés dans [`magie.md`](magie.md#magie-des-mers--modificateurs-des-vents-en-mer).
+
+# **Domaine de la Vie**
+
+### **Bourbier vivant**
+
+**NI :** 8
+
+**Portée :** (Force Mentale) mètres × 10
+
+**Cible :** Un navire
+
+**Durée :** (Bonus de Force Mentale) minutes
+
+Face à un bateau en mer, vous produisez une gerbe d'algues. Les plantes visqueuses entourent le vaisseau, qui s'enlise dedans. Tant qu'il est pris dans le bourbier, le bateau subit -2 à sa Caractéristique de Mouvement et ajuste sa Caractéristique de Manœuvre de -3 DR. Il est possible d'ordonner à l'équipage de couper les algues pour dégager la coque avec un Test étendu de **Navigation Intermédiaire (+0)** sur un nombre de cibles égal au Bonus de Force Mentale + DR du lanceur du sort.
+
+### **Que d'eau, que d'eau**
+
+**NI :** 6
+
+**Portée :** Vous **Cible :** Un navire **Durée :** Instantané
+
+Vous rassemblez *Ghyran* depuis la mer et vous emportez de petites quantités d'eau grâce à lui. Nettoyée de toutes ses impuretés, cette eau s'écoule dans les réserves du navire et remplit d'eau tous les tonneaux vides.
+
+### **Tourbillon**
+
+**NI :** 6
+
+**Portée :** (Force Mentale) mètres × 10 **Cible :** ZdE (Force Mentale) mètres **Durée :** (Bonus de Force Mentale) Rounds
+
+Vous tirez sur le *Ghyran* entourant la zone ciblée et vous le faites tourner sur lui-même. L'eau se met à bouillonner et un tourbillon se forme dans la zone ciblée. Les tourbillons sont décrits en page 113. Ce Sort crée une zone de rotation lente, mais des DR peuvent être dépensés pour agrandir le tourbillon en suivant les règles de Surincantation.
+
+| DR         | Taille du tourbillon |
+|------------|----------------------|
+| 5          | Tourbillon           |
+| 8          | Puissant vortex      |
+| 13         | Maelstrom            |
+| 21 ou plus | Maelstrom primordial |
+
+# **Domaine des Cieux**
+
+### **Bienfait de Bel Shanaar**
+
+**NI :** 2
+
+**Portée :** Vous **Cible :** Vous **Durée :** 1 jour
+
+Ce Sort doit être lancé au cours d'un voyage à la destination prédéterminée, et cette destination doit être un lieu connu du lanceur. Vous fermez les yeux et vous focalisez votre Seconde vue sur les cieux, suivant la trajectoire d'*Azyr* tandis qu'il crépite dans le ciel et semble sauter d'étoile en étoile. Pendant un instant, un éclair d'*Azyr* vous relie à votre destination et laisse une image rémanente bleue et scintillante dans votre vision. Pendant toute la durée du Sort, tous les Tests d'Orientation effectués par le sorcier (ou impliquant le sorcier dans le cas des Tests d'équipage) bénéficient de +2 DR.
+
+### **Mer d'huile**
+
+**NI :** 10 **Portée :** Vous
+
+**Cible :** ZdE (Bonus de Force Mentale) milles **Durée :** (Bonus de Force Mentale) minutes
+
+Vous hurlez à tous ceux à bord de votre vaisseau de se taire et vous fermez les yeux. Un silence inquiétant enveloppe d'abord le navire, puis la zone qui l'entoure. Les voiles se dégonflent et les vagues se calment. L'effet Calme plat du tableau Effet du vent (voir page 107) s'applique pendant toute la durée du Sort.
+
+### **Solution de tir optimal de Niezlib**
+
+**NI :** 6
+
+**Portée :** (Bonus de Force Mentale) mètres
+
+**Cible :** Un navire **Durée :** Un Round
+
+Ce Sort est une variante d'une création du seigneur astromancien Wilfried-Gotthelm Niezlib, qui cherchait à l'utiliser pour prouver ses théories concernant le mouvement des corps célestes. Il s'est ensuite rendu compte que cette magie avait des applications plus concrètes et l'a modifiée pour déterminer le moment exact auquel un bateau doit tirer une bordée. Le lanceur peut calculer le roulis du vaisseau, la distance par rapport à la cible, le poids des boulets de canon et la puissance de chaque tir. Pendant toute la durée du Sort, les Tests effectués pour tirer avec un canon bénéficient de +1 DR.

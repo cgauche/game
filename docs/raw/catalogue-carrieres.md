@@ -5592,3 +5592,9 @@ Le Morrspark ................................. 91 Le Temple de Myrmidia.........
 **Middenheim : la Cité du Loup Blanc** propose aussi le meilleur de ce qui a déjà été écrit sur la cité d'Ulric, et y ajoute de nouvelles créatures, des PNJ inédits, des établissements et lieux originaux, ainsi que des règles additionnelles pour les groupes désireux de s'aventurer dans Middenheim et ses alentours. D'autres options permettant de créer des personnages originaires de Middenheim, du Middenland ainsi que du Nordland sont incluses, avec une nouvelle Carrière pour les vrais fi dèles d'Ulric.
 
 Prix de vente : 20,00 €
+
+---
+
+<!-- MDG-INTEGRATION --> carrieres
+
+Les entrées catalogue proposées sont fidèles à la source (reproduction de données de Carrières + tableaux + traits, sans réf `MDG NN l.X` à vérifier). Spot-checks confirmés : page-ranges (PDF 67-84 pour 09, PDF 52-62 pour 07), niveaux Bronze/Argent/Or de chaque Carrière, compétences/talents/possessions par niveau, variante hauts elfes Projectiles (Arbalète), absence de schéma de progression pour l'Officier (correctement omise), tableau d100 norse, texte du Trait Marque de Khorne. Aucune correction nécessaire — entrées laissées telles quelles.

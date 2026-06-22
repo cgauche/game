@@ -50,6 +50,10 @@
 - [Sorcellerie (domaine hors-Collège)](#sorcellerie-domaine-hors-college)
 - [Bilan de fidélité](#bilan-de-fidelite)
 
+- **La Mer des Griffes (MDG)** <!-- MDG-INTEGRATION -->
+- Magie des mers — modificateurs des Vents en mer (Bête/Feu/Cieux/Vie) — `MDG 02 l.178-186`
+- Sorts de magie des mers (collège du baron Henryk) — 6 sorts Vie/Cieux — `MDG 02 l.189-262`
+
 ---
 
 ## L'Aethyr et les Vents de Magie
@@ -668,6 +672,55 @@ Les catalogues de sorts (NI, portée, cible, durée, description mécanique) son
 Les specs curées de tous ces sorts sont dans `src/data/spellspecs/` (une entrée par sort, couvrant les 243 sorts) — voir `src/engine/spellspec.ts`.
 
 ---
+
+
+---
+
+<!-- MDG-INTEGRATION -->
+
+## Magie des mers — modificateurs des Vents en mer
+
+**Sources RAW :** `MDG 02 l.178-186`
+
+Le « Département des arts magiques maritimes » du collège du baron Henryk (Marienburg) prévient les apprentis que les Vents de Magie se rassemblent et soufflent de manière étrange sur les mers. Certains Vents sont plus difficiles à contrôler, d'autres déferlent en rafales écrasantes. Les modificateurs suivants s'appliquent aux Tests de **Focalisation** et d'**Incantation** en mer, par Domaine :
+
+- **Domaine de la Bête (*Ghur*)** : la définition de Maladresse — et de Critique — est élargie pour les Sorts de ce Domaine. Les Incantations/Focalisations critiques **et** les Maladresses se produisent à la fois sur les **doubles** et sur les **résultats se terminant par un 0** (Ghur repose parmi les bêtes de l'abysse et peut réagir au lanceur).
+- **Domaine du Feu (*Aqshy*)** : les Tests de **Focalisation** subissent **−1 DR** en mer (*Aqshy* est difficile à invoquer). **Exception** : si un bateau est actuellement rongé par les flammes, Focaliser *Aqshy* sur ce vaisseau donne **+1 DR** (en plus des bénéfices normaux des États *En flammes* appliqués au Domaine du Feu — cf. Attribut Feu LDB 48).
+- **Domaine des Cieux (*Azyr*)** : météo-dépendant. Les Sorts du Domaine des Cieux lancés pendant une **Violente tempête** bénéficient de **+1 DR** aux Tests d'**Incantation** ; ceux lancés en période de **Calme plat** subissent **−1 DR** aux Tests d'**Incantation**.
+- **Domaine de la Vie (*Ghyran*)** : *Ghyran* sature les mers (puissance facile pour un sorcier de Jade) mais fluctue. Les **DR des Tests de Focalisation sont doublés** sur les mers, mais une **Focalisation Critique** y donne une **Incantation Imparfaite Majeure** (au lieu de Mineure). Avec le Talent **Harmonisation aethyrique**, on lance sur le tableau des Incantations Imparfaites **Mineures** à la place.
+
+> **Verbatim** (l.180) : « Pour les Sorts de ce Domaine, les Incantations et Focalisations critiques ainsi que les Maladresses se produisent à la fois sur les doubles et les résultats se terminant par un 0. »
+
+> **Verbatim** (l.182) : « Les Tests de Focalisation pour ce Domaine subissent -1 DR. Cependant, si un bateau est en feu, *Aqshy* se précipite vers lui. Focaliser *Aqshy* sur un vaisseau actuellement rongé par les flammes donne +1 DR »
+
+> **Verbatim** (l.184) : « Les Sorts du Domaine des Cieux lancés pendant une Violente tempête bénéficient de +1 DR sur les Tests d'Incantation. Les Sorts lancés en période de Calme plat subissent -1 DR sur les Tests d'Incantation. »
+
+> **Verbatim** (l.186) : « Les DR des Tests de Focalisation sont doublés sur les mers, mais une Focalisation Critique donne une Incantation Imparfaite Majeure au lieu de Mineure. Si vous possédez le Talent *Harmonisation aethyrique*, faites un lancer sur le tableau des Incantations Imparfaites Mineures à la place. »
+
+**Voir aussi :** [Focalisation (Test étendu)](#focalisation-test-etendu), [Focalisation Critique](#focalisation-critique), [Maladresse de Focalisation](#maladresse-de-focalisation), [Domaine du Feu (Aqshy — Vent Rouge)](#domaine-du-feu-aqshy--vent-rouge)
+
+**Implémente :** non-implémenté (modificateurs environnementaux « en mer » — nécessiterait un contexte naval/météo de scène ; règle de naval-combat MDG hors périmètre actuel du moteur).
+
+---
+
+## Sorts de magie des mers (collège du baron Henryk)
+
+**Sources RAW :** `MDG 02 l.189-262`
+
+Le collège du baron Henryk enseigne des Sorts particulièrement adaptés à la vie en mer, peu connus hors de Marienburg, rattachés aux Domaines de la **Vie** (*Ghyran*) et des **Cieux** (*Azyr*). Six sorts sont décrits (NI, portée, cible, durée, effet mécanique → transcrits dans [`catalogue-sorts.md`](catalogue-sorts.md)) :
+
+- **Domaine de la Vie** — *Bourbier vivant* (NI 8 : enlise un navire, −2 Mouvement et −3 DR de Manœuvre, dégagement par Test étendu de Navigation) ; *Que d'eau, que d'eau* (NI 6 : purifie et remplit les tonneaux d'eau du navire) ; *Tourbillon* (NI 6 : crée un tourbillon dans la ZdE, agrandissable par Surincantation — Tourbillon / Puissant vortex / Maelstrom / Maelstrom primordial selon le DR).
+- **Domaine des Cieux** — *Bienfait de Bel Shanaar* (NI 2 : +2 DR aux Tests d'Orientation du sorcier vers une destination connue) ; *Mer d'huile* (NI 10 : impose l'effet *Calme plat* du tableau Effet du vent sur la ZdE) ; *Solution de tir optimal de Niezlib* (NI 6 : +1 DR aux Tests pour tirer au canon depuis le navire).
+
+Ces sorts manipulent des objets de jeu « navals » (navire, Manœuvre, tourbillon, Effet du vent, canon) propres aux règles maritimes de MDG ; seul *Bienfait de Bel Shanaar* (bonus d'Orientation) relève d'une mécanique générique RAW déjà supportée.
+
+> **Verbatim** (l.205, *Bourbier vivant*) : « Tant qu'il est pris dans le bourbier, le bateau subit -2 à sa Caractéristique de Mouvement et ajuste sa Caractéristique de Manœuvre de -3 DR. »
+
+> **Verbatim** (l.262, *Solution de tir optimal de Niezlib*) : « Pendant toute la durée du Sort, les Tests effectués pour tirer avec un canon bénéficient de +1 DR. »
+
+**Voir aussi :** [Magie des mers — modificateurs des Vents en mer](#magie-des-mers--modificateurs-des-vents-en-mer), [Surincantation](#surincantation), [Zone d'Effet (ZdE)](#zone-deffet-zde)
+
+**Implémente :** non-implémenté (sorts navals MDG ; à ajouter en données `src/data/spellspecs/` si les règles maritimes de MDG entrent dans le moteur).
 
 ## Bilan de fidélité
 

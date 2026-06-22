@@ -20,6 +20,7 @@ export const BOOKS = [
   ['Altdorf', "Source/Warhammer v4 - Aldorf la Couronne de l'Empire"],
   ['Ubersreik', 'Source/Warhammer v4 - Aventures a Ubersreik'],
   ['NADAJ', 'Source/Warhammer v4 - Nuits agitees & dures journées'],
+  ['MDG', 'Source/WH - V4 - La Mer de Griffe'],
 ]
 
 const BOOK_DIR = new Map(BOOKS)

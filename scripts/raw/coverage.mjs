@@ -32,6 +32,7 @@ const HORS_REGLE = new Set([
   'Middenheim 1', 'Middenheim 2', 'Middenheim 3', 'Middenheim 5', 'Middenheim 6',
   'EDOC 2', 'EDOC 3', 'EDOC 5', 'EDOC 10', 'EDOC 11', 'EDOC 13', 'EDOC 14', 'EDOC 15', 'EDOC 16',
   'T2C 2', 'T2C 3', 'T2C 5', 'T2C 6', 'T2C 8', 'T2C 10', 'T2C 11', 'T2C 17', 'T2C 18', 'T2C 19',
+  'MDG 1', 'MDG 3', 'MDG 4', 'MDG 5', 'MDG 6', 'MDG 8', // gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles
 ])
 const isFrontMatter = (t) => /^index$|^introduction|avant-?propos|préface|^preface|^sommaire|^\*+$/i.test(t.trim())
 // Classe un chapitre : ✅ couvert (propriétaire ≥3 refs ligne, OU catalogue au chapitre) · 🟡 effleuré (1-2) · ⬜ trou (0).

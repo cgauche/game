@@ -25,6 +25,10 @@
 - [Catalogue du bestiaire (à transcrire séparément)](#catalogue-du-bestiaire)
 - [Bilan de fidélité](#bilan-de-fidelite)
 
+- **La Mer des Griffes (MDG)** <!-- MDG-INTEGRATION -->
+- Trait de créature : Créature marine (MDG) — `MDG 16 l.15-19`
+- Trait Redoutable — variante de formulation (MDG, clause Avantage de groupe AA) — `MDG 16 l.9-13`
+
 ---
 
 ## Introduction au Bestiaire
@@ -405,6 +409,56 @@ Les chapitres suivants du LDB listent les profils de créatures individuelles. I
 - `scripts/frenchy/import-creatures.mjs` — importe les 88 créatures frenchy.bzh.
 
 ---
+
+
+---
+
+<!-- MDG-INTEGRATION -->
+
+## Trait de créature : Créature marine (MDG)
+
+**Source RAW** : `MDG 16 l.15-19`
+
+La **Mer des Griffes** (MDG) introduit un nouveau Trait de créature, **Créature marine**, propre au bestiaire marin. Il décrit une bête adaptée à l'océan et **inadaptée à la vie sur terre**. C'est un Trait distinct d'**Aquatique** (T2C) : Aquatique permet seulement de respirer sous l'eau et de se déplacer à pleine vitesse en immersion ; **Créature marine** ajoute en plus une **pénalité hors de l'eau** et un **risque de suffocation**.
+
+Effets mécaniques (le profil suppose un environnement aquatique) :
+- Dans l'eau, la créature se déplace de **tout son M**.
+- **Sortie de l'eau** : son **M tombe à 1** et **tous ses Tests subissent −2 DR**.
+- La créature doit être **immergée pour respirer**. Hors de l'eau, elle doit être **régulièrement aspergée d'eau** sous peine de **suffoquer** (règle de suffocation p. 181 du LDB).
+
+> « La créature est chez elle dans l'océan et est inadaptée à la vie sur terre. Le profil de ce type de créature part du principe qu'elle se trouve dans un environnement aquatique et qu'elle se déplace de tout son M dans l'eau. Si elle est sortie de l'eau, son M tombe à 1 et tous les Tests qu'elle effectue subissent –2 DR. » — `MDG 16 l.17`
+
+> « Les créatures possédant le Trait *Créature marine* doivent être immergées pour respirer correctement. Si elles sont sorties de l'eau, elles doivent être régulièrement aspergées d'eau, sinon elles se mettent à suffoquer comme décrit en page 181 de **WFJDR**. » — `MDG 16 l.19`
+
+Créatures MDG portant ce Trait : Anguille mâcheprise, Stylet, Élémentaire de mer, Gargantuan, Wyrm des mers, Hydre d'os, Sangsue des abysses, Léviathan-phare, Léviathan noir, Triton (`MDG 16 l.63/82/103/129/187/224/241/259/272/305`). Les créatures **amphibies** (Baudroye, Crabe boxeur, Kharibde, Syrène bleue) ne portent **pas** ce Trait et ne subissent pas la pénalité terrestre.
+
+**Voir aussi** : [Index des Traits de créature](#index-des-traits-de-creature) ; Trait *Aquatique* (T2C) — `combat.md` § *Traits de mouvement* ; Trait *Amphibie* — `deplacement.md`.
+
+**Implémente** :
+- `(non implémenté en règle moteur)` — Trait à porter en donnée dans `traits.json` (id type `creature-marine`), `passive: GameOp[]` pour le malus hors-eau (M→1, −2 DR) conditionné à l'environnement. Le moteur n'a pas de notion d'environnement aquatique/terrestre par case ni de hook de suffocation hors-eau → effet narratif côté MJ pour l'instant.
+
+---
+
+## Trait Redoutable — variante de formulation (MDG)
+
+**Source RAW** : `MDG 16 l.9-13`
+
+La **Mer des Griffes** rappelle et reformule le Trait **Redoutable (Indice)**, déjà introduit par le Zoo Impérial (`ZI 01 l.4107`). La règle de fond est **identique** (regain d'Avantage au début du tour jusqu'à l'Indice), mais MDG en donne une formulation propre et **ajoute une clause d'interaction** avec les règles d'**Avantage de groupe** d'*Aux Armes !* (AA).
+
+- Au début de son tour, si la créature n'a pas autant d'Avantages que son **Indice** de Redoutable (par défaut **1**), elle gagne **immédiatement tous les Avantages manquants**.
+- **Pas de regain** si la créature est sous l'effet d'un État **Empêtré**, **Inconscient** ou **Surpris**.
+- **Clause AA** : avec les règles d'Avantage de groupe d'*Aux Armes !*, la créature **génère un nombre d'Avantages égal à son Indice de Redoutable pour la réserve d'Avantages des adversaires**.
+
+> « Si, au début de son tour, la créature n'a pas autant d'Avantages que son *Indice* de Redoutable le voudrait (par défaut, 1), elle gagne immédiatement tous les Avantages qui lui manquent. Si la créature est sous l'effet d'un État *Empêtré*, *Inconscient* ou *Surpris*, elle ne gagne pas d'Avantage. » — `MDG 16 l.11`
+
+> « Si vous utilisez les règles d'Avantage de groupe du supplément **Aux Armes !**, la créature génère un nombre d'Avantages égal à son Indice dans le Trait *Redoutable* pour la réserve d'Avantages des adversaires. » — `MDG 16 l.13`
+
+Indices observés dans le bestiaire MDG : Redoutable 1 (Baudroye, Hydre d'os, Sangsue des abysses), Redoutable 2 (Kharibde, Wyrm des mers, Léviathan-phare), Redoutable 3 (Élémentaire de mer, Gargantuan, Triton), Redoutable 5 (Léviathan noir). Le **Kharibde** porte un cas particulier (« **Gigue d'os** ») : son Indice passe de *Redoutable 2* à *Redoutable 4* tant qu'il reste Engagé après avoir gagné 1 Avantage en combat (`MDG 16 l.152`).
+
+**Voir aussi** : [Avantage permanent — Trait *Redoutable* (Grim) (ZI)](combat.md#avantage-permanent--trait-redoutable-grim-zi) — `combat.md` ; Avantage de groupe (AA) — `combat.md`.
+
+**Implémente** :
+- `(non implémenté en règle moteur)` — cf. `combat.md` : Trait présent en donnée (`src/data/frenchy-traits.json` id `redoutable`, desc verbatim) mais le **regain d'Avantage début de tour n'est PAS câblé**. La clause AA d'Avantage de groupe n'est pas modélisée.
 
 ## Bilan de fidélité
 
