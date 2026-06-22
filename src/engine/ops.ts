@@ -542,6 +542,9 @@ export interface OpsCtx {
   /** CAUSE de l'effarouchement courant ('noise'/'magic', LDB 85 l.197) — lue par la Condition Flow
    *  `startleCause` (exemption Dressé : Guerre ignore les bruits, Magie ignore la magie). */
   startleCause?: 'noise' | 'magic';
+  /** Un adversaire vivant est-il dans la Ligne de Vue du porteur — résout la Condition `foeInLoS`
+   *  (sortie de Frénésie, Brisé). Précalculé sur la `battle` par le dispatcher de combat. */
+  foeInLoS?: boolean;
   /** Gain de Corruption AVEC seuil → mutation (corruptionFlow) ; sans contexte
    *  store, l'op `corruption` incrémente simplement le compteur. */
   onCorruption?: (n: number) => string[];

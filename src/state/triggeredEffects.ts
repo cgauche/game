@@ -19,6 +19,8 @@ import type { CombatFeature } from '../engine/combatFeatures/types';
 import { isOutOfAction } from '../engine/conditions';
 import { isEngagedWith } from '../engine/engagement';
 import { combatDistance } from './footprint';
+import { lineOfSightCover } from './lineOfSight';
+import { smokeOf } from './combatGeometry';
 import { traitById, qualityById, findManeuverById, findTalentById, findConditionById } from '../data';
 import { difficultyFromLabel } from '../engine/tests';
 import { runSpellFlowLines } from './combatEffects';
@@ -123,6 +125,9 @@ export interface TriggerCtx { victim?: Combatant; weapon?: Weapon; rng?: RNG; ma
    *  `startleCause` (exemption Dressé : Guerre ignore les bruits, Magie ignore la magie). Posé par les
    *  émetteurs `onStartled` (arme à feu/Explosion → 'noise' ; incantation → 'magic'). */
   startleCause?: 'noise' | 'magic';
+  /** Un adversaire vivant est-il dans la Ligne de Vue du porteur — alimente la Condition Flow `foeInLoS`
+   *  (sortie de Frénésie, fuite/récupération du Brisé). Si absent, calculé sur la `battle` au déclenchement. */
+  foeInLoS?: boolean;
   /** ID de l'État qui vient d'être GAGNÉ (déclencheur `onGainCondition`) — filtre les effets dont
    *  `condition` ne le matche pas (Mâchoires d'acier : `condition:'sonne'`). */
   conditionName?: string;
@@ -159,6 +164,17 @@ function engagedAdvantageGap(get: Get, actor: Combatant): number {
   return Math.max(0, Math.max(...foes.map((e) => e.advantage ?? 0)) - (actor.advantage ?? 0));
 }
 
+/** Un adversaire VIVANT est-il dans la Ligne de Vue de `actor` ? Géométrie d'arène (au-dessus de
+ *  `lineOfSightCover`, fumées/zones bloquantes incluses) alimentant la Condition `foeInLoS` : sortie de
+ *  Frénésie (LDB 21 l.36), fuite/récupération du Brisé (LDB 16 l.55). Hors combat / sans position = false. */
+export function hasFoeInLoS(get: Get, actor: Combatant): boolean {
+  const { battle, scene } = get();
+  if (!battle || !scene || !actor.pos) return false;
+  return battle.combatants.some(
+    (f) => f.kind !== actor.kind && !isOutOfAction(f) && f.pos && !lineOfSightCover(scene, actor.pos!, f.pos, [], smokeOf(battle)).blocked,
+  );
+}
+
 /** CŒUR d'application : applique une LISTE d'effets `TriggeredEffect` de `actor` correspondant à
  *  `trigger`, chacun via `runSpellFlowLines` aux cibles résolues (`on`). Source UNIQUE : utilisé par
  *  `fireTriggers` (effets de traits/atouts) ET par les manœuvres (effets du profil de manœuvre).
@@ -172,6 +188,7 @@ export function applyTriggeredEffects(
   // Valeur RELATIONNELLE de combat calculée UNE fois pour le porteur (battle-aware) : écart d'Avantage
   // avec ses adversaires Engagés (Instable, LDB 85 l.177). Voyage dans l'opsCtx → Formula/Condition.
   const gap = ctx.engagedAdvantageGap ?? engagedAdvantageGap(get, actor);
+  const foeInLoS = ctx.foeInLoS ?? hasFoeInLoS(get, actor);
   for (const eff of effects) {
     if (eff.trigger !== trigger) continue;
     // Filtre `onGainCondition` : ne réagit qu'à l'État effectivement gagné (Mâchoires → 'sonne').
@@ -191,10 +208,10 @@ export function applyTriggeredEffects(
       // `runSpellFlowLines`, qui LÈVE (jamais de branche succès muette). Le contexte de la touche
       // (`woundsDealt`/`margin→sl`/`location`/`attackKind`) voyage dans l'opsCtx pour les Conditions `if`.
       if (flowHasTest(eff.flow) && ctx.set && testRouter) {
-        testRouter(get, ctx.set, t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, engagedAdvantageGap: gap, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause });
+        testRouter(get, ctx.set, t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, engagedAdvantageGap: gap, foeInLoS, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause });
         continue;
       }
-      lines.push(...runSpellFlowLines(t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, engagedAdvantageGap: gap, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause }));
+      lines.push(...runSpellFlowLines(t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, engagedAdvantageGap: gap, foeInLoS, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause }));
     }
   }
   return lines;

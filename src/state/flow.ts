@@ -89,6 +89,10 @@ export type Condition =
   /** Écart d'Avantage avec les adversaires Engagés (`ctx.engagedAdvantageGap`), comparé par `op` à `value`
    *  (Instable : `> 0` → la créature est repoussée et perd des PB, LDB 85 l.177). Hors combat = 0. */
   | { kind: 'engagedAdvantageGap'; op: CompareOp; value: number }
+  /** Y a-t-il un adversaire VIVANT dans la Ligne de Vue de `target` (`ctx.foeInLoS`) ? Géométrie d'arène
+   *  emballée en donnée (au-dessus de `lineOfSightCover`) : sortie de Frénésie « plus d'ennemi en vue → fin »
+   *  (LDB 21 l.36), fuite/récupération du Brisé « hors de vue de l'ennemi » (LDB 16 l.55). Hors combat = false. */
+  | { kind: 'foeInLoS' }
   /** Camp / RELATION d'un acteur (`who`) — gate « seulement les ennemis / les alliés / les neutres »
    *  (riders de domaine offensifs : `who:'target', is:'opponent'`). `ally`/`opponent` sont RELATIFS à
    *  l'autre acteur (même camp / camp différent) ; `party`/`neutral`/`hostile` sont ABSOLUS (le `kind`).
@@ -125,6 +129,9 @@ export interface ConditionCtx {
   attackKind?: string;
   /** CAUSE de l'effarouchement courant ('noise'/'magic') — lue par la Condition `startleCause` (exemption Dressé). */
   startleCause?: 'noise' | 'magic';
+  /** Un adversaire vivant est-il dans la Ligne de Vue du porteur — lu par la Condition `foeInLoS`
+   *  (sortie de Frénésie, fuite/récupération du Brisé). Précalculé sur la `battle` par l'appelant. */
+  foeInLoS?: boolean;
 }
 
 /** Évalue une Condition — SOURCE UNIQUE de l'évaluation des conditions (triggers, choix de dialogue,
@@ -174,6 +181,7 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
     case 'startleCause': return ctx.startleCause != null && ctx.startleCause === cond.is;
     case 'woundsDealt': return applyCompareOp(ctx.woundsDealt ?? 0, cond.op, cond.value);
     case 'engagedAdvantageGap': return applyCompareOp(ctx.engagedAdvantageGap ?? 0, cond.op, cond.value);
+    case 'foeInLoS': return !!ctx.foeInLoS;
     case 'relation': {
       const a = cond.who === 'caster' ? ctx.caster : ctx.target;
       if (!a) return false;

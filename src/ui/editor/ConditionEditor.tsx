@@ -52,6 +52,7 @@ const KIND_OPTIONS: [Condition['kind'], string][] = [
   ['startleCause', 'Cause d’effarouchement'],
   ['woundsDealt', 'Blessures infligées'],
   ['engagedAdvantageGap', 'Écart d’Avantage (engagés)'],
+  ['foeInLoS', 'Ennemi en Ligne de Vue'],
   ['relation', 'Camp / relation'],
   ['has', 'Possède (Groupe/Talent/Trait)'],
   ['all', 'TOUS (ET)'],
@@ -89,6 +90,7 @@ export function condSummary(c: Condition | undefined): string {
     case 'startleCause': return `effarouché par ${STARTLE_CAUSE_LABELS[c.is]}`;
     case 'woundsDealt': return `PB infligés ${c.op} ${c.value}`;
     case 'engagedAdvantageGap': return `écart d’Avantage ${c.op} ${c.value}`;
+    case 'foeInLoS': return 'ennemi en Ligne de Vue';
     case 'relation': return `${WHO_LABEL[c.who]} : ${REL_LABEL[c.is]}`;
     case 'has': return `${WHO_LABEL[c.who]} a ${WHAT_LABEL[c.what]} « ${c.value || '?'}${c.spec ? ` (${c.spec})` : ''} »`;
     case 'all': return c.of.length ? c.of.map(condSummary).join(' ET ') : 'toujours';
@@ -113,6 +115,7 @@ function recast(cond: Condition, kind: Condition['kind']): Condition {
     case 'startleCause': return { kind: 'startleCause', is: cond.kind === 'startleCause' ? cond.is : 'noise' };
     case 'woundsDealt': return cond.kind === 'woundsDealt' ? cond : { kind: 'woundsDealt', op: '>', value: 0 };
     case 'engagedAdvantageGap': return cond.kind === 'engagedAdvantageGap' ? cond : { kind: 'engagedAdvantageGap', op: '>', value: 0 };
+    case 'foeInLoS': return { kind: 'foeInLoS' };
     case 'relation': return cond.kind === 'relation' ? cond : { kind: 'relation', who: 'target', is: 'opponent' };
     case 'has': return cond.kind === 'has' ? cond : { kind: 'has', who: 'target', what: 'group', value: '' };
     case 'all': return { kind: 'all', of: cond.kind === 'all' || cond.kind === 'any' ? cond.of : cond.kind === 'always' ? [] : [cond] };
