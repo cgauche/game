@@ -19,7 +19,7 @@ import type { CombatFeature } from '../engine/combatFeatures/types';
 import { isOutOfAction } from '../engine/conditions';
 import { isEngagedWith } from '../engine/engagement';
 import { combatDistance } from './footprint';
-import { lineOfSightCover } from './lineOfSight';
+import { losClear } from './lineOfSight';
 import { smokeOf } from './combatGeometry';
 import { traitById, qualityById, findManeuverById, findTalentById, findConditionById, findPsychologyById } from '../data';
 import { difficultyFromLabel } from '../engine/tests';
@@ -171,7 +171,7 @@ export function hasFoeInLoS(get: Get, actor: Combatant): boolean {
   const { battle, scene } = get();
   if (!battle || !scene || !actor.pos) return false;
   return battle.combatants.some(
-    (f) => f.kind !== actor.kind && !isOutOfAction(f) && f.pos && !lineOfSightCover(scene, actor.pos!, f.pos, [], smokeOf(battle)).blocked,
+    (f) => f.kind !== actor.kind && !isOutOfAction(f) && f.pos && losClear(scene, actor.pos!, f.pos, smokeOf(battle)),
   );
 }
 

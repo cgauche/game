@@ -835,9 +835,10 @@ export function findPsychologyById(id: string): PsychologyData | undefined {
 export function conditionLabel(id: string): string {
   return ETAT_BY_ID.get(id)?.label ?? id;
 }
-/** Libellé d'affichage d'un état psychologique par son `id` (`PsychType`), repli sur l'id. */
+/** Libellé d'affichage d'un état psychologique par son `id` (`PsychType`), repli sur l'id — délègue au
+ *  résolveur de libellé GÉNÉRIQUE (`refLabel`), plus de copie locale du motif `MAP.get(id)?.label ?? id`. */
 export function psychologyLabel(id: string): string {
-  return PSYCH_BY_ID.get(id)?.label ?? id;
+  return refLabel('psychology', { id });
 }
 const ETAT_ID_BY_LABEL = new Map(etats.map((e) => [e.label.toLowerCase(), e.id]));
 /** Résout un `id` d'État depuis un LIBELLÉ (authoring : parsing de desc/texte) — insensible à la casse. */
@@ -1053,6 +1054,7 @@ export function findById(category: string, id: string): { label: string } | unde
     case 'classes': return findClassById(id);
     case 'races': return findSpeciesById(id);
     case 'etats': return findConditionById(id);
+    case 'psychology': return findPsychologyById(id);
     case 'maladies': return findDiseaseById(id) ? { label: findDiseaseById(id)!.label } : undefined;
     default: return undefined;
   }

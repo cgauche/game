@@ -19,7 +19,7 @@ import { battleRng } from '../battleRng';
 import { ev, evLines } from '../combatLog';
 import { effectiveChar } from '../../engine/characteristics';
 import { isOutOfAction, addCondition, COND } from '../../engine/conditions';
-import { lineOfSightCover } from '../lineOfSight';
+import { losClear } from '../lineOfSight';
 import { smokeOf } from '../combatGeometry';
 import { groupMatch } from '../../engine/groups';
 import {
@@ -28,7 +28,7 @@ import {
 } from '../../engine/psychology';
 import { psychologyLabel } from '../../data';
 import { isColdBlooded, hasRage } from '../../engine/traits/dispatch';
-import { fireTriggers } from '../triggeredEffects';
+import { fireTriggers, hasFoeInLoS } from '../triggeredEffects';
 import { t } from '../../i18n';
 import type { Combatant } from '../../engine/types';
 import type { Get, Set as SetFn } from '../flowTypes';
@@ -69,13 +69,7 @@ function fireTurnEdgeTriggers(get: Get, set: SetFn, c: Combatant | undefined, tr
  *  un effet déclenché `onTurnStart` en DONNÉES (`psychology.json`) — plus de hook `end-frenzy` par-nom. */
 export function aiMaybeFrenzy(get: Get, set: SetFn, enemy: Combatant): void {
   if (enemy.kind !== 'enemy' || isFrenzied(enemy) || enemy.psychImmune || isOutOfAction(enemy) || !isFrenzyCapable(enemy)) return;
-  const battle = get().battle;
-  const scene = get().scene;
-  if (!battle || !scene || !enemy.pos) return;
-  const foeInLoS = battle.combatants.some(
-    (f) => f.kind !== enemy.kind && !isOutOfAction(f) && f.pos && !lineOfSightCover(scene, enemy.pos!, f.pos, [], smokeOf(battle)).blocked,
-  );
-  if (!foeInLoS) return;
+  if (!hasFoeInLoS(get, enemy)) return; // adversaire vivant en Ligne de Vue (primitive partagée, sens acteur→foe)
   if (resolveFrenzyEntry(effectiveChar(enemy, 'FM'), battleRng()).success) {
     (enemy.psychState ??= []).push({ type: 'frenesie' });
     set({ battle: { ...get().battle!, log: [...get().battle!.log, ev('frenzy', t('turn.frenzyEnter', { name: enemy.name }), enemy.id)] } });
@@ -101,7 +95,7 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
   // Nouvelles sources de peur/terreur en Ligne de Vue (non encore rencontrées).
   for (const foe of battle.combatants) {
     if (foe.kind === enemy.kind || isOutOfAction(foe) || !foe.pos) continue;
-    if (lineOfSightCover(scene, enemy.pos, foe.pos, [], smokeOf(battle)).blocked) continue;
+    if (!losClear(scene, enemy.pos, foe.pos, smokeOf(battle))) continue;
     const src = fearSourceFor(enemy, foe);
     if (!src || enemy.psychState.some((p) => p.sourceId === foe.id)) continue;
     const sansPeur = sansPeurVs(enemy, foe); // Sans Peur (Ennemi, LDB 10 l.864) : Test de Calme +20 à la rencontre
@@ -131,7 +125,7 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
     if (r.vaincue) log.push(t('turn.fearOvercome', { name: enemy.name }));
   }
   // ── Traits psy CIBLÉS (Animosité/Haine/… — LDB 21), instantané pour l'IA ──
-  const visible = battle.combatants.filter((v) => v.id !== enemy.id && v.pos && !isOutOfAction(v) && !lineOfSightCover(scene, enemy.pos!, v.pos, [], smokeOf(battle)).blocked);
+  const visible = battle.combatants.filter((v) => v.id !== enemy.id && v.pos && !isOutOfAction(v) && losClear(scene, enemy.pos!, v.pos, smokeOf(battle)));
   for (const p of enemy.psychState) {
     // Re-test (fin de Round) des afflictions ciblées actives, tant qu'un membre du groupe est visible.
     if (!p.active || !CIBLE_TYPES.has(p.type) || !p.cible || p.lastTestRound === battle.round) continue;

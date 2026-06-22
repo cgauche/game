@@ -14,7 +14,7 @@ import { Combatant } from '../engine/types';
 import { Scene } from './scene';
 import { reachable, flyReachable, manhattan, chebyshev, Pt } from './path';
 import { footprintChebyshev, sizeFootprint } from './footprint';
-import { lineOfSightCover, tileSeenByFoe } from './lineOfSight';
+import { losClear, tileSeenByFoe } from './lineOfSight';
 import { rangeBandModifier } from '../engine/combat';
 import { hasCondition } from '../engine/conditions';
 import { isEngaged, meleeReachTiles } from '../engine/engagement';
@@ -115,7 +115,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const adjacentFoes = heroes.filter(inMelee);
   // Ligne de Vue (LDB 13 l.123) : on ne vise au tir/sort qu'une cible visible. Occupants ignorés
   // ici (une créature ne BLOQUE pas la vue — elle ne donne qu'un couvert imparfait, géré au jet).
-  const visible = (h: Combatant): boolean => !lineOfSightCover(scene, pos, h.pos!, [], smoke ?? []).blocked;
+  const visible = (h: Combatant): boolean => losClear(scene, pos, h.pos!, smoke ?? []);
   const shootableHeroes = heroes.filter(visible);
   // PORTÉE (parité avec le gate pré-clic du héros) : un tireur ne vise pas au-delà de la bande
   // Extrême (Portée ×3 — rangeBandModifier null), un lanceur pas au-delà de la portée du sort.

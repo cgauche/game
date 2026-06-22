@@ -126,7 +126,7 @@ const resolveSpell = (idOrLabel: string) => findSpellById(idOrLabel) ?? findSpel
 import { toBrass, fromBrass } from '../engine/money';
 import { Scene, Effect, isWalkable } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
-import { lineOfSightCover, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
+import { lineOfSightCover, losClear, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
 import { fearSourceFor, sansPeurVs, terreurBrise, calmeValue, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, suppressSupersededPsych, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
@@ -618,7 +618,7 @@ export function outOfSightTargetIds(get: Get): Set<string> {
 export function castSightBlocked(get: Get, from: Pt, to: Pt): boolean {
   const { scene, battle } = get();
   if (!scene) return false;
-  return lineOfSightCover(scene, from, to, [], battle ? smokeOf(battle) : []).blocked;
+  return !losClear(scene, from, to, battle ? smokeOf(battle) : []);
 }
 
 /** Aperçu de DÉPLACEMENT vers `pt` (Marche ou Course) au SURVOL — composé des MÊMES sources que
@@ -837,7 +837,7 @@ export function frenzyTarget(get: Get, c: Combatant): Combatant | null {
   const { battle, scene } = get();
   if (!battle || !scene || !isFrenzied(c) || !c.pos) return null;
   const visible = battle.combatants.filter(
-    (e) => e.kind !== c.kind && !isOutOfAction(e) && e.pos && !lineOfSightCover(scene, c.pos!, e.pos!, [], smokeOf(battle)).blocked,
+    (e) => e.kind !== c.kind && !isOutOfAction(e) && e.pos && losClear(scene, c.pos!, e.pos!, smokeOf(battle)),
   );
   if (!visible.length) return null;
   return visible.sort((a, b) => {
@@ -2481,7 +2481,7 @@ export function castCommitZone(get: Get, set: SetFn, pt: Pt): void {
  *  l.170). Absent/null (hors combat, tests purs) : pas de filtre — comportement historique. */
 export type SpellSight = { scene: Scene; smoke?: Pt[] } | null;
 const spellSightBlocked = (sight: SpellSight | undefined, caster: Combatant, t: Combatant): boolean =>
-  !!sight && !!caster.pos && !!t.pos && lineOfSightCover(sight.scene, caster.pos, t.pos, [], sight.smoke ?? []).blocked;
+  !!sight && !!caster.pos && !!t.pos && !losClear(sight.scene, caster.pos, t.pos, sight.smoke ?? []);
 /** SpellSight depuis l'état courant (scène + fumée du combat), null hors combat. */
 export const spellSightOf = (get: Get): SpellSight =>
   get().scene && get().battle ? { scene: get().scene!, smoke: smokeOf(get().battle!) } : null;
@@ -2585,7 +2585,7 @@ export function counterspellCandidates(
     if (c.id === target.id) return true;
     if (!c.pos || !target.pos) return false;
     if (combatDistance(c, target) > Math.max(1, Math.floor(effectiveChar(c, 'FM') / 2))) return false;
-    return !scene || !lineOfSightCover(scene, c.pos, target.pos, [], smokeOf(battle)).blocked;
+    return !scene || losClear(scene, c.pos, target.pos, smokeOf(battle));
   });
 }
 
@@ -3697,7 +3697,7 @@ type HeroPsychDue = { kind: PsychType; sourceId: string; sourceName: string; ind
 
 /** Combattants en Ligne de Vue de `c` (hors lui-même, debout). Mutualisé par les deux collectes. */
 function visibleFoesAndAllies(battle: BattleState, scene: import('./scene').Scene, c: Combatant): Combatant[] {
-  return battle.combatants.filter((v) => v.id !== c.id && v.pos && !isOutOfAction(v) && !lineOfSightCover(scene, c.pos!, v.pos, [], smokeOf(battle)).blocked);
+  return battle.combatants.filter((v) => v.id !== c.id && v.pos && !isOutOfAction(v) && losClear(scene, c.pos!, v.pos, smokeOf(battle)));
 }
 
 /** Test de Psychologie de DÉBUT de Round dû à `c` (LDB 21 l.14) : un Trait ciblé (re-test d'un actif
@@ -3711,7 +3711,7 @@ export function collectHeroRoundStartPsych(get: Get, c: Combatant): HeroPsychDue
   // NOUVELLE Terreur en Ligne de Vue (1ʳᵉ rencontre → Brisé, puis devient une Peur — LDB 21 l.55-57).
   for (const foe of battle.combatants) {
     if (foe.kind === c.kind || isOutOfAction(foe) || !foe.pos) continue;
-    if (lineOfSightCover(scene, c.pos, foe.pos, [], smokeOf(battle)).blocked) continue;
+    if (!losClear(scene, c.pos, foe.pos, smokeOf(battle))) continue;
     const src = fearSourceFor(c, foe);
     if (!src || src.kind !== 'terreur' || state.some((p) => p.sourceId === foe.id)) continue;
     return { kind: 'terreur', sourceId: foe.id, sourceName: foe.name, indice: src.indice, prevDR: 0 };
@@ -3738,7 +3738,7 @@ export function collectHeroRoundEndPsych(get: Get, c: Combatant): HeroPsychDue |
   // NOUVELLE source de Peur (pas Terreur — celle-ci passe par le début de Round) en Ligne de Vue.
   for (const foe of battle.combatants) {
     if (foe.kind === c.kind || isOutOfAction(foe) || !foe.pos) continue;
-    if (lineOfSightCover(scene, c.pos, foe.pos, [], smokeOf(battle)).blocked) continue;
+    if (!losClear(scene, c.pos, foe.pos, smokeOf(battle))) continue;
     const src = fearSourceFor(c, foe);
     if (!src || src.kind !== 'peur' || state.some((p) => p.sourceId === foe.id)) continue;
     return { kind: 'peur', sourceId: foe.id, sourceName: foe.name, indice: src.indice, prevDR: 0 };
