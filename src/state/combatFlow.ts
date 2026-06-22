@@ -10,6 +10,7 @@ import { Combatant, ItemInstance, HitLocation, Weapon, Difficulty, DIFFICULTY_MO
 import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
 import { ev, evLines, type CombatEventKind } from './combatLog';
+import { t as tr } from '../i18n'; // alias : `t` est un identifiant local très fréquent ici (cibles/jets)
 import { TEMPO } from './tempo';
 import { walkMs } from '../gameIso/walkPath';
 import { facingToward } from '../gameIso/rig/facing';
@@ -266,7 +267,7 @@ export function attackWardGate(attacker: Combatant, target: Combatant, rng: RNG 
   if (!hasActiveFlag(target, 'attackWardFM')) return { allowed: true, lines: [] };
   const t = rollTest(effectiveChar(attacker, 'FM'), 'accessible', rng);
   if (t.success) {
-    return { allowed: true, lines: [`${attacker.name} surmonte sa honte (FM 🎲 ${t.roll}/${t.target}) et attaque ${target.name} malgré la Bénédiction de Protection.`] };
+    return { allowed: true, lines: [tr('cs.shameOvercome', { name: attacker.name, roll: t.roll, target: t.target, foe: target.name })] };
   }
   return {
     allowed: false,
@@ -354,7 +355,7 @@ export function attackEnv(
       .map((c) => c.pos!);
     const los = lineOfSightCover(scene, attacker.pos!, target.pos!, occupants, smokeOf(battle));
     if (los.blocked) return { env, blocked: true, inMelee: false, crowd: [], cm: null, sc }; // pas de LdV (LDB 13 l.123)
-    if (los.cover !== 'none') env.push({ label: `Couvert (${los.cover})`, value: coverModifier(los.cover) });
+    if (los.cover !== 'none') env.push({ label: tr('cf.coverLabel', { cover: los.cover }), value: coverModifier(los.cover) });
     // Vision nocturne / Infravision (LDB 85) ou Talent Vision nocturne : annule la pénalité d'obscurité.
     if (sc.concealed && !seesInDark(attacker)) env.push({ label: sc.label || 'Obscurité', value: -20 }); // cible dissimulée (LDB 14 l.107)
     else if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod }); // tempête/neige (l.108-116)
@@ -547,7 +548,7 @@ export function previewCast(
     ...(penMod ? [{ label: 'Contrecoup', value: penMod }] : []),
   ];
   return {
-    label: isPrayer ? 'Prière' : `Incantation / NI ${ni}`, // le test reste Langue (Magick) — « Projectile magique » ne change QUE Localisation/Dégâts après réussite (LDB 46 l.155-156)
+    label: isPrayer ? tr('cf.prayerLabel') : tr('cf.castLabel', { ni }), // le test reste Langue (Magick) — « Projectile magique » ne change QUE Localisation/Dégâts après réussite (LDB 46 l.155-156)
     base: target - advMod - penMod,
     target,
     mods,
@@ -679,7 +680,7 @@ export function startDisengage(get: Get, set: SetFn, mover: Combatant): void {
   if (!foes.length || freeDisengage) {
     if (freeDisengage) {
       for (const f of foes) disengageFrom(mover, f); // lève les liens Engagé avec les plus petits écartés
-      battle.log.push(ev('move', `${mover.name} écarte les plus petits et se déplace librement.`, mover.id));
+      battle.log.push(ev('move', tr('cf.pushThrough', { name: mover.name }), mover.id));
     }
     // Lien d'Engagement périmé (foe mort/parti) OU désengagement gratuit : rouvrir le déplacement normal.
     const blocked = occupied(battle, mover);
@@ -926,7 +927,7 @@ export function applyCriticalToTarget(
     // Figurant : Mort Subite (LDB 18 l.51-54) — sortie directe.
     target.wounds.current = 0;
     if (!target.conditions.some((c) => c.name === COND.inconscient)) addCondition(target, COND.inconscient);
-    log.push(`${target.name} s'effondre, hors de combat.`);
+    log.push(tr('cf.collapse', { name: target.name }));
     return false;
   }
   // Coup Critique : localisation fraîche (1d100) SAUF si le joueur l'a choisie via « Je ne faillirai pas ! »
@@ -1013,7 +1014,7 @@ function deviateArmour(target: Combatant, weapon: Weapon, res: AttackResult, log
   damageArmour(target, res.location ?? 'corps');
   const extra = Math.max(0, woundsFromHit(weapon, target, res.location ?? 'corps', res.damage ?? 0) - (res.woundsLost ?? 0));
   if (extra) target.wounds.current = Math.max(0, target.wounds.current - extra);
-  log.push(`${target.name} dévie le coup sur son armure (−1 PA, Critique ignoré).`);
+  log.push(tr('cf.deflectArmour', { name: target.name }));
 }
 
 /** Une armure Bâclée frappée par un Coup Critique à sa localisation casse (LDB 60 l.82) — héros (pièces). */
@@ -1024,7 +1025,7 @@ function breakBacleArmour(target: Combatant, loc: HitLocation, log: string[]): v
   if (!piece) return;
   piece.damageTaken = piece.pa ?? 0; // inutilisable
   recomputeLoadout(target);
-  log.push(`L'armure Bâclée de ${target.name} (${loc}) se brise sous le Coup Critique.`);
+  log.push(tr('cf.shoddyBreaks', { name: target.name, loc }));
 }
 
 /** « Arme possédant une lame » (Piège-lame, LDB 62 l.292) — la source ne liste pas les armes :
@@ -1053,12 +1054,12 @@ function applyOpposedCritical(
   const heroConcerned = victim.kind === 'hero' || attacker?.kind === 'hero';
   if (victim.kind === 'enemy' && (victim.armour[loc] ?? 0) > 0) {
     damageArmour(victim, loc);
-    const line = `${victim.name} dévie le Critique sur son armure (−1 PA, Critique ignoré).`;
+    const line = tr('cf.deflectCrit', { name: victim.name });
     log.push(line);
     // Le Critique paré DOIT rester VISIBLE dans la cascade (sinon la fenêtre se referme sans rien montrer)
     // quand un héros est concerné — il l'a PLACÉ (parade) ou le SUBIT ; sinon (ennemi↔ennemi) : journal seul.
-    if (heroConcerned) pushReveal(set, { kind: 'critical', title: 'Coup Critique dévié', dice: roll,
-      lines: [`Coup Critique (${HIT_LOCATION_LABELS[loc]}) — dévié.`, line], subjectId: victim.id, severity: 'minor', actorId: ctx.attackerId, weapon: ctx.weapon });
+    if (heroConcerned) pushReveal(set, { kind: 'critical', title: tr('cf.critDeflectedTitle'), dice: roll,
+      lines: [tr('cf.critDeflectedReveal', { loc: HIT_LOCATION_LABELS[loc] }), line], subjectId: victim.id, severity: 'minor', actorId: ctx.attackerId, weapon: ctx.weapon });
     return;
   }
   const currentBefore = victim.wounds.current;
@@ -1110,8 +1111,8 @@ export function applyAttackResult(
       set((s: GameState) => ({ facing: { ...s.facing, [attacker.id]: facingToward(attacker.pos!, target.pos!), [target.id]: facingToward(target.pos!, attacker.pos!) } }));
     }
     bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: target.id, result: res, kind: 'melee', defense: 'none', weapon, parryWeapon: res.parryWeapon, creatureAttack: creatureAttackKind(weapon) });
-    const log = [...battle.log, ev('attack', `${attacker.name} achève ${target.name}, sans défense.`, attacker.id, target.id)];
-    if (isOutOfAction(target)) log.push(ev('death', `${target.name} est mis hors de combat !`, target.id));
+    const log = [...battle.log, ev('attack', tr('cf.finishHelpless', { name: attacker.name, foe: target.name }), attacker.id, target.id)];
+    if (isOutOfAction(target)) log.push(ev('death', tr('cf.outOfAction', { name: target.name }), target.id));
     set({ battle: { ...battle, acted: true, action: null, log } });
     bus.emit(EVT.SCENE_DIRTY);
     checkBattleOver(get, set);
@@ -1168,7 +1169,7 @@ export function applyAttackResult(
       const fb = talentCritExtraWounds(attacker);
       if (fb > 0 && !lethal) {
         target.wounds.current = Math.max(0, target.wounds.current - fb);
-        critLog.push(`Frappe blessante : ${target.name} perd ${fb} Blessure(s) de plus.`);
+        critLog.push(tr('cf.woundingStrike', { name: target.name, n: fb }));
       }
       // Taillade (Aux Armes p.89) : une Blessure Critique infligée par une arme de Taillade ajoute
       // un État Hémorragique, en plus de tous les effets du Coup Critique.
@@ -1176,7 +1177,7 @@ export function applyAttackResult(
         for (const { def, caps } of resolveQualities(weapon)) {
           if (!caps?.onCritCondition) continue;
           addCondition(target, caps.onCritCondition);
-          critLog.push(`${target.name} : ${caps.onCritCondition} (${def.key}).`);
+          critLog.push(tr('cf.onCritCondition', { name: target.name, cond: caps.onCritCondition, key: def.key }));
         }
       }
       if (lethal) finalizeHeroDeath(get, set, target, 'hit', currentBefore); // mort directe ou pause Destin
@@ -1202,7 +1203,7 @@ export function applyAttackResult(
     const dd = res.defenderDetail;
     // (a) Attaquant : Critique au jet mais échange PERDU (pas de touche) → le défenseur subit un Critique sec.
     if (ad && ad.success && isDoubleRoll(ad.roll) && !res.hit && !isOutOfAction(target)) {
-      critLog.push(`${attacker.name} place un Critique malgré l'échange perdu.`);
+      critLog.push(tr('cf.critDespiteLoss', { name: attacker.name }));
       applyOpposedCritical(get, set, target, ad.roll, { attackerId: attacker.id, weapon: weapon?.name }, critLog);
     }
     // (b) Défenseur : Critique sur sa défense → l'attaquant subit un Critique sec — UNIQUEMENT en PARADE
@@ -1226,7 +1227,7 @@ export function applyAttackResult(
           interactive: true,
         });
       } else {
-        critLog.push(`${target.name} place un Critique sur sa défense.`);
+        critLog.push(tr('cf.critOnDefense', { name: target.name }));
         applyOpposedCritical(get, set, attacker, dd.roll, { attackerId: target.id, weapon: res.parryWeapon?.name }, critLog);
       }
     }
@@ -1241,7 +1242,7 @@ export function applyAttackResult(
     if (riposte.hit && riposte.woundsLost) {
       const before = attacker.wounds.current;
       attacker.wounds.current = Math.max(0, before - riposte.woundsLost);
-      critLog.push(`${target.name} ${hasChampionDefense(target.traits) ? '(Champion)' : '(Riposte)'} inflige ${riposte.woundsLost} Blessure(s) en défendant.`);
+      critLog.push(tr('cf.riposte', { name: target.name, champ: hasChampionDefense(target.traits) ? tr('cf.fragChampion') : tr('cf.fragRiposte'), n: riposte.woundsLost }));
       if (attacker.wounds.current <= 0 && !attacker.dead && !hasCondition(attacker, COND.inconscient)) applyZeroWounds(attacker);
       if (isOutOfAction(attacker)) {
         clearEngagementOf(get().battle?.combatants ?? [], attacker.id);
@@ -1269,7 +1270,7 @@ export function applyAttackResult(
   if (res.defenderDetail?.mode === 'esquive' && !res.defenderDetail.success
       && hasActiveSymptom(target, 'nausee') && !hasCondition(target, COND.sonne)) {
     addCondition(target, COND.sonne);
-    critLog.push(`${target.name} vomit (Nausée) : Sonné.`);
+    critLog.push(tr('cf.vomitStun', { name: target.name }));
   }
   // Effet DÉCLENCHÉ « à la perte de PB en mêlée » authoré (Sang corrosif : 1d10 aux Engagés, BE+PA,
   // min 1) — dispatcher générique (state/triggeredEffects), plus de handler en dur.
@@ -1280,7 +1281,7 @@ export function applyAttackResult(
   // Chaos, ce qui la retire du jeu » — pas de corps, pas d'Inconscient.
   if (res.hit && target.wounds.current <= 0 && banishedAtZero(target.traits) && !target.dead) {
     target.dead = true;
-    critLog.push(`${target.name} est bannie — son essence retourne aux Royaumes du Chaos !`);
+    critLog.push(tr('cf.banished', { name: target.name }));
   }
   // Effet déclenché « à la mise hors de combat d'un adversaire » authoré (Affamé : Test de FM ou
   // festoie — perd Action + Mouvement) — dispatcher générique (state/triggeredEffects).
@@ -1320,7 +1321,7 @@ export function applyAttackResult(
     if (weapon.type === 'melee' && hasStealAdvantage(attacker) && (target.advantage ?? 0) > 1) {
       gainAdvantage(attacker, target.advantage);
       target.advantage = 0;
-      critLog.push(`${attacker.name} renverse l'échange et vole tous les Avantages (Renversement).`);
+      critLog.push(tr('cf.reversal', { name: attacker.name }));
     } else gainAdvantage(attacker);
     attacker.gainedAdvThisRound = true;
   }
@@ -1329,7 +1330,7 @@ export function applyAttackResult(
     // défense gagnée au Bouclier.
     if (weapon.type === 'melee' && hasStealAdvantage(target) && (attacker.advantage ?? 0) > 1) {
       gainAdvantage(target, attacker.advantage);
-      critLog.push(`${target.name} renverse l'échange et vole tous les Avantages (Renversement).`);
+      critLog.push(tr('cf.reversal', { name: target.name }));
     } else gainAdvantage(target);
     gainAdvantage(target, shieldAdvantageLevel(target, res.parryWeapon));
     target.gainedAdvThisRound = true;
@@ -1371,7 +1372,7 @@ export function applyAttackResult(
       const indice = tz.indice ?? 1;
       if (chebyshev(attacker.pos, target.pos) <= 1) {
         loseWounds(target, indice);
-        log.push(ev('shoot', `Tir de zone à bout portant : ${target.name} subit ${indice} Blessure(s) de plus.`, target.id));
+        log.push(ev('shoot', tr('cf.blastPointBlank', { name: target.name, indice }), target.id));
       } else {
         const radTiles = Math.max(1, Math.ceil(indice / 2));
         const near = battle.combatants
@@ -1382,7 +1383,7 @@ export function applyAttackResult(
           const wl = woundsFromHit(weapon, sec, res.location ?? 'corps', res.damage);
           if (wl > 0) {
             loseWounds(sec, wl);
-            log.push(ev('shoot', `Tir de zone : ${sec.name} est aussi pris dans la gerbe — ${wl} Blessure(s).`, sec.id));
+            log.push(ev('shoot', tr('cf.blastSecondary', { name: sec.name, wl }), sec.id));
           }
         }
       }
@@ -1447,7 +1448,7 @@ export function checkFocusInterruption(get: Get, set: SetFn, target: Combatant):
 export function applyFocusInterruption(get: Get, set: SetFn, focuser: Combatant): void {
   if (!focuser.focus || focuser.focus.dr <= 0) return; // garde (le composant/DR a pu changer entre Test et conséquence)
   const focusedSpellId = focuser.focus.spell;
-  const lines = [`${focuser.name} perd les ${focuser.focus.dr} DR focalisés sur ${findSpellById(focusedSpellId)?.label ?? focusedSpellId}.`];
+  const lines = [tr('cf.focusLost', { name: focuser.name, dr: focuser.focus.dr, spell: findSpellById(focusedSpellId)?.label ?? focusedSpellId })];
   focuser.focus = undefined;
   const compUsed = useSpellComponent(focuser, focusedSpellId, lines); // un composant couvre aussi la Focalisation (incantation en cours)
   lines.push(...applyMiscast(get, set, focuser, 'mineure', { componentDowngrade: compUsed }));
@@ -1545,7 +1546,7 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
       c.criticalWounds = (c.criticalWounds ?? 0) + 1; // « compte comme une Blessure critique » (l.41)
       const leg: HitLocation = battleRng().int(0, 1) === 0 ? 'jambeG' : 'jambeD'; // « se tord la cheville »
       c.traumas = [...(c.traumas ?? []), traumaFromKind('dechirure', 'mineur', leg, { be: bonus(effectiveChar(c, 'E')) })];
-      log.push(`  ↳ Déchirure musculaire (Mineure) à la ${leg === 'jambeG' ? 'jambe gauche' : 'jambe droite'}.`);
+      log.push(tr('cf.fumbleTear', { leg: leg === 'jambeG' ? tr('cf.legLeft') : tr('cf.legRight') }));
       break;
     }
     case 'hitAlly': {
@@ -1556,10 +1557,10 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
         const lost = woundsFromHit(weapon, ally, loc, effectiveWeaponDamage(weapon, sb) + units); // plancher 1 (l.165)
         ally.wounds.current = Math.max(0, ally.wounds.current - lost);
         if (ally.wounds.current <= 0) applyZeroWounds(ally);
-        log.push(`  ↳ Touche ${ally.name} (${locationLabel(loc, ally.bodyShape)}) : ${lost} Blessure(s).`);
+        log.push(tr('cf.fumbleHitAlly', { name: ally.name, loc: locationLabel(loc, ally.bodyShape), lost }));
       } else {
         addCondition(c, COND.sonne); // « Si personne n'est à distance, vous vous frappez tout seul → Sonné » (l.45-46)
-        log.push(`  ↳ Personne à portée : se frappe seul → Sonné.`);
+        log.push(tr('cf.fumbleSelfStun'));
       }
       break;
     }
@@ -1568,7 +1569,7 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
       c.wounds.current = Math.max(0, c.wounds.current - lost);
       if (c.wounds.current <= 0) applyZeroWounds(c);
       wearActiveWeapon(c, weapon, true); // arme détruite, persistée sur l'ItemInstance source
-      log.push(`  ↳ Incident de Tir : ${lost} Blessure(s) au Bras principal, arme détruite.`);
+      log.push(tr('cf.fumbleMisfire', { lost }));
       break;
     }
   }
@@ -1657,7 +1658,7 @@ export function doAttack(get: Get, set: SetFn, attacker: Combatant, target: Comb
   // partait dans le journal du GROUPE (invisible en combat).
   if (firedWeapon(attacker, target).type === 'ranged') {
     const b0 = get().battle;
-    if (b0) set({ battle: { ...b0, log: [...b0.log, ev('shoot', `${attacker.name} vise ${target.name}.`, attacker.id, target.id)] } });
+    if (b0) set({ battle: { ...b0, log: [...b0.log, ev('shoot', tr('cf.aim', { name: attacker.name, target: target.name }), attacker.id, target.id)] } });
   }
   applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
   // Charge montée (LDB 14 l.223) : si l'attaquant a chargé ce tour, ses dégâts utilisent la Force + la
@@ -2102,7 +2103,7 @@ export function useSpellComponent(caster: Combatant, spellId: string, lines: str
   const next = [...owned];
   next.splice(i, 1); // retire UNE occurrence (consommée par l'incantation)
   caster.componentSpells = next;
-  lines.push(`${caster.name} : composant d'incantation consumé (LDB 46 l.161).`);
+  lines.push(tr('cf.componentConsumed', { name: caster.name }));
   return true;
 }
 
@@ -2136,7 +2137,7 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
   // de 1, jusqu'à un minimum de 0 » (LDB 40 l.53).
   if (severity === 'colere' && sinPoints > 0) {
     caster.sinPoints = sinPoints - 1;
-    lines.push(`${caster.name} : 1 Point de Péché expié (reste ${caster.sinPoints}).`);
+    lines.push(tr('cf.sinExpiated', { name: caster.name, n: caster.sinPoints }));
   }
   // Ops IMMÉDIATS de la table (États, Blessures ignorant BE+PA, Corruption, pénalités/blocages
   // d'incantation temporisés, réduction à 0) — applicateur unique, AVANT le Test imbriqué (RAW :
@@ -2418,11 +2419,11 @@ export function castCommitZone(get: Get, set: SetFn, pt: Pt): void {
   if (!castable) return;
   const range = spellRangeTiles(spell.range, caster);
   if (range != null && chebyshev(caster.pos, pt) > range) {
-    get().log(`${spell.label} : zone hors de portée (${range} cases).`);
+    get().log(tr('cf.zoneOutOfRange', { spell: spell.label, range }));
     return;
   }
   if (castSightBlocked(get, caster.pos, pt)) {
-    get().log(`${spell.label} : pas de ligne de vue.`);
+    get().log(tr('cf.noLineOfSight', { spell: spell.label }));
     return;
   }
   const radius = pc.zone.radius;
@@ -2695,7 +2696,7 @@ export function applyCast(
     if (marks.some((m) => m.targetId === target.id && m.domain === spell.subType)) {
       gainAdvantage(caster);
       caster.gainedAdvThisRound = true;
-      logLines.push(`${caster.name} : +1 Avantage — le Vent de ${spell.subType} converge sur ${target.name}.`);
+      logLines.push(tr('cf.windConverges', { name: caster.name, wind: spell.subType, target: target.name }));
     }
     battle.domainCasts = [...marks, ...[target, ...extraTargets].map((t) => ({ targetId: t.id, domain: spell.subType! }))];
   }
@@ -2709,13 +2710,13 @@ export function applyCast(
       const mr = magicResistanceOf(t.traits) + talentMagicResistance(t); // Trait (LDB 85) + Talent (LDB 10, 2×niveau)
       if (mr > 0 && mres.hit && mres.woundsLost) {
         mres = { ...mres, woundsLost: Math.max(0, mres.woundsLost - mr) };
-        logLines.push(`${t.name} résiste à la magie (−${mr} DR de Sort).`);
+        logLines.push(tr('cf.resistMagic', { name: t.name, mr }));
       }
       // Dôme (LDB 47 — L11) : Protection (6+) contre une Attaque MAGIQUE venant de l'extérieur.
       if (mres.hit && mres.woundsLost && battle && wardedAgainst(battle.combatants, caster, t, 'domeWard')) {
         const d = d10(battleRng());
         if (d >= 6) {
-          logLines.push(`${t.name} est couvert par le Dôme — sauvegarde ${d} ≥ 6, le Sort se brise sur la voûte.`);
+          logLines.push(tr('cf.domeSaved', { name: t.name, d }));
           return;
         }
       }
@@ -2729,7 +2730,7 @@ export function applyCast(
             loseWounds(priest, taken);
             if (priest.wounds.current <= 0) applyZeroWounds(priest);
           }
-          logLines.push(`Martyr : ${priest.name} reçoit les Dégâts à la place de ${t.name}${taken > 0 ? ` (${taken} PB, BE doublé)` : ' (encaissés sans dommage, BE doublé)'}.`);
+          logLines.push(tr('cf.martyrTakes', { priest: priest.name, name: t.name, taken: taken > 0 ? tr('cf.fragMartyrTaken', { taken }) : tr('cf.fragMartyrNoDmg') }));
           logLines.push(...checkFocusInterruption(get, set, priest));
           return;
         }
@@ -2770,7 +2771,7 @@ export function applyCast(
       }
       // Interruption de Focalisation : un Projectile magique blesse aussi un focaliseur (LDB 46 l.193).
       logLines.push(...checkFocusInterruption(get, set, t));
-      if (isOutOfAction(t)) logLines.push(`${t.name} est mis hors de combat !`);
+      if (isOutOfAction(t)) logLines.push(tr('cf.outOfAction', { name: t.name }));
     };
     applyMissileHit(target, res);
     // Nerveux (effet déclenché onStartled : magie → +3 Brisé) — dispatcher générique (state/triggeredEffects).
@@ -2804,7 +2805,7 @@ export function applyCast(
           .sort((a, b) => combatDistance(prev, a) - combatDistance(prev, b))[0];
         if (!next) break;
         const r2 = evaluateMissile(caster, next, spell, res);
-        logLines.push(`${spell.label} rebondit sur ${next.name} !`, r2.log);
+        logLines.push(tr('cf.spellBounces', { spell: spell.label, name: next.name }), r2.log);
         applyMissileHit(next, r2);
         bus.emit(EVT.ANIM_ATTACK, { from: prev.id, to: next.id, result: r2, kind: 'spell', spell: spell.label, defense: 'none' });
         hitIds.add(next.id);
@@ -2834,14 +2835,14 @@ export function applyCast(
       const rounds = baseRounds != null ? baseRounds * durationMult : null;
       const baseClockMin = baseRounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
       const clockMin = baseClockMin != null ? baseClockMin * durationMult : null;
-      if (durationMult > 1 && baseRounds != null) logLines.push(`Surincantation : durée ×${durationMult} (${rounds} Rounds).`);
-      if (durationMult > 1 && baseClockMin != null) logLines.push(`Surincantation : durée ×${durationMult}.`);
+      if (durationMult > 1 && baseRounds != null) logLines.push(tr('cf.overcastDuration', { mult: durationMult, rounds: String(rounds) }));
+      if (durationMult > 1 && baseClockMin != null) logLines.push(tr('cf.overcastDurationMin', { mult: durationMult }));
       for (const t of [target, ...extraTargets]) {
-        if (t !== target) logLines.push(`${spell.label} s'étend aussi à ${t.name} (Surincantation).`);
+        if (t !== target) logLines.push(tr('cf.spellExtends', { spell: spell.label, name: t.name }));
         // OPPOSITION (spec.opposed) résolue dans la modale : une cible qui l'a emporté RÉSISTE (aucune
         // op) ; sinon les ops portent sur la MARGE de DR (l'écart de l'opposition → échelles `perSL`).
         const opp = extras?.opposedOutcome?.[t.id];
-        if (opp?.resisted) { logLines.push(`${t.name} résiste à ${spell.label} (Test opposé).`); continue; }
+        if (opp?.resisted) { logLines.push(tr('cf.spellResisted', { name: t.name, spell: spell.label })); continue; }
         logLines.push(
           // Tout sort passe par le système Flow/EffectOp : `spell.effects` (Flow éditable, feuilles
           // `on:'target'`) → `runCombatFlow` (exécuteur unique, after-aware) → applyOps. Les feuilles
@@ -2874,10 +2875,10 @@ export function applyCast(
             const fromPos = { ...t.pos };
             t.pos = { ...r.dest };
             bus.emit(EVT.ANIM_MOVE, { id: t.id, path: [{ ...r.dest }] });
-            logLines.push(`${t.name} est repoussé de ${r.pushed * 2} m.`);
+            logLines.push(tr('cf.pushed', { name: t.name, m: r.pushed * 2 }));
             applyZoneCrossings(get, t, [...tilesBetween(fromPos, r.dest), { ...r.dest }]); // une poussée TRAVERSE (Mur de feu, L11)
           }
-          if (r.collided) logLines.push(`${t.name} percute un obstacle (Dégâts = distance restante — arbitrage MJ).`);
+          if (r.collided) logLines.push(tr('cf.collided', { name: t.name }));
         }
       }
       // Sort « Souffle » (LDB 47 p.244) : « comme si vous aviez dépensé 2 Avantages pour activer
@@ -2898,7 +2899,7 @@ export function applyCast(
           }, target);
           if (!type) logLines.push('Souffle : Domaine sans Type évident — Dégâts purs (« Le MJ détermine quel type… »).');
         } else {
-          logLines.push(`${caster.name} crache un Souffle — hors combat, effet narratif (arbitrage MJ).`);
+          logLines.push(tr('cf.breathNarrative', { name: caster.name }));
         }
       }
       // Zone persistante d'un sort de soutien/zone (Mur de feu : « Quiconque traverse… »).
@@ -2915,9 +2916,9 @@ export function applyCast(
         if (battle && caster.pos) {
           const tpTiles = Math.max(1, Math.floor(meters / 2));
           teleportReach = flyReachable(get().scene!, caster.pos, tpTiles, occupied(battle, caster), sizeFootprint(caster.size));
-          logLines.push(`${caster.name} peut se téléporter (${meters} m) — choisir la case d'arrivée.`);
+          logLines.push(tr('cf.teleportChoose', { name: caster.name, m: meters }));
         } else {
-          logLines.push(`${caster.name} se téléporte (${meters} m) — repositionnement libre hors combat.`);
+          logLines.push(tr('cf.teleportFree', { name: caster.name, m: meters }));
         }
       }
     } else if (res.isFumble) {
@@ -2980,7 +2981,7 @@ export function applyCast(
   // unités ≤ Points de Péché → Colère des dieux, MÊME si le Test est réussi (la
   // Maladresse, elle, a déjà déclenché la sienne ci-dessus).
   if (castInfoIsPrayer(spell) && !res.isFumble && res.roll > 0 && prayerWrathTriggered(res.roll, caster.sinPoints ?? 0)) {
-    logLines.push(`Le dé des unités (${res.roll % 10}) trahit les Péchés de ${caster.name} (${caster.sinPoints}) — Colère des dieux !`);
+    logLines.push(tr('cf.wrathTriggered', { units: res.roll % 10, name: caster.name, sin: String(caster.sinPoints) }));
     logLines.push(...applyMiscast(get, set, caster, 'colere'));
   }
 
@@ -3017,7 +3018,7 @@ function placeSpellZone(
   if (!pz) return;
   const battle = get().battle;
   if (!battle || !target.pos || !caster.pos) {
-    logLines.push(`${spell.label} : la zone persiste — hors grille de combat, arbitrage MJ.`);
+    logLines.push(tr('cf.zonePersists', { spell: spell.label }));
     return;
   }
   const baseRounds = spell.duration?.kind === 'rounds' ? resolveFormula(spell.duration.value, caster, battleRng()) : 1;
@@ -3032,7 +3033,7 @@ function placeSpellZone(
     ...(pz.perRound ? { perRound: pz.perRound } : {}),
   };
   battle.zones = [...(battle.zones ?? []), zone];
-  logLines.push(`${spell.label} : la zone persiste ${rounds} Round(s).`);
+  logLines.push(tr('cf.zonePersistsRounds', { spell: spell.label, rounds }));
   bus.emit(EVT.ANIM_AOE, { tiles, kind: 'spell' });
 }
 
@@ -3154,7 +3155,7 @@ function resolveCombatEndHeroTestsInline(
   if (decided.corruption && corr) {
     const t = rollTest(testValue(c, 'resistance'), 'intermediaire', battleRng());
     const gain = corruptionGain(decided.corruption, t.success, Math.max(0, t.sl));
-    lines.push(`${c.name} — exposition à la Corruption (${corr.label}) : Résistance ${t.roll}/${t.target}${gain ? '' : ', résiste'}.`);
+    lines.push(tr('cf.corruptionExposure', { name: c.name, label: corr.label, roll: t.roll, target: t.target, gain: gain ? '' : tr('cf.fragResists') }));
     if (gain > 0) lines.push(...gainCorruption(get, set, c, gain));
   }
   return lines;
@@ -3211,7 +3212,7 @@ registerCascadeApplier('combatEndDisease', (get, set, step, hero) => {
   const lines = applyContraction(hero, disease, step.result.success, battleRng());
   set({ party: [...get().party] });
   if (get().battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
-  return { journal: lines.length ? lines : [`${hero.name} résiste à l’infection.`] };
+  return { journal: lines.length ? lines : [tr('cf.resistsInfection', { name: hero.name })] };
 });
 
 /** Applier d'une étape `combatEndCorruption` (LDB 19) : Test de Résistance RÉSOLU → `corruptionGain` selon
@@ -3222,7 +3223,7 @@ registerCascadeApplier('combatEndCorruption', (get, set, step, hero) => {
   const label = typeof step.meta?.exposureLabel === 'string' ? step.meta.exposureLabel : '';
   if (!level) return;
   const gain = corruptionGain(level, step.result.success, Math.max(0, step.result.sl));
-  const lines = [`${hero.name} — exposition à la Corruption (${label}) : Résistance ${step.result.roll}/${step.result.target}${gain ? '' : ', résiste'}.`];
+  const lines = [tr('cf.corruptionExposure', { name: hero.name, label, roll: step.result.roll, target: step.result.target, gain: gain ? '' : tr('cf.fragResists') })];
   if (gain > 0) lines.push(...gainCorruption(get, set, hero, gain));
   set({ party: [...get().party] });
   if (get().battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
@@ -3289,7 +3290,7 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
     // interactif → pas de cascade), puis writeback. Pas d'écran de victoire à gater.
     openCombatEndCascade(get, set);
     finalizeBattle(get, set);
-    set({ battle: { ...get().battle!, over: 'defeat', log: [...battle.log, ev('info', 'Défaite…')] } });
+    set({ battle: { ...get().battle!, over: 'defeat', log: [...battle.log, ev('info', tr('cf.defeat'))] } });
     return true;
   }
   return false;
@@ -3305,7 +3306,7 @@ export function finishVictory(get: Get, set: SetFn): void {
   const battle = get().battle;
   if (!battle || battle.over) return;
   finalizeBattle(get, set); // writeback AVANT onVictory (qui ajoute XP/butin au groupe)
-  set({ battle: { ...get().battle!, over: 'victory', log: [...get().battle!.log, ev('info', 'Victoire !')] } });
+  set({ battle: { ...get().battle!, over: 'victory', log: [...get().battle!.log, ev('info', tr('cf.victory'))] } });
   bus.emit(EVT.BATTLE_OVER, { victory: true }); // gong audio + hooks futurs
   // Capture des récompenses pour l'écran de victoire : on mesure ce que onVictory octroie (XP/or/butin)
   // par diff avant/après, + la liste des vaincus (groupée par nom). L'écran (VictoryScreen) lit `pendingVictory`.
@@ -3352,7 +3353,7 @@ export function finishCombatEnd(get: Get, set: SetFn): void {
   if (heroesAlive) { finishVictory(get, set); return; }
   // Cas-limite : la mutation/damnation a achevé le dernier héros pendant la cascade → défaite.
   finalizeBattle(get, set);
-  set({ battle: { ...get().battle!, over: 'defeat', log: [...get().battle!.log, ev('info', 'Défaite…')] } });
+  set({ battle: { ...get().battle!, over: 'defeat', log: [...get().battle!.log, ev('info', tr('cf.defeat'))] } });
 }
 
 /**
@@ -3378,15 +3379,15 @@ export function applyBladeTrap(get: Get, set: SetFn, defender: Combatant, bt: Bl
     // Succès Stupéfiant : la lame est BRISÉE, à moins qu'elle ne possède l'Atout Incassable (l.295).
     wearActiveWeapon(attacker, drop, true);
     line = drop.destroyed
-      ? `La lame de ${attacker.name} (${drop.name}) est BRISÉE par la manœuvre !`
-      : `${drop.name} résiste à la casse (Incassable/Solide) mais est arrachée des mains de ${attacker.name}.`;
+      ? tr('cf.bladeBroken', { name: attacker.name, weapon: drop.name })
+      : tr('cf.bladeResists', { weapon: drop.name, name: attacker.name });
   } else {
-    line = `${attacker.name} laisse tomber ${drop.name}, arrachée de ses mains !`;
+    line = tr('cf.weaponDropped', { name: attacker.name, weapon: drop.name });
   }
   attacker.weapons = attacker.weapons.filter((w) => w !== drop);
   // Étape d'AFFICHAGE empilée (comme un Coup Critique) : visible « l'un sous l'autre », acquittée par le
   // joueur. `actorId` = le défenseur piégeur (propriétaire de la modale en coop). Applier muet (préserve `outcome`).
-  pushCombatStep(set, { id: `cons-bladetrap-result-${defender.id}`, kind: 'bladeTrapResult', actorId: defender.id, icon: '🗡️', label: 'Piège-lame', outcome: [line], interactive: true });
+  pushCombatStep(set, { id: `cons-bladetrap-result-${defender.id}`, kind: 'bladeTrapResult', actorId: defender.id, icon: '🗡️', label: tr('cf.bladeTrapLabel'), outcome: [line], interactive: true });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
 }
@@ -3411,7 +3412,7 @@ registerCascadeApplier('bladeTrap', (get, set, step) => {
   if (step.chosen !== 'trap') {
     // Coup Critique normal sur la défense (le défenseur place le Critique sur l'attaquant).
     const parryWeaponName = defender.weapons.find((w) => w.uid === pbt.parryWeaponUid)?.name ?? 'arme';
-    const lines = [`${defender.name} place un Critique sur sa défense.`];
+    const lines = [tr('cf.critOnDefense', { name: defender.name })];
     applyOpposedCritical(get, set, attacker, pbt.roll, { attackerId: defender.id, weapon: parryWeaponName }, lines);
     const b = get().battle!;
     set({ battle: { ...b, log: [...b.log, ...evLines(lines, 'info', defender.id, attacker.id)] } });
@@ -3479,14 +3480,14 @@ export function advanceTurn(get: Get, set: SetFn) {
       // car elle peut suspendre (pendingFateSave / pendingRoundStart).
       const round = battle.round + 1;
       get().advanceTime(TIME_COST.combatRound); // « tout est horodaté » : 1 Round franchi = +combatRound min
-      battle.log.push(ev('round', `— Round ${round} —`));
+      battle.log.push(ev('round', tr('cf.roundHeader', { round })));
       // Ordre du Round : on REPART de l'ordre canonique (baseOrder) — donc tout réordonnancement
       // (Maladresse « agir en dernier » Oups! 21-40, pré-emption Chance) ne dure qu'UN Round (l.22-25).
       const base = battle.baseOrder ?? battle.order;
       // Agir en dernier : Maladresse (Oups! 21-40, 1 Round) OU arme Lente active (LDB 63 l.25, permanent).
       const lastIds = battle.combatants.filter((c) => c.actLastNextRound || strikesLast(c.weapons)).map((c) => c.id);
       battle.order = [...base.filter((id) => !lastIds.includes(id)), ...base.filter((id) => lastIds.includes(id))];
-      for (const c of battle.combatants) if (c.actLastNextRound) { c.actLastNextRound = false; battle.log.push(ev('detail', `${c.name} agira en dernier ce Round (Maladresse).`, c.id)); }
+      for (const c of battle.combatants) if (c.actLastNextRound) { c.actLastNextRound = false; battle.log.push(ev('detail', tr('cf.actLast', { name: c.name }), c.id)); }
       // Entretien de Round PARTITIONNÉ (spec coop §4bis) : TOUT va au journal de combat (bandeau) ;
       // seules les lignes CONCERNANT UN HÉROS alimentent la révélation (les ennemis : journal seul).
       const heroRoundLines: string[] = [];
@@ -3502,7 +3503,7 @@ export function advanceTurn(get: Get, set: SetFn) {
       // advanceTurn n'orchestre plus que le CADRE (Round, ordre, révélation) ; le CONTENU vit en hooks.
       // (Frénésie : l'Arme libre est un grant de DONNÉE plafonné par freeAttacksThisTurn, remis à zéro au tour.)
       runCombatHooks('roundBoundary', { get, set, battle, sink: tickLine });
-      if (heroRoundLines.length) pushReveal(set, { kind: 'round', title: `Fin du Round ${round - 1}`, lines: heroRoundLines, severity: 'minor' }); // (entretien HÉROS — auto-fermée)
+      if (heroRoundLines.length) pushReveal(set, { kind: 'round', title: tr('cf.roundEndTitle', { n: round - 1 }), lines: heroRoundLines, severity: 'minor' }); // (entretien HÉROS — auto-fermée)
       // Maniement de deux armes : le −10 défensif expire au DÉBUT du prochain Tour de son porteur. Si ce
       // porteur est order[0] (il rejoue en premier), c'est ICI (le franchissement de Round) que son Tour démarre.
       const firstNext = battle.combatants.find((c) => c.id === battle.order[0]);
@@ -3522,8 +3523,8 @@ export function advanceTurn(get: Get, set: SetFn) {
     newActive.defensiveStance = false;
     newActive.dualStrikeDefensePenalty = false; // Maniement de deux armes : expire au début de son Tour (LDB 10 l.638)
     // Maladresse (Oups! 61-80) : perte du Mouvement / de l'Action ce tour-ci.
-    if (newActive.loseNextMovement) { movementUsed = mountMovement(battle, newActive); newActive.loseNextMovement = false; battle.log.push(ev('detail', `${newActive.name} perd son Mouvement (Maladresse).`, newActive.id)); }
-    if (newActive.loseNextAction) { acted = true; newActive.loseNextAction = false; battle.log.push(ev('detail', `${newActive.name} perd son Action (Maladresse).`, newActive.id)); }
+    if (newActive.loseNextMovement) { movementUsed = mountMovement(battle, newActive); newActive.loseNextMovement = false; battle.log.push(ev('detail', tr('cf.loseMovement', { name: newActive.name }), newActive.id)); }
+    if (newActive.loseNextAction) { acted = true; newActive.loseNextAction = false; battle.log.push(ev('detail', tr('cf.loseAction', { name: newActive.name }), newActive.id)); }
     fireTurnStartTriggers(get, set, newActive); // effets de bord « début de tour » authorés (inerte sans donnée)
   }
   set({ battle: { ...battle, turn, action: null, movementUsed, movedPreAction: false, acted, loadoutSwapped: false, reachable: new Map(), preview: null, runBudget: null, fearGate: null } });
@@ -3841,7 +3842,7 @@ registerCascadeApplier(
     if (step.immune) {
       set({ party: [...get().party] });
       if (battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
-      return { journal: [`${hero.name} est temporairement insensible à la Psychologie (Détermination).`] };
+      return { journal: [tr('cf.psychImmune', { name: hero.name })] };
     }
     let line: string;
     if (cp.kind === 'terreur') {
@@ -3849,7 +3850,7 @@ registerCascadeApplier(
       const brise = terreurBrise(cp.indice, r.success, r.sl);
       if (brise > 0) addCondition(hero, COND.brise, brise);
       hero.psychState.push({ type: 'peur', sourceId: cp.sourceId, indice: r.success ? 0 : cp.indice, calmeDR: 0, lastTestRound: battle?.round });
-      line = r.success ? `${hero.name} garde son sang-froid.` : `${hero.name} est terrifié par ${cp.sourceName} : ${brise} État(s) Brisé, puis Peur ${cp.indice}.`;
+      line = r.success ? tr('out.terreurHold', { name: hero.name }) : tr('cf.terreurThenFear', { name: hero.name, foe: cp.sourceName, brise, indice: cp.indice });
     } else if (CIBLE_TYPES.has(cp.kind)) {
       // Trait ciblé : échec → affliction active ; succès → marqueur inerte (pas de re-déclenchement).
       let e = hero.psychState.find((p) => p.type === cp.kind && p.cible === cp.cible);
@@ -3857,7 +3858,7 @@ registerCascadeApplier(
       e.lastTestRound = battle?.round;
       e.active = !r.success;
       const cl = CIBLE_LABEL[cp.kind];
-      line = r.success ? `${hero.name} maîtrise son ${cl?.label.toLowerCase() ?? cp.kind}.` : `${hero.name} est en proie à son ${cl?.label.toLowerCase() ?? cp.kind}.`;
+      line = r.success ? tr('out.cibleMaster', { name: hero.name, kind: cl?.label.toLowerCase() ?? cp.kind }) : tr('out.cibleGrip', { name: hero.name, kind: cl?.label.toLowerCase() ?? cp.kind });
     } else {
       // Peur = Test ÉTENDU de Calme (LDB 21 l.27) : cumuler le DR vers l'Indice (calque resolvePeurTest).
       // Sans Peur (LDB 10 l.864) : « un seul Test (+20) » → une réussite IGNORE la Peur d'emblée
@@ -3876,7 +3877,7 @@ registerCascadeApplier(
     if (battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
     return { journal: [line] };
   },
-  (success, name) => (success ? `${name} garde son sang-froid.` : `${name} cède à la Psychologie.`),
+  (success, name) => (success ? tr('out.terreurHold', { name }) : tr('cf.psychYields', { name })),
 );
 
 // endFrenzyIfDone / aiMaybeFrenzy / resolvePsychAI (cycle de tour ennemi) déplacés → state/combat/turnHooks
@@ -3901,7 +3902,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       (a) => a.kind === enemy.kind && a.id !== enemy.id && !isOutOfAction(a) && !isStupid(a.traits) && a.pos && chebyshev(a.pos, enemy.pos!) <= 1,
     );
     if (!guided && !rollTest(effectiveChar(enemy, 'Int'), 'facile', battleRng()).success) {
-      battle.log.push(ev('detail', `${enemy.name} (Stupide) bave et regarde dans le vide — Mouvement et Action perdus.`, enemy.id));
+      battle.log.push(ev('detail', tr('cf.stupid', { name: enemy.name }), enemy.id));
       set({ battle: { ...battle } });
       return advanceTurn(get, set);
     }
@@ -3925,7 +3926,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
     if (freeMount) {
       mountUp(enemy, freeMount);
       justMounted = true;
-      battle.log.push(ev('move', `${enemy.name} enfourche ${freeMount.name}.`, enemy.id));
+      battle.log.push(ev('move', tr('cs.mount', { name: enemy.name, mount: freeMount.name }), enemy.id));
       set({ battle: { ...battle } });
       bus.emit(EVT.SCENE_DIRTY);
     }
@@ -4086,7 +4087,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         geom, action, battleRng(),
       );
       const mv = plan.kind === 'move' ? plan : action;
-      if (ran) battle.log.push(ev('move', `${enemy.name} prend sa Course (${enemy.mountId ? 'Chevaucher' : 'Athlétisme'} ${ran.roll === 100 ? '00' : ran.roll}) : jusqu'à ${ran.budget} cases.`, enemy.id));
+      if (ran) battle.log.push(ev('move', tr('cf.enemyRun', { name: enemy.name, skill: enemy.mountId ? tr('cf.skillRide') : tr('cf.skillAthletics'), roll: ran.roll === 100 ? '00' : ran.roll, budget: ran.budget }), enemy.id));
       const wasEngaged = isEngaged(enemy);
       const distBefore = combatDistance(enemy, targetOf(mv.thenTargetId)); // distance de combat AVANT le déplacement
       const fromPos = { ...enemy.pos! }; // position AVANT déplacement (déclenchement de Peur à l'approche)
