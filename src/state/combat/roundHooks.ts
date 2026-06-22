@@ -17,8 +17,8 @@ import { suffocationTick } from '../../engine/suffocation';
 import { clearPsychOf, calmeValue } from '../../engine/psychology';
 import { zonesRoundTick } from '../zones';
 import { purgeExpiredSummons } from '../summonFlow';
-import { fireTriggers, fireConditionEffects } from '../triggeredEffects';
-import { isUnstable, isBestial, hasPerturbingAura } from '../../engine/traits/dispatch';
+import { fireTriggers } from '../triggeredEffects';
+import { isUnstable, hasPerturbingAura } from '../../engine/traits/dispatch';
 import { outnumberCountBonus, hasBraveheart } from '../../engine/combatFeatures/dispatch';
 import { chebyshev } from '../path';
 import { isEngaged } from '../../engine/engagement';
@@ -51,13 +51,15 @@ export function roundTestInteractive(c: Combatant): boolean {
 registerCombatHook({
   id: 'end-of-round', // effets périodiques d'États — RNG. endOfRound : récupération du Sonné (Test) +
   // décrément des durées. Dégâts par-round (Empoisonné/En Flammes/Hémorragique) + auto-dissipation
-  // (Aveuglé/Assourdi/Surpris) MIGRÉS en données (effects: onRoundEnd), joués par fireConditionEffects.
+  // (Aveuglé/Assourdi/Surpris) MIGRÉS en données (effects: onRoundEnd), dispatchés par le DISPATCHER UNIQUE.
   phase: 'onRoundEnd',
   order: 10,
   run: ({ get, set, battle, sink }) => {
     for (const c of battle.combatants) {
-      endOfRound(c, battleRng()).forEach((l) => sink(l, c));
-      fireConditionEffects(get, c, 'onRoundEnd', { rng: battleRng(), set }).forEach((l) => sink(l, c)); // dégâts/dissipation data-driven
+      endOfRound(c, battleRng()).forEach((l) => sink(l, c)); // machinerie : récupération du Sonné + décrément des durées
+      // Dispatch UNIQUE des effets `onRoundEnd` (États : dégâts/dissipation ; Traits/Talents : réactions) —
+      // fireTriggers réunit toutes les sources, aucun chemin par-kind. Inerte sans donnée.
+      fireTriggers(get, c, 'onRoundEnd', { rng: battleRng(), set }).forEach((l) => sink(l, c));
     }
   },
 });
@@ -112,19 +114,8 @@ registerCombatHook({
     }
   },
 });
-registerCombatHook({
-  id: 'bestial-fire-fear', // Bestial (LDB 85 p.338) : En flammes → gagne Brisé (approximation granularité Round)
-  phase: 'onRoundEnd',
-  order: 40,
-  run: ({ battle, sink }) => {
-    for (const c of battle.combatants) {
-      if (!isOutOfAction(c) && isBestial(c.traits) && hasCondition(c, COND.enFlammes) && !hasCondition(c, COND.brise)) {
-        addCondition(c, COND.brise);
-        sink(`${c.name} (Bestial) est terrifié par les flammes : Brisé.`, c);
-      }
-    }
-  },
-});
+// Bestial (LDB 85 p.338) « peur du feu → gagne Brisé » MIGRÉ en données : trait `bestial` effects
+// onRoundEnd (if En Flammes ∧ pas déjà Brisé → condition Brisé), dispatché par le dispatcher unique.
 registerCombatHook({
   id: 'perturbing-aura', // Perturbant (LDB 85 p.341) : −20 aux Tests à BE mètres d'une créature Perturbante (aura recalculée/Round)
   phase: 'onRoundEnd',
@@ -271,18 +262,6 @@ registerCombatHook({
   order: 79.5,
   run: ({ battle, sink }) => { purgeExpiredSummons(battle, battle.round + 1).forEach((l) => sink(l)); },
 });
-registerCombatHook({
-  id: 'fire-round-end-triggers', // effets « fin de Round » authorés — dispatcher générique (RNG) ; inerte sans donnée
-  phase: 'onRoundEnd',
-  order: 79.6, // après les décomptes/purges de fin de Round, avant la règle optionnelle se-fatiguer (80)
-  run: ({ get, set, battle, sink }) => {
-    for (const c of battle.combatants) {
-      if (c.dead || c.outOfRencontre) continue;
-      for (const line of fireTriggers(get, c, 'onRoundEnd', { rng: battleRng(), set })) sink(line, c);
-    }
-  },
-});
-
 /**
  * Règle optionnelle « Se fatiguer » (LDB 16 l.99) : un effort physique soutenu finit par épuiser.
  * Approximation assumée (granularité Round) : chaque Round en action = 1 Round d'effort ; à Bonus

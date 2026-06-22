@@ -143,12 +143,18 @@ export function applyTriggeredEffects(
 }
 
 /**
- * Déclenche les effets de `actor` (Traits + Atouts de `ctx.weapon`) correspondant à `trigger` — pour
- * TOUTE attaque/événement. (Les effets propres à une MANŒUVRE précise vivent sur son profil et sont
- * appliqués par `applyTriggeredEffects(maneuverEffectsOf(...))`, scoped à la manœuvre.)
+ * DISPATCHER UNIQUE des effets déclenchés de `actor` pour un `trigger` — SOURCE UNIQUE, sans code
+ * spécifique par KIND d'entité ni par trigger. Réunit TOUTES les sources d'effets portées par le
+ * combattant : Traits, Talents, Atouts d'arme (`effectsOf`) ET États (`fireConditionEffects`, qui
+ * apporte le `stacks` de chaque État). Maladies/Mutations réagissent par COMPOSITION (elles octroient
+ * un Trait/État, déjà couvert ici) — rien de neuf à câbler pour un nouveau type. Ajouter une source =
+ * l'AJOUTER ICI, jamais un nouveau chemin de dispatch. (Effets propres à une MANŒUVRE = scoped à son
+ * profil via `maneuverEffectsOf`.)
  */
 export function fireTriggers(get: Get, actor: Combatant, trigger: EffectTrigger, ctx: TriggerCtx = {}): string[] {
-  return applyTriggeredEffects(get, actor, effectsOf(actor, ctx.weapon), trigger, ctx);
+  const lines = applyTriggeredEffects(get, actor, effectsOf(actor, ctx.weapon), trigger, ctx);
+  lines.push(...fireConditionEffects(get, actor, trigger, ctx)); // États dispatchés EXACTEMENT comme Traits
+  return lines;
 }
 
 /**

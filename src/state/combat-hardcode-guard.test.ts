@@ -67,7 +67,7 @@ const TARGETS: Target[] = [
     name: 'state/combat/roundHooks.ts',
     src: read('./combat/roundHooks.ts'),
     reactive: /isUnstable|isBestial|hasPerturbingAura|suffocationTick|id: '(unstable|bestial-fire-fear|perturbing-aura|determination)/,
-    baseline: 11,
+    baseline: 9, // 11→9 : Bestial (peur du feu → Brisé) migré en données (trait `bestial` effects onRoundEnd, dispatcher unique)
     lot: 'Lot 4bis',
   },
   {

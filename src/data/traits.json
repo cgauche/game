@@ -183,7 +183,52 @@
     },
     "capabilities": {
       "bestial": true
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "all",
+            "of": [
+              {
+                "kind": "compare",
+                "subject": {
+                  "who": "target",
+                  "condition": "en-flammes"
+                },
+                "op": ">=",
+                "value": 1
+              },
+              {
+                "kind": "compare",
+                "subject": {
+                  "who": "target",
+                  "condition": "brise"
+                },
+                "op": "==",
+                "value": 0
+              }
+            ]
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "condition",
+                  "name": "brise"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
   },
   {
     "id": "bond",
