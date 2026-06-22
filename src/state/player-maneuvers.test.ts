@@ -162,7 +162,9 @@ describe('manœuvres en combat (store)', () => {
     E.pos = { x: 14, y: 10 }; // hors d'Allonge
     useGame.setState({ battle: { ...useGame.getState().battle!, acted: true, movementUsed: 0 } }); // Action déjà dépensée
     useGame.getState().battleSelectAttack('morsure');
+    vi.clearAllTimers();
     useGame.getState().battleClickEntity(E.id, { confirm: true });
+    vi.runOnlyPendingTimers(); // joue le glissé d'approche (charge) → ouvre la frappe
     const pa = useGame.getState().pendingAttack;
     expect(pa!.freeKind).toBe('morsure');
     expect(pa!.fromCharge).toBe(true); // s'est ruée au contact (gratuite = approche permise même Action dépensée)
@@ -176,7 +178,9 @@ describe('manœuvres en combat (store)', () => {
     H.weapons = [{ name: 'Arc', type: 'ranged', damage: '+0', range: 30, qualities: [], uid: 'bow' }] as Combatant['weapons']; // arme tenue = arc
     E.pos = { x: 14, y: 10 };
     useGame.getState().battleSelectAttack('morsure');
+    vi.clearAllTimers();
     useGame.getState().battleClickEntity(E.id, { confirm: true });
+    vi.runOnlyPendingTimers(); // joue le glissé d'approche (charge) → ouvre la frappe
     const pa = useGame.getState().pendingAttack;
     expect(pa!.freeKind).toBe('morsure'); // la Morsure reste une attaque de MÊLÉE…
     expect(pa!.fromCharge).toBe(true); // …elle s'approche (charge), elle ne tire pas à distance

@@ -307,10 +307,18 @@
 .cb-now {
   animation: cb-in 0.18s ease-out;
 }
-.cb-old {
-  opacity: 0.45;
-  font-size: 12px;
-  padding: 3px 12px;
+/* Ton du beat (source : combatNarration.toneOf) — renforce l'entrée pour qu'on ne rate plus la
+   bannière. `strong` = une Peur ; `grave` = un critique / une mise à mort (liseré sang + pop). */
+.cb-tone-strong {
+  border-color: color-mix(in srgb, var(--danger-soft) 60%, transparent);
+  box-shadow: 0 0 12px 0 color-mix(in srgb, var(--danger-soft) 30%, transparent);
+}
+.cb-tone-grave {
+  border-color: var(--blood);
+  background: color-mix(in srgb, var(--blood) 32%, rgba(10, 14, 20, 0.82));
+  box-shadow: 0 0 16px 0 color-mix(in srgb, var(--blood) 55%, transparent);
+  font-size: 15px;
+  animation: cb-in-grave 0.3s cubic-bezier(0.2, 1.4, 0.4, 1);
 }
 /* INTERLUDE de ciblage par carte (Frappe Mortelle / 2ᵉ frappe / Surincantation +Cible / pose de
    zone) : la BARRE D'ACTION se transforme (cf. ActionBar) — liseré or pulsé = « la carte attend
@@ -361,6 +369,11 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+@keyframes cb-in-grave {
+  0% { opacity: 0; transform: scale(0.82) translateY(-6px); }
+  60% { opacity: 1; transform: scale(1.06) translateY(0); }
+  100% { transform: scale(1) translateY(0); }
 }
 .battle-result {
   text-align: center;

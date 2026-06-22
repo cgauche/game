@@ -18,6 +18,16 @@ export interface CombatEvent {
   targetId?: string;
 }
 
+/** Télégraphe d'intention d'un combattant IA (réticule + ligne sur la carte) : qui vise qui, et de
+ *  quelle manière. `kind` choisit le trait (mêlée/charge = ligne PLEINE ; tir/sort = POINTILLÉE) ET
+ *  narre la bannière (« charge / attaque / vise / lance un sort »). Une seule source pour les deux. */
+export type ActorAimKind = 'melee' | 'charge' | 'ranged' | 'cast';
+export interface ActorAim {
+  fromId: string;
+  toId: string;
+  kind: ActorAimKind;
+}
+
 /** Construit un événement. */
 export function ev(kind: CombatEventKind, text: string, actorId?: string, targetId?: string): CombatEvent {
   return { kind, text, actorId, targetId };

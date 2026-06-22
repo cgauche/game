@@ -99,7 +99,9 @@ describe('Approche sous Peur (store)', () => {
     expect(st.pendingApproach).toMatchObject({ combatantId: H.id, sourceId: E.id, intent: { kind: 'entity', id: E.id } });
     expect(st.pendingAttack).toBeNull(); // la charge attend le Test
     useGame.setState({ pendingApproach: { ...st.pendingApproach!, result: { success: true, roll: 5, target: 50, sl: 4 } } });
+    vi.clearAllTimers();
     useGame.getState().approachConfirm();
+    vi.runOnlyPendingTimers(); // joue le glissé d'approche (charge) relancé → ouvre la frappe
     st = useGame.getState();
     expect(st.pendingAttack?.fromCharge).toBe(true); // charge relancée après le succès
     expect(st.battle!.fearGate).toBe('passed');

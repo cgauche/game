@@ -11,7 +11,7 @@ import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
 import { ev, evLines, type CombatEventKind } from './combatLog';
 import { TEMPO } from './tempo';
-import { walkMs } from '../gameIso/walkPath';
+import { beatHold, approachMs, afterApproach } from './combatDirector';
 import { facingToward } from '../gameIso/rig/facing';
 import type { Dir8 } from './dir8';
 import { d10 } from '../engine/dice';
@@ -3440,7 +3440,7 @@ registerCascadeApplier('bladeTrap', (get, set, step) => {
  *  attackThenAdvance juste après doAttack). No-op si le combat est terminé. */
 export function resumeEnemyTurn(get: Get, set: SetFn): void {
   if (combatAdvanceBlocked(get())) return;
-  setTimeout(() => advanceTurn(get, set), TEMPO.enemyAdvance);
+  setTimeout(() => advanceTurn(get, set), beatHold(get, 'enemyAdvance'));
 }
 
 /** Reprend un tour d'IA SUSPENDU par une modale bloquante (révélations OU séquence de conséquences de
@@ -3625,7 +3625,7 @@ export function maybeRunEnemyTurn(get: Get, set: SetFn) {
   const battle = get().battle!;
   const active = activeCombatant(battle);
   if (!active || !aiDriven(get(), active) || isOutOfAction(active)) return;
-  setTimeout(() => runEnemyAI(get, set, active.id), TEMPO.turnHandoff);
+  setTimeout(() => runEnemyAI(get, set, active.id), beatHold(get, 'turnHandoff'));
 }
 
 /** LDB 21 (Psychologie) l.29 : « Si la source de votre Peur se rapproche de vous, vous devez réussir un
@@ -3973,15 +3973,17 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   const canAct = canTakeAction(enemy); // Sonné : pas d'Action — déplacement seul (LDB États l.123)
 
   // Attaque (mêlée ou tir, selon l'arme active) puis fin de tour — cadence préservée.
-  const attackThenAdvance = (target: Combatant, delay: number = TEMPO.preAttack) => {
+  const attackThenAdvance = (target: Combatant, delay: number = TEMPO.aimTelegraph) => {
     // Télégraphe (réticule + ligne — PLEINE en mêlée, pointillée au tir) pendant la pré-attaque :
     // même affordance que la visée du joueur, des deux côtés.
-    set({ actorAim: { fromId: enemy.id, toId: target.id, melee: firedWeapon(enemy, target).type !== 'ranged' } });
+    const aimKind = firedWeapon(enemy, target).type === 'ranged' ? 'ranged' : enemy.chargedThisTurn ? 'charge' : 'melee';
+    set({ actorAim: { fromId: enemy.id, toId: target.id, kind: aimKind } });
     bus.emit(EVT.SCENE_DIRTY);
     setTimeout(() => {
       set({ actorAim: null });
       const b = get().battle;
-      if (!b || b.over) return;
+      // Tour caduc (combat fini OU relancé pendant le télégraphe → `enemy` hors du combat courant).
+      if (!b || b.over || !b.combatants.includes(enemy)) return;
       // Attaque-ACTION spéciale (Regard pétrifiant / Étreinte glaciale) à la place de l'attaque
       // normale si la créature en a le trait + l'Avantage ; sinon attaque normale (opposée).
       const suspended = aiMaybeSpecialAction(get, set, enemy) ? false : doAttack(get, set, enemy, target);
@@ -3991,7 +3993,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         aiFrenzyAttack(get, set, enemy); // Frénésie : Test de CC gratuit après l'attaque principale (instantané, LDB 21 l.34)
         // Attaques gratuites de créature (Morsure/Caudale/Piétinement, OPPOSÉES) après l'attaque
         // principale ; si une modale de défense s'ouvre, ne PAS avancer (reprise via defenseConfirm).
-        if (!aiCreatureFreeAttacks(get, set, enemy)) setTimeout(() => advanceTurn(get, set), TEMPO.postAttack);
+        if (!aiCreatureFreeAttacks(get, set, enemy)) setTimeout(() => advanceTurn(get, set), beatHold(get, 'postAttack'));
       }
     }, delay);
   };
@@ -4017,7 +4019,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       if (!canAct) return advanceTurn(get, set);
       const ctgt = targetOf(action.targetId);
       // Télégraphe d'incantation (parité tir) : ligne pointillée + réticule ~0,7 s avant le jet.
-      set({ actorAim: { fromId: enemy.id, toId: ctgt.id } });
+      set({ actorAim: { fromId: enemy.id, toId: ctgt.id, kind: 'cast' } });
       bus.emit(EVT.SCENE_DIRTY);
       setTimeout(() => {
         set({ actorAim: null });
@@ -4028,18 +4030,15 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         // l'IA : la reprise est portée par castConfirm/castCancel → resumeEnemyTurn (anti
         // double-advance, même pattern que la défense). castSpell peut refuser (contrecoup
         // bloquant, hors de portée…) → pas de modale → l'ennemi passe.
-        if (!get().pendingCast) setTimeout(() => advanceTurn(get, set), TEMPO.enemyAdvance);
+        if (!get().pendingCast) setTimeout(() => advanceTurn(get, set), beatHold(get, 'enemyAdvance'));
       }, TEMPO.aimTelegraph);
       return;
     }
     case 'shoot': {
       if (!canAct) return advanceTurn(get, set);
-      const tgt = targetOf(action.targetId);
-      // Télégraphe de tir : on montre QUI le tireur vise (réticule + cadrage) ~0,7 s AVANT de tirer
-      // (retour playtest « jamais su sur qui il tirait »). doAttack journalise « X tire sur Y ».
-      set({ actorAim: { fromId: enemy.id, toId: tgt.id } });
-      bus.emit(EVT.SCENE_DIRTY);
-      setTimeout(() => { set({ actorAim: null }); attackThenAdvance(tgt); }, TEMPO.aimTelegraph);
+      // Le télégraphe (réticule + ligne pointillée ~0,85 s) est porté par attackThenAdvance — même
+      // affordance « qui va être frappé » que la mêlée et le sort (plus de double télégraphe).
+      attackThenAdvance(targetOf(action.targetId));
       return;
     }
     case 'reload': {
@@ -4074,7 +4073,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         : (action.state === COND.empetre ? `${enemy.name} reste Empêtré.` : `${enemy.name} reste En flammes.`);
       set({ battle: { ...battle, log: [...battle.log, ev('condition', line, enemy.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
-      setTimeout(() => advanceTurn(get, set), TEMPO.afterMove);
+      setTimeout(() => advanceTurn(get, set), beatHold(get, 'afterMove'));
       return;
     }
     case 'move': {
@@ -4093,34 +4092,46 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       const distBefore = combatDistance(enemy, targetOf(mv.thenTargetId)); // distance de combat AVANT le déplacement
       const fromPos = { ...enemy.pos! }; // position AVANT déplacement (déclenchement de Peur à l'approche)
       const path = pathTo(scene, enemy.pos!, mv.to, blocked, sizeFootprint(geom.size));
-      enemy.pos = mv.to;
-      if (geom !== enemy) geom.pos = { ...mv.to }; // Combat monté : la monture suit le cavalier (couple solidaire)
-      displaceSmaller(get, geom); // un grand « dégage » les plus petits sous son empreinte (85 l.308-309)
-      get().faceFromPath(enemy.id, path);
-      if (geom !== enemy) get().faceFromPath(geom.id, path);
-      bus.emit(EVT.ANIM_MOVE, { id: enemy.id, path });
-      if (geom !== enemy) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path });
-      applyZoneCrossings(get, enemy, path ?? [{ ...mv.to }]); // Mur de feu & co (L11) : traverser coûte
-      approachFearTrigger(get, set, enemy, fromPos); // LDB 21 l.29 : source de Peur qui s'approche → Test de Calme ou Brisé
-      set({ battle: { ...battle } });
+      // Télégraphe de DÉPLACEMENT (parité héros) : montrer le chemin + la destination AVANT que l'ennemi
+      // bouge (« où il va »), puis il glisse dessus. Le mouvement réel + la suite (attaque/fin de tour)
+      // sont DIFFÉRÉS après la tenue (beatHold moveTelegraph) — mêmes effets, juste annoncés d'abord.
+      set({ actorMove: { id: enemy.id, path: path ?? [{ ...mv.to }] }, battle: { ...battle } });
       bus.emit(EVT.SCENE_DIRTY);
-      const tgt = targetOf(mv.thenTargetId);
-      // La Course a consommé l'Action (LDB 15 l.79) → pas d'attaque en arrivant.
-      if (!ran && canAct && combatDistance(enemy, tgt) <= meleeReachTiles(enemy.weapons)) {
-        // Charge de l'IA : se ruer au contact depuis une position non-Engagée donne l'Avantage (LDB 15-Dépl l.74-77).
-        if (!wasEngaged) {
-          const adv = chargeAdvantage(effectiveMovement(geom), distBefore);
-          if (adv) {
-            gainAdvantage(enemy, adv);
-            enemy.gainedAdvThisRound = true;
-            enemy.chargedThisTurn = true; // Charge → Attaque gratuite de Cornes (LDB 85), résolue par aiCreatureFreeAttacks
-            // Frappe réactive (LDB 10) : la cible CHARGÉE peut riposter HORS séquence (Test d'Init) avant
-            // l'attaque du chargeur — talent d'attaque déclenchée en donnée (`grantFreeAttack onCharged`).
-            resolveTalentFreeAttacks(get, set, tgt, 'onCharged', enemy);
+      setTimeout(() => {
+        set({ actorMove: null }); // toujours retirer le télégraphe (même si le tour est devenu caduc)
+        const b = get().battle;
+        // Tour caduc (combat fini OU combat/scène relancé pendant le télégraphe → `enemy` n'appartient
+        // plus au combat courant) : abandonner SANS muter, sinon on réécrirait l'ancien combat.
+        if (!b || b.over || !b.combatants.includes(enemy)) return;
+        enemy.pos = mv.to;
+        if (geom !== enemy) geom.pos = { ...mv.to }; // Combat monté : la monture suit le cavalier (couple solidaire)
+        displaceSmaller(get, geom); // un grand « dégage » les plus petits sous son empreinte (85 l.308-309)
+        get().faceFromPath(enemy.id, path);
+        if (geom !== enemy) get().faceFromPath(geom.id, path);
+        bus.emit(EVT.ANIM_MOVE, { id: enemy.id, path });
+        if (geom !== enemy) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path });
+        applyZoneCrossings(get, enemy, path ?? [{ ...mv.to }]); // Mur de feu & co (L11) : traverser coûte
+        approachFearTrigger(get, set, enemy, fromPos); // LDB 21 l.29 : source de Peur qui s'approche → Test de Calme ou Brisé
+        set({ battle: { ...battle } });
+        bus.emit(EVT.SCENE_DIRTY);
+        const tgt = targetOf(mv.thenTargetId);
+        // La Course a consommé l'Action (LDB 15 l.79) → pas d'attaque en arrivant.
+        if (!ran && canAct && combatDistance(enemy, tgt) <= meleeReachTiles(enemy.weapons)) {
+          // Charge de l'IA : se ruer au contact depuis une position non-Engagée donne l'Avantage (LDB 15-Dépl l.74-77).
+          if (!wasEngaged) {
+            const adv = chargeAdvantage(effectiveMovement(geom), distBefore);
+            if (adv) {
+              gainAdvantage(enemy, adv);
+              enemy.gainedAdvThisRound = true;
+              enemy.chargedThisTurn = true; // Charge → Attaque gratuite de Cornes (LDB 85), résolue par aiCreatureFreeAttacks
+              // Frappe réactive (LDB 10) : la cible CHARGÉE peut riposter HORS séquence (Test d'Init) avant
+              // l'attaque du chargeur — talent d'attaque déclenchée en donnée (`grantFreeAttack onCharged`).
+              resolveTalentFreeAttacks(get, set, tgt, 'onCharged', enemy);
+            }
           }
-        }
-        attackThenAdvance(tgt, Math.max(TEMPO.preAttack, walkMs(path ?? []) + TEMPO.afterMove));
-      } else setTimeout(() => advanceTurn(get, set), walkMs(path ?? []) + TEMPO.afterMove);
+          attackThenAdvance(tgt, Math.max(TEMPO.preAttack, approachMs(get, path)));
+        } else afterApproach(get, path, () => advanceTurn(get, set));
+      }, beatHold(get, 'moveTelegraph'));
       return;
     }
   }

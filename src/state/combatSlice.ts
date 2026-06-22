@@ -22,6 +22,7 @@ import { EMPTY_FLOW, flowEffects } from './flow';
 import { pickActiveModalKey } from './modalArbiter';
 import { mountMovement, canMove, mountUp, dismount, mountOf, mountableNear } from './mount';
 import { ev, evLines } from './combatLog';
+import { afterApproach } from './combatDirector';
 import { initiativeOrder, combatValue, rollMeleeDefender, resolveBackstabAttack, resolveMeleePassive, attackWeapon } from '../engine/combat';
 import { disengageFrom, isEngaged, meleeReachTiles } from '../engine/engagement';
 import { gainAdvantage } from '../engine/advantage';
@@ -541,80 +542,85 @@ export function createCombatSlice(get: Get, set: Set) {
       // Avantage de la manœuvre dépensé UNE fois, à la frappe (après TOUS les portails — aperçu/monture/Peur/
       // ward) : gratuites de mêlée (Morsure/Caudale… coût RAW). L'Arme (cost.advantage 0) ne dépense rien.
       if (option.cost.advantage) active.advantage = Math.max(0, active.advantage - option.cost.advantage);
+      // === Approche-puis-frappe : DEUX beats explicites ===
+      //   (1) APPROCHE — appliquer le déplacement animé (charge / rejoindre) et calculer la charge utile
+      //       de frappe `pa` (PAS de modale ici).
+      //   (2) FRAPPE — ouvrir la SÉQUENCE de combat, mais SEULEMENT après le glissé d'approche (beat
+      //       `afterApproach` du Réalisateur, PARTAGÉ avec l'IA) : on VOIT le héros rejoindre la cible
+      //       avant la modale, au lieu de la modale par-dessus une téléportation.
+      let approachPath: { x: number; y: number }[] | null = null;
+      let pa: GameState['pendingAttack'];
       if (plan.kind === 'charge') {
         // Charge (LDB 15-Dépl l.74-77) : se ruer au contact (portée de Course) puis attaquer — manœuvre
         // PLEINE (consomme tout le Mouvement). Combat monté : empreinte/Course de la MONTURE.
         const geom = mountOf(battle, active) ?? active;
-        const path = plan.path;
+        approachPath = plan.path;
         active.pos = { ...plan.dest };
         if (geom !== active) geom.pos = { ...plan.dest }; // la monture charge sous le cavalier
         displaceSmaller(get, geom); // charge d'un grand : idem dégage les plus petits (85 l.308-309)
-        get().faceFromPath(active.id, path);
-        if (geom !== active) get().faceFromPath(geom.id, path);
-        bus.emit(EVT.ANIM_MOVE, { id: active.id, path });
-        if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path });
-        applyZoneCrossings(get, active, path); // Mur de feu & co (L11) : charger À TRAVERS coûte
+        get().faceFromPath(active.id, approachPath);
+        if (geom !== active) get().faceFromPath(geom.id, approachPath);
+        bus.emit(EVT.ANIM_MOVE, { id: active.id, path: approachPath });
+        if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path: approachPath });
+        applyZoneCrossings(get, active, approachPath); // Mur de feu & co (L11) : charger À TRAVERS coûte
         gainAdvantage(active, plan.adv); // +1 si « fonçant » de ≥ M mètres (l.77, lecture stricte), AVANT le jet
         if (plan.adv > 0) active.gainedAdvThisRound = true;
         active.chargedThisTurn = true; // Charge → Atouts de Dégâts d'une arme Épuisante actifs (LDB 63 l.16-17) ; consommé en fin de tour
         set({ battle: { ...get().battle!, movementUsed: mountMovement(battle, active), action: null, preview: null, log: [...battle.log, ev('charge', `${active.name} charge ${target.name}${plan.adv ? ` (+${plan.adv} Avantage)` : ''}.`, active.id, target.id)] } });
-        set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null, fromCharge: true, ...(option.freeKind ? { freeKind: option.freeKind, ...(option.weaponUid ? { weaponUid: option.weaponUid } : {}) } : {}) } });
-        // Ouvre la SÉQUENCE de combat (comme l'attaque normale/gratuite) : sans elle, le jet de Charge serait
-        // une modale d'arbitre `attack` autonome et ses conséquences (Critique/Maladresse) déborderaient dans
-        // une popin « Conséquences » séparée — d'où l'entrée `attack` qu'on peut désormais retirer (tous les
-        // chemins d'attaque ouvrent une cascade ; cleave/dual réutilisent celle-ci).
+        pa = { attackerId: active.id, targetId: target.id, location: null, result: null, fromCharge: true, ...(option.freeKind ? { freeKind: option.freeKind, ...(option.weaponUid ? { weaponUid: option.weaponUid } : {}) } : {}) };
+      } else {
+        if (plan.kind === 'moveAttack') {
+          // Rejoindre la cible dans la Marche restante (pas une Charge → pas de bonus), puis attaquer.
+          // MÊMES mutations qu'un segment de battleClickTile (snapshot d'annulation compris).
+          const b = get().battle!;
+          const snapshot =
+            (b.movementUsed ?? 0) === 0
+              ? {
+                  pos: Object.fromEntries(b.combatants.filter((c) => c.pos).map((c) => [c.id, { ...c.pos! }])),
+                  facing: { ...get().facing },
+                  movedPreAction: b.movedPreAction,
+                }
+              : b.moveSnapshot ?? null;
+          const geom = mountOf(b, active) ?? active;
+          approachPath = plan.path;
+          active.pos = { ...plan.dest };
+          if (geom !== active) geom.pos = { ...plan.dest };
+          displaceSmaller(get, geom);
+          get().faceFromPath(active.id, approachPath);
+          if (geom !== active) get().faceFromPath(geom.id, approachPath);
+          bus.emit(EVT.ANIM_MOVE, { id: active.id, path: approachPath });
+          if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path: approachPath });
+          applyZoneCrossings(get, active, approachPath); // Mur de feu & co (L11)
+          set({ battle: { ...b, moveSnapshot: snapshot, movementUsed: (b.movementUsed ?? 0) + plan.cost, movedPreAction: b.movedPreAction || !b.acted, action: null, reachable: new Map(), preview: null } });
+          bus.emit(EVT.SCENE_DIRTY);
+        }
+        if (option.freeKind) {
+          // Frappe GRATUITE (Morsure/Caudale/Tentacule) — déjà à portée (Allonge 1) : résolveur = arme
+          // naturelle synthétique (freeAttackWeapon, via `pa.freeKind`) ; pas de gate Allonge/munitions.
+          pa = { attackerId: active.id, targetId: target.id, location: null, result: null, freeKind: option.freeKind, ...(option.weaponUid ? { weaponUid: option.weaponUid } : {}) };
+        } else {
+          // Arme effectivement employée selon la distance (mêlée à portée d'Allonge, distance sinon) — PAS
+          // weapons[0], sinon un héros mixte mêlée+distance ne pourrait jamais tirer une cible éloignée (LDB
+          // Armes l.297-298). Portée de mêlée = Allonge de l'arme (RAW-3, LDB 62 l.211/213), footprint inclus.
+          const adj = combatDistance(active, target) <= meleeReachTiles(active.weapons);
+          const w = attackWeapon(active.weapons, adj);
+          if (!adj && w.type === 'melee') {
+            get().log('Cible hors de portée de mêlée.'); // aucune arme à distance dispo → mêlée hors de portée
+            return;
+          }
+          // Le gate de RESSOURCE (Recharge/munition) a déjà été appliqué plus haut (firedAttackBlock).
+          pa = { attackerId: active.id, targetId: target.id, location: null, result: null };
+        }
+      }
+      // (2) FRAPPE — après le glissé d'approche : ouvre la SÉQUENCE de combat (jet d'attaque = ÉTAPE 0,
+      // CascadeModal via useAttackJetProps ; ses conséquences s'empilent APRÈS dans la MÊME fenêtre). Garde
+      // dans le différé : encore le tour de l'acteur et aucune autre cascade ouverte (anti double-ouverture).
+      afterApproach(get, approachPath, () => {
+        const b = get().battle;
+        if (!b || b.over || b.order[b.turn] !== active.id || get().pendingCascade) return;
+        set({ pendingAttack: pa });
         startCascade(get, set, { title: 'Attaque', icon: '⚔️', purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: active.id }] });
-        return;
-      }
-      if (plan.kind === 'moveAttack') {
-        // Rejoindre la cible dans la Marche restante (pas une Charge → pas de bonus), puis attaquer.
-        // MÊMES mutations qu'un segment de battleClickTile (snapshot d'annulation compris).
-        const b = get().battle!;
-        const snapshot =
-          (b.movementUsed ?? 0) === 0
-            ? {
-                pos: Object.fromEntries(b.combatants.filter((c) => c.pos).map((c) => [c.id, { ...c.pos! }])),
-                facing: { ...get().facing },
-                movedPreAction: b.movedPreAction,
-              }
-            : b.moveSnapshot ?? null;
-        const geom = mountOf(b, active) ?? active;
-        active.pos = { ...plan.dest };
-        if (geom !== active) geom.pos = { ...plan.dest };
-        displaceSmaller(get, geom);
-        get().faceFromPath(active.id, plan.path);
-        if (geom !== active) get().faceFromPath(geom.id, plan.path);
-        bus.emit(EVT.ANIM_MOVE, { id: active.id, path: plan.path });
-        if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path: plan.path });
-        applyZoneCrossings(get, active, plan.path); // Mur de feu & co (L11)
-        set({ battle: { ...b, moveSnapshot: snapshot, movementUsed: (b.movementUsed ?? 0) + plan.cost, movedPreAction: b.movedPreAction || !b.acted, action: null, reachable: new Map(), preview: null } });
-        bus.emit(EVT.SCENE_DIRTY);
-        // … puis on enchaîne sur la queue d'attaque (la cible est désormais à portée d'Allonge).
-      }
-      // Frappe GRATUITE (Morsure/Caudale/Tentacule) — déjà à portée (Allonge 1, approche faite) : résolveur =
-      // arme naturelle synthétique (freeAttackWeapon, via `pa.freeKind`) ; pas de gate Allonge d'arme tenue ni
-      // munitions. (Le cas Charge a déjà ouvert le `pendingAttack{freeKind, fromCharge}` ci-dessus.)
-      if (option.freeKind) {
-        set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null, freeKind: option.freeKind, ...(option.weaponUid ? { weaponUid: option.weaponUid } : {}) } });
-        startCascade(get, set, { title: 'Attaque', icon: '⚔️', purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: active.id }] });
-        return;
-      }
-      // Arme effectivement employée selon la distance (mêlée à portée d'Allonge, distance sinon) — PAS
-      // weapons[0], sinon un héros mixte mêlée+distance ne pourrait jamais tirer une cible éloignée (LDB
-      // Armes l.297-298). Portée de mêlée = Allonge de l'arme (RAW-3, LDB 62 l.211/213), footprint inclus.
-      const adj = combatDistance(active, target) <= meleeReachTiles(active.weapons);
-      const w = attackWeapon(active.weapons, adj);
-      if (!adj && w.type === 'melee') {
-        get().log('Cible hors de portée de mêlée.'); // aucune arme à distance dispo → mêlée hors de portée
-        return;
-      }
-      // Le gate de RESSOURCE (Recharge non chargée / plus de munition) a déjà été appliqué plus haut, dès le
-      // plan 'attack', par firedAttackBlock — même prédicat que le réticule de survol (affordance honnête).
-      // Ouvre la SÉQUENCE de combat : le jet d'attaque est l'ÉTAPE 0 (rendu par CascadeModal via
-      // useAttackJetProps), ses conséquences s'empileront APRÈS dans la MÊME fenêtre. Les données du
-      // jet vivent dans pendingAttack (coexistant) ; les actions attack* restent inchangées.
-      set({ pendingAttack: { attackerId: active.id, targetId: target.id, location: null, result: null } });
-      startCascade(get, set, { title: 'Attaque', icon: '⚔️', purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: active.id }] });
+      });
     },
 
     dismissReveal: () => {

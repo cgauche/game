@@ -45,7 +45,7 @@ function applyLoadedSave(set: (s: Partial<GameState>) => void, save: SaveGame): 
   if (save.rules) loadRuleOverrides(save.rules);
   bus.emit(EVT.SCENE_DIRTY);
 }
-import { ev, type CombatEvent } from './combatLog';
+import { ev, type CombatEvent, type ActorAim } from './combatLog';
 import { rule, ruleOverrides, loadRuleOverrides } from '../engine/policy';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualities/dispatch';
@@ -270,8 +270,12 @@ export interface GameState extends RollFlowActionsMap {
    *  auto-roulée, cible héros = interactive). `oppositionConfirm` agrège → `pendingCast.opposedOutcome`
    *  → `castConfirm` applique (cible résistante = aucune op ; sinon ops à la marge). */
   pendingCastOpposition: PendingCastOpposition | null;
-  /** Tir ENNEMI télégraphié : réticule « qui l'adversaire vise », montré ~0,7 s AVANT le tir. */
-  actorAim: { fromId: string; toId: string; melee?: boolean } | null;
+  /** Télégraphe d'intention ENNEMI : réticule « qui l'adversaire vise » + manière (`kind`), montré
+   *  ~0,85 s AVANT l'action. Alimente le réticule/la ligne sur la carte ET la bannière d'annonce. */
+  actorAim: ActorAim | null;
+  /** Télégraphe de DÉPLACEMENT ENNEMI : chemin (+ destination = dernière case) montré ~0,4 s AVANT que
+   *  l'ennemi glisse dessus, pour lire « où il va ». Tracé via movePreviewEls (rouge), comme un aim. */
+  actorMove: { id: string; path: { x: number; y: number }[] } | null;
   /** Coût/gain (Action/Mouvement/Avantage) de l'intention SOUS LA SOURIS (desktop) — alimente le
    *  clignotant des jauges (ActiveFrame), même source que le tap-1 (`previewResourceDelta`).
    *  Posé par IsoStage au changement de tuile survolée ; null hors survol pertinent. */

@@ -10,17 +10,22 @@
  */
 import { conditionMeta } from './effectIcons';
 import { etats } from '../data';
-import type { CombatEvent, CombatEventKind } from '../state/combatLog';
+import type { CombatEvent, CombatEventKind, ActorAim, ActorAimKind } from '../state/combatLog';
 
 export interface NarratedSegment {
   text: string;
   team?: 'ally' | 'enemy';
 }
 
+/** Intensité d'un évènement → tenue à l'écran (le Réalisateur allonge les temps forts) ET emphase
+ *  visuelle de la bannière. `grave` = un critique / une mise à mort ; `strong` = une Peur. */
+export type CombatTone = 'normal' | 'strong' | 'grave';
+
 export interface NarratedLine {
   raw: string;
   icon: string;
   important: boolean;
+  tone: CombatTone;
   segments: NarratedSegment[];
 }
 
@@ -43,6 +48,13 @@ const IMPORTANT: Set<CombatEventKind> = new Set([
   'charge', 'attack', 'shoot', 'cast', 'item', 'heal', 'flee',
   'defensive', 'aim', 'focus', 'frenzy', 'crit', 'fear', 'death', 'round',
 ]);
+
+/** Ton par type d'évènement (source UNIQUE — lue par le Réalisateur pour la tenue ET par la bannière
+ *  pour l'emphase). Tout le reste retombe sur `normal`. */
+const KIND_TONE: Partial<Record<CombatEventKind, CombatTone>> = { crit: 'grave', death: 'grave', fear: 'strong' };
+export function toneOf(k: CombatEventKind): CombatTone {
+  return KIND_TONE[k] ?? 'normal';
+}
 
 /** États (LDB ch.16) reconnus dans le texte d'un événement `condition`/`detail` → icône via la
  *  source unique `conditionMeta` (jeu de noms FERMÉ, pas du devinage de verbe libre). */
@@ -105,9 +117,29 @@ function colorize(text: string, combatants: ComLite[]): NarratedSegment[] {
   return segs.length ? segs : [{ text }];
 }
 
-/** Narre un événement de combat : icône unifiée + importance + segments colorés par camp. */
+/** Narre un événement de combat : icône unifiée + importance + ton + segments colorés par camp. */
 export function narrateEvent(e: CombatEvent, combatants: ComLite[] = []): NarratedLine {
-  return { raw: e.text, icon: iconOf(e), important: importantOf(e), segments: colorize(e.text, combatants) };
+  return { raw: e.text, icon: iconOf(e), important: importantOf(e), tone: toneOf(e.kind), segments: colorize(e.text, combatants) };
+}
+
+/** Verbe + kind (icône/ton) pour chaque manière de télégraphe d'intention. */
+const INTENT: Record<ActorAimKind, { verb: string; kind: CombatEventKind }> = {
+  charge: { verb: 'charge', kind: 'charge' },
+  melee: { verb: 'attaque', kind: 'attack' },
+  ranged: { verb: 'vise', kind: 'shoot' },
+  cast: { verb: 'lance un sort sur', kind: 'cast' },
+};
+
+/** Narre l'INTENTION télégraphiée d'un combattant IA (« X charge / attaque / vise / lance un sort sur
+ *  Y »). N'est PAS journalisée (doublon de la ligne de résultat) : la bannière la projette le temps du
+ *  télégraphe. Réutilise la coloration par camp + l'icône/le ton par kind, comme un évènement. */
+export function narrateIntent(aim: ActorAim, combatants: ComLite[] = []): NarratedLine | null {
+  const from = combatants.find((c) => c.id === aim.fromId);
+  const to = combatants.find((c) => c.id === aim.toId);
+  if (!from || !to) return null;
+  const { verb, kind } = INTENT[aim.kind];
+  const text = `${from.name} ${verb} ${to.name}`;
+  return { raw: text, icon: KIND_ICON[kind], important: true, tone: toneOf(kind), segments: colorize(text, combatants) };
 }
 
 /** Les `max` derniers événements IMPORTANTS (pour le bandeau haut), ordre chronologique préservé. */

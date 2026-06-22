@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { computeMoveReach } from './combatFlow';
 import { chooseEnemyAction } from './ai';
@@ -18,7 +18,8 @@ describe('Brisé — restriction d\'action (LDB 16 l.55)', () => {
   // Purge inter-tests : `combatBusy` gèle la hotbar sous un jet OU une cascade en cours. Depuis que la
   // Charge ouvre une cascade combat (comme l'attaque normale), `battleClickEntity` laisse un `pendingCascade`
   // qu'il faut aussi purger (sinon le test suivant verra `combatBusy === true`).
-  beforeEach(() => useGame.setState({ battle: null, pendingAttack: null, pendingCascade: null }));
+  beforeEach(() => { vi.useFakeTimers(); useGame.setState({ battle: null, pendingAttack: null, pendingCascade: null }); });
+  afterEach(() => { vi.useRealTimers(); });
 
   it('Brisé : le clic-ennemi est REFUSÉ (aucune action offensive)', () => {
     setup(true);
@@ -28,7 +29,9 @@ describe('Brisé — restriction d\'action (LDB 16 l.55)', () => {
 
   it('non Brisé : le clic-ennemi attaque (régression)', () => {
     setup(false);
+    vi.clearAllTimers();
     useGame.getState().battleClickEntity('e', { confirm: true });
+    vi.runOnlyPendingTimers(); // joue le glissé d'approche (charge) → ouvre la frappe
     expect(useGame.getState().pendingAttack).not.toBeNull();
   });
 

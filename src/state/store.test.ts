@@ -895,7 +895,9 @@ describe('Boucle de jeu (store)', () => {
     for (const c of st.battle!.combatants) if (c.kind === 'enemy' && c.id !== E.id) c.wounds.current = 0;
     const turn = st.battle!.order.indexOf(H.id);
     useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false } });
+    vi.clearAllTimers();
     useGame.getState().battleClickEntity(E.id, { confirm: true }); // Charge implicite (mêlée + non Engagé + Mvt intact)
+    vi.runOnlyPendingTimers(); // joue le glissé d'approche (charge) → ouvre la frappe
     st = useGame.getState();
     const Ha = st.battle!.combatants.find((c) => c.id === H.id)!;
     expect(Ha.advantage).toBe(1); // chargé de 2 cases (M4, seuil 2) → +1 (strict l.77)

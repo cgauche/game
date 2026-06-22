@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { frenzyTarget } from './combatFlow';
 import { createHero } from '../engine/character';
@@ -11,7 +11,8 @@ import { testScene } from '../scenes/test-fixture';
  * possible est un Test de Capacité de Combat ou un Test d'Athlétisme. »
  */
 describe('Frénésie héros — cible imposée et déplacement contraint', () => {
-  beforeEach(() => { useGame.setState({ battle: null, pendingAttack: null }); });
+  beforeEach(() => { vi.useFakeTimers(); useGame.setState({ battle: null, pendingAttack: null }); });
+  afterEach(() => { vi.useRealTimers(); });
 
   function setup() {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
@@ -41,9 +42,11 @@ describe('Frénésie héros — cible imposée et déplacement contraint', () =>
 
   it('attaquer un AUTRE ennemi que le plus proche est refusé ; le plus proche passe', () => {
     const { E1, E2 } = setup();
+    vi.clearAllTimers(); // largue le turn-handoff résiduel du setup (le tour a été forcé sur le héros)
     useGame.getState().battleClickEntity(E2.id, { confirm: true });
     expect(useGame.getState().pendingAttack).toBeNull(); // refusé : pas le plus proche
     useGame.getState().battleClickEntity(E1.id, { confirm: true });
+    vi.runOnlyPendingTimers(); // joue le glissé d'approche (charge) → ouvre la frappe
     expect(useGame.getState().pendingAttack?.targetId).toBe(E1.id); // charge/attaque sur la cible imposée
   });
 
@@ -55,7 +58,9 @@ describe('Frénésie héros — cible imposée et déplacement contraint', () =>
     const Hc = b.combatants.find((c) => c.id === H.id)!;
     Hc.talents = [...(Hc.talents ?? []), { talentId: 'frenesie', times: 1 }]; // talent Frénésie → attaque d'arme libre dispo (donnée)
     useGame.setState({ battle: { ...b, acted: true }, pendingAttack: null });
+    vi.clearAllTimers();
     useGame.getState().battleClickEntity(E1.id, { confirm: true }); // E1 à 2 cases → CHARGE (déplacement + attaque)
+    vi.runOnlyPendingTimers(); // joue le glissé d'approche → ouvre la frappe
     const pa = useGame.getState().pendingAttack;
     expect(pa?.targetId).toBe(E1.id); // la charge s'ouvre malgré l'Action dépensée (≠ blocage « attaque directe seulement »)
     expect(pa?.fromCharge).toBe(true);

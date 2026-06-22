@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame, movementRemaining } from './store';
 import { computeMoveReach, computeRunReach, displayedReach } from './combatFlow';
 import { createHero } from '../engine/character';
@@ -157,7 +157,8 @@ describe('Course implicite — zone au-delà de la Marche, jet au commit (LDB 15
 });
 
 describe('clic-ennemi implicite', () => {
-  beforeEach(() => { useGame.setState({ battle: null, pendingAttack: null, pendingDisengage: null }); });
+  beforeEach(() => { vi.useFakeTimers(); useGame.setState({ battle: null, pendingAttack: null, pendingDisengage: null }); });
+  afterEach(() => { vi.useRealTimers(); });
 
   it('cible adjacente : tap 1 aperçu attack, tap 2 ouvre la modale (pas de Charge → pas d’Avantage)', () => {
     const { H } = setup();
@@ -185,7 +186,9 @@ describe('clic-ennemi implicite', () => {
     h.advantage = 0;
     useGame.getState().battleClickEntity(e.id);
     expect(useGame.getState().battle!.preview).toMatchObject({ kind: 'charge', targetId: e.id, adv: 1 });
+    vi.clearAllTimers();
     useGame.getState().battleClickEntity(e.id);
+    vi.runOnlyPendingTimers(); // joue le glissé d'approche (charge) → ouvre la frappe
     const st = useGame.getState();
     const hh = st.battle!.combatants.find((c) => c.id === H.id)!;
     expect(hh.advantage).toBe(1);
@@ -203,7 +206,9 @@ describe('clic-ennemi implicite', () => {
     h.advantage = 0;
     useGame.getState().battleClickEntity(e.id);
     expect(useGame.getState().battle!.preview).toMatchObject({ kind: 'moveAttack', targetId: e.id });
+    vi.clearAllTimers();
     useGame.getState().battleClickEntity(e.id);
+    vi.runOnlyPendingTimers(); // joue le glissé d'approche → ouvre la frappe
     const st = useGame.getState();
     expect(st.battle!.combatants.find((c) => c.id === H.id)!.advantage).toBe(0);
     expect(st.pendingAttack?.targetId).toBe(e.id);

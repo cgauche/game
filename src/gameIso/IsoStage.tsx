@@ -87,13 +87,13 @@ const AMBIANCE_DEFS = `
 
 /** Tracé d'un DÉPLACEMENT (chemin + case d'arrivée + badge d'action) — source unique du rendu,
  *  partagée entre l'aperçu tap-1 (battle.preview, tactile) et l'aperçu au SURVOL (desktop). */
-function movePreviewEls(path: { x: number; y: number }[], dest: { x: number; y: number } | null, label: string | null, d: Dims, keyPrefix: string): JSX.Element[] {
+function movePreviewEls(path: { x: number; y: number }[], dest: { x: number; y: number } | null, label: string | null, d: Dims, keyPrefix: string, color = '#ffd75e'): JSX.Element[] {
   const els: JSX.Element[] = [];
   if (path.length > 1) {
     const pts = path.map((p) => tileCenter(p.x, p.y, d)).map((p) => `${p.cx},${p.cy}`).join(' ');
-    els.push(<polyline key={`${keyPrefix}-path`} points={pts} fill="none" stroke="#ffd75e" strokeWidth={3} opacity={0.9} pointerEvents="none" />);
+    els.push(<polyline key={`${keyPrefix}-path`} points={pts} fill="none" stroke={color} strokeWidth={3} opacity={0.9} pointerEvents="none" />);
   }
-  if (dest) els.push(<path key={`${keyPrefix}-dest`} d={diamondPath(dest.x, dest.y, d)} fill="none" stroke="#ffd75e" strokeWidth={3} opacity={0.95} pointerEvents="none" />);
+  if (dest) els.push(<path key={`${keyPrefix}-dest`} d={diamondPath(dest.x, dest.y, d)} fill="none" stroke={color} strokeWidth={3} opacity={0.95} pointerEvents="none" />);
   const at = dest ?? (path.length ? path[path.length - 1] : null);
   if (label && at) {
     const c0 = tileCenter(at.x, at.y, d);
@@ -117,6 +117,7 @@ export function IsoStage() {
   // Télégraphe ENNEMI (« qui l'adversaire vise ») — le ciblage du JOUEUR a son propre réticule
   // (survol hoverAim + jets à cible pendants), même rendu partagé (TargetReticle).
   const actorAim = useGame((s) => s.actorAim);
+  const actorMove = useGame((s) => s.actorMove); // télégraphe de déplacement ENNEMI (chemin avant le glissé)
   // COOP : le tour du héros d'un AUTRE joueur s'affiche comme un tour ennemi — AUCUNE affordance
   // (grille de déplacement, visée au survol, anneaux de cible, clics). Source unique : netFlow.
   const myTurn = useGame(controlsActive);
@@ -856,7 +857,7 @@ export function IsoStage() {
   if (mode === 'battle' && battle && actorAim) {
     const a = battle.combatants.find((c) => c.id === actorAim.fromId);
     const b = battle.combatants.find((c) => c.id === actorAim.toId);
-    if (a?.pos && b?.pos) targeting = { from: a, to: b, melee: actorAim.melee };
+    if (a?.pos && b?.pos) targeting = { from: a, to: b, melee: actorAim.kind === 'melee' || actorAim.kind === 'charge' };
   }
 
   // Cadrage CAMÉRA (découplé du réticule, R8) : on cadre la paire attaquant↔cible aussi pour une
@@ -1208,6 +1209,10 @@ export function IsoStage() {
               );
             });
         })()}
+        {/* Télégraphe de DÉPLACEMENT ENNEMI (actorMove) : chemin + destination en ROUGE, montré avant le
+            glissé — même tracé que l'aperçu héros (movePreviewEls), teinté ennemi. */}
+        {actorMove && actorMove.path.length > 0 &&
+          movePreviewEls(actorMove.path, actorMove.path[actorMove.path.length - 1], null, dims, 'enmv', '#e0533a')}
         {/* Télégraphe ENNEMI (actorAim) : réticule + ligne — PLEINE en mêlée, pointillée tir/sort. */}
         {targeting && (
           <TargetReticle

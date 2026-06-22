@@ -112,7 +112,9 @@ describe('Attaque gratuite de Tentacule (store)', () => {
     const { E } = setup();
     E.pos = { x: 14, y: 10 }; // hors d'Allonge → l'attaque de mêlée s'approche (charge) au lieu de refuser
     useGame.getState().battleSelectAttack('tentacule');
+    vi.clearAllTimers();
     useGame.getState().battleClickEntity(E.id, { confirm: true });
+    vi.runOnlyPendingTimers(); // joue le glissé d'approche (charge) → ouvre la frappe
     const pa = useGame.getState().pendingAttack;
     expect(pa?.freeKind).toBe('tentacules');
     expect(pa?.fromCharge).toBe(true); // s'est ruée au contact
