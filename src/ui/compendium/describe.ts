@@ -16,6 +16,7 @@ import { statName } from '../../engine/statEntry';
 const TRIGGER_LABEL: Record<EffectTrigger, string> = {
   onHit: 'À la touche',
   onWoundLoss: 'En perdant des PB',
+  onSlain: 'À sa mise hors de combat',
   onRoundStart: 'Au début du Round',
   onStartled: 'Surpris (magie / bruit)',
   onKill: 'En tuant un adversaire',

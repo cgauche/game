@@ -420,30 +420,18 @@
     ],
     "effects": [
       {
-        "trigger": "onWoundLoss",
+        "trigger": "onSlain",
         "on": "self",
         "flow": {
-          "kind": "if",
-          "cond": {
-            "kind": "compare",
-            "subject": {
-              "who": "target",
-              "field": "woundsCurrent"
-            },
-            "op": "<=",
-            "value": 0
-          },
-          "then": {
-            "kind": "do",
-            "effect": {
-              "type": "ops",
-              "on": "target",
-              "ops": [
-                {
-                  "op": "banish"
-                }
-              ]
-            }
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "banish"
+              }
+            ]
           }
         }
       }

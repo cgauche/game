@@ -873,8 +873,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'banish': {
-        if (target.dead) break; // idempotent : déjà retirée
-        target.dead = true; // retrait du jeu (LDB 85 p.339) — pas de corps/Inconscient/Critique
+        // Retrait du jeu (LDB 85 p.339) — pas de corps/Inconscient/Critique. Émet TOUJOURS la narration
+        // (la cible peut être déjà `dead` d'un Critique létal : le bannissement est l'issue NARRÉE de SA
+        // mort). L'unicité est garantie en amont par le déclencheur `onSlain` (`slainNotified`).
+        target.dead = true;
         lines.push(t('op.banish', { name: target.name }));
         break;
       }

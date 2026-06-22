@@ -6,11 +6,12 @@ import type { Combatant } from '../engine/types';
 import type { TriggeredEffect } from './flow';
 
 /**
- * Démoniaque — bannissement à 0 PB (LDB 85 p.339 : « son âme retourne dans les Royaumes du Chaos, ce qui
- * la retire du jeu »). L'effet est 100 % DONNÉE : op `banish` portée par l'`effects` du trait, déclenchée
- * par `onWoundLoss` quand `woundsCurrent <= 0` — plus de branche en dur dans applyAttackResult. Le porteur
- * réagit à SA PROPRE chute (le dispatcher autorise les effets `on:'self'` sur une cible hors-combat), donc
- * même un figurant (mort subite à 0 PB) est bien banni — parité avec l'ancien code impératif.
+ * Démoniaque — bannissement « à la mort » (LDB 85 p.339 : « son âme retourne dans les Royaumes du Chaos,
+ * ce qui la retire du jeu »). L'effet est 100 % DONNÉE : op `banish` portée par l'`effects` du trait,
+ * déclenchée par `onSlain` — donc QUEL QUE SOIT le chemin de mort (0 PB, Critique LÉTAL/démembrement, mort
+ * comme attaquant sous un Critique défensif, mort-auto). Plus de branche en dur dans applyAttackResult. Le
+ * porteur réagit à SA PROPRE chute (le dispatcher autorise `on:'self'` sur une cible hors-combat) ; `onSlain`
+ * n'est tiré qu'UNE fois (garde `slainNotified`, posée par `notifySlain`).
  */
 
 const mk = (over: Partial<Combatant> = {}): Combatant => ({
@@ -21,24 +22,23 @@ const mk = (over: Partial<Combatant> = {}): Combatant => ({
 }) as unknown as Combatant;
 
 const get = ((c: Combatant) => () => ({ battle: { combatants: [c] } })) as never;
-const woundLoss = (c: Combatant, attackType: 'melee' | 'ranged') =>
-  fireTriggers((get as (c: Combatant) => unknown)(c) as never, c, 'onWoundLoss', { attackType } as never);
+const slain = (c: Combatant) => fireTriggers((get as (c: Combatant) => unknown)(c) as never, c, 'onSlain', {} as never);
 
-describe('Démoniaque — banni à 0 PB (op `banish` en DONNÉE, déclenché par onWoundLoss)', () => {
-  it('démoniaque à 0 PB → banni (dead) par mêlée', () => {
+describe('Démoniaque — banni à la mort (op `banish` en DONNÉE, déclenché par onSlain)', () => {
+  it('mis hors de combat AVEC des PB restants (Critique LÉTAL — démembrement) → quand même banni + narré', () => {
+    const demon = mk({ traits: [{ id: 'demoniaque', value: 8 }] as never, wounds: { current: 6, max: 12, base: 12 } as never, dead: true as never });
+    const lines = slain(demon);
+    expect(demon.dead).toBe(true);
+    expect(lines.join(' ')).toMatch(/banni/i); // narration de bannissement émise même PB > 0
+  });
+  it('réduit à 0 PB → banni (dead)', () => {
     const demon = mk({ traits: [{ id: 'demoniaque', value: 8 }] as never });
-    woundLoss(demon, 'melee');
+    slain(demon);
     expect(demon.dead).toBe(true);
   });
-  it('démoniaque à 0 PB → banni (dead) par tir (toute attaque, pas seulement mêlée)', () => {
-    const demon = mk({ traits: [{ id: 'demoniaque', value: 8 }] as never });
-    woundLoss(demon, 'ranged');
-    expect(demon.dead).toBe(true);
-  });
-  it('démoniaque AU-DESSUS de 0 PB → PAS banni (la Condition woundsCurrent<=0 filtre)', () => {
-    const demon = mk({ traits: [{ id: 'demoniaque', value: 8 }] as never, wounds: { current: 5, max: 12, base: 12 } as never });
-    woundLoss(demon, 'melee');
-    expect(demon.dead).toBeFalsy();
+  it('créature SANS Démoniaque mise hors de combat → inerte (pas de bannissement)', () => {
+    const mortal = mk({ traits: [{ id: 'bestial' }] as never, dead: true as never });
+    expect(slain(mortal).join(' ')).not.toMatch(/banni/i);
   });
 });
 

@@ -655,6 +655,9 @@ export interface Combatant {
   soinRencontreUtilise?: boolean;
   /** Mort (résultat létal ou mort lente). Hors de combat définitif. */
   dead?: boolean;
+  /** Le déclencheur `onSlain` a déjà été émis pour ce combattant (mise hors de combat) — garde-fou
+   *  d'unicité : `onSlain` peut être atteint par plusieurs chemins de mort, on ne le tire qu'UNE fois. */
+  slainNotified?: boolean;
   /** PNJ important : utilise le système complet de critiques au lieu de la Mort Subite. */
   important?: boolean;
   /** « Meurs un autre jour » (Destin) : éjecté de la rencontre — vivant mais hors de combat. */

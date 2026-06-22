@@ -283,11 +283,14 @@ export const EMPTY_FLOW: Flow = { kind: 'seq', steps: [] };
  *  Mâchoires d'acier : « chaque fois que vous gagnez un État Sonné »).
  *  `onWoundLoss` se produit pour TOUTE perte de PB (mêlée OU distance) ; le TYPE d'attaque voyage dans le
  *  contexte (`attackType`) et un effet peut s'y restreindre via son champ `attackType`.
+ *  `onSlain` : le porteur vient d'être mis HORS DE COMBAT, par n'importe quel chemin de mort (0 PB,
+ *  Critique létal — démembrement —, mort-auto du désespéré, mort lente). Émis UNE fois (garde `slainNotified`).
+ *  Couvre le « démon banni à sa mort » (Démoniaque, LDB 85 p.339) et tout futur effet « à la mort ».
  *  Cycle de vie du COMBAT (au point de hook correspondant — cf. `combatHooks`) : `onCombatStart` (le
  *  combat débute), `onCombatEnd` (le combat se résout, AVANT l'écran de victoire), `onRoundEnd` (fin de
  *  Round, après l'entretien), `onTurnStart`/`onTurnEnd` (début/fin du tour du porteur). */
 export type EffectTrigger =
-  | 'onHit' | 'onWoundLoss' | 'onRoundStart' | 'onStartled' | 'onKill' | 'onCharged' | 'onGainCondition'
+  | 'onHit' | 'onWoundLoss' | 'onSlain' | 'onRoundStart' | 'onStartled' | 'onKill' | 'onCharged' | 'onGainCondition'
   | 'onCombatStart' | 'onCombatEnd' | 'onRoundEnd' | 'onTurnStart' | 'onTurnEnd'
   | 'onAttackResolved' | 'onCastResolved' | 'onMiscast';
 

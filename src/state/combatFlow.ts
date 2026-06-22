@@ -909,6 +909,16 @@ export function finalizeHeroDeath(get: Get, set: SetFn, hero: Combatant, source:
   }
 }
 
+/** Émet le déclencheur `onSlain` UNE seule fois pour un combattant mis HORS DE COMBAT — effets de DONNÉE
+ *  « à la mort » (Démoniaque banni, LDB 85 p.339 ; futur explose/se dédouble). Atteignable par plusieurs
+ *  chemins de mort (0 PB, Critique létal, mort-auto, mort lente) → garde d'unicité `slainNotified`.
+ *  Renvoie les lignes de journal de l'effet (tissées par l'appelant à sa position). */
+export function notifySlain(get: Get, set: SetFn, c: Combatant): string[] {
+  if (!isOutOfAction(c) || c.slainNotified) return [];
+  c.slainNotified = true;
+  return fireTriggers(get, c, 'onSlain', { rng: battleRng(), set });
+}
+
 /** Applique une Blessure critique (Coup Critique ou overkill) à `target` : PB (ignore BE+PA,
  *  plancher 0) + États + compteur. Mort Subite pour les figurants en overkill. RETOURNE `true`
  *  si le résultat est létal (le caller finalise via finalizeHeroDeath). Pousse le journal dans `log`. */
@@ -1114,6 +1124,7 @@ export function applyAttackResult(
     bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: target.id, result: res, kind: 'melee', defense: 'none', weapon, parryWeapon: res.parryWeapon, creatureAttack: creatureAttackKind(weapon) });
     const log = [...battle.log, ev('attack', tr('cf.finishHelpless', { name: attacker.name, foe: target.name }), attacker.id, target.id)];
     if (isOutOfAction(target)) log.push(ev('death', tr('cf.outOfAction', { name: target.name }), target.id));
+    for (const line of notifySlain(get, set, target)) log.push(ev('death', line, target.id)); // effet « à la mort » (banni…) — mort-auto du désespéré
     set({ battle: { ...battle, acted: true, action: null, log } });
     bus.emit(EVT.SCENE_DIRTY);
     checkBattleOver(get, set);
@@ -1275,6 +1286,10 @@ export function applyAttackResult(
   if (res.hit && isOutOfAction(target) && !isOutOfAction(attacker)) {
     for (const line of fireTriggers(get, attacker, 'onKill', { rng: battleRng(), set })) critLog.push(line);
   }
+  // Effet « à la mort » du SLAIN lui-même (Démoniaque banni…) — pour TOUT chemin de mort de cette
+  // résolution : la CIBLE (touche, Critique létal, 0 PB) ET l'ATTAQUANT (Critique défensif opposé qui le
+  // tue PENDANT sa charge). Émis une fois (garde `slainNotified`).
+  for (const c of [target, attacker]) critLog.push(...notifySlain(get, set, c));
   // Taille (arme) : sur une touche réussie, endommage de 1 PA l'armure frappée (LDB 63 l.8).
   if (res.hit && hasQuality(weapon, QUALITY_IDS.Taille)) damageArmour(target, res.location ?? 'corps');
   // Munition héros : consommée à l'application ; arme à Recharge → déchargée (Test étendu requis pour recharger).
@@ -3445,11 +3460,15 @@ export function resumeSuspendedAI(get: Get, set: SetFn): void {
   if (combatAdvanceBlocked(s, { cast: false })) return;
   const battle = s.battle!;
   const active = activeCombatant(battle);
-  if (active && aiDriven(s, active) && !isOutOfAction(active)) {
-    // Acteur IA ayant déjà agi (conséquence d'attaque) → fin de tour ; sinon début de tour (entretien) → IA.
-    if (battle.acted) resumeEnemyTurn(get, set);
-    else maybeRunEnemyTurn(get, set);
-  }
+  if (!active || !aiDriven(s, active)) return;
+  // L'acteur IA actif est MORT pendant la conséquence suspendue (ex. critique défensif du héros — un
+  // démembrement — qui tue le chargeur PENDANT sa propre attaque) → son tour est terminé : AVANCER au
+  // combattant suivant. Sans ça, `resumeEnemyTurn` ne serait jamais armé et la main ne reviendrait jamais
+  // au héros (soft-lock observé). `advanceTurn` saute de lui-même les hors-combat.
+  if (isOutOfAction(active)) { advanceTurn(get, set); return; }
+  // Acteur IA ayant déjà agi (conséquence d'attaque) → fin de tour ; sinon début de tour (entretien) → IA.
+  if (battle.acted) resumeEnemyTurn(get, set);
+  else maybeRunEnemyTurn(get, set);
 }
 
 export function advanceTurn(get: Get, set: SetFn) {
@@ -3544,8 +3563,8 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
     set({ pendingFateSave: { heroId: dying.id, source: 'slow' } });
     return;
   }
-  // (2) Finaliser les morts lentes restantes (héros sans Destin).
-  for (const c of battle.combatants) if (inDeathCondition(c)) c.dead = true;
+  // (2) Finaliser les morts lentes restantes (héros sans Destin) — + effet « à la mort » (onSlain) éventuel.
+  for (const c of battle.combatants) if (inDeathCondition(c)) { c.dead = true; for (const line of notifySlain(get, set, c)) battle.log.push(ev('death', line, c.id)); }
   // (3) Avantage : -1 si aucun gagné ce Round (LDB Dépl. l.40) ; Engagé périmé (LDB 13-Combat l.175).
   for (const c of battle.combatants) {
     if (!isOutOfAction(c) && c.advantage > 0 && !c.gainedAdvThisRound) c.advantage -= 1;
