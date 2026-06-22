@@ -1203,15 +1203,7 @@
     "source": {
       "book": "LDB",
       "page": 138
-    },
-    "passive": [
-      {
-        "op": "grantFreeAttack",
-        "weapon": "held",
-        "when": "available",
-        "activeIf": "frenzied"
-      }
-    ]
+    }
   },
   {
     "id": "fuite",

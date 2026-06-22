@@ -12,6 +12,11 @@
       {
         "op": "sbBonus",
         "amount": 1
+      },
+      {
+        "op": "grantFreeAttack",
+        "weapon": "held",
+        "when": "available"
       }
     ],
     "effects": [

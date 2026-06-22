@@ -178,7 +178,7 @@ import { runHitModifiers, martyrGuardOf, wardedAgainst } from './combat/hitModif
 export { runHitModifiers, registerHitModifier, martyrGuardOf, wardedAgainst, organicProjectile } from './combat/hitModifiers'; // baril : enregistre les modifiers (effet de bord) + ré-export pour applyCast / les tests (l11-sorts-zones, etc.)
 import {
   emitCreatureAttackAnim, trampleTarget, bestDefenseMode,
-  rollManeuverAttacker, maneuverAttackerDifficulty, resolveManeuver,
+  rollManeuverAttacker, maneuverAttackerDifficulty, resolveManeuver, hasFreeWeaponAttack,
 } from './combatManeuvers';
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, EMPTY_FLOW, type Flow, type EffectTrigger } from './flow';
 import { startCascade, registerCascadeApplier } from './cascade';
@@ -1801,12 +1801,13 @@ export function aiMaybeTrample(get: Get, set: SetFn, enemy: Combatant): void {
   applyTrample(get, set, enemy, target);
 }
 
-/** Attaque LIBRE de Frénésie (LDB 21 l.34 : « un Test de Capacité de Combat gratuit chaque Round ») :
- *  un ennemi frenzied porte une attaque de mêlée supplémentaire avec son arme contre un adversaire
- *  adjacent. Elle NE consomme ni Avantage ni Action. Résolution instantanée — comme autoCleave /
- *  aiMaybeTrample, l'IA ne déclenche pas de modale de défense (simplification documentée). */
+/** Résolution IA d'une attaque d'Arme GRATUITE « disponible » (déclarée en DONNÉE par `grantFreeAttack
+ *  {when:'available'}` — l'état Frénésie LDB 21 l.34 : « un Test de CC gratuit chaque Round »). L'ennemi
+ *  porte une attaque de mêlée supplémentaire avec son arme contre un adversaire adjacent ; ni Avantage ni
+ *  Action. La MÊME donnée offre l'affordance au héros (`hasFreeWeaponAttack` → hotbar) : pas de jaloux.
+ *  Résolution instantanée — comme autoCleave / aiMaybeTrample, l'IA ne déclenche pas de modale de défense. */
 export function aiFrenzyAttack(get: Get, set: SetFn, enemy: Combatant): void {
-  if (enemy.kind !== 'enemy' || !isFrenzied(enemy) || isOutOfAction(enemy)) return;
+  if (enemy.kind !== 'enemy' || !hasFreeWeaponAttack(enemy) || isOutOfAction(enemy)) return;
   const battle = get().battle;
   if (!battle || battle.over || !enemy.pos) return;
   if ((enemy.weapons[0]?.type ?? 'melee') !== 'melee') return; // CC Test = corps à corps

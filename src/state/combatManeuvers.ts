@@ -27,7 +27,7 @@ import { isOutOfAction, applyZeroWounds } from '../engine/conditions';
 import { hasTraitKey, isBestial } from '../engine/traits/dispatch';
 import { isFrenzied } from '../engine/psychology';
 import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../engine/creatureAttacks';
-import { findTalentById, type ManeuverDef, type ManeuverMeasure } from '../data';
+import { findTalentById, findPsychologyById, type ManeuverDef, type ManeuverMeasure } from '../data';
 import { sizeGap } from '../engine/size';
 import { combatDistance } from './footprint';
 import { chebyshev, type Pt } from './path';
@@ -113,9 +113,16 @@ export interface AttackOption {
  *  `freeAttacksThisTurn['arme']` (reset de tour). GÉNÉRIQUE : tout talent du même genre s'ajoute en donnée,
  *  sans code. Lue par `availableAttacks` + ActionBar/IsoStage/turnEconomy (l'affordance « attaque libre »). */
 export const hasFreeWeaponAttack = (c: Combatant): boolean => {
+  const used = c.freeAttacksThisTurn?.['arme'] ?? 0;
+  // Sources DONNÉES d'une attaque d'Arme gratuite « disponible » : Talents ET États PSY. L'état Frénésie
+  // porte LUI-MÊME `grantFreeAttack` (LDB 21 l.34) → HÉROS comme ENNEMI, MÊME donnée (pas de jaloux).
   for (const t of c.talents ?? [])
     for (const op of findTalentById(t.talentId)?.passive ?? [])
-      if (op.op === 'grantFreeAttack' && op.when === 'available' && (op.activeIf !== 'frenzied' || isFrenzied(c)) && (c.freeAttacksThisTurn?.['arme'] ?? 0) < (t.times ?? 1))
+      if (op.op === 'grantFreeAttack' && op.when === 'available' && (op.activeIf !== 'frenzied' || isFrenzied(c)) && used < (t.times ?? 1))
+        return true;
+  for (const p of c.psychState ?? [])
+    for (const op of findPsychologyById(p.type)?.passive ?? [])
+      if (op.op === 'grantFreeAttack' && op.when === 'available' && used < 1)
         return true;
   return false;
 };
