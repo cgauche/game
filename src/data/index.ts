@@ -390,6 +390,10 @@ export interface TraitCapabilities {
   stupid?: boolean;
   rage?: boolean;
   territorial?: boolean;
+  /** Monture trop ombrageuse pour agir seule (Nerveux, LDB 14 l.221) : MONTÉE, elle ne consacre pas sa
+   *  propre Action à attaquer (une monture SANS ce drapeau est « un combattant à part entière »). Lu par
+   *  l'IA de combat monté — drapeau de donnée, plus de test par-nom du trait. */
+  skittishMount?: boolean;
   // Déplacement / vision
   fly?: boolean;
   leap?: boolean;

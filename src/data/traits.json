@@ -1077,6 +1077,9 @@
       "book": "LDB",
       "page": 340
     },
+    "capabilities": {
+      "skittishMount": true
+    },
     "effects": [
       {
         "trigger": "onStartled",

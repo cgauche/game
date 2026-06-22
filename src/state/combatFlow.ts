@@ -58,7 +58,7 @@ import {
   banishedAtZero,
   isStupid, isUnstable, isBestial, isTerritorial, hasPerturbingAura,
   traitSeesInDark, bellicosePsychImmune, magicResistanceOf, flyMeters, runMultiplier,
-  hasTraitKey,
+  isSkittishMount,
 } from '../engine/traits/dispatch';
 import {
   isMagicMissile,
@@ -3997,8 +3997,8 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   // pas seule (le couple bouge au tour du cavalier). Sans le Trait Nerveux, elle peut consacrer SA propre
   // Action à attaquer un adversaire au contact ; sinon elle passe son tour.
   if (enemy.riderId) {
-    const nerveux = hasTraitKey(enemy.traits, 'nerveux');
-    const foe = nerveux || !canAct ? undefined
+    const skittish = isSkittishMount(enemy.traits); // Nerveux (LDB 14 l.221) → la monture passe son tour
+    const foe = skittish || !canAct ? undefined
       : battle.combatants.find((c) => c.kind !== enemy.kind && !isOutOfAction(c) && !!c.pos && combatDistance(enemy, c) <= meleeReachTiles(enemy.weapons));
     if (foe) { attackThenAdvance(foe); return; }
     return advanceTurn(get, set);

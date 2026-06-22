@@ -79,7 +79,7 @@ const TARGETS: Target[] = [
     // `banishedAtZero` = VARIANTE d'issue de mort lisant une CAPACITÉ de donnée (comme `usesSuddenDeath`/
     // `inDeathCondition`) — machinerie de mort universelle, ne nomme aucune entité → exclue (cf. NB en tête).
     exclude: /^\s*import|export function (autoCleave|maybeHeroCleave)|banishedAtZero/,
-    baseline: 3, // …→6 (Infection)→4 (Riposte/Champion → counterOnDefenseWin)→3 (Démoniaque/banish reclassé : machinerie de mort lisant la capacité `banishedAtZero`, exclu). Reste : Cleave ×2 + nerveux (mont-IA, LDB 14 l.188)
+    baseline: 2, // …→4 (Riposte→counterOnDefenseWin)→3 (banish reclassé machinerie)→2 (Nerveux mont-IA → capacité `skittishMount`, lue par isSkittishMount). Reste : Cleave ×2 (géométrie → Condition spatiale, Lot 5/6)
     lot: 'Lot 6',
   },
 ];

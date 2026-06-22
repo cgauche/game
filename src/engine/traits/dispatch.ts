@@ -262,6 +262,11 @@ export function isTerritorial(traits: TraitList | undefined): boolean {
   return traitCapability(traits, 'territorial');
 }
 
+/** Monture ombrageuse (Nerveux, LDB 14 l.221) : MONTÉE, ne prend pas sa propre Action d'attaque. */
+export function isSkittishMount(traits: TraitList | undefined): boolean {
+  return traitCapability(traits, 'skittishMount');
+}
+
 // ── Mouvement & vision ────────────────────────────────────────────────────────────────────────────
 /** Vol (Indice) : distance de vol en MÈTRES, ou null. */
 export function flyMeters(traits: TraitList | undefined): number | null {
