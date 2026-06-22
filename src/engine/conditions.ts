@@ -262,13 +262,8 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
       log.push(t('cond.stunPersists', { name: c.name }));
     }
   }
-  // Dissipation en fin de Round : Aveuglé (l.48), Assourdi (l.32), Surpris (l.136).
-  for (const n of [COND.aveugle, COND.assourdi, COND.surpris]) {
-    if (hasCondition(c, n)) {
-      removeCondition(c, n, 1);
-      log.push(t('cond.dissipate', { name: c.name, cond: conditionLabel(n) }));
-    }
-  }
+  // Auto-dissipation en fin de Round (Aveuglé l.48 / Assourdi l.32 / Surpris l.136) MIGRÉE en données :
+  // `effects: [{trigger:'onRoundEnd', flow:…removeCondition}]` dans etats.json, jouée par fireConditionEffects.
   // Effets RÉCURRENTS portés par un effet actif de sort (op `perRound`) — re-joués tant que l'effet
   // dure (AVANT le décrément : il agit aussi son dernier Round). 1 État X/Round, 1 Ration de
   // « Récolte de Rhya »/Round… Le nombre de répétitions suit roundsLeft (Surincantation de Durée

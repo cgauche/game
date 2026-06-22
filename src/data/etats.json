@@ -6,7 +6,26 @@
     "source": {
       "book": "LDB",
       "page": 167
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "removeCondition",
+                "name": "assourdi"
+              }
+            ]
+          }
+        }
+      }
+    ]
   },
   {
     "id": "a-terre",
@@ -47,6 +66,25 @@
         "op": "testMod",
         "amount": -10,
         "combatOnly": true
+      }
+    ],
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "removeCondition",
+                "name": "aveugle"
+              }
+            ]
+          }
+        }
       }
     ]
   },
@@ -192,6 +230,25 @@
         "op": "incomingAttackMod",
         "mode": "melee",
         "amount": 20
+      }
+    ],
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "removeCondition",
+                "name": "surpris"
+              }
+            ]
+          }
+        }
       }
     ]
   }

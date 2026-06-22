@@ -157,7 +157,8 @@ export function fireTriggers(get: Get, actor: Combatant, trigger: EffectTrigger,
  */
 export function fireConditionEffects(get: Get, c: Combatant, trigger: EffectTrigger, ctx: TriggerCtx = {}): string[] {
   const lines: string[] = [];
-  for (const cond of c.conditions ?? []) {
+  // Snapshot : un effet `removeCondition` (auto-dissipation) mute `c.conditions` pendant l'itération.
+  for (const cond of [...(c.conditions ?? [])]) {
     const effs = findConditionById(cond.name)?.effects;
     if (!effs?.length) continue;
     lines.push(...applyTriggeredEffects(get, c, effs, trigger, { ...ctx, stacks: cond.value }));
