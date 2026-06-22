@@ -63,11 +63,21 @@ const JOURNAL_MJ = new Map<string, string>([
   ['Limicole', 'pas de terrain marécageux à pénalité de Mouvement'],
   ['Grimpant', 'pas de système d’escalade (surfaces verticales)'],
   ['Pisteur', 'Pistage hors combat — arbitrage MJ'],
-  ['Dressé', 'dressages spécifiques (Divertir/Garder/Monture…) — arbitrage MJ'],
   ['Béni', 'Bénédictions de PNJ — pas de liste de prières dans la donnée (MJ)'],
   ['Miracles', 'Miracles de PNJ — pas de liste dans la donnée (MJ)'],
   ['Lanceur de Sorts', 'la donnée bestiaire ne liste pas les sorts connus → choix d’AUTEUR (éditeur : spells du spawn/statbloc) ; l’IA incante enemy.spells'],
   ['Mort-vivant', 'marqueur (consommé par Hurlement fantomatique, les Groupes et les contractions)'],
+  // Dressé : chaque discipline est un trait à part entière (anti-pattern chaîne supprimé). Phase 1 =
+  // STRUCTURE seule (inertes, comme avant) ; les effets mécaniques (Guerre→CC/ignore Nerveux, Dompté→
+  // ignore Bestial, Garde→Territorial…) sont câblés en Phase 2 et migreront vers DISPATCH/COUVERT_AILLEURS.
+  ['Dressé (Guerre)', 'discipline — effet (+10 CC / ignore Nerveux bruits) câblé en Phase 2'],
+  ['Dressé (Magie)', 'discipline — effet (ignore Nerveux magie) câblé en Phase 2'],
+  ['Dressé (Dompté)', 'discipline — effet (ignore Bestial / +Soc) câblé en Phase 2'],
+  ['Dressé (Monture)', 'discipline — accepte un cavalier (gate du montage) câblé en Phase 2'],
+  ['Dressé (Garde)', 'discipline — octroie Territorial, câblé en Phase 2'],
+  ['Dressé (Rapporteur)', 'discipline narrative (rapport) — arbitrage MJ'],
+  ['Dressé (Revenir à la maison)', 'discipline narrative (retour au bercail) — arbitrage MJ'],
+  ['Dressé (Cavalerie de choc)', 'discipline — charge en bon ordre (Aux Armes) câblé en Phase 2'],
   ['Increvable', 'recousue/ressuscitée post-combat — arbitrage MJ'],
   // Traits des Horreurs de Tzeentch (EDO) — flavor de statbloc sans système support, desc verbatim.
   ['Marque de Tzeentch', 'Mutations du statbloc — fixées par l’auteur/MJ (l’éditeur pose les Mutations de la créature) ; pas de génération runtime'],

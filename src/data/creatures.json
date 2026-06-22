@@ -4868,8 +4868,16 @@
         "value": 8
       },
       {
-        "id": "dresse",
-        "arg": "Cavalerie de choc, Dompté, Guerre, Monture"
+        "id": "dresse-cavalerie-de-choc"
+      },
+      {
+        "id": "dresse-dompte"
+      },
+      {
+        "id": "dresse-guerre"
+      },
+      {
+        "id": "dresse-monture"
       },
       {
         "id": "foulee"
@@ -4946,8 +4954,16 @@
         "id": "bestial"
       },
       {
-        "id": "dresse",
-        "arg": "Cavalerie de choc, Dompté, Guerre, Monture"
+        "id": "dresse-cavalerie-de-choc"
+      },
+      {
+        "id": "dresse-dompte"
+      },
+      {
+        "id": "dresse-guerre"
+      },
+      {
+        "id": "dresse-monture"
       },
       {
         "id": "foulee"
@@ -22430,12 +22446,10 @@
         "id": "nerveux"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "id": "dresse",
-        "arg": "Garde"
+        "id": "dresse-garde"
       },
       {
         "id": "grand"
@@ -22563,12 +22577,10 @@
         "id": "nerveux"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "id": "dresse",
-        "arg": "Rapporteur"
+        "id": "dresse-rapporteur"
       },
       {
         "id": "intelligent"
@@ -22719,8 +22731,7 @@
         "id": "nerveux"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
         "id": "elite"
@@ -22942,12 +22953,10 @@
         "id": "nerveux"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "id": "dresse",
-        "arg": "Monture"
+        "id": "dresse-monture"
       },
       {
         "id": "ruse"
@@ -23076,12 +23085,10 @@
         "id": "nerveux"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "id": "dresse",
-        "arg": "Monture"
+        "id": "dresse-monture"
       },
       {
         "id": "rapide"
@@ -23211,8 +23218,7 @@
         "id": "nerveux"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
         "id": "taille",
@@ -23344,20 +23350,16 @@
         "id": "coriace"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "id": "dresse",
-        "arg": "Guerre"
+        "id": "dresse-guerre"
       },
       {
-        "id": "dresse",
-        "arg": "Magie"
+        "id": "dresse-magie"
       },
       {
-        "id": "dresse",
-        "arg": "Monture"
+        "id": "dresse-monture"
       },
       {
         "id": "elite"
@@ -23730,12 +23732,10 @@
         "id": "nerveux"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "id": "dresse",
-        "arg": "Guerre"
+        "id": "dresse-guerre"
       },
       {
         "id": "pisteur"
@@ -23880,16 +23880,13 @@
         "id": "foulee"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "id": "dresse",
-        "arg": "Guerre"
+        "id": "dresse-guerre"
       },
       {
-        "id": "dresse",
-        "arg": "Magie"
+        "id": "dresse-magie"
       },
       {
         "id": "redoutable",
@@ -24331,8 +24328,7 @@
         "id": "nerveux"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
         "id": "taille",
@@ -24478,16 +24474,13 @@
         "id": "foulee"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "id": "dresse",
-        "arg": "Guerre"
+        "id": "dresse-guerre"
       },
       {
-        "id": "dresse",
-        "arg": "Magie"
+        "id": "dresse-magie"
       },
       {
         "id": "redoutable",
@@ -24936,12 +24929,10 @@
         "id": "nerveux"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "id": "dresse",
-        "arg": "Guerre"
+        "id": "dresse-guerre"
       },
       {
         "id": "rage"
@@ -25024,16 +25015,13 @@
         "id": "belliqueux"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "id": "dresse",
-        "arg": "Guerre"
+        "id": "dresse-guerre"
       },
       {
-        "id": "dresse",
-        "arg": "Magie"
+        "id": "dresse-magie"
       },
       {
         "id": "redoutable",
@@ -25497,8 +25485,7 @@
         "id": "nerveux"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
         "id": "infecte"
@@ -25639,16 +25626,13 @@
         "id": "foulee"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "id": "dresse",
-        "arg": "Guerre"
+        "id": "dresse-guerre"
       },
       {
-        "id": "dresse",
-        "arg": "Magie"
+        "id": "dresse-magie"
       },
       {
         "id": "rage"
@@ -26161,12 +26145,10 @@
         "id": "nerveux"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "id": "dresse",
-        "arg": "Guerre"
+        "id": "dresse-guerre"
       },
       {
         "id": "grimpant"
@@ -26321,16 +26303,13 @@
         "id": "arboricole"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "id": "dresse",
-        "arg": "Guerre"
+        "id": "dresse-guerre"
       },
       {
-        "id": "dresse",
-        "arg": "Magie"
+        "id": "dresse-magie"
       },
       {
         "id": "redoutable",
@@ -38955,20 +38934,16 @@
         "id": "coriace"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "id": "dresse",
-        "arg": "Guerre"
+        "id": "dresse-guerre"
       },
       {
-        "id": "dresse",
-        "arg": "Magie"
+        "id": "dresse-magie"
       },
       {
-        "id": "dresse",
-        "arg": "Monture"
+        "id": "dresse-monture"
       },
       {
         "id": "rage"
@@ -39125,20 +39100,16 @@
         "id": "coriace"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "id": "dresse",
-        "arg": "Guerre"
+        "id": "dresse-guerre"
       },
       {
-        "id": "dresse",
-        "arg": "Magie"
+        "id": "dresse-magie"
       },
       {
-        "id": "dresse",
-        "arg": "Monture"
+        "id": "dresse-monture"
       },
       {
         "id": "rage"
@@ -39304,20 +39275,16 @@
         "id": "coriace"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "id": "dresse",
-        "arg": "Guerre"
+        "id": "dresse-guerre"
       },
       {
-        "id": "dresse",
-        "arg": "Magie"
+        "id": "dresse-magie"
       },
       {
-        "id": "dresse",
-        "arg": "Monture"
+        "id": "dresse-monture"
       },
       {
         "id": "elite"
@@ -45232,12 +45199,10 @@
         "id": "bond"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "id": "dresse",
-        "arg": "Monture"
+        "id": "dresse-monture"
       },
       {
         "id": "infecte"
@@ -45374,20 +45339,16 @@
         "id": "bond"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "id": "dresse",
-        "arg": "Monture"
+        "id": "dresse-monture"
       },
       {
-        "id": "dresse",
-        "arg": "Guerre"
+        "id": "dresse-guerre"
       },
       {
-        "id": "dresse",
-        "arg": "Magie"
+        "id": "dresse-magie"
       },
       {
         "id": "infecte"
@@ -47938,12 +47899,10 @@
         "id": "fabrique"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "id": "dresse",
-        "arg": "Monture"
+        "id": "dresse-monture"
       },
       {
         "id": "infecte"
@@ -48070,12 +48029,10 @@
         "id": "fabrique"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté"
+        "id": "dresse-dompte"
       },
       {
-        "id": "dresse",
-        "arg": "Monture"
+        "id": "dresse-monture"
       },
       {
         "id": "elite"
@@ -51210,8 +51167,19 @@
         "id": "bestial"
       },
       {
-        "id": "dresse",
-        "arg": "Dompté, Garder, Guerre, Magie, Revenir à la maison"
+        "id": "dresse-dompte"
+      },
+      {
+        "id": "dresse-garde"
+      },
+      {
+        "id": "dresse-guerre"
+      },
+      {
+        "id": "dresse-magie"
+      },
+      {
+        "id": "dresse-revenir-a-la-maison"
       },
       {
         "id": "foulee"

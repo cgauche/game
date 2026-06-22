@@ -421,11 +421,88 @@
     ]
   },
   {
-    "id": "dresse",
-    "label": "Dressé",
-    "prefix": "(Compétences spécifiques)",
+    "id": "dresse-guerre",
+    "label": "Dressé (Guerre)",
+    "prefix": null,
     "suffix": null,
-    "desc": "Ce Trait concerne les animaux entraînés par l'intermédiaire de la Compétence Dressage. Les Compétences que l'animal connaît sont indiquées entre parenthèses. Vous êtes libre de créer vos propres Compétences spécifiques. <br><br><b>Divertir:</b> l'animal est entraîné à divertir les autres. Vous ajoutez un bonus de +10 aux Tests appropriés de Divertissement, Musicien et Représentation. <br><br><b>Dompté:</b> l'animal est entraîné à ignorer son Trait Bestial. Il reçoit 2d10 en Sociabilité. <br><br><b>Garder:</b> l'animal est entraîné à rester à la même place ou à patrouiller autour comme un garde. Elle gagne le Trait de créature Territorial. <br><br><b>Guerre:</b> l'animal est entraîné pour la guerre, il gagne +10 en CC. Il ignore également son trait Nerveux pour les bruits forts. <br><br><b>Magie:</b> l'animal est entraîné à ignorer son trait Nerveux en présence de magie, ce qui est nécessaire à la plupart des chevaux utilisés par les Sorciers. <br><br><b>Monture:</b> l'animal est entraîné à accepter un cavalier. Certaines créatures sont particulièrement belliqueuses, et n'accepteront jamais de cavalier sans la Compétence adaptée. Ainsi, pour chevaucher un griffon, vous avez besoin de la Compétence Chevaucher (Griffon). <br><br><b>Rapporter:</b> l'animal est entraîné à rapporter. Cette discipline est normalement réservée aux chiens et autres animaux similaires. <br><br><b>Revenir à la maison:</b> l'animal est entraîné à revenir chez lui s'il est relâché ou perdu. <br><br><b>Trait:</b> L'animal est entraîné à tirer un carrosse, un chariot, une charrue, une carriole ou similaire. <br><br><b>Cavalerie de Choc (Aux Armes):</b> réservé à un animal possédant déjà Dressé (Guerre). La monture ignore le péril de charger en bon ordre au milieu d'une unité ennemie bien armée et fonce droit sur une masse d'ennemis. Une créature de Taille inférieure à celle qu'elle tente de renverser peut renoncer à sa chance d'esquiver pour porter, si elle n'a pas déjà agi ce Round, une seule attaque avec une arme tenue en main contre la monture ou son cavalier ; sauf si cette attaque tue ou incapacite la monture, la Charge se poursuit.",
+    "desc": "L'animal est entraîné pour la guerre, il gagne +10 en CC. Il ignore également son trait Nerveux pour les bruits forts.",
+    "source": {
+      "book": "LDB",
+      "page": 339
+    }
+  },
+  {
+    "id": "dresse-magie",
+    "label": "Dressé (Magie)",
+    "prefix": null,
+    "suffix": null,
+    "desc": "L'animal est entraîné à ignorer son trait Nerveux en présence de magie, ce qui est nécessaire à la plupart des chevaux utilisés par les Sorciers.",
+    "source": {
+      "book": "LDB",
+      "page": 339
+    }
+  },
+  {
+    "id": "dresse-dompte",
+    "label": "Dressé (Dompté)",
+    "prefix": null,
+    "suffix": null,
+    "desc": "L'animal est entraîné à ignorer son Trait Bestial. Il reçoit 2d10 en Sociabilité.",
+    "source": {
+      "book": "LDB",
+      "page": 339
+    }
+  },
+  {
+    "id": "dresse-monture",
+    "label": "Dressé (Monture)",
+    "prefix": null,
+    "suffix": null,
+    "desc": "L'animal est entraîné à accepter un cavalier. Certaines créatures sont particulièrement belliqueuses, et n'accepteront jamais de cavalier sans la Compétence adaptée.",
+    "source": {
+      "book": "LDB",
+      "page": 339
+    }
+  },
+  {
+    "id": "dresse-garde",
+    "label": "Dressé (Garde)",
+    "prefix": null,
+    "suffix": null,
+    "desc": "L'animal est entraîné à rester à la même place ou à patrouiller autour comme un garde. Il gagne le Trait de créature Territorial.",
+    "source": {
+      "book": "LDB",
+      "page": 339
+    }
+  },
+  {
+    "id": "dresse-rapporteur",
+    "label": "Dressé (Rapporteur)",
+    "prefix": null,
+    "suffix": null,
+    "desc": "L'animal est entraîné à rapporter. Cette discipline est normalement réservée aux chiens et autres animaux similaires.",
+    "source": {
+      "book": "LDB",
+      "page": 339
+    }
+  },
+  {
+    "id": "dresse-revenir-a-la-maison",
+    "label": "Dressé (Revenir à la maison)",
+    "prefix": null,
+    "suffix": null,
+    "desc": "L'animal est entraîné à revenir chez lui s'il est relâché ou perdu.",
+    "source": {
+      "book": "LDB",
+      "page": 339
+    }
+  },
+  {
+    "id": "dresse-cavalerie-de-choc",
+    "label": "Dressé (Cavalerie de choc)",
+    "prefix": null,
+    "suffix": null,
+    "desc": "Réservé à un animal possédant déjà Dressé (Guerre). La monture ignore le péril de charger en bon ordre au milieu d'une unité ennemie bien armée et fonce droit sur une masse d'ennemis (Aux Armes).",
     "source": {
       "book": "LDB",
       "page": 339
