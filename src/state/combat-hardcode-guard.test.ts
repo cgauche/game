@@ -57,7 +57,8 @@ const TARGETS: Target[] = [
     reactive: /hasCondition\(c, COND\.|hasCondition\(target, COND\.|stacks\(c, COND\./,
     // Prédicats GÉNÉRIQUES de machinerie (mort/gating universels) — ne nomment pas un effet d'entité éditable.
     exclude: /isOutOfAction|inDeathCondition|c\.dead|roundsAtZero|return !hasCondition|return hasCondition\(c, COND\.surpris\)/,
-    baseline: 30,
+    // 30 → 27 : meleeAttackerBonus (À Terre/Surpris/Aveuglé) migré en données (etats.json incomingAttackMod).
+    baseline: 27,
     lot: 'Lot 4',
   },
   {

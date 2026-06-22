@@ -10,6 +10,7 @@ import { rule } from './policy';
 import { bleedIgnoreLevel } from './combatFeatures/dispatch';
 import { bonus, effectiveChar } from './characteristics';
 import { d10, d100, RNG, defaultRNG } from './dice';
+import { passiveMods } from './trauma';
 import { rollTest, isDoubleRoll, type TestResult } from './tests';
 import { dropExpiredGrantedTraits } from './grantedTraits';
 import { dropExpiredGrantedResources } from './grantedResources';
@@ -164,11 +165,15 @@ export function testStatePenalty(c: Combatant, skill?: string): number {
  * flanc/derrière : non modélisé — l'orientation des combattants n'est pas suivie.)
  */
 export function meleeAttackerBonus(target: Combatant): number {
-  const cand: number[] = [];
-  if (hasCondition(target, COND.aTerre)) cand.push(20);
-  if (hasCondition(target, COND.surpris)) cand.push(20);
-  if (hasCondition(target, COND.aveugle)) cand.push(10);
-  return cand.length ? Math.max(...cand) : 0;
+  // Lu en DONNÉES : le `passive` de chaque État (`incomingAttackMod` melee/all, kind `etat`) ;
+  // non-cumul = le MEILLEUR seul (LDB 16). À Terre/Surpris +20, Aveuglé +10 vivent dans `etats.json`.
+  let best = 0;
+  for (const m of passiveMods(target)) {
+    if (m.kind === 'etat' && m.op.op === 'incomingAttackMod' && (m.op.mode === 'melee' || m.op.mode === 'all')) {
+      best = Math.max(best, m.op.amount);
+    }
+  }
+  return best;
 }
 
 /** Une cible Surprise (LDB ch.16 l.132) ou Inconscient (l.112 « rien faire de votre tour »)

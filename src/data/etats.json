@@ -15,7 +15,14 @@
     "source": {
       "book": "LDB",
       "page": 167
-    }
+    },
+    "passive": [
+      {
+        "op": "incomingAttackMod",
+        "mode": "melee",
+        "amount": 20
+      }
+    ]
   },
   {
     "id": "aveugle",
@@ -24,7 +31,14 @@
     "source": {
       "book": "LDB",
       "page": 167
-    }
+    },
+    "passive": [
+      {
+        "op": "incomingAttackMod",
+        "mode": "melee",
+        "amount": 10
+      }
+    ]
   },
   {
     "id": "brise",
@@ -105,6 +119,13 @@
     "source": {
       "book": "LDB",
       "page": 169
-    }
+    },
+    "passive": [
+      {
+        "op": "incomingAttackMod",
+        "mode": "melee",
+        "amount": 20
+      }
+    ]
   }
 ]
