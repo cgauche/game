@@ -14,6 +14,8 @@ import type { Get, Set as SetFn } from './flowTypes';
 import { type EffectTrigger, type TriggeredEffect, type Flow, flowHasTest } from './flow';
 import type { OpsCtx } from '../engine/ops';
 import { resolveQualities } from '../engine/qualities/dispatch';
+import { featureLevel } from '../engine/combatFeatures/dispatch';
+import type { CombatFeature } from '../engine/combatFeatures/types';
 import { isOutOfAction } from '../engine/conditions';
 import { isEngagedWith } from '../engine/engagement';
 import { combatDistance } from './footprint';
@@ -159,9 +161,13 @@ export function fireConditionEffects(get: Get, c: Combatant, trigger: EffectTrig
   const lines: string[] = [];
   // Snapshot : un effet `removeCondition` (auto-dissipation) mute `c.conditions` pendant l'itération.
   for (const cond of [...(c.conditions ?? [])]) {
-    const effs = findConditionById(cond.name)?.effects;
-    if (!effs?.length) continue;
-    lines.push(...applyTriggeredEffects(get, c, effs, trigger, { ...ctx, stacks: cond.value }));
+    const data = findConditionById(cond.name);
+    if (!data?.effects?.length) continue;
+    // Pions vus par les effets, RÉDUITS d'une capacité de combat de la cible si l'État le déclare
+    // (Hémorragique − Endurci `bleedIgnore`, LDB 10) — générique, jamais codé par-nom.
+    const reduce = data.stacksReducedBy ? featureLevel(c, data.stacksReducedBy as keyof CombatFeature) : 0;
+    const stacks = Math.max(0, (cond.value ?? 1) - reduce);
+    lines.push(...applyTriggeredEffects(get, c, data.effects, trigger, { ...ctx, stacks }));
   }
   return lines;
 }

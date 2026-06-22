@@ -7,9 +7,8 @@ import { tickRound } from './duration';
 import { conditionLabel } from '../data';
 import { t } from '../i18n';
 import { rule } from './policy';
-import { bleedIgnoreLevel } from './combatFeatures/dispatch';
 import { bonus, effectiveChar } from './characteristics';
-import { d10, d100, RNG, defaultRNG } from './dice';
+import { d100, RNG, defaultRNG } from './dice';
 import { passiveMods } from './trauma';
 import type { GameOp } from './ops';
 import { rollTest, isDoubleRoll, type TestResult } from './tests';
@@ -222,13 +221,10 @@ export function poisonResistApply(c: Combatant, success: boolean, sl: number): s
  */
 export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
   const log: string[] = [];
-  // Hémorragique : 1 Blessure par point, en ignorant les modificateurs (l.104).
-  // Endurci (LDB 10) : ignore niveau Point(s) de Blessure perdus par l'État Hémorragique.
-  const bleed = Math.max(0, stacks(c, COND.hemorragique) - bleedIgnoreLevel(c));
-  if (bleed) {
-    loseWounds(c, bleed); // perte de PB centralisée (perte d'Avantage + À Terre à 0)
-    log.push(t('cond.bleed', { name: c.name, n: bleed }));
-  }
+  // Hémorragique : dégâts par-round (« 1 Blessure par pion, en ignorant les modificateurs », l.104) MIGRÉS
+  // en données — etats.json hemorragique `effects: onRoundEnd → wounds {stacks:'self'}` (défaut : ignore
+  // BE+PA), avec `stacksReducedBy:'bleedIgnore'` pour l'Endurci (LDB 10), joué par fireConditionEffects.
+  // Le jet de MORT par hémorragie (d100 ≤ 10×pions, coagulation) reste `bleedDeathRoll` (règle de mort).
   // Empoisonné : dégâts par-round (« 1 PB/pion, en ignorant les modificateurs ») MIGRÉS en DONNÉES —
   // `etats.json` empoisonne `effects: onRoundEnd → wounds {stacks:'self'}` (le défaut de `wounds` ignore
   // BE+PA), joués par `fireConditionEffects` au hook order-10. Le Test de Résistance qui élimine l'État

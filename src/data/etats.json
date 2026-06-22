@@ -227,7 +227,29 @@
     "source": {
       "book": "LDB",
       "page": 169
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "wounds",
+                "amount": {
+                  "stacks": "self"
+                }
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "stacksReducedBy": "bleedIgnore"
   },
   {
     "id": "inconscient",

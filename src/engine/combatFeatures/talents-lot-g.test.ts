@@ -104,11 +104,11 @@ describe('défense / récupération (LDB 10)', () => {
     expect(hasRiposte(mk([{ name: 'Riposte', times: 1 }]))).toBe(true);
     expect(hasStealAdvantage(mk([{ name: 'Renversement', times: 1 }]))).toBe(true);
   });
-  it('Endurci : ignore niveau PB d’Hémorragique en fin de Round', () => {
+  it('Endurci : niveau d’ignorance du saignement (la réduction des dégâts est data-driven, cf. state/etat-perround)', () => {
     const c = mk([{ name: 'Endurci', times: 1 }], { conditions: [{ name: 'hemorragique', value: 2 }] });
     endOfRound(c, makeRNG(3));
-    expect(c.wounds.current).toBe(11); // 2 pions − 1 ignoré = 1 PB perdu
-    expect(bleedIgnoreLevel(c)).toBe(1);
+    expect(c.wounds.current).toBe(12); // endOfRound ne saigne plus (dégâts d'Hémorragique migrés en données)
+    expect(bleedIgnoreLevel(c)).toBe(1); // 1 pion ignoré — lu par fireConditionEffects (stacksReducedBy)
   });
   // (Mâchoires d'acier n'est plus une CombatFeature `stunSave` : c'est un effet `onGainCondition`
   //  data-driven — couvert par les tests de la brique `state/combat/triggeredTest`.)

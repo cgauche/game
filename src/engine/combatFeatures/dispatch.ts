@@ -196,6 +196,13 @@ export function bleedIgnoreLevel(c: Combatant): number {
   return levelSum(c, (d) => !!d.bleedIgnore);
 }
 
+/** Niveau GÉNÉRIQUE d'une capacité de combat booléenne, par clé (somme des niveaux des talents qui la
+ *  portent). Permet à la DONNÉE (un État qui déclare `stacksReducedBy: '<clé>'`) de lire une capacité
+ *  sans la coder en dur — ex. Hémorragique réduit par Endurci (`bleedIgnore`). */
+export function featureLevel(c: Combatant, key: keyof CombatFeature): number {
+  return levelSum(c, (d) => !!d[key]);
+}
+
 /** Résistance à la Magie — TALENT (LDB 10) : −2 × niveau au DR des Sorts affectant le porteur. */
 export function talentMagicResistance(c: Combatant): number {
   return 2 * levelSum(c, (d) => !!d.magicResistance2);

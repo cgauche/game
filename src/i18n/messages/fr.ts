@@ -173,9 +173,6 @@ export const fr = {
   // ── Phase C : narration moteur (États/upkeep). Patrons byte-identiques aux littéraux d'origine. ──
   'cond.poisonEliminated': '{name} : {removed} État(s) Empoisonné éliminé(s) (Résistance réussie).',
   'cond.poisonOvercome': '{name} est Exténué (poison surmonté).',
-  'cond.bleed': '{name} subit {n} Blessure(s) (Hémorragique).',
-  'cond.poisonDmg': '{name} subit {n} Blessure(s) (Empoisonné).',
-  'cond.burnDmg': '{name} subit {n} Blessure(s) (En flammes).',
   'cond.stunDissipated': '{name} : {removed} État(s) Sonné dissipé(s) (Résistance réussie).',
   'cond.stunToExhausted': '{name} est Exténué (après avoir surmonté le dernier État Sonné).',
   'cond.stunPersists': '{name} reste Sonné (Résistance ratée).',

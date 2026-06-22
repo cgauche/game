@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { fireConditionEffects } from './triggeredEffects';
 import { addCondition, hasCondition, stacks, COND } from '../engine/conditions';
+import { slugId } from '../data/slug';
 import type { Combatant } from '../engine/types';
 
 const mk = (): Combatant => ({
@@ -60,6 +61,34 @@ describe('En Flammes — dégâts par-round en DONNÉES (effects onRoundEnd → 
     const before = c.wounds.current;
     fireConditionEffects((get as (c: Combatant) => unknown)(c) as never, c, 'onRoundEnd', { rng: fixedD10(8) });
     expect(before - c.wounds.current).toBe(7); // 8 − 0 − min(1,5)=1 = 7
+  });
+});
+
+describe('Hémorragique — dégâts par-round en DONNÉES (effects onRoundEnd → wounds {stacks:self}, réduit par Endurci)', () => {
+  const get = ((c: Combatant) => () => ({ battle: { combatants: [c] } })) as never;
+  const fire = (c: Combatant) => fireConditionEffects((get as (c: Combatant) => unknown)(c) as never, c, 'onRoundEnd', {});
+
+  it('2 pions, sans Endurci → 2 PB perdus, en IGNORANT BE+PA', () => {
+    const c = mk(); addCondition(c, COND.hemorragique); addCondition(c, COND.hemorragique);
+    const before = c.wounds.current;
+    fire(c);
+    expect(before - c.wounds.current).toBe(2);
+  });
+
+  it('Endurci ×1 (stacksReducedBy bleedIgnore) : 2 pions − 1 ignoré → 1 PB perdu', () => {
+    const c = mk(); c.talents = [{ talentId: slugId('Endurci'), times: 1 }] as never;
+    addCondition(c, COND.hemorragique); addCondition(c, COND.hemorragique);
+    const before = c.wounds.current;
+    fire(c);
+    expect(before - c.wounds.current).toBe(1); // max(0, 2 − 1) = 1
+  });
+
+  it('Endurci ×2 ≥ pions → aucun dégât (le saignement est entièrement ignoré, plancher 0)', () => {
+    const c = mk(); c.talents = [{ talentId: slugId('Endurci'), times: 2 }] as never;
+    addCondition(c, COND.hemorragique);
+    const before = c.wounds.current;
+    fire(c);
+    expect(c.wounds.current).toBe(before); // max(0, 1 − 2) = 0
   });
 });
 
