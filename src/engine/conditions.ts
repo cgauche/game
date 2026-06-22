@@ -5,6 +5,7 @@
 import { Combatant, ActiveEffect } from './types';
 import { tickRound } from './duration';
 import { conditionLabel } from '../data';
+import { t } from '../i18n';
 import { rule } from './policy';
 import { bleedIgnoreLevel } from './combatFeatures/dispatch';
 import { bonus, effectiveChar } from './characteristics';
@@ -199,8 +200,8 @@ export function poisonResistApply(c: Combatant, success: boolean, sl: number): s
   if (!success || poison <= 0) return null;
   const removed = Math.min(poison, 1 + Math.max(0, sl));
   removeCondition(c, COND.empoisonne, removed);
-  const lines = [`${c.name} : ${removed} État(s) Empoisonné éliminé(s) (Résistance réussie).`];
-  if (!hasCondition(c, COND.empoisonne)) { addCondition(c, COND.extenue); lines.push(`${c.name} est Exténué (poison surmonté).`); }
+  const lines = [t('cond.poisonEliminated', { name: c.name, removed })];
+  if (!hasCondition(c, COND.empoisonne)) { addCondition(c, COND.extenue); lines.push(t('cond.poisonOvercome', { name: c.name })); }
   return lines.join('\n');
 }
 
@@ -220,13 +221,13 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
   const bleed = Math.max(0, stacks(c, COND.hemorragique) - bleedIgnoreLevel(c));
   if (bleed) {
     loseWounds(c, bleed); // perte de PB centralisée (perte d'Avantage + À Terre à 0)
-    log.push(`${c.name} subit ${bleed} Blessure(s) (Hémorragique).`);
+    log.push(t('cond.bleed', { name: c.name, n: bleed }));
   }
   // Empoisonné : 1 Blessure par point, en ignorant les modificateurs (l.66).
   const poison = stacks(c, COND.empoisonne);
   if (poison) {
     loseWounds(c, poison);
-    log.push(`${c.name} subit ${poison} Blessure(s) (Empoisonné).`);
+    log.push(t('cond.poisonDmg', { name: c.name, n: poison }));
     // Le Test de Résistance qui ÉLIMINE l'Empoisonné (LDB 16 l.70-72) n'est PLUS ici : c'est un hook
     // `roundBoundary` (`poison-resist`, state/combat/roundHooks) qui décide silence (non-interactif :
     // monstre OU héros en cadence rapide/auto) vs étape de cascade influençable (héros en manuel),
@@ -242,7 +243,7 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
     // réduction BE+PA et le plancher de 1 — pas après.
     const dmg = Math.max(1, d10(rng) + (fire - 1) - bonus(effectiveChar(c, 'E')) - minPA);
     loseWounds(c, dmg);
-    log.push(`${c.name} subit ${dmg} Blessure(s) (En flammes).`);
+    log.push(t('cond.burnDmg', { name: c.name, n: dmg }));
   }
   // Sonné : Test de Résistance Intermédiaire (+0) en fin de Round ; sur un succès, retire
   // 1 État + 1 par DR ; une fois tous retirés, on gagne 1 Exténué (LDB États l.125-127).
@@ -254,20 +255,20 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
     if (res.success) {
       const removed = Math.min(sonne, 1 + Math.max(0, res.sl));
       removeCondition(c, COND.sonne, removed);
-      log.push(`${c.name} : ${removed} État(s) Sonné dissipé(s) (Résistance réussie).`);
+      log.push(t('cond.stunDissipated', { name: c.name, removed }));
       if (!hasCondition(c, COND.sonne) && !hasCondition(c, COND.extenue)) {
         addCondition(c, COND.extenue);
-        log.push(`${c.name} est Exténué (après avoir surmonté le dernier État Sonné).`);
+        log.push(t('cond.stunToExhausted', { name: c.name }));
       }
     } else {
-      log.push(`${c.name} reste Sonné (Résistance ratée).`);
+      log.push(t('cond.stunPersists', { name: c.name }));
     }
   }
   // Dissipation en fin de Round : Aveuglé (l.48), Assourdi (l.32), Surpris (l.136).
   for (const n of [COND.aveugle, COND.assourdi, COND.surpris]) {
     if (hasCondition(c, n)) {
       removeCondition(c, n, 1);
-      log.push(`${c.name} : un État ${conditionLabel(n)} se dissipe.`);
+      log.push(t('cond.dissipate', { name: c.name, cond: conditionLabel(n) }));
     }
   }
   // Effets RÉCURRENTS portés par un effet actif de sort (op `perRound`) — re-joués tant que l'effet
@@ -300,7 +301,7 @@ export function tickDurations(c: Combatant): string[] {
     for (const e of c.activeEffects) e.duration = tickRound(e.duration);
     const isDone = (e: ActiveEffect) => e.duration.scale === 'rounds' && e.duration.left <= 0;
     const expired = c.activeEffects.filter(isDone);
-    for (const e of expired) log.push(`${c.name} : ${e.label} se dissipe.`);
+    for (const e of expired) log.push(t('cond.effectExpire', { name: c.name, label: e.label }));
     c.activeEffects = c.activeEffects.filter((e) => !isDone(e));
     dropExpiredGrantedTraits(c, expired); // traits accordés (op grantTrait) retirés avec leur effet
     dropExpiredGrantedResources(c, expired); // Chance/Destin accordés (gainResource) non dépensés
@@ -311,14 +312,14 @@ export function tickDurations(c: Combatant): string[] {
   if (c.conditions.some((x) => x.roundsLeft != null)) {
     for (const x of c.conditions) if (x.roundsLeft != null) x.roundsLeft -= 1;
     const done = c.conditions.filter((x) => x.roundsLeft != null && x.roundsLeft <= 0);
-    for (const x of done) log.push(`${c.name} : l'État ${conditionLabel(x.name)} (sort) se dissipe.`);
+    for (const x of done) log.push(t('cond.spellCondExpire', { name: c.name, cond: conditionLabel(x.name) }));
     c.conditions = c.conditions.filter((x) => !(x.roundsLeft != null && x.roundsLeft <= 0));
   }
   // Contrecoups d'incantation à durée en Rounds (tables d'Imparfaites/Colère, LDB 46/40).
   if (c.castPenalties?.some((p) => p.roundsLeft != null)) {
     for (const p of c.castPenalties) if (p.roundsLeft != null) p.roundsLeft -= 1;
     const done = c.castPenalties.filter((p) => p.roundsLeft != null && p.roundsLeft <= 0);
-    for (const p of done) log.push(`${c.name} : ${p.label} se dissipe.`);
+    for (const p of done) log.push(t('cond.effectExpire', { name: c.name, label: p.label }));
     c.castPenalties = c.castPenalties.filter((p) => !(p.roundsLeft != null && p.roundsLeft <= 0));
   }
   return log;
@@ -333,9 +334,9 @@ export function nightmareCheck(c: Combatant, rng: RNG = defaultRNG, out?: { base
   const calme = effectiveChar(c, 'FM') + (c.skills?.find((s) => s.skillId === 'calme')?.advances ?? 0);
   const res = rollTest(calme, 'facile', rng); // Calme Facile (+40), palier canonique
   out?.push({ base: calme, result: res });
-  if (res.success) return [`${c.name} dort d'un sommeil sans rêve.`];
+  if (res.success) return [t('cond.nightmareNone', { name: c.name })];
   addCondition(c, COND.extenue);
-  return [`${c.name} est en proie à de terribles cauchemars (Calme +40 raté) et gagne Exténué.`];
+  return [t('cond.nightmare', { name: c.name })];
 }
 
 /**
@@ -350,11 +351,11 @@ export function bleedDeathRoll(c: Combatant, rng: RNG = defaultRNG): { died: boo
   const r = d100(rng);
   if (isDoubleRoll(r)) {
     removeCondition(c, COND.hemorragique, 1); // coagulation (le double prime sur la mort)
-    const log = [`${c.name} : une plaie coagule (${r === 100 ? '00' : r}, double) — un État Hémorragique en moins.`];
-    if (!hasCondition(c, COND.hemorragique)) { addCondition(c, COND.extenue); log.push(`${c.name} est Exténué (dernière plaie refermée).`); } // tous retirés → 1 Exténué
+    const log = [t('cond.coagulate', { name: c.name, roll: r === 100 ? '00' : r })];
+    if (!hasCondition(c, COND.hemorragique)) { addCondition(c, COND.extenue); log.push(t('cond.lastWoundExhausted', { name: c.name })); } // tous retirés → 1 Exténué
     return { died: false, log };
   }
-  if (r <= 10 * n) return { died: true, log: [`${c.name} succombe à l'hémorragie (${r} ≤ ${10 * n}).`] };
+  if (r <= 10 * n) return { died: true, log: [t('cond.bleedDeath', { name: c.name, roll: r, threshold: 10 * n })] };
   return { died: false, log: [] };
 }
 
@@ -425,7 +426,7 @@ export function tickDeath(c: Combatant, _rng: RNG = defaultRNG): string[] {
   c.roundsAtZero = (c.roundsAtZero ?? 0) + 1;
   if (c.roundsAtZero > be && !hasCondition(c, COND.inconscient)) {
     addCondition(c, COND.inconscient);
-    log.push(`${c.name} perd connaissance (0 PB depuis ${c.roundsAtZero} Rounds).`);
+    log.push(t('cond.unconscious', { name: c.name, rounds: c.roundsAtZero }));
   }
   return log; // la mort (dead) est finalisée par le store (avec sauvetage par Destin)
 }

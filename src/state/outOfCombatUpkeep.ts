@@ -14,6 +14,7 @@
 import { Combatant } from '../engine/types';
 import { RNG } from '../engine/dice';
 import { endOfRound, bleedDeathRoll, tickDeath, hasCondition } from '../engine/conditions';
+import { t } from '../i18n';
 
 /** A-t-il un effet périodique (perte de PB chaque Round) OU est-il à 0 PB (progression vers l'Inconscience) ? */
 function needsUpkeep(c: Combatant): boolean {
@@ -39,10 +40,10 @@ export function outOfCombatUpkeep(party: Combatant[], rounds: number, rng: RNG):
         if ((c.fate ?? 0) > 0) {
           c.fate = (c.fate ?? 0) - 1;
           c.wounds.current = Math.max(1, c.wounds.current);
-          log.push(`${c.name} est sauvé in extremis (Point de Destin) — l'hémorragie est jugulée.`);
+          log.push(t('upkeep.fateSaved', { name: c.name }));
         } else {
           c.dead = true;
-          log.push(`${c.name} succombe à ses blessures.`);
+          log.push(t('upkeep.succumb', { name: c.name }));
         }
         continue;
       }
