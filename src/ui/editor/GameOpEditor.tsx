@@ -148,6 +148,7 @@ export function formulaSummary(f: Formula | undefined): string {
   if ('charOf' in f) return f.charOf;
   if ('rolled' in f) return 'dé';
   if ('indiceOf' in f) return 'Indice';
+  if ('stacks' in f) return 'pions';
   return `${f.dice.n}d${f.dice.sides}${f.dice.plus ? `+${f.dice.plus}` : ''}`;
 }
 

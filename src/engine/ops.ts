@@ -65,17 +65,21 @@ export type Formula =
   /** INDICE de l'attaque NATURELLE en cours (« Morsure +10 », « Souffle +15 ») — injecté par le
    *  résolveur de manœuvre (`ctx.indice`). Permet d'authorer les Dégâts « Indice » d'une manœuvre en
    *  GameOp : `wounds { amount: {indiceOf:true}, ignoreTB:false, ignoreAP:false }`. 0 hors contexte. */
-  | { indiceOf: true };
+  | { indiceOf: true }
+  /** Nombre de PIONS de l'État qui DÉCLENCHE l'effet (Empoisonné « 1 PB/pion », En Flammes « +1/pion ») —
+   *  injecté par le bus d'événements (`ctx.stacks`) quand un `effects: onRoundEnd` d'État est joué. 0 hors contexte. */
+  | { stacks: 'self' };
 
 /** Résout une formule contre son référent (`ref`) — RNG seedable pour les dés. `rolled` = valeur du
  *  jet courant d'un `rollThreshold` (injectée par l'op ; 0 hors de ce contexte) ; `indice` = Indice
  *  de l'attaque naturelle d'une manœuvre (`{indiceOf}`, 0 hors contexte). */
-export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG, rolled?: number, indice?: number): number {
+export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG, rolled?: number, indice?: number, stacks?: number): number {
   if (typeof f === 'number') return f;
   if ('bonusOf' in f) return bonus(effectiveChar(ref, f.bonusOf));
   if ('charOf' in f) return effectiveChar(ref, f.charOf);
   if ('rolled' in f) return rolled ?? 0;
   if ('indiceOf' in f) return indice ?? 0;
+  if ('stacks' in f) return stacks ?? 0;
   return rollDice(f.dice, rng);
 }
 
@@ -493,6 +497,9 @@ export interface OpsCtx {
   /** INDICE de l'attaque naturelle d'une MANŒUVRE en cours (« Morsure +10 ») — résout les Formula
    *  `{indiceOf}` (Dégâts authorés en GameOp). Posé par le résolveur de manœuvre. */
   indice?: number;
+  /** Nombre de PIONS de l'État qui déclenche un `effects: onRoundEnd` — résout les Formula `{stacks:'self'}`
+   *  (Empoisonné « 1 PB/pion », En Flammes « +1/pion »). Posé par le bus à la diffusion d'un effet d'État. */
+  stacks?: number;
   /** Localisation de la touche courante (dé inversé) — lue par la Condition Flow `location` (Assommante). */
   location?: HitLocation;
   /** KIND de l'attaque courante (`creatureAttackKind` : 'morsure'/'cornes'/…) — lu par la Condition Flow
@@ -587,7 +594,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
     switch (o.op) {
       case 'wounds': {
         if (!groupGate(o.onlyGroups)) break;
-        const raw = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled, ctx.indice) + slBonus(ctx.sl, o.perSL));
+        const raw = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled, ctx.indice, ctx.stacks) + slBonus(ctx.sl, o.perSL));
         // Défaut : ignore BE+PA. `ignoreTB:false` → déduit le Bonus d'Endurance ; `ignoreAP:false` → déduit les PA.
         const tb = o.ignoreTB === false ? bonus(effectiveChar(target, 'E')) : 0;
         const totalAP = Math.max(0, target.armour.corps ?? 0);
@@ -600,7 +607,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'heal': {
-        const n = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled, ctx.indice) + slBonus(ctx.sl, o.perSL));
+        const n = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled, ctx.indice, ctx.stacks) + slBonus(ctx.sl, o.perSL));
         target.wounds.current = Math.min(target.wounds.max, target.wounds.current + n);
         lines.push(t('op.heal', { name: target.name, n }));
         break;
