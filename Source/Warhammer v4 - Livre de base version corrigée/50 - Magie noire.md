@@ -1,88 +1,106 @@
-# Magie noire
+*Pages PDF 258*
 
-*Page PDF 258*
+# **MAGIE NOIRE**
 
-WARHAMMER FANTASY 
+Vous trouverez ci-après deux courtes listes de quatre Sorts de Magie noire.
 
-## **Menace Rampante**
-**NI :** 6 
+# **Le Domaine de Démonologie**
 
-**Portée :** (Force Mentale) mètres 
+Le Domaine de Démonologie, dont l'usage est proscrit, s'intéresse à l'invocation, au lien et au contrôle des démons, et ce dans le but de rendre plus puissant le lanceur du Sort. Son utilisation est extrêmement dangereuse, entraînant le plus souvent la soumission de l'âme du démonologue aux Puissances de la Ruine, donnant ainsi naissance à un nouveau Sorcier du Chaos.
 
-**Cible :** 1 
+# **Destruction de Démon Mineur**
 
-**Durée :** (Bonus de Force Mentale) Rounds 
+**NI :** 6
 
-Vous invoquez une nuée de créatures rampantes et envahissantes qui vont venir harceler vos adversaires. Chaque cible affectée se retrouve _Engagée_ par une nuée de rats géants, d’araignées géantes ou de serpents. Utilisez les caractéristiques classiques du type de créature correspondant, en lui ajoutant le Trait Nuée. Pour votre Action, vous pouvez effectuer un Test d’ **Emprise sur les animaux Intermédiaire (+0)** afin d’envoyer une nuée, ou plus, attaquer une autre cible. 
+**Portée :** (Force Mentale) mètres
 
-Lorsque le Sort s’arrête, les nuées restantes disparaissent dans les ombres. 
+**Cible :** 1
 
-## **Magie Noire**
-Vous trouverez ci-après deux courtes listes de quatre Sorts de Magie noire. 
+**Durée :** (Bonus de Force Mentale) Rounds
 
-immédiatement par cette déchirure (référez-vous à la page 335 pour y trouver deux exemples : Sanguinaires de Khorne et Démonette de Slaanesh). Effectuez un Test opposé de **Focalisation (Dhar)/Force Mentale** avec le démon. Sur un succès, ce dernier répondra favorablement à un ordre que vous lui donnerez, littéralement, avant de disparaître (en partant du principe qu’il puisse accomplir ce que vous lui avez demandé avant la fin du Sort). Sur un échec, le démon attaque sur le champ. 
+Votre Sort perturbe *Dhar*, maintenant le démon ciblé en vie et le draine vers vous. Une cible qui possède le Trait de Créature Démoniaque et qui a une Force Mentale inférieure à la vôtre subit un nombre de Blessures égal à votre Bonus de Force Mentale, en ignorant le Bonus d'Endurance et les PA. De plus, vous pouvez augmenter l'une de vos Caractéristiques de +10 pendant la durée du Sort alors que vous absorbez les énergies profanes.
 
-## **Octogramme**
-**NI :** 10 **Potée :** Toucher 
+# **Détection de démon**
 
-**Cible :** ZdE (diamètre maximum égal au Bonus de Force Mentale) 
+**NI :** 4
 
-**Durée :** (Force Mentale) minutes 
+**Portée :** (Force Mentale) mètres
 
-Vous dessinez un octogramme au sol et y apposez des symboles maudits qui vont vous protéger des influences démoniaques. Quiconque possède le Trait de créature Démoniaque ne peut entrer ou Sortir de l’octogramme à moins que sa Force Mentale ne soit deux fois supérieure à la vôtre. 
+**Cible :** Spécial **Durée :** Instantané
 
-## **Le Domaine de Nécromancie**
-## **Le Domaine de Démonologie**
-Le Domaine de Démonologie, dont l’usage est proscrit, s’intéresse à l’invocation, au lien et au contrôle des démons, et ce dans le but de rendre plus puissant le lanceur du Sort. Son utilisation est extrêmement dangereuse, entraînant le plus souvent la soumission de l’âme du démonologue aux Puissances de la Ruine, donnant ainsi naissance à un nouveau Sorcier du Chaos. 
+Votre Sort détecte toutes les influences démoniaques de la zone. Vous savez immédiatement s'il y a un démon actif à portée, qu'il ait été invoqué, ou qu'il soit lié à un artefact, s'il possède quelqu'un d'autre, etc.
 
-La Nécromancie est un antique art magique qui cherche à maîtriser la mort et à obtenir la vie éternelle, en utilisant le plus souvent des corps en décomposition. Considérée comme la forme la plus infecte de la Magie, une pure hérésie, l’étude de ses secrets n’est jamais prise à la légère, car l’horreur que représentent la mort et les morts-vivants ne doit jamais être sous-estimée. 
+### **Manifestation de Démon Mineur**
 
-## **Crâne Hurlant**
-## **Destruction de Démon Mineur**
-**NI :** 6 **Portée :** (Force Mentale) mètres 
+**NI :** 8
 
-**Cible :** 1 
+**Portée :** (Bonus de Force Mentale) mètres
 
-**Durée :** (Bonus de Force Mentale) Rounds 
+**Cible :** Spécial
 
-Votre Sort perturbe _Dhar_ , maintenant le démon ciblé en vie et le draine vers vous. Une cible qui possède le Trait de Créature Démoniaque et qui a une Force Mentale inférieure à la vôtre subit un nombre de Blessures égal à votre Bonus de Force Mentale, en ignorant le Bonus d’Endurance et les PA. De plus, vous pouvez augmenter l’une de vos Caractéristiques de +10 pendant la durée du Sort alors que vous absorbez les énergies profanes. 
+**Durée :** (Bonus de Force Mentale) Rounds
 
-## **Détection de Démon**
-**NI :** 4 
+Vous focalisez des relents de *Dhar*, provoquant une brève déchirure dans la réalité. Un Démon Mineur apparaît immédiatement par cette déchirure (référez-vous à la page 335 pour y trouver deux exemples : Sanguinaires de Khorne et Démonette de Slaanesh). Effectuez un Test opposé de **Focalisation (Dhar)/Force Mentale** avec le démon. Sur un succès, ce dernier répondra favorablement à un ordre que vous lui donnerez, littéralement, avant de disparaître (en partant du principe qu'il puisse accomplir ce que vous lui avez demandé avant la fin du Sort). Sur un échec, le démon attaque sur le champ.
 
-**Portée :** (Force Mentale) mètres 
+### **Octogramme**
 
-## **Cible :** Spécial
-**Durée :** Instantané 
+**NI :** 10
 
-Votre Sort détecte toutes les influences démoniaques de la zone. Vous savez immédiatement s’il y a un démon actif à portée, qu’il ait été invoqué, ou qu’il soit lié à un artefact, s’il possède quelqu’un d’autre, etc. 
+**Potée :** Toucher
 
-## **Manifestation de Démon Mineur**
-**NI :** 8 
+**Cible :** ZdE (diamètre maximum égal au Bonus de Force
 
-**Portée :** (Bonus de Force Mentale) mètres 
+Mentale)
 
-**Cible :** Spécial 
+**Durée :** (Force Mentale) minutes
 
-**Durée :** (Bonus de Force Mentale) Rounds 
+Vous dessinez un octogramme au sol et y apposez des symboles maudits qui vont vous protéger des influences démoniaques. Quiconque possède le Trait de créature Démoniaque ne peut entrer ou Sortir de l'octogramme à moins que sa Force Mentale ne soit deux fois supérieure à la vôtre.
 
-Vous focalisez des relents de _Dhar_ , provoquant une brève déchirure dans la réalité. Un Démon Mineur apparaît 
+# **Le Domaine de Nécromancie**
 
-**NI :** 8 **Portée :** (Force Mentale) mètres 
+La Nécromancie est un antique art magique qui cherche à maîtriser la mort et à obtenir la vie éternelle, en utilisant le plus souvent des corps en décomposition. Considérée comme la forme la plus infecte de la Magie, une pure hérésie, l'étude de ses secrets n'est jamais prise à la légère, car l'horreur que représentent la mort et les morts-vivants ne doit jamais être sous-estimée.
 
-**Cible :** Spécial 
+### **Crâne hurlant**
 
-**Durée :** Instantané 
+**NI :** 8
 
-Vous hurlez les paroles du Sort. Un crâne énorme, noir et entouré de flammes vertes et pourpres se matérialise devant vous, avant de voler droit devant lui, en criant et gloussant. Le crâne se déplace en ligne droite sur toute la portée du Sort, suivant les contours du relief en passant à travers tous les obstacles qu’il rencontre. _Crâne hurlant_ est un _Projectile magique_ qui n’affecte que les cibles ne disposant pas du Trait de créature Mort-vivant, et inflige des Dégâts équivalents à votre Bonus de Force Mentale. Pour chaque blessure infligée par le Sort, il faut réussir un Test de **Calme Intermédiaire (+0)** ou subir un État _Brisé_ . 
+**Portée :** (Force Mentale) mètres
 
-## **L’appel de Vanhel**
-**NI :** 6 
+**Cible :** Spécial **Durée :** Instantané
 
-**Portée :** (Force Mentale) mètres **Cible :** Spécial 
+Vous hurlez les paroles du Sort. Un crâne énorme, noir et entouré de flammes vertes et pourpres se matérialise devant vous, avant de voler droit devant lui, en criant et gloussant. Le crâne se déplace en ligne droite sur toute la portée du Sort, suivant les contours du relief en passant à travers tous les obstacles qu'il rencontre. *Crâne hurlant* est un *Projectile magique* qui n'affecte que les cibles ne disposant pas du Trait de créature Mort-vivant, et inflige des Dégâts équivalents à votre Bonus de Force Mentale. Pour chaque blessure infligée par le Sort, il faut réussir un Test de **Calme Intermédiaire (+0)**  ou subir un État *Brisé*.
 
-**Durée :** Instantané 
+# **L'appel de Vanhel**
 
-Vous envoyez les flux complexes de _Dhar_ vers vos cibles, leur insufflant une irrésistible énergie. Un nombre de cibles équivalent à votre Bonus d’Intelligence qui possèdent le Trait de créature Mort-vivant gagnent une Action ou un Mouvement gratuits – vous choisissez l’un ou l’autre, qui sera appliqué à _toutes_ les cibles – au moment de lancer le Sort. Pour chaque DR+2 obtenu, vous pouvez affecter un nombre de cibles supplémentaires équivalent à votre Bonus d’Intelligence. 
+**NI :** 6
 
-Antoine Droste - antoine.droste@gmail.com
+**Portée :** (Force Mentale) mètres
+
+**Cible :** Spécial **Durée :** Instantané
+
+Vous envoyez les flux complexes de *Dhar* vers vos cibles, leur insufflant une irrésistible énergie. Un nombre de cibles équivalent à votre Bonus d'Intelligence qui possèdent le Trait de créature Mort-vivant gagnent une Action ou un Mouvement gratuits – vous choisissez l'un ou l'autre, qui sera appliqué à *toutes* les cibles – au moment de lancer le Sort. Pour chaque DR+2 obtenu, vous pouvez affecter un nombre de cibles supplémentaires équivalent à votre Bonus d'Intelligence.
+
+
+### <span id="page-258-0"></span>**Réanimation**
+
+**NI :** 8
+
+**Portée :** (Force Mentale) mètres
+
+**Cible :** ZdE (Bonus de Force Mentale) mètres
+
+**Durée :** Jusqu'au lever du soleil
+
+Vous concentrez d'épais filaments de *Dhar* qui pénètrent des corps, réanimant ceux qui, autrefois, étaient morts. Réanimez un nombre de corps égal à Bonus de Force Mentale + DR (en tant que zombies) ou squelettes (en tant que squelettes) à portée. Ils entrent en jeu avec l'État *À Terre*. Les morts-vivants sont tous sous votre contrôle et sont capables d'exécuter les ordres simples que vous leur donnez. Si vous mourez ou que vous subissez l'État *Inconscient*, le Sort s'arrête et les corps réanimés s'effondrent, à nouveau morts. Pour chaque +2 DR obtenu, vous pouvez réanimer Bonus de Force Mentale + DR squelettes ou zombies supplémentaires.
+
+# **Relever les morts**
+
+**NI :** 8
+
+**Portée :** (Force Mentale) mètres
+
+**Cible :** ZdE (Bonus de Force Mentale) mètres
+
+**Durée :** Jusqu'au lever du soleil
+
+Vous focalisez un important flux de *Dhar* directement vers le sol, faisant se rassembler et sortir de vieux os. DR+1 Squelettes sortiront ainsi du sol dans la zone d'effet que vous aurez choisie avant la fin du Round. Ils entrent tous en jeu avec l'État *À Terre*. Ces morts-vivants sont sous votre contrôle et sont capables d'exécuter les ordres simples que vous leur donnerez. Si vous êtes tué où que vous subissez l'État *Inconscient*, le Sort s'achève et les morts-vivants s'écroulent. Pour chaque DR+2 que vous obtenez, vous pouvez invoquer DR Squelettes supplémentaires.

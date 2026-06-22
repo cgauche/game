@@ -1,163 +1,173 @@
-# Cultes interdits et groupes extrémistes
-
 *Pages PDF 217-221*
 
-## Cultes Interdits et Groupes Extrémistes
-Il y a beaucoup de cultes profanes et d’organisations extrémistes à Altdorf. La plupart sont des groupes fractionnés et éphémères : vendus aux répurgateurs aussitôt formés. Cependant, un certain nombre d’entre eux arrivent à échapper à l’attention de ceux qui voudraient les persécuter. 
+# <span id="page-216-0"></span>CULTES INTERDITS ET GROUPES EXTRÉMISTES • •
 
-## Opportunisme À Tout Prix
+Il y a beaucoup de cultes profanes et d'organisations extrémistes à Altdorf. La plupart sont des groupes fractionnés et éphémères : vendus aux répurgateurs aussitôt formés. Cependant, un certain nombre d'entre eux arrivent à échapper à l'attention de ceux qui voudraient les persécuter.
 
-- Certains membres de l’Œil Flétri font partie de la terrible Cabale. Selon la rumeur, la Cabale manipule des centaines d’autres cultes dans le monde, notamment la Couronne Rouge et la Main Pourpre. Le chef de la Cabal n’est autre que le plus grand traître arcanique de tous les temps : Egrimm van Horstmann. Jadis Patriarche du Collège Lumineux, il est désormais le plus puissant champion-sorcier de Tzeentch. 
+# **L'Œil Flétri**
 
-## **L’œil Flétri**
-D’après la rumeur calomnieuse la plus ancienne et pernicieuse concernant les sorciers d’Altdorf, ces derniers seraient mécontents des restrictions que leur a imposées Teclis. On dit qu’ils préféreraient étudier la magie sous sa forme la plus sombre, la plus pure, afin d’exploiter son plein potentiel. Ces rumeurs sont injustes ; les sorciers d’Altdorf savent généralement qu’ils n’ont pas le temps d’étudier plus d’un courant de magie au cours d’une seule vie humaine. 
+D'après la rumeur calomnieuse la plus ancienne et pernicieuse concernant les sorciers d'Altdorf, ces derniers seraient mécontents des restrictions que leur a imposées Teclis. On dit qu'ils préféreraient étudier la magie sous sa forme la plus sombre, la plus pure, afin d'exploiter son plein potentiel. Ces rumeurs sont injustes ; les sorciers d'Altdorf savent généralement qu'ils n'ont pas le temps d'étudier plus d'un courant de magie au cours d'une seule vie humaine.
 
-- En plus d’être un forum de discussion pour les sorciers immoraux, l’Œil Flétri comprend plusieurs informateurs. Ils entretiennent des liens avec des cultes dans d’autres villes de l’Empire, et ont pour mission de compiler des renseignements. 
+L'Œil Flétri accueille des sorciers qui ignorent sciemment ces avertissements : ils pratiquent des magies issues d'écoles différentes et se risquent à attirer l'attention des Démons. Ce culte n'est pas formellement dédié à Tzeentch, mais tout le monde sait que ses membres fraternisent avec des Démonologues et autres mages noirs.
 
-L’Œil Flétri accueille des sorciers qui ignorent sciemment ces avertissements : ils pratiquent des magies issues d’écoles différentes et se risquent à attirer l’attention des Démons. Ce culte n’est pas formellement dédié à Tzeentch, mais tout le monde sait que ses membres fraternisent avec des Démonologues et autres mages noirs. 
+# OPPORTUNISME À TOUT PRIX
 
-## **La Main Pourpre**
-La Main Pourpre est le culte de Tzeentch le plus important et répandu de l’Empire. Elle est composée de plusieurs cellules régionales. Chaque cellule est divisée en trois ordos qui dépendent d’un Magister Magistri. L’Ordo Novitiae s’occupe du recrutement et de l’endoctrinement. L’Ordo Impedimentae collecte des fonds et gère les ressources. L’Ordo Terribilis s’occupe de la recherche et du développement. Chacun de ces ordos est une organisation autonome ; leurs membres ne tiennent pas de réunions avec les autres ordos et en savent très peu sur leurs activités. 
+- 0 Certains membres de l'Œil Flétri font partie de la terrible Cabale. Selon la rumeur, la Cabale manipule des centaines d'autres cultes dans le monde, notamment la Couronne Rouge et la Main Pourpre. Le chef de la Cabal n'est autre que le plus grand traître arcanique de tous les temps : Egrimm van Horstmann. Jadis Patriarche du Collège Lumineux, il est désormais le plus puissant champion-sorcier de Tzeentch.
+- 0 En plus d'être un forum de discussion pour les sorciers immoraux, l'Œil Flétri comprend plusieurs informateurs. Ils entretiennent des liens avec des cultes dans d'autres villes de l'Empire, et ont pour mission de compiler des renseignements.
 
-Deux fois par an, les nuits de Geheimnisnacht et Hexensnacht, les chefs de chaque ordo organisent un conclave. Ils quittent Altdorf et se rassemblent dans un lieu convenu à l’avance dans les marais. Ils chantent les louanges de Tzeentch sous la lumière verdâtre de Morrslieb, parlent de l’avancement de leurs plans, et réalisent des sacrifices humains. 
+# **La Main Pourpre**
 
-Le Magister Magistri de la Main Pourpre d’Altdorf est un espion accompli de la Chambre noire : l’insaisissable et ingénieux Yann Zuntermein. Yann est aussi à la tête de l’Ordo Terribilis. Contrairement à l’Ordo Terribilis de Middenheim, la branche d’Altdorf n’innove pas avec de nouvelles techniques magiques, mais se concentre plutôt sur l’information et son potentiel destructeur. 
+La Main Pourpre est le culte de Tzeentch le plus important et répandu de l'Empire. Elle est composée de plusieurs cellules régionales. Chaque cellule est divisée en trois ordos qui dépendent d'un Magister Magistri. L'Ordo Novitiae s'occupe du recrutement et de l'endoctrinement. L'Ordo Impedimentae collecte des fonds et gère les ressources. L'Ordo Terribilis s'occupe de la recherche et du développement. Chacun de ces ordos est une organisation autonome ; leurs membres ne tiennent pas de réunions avec les autres ordos et en savent très peu sur leurs activités.
 
-Ludovic Paulet - ludovicmad@wanadoo.fr 
+Deux fois par an, les nuits de Geheimnisnacht et Hexensnacht, les chefs de chaque ordo organisent un conclave. Ils quittent Altdorf et se rassemblent dans un lieu convenu à l'avance dans les marais. Ils chantent les louanges de Tzeentch sous la lumière verdâtre de Morrslieb, parlent de l'avancement de leurs plans, et réalisent des sacrifices humains.
 
-CULTES INTERDITS ET GROUPES EXTRÉMISTES 
+Le Magister Magistri de la Main Pourpre d'Altdorf est un espion accompli de la Chambre noire : l'insaisissable et ingénieux Yann Zuntermein. Yann est aussi à la tête de l'Ordo Terribilis. Contrairement à l'Ordo Terribilis de Middenheim, la branche d'Altdorf n'innove pas avec de nouvelles techniques magiques, mais se concentre plutôt sur l'information et son potentiel destructeur.
 
-## Un Tiens Vaut Mieux Que Deux Tu L’auras
 
-- Une femme mystérieuse approche les Personnages et leur demande s’ils peuvent assister à une réunion brustelliste pour y débusquer d’éventuels cultistes du Chaos. Elle leur promet une généreuse récompense pour tous les hérétiques qu’ils démasqueront. Bien qu’elle prétende vouloir débarrasser la ville de la corruption, elle est en réalité à la recherche de nouvelles recrues. 
+### UN TIENS VAUT MIEUX QUE DEUX TU L'AURAS
 
-- Le chef de l’Ordo Impedimentae d’Altdorf est un Ostlander très décontracté appelé Gustav Proll. Il a élaboré un plan cynique pour lever des fonds à travers une nouvelle cause charitable : L’Équipe d’Altdorfers Patriotes pour Vêtir les Moches et les Mal Habillés. Tout l’argent collecté sert à financer la Main Pourpre. 
+- <span id="page-217-0"></span>0 Une femme mystérieuse approche les Personnages et leur demande s'ils peuvent assister à une réunion brustelliste pour y débusquer d'éventuels cultistes du Chaos. Elle leur promet une généreuse récompense pour tous les hérétiques qu'ils démasqueront. Bien qu'elle prétende vouloir débarrasser la ville de la corruption, elle est en réalité à la recherche de nouvelles recrues.
+- 0 Le chef de l'Ordo Impedimentae d'Altdorf est un Ostlander très décontracté appelé Gustav Proll. Il a élaboré un plan cynique pour lever des fonds à travers une nouvelle cause charitable : L'Équipe d'Altdorfers Patriotes pour Vêtir les Moches et les Mal Habillés. Tout l'argent collecté sert à financer la Main Pourpre.
 
-## **La Couronne Rouge**
-La Couronne Rouge est un culte dédié à Tzeentch. Ses membres croient que la meilleure façon de servir leur maître, c’est de provoquer une révolution violente. C’est pour ça qu’ils lèvent en secret une armée de mutants hors-la-loi et d’hommes-bêtes fous. Leur activité est concentrée dans les zones rurales, car leurs meilleurs alliés se trouvent dans les forêts. Cela n’empêche pas le culte de conserver des centres dans les villes de l’Empire. Il est ironique qu’à Altdorf, une ville traversée par une ferveur révolutionnaire notoire, la Couronne Rouge n’ait pas davantage de succès. Les populations pauvres et opprimées ont déjà trop de choix parmi les différentes philosophies révolutionnaires, et le groupe a du mal à se faire une place. La volonté des cultistes de créer un soulèvement violent d’hommes-bêtes (sans autre raison que pour leur propre amusement) fait d’eux des extrémistes dans l’esprit collectif. Même les autres cultes du Chaos voient la Couronne Rouge comme de dangereux imprévisibles. 
+# **La Couronne Rouge**
 
-- Salli Spaak était une actrice et courtisane de renom qui travaillait à Altdorf il y a presque deux siècles. Elle vénérait Tzeentch et a empoisonné plusieurs de ses amants en ajoutant de la poudre de malepierre dans leur nourriture. Le Prince Nicol, le frère de l’Empereur Leopold, est tombé sous son charme. Il a paniqué quand les premières mutations sont apparues sur son corps, et il s’est pendu sous le pont du Reik. D’après certaines rumeurs, les admirateurs de Salli l’ont enterrée avec des offrandes de malepierre. La Couronne Rouge cherche à localiser son tombeau, mais hésite à exhumer ce qui y est enterré. 
+La Couronne Rouge est un culte dédié à Tzeentch. Ses membres croient que la meilleure façon de servir leur maître, c'est de provoquer une révolution violente. C'est pour ça qu'ils lèvent en secret une armée de mutants hors-la-loi et d'hommes-bêtes fous. Leur activité est concentrée dans les zones rurales, car leurs meilleurs alliés se trouvent dans les forêts. Cela n'empêche pas le culte de conserver des centres dans les villes de l'Empire. Il est ironique qu'à Altdorf, une ville traversée par une ferveur révolutionnaire notoire, la Couronne Rouge n'ait pas davantage de succès. Les populations pauvres et opprimées ont déjà trop de choix parmi les différentes philosophies révolutionnaires, et le groupe a du mal à se faire une place. La volonté des cultistes de créer un soulèvement violent d'hommes-bêtes (sans autre raison que pour leur propre amusement) fait d'eux des extrémistes dans l'esprit collectif. Même les autres cultes du Chaos voient la Couronne Rouge comme de dangereux imprévisibles.
 
-- Quand Bosco fait courir le bruit qu’il a acquis deux ungors en captivité et espère organiser un combat de fosse dans son tripot, cela attire l’attention de la Couronne Rouge. Si les cultistes pouvaient relâcher les captifs dans la nature, ils pourraient s’attirer les faveurs d’hommes-bêtes reconnaissants. S’ils réussissent, Bosco ne prendra pas la perte de ses champions à la légère. Il offre une généreuse récompense pour qu’ils lui soient rendus sains et saufs. 
+- 0 Salli Spaak était une actrice et courtisane de renom qui travaillait à Altdorf il y a presque deux siècles. Elle vénérait Tzeentch et a empoisonné plusieurs de ses amants en ajoutant de la poudre de malepierre dans leur nourriture. Le Prince Nicol, le frère de l'Empereur Leopold, est tombé sous son charme. Il a paniqué quand les premières mutations sont apparues sur son corps, et il s'est pendu sous le pont du Reik. D'après certaines rumeurs, les admirateurs de Salli l'ont enterrée avec des offrandes de malepierre. La Couronne Rouge cherche à localiser son tombeau, mais hésite à exhumer ce qui y est enterré.
+- 0 Quand Bosco fait courir le bruit qu'il a acquis deux ungors en captivité et espère organiser un combat de fosse dans son tripot, cela attire l'attention de la Couronne Rouge. Si les cultistes pouvaient relâcher les captifs dans la nature, ils pourraient s'attirer les faveurs d'hommes-bêtes reconnaissants. S'ils réussissent, Bosco ne prendra pas la perte de ses champions à la légère. Il offre une généreuse récompense pour qu'ils lui soient rendus sains et saufs.
+- 0 Un cultiste de la Couronne Rouge, après une visite au Zoo Impérial, tire la conclusion que beaucoup de ses étranges créatures doivent être Chaotiques. Les membres du culte tentent une approche très particulière pour mener la révolution : le bien-être animal. Bien évidemment, ils n'ont aucunement l'intention de relâcher les animaux du zoo dans la nature, et veulent simplement qu'ils causent une panique dans la ville.
 
-- Un cultiste de la Couronne Rouge, après une visite au Zoo Impérial, tire la conclusion que beaucoup de ses étranges créatures doivent être Chaotiques. Les membres du culte tentent une approche très particulière pour mener la révolution : le bien-être animal. Bien évidemment, ils n’ont aucunement l’intention de relâcher les animaux du zoo dans la nature, et veulent simplement qu’ils causent une panique dans la ville. 
+# **La Société des Dés**
 
-## **La Société des Dés**
-Lukas Reinhardt était jadis un médecin respecté qui travaillait depuis son cabinet à Zwillingsgrab. Il était spécialiste des afflictions de l’esprit, et avait étudié des méthodes elfiques pour traiter les traumatismes et le stress. Un jour, alors qu’il souffrait d’un cas classique d’ennui mortel, il a voulu découvrir un remède à la monotonie. C’est ainsi qu’il est tombé dans les griffes de Tzeentch. 
+Lukas Reinhardt était jadis un médecin respecté qui travaillait depuis son cabinet à Zwillingsgrab. Il était spécialiste des afflictions de l'esprit, et avait étudié des méthodes elfiques pour traiter les traumatismes et le stress. Un jour, alors qu'il souffrait d'un cas classique d'ennui mortel, il a voulu découvrir un remède à la monotonie. C'est ainsi qu'il est tombé dans les griffes de Tzeentch.
 
-Lukas a rédigé une liste de six choses qu’il serait normalement trop timide pour essayer, et a lancé un dé… 
+Lukas a rédigé une liste de six choses qu'il serait normalement trop timide pour essayer, et a lancé un dé…
 
-Depuis, c’est comme ça qu’il prend toutes ses décisions, et il trouve l’expérience particulièrement agréable. Lukas ne s’en est pas encore rendu compte, mais une main invisible commande son destin et a fait de lui le chef d’un culte étrange qui suit la volonté de Tzeentch. Chaque fois qu’il tire un dé pour savoir s’il devrait intégrer une nouvelle personne à son jeu, la réponse est toujours oui. Il a désormais une petite clique d’associés sélectionnés au hasard qui se réunissent chaque Festag après-midi pour écrire des listes de choses à faire, avant de laisser les dés décider. La Société des Dés est devenue un culte sans le savoir ; de leur point de vue, les membres ne font que jouer à un jeu de société passionnant. Mais les dés tombent toujours selon les plans de Tzeentch. 
+Depuis, c'est comme ça qu'il prend toutes ses décisions, et il trouve l'expérience particulièrement agréable. Lukas ne s'en est pas encore rendu compte, mais une main invisible commande son destin et a fait de lui le chef d'un culte étrange qui suit la volonté de Tzeentch. Chaque fois qu'il tire un dé pour savoir s'il devrait intégrer une nouvelle personne à son jeu, la réponse est toujours oui. Il a désormais une petite clique d'associés sélectionnés au hasard qui se réunissent chaque Festag après-midi pour écrire des listes de choses à faire, avant de laisser les dés décider. La Société des Dés est devenue un culte sans le savoir ; de leur point de vue, les membres ne font que jouer à un jeu de société passionnant. Mais les dés tombent toujours selon les plans de Tzeentch.
 
-## Ô Rage ! Ô Dés-Espoir !
+# Ô RAGE ! Ô DÉS-ESPOIR !
 
-- Un jet de dés a poussé le groupe à rendre ses activités publiques. Pour ce faire, ils ont fait imprimer une liasse de brochures qu’ils ont affichées un peu partout à Altdorf. Ces brochures invitent leurs lecteurs à lancer un dé et à suivre ses instructions écrites. Les différentes options sont très convenables, voire d’utilité publique (voir ci-dessous). Elles sont inoffensives, mais constituent un indice quant à l’existence et le modus operandi du groupe. 
+- 0 Un jet de dés a poussé le groupe à rendre ses activités publiques. Pour ce faire, ils ont fait imprimer une liasse de brochures qu'ils ont affichées un peu partout à Altdorf. Ces brochures invitent leurs lecteurs à lancer un dé et à suivre ses instructions écrites. Les différentes options sont très convenables, voire d'utilité publique (voir ci-dessous). Elles sont inoffensives, mais constituent un indice quant à l'existence et le modus operandi du groupe.
+- 0 Inspiré par un malheureux jet de dés, un cultiste décide de jouer un tour dangereux à un des Personnages. Il peut essayer de cacher de la littérature séditieuse sur sa personne pour l'incriminer, ou retirer toutes les têtes de ses flèches. Si les Personnages l'attrapent la main dans le sac, ses motivations semblent saugrenues et… arbitraires. Les cultistes refusent de révéler la nature de leur jeu (sauf si les dés le leur dictent), mais ils peuvent être sensibles à la menace ou à la tromperie.
 
-- Inspiré par un malheureux jet de dés, un cultiste décide de jouer un tour dangereux à un des Personnages. Il peut essayer de cacher de la littérature séditieuse sur sa personne pour l’incriminer, ou retirer toutes les têtes de ses flèches. Si les Personnages l’attrapent la main dans le sac, ses motivations semblent saugrenues et… arbitraires. Les cultistes refusent de révéler la nature de leur jeu (sauf si les dés le leur dictent), mais ils peuvent être sensibles à la menace ou à la tromperie. 
+## TENTEZ VOTRE CHANCE !
 
-## Tentez Votre Chance !
-|1.<br>2.<br>3.<br>4.<br>5.|Assistez à une exécution<br>sur la Colline aux<br>crépitements<br>Passez l’après-midi à faire<br>du bénévolat au Temple<br>de Shallya<br>Achetez du fromage chez<br>les pauvres gens de la<br>boutique Fromages de<br>l’Empire<br>Allez voir une pièce au<br>Théâtre Geheimnisstrasse<br>Exiger l’entrée à|6.<br>7.<br>8.<br>9.<br>10.|Traverser tous les ponts<br>d’Altdorf<br>Faites des ricochets<br>depuis l’Île aux anguilles<br>Escaladez la Tour<br>de l’Horloge à la<br>Schmutplatz<br>Relancez le dé, et allez<br>visiter un nombre de<br>tavernes sur les quais égal<br>au résultat<br>Allez vous recueillir sur la<br>tombe de la Domplatz|
-|---|---|---|---|
-||Neiderwind|||
+- 1. Assistez à une exécution sur la Colline aux crépitements
+- 2. Passez l'après-midi à faire du bénévolat au Temple de Shallya
+- 3. Achetez du fromage chez les pauvres gens de la boutique Fromages de l'Empire
+- 4. Allez voir une pièce au Théâtre Geheimnisstrasse
+- 5. Exiger l'entrée à Neiderwind
 
-Ludovic Paulet - ludovicmad@wanadoo.fr 
+- 6. Traverser tous les ponts d'Altdorf
+- 7. Faites des ricochets depuis l'Île aux anguilles
+- 8. Escaladez la Tour de l'Horloge à la Schmutplatz
+- 9. Relancez le dé, et allez visiter un nombre de tavernes sur les quais égal au résultat
+- 10. Allez vous recueillir sur la tombe de la Domplatz
 
-## **Le Culte du Cadavre Exquis**
-Ce culte de Slaanesh tire profit de la faiblesse de personnes à la recherche de perfection physique. Il était jadis basé à Bögenhafen, mais le Magus Marlene l’a déplacé à Altdorf quand les Répurgateurs ont commencé à s’approcher dangereusement. 
 
-Marlene Gebhardt est l’héritière d’une fortune considérable, léguée par son oncle marchand de vin. C’est par lui qu’elle a été initiée au culte de Slaanesh. Il lui a également fait découvrir la liqueur de rêve, qui permet d’anticiper des événements à venir. Marlene résiste à l’appel des vignobles des Montagnes Grises, mais elle devine que c’est là que l’emmènera son destin. Le nom de son culte est un trait d’autodérision sinistre. 
+# <span id="page-218-0"></span>**Le Culte du Cadavre Exquis**
 
-Marlene a trois lieutenants. L’une d’elles est une puissante Guerrière du Chaos ; une autre est une sorcière dissidente accomplie. Les visions de la liqueur de rêve lui ont appris ce qu’elle devait faire pour les séduire. Cette assemblée de sorcières recrute désormais des initiés parmi de jeunes aspirants acteurs et danseurs. Elle promet à ses membres une batterie d’exercices, d’entraînements mentaux, et d’altérations cosmétiques pour améliorer leur apparence et leur confiance en eux. Ceux qui la suivent à la lettre finissent par tomber dans l’addiction, le chantage, et la dépendance totale envers Marlene. 
+Ce culte de Slaanesh tire profit de la faiblesse de personnes à la recherche de perfection physique. Il était jadis basé à Bögenhafen, mais le Magus Marlene l'a déplacé à Altdorf quand les Répurgateurs ont commencé à s'approcher dangereusement.
 
-- Marlene possède l’un des six bijoux démoniaques offerts par le passé aux champions de Slaanesh. Chaque bijou peut infliger une terrible blessure s’il est pressé contre de la chair vivante. Le sien est l’Anneau de Piqûre, un cristal aux facettes arc-en-ciel qui cache une guêpe démoniaque. Elle désire tous les acquérir : le Collier Tisonnier, le Bouton Brûlant, le Pendentif Perçant, la Broche Tranchante, et les Manchettes Mâchoires. Malgré les prémonitions de la liqueur de rêve, Marlene n’arrive pas à localiser ces artéfacts. Elle est prête à payer des aventuriers pour qu’ils se lancent à leur recherche. 
+Marlene Gebhardt est l'héritière d'une fortune considérable, léguée par son oncle marchand de vin. C'est par lui qu'elle a été initiée au culte de Slaanesh. Il lui a également fait découvrir la liqueur de rêve, qui permet d'anticiper des événements à venir. Marlene résiste à l'appel des vignobles des Montagnes Grises, mais elle devine que c'est là que l'emmènera son destin. Le nom de son culte est un trait d'autodérision sinistre.
 
-## **Katarina Briesach**
-Bien que Marlene Gebhardt soit le Magus du culte du Cadavre Exquis et sa principale visionnaire, une grande partie de sa force lui vient de son bras droit, Katarina Briesach. Elle est Champion de  Slaanesh, guerrière accomplie, mais aussi agent infiltré dont les dons ne l’empêchent pas (encore) de se mêler à la société d’Altdorf. 
+Marlene a trois lieutenants. L'une d'elles est une puissante Guerrière du Chaos ; une autre est une sorcière dissidente accomplie. Les visions de la liqueur de rêve lui ont appris ce qu'elle devait faire pour les séduire. Cette assemblée de sorcières recrute désormais des initiés parmi de jeunes aspirants acteurs et danseurs. Elle promet à ses membres une batterie d'exercices, d'entraînements mentaux, et d'altérations cosmétiques pour améliorer leur apparence et leur confiance en eux. Ceux qui la suivent à la lettre finissent par tomber dans l'addiction, le chantage, et la dépendance totale envers Marlene.
 
-Katarina est petite et jolie, mais une force étrange émane de son être. Seul un idiot songerait à sous-estimer ses talents de combattante ou d’aventurière. Marlene se sert de Katarina comme bras droit et tueuse ; de l’extérieur, les deux femmes ont l’air de former une bonne équipe. 
+0 Marlene possède l'un des six bijoux démoniaques offerts par le passé aux champions de Slaanesh. Chaque bijou peut infliger une terrible blessure s'il est pressé contre de la chair vivante. Le sien est l'Anneau de Piqûre, un cristal aux facettes arc-en-ciel qui cache une guêpe démoniaque. Elle désire tous les acquérir : le Collier Tisonnier, le Bouton Brûlant, le Pendentif Perçant, la Broche Tranchante, et les Manchettes Mâchoires. Malgré les prémonitions de la liqueur de rêve, Marlene n'arrive pas à localiser ces artéfacts. Elle est prête à payer des aventuriers pour qu'ils se lancent à leur recherche.
 
-Mais Katarina sent un vent de rébellion monter en elle : elle cherche à supplanter Marlene en tant que chef du culte. Elle vient d’échafauder un plan que les visions de la liqueur de rêve n’arriveront pas à anticiper. Elle croit qu’il est possible de se lancer dans une action ambitieuse sans attirer la suspicion de Marlene, tant qu’elle le fait avec une grâce impassible. En suivant cette méthode, elle a réussi à localiser et dérober le Bouton Brûlant convoité par Marlene. Elle l’a ensuite remplacé par un faux et compte garder l’original pour elle. 
+Bien que Marlene Gebhardt soit le Magus du culte du Cadavre Exquis et sa principale visionnaire, une grande partie de sa force lui vient de son bras droit, Katarina Briesach. Elle est Champion de Slaanesh, guerrière accomplie, mais aussi agent infiltré dont les dons ne l'empêchent pas (encore) de se mêler à la société d'Altdorf.
 
-## Katarina Briesach - Champion du Chaos Mutant
-**M CC CT F E I Ag Dex Int FM Soc B** 4 55 30 45 45 45 60 40 35 55 35 21 
+Katarina est petite et jolie, mais une force étrange émane de son être. Seul un idiot songerait à sous-estimer ses talents de combattante ou d'aventurière. Marlene se sert de Katarina comme bras droit et tueuse ; de l'extérieur, les deux femmes ont l'air de former une bonne équipe.
 
-**Compétences :** Athlétisme 65, Calme 60, Charme 45, Commandement 45, Corps à corps (Bagarre 65, Base 75), Discrétion (Urbaine) 70, Esquive 65, Intimidation 50, Projectiles (Lancer) 75, Résistance 55 
+Mais Katarina sent un vent de rébellion monter en elle : elle cherche à supplanter Marlene en tant que chef du culte. Elle vient d'échafauder un plan que les visions de la liqueur de rêve n'arriveront pas à anticiper. Elle croit qu'il est possible de se lancer dans une action ambitieuse sans attirer la suspicion de Marlene, tant qu'elle le fait avec une grâce impassible. En suivant cette méthode, elle a réussi à localiser et dérober le Bouton Brûlant convoité par Marlene. Elle l'a ensuite remplacé par un faux et compte garder l'original pour elle.
 
-**Talents :** Ambidextre 2, Battement, Désarmer, Destinée ( _Attention aux flammes de la passion_ ), Dur à cuire, Maîtrise du combat 3, Renversement, Souplesse féline, Vigilance **Traits :** À distance (Bolas) +4 (12), Arme (Épée) +8, Armure 5, Champion, Corruption (Mineure), Mutation (Articulations supplémentaires aux jambes, Beauté inhumaine, Doigts distendus), Perturbant **Possessions :** bolas, bouton Brûlant (voir ci-dessous), épée 
+### KATARINA BRIESACH - CHAMPION DU CHAOS MUTANT
 
-## **Bouton Brûlant**
-Le porteur de ce bouton argenté peut infliger +1 État _En flammes_ à sa cible rien qu’en la touchant. Si le porteur est en combat, ou si la cible résiste, il doit faire un Test opposé de **Corps à corps (Bagarre)** (généralement opposé à la Compétence Corps à corps ou Esquive de la cible). Le bouton est une source de Corruption Mineure. 
+| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
+|---|----|----|----|----|----|----|-----|-----|----|-----|----|
+| 4 | 55 | 30 | 45 | 45 | 45 | 60 | 40  | 35  | 55 | 35  | 21 |
 
-Ludovic Paulet - ludovicmad@wanadoo.fr 
+**Compétences :** Athlétisme 65, Calme 60, Charme 45, Commandement 45, Corps à corps (Bagarre 65, Base 75), Discrétion (Urbaine) 70, Esquive 65, Intimidation 50, Projectiles (Lancer) 75, Résistance 55
 
-CULTES INTERDITS ET GROUPES EXTRÉMISTES 
+**Talents :** Ambidextre 2, Battement, Désarmer, Destinée (*Attention aux flammes de la passion*), Dur à cuire, Maîtrise du combat 3, Renversement, Souplesse féline, Vigilance
 
-## **La Communauté Tinéenne**
-La Communauté Tinéenne est un réseau de médecins dont l’objectif affiché est de partager le savoir médical et mettre au jour de nouvelles connaissances. Mais à l’insu de la plupart de ses membres, le Cercle intérieur de la communauté est dédié au culte de Nurgle. Sous la direction d’un Nordlander mystérieux qui signe ses lettres par « Docteur Festus », la Communauté pratique des expériences médicales immorales. Ses membres sont capables de créer des maladies pour pouvoir les guérir plus tard. 
+**Traits :** À distance (Bolas) +4 (12), Arme (Épée) +8, Armure 5, Champion, Corruption (Mineure), Mutation (Articulations supplémentaires aux jambes, Beauté inhumaine, Doigts distendus), Perturbant
 
-- Festus lui-même a une base dans les égouts à ciel ouvert du Fleischmarkt, où il développe de nouvelles souches de maladie virulentes (voir p. 144). Il partage son temps entre ce laboratoire et Salzenmund, mais les corruptions qui affectent son corps sont de plus en plus visibles, et il évite le contact humain. D’étranges créatures hantent les égouts près de sa base ; d’énormes sangsues boursouflées et des nurglings rôdent. Ils tentent d’intimider, d’arrêter ou de perdre d’éventuels intrus. 
+**Possessions :** bolas, bouton Brûlant (voir ci-dessous), épée
 
-- La Communauté Tinéenne est un ardent défenseur des services publics. Elle soutient surtout les projets qui permettent de réunir un grand nombre de personnes dans un espace clos. 
+### **BOUTON BRÛLANT**
 
-## **La Confrérie**
-La Confrérie est un réseau dédié à honorer l’aspect du Rôdeur nocturne de Ranald. C’est une organisation illégale. Le Grand Théogoniste et le Grand Prêtre de Verena ont tous les deux déclaré que, bien qu’elle ne constitue techniquement pas un blasphème, seul un vaurien pourrait rendre hommage au Rôdeur nocturne ; la punition doit être sévère. 
+Le porteur de ce bouton argenté peut infliger +1 État *En flammes* à sa cible rien qu'en la touchant. Si le porteur est en combat, ou si la cible résiste, il doit faire un Test opposé de **Corps à corps (Bagarre)** (généralement opposé à la Compétence Corps à corps ou Esquive de la cible). Le bouton est une source de Corruption Mineure.
 
-Les membres de la Confrérie vénèrent Ranald en volant tout ce qu’ils peuvent aux classes privilégiées. Les membres font s’évader des prisonniers, commettent des braquages et d’audacieux cambriolages. En accord avec l’éthique Ranaldienne, ils évitent la violence, sauf pour leur défense. Enfin, leur définition de défense peut être flexible, surtout quand ils sont confrontés à des gardes ou des geôliers. 
 
-- Le Duc Berndt Wechsler veut compléter sa collection de tabatières embossées d’argent à l’effigie de la noblesse du Reikland. Il cherche un membre de la Confrérie pour les acquérir pour lui. Personne ne sait pourquoi il est obsédé à ce point, d’autant plus qu’il s’est irrémédiablement compromis avec le Culte de l’Illumination. Toutes les personnes impliquées dans ce vol de tabatières pourront s’attirer les foudres des autorités, et d’un culte du Chaos qui tente à tout prix de rester discret. 
+# <span id="page-219-0"></span>**La Communauté Tinéenne**
 
-- La direction et l’organisation de la Confrérie sont des secrets très bien gardés : rejoindre ce club exclusif est presque impossible. Certains disent que si on a un amour sincère pour Ranald, qu’on croise le comte Jäger la nuit, au clair de lune, et qu’on le bat à une partie d’Impératrice écarlate, il peut vous y faire admettre. 
+La Communauté Tinéenne est un réseau de médecins dont l'objectif affiché est de partager le savoir médical et mettre au jour de nouvelles connaissances. Mais à l'insu de la plupart de ses membres, le Cercle intérieur de la communauté est dédié au culte de Nurgle. Sous la direction d'un Nordlander mystérieux qui signe ses lettres par « Docteur Festus », la Communauté pratique des expériences médicales immorales. Ses membres sont capables de créer des maladies pour pouvoir les guérir plus tard.
 
-## **Le Culte du Brasier Vengeur**
-Il n’est pas illégal de vénérer Solkan dans l’Empire, mais ce culte obscur compte peu de fidèles. C’est un dieu strict, qui prône une tolérance zéro pour la nuance, le désordre, et le changement. La plupart des gens trouvent ces principes difficiles à concilier avec leur vie quotidienne. 
+- 0 Festus lui-même a une base dans les égouts à ciel ouvert du Fleischmarkt, où il développe de nouvelles souches de maladie virulentes (voir p. 144). Il partage son temps entre ce laboratoire et Salzenmund, mais les corruptions qui affectent son corps sont de plus en plus visibles, et il évite le contact humain. D'étranges créatures hantent les égouts près de sa base ; d'énormes sangsues boursouflées et des nurglings rôdent. Ils tentent d'intimider, d'arrêter ou de perdre d'éventuels intrus.
+- 0 La Communauté Tinéenne est un ardent défenseur des services publics. Elle soutient surtout les projets qui permettent de réunir un grand nombre de personnes dans un espace clos.
 
-Le culte est petit et discret, ses membres veulent éliminer ce qu’ils appellent la « corruption » du monde. Ils cherchent à affaiblir les Collèges de Magie, contrôler l’armée, détruire les groupes révolutionnaires, et mettre fin au culte des dieux « faibles ». Ils comptent même Sigmar parmi ces derniers, mais pour l’instant, le Culte du Brasier vengeur peut encore faire cause commune avec les Sigmarites les plus zélés. Il ne prendrait pas le risque de s’attaquer à une institution aussi puissante. Du moins, pas encore. 
+# **La Confrérie**
 
-Ses membres se réunissent rarement dans un lieu donné, et préfèrent correspondre par message codé. Il existe un Temple de Solkan caché au Karl Franz Park, où de grands prêtres pratiquent des rituels pour une congrégation de fidèles masqués. Parmi les cultistes les plus éminents, on trouve Mornan Tybalt, plusieurs lettrés, et des juges de la Citadelle du Châtiment. Il y a des Solkanites à tous les niveaux de l’armée du Reikland, et même dans les ordres chevaleresques. 
+La Confrérie est un réseau dédié à honorer l'aspect du Rôdeur nocturne de Ranald. C'est une organisation illégale. Le Grand Théogoniste et le Grand Prêtre de Verena ont tous les deux déclaré que, bien qu'elle ne constitue techniquement pas un blasphème, seul un vaurien pourrait rendre hommage au Rôdeur nocturne ; la punition doit être sévère.
 
-Mais le culte se déchire petit à petit. Une faction, appelée la Propension Légaliste, est sous le contrôle de Mornan Tybalt. Elle prône l’acquisition prudente de pouvoir  : elle veut influencer la culture et la politique pour obtenir l’approbation de Solkan. Les autres Solkanites méprisent la faiblesse de ce compromis. Ils exigent des actions directes, et manipulent les Crochets et la Ligue de Karl Franz pour les faire attaquer les cibles de Solkan. 
+Les membres de la Confrérie vénèrent Ranald en volant tout ce qu'ils peuvent aux classes privilégiées. Les membres font s'évader des prisonniers, commettent des braquages et d'audacieux cambriolages. En accord avec l'éthique Ranaldienne, ils évitent la violence, sauf pour leur défense. Enfin, leur définition de défense peut être flexible, surtout quand ils sont confrontés à des gardes ou des geôliers.
 
-## Soyez Purs, Soyez Vigilants, Soyez Solkanites
+- 0 Le Duc Berndt Wechsler veut compléter sa collection de tabatières embossées d'argent à l'effigie de la noblesse du Reikland. Il cherche un membre de la Confrérie pour les acquérir pour lui. Personne ne sait pourquoi il est obsédé à ce point, d'autant plus qu'il s'est irrémédiablement compromis avec le Culte de l'Illumination. Toutes les personnes impliquées dans ce vol de tabatières pourront s'attirer les foudres des autorités, et d'un culte du Chaos qui tente à tout prix de rester discret.
+- 0 La direction et l'organisation de la Confrérie sont des secrets très bien gardés : rejoindre ce club exclusif est presque impossible. Certains disent que si on a un amour sincère pour Ranald, qu'on croise le comte Jäger la nuit, au clair de lune, et qu'on le bat à une partie d'Impératrice écarlate, il peut vous y faire admettre.
 
-- Quand un incendie se déclenche dans la bibliothèque de Verena, plusieurs indices semblent pointer du doigt une cellule d’agitateurs kloszowskistes de l’Université d’Altdorf. Ils prétendent respecter la déesse et sa bibliothèque, mais dans la chambre qu’ils partagent, on a découvert le même produit chimique inflammable que celui trouvé sur le lieu de l’incendie. Les Personnages sauront-ils démasquer les véritables coupables ? 
+# **Le Culte du Brasier vengeur**
 
-- Les Personnages intransigeants dans leur combat contre le Chaos et autres forces du mal peuvent se faire courtiser par le Culte du Brasier vengeur. Comment réagiront-ils quand ils découvriront que l’obsession pour la pureté exigée par le culte est beaucoup plus austère (pour ne pas dire tyrannique) qu’ailleurs ? 
+Il n'est pas illégal de vénérer Solkan dans l'Empire, mais ce culte obscur compte peu de fidèles. C'est un dieu strict, qui prône une tolérance zéro pour la nuance, le désordre, et le changement. La plupart des gens trouvent ces principes difficiles à concilier avec leur vie quotidienne.
 
-Ludovic Paulet - ludovicmad@wanadoo.fr 
+Le culte est petit et discret, ses membres veulent éliminer ce qu'ils appellent la « corruption » du monde. Ils cherchent à affaiblir les Collèges de Magie, contrôler l'armée, détruire les groupes révolutionnaires, et mettre fin au culte des dieux « faibles ». Ils comptent même Sigmar parmi ces derniers, mais pour l'instant, le Culte du Brasier vengeur peut encore faire cause commune avec les Sigmarites les plus zélés. Il ne prendrait pas le risque de s'attaquer à une institution aussi puissante. Du moins, pas encore.
 
-## **Le Culte de L’illumination**
-La Grande Union d’Altdorf pour la Promotion de l’Art, de la Réthorique, de la Science, et de l’Entreprise est un club très exclusif pour les personnes de talent. Ses membres comprennent certains des meilleurs artistes, ingénieurs et entrepreneurs de la ville. 
+Ses membres se réunissent rarement dans un lieu donné, et préfèrent correspondre par message codé. Il existe un Temple de Solkan caché au Karl Franz Park, où de grands prêtres pratiquent des rituels pour une congrégation de fidèles masqués. Parmi les cultistes les plus éminents, on trouve Mornan Tybalt, plusieurs lettrés, et des juges de la Citadelle du Châtiment. Il y a des Solkanites à tous les niveaux de l'armée du Reikland, et même dans les ordres chevaleresques.
 
-Les frais d’entrée sont exorbitants, mais on se bouscule pour être accepté, et bénéficier de l’inspiration et du mécénat promis par le club. Les nouveaux membres trouvent toujours les dîners d’inauguration fascinants : les invités plus expérimentés leur prodiguent les conseils parfaits pour faire passer leurs projets à la vitesse supérieure. 
+Mais le culte se déchire petit à petit. Une faction, appelée la Propension Légaliste, est sous le contrôle de Mornan Tybalt. Elle prône l'acquisition prudente de pouvoir : elle veut influencer la culture et la politique pour obtenir l'approbation de Solkan. Les autres Solkanites méprisent la faiblesse de ce compromis. Ils exigent des actions directes, et manipulent les Crochets et la Ligue de Karl Franz pour les faire attaquer les cibles de Solkan.
 
-La Grande Union est une façade pour le Culte de l’Illumination. Ce Culte a établi plusieurs bases de pouvoir entre Nuln, Altdorf, et Talabheim. La plupart des membres ignorent que leurs chefs glanent des informations en consultant des serviteurs démoniaques de Slaanesh et Tzeentch. Ce faisant, ils sont capables de deviner des tendances, des découvertes et opportunités à venir : un savoir précieux qu’ils transmettent à diverses organisations qui leur servent de couverture. 
+# SOYEZ PURS, SOYEZ VIGILANTS, SOYEZ SOLKANITES
 
-Le chef du culte est le Grand Illuminateur ; il garde une base à Altdorf par tradition. Ses subalternes directs sont appelés les Onze Préfets du Cercle Omniscient. Trois Préfets gèrent l’activité du culte à Talabheim, trois à Altdorf, et trois à Nuln. Les deux derniers s’occupent de la cour des Comtes Électeurs au nord et à l’est de l’Empire. 
+- 0 Quand un incendie se déclenche dans la bibliothèque de Verena, plusieurs indices semblent pointer du doigt une cellule d'agitateurs kloszowskistes de l'Université d'Altdorf. Ils prétendent respecter la déesse et sa bibliothèque, mais dans la chambre qu'ils partagent, on a découvert le même produit chimique inflammable que celui trouvé sur le lieu de l'incendie. Les Personnages sauront-ils démasquer les véritables coupables ?
+- 0 Les Personnages intransigeants dans leur combat contre le Chaos et autres forces du mal peuvent se faire courtiser par le Culte du Brasier vengeur. Comment réagiront-ils quand ils découvriront que l'obsession pour la pureté exigée par le culte est beaucoup plus austère (pour ne pas dire tyrannique) qu'ailleurs ?
 
-Le culte garde des archives détaillées sur les accomplissements et les désirs de chacun de ses affiliés. Ces informations sont utilisées pour aider les membres à réaliser leurs ambitions, mais aussi pour les pousser à s’impliquer davantage dans le culte (en menaçant de révéler leurs secrets honteux au public). 
+
+# <span id="page-220-0"></span>**Le Culte de l'Illumination**
+
+La Grande Union d'Altdorf pour la Promotion de l'Art, de la Réthorique, de la Science, et de l'Entreprise est un club très exclusif pour les personnes de talent. Ses membres comprennent certains des meilleurs artistes, ingénieurs et entrepreneurs de la ville.
+
+Les frais d'entrée sont exorbitants, mais on se bouscule pour être accepté, et bénéficier de l'inspiration et du mécénat promis par le club. Les nouveaux membres trouvent toujours les dîners d'inauguration fascinants : les invités plus expérimentés leur prodiguent les conseils parfaits pour faire passer leurs projets à la vitesse supérieure.
+
+La Grande Union est une façade pour le Culte de l'Illumination. Ce Culte a établi plusieurs bases de pouvoir entre Nuln, Altdorf, et Talabheim. La plupart des membres ignorent que leurs chefs glanent des informations en consultant des serviteurs démoniaques de Slaanesh et Tzeentch. Ce faisant, ils sont capables de deviner des tendances, des découvertes et opportunités à venir : un savoir précieux qu'ils transmettent à diverses organisations qui leur servent de couverture.
+
+Le chef du culte est le Grand Illuminateur ; il garde une base à Altdorf par tradition. Ses subalternes directs sont appelés les Onze Préfets du Cercle Omniscient. Trois Préfets gèrent l'activité du culte à Talabheim, trois à Altdorf, et trois à Nuln. Les deux derniers s'occupent de la cour des Comtes Électeurs au nord et à l'est de l'Empire.
+
+Le culte garde des archives détaillées sur les accomplissements et les désirs de chacun de ses affiliés. Ces informations sont utilisées pour aider les membres à réaliser leurs ambitions, mais aussi pour les pousser à s'impliquer davantage dans le culte (en menaçant de révéler leurs secrets honteux au public).
 
 ## **Gridli Ahlquist, Cultiste**
-Gridli Ahlquist est un membre atypique de la Cabal d’Egrimm van Horstmann. Il a d’abord suivi une formation de sorcier lumineux, puis a suivi son maître Egrimm dans sa fuite vers les Steppes Septentrionales. Dans les bibliothèques et laboratoires des Tours d’Argent, Gridli a appris à percevoir et pratiquer différents vents de magie. 
 
-Il y a un an, Gridli est retourné à Altdorf. Grâce à la magie, il modifie son apparence et cache les mutations apparues sur son corps lors de ses études. Il avait pour mission de diriger le Culte de l’Œil Flétri, et rassembler les sorciers d’Altdorf pour s’assurer que les plus talentueux soient présentés à Egrimm. 
+Gridli Ahlquist est un membre atypique de la Cabal d'Egrimm van Horstmann. Il a d'abord suivi une formation de sorcier lumineux, puis a suivi son maître Egrimm dans sa fuite vers les Steppes Septentrionales. Dans les bibliothèques et laboratoires des Tours d'Argent, Gridli a appris à percevoir et pratiquer différents vents de magie.
 
-Mais une chose inattendue s’est produite : Gridli a pris goût à la ville. Avant, il était trop absorbé par ses recherches pour vraiment apprécier Altdorf et toute la vie qu’elle a à offrir. Désormais, il se rend compte qu’il aime passer ses soirées au théâtre avant d’aller boire dans les tavernes des quais. Toujours voué à la destruction de la civilisation, Gridli continue de remplir ses devoirs envers Tzeentch. Mais il le fait avec de plus en plus de remords. 
+Il y a un an, Gridli est retourné à Altdorf. Grâce à la magie, il modifie son apparence et cache les mutations apparues sur son corps lors de ses études. Il avait pour mission de diriger le Culte de l'Œil Flétri, et rassembler les sorciers d'Altdorf pour s'assurer que les plus talentueux soient présentés à Egrimm.
 
-GRIDLI AHLQUIST - CULTISTE HUMAIN 
+Mais une chose inattendue s'est produite : Gridli a pris goût à la ville. Avant, il était trop absorbé par ses recherches pour vraiment apprécier Altdorf et toute la vie qu'elle a à offrir. Désormais, il se rend compte qu'il aime passer ses soirées au théâtre avant d'aller boire dans les tavernes des quais. Toujours voué à la destruction de la civilisation, Gridli continue de remplir ses devoirs envers Tzeentch. Mais il le fait avec de plus en plus de remords.
 
-**M CC CT F E I Ag Dex Int FM Soc B** 4 43 31 31 32 51 53 38 69 63 32 18 
+| GRIDLI AHLQUIST - CULTISTE HUMAIN |    |    |    |    |    |    |     |     |    |     |    |  |  |
+|-----------------------------------|----|----|----|----|----|----|-----|-----|----|-----|----|--|--|
+| M                                 | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |  |  |
+| 4                                 | 43 | 31 | 31 | 32 | 51 | 53 | 38  | 69  | 63 | 32  | 18 |  |  |
 
-**Compétences :** Calme 76, Charme 47, Chevaucher (Cheval) 61, Commandement 37, Corps à corps (Armes d’hast 63, Base 53), Discrétion (Rurale) 63, Escamotage 48, Esquive 58, Évaluation 72, Focalisation (Hysh) 83, Intimidation 41, Intuition 56, Langue (Magick) 89, Marchandage 35, Perception 66, Ragot 55, Résistance 42, Savoir (Magie) 84 
+**Compétences :** Calme 76, Charme 47, Chevaucher (Cheval) 61, Commandement 37, Corps à corps (Armes d'hast 63, Base 53), Discrétion (Rurale) 63, Escamotage 48, Esquive 58, Évaluation 72, Focalisation (Hysh) 83, Intimidation 41, Intuition 56, Langue (Magick) 89, Marchandage 35, Perception 66, Ragot 55, Résistance 42, Savoir (Magie) 84
 
-**Talents :** Âme pure, Destinée ( _Des embruns irritent l’œil qu’il te reste, les dieux tournent leur regard sur toi_ ), Détection d’artefact, Diction instinctive, Doigts de fée, Dur à cuire, Harmonisation aethyrique, Lire/Écrire, Magie des Arcanes (Lumière), Magie mineure, Mains agiles 2, Menaçant, Perception de la magie, Perspicace, Seconde vue, Sixième sens, Sorcier ! 
+**Talents :** Âme pure, Destinée (*Des embruns irritent l'œil qu'il te reste, les dieux tournent leur regard sur toi*), Détection d'artefact, Diction instinctive, Doigts de fée, Dur à cuire, Harmonisation aethyrique, Lire/Écrire, Magie des Arcanes (Lumière), Magie mineure, Mains agiles 2, Menaçant, Perception de la magie, Perspicace, Seconde vue, Sixième sens, Sorcier !
 
-## **Sorts**
-**Mineurs :** Choc, Éblouissant, Flamme magique, Fléchette, Lumière, Source 
+### **SORTS**
 
-**Lumière :** Clarté d’esprit, Lumière aveuglante **Sorcellerie :** Armure aethyrique, Carreau, Dégradation, Explosion, Malédiction de douleur paralysante, Malédiction de malchance, Protection, Téléportation, Terrifiant 
+**Mineurs :** Choc, Éblouissant, Flamme magique, Fléchette, Lumière, Source
 
-- Conformément au pacte établi avec Tzeentch, le culte fait honneur aux membres qui ont contracté des mutations. Grâce à ses nombreuses sociétés-écrans, il dispose d’un grand entrepôt à Reikerbahn. Derrière un mur de caisses, on trouve une ribambelle misérable d’habitations en bois fin, chacune accueillant un mutant. 
+**Lumière :** Clarté d'esprit, Lumière aveuglante
 
-- Klaus von Talber est le Grand Illuminateur. Il est le gardien de bibliothèque et conseiller privilégié du duc Berndt Wechsler, qui possède un gigantesque manoir à Mauerblumchen. Grâce à son charisme, Klaus a persuadé le duc Wechsler de rejoindre le culte de Slaanesh. Il est complètement soumis à Klaus. Étant donné qu’il siège parfois aux réunions du Conseil d’Altdorf, il donne régulièrement à Klaus des informations sur les futurs plans des dirigeants de la ville. 
+**Sorcellerie :** Armure aethyrique, Carreau, Dégradation, Explosion, Malédiction de douleur paralysante, Malédiction de malchance, Protection, Téléportation, Terrifiant
 
-Ludovic Paulet - ludovicmad@wanadoo.fr
+- 0 Conformément au pacte établi avec Tzeentch, le culte fait honneur aux membres qui ont contracté des mutations. Grâce à ses nombreuses sociétés-écrans, il dispose d'un grand entrepôt à Reikerbahn. Derrière un mur de caisses, on trouve une ribambelle misérable d'habitations en bois fin, chacune accueillant un mutant.
+- 0 Klaus von Talber est le Grand Illuminateur. Il est le gardien de bibliothèque et conseiller privilégié du duc Berndt Wechsler, qui possède un gigantesque manoir à Mauerblumchen. Grâce à son charisme, Klaus a persuadé le duc Wechsler de rejoindre le culte de Slaanesh. Il est complètement soumis à Klaus. Étant donné qu'il siège parfois aux réunions du Conseil d'Altdorf, il donne régulièrement à Klaus des informations sur les futurs plans des dirigeants de la ville.

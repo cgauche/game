@@ -1,39 +1,138 @@
-# Annexe I
-
 *Pages PDF 94-98*
 
-WARHAMMER FANTASY 
+## <span id="page-93-0"></span>ANNEXE I TROUBLES PSYCHOLOGIQUES • •
 
-AI 
+Le quotidien dans le Vieux Monde est éprouvant et les aventures sinistres et périlleuses que vivent les Personnages peuvent laisser des traces. Les règles suivantes peuvent permettre aux Personnages d'obtenir de nouveaux Traits Psychologiques (**WFJDR**, page 190) au cours de la partie. Ces règles comprennent également des options pour rendre la vie des Personnages plus dramatique à l'apparition de ces Traits Psychologiques. Comme il s'agit d'un sujet sensible, assurez-vous de discuter de ces règles avec votre groupe avant de les utiliser, et souvenez-vous des *Règles du jeu* (**WFJDR**, page 151). Lorsqu'un Trait Psychologique est joué de sorte à rendre encore plus tragique la vie du Personnage, accordez-lui la même valeur qu'à la poursuite de sa Motivation (**WFJDR**, page 34).
 
-## Annexe I Troubles Psychologiques
-Le quotidien dans le Vieux Monde est éprouvant et les aventures sinistres et périlleuses que vivent les Personnages peuvent laisser des traces. Les règles suivantes peuvent permettre aux Personnages d’obtenir de nouveaux Traits Psychologiques ( **WFJDR** , page 190) au cours de la partie. Ces règles comprennent également des options pour rendre la vie des Personnages plus dramatique à l’apparition de ces Traits Psychologiques. Comme il s’agit d’un sujet sensible, assurez-vous de discuter de ces règles avec votre groupe avant de les utiliser, et souvenez-vous des _Règles du jeu_ ( **WFJDR** , page 151). Lorsqu’un Trait Psychologique est joué de sorte à rendre encore plus tragique la vie du Personnage, accordez-lui la même valeur qu’à la poursuite de sa Motivation ( **WFJDR** , page 34). 
+## **Phobie du noir**
 
-## **Phobie du Noir**
-Chaque fois qu’un Personnage souffre de _Terreur_ , notez le nombre d’États _Brisé_ subis. Lorsque le total d’États _Brisé_ d’un Personnage est supérieur ou égal à sa Bonus de Force Mentale actuelle, il reçoit une _Phobie_ ( **WFJDR** , page 191). Cette _Phobie_ est liée à la cause de la _Terreur_ qu’il a subi le plus récemment ou le plus souvent. Elle doit avoir un rapport avec une créature ou une situation que le Personnage peut rencontrer fréquemment. Par exemple, un répurgateur ayant passé trop de nuits à chasser des vampires peut développer une _Phobie_ des miroirs, des sangsues ou des accents de Sylvanie. 
+Chaque fois qu'un Personnage souffre de *Terreur*, notez le nombre d'États *Brisé* subis. Lorsque le total d'États *Brisé* d'un Personnage est supérieur ou égal à sa Bonus de Force Mentale actuelle, il reçoit une *Phobie* (**WFJDR**, page 191). Cette *Phobie* est liée à la cause de la *Terreur* qu'il a subi le plus récemment ou le plus souvent. Elle doit avoir un rapport avec une créature ou une situation que le Personnage peut rencontrer fréquemment. Par exemple, un répurgateur ayant passé trop de nuits à chasser des vampires peut développer une *Phobie* des miroirs, des sangsues ou des accents de Sylvanie.
 
-Une fois que le Personnage a obtenu une _Phobie_ , remettez le compteur d’États _Brisé_ à zéro. 
+Une fois que le Personnage a obtenu une *Phobie*, remettez le compteur d'États *Brisé* à zéro.
 
 ## **Animosité et Haine**
-Lorsqu’un Personnage dépense un point de Destin pour rester en vie, il ne peut pas se défaire complètement de l’emprise de Morr sans conséquence, car frôler la mort n’est jamais facile. Lorsqu’un Personnage survit de cette façon, il doit effectuer un Test de **Calme Intermédiaire (+0)** . En cas d’échec, il obtient la le Trait Psychologique _Animosité_ , en prenant pour cible l’individu ou l’élément qui l’a presque tué. Si la cible est un membre de la propre Race du Personnage, il obtient une _Animosité_ envers les Reiklanders, les miliciens, les nains impériaux, etc., plutôt que juste les humains ou les nains. Si la cible est un membre d’une autre Race, le Personnage est plus susceptible de développer une _Animosité_ pour la Race entière, par exemple les nains, les humains, les orcs ou les elfes. Si un Personnage obtient une _Animosité_ qu’il possède déjà, celle-ci devient de la _Haine_ . 
+
+Lorsqu'un Personnage dépense un point de Destin pour rester en vie, il ne peut pas se défaire complètement de l'emprise de Morr sans conséquence, car frôler la mort n'est jamais facile. Lorsqu'un Personnage survit de cette façon, il doit effectuer un Test de **Calme Intermédiaire (+0)**. En cas d'échec, il obtient la le Trait Psychologique *Animosité*, en prenant pour cible l'individu ou l'élément qui l'a presque tué. Si la cible est un membre de la propre Race du Personnage, il obtient une *Animosité* envers les Reiklanders, les miliciens, les nains impériaux, etc., plutôt que juste les humains ou les nains. Si la cible est un membre d'une autre Race, le Personnage est plus susceptible de développer une *Animosité* pour la Race entière, par exemple les nains, les humains, les orcs ou les elfes. Si un Personnage obtient une *Animosité* qu'il possède déjà, celle-ci devient de la *Haine*.
 
 ## **Trauma**
-Un événement traumatique peut être formateur pour un Personnage. Celui-ci peut être marqué à vie par la mort d’un proche, un échec cuisant ou un terrible regret. Même s’il vaut mieux laisser la théorie et le fonctionnement de tels événements au Joueur, leurs effets peuvent ajouter des rebondissements à l’expérience de jeu. 
 
-Si un Personnage est témoin d’un événement qui rend l’une de ses Ambitions complètement irréalisable ( **WFJDR** , page 41), il doit effectuer un Test de **Calme Accessible (+20)** . En cas d’échec, il développe un _Trauma Psychologique_ ( **WFJDR** , page 191). Les _Traumas_ appropriés peuvent impliquer un autre Trait Psychologique défini, mais les Joueurs doivent également prendre en compte les règles pour les Traits Psychologiques personnalisés. 
+Un événement traumatique peut être formateur pour un Personnage. Celui-ci peut être marqué à vie par la mort d'un proche, un échec cuisant ou un terrible regret. Même s'il vaut mieux laisser la théorie et le fonctionnement de tels événements au Joueur, leurs effets peuvent ajouter des rebondissements à l'expérience de jeu.
 
-_**Exemple :** l’une des Ambitions à court terme de Deiter est de venger la mort de son camarade, Hans. Avant qu’il n’en ait l’occasion, son assassin est capturé et pendu pour un crime sans aucun rapport avec la mort de Hans. Beaucoup se contenteraient de cette conclusion qui apporte une certaine justice, mais Deiter ne peut s’empêcher de penser que Hans ne pourra plus jamais reposer en paix. Il échoue au Test de Calme et obtient le Trait Psychologique Trauma. Après une discussion avec le MJ et les autres Joueurs, le groupe décide que ce Trauma prend la forme d’une Action interdite (_ _**WFJDR** , page 191). Deiter refuse désormais catégoriquement de pénétrer sur une place de village où se trouve une potence, convaincu qu’il verra le visage de Hans parmi les condamnés attendant leur punition._ 
+Si un Personnage est témoin d'un événement qui rend l'une de ses Ambitions complètement irréalisable (**WFJDR**, page 41), il doit effectuer un Test de **Calme Accessible (+20)**. En cas d'échec, il développe un *Trauma Psychologique* (**WFJDR**, page 191). Les *Traumas* appropriés peuvent impliquer un autre Trait Psychologique défini, mais les Joueurs doivent également prendre en compte les règles pour les Traits Psychologiques personnalisés.
 
-## **Les Choses S’arrangent**
-Ce n’est pas parce que les Personnages composant un groupe typique du Vieux Monde ne sont pas toujours des héros qu’ils n’ont pas de moments de gloire. Surmonter ses peurs, ses préjugés et ses traumas est un acte fondamentalement héroïque. Le MJ est encouragé à récompenser une bonne interprétation des Personnages en retirant un Trait Psychologique, surtout si celui-ci est déjà intervenu dans l’histoire du Personnage. En outre, chaque fois qu’un Personnage doit récupérer un Point de Résilience ( **WFJDR** , page 172), il peut choisir de supprimer un Trait Psychologique indésirable à la place. 
+*Exemple : l'une des Ambitions à court terme de Deiter est de venger la mort de son camarade, Hans. Avant qu'il n'en ait l'occasion, son assassin est capturé et pendu pour un crime sans aucun rapport avec la mort de Hans. Beaucoup se contenteraient de cette conclusion qui apporte une certaine justice, mais Deiter ne peut s'empêcher de penser que Hans ne pourra plus jamais reposer en paix. Il échoue au Test de Calme et obtient le Trait Psychologique Trauma. Après une discussion avec le MJ et les autres Joueurs, le groupe décide que ce Trauma prend la forme d'une Action interdite (WFJDR, page 191). Deiter refuse désormais catégoriquement de pénétrer sur une place de village où se trouve une potence, convaincu qu'il verra le visage de Hans parmi les condamnés attendant leur punition.*
 
-Nombreux sont ceux à s’être réfugiés au _Grand Hospice_ (page 69) ou à des endroits de repos similaires, tels que des monastères et des temples. Ceux qui se rendent dans ces établissements peuvent se livrer à l’Activité _Convalescence_ . 
+## **Les choses s'arrangent**
 
-## Nouvelle Activité : Convalescence
-Vous faites des efforts concertés pour vous reposer et réfléchir, et tenter de trouver la paix sans vous soucier des peines d’autrui. Effectuez un Test de **Calme Très Difficile (–30)** . La difficulté peut être réduite en fonction de la qualité des soins reçus. En cas de réussite, vous pouvez éliminer un Trait Psychologique de votre choix. Même en cas d’échec, vous vous sentez mieux après avoir fait face à vos problèmes et pouvez inverser un Test de **Calme** pour résister aux effets du Trait Psychologique au cours de votre prochaine aventure. 
+Ce n'est pas parce que les Personnages composant un groupe typique du Vieux Monde ne sont pas toujours des héros qu'ils n'ont pas de moments de gloire. Surmonter ses peurs, ses préjugés et ses traumas est un acte fondamentalement héroïque. Le MJ est encouragé à récompenser une bonne interprétation des Personnages en retirant un Trait Psychologique, surtout si celui-ci est déjà intervenu dans l'histoire du Personnage. En outre, chaque fois qu'un Personnage doit récupérer un Point de Résilience (**WFJDR**, page 172), il peut choisir de supprimer un Trait Psychologique indésirable à la place.
 
-INDEX 
+Nombreux sont ceux à s'être réfugiés au *Grand Hospice* (page 69) ou à des endroits de repos similaires, tels que des monastères et des temples. Ceux qui se rendent dans ces établissements peuvent se livrer à l'Activité *Convalescence*.
 
-|A|E|O|U|
-|---|---|---|---|
-|Activités de bataille ..................84<br>Adalmann von Hopfberg .........78<br>Âge ..........................................21<br>Aide-soignant type ..................76<br>Aide-soignante en chef,<br>Hanna Bratsch .........................76<br>Anneaux magiques ..................66<br>Appartements de la<br>Grande Prêtresse, Les ..............72<br>Argot .......................................16<br>Armes magiques ......................57<br>Armures magiques ...................62<br>Artefact magique ...............51, 55<br>Artur Piedmarteau ...................26<br>Astrologie ................................47<br>Atelier, L’ ..................................73<br>Atouts d’Armure magique .......63<br>Atouts des Armes magiques ....58<br>Attributs ..................................20<br>B<br>Baguettes .................................65<br>Bâtons ......................................65<br>Baudrier de Grungni ...............42<br>Bibliothèque, La ......................72<br>Boucliers magiques ..................64<br>Bouf ’crâne ...............................32<br>Brisegéant ................................23<br>Broyeur d’os .............................32<br>C<br>Cackelfax le Coq .....................46<br>Canon crache-plomb ...............30<br>Capitaine Hrothyogg ...............13<br>Carrières ..................................18<br>Cellules sécurisées....................74<br>Cellules, Les ............................73<br>Chapelle, La ............................73<br>Charge .....................................86<br>Charrette Brisée, La ................45<br>Chaudron de Rhya ..................46<br>Chèvre Sauvage, La .................45<br>Collège Céleste, Le ..................47<br>Compétences et Talents ...........20<br>Compte à rebours ....................86<br>Couleur des cheveux ................21<br>Couleur des yeux .....................21<br>Cour intérieure ........................73<br>Crépuscule, Le .........................42<br>D<br>Danseur, Le .............................43<br>Défelamort .............................23<br>Dégâts des armes .....................28<br>Demeures Célestes ..................50<br>Démongorgé ............................23<br>Descriptions d’armures ............30<br>Descriptions des armes ............30<br>Déterminer l’ascendant ............50<br>Deux Bœufs, Les .....................43<br>Discours inspirant ....................84<br>Dortoirs, Les ...........................72<br>Dragomas le Dragon ...............41<br>Duel.........................................88|Écuries et réserve .....................72<br>Égorgeuse ................................55<br>Enchantements temporaires ....61<br>Engager un ogre ........................8<br>Équipement pour ogres ...........28<br>Erzbet Wegener,<br>l’Assassin-danseur ....................77<br>Étoile du Sorcier, L’ ..................47<br>F<br>Festin des Damnés...................32<br>Flèches et carreaux magiques ...61<br>Flûtiste, Le ..............................44<br>Fosse sacrée, La ........................12<br>Frappe mortelle .......................28<br>G<br>Gnuthus le Boeuf ....................41<br>Goinfre costaud .......................32<br>Golgfag Mange’homme...........13<br>Goûtemort ...............................33<br>Grande Croix, La ....................40<br>Grande lance ...........................30<br>Gromril et Ithilmar .................62<br>Gueule, La ...............................32<br>H<br>Histoire des ogres ....................16<br>I<br>Impénétrable, Atout ................89<br>Infltration ...............................84<br>Infrmerie.................................73<br>Intrus .......................................88<br>Isabella, la Princesse-Prophète ..79<br>Isrogdal l’Empressé ..................14<br>L<br>Lance-harpon ..........................30<br>Lanceurs de sorts ogres ............31<br>Liber Chaotica, Le ..................81<br>Ligne de mire ..........................87<br>Longmarcheur .........................23<br>M<br>Machines de guerre ...........88, 89<br>Magie ......................................31<br>Maille silencieuse .....................55<br>Mammit le Sage ......................42<br>Margaret von Aschendorf ........74<br>Massif ......................................20<br>Massue brise-tibias ..................55<br>Massues ogres ..........................30<br>Mercenaires .........................6, 13<br>Motivation ...............................86<br>Mummit le Fou .......................43<br>N<br>Nazzaalta Afabule ..................26<br>Noms .................................21, 23<br>Nouvelle activité :<br>Convalescence .........................92|Objets insolites ........................67<br>Option :<br>les Horreurs de la Guerre ........87<br>P<br>Pansière ...................................30<br>Parchemins ..............................64<br>Particularités et malédictions ...56<br>Patient type .............................81<br>Percée ......................................86<br>Personnages ogres ....................18<br>Personnel, Le ...........................74<br>Peur .........................................28<br>Pièges à chaînes .......................30<br>Pistolet ogre .............................30<br>Plan .........................................85<br>Pluie de fèches ........................86<br>Poing de fer .............................30<br>Pour les Grognards :<br>Drachenfels .............................77<br>Pourfendeur .............................23<br>Pouvoir ....................................82<br>Premier étage, Le .....................72<br>Protection ................................86<br>Puissance de bataille ................83<br>Q<br>Quêtegueule ............................23<br>R<br>Rassembler des forces ..............84<br>Repérage ..................................84<br>Résistante, Atout .....................89<br>Rhinox .....................................34<br>Richter Kless, l’Hérétique ........80<br>S<br>Sabotage ..................................84<br>Sanatorium, Le ........................73<br>Scènes cinématiques ................86<br>Scie à Os, La ............................46<br>Siège, Atout .............................89<br>Signes astrologiques .................39<br>Sœur Anna-Lise Leverktse......75<br>Sœur Clementine Clausewitz ..75<br>Sœur Marie Duvallier..............75<br>Sœur type ................................76<br>Survol ......................................88<br>T<br>Taille ........................................21<br>Talismans .................................66<br>Tambour, Le ............................44<br>Taverne de la Dent Rouge, La ..13<br>Tenez votre position ................86<br>Tournegoule.............................23<br>Trait du Peintre, Le .................41<br>Trollboyaux ..............................33<br>Tuelabête .................................23<br>Tuez la bête ! ...........................88|Ugrik l’Égarée ..........................14<br>V<br>Vallée d’Osséine .......................12<br>Vice (Cible) .............................20<br>Vobist le Pâle ...........................44<br>W<br>Wymund l’Anachorète ............40<br>TABLEAU<br>Tableau de créature aléatoire ....55<br>Tableau de l’histoire<br>des armes magiques .................60<br>Tableau de Taille d’armure .......62<br>Tableau des anneaux ................66<br>Tableau des armes magiques ....57<br>Tableau des<br>armures magiques ....................62<br>Tableau des Atouts<br>des boucliers ............................64<br>Tableau des baguettes ..............65<br>Tableau des<br>boucliers magiques ...................64<br>Tableau des<br>munitions magiques .................61<br>Tableau des parchemins ...........64<br>Tableaux des talismans ............66|
+#### NOUVELLE ACTIVITÉ : CONVALESCENCE
+
+Vous faites des efforts concertés pour vous reposer et réfléchir, et tenter de trouver la paix sans vous soucier des peines d'autrui. Effectuez un Test de **Calme Très Difficile (–30)**. La difficulté peut être réduite en fonction de la qualité des soins reçus. En cas de réussite, vous pouvez éliminer un Trait Psychologique de votre choix. Même en cas d'échec, vous vous sentez mieux après avoir fait face à vos problèmes et pouvez inverser un Test de **Calme** pour résister aux effets du Trait Psychologique au cours de votre prochaine aventure.
+
+
+
+
+| A                           | E                                 | O                                |
+|-----------------------------|-----------------------------------|----------------------------------|
+| Activités de bataille84     | Écuries et réserve72              | Objets insolites67               |
+| Adalmann von Hopfberg78     | Égorgeuse55                       | Option :                         |
+| Âge21                       | Enchantements temporaires61       | les Horreurs de la Guerre87      |
+| Aide-soignant type76        | Engager un ogre8                  |                                  |
+| Aide-soignante en chef,     | Équipement pour ogres28           | P                                |
+| Hanna Bratsch76             | Erzbet Wegener,                   | Pansière30                       |
+| Anneaux magiques66          | l'Assassin-danseur77              | Parchemins64                     |
+| Appartements de la          | Étoile du Sorcier, L'47           | Particularités et malédictions56 |
+| Grande Prêtresse, Les72     |                                   | Patient type81                   |
+| Argot16                     | F                                 | Percée86                         |
+| Armes magiques57            | Festin des Damnés32               | Personnages ogres18              |
+| Armures magiques62          | Flèches et carreaux magiques61    | Personnel, Le74                  |
+| Artefact magique51, 55      | Flûtiste, Le44                    | Peur28                           |
+| Artur Piedmarteau26         | Fosse sacrée, La12                | Pièges à chaînes30               |
+| Astrologie47                | Frappe mortelle28                 | Pistolet ogre30                  |
+| Atelier, L'73               |                                   | Plan85                           |
+| Atouts d'Armure magique63   | G                                 | Pluie de flèches86               |
+| Atouts des Armes magiques58 | Gnuthus le Boeuf41                | Poing de fer30                   |
+| Attributs20                 | Goinfre costaud32                 | Pour les Grognards :             |
+|                             | Golgfag Mange'homme13             | Drachenfels77                    |
+| B                           |                                   |                                  |
+|                             | Goûtemort33                       | Pourfendeur23                    |
+| Baguettes65                 | Grande Croix, La40                | Pouvoir82                        |
+| Bâtons65                    | Grande lance30                    | Premier étage, Le72              |
+| Baudrier de Grungni42       | Gromril et Ithilmar62             | Protection86                     |
+| Bibliothèque, La72          | Gueule, La32                      | Puissance de bataille83          |
+| Boucliers magiques64        | H                                 | Q                                |
+| Bouf 'crâne32               |                                   |                                  |
+| Brisegéant23                | Histoire des ogres16              | Quêtegueule23                    |
+| Broyeur d'os32              | I                                 | R                                |
+| C                           | Impénétrable, Atout89             | Rassembler des forces84          |
+|                             |                                   |                                  |
+|                             |                                   |                                  |
+| Cackelfax le Coq46          | Infiltration84                    | Repérage84                       |
+| Canon crache-plomb30        | Infirmerie73                      | Résistante, Atout89              |
+| Capitaine Hrothyogg13       | Intrus88                          | Rhinox34                         |
+| Carrières18                 | Isabella, la Princesse-Prophète79 | Richter Kless, l'Hérétique80     |
+| Cellules sécurisées74       | Isrogdal l'Empressé14             |                                  |
+| Cellules, Les73             |                                   | S                                |
+| Chapelle, La73              | L                                 | Sabotage84                       |
+| Charge86                    | Lance-harpon30                    | Sanatorium, Le73                 |
+| Charrette Brisée, La45      | Lanceurs de sorts ogres31         | Scènes cinématiques86            |
+| Chaudron de Rhya46          | Liber Chaotica, Le81              | Scie à Os, La46                  |
+| Chèvre Sauvage, La45        | Ligne de mire87                   | Siège, Atout89                   |
+| Collège Céleste, Le47       | Longmarcheur23                    | Signes astrologiques39           |
+| Compétences et Talents20    |                                   | Sœur Anna-Lise Leverktse75       |
+| Compte à rebours86          | M                                 | Sœur Clementine Clausewitz75     |
+| Couleur des cheveux21       | Machines de guerre88, 89          | Sœur Marie Duvallier75           |
+| Couleur des yeux21          | Magie31                           | Sœur type76                      |
+| Cour intérieure73           | Maille silencieuse55              | Survol88                         |
+| Crépuscule, Le42            | Mammit le Sage42                  |                                  |
+|                             | Margaret von Aschendorf74         | T                                |
+| D                           | Massif20                          | Taille21                         |
+| Danseur, Le43               | Massue brise-tibias55             | Talismans66                      |
+| Défielamort23               | Massues ogres30                   | Tambour, Le44                    |
+| Dégâts des armes28          | Mercenaires6, 13                  | Taverne de la Dent Rouge, La13   |
+| Demeures Célestes50         | Motivation86                      | Tenez votre position86           |
+| Démongorgé23                | Mummit le Fou43                   | Tournegoule23                    |
+| Descriptions d'armures30    |                                   | Trait du Peintre, Le41           |
+| Descriptions des armes30    | N                                 | Trollboyaux33                    |
+| Déterminer l'ascendant50    | Nazzaalta Affabule26              | Tuelabête23                      |
+| Deux Bœufs, Les43           | Noms21, 23                        | Tuez la bête !88                 |
+
+| O                                | U                               |  |
+|----------------------------------|---------------------------------|--|
+| Objets insolites67               | Ugrik l'Égarée14                |  |
+| Option :                         |                                 |  |
+| les Horreurs de la Guerre87      | V                               |  |
+|                                  | Vallée d'Osséine12              |  |
+| P                                | Vice (Cible)20                  |  |
+| Pansière30                       | Vobist le Pâle44                |  |
+| Parchemins64                     |                                 |  |
+| Particularités et malédictions56 | W                               |  |
+| Patient type81                   | Wymund l'Anachorète40           |  |
+| Percée86                         |                                 |  |
+| Personnages ogres18              |                                 |  |
+| Personnel, Le74                  | TABLEAU                         |  |
+| Peur28                           | Tableau de créature aléatoire55 |  |
+| Pièges à chaînes30               | Tableau de l'histoire           |  |
+| Pistolet ogre30                  | des armes magiques60            |  |
+| Plan85                           | Tableau de Taille d'armure62    |  |
+| Pluie de flèches86               | Tableau des anneaux66           |  |
+| Poing de fer30                   | Tableau des armes magiques57    |  |
+| Pour les Grognards :             | Tableau des                     |  |
+| Drachenfels77                    | armures magiques62              |  |
+| Pourfendeur23                    | Tableau des Atouts              |  |
+| Pouvoir82                        | des boucliers64                 |  |
+| Premier étage, Le72              | Tableau des baguettes65         |  |
+| Protection86                     | Tableau des                     |  |
+| Puissance de bataille83          | boucliers magiques64            |  |
+|                                  | Tableau des                     |  |
+| Q                                | munitions magiques61            |  |
+| Quêtegueule23                    | Tableau des parchemins64        |  |
+|                                  | Tableaux des talismans66        |  |
+|                                  |                                 |  |
+
+Convalescence .........................92
+
+Dortoirs, Les ...........................72 Dragomas le Dragon ...............41 Duel.........................................88
