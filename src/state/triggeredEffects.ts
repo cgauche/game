@@ -21,7 +21,7 @@ import { isEngagedWith } from '../engine/engagement';
 import { combatDistance } from './footprint';
 import { lineOfSightCover } from './lineOfSight';
 import { smokeOf } from './combatGeometry';
-import { traitById, qualityById, findManeuverById, findTalentById, findConditionById } from '../data';
+import { traitById, qualityById, findManeuverById, findTalentById, findConditionById, findPsychologyById } from '../data';
 import { difficultyFromLabel } from '../engine/tests';
 import { runSpellFlowLines } from './combatEffects';
 import { RNG, defaultRNG } from '../engine/dice';
@@ -229,28 +229,46 @@ export function applyTriggeredEffects(
 export function fireTriggers(get: Get, actor: Combatant, trigger: EffectTrigger, ctx: TriggerCtx = {}): string[] {
   const lines = applyTriggeredEffects(get, actor, effectsOf(actor, ctx.weapon), trigger, ctx);
   lines.push(...fireConditionEffects(get, actor, trigger, ctx)); // États dispatchés EXACTEMENT comme Traits
+  lines.push(...firePsychEffects(get, actor, trigger, ctx)); // états PSY (Frénésie…) — MÊME folding générique
+  return lines;
+}
+
+/** CŒUR GÉNÉRIQUE du folding des STATUTS portés (`StatusData` : États OU psy) : applique les `effects` de
+ *  chaque statut pour `trigger`, avec son nombre de pions (`stacks`). SOURCE UNIQUE — `fireConditionEffects`
+ *  et `firePsychEffects` y délèguent (zéro copie du cœur `applyTriggeredEffects`). Le `[...snapshot]` côté
+ *  appelant protège l'itération d'une auto-dissipation (`removeCondition`/`endPsych`) qui mute la collection. */
+function fireStatusEffects(
+  get: Get, c: Combatant, trigger: EffectTrigger, ctx: TriggerCtx,
+  statuses: { effects?: TriggeredEffect[]; stacks: number }[],
+): string[] {
+  const lines: string[] = [];
+  for (const s of statuses) {
+    if (!s.effects?.length) continue;
+    lines.push(...applyTriggeredEffects(get, c, s.effects, trigger, { ...ctx, stacks: s.stacks }));
+  }
   return lines;
 }
 
 /**
- * Déclenche les `effects` data-driven des ÉTATS portés par `c` correspondant à `trigger` (Empoisonné
- * « 1 PB/pion » via `onRoundEnd`…). Chaque État est joué avec `ctx.stacks = son nombre de pions` → résout
- * les Formula `{stacks:'self'}`. SOURCE UNIQUE des effets d'État ; complète `fireTriggers` (traits/atouts/
- * talents), porteur d'effets distinct. Inerte tant qu'aucun État ne porte d'`effects`.
+ * Déclenche les `effects` data-driven des ÉTATS portés par `c` (Empoisonné « 1 PB/pion » via `onRoundEnd`…).
+ * Chaque État est joué avec `ctx.stacks = ses pions`, RÉDUITS d'une capacité de la cible s'il le déclare
+ * (Hémorragique − Endurci `bleedIgnore`, LDB 10 — générique, jamais par-nom). Inerte sans `effects`.
  */
 export function fireConditionEffects(get: Get, c: Combatant, trigger: EffectTrigger, ctx: TriggerCtx = {}): string[] {
-  const lines: string[] = [];
-  // Snapshot : un effet `removeCondition` (auto-dissipation) mute `c.conditions` pendant l'itération.
-  for (const cond of [...(c.conditions ?? [])]) {
+  return fireStatusEffects(get, c, trigger, ctx, [...(c.conditions ?? [])].map((cond) => {
     const data = findConditionById(cond.name);
-    if (!data?.effects?.length) continue;
-    // Pions vus par les effets, RÉDUITS d'une capacité de combat de la cible si l'État le déclare
-    // (Hémorragique − Endurci `bleedIgnore`, LDB 10) — générique, jamais codé par-nom.
-    const reduce = data.stacksReducedBy ? featureLevel(c, data.stacksReducedBy as keyof CombatFeature) : 0;
-    const stacks = Math.max(0, (cond.value ?? 1) - reduce);
-    lines.push(...applyTriggeredEffects(get, c, data.effects, trigger, { ...ctx, stacks }));
-  }
-  return lines;
+    const reduce = data?.stacksReducedBy ? featureLevel(c, data.stacksReducedBy as keyof CombatFeature) : 0;
+    return { effects: data?.effects, stacks: Math.max(0, (cond.value ?? 1) - reduce) };
+  }));
+}
+
+/**
+ * Déclenche les `effects` data-driven des états PSYCHOLOGIQUES portés par `c` (Frénésie : sortie
+ * `onTurnStart` → fin + Exténué, LDB 21 l.36). MÊME cœur que les États (`fireStatusEffects`) ; la donnée
+ * vit dans `psychology.json`. Inerte tant que `psychState` ne porte aucun type doté d'`effects`.
+ */
+export function firePsychEffects(get: Get, c: Combatant, trigger: EffectTrigger, ctx: TriggerCtx = {}): string[] {
+  return fireStatusEffects(get, c, trigger, ctx, [...(c.psychState ?? [])].map((p) => ({ effects: findPsychologyById(p.type)?.effects, stacks: 1 })));
 }
 
 /** Effets onHit AUTHORÉS de la manœuvre `kind` portée par `actor` (Caudale → À Terre, Tentacules →

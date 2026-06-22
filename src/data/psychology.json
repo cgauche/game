@@ -1,0 +1,73 @@
+[
+  {
+    "id": "frenesie",
+    "label": "Frénésie",
+    "desc": "Vous pouvez, par le biais d'un Test de Force Mentale, vous mettre dans un état psychologique dans lequel vous allez vous surmotiver, mordre votre bouclier, etc. Sur un succès, vous entrez en Frénésie. <br><br>Tant que vous êtes en Frénésie, vous êtes immunisé à tous les autres Traits Psychologiques, et sous aucun prétexte vous ne fuirez, ni ne battrez en retraite. À l'inverse, vous devez vous déplacer à votre maximum en direction de l'ennemi le plus proche dans votre Ligne de Vue pour l'attaquer. La seule Action possible est un Test de Capacité de Combat ou un Test d'Athlétisme pour atteindre votre ennemi le plus rapidement possible. De plus, vous pouvez effectuer un Test de Capacité de Combat gratuit chaque Round car vous vous lancez à corps perdu dans votre attaque. Enfin, vous gagnez un Bonus de Force de +1 grâce à votre férocité. <br><br>Vous restez en Frénésie jusqu'à ce que tous les ennemis dans votre Ligne de Vue soient neutralisés ou que vous gagniez l'État Sonné ou Inconscient. Dès que votre Frénésie s'achève, vous gagnez l'État Exténué.",
+    "source": {
+      "book": "LDB",
+      "page": 190
+    },
+    "psychImmune": true,
+    "passive": [
+      {
+        "op": "sbBonus",
+        "amount": 1
+      }
+    ],
+    "effects": [
+      {
+        "trigger": "onTurnStart",
+        "on": "self",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "any",
+            "of": [
+              {
+                "kind": "compare",
+                "subject": {
+                  "who": "target",
+                  "condition": "sonne"
+                },
+                "op": ">",
+                "value": 0
+              },
+              {
+                "kind": "compare",
+                "subject": {
+                  "who": "target",
+                  "condition": "inconscient"
+                },
+                "op": ">",
+                "value": 0
+              },
+              {
+                "kind": "not",
+                "of": {
+                  "kind": "foeInLoS"
+                }
+              }
+            ]
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "endPsych",
+                  "type": "frenesie"
+                },
+                {
+                  "op": "condition",
+                  "name": "extenue"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  }
+]

@@ -43,6 +43,8 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   skillDRBonus: '🥷 +DR à une Compétence (passif)',
   incomingAttackMod: '🛡️ Modif. au toucher de l’attaquant',
   incomingAdvantage: '⚔️ Avantage donné à l’attaquant (mêlée)',
+  sbBonus: '💪 +Bonus de Force aux Dégâts',
+  endPsych: '🧠 Fin d’un état psychologique',
   exposeDisease: '🦠 Exposer à une Maladie (Test post-combat)',
   attackKeyword: '✨ Mot-clé d’attaque (ex. magique)',
   mitigateIncoming: '🌫️ Mitige les Dégâts entrants (Éthéré)',
@@ -216,6 +218,8 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'healCaster': return { op: 'healCaster', amount: 1 };
     case 'condition': return { op: 'condition', name: etats[0]?.label ?? 'sonne', value: 1 };
     case 'removeCondition': return { op: 'removeCondition' };
+    case 'endPsych': return { op: 'endPsych', type: 'frenesie' };
+    case 'sbBonus': return { op: 'sbBonus', amount: 1 };
     case 'charMod': return { op: 'charMod', char: 'F', mod: -10 };
     case 'apAll': return { op: 'apAll', amount: 1 };
     case 'testMod': return { op: 'testMod', amount: -10 };
@@ -286,6 +290,8 @@ export function opSummary(o: GameOp): string {
     case 'healCaster': return `${L} +${formulaSummary(o.amount)} PB au lanceur`;
     case 'condition': return `${L} ${o.name}${o.value && o.value !== 1 ? ` ×${formulaSummary(o.value)}` : ''}${o.perRound ? '/Round' : ''}`;
     case 'removeCondition': return `${L} ${o.name ?? '(au choix)'}`;
+    case 'endPsych': return `${L} ${o.type}`;
+    case 'sbBonus': return `${L} +${o.amount} BF aux Dégâts`;
     case 'charMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} ${CHAR_LABELS[o.char] ?? o.char}`;
     case 'skillMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} ${refLabel('skills', { id: o.skill })}`;
     case 'moveMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} Mouvement`;
@@ -374,6 +380,12 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
             <label className="dr">Points<input type="number" min={1} value={o.amount ?? 1} onChange={(e) => upd({ amount: Math.max(1, Number(e.target.value) || 1) })} /></label>
             <label className="dr"><input type="checkbox" checked={!!o.temporary} onChange={(e) => upd({ temporary: e.target.checked || undefined })} /> le temps du Sort</label>
           </>
+        )}
+        {op.op === 'sbBonus' && (
+          <label className="dr">+BF<input type="number" value={o.amount ?? 0} onChange={(e) => upd({ amount: Number(e.target.value) || 0 })} /></label>
+        )}
+        {op.op === 'endPsych' && (
+          <label className="dr">Type psy<input value={o.type ?? ''} onChange={(e) => upd({ type: e.target.value })} /></label>
         )}
         {op.op === 'testMod' && (
           <>

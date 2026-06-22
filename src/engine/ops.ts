@@ -16,7 +16,7 @@
 import { RNG, defaultRNG, roll, type DiceSpec, rollDice } from './dice';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
 import { addCondition, addTimedCondition, removeCondition, loseWounds, hasCondition } from './conditions';
-import { conditionLabel, talentConcrete, qualityRefLabel, traitById, refLabel } from '../data';
+import { conditionLabel, psychologyLabel, talentConcrete, qualityRefLabel, traitById, refLabel } from '../data';
 import { groupMatch } from './groups';
 import { bypassedAP } from './armourBypass';
 import { grantTrait } from './grantedTraits';
@@ -196,6 +196,10 @@ export type GameOp =
    *  « +1 par +N DR » ajoutée à `value` (Mâchoires d'acier : « chaque DR supprime un État Sonné
    *  supplémentaire », LDB 10) — inerte si absent (calque op `condition`). */
   | { op: 'removeCondition'; name?: string; value?: Formula; valuePerSL?: PerSL; all?: boolean }
+  /** Retire un état PSYCHOLOGIQUE porté (`PsychAffliction.type` — collection `psychState`, DISTINCTE de
+   *  `conditions` : pas de perte d'Avantage à la pose, LDB 21 ≠ LDB 16). GÉNÉRIQUE (paramétré par `type`) :
+   *  sortie de Frénésie (`effects: onTurnStart` → fin + Exténué, LDB 21 l.36). Journalisé via `t()`. */
+  | { op: 'endPsych'; type: string }
   /** Modificateur de caractéristique temporisé (ActiveEffect — meilleur bonus +
    *  pire pénalité sans cumul, LDB l.168). `durationRounds` absent = durée du
    *  contexte (sort : Rounds, horloge, ou permanent — cf. `durationFromCtx`). */
@@ -433,6 +437,10 @@ export type GameOp =
    *  l.123). PASSIF de l'État/trait du DÉFENSEUR, lu par `incomingMeleeAdvantage` au moment de l'attaque
    *  (≠ `incomingAttackMod` = bonus de TOUCHE éphémère). Inerte dans `applyOps`. */
   | { op: 'incomingAdvantage'; mode: 'melee' | 'ranged' | 'all'; amount: number }
+  /** +N au Bonus de Force employé aux DÉGÂTS (Frénésie : +1 « grâce à votre férocité », LDB 21 l.34). PASSIF,
+   *  sommé par `damageSBBonus` et injecté dans `sb` au calcul des dégâts (combat.ts) — AVANT le `max` du Tueur
+   *  et `effectiveWeaponDamage` (une arme à dégâts FIXES n'en profite donc pas). Inerte dans `applyOps`. */
+  | { op: 'sbBonus'; amount: number }
   /** L'attaque du porteur porte un MOT-CLÉ (Magique/Démoniaque/Fabriqué → 'magic', LDB 85). PASSIF, lu par
    *  `attackHasKeyword` — sert la mitigation (Éthéré : seules les attaques 'magic' blessent). Inerte dans applyOps. */
   | { op: 'attackKeyword'; keyword: 'magic' }
@@ -698,6 +706,14 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           lines.push(t('op.removeCond', { name: target.name, what: o.all ? "tout l'État" : `${v} État`, cond: conditionLabel(name) }));
         } else {
           lines.push(t('op.noCondToRemove', { name: target.name }));
+        }
+        break;
+      }
+      case 'endPsych': {
+        // Retrait d'un état psychologique porté (collection `psychState`, ≠ `conditions`). GÉNÉRIQUE.
+        if (target.psychState?.some((p) => p.type === o.type)) {
+          target.psychState = target.psychState.filter((p) => p.type !== o.type);
+          lines.push(t('op.endPsych', { name: target.name, psych: psychologyLabel(o.type) }));
         }
         break;
       }

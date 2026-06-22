@@ -12,7 +12,7 @@ import { Combatant, CharKey, HitLocation, Trauma, Difficulty, UpkeepDeferTest } 
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
 import { isPainless, traitPassiveMods } from './traits/dispatch';
-import { findConditionById } from '../data';
+import { findConditionById, findPsychologyById } from '../data';
 import { talentPassiveMods } from './talentEffects';
 import { diseaseCharPenalties } from './disease';
 import { hungerCharPenalties } from './provisions';
@@ -462,6 +462,10 @@ export function passiveMods(c: Combatant): PassiveMod[] {
     const mult = ed.perStack ? Math.max(1, cond.value ?? 1) : 1; // Exténué −10/pion (LDB 16 l.89)
     for (const op of ed.passive) out.push({ op: scaleEtatOp(op, mult), kind: 'etat' });
   }
+  // États PSYCHOLOGIQUES (LDB 21, `psychology.json`) : leur `passive` (Frénésie → `sbBonus +1`) émis dans le
+  // MÊME pool `etat` que les États — MÊME folding générique, zéro chemin parallèle. Inerte sans `passive`.
+  for (const p of c.psychState ?? [])
+    for (const op of findPsychologyById(p.type)?.passive ?? []) out.push({ op, kind: 'etat' });
   // Mutations de Corruption (LDB 19) : modifs PERMANENTES du corps → leur `passive: GameOp[]` (vocab unifié,
   // `mutations.json`) émis tel quel en kind `intrinsèque`, COMME les traits. (L'armure naturelle apAll/
   // apLocations est lue à part par recomputeLoadout.) Lu inline (la donnée `c.mutations` est sur le Combatant).
@@ -500,6 +504,13 @@ function pmods<K extends GameOp['op']>(c: Combatant, op: K, additive?: boolean):
 /** Le Mouvement est-il réduit de moitié (séquelle de jambe ou autre source `moveScale`) ? Lu par `effectiveMovement`. */
 export function traumaMovementHalved(c: Combatant): boolean {
   return pmods(c, 'moveScale').length > 0;
+}
+
+/** Σ des modificateurs PASSIFS du Bonus de Force employé aux DÉGÂTS (`sbBonus`) — Frénésie : +1 (LDB 21
+ *  l.34). Lu par le calcul des dégâts (`combat.ts`) à l'endroit du `sb`, en remplacement du drapeau
+ *  `frenzied ? 1 : 0` codé en dur — la donnée vient de `psychology.json` via `passiveMods`. */
+export function damageSBBonus(c: Combatant): number {
+  return pmods(c, 'sbBonus').reduce((n, o) => n + o.amount, 0);
 }
 
 /** Σ des `charMod` ADDITIFS (mutation/qualité, kind `intrinsèque`) pour la Caractéristique `key` — sommés

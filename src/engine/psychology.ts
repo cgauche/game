@@ -9,6 +9,7 @@ import { t } from '../i18n';
 import { RNG, defaultRNG } from './dice';
 import { rollTest, evaluateTest } from './tests';
 import { effectiveChar } from './characteristics';
+import { findPsychologyById } from '../data';
 import { SizeCategory, sizeGap } from './size';
 import { groupMatch } from './groups';
 import { bellicosePsychImmune, hasTraitKey } from './traits/dispatch';
@@ -141,7 +142,12 @@ export function isPsychImmune(c: Combatant, foesMaxAdvantage?: number): boolean 
   // Immunité Psychologique » — `foesMaxAdvantage` = le meilleur Avantage de ses adversaires ENGAGÉS
   // (fourni par les appelants qui ont le contexte de bataille ; absent ⇒ trait inerte).
   if (foesMaxAdvantage != null && bellicosePsychImmune(c, foesMaxAdvantage)) return true;
-  return !!c.psychImmune || !!c.frenzied || (c.activeEffects ?? []).some((e) => e.psychImmune);
+  // Immunité par DONNÉE : trait « Immunité (Psychologie) » (`c.psychImmune`), Détermination temporaire
+  // (`ActiveEffect.psychImmune`), OU un état psy porté qui l'accorde (Frénésie → `psychology.json`
+  // `psychImmune:true`, LDB 21 l.34) — lu GÉNÉRIQUEMENT, jamais par-nom.
+  return !!c.psychImmune || !!c.frenzied
+    || (c.activeEffects ?? []).some((e) => e.psychImmune)
+    || (c.psychState ?? []).some((p) => findPsychologyById(p.type)?.psychImmune);
 }
 
 /** À sang-froid (LDB 85 p.338) : « Elle peut inverser tous ses Tests de Force Mentale échoués » —

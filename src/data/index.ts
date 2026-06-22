@@ -12,6 +12,7 @@ import careerLevelsJson from './careerLevels.json';
 import skillsJson from './skills.json';
 import talentsJson from './talents.json';
 import etatsJson from './etats.json';
+import psychologyJson from './psychology.json';
 import maladiesJson from './maladies.json';
 import traitsJson from './traits.json';
 import qualitiesJson from './qualities.json';
@@ -252,21 +253,26 @@ export interface CreatureData {
    *  (`engine/groups`). Absent = catégorie auto-dérivée du `folder`. */
   group?: string;
 }
-export interface EtatData {
-  /** id STABLE (slug du libellé) — `ConditionId` ; cible de `ConditionInstance.name` et des ops condition. */
+/** Base PARTAGÉE d'un STATUT porté pilotant des effets en DONNÉES — soit un État (LDB 16, `EtatData`), soit
+ *  un état psychologique (LDB 21, `PsychologyData`). Porte le vocabulaire commun : modificateurs PASSIFS
+ *  (`passive: GameOp[]`, MÊME éditeur `GameOpEditor` que traits/atouts) ET effets DÉCLENCHÉS
+ *  (`effects: TriggeredEffect[]`). Folding UNIQUE : `passiveMods` (passifs) + `fireStatusEffects` (déclenchés)
+ *  itèrent indifféremment États et états psy → zéro duplication de schéma ni de collecteur. */
+export interface StatusData {
+  /** id STABLE (slug du libellé) — cible des instances (`ConditionInstance.name` / `PsychAffliction.type`). */
   id: string;
   label: string;
   desc: string;
   source: { book: string; page: number };
-  /** Modificateurs PASSIFS continus de l'État (pénalité de Test, bonus à l'attaquant via `incomingAttackMod`,
-   *  échelle de Mouvement…) en `GameOp[]` — MÊME vocabulaire/éditeur (`GameOpEditor`) que traits/atouts. Lus
-   *  par le collecteur passif (`passiveMods`, kind `etat` : pool non-cumul, le pire seul, LDB 16 l.20).
-   *  VIDE aujourd'hui : migration des 12 États en cours (cf. docs/combat-events-coherence.md, Lot 4). */
+  /** Modificateurs PASSIFS continus (pénalité de Test, `incomingAttackMod`, `sbBonus`…) en `GameOp[]`, lus
+   *  par `passiveMods` (kind `etat` : pool non-cumul, le pire seul, LDB 16 l.20). MÊME éditeur GameOpEditor. */
   passive?: import('../engine/ops').GameOp[];
-  /** Effets DÉCLENCHÉS de l'État (dégâts par round → `onRoundEnd` ; test d'évasion/récupération → flow
-   *  `test`…) en `TriggeredEffect[]` — MÊME vocabulaire que traits/atouts, diffusés par le bus d'événements
-   *  de combat (`emitCombatEvent`). VIDE aujourd'hui (Lot 4). */
+  /** Effets DÉCLENCHÉS (dégâts par round → `onRoundEnd` ; sortie de Frénésie → `onTurnStart`…) en
+   *  `TriggeredEffect[]`, diffusés par `fireStatusEffects` — le même cœur `applyTriggeredEffects`. */
   effects?: import('../state/flow').TriggeredEffect[];
+}
+
+export interface EtatData extends StatusData {
   /** Restriction d'Action / de Mouvement / de défense imposée par l'État (À Terre/Sonné/Inconscient/
    *  Surpris/Empêtré…), lue par les prédicats moteur EXISTANTS (`canTakeAction`/`effectiveMovement`/
    *  `cannotDefend`) au lieu des branches par-nom. VIDE aujourd'hui (Lot 4). */
@@ -278,6 +284,14 @@ export interface EtatData {
    *  niveau de cette capacité de combat chez la cible — ex. Hémorragique réduit par Endurci (`bleedIgnore`,
    *  LDB 10). Clé de `CombatFeature` ; lu génériquement par `fireConditionEffects` (jamais codé par-nom). */
   stacksReducedBy?: string;
+}
+
+/** État PSYCHOLOGIQUE en DONNÉES (LDB 21) — `id` = `PsychType` (`frenesie`, à terme `peur`/`terreur`/…).
+ *  Étend `StatusData` (passive/effects mutualisés) ; n'ajoute que la capacité propre à la psychologie. */
+export interface PsychologyData extends StatusData {
+  /** Porter cet état psy IMMUNISE à la Psychologie (Frénésie, LDB 21 l.34) — lu GÉNÉRIQUEMENT par
+   *  `isPsychImmune` (jamais codé par-nom), à l'égal du drapeau de trait « Immunité (Psychologie) ». */
+  psychImmune?: boolean;
 }
 /** Tables Couleur des Yeux / Cheveux (LDB 05 l.698-744) : 2d10, libellé par refChar. */
 export interface DetailColorData {
@@ -797,9 +811,22 @@ const ETAT_BY_ID = new Map(etats.map((e) => [e.id, e]));
 export function findConditionById(id: string): EtatData | undefined {
   return ETAT_BY_ID.get(id);
 }
+
+/** États PSYCHOLOGIQUES (LDB 21) — base app-owned éditable au Codex. Données de Frénésie aujourd'hui ;
+ *  Peur/Terreur/Animosité/Haine à migrer (chantier psychologie data-driven). */
+export const psychologies = psychologyJson as PsychologyData[];
+const PSYCH_BY_ID = new Map(psychologies.map((p) => [p.id, p]));
+/** Résout un état psychologique par son `id` STABLE (`PsychType`). Absent → undefined (folding inerte). */
+export function findPsychologyById(id: string): PsychologyData | undefined {
+  return PSYCH_BY_ID.get(id);
+}
 /** Libellé d'affichage d'un État par son id (repli sur l'id). SOURCE UNIQUE du nom d'État affiché. */
 export function conditionLabel(id: string): string {
   return ETAT_BY_ID.get(id)?.label ?? id;
+}
+/** Libellé d'affichage d'un état psychologique par son `id` (`PsychType`), repli sur l'id. */
+export function psychologyLabel(id: string): string {
+  return PSYCH_BY_ID.get(id)?.label ?? id;
 }
 const ETAT_ID_BY_LABEL = new Map(etats.map((e) => [e.label.toLowerCase(), e.id]));
 /** Résout un `id` d'État depuis un LIBELLÉ (authoring : parsing de desc/texte) — insensible à la casse. */
