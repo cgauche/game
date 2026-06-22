@@ -141,7 +141,7 @@ export function isPsychImmune(c: Combatant, foesMaxAdvantage?: number): boolean 
   // Immunité Psychologique » — `foesMaxAdvantage` = le meilleur Avantage de ses adversaires ENGAGÉS
   // (fourni par les appelants qui ont le contexte de bataille ; absent ⇒ trait inerte).
   if (foesMaxAdvantage != null && bellicosePsychImmune(c, foesMaxAdvantage)) return true;
-  return !!c.psychImmune || !!c.frenzied || (c.psychImmuneRoundsLeft ?? 0) > 0;
+  return !!c.psychImmune || !!c.frenzied || (c.activeEffects ?? []).some((e) => e.psychImmune);
 }
 
 /** À sang-froid (LDB 85 p.338) : « Elle peut inverser tous ses Tests de Force Mentale échoués » —
@@ -156,11 +156,15 @@ export function coldBloodedAdjust(
   return e.success ? { roll: e.roll, target: e.target, success: e.success, sl: e.sl } : t;
 }
 
-/** Détermination (LDB 17 l.62) : immunité à la Psychologie jusqu'à la fin du prochain Round. */
+/** Détermination (LDB 17 l.62) : immunité à la Psychologie jusqu'à la fin du prochain Round. Portée par un
+ *  `ActiveEffect` à durée 2 Rounds (système de Durée unifié : décrémenté/expiré au passage de Round). */
 export function spendResolveForPsychImmunity(c: Combatant): string | null {
   if ((c.resolve ?? 0) <= 0) return null;
   c.resolve = (c.resolve ?? 0) - 1;
-  c.psychImmuneRoundsLeft = 2;
+  c.activeEffects = [
+    ...(c.activeEffects ?? []).filter((e) => e.effectId !== 'determination-psych'),
+    { label: 'Détermination (immunité psy)', effectId: 'determination-psych', bonus: 0, duration: { scale: 'rounds', left: 2 }, psychImmune: true },
+  ];
   return t('psy.determinationImmune', { name: c.name });
 }
 

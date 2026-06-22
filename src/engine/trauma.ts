@@ -412,7 +412,7 @@ function traumaOpKind(op: GameOp): PassiveKind {
  *  les sources SANS séquelle (maladie/faim — gating par Détermination seule) l'omettent. */
 function modSurvives(c: Combatant, kind: PassiveKind, t?: Trauma): boolean {
   for (const canc of PASSIVE_CANCELLERS[kind]) {
-    if (canc === 'determination' && c.ignoreCritMods) return false;
+    if (canc === 'determination' && (c.activeEffects ?? []).some((e) => e.ignoreCritMods)) return false;
     if (canc === 'painless' && t && painlessIgnores(c, t)) return false;
     if (canc === 'prosthesis-all' && t && prosthesisCancels(c, t, 'all')) return false;
     if (canc === 'prosthesis-move' && t && prosthesisCancels(c, t, 'movement')) return false;

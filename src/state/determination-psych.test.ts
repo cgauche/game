@@ -13,10 +13,11 @@ describe('isPsychImmune — prédicat central (trait / Frénésie / Déterminati
     expect(isPsychImmune(C({ frenzied: true }))).toBe(true);
     expect(isPsychImmune(C({}))).toBe(false);
   });
-  it('Détermination temporaire : immunisé tant que psychImmuneRoundsLeft > 0 (LDB 17 l.62)', () => {
-    expect(isPsychImmune(C({ psychImmuneRoundsLeft: 2 }))).toBe(true);
-    expect(isPsychImmune(C({ psychImmuneRoundsLeft: 1 }))).toBe(true);
-    expect(isPsychImmune(C({ psychImmuneRoundsLeft: 0 }))).toBe(false);
+  it('Détermination temporaire : immunisé tant qu\'un ActiveEffect `psychImmune` est porté (LDB 17 l.62)', () => {
+    const det = (left: number) => C({ activeEffects: [{ label: 'D', bonus: 0, duration: { scale: 'rounds', left }, psychImmune: true } as never] });
+    expect(isPsychImmune(det(2))).toBe(true);
+    expect(isPsychImmune(det(1))).toBe(true);
+    expect(isPsychImmune(C({ activeEffects: [] }))).toBe(false);
   });
 });
 
@@ -37,7 +38,7 @@ describe('Immunité psy → AUCUN modificateur de combat psy (attackModifiers, L
     const afraid = C({ advantage: 0, conditions: [], psychState: [{ type: 'peur', sourceId: 't', indice: 2, calmeDR: 0 } as never] });
     const mods = attackModifiers(afraid, target, weapon, { kind: 'melee' });
     expect(mods.some((m) => m.label === 'Peur' && m.value === -10)).toBe(true);
-    afraid.psychImmuneRoundsLeft = 2; // Détermination active
+    afraid.activeEffects = [{ label: 'D', bonus: 0, duration: { scale: 'rounds', left: 2 }, psychImmune: true } as never]; // Détermination active
     const mods2 = attackModifiers(afraid, target, weapon, { kind: 'melee' });
     expect(mods2.some((m) => m.label === 'Peur')).toBe(false); // immunisé → plus de malus
   });
@@ -53,7 +54,7 @@ describe('Détermination « ignorer modifs de critique » (LDB 17 l.64) annule l
   });
   it('ignoreCritMods : toutes les pénalités de trauma sont annulées', () => {
     const c = trauma();
-    c.ignoreCritMods = true;
+    c.activeEffects = [{ label: 'D', bonus: 0, duration: { scale: 'rounds', left: 1 }, ignoreCritMods: true } as never];
     expect(traumaCharPenalties(c, 'F')).toEqual([]);
     expect(traumaDodgePenalty(c)).toBe(0);
     expect(traumaMovementHalved(c)).toBe(false);
@@ -68,7 +69,7 @@ describe('Détermination annule aussi les pénalités de MALADIE (kind `maladie`
   });
   it('ignoreCritMods : la pénalité de maladie est annulée (comme un trauma)', () => {
     const c = sick();
-    c.ignoreCritMods = true;
+    c.activeEffects = [{ label: 'D', bonus: 0, duration: { scale: 'rounds', left: 1 }, ignoreCritMods: true } as never];
     expect(traumaCharPenalties(c, 'F')).toEqual([]);
   });
 });
@@ -85,7 +86,8 @@ describe('Actions Détermination — immunité psy & ignore-crit (store)', () =>
     withHero();
     useGame.getState().battleResolvePsychImmune();
     const h = useGame.getState().battle!.combatants[0];
-    expect(h.psychImmuneRoundsLeft).toBe(2); // ce Round + le prochain
+    const psy = h.activeEffects?.find((e) => e.psychImmune); // ce Round + le prochain
+    expect(psy?.duration).toEqual({ scale: 'rounds', left: 2 });
     expect(h.resolve).toBe(1);
     expect(useGame.getState().battle!.acted).toBe(false); // gratuit
   });
@@ -94,7 +96,7 @@ describe('Actions Détermination — immunité psy & ignore-crit (store)', () =>
     withHero();
     useGame.getState().battleResolveIgnoreCrit();
     const h = useGame.getState().battle!.combatants[0];
-    expect(h.ignoreCritMods).toBe(true);
+    expect(h.activeEffects?.some((e) => e.ignoreCritMods)).toBe(true);
     expect(h.resolve).toBe(1);
   });
 
@@ -102,6 +104,6 @@ describe('Actions Détermination — immunité psy & ignore-crit (store)', () =>
     const hero = C({ id: 'h', kind: 'hero', name: 'H', resolve: 0, conditions: [], wounds: { current: 10, max: 10 } });
     useGame.setState({ battle: { combatants: [hero], order: ['h'], turn: 0, round: 1, over: false, log: [], acted: false } as never });
     useGame.getState().battleResolvePsychImmune();
-    expect(useGame.getState().battle!.combatants[0].psychImmuneRoundsLeft).toBeUndefined();
+    expect(useGame.getState().battle!.combatants[0].activeEffects?.some((e) => e.psychImmune)).toBeFalsy();
   });
 });

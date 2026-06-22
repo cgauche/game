@@ -289,6 +289,12 @@ export interface ActiveEffect {
   /** « Ne subit aucune pénalité causée par les États » (Endurance de l'anachorète, LDB 42) —
    *  lu par combatTestPenalty/testStatePenalty. */
   ignoreStatePenalties?: boolean;
+  /** Détermination (LDB 17 l.62) : immunité PSYCHOLOGIQUE temporaire (la source est IGNORÉE, pas vaincue).
+   *  Durée portée par `duration` (Rounds) → décrémentée/expirée par le système de Durée unifié. */
+  psychImmune?: boolean;
+  /** Détermination (LDB 17 l.64) : ignore les modificateurs de Blessure critique (traumatismes), 1 Round.
+   *  Durée portée par `duration` → expirée par le système de Durée unifié (plus de flag round-scopé). */
+  ignoreCritMods?: boolean;
   /** Traits psychologiques SUSPENDUS par l'effet (Baume pour un esprit blessé, LDB 42 : « Tous les
    *  Traits Psychologiques sont retirés pour la durée ») — restitués à l'expiration (rounds OU horloge). */
   suppressedPsych?: import('./psychology').PsychTrait[];
@@ -499,13 +505,9 @@ export interface Combatant {
   psychState?: import('./psychology').PsychAffliction[];
   /** Frénésie active (LDB 21 l.31-36) : +1 BF, attaque obligatoire, immunité psy ; fin → Exténué. */
   frenzied?: boolean;
-  /** Détermination (LDB 17 l.62) : immunisé à la Psychologie « jusqu'à la fin du prochain Round ».
-   *  Compteur de Rounds restants (2 à la dépense = ce Round + le prochain), décrémenté au passage de
-   *  Round ; immunisé tant que > 0. Round-indépendant → consommé partout (déclencheurs ET modificateurs). */
-  psychImmuneRoundsLeft?: number;
-  /** Détermination (LDB 17 l.64) : ignore les modificateurs de Blessure critique (traumatismes) ; posé à la
-   *  dépense, effacé au DÉBUT du prochain Round (passage de Round). */
-  ignoreCritMods?: boolean;
+  /** (Détermination : l'immunité psy temporaire + l'ignorance des modifs de Critique sont désormais
+   *  portées par des `ActiveEffect` à `duration` Rounds — `psychImmune`/`ignoreCritMods` — expirées par
+   *  le système de Durée unifié, plus de compteur/flag round-scopé ad hoc.) */
   /** Groupes d'appartenance + traits psy possédés (matching des Cibles — utilisés en P3). */
   groups?: string[];
   psychTraits?: import('./psychology').PsychTrait[];

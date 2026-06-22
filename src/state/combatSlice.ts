@@ -1151,7 +1151,12 @@ export function createCombatSlice(get: Get, set: Set) {
       const active = activeCombatant(battle);
       if (!active || active.kind !== 'hero' || (active.resolve ?? 0) <= 0) return;
       active.resolve = (active.resolve ?? 0) - 1;
-      active.ignoreCritMods = true; // effacé au début du prochain Round (passage de Round)
+      // Détermination (LDB 17 l.64) : `ActiveEffect` à durée 1 Round (système de Durée unifié) — ignore les
+      // modifs de Critique ce Round, expiré au passage de Round. Plus de flag round-scopé + hook dédié.
+      active.activeEffects = [
+        ...(active.activeEffects ?? []).filter((e) => e.effectId !== 'determination-crit'),
+        { label: 'Détermination (Critique)', effectId: 'determination-crit', bonus: 0, duration: { scale: 'rounds', left: 1 }, ignoreCritMods: true },
+      ];
       set({ battle: { ...battle, action: null, log: [...battle.log, ev('info', t('cs.determinationCrit', { name: active.name }), active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
     },
