@@ -57,12 +57,16 @@ const TARGETS: Target[] = [
     name: 'engine/conditions.ts',
     src: read('../engine/conditions.ts'),
     reactive: /hasCondition\(c, COND\.|hasCondition\(target, COND\.|stacks\(c, COND\./,
-    // Prédicats GÉNÉRIQUES de machinerie (mort/gating universels) — ne nomment pas un effet d'entité éditable.
-    exclude: /isOutOfAction|inDeathCondition|c\.dead|roundsAtZero|return !hasCondition|return hasCondition\(c, COND\.surpris\)/,
-    // 30 → 27 (meleeAttackerBonus → incomingAttackMod data) → 11 (combatTestPenalty/testStatePenalty →
-    // testMod data combatOnly/movementOnly/exceptSkills + perStack). Reste : par-round/évasion (endOfRound),
-    // gating, et prédicats de mort (exclus). Cible Lot 4 finale : 0.
-    baseline: 4, // …→6 (résist Empoisonné→données)→4 (résist Sonné→données : effects onRoundEnd test, retire 1+DR puis Exténué « si pas déjà »). Reste : jet de mort Hémorragique / inDeathCondition / À-Terre@0 — MACHINERIE de mort (à reclasser en exclude, baseline→0)
+    // Prédicats/RÈGLES de machinerie de MORT & GATING universels — lisent un État en ENTRÉE d'une règle de
+    // l'arène (ne PRODUISENT pas l'effet propre d'une entité éditable) : `isOutOfAction`/`inDeathCondition`
+    // (prédicats de mort, dont le corps `criticalWounds`), `tickDeath` (0 PB→Inconscient), `bleedDeathRoll`
+    // (mort par Hémorragique 10 %/pion + coagulation — règle de mort, comme tickDeath), `applyZeroWounds`
+    // (0 PB→À Terre, `COND.aTerre`). NB : les EFFETS propres des États (pénalités/dégâts/récupération) sont
+    // tous en DONNÉES (etats.json) ; seules ces règles de mort/gating restent moteur.
+    exclude: /isOutOfAction|inDeathCondition|criticalWounds|COND\.hemorragique|COND\.aTerre|c\.dead|roundsAtZero|return !hasCondition|return hasCondition\(c, COND\.surpris\)/,
+    // 30 → … → 8 (dégâts Hémorragique→données) → 6 (résist Empoisonné→données) → 4 (résist Sonné→données)
+    // → 0 : tous les EFFETS d'État sont en données ; il ne reste QUE de la machinerie de mort/gating (exclue).
+    baseline: 0,
     lot: 'Lot 4',
   },
   {
