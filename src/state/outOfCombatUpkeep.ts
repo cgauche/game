@@ -34,9 +34,10 @@ export function outOfCombatUpkeep(party: Combatant[], rounds: number, rng: RNG):
     for (const c of party) {
       if (c.dead || !needsUpkeep(c)) continue;
       active = true;
-      endOfRound(c, rng).forEach((l) => log.push(l)); // dégâts périodiques (Hémorragique/En flammes) + décrément des durées
-      // Empoisonné MIGRÉ en données (effects: onRoundEnd → wounds {stacks}) : ticke AUSSI hors-combat. La
-      // cible 'self' ne touche pas `battle` (targetsFor) → `get` stub suffit ; pas de `set` (flow sans test).
+      endOfRound(c, rng).forEach((l) => log.push(l)); // récupération du Sonné (Test) + décrément des durées
+      // Dégâts périodiques d'État (Empoisonné/En Flammes/Hémorragique) MIGRÉS en données (effects: onRoundEnd
+      // → wounds) : MÊME chemin qu'en combat, ils tickent AUSSI hors-combat. La cible 'self' ne touche pas
+      // `battle` (targetsFor) → `get` stub suffit ; pas de `set` (flow sans test interactif hors combat).
       fireConditionEffects((() => ({ battle: undefined })) as never, c, 'onRoundEnd', { rng }).forEach((l) => log.push(l));
       const bd = bleedDeathRoll(c, rng); // mort par Hémorragique (10 %/pion, double = coagule)
       bd.log.forEach((l) => log.push(l));

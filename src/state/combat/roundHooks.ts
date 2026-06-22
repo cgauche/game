@@ -49,14 +49,15 @@ export function roundTestInteractive(c: Combatant): boolean {
 // ============================================================================================
 
 registerCombatHook({
-  id: 'end-of-round', // dégâts/effets périodiques d'États — RNG. Hémorragique/En flammes/Sonné/dissipation
-  // restent dans endOfRound (en dur, à migrer) ; Empoisonné MIGRÉ en données (effects: onRoundEnd).
+  id: 'end-of-round', // effets périodiques d'États — RNG. endOfRound : récupération du Sonné (Test) +
+  // décrément des durées. Dégâts par-round (Empoisonné/En Flammes/Hémorragique) + auto-dissipation
+  // (Aveuglé/Assourdi/Surpris) MIGRÉS en données (effects: onRoundEnd), joués par fireConditionEffects.
   phase: 'onRoundEnd',
   order: 10,
   run: ({ get, set, battle, sink }) => {
     for (const c of battle.combatants) {
       endOfRound(c, battleRng()).forEach((l) => sink(l, c));
-      fireConditionEffects(get, c, 'onRoundEnd', { rng: battleRng(), set }).forEach((l) => sink(l, c)); // dégâts data-driven (Empoisonné…)
+      fireConditionEffects(get, c, 'onRoundEnd', { rng: battleRng(), set }).forEach((l) => sink(l, c)); // dégâts/dissipation data-driven
     }
   },
 });
