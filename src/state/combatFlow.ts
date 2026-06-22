@@ -137,6 +137,7 @@ import { chooseEnemyAction, type EnemyAction, type EnemyTurnInput } from './ai';
 import { resolveRun } from '../engine/movement';
 import type { RNG } from '../engine/dice';
 import { bus, EVT } from './bus';
+import { emitCombatEvent } from './combatEvents';
 // Géométrie de combat extraite (placement/déplacement/zones/flanc-dos/vision) — importée pour
 // l'usage interne ET ré-exportée (baril) pour les importeurs de combatFlow.
 import {
@@ -3240,10 +3241,11 @@ export function finalizeBattle(get: Get, set: SetFn): void {
   // Effets « fin de combat » authorés de chaque combattant survivant (inerte tant qu'aucune donnée ne
   // porte un effet `onCombatEnd`) → collectés dans le journal de fin de combat.
   const endLines: string[] = [];
-  for (const c of battle.combatants) {
-    if (isOutOfAction(c)) continue;
-    endLines.push(...fireTriggers(get, c, 'onCombatEnd', { rng: battleRng(), set }));
-  }
+  emitCombatEvent('onCombatEnd', {
+    get, set, battle, sink: (line) => endLines.push(line),
+    audience: battle.combatants.filter((c) => !isOutOfAction(c)),
+    triggerCtx: { rng: battleRng() },
+  });
   const newParty = party.map((h) => {
     const c = battle.combatants.find((x) => x.id === h.id && x.kind === 'hero');
     return c ? { ...h, ...carryOverState(c) } : h;
