@@ -14,6 +14,7 @@
 import { Combatant } from '../engine/types';
 import { RNG } from '../engine/dice';
 import { endOfRound, bleedDeathRoll, tickDeath, hasCondition } from '../engine/conditions';
+import { fireConditionEffects } from './triggeredEffects';
 import { t } from '../i18n';
 
 /** A-t-il un effet périodique (perte de PB chaque Round) OU est-il à 0 PB (progression vers l'Inconscience) ? */
@@ -33,7 +34,10 @@ export function outOfCombatUpkeep(party: Combatant[], rounds: number, rng: RNG):
     for (const c of party) {
       if (c.dead || !needsUpkeep(c)) continue;
       active = true;
-      endOfRound(c, rng).forEach((l) => log.push(l)); // dégâts périodiques + décrément des durées (tickDurations)
+      endOfRound(c, rng).forEach((l) => log.push(l)); // dégâts périodiques (Hémorragique/En flammes) + décrément des durées
+      // Empoisonné MIGRÉ en données (effects: onRoundEnd → wounds {stacks}) : ticke AUSSI hors-combat. La
+      // cible 'self' ne touche pas `battle` (targetsFor) → `get` stub suffit ; pas de `set` (flow sans test).
+      fireConditionEffects((() => ({ battle: undefined })) as never, c, 'onRoundEnd', { rng }).forEach((l) => log.push(l));
       const bd = bleedDeathRoll(c, rng); // mort par Hémorragique (10 %/pion, double = coagule)
       bd.log.forEach((l) => log.push(l));
       if (bd.died) {

@@ -186,11 +186,13 @@ describe('États en combat (LDB ch.16)', () => {
     addCondition(t, 'surpris');
     expect(cannotDefend(t)).toBe(true);
   });
-  it('Empoisonné inflige 1 Blessure par point en fin de Round', () => {
+  it('Empoisonné : endOfRound n’applique PLUS les dégâts (migrés en données — effects onRoundEnd → wounds {stacks})', () => {
     const c = { name: 'x', conditions: [], characteristics: { E: 30 }, skills: [], wounds: { current: 10, max: 10 } } as unknown as Combatant;
     addCondition(c, 'empoisonne', 2);
     endOfRound(c);
-    expect(c.wounds.current).toBe(8); // 2 Blessures de poison (la récupération éventuelle ne restaure pas les PB)
+    // Dégâts de poison désormais data-driven (etats.json + fireConditionEffects, cf. state/etat-perround.test) :
+    // endOfRound ne les applique plus → PB inchangés ici.
+    expect(c.wounds.current).toBe(10);
   });
   it('En flammes : le +1 par État en plus s’ajoute aux Dégâts AVANT réduction BE+PA (l.77)', () => {
     // 3 États → « 1d10+2 » ; BE 7 absorbe tout jusqu’au plancher de 1 (et non 1+2 = 3, le bug).

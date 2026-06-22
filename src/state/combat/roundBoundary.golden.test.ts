@@ -40,7 +40,7 @@ describe('GOLDEN — séquence de franchissement de Round (advanceTurn)', () => 
       {
         "lines": [
           "round:— Round 2 —",
-          "condition:Mutant subit 1 Blessure(s) (Empoisonné).",
+          "condition:Mutant subit 1 Blessure(s) (ignorant BE et PA).",
           "condition:Mutant : 1 État(s) Empoisonné éliminé(s) (Résistance réussie).",
           "condition:Mutant est Exténué (poison surmonté).",
         ],

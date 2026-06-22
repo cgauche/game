@@ -17,7 +17,7 @@ import { resolveQualities } from '../engine/qualities/dispatch';
 import { isOutOfAction } from '../engine/conditions';
 import { isEngagedWith } from '../engine/engagement';
 import { combatDistance } from './footprint';
-import { traitById, qualityById, findManeuverById, findTalentById } from '../data';
+import { traitById, qualityById, findManeuverById, findTalentById, findConditionById } from '../data';
 import { difficultyFromLabel } from '../engine/tests';
 import { runSpellFlowLines } from './combatEffects';
 import { RNG, defaultRNG } from '../engine/dice';
@@ -78,6 +78,9 @@ function targetsFor(get: Get, actor: Combatant, on: TriggeredEffect['on'], victi
 export interface TriggerCtx { victim?: Combatant; weapon?: Weapon; rng?: RNG; margin?: number; woundsDealt?: number;
   /** Indice de l'attaque naturelle d'une MANŒUVRE — alimente les Formula `{indiceOf}` (Dégâts en GameOp). */
   indice?: number;
+  /** Nombre de PIONS de l'État qui déclenche un `effects: onRoundEnd` — alimente les Formula `{stacks:'self'}`
+   *  (Empoisonné « 1 PB/pion »). Posé par `fireConditionEffects`. */
+  stacks?: number;
   /** Localisation de la touche courante (dé inversé) — alimente la Condition Flow `location` (Assommante). */
   location?: HitLocation;
   /** KIND de l'attaque courante (`creatureAttackKind` : 'morsure'/'cornes'/…) — alimente la Condition Flow
@@ -128,10 +131,10 @@ export function applyTriggeredEffects(
       // `runSpellFlowLines`, qui LÈVE (jamais de branche succès muette). Le contexte de la touche
       // (`woundsDealt`/`margin→sl`/`location`/`attackKind`) voyage dans l'opsCtx pour les Conditions `if`.
       if (flowHasTest(eff.flow) && ctx.set && testRouter) {
-        testRouter(get, ctx.set, t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, location: ctx.location, attackKind: ctx.attackKind });
+        testRouter(get, ctx.set, t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, location: ctx.location, attackKind: ctx.attackKind });
         continue;
       }
-      lines.push(...runSpellFlowLines(t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, location: ctx.location, attackKind: ctx.attackKind }));
+      lines.push(...runSpellFlowLines(t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, location: ctx.location, attackKind: ctx.attackKind }));
     }
   }
   return lines;
@@ -144,6 +147,22 @@ export function applyTriggeredEffects(
  */
 export function fireTriggers(get: Get, actor: Combatant, trigger: EffectTrigger, ctx: TriggerCtx = {}): string[] {
   return applyTriggeredEffects(get, actor, effectsOf(actor, ctx.weapon), trigger, ctx);
+}
+
+/**
+ * Déclenche les `effects` data-driven des ÉTATS portés par `c` correspondant à `trigger` (Empoisonné
+ * « 1 PB/pion » via `onRoundEnd`…). Chaque État est joué avec `ctx.stacks = son nombre de pions` → résout
+ * les Formula `{stacks:'self'}`. SOURCE UNIQUE des effets d'État ; complète `fireTriggers` (traits/atouts/
+ * talents), porteur d'effets distinct. Inerte tant qu'aucun État ne porte d'`effects`.
+ */
+export function fireConditionEffects(get: Get, c: Combatant, trigger: EffectTrigger, ctx: TriggerCtx = {}): string[] {
+  const lines: string[] = [];
+  for (const cond of c.conditions ?? []) {
+    const effs = findConditionById(cond.name)?.effects;
+    if (!effs?.length) continue;
+    lines.push(...applyTriggeredEffects(get, c, effs, trigger, { ...ctx, stacks: cond.value }));
+  }
+  return lines;
 }
 
 /** Effets onHit AUTHORÉS de la manœuvre `kind` portée par `actor` (Caudale → À Terre, Tentacules →

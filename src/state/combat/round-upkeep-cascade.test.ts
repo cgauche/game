@@ -5,6 +5,7 @@ import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { seedBattleRng } from '../battleRng';
 import { addCondition, stacks, hasCondition, endOfRound, COND } from '../../engine/conditions';
+import { fireConditionEffects } from '../triggeredEffects';
 import { setRule, resetRule } from '../../engine/policy';
 import { testScene } from '../../scenes/test-fixture';
 import type { Combatant } from '../../engine/types';
@@ -122,13 +123,15 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
     expect(hasCondition(h, COND.extenue)).toBe(true);      // … → 1 Exténué (LDB 16 l.72)
   });
 
-  it('endOfRound n’applique QUE les dégâts d’Empoisonné — le Test est un hook séparé (poison-resist), pas un param', () => {
+  it('dégâts d’Empoisonné en fin de Round = data-driven (fireConditionEffects) ; endOfRound ne teste pas (poison-resist = hook séparé)', () => {
     const { H } = setup();
     addCondition(H, COND.empoisonne, 2);
     const hpBefore = H.wounds.current;
-    endOfRound(H, makeRNG(1)); // dégâts périodiques SEULS ; le Test de Résistance vit dans le hook `poison-resist`
+    endOfRound(H, makeRNG(1));                             // n'applique PLUS les dégâts de poison (migrés en données)
+    expect(H.wounds.current).toBe(hpBefore);              // endOfRound seul : aucun dégât de poison
+    fireConditionEffects(useGame.getState, H, 'onRoundEnd', { rng: makeRNG(1) }); // dégâts data-driven (effects: onRoundEnd)
     expect(H.wounds.current).toBe(hpBefore - 2);          // 2 Blessures subies (Empoisonné×2)
-    expect(stacks(H, COND.empoisonne)).toBe(2);           // aucun pion retiré (endOfRound ne teste plus)
+    expect(stacks(H, COND.empoisonne)).toBe(2);           // aucun pion retiré (le Test vit dans le hook poison-resist)
     expect(hasCondition(H, COND.extenue)).toBe(false);    // pas d'Exténué
   });
 

@@ -17,7 +17,7 @@ import { suffocationTick } from '../../engine/suffocation';
 import { clearPsychOf, calmeValue } from '../../engine/psychology';
 import { zonesRoundTick } from '../zones';
 import { purgeExpiredSummons } from '../summonFlow';
-import { fireTriggers } from '../triggeredEffects';
+import { fireTriggers, fireConditionEffects } from '../triggeredEffects';
 import { isUnstable, isBestial, hasPerturbingAura } from '../../engine/traits/dispatch';
 import { outnumberCountBonus, hasBraveheart } from '../../engine/combatFeatures/dispatch';
 import { chebyshev } from '../path';
@@ -49,10 +49,16 @@ export function roundTestInteractive(c: Combatant): boolean {
 // ============================================================================================
 
 registerCombatHook({
-  id: 'end-of-round', // dégâts/effets périodiques d'États (Empoisonné, En flammes, Hémorragique…) — RNG
+  id: 'end-of-round', // dégâts/effets périodiques d'États — RNG. Hémorragique/En flammes/Sonné/dissipation
+  // restent dans endOfRound (en dur, à migrer) ; Empoisonné MIGRÉ en données (effects: onRoundEnd).
   phase: 'onRoundEnd',
   order: 10,
-  run: ({ battle, sink }) => { for (const c of battle.combatants) endOfRound(c, battleRng()).forEach((l) => sink(l, c)); },
+  run: ({ get, set, battle, sink }) => {
+    for (const c of battle.combatants) {
+      endOfRound(c, battleRng()).forEach((l) => sink(l, c));
+      fireConditionEffects(get, c, 'onRoundEnd', { rng: battleRng(), set }).forEach((l) => sink(l, c)); // dégâts data-driven (Empoisonné…)
+    }
+  },
 });
 registerCombatHook({
   id: 'poison-resist', // Résistance à l'Empoisonné (LDB 16 l.70-72) : retire 1+DR pions sur succès, puis Exténué quand vidé

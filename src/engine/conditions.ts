@@ -229,18 +229,10 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
     loseWounds(c, bleed); // perte de PB centralisée (perte d'Avantage + À Terre à 0)
     log.push(t('cond.bleed', { name: c.name, n: bleed }));
   }
-  // Empoisonné : 1 Blessure par point, en ignorant les modificateurs (l.66).
-  const poison = stacks(c, COND.empoisonne);
-  if (poison) {
-    loseWounds(c, poison);
-    log.push(t('cond.poisonDmg', { name: c.name, n: poison }));
-    // Le Test de Résistance qui ÉLIMINE l'Empoisonné (LDB 16 l.70-72) n'est PLUS ici : c'est un hook
-    // `roundBoundary` (`poison-resist`, state/combat/roundHooks) qui décide silence (non-interactif :
-    // monstre OU héros en cadence rapide/auto) vs étape de cascade influençable (héros en manuel),
-    // via `roundTestInteractive` — exactement comme Mâchoires/Brisé. `endOfRound` ne fait QUE les
-    // dégâts périodiques (pur, ignorant du joueur/monstre et de la cadence). Logique partagée :
-    // `poisonResistValue`/`poisonResistApply` (helpers purs ci-dessus).
-  }
+  // Empoisonné : dégâts par-round (« 1 PB/pion, en ignorant les modificateurs ») MIGRÉS en DONNÉES —
+  // `etats.json` empoisonne `effects: onRoundEnd → wounds {stacks:'self'}` (le défaut de `wounds` ignore
+  // BE+PA), joués par `fireConditionEffects` au hook order-10. Le Test de Résistance qui élimine l'État
+  // reste le hook `poison-resist` (cadence-aware). Plus de branche par-nom de DÉGÂTS de poison ici.
   // En flammes : 1d10 − BE − PA de la localisation la moins protégée (min 1), +1 par État en plus (l.77).
   const fire = stacks(c, COND.enFlammes);
   if (fire) {
