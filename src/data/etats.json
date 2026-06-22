@@ -166,7 +166,43 @@
     "source": {
       "book": "LDB",
       "page": 168
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "wounds",
+                "amount": {
+                  "sum": [
+                    {
+                      "dice": {
+                        "n": 1,
+                        "sides": 10
+                      }
+                    },
+                    {
+                      "stacks": "self"
+                    },
+                    -1
+                  ]
+                },
+                "ignoreTB": false,
+                "ignoreAP": false,
+                "apFrom": "least",
+                "min": 1
+              }
+            ]
+          }
+        }
+      }
+    ]
   },
   {
     "id": "extenue",

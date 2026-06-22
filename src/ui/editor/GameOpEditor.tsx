@@ -149,6 +149,7 @@ export function formulaSummary(f: Formula | undefined): string {
   if ('rolled' in f) return 'dé';
   if ('indiceOf' in f) return 'Indice';
   if ('stacks' in f) return 'pions';
+  if ('sum' in f) return f.sum.map(formulaSummary).join(' + ');
   return `${f.dice.n}d${f.dice.sides}${f.dice.plus ? `+${f.dice.plus}` : ''}`;
 }
 

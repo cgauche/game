@@ -233,16 +233,9 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
   // `etats.json` empoisonne `effects: onRoundEnd → wounds {stacks:'self'}` (le défaut de `wounds` ignore
   // BE+PA), joués par `fireConditionEffects` au hook order-10. Le Test de Résistance qui élimine l'État
   // reste le hook `poison-resist` (cadence-aware). Plus de branche par-nom de DÉGÂTS de poison ici.
-  // En flammes : 1d10 − BE − PA de la localisation la moins protégée (min 1), +1 par État en plus (l.77).
-  const fire = stacks(c, COND.enFlammes);
-  if (fire) {
-    const minPA = Math.min(...Object.values(c.armour));
-    // « 1d10+2 si 3 États » (l.77) : le +1/État en plus s'ajoute aux Dégâts AVANT la
-    // réduction BE+PA et le plancher de 1 — pas après.
-    const dmg = Math.max(1, d10(rng) + (fire - 1) - bonus(effectiveChar(c, 'E')) - minPA);
-    loseWounds(c, dmg);
-    log.push(t('cond.burnDmg', { name: c.name, n: dmg }));
-  }
+  // En Flammes : dégâts par-round MIGRÉS en données (etats.json `effects: onRoundEnd → wounds`,
+  // amount {sum:[1d10, pions, −1]} − BE − PA de la Localisation la moins protégée, min 1 ; LDB 16 l.77),
+  // joués par fireConditionEffects. Plus de branche by-name de DÉGÂTS d'En Flammes ici.
   // Sonné : Test de Résistance Intermédiaire (+0) en fin de Round ; sur un succès, retire
   // 1 État + 1 par DR ; une fois tous retirés, on gagne 1 Exténué (LDB États l.125-127).
   // Le « -10 à tous les Tests » du Sonné s'applique au jet (l.123, via combatTestPenalty).

@@ -34,6 +34,35 @@ describe('Empoisonné — dégâts par-round en DONNÉES (effects: onRoundEnd �
   });
 });
 
+describe('En Flammes — dégâts par-round en DONNÉES (effects onRoundEnd → wounds {sum:[1d10, pions, −1]} − BE − PAmin, min 1)', () => {
+  const get = ((c: Combatant) => () => ({ battle: { combatants: [c] } })) as never;
+  const fixedD10 = (v: number) => ({ int: () => v } as never); // int(1,10) moqué → d10 = v
+
+  it('1 pion : 1d10 − BE − PAmin (BE=4, PAmin=0) ; d10=8 → 8−4 = 4 PB', () => {
+    const c = mk(); c.armour = { corps: 0 } as never; addCondition(c, COND.enFlammes);
+    const before = c.wounds.current;
+    fireConditionEffects((get as (c: Combatant) => unknown)(c) as never, c, 'onRoundEnd', { rng: fixedD10(8) });
+    expect(before - c.wounds.current).toBe(4); // 8 + (1−1) − 4 − 0 = 4
+  });
+
+  it('3 pions : +1 par État en plus AVANT réduction ; d10=4, BE=7, PAmin=0 → (4+2)−7 = −1 → plancher 1', () => {
+    const c = mk(); c.characteristics = { E: 70 } as never; c.armour = { corps: 0 } as never;
+    addCondition(c, COND.enFlammes); addCondition(c, COND.enFlammes); addCondition(c, COND.enFlammes);
+    const before = c.wounds.current;
+    fireConditionEffects((get as (c: Combatant) => unknown)(c) as never, c, 'onRoundEnd', { rng: fixedD10(4) });
+    expect(before - c.wounds.current).toBe(1); // max(1, (4+3−1) − 7 − 0) = max(1,−1) = 1
+  });
+
+  it('PAmin = la Localisation la MOINS protégée (pas le Corps) ; corps=5 mais tête=1 → PA=1', () => {
+    const c = mk(); c.characteristics = { E: 0 } as never; // BE=0
+    c.armour = { tete: 1, corps: 5 } as never;
+    addCondition(c, COND.enFlammes);
+    const before = c.wounds.current;
+    fireConditionEffects((get as (c: Combatant) => unknown)(c) as never, c, 'onRoundEnd', { rng: fixedD10(8) });
+    expect(before - c.wounds.current).toBe(7); // 8 − 0 − min(1,5)=1 = 7
+  });
+});
+
 describe('Auto-dissipation en fin de Round en DONNÉES (effects: onRoundEnd → removeCondition)', () => {
   const get = ((c: Combatant) => () => ({ battle: { combatants: [c] } })) as never;
   const fire = (c: Combatant) =>

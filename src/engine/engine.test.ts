@@ -194,8 +194,7 @@ describe('États en combat (LDB ch.16)', () => {
     // endOfRound ne les applique plus → PB inchangés ici.
     expect(c.wounds.current).toBe(10);
   });
-  it('En flammes : le +1 par État en plus s’ajoute aux Dégâts AVANT réduction BE+PA (l.77)', () => {
-    // 3 États → « 1d10+2 » ; BE 7 absorbe tout jusqu’au plancher de 1 (et non 1+2 = 3, le bug).
+  it('En Flammes : endOfRound n’applique PLUS les dégâts (migrés en données — effects onRoundEnd → wounds {sum})', () => {
     const c = {
       name: 'x',
       conditions: [],
@@ -204,8 +203,8 @@ describe('États en combat (LDB ch.16)', () => {
       wounds: { current: 20, max: 20 },
     } as unknown as Combatant;
     addCondition(c, 'en-flammes', 3);
-    endOfRound(c, { int: () => 4 }); // d10 = 4 ⇒ (4+2) − 7 = −1 → plancher 1
-    expect(c.wounds.current).toBe(19); // 20 − 1, pas 20 − 3
+    endOfRound(c, { int: () => 4 }); // dégâts de feu désormais data-driven (cf. state/etat-perround.test)
+    expect(c.wounds.current).toBe(20); // endOfRound seul : aucun dégât de feu
   });
   it('Sonné : Résistance réussie retire 1 État +1/DR puis octroie Exténué une fois nettoyé (l.125-127)', () => {
     const c = {

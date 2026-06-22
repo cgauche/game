@@ -60,7 +60,7 @@ const TARGETS: Target[] = [
     // 30 → 27 (meleeAttackerBonus → incomingAttackMod data) → 11 (combatTestPenalty/testStatePenalty →
     // testMod data combatOnly/movementOnly/exceptSkills + perStack). Reste : par-round/évasion (endOfRound),
     // gating, et prédicats de mort (exclus). Cible Lot 4 finale : 0.
-    baseline: 10, // 11 → 10 : Empoisonné dégâts par-round → données (effects: onRoundEnd → wounds {stacks})
+    baseline: 9, // 11→10 (Empoisonné dégâts→données) →9 (En Flammes dégâts→données : wounds {sum:[1d10,pions,−1]} apFrom:least)
     lot: 'Lot 4',
   },
   {

@@ -68,7 +68,10 @@ export type Formula =
   | { indiceOf: true }
   /** Nombre de PIONS de l'État qui DÉCLENCHE l'effet (Empoisonné « 1 PB/pion », En Flammes « +1/pion ») —
    *  injecté par le bus d'événements (`ctx.stacks`) quand un `effects: onRoundEnd` d'État est joué. 0 hors contexte. */
-  | { stacks: 'self' };
+  | { stacks: 'self' }
+  /** SOMME de termes (composition) — « 1d10 + (pions − 1) » des Dégâts d'En Flammes (LDB 16 l.77). Permet
+   *  d'authorer une formule composée sans coder en dur l'addition au moteur. Récursif. */
+  | { sum: Formula[] };
 
 /** Résout une formule contre son référent (`ref`) — RNG seedable pour les dés. `rolled` = valeur du
  *  jet courant d'un `rollThreshold` (injectée par l'op ; 0 hors de ce contexte) ; `indice` = Indice
@@ -80,6 +83,7 @@ export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG
   if ('rolled' in f) return rolled ?? 0;
   if ('indiceOf' in f) return indice ?? 0;
   if ('stacks' in f) return stacks ?? 0;
+  if ('sum' in f) return f.sum.reduce<number>((acc, term) => acc + resolveFormula(term, ref, rng, rolled, indice, stacks), 0);
   return rollDice(f.dice, rng);
 }
 
@@ -158,6 +162,9 @@ export type GameOp =
       /** Quand les PA sont déduits (`ignoreAP:false`), IGNORE en plus les PA d'une matière (Cieux/Métal =
        *  `metal`, Ombres = `nonMagic`) — attribut de Domaine (l'arc d'Azyr perce le métal). */
       bypassArmour?: 'metal' | 'nonMagic';
+      /** Localisation dont les PA sont déduits (quand `ignoreAP:false`). `corps` (défaut) ou `least` =
+       *  la Localisation la MOINS protégée (En Flammes brûle là où l'armure protège le moins, LDB 16 l.77). */
+      apFrom?: 'corps' | 'least';
       /** Plancher de Blessures infligées APRÈS mitigation (Sang corrosif : « min 1 » même BE/PA élevés). */
       min?: number }
   /** Blessures rendues (plafonnées au max). */
@@ -597,7 +604,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const raw = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled, ctx.indice, ctx.stacks) + slBonus(ctx.sl, o.perSL));
         // Défaut : ignore BE+PA. `ignoreTB:false` → déduit le Bonus d'Endurance ; `ignoreAP:false` → déduit les PA.
         const tb = o.ignoreTB === false ? bonus(effectiveChar(target, 'E')) : 0;
-        const totalAP = Math.max(0, target.armour.corps ?? 0);
+        // `apFrom:'least'` → PA de la Localisation la moins protégée (En Flammes) ; sinon le Corps.
+        const totalAP = o.apFrom === 'least'
+          ? Math.max(0, Math.min(...Object.values(target.armour)))
+          : Math.max(0, target.armour.corps ?? 0);
         const bypass = o.bypassArmour ? bypassedAP(target, 'corps', o.bypassArmour, totalAP) : 0; // attribut de Domaine : perce le métal/non-magique
         const ap = o.ignoreAP === false ? Math.max(0, totalAP - bypass) : 0;
         const n = Math.max(o.min ?? 0, raw - tb - ap);
