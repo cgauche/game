@@ -260,6 +260,7 @@ export const fr = {
   'turn.fearOvercome': '{name} surmonte sa peur.',
   'turn.recompose': '{name} se ressaisit ({type}).',
   'turn.afflictionGrip': '{name} est en proie à son {type} ({cible}).',
+  'turn.psychSuperseded': '{name} : {psych} cède devant un effet psychologique plus fort.',
   'turn.rageEnter': '{name} entre dans une rage dévorante (Frénésie) !',
   // ── Phase C : narration de manœuvres de créature (state/combatManeuvers). ──
   'manv.trigger': '{name} déclenche {label} !',

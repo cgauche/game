@@ -24,8 +24,9 @@ import { smokeOf } from '../combatGeometry';
 import { groupMatch } from '../../engine/groups';
 import {
   fearSourceFor, sansPeurVs, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isFrenzied, isPsychImmune,
-  resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, CIBLE_TYPES,
+  resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, suppressSupersededPsych, CIBLE_TYPES,
 } from '../../engine/psychology';
+import { psychologyLabel } from '../../data';
 import { isColdBlooded, hasRage } from '../../engine/traits/dispatch';
 import { fireTriggers } from '../triggeredEffects';
 import { t } from '../../i18n';
@@ -144,6 +145,8 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
     enemy.psychState.push({ type: tt.type, cible: tt.cible, sourceId: tt.sourceId, active: !r.success, lastTestRound: battle.round });
     if (!r.success) log.push(t('turn.afflictionGrip', { name: enemy.name, type: tt.type, cible: tt.cible }));
   }
+  // Immunités croisées (LDB 21) : Animosité/Préjugé cèdent dès qu'on tombe sous un effet psy dominant (Peur/…).
+  for (const tp of suppressSupersededPsych(enemy)) log.push(t('turn.psychSuperseded', { name: enemy.name, psych: psychologyLabel(tp) }));
   if (log.length) set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(log, 'fear', enemy.id)] } });
 }
 

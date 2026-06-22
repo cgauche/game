@@ -297,6 +297,12 @@ export interface PsychologyData extends StatusData {
   /** Trait psychologique CIBLÉ (Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie, LDB 21) : résolution
    *  binaire de Calme pilotée par un Groupe-Cible. Dérive `CIBLE_TYPES` de la donnée (plus de Set codé). */
   targeted?: boolean;
+  /** RAW LDB 21 : cette affliction CIBLÉE cesse dès que son porteur tombe sous un AUTRE effet psychologique
+   *  « dominant » (Peur/Terreur/Haine…) — « Animosité est annulé par Peur et Terreur » ; Préjugé idem. */
+  endedByOtherPsych?: boolean;
+  /** RAW LDB 21 : tant que cette affliction CIBLÉE est active, son porteur est IMMUNISÉ aux KINDS psy listés
+   *  causés par un membre de sa Cible (Haine → ['peur'], « mais pas Terreur »). Lu par `fearSourceFor`. */
+  immuneToFromTarget?: string[];
 }
 /** Tables Couleur des Yeux / Cheveux (LDB 05 l.698-744) : 2d10, libellé par refChar. */
 export interface DetailColorData {

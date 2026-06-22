@@ -94,7 +94,7 @@ import { rollMiscast, componentDowngrade, type MiscastSeverity } from '../engine
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } from '../engine/skills';
-import { findManeuverById, findDomainById, findTalentById, diseaseLabel } from '../data';
+import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel } from '../data';
 import { norm } from '../lib/normalize';
 import { recomputeLoadout, weaponWithAmmo, compatibleAmmo, ammoFamily, damageArmour, buildWeapon } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
@@ -127,7 +127,7 @@ import { toBrass, fromBrass } from '../engine/money';
 import { Scene, Effect, isWalkable } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
 import { lineOfSightCover, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
-import { fearSourceFor, sansPeurVs, terreurBrise, calmeValue, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
+import { fearSourceFor, sansPeurVs, terreurBrise, calmeValue, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, suppressSupersededPsych, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import { reachable, moveReachFor, flyReachable, pushAway, pathTo, chebyshev, Pt } from './path';
@@ -3900,9 +3900,11 @@ registerCascadeApplier(
         ? `${hero.name} ${cp.sansPeur ? 'ignore la Peur' : 'surmonte sa peur'}${cp.sourceName ? ` de ${cp.sourceName}` : ''}${cp.sansPeur ? ' (Sans Peur)' : ''}.`
         : `${hero.name} reste sous l'emprise de la Peur (${calmeDR}/${cp.indice} DR).`;
     }
+    // Immunités croisées (LDB 21) : Animosité/Préjugé cèdent dès qu'on tombe sous un effet psy dominant.
+    const superseded = suppressSupersededPsych(hero);
     set({ party: [...get().party] });
     if (battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
-    return { journal: [line] };
+    return { journal: [line, ...superseded.map((tp) => tr('turn.psychSuperseded', { name: hero.name, psych: psychologyLabel(tp) }))] };
   },
   (success, name) => (success ? tr('out.terreurHold', { name }) : tr('cf.psychYields', { name })),
 );

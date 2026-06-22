@@ -105,7 +105,8 @@
     "source": {
       "book": "LDB",
       "page": 192
-    }
+    },
+    "endedByOtherPsych": true
   },
   {
     "id": "haine",
@@ -116,7 +117,10 @@
     "source": {
       "book": "LDB",
       "page": 192
-    }
+    },
+    "immuneToFromTarget": [
+      "peur"
+    ]
   },
   {
     "id": "prejuge",
@@ -127,7 +131,8 @@
     "source": {
       "book": "LDB",
       "page": 192
-    }
+    },
+    "endedByOtherPsych": true
   },
   {
     "id": "amour",

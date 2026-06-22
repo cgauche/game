@@ -79,7 +79,43 @@ export function fearSourceFor(self: Combatant, foe: Combatant): { kind: 'peur' |
   if (foe.causesPeur) cands.push({ kind: 'peur', indice: foe.causesPeur });
   if (!cands.length) return null;
   const terr = cands.filter((c) => c.kind === 'terreur');
-  return (terr.length ? terr : cands).reduce((a, b) => (b.indice > a.indice ? b : a));
+  const best = (terr.length ? terr : cands).reduce((a, b) => (b.indice > a.indice ? b : a));
+  // Haine (LDB 21) : « immunisé à Peur (mais PAS Terreur) causée par ceux de ce groupe » — data-driven.
+  if (best.kind === 'peur' && psychImmuneToFearFrom(self, foe)) return null;
+  return best;
+}
+
+/** Une affliction psy est-elle ACTIVE ? Ciblé (Animosité/Haine/…) : drapeau `active` ; Peur/Terreur : DR
+ *  cumulé encore sous l'Indice (sujet à la Peur). Frénésie/trauma ne sont pas des afflictions surmontables. */
+function isAfflictionActive(p: PsychAffliction): boolean {
+  if (CIBLE_TYPES.has(p.type)) return p.active === true;
+  if (p.type === 'peur' || p.type === 'terreur') return (p.indice ?? 0) > 0 && (p.calmeDR ?? 0) < (p.indice ?? 0);
+  return false;
+}
+
+/** RAW LDB 21 : un Trait CIBLÉ actif dont la donnée `immuneToFromTarget` inclut `'peur'` (Haine) IMMUNISE
+ *  `self` à la Peur causée par un membre de sa Cible. (Pas la Terreur.) Lu par `fearSourceFor` (héros ET IA).
+ *  Data-driven : aucune entité nommée. */
+export function psychImmuneToFearFrom(self: Combatant, foe: Pick<Combatant, 'groups'>): boolean {
+  for (const p of self.psychState ?? []) {
+    if (p.active !== true || !p.cible) continue;
+    if (findPsychologyById(p.type)?.immuneToFromTarget?.includes('peur') && groupMatch(p.cible, foe.groups ?? [])) return true;
+  }
+  return false;
+}
+
+/** RAW LDB 21 : les Traits CIBLÉS `endedByOtherPsych` (Animosité, Préjugé) cessent dès que leur porteur
+ *  tombe sous un AUTRE effet psychologique DOMINANT actif (Peur/Terreur/Haine — soit toute affliction
+ *  active qui n'est PAS elle-même `endedByOtherPsych`). Mute `psychState` (désactive), renvoie les types
+ *  désactivés (narration). Data-driven, générique : aucune entité nommée. */
+export function suppressSupersededPsych(c: Combatant): PsychType[] {
+  const dominant = (c.psychState ?? []).filter((o) => isAfflictionActive(o) && !findPsychologyById(o.type)?.endedByOtherPsych);
+  const out: PsychType[] = [];
+  for (const p of c.psychState ?? []) {
+    if (p.active !== true || !findPsychologyById(p.type)?.endedByOtherPsych) continue;
+    if (dominant.some((o) => o !== p)) { p.active = false; out.push(p.type); }
+  }
+  return out;
 }
 
 /** `self` possède-t-il « Sans Peur (Ennemi) » (LDB 10 l.864) contre `foe` ? Le porteur n'est PAS
