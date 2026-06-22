@@ -87,6 +87,41 @@ ré-ordonnancement d'initiative, surnombre (la règle ; les exemptions sont des 
 réactive nomme un État/trait/talent/atout précis** (`hasCondition('sonne')`, `traitId==='infecte'`…).
 La dette devient un test qui rougit, pas un jugement.
 
+## 3bis. FAIT — Le **dispatcher unique** (orchestrateur · machinerie · data-driven)
+
+> Avancement 2026-06-22. C'est **le socle** réclamé : « peu importe le KIND (maladie, talent, trait,
+> sort, état, mutation…), un Trigger doit fonctionner sans code spécifique à chacun. »
+
+Trois rôles, séparés nettement :
+
+| Rôle | Qui | Responsabilité |
+|---|---|---|
+| **Orchestrateur** | les points d'émission (`emitCombatEvent` + sites `fireTriggers` de cycle) | *QUAND* un événement canonique se produit |
+| **Dispatcher unique** | **`fireTriggers(get, actor, trigger, ctx)`** | *À QUI* : réunit TOUTES les sources d'effets du combattant et joue celles qui matchent — **sans brancher par kind** |
+| **Machinerie** | les hooks (`registerCombatHook`, `order`) | Règles universelles de l'arène qui ne nomment AUCUNE entité |
+
+**Le dispatcher (`fireTriggers`) réunit désormais toutes les sources** : `effectsOf` (Traits + Talents +
+Atouts d'arme) **ET** `fireConditionEffects` (États, avec leurs pions). Conséquence : un **État**
+authoré avec `effects:[{trigger:'onHit'|'onKill'|'onTurnStart'|'onWoundLoss'|'onRoundStart'|…}]` réagit
+**partout** où le trigger est émis, **exactement comme un Trait** — plus aucun câblage par-trigger à se
+rappeler. **Maladies/Mutations** réagissent par **composition** (elles octroient un Trait/État, déjà
+couvert). Ajouter une source = l'ajouter **dans `fireTriggers`**, jamais un nouveau chemin de dispatch.
+
+Avant : `fireConditionEffects` n'était appelé qu'à 2 endroits (`onRoundEnd` + upkeep hors-combat) → un
+État ne pouvait réagir qu'à `onRoundEnd`, alors qu'un Trait réagissait à ~9 triggers. Cette **asymétrie
+= le câblage caché** est supprimée. Preuve : `state/unified-dispatch.test.ts` (un Trait et un État au
+MÊME `onRoundEnd`, MÊME appel) ; Bestial « peur du feu → Brisé » migré du hook `bestial-fire-fear` en
+donnée (trait `bestial` `effects: onRoundEnd`).
+
+**Reste à faire pour « un seul bus » complet** (ne bloque PAS l'authoring data, mais centralise) :
+- Émission encore **dispersée** : round/tour/touche appellent `fireTriggers` directement plutôt que via
+  `emitCombatEvent` (corrects, mais le bus n'est pas l'unique porte). Centraliser = Lot 1/2.
+- **3 moments non émis** : `onAttackResolved`/`onCastResolved`/`onMiscast` (orphelins) — à brancher (inerte
+  tant qu'aucune donnée/​hook ne s'y abonne ; cibles : crit opposé/déviation en **machinerie**, Lot 7bis).
+- **`onCharged`/`onHit` d'attaque GRATUITE** (`resolveTalentFreeAttacks`) = chemin **talent-only**
+  spécialisé (contexte de frappe gratuite). À fondre dans le dispatcher unique au **Lot 6** (migration des
+  réactions), avec certification des golden de charge — pas avant (mécanisme testé, ne pas casser à l'aveugle).
+
 ## 4. BUG concret relevé (exemple) — « punching-ball à 0 PB » + intégrité hors-combat
 
 > **À CORRIGER PLUS TARD.** Sert d'illustration de l'incohérence : l'état « à terre / mourant /
