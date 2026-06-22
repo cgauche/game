@@ -123,6 +123,9 @@ export interface TriggerCtx { victim?: Combatant; weapon?: Weapon; rng?: RNG; ma
   /** ID de l'État qui vient d'être GAGNÉ (déclencheur `onGainCondition`) — filtre les effets dont
    *  `condition` ne le matche pas (Mâchoires d'acier : `condition:'sonne'`). */
   conditionName?: string;
+  /** TYPE de l'attaque courante (`weapon.type` : 'melee'/'ranged') — filtre les effets `onHit`/`onWoundLoss`
+   *  dont `attackType` ne le matche pas. Posé par les émetteurs onHit/onWoundLoss. */
+  attackType?: 'melee' | 'ranged';
   /** `set` du store — fourni quand un Test de trigger peut être routé en cascade influençable (héros
    *  manuel) ou résolu inline (ennemi/auto). Câblé sur tous les `fireTriggers` de combat (onHit/
    *  onWoundLoss/onKill/onStartled/onRoundStart/Domaine + manœuvres) ; INERTE tant qu'aucune donnée de
@@ -156,8 +159,14 @@ export function applyTriggeredEffects(
     if (eff.trigger !== trigger) continue;
     // Filtre `onGainCondition` : ne réagit qu'à l'État effectivement gagné (Mâchoires → 'sonne').
     if (eff.condition && eff.condition !== ctx.conditionName) continue;
+    // Filtre par TYPE d'attaque (onHit/onWoundLoss) : un effet `attackType` ne réagit qu'à ce type.
+    if (eff.attackType && eff.attackType !== ctx.attackType) continue;
     for (const t of targetsFor(get, actor, eff.on, ctx.victim)) {
-      if (isOutOfAction(t)) continue;
+      // On n'applique pas un effet à une cible DÉJÀ hors de combat (pas d'éclaboussure sur un cadavre) —
+      // SAUF le PORTEUR réagissant à SON PROPRE événement (`on:'self'`) : une unité doit pouvoir réagir à
+      // sa propre chute (Démoniaque banni à 0 PB, futur « éclate/se dédouble à la mort »). Les déclencheurs
+      // de FRONTIÈRE de round (`onRoundEnd`/`onRoundStart`) filtrent eux-mêmes les hors-combat côté appelant.
+      if (isOutOfAction(t) && t.id !== actor.id) continue;
       // Flow PORTANT un nœud `test` (à n'importe quelle profondeur — top-level Mâchoires, ou enfoui sous
       // `if`/`seq` : Venin/Hurlement/2 enchants) routé vers la voie cadence-aware (héros manuel → cascade
       // influençable ; ennemi/auto → inline) plutôt qu'avalé silencieusement — seulement si l'appelant

@@ -410,13 +410,42 @@
       "page": 339
     },
     "capabilities": {
-      "wardSave": true,
-      "banishedAtZero": true
+      "wardSave": true
     },
     "passive": [
       {
         "op": "attackKeyword",
         "keyword": "magic"
+      }
+    ],
+    "effects": [
+      {
+        "trigger": "onWoundLoss",
+        "on": "self",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "compare",
+            "subject": {
+              "who": "target",
+              "field": "woundsCurrent"
+            },
+            "op": "<=",
+            "value": 0
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "banish"
+                }
+              ]
+            }
+          }
+        }
       }
     ]
   },

@@ -78,11 +78,9 @@ const TARGETS: Target[] = [
     // `autoCleave`/`maybeHeroCleave` RETIRÉS de la regex : ce sont des FONCTIONS de machinerie géométrique
     // (balayage des surdimensionnés/Nuée, LDB 85 l.299 + Frappe Mortelle optionnelle), déclenchées par un
     // flag GÉNÉRIQUE (`res.cleave` = swarm ∨ sizeGap≥1) et l'adjacence pure — elles ne nomment AUCUNE entité.
-    reactive: /hasTraitKey\(|banishedAtZero|isUnstable|isBestial|hasPerturbingAura|suffocationTick/,
-    // `banishedAtZero` = VARIANTE d'issue de mort lisant une CAPACITÉ de donnée (comme `usesSuddenDeath`/
-    // `inDeathCondition`) — machinerie de mort universelle, ne nomme aucune entité → exclue (cf. NB en tête).
-    exclude: /^\s*import|banishedAtZero/,
-    baseline: 0, // …→4 (Riposte→counterOnDefenseWin)→3 (banish machinerie)→2 (Nerveux→skittishMount)→0 (Cleave = machinerie géométrique, hors regex). combatFlow PURGÉ de toute réaction par-nom.
+    reactive: /hasTraitKey\(|isUnstable|isBestial|hasPerturbingAura|suffocationTick/,
+    exclude: /^\s*import/,
+    baseline: 0, // …→4 (Riposte→counterOnDefenseWin)→2 (Nerveux→skittishMount)→0 (banish→op `banish` en DONNÉE du trait, déclenché par `onWoundLoss`+`if woundsCurrent<=0` ; Cleave = machinerie géométrique). combatFlow PURGÉ de toute réaction par-nom.
     lot: 'Lot 6',
   },
 ];

@@ -180,10 +180,10 @@ const PSYCH_TYPE_LABEL: Record<string, string> = {
  *  Les capacités psy (psychType/psychImmune/psychIndice) sont surfacées à part (méta). */
 const TRAIT_CAP_LABEL: Record<string, string> = {
   bonusWoundsBE: 'Blessures bonifiées (+BE)', swarm: 'Nuée', wardSave: 'Sauvegarde invulnérable',
-  magicResistance: 'Résistance à la magie', damageImmunity: 'Immunité aux dégâts', banishedAtZero: 'Banni à 0 PB',
+  magicResistance: 'Résistance à la magie', damageImmunity: 'Immunité aux dégâts',
   counterOnDefenseWin: 'Contre-attaque (défense gagnée)', counterRequiresFastParry: 'Contre exige arme Rapide', unstable: 'Instable', painless: 'Insensible à la douleur',
   psychImmuneIfAhead: 'Immunité psy si en avantage', mindless: 'Sans esprit', bestial: 'Bestial',
-  coldBlooded: 'Sang-froid', stupid: 'Stupidité', rage: 'Rage', territorial: 'Territorial',
+  coldBlooded: 'Sang-froid', stupid: 'Stupidité', rage: 'Rage', territorial: 'Territorial', skittishMount: 'Monture ombrageuse',
   fly: 'Vol', leap: 'Bond', stride: 'Foulée', seesInDark: 'Vision nocturne', perturbingAura: 'Aura perturbante',
 };
 /** Libellés FR des CAPACITÉS de Qualité d'arme/armure (`QualityCapabilities`). */

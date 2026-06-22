@@ -189,12 +189,6 @@ export function wardSaves(traits: TraitList | undefined): number[] {
   return (traits ?? []).filter((t) => traitById.get(t.id)?.capabilities?.wardSave && t.value != null).map((t) => t.value!);
 }
 
-
-/** Démoniaque : à 0 PB, retirée du jeu (bannie vers les Royaumes du Chaos). */
-export function banishedAtZero(traits: TraitList | undefined): boolean {
-  return traitCapability(traits, 'banishedAtZero');
-}
-
 // Défense du champion (LDB 85) : capacité GÉNÉRIQUE `counterOnDefenseWin` (traits ET talents), lue par
 // `canCounterOnDefenseWin` (combatFeatures/dispatch) — plus de prédicat par-nom `hasChampionDefense`.
 

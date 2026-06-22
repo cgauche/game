@@ -263,6 +263,11 @@ export type GameOp =
   /** PB réduits à 0 + Inconscient (Châtiment, Tonnerre et foudre — LDB 40). `onlyGroups` : gaté par
    *  Groupe (Fauche-démon → cible Démoniaque seulement). */
   | { op: 'reduceToZero'; onlyGroups?: string[] }
+  /** BANNISSEMENT : la cible est RETIRÉE du jeu, sa forme se dissipe (Démoniaque réduit à 0 PB — son âme
+   *  retourne immédiatement dans les Royaumes du Chaos, LDB 85 p.339) : pas de corps, pas d'Inconscient,
+   *  pas de Critique. Op IMPURE (marque `dead`), idempotente (déjà retirée → no-op). Portée par l'`effects`
+   *  du trait Démoniaque (déclenchée à 0 PB), édité au Codex — plus de branche en dur dans applyAttackResult. */
+  | { op: 'banish' }
   /** « Ne subit aucune pénalité causée par les États » (Endurance de l'anachorète, LDB 42) —
    *  drapeau d'effet actif lu par combatTestPenalty/testStatePenalty. */
   | { op: 'ignoreStatePenalties' }
@@ -865,6 +870,12 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.wounds.current = 0;
         addCondition(target, 'inconscient');
         lines.push(t('op.reduceToZero', { name: target.name }));
+        break;
+      }
+      case 'banish': {
+        if (target.dead) break; // idempotent : déjà retirée
+        target.dead = true; // retrait du jeu (LDB 85 p.339) — pas de corps/Inconscient/Critique
+        lines.push(t('op.banish', { name: target.name }));
         break;
       }
       case 'ignoreStatePenalties': {

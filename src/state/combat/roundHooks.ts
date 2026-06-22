@@ -58,8 +58,10 @@ registerCombatHook({
     for (const c of battle.combatants) {
       endOfRound(c, battleRng()).forEach((l) => sink(l, c)); // machinerie : récupération du Sonné + décrément des durées
       // Dispatch UNIQUE des effets `onRoundEnd` (États : dégâts/dissipation ; Traits/Talents : réactions) —
-      // fireTriggers réunit toutes les sources, aucun chemin par-kind. Inerte sans donnée.
-      fireTriggers(get, c, 'onRoundEnd', { rng: battleRng(), set }).forEach((l) => sink(l, c));
+      // fireTriggers réunit toutes les sources, aucun chemin par-kind. Inerte sans donnée. Pas de réaction
+      // de fin de Round pour un combattant HORS COMBAT (un cadavre ne brûle/saigne plus — le dispatcher
+      // autorise désormais les effets `on:'self'` sur une cible hors-combat, on filtre donc ici).
+      if (!isOutOfAction(c)) fireTriggers(get, c, 'onRoundEnd', { rng: battleRng(), set }).forEach((l) => sink(l, c));
     }
   },
 });
@@ -89,8 +91,8 @@ registerCombatHook({
   order: 25,
   run: ({ get, set, battle, sink }) => {
     for (const c of battle.combatants) {
-      if (c.dead || c.outOfRencontre) continue;
-      for (const line of fireTriggers(get, c, 'onRoundStart', { rng: battleRng(), set })) sink(line, c);
+      if (isOutOfAction(c)) continue; // pas de réaction « début de Round » pour un hors-combat (le dispatcher
+      for (const line of fireTriggers(get, c, 'onRoundStart', { rng: battleRng(), set })) sink(line, c); // autorise on:'self' sur un hors-combat → filtré ici)
     }
   },
 });

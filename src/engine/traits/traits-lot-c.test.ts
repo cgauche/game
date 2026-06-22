@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   traitCharMods, traitMovementMod, traitBonusWoundsBE, wardSaves,
-  banishedAtZero, hasPerturbingAura,
+  hasPerturbingAura,
   magicResistanceOf, immunityTypes, isUnstable, isPainless,
   bellicosePsychImmune, isMindless, isBestial, isColdBlooded, isStupid, hasRage,
   isTerritorial, flyMeters, runMultiplier, traitSeesInDark, mutationsAtSpawn,
@@ -42,9 +42,6 @@ describe('dispatch — parsing et prédicats (LDB 85)', () => {
     expect(wardSaves([{ id: 'demoniaque', value: 8 }])).toEqual([8]);
     expect(wardSaves([{ id: 'protection', value: 9 }])).toEqual([9]);
     expect(wardSaves([{ id: 'arme', value: 8 }])).toEqual([]);
-  });
-  it('bannissement à 0 PB (Démoniaque)', () => {
-    expect(banishedAtZero([{ id: 'demoniaque', value: 8 }])).toBe(true);
   });
   it('divers combat : Champion, Parasité, Perturbant, Instable', () => {
     expect(canCounterOnDefenseWin({ traits: [{ id: 'champion' }] } as never, undefined)).toBe(true); // Champion : sans condition d'arme

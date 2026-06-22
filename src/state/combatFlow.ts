@@ -55,7 +55,6 @@ import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf, freeAttackSourc
 import { hasStealAdvantage, shieldAdvantageLevel, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf } from '../engine/combatFeatures/dispatch';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
-  banishedAtZero,
   isStupid, isUnstable, isBestial, isTerritorial, hasPerturbingAura,
   traitSeesInDark, bellicosePsychImmune, magicResistanceOf, flyMeters, runMultiplier,
   isSkittishMount,
@@ -1264,19 +1263,12 @@ export function applyAttackResult(
     addCondition(target, COND.sonne);
     critLog.push(tr('cf.vomitStun', { name: target.name }));
   }
-  // Effet DÉCLENCHÉ « à la perte de PB en mêlée » authoré (Sang corrosif : 1d10 aux Engagés, BE+PA,
-  // min 1) — dispatcher générique (state/triggeredEffects), plus de handler en dur.
-  if (res.hit && res.woundsLost && weapon.type === 'melee') {
-    for (const line of fireTriggers(get, target, 'onWoundLoss', { rng: battleRng(), set })) critLog.push(line);
-  }
-  // Démoniaque (LDB 85 p.339) : à 0 PB, « son âme retourne immédiatement dans les Royaumes du
-  // Chaos, ce qui la retire du jeu » — pas de corps, pas d'Inconscient. C'est une VARIANTE de l'issue
-  // de MORT (comme la Mort Subite `usesSuddenDeath`), sélectionnée par la CAPACITÉ de donnée
-  // `banishedAtZero` (éditable au Codex) : machinerie de mort lisant un drapeau de donnée, PAS une
-  // réaction d'entité câblée par-nom (le code ne nomme aucun trait).
-  if (res.hit && target.wounds.current <= 0 && banishedAtZero(target.traits) && !target.dead) {
-    target.dead = true;
-    critLog.push(tr('cf.banished', { name: target.name }));
+  // Effet DÉCLENCHÉ « à la perte de PB » authoré (Sang corrosif : 1d10 aux Engagés, BE+PA, min 1, sur
+  // TOUTE Blessure subie — LDB 85 l.220 ; Démoniaque : banni à 0 PB — `if woundsCurrent<=0`). Le TYPE
+  // d'attaque (`weapon.type`) voyage dans le contexte ; un effet peut s'y restreindre (`attackType`).
+  // Dispatcher générique (state/triggeredEffects), plus de handler en dur ni de branche par-nom.
+  if (res.hit && res.woundsLost) {
+    for (const line of fireTriggers(get, target, 'onWoundLoss', { rng: battleRng(), set, attackType: weapon.type })) critLog.push(line);
   }
   // Effet déclenché « à la mise hors de combat d'un adversaire » authoré (Affamé : Test de FM ou
   // festoie — perd Action + Mouvement) — dispatcher générique (state/triggeredEffects).
@@ -1358,7 +1350,7 @@ export function applyAttackResult(
   // Atouts de l'arme (Assommante, Immobilisante…) et Enchantements actifs — agrégés et appliqués par UN
   // dispatcher générique (state/triggeredEffects). `location` (Assommante Tête) et `woundsDealt` (Venin
   // sur PB) alimentent les Conditions Flow de gating.
-  if (res.hit) for (const line of fireTriggers(get, attacker, 'onHit', { victim: target, weapon, woundsDealt: res.woundsLost, location: res.location, attackKind: creatureAttackKind(weapon), rng: battleRng(), set })) log.push(ev('condition', line, target.id));
+  if (res.hit) for (const line of fireTriggers(get, attacker, 'onHit', { victim: target, weapon, woundsDealt: res.woundsLost, location: res.location, attackKind: creatureAttackKind(weapon), attackType: weapon.type, rng: battleRng(), set })) log.push(ev('condition', line, target.id));
   // Tir de zone (Aux Armes p.89) : nuage de projectiles. À bout portant (≤ 1 case ≈ 2 m) → +Indice
   // Dégâts sur la cible ; à portée → la touche frappe AUSSI les Indice créatures les plus proches
   // (≤ Indice mètres, 1 case = 2 m). Réutilise la géométrie de zone (comme le Souffle de créature).

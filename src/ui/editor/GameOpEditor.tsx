@@ -79,6 +79,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   weatherWard: '🌫️ Immunité aux intempéries',
   damageArmour: '🌫️ Pourrir le cuir (−1 PA)',
   reduceToZero: '🌫️ Réduire les Blessures à 0',
+  banish: '🌀 Bannir (retirer du jeu)',
   martyr: '🌫️ Martyr (recevoir les Dégâts)',
   giveTrapping: '🎒 Donner un objet',
   perRound: '🔄 Effet récurrent (chaque Round)',
@@ -103,7 +104,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
 
 /** Menu « + op » : TOUTES les op du vocabulaire, groupées par intention d'auteur. */
 const OP_GROUPS: [string, GameOp['op'][]][] = [
-  ['💥 Dégâts & soin', ['wounds', 'heal', 'healCaster', 'lifeSteal', 'reduceToZero']],
+  ['💥 Dégâts & soin', ['wounds', 'heal', 'healCaster', 'lifeSteal', 'reduceToZero', 'banish']],
   ['🌀 États', ['condition', 'removeCondition']],
   ['📊 Buffs & caractéristiques', ['charMod', 'apAll', 'testMod', 'ignoreStatePenalties', 'freeReroll', 'critTwice']],
   ['✨ Ressources', ['gainResource', 'corruption']],
@@ -246,6 +247,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'weatherWard': return { op: 'weatherWard' };
     case 'damageArmour': return { op: 'damageArmour', material: 'cuir' };
     case 'reduceToZero': return { op: 'reduceToZero' };
+    case 'banish': return { op: 'banish' };
     case 'martyr': return { op: 'martyr' };
     case 'giveTrapping': return { op: 'giveTrapping', custom: 'Ration' };
     case 'perRound': return { op: 'perRound', ops: [] };
@@ -317,6 +319,7 @@ export function opSummary(o: GameOp): string {
     case 'weatherWard': return `${L} immunité aux intempéries`;
     case 'damageArmour': return `${L} cuir −1 PA`;
     case 'reduceToZero': return `${L} Blessures à 0 (Inconscient)`;
+    case 'banish': return `${L} retirée du jeu`;
     case 'martyr': return `${L} reçoit les Dégâts`;
     case 'giveTrapping': return `${L} ${o.count && o.count > 1 ? `${o.count}× ` : ''}${giveTrappingLabel(o)}`;
     case 'perRound': return `${L} ${o.ops.length} op(s) chaque Round`;

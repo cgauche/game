@@ -281,6 +281,8 @@ export const EMPTY_FLOW: Flow = { kind: 'seq', steps: [] };
  *  `onRoundStart` : au début de son Round ; `onStartled` : magie / bruit fort ; `onKill` : adversaire
  *  mis hors de combat ; `onGainCondition` : le porteur vient de GAGNER un État (filtré par `condition` —
  *  Mâchoires d'acier : « chaque fois que vous gagnez un État Sonné »).
+ *  `onWoundLoss` se produit pour TOUTE perte de PB (mêlée OU distance) ; le TYPE d'attaque voyage dans le
+ *  contexte (`attackType`) et un effet peut s'y restreindre via son champ `attackType`.
  *  Cycle de vie du COMBAT (au point de hook correspondant — cf. `combatHooks`) : `onCombatStart` (le
  *  combat débute), `onCombatEnd` (le combat se résout, AVANT l'écran de victoire), `onRoundEnd` (fin de
  *  Round, après l'entretien), `onTurnStart`/`onTurnEnd` (début/fin du tour du porteur). */
@@ -306,6 +308,10 @@ export interface TriggeredEffect {
    *  d'acier : `condition:'sonne'`). Absent = réagit à n'importe quel État gagné. Inerte pour les
    *  autres triggers. */
   condition?: string;
+  /** Filtre par TYPE d'attaque (`onHit`/`onWoundLoss`) : ne réagit que si la touche/perte provient d'une
+   *  attaque de ce type (`melee`/`ranged`). Absent = tout type (Sang corrosif : « chaque fois qu'elle subit
+   *  des Blessures », LDB 85 l.220 → aucune restriction). Lu via `ctx.attackType`. */
+  attackType?: 'melee' | 'ranged';
 }
 
 /** Enveloppe une liste d'`Effect` (ancien format) en un Flow `seq` de `do` — pont de migration des
