@@ -459,6 +459,7 @@ export type PassiveKind =
   | 'maladie'      // symptôme de maladie : Détermination SEULE (pas Insensible)
   | 'faim'         // pénalité de Faim : « Plus besoin de manger »
   | 'magique'      // effet de SORT actif (ActiveEffect) : inconditionnel mais combiné en POOL non-cumul ; expire seul
+  | 'etat'         // pénalité/effet d'un État (LDB 16) : pool NON-CUMUL, le pire seul (l.20) ; Exténué ×stacks
   | 'intrinsèque'; // trait/mutation/qualité : inconditionnel ET ADDITIF (Σ dans la base — corps/équipement permanent)
 
 /** Effet PASSIF porté par un élément (trauma/trait/mutation/qualité…) : une op + son profil d'annulation.

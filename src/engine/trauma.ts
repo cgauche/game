@@ -12,6 +12,7 @@ import { Combatant, CharKey, HitLocation, Trauma, Difficulty, UpkeepDeferTest } 
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
 import { isPainless, traitPassiveMods } from './traits/dispatch';
+import { findConditionById } from '../data';
 import { talentPassiveMods } from './talentEffects';
 import { diseaseCharPenalties } from './disease';
 import { hungerCharPenalties } from './provisions';
@@ -388,6 +389,7 @@ const PASSIVE_CANCELLERS: Record<PassiveKind, ('determination' | 'painless' | 'p
   maladie: ['determination'],
   faim: [], // annulé par `noHunger` (flag de sort) — géré à la source Faim (P2), pas par une prothèse de séquelle
   magique: [], // sort actif : rien ne l'annule (il expire), mais il se combine en POOL non-cumul (≠ intrinsèque additif)
+  etat: [], // État (LDB 16) : annulé NON PAS ici mais par le flag de combat `ignoreStatePenalties` (au consommateur) ; pool non-cumul
   intrinsèque: [],
 };
 
@@ -441,6 +443,15 @@ export function passiveMods(c: Combatant): PassiveMod[] {
   }
   if (c.hunger && modSurvives(c, 'faim')) {
     for (const key of Object.keys(c.characteristics) as CharKey[]) for (const mod of hungerCharPenalties(c, key)) out.push({ op: { op: 'charMod', char: key, mod }, kind: 'faim' });
+  }
+  // États (LDB 16) : leur `passive: GameOp[]` (pénalité de Test → `testMod`, bonus à l'attaquant →
+  // `incomingAttackMod`, échelle de Mouvement…) émis kind `etat` (pool NON-CUMUL, le pire seul, l.20).
+  // VIDE aujourd'hui (migration des 12 États en cours — cf. docs/combat-events-coherence.md, Lot 4) :
+  // inerte tant qu'aucun État ne porte de `passive`. L'échelle par stacks (Exténué) et le gating de
+  // combat (`ignoreStatePenalties`) sont traités au moment de la migration de chaque État concerné.
+  for (const cond of c.conditions ?? []) {
+    const ed = findConditionById(cond.name);
+    for (const op of ed?.passive ?? []) out.push({ op, kind: 'etat' });
   }
   // Mutations de Corruption (LDB 19) : modifs PERMANENTES du corps → leur `passive: GameOp[]` (vocab unifié,
   // `mutations.json`) émis tel quel en kind `intrinsèque`, COMME les traits. (L'armure naturelle apAll/
