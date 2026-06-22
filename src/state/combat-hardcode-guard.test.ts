@@ -75,11 +75,14 @@ const TARGETS: Target[] = [
   {
     name: 'state/combatFlow.ts',
     src: read('./combatFlow.ts'),
-    reactive: /hasTraitKey\(|banishedAtZero|autoCleave|maybeHeroCleave|isUnstable|isBestial|hasPerturbingAura|suffocationTick/,
+    // `autoCleave`/`maybeHeroCleave` RETIRÉS de la regex : ce sont des FONCTIONS de machinerie géométrique
+    // (balayage des surdimensionnés/Nuée, LDB 85 l.299 + Frappe Mortelle optionnelle), déclenchées par un
+    // flag GÉNÉRIQUE (`res.cleave` = swarm ∨ sizeGap≥1) et l'adjacence pure — elles ne nomment AUCUNE entité.
+    reactive: /hasTraitKey\(|banishedAtZero|isUnstable|isBestial|hasPerturbingAura|suffocationTick/,
     // `banishedAtZero` = VARIANTE d'issue de mort lisant une CAPACITÉ de donnée (comme `usesSuddenDeath`/
     // `inDeathCondition`) — machinerie de mort universelle, ne nomme aucune entité → exclue (cf. NB en tête).
-    exclude: /^\s*import|export function (autoCleave|maybeHeroCleave)|banishedAtZero/,
-    baseline: 2, // …→4 (Riposte→counterOnDefenseWin)→3 (banish reclassé machinerie)→2 (Nerveux mont-IA → capacité `skittishMount`, lue par isSkittishMount). Reste : Cleave ×2 (géométrie → Condition spatiale, Lot 5/6)
+    exclude: /^\s*import|banishedAtZero/,
+    baseline: 0, // …→4 (Riposte→counterOnDefenseWin)→3 (banish machinerie)→2 (Nerveux→skittishMount)→0 (Cleave = machinerie géométrique, hors regex). combatFlow PURGÉ de toute réaction par-nom.
     lot: 'Lot 6',
   },
 ];

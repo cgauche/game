@@ -1688,7 +1688,11 @@ export function cleaveTargets(battle: BattleState, attacker: Combatant, hitIds: 
 /** Balayage AUTOMATIQUE d'un ennemi (IA) après une touche de mêlée d'un plus grand (`res.cleave`,
  *  LDB 85 l.299) : enchaîne jusqu'à BCC attaques sur des adversaires adjacents non encore frappés,
  *  se déplaçant sur la case d'une cible tuée (l.10). Résolution instantanée — les enchaînements
- *  n'ouvrent pas de modale de défense interactive (simplification documentée pour l'IA). */
+ *  n'ouvrent pas de modale de défense interactive (simplification documentée pour l'IA).
+ *  MACHINERIE GÉOMÉTRIQUE (pas une réaction d'entité câblée par-nom) : le déclencheur `res.cleave` est
+ *  dérivé GÉNÉRIQUEMENT (combat.ts : `attacker.swarm` ∨ `sizeGap ≥ 1`) et la Frappe Mortelle est une
+ *  RÈGLE OPTIONNELLE (`combat-frappe-mortelle`) ; le ciblage est l'adjacence pure (`cleaveTargets`). Aucun
+ *  trait/talent n'est nommé — règle universelle de l'arène pour les attaquants surdimensionnés/Nuée. */
 export function autoCleave(get: Get, set: SetFn, attacker: Combatant, primaryTarget: Combatant, res: AttackResult): void {
   if (attacker.kind !== 'enemy') return;
   const sizeCleave = !!res.cleave; // Taille/Nuée : enchaîne sur une simple TOUCHE (LDB 85 l.299)
