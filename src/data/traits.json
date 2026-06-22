@@ -288,7 +288,7 @@
       "page": 338
     },
     "capabilities": {
-      "championDefense": true
+      "counterOnDefenseWin": true
     }
   },
   {

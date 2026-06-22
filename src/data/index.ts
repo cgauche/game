@@ -371,7 +371,10 @@ export interface TraitCapabilities {
   magicResistance?: boolean;
   damageImmunity?: boolean;
   banishedAtZero?: boolean;
-  championDefense?: boolean;
+  /** Contre-attaque en gagnant un Test opposé de défense (Champion LDB 85). MÊME capacité GÉNÉRIQUE que
+   *  le talent Riposte (`CombatFeature.counterOnDefenseWin`) — un seul concept pour traits ET talents. */
+  counterOnDefenseWin?: boolean;
+  counterRequiresFastParry?: boolean;
   unstable?: boolean;
   painless?: boolean;
   // Psychologie / IA

@@ -181,7 +181,7 @@ const PSYCH_TYPE_LABEL: Record<string, string> = {
 const TRAIT_CAP_LABEL: Record<string, string> = {
   bonusWoundsBE: 'Blessures bonifiées (+BE)', swarm: 'Nuée', wardSave: 'Sauvegarde invulnérable',
   magicResistance: 'Résistance à la magie', damageImmunity: 'Immunité aux dégâts', banishedAtZero: 'Banni à 0 PB',
-  championDefense: 'Défense de champion', unstable: 'Instable', painless: 'Insensible à la douleur',
+  counterOnDefenseWin: 'Contre-attaque (défense gagnée)', counterRequiresFastParry: 'Contre exige arme Rapide', unstable: 'Instable', painless: 'Insensible à la douleur',
   psychImmuneIfAhead: 'Immunité psy si en avantage', mindless: 'Sans esprit', bestial: 'Bestial',
   coldBlooded: 'Sang-froid', stupid: 'Stupidité', rage: 'Rage', territorial: 'Territorial',
   fly: 'Vol', leap: 'Bond', stride: 'Foulée', seesInDark: 'Vision nocturne', perturbingAura: 'Aura perturbante',

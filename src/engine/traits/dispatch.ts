@@ -191,10 +191,8 @@ export function banishedAtZero(traits: TraitList | undefined): boolean {
   return traitCapability(traits, 'banishedAtZero');
 }
 
-/** Champion (LDB 85 p.338) : Dégâts en gagnant un Test opposé en défense de mêlée. */
-export function hasChampionDefense(traits: TraitList | undefined): boolean {
-  return traitCapability(traits, 'championDefense');
-}
+// Défense du champion (LDB 85) : capacité GÉNÉRIQUE `counterOnDefenseWin` (traits ET talents), lue par
+// `canCounterOnDefenseWin` (combatFeatures/dispatch) — plus de prédicat par-nom `hasChampionDefense`.
 
 
 /** Perturbant (LDB 85 p.341) : aura de −20 aux Tests à Bonus d'Endurance mètres. */

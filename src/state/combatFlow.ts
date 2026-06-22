@@ -52,11 +52,10 @@ import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, occupiesTile } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality } from '../engine/qualities/dispatch';
 import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf, freeAttackSourcesOf } from './triggeredEffects';
-import { hasStealAdvantage, shieldAdvantageLevel, hasRiposte, talentCritExtraWounds, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf } from '../engine/combatFeatures/dispatch';
-import { canStrikeFirst } from '../engine/qualities/dispatch';
+import { hasStealAdvantage, shieldAdvantageLevel, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf } from '../engine/combatFeatures/dispatch';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
-  hasChampionDefense, banishedAtZero,
+  banishedAtZero,
   isStupid, isUnstable, isBestial, isTerritorial, hasPerturbingAura,
   traitSeesInDark, bellicosePsychImmune, magicResistanceOf, flyMeters, runMultiplier,
   hasTraitKey,
@@ -1235,17 +1234,19 @@ export function applyAttackResult(
       }
     }
   }
-  // Champion (LDB 85 p.338) : « Si elle gagne un Test opposé en se défendant dans un Combat au
-  // Corps à corps, elle cause autant de Dégâts que si elle était l'attaquant. »
+  // Contre-attaque sur Test opposé de défense GAGNÉ en mêlée (Champion LDB 85 « cause autant de Dégâts
+  // que si elle était l'attaquant » ; Riposte LDB 10 avec arme Rapide). « Qui peut contrer » lu en DONNÉES
+  // (`canCounterOnDefenseWin` → capacité générique `counterOnDefenseWin`) ; la RÉSOLUTION (frappe avec le
+  // jet de défense gagnant) reste machinerie (règle universelle).
   if (weapon.type === 'melee' && res.advantageTo === 'defender' && res.netSL > 0
-      && (hasChampionDefense(target.traits) || (hasRiposte(target) && canStrikeFirst(res.parryWeapon ? [res.parryWeapon] : [])))
+      && canCounterOnDefenseWin(target, res.parryWeapon)
       && !isOutOfAction(target) && target.weapons[0]) {
     const riposte = resolveMeleePassive(target, attacker, target.weapons[0],
       { roll: res.defenderRoll ?? 1, target: res.defenderDetail?.target ?? 1, success: true, sl: res.netSL, isDouble: false });
     if (riposte.hit && riposte.woundsLost) {
       const before = attacker.wounds.current;
       attacker.wounds.current = Math.max(0, before - riposte.woundsLost);
-      critLog.push(tr('cf.riposte', { name: target.name, champ: hasChampionDefense(target.traits) ? tr('cf.fragChampion') : tr('cf.fragRiposte'), n: riposte.woundsLost }));
+      critLog.push(tr('cf.riposte', { name: target.name, n: riposte.woundsLost }));
       if (attacker.wounds.current <= 0 && !attacker.dead && !hasCondition(attacker, COND.inconscient)) applyZeroWounds(attacker);
       if (isOutOfAction(attacker)) {
         clearEngagementOf(get().battle?.combatants ?? [], attacker.id);

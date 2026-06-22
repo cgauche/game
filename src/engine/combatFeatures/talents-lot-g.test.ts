@@ -3,7 +3,7 @@ import {
   talentDamageBonus, isSlayer, talentDamageReduction, talentCritExtraWounds, talentRangedAPIgnore,
   ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust, talentInitiativeBonus,
   canPreemptRanged, hasSurpriseSave, reloadDRBonus, runMovementBonus, fleeMovementBonus,
-  shieldAdvantageLevel, hasRiposte, hasStealAdvantage, outnumberCountBonus,
+  shieldAdvantageLevel, canCounterOnDefenseWin, hasStealAdvantage, outnumberCountBonus,
   hasBraveheart, bleedIgnoreLevel, talentMagicResistance, talentFearIndice, talentTestDR,
   talentReverseFailed, offHandPenalty,
 } from './dispatch';
@@ -101,7 +101,8 @@ describe('défense / récupération (LDB 10)', () => {
     const c = mk([{ name: 'Porte-Bouclier', times: 2 }]);
     expect(shieldAdvantageLevel(c, w({ name: 'Bouclier', qualities: [{ id: 'protectrice', value: 2 }] }))).toBe(2); // bouclier = Atout Protectrice (id stable)
     expect(shieldAdvantageLevel(c, w({ name: 'Épée' }))).toBe(0);
-    expect(hasRiposte(mk([{ name: 'Riposte', times: 1 }]))).toBe(true);
+    expect(canCounterOnDefenseWin(mk([{ name: 'Riposte', times: 1 }]), w({ qualities: [{ id: 'rapide' }] }))).toBe(true); // Riposte + arme Rapide
+    expect(canCounterOnDefenseWin(mk([{ name: 'Riposte', times: 1 }]), w())).toBe(false); // arme NON Rapide → pas de Riposte
     expect(hasStealAdvantage(mk([{ name: 'Renversement', times: 1 }]))).toBe(true);
   });
   it('Endurci : niveau d’ignorance du saignement (la réduction des dégâts est data-driven, cf. state/etat-perround)', () => {

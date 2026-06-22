@@ -6,7 +6,8 @@
 import type { Combatant, Weapon } from '../types';
 import { groupMatch } from '../groups';
 import { isShieldItem } from '../equipCompare';
-import { findTalentById, domainByLabel } from '../../data';
+import { findTalentById, domainByLabel, traitById } from '../../data';
+import { canStrikeFirst } from '../qualities/dispatch';
 import type { CombatFeature, CombatFeatureCtx, CastingKind } from './types';
 
 /** Famille d'incantation d'un Talent par son `id` STABLE (« magie-mineure », « beni ») via sa DONNÉE
@@ -171,9 +172,20 @@ export function shieldAdvantageLevel(c: Combatant, parryWeapon: Weapon | undefin
   return levelSum(c, (d) => !!d.shieldAdvantage);
 }
 
-/** Riposte (LDB 10) : contre-attaque en défense gagnée si l'arme de parade est Rapide. */
-export function hasRiposte(c: Combatant): boolean {
-  return featuresOf(c).some(({ def }) => def.riposte);
+/** Contre-attaque sur Test opposé de DÉFENSE gagné en mêlée — lue en DONNÉES, traits ET talents
+ *  confondus (capacité GÉNÉRIQUE `counterOnDefenseWin`). Champion (LDB 85) : sans condition d'arme.
+ *  Riposte (LDB 10) : exige une arme de PARADE Rapide (`counterRequiresFastParry`). Tout trait/talent
+ *  qui déclare la capacité contre — plus de branche par-nom `hasChampionDefense`/`hasRiposte`. */
+export function canCounterOnDefenseWin(c: Combatant, parryWeapon: Weapon | undefined): boolean {
+  const fast = canStrikeFirst(parryWeapon ? [parryWeapon] : []);
+  for (const t of c.traits ?? []) {
+    const cap = traitById.get(t.id)?.capabilities;
+    if (cap?.counterOnDefenseWin && (!cap.counterRequiresFastParry || fast)) return true;
+  }
+  for (const { def } of featuresOf(c)) {
+    if (def.counterOnDefenseWin && (!def.counterRequiresFastParry || fast)) return true;
+  }
+  return false;
 }
 
 /** Renversement (LDB 10) : vole TOUS les Avantages adverses au lieu de +1 sur un opposé gagné. */

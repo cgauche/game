@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import {
   traitCharMods, traitMovementMod, traitBonusWoundsBE, wardSaves,
-  banishedAtZero, hasChampionDefense, hasPerturbingAura,
+  banishedAtZero, hasPerturbingAura,
   magicResistanceOf, immunityTypes, isUnstable, isPainless,
   bellicosePsychImmune, isMindless, isBestial, isColdBlooded, isStupid, hasRage,
   isTerritorial, flyMeters, runMultiplier, traitSeesInDark, mutationsAtSpawn,
 } from './dispatch';
+import { canCounterOnDefenseWin } from '../combatFeatures/dispatch';
 import { coldBloodedAdjust, isPsychImmune } from '../psychology';
 import { attackModifiers } from '../combat';
 import { traumaCharPenalties } from '../trauma';
@@ -46,7 +47,7 @@ describe('dispatch — parsing et prédicats (LDB 85)', () => {
     expect(banishedAtZero([{ id: 'demoniaque', value: 8 }])).toBe(true);
   });
   it('divers combat : Champion, Parasité, Perturbant, Instable', () => {
-    expect(hasChampionDefense([{ id: 'champion' }])).toBe(true);
+    expect(canCounterOnDefenseWin({ traits: [{ id: 'champion' }] } as never, undefined)).toBe(true); // Champion : sans condition d'arme
     expect(hasPerturbingAura([{ id: 'perturbant' }])).toBe(true);
     expect(isUnstable([{ id: 'instable' }])).toBe(true);
   });

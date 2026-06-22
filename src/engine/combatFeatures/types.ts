@@ -71,8 +71,11 @@ export interface CombatFeature {
   // ── Défense / Avantage ─────────────────────────────────────────────────────
   /** Porte-Bouclier : +niveau Avantage quand on se défend au Bouclier (défense gagnée). */
   shieldAdvantage?: boolean;
-  /** Riposte : avec une arme Rapide, inflige des Dégâts en gagnant un Test opposé en défense. */
-  riposte?: boolean;
+  /** Contre-attaque en gagnant un Test opposé de défense en mêlée (Champion LDB 85 sans condition d'arme ;
+   *  Riposte LDB 10 avec `counterRequiresFastParry`). GÉNÉRIQUE : tout talent/trait qui le déclare contre. */
+  counterOnDefenseWin?: boolean;
+  /** La contre-attaque exige une arme de PARADE Rapide (Riposte ; Champion ne l'exige pas). */
+  counterRequiresFastParry?: boolean;
   /** Renversement : en gagnant le Test opposé de Corps à corps, prend TOUS les Avantages adverses au lieu de +1. */
   stealAdvantage?: boolean;
   /** Maîtrise du combat : compte pour 1+niveau personnes au calcul du surnombre. */
