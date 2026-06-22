@@ -709,7 +709,34 @@
     "source": {
       "book": "LDB",
       "page": 340
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "woundsDealt",
+            "op": ">",
+            "value": 0
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "victim",
+              "ops": [
+                {
+                  "op": "exposeDisease",
+                  "disease": "blessure-purulente"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
   },
   {
     "id": "infravision",
@@ -842,7 +869,34 @@
     "source": {
       "book": "LDB",
       "page": 340
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "woundsDealt",
+            "op": ">",
+            "value": 0
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "victim",
+              "ops": [
+                {
+                  "op": "exposeDisease",
+                  "disease": "$arg"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
   },
   {
     "id": "meneur",
@@ -1507,7 +1561,45 @@
     "source": {
       "book": "LDB",
       "page": 343
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "all",
+            "of": [
+              {
+                "kind": "woundsDealt",
+                "op": ">",
+                "value": 0
+              },
+              {
+                "kind": "has",
+                "who": "caster",
+                "what": "trait",
+                "value": "infecte"
+              }
+            ]
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "victim",
+              "ops": [
+                {
+                  "op": "exposeDisease",
+                  "disease": "fievre-du-rongeur"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
   },
   {
     "id": "venin",

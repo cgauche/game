@@ -1253,22 +1253,10 @@ export function applyAttackResult(
       }
     }
   }
-  // Infecté / Maladie (Type) (LDB 85 p.340) : un héros BLESSÉ par la créature porteuse est exposé →
-  // Tests de Contraction post-combat (finalizeBattle, LDB 20 l.32/49). Rongeur Infecté → Fièvre du Rongeur.
-  if (res.hit && res.woundsLost && target.kind === 'hero') {
-    const atkTraits = attacker.traits ?? [];
-    if (hasTraitKey(atkTraits, 'infecte')) {
-      target.woundedByInfected = true;
-      if (hasTraitKey(atkTraits, 'rongeur')) target.woundedByRodent = true; // rongeur Infecté → Fièvre du Rongeur
-    }
-    // Munition Infecté (Aux Armes p.102 — ferraille/débris souillés) : exposition à l'infection.
-    if (hasQuality(weapon, QUALITY_IDS.Infecte)) target.woundedByInfected = true;
-    for (const t of atkTraits) {
-      if (t.id === 'maladie' && t.arg && !(target.diseaseExposure ?? []).includes(t.arg)) {
-        target.diseaseExposure = [...(target.diseaseExposure ?? []), t.arg];
-      }
-    }
-  }
+  // Exposition aux Maladies (Infecté/Rongeur/Maladie (Type) ; munition Infecté) MIGRÉE en données :
+  // `effects: onHit → if woundsDealt>0 → exposeDisease(<id>)` sur les traits/qualité de l'ATTAQUANT,
+  // dispatchés par le `fireTriggers('onHit')` ci-dessous. Op GÉNÉRIQUE unique (plus de flags ad hoc).
+  // Le bilan reste héros-only : exposer un non-héros est inerte. (LDB 20 l.32/49 ; LDB 85 p.340.)
   // Nausée (LDB 20 l.170) : un Test de DÉPLACEMENT raté (Esquive) fait vomir → État Sonné.
   if (res.defenderDetail?.mode === 'esquive' && !res.defenderDetail.success
       && hasActiveSymptom(target, 'nausee') && !hasCondition(target, COND.sonne)) {
@@ -3096,7 +3084,7 @@ function combatEndResistVal(c: Combatant): number {
 /**
  * DÉCIDE et CONSOMME les Tests de fin de combat DUS pour le héros `c` (LDB 18 l.382/20 l.72/20 l.32-49 +
  * LDB 19 Corruption) — SOURCE UNIQUE de la décision : les marqueurs (`tookCriticalThisFight`/`woundDressed`/
- * `woundedByInfected`/`woundedByRodent`/`diseaseExposure`) sont purgés ICI (idempotent). Retourne la LISTE
+ * `diseaseExposure`) sont purgés ICI (idempotent). Retourne la LISTE
  * des Tests de Contraction de maladie dus + le NIVEAU d'exposition à la Corruption (worst des créatures
  * affrontées), ou `null` pour la Corruption si aucune. PUR de RNG (aucun jet) : le jet vit dans l'étape de
  * cascade (héros manuel) OU dans la résolution inline (non-interactif).
@@ -3115,19 +3103,15 @@ function decideCombatEndHeroTests(
   }
   c.tookCriticalThisFight = false; // consommé (idempotent)
   c.woundDressed = false;
-  // Traits Infecté / Maladie (Type) (LDB 20 l.32/49 ; LDB 85 p.340) — 'off' : aucune contraction.
+  // Exposition aux Maladies (LDB 20 l.32/49 ; LDB 85 p.340) — SOURCE UNIQUE `diseaseExposure` (Infecté/
+  // Rongeur/Maladie/munition exposent via l'op `exposeDisease`). Difficulté = celle de la maladie
+  // (`def.contractDifficulty`). 'off' : aucune contraction.
   if (dm !== 'off' && !c.dead) {
-    if (c.woundedByInfected && contractionDue(c, 'blessure-purulente'))
-      diseases.push({ disease: 'blessure-purulente', difficulty: 'facile', label: 'Blessure Purulente (Infecté)' });
-    if (c.woundedByRodent && contractionDue(c, 'fievre-du-rongeur'))
-      diseases.push({ disease: 'fievre-du-rongeur', difficulty: 'accessible', label: 'Fièvre du Rongeur' });
     for (const diseaseId of c.diseaseExposure ?? []) {
       const def = DISEASE_DEFS[diseaseId];
       if (def && contractionDue(c, def.id)) diseases.push({ disease: def.id, difficulty: def.contractDifficulty, label: `Contagion (${diseaseLabel(def.id)})` });
     }
   }
-  c.woundedByInfected = false;
-  c.woundedByRodent = false;
   c.diseaseExposure = undefined;
   return { diseases, corruption: c.dead ? null : worstCorruption };
 }

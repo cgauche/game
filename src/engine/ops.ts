@@ -252,6 +252,11 @@ export type GameOp =
   | { op: 'reduceDiseaseDays'; days?: number }
   /** Les Blessures ne s'infecteront pas (Cautériser, LDB 47 → flag `woundDressed`, LDB 18 l.382). */
   | { op: 'preventInfection' }
+  /** EXPOSE la cible à une Maladie (`disease` = id de `maladies.json`) → Test de Contraction au bilan de
+   *  fin de combat (LDB 20 l.32/49). Op GÉNÉRIQUE : remplace les flags ad hoc `woundedByInfected`/
+   *  `woundedByRodent` (Infecté → 'blessure-purulente', Rongeur → 'fievre-du-rongeur', trait Maladie →
+   *  l'`arg`). Cumule sans doublon dans `diseaseExposure`. Inerte sur un non-héros (bilan héros-only). */
+  | { op: 'exposeDisease'; disease: string }
   /** Guérit `count` (+échelle DR) Blessures critiques de convalescence — jamais une amputation
    *  (Larmes de Shallya, LDB 42). */
   | { op: 'cureCriticalWound'; count?: number; countPerSL?: PerSL }
@@ -829,6 +834,11 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'preventInfection': {
         target.woundDressed = true; // pas d'Infection post-critique (LDB 18 l.382)
         lines.push(t('op.preventInfection', { name: target.name, src: ctx.label ?? 'sort' }));
+        break;
+      }
+      case 'exposeDisease': {
+        // SILENCIEUX (comme l'ancien flag) : l'exposition ne s'exprime qu'au bilan de fin de combat.
+        if (!(target.diseaseExposure ?? []).includes(o.disease)) target.diseaseExposure = [...(target.diseaseExposure ?? []), o.disease];
         break;
       }
       case 'cureCriticalWound': {

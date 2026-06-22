@@ -43,6 +43,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   skillDRBonus: '🥷 +DR à une Compétence (passif)',
   incomingAttackMod: '🛡️ Modif. au toucher de l’attaquant',
   incomingAdvantage: '⚔️ Avantage donné à l’attaquant (mêlée)',
+  exposeDisease: '🦠 Exposer à une Maladie (Test post-combat)',
   attackKeyword: '✨ Mot-clé d’attaque (ex. magique)',
   mitigateIncoming: '🌫️ Mitige les Dégâts entrants (Éthéré)',
   ignoreStatePenalties: '🚫 Ignore les pénalités d’État',

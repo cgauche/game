@@ -628,12 +628,10 @@ export interface Combatant {
   hunger?: import('./provisions').HungerState;
   /** Immunités acquises (Vérole Urticante guérie — LDB 20 l.97) : maladies inattrapables à nouveau. */
   diseaseImmunities?: string[];
-  /** Blessé pendant CE combat par une créature au Trait Infecté → Test post-combat de Résistance
-   *  Facile (+40) ou Blessure Purulente (LDB 20 l.32) ; rongeur Infecté → aussi Fièvre du Rongeur (+20, l.49). */
-  woundedByInfected?: boolean;
-  woundedByRodent?: boolean;
-  /** Maladies (Trait « Maladie (Type) ») auxquelles ce combattant a été EXPOSÉ pendant le combat
-   *  (blessé par la créature porteuse) → Tests de Contraction post-combat (LDB 85 p.340 / LDB 20). */
+  /** Maladies auxquelles ce combattant a été EXPOSÉ pendant le combat (blessé par une source porteuse :
+   *  Infecté → 'blessure-purulente', Rongeur Infecté → 'fievre-du-rongeur', Maladie (Type) → l'`arg`,
+   *  munition Infecté) → Tests de Contraction post-combat (LDB 85 p.340 / LDB 20 l.32/49). SOURCE UNIQUE
+   *  (op `exposeDisease`) — remplace les anciens flags `woundedByInfected`/`woundedByRodent`. */
   diseaseExposure?: string[];
   // Maladresse (LDB 14 — Tableau des Oups !) : effets reportés au prochain Round.
   /** Pénalité (positive) à l'Action au prochain Round (Oups! 41-60). Consommée au prochain Test d'attaque. */

@@ -12,7 +12,7 @@
 import type { Combatant, Weapon, HitLocation } from '../engine/types';
 import type { Get, Set as SetFn } from './flowTypes';
 import { type EffectTrigger, type TriggeredEffect, type Flow, flowHasTest } from './flow';
-import type { OpsCtx } from '../engine/ops';
+import type { OpsCtx, GameOp } from '../engine/ops';
 import { resolveQualities } from '../engine/qualities/dispatch';
 import { featureLevel } from '../engine/combatFeatures/dispatch';
 import type { CombatFeature } from '../engine/combatFeatures/types';
@@ -30,6 +30,15 @@ import { RNG, defaultRNG } from '../engine/dice';
 function withArg(effects: TriggeredEffect[], arg?: string): TriggeredEffect[] {
   if (!arg) return effects;
   const diff = difficultyFromLabel(arg);
+  // Injection GÉNÉRIQUE de l'arg d'instance dans une op : tout champ valant le littéral `'$arg'` reçoit
+  // l'arg (trait Maladie « (peste) » → `exposeDisease{disease:'$arg'}`). Une seule convention, pas de variante.
+  const substOp = (op: GameOp): GameOp => {
+    const o = op as Record<string, unknown>;
+    if (!Object.values(o).includes('$arg')) return op;
+    const out = { ...o };
+    for (const k in out) if (out[k] === '$arg') out[k] = arg;
+    return out as unknown as GameOp;
+  };
   const visit = (f: Flow): Flow => {
     if (f.kind === 'seq') return { ...f, steps: f.steps.map(visit) };
     if (f.kind === 'if') return { ...f, then: visit(f.then), ...(f.else ? { else: visit(f.else) } : {}) };
@@ -39,7 +48,8 @@ function withArg(effects: TriggeredEffect[], arg?: string): TriggeredEffect[] {
       const test = f.test.argDifficulty ? { ...f.test, difficulty: diff } : f.test;
       return { ...f, test, success: visit(f.success), fail: visit(f.fail) };
     }
-    return f; // `do` (feuille) : inchangé
+    if (f.kind === 'do' && f.effect.type === 'ops') return { ...f, effect: { ...f.effect, ops: f.effect.ops.map(substOp) } };
+    return f;
   };
   return effects.map((eff) => ({ ...eff, flow: visit(eff.flow) }));
 }

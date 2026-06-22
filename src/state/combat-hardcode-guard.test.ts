@@ -77,7 +77,7 @@ const TARGETS: Target[] = [
     src: read('./combatFlow.ts'),
     reactive: /hasRiposte|hasChampionDefense|hasTraitKey\(|banishedAtZero|autoCleave|maybeHeroCleave|isUnstable|isBestial|hasPerturbingAura|suffocationTick/,
     exclude: /^\s*import|export function (autoCleave|maybeHeroCleave)/,
-    baseline: 8, // 14→10 (Sonné→Avantage en données : passive incomingAdvantage) →8 (imports multi-lignes plus comptés). Reste : Riposte/Cleave/infection/banish/nerveux (Lot 6)
+    baseline: 6, // 14→10 (Sonné→Avantage)→8 (imports plus comptés)→6 (Infection : Infecté/Rongeur/Maladie/munition → op générique exposeDisease). Reste : Riposte/Cleave/banish/nerveux (Lot 6)
     lot: 'Lot 6',
   },
 ];

@@ -844,6 +844,33 @@
     "source": {
       "book": "AA",
       "page": 102
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "woundsDealt",
+            "op": ">",
+            "value": 0
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "victim",
+              "ops": [
+                {
+                  "op": "exposeDisease",
+                  "disease": "blessure-purulente"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
   }
 ]

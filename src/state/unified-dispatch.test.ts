@@ -76,3 +76,44 @@ describe('Attaques gratuites — résolveur kind-agnostique (plus de chemin tale
     expect(bestial.effects.some((e) => flowHasFreeAttack(e.flow))).toBe(false); // Bestial = onRoundEnd → Brisé, pas une frappe
   });
 });
+
+describe('Exposition aux Maladies — op générique exposeDisease (onHit, plus de flags ad hoc)', () => {
+  const get = (() => ({ battle: { combatants: [] } })) as never;
+  const onHit = (attacker: Combatant, victim: Combatant, woundsDealt: number) =>
+    fireTriggers(get, attacker, 'onHit', { victim, woundsDealt } as never);
+
+  it('attaquant Infecté blesse la victime → exposition à blessure-purulente', () => {
+    const atk = mk({ traits: [{ id: 'infecte' }] as never });
+    const vic = mk();
+    onHit(atk, vic, 3);
+    expect(vic.diseaseExposure).toEqual(['blessure-purulente']);
+  });
+
+  it('Rongeur SANS Infecté → aucune exposition (la Condition `caster a le trait infecte` filtre)', () => {
+    const atk = mk({ traits: [{ id: 'rongeur' }] as never });
+    const vic = mk();
+    onHit(atk, vic, 3);
+    expect(vic.diseaseExposure ?? []).toEqual([]);
+  });
+
+  it('Rongeur + Infecté → blessure-purulente ET fievre-du-rongeur (deux sources, un dispatch)', () => {
+    const atk = mk({ traits: [{ id: 'infecte' }, { id: 'rongeur' }] as never });
+    const vic = mk();
+    onHit(atk, vic, 3);
+    expect(vic.diseaseExposure?.sort()).toEqual(['blessure-purulente', 'fievre-du-rongeur']);
+  });
+
+  it('trait Maladie (Type) : l’`arg` d’instance est injecté dans l’op (`$arg` → withArg)', () => {
+    const atk = mk({ traits: [{ id: 'maladie', arg: 'peste-noire' }] as never });
+    const vic = mk();
+    onHit(atk, vic, 3);
+    expect(vic.diseaseExposure).toEqual(['peste-noire']);
+  });
+
+  it('touche SANS Blessure (woundsDealt=0) → aucune exposition (gate woundsDealt>0)', () => {
+    const atk = mk({ traits: [{ id: 'infecte' }] as never });
+    const vic = mk();
+    onHit(atk, vic, 0);
+    expect(vic.diseaseExposure ?? []).toEqual([]);
+  });
+});
