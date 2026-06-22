@@ -12,7 +12,7 @@ import {
   qualities, trappings, weaponGroups, etats, maladies, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
   stars, locations, findLocationById, books, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, weaponGroupLabel,
   skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names,
-  pregens, oups, interludeEvents, peripeties,
+  pregens, oups, interludeEvents, peripeties, psychologyLabel,
 } from '../../data';
 import { statName } from '../../engine/statEntry';
 import { talentMaxLabel } from '../../engine/careerSlots';
@@ -171,11 +171,6 @@ const OUPS_KIND_LABEL: Record<string, string> = {
   selfWound: 'Auto-blessure', weaponDamageActLast: 'Arme abîmée + agit en dernier', actionPenalty: 'Malus d’Action',
   loseMovement: 'Perte de Mouvement', loseAction: 'Perte d’Action', trauma: 'Traumatisme', hitAlly: 'Touche un allié',
 };
-/** Libellés FR des types de Psychologie (LDB 21) — affichage (la donnée porte le `psychType` STABLE). */
-const PSYCH_TYPE_LABEL: Record<string, string> = {
-  peur: 'Peur', terreur: 'Terreur', animosite: 'Animosité', haine: 'Haine', prejuge: 'Préjugé',
-  amour: 'Amour', camaraderie: 'Camaraderie', phobie: 'Phobie',
-};
 /** Libellés FR des CAPACITÉS de Trait (drapeaux booléens lus par le moteur — `TraitCapabilities`).
  *  Les capacités psy (psychType/psychImmune/psychIndice) sont surfacées à part (méta). */
 const TRAIT_CAP_LABEL: Record<string, string> = {
@@ -282,7 +277,7 @@ const traitItem = (t: (typeof traits)[number]): CodexItem => {
   return {
     label: t.label, sub: t.prefix ?? undefined, desc: t.desc, html: true, source: src(t.source), appearance: t.appearance,
     meta: facts(
-      cap?.psychType ? fact('Psychologie', PSYCH_TYPE_LABEL[cap.psychType] ?? cap.psychType) : null,
+      cap?.psychType ? fact('Psychologie', psychologyLabel(cap.psychType)) : null,
       cap?.psychImmune ? fact('Immunité', '(Psychologie)') : null,
       cap?.psychIndice != null ? fact('Indice', cap.psychIndice) : null,
     ),
@@ -488,7 +483,7 @@ export const CODEX: CodexCategory[] = [
     // Groupés par type (Peur, Terreur, Animosité…). Édition = catégorie « Traits » (source unique).
     items: traits
       .filter((t) => t.capabilities?.psychType || t.capabilities?.psychImmune)
-      .map((t) => ({ ...traitItem(t), group: t.capabilities?.psychType ? PSYCH_TYPE_LABEL[t.capabilities.psychType] ?? t.capabilities.psychType : 'Immunité' })),
+      .map((t) => ({ ...traitItem(t), group: t.capabilities?.psychType ? psychologyLabel(t.capabilities.psychType) : 'Immunité' })),
   },
   {
     key: 'domains', label: 'Domaines', group: 'Magie',

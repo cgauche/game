@@ -9,7 +9,7 @@ import { t } from '../i18n';
 import { RNG, defaultRNG } from './dice';
 import { rollTest, evaluateTest } from './tests';
 import { effectiveChar } from './characteristics';
-import { findPsychologyById } from '../data';
+import { findPsychologyById, psychologies } from '../data';
 import { SizeCategory, sizeGap } from './size';
 import { groupMatch } from './groups';
 import { bellicosePsychImmune, hasTraitKey } from './traits/dispatch';
@@ -56,19 +56,15 @@ export interface PsychAffliction {
   active?: boolean;
 }
 
-/** Types de Traits psy CIBLÉS (résolution binaire de Calme, pilotés par un Groupe-Cible — LDB 21). */
-export const CIBLE_TYPES = new Set<PsychType>(['animosite', 'haine', 'prejuge', 'amour', 'camaraderie', 'phobie']);
+/** Types de Traits psy CIBLÉS (résolution binaire de Calme, pilotés par un Groupe-Cible, LDB 21) —
+ *  DÉRIVÉ de `psychology.json` (`targeted:true`), plus de Set codé en dur. */
+export const CIBLE_TYPES = new Set<PsychType>(psychologies.filter((p) => p.targeted).map((p) => p.id as PsychType));
 
-/** Libellés des Traits psy ciblés (LDB 21) — partagé par les modales psy (combat + rencontre) ET la
- *  narration d'issue (state). Déplacé depuis ui/psychLabels pour que la couche state y accède. */
-export const CIBLE_LABEL: Record<string, { emoji: string; label: string }> = {
-  animosite: { emoji: '😤', label: t('cible.animosite') },
-  haine: { emoji: '😡', label: t('cible.haine') },
-  prejuge: { emoji: '🙄', label: t('cible.prejuge') },
-  amour: { emoji: '❤️', label: t('cible.amour') },
-  camaraderie: { emoji: '🤝', label: t('cible.camaraderie') },
-  phobie: { emoji: '🕷️', label: t('cible.phobie') },
-};
+/** Libellés (emoji + nom) des Traits psy ciblés — DÉRIVÉS de `psychology.json` (SOURCE UNIQUE, comme
+ *  `etats.json` pour les États). Partagé par les modales psy (combat + rencontre) et la narration. */
+export const CIBLE_LABEL: Record<string, { emoji: string; label: string }> = Object.fromEntries(
+  psychologies.filter((p) => p.targeted).map((p) => [p.id, { emoji: p.emoji ?? '', label: p.label }]),
+);
 
 /** Source de Peur/Terreur que `foe` représente pour `self` : combine la Taille (LDB 85) et l'Indice
  *  inspiré au statbloc (`causesPeur`/`causesTerreur`). Terreur prime ; sinon le plus haut Indice. Pur.

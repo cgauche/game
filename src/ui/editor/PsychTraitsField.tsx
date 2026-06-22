@@ -3,15 +3,14 @@
  * mutation, Animosité(Elfes), Phobie(Serpents)…). Édite les vrais `PsychTrait` ({type, cible?, indice?}).
  * Source UNIQUE des libellés de type psy (cf. `PsychType`).
  */
-import type { PsychTrait, PsychType } from '../../engine/psychology';
+import { CIBLE_TYPES, type PsychTrait, type PsychType } from '../../engine/psychology';
+import { psychologies, psychologyLabel } from '../../data';
 
-const PSYCH_TYPES: PsychType[] = ['peur', 'terreur', 'frenesie', 'animosite', 'haine', 'prejuge', 'amour', 'camaraderie', 'phobie', 'trauma'];
-const PSYCH_LABEL: Record<PsychType, string> = {
-  peur: 'Peur', terreur: 'Terreur', frenesie: 'Frénésie', animosite: 'Animosité', haine: 'Haine',
-  prejuge: 'Préjugé', amour: 'Amour', camaraderie: 'Camaraderie', phobie: 'Phobie', trauma: 'Trauma',
-};
-/** Types CIBLÉS (Animosité(Elfes)…) / À INDICE (Peur 2) — pour n'afficher les champs que quand utiles. */
-const TARGETED = new Set<PsychType>(['animosite', 'haine', 'prejuge', 'amour', 'camaraderie', 'phobie']);
+// Types conférables = ceux de `psychology.json` (exclut `trauma`, marqueur INTERNE) ; libellés/ciblage
+// DÉRIVÉS de la donnée (source UNIQUE, plus de map ni de Set codés en dur).
+const PSYCH_TYPES: PsychType[] = psychologies.map((p) => p.id as PsychType);
+const TARGETED = CIBLE_TYPES;
+/** Types À INDICE (Peur 2…) — pour n'afficher le champ Indice que quand il est utile. */
 const INDEXED = new Set<PsychType>(['peur', 'terreur', 'phobie']);
 
 export function PsychTraitsField({ value, onChange }: { value: PsychTrait[] | undefined; onChange: (v: PsychTrait[] | undefined) => void }) {
@@ -24,7 +23,7 @@ export function PsychTraitsField({ value, onChange }: { value: PsychTrait[] | un
       {list.map((t, i) => (
         <div className="tf-row" key={i}>
           <select value={t.type} onChange={(e) => upd(i, { type: e.target.value as PsychType })}>
-            {PSYCH_TYPES.map((p) => <option key={p} value={p}>{PSYCH_LABEL[p]}</option>)}
+            {PSYCH_TYPES.map((p) => <option key={p} value={p}>{psychologyLabel(p)}</option>)}
           </select>
           {TARGETED.has(t.type) && (
             <input placeholder="cible (Elfes, Serpents…)" value={t.cible ?? ''} onChange={(e) => upd(i, { cible: e.target.value || undefined })} />

@@ -51,13 +51,6 @@ export const fr = {
   'hitloc.oiseau.jambeD': 'Patte droite',
   'hitloc.araignee.jambeD': 'Patte',
   'hitloc.araignee.corps': 'Abdomen',
-  // Traits psy ciblés (LDB 21) — migré de engine/psychology.ts (CIBLE_LABEL, partie label ; emoji inline).
-  'cible.animosite': 'Animosité',
-  'cible.haine': 'Haine',
-  'cible.prejuge': 'Préjugé',
-  'cible.amour': 'Amour',
-  'cible.camaraderie': 'Camaraderie',
-  'cible.phobie': 'Phobie',
   // Menu principal (UI) — Phase D.
   'menu.title': 'Warhammer Fantasy',
   'menu.subtitle': 'Jeu de Rôle — 4ᵉ édition · Tactique au tour par tour',
