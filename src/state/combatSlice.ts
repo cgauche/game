@@ -1429,7 +1429,15 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingDefense: null }); // null AVANT la reprise → ré-entrance/double-advance impossibles
       if (attacker && defender) {
         const suspended = applyAttackResult(get, set, attacker, defender, pd.weapon, pd.result);
-        if (suspended) return; // Déviation Critique du héros : l'étape 'deviation' (resolveDeviation) rejouera autoCleave/Piétinement/fumble/reprise
+        if (suspended) {
+          // Déviation Critique du héros : `applyAttackResult` a EMPILÉ l'étape 'deviation' APRÈS l'étape
+          // défense courante. Avancer le curseur dessus (comme la Maladresse plus bas) — sinon, en
+          // Auto-combat, le pilote BOUCLE sur l'étape défense orpheline (pendingDefense déjà nulle →
+          // defenseConfirm no-op = soft-lock). Garde : seulement si on est ENCORE sur l'étape défense.
+          const casc = get().pendingCascade;
+          if (casc?.participants[casc.cursor]?.jet === 'defense') get().cascadeNext();
+          return; // la suite (autoCleave/Piétinement/fumble/reprise) part de l'applier 'deviation' (resolveDeviation)
+        }
         if (pd.free) {
           set({ battle: { ...get().battle!, acted: pd.prevActed ?? get().battle!.acted } }); // attaque gratuite : ne consomme pas l'Action
           applyFreeAttackEffects(get, attacker, defender, pd.freeKind ?? '', pd.result); // À Terre (Attaque caudale)…
@@ -1468,7 +1476,13 @@ export function createCombatSlice(get: Get, set: Set) {
       if (attacker && defender) {
         const res = resolveMeleePassive(attacker, defender, pd.weapon, pd.atk, pd.location ?? undefined);
         const suspended = applyAttackResult(get, set, attacker, defender, pd.weapon, res);
-        if (suspended) return; // Déviation Critique du héros (même après « Subir » : la déviation d'armure est un choix distinct) — l'étape 'deviation' (resolveDeviation) reprend
+        if (suspended) {
+          // Déviation Critique (même après « Subir ») : avancer le curseur hors de l'étape défense
+          // orpheline (cf. defenseConfirm) — anti soft-lock du pilote Auto-combat. Garde idempotente.
+          const casc = get().pendingCascade;
+          if (casc?.participants[casc.cursor]?.jet === 'defense') get().cascadeNext();
+          return; // l'étape 'deviation' (resolveDeviation) reprend la suite
+        }
         if (pd.free) {
           set({ battle: { ...get().battle!, acted: pd.prevActed ?? get().battle!.acted } }); // attaque gratuite : ne consomme pas l'Action
           applyFreeAttackEffects(get, attacker, defender, pd.freeKind ?? '', res); // À Terre (Attaque caudale)…

@@ -458,6 +458,42 @@ describe('Boucle de jeu (store)', () => {
     expect(cur?.fumble?.weapon).toBeTruthy();
   });
 
+  it('Déviation Critique — défenseur héros crité : le curseur AVANCE sur l’étape deviation (anti soft-lock Auto-combat)', () => {
+    // Régression : un héros crité en DÉFENSE → applyAttackResult empile l'étape 'deviation' et suspend ;
+    // defenseConfirm doit avancer le curseur HORS de l'étape défense (pendingDefense déjà nulle), sinon le
+    // pilote Auto-combat boucle dessus (defenseConfirm no-op) = soft-lock vécu.
+    setRule('combat-critical-deflect', true);
+    seedBattleRng(424242);
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(testScene);
+    useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
+    vi.clearAllTimers();
+    const b = useGame.getState().battle!;
+    const h = b.combatants.find((c) => c.kind === 'hero')!;
+    const e = b.combatants.find((c) => c.kind === 'enemy')!;
+    const result = {
+      hit: true, attackerRoll: 12, netSL: 4, location: 'corps', damage: 8, woundsLost: 3,
+      critical: true, advantageTo: null, defenderDefeated: false, log: 'Coup Critique (corps)',
+    } as any;
+    useGame.setState({
+      battle: { ...b },
+      pendingDefense: {
+        attackerId: e.id, defenderId: h.id, weapon: e.weapons[0], location: 'corps',
+        atk: { roll: 12, target: 40, success: true, sl: 4, isDouble: false }, mode: 'parade',
+        def: { roll: 60, target: 40, success: false, sl: 0, isDouble: false }, result,
+      },
+      pendingCascade: { title: 'Défense', icon: '🛡️', purpose: 'combat', cursor: 0, log: [], participants: [{ id: 'defense-jet', kind: 'defenseJet', jet: 'defense', actorId: h.id }] } as any,
+    });
+    useGame.getState().defenseConfirm();
+    const st = useGame.getState();
+    const cur = st.pendingCascade?.participants[st.pendingCascade!.cursor];
+    expect(cur?.kind).toBe('deviation'); // le curseur a QUITTÉ l'étape défense orpheline
+    expect(st.pendingDefense).toBeNull();
+    resetRule('combat-critical-deflect');
+  });
+
   it('Maladresse — « agir en dernier » (21-40) ne dure qu’UN Round (ordre canonique restauré)', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
