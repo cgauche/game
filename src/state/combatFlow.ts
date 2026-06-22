@@ -2681,13 +2681,13 @@ export function applyCast(
   if (crit) {
     logLines.push(
       choice === 'critique'
-        ? 'Incantation Critique : le Projectile inflige une Blessure Critique.'
+        ? tr('cf.castCritical')
         : choice === 'puissance'
-          ? 'Puissance totale : le sort est lancé quels que soient NI et DR (mais peut être Dissipé).'
-          : 'Force inéluctable : le sort ne peut pas être Dissipé.',
+          ? tr('cf.overcastFullPower')
+          : tr('cf.overcastIrresistible'),
     );
     if (!hasTalent(caster, 'Diction instinctive')) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed }));
-    else logLines.push('Diction instinctive : aucune Imparfaite sur le double réussi.');
+    else logLines.push(tr('cf.dictionInstinctive'));
   }
   // « Avantages et Magie » (LDB 46 l.176) : si la cible a déjà été visée par un Sort du
   // MÊME Domaine ce Round, le lanceur gagne +1 Avantage (le Vent converge). Sorts seulement.
