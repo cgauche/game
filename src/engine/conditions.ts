@@ -11,6 +11,7 @@ import { bleedIgnoreLevel } from './combatFeatures/dispatch';
 import { bonus, effectiveChar } from './characteristics';
 import { d10, d100, RNG, defaultRNG } from './dice';
 import { passiveMods } from './trauma';
+import type { GameOp } from './ops';
 import { rollTest, isDoubleRoll, type TestResult } from './tests';
 import { dropExpiredGrantedTraits } from './grantedTraits';
 import { dropExpiredGrantedResources } from './grantedResources';
@@ -111,34 +112,38 @@ export function effectTestMod(c: Combatant): number {
   return (c.activeEffects ?? []).reduce((s, e) => s + (e.testMod ?? 0), 0);
 }
 
+/** Les `testMod` portés par les États du combattant (kind `etat`), déjà ×pions (perStack) par le
+ *  collecteur. Lus en « PIRE seul » par combatTestPenalty/testStatePenalty (non-cumul, LDB 16 l.20). */
+function etatTestMods(c: Combatant): Extract<GameOp, { op: 'testMod' }>[] {
+  const out: Extract<GameOp, { op: 'testMod' }>[] = [];
+  for (const m of passiveMods(c)) if (m.kind === 'etat' && m.op.op === 'testMod') out.push(m.op);
+  return out;
+}
+
 export function combatTestPenalty(c: Combatant): number {
   const cand: number[] = [];
   // Endurance de l'anachorète (LDB 42) : « ne subit aucune pénalité causée par les États » —
   // n'efface QUE les pénalités d'État (l'aura Perturbante est un trait, pas un État).
   if (!hasActiveFlag(c, 'ignoreStatePenalties')) {
-    if (hasCondition(c, COND.aveugle)) cand.push(-10);
-    if (hasCondition(c, COND.brise)) cand.push(-10);
-    if (hasCondition(c, COND.empoisonne)) cand.push(-10);
-    if (hasCondition(c, COND.sonne)) cand.push(-10);
-    const ext = stacks(c, COND.extenue);
-    if (ext > 0) cand.push(-10 * ext);
+    for (const m of etatTestMods(c)) {
+      if (m.movementOnly) continue; // pénalité de DÉPLACEMENT (À Terre/Empêtré) — pas un Test de combat
+      cand.push(m.amount); // magnitude/portée en données (etats.json) ; déjà ×pions (Exténué)
+    }
   }
-  // Aura d'une créature Perturbante (LDB 85 p.341) : −20 à tous les Tests (non cumulable — flag).
+  // Aura d'une créature Perturbante (LDB 85 p.341) : −20 à tous les Tests (non cumulable — flag, ≠ État).
   if (c.perturbed) cand.push(-20);
   const state = cand.length ? Math.min(...cand) : 0;
   return state + effectTestMod(c); // modificateur de Sort (Malédiction de malchance) : STACKE avec l'État
 }
 
 /**
- * Pénalité d'États aux Tests HORS COMBAT (LDB ch.16). Non-cumul (l.20 : la PIRE pénalité seule).
- * Couvre les États « à tous les Tests » : Empoisonné (l.66) / Sonné (l.123) −10, Exténué (l.89) −10/pion,
- * Brisé (l.55) −10 SAUF un Test de course (Athlétisme) ou de dissimulation (Discrétion). Les États à
- * portée sensorielle/déplacement (Aveuglé=vue, Assourdi=audition, À Terre/Empêtré=déplacement) ne sont
- * PAS appliqués ici faute de classification du Test (rare hors combat ; raffinement futur).
+ * Pénalité d'États aux Tests HORS COMBAT (LDB ch.16). Non-cumul (l.20 : la PIRE pénalité seule) ; le
+ * modificateur de Sort (effectTestMod) s'ajoute par-dessus. Magnitudes/portées en DONNÉES (etats.json
+ * passive `testMod` : `combatOnly`/`movementOnly`/`exceptSkills`), lues via passiveMods (kind `etat`).
+ * Les États non classables hors combat (Aveuglé=vue, `combatOnly`) sont exclus ici.
  */
-const BRISE_EXEMPT = new Set(['athletisme', 'discretion']); // course / dissimulation (LDB 16 l.55), par skillId
-// Tests « impliquant un déplacement » (LDB 16 l.37/l.85), par skillId. Les Acrobaties (spécialisation de
-// Représentation) ne sont pas classables au niveau de l'id de base → non couvertes (rare hors combat).
+// Tests « impliquant un déplacement » (LDB 16 l.37/l.85), par skillId — classification de COMPÉTENCE (fait
+// de système, ≠ contenu d'État). Acrobaties (spé de Représentation) non classables à l'id de base → non couvertes.
 const MOVEMENT_SKILL = new Set(['athletisme', 'esquive', 'escalade', 'chevaucher', 'natation']);
 export function testStatePenalty(c: Combatant, skill?: string): number {
   const effMod = effectTestMod(c); // modificateur de Sort (stacke, hors non-cumul d'État)
@@ -146,15 +151,11 @@ export function testStatePenalty(c: Combatant, skill?: string): number {
   // Endurance de l'anachorète (LDB 42) : aucune pénalité d'État pour la durée (le modificateur de Sort reste).
   if (hasActiveFlag(c, 'ignoreStatePenalties')) return effMod;
   const cand: number[] = [];
-  if (hasCondition(c, COND.empoisonne)) cand.push(-10);
-  if (hasCondition(c, COND.sonne)) cand.push(-10);
-  const ext = stacks(c, COND.extenue);
-  if (ext > 0) cand.push(-10 * ext);
-  if (hasCondition(c, COND.brise) && !BRISE_EXEMPT.has(skill ?? '')) cand.push(-10);
-  // À Terre / Empêtré : pénalité aux Tests impliquant un déplacement (LDB 16 l.37 / l.85).
-  if (MOVEMENT_SKILL.has(skill ?? '')) {
-    if (hasCondition(c, COND.aTerre)) cand.push(-20);
-    if (hasCondition(c, COND.empetre)) cand.push(-10);
+  for (const m of etatTestMods(c)) {
+    if (m.combatOnly) continue; // Aveuglé (vue) : non classé hors combat (faute de classification du Test)
+    if (m.movementOnly && !MOVEMENT_SKILL.has(skill ?? '')) continue; // À Terre/Empêtré : Tests de déplacement seuls
+    if (m.exceptSkills?.includes(skill ?? '')) continue; // Brisé : sauf course (Athlétisme) / dissimulation (Discrétion)
+    cand.push(m.amount);
   }
   return (cand.length ? Math.min(...cand) : 0) + effMod;
 }

@@ -291,7 +291,7 @@ export type GameOp =
    *  Tests, porté par un effet actif, STACKE sur les États, lu par `combat/testStatePenalty`). AVEC `char` =
    *  modificateur de TEST qualifié par Caractéristique (Visage inversé −20 Soc, objet Laid −20 Soc), émis par
    *  le collecteur passif et lu par `testValue/passiveTestMod` — n'altère PAS la Caractéristique (≠ charMod). */
-  | { op: 'testMod'; amount: number; char?: CharKey }
+  | { op: 'testMod'; amount: number; char?: CharKey; combatOnly?: boolean; movementOnly?: boolean; exceptSkills?: string[] }
   /** Immunité à l'EXPOSITION météo (froid/pluie/neige/tempête) tant que le Sort dure — Peau de loup
    *  d'hiver (Ulric), Protection contre la pluie. Lu par `exposureNight` (engine/exposure). */
   | { op: 'weatherWard' }

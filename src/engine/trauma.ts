@@ -429,6 +429,13 @@ function modSurvives(c: Combatant, kind: PassiveKind, t?: Trauma): boolean {
  *  - à terme trait/mutation/objet : poussent leurs `PassiveMod` (kind explicite) au point d'extension.
  * Le charMod de SORT reste lu par effectiveChar (e.char/e.bonus) → non émis ici (pas de double comptage).
  */
+/** Multiplie la magnitude d'une op d'État par le nombre de pions (perStack — Exténué −10/pion). Seul
+ *  `testMod` (la pénalité par pion) est concerné aujourd'hui ; les autres ops d'État ne sont pas perStack. */
+function scaleEtatOp(op: GameOp, mult: number): GameOp {
+  if (mult === 1 || op.op !== 'testMod') return op;
+  return { ...op, amount: op.amount * mult };
+}
+
 export function passiveMods(c: Combatant): PassiveMod[] {
   const out: PassiveMod[] = [];
   for (const t of c.traumas ?? []) {
@@ -451,7 +458,9 @@ export function passiveMods(c: Combatant): PassiveMod[] {
   // combat (`ignoreStatePenalties`) sont traités au moment de la migration de chaque État concerné.
   for (const cond of c.conditions ?? []) {
     const ed = findConditionById(cond.name);
-    for (const op of ed?.passive ?? []) out.push({ op, kind: 'etat' });
+    if (!ed?.passive?.length) continue;
+    const mult = ed.perStack ? Math.max(1, cond.value ?? 1) : 1; // Exténué −10/pion (LDB 16 l.89)
+    for (const op of ed.passive) out.push({ op: scaleEtatOp(op, mult), kind: 'etat' });
   }
   // Mutations de Corruption (LDB 19) : modifs PERMANENTES du corps → leur `passive: GameOp[]` (vocab unifié,
   // `mutations.json`) émis tel quel en kind `intrinsèque`, COMME les traits. (L'armure naturelle apAll/

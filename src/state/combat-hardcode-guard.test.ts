@@ -57,8 +57,10 @@ const TARGETS: Target[] = [
     reactive: /hasCondition\(c, COND\.|hasCondition\(target, COND\.|stacks\(c, COND\./,
     // Prédicats GÉNÉRIQUES de machinerie (mort/gating universels) — ne nomment pas un effet d'entité éditable.
     exclude: /isOutOfAction|inDeathCondition|c\.dead|roundsAtZero|return !hasCondition|return hasCondition\(c, COND\.surpris\)/,
-    // 30 → 27 : meleeAttackerBonus (À Terre/Surpris/Aveuglé) migré en données (etats.json incomingAttackMod).
-    baseline: 27,
+    // 30 → 27 (meleeAttackerBonus → incomingAttackMod data) → 11 (combatTestPenalty/testStatePenalty →
+    // testMod data combatOnly/movementOnly/exceptSkills + perStack). Reste : par-round/évasion (endOfRound),
+    // gating, et prédicats de mort (exclus). Cible Lot 4 finale : 0.
+    baseline: 11,
     lot: 'Lot 4',
   },
   {

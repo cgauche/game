@@ -21,6 +21,11 @@
         "op": "incomingAttackMod",
         "mode": "melee",
         "amount": 20
+      },
+      {
+        "op": "testMod",
+        "amount": -20,
+        "movementOnly": true
       }
     ]
   },
@@ -37,6 +42,11 @@
         "op": "incomingAttackMod",
         "mode": "melee",
         "amount": 10
+      },
+      {
+        "op": "testMod",
+        "amount": -10,
+        "combatOnly": true
       }
     ]
   },
@@ -47,7 +57,17 @@
     "source": {
       "book": "LDB",
       "page": 168
-    }
+    },
+    "passive": [
+      {
+        "op": "testMod",
+        "amount": -10,
+        "exceptSkills": [
+          "athletisme",
+          "discretion"
+        ]
+      }
+    ]
   },
   {
     "id": "empetre",
@@ -56,7 +76,14 @@
     "source": {
       "book": "LDB",
       "page": 168
-    }
+    },
+    "passive": [
+      {
+        "op": "testMod",
+        "amount": -10,
+        "movementOnly": true
+      }
+    ]
   },
   {
     "id": "empoisonne",
@@ -65,7 +92,13 @@
     "source": {
       "book": "LDB",
       "page": 168
-    }
+    },
+    "passive": [
+      {
+        "op": "testMod",
+        "amount": -10
+      }
+    ]
   },
   {
     "id": "en-flammes",
@@ -83,7 +116,14 @@
     "source": {
       "book": "LDB",
       "page": 168
-    }
+    },
+    "passive": [
+      {
+        "op": "testMod",
+        "amount": -10
+      }
+    ],
+    "perStack": true
   },
   {
     "id": "hemorragique",
@@ -110,7 +150,13 @@
     "source": {
       "book": "LDB",
       "page": 169
-    }
+    },
+    "passive": [
+      {
+        "op": "testMod",
+        "amount": -10
+      }
+    ]
   },
   {
     "id": "surpris",

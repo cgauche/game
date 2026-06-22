@@ -271,6 +271,9 @@ export interface EtatData {
    *  Surpris/Empêtré…), lue par les prédicats moteur EXISTANTS (`canTakeAction`/`effectiveMovement`/
    *  `cannotDefend`) au lieu des branches par-nom. VIDE aujourd'hui (Lot 4). */
   gating?: { action?: 'none'; movement?: 'none' | 'half' | 'crawl'; cannotDefend?: true };
+  /** Les magnitudes du `passive` sont-elles multipliées par le nombre de pions (Exténué −10/pion, LDB 16
+   *  l.89) ? Appliqué à l'émission par le collecteur `passiveMods`. Défaut (absent) : magnitude fixe. */
+  perStack?: boolean;
 }
 /** Tables Couleur des Yeux / Cheveux (LDB 05 l.698-744) : 2d10, libellé par refChar. */
 export interface DetailColorData {
