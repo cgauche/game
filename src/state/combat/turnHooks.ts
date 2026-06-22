@@ -28,6 +28,7 @@ import {
 } from '../../engine/psychology';
 import { isColdBlooded, hasRage } from '../../engine/traits/dispatch';
 import { fireTriggers } from '../triggeredEffects';
+import { t } from '../../i18n';
 import type { Combatant } from '../../engine/types';
 import type { Get, Set as SetFn } from '../flowTypes';
 
@@ -75,7 +76,7 @@ export function endFrenzyIfDone(get: Get, set: SetFn, c: Combatant): void {
   if (stunned || !foeInLoS) {
     c.frenzied = false;
     addCondition(c, COND.extenue);
-    set({ battle: { ...get().battle!, log: [...get().battle!.log, ev('frenzy', `${c.name} sort de Frénésie (Exténué).`, c.id)] } });
+    set({ battle: { ...get().battle!, log: [...get().battle!.log, ev('frenzy', t('turn.frenzyEnd', { name: c.name }), c.id)] } });
   }
 }
 
@@ -93,7 +94,7 @@ export function aiMaybeFrenzy(get: Get, set: SetFn, enemy: Combatant): void {
   if (!foeInLoS) return;
   if (resolveFrenzyEntry(effectiveChar(enemy, 'FM'), battleRng()).success) {
     enemy.frenzied = true;
-    set({ battle: { ...get().battle!, log: [...get().battle!.log, ev('frenzy', `${enemy.name} entre en Frénésie !`, enemy.id)] } });
+    set({ battle: { ...get().battle!, log: [...get().battle!.log, ev('frenzy', t('turn.frenzyEnter', { name: enemy.name }), enemy.id)] } });
   }
 }
 
@@ -124,17 +125,17 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
       const r = resolveTerreurTest(calmeValue(enemy), src.indice, battleRng(), isColdBlooded(enemy.traits), sansPeur); // À sang-froid : inverse un raté (LDB 85)
       if (!r.success) {
         addCondition(enemy, COND.brise, r.brise);
-        log.push(`${enemy.name} est terrifié par ${foe.name} : ${r.brise} Brisé.`);
+        log.push(t('turn.terrified', { name: enemy.name, foe: foe.name, brise: r.brise }));
       }
       enemy.psychState.push({ type: 'peur', sourceId: foe.id, indice: r.success ? 0 : r.devientPeur, calmeDR: 0, lastTestRound: battle.round }); // Terreur → Peur (ignorée si Sans Peur réussit)
     } else if (sansPeur) {
       // Sans Peur : UN seul Test de Calme Accessible (+20) à la rencontre ; réussi → Peur ignorée d'emblée.
       const r = resolvePeurTest(calmeValue(enemy), src.indice, 0, battleRng(), isColdBlooded(enemy.traits), true);
       enemy.psychState.push({ type: 'peur', sourceId: foe.id, indice: src.indice, calmeDR: r.calmeDR, lastTestRound: battle.round });
-      log.push(r.vaincue ? `${enemy.name} ignore la peur de ${foe.name} (Sans Peur).` : `${enemy.name} a peur de ${foe.name}.`);
+      log.push(r.vaincue ? t('turn.fearVanquished', { name: enemy.name, foe: foe.name }) : t('turn.fear', { name: enemy.name, foe: foe.name }));
     } else {
       enemy.psychState.push({ type: 'peur', sourceId: foe.id, indice: src.indice, calmeDR: 0, lastTestRound: battle.round });
-      log.push(`${enemy.name} a peur de ${foe.name}.`);
+      log.push(t('turn.fear', { name: enemy.name, foe: foe.name }));
     }
   }
   // Test ÉTENDU de Calme des Peur actives (calmeDR < indice) — UNE fois par Round.
@@ -143,7 +144,7 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
     const r = resolvePeurTest(calmeValue(enemy), p.indice ?? 1, p.calmeDR ?? 0, battleRng(), isColdBlooded(enemy.traits)); // À sang-froid (LDB 85)
     p.calmeDR = r.calmeDR;
     p.lastTestRound = battle.round;
-    if (r.vaincue) log.push(`${enemy.name} surmonte sa peur.`);
+    if (r.vaincue) log.push(t('turn.fearOvercome', { name: enemy.name }));
   }
   // ── Traits psy CIBLÉS (Animosité/Haine/… — LDB 21), instantané pour l'IA ──
   const visible = battle.combatants.filter((v) => v.id !== enemy.id && v.pos && !isOutOfAction(v) && !lineOfSightCover(scene, enemy.pos!, v.pos, [], smokeOf(battle)).blocked);
@@ -152,13 +153,13 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
     if (!p.active || !CIBLE_TYPES.has(p.type) || !p.cible || p.lastTestRound === battle.round) continue;
     if (!visible.some((v) => groupMatch(p.cible!, v.groups ?? []))) continue;
     p.lastTestRound = battle.round;
-    if (resolveCalmeSimple(calmeValue(enemy), battleRng()).success) { p.active = false; log.push(`${enemy.name} se ressaisit (${p.type}).`); }
+    if (resolveCalmeSimple(calmeValue(enemy), battleRng()).success) { p.active = false; log.push(t('turn.recompose', { name: enemy.name, type: p.type })); }
   }
   const tt = targetedTrigger(enemy, visible); // nouveau Trait ciblé déclenché par un membre du groupe visible
   if (tt) {
     const r = resolveCalmeSimple(calmeValue(enemy), battleRng());
     enemy.psychState.push({ type: tt.type, cible: tt.cible, sourceId: tt.sourceId, active: !r.success, lastTestRound: battle.round });
-    if (!r.success) log.push(`${enemy.name} est en proie à son ${tt.type} (${tt.cible}).`);
+    if (!r.success) log.push(t('turn.afflictionGrip', { name: enemy.name, type: tt.type, cible: tt.cible }));
   }
   if (log.length) set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(log, 'fear', enemy.id)] } });
 }
@@ -184,7 +185,7 @@ registerCombatHook({
     if (!enemy || !hasRage(enemy.traits) || enemy.frenzied || (enemy.advantage ?? 0) < 3) return;
     enemy.advantage = 0;
     enemy.frenzied = true;
-    battle.log.push(ev('frenzy', `${enemy.name} entre dans une rage dévorante (Frénésie) !`, enemy.id));
+    battle.log.push(ev('frenzy', t('turn.rageEnter', { name: enemy.name }), enemy.id));
     set({ battle: { ...battle } });
   },
 });

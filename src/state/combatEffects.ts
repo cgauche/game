@@ -38,6 +38,7 @@ import { startCascade } from './cascade';
 import { loseWounds, addCondition } from '../engine/conditions';
 import { touchActors } from './combatOrParty';
 import { ev } from './combatLog';
+import { t } from '../i18n';
 
 /**
  * Effets de scène/campagne (`Effect[]`) appliqués par le store : le grand `applyEffects`
@@ -576,7 +577,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         recomputeLoadout(clone); // met à jour l'encombrement
         return clone;
       });
-      env.log(`${who?.name || 'Le groupe'} récupère : ${it.name}.`);
+      env.log(t('eff.recover', { name: who?.name || t('eff.party'), item: it.name }));
     },
   },
   giveMoney: {
@@ -590,8 +591,8 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
           brass: s.money.brass + (e.brass ?? 0),
         },
       }));
-      const parts = [e.gold && `${e.gold} CO`, e.silver && `${e.silver} pa`, e.brass && `${e.brass} sc`].filter(Boolean); // noms canon FR (couronne/pistole/sou)
-      if (parts.length) env.log(`Bourse : ${(e.gold ?? 0) < 0 || (e.silver ?? 0) < 0 ? '' : '+'}${parts.join(' ')}.`);
+      const parts = [e.gold && t('eff.coin.gold', { n: e.gold }), e.silver && t('eff.coin.silver', { n: e.silver }), e.brass && t('eff.coin.brass', { n: e.brass })].filter(Boolean); // noms canon FR (couronne/pistole/sou)
+      if (parts.length) env.log(t('eff.purse', { sign: (e.gold ?? 0) < 0 || (e.silver ?? 0) < 0 ? '' : '+', parts: parts.join(' ') }));
     },
   },
   giveXp: {
@@ -605,7 +606,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
           return clone;
         }),
       }));
-      env.log(`Groupe : +${e.amount} PX.`);
+      env.log(t('eff.xp', { amount: e.amount }));
     },
   },
   learnSpell: {
@@ -623,7 +624,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         (h) => ((h.spells ?? []).includes(sp.id) ? h : { ...h, spells: [...(h.spells ?? []), sp.id] }),
         (party) => party.findIndex((h) => !!eligibleTalent(h, sp) && !(h.spells ?? []).includes(sp.id)),
       );
-      if (who) env.log(`${who.name} apprend ${sp.label}.`);
+      if (who) env.log(t('eff.learnSpell', { name: who.name, spell: sp.label }));
     },
   },
   restoreFortune: {
@@ -632,7 +633,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     apply: (_e, env) => {
       // Début de session (LDB 17 l.47) : Chance regagnée jusqu'au maximum = Destin actuel.
       env.set((s: GameState) => ({ party: restoreFortune(s.party) }));
-      env.log('Début de session : Points de Chance regagnés (maximum = Destin).');
+      env.log(t('eff.restoreFortune'));
     },
   },
 
@@ -672,10 +673,10 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         const dmg = Math.max(0, rollExpr(e.damage, battleRng()));
         loseWounds(c, dmg);
         for (const cond of e.conditions ?? []) addCondition(c, cond.name, cond.value ?? 1);
-        return `${c.name} ${dmg}${e.conditions?.length ? ` +${e.conditions.map((x) => x.name).join('/')}` : ''}`;
+        return t('eff.blastTarget', { name: c.name, dmg, conds: e.conditions?.length ? t('eff.fragPlusConds', { conds: e.conditions.map((x) => x.name).join('/') }) : '' });
       });
       env.set(touchActors(env.get()));
-      env.log(`💥 Souffle (${e.damage}) : ${lines.join(' · ')}.`);
+      env.log(t('eff.blast', { damage: e.damage, lines: lines.join(' · ') }));
     },
     refs: (e, ctx) => {
       const out: EffectRefIssue[] = [];
@@ -699,11 +700,11 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         const lost = Math.max(0, 3 * m + d10(battleRng()) - be);
         loseWounds(c, lost);
         if (lost > be) addCondition(c, 'a-terre');
-        return `${c.name} ${lost}${lost > be ? ' (À Terre)' : ''}`;
+        return t('eff.fallTarget', { name: c.name, lost, aterre: lost > be ? t('eff.fragATerre') : '' });
       });
       if (targets.length) {
         env.set({ ...touchActors(env.get()), ...(e.to && !env.get().battle ? { partyPos: e.to } : {}) });
-        env.log(`🪂 Chute de ${m} m : ${lines.join(' · ')}.`);
+        env.log(t('eff.fall', { m, lines: lines.join(' · ') }));
       } else if (e.to && !env.get().battle) env.set({ partyPos: e.to });
     },
   },
@@ -722,10 +723,10 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         return { ...h, diseases: [...(h.diseases ?? []), dz] };
       });
       if (who && whoId) {
-        const line = `${who.name} a contracté : ${e.disease} (symptômes au repos).`;
+        const line = t('eff.diseaseContracted', { name: who.name, disease: e.disease });
         env.log(line);
         // VISIBLE (le journal seul ne suffit pas) : effet d'AUTEUR → révélation témoin.
-        env.pushReveal({ kind: 'effet', title: `Maladie — ${e.disease}`, lines: [line], subjectId: whoId, severity: 'grave' });
+        env.pushReveal({ kind: 'effet', title: t('eff.diseaseTitle', { disease: e.disease }), lines: [line], subjectId: whoId, severity: 'grave' });
       }
     },
   },
@@ -747,14 +748,14 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         const traumas = e.kind === 'amputation'
           ? permanentAmputations('Amputation', ampNote, e.location, battleRng())
           : [traumaFromKind(e.kind, e.severity ?? 'mineur', e.location, { be, d10: d10(battleRng()) })];
-        labels = traumas.map((t) => t.label);
+        labels = traumas.map((tr) => tr.label);
         return { ...h, traumas: [...(h.traumas ?? []), ...traumas], criticalWounds: (h.criticalWounds ?? 0) + 1 };
       });
       if (who) {
-        const line = `${who.name} subit une Blessure Critique (${e.kind}, ${e.location}).`;
+        const line = t('eff.criticalSuffered', { name: who.name, kind: e.kind, location: e.location });
         env.log(line);
         // VISIBLE (le journal seul ne suffit pas) : effet d'AUTEUR → révélation témoin.
-        env.pushReveal({ kind: 'effet', title: `Blessure Critique — ${e.kind}`, lines: [line, ...labels], subjectId: whoId, severity: 'grave' });
+        env.pushReveal({ kind: 'effet', title: t('eff.criticalTitle', { kind: e.kind }), lines: [line, ...labels], subjectId: whoId, severity: 'grave' });
       }
     },
   },
@@ -764,7 +765,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     apply: (e, env) => {
       // Trauma « Cauchemars » (LDB 21 l.92) posé sur un héros (défaut : le premier).
       const who = env.mutateHero(e.heroId, (h) => ({ ...h, nightmares: true }));
-      if (who) env.log(`${who.name} est marqué par un trauma : des cauchemars le hanteront chaque nuit.`);
+      if (who) env.log(t('eff.nightmares', { name: who.name }));
     },
   },
   giveCorruption: {
@@ -807,7 +808,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
           return i >= 0 ? i : 0;
         },
       );
-      if (who) env.log(`${who.name} a péché contre son dieu : +${amount} Point(s) de Péché.`);
+      if (who) env.log(t('eff.sin', { name: who.name, amount }));
     },
   },
 
@@ -830,7 +831,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const diners = env.get().party;
       for (const h of diners) if (!h.dead) feedFromMeal(h);
       env.set({ party: [...diners] });
-      env.log('Le groupe prend un vrai repas — chacun mange à sa faim.');
+      env.log(t('eff.meal'));
     },
   },
   interlude: {

@@ -34,6 +34,7 @@ import { smokeZone } from './lineOfSight';
 import { applyTriggeredEffects } from './triggeredEffects';
 import { canTakeAction } from '../engine/conditions';
 import { bus, EVT } from './bus';
+import { t } from '../i18n';
 
 // ---------------------------------------------------------------------------
 // Émission d'animation + énumération (déplacées de combatFlow)
@@ -250,7 +251,7 @@ export function resolveManeuver(
   const rng = battleRng();
   // Libellé de feed = celui de la manœuvre (« Souffle (Feu) ») s'il enrichit le geste, sinon le libellé
   // canonique du geste (`ATTACK_LABEL[def.kind]`). Aucune LOGIQUE sur le label — pur affichage.
-  const lines: string[] = [`${attacker.name} déclenche ${def.label || ATTACK_LABEL[def.kind]} !`];
+  const lines: string[] = [t('manv.trigger', { name: attacker.name, label: def.label || ATTACK_LABEL[def.kind] })];
   emitCreatureAttackAnim(attacker, def.kind);
   const alive = (c: Combatant) => c.kind !== attacker.kind && !isOutOfAction(c) && !!c.pos;
   const nearest = (cands: Combatant[]) => cands.reduce((p, c) => (chebyshev(attacker.pos!, p.pos!) <= chebyshev(attacker.pos!, c.pos!) ? p : c));
@@ -262,7 +263,7 @@ export function resolveManeuver(
     let margin: number | undefined;
     if (drow) {
       const opp = resolveOpposed(atk ?? drow, drow);
-      if (!opp.attackerWins) { lines.push(`${tgt.name} résiste.`); floatTag(tgt, def.defense === 'init' ? 'Résiste' : 'Esquive'); return; }
+      if (!opp.attackerWins) { lines.push(t('manv.resists', { name: tgt.name })); floatTag(tgt, def.defense === 'init' ? t('fx.resists') : t('fx.dodge')); return; }
       // Marge = DR net du vainqueur (+Avantage dépensé pour les manœuvres à Avantage VARIABLE, Regard l.238).
       margin = opp.netSL + (def.advantageMode === 'variable' ? spent : 0);
     }
@@ -289,8 +290,8 @@ export function resolveManeuver(
     if (def.id === 'souffle-fumee') {
       const dur = Math.max(1, bonus(effectiveChar(attacker, 'E')));
       const tiles = smokeZone(attacker.pos!, center.pos!, blast);
-      const zones = [...(get().battle!.zones ?? []), { label: 'Fumée', tiles, rounds: dur, blocksLoS: true }];
-      lines.push(`La zone se remplit de fumée — Lignes de vue bloquées ${dur} Round(s).`);
+      const zones = [...(get().battle!.zones ?? []), { label: t('manv.smokeZone'), tiles, rounds: dur, blocksLoS: true }];
+      lines.push(t('manv.smoke', { dur }));
       set({ battle: { ...get().battle!, zones } });
     }
   } else if (def.targeting === 'allFoes') {
