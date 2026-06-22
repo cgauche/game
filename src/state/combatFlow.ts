@@ -126,7 +126,7 @@ const resolveSpell = (idOrLabel: string) => findSpellById(idOrLabel) ?? findSpel
 import { toBrass, fromBrass } from '../engine/money';
 import { Scene, Effect, isWalkable } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
-import { lineOfSightCover, coverModifier, tilesBetween } from './lineOfSight';
+import { lineOfSightCover, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
 import { fearSourceFor, sansPeurVs, terreurBrise, calmeValue, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
@@ -744,14 +744,22 @@ export function computeMoveReach(get: Get): Map<string, number> {
   const geom = mountOf(battle, active) ?? active;
   const blocked = occupied(battle, geom);
   const reach = moveReachFor(geom, scene, active.pos, movementRemaining(battle, active), blocked, sizeFootprint(geom.size));
-  return briseFleeFilter(battle, active, reach);
+  return briseFleeFilter(scene, battle, active, reach);
 }
 
-/** Brisé (LDB 16 l.55) : fuir seulement — retire toute case qui RAPPROCHE d'un ennemi. */
-function briseFleeFilter(battle: BattleState, active: Combatant, reach: Map<string, number>): Map<string, number> {
+/** Brisé (LDB 16 l.55) : « se déplacer jusqu'à se retrouver à l'abri, HORS DE VUE de l'ennemi ». Si des
+ *  cases atteignables BRISENT la Ligne de Vue de tout adversaire (`tileSeenByFoe` faux), on s'y limite
+ *  (gagner une cachette prime) ; sinon, à défaut de cachette, fuir = ne pas se rapprocher (distance). */
+function briseFleeFilter(scene: Scene, battle: BattleState, active: Combatant, reach: Map<string, number>): Map<string, number> {
   if (!hasCondition(active, COND.brise)) return reach;
   const foes = battle.combatants.filter((c) => c.kind !== active.kind && !isOutOfAction(c) && c.pos);
   if (!foes.length) return reach;
+  const smoke = smokeOf(battle);
+  const hiddenTiles = new Map([...reach].filter(([k]) => {
+    const [x, y] = k.split(',').map(Number);
+    return !tileSeenByFoe(scene, foes, { x, y }, smoke);
+  }));
+  if (hiddenTiles.size) return hiddenTiles; // une cachette atteignable → s'y mettre à l'abri (RAW)
   const distNow = Math.min(...foes.map((e) => chebyshev(active.pos!, e.pos!)));
   return new Map([...reach].filter(([k]) => {
     const [x, y] = k.split(',').map(Number);
@@ -773,7 +781,7 @@ export function computeRunReach(get: Get): Map<string, number> {
   const M = mountMovement(battle, active);
   if (M <= 0) return new Map();
   const reach = moveReachFor(geom, scene, active.pos, M * 3, blocked, sizeFootprint(geom.size));
-  return briseFleeFilter(battle, active, reach);
+  return briseFleeFilter(scene, battle, active, reach);
 }
 
 /** Cases cliquables affichées/validées : budget SPÉCIAL stocké (Course, post-Désengagement)

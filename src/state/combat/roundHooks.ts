@@ -22,7 +22,7 @@ import { traitAuras } from '../../engine/traits/dispatch';
 import { outnumberCountBonus, hasBraveheart } from '../../engine/combatFeatures/dispatch';
 import { chebyshev } from '../path';
 import { isEngaged } from '../../engine/engagement';
-import { lineOfSightCover } from '../lineOfSight';
+import { tileSeenByFoe } from '../lineOfSight';
 import { smokeOf } from '../combatGeometry';
 import { rule } from '../../engine/policy';
 import { cadenceAuto } from '../../engine/cadence';
@@ -162,7 +162,7 @@ function brokenContext(get: Get, c: Combatant): { hidden: boolean; testDue: bool
   const scene = get().scene;
   if (!battle || !stacks(c, COND.brise) || isOutOfAction(c) || !c.pos) return null;
   const enemies = battle.combatants.filter((e) => e.kind !== c.kind && !isOutOfAction(e) && e.pos);
-  const hidden = !!scene && enemies.length > 0 && enemies.every((e) => lineOfSightCover(scene, e.pos!, c.pos!, [], smokeOf(battle)).blocked);
+  const hidden = !!scene && enemies.length > 0 && !tileSeenByFoe(scene, enemies, c.pos!, smokeOf(battle)); // « caché hors de vue » = aucun ennemi ne le voit (primitive partagée, sens ennemi→cible)
   // Restera-t-il du Brisé à tester APRÈS l'éventuel retrait « caché » (1 stack) ? Le Test n'a lieu que
   // si pas Engagé (l.57) — sauf Cœur vaillant (LDB 10, sans restriction d'Engagement).
   const briseAfterHidden = stacks(c, COND.brise) - (hidden ? 1 : 0);

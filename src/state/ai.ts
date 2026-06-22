@@ -14,7 +14,7 @@ import { Combatant } from '../engine/types';
 import { Scene } from './scene';
 import { reachable, flyReachable, manhattan, chebyshev, Pt } from './path';
 import { footprintChebyshev, sizeFootprint } from './footprint';
-import { lineOfSightCover } from './lineOfSight';
+import { lineOfSightCover, tileSeenByFoe } from './lineOfSight';
 import { rangeBandModifier } from '../engine/combat';
 import { hasCondition } from '../engine/conditions';
 import { isEngaged, meleeReachTiles } from '../engine/engagement';
@@ -133,20 +133,25 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // ligne directe, seules les cases d'atterrissage doivent être praticables et libres.
   const reach = (flying ? flyReachable : reachable)(scene, pos, movement, blocked, sizeFootprint(enemy.size));
 
-  // Fuite vers la case atteignable la PLUS éloignée des héros (Brisé / Bestial blessé).
-  const fleeMove = (): EnemyAction => {
+  // Fuite (Brisé / Bestial blessé). `preferHidden` (Brisé, LDB 16 l.55 « hors de vue de l'ennemi ») :
+  // gagner une CACHETTE (case hors de vue de tout héros) prime sur la distance ; sinon, la plus éloignée.
+  const fleeMove = (preferHidden = false): EnemyAction => {
+    const tiles = [...reach.keys()].map((k) => { const [x, y] = k.split(',').map(Number); return { x, y } as Pt; });
+    const distOf = (t: Pt) => Math.min(...heroes.map((h) => chebyshev(t, h.pos!)));
+    const hidden = preferHidden ? tiles.filter((t) => !tileSeenByFoe(scene, heroes, t, smoke ?? [])) : [];
     let best = pos;
-    let bestDist = Math.min(...heroes.map((h) => chebyshev(pos, h.pos!)));
-    for (const k of reach.keys()) {
-      const [x, y] = k.split(',').map(Number);
-      const d = Math.min(...heroes.map((h) => chebyshev({ x, y }, h.pos!)));
-      if (d > bestDist) { bestDist = d; best = { x, y }; }
+    let bestDist = distOf(pos);
+    // Actuellement à découvert mais une cachette est atteignable → toute cachette vaut mieux que rester vu.
+    if (hidden.length && tileSeenByFoe(scene, heroes, pos, smoke ?? [])) { best = hidden[0]; bestDist = -1; }
+    for (const t of (hidden.length ? hidden : tiles)) {
+      const d = distOf(t);
+      if (d > bestDist) { bestDist = d; best = t; }
     }
     return best.x === pos.x && best.y === pos.y ? { kind: 'end' } : { kind: 'move', to: best, thenTargetId: heroes[0].id };
   };
   // Brisé (LDB 16 l.55) : un ennemi Brisé NON Engagé fuit — il gagne la case atteignable la PLUS
   // éloignée des héros et ne peut pas attaquer. (Engagé : il reste — l'IA ne se désengage pas, simplif. assumée.)
-  if (hasCondition(enemy, 'brise') && !isEngaged(enemy)) return fleeMove();
+  if (hasCondition(enemy, 'brise') && !isEngaged(enemy)) return fleeMove(true); // Brisé : fuir hors de vue (cachette prioritaire)
   // Bestial (LDB 85 p.338) : « Si elle perd plus de la moitié de ses Blessures, elle tente de fuir »
   // — sauf Territorial (combat jusqu'à la mort) ou acculée/Engagée (elle reste — Frénésie gérée par
   // le drapeau frenzied de l'appelant).
