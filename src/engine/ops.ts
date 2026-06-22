@@ -409,6 +409,10 @@ export type GameOp =
    *  (qui modifie les Tests du porteur LUI-MÊME). `mode` : portée concernée (`all` = mêlée ET distance).
    *  Inerte dans `applyOps`. */
   | { op: 'incomingAttackMod'; mode: 'melee' | 'ranged' | 'all'; amount: number }
+  /** L'ASSAILLANT du porteur GAGNE `amount` Avantage(s) avant son attaque (Sonné : « +1 Avantage », LDB 16
+   *  l.123). PASSIF de l'État/trait du DÉFENSEUR, lu par `incomingMeleeAdvantage` au moment de l'attaque
+   *  (≠ `incomingAttackMod` = bonus de TOUCHE éphémère). Inerte dans `applyOps`. */
+  | { op: 'incomingAdvantage'; mode: 'melee' | 'ranged' | 'all'; amount: number }
   /** L'attaque du porteur porte un MOT-CLÉ (Magique/Démoniaque/Fabriqué → 'magic', LDB 85). PASSIF, lu par
    *  `attackHasKeyword` — sert la mitigation (Éthéré : seules les attaques 'magic' blessent). Inerte dans applyOps. */
   | { op: 'attackKeyword'; keyword: 'magic' }

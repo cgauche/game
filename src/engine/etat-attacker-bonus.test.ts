@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { meleeAttackerBonus, addCondition, COND } from './conditions';
+import { meleeAttackerBonus, incomingMeleeAdvantage, addCondition, COND } from './conditions';
 import type { Combatant } from './types';
 
 /** Combattant nu (le bonus dépend UNIQUEMENT des États portés, lus en données via passiveMods). */
@@ -29,5 +29,21 @@ describe('meleeAttackerBonus — bonus à l’attaquant lu en DONNÉES (etats.js
   it('aucun État pertinent (Empoisonné n’octroie pas de bonus) → 0', () => {
     const c = mk(); addCondition(c, COND.empoisonne);
     expect(meleeAttackerBonus(c)).toBe(0);
+  });
+});
+
+describe('incomingMeleeAdvantage — Avantage donné à l’assaillant lu en DONNÉES (Sonné, plus de branche par-nom)', () => {
+  it('Sonné → +1 Avantage à l’attaquant en mêlée (LDB 16 l.123)', () => {
+    const c = mk(); addCondition(c, COND.sonne);
+    expect(incomingMeleeAdvantage(c)).toBe(1);
+  });
+  it('le bonus de TOUCHE (incomingAttackMod) et l’AVANTAGE (incomingAdvantage) sont distincts : Sonné ne donne PAS de +toucher', () => {
+    const c = mk(); addCondition(c, COND.sonne);
+    expect(meleeAttackerBonus(c)).toBe(0);      // Sonné n'a pas d'incomingAttackMod
+    expect(incomingMeleeAdvantage(c)).toBe(1);  // … mais un incomingAdvantage
+  });
+  it('À Terre donne +toucher mais PAS d’Avantage (≠ Sonné)', () => {
+    const c = mk(); addCondition(c, COND.aTerre);
+    expect(incomingMeleeAdvantage(c)).toBe(0);
   });
 });

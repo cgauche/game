@@ -100,7 +100,7 @@ import { findManeuverById, findDomainById, findTalentById, diseaseLabel } from '
 import { norm } from '../lib/normalize';
 import { recomputeLoadout, weaponWithAmmo, compatibleAmmo, ammoFamily, damageArmour, buildWeapon } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, combatTestPenalty, COND } from '../engine/conditions';
+import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, combatTestPenalty, incomingMeleeAdvantage, COND } from '../engine/conditions';
 import { creatureAttacks, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { suffocationTick } from '../engine/suffocation';
@@ -185,12 +185,14 @@ import {
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, EMPTY_FLOW, type Flow, type EffectTrigger } from './flow';
 import { startCascade, registerCascadeApplier } from './cascade';
 
-/** Sonné : tout adversaire qui frappe la cible en CORPS À CORPS gagne +1 Avantage
- *  AVANT son attaque (LDB États l.123) — ce +1 profite donc déjà au jet en cours puis
- *  persiste. À appeler une seule fois par attaque (avant le 1er jet ; pas sur une relance). */
-export function applySonneMeleeAdvantage(attacker: Combatant, target: Combatant): void {
-  if (attacker.weapons[0]?.type === 'melee' && target.conditions.some((c) => c.name === COND.sonne)) {
-    gainAdvantage(attacker);
+/** L'État du défenseur accorde-t-il un Avantage à l'assaillant en mêlée ? Lu en DONNÉES
+ *  (`incomingMeleeAdvantage` → `passive` `incomingAdvantage`, kind `etat`). Sonné : « +1 Avantage avant
+ *  l'attaque » (LDB 16 l.123) — ce gain profite déjà au jet en cours puis persiste. À appeler une seule
+ *  fois par attaque (avant le 1er jet ; pas sur une relance). Plus de branche par-nom de l'État. */
+export function applyIncomingMeleeAdvantage(attacker: Combatant, target: Combatant): void {
+  const adv = attacker.weapons[0]?.type === 'melee' ? incomingMeleeAdvantage(target) : 0;
+  if (adv > 0) {
+    gainAdvantage(attacker, adv);
     attacker.gainedAdvThisRound = true;
   }
 }
@@ -1620,7 +1622,7 @@ export function maybeOpenDefense(
   if (weapon?.type !== 'melee') return false;
   if (combatDistance(attacker, target) > reachTiles(weapon)) return false; // Allonge incluse (RAW-3)
   if (cannotDefend(target)) return false; // Surpris → résolution instantanée (LDB États l.132)
-  applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée, AVANT le jet (une seule fois)
+  applyIncomingMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée, AVANT le jet (une seule fois)
   // Le MÊME env que resolveAttack (météo, Flanc/dos, Surnombre, Combat monté) : le jet figé de la
   // défense réactive l'omettait — un cavalier IA attaquait un héros sans son +20 (LDB 14 l.217).
   const { env } = attackEnv(get, attacker, target, weapon);
@@ -1661,7 +1663,7 @@ export function doAttack(get: Get, set: SetFn, attacker: Combatant, target: Comb
     const b0 = get().battle;
     if (b0) set({ battle: { ...b0, log: [...b0.log, ev('shoot', tr('cf.aim', { name: attacker.name, target: target.name }), attacker.id, target.id)] } });
   }
-  applySonneMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
+  applyIncomingMeleeAdvantage(attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
   // Charge montée (LDB 14 l.223) : si l'attaquant a chargé ce tour, ses dégâts utilisent la Force + la
   // Taille de sa monture — PARITÉ avec le joueur (le proxy ne s'applique que s'il chevauche réellement).
   const r = resolveAttack(get, attacker, target, undefined, attacker.chargedThisTurn);

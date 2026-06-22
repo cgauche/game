@@ -176,6 +176,21 @@ export function meleeAttackerBonus(target: Combatant): number {
   return best;
 }
 
+/**
+ * Avantage(s) GAGNÉ(s) par l'assaillant qui frappe `target` en mêlée — lu en DONNÉES (`passive`
+ * `incomingAdvantage` melee/all, kind `etat`). Sonné : « +1 Avantage avant l'attaque » (LDB 16 l.123).
+ * Non-cumul : le MEILLEUR seul (comme `meleeAttackerBonus`). ≠ bonus de TOUCHE (`meleeAttackerBonus`).
+ */
+export function incomingMeleeAdvantage(target: Combatant): number {
+  let best = 0;
+  for (const m of passiveMods(target)) {
+    if (m.kind === 'etat' && m.op.op === 'incomingAdvantage' && (m.op.mode === 'melee' || m.op.mode === 'all')) {
+      best = Math.max(best, m.op.amount);
+    }
+  }
+  return best;
+}
+
 /** Une cible Surprise (LDB ch.16 l.132) ou Inconscient (l.112 « rien faire de votre tour »)
  *  ne peut pas se défendre lors d'un Test opposé. */
 export function cannotDefend(c: Combatant): boolean {

@@ -272,6 +272,11 @@
       {
         "op": "testMod",
         "amount": -10
+      },
+      {
+        "op": "incomingAdvantage",
+        "mode": "melee",
+        "amount": 1
       }
     ]
   },

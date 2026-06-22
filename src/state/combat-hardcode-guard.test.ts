@@ -73,9 +73,9 @@ const TARGETS: Target[] = [
   {
     name: 'state/combatFlow.ts',
     src: read('./combatFlow.ts'),
-    reactive: /hasRiposte|hasChampionDefense|applySonneMeleeAdvantage|hasTraitKey\(|banishedAtZero|autoCleave|maybeHeroCleave|isUnstable|isBestial|hasPerturbingAura|suffocationTick/,
-    exclude: /^\s*import|export function (autoCleave|maybeHeroCleave|applySonneMeleeAdvantage)/,
-    baseline: 14,
+    reactive: /hasRiposte|hasChampionDefense|hasTraitKey\(|banishedAtZero|autoCleave|maybeHeroCleave|isUnstable|isBestial|hasPerturbingAura|suffocationTick/,
+    exclude: /^\s*import|export function (autoCleave|maybeHeroCleave)/,
+    baseline: 10, // Sonné→Avantage migré en données (passive incomingAdvantage, lu par incomingMeleeAdvantage) — plus de branche par-nom
     lot: 'Lot 6',
   },
 ];
