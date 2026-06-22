@@ -272,8 +272,8 @@ export function attackWardGate(attacker: Combatant, target: Combatant, rng: RNG 
   return {
     allowed: false,
     lines: [
-      `${attacker.name} — Test de Force Mentale Accessible (+20) : 🎲 ${t.roll}/${t.target} → échec.`,
-      `${attacker.name} ne peut se résoudre à frapper ${target.name} (Bénédiction de Protection) — il doit choisir une autre cible ou une autre Action.`,
+      tr('cf.wardTestFail', { name: attacker.name, roll: t.roll, target: t.target }),
+      tr('cs.shameBlocked', { name: attacker.name, foe: target.name }),
     ],
   };
 }
@@ -423,7 +423,7 @@ export function resolveAttack(
         const ad = res.attackerDetail!;
         const rescued = res.attackerRoll > ad.target - (cm?.value ?? 0); // aurait échoué sans le bonus → 0 DR (l.146)
         const stray = resolveStrayRangedHit(attacker, victim, weapon, res.attackerRoll, rescued ? res.attackerRoll : ad.target);
-        stray.log = `Tir dans le tas : ${victim.name} est touché au hasard${rescued ? ' (succès dû au bonus → 0 DR)' : ''}.`;
+        stray.log = tr('cf.strayHit', { name: victim.name, rescued: rescued ? tr('cf.fragRescued') : '' });
         return { res: stray, weapon, victim };
       }
       return { res, weapon };
@@ -1665,7 +1665,7 @@ export function doAttack(get: Get, set: SetFn, attacker: Combatant, target: Comb
   // Taille de sa monture — PARITÉ avec le joueur (le proxy ne s'applique que s'il chevauche réellement).
   const r = resolveAttack(get, attacker, target, undefined, attacker.chargedThisTurn);
   if (!r) {
-    get().log(firedWeapon(attacker, target).type === 'ranged' ? 'Pas de ligne de vue (cible masquée).' : 'Cible hors de portée de mêlée.');
+    get().log(firedWeapon(attacker, target).type === 'ranged' ? tr('cf.noLoSMasked') : tr('cs.meleeOutOfRange'));
     return false;
   }
   const suspended = applyAttackResult(get, set, attacker, r.victim ?? target, r.weapon, r.res); // r.victim = allié touché par un tir dévié (LDB 14 l.136)
@@ -2125,7 +2125,7 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
       return [`${caster.name} : le composant absorbe l'Incantation Imparfaite Mineure (aucun effet).`];
     }
     return [
-      `${caster.name} : le composant dégrade l'Incantation Imparfaite (Majeure → Mineure).`,
+      tr('cf.componentDowngrade', { name: caster.name }),
       ...applyMiscast(get, set, caster, downgraded, { suppressReveal: opts.suppressReveal }),
     ];
   }
@@ -2233,7 +2233,7 @@ export function castSpell(
   }
   // Lecture au grimoire (LDB 47 l.34) : sort NON mémorisé de son Domaine, NI doublé.
   if (fromGrimoire && !canCastFromGrimoire(caster, spell)) {
-    castRefused(get, set, caster, `${caster.name} ne peut pas lancer ${label} depuis un grimoire (mémorisé, hors Domaine ou pas de grimoire porté).`);
+    castRefused(get, set, caster, tr('cf.grimoireRefused', { name: caster.name, spell: label }));
     return;
   }
   // Sort « Souffle » (LDB 47 p.244) : délégué à l'attaque de ZONE du Trait — la portée suit le
@@ -2246,7 +2246,7 @@ export function castSpell(
       ? Math.max(1, Math.ceil((bonus(effectiveChar(caster, 'E')) + 20) / 2))
       : spellRangeTiles(spell.range, caster);
     if (range != null && combatDistance(caster, target) > range) {
-      castRefused(get, set, caster, `${spell.label} : cible hors de portée (${range} cases).`);
+      castRefused(get, set, caster, tr('cf.castOutOfRange', { spell: spell.label, range }));
       return;
     }
     // Ligne de Vue (LDB 46 l.170 : « vous devez toujours être capable de voir […] votre cible ») —
@@ -2897,7 +2897,7 @@ export function applyCast(
             kind: 'souffle', label: sDef.label, bonus: indice, indice, def: sDef,
             trigger: 'free', avantage: 0, aoe: true, magic: true, ...(type ? { type } : {}),
           }, target);
-          if (!type) logLines.push('Souffle : Domaine sans Type évident — Dégâts purs (« Le MJ détermine quel type… »).');
+          if (!type) logLines.push(tr('cf.breathNoType'));
         } else {
           logLines.push(tr('cf.breathNarrative', { name: caster.name }));
         }
@@ -4069,8 +4069,8 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       const removed = recoveredStacks(netSL, stacks(enemy, action.state), success);
       if (removed > 0) removeCondition(enemy, action.state, removed);
       const line = removed > 0
-        ? (action.state === COND.empetre ? `${enemy.name} se libère (${removed} État Empêtré retiré).` : `${enemy.name} étouffe les flammes (${removed} État En flammes retiré).`)
-        : (action.state === COND.empetre ? `${enemy.name} reste Empêtré.` : `${enemy.name} reste En flammes.`);
+        ? (action.state === COND.empetre ? tr('cf.enemyFreed', { name: enemy.name, removed }) : tr('cf.enemyDouses', { name: enemy.name, removed }))
+        : (action.state === COND.empetre ? tr('cf.enemyStaysEmpetre', { name: enemy.name }) : tr('cf.enemyStaysFlames', { name: enemy.name }));
       set({ battle: { ...battle, log: [...battle.log, ev('condition', line, enemy.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
       setTimeout(() => advanceTurn(get, set), TEMPO.afterMove);
