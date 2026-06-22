@@ -1270,7 +1270,10 @@ export function applyAttackResult(
     for (const line of fireTriggers(get, target, 'onWoundLoss', { rng: battleRng(), set })) critLog.push(line);
   }
   // Démoniaque (LDB 85 p.339) : à 0 PB, « son âme retourne immédiatement dans les Royaumes du
-  // Chaos, ce qui la retire du jeu » — pas de corps, pas d'Inconscient.
+  // Chaos, ce qui la retire du jeu » — pas de corps, pas d'Inconscient. C'est une VARIANTE de l'issue
+  // de MORT (comme la Mort Subite `usesSuddenDeath`), sélectionnée par la CAPACITÉ de donnée
+  // `banishedAtZero` (éditable au Codex) : machinerie de mort lisant un drapeau de donnée, PAS une
+  // réaction d'entité câblée par-nom (le code ne nomme aucun trait).
   if (res.hit && target.wounds.current <= 0 && banishedAtZero(target.traits) && !target.dead) {
     target.dead = true;
     critLog.push(tr('cf.banished', { name: target.name }));

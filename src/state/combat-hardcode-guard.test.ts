@@ -76,8 +76,10 @@ const TARGETS: Target[] = [
     name: 'state/combatFlow.ts',
     src: read('./combatFlow.ts'),
     reactive: /hasTraitKey\(|banishedAtZero|autoCleave|maybeHeroCleave|isUnstable|isBestial|hasPerturbingAura|suffocationTick/,
-    exclude: /^\s*import|export function (autoCleave|maybeHeroCleave)/,
-    baseline: 4, // …→6 (Infection)→4 (Riposte/Champion → capacité générique counterOnDefenseWin, lue par canCounterOnDefenseWin). Reste : Cleave/banish/nerveux (Lot 6)
+    // `banishedAtZero` = VARIANTE d'issue de mort lisant une CAPACITÉ de donnée (comme `usesSuddenDeath`/
+    // `inDeathCondition`) — machinerie de mort universelle, ne nomme aucune entité → exclue (cf. NB en tête).
+    exclude: /^\s*import|export function (autoCleave|maybeHeroCleave)|banishedAtZero/,
+    baseline: 3, // …→6 (Infection)→4 (Riposte/Champion → counterOnDefenseWin)→3 (Démoniaque/banish reclassé : machinerie de mort lisant la capacité `banishedAtZero`, exclu). Reste : Cleave ×2 + nerveux (mont-IA, LDB 14 l.188)
     lot: 'Lot 6',
   },
 ];
