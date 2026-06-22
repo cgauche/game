@@ -74,4 +74,27 @@ describe('Défense du champion / Riposte — contre-attaque (PINNING avant migra
     const h = useGame.getState().battle!.combatants.find((c) => c.id === hero.id)!;
     expect(h.wounds.current).toBe(before);
   });
+
+  const rapide: Weapon = { name: 'Rapière', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'rapide' }] } as never;
+  const lente: Weapon = { name: 'Hache', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] } as never;
+
+  it('Riposte (talent) + arme de parade RAPIDE → contre-attaque', () => {
+    seedBattleRng(7);
+    const { hero, enemy } = setup([]); // pas de Champion
+    enemy.talents = [{ talentId: 'riposte', times: 1 }] as never; // le défenseur a Riposte
+    const before = hero.wounds.current;
+    applyAttackResult(useGame.getState, useGame.setState, hero, enemy, hero.weapons[0], { ...defenderWins, parryWeapon: rapide });
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === hero.id)!;
+    expect(h.wounds.current).toBeLessThan(before); // riposte avec arme Rapide
+  });
+
+  it('Riposte (talent) mais arme de parade NON Rapide → pas de contre-attaque', () => {
+    seedBattleRng(7);
+    const { hero, enemy } = setup([]);
+    enemy.talents = [{ talentId: 'riposte', times: 1 }] as never;
+    const before = hero.wounds.current;
+    applyAttackResult(useGame.getState, useGame.setState, hero, enemy, hero.weapons[0], { ...defenderWins, parryWeapon: lente });
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === hero.id)!;
+    expect(h.wounds.current).toBe(before); // Riposte exige une arme de parade Rapide (LDB 10)
+  });
 });
