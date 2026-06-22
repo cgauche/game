@@ -401,7 +401,11 @@ export type GameOp =
    *  « +N m par +2 DR ») ; `blocksLoS` ; `onCross`/`perRound` = effets de zone (traversée / fin de Round). */
   | { op: 'zone'; shape: 'disc' | 'wall'; radiusMeters?: Formula; lengthMeters?: Formula;
       lengthPerSL?: { every: number; metersFormula: Formula }; blocksLoS?: boolean;
-      onCross?: ZoneEffect; perRound?: ZoneEffect }
+      onCross?: ZoneEffect; perRound?: ZoneEffect;
+      /** BARRIÈRE infranchissable (Protection de Phâ : « ne peuvent pas entrer ») ; `gate:'profane'`
+       *  restreint barrière + `perRound` aux créatures profanes ; `noCorruption` : nul gain de Corruption
+       *  pour les occupants tant que la zone dure (LDB 48 p.249). */
+      barrier?: boolean; gate?: 'profane'; noCorruption?: boolean }
   /** MÉTAMORPHOSE en créature (Forme bestiale, LDB 48) : remplace F/E/Ag/Dex (charMod différentiel) et
    *  accorde les Traits de la créature sauf Bestial (grantTrait), auto-restitués à l'expiration. `ref` =
    *  créature du bestiaire (forme LIBRE — « les Bêtes du Reikland », pas l'Ours seul). Pure : expansée

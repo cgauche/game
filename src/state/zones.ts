@@ -16,6 +16,7 @@ import { Formula, resolveFormula } from '../engine/ops';
 import { ZoneEffect, applyZoneEffect } from '../engine/zones';
 import type { ZoneArea, SceneEffectZone } from './scene';
 import { isOutOfAction } from '../engine/conditions';
+import { isProfane } from '../engine/corruption';
 import { groupMatch } from '../engine/groups';
 
 export interface BattleZone {
@@ -31,9 +32,18 @@ export interface BattleZone {
   /** BARRIÈRE : les cases sont infranchissables pour les créatures gatées (cf. `SceneEffectZone.barrier`) —
    *  injectées dans `occupied()`, donc respectées par TOUT déplacement (joueur, IA, poussée, téléport). */
   barrier?: { blockGroups?: string[] };
+  /** GATE de la zone (barrière + `perRound`) restreint aux créatures PROFANES (Protection de Phâ, LDB 48
+   *  p.249 : « les créatures profanes ne peuvent pas entrer… celles déjà à l'intérieur gagnent Brisé »). */
+  gate?: 'profane';
+  /** Aucun gain de Corruption pour les occupants tant que la zone est active (Protection de Phâ). */
+  noCorruption?: boolean;
   /** Référent des formules de l'effet (« votre BFM » = le lanceur) — résolu à l'application. */
   casterId?: string;
 }
+
+/** Le combattant `mover` est-il GATÉ par la zone `z` (ciblé par sa barrière / son `perRound`) ? `gate:
+ *  'profane'` → seulement les profanes (LDB 48). Sans gate → tout le monde. */
+const zoneTargets = (z: BattleZone, mover: Combatant): boolean => z.gate !== 'profane' || isProfane(mover);
 
 export const zoneCovers = (z: BattleZone, p: Pt): boolean => z.tiles.some((t) => t.x === p.x && t.y === p.y);
 
@@ -78,12 +88,13 @@ export function sceneZonesToBattle(zones: SceneEffectZone[] | undefined): Battle
  *  une barrière sans `blockGroups` bloque tout le monde ; sinon seulement les Groupes correspondants
  *  (groupMatch). `moverGroups` = Groupes du mover (vide si inconnu → on bloque par prudence quand un
  *  filtre existe). Injecté dans `occupied()` → respecté par TOUT déplacement. */
-export function barrierTilesFor(zones: BattleZone[] | undefined, moverGroups: string[] | undefined): Pt[] {
+export function barrierTilesFor(zones: BattleZone[] | undefined, mover: Combatant | undefined): Pt[] {
   const out: Pt[] = [];
   for (const z of zones ?? []) {
     if (!z.barrier) continue;
+    if (z.gate && (!mover || !zoneTargets(z, mover))) continue; // barrière sacrée : ne bloque que les profanes
     const filter = z.barrier.blockGroups;
-    const blocks = !filter?.length || (moverGroups ? filter.some((g) => groupMatch(g, moverGroups)) : true);
+    const blocks = !filter?.length || (mover?.groups ? filter.some((g) => groupMatch(g, mover.groups!)) : true);
     if (blocks) out.push(...z.tiles);
   }
   return out;
@@ -145,7 +156,7 @@ export function zonesRoundTick(
     const caster = z.casterId ? combatants.find((c) => c.id === z.casterId) : undefined;
     for (const c of combatants) {
       if (!c.pos || c.dead || isOutOfAction(c)) continue;
-      if (!zoneCovers(z, c.pos)) continue;
+      if (!zoneCovers(z, c.pos) || !zoneTargets(z, c)) continue; // `gate:'profane'` → seuls les profanes subissent
       for (const line of applyZoneEffect(c, z.label, z.perRound, caster, rng)) out.push({ line, combatant: c });
     }
   }

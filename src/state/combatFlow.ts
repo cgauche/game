@@ -3020,7 +3020,7 @@ function placeSpellZone(
   get: Get,
   caster: Combatant,
   target: Combatant,
-  spell: { label: string; effects?: Flow; duration?: import('../engine/spellDuration').SpellDuration | null },
+  spell: { label: string; effects?: Flow; duration?: import('../engine/spellDuration').SpellDuration | null; target?: import('../engine/spellRange').SpellTarget | null },
   _spec: unknown,
   sl: number,
   durationMult: number,
@@ -3035,14 +3035,20 @@ function placeSpellZone(
   }
   const baseRounds = spell.duration?.kind === 'rounds' ? resolveFormula(spell.duration.value, caster, battleRng()) : 1;
   const rounds = Math.max(1, baseRounds * Math.max(1, durationMult));
+  // Rayon : op `radiusMeters` explicite, sinon dérivé de la `target` du sort (« Zone Diamètre BFM m » →
+  // rayon BFM/2, via `zoneRadiusMeters`). Protection de Phâ : Zone centrée sur le lanceur (range self).
+  const discRadiusM = pz.radiusMeters != null ? Math.max(0, resolveFormula(pz.radiusMeters, caster, battleRng())) : ((zdeDiameterMeters(spell.target, caster) ?? 4) / 2);
   const tiles = pz.shape === 'wall'
     ? wallTiles(caster.pos, target.pos, metersToTiles(resolveZoneMeters(pz.lengthMeters ?? 2, pz.lengthPerSL, caster, sl, battleRng())))
-    : discTiles(target.pos, metersToTiles(Math.max(0, resolveFormula(pz.radiusMeters ?? 2, caster, battleRng()))));
+    : discTiles(target.pos, metersToTiles(discRadiusM));
   const zone: BattleZone = {
     label: spell.label, tiles, rounds, casterId: caster.id,
     ...(pz.blocksLoS ? { blocksLoS: true } : {}),
     ...(pz.onCross ? { onCross: pz.onCross } : {}),
     ...(pz.perRound ? { perRound: pz.perRound } : {}),
+    ...(pz.barrier ? { barrier: {} } : {}),
+    ...(pz.gate ? { gate: pz.gate } : {}),
+    ...(pz.noCorruption ? { noCorruption: true } : {}),
   };
   battle.zones = [...(battle.zones ?? []), zone];
   logLines.push(tr('cf.zonePersistsRounds', { spell: spell.label, rounds }));

@@ -11,7 +11,7 @@ import type { Combatant } from './types';
 import { Formula, resolveFormula } from './ops';
 import { RNG, defaultRNG } from './dice';
 import { bonus, effectiveChar } from './characteristics';
-import { addCondition, loseWounds, applyZeroWounds } from './conditions';
+import { addCondition, hasCondition, loseWounds, applyZeroWounds } from './conditions';
 
 export interface ZoneEffect {
   /** Dégâts : `amount` résolu contre le LANCEUR (« votre Bonus de Force Mentale ») — repli : la victime. */
@@ -19,8 +19,9 @@ export interface ZoneEffect {
   /** Soin : `amount` rendu à qui stationne dans la zone (Sang de la Terre, LDB 48 — Vie : « guérissent
    *  d'un nombre de Blessures égal à votre BFM au début de chaque round »). Résolu contre le lanceur. */
   heal?: { amount: Formula };
-  /** États infligés (« gagne 1 État En flammes »). */
-  conditions?: { name: string; value?: number }[];
+  /** États infligés (« gagne 1 État En flammes »). `unlessCondition` : ne (ré)applique PAS si la cible a
+   *  déjà cet État — pour un État ENTRETENU sans empiler (Protection de Phâ : « Brisé jusqu'à sortir »). */
+  conditions?: { name: string; value?: number; unlessCondition?: boolean }[];
 }
 
 /** Applique l'effet d'une zone `label` à `victim`. Mute la victime, retourne le journal. */
@@ -53,6 +54,7 @@ export function applyZoneEffect(
     }
   }
   for (const c of eff.conditions ?? []) {
+    if (c.unlessCondition && hasCondition(victim, c.name)) continue; // État entretenu, pas empilé
     addCondition(victim, c.name, c.value ?? 1);
     lines.push(`${victim.name} reçoit ${c.value ?? 1} État ${c.name} (${label}).`);
   }

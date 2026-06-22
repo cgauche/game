@@ -5380,11 +5380,22 @@
           "kind": "do",
           "effect": {
             "type": "ops",
-            "on": "target",
+            "on": "caster",
             "ops": [
               {
-                "op": "narrative",
-                "text": "Protection de Phâ : aura de zone (BFM m) — les profanes ne peuvent entrer, celles déjà dedans gagnent Brisé jusqu’à sortir, et nul n’y gagne de Corruption — arbitrage MJ."
+                "op": "zone",
+                "shape": "disc",
+                "barrier": true,
+                "gate": "profane",
+                "noCorruption": true,
+                "perRound": {
+                  "conditions": [
+                    {
+                      "name": "brise",
+                      "unlessCondition": true
+                    }
+                  ]
+                }
               }
             ]
           }

@@ -38,7 +38,7 @@ export function occupied(battle: BattleState, mover: Combatant | string): Set<st
   // BARRIÈRES (zones authorées/sorts) : leurs cases sont infranchissables pour le mover gaté — point
   // d'injection UNIQUE → tout déplacement (reachable joueur, IA, poussée, téléport) les respecte.
   const moverC = typeof mover === 'string' ? battle.combatants.find((c) => c.id === mover) : mover;
-  for (const t of barrierTilesFor(battle.zones, moverC?.groups)) s.add(`${t.x},${t.y}`);
+  for (const t of barrierTilesFor(battle.zones, moverC)) s.add(`${t.x},${t.y}`);
   return s;
 }
 
