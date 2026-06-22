@@ -116,6 +116,10 @@ export interface TriggerCtx { victim?: Combatant; weapon?: Weapon; rng?: RNG; ma
   /** KIND de l'attaque courante (`creatureAttackKind` : 'morsure'/'cornes'/…) — alimente la Condition Flow
    *  `attackKind` (Vampirique : Vol de vie sur Morsure seulement). */
   attackKind?: string;
+  /** CAUSE de l'effarouchement courant ('noise'/'magic', LDB 85 l.197) — alimente la Condition Flow
+   *  `startleCause` (exemption Dressé : Guerre ignore les bruits, Magie ignore la magie). Posé par les
+   *  émetteurs `onStartled` (arme à feu/Explosion → 'noise' ; incantation → 'magic'). */
+  startleCause?: 'noise' | 'magic';
   /** ID de l'État qui vient d'être GAGNÉ (déclencheur `onGainCondition`) — filtre les effets dont
    *  `condition` ne le matche pas (Mâchoires d'acier : `condition:'sonne'`). */
   conditionName?: string;
@@ -161,10 +165,10 @@ export function applyTriggeredEffects(
       // `runSpellFlowLines`, qui LÈVE (jamais de branche succès muette). Le contexte de la touche
       // (`woundsDealt`/`margin→sl`/`location`/`attackKind`) voyage dans l'opsCtx pour les Conditions `if`.
       if (flowHasTest(eff.flow) && ctx.set && testRouter) {
-        testRouter(get, ctx.set, t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, location: ctx.location, attackKind: ctx.attackKind });
+        testRouter(get, ctx.set, t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause });
         continue;
       }
-      lines.push(...runSpellFlowLines(t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, location: ctx.location, attackKind: ctx.attackKind }));
+      lines.push(...runSpellFlowLines(t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause }));
     }
   }
   return lines;

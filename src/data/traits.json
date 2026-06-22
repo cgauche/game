@@ -429,7 +429,14 @@
     "source": {
       "book": "LDB",
       "page": 339
-    }
+    },
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "CC",
+        "mod": 10
+      }
+    ]
   },
   {
     "id": "dresse-magie",
@@ -1069,24 +1076,60 @@
         "trigger": "onStartled",
         "on": "self",
         "flow": {
-          "kind": "seq",
-          "steps": [
-            {
-              "kind": "do",
-              "effect": {
-                "type": "ops",
-                "on": "target",
-                "ops": [
-                  {
-                    "op": "condition",
-                    "name": "brise",
-                    "value": 3,
-                    "unlessCondition": "brise"
-                  }
-                ]
-              }
+          "kind": "if",
+          "cond": {
+            "kind": "not",
+            "of": {
+              "kind": "any",
+              "of": [
+                {
+                  "kind": "all",
+                  "of": [
+                    {
+                      "kind": "startleCause",
+                      "is": "noise"
+                    },
+                    {
+                      "kind": "has",
+                      "who": "target",
+                      "what": "trait",
+                      "value": "dresse-guerre"
+                    }
+                  ]
+                },
+                {
+                  "kind": "all",
+                  "of": [
+                    {
+                      "kind": "startleCause",
+                      "is": "magic"
+                    },
+                    {
+                      "kind": "has",
+                      "who": "target",
+                      "what": "trait",
+                      "value": "dresse-magie"
+                    }
+                  ]
+                }
+              ]
             }
-          ]
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "condition",
+                  "name": "brise",
+                  "value": 3,
+                  "unlessCondition": "brise"
+                }
+              ]
+            }
+          }
         }
       }
     ]

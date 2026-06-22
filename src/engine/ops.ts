@@ -521,6 +521,9 @@ export interface OpsCtx {
   /** KIND de l'attaque courante (`creatureAttackKind` : 'morsure'/'cornes'/…) — lu par la Condition Flow
    *  `attackKind` (Vampirique : Vol de vie sur Morsure seulement). */
   attackKind?: string;
+  /** CAUSE de l'effarouchement courant ('noise'/'magic', LDB 85 l.197) — lue par la Condition Flow
+   *  `startleCause` (exemption Dressé : Guerre ignore les bruits, Magie ignore la magie). */
+  startleCause?: 'noise' | 'magic';
   /** Gain de Corruption AVEC seuil → mutation (corruptionFlow) ; sans contexte
    *  store, l'op `corruption` incrémente simplement le compteur. */
   onCorruption?: (n: number) => string[];

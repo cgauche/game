@@ -1347,7 +1347,8 @@ export function applyAttackResult(
   if (weapon.type === 'ranged' && isFirearmQuality(weapon)) {
     for (const c of battle.combatants) {
       // Nerveux (effet déclenché onStartled : +3 Brisé) — fired par le dispatcher générique (no-op si absent).
-      if (!isOutOfAction(c)) for (const line of fireTriggers(get, c, 'onStartled', { set })) log.push(ev('condition', line, c.id));
+      // Cause 'noise' (bruits forts) → exemption Dressé (Guerre) lue par la Condition Flow `startleCause`.
+      if (!isOutOfAction(c)) for (const line of fireTriggers(get, c, 'onStartled', { set, startleCause: 'noise' })) log.push(ev('condition', line, c.id));
     }
   }
   // Effets DÉCLENCHÉS « à la touche » authorés (donnée éditable) : Traits de l'attaquant (Toile, Venin…),
@@ -2771,8 +2772,9 @@ export function applyCast(
     };
     applyMissileHit(target, res);
     // Nerveux (effet déclenché onStartled : magie → +3 Brisé) — dispatcher générique (state/triggeredEffects).
+    // Cause 'magic' (présence de magie) → exemption Dressé (Magie) lue par la Condition Flow `startleCause`.
     for (const t of [target, ...extraTargets]) {
-      if (res.cast && !isOutOfAction(t)) for (const line of fireTriggers(get, t, 'onStartled', { set })) logLines.push(line);
+      if (res.cast && !isOutOfAction(t)) for (const line of fireTriggers(get, t, 'onStartled', { set, startleCause: 'magic' })) logLines.push(line);
     }
     // Surincantation « Cible » (LDB 47 l.28-31) : le MÊME jet frappe les cibles supplémentaires.
     for (const t2 of extraTargets) {

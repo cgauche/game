@@ -53,6 +53,9 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Infecté', 'Blessure Purulente post-combat (disease.ts — Lot D)'],
   ['Rongeur', 'marqueur rongeur → Fièvre du Rongeur si aussi Infecté (woundedByRodent, contraction post-combat)'],
   ['Corruption', 'exposition du groupe (corruptionFlow — Lot E)'],
+  // Dressé (Magie) : trait MARQUEUR sans effet propre — lu par le gate `startleCause` de Nerveux
+  // (Condition Flow `has dresse-magie` → exemption de l'effarouchement magique, LDB 85 l.89, données).
+  ['Dressé (Magie)', 'marqueur lu par le gate `startleCause` de Nerveux (exemption magie, données)'],
 ]);
 
 // Journal/MJ EN CONSCIENCE : pas d'effet moteur câblable sans système support — la desc (verbatim)
@@ -68,16 +71,14 @@ const JOURNAL_MJ = new Map<string, string>([
   ['Lanceur de Sorts', 'la donnée bestiaire ne liste pas les sorts connus → choix d’AUTEUR (éditeur : spells du spawn/statbloc) ; l’IA incante enemy.spells'],
   ['Mort-vivant', 'marqueur (consommé par Hurlement fantomatique, les Groupes et les contractions)'],
   // Dressé : chaque discipline est un trait à part entière (anti-pattern chaîne supprimé). Phase 1 =
-  // STRUCTURE seule (inertes, comme avant) ; les effets mécaniques (Guerre→CC/ignore Nerveux, Dompté→
-  // ignore Bestial, Garde→Territorial…) sont câblés en Phase 2 et migreront vers DISPATCH/COUVERT_AILLEURS.
-  ['Dressé (Guerre)', 'discipline — effet (+10 CC / ignore Nerveux bruits) câblé en Phase 2'],
-  ['Dressé (Magie)', 'discipline — effet (ignore Nerveux magie) câblé en Phase 2'],
-  ['Dressé (Dompté)', 'discipline — effet (ignore Bestial / +Soc) câblé en Phase 2'],
-  ['Dressé (Monture)', 'discipline — accepte un cavalier (gate du montage) câblé en Phase 2'],
-  ['Dressé (Garde)', 'discipline — octroie Territorial, câblé en Phase 2'],
+  // STRUCTURE ; Phase 2 a CÂBLÉ Guerre/Magie (exemption Nerveux + CC). Restent inertes ici les disciplines
+  // dont l'effet est câblé en Phase 3 (Dompté→ignore Bestial, Garde→Territorial, Monture→montage…).
+  ['Dressé (Dompté)', 'discipline — effet (ignore Bestial / +Soc) câblé en Phase 3'],
+  ['Dressé (Monture)', 'discipline — accepte un cavalier (gate du montage) câblé en Phase 3'],
+  ['Dressé (Garde)', 'discipline — octroie Territorial, câblé en Phase 3'],
   ['Dressé (Rapporteur)', 'discipline narrative (rapport) — arbitrage MJ'],
   ['Dressé (Revenir à la maison)', 'discipline narrative (retour au bercail) — arbitrage MJ'],
-  ['Dressé (Cavalerie de choc)', 'discipline — charge en bon ordre (Aux Armes) câblé en Phase 2'],
+  ['Dressé (Cavalerie de choc)', 'discipline — charge en bon ordre (Aux Armes) câblé en Phase 3'],
   ['Increvable', 'recousue/ressuscitée post-combat — arbitrage MJ'],
   // Traits des Horreurs de Tzeentch (EDO) — flavor de statbloc sans système support, desc verbatim.
   ['Marque de Tzeentch', 'Mutations du statbloc — fixées par l’auteur/MJ (l’éditeur pose les Mutations de la créature) ; pas de génération runtime'],
@@ -90,6 +91,9 @@ const JOURNAL_MJ = new Map<string, string>([
 // échoue le test de couverture — on n'oublie aucun trait dans un trou.
 const DISPATCH = new Set<string>([
   'À sang-froid', 'Affamé', 'Armure', 'Belliqueux', 'Bestial', 'Bond', 'Brutal', 'Champion', 'Coriace',
+  // Dressé (Guerre) : passive +10 CC (charMod, collecteur passiveMods) + marqueur lu par le gate Nerveux
+  // (exemption bruits forts). Effet PRINCIPAL = passive → DISPATCH (LDB 85 l.89).
+  'Dressé (Guerre)',
   'Corruption mentale', 'Démoniaque', 'Élite', 'Endurant', 'Éthéré', 'Fabriqué', 'Foulée', 'Furtif',
   'Grand', 'Immunité', 'Infravision', 'Insensible à la douleur', 'Instable', 'Intelligent', 'Magique',
   'Meneur', 'Mutation', 'Nerveux', 'Nuée', 'Parasité', 'Perturbant', 'Protection', 'Rage', 'Rapide',
