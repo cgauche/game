@@ -167,7 +167,8 @@ export * from './combatManeuvers';
 export * from './combatHooks';
 export * from './combatSetup';
 import { runCombatHooks } from './combatHooks';
-import { collectHeroRoundEndUpkeep, roundTestInteractive } from './combat/roundHooks';
+import { collectHeroRoundEndUpkeep } from './combat/roundHooks';
+import { roundTestInteractive } from './combat/cadenceGate';
 import { fireTurnStartTriggers, fireTurnEndTriggers } from './combat/turnHooks'; // effets de bord de tour (onTurnStart/onTurnEnd, dont la sortie de Frénésie en données)
 export { brokenRecovery, collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour broken-recovery.test / cascade d'upkeep
 export * from './combat/triggeredTest'; // baril : enregistre l'applier de cascade `triggeredTest` + installe le routeur de Test des triggers (effet de bord)

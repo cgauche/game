@@ -156,6 +156,70 @@
             ]
           }
         }
+      },
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "test",
+          "test": {
+            "skill": "resistance",
+            "difficulty": "intermediaire",
+            "label": "☠️ Résistance à l’Empoisonné"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "target",
+                  "ops": [
+                    {
+                      "op": "removeCondition",
+                      "name": "empoisonne",
+                      "value": 1,
+                      "valuePerSL": {
+                        "every": 1,
+                        "amount": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "compare",
+                  "subject": {
+                    "who": "target",
+                    "condition": "empoisonne"
+                  },
+                  "op": "<=",
+                  "value": 0
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "on": "target",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "name": "extenue"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": []
+          }
+        }
       }
     ]
   },

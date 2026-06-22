@@ -62,7 +62,7 @@ const TARGETS: Target[] = [
     // 30 → 27 (meleeAttackerBonus → incomingAttackMod data) → 11 (combatTestPenalty/testStatePenalty →
     // testMod data combatOnly/movementOnly/exceptSkills + perStack). Reste : par-round/évasion (endOfRound),
     // gating, et prédicats de mort (exclus). Cible Lot 4 finale : 0.
-    baseline: 8, // 11→10 (Empoisonné)→9 (En Flammes)→8 (Hémorragique dégâts→données : wounds {stacks} stacksReducedBy bleedIgnore). Reste : résist Empoisonné/Sonné (cadence), jet de mort/À-Terre (machinerie de mort)
+    baseline: 6, // …→8 (Hémorragique dégâts→données)→6 (résist Empoisonné→données : effects onRoundEnd test, retire 1+DR puis Exténué, résolu cadence-aware + inline hors-combat). Reste : résist Sonné (à migrer), jet de mort Hémorragique / inDeathCondition / À-Terre@0 (machinerie de mort)
     lot: 'Lot 4',
   },
   {

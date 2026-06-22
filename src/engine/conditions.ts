@@ -205,27 +205,12 @@ export function canTakeAction(c: Combatant): boolean {
   return !hasCondition(c, COND.sonne);
 }
 
-/** Valeur « brute » du Test de Résistance contre l'État Empoisonné (LDB 16 l.70 : Endurance +
- *  Augmentations de Résistance). SOURCE UNIQUE, partagée par `endOfRound` (jet silencieux) et le
- *  collecteur de cascade des HÉROS (étape influençable) — la difficulté Intermédiaire (+0) et la
- *  pénalité d'États (`combatTestPenalty`) sont appliquées par l'appelant. */
-export function poisonResistValue(c: Combatant): number {
-  return effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
-}
-
-/** Conséquence d'un Test de Résistance contre l'État Empoisonné (LDB 16 l.70-72) : sur un succès,
- *  retire 1 + DR pions ; une fois tous retirés, 1 État Exténué. PUR (mute `c`, renvoie la ligne de
- *  journal ou null). Partagé par `endOfRound` (ENNEMIS, jet silencieux interne) et l'applier de
- *  cascade `poisonResist` (HÉROS, jet influençable). */
-export function poisonResistApply(c: Combatant, success: boolean, sl: number): string | null {
-  const poison = stacks(c, COND.empoisonne);
-  if (!success || poison <= 0) return null;
-  const removed = Math.min(poison, 1 + Math.max(0, sl));
-  removeCondition(c, COND.empoisonne, removed);
-  const lines = [t('cond.poisonEliminated', { name: c.name, removed })];
-  if (!hasCondition(c, COND.empoisonne)) { addCondition(c, COND.extenue); lines.push(t('cond.poisonOvercome', { name: c.name })); }
-  return lines.join('\n');
-}
+/**
+ * (Résistance à l'Empoisonné — LDB 16 l.70-72 — n'est PLUS du code moteur : c'est un `effects: onRoundEnd`
+ *  à nœud `test` dans `etats.json` (retire 1+DR via `removeCondition`, puis Exténué si vidé via `if`/
+ *  `condition`), résolu par le DISPATCHER UNIQUE — cadence-aware en combat, inline hors-combat. Plus de
+ *  `poisonResistValue`/`poisonResistApply` par-nom ici.)
+ */
 
 /**
  * Fin de Round : dégâts périodiques (Hémorragique/Empoisonné/En flammes) et

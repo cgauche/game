@@ -95,10 +95,10 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
     expect(c).toBeTruthy();
     expect(c.purpose).toBe('combat');
     expect(c.roundBoundary).toBe(true);
-    // UNE seule étape poisonResist (le héros) — l'ennemi n'est JAMAIS une étape (silence côté hook).
+    // UNE seule étape de récupération (le héros) — l'ennemi n'est JAMAIS une étape (silence côté hook).
     expect(c.participants).toHaveLength(1);
     const step = c.participants[0];
-    expect(step.kind).toBe('poisonResist');
+    expect(step.kind).toBe('triggeredTest'); // étape GÉNÉRIQUE data-driven (plus de kind `poisonResist` par-nom)
     expect(step.actorId).toBe(H.id);
     expect(step.rollLabel).toBe('Résistance');
     expect(step.result).toBeFalsy(); // pas encore lancé → influençable (Chance/Résilience)
@@ -113,26 +113,28 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
 
     openRoundEndCascade(useGame.getState, useGame.setState);
     const c = useGame.getState().pendingCascade!;
-    const step = c.participants.find((s) => s.kind === 'poisonResist')!;
+    const step = c.participants.find((s) => s.kind === 'triggeredTest')!;
     expect(step).toBeTruthy();
 
     useGame.getState().cascadeRoll(step.id);
     useGame.getState().cascadeNext();
     const h = useGame.getState().battle!.combatants.find((x) => x.id === H.id)!;
-    expect(hasCondition(h, COND.empoisonne)).toBe(false); // poison surmonté
-    expect(hasCondition(h, COND.extenue)).toBe(true);      // … → 1 Exténué (LDB 16 l.72)
+    expect(hasCondition(h, COND.empoisonne)).toBe(false); // poison surmonté (branche success de la donnée : retire 1+DR)
+    expect(hasCondition(h, COND.extenue)).toBe(true);      // … vidé → 1 Exténué (LDB 16 l.72, via `if`/`condition`)
   });
 
-  it('dégâts d’Empoisonné en fin de Round = data-driven (fireConditionEffects) ; endOfRound ne teste pas (poison-resist = hook séparé)', () => {
+  it('Empoisonné data-driven : fireConditionEffects applique les DÉGÂTS puis résout le Test de Résistance INLINE (hors-combat, RAW l.66-72)', () => {
     const { H } = setup();
     addCondition(H, COND.empoisonne, 2);
     const hpBefore = H.wounds.current;
-    endOfRound(H, makeRNG(1));                             // n'applique PLUS les dégâts de poison (migrés en données)
-    expect(H.wounds.current).toBe(hpBefore);              // endOfRound seul : aucun dégât de poison
-    fireConditionEffects(useGame.getState, H, 'onRoundEnd', { rng: makeRNG(1) }); // dégâts data-driven (effects: onRoundEnd)
-    expect(H.wounds.current).toBe(hpBefore - 2);          // 2 Blessures subies (Empoisonné×2)
-    expect(stacks(H, COND.empoisonne)).toBe(2);           // aucun pion retiré (le Test vit dans le hook poison-resist)
-    expect(hasCondition(H, COND.extenue)).toBe(false);    // pas d'Exténué
+    endOfRound(H, makeRNG(1));                             // endOfRound ne touche plus le poison (ni dégâts ni Test)
+    expect(H.wounds.current).toBe(hpBefore);              // endOfRound seul : rien
+    // Sans `set` (= entretien HORS COMBAT) : le dispatcher applique les dégâts PUIS résout le Test inline.
+    // RNG forcé à l'ÉCHEC (jet 99) → la Résistance rate, le poison persiste : on isole les dégâts.
+    fireConditionEffects(useGame.getState, H, 'onRoundEnd', { rng: { int: () => 99 } as never });
+    expect(H.wounds.current).toBe(hpBefore - 2);          // 2 Blessures subies (Empoisonné×2), dégâts data-driven
+    expect(stacks(H, COND.empoisonne)).toBe(2);           // Résistance ratée → aucun pion retiré
+    expect(hasCondition(H, COND.extenue)).toBe(false);    // poison non vidé → pas d'Exténué
   });
 
   it('cadence AUTO : un héros empoisonné N’ouvre PAS d’étape de cascade (auto-résolu comme un monstre — roundTestInteractive)', () => {
@@ -142,8 +144,8 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
       addCondition(H, COND.empoisonne, 1);
       openRoundEndCascade(useGame.getState, useGame.setState);
       const c = useGame.getState().pendingCascade;
-      // En rapide/auto le héros est joué/auto-résolu → son Test ne passe PAS par la cascade (silence côté hook).
-      expect(c?.participants.some((s) => s.kind === 'poisonResist')).toBeFalsy();
+      // En rapide/auto le héros est joué/auto-résolu → son Test ne passe PAS par la cascade (résolu inline).
+      expect(c?.participants.some((s) => s.kind === 'triggeredTest')).toBeFalsy();
     } finally {
       resetRule('combat-cadence');
     }

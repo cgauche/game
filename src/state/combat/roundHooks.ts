@@ -12,12 +12,14 @@ import { battleRng } from '../battleRng';
 import { rollTest } from '../../engine/tests';
 import { testValue } from '../../engine/skills';
 import { bonus, effectiveChar, refreshWounds } from '../../engine/characteristics';
-import { addCondition, isOutOfAction, COND, tickDeath, stacks, removeCondition, endOfRound, hasCondition, poisonResistValue, poisonResistApply, combatTestPenalty } from '../../engine/conditions';
+import { addCondition, isOutOfAction, COND, tickDeath, stacks, removeCondition, endOfRound } from '../../engine/conditions';
 import { suffocationTick } from '../../engine/suffocation';
 import { clearPsychOf, calmeValue } from '../../engine/psychology';
 import { zonesRoundTick } from '../zones';
 import { purgeExpiredSummons } from '../summonFlow';
 import { fireTriggers } from '../triggeredEffects';
+import { collectConditionRecoverySteps } from './triggeredTest';
+import { roundTestInteractive } from './cadenceGate';
 import { traitAuras } from '../../engine/traits/dispatch';
 import { outnumberCountBonus, hasBraveheart } from '../../engine/combatFeatures/dispatch';
 import { chebyshev } from '../path';
@@ -25,22 +27,10 @@ import { isEngaged } from '../../engine/engagement';
 import { tileSeenByFoe } from '../lineOfSight';
 import { smokeOf } from '../combatGeometry';
 import { rule } from '../../engine/policy';
-import { cadenceAuto } from '../../engine/cadence';
 import { DIFFICULTY_MODIFIERS } from '../../engine/types';
 import type { Combatant, Difficulty } from '../../engine/types';
 import type { CascadeStep } from '../pendings';
 import type { Get, Set as SetFn } from '../flowTypes';
-
-/**
- * Un Test de fin de Round de `c` doit-il être une étape de CASCADE influençable (modale) plutôt qu'un
- * jet silencieux résolu dans le hook ? VRAI uniquement pour un HÉROS en cadence MANUELLE — en rapide/auto
- * (`cadenceAuto`), le héros est auto-résolu COMME un monstre → jet silencieux dans le hook (pas de cascade
- * redondante). C'est l'axe RÉEL de l'interactivité (kind × cadence), PAS `kind` seul (un héros auto-piloté
- * n'est pas « interactif »). Une seule source pour tous les hooks d'upkeep + le collecteur de cascade.
- */
-export function roundTestInteractive(c: Combatant): boolean {
-  return c.kind === 'hero' && !cadenceAuto();
-}
 
 // ============================================================================================
 // Séquence RAW de franchissement de Round, migrée ISO-COMPORTEMENT depuis advanceTurn (corps copiés
@@ -61,24 +51,17 @@ registerCombatHook({
       // fireTriggers réunit toutes les sources, aucun chemin par-kind. Inerte sans donnée. Pas de réaction
       // de fin de Round pour un combattant HORS COMBAT (un cadavre ne brûle/saigne plus — le dispatcher
       // autorise désormais les effets `on:'self'` sur une cible hors-combat, on filtre donc ici).
-      if (!isOutOfAction(c)) fireTriggers(get, c, 'onRoundEnd', { rng: battleRng(), set }).forEach((l) => sink(l, c));
+      // `deferInteractiveTest` : un Test de RÉCUPÉRATION d'État en DONNÉES (Empoisonné Résistance…) routé
+      // pour un héros MANUEL n'est PAS poussé ici (la cascade de fin de Round n'est pas encore ouverte) —
+      // il est COLLECTÉ par `collectHeroRoundEndUpkeep`. Ennemi/auto : résolu inline par le dispatcher.
+      if (!isOutOfAction(c)) fireTriggers(get, c, 'onRoundEnd', { rng: battleRng(), set, deferInteractiveTest: true }).forEach((l) => sink(l, c));
     }
   },
 });
-registerCombatHook({
-  id: 'poison-resist', // Résistance à l'Empoisonné (LDB 16 l.70-72) : retire 1+DR pions sur succès, puis Exténué quand vidé
-  phase: 'onRoundEnd',
-  order: 15, // juste après les DÉGÂTS périodiques (end-of-round 10)
-  run: ({ battle, sink }) => {
-    for (const c of battle.combatants) {
-      // Non-interactif (monstre OU héros en rapide/auto) → jet SILENCIEUX ici. Héros MANUEL → différé à
-      // la cascade influençable (étape `poisonResist`, cf. collectHeroRoundEndUpkeep) → on le saute.
-      if (roundTestInteractive(c) || stacks(c, COND.empoisonne) <= 0) continue;
-      const t = rollTest(poisonResistValue(c), 'intermediaire', battleRng(), combatTestPenalty(c));
-      poisonResistApply(c, t.success, t.sl)?.split('\n').forEach((l) => sink(l, c));
-    }
-  },
-});
+// (Résistance à l'Empoisonné — LDB 16 l.70-72 : retire 1+DR pions sur succès, puis Exténué quand vidé — n'est
+//  PLUS un hook impératif : c'est un effet `onRoundEnd` à nœud `test` en DONNÉES (etats.json), résolu par le
+//  DISPATCHER UNIQUE — ennemi/auto inline, héros manuel → étape de cascade collectée ci-dessous. Hors combat :
+//  inline générique, cf. outOfCombatUpkeep. Plus de `poisonResistValue`/`poisonResistApply` par-nom.)
 registerCombatHook({
   id: 'refresh-wounds', // dissipation d'un buff F/E/FM → recale les Blessures (LDB 85)
   phase: 'onRoundEnd',
@@ -321,14 +304,12 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, sink: (line: s
   // héros est auto-résolu COMME un monstre → ses Tests se résolvent silencieusement dans les hooks ci-dessus.
   if (!roundTestInteractive(c) || isOutOfAction(c)) return [];
   const steps: CascadeStep[] = [];
-  // 0) Résistance à l'Empoisonné (LDB 16 l.70-72) — Test de Résistance Intermédiaire (+0). Les DÉGÂTS
-  //    périodiques ont DÉJÀ été appliqués par `endOfRound` (hook `end-of-round`) ; seul le TEST passe en
-  //    cascade. Placé en TÊTE (physiologique, groupé avec les dégâts de poison).
-  //    La pénalité d'États (−10 Empoisonné/Sonné/Exténué…) est repliée dans `target`, comme pour le Brisé.
-  if (stacks(c, COND.empoisonne) > 0) {
-    const base = poisonResistValue(c);
-    steps.push({ id: `poisonResist-${c.id}`, kind: 'poisonResist', actorId: c.id, icon: '☠️', rollLabel: 'Résistance', base, target: base + DIFFICULTY_MODIFIERS.intermediaire + combatTestPenalty(c), label: '☠️ Résistance à l’Empoisonné' });
-  }
+  // 0) Récupération d'États en DONNÉES (Empoisonné Résistance LDB 16 l.70-72 ; plus tard En Flammes/Sonné) —
+  //    chaque État porté dont la donnée déclare un `effects: onRoundEnd` à nœud `test` devient une étape
+  //    `triggeredTest` INFLUENÇABLE, bâtie depuis la MÊME donnée que la voie inline (ennemi/auto) et hors-combat
+  //    (`simpleTriggeredTestStep`). Les DÉGÂTS périodiques ont DÉJÀ été appliqués par le dispatcher (hook
+  //    `end-of-round`) ; seul le TEST passe en cascade. En TÊTE (physiologique). Plus de `poisonResist` par-nom.
+  steps.push(...collectConditionRecoverySteps(c));
   // (Mâchoires d'acier n'est PLUS un Test de fin de Round : c'est un effet `onGainCondition` data-driven,
   //  déclenché à l'acquisition du Sonné — cf. talents.json + brique `combat/triggeredTest`.)
   // 2) Récupération du Brisé (LDB 16) — retrait « caché » + Exténué SANS-Test appliqués ici ; le Test
@@ -359,13 +340,9 @@ function syncCombatant(get: Get, set: SetFn): void {
   if (get().battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
 }
 
-registerCascadeApplier('poisonResist', (get, set, step, hero) => {
-  if (!hero || !step.result) return;
-  const line = poisonResistApply(hero, step.result.success, step.result.sl);
-  syncCombatant(get, set);
-  // `poisonResistApply` peut renvoyer 2 lignes jointes (« éliminé » + « Exténué ») → on les sépare.
-  return { journal: line ? line.split('\n') : [`${hero.name} ne surmonte pas le poison (Résistance ratée).`] };
-});
+// (La Résistance à l'Empoisonné n'a PLUS d'applier dédié : son étape est de kind `triggeredTest` (générique),
+//  résolue par l'applier `triggeredTest` de la brique cadence-aware — la branche `success`/`fail` de la donnée
+//  (retire 1+DR, puis Exténué si vidé) y est rejouée. Plus de `poisonResistApply` par-nom.)
 
 registerCascadeApplier('brokenRecovery', (get, set, step, hero) => {
   if (!hero || !step.result) return;

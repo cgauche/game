@@ -684,14 +684,14 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           // État récurrent = cas particulier de l'effet récurrent général (op `perRound`) : la
           // valeur est figée maintenant, l'op `condition` littérale est re-jouée chaque fin de Round.
           pushPerRound(target, [{ op: 'condition', name: o.name, value: v, ...(escape != null ? { escapeStrength: escape } : {}) }], ctx);
-          lines.push(t('op.condPerRound', { name: target.name, v, cond: o.name, src: ctx.label ?? 'sort' }));
+          lines.push(t('op.condPerRound', { name: target.name, v, cond: conditionLabel(o.name), src: ctx.label ?? 'sort' }));
         } else if (o.durationRounds != null) {
           const rounds = Math.max(1, resolveFormula(o.durationRounds, ref, rng));
           addTimedCondition(target, o.name, v, rounds, escape);
-          lines.push(t('op.condTimed', { name: target.name, v, cond: o.name, roundsTxt: t('op.frag.roundsCap', { n: rounds, s: rounds > 1 ? 's' : '' }) }));
+          lines.push(t('op.condTimed', { name: target.name, v, cond: conditionLabel(o.name), roundsTxt: t('op.frag.roundsCap', { n: rounds, s: rounds > 1 ? 's' : '' }) }));
         } else {
           addCondition(target, o.name, v, escape);
-          lines.push(t('op.cond', { name: target.name, v, cond: o.name }));
+          lines.push(t('op.cond', { name: target.name, v, cond: conditionLabel(o.name) })); // libellé (« Exténué »), cohérent avec removeCond
         }
         break;
       }

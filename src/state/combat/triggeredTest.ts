@@ -24,7 +24,7 @@
  */
 import { rollTest, resolveOpposed, type TestResult } from '../../engine/tests';
 import { combatTestPenalty } from '../../engine/conditions';
-import { testValue } from '../../engine/skills';
+import { testValue, rawCombatTestBase } from '../../engine/skills';
 import { applyOps, describeTestRoll, type OpsCtx } from '../../engine/ops';
 import { DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../../engine/types';
 import type { Combatant, Difficulty } from '../../engine/types';
@@ -32,15 +32,15 @@ import { SIZE_ORDER, effectiveSize } from '../../engine/size';
 import { campOf } from '../../engine/relations';
 import { immunityTypes } from '../../engine/traits/dispatch';
 import { groupMatch } from '../../engine/groups';
-import { refLabel } from '../../data';
-import { type Flow, type ActorView, type ConditionCtx, evalCondition, conditionCtx, flowHasImpureOp, EMPTY_FLOW } from '../flow';
+import { refLabel, findConditionById } from '../../data';
+import { type Flow, type FlowTest, type ActorView, type ConditionCtx, evalCondition, conditionCtx, flowHasImpureOp, EMPTY_FLOW } from '../flow';
 import type { Get, Set as SetFn } from '../flowTypes';
-import type { FreeAttackFreeze, BladeTrapFreeze } from '../pendings';
+import type { FreeAttackFreeze, BladeTrapFreeze, CascadeStep } from '../pendings';
 import { battleRng } from '../battleRng';
 import { runSpellFlowLines, runFlow, pushCombatStep, openSkillTest } from '../combatEffects';
 import { registerCascadeApplier } from '../cascade';
 import { fireTriggers } from '../triggeredEffects';
-import { roundTestInteractive } from './roundHooks';
+import { roundTestInteractive } from './cadenceGate';
 
 /** Reflète la mutation EN PLACE d'un combattant (États retirés) dans les références party/battle pour
  *  un re-rendu React (clone des tableaux) — mirroir de `syncCombatant` des appliers d'upkeep. */
@@ -166,6 +166,42 @@ export function applyTriggeredTestBranch(
     return [];
   }
   return runSpellFlowLines(c, c, branch, { rng: battleRng(), caster: c, sl: t.sl });
+}
+
+/** Construit l'étape de cascade `triggeredTest` d'un Test de RÉCUPÉRATION d'État (top-level, non opposé) pour
+ *  le collecteur de fin de Round (`collectHeroRoundEndUpkeep`). Convention RAW-CORRECTE : `base` = valeur de
+ *  Test BRUTE (`rawCombatTestBase`, sans pénalité d'État) + `combatTestPenalty` appliquée UNE seule fois dans
+ *  `target` — la pénalité d'État de l'Empoisonné/Sonné qui se récupère est comptée une fois (LDB 16), pas deux
+ *  (`testValue` l'inclurait déjà). MÊME calcul que la voie inline (ennemi/auto + hors-combat,
+ *  `resolveInlineFlowTest`) → héros et ennemi récupèrent à l'identique. */
+export function simpleTriggeredTestStep(
+  c: Combatant, ft: FlowTest, branches: { onSuccess: Flow; onFail: Flow }, after: Flow,
+): CascadeStep {
+  const base = rawCombatTestBase(c, ft.skill, ft.characteristic, ft.spec);
+  const difficulty: Difficulty = ft.difficulty ?? 'intermediaire';
+  const skillLabel = ft.skill ? refLabel('skills', { id: ft.skill, spec: ft.spec }) : (ft.characteristic ? CHAR_LABELS[ft.characteristic] : 'Test');
+  return {
+    id: `triggeredTest-${c.id}-${skillLabel}`,
+    kind: 'triggeredTest', actorId: c.id, icon: '🎲', rollLabel: skillLabel,
+    base, target: base + DIFFICULTY_MODIFIERS[difficulty] + combatTestPenalty(c), label: ft.label ?? skillLabel,
+    meta: { onSuccess: branches.onSuccess, onFail: branches.onFail, after },
+  };
+}
+
+/** Étapes de cascade de RÉCUPÉRATION d'États en fin de Round pour un héros MANUEL (LDB 16) : pour chaque
+ *  État porté dont la DONNÉE déclare un `effects: onRoundEnd` à nœud `test` (Empoisonné Résistance ; plus
+ *  tard En Flammes Athlétisme / Sonné Résistance), une étape `triggeredTest` INFLUENÇABLE bâtie depuis la
+ *  MÊME donnée (`simpleTriggeredTestStep`) que la voie inline (ennemi/auto) et la voie hors-combat. GÉNÉRIQUE
+ *  (aucun État nommé en dur). `after` vide : un Test de récupération est top-level. */
+export function collectConditionRecoverySteps(c: Combatant): CascadeStep[] {
+  const steps: CascadeStep[] = [];
+  for (const cond of c.conditions ?? []) {
+    for (const eff of findConditionById(cond.name)?.effects ?? []) {
+      if (eff.trigger !== 'onRoundEnd' || eff.flow.kind !== 'test') continue;
+      steps.push(simpleTriggeredTestStep(c, eff.flow.test, { onSuccess: eff.flow.success, onFail: eff.flow.fail }, EMPTY_FLOW));
+    }
+  }
+  return steps;
 }
 
 /** Rejoue la CONTINUATION `after` d'un `test` (le reste du `seq`) sur `c` EN COMBAT (peut ré-appender

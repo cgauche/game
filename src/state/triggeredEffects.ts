@@ -9,20 +9,23 @@
  * place et renvoie le journal. Le référent des formules « (X) » est le PORTEUR (`caster` = la créature
  * qui frappe) — donc « Force de la source » = sa Force.
  */
-import type { Combatant, Weapon, HitLocation } from '../engine/types';
+import { type Combatant, type Weapon, type HitLocation, type Difficulty, CHAR_LABELS } from '../engine/types';
 import type { Get, Set as SetFn } from './flowTypes';
 import { type EffectTrigger, type TriggeredEffect, type Flow, flowHasTest } from './flow';
 import type { OpsCtx, GameOp } from '../engine/ops';
+import { describeTestRoll } from '../engine/ops';
 import { resolveQualities } from '../engine/qualities/dispatch';
 import { featureLevel } from '../engine/combatFeatures/dispatch';
 import type { CombatFeature } from '../engine/combatFeatures/types';
-import { isOutOfAction } from '../engine/conditions';
+import { isOutOfAction, combatTestPenalty } from '../engine/conditions';
+import { roundTestInteractive } from './combat/cadenceGate';
 import { isEngagedWith } from '../engine/engagement';
 import { combatDistance } from './footprint';
 import { losClear } from './lineOfSight';
 import { smokeOf } from './combatGeometry';
-import { traitById, qualityById, findManeuverById, findTalentById, findConditionById, findPsychologyById } from '../data';
-import { difficultyFromLabel } from '../engine/tests';
+import { traitById, qualityById, findManeuverById, findTalentById, findConditionById, findPsychologyById, refLabel } from '../data';
+import { difficultyFromLabel, rollTest } from '../engine/tests';
+import { rawCombatTestBase } from '../engine/skills';
 import { runSpellFlowLines } from './combatEffects';
 import { RNG, defaultRNG } from '../engine/dice';
 
@@ -140,7 +143,11 @@ export interface TriggerCtx { victim?: Combatant; weapon?: Weapon; rng?: RNG; ma
    *  trigger ne porte un nœud Flow `test` au 1ᵉʳ niveau (seul Mâchoires d'acier en a un, `onGainCondition`,
    *  câblé via le hook du store). Absent → pas de routage (les flows non-`test` passent par
    *  `runSpellFlowLines`, qui rend le `string[]` tissé inline par l'appelant). */
-  set?: SetFn }
+  set?: SetFn;
+  /** Pose le drapeau `deferInteractiveTest` sur la résolution d'un Test routé : un héros MANUEL ne pousse
+   *  PAS son étape ICI (la cascade n'est pas ouverte au moment où le hook `end-of-round` diffuse) — elle
+   *  est COLLECTÉE par `collectHeroRoundEndUpkeep`. Ennemi/auto restent résolus inline. */
+  deferInteractiveTest?: boolean }
 
 /** ROUTEUR d'un Flow de trigger PORTANT un nœud `test` (à n'importe quelle profondeur) vers la voie
  *  CADENCE-AWARE (héros manuel → cascade influençable ; sinon → jet inline) via `runCombatFlow`
@@ -152,6 +159,24 @@ export interface TriggerCtx { victim?: Combatant; weapon?: Weapon; rng?: RNG; ma
 type TestRouter = (get: Get, set: SetFn, target: Combatant, actor: Combatant, flow: Flow, opsCtx?: OpsCtx) => void;
 let testRouter: TestRouter | undefined;
 export function setTriggeredTestRouter(fn: TestRouter): void { testRouter = fn; }
+
+/** Résolution INLINE d'un nœud `test` TOP-LEVEL sans routeur cadence-aware (entretien HORS COMBAT) —
+ *  jumeau store-free de la branche NON-interactive de `resolveFlowTest` : jet du Test (`combatTestPenalty`
+ *  comme un Test simple), puis branche `success`/`fail` jouée par `runSpellFlowLines` (mêmes ops). Un `test`
+ *  ENFOUI (hors top-level) LÈVE — un tel cas exige la voie cadence-aware (jamais de branche succès muette). */
+function resolveInlineFlowTest(c: Combatant, flow: Flow, ctx: OpsCtx): string[] {
+  if (flow.kind !== 'test') throw new Error('resolveInlineFlowTest: nœud non-`test` (un test enfoui exige un routeur cadence-aware).');
+  const ft = flow.test;
+  // `base` BRUT (sans pénalité d'État) + `combatTestPenalty` une SEULE fois (RAW : −10 d'Empoisonné/Sonné
+  // compté une fois, LDB 16) — MÊME convention que `simpleTriggeredTestStep` (héros) → récupération identique.
+  const base = rawCombatTestBase(c, ft.skill, ft.characteristic, ft.spec);
+  const difficulty: Difficulty = ft.difficulty ?? 'intermediaire';
+  const skillLabel = ft.skill ? refLabel('skills', { id: ft.skill, spec: ft.spec }) : (ft.characteristic ? CHAR_LABELS[ft.characteristic] : 'Test');
+  const rng = ctx.rng ?? defaultRNG;
+  const res = rollTest(base, difficulty, rng, combatTestPenalty(c));
+  const branch = res.success ? flow.success : flow.fail;
+  return [describeTestRoll(c.name, skillLabel, difficulty, res), ...runSpellFlowLines(c, c, branch, { ...ctx, rng, caster: c, sl: res.sl })];
+}
 
 /** Écart d'Avantage de `actor` avec ses adversaires ENGAGÉS : `max(0, meilleur Avantage ennemi engagé −
  *  le sien)` (Instable, LDB 85 l.177 : « la différence entre son Avantage et celui supérieur de son
@@ -207,11 +232,24 @@ export function applyTriggeredEffects(
       // fournit `set` + un routeur installé. Un Flow `test` non routé (pas de `set`) atteindrait
       // `runSpellFlowLines`, qui LÈVE (jamais de branche succès muette). Le contexte de la touche
       // (`woundsDealt`/`margin→sl`/`location`/`attackKind`) voyage dans l'opsCtx pour les Conditions `if`.
-      if (flowHasTest(eff.flow) && ctx.set && testRouter) {
-        testRouter(get, ctx.set, t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, engagedAdvantageGap: gap, foeInLoS, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause });
+      const flowCtx: OpsCtx = { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, engagedAdvantageGap: gap, foeInLoS, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause };
+      if (flowHasTest(eff.flow)) {
+        // Test de FIN DE ROUND (`deferInteractiveTest`, posé par le hook `end-of-round` : la cascade n'est
+        // pas encore ouverte) : un héros MANUEL est COLLECTÉ par `collectHeroRoundEndUpkeep` (on saute ici) ;
+        // ennemi / héros auto → résolu INLINE (lignes RENDUES → sinkées dans le journal comme les dégâts).
+        if (ctx.deferInteractiveTest) {
+          if (roundTestInteractive(t)) continue;
+          lines.push(...resolveInlineFlowTest(t, eff.flow, flowCtx));
+          continue;
+        }
+        // Hors fin de Round : voie cadence-aware si un routeur est branché (onGainCondition / attaques →
+        // cascade influençable pour un héros manuel, inline + file différée sinon) ; SANS routeur (entretien
+        // HORS COMBAT) → INLINE. Jamais avalé. GÉNÉRIQUE : tout État à `onRoundEnd` test (Empoisonné…).
+        if (ctx.set && testRouter) { testRouter(get, ctx.set, t, actor, eff.flow, flowCtx); continue; }
+        lines.push(...resolveInlineFlowTest(t, eff.flow, flowCtx));
         continue;
       }
-      lines.push(...runSpellFlowLines(t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, engagedAdvantageGap: gap, foeInLoS, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause }));
+      lines.push(...runSpellFlowLines(t, actor, eff.flow, flowCtx));
     }
   }
   return lines;
