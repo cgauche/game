@@ -23,7 +23,7 @@ const CASES: Case[] = [
 ];
 const cells = CASES.map((cse, i) => {
   const app: Appearance = { species: 'Humain', sex: 'M', build: 0.55, seed: 4, monster: cse.monster };
-  const w = cse.weapon ? ({ name: cse.weapon[0], type: cse.weapon[1], damage: '+4', qualities: [] } as Weapon) : undefined;
+  const w = cse.weapon ? ({ name: cse.weapon[0], type: cse.weapon[1], damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon) : undefined;
   const svg = renderToStaticMarkup(
     React.createElement(RigSprite, { appearance: app, equip: { weapons: w ? [w] : [], armour: [] }, career: 'Mendiant', pose: w ? weaponRest(w) : {} }),
   );

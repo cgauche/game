@@ -16,6 +16,7 @@ import { statName } from '../../engine/statEntry';
 const TRIGGER_LABEL: Record<EffectTrigger, string> = {
   onHit: 'À la touche',
   onWoundLoss: 'En perdant des PB',
+  onSlain: 'À sa mise hors de combat',
   onRoundStart: 'Au début du Round',
   onStartled: 'Surpris (magie / bruit)',
   onKill: 'En tuant un adversaire',
@@ -26,6 +27,9 @@ const TRIGGER_LABEL: Record<EffectTrigger, string> = {
   onRoundEnd: 'À la fin du Round',
   onTurnStart: 'Au début de son tour',
   onTurnEnd: 'À la fin de son tour',
+  onAttackResolved: 'Après une attaque résolue',
+  onCastResolved: 'Après une incantation résolue',
+  onMiscast: 'Sur une Imparfaite',
 };
 const ON_LABEL: Record<'self' | 'victim' | 'engaged', string> = {
   self: 'soi-même',

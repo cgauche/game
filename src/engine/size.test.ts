@@ -59,8 +59,8 @@ describe('Taille en combat (T2/T3/T4) — LDB 85 l.293-352', () => {
   });
   it('sizeGrantedQualities : ∅ / Dévastatrice / Dévastatrice+Percutante (cumul)', () => {
     expect(sizeGrantedQualities('moyenne', 'moyenne')).toEqual([]);
-    expect(sizeGrantedQualities('grande', 'moyenne')).toEqual(['Dévastatrice']);
-    expect(sizeGrantedQualities('enorme', 'moyenne')).toEqual(['Dévastatrice', 'Percutante']);
+    expect(sizeGrantedQualities('grande', 'moyenne')).toEqual(['devastatrice']); // ids stables
+    expect(sizeGrantedQualities('enorme', 'moyenne')).toEqual(['devastatrice', 'percutante']);
   });
   it('forceOpposedOutcome : autoWin / needCrit / normal', () => {
     expect(forceOpposedOutcome('enorme', 'moyenne')).toBe('autoWin'); // a ≥ +2 cat

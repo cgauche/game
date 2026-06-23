@@ -21,7 +21,7 @@ function reset() {
 function blessedHero(fortune = 0) {
   const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Béni', rng: makeRNG(5) });
   hero.fortune = fortune;
-  hero.activeEffects = [{ label: 'Bénédiction de Chance', bonus: 0, roundsLeft: 6, freeReroll: true }];
+  hero.activeEffects = [{ label: 'Bénédiction de Chance', bonus: 0, duration: { scale: 'rounds', left: 6 }, freeReroll: true }];
   return hero;
 }
 

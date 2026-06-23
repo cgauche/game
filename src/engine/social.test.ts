@@ -5,8 +5,6 @@ import { Status } from './creation';
 
 const S = (tier: Status['tier'], standing: number): Status => ({ tier, standing });
 
-// rng INJECTÉ : renvoie directement le 1d10 voulu (1..10), pour des résultats déterministes.
-const rngFixed = (n: number) => () => n;
 
 afterEach(() => {
   resetRule('social-status-reaction-roll');
@@ -67,23 +65,23 @@ describe('statusCharmMod — mendicité (option social-begging-bonus, l.92)', ()
 describe('statusCharmMod — réaction au Statut (option social-status-reaction-roll, l.54/90)', () => {
   it('1-2 « Braver le Statut » → 0', () => {
     setRule('social-status-reaction-roll', true);
-    expect(statusCharmMod(S('Or', 1), S('Bronze', 1), { rng: rngFixed(1) })).toBe(0);
-    expect(statusCharmMod(S('Or', 1), S('Bronze', 1), { rng: rngFixed(2) })).toBe(0);
+    expect(statusCharmMod(S('Or', 1), S('Bronze', 1), { reactionRoll: 1 })).toBe(0);
+    expect(statusCharmMod(S('Or', 1), S('Bronze', 1), { reactionRoll: 2 })).toBe(0);
   });
   it('3-8 « réactions classiques » → mod inchangé', () => {
     setRule('social-status-reaction-roll', true);
-    expect(statusCharmMod(S('Or', 1), S('Bronze', 1), { rng: rngFixed(5) })).toBe(10);
-    expect(statusCharmMod(S('Bronze', 1), S('Or', 1), { rng: rngFixed(5) })).toBe(-10);
+    expect(statusCharmMod(S('Or', 1), S('Bronze', 1), { reactionRoll: 5 })).toBe(10);
+    expect(statusCharmMod(S('Bronze', 1), S('Or', 1), { reactionRoll: 5 })).toBe(-10);
   });
   it('9-10 « Opinions extrêmes » → mod inversé (Or>Bronze +10 → −10 ; Bronze<Or −10 → +10)', () => {
     setRule('social-status-reaction-roll', true);
-    expect(statusCharmMod(S('Or', 1), S('Bronze', 1), { rng: rngFixed(9) })).toBe(-10);
-    expect(statusCharmMod(S('Or', 1), S('Bronze', 1), { rng: rngFixed(10) })).toBe(-10);
-    expect(statusCharmMod(S('Bronze', 1), S('Or', 1), { rng: rngFixed(10) })).toBe(10);
+    expect(statusCharmMod(S('Or', 1), S('Bronze', 1), { reactionRoll: 9 })).toBe(-10);
+    expect(statusCharmMod(S('Or', 1), S('Bronze', 1), { reactionRoll: 10 })).toBe(-10);
+    expect(statusCharmMod(S('Bronze', 1), S('Or', 1), { reactionRoll: 10 })).toBe(10);
   });
   it('enveloppe aussi un mod de 0 (rien à inverser)', () => {
     setRule('social-status-reaction-roll', true);
-    expect(statusCharmMod(S('Argent', 3), S('Argent', 1), { rng: rngFixed(9) })).toBe(-0);
+    expect(statusCharmMod(S('Argent', 3), S('Argent', 1), { reactionRoll: 9 })).toBe(-0);
   });
 });
 

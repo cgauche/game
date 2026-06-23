@@ -14,12 +14,13 @@ import { Combatant } from '../engine/types';
 import { Scene } from './scene';
 import { reachable, flyReachable, manhattan, chebyshev, Pt } from './path';
 import { footprintChebyshev, sizeFootprint } from './footprint';
-import { lineOfSightCover } from './lineOfSight';
+import { losClear, tileSeenByFoe } from './lineOfSight';
 import { rangeBandModifier } from '../engine/combat';
 import { hasCondition } from '../engine/conditions';
 import { isEngaged, meleeReachTiles } from '../engine/engagement';
 import { groupMatch } from '../engine/groups';
 import { isBestial, isTerritorial } from '../engine/traits/dispatch';
+import { isFrenzied } from '../engine/psychology';
 
 export type EnemyAction =
   | { kind: 'cast'; targetId: string; spell: string } // incantation offensive sur la cible
@@ -88,7 +89,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   if (hasCondition(enemy, 'surpris')) return { kind: 'end' }; // Surpris (LDB 16 l.132) : ni Mouvement ni Action ce tour
   // En flammes (LDB 16 l.77) : un ennemi NON frénétique se roule au sol pour éteindre le feu (1d10/Round
   // est mortel). Un frénétique ignore le danger et continue d'attaquer (Frénésie, LDB 21 l.34).
-  if (hasCondition(enemy, 'en-flammes') && !enemy.frenzied) return { kind: 'recover', state: 'en-flammes' };
+  if (hasCondition(enemy, 'en-flammes') && !isFrenzied(enemy)) return { kind: 'recover', state: 'en-flammes' };
   const pos = enemy.pos!;
   // Portée de mêlée = Allonge de l'arme (RAW-3, LDB 62 l.211/213) ; 1 case par défaut. Diagonale incluse
   // (Chebyshev). Source unique partagée avec le héros et la résolution → symétrie héros/ennemi.
@@ -114,7 +115,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const adjacentFoes = heroes.filter(inMelee);
   // Ligne de Vue (LDB 13 l.123) : on ne vise au tir/sort qu'une cible visible. Occupants ignorés
   // ici (une créature ne BLOQUE pas la vue — elle ne donne qu'un couvert imparfait, géré au jet).
-  const visible = (h: Combatant): boolean => !lineOfSightCover(scene, pos, h.pos!, [], smoke ?? []).blocked;
+  const visible = (h: Combatant): boolean => losClear(scene, pos, h.pos!, smoke ?? []);
   const shootableHeroes = heroes.filter(visible);
   // PORTÉE (parité avec le gate pré-clic du héros) : un tireur ne vise pas au-delà de la bande
   // Extrême (Portée ×3 — rangeBandModifier null), un lanceur pas au-delà de la portée du sort.
@@ -124,7 +125,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const shootPool = maxWeaponRange > 0 ? shootableHeroes.filter((h) => rangeBandModifier(fpDist(h), maxWeaponRange) != null) : shootableHeroes;
   const castPool = spellRange != null ? shootableHeroes.filter((h) => fpDist(h) <= spellRange) : shootableHeroes;
   // Frénésie (LDB 21 l.34) : la seule Action est un Test de Capacité de Combat / Athlétisme — ni tir ni sort.
-  const frenzied = !!enemy.frenzied;
+  const frenzied = isFrenzied(enemy);
   const canShoot = !frenzied && hasRanged && !reloadNeeded && !(adjacentFoes.length > 0 && hasMeleeWeapon) && shootPool.length > 0;
   const canCast = !frenzied && offensiveSpell != null && castPool.length > 0;
 
@@ -132,24 +133,29 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // ligne directe, seules les cases d'atterrissage doivent être praticables et libres.
   const reach = (flying ? flyReachable : reachable)(scene, pos, movement, blocked, sizeFootprint(enemy.size));
 
-  // Fuite vers la case atteignable la PLUS éloignée des héros (Brisé / Bestial blessé).
-  const fleeMove = (): EnemyAction => {
+  // Fuite (Brisé / Bestial blessé). `preferHidden` (Brisé, LDB 16 l.55 « hors de vue de l'ennemi ») :
+  // gagner une CACHETTE (case hors de vue de tout héros) prime sur la distance ; sinon, la plus éloignée.
+  const fleeMove = (preferHidden = false): EnemyAction => {
+    const tiles = [...reach.keys()].map((k) => { const [x, y] = k.split(',').map(Number); return { x, y } as Pt; });
+    const distOf = (t: Pt) => Math.min(...heroes.map((h) => chebyshev(t, h.pos!)));
+    const hidden = preferHidden ? tiles.filter((t) => !tileSeenByFoe(scene, heroes, t, smoke ?? [])) : [];
     let best = pos;
-    let bestDist = Math.min(...heroes.map((h) => chebyshev(pos, h.pos!)));
-    for (const k of reach.keys()) {
-      const [x, y] = k.split(',').map(Number);
-      const d = Math.min(...heroes.map((h) => chebyshev({ x, y }, h.pos!)));
-      if (d > bestDist) { bestDist = d; best = { x, y }; }
+    let bestDist = distOf(pos);
+    // Actuellement à découvert mais une cachette est atteignable → toute cachette vaut mieux que rester vu.
+    if (hidden.length && tileSeenByFoe(scene, heroes, pos, smoke ?? [])) { best = hidden[0]; bestDist = -1; }
+    for (const t of (hidden.length ? hidden : tiles)) {
+      const d = distOf(t);
+      if (d > bestDist) { bestDist = d; best = t; }
     }
     return best.x === pos.x && best.y === pos.y ? { kind: 'end' } : { kind: 'move', to: best, thenTargetId: heroes[0].id };
   };
   // Brisé (LDB 16 l.55) : un ennemi Brisé NON Engagé fuit — il gagne la case atteignable la PLUS
   // éloignée des héros et ne peut pas attaquer. (Engagé : il reste — l'IA ne se désengage pas, simplif. assumée.)
-  if (hasCondition(enemy, 'brise') && !isEngaged(enemy)) return fleeMove();
+  if (hasCondition(enemy, 'brise') && !isEngaged(enemy)) return fleeMove(true); // Brisé : fuir hors de vue (cachette prioritaire)
   // Bestial (LDB 85 p.338) : « Si elle perd plus de la moitié de ses Blessures, elle tente de fuir »
   // — sauf Territorial (combat jusqu'à la mort) ou acculée/Engagée (elle reste — Frénésie gérée par
   // le drapeau frenzied de l'appelant).
-  if (isBestial(enemy.traits) && !isTerritorial(enemy.traits) && !enemy.frenzied
+  if (isBestial(enemy.traits) && !isTerritorial(enemy.traits) && !isFrenzied(enemy)
       && enemy.wounds.current < enemy.wounds.max / 2 && !isEngaged(enemy)) return fleeMove();
 
   // Un héros est « frappable ce tour » en mêlée s'il est déjà adjacent OU si une

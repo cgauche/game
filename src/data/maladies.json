@@ -1,15 +1,15 @@
 [
   {
     "id": "infection-mineure",
-    "name": "Infection Mineure",
+    "label": "Infection Mineure",
     "contractDifficulty": "tresFacile",
     "incubation": {
       "n": 1,
-      "d": 10
+      "sides": 10
     },
     "duration": {
       "n": 1,
-      "d": 10
+      "sides": 10
     },
     "symptoms": [
       {
@@ -26,15 +26,15 @@
   },
   {
     "id": "blessure-purulente",
-    "name": "Blessure Purulente",
+    "label": "Blessure Purulente",
     "contractDifficulty": "facile",
     "incubation": {
       "n": 1,
-      "d": 10
+      "sides": 10
     },
     "duration": {
       "n": 1,
-      "d": 10
+      "sides": 10
     },
     "symptoms": [
       {
@@ -54,16 +54,16 @@
   },
   {
     "id": "infection-du-sang",
-    "name": "Infection du Sang",
+    "label": "Infection du Sang",
     "contractDifficulty": "tresFacile",
     "incubation": {
       "n": 0,
-      "d": 1,
+      "sides": 1,
       "plus": -1
     },
     "duration": {
       "n": 1,
-      "d": 10
+      "sides": 10
     },
     "symptoms": [
       {
@@ -80,15 +80,15 @@
   },
   {
     "id": "courante-galopante",
-    "name": "Courante Galopante",
+    "label": "Courante Galopante",
     "contractDifficulty": "facile",
     "incubation": {
       "n": 0,
-      "d": 1
+      "sides": 1
     },
     "duration": {
       "n": 1,
-      "d": 10
+      "sides": 10
     },
     "symptoms": [
       {
@@ -105,16 +105,16 @@
   },
   {
     "id": "fievre-du-rongeur",
-    "name": "Fièvre du Rongeur",
+    "label": "Fièvre du Rongeur",
     "contractDifficulty": "accessible",
     "incubation": {
       "n": 3,
-      "d": 10,
+      "sides": 10,
       "plus": 5
     },
     "duration": {
       "n": 3,
-      "d": 10,
+      "sides": 10,
       "plus": 10
     },
     "symptoms": [
@@ -141,15 +141,15 @@
   },
   {
     "id": "flux-sanglant",
-    "name": "Flux Sanglant",
+    "label": "Flux Sanglant",
     "contractDifficulty": "facile",
     "incubation": {
       "n": 2,
-      "d": 10
+      "sides": 10
     },
     "duration": {
       "n": 1,
-      "d": 10
+      "sides": 10
     },
     "symptoms": [
       {
@@ -173,15 +173,15 @@
   },
   {
     "id": "peste-noire",
-    "name": "Peste Noire",
+    "label": "Peste Noire",
     "contractDifficulty": "accessible",
     "incubation": {
       "n": 0,
-      "d": 1
+      "sides": 1
     },
     "duration": {
       "n": 3,
-      "d": 10
+      "sides": 10
     },
     "symptoms": [
       {
@@ -204,15 +204,15 @@
   },
   {
     "id": "verole-du-tanneur",
-    "name": "Vérole du Tanneur",
+    "label": "Vérole du Tanneur",
     "contractDifficulty": "facile",
     "incubation": {
       "n": 1,
-      "d": 10
+      "sides": 10
     },
     "duration": {
       "n": 5,
-      "d": 10
+      "sides": 10
     },
     "symptoms": [
       {
@@ -226,15 +226,15 @@
   },
   {
     "id": "verole-urticante",
-    "name": "Vérole Urticante",
+    "label": "Vérole Urticante",
     "contractDifficulty": "accessible",
     "incubation": {
       "n": 1,
-      "d": 10
+      "sides": 10
     },
     "duration": {
       "n": 1,
-      "d": 10,
+      "sides": 10,
       "plus": 7
     },
     "symptoms": [

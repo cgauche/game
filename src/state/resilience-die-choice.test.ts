@@ -15,7 +15,7 @@ const C = (over: Partial<Combatant>): Combatant =>
     id: 'X', name: 'X', kind: 'hero',
     characteristics: { CC: 45, CT: 45, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], traumas: [],
-    weapons: [{ name: 'Épée', type: 'melee', damage: '+4', qualities: [] }],
+    weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] }],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [], talents: [], movement: 4, bodyShape: 'humanoide', pos: { x: 0, y: 0 },
     ...over,
@@ -136,7 +136,7 @@ describe('defenseSetForcedRoll — même choix sur une DÉFENSE forcée', () => 
     useGame.setState({
       battle: { combatants: [attacker, defender], log: [] } as never,
       pendingDefense: {
-        attackerId: 'E', defenderId: 'H', weapon: { name: 'Gourdin', type: 'melee', damage: '+4', qualities: [] },
+        attackerId: 'E', defenderId: 'H', weapon: { name: 'Gourdin', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] },
         location: null, atk, mode: 'esquive',
         def: { roll: 95, target: 50, success: false, sl: -4, isDouble: false },
         result: {

@@ -20,7 +20,6 @@
 import type { Combatant, CharKey } from './types';
 import type { RNG } from './dice';
 import { rollTest } from './tests';
-import { COMBAT_PERSIST } from './ops';
 import { addCondition, hasCondition, loseWounds } from './conditions';
 
 export type ExposureSeverity = 'clement' | 'difficile' | 'extreme';
@@ -81,12 +80,12 @@ export function exposureTarget(c: Combatant, resVal: number): number {
 export function applyExposureFailure(c: Combatant, failures: number, rng: RNG): { log: string[]; wounds: number } {
   const log: string[] = [];
   if (failures === 1) {
-    for (const k of FIRST_FAIL) c.activeEffects = [...(c.activeEffects ?? []), { label: 'Exposition (froid)', effectId: 'exposition-froid', char: k, bonus: -10, roundsLeft: COMBAT_PERSIST }];
+    for (const k of FIRST_FAIL) c.activeEffects = [...(c.activeEffects ?? []), { label: 'Exposition (froid)', effectId: 'exposition-froid', char: k, bonus: -10, duration: { scale: 'permanent' } }];
     log.push(`${c.name} grelotte — −10 CT/Agilité/Dextérité (Exposition au froid).`);
     return { log, wounds: 0 };
   }
   if (failures === 2) {
-    for (const k of SECOND_FAIL) c.activeEffects = [...(c.activeEffects ?? []), { label: 'Exposition (froid)', effectId: 'exposition-froid', char: k, bonus: -10, roundsLeft: COMBAT_PERSIST }];
+    for (const k of SECOND_FAIL) c.activeEffects = [...(c.activeEffects ?? []), { label: 'Exposition (froid)', effectId: 'exposition-froid', char: k, bonus: -10, duration: { scale: 'permanent' } }];
     log.push(`${c.name} est transi — −10 à toutes les autres Caractéristiques.`);
     return { log, wounds: 0 };
   }
@@ -129,6 +128,6 @@ export function exposureNight(c: Combatant, count: number, resVal: number, rng: 
 /** Pose une échéance d'horloge sur les pénalités d'Exposition (dissipation après 24 h au chaud). */
 export function expireExposureEffects(c: Combatant, untilTime: number): void {
   for (const e of c.activeEffects ?? []) {
-    if (e.effectId === 'exposition-froid' && e.untilTime == null) e.untilTime = untilTime;
+    if (e.effectId === 'exposition-froid' && e.duration.scale === 'permanent') e.duration = { scale: 'clock', until: untilTime };
   }
 }

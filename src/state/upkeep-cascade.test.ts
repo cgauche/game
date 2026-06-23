@@ -4,7 +4,7 @@ import { seedBattleRng } from './battleRng';
 import { contractDisease } from '../engine/disease';
 import { traumaFromKind } from '../engine/trauma';
 import { MINUTES_PER_DAY } from '../engine/clock';
-import { applyOps, COMBAT_PERSIST } from '../engine/ops';
+import { applyOps } from '../engine/ops';
 import type { Combatant } from '../engine/types';
 
 /**
@@ -75,9 +75,9 @@ describe('#T3 — cascade d’horloge (maladies/convalescence/purge sur franchis
   it('un buff de sort à durée d’HORLOGE (« 1 heure ») expire à son échéance, pas à 9999 Rounds (A4)', () => {
     const t0 = 12 * 60;
     const c = hero({});
-    // Buff posé comme le ferait applyCast pour une durée « 1 heure » : COMBAT_PERSIST + untilTime.
+    // Buff posé comme le ferait applyCast pour une durée « 1 heure » : durée d horloge (untilTime, sans sentinelle).
     applyOps(c, [{ op: 'charMod', char: 'F', mod: 10 }], {
-      label: 'Tour de force', defaultDurationRounds: COMBAT_PERSIST, defaultUntilTime: t0 + 60,
+      label: 'Tour de force', defaultUntilTime: t0 + 60,
     });
     useGame.setState({ party: [c], gameTime: t0, lastUpkeepDay: 0 });
     useGame.getState().advanceTime(30); // 30 min : toujours actif

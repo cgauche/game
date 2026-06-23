@@ -26,7 +26,8 @@ const mk = (over: Partial<Combatant> = {}): Combatant => ({
   ...over,
 } as Combatant);
 
-const noBattle = () => ({ battle: undefined }) as never;
+// `get` est une FONCTION (getter du store) ; un stub hors-combat renvoie donc `() => ({ battle: undefined })`.
+const noBattle = () => (() => ({ battle: undefined })) as never;
 const empetre = (c: Combatant) => c.conditions.find((x) => x.name === 'empetre');
 
 describe('fireTriggers — Traits et Atouts sur le même système flow+déclencheur', () => {
@@ -41,7 +42,7 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
   it('ATOUT Immobilisante : l’arme qui touche pose Empêtré — MÊME chemin que le trait', () => {
     const knight = mk({ id: 'kn' });
     const foe = mk({ id: 'fo' });
-    const weapon: Weapon = { name: 'Fléau à chaîne', type: 'melee', damage: '+BF+4', qualities: ['Immobilisante'] } as Weapon;
+    const weapon: Weapon = { name: 'Fléau à chaîne', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [{ id: 'immobilisante' }] } as Weapon;
     fireTriggers(noBattle(), knight, 'onHit', { victim: foe, weapon });
     expect(empetre(foe)?.value).toBe(1);
   });

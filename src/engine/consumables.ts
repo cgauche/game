@@ -1,98 +1,22 @@
 /**
- * Objets consommables (« Herbes et potions », Livre de base p.307). L'effet est PARSÉ du `desc`
- * du trapping — rien d'inventé. Deux effets modélisés (les seuls consommables de la base) :
- *  - soin : « Bonus de <Carac> » (Potion de guérison = Bonus d'Endurance) ou « N Points de Blessure »
- *  - retrait d'État : « retire … tout État <Nom> » (Potion de vitalité = Exténué)
- *
- * Réservé aux objets `misc` : une arme/armure dont le `desc` mentionne « Bonus de Force » (Dégâts)
- * ou « Blessure » ne doit pas être prise pour un consommable.
+ * Objets consommables (« Herbes et potions », LDB 307). L'effet est STRUCTURÉ en `GameOp[]`
+ * (`ItemInstance.consumable`, copié du catalogue) — MÊME vocabulaire que les sorts/passifs : `heal`
+ * (Bonus de carac ou littéral), `removeCondition` (`all` = tout l'État, sinon N pions),
+ * `preventInfection` (pansement → pas d'Infection, LDB 18 l.382). Exécuté par `applyOps`. Plus aucun
+ * parsing de `desc` au runtime (la prose→ops a été faite une fois par `migrate-consumables.mts`).
  */
-import { Combatant, ItemInstance, CHAR_BY_LABEL, CharKey } from './types';
-import { bonus, effectiveChar } from './characteristics';
-import { removeCondition } from './conditions';
-import { conditionIdByLabel, conditionLabel } from '../data';
+import { Combatant, ItemInstance } from './types';
+import { applyOps } from './ops';
 
-export interface ItemEffect {
-  /** Blessures rendues. */
-  heal?: number;
-  /** Nom de l'État retiré. */
-  removeCondition?: string;
-  /** Nombre de pions retirés (Bandages : « +1 État Hémorragique », LDB 74 l.70). Absent = tout l'État. */
-  removeStacks?: number;
-}
-
-/** Applique un effet d'objet à `target` (mutation) : soin de PB et/ou retrait d'État. Renvoie le journal.
- *  Partagé par l'usage EN COMBAT (`battleUseItem`) et HORS COMBAT (`usePartyItem`) — zéro duplication. */
-export function applyItemUse(target: Combatant, eff: ItemEffect): string[] {
-  const log: string[] = [];
-  if (eff.heal != null && eff.heal > 0) {
-    const before = target.wounds.current;
-    target.wounds.current = Math.min(target.wounds.max, target.wounds.current + eff.heal);
-    log.push(`${target.name} regagne ${target.wounds.current - before} Blessure(s).`);
-  }
-  if (eff.removeCondition === 'hemorragique') {
-    target.woundDressed = true; // un pansement/bandage panse la plaie → pas d'Infection (LDB 18 l.382)
-  }
-  if (eff.removeCondition) {
-    const cond = target.conditions.find((c) => c.name === eff.removeCondition);
-    if (cond) {
-      const n = eff.removeStacks ?? cond.value; // Bandages : +1 pion ; Potion : tout l'État
-      removeCondition(target, eff.removeCondition, n);
-      log.push(eff.removeStacks
-        ? `${target.name} : ${Math.min(n, cond.value)} pion ${conditionLabel(eff.removeCondition)} retiré.`
-        : `${target.name} n'est plus ${conditionLabel(eff.removeCondition)}.`);
-    } else log.push(`${target.name} n'a pas l'État ${conditionLabel(eff.removeCondition)}.`);
-  }
-  return log;
-}
-
-/** Effet d'un consommable INDÉPENDANT du buveur : le soin « Bonus de <Carac> » reste une réf de carac
- *  (`healBonus`) à résoudre, le reste est déjà concret. `null` = l'objet n'est pas un consommable.
- *  Source UNIQUE de la DÉTECTION (parsing du `desc`) — partagée par `isConsumable` et `itemUse`. */
-type RawItemEffect =
-  | { heal: number }
-  | { healBonus: CharKey }
-  | { removeCondition: string; removeStacks?: number };
-
-function parseConsumable(item: ItemInstance): RawItemEffect | null {
-  if (item.kind !== 'misc') return null;
-  const desc = item.desc ?? '';
-  // Soin : « Bonus de <Carac> » (valeur dépendante du buveur) ou « N Points de Blessure » littéral —
-  // lu UNIQUEMENT dans un contexte de RÉCUPÉRATION. Sans ce garde-fou, un poison d'arme (Lotus noir :
-  // « les victimes subissent 1 Point de Blessure ») ou une drogue (Bonnet de fou : « l'utilisateur perd
-  // 1d10 Points de Blessure ») serait pris pour un soin (LDB 72) : on ne se soigne pas en s'empoisonnant.
-  const recovers = /(r[ée]cup[ée]r|regagn|soign|r[ée]tabl)/i.test(desc);
-  if (recovers && /Blessure/i.test(desc)) {
-    const byBonus = desc.match(/Bonus d[e'’]\s*([A-Za-zÀ-ÿ]+)/i);
-    if (byBonus) {
-      const key = CHAR_BY_LABEL[byBonus[1]];
-      if (key) return { healBonus: key };
-    }
-    const lit = desc.match(/(\d+)\s*Points?\s+de\s+Blessure/i);
-    if (lit) return { heal: parseInt(lit[1], 10) };
-  }
-  // Retrait d'État : « retire … (tout | +N) État <Nom> ». Une quantité chiffrée (« +1 État Hémorragique »
-  // des Bandages) retire ce nombre de pions ; « tout État <Nom> » (Potion de vitalité) retire tout.
-  const cond = desc.match(/retire[^.]*?[ÉEée]tat\s+([A-Za-zÀ-ÿ]+)/i);
-  if (cond) {
-    const qty = desc.match(/\+?\s*(\d+)\s*[ÉEée]tats?\b/i);
-    // Le `desc` est en français → résoudre le libellé parsé en `conditionId` (clé runtime).
-    const id = conditionIdByLabel(cond[1]);
-    if (id) return { removeCondition: id, ...(qty ? { removeStacks: parseInt(qty[1], 10) } : {}) };
-  }
-  return null;
-}
-
-/** L'objet est-il un consommable utilisable ? Indépendant du buveur (≠ `itemUse` qui calcule la valeur)
- *  — sert l'icône d'objet (glyphe 🧪) et tout filtre « utilisable » qui n'a pas de Combatant sous la main. */
+/** L'objet est-il un consommable utilisable ? Présence d'au moins un `GameOp` d'effet. Sert l'icône
+ *  (glyphe 🧪) et tout filtre « utilisable » sans Combatant sous la main. */
 export function isConsumable(item: ItemInstance): boolean {
-  return parseConsumable(item) != null;
+  return !!item.consumable?.length;
 }
 
-/** Effet d'usage d'un consommable pour un buveur donné, ou `null` si l'objet n'est pas utilisable. */
-export function itemUse(item: ItemInstance, user: Combatant): ItemEffect | null {
-  const raw = parseConsumable(item);
-  if (!raw) return null;
-  if ('healBonus' in raw) return { heal: bonus(effectiveChar(user, raw.healBonus)) };
-  return raw; // { heal } | { removeCondition, removeStacks? } : déjà un ItemEffect concret
+/** Boit/applique le consommable sur `target` (= le buveur : `ref`/`caster` = `target`, donc un soin
+ *  « Bonus d'Endurance » résout le BE du buveur). Mutation + journal. RNG-free (ops sans dé). */
+export function useConsumable(target: Combatant, item: ItemInstance): string[] {
+  if (!item.consumable?.length) return [];
+  return applyOps(target, item.consumable, { caster: target });
 }

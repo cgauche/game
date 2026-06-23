@@ -32,15 +32,15 @@ describe('activeFlags — drapeaux portés par un ActiveEffect (Jalon 2.6 L9)', 
   it('hasActiveFlag : faux sans effet, vrai avec un effet porteur', () => {
     const c = mk();
     expect(hasActiveFlag(c, 'freeReroll')).toBe(false);
-    c.activeEffects = [{ label: 'Bénédiction de Chance', bonus: 0, roundsLeft: 6, freeReroll: true }];
+    c.activeEffects = [{ label: 'Bénédiction de Chance', bonus: 0, duration: { scale: 'rounds', left: 6 }, freeReroll: true }];
     expect(hasActiveFlag(c, 'freeReroll')).toBe(true);
     expect(hasActiveFlag(c, 'critRollTwice')).toBe(false);
   });
   it('consumeActiveFlag : retire UNE instance et rend son label ; null si absent', () => {
     const c = mk();
     c.activeEffects = [
-      { label: 'Bénédiction de Chance', bonus: 0, roundsLeft: 6, freeReroll: true },
-      { label: 'Autre buff', bonus: 10, char: 'CC', roundsLeft: 6 },
+      { label: 'Bénédiction de Chance', bonus: 0, duration: { scale: 'rounds', left: 6 }, freeReroll: true },
+      { label: 'Autre buff', bonus: 10, char: 'CC', duration: { scale: 'rounds', left: 6 } },
     ];
     expect(consumeActiveFlag(c, 'freeReroll')).toBe('Bénédiction de Chance');
     expect(c.activeEffects).toHaveLength(1);
@@ -54,28 +54,28 @@ describe("Endurance de l'anachorète — « ne subit aucune pénalité causée p
     addCondition(c, 'sonne');
     addCondition(c, 'extenue', 2);
     expect(combatTestPenalty(c)).toBe(-20);
-    c.activeEffects = [{ label: 'Endurance de l’anachorète', bonus: 0, roundsLeft: 3, ignoreStatePenalties: true }];
+    c.activeEffects = [{ label: 'Endurance de l’anachorète', bonus: 0, duration: { scale: 'rounds', left: 3 }, ignoreStatePenalties: true }];
     expect(combatTestPenalty(c)).toBe(0);
   });
   it('combatTestPenalty : l’aura Perturbante (trait, pas un État) n’est PAS annulée', () => {
     const c = mk();
-    addCondition(c, 'sonne');
-    (c as Combatant & { perturbed?: boolean }).perturbed = true;
-    c.activeEffects = [{ label: 'Endurance', bonus: 0, roundsLeft: 3, ignoreStatePenalties: true }];
-    expect(combatTestPenalty(c)).toBe(-20);
+    addCondition(c, 'sonne'); // −10, annulé par le drapeau
+    c.auraMods = [{ op: 'testMod', amount: -20 }]; // aura projetée (recompute-auras) : trait, ≠ État
+    c.activeEffects = [{ label: 'Endurance', bonus: 0, duration: { scale: 'rounds', left: 3 }, ignoreStatePenalties: true }];
+    expect(combatTestPenalty(c)).toBe(-20); // l'aura survit au drapeau (Endurance de l'anachorète, LDB 42)
   });
   it('testStatePenalty : annulée sous le drapeau (Empoisonné, déplacement À Terre)', () => {
     const c = mk();
     addCondition(c, 'empoisonne');
     addCondition(c, 'a-terre');
     expect(testStatePenalty(c, 'athletisme')).toBe(-20);
-    c.activeEffects = [{ label: 'Endurance', bonus: 0, roundsLeft: 3, ignoreStatePenalties: true }];
+    c.activeEffects = [{ label: 'Endurance', bonus: 0, duration: { scale: 'rounds', left: 3 }, ignoreStatePenalties: true }];
     expect(testStatePenalty(c, 'athletisme')).toBe(0);
   });
   it("op ignoreStatePenalties : pose l'effet actif à la durée du sort + journal", () => {
     const c = mk();
     const lines = applyOps(c, [{ op: 'ignoreStatePenalties' }], { label: 'Endurance de l’anachorète', defaultDurationRounds: 3 });
-    expect(c.activeEffects?.[0]).toMatchObject({ label: 'Endurance de l’anachorète', ignoreStatePenalties: true, roundsLeft: 3 });
+    expect(c.activeEffects?.[0]).toMatchObject({ label: 'Endurance de l’anachorète', ignoreStatePenalties: true, duration: { scale: 'rounds', left: 3 } });
     expect(lines.join(' ')).toMatch(/pénalité d'État|pénalités d'État/i);
   });
   it('effets curés : Endurance de l’anachorète porte l’op (plus de narrative seul)', () => {
@@ -142,7 +142,7 @@ describe('Baume pour un esprit blessé — « Tous les Traits Psychologiques son
     expect(c.psychState).toEqual([]);
     const eff = c.activeEffects?.find((e) => e.suppressedPsych);
     expect(eff?.suppressedPsych).toHaveLength(2);
-    expect(eff?.untilTime).toBe(120);
+    expect(eff?.duration).toEqual({ scale: "clock", until: 120 });
     expect(lines.join(' ')).toMatch(/Traits? psychologiques?/i);
   });
   it('expiration en fin de Round : les Traits psy suspendus sont restitués', () => {
@@ -172,7 +172,7 @@ describe("N'écoutez point la Sorcière — « −20 aux Tests de Langue (Magick
     ], { caster: priest, label: 'N’écoutez point la Sorcière', defaultDurationRounds: 4, sl: 4 });
     const eff = priest.activeEffects?.find((e) => e.castWard);
     expect(eff?.castWard?.radiusMeters).toBe(4 + 2 * 4); // BSoc 4 + 2 paliers (+2 DR) × BSoc
-    expect(eff?.roundsLeft).toBe(4);
+    expect(eff?.duration).toEqual({ scale: "rounds", left: 4 });
   });
   it('sans DR excédentaire : rayon de base seul', () => {
     const priest = mk({ id: 'p', characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 40 } as Combatant['characteristics'] });

@@ -22,7 +22,7 @@ describe('RigSprite (rendu headless)', () => {
   });
 
   it('affiche une arme quand une est équipée', () => {
-    const equip: EquipCtx = { weapons: [{ name: 'Hache', type: 'melee', damage: '+4', qualities: [] } as Weapon], armour: [] };
+    const equip: EquipCtx = { weapons: [{ name: 'Hache', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon], armour: [] };
     const html = renderToStaticMarkup(
       <svg><RigSprite appearance={app} equip={equip} career="Soldat" /></svg>,
     );

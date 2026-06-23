@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutRename, loadoutDelete, loadoutSetActive, loadoutSetSlot, armourLayer, equipConflicts, isCapeItem, buildInventory } from './items';
+import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutRename, loadoutDelete, loadoutSetActive, loadoutSetSlot, armourLayer, equipConflicts, isCapeItem, buildInventory, damageString } from './items';
 import { trappings, type TrappingRef } from '../data';
 import { Combatant, ItemInstance, Weapon } from './types';
 
@@ -22,18 +22,17 @@ describe('weaponHands (latéralité)', () => {
     expect(weaponHands(it_({ name: 'Hallebarde', subType: "Armes d'hast", hands: 2 }))).toBe(2);
     expect(weaponHands(it_({ name: 'Epee', subType: 'Base', hands: 1 }))).toBe(1);
   });
-  it('fallback sans `hands` : marqueur (2M) dans le nom, ou Groupe Deux-mains', () => {
-    expect(weaponHands(it_({ name: '(2M) Lance', subType: "Armes d'hast" }))).toBe(2);
+  it('fallback sans `hands` typé : Groupe Deux-mains (subType)', () => {
     expect(weaponHands(it_({ name: 'Espadon', subType: 'deux-mains' }))).toBe(2); // id de Groupe
     expect(weaponHands(it_({ name: 'Epee', subType: 'Base' }))).toBe(1);
   });
-  it('itemFromTrapping pose `hands` depuis le marqueur (2M) — mêlée ET distance', () => {
+  it('itemFromTrapping pose `hands` depuis le champ typé — mêlée ET distance', () => {
     expect(itemFromTrapping('Arc')?.hands).toBe(2);
     expect(itemFromTrapping('Arbalète de poing')?.hands).toBe(1);
     expect(itemFromTrapping('Pistolet')?.hands).toBe(1);
     expect(itemFromTrapping('Hallebarde')?.hands).toBe(2);
   });
-  it('Poudre noire/Ingénierie classées par le marqueur canonique (LDB 62 « (2M) ») : arquebuses 2 mains, pistolets 1 main', () => {
+  it('Poudre noire/Ingénierie classées par le champ typé `hands` (LDB 62) : arquebuses 2 mains, pistolets 1 main', () => {
     expect(itemFromTrapping('Arquebuse')?.hands).toBe(2);
     expect(itemFromTrapping('Tromblon')?.hands).toBe(2);
     expect(itemFromTrapping("Long fusil d'Hochland")?.hands).toBe(2);
@@ -100,9 +99,9 @@ describe('mutateurs de loadout (purs)', () => {
 describe('unarmedWeapon (Mains nues canoniques, LDB 62 l.75)', () => {
   it('dérivées du trapping : +BF+0, Personnelle, Inoffensive (pas +BF-2)', () => {
     const u = unarmedWeapon();
-    expect(u.damage).toBe('+BF+0');
+    expect(damageString(u.damage)).toBe('+BF+0');
     expect(u.reach).toBe('Personnelle');
-    expect(u.qualities).toContain('inoffensive'); // runtime = id de qualité (pas le libellé)
+    expect(u.qualities.some((q) => q.id === 'inoffensive')).toBe(true); // runtime = id de qualité (pas le libellé)
     expect(u.hand).toBe('main');
   });
 });
@@ -133,7 +132,7 @@ describe('recomputeLoadout piloté par loadout', () => {
 
   it('loadout 1 main + bouclier → 2 armes taguées main/off + Mains nues', () => {
     const epee = w('e', 'Epee', { subType: 'Base', hands: 1 });
-    const bouc = w('b', 'Bouclier', { subType: 'Base', hands: 1, qualities: ['Défensive'] });
+    const bouc = w('b', 'Bouclier', { subType: 'Base', hands: 1, qualities: [{ id: 'defensive' }] });
     const c = heroWith([epee, bouc], { loadouts: [{ id: 'l1', name: 'EB', main: 'e', off: 'b' }], activeLoadoutId: 'l1' });
     recomputeLoadout(c);
     expect(c.weapons.map((x) => [x.name, x.hand])).toEqual([
@@ -158,8 +157,8 @@ describe('recomputeLoadout piloté par loadout', () => {
   });
 
   it('sans loadout : recompute AUTO-GÉNÈRE un loadout par défaut (un seul modèle, plus de « toutes équipées »)', () => {
-    const a = w('a', 'A', { subType: 'Base', hands: 1, damage: '+BF+4' });
-    const b = w('b', 'B', { subType: 'Base', hands: 1, damage: '+BF' });
+    const a = w('a', 'A', { subType: 'Base', hands: 1, damage: { plusBF: true, flat: 4 } });
+    const b = w('b', 'B', { subType: 'Base', hands: 1, damage: { plusBF: true, flat: 0, bare: true } });
     const c = heroWith([a, b]);
     recomputeLoadout(c);
     expect((c.loadouts ?? []).length).toBeGreaterThanOrEqual(1); // loadout créé à la volée
@@ -169,14 +168,14 @@ describe('recomputeLoadout piloté par loadout', () => {
 
 describe('ensureDefaultLoadout', () => {
   const w = (uid: string, name: string, p: Partial<ItemInstance> = {}): ItemInstance =>
-    ({ uid, name, kind: 'melee', qualities: [], enc: 1, equipped: true, damage: '+BF+4', ...p } as ItemInstance);
+    ({ uid, name, kind: 'melee', qualities: [], enc: 1, equipped: true, damage: { plusBF: true, flat: 4 }, ...p } as ItemInstance);
   const hero = (items: ItemInstance[]): Combatant =>
     ({ id: 'h', name: 'H', kind: 'hero', items } as unknown as Combatant);
 
   it('crée « Set I » = meilleure arme de mêlée en main, bouclier en secondaire', () => {
     const c = hero([
-      w('e', 'Epee', { subType: 'Base', hands: 1, damage: '+BF+4' }),
-      w('b', 'Bouclier', { subType: 'Base', hands: 1, damage: '+BF', qualities: ['Défensive'] }),
+      w('e', 'Epee', { subType: 'Base', hands: 1, damage: { plusBF: true, flat: 4 } }),
+      w('b', 'Bouclier', { subType: 'Base', hands: 1, damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'defensive' }] }),
     ]);
     ensureDefaultLoadout(c);
     const lo = c.loadouts!.find((l) => l.name === 'Set I')!;
@@ -188,7 +187,7 @@ describe('ensureDefaultLoadout', () => {
   it('crée TOUJOURS deux sets : « Set II » porte la 1re arme à distance (sinon vide)', () => {
     const c = hero([
       w('e', 'Epee', { subType: 'Base', hands: 1 }),
-      w('arc', 'Arc', { kind: 'ranged', subType: 'Arc', hands: 2, equipped: true, damage: '+9' }),
+      w('arc', 'Arc', { kind: 'ranged', subType: 'Arc', hands: 2, equipped: true, damage: { plusBF: false, flat: 9 } }),
     ]);
     ensureDefaultLoadout(c);
     expect(c.loadouts!.map((l) => l.name)).toEqual(['Set I', 'Set II']);
@@ -199,7 +198,7 @@ describe('ensureDefaultLoadout', () => {
   });
 
   it('héros sans arme distance équipée : actif = Set I ; sans mêlée : actif = Set II', () => {
-    const c = hero([w('arc', 'Arc', { kind: 'ranged', subType: 'Arc', hands: 2, equipped: true, damage: '+9' })]);
+    const c = hero([w('arc', 'Arc', { kind: 'ranged', subType: 'Arc', hands: 2, equipped: true, damage: { plusBF: false, flat: 9 } })]);
     ensureDefaultLoadout(c);
     expect(c.loadouts!.find((l) => l.id === c.activeLoadoutId)!.name).toBe('Set II');
   });
@@ -266,7 +265,7 @@ describe('items — recomputeLoadout / encombrement', () => {
     const c = {
       characteristics: { F: 30, E: 30 },
       items: [
-        item({ name: 'Hache', kind: 'melee', damage: '+BF+4', equipped: true }),
+        item({ name: 'Hache', kind: 'melee', damage: { plusBF: true, flat: 4 }, equipped: true }),
         item({ name: 'Plastron', kind: 'armor', pa: 2, locs: ['corps'], equipped: true }),
         item({ name: 'Casque rangé', kind: 'armor', pa: 3, locs: ['tete'], equipped: false }),
       ],
@@ -278,7 +277,7 @@ describe('items — recomputeLoadout / encombrement', () => {
     expect(c.armour.tete).toBe(0); // l'armure NON équipée ne compte pas
   });
   it('recomputeLoadout propage le SKIN d’un objet légendaire au Weapon actif (rendu recoloré)', () => {
-    const c = { items: [item({ name: 'Lame du Crépuscule', kind: 'melee', damage: '+BF+5', equipped: true, skin: { metal: '#caa64a' } })] } as unknown as Combatant;
+    const c = { items: [item({ name: 'Lame du Crépuscule', kind: 'melee', damage: { plusBF: true, flat: 5 }, equipped: true, skin: { metal: '#caa64a' } })] } as unknown as Combatant;
     recomputeLoadout(c);
     expect(c.weapons.find((w) => w.name === 'Lame du Crépuscule')?.skin).toEqual({ metal: '#caa64a' });
     expect(c.weapons.find((w) => w.name === 'Mains nues')?.skin).toBeUndefined();
@@ -291,7 +290,7 @@ describe('items — recomputeLoadout / encombrement', () => {
     const c = {
       characteristics: { F: 30, E: 30 },
       traumas: [{ label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }], prosthesis: [{ trappingId: 'merveille-d-ingenierie', cancels: 'all' }], note: '' }],
-      items: [item({ name: 'Espadon', kind: 'melee', damage: '+BF+5', subType: 'deux-mains', equipped: true })],
+      items: [item({ name: 'Espadon', kind: 'melee', damage: { plusBF: true, flat: 5 }, subType: 'deux-mains', equipped: true })],
     } as unknown as Combatant;
     recomputeLoadout(c);
     expect(c.weapons.map((w) => w.name)).not.toContain('Espadon'); // pas d'arme à 2 mains avec une main amputée
@@ -303,7 +302,7 @@ describe('items — recomputeLoadout / encombrement', () => {
     const c = { characteristics: { F: 30, E: 30 }, items: [{ ...itemFromTrapping('Crochet')!, equipped: true }] } as unknown as Combatant;
     recomputeLoadout(c);
     const cr = c.weapons.find((w) => w.name === 'Crochet');
-    expect(cr?.damage).toBe('+BF+2');
+    expect(damageString(cr!.damage)).toBe('+BF+2');
   });
   it('amputation de main : loadout Arc (2 mains) exclu → Mains nues ; loadout Arbalète de poing (1 main) utilisable', () => {
     const c = {
@@ -327,8 +326,8 @@ describe('items — recomputeLoadout / encombrement', () => {
       characteristics: { F: 30, E: 30 },
       traumas: [{ label: 'Main', location: 'brasG', ops: [{ op: 'maxWeaponHands', hands: 1 }], note: '' }],
       items: [
-        item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: '+BF+4', equipped: true }),
-        item({ uid: 'bo', name: 'Bouclier', kind: 'melee', damage: '+BF', qualities: ['Bouclier', 'Défensive'], equipped: true }),
+        item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, equipped: true }),
+        item({ uid: 'bo', name: 'Bouclier', kind: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'protectrice', value: 1 }, { id: 'defensive' }], equipped: true }),
       ],
       loadouts: [{ id: 'l1', name: 'Épée+Bouclier', main: 'ep', off: 'bo' }],
       activeLoadoutId: 'l1',
@@ -342,8 +341,8 @@ describe('items — recomputeLoadout / encombrement', () => {
       characteristics: { F: 30, E: 30 },
       traumas: [{ label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }], note: '' }],
       items: [
-        item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: '+BF+4', equipped: true }),
-        item({ uid: 'da', name: 'Dague', kind: 'melee', damage: '+BF', equipped: true }),
+        item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, equipped: true }),
+        item({ uid: 'da', name: 'Dague', kind: 'melee', damage: { plusBF: true, flat: 0, bare: true }, equipped: true }),
       ],
       loadouts: [{ id: 'l1', name: 'Deux armes', main: 'ep', off: 'da' }],
       activeLoadoutId: 'l1',
@@ -359,7 +358,7 @@ describe('items — recomputeLoadout / encombrement', () => {
         { label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }], note: '' },
         { label: 'Main', location: 'brasG', ops: [{ op: 'maxWeaponHands', hands: 1 }], note: '' },
       ],
-      items: [item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: '+BF+4', equipped: true })],
+      items: [item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, equipped: true })],
       loadouts: [{ id: 'l1', name: 'X', main: 'ep' }],
       activeLoadoutId: 'l1',
     } as unknown as Combatant;
@@ -369,7 +368,7 @@ describe('items — recomputeLoadout / encombrement', () => {
   it('auto-prune : un slot pointant vers une arme DÉTRUITE (Incident de Tir / usure) est vidé', () => {
     const c = {
       characteristics: { F: 30, E: 30 },
-      items: [item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: '+BF+4', equipped: true, destroyed: true })],
+      items: [item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, equipped: true, destroyed: true })],
       loadouts: [{ id: 'l1', name: 'X', main: 'ep' }],
       activeLoadoutId: 'l1',
     } as unknown as Combatant;
@@ -382,8 +381,8 @@ describe('items — recomputeLoadout / encombrement', () => {
       characteristics: { F: 30, E: 30 },
       traumas: [{ label: 'Main', location: 'brasG', ops: [{ op: 'maxWeaponHands', hands: 1 }], prosthesis: [{ trappingId: 'merveille-d-ingenierie', cancels: 'all' }], note: '' }],
       items: [
-        item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: '+BF+4', equipped: true }),
-        item({ uid: 'bo', name: 'Bouclier', kind: 'melee', damage: '+BF', qualities: ['Bouclier'], equipped: true }),
+        item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, equipped: true }),
+        item({ uid: 'bo', name: 'Bouclier', kind: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'protectrice', value: 1 }], equipped: true }),
         item({ trappingId: 'merveille-d-ingenierie', name: "Merveille d'ingénierie", subType: 'protheses', equipped: true }),
       ],
       loadouts: [{ id: 'l1', name: 'X', main: 'ep', off: 'bo' }],
@@ -429,16 +428,16 @@ describe('items — recomputeLoadout / encombrement', () => {
 describe('totalEncumbrance — qualités d’artisanat (LDB 60 l.56/91)', () => {
   const enc = (items: ItemInstance[]) => totalEncumbrance({ items } as unknown as Combatant);
   it('Léger réduit l’Enc de 1 (plancher 0)', () => {
-    expect(enc([item({ kind: 'misc', enc: 2, qualities: ['Léger'] })])).toBe(1);
-    expect(enc([item({ kind: 'misc', enc: 1, qualities: ['Léger'] })])).toBe(0);
+    expect(enc([item({ kind: 'misc', enc: 2, qualities: [{ id: 'leger' }] })])).toBe(1);
+    expect(enc([item({ kind: 'misc', enc: 1, qualities: [{ id: 'leger' }] })])).toBe(0);
   });
   it('Volumineux augmente l’Enc de 1 (objet NON porté)', () => {
-    expect(enc([item({ kind: 'melee', enc: 2, qualities: ['Volumineux'] })])).toBe(3);
+    expect(enc([item({ kind: 'melee', enc: 2, qualities: [{ id: 'volumineux' }] })])).toBe(3);
   });
   it('armure portée : -1 (existant) ; Volumineux porté = Enc 1 ; Léger porté cumule (l.91)', () => {
     expect(enc([item({ kind: 'armor', enc: 2, equipped: true })])).toBe(1); // 2-1 (inchangé)
-    expect(enc([item({ kind: 'armor', enc: 2, equipped: true, qualities: ['Volumineux'] })])).toBe(1); // forcé à 1
-    expect(enc([item({ kind: 'armor', enc: 3, equipped: true, qualities: ['Léger'] })])).toBe(1); // (3-1)-1 = 1
+    expect(enc([item({ kind: 'armor', enc: 2, equipped: true, qualities: [{ id: 'volumineux' }] })])).toBe(1); // forcé à 1
+    expect(enc([item({ kind: 'armor', enc: 3, equipped: true, qualities: [{ id: 'leger' }] })])).toBe(1); // (3-1)-1 = 1
   });
 });
 
@@ -478,27 +477,27 @@ describe('Munitions & rechargement', () => {
     expect(fleche.kind).toBe('ammo');
     expect(fleche.subType).toBe('arc'); // id de Groupe
     expect(fleche.qty).toBe(12);
-    expect(fleche.qualities).toContain('empaleuse'); // runtime = id
+    expect(fleche.qualities.some((q) => q.id === 'empaleuse')).toBe(true); // runtime = id
   });
   it('weaponWithAmmo combine Dégâts (concaténés) et fusionne les Atouts', () => {
-    const arc: Weapon = { name: 'Arc', type: 'ranged', damage: '+9', range: 60, qualities: [], subType: 'arc', reload: 0 };
+    const arc: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [], subType: 'arc', reload: 0 };
     const fleche = itemFromTrapping('Flèche')!;
     const w = weaponWithAmmo(arc, fleche);
-    expect(w.qualities).toContain('empaleuse'); // runtime = id
+    expect(w.qualities.some((q) => q.id === 'empaleuse')).toBe(true); // runtime = id
     // La Flèche n'a pas de modificateur de Dégâts → reste +9.
-    expect(w.damage).toBe('+9');
+    expect(damageString(w.damage)).toBe('+9');
   });
   it('compatibleAmmo filtre par subType et qty>0', () => {
     const c = { items: [itemFromTrapping('Flèche'), itemFromTrapping('Carreau')] } as unknown as Combatant;
-    const arc: Weapon = { name: 'Arc', type: 'ranged', damage: '+9', qualities: [], subType: 'arc', reload: 0 };
+    const arc: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, qualities: [], subType: 'arc', reload: 0 };
     const list = compatibleAmmo(c, arc);
     expect(list.length).toBe(1);
     expect(list[0].name).toBe('Flèche');
   });
   it('compatibleAmmo : Poudre noire ET Ingénierie acceptent les munitions « Poudre noire et ingénierie » (LDB 62 l.150)', () => {
     const c = { items: [itemFromTrapping('Balle et Poudre')] } as unknown as Combatant;
-    const pistolet: Weapon = { name: 'Pistolet', type: 'ranged', damage: '+8', qualities: ['pistolet'], subType: 'poudre-noire', reload: 1 };
-    const arqRep: Weapon = { name: 'Arquebus à répétition', type: 'ranged', damage: '+9', qualities: [], subType: 'ingenierie', reload: 5 };
+    const pistolet: Weapon = { name: 'Pistolet', type: 'ranged', damage: { plusBF: false, flat: 8 }, qualities: [{ id: 'pistolet' }], subType: 'poudre-noire', reload: 1 };
+    const arqRep: Weapon = { name: 'Arquebus à répétition', type: 'ranged', damage: { plusBF: false, flat: 9 }, qualities: [], subType: 'ingenierie', reload: 5 };
     expect(compatibleAmmo(c, pistolet).map((a) => a.name)).toContain('Balle et Poudre');
     expect(compatibleAmmo(c, arqRep).map((a) => a.name)).toContain('Balle et Poudre');
   });

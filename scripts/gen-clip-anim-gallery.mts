@@ -36,9 +36,9 @@ function tile(label: string, clip: Clip, app: Appearance, equip: EquipCtx, caree
 
 const soldat: Appearance = { species: 'Humain', sex: 'M', build: 0.55, seed: 4 };
 const sorcier: Appearance = { species: 'Humain', sex: 'F', build: 0.45, seed: 5 };
-const epee: Weapon = { name: 'Épée', type: 'melee', damage: '+4', qualities: [] };
-const arc: Weapon = { name: 'Arc long', type: 'ranged', damage: '+4', qualities: [] };
-const baton: Weapon = { name: 'Bâton', type: 'melee', damage: '+2', qualities: [] };
+const epee: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] };
+const arc: Weapon = { name: 'Arc long', type: 'ranged', damage: { plusBF: false, flat: 4 }, qualities: [] };
+const baton: Weapon = { name: 'Bâton', type: 'melee', damage: { plusBF: false, flat: 2 }, qualities: [] };
 const eqEpee: EquipCtx = { weapons: [epee], armour: [] };
 const eqArc: EquipCtx = { weapons: [arc], armour: [] };
 const eqBaton: EquipCtx = { weapons: [baton], armour: [] };
@@ -78,7 +78,7 @@ function mountedTile(label: string, weapon: Weapon | undefined, clip: Clip) {
     <svg viewBox="0 0 120 150" width="140" height="175"><defs>${DEFS}</defs><rect width="120" height="150" fill="#1d2230"/>${svg}</svg>
     <figcaption style="color:#bcd;font:11px sans-serif">${label}</figcaption></figure>`;
 }
-const wm = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ name, type, damage: '+4', qualities: [] } as Weapon);
+const wm = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
 const rowMonte = [
   mountedTile('charge (lance couchée)', wm('Lance de cavalerie'), mountedAttackClip(wm('Lance de cavalerie'))),
   mountedTile('taille (épée)', wm('Épée'), mountedAttackClip(wm('Épée'))),

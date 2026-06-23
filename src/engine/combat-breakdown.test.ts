@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { parseQualityInstance } from './qualities/normalize';
 import { resolveMelee, resolveRanged, rangeBandModifier, rangeBandName, attackModifiers, resolveStrayRangedHit, defenseModifiers, rollMeleeDefender, finishMelee, resolveMeleePassive, resolveTrample } from './combat';
 import { evaluateTest } from './tests';
 import { makeRNG } from './dice';
@@ -21,12 +22,12 @@ const mk = (over: Partial<Combatant> = {}): Combatant =>
     ...over,
   }) as unknown as Combatant;
 
-const sword: Weapon = { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [] };
-const bow: Weapon = { name: 'Arc', type: 'ranged', damage: '+8', range: 60, qualities: [] };
+const sword: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+const bow: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] };
 
 describe('rollMeleeDefender : pénalité de main secondaire APPLIQUÉE au jet de parade (pas que l’affichage)', () => {
-  const main: Weapon = { name: 'Épée', type: 'melee', damage: '+BF', qualities: [], hand: 'main', hands: 1, uid: 'm' };
-  const off: Weapon = { name: 'Dague', type: 'melee', damage: '+BF', qualities: [], hand: 'off', hands: 1, uid: 'o' };
+  const main: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], hand: 'main', hands: 1, uid: 'm' };
+  const off: Weapon = { name: 'Dague', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], hand: 'off', hands: 1, uid: 'o' };
   it('parer avec l’arme de main secondaire (non Parade) → cible du jet -20 vs main principale', () => {
     const d = mk({ weapons: [main, off] });
     const withMain = rollMeleeDefender(d, 'parade', makeRNG(1), 0, main).target;
@@ -36,8 +37,8 @@ describe('rollMeleeDefender : pénalité de main secondaire APPLIQUÉE au jet de
 });
 
 describe('attackModifiers : pénalité de main secondaire (LDB 14 l.181)', () => {
-  const off: Weapon = { name: 'Dague', type: 'melee', damage: '+BF', qualities: [], hand: 'off', hands: 1 };
-  const main: Weapon = { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [], hand: 'main', hands: 1 };
+  const off: Weapon = { name: 'Dague', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], hand: 'off', hands: 1 };
+  const main: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], hand: 'main', hands: 1 };
   it('arme de main secondaire → -20', () => {
     const mods = attackModifiers(mk(), mk(), off, { kind: 'melee' });
     expect(mods.find((m) => m.label === 'Main secondaire')?.value).toBe(-20);
@@ -54,7 +55,7 @@ describe('attackModifiers : pénalité de main secondaire (LDB 14 l.181)', () =>
 
 describe('parade : pénalité de main secondaire + exception Parade/Défensive (LDB 62 l.192)', () => {
   const parrySpec = { skillId: 'corps-a-corps', spec: 'Parade', characteristic: 'CC', advances: 0 } as any;
-  const offShield: Weapon = { name: 'Bouclier', type: 'melee', damage: '+BF', qualities: ['Défensive'], hand: 'off', hands: 1 };
+  const offShield: Weapon = { name: 'Bouclier', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'defensive' }], hand: 'off', hands: 1 };
   it('parade main secondaire : bouclier Défensive + spé Parade → AUCUNE pénalité', () => {
     const mods = defenseModifiers(mk({ skills: [parrySpec] }), 'parade', 0, offShield);
     expect(mods.some((m) => m.label === 'Main secondaire')).toBe(false);
@@ -104,7 +105,7 @@ describe('Taille en combat (T1) + env injecté — attackModifiers (LDB 14 l.151
   });
   it('Frénésie : +1 Bonus de Force au calcul des Dégâts (LDB 21 l.34)', () => {
     const tgt = mk({ id: 'T' });
-    const fr = resolveMelee(mk({ frenzied: true }), tgt, sword, makeRNG(2), { defense: 'none' });
+    const fr = resolveMelee(mk({ psychState: [{ type: 'frenesie' }] }), tgt, sword, makeRNG(2), { defense: 'none' });
     const no = resolveMelee(mk(), tgt, sword, makeRNG(2), { defense: 'none' });
     if (fr.hit && no.hit) expect(fr.woundsLost!).toBe(no.woundsLost! + 1);
   });
@@ -125,7 +126,7 @@ describe('Esquive sous la neige −20 (LDB 14 l.115-116)', () => {
 describe('Atouts Dévastatrice / Percutante (LDB 62 l.279/313)', () => {
   // roll 34 vs cible 52 → DR (sl) = 5−3 = 2 ; dé des unités = 4. Arme '+8' (ranged) ; cible mk() E30 → BE3, PA0.
   // Sans Atout : dégâts = 8 + 2 = 10 → woundsLost 7. Dévastatrice : 8 + max(2,4)=12 → 9. Percutante : 8+2+4=14 → 11.
-  const ranged = (qualities: string[]) => ({ name: 'X', type: 'ranged' as const, damage: '+8', qualities });
+  const ranged = (qualities: string[]) => ({ name: 'X', type: 'ranged' as const, damage: { plusBF: false, flat: 8 }, qualities: qualities.map((s) => parseQualityInstance(s)!) });
   it('Dévastatrice : dégâts utilisent max(DR, dé des unités)', () => {
     expect(resolveStrayRangedHit(mk(), mk(), ranged([]), 34, 52).woundsLost).toBe(7);
     expect(resolveStrayRangedHit(mk(), mk(), ranged(['Dévastatrice']), 34, 52).woundsLost).toBe(9);
@@ -173,7 +174,7 @@ describe('Taille — défense −2 DR/catégorie en parade (LDB 85 l.305-306)', 
 });
 
 describe('Taille — Dégâts ×N + Atouts conférés (LDB 85 l.295-297)', () => {
-  const ranged = { name: 'Arc', type: 'ranged' as const, damage: '+8', qualities: [] };
+  const ranged = { name: 'Arc', type: 'ranged' as const, damage: { plusBF: false, flat: 8 }, qualities: [] };
   it('attaquant Énorme (+2 cat) vs Moyen : ×2 + Dévastatrice + Percutante, AVANT soak', () => {
     expect(resolveStrayRangedHit(mk(), mk(), ranged, 34, 52).woundsLost).toBe(7); // 8+2 −3
     // (8 + max(2,4) + 4)×2 − 3 = 32 − 3 = 29

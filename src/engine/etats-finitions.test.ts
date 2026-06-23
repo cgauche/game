@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { addCondition, testStatePenalty, combatTestPenalty, endOfRound, hasCondition, bleedDeathRoll, recoveredStacks, poisonResistApply } from './conditions';
+import { addCondition, testStatePenalty, combatTestPenalty, endOfRound, hasCondition, bleedDeathRoll, recoveredStacks } from './conditions';
 import { applyOps } from './ops';
 import { makeRNG } from './dice';
 import type { RNG } from './dice';
@@ -29,17 +29,15 @@ describe('Finitions d\'États (LDB 16)', () => {
     addCondition(c, 'sonne'); // État −10 → STACKE avec le −10 du Sort (sources distinctes)
     expect(combatTestPenalty(c)).toBe(-20);
     // « ne subit aucune pénalité d'État » (Endurance de l'anachorète) n'efface PAS le malus de Sort.
-    c.activeEffects!.push({ label: 'Anachorète', bonus: 0, roundsLeft: 9999, ignoreStatePenalties: true });
+    c.activeEffects!.push({ label: 'Anachorète', bonus: 0, duration: { scale: 'permanent' }, ignoreStatePenalties: true });
     expect(combatTestPenalty(c)).toBe(-10); // l'État est effacé, le −10 du Sort demeure
   });
 
-  it('Empoisonné : endOfRound applique les DÉGÂTS ; le Test de Résistance (hook poison-resist) retire l\'État puis 1 Exténué (l.70-72)', () => {
-    const c = C({ characteristics: { E: 90 } as never, conditions: [{ name: 'empoisonne', value: 1 }] });
-    endOfRound(c, makeRNG(1)); // dégâts périodiques SEULS — le Test est désormais le hook `poison-resist` (cadence-aware)
-    expect(hasCondition(c, 'empoisonne')).toBe(true); // endOfRound ne teste plus le poison
-    poisonResistApply(c, true, 0); // Résistance réussie → retire le poison + Exténué (logique pure partagée)
-    expect(hasCondition(c, 'empoisonne')).toBe(false);
-    expect(hasCondition(c, 'extenue')).toBe(true);
+  it('Empoisonné : endOfRound NE touche plus le poison — dégâts ET Test de Résistance migrés en DONNÉES (l.66-72)', () => {
+    const c = C({ characteristics: { E: 90 } as never, conditions: [{ name: 'empoisonne', value: 1 }], wounds: { current: 20, max: 20 } });
+    endOfRound(c, makeRNG(1)); // ni dégâts, ni Test de poison : tout est `effects: onRoundEnd` (etats.json), résolu par le dispatcher
+    expect(hasCondition(c, 'empoisonne')).toBe(true); // endOfRound ne retire aucun pion de poison
+    expect(c.wounds.current).toBe(20);                // ni dégât périodique (cf. state/round-upkeep-cascade.test pour la voie data-driven)
   });
 
   it('recoveredStacks : « 1 + DR » borné aux pions ; échec ⇒ 0 (l.61/77/107)', () => {

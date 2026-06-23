@@ -4,7 +4,7 @@ import { weaponFamily, shieldPart } from './equipment';
 import { trappings } from '../../../data';
 import type { Weapon } from '../../../engine/types';
 
-const wep = (label: string, type: 'melee' | 'ranged'): Weapon => ({ name: label, type, damage: '+4', qualities: [] } as Weapon);
+const wep = (label: string, type: 'melee' | 'ranged'): Weapon => ({ name: label, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
 
 /** Sous-types NON tenus en main → hors contrat de silhouette : engins de siège servis par un équipage
  *  (Baliste/Canons/Catapultes/Mortier/Pierrier) et munitions/projectiles (flèches/cartouches/bombes/

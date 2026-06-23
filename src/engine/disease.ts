@@ -21,7 +21,7 @@
  *                        du MVP — texte source tronqué, on n'invente pas).
  */
 import { Combatant, CharKey, Difficulty, UpkeepDeferTest } from './types';
-import { RNG, defaultRNG, roll } from './dice';
+import { RNG, defaultRNG, roll, type DiceSpec, rollDice } from './dice';
 import { rollTest } from './tests';
 import { maladies, diseaseLabel } from '../data';
 
@@ -44,21 +44,15 @@ export interface DiseaseSymptom {
   difficulty?: Difficulty;
 }
 
-interface Dice {
-  n: number;
-  d: number;
-  plus?: number;
-}
-
 export interface DiseaseDef {
   /** id STABLE (slug du nom) — clé de `maladies.json`, cible de `Disease.name` et des refs. */
   id: string;
-  /** Nom d'affichage (français) — résolu via `diseaseLabel` ; ≠ id. */
-  name: string;
+  /** Libellé d'affichage (français) — résolu via `diseaseLabel` ; ≠ id. Convention `label` des catalogues. */
+  label: string;
   /** Difficulté du Test de Contraction (pour mémoire/journal — la contraction est déclenchée par l'appelant). */
   contractDifficulty: Difficulty;
-  incubation: Dice;
-  duration: Dice;
+  incubation: DiceSpec;
+  duration: DiceSpec;
   symptoms: DiseaseSymptom[];
   /** Vérole Urticante (l.97) : « vous ne pouvez pas l'attraper une seconde fois » — immunité après guérison. */
   immuneAfterCure?: boolean;
@@ -87,9 +81,6 @@ export interface Disease {
   endTestPending?: boolean;
 }
 
-function rollDice(dc: Dice, rng: RNG): number {
-  return roll(dc.n, dc.d, rng) + (dc.plus ?? 0);
-}
 
 // Registre des maladies CÂBLÉES — DÉRIVÉ de `maladies.json` (data app-owned, éditable au Codex), keyé
 // par `id`. Les valeurs verbatim (LDB 20) vivent désormais dans la donnée ; le COMPORTEMENT (cycle,

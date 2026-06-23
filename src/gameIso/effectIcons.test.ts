@@ -3,7 +3,7 @@ import { conditionMeta, summarizeEffects, topImportantCondition, combatantFlags 
 import type { Combatant, ConditionInstance, ActiveEffect, CharKey } from '../engine/types';
 
 const cond = (name: string, value = 1): ConditionInstance => ({ name, value });
-const buff = (label: string, bonus: number, roundsLeft: number, char?: CharKey): ActiveEffect => ({ label, bonus, roundsLeft, char });
+const buff = (label: string, bonus: number, roundsLeft: number, char?: CharKey): ActiveEffect => ({ label, bonus, duration: { scale: "rounds", left: roundsLeft }, char });
 
 describe('conditionMeta', () => {
   it('donne une icône et marque les états incapacitants comme importants', () => {

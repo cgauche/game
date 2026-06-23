@@ -1,12 +1,12 @@
 /**
  * Talents d'attaque DÉCLENCHÉE en DONNÉE (`TalentData.effects` → op `grantFreeAttack{immediate}`, résolu
- * par `resolveTalentFreeAttacks`). Assaut féroce (LDB 10) : « une fois par Round, si vous touchez en mêlée
+ * par `resolveFreeAttacks`). Assaut féroce (LDB 10) : « une fois par Round, si vous touchez en mêlée
  * → attaque supplémentaire (coût Avantage ou Mouvement) ». Preuve que créer un talent qui DONNE une attaque
  * fonctionne de bout en bout depuis la donnée.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
-import { resolveTalentFreeAttacks } from './combatFlow';
+import { resolveFreeAttacks } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
@@ -80,7 +80,7 @@ describe('Talents d’attaque déclenchée (grantFreeAttack en donnée)', () => 
     H.talents = [...(H.talents ?? []), { talentId: 'frappe-reactive', times: 1 }];
     H.characteristics.I = 99; // Test d'Initiative Intermédiaire quasi-garanti
 
-    resolveTalentFreeAttacks(useGame.getState, useGame.setState, H, 'onCharged', E);
+    resolveFreeAttacks(useGame.getState, useGame.setState, H, 'onCharged', E);
     // 1) Étape de CHOIX opt-in `triggeredChoice` (aucune frappe en silence).
     const choice = useGame.getState().pendingCascade!;
     expect(choice.participants[choice.cursor].kind).toBe('triggeredChoice');
@@ -98,7 +98,7 @@ describe('Talents d’attaque déclenchée (grantFreeAttack en donnée)', () => 
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     H.talents = [...(H.talents ?? []), { talentId: 'frappe-reactive', times: 1 }];
-    resolveTalentFreeAttacks(useGame.getState, useGame.setState, H, 'onCharged', E);
+    resolveFreeAttacks(useGame.getState, useGame.setState, H, 'onCharged', E);
     driveChoice('no');
     expect(useGame.getState().pendingCascade).toBeNull(); // pas de Test d'Init
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.freeAttacksThisTurn?.['frappe-reactive']).toBeUndefined();
@@ -111,13 +111,13 @@ describe('Talents d’attaque déclenchée (grantFreeAttack en donnée)', () => 
       const { H, E } = setup();
       H.talents = [...(H.talents ?? []), { talentId: 'frappe-reactive', times: 1 }];
       H.characteristics.I = 99; // Test d'Initiative quasi-garanti
-      resolveTalentFreeAttacks(useGame.getState, useGame.setState, H, 'onCharged', E);
+      resolveFreeAttacks(useGame.getState, useGame.setState, H, 'onCharged', E);
       // Cadence auto : pas de cascade — choix + Test résolus inline (comme un ennemi).
       expect(useGame.getState().pendingCascade).toBeNull();
       const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
       expect(h.freeAttacksThisTurn?.['frappe-reactive']).toBe(1); // a riposté 1× contre ce chargeur
       // 2ᵉ tentative contre le MÊME chargeur ce Round : refusée (1× par chargeur).
-      resolveTalentFreeAttacks(useGame.getState, useGame.setState, H, 'onCharged', E);
+      resolveFreeAttacks(useGame.getState, useGame.setState, H, 'onCharged', E);
       expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.freeAttacksThisTurn?.['frappe-reactive']).toBe(1);
     } finally {
       resetRule('combat-cadence');

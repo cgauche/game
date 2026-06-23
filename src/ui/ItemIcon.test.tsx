@@ -19,7 +19,7 @@ describe('ItemIcon', () => {
   });
 
   it('arme générique hors-catalogue (Weapon directe) : repli avec gradient → <defs> injecté', () => {
-    const w: Weapon = { name: 'Masse', type: 'melee', damage: '+0', qualities: [] }; // synonyme → art de repli url(#g_steelD)
+    const w: Weapon = { name: 'Masse', type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [] }; // synonyme → art de repli url(#g_steelD)
     const h = renderToStaticMarkup(<ItemIcon item={w} />);
     expect(h).toContain('item-icon-weapon');
     expect(h).toContain('<defs');
@@ -39,8 +39,8 @@ describe('ItemIcon', () => {
     expect(html(mk({ kind: 'misc', name: 'Cape', weatherProtection: true }))).toContain('🧥');
   });
 
-  it('consommable (desc soin) → glyphe 🧪', () => {
-    const potion = mk({ kind: 'misc', name: 'Potion de guérison', desc: "Le buveur regagne des Points de Blessure égaux à son Bonus d'Endurance." });
+  it('consommable (effet structuré) → glyphe 🧪', () => {
+    const potion = mk({ kind: 'misc', name: 'Potion de guérison', consumable: [{ op: 'heal', amount: { bonusOf: 'E' } }] });
     expect(html(potion)).toContain('🧪');
   });
 

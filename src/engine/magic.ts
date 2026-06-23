@@ -23,10 +23,13 @@ import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { effectiveSkillCharKey } from './skills';
 import { reverseRoll, hitLocationByShape } from './combat';
 import { Formula, resolveFormula } from './ops';
-import { arcaneDomainOf, arcaneDomainIdOf } from './combatFeatures/dispatch';
+import type { SpellRange, SpellTarget } from './spellRange';
+import type { SpellDuration } from './spellDuration';
+import { arcaneDomainIdOf } from './combatFeatures/dispatch';
 import { domainMissileMods } from './domainAttributes';
+import { armourMaterialOf } from './armourBypass';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
-import { Combatant, HitLocation, Difficulty, CHAR_BY_LABEL } from './types';
+import { Combatant, HitLocation, Difficulty } from './types';
 import { findTalent, findTalentById, findDomainById } from '../data';
 import { slugId } from '../data/slug';
 
@@ -40,7 +43,7 @@ export interface SpellLike {
    *  Domaine (LDB 48), indépendante de la langue. Dérivé du `subType` à l'authoring. */
   domainId?: string | null;
   cn: number | null;
-  duration?: string;
+  duration?: SpellDuration | null;
   desc: string;
   /** Prière (Béni/Invocation) plutôt qu'un Sort arcanique — porté par la DONNÉE (spells.json). */
   isPrayer?: boolean;
@@ -142,18 +145,18 @@ export function castingValue(c: Combatant, skillName: string, spec?: string): nu
  * ignore les armures de cuir.
  */
 export function armourCastDRPenalty(c: Combatant): number {
-  // Domaine d'Arcane (spec du talent à castingKind:'arcane') — Métal ignore le métal, Bête le cuir.
-  const arc = arcaneDomainOf(c) ?? '';
-  const ignoreMetal = /^M[ée]tal$/.test(arc);
-  const ignoreLeather = /^Bêtes?$/.test(arc);
+  // Domaine d'Arcane par ID STABLE (`arcaneDomainIdOf`) + matériau de l'armure par CAPACITÉ TYPÉE du
+  // Groupe (`armourMaterialOf`) — plus AUCUNE devinette par regex (ni sur le nom de l'armure, ni sur le
+  // libellé du Domaine). Métal ignore le métal, Bête le cuir (LDB 46 l.188).
+  const domId = arcaneDomainIdOf(c);
+  const ignoreMetal = domId === 'metal';
+  const ignoreLeather = domId === 'bete';
   let maxPA = 0;
   for (const it of c.items ?? []) {
     if (!it.equipped || it.kind !== 'armor' || !it.pa) continue;
-    const name = `${it.name} ${it.subType ?? ''}`.toLowerCase();
-    const metal = /maille|plate|métal|metal|gambison.*métal/.test(name);
-    const leather = /cuir/.test(name);
-    if (metal && ignoreMetal) continue;
-    if (leather && ignoreLeather) continue;
+    const mat = armourMaterialOf(it);
+    if (mat === 'metal' && ignoreMetal) continue;
+    if (mat === 'leather' && ignoreLeather) continue;
     maxPA = Math.max(maxPA, Math.max(0, it.pa - (it.damageTaken ?? 0)));
   }
   return maxPA;
@@ -232,56 +235,35 @@ export function castTestTalentDR(c: Combatant, needle: 'Langue (Magick)' | 'Foca
 }
 
 /**
- * Zone d'Effet (LDB 47 l.44) : « les Sorts marqués ZdE affectent tous les individus
- * à l'intérieur de ce DIAMÈTRE ». Diamètre en mètres depuis le champ Cible
- * (« ZdE (Bonus de Force Mentale) mètres », « ZdE (4) mètres »…), résolu contre le
- * lanceur. Null si pas de ZdE chiffrable (« ZdE (Spécial) », « un lieu unique »…).
+ * Zone d'Effet (LDB 47 l.44) : « les Sorts marqués ZdE affectent tous les individus à l'intérieur de
+ * ce DIAMÈTRE ». Diamètre en mètres depuis la cible STRUCTURÉE (`{kind:'area'}`), résolu contre le
+ * lanceur. Null si la cible n'est pas une aire chiffrable. Zéro parsing de chaîne (cf. `spellRange.ts`).
  */
-export function zdeDiameterMeters(target: number | string | null | undefined, caster: Combatant): number | null {
-  if (typeof target !== 'string') return null;
-  // « ZdE (…) mètres » OU diamètre nu « (Bonus de X) mètres » (Explosion, Dôme… — l'extraction
-  // a parfois perdu le marqueur ZdE) ; jamais les cibles dénombrées (« (BInt) alliés »், « Vous »…).
-  if (!/ZdE/i.test(target) && !/mètres?\s*$/i.test(target.trim())) return null;
-  if (/alli[ée]s|voilier|lieu unique|sp[ée]cial/i.test(target)) return null;
-  const bon = target.match(/\(Bonus d[e'’]\s*([^)]+?)\)/i);
-  if (bon) {
-    const key = CHAR_BY_LABEL[bon[1].trim()];
-    if (key) return bonus(effectiveChar(caster, key));
-  }
-  const lit = target.match(/\((\d+)\)|(\d+)\s*mètres?/i);
-  if (lit) return parseInt(lit[1] ?? lit[2], 10);
-  return null;
+export function zdeDiameterMeters(target: SpellTarget | null | undefined, caster: Combatant): number | null {
+  if (!target || target.kind !== 'area') return null;
+  const m = resolveFormula(target.meters, caster);
+  return target.span === 'radius' ? m * 2 : m;
 }
 
 /** Rayon de la ZdE en CASES (grille 2 m/case) : diamètre/2 mètres → ÷2 m/case,
  *  arrondi à l'entier inférieur (min 0 = la seule case du centre). */
-export function zdeRadiusTiles(target: number | string | null | undefined, caster: Combatant): number | null {
+export function zdeRadiusTiles(target: SpellTarget | null | undefined, caster: Combatant): number | null {
   const diam = zdeDiameterMeters(target, caster);
   return diam == null ? null : Math.max(0, Math.floor(diam / 2 / 2));
 }
 
 /**
- * Portée d'un sort en CASES (2 m/case) : « 6 mètres », « (Force Mentale) mètres »
- * (caractéristique pleine), « (Bonus de X) mètres », « Vous » → 0, « Contact »/
- * « Toucher » → 1. Null = non chiffrable (pas de garde-fou, comportement historique).
+ * Portée d'un sort en CASES (2 m/case) depuis la portée STRUCTURÉE : `self` → 0, `touch` → 1,
+ * `distance` → ⌊mètres/2⌋ (km ×1000). Null = non chiffrable (`special`/absente). Zéro parsing.
  */
-export function spellRangeTiles(range: string | null | undefined, caster: Combatant): number | null {
+export function spellRangeTiles(range: SpellRange | null | undefined, caster: Combatant): number | null {
   if (!range) return null;
-  if (/^vous$/i.test(range.trim())) return 0;
-  if (/contact|toucher/i.test(range)) return 1;
-  const bon = range.match(/\(Bonus d[e'’]\s*([^)]+?)\)/i);
-  if (bon) {
-    const key = CHAR_BY_LABEL[bon[1].trim()];
-    if (key) return Math.max(1, Math.floor(bonus(effectiveChar(caster, key)) / 2));
+  switch (range.kind) {
+    case 'self': return 0;
+    case 'touch': return 1;
+    case 'distance': return Math.max(1, Math.floor((resolveFormula(range.value, caster) * (range.unit === 'km' ? 1000 : 1)) / 2));
+    case 'special': return null;
   }
-  const full = range.match(/\(([^)]+)\)\s*mètres?/i);
-  if (full) {
-    const key = CHAR_BY_LABEL[full[1].trim()];
-    if (key) return Math.max(1, Math.floor(effectiveChar(caster, key) / 2));
-  }
-  const lit = range.match(/(\d+)\s*mètres?/i);
-  if (lit) return Math.max(1, Math.floor(parseInt(lit[1], 10) / 2));
-  return null;
 }
 
 /**
@@ -298,66 +280,21 @@ export function prayerWrathTriggered(roll: number, sinPoints: number): boolean {
 }
 
 /** Durée d'un sort exprimée en Rounds (« 6 rounds »), sinon null. */
-export function parseDurationRounds(duration?: string): number | null {
-  if (!duration) return null;
-  const m = duration.match(/(\d+)\s*rounds?/i);
-  return m ? parseInt(m[1], 10) : null;
-}
-
 /**
- * Durée d'un sort en Rounds, au niveau FORMULE : « N rounds » (littéral) ou
- * « (Bonus de X) Rounds » (résolu contre le lanceur à l'application). Retourne
- * null pour les durées hors-rounds (minutes/heures/jours/Instantanée) : l'appelant
- * NE DOIT PAS inventer un nombre de rounds dans ce cas (Livre de base : la durée est
- * celle indiquée par le sort, aucun défaut d'1 round).
+ * Durée d'un sort à l'échelle de l'HORLOGE (LDB 47), en minutes à partir de `now`, depuis la durée
+ * STRUCTURÉE : `{clock}` (« 1 heure », « (Bonus de FM) jours »…) résolu contre le lanceur, `{untilDawn}`
+ * (« Jusqu'au lever du soleil » = prochaine aube ; à l'aube pile, un cycle entier). Null pour les autres
+ * échelles (Rounds / Instantané / Spécial) — l'appelant n'invente RIEN. Zéro parsing de chaîne.
  */
-export function durationRoundsFormula(duration: string | undefined): Formula | null {
-  const lit = parseDurationRounds(duration);
-  if (lit != null) return lit;
+export function durationClockMinutes(duration: SpellDuration | null | undefined, caster: Combatant, now: number): number | null {
   if (!duration) return null;
-  const f = duration.match(/\(Bonus d[e'’]\s*([^)]+)\)\s*Rounds?/i);
-  if (f) {
-    const key = CHAR_BY_LABEL[f[1].trim()];
-    if (key) return { bonusOf: key };
-  }
-  return null;
-}
-
-/** Durée d'un buff en Rounds, résolue contre le lanceur (cf. durationRoundsFormula). */
-export function buffDurationRounds(duration: string | undefined, caster: Combatant): number | null {
-  const f = durationRoundsFormula(duration);
-  return f == null ? null : resolveFormula(f, caster);
-}
-
-/**
- * Durée d'un sort à l'échelle de l'HORLOGE (LDB 47), en minutes à partir de `now` — pour les
- * durées hors-rounds : « 1 heure », « (Bonus de Force Mentale) jours », « (Intelligence)
- * minutes », « Jusqu'au (prochain) lever du soleil » (= prochaine aube ; à l'aube pile, un
- * cycle entier — même convention que le repos). Renvoie null si la durée n'est pas une durée
- * d'horloge (Rounds / Instantanée / Spécial) — l'appelant n'invente RIEN.
- */
-export function durationClockMinutes(duration: string | undefined, caster: Combatant, now: number): number | null {
-  if (!duration) return null;
-  if (durationRoundsFormula(duration) != null) return null; // échelle tactique : gérée en Rounds
-  const UNIT: Record<string, number> = { minute: 1, heure: 60, jour: MINUTES_PER_DAY };
-  const unitOf = (s: string) => UNIT[s.toLowerCase().replace(/s$/, '')];
-  // « Jusqu'au (prochain) lever du soleil » (Tour de guet, LDB 47).
-  if (/jusqu.au\s+(prochain\s+)?lever\s+d[eu]\s*soleil/i.test(duration)) {
+  if (duration.kind === 'untilDawn') {
     const toDawn = minutesUntilNext(now, DAWN_MINUTE);
     return toDawn === 0 ? MINUTES_PER_DAY : toDawn;
   }
-  // Littéral : « 1 heure », « 3 jours ».
-  const lit = duration.match(/^(\d+)\s*(minutes?|heures?|jours?)/i);
-  if (lit) return parseInt(lit[1], 10) * unitOf(lit[2]);
-  // « (Bonus de X) unités » ou « (X) unités » — valeur du lanceur.
-  const f = duration.match(/^\((Bonus d[e'’]\s*)?([^)]+)\)\s*(minutes?|heures?|jours?)/i);
-  if (f) {
-    const key = CHAR_BY_LABEL[f[2].trim()];
-    if (!key) return null;
-    const val = f[1] ? bonus(effectiveChar(caster, key)) : effectiveChar(caster, key);
-    return Math.max(1, val) * unitOf(f[3]);
-  }
-  return null;
+  if (duration.kind !== 'clock') return null;
+  const UNIT = { minutes: 1, hours: 60, days: MINUTES_PER_DAY };
+  return Math.max(1, resolveFormula(duration.value, caster)) * UNIT[duration.unit];
 }
 
 export interface CastResult {

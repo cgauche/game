@@ -12,35 +12,25 @@ import { battleRng } from '../battleRng';
 import { rollTest } from '../../engine/tests';
 import { testValue } from '../../engine/skills';
 import { bonus, effectiveChar, refreshWounds } from '../../engine/characteristics';
-import { addCondition, isOutOfAction, COND, tickDeath, stacks, removeCondition, endOfRound, loseWounds, hasCondition, poisonResistValue, poisonResistApply, combatTestPenalty } from '../../engine/conditions';
+import { addCondition, isOutOfAction, COND, tickDeath, stacks, removeCondition, endOfRound } from '../../engine/conditions';
 import { suffocationTick } from '../../engine/suffocation';
 import { clearPsychOf, calmeValue } from '../../engine/psychology';
 import { zonesRoundTick } from '../zones';
 import { purgeExpiredSummons } from '../summonFlow';
 import { fireTriggers } from '../triggeredEffects';
-import { isUnstable, isBestial, hasPerturbingAura } from '../../engine/traits/dispatch';
+import { collectConditionRecoverySteps } from './triggeredTest';
+import { roundTestInteractive } from './cadenceGate';
+import { traitAuras } from '../../engine/traits/dispatch';
 import { outnumberCountBonus, hasBraveheart } from '../../engine/combatFeatures/dispatch';
 import { chebyshev } from '../path';
 import { isEngaged } from '../../engine/engagement';
-import { lineOfSightCover } from '../lineOfSight';
+import { tileSeenByFoe } from '../lineOfSight';
 import { smokeOf } from '../combatGeometry';
 import { rule } from '../../engine/policy';
-import { cadenceAuto } from '../../engine/cadence';
 import { DIFFICULTY_MODIFIERS } from '../../engine/types';
 import type { Combatant, Difficulty } from '../../engine/types';
 import type { CascadeStep } from '../pendings';
 import type { Get, Set as SetFn } from '../flowTypes';
-
-/**
- * Un Test de fin de Round de `c` doit-il être une étape de CASCADE influençable (modale) plutôt qu'un
- * jet silencieux résolu dans le hook ? VRAI uniquement pour un HÉROS en cadence MANUELLE — en rapide/auto
- * (`cadenceAuto`), le héros est auto-résolu COMME un monstre → jet silencieux dans le hook (pas de cascade
- * redondante). C'est l'axe RÉEL de l'interactivité (kind × cadence), PAS `kind` seul (un héros auto-piloté
- * n'est pas « interactif »). Une seule source pour tous les hooks d'upkeep + le collecteur de cascade.
- */
-export function roundTestInteractive(c: Combatant): boolean {
-  return c.kind === 'hero' && !cadenceAuto();
-}
 
 // ============================================================================================
 // Séquence RAW de franchissement de Round, migrée ISO-COMPORTEMENT depuis advanceTurn (corps copiés
@@ -49,91 +39,78 @@ export function roundTestInteractive(c: Combatant): boolean {
 // ============================================================================================
 
 registerCombatHook({
-  id: 'end-of-round', // dégâts/effets périodiques d'États (Empoisonné, En flammes, Hémorragique…) — RNG
-  phase: 'roundBoundary',
+  id: 'end-of-round', // effets périodiques d'États — RNG. endOfRound : récupération du Sonné (Test) +
+  // décrément des durées. Dégâts par-round (Empoisonné/En Flammes/Hémorragique) + auto-dissipation
+  // (Aveuglé/Assourdi/Surpris) MIGRÉS en données (effects: onRoundEnd), dispatchés par le DISPATCHER UNIQUE.
+  phase: 'onRoundEnd',
   order: 10,
-  run: ({ battle, sink }) => { for (const c of battle.combatants) endOfRound(c, battleRng()).forEach((l) => sink(l, c)); },
-});
-registerCombatHook({
-  id: 'poison-resist', // Résistance à l'Empoisonné (LDB 16 l.70-72) : retire 1+DR pions sur succès, puis Exténué quand vidé
-  phase: 'roundBoundary',
-  order: 15, // juste après les DÉGÂTS périodiques (end-of-round 10)
-  run: ({ battle, sink }) => {
+  run: ({ get, set, battle, sink }) => {
     for (const c of battle.combatants) {
-      // Non-interactif (monstre OU héros en rapide/auto) → jet SILENCIEUX ici. Héros MANUEL → différé à
-      // la cascade influençable (étape `poisonResist`, cf. collectHeroRoundEndUpkeep) → on le saute.
-      if (roundTestInteractive(c) || stacks(c, COND.empoisonne) <= 0) continue;
-      const t = rollTest(poisonResistValue(c), 'intermediaire', battleRng(), combatTestPenalty(c));
-      poisonResistApply(c, t.success, t.sl)?.split('\n').forEach((l) => sink(l, c));
+      endOfRound(c, battleRng()).forEach((l) => sink(l, c)); // machinerie : récupération du Sonné + décrément des durées
+      // Dispatch UNIQUE des effets `onRoundEnd` (États : dégâts/dissipation ; Traits/Talents : réactions) —
+      // fireTriggers réunit toutes les sources, aucun chemin par-kind. Inerte sans donnée. Pas de réaction
+      // de fin de Round pour un combattant HORS COMBAT (un cadavre ne brûle/saigne plus — le dispatcher
+      // autorise désormais les effets `on:'self'` sur une cible hors-combat, on filtre donc ici).
+      // `deferInteractiveTest` : un Test de RÉCUPÉRATION d'État en DONNÉES (Empoisonné Résistance…) routé
+      // pour un héros MANUEL n'est PAS poussé ici (la cascade de fin de Round n'est pas encore ouverte) —
+      // il est COLLECTÉ par `collectHeroRoundEndUpkeep`. Ennemi/auto : résolu inline par le dispatcher.
+      if (!isOutOfAction(c)) fireTriggers(get, c, 'onRoundEnd', { rng: battleRng(), set, deferInteractiveTest: true }).forEach((l) => sink(l, c));
     }
   },
 });
+// (Résistance à l'Empoisonné — LDB 16 l.70-72 : retire 1+DR pions sur succès, puis Exténué quand vidé — n'est
+//  PLUS un hook impératif : c'est un effet `onRoundEnd` à nœud `test` en DONNÉES (etats.json), résolu par le
+//  DISPATCHER UNIQUE — ennemi/auto inline, héros manuel → étape de cascade collectée ci-dessous. Hors combat :
+//  inline générique, cf. outOfCombatUpkeep. Plus de `poisonResistValue`/`poisonResistApply` par-nom.)
 registerCombatHook({
   id: 'refresh-wounds', // dissipation d'un buff F/E/FM → recale les Blessures (LDB 85)
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 20,
   run: ({ battle }) => { for (const c of battle.combatants) refreshWounds(c); },
 });
 registerCombatHook({
   id: 'fire-round-start-triggers', // effets « début de Round » authorés (Régénération…) — dispatcher générique (RNG)
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 25,
   run: ({ get, set, battle, sink }) => {
     for (const c of battle.combatants) {
-      if (c.dead || c.outOfRencontre) continue;
-      for (const line of fireTriggers(get, c, 'onRoundStart', { rng: battleRng(), set })) sink(line, c);
+      if (isOutOfAction(c)) continue; // pas de réaction « début de Round » pour un hors-combat (le dispatcher
+      for (const line of fireTriggers(get, c, 'onRoundStart', { rng: battleRng(), set })) sink(line, c); // autorise on:'self' sur un hors-combat → filtré ici)
     }
   },
 });
+// Instable (LDB 85 p.340) MIGRÉ en DONNÉES : trait `instable` effects onRoundEnd — `if engagedAdvantageGap
+// > 0` → wounds {engagedAdvantageGap} (perd la différence d'Avantage) puis `if woundsCurrent<=0` → banish
+// {narration:'unravel'} (« se délite »). La valeur relationnelle est calculée par le dispatcher. Plus de hook.
+// Bestial (LDB 85 p.338) « peur du feu → gagne Brisé » MIGRÉ en données : trait `bestial` effects
+// onRoundEnd (if En Flammes ∧ pas déjà Brisé → condition Brisé), dispatché par le dispatcher unique.
 registerCombatHook({
-  id: 'unstable', // Instable (LDB 85 p.340) : Engagé avec un Avantage SUPÉRIEUR → perd la différence en PB ; à 0, « meurt »
-  phase: 'roundBoundary',
-  order: 30,
-  run: ({ battle, sink }) => {
-    for (const c of battle.combatants) {
-      if (isOutOfAction(c) || !isUnstable(c.traits)) continue;
-      const foesAdv = (c.engagedWith ?? [])
-        .map((id) => battle.combatants.find((x) => x.id === id))
-        .filter((e): e is Combatant => !!e && e.kind !== c.kind && !isOutOfAction(e))
-        .map((e) => e.advantage ?? 0);
-      const diff = (foesAdv.length ? Math.max(...foesAdv) : 0) - (c.advantage ?? 0);
-      if (diff > 0) {
-        loseWounds(c, diff);
-        sink(`${c.name} (Instable) est repoussée : −${diff} PB.`, c);
-        if (c.wounds.current <= 0) { c.dead = true; sink(`${c.name} se délite — les magies qui la maintenaient s'effondrent.`, c); }
-      }
-    }
-  },
-});
-registerCombatHook({
-  id: 'bestial-fire-fear', // Bestial (LDB 85 p.338) : En flammes → gagne Brisé (approximation granularité Round)
-  phase: 'roundBoundary',
-  order: 40,
-  run: ({ battle, sink }) => {
-    for (const c of battle.combatants) {
-      if (!isOutOfAction(c) && isBestial(c.traits) && hasCondition(c, COND.enFlammes) && !hasCondition(c, COND.brise)) {
-        addCondition(c, COND.brise);
-        sink(`${c.name} (Bestial) est terrifié par les flammes : Brisé.`, c);
-      }
-    }
-  },
-});
-registerCombatHook({
-  id: 'perturbing-aura', // Perturbant (LDB 85 p.341) : −20 aux Tests à BE mètres d'une créature Perturbante (aura recalculée/Round)
-  phase: 'roundBoundary',
+  // Auras de combat — machinerie GÉOMÉTRIQUE GÉNÉRIQUE : projette les `passive` de toute `TraitData.aura`
+  // (Perturbant : −20 aux Tests à BE mètres, LDB 85 p.341) sur les combattants à portée, accumulés dans
+  // `auraMods` (lus par `passiveMods`, kind `etat` non-cumul). Aucun trait nommé en dur ; recalcul/Round.
+  id: 'recompute-auras',
+  phase: 'onRoundEnd',
   order: 50,
   run: ({ battle }) => {
-    for (const c of battle.combatants) {
-      c.perturbed = !isOutOfAction(c) && !!c.pos && battle.combatants.some(
-        (p) => p.id !== c.id && p.kind !== c.kind && !isOutOfAction(p) && p.pos
-          && hasPerturbingAura(p.traits) && chebyshev(p.pos, c.pos!) * 2 <= bonus(effectiveChar(p, 'E')),
-      );
+    for (const c of battle.combatants) c.auraMods = undefined; // recalcul intégral chaque Round
+    for (const src of battle.combatants) {
+      if (isOutOfAction(src) || !src.pos) continue;
+      for (const aura of traitAuras(src.traits)) {
+        const rangeM = aura.rangeChar ? bonus(effectiveChar(src, aura.rangeChar)) : (aura.rangeMeters ?? 0);
+        for (const c of battle.combatants) {
+          if (c.id === src.id || isOutOfAction(c) || !c.pos) continue;
+          const sameCamp = c.kind === src.kind;
+          if (aura.affects === 'enemies' && sameCamp) continue; // « désoriente ses ENNEMIS » (LDB 85 l.208)
+          if (aura.affects === 'allies' && !sameCamp) continue;
+          if (chebyshev(src.pos, c.pos) * 2 <= rangeM) c.auraMods = [...(c.auraMods ?? []), ...aura.passive];
+        }
+      }
     }
   },
 });
 registerCombatHook({
   id: 'outnumbered', // Surnombre (LDB 14 l.149) : ≥2 ennemis Engagés → −1 Avantage en fin de Round
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 55,
   run: ({ battle, sink }) => {
     for (const c of battle.combatants) {
@@ -152,19 +129,10 @@ registerCombatHook({
 // résolu cadence-aware par la brique `combat/triggeredTest` (héros manuel → cascade influençable ;
 // ennemi/auto → jet inline). L'ordre 60 du franchissement de Round est désormais libre.
 
-// Détermination (LDB 17 l.62/64) : décomptes de fin de Round (flags, RNG-free).
-registerCombatHook({
-  id: 'determination-ignore-crit-expire', // « ignorer modifs de critique » expire au début du prochain Round
-  phase: 'roundBoundary',
-  order: 70,
-  run: ({ battle }) => { for (const c of battle.combatants) if (c.ignoreCritMods) c.ignoreCritMods = false; },
-});
-registerCombatHook({
-  id: 'determination-psych-immune-tick', // l'immunité psychologique décompte 1 Round
-  phase: 'roundBoundary',
-  order: 72,
-  run: ({ battle }) => { for (const c of battle.combatants) if (c.psychImmuneRoundsLeft) c.psychImmuneRoundsLeft -= 1; },
-});
+// Détermination (LDB 17 l.62/64) MIGRÉE sur le système de Durée UNIFIÉ : l'immunité psychologique (2
+// Rounds) et l'ignorance des modifs de Critique (1 Round) sont portées par des `ActiveEffect`
+// (`psychImmune`/`ignoreCritMods`) à `duration` Rounds, décrémentés/expirés par `tickDurations` (hook
+// `end-of-round`) — plus de compteur/flag round-scopé ni de hook de décompte dédié.
 
 /**
  * Contexte RNG-free de récupération du Brisé pour `c` (LDB 16 l.57-59 ; Cœur vaillant LDB 10) :
@@ -177,7 +145,7 @@ function brokenContext(get: Get, c: Combatant): { hidden: boolean; testDue: bool
   const scene = get().scene;
   if (!battle || !stacks(c, COND.brise) || isOutOfAction(c) || !c.pos) return null;
   const enemies = battle.combatants.filter((e) => e.kind !== c.kind && !isOutOfAction(e) && e.pos);
-  const hidden = !!scene && enemies.length > 0 && enemies.every((e) => lineOfSightCover(scene, e.pos!, c.pos!, [], smokeOf(battle)).blocked);
+  const hidden = !!scene && enemies.length > 0 && !tileSeenByFoe(scene, enemies, c.pos!, smokeOf(battle)); // « caché hors de vue » = aucun ennemi ne le voit (primitive partagée, sens ennemi→cible)
   // Restera-t-il du Brisé à tester APRÈS l'éventuel retrait « caché » (1 stack) ? Le Test n'a lieu que
   // si pas Engagé (l.57) — sauf Cœur vaillant (LDB 10, sans restriction d'Engagement).
   const briseAfterHidden = stacks(c, COND.brise) - (hidden ? 1 : 0);
@@ -227,7 +195,7 @@ export function brokenRecovery(get: Get, sink: (line: string, c: Combatant) => v
 }
 registerCombatHook({
   id: 'broken-recovery', // récupération du Brisé en fin de Round (LDB 16 l.57-59) — RNG (Test de Calme)
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 74,
   run: ({ get, sink }) => brokenRecovery(get, sink, (c) => !roundTestInteractive(c)), // héros MANUEL → cascade ; non-interactif (monstre/rapide/auto) → silence
 });
@@ -236,46 +204,38 @@ registerCombatHook({
 //     `ctx.sink` remplace `tickLine`). Pas de hook suspensif (aucun pending). ---
 registerCombatHook({
   id: 'tick-death', // 0 PB → Inconscient (LDB 18 l.28)
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 76,
   run: ({ battle, sink }) => { for (const c of battle.combatants) tickDeath(c, battleRng()).forEach((l) => sink(l, c)); },
 });
 registerCombatHook({
-  id: 'suffocation-tick', // Noyade et Suffocation (LDB 18 l.424-425)
-  phase: 'roundBoundary',
+  // Noyade et Suffocation (LDB 18 l.424-425) : MACHINERIE environnementale UNIVERSELLE — la règle de mort
+  // par manque d'air s'applique à TOUT combattant portant le drapeau d'effet `suffocates` (posé par les
+  // sorts d'étouffement / l'environnement — la DONNÉE éditable), `noBreath` immunise. Ne NOMME aucune
+  // entité éditable (trait/talent/État) ; comme `tick-death`/`tick-durations`, c'est une règle de l'arène.
+  id: 'suffocation-tick',
+  phase: 'onRoundEnd',
   order: 78,
   run: ({ battle, sink }) => { for (const c of battle.combatants) suffocationTick(c).forEach((l) => sink(l, c)); },
 });
 registerCombatHook({
   id: 'zones-round-tick', // zones perRound (Grands feux d'U'Zhul, LDB 47 : « au début d'un Round »)
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 79,
   run: ({ battle, sink }) => { zonesRoundTick(battle.zones, battle.combatants, battleRng()).forEach((t) => sink(t.line, t.combatant)); },
 });
 registerCombatHook({
   id: 'clear-psych-of-dead', // effets psy d'une créature morte → fin (catch-all toutes causes de mort)
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 79.3,
   run: ({ battle }) => { for (const c of battle.combatants) if (isOutOfAction(c)) clearPsychOf(battle.combatants, c.id); },
 });
 registerCombatHook({
   id: 'purge-expired-summons', // invocations à durée écoulée OU lanceur tombé ; round = battle.round+1 (set après le dispatch)
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 79.5,
   run: ({ battle, sink }) => { purgeExpiredSummons(battle, battle.round + 1).forEach((l) => sink(l)); },
 });
-registerCombatHook({
-  id: 'fire-round-end-triggers', // effets « fin de Round » authorés — dispatcher générique (RNG) ; inerte sans donnée
-  phase: 'roundBoundary',
-  order: 79.6, // après les décomptes/purges de fin de Round, avant la règle optionnelle se-fatiguer (80)
-  run: ({ get, set, battle, sink }) => {
-    for (const c of battle.combatants) {
-      if (c.dead || c.outOfRencontre) continue;
-      for (const line of fireTriggers(get, c, 'onRoundEnd', { rng: battleRng(), set })) sink(line, c);
-    }
-  },
-});
-
 /**
  * Règle optionnelle « Se fatiguer » (LDB 16 l.99) : un effort physique soutenu finit par épuiser.
  * Approximation assumée (granularité Round) : chaque Round en action = 1 Round d'effort ; à Bonus
@@ -300,7 +260,7 @@ function fatigueApply(c: Combatant, success: boolean, sl: number): string | null
 }
 registerCombatHook({
   id: 'se-fatiguer',
-  phase: 'roundBoundary',
+  phase: 'onRoundEnd',
   order: 80, // après tous les effets de Round RAW, avant la révélation héros
   enabledIf: 'combat-se-fatiguer',
   run: ({ battle, sink }) => {
@@ -344,14 +304,12 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, sink: (line: s
   // héros est auto-résolu COMME un monstre → ses Tests se résolvent silencieusement dans les hooks ci-dessus.
   if (!roundTestInteractive(c) || isOutOfAction(c)) return [];
   const steps: CascadeStep[] = [];
-  // 0) Résistance à l'Empoisonné (LDB 16 l.70-72) — Test de Résistance Intermédiaire (+0). Les DÉGÂTS
-  //    périodiques ont DÉJÀ été appliqués par `endOfRound` (hook `end-of-round`) ; seul le TEST passe en
-  //    cascade. Placé en TÊTE (physiologique, groupé avec les dégâts de poison).
-  //    La pénalité d'États (−10 Empoisonné/Sonné/Exténué…) est repliée dans `target`, comme pour le Brisé.
-  if (stacks(c, COND.empoisonne) > 0) {
-    const base = poisonResistValue(c);
-    steps.push({ id: `poisonResist-${c.id}`, kind: 'poisonResist', actorId: c.id, icon: '☠️', rollLabel: 'Résistance', base, target: base + DIFFICULTY_MODIFIERS.intermediaire + combatTestPenalty(c), label: '☠️ Résistance à l’Empoisonné' });
-  }
+  // 0) Récupération d'États en DONNÉES (Empoisonné Résistance LDB 16 l.70-72 ; plus tard En Flammes/Sonné) —
+  //    chaque État porté dont la donnée déclare un `effects: onRoundEnd` à nœud `test` devient une étape
+  //    `triggeredTest` INFLUENÇABLE, bâtie depuis la MÊME donnée que la voie inline (ennemi/auto) et hors-combat
+  //    (`simpleTriggeredTestStep`). Les DÉGÂTS périodiques ont DÉJÀ été appliqués par le dispatcher (hook
+  //    `end-of-round`) ; seul le TEST passe en cascade. En TÊTE (physiologique). Plus de `poisonResist` par-nom.
+  steps.push(...collectConditionRecoverySteps(c));
   // (Mâchoires d'acier n'est PLUS un Test de fin de Round : c'est un effet `onGainCondition` data-driven,
   //  déclenché à l'acquisition du Sonné — cf. talents.json + brique `combat/triggeredTest`.)
   // 2) Récupération du Brisé (LDB 16) — retrait « caché » + Exténué SANS-Test appliqués ici ; le Test
@@ -382,13 +340,9 @@ function syncCombatant(get: Get, set: SetFn): void {
   if (get().battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
 }
 
-registerCascadeApplier('poisonResist', (get, set, step, hero) => {
-  if (!hero || !step.result) return;
-  const line = poisonResistApply(hero, step.result.success, step.result.sl);
-  syncCombatant(get, set);
-  // `poisonResistApply` peut renvoyer 2 lignes jointes (« éliminé » + « Exténué ») → on les sépare.
-  return { journal: line ? line.split('\n') : [`${hero.name} ne surmonte pas le poison (Résistance ratée).`] };
-});
+// (La Résistance à l'Empoisonné n'a PLUS d'applier dédié : son étape est de kind `triggeredTest` (générique),
+//  résolue par l'applier `triggeredTest` de la brique cadence-aware — la branche `success`/`fail` de la donnée
+//  (retire 1+DR, puis Exténué si vidé) y est rejouée. Plus de `poisonResistApply` par-nom.)
 
 registerCascadeApplier('brokenRecovery', (get, set, step, hero) => {
   if (!hero || !step.result) return;

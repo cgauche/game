@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import {
   traitCharMods, traitMovementMod, traitBonusWoundsBE, wardSaves,
-  banishedAtZero, hasChampionDefense, hasPerturbingAura,
+  traitAuras,
   magicResistanceOf, immunityTypes, isUnstable, isPainless,
   bellicosePsychImmune, isMindless, isBestial, isColdBlooded, isStupid, hasRage,
   isTerritorial, flyMeters, runMultiplier, traitSeesInDark, mutationsAtSpawn,
 } from './dispatch';
+import { canCounterOnDefenseWin } from '../combatFeatures/dispatch';
 import { coldBloodedAdjust, isPsychImmune } from '../psychology';
 import { attackModifiers } from '../combat';
 import { traumaCharPenalties } from '../trauma';
@@ -42,12 +43,12 @@ describe('dispatch — parsing et prédicats (LDB 85)', () => {
     expect(wardSaves([{ id: 'protection', value: 9 }])).toEqual([9]);
     expect(wardSaves([{ id: 'arme', value: 8 }])).toEqual([]);
   });
-  it('bannissement à 0 PB (Démoniaque)', () => {
-    expect(banishedAtZero([{ id: 'demoniaque', value: 8 }])).toBe(true);
-  });
   it('divers combat : Champion, Parasité, Perturbant, Instable', () => {
-    expect(hasChampionDefense([{ id: 'champion' }])).toBe(true);
-    expect(hasPerturbingAura([{ id: 'perturbant' }])).toBe(true);
+    expect(canCounterOnDefenseWin({ traits: [{ id: 'champion' }] } as never, undefined)).toBe(true); // Champion : sans condition d'arme
+    // Perturbant : l'aura (−20 à BE m) vit en DONNÉE (`TraitData.aura`), projetée par le hook générique.
+    const aura = traitAuras([{ id: 'perturbant' }])[0];
+    expect(aura?.rangeChar).toBe('E');
+    expect(aura?.passive).toEqual([{ op: 'testMod', amount: -20 }]);
     expect(isUnstable([{ id: 'instable' }])).toBe(true);
   });
   it('magie : Résistance à la Magie, Immunité (Poison)', () => {
@@ -115,7 +116,7 @@ describe('câblages moteur', () => {
   it('Parasité : −10 pour toucher en mêlée (attackModifiers)', () => {
     const atk = mk({ id: 'a' });
     const tgt = mk({ id: 't', traits: [{ id: 'parasite' }] });
-    const mods = attackModifiers(atk, tgt, { name: 'Épée', type: 'melee', damage: '+BF', qualities: [] }, { kind: 'melee' });
+    const mods = attackModifiers(atk, tgt, { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }, { kind: 'melee' });
     expect(mods.find((m) => m.label === 'Parasité')?.value).toBe(-10);
   });
   it('À sang-froid : un Test de FM raté est inversé s’il devient réussi', () => {

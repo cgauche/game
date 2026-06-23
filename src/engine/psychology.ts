@@ -9,6 +9,7 @@ import { t } from '../i18n';
 import { RNG, defaultRNG } from './dice';
 import { rollTest, evaluateTest } from './tests';
 import { effectiveChar } from './characteristics';
+import { findPsychologyById, psychologies } from '../data';
 import { SizeCategory, sizeGap } from './size';
 import { groupMatch } from './groups';
 import { bellicosePsychImmune, hasTraitKey } from './traits/dispatch';
@@ -55,19 +56,15 @@ export interface PsychAffliction {
   active?: boolean;
 }
 
-/** Types de Traits psy CIBLÉS (résolution binaire de Calme, pilotés par un Groupe-Cible — LDB 21). */
-export const CIBLE_TYPES = new Set<PsychType>(['animosite', 'haine', 'prejuge', 'amour', 'camaraderie', 'phobie']);
+/** Types de Traits psy CIBLÉS (résolution binaire de Calme, pilotés par un Groupe-Cible, LDB 21) —
+ *  DÉRIVÉ de `psychology.json` (`targeted:true`), plus de Set codé en dur. */
+export const CIBLE_TYPES = new Set<PsychType>(psychologies.filter((p) => p.targeted).map((p) => p.id as PsychType));
 
-/** Libellés des Traits psy ciblés (LDB 21) — partagé par les modales psy (combat + rencontre) ET la
- *  narration d'issue (state). Déplacé depuis ui/psychLabels pour que la couche state y accède. */
-export const CIBLE_LABEL: Record<string, { emoji: string; label: string }> = {
-  animosite: { emoji: '😤', label: t('cible.animosite') },
-  haine: { emoji: '😡', label: t('cible.haine') },
-  prejuge: { emoji: '🙄', label: t('cible.prejuge') },
-  amour: { emoji: '❤️', label: t('cible.amour') },
-  camaraderie: { emoji: '🤝', label: t('cible.camaraderie') },
-  phobie: { emoji: '🕷️', label: t('cible.phobie') },
-};
+/** Libellés (emoji + nom) des Traits psy ciblés — DÉRIVÉS de `psychology.json` (SOURCE UNIQUE, comme
+ *  `etats.json` pour les États). Partagé par les modales psy (combat + rencontre) et la narration. */
+export const CIBLE_LABEL: Record<string, { emoji: string; label: string }> = Object.fromEntries(
+  psychologies.filter((p) => p.targeted).map((p) => [p.id, { emoji: p.emoji ?? '', label: p.label }]),
+);
 
 /** Source de Peur/Terreur que `foe` représente pour `self` : combine la Taille (LDB 85) et l'Indice
  *  inspiré au statbloc (`causesPeur`/`causesTerreur`). Terreur prime ; sinon le plus haut Indice. Pur.
@@ -82,7 +79,43 @@ export function fearSourceFor(self: Combatant, foe: Combatant): { kind: 'peur' |
   if (foe.causesPeur) cands.push({ kind: 'peur', indice: foe.causesPeur });
   if (!cands.length) return null;
   const terr = cands.filter((c) => c.kind === 'terreur');
-  return (terr.length ? terr : cands).reduce((a, b) => (b.indice > a.indice ? b : a));
+  const best = (terr.length ? terr : cands).reduce((a, b) => (b.indice > a.indice ? b : a));
+  // Haine (LDB 21) : « immunisé à Peur (mais PAS Terreur) causée par ceux de ce groupe » — data-driven.
+  if (best.kind === 'peur' && psychImmuneToFearFrom(self, foe)) return null;
+  return best;
+}
+
+/** Une affliction psy est-elle ACTIVE ? Ciblé (Animosité/Haine/…) : drapeau `active` ; Peur/Terreur : DR
+ *  cumulé encore sous l'Indice (sujet à la Peur). Frénésie/trauma ne sont pas des afflictions surmontables. */
+function isAfflictionActive(p: PsychAffliction): boolean {
+  if (CIBLE_TYPES.has(p.type)) return p.active === true;
+  if (p.type === 'peur' || p.type === 'terreur') return (p.indice ?? 0) > 0 && (p.calmeDR ?? 0) < (p.indice ?? 0);
+  return false;
+}
+
+/** RAW LDB 21 : un Trait CIBLÉ actif dont la donnée `immuneToFromTarget` inclut `'peur'` (Haine) IMMUNISE
+ *  `self` à la Peur causée par un membre de sa Cible. (Pas la Terreur.) Lu par `fearSourceFor` (héros ET IA).
+ *  Data-driven : aucune entité nommée. */
+export function psychImmuneToFearFrom(self: Combatant, foe: Pick<Combatant, 'groups'>): boolean {
+  for (const p of self.psychState ?? []) {
+    if (p.active !== true || !p.cible) continue;
+    if (findPsychologyById(p.type)?.immuneToFromTarget?.includes('peur') && groupMatch(p.cible, foe.groups ?? [])) return true;
+  }
+  return false;
+}
+
+/** RAW LDB 21 : les Traits CIBLÉS `endedByOtherPsych` (Animosité, Préjugé) cessent dès que leur porteur
+ *  tombe sous un AUTRE effet psychologique DOMINANT actif (Peur/Terreur/Haine — soit toute affliction
+ *  active qui n'est PAS elle-même `endedByOtherPsych`). Mute `psychState` (désactive), renvoie les types
+ *  désactivés (narration). Data-driven, générique : aucune entité nommée. */
+export function suppressSupersededPsych(c: Combatant): PsychType[] {
+  const dominant = (c.psychState ?? []).filter((o) => isAfflictionActive(o) && !findPsychologyById(o.type)?.endedByOtherPsych);
+  const out: PsychType[] = [];
+  for (const p of c.psychState ?? []) {
+    if (p.active !== true || !findPsychologyById(p.type)?.endedByOtherPsych) continue;
+    if (dominant.some((o) => o !== p)) { p.active = false; out.push(p.type); }
+  }
+  return out;
 }
 
 /** `self` possède-t-il « Sans Peur (Ennemi) » (LDB 10 l.864) contre `foe` ? Le porteur n'est PAS
@@ -141,7 +174,12 @@ export function isPsychImmune(c: Combatant, foesMaxAdvantage?: number): boolean 
   // Immunité Psychologique » — `foesMaxAdvantage` = le meilleur Avantage de ses adversaires ENGAGÉS
   // (fourni par les appelants qui ont le contexte de bataille ; absent ⇒ trait inerte).
   if (foesMaxAdvantage != null && bellicosePsychImmune(c, foesMaxAdvantage)) return true;
-  return !!c.psychImmune || !!c.frenzied || (c.psychImmuneRoundsLeft ?? 0) > 0;
+  // Immunité par DONNÉE : trait « Immunité (Psychologie) » (`c.psychImmune`), Détermination temporaire
+  // (`ActiveEffect.psychImmune`), OU un état psy porté qui l'accorde (Frénésie → `psychology.json`
+  // `psychImmune:true`, LDB 21 l.34) — lu GÉNÉRIQUEMENT, jamais par-nom.
+  return !!c.psychImmune
+    || (c.activeEffects ?? []).some((e) => e.psychImmune)
+    || (c.psychState ?? []).some((p) => findPsychologyById(p.type)?.psychImmune);
 }
 
 /** À sang-froid (LDB 85 p.338) : « Elle peut inverser tous ses Tests de Force Mentale échoués » —
@@ -156,12 +194,16 @@ export function coldBloodedAdjust(
   return e.success ? { roll: e.roll, target: e.target, success: e.success, sl: e.sl } : t;
 }
 
-/** Détermination (LDB 17 l.62) : immunité à la Psychologie jusqu'à la fin du prochain Round. */
+/** Détermination (LDB 17 l.62) : immunité à la Psychologie jusqu'à la fin du prochain Round. Portée par un
+ *  `ActiveEffect` à durée 2 Rounds (système de Durée unifié : décrémenté/expiré au passage de Round). */
 export function spendResolveForPsychImmunity(c: Combatant): string | null {
   if ((c.resolve ?? 0) <= 0) return null;
   c.resolve = (c.resolve ?? 0) - 1;
-  c.psychImmuneRoundsLeft = 2;
-  return `${c.name} : immunisé à la Psychologie jusqu'à la fin du prochain Round (Détermination).`;
+  c.activeEffects = [
+    ...(c.activeEffects ?? []).filter((e) => e.effectId !== 'determination-psych'),
+    { label: 'Détermination (immunité psy)', effectId: 'determination-psych', bonus: 0, duration: { scale: 'rounds', left: 2 }, psychImmune: true },
+  ];
+  return t('psy.determinationImmune', { name: c.name });
 }
 
 /** Retire de TOUS les combattants les afflictions psychologiques (Peur/Terreur/traits ciblés)
@@ -177,6 +219,13 @@ export function clearPsychOf(all: Combatant[], deadId: string): void {
 /** Le combattant peut-il entrer en Frénésie (LDB 21 l.31) ? Trait de créature OU Talent « Frénésie ». */
 export function isFrenzyCapable(c: Combatant): boolean {
   return hasTraitKey(c.traits, 'frenesie') || (c.talents ?? []).some((t) => t.talentId === 'frenesie');
+}
+
+/** Le combattant est-il EN Frénésie (LDB 21 l.34) ? État psychologique porté `frenesie` (`psychState`,
+ *  posé par l'entrée — Action héros / décision IA / Rage) — remplace l'ancien drapeau `Combatant.frenzied`.
+ *  Lu par le combat (charge, gating, +1 BF via données, immunité psy, attaque libre). */
+export function isFrenzied(c: Combatant): boolean {
+  return (c.psychState ?? []).some((p) => p.type === 'frenesie');
 }
 
 /** Test de Force Mentale pour entrer en Frénésie (LDB 21 l.32). Succès → on entre. */

@@ -2,12 +2,15 @@
  * États (conditions) — Livre de base, chapitre « États ».
  * Gestion minimale pour le combat tactique : ajout, empilement, retrait.
  */
-import { Combatant } from './types';
+import { Combatant, ActiveEffect } from './types';
+import { tickRound } from './duration';
 import { conditionLabel } from '../data';
+import { t } from '../i18n';
 import { rule } from './policy';
-import { bleedIgnoreLevel } from './combatFeatures/dispatch';
 import { bonus, effectiveChar } from './characteristics';
-import { d10, d100, RNG, defaultRNG } from './dice';
+import { d100, RNG, defaultRNG } from './dice';
+import { passiveMods } from './trauma';
+import type { GameOp } from './ops';
 import { rollTest, isDoubleRoll, type TestResult } from './tests';
 import { dropExpiredGrantedTraits } from './grantedTraits';
 import { dropExpiredGrantedResources } from './grantedResources';
@@ -108,34 +111,40 @@ export function effectTestMod(c: Combatant): number {
   return (c.activeEffects ?? []).reduce((s, e) => s + (e.testMod ?? 0), 0);
 }
 
+/** Les `testMod` portés par les États du combattant (kind `etat`), déjà ×pions (perStack) par le
+ *  collecteur. Lus en « PIRE seul » par combatTestPenalty/testStatePenalty (non-cumul, LDB 16 l.20). */
+function etatTestMods(c: Combatant): Extract<GameOp, { op: 'testMod' }>[] {
+  const out: Extract<GameOp, { op: 'testMod' }>[] = [];
+  for (const m of passiveMods(c)) if (m.kind === 'etat' && m.op.op === 'testMod') out.push(m.op);
+  return out;
+}
+
 export function combatTestPenalty(c: Combatant): number {
   const cand: number[] = [];
   // Endurance de l'anachorète (LDB 42) : « ne subit aucune pénalité causée par les États » —
   // n'efface QUE les pénalités d'État (l'aura Perturbante est un trait, pas un État).
   if (!hasActiveFlag(c, 'ignoreStatePenalties')) {
-    if (hasCondition(c, COND.aveugle)) cand.push(-10);
-    if (hasCondition(c, COND.brise)) cand.push(-10);
-    if (hasCondition(c, COND.empoisonne)) cand.push(-10);
-    if (hasCondition(c, COND.sonne)) cand.push(-10);
-    const ext = stacks(c, COND.extenue);
-    if (ext > 0) cand.push(-10 * ext);
+    for (const m of etatTestMods(c)) {
+      if (m.movementOnly) continue; // pénalité de DÉPLACEMENT (À Terre/Empêtré) — pas un Test de combat
+      cand.push(m.amount); // magnitude/portée en données (etats.json) ; déjà ×pions (Exténué)
+    }
   }
-  // Aura d'une créature Perturbante (LDB 85 p.341) : −20 à tous les Tests (non cumulable — flag).
-  if (c.perturbed) cand.push(-20);
+  // Auras de combat (Perturbant : −20 à BE m, LDB 85 p.341) — `testMod` projetés dans `auraMods` par le hook
+  // `recompute-auras`. HORS du gate `ignoreStatePenalties` : une aura est un TRAIT, pas un État (Endurance de
+  // l'anachorète ne l'annule pas, LDB 42). Non-cumul = même pool `min` (« une seule fois », LDB 85 l.208).
+  for (const op of c.auraMods ?? []) if (op.op === 'testMod' && op.char == null) cand.push(op.amount);
   const state = cand.length ? Math.min(...cand) : 0;
   return state + effectTestMod(c); // modificateur de Sort (Malédiction de malchance) : STACKE avec l'État
 }
 
 /**
- * Pénalité d'États aux Tests HORS COMBAT (LDB ch.16). Non-cumul (l.20 : la PIRE pénalité seule).
- * Couvre les États « à tous les Tests » : Empoisonné (l.66) / Sonné (l.123) −10, Exténué (l.89) −10/pion,
- * Brisé (l.55) −10 SAUF un Test de course (Athlétisme) ou de dissimulation (Discrétion). Les États à
- * portée sensorielle/déplacement (Aveuglé=vue, Assourdi=audition, À Terre/Empêtré=déplacement) ne sont
- * PAS appliqués ici faute de classification du Test (rare hors combat ; raffinement futur).
+ * Pénalité d'États aux Tests HORS COMBAT (LDB ch.16). Non-cumul (l.20 : la PIRE pénalité seule) ; le
+ * modificateur de Sort (effectTestMod) s'ajoute par-dessus. Magnitudes/portées en DONNÉES (etats.json
+ * passive `testMod` : `combatOnly`/`movementOnly`/`exceptSkills`), lues via passiveMods (kind `etat`).
+ * Les États non classables hors combat (Aveuglé=vue, `combatOnly`) sont exclus ici.
  */
-const BRISE_EXEMPT = new Set(['athletisme', 'discretion']); // course / dissimulation (LDB 16 l.55), par skillId
-// Tests « impliquant un déplacement » (LDB 16 l.37/l.85), par skillId. Les Acrobaties (spécialisation de
-// Représentation) ne sont pas classables au niveau de l'id de base → non couvertes (rare hors combat).
+// Tests « impliquant un déplacement » (LDB 16 l.37/l.85), par skillId — classification de COMPÉTENCE (fait
+// de système, ≠ contenu d'État). Acrobaties (spé de Représentation) non classables à l'id de base → non couvertes.
 const MOVEMENT_SKILL = new Set(['athletisme', 'esquive', 'escalade', 'chevaucher', 'natation']);
 export function testStatePenalty(c: Combatant, skill?: string): number {
   const effMod = effectTestMod(c); // modificateur de Sort (stacke, hors non-cumul d'État)
@@ -143,15 +152,11 @@ export function testStatePenalty(c: Combatant, skill?: string): number {
   // Endurance de l'anachorète (LDB 42) : aucune pénalité d'État pour la durée (le modificateur de Sort reste).
   if (hasActiveFlag(c, 'ignoreStatePenalties')) return effMod;
   const cand: number[] = [];
-  if (hasCondition(c, COND.empoisonne)) cand.push(-10);
-  if (hasCondition(c, COND.sonne)) cand.push(-10);
-  const ext = stacks(c, COND.extenue);
-  if (ext > 0) cand.push(-10 * ext);
-  if (hasCondition(c, COND.brise) && !BRISE_EXEMPT.has(skill ?? '')) cand.push(-10);
-  // À Terre / Empêtré : pénalité aux Tests impliquant un déplacement (LDB 16 l.37 / l.85).
-  if (MOVEMENT_SKILL.has(skill ?? '')) {
-    if (hasCondition(c, COND.aTerre)) cand.push(-20);
-    if (hasCondition(c, COND.empetre)) cand.push(-10);
+  for (const m of etatTestMods(c)) {
+    if (m.combatOnly) continue; // Aveuglé (vue) : non classé hors combat (faute de classification du Test)
+    if (m.movementOnly && !MOVEMENT_SKILL.has(skill ?? '')) continue; // À Terre/Empêtré : Tests de déplacement seuls
+    if (m.exceptSkills?.includes(skill ?? '')) continue; // Brisé : sauf course (Athlétisme) / dissimulation (Discrétion)
+    cand.push(m.amount);
   }
   return (cand.length ? Math.min(...cand) : 0) + effMod;
 }
@@ -162,11 +167,30 @@ export function testStatePenalty(c: Combatant, skill?: string): number {
  * flanc/derrière : non modélisé — l'orientation des combattants n'est pas suivie.)
  */
 export function meleeAttackerBonus(target: Combatant): number {
-  const cand: number[] = [];
-  if (hasCondition(target, COND.aTerre)) cand.push(20);
-  if (hasCondition(target, COND.surpris)) cand.push(20);
-  if (hasCondition(target, COND.aveugle)) cand.push(10);
-  return cand.length ? Math.max(...cand) : 0;
+  // Lu en DONNÉES : le `passive` de chaque État (`incomingAttackMod` melee/all, kind `etat`) ;
+  // non-cumul = le MEILLEUR seul (LDB 16). À Terre/Surpris +20, Aveuglé +10 vivent dans `etats.json`.
+  let best = 0;
+  for (const m of passiveMods(target)) {
+    if (m.kind === 'etat' && m.op.op === 'incomingAttackMod' && (m.op.mode === 'melee' || m.op.mode === 'all')) {
+      best = Math.max(best, m.op.amount);
+    }
+  }
+  return best;
+}
+
+/**
+ * Avantage(s) GAGNÉ(s) par l'assaillant qui frappe `target` en mêlée — lu en DONNÉES (`passive`
+ * `incomingAdvantage` melee/all, kind `etat`). Sonné : « +1 Avantage avant l'attaque » (LDB 16 l.123).
+ * Non-cumul : le MEILLEUR seul (comme `meleeAttackerBonus`). ≠ bonus de TOUCHE (`meleeAttackerBonus`).
+ */
+export function incomingMeleeAdvantage(target: Combatant): number {
+  let best = 0;
+  for (const m of passiveMods(target)) {
+    if (m.kind === 'etat' && m.op.op === 'incomingAdvantage' && (m.op.mode === 'melee' || m.op.mode === 'all')) {
+      best = Math.max(best, m.op.amount);
+    }
+  }
+  return best;
 }
 
 /** Une cible Surprise (LDB ch.16 l.132) ou Inconscient (l.112 « rien faire de votre tour »)
@@ -181,27 +205,12 @@ export function canTakeAction(c: Combatant): boolean {
   return !hasCondition(c, COND.sonne);
 }
 
-/** Valeur « brute » du Test de Résistance contre l'État Empoisonné (LDB 16 l.70 : Endurance +
- *  Augmentations de Résistance). SOURCE UNIQUE, partagée par `endOfRound` (jet silencieux) et le
- *  collecteur de cascade des HÉROS (étape influençable) — la difficulté Intermédiaire (+0) et la
- *  pénalité d'États (`combatTestPenalty`) sont appliquées par l'appelant. */
-export function poisonResistValue(c: Combatant): number {
-  return effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
-}
-
-/** Conséquence d'un Test de Résistance contre l'État Empoisonné (LDB 16 l.70-72) : sur un succès,
- *  retire 1 + DR pions ; une fois tous retirés, 1 État Exténué. PUR (mute `c`, renvoie la ligne de
- *  journal ou null). Partagé par `endOfRound` (ENNEMIS, jet silencieux interne) et l'applier de
- *  cascade `poisonResist` (HÉROS, jet influençable). */
-export function poisonResistApply(c: Combatant, success: boolean, sl: number): string | null {
-  const poison = stacks(c, COND.empoisonne);
-  if (!success || poison <= 0) return null;
-  const removed = Math.min(poison, 1 + Math.max(0, sl));
-  removeCondition(c, COND.empoisonne, removed);
-  const lines = [`${c.name} : ${removed} État(s) Empoisonné éliminé(s) (Résistance réussie).`];
-  if (!hasCondition(c, COND.empoisonne)) { addCondition(c, COND.extenue); lines.push(`${c.name} est Exténué (poison surmonté).`); }
-  return lines.join('\n');
-}
+/**
+ * (Résistance à l'Empoisonné — LDB 16 l.70-72 — n'est PLUS du code moteur : c'est un `effects: onRoundEnd`
+ *  à nœud `test` dans `etats.json` (retire 1+DR via `removeCondition`, puis Exténué si vidé via `if`/
+ *  `condition`), résolu par le DISPATCHER UNIQUE — cadence-aware en combat, inline hors-combat. Plus de
+ *  `poisonResistValue`/`poisonResistApply` par-nom ici.)
+ */
 
 /**
  * Fin de Round : dégâts périodiques (Hémorragique/Empoisonné/En flammes) et
@@ -214,75 +223,55 @@ export function poisonResistApply(c: Combatant, success: boolean, sl: number): s
  */
 export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
   const log: string[] = [];
-  // Hémorragique : 1 Blessure par point, en ignorant les modificateurs (l.104).
-  // Endurci (LDB 10) : ignore niveau Point(s) de Blessure perdus par l'État Hémorragique.
-  const bleed = Math.max(0, stacks(c, COND.hemorragique) - bleedIgnoreLevel(c));
-  if (bleed) {
-    loseWounds(c, bleed); // perte de PB centralisée (perte d'Avantage + À Terre à 0)
-    log.push(`${c.name} subit ${bleed} Blessure(s) (Hémorragique).`);
-  }
-  // Empoisonné : 1 Blessure par point, en ignorant les modificateurs (l.66).
-  const poison = stacks(c, COND.empoisonne);
-  if (poison) {
-    loseWounds(c, poison);
-    log.push(`${c.name} subit ${poison} Blessure(s) (Empoisonné).`);
-    // Le Test de Résistance qui ÉLIMINE l'Empoisonné (LDB 16 l.70-72) n'est PLUS ici : c'est un hook
-    // `roundBoundary` (`poison-resist`, state/combat/roundHooks) qui décide silence (non-interactif :
-    // monstre OU héros en cadence rapide/auto) vs étape de cascade influençable (héros en manuel),
-    // via `roundTestInteractive` — exactement comme Mâchoires/Brisé. `endOfRound` ne fait QUE les
-    // dégâts périodiques (pur, ignorant du joueur/monstre et de la cadence). Logique partagée :
-    // `poisonResistValue`/`poisonResistApply` (helpers purs ci-dessus).
-  }
-  // En flammes : 1d10 − BE − PA de la localisation la moins protégée (min 1), +1 par État en plus (l.77).
-  const fire = stacks(c, COND.enFlammes);
-  if (fire) {
-    const minPA = Math.min(...Object.values(c.armour));
-    // « 1d10+2 si 3 États » (l.77) : le +1/État en plus s'ajoute aux Dégâts AVANT la
-    // réduction BE+PA et le plancher de 1 — pas après.
-    const dmg = Math.max(1, d10(rng) + (fire - 1) - bonus(effectiveChar(c, 'E')) - minPA);
-    loseWounds(c, dmg);
-    log.push(`${c.name} subit ${dmg} Blessure(s) (En flammes).`);
-  }
-  // Sonné : Test de Résistance Intermédiaire (+0) en fin de Round ; sur un succès, retire
-  // 1 État + 1 par DR ; une fois tous retirés, on gagne 1 Exténué (LDB États l.125-127).
-  // Le « -10 à tous les Tests » du Sonné s'applique au jet (l.123, via combatTestPenalty).
-  const sonne = stacks(c, COND.sonne);
-  if (sonne) {
-    const resistVal = effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
-    const res = rollTest(resistVal, 'intermediaire', rng, combatTestPenalty(c));
-    if (res.success) {
-      const removed = Math.min(sonne, 1 + Math.max(0, res.sl));
-      removeCondition(c, COND.sonne, removed);
-      log.push(`${c.name} : ${removed} État(s) Sonné dissipé(s) (Résistance réussie).`);
-      if (!hasCondition(c, COND.sonne) && !hasCondition(c, COND.extenue)) {
-        addCondition(c, COND.extenue);
-        log.push(`${c.name} est Exténué (après avoir surmonté le dernier État Sonné).`);
-      }
-    } else {
-      log.push(`${c.name} reste Sonné (Résistance ratée).`);
-    }
-  }
-  // Dissipation en fin de Round : Aveuglé (l.48), Assourdi (l.32), Surpris (l.136).
-  for (const n of [COND.aveugle, COND.assourdi, COND.surpris]) {
-    if (hasCondition(c, n)) {
-      removeCondition(c, n, 1);
-      log.push(`${c.name} : un État ${conditionLabel(n)} se dissipe.`);
-    }
-  }
+  // Hémorragique : dégâts par-round (« 1 Blessure par pion, en ignorant les modificateurs », l.104) MIGRÉS
+  // en données — etats.json hemorragique `effects: onRoundEnd → wounds {stacks:'self'}` (défaut : ignore
+  // BE+PA), avec `stacksReducedBy:'bleedIgnore'` pour l'Endurci (LDB 10), joué par fireConditionEffects.
+  // Le jet de MORT par hémorragie (d100 ≤ 10×pions, coagulation) reste `bleedDeathRoll` (règle de mort).
+  // Empoisonné : dégâts par-round (« 1 PB/pion, en ignorant les modificateurs ») MIGRÉS en DONNÉES —
+  // `etats.json` empoisonne `effects: onRoundEnd → wounds {stacks:'self'}` (le défaut de `wounds` ignore
+  // BE+PA), joués par `fireConditionEffects` au hook order-10. Le Test de Résistance qui élimine l'État
+  // reste le hook `poison-resist` (cadence-aware). Plus de branche par-nom de DÉGÂTS de poison ici.
+  // En Flammes : dégâts par-round MIGRÉS en données (etats.json `effects: onRoundEnd → wounds`,
+  // amount {sum:[1d10, pions, −1]} − BE − PA de la Localisation la moins protégée, min 1 ; LDB 16 l.77),
+  // joués par fireConditionEffects. Plus de branche by-name de DÉGÂTS d'En Flammes ici.
+  // Sonné : Test de Résistance Intermédiaire (+0) en fin de Round (retire 1+DR ; vidé → 1 Exténué « si pas
+  // déjà », LDB 16 l.123-127) MIGRÉ en DONNÉES — `etats.json` sonne `effects: onRoundEnd → {test → removeCondition
+  // 1+DR, `if` sonne∧extenue vidés → condition extenue}`, résolu par le DISPATCHER UNIQUE (cadence-aware en
+  // combat, inline hors-combat). Le −10 du Sonné s'applique au jet via `combatTestPenalty` (rawCombatTestBase).
+  // Auto-dissipation en fin de Round (Aveuglé l.48 / Assourdi l.32 / Surpris l.136) MIGRÉE en données :
+  // `effects: [{trigger:'onRoundEnd', flow:…removeCondition}]` dans etats.json, jouée par fireConditionEffects.
   // Effets RÉCURRENTS portés par un effet actif de sort (op `perRound`) — re-joués tant que l'effet
   // dure (AVANT le décrément : il agit aussi son dernier Round). 1 État X/Round, 1 Ration de
   // « Récolte de Rhya »/Round… Le nombre de répétitions suit roundsLeft (Surincantation de Durée
   // comprise). Snapshot de la liste : les ops récurrentes n'ajoutent pas d'effet actif (cas littéraux).
   for (const e of [...(c.activeEffects ?? [])]) {
-    if (!e.opsPerRound || e.roundsLeft <= 0) continue;
+    if (!e.opsPerRound || (e.duration.scale === 'rounds' && e.duration.left <= 0)) continue;
     applyOps(c, e.opsPerRound, { label: e.label, rng }).forEach((l) => log.push(l));
   }
-  // Effets magiques temporisés (Bénédictions, Sorts de bonus).
+  // Décrément des durées (effets/États de sort/contrecoups) — SOURCE UNIQUE extraite, même emplacement
+  // qu'avant (fin d'`endOfRound`, après les ops récurrentes). RNG-free.
+  tickDurations(c).forEach((l) => log.push(l));
+  return log;
+}
+
+/**
+ * Décrément des DURÉES à la frontière de Round — SOURCE UNIQUE (effets magiques temporisés, États de
+ * sort, contrecoups d'incantation en Rounds). Extrait d'`endOfRound` : un seul point décrémente les
+ * `roundsLeft`, branché par le hook `tick-durations` (order 15.5, après les dégâts périodiques, avant
+ * `refresh-wounds`). RNG-FREE (décrément + filtre + retraits) → n'altère pas le flux déterministe.
+ * Rejoué hors combat par `outOfCombatUpkeep` (les durées en Rounds tickent aussi à l'horloge).
+ */
+export function tickDurations(c: Combatant): string[] {
+  const log: string[] = [];
+  // Effets magiques temporisés (Bénédictions, Sorts de bonus) : décrément des durées en Rounds.
+  // `tickRound` n'agit que sur l'échelle `rounds` ; les durées d'horloge/permanentes sont inertes ici
+  // (les premières sont purgées par l'horloge `purgeClockEffects`).
   if (c.activeEffects?.length) {
-    for (const e of c.activeEffects) e.roundsLeft -= 1;
-    const expired = c.activeEffects.filter((e) => e.roundsLeft <= 0);
-    for (const e of expired) log.push(`${c.name} : ${e.label} se dissipe.`);
-    c.activeEffects = c.activeEffects.filter((e) => e.roundsLeft > 0);
+    for (const e of c.activeEffects) e.duration = tickRound(e.duration);
+    const isDone = (e: ActiveEffect) => e.duration.scale === 'rounds' && e.duration.left <= 0;
+    const expired = c.activeEffects.filter(isDone);
+    for (const e of expired) log.push(t('cond.effectExpire', { name: c.name, label: e.label }));
+    c.activeEffects = c.activeEffects.filter((e) => !isDone(e));
     dropExpiredGrantedTraits(c, expired); // traits accordés (op grantTrait) retirés avec leur effet
     dropExpiredGrantedResources(c, expired); // Chance/Destin accordés (gainResource) non dépensés
     dropExpiredGrantedWeapons(c, expired); // armes invoquées/naturelles accordées : loadout recomposé
@@ -292,15 +281,14 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
   if (c.conditions.some((x) => x.roundsLeft != null)) {
     for (const x of c.conditions) if (x.roundsLeft != null) x.roundsLeft -= 1;
     const done = c.conditions.filter((x) => x.roundsLeft != null && x.roundsLeft <= 0);
-    for (const x of done) log.push(`${c.name} : l'État ${conditionLabel(x.name)} (sort) se dissipe.`);
+    for (const x of done) log.push(t('cond.spellCondExpire', { name: c.name, cond: conditionLabel(x.name) }));
     c.conditions = c.conditions.filter((x) => !(x.roundsLeft != null && x.roundsLeft <= 0));
   }
-  // Contrecoups d'incantation à durée en Rounds (tables d'Imparfaites/Colère, LDB 46/40) —
-  // l'entretien hors combat rejoue endOfRound (couture A) → ils tickent aussi hors combat.
+  // Contrecoups d'incantation à durée en Rounds (tables d'Imparfaites/Colère, LDB 46/40).
   if (c.castPenalties?.some((p) => p.roundsLeft != null)) {
     for (const p of c.castPenalties) if (p.roundsLeft != null) p.roundsLeft -= 1;
     const done = c.castPenalties.filter((p) => p.roundsLeft != null && p.roundsLeft <= 0);
-    for (const p of done) log.push(`${c.name} : ${p.label} se dissipe.`);
+    for (const p of done) log.push(t('cond.effectExpire', { name: c.name, label: p.label }));
     c.castPenalties = c.castPenalties.filter((p) => !(p.roundsLeft != null && p.roundsLeft <= 0));
   }
   return log;
@@ -315,9 +303,9 @@ export function nightmareCheck(c: Combatant, rng: RNG = defaultRNG, out?: { base
   const calme = effectiveChar(c, 'FM') + (c.skills?.find((s) => s.skillId === 'calme')?.advances ?? 0);
   const res = rollTest(calme, 'facile', rng); // Calme Facile (+40), palier canonique
   out?.push({ base: calme, result: res });
-  if (res.success) return [`${c.name} dort d'un sommeil sans rêve.`];
+  if (res.success) return [t('cond.nightmareNone', { name: c.name })];
   addCondition(c, COND.extenue);
-  return [`${c.name} est en proie à de terribles cauchemars (Calme +40 raté) et gagne Exténué.`];
+  return [t('cond.nightmare', { name: c.name })];
 }
 
 /**
@@ -332,11 +320,11 @@ export function bleedDeathRoll(c: Combatant, rng: RNG = defaultRNG): { died: boo
   const r = d100(rng);
   if (isDoubleRoll(r)) {
     removeCondition(c, COND.hemorragique, 1); // coagulation (le double prime sur la mort)
-    const log = [`${c.name} : une plaie coagule (${r === 100 ? '00' : r}, double) — un État Hémorragique en moins.`];
-    if (!hasCondition(c, COND.hemorragique)) { addCondition(c, COND.extenue); log.push(`${c.name} est Exténué (dernière plaie refermée).`); } // tous retirés → 1 Exténué
+    const log = [t('cond.coagulate', { name: c.name, roll: r === 100 ? '00' : r })];
+    if (!hasCondition(c, COND.hemorragique)) { addCondition(c, COND.extenue); log.push(t('cond.lastWoundExhausted', { name: c.name })); } // tous retirés → 1 Exténué
     return { died: false, log };
   }
-  if (r <= 10 * n) return { died: true, log: [`${c.name} succombe à l'hémorragie (${r} ≤ ${10 * n}).`] };
+  if (r <= 10 * n) return { died: true, log: [t('cond.bleedDeath', { name: c.name, roll: r, threshold: 10 * n })] };
   return { died: false, log: [] };
 }
 
@@ -407,7 +395,7 @@ export function tickDeath(c: Combatant, _rng: RNG = defaultRNG): string[] {
   c.roundsAtZero = (c.roundsAtZero ?? 0) + 1;
   if (c.roundsAtZero > be && !hasCondition(c, COND.inconscient)) {
     addCondition(c, COND.inconscient);
-    log.push(`${c.name} perd connaissance (0 PB depuis ${c.roundsAtZero} Rounds).`);
+    log.push(t('cond.unconscious', { name: c.name, rounds: c.roundsAtZero }));
   }
   return log; // la mort (dead) est finalisée par le store (avec sauvetage par Destin)
 }

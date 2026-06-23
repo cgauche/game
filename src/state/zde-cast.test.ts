@@ -21,17 +21,17 @@ function wiz() {
 
 describe('parsing ZdE / portée (engine/magic)', () => {
   const caster = { characteristics: { FM: 42, I: 30, Soc: 30, CC: 0, CT: 0, F: 0, E: 0, Ag: 0, Dex: 0, Int: 0 }, skills: [], talents: [], conditions: [], wounds: { current: 1, max: 1 }, advantage: 0, movement: 4, weapons: [], armour: {} } as never as Combatant;
-  it('« ZdE (Bonus de Force Mentale) mètres » → diamètre BFM, rayon en cases ⌊d/2/2⌋', () => {
-    expect(zdeDiameterMeters('ZdE (Bonus de Force Mentale) mètres', caster)).toBe(4);
-    expect(zdeRadiusTiles('ZdE (Bonus de Force Mentale) mètres', caster)).toBe(1);
-    expect(zdeRadiusTiles('ZdE (Spécial)', caster)).toBeNull(); // mur/lieu : non chiffrable
-    expect(zdeRadiusTiles(1, caster)).toBeNull(); // cible numérique : pas une ZdE
+  it('aire { diamètre (Bonus de FM) } → diamètre BFM, rayon en cases ⌊d/2/2⌋', () => {
+    expect(zdeDiameterMeters({ kind: 'area', span: 'diameter', meters: { bonusOf: 'FM' } }, caster)).toBe(4);
+    expect(zdeRadiusTiles({ kind: 'area', span: 'diameter', meters: { bonusOf: 'FM' } }, caster)).toBe(1);
+    expect(zdeRadiusTiles({ kind: 'special', text: 'ZdE (Spécial)' }, caster)).toBeNull(); // mur/lieu : non chiffrable
+    expect(zdeRadiusTiles({ kind: 'count', n: 1 }, caster)).toBeNull(); // cible dénombrée : pas une ZdE
   });
-  it('portée : littéral mètres / (Caractéristique) / Vous / Contact', () => {
-    expect(spellRangeTiles('6 mètres', caster)).toBe(3);
-    expect(spellRangeTiles('(Force Mentale) mètres', caster)).toBe(21); // 42 m → 21 cases
-    expect(spellRangeTiles('Vous', caster)).toBe(0);
-    expect(spellRangeTiles('Contact', caster)).toBe(1);
+  it('portée : distance littérale / (Caractéristique) / self / touch', () => {
+    expect(spellRangeTiles({ kind: 'distance', value: 6, unit: 'm' }, caster)).toBe(3);
+    expect(spellRangeTiles({ kind: 'distance', value: { charOf: 'FM' }, unit: 'm' }, caster)).toBe(21); // 42 m → 21 cases
+    expect(spellRangeTiles({ kind: 'self' }, caster)).toBe(0);
+    expect(spellRangeTiles({ kind: 'touch' }, caster)).toBe(1);
     expect(spellRangeTiles(null, caster)).toBeNull();
   });
 });

@@ -3,6 +3,7 @@ import { t, interpolate, getLocale } from './index';
 import { CHAR_LABELS, DIFFICULTY_LABELS, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS } from '../engine/types';
 import { DEFENSE_LABEL, FREE_ATTACK_LABEL } from '../engine/combat';
 import { CIBLE_LABEL } from '../engine/psychology';
+import { psychologyLabel } from '../data';
 
 describe('i18n — primitive t() + catalogue FR (seam, docs/i18n-seam.md)', () => {
   it('résout une clé en texte FR', () => {
@@ -32,7 +33,8 @@ describe('i18n — primitive t() + catalogue FR (seam, docs/i18n-seam.md)', () =
     expect(FREE_ATTACK_LABEL.caudale).toBe('Attaque caudale');
     expect(BODY_SHAPE_LOC_LABELS.quadrupede.brasG).toBe('Membre antérieur gauche');
     expect(BODY_SHAPE_LOC_LABELS.oiseau.brasG).toBe(t('hitloc.oiseau.brasG'));
-    expect(CIBLE_LABEL.animosite.label).toBe(t('cible.animosite'));
-    expect(CIBLE_LABEL.haine.emoji).toBe('😡'); // emoji reste inline (non traduit)
+    // CIBLE_LABEL DÉRIVE désormais de psychology.json (donnée app-owned, comme etats.json), pas du catalogue t().
+    expect(CIBLE_LABEL.animosite.label).toBe(psychologyLabel('animosite'));
+    expect(CIBLE_LABEL.haine.emoji).toBe('😡'); // emoji porté par la donnée
   });
 });

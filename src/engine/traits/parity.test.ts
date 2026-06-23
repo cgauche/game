@@ -53,6 +53,9 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Infecté', 'Blessure Purulente post-combat (disease.ts — Lot D)'],
   ['Rongeur', 'marqueur rongeur → Fièvre du Rongeur si aussi Infecté (woundedByRodent, contraction post-combat)'],
   ['Corruption', 'exposition du groupe (corruptionFlow — Lot E)'],
+  // Dressé (Magie) : trait MARQUEUR sans effet propre — lu par le gate `startleCause` de Nerveux
+  // (Condition Flow `has dresse-magie` → exemption de l'effarouchement magique, LDB 85 l.89, données).
+  ['Dressé (Magie)', 'marqueur lu par le gate `startleCause` de Nerveux (exemption magie, données)'],
 ]);
 
 // Journal/MJ EN CONSCIENCE : pas d'effet moteur câblable sans système support — la desc (verbatim)
@@ -63,11 +66,20 @@ const JOURNAL_MJ = new Map<string, string>([
   ['Limicole', 'pas de terrain marécageux à pénalité de Mouvement'],
   ['Grimpant', 'pas de système d’escalade (surfaces verticales)'],
   ['Pisteur', 'Pistage hors combat — arbitrage MJ'],
-  ['Dressé', 'dressages spécifiques (Divertir/Garder/Monture…) — arbitrage MJ'],
   ['Béni', 'Bénédictions de PNJ — pas de liste de prières dans la donnée (MJ)'],
   ['Miracles', 'Miracles de PNJ — pas de liste dans la donnée (MJ)'],
   ['Lanceur de Sorts', 'la donnée bestiaire ne liste pas les sorts connus → choix d’AUTEUR (éditeur : spells du spawn/statbloc) ; l’IA incante enemy.spells'],
   ['Mort-vivant', 'marqueur (consommé par Hurlement fantomatique, les Groupes et les contractions)'],
+  // Dressé : chaque discipline est un trait à part entière (anti-pattern chaîne supprimé). Phase 1 =
+  // STRUCTURE ; Phase 2 a CÂBLÉ Guerre/Magie (exemption Nerveux + CC) ; Phase 3 a CÂBLÉ Dompté (ignore
+  // Bestial) et Garde (Territorial). Restent narratives/non modélisées : Monture, Cavalerie, Rapporteur…
+  // Monture : la mountabilité réelle est posée par l'ENCOUNTER (`m.mount`/`ridesEntityId`, choix d'auteur
+  // de scène) ; le trait reste le marqueur RAW. Cavalerie de choc : règle « charger en bon ordre » (Aux
+  // Armes, formations d'unités) NON modélisée. Les deux = narratif/auteur, pas d'effet moteur isolé.
+  ['Dressé (Monture)', 'marqueur RAW ; mountabilité posée par l’encounter (m.mount/ridesEntityId)'],
+  ['Dressé (Cavalerie de choc)', 'charge en bon ordre (Aux Armes, formations) — non modélisé'],
+  ['Dressé (Rapporteur)', 'discipline narrative (rapport) — arbitrage MJ'],
+  ['Dressé (Revenir à la maison)', 'discipline narrative (retour au bercail) — arbitrage MJ'],
   ['Increvable', 'recousue/ressuscitée post-combat — arbitrage MJ'],
   // Traits des Horreurs de Tzeentch (EDO) — flavor de statbloc sans système support, desc verbatim.
   ['Marque de Tzeentch', 'Mutations du statbloc — fixées par l’auteur/MJ (l’éditeur pose les Mutations de la créature) ; pas de génération runtime'],
@@ -80,6 +92,10 @@ const JOURNAL_MJ = new Map<string, string>([
 // échoue le test de couverture — on n'oublie aucun trait dans un trou.
 const DISPATCH = new Set<string>([
   'À sang-froid', 'Affamé', 'Armure', 'Belliqueux', 'Bestial', 'Bond', 'Brutal', 'Champion', 'Coriace',
+  // Dressé (Guerre) : passive +10 CC (charMod) + marqueur du gate Nerveux (bruits). Dompté : suppression
+  // GÉNÉRIQUE du Trait Bestial (suppressesCapabilities, lue par traitCapability ; +2d10 Soc = profil cuit
+  // à l'authoring). Garde : capability `territorial` (lue par isTerritorial). Tous DISPATCH (LDB 85 l.85/89).
+  'Dressé (Guerre)', 'Dressé (Dompté)', 'Dressé (Garde)',
   'Corruption mentale', 'Démoniaque', 'Élite', 'Endurant', 'Éthéré', 'Fabriqué', 'Foulée', 'Furtif',
   'Grand', 'Immunité', 'Infravision', 'Insensible à la douleur', 'Instable', 'Intelligent', 'Magique',
   'Meneur', 'Mutation', 'Nerveux', 'Nuée', 'Parasité', 'Perturbant', 'Protection', 'Rage', 'Rapide',

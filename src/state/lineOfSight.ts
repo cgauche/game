@@ -10,6 +10,7 @@ import { buildingBlockedAt } from './buildings';
 import { TERRAINS } from './terrain';
 import { findPropById } from '../data';
 import { Pt } from './path';
+import type { Combatant } from '../engine/types';
 
 export type CoverClass = 'none' | 'imparfaite' | 'moyenne' | 'totale';
 
@@ -156,4 +157,18 @@ export function lineOfSightCover(
     if (occupants.some((o) => o.x === t.x && o.y === t.y)) cover = worst(cover, 'imparfaite');
   }
   return { blocked: false, cover };
+}
+
+/** Ligne de Vue DÉGAGÉE de `from` vers `to` (fumées comprises) ? Wrapper bas-niveau UNIQUE du
+ *  `!lineOfSightCover(...).blocked` — la directionnalité EST le couple `from→to` (le couvert d'adjacence
+ *  rend `blocked` non symétrique). Toutes les itérations de LdV (visibilité, `tileSeenByFoe`, `hasFoeInLoS`)
+ *  s'y branchent au lieu de recopier le `!...blocked`. */
+export const losClear = (scene: Scene, from: Pt, to: Pt, smoke: Pt[] = []): boolean =>
+  !lineOfSightCover(scene, from, to, [], smoke).blocked;
+
+/** La case `pos` est-elle DANS la Ligne de Vue d'au moins un `foe` (direction adversaire→case) ?
+ *  Primitive géométrique du Brisé (LDB 16 l.55, « hors de vue de l'ennemi » = aucun adversaire ne te voit).
+ *  `foes` = la liste d'adversaires PERTINENTS (l'appelant filtre camp/vivacité) ; on ignore les sans-position. */
+export function tileSeenByFoe(scene: Scene, foes: Combatant[], pos: Pt, smoke: Pt[] = []): boolean {
+  return foes.some((e) => e.pos && losClear(scene, e.pos, pos, smoke));
 }

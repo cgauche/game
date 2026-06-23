@@ -4,17 +4,16 @@
  * (`Combatant.weapons` / `armour`) sont DÉRIVÉES de l'équipement via
  * recomputeLoadout : équiper une hache ou une armure change donc le combat.
  */
-import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout } from './types';
+import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout, WeaponDamageSpec, QualityInstance } from './types';
 import { bonus, baseWithTraits } from './characteristics';
 import { talentEncumbranceBonus } from './combatFeatures/dispatch';
 import { applyEnchants } from './weaponDamage';
 import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { mutationArmourBonus } from './corruption';
-import { findTrappingById, qualityRuntime, type TrappingRef, trappingRefLabel } from '../data';
+import { findTrappingById, qualityInstance, type TrappingRef, trappingRefLabel } from '../data';
 import { QUALITY_IDS } from './qualities/ids';
-import { indiceOf } from './qualities/normalize';
 import { craftEncDelta } from './qualities/craftEconomy';
-import { hasQuality } from './qualities/dispatch';
+import { hasQuality, qualityIndice } from './qualities/dispatch';
 import { hasTraitKey } from './traits/dispatch';
 
 let uidCounter = 0;
@@ -22,24 +21,25 @@ export function newUid(): string {
   return `it-${++uidCounter}`;
 }
 
-/** Spécification UNIFIÉE de Dégâts d'arme. La présence du token `BF` est PORTEUSE de sens
- *  (`effectiveWeaponDamage` teste `/BF/i` pour ajouter le Bonus de Force) → on l'exprime EXPLICITEMENT,
- *  jamais par accident de chaîne. La résolution `Formula`→`flat` se fait AU SITE D'APPEL (référent/rng
- *  propres) ; ici on ne reçoit qu'un entier déjà résolu. `literal` court-circuite (Dégâts déjà finis :
- *  trapping de catalogue). */
-export type WeaponDamageSpec =
-  /** Chaîne de Dégâts finie, utilisée verbatim (catalogue) — court-circuite la convention. */
-  | { literal: string }
-  /** `plusBF` : `true` → « +BF… » (SB-relatif : naturelles/invoquées/mains nues) ; `false` → pas de token
-   *  BF (Indice de créature, Bonus de Force déjà inclus : gratuites + traits). `flat` DÉJÀ résolu (négatif
-   *  autorisé : Indice −2). `bare` : « +BF » NU (Tentacule/Piétinement) au lieu de « +BF+0 ». */
-  | { plusBF: boolean; flat: number; bare?: true };
-
-/** Source UNIQUE de la convention de Dégâts (la SEULE fonction qui décide « +BF » vs « +N » vs « +BF+N »). */
-function damageString(d: WeaponDamageSpec): string {
+/** Convention d'AFFICHAGE des Dégâts (spec → chaîne) : la SEULE fonction qui décide « +BF » vs « +N »
+ *  vs « +BF+N ». DÉRIVE l'affichage de la donnée structurée (`WeaponDamageSpec`, dans `types.ts`). */
+export function damageString(d: WeaponDamageSpec): string {
   if ('literal' in d) return d.literal;
   if (d.plusBF) return d.flat === 0 && d.bare ? '+BF' : `+BF+${d.flat}`;
   return d.flat < 0 ? `${d.flat}` : `+${d.flat}`; // Indice négatif : « -2 », pas « +-2 »
+}
+
+/** INVERSE de `damageString` (chaîne → spec) — pour la migration des données et la saisie éditeur,
+ *  JAMAIS au runtime. « +BF+4 »→{plusBF,flat:4}, « +9 »→{plusBF:false,flat:9}, « +BF »→{plusBF,flat:0,bare},
+ *  « -2 »→{plusBF:false,flat:-2}, sinon « Spécial » → {literal}. */
+export function parseDamage(s: string): WeaponDamageSpec {
+  const t = s.trim();
+  const plusBF = /BF/i.test(t);
+  const nums = t.replace(/BF/gi, '').match(/[+-]?\d+/g);
+  if (!plusBF && !nums) return { literal: t }; // non chiffrable (« Spécial »)
+  const flat = (nums ?? []).reduce((a, n) => a + parseInt(n, 10), 0);
+  if (plusBF) return flat === 0 && !/\+\s*BF\s*[+-]\s*\d/i.test(t) ? { plusBF: true, flat: 0, bare: true } : { plusBF: true, flat };
+  return { plusBF: false, flat };
 }
 
 /** Spécification d'une arme SYNTHÉTIQUE (≠ catalogue) : sert `buildWeapon` (→ Weapon) ET `weaponItem`
@@ -50,7 +50,7 @@ export interface WeaponSpec {
   name: string;
   type?: 'melee' | 'ranged';
   damage: WeaponDamageSpec;
-  qualities?: string[];
+  qualities?: QualityInstance[];
   subType?: string;
   reach?: string | null;
   range?: number | null;
@@ -78,7 +78,7 @@ export function buildWeapon(spec: WeaponSpec): Weapon {
   const w: Weapon = {
     name: spec.name,
     type: spec.type ?? 'melee',
-    damage: damageString(spec.damage),
+    damage: spec.damage, // spec STRUCTURÉE stockée telle quelle (affichage dérivé par damageString)
     qualities: [...(spec.qualities ?? [])],
     hands: spec.hands ?? 1,
   };
@@ -143,8 +143,6 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
           .map((s) => s.trim())
           .flatMap((p) => ARMOUR_LOC[p] ?? [])
       : undefined;
-  const qtyMatch = (t.prefix ?? '').match(/\((\d+)\)/); // « (12) » → 12 (taille du paquet de munitions)
-  const twoHandMark = /\(2m\)/i.test(t.prefix ?? '') || /\(2m\)/i.test(t.label); // marqueur « (2M) » = 2 mains
   return {
     uid: newUid(),
     trappingId: t.id,
@@ -153,15 +151,16 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
     damage: t.damage ?? undefined,
     reach: t.reach,
     range: kind === 'ranged' ? Number(t.reach) || null : null,
-    qualities: (t.qualities ?? []).map(qualityRuntime), // QualityRef[] (donnée) → ids runtime (stables)
+    qualities: (t.qualities ?? []).map(qualityInstance), // QualityRef[] (donnée) → QualityInstance[] runtime (structuré, frais)
     pa: t.pa ?? undefined,
     locs: locs && locs.length ? locs : undefined,
     enc: t.enc ?? 0,
     equipped: false,
     desc: t.desc,
+    ...(t.consumable?.length ? { consumable: t.consumable } : {}), // effet de consommable (GameOp[]) copié du catalogue
     subType: t.subType ?? undefined,
-    hands: kind === 'melee' || kind === 'ranged' ? (twoHandMark ? 2 : 1) : undefined, // marqueur (2M), uniforme
-    qty: kind === 'ammo' ? (qtyMatch ? parseInt(qtyMatch[1], 10) : 1) : undefined,
+    hands: kind === 'melee' || kind === 'ranged' ? (t.hands === 2 ? 2 : 1) : undefined, // champ typé (LDB 62)
+    qty: kind === 'ammo' ? (t.packSize ?? 1) : undefined, // taille de paquet typée
     // Marqueurs fonctionnels de catégorie (multilangue-safe) — propagés tels quels du catalogue.
     ...(t.weatherProtection ? { weatherProtection: true } : {}),
     ...(t.isShelter ? { isShelter: true } : {}),
@@ -215,14 +214,13 @@ export function emptyArmour(ap = 0): ArmourPoints {
 
 /** Latéralité d'une arme. La donnée canonique marque le 2-mains par le préfixe `(2M)` — UNIFORME mêlée ET
  *  distance (Arc/Arbalète/Arquebuse/Tromblon = (2M) ; Arbalète de poing/Pistolet/Fronde = 1 main).
- *  `itemFromTrapping` pose `hands` depuis ce marqueur → c'est la SOURCE de vérité (multilangue-safe :
- *  le champ typé `hands`, pas le nom). FALLBACK legacy (ItemInstance/Weapon sans `hands` : statbloc,
- *  synthétiques) : Groupe « Deux-mains » (id stable) ; sinon le marqueur `(2M)` du nom — language-specific,
- *  mais NÉCESSAIRE car `subType==='deux-mains'` ne couvre PAS les arcs/arbalètes/armes à feu (subType
- *  arc/poudre-noire…) qui portent aussi `(2M)`. Repli toléré : il n'est atteint que sans `hands` typé. */
-export function weaponHands(it: { hands?: 1 | 2; name: string; subType?: string }): 1 | 2 {
+ *  La donnée canonique porte la latéralité TYPÉE : `TrappingData.hands` (LDB 62), propagée par
+ *  `itemFromTrapping` sur l'ItemInstance. Repli pour les armes BRUTES sans `hands` typé (statblocs
+ *  d'ennemis, armes synthétiques) : Groupe « Deux-mains » typé (`subType==='deux-mains'`). Aucun parse
+ *  de chaîne d'affichage — l'ancien marqueur `(2M)` re-parsé par regex a été supprimé. */
+export function weaponHands(it: { hands?: 1 | 2; subType?: string }): 1 | 2 {
   if (it.hands === 1 || it.hands === 2) return it.hands;
-  if (it.subType === 'deux-mains' || /\(2m\)/i.test(it.name)) return 2; // Groupe « Deux-mains » (id) ; repli legacy (2M)
+  if (it.subType === 'deux-mains') return 2; // Groupe « Deux-mains » (id stable, donnée typée)
   return 1;
 }
 
@@ -272,8 +270,8 @@ export function unarmedWeapon(): Weapon {
   if (!_unarmed) {
     const it = itemFromTrappingById('mains-nues');
     _unarmed = it
-      ? buildWeapon({ name: it.name, damage: { literal: it.damage ?? '+BF+0' }, reach: it.reach, qualities: it.qualities, subType: it.subType, builtinId: 'mains-nues' })
-      : buildWeapon({ name: 'Mains nues', damage: { literal: '+BF+0' }, reach: 'Personnelle', qualities: [QUALITY_IDS.Inoffensive], subType: 'bagarre', builtinId: 'mains-nues' });
+      ? buildWeapon({ name: it.name, damage: it.damage ?? { plusBF: true, flat: 0 }, reach: it.reach, qualities: it.qualities, subType: it.subType, builtinId: 'mains-nues' })
+      : buildWeapon({ name: 'Mains nues', damage: { literal: '+BF+0' }, reach: 'Personnelle', qualities: [{ id: QUALITY_IDS.Inoffensive }], subType: 'bagarre', builtinId: 'mains-nues' });
   }
   return { ..._unarmed, hand: 'main' };
 }
@@ -307,10 +305,10 @@ export function recomputeLoadout(c: Combatant): void {
     if (it.destroyed) return null; // arme détruite : inutilisable (LDB 14 — Incident de Tir)
     const hands = weaponHands(it);
     if (hands === 2 && cannotWieldTwoHanded(c)) return null; // amputation : pas d'arme à 2 mains (LDB 18 l.352)
-    const reload = indiceOf(it.qualities, QUALITY_IDS.Recharge) ?? 0;
+    const reload = qualityIndice(it, QUALITY_IDS.Recharge) ?? 0;
     // Enchantements PORTÉS PAR L'OBJET (op augmentWeapon / arme invoquée) repliés ici → l'arme active
     // est déjà Magique/+Dégâts/onHit, donc visible partout ET appliquée à la résolution (pas de merge ailleurs).
-    return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? '+BF', reach: it.reach,
+    return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
       range: it.range, qualities: it.qualities, subType: it.subType, reload, damageTaken: it.damageTaken,
       skin: it.skin, form: it.form, hands, hand, uid: it.uid }, it.enchants ?? []);
   };
@@ -459,7 +457,7 @@ export function loadoutSetSlot(c: Combatant, id: string, slot: 'main' | 'off', u
 export function addItemToHero(hero: Combatant, trappingId: string): Combatant {
   const it = itemFromTrappingById(trappingId);
   if (!it) return hero;
-  const clone: Combatant = JSON.parse(JSON.stringify(hero));
+  const clone: Combatant = structuredClone(hero);
   clone.items = [...(clone.items ?? []), it];
   recomputeLoadout(clone);
   return clone;
@@ -549,10 +547,9 @@ export function damageLeatherArmour(c: Combatant): HitLocation | null {
   return piece.locs?.[0] ?? 'corps';
 }
 
-/** Score de dégâts approximatif (somme des nombres, ex. "+BF+4" → 4). */
-export function damageScore(d?: string): number {
-  if (!d) return 0;
-  return (d.replace(/BF/gi, '').match(/[+-]?\d+/g) ?? []).reduce((a, n) => a + parseInt(n, 10), 0);
+/** Score de dégâts approximatif pour le tri (composante fixe ; « Spécial » → 0). */
+export function damageScore(d?: WeaponDamageSpec): number {
+  return d && 'flat' in d ? d.flat : 0;
 }
 
 /** Construit l'inventaire d'un héros depuis des `TrappingRef[]` (possessions de Classe + niveau de
@@ -601,11 +598,15 @@ export function compatibleAmmo(c: Combatant, weapon: Weapon): ItemInstance[] {
   return (c.items ?? []).filter((i) => i.kind === 'ammo' && (i.qty ?? 0) > 0 && ammoFamily(i.subType) === fam);
 }
 
-/** Arme à distance « augmentée » par la munition tirée : Dégâts combinés (concaténés —
- *  `effectiveWeaponDamage` somme les nombres) et Atouts fusionnés (ex. Empaleuse de la Flèche). */
+/** Arme à distance « augmentée » par la munition tirée : Dégâts combinés (flats additionnés, BF si l'un
+ *  l'utilise) et Atouts fusionnés (ex. Empaleuse de la Flèche). */
 export function weaponWithAmmo(weapon: Weapon, ammo: ItemInstance): Weapon {
-  const extra = ammo.damage ?? '';
+  const w = weapon.damage;
+  const a = ammo.damage;
   const qualities = [...weapon.qualities];
-  for (const q of ammo.qualities) if (!qualities.includes(q)) qualities.push(q);
-  return { ...weapon, damage: `${weapon.damage}${extra}`, qualities };
+  for (const q of ammo.qualities) if (!qualities.some((x) => x.id === q.id)) qualities.push(q);
+  const damage: WeaponDamageSpec = 'flat' in w
+    ? { plusBF: w.plusBF || (a != null && 'plusBF' in a && a.plusBF), flat: w.flat + (a != null && 'flat' in a ? a.flat : 0) }
+    : w; // arme « Spécial » (literal) → inchangée
+  return { ...weapon, damage, qualities };
 }

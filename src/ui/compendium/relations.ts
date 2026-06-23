@@ -250,7 +250,7 @@ pushCatalog('stars', stars);
 pushCatalog('locations', locations as { label: string; source?: { book: string; page: number } }[]);
 pushCatalog('characteristics', characteristics as { label: string }[]);
 CATALOG.push(...gods.map((g) => ({ category: 'gods', label: g.key, book: g.source?.book, page: g.source?.page })));
-CATALOG.push(...maladies.map((m) => ({ category: 'maladies', label: m.name })));
+CATALOG.push(...maladies.map((m) => ({ category: 'maladies', label: m.label })));
 
 /** Contenu d'un livre, GROUPÉ par catégorie (« par type ») — pour la fiche Livre. Les entités portent
  *  leur livre dans `source.book` (ABRÉVIATION, ex. « LDB ») ; on accepte plusieurs clés d'identité

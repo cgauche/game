@@ -9,6 +9,7 @@
  * Données règles (rangedMod) dans `src/data/sizes.json`.
  */
 import sizesJson from '../data/sizes.json';
+import { QUALITY_IDS } from './qualities/ids';
 
 export type SizeCategory =
   | 'minuscule'
@@ -86,11 +87,12 @@ export function sizeDamageMultiplier(attacker?: SizeCategory, target?: SizeCateg
   return gap >= 2 ? gap : 1;
 }
 
-/** Atouts conférés par l'écart de Taille (LDB 85 l.295) : Dévastatrice à +1 cat, Percutante à +2 — CUMUL. */
+/** Atouts conférés par l'écart de Taille (LDB 85 l.295) : Dévastatrice à +1 cat, Percutante à +2 — CUMUL.
+ *  Renvoie des **ids stables** (consommés tels quels par `qualityDamageStep`, plus de parse de libellé). */
 export function sizeGrantedQualities(attacker?: SizeCategory, target?: SizeCategory): string[] {
   const gap = sizeGap(attacker, target);
-  if (gap >= 2) return ['Dévastatrice', 'Percutante'];
-  if (gap >= 1) return ['Dévastatrice'];
+  if (gap >= 2) return [QUALITY_IDS.Devastatrice, QUALITY_IDS.Percutante];
+  if (gap >= 1) return [QUALITY_IDS.Devastatrice];
   return [];
 }
 

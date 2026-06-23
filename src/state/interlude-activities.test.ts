@@ -79,7 +79,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     const after = st();
     expect(after.craft).toBeUndefined();
     expect(after.left).toBe(2);
-    const made = hero().items?.find((i) => i.name === 'Dague' && (i.qualities ?? []).includes('solide'));
+    const made = hero().items?.find((i) => i.name === 'Dague' && (i.qualities ?? []).some((q) => q.id === 'solide'));
     expect(made).toBeTruthy();
   });
 
@@ -165,7 +165,7 @@ describe('Activités d’interlude (LDB 23)', () => {
   function armArtefact(withSavoir = true) {
     const h = hero();
     if (withSavoir) h.skills.push({ skillId: 'savoir', spec: 'Magie', characteristic: 'Int', advances: 10 });
-    h.items = [...(h.items ?? []), { uid: 'art1', name: 'Épée ancienne', kind: 'melee', qualities: ['De plaies atroces'], enc: 1, equipped: false, identified: false } as never];
+    h.items = [...(h.items ?? []), { uid: 'art1', name: 'Épée ancienne', kind: 'melee', qualities: [{ id: 'de-plaies-atroces' }], enc: 1, equipped: false, identified: false } as never];
     const itl = useGame.getState().interlude!;
     itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
     useGame.setState({ interlude: { ...itl }, party: [...useGame.getState().party] });

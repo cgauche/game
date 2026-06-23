@@ -88,6 +88,16 @@ export function corruptionThresholdExceeded(c: Combatant): boolean {
   return (c.corruption ?? 0) > bonus(effectiveChar(c, 'FM')) + bonus(effectiveChar(c, 'E')) + talentCorruptionThreshold(c);
 }
 
+/** « PROFANE » au sens de la Protection de Phâ (LDB 48 p.249) : créature ayant le Trait Mort-vivant OU
+ *  Démoniaque, OU porteuse de Mutations, OU dont la Corruption dépasse ses Bonus de FM + E combinés.
+ *  Lue par la Zone sacrée (barrière d'entrée + Brisé aux profanes présents). */
+export function isProfane(c: Combatant): boolean {
+  const traits = c.traits ?? [];
+  if (traits.some((t) => t.id === 'mort-vivant' || t.id === 'demoniaque')) return true;
+  if ((c.mutations?.length ?? 0) > 0) return true;
+  return (c.corruption ?? 0) > bonus(effectiveChar(c, 'FM')) + bonus(effectiveChar(c, 'E'));
+}
+
 // ---------------------------------------------------------------------------
 // Dissolution du corps et de l'esprit (l.82-91)
 // ---------------------------------------------------------------------------

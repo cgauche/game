@@ -30,11 +30,11 @@ import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSk
 import { skillCharacteristicById } from '../engine/character';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { castingKindOf } from '../engine/combatFeatures/dispatch';
-import { itemUse, applyItemUse } from '../engine/consumables';
+import { isConsumable, useConsumable } from '../engine/consumables';
 import { add as moneyAdd, subtract as moneySub, canAfford, toMoney, Money, formatMoney } from '../engine/money';
 import { isArcaneSpell } from '../engine/magic';
 import { spellCost } from '../engine/grimoire';
-import { levelsForCareer, findSkill, findTalent, findCareerById, findSpell as findSpellData, findSpellById } from '../data/index';
+import { levelsForCareer, findSkill, findTalent, findCareerById, findSpellById } from '../data/index';
 import { slugId } from '../data/slug';
 import { seatSlotsRemaining } from './netOwnership';
 import { bus, EVT } from './bus';
@@ -88,7 +88,7 @@ export function toggleEquip(get: Get, set: Set, heroId: string, uid: string): vo
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
-      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      const clone: Combatant = structuredClone(h);
       const it = (clone.items ?? []).find((i) => i.uid === uid);
       if (it) {
         if (!it.equipped) {
@@ -110,7 +110,7 @@ function mutLoadout(set: Set, heroId: string, fn: (c: Combatant) => void): void 
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
-      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      const clone: Combatant = structuredClone(h);
       fn(clone);
       recomputeLoadout(clone);
       return clone;
@@ -156,13 +156,13 @@ export function transferItem(get: Get, set: Set, uid: string, fromHeroId: string
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id === fromHeroId) {
-        const c: Combatant = JSON.parse(JSON.stringify(h));
+        const c: Combatant = structuredClone(h);
         c.items = (c.items ?? []).filter((i) => i.uid !== uid);
         recomputeLoadout(c);
         return c;
       }
       if (h.id === toHeroId) {
-        const c: Combatant = JSON.parse(JSON.stringify(h));
+        const c: Combatant = structuredClone(h);
         c.items = [...(c.items ?? []), { ...item, equipped: false }]; // arrive NON équipé
         recomputeLoadout(c);
         return c;
@@ -177,7 +177,7 @@ export function setItemSkin(_get: Get, set: Set, heroId: string, uid: string, pa
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
-      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      const clone: Combatant = structuredClone(h);
       const it = (clone.items ?? []).find((i) => i.uid === uid);
       if (it) {
         const next: Record<string, string> = { ...(it.skin ?? {}) };
@@ -196,7 +196,7 @@ export function grantXp(get: Get, set: Set, heroId: string, amount: number): voi
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
       name = h.name;
-      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      const clone: Combatant = structuredClone(h);
       clone.xp = (clone.xp ?? 0) + amount;
       return clone;
     }),
@@ -209,7 +209,7 @@ export function buyCharAdvance(get: Get, set: Set, heroId: string, char: CharKey
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
-      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      const clone: Combatant = structuredClone(h);
       const inC = inCareerChar(careerCtx(clone).careerChars, char);
       const r = engineBuyCharAdvance(clone, char, inC);
       if (!r.ok) {
@@ -238,7 +238,7 @@ export function buySkillAdvance(get: Get, set: Set, heroId: string, skillName: s
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
-      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      const clone: Combatant = structuredClone(h);
       const ctx = careerCtx(clone);
       const skillId = findSkill(skillName)?.id ?? slugId(skillName);
       const known = clone.skills.some((sk) => sk.skillId === skillId && (sk.spec ?? '') === (spec ?? ''));
@@ -284,7 +284,7 @@ export function designateCareerSlot(get: Get, set: Set, heroId: string, slotKey:
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
-      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      const clone: Combatant = structuredClone(h);
       const ctx = careerCtx(clone);
       const all = [...ctx.sSlots, ...ctx.tSlots];
       const slot = all.find((sl) => sl.key === slotKey);
@@ -313,7 +313,7 @@ export function buyTalent(get: Get, set: Set, heroId: string, talentName: string
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
-      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      const clone: Combatant = structuredClone(h);
       const ctx = careerCtx(clone);
       const { name, spec } = splitLabel(talentName);
       const status = inCareerStatus(ctx.tSlots, ctx.designations, name, spec, [...ctx.sSlots, ...ctx.tSlots]);
@@ -358,25 +358,25 @@ export function buyTalent(get: Get, set: Set, heroId: string, talentName: string
  *  famille (engine/grimoire.spellCost) ; un sort de Magie du Chaos inflige AUSSI
  *  +1 Point de Corruption (« le Sort s'insinue dans votre esprit ») — appliqué par
  *  l'appelant store (seuil → mutation). */
-export function buySpell(get: Get, set: Set, heroId: string, label: string): { ok: boolean; chaos?: boolean } {
+export function buySpell(get: Get, set: Set, heroId: string, spellId: string): { ok: boolean; chaos?: boolean } {
   let msg = '';
   let result: { ok: boolean; chaos?: boolean } = { ok: false };
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
-      const sp = findSpellById(label) ?? findSpellData(label); // id (runtime/UI) ou libellé (legacy)
+      const sp = findSpellById(spellId); // accès UNIQUE par id stable (prod et tests)
       if (!sp) {
-        msg = `Sort « ${label} » introuvable.`;
+        msg = `Sort « ${spellId} » introuvable.`;
         return h;
       }
-      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      const clone: Combatant = structuredClone(h);
       const cost = spellCost(clone, sp);
       if (cost == null) {
-        msg = `${clone.name} ne peut pas apprendre ${label} (déjà connu ou Talent manquant).`;
+        msg = `${clone.name} ne peut pas apprendre ${sp.label} (déjà connu ou Talent manquant).`;
         return h;
       }
       if ((clone.xp ?? 0) < cost) {
-        msg = `${clone.name} : ${cost} PX requis pour mémoriser ${label} (reste ${clone.xp ?? 0}).`;
+        msg = `${clone.name} : ${cost} PX requis pour mémoriser ${sp.label} (reste ${clone.xp ?? 0}).`;
         return h;
       }
       clone.xp = (clone.xp ?? 0) - cost;
@@ -435,7 +435,7 @@ export function trainProsthesis(get: Get, set: Set, heroId: string, uid: string)
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
-      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      const clone: Combatant = structuredClone(h);
       const it = (clone.items ?? []).find((i) => i.uid === uid);
       const cost = it?.trappingId ? COSTS[it.trappingId] : undefined;
       if (!it || cost == null || !it.equipped) { msg = `${clone.name} : prothèse non portée / non entraînable.`; return h; }
@@ -457,7 +457,7 @@ export function changeCareer(get: Get, set: Set, heroId: string, newCareer: stri
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
-      const clone: Combatant = JSON.parse(JSON.stringify(h));
+      const clone: Combatant = structuredClone(h);
       // Validation LDB 07 l.137 + LDB 08 l.7-11 : complétion, niveau cible, surcoût de Classe.
       const completed = isCompleted(clone);
       const sameClass = findCareerById(clone.career ?? '')?.class === findCareerById(newCareer)?.class;
@@ -488,7 +488,7 @@ export function partyAddHero(get: Get, set: Set, hero: Combatant, wealth?: Money
   const s = get();
   if (s.party.length >= 4 || s.party.some((h) => h.id === hero.id)) return;
   if (seatSlotsRemaining(s, seat) <= 0) return;
-  const copy: Combatant = JSON.parse(JSON.stringify(hero));
+  const copy: Combatant = structuredClone(hero);
   set({
     party: [...s.party, copy],
     net: { ...s.net, ownership: { ...s.net.ownership, [copy.id]: seat } },
@@ -508,16 +508,15 @@ export function partyRemoveHero(get: Get, set: Set, heroId: string): void {
 
 
 /** HORS COMBAT : un héros utilise un consommable (bandages, potion) depuis sa fiche — même effet
- *  qu'en combat (`applyItemUse`), consommé, journalisé. Le combat passe par `battleUseItem` (coûte l'Action). */
+ *  qu'en combat (`useConsumable`), consommé, journalisé. Le combat passe par `battleUseItem` (coûte l'Action). */
 export function usePartyItem(get: Get, set: Set, heroId: string, uid: string): void {
   if (get().battle) return; // en combat → battleUseItem
   const party = get().party;
   const hero = party.find((h) => h.id === heroId);
   const it = hero?.items?.find((i) => i.uid === uid);
   if (!hero || !it) return;
-  const eff = itemUse(it, hero);
-  if (!eff) return;
-  const log = [`${hero.name} utilise : ${it.name}.`, ...applyItemUse(hero, eff)];
+  if (!isConsumable(it)) return;
+  const log = [`${hero.name} utilise : ${it.name}.`, ...useConsumable(hero, it)];
   hero.items = (hero.items ?? []).filter((i) => i.uid !== uid);
   set({ party: [...party], journal: [...get().journal.slice(-40), ...log] });
   bus.emit(EVT.SCENE_DIRTY);

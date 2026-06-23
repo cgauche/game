@@ -6,7 +6,26 @@
     "source": {
       "book": "LDB",
       "page": 167
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "removeCondition",
+                "name": "assourdi"
+              }
+            ]
+          }
+        }
+      }
+    ]
   },
   {
     "id": "a-terre",
@@ -15,7 +34,19 @@
     "source": {
       "book": "LDB",
       "page": 167
-    }
+    },
+    "passive": [
+      {
+        "op": "incomingAttackMod",
+        "mode": "melee",
+        "amount": 20
+      },
+      {
+        "op": "testMod",
+        "amount": -20,
+        "movementOnly": true
+      }
+    ]
   },
   {
     "id": "aveugle",
@@ -24,7 +55,38 @@
     "source": {
       "book": "LDB",
       "page": 167
-    }
+    },
+    "passive": [
+      {
+        "op": "incomingAttackMod",
+        "mode": "melee",
+        "amount": 10
+      },
+      {
+        "op": "testMod",
+        "amount": -10,
+        "combatOnly": true
+      }
+    ],
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "removeCondition",
+                "name": "aveugle"
+              }
+            ]
+          }
+        }
+      }
+    ]
   },
   {
     "id": "brise",
@@ -33,7 +95,17 @@
     "source": {
       "book": "LDB",
       "page": 168
-    }
+    },
+    "passive": [
+      {
+        "op": "testMod",
+        "amount": -10,
+        "exceptSkills": [
+          "athletisme",
+          "discretion"
+        ]
+      }
+    ]
   },
   {
     "id": "empetre",
@@ -42,7 +114,14 @@
     "source": {
       "book": "LDB",
       "page": 168
-    }
+    },
+    "passive": [
+      {
+        "op": "testMod",
+        "amount": -10,
+        "movementOnly": true
+      }
+    ]
   },
   {
     "id": "empoisonne",
@@ -51,7 +130,98 @@
     "source": {
       "book": "LDB",
       "page": 168
-    }
+    },
+    "passive": [
+      {
+        "op": "testMod",
+        "amount": -10
+      }
+    ],
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "wounds",
+                "amount": {
+                  "stacks": "self"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "test",
+          "test": {
+            "skill": "resistance",
+            "difficulty": "intermediaire",
+            "label": "☠️ Résistance à l’Empoisonné"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "target",
+                  "ops": [
+                    {
+                      "op": "removeCondition",
+                      "name": "empoisonne",
+                      "value": 1,
+                      "valuePerSL": {
+                        "every": 1,
+                        "amount": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "compare",
+                  "subject": {
+                    "who": "target",
+                    "condition": "empoisonne"
+                  },
+                  "op": "<=",
+                  "value": 0
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "on": "target",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "name": "extenue"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": []
+          }
+        }
+      }
+    ]
   },
   {
     "id": "en-flammes",
@@ -60,7 +230,43 @@
     "source": {
       "book": "LDB",
       "page": 168
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "wounds",
+                "amount": {
+                  "sum": [
+                    {
+                      "dice": {
+                        "n": 1,
+                        "sides": 10
+                      }
+                    },
+                    {
+                      "stacks": "self"
+                    },
+                    -1
+                  ]
+                },
+                "ignoreTB": false,
+                "ignoreAP": false,
+                "apFrom": "least",
+                "min": 1
+              }
+            ]
+          }
+        }
+      }
+    ]
   },
   {
     "id": "extenue",
@@ -69,7 +275,14 @@
     "source": {
       "book": "LDB",
       "page": 168
-    }
+    },
+    "passive": [
+      {
+        "op": "testMod",
+        "amount": -10
+      }
+    ],
+    "perStack": true
   },
   {
     "id": "hemorragique",
@@ -78,7 +291,29 @@
     "source": {
       "book": "LDB",
       "page": 169
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "wounds",
+                "amount": {
+                  "stacks": "self"
+                }
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "stacksReducedBy": "bleedIgnore"
   },
   {
     "id": "inconscient",
@@ -96,7 +331,98 @@
     "source": {
       "book": "LDB",
       "page": 169
-    }
+    },
+    "passive": [
+      {
+        "op": "testMod",
+        "amount": -10
+      },
+      {
+        "op": "incomingAdvantage",
+        "mode": "melee",
+        "amount": 1
+      }
+    ],
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "test",
+          "test": {
+            "skill": "resistance",
+            "difficulty": "intermediaire",
+            "label": "💫 Résistance au Sonné"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "target",
+                  "ops": [
+                    {
+                      "op": "removeCondition",
+                      "name": "sonne",
+                      "value": 1,
+                      "valuePerSL": {
+                        "every": 1,
+                        "amount": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "all",
+                  "of": [
+                    {
+                      "kind": "compare",
+                      "subject": {
+                        "who": "target",
+                        "condition": "sonne"
+                      },
+                      "op": "<=",
+                      "value": 0
+                    },
+                    {
+                      "kind": "compare",
+                      "subject": {
+                        "who": "target",
+                        "condition": "extenue"
+                      },
+                      "op": "<=",
+                      "value": 0
+                    }
+                  ]
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "on": "target",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "name": "extenue"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": []
+          }
+        }
+      }
+    ]
   },
   {
     "id": "surpris",
@@ -105,6 +431,32 @@
     "source": {
       "book": "LDB",
       "page": 169
-    }
+    },
+    "passive": [
+      {
+        "op": "incomingAttackMod",
+        "mode": "melee",
+        "amount": 20
+      }
+    ],
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "removeCondition",
+                "name": "surpris"
+              }
+            ]
+          }
+        }
+      }
+    ]
   }
 ]

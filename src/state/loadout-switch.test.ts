@@ -3,7 +3,7 @@ import { useGame } from './store';
 import type { Combatant } from '../engine/types';
 
 const w = (uid: string, name: string): unknown =>
-  ({ uid, name, kind: 'melee', qualities: [], enc: 1, equipped: true, hands: 1, damage: '+BF+4' });
+  ({ uid, name, kind: 'melee', qualities: [], enc: 1, equipped: true, hands: 1, damage: { plusBF: true, flat: 4 } });
 
 const hero = (): Combatant =>
   ({

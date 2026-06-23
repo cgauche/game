@@ -12,14 +12,16 @@ import {
   qualities, trappings, weaponGroups, etats, maladies, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
   stars, locations, findLocationById, books, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, weaponGroupLabel,
   skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names,
-  pregens, oups, interludeEvents, peripeties,
+  pregens, oups, interludeEvents, peripeties, psychologyLabel,
 } from '../../data';
 import { statName } from '../../engine/statEntry';
-import { splitTopLevelOu } from '../../engine/careerSlots';
+import { talentMaxLabel } from '../../engine/careerSlots';
+import type { AdvancementRef } from '../../data';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import { traitLabels } from '../../engine/traits/dispatch';
 import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, DIFFICULTY_LABELS, type Combatant, type HitLocation } from '../../engine/types';
 import { SIZE_LABEL, effectiveSize } from '../../engine/size';
+import { formatDice } from '../../engine/dice';
 import { costPerEnc } from '../../engine/harvest';
 import { formatMoney, priceToMoney } from '../../engine/money';
 import type { EntityAppearance } from '../../state/scene';
@@ -163,26 +165,21 @@ const SYMPTOM_LABEL: Record<string, string> = {
   intoxication: 'Intoxication', nausee: 'Nausée', touxEternuements: 'Toux & éternuements',
 };
 /** Libellé d'un jet de dés (`{n,d,plus?}`) — « 1d10 », « 2d10+2 ». */
-const diceLabel = (dc: { n: number; d: number; plus?: number }): string => `${dc.n}d${dc.d}${dc.plus ? `+${dc.plus}` : ''}`;
+const diceLabel = formatDice;
 /** Libellés FR des types de résultat « Oups ! » (Maladresse, LDB 12) — affichage (donnée = `kind` STABLE). */
 const OUPS_KIND_LABEL: Record<string, string> = {
   selfWound: 'Auto-blessure', weaponDamageActLast: 'Arme abîmée + agit en dernier', actionPenalty: 'Malus d’Action',
   loseMovement: 'Perte de Mouvement', loseAction: 'Perte d’Action', trauma: 'Traumatisme', hitAlly: 'Touche un allié',
 };
-/** Libellés FR des types de Psychologie (LDB 21) — affichage (la donnée porte le `psychType` STABLE). */
-const PSYCH_TYPE_LABEL: Record<string, string> = {
-  peur: 'Peur', terreur: 'Terreur', animosite: 'Animosité', haine: 'Haine', prejuge: 'Préjugé',
-  amour: 'Amour', camaraderie: 'Camaraderie', phobie: 'Phobie',
-};
 /** Libellés FR des CAPACITÉS de Trait (drapeaux booléens lus par le moteur — `TraitCapabilities`).
  *  Les capacités psy (psychType/psychImmune/psychIndice) sont surfacées à part (méta). */
 const TRAIT_CAP_LABEL: Record<string, string> = {
   bonusWoundsBE: 'Blessures bonifiées (+BE)', swarm: 'Nuée', wardSave: 'Sauvegarde invulnérable',
-  magicResistance: 'Résistance à la magie', damageImmunity: 'Immunité aux dégâts', banishedAtZero: 'Banni à 0 PB',
-  championDefense: 'Défense de champion', unstable: 'Instable', painless: 'Insensible à la douleur',
+  magicResistance: 'Résistance à la magie', damageImmunity: 'Immunité aux dégâts',
+  counterOnDefenseWin: 'Contre-attaque (défense gagnée)', counterRequiresFastParry: 'Contre exige arme Rapide', unstable: 'Instable', painless: 'Insensible à la douleur',
   psychImmuneIfAhead: 'Immunité psy si en avantage', mindless: 'Sans esprit', bestial: 'Bestial',
-  coldBlooded: 'Sang-froid', stupid: 'Stupidité', rage: 'Rage', territorial: 'Territorial',
-  fly: 'Vol', leap: 'Bond', stride: 'Foulée', seesInDark: 'Vision nocturne', perturbingAura: 'Aura perturbante',
+  coldBlooded: 'Sang-froid', stupid: 'Stupidité', rage: 'Rage', territorial: 'Territorial', skittishMount: 'Monture ombrageuse',
+  fly: 'Vol', leap: 'Bond', stride: 'Foulée', seesInDark: 'Vision nocturne',
 };
 /** Libellés FR des CAPACITÉS de Qualité d'arme/armure (`QualityCapabilities`). */
 const QUALITY_CAP_LABEL: Record<string, string> = {
@@ -200,13 +197,13 @@ const QUALITY_CAP_LABEL: Record<string, string> = {
  * (`careersForSpecies`, `details`, `eyes`, `hairs`). Les faits-clés (M/Destin/Résilience) restent en
  * en-tête (méta), pas ici ; le tirage aléatoire (création) est ajouté PAR le créateur.
  */
-/** Une ENTRÉE de compétence/talent de race : « A ou B » → ligne de CHOIX (chaque option cliquable),
- *  sinon un simple lien cross-réf. PARTAGÉE (Codex + créateur) → split identique des deux côtés. */
-const choiceOrRef = (category: string, entry: string): CodexRow => {
-  const opts = splitTopLevelOu(entry);
-  return opts.length > 1
-    ? { t: 'choice', category, options: opts.map((o) => ({ label: statName(o), show: o })) }
-    : refRow(category, entry);
+/** Une ENTRÉE de compétence/talent de race : « A ou B » (`choice`) → ligne de CHOIX (chaque option
+ *  cliquable), sinon un simple lien cross-réf. Lit l'`AdvancementRef` STRUCTURÉ (plus de split de prose). */
+const choiceOrRef = (category: string, a: AdvancementRef): CodexRow => {
+  if ('choice' in a) {
+    return { t: 'choice', category, options: a.choice.map((x) => { const lbl = advancementLabel(category, x); return { label: statName(lbl), show: lbl }; }) };
+  }
+  return refRow(category, advancementLabel(category, a));
 };
 
 /** Section « Caractéristiques de base » d'une race — chaque carac affiche son écart racial (±). */
@@ -221,13 +218,13 @@ export function raceCharSection(s: (typeof species)[number]): CodexSection {
 
 /** Section « Compétences de race » — chips cliquables, « A ou B » éclaté en choix. */
 export function raceSkillSection(s: (typeof species)[number]): CodexSection | null {
-  const rows = s.skills.map((a) => choiceOrRef('skills', advancementLabel('skills', a)));
+  const rows = s.skills.map((a) => choiceOrRef('skills', a));
   return rows.length ? { title: 'Compétences de race', layout: 'chips', rows } : null;
 }
 
 /** Section « Talents de race » — chips cliquables, « A ou B » éclaté en choix. */
 export function raceTalentSection(s: (typeof species)[number]): CodexSection | null {
-  const rows = s.talents.map((a) => choiceOrRef('talents', advancementLabel('talents', a)));
+  const rows = s.talents.map((a) => choiceOrRef('talents', a));
   return rows.length ? { title: 'Talents de race', layout: 'chips', rows } : null;
 }
 
@@ -280,7 +277,7 @@ const traitItem = (t: (typeof traits)[number]): CodexItem => {
   return {
     label: t.label, sub: t.prefix ?? undefined, desc: t.desc, html: true, source: src(t.source), appearance: t.appearance,
     meta: facts(
-      cap?.psychType ? fact('Psychologie', PSYCH_TYPE_LABEL[cap.psychType] ?? cap.psychType) : null,
+      cap?.psychType ? fact('Psychologie', psychologyLabel(cap.psychType)) : null,
       cap?.psychImmune ? fact('Immunité', '(Psychologie)') : null,
       cap?.psychIndice != null ? fact('Indice', cap.psychIndice) : null,
     ),
@@ -364,7 +361,7 @@ export const CODEX: CodexCategory[] = [
     key: 'talents', label: 'Talents', group: 'Compétences',
     items: talents.map((t) => ({
       label: t.label, desc: t.desc, source: src(t.source),
-      meta: facts(fact('Max', t.max), fact('Test', t.test), fact('Spécialisations', t.specs?.length ? t.specs.join(', ') : null)),
+      meta: facts(fact('Max', talentMaxLabel(t.max)), fact('Test', t.test), fact('Spécialisations', t.specs?.length ? t.specs.join(', ') : null)),
       sections: sections(
         careerGrantSection(t.passive), // Compétence/Talent ajouté à toute carrière (Maître artisan, Flagellant…)
         passiveSection(t.passive),
@@ -416,7 +413,7 @@ export const CODEX: CodexCategory[] = [
   {
     key: 'maladies', label: 'Maladies', group: 'Effets',
     items: maladies.map((m) => ({
-      label: m.name,
+      label: m.label,
       sub: m.symptoms.map((s) => SYMPTOM_LABEL[s.kind] ?? s.kind).join(', '),
       meta: facts(
         fact('Contraction', DIFFICULTY_LABELS[m.contractDifficulty]),
@@ -486,7 +483,7 @@ export const CODEX: CodexCategory[] = [
     // Groupés par type (Peur, Terreur, Animosité…). Édition = catégorie « Traits » (source unique).
     items: traits
       .filter((t) => t.capabilities?.psychType || t.capabilities?.psychImmune)
-      .map((t) => ({ ...traitItem(t), group: t.capabilities?.psychType ? PSYCH_TYPE_LABEL[t.capabilities.psychType] ?? t.capabilities.psychType : 'Immunité' })),
+      .map((t) => ({ ...traitItem(t), group: t.capabilities?.psychType ? psychologyLabel(t.capabilities.psychType) : 'Immunité' })),
   },
   {
     key: 'domains', label: 'Domaines', group: 'Magie',

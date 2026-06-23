@@ -42,6 +42,10 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   testMod: '📉 Modif. à tous les Tests',
   skillDRBonus: '🥷 +DR à une Compétence (passif)',
   incomingAttackMod: '🛡️ Modif. au toucher de l’attaquant',
+  incomingAdvantage: '⚔️ Avantage donné à l’attaquant (mêlée)',
+  sbBonus: '💪 +Bonus de Force aux Dégâts',
+  endPsych: '🧠 Fin d’un état psychologique',
+  exposeDisease: '🦠 Exposer à une Maladie (Test post-combat)',
   attackKeyword: '✨ Mot-clé d’attaque (ex. magique)',
   mitigateIncoming: '🌫️ Mitige les Dégâts entrants (Éthéré)',
   ignoreStatePenalties: '🚫 Ignore les pénalités d’État',
@@ -77,6 +81,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   weatherWard: '🌫️ Immunité aux intempéries',
   damageArmour: '🌫️ Pourrir le cuir (−1 PA)',
   reduceToZero: '🌫️ Réduire les Blessures à 0',
+  banish: '🌀 Bannir (retirer du jeu)',
   martyr: '🌫️ Martyr (recevoir les Dégâts)',
   giveTrapping: '🎒 Donner un objet',
   perRound: '🔄 Effet récurrent (chaque Round)',
@@ -101,7 +106,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
 
 /** Menu « + op » : TOUTES les op du vocabulaire, groupées par intention d'auteur. */
 const OP_GROUPS: [string, GameOp['op'][]][] = [
-  ['💥 Dégâts & soin', ['wounds', 'heal', 'healCaster', 'lifeSteal', 'reduceToZero']],
+  ['💥 Dégâts & soin', ['wounds', 'heal', 'healCaster', 'lifeSteal', 'reduceToZero', 'banish']],
   ['🌀 États', ['condition', 'removeCondition']],
   ['📊 Buffs & caractéristiques', ['charMod', 'apAll', 'testMod', 'ignoreStatePenalties', 'freeReroll', 'critTwice']],
   ['✨ Ressources', ['gainResource', 'corruption']],
@@ -148,6 +153,9 @@ export function formulaSummary(f: Formula | undefined): string {
   if ('charOf' in f) return f.charOf;
   if ('rolled' in f) return 'dé';
   if ('indiceOf' in f) return 'Indice';
+  if ('stacks' in f) return 'pions';
+  if ('engagedAdvantageGap' in f) return 'écart d’Avantage';
+  if ('sum' in f) return f.sum.map(formulaSummary).join(' + ');
   return `${f.dice.n}d${f.dice.sides}${f.dice.plus ? `+${f.dice.plus}` : ''}`;
 }
 
@@ -210,6 +218,8 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'healCaster': return { op: 'healCaster', amount: 1 };
     case 'condition': return { op: 'condition', name: etats[0]?.label ?? 'sonne', value: 1 };
     case 'removeCondition': return { op: 'removeCondition' };
+    case 'endPsych': return { op: 'endPsych', type: 'frenesie' };
+    case 'sbBonus': return { op: 'sbBonus', amount: 1 };
     case 'charMod': return { op: 'charMod', char: 'F', mod: -10 };
     case 'apAll': return { op: 'apAll', amount: 1 };
     case 'testMod': return { op: 'testMod', amount: -10 };
@@ -242,6 +252,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'weatherWard': return { op: 'weatherWard' };
     case 'damageArmour': return { op: 'damageArmour', material: 'cuir' };
     case 'reduceToZero': return { op: 'reduceToZero' };
+    case 'banish': return { op: 'banish' };
     case 'martyr': return { op: 'martyr' };
     case 'giveTrapping': return { op: 'giveTrapping', custom: 'Ration' };
     case 'perRound': return { op: 'perRound', ops: [] };
@@ -279,6 +290,8 @@ export function opSummary(o: GameOp): string {
     case 'healCaster': return `${L} +${formulaSummary(o.amount)} PB au lanceur`;
     case 'condition': return `${L} ${o.name}${o.value && o.value !== 1 ? ` ×${formulaSummary(o.value)}` : ''}${o.perRound ? '/Round' : ''}`;
     case 'removeCondition': return `${L} ${o.name ?? '(au choix)'}`;
+    case 'endPsych': return `${L} ${o.type}`;
+    case 'sbBonus': return `${L} +${o.amount} BF aux Dégâts`;
     case 'charMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} ${CHAR_LABELS[o.char] ?? o.char}`;
     case 'skillMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} ${refLabel('skills', { id: o.skill })}`;
     case 'moveMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} Mouvement`;
@@ -313,6 +326,7 @@ export function opSummary(o: GameOp): string {
     case 'weatherWard': return `${L} immunité aux intempéries`;
     case 'damageArmour': return `${L} cuir −1 PA`;
     case 'reduceToZero': return `${L} Blessures à 0 (Inconscient)`;
+    case 'banish': return `${L} retirée du jeu`;
     case 'martyr': return `${L} reçoit les Dégâts`;
     case 'giveTrapping': return `${L} ${o.count && o.count > 1 ? `${o.count}× ` : ''}${giveTrappingLabel(o)}`;
     case 'perRound': return `${L} ${o.ops.length} op(s) chaque Round`;
@@ -366,6 +380,12 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
             <label className="dr">Points<input type="number" min={1} value={o.amount ?? 1} onChange={(e) => upd({ amount: Math.max(1, Number(e.target.value) || 1) })} /></label>
             <label className="dr"><input type="checkbox" checked={!!o.temporary} onChange={(e) => upd({ temporary: e.target.checked || undefined })} /> le temps du Sort</label>
           </>
+        )}
+        {op.op === 'sbBonus' && (
+          <label className="dr">+BF<input type="number" value={o.amount ?? 0} onChange={(e) => upd({ amount: Number(e.target.value) || 0 })} /></label>
+        )}
+        {op.op === 'endPsych' && (
+          <label className="dr">Type psy<input value={o.type ?? ''} onChange={(e) => upd({ type: e.target.value })} /></label>
         )}
         {op.op === 'testMod' && (
           <>

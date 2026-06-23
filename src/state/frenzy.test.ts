@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
-import { resolvePsychAI, endFrenzyIfDone } from './combatFlow';
+import { resolvePsychAI, fireTurnStartTriggers } from './combatFlow';
+import { isFrenzied } from '../engine/psychology';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
@@ -38,21 +39,22 @@ describe('Frénésie — immunité psy & fin (→ Exténué)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     H.size = 'enorme'; // Terreur 2
-    E.frenzied = true;
+    (E.psychState ??= []).push({ type: 'frenesie' });
     E.characteristics.FM = 10;
     resolvePsychAI(useGame.getState, useGame.setState, E);
     const e = useGame.getState().battle!.combatants.find((c) => c.id === E.id)!;
     expect(e.conditions.some((c) => c.name === 'brise')).toBe(false);
-    expect(e.psychState ?? []).toEqual([]);
+    expect(e.psychState ?? []).toEqual([{ type: 'frenesie' }]); // aucune Peur ajoutée (immunisé), la Frénésie demeure
   });
 
   it('la Frénésie finit (Exténué) quand plus aucun ennemi n’est en Ligne de Vue', () => {
     const { H, E } = setup();
-    E.frenzied = true;
+    (E.psychState ??= []).push({ type: 'frenesie' });
     (H as Combatant).dead = true; // plus d'ennemi vivant pour E
-    endFrenzyIfDone(useGame.getState, useGame.setState, E);
+    // La sortie est un effet DÉCLENCHÉ `onTurnStart` en données (psychology.json) — joué au début du tour.
+    fireTurnStartTriggers(useGame.getState, useGame.setState, E);
     const e = useGame.getState().battle!.combatants.find((c) => c.id === E.id)!;
-    expect(e.frenzied).toBe(false);
+    expect(isFrenzied(e)).toBe(false);
     expect(e.conditions.some((c) => c.name === 'extenue')).toBe(true);
   });
 });

@@ -1,5 +1,6 @@
 /** Types partagés du moteur de règles WFRP v4. */
 import { t } from '../i18n';
+import type { Duration } from './duration';
 
 /** Les 10 Caractéristiques (abréviations du Livre de base). */
 export type CharKey =
@@ -103,15 +104,35 @@ export interface HeroDetails {
  *  magique — Ulgu). Calcul : engine/armourBypass.bypassedAP. */
 export type ArmourBypass = number | 'all' | 'metal' | 'leather' | 'nonMagic';
 
+/** Spécification STRUCTURÉE des Dégâts d'arme (LDB 62). La présence du token `BF` (Bonus de Force) est
+ *  PORTEUSE de sens — exprimée explicitement par `plusBF`, jamais par accident de chaîne. `flat` DÉJÀ
+ *  résolu (négatif autorisé : Indice −2). `bare` : « +BF » NU (Tentacule/Piétinement) ≠ « +BF+0 ».
+ *  `literal` = escape hatch pour les Dégâts non chiffrables (« Spécial »). Affichage dérivé par
+ *  `damageString` ; remplace la chaîne « +BF+4 » re-parsée par regex au runtime. */
+export type WeaponDamageSpec =
+  | { literal: string }
+  | { plusBF: boolean; flat: number; bare?: true };
+
+/** Atout/Défaut d'arme ou d'armure PORTÉ par un objet/arme au runtime. Forme STRUCTURÉE (id stable du
+ *  registre + Indice éventuel) — miroir runtime de `QualityRef` de la donnée, sans l'aplatissement en
+ *  chaîne « id value » re-parsée par regex. `value` = Indice (Solide N, Recharge N, Protectrice N) OU
+ *  magnitude d'une pénalité de port (`en-discretion` −10). Affichage dérivé par `qualityRefLabel`. */
+export interface QualityInstance {
+  /** id STABLE du registre de qualités (`QualityData.id` / `QualityRef.id`) — jamais un libellé FR. */
+  id: string;
+  /** Indice / magnitude éventuelle (Solide 3, Recharge 2, « -10% en Discrétion » → −10). */
+  value?: number;
+}
+
 export interface Weapon {
   name: string;
   type: 'melee' | 'ranged';
-  /** Chaîne de dégâts d'arme, ex. "+BF+4" (mêlée) ou "+9" (distance). */
-  damage: string;
+  /** Dégâts d'arme STRUCTURÉS (cf. `WeaponDamageSpec`) — ex. `{plusBF:true,flat:4}` (« +BF+4 »). */
+  damage: WeaponDamageSpec;
   reach?: string | null;
   /** Portée en mètres (distance uniquement). */
   range?: number | null;
-  qualities: string[];
+  qualities: QualityInstance[];
   /** `id` du Groupe d'arme/famille de munition (`WeaponGroupData.id`) — réf, ≠ libellé. Pilote la
    *  Spécialisation de combat (`combatValue`), la famille de munition (`ammoFamily`), le rendu (rig). */
   subType?: string;
@@ -223,16 +244,15 @@ export interface ActiveEffect {
   char?: CharKey;
   /** Valeur du bonus (ex. +10). */
   bonus: number;
-  /** Rounds restants avant dissipation. */
-  roundsLeft: number;
-  /** Échéance d'HORLOGE (minutes `gameTime`) d'un buff à durée en minutes/heures/jours (LDB 47 —
-   *  « (Bonus de FM) heures », « Jusqu'au lever du soleil »…) : purgé par la cascade #T3
-   *  (`purgeClockEffects`) ; `roundsLeft` reste à COMBAT_PERSIST en attendant. */
-  untilTime?: number;
+  /** Durée de l'effet (échelle Rounds, horloge `gameTime`, ou permanent) — représentation UNIQUE
+   *  (cf. `engine/duration.ts`). Remplace l'ancien couple `roundsLeft` + `untilTime` (+ sentinelle
+   *  `COMBAT_PERSIST`) : un buff en Rounds = `{scale:'rounds'}`, en heures = `{scale:'clock'}` (purgé
+   *  par l'horloge), sans durée = `{scale:'permanent'}`. */
+  duration: Duration;
   /** Ops RÉCURRENTES re-jouées à CHAQUE fin de Round tant que l'effet dure (op `perRound` — sorts
    *  multi-Rounds : 1 État X par Round, 1 Ration par Round de « Récolte de Rhya », etc.). Les valeurs
    *  sont déjà résolues à l'incantation (littérales) — `endOfRound` les ré-applique via `applyOps`
-   *  sans avoir besoin du lanceur. La durée (donc le nombre de répétitions) suit `roundsLeft`, qui
+   *  sans avoir besoin du lanceur. La durée (donc le nombre de répétitions) suit `duration`, qui
    *  intègre la Surincantation de Durée (LDB 47). */
   opsPerRound?: import('./ops').GameOp[];
   /** PA temporisés à TOUTES les localisations (Armure Aethyrique : « +1 PA à toutes les
@@ -269,6 +289,12 @@ export interface ActiveEffect {
   /** « Ne subit aucune pénalité causée par les États » (Endurance de l'anachorète, LDB 42) —
    *  lu par combatTestPenalty/testStatePenalty. */
   ignoreStatePenalties?: boolean;
+  /** Détermination (LDB 17 l.62) : immunité PSYCHOLOGIQUE temporaire (la source est IGNORÉE, pas vaincue).
+   *  Durée portée par `duration` (Rounds) → décrémentée/expirée par le système de Durée unifié. */
+  psychImmune?: boolean;
+  /** Détermination (LDB 17 l.64) : ignore les modificateurs de Blessure critique (traumatismes), 1 Round.
+   *  Durée portée par `duration` → expirée par le système de Durée unifié (plus de flag round-scopé). */
+  ignoreCritMods?: boolean;
   /** Traits psychologiques SUSPENDUS par l'effet (Baume pour un esprit blessé, LDB 42 : « Tous les
    *  Traits Psychologiques sont retirés pour la durée ») — restitués à l'expiration (rounds OU horloge). */
   suppressedPsych?: import('./psychology').PsychTrait[];
@@ -380,10 +406,10 @@ export interface ItemInstance {
   trappingId?: string;
   name: string;
   kind: ItemKind;
-  damage?: string; // armes
+  damage?: WeaponDamageSpec; // armes
   reach?: string | null;
   range?: number | null;
-  qualities: string[];
+  qualities: QualityInstance[];
   /** Enchantements actifs portés par l'ARME (op `augmentWeapon` / arme invoquée) — SOURCE DE VÉRITÉ,
    *  repliés dans l'arme dérivée par `recomputeLoadout` (`applyEnchants`). Temporisés via `ActiveEffect.enchantRef`. */
   enchants?: WeaponEnchant[];
@@ -392,6 +418,9 @@ export interface ItemInstance {
   enc: number; // encombrement
   equipped: boolean;
   desc?: string | null;
+  /** Effet d'un CONSOMMABLE (potion/bandage) en `GameOp[]` — copié du trapping (`TrappingData.consumable`).
+   *  Exécuté par `applyOps` (`useConsumable`). `isConsumable` = présence d'au moins un op. */
+  consumable?: import('./ops').GameOp[];
   /** `id` du Groupe/famille (`WeaponGroupData.id`) — munition : famille compatible (arc/arbalete/
    *  poudre-noire) ; armure : type (plate/mailles/cuir-souple…). Correspond à `Weapon.subType`. */
   subType?: string;
@@ -473,16 +502,12 @@ export interface Combatant {
   causesTerreur?: number;
   psychImmune?: boolean;
   /** Afflictions psychologiques ACTIVES en combat (Peur en cours, etc.). */
+  /** États psychologiques portés (LDB 21) — Peur/Terreur/Animosité/Haine ET **Frénésie** (`type:'frenesie'`,
+   *  posée à l'entrée, lue par `isFrenzied` ; +1 BF / immunité psy / sortie en DONNÉES `psychology.json`). */
   psychState?: import('./psychology').PsychAffliction[];
-  /** Frénésie active (LDB 21 l.31-36) : +1 BF, attaque obligatoire, immunité psy ; fin → Exténué. */
-  frenzied?: boolean;
-  /** Détermination (LDB 17 l.62) : immunisé à la Psychologie « jusqu'à la fin du prochain Round ».
-   *  Compteur de Rounds restants (2 à la dépense = ce Round + le prochain), décrémenté au passage de
-   *  Round ; immunisé tant que > 0. Round-indépendant → consommé partout (déclencheurs ET modificateurs). */
-  psychImmuneRoundsLeft?: number;
-  /** Détermination (LDB 17 l.64) : ignore les modificateurs de Blessure critique (traumatismes) ; posé à la
-   *  dépense, effacé au DÉBUT du prochain Round (passage de Round). */
-  ignoreCritMods?: boolean;
+  /** (Détermination : l'immunité psy temporaire + l'ignorance des modifs de Critique sont désormais
+   *  portées par des `ActiveEffect` à `duration` Rounds — `psychImmune`/`ignoreCritMods` — expirées par
+   *  le système de Durée unifié, plus de compteur/flag round-scopé ad hoc.) */
   /** Groupes d'appartenance + traits psy possédés (matching des Cibles — utilisés en P3). */
   groups?: string[];
   psychTraits?: import('./psychology').PsychTrait[];
@@ -605,12 +630,10 @@ export interface Combatant {
   hunger?: import('./provisions').HungerState;
   /** Immunités acquises (Vérole Urticante guérie — LDB 20 l.97) : maladies inattrapables à nouveau. */
   diseaseImmunities?: string[];
-  /** Blessé pendant CE combat par une créature au Trait Infecté → Test post-combat de Résistance
-   *  Facile (+40) ou Blessure Purulente (LDB 20 l.32) ; rongeur Infecté → aussi Fièvre du Rongeur (+20, l.49). */
-  woundedByInfected?: boolean;
-  woundedByRodent?: boolean;
-  /** Maladies (Trait « Maladie (Type) ») auxquelles ce combattant a été EXPOSÉ pendant le combat
-   *  (blessé par la créature porteuse) → Tests de Contraction post-combat (LDB 85 p.340 / LDB 20). */
+  /** Maladies auxquelles ce combattant a été EXPOSÉ pendant le combat (blessé par une source porteuse :
+   *  Infecté → 'blessure-purulente', Rongeur Infecté → 'fievre-du-rongeur', Maladie (Type) → l'`arg`,
+   *  munition Infecté) → Tests de Contraction post-combat (LDB 85 p.340 / LDB 20 l.32/49). SOURCE UNIQUE
+   *  (op `exposeDisease`) — remplace les anciens flags `woundedByInfected`/`woundedByRodent`. */
   diseaseExposure?: string[];
   // Maladresse (LDB 14 — Tableau des Oups !) : effets reportés au prochain Round.
   /** Pénalité (positive) à l'Action au prochain Round (Oups! 41-60). Consommée au prochain Test d'attaque. */
@@ -634,6 +657,9 @@ export interface Combatant {
   soinRencontreUtilise?: boolean;
   /** Mort (résultat létal ou mort lente). Hors de combat définitif. */
   dead?: boolean;
+  /** Le déclencheur `onSlain` a déjà été émis pour ce combattant (mise hors de combat) — garde-fou
+   *  d'unicité : `onSlain` peut être atteint par plusieurs chemins de mort, on ne le tire qu'UNE fois. */
+  slainNotified?: boolean;
   /** PNJ important : utilise le système complet de critiques au lieu de la Mort Subite. */
   important?: boolean;
   /** « Meurs un autre jour » (Destin) : éjecté de la rencontre — vivant mais hors de combat. */
@@ -661,9 +687,10 @@ export interface Combatant {
   /** Perturbante (LDB 62 l.275-276) : mode « Repousser » armé — la prochaine attaque réussie repousse
    *  d'1 m par DR au lieu de causer des Dégâts. Consommé par l'attaque (héros uniquement). */
   pushbackMode?: boolean;
-  /** Dans l'aura d'une créature Perturbante (LDB 85 p.341) : −20 à tous les Tests — recalculé
-   *  à chaque franchissement de Round par combatFlow. */
-  perturbed?: boolean;
+  /** `passive` GameOp[] des AURAS de combat à portée desquelles ce combattant se trouve (Perturbant :
+   *  −20 aux Tests, LDB 85 p.341) — recalculé chaque Round par le hook `recompute-auras` à partir des
+   *  `TraitData.aura` voisines, lu par `passiveMods` (kind `etat`, non-cumul). Générique (toute aura). */
+  auraMods?: import('./ops').GameOp[];
   // Avancement par Points d'Expérience (héros uniquement, LDB Carrières)
   /** PX disponibles à dépenser. */
   xp?: number;

@@ -15,7 +15,7 @@ const combatant = (over: Partial<Combatant>): Combatant =>
   }) as unknown as Combatant;
 
 const ctx = (combatants: Combatant[]): CombatHookCtx => {
-  // runCombatHooks('roundBoundary') exécute TOUTE la séquence : `get` doit renvoyer un état valide
+  // runCombatHooks('onRoundEnd') exécute TOUTE la séquence : `get` doit renvoyer un état valide
   // (broken-recovery/fireTriggers lisent get().battle/scene). Combattants nus → les autres hooks no-op
   // sans tirer le RNG (pas de condition/Brisé/zone) → se-fatiguer obtient bien le 1ᵉʳ tirage seedé.
   const battle = { combatants, zones: [], round: 1 } as never;
@@ -27,7 +27,7 @@ describe('roundHooks — se-fatiguer (combat-se-fatiguer, LDB 16 l.99)', () => {
 
   it('règle OFF (défaut) : aucun effet, le compteur ne bouge pas', () => {
     const c = combatant({ effortRounds: 5 });
-    runCombatHooks('roundBoundary', ctx([c]));
+    runCombatHooks('onRoundEnd', ctx([c]));
     expect(c.effortRounds).toBe(5);
     expect(hasCondition(c, COND.extenue)).toBe(false);
   });
@@ -35,7 +35,7 @@ describe('roundHooks — se-fatiguer (combat-se-fatiguer, LDB 16 l.99)', () => {
   it('sous le seuil (Bonus d’Endurance Rounds) : accumule sans Test ni État', () => {
     setRule('combat-se-fatiguer', true);
     const c = combatant({ characteristics: { E: 35 } as never, effortRounds: 0 }); // BE=3 → seuil 3
-    runCombatHooks('roundBoundary', ctx([c]));
+    runCombatHooks('onRoundEnd', ctx([c]));
     expect(c.effortRounds).toBe(1);
     expect(hasCondition(c, COND.extenue)).toBe(false);
   });
@@ -44,7 +44,7 @@ describe('roundHooks — se-fatiguer (combat-se-fatiguer, LDB 16 l.99)', () => {
     setRule('combat-se-fatiguer', true);
     seedBattleRng(4); // 1ᵉʳ d100 = 93 → Test de Résistance raté (cible ≈ Endurance basse)
     const c = combatant({ effortRounds: 0 }); // E=1 → seuil 1
-    runCombatHooks('roundBoundary', ctx([c]));
+    runCombatHooks('onRoundEnd', ctx([c]));
     expect(hasCondition(c, COND.extenue)).toBe(true);
     expect(c.effortRounds).toBe(0);
   });

@@ -26,7 +26,7 @@ import { baseSpeciesOf } from './skeletons';
 const RANGED_GROUPS = new Set(['arc', 'arbalete', 'poudre', 'fronde', 'lancer', 'entraves', 'explosifs', 'ingenierie']);
 /** Construit une arme minimale depuis un libellé (type déduit du Groupe canonique). */
 export function weaponFromLabel(label: string): import('../../engine/types').Weapon {
-  const w = { name: label, type: 'melee' as 'melee' | 'ranged', damage: '+0', qualities: [], uid: `w-${newUid()}` };
+  const w = { name: label, type: 'melee' as 'melee' | 'ranged', damage: { plusBF: false, flat: 0 }, qualities: [], uid: `w-${newUid()}` };
   if (RANGED_GROUPS.has(weaponGroupKey(w))) w.type = 'ranged';
   return w;
 }

@@ -18,7 +18,7 @@ const CW = 90, CH = 120;
 const tiles = slugs.map((slug, i) => {
   const f = bySlug.get(slug);
   if (!f) return '';
-  const art = weaponPart({ name: f.label, type: f.type, damage: '+4', qualities: [] } as Weapon);
+  const art = weaponPart({ name: f.label, type: f.type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
   const svg = pickView(art, 'front');
   return `<g transform="translate(${i * CW},0)"><rect width="${CW}" height="${CH}" fill="#222831"/>` +
     `<g transform="translate(${CW / 2},${CH - 26})">${svg}</g>` +

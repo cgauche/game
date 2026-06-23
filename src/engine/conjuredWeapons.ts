@@ -6,7 +6,7 @@
  * réutilise donc entièrement la base d'armes (`itemFromTrapping`) et le loadout : seuls les Dégâts
  * (= BFM…) et l'Atout Magique sont surchargés par le Sort.
  */
-import { Combatant, ItemInstance } from './types';
+import { Combatant, ItemInstance, QualityInstance } from './types';
 import { recomputeLoadout, itemFromTrappingById, ensureDefaultLoadout, newLoadoutId } from './items';
 import { isShieldItem } from './equipCompare';
 import { QUALITY_IDS } from './qualities/ids';
@@ -70,7 +70,7 @@ export interface ConjureForm {
  *  de base la plus commune, cf. sa description). Détection par CHAMPS STABLES (multilangue-safe) :
  *  `trappingId` de catalogue (arme-improvisee / mains-nues), Atout Protectrice (bouclier), Atout
  *  Inoffensive — plus de name-parse `/bouclier|improvis|mains nues/`. */
-function isConjurableWeapon(it: { trappingId?: string; qualities: string[] }): boolean {
+function isConjurableWeapon(it: { trappingId?: string; qualities: QualityInstance[] }): boolean {
   if (it.trappingId === 'arme-improvisee' || it.trappingId === 'mains-nues') return false;
   if (isShieldItem(it)) return false;
   if (hasQuality(it, QUALITY_IDS.Inoffensive)) return false;

@@ -21,7 +21,7 @@ import { t } from '../i18n';
 const ATOUTS = qualities.filter((q) => q.type === 'Atout' && q.subType === 'Objet').map((q) => q.id);
 const DEFAUTS = qualities.filter((q) => q.type === 'Défaut' && q.subType === 'Objet').map((q) => q.id);
 /** Libellé + desc d'une qualité d'artisanat par id (registre via `describeQuality`). */
-const craftQual = (id: string) => describeQuality(id) ?? { label: id, desc: undefined };
+const craftQual = (id: string) => describeQuality({ id }) ?? { label: id, desc: undefined };
 
 /** Familles d'équipement pour grouper les sélecteurs (mêmes données que le marchand). */
 const FAMILY_LABEL: Record<string, string> = {

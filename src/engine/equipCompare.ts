@@ -5,10 +5,10 @@
  * des stats déjà portées par les trappings (Dégâts, Allonge, Portée, Qualités, PA d'armure ;
  * Protection des boucliers via l'Atout « Protectrice N »). Présentation pure → testable hors UI.
  */
-import type { Combatant, ItemInstance, HitLocation } from './types';
-import { damageScore, isUnarmed } from './items';
+import type { Combatant, ItemInstance, HitLocation, WeaponDamageSpec, QualityInstance } from './types';
+import { damageScore, isUnarmed, damageString } from './items';
 import { QUALITY_IDS } from './qualities/ids';
-import { indiceOf } from './qualities/normalize';
+import { qualityRefLabel } from '../data';
 
 export type Trend = 'up' | 'down' | 'same';
 export interface CompareRow {
@@ -37,21 +37,14 @@ const ZONES: { label: string; locs: HitLocation[] }[] = [
 
 /** Un bouclier = l'arme portant l'Atout « Protectrice N » (LDB 62 l.272 — c'est la PA d'un bouclier en
  *  parade ; cet Atout est exclusif aux boucliers dans le catalogue). Détection par ID STABLE de qualité
- *  via `indiceOf` (gère la forme runtime « protectrice 2 ») — multilangue-safe : ne dépend plus du
- *  libellé « Bouclier ». Pur (pas d'import rig). */
-export function isShieldItem(i: { qualities?: string[] }): boolean {
-  return indiceOf(i.qualities ?? [], QUALITY_IDS.Protectrice) != null;
+ *  (`QualityInstance.id`) — multilangue-safe : ne dépend plus du libellé « Bouclier ». Pur (pas d'import rig). */
+export function isShieldItem(i: { qualities?: QualityInstance[] }): boolean {
+  return (i.qualities ?? []).some((q) => q.id === QUALITY_IDS.Protectrice);
 }
 
 const trendOf = (n: number): Trend => (n > 0 ? 'up' : n < 0 ? 'down' : 'same');
-/** Indice de l'Atout « Protectrice N » (PA d'un bouclier en parade, LDB 62 l.272). */
-const protectrice = (q: string[]): number => {
-  for (const s of q) {
-    const m = s.match(/protectrice\s*(\d+)/i);
-    if (m) return parseInt(m[1], 10);
-  }
-  return 0;
-};
+/** Indice de l'Atout « Protectrice N » (PA d'un bouclier en parade, LDB 62 l.272) — lecture structurée. */
+const protectrice = (q: QualityInstance[]): number => q.find((x) => x.id === QUALITY_IDS.Protectrice)?.value ?? 0;
 
 export function compareEquip(item: ItemInstance, hero: Combatant): EquipComparison {
   const items = hero.items ?? [];
@@ -72,10 +65,10 @@ export function compareEquip(item: ItemInstance, hero: Combatant): EquipComparis
 
   if (item.kind === 'melee' || item.kind === 'ranged') {
     const cur = wielded.find((w) => w.type === item.kind && !isShieldItem(w) && w.uid !== item.uid);
-    const baseline = item.kind === 'melee' ? '+BF-2' : undefined; // mêlée : mains nues (LDB) ; distance : pas d'arme
+    const baseline: WeaponDamageSpec | undefined = item.kind === 'melee' ? { plusBF: true, flat: -2 } : undefined; // mêlée : mains nues (LDB)
     const curDmg = cur?.damage ?? baseline;
     const rows: CompareRow[] = [
-      { label: 'Dégâts', current: cur?.damage ?? (item.kind === 'melee' ? '+BF-2 (mains nues)' : '—'), next: item.damage ?? '—', trend: trendOf(damageScore(item.damage) - damageScore(curDmg)) },
+      { label: 'Dégâts', current: cur ? damageString(cur.damage) : (item.kind === 'melee' ? '+BF-2 (mains nues)' : '—'), next: item.damage ? damageString(item.damage) : '—', trend: trendOf(damageScore(item.damage) - damageScore(curDmg)) },
     ];
     if (item.kind === 'melee') {
       const cr = REACH_RANK[cur?.reach ?? ''] ?? -1;
@@ -84,8 +77,8 @@ export function compareEquip(item: ItemInstance, hero: Combatant): EquipComparis
     } else {
       rows.push({ label: 'Portée', current: cur?.range != null ? `${cur.range} m` : '—', next: item.range != null ? `${item.range} m` : '—', trend: trendOf((item.range ?? 0) - (cur?.range ?? 0)) });
     }
-    const cq = (cur?.qualities ?? []).filter(Boolean);
-    const nq = item.qualities.filter(Boolean);
+    const cq = (cur?.qualities ?? []).map(qualityRefLabel);
+    const nq = item.qualities.map(qualityRefLabel);
     rows.push({ label: 'Qualités', current: cq.length ? cq.join(', ') : '—', next: nq.length ? nq.join(', ') : '—', trend: 'same' });
     return { slot: item.kind, currentName: cur?.name ?? null, rows };
   }

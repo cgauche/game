@@ -2,6 +2,7 @@ import { useRef, useState, type ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { bestDetector } from '../state/merchantFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
+import type { Duration } from '../engine/duration';
 import { useModalA11y } from './Modal';
 import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem, giveTrappingLabel } from '../engine/items';
 import { CHAR_KEYS, CHAR_LABELS, CharKey, HitLocation, ItemInstance, Combatant, Weapon } from '../engine/types';
@@ -10,7 +11,7 @@ import { baseWithTalents } from '../engine/talentEffects';
 import { effectiveWeaponDamage } from '../engine/weaponDamage';
 import { buildAdvancementView } from '../state/advancement';
 import { hasHealSkill, isHealable } from '../engine/healing';
-import { itemUse } from '../engine/consumables';
+import { isConsumable } from '../engine/consumables';
 import { isMagicMissile, isArcaneSpell } from '../engine/magic';
 import { rule } from '../engine/policy';
 import { canAfford, toMoney, formatMoney } from '../engine/money';
@@ -93,8 +94,11 @@ function ActiveEffectsPanel({ hero }: { hero: Combatant }) {
   const fx = hero.activeEffects ?? [];
   const cp = hero.castPenalties ?? [];
   if (!fx.length && !cp.length) return null;
-  const dur = (e: { roundsLeft?: number; untilTime?: number }) =>
-    e.roundsLeft != null && e.roundsLeft < 9999 ? ` · ${e.roundsLeft} R` : e.untilTime != null ? ' · durée' : '';
+  // ActiveEffect porte `duration` (échelle discriminée) ; CastPenalty garde `roundsLeft`/`untilTime`.
+  const dur = (e: { duration?: Duration; roundsLeft?: number; untilTime?: number }) => {
+    if (e.duration) return e.duration.scale === 'rounds' ? ` · ${e.duration.left} R` : e.duration.scale === 'clock' ? ' · durée' : '';
+    return e.roundsLeft != null ? ` · ${e.roundsLeft} R` : e.untilTime != null ? ' · durée' : '';
+  };
   return (
     <>
       <div className="mini-title">Effets actifs</div>
@@ -527,7 +531,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
             // Surbrillance « équipé » : arme tenue dans le set ACTIF (plus de flag `equipped` d'arme) ; sinon armure portée.
             const highlighted = isWeaponItem ? isWeaponActive(hero, it.uid) : it.equipped;
             const isSkinnable = it.kind === 'melee' || it.kind === 'ranged' || it.kind === 'armor';
-            const consumable = itemUse(it, hero) != null; // bandages / potion : utilisable depuis la fiche
+            const consumable = isConsumable(it); // bandages / potion : utilisable depuis la fiche
             const skinned = !!it.skin && Object.keys(it.skin).length > 0;
             const open = isSkinnable && skinFor === it.uid;
             return (
@@ -644,7 +648,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
           const GROUPS: { label: string; pred: (it: ItemInstance) => boolean }[] = [
             { label: 'Armes', pred: (it) => it.kind === 'melee' || it.kind === 'ranged' },
             { label: 'Armures & protections', pred: (it) => it.kind === 'armor' || isCapeItem(it) },
-            { label: 'Consommables', pred: (it) => itemUse(it, hero) != null },
+            { label: 'Consommables', pred: isConsumable },
             { label: 'Divers', pred: () => true },
           ];
           const partition: ItemInstance[][] = GROUPS.map(() => []);

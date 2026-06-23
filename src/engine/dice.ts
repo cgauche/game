@@ -37,6 +37,28 @@ export const roll = (n: number, sides: number, rng: RNG = defaultRNG) => {
   return total;
 };
 
+/** Descripteur de jet de dés en DONNÉE (forme canonique partagée : « NdM(+P ») — `n`d`sides`+`plus`).
+ *  Source UNIQUE réutilisée par la Formula `{dice}` (ops), les maladies (incubation/durée) et les
+ *  Imparfaites (miscast, qui l'étend d'un `sinPlus`). */
+export interface DiceSpec {
+  n: number;
+  sides: number;
+  plus?: number;
+}
+/** Roule un `DiceSpec` (n dés à `sides` faces + `plus`). PUR (RNG injecté). */
+export const rollDice = (dc: DiceSpec, rng: RNG = defaultRNG): number => roll(dc.n, dc.sides, rng) + (dc.plus ?? 0);
+
+/** Écriture canonique d'un `DiceSpec` (« 1d10 », « 3d10+5 ») — formateur d'affichage/édition. */
+export const formatDice = (dc: DiceSpec): string => `${dc.n}d${dc.sides}${dc.plus ? (dc.plus > 0 ? `+${dc.plus}` : `${dc.plus}`) : ''}`;
+/** Inverse de `formatDice` : « NdM(+P) » → `DiceSpec` (N implicite = 1). null si non reconnu (authoring). */
+export function parseDice(s: string): DiceSpec | null {
+  const m = s.trim().match(/^(\d*)\s*d\s*(\d+)\s*([+-]\s*\d+)?$/i);
+  if (!m) return null;
+  const dc: DiceSpec = { n: m[1] ? parseInt(m[1], 10) : 1, sides: parseInt(m[2], 10) };
+  if (m[3]) dc.plus = parseInt(m[3].replace(/\s+/g, ''), 10);
+  return dc;
+}
+
 /** Évalue une expression de dés signée (« 1d10+15 », « 2d10 », « d10 », « 15 », « 1d6-1 ») → total
  *  tiré. Termes additionnés ; « NdM » roule N dés à M faces (N implicite = 1). PUR (RNG injecté). */
 export function rollExpr(expr: string, rng: RNG = defaultRNG): number {

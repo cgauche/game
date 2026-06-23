@@ -42,12 +42,13 @@ export function actorStatus(c: Combatant): Status {
  *  - (a) inter-Échelon : actor > target → +10, < → −10, = → 0 (RAW de base, toujours actif).
  *  - (b) si même Échelon ET règle `social-charm-intra-tier` : ±10 selon le Standing.
  *  - (c) règle `social-begging-bonus` + actor Bronze + target Argent + `opts.begging` → force +10.
- *  - (d) règle `social-status-reaction-roll` : enveloppe le résultat via un 1d10 (`opts.rng`,
- *        défaut Math.random) — 1-2 → 0, 3-8 → mod, 9-10 → −mod. */
+ *  - (d) règle `social-status-reaction-roll` : enveloppe le résultat via un 1d10 PRÉ-TIRÉ par l'appelant
+ *        (`opts.reactionRoll`, RNG SEEDÉ, UN seul tirage par Test) — 1-2 → 0, 3-8 → mod, 9-10 → −mod.
+ *        PUR : aucun tirage ici (plus de `Math.random` non seedé ni d'incohérence par candidat). */
 export function statusCharmMod(
   actor: Status,
   target: Status,
-  opts?: { begging?: boolean; rng?: () => number },
+  opts?: { begging?: boolean; reactionRoll?: number },
 ): number {
   let mod: number;
   const da = TIER_RANK[actor.tier], dt = TIER_RANK[target.tier];
@@ -68,11 +69,11 @@ export function statusCharmMod(
     mod = 0; // même Échelon (et option intra-Échelon off ou Standing égal) → aucun mod.
   }
 
-  // (d) Au-delà de la norme sociale (option, l.54/90) : 1d10 enveloppant.
-  if (rule('social-status-reaction-roll')) {
-    const r = opts?.rng ? opts.rng() : 1 + Math.floor(Math.random() * 10);
-    if (r <= 2) return 0;        // Braver le Statut : aucun modificateur.
-    if (r >= 9) return -mod;     // Opinions extrêmes : modificateurs inversés.
+  // (d) Au-delà de la norme sociale (option, l.54/90) : 1d10 enveloppant PRÉ-TIRÉ par l'appelant
+  // (UN tirage seedé par Test, gaté par la règle au point d'appel — plus de tirage par candidat ici).
+  if (opts?.reactionRoll != null) {
+    if (opts.reactionRoll <= 2) return 0;     // Braver le Statut : aucun modificateur.
+    if (opts.reactionRoll >= 9) return -mod;  // Opinions extrêmes : modificateurs inversés.
     // 3-8 : réactions classiques → mod inchangé.
   }
   return mod;
@@ -84,9 +85,9 @@ export function statusCharmMod(
 export function statusCharmLabel(
   actor: Status,
   target: Status,
-  opts?: { begging?: boolean; rng?: () => number },
+  opts?: { begging?: boolean },
 ): string | undefined {
-  const mod = statusCharmMod(actor, target, opts);
+  const mod = statusCharmMod(actor, target, opts); // affichage = base RAW (jamais le 1d10 caché)
   if (!mod) return undefined;
   const sign = mod > 0 ? '+' : '−';
   const cmp = mod > 0 ? '>' : '<'; // le comparateur SUIT le sens du mod (cohérent même en mendicité)

@@ -4,10 +4,11 @@ import { useGame, activeCombatant, entityPickables, movementRemaining, canMove }
 import { hasMeaningfulOption } from '../state/turnEconomy';
 import { findSpellById } from '../data/index';
 import { isArcaneSpell } from '../engine/magic';
+import { formatSpellRange, formatSpellTarget, formatSpellDuration } from '../engine/spellRangeFormat';
 import { canTakeAction, hasCondition, isOutOfAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
-import { isFrenzyCapable } from '../engine/psychology';
-import { itemUse } from '../engine/consumables';
+import { isFrenzyCapable, isFrenzied } from '../engine/psychology';
+import { isConsumable } from '../engine/consumables';
 import { compatibleAmmo } from '../engine/items';
 import { canPushback } from '../engine/qualities/dispatch';
 import { hasHealSkill, healableTargets, availableHealModes } from '../engine/healing';
@@ -233,16 +234,16 @@ export function ActionBar() {
   // résout l'attaque armée (approche-puis-frappe). La hotbar ne fait que rendre ces descripteurs.
   const attacks = isHero ? availableAttacks(active, battle) : [];
   // Frénésie (LDB 21 l.31-32) : un héros capable peut tenter d'entrer en Frénésie (Test de FM, coûte l'Action).
-  const canFrenzy = isHero && isFrenzyCapable(active) && !active.frenzied && !battle.acted && !stunned;
+  const canFrenzy = isHero && isFrenzyCapable(active) && !isFrenzied(active) && !battle.acted && !stunned;
   // Frénésie : l'attaque d'Arme gratuite (talent, LDB 21 l.34) reste possible même l'Action dépensée (donnée).
   const freeFrenzy = isHero && hasFreeWeaponAttack(active);
   // Frénésie (LDB 21 l.34) : « La seule Action possible est un Test de Capacité de Combat ou un Test
   // d'Athlétisme » + « sous aucun prétexte vous ne fuirez, ni ne battrez en retraite » → en Frénésie,
   // la hotbar masque Incanter/Soigner/Défensive/Tir/Objets/Se désengager (restent : attaque au clic,
   // Course vers la cible, Se relever, Piétiner, Détermination — qui ne coûte pas l'Action).
-  const frenzied = isHero && !!active.frenzied;
+  const frenzied = isHero && isFrenzied(active);
   // Jauge d'Action : 1 Action de base (+1 attaque gratuite si frénétique). Pleins = encore disponibles.
-  const actMax = 1 + (active.frenzied ? 1 : 0);
+  const actMax = 1 + (isFrenzied(active) ? 1 : 0);
   const actAvail = (battle.acted ? 0 : 1) + (freeFrenzy ? 1 : 0);
   // Coût/gain de l'INTENTION en cours : aperçu tap-1 (tactile) prioritaire, sinon SURVOL (desktop,
   // hoverDelta posé par IsoStage) — même source previewResourceDelta, les jauges clignotent pareil.
@@ -256,7 +257,7 @@ export function ActionBar() {
     : 0;
 
   // Consommables utilisables du combattant actif, groupés par nom (plusieurs potions → ×N).
-  const usable = isHero ? (active.items ?? []).filter((it) => itemUse(it, active) != null) : [];
+  const usable = isHero ? (active.items ?? []).filter(isConsumable) : [];
   const usableGroups = Object.values(
     usable.reduce<Record<string, { name: string; uids: string[]; desc?: string }>>((acc, it) => {
       (acc[it.name] ??= { name: it.name, uids: [], desc: it.desc ?? undefined }).uids.push(it.uid);
@@ -343,9 +344,12 @@ export function ActionBar() {
             const ni = spell.cn != null ? `NI ${spell.cn}` : 'Prière';
             const canFocus = isArcaneSpell(spell) && (spell.cn ?? 0) > 0;
             const focusDr = active.focus?.spell === spell.id ? active.focus.dr : null;
-            // Découvrabilité (R4) : portée / durée / cibles d'un sort, AVANT de l'incanter (données SpellData).
-            const tgtLabel = typeof spell.target === 'number' ? (spell.target === 1 ? '1 cible' : `${spell.target} cibles`) : spell.target;
-            const meta = `📏 ${spell.range} · ⏳ ${spell.duration} · 🎯 ${tgtLabel}`;
+            // Découvrabilité (R4) : portée / durée / cibles d'un sort, AVANT de l'incanter — prose DÉRIVÉE
+            // de la donnée structurée (spellRangeFormat, source unique de l'affichage).
+            const rangeLabel = spell.range ? formatSpellRange(spell.range) : '—';
+            const tgtLabel = spell.target ? formatSpellTarget(spell.target) : '—';
+            const durLabel = spell.duration ? formatSpellDuration(spell.duration) : '—';
+            const meta = `📏 ${rangeLabel} · ⏳ ${durLabel} · 🎯 ${tgtLabel}`;
             return (
               <div key={spellId} className="ab-spell-row">
                 <button className={`btn btn-sm ${selected ? 'btn-primary' : ''}`} onClick={() => selectSpell(spell.id)}>

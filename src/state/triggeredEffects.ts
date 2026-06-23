@@ -9,16 +9,23 @@
  * place et renvoie le journal. Le référent des formules « (X) » est le PORTEUR (`caster` = la créature
  * qui frappe) — donc « Force de la source » = sa Force.
  */
-import type { Combatant, Weapon, HitLocation } from '../engine/types';
+import { type Combatant, type Weapon, type HitLocation, type Difficulty, CHAR_LABELS } from '../engine/types';
 import type { Get, Set as SetFn } from './flowTypes';
 import { type EffectTrigger, type TriggeredEffect, type Flow, flowHasTest } from './flow';
-import type { OpsCtx } from '../engine/ops';
+import type { OpsCtx, GameOp } from '../engine/ops';
+import { describeTestRoll } from '../engine/ops';
 import { resolveQualities } from '../engine/qualities/dispatch';
-import { isOutOfAction } from '../engine/conditions';
+import { featureLevel } from '../engine/combatFeatures/dispatch';
+import type { CombatFeature } from '../engine/combatFeatures/types';
+import { isOutOfAction, combatTestPenalty } from '../engine/conditions';
+import { roundTestInteractive } from './combat/cadenceGate';
 import { isEngagedWith } from '../engine/engagement';
 import { combatDistance } from './footprint';
-import { traitById, qualityById, findManeuverById, findTalentById } from '../data';
-import { difficultyFromLabel } from '../engine/tests';
+import { losClear } from './lineOfSight';
+import { smokeOf } from './combatGeometry';
+import { traitById, qualityById, findManeuverById, findTalentById, findConditionById, findPsychologyById, refLabel } from '../data';
+import { difficultyFromLabel, rollTest } from '../engine/tests';
+import { rawCombatTestBase } from '../engine/skills';
 import { runSpellFlowLines } from './combatEffects';
 import { RNG, defaultRNG } from '../engine/dice';
 
@@ -28,6 +35,15 @@ import { RNG, defaultRNG } from '../engine/dice';
 function withArg(effects: TriggeredEffect[], arg?: string): TriggeredEffect[] {
   if (!arg) return effects;
   const diff = difficultyFromLabel(arg);
+  // Injection GÉNÉRIQUE de l'arg d'instance dans une op : tout champ valant le littéral `'$arg'` reçoit
+  // l'arg (trait Maladie « (peste) » → `exposeDisease{disease:'$arg'}`). Une seule convention, pas de variante.
+  const substOp = (op: GameOp): GameOp => {
+    const o = op as Record<string, unknown>;
+    if (!Object.values(o).includes('$arg')) return op;
+    const out = { ...o };
+    for (const k in out) if (out[k] === '$arg') out[k] = arg;
+    return out as unknown as GameOp;
+  };
   const visit = (f: Flow): Flow => {
     if (f.kind === 'seq') return { ...f, steps: f.steps.map(visit) };
     if (f.kind === 'if') return { ...f, then: visit(f.then), ...(f.else ? { else: visit(f.else) } : {}) };
@@ -37,7 +53,8 @@ function withArg(effects: TriggeredEffect[], arg?: string): TriggeredEffect[] {
       const test = f.test.argDifficulty ? { ...f.test, difficulty: diff } : f.test;
       return { ...f, test, success: visit(f.success), fail: visit(f.fail) };
     }
-    return f; // `do` (feuille) : inchangé
+    if (f.kind === 'do' && f.effect.type === 'ops') return { ...f, effect: { ...f.effect, ops: f.effect.ops.map(substOp) } };
+    return f;
   };
   return effects.map((eff) => ({ ...eff, flow: visit(eff.flow) }));
 }
@@ -54,6 +71,24 @@ function effectsOf(actor: Combatant, weapon?: Weapon): TriggeredEffect[] {
   // Talents POSSÉDÉS portant des effets déclenchés (Assaut féroce onHit, Frappe réactive onCharged…) —
   // mêmes `TriggeredEffect` que les traits. Appendus en fin (ordre RNG existant enchant→traits→atouts préservé).
   for (const t of actor.talents ?? []) out.push(...(findTalentById(t.talentId)?.effects ?? []));
+  return out;
+}
+
+/** Une SOURCE d'effets déclenchés du combattant, AVEC son identité (`key`) et son plafond (`cap`) —
+ *  nécessaires aux ATTAQUES GRATUITES (imputation /Round par source ; plafond par source). */
+export interface TriggerSource { effects: TriggeredEffect[]; cap: number; key: string; label: string; }
+
+/** Énumère TOUTES les sources d'attaque gratuite du combattant — MÊME couverture que `effectsOf` (Atouts
+ *  d'arme, Traits, Qualités, Talents) + les ÉTATS — chacune taguée `key`/`cap`/`label`. Permet à
+ *  `resolveFreeAttacks` de jouer un `grantFreeAttack` quel que soit le KIND de la source (plus de chemin
+ *  talent-only) : un Trait/État de créature qui riposte à la charge fonctionne comme le talent. */
+export function freeAttackSourcesOf(actor: Combatant, weapon?: Weapon): TriggerSource[] {
+  const out: TriggerSource[] = [];
+  if (weapon?.onHitEffects?.length) out.push({ effects: weapon.onHitEffects, cap: 1, key: `weapon:${weapon.name}`, label: weapon.name });
+  for (const tr of actor.traits ?? []) { const d = traitById.get(tr.id); if (d?.effects?.length) out.push({ effects: withArg(d.effects, tr.arg), cap: 1, key: `trait:${tr.id}`, label: d.label ?? tr.id }); }
+  if (weapon) for (const { id } of resolveQualities(weapon)) { const d = qualityById.get(id); if (d?.effects?.length) out.push({ effects: d.effects, cap: 1, key: `qual:${id}`, label: d.label ?? id }); }
+  for (const t of actor.talents ?? []) { const d = findTalentById(t.talentId); if (d?.effects?.length) out.push({ effects: d.effects, cap: t.times ?? 1, key: t.talentId, label: d.label ?? t.talentId }); }
+  for (const cond of actor.conditions ?? []) { const d = findConditionById(cond.name); if (d?.effects?.length) out.push({ effects: d.effects, cap: 1, key: `cond:${cond.name}`, label: d.label ?? cond.name }); }
   return out;
 }
 
@@ -78,21 +113,41 @@ function targetsFor(get: Get, actor: Combatant, on: TriggeredEffect['on'], victi
 export interface TriggerCtx { victim?: Combatant; weapon?: Weapon; rng?: RNG; margin?: number; woundsDealt?: number;
   /** Indice de l'attaque naturelle d'une MANŒUVRE — alimente les Formula `{indiceOf}` (Dégâts en GameOp). */
   indice?: number;
+  /** Nombre de PIONS de l'État qui déclenche un `effects: onRoundEnd` — alimente les Formula `{stacks:'self'}`
+   *  (Empoisonné « 1 PB/pion »). Posé par `fireConditionEffects`. */
+  stacks?: number;
+  /** Écart d'Avantage avec les adversaires Engagés — alimente la Formula `{engagedAdvantageGap}` ET la
+   *  Condition `engagedAdvantageGap` (Instable). Calculé par `applyTriggeredEffects` sur la `battle`. */
+  engagedAdvantageGap?: number;
   /** Localisation de la touche courante (dé inversé) — alimente la Condition Flow `location` (Assommante). */
   location?: HitLocation;
   /** KIND de l'attaque courante (`creatureAttackKind` : 'morsure'/'cornes'/…) — alimente la Condition Flow
    *  `attackKind` (Vampirique : Vol de vie sur Morsure seulement). */
   attackKind?: string;
+  /** CAUSE de l'effarouchement courant ('noise'/'magic', LDB 85 l.197) — alimente la Condition Flow
+   *  `startleCause` (exemption Dressé : Guerre ignore les bruits, Magie ignore la magie). Posé par les
+   *  émetteurs `onStartled` (arme à feu/Explosion → 'noise' ; incantation → 'magic'). */
+  startleCause?: 'noise' | 'magic';
+  /** Un adversaire vivant est-il dans la Ligne de Vue du porteur — alimente la Condition Flow `foeInLoS`
+   *  (sortie de Frénésie, fuite/récupération du Brisé). Si absent, calculé sur la `battle` au déclenchement. */
+  foeInLoS?: boolean;
   /** ID de l'État qui vient d'être GAGNÉ (déclencheur `onGainCondition`) — filtre les effets dont
    *  `condition` ne le matche pas (Mâchoires d'acier : `condition:'sonne'`). */
   conditionName?: string;
+  /** TYPE de l'attaque courante (`weapon.type` : 'melee'/'ranged') — filtre les effets `onHit`/`onWoundLoss`
+   *  dont `attackType` ne le matche pas. Posé par les émetteurs onHit/onWoundLoss. */
+  attackType?: 'melee' | 'ranged';
   /** `set` du store — fourni quand un Test de trigger peut être routé en cascade influençable (héros
    *  manuel) ou résolu inline (ennemi/auto). Câblé sur tous les `fireTriggers` de combat (onHit/
    *  onWoundLoss/onKill/onStartled/onRoundStart/Domaine + manœuvres) ; INERTE tant qu'aucune donnée de
    *  trigger ne porte un nœud Flow `test` au 1ᵉʳ niveau (seul Mâchoires d'acier en a un, `onGainCondition`,
    *  câblé via le hook du store). Absent → pas de routage (les flows non-`test` passent par
    *  `runSpellFlowLines`, qui rend le `string[]` tissé inline par l'appelant). */
-  set?: SetFn }
+  set?: SetFn;
+  /** Pose le drapeau `deferInteractiveTest` sur la résolution d'un Test routé : un héros MANUEL ne pousse
+   *  PAS son étape ICI (la cascade n'est pas ouverte au moment où le hook `end-of-round` diffuse) — elle
+   *  est COLLECTÉE par `collectHeroRoundEndUpkeep`. Ennemi/auto restent résolus inline. */
+  deferInteractiveTest?: boolean }
 
 /** ROUTEUR d'un Flow de trigger PORTANT un nœud `test` (à n'importe quelle profondeur) vers la voie
  *  CADENCE-AWARE (héros manuel → cascade influençable ; sinon → jet inline) via `runCombatFlow`
@@ -105,6 +160,46 @@ type TestRouter = (get: Get, set: SetFn, target: Combatant, actor: Combatant, fl
 let testRouter: TestRouter | undefined;
 export function setTriggeredTestRouter(fn: TestRouter): void { testRouter = fn; }
 
+/** Résolution INLINE d'un nœud `test` TOP-LEVEL sans routeur cadence-aware (entretien HORS COMBAT) —
+ *  jumeau store-free de la branche NON-interactive de `resolveFlowTest` : jet du Test (`combatTestPenalty`
+ *  comme un Test simple), puis branche `success`/`fail` jouée par `runSpellFlowLines` (mêmes ops). Un `test`
+ *  ENFOUI (hors top-level) LÈVE — un tel cas exige la voie cadence-aware (jamais de branche succès muette). */
+function resolveInlineFlowTest(c: Combatant, flow: Flow, ctx: OpsCtx): string[] {
+  if (flow.kind !== 'test') throw new Error('resolveInlineFlowTest: nœud non-`test` (un test enfoui exige un routeur cadence-aware).');
+  const ft = flow.test;
+  // `base` BRUT (sans pénalité d'État) + `combatTestPenalty` une SEULE fois (RAW : −10 d'Empoisonné/Sonné
+  // compté une fois, LDB 16) — MÊME convention que `simpleTriggeredTestStep` (héros) → récupération identique.
+  const base = rawCombatTestBase(c, ft.skill, ft.characteristic, ft.spec);
+  const difficulty: Difficulty = ft.difficulty ?? 'intermediaire';
+  const skillLabel = ft.skill ? refLabel('skills', { id: ft.skill, spec: ft.spec }) : (ft.characteristic ? CHAR_LABELS[ft.characteristic] : 'Test');
+  const rng = ctx.rng ?? defaultRNG;
+  const res = rollTest(base, difficulty, rng, combatTestPenalty(c));
+  const branch = res.success ? flow.success : flow.fail;
+  return [describeTestRoll(c.name, skillLabel, difficulty, res), ...runSpellFlowLines(c, c, branch, { ...ctx, rng, caster: c, sl: res.sl })];
+}
+
+/** Écart d'Avantage de `actor` avec ses adversaires ENGAGÉS : `max(0, meilleur Avantage ennemi engagé −
+ *  le sien)` (Instable, LDB 85 l.177 : « la différence entre son Avantage et celui supérieur de son
+ *  adversaire »). Hors combat / sans foe engagé = 0. Calculé sur la `battle` (valeur relationnelle). */
+function engagedAdvantageGap(get: Get, actor: Combatant): number {
+  const battle = get().battle;
+  if (!battle) return 0;
+  const foes = battle.combatants.filter((e) => e.kind !== actor.kind && !isOutOfAction(e) && isEngagedWith(e, actor.id));
+  if (!foes.length) return 0;
+  return Math.max(0, Math.max(...foes.map((e) => e.advantage ?? 0)) - (actor.advantage ?? 0));
+}
+
+/** Un adversaire VIVANT est-il dans la Ligne de Vue de `actor` ? Géométrie d'arène (au-dessus de
+ *  `lineOfSightCover`, fumées/zones bloquantes incluses) alimentant la Condition `foeInLoS` : sortie de
+ *  Frénésie (LDB 21 l.36), fuite/récupération du Brisé (LDB 16 l.55). Hors combat / sans position = false. */
+export function hasFoeInLoS(get: Get, actor: Combatant): boolean {
+  const { battle, scene } = get();
+  if (!battle || !scene || !actor.pos) return false;
+  return battle.combatants.some(
+    (f) => f.kind !== actor.kind && !isOutOfAction(f) && f.pos && losClear(scene, actor.pos!, f.pos, smokeOf(battle)),
+  );
+}
+
 /** CŒUR d'application : applique une LISTE d'effets `TriggeredEffect` de `actor` correspondant à
  *  `trigger`, chacun via `runSpellFlowLines` aux cibles résolues (`on`). Source UNIQUE : utilisé par
  *  `fireTriggers` (effets de traits/atouts) ET par les manœuvres (effets du profil de manœuvre).
@@ -115,35 +210,103 @@ export function applyTriggeredEffects(
 ): string[] {
   const lines: string[] = [];
   const rng = ctx.rng ?? defaultRNG;
+  // Valeur RELATIONNELLE de combat calculée UNE fois pour le porteur (battle-aware) : écart d'Avantage
+  // avec ses adversaires Engagés (Instable, LDB 85 l.177). Voyage dans l'opsCtx → Formula/Condition.
+  const gap = ctx.engagedAdvantageGap ?? engagedAdvantageGap(get, actor);
+  const foeInLoS = ctx.foeInLoS ?? hasFoeInLoS(get, actor);
   for (const eff of effects) {
     if (eff.trigger !== trigger) continue;
     // Filtre `onGainCondition` : ne réagit qu'à l'État effectivement gagné (Mâchoires → 'sonne').
     if (eff.condition && eff.condition !== ctx.conditionName) continue;
+    // Filtre par TYPE d'attaque (onHit/onWoundLoss) : un effet `attackType` ne réagit qu'à ce type.
+    if (eff.attackType && eff.attackType !== ctx.attackType) continue;
     for (const t of targetsFor(get, actor, eff.on, ctx.victim)) {
-      if (isOutOfAction(t)) continue;
+      // On n'applique pas un effet à une cible DÉJÀ hors de combat (pas d'éclaboussure sur un cadavre) —
+      // SAUF le PORTEUR réagissant à SON PROPRE événement (`on:'self'`) : une unité doit pouvoir réagir à
+      // sa propre chute (Démoniaque banni à 0 PB, futur « éclate/se dédouble à la mort »). Les déclencheurs
+      // de FRONTIÈRE de round (`onRoundEnd`/`onRoundStart`) filtrent eux-mêmes les hors-combat côté appelant.
+      if (isOutOfAction(t) && t.id !== actor.id) continue;
       // Flow PORTANT un nœud `test` (à n'importe quelle profondeur — top-level Mâchoires, ou enfoui sous
       // `if`/`seq` : Venin/Hurlement/2 enchants) routé vers la voie cadence-aware (héros manuel → cascade
       // influençable ; ennemi/auto → inline) plutôt qu'avalé silencieusement — seulement si l'appelant
       // fournit `set` + un routeur installé. Un Flow `test` non routé (pas de `set`) atteindrait
       // `runSpellFlowLines`, qui LÈVE (jamais de branche succès muette). Le contexte de la touche
       // (`woundsDealt`/`margin→sl`/`location`/`attackKind`) voyage dans l'opsCtx pour les Conditions `if`.
-      if (flowHasTest(eff.flow) && ctx.set && testRouter) {
-        testRouter(get, ctx.set, t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, location: ctx.location, attackKind: ctx.attackKind });
+      const flowCtx: OpsCtx = { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, engagedAdvantageGap: gap, foeInLoS, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause };
+      if (flowHasTest(eff.flow)) {
+        // Test de FIN DE ROUND (`deferInteractiveTest`, posé par le hook `end-of-round` : la cascade n'est
+        // pas encore ouverte) : un héros MANUEL est COLLECTÉ par `collectHeroRoundEndUpkeep` (on saute ici) ;
+        // ennemi / héros auto → résolu INLINE (lignes RENDUES → sinkées dans le journal comme les dégâts).
+        if (ctx.deferInteractiveTest) {
+          if (roundTestInteractive(t)) continue;
+          lines.push(...resolveInlineFlowTest(t, eff.flow, flowCtx));
+          continue;
+        }
+        // Hors fin de Round : voie cadence-aware si un routeur est branché (onGainCondition / attaques →
+        // cascade influençable pour un héros manuel, inline + file différée sinon) ; SANS routeur (entretien
+        // HORS COMBAT) → INLINE. Jamais avalé. GÉNÉRIQUE : tout État à `onRoundEnd` test (Empoisonné…).
+        if (ctx.set && testRouter) { testRouter(get, ctx.set, t, actor, eff.flow, flowCtx); continue; }
+        lines.push(...resolveInlineFlowTest(t, eff.flow, flowCtx));
         continue;
       }
-      lines.push(...runSpellFlowLines(t, actor, eff.flow, { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, location: ctx.location, attackKind: ctx.attackKind }));
+      lines.push(...runSpellFlowLines(t, actor, eff.flow, flowCtx));
     }
   }
   return lines;
 }
 
 /**
- * Déclenche les effets de `actor` (Traits + Atouts de `ctx.weapon`) correspondant à `trigger` — pour
- * TOUTE attaque/événement. (Les effets propres à une MANŒUVRE précise vivent sur son profil et sont
- * appliqués par `applyTriggeredEffects(maneuverEffectsOf(...))`, scoped à la manœuvre.)
+ * DISPATCHER UNIQUE des effets déclenchés de `actor` pour un `trigger` — SOURCE UNIQUE, sans code
+ * spécifique par KIND d'entité ni par trigger. Réunit TOUTES les sources d'effets portées par le
+ * combattant : Traits, Talents, Atouts d'arme (`effectsOf`) ET États (`fireConditionEffects`, qui
+ * apporte le `stacks` de chaque État). Maladies/Mutations réagissent par COMPOSITION (elles octroient
+ * un Trait/État, déjà couvert ici) — rien de neuf à câbler pour un nouveau type. Ajouter une source =
+ * l'AJOUTER ICI, jamais un nouveau chemin de dispatch. (Effets propres à une MANŒUVRE = scoped à son
+ * profil via `maneuverEffectsOf`.)
  */
 export function fireTriggers(get: Get, actor: Combatant, trigger: EffectTrigger, ctx: TriggerCtx = {}): string[] {
-  return applyTriggeredEffects(get, actor, effectsOf(actor, ctx.weapon), trigger, ctx);
+  const lines = applyTriggeredEffects(get, actor, effectsOf(actor, ctx.weapon), trigger, ctx);
+  lines.push(...fireConditionEffects(get, actor, trigger, ctx)); // États dispatchés EXACTEMENT comme Traits
+  lines.push(...firePsychEffects(get, actor, trigger, ctx)); // états PSY (Frénésie…) — MÊME folding générique
+  return lines;
+}
+
+/** CŒUR GÉNÉRIQUE du folding des STATUTS portés (`StatusData` : États OU psy) : applique les `effects` de
+ *  chaque statut pour `trigger`, avec son nombre de pions (`stacks`). SOURCE UNIQUE — `fireConditionEffects`
+ *  et `firePsychEffects` y délèguent (zéro copie du cœur `applyTriggeredEffects`). Le `[...snapshot]` côté
+ *  appelant protège l'itération d'une auto-dissipation (`removeCondition`/`endPsych`) qui mute la collection. */
+function fireStatusEffects(
+  get: Get, c: Combatant, trigger: EffectTrigger, ctx: TriggerCtx,
+  statuses: { effects?: TriggeredEffect[]; stacks: number }[],
+): string[] {
+  const lines: string[] = [];
+  for (const s of statuses) {
+    if (!s.effects?.length) continue;
+    lines.push(...applyTriggeredEffects(get, c, s.effects, trigger, { ...ctx, stacks: s.stacks }));
+  }
+  return lines;
+}
+
+/**
+ * Déclenche les `effects` data-driven des ÉTATS portés par `c` (Empoisonné « 1 PB/pion » via `onRoundEnd`…).
+ * Chaque État est joué avec `ctx.stacks = ses pions`, RÉDUITS d'une capacité de la cible s'il le déclare
+ * (Hémorragique − Endurci `bleedIgnore`, LDB 10 — générique, jamais par-nom). Inerte sans `effects`.
+ */
+export function fireConditionEffects(get: Get, c: Combatant, trigger: EffectTrigger, ctx: TriggerCtx = {}): string[] {
+  return fireStatusEffects(get, c, trigger, ctx, [...(c.conditions ?? [])].map((cond) => {
+    const data = findConditionById(cond.name);
+    const reduce = data?.stacksReducedBy ? featureLevel(c, data.stacksReducedBy as keyof CombatFeature) : 0;
+    return { effects: data?.effects, stacks: Math.max(0, (cond.value ?? 1) - reduce) };
+  }));
+}
+
+/**
+ * Déclenche les `effects` data-driven des états PSYCHOLOGIQUES portés par `c` (Frénésie : sortie
+ * `onTurnStart` → fin + Exténué, LDB 21 l.36). MÊME cœur que les États (`fireStatusEffects`) ; la donnée
+ * vit dans `psychology.json`. Inerte tant que `psychState` ne porte aucun type doté d'`effects`.
+ */
+export function firePsychEffects(get: Get, c: Combatant, trigger: EffectTrigger, ctx: TriggerCtx = {}): string[] {
+  return fireStatusEffects(get, c, trigger, ctx, [...(c.psychState ?? [])].map((p) => ({ effects: findPsychologyById(p.type)?.effects, stacks: 1 })));
 }
 
 /** Effets onHit AUTHORÉS de la manœuvre `kind` portée par `actor` (Caudale → À Terre, Tentacules →

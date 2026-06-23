@@ -25,7 +25,7 @@ import { effectiveChar } from '../engine/characteristics';
 import { buyTalent as engineBuyTalent, talentCost } from '../engine/advancement';
 import { applyTalentAcquisition, fortuneMax, resolveMax, heroMaxWounds } from '../engine/talentEffects';
 import { findCareerById, levelsForCareer, findTrappingById, findTalentById, refLabel, skillInstanceLabel, advancementBaseId, qualityRefLabel, qualities } from '../data';
-import { CHAR_BY_LABEL, CHAR_LABELS, type CharKey, type Combatant, type Difficulty } from '../engine/types';
+import { CHAR_LABELS, type CharKey, type Combatant, type Difficulty, type QualityInstance } from '../engine/types';
 import type { PendingBase } from './rollFlow';
 
 import type { Get, Set } from './flowTypes';
@@ -283,8 +283,7 @@ export function openLearn(get: Get, set: Set, heroId: string, talentId: string):
     get().log(`Le tuteur demande ${formatMoney(fromBrass(tutorBrass))} — la bourse ne suit pas.`);
     return;
   }
-  const m = typeof t.max === 'string' ? t.max.match(/Bonus d[e'’]\s*(.+)/i) : null;
-  const ck: CharKey = (m && CHAR_BY_LABEL[m[1].trim()]) || 'Int';
+  const ck: CharKey = t.max && typeof t.max !== 'number' ? t.max.bonusOf : 'Int'; // Maxi « Bonus de X » → carac (structuré)
   const fails = st.learnFails?.[t.id] ?? 0; // clé = id stable du Talent
   set({
     pendingActivity: {
@@ -324,12 +323,13 @@ export function openIdentify(get: Get, set: Set, heroId: string, itemUid: string
 /** Fausses Particularités (ADE2 : échec Impressionnant/Stupéfiant — « soupçonne que l'objet possède
  *  une/au moins deux Particularité(s) qu'il n'a pas réellement ») : Atouts plausibles du registre,
  *  hors qualités réellement portées par l'objet. */
-function falseQualities(item: { kind: string; qualities: string[] }, count: number): string[] {
+function falseQualities(item: { kind: string; qualities: QualityInstance[] }, count: number): string[] {
+  const have = new Set(item.qualities.map((q) => q.id)); // qualités RÉELLEMENT portées (par id)
   const pool = qualities
     .filter((q) => q.type === 'Atout')
     .filter((q) => (item.kind === 'armor' ? q.subType !== 'Arme' : q.subType !== 'Armure'))
-    .map((q) => q.label)
-    .filter((k) => !item.qualities.includes(k));
+    .filter((q) => !have.has(q.id)) // dédup par ID (corrige le bug : comparait un libellé à un tableau d'ids)
+    .map((q) => q.label);
   const out: string[] = [];
   while (out.length < count && pool.length) {
     const i = (d100(battleRng()) - 1) % pool.length; // tirage registre (biais négligeable — pur cosmétique)
@@ -448,7 +448,7 @@ export function confirmActivity(get: Get, set: Set): void {
     if (drDone >= st.craft.drTarget) {
       const it = itemFromTrappingById(st.craft.trappingId);
       if (it) {
-        it.qualities = [...(it.qualities ?? []), ...st.craft.atouts, ...st.craft.defauts]; // ids de qualité runtime
+        it.qualities = [...(it.qualities ?? []), ...st.craft.atouts.map((id) => ({ id })), ...st.craft.defauts.map((id) => ({ id }))]; // ids → QualityInstance
         h.items = [...(h.items ?? []), it];
         recomputeLoadout(h);
       }

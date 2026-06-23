@@ -3,10 +3,13 @@ import type { Weapon } from '../types';
 import { QUALITIES } from './registry';
 import { hasQuality, qualitySum, qualityCritTriggered, parryDRAdjust, isUnbreakable, attackDRAdjust, dangerousNine, reloadDRTarget, magazineSize } from './dispatch';
 import { findQualityById } from '../../data';
+import { parseQualityInstance } from './normalize';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const w = (qualities: string[], over: Partial<Weapon> = {}): Weapon => ({ name: 'W', type: 'melee', damage: '+BF', qualities, ...over });
+/** Libellés FR (lisibles) → `QualityInstance[]` structurées (parseur d'authoring). */
+const q_ = (qs: string[]) => qs.map((s) => parseQualityInstance(s)!);
+const w = (qualities: string[], over: Partial<Weapon> = {}): Weapon => ({ name: 'W', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: q_(qualities), ...over });
 
 describe('dispatch — hasQuality compare par ID de qualité (label/casse/Indice tolérés en entrée)', () => {
   it('hasQuality(porteur, qualityId) reconnaît la qualité quelle que soit la forme stockée', () => {
@@ -97,8 +100,8 @@ describe('Aux Armes — qualités d’artillerie câblées', () => {
     expect(dangerousNine(w(["Arme d'équipe 3"]), 19, false)).toBe(false); // Indice 3 : pas Dangereuse
   });
   it('Arme d’équipe : Recharge DOUBLÉE (reloadDRTarget)', () => {
-    expect(reloadDRTarget({ qualities: ['Recharge 3'], reload: 3 })).toBe(3);
-    expect(reloadDRTarget({ qualities: ['Recharge 3', "Arme d'équipe 2"], reload: 3 })).toBe(6);
+    expect(reloadDRTarget({ qualities: q_(['Recharge 3']), reload: 3 })).toBe(3);
+    expect(reloadDRTarget({ qualities: q_(['Recharge 3', "Arme d'équipe 2"]), reload: 3 })).toBe(6);
   });
   it('Salve : chargeur d’Indice tirs avant rechargement (magazineSize)', () => {
     expect(magazineSize(w(['Salve 7']))).toBe(7);

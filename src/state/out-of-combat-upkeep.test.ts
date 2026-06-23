@@ -12,6 +12,7 @@ function mk(opts: { current?: number; conditions?: { name: string; value: number
     wounds: { current: opts.current ?? 10, max: 10 },
     advantage: opts.advantage ?? 0,
     conditions: opts.conditions ?? [],
+    skills: [], // requis par le Test de Résistance d'Empoisonné, désormais résolu INLINE hors combat (RAW l.66-72)
     armour: { tete: 0, corps: 0, brasG: 0, brasD: 0, jambeG: 0, jambeD: 0 },
     characteristics: { E: 30 } as never,
     fate: opts.fate ?? 0,
@@ -24,6 +25,14 @@ describe('outOfCombatUpkeep — États qui tickent HORS COMBAT (couture A, LDB 1
     outOfCombatUpkeep([c], 3, fixed(50)); // 3 Rounds ; jet 50 = pas de mort par hémorragie
     expect(c.wounds.current).toBe(5); // 8 − 3×1
     expect(c.advantage).toBe(0); // perdre des PB → perte de tout l'Avantage (LDB 15 l.40)
+  });
+
+  it('Empoisonné : le Test de Résistance se résout AUSSI hors combat (RAW l.66-72) — succès → poison retiré + Exténué', () => {
+    const c = mk({ current: 8, conditions: [{ name: 'empoisonne', value: 1 }] });
+    outOfCombatUpkeep([c], 1, fixed(5)); // jet 5 ≤ cible (E 30 −10 État = 20) → Résistance réussie
+    expect(c.wounds.current).toBe(7);              // 1 dégât périodique appliqué AVANT le Test
+    expect(hasCondition(c, 'empoisonne')).toBe(false); // poison vaincu (branche success : retire 1+DR)
+    expect(hasCondition(c, 'extenue')).toBe(true);     // vidé → 1 Exténué
   });
 
   it('aucun effet périodique ni 0 PB → no-op (rien ne ticke)', () => {

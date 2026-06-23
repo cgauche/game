@@ -47,7 +47,7 @@ describe('resolveRig — échelle des parts par os', () => {
   });
 
   it('l’arme (os de longueur nulle) hérite de l’échelle de son parent', () => {
-    const weap = { name: 'Épée', type: 'melee' as const, damage: '+4', qualities: [] };
+    const weap = { name: 'Épée', type: 'melee' as const, damage: { plusBF: false, flat: 4 }, qualities: [] };
     const bones = resolveRig({ species: 'Ogre', sex: 'M', build: 0.5, seed: 1 }, { weapons: [weap], armour: [] }, {});
     const arme = bones.find((b) => b.id === 'arme');
     expect(arme).toBeTruthy();

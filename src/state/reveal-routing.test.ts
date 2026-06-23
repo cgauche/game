@@ -92,7 +92,9 @@ describe('entretien de fin de Round — partition héros/ennemis (spec coop §4b
     crossRound();
     const reveals = useGame.getState().pendingReveals.filter((r) => r.kind === 'round');
     expect(reveals).toHaveLength(0);
-    expect(useGame.getState().battle!.log.some((e) => /Hémorragique|hémorragie|perd/i.test(e.text))).toBe(true);
+    // Dégâts d'Hémorragique désormais data-driven (effects onRoundEnd → wounds) : le journal porte la
+    // ligne générique « subit N Blessure(s) (ignorant BE et PA) » au lieu d'un libellé « (Hémorragique) ».
+    expect(useGame.getState().battle!.log.some((e) => /subit \d+ Blessure/i.test(e.text))).toBe(true);
   });
 
   it('État récurrent sur un HÉROS → modale de Round avec SA ligne, sans les lignes ennemies', () => {

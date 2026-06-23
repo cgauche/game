@@ -24,7 +24,7 @@ const DIRS: Dir[] = [
   { view: 'profile', mirror: true, label: 'profil G' },
 ];
 
-const wpn = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ name, type, damage: '+0', qualities: [] });
+const wpn = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ name, type, damage: { plusBF: false, flat: 0 }, qualities: [] });
 
 /** Rend un rig (vue/miroir/taille/équip) → fragment SVG, dans la boîte rig 120×150. */
 function rig(o: { app: Appearance; view: View; mirror: boolean; career?: string; weapons?: Weapon[] }): string {

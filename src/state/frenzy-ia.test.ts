@@ -3,12 +3,13 @@ import { chooseEnemyAction, EnemyTurnInput } from './ai';
 import { emptyScene } from './scene';
 import { useGame } from './store';
 import { aiMaybeFrenzy, aiFrenzyAttack } from './combatFlow';
+import { isFrenzied } from '../engine/psychology';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import type { Combatant, Weapon } from '../engine/types';
 
-const MELEE: Weapon = { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [] };
+const MELEE: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
 
 function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, opts: Partial<Combatant> = {}): Combatant {
   return {
@@ -29,7 +30,7 @@ function input(enemy: Combatant, heroes: Combatant[], extra: Partial<EnemyTurnIn
 
 describe('Frénésie IA — cible la plus proche (chooseEnemyAction, pur, LDB 21 l.34)', () => {
   it('frenzied : vise le plus PROCHE en Ligne de Vue (pas le plus faible distant)', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { frenzied: true, movement: 4 });
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { psychState: [{ type: 'frenesie' }], movement: 4 });
     const near = mk('near', 'hero', { x: 5, y: 6 }, { wounds: { current: 10, max: 10 } }); // proche, costaud
     const far = mk('far', 'hero', { x: 5, y: 9 }, { wounds: { current: 2, max: 10 } }); // faible, atteignable MAIS plus loin
     const action = chooseEnemyAction(input(e, [near, far]));
@@ -81,7 +82,7 @@ describe('Frénésie IA — entrée auto & attaque libre', () => {
     E.traits = [{ id: 'frenesie' }];
     E.characteristics.FM = 99; // réussite quasi certaine
     aiMaybeFrenzy(useGame.getState, useGame.setState, E);
-    expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.frenzied).toBe(true);
+    expect(isFrenzied(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!)).toBe(true);
   });
 
   it('aiMaybeFrenzy : aucun adversaire vivant en LdV → pas de Frénésie', () => {
@@ -90,20 +91,20 @@ describe('Frénésie IA — entrée auto & attaque libre', () => {
     E.characteristics.FM = 99;
     (H as Combatant).dead = true;
     aiMaybeFrenzy(useGame.getState, useGame.setState, E);
-    expect(!!useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.frenzied).toBe(false);
+    expect(isFrenzied(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!)).toBe(false);
   });
 
   it('aiMaybeFrenzy : ennemi NON capable → pas de Frénésie', () => {
     const { E } = setupBattle();
     E.characteristics.FM = 99; // mais aucun trait/talent « Frénésie »
     aiMaybeFrenzy(useGame.getState, useGame.setState, E);
-    expect(!!useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.frenzied).toBe(false);
+    expect(isFrenzied(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!)).toBe(false);
   });
 
   it('aiFrenzyAttack : attaque de mêlée LIBRE (ne consomme pas l’Action) contre un adversaire adjacent', () => {
     useGame.getState().seedRng(4);
     const { E } = setupBattle();
-    E.frenzied = true;
+    (E.psychState ??= []).push({ type: 'frenesie' });
     E.weapons = [MELEE];
     useGame.setState({ battle: { ...useGame.getState().battle!, acted: false } });
     const logBefore = useGame.getState().battle!.log.length;
@@ -115,7 +116,7 @@ describe('Frénésie IA — entrée auto & attaque libre', () => {
 
   it('aiFrenzyAttack : aucun adversaire adjacent → no-op', () => {
     const { E } = setupBattle();
-    E.frenzied = true;
+    (E.psychState ??= []).push({ type: 'frenesie' });
     E.pos = { x: 1, y: 1 }; // loin du héros (10,10)
     E.weapons = [MELEE];
     useGame.setState({ battle: { ...useGame.getState().battle!, acted: false } });

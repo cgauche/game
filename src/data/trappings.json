@@ -2,7 +2,7 @@
   {
     "id": "baton-de-combat",
     "label": "Bâton de combat",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "melee",
     "subType": "armes-d-hast",
     "enc": 2,
@@ -10,7 +10,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "assommante"
@@ -33,7 +36,7 @@
   {
     "id": "hallebarde",
     "label": "Hallebarde",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "melee",
     "subType": "armes-d-hast",
     "enc": 3,
@@ -41,7 +44,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "defensive"
@@ -67,7 +73,7 @@
   {
     "id": "lance",
     "label": "Lance",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "melee",
     "subType": "armes-d-hast",
     "enc": 2,
@@ -75,7 +81,10 @@
     "reach": "Très longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -95,7 +104,7 @@
   {
     "id": "pique",
     "label": "Pique",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "melee",
     "subType": "armes-d-hast",
     "enc": 4,
@@ -103,7 +112,10 @@
     "reach": "Considérable",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -123,7 +135,6 @@
   {
     "id": "mains-nues",
     "label": "Mains nues",
-    "prefix": null,
     "type": "melee",
     "subType": "bagarre",
     "enc": 0,
@@ -131,7 +142,10 @@
     "reach": "Personnelle",
     "loc": null,
     "pa": null,
-    "damage": "+BF+0",
+    "damage": {
+      "plusBF": true,
+      "flat": 0
+    },
     "qualities": [
       {
         "id": "inoffensive"
@@ -151,7 +165,6 @@
   {
     "id": "coup-de-poing",
     "label": "Coup-de-poing",
-    "prefix": null,
     "type": "melee",
     "subType": "bagarre",
     "enc": 0,
@@ -159,7 +172,10 @@
     "reach": "Personnelle",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [],
     "desc": null,
     "price": {
@@ -175,7 +191,6 @@
   {
     "id": "arme-improvisee",
     "label": "Arme improvisée",
-    "prefix": null,
     "type": "melee",
     "subType": "base",
     "enc": "Variable",
@@ -183,7 +198,10 @@
     "reach": "Variable",
     "loc": null,
     "pa": null,
-    "damage": "+BF+1",
+    "damage": {
+      "plusBF": true,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "inoffensive"
@@ -203,7 +221,6 @@
   {
     "id": "arme-simple",
     "label": "Arme simple",
-    "prefix": null,
     "type": "melee",
     "subType": "base",
     "enc": 1,
@@ -211,7 +228,10 @@
     "reach": "Moyenne",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [],
     "desc": "Le terme « Arme simple » est utilisé pour décrire un certain nombre d'armes de base qui, bien que différentes, sont considérées comme étant effectivement les mêmes pour le jeu, y compris les épées, les haches, les marteaux, les masses, les lances courtes etc. ",
     "price": {
@@ -227,7 +247,6 @@
   {
     "id": "bouclier",
     "label": "Bouclier",
-    "prefix": null,
     "type": "melee",
     "subType": "base",
     "enc": 1,
@@ -235,7 +254,10 @@
     "reach": "Très courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "protectrice",
@@ -262,7 +284,6 @@
   {
     "id": "bouclier-grand",
     "label": "Bouclier (Grand)",
-    "prefix": null,
     "type": "melee",
     "subType": "base",
     "enc": 3,
@@ -270,7 +291,10 @@
     "reach": "Très courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+3",
+    "damage": {
+      "plusBF": true,
+      "flat": 3
+    },
     "qualities": [
       {
         "id": "protectrice",
@@ -297,7 +321,6 @@
   {
     "id": "bouclier-targe",
     "label": "Bouclier (Targe)",
-    "prefix": null,
     "type": "melee",
     "subType": "base",
     "enc": 0,
@@ -305,7 +328,10 @@
     "reach": "Personnelle",
     "loc": null,
     "pa": null,
-    "damage": "+BF+1",
+    "damage": {
+      "plusBF": true,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "protectrice",
@@ -332,7 +358,6 @@
   {
     "id": "couteau",
     "label": "Couteau",
-    "prefix": null,
     "type": "melee",
     "subType": "base",
     "enc": 0,
@@ -340,7 +365,10 @@
     "reach": "Très courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+1",
+    "damage": {
+      "plusBF": true,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "inoffensive"
@@ -360,7 +388,6 @@
   {
     "id": "dague",
     "label": "Dague",
-    "prefix": null,
     "type": "melee",
     "subType": "base",
     "enc": 0,
@@ -368,7 +395,10 @@
     "reach": "Très courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [],
     "desc": null,
     "price": {
@@ -384,7 +414,6 @@
   {
     "id": "lance-de-cavalerie",
     "label": "Lance de cavalerie",
-    "prefix": null,
     "type": "melee",
     "subType": "cavalerie",
     "enc": 3,
@@ -392,7 +421,10 @@
     "reach": "Très longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+6",
+    "damage": {
+      "plusBF": true,
+      "flat": 6
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -415,7 +447,7 @@
   {
     "id": "marteau-a-bec-de-corbin",
     "label": "Marteau à bec-de-corbin",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "melee",
     "subType": "cavalerie",
     "enc": 3,
@@ -423,7 +455,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+5",
+    "damage": {
+      "plusBF": true,
+      "flat": 5
+    },
     "qualities": [
       {
         "id": "assommante"
@@ -443,7 +478,7 @@
   {
     "id": "epee-batarde",
     "label": "Épée bâtarde",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "melee",
     "subType": "deux-mains",
     "enc": 3,
@@ -451,7 +486,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+5",
+    "damage": {
+      "plusBF": true,
+      "flat": 5
+    },
     "qualities": [
       {
         "id": "devastatrice"
@@ -474,7 +512,7 @@
   {
     "id": "grande-hache",
     "label": "Grande hache",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "melee",
     "subType": "deux-mains",
     "enc": 3,
@@ -482,7 +520,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+6",
+    "damage": {
+      "plusBF": true,
+      "flat": 6
+    },
     "qualities": [
       {
         "id": "epuisante"
@@ -508,7 +549,7 @@
   {
     "id": "marteau-de-guerre",
     "label": "Marteau de guerre",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "melee",
     "subType": "deux-mains",
     "enc": 3,
@@ -516,7 +557,10 @@
     "reach": "Moyenne",
     "loc": null,
     "pa": null,
-    "damage": "+BF+6",
+    "damage": {
+      "plusBF": true,
+      "flat": 6
+    },
     "qualities": [
       {
         "id": "assommante"
@@ -542,7 +586,7 @@
   {
     "id": "pioche-a-deux-mains",
     "label": "Pioche à deux mains",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "melee",
     "subType": "deux-mains",
     "enc": 3,
@@ -550,7 +594,10 @@
     "reach": "Moyenne",
     "loc": null,
     "pa": null,
-    "damage": "+BF+5",
+    "damage": {
+      "plusBF": true,
+      "flat": 5
+    },
     "qualities": [
       {
         "id": "devastatrice"
@@ -576,7 +623,7 @@
   {
     "id": "zweihander",
     "label": "Zweihänder",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "melee",
     "subType": "deux-mains",
     "enc": 3,
@@ -584,7 +631,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+5",
+    "damage": {
+      "plusBF": true,
+      "flat": 5
+    },
     "qualities": [
       {
         "id": "devastatrice"
@@ -607,7 +657,6 @@
   {
     "id": "fleuret",
     "label": "Fleuret",
-    "prefix": null,
     "type": "melee",
     "subType": "escrime",
     "enc": 1,
@@ -615,7 +664,10 @@
     "reach": "Moyenne",
     "loc": null,
     "pa": null,
-    "damage": "+BF+3",
+    "damage": {
+      "plusBF": true,
+      "flat": 3
+    },
     "qualities": [
       {
         "id": "rapide"
@@ -644,7 +696,6 @@
   {
     "id": "rapiere",
     "label": "Rapière",
-    "prefix": null,
     "type": "melee",
     "subType": "escrime",
     "enc": 1,
@@ -652,7 +703,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "rapide"
@@ -675,7 +729,6 @@
   {
     "id": "fleau",
     "label": "Fléau",
-    "prefix": null,
     "type": "melee",
     "subType": "fleau",
     "enc": 1,
@@ -683,7 +736,10 @@
     "reach": "Moyenne",
     "loc": null,
     "pa": null,
-    "damage": "+BF+5",
+    "damage": {
+      "plusBF": true,
+      "flat": 5
+    },
     "qualities": [
       {
         "id": "perturbante"
@@ -706,7 +762,6 @@
   {
     "id": "fleau-a-grain",
     "label": "Fléau à grain",
-    "prefix": null,
     "type": "melee",
     "subType": "fleau",
     "enc": 1,
@@ -714,7 +769,10 @@
     "reach": "Moyenne",
     "loc": null,
     "pa": null,
-    "damage": "+BF+3",
+    "damage": {
+      "plusBF": true,
+      "flat": 3
+    },
     "qualities": [
       {
         "id": "perturbante"
@@ -740,7 +798,7 @@
   {
     "id": "fleau-d-armes",
     "label": "Fléau d'armes",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "melee",
     "subType": "fleau",
     "enc": 2,
@@ -748,7 +806,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+6",
+    "damage": {
+      "plusBF": true,
+      "flat": 6
+    },
     "qualities": [
       {
         "id": "perturbante"
@@ -777,7 +838,6 @@
   {
     "id": "brise-epee",
     "label": "Brise-épée",
-    "prefix": null,
     "type": "melee",
     "subType": "parade",
     "enc": 1,
@@ -785,7 +845,10 @@
     "reach": "Courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+3",
+    "damage": {
+      "plusBF": true,
+      "flat": 3
+    },
     "qualities": [
       {
         "id": "defensive"
@@ -808,7 +871,6 @@
   {
     "id": "main-gauche",
     "label": "Main Gauche",
-    "prefix": null,
     "type": "melee",
     "subType": "parade",
     "enc": 0,
@@ -816,7 +878,10 @@
     "reach": "Très courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "defensive"
@@ -836,7 +901,7 @@
   {
     "id": "arbalete",
     "label": "Arbalète",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "ranged",
     "subType": "arbalete",
     "enc": 2,
@@ -844,7 +909,10 @@
     "reach": 60,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "recharge",
@@ -865,7 +933,6 @@
   {
     "id": "arbalete-de-poing",
     "label": "Arbalète de poing",
-    "prefix": null,
     "type": "ranged",
     "subType": "arbalete",
     "enc": 0,
@@ -873,7 +940,10 @@
     "reach": 10,
     "loc": null,
     "pa": null,
-    "damage": "+7",
+    "damage": {
+      "plusBF": false,
+      "flat": 7
+    },
     "qualities": [
       {
         "id": "pistolet"
@@ -893,7 +963,7 @@
   {
     "id": "arbalete-lourde",
     "label": "Arbalète lourde",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "ranged",
     "subType": "arbalete",
     "enc": 3,
@@ -901,7 +971,10 @@
     "reach": 100,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "devastatrice"
@@ -925,7 +998,7 @@
   {
     "id": "arc",
     "label": "Arc",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "ranged",
     "subType": "arc",
     "enc": 2,
@@ -933,7 +1006,10 @@
     "reach": 50,
     "loc": null,
     "pa": null,
-    "damage": "+BF+3",
+    "damage": {
+      "plusBF": true,
+      "flat": 3
+    },
     "qualities": [],
     "desc": null,
     "price": {
@@ -949,7 +1025,7 @@
   {
     "id": "arc-court",
     "label": "Arc court",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "ranged",
     "subType": "arc",
     "enc": 1,
@@ -957,7 +1033,10 @@
     "reach": 20,
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [],
     "desc": null,
     "price": {
@@ -973,7 +1052,7 @@
   {
     "id": "arc-elfique",
     "label": "Arc elfique",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "ranged",
     "subType": "arc",
     "enc": 2,
@@ -981,7 +1060,10 @@
     "reach": 150,
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "devastatrice"
@@ -1004,7 +1086,7 @@
   {
     "id": "arc-long",
     "label": "Arc long",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "ranged",
     "subType": "arc",
     "enc": 3,
@@ -1012,7 +1094,10 @@
     "reach": 100,
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "devastatrice"
@@ -1032,7 +1117,6 @@
   {
     "id": "fouet",
     "label": "Fouet",
-    "prefix": null,
     "type": "ranged",
     "subType": "entraves",
     "enc": 0,
@@ -1040,7 +1124,10 @@
     "reach": 6,
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "immobilisante"
@@ -1060,7 +1147,6 @@
   {
     "id": "lasso",
     "label": "Lasso",
-    "prefix": null,
     "type": "ranged",
     "subType": "entraves",
     "enc": 0,
@@ -1088,7 +1174,6 @@
   {
     "id": "bombe",
     "label": "Bombe",
-    "prefix": null,
     "type": "ranged",
     "subType": "explosifs",
     "enc": 0,
@@ -1096,7 +1181,10 @@
     "reach": "BF",
     "loc": null,
     "pa": null,
-    "damage": "+12",
+    "damage": {
+      "plusBF": false,
+      "flat": 12
+    },
     "qualities": [
       {
         "id": "a-explosion",
@@ -1123,7 +1211,6 @@
   {
     "id": "bombe-incendiaire",
     "label": "Bombe incendiaire",
-    "prefix": null,
     "type": "ranged",
     "subType": "explosifs",
     "enc": 0,
@@ -1131,7 +1218,9 @@
     "reach": "BF",
     "loc": null,
     "pa": null,
-    "damage": "Spécial",
+    "damage": {
+      "literal": "Spécial"
+    },
     "qualities": [
       {
         "id": "a-explosion",
@@ -1155,7 +1244,6 @@
   {
     "id": "fronde",
     "label": "Fronde",
-    "prefix": null,
     "type": "ranged",
     "subType": "fronde",
     "enc": 0,
@@ -1163,7 +1251,10 @@
     "reach": 60,
     "loc": null,
     "pa": null,
-    "damage": "+6",
+    "damage": {
+      "plusBF": false,
+      "flat": 6
+    },
     "qualities": [],
     "desc": null,
     "price": {
@@ -1179,7 +1270,7 @@
   {
     "id": "fustibale",
     "label": "Fustibale",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "ranged",
     "subType": "fronde",
     "enc": 2,
@@ -1187,7 +1278,10 @@
     "reach": 100,
     "loc": null,
     "pa": null,
-    "damage": "+7",
+    "damage": {
+      "plusBF": false,
+      "flat": 7
+    },
     "qualities": [],
     "desc": null,
     "price": {
@@ -1203,7 +1297,6 @@
   {
     "id": "bolas",
     "label": "Bolas",
-    "prefix": null,
     "type": "ranged",
     "subType": "lancer",
     "enc": 0,
@@ -1211,7 +1304,11 @@
     "reach": "BFx3",
     "loc": null,
     "pa": null,
-    "damage": "+BF",
+    "damage": {
+      "plusBF": true,
+      "flat": 0,
+      "bare": true
+    },
     "qualities": [
       {
         "id": "immobilisante"
@@ -1231,7 +1328,6 @@
   {
     "id": "couteau-de-lancer",
     "label": "Couteau de lancer",
-    "prefix": null,
     "type": "ranged",
     "subType": "lancer",
     "enc": 0,
@@ -1239,7 +1335,10 @@
     "reach": "BFx2",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [],
     "desc": null,
     "price": {
@@ -1255,7 +1354,6 @@
   {
     "id": "flechette",
     "label": "Fléchette",
-    "prefix": null,
     "type": "ranged",
     "subType": "lancer",
     "enc": 0,
@@ -1263,7 +1361,10 @@
     "reach": "BFx2",
     "loc": null,
     "pa": null,
-    "damage": "+BF+1",
+    "damage": {
+      "plusBF": true,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -1283,7 +1384,6 @@
   {
     "id": "hache-de-lancer",
     "label": "Hache de lancer",
-    "prefix": null,
     "type": "ranged",
     "subType": "lancer",
     "enc": 1,
@@ -1291,7 +1391,10 @@
     "reach": "BFx2",
     "loc": null,
     "pa": null,
-    "damage": "+BF+3",
+    "damage": {
+      "plusBF": true,
+      "flat": 3
+    },
     "qualities": [
       {
         "id": "taille"
@@ -1311,7 +1414,6 @@
   {
     "id": "javelot",
     "label": "Javelot",
-    "prefix": null,
     "type": "ranged",
     "subType": "lancer",
     "enc": 1,
@@ -1319,7 +1421,10 @@
     "reach": "BFx3",
     "loc": null,
     "pa": null,
-    "damage": "+BF+3",
+    "damage": {
+      "plusBF": true,
+      "flat": 3
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -1339,7 +1444,6 @@
   {
     "id": "rocher",
     "label": "Rocher",
-    "prefix": null,
     "type": "ranged",
     "subType": "lancer",
     "enc": 0,
@@ -1347,7 +1451,11 @@
     "reach": "BFx3",
     "loc": null,
     "pa": null,
-    "damage": "+BF",
+    "damage": {
+      "plusBF": true,
+      "flat": 0,
+      "bare": true
+    },
     "qualities": [],
     "desc": null,
     "price": {
@@ -1363,7 +1471,7 @@
   {
     "id": "arquebus-a-repetition",
     "label": "Arquebus à répétition",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "ranged",
     "subType": "ingenierie",
     "enc": 3,
@@ -1371,7 +1479,10 @@
     "reach": 30,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -1405,7 +1516,6 @@
   {
     "id": "pistolet-a-repetition",
     "label": "Pistolet à répétition",
-    "prefix": null,
     "type": "ranged",
     "subType": "ingenierie",
     "enc": 1,
@@ -1413,7 +1523,10 @@
     "reach": 10,
     "loc": null,
     "pa": null,
-    "damage": "+8",
+    "damage": {
+      "plusBF": false,
+      "flat": 8
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -1450,7 +1563,7 @@
   {
     "id": "arquebuse",
     "label": "Arquebuse",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "ranged",
     "subType": "poudre-noire",
     "enc": 2,
@@ -1458,7 +1571,10 @@
     "reach": 50,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -1488,7 +1604,7 @@
   {
     "id": "long-fusil-d-hochland",
     "label": "Long fusil d'Hochland",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "ranged",
     "subType": "poudre-noire",
     "enc": 3,
@@ -1496,7 +1612,10 @@
     "reach": 100,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "devastatrice"
@@ -1529,7 +1648,6 @@
   {
     "id": "pistolet",
     "label": "Pistolet",
-    "prefix": null,
     "type": "ranged",
     "subType": "poudre-noire",
     "enc": 0,
@@ -1537,7 +1655,10 @@
     "reach": 20,
     "loc": null,
     "pa": null,
-    "damage": "+8",
+    "damage": {
+      "plusBF": false,
+      "flat": 8
+    },
     "qualities": [
       {
         "id": "devastatrice"
@@ -1567,7 +1688,7 @@
   {
     "id": "tromblon",
     "label": "Tromblon",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "ranged",
     "subType": "poudre-noire",
     "enc": 1,
@@ -1575,7 +1696,10 @@
     "reach": 20,
     "loc": null,
     "pa": null,
-    "damage": "+8",
+    "damage": {
+      "plusBF": false,
+      "flat": 8
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -1609,7 +1733,7 @@
   {
     "id": "carreau",
     "label": "Carreau",
-    "prefix": "(12)",
+    "packSize": 12,
     "type": "ammunition",
     "subType": "arbalete",
     "enc": 0,
@@ -1637,7 +1761,7 @@
   {
     "id": "fleche",
     "label": "Flèche",
-    "prefix": "(12)",
+    "packSize": 12,
     "type": "ammunition",
     "subType": "arc",
     "enc": 0,
@@ -1665,7 +1789,6 @@
   {
     "id": "fleche-elfique",
     "label": "Flèche elfique",
-    "prefix": null,
     "type": "ammunition",
     "subType": "arc",
     "enc": 0,
@@ -1673,7 +1796,10 @@
     "reach": "+50",
     "loc": null,
     "pa": null,
-    "damage": "+1",
+    "damage": {
+      "plusBF": false,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "precise"
@@ -1699,7 +1825,7 @@
   {
     "id": "balle-de-plomb",
     "label": "Balle de plomb",
-    "prefix": "(12)",
+    "packSize": 12,
     "type": "ammunition",
     "subType": "fronde",
     "enc": 0,
@@ -1707,7 +1833,10 @@
     "reach": "-10",
     "loc": null,
     "pa": null,
-    "damage": "+1",
+    "damage": {
+      "plusBF": false,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "assommante"
@@ -1727,7 +1856,7 @@
   {
     "id": "projectile-de-pierre",
     "label": "Projectile de pierre",
-    "prefix": "(12)",
+    "packSize": 12,
     "type": "ammunition",
     "subType": "fronde",
     "enc": 0,
@@ -1755,7 +1884,7 @@
   {
     "id": "balle-et-poudre",
     "label": "Balle et Poudre",
-    "prefix": "(12)",
+    "packSize": 12,
     "type": "ammunition",
     "subType": "poudre-noire-et-ingenierie",
     "enc": 0,
@@ -1763,7 +1892,10 @@
     "reach": "Comme l'arme",
     "loc": null,
     "pa": null,
-    "damage": "+1",
+    "damage": {
+      "plusBF": false,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -1786,7 +1918,6 @@
   {
     "id": "munitions-improvisees-et-poudre",
     "label": "Munitions improvisées et Poudre",
-    "prefix": null,
     "type": "ammunition",
     "subType": "poudre-noire-et-ingenierie",
     "enc": 0,
@@ -1810,7 +1941,6 @@
   {
     "id": "petites-munitions-et-poudre",
     "label": "Petites munitions et Poudre",
-    "prefix": null,
     "type": "ammunition",
     "subType": "poudre-noire-et-ingenierie",
     "enc": 0,
@@ -1838,7 +1968,6 @@
   {
     "id": "calotte-de-cuir",
     "label": "Calotte de cuir",
-    "prefix": null,
     "type": "armor",
     "subType": "cuir-souple",
     "enc": 0,
@@ -1866,7 +1995,6 @@
   {
     "id": "jambieres-en-cuir",
     "label": "Jambières en cuir",
-    "prefix": null,
     "type": "armor",
     "subType": "cuir-souple",
     "enc": 1,
@@ -1890,7 +2018,6 @@
   {
     "id": "justaucorps-de-cuir",
     "label": "Justaucorps de cuir",
-    "prefix": null,
     "type": "armor",
     "subType": "cuir-souple",
     "enc": 1,
@@ -1914,7 +2041,6 @@
   {
     "id": "veste-de-cuir",
     "label": "Veste de cuir",
-    "prefix": null,
     "type": "armor",
     "subType": "cuir-souple",
     "enc": 1,
@@ -1938,7 +2064,6 @@
   {
     "id": "plastron-de-cuir",
     "label": "Plastron de cuir",
-    "prefix": null,
     "type": "armor",
     "subType": "cuir-bouilli",
     "enc": 2,
@@ -1966,7 +2091,6 @@
   {
     "id": "chausses-de-mailles",
     "label": "Chausses de mailles",
-    "prefix": null,
     "type": "armor",
     "subType": "mailles",
     "enc": 3,
@@ -1980,7 +2104,8 @@
         "id": "flexible"
       },
       {
-        "id": "en-discretion"
+        "id": "en-discretion",
+        "value": -10
       }
     ],
     "desc": null,
@@ -1997,7 +2122,6 @@
   {
     "id": "chemise-de-mailles",
     "label": "Chemise de mailles",
-    "prefix": null,
     "type": "armor",
     "subType": "mailles",
     "enc": 2,
@@ -2011,7 +2135,8 @@
         "id": "flexible"
       },
       {
-        "id": "en-discretion"
+        "id": "en-discretion",
+        "value": -10
       }
     ],
     "desc": null,
@@ -2028,7 +2153,6 @@
   {
     "id": "coiffe-de-mailles",
     "label": "Coiffe de mailles",
-    "prefix": null,
     "type": "armor",
     "subType": "mailles",
     "enc": 2,
@@ -2045,10 +2169,12 @@
         "id": "partielle"
       },
       {
-        "id": "en-discretion"
+        "id": "en-discretion",
+        "value": -10
       },
       {
-        "id": "en-perception"
+        "id": "en-perception",
+        "value": -10
       }
     ],
     "desc": null,
@@ -2065,7 +2191,6 @@
   {
     "id": "cotte-de-mailles",
     "label": "Cotte de mailles",
-    "prefix": null,
     "type": "armor",
     "subType": "mailles",
     "enc": 3,
@@ -2079,7 +2204,8 @@
         "id": "flexible"
       },
       {
-        "id": "en-discretion"
+        "id": "en-discretion",
+        "value": -10
       }
     ],
     "desc": null,
@@ -2096,7 +2222,6 @@
   {
     "id": "brassards",
     "label": "Brassards",
-    "prefix": null,
     "type": "armor",
     "subType": "plate",
     "enc": 3,
@@ -2113,7 +2238,8 @@
         "id": "points-faibles"
       },
       {
-        "id": "en-discretion"
+        "id": "en-discretion",
+        "value": -10
       }
     ],
     "desc": null,
@@ -2130,7 +2256,6 @@
   {
     "id": "heaume",
     "label": "Heaume",
-    "prefix": null,
     "type": "armor",
     "subType": "plate",
     "enc": 2,
@@ -2147,10 +2272,12 @@
         "id": "points-faibles"
       },
       {
-        "id": "en-discretion"
+        "id": "en-discretion",
+        "value": -10
       },
       {
-        "id": "en-perception"
+        "id": "en-perception",
+        "value": -20
       }
     ],
     "desc": null,
@@ -2167,7 +2294,6 @@
   {
     "id": "heaume-ouvert",
     "label": "Heaume ouvert",
-    "prefix": null,
     "type": "armor",
     "subType": "plate",
     "enc": 1,
@@ -2181,10 +2307,12 @@
         "id": "partielle"
       },
       {
-        "id": "en-discretion"
+        "id": "en-discretion",
+        "value": -10
       },
       {
-        "id": "en-perception"
+        "id": "en-perception",
+        "value": -10
       }
     ],
     "desc": null,
@@ -2201,7 +2329,6 @@
   {
     "id": "jambieres-d-acier",
     "label": "Jambières d'acier",
-    "prefix": null,
     "type": "armor",
     "subType": "plate",
     "enc": 3,
@@ -2218,7 +2345,8 @@
         "id": "points-faibles"
       },
       {
-        "id": "en-discretion"
+        "id": "en-discretion",
+        "value": -10
       }
     ],
     "desc": null,
@@ -2235,7 +2363,6 @@
   {
     "id": "plastron",
     "label": "Plastron",
-    "prefix": null,
     "type": "armor",
     "subType": "plate",
     "enc": 3,
@@ -2252,7 +2379,8 @@
         "id": "points-faibles"
       },
       {
-        "id": "en-discretion"
+        "id": "en-discretion",
+        "value": -10
       }
     ],
     "desc": null,
@@ -2269,7 +2397,6 @@
   {
     "id": "baril",
     "label": "Baril",
-    "prefix": null,
     "type": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 6,
@@ -2293,7 +2420,6 @@
   {
     "id": "besace",
     "label": "Besace",
-    "prefix": null,
     "type": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 1,
@@ -2317,7 +2443,6 @@
   {
     "id": "bourse",
     "label": "Bourse",
-    "prefix": null,
     "type": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 0,
@@ -2341,7 +2466,6 @@
   {
     "id": "chope-en-etain",
     "label": "Chope en étain",
-    "prefix": null,
     "type": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 0,
@@ -2365,7 +2489,6 @@
   {
     "id": "cruche",
     "label": "Cruche",
-    "prefix": null,
     "type": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 1,
@@ -2389,7 +2512,6 @@
   {
     "id": "etui-a-parchemin",
     "label": "Étui à parchemin",
-    "prefix": null,
     "type": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 0,
@@ -2413,7 +2535,6 @@
   {
     "id": "flasque",
     "label": "Flasque",
-    "prefix": null,
     "type": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 0,
@@ -2437,7 +2558,6 @@
   {
     "id": "fontes-de-selle",
     "label": "Fontes de selle",
-    "prefix": null,
     "type": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 4,
@@ -2461,7 +2581,6 @@
   {
     "id": "grand-sac",
     "label": "Grand sac",
-    "prefix": null,
     "type": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 3,
@@ -2485,7 +2604,6 @@
   {
     "id": "outre-a-eau",
     "label": "Outre à eau",
-    "prefix": null,
     "type": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 1,
@@ -2509,7 +2627,6 @@
   {
     "id": "sac",
     "label": "Sac",
-    "prefix": null,
     "type": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 2,
@@ -2533,7 +2650,6 @@
   {
     "id": "sac-a-dos",
     "label": "Sac à dos",
-    "prefix": null,
     "type": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 2,
@@ -2557,7 +2673,6 @@
   {
     "id": "tonneau",
     "label": "Tonneau",
-    "prefix": null,
     "type": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 2,
@@ -2581,7 +2696,6 @@
   {
     "id": "amulette",
     "label": "Amulette",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
@@ -2605,7 +2719,6 @@
   {
     "id": "bijoux",
     "label": "Bijoux",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
@@ -2629,7 +2742,6 @@
   {
     "id": "bottes",
     "label": "Bottes",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
@@ -2653,7 +2765,6 @@
   {
     "id": "canne-de-marche",
     "label": "Canne de marche",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
@@ -2678,7 +2789,6 @@
     "id": "cape",
     "label": "Cape",
     "weatherProtection": true,
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
@@ -2702,7 +2812,6 @@
   {
     "id": "capuchon",
     "label": "Capuchon",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
@@ -2726,7 +2835,6 @@
   {
     "id": "masque",
     "label": "Masque",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
@@ -2750,7 +2858,6 @@
   {
     "id": "chapeau",
     "label": "Chapeau",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
@@ -2774,7 +2881,6 @@
   {
     "id": "chaussures",
     "label": "Chaussures",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
@@ -2798,7 +2904,6 @@
   {
     "id": "chevaliere",
     "label": "Chevalière",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
@@ -2822,7 +2927,6 @@
   {
     "id": "costume",
     "label": "Costume",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
@@ -2846,7 +2950,7 @@
   {
     "id": "epingle",
     "label": "Épingle",
-    "prefix": "(6)",
+    "packSize": 6,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
@@ -2870,7 +2974,6 @@
   {
     "id": "gants",
     "label": "Gants",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
@@ -2894,7 +2997,6 @@
   {
     "id": "gants-en-cuir",
     "label": "Gants en cuir",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
@@ -2918,7 +3020,6 @@
   {
     "id": "costume-de-cour",
     "label": "Costume de cour",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
@@ -2943,7 +3044,6 @@
     "id": "manteau",
     "label": "Manteau",
     "weatherProtection": true,
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
@@ -2967,7 +3067,6 @@
   {
     "id": "parfum",
     "label": "Parfum",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
@@ -2991,7 +3090,6 @@
   {
     "id": "poudre-pour-le-visage",
     "label": "Poudre pour le visage",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
@@ -3015,7 +3113,6 @@
   {
     "id": "robes",
     "label": "Robes",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
@@ -3039,7 +3136,6 @@
   {
     "id": "sceptre",
     "label": "Sceptre",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
@@ -3063,7 +3159,6 @@
   {
     "id": "symbole-religieux",
     "label": "Symbole religieux",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
@@ -3087,7 +3182,6 @@
   {
     "id": "tatouage",
     "label": "Tatouage",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
@@ -3111,7 +3205,6 @@
   {
     "id": "uniforme",
     "label": "Uniforme",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
@@ -3135,7 +3228,6 @@
   {
     "id": "vetements",
     "label": "Vêtements",
-    "prefix": null,
     "type": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
@@ -3159,7 +3251,6 @@
   {
     "id": "biere-pinte",
     "label": "Bière, pinte",
-    "prefix": null,
     "type": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 0,
@@ -3183,7 +3274,6 @@
   {
     "id": "biere-tonnelet",
     "label": "Bière, tonnelet",
-    "prefix": null,
     "type": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 2,
@@ -3207,7 +3297,6 @@
   {
     "id": "biere-de-bugman-xxxxxx-pinte",
     "label": "Bière de Bugman XXXXXX, pinte",
-    "prefix": null,
     "type": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 0,
@@ -3231,7 +3320,6 @@
   {
     "id": "chambre-commune-nuit",
     "label": "Chambre, commune/nuit",
-    "prefix": null,
     "type": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": null,
@@ -3255,7 +3343,6 @@
   {
     "id": "chambre-privee-nuit",
     "label": "Chambre, privée/nuit",
-    "prefix": null,
     "type": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": null,
@@ -3279,7 +3366,6 @@
   {
     "id": "ecurie-nuit",
     "label": "Écurie/nuit",
-    "prefix": null,
     "type": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": null,
@@ -3303,7 +3389,6 @@
   {
     "id": "nourriture-courses-journee",
     "label": "Nourriture, courses/journée",
-    "prefix": null,
     "type": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 1,
@@ -3327,7 +3412,6 @@
   {
     "id": "repas-auberge",
     "label": "Repas, auberge",
-    "prefix": null,
     "type": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 0,
@@ -3351,7 +3435,6 @@
   {
     "id": "spiritueux-pinte",
     "label": "Spiritueux, pinte",
-    "prefix": null,
     "type": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 0,
@@ -3375,7 +3458,6 @@
   {
     "id": "vin-bouteille",
     "label": "Vin, bouteille",
-    "prefix": null,
     "type": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 0,
@@ -3399,7 +3481,6 @@
   {
     "id": "vin-spiritueux-verre",
     "label": "Vin & spiritueux, verre",
-    "prefix": null,
     "type": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 0,
@@ -3424,7 +3505,6 @@
     "id": "ration",
     "label": "Ration",
     "isRations": true,
-    "prefix": "(1 jour)",
     "type": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 0,
@@ -3434,7 +3514,7 @@
     "pa": null,
     "damage": null,
     "qualities": [],
-    "desc": null,
+    "desc": "(1 jour)",
     "price": {
       "gold": 0,
       "silver": 2,
@@ -3448,7 +3528,6 @@
   {
     "id": "aiguille",
     "label": "Aiguille",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -3472,7 +3551,6 @@
   {
     "id": "balai",
     "label": "Balai",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 2,
@@ -3496,7 +3574,6 @@
   {
     "id": "bequille",
     "label": "Béquille",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 2,
@@ -3520,7 +3597,6 @@
   {
     "id": "besicles",
     "label": "Bésicles",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -3544,7 +3620,6 @@
   {
     "id": "binette",
     "label": "Binette",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 2,
@@ -3568,7 +3643,6 @@
   {
     "id": "boulier",
     "label": "Boulier",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -3592,7 +3666,6 @@
   {
     "id": "brosse-pour-le-sol",
     "label": "Brosse pour le sol",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -3616,7 +3689,6 @@
   {
     "id": "cachet-grave",
     "label": "Cachet, gravé",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -3640,7 +3712,6 @@
   {
     "id": "ciseau",
     "label": "Ciseau",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -3664,7 +3735,6 @@
   {
     "id": "clef",
     "label": "Clef",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -3688,7 +3758,7 @@
   {
     "id": "clou",
     "label": "Clou",
-    "prefix": "(12)",
+    "packSize": 12,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -3712,7 +3782,6 @@
   {
     "id": "couteau-2",
     "label": "Couteau",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -3736,7 +3805,6 @@
   {
     "id": "cure-oreille",
     "label": "Cure-oreille",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -3760,7 +3828,6 @@
   {
     "id": "faucille",
     "label": "Faucille",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 1,
@@ -3784,7 +3851,6 @@
   {
     "id": "gaffe",
     "label": "Gaffe",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 1,
@@ -3808,7 +3874,7 @@
   {
     "id": "hamecon",
     "label": "Hameçon",
-    "prefix": "(12)",
+    "packSize": 12,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -3832,7 +3898,6 @@
   {
     "id": "maillet",
     "label": "Maillet",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -3856,7 +3921,6 @@
   {
     "id": "marteau",
     "label": "Marteau",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -3880,7 +3944,6 @@
   {
     "id": "menottes",
     "label": "Menottes",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -3904,7 +3967,6 @@
   {
     "id": "miroir-a-main",
     "label": "Miroir à main",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -3928,7 +3990,6 @@
   {
     "id": "necessaire-antipoison",
     "label": "Nécessaire antipoison",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -3947,12 +4008,18 @@
     "source": {
       "book": "LDB",
       "page": 303
-    }
+    },
+    "consumable": [
+      {
+        "op": "removeCondition",
+        "name": "empoisonne",
+        "all": true
+      }
+    ]
   },
   {
     "id": "necessaire-d-ecriture",
     "label": "Nécessaire d'écriture",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -3976,7 +4043,6 @@
   {
     "id": "necessaire-de-deguisement",
     "label": "Nécessaire de déguisement",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -4000,7 +4066,6 @@
   {
     "id": "outils-de-crochetage",
     "label": "Outils de crochetage",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -4024,7 +4089,6 @@
   {
     "id": "peigne",
     "label": "Peigne",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -4048,7 +4112,6 @@
   {
     "id": "pelle",
     "label": "Pelle",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 2,
@@ -4072,7 +4135,6 @@
   {
     "id": "perche",
     "label": "Perche",
-    "prefix": "(3 mètres)",
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 3,
@@ -4082,7 +4144,7 @@
     "pa": null,
     "damage": null,
     "qualities": [],
-    "desc": "Une longue perche est utilisée pour diriger une barque ; compte comme une Arme improvisée.",
+    "desc": "(3 mètres) Une longue perche est utilisée pour diriger une barque ; compte comme une Arme improvisée.",
     "price": {
       "gold": 0,
       "silver": 8,
@@ -4096,7 +4158,6 @@
   {
     "id": "pied-de-biche",
     "label": "Pied-de-biche",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 1,
@@ -4120,7 +4181,6 @@
   {
     "id": "piege-a-animaux",
     "label": "Piège à animaux",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 1,
@@ -4144,7 +4204,6 @@
   {
     "id": "pilon-et-mortier",
     "label": "Pilon et Mortier",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -4168,7 +4227,6 @@
   {
     "id": "pinces-acier",
     "label": "Pinces, acier",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -4192,7 +4250,6 @@
   {
     "id": "pince-a-epiler",
     "label": "Pince à épiler",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -4216,7 +4273,6 @@
   {
     "id": "pinceau",
     "label": "Pinceau",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -4240,7 +4296,6 @@
   {
     "id": "pioche",
     "label": "Pioche",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 1,
@@ -4264,7 +4319,6 @@
   {
     "id": "plume-d-oie",
     "label": "Plume d'oie",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -4288,7 +4342,6 @@
   {
     "id": "rateau",
     "label": "Râteau",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 2,
@@ -4312,7 +4365,6 @@
   {
     "id": "scie",
     "label": "Scie",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 1,
@@ -4336,7 +4388,6 @@
   {
     "id": "seau",
     "label": "Seau",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 1,
@@ -4360,7 +4411,6 @@
   {
     "id": "serpillere",
     "label": "Serpillère",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 2,
@@ -4384,7 +4434,6 @@
   {
     "id": "telescope",
     "label": "Télescope",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
@@ -4408,7 +4457,6 @@
   {
     "id": "carte",
     "label": "Carte",
-    "prefix": null,
     "type": "trapping",
     "subType": "livres-et-documents",
     "enc": 0,
@@ -4432,7 +4480,6 @@
   {
     "id": "document-legal",
     "label": "Document légal",
-    "prefix": null,
     "type": "trapping",
     "subType": "livres-et-documents",
     "enc": 0,
@@ -4456,7 +4503,6 @@
   {
     "id": "licence-de-guilde",
     "label": "Licence de Guilde",
-    "prefix": null,
     "type": "trapping",
     "subType": "livres-et-documents",
     "enc": 0,
@@ -4480,7 +4526,6 @@
   {
     "id": "livre-apothicaire",
     "label": "Livre (Apothicaire)",
-    "prefix": null,
     "type": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
@@ -4504,7 +4549,6 @@
   {
     "id": "livre-art",
     "label": "Livre (Art)",
-    "prefix": null,
     "type": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
@@ -4528,7 +4572,6 @@
   {
     "id": "livre-cryptographie",
     "label": "Livre (Cryptographie)",
-    "prefix": null,
     "type": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
@@ -4552,7 +4595,6 @@
   {
     "id": "livre-ingenierie",
     "label": "Livre (Ingénierie)",
-    "prefix": null,
     "type": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
@@ -4576,7 +4618,6 @@
   {
     "id": "livre-loi",
     "label": "Livre (Loi)",
-    "prefix": null,
     "type": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
@@ -4600,7 +4641,6 @@
   {
     "id": "livre-magie",
     "label": "Livre (Magie)",
-    "prefix": null,
     "type": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
@@ -4624,7 +4664,6 @@
   {
     "id": "livre-medecine",
     "label": "Livre (Médecine)",
-    "prefix": null,
     "type": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
@@ -4648,7 +4687,6 @@
   {
     "id": "livre-religion",
     "label": "Livre (Religion)",
-    "prefix": null,
     "type": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
@@ -4673,7 +4711,6 @@
     "id": "grimoire",
     "label": "Grimoire",
     "isGrimoire": true,
-    "prefix": null,
     "type": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
@@ -4697,7 +4734,6 @@
   {
     "id": "parchemin",
     "label": "Parchemin",
-    "prefix": null,
     "type": "trapping",
     "subType": "livres-et-documents",
     "enc": 0,
@@ -4721,7 +4757,6 @@
   {
     "id": "feuille-de-parchemin",
     "label": "Feuille de parchemin",
-    "prefix": null,
     "type": "trapping",
     "subType": "livres-et-documents",
     "enc": 0,
@@ -4745,7 +4780,6 @@
   {
     "id": "tract",
     "label": "Tract",
-    "prefix": null,
     "type": "trapping",
     "subType": "livres-et-documents",
     "enc": 0,
@@ -4769,7 +4803,6 @@
   {
     "id": "atelier",
     "label": "Atelier",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": "ND",
@@ -4793,7 +4826,6 @@
   {
     "id": "atelier-apothicaire",
     "label": "Atelier (Apothicaire)",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": "ND",
@@ -4817,7 +4849,6 @@
   {
     "id": "atelier-charpentier",
     "label": "Atelier (Charpentier)",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": "ND",
@@ -4841,7 +4872,6 @@
   {
     "id": "atelier-forgeron",
     "label": "Atelier (Forgeron)",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": "ND",
@@ -4865,7 +4895,6 @@
   {
     "id": "atelier-graveur",
     "label": "Atelier (Graveur)",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": "ND",
@@ -4889,7 +4918,6 @@
   {
     "id": "atelier-artiste",
     "label": "Atelier (Artiste)",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": "ND",
@@ -4913,7 +4941,6 @@
   {
     "id": "atelier-herboriste",
     "label": "Atelier (Herboriste)",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": "ND",
@@ -4937,7 +4964,6 @@
   {
     "id": "atelier-ingenieur",
     "label": "Atelier (Ingénieur)",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": "ND",
@@ -4961,7 +4987,6 @@
   {
     "id": "atelier-medecin",
     "label": "Atelier (Médecin)",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": "ND",
@@ -4985,7 +5010,6 @@
   {
     "id": "outils-professionnels",
     "label": "Outils professionnels",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": 1,
@@ -5009,7 +5033,6 @@
   {
     "id": "outils-professionnels-apothicaire",
     "label": "Outils professionnels (Apothicaire)",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": 1,
@@ -5033,7 +5056,6 @@
   {
     "id": "outils-professionnels-charpentier",
     "label": "Outils professionnels (Charpentier)",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": 1,
@@ -5057,7 +5079,6 @@
   {
     "id": "outils-professionnels-forgeron",
     "label": "Outils professionnels (Forgeron)",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": 1,
@@ -5081,7 +5102,6 @@
   {
     "id": "outils-professionnels-graveur",
     "label": "Outils professionnels (Graveur)",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": 1,
@@ -5105,7 +5125,6 @@
   {
     "id": "outils-professionnels-artiste",
     "label": "Outils professionnels (Artiste)",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": 1,
@@ -5129,7 +5148,6 @@
   {
     "id": "outils-professionnels-herboriste",
     "label": "Outils professionnels (Herboriste)",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": 1,
@@ -5153,7 +5171,6 @@
   {
     "id": "outils-professionnels-ingenieur",
     "label": "Outils professionnels (Ingénieur)",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": 1,
@@ -5177,7 +5194,6 @@
   {
     "id": "outils-professionnels-medecin",
     "label": "Outils professionnels (Médecin)",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": 1,
@@ -5201,7 +5217,6 @@
   {
     "id": "outils-professionnels-navigateur",
     "label": "Outils professionnels (Navigateur)",
-    "prefix": null,
     "type": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": 1,
@@ -5225,7 +5240,6 @@
   {
     "id": "barque",
     "label": "Barque",
-    "prefix": null,
     "type": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": null,
@@ -5249,7 +5263,6 @@
   {
     "id": "chaland",
     "label": "Chaland",
-    "prefix": null,
     "type": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": null,
@@ -5273,7 +5286,6 @@
   {
     "id": "chariot",
     "label": "Chariot",
-    "prefix": null,
     "type": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": null,
@@ -5297,7 +5309,6 @@
   {
     "id": "charrette",
     "label": "Charrette",
-    "prefix": null,
     "type": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": null,
@@ -5321,7 +5332,6 @@
   {
     "id": "cheval-de-guerre-leger",
     "label": "Cheval de guerre léger",
-    "prefix": null,
     "type": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": null,
@@ -5345,7 +5355,6 @@
   {
     "id": "cheval-de-selle",
     "label": "Cheval de selle",
-    "prefix": null,
     "type": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": null,
@@ -5369,7 +5378,6 @@
   {
     "id": "cheval-de-trait",
     "label": "Cheval de trait",
-    "prefix": null,
     "type": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": null,
@@ -5393,7 +5401,6 @@
   {
     "id": "chien",
     "label": "Chien",
-    "prefix": null,
     "type": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": null,
@@ -5417,7 +5424,6 @@
   {
     "id": "collier-et-laisse-chien",
     "label": "Collier et laisse (chien)",
-    "prefix": null,
     "type": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": 0,
@@ -5441,7 +5447,6 @@
   {
     "id": "coracle",
     "label": "Coracle",
-    "prefix": null,
     "type": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": 6,
@@ -5465,7 +5470,6 @@
   {
     "id": "destrier",
     "label": "Destrier",
-    "prefix": null,
     "type": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": null,
@@ -5489,7 +5493,6 @@
   {
     "id": "diligence",
     "label": "Diligence",
-    "prefix": null,
     "type": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": null,
@@ -5513,7 +5516,6 @@
   {
     "id": "mule",
     "label": "Mule",
-    "prefix": null,
     "type": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": null,
@@ -5537,7 +5539,6 @@
   {
     "id": "pigeon-voyageur",
     "label": "Pigeon voyageur",
-    "prefix": null,
     "type": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": 1,
@@ -5561,7 +5562,6 @@
   {
     "id": "poney",
     "label": "Poney",
-    "prefix": null,
     "type": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": null,
@@ -5585,7 +5585,6 @@
   {
     "id": "poulet",
     "label": "Poulet",
-    "prefix": null,
     "type": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": 1,
@@ -5609,7 +5608,6 @@
   {
     "id": "selle-et-harnais",
     "label": "Selle et Harnais",
-    "prefix": null,
     "type": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": 4,
@@ -5633,7 +5631,6 @@
   {
     "id": "singe",
     "label": "Singe",
-    "prefix": null,
     "type": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": 2,
@@ -5657,7 +5654,7 @@
   {
     "id": "vers",
     "label": "Vers",
-    "prefix": "(6)",
+    "packSize": 6,
     "type": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": 0,
@@ -5681,7 +5678,6 @@
   {
     "id": "bave",
     "label": "Bave",
-    "prefix": null,
     "type": "trapping",
     "subType": "drogues-et-poisons",
     "enc": 0,
@@ -5705,7 +5701,6 @@
   {
     "id": "bonnet-de-fou",
     "label": "Bonnet de fou",
-    "prefix": null,
     "type": "trapping",
     "subType": "drogues-et-poisons",
     "enc": 0,
@@ -5729,7 +5724,6 @@
   {
     "id": "brise-coeur",
     "label": "Brise-cœur",
-    "prefix": null,
     "type": "trapping",
     "subType": "drogues-et-poisons",
     "enc": 0,
@@ -5753,7 +5747,6 @@
   {
     "id": "delice-de-ranald",
     "label": "Délice de Ranald",
-    "prefix": null,
     "type": "trapping",
     "subType": "drogues-et-poisons",
     "enc": 0,
@@ -5777,7 +5770,6 @@
   {
     "id": "fleur-de-lune",
     "label": "Fleur de lune",
-    "prefix": null,
     "type": "trapping",
     "subType": "drogues-et-poisons",
     "enc": 0,
@@ -5801,7 +5793,6 @@
   {
     "id": "lotus-noir",
     "label": "Lotus noir",
-    "prefix": null,
     "type": "trapping",
     "subType": "drogues-et-poisons",
     "enc": 0,
@@ -5825,7 +5816,6 @@
   {
     "id": "mystracine",
     "label": "Mystracine",
-    "prefix": null,
     "type": "trapping",
     "subType": "drogues-et-poisons",
     "enc": 0,
@@ -5849,7 +5839,6 @@
   {
     "id": "racine-de-mandragore",
     "label": "Racine de mandragore",
-    "prefix": null,
     "type": "trapping",
     "subType": "drogues-et-poisons",
     "enc": 0,
@@ -5873,7 +5862,6 @@
   {
     "id": "belladone",
     "label": "Belladone",
-    "prefix": null,
     "type": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
@@ -5897,7 +5885,6 @@
   {
     "id": "cataplasme-de-guerison",
     "label": "Cataplasme de guérison",
-    "prefix": null,
     "type": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
@@ -5921,7 +5908,6 @@
   {
     "id": "faxtoryll",
     "label": "Faxtoryll",
-    "prefix": null,
     "type": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
@@ -5940,12 +5926,21 @@
     "source": {
       "book": "LDB",
       "page": 307
-    }
+    },
+    "consumable": [
+      {
+        "op": "removeCondition",
+        "name": "hemorragique",
+        "all": true
+      },
+      {
+        "op": "preventInfection"
+      }
+    ]
   },
   {
     "id": "potion-de-guerison",
     "label": "Potion de guérison",
-    "prefix": null,
     "type": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
@@ -5964,12 +5959,19 @@
     "source": {
       "book": "LDB",
       "page": 307
-    }
+    },
+    "consumable": [
+      {
+        "op": "heal",
+        "amount": {
+          "bonusOf": "E"
+        }
+      }
+    ]
   },
   {
     "id": "potion-de-vitalite",
     "label": "Potion de vitalité",
-    "prefix": null,
     "type": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
@@ -5988,12 +5990,18 @@
     "source": {
       "book": "LDB",
       "page": 307
-    }
+    },
+    "consumable": [
+      {
+        "op": "removeCondition",
+        "name": "extenue",
+        "all": true
+      }
+    ]
   },
   {
     "id": "racine-de-terre",
     "label": "Racine de terre",
-    "prefix": null,
     "type": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
@@ -6017,7 +6025,6 @@
   {
     "id": "soude-commune",
     "label": "Soude commune",
-    "prefix": null,
     "type": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
@@ -6036,12 +6043,18 @@
     "source": {
       "book": "LDB",
       "page": 307
-    }
+    },
+    "consumable": [
+      {
+        "op": "removeCondition",
+        "name": "sonne",
+        "value": 1
+      }
+    ]
   },
   {
     "id": "tonique-digestif",
     "label": "Tonique digestif",
-    "prefix": null,
     "type": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
@@ -6065,7 +6078,6 @@
   {
     "id": "cache-oeil",
     "label": "Cache-œil",
-    "prefix": null,
     "type": "trapping",
     "subType": "protheses",
     "enc": 0,
@@ -6089,7 +6101,6 @@
   {
     "id": "crochet",
     "label": "Crochet",
-    "prefix": null,
     "type": "trapping",
     "subType": "protheses",
     "enc": 1,
@@ -6102,7 +6113,10 @@
     "derivedWeapon": {
       "name": "Crochet",
       "type": "melee",
-      "damage": "+BF+2",
+      "damage": {
+        "plusBF": true,
+        "flat": 2
+      },
       "reach": "Très courte",
       "qualities": [],
       "subType": "Base",
@@ -6122,7 +6136,6 @@
   {
     "id": "dents-en-bois",
     "label": "Dents en bois",
-    "prefix": null,
     "type": "trapping",
     "subType": "protheses",
     "enc": 0,
@@ -6146,7 +6159,6 @@
   {
     "id": "fausse-jambe",
     "label": "Fausse jambe",
-    "prefix": null,
     "type": "trapping",
     "subType": "protheses",
     "enc": 2,
@@ -6170,7 +6182,6 @@
   {
     "id": "merveille-d-ingenierie",
     "label": "Merveille d'ingénierie",
-    "prefix": null,
     "type": "trapping",
     "subType": "protheses",
     "enc": 1,
@@ -6194,7 +6205,6 @@
   {
     "id": "nez-dore",
     "label": "Nez doré",
-    "prefix": null,
     "type": "trapping",
     "subType": "protheses",
     "enc": 0,
@@ -6218,7 +6228,6 @@
   {
     "id": "oeil-de-verre",
     "label": "Œil de verre",
-    "prefix": null,
     "type": "trapping",
     "subType": "protheses",
     "enc": 0,
@@ -6242,7 +6251,6 @@
   {
     "id": "affiche",
     "label": "Affiche",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 2,
@@ -6266,7 +6274,6 @@
   {
     "id": "allumette",
     "label": "Allumette",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
@@ -6290,7 +6297,6 @@
   {
     "id": "assiette",
     "label": "Assiette",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
@@ -6314,7 +6320,6 @@
   {
     "id": "bache-de-toile",
     "label": "Bâche de toile",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
@@ -6338,7 +6343,6 @@
   {
     "id": "balle",
     "label": "Balle",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
@@ -6362,7 +6366,6 @@
   {
     "id": "bandages",
     "label": "Bandages",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
@@ -6381,12 +6384,21 @@
     "source": {
       "book": "LDB",
       "page": 308
-    }
+    },
+    "consumable": [
+      {
+        "op": "removeCondition",
+        "name": "hemorragique",
+        "value": 1
+      },
+      {
+        "op": "preventInfection"
+      }
+    ]
   },
   {
     "id": "batonnet-de-fusain",
     "label": "Bâtonnet de fusain",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
@@ -6410,7 +6422,6 @@
   {
     "id": "boite-a-amadou",
     "label": "Boîte à amadou",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
@@ -6434,7 +6445,6 @@
   {
     "id": "bol",
     "label": "Bol",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
@@ -6458,7 +6468,6 @@
   {
     "id": "bougie",
     "label": "Bougie",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
@@ -6485,7 +6494,6 @@
   {
     "id": "casserole",
     "label": "Casserole",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
@@ -6509,7 +6517,6 @@
   {
     "id": "chiffons",
     "label": "Chiffons",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
@@ -6533,7 +6540,6 @@
   {
     "id": "corde",
     "label": "Corde",
-    "prefix": "(10 mètres)",
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
@@ -6543,7 +6549,7 @@
     "pa": null,
     "damage": null,
     "qualities": [],
-    "desc": null,
+    "desc": "(10 mètres)",
     "price": {
       "gold": 0,
       "silver": 8,
@@ -6557,7 +6563,6 @@
   {
     "id": "couvert",
     "label": "Couvert",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
@@ -6581,7 +6586,6 @@
   {
     "id": "couverture",
     "label": "Couverture",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
@@ -6605,7 +6609,6 @@
   {
     "id": "craie",
     "label": "Craie",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
@@ -6629,7 +6632,6 @@
   {
     "id": "des",
     "label": "Dés",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
@@ -6653,7 +6655,6 @@
   {
     "id": "grappin",
     "label": "Grappin",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
@@ -6677,7 +6678,6 @@
   {
     "id": "instrument",
     "label": "Instrument",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
@@ -6701,7 +6701,6 @@
   {
     "id": "lampe-davrich",
     "label": "Lampe Davrich",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
@@ -6725,7 +6724,6 @@
   {
     "id": "huile-de-lampe",
     "label": "Huile de lampe",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
@@ -6749,7 +6747,6 @@
   {
     "id": "lampe-tempete",
     "label": "Lampe tempête",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
@@ -6776,7 +6773,6 @@
   {
     "id": "lanterne",
     "label": "Lanterne",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
@@ -6803,7 +6799,6 @@
   {
     "id": "marmite",
     "label": "Marmite",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
@@ -6827,7 +6822,6 @@
   {
     "id": "matraque",
     "label": "Matraque",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
@@ -6851,7 +6845,6 @@
   {
     "id": "paquet-de-cartes",
     "label": "Paquet de cartes",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
@@ -6875,7 +6868,6 @@
   {
     "id": "pipe-et-tabac",
     "label": "Pipe et Tabac",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
@@ -6899,7 +6891,6 @@
   {
     "id": "poupee",
     "label": "Poupée",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
@@ -6923,7 +6914,6 @@
   {
     "id": "sac-de-couchage",
     "label": "Sac de couchage",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
@@ -6947,7 +6937,6 @@
   {
     "id": "tasse",
     "label": "Tasse",
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
@@ -6972,7 +6961,6 @@
     "id": "tente",
     "label": "Tente",
     "isShelter": true,
-    "prefix": null,
     "type": "trapping",
     "subType": "possessions-diverses",
     "enc": 2,
@@ -6996,7 +6984,6 @@
   {
     "id": "charrette-2",
     "label": "Charrette",
-    "prefix": null,
     "type": "vehicle",
     "subType": null,
     "enc": 10,
@@ -7020,7 +7007,6 @@
   {
     "id": "chaise",
     "label": "Chaise",
-    "prefix": null,
     "type": "vehicle",
     "subType": null,
     "enc": 51,
@@ -7044,7 +7030,6 @@
   {
     "id": "diligence-2",
     "label": "Diligence",
-    "prefix": null,
     "type": "vehicle",
     "subType": null,
     "enc": 100,
@@ -7068,7 +7053,6 @@
   {
     "id": "charrette-a-bras",
     "label": "Charrette à bras",
-    "prefix": null,
     "type": "vehicle",
     "subType": null,
     "enc": 5,
@@ -7092,7 +7076,6 @@
   {
     "id": "petite-litiere",
     "label": "Petite litière",
-    "prefix": null,
     "type": "vehicle",
     "subType": null,
     "enc": 10,
@@ -7116,7 +7099,6 @@
   {
     "id": "grande-litiere",
     "label": "Grande litière",
-    "prefix": null,
     "type": "vehicle",
     "subType": null,
     "enc": 20,
@@ -7140,7 +7122,6 @@
   {
     "id": "chariot-leger",
     "label": "Chariot léger",
-    "prefix": null,
     "type": "vehicle",
     "subType": null,
     "enc": 30,
@@ -7164,7 +7145,6 @@
   {
     "id": "chariot-moyen",
     "label": "Chariot moyen",
-    "prefix": null,
     "type": "vehicle",
     "subType": null,
     "enc": 50,
@@ -7188,7 +7168,6 @@
   {
     "id": "chariot-lourd",
     "label": "Chariot lourd",
-    "prefix": null,
     "type": "vehicle",
     "subType": null,
     "enc": 75,
@@ -7212,7 +7191,6 @@
   {
     "id": "pavois",
     "label": "Pavois",
-    "prefix": null,
     "type": "melee",
     "subType": "base",
     "enc": 4,
@@ -7220,7 +7198,10 @@
     "reach": null,
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "defensive"
@@ -7244,7 +7225,7 @@
   {
     "id": "filet-leste",
     "label": "Filet lesté",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "melee",
     "subType": "parade",
     "enc": 1,
@@ -7252,7 +7233,10 @@
     "reach": "Courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+0",
+    "damage": {
+      "plusBF": true,
+      "flat": 0
+    },
     "qualities": [
       {
         "id": "a-enroulement"
@@ -7288,7 +7272,6 @@
   {
     "id": "baliste",
     "label": "Baliste",
-    "prefix": null,
     "type": "ranged",
     "subType": "armes-de-siege",
     "enc": 20,
@@ -7296,7 +7279,10 @@
     "reach": 150,
     "loc": null,
     "pa": null,
-    "damage": "+12",
+    "damage": {
+      "plusBF": false,
+      "flat": 12
+    },
     "qualities": [
       {
         "id": "pointue"
@@ -7324,7 +7310,6 @@
   {
     "id": "catapulte-petite",
     "label": "Catapulte (petite)",
-    "prefix": null,
     "type": "ranged",
     "subType": "armes-de-siege",
     "enc": 25,
@@ -7332,7 +7317,10 @@
     "reach": 75,
     "loc": null,
     "pa": null,
-    "damage": "+10",
+    "damage": {
+      "plusBF": false,
+      "flat": 10
+    },
     "qualities": [
       {
         "id": "imprecise"
@@ -7360,7 +7348,6 @@
   {
     "id": "catapulte-moyenne",
     "label": "Catapulte (moyenne)",
-    "prefix": null,
     "type": "ranged",
     "subType": "armes-de-siege",
     "enc": 40,
@@ -7368,7 +7355,10 @@
     "reach": 100,
     "loc": null,
     "pa": null,
-    "damage": "+15",
+    "damage": {
+      "plusBF": false,
+      "flat": 15
+    },
     "qualities": [
       {
         "id": "imprecise"
@@ -7396,7 +7386,6 @@
   {
     "id": "catapulte-grande",
     "label": "Catapulte (grande)",
-    "prefix": null,
     "type": "ranged",
     "subType": "armes-de-siege",
     "enc": 65,
@@ -7404,7 +7393,10 @@
     "reach": 175,
     "loc": null,
     "pa": null,
-    "damage": "+18",
+    "damage": {
+      "plusBF": false,
+      "flat": 18
+    },
     "qualities": [
       {
         "id": "imprecise"
@@ -7432,7 +7424,6 @@
   {
     "id": "batterie-tonnerre-de-feu",
     "label": "Batterie tonnerre de feu",
-    "prefix": null,
     "type": "ranged",
     "subType": "armes-de-siege",
     "enc": 75,
@@ -7440,7 +7431,10 @@
     "reach": 185,
     "loc": null,
     "pa": null,
-    "damage": "+12",
+    "damage": {
+      "plusBF": false,
+      "flat": 12
+    },
     "qualities": [
       {
         "id": "a-explosion",
@@ -7479,7 +7473,6 @@
   {
     "id": "canon-a-repetition",
     "label": "Canon à répétition",
-    "prefix": null,
     "type": "ranged",
     "subType": "armes-de-siege",
     "enc": 5,
@@ -7487,7 +7480,10 @@
     "reach": 50,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -7515,7 +7511,6 @@
   {
     "id": "canon-a-repetition-feu-d-enfer",
     "label": "Canon à répétition feu d'enfer",
-    "prefix": null,
     "type": "ranged",
     "subType": "armes-de-siege",
     "enc": 85,
@@ -7523,7 +7518,10 @@
     "reach": 100,
     "loc": null,
     "pa": null,
-    "damage": "+10",
+    "damage": {
+      "plusBF": false,
+      "flat": 10
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -7555,7 +7553,6 @@
   {
     "id": "canon-petit",
     "label": "Canon (petit)",
-    "prefix": null,
     "type": "ranged",
     "subType": "armes-de-siege",
     "enc": 30,
@@ -7563,7 +7560,10 @@
     "reach": 50,
     "loc": null,
     "pa": null,
-    "damage": "+10",
+    "damage": {
+      "plusBF": false,
+      "flat": 10
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -7591,7 +7591,6 @@
   {
     "id": "canon-moyen",
     "label": "Canon (moyen)",
-    "prefix": null,
     "type": "ranged",
     "subType": "armes-de-siege",
     "enc": 50,
@@ -7599,7 +7598,10 @@
     "reach": 75,
     "loc": null,
     "pa": null,
-    "damage": "+14",
+    "damage": {
+      "plusBF": false,
+      "flat": 14
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -7627,7 +7629,6 @@
   {
     "id": "canon-grand",
     "label": "Canon (grand)",
-    "prefix": null,
     "type": "ranged",
     "subType": "armes-de-siege",
     "enc": 75,
@@ -7635,7 +7636,10 @@
     "reach": 150,
     "loc": null,
     "pa": null,
-    "damage": "+16",
+    "damage": {
+      "plusBF": false,
+      "flat": 16
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -7663,7 +7667,6 @@
   {
     "id": "mortier",
     "label": "Mortier",
-    "prefix": null,
     "type": "ranged",
     "subType": "armes-de-siege",
     "enc": 50,
@@ -7696,7 +7699,6 @@
   {
     "id": "pierrier",
     "label": "Pierrier",
-    "prefix": null,
     "type": "ranged",
     "subType": "armes-de-siege",
     "enc": 5,
@@ -7704,7 +7706,10 @@
     "reach": 30,
     "loc": null,
     "pa": null,
-    "damage": "+14",
+    "damage": {
+      "plusBF": false,
+      "flat": 14
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -7728,7 +7733,6 @@
   {
     "id": "demi-lance-de-cavalerie",
     "label": "Demi-lance de cavalerie",
-    "prefix": null,
     "type": "melee",
     "subType": "cavalerie",
     "enc": 2,
@@ -7736,7 +7740,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+5",
+    "damage": {
+      "plusBF": true,
+      "flat": 5
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -7759,7 +7766,6 @@
   {
     "id": "sabre",
     "label": "Sabre",
-    "prefix": null,
     "type": "melee",
     "subType": "cavalerie",
     "enc": 1,
@@ -7767,7 +7773,10 @@
     "reach": "Moyenne",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "taillade",
@@ -7788,7 +7797,6 @@
   {
     "id": "epee-de-cour",
     "label": "Épée de cour",
-    "prefix": null,
     "type": "melee",
     "subType": "escrime",
     "enc": 1,
@@ -7796,7 +7804,10 @@
     "reach": "Courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -7822,7 +7833,6 @@
   {
     "id": "gaffe-2",
     "label": "Gaffe",
-    "prefix": null,
     "type": "melee",
     "subType": "bagarre",
     "enc": 0,
@@ -7830,7 +7840,10 @@
     "reach": "Courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "destabilisante"
@@ -7853,7 +7866,6 @@
   {
     "id": "gantelet-a-pointes",
     "label": "Gantelet à pointes",
-    "prefix": null,
     "type": "melee",
     "subType": "bagarre",
     "enc": 1,
@@ -7861,7 +7873,10 @@
     "reach": "Personnelle",
     "loc": null,
     "pa": null,
-    "damage": "+BF+3",
+    "damage": {
+      "plusBF": true,
+      "flat": 3
+    },
     "qualities": [
       {
         "id": "desequilibree"
@@ -7884,7 +7899,6 @@
   {
     "id": "gantelet-verrouille",
     "label": "Gantelet verrouillé",
-    "prefix": null,
     "type": "melee",
     "subType": "bagarre",
     "enc": 1,
@@ -7892,7 +7906,10 @@
     "reach": "Personnelle",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "inoffensive"
@@ -7912,7 +7929,7 @@
   {
     "id": "lacet-etrangleur",
     "label": "Lacet étrangleur",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "melee",
     "subType": "bagarre",
     "enc": 0,
@@ -7920,7 +7937,10 @@
     "reach": "Personnelle",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "desequilibree"
@@ -7949,7 +7969,6 @@
   {
     "id": "cape-2",
     "label": "Cape",
-    "prefix": null,
     "type": "melee",
     "subType": "parade",
     "enc": 1,
@@ -7957,7 +7976,10 @@
     "reach": "Courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+0",
+    "damage": {
+      "plusBF": true,
+      "flat": 0
+    },
     "qualities": [
       {
         "id": "defensive"
@@ -7983,7 +8005,7 @@
   {
     "id": "ahlspiess",
     "label": "Ahlspiess",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "melee",
     "subType": "armes-d-hast",
     "enc": 2,
@@ -7991,7 +8013,10 @@
     "reach": "Très longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+3",
+    "damage": {
+      "plusBF": true,
+      "flat": 3
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -8014,7 +8039,7 @@
   {
     "id": "attrape-coquin",
     "label": "Attrape-coquin",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "melee",
     "subType": "armes-d-hast",
     "enc": 3,
@@ -8022,7 +8047,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "defensive"
@@ -8045,7 +8073,7 @@
   {
     "id": "hache-d-armes",
     "label": "Hache d'armes",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "melee",
     "subType": "armes-d-hast",
     "enc": 3,
@@ -8053,7 +8081,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "taille"
@@ -8082,7 +8113,7 @@
   {
     "id": "pertuisane-fauchard",
     "label": "Pertuisane/Fauchard",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "melee",
     "subType": "armes-d-hast",
     "enc": 3,
@@ -8090,7 +8121,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "defensive"
@@ -8117,7 +8151,7 @@
   {
     "id": "serpe-de-guerre",
     "label": "Serpe de guerre",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "melee",
     "subType": "armes-d-hast",
     "enc": 3,
@@ -8125,7 +8159,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "defensive"
@@ -8151,7 +8188,7 @@
   {
     "id": "zweihander-flamberge",
     "label": "Zweihänder flamberge",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "melee",
     "subType": "deux-mains",
     "enc": 3,
@@ -8159,7 +8196,10 @@
     "reach": "Longue",
     "loc": null,
     "pa": null,
-    "damage": "+BF+5",
+    "damage": {
+      "plusBF": true,
+      "flat": 5
+    },
     "qualities": [
       {
         "id": "devastatrice"
@@ -8186,7 +8226,6 @@
   {
     "id": "baton-pointu",
     "label": "Bâton pointu",
-    "prefix": null,
     "type": "ranged",
     "subType": "munitions",
     "enc": 0,
@@ -8194,7 +8233,10 @@
     "reach": "Moitié de l'arme",
     "loc": null,
     "pa": null,
-    "damage": "-2",
+    "damage": {
+      "plusBF": false,
+      "flat": -2
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -8220,7 +8262,6 @@
   {
     "id": "fleche-barbelee",
     "label": "Flèche barbelée",
-    "prefix": null,
     "type": "ranged",
     "subType": "munitions",
     "enc": 0,
@@ -8252,7 +8293,6 @@
   {
     "id": "fleche-bodkin",
     "label": "Flèche bodkin",
-    "prefix": null,
     "type": "ranged",
     "subType": "munitions",
     "enc": 0,
@@ -8283,7 +8323,6 @@
   {
     "id": "bille-de-plomb",
     "label": "Bille de plomb",
-    "prefix": null,
     "type": "ranged",
     "subType": "munitions",
     "enc": 0,
@@ -8291,7 +8330,10 @@
     "reach": "-10",
     "loc": null,
     "pa": null,
-    "damage": "+1",
+    "damage": {
+      "plusBF": false,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "assommante"
@@ -8311,7 +8353,6 @@
   {
     "id": "caillou",
     "label": "Caillou",
-    "prefix": null,
     "type": "ranged",
     "subType": "munitions",
     "enc": 0,
@@ -8319,7 +8360,10 @@
     "reach": "-10",
     "loc": null,
     "pa": null,
-    "damage": "-2",
+    "damage": {
+      "plusBF": false,
+      "flat": -2
+    },
     "qualities": [
       {
         "id": "imprecise"
@@ -8342,7 +8386,7 @@
   {
     "id": "arquebuse-a-double-canon",
     "label": "Arquebuse à double canon",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "ranged",
     "subType": "poudre-noire",
     "enc": 3,
@@ -8350,7 +8394,10 @@
     "reach": 50,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "a-repetition",
@@ -8378,7 +8425,7 @@
   {
     "id": "arquebuse-a-meche",
     "label": "Arquebuse à mèche",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "ranged",
     "subType": "poudre-noire",
     "enc": 2,
@@ -8386,7 +8433,10 @@
     "reach": 50,
     "loc": null,
     "pa": null,
-    "damage": "+8",
+    "damage": {
+      "plusBF": false,
+      "flat": 8
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -8410,7 +8460,7 @@
   {
     "id": "hache-arquebuse",
     "label": "Hache-arquebuse",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "ranged",
     "subType": "poudre-noire",
     "enc": 1,
@@ -8418,7 +8468,10 @@
     "reach": 30,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -8445,7 +8498,7 @@
   {
     "id": "hallebarde-arquebuse",
     "label": "Hallebarde-arquebuse",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "ranged",
     "subType": "poudre-noire",
     "enc": 3,
@@ -8453,7 +8506,10 @@
     "reach": 30,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -8480,7 +8536,7 @@
   {
     "id": "haquebute",
     "label": "Haquebute",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "ranged",
     "subType": "poudre-noire",
     "enc": 3,
@@ -8488,7 +8544,10 @@
     "reach": 40,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -8515,7 +8574,6 @@
   {
     "id": "pistolet-patte-de-griffon",
     "label": "Pistolet patte de griffon",
-    "prefix": null,
     "type": "ranged",
     "subType": "poudre-noire",
     "enc": 1,
@@ -8523,7 +8581,10 @@
     "reach": 10,
     "loc": null,
     "pa": null,
-    "damage": "+7",
+    "damage": {
+      "plusBF": false,
+      "flat": 7
+    },
     "qualities": [
       {
         "id": "imprecise"
@@ -8551,7 +8612,7 @@
   {
     "id": "tromblon-a-meche",
     "label": "Tromblon à mèche",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "ranged",
     "subType": "poudre-noire",
     "enc": 1,
@@ -8559,7 +8620,10 @@
     "reach": 20,
     "loc": null,
     "pa": null,
-    "damage": "+7",
+    "damage": {
+      "plusBF": false,
+      "flat": 7
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -8587,7 +8651,6 @@
   {
     "id": "canne-pistolet",
     "label": "Canne-pistolet",
-    "prefix": null,
     "type": "ranged",
     "subType": "poudre-noire",
     "enc": 1,
@@ -8595,7 +8658,10 @@
     "reach": 10,
     "loc": null,
     "pa": null,
-    "damage": "+8",
+    "damage": {
+      "plusBF": false,
+      "flat": 8
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -8622,7 +8688,7 @@
   {
     "id": "mortier-a-main",
     "label": "Mortier à main",
-    "prefix": "(2M)",
+    "hands": 2,
     "type": "ranged",
     "subType": "poudre-noire",
     "enc": 3,
@@ -8630,7 +8696,10 @@
     "reach": 30,
     "loc": null,
     "pa": null,
-    "damage": "+7",
+    "damage": {
+      "plusBF": false,
+      "flat": 7
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -8657,7 +8726,6 @@
   {
     "id": "poivriere",
     "label": "Poivrière",
-    "prefix": null,
     "type": "ranged",
     "subType": "poudre-noire",
     "enc": 1,
@@ -8665,7 +8733,10 @@
     "reach": 10,
     "loc": null,
     "pa": null,
-    "damage": "+8",
+    "damage": {
+      "plusBF": false,
+      "flat": 8
+    },
     "qualities": [
       {
         "id": "a-repetition",
@@ -8696,7 +8767,6 @@
   {
     "id": "balle-de-gros-calibre-et-poudre",
     "label": "Balle de gros calibre et poudre",
-    "prefix": null,
     "type": "ranged",
     "subType": "munitions",
     "enc": 0,
@@ -8704,7 +8774,10 @@
     "reach": "Comme l'arme",
     "loc": null,
     "pa": null,
-    "damage": "+2",
+    "damage": {
+      "plusBF": false,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -8730,7 +8803,6 @@
   {
     "id": "bombe-explosive",
     "label": "Bombe explosive",
-    "prefix": null,
     "type": "ranged",
     "subType": "munitions",
     "enc": 0,
@@ -8738,7 +8810,10 @@
     "reach": "Comme l'arme",
     "loc": null,
     "pa": null,
-    "damage": "+5",
+    "damage": {
+      "plusBF": false,
+      "flat": 5
+    },
     "qualities": [
       {
         "id": "dangereuse"
@@ -8765,7 +8840,6 @@
   {
     "id": "cartouche-en-papier",
     "label": "Cartouche en papier",
-    "prefix": null,
     "type": "ranged",
     "subType": "munitions",
     "enc": 0,
@@ -8773,7 +8847,10 @@
     "reach": "Comme l'arme",
     "loc": null,
     "pa": null,
-    "damage": "+1",
+    "damage": {
+      "plusBF": false,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -8796,7 +8873,6 @@
   {
     "id": "cartouche-et-poudre-de-precision",
     "label": "Cartouche et poudre de précision",
-    "prefix": null,
     "type": "ranged",
     "subType": "munitions",
     "enc": 0,
@@ -8804,7 +8880,10 @@
     "reach": "Comme l'arme",
     "loc": null,
     "pa": null,
-    "damage": "+1",
+    "damage": {
+      "plusBF": false,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -8830,7 +8909,6 @@
   {
     "id": "ferraille-et-poudre",
     "label": "Ferraille et poudre",
-    "prefix": null,
     "type": "ranged",
     "subType": "munitions",
     "enc": 0,
@@ -8838,7 +8916,10 @@
     "reach": "Moitié de l'arme",
     "loc": null,
     "pa": null,
-    "damage": "-1",
+    "damage": {
+      "plusBF": false,
+      "flat": -1
+    },
     "qualities": [
       {
         "id": "infecte"
@@ -8861,7 +8942,6 @@
   {
     "id": "grappin-munition",
     "label": "Grappin (munition)",
-    "prefix": null,
     "type": "ranged",
     "subType": "munitions",
     "enc": 1,
@@ -8869,7 +8949,10 @@
     "reach": "Moitié de l'arme",
     "loc": null,
     "pa": null,
-    "damage": "+2",
+    "damage": {
+      "plusBF": false,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "perforante"
@@ -8892,7 +8975,6 @@
   {
     "id": "poudre-impregnee-d-aqshy",
     "label": "Poudre imprégnée d'Aqshy",
-    "prefix": null,
     "type": "ranged",
     "subType": "munitions",
     "enc": 0,
@@ -8900,7 +8982,10 @@
     "reach": "+10",
     "loc": null,
     "pa": null,
-    "damage": "+2",
+    "damage": {
+      "plusBF": false,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -8936,11 +9021,13 @@
       "page": 45
     },
     "desc": "La contrefaçon skaven du long fusil du Hochland. Utilisez le profil du long fusil, mais ajoutez-y le Défaut Dangereuse. De plus, les cibles qu'elle blesse doivent effectuer un Test de Corruption (Mineure), car ses balles sont incrustées de malepierre.",
-    "prefix": null,
     "reach": 100,
     "loc": null,
     "pa": null,
-    "damage": "+9",
+    "damage": {
+      "plusBF": false,
+      "flat": 9
+    },
     "qualities": [
       {
         "id": "pointue"
@@ -8960,6 +9047,7 @@
   {
     "id": "canon-ratling",
     "label": "Canon ratling",
+    "hands": 2,
     "type": "ranged",
     "subType": "ingenierie",
     "availability": "Exotique",
@@ -8973,11 +9061,13 @@
       "page": 45
     },
     "desc": "Machine à tuer skaven à plusieurs canons. Il faut deux skavens pour s'en servir : un pour charger, l'autre pour la maintenir tant bien que mal. Arme à distance : +10 Dégâts, portée 40 mètres, Atouts À Poudre noire, Empaleuse, Explosion 3 et Perforante, Défauts Dangereuse et Imprécise. Ses balles étant incrustées de malepierre, les cibles blessées doivent effectuer un Test de Corruption (Mineure) Accessible (+20).",
-    "prefix": "(2M)",
     "reach": 40,
     "loc": null,
     "pa": null,
-    "damage": "+10",
+    "damage": {
+      "plusBF": false,
+      "flat": 10
+    },
     "qualities": [
       {
         "id": "a-poudre-noire"
@@ -9017,11 +9107,13 @@
       "page": 45
     },
     "desc": "La version skaven des pistolets humains, « améliorée » selon leurs standards. Atouts À Poudre noire, Dévastatrice, Empaleuse, Perforante ; Défauts Dangereuse et Recharge 1. Ses balles étant incrustées de malepierre, les cibles qu'il blesse doivent effectuer un Test de Corruption (Mineure).",
-    "prefix": null,
     "reach": 20,
     "loc": null,
     "pa": null,
-    "damage": "+8",
+    "damage": {
+      "plusBF": false,
+      "flat": 8
+    },
     "qualities": [
       {
         "id": "pistolet"
@@ -9501,11 +9593,13 @@
       "page": 112
     },
     "desc": "Dague fabriquée à partir d'une serre de cockatrice, fragile mais suintant un poison mortel. Une victime qui subit au moins 1 Blessure reçoit immédiatement un État Empoisonné (Test de Résistance Complexe (-10) pour résister). À chaque utilisation, le MJ lance un d10 en secret : sur un 1, le poison s'épuise et la dague se brisera à la prochaine utilisation. Illégale dans toutes les provinces de l'Empire.",
-    "prefix": null,
     "reach": "Très courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [],
     "enc": 0
   },
@@ -9525,7 +9619,6 @@
       "page": 112
     },
     "desc": "Armure de plates forgée à partir des écailles ou de la carapace d'un léviathan. Très volumineuse mais étonnamment légère : elle pèse 1 point d'Encombrement de moins que l'armure de plates en métal classique. Fonctionne comme une armure de plates pour le reste.",
-    "prefix": null,
     "reach": null,
     "loc": "Bras, Corps, Jambes",
     "pa": 2,
@@ -9538,7 +9631,8 @@
         "id": "points-faibles"
       },
       {
-        "id": "en-discretion"
+        "id": "en-discretion",
+        "value": -10
       }
     ],
     "enc": 8
@@ -9559,11 +9653,13 @@
       "page": 113
     },
     "desc": "Arme simple montée sur une poignée en ramure de grand cerf. Une telle épée ne se brisera jamais pendant la bataille tant que son utilisateur la manie. Si la ramure a été obtenue par la violence, l'épée inflige toujours un État Hémorragique à la fois à son utilisateur et à sa victime chaque fois qu'elle inflige une Blessure Critique.",
-    "prefix": null,
     "reach": "Moyenne",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [],
     "enc": 1
   },
@@ -9601,17 +9697,20 @@
       "page": 113
     },
     "desc": "Dague façonnée par les forgerons nains à partir de la serre d'un grand aigle majestueux. Ces lames sont exceptionnelles ; leur principal intérêt secondaire est de contrarier les elfes sylvains d'Athel Loren.",
-    "prefix": null,
     "reach": "Très courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [],
     "enc": 0
   },
   {
     "id": "seve-de-tregara",
     "label": "Sève de trégara",
+    "packSize": 6,
     "type": "ammunition",
     "subType": "arbalete",
     "availability": "Rare",
@@ -9625,7 +9724,6 @@
       "page": 114
     },
     "desc": "Munitions (6 par 1 Enc de composant). La sève durcissante d'un trégara couvre jusqu'à 6 carreaux ou flèches, qui doivent être tirés dans la journée. Les projectiles ainsi traités gagnent l'Atout Perforante.",
-    "prefix": "(6)",
     "reach": "Comme l'arme",
     "loc": null,
     "pa": null,
@@ -9643,6 +9741,7 @@
   {
     "id": "empennage-de-griffon",
     "label": "Empennage de griffon",
+    "packSize": 12,
     "type": "ammunition",
     "subType": "arc",
     "availability": "Rare",
@@ -9656,11 +9755,13 @@
       "page": 114
     },
     "desc": "Munitions (12 par 1 Enc de composant). Flèches ou carreaux empennés de plumes de griffon par les maîtres-fléchiers d'Ostermark ; ils agissent comme des flèches elfiques.",
-    "prefix": "(12)",
     "reach": "+50",
     "loc": null,
     "pa": null,
-    "damage": "+1",
+    "damage": {
+      "plusBF": false,
+      "flat": 1
+    },
     "qualities": [
       {
         "id": "empaleuse"
@@ -9677,6 +9778,7 @@
   {
     "id": "pointes-barbelees",
     "label": "Pointes barbelées",
+    "packSize": 12,
     "type": "ammunition",
     "subType": "arc",
     "availability": "Rare",
@@ -9690,7 +9792,6 @@
       "page": 114
     },
     "desc": "Munitions (12 par 1 Enc de composant). Pointes faites d'écailles de dragon barbelé, incroyablement aiguisées (le tranchant se renouvelle quand il s'émousse). Les attaques avec ces munitions qui infligent au moins une Blessure appliquent également un État Hémorragique.",
-    "prefix": "(12)",
     "reach": "Comme l'arme",
     "loc": null,
     "pa": null,
@@ -9705,6 +9806,7 @@
   {
     "id": "broyeur-d-os",
     "label": "Broyeur d'os",
+    "hands": 2,
     "type": "melee",
     "subType": "deux-mains",
     "availability": "Exotique",
@@ -9718,11 +9820,13 @@
       "page": 115
     },
     "desc": "Marteau de guerre magique dont la tête a été forgée avec des os de stégadon réduits en poudre, et dont le cri se fait entendre à chaque coup. S'il tue un ennemi, le son devient assourdissant : les créatures vivantes dans un rayon de 10 mètres (sauf l'utilisateur) doivent réussir un Test de Résistance Intermédiaire (+0) ou subir un État Assourdi et 1d10 Blessures qui ignorent l'armure (mais pas le Bonus d'Endurance).",
-    "prefix": "(2M)",
     "reach": "Moyenne",
     "loc": null,
     "pa": null,
-    "damage": "+BF+6",
+    "damage": {
+      "plusBF": true,
+      "flat": 6
+    },
     "qualities": [
       {
         "id": "assommante"
@@ -9752,11 +9856,13 @@
       "page": 115
     },
     "desc": "Arme simple (épée) ou dague magique dont la poignée creuse contient une mèche de cheveux de sirène. La lame gagne l'Atout Dévastatrice, mais l'utilisateur est incapable de parler ou de produire le moindre son tant qu'il la manie ; cela vaut aussi pour quiconque est blessé par cette arme. Si la mèche a été prise par la force, l'utilisateur ne peut pas utiliser le Talent Chanceux tant qu'il tient ou porte Silence.",
-    "prefix": null,
     "reach": "Moyenne",
     "loc": null,
     "pa": null,
-    "damage": "+BF+4",
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
     "qualities": [
       {
         "id": "devastatrice"
@@ -9780,11 +9886,13 @@
       "page": 116
     },
     "desc": "Bouclier magique créé à partir de poudre de cadavres de revenant. Il confère à son porteur la capacité de voir les créatures mort-vivantes telles qu'elles étaient avant leur trépas, ce qui neutralise le Trait Peur du mort-vivant (sauf s'il le possédait déjà de son vivant). Ne permet ni de communiquer avec, ni de contrôler les morts-vivants.",
-    "prefix": null,
     "reach": "Très courte",
     "loc": null,
     "pa": null,
-    "damage": "+BF+2",
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
     "qualities": [
       {
         "id": "protectrice",

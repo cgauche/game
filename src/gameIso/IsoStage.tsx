@@ -20,6 +20,7 @@ import { resolveFormula } from '../engine/ops';
 import { findSpellById } from '../data';
 import { bus, EVT } from '../state/bus';
 import { isOutOfAction, canTakeAction, hasCondition } from '../engine/conditions';
+import { isFrenzied } from '../engine/psychology';
 import { Combatant } from '../engine/types';
 import {
   TW,
@@ -391,7 +392,7 @@ export function IsoStage() {
     const freeFrenzy = battle.action === null && hasFreeWeaponAttack(activeH);
     if (battle.acted && !freeFrenzy) return null;
     if (battle.action === null && (!canTakeAction(activeH) || hasCondition(activeH, 'brise'))) return null;
-    if (battle.action === null && activeH.frenzied) {
+    if (battle.action === null && isFrenzied(activeH)) {
       const ft = frenzyTarget(st, activeH);
       if (ft && ft.id !== occ.id) return null;
     }
@@ -1253,13 +1254,8 @@ export function IsoStage() {
             ok = placedZoneValidAt(useGame.getState, pz, hover);
           } else if (battle.action === 'cast' && battle.selectedSpellId && activeC?.kind === 'hero' && !pendingCast) {
             const spell = findSpellById(battle.selectedSpellId);
-            // Même calcul que castZoneSpell : rayon de la donnée (spell.zdeRadiusMeters) prioritaire
-            // sur le parsing du champ Cible (zdeRadiusTiles).
-            radius = spell
-              ? spell.zdeRadiusMeters != null
-                ? Math.max(0, Math.floor(resolveFormula(spell.zdeRadiusMeters, activeC) / 2))
-                : zdeRadiusTiles(spell.target, activeC)
-              : null;
+            // Rayon depuis la cible STRUCTURÉE (source unique — gère les spans rayon ET diamètre).
+            radius = spell ? zdeRadiusTiles(spell.target, activeC) : null;
             caster = activeC;
             if (radius != null && spell && caster?.pos) {
               const range = spellRangeTiles(spell.range, caster);

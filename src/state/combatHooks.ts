@@ -18,17 +18,11 @@ import type { BattleState } from './store';
 import type { Combatant, Weapon } from '../engine/types';
 import type { AttackResult } from '../engine/combat';
 import { rule } from '../engine/policy';
+import type { EffectTrigger } from './flow';
 
-/** Moment du cycle de vie d'un combat où des handlers peuvent agir. */
-export type CombatPhase =
-  | 'battleStart'
-  | 'turnStart'
-  | 'turnEnd'
-  | 'roundBoundary'
-  | 'attackResolved'
-  | 'castResolved'
-  | 'miscast'
-  | 'battleEnd';
+/** Le moment du cycle de vie = un `EffectTrigger` (taxonomie UNIQUE, partagée avec les triggers de
+ *  DONNÉES — plus de `CombatPhase` séparé). Les hooks portés ici sont le rôle MACHINERIE de l'arène
+ *  sur ce vocabulaire (tick de durées, zones, mort…) ; le contenu d'entité = `TriggeredEffect` data. */
 
 /** Contexte d'un hook : l'état (get/set) + les protagonistes du moment + un `sink(line, c?)` pour
  *  journaliser (remplace les `tickLine` locales des séquences extraites de combatFlow). */
@@ -50,40 +44,33 @@ export interface CombatHookCtx {
  *  par `order`). `enabledIf` = id d'une règle optionnelle (`policy`) ; absent = toujours actif. */
 export interface CombatHook {
   id: string;
-  phase: CombatPhase;
+  phase: EffectTrigger;
   order?: number;
   enabledIf?: string;
   run(ctx: CombatHookCtx): void;
 }
 
-const HOOKS: Record<CombatPhase, CombatHook[]> = {
-  battleStart: [],
-  turnStart: [],
-  turnEnd: [],
-  roundBoundary: [],
-  attackResolved: [],
-  castResolved: [],
-  miscast: [],
-  battleEnd: [],
-};
+const HOOKS: Partial<Record<EffectTrigger, CombatHook[]>> = {};
 
 /** Enregistre (ou REMPLACE par `id`) un hook et garde la phase triée par `order` croissant. Idempotent
  *  par id (sûr face au double-import / HMR), contrairement au `push` brut de cascadeAppliers. */
 export function registerCombatHook(h: CombatHook): void {
-  const arr = HOOKS[h.phase];
+  const arr = (HOOKS[h.phase] ??= []);
   const i = arr.findIndex((x) => x.id === h.id);
   if (i >= 0) arr[i] = h;
   else arr.push(h);
   arr.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }
 
-/** Joue les hooks d'une phase, dans l'ordre `order`, en sautant ceux dont la règle optionnelle
- *  `enabledIf` est inactive. SOURCE UNIQUE du dispatch — combatFlow appelle ceci à chaque couture. */
-export function runCombatHooks(phase: CombatPhase, ctx: CombatHookCtx): void {
-  for (const h of HOOKS[phase]) if (!h.enabledIf || rule(h.enabledIf)) h.run(ctx);
+/** Joue les hooks d'un événement, dans l'ordre `order`, en sautant ceux dont la règle optionnelle
+ *  `enabledIf` est inactive. SOURCE UNIQUE du dispatch machinerie — appelé par `emitCombatEvent`. */
+export function runCombatHooks(phase: EffectTrigger, ctx: CombatHookCtx): void {
+  const arr = HOOKS[phase];
+  if (!arr) return;
+  for (const h of arr) if (!h.enabledIf || rule(h.enabledIf)) h.run(ctx);
 }
 
-/** Hooks enregistrés d'une phase (diagnostic + garde-fou de test « chaque phase a ses hooks »). */
-export function combatHooksOf(phase: CombatPhase): readonly CombatHook[] {
-  return HOOKS[phase];
+/** Hooks enregistrés d'un événement (diagnostic + garde-fou de test « chaque événement a ses hooks »). */
+export function combatHooksOf(phase: EffectTrigger): readonly CombatHook[] {
+  return HOOKS[phase] ?? [];
 }

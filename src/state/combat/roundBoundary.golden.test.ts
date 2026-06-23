@@ -40,9 +40,10 @@ describe('GOLDEN — séquence de franchissement de Round (advanceTurn)', () => 
       {
         "lines": [
           "round:— Round 2 —",
-          "condition:Mutant subit 1 Blessure(s) (Empoisonné).",
-          "condition:Mutant : 1 État(s) Empoisonné éliminé(s) (Résistance réussie).",
-          "condition:Mutant est Exténué (poison surmonté).",
+          "condition:Mutant subit 1 Blessure(s) (ignorant BE et PA).",
+          "condition:Mutant — Test de Résistance Intermédiaire (+0) : 🎲 13 / 20 → réussite.",
+          "condition:Mutant retire 2 État Empoisonné.",
+          "condition:Mutant reçoit 1 État Exténué.",
         ],
         "rngProbe": 24,
       }

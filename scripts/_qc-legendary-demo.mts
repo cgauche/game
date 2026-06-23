@@ -17,7 +17,7 @@ const APP = { species: 'Humain', sex: 'M', build: 0.5, seed: 4 } as const;
 
 /** Construit un héros tenant une épée bâtarde, avec ou sans skin légendaire, via la VRAIE chaîne. */
 function heroWeapon(skin?: Record<string, string>) {
-  const it = { uid: 'leg', name: 'Épée bâtarde', kind: 'melee', damage: '+BF+5', qualities: [], enc: 1, equipped: true, skin } as ItemInstance;
+  const it = { uid: 'leg', name: 'Épée bâtarde', kind: 'melee', damage: { plusBF: true, flat: 5 }, qualities: [], enc: 1, equipped: true, skin } as ItemInstance;
   const c = { characteristics: { F: 35, E: 35 }, items: [it] } as unknown as Combatant;
   recomputeLoadout(c); // ItemInstance.skin → Weapon.skin
   return c.weapons[0];

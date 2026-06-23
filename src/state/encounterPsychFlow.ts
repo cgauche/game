@@ -15,7 +15,9 @@ import { Scene } from './scene';
 import type { CascadeStep } from './pendings';
 import { spawnEnemy } from './spawn';
 import { encounterPsych } from '../engine/encounterPsych';
-import { calmeValue, CIBLE_TYPES, CIBLE_LABEL, PsychType, terreurBrise } from '../engine/psychology';
+import { calmeValue, CIBLE_TYPES, CIBLE_LABEL, PsychType, terreurBrise, suppressSupersededPsych } from '../engine/psychology';
+import { psychologyLabel } from '../data';
+import { t } from '../i18n';
 import { addCondition } from '../engine/conditions';
 import { registerCascadeApplier, startCascade } from './cascade';
 import { describeEncounterPsych } from './flowOutcomes';
@@ -103,12 +105,14 @@ registerCascadeApplier(
     } else {
       hero.psychState.push({ type: 'peur', sourceId: ep.sourceId, indice: ep.indice, calmeDR: r.success ? ep.indice : 0 });
     }
+    // Immunités croisées (LDB 21) : un effet psy dominant (Peur/Terreur) annule l'Animosité/Préjugé.
+    const superseded = suppressSupersededPsych(hero);
     set({ party: [...get().party] });
     const pe: PendingEncounterPsych = {
       heroId: hero.id, kind: ep.kind, sourceId: ep.sourceId, sourceName: ep.sourceName, indice: ep.indice, cible: ep.cible,
       result: { roll: r.roll, success: r.success, brise, target: r.target, sl: r.sl },
     };
-    return { journal: [describeEncounterPsych(pe, hero.name)] };
+    return { journal: [describeEncounterPsych(pe, hero.name), ...superseded.map((tp) => t('turn.psychSuperseded', { name: hero.name, psych: psychologyLabel(tp) }))] };
   },
   (success, name) => (success ? `${name} garde son sang-froid.` : `${name} cède à la Psychologie.`),
 );

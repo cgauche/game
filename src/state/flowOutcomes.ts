@@ -27,13 +27,14 @@ import type { PendingActivity } from './interludeFlow';
 import { CIBLE_TYPES, CIBLE_LABEL } from '../engine/psychology';
 import { healWoundsDelta } from '../engine/healing';
 import { corruptionGain } from '../engine/corruption';
+import { t } from '../i18n';
 
 /** Test de scène (LDB 12) : réussite / échec / réussite garantie par Résilience. Le DR figure déjà
  *  dans le breakdown au-dessus — l'issue reste une phrase courte. */
 export function describeTest(pt: PendingTest): string {
   if (pt.roll == null) return '';
-  if (pt.forced) return `${pt.actorName} ne faillit pas (Résilience) : réussite garantie.`;
-  return pt.success ? `${pt.actorName} réussit.` : `${pt.actorName} échoue.`;
+  if (pt.forced) return t('out.testForced', { name: pt.actorName });
+  return pt.success ? t('out.testSuccess', { name: pt.actorName }) : t('out.testFail', { name: pt.actorName });
 }
 
 /**
@@ -44,7 +45,7 @@ export function describeTest(pt: PendingTest): string {
  * elle-même (`rule('test-critiques-doubles')`) est lue par l'appelant — cette fonction reste pure. */
 export function amazingTestLabel(pt: PendingTest): { success: boolean; text: string } | null {
   if (pt.roll == null || !pt.isDouble || pt.forced) return null;
-  return { success: pt.success, text: pt.success ? 'Succès Stupéfiant' : 'Échec Stupéfiant' };
+  return { success: pt.success, text: pt.success ? t('out.amazingSuccess') : t('out.amazingFail') };
 }
 
 // (Psychologie EN COMBAT : PLUS de `describePsych` — l'issue des étapes de la cascade de Round est
@@ -57,12 +58,13 @@ export function describeEncounterPsych(pe: PendingEncounterPsych, name: string):
   if (!r) return '';
   if (CIBLE_TYPES.has(pe.kind)) {
     const cl = CIBLE_LABEL[pe.kind];
-    return r.success ? `${name} maîtrise son ${cl?.label.toLowerCase() ?? pe.kind}.` : `${name} est en proie à son ${cl?.label.toLowerCase() ?? pe.kind}.`;
+    const kind = cl?.label.toLowerCase() ?? pe.kind;
+    return r.success ? t('out.cibleMaster', { name, kind }) : t('out.cibleGrip', { name, kind });
   }
   if (pe.kind === 'terreur') {
-    return r.success ? `${name} garde son sang-froid.` : `${name} est terrifié par ${pe.sourceName} : ${r.brise} État(s) Brisé.`;
+    return r.success ? t('out.terreurHold', { name }) : t('out.terreurTerrified', { name, foe: pe.sourceName, brise: String(r.brise) });
   }
-  return r.success ? `${name} surmonte sa peur de ${pe.sourceName}.` : `${name} a peur de ${pe.sourceName}.`;
+  return r.success ? t('out.fearOvercome', { name, foe: pe.sourceName }) : t('out.fear', { name, foe: pe.sourceName });
 }
 
 /** Soin de Guérison (LDB 09) : montant PRÉVU (aperçu) — Blessures rendues / Hémorragie stoppée /
@@ -74,13 +76,13 @@ export function describeHeal(ph: PendingHeal): string {
   const trauma = ph.mode === 'trauma';
   const preview = wounds ? healWoundsDelta(ph.intBonus, ph.sl, ph.success) : 0;
   if (ph.success) {
-    if (wounds) return `${ph.targetName} récupère ${preview} PB.`;
-    if (trauma) return `Convalescence de ${ph.targetName} raccourcie de ${1 + Math.max(0, ph.sl)} jour(s).`;
-    return `${1 + Math.max(0, ph.sl)} pion(s) d'Hémorragie stoppé(s) sur ${ph.targetName}.`;
+    if (wounds) return t('out.healWounds', { name: ph.targetName, n: preview });
+    if (trauma) return t('out.healTrauma', { name: ph.targetName, n: 1 + Math.max(0, ph.sl) });
+    return t('out.healBleed', { n: 1 + Math.max(0, ph.sl), name: ph.targetName });
   }
   return wounds && ph.intBonus + ph.sl < 0
-    ? `Le soin blesse ${ph.targetName} (${ph.intBonus + ph.sl} PB).`
-    : `Le soin de ${ph.targetName} reste sans effet.`;
+    ? t('out.healHarm', { name: ph.targetName, n: ph.intBonus + ph.sl })
+    : t('out.healNone', { name: ph.targetName });
 }
 
 /** Exposition à une Influence corruptrice (LDB 19) ou Test de seuil : issue de la popin. La VALIDATION
@@ -90,13 +92,13 @@ export function describeCorruption(pc: PendingCorruption, name: string): string 
   if (pc.roll == null) return '';
   if (pc.kind === 'seuil') {
     return pc.success
-      ? `${name} contient sa Corruption — pour cette fois.`
-      : `${name} échoue — une mutation menace de se développer…`;
+      ? t('out.corruptHold', { name })
+      : t('out.corruptThreatens', { name });
   }
   const gain = corruptionGain(pc.level ?? 'mineure', !!pc.success, pc.sl ?? 0);
   return gain === 0
-    ? `${name} repousse l'Influence corruptrice.`
-    : `${name} subit ${gain} Point${gain > 1 ? 's' : ''} de Corruption.`;
+    ? t('out.corruptRepel', { name })
+    : t('out.corruptGain', { name, gain, s: gain > 1 ? 's' : '' });
 }
 
 /** Jet d'Activité d'interlude (LDB 23) : issue de la popin (Revenus / Artisanat / Apprentissage /
@@ -105,39 +107,39 @@ export function describeActivity(pa: PendingActivity): string {
   if (pa.roll == null) return '';
   const after = Math.max(0, (pa.drBefore ?? 0) + pa.sl);
   if (pa.kind === 'craft') {
-    return after >= (pa.drTarget ?? 1) ? 'L’ouvrage est achevé !' : `L’ouvrage avance (${after}/${pa.drTarget} DR).`;
+    return after >= (pa.drTarget ?? 1) ? t('out.craftDone') : t('out.craftProgress', { after, target: String(pa.drTarget) });
   }
   if (pa.kind === 'identify') {
     return pa.success
       ? pa.sl >= 4
-        ? 'L’artefact est identifié — ses Particularités sont révélées.'
-        : 'Nature magique cernée — les règles restent obscures (réétudiable).'
+        ? t('out.identifyFull')
+        : t('out.identifyPartial')
       : pa.sl <= -4
-        ? 'Lourde méprise : de fausses certitudes s’installent…'
-        : 'Semaine d’étude infructueuse — vous en êtes conscient.';
+        ? t('out.identifyMisread')
+        : t('out.identifyNone');
   }
   if (pa.kind === 'learn') {
     return pa.success
-      ? 'Le Talent est acquis.'
-      : 'Échec — PX et argent du tuteur dépensés en vain (+10 à la prochaine tentative).';
+      ? t('out.learnDone')
+      : t('out.learnFail');
   }
   // revenus
   return pa.success
-    ? 'Bonne semaine de travail — revenus pleins.'
+    ? t('out.incomeGood')
     : pa.sl <= -6
-      ? 'Très mauvaise semaine : rien gagné (Échec Stupéfiant).'
-      : 'Semaine médiocre : la moitié des revenus.';
+      ? t('out.incomeNone')
+      : t('out.incomeHalf');
 }
 
 /** Marchandage (LDB 60 l.12) : VERDICT du Test opposé (source unique popin ↔ journal). */
 export function describeBargain(pb: PendingBargain): string {
   const won = pb.result?.attackerWins ?? false;
   const drNet = pb.result?.netSL ?? 0;
-  const discount = won ? (drNet >= 6 || pb.negotiator ? '−20 %' : '−10 %') : '—';
+  const discount = won ? (drNet >= 6 || pb.negotiator ? t('out.fragDiscount20') : t('out.fragDiscount10')) : '—';
   // « Rater de beaucoup » (LDB 60 l.12) = perdre l'opposé par un net DR ≥ 6 → le marchand se méfie.
-  if (!won && drNet >= 6) return 'Raté de beaucoup — le marchand se méfie (fini de marchander)';
-  if (won) return pb.mode === 'buy' ? `Gagné (${discount} à l’achat)` : 'Gagné (½ du prix listé)';
-  return pb.mode === 'buy' ? 'Perdu (prix plein)' : 'Perdu (¼ du prix listé)';
+  if (!won && drNet >= 6) return t('out.bargainSuspicious');
+  if (won) return pb.mode === 'buy' ? t('out.bargainWonBuy', { discount }) : t('out.bargainWonSell');
+  return pb.mode === 'buy' ? t('out.bargainLostBuy') : t('out.bargainLostSell');
 }
 
 /** Évaluation / Détection d'artefact (LDB 60 l.10 / 10 l.310-312) : issue de la popin. La VALIDATION
@@ -147,19 +149,19 @@ export function describeAppraise(pa: PendingAppraise): string {
   const detect = pa.mode === 'detect';
   if (detect) {
     return pa.success
-      ? `${pa.actorName} perçoit quelque chose en touchant ${pa.itemName}…`
-      : `${pa.actorName} ne perçoit rien — l'artefact ne se laissera plus sonder.`;
+      ? t('out.detectSomething', { name: pa.actorName, item: pa.itemName })
+      : t('out.detectNothing', { name: pa.actorName });
   }
   return pa.success
-    ? `${pa.actorName} jauge ${pa.itemName} : révélé ✓.`
-    : `${pa.actorName} n'en tire rien — ${pa.itemName} reste inchangé.`;
+    ? t('out.appraiseRevealed', { name: pa.actorName, item: pa.itemName })
+    : t('out.appraiseNone', { name: pa.actorName, item: pa.itemName });
 }
 
 /** Approche d'une source de Peur (LDB 21 l.29) : issue du Test de Calme (popin). Le fil journalise la
  *  conséquence (gate d'approche du Tour) à part. `name` = combattant ; `sourceName` = source de Peur. */
 export function describeApproach(pa: PendingApproach): string {
   if (!pa.result) return '';
-  return pa.result.success ? 'Le cran tient : il peut approcher ce Tour.' : 'La Peur le cloue : aucune approche ce Tour.';
+  return pa.result.success ? t('out.approachYes') : t('out.approachNo');
 }
 
 /** Bénédiction de Protection (LDB 41 l.105) : issue du Test de FM (popin). Le fil journalise la
@@ -167,8 +169,8 @@ export function describeApproach(pa: PendingApproach): string {
 export function describeWard(pw: PendingWard, targetName: string): string {
   if (!pw.result) return '';
   return pw.result.success
-    ? `Il surmonte sa honte et peut frapper ${targetName} malgré la Bénédiction de Protection.`
-    : `Il ne peut se résoudre à frapper ${targetName} : il doit choisir une autre cible ou une autre Action.`;
+    ? t('out.wardOvercome', { target: targetName })
+    : t('out.wardBlocked', { target: targetName });
 }
 
 /** Course (LDB 15-Dépl l.79-82) : issue du Test d'Athlétisme/Chevaucher (popin). Le fil journalise le
@@ -176,7 +178,7 @@ export function describeWard(pw: PendingWard, targetName: string): string {
 export function describeRun(pr: PendingRun): string {
   const r = pr.result;
   if (!r) return '';
-  return `${r.success ? 'Course !' : 'Course poussive'} → +${r.bonusCases} cases (Marche + Course + DR).`;
+  return t('out.run', { label: r.success ? t('out.runYes') : t('out.runNo'), cases: r.bonusCases });
 }
 
 /** « Se libérer » (Empêtré) / « se rouler » (En flammes) — LDB 16 l.61/77 : issue du Test (source unique
@@ -184,14 +186,17 @@ export function describeRun(pr: PendingRun): string {
 export function describeStateRecovery(sr: PendingStateRecovery, name: string): string {
   if (sr.roll == null) return '';
   const removed = sr.success ? Math.min(sr.stacks, 1 + Math.max(0, sr.netSL)) : 0;
-  return `${name} ${sr.success ? `se dégage (${sr.netSL >= 0 ? '+' : ''}${sr.netSL} DR net) : ${removed} pion${removed > 1 ? 's' : ''} retiré${removed > 1 ? 's' : ''}` : 'n’y parvient pas — aucun pion retiré'}.`;
+  const body = sr.success
+    ? t('out.stateRecoveryWin', { sign: sr.netSL >= 0 ? '+' : '', netSL: sr.netSL, removed, s: removed > 1 ? 's' : '' })
+    : t('out.stateRecoveryFail');
+  return t('out.stateRecovery', { name, body });
 }
 
 /** Rechargement = Test étendu de Projectiles (LDB 63 l.28-29) : issue (source unique popin ↔ journal).
  *  `after` = DR cumulé après ce jet (plafond 0). `weaponName` = NOM résolu de l'arme (uid → nom à l'appel). */
 export function describeReload(pr: PendingReload, after: number, weaponName: string): string {
   if (pr.roll == null) return '';
-  return after >= pr.reload ? `${weaponName} rechargé ✓` : `${pr.actorName} recharge ${weaponName} (${after}/${pr.reload} DR).`;
+  return after >= pr.reload ? t('out.reloadDone', { weapon: weaponName }) : t('out.reload', { name: pr.actorName, weapon: weaponName, after, reload: pr.reload });
 }
 
 /** Focalisation = Test étendu (LDB 46) : issue (source unique popin ↔ journal). `prev`/`ni` = DR déjà
@@ -200,7 +205,7 @@ export function describeFocus(pf: PendingFocus, prev: number, ni: number): strin
   const r = pf.result;
   if (!r) return '';
   const after = prev + r.dr;
-  return `${r.log} → ${after}/${ni} DR${after >= ni ? ' (NI 0 atteint !)' : ''}`;
+  return t('out.focus', { log: r.log, after, ni, niReached: after >= ni ? t('out.fragNiReached') : '' });
 }
 
 /** Entrée en Frénésie (LDB 21 l.32) : issue (source unique popin ↔ journal). `name` = le combattant. */
@@ -208,23 +213,26 @@ export function describeFrenzy(pf: PendingFrenzy, name: string): string {
   const r = pf.result;
   if (!r) return '';
   return r.success
-    ? `${name} entre en Frénésie : +1 BF, immunité psy, attaque obligatoire.`
-    : `${name} reste de marbre — le sang ne monte pas ce tour.`;
+    ? t('out.frenzyEnter', { name })
+    : t('out.frenzyNo', { name });
 }
 
 /** Désengagement (LDB 15-Dépl) — phase 'esquive' : verdict du Test opposé d'Esquive (popin). Le fil
  *  journalise la conséquence (Avantage, libération des Engagements) à part. */
 export function describeDisengage(pd: PendingDisengage): string {
   return pd.result === 'success'
-    ? 'Désengagé ! (+1 Avantage)'
+    ? t('out.disengageSuccess')
     : pd.result === 'tie'
-      ? 'Échange neutre — reste au contact'
-      : "Échec — l'adversaire gagne l'Avantage";
+      ? t('out.disengageTie')
+      : t('out.disengageFail');
 }
 
 /** Désengagement — phase 'fuir' : issue du coup dans le dos + Test de Calme, montrée INLINE (popin). */
 export function describeDisengageFlee(pd: PendingDisengage): string {
   const f = pd.fuir;
   if (!f) return '';
-  return `Fuite ! ${f.hit ? `Coup encaissé (${f.woundsLost} Blessure${f.woundsLost > 1 ? 's' : ''})${f.broken ? `, ${f.broken} État${f.broken > 1 ? 's' : ''} Brisé` : ''}. ` : 'Coup esquivé. '}Cours te mettre à l'abri.`;
+  const hit = f.hit
+    ? t('out.fleeHit', { wounds: f.woundsLost, s: f.woundsLost > 1 ? 's' : '', broken: f.broken ? t('out.fleeBroken', { broken: f.broken, s: f.broken > 1 ? 's' : '' }) : '' })
+    : t('out.fleeDodge');
+  return t('out.disengageFlee', { hit });
 }

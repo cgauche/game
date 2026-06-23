@@ -4,7 +4,7 @@ import { Scene } from './scene';
 import { Combatant } from '../engine/types';
 
 const enemy = (over: Partial<Combatant> = {}): Combatant =>
-  ({ id: 'E', name: 'Tireur', kind: 'enemy', characteristics: {} as any, wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], weapons: [{ name: 'Arc', type: 'ranged', damage: '+8', range: 60, qualities: [] }], armour: {} as any, skills: [], talents: [], movement: 4, pos: { x: 0, y: 0 }, ...over }) as unknown as Combatant;
+  ({ id: 'E', name: 'Tireur', kind: 'enemy', characteristics: {} as any, wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], weapons: [{ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] }], armour: {} as any, skills: [], talents: [], movement: 4, pos: { x: 0, y: 0 }, ...over }) as unknown as Combatant;
 
 const hero = (x: number): Combatant =>
   ({ id: 'H', name: 'Héros', kind: 'hero', wounds: { current: 10, max: 10 }, pos: { x, y: 0 } }) as unknown as Combatant;
@@ -29,7 +29,7 @@ describe('IA — respecte la Ligne de Vue au tir (LDB 13 l.123)', () => {
 describe('IA — respecte la PORTÉE (tir : bande Extrême ×3 ; sort : portée du sort)', () => {
   it('héros au-delà de Portée ×3 → ne tire pas (s’approche) ; à exactement ×3 → tire', () => {
     // Arc 10 m → Extrême ≤ 30 m = 15 cases.
-    const e = () => enemy({ weapons: [{ name: 'Arc', type: 'ranged', damage: '+8', range: 10, qualities: [] }] as never });
+    const e = () => enemy({ weapons: [{ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 10, qualities: [] }] as never });
     const far = chooseEnemyAction({ enemy: e(), heroes: [hero(20)], scene: scene(25), blocked: new Set(), movement: 4 });
     expect(far.kind).toBe('move');
     const edge = chooseEnemyAction({ enemy: e(), heroes: [hero(15)], scene: scene(25), blocked: new Set(), movement: 4 });

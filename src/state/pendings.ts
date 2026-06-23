@@ -17,12 +17,9 @@ import type { CastResult, MissileResult, FocusResult, CounterspellOutcome } from
 import type { HealMode } from '../engine/healing';
 import type { PsychType } from '../engine/psychology';
 import type { RollParticipant, MultiPending, PendingBase } from './rollFlow';
+import type { Money } from '../engine/money';
 
-export interface Money {
-  gold: number;
-  silver: number;
-  brass: number;
-}
+export type { Money };
 /** Une ligne de butin d'équipement (giveTrapping) ATTRIBUABLE par portrait — partagée entre
  *  l'écran de victoire et la fenêtre de loot (fouille/Test/dialogue). `magic` = qualités cachées
  *  ou ajoutées (✨, révélables par Évaluation). L'Effet d'origine est conservé tel quel. */

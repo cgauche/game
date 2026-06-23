@@ -183,7 +183,52 @@
     },
     "capabilities": {
       "bestial": true
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "all",
+            "of": [
+              {
+                "kind": "compare",
+                "subject": {
+                  "who": "target",
+                  "condition": "en-flammes"
+                },
+                "op": ">=",
+                "value": 1
+              },
+              {
+                "kind": "compare",
+                "subject": {
+                  "who": "target",
+                  "condition": "brise"
+                },
+                "op": "==",
+                "value": 0
+              }
+            ]
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "condition",
+                  "name": "brise"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
   },
   {
     "id": "bond",
@@ -243,7 +288,7 @@
       "page": 338
     },
     "capabilities": {
-      "championDefense": true
+      "counterOnDefenseWin": true
     }
   },
   {
@@ -324,7 +369,10 @@
       {
         "id": "cornes"
       }
-    ]
+    ],
+    "capabilities": {
+      "naturalWeapon": {}
+    }
   },
   {
     "id": "corruption",
@@ -362,22 +410,129 @@
       "page": 339
     },
     "capabilities": {
-      "wardSave": true,
-      "banishedAtZero": true
+      "wardSave": true
     },
     "passive": [
       {
         "op": "attackKeyword",
         "keyword": "magic"
       }
+    ],
+    "effects": [
+      {
+        "trigger": "onSlain",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "banish"
+              }
+            ]
+          }
+        }
+      }
     ]
   },
   {
-    "id": "dresse",
-    "label": "Dressé",
-    "prefix": "(Compétences spécifiques)",
+    "id": "dresse-guerre",
+    "label": "Dressé (Guerre)",
+    "prefix": null,
     "suffix": null,
-    "desc": "Ce Trait concerne les animaux entraînés par l'intermédiaire de la Compétence Dressage. Les Compétences que l'animal connaît sont indiquées entre parenthèses. Vous êtes libre de créer vos propres Compétences spécifiques. <br><br><b>Divertir:</b> l'animal est entraîné à divertir les autres. Vous ajoutez un bonus de +10 aux Tests appropriés de Divertissement, Musicien et Représentation. <br><br><b>Dompté:</b> l'animal est entraîné à ignorer son Trait Bestial. Il reçoit 2d10 en Sociabilité. <br><br><b>Garder:</b> l'animal est entraîné à rester à la même place ou à patrouiller autour comme un garde. Elle gagne le Trait de créature Territorial. <br><br><b>Guerre:</b> l'animal est entraîné pour la guerre, il gagne +10 en CC. Il ignore également son trait Nerveux pour les bruits forts. <br><br><b>Magie:</b> l'animal est entraîné à ignorer son trait Nerveux en présence de magie, ce qui est nécessaire à la plupart des chevaux utilisés par les Sorciers. <br><br><b>Monture:</b> l'animal est entraîné à accepter un cavalier. Certaines créatures sont particulièrement belliqueuses, et n'accepteront jamais de cavalier sans la Compétence adaptée. Ainsi, pour chevaucher un griffon, vous avez besoin de la Compétence Chevaucher (Griffon). <br><br><b>Rapporter:</b> l'animal est entraîné à rapporter. Cette discipline est normalement réservée aux chiens et autres animaux similaires. <br><br><b>Revenir à la maison:</b> l'animal est entraîné à revenir chez lui s'il est relâché ou perdu. <br><br><b>Trait:</b> L'animal est entraîné à tirer un carrosse, un chariot, une charrue, une carriole ou similaire. <br><br><b>Cavalerie de Choc (Aux Armes):</b> réservé à un animal possédant déjà Dressé (Guerre). La monture ignore le péril de charger en bon ordre au milieu d'une unité ennemie bien armée et fonce droit sur une masse d'ennemis. Une créature de Taille inférieure à celle qu'elle tente de renverser peut renoncer à sa chance d'esquiver pour porter, si elle n'a pas déjà agi ce Round, une seule attaque avec une arme tenue en main contre la monture ou son cavalier ; sauf si cette attaque tue ou incapacite la monture, la Charge se poursuit.",
+    "desc": "L'animal est entraîné pour la guerre, il gagne +10 en CC. Il ignore également son trait Nerveux pour les bruits forts.",
+    "source": {
+      "book": "LDB",
+      "page": 339
+    },
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "CC",
+        "mod": 10
+      }
+    ]
+  },
+  {
+    "id": "dresse-magie",
+    "label": "Dressé (Magie)",
+    "prefix": null,
+    "suffix": null,
+    "desc": "L'animal est entraîné à ignorer son trait Nerveux en présence de magie, ce qui est nécessaire à la plupart des chevaux utilisés par les Sorciers.",
+    "source": {
+      "book": "LDB",
+      "page": 339
+    }
+  },
+  {
+    "id": "dresse-dompte",
+    "label": "Dressé (Dompté)",
+    "prefix": null,
+    "suffix": null,
+    "desc": "L'animal est entraîné à ignorer son Trait Bestial. Il reçoit 2d10 en Sociabilité.",
+    "source": {
+      "book": "LDB",
+      "page": 339
+    },
+    "suppressesCapabilities": [
+      "bestial"
+    ]
+  },
+  {
+    "id": "dresse-monture",
+    "label": "Dressé (Monture)",
+    "prefix": null,
+    "suffix": null,
+    "desc": "L'animal est entraîné à accepter un cavalier. Certaines créatures sont particulièrement belliqueuses, et n'accepteront jamais de cavalier sans la Compétence adaptée.",
+    "source": {
+      "book": "LDB",
+      "page": 339
+    }
+  },
+  {
+    "id": "dresse-garde",
+    "label": "Dressé (Garde)",
+    "prefix": null,
+    "suffix": null,
+    "desc": "L'animal est entraîné à rester à la même place ou à patrouiller autour comme un garde. Il gagne le Trait de créature Territorial.",
+    "source": {
+      "book": "LDB",
+      "page": 339
+    },
+    "capabilities": {
+      "territorial": true
+    }
+  },
+  {
+    "id": "dresse-rapporteur",
+    "label": "Dressé (Rapporteur)",
+    "prefix": null,
+    "suffix": null,
+    "desc": "L'animal est entraîné à rapporter. Cette discipline est normalement réservée aux chiens et autres animaux similaires.",
+    "source": {
+      "book": "LDB",
+      "page": 339
+    }
+  },
+  {
+    "id": "dresse-revenir-a-la-maison",
+    "label": "Dressé (Revenir à la maison)",
+    "prefix": null,
+    "suffix": null,
+    "desc": "L'animal est entraîné à revenir chez lui s'il est relâché ou perdu.",
+    "source": {
+      "book": "LDB",
+      "page": 339
+    }
+  },
+  {
+    "id": "dresse-cavalerie-de-choc",
+    "label": "Dressé (Cavalerie de choc)",
+    "prefix": null,
+    "suffix": null,
+    "desc": "Réservé à un animal possédant déjà Dressé (Guerre). La monture ignore le péril de charger en bon ordre au milieu d'une unité ennemie bien armée et fonce droit sur une masse d'ennemis (Aux Armes).",
     "source": {
       "book": "LDB",
       "page": 339
@@ -661,7 +816,34 @@
     "source": {
       "book": "LDB",
       "page": 340
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "woundsDealt",
+            "op": ">",
+            "value": 0
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "victim",
+              "ops": [
+                {
+                  "op": "exposeDisease",
+                  "disease": "blessure-purulente"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
   },
   {
     "id": "infravision",
@@ -704,7 +886,66 @@
     },
     "capabilities": {
       "unstable": true
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "engagedAdvantageGap",
+            "op": ">",
+            "value": 0
+          },
+          "then": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "target",
+                  "ops": [
+                    {
+                      "op": "wounds",
+                      "amount": {
+                        "engagedAdvantageGap": true
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "compare",
+                  "subject": {
+                    "who": "target",
+                    "field": "woundsCurrent"
+                  },
+                  "op": "<=",
+                  "value": 0
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "on": "target",
+                    "ops": [
+                      {
+                        "op": "banish",
+                        "narration": "unravel"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
   },
   {
     "id": "intelligent",
@@ -794,7 +1035,34 @@
     "source": {
       "book": "LDB",
       "page": 340
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "woundsDealt",
+            "op": ">",
+            "value": 0
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "victim",
+              "ops": [
+                {
+                  "op": "exposeDisease",
+                  "disease": "$arg"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
   },
   {
     "id": "meneur",
@@ -845,7 +1113,10 @@
       {
         "id": "morsure"
       }
-    ]
+    ],
+    "capabilities": {
+      "naturalWeapon": {}
+    }
   },
   {
     "id": "mort-vivant",
@@ -882,29 +1153,68 @@
       "book": "LDB",
       "page": 340
     },
+    "capabilities": {
+      "skittishMount": true
+    },
     "effects": [
       {
         "trigger": "onStartled",
         "on": "self",
         "flow": {
-          "kind": "seq",
-          "steps": [
-            {
-              "kind": "do",
-              "effect": {
-                "type": "ops",
-                "on": "target",
-                "ops": [
-                  {
-                    "op": "condition",
-                    "name": "brise",
-                    "value": 3,
-                    "unlessCondition": "brise"
-                  }
-                ]
-              }
+          "kind": "if",
+          "cond": {
+            "kind": "not",
+            "of": {
+              "kind": "any",
+              "of": [
+                {
+                  "kind": "all",
+                  "of": [
+                    {
+                      "kind": "startleCause",
+                      "is": "noise"
+                    },
+                    {
+                      "kind": "has",
+                      "who": "target",
+                      "what": "trait",
+                      "value": "dresse-guerre"
+                    }
+                  ]
+                },
+                {
+                  "kind": "all",
+                  "of": [
+                    {
+                      "kind": "startleCause",
+                      "is": "magic"
+                    },
+                    {
+                      "kind": "has",
+                      "who": "target",
+                      "what": "trait",
+                      "value": "dresse-magie"
+                    }
+                  ]
+                }
+              ]
             }
-          ]
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "condition",
+                  "name": "brise",
+                  "value": 3,
+                  "unlessCondition": "brise"
+                }
+              ]
+            }
+          }
         }
       }
     ]
@@ -951,8 +1261,15 @@
       "book": "LDB",
       "page": 341
     },
-    "capabilities": {
-      "perturbingAura": true
+    "aura": {
+      "rangeChar": "E",
+      "affects": "enemies",
+      "passive": [
+        {
+          "op": "testMod",
+          "amount": -20
+        }
+      ]
     }
   },
   {
@@ -1331,7 +1648,10 @@
       {
         "id": "tentacules"
       }
-    ]
+    ],
+    "capabilities": {
+      "naturalWeapon": {}
+    }
   },
   {
     "id": "terreur",
@@ -1453,7 +1773,45 @@
     "source": {
       "book": "LDB",
       "page": 343
-    }
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "all",
+            "of": [
+              {
+                "kind": "woundsDealt",
+                "op": ">",
+                "value": 0
+              },
+              {
+                "kind": "has",
+                "who": "caster",
+                "what": "trait",
+                "value": "infecte"
+              }
+            ]
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "victim",
+              "ops": [
+                {
+                  "op": "exposeDisease",
+                  "disease": "fievre-du-rongeur"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
   },
   {
     "id": "venin",

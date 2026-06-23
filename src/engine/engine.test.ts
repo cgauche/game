@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG, RNG } from './dice';
 import { addCondition, combatTestPenalty, meleeAttackerBonus, cannotDefend } from './conditions';
+import { parseQualityInstance } from './qualities/normalize';
 import { evaluateTest, resolveOpposed } from './tests';
 import { bonus, maxWounds } from './characteristics';
 import { effectiveWeaponDamage } from './weaponDamage';
@@ -40,7 +41,7 @@ describe("Atouts d'arme (LDB Les armes)", () => {
       wounds: { current: 20, max: 20 },
       advantage: 0,
       conditions: [],
-      weapons: [{ name: 'W', type: 'melee', damage: '+5', qualities: [], ...weapon } as Weapon],
+      weapons: [{ name: 'W', type: 'melee', damage: { plusBF: false, flat: 5 }, qualities: [], ...weapon } as Weapon],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
       skills: [],
       talents: [],
@@ -51,7 +52,7 @@ describe("Atouts d'arme (LDB Les armes)", () => {
     const def = fighter(30);
     def.armour.brasD = 3; // jet 44 → reverseRoll 44 → Bras droit
     const hit = (q: string[]) => {
-      const atk = fighter(50, { qualities: q, damage: '+10' });
+      const atk = fighter(50, { qualities: q.map((s) => parseQualityInstance(s)!), damage: { plusBF: false, flat: 10 } });
       return resolveMelee(atk, def, atk.weapons[0], rngOf(44), { defense: 'none' });
     };
     expect(hit(['Perforante']).woundsLost! - hit([]).woundsLost!).toBe(1);
@@ -59,13 +60,13 @@ describe("Atouts d'arme (LDB Les armes)", () => {
   it('Pointue : +1 DR sur une touche (→ +1 Blessure)', () => {
     const def = fighter(30);
     const hit = (q: string[]) => {
-      const atk = fighter(50, { qualities: q });
+      const atk = fighter(50, { qualities: q.map((s) => parseQualityInstance(s)!) });
       return resolveMelee(atk, def, atk.weapons[0], rngOf(44), { defense: 'none' });
     };
     expect(hit(['Pointue']).woundsLost! - hit([]).woundsLost!).toBe(1);
   });
   it('Empaleuse : Critique sur un multiple de 10', () => {
-    const emp = fighter(60, { qualities: ['Empaleuse'] });
+    const emp = fighter(60, { qualities: [{ id: 'empaleuse' }] });
     const r = resolveMelee(emp, fighter(30), emp.weapons[0], rngOf(20), { defense: 'none' });
     expect(r.hit).toBe(true);
     expect(r.critical).toBe(true);
@@ -75,7 +76,7 @@ describe("Atouts d'arme (LDB Les armes)", () => {
   it("Précise : +10 au Test (touche là où l'arme nue échoue, même jet)", () => {
     const def = fighter(30);
     const plain = fighter(40); // CC 40, jet 45 → échec
-    const prec = fighter(40, { qualities: ['Précise'] }); // +10 → cible 50, jet 45 → réussite
+    const prec = fighter(40, { qualities: [{ id: 'precise' }] }); // +10 → cible 50, jet 45 → réussite
     expect(resolveMelee(plain, def, plain.weapons[0], rngOf(45), { defense: 'none' }).hit).toBe(false);
     expect(resolveMelee(prec, def, prec.weapons[0], rngOf(45), { defense: 'none' }).hit).toBe(true);
   });
@@ -91,7 +92,7 @@ describe('Découpe de la résolution de mêlée (split attaquant/défenseur)', (
       wounds: { current: 20, max: 20 },
       advantage: 0,
       conditions: [],
-      weapons: [{ name: 'W', type: 'melee', damage: '+5', qualities: [], ...weapon } as Weapon],
+      weapons: [{ name: 'W', type: 'melee', damage: { plusBF: false, flat: 5 }, qualities: [], ...weapon } as Weapon],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
       skills: [],
       talents: [],
@@ -150,7 +151,7 @@ describe('Sur la défensive (+20 en défense, LDB Combat l.118)', () => {
       wounds: { current: 20, max: 20 },
       advantage: 0,
       conditions: [],
-      weapons: [{ name: 'W', type: 'melee', damage: '+5', qualities: [] }],
+      weapons: [{ name: 'W', type: 'melee', damage: { plusBF: false, flat: 5 }, qualities: [] }],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
       skills: [],
       talents: [],
@@ -185,14 +186,15 @@ describe('États en combat (LDB ch.16)', () => {
     addCondition(t, 'surpris');
     expect(cannotDefend(t)).toBe(true);
   });
-  it('Empoisonné inflige 1 Blessure par point en fin de Round', () => {
+  it('Empoisonné : endOfRound n’applique PLUS les dégâts (migrés en données — effects onRoundEnd → wounds {stacks})', () => {
     const c = { name: 'x', conditions: [], characteristics: { E: 30 }, skills: [], wounds: { current: 10, max: 10 } } as unknown as Combatant;
     addCondition(c, 'empoisonne', 2);
     endOfRound(c);
-    expect(c.wounds.current).toBe(8); // 2 Blessures de poison (la récupération éventuelle ne restaure pas les PB)
+    // Dégâts de poison désormais data-driven (etats.json + fireConditionEffects, cf. state/etat-perround.test) :
+    // endOfRound ne les applique plus → PB inchangés ici.
+    expect(c.wounds.current).toBe(10);
   });
-  it('En flammes : le +1 par État en plus s’ajoute aux Dégâts AVANT réduction BE+PA (l.77)', () => {
-    // 3 États → « 1d10+2 » ; BE 7 absorbe tout jusqu’au plancher de 1 (et non 1+2 = 3, le bug).
+  it('En Flammes : endOfRound n’applique PLUS les dégâts (migrés en données — effects onRoundEnd → wounds {sum})', () => {
     const c = {
       name: 'x',
       conditions: [],
@@ -201,10 +203,10 @@ describe('États en combat (LDB ch.16)', () => {
       wounds: { current: 20, max: 20 },
     } as unknown as Combatant;
     addCondition(c, 'en-flammes', 3);
-    endOfRound(c, { int: () => 4 }); // d10 = 4 ⇒ (4+2) − 7 = −1 → plancher 1
-    expect(c.wounds.current).toBe(19); // 20 − 1, pas 20 − 3
+    endOfRound(c, { int: () => 4 }); // dégâts de feu désormais data-driven (cf. state/etat-perround.test)
+    expect(c.wounds.current).toBe(20); // endOfRound seul : aucun dégât de feu
   });
-  it('Sonné : Résistance réussie retire 1 État +1/DR puis octroie Exténué une fois nettoyé (l.125-127)', () => {
+  it('Sonné : endOfRound NE touche plus le Sonné — Test de Résistance migré en DONNÉES (l.125-127)', () => {
     const c = {
       name: 'x',
       conditions: [],
@@ -214,24 +216,8 @@ describe('États en combat (LDB ch.16)', () => {
       wounds: { current: 10, max: 10 },
     } as unknown as Combatant;
     addCondition(c, 'sonne', 2);
-    // E 50, Sonné −10 → cible 40 ; jet 5 → réussite, DR = 4 → retire min(2, 1+4) = 2 → nettoyé.
-    endOfRound(c, { int: () => 5 });
-    expect(c.conditions.some((x) => x.name === 'sonne')).toBe(false);
-    expect(c.conditions.some((x) => x.name === 'extenue')).toBe(true);
-  });
-  it('Sonné : Résistance ratée conserve l’État et n’octroie pas d’Exténué (l.125)', () => {
-    const c = {
-      name: 'x',
-      conditions: [],
-      skills: [],
-      characteristics: { E: 30 },
-      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
-      wounds: { current: 10, max: 10 },
-    } as unknown as Combatant;
-    addCondition(c, 'sonne', 1);
-    // E 30, Sonné −10 → cible 20 ; jet 95 → échec → reste Sonné, pas d’Exténué.
-    endOfRound(c, { int: () => 95 });
-    expect(c.conditions.some((x) => x.name === 'sonne')).toBe(true);
+    endOfRound(c, { int: () => 5 }); // la Résistance au Sonné est `effects: onRoundEnd test` (etats.json), résolue par le dispatcher
+    expect(c.conditions.some((x) => x.name === 'sonne')).toBe(true);   // endOfRound ne retire aucun pion (cf. state/round-upkeep-cascade.test)
     expect(c.conditions.some((x) => x.name === 'extenue')).toBe(false);
   });
 });
@@ -246,7 +232,7 @@ describe('Avantage en combat (LDB Déplacement l.37 : +10 par point)', () => {
     wounds: { current: 10, max: 10 },
     advantage,
     conditions: [],
-    weapons: [{ name: 'Épée', type: 'melee', damage: '+BF', qualities: [] }],
+    weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [],
     talents: [],
@@ -270,8 +256,6 @@ import {
   castInfo,
   castingValue,
   missileDamage,
-  parseDurationRounds,
-  buffDurationRounds,
   durationClockMinutes,
   isMagicMissile,
   isArcaneSpell,
@@ -368,10 +352,10 @@ describe('Localisation par forme du corps (LDB « Point d’Impact des Créature
 
 describe('Dégâts d’arme (parsing via effectiveWeaponDamage)', () => {
   it('+BF+4 avec BF=3 → 7', () => {
-    expect(effectiveWeaponDamage({ name: 'x', type: 'melee', damage: '+BF+4', qualities: [] }, 3)).toBe(7);
+    expect(effectiveWeaponDamage({ name: 'x', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] }, 3)).toBe(7);
   });
   it('+9 (distance) ignore BF', () => {
-    expect(effectiveWeaponDamage({ name: 'x', type: 'ranged', damage: '+9', qualities: [] }, 3)).toBe(9);
+    expect(effectiveWeaponDamage({ name: 'x', type: 'ranged', damage: { plusBF: false, flat: 9 }, qualities: [] }, 3)).toBe(9);
   });
 });
 
@@ -396,7 +380,7 @@ function dummy(name: string, chars: Partial<Characteristics>, wounds: number, we
 describe('Résolution de mêlée', () => {
   it('produit un résultat cohérent et déterministe avec une graine', () => {
     const rng = makeRNG(42);
-    const sword: Weapon = { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [] };
+    const sword: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
     const a = dummy('Attaquant', { CC: 60, F: 40 }, 15, sword);
     const d = dummy('Défenseur', { CC: 25, E: 30 }, 12, sword);
     const res = resolveMelee(a, d, sword, rng);
@@ -439,7 +423,7 @@ describe('Test opposé (départage canon)', () => {
 
 describe('Coup Critique au niveau moteur (LDB 18-Traumatisme : double uniquement)', () => {
   it('le moteur ne marque le critique que sur un double — l’OVERKILL est posé par le store (sur PB courants)', () => {
-    const heavy: Weapon = { name: 'Maillet', type: 'melee', damage: '+BF+20', qualities: [] };
+    const heavy: Weapon = { name: 'Maillet', type: 'melee', damage: { plusBF: true, flat: 20 }, qualities: [] };
     const a = dummy('Brute', { CC: 90, F: 40 }, 20, heavy);
     const d = dummy('Frêle', { CC: 20, E: 20 }, 3, heavy); // Blessures max 3
     const res = resolveMelee(a, d, heavy, makeRNG(1), { defense: 'none' });
@@ -469,9 +453,9 @@ function caster(chars: Partial<Characteristics>, skills: SkillInstance[] = [], w
   };
 }
 
-const FLECHETTE: SpellLike = { label: 'Fléchette', type: 'Magie mineure', family: 'mineure', missile: true, damage: 0, cn: 0, duration: 'Instantanée', desc: 'Il s’agit d’un Projectile magique avec Dégât +0.' };
-const PRIERE: SpellLike = { label: 'Bénédiction de Bataille', type: 'Béni', family: 'beni', isPrayer: true, cn: null, duration: '6 rounds', desc: 'Votre cible gagne +10 en Capacité de Combat.' };
-const ARCANE: SpellLike = { label: 'Boule de feu', type: 'Magie des Arcanes', family: 'arcane', cn: 8, duration: 'Instantanée', desc: 'Projectile magique avec Dégâts +8.' };
+const FLECHETTE: SpellLike = { label: 'Fléchette', type: 'Magie mineure', family: 'mineure', missile: true, damage: 0, cn: 0, duration: { kind: 'instant' }, desc: 'Il s’agit d’un Projectile magique avec Dégât +0.' };
+const PRIERE: SpellLike = { label: 'Bénédiction de Bataille', type: 'Béni', family: 'beni', isPrayer: true, cn: null, duration: { kind: 'rounds', value: 6 }, desc: 'Votre cible gagne +10 en Capacité de Combat.' };
+const ARCANE: SpellLike = { label: 'Boule de feu', type: 'Magie des Arcanes', family: 'arcane', cn: 8, duration: { kind: 'instant' }, desc: 'Projectile magique avec Dégâts +8.' };
 
 describe('Magie — routage du test par branche', () => {
   it('les Prières (Béni/Invocation) utilisent Prière (Soc), sans NI', () => {
@@ -504,10 +488,8 @@ describe('Magie — analyse des descriptions', () => {
     expect(isMagicMissile(FLECHETTE)).toBe(true);
     expect(isMagicMissile(PRIERE)).toBe(false);
   });
-  it('parseDurationRounds lit « N rounds »', () => {
-    expect(parseDurationRounds('6 rounds')).toBe(6);
-    expect(parseDurationRounds('Instantanée')).toBeNull();
-  });
+  // (parseDurationRounds/buffDurationRounds supprimés : la durée Rounds vient de la donnée structurée
+  //  `SpellDuration`, dont le parser est testé dans spellDuration.test.ts.)
 });
 
 describe('Magie — valeur d’incantation', () => {
@@ -575,14 +557,14 @@ describe('Magie — effets actifs (buffs temporisés)', () => {
   it('effectiveChar applique le meilleur bonus, sans cumul', () => {
     const c = caster({ CC: 35 });
     c.activeEffects = [
-      { label: 'A', char: 'CC', bonus: 10, roundsLeft: 6 },
-      { label: 'B', char: 'CC', bonus: 20, roundsLeft: 6 },
+      { label: 'A', char: 'CC', bonus: 10, duration: { scale: 'rounds', left: 6 } },
+      { label: 'B', char: 'CC', bonus: 20, duration: { scale: 'rounds', left: 6 } },
     ];
     expect(effectiveChar(c, 'CC')).toBe(55); // 35 + max(10,20)
   });
   it('endOfRound décrémente et dissipe les effets expirés', () => {
     const c = caster({ CC: 35 });
-    const eff: ActiveEffect = { label: 'Bénédiction de Bataille', char: 'CC', bonus: 10, roundsLeft: 1 };
+    const eff: ActiveEffect = { label: 'Bénédiction de Bataille', char: 'CC', bonus: 10, duration: { scale: 'rounds', left: 1 } };
     c.activeEffects = [eff];
     endOfRound(c);
     expect(c.activeEffects.length).toBe(0);
@@ -592,17 +574,17 @@ describe('Magie — effets actifs (buffs temporisés)', () => {
   it('effectiveChar applique le meilleur bonus ET la pire pénalité (l.168)', () => {
     const c = caster({ Ag: 40 });
     c.activeEffects = [
-      { label: 'buff', char: 'Ag', bonus: 10, roundsLeft: 6 },
-      { label: 'autre buff', char: 'Ag', bonus: 20, roundsLeft: 6 },
-      { label: 'Écorce', char: 'Ag', bonus: -10, roundsLeft: 6 },
+      { label: 'buff', char: 'Ag', bonus: 10, duration: { scale: 'rounds', left: 6 } },
+      { label: 'autre buff', char: 'Ag', bonus: 20, duration: { scale: 'rounds', left: 6 } },
+      { label: 'Écorce', char: 'Ag', bonus: -10, duration: { scale: 'rounds', left: 6 } },
     ];
     expect(effectiveChar(c, 'Ag')).toBe(50); // 40 + max(10,20) + min(-10) = 40+20-10
   });
   it('effectiveChar garde la pénalité la PIRE entre deux malus', () => {
     const c = caster({ Dex: 45 });
     c.activeEffects = [
-      { label: 'a', char: 'Dex', bonus: -10, roundsLeft: 6 },
-      { label: 'b', char: 'Dex', bonus: -20, roundsLeft: 6 },
+      { label: 'a', char: 'Dex', bonus: -10, duration: { scale: 'rounds', left: 6 } },
+      { label: 'b', char: 'Dex', bonus: -20, duration: { scale: 'rounds', left: 6 } },
     ];
     expect(effectiveChar(c, 'Dex')).toBe(25); // 45 + 0 - 20
   });
@@ -617,7 +599,7 @@ describe('Magie — correctifs de fidélité (audit)', () => {
       label: 'Vortex d’âmes',
       type: 'Magie des Arcanes',
       cn: 0,
-      duration: 'Instantanée',
+      duration: { kind: 'instant' },
       missile: true,
       damage: 10,
       ignorePA: true,
@@ -631,30 +613,21 @@ describe('Magie — correctifs de fidélité (audit)', () => {
     }
   });
 
-  // I1 — pas d'invention d'1 round ; résolution des durées-formule « (Bonus de X) Rounds ».
-  it('I1 : buffDurationRounds résout littéral et formule, null hors-rounds', () => {
-    const c = caster({ FM: 45, Ag: 39 }); // BFM 4, BAg 3
-    expect(buffDurationRounds('6 rounds', c)).toBe(6);
-    expect(buffDurationRounds('(Bonus de Force Mentale) Rounds', c)).toBe(4);
-    expect(buffDurationRounds('(Bonus d’Agilité) Rounds', c)).toBe(3);
-    expect(buffDurationRounds('1 minute', c)).toBeNull(); // hors-rounds : pas de défaut inventé
-    expect(buffDurationRounds(undefined, c)).toBeNull();
-  });
-
-  // A4 (cascade #T3) — durées d'HORLOGE (LDB 47) : minutes/heures/jours/« lever du soleil ».
-  it('durationClockMinutes : littéral, (Bonus de X), (X), lever du soleil ; null hors-horloge', () => {
+  // A4 (cascade #T3) — durées d'HORLOGE (LDB 47) : minutes/heures/jours/« lever du soleil », depuis la
+  // durée STRUCTURÉE. (L'échelle Rounds est portée par `{kind:'rounds'}`, hors de durationClockMinutes.)
+  it('durationClockMinutes : clock littéral/(Bonus de X)/(X), untilDawn ; null hors-horloge', () => {
     const c = caster({ FM: 45, Int: 38 }); // BFM 4 ; Int 38
-    expect(durationClockMinutes('1 heure', c, 0)).toBe(60);
-    expect(durationClockMinutes('(Bonus de Force Mentale) jours', c, 0)).toBe(4 * 24 * 60);
-    expect(durationClockMinutes('(Bonus de Force Mentale) minutes', c, 0)).toBe(4);
-    expect(durationClockMinutes('(Intelligence) minutes', c, 0)).toBe(38); // caractéristique PLEINE
+    expect(durationClockMinutes({ kind: 'clock', value: 1, unit: 'hours' }, c, 0)).toBe(60);
+    expect(durationClockMinutes({ kind: 'clock', value: { bonusOf: 'FM' }, unit: 'days' }, c, 0)).toBe(4 * 24 * 60);
+    expect(durationClockMinutes({ kind: 'clock', value: { bonusOf: 'FM' }, unit: 'minutes' }, c, 0)).toBe(4);
+    expect(durationClockMinutes({ kind: 'clock', value: { charOf: 'Int' }, unit: 'minutes' }, c, 0)).toBe(38); // carac PLEINE
     // « Jusqu'au lever du soleil » : prochaine aube (05:00) ; à l'aube pile → un cycle entier.
-    expect(durationClockMinutes("Jusqu'au lever du soleil", c, 0)).toBe(5 * 60);
-    expect(durationClockMinutes("Jusqu'au prochain lever de soleil", c, 5 * 60)).toBe(24 * 60);
-    // Hors-horloge : Rounds (échelle tactique), Instantanée, Spécial → null (rien d'inventé).
-    expect(durationClockMinutes('6 rounds', c, 0)).toBeNull();
-    expect(durationClockMinutes('Instantanée', c, 0)).toBeNull();
-    expect(durationClockMinutes('Spécial', c, 0)).toBeNull();
+    expect(durationClockMinutes({ kind: 'untilDawn' }, c, 0)).toBe(5 * 60);
+    expect(durationClockMinutes({ kind: 'untilDawn' }, c, 5 * 60)).toBe(24 * 60);
+    // Hors-horloge : Rounds (échelle tactique), Instantané, Spécial → null (rien d'inventé).
+    expect(durationClockMinutes({ kind: 'rounds', value: 6 }, c, 0)).toBeNull();
+    expect(durationClockMinutes({ kind: 'instant' }, c, 0)).toBeNull();
+    expect(durationClockMinutes({ kind: 'special', text: 'Spécial' }, c, 0)).toBeNull();
   });
 });
 
@@ -730,7 +703,7 @@ describe('Magie — compétences Avancées (gating)', () => {
 
   it('Dissipation : seul un SORT se dissipe — pas une Prière (LDB 46 « Si un Sort vous cible »)', () => {
     expect(isDispellableSpell(FLECHETTE)).toBe(true);
-    expect(isDispellableSpell({ label: 'Bénédiction', type: 'Béni', isPrayer: true, cn: null, duration: '', desc: '' })).toBe(false);
+    expect(isDispellableSpell({ label: 'Bénédiction', type: 'Béni', isPrayer: true, cn: null, duration: null, desc: '' })).toBe(false);
   });
 
   it('le Trait « Lanceur de Sorts » (LDB 85 : « La créature peut lancer des Sorts ») dispense de la Compétence', () => {

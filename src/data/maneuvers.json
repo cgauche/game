@@ -144,7 +144,9 @@
     "stat": "CT",
     "defense": "esquive",
     "targeting": "ranged",
-    "range": "Bonus d’Endurance mètres",
+    "range": {
+      "bonusOf": "E"
+    },
     "effects": [
       {
         "trigger": "onHit",
@@ -336,8 +338,13 @@
     "stat": "CT",
     "defense": "esquive",
     "targeting": "zone",
-    "range": "Bonus d’Endurance + 20 mètres",
-    "blast": "Bonus de Force mètres",
+    "range": {
+      "bonusOf": "E",
+      "plus": 20
+    },
+    "blast": {
+      "bonusOf": "F"
+    },
     "magic": true,
     "source": {
       "book": "LDB",
@@ -395,8 +402,13 @@
     "stat": "CT",
     "defense": "esquive",
     "targeting": "zone",
-    "range": "Bonus d’Endurance + 20 mètres",
-    "blast": "Bonus de Force mètres",
+    "range": {
+      "bonusOf": "E",
+      "plus": 20
+    },
+    "blast": {
+      "bonusOf": "F"
+    },
     "magic": true,
     "source": {
       "book": "LDB",
@@ -454,8 +466,13 @@
     "stat": "CT",
     "defense": "esquive",
     "targeting": "zone",
-    "range": "Bonus d’Endurance + 20 mètres",
-    "blast": "Bonus de Force mètres",
+    "range": {
+      "bonusOf": "E",
+      "plus": 20
+    },
+    "blast": {
+      "bonusOf": "F"
+    },
     "magic": true,
     "source": {
       "book": "LDB",
@@ -526,8 +543,13 @@
     "stat": "CT",
     "defense": "esquive",
     "targeting": "zone",
-    "range": "Bonus d’Endurance + 20 mètres",
-    "blast": "Bonus de Force mètres",
+    "range": {
+      "bonusOf": "E",
+      "plus": 20
+    },
+    "blast": {
+      "bonusOf": "F"
+    },
     "magic": true,
     "source": {
       "book": "LDB",
@@ -585,8 +607,13 @@
     "stat": "CT",
     "defense": "esquive",
     "targeting": "zone",
-    "range": "Bonus d’Endurance + 20 mètres",
-    "blast": "Bonus de Force mètres",
+    "range": {
+      "bonusOf": "E",
+      "plus": 20
+    },
+    "blast": {
+      "bonusOf": "F"
+    },
     "magic": true,
     "source": {
       "book": "LDB",
@@ -644,8 +671,13 @@
     "stat": "CT",
     "defense": "esquive",
     "targeting": "zone",
-    "range": "Bonus d’Endurance + 20 mètres",
-    "blast": "Bonus de Force mètres",
+    "range": {
+      "bonusOf": "E",
+      "plus": 20
+    },
+    "blast": {
+      "bonusOf": "F"
+    },
     "magic": true,
     "source": {
       "book": "LDB",
@@ -663,8 +695,12 @@
     "stat": "CT",
     "defense": "esquive",
     "targeting": "zone",
-    "range": "Bonus d’Endurance mètres",
-    "blast": "2 mètres",
+    "range": {
+      "bonusOf": "E"
+    },
+    "blast": {
+      "plus": 2
+    },
     "effects": [
       {
         "trigger": "onHit",

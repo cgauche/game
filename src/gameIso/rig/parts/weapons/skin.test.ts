@@ -3,7 +3,7 @@ import { weaponPart } from '../equipment';
 import type { Weapon } from '../../../../engine/types';
 
 const w = (name: string, skin?: Record<string, string>): Weapon =>
-  ({ name, type: 'melee', damage: '+4', qualities: [], skin } as Weapon);
+  ({ name, type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [], skin } as Weapon);
 
 describe('skin d’arme — recolorisation par-objet (tokens palette)', () => {
   it('au défaut, l’art est entièrement résolu (aucun @token résiduel)', () => {

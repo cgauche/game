@@ -1,24 +1,22 @@
 import { describe, it, expect } from 'vitest';
-import { parseWearPenalty, wornArmourPenalty, wornSocialMod } from './wearPenalty';
+import { wornArmourPenalty, wornSocialMod } from './wearPenalty';
 import { testValue, partyBest } from './skills';
 import { qualitySocMod } from './qualities/dispatch';
 import { totalEncumbrance } from './items';
-import type { Combatant } from './types';
+import { parseQualityInstance } from './qualities/normalize';
+import { slugId } from '../data/slug';
+import type { Combatant, QualityInstance } from './types';
 
-describe('parseWearPenalty', () => {
-  it('parse « -10% en Discrétion » → { skill: Discrétion, value: -10 }', () => {
-    expect(parseWearPenalty('-10% en Discrétion')).toEqual({ skill: 'Discrétion', value: -10 });
-  });
-  it('parse « -20% en Perception »', () => {
-    expect(parseWearPenalty('-20% en Perception')).toEqual({ skill: 'Perception', value: -20 });
-  });
-  it('renvoie null pour une qualité non-pénalité', () => {
-    expect(parseWearPenalty('Flexible')).toBeNull();
-    expect(parseWearPenalty('Impénétrable')).toBeNull();
-  });
+/** Fixture : libellés FR ou prose de pénalité de port (« -10% en Discrétion ») → `QualityInstance[]` structurées.
+ *  La prose de port mappe `en-<skillId>` + magnitude (forme réelle de la donnée d'armure). */
+const WEAR = /^(-?\d+)%?\s*en\s+(.+)$/i;
+const q_ = (labels: string[]): QualityInstance[] => labels.map((l) => {
+  const m = WEAR.exec(l);
+  return m ? { id: `en-${slugId(m[2])}`, value: parseInt(m[1], 10) } : parseQualityInstance(l)!;
 });
 
-function mkWearer(qualities: string[]): Combatant {
+function mkWearer(labels: string[]): Combatant {
+  const qualities = q_(labels);
   return {
     id: 'h', name: 'A', kind: 'hero',
     characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 40, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30 },
@@ -62,11 +60,11 @@ describe('testValue + port d’armure', () => {
     } as unknown as Combatant;
   }
   it('testValue soustrait la pénalité de Discrétion d’une cotte équipée', () => {
-    const c = hero('h1', 40, [{ uid: 'a', name: 'Cotte de mailles', kind: 'armor', qualities: ['-10% en Discrétion'], enc: 3, equipped: true }]);
+    const c = hero('h1', 40, [{ uid: 'a', name: 'Cotte de mailles', kind: 'armor', qualities: q_(['-10% en Discrétion']), enc: 3, equipped: true }]);
     expect(testValue(c, 'discretion')).toBe(30); // Ag 40 − 10
   });
   it('partyBest préfère le héros NON armuré pour un Test de Discrétion', () => {
-    const armure = hero('arm', 45, [{ uid: 'a', name: 'Cotte de mailles', kind: 'armor', qualities: ['-10% en Discrétion'], enc: 3, equipped: true }]); // 35
+    const armure = hero('arm', 45, [{ uid: 'a', name: 'Cotte de mailles', kind: 'armor', qualities: q_(['-10% en Discrétion']), enc: 3, equipped: true }]); // 35
     const leste = hero('leste', 40, []); // 40
     expect(partyBest([armure, leste], 'discretion')!.actor.id).toBe('leste');
   });
@@ -74,16 +72,16 @@ describe('testValue + port d’armure', () => {
 
 describe('qualitySocMod (Laid)', () => {
   it('somme socMod (Laid = -10 ; qualité sans socMod = 0)', () => {
-    expect(qualitySocMod({ qualities: ['Laid'] })).toBe(-10);
-    expect(qualitySocMod({ qualities: ['Précise'] })).toBe(0);
+    expect(qualitySocMod({ qualities: q_(['Laid']) })).toBe(-10);
+    expect(qualitySocMod({ qualities: q_(['Précise']) })).toBe(0);
   });
 });
 
 describe('wornSocialMod', () => {
   it('somme les Laid ÉQUIPÉS (-10), ignore les non équipés', () => {
     const c = { items: [
-      { uid: 'a', name: 'Heaume hideux', kind: 'armor', qualities: ['Laid'], enc: 2, equipped: true },
-      { uid: 'b', name: 'Babiole', kind: 'misc', qualities: ['Laid'], enc: 0, equipped: false },
+      { uid: 'a', name: 'Heaume hideux', kind: 'armor', qualities: q_(['Laid']), enc: 2, equipped: true },
+      { uid: 'b', name: 'Babiole', kind: 'misc', qualities: q_(['Laid']), enc: 0, equipped: false },
     ] } as unknown as Combatant;
     expect(wornSocialMod(c)).toBe(-10);
   });
@@ -91,14 +89,14 @@ describe('wornSocialMod', () => {
 
 describe('testValue + Laid (Sociabilité)', () => {
   it('un objet Laid équipé impose -10 aux Tests Soc (caractéristique brute)', () => {
-    const c = { characteristics: { Soc: 40 }, skills: [], items: [{ uid: 'a', name: 'X', kind: 'armor', qualities: ['Laid'], enc: 1, equipped: true }] } as unknown as Combatant;
+    const c = { characteristics: { Soc: 40 }, skills: [], items: [{ uid: 'a', name: 'X', kind: 'armor', qualities: q_(['Laid']), enc: 1, equipped: true }] } as unknown as Combatant;
     expect(testValue(c, undefined, 'Soc')).toBe(30);
   });
   it('-10 sur une compétence Soc-based (Charme), rien sur une compétence non-Soc (Discrétion)', () => {
     const c = {
       characteristics: { Soc: 40, Ag: 40, F: 30, E: 30 }, // F/E requis : sinon maxEncumbrance = NaN → faux palier d'Encombrement
       skills: [{ skillId: 'charme', characteristic: 'Soc', advances: 0 }, { skillId: 'discretion', characteristic: 'Ag', advances: 0 }],
-      items: [{ uid: 'a', name: 'X', kind: 'armor', qualities: ['Laid'], enc: 1, equipped: true }],
+      items: [{ uid: 'a', name: 'X', kind: 'armor', qualities: q_(['Laid']), enc: 1, equipped: true }],
     } as unknown as Combatant;
     expect(testValue(c, 'charme')).toBe(30); // Soc 40 − 10
     expect(testValue(c, 'discretion')).toBe(40); // non-Soc, pas de pénalité d'armure → inchangé
@@ -107,7 +105,7 @@ describe('testValue + Laid (Sociabilité)', () => {
 
 describe('Volumineux porté (garde — déjà câblé items.ts)', () => {
   it('une armure Volumineux portée vaut Enc 1 (LDB 60 l.91)', () => {
-    const c = { items: [{ uid: 'a', name: 'Plastron lourd', kind: 'armor', qualities: ['Volumineux'], enc: 3, equipped: true }] } as unknown as Combatant;
+    const c = { items: [{ uid: 'a', name: 'Plastron lourd', kind: 'armor', qualities: q_(['Volumineux']), enc: 3, equipped: true }] } as unknown as Combatant;
     expect(totalEncumbrance(c)).toBe(1);
   });
 });

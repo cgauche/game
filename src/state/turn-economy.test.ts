@@ -8,7 +8,7 @@ const hero = (over: Partial<Combatant> = {}): Combatant =>
     id: 'H', name: 'H', kind: 'hero',
     characteristics: { CC: 40, CT: 40, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
     wounds: { current: 10, max: 10 }, advantage: 0, conditions: [],
-    weapons: [{ name: 'Épée', type: 'melee', damage: '+BF', qualities: [] }],
+    weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }],
     armour: {}, skills: [], talents: [], movement: 4, pos: { x: 0, y: 0 }, ...over,
   }) as unknown as Combatant;
 
@@ -40,7 +40,7 @@ describe('hasMeaningfulOption — garde-fou « tour gâché » (R6)', () => {
   });
 
   it('tout dépensé mais attaque libre de Frénésie disponible → true', () => {
-    const h = hero({ frenzied: true, talents: [{ talentId: 'frenesie', times: 1 }] });
+    const h = hero({ psychState: [{ type: 'frenesie' }], talents: [{ talentId: 'frenesie', times: 1 }] });
     expect(hasMeaningfulOption(h, battle(h, { acted: true, movementUsed: 99, movedPreAction: true }))).toBe(true);
   });
 

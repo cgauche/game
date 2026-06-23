@@ -23,7 +23,7 @@ function mk(over: Partial<Combatant> = {}): Combatant {
     conditions: [], skills: [], talents: [], traits: [], groups: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     movement: 4, wounds: { current: 2, max: 12 },
-    activeEffects: [{ label: 'Ombres étrangleuses', bonus: 0, roundsLeft: 8, suffocates: true }],
+    activeEffects: [{ label: 'Ombres étrangleuses', bonus: 0, duration: { scale: 'rounds', left: 8 }, suffocates: true }],
     ...over,
   } as unknown as Combatant;
 }
@@ -52,7 +52,7 @@ describe('suffocationTick — Noyade et Suffocation (LDB 18 l.424-425)', () => {
   });
   it('Bénédiction de Souffle : « ignore les règles de suffocation » — aucun effet', () => {
     const c = mk();
-    c.activeEffects!.push({ label: 'Bénédiction de Souffle', bonus: 0, roundsLeft: 6, noBreath: true });
+    c.activeEffects!.push({ label: 'Bénédiction de Souffle', bonus: 0, duration: { scale: 'rounds', left: 6 }, noBreath: true });
     suffocationTick(c);
     expect(c.wounds.current).toBe(2);
   });
@@ -88,6 +88,6 @@ describe('Effets curés — suffocation (lus de SpellData.effects)', () => {
   it('op suffocate : pose l’effet porteur à la durée du sort', () => {
     const c = mk({ activeEffects: [] });
     applyOps(c, [{ op: 'suffocate' }], { label: 'Ombres étrangleuses', defaultDurationRounds: 4 });
-    expect(c.activeEffects?.find((e) => e.suffocates)?.roundsLeft).toBe(4);
+    expect(c.activeEffects?.find((e) => e.suffocates)?.duration).toEqual({ scale: "rounds", left: 4 });
   });
 });

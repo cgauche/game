@@ -7,21 +7,10 @@
  */
 import type { Weapon, ArmourPoints } from './types';
 import type { TraitInstance, TraitList } from './statEntry';
-import { buildWeapon, emptyArmour, type WeaponDamageSpec } from './items';
+import { buildWeapon, emptyArmour } from './items';
+import type { WeaponDamageSpec } from './types';
 import { resolveTraits, traitLabelById } from './traits/dispatch';
-import { norm as normTrait } from '../lib/normalize';
-
-/**
- * Attaques NATURELLES (FR) : pas d'arme tenue par le rig (la « part » du corps fait
- * foi — griffes, morsure, tentacule…). Le rendu n'affiche donc pas d'objet en main.
- * SOURCE UNIQUE (clé normalisée → { ranged? }) : sert et à filtrer le type « Arme (griffes) »
- * et à reconnaître un trait d'attaque naturelle (« Morsure +9 ») — plus de regex dupliquée.
- */
-const NATURAL_WEAPON = new Map<string, { ranged?: boolean }>([
-  ['morsure', {}], ['griffes', {}], ['griffe', {}], ['poings', {}], ['mains nues', {}],
-  ['tentacule', {}], ['tentacules', {}], ['bec', {}], ['dard', {}], ['corne', {}], ['cornes', {}],
-  ['queue', {}], ['pietinement', {}], ['crachat', { ranged: true }],
-]);
+import { findTraitById } from '../data/index';
 
 /**
  * Parse UN trait d'arme WFRP4 (français) en arme jouable, ou null. Gère le TYPE
@@ -37,19 +26,14 @@ export function weaponFromTrait(t: TraitInstance): Weapon | null {
   const dmg: WeaponDamageSpec = t.value != null ? { plusBF: false, flat: t.value } : { plusBF: true, flat: 0, bare: true };
   if (t.id === 'a-distance') {
     if (t.value == null) return null; // « À distance » sans Indice de Dégâts : pas une arme jouable (RAW)
-    const type = t.arg;
-    return buildWeapon({
-      name: type && !NATURAL_WEAPON.has(normTrait(type)) ? type : 'Attaque à distance',
-      type: 'ranged', damage: dmg, range: t.range ?? undefined,
-    });
+    return buildWeapon({ name: t.arg || 'Attaque à distance', type: 'ranged', damage: dmg, range: t.range ?? undefined });
   }
   if (t.id === 'arme') return buildWeapon({ name: t.arg ?? 'Arme', damage: dmg }); // mêlée par défaut
-  // Attaque naturelle (« Morsure +9 », « 8 Tentacules +9 ») : la clé est une arme naturelle CONNUE
-  // (source UNIQUE NATURAL_WEAPON). L'arme reste UNE (l'Action d'attaque) ; le compte joue sur les
-  // Attaques GRATUITES (aiCreatureFreeAttacks), LDB 85 l.354.
-  const word = traitLabelById(t.id).split(/\s+/)[0];
-  const meta = NATURAL_WEAPON.get(normTrait(word));
-  if (meta) return buildWeapon({ name: word, type: meta.ranged ? 'ranged' : 'melee', damage: dmg });
+  // Attaque naturelle (Morsure, Cornes, Tentacules…) : reconnue par la CAPACITÉ TYPÉE du trait
+  // (`capabilities.naturalWeapon`, donnée), plus par découpe du libellé au runtime. L'arme reste UNE
+  // (l'Action d'attaque) ; le compte joue sur les Attaques GRATUITES (aiCreatureFreeAttacks, LDB 85 l.354).
+  const nat = findTraitById(t.id)?.capabilities?.naturalWeapon;
+  if (nat) return buildWeapon({ name: traitLabelById(t.id), type: nat.ranged ? 'ranged' : 'melee', damage: dmg });
   return null;
 }
 

@@ -19,7 +19,7 @@ function mkEnemy(name: string, over: Partial<Combatant> = {}): Combatant {
     wounds: { current: 10, max: 10 },
     advantage: 0,
     conditions: [],
-    weapons: [{ name: 'Épée', type: 'melee', damage: '+4', qualities: [] } as Weapon],
+    weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon],
     armour: { ...noArmour },
     skills: [],
     talents: [],

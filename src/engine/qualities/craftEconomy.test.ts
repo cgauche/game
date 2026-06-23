@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { craftPriceFactor, craftEncDelta, shiftAvailability, qualityClass, craftAtoutCount, craftDefautCount } from './craftEconomy';
+import { parseQualityInstance } from './normalize';
 
-const it_ = (qualities: string[]) => ({ qualities });
+/** Fixture : libellés FR (lisibles) → `QualityInstance[]` structurées via le parseur d'authoring. */
+const it_ = (qualities: string[]) => ({ qualities: qualities.map((q) => parseQualityInstance(q)!) });
 
 describe('craftEconomy — comptage & prix (LDB 60 l.47/75)', () => {
   it('compte les Atouts/Défauts d’OBJET seulement (ignore les qualités d’arme)', () => {

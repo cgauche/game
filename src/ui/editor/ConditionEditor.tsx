@@ -30,6 +30,9 @@ const ATTACK_KIND_LABELS: Record<string, string> = {
   arme: 'Arme / griffe', morsure: 'Morsure', caudale: 'Attaque caudale', cornes: 'Cornes', tentacules: 'Tentacules', pietinement: 'Piétinement',
 };
 
+/** Causes d'effarouchement (cf. Nerveux, LDB 85 l.197) — libellés du sélecteur de la Condition `startleCause`. */
+const STARTLE_CAUSE_LABELS: Record<'noise' | 'magic', string> = { noise: 'Bruits forts', magic: 'Magie' };
+
 /** Données fixes d'un acteur comparables (Condition `compare`) — libellés des sélecteurs. */
 const FIELD_LABEL: Record<ActorField, string> = { woundsCurrent: 'PB courants', woundsMax: 'PB max', size: 'Taille', advantage: 'Avantage' };
 const WHO_LABEL: Record<ActorRef, string> = { target: 'la cible', caster: 'le lanceur' };
@@ -46,7 +49,10 @@ const KIND_OPTIONS: [Condition['kind'], string][] = [
   ['slThreshold', 'Marge (DR)'],
   ['location', 'Localisation touchée'],
   ['attackKind', 'Type d’attaque'],
+  ['startleCause', 'Cause d’effarouchement'],
   ['woundsDealt', 'Blessures infligées'],
+  ['engagedAdvantageGap', 'Écart d’Avantage (engagés)'],
+  ['foeInLoS', 'Ennemi en Ligne de Vue'],
   ['relation', 'Camp / relation'],
   ['has', 'Possède (Groupe/Talent/Trait)'],
   ['all', 'TOUS (ET)'],
@@ -81,7 +87,10 @@ export function condSummary(c: Condition | undefined): string {
     case 'slThreshold': return `marge ${c.op} ${c.value} DR`;
     case 'location': return `touche ${HIT_LOCATION_LABELS[c.is]}`;
     case 'attackKind': return `attaque = ${ATTACK_KIND_LABELS[c.is] ?? (c.is || '?')}`;
+    case 'startleCause': return `effarouché par ${STARTLE_CAUSE_LABELS[c.is]}`;
     case 'woundsDealt': return `PB infligés ${c.op} ${c.value}`;
+    case 'engagedAdvantageGap': return `écart d’Avantage ${c.op} ${c.value}`;
+    case 'foeInLoS': return 'ennemi en Ligne de Vue';
     case 'relation': return `${WHO_LABEL[c.who]} : ${REL_LABEL[c.is]}`;
     case 'has': return `${WHO_LABEL[c.who]} a ${WHAT_LABEL[c.what]} « ${c.value || '?'}${c.spec ? ` (${c.spec})` : ''} »`;
     case 'all': return c.of.length ? c.of.map(condSummary).join(' ET ') : 'toujours';
@@ -103,7 +112,10 @@ function recast(cond: Condition, kind: Condition['kind']): Condition {
     case 'slThreshold': return cond.kind === 'slThreshold' ? cond : { kind: 'slThreshold', op: '>=', value: 6 };
     case 'location': return { kind: 'location', is: cond.kind === 'location' ? cond.is : 'tete' };
     case 'attackKind': return { kind: 'attackKind', is: cond.kind === 'attackKind' ? cond.is : 'morsure' };
+    case 'startleCause': return { kind: 'startleCause', is: cond.kind === 'startleCause' ? cond.is : 'noise' };
     case 'woundsDealt': return cond.kind === 'woundsDealt' ? cond : { kind: 'woundsDealt', op: '>', value: 0 };
+    case 'engagedAdvantageGap': return cond.kind === 'engagedAdvantageGap' ? cond : { kind: 'engagedAdvantageGap', op: '>', value: 0 };
+    case 'foeInLoS': return { kind: 'foeInLoS' };
     case 'relation': return cond.kind === 'relation' ? cond : { kind: 'relation', who: 'target', is: 'opponent' };
     case 'has': return cond.kind === 'has' ? cond : { kind: 'has', who: 'target', what: 'group', value: '' };
     case 'all': return { kind: 'all', of: cond.kind === 'all' || cond.kind === 'any' ? cond.of : cond.kind === 'always' ? [] : [cond] };
@@ -227,8 +239,21 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
           {Object.keys(ATTACK_KIND_LABELS).map((k) => <option key={k} value={k}>{ATTACK_KIND_LABELS[k]}</option>)}
         </select>
       )}
+      {cond.kind === 'startleCause' && (
+        <select className="cond-kind" value={cond.is} onChange={(e) => onChange({ kind: 'startleCause', is: e.target.value as 'noise' | 'magic' })}>
+          {(Object.keys(STARTLE_CAUSE_LABELS) as ('noise' | 'magic')[]).map((k) => <option key={k} value={k}>{STARTLE_CAUSE_LABELS[k]}</option>)}
+        </select>
+      )}
       {cond.kind === 'woundsDealt' && (
         <span className="cond-time">PB infligés
+          <select className="cond-kind" value={cond.op} onChange={(e) => onChange({ ...cond, op: e.target.value as CompareOp })}>
+            {COMPARE_OPS.map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
+          <input type="number" min={0} style={{ width: '3.4em' }} value={cond.value} onChange={(e) => onChange({ ...cond, value: Math.max(0, Number(e.target.value) || 0) })} />
+        </span>
+      )}
+      {cond.kind === 'engagedAdvantageGap' && (
+        <span className="cond-time">écart d’Avantage
           <select className="cond-kind" value={cond.op} onChange={(e) => onChange({ ...cond, op: e.target.value as CompareOp })}>
             {COMPARE_OPS.map((o) => <option key={o} value={o}>{o}</option>)}
           </select>

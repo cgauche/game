@@ -112,7 +112,7 @@ describe('encounterPsychFlow — Psychologie à la rencontre HORS COMBAT (cascad
     useGame.getState().cascadeNext();
     const hero = useGame.getState().party[0];
     expect(hero.resolve).toBe(0);
-    expect(hero.psychImmuneRoundsLeft).toBe(2);
+    expect(hero.activeEffects?.find((e) => e.psychImmune)?.duration).toEqual({ scale: 'rounds', left: 2 });
     // One-shot : immune ≈ inerte = même état final qu'un succès (pas d'affliction active → pas de re-déclenchement).
     expect((hero.psychState ?? []).some((p) => p.type === 'animosite' && p.active === true)).toBe(false);
     expect(useGame.getState().pendingCascade).toBeNull();
@@ -140,7 +140,7 @@ describe('encounterPsychFlow — Psychologie à la rencontre HORS COMBAT (cascad
 
   it('immunité (Frénésie) → aucune cascade même sociale', () => {
     const h = animosite('H');
-    h.frenzied = true;
+    (h.psychState ??= []).push({ type: 'frenesie' });
     useGame.setState({ party: [h] });
     useGame.getState().startScene(scene([ent({ id: 'elfe', statblock: ELFE })]));
     expect(useGame.getState().pendingCascade).toBeNull();

@@ -3,8 +3,8 @@ import { weaponPart, weaponFamily, shieldPart, armourPart, armourMaterial, equip
 import { pickView } from './types';
 import type { Combatant, Weapon, ItemInstance } from '../../../engine/types';
 
-const wep = (name: string, type: 'melee' | 'ranged', q: string[] = []): Weapon =>
-  ({ name, type, damage: '+4', qualities: q } as Weapon);
+const wep = (name: string, type: 'melee' | 'ranged', q: { id: string; value?: number }[] = []): Weapon =>
+  ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: q } as Weapon);
 const wpv = (name: string, type: 'melee' | 'ranged' = 'melee') => pickView(weaponPart(wep(name, type)), 'front');
 const fam = (name: string, type: 'melee' | 'ranged' = 'melee') => weaponFamily(wep(name, type));
 
@@ -32,7 +32,7 @@ describe('weaponFamily — 1 forme par arme (anti-collapse)', () => {
 
 describe('isShield', () => {
   it('reconnaît un bouclier par qualité ou nom, pas une épée', () => {
-    expect(isShield({ name: 'Targe', qualities: ['Bouclier'] })).toBe(true);
+    expect(isShield({ name: 'Targe', qualities: [{ id: 'protectrice', value: 1 }] })).toBe(true);
     expect(isShield({ name: 'Bouclier', qualities: [] })).toBe(true);
     expect(isShield({ name: 'Épée', qualities: [] })).toBe(false);
   });
@@ -68,14 +68,14 @@ describe('armourPart', () => {
 
 describe('shieldPart', () => {
   it('renvoie un SVG de bouclier non vide', () => {
-    expect(pickView(shieldPart(wep('Bouclier', 'melee', ['Bouclier'])), 'front')).toContain('<');
+    expect(pickView(shieldPart(wep('Bouclier', 'melee')), 'front')).toContain('<');
   });
 });
 
 describe('equipFromCombatant', () => {
   it('extrait armes actives + pièces d’armure équipées + bouclier', () => {
     const c = {
-      weapons: [wep('Épée', 'melee'), wep('Bouclier', 'melee', ['Bouclier'])],
+      weapons: [wep('Épée', 'melee'), wep('Bouclier', 'melee')],
       items: [
         { uid: 'a', name: 'Plastron', kind: 'armor', qualities: [], pa: 1, locs: ['corps'], enc: 1, equipped: true } as ItemInstance,
         { uid: 'b', name: 'Heaume', kind: 'armor', qualities: [], pa: 1, locs: ['tete'], enc: 0, equipped: false } as ItemInstance,

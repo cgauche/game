@@ -5,6 +5,7 @@
  */
 import type { ConditionInstance, ActiveEffect, CharKey, Combatant } from '../engine/types';
 import { conditionLabel } from '../data';
+import { isFrenzied } from '../engine/psychology';
 
 export interface EffectChip {
   key: string;
@@ -73,7 +74,7 @@ function buffChips(effects: ActiveEffect[]): EffectChip[] {
     label: e.label,
     kind: 'buff',
     severity: 50,
-    rounds: e.roundsLeft,
+    rounds: e.duration.scale === 'rounds' ? e.duration.left : undefined,
     bonus: e.bonus,
     char: e.char,
   }));
@@ -97,7 +98,7 @@ export interface EffectFlags {
 export function combatantFlags(c: Combatant): EffectFlags {
   const fears = (c.psychState ?? []).filter((p) => p.type === 'peur' && (p.calmeDR ?? 0) < (p.indice ?? 1));
   return {
-    frenzied: c.frenzied, defensiveStance: c.defensiveStance, aiming: c.aiming, focusDr: c.focus?.dr,
+    frenzied: isFrenzied(c), defensiveStance: c.defensiveStance, aiming: c.aiming, focusDr: c.focus?.dr,
     hunger: (c.hunger?.days ?? 0) >= 1 ? { days: c.hunger!.days, failures: c.hunger!.failures } : undefined,
     fear: fears.length ? Math.max(...fears.map((p) => p.indice ?? 1)) : undefined,
   };

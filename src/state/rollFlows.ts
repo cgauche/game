@@ -708,7 +708,7 @@ export const FLOWS = {
     resolve: (s, p, actor, _get, forced) => {
       if (!s.battle || !actor) return null;
       // RAW LDB 17 l.73 : avant le jet (result==null → choisit 01) OU après un échec.
-      if (forced) return p.result?.success ? null : { result: { success: true, roll: p.result?.roll ?? 1, target: p.result?.target } };
+      if (forced) return p.result?.success ? null : { result: { success: true, roll: p.result?.roll ?? 1, target: p.result?.target, sl: Math.max(p.result?.sl ?? 0, 0) } };
       return { result: resolveFrenzyEntry(effectiveChar(actor, 'FM'), battleRng()) };
     },
     failed: (p) => !p.result?.success,

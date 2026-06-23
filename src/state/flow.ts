@@ -79,9 +79,20 @@ export type Condition =
   /** KIND de l'attaque courante (`ctx.attackKind` : 'morsure'/'cornes'/'caudale'/… cf. `creatureAttackKind`)
    *  — gate « seulement quand l'attaque est une Morsure » (Vampirique). Hors contexte = jamais vrai. */
   | { kind: 'attackKind'; is: string }
+  /** CAUSE d'un effarouchement courant (`ctx.startleCause` : 'noise' bruits forts / 'magic' présence de
+   *  magie — LDB 85 l.197 Nerveux) — gate l'exemption Dressé (Guerre ignore les bruits, Magie ignore la
+   *  magie, LDB 85 l.89). Hors contexte d'effarouchement = jamais vrai. */
+  | { kind: 'startleCause'; is: 'noise' | 'magic' }
   /** Blessures infligées par l'attaque/lancement courant (`ctx.woundsDealt`), comparées par `op` à
    *  `value` (Venin : `> 0` → Empoisonné ; un rider « coup lourd » : `>= 3`). Hors contexte = 0. */
   | { kind: 'woundsDealt'; op: CompareOp; value: number }
+  /** Écart d'Avantage avec les adversaires Engagés (`ctx.engagedAdvantageGap`), comparé par `op` à `value`
+   *  (Instable : `> 0` → la créature est repoussée et perd des PB, LDB 85 l.177). Hors combat = 0. */
+  | { kind: 'engagedAdvantageGap'; op: CompareOp; value: number }
+  /** Y a-t-il un adversaire VIVANT dans la Ligne de Vue de `target` (`ctx.foeInLoS`) ? Géométrie d'arène
+   *  emballée en donnée (au-dessus de `lineOfSightCover`) : sortie de Frénésie « plus d'ennemi en vue → fin »
+   *  (LDB 21 l.36), fuite/récupération du Brisé « hors de vue de l'ennemi » (LDB 16 l.55). Hors combat = false. */
+  | { kind: 'foeInLoS' }
   /** Camp / RELATION d'un acteur (`who`) — gate « seulement les ennemis / les alliés / les neutres »
    *  (riders de domaine offensifs : `who:'target', is:'opponent'`). `ally`/`opponent` sont RELATIFS à
    *  l'autre acteur (même camp / camp différent) ; `party`/`neutral`/`hostile` sont ABSOLUS (le `kind`).
@@ -112,8 +123,15 @@ export interface ConditionCtx {
   location?: HitLocation;
   /** Blessures infligées par l'attaque courante — lue par la Condition `woundsDealt`. */
   woundsDealt?: number;
+  /** Écart d'Avantage avec les adversaires Engagés — lu par la Condition `engagedAdvantageGap` (Instable). */
+  engagedAdvantageGap?: number;
   /** KIND de l'attaque courante (`creatureAttackKind` : 'morsure'/'cornes'/…) — lu par la Condition `attackKind`. */
   attackKind?: string;
+  /** CAUSE de l'effarouchement courant ('noise'/'magic') — lue par la Condition `startleCause` (exemption Dressé). */
+  startleCause?: 'noise' | 'magic';
+  /** Un adversaire vivant est-il dans la Ligne de Vue du porteur — lu par la Condition `foeInLoS`
+   *  (sortie de Frénésie, fuite/récupération du Brisé). Précalculé sur la `battle` par l'appelant. */
+  foeInLoS?: boolean;
 }
 
 /** Évalue une Condition — SOURCE UNIQUE de l'évaluation des conditions (triggers, choix de dialogue,
@@ -160,7 +178,10 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
     case 'slThreshold': return applyCompareOp(ctx.sl ?? 0, cond.op, cond.value);
     case 'location': return ctx.location != null && ctx.location === cond.is;
     case 'attackKind': return ctx.attackKind != null && ctx.attackKind === cond.is;
+    case 'startleCause': return ctx.startleCause != null && ctx.startleCause === cond.is;
     case 'woundsDealt': return applyCompareOp(ctx.woundsDealt ?? 0, cond.op, cond.value);
+    case 'engagedAdvantageGap': return applyCompareOp(ctx.engagedAdvantageGap ?? 0, cond.op, cond.value);
+    case 'foeInLoS': return !!ctx.foeInLoS;
     case 'relation': {
       const a = cond.who === 'caster' ? ctx.caster : ctx.target;
       if (!a) return false;
@@ -274,12 +295,18 @@ export const EMPTY_FLOW: Flow = { kind: 'seq', steps: [] };
  *  `onRoundStart` : au début de son Round ; `onStartled` : magie / bruit fort ; `onKill` : adversaire
  *  mis hors de combat ; `onGainCondition` : le porteur vient de GAGNER un État (filtré par `condition` —
  *  Mâchoires d'acier : « chaque fois que vous gagnez un État Sonné »).
+ *  `onWoundLoss` se produit pour TOUTE perte de PB (mêlée OU distance) ; le TYPE d'attaque voyage dans le
+ *  contexte (`attackType`) et un effet peut s'y restreindre via son champ `attackType`.
+ *  `onSlain` : le porteur vient d'être mis HORS DE COMBAT, par n'importe quel chemin de mort (0 PB,
+ *  Critique létal — démembrement —, mort-auto du désespéré, mort lente). Émis UNE fois (garde `slainNotified`).
+ *  Couvre le « démon banni à sa mort » (Démoniaque, LDB 85 p.339) et tout futur effet « à la mort ».
  *  Cycle de vie du COMBAT (au point de hook correspondant — cf. `combatHooks`) : `onCombatStart` (le
  *  combat débute), `onCombatEnd` (le combat se résout, AVANT l'écran de victoire), `onRoundEnd` (fin de
  *  Round, après l'entretien), `onTurnStart`/`onTurnEnd` (début/fin du tour du porteur). */
 export type EffectTrigger =
-  | 'onHit' | 'onWoundLoss' | 'onRoundStart' | 'onStartled' | 'onKill' | 'onCharged' | 'onGainCondition'
-  | 'onCombatStart' | 'onCombatEnd' | 'onRoundEnd' | 'onTurnStart' | 'onTurnEnd';
+  | 'onHit' | 'onWoundLoss' | 'onSlain' | 'onRoundStart' | 'onStartled' | 'onKill' | 'onCharged' | 'onGainCondition'
+  | 'onCombatStart' | 'onCombatEnd' | 'onRoundEnd' | 'onTurnStart' | 'onTurnEnd'
+  | 'onAttackResolved' | 'onCastResolved' | 'onMiscast';
 
 /** Effet DÉCLENCHÉ authoré (donnée éditable) : un Flow d'ops appliqué à `on` quand `trigger` se produit.
  *  GÉNÉRIQUE — porté indifféremment par `TraitData.effects` (Toile, Sang corrosif…) ET `QualityData.effects`
@@ -298,6 +325,10 @@ export interface TriggeredEffect {
    *  d'acier : `condition:'sonne'`). Absent = réagit à n'importe quel État gagné. Inerte pour les
    *  autres triggers. */
   condition?: string;
+  /** Filtre par TYPE d'attaque (`onHit`/`onWoundLoss`) : ne réagit que si la touche/perte provient d'une
+   *  attaque de ce type (`melee`/`ranged`). Absent = tout type (Sang corrosif : « chaque fois qu'elle subit
+   *  des Blessures », LDB 85 l.220 → aucune restriction). Lu via `ctx.attackType`. */
+  attackType?: 'melee' | 'ranged';
 }
 
 /** Enveloppe une liste d'`Effect` (ancien format) en un Flow `seq` de `do` — pont de migration des
@@ -406,6 +437,19 @@ export function flowHasImpureOp(flow: Flow): boolean {
     case 'if': return flowHasImpureOp(flow.then) || (flow.else ? flowHasImpureOp(flow.else) : false);
     case 'test': return flowHasImpureOp(flow.success) || flowHasImpureOp(flow.fail);
     case 'choice': return flowHasImpureOp(flow.yes) || (flow.no ? flowHasImpureOp(flow.no) : false);
+  }
+}
+
+/** Le Flow accorde-t-il une ATTAQUE GRATUITE (op `grantFreeAttack`, à quelque profondeur) ? Un tel Flow
+ *  cible un TIERS (le chargeur/la victime) et exige le contexte `freeAttack` → il est joué par le
+ *  résolveur d'attaques gratuites (`resolveFreeAttacks`), PAS par le dispatcher générique (où il est inerte). */
+export function flowHasFreeAttack(flow: Flow): boolean {
+  switch (flow.kind) {
+    case 'do': return flow.effect.type === 'ops' && flow.effect.ops.some((o) => o.op === 'grantFreeAttack');
+    case 'seq': return flow.steps.some(flowHasFreeAttack);
+    case 'if': return flowHasFreeAttack(flow.then) || (flow.else ? flowHasFreeAttack(flow.else) : false);
+    case 'test': return flowHasFreeAttack(flow.success) || flowHasFreeAttack(flow.fail);
+    case 'choice': return flowHasFreeAttack(flow.yes) || (flow.no ? flowHasFreeAttack(flow.no) : false);
   }
 }
 

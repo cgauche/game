@@ -7,7 +7,7 @@
 import type { CharKey, Combatant } from '../types';
 import { TRAITS, TraitDef } from './registry';
 import { parseStatEntry, type TraitInstance, type TraitList } from '../statEntry';
-import { traitByLabel, traitById, type TraitCapabilities } from '../../data';
+import { traitByLabel, traitById, type TraitCapabilities, type TraitData } from '../../data';
 import { slugId } from '../../data/slug';
 import type { PassiveMod } from '../ops';
 
@@ -162,7 +162,11 @@ export function traitMovementMod(traits: TraitList | undefined): number {
  *  SOURCE UNIQUE des helpers de capacité (bestial/stupide/rage/…). Le seuil/type éventuel (Démoniaque 8+,
  *  Immunité (Poison)) vient de l'INDICE/arg de l'INSTANCE, lu par les helpers dédiés (wardSaves, etc.). */
 export function traitCapability(traits: TraitList | undefined, cap: keyof TraitCapabilities): boolean {
-  return (traits ?? []).some((t) => !!traitById.get(t.id)?.capabilities?.[cap]);
+  const list = traits ?? [];
+  // Suppression GÉNÉRIQUE (Dressé (Dompté) « ignore son Trait Bestial », LDB 85 l.85) : un trait porté
+  // peut annuler la capacité d'un AUTRE trait du même porteur — aucun code par-nom de discipline.
+  if (list.some((t) => traitById.get(t.id)?.suppressesCapabilities?.includes(cap))) return false;
+  return list.some((t) => !!traitById.get(t.id)?.capabilities?.[cap]);
 }
 
 /** Endurant (LDB 85 p.339) : +Bonus d'Endurance Blessures. */
@@ -185,21 +189,15 @@ export function wardSaves(traits: TraitList | undefined): number[] {
   return (traits ?? []).filter((t) => traitById.get(t.id)?.capabilities?.wardSave && t.value != null).map((t) => t.value!);
 }
 
-
-/** Démoniaque : à 0 PB, retirée du jeu (bannie vers les Royaumes du Chaos). */
-export function banishedAtZero(traits: TraitList | undefined): boolean {
-  return traitCapability(traits, 'banishedAtZero');
-}
-
-/** Champion (LDB 85 p.338) : Dégâts en gagnant un Test opposé en défense de mêlée. */
-export function hasChampionDefense(traits: TraitList | undefined): boolean {
-  return traitCapability(traits, 'championDefense');
-}
+// Défense du champion (LDB 85) : capacité GÉNÉRIQUE `counterOnDefenseWin` (traits ET talents), lue par
+// `canCounterOnDefenseWin` (combatFeatures/dispatch) — plus de prédicat par-nom `hasChampionDefense`.
 
 
-/** Perturbant (LDB 85 p.341) : aura de −20 aux Tests à Bonus d'Endurance mètres. */
-export function hasPerturbingAura(traits: TraitList | undefined): boolean {
-  return traitCapability(traits, 'perturbingAura');
+/** AURAS de combat déclarées par les traits du porteur (Perturbant : −20 à BE m, LDB 85 p.341 ; toute
+ *  future aura). GÉNÉRIQUE — lue par le hook `recompute-auras`, qui projette leurs `passive` sur les
+ *  combattants à portée. Aucun trait nommé en dur. */
+export function traitAuras(traits: TraitList | undefined): NonNullable<TraitData['aura']>[] {
+  return (traits ?? []).map((t) => traitById.get(t.id)?.aura).filter((a): a is NonNullable<TraitData['aura']> => !!a);
 }
 
 /** Résistance à la Magie (Indice) : réduction du DR des Sorts (défaut 1 si l'Indice manque). */
@@ -258,6 +256,11 @@ export function hasRage(traits: TraitList | undefined): boolean {
 /** Territorial (LDB 85 p.343) : annule la fuite de Bestial (combat jusqu'à la mort). */
 export function isTerritorial(traits: TraitList | undefined): boolean {
   return traitCapability(traits, 'territorial');
+}
+
+/** Monture ombrageuse (Nerveux, LDB 14 l.221) : MONTÉE, ne prend pas sa propre Action d'attaque. */
+export function isSkittishMount(traits: TraitList | undefined): boolean {
+  return traitCapability(traits, 'skittishMount');
 }
 
 // ── Mouvement & vision ────────────────────────────────────────────────────────────────────────────

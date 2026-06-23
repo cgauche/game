@@ -270,7 +270,11 @@
     "derivedWeapon": {
       "name": "Cornes",
       "type": "melee",
-      "damage": "+BF",
+      "damage": {
+        "plusBF": true,
+        "flat": 0,
+        "bare": true
+      },
       "qualities": [],
       "subType": "Base",
       "hands": 1

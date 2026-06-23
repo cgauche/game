@@ -1,10 +1,11 @@
 import { useGame } from './store';
-import { checkBattleOver, resolveTalentFreeAttacks, approachFearTrigger } from './combatFlow';
+import { checkBattleOver, resolveFreeAttacks, approachFearTrigger } from './combatFlow';
 import { pushCombatStep } from './combatEffects';
 import type { PendingBladeTrap } from './pendings';
 import { bus, EVT } from './bus';
 import { ev } from './combatLog';
 import { isOutOfAction, addCondition } from '../engine/conditions';
+import { parseQualityInstance } from '../engine/qualities/normalize';
 import { formatImperial } from '../engine/clock';
 import { testScenarios } from '../scenes/test-scenarios';
 import { hoverTargeting } from './targeting';
@@ -464,7 +465,7 @@ export function buildApi() {
 
     /** RECETTE : simule une CHARGE de `enemyId` sur un héros (défaut : le plus proche) — déclenche le
      *  trigger `onCharged` (Frappe réactive : modale de choix puis Test d'Initiative influençable). C'est
-     *  le MÊME appel que le mouvement d'IA quand un ennemi se rue au contact (resolveTalentFreeAttacks). */
+     *  le MÊME appel que le mouvement d'IA quand un ennemi se rue au contact (resolveFreeAttacks). */
     charge: (enemyId: string, heroId?: string) => {
       const s = g();
       const b = s.battle;
@@ -481,7 +482,7 @@ export function buildApi() {
               })[0]
             : heroes[0]);
       if (!target) return '❌ aucun héros chargeable';
-      resolveTalentFreeAttacks(() => useGame.getState(), useGame.setState, target, 'onCharged', enemy);
+      resolveFreeAttacks(() => useGame.getState(), useGame.setState, target, 'onCharged', enemy);
       bus.emit(EVT.SCENE_DIRTY);
       return `✅ ${enemy.name} charge ${target.name} (onCharged)`;
     },
@@ -492,7 +493,7 @@ export function buildApi() {
     quality: (id: string, label = 'Déstabilisante', advantage?: number) => {
       const tweak = (c: Combatant): Combatant => {
         if (c.id !== id) return c;
-        const weapons = (c.weapons ?? []).map((w, i) => (i === 0 ? { ...w, qualities: [...(w.qualities ?? []), label] } : w));
+        const weapons = (c.weapons ?? []).map((w, i) => (i === 0 ? { ...w, qualities: [...(w.qualities ?? []), parseQualityInstance(label) ?? { id: label }] } : w));
         return { ...c, weapons, ...(advantage != null ? { advantage } : {}) };
       };
       useGame.setState((s) => ({

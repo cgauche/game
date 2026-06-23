@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { wornArmourPoints, ignoredArmourAP, impenetrableAt } from '../items';
+import { parseQualityInstance } from './normalize';
 import type { Combatant, ItemInstance } from '../types';
 
 /**
@@ -9,7 +10,7 @@ import type { Combatant, ItemInstance } from '../types';
  */
 let uidSeq = 0;
 const piece = (name: string, pa: number, locs: ItemInstance['locs'], qualities: string[] = []): ItemInstance =>
-  ({ uid: `it-${uidSeq++}`, name, kind: 'armor', equipped: true, pa, locs, qualities, enc: 1 } as ItemInstance);
+  ({ uid: `it-${uidSeq++}`, name, kind: 'armor', equipped: true, pa, locs, qualities: qualities.map((s) => parseQualityInstance(s)!), enc: 1 } as ItemInstance);
 
 function wearer(items: ItemInstance[]): Combatant {
   return {

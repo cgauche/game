@@ -7,7 +7,7 @@ import { makeRNG } from '../engine/dice';
 import type { Combatant, Weapon } from '../engine/types';
 
 const W = (uid: string, hand: 'main' | 'off'): Weapon =>
-  ({ uid, name: hand === 'main' ? 'Épée' : 'Dague', type: 'melee', damage: '+BF', qualities: [], hand, hands: 1 });
+  ({ uid, name: hand === 'main' ? 'Épée' : 'Dague', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], hand, hands: 1 });
 
 const CHARS = (cc: number) => ({ CC: cc, CT: 30, F: 35, E: 35, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 });
 const ARM = () => ({ tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 });
@@ -23,7 +23,7 @@ const mkFoe = (id: string, x: number): Combatant => ({
   id, name: id, kind: 'enemy', pos: { x, y: 0 }, size: 'moyenne',
   characteristics: CHARS(30), skills: [], talents: [], advantage: 0, conditions: [],
   wounds: { base: 10, max: 10, current: 10 },
-  weapons: [{ name: 'Griffe', type: 'melee', damage: '+BF', qualities: [] }], armour: ARM(),
+  weapons: [{ name: 'Griffe', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }], armour: ARM(),
 } as unknown as Combatant);
 
 function setupBattle(heroOver: Partial<Combatant> = {}) {

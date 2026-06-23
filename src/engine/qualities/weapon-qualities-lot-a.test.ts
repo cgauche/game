@@ -8,6 +8,7 @@ import { woundsFromHit, finishMelee, rollMeleeDefender } from '../combat';
 import { makeRNG } from '../dice';
 import { rollTest } from '../tests';
 import type { Combatant, Weapon } from '../types';
+import { parseQualityInstance } from './normalize';
 
 /**
  * Lot A — les 10 derniers Atouts/Défauts d'armes (LDB 62 l.264-321 / LDB 63 l.13-26) :
@@ -15,7 +16,7 @@ import type { Combatant, Weapon } from '../types';
  * Dangereuse, Épuisante, Imprécise, Lente. Tests PURS (moteur).
  */
 const w = (qualities: string[], over: Partial<Weapon> = {}): Weapon =>
-  ({ name: 'Arme', type: 'melee', damage: '+BF', qualities, ...over });
+  ({ name: 'Arme', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: qualities.map((s) => parseQualityInstance(s)!), ...over });
 
 function fighter(over: Partial<Combatant> = {}): Combatant {
   return {
@@ -136,7 +137,7 @@ describe('Protectrice — Indice PA partout en opposant (LDB 62 l.306-307)', () 
     expect(sans - avec).toBe(2);
   });
   it('Indice ≥ 2 → peut opposer les projectiles (rangedOpposeWeapon)', () => {
-    expect(rangedOpposeWeapon([w(['Protectrice 2'])])?.qualities).toContain('Protectrice 2');
+    expect(rangedOpposeWeapon([w(['Protectrice 2'])])?.qualities.some((q) => q.id === 'protectrice' && q.value === 2)).toBe(true);
     expect(rangedOpposeWeapon([w(['Protectrice 1'])])).toBeUndefined();
   });
 });

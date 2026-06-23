@@ -1,47 +1,63 @@
 import { describe, it, expect } from 'vitest';
 import { Combatant, ItemInstance } from './types';
-import { itemUse } from './consumables';
+import { isConsumable, useConsumable } from './consumables';
+import { trappings, findTrappingById } from '../data';
+import { itemFromTrappingById } from './items';
 
-const user = (E = 35): Combatant =>
+const user = (over: Partial<Combatant> = {}): Combatant =>
   ({
-    characteristics: { CC: 30, CT: 30, F: 30, E, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
-    activeEffects: [],
+    name: 'X',
+    characteristics: { CC: 30, CT: 30, F: 30, E: 35, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    wounds: { current: 5, max: 20, base: 20 }, conditions: [], activeEffects: [], ...over,
   }) as unknown as Combatant;
 
-const item = (over: Partial<ItemInstance>): ItemInstance =>
-  ({ uid: 'i', name: 'X', kind: 'misc', qualities: [], enc: 0, equipped: false, ...over }) as ItemInstance;
+const item = (consumable?: ItemInstance['consumable']): ItemInstance =>
+  ({ uid: 'i', name: 'X', kind: 'misc', qualities: [], enc: 0, equipped: false, ...(consumable ? { consumable } : {}) }) as ItemInstance;
 
-// Descriptions VERBATIM du Livre de base p.307.
-const HEAL = item({
-  name: 'Potion de guérison',
-  desc: "Si vous avez plus de 0 Blessure, récupérez immédiatement un nombre de Points de Blessure égal à votre Bonus d'Endurance. Dose: 1 par rencontre.",
+describe('consommables — effet STRUCTURÉ `GameOp[]` (exécuté par applyOps)', () => {
+  it('isConsumable = présence d’au moins un op', () => {
+    expect(isConsumable(item([{ op: 'heal', amount: 1 }]))).toBe(true);
+    expect(isConsumable(item())).toBe(false);
+    expect(isConsumable(item([]))).toBe(false);
+  });
+  it('Potion de guérison : soin = Bonus d’Endurance du buveur (heal `{bonusOf:E}`)', () => {
+    const c = user();
+    useConsumable(c, item([{ op: 'heal', amount: { bonusOf: 'E' } }]));
+    expect(c.wounds.current).toBe(8); // 5 + BE(35)=3
+  });
+  it('soin littéral « N Points de Blessure » (heal nombre)', () => {
+    const c = user();
+    useConsumable(c, item([{ op: 'heal', amount: 4 }]));
+    expect(c.wounds.current).toBe(9);
+  });
+  it('Potion de vitalité : `removeCondition all` retire TOUT l’État Exténué', () => {
+    const c = user({ conditions: [{ name: 'extenue', value: 3 }] as Combatant['conditions'] });
+    useConsumable(c, item([{ op: 'removeCondition', name: 'extenue', all: true }]));
+    expect(c.conditions.find((x) => x.name === 'extenue')).toBeUndefined();
+  });
+  it('Bandage : retire 1 pion Hémorragique (`value`) + pas d’Infection (`preventInfection`→woundDressed)', () => {
+    const c = user({ conditions: [{ name: 'hemorragique', value: 2 }] as Combatant['conditions'] });
+    useConsumable(c, item([{ op: 'removeCondition', name: 'hemorragique', value: 1 }, { op: 'preventInfection' }]));
+    expect(c.conditions.find((x) => x.name === 'hemorragique')?.value).toBe(1);
+    expect(c.woundDressed).toBe(true);
+  });
+  it('objet sans `consumable` → non utilisable, useConsumable inerte', () => {
+    const c = user();
+    expect(useConsumable(c, item())).toEqual([]);
+    expect(c.wounds.current).toBe(5);
+  });
 });
-const VITAL = item({ name: 'Potion de vitalité', desc: 'Boire cette décoction retire instantanément tout État Exténué.' });
-const BANDAGE = item({ name: 'Bandages', desc: 'Un Test de Guérison ou de Dextérité réussi retire +1 État Hémorragique supplémentaire.' });
-const SWORD = item({ name: 'Épée', kind: 'melee', desc: 'Une lame tranchante.' });
 
-describe('itemUse — consommables (LDB p.307, sourcé du desc)', () => {
-  it('Potion de guérison : soin = Bonus d’Endurance du buveur', () => {
-    expect(itemUse(HEAL, user(35))).toEqual({ heal: 3 }); // BE(35) = 3
-    expect(itemUse(HEAL, user(28))).toEqual({ heal: 2 }); // BE(28) = 2
+describe('consommables — catalogue migré (LDB 307, donnée réelle)', () => {
+  it('potion-de-guerison : heal `{bonusOf:E}` ; bandages : removeCondition + preventInfection', () => {
+    expect(findTrappingById('potion-de-guerison')?.consumable).toEqual([{ op: 'heal', amount: { bonusOf: 'E' } }]);
+    expect(findTrappingById('bandages')?.consumable).toEqual([
+      { op: 'removeCondition', name: 'hemorragique', value: 1 }, { op: 'preventInfection' },
+    ]);
+    expect(isConsumable(itemFromTrappingById('potion-de-guerison')!)).toBe(true);
   });
-  it('soin littéral « N Points de Blessure »', () => {
-    expect(itemUse(item({ desc: 'Récupérez 4 Points de Blessure.' }), user())).toEqual({ heal: 4 });
-  });
-  it('Potion de vitalité : retire TOUT l’État Exténué (pas de quantité chiffrée)', () => {
-    expect(itemUse(VITAL, user())).toEqual({ removeCondition: 'extenue' });
-  });
-  it('Bandages : retire +1 pion Hémorragique (quantité chiffrée, LDB 74 l.70)', () => {
-    expect(itemUse(BANDAGE, user())).toEqual({ removeCondition: 'hemorragique', removeStacks: 1 });
-  });
-  it('objet non consommable (arme, bibelot) → null', () => {
-    expect(itemUse(SWORD, user())).toBeNull();
-    expect(itemUse(item({ desc: 'Un simple bibelot sans effet.' }), user())).toBeNull();
-  });
-  it('un POISON d’arme / une drogue ne soigne PAS (PB en contexte de dégât, pas de récupération, LDB 72)', () => {
-    // Lotus noir : « les victimes subissent 1 Point de Blessure » → dégât infligé, pas un soin.
-    expect(itemUse(item({ name: 'Lotus noir', desc: "Utilisée pour empoisonner les lames. Les victimes qui subissent au moins 1 Point de Blessure d'une lame recouverte de sa sève subissent immédiatement 2 État Empoisonnés." }), user())).toBeNull();
-    // Bonnet de fou : « l'utilisateur perd 1d10 Points de Blessure » → perte, pas un soin.
-    expect(itemUse(item({ name: 'Bonnet de fou', desc: "Ils induisent une rage berserk, ajoutant +10 en Force, +4 Blessures et le Talent Frénésie. Quand l'effet se dissipe, l'utilisateur perd 1d10 Points de Blessure." }), user())).toBeNull();
+  it('exactement les 6 consommables de la base portent `consumable` (poisons/armes exclus à la migration)', () => {
+    const ids = trappings.filter((t) => t.consumable?.length).map((t) => t.id).sort();
+    expect(ids).toEqual(['bandages', 'faxtoryll', 'necessaire-antipoison', 'potion-de-guerison', 'potion-de-vitalite', 'soude-commune']);
   });
 });

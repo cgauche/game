@@ -9,7 +9,7 @@ import { DEFS } from '../src/gameIso/sprites';
 import type { Weapon } from '../src/engine/types';
 
 const SPECIES = ['Humain', 'Halfling', 'Nain', 'Gnome', 'Ogre', 'Haut-Elfe', 'Elfe sylvain'];
-const wep = (name: string): Weapon => ({ name, type: 'melee', damage: '+4', qualities: [] } as Weapon);
+const wep = (name: string): Weapon => ({ name, type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
 
 const cells = SPECIES.map((sp, i) => {
   const svg = renderToStaticMarkup(

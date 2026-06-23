@@ -18,7 +18,7 @@
  * La DONNÉE vit dans `src/data/miscast.json` (éditable) ; ce module = types +
  * chargement + résolution. Ajouter/régler une entrée = éditer le JSON, jamais ce fichier.
  */
-import { RNG, defaultRNG, d100 } from './dice';
+import { RNG, defaultRNG, d100, type DiceSpec } from './dice';
 import { findTableEntry } from './tables';
 import { GameOp } from './ops';
 import { Difficulty } from './types';
@@ -69,9 +69,7 @@ interface NestedTest {
  * with an optional `sinPlus` flag: when `true`, the resolved `plus` is the caller's `sinPoints`
  * value (e.g. `d(1,10,sin)` in the old inline code → `{ n:1, sides:10, sinPlus:true }` in JSON).
  */
-interface JsonDice {
-  n: number;
-  sides: number;
+interface JsonDice extends DiceSpec {
   /** When true, `plus` = sinPoints at resolution time (replaces the old closure `d(n,s,sin)`). */
   sinPlus?: boolean;
 }

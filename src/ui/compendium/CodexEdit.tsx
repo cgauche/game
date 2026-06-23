@@ -21,7 +21,7 @@ import { RACES } from '../../gameIso/rig/races';
 import { CreaturePreview } from './CreaturePreview';
 import type { EntityAppearance } from '../../state/scene';
 import { type Flow, EMPTY_FLOW, type TriggeredEffect, type EffectTrigger } from '../../state/flow';
-import type { ManeuverDef } from '../../data';
+import type { ManeuverDef, ManeuverMeasure } from '../../data';
 import { ATTACK_LABEL, type AttackKind } from '../../engine/creatureAttacks';
 import { WeaponField } from '../editor/WeaponField';
 import { PsychTraitsField } from '../editor/PsychTraitsField';
@@ -31,6 +31,7 @@ import { SymptomsField, CombatField, AdvancementRefField, TrappingRefField, Char
 import type { TraitInstance } from '../../engine/statEntry';
 import type { DomainData } from '../../data';
 import type { CharKey } from '../../engine/types';
+import { CHAR_KEYS, CHAR_LABELS } from '../../engine/types';
 import type { DiseaseSymptom } from '../../engine/disease';
 import type { CombatFeature } from '../../engine/combatFeatures/types';
 import type { AdvancementRef, TrappingRef } from '../../data';
@@ -78,13 +79,14 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   const k = new Set<string>();
   const add = (...keys: string[]) => keys.forEach((x) => k.add(x));
   if (['creatures', 'traits', 'mutations'].includes(categoryKey)) add('appearance');
-  if (['spells', 'traits', 'qualities', 'domains', 'talents', 'maneuvers'].includes(categoryKey)) add('effects');
+  if (['spells', 'traits', 'qualities', 'domains', 'talents', 'maneuvers', 'etats'].includes(categoryKey)) add('effects');
   if (categoryKey === 'maneuvers') add(...MANEUVER_PROFILE_KEYS);
-  if (['traits', 'qualities', 'mutations', 'talents'].includes(categoryKey)) add('passive');
+  if (['traits', 'qualities', 'mutations', 'talents', 'etats'].includes(categoryKey)) add('passive');
   if (categoryKey === 'stars') add('effect', 'sub');
   if (categoryKey === 'mutationTables') add('ranges');
   if (categoryKey === 'mutations') add('psychTraits');
   if (['mutations', 'trappings'].includes(categoryKey)) add('derivedWeapon');
+  if (categoryKey === 'trappings') add('consumable');
   if (categoryKey === 'maladies') add('symptoms');
   if (categoryKey === 'talents') add('combat');
   if (categoryKey === 'races' || categoryKey === 'careerLevels') add('skills', 'talents');
@@ -170,12 +172,12 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const isSpell = categoryKey === 'spells';
   // Porteurs d'effets DÉCLENCHÉS (mêmes `TriggeredEffect` éditables) : Traits, Atouts d'arme, Domaines
   // (riders « à la touche »…) ET Talents (Assaut féroce onHit, Frappe réactive onCharged…).
-  const isTriggered = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'domains' || categoryKey === 'talents';
+  const isTriggered = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'domains' || categoryKey === 'talents' || categoryKey === 'etats';
   // Manœuvre = ENTITÉ de 1ʳᵉ classe : profil dédié + ses effets AUTHORÉS (Dégâts + États) en GameOp.
   const isManeuver = categoryKey === 'maneuvers';
   // Porteurs de modificateurs PASSIFS continus (`GameOp[]`) édités par ops (GameOpEditor), comme un sort.
   // Talents inclus (Coup puissant, Dur à cuire… ou Frénésie → grantFreeAttack, tous en `passive`).
-  const isPassive = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'mutations' || categoryKey === 'talents';
+  const isPassive = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'mutations' || categoryKey === 'talents' || categoryKey === 'etats';
   // Signe astral : son EFFET de création (charMod / grantTalent) en `GameOp[]` — même éditeur que les
   // passifs, mais champ `effect` (appliqué une fois aux attributs de départ, cf. applyStarEffect).
   const isStarEffect = categoryKey === 'stars';
@@ -185,6 +187,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const isMutation = categoryKey === 'mutations';
   // Arme DÉRIVÉE (WeaponField) : portée par une Mutation (Tentacule…) OU une Possession (prothèse-arme).
   const hasDerivedWeapon = categoryKey === 'mutations' || categoryKey === 'trappings';
+  const hasConsumable = categoryKey === 'trappings';
   // Maladie : ses `symptoms` (DiseaseSymptom[]) ont un éditeur dédié (type + sévérité + difficulté).
   const isDisease = categoryKey === 'maladies';
   // Talent : sa capacité de combat `combat` (CombatFeature : drapeaux + castingKind/attackModes/offHand).
@@ -262,6 +265,12 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {isManeuver && <ManeuverDefField entry={entry} edit={edit} />}
         {isMutationTable && <MutationTableField value={entry.ranges as MutationRange[] | undefined} onChange={(v) => edit('ranges', v)} />}
         {hasDerivedWeapon && <WeaponField value={entry.derivedWeapon as Weapon | undefined} onChange={(v) => edit('derivedWeapon', v)} />}
+        {hasConsumable && (
+          <div className="ed-field">
+            <span>effet d’un CONSOMMABLE (potion/bandage) — ops appliqués au buveur (heal / removeCondition / preventInfection)</span>
+            <GameOpEditor ops={(entry.consumable as GameOp[] | undefined) ?? []} onChange={(ops) => edit('consumable', ops.length ? ops : undefined)} />
+          </div>
+        )}
         {isMutation && <PsychTraitsField value={entry.psychTraits as PsychTrait[] | undefined} onChange={(v) => edit('psychTraits', v)} />}
         {isDisease && <SymptomsField value={entry.symptoms as DiseaseSymptom[] | undefined} onChange={(v) => edit('symptoms', v)} />}
         {hasCombat && <CombatField value={entry.combat as Partial<CombatFeature> | undefined} allFeatures={src.entries.map((e) => e.combat as Partial<CombatFeature> | undefined)} onChange={(v) => edit('combat', v)} />}
@@ -350,6 +359,7 @@ function SpellEffectsField({ value, onChange }: { value: Flow | undefined; onCha
 const TRIGGER_LABEL: Record<EffectTrigger, string> = {
   onHit: 'à la touche',
   onWoundLoss: 'quand le porteur perd des PB',
+  onSlain: 'à sa mise hors de combat (mort)',
   onRoundStart: 'au début de son Round',
   onStartled: 'magie / bruit fort',
   onKill: 'quand il neutralise un adversaire',
@@ -360,6 +370,9 @@ const TRIGGER_LABEL: Record<EffectTrigger, string> = {
   onRoundEnd: 'à la fin du Round',
   onTurnStart: 'au début de son tour',
   onTurnEnd: 'à la fin de son tour',
+  onAttackResolved: 'après une attaque résolue',
+  onCastResolved: 'après une incantation résolue',
+  onMiscast: 'sur une Imparfaite',
 };
 const ON_LABEL: Record<'self' | 'victim' | 'engaged', string> = {
   self: 'le porteur lui-même',
@@ -427,6 +440,29 @@ const TARGETING_LABEL: Record<ManeuverDef['targeting'], string> = {
  *  jet/défense/ciblage/portée/magie) + ses effets AUTHORÉS (Dégâts + États en GameOp, via
  *  `TriggeredEffectsField`). Édite les champs TOP-LEVEL de `ManeuverDef` (id/label/desc/source restent
  *  au repli générique). Source UNIQUE de résolution : ces effets sont joués tels quels par `resolveManeuver`. */
+/** Éditeur d'une `ManeuverMeasure` (Portée/Souffle) : Bonus de carac + constante (mètres). Structuré —
+ *  plus de saisie prose « Bonus de Force mètres » re-parsée au runtime. */
+function MeasureField({ label, value, onChange }: { label: string; value: ManeuverMeasure | undefined; onChange: (v: ManeuverMeasure | undefined) => void }) {
+  const v = value ?? {};
+  const upd = (p: Partial<ManeuverMeasure>) => {
+    const bonusOf = 'bonusOf' in p ? p.bonusOf : v.bonusOf;
+    const plus = 'plus' in p ? p.plus : v.plus;
+    const next: ManeuverMeasure = {};
+    if (bonusOf) next.bonusOf = bonusOf;
+    if (plus != null) next.plus = plus;
+    onChange(next.bonusOf || next.plus != null ? next : undefined);
+  };
+  return (
+    <label className="dr">{label}
+      <select value={v.bonusOf ?? ''} onChange={(e) => upd({ bonusOf: (e.target.value || undefined) as CharKey | undefined })}>
+        <option value="">— (aucun)</option>
+        {CHAR_KEYS.map((k) => <option key={k} value={k}>Bonus de {CHAR_LABELS[k]}</option>)}
+      </select>
+      <input type="number" placeholder="+ m" style={{ width: 64 }} value={v.plus ?? ''} onChange={(e) => upd({ plus: e.target.value === '' ? undefined : (Number(e.target.value) || 0) })} /> m
+    </label>
+  );
+}
+
 function ManeuverDefField({ entry, edit }: { entry: Entry; edit: (key: string, v: unknown) => void }) {
   const m = entry as Partial<ManeuverDef>;
   return (
@@ -470,8 +506,8 @@ function ManeuverDefField({ entry, edit }: { entry: Entry; edit: (key: string, v
         <label className="dr"><input type="checkbox" checked={!!m.magic} onChange={(e) => edit('magic', e.target.checked || undefined)} /> Magique</label>
       </div>
       <div className="tf-row">
-        <label className="dr">Portée<input value={m.range ?? ''} placeholder="ex. Bonus d’Endurance + 20 mètres" onChange={(e) => edit('range', e.target.value || undefined)} /></label>
-        <label className="dr">Souffle/zone<input value={m.blast ?? ''} placeholder="ex. Bonus de Force mètres" onChange={(e) => edit('blast', e.target.value || undefined)} /></label>
+        <MeasureField label="Portée" value={m.range} onChange={(v) => edit('range', v)} />
+        <MeasureField label="Souffle/zone" value={m.blast} onChange={(v) => edit('blast', v)} />
       </div>
       <span>effets AUTHORÉS de la manœuvre (Dégâts + États, appliqués quand ELLE touche)</span>
       <TriggeredEffectsField value={m.effects} onChange={(effects) => edit('effects', effects.length ? effects : undefined)} />

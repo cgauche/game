@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Combatant } from './types';
 import { makeRNG } from './dice';
-import { resolveFormula, applyOps, applyActiveEffect, COMBAT_PERSIST } from './ops';
+import { resolveFormula, applyOps, applyActiveEffect } from './ops';
 import { hasTraitKey } from './traits/dispatch';
 
 function hero(p: Partial<Combatant> = {}): Combatant {
@@ -35,7 +35,7 @@ describe('resolveFormula', () => {
   });
 
   it('(Bonus de X) se résout contre la caractéristique EFFECTIVE (buffs compris)', () => {
-    const c = hero({ activeEffects: [{ label: 'Buff', char: 'FM', bonus: 10, roundsLeft: 3 }] });
+    const c = hero({ activeEffects: [{ label: 'Buff', char: 'FM', bonus: 10, duration: { scale: 'rounds', left: 3 } }] });
     expect(resolveFormula({ bonusOf: 'FM' }, c)).toBe(4); // 38+10 → 48 → bonus 4
   });
 });
@@ -107,15 +107,15 @@ describe('applyOps — opérations unitaires', () => {
       { label: 'Écorce', defaultDurationRounds: 6 },
     );
     expect(c.activeEffects).toHaveLength(2);
-    expect(c.activeEffects![0]).toMatchObject({ label: 'Écorce', char: 'Ag', bonus: -10, roundsLeft: 6 });
+    expect(c.activeEffects![0]).toMatchObject({ label: 'Écorce', char: 'Ag', bonus: -10, duration: { scale: 'rounds', left: 6 } });
     expect(lines).toHaveLength(1);
     expect(lines[0]).toBe('Cobaye : Écorce (-10 Agilité, -10 Dextérité, 6 rounds).');
   });
 
-  it('charMod : COMBAT_PERSIST par défaut → « durée hors combat » au journal', () => {
+  it('charMod : durée permanente par défaut → « durée hors combat » au journal', () => {
     const c = hero();
     const lines = applyOps(c, [{ op: 'charMod', char: 'E', mod: 20 }], { label: 'Armure' });
-    expect(c.activeEffects![0].roundsLeft).toBe(COMBAT_PERSIST);
+    expect(c.activeEffects![0].duration).toEqual({ scale: "permanent" });
     expect(lines[0]).toMatch(/durée hors combat/);
   });
 
@@ -135,10 +135,10 @@ describe('applyOps — opérations unitaires', () => {
 describe('applyActiveEffect — non-cumul (LDB l.168)', () => {
   it('meilleur bonus conservé, pire pénalité conservée, bonus+pénalité coexistent', () => {
     const c = hero();
-    applyActiveEffect(c, { label: 'A', char: 'FM', bonus: 10, roundsLeft: 3 });
-    applyActiveEffect(c, { label: 'B', char: 'FM', bonus: 20, roundsLeft: 2 });
-    applyActiveEffect(c, { label: 'C', char: 'FM', bonus: 5, roundsLeft: 9 });
-    applyActiveEffect(c, { label: 'D', char: 'FM', bonus: -10, roundsLeft: 1 });
+    applyActiveEffect(c, { label: 'A', char: 'FM', bonus: 10, duration: { scale: 'rounds', left: 3 } });
+    applyActiveEffect(c, { label: 'B', char: 'FM', bonus: 20, duration: { scale: 'rounds', left: 2 } });
+    applyActiveEffect(c, { label: 'C', char: 'FM', bonus: 5, duration: { scale: 'rounds', left: 9 } });
+    applyActiveEffect(c, { label: 'D', char: 'FM', bonus: -10, duration: { scale: 'rounds', left: 1 } });
     const fm = c.activeEffects!.filter((e) => e.char === 'FM');
     expect(fm).toHaveLength(2); // un bonus (le meilleur : B +20) + une pénalité (D -10)
     expect(fm.find((e) => e.bonus > 0)).toMatchObject({ label: 'B', bonus: 20 });
@@ -147,7 +147,7 @@ describe('applyActiveEffect — non-cumul (LDB l.168)', () => {
 
   it('buff de F/E/FM recale les Blessures max (LDB 85)', () => {
     const c = hero({ wounds: { current: 10, max: 12, base: 12 } });
-    applyActiveEffect(c, { label: 'Vigueur', char: 'E', bonus: 10, roundsLeft: 6 });
+    applyActiveEffect(c, { label: 'Vigueur', char: 'E', bonus: 10, duration: { scale: 'rounds', left: 6 } });
     expect(c.wounds.max).toBeGreaterThan(12); // E 45→55 : BE 4→5 → +2 PB (2×BE)
   });
 });

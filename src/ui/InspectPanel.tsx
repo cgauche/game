@@ -6,6 +6,7 @@ import { summarizeEffects, combatantFlags } from '../gameIso/effectIcons';
 import { CodexSections } from './compendium/CodexEntry';
 import { combatantSections } from './compendium/registry';
 import { EffectChips } from './EffectChips';
+import { isFrenzied } from '../engine/psychology';
 
 /**
  * Panneau d'INSPECTION d'un combattant (clic sur l'ordre de bataille) : tête VIVANTE (portrait,
@@ -31,7 +32,7 @@ export function InspectPanel({ combatant, onClose }: { combatant: Combatant; onC
         </div>
 
         {/* Coup d'œil tactique : psychologie + « lanceur de sorts » (le détail est dans le statbloc). */}
-        {(c.causesTerreur || c.causesPeur || c.psychImmune || c.frenzied || (c.spells?.length ?? 0) > 0) && (
+        {(c.causesTerreur || c.causesPeur || c.psychImmune || isFrenzied(c) || (c.spells?.length ?? 0) > 0) && (
           <div className="insp-badges">
             {c.causesTerreur ? (
               <span className="insp-badge foe">😱 Terreur {c.causesTerreur}</span>
@@ -39,7 +40,7 @@ export function InspectPanel({ combatant, onClose }: { combatant: Combatant; onC
               <span className="insp-badge foe">😨 Peur {c.causesPeur}</span>
             ) : null}
             {c.psychImmune && <span className="insp-badge">🧠 Immunité psy</span>}
-            {c.frenzied && <span className="insp-badge foe">🐗 Frénésie</span>}
+            {isFrenzied(c) && <span className="insp-badge foe">🐗 Frénésie</span>}
             {(c.spells?.length ?? 0) > 0 && <span className="insp-badge foe">🪄 Lanceur de sorts</span>}
           </div>
         )}

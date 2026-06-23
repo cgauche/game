@@ -1,12 +1,13 @@
 import { useState, useMemo, Fragment } from 'react';
 import { useGame } from '../state/store';
-import { findTrappingById, weaponGroupLabel, qualityRuntime, type QualityRef } from '../data/index';
+import { findTrappingById, weaponGroupLabel, type QualityRef } from '../data/index';
 import { priceToMoney, fromBrass, toBrass, formatMoney, canAfford, add as moneyAdd, type Money } from '../engine/money';
 import { craftPriceFactor } from '../engine/qualities/craftEconomy';
 import { repairCostBrass } from '../engine/repair';
 import { bargainBuyFactor } from '../engine/bargain';
 import { compareEquip, isShieldItem } from '../engine/equipCompare';
-import { itemFromTrappingById, isWeaponActive } from '../engine/items';
+import { itemFromTrappingById, isWeaponActive, damageString } from '../engine/items';
+import type { WeaponDamageSpec } from '../engine/types';
 import { describeQuality } from '../engine/qualities/describe';
 import { sellGain } from '../state/merchantFlow';
 import type { Combatant, ItemInstance } from '../engine/types';
@@ -30,7 +31,7 @@ const AVAIL_RANK: Record<string, number> = { Commune: 0, Limitée: 1, Rare: 2, E
 function familyOf(id: string): string {
   const t = findTrappingById(id);
   if (!t) return 'divers';
-  if (isShieldItem({ qualities: (t.qualities ?? []).map(qualityRuntime) })) return 'boucliers';
+  if (isShieldItem({ qualities: t.qualities })) return 'boucliers';
   if (t.type === 'melee') return 'melee';
   if (t.type === 'ranged') return 'ranged';
   if (t.type === 'ammunition') return 'ammo';
@@ -42,18 +43,19 @@ function availRank(id: string): number {
 }
 
 /** Colonnes de stats par famille (tableau comparatif). 1re colonne (`emph`) = info clé mise en avant. */
-type TrapRow = { damage?: string | null; reach?: string | null; pa?: number | null; qualities?: QualityRef[] };
+type TrapRow = { damage?: WeaponDamageSpec | null; reach?: string | null; pa?: number | null; qualities?: QualityRef[] };
 const DASH = '—';
+const dmg = (t: TrapRow) => (t.damage ? damageString(t.damage) : DASH);
 const FAMILY_COLS: Record<string, { label: string; get: (t: TrapRow) => string; emph?: boolean }[]> = {
   melee: [
-    { label: 'Dégâts', get: (t) => t.damage || DASH, emph: true },
+    { label: 'Dégâts', get: dmg, emph: true },
     { label: 'Allonge', get: (t) => t.reach || DASH },
   ],
   ranged: [
-    { label: 'Dégâts', get: (t) => t.damage || DASH, emph: true },
+    { label: 'Dégâts', get: dmg, emph: true },
     { label: 'Portée', get: (t) => { const r = Number(t.reach); return r ? `${r} m` : DASH; } },
   ],
-  ammo: [{ label: 'Dégâts', get: (t) => t.damage || DASH, emph: true }],
+  ammo: [{ label: 'Dégâts', get: dmg, emph: true }],
   boucliers: [{ label: 'Protection', get: (t) => { const q = (t.qualities ?? []).find((x) => x.id === 'protectrice'); return q ? `Protectrice ${q.value ?? ''}`.trim() : DASH; }, emph: true }],
   armor: [{ label: 'PA', get: (t) => (t.pa != null ? String(t.pa) : DASH), emph: true }],
   divers: [],
@@ -63,7 +65,7 @@ const FAMILY_COLS: Record<string, { label: string; get: (t: TrapRow) => string; 
 function lineCost(id: string, factor: number): Money | null {
   const t = findTrappingById(id);
   if (!t) return null;
-  const brass = toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities.map(qualityRuntime) }) * factor;
+  const brass = toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * factor;
   if (!Number.isFinite(brass)) return null;
   return fromBrass(Math.round(brass));
 }

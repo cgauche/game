@@ -19,6 +19,7 @@ import type { GameState } from './store';
 import type { Get, Set } from './flowTypes';
 import type { Combatant } from '../engine/types';
 import { battleRng } from './battleRng';
+import { zoneCovers } from './zones';
 import { bonus, effectiveChar, refreshWounds } from '../engine/characteristics';
 import { recomputeLoadout } from '../engine/items';
 import { d100 } from '../engine/dice';
@@ -43,6 +44,10 @@ import { evLines } from './combatLog';
 export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number): string[] {
   const rng = battleRng();
   const lines: string[] = [];
+  // Protection de Phâ (LDB 48 p.249) : un occupant d'une Zone `noCorruption` ne gagne aucune Corruption.
+  if (n > 0 && hero.pos && (get().battle?.zones ?? []).some((z) => z.noCorruption && zoneCovers(z, hero.pos!))) {
+    return [`${hero.name} : la lumière sacrée de Phâ écarte la Corruption (aucun gain).`];
+  }
   hero.corruption = (hero.corruption ?? 0) + n;
   lines.push(`${hero.name} : +${n} Point${n > 1 ? 's' : ''} de Corruption (total ${hero.corruption}).`);
 

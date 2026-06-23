@@ -3,7 +3,7 @@ import {
   talentDamageBonus, isSlayer, talentDamageReduction, talentCritExtraWounds, talentRangedAPIgnore,
   ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust, talentInitiativeBonus,
   canPreemptRanged, hasSurpriseSave, reloadDRBonus, runMovementBonus, fleeMovementBonus,
-  shieldAdvantageLevel, hasRiposte, hasStealAdvantage, outnumberCountBonus,
+  shieldAdvantageLevel, canCounterOnDefenseWin, hasStealAdvantage, outnumberCountBonus,
   hasBraveheart, bleedIgnoreLevel, talentMagicResistance, talentFearIndice, talentTestDR,
   talentReverseFailed, offHandPenalty,
 } from './dispatch';
@@ -14,7 +14,7 @@ import { slugId } from '../../data/slug';
 import type { Combatant, Weapon } from '../types';
 
 /** Lot G — Talents à effet de jeu (LDB 10) : helpers du registre + câblages moteur purs. */
-const w = (over: Partial<Weapon> = {}): Weapon => ({ name: 'Épée', type: 'melee', damage: '+BF', qualities: [], ...over });
+const w = (over: Partial<Weapon> = {}): Weapon => ({ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], ...over });
 
 function mk(talents: { name: string; times: number }[] = [], over: Partial<Combatant> = {}): Combatant {
   return {
@@ -53,9 +53,9 @@ describe('modificateurs de Test (LDB 10)', () => {
   it('Frappe assommante : pas de −10 à la Tête avec une arme Assommante', () => {
     const c = mk([{ name: 'Frappe assommante', times: 1 }]);
     const tgt = mk([], { id: 't' });
-    const mods = attackModifiers(c, tgt, w({ qualities: ['Assommante'] }), { kind: 'melee', location: 'tete' });
+    const mods = attackModifiers(c, tgt, w({ qualities: [{ id: 'assommante' }] }), { kind: 'melee', location: 'tete' });
     expect(mods.find((m) => m.label === 'Localisation visée')).toBeUndefined();
-    const sans = attackModifiers(mk([]), tgt, w({ qualities: ['Assommante'] }), { kind: 'melee', location: 'tete' });
+    const sans = attackModifiers(mk([]), tgt, w({ qualities: [{ id: 'assommante' }] }), { kind: 'melee', location: 'tete' });
     expect(sans.find((m) => m.label === 'Localisation visée')?.value).toBe(-10);
   });
   it('Tir mortel : pas de −10 de Localisation à distance', () => {
@@ -99,16 +99,17 @@ describe('initiative / économie d’action (LDB 10)', () => {
 describe('défense / récupération (LDB 10)', () => {
   it('Porte-Bouclier (au bouclier seulement) / Riposte / Renversement', () => {
     const c = mk([{ name: 'Porte-Bouclier', times: 2 }]);
-    expect(shieldAdvantageLevel(c, w({ name: 'Bouclier', qualities: ['protectrice 2'] }))).toBe(2); // bouclier = Atout Protectrice (id stable)
+    expect(shieldAdvantageLevel(c, w({ name: 'Bouclier', qualities: [{ id: 'protectrice', value: 2 }] }))).toBe(2); // bouclier = Atout Protectrice (id stable)
     expect(shieldAdvantageLevel(c, w({ name: 'Épée' }))).toBe(0);
-    expect(hasRiposte(mk([{ name: 'Riposte', times: 1 }]))).toBe(true);
+    expect(canCounterOnDefenseWin(mk([{ name: 'Riposte', times: 1 }]), w({ qualities: [{ id: 'rapide' }] }))).toBe(true); // Riposte + arme Rapide
+    expect(canCounterOnDefenseWin(mk([{ name: 'Riposte', times: 1 }]), w())).toBe(false); // arme NON Rapide → pas de Riposte
     expect(hasStealAdvantage(mk([{ name: 'Renversement', times: 1 }]))).toBe(true);
   });
-  it('Endurci : ignore niveau PB d’Hémorragique en fin de Round', () => {
+  it('Endurci : niveau d’ignorance du saignement (la réduction des dégâts est data-driven, cf. state/etat-perround)', () => {
     const c = mk([{ name: 'Endurci', times: 1 }], { conditions: [{ name: 'hemorragique', value: 2 }] });
     endOfRound(c, makeRNG(3));
-    expect(c.wounds.current).toBe(11); // 2 pions − 1 ignoré = 1 PB perdu
-    expect(bleedIgnoreLevel(c)).toBe(1);
+    expect(c.wounds.current).toBe(12); // endOfRound ne saigne plus (dégâts d'Hémorragique migrés en données)
+    expect(bleedIgnoreLevel(c)).toBe(1); // 1 pion ignoré — lu par fireConditionEffects (stacksReducedBy)
   });
   // (Mâchoires d'acier n'est plus une CombatFeature `stunSave` : c'est un effet `onGainCondition`
   //  data-driven — couvert par les tests de la brique `state/combat/triggeredTest`.)

@@ -4,8 +4,8 @@ import { isFumble, rollOups } from './oups';
 import { OUPS_TABLE } from '../data/oups';
 import type { Weapon } from './types';
 
-const sword: Weapon = { name: 'Épée', type: 'melee', damage: '+BF+4', qualities: [] };
-const pistol: Weapon = { name: 'Pistolet', type: 'ranged', damage: '+9', qualities: ['Pistolet'], subType: 'Poudre noire', range: 20 };
+const sword: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+const pistol: Weapon = { name: 'Pistolet', type: 'ranged', damage: { plusBF: false, flat: 9 }, qualities: [{ id: 'pistolet' }], subType: 'Poudre noire', range: 20 };
 
 describe('isFumble (LDB 14 l.53)', () => {
   it('échec + double = Maladresse', () => {

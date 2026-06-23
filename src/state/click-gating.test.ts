@@ -19,7 +19,7 @@ function wallScene() {
 function setup() {
   const a = makePregens()[0];
   a.pos = { x: 2, y: 0 };
-  a.weapons = [{ name: 'Arc', type: 'ranged', damage: '+8', range: 12, qualities: [] }] as never; // ×3 = 36 m = 18 cases
+  a.weapons = [{ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 12, qualities: [] }] as never; // ×3 = 36 m = 18 cases
   const seen = spawnEnemy('Bandit de Grand Chemin', undefined, 'e-vu', { x: 6, y: 0 });
   const hidden = spawnEnemy('Bandit de Grand Chemin', undefined, 'e-cache', { x: 16, y: 4 }); // mur intercalé
   const battle = {
@@ -47,7 +47,7 @@ describe('battleClickEntity — tir refusé AVANT la modale', () => {
 
   it('cible au-delà de Portée ×3 → journal « hors de portée », pas de pendingAttack', () => {
     const { a } = setup();
-    a.weapons = [{ name: 'Arc court', type: 'ranged', damage: '+8', range: 4, qualities: [] }] as never; // ×3 = 6 cases
+    a.weapons = [{ name: 'Arc court', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 4, qualities: [] }] as never; // ×3 = 6 cases
     useGame.getState().battleClickEntity('e-cache'); // à 14 cases — ET sans LdV, mais la portée seule suffirait
     expect(useGame.getState().pendingAttack).toBeNull();
     const b2 = spawnEnemy('Bandit de Grand Chemin', undefined, 'e-loin', { x: 10, y: 0 }); // brèche : LdV ok, 8 cases > 6

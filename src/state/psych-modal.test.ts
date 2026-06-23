@@ -117,13 +117,13 @@ describe('Psychologie de combat héros — cascade de Round (Peur/Terreur)', () 
     expect(step.combatPsych?.kind).toBe('peur');
     expect(step.combatPsych?.prevDR).toBe(1); // l'étape part du DR déjà cumulé
 
-    // Détermination : NE force PAS le succès — immunité temporaire. -1 Détermination, psychImmuneRoundsLeft=2.
+    // Détermination : NE force PAS le succès — immunité temporaire. -1 Détermination, ActiveEffect psychImmune (2 Rounds).
     useGame.getState().cascadeDetermine(step.id);
     const sAfterDet = useGame.getState().pendingCascade!.participants[0];
     expect(sAfterDet.immune).toBe(true);
     const hMid = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect(hMid.resolve).toBe(1);
-    expect(hMid.psychImmuneRoundsLeft).toBe(2);
+    expect(hMid.activeEffects?.find((e) => e.psychImmune)?.duration).toEqual({ scale: 'rounds', left: 2 });
 
     useGame.getState().cascadeNext();
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;

@@ -76,6 +76,15 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
   return base + (sk?.advances ?? 0) + states + enc + traumaSkill + passive;
 }
 
+/** Valeur de Test « brute » pour un Test de COMBAT : `testValue` PRIVÉE de la pénalité d'États HORS combat
+ *  (`testStatePenalty`, qu'elle inclut déjà) — pour que l'appelant ajoute la pénalité de COMBAT
+ *  (`combatTestPenalty`) UNE SEULE fois, sans double-compte. = Caractéristique effective + avances + passifs
+ *  intrinsèques + Encombrement/Traumatisme, SANS la pénalité d'État (réappliquée en version combat par
+ *  l'appelant). Utilisée par les Tests de RÉCUPÉRATION d'États (Empoisonné… : −10 d'État compté une fois). */
+export function rawCombatTestBase(c: Combatant, skill?: string, characteristic?: CharKey, spec?: string): number {
+  return testValue(c, skill, characteristic, spec) - testStatePenalty(c, skill);
+}
+
 /** Le personnage possède-t-il la compétence `skillId` (et, si `spec` fourni, cette spécialisation —
  *  ex. Projectiles (Poudre noire)) ? Par id STABLE. Sert aux modulateurs (ex. `easierIf`). */
 export function actorHasSkill(c: Combatant, skillId: string, spec?: string): boolean {

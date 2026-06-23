@@ -18,10 +18,16 @@
  * carrière rouvre tous les choix). Cas réels en données : Érudit a « Savoir (Au choix) » aux
  * 4 niveaux ; jokers RESTREINTS « Corps à corps (Fléau ou À deux mains) » ; entrée talent
  * « Guide fluvial ou Bonnes jambes ».
+ *
+ * MOTEUR : `slotsOfLevel` construit ses `SlotOption[]` DIRECTEMENT depuis l'`AdvancementRef` structuré
+ * (`slotOptionsFromRef`) — plus de round-trip `advancementLabel→parseEntry` au runtime. `parseAdvancement`
+ * (prose→ref) et `parseEntry`/`parseOption`/`splitTopLevelOu` restent les helpers d'AUTHORING/CRÉATION :
+ * l'assistant de création (`draft`/`CharacterCreator`) travaille sur des LIBELLÉS concrets (clés de
+ * `specChoices`), le Codex sur la prose — c'est leur modèle, pas un chemin de résolution de règle.
  */
-import { Combatant, CharKey } from './types';
+import { Combatant, CharKey, CHAR_LABELS } from './types';
 import { bonus } from './characteristics';
-import { findTalent, findTalentById, findSkill, spells, advancementLabel, CareerLevelData, type AdvancementRef } from '../data';
+import { findTalent, findTalentById, findSkill, spells, advancementLabel, refLabel, CareerLevelData, type AdvancementRef } from '../data';
 import { slugId } from '../data/slug';
 import { CULT_KEYS } from '../data';
 import { splitLabel } from './statEntry';
@@ -138,12 +144,22 @@ export function parseAdvancement(entry: string): AdvancementRef {
   return opts.length > 1 ? { choice: opts } : opts[0];
 }
 
+/** `AdvancementRef` STRUCTURÉ → `SlotOption[]` — lecture DIRECTE de la donnée (id→libellé via `refLabel`,
+ *  jamais de re-parse de prose). `name` reste un LIBELLÉ (consommé par `findSkill`/`concreteLabel`).
+ *  Remplace le round-trip `advancementLabel(ref) → parseEntry(prose)`. */
+export function slotOptionsFromRef(category: string, a: AdvancementRef): SlotOption[] {
+  if ('ref' in a) return [{ name: refLabel(category, { id: a.ref.id }), ...(a.ref.spec ? { spec: a.ref.spec } : {}), wildcard: false }];
+  if ('wildcard' in a) return [{ name: refLabel(category, { id: a.wildcard.id }), wildcard: true, ...(a.specOptions ? { specOptions: a.specOptions } : {}) }];
+  if ('choice' in a) return a.choice.flatMap((x) => slotOptionsFromRef(category, x));
+  return [{ name: advancementLabel(category, a), wildcard: false }]; // tirage aléatoire (« N Talent aléatoire »)
+}
+
 function slotsOfLevel(level: CareerLevelData, kind: 'skill' | 'talent'): CareerSlot[] {
   const refs = kind === 'skill' ? level.skills : level.talents;
   const cat = kind === 'skill' ? 'skills' : 'talents';
   return refs.map((ref, i) => {
-    const entry = advancementLabel(cat, ref); // AdvancementRef → libellé, puis parseEntry (logique inchangée)
-    const options = parseEntry(entry);
+    const options = slotOptionsFromRef(cat, ref); // DIRECT depuis la structure (zéro re-parse)
+    const entry = advancementLabel(cat, ref); // libellé d'AFFICHAGE seulement (formateur)
     const needsChoice = options.length > 1 || options.some((o) => o.wildcard);
     const summary = options.map((o) => o.name).join('|');
     return { key: `${level.level}:${kind}:${i}:${summary}`, level: level.level, kind, entry, options, needsChoice };
@@ -280,17 +296,16 @@ export function designateSlot(
  * compte PAR spécialisation (côté appelant : le libellé concret porte la spec).
  */
 export function talentMaxById(hero: Combatant, talentId: string): number | null {
-  const data = findTalentById(talentId);
-  if (!data || data.max == null || data.max === 'Aucun') return null;
-  if (typeof data.max === 'number') return data.max;
-  const m = String(data.max).match(/^Bonus (?:de |d')(.*)$/i);
-  if (!m) return null;
-  const charLabel = m[1].trim();
-  const entry = (Object.entries(CHAR_LABEL_TO_KEY) as [string, keyof Combatant['characteristics']][]).find(
-    ([l]) => l.toLowerCase() === charLabel.toLowerCase(),
-  );
-  if (!entry) return null;
-  return bonus(hero.characteristics[entry[1]]);
+  const max = findTalentById(talentId)?.max;
+  if (max == null) return null; // sans limite (ex-« Aucun »)
+  if (typeof max === 'number') return max;
+  return bonus(hero.characteristics[max.bonusOf]); // Maxi = Bonus de carac (valeur de base du héros)
+}
+
+/** Affichage FR du Maxi d'un talent (Compendium), DÉRIVÉ de la donnée structurée — plus de chaîne stockée. */
+export function talentMaxLabel(max: number | { bonusOf: CharKey } | null): string {
+  if (max == null) return 'Aucun';
+  return typeof max === 'number' ? String(max) : `Bonus de ${CHAR_LABELS[max.bonusOf]}`;
 }
 
 /** Maxi par LIBELLÉ — bord authoring/tests : résout l'id (nom seul) puis délègue. */
@@ -308,20 +323,3 @@ export function talentMaxReached(hero: Combatant, label: string): boolean {
   const times = hero.talents.find((t) => t.talentId === id && (t.spec ?? '') === (spec ?? ''))?.times ?? 0;
   return times >= max;
 }
-
-// Libellés longs (et abréviations historiques CC/CT utilisées par certains Maxi) → clé.
-const CHAR_LABEL_TO_KEY: Record<string, keyof Combatant['characteristics']> = {
-  'Capacité de Combat': 'CC',
-  'Capacité de Tir': 'CT',
-  CC: 'CC',
-  CT: 'CT',
-  Force: 'F',
-  Endurance: 'E',
-  Initiative: 'I',
-  Agilité: 'Ag',
-  Dextérité: 'Dex',
-  Intelligence: 'Int',
-  'Force Mentale': 'FM',
-  FM: 'FM',
-  Sociabilité: 'Soc',
-};

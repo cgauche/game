@@ -24,12 +24,12 @@ describe('buySpell', () => {
     w.characteristics.FM = 25;
     w.xp = 60;
     useGame.setState({ party: [w] as Combatant[] });
-    useGame.getState().buySpell(w.id, 'Drain');
+    useGame.getState().buySpell(w.id, 'drain');
     const after = useGame.getState().party[0];
     expect(after.spells).toContain('drain'); // runtime = id de sort
     expect(after.xp).toBe(10);
-    useGame.getState().buySpell(w.id, 'Éblouissant'); // 3 connus → bande ×2 : 100 PX > 10 restants
-    expect(useGame.getState().party[0].spells).not.toContain('Éblouissant');
+    useGame.getState().buySpell(w.id, 'eblouissant'); // 3 connus → bande ×2 : 100 PX > 10 restants
+    expect(useGame.getState().party[0].spells).not.toContain('eblouissant');
     expect(useGame.getState().journal.join('\n')).toMatch(/PX requis/);
   });
 
@@ -38,7 +38,7 @@ describe('buySpell', () => {
     p.talents.push({ talentId: 'beni', spec: 'Sigmar', times: 1 });
     p.xp = 0;
     useGame.setState({ party: [p] as Combatant[] });
-    useGame.getState().buySpell(p.id, 'Bénédiction de Puissance'); // Sigmar (LDB 41)
+    useGame.getState().buySpell(p.id, 'benediction-de-puissance'); // Sigmar (LDB 41)
     expect(useGame.getState().party[0].spells).toContain('benediction-de-puissance'); // id de sort
     expect(useGame.getState().party[0].xp).toBe(0);
   });
@@ -48,16 +48,11 @@ describe('buySpell', () => {
     w.talents.push({ talentId: 'magie-du-chaos', spec: 'Nurgle', times: 1 });
     w.xp = 200;
     useGame.setState({ party: [w] as Combatant[] });
-    const chaos = 'Flot de corruption';
-    useGame.getState().buySpell(w.id, chaos);
+    useGame.getState().buySpell(w.id, 'flot-de-corruption');
     const after = useGame.getState().party[0];
-    if (after.spells?.includes(chaos)) {
-      expect(after.corruption ?? 0).toBeGreaterThanOrEqual(1);
-      expect(after.xp).toBe(100);
-    } else {
-      // si le label exact diffère dans la base, le test reste honnête : rien d'appris, rien de payé
-      expect(after.xp).toBe(200);
-    }
+    expect(after.spells).toContain('flot-de-corruption'); // sort du Chaos appris (id stable)
+    expect(after.corruption ?? 0).toBeGreaterThanOrEqual(1); // +1 Point de Corruption (LDB 19)
+    expect(after.xp).toBe(100); // 200 − 100 PX
   });
 });
 

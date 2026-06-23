@@ -12,6 +12,7 @@ import { Combatant, CharKey, HitLocation, Trauma, Difficulty, UpkeepDeferTest } 
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
 import { isPainless, traitPassiveMods } from './traits/dispatch';
+import { findConditionById, findPsychologyById } from '../data';
 import { talentPassiveMods } from './talentEffects';
 import { diseaseCharPenalties } from './disease';
 import { hungerCharPenalties } from './provisions';
@@ -388,6 +389,7 @@ const PASSIVE_CANCELLERS: Record<PassiveKind, ('determination' | 'painless' | 'p
   maladie: ['determination'],
   faim: [], // annulé par `noHunger` (flag de sort) — géré à la source Faim (P2), pas par une prothèse de séquelle
   magique: [], // sort actif : rien ne l'annule (il expire), mais il se combine en POOL non-cumul (≠ intrinsèque additif)
+  etat: [], // État (LDB 16) : annulé NON PAS ici mais par le flag de combat `ignoreStatePenalties` (au consommateur) ; pool non-cumul
   intrinsèque: [],
 };
 
@@ -410,7 +412,7 @@ function traumaOpKind(op: GameOp): PassiveKind {
  *  les sources SANS séquelle (maladie/faim — gating par Détermination seule) l'omettent. */
 function modSurvives(c: Combatant, kind: PassiveKind, t?: Trauma): boolean {
   for (const canc of PASSIVE_CANCELLERS[kind]) {
-    if (canc === 'determination' && c.ignoreCritMods) return false;
+    if (canc === 'determination' && (c.activeEffects ?? []).some((e) => e.ignoreCritMods)) return false;
     if (canc === 'painless' && t && painlessIgnores(c, t)) return false;
     if (canc === 'prosthesis-all' && t && prosthesisCancels(c, t, 'all')) return false;
     if (canc === 'prosthesis-move' && t && prosthesisCancels(c, t, 'movement')) return false;
@@ -427,6 +429,13 @@ function modSurvives(c: Combatant, kind: PassiveKind, t?: Trauma): boolean {
  *  - à terme trait/mutation/objet : poussent leurs `PassiveMod` (kind explicite) au point d'extension.
  * Le charMod de SORT reste lu par effectiveChar (e.char/e.bonus) → non émis ici (pas de double comptage).
  */
+/** Multiplie la magnitude d'une op d'État par le nombre de pions (perStack — Exténué −10/pion). Seul
+ *  `testMod` (la pénalité par pion) est concerné aujourd'hui ; les autres ops d'État ne sont pas perStack. */
+function scaleEtatOp(op: GameOp, mult: number): GameOp {
+  if (mult === 1 || op.op !== 'testMod') return op;
+  return { ...op, amount: op.amount * mult };
+}
+
 export function passiveMods(c: Combatant): PassiveMod[] {
   const out: PassiveMod[] = [];
   for (const t of c.traumas ?? []) {
@@ -442,6 +451,21 @@ export function passiveMods(c: Combatant): PassiveMod[] {
   if (c.hunger && modSurvives(c, 'faim')) {
     for (const key of Object.keys(c.characteristics) as CharKey[]) for (const mod of hungerCharPenalties(c, key)) out.push({ op: { op: 'charMod', char: key, mod }, kind: 'faim' });
   }
+  // États (LDB 16) : leur `passive: GameOp[]` (pénalité de Test → `testMod`, bonus à l'attaquant →
+  // `incomingAttackMod`, échelle de Mouvement…) émis kind `etat` (pool NON-CUMUL, le pire seul, l.20).
+  // VIDE aujourd'hui (migration des 12 États en cours — cf. docs/combat-events-coherence.md, Lot 4) :
+  // inerte tant qu'aucun État ne porte de `passive`. L'échelle par stacks (Exténué) et le gating de
+  // combat (`ignoreStatePenalties`) sont traités au moment de la migration de chaque État concerné.
+  for (const cond of c.conditions ?? []) {
+    const ed = findConditionById(cond.name);
+    if (!ed?.passive?.length) continue;
+    const mult = ed.perStack ? Math.max(1, cond.value ?? 1) : 1; // Exténué −10/pion (LDB 16 l.89)
+    for (const op of ed.passive) out.push({ op: scaleEtatOp(op, mult), kind: 'etat' });
+  }
+  // États PSYCHOLOGIQUES (LDB 21, `psychology.json`) : leur `passive` (Frénésie → `sbBonus +1`) émis dans le
+  // MÊME pool `etat` que les États — MÊME folding générique, zéro chemin parallèle. Inerte sans `passive`.
+  for (const p of c.psychState ?? [])
+    for (const op of findPsychologyById(p.type)?.passive ?? []) out.push({ op, kind: 'etat' });
   // Mutations de Corruption (LDB 19) : modifs PERMANENTES du corps → leur `passive: GameOp[]` (vocab unifié,
   // `mutations.json`) émis tel quel en kind `intrinsèque`, COMME les traits. (L'armure naturelle apAll/
   // apLocations est lue à part par recomputeLoadout.) Lu inline (la donnée `c.mutations` est sur le Combatant).
@@ -480,6 +504,13 @@ function pmods<K extends GameOp['op']>(c: Combatant, op: K, additive?: boolean):
 /** Le Mouvement est-il réduit de moitié (séquelle de jambe ou autre source `moveScale`) ? Lu par `effectiveMovement`. */
 export function traumaMovementHalved(c: Combatant): boolean {
   return pmods(c, 'moveScale').length > 0;
+}
+
+/** Σ des modificateurs PASSIFS du Bonus de Force employé aux DÉGÂTS (`sbBonus`) — Frénésie : +1 (LDB 21
+ *  l.34). Lu par le calcul des dégâts (`combat.ts`) à l'endroit du `sb`, en remplacement du drapeau
+ *  `frenzied ? 1 : 0` codé en dur — la donnée vient de `psychology.json` via `passiveMods`. */
+export function damageSBBonus(c: Combatant): number {
+  return pmods(c, 'sbBonus').reduce((n, o) => n + o.amount, 0);
 }
 
 /** Σ des `charMod` ADDITIFS (mutation/qualité, kind `intrinsèque`) pour la Caractéristique `key` — sommés

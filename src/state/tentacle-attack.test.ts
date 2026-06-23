@@ -3,7 +3,7 @@ import { useGame } from './store';
 import { availableAttacks } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { recomputeLoadout } from '../engine/items';
+import { recomputeLoadout, damageString } from '../engine/items';
 import { attachMutation } from '../engine/corruption';
 import { rollMutation } from '../data/mutations';
 import { hasCondition } from '../engine/conditions';
@@ -27,10 +27,10 @@ describe('armes naturelles de mutation (recomputeLoadout)', () => {
     recomputeLoadout(hero);
     const t = hero.weapons.find((w) => w.uid === 'nat-tentacule');
     expect(t?.name).toBe('Tentacule');
-    expect(t?.damage).toBe('+BF');
+    expect(damageString(t!.damage)).toBe('+BF');
     const c = hero.weapons.find((w) => w.name === 'Cornes'); // arme dérivée de mutation (derivedWeapon)
     expect(c?.name).toBe('Cornes');
-    expect(c?.damage).toBe('+BF');
+    expect(damageString(c!.damage)).toBe('+BF');
   });
 
   it('sans mutation : aucune arme naturelle dérivée', () => {

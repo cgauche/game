@@ -1,6 +1,6 @@
 import { useGame } from '../state/store';
-import type { Combatant, HitLocation, ItemInstance } from '../engine/types';
-import { armourLayer, isCapeItem, weaponHands, compatibleAmmo, WEAPON_SET_NAMES, isUnarmed, type ArmourLayer } from '../engine/items';
+import type { Combatant, HitLocation, ItemInstance, QualityInstance } from '../engine/types';
+import { armourLayer, isCapeItem, weaponHands, compatibleAmmo, WEAPON_SET_NAMES, isUnarmed, damageString, type ArmourLayer } from '../engine/items';
 import { RigSprite } from '../gameIso/rig/composeRig';
 import { DEFS } from '../gameIso/sprites';
 import { defaultAppearance } from '../gameIso/rig/appearance';
@@ -11,7 +11,7 @@ import { ItemIcon } from './ItemIcon';
 import { MediaSelect, type MediaOption } from './MediaSelect';
 import { effectiveWeaponDamage } from '../engine/weaponDamage';
 import { charBonus } from '../engine/characteristics';
-import { refLabel } from '../data';
+import { refLabel, qualityRefLabel } from '../data';
 
 /**
  * Écran d'EMPLACEMENTS d'équipement (onglet Combat de la fiche) — façon jeu vidéo : colonne
@@ -51,9 +51,9 @@ function zonesOf(it: ItemInstance): string[] {
   return seen;
 }
 
-/** Qualités/atouts d'une arme en libellés lisibles (ids runtime → libellés via `refLabel`). */
-function weaponQualities(qualities?: string[]): string {
-  return (qualities ?? []).map((q) => refLabel('qualities', { id: q })).filter(Boolean).join(', ');
+/** Qualités/atouts d'une arme en libellés lisibles (`QualityInstance` runtime → libellés via `qualityRefLabel`). */
+function weaponQualities(qualities?: QualityInstance[]): string {
+  return (qualities ?? []).map(qualityRefLabel).filter(Boolean).join(', ');
 }
 
 /** Option « objet » (ItemIcon + libellé) d'un MediaSelect. Libellé d'armure = UN seul nœud
@@ -281,7 +281,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
                   <ItemIcon item={w} size="sm" />
                   <span className="weap-text">
                     <CodexRef category="trappings" label={w.name}>{w.name}</CodexRef>{' '}
-                    <em>{w.damage} = {effectiveWeaponDamage(w, strBonus)}</em>
+                    <em>{damageString(w.damage)} = {effectiveWeaponDamage(w, strBonus)}</em>
                     {quals && <span className="weap-quals"> · {quals}</span>}
                     {ammo != null && <span className="eq-ammo" title="Munitions compatibles dans le sac"> · 🏹 {ammo}</span>}
                   </span>

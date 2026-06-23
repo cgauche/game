@@ -12,6 +12,7 @@ import careerLevelsJson from './careerLevels.json';
 import skillsJson from './skills.json';
 import talentsJson from './talents.json';
 import etatsJson from './etats.json';
+import psychologyJson from './psychology.json';
 import maladiesJson from './maladies.json';
 import traitsJson from './traits.json';
 import qualitiesJson from './qualities.json';
@@ -43,6 +44,7 @@ import peripetiesJson from './peripeties.json';
 import { CharKey, Weapon } from '../engine/types';
 import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
 import type { DiseaseDef } from '../engine/disease'; // type-only (le runtime de disease.ts importe `maladies` d'ici)
+import { type DiceSpec, formatDice } from '../engine/dice';
 import type { PregenDef } from './pregens'; // type-only (pregens.ts importe la donnée d'ici)
 import type { OupsEntry } from './oups';
 import type { InterludeEvent } from './interludeEvents';
@@ -126,8 +128,10 @@ export interface TalentData {
    *  renommage du `label`. Source unique pour `findTalentById`. */
   id: string;
   label: string;
-  /** Maxi d'acquisitions (LDB 10 « Schéma des Talents ») : 1, « Bonus de X », « Aucun » ou null. */
-  max: string | number | null;
+  /** Maxi d'acquisitions (LDB 10 « Schéma des Talents ») : un nombre fixe, ou le BONUS d'une
+   *  caractéristique (`{bonusOf}`, structuré — remplace la chaîne « Bonus de X » re-parsée par regex),
+   *  ou `null` = sans limite (ex-« Aucun »). */
+  max: number | { bonusOf: import('../engine/types').CharKey } | null;
   test: string | null;
   desc: string;
   specs?: string[];
@@ -151,7 +155,11 @@ export interface TrappingData {
   /** id STABLE (slug du libellé) — cible des `TrappingRef`, robuste au renommage. */
   id: string;
   label: string;
-  prefix: string | null;
+  /** Latéralité TYPÉE (LDB 62) : `2` = arme à deux mains, absent = une main. Remplace l'ancien marqueur
+   *  d'affichage `(2M)` re-parsé par regex — source de vérité unique, multilangue-safe. */
+  hands?: 1 | 2;
+  /** Taille TYPÉE du paquet de munitions (« 12 flèches », LDB 290) : remplace l'ancien marqueur `(12)`. */
+  packSize?: number;
   type: string;
   /** `id` du Groupe d'objet (`WeaponGroupData.id`) : Groupe d'arme (Base/Escrime…), famille de munition
    *  (Arc/Poudre noire…), type d'armure (Plate/Mailles…) ou catégorie d'inventaire — réf d'entité, ≠ libellé. */
@@ -161,10 +169,15 @@ export interface TrappingData {
   reach: string | null;
   loc: string | null;
   pa: number | null;
-  damage: string | null;
+  /** Dégâts d'arme STRUCTURÉS (cf. `WeaponDamageSpec`) — remplace la chaîne « +BF+4 » re-parsée au runtime. */
+  damage: import('../engine/types').WeaponDamageSpec | null;
   /** Qualités d'arme/armure (`QualityRef` : id + Indice éventuel « Solide 3 » → value, spec = arg éventuel). */
   qualities: QualityRef[];
   desc: string | null;
+  /** Effet d'un CONSOMMABLE (potion/bandage, LDB 307) en `GameOp[]` — MÊME vocabulaire que sorts/passifs
+   *  (`heal`/`removeCondition`/`preventInfection`), exécuté par `applyOps`. Remplace le parsing du `desc`
+   *  au runtime ; édité au Codex via `GameOpEditor`. Copié sur `ItemInstance.consumable` à la construction. */
+  consumable?: import('../engine/ops').GameOp[];
   price: { gold: number; silver: number; bronze: number };
   source: { book: string; page: number };
   /** Arme DÉRIVÉE conférée tant que l'objet est ÉQUIPÉ (prothèse-arme, LDB 73 : le Crochet « est
@@ -195,6 +208,9 @@ export interface WeaponGroupData {
   id: string;
   label: string;
   kind: 'weapon' | 'ammo' | 'armour' | 'inventory';
+  /** Matériau d'une armure (groupes `kind:'armour'`) — source TYPÉE des exemptions de Magie des Arcanes
+   *  (Chamon/Azyr ignorent le métal, Ghur le cuir, LDB 46 l.188). Remplace la devinette par regex sur le nom. */
+  material?: 'metal' | 'leather';
 }
 export type HarvestRarity = 'Commune' | 'Limitée' | 'Rare' | 'Exotique' | 'Unique';
 export type HarvestDanger = 'Inoffensive' | 'Inquiétante' | 'Menaçante' | 'Mortelle';
@@ -237,12 +253,56 @@ export interface CreatureData {
    *  (`engine/groups`). Absent = catégorie auto-dérivée du `folder`. */
   group?: string;
 }
-export interface EtatData {
-  /** id STABLE (slug du libellé) — `ConditionId` ; cible de `ConditionInstance.name` et des ops condition. */
+/** Base PARTAGÉE d'un STATUT porté pilotant des effets en DONNÉES — soit un État (LDB 16, `EtatData`), soit
+ *  un état psychologique (LDB 21, `PsychologyData`). Porte le vocabulaire commun : modificateurs PASSIFS
+ *  (`passive: GameOp[]`, MÊME éditeur `GameOpEditor` que traits/atouts) ET effets DÉCLENCHÉS
+ *  (`effects: TriggeredEffect[]`). Folding UNIQUE : `passiveMods` (passifs) + `fireStatusEffects` (déclenchés)
+ *  itèrent indifféremment États et états psy → zéro duplication de schéma ni de collecteur. */
+export interface StatusData {
+  /** id STABLE (slug du libellé) — cible des instances (`ConditionInstance.name` / `PsychAffliction.type`). */
   id: string;
   label: string;
   desc: string;
   source: { book: string; page: number };
+  /** Modificateurs PASSIFS continus (pénalité de Test, `incomingAttackMod`, `sbBonus`…) en `GameOp[]`, lus
+   *  par `passiveMods` (kind `etat` : pool non-cumul, le pire seul, LDB 16 l.20). MÊME éditeur GameOpEditor. */
+  passive?: import('../engine/ops').GameOp[];
+  /** Effets DÉCLENCHÉS (dégâts par round → `onRoundEnd` ; sortie de Frénésie → `onTurnStart`…) en
+   *  `TriggeredEffect[]`, diffusés par `fireStatusEffects` — le même cœur `applyTriggeredEffects`. */
+  effects?: import('../state/flow').TriggeredEffect[];
+}
+
+export interface EtatData extends StatusData {
+  /** Restriction d'Action / de Mouvement / de défense imposée par l'État (À Terre/Sonné/Inconscient/
+   *  Surpris/Empêtré…), lue par les prédicats moteur EXISTANTS (`canTakeAction`/`effectiveMovement`/
+   *  `cannotDefend`) au lieu des branches par-nom. VIDE aujourd'hui (Lot 4). */
+  gating?: { action?: 'none'; movement?: 'none' | 'half' | 'crawl'; cannotDefend?: true };
+  /** Les magnitudes du `passive` sont-elles multipliées par le nombre de pions (Exténué −10/pion, LDB 16
+   *  l.89) ? Appliqué à l'émission par le collecteur `passiveMods`. Défaut (absent) : magnitude fixe. */
+  perStack?: boolean;
+  /** Le nombre de pions vu par les `effects` (le `{stacks:'self'}` des dégâts par-round) est RÉDUIT du
+   *  niveau de cette capacité de combat chez la cible — ex. Hémorragique réduit par Endurci (`bleedIgnore`,
+   *  LDB 10). Clé de `CombatFeature` ; lu génériquement par `fireConditionEffects` (jamais codé par-nom). */
+  stacksReducedBy?: string;
+}
+
+/** État PSYCHOLOGIQUE en DONNÉES (LDB 21) — `id` = `PsychType` (`frenesie`, à terme `peur`/`terreur`/…).
+ *  Étend `StatusData` (passive/effects mutualisés) ; n'ajoute que la capacité propre à la psychologie. */
+export interface PsychologyData extends StatusData {
+  /** Porter cet état psy IMMUNISE à la Psychologie (Frénésie, LDB 21 l.34) — lu GÉNÉRIQUEMENT par
+   *  `isPsychImmune` (jamais codé par-nom), à l'égal du drapeau de trait « Immunité (Psychologie) ». */
+  psychImmune?: boolean;
+  /** Emoji d'affichage (HUD/modales/Codex) — SOURCE UNIQUE, remplace les maps `CIBLE_LABEL`/`PSYCH_LABEL`. */
+  emoji?: string;
+  /** Trait psychologique CIBLÉ (Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie, LDB 21) : résolution
+   *  binaire de Calme pilotée par un Groupe-Cible. Dérive `CIBLE_TYPES` de la donnée (plus de Set codé). */
+  targeted?: boolean;
+  /** RAW LDB 21 : cette affliction CIBLÉE cesse dès que son porteur tombe sous un AUTRE effet psychologique
+   *  « dominant » (Peur/Terreur/Haine…) — « Animosité est annulé par Peur et Terreur » ; Préjugé idem. */
+  endedByOtherPsych?: boolean;
+  /** RAW LDB 21 : tant que cette affliction CIBLÉE est active, son porteur est IMMUNISÉ aux KINDS psy listés
+   *  causés par un membre de sa Cible (Haine → ['peur'], « mais pas Terreur »). Lu par `fearSourceFor`. */
+  immuneToFromTarget?: string[];
 }
 /** Tables Couleur des Yeux / Cheveux (LDB 05 l.698-744) : 2d10, libellé par refChar. */
 export interface DetailColorData {
@@ -277,6 +337,13 @@ export interface DetailsData {
  *  générique (`state/combatManeuvers.resolveManeuver`) la joue ENTIÈREMENT depuis cette donnée — plus
  *  de table en dur ni d'applier par type. `kind` ne sert QU'À l'anim/pose/icône (jamais à résoudre).
  *  La géométrie/portée/opposition restent moteur (règle 3) ; Dégâts (`wounds`) + États = data. */
+/** Mesure de géométrie de manœuvre en MÈTRES (Portée/Souffle) : `bonus(ref)` de la carac `bonusOf` (référent
+ *  = Attaquant pour la Portée, Cible au centre pour le Souffle, RAW l.251) + constante `plus`. Résolue par
+ *  `measureMeters` (`combatManeuvers`) — remplace la formule-chaîne FR re-parsée par regex au runtime. */
+export interface ManeuverMeasure {
+  bonusOf?: CharKey;
+  plus?: number;
+}
 export interface ManeuverDef {
   id: string;
   label: string;
@@ -295,9 +362,10 @@ export interface ManeuverDef {
   defense?: 'esquive' | 'parade' | 'init' | 'resist' | 'auto';
   /** Mode de ciblage (le résolveur en dérive la géométrie moteur). */
   targeting: 'melee' | 'ranged' | 'zone' | 'allFoes';
-  /** Portée / Souffle (formules-chaînes résolues par le résolveur, ex. « Bonus d'Endurance + 20 mètres »). */
-  range?: string;
-  blast?: string;
+  /** Portée / Souffle STRUCTURÉS (`ManeuverMeasure`) — mètres = `bonus(ref) + plus`. `range` résolu contre
+   *  l'Attaquant, `blast` contre la cible au centre (RAW l.251). Remplace la formule-chaîne re-parsée au runtime. */
+  range?: ManeuverMeasure;
+  blast?: ManeuverMeasure;
   /** Attaque magique (Souffle, Étreinte glaciale) → soumise à la Résistance à la Magie, etc. */
   magic?: boolean;
   /** Effets AUTHORÉS (Dégâts `wounds` + États) appliqués quand la manœuvre touche (`onHit`) — MÊME
@@ -319,12 +387,18 @@ export interface TraitCapabilities {
   bonusWoundsBE?: boolean;
   mutationAtSpawn?: 'physique' | 'mentale';
   swarm?: boolean;
+  /** Attaque NATURELLE (LDB 85) : le trait EST une arme (morsure, cornes, tentacules…) — pas d'objet
+   *  tenu par le rig. Remplace l'ancienne reconnaissance par découpe du libellé + Map FR au runtime
+   *  (`statEntry` interdit le parsing de chaîne au runtime). `ranged` pour les attaques à distance (crachat). */
+  naturalWeapon?: { ranged?: boolean };
   // Résolution de combat (seuil/type éventuel depuis l'instance)
   wardSave?: boolean;
   magicResistance?: boolean;
   damageImmunity?: boolean;
-  banishedAtZero?: boolean;
-  championDefense?: boolean;
+  /** Contre-attaque en gagnant un Test opposé de défense (Champion LDB 85). MÊME capacité GÉNÉRIQUE que
+   *  le talent Riposte (`CombatFeature.counterOnDefenseWin`) — un seul concept pour traits ET talents. */
+  counterOnDefenseWin?: boolean;
+  counterRequiresFastParry?: boolean;
   unstable?: boolean;
   painless?: boolean;
   // Psychologie / IA
@@ -340,6 +414,10 @@ export interface TraitCapabilities {
   stupid?: boolean;
   rage?: boolean;
   territorial?: boolean;
+  /** Monture trop ombrageuse pour agir seule (Nerveux, LDB 14 l.221) : MONTÉE, elle ne consacre pas sa
+   *  propre Action à attaquer (une monture SANS ce drapeau est « un combattant à part entière »). Lu par
+   *  l'IA de combat monté — drapeau de donnée, plus de test par-nom du trait. */
+  skittishMount?: boolean;
   // Déplacement / vision
   fly?: boolean;
   leap?: boolean;
@@ -348,7 +426,6 @@ export interface TraitCapabilities {
   /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.147` ;
    *  Infravision = illimité, grande valeur — `LDB 85 l.165`). Lue par `darkSightTiles`. */
   darkSightTiles?: number;
-  perturbingAura?: boolean;
 }
 /** Trait de créature (LDB 85) : libellé canonique + desc VERBATIM (affichée à l'inspecteur). */
 export interface TraitData {
@@ -379,6 +456,15 @@ export interface TraitData {
   /** Drapeaux de CAPACITÉ irréductibles (décisions IA/psy, résolution, build/déplacement/vision) —
    *  migrés des `defs/` mécaniques, lus PAR ID par `engine/traits/dispatch`. Édité au Codex. */
   capabilities?: TraitCapabilities;
+  /** Capacités d'AUTRES traits du même porteur ANNULÉES par ce trait (« entraîné à IGNORER son Trait
+   *  X » — LDB 85 : Dressé (Dompté) ignore Bestial). Mécanisme GÉNÉRIQUE de suppression, lu par
+   *  `traitCapability` : une capacité supprimée par n'importe quel trait porté répond false. */
+  suppressesCapabilities?: (keyof TraitCapabilities)[];
+  /** AURA de combat : projette des `passive` GameOp[] sur les combattants À PORTÉE (Perturbant : −20 aux
+   *  Tests à `rangeChar` mètres, LDB 85 p.341 ; `affects` = qui est touché). Recalculée chaque Round par le
+   *  hook GÉNÉRIQUE `recompute-auras`, accumulée dans `Combatant.auraMods` (lu par `passiveMods`, kind `etat`
+   *  NON-CUMUL — « une seule fois, peu importe le nombre d'ennemis Perturbants »). Aucun code par-nom. */
+  aura?: { rangeChar?: CharKey; rangeMeters?: number; affects?: 'enemies' | 'allies' | 'all'; passive: import('../engine/ops').GameOp[] };
   /** Trait STANDARD (LDB 76 l.28-31 : « ajoutés à la liste Facultative de TOUTES les créatures ») —
    *  proposé par le picker de Traits facultatifs sur n'importe quel bestiaire. Édité au Codex. */
   standard?: boolean;
@@ -483,9 +569,16 @@ export interface SpellData {
   family: import('../engine/combatFeatures/types').CastingKind;
   /** Niveau d'Incantation (NI). `null` pour les Prières (Béni/Invocation). */
   cn: number | null;
-  range: string;
-  target: number | string;
-  duration: string;
+  /** Portée STRUCTURÉE (LDB 46/47) — d'où le sort peut être lancé. `null` = donnée absente (homebrew
+   *  non extrait). Remplace l'ancienne prose re-parsée au runtime ; l'affichage est DÉRIVÉ
+   *  (`engine/spellRangeFormat`). */
+  range: import('../engine/spellRange').SpellRange | null;
+  /** Cible STRUCTURÉE (LDB 47) — qui/quoi est affecté (compte, ZONE par rayon/diamètre, cône, spécial).
+   *  `null` = donnée absente. L'aire (ex-`zdeRadiusMeters`) vit désormais ICI (source unique). */
+  target: import('../engine/spellRange').SpellTarget | null;
+  /** Durée STRUCTURÉE (LDB 47) — instant/Rounds/horloge/lever-du-soleil/spécial. `null` = donnée absente.
+   *  L'échelle Rounds (ex-`durationRounds`) vit désormais ICI (source unique). */
+  duration: import('../engine/spellDuration').SpellDuration | null;
   desc: string;
   /** Projectile magique (Dégâts résolus façon attaque) — DONNÉE (multilangue ; remplace la regex
    *  `/projectile magique/` sur la desc). `damage` = bonus ADDITIF (+ DR + BFM, LDB 46) ; `ignorePA`/
@@ -500,17 +593,6 @@ export interface SpellData {
   /** Vrai pour une entrée curée de la base officielle. Absent/false pour les sorts homebrew (frenchy.bzh).
    *  Permet au test de couverture de vérifier que TOUS les sorts officiels ont une spec complète. */
   curated?: boolean;
-  /** Durée en Rounds si exprimable (littéral / « (Bonus de X) Rounds » du lanceur) ;
-   *  null = Instantané ou durée hors échelle tactique (minutes/heures/jours) — on n'invente PAS un
-   *  nombre de rounds (LDB). Formula = `number | {bonusOf:CharKey} | {charOf:CharKey} | …` (engine/ops). */
-  durationRounds?: import('../engine/ops').Formula | null;
-  /** RAYON de Zone d'Effet en MÈTRES (sorts de zone avec rayon dans la desc —
-   *  « dans un rayon de (Bonus de Sociabilité) mètres », Feu de l'âme, Comète…) ;
-   *  prioritaire sur le parsing du champ Cible (zdeRadiusTiles). */
-  zdeRadiusMeters?: import('../engine/ops').Formula;
-  /** La zone ÉPARGNE le lanceur (Poussée repousse « toutes les créatures » autour de SOI ;
-   *  Feu de l'âme châtie les ennemis) — il est exclu de la collecte des cibles. */
-  zdeExcludesCaster?: boolean;
   /** TÉLÉPORTATION du lanceur (Jalon 2.6 — « vous vous téléportez de BFM mètres ») : après
    *  l'Appliquer, le jeu propose le choix d'une case d'arrivée dans ce rayon (survol des
    *  obstacles, atterrissage libre). */
@@ -644,7 +726,7 @@ export function findDiseaseById(id: string): DiseaseDef | undefined {
 }
 /** Libellé d'affichage d'une Maladie par son id (repli sur l'id). */
 export function diseaseLabel(id: string): string {
-  return DISEASE_BY_ID.get(id)?.name ?? id;
+  return DISEASE_BY_ID.get(id)?.label ?? id;
 }
 // Traits app-owned + traits curés hors-extraction mergés ici : homebrew frenchy.bzh (Aura de Dhar/
 // Mort, Charnier) + traits de suppléments autorisés référencés par le bestiaire mais absents
@@ -740,9 +822,23 @@ const ETAT_BY_ID = new Map(etats.map((e) => [e.id, e]));
 export function findConditionById(id: string): EtatData | undefined {
   return ETAT_BY_ID.get(id);
 }
+
+/** États PSYCHOLOGIQUES (LDB 21) — base app-owned éditable au Codex. Données de Frénésie aujourd'hui ;
+ *  Peur/Terreur/Animosité/Haine à migrer (chantier psychologie data-driven). */
+export const psychologies = psychologyJson as PsychologyData[];
+const PSYCH_BY_ID = new Map(psychologies.map((p) => [p.id, p]));
+/** Résout un état psychologique par son `id` STABLE (`PsychType`). Absent → undefined (folding inerte). */
+export function findPsychologyById(id: string): PsychologyData | undefined {
+  return PSYCH_BY_ID.get(id);
+}
 /** Libellé d'affichage d'un État par son id (repli sur l'id). SOURCE UNIQUE du nom d'État affiché. */
 export function conditionLabel(id: string): string {
   return ETAT_BY_ID.get(id)?.label ?? id;
+}
+/** Libellé d'affichage d'un état psychologique par son `id` (`PsychType`), repli sur l'id — délègue au
+ *  résolveur de libellé GÉNÉRIQUE (`refLabel`), plus de copie locale du motif `MAP.get(id)?.label ?? id`. */
+export function psychologyLabel(id: string): string {
+  return refLabel('psychology', { id });
 }
 const ETAT_ID_BY_LABEL = new Map(etats.map((e) => [e.label.toLowerCase(), e.id]));
 /** Résout un `id` d'État depuis un LIBELLÉ (authoring : parsing de desc/texte) — insensible à la casse. */
@@ -930,8 +1026,8 @@ export function miraclesOf(cult: string): string[] {
 export interface QualityRef extends Ref {
   value?: number;
 }
-/** Quantité d'une possession conférée : nombre fixe (« (3) ») ou jet (« (1d10) »). */
-export type CountSpec = { fixed: number } | { roll: string };
+/** Quantité d'une possession conférée : nombre fixe (« (3) ») ou jet de dés structuré (« (1d10) »). */
+export type CountSpec = { fixed: number } | { roll: DiceSpec };
 /** Référence à une Possession : par `id` du catalogue (+ quantité éventuelle) OU texte NARRATIF hors
  *  catalogue (statblocs de créature : « collection d'alcool sans pareille »). */
 export type TrappingRef = (Ref & { count?: CountSpec }) | { text: string; count?: CountSpec };
@@ -958,7 +1054,8 @@ export function findById(category: string, id: string): { label: string } | unde
     case 'classes': return findClassById(id);
     case 'races': return findSpeciesById(id);
     case 'etats': return findConditionById(id);
-    case 'maladies': return findDiseaseById(id) ? { label: findDiseaseById(id)!.name } : undefined;
+    case 'psychology': return findPsychologyById(id);
+    case 'maladies': return findDiseaseById(id) ? { label: findDiseaseById(id)!.label } : undefined;
     default: return undefined;
   }
 }
@@ -968,12 +1065,12 @@ export function refLabel(category: string, ref: Ref): string {
   const base = findById(category, ref.id)?.label ?? ref.id;
   return ref.spec ? `${base} (${ref.spec})` : base;
 }
-/** Forme RUNTIME d'une qualité (Weapon/ItemInstance.qualities) : id STABLE, + Indice « id 3 ».
- *  Le moteur (`parseQuality`) la relit par id ; l'affichage la repasse en libellé. PAS le libellé. */
-export function qualityRuntime(q: QualityRef): string {
-  return q.value != null ? `${q.id} ${q.value}` : q.id;
+/** Copie une `QualityRef` de catalogue en `QualityInstance` RUNTIME FRAÎCHE (`{id, value?}`) — objet neuf
+ *  (le runtime mute `qualities` : enchantements, munitions). Plus d'aplatissement en chaîne « id value ». */
+export function qualityInstance(q: QualityRef): import('../engine/types').QualityInstance {
+  return q.value != null ? { id: q.id, value: q.value } : { id: q.id };
 }
-/** Libellé d'affichage d'une `QualityRef` : « Solide 3 », « Tranchante » (id → libellé + Indice). */
+/** Libellé d'affichage d'une `QualityRef` (ou `QualityInstance` runtime) : « Solide 3 », « Tranchante ». */
 export function qualityRefLabel(q: QualityRef): string {
   return q.value != null ? `${refLabel('qualities', q)} ${q.value}` : refLabel('qualities', q);
 }
@@ -1007,6 +1104,6 @@ export function advancementBaseId(a: AdvancementRef): string | undefined {
  *  texte narratif hors catalogue. SOURCE UNIQUE (Codex, créateur, marchand, inventaire). */
 export function trappingRefLabel(ref: TrappingRef): string {
   const base = 'text' in ref ? ref.text : (findTrappingById(ref.id)?.label ?? ref.id);
-  const count = ref.count ? ('fixed' in ref.count ? ` (${ref.count.fixed})` : ` (${ref.count.roll})`) : '';
+  const count = ref.count ? ('fixed' in ref.count ? ` (${ref.count.fixed})` : ` (${formatDice(ref.count.roll)})`) : '';
   return base + count;
 }

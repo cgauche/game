@@ -15,7 +15,7 @@ const C = (kind: 'hero' | 'enemy', id: string, x: number, over: Partial<Combatan
   ({
     id, name: id, kind, pos: { x, y: 10 }, movement: 4,
     characteristics: { CC: 40, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
-    weapons: [{ name: 'Épée', type: 'melee', damage: '+4', qualities: [] }],
+    weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] }],
     conditions: [], skills: [], wounds: { current: 10, max: 10 }, advantage: 0, engagedWith: [], psychState: [],
     ...over,
   }) as unknown as Combatant;

@@ -102,9 +102,9 @@ describe('barrières — infranchissables pour les créatures gatées (via occup
   });
 
   it('barrierTilesFor : sans filtre bloque tout le monde ; filtré ne bloque que les Groupes visés', () => {
-    expect(barrierTilesFor([barrier()], ['Humain'])).toEqual([{ x: 5, y: 5 }]);
-    expect(barrierTilesFor([barrier(['Démon'])], ['Démon'])).toEqual([{ x: 5, y: 5 }]);
-    expect(barrierTilesFor([barrier(['Démon'])], ['Humain'])).toEqual([]);
+    expect(barrierTilesFor([barrier()], mk({ groups: ['Humain'] }))).toEqual([{ x: 5, y: 5 }]);
+    expect(barrierTilesFor([barrier(['Démon'])], mk({ groups: ['Démon'] }))).toEqual([{ x: 5, y: 5 }]);
+    expect(barrierTilesFor([barrier(['Démon'])], mk({ groups: ['Humain'] }))).toEqual([]);
   });
 
   it('occupied : un Démon est bloqué par la barrière sacrée, pas un vivant', () => {

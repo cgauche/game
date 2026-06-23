@@ -3,7 +3,7 @@ import { handlingClass } from './handling';
 import { weaponAttackClip, weaponParryClip, weaponRest } from './weaponClips';
 import type { Weapon } from '../../../engine/types';
 
-const w = (name: string): Weapon => ({ name, type: 'melee', damage: '+BF', qualities: [] });
+const w = (name: string): Weapon => ({ name, type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] });
 
 describe('maniement des armes naturelles (mutations/traits)', () => {
   it('Tentacule → classe fouet (entraves) ; Cornes → coup de tête (cornes)', () => {
