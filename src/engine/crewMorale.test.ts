@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { MORALE_BASE, MORALE_FACTORS, MORALE_BANDS, moraleBand, recalcMorale } from './crewMorale';
-import { makeRNG } from './dice';
+import { MORALE_BASE, MORALE_FACTORS, MORALE_BANDS, moraleBand, recalcMorale, resolveCrewTest, tickShipMorale } from './crewMorale';
+import { makeRNG, type RNG } from './dice';
+
+const seq = (values: number[]): RNG => { let i = 0; return { int: () => values[i++] }; };
 
 /**
  * MORAL d'équipage (MDG ch.14) — système PROPRE à la Mer des Griffes (aucun équivalent LDB/AA). Le code
@@ -52,5 +54,42 @@ describe('Moral d’équipage — données verbatim + recalcul hebdomadaire', ()
     expect(moraleBand(-200).id).toBe('canailles');
     expect(moraleBand(50).id).toBe('canailles'); // 50 = borne haute de la bande basse
     expect(moraleBand(51).id).toBe('equipage-satisfait');
+  });
+});
+
+describe('resolveCrewTest — Test d’équipage (somme des DR, rôle essentiel doublé, DR de Moral)', () => {
+  it('additionne les DR ; le rôle ESSENTIEL compte double ; le DR de Moral s’applique au total', () => {
+    const r = resolveCrewTest(
+      [{ value: 60, essential: true, label: 'Capitaine' }, { value: 50, label: 'Marin' }],
+      'intermediaire', 80, seq([20, 30]), // band 76-100 → crewTestDR 0
+    );
+    expect(r.contributions[0].counted).toBe(r.contributions[0].sl * 2); // essentiel ×2
+    expect(r.contributions[1].counted).toBe(r.contributions[1].sl);
+    expect(r.baseTotal).toBe(r.contributions[0].counted + r.contributions[1].counted);
+    expect(r.moraleDR).toBe(0);
+    expect(r.total).toBe(r.baseTotal);
+  });
+
+  it('un Moral bas (« canailles ») applique -1 DR au total ; extraDR (Manque de bras) s’ajoute', () => {
+    const r = resolveCrewTest([{ value: 50 }], 'intermediaire', 30, seq([30]), -2); // band ≤50 → -1 DR
+    expect(r.moraleDR).toBe(-1);
+    expect(r.total).toBe(r.baseTotal - 1 - 2);
+  });
+});
+
+describe('tickShipMorale — recalcul HEBDOMADAIRE gardé (jour ÷ 7, anti-double-comptage)', () => {
+  const s0 = { score: 75, lastMoraleWeek: 0, factors: ['pas-de-paie'] };
+  it('même semaine → aucun recalcul', () => {
+    const a = tickShipMorale(s0, 3, makeRNG(1));
+    expect(a.recalced).toBe(false);
+    expect(a.state.score).toBe(75);
+  });
+  it('nouvelle semaine → recalcule (pas-de-paie -3d10) et avance lastMoraleWeek', () => {
+    const b = tickShipMorale(s0, 7, makeRNG(1));
+    expect(b.recalced).toBe(true);
+    expect(b.state.lastMoraleWeek).toBe(1);
+    expect(b.state.score).toBeLessThan(75);
+    // idempotent dans la même semaine
+    expect(tickShipMorale(b.state, 8, makeRNG(1)).recalced).toBe(false);
   });
 });

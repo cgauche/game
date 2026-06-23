@@ -4,20 +4,21 @@
  * Aux Armes ne définissent de score de Moral numérique (AA n'a qu'une « Loyauté »/« Désertion »
  * narrative) — aucune mécanique parallèle à réutiliser ici.
  *
- * Réutilisation stricte là où le RAW recoupe l'existant :
- *  - les « Tests d'équipage » (total cumulé de Tests individuels, rôles essentiels comptant double) ne sont
- *    PAS un mécanisme à part : ils s'expriment via la primitive de **Soutien** (`partyAssisted`/`assistBonus`,
- *    LDB 12 l.214-225) et les **Tests étendus** (`extendedTestStep`) déjà en place ;
- *  - `rollExpr` évalue les modificateurs en dés signés (« +2d10 », « -3d10 ») ;
- *  - `findTableEntry` classe le score dans sa bande d'effet.
- *
  * Le Moral débute à 75 (nouveau capitaine / nouvel équipage) et est RECALCULÉ une fois par semaine :
  * chaque facteur ACTIF fait monter ou descendre le score. Sa bande détermine les bonus/malus de DR aux
  * Tests d'équipage et de Commandement, et le seuil de désertion en cas de relâche à terre.
+ *
+ * Le **Test d'équipage** (MDG ch.14) est un mécanisme PROPRE : « le total cumulé de ces Tests individuels »
+ * (somme des DR de chaque contributeur, le DR du rôle ESSENTIEL étant DOUBLÉ) — ce n'est PAS le Test Soutenu
+ * du LDB (+10 par soutien à UN seul jet) : on le résout donc avec son propre additionneur, en réutilisant
+ * `rollTest` (un jet par contributeur) et la bande de Moral (`crewTestDR`). `rollExpr` évalue les
+ * modificateurs de Moral (dés signés « +2d10 »/« -3d10 ») ; `findTableEntry` classe le score dans sa bande.
  */
 import crewMoraleJson from '../data/crew-morale.json';
 import { findTableEntry } from './tables';
 import { rollExpr, type RNG, defaultRNG } from './dice';
+import { rollTest } from './tests';
+import type { Difficulty } from './types';
 
 /** Facteur de Moral (MODIFICATEURS DE MORAL, MDG ch.14) — `effect` = dés signés (« +2d10 », « -3d10 »). */
 export interface MoraleFactor {
@@ -78,4 +79,75 @@ export function recalcMorale(current: number, activeFactorIds: string[], rng: RN
     lines.push(`${f.label} : ${rolled >= 0 ? '+' : ''}${rolled} Moral.`);
   }
   return { delta, score: current + delta, lines };
+}
+
+/** Un contributeur à un Test d'équipage (un rôle tenu par un Personnage). `essential` → son DR compte DOUBLE. */
+export interface CrewContributor {
+  /** Valeur de Compétence effective du contributeur pour ce Test. */
+  value: number;
+  /** Rôle ESSENTIEL (MDG ch.14) : « Tout DR, ou DR négatif, qu'il génère est alors doublé. » */
+  essential?: boolean;
+  /** Étiquette d'affichage (journal). */
+  label?: string;
+}
+
+export interface CrewTestResult {
+  /** Détail par contributeur (DR brut puis doublé si essentiel). */
+  contributions: { label?: string; sl: number; essential: boolean; counted: number }[];
+  /** Somme des DR (rôles essentiels doublés). */
+  baseTotal: number;
+  /** ±DR de la bande de Moral courante (MDG ch.14, EFFETS DU MORAL). */
+  moraleDR: number;
+  /** DR final = somme des contributions + DR de Moral + `extraDR` (ex. Manque de bras). */
+  total: number;
+  lines: string[];
+}
+
+/**
+ * Résout un TEST D'ÉQUIPAGE (MDG ch.14) : chaque contributeur lance son Test à `difficulty` et son DR
+ * s'ajoute au total (DR du rôle ESSENTIEL doublé). Le DR de la bande de Moral courante s'applique au total,
+ * ainsi qu'un `extraDR` optionnel (Manque de bras, sabotage…). PUR (RNG injecté). Ce n'est PAS le Test
+ * Soutenu du LDB : on additionne des DR de jets distincts, on n'ajoute pas +10 à un jet unique.
+ */
+export function resolveCrewTest(
+  contributors: CrewContributor[],
+  difficulty: Difficulty,
+  moraleScore: number,
+  rng: RNG = defaultRNG,
+  extraDR = 0,
+): CrewTestResult {
+  const contributions = contributors.map((c) => {
+    const t = rollTest(c.value, difficulty, rng);
+    const counted = c.essential ? t.sl * 2 : t.sl;
+    return { label: c.label, sl: t.sl, essential: !!c.essential, counted };
+  });
+  const baseTotal = contributions.reduce((s, c) => s + c.counted, 0);
+  const moraleDR = moraleBand(moraleScore).crewTestDR;
+  const total = baseTotal + moraleDR + extraDR;
+  const lines = contributions.map((c) =>
+    `${c.label ?? 'Rôle'} : ${c.sl >= 0 ? '+' : ''}${c.sl} DR${c.essential ? ` (essentiel ×2 → ${c.counted})` : ''}.`);
+  if (moraleDR) lines.push(`Moral : ${moraleDR >= 0 ? '+' : ''}${moraleDR} DR.`);
+  if (extraDR) lines.push(`Modificateur : ${extraDR >= 0 ? '+' : ''}${extraDR} DR.`);
+  return { contributions, baseTotal, moraleDR, total, lines };
+}
+
+/** État de Moral PERSISTANT d'un navire (porté par l'instance de navire en campagne ; recalc hebdomadaire). */
+export interface ShipMoraleState {
+  score: number;
+  /** Dernière semaine (jour ÷ 7) où le Moral a été recalculé — garde anti-double-comptage (cf. lastUpkeepDay). */
+  lastMoraleWeek: number;
+  /** Facteurs de Moral ACTIFS cette semaine (ids), édités par le MJ / l'éditeur. */
+  factors: string[];
+}
+
+/**
+ * RECALCUL HEBDOMADAIRE gardé (MDG ch.14) : recalcule le Moral une seule fois par semaine calendaire
+ * (jour ÷ 7), sur le modèle de `lastUpkeepDay`. PUR — prêt à être appelé par l'entretien quotidien quand
+ * un navire vit dans l'état de campagne. Renvoie un nouvel état (jamais muté en place).
+ */
+export function tickShipMorale(state: ShipMoraleState, currentDay: number, rng: RNG = defaultRNG): { state: ShipMoraleState; recalced: boolean; lines: string[] } {
+  const week = Math.floor(currentDay / 7);
+  if (week <= state.lastMoraleWeek) return { state, recalced: false, lines: [] };
+  const r = recalcMorale(state.score, state.factors, rng);
+  return { state: { ...state, score: r.score, lastMoraleWeek: week }, recalced: true, lines: r.lines };
 }
