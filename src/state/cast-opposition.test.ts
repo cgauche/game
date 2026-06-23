@@ -22,7 +22,7 @@ describe('Incantation opposée (SpellSpec.opposed — multijet)', () => {
       speciesId: 'humains-reiklander', careerId: 'sorcier', name: 'W',
       careerTalent: 'Magie mineure', rng: makeRNG(707),
     });
-    hero.spells = ['Fauche-démon', 'Parole de Tzeentch'];
+    hero.spells = ['fauche-demon', 'parole-de-tzeentch'];
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');

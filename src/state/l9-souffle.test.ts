@@ -55,7 +55,7 @@ describe('Souffle — délégation à l’attaque de zone du Trait (LDB 47 p.244
   it('castSpell : la portée du sort suit le TRAIT (BE+20 m), pas le champ « 1 mètre »', () => {
     const { caster, T } = setup();
     T.pos = { x: 16, y: 10 }; // 6 cases = 12 m — hors « 1 mètre », dans BE+20 (26 m)
-    castSpell(useGame.getState, useGame.setState, caster, T, 'Souffle');
+    castSpell(useGame.getState, useGame.setState, caster, T, 'souffle');
     expect(useGame.getState().pendingCast).not.toBeNull();
     expect(useGame.getState().pendingCast!.missile).toBe(false); // résolu comme zone, pas Projectile
   });

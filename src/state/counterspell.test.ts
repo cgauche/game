@@ -17,7 +17,7 @@ describe('Contre-sort (Dissipation, LDB 46 l.201-202)', () => {
       speciesId: 'humains-reiklander', careerId: 'sorcier', name: 'W',
       careerTalent: 'Magie mineure', rng: makeRNG(707),
     });
-    hero.spells = ['Fléchette'];
+    hero.spells = ['flechette'];
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -31,7 +31,7 @@ describe('Contre-sort (Dissipation, LDB 46 l.201-202)', () => {
     // L'ennemi devient une lanceuse façon Eusapia : Langue (Magick) 63 (Int 48 + 15), Carreau connu.
     E.characteristics.Int = 48; E.characteristics.FM = 53;
     E.skills = [{ skillId: 'langue', spec: 'Magick', characteristic: 'Int', advances: 15 }];
-    E.spells = ['Carreau'];
+    E.spells = ['carreau'];
     H.pos = { x: 10, y: 10 };
     E.pos = { x: 12, y: 10 }; // à 2 cases : dans les FM mètres de chacun
     useGame.setState({ battle: { ...b } });
@@ -51,7 +51,7 @@ describe('Contre-sort (Dissipation, LDB 46 l.201-202)', () => {
   it('IA : l’ennemie chante un Contre-sort contre le Sort du héros (déclaré au jet, 1/Round)', () => {
     useGame.getState().seedRng(3);
     const { H, E } = setup();
-    castSpell(useGame.getState, useGame.setState, H, E, 'Fléchette');
+    castSpell(useGame.getState, useGame.setState, H, E, 'flechette');
     useGame.getState().castRoll();
     const pc = useGame.getState().pendingCast!;
     if (!pc.result!.isCritical) {
@@ -60,7 +60,7 @@ describe('Contre-sort (Dissipation, LDB 46 l.201-202)', () => {
     }
     // 2e incantation du même Round : l'essai est consommé, plus de Contre-sort.
     useGame.getState().castCancel();
-    castSpell(useGame.getState, useGame.setState, H, E, 'Fléchette');
+    castSpell(useGame.getState, useGame.setState, H, E, 'flechette');
     useGame.getState().castRoll();
     const pc2 = useGame.getState().pendingCast!;
     expect(pc2.result!.log).not.toContain('Contre-sort de');
@@ -122,8 +122,8 @@ describe('Contre-sort (Dissipation, LDB 46 l.201-202)', () => {
     const { H, E } = setup();
     const hero = useGame.getState().battle!.combatants.find((c) => c.id === H.id)! as Combatant;
     hero.skills = [...hero.skills, { skillId: 'priere', characteristic: 'Soc', advances: 5 }];
-    hero.spells = ['Bénédiction de Guérison'];
-    castSpell(useGame.getState, useGame.setState, hero, hero, 'Bénédiction de Guérison');
+    hero.spells = ['benediction-de-guerison'];
+    castSpell(useGame.getState, useGame.setState, hero, hero, 'benediction-de-guerison');
     useGame.getState().castRoll();
     expect(useGame.getState().pendingCast!.result!.log).not.toContain('Contre-sort');
   });

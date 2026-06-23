@@ -18,7 +18,7 @@ function wiz() {
   const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
   const sk = w.skills.find((s) => s.skillId === 'langue');
   if (sk) sk.advances = Math.max(sk.advances, 10);
-  w.spells = ['Explosion', 'Carreau', ...(w.spells ?? [])];
+  w.spells = ['explosion', 'carreau', ...(w.spells ?? [])];
   return w;
 }
 
@@ -54,7 +54,7 @@ beforeEach(() => {
 describe('castSpell — Ligne de Vue (LDB 46 l.170)', () => {
   it('cible derrière un mur → refus dans le FEED de combat (pas le journal), pas de modale', () => {
     const { w, hidden } = setup();
-    castSpell(useGame.getState, useGame.setState, w, hidden, 'Carreau');
+    castSpell(useGame.getState, useGame.setState, w, hidden, 'carreau');
     expect(useGame.getState().pendingCast).toBeNull();
     // EN COMBAT, le refus est VISIBLE dans le feed (battle.log) — pas dans le journal d'exploration
     // invisible pendant le combat (B4 : un refus muet passait pour un bug).
@@ -64,7 +64,7 @@ describe('castSpell — Ligne de Vue (LDB 46 l.170)', () => {
 
   it('ligne dégagée (brèche) → la modale s’ouvre', () => {
     const { w, seen } = setup();
-    castSpell(useGame.getState, useGame.setState, w, seen, 'Carreau');
+    castSpell(useGame.getState, useGame.setState, w, seen, 'carreau');
     expect(useGame.getState().pendingCast?.targetId).toBe('e-vu');
   });
 
@@ -74,14 +74,14 @@ describe('castSpell — Ligne de Vue (LDB 46 l.170)', () => {
     ally.pos = { x: 16, y: 4 }; // derrière le mur
     const b = useGame.getState().battle!;
     useGame.setState({ battle: { ...b, combatants: [...b.combatants, ally] } });
-    castSpell(useGame.getState, useGame.setState, w, ally, 'Carreau');
+    castSpell(useGame.getState, useGame.setState, w, ally, 'carreau');
     expect(useGame.getState().pendingCast).toBeNull();
     expect(useGame.getState().battle!.log.map((e) => e.text).join('\n')).toMatch(/pas de ligne de vue/i);
   });
 
   it('sur SOI-MÊME : jamais bloqué par la LdV', () => {
     const { w } = setup();
-    castSpell(useGame.getState, useGame.setState, w, w, 'Carreau');
+    castSpell(useGame.getState, useGame.setState, w, w, 'carreau');
     expect(useGame.getState().pendingCast?.targetId).toBe(w.id);
   });
 });
@@ -90,7 +90,7 @@ describe('castSpell — Portée (LDB 47) : refus VISIBLE en combat (B4)', () => 
   it('cible hors de portée → message dans le FEED de combat, pas de modale', () => {
     const { w, seen } = setup();
     w.characteristics.FM = 2; // Carreau = FM/2 → 1 case ; e-vu est à 14 cases (LdV dégagée en y=0)
-    castSpell(useGame.getState, useGame.setState, w, seen, 'Carreau');
+    castSpell(useGame.getState, useGame.setState, w, seen, 'carreau');
     expect(useGame.getState().pendingCast).toBeNull();
     expect(useGame.getState().battle!.log.map((e) => e.text).join('\n')).toMatch(/hors de portée/i);
     expect(useGame.getState().journal.join('\n')).not.toMatch(/hors de portée/i);

@@ -120,9 +120,10 @@ import { feedFromMeal } from '../engine/provisions';
 import { runDailyUpkeep } from './upkeep';
 import { findSpell, findSpellById } from '../data/index';
 
-/** Résout un sort par ID (runtime : `Combatant.spells` = ids) avec repli sur le LIBELLÉ (appelants
- *  legacy/tests/authoring). SOURCE UNIQUE de la résolution de sort dans le flux de combat. */
-const resolveSpell = (idOrLabel: string) => findSpellById(idOrLabel) ?? findSpell(idOrLabel);
+/** Résout un sort par ID STABLE. SOURCE UNIQUE de la résolution de sort dans le flux de combat.
+ *  `Combatant.spells` = ids au runtime (créatures via spawn, héros via pregens) → AUCUN repli libellé
+ *  (un fallback id→libellé = rétro-compatibilité, proscrite). Les libellés restent au seul niveau AUTHORING. */
+const resolveSpell = (id: string) => findSpellById(id);
 import { toBrass, fromBrass } from '../engine/money';
 import { Scene, Effect, isWalkable } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
@@ -2509,7 +2510,7 @@ export function aiBestMissile(enemy: Combatant): string | undefined {
   const feasible = known.filter((sp) => (sp.cn ?? 0) <= maxSL(sp));
   const pool = feasible.length ? feasible : known;
   pool.sort((a, b) => dmg(b) - dmg(a) || (a.cn ?? 0) - (b.cn ?? 0));
-  return pool[0].label;
+  return pool[0].id; // id STABLE (consommé par resolveSpell/castSpell — plus de libellé)
 }
 
 /** Surincantation AUTOMATIQUE d'un lanceur ENNEMI (LDB 47 l.28-31 : « Pour chaque +2 DR […]

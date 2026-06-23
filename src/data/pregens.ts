@@ -44,7 +44,9 @@ export function makePregens(): Combatant[] {
         rng: makeRNG(d.seed),
         id: `pregen-${d.seed}`,
       });
-      if (d.spells?.length) hero.spells = d.spells.map((l) => findSpell(l)?.id ?? l); // libellés (def) → ids runtime
+      // Libellés (def AUTHORING, lisibles) → ids STABLES au runtime ; un libellé non résolu est ÉCARTÉ
+      // (jamais réinjecté tel quel — pas de repli libellé : le runtime ne connaît QUE des ids).
+      if (d.spells?.length) hero.spells = d.spells.map((l) => findSpell(l)?.id).filter((id): id is string => !!id);
       // appearance.species = clé de rig (LIBELLÉ d'espèce, résolu depuis l'id) ≠ Combatant.species (id rules).
       hero.appearance = { species: findSpeciesById(d.species)?.label ?? d.species, sex: d.sex ?? 'M', build: d.build ?? 0.5 };
       out.push(hero);

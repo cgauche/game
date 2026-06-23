@@ -29,7 +29,7 @@ describe('castWard — pénalité −20 aux Sorts ciblant la zone du prêtre', (
     const P = b.combatants.find((c) => c.name === 'P')!;
     const E = b.combatants.filter((c) => c.kind === 'enemy')[0];
     // L'ennemi devient un lanceur de Sorts (Langue (Magick)).
-    E.spells = ['Fléchette'];
+    E.spells = ['flechette'];
     E.skills.push({ skillId: 'langue', spec: 'Magick', characteristic: 'Int', advances: 10 });
     E.characteristics.Int = 40;
     E.advantage = 0;

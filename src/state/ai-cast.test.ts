@@ -19,26 +19,26 @@ describe('aiBestMissile — choix du Projectile magique de l’IA (DR ≥ NI exi
   const eusapia = () => creatureToCombatant(findCreature('Eusapia Balacañon')!, 'e1', { x: 0, y: 0 });
 
   it('Eusapia (Langue (Magick) 63, SL max 6) : Carreau (NI 4, Dégâts +4) plutôt que Fléchette (+0)', () => {
-    expect(aiBestMissile(eusapia())).toBe('Carreau');
+    expect(aiBestMissile(eusapia())).toBe('carreau');
   });
 
   it('avec 2 Avantages (+20 au Test, LDB 46 l.176) : La lance d’Ambre (NI 8, Dégâts +12) devient jouable', () => {
     const c = eusapia();
     c.advantage = 2;
-    expect(aiBestMissile(c)).toBe("La lance d'Ambre");
+    expect(aiBestMissile(c)).toBe('la-lance-d-ambre');
   });
 
   it('les DR de Talent lié au Test (LDB 10 l.20) comptent : Diction instinctive ×2 → SL max 8 → La lance d’Ambre', () => {
     const c = eusapia();
     c.talents = [...c.talents, { talentId: 'diction-instinctive', times: 2 }];
-    expect(aiBestMissile(c)).toBe("La lance d'Ambre"); // 63/10 = 6, +2 de Talent ≥ NI 8
+    expect(aiBestMissile(c)).toBe('la-lance-d-ambre'); // 63/10 = 6, +2 de Talent ≥ NI 8
   });
 
   it('aucun NI atteignable → repli sur le moins exigeant (rien d’injouable choisi en boucle)', () => {
     const c = eusapia();
     c.skills = []; // plus de Langue (Magick) : valeur = Int 48 → SL max 4… on coupe aussi Int
     c.characteristics.Int = 20; // SL max 2 < NI 4 (Carreau) : seul Fléchette (NI 0) aboutira
-    expect(aiBestMissile(c)).toBe('Fléchette');
+    expect(aiBestMissile(c)).toBe('flechette');
   });
 
   it('sans sorts → undefined', () => {

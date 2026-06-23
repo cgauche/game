@@ -102,7 +102,7 @@ describe("IA d'ennemi (chooseEnemyAction, pure)", () => {
   });
 
   it('sort offensif prêt → incante sur la cible', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { spells: ['Fléchette'] });
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { spells: ['flechette'] });
     const h = mk('h', 'hero', { x: 1, y: 1 });
     expect(chooseEnemyAction(input(e, [h], { offensiveSpell: 'Fléchette' }))).toEqual({
       kind: 'cast',

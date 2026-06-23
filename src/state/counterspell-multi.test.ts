@@ -16,7 +16,7 @@ describe('Contre-sort à plusieurs (flux multi parallèle)', () => {
   function setup() {
     const mk = (name: string, seed: number) => {
       const h = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', name, careerTalent: 'Magie mineure', rng: makeRNG(seed) });
-      h.spells = ['Fléchette'];
+      h.spells = ['flechette'];
       h.resilience = 1; // pour le test Résilience
       return h;
     };
@@ -33,7 +33,7 @@ describe('Contre-sort à plusieurs (flux multi parallèle)', () => {
     const E = enemies[0];
     E.characteristics.Int = 48; E.characteristics.FM = 53;
     E.skills = [{ skillId: 'langue', spec: 'Magick', characteristic: 'Int', advances: 15 }];
-    E.spells = ['Carreau'];
+    E.spells = ['carreau'];
     heroes.forEach((h, i) => { h.pos = { x: 10, y: 10 + i }; h.wounds = { ...h.wounds, max: 99, current: 99 }; });
     E.pos = { x: 12, y: 10 }; // ≤ FM mètres de chaque héros
     useGame.setState({ battle: { ...b } });
@@ -42,7 +42,7 @@ describe('Contre-sort à plusieurs (flux multi parallèle)', () => {
 
   /** Ouvre l'incantation ENNEMIE figée (= ce que fera le pré-roll de `castSpell` pour un lanceur IA). */
   function enemyCast(E: Combatant, target: Combatant) {
-    castSpell(useGame.getState, useGame.setState, E, target, 'Carreau');
+    castSpell(useGame.getState, useGame.setState, E, target, 'carreau');
     useGame.getState().castRoll();
   }
   function openCounter(ids: string[]) {
