@@ -48,6 +48,7 @@ import { DEFS } from '../../gameIso/sprites';
 import { AppearancePanel } from '../AppearancePanel';
 import { CodexRef, CodexTooltipOnly } from '../compendium/CodexRef';
 import { TabbedEntry } from '../TabbedEntry';
+import { Prose, mdToText } from '../Prose';
 import { CodexSections } from '../compendium/CodexEntry';
 import { EntityRef, EntityChoice, SkillChip, TalentChip } from '../EntityChip';
 import { raceCareerSection, raceDetailSection, raceCharSection, raceSkillSection, raceTalentSection, type CodexSection } from '../compendium/registry';
@@ -118,10 +119,10 @@ const WEAPON_CHOICES = allTrappings
   .map((t) => ({ id: t.id, label: t.label }))
   .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
 
-/** Texte de données (desc HTML) → extrait lisible pour cartes et infobulles. */
-function blurb(html: string | null | undefined, max = 160): string {
-  if (!html) return '';
-  const txt = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+/** Texte de données (desc Markdown) → extrait lisible pour cartes et infobulles. */
+function blurb(md: string | null | undefined, max = 160): string {
+  if (!md) return '';
+  const txt = mdToText(md);
   return txt.length > max ? `${txt.slice(0, max)}…` : txt;
 }
 const skillTip = (name: string) => {
@@ -307,10 +308,10 @@ function speciesFamily(label: string): { family: string; variant: string | null 
   return m ? { family: m[1].trim(), variant: m[2].trim() } : { family: label, variant: null };
 }
 
-/** Rendu HTML léger des textes de données (descriptions — données locales de confiance). */
-function LoreText({ html }: { html: string | null | undefined }) {
-  if (!html?.trim()) return null;
-  return <div className="lore-text" dangerouslySetInnerHTML={{ __html: html }} />;
+/** Rendu Markdown des textes de données (descriptions — verbatim de la source, via la primitive Prose). */
+function LoreText({ md }: { md: string | null | undefined }) {
+  if (!md?.trim()) return null;
+  return <div className="lore-text"><Prose md={md} /></div>;
 }
 
 // ════ 1) Race (LDB 04 l.84-90) — rail : liste groupée par race ; détail : onglets ════
@@ -403,7 +404,7 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
   //    `raceCareerSection`/`raceDetailSection`) — plus de ré-implémentation divergente. ──
   const careerSec = raceCareerSection(sp);
   const carrieres = careerSec ? <CodexSections sections={[careerSec]} /> : <p className="hint">Aucune carrière accessible.</p>;
-  const description = sp.desc ? <div className="codex-body" dangerouslySetInnerHTML={{ __html: sp.desc }} /> : null;
+  const description = sp.desc ? <div className="codex-body"><Prose md={sp.desc} selfLabel={sp.label} /></div> : null;
   const detailsTab = <CodexSections sections={[raceDetailSection(sp)]} />;
 
   const main = (
@@ -758,7 +759,7 @@ function StarZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode }
   const main = (
     <>
       <Section title={sign ? sign.label : 'Sous quel signe êtes-vous né ?'}>
-        {sign ? <LoreText html={sign.desc} /> : <p className="hint">Gardez le tirage : +25 PX · Choix libre : +0 PX.</p>}
+        {sign ? <LoreText md={sign.desc} /> : <p className="hint">Gardez le tirage : +25 PX · Choix libre : +0 PX.</p>}
       </Section>
       <Section title="Astrologie (facultatif)" right={<button className="btn small" onClick={() => setD(rollDraftAstrology(d))}>🎲 Thème astral</button>}>
         {d.ascendant || d.dwellings?.length ? (

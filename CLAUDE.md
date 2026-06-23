@@ -31,6 +31,13 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
    primitives globales de `styles.css` — `.layout-sidebar` (colonne latérale, s'empile ≤900px),
    `.panel-grid` (1 colonne ≤700px), `.bar` (s'enroule ≤700px), cibles tactiles via
    `pointer: coarse`. Breakpoints canon : 900 / 700 / 560 px.
+5. **Aucune retranscription des textes sources dans les `.json`.** Une description (`desc`, et tout
+   champ de prose : effet, règles…) est un **copié/collé verbatim** de la source — JAMAIS une
+   reformulation, un résumé ou une paraphrase. Le formatage est **conservé en Markdown** (la source
+   est en Markdown → on recolle tel quel : `**gras**`, `*ital*`, listes `-`, sauts `\n\n`), **jamais
+   en HTML**. Corollaire de la règle 1 : le texte affiché doit pouvoir être recollé tel quel dans
+   `Source/`. Rendu par l'unique primitive `<Prose>` (`src/ui/Prose.tsx`, `react-markdown`, HTML brut
+   neutralisé + auto-liage des règles) ; garde-fou `src/data/no-html-in-prose.test.ts`.
 
 ## Sources VF (NE PAS chercher — c'est ici)
 

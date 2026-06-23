@@ -10,6 +10,7 @@ import { isEngaged } from '../engine/engagement';
 import { isFrenzyCapable, isFrenzied } from '../engine/psychology';
 import { isConsumable } from '../engine/consumables';
 import { compatibleAmmo } from '../engine/items';
+import { mdToText } from './Prose';
 import { canPushback } from '../engine/qualities/dispatch';
 import { hasHealSkill, healableTargets, availableHealModes } from '../engine/healing';
 import { mountableNear } from '../state/mount';
@@ -323,7 +324,7 @@ export function ActionBar() {
     if (attacks.length > 1) slots.push({ id: 'attacks', cls: showManeuvers || (battle.action === null && (battle.selectedAttack ?? 'arme') !== 'arme') ? 'on' : '', icon: '⚔️', label: 'Attaque ▾', title: "Choisir l'attaque (arme ou attaque spéciale d'un trait de créature)", run: () => setShowManeuvers((v) => !v) });
     if (!frenzied) for (const g of usableGroups) {
       const it = active.items?.find((i) => i.uid === g.uids[0]);
-      slots.push({ id: `item-${g.name}`, disabled: battle.acted || stunned || broken, icon: it ? <ItemIcon item={it} size={22} /> : '🧪', label: `${g.name}${g.uids.length > 1 ? ` ×${g.uids.length}` : ''}`, title: g.desc || `Utiliser ${g.name}`, run: () => useItem(g.uids[0]) });
+      slots.push({ id: `item-${g.name}`, disabled: battle.acted || stunned || broken, icon: it ? <ItemIcon item={it} size={22} /> : '🧪', label: `${g.name}${g.uids.length > 1 ? ` ×${g.uids.length}` : ''}`, title: (g.desc ? mdToText(g.desc) : '') || `Utiliser ${g.name}`, run: () => useItem(g.uids[0]) });
     }
     if (!frenzied) for (const g of groundItems) slots.push({ id: `pickup-${g.entityId}:${g.key}`, disabled: battle.acted || stunned || broken, icon: '✋', label: g.label, title: "Ramasser cet objet au sol (coûte l'Action)", run: () => pickup(g.entityId, g.key) });
     if (removableConditions.length > 0) slots.push({ id: 'resolve', cls: `ab-alert ${battle.action === 'resolve' ? 'on' : ''}`, icon: '✊', label: `Détermination (${resolve})`, title: "Détermination : retirer un État (ne coûte pas l'Action)", run: () => selectAction(battle.action === 'resolve' ? null : 'resolve') });

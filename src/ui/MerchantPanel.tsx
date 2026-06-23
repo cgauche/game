@@ -12,6 +12,7 @@ import { describeQuality } from '../engine/qualities/describe';
 import { sellGain } from '../state/merchantFlow';
 import type { Combatant, ItemInstance } from '../engine/types';
 import { Coins } from './Coins';
+import { Prose, mdToText } from './Prose';
 import { CharFrame } from './CharFrame';
 import { TeamPortrait } from './TeamPortrait';
 
@@ -194,11 +195,11 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
         </div>
         {(atouts.length > 0 || defauts.length > 0) && (
           <div className="mc-quals">
-            {atouts.map((q) => <div className="mc-qual atout" key={`a-${q.key}`}><span className="q-name">{q.label}</span>{q.desc && <span className="q-desc">{q.desc}</span>}</div>)}
-            {defauts.map((q) => <div className="mc-qual flaw" key={`d-${q.key}`}><span className="q-name">{q.label}</span>{q.desc && <span className="q-desc">{q.desc}</span>}</div>)}
+            {atouts.map((q) => <div className="mc-qual atout" key={`a-${q.key}`}><span className="q-name">{q.label}</span>{q.desc && <span className="q-desc">{mdToText(q.desc)}</span>}</div>)}
+            {defauts.map((q) => <div className="mc-qual flaw" key={`d-${q.key}`}><span className="q-name">{q.label}</span>{q.desc && <span className="q-desc">{mdToText(q.desc)}</span>}</div>)}
           </div>
         )}
-        {item.desc && <p className="mc-desc">{item.desc}</p>}
+        {item.desc && <div className="mc-desc"><Prose md={item.desc} /></div>}
         {canCompare && party.map((h) => heroCompareBlock(item, h))}
       </div>
     );

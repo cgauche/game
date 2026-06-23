@@ -58,7 +58,7 @@ export interface CodexFact {
 }
 /** Une ligne d'une section. */
 export type CodexRow =
-  | { t: 'text'; text: string; html?: boolean }
+  | { t: 'text'; text: string }
   | { t: 'kv'; k: string; v: string }
   /** Lien vers une autre fiche. `label` = clé de résolution (base) ; `show` = libellé affiché,
    *  qui PORTE les Indices (« 8 Tentacules +8 ») et est transmis au Codex/popover comme instance.
@@ -90,9 +90,8 @@ export interface CodexItem {
   sections?: CodexSection[];
   /** Regroupement EXPLICITE des sections en onglets (sinon : un onglet par section). */
   tabs?: CodexTab[];
-  /** Corps prose : texte simple, OU HTML si `html` (lore des Dieux/Livres). */
+  /** Corps prose en **Markdown** (verbatim de la source), rendu par `<Prose>` (auto-liage des règles). */
   desc?: string;
-  html?: boolean;
   source?: CodexSource | null;
   /** Apparence (rig) à prévisualiser dans la fiche : créature, difformité de mutation, trait à visuel. */
   appearance?: EntityAppearance;
@@ -249,14 +248,14 @@ export function raceDetailSection(s: (typeof species)[number]): CodexSection {
     { t: 'sub', label: 'Âge' },
     { t: 'text', text: `${details.ageBase[ref] ?? details.ageBase['Humain']} + ${Math.round(details.ageRoll[ref] ?? 1)}d10 ans` },
   ];
-  if (txt.age.bySpecies[ref]) rows.push({ t: 'text', text: txt.age.bySpecies[ref], html: true });
+  if (txt.age.bySpecies[ref]) rows.push({ t: 'text', text: txt.age.bySpecies[ref] });
   rows.push({ t: 'sub', label: 'Taille' }, { t: 'text', text: `${details.heightBase[ref] ?? details.heightBase['Humain']} + ${Math.round(details.heightRoll[ref] ?? 1)}d10 cm` });
   const tailleTxt = txt.taille.bySpecies[ref] ?? txt.taille.all;
-  if (tailleTxt) rows.push({ t: 'text', text: tailleTxt, html: true });
+  if (tailleTxt) rows.push({ t: 'text', text: tailleTxt });
   if (eyeColors.length) rows.push({ t: 'sub', label: 'Yeux' }, { t: 'text', text: eyeColors.join(', ') });
   if (hairColors.length) rows.push({ t: 'sub', label: 'Cheveux' }, { t: 'text', text: hairColors.join(', ') });
   const namesTxt = txt.nom.bySpecies[ref] ?? txt.nom.bySpecies['Humain'];
-  if (namesTxt) rows.push({ t: 'sub', label: 'Noms' }, { t: 'text', text: namesTxt, html: true });
+  if (namesTxt) rows.push({ t: 'sub', label: 'Noms' }, { t: 'text', text: namesTxt });
   return { title: 'Âge, taille & apparence', layout: 'list', rows };
 }
 
@@ -275,7 +274,7 @@ export function raceFicheTabs(s: (typeof species)[number]): CodexTab[] {
 const traitItem = (t: (typeof traits)[number]): CodexItem => {
   const cap = t.capabilities;
   return {
-    label: t.label, sub: t.prefix ?? undefined, desc: t.desc, html: true, source: src(t.source), appearance: t.appearance,
+    label: t.label, sub: t.prefix ?? undefined, desc: t.desc, source: src(t.source), appearance: t.appearance,
     meta: facts(
       cap?.psychType ? fact('Psychologie', psychologyLabel(cap.psychType)) : null,
       cap?.psychImmune ? fact('Immunité', '(Psychologie)') : null,
@@ -297,7 +296,6 @@ export const CODEX: CodexCategory[] = [
       label: s.label,
       group: family(s.label),
       desc: s.desc,
-      html: true, // desc = HTML (mêmes données que le créateur, qui le rend via LoreText)
       source: src(s.source),
       // Aperçu rig DATA-DRIVEN (même chemin que le créateur) : la fiche de race montre sa silhouette.
       appearance: { species: s.label },
@@ -382,7 +380,7 @@ export const CODEX: CodexCategory[] = [
         t.derivedWeapon ? `Arme dérivée : ${t.derivedWeapon.name} (${t.derivedWeapon.damage})` : null,
       ].filter(Boolean) as string[];
       return {
-        label: t.label, sub: join(t.type, weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, html: true, source: src(t.source),
+        label: t.label, sub: join(t.type, weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, source: src(t.source),
         meta: facts(fact('Prix', priceLabel(t.price)), fact('Enc', t.enc), fact('Disponibilité', t.availability), fact('Emplacement', t.loc), fact('Dégâts', t.damage), fact('PA', t.pa), fact('Allonge', t.reach)),
         sections: sections(
           chips('Qualités', 'qualities', t.qualities.map(qualityRefLabel)),
@@ -399,7 +397,7 @@ export const CODEX: CodexCategory[] = [
   {
     key: 'qualities', label: 'Qualités', group: 'Équipement',
     items: (qualities as { id: string; label: string; type?: string; subType?: string; desc?: string; source?: CodexSource; passive?: import('../../engine/ops').GameOp[]; effects?: import('../../state/flow').TriggeredEffect[]; capabilities?: Record<string, unknown> }[]).map((q) => ({
-      label: q.label, sub: join(q.type, q.subType), desc: q.desc, html: true, source: src(q.source),
+      label: q.label, sub: join(q.type, q.subType), desc: q.desc, source: src(q.source),
       sections: sections(capabilitySection(q.capabilities, QUALITY_CAP_LABEL), passiveSection(q.passive), effectsSection(q.effects, 'Effets déclenchés'), ...reverseSections('qualities', q.id)),
     })),
   },
@@ -500,7 +498,7 @@ export const CODEX: CodexCategory[] = [
   {
     key: 'spells', label: 'Sorts', group: 'Magie',
     items: spells.map((s) => ({
-      label: s.label, sub: join(s.type, s.subType), desc: s.desc, html: true, source: src(s.source),
+      label: s.label, sub: join(s.type, s.subType), desc: s.desc, source: src(s.source),
       meta: facts(
         fact('NI', s.cn), fact('Portée', s.range), fact('Cible', s.target), fact('Durée', s.duration),
         // Projectile magique (#2 data-driven) : Dégâts additifs + DR + BFM, ignore éventuellement PA/BE.
@@ -515,7 +513,7 @@ export const CODEX: CodexCategory[] = [
   {
     key: 'gods', label: 'Dieux', group: 'Magie',
     items: gods.map((c) => ({
-      label: c.key, sub: c.title, desc: c.desc, html: true, source: c.source ?? null,
+      label: c.key, sub: c.title, desc: c.desc, source: c.source ?? null,
       sections: sections(
         chips('Bénédictions', 'spells', c.blessings.map((b) => refLabel('spells', b))),
         chips('Miracles', 'spells', c.miracles.map((m) => refLabel('spells', m))),
@@ -525,7 +523,7 @@ export const CODEX: CodexCategory[] = [
   {
     key: 'creatures', label: 'Créatures', group: 'Monde',
     items: creatures.map((c) => ({
-      label: c.label, sub: c.title ?? undefined, group: c.folder ?? undefined, desc: c.desc ?? undefined, html: true, source: src(c.source),
+      label: c.label, sub: c.title ?? undefined, group: c.folder ?? undefined, desc: c.desc ?? undefined, source: src(c.source),
       appearance: c.appearance, previewRef: c.id, // aperçu rig résolu par id (Nuées/non-bipèdes lisent leurs traits)
       meta: c.harvest ? facts(fact('Récolte (1 Enc)', formatMoney(costPerEnc(c.harvest)))) : undefined,
       sections: sections(
@@ -568,7 +566,7 @@ export const CODEX: CodexCategory[] = [
   },
   {
     key: 'books', label: 'Livres', group: 'Monde',
-    items: books.map((b) => ({ label: b.label, sub: b.abr ?? b.folder ?? undefined, group: b.folder ?? undefined, desc: b.desc ?? undefined, html: true })),
+    items: books.map((b) => ({ label: b.label, sub: b.abr ?? b.folder ?? undefined, group: b.folder ?? undefined, desc: b.desc ?? undefined })),
   },
   // ── Tables & gabarits éditables (E3a) ─────────────────────────────────────────
   {

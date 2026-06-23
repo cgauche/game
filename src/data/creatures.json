@@ -308,7 +308,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Grands, bruyants, brutaux et extrêmement violents, les ogres sont animés par le besoin de remplir leur énorme ventre musclé. Ils manquent d'astuce ou d'intelligence pour le faire avec subtilité, optant d'emblée pour la force dans la plupart des situations.<br><br>Originaires des terres situées très à l'est, les ogres sont répandus dans le Vieux Monde car ils adorent errer, toujours à la recherche de nouvelles proies. Au cours de leurs voyages à but alimentaire, longs de plusieurs décennies, ils mettent tout en œuvre pour s'intégrer, portant des vêtements de la région et suivant les coutumes locales qu'ils comprennent, car cela leur permet d'attirer plus facilement leur prochaine proie.<br><br>Dans l'Empire, ils servent souvent dans l'Armée et sont souvent aperçus dans les grandes villes, où ils sont recrutés pour leurs muscles. La Guilde des Vieux halflings (des entrepreneurs en construction) a effectivement monopolisé le travail bon marché des ogres dans nombre de villes et cités de l'Empire, source d'un grand mécontentement pour ses rivaux.",
+    "desc": "Grands, bruyants, brutaux et extrêmement violents, les ogres sont animés par le besoin de remplir leur énorme ventre musclé. Ils manquent d'astuce ou d'intelligence pour le faire avec subtilité, optant d'emblée pour la force dans la plupart des situations.\n\nOriginaires des terres situées très à l'est, les ogres sont répandus dans le Vieux Monde car ils adorent errer, toujours à la recherche de nouvelles proies. Au cours de leurs voyages à but alimentaire, longs de plusieurs décennies, ils mettent tout en œuvre pour s'intégrer, portant des vêtements de la région et suivant les coutumes locales qu'ils comprennent, car cela leur permet d'attirer plus facilement leur prochaine proie.\n\nDans l'Empire, ils servent souvent dans l'Armée et sont souvent aperçus dans les grandes villes, où ils sont recrutés pour leurs muscles. La Guilde des Vieux halflings (des entrepreneurs en construction) a effectivement monopolisé le travail bon marché des ogres dans nombre de villes et cités de l'Empire, source d'un grand mécontentement pour ses rivaux.",
     "source": {
       "book": "LDB",
       "page": 312
@@ -1386,7 +1386,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Ces créatures reptiliennes à huit pattes sont solitaires et insaisissables. Considérées comme étant l’une des plus anciennes créatures du Chaos, on les dit emplies de tant de malveillance et de venin que même le sol sur lequel elles marchent est empoisonné. Leur morsure est également venimeuse, mais c’est leur regard pétrifiant qui est le plus à craindre.<br><br> Rarement rencontrés aujourd’hui, les basilics sont des ennemis des plus dangereux. Leurs glandes et leurs organes sont très prisés des Sorciers et Alchimistes. Des chasseurs opportunistes écoutent donc souvent les rumeurs sur la présence de basilics dans les espaces sauvages du Vorbergland, et bien peu en reviennent.",
+    "desc": "Ces créatures reptiliennes à huit pattes sont solitaires et insaisissables. Considérées comme étant l’une des plus anciennes créatures du Chaos, on les dit emplies de tant de malveillance et de venin que même le sol sur lequel elles marchent est empoisonné. Leur morsure est également venimeuse, mais c’est leur regard pétrifiant qui est le plus à craindre.\n\nRarement rencontrés aujourd’hui, les basilics sont des ennemis des plus dangereux. Leurs glandes et leurs organes sont très prisés des Sorciers et Alchimistes. Des chasseurs opportunistes écoutent donc souvent les rumeurs sur la présence de basilics dans les espaces sauvages du Vorbergland, et bien peu en reviennent.",
     "source": {
       "book": "LDB",
       "page": 317
@@ -1639,7 +1639,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les dragons régnaient sur les cieux bien avant que les anciennes races n’arpentent le monde connu. Même si les dragons d’aujourd’hui ne sont plus que l’ombre de leurs frères, ils demeurent parmi les créatures connues les plus puissantes de l’Empire.<br><br>Les quelques anciens dragons survivants sont immenses et sortent rarement de leur léthargie. S’ils prennent ombrage de la présence d’un petit groupe d’aventuriers, ces derniers ne pourront pas faire grand-chose pour lui résister.",
+    "desc": "Les dragons régnaient sur les cieux bien avant que les anciennes races n’arpentent le monde connu. Même si les dragons d’aujourd’hui ne sont plus que l’ombre de leurs frères, ils demeurent parmi les créatures connues les plus puissantes de l’Empire.\n\nLes quelques anciens dragons survivants sont immenses et sortent rarement de leur léthargie. S’ils prennent ombrage de la présence d’un petit groupe d’aventuriers, ces derniers ne pourront pas faire grand-chose pour lui résister.",
     "source": {
       "book": "LDB",
       "page": 319
@@ -1856,7 +1856,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Avec les pattes avant et les ailes d’un aigle et l’arrière-train d’un grand chat, les griffons sont des bêtes élégantes au port naturellement altier et majestueux. Ils nichent haut dans les montagnes qui entourent l’Empire et sont des tueurs rapides et efficaces, peu enclins à la destruction aveugle de créatures, contrairement aux manticores ou aux hippogriffes. Peut-être à cause de cette apparente noblesse, l’image du Griffon est extrêmement populaire au sein de l’Empire, utilisée sur les blasons, dans l’iconographie religieuse et comme symbole de l’Empire lui-même.<br><br>Les griffons sont aussi l’une des bêtes les plus intelligentes. S’ils sont capturés relativement jeunes et soumis à un entraînement approprié, ils peuvent être extrêmement loyaux, capables d’anticiper et d’obéir à une grande variété d’ordres. Ils sont tellement prisés que des chasseurs meurent régulièrement en essayant de se procurer un oeuf de griffon pour le revendre.<br><br>Le griffon le plus célèbre du Reikland est sans doute Griffe-de-Mort. Installé dans le Zoo impérial d’Altdorf, il appartenait au Prince héritier du Reikland et aurait paraît-il éclos dans les mains de l’Empereur Karl Franz en personne – ce qui a provoqué l’impression de toutes sortes de dessins humoristiques dans des pamphlets séditieux.",
+    "desc": "Avec les pattes avant et les ailes d’un aigle et l’arrière-train d’un grand chat, les griffons sont des bêtes élégantes au port naturellement altier et majestueux. Ils nichent haut dans les montagnes qui entourent l’Empire et sont des tueurs rapides et efficaces, peu enclins à la destruction aveugle de créatures, contrairement aux manticores ou aux hippogriffes. Peut-être à cause de cette apparente noblesse, l’image du Griffon est extrêmement populaire au sein de l’Empire, utilisée sur les blasons, dans l’iconographie religieuse et comme symbole de l’Empire lui-même.\n\nLes griffons sont aussi l’une des bêtes les plus intelligentes. S’ils sont capturés relativement jeunes et soumis à un entraînement approprié, ils peuvent être extrêmement loyaux, capables d’anticiper et d’obéir à une grande variété d’ordres. Ils sont tellement prisés que des chasseurs meurent régulièrement en essayant de se procurer un oeuf de griffon pour le revendre.\n\nLe griffon le plus célèbre du Reikland est sans doute Griffe-de-Mort. Installé dans le Zoo impérial d’Altdorf, il appartenait au Prince héritier du Reikland et aurait paraît-il éclos dans les mains de l’Empereur Karl Franz en personne – ce qui a provoqué l’impression de toutes sortes de dessins humoristiques dans des pamphlets séditieux.",
     "source": {
       "book": "LDB",
       "page": 320
@@ -1946,7 +1946,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Particulièrement féroces et territoriaux, les hippogriffes possèdent une tête et des ailes d’aigle, le buste d’un lion et l’arrière-train d’un cheval. Issus le plus souvent des Montagnes Grises, ils attaquent sans provocation, presque imprudents dans leur fureur, déchirant la chair en lambeaux pour la dévorer plus tard. Leur rage est telle que des troupeaux entiers de bétails peuvent être anéantis par un seul hippogriffe, qui s’enfuit ensuite avec ses proies préférées, abandonnant les restes aux charognards.<br><br>N’étant pas foncièrement intelligents, lors de la chasse, les hippogriffes ont tendance à tuer tout ce qu’ils voient. Supposant que tout ce qu’ils ne voient plus disparaît à jamais, les victimes réelles des hippogriffes sont relativement peu nombreuses, puisqu’il suffit de trouver une bonne cachette pour leur échapper.",
+    "desc": "Particulièrement féroces et territoriaux, les hippogriffes possèdent une tête et des ailes d’aigle, le buste d’un lion et l’arrière-train d’un cheval. Issus le plus souvent des Montagnes Grises, ils attaquent sans provocation, presque imprudents dans leur fureur, déchirant la chair en lambeaux pour la dévorer plus tard. Leur rage est telle que des troupeaux entiers de bétails peuvent être anéantis par un seul hippogriffe, qui s’enfuit ensuite avec ses proies préférées, abandonnant les restes aux charognards.\n\nN’étant pas foncièrement intelligents, lors de la chasse, les hippogriffes ont tendance à tuer tout ce qu’ils voient. Supposant que tout ce qu’ils ne voient plus disparaît à jamais, les victimes réelles des hippogriffes sont relativement peu nombreuses, puisqu’il suffit de trouver une bonne cachette pour leur échapper.",
     "source": {
       "book": "LDB",
       "page": 321
@@ -2197,7 +2197,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Heureusement assez rares, les manticores sont féroces à l’extrême, animées par la volonté de débarrasser leur territoire, avec une extraordinaire brutalité, des prédateurs rivaux. Cela signifie que se trouver sur le territoire d’une manticore ne passe pas inaperçu, car des corps d’autres monstres jonchent le sol. La créature possède la tête et le corps déformé d’un grand chat (bien que parfois son visage apparaisse un peu trop humain), les ailes d’une chauve-souris et une queue semblable à un fouet hérissé de barbelés.<br><br><i>« Quand je voyageais avec les elfes d’Ulthuan, j’ai vu beaucoup de choses qui sidéreraient la plupart des gens. Une fois, j’ai aperçu une manticore, avec au beau milieu de sa crinière de lion un visage de haut elfe ! Je suppose que c’était moins une manticore qu’une elfticore. »</i><br>– Adhemar Fitztancred, Gardien Gris, conteur et menteur",
+    "desc": "Heureusement assez rares, les manticores sont féroces à l’extrême, animées par la volonté de débarrasser leur territoire, avec une extraordinaire brutalité, des prédateurs rivaux. Cela signifie que se trouver sur le territoire d’une manticore ne passe pas inaperçu, car des corps d’autres monstres jonchent le sol. La créature possède la tête et le corps déformé d’un grand chat (bien que parfois son visage apparaisse un peu trop humain), les ailes d’une chauve-souris et une queue semblable à un fouet hérissé de barbelés.\n\n*« Quand je voyageais avec les elfes d’Ulthuan, j’ai vu beaucoup de choses qui sidéreraient la plupart des gens. Une fois, j’ai aperçu une manticore, avec au beau milieu de sa crinière de lion un visage de haut elfe ! Je suppose que c’était moins une manticore qu’une elfticore. »*\n\n– Adhemar Fitztancred, Gardien Gris, conteur et menteur",
     "source": {
       "book": "LDB",
       "page": 322
@@ -2252,7 +2252,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les pégases sont de magnifiques chevaux blancs pourvus d’ailes de cygne. Ce sont des voltigeurs acharnés et inépuisables qui se déplacent en grandes hordes dans les hautes montagnes, semblant prendre beaucoup de plaisir à virevolter dans les courants d’air chaud tourbillonnants. Les pégases font de parfaits destriers et beaucoup de guerriers ou d’éclaireurs ont tenté d’en capturer un. Ils sont très intelligents, et certains pensent qu’ils ne se laissent capturer que s’ils le veulent bien, ce qui a fait naître toutes sortes de légendes romantiques fantaisistes insistant sur le fait que seuls les plus dignes ou les plus vertueux pouvaient être choisis.<br><br><i>« Ouais, les champs sont verdoyants par ici. Ce sont les pégases, vous voyez. Pas besoin d’acheter de l’engrais pour fertiliser, il tombe du paradis, comme un cadeau des dieux. Attention, faut pas rester sous la horde quand elle passe au-dessus. C’est salissant. Très salissant. »</i><br>– Berthold Bruner, fermier et garde-pégase",
+    "desc": "Les pégases sont de magnifiques chevaux blancs pourvus d’ailes de cygne. Ce sont des voltigeurs acharnés et inépuisables qui se déplacent en grandes hordes dans les hautes montagnes, semblant prendre beaucoup de plaisir à virevolter dans les courants d’air chaud tourbillonnants. Les pégases font de parfaits destriers et beaucoup de guerriers ou d’éclaireurs ont tenté d’en capturer un. Ils sont très intelligents, et certains pensent qu’ils ne se laissent capturer que s’ils le veulent bien, ce qui a fait naître toutes sortes de légendes romantiques fantaisistes insistant sur le fait que seuls les plus dignes ou les plus vertueux pouvaient être choisis.\n\n*« Ouais, les champs sont verdoyants par ici. Ce sont les pégases, vous voyez. Pas besoin d’acheter de l’engrais pour fertiliser, il tombe du paradis, comme un cadeau des dieux. Attention, faut pas rester sous la horde quand elle passe au-dessus. C’est salissant. Très salissant. »*\n\n– Berthold Bruner, fermier et garde-pégase",
     "source": {
       "book": "LDB",
       "page": 323
@@ -2497,7 +2497,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les trolls sont des créatures sales et immondes qui infestent tous les coins du Vieux Monde. Prompts à s’adapter à leur environnement, quel que soit leur type, ils sont tous énormes et imposants. Sombres et mus par leurs pulsions alimentaires, ils aiment tout de même amasser des biens et leur repaire peut renfermer des trésors composés d’objets utiles et de valeur… et des restes macabres de leurs repas.<br><br>Bien qu’il existe beaucoup d’espèces de trolls, ils partagent tous des traits communs : ils sont généralement extrêmement stupides, ce qui signifie que tout ennemi vif d’esprit peut avoir un avantage sur eux ; ils peuvent régénérer, ce qui les rend extrêmement difficiles à tuer ; et ils sont capables de régurgiter leur dernier repas à volonté, vomissant de la bile âcre sur des distances particulièrement impressionnantes – bien qu’ils répugnent à le faire, car la faim les tenaille alors.<br><br><i>« Je vous assure, monsieur, que nous avons mené de nombreuses études sur le sujet, et nous avons perdu certains de nos plus braves taxonomistes dans cette entreprise. Il y a précisément vingt-trois espèces de trolls dans l’Empire en ce moment – y compris dix-sept sous-espèces et deux observations non vérifiées, pas encore classifiées. Ce niveau de détail est exactement ce pourquoi la Société impériale a été créée : nous savons que nos chiffres sont exacts. »</i><br>– Ignatius de Nuln, homme de lettres",
+    "desc": "Les trolls sont des créatures sales et immondes qui infestent tous les coins du Vieux Monde. Prompts à s’adapter à leur environnement, quel que soit leur type, ils sont tous énormes et imposants. Sombres et mus par leurs pulsions alimentaires, ils aiment tout de même amasser des biens et leur repaire peut renfermer des trésors composés d’objets utiles et de valeur… et des restes macabres de leurs repas.\n\nBien qu’il existe beaucoup d’espèces de trolls, ils partagent tous des traits communs : ils sont généralement extrêmement stupides, ce qui signifie que tout ennemi vif d’esprit peut avoir un avantage sur eux ; ils peuvent régénérer, ce qui les rend extrêmement difficiles à tuer ; et ils sont capables de régurgiter leur dernier repas à volonté, vomissant de la bile âcre sur des distances particulièrement impressionnantes – bien qu’ils répugnent à le faire, car la faim les tenaille alors.\n\n*« Je vous assure, monsieur, que nous avons mené de nombreuses études sur le sujet, et nous avons perdu certains de nos plus braves taxonomistes dans cette entreprise. Il y a précisément vingt-trois espèces de trolls dans l’Empire en ce moment – y compris dix-sept sous-espèces et deux observations non vérifiées, pas encore classifiées. Ce niveau de détail est exactement ce pourquoi la Société impériale a été créée : nous savons que nos chiffres sont exacts. »*\n\n– Ignatius de Nuln, homme de lettres",
     "source": {
       "book": "LDB",
       "page": 324
@@ -2648,7 +2648,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les orcs sont mauvais, brutaux, belliqueux et presque immunisés contre la douleur. Ils possèdent un corps massif et de larges épaules puissantes et ils ne laisseront pas une chose aussi insignifiante que la perte d’un bras faire obstacle à une bonne bagarre. Ils sont taillés pour le combat et n’aiment rien de plus au monde. Quand ils n’ont pas d’ennemis à combattre, ils s’en prennent à des groupes rivaux de peaux-vertes. S’il n’y a pas de groupe rival, ils se battront entre eux. Bien que moins nombreux que les gobelins, ils sont plus grands et plus robustes, et toutes les occasions sont bonnes pour le faire savoir. Les orcs peuvent atteindre des tailles prodigieuses, et les plus grands, les plus forts, les plus robustes et les plus agressifs d’entre eux se voient par conséquent accorder plus de prestige : la force entraîne le pouvoir dans leur société guerrière. Certains orcs chevauchent d’énormes sangliers pendant les batailles, un spectacle assez terrifiant.Nous être les meilleurs.<br><br><i>« Nous être les meilleurs. Nous pas être foutus gobbos ou stoupides trollz, nous être plus forts ! Et si quoiqu’un dit que nous pas forts, nous taper dur sur foutue tête. »</i><br>– Gurkk Chop’crâne, Chef orc",
+    "desc": "Les orcs sont mauvais, brutaux, belliqueux et presque immunisés contre la douleur. Ils possèdent un corps massif et de larges épaules puissantes et ils ne laisseront pas une chose aussi insignifiante que la perte d’un bras faire obstacle à une bonne bagarre. Ils sont taillés pour le combat et n’aiment rien de plus au monde. Quand ils n’ont pas d’ennemis à combattre, ils s’en prennent à des groupes rivaux de peaux-vertes. S’il n’y a pas de groupe rival, ils se battront entre eux. Bien que moins nombreux que les gobelins, ils sont plus grands et plus robustes, et toutes les occasions sont bonnes pour le faire savoir. Les orcs peuvent atteindre des tailles prodigieuses, et les plus grands, les plus forts, les plus robustes et les plus agressifs d’entre eux se voient par conséquent accorder plus de prestige : la force entraîne le pouvoir dans leur société guerrière. Certains orcs chevauchent d’énormes sangliers pendant les batailles, un spectacle assez terrifiant.Nous être les meilleurs.\n\n*« Nous être les meilleurs. Nous pas être foutus gobbos ou stoupides trollz, nous être plus forts ! Et si quoiqu’un dit que nous pas forts, nous taper dur sur foutue tête. »*\n\n– Gurkk Chop’crâne, Chef orc",
     "source": {
       "book": "LDB",
       "page": 325
@@ -2725,7 +2725,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "L’instinct de conservation d’un gobelin, rachitique, malveillant, mais également agile et intelligent, ne doit jamais être sous-estimé. Ces créatures sont néanmoins lâches, et se regroupent donc facilement si le nombre leur procure un avantage écrasant. Les gobelins rejoignent souvent les armées d’orcs – pas toujours par choix – s’appropriant opportunément une partie du butin de guerre pendant que les autres prennent part au plus gros du combat.<br><br><i>« Des gobelins, sire ! Par milliers ! »</i><br>– Lieutenant Bromkopf, 24e Régiment de Fantassins reiklander",
+    "desc": "L’instinct de conservation d’un gobelin, rachitique, malveillant, mais également agile et intelligent, ne doit jamais être sous-estimé. Ces créatures sont néanmoins lâches, et se regroupent donc facilement si le nombre leur procure un avantage écrasant. Les gobelins rejoignent souvent les armées d’orcs – pas toujours par choix – s’appropriant opportunément une partie du butin de guerre pendant que les autres prennent part au plus gros du combat.\n\n*« Des gobelins, sire ! Par milliers ! »*\n\n– Lieutenant Bromkopf, 24e Régiment de Fantassins reiklander",
     "source": {
       "book": "LDB",
       "page": 326
@@ -3326,7 +3326,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les squelettes sont les restes décharnés de ceux qui sont morts depuis longtemps, réanimés, parodies de vivants, par une magie sombre pour arpenter la terre. Ceux qui sont morts sans recevoir le repos accordé par les rituels de Morr, le dieu de la Mort, peuvent être ressuscités sous cette forme par un nécromancien suffisamment puissant. Totalement dépourvus d’intelligence, les squelettes combattent jusqu’à ce que leurs os soient réduits en miettes. Leur ténacité n’a rien à voir avec du courage, ils n’ont tout simplement peur de rien, et ne peuvent pas être tués puisqu’ils ne sont vivants.<br><br><i>« J’ai soulevé le lourd couvercle, m’attendant à découvrir le sublime masque mortuaire en or de Khetanken. Mais on nous avait mal renseignés. Une main osseuse a jailli et m’a saisi par le cou. Surpris, j’ai lâché le couvercle, et la main et l’avant-bras ont été sectionnés, piégeant la créature dans le sarcophage. Mais la main persistait à m’étrangler, serrant si fort mon pauvre cou que je pouvais à peine respirer ! J’ai pensé que ma dernière heure était arrivée. C’est alors que soeur Célestine a jeté de l’eau bénite sur la chose qui est redevenue inerte. Je m’en sers pour me gratter le dos à présent. »</i><br>– Hubert Karter, Pilleur de tombes",
+    "desc": "Les squelettes sont les restes décharnés de ceux qui sont morts depuis longtemps, réanimés, parodies de vivants, par une magie sombre pour arpenter la terre. Ceux qui sont morts sans recevoir le repos accordé par les rituels de Morr, le dieu de la Mort, peuvent être ressuscités sous cette forme par un nécromancien suffisamment puissant. Totalement dépourvus d’intelligence, les squelettes combattent jusqu’à ce que leurs os soient réduits en miettes. Leur ténacité n’a rien à voir avec du courage, ils n’ont tout simplement peur de rien, et ne peuvent pas être tués puisqu’ils ne sont vivants.\n\n*« J’ai soulevé le lourd couvercle, m’attendant à découvrir le sublime masque mortuaire en or de Khetanken. Mais on nous avait mal renseignés. Une main osseuse a jailli et m’a saisi par le cou. Surpris, j’ai lâché le couvercle, et la main et l’avant-bras ont été sectionnés, piégeant la créature dans le sarcophage. Mais la main persistait à m’étrangler, serrant si fort mon pauvre cou que je pouvais à peine respirer ! J’ai pensé que ma dernière heure était arrivée. C’est alors que soeur Célestine a jeté de l’eau bénite sur la chose qui est redevenue inerte. Je m’en sers pour me gratter le dos à présent. »*\n\n– Hubert Karter, Pilleur de tombes",
     "source": {
       "book": "LDB",
       "page": 329
@@ -4028,7 +4028,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Énormes brutes lourdement cuirassées, affublées de pointes et d’impressionnants symboles de leurs dieux, les guerriers du Chaos ne sont clairement plus des humains. Plus rien ne subsiste de leur existence passée, et ils n’existent que pour servir leur sombre maître, et rien d’autre.<br><br>Alors que la plupart des guerriers du Chaos sont des maraudeurs couverts de gloire venant des régions loin au nord, quelques cultistes privilégiés peuvent se voir attribuer une armure du Chaos par les Dieux Sombres, leur conférant une grande puissance, avec obligation de ne jamais l’ôter du reste de leur vie. Comme peu de guerriers les surpassent, et qu’aucun chevalier n’est mieux protégé, leur espérance de vie demeure très longue.<br><br><i>« Dans le Nord redouté se trouve le plus grand danger. Il est le fruit d’un autre lieu, d’un autre temps, nous attaquant à cause des erreurs et de la malchance de dieux morts depuis longtemps. Il agrippe avidement notre monde, frémissant d’impatience, envoyant des hordes parmi les plus belliqueuses et envieuses : nos propres parents, les tribus de l’Homme. »</i><br><br>— Phitzer, Sorcière wissenlander",
+    "desc": "Énormes brutes lourdement cuirassées, affublées de pointes et d’impressionnants symboles de leurs dieux, les guerriers du Chaos ne sont clairement plus des humains. Plus rien ne subsiste de leur existence passée, et ils n’existent que pour servir leur sombre maître, et rien d’autre.\n\nAlors que la plupart des guerriers du Chaos sont des maraudeurs couverts de gloire venant des régions loin au nord, quelques cultistes privilégiés peuvent se voir attribuer une armure du Chaos par les Dieux Sombres, leur conférant une grande puissance, avec obligation de ne jamais l’ôter du reste de leur vie. Comme peu de guerriers les surpassent, et qu’aucun chevalier n’est mieux protégé, leur espérance de vie demeure très longue.\n\n*« Dans le Nord redouté se trouve le plus grand danger. Il est le fruit d’un autre lieu, d’un autre temps, nous attaquant à cause des erreurs et de la malchance de dieux morts depuis longtemps. Il agrippe avidement notre monde, frémissant d’impatience, envoyant des hordes parmi les plus belliqueuses et envieuses : nos propres parents, les tribus de l’Homme. »*\n\n— Phitzer, Sorcière wissenlander",
     "source": {
       "book": "LDB",
       "page": 334
@@ -4266,7 +4266,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "À bien des égards, les furies du Chaos sont considérées comme des démons sans importance. Elles ne servent aucun dieu en particulier, et ne sont que des manifestations ataviques du Chaos dans sa forme indivisible, primitive et sans personnalité distincte. Leur faiblesse relative, ainsi que le fait qu’aucune puissance du Chaos ne chercherait à se venger si elles étaient maltraitées, font qu’elles sont souvent invoquées par des démonologues novices à la recherche d’un serviteur malléable et utile. <br><br> Malgré leur manque de puissance, les furies restent toujours plus fortes que la plupart des humains mortels, et capables de voler rapidement grâce à leurs ailes en cuir. Leur apparence est changeante, comme celle de tous les serviteurs du Chaos, mais elles ont généralement une silhouette grossière qui n’est pas sans évoquer celle d’un homme-bête ailé. Les furies sont souvent caractérisées par un long museau canin, des cornes courtes et pointues, des yeux jaunes brûlants et une peau parsemée de fourrure sombre et d’écailles reptiliennes rouges. <br><br> Les furies sont faibles et lâches par nature. Un démonologue peut facilement en lier une afin de délivrer de simples messages ou de s’attaquer à des cibles isolées. Cependant, si on leur confie des tâches trop pénibles, complexes ou dangereuses, elles peuvent devenir rancunières et refuser de coopérer.",
+    "desc": "À bien des égards, les furies du Chaos sont considérées comme des démons sans importance. Elles ne servent aucun dieu en particulier, et ne sont que des manifestations ataviques du Chaos dans sa forme indivisible, primitive et sans personnalité distincte. Leur faiblesse relative, ainsi que le fait qu’aucune puissance du Chaos ne chercherait à se venger si elles étaient maltraitées, font qu’elles sont souvent invoquées par des démonologues novices à la recherche d’un serviteur malléable et utile.\n\nMalgré leur manque de puissance, les furies restent toujours plus fortes que la plupart des humains mortels, et capables de voler rapidement grâce à leurs ailes en cuir. Leur apparence est changeante, comme celle de tous les serviteurs du Chaos, mais elles ont généralement une silhouette grossière qui n’est pas sans évoquer celle d’un homme-bête ailé. Les furies sont souvent caractérisées par un long museau canin, des cornes courtes et pointues, des yeux jaunes brûlants et une peau parsemée de fourrure sombre et d’écailles reptiliennes rouges.\n\nLes furies sont faibles et lâches par nature. Un démonologue peut facilement en lier une afin de délivrer de simples messages ou de s’attaquer à des cibles isolées. Cependant, si on leur confie des tâches trop pénibles, complexes ou dangereuses, elles peuvent devenir rancunières et refuser de coopérer.",
     "source": {
       "book": "EDO",
       "page": 84
@@ -4358,7 +4358,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les horreurs de Tzeentch sont les rejetons mutants et baragouinant du Changeur de Voies. Monstruosités aux membres multiples, leur forme semble se tordre et se modifier selon les bras, les jambes et les tentacules qui surgissent, serpentant dans l’air à la recherche de proies à emporter dans leurs gueules béantes. Créatures de pure magie, l’air qui les entoure crépite et se déforme avec des énergies arcaniques impies. <br><br> Les horreurs roses se délectent du changement et de la magie. Lorsqu’elles sont invoquées, elles rient et gambadent à travers le monde, folâtrant et effectuant des cabrioles enthousiastes. Leur caractère joyeusement anticonformiste leur a souvent valu le surnom de « Couineurs » ou de « Destructeurs tourbillonnants ». Créatures du Chaos brut, elles sont attirées les unes par les autres, amplifiant leur pouvoir mutuel, et conjurant de redoutables éclairs de flammes magiques pour détruire ceux qui sont assez fous pour s’en approcher. <br><br> Si une horreur rose reçoit un coup suffisant pour détruire sa manifestation matérielle, elle se divise de manière explosive en deux horreurs bleues, au lieu d’être bannie dans les Royaumes du Chaos. Contrairement à leur homologues roses et rieuses, les horreurs bleues sont maussades et malveillantes, leurs visages déformées par des grimaces et des rictus. Au lieu de rire, leurs gorges surnaturelles grommellent ou marmonnent des malédictions. <br><br> Si un groupe de neuf créatures, ou un multiple de neuf, possède le Trait Feu de Tzeentch, alors toutes les créatures mettent leurs ressources en commun et lancent le sort Tempête de feu de Tzeentch. Neuf, bien sûr, est le nombre sacré de Tzeentch.",
+    "desc": "Les horreurs de Tzeentch sont les rejetons mutants et baragouinant du Changeur de Voies. Monstruosités aux membres multiples, leur forme semble se tordre et se modifier selon les bras, les jambes et les tentacules qui surgissent, serpentant dans l’air à la recherche de proies à emporter dans leurs gueules béantes. Créatures de pure magie, l’air qui les entoure crépite et se déforme avec des énergies arcaniques impies.\n\nLes horreurs roses se délectent du changement et de la magie. Lorsqu’elles sont invoquées, elles rient et gambadent à travers le monde, folâtrant et effectuant des cabrioles enthousiastes. Leur caractère joyeusement anticonformiste leur a souvent valu le surnom de « Couineurs » ou de « Destructeurs tourbillonnants ». Créatures du Chaos brut, elles sont attirées les unes par les autres, amplifiant leur pouvoir mutuel, et conjurant de redoutables éclairs de flammes magiques pour détruire ceux qui sont assez fous pour s’en approcher.\n\nSi une horreur rose reçoit un coup suffisant pour détruire sa manifestation matérielle, elle se divise de manière explosive en deux horreurs bleues, au lieu d’être bannie dans les Royaumes du Chaos. Contrairement à leur homologues roses et rieuses, les horreurs bleues sont maussades et malveillantes, leurs visages déformées par des grimaces et des rictus. Au lieu de rire, leurs gorges surnaturelles grommellent ou marmonnent des malédictions.\n\nSi un groupe de neuf créatures, ou un multiple de neuf, possède le Trait Feu de Tzeentch, alors toutes les créatures mettent leurs ressources en commun et lancent le sort Tempête de feu de Tzeentch. Neuf, bien sûr, est le nombre sacré de Tzeentch.",
     "source": {
       "book": "EDO",
       "page": 85
@@ -4443,7 +4443,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les horreurs de Tzeentch sont les rejetons mutants et baragouinant du Changeur de Voies. Monstruosités aux membres multiples, leur forme semble se tordre et se modifier selon les bras, les jambes et les tentacules qui surgissent, serpentant dans l’air à la recherche de proies à emporter dans leurs gueules béantes. Créatures de pure magie, l’air qui les entoure crépite et se déforme avec des énergies arcaniques impies. <br><br> Les horreurs roses se délectent du changement et de la magie. Lorsqu’elles sont invoquées, elles rient et gambadent à travers le monde, folâtrant et effectuant des cabrioles enthousiastes. Leur caractère joyeusement anticonformiste leur a souvent valu le surnom de « Couineurs » ou de « Destructeurs tourbillonnants ». Créatures du Chaos brut, elles sont attirées les unes par les autres, amplifiant leur pouvoir mutuel, et conjurant de redoutables éclairs de flammes magiques pour détruire ceux qui sont assez fous pour s’en approcher. <br><br> Si une horreur rose reçoit un coup suffisant pour détruire sa manifestation matérielle, elle se divise de manière explosive en deux horreurs bleues, au lieu d’être bannie dans les Royaumes du Chaos. Contrairement à leur homologues roses et rieuses, les horreurs bleues sont maussades et malveillantes, leurs visages déformées par des grimaces et des rictus. Au lieu de rire, leurs gorges surnaturelles grommellent ou marmonnent des malédictions. <br><br> Si un groupe de neuf créatures, ou un multiple de neuf, possède le Trait Feu de Tzeentch, alors toutes les créatures mettent leurs ressources en commun et lancent le sort Tempête de feu de Tzeentch. Neuf, bien sûr, est le nombre sacré de Tzeentch.",
+    "desc": "Les horreurs de Tzeentch sont les rejetons mutants et baragouinant du Changeur de Voies. Monstruosités aux membres multiples, leur forme semble se tordre et se modifier selon les bras, les jambes et les tentacules qui surgissent, serpentant dans l’air à la recherche de proies à emporter dans leurs gueules béantes. Créatures de pure magie, l’air qui les entoure crépite et se déforme avec des énergies arcaniques impies.\n\nLes horreurs roses se délectent du changement et de la magie. Lorsqu’elles sont invoquées, elles rient et gambadent à travers le monde, folâtrant et effectuant des cabrioles enthousiastes. Leur caractère joyeusement anticonformiste leur a souvent valu le surnom de « Couineurs » ou de « Destructeurs tourbillonnants ». Créatures du Chaos brut, elles sont attirées les unes par les autres, amplifiant leur pouvoir mutuel, et conjurant de redoutables éclairs de flammes magiques pour détruire ceux qui sont assez fous pour s’en approcher.\n\nSi une horreur rose reçoit un coup suffisant pour détruire sa manifestation matérielle, elle se divise de manière explosive en deux horreurs bleues, au lieu d’être bannie dans les Royaumes du Chaos. Contrairement à leur homologues roses et rieuses, les horreurs bleues sont maussades et malveillantes, leurs visages déformées par des grimaces et des rictus. Au lieu de rire, leurs gorges surnaturelles grommellent ou marmonnent des malédictions.\n\nSi un groupe de neuf créatures, ou un multiple de neuf, possède le Trait Feu de Tzeentch, alors toutes les créatures mettent leurs ressources en commun et lancent le sort Tempête de feu de Tzeentch. Neuf, bien sûr, est le nombre sacré de Tzeentch.",
     "source": {
       "book": "EDO",
       "page": 85
@@ -4914,7 +4914,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "En progressant dans votre Carrière de chevalier, vous allez d'abord acquérir un cheval de selle, puis un destrier, un puissant cheval de guerre qui constitue une menace à part entière pour vos ennemis.<br><br>S'occuper de cette bête magnifique n'est pas une mince affaire. En campagne ou sur la route, vous devez lui trouver une écurie et le panser, soit en utilisant votre Compétence Soin aux animaux, soit en employant quelqu'un d'autre pour s'en charger. Un destrier bien dressé peut coûter plus de 230 CO, donc remplacer votre monture ne sera pas facile.",
+    "desc": "En progressant dans votre Carrière de chevalier, vous allez d'abord acquérir un cheval de selle, puis un destrier, un puissant cheval de guerre qui constitue une menace à part entière pour vos ennemis.\n\nS'occuper de cette bête magnifique n'est pas une mince affaire. En campagne ou sur la route, vous devez lui trouver une écurie et le panser, soit en utilisant votre Compétence Soin aux animaux, soit en employant quelqu'un d'autre pour s'en charger. Un destrier bien dressé peut coûter plus de 230 CO, donc remplacer votre monture ne sera pas facile.",
     "source": {
       "book": "AA",
       "page": 29
@@ -4994,7 +4994,7 @@
       }
     ],
     "spells": [],
-    "desc": "Au sein de certains ordres de chevalerie, des chevaliers du cercle intérieur sont assez courageux pour monter des demigriffons au combat. Ils doivent prouver qu'ils sont dignes de cette monture en s'aventurant dans la forêt et en capturant eux-mêmes l'une de ces bêtes terrifiantes. Même s'il est dressé, un demigriffon reste un animal capricieux et féroce. À la bataille, il frappe rapidement avec ses serres et son bec tandis que son cavalier porte des coups d'estoc à l'ennemi avec une hallebarde de cavalerie.<br><br>Le demigriffon décrit dans le Livre de Base est un jeune spécimen : celui-ci a passé un certain temps à servir de monture et a connu les réalités de la guerre.",
+    "desc": "Au sein de certains ordres de chevalerie, des chevaliers du cercle intérieur sont assez courageux pour monter des demigriffons au combat. Ils doivent prouver qu'ils sont dignes de cette monture en s'aventurant dans la forêt et en capturant eux-mêmes l'une de ces bêtes terrifiantes. Même s'il est dressé, un demigriffon reste un animal capricieux et féroce. À la bataille, il frappe rapidement avec ses serres et son bec tandis que son cavalier porte des coups d'estoc à l'ennemi avec une hallebarde de cavalerie.\n\nLe demigriffon décrit dans le Livre de Base est un jeune spécimen : celui-ci a passé un certain temps à servir de monture et a connu les réalités de la guerre.",
     "source": {
       "book": "AA",
       "page": 109
@@ -49228,7 +49228,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les grands cerfs sont des créatures imposantes. Ils peuvent mesurer plus de trois mètres de long et près de deux mètres au garrot et peser plus de quatre cents kilos. Chacun arbore une paire de bois gigantesques dont le nombre de ramifications peut aller de six à quatorze, en fonction de l'individu. Chaque paire est unique, mais toutes sont immanquablement magnifiques, et assez acérées pour perforer une armure.<br><br>Les gens de Talabheim professent que les grands cerfs ont été désignés par Taal pour garder la Grande Forêt, et qu'ils lui servent d'yeux dans toutes les autres forêts du Vieux Monde. Tout le monde s'accorde à croire que les grands cerfs attaquent sans la moindre pitié quiconque ose souiller les régions boisées, ce qui en fait des ennemis jurés des hommes-bêtes.<br><br>Lames de Taal : lorsqu'un grand cerf se bat avec ses bois, ceux-ci ont les Atouts Empaleuse et Perforante.",
+    "desc": "Les grands cerfs sont des créatures imposantes. Ils peuvent mesurer plus de trois mètres de long et près de deux mètres au garrot et peser plus de quatre cents kilos. Chacun arbore une paire de bois gigantesques dont le nombre de ramifications peut aller de six à quatorze, en fonction de l'individu. Chaque paire est unique, mais toutes sont immanquablement magnifiques, et assez acérées pour perforer une armure.\n\nLes gens de Talabheim professent que les grands cerfs ont été désignés par Taal pour garder la Grande Forêt, et qu'ils lui servent d'yeux dans toutes les autres forêts du Vieux Monde. Tout le monde s'accorde à croire que les grands cerfs attaquent sans la moindre pitié quiconque ose souiller les régions boisées, ce qui en fait des ennemis jurés des hommes-bêtes.\n\nLames de Taal : lorsqu'un grand cerf se bat avec ses bois, ceux-ci ont les Atouts Empaleuse et Perforante.",
     "source": {
       "book": "ZI",
       "page": 10
@@ -49319,7 +49319,7 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": "Les grands cerfs sont bien plus que de simples animaux. Ce sont des créatures transcendantes, les enfants de Kurnous, seigneur des lieux sauvages. Les grands cerfs sont des êtres magiques, la manifestation suprême de l'âme d'une forêt. Leur souffle est celui d'un chant lointain qui s'élève telle la vapeur ; d'innombrables fleurs bourgeonnent sous leurs pas. Partout où ils vont, tous les autres animaux s'inclinent devant eux en signe de révérence.<br><br>On dit que les grands cerfs sont totalement immunisés contre les effets des poisons naturels. C'est sans doute à cause de leur rivalité de longue date avec les ophidiens.<br><br>Lames de Kurnous : lorsque l'Ombre du fleuve se bat avec ses bois, ceux-ci ont les Atouts Empaleuse, Perforante et Rapide.",
+    "desc": "Les grands cerfs sont bien plus que de simples animaux. Ce sont des créatures transcendantes, les enfants de Kurnous, seigneur des lieux sauvages. Les grands cerfs sont des êtres magiques, la manifestation suprême de l'âme d'une forêt. Leur souffle est celui d'un chant lointain qui s'élève telle la vapeur ; d'innombrables fleurs bourgeonnent sous leurs pas. Partout où ils vont, tous les autres animaux s'inclinent devant eux en signe de révérence.\n\nOn dit que les grands cerfs sont totalement immunisés contre les effets des poisons naturels. C'est sans doute à cause de leur rivalité de longue date avec les ophidiens.\n\nLames de Kurnous : lorsque l'Ombre du fleuve se bat avec ses bois, ceux-ci ont les Atouts Empaleuse, Perforante et Rapide.",
     "source": {
       "book": "ZI",
       "page": 11
@@ -49402,7 +49402,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les arachnaroks sont les titans des bois profonds, des prédateurs gigantesques. À en croire les Middenlanders, ce nom est tiré d'un conte norsque antique. Les arachnaroks sont apparemment plus grosses que des maisons, et rien, à part un barrage concentré de tirs de canons, ne pourrait les arrêter. Les récits qui vantent leur voracité sont légion. S'ils disent vrai, les arachnaroks sont tout à fait capables de dévorer des hardes entières d'hommes-bêtes, ou des créatures aussi immenses que des géants. Heureusement, elles sont aussi rares que des dragons, et bien peu affirment en avoir aperçu. Contrairement à la toile des autres araignées, celle des arachnaroks est imprégnée de leur poison.<br><br>Toile traître : lorsqu'un ennemi devient Empêtré dans la toile d'une arachnarok, il gagne aussi un État Empoisonné.",
+    "desc": "Les arachnaroks sont les titans des bois profonds, des prédateurs gigantesques. À en croire les Middenlanders, ce nom est tiré d'un conte norsque antique. Les arachnaroks sont apparemment plus grosses que des maisons, et rien, à part un barrage concentré de tirs de canons, ne pourrait les arrêter. Les récits qui vantent leur voracité sont légion. S'ils disent vrai, les arachnaroks sont tout à fait capables de dévorer des hardes entières d'hommes-bêtes, ou des créatures aussi immenses que des géants. Heureusement, elles sont aussi rares que des dragons, et bien peu affirment en avoir aperçu. Contrairement à la toile des autres araignées, celle des arachnaroks est imprégnée de leur poison.\n\nToile traître : lorsqu'un ennemi devient Empêtré dans la toile d'une arachnarok, il gagne aussi un État Empoisonné.",
     "source": {
       "book": "ZI",
       "page": 12
@@ -49493,7 +49493,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les araignées géantes qui tissent leur toile dans les forêts sont des prédateurs anormalement énormes, rusés et cruels. Leur corps mesure souvent près de deux mètres de long et pas moins de trois mètres de large si l'on compte leurs pattes. Elles tissent des toiles collantes et résistantes pour capturer leurs proies, qu'elles emballent dans d'épais cocons pour s'en repaître à loisir. Leurs mandibules ressemblent à des pinces, assez puissantes pour perforer l'acier, et sont enduites de toxines mortelles. De toutes les sous-espèces qui arpentent les forêts de l'Empire, aucune n'a une réputation plus épouvantable que la mangeuse d'hommes de la Drakwald, identifiable au cramoisi vif qui orne sa carapace brun sombre.<br><br>Lorsqu'elles font face à un adversaire particulièrement dangereux ou irritant, les araignées géantes se retirent souvent dans les arbres, d'où elles crachent leur soie collante sur leurs ennemis à l'aide de leur Capacité de Tir.<br><br>Rancunière : les mangeuses d'hommes de la Drakwald ont le Trait Haine (Anciens adversaires).",
+    "desc": "Les araignées géantes qui tissent leur toile dans les forêts sont des prédateurs anormalement énormes, rusés et cruels. Leur corps mesure souvent près de deux mètres de long et pas moins de trois mètres de large si l'on compte leurs pattes. Elles tissent des toiles collantes et résistantes pour capturer leurs proies, qu'elles emballent dans d'épais cocons pour s'en repaître à loisir. Leurs mandibules ressemblent à des pinces, assez puissantes pour perforer l'acier, et sont enduites de toxines mortelles. De toutes les sous-espèces qui arpentent les forêts de l'Empire, aucune n'a une réputation plus épouvantable que la mangeuse d'hommes de la Drakwald, identifiable au cramoisi vif qui orne sa carapace brun sombre.\n\nLorsqu'elles font face à un adversaire particulièrement dangereux ou irritant, les araignées géantes se retirent souvent dans les arbres, d'où elles crachent leur soie collante sur leurs ennemis à l'aide de leur Capacité de Tir.\n\nRancunière : les mangeuses d'hommes de la Drakwald ont le Trait Haine (Anciens adversaires).",
     "source": {
       "book": "ZI",
       "page": 12
@@ -49569,7 +49569,7 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": "Les gobelins des forêts sont des couards traîtres et perfides. Ils sont particulièrement doués pour tendre des embuscades, et pour prendre la fuite lorsque la situation les dépasse. Ils frappent rapidement du haut de leurs redoutables montures, qui sont en général considérablement plus dangereuses qu'eux. Les gobelins des forêts sont extrêmement minces et agiles de leurs dix doigts. Ils ont la peau verte, un long nez pointu, et des dents acérées. Ils ont tendance à préférer les armes qui leur permettent de rester aussi loin de leurs ennemis que possible, comme les lances et les flèches, qu'ils trempent dans le venin de leur monture. Ils entretiennent une relation étrange et complexe avec les araignées géantes des bois profonds, qui leur servent à la fois de montures, d'animaux de compagnie, et de source de nourriture et de poison.<br><br>Bravoure d'emprunt : les gobelins des forêts rencontrés hors de leur tribu seront invariablement montés sur des araignées géantes. Les gobelins des forêts montés sur des araignées ignorent les effets de leur Trait Effrayé (Elfes).",
+    "desc": "Les gobelins des forêts sont des couards traîtres et perfides. Ils sont particulièrement doués pour tendre des embuscades, et pour prendre la fuite lorsque la situation les dépasse. Ils frappent rapidement du haut de leurs redoutables montures, qui sont en général considérablement plus dangereuses qu'eux. Les gobelins des forêts sont extrêmement minces et agiles de leurs dix doigts. Ils ont la peau verte, un long nez pointu, et des dents acérées. Ils ont tendance à préférer les armes qui leur permettent de rester aussi loin de leurs ennemis que possible, comme les lances et les flèches, qu'ils trempent dans le venin de leur monture. Ils entretiennent une relation étrange et complexe avec les araignées géantes des bois profonds, qui leur servent à la fois de montures, d'animaux de compagnie, et de source de nourriture et de poison.\n\nBravoure d'emprunt : les gobelins des forêts rencontrés hors de leur tribu seront invariablement montés sur des araignées géantes. Les gobelins des forêts montés sur des araignées ignorent les effets de leur Trait Effrayé (Elfes).",
     "source": {
       "book": "ZI",
       "page": 14
@@ -49646,7 +49646,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les chamanes gobelins des forêts se parent de myriades d'araignées (qui les mordent régulièrement), et consomment quotidiennement des substances hallucinogènes. Leur perception du monde est donc constamment voilée. S'il est attaqué, un chamane n'aura aucun problème à se concentrer sur le combat. Dans le cas contraire, il doit effectuer un Test de Force Mentale Facile (+40) au début de chacun de ses tours. En cas d'échec, il se met à baver, le regard dans le vide : il ne peut pas se déplacer ni entreprendre la moindre Action durant son tour.<br><br>Bénédictions de la Déesse-araignée : Bataille, Chance, Courage, Grâce, La Chasse, Sauvagerie.",
+    "desc": "Les chamanes gobelins des forêts se parent de myriades d'araignées (qui les mordent régulièrement), et consomment quotidiennement des substances hallucinogènes. Leur perception du monde est donc constamment voilée. S'il est attaqué, un chamane n'aura aucun problème à se concentrer sur le combat. Dans le cas contraire, il doit effectuer un Test de Force Mentale Facile (+40) au début de chacun de ses tours. En cas d'échec, il se met à baver, le regard dans le vide : il ne peut pas se déplacer ni entreprendre la moindre Action durant son tour.\n\nBénédictions de la Déesse-araignée : Bataille, Chance, Courage, Grâce, La Chasse, Sauvagerie.",
     "source": {
       "book": "ZI",
       "page": 14
@@ -49706,7 +49706,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les loups géants sont des bêtes plus imposantes et plus féroces que n'importe quelle bête sauvage. Ils sont plus grands que les mieux bâtis des halflings, et chacune de leurs foulées est deux fois plus longue que celle d'un homme. Leurs yeux sont des flammes vacillantes jaunes ou vertes qui luisent au-dessus de crocs aussi longs que des couteaux de chasse. Et chacun est habité d'une faim insatiable. Ils sont rusés, bien plus que les hommes ne le pensent. Ils ont leur propre langue, et leur voix porte sur des distances incommensurables, ce qui leur permet de contourner, voire d'embusquer, ceux qui se risquent à les chasser. Ils sont assez intelligents pour créer de faux antres afin de perdre leurs ennemis, tout en camouflant leurs véritables repaires.<br><br>La meute fait la force : les loups géants qui sont en supériorité numérique par rapport à leurs ennemis gagnent un bonus de +10 à leur score de combat. Ce bonus est cumulatif avec d'autres bonus du même type.",
+    "desc": "Les loups géants sont des bêtes plus imposantes et plus féroces que n'importe quelle bête sauvage. Ils sont plus grands que les mieux bâtis des halflings, et chacune de leurs foulées est deux fois plus longue que celle d'un homme. Leurs yeux sont des flammes vacillantes jaunes ou vertes qui luisent au-dessus de crocs aussi longs que des couteaux de chasse. Et chacun est habité d'une faim insatiable. Ils sont rusés, bien plus que les hommes ne le pensent. Ils ont leur propre langue, et leur voix porte sur des distances incommensurables, ce qui leur permet de contourner, voire d'embusquer, ceux qui se risquent à les chasser. Ils sont assez intelligents pour créer de faux antres afin de perdre leurs ennemis, tout en camouflant leurs véritables repaires.\n\nLa meute fait la force : les loups géants qui sont en supériorité numérique par rapport à leurs ennemis gagnent un bonus de +10 à leur score de combat. Ce bonus est cumulatif avec d'autres bonus du même type.",
     "source": {
       "book": "ZI",
       "page": 16
@@ -49778,7 +49778,7 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": "Raukos est un loup géant à deux têtes, autrefois la vedette de l'arène d'un dresseur de monstres kislevite nommé Kapayev. Quand une tête dormait, l'autre veillait, alerte et agile. Il triompha de tous les monstres qu'on lui opposa, jusqu'au jour où il tua son maître endormi et disparut.<br><br>Une meute à lui seul : Raukos gagne une attaque gratuite par tour. De plus, il compte comme 2 créatures : pour être en supériorité numérique à 2 contre 1, ses adversaires doivent être 4 ; si Raukos se bat contre un seul adversaire, il est en supériorité numérique à 2 contre 1.",
+    "desc": "Raukos est un loup géant à deux têtes, autrefois la vedette de l'arène d'un dresseur de monstres kislevite nommé Kapayev. Quand une tête dormait, l'autre veillait, alerte et agile. Il triompha de tous les monstres qu'on lui opposa, jusqu'au jour où il tua son maître endormi et disparut.\n\nUne meute à lui seul : Raukos gagne une attaque gratuite par tour. De plus, il compte comme 2 créatures : pour être en supériorité numérique à 2 contre 1, ses adversaires doivent être 4 ; si Raukos se bat contre un seul adversaire, il est en supériorité numérique à 2 contre 1.",
     "source": {
       "book": "ZI",
       "page": 16
@@ -49959,7 +49959,7 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": "Le plus tristement célèbre de tous les razorgors de l'Empire est le Vieux Dos-de-pus du Hochland : un monstre gigantesque à la peau pâle dont le dos suppurant est orné d'une énorme bosse de muscles biscornus et d'os dentelés. Il a dévoré des chasseurs, des caravanes, des détachements entiers de patrouilleurs routiers et même un petit contingent de chevaliers de la Reiksguard envoyés pour l'occire.<br><br>La bosse d'os : des os à la fois souples et durs comme le fer se sont propagés depuis la bosse du Vieux Dos-de-pus sur tout son corps. Ceci l'a rendu plus lent, mais aussi incroyablement coriace.",
+    "desc": "Le plus tristement célèbre de tous les razorgors de l'Empire est le Vieux Dos-de-pus du Hochland : un monstre gigantesque à la peau pâle dont le dos suppurant est orné d'une énorme bosse de muscles biscornus et d'os dentelés. Il a dévoré des chasseurs, des caravanes, des détachements entiers de patrouilleurs routiers et même un petit contingent de chevaliers de la Reiksguard envoyés pour l'occire.\n\nLa bosse d'os : des os à la fois souples et durs comme le fer se sont propagés depuis la bosse du Vieux Dos-de-pus sur tout son corps. Ceci l'a rendu plus lent, mais aussi incroyablement coriace.",
     "source": {
       "book": "ZI",
       "page": 18
@@ -50061,7 +50061,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les gueules d'effroi sont de gigantesques serpents (certains nains soutiennent que « vers » serait plus approprié) dont l'immense gueule circulaire est remplie de dents crochues recourbées vers l'intérieur. Leur corps est couvert d'écailles grises ou verdâtres, elles-mêmes enduites d'une bave gluante et nauséabonde qui leur permet de glisser dans la terre à très grande vitesse. Elles attaquent généralement leurs cibles par en dessous : elles émergent soudain du sol pour avaler toutes crues les créatures plus petites. Elles sont tout aussi capables de s'attaquer aux créatures plus grosses, auquel cas elles se taillent un chemin à travers chair et os pour les dévorer de l'intérieur. Ce sont des créatures des désolations du Chaos, et il n'en existe pas deux pareilles.<br><br>Bave gluante : les Blessures infligées ignorent les Points d'Armure. Pendant un nombre de Rounds égal au Bonus d'Endurance de la gueule d'effroi, les créatures touchées par cette substance doivent effectuer un Test d'Agilité Accessible (+20) chaque fois qu'elles veulent agir. En cas d'échec, elles glissent à cause de la substance et gagnent immédiatement l'État À Terre.<br><br>Avaler tout cru : lorsqu'une gueule d'effroi attaque une cible à l'aide de sa mâchoire, elle peut essayer de l'avaler. Pour cela, la cible doit être d'une Taille inférieure ou égale à la sienne, et subir soit un nombre de Blessures égal au double de son propre Bonus d'Endurance en une seule attaque, soit un Dégât Critique. Une fois ces conditions remplies, la gueule d'effroi fait un Test opposé de Force contre sa cible. En cas de réussite, la cible subit immédiatement un État Empêtré, plus un supplémentaire par tranche de 2 DR. La prochaine Action de la cible ne peut être qu'un Test opposé de Force pour échapper à la gueule d'effroi. Si elle ne parvient pas à se libérer, elle subit 10 Blessures et est avalée. Une fois avalée, la victime subit un État Empêtré ainsi que 10 Blessures (qui ignorent l'Armure) au début de chaque Round.",
+    "desc": "Les gueules d'effroi sont de gigantesques serpents (certains nains soutiennent que « vers » serait plus approprié) dont l'immense gueule circulaire est remplie de dents crochues recourbées vers l'intérieur. Leur corps est couvert d'écailles grises ou verdâtres, elles-mêmes enduites d'une bave gluante et nauséabonde qui leur permet de glisser dans la terre à très grande vitesse. Elles attaquent généralement leurs cibles par en dessous : elles émergent soudain du sol pour avaler toutes crues les créatures plus petites. Elles sont tout aussi capables de s'attaquer aux créatures plus grosses, auquel cas elles se taillent un chemin à travers chair et os pour les dévorer de l'intérieur. Ce sont des créatures des désolations du Chaos, et il n'en existe pas deux pareilles.\n\nBave gluante : les Blessures infligées ignorent les Points d'Armure. Pendant un nombre de Rounds égal au Bonus d'Endurance de la gueule d'effroi, les créatures touchées par cette substance doivent effectuer un Test d'Agilité Accessible (+20) chaque fois qu'elles veulent agir. En cas d'échec, elles glissent à cause de la substance et gagnent immédiatement l'État À Terre.\n\nAvaler tout cru : lorsqu'une gueule d'effroi attaque une cible à l'aide de sa mâchoire, elle peut essayer de l'avaler. Pour cela, la cible doit être d'une Taille inférieure ou égale à la sienne, et subir soit un nombre de Blessures égal au double de son propre Bonus d'Endurance en une seule attaque, soit un Dégât Critique. Une fois ces conditions remplies, la gueule d'effroi fait un Test opposé de Force contre sa cible. En cas de réussite, la cible subit immédiatement un État Empêtré, plus un supplémentaire par tranche de 2 DR. La prochaine Action de la cible ne peut être qu'un Test opposé de Force pour échapper à la gueule d'effroi. Si elle ne parvient pas à se libérer, elle subit 10 Blessures et est avalée. Une fois avalée, la victime subit un État Empêtré ainsi que 10 Blessures (qui ignorent l'Armure) au début de chaque Round.",
     "source": {
       "book": "ZI",
       "page": 22
@@ -50155,7 +50155,7 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": "Dans les hauteurs des chaînes de montagnes du Vieux Monde errent des brutes hirsutes et irascibles. D'énormes bêtes à quatre pattes dont le lourd museau est surmonté d'immenses cornes : les rhinox. Leur amour du froid et leur nature belliqueuse, qui les pousse à charger sur-le-champ tout ce qui s'aventure à moins d'un jet de pierre d'eux, leur ont attiré les faveurs d'Ulric. Ce sont des créatures obstinées : elles ne dévient jamais de la trajectoire qu'elles ont choisie et attaquent tout ce qui n'a pas la même odeur qu'elles. Leur très mauvaise vue est compensée par un odorat extrêmement fin. Les ogres se servent parfois des rhinox comme de bêtes de somme.<br><br>Trop buté pour mourir : les rhinox ignorent les effets du premier Dégât Critique qu'ils subissent à chaque combat.",
+    "desc": "Dans les hauteurs des chaînes de montagnes du Vieux Monde errent des brutes hirsutes et irascibles. D'énormes bêtes à quatre pattes dont le lourd museau est surmonté d'immenses cornes : les rhinox. Leur amour du froid et leur nature belliqueuse, qui les pousse à charger sur-le-champ tout ce qui s'aventure à moins d'un jet de pierre d'eux, leur ont attiré les faveurs d'Ulric. Ce sont des créatures obstinées : elles ne dévient jamais de la trajectoire qu'elles ont choisie et attaquent tout ce qui n'a pas la même odeur qu'elles. Leur très mauvaise vue est compensée par un odorat extrêmement fin. Les ogres se servent parfois des rhinox comme de bêtes de somme.\n\nTrop buté pour mourir : les rhinox ignorent les effets du premier Dégât Critique qu'ils subissent à chaque combat.",
     "source": {
       "book": "ZI",
       "page": 28
@@ -50227,7 +50227,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Particulièrement craint et maudit, le hargneux Brise-Krag aurait enfoncé la porte d'un Karak à l'aide de son crâne dur comme du « gromil ». Malgré la prime considérable que le Haut Roi des nains a mise sur son crâne quasiment impénétrable, Brise-Krag arpente toujours les hauts vallons du Bord du Monde, où il piétine tout sur son passage.<br><br>Plus solide que la roche : l'Armure de Brise-Krag a l'Atout Impénétrable.<br><br>Trop buté pour mourir : Brise-Krag ignore les effets du premier Dégât Critique qu'il subit à chaque combat.",
+    "desc": "Particulièrement craint et maudit, le hargneux Brise-Krag aurait enfoncé la porte d'un Karak à l'aide de son crâne dur comme du « gromil ». Malgré la prime considérable que le Haut Roi des nains a mise sur son crâne quasiment impénétrable, Brise-Krag arpente toujours les hauts vallons du Bord du Monde, où il piétine tout sur son passage.\n\nPlus solide que la roche : l'Armure de Brise-Krag a l'Atout Impénétrable.\n\nTrop buté pour mourir : Brise-Krag ignore les effets du premier Dégât Critique qu'il subit à chaque combat.",
     "source": {
       "book": "ZI",
       "page": 28
@@ -50371,7 +50371,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les gobelins de la nuit sont sans doute les membres les plus cruels de leur espèce à l'esprit déjà bien tordu. Ce sont des conspirateurs retors dépourvus de la moindre conscience morale. Ce sont eux qui ont investi la majorité des antiques karak des nains au fil des siècles, ce pourquoi les nains les haïssent par-dessus tout. Ils chassent les squigs depuis des éons, dont ils se servent tantôt comme nourriture, tantôt comme armes vivantes. Ils revêtent des tuniques souillées et s'équipent d'armes rouillées et bardées de crochets.<br><br>Certains gobelins de la nuit se servent de filets pour capturer leurs ennemis. Ceux-là ont le Trait d'attaque À distance (Filet 3) +0 (6).<br><br>Quelques gobelins de la nuit chevauchent des squigs au combat, ce qui finit généralement mal. Ces chevaucheurs de squigs ont la Compétence Chevaucher (Squig) 40.<br><br>Avant le combat, certains gobelins ingurgitent une boisson à base de bonnets de fou et deviennent des fanatiques gobelins de la nuit, armés d'un gigantesque boulet métalliques attaché à une chaîne. Les fanatiques gagnent +10 en Force, ont 16 Blessures et gagnent le Trait Frénésie ainsi que la Compétence Corps à corps (Deux-mains) 40.",
+    "desc": "Les gobelins de la nuit sont sans doute les membres les plus cruels de leur espèce à l'esprit déjà bien tordu. Ce sont des conspirateurs retors dépourvus de la moindre conscience morale. Ce sont eux qui ont investi la majorité des antiques karak des nains au fil des siècles, ce pourquoi les nains les haïssent par-dessus tout. Ils chassent les squigs depuis des éons, dont ils se servent tantôt comme nourriture, tantôt comme armes vivantes. Ils revêtent des tuniques souillées et s'équipent d'armes rouillées et bardées de crochets.\n\nCertains gobelins de la nuit se servent de filets pour capturer leurs ennemis. Ceux-là ont le Trait d'attaque À distance (Filet 3) +0 (6).\n\nQuelques gobelins de la nuit chevauchent des squigs au combat, ce qui finit généralement mal. Ces chevaucheurs de squigs ont la Compétence Chevaucher (Squig) 40.\n\nAvant le combat, certains gobelins ingurgitent une boisson à base de bonnets de fou et deviennent des fanatiques gobelins de la nuit, armés d'un gigantesque boulet métalliques attaché à une chaîne. Les fanatiques gagnent +10 en Force, ont 16 Blessures et gagnent le Trait Frénésie ainsi que la Compétence Corps à corps (Deux-mains) 40.",
     "source": {
       "book": "ZI",
       "page": 31
@@ -50478,7 +50478,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "De toutes les créatures qui peuplent le Vieux Monde, aucune n'est aussi impressionnante que les dragons. Ils sont aussi l'une des plus vieilles espèces à y vivre. Aujourd'hui, il ne reste que peu de ces puissants reptiles, et le battement de leurs ailes s'est fait rare dans l'Empire. Les effets de leur célèbre souffle sont aussi variés que leur apparence, mais suffisent à écraser la plupart de leurs ennemis. Et c'est sans compter leurs griffes et leurs dents plus aiguisées qu'une épée ensorcelée, et leur peau bardée d'écailles capable d'amortir un boulet de canon. Aucun dragon n'est jamais mort de vieillesse : au contraire, ils ne deviennent que plus gros et plus rusés au fil des siècles, capables de parler de nombreuses langues et de manier la magie aussi bien qu'un Maître sorcier.<br><br>La bêtise les perdra : le Souffle soporifique ignore les Points d'Armure. Toute cible blessée par cette attaque doit effectuer un Test de Force Mentale Difficile (-20). En cas d'échec, elle gagne le Trait Stupide pendant un nombre de Rounds égal au Bonus d'Endurance du dragon.<br><br>La forêt est mon bouclier : dans une région boisée, lorsqu'il est entouré d'arbres, un dragon de la forêt ne sera jamais en infériorité numérique. De plus, ses écailles caméléonesques alternent entre l'apparence de l'écorce et celle des feuilles : toutes les attaques à distance qui le prennent pour cible subissent un malus de -20.",
+    "desc": "De toutes les créatures qui peuplent le Vieux Monde, aucune n'est aussi impressionnante que les dragons. Ils sont aussi l'une des plus vieilles espèces à y vivre. Aujourd'hui, il ne reste que peu de ces puissants reptiles, et le battement de leurs ailes s'est fait rare dans l'Empire. Les effets de leur célèbre souffle sont aussi variés que leur apparence, mais suffisent à écraser la plupart de leurs ennemis. Et c'est sans compter leurs griffes et leurs dents plus aiguisées qu'une épée ensorcelée, et leur peau bardée d'écailles capable d'amortir un boulet de canon. Aucun dragon n'est jamais mort de vieillesse : au contraire, ils ne deviennent que plus gros et plus rusés au fil des siècles, capables de parler de nombreuses langues et de manier la magie aussi bien qu'un Maître sorcier.\n\nLa bêtise les perdra : le Souffle soporifique ignore les Points d'Armure. Toute cible blessée par cette attaque doit effectuer un Test de Force Mentale Difficile (-20). En cas d'échec, elle gagne le Trait Stupide pendant un nombre de Rounds égal au Bonus d'Endurance du dragon.\n\nLa forêt est mon bouclier : dans une région boisée, lorsqu'il est entouré d'arbres, un dragon de la forêt ne sera jamais en infériorité numérique. De plus, ses écailles caméléonesques alternent entre l'apparence de l'écorce et celle des feuilles : toutes les attaques à distance qui le prennent pour cible subissent un malus de -20.",
     "source": {
       "book": "ZI",
       "page": 33
@@ -50600,7 +50600,7 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": "Caledair la Faux de Feu est un dragon de feu antique et monstrueux. Les nains ont des livres des rancunes entiers dédiés à ses déprédations, mais rien ne les a plus outrés que lorsque le dragon a acquis du gromril pour en recouvrir ses griffes.<br><br>Griffes « volées » : les griffes de Caledair ignorent totalement les Points d'Armure.",
+    "desc": "Caledair la Faux de Feu est un dragon de feu antique et monstrueux. Les nains ont des livres des rancunes entiers dédiés à ses déprédations, mais rien ne les a plus outrés que lorsque le dragon a acquis du gromril pour en recouvrir ses griffes.\n\nGriffes « volées » : les griffes de Caledair ignorent totalement les Points d'Armure.",
     "source": {
       "book": "ZI",
       "page": 33
@@ -50852,7 +50852,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les brochets du Stir sont de très gros poissons gris verdâtre, des monstres dangereux et rusés, passés maîtres dans l'art d'échapper aux cannes à pêche, et qui peuvent vivre très, très longtemps. La taille moyenne de ces monstres est de plus de 3,50 mètres, mais certains rapports fiables notent que certaines bêtes particulièrement célèbres atteignent les 6 mètres, et que leur poids se compte en tonnes. Ils ont été trop pêchés, et sont maintenant presque éteints dans la majeure partie du grand Stir.<br><br>Il a eu de la chance, c'est tout : les brochets du Stir qui ont vécu assez longtemps pour devenir énormes et pour gagner un surnom semblent protégés par Manann lui-même. Tous ces brochets du Stir ont 3 Points de Chance.<br><br>Queue agile : les brochets du Stir peuvent effectuer une attaque caudale par Round sans dépenser d'Avantage.",
+    "desc": "Les brochets du Stir sont de très gros poissons gris verdâtre, des monstres dangereux et rusés, passés maîtres dans l'art d'échapper aux cannes à pêche, et qui peuvent vivre très, très longtemps. La taille moyenne de ces monstres est de plus de 3,50 mètres, mais certains rapports fiables notent que certaines bêtes particulièrement célèbres atteignent les 6 mètres, et que leur poids se compte en tonnes. Ils ont été trop pêchés, et sont maintenant presque éteints dans la majeure partie du grand Stir.\n\nIl a eu de la chance, c'est tout : les brochets du Stir qui ont vécu assez longtemps pour devenir énormes et pour gagner un surnom semblent protégés par Manann lui-même. Tous ces brochets du Stir ont 3 Points de Chance.\n\nQueue agile : les brochets du Stir peuvent effectuer une attaque caudale par Round sans dépenser d'Avantage.",
     "source": {
       "book": "ZI",
       "page": 38
@@ -50960,7 +50960,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les Choses du Bois mort sont d'anciens habitants des villages bordant la forêt maudite, revenus changés et corrompus après s'être aventurés trop loin sous les frondaisons. Ils ne sont pas morts-vivants : pire. Couverts de mutations et d'une rage incontrôlable, ils reviennent traquer ceux qu'ils ont connus de leur vivant.<br><br>Choc des retrouvailles : la première fois qu'une personne reconnaît ce que la « chose » était, elle doit effectuer un Test de Force Mentale Complexe (-10). En cas d'échec, elle gagne un État Assommé.",
+    "desc": "Les Choses du Bois mort sont d'anciens habitants des villages bordant la forêt maudite, revenus changés et corrompus après s'être aventurés trop loin sous les frondaisons. Ils ne sont pas morts-vivants : pire. Couverts de mutations et d'une rage incontrôlable, ils reviennent traquer ceux qu'ils ont connus de leur vivant.\n\nChoc des retrouvailles : la première fois qu'une personne reconnaît ce que la « chose » était, elle doit effectuer un Test de Force Mentale Complexe (-10). En cas d'échec, elle gagne un État Assommé.",
     "source": {
       "book": "ZI",
       "page": 40
@@ -51035,7 +51035,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les chefs de meute du clan Moulder sont des dompteurs skavens impitoyables, passés maîtres dans l'art de manier leur fouet pour maintenir leurs bêtes de guerre sous contrôle.<br><br>Maître du fouet : les rats ogres ordinaires et briseurs d'os menés par un chef de meute ignorent les effets de leur Trait Stupide. Les rats-loups et les rats géants, eux, ignorent leur Trait Nerveux. De plus, les chefs de meute peuvent effectuer des attaques Projectiles (Entraves) au corps à corps sans risquer de toucher leurs alliés (à moins d'obtenir une Maladresse sur leur jet d'attaque).",
+    "desc": "Les chefs de meute du clan Moulder sont des dompteurs skavens impitoyables, passés maîtres dans l'art de manier leur fouet pour maintenir leurs bêtes de guerre sous contrôle.\n\nMaître du fouet : les rats ogres ordinaires et briseurs d'os menés par un chef de meute ignorent les effets de leur Trait Stupide. Les rats-loups et les rats géants, eux, ignorent leur Trait Nerveux. De plus, les chefs de meute peuvent effectuer des attaques Projectiles (Entraves) au corps à corps sans risquer de toucher leurs alliés (à moins d'obtenir une Maladresse sur leur jet d'attaque).",
     "source": {
       "book": "ZI",
       "page": 43
@@ -51125,7 +51125,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les rats ogres briseurs d'os sont des monstres rarissimes. Ils servent souvent de montures aux skavens puissants, qui les chevauchent grâce à des howdahs construits sur mesure qui ressemblent à des trônes.<br><br>JE SUIS INARRÊTABLE ! : tant qu'un skaven est monté sur un briseur d'os, il gagne le Trait Immunité Psychologique. Si un rat ogre briseur d'os meurt, quiconque le chevauchait gagne immédiatement 5 États Brisé, et tous les autres skavens dans un rayon de 10 mètres gagnent immédiatement 1 État Brisé.",
+    "desc": "Les rats ogres briseurs d'os sont des monstres rarissimes. Ils servent souvent de montures aux skavens puissants, qui les chevauchent grâce à des howdahs construits sur mesure qui ressemblent à des trônes.\n\nJE SUIS INARRÊTABLE ! : tant qu'un skaven est monté sur un briseur d'os, il gagne le Trait Immunité Psychologique. Si un rat ogre briseur d'os meurt, quiconque le chevauchait gagne immédiatement 5 États Brisé, et tous les autres skavens dans un rayon de 10 mètres gagnent immédiatement 1 État Brisé.",
     "source": {
       "book": "ZI",
       "page": 43
@@ -51227,7 +51227,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les rats-loups sont des bêtes de meute créées par le clan Moulder à partir de rats géants façonnés par la chair-sorcellerie skaven. Dressés pour la garde, la chasse et la guerre, ils traquent inlassablement leurs proies.<br><br>Rat-zoirs : les crocs acérés d'un rat loup ont l'Atout Perforante.",
+    "desc": "Les rats-loups sont des bêtes de meute créées par le clan Moulder à partir de rats géants façonnés par la chair-sorcellerie skaven. Dressés pour la garde, la chasse et la guerre, ils traquent inlassablement leurs proies.\n\nRat-zoirs : les crocs acérés d'un rat loup ont l'Atout Perforante.",
     "source": {
       "book": "ZI",
       "page": 43
@@ -51366,7 +51366,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les plus grands accomplissements des arts pervers du clan Moulder sont tous des abominations uniques et innommables, des amas de chair, de griffes et de bouches multiples façonnés par la chair-sorcellerie skaven.<br><br>Au nom de Sigmar, quelle est cette CHOSE ? : tout Test de Calme effectué pour résister à la Terreur ou à la Peur que provoquent ces horreurs sur mesure est Complexe (-10).",
+    "desc": "Les plus grands accomplissements des arts pervers du clan Moulder sont tous des abominations uniques et innommables, des amas de chair, de griffes et de bouches multiples façonnés par la chair-sorcellerie skaven.\n\nAu nom de Sigmar, quelle est cette CHOSE ? : tout Test de Calme effectué pour résister à la Terreur ou à la Peur que provoquent ces horreurs sur mesure est Complexe (-10).",
     "source": {
       "book": "ZI",
       "page": 26
@@ -51431,7 +51431,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les amibes, surnommées « diables gluants », sont des créatures dénuées de squelette, dont l'aspect n'évoque rien d'autre qu'une sorte de gelée hostile. Leur existence se limite à consommer toute matière organique qu'elles parviennent à recouvrir, à l'aide de longs tentacules appelés « pseudopodes ». Leur surface exsude un acide digestif puissant. Elles craignent le feu.<br><br>Engloutir : une amibe peut engloutir n'importe quelle créature de sa taille ou plus petite. Une victime Engloutie souffre d'un nombre d'États Empêtré égal au Bonus de Force de l'amibe et subit au début de chaque Round des Blessures égales à ce même Bonus (ignorant Armure et Endurance), digérée par les acides.<br><br>Gelée de l'enfer : toute Blessure non causée par le feu, un froid extrême ou de la magie est divisée par deux. Une amibe ne peut être tuée de manière permanente que par le feu, le froid ou la magie.<br><br>Essentiellement décérébrée : les amibes n'ont aucun score d'Intelligence, de Force Mentale ou de Sociabilité ; elles disposent du Trait Immunité Psychologique, mais réagissent aux flammes comme si elles possédaient le Trait Effrayé (Feu).",
+    "desc": "Les amibes, surnommées « diables gluants », sont des créatures dénuées de squelette, dont l'aspect n'évoque rien d'autre qu'une sorte de gelée hostile. Leur existence se limite à consommer toute matière organique qu'elles parviennent à recouvrir, à l'aide de longs tentacules appelés « pseudopodes ». Leur surface exsude un acide digestif puissant. Elles craignent le feu.\n\nEngloutir : une amibe peut engloutir n'importe quelle créature de sa taille ou plus petite. Une victime Engloutie souffre d'un nombre d'États Empêtré égal au Bonus de Force de l'amibe et subit au début de chaque Round des Blessures égales à ce même Bonus (ignorant Armure et Endurance), digérée par les acides.\n\nGelée de l'enfer : toute Blessure non causée par le feu, un froid extrême ou de la magie est divisée par deux. Une amibe ne peut être tuée de manière permanente que par le feu, le froid ou la magie.\n\nEssentiellement décérébrée : les amibes n'ont aucun score d'Intelligence, de Force Mentale ou de Sociabilité ; elles disposent du Trait Immunité Psychologique, mais réagissent aux flammes comme si elles possédaient le Trait Effrayé (Feu).",
     "source": {
       "book": "ZI",
       "page": 44
@@ -51557,7 +51557,7 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": "Jetsam est une très grosse amibe intelligente et capable de communiquer, employée par un gang de rançonneurs d'Altdorf comme « calèche de résolution des problèmes » : les corps encombrants — et les personnes gênantes — disparaissent entièrement après une « discussion avec Jetsam ».<br><br>Engloutir : comme l'Amibe, mais Jetsam est suffisamment intelligente pour expulser une cible qu'elle ne souhaite pas dévorer.<br><br>Gelée de l'enfer : comme l'Amibe.",
+    "desc": "Jetsam est une très grosse amibe intelligente et capable de communiquer, employée par un gang de rançonneurs d'Altdorf comme « calèche de résolution des problèmes » : les corps encombrants — et les personnes gênantes — disparaissent entièrement après une « discussion avec Jetsam ».\n\nEngloutir : comme l'Amibe, mais Jetsam est suffisamment intelligente pour expulser une cible qu'elle ne souhaite pas dévorer.\n\nGelée de l'enfer : comme l'Amibe.",
     "source": {
       "book": "ZI",
       "page": 45
@@ -51643,7 +51643,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "L'amphisbaena, surnommé le « Serpent des prophètes », est un énorme serpent à deux têtes, une à chaque extrémité de son corps, et toutes deux dotées de l'un des poisons les plus mortels connus des alchimistes. Ses yeux brillent comme des lampes dans l'obscurité, attirant les créatures imprudentes vers leur trépas. Dilué, son venin permettrait de produire des visions d'un passé caché et d'un avenir inconnu.<br><br>Surnombre à quatre : l'amphisbaena ne peut être Surpris et 4 adversaires sont nécessaires pour avoir la supériorité numérique sur lui. Une fois par Round de combat, l'amphisbaena peut inverser le résultat d'un Test de Combat dans lequel il est impliqué.",
+    "desc": "L'amphisbaena, surnommé le « Serpent des prophètes », est un énorme serpent à deux têtes, une à chaque extrémité de son corps, et toutes deux dotées de l'un des poisons les plus mortels connus des alchimistes. Ses yeux brillent comme des lampes dans l'obscurité, attirant les créatures imprudentes vers leur trépas. Dilué, son venin permettrait de produire des visions d'un passé caché et d'un avenir inconnu.\n\nSurnombre à quatre : l'amphisbaena ne peut être Surpris et 4 adversaires sont nécessaires pour avoir la supériorité numérique sur lui. Une fois par Round de combat, l'amphisbaena peut inverser le résultat d'un Test de Combat dans lequel il est impliqué.",
     "source": {
       "book": "ZI",
       "page": 46
@@ -51747,7 +51747,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les trolls des rivières arrachent en pleine nuit les voyageurs à leurs barges et les condamnent à un sort terrible. La couleur de leur peau varie du vert herbeux au bleu bilieux, mais tous empestent la végétation en décomposition, le poisson putride et la vase rance. Ils guérissent de presque n'importe quelle blessure à une rapidité stupéfiante, le feu étant la seule chose dont ils ne peuvent facilement guérir, et peuvent vomir le contenu acide de leur estomac à volonté.<br><br>Rempli de poisson et pire encore : un troll des rivières peut effectuer sa première attaque de Vomissement dans un combat sans dépenser d'Avantage.<br><br>Odeur de pourriture : toutes les cibles vivantes situées à un nombre de mètres inférieur ou égal au Bonus d'Endurance du troll subissent une pénalité de -10 à tous les Tests (non cumulable).",
+    "desc": "Les trolls des rivières arrachent en pleine nuit les voyageurs à leurs barges et les condamnent à un sort terrible. La couleur de leur peau varie du vert herbeux au bleu bilieux, mais tous empestent la végétation en décomposition, le poisson putride et la vase rance. Ils guérissent de presque n'importe quelle blessure à une rapidité stupéfiante, le feu étant la seule chose dont ils ne peuvent facilement guérir, et peuvent vomir le contenu acide de leur estomac à volonté.\n\nRempli de poisson et pire encore : un troll des rivières peut effectuer sa première attaque de Vomissement dans un combat sans dépenser d'Avantage.\n\nOdeur de pourriture : toutes les cibles vivantes situées à un nombre de mètres inférieur ou égal au Bonus d'Endurance du troll subissent une pénalité de -10 à tous les Tests (non cumulable).",
     "source": {
       "book": "ZI",
       "page": 48
@@ -51862,7 +51862,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les sorcières trolls des rivières sont les matriarches malfaisantes, cruelles et dotées d'une intelligence inquiétante de leur espèce. Elles émergent des profondeurs des marais pour mener leurs semblables au combat, pratiquant des arts mystiques obscurs et maudissant leurs ennemis à coups d'invectives trolls effroyables. Elles dépassent largement leurs homologues masculins en taille.<br><br>Vomissement abondant : elle effectue sa première attaque de Vomissement dans un combat sans dépenser d'Avantage.<br><br>Odeur accablante : ceux qui sont exposés à cette puanteur pour la première fois doivent passer un Test de Force Mentale, sans quoi ils se voient infliger l'État Assommé.",
+    "desc": "Les sorcières trolls des rivières sont les matriarches malfaisantes, cruelles et dotées d'une intelligence inquiétante de leur espèce. Elles émergent des profondeurs des marais pour mener leurs semblables au combat, pratiquant des arts mystiques obscurs et maudissant leurs ennemis à coups d'invectives trolls effroyables. Elles dépassent largement leurs homologues masculins en taille.\n\nVomissement abondant : elle effectue sa première attaque de Vomissement dans un combat sans dépenser d'Avantage.\n\nOdeur accablante : ceux qui sont exposés à cette puanteur pour la première fois doivent passer un Test de Force Mentale, sans quoi ils se voient infliger l'État Assommé.",
     "source": {
       "book": "ZI",
       "page": 48
@@ -51932,7 +51932,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les sangsues caméléons ressemblent à de simples sangsues géantes parées de couleurs étranges. Dénuées d'yeux, ce sont des buveuses de sang qui attirent leurs proies grâce à leur extraordinaire capacité à créer des hallucinations captivantes reflétant les désirs profonds de leur cible. Leur morsure est indolore. Elles chassent en groupes de trois ou plus.<br><br>Nuage hallucinogène : une sangsue caméléon exsude un nuage affectant les mammifères à une distance en mètres inférieure ou égale à son Bonus d'Endurance. Toute créature exposée doit réussir un Test d'Endurance Difficile (-20), sans quoi elle est en proie à une vision puissante de quelqu'un ou quelque chose qu'elle aime et a perdu, et compte comme victime de l'État Inconscient pendant trois Rounds, plus un par DR manquant.<br><br>Morsure indolore : après avoir touché, une sangsue caméléon se colle à sa cible et aspire 1 Blessure en sang par Round (ignorant Armure et Endurance) jusqu'à 1d10 Blessures. La retirer par un Test opposé de Force inflige une Blessure supplémentaire et l'État Hémorragique.",
+    "desc": "Les sangsues caméléons ressemblent à de simples sangsues géantes parées de couleurs étranges. Dénuées d'yeux, ce sont des buveuses de sang qui attirent leurs proies grâce à leur extraordinaire capacité à créer des hallucinations captivantes reflétant les désirs profonds de leur cible. Leur morsure est indolore. Elles chassent en groupes de trois ou plus.\n\nNuage hallucinogène : une sangsue caméléon exsude un nuage affectant les mammifères à une distance en mètres inférieure ou égale à son Bonus d'Endurance. Toute créature exposée doit réussir un Test d'Endurance Difficile (-20), sans quoi elle est en proie à une vision puissante de quelqu'un ou quelque chose qu'elle aime et a perdu, et compte comme victime de l'État Inconscient pendant trois Rounds, plus un par DR manquant.\n\nMorsure indolore : après avoir touché, une sangsue caméléon se colle à sa cible et aspire 1 Blessure en sang par Round (ignorant Armure et Endurance) jusqu'à 1d10 Blessures. La retirer par un Test opposé de Force inflige une Blessure supplémentaire et l'État Hémorragique.",
     "source": {
       "book": "ZI",
       "page": 50
@@ -52022,7 +52022,7 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": "Le déchiqueteur de cadavres de Carroburg est un énorme prédateur limicole aux écailles changeant de couleur, doté de plusieurs regards perçants et d'une gueule cachée qui jaillit pour broyer ses proies.<br><br>Sept regards perçants : le déchiqueteur de cadavres ne peut pas être en infériorité numérique ni Surpris.",
+    "desc": "Le déchiqueteur de cadavres de Carroburg est un énorme prédateur limicole aux écailles changeant de couleur, doté de plusieurs regards perçants et d'une gueule cachée qui jaillit pour broyer ses proies.\n\nSept regards perçants : le déchiqueteur de cadavres ne peut pas être en infériorité numérique ni Surpris.",
     "source": {
       "book": "ZI",
       "page": 54
@@ -52093,7 +52093,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les pégases « déchus » ou « noirs » sont nés d'un programme d'élevage couronnien dévoyé visant à créer un pégase plus rapide en y mêlant une bête issue des Désolations du Chaos. Ce sont des pégases aux couleurs sombres, dotés de grandes ailes semblables à celles d'une chauve-souris et de cornes en dents de scie irrégulières. Chasseurs cruels et rusés, ils aiment tendre des embuscades dévastatrices aux ennemis imprudents ou affaiblis.<br><br>Attaque impitoyable : lors du Round où un pégase noir charge, toutes ses attaques ont les Atouts Empaleuse et Perforante.",
+    "desc": "Les pégases « déchus » ou « noirs » sont nés d'un programme d'élevage couronnien dévoyé visant à créer un pégase plus rapide en y mêlant une bête issue des Désolations du Chaos. Ce sont des pégases aux couleurs sombres, dotés de grandes ailes semblables à celles d'une chauve-souris et de cornes en dents de scie irrégulières. Chasseurs cruels et rusés, ils aiment tendre des embuscades dévastatrices aux ennemis imprudents ou affaiblis.\n\nAttaque impitoyable : lors du Round où un pégase noir charge, toutes ses attaques ont les Atouts Empaleuse et Perforante.",
     "source": {
       "book": "ZI",
       "page": 56
@@ -52175,7 +52175,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les noctecorbes sont des rapaces déformés ressemblant davantage à des monstres qu'à des oiseaux, qui descendaient en volées rapides déchiqueter les imprudents, réduisant leurs victimes à l'état d'ossements en moins de trente secondes. Ils craignent la lumière et n'attaquent que lorsqu'aucune des lunes n'apparaît dans le ciel.<br><br>Meurtre ailé : toutes les attaques de la nuée de noctecorbes ont les Atouts Empaleuse et Perforante.",
+    "desc": "Les noctecorbes sont des rapaces déformés ressemblant davantage à des monstres qu'à des oiseaux, qui descendaient en volées rapides déchiqueter les imprudents, réduisant leurs victimes à l'état d'ossements en moins de trente secondes. Ils craignent la lumière et n'attaquent que lorsqu'aucune des lunes n'apparaît dans le ciel.\n\nMeurtre ailé : toutes les attaques de la nuée de noctecorbes ont les Atouts Empaleuse et Perforante.",
     "source": {
       "book": "ZI",
       "page": 59
@@ -52263,7 +52263,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Le preyton est une terreur légendaire de la Forêt d'Arden. Ses pattes avant et son corps évoquent un cerf difforme et couvert d'écailles, son arrière-train se termine par des griffes de lion, et sa tête équine arbore des ramures acérées, des yeux rouges furieux et une gueule garnie de crocs dentelés. Féroce et impitoyable, il tue pour le plaisir, laissant derrière lui des cadavres déchiquetés dont il ne se nourrit même pas.<br><br>Malveillance infinie : si un preyton tue ou neutralise un adversaire vivant, il doit réussir un Test de Force Mentale ou s'arrêter pour mettre en pièces son opposant, perdant sa prochaine Action et son prochain Mouvement. Un ennemi inconscient subit automatiquement une Blessure Critique. Les témoins se voient infliger Peur 2.",
+    "desc": "Le preyton est une terreur légendaire de la Forêt d'Arden. Ses pattes avant et son corps évoquent un cerf difforme et couvert d'écailles, son arrière-train se termine par des griffes de lion, et sa tête équine arbore des ramures acérées, des yeux rouges furieux et une gueule garnie de crocs dentelés. Féroce et impitoyable, il tue pour le plaisir, laissant derrière lui des cadavres déchiquetés dont il ne se nourrit même pas.\n\nMalveillance infinie : si un preyton tue ou neutralise un adversaire vivant, il doit réussir un Test de Force Mentale ou s'arrêter pour mettre en pièces son opposant, perdant sa prochaine Action et son prochain Mouvement. Un ennemi inconscient subit automatiquement une Blessure Critique. Les témoins se voient infliger Peur 2.",
     "source": {
       "book": "ZI",
       "page": 60
@@ -52342,7 +52342,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les grands aigles, les plus imposants rapaces du Vieux Monde, nichent dans les hauts sommets des Montagnes Grises. Ce sont d'immenses créatures dont l'envergure dépasse fréquemment les neuf mètres, capables d'une vitesse fulgurante. Leur vue est la plus perçante que l'on puisse trouver chez des créatures mortelles, et leurs serres, aussi longues qu'un bras d'homme, perforent aisément une armure. Espèce noble, ils vouent une détestation féroce aux peaux-vertes.<br><br>Éclair tombé d'un ciel clair : toutes les attaques du grand aigle ont les Atouts Rapide et Perforante.",
+    "desc": "Les grands aigles, les plus imposants rapaces du Vieux Monde, nichent dans les hauts sommets des Montagnes Grises. Ce sont d'immenses créatures dont l'envergure dépasse fréquemment les neuf mètres, capables d'une vitesse fulgurante. Leur vue est la plus perçante que l'on puisse trouver chez des créatures mortelles, et leurs serres, aussi longues qu'un bras d'homme, perforent aisément une armure. Espèce noble, ils vouent une détestation féroce aux peaux-vertes.\n\nÉclair tombé d'un ciel clair : toutes les attaques du grand aigle ont les Atouts Rapide et Perforante.",
     "source": {
       "book": "ZI",
       "page": 62
@@ -52603,7 +52603,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Difforme et repoussante, la cockatrice est une créature jadis « bénie » par les Puissances de la Ruine. Elle ressemble à un grand oiseau difforme, avec un bec à crocs dentelés, un corps couvert de plumes et de fourrure de manière inégale, et une queue de serpent terminée par des serres. Ceux qui croisent son regard maudit sont aussitôt transformés en pierre, c'est pourquoi les chevaliers qui la chassent portent des casques qui les rendent presque aveugles, se guidant au sifflement résonnant qu'elle émet au combat.<br><br>Griffes cruelles : les serres d'une cockatrice ont le Trait Venin (Difficile).",
+    "desc": "Difforme et repoussante, la cockatrice est une créature jadis « bénie » par les Puissances de la Ruine. Elle ressemble à un grand oiseau difforme, avec un bec à crocs dentelés, un corps couvert de plumes et de fourrure de manière inégale, et une queue de serpent terminée par des serres. Ceux qui croisent son regard maudit sont aussitôt transformés en pierre, c'est pourquoi les chevaliers qui la chassent portent des casques qui les rendent presque aveugles, se guidant au sifflement résonnant qu'elle émet au combat.\n\nGriffes cruelles : les serres d'une cockatrice ont le Trait Venin (Difficile).",
     "source": {
       "book": "ZI",
       "page": 64
@@ -52725,7 +52725,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "La terrible chimère à trois têtes est un véritable monstre du Chaos, une créature difforme qui ne vit que pour tuer. Son corps est généralement semblable à celui d'un énorme chat difforme aux larges pattes griffues, surmonté de trois têtes distinctes — l'une léonine, une autre celle d'un grand rapace, la troisième celle d'un dragon — qui agissent de concert et peuvent traquer indépendamment plusieurs ennemis à la fois. Elle vole à l'aide de grandes ailes et possède une longue queue pouvant s'achever par une lame, un dard ou une quatrième tête.<br><br>Nous vous voyons : une chimère ne peut être ni Surprise, ni en infériorité numérique au combat.",
+    "desc": "La terrible chimère à trois têtes est un véritable monstre du Chaos, une créature difforme qui ne vit que pour tuer. Son corps est généralement semblable à celui d'un énorme chat difforme aux larges pattes griffues, surmonté de trois têtes distinctes — l'une léonine, une autre celle d'un grand rapace, la troisième celle d'un dragon — qui agissent de concert et peuvent traquer indépendamment plusieurs ennemis à la fois. Elle vole à l'aide de grandes ailes et possède une longue queue pouvant s'achever par une lame, un dard ou une quatrième tête.\n\nNous vous voyons : une chimère ne peut être ni Surprise, ni en infériorité numérique au combat.",
     "source": {
       "book": "ZI",
       "page": 66
@@ -52841,7 +52841,7 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": "La redoutée Bête de l'Oblast, une chimère qui dévaste régulièrement les terres de Kislev et traque ses proies pendant des jours, a un corps immense évoquant un ours au poil gris et hirsute, surmonté des têtes d'un grand faucon, d'un sanglier aux défenses massives et d'un dragon crachant de la glace.<br><br>Nous vous voyons : la bête de l'Oblast ne peut être ni Surprise, ni en infériorité numérique au combat.<br><br>Mâchoires broyantes : la morsure de la bête de l'Oblast possède les Atouts Taille et Perforante.",
+    "desc": "La redoutée Bête de l'Oblast, une chimère qui dévaste régulièrement les terres de Kislev et traque ses proies pendant des jours, a un corps immense évoquant un ours au poil gris et hirsute, surmonté des têtes d'un grand faucon, d'un sanglier aux défenses massives et d'un dragon crachant de la glace.\n\nNous vous voyons : la bête de l'Oblast ne peut être ni Surprise, ni en infériorité numérique au combat.\n\nMâchoires broyantes : la morsure de la bête de l'Oblast possède les Atouts Taille et Perforante.",
     "source": {
       "book": "ZI",
       "page": 67
@@ -53075,7 +53075,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les peaux-de-loup sont des métamorphes déformés souillés par le Chaos, nés d'une terrible malédiction : des monstres déambulant sous une apparence humaine, jusqu'à ce que Morrslieb les fasse émerger de leur prison de chair. La bête qui se trouve à l'intérieur se libère alors à coups de griffes de sa forme humaine — une terrible créature-loup qui se tient debout et sème la dévastation, uniquement vêtue des lambeaux de son ancien corps. Lorsqu'elle a suffisamment massacré, l'humain à l'intérieur doit en sortir à coups de griffes et de morsures.<br><br>Rage infinie : un peau-de-loup est toujours dans un état de Frénésie.",
+    "desc": "Les peaux-de-loup sont des métamorphes déformés souillés par le Chaos, nés d'une terrible malédiction : des monstres déambulant sous une apparence humaine, jusqu'à ce que Morrslieb les fasse émerger de leur prison de chair. La bête qui se trouve à l'intérieur se libère alors à coups de griffes de sa forme humaine — une terrible créature-loup qui se tient debout et sème la dévastation, uniquement vêtue des lambeaux de son ancien corps. Lorsqu'elle a suffisamment massacré, l'humain à l'intérieur doit en sortir à coups de griffes et de morsures.\n\nRage infinie : un peau-de-loup est toujours dans un état de Frénésie.",
     "source": {
       "book": "ZI",
       "page": 71
@@ -53165,7 +53165,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les grands taurus sont des créatures de feu et de rage natives des Terres Sombres. Ils ressemblent à d'énormes taureaux ailés dont la peau rouge profond brûle en permanence de la chaleur d'une gigantesque forge, leur apparence voilée par un nuage tourbillonnant de fumée. Leur gueule bardée de crocs ne laisse pas échapper un souffle, mais des flammes, et leurs sabots ardents laissent des traces calcinées sur la terre. Ce sont des êtres d'Aqshy, le Vent de Feu.<br><br>Corps de flammes : à la fin de chaque Round de combat, toutes les cibles Engagées avec un grand taurus subissent 1d10 Blessures (réductibles par le Bonus d'Endurance et les Points d'Armure, minimum 1). De plus, le Bonus d'Endurance d'un grand taurus est doublé contre les attaques et les armes non magiques.<br><br>Rage sanguinaire : les grands taurus sont toujours sujets à la Frénésie et à la Haine d'absolument tout.",
+    "desc": "Les grands taurus sont des créatures de feu et de rage natives des Terres Sombres. Ils ressemblent à d'énormes taureaux ailés dont la peau rouge profond brûle en permanence de la chaleur d'une gigantesque forge, leur apparence voilée par un nuage tourbillonnant de fumée. Leur gueule bardée de crocs ne laisse pas échapper un souffle, mais des flammes, et leurs sabots ardents laissent des traces calcinées sur la terre. Ce sont des êtres d'Aqshy, le Vent de Feu.\n\nCorps de flammes : à la fin de chaque Round de combat, toutes les cibles Engagées avec un grand taurus subissent 1d10 Blessures (réductibles par le Bonus d'Endurance et les Points d'Armure, minimum 1). De plus, le Bonus d'Endurance d'un grand taurus est doublé contre les attaques et les armes non magiques.\n\nRage sanguinaire : les grands taurus sont toujours sujets à la Frénésie et à la Haine d'absolument tout.",
     "source": {
       "book": "ZI",
       "page": 74
@@ -53245,7 +53245,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les trégaras sont les plus gros insectes connus, ressemblant à un croisement entre une mante religieuse et un énorme bernard-l'ermite, avec un goût prononcé pour la viande de skaven. Leur carapace couleur pierre imite le plafond des cavernes où ils vivent, les rendant pratiquement indétectables, et ils ne dégagent aucune odeur. Dépourvus d'yeux, ils localisent leurs proies par les vibrations de la pierre, les attrapent de leurs pinces antérieures et les achèvent de leurs mâchoires phénoménales.<br><br>Pinces antérieures : si un trégara touche une cible avec ses pinces, celle-ci gagne automatiquement un État Empêtré, et le trégara peut entamer une Empoignade. Un trégara ne peut pas Empêtrer plus de deux adversaires à la fois.<br><br>Sens des vibrations : les trégaras détectent automatiquement toutes les créatures physiques dans un rayon de 4 x leur Bonus d'Initiative en mètres, et ne peuvent pas être Surpris.<br><br>Mandibules acérées : la morsure d'un trégara a les Atouts Empaleuse et Perforante.",
+    "desc": "Les trégaras sont les plus gros insectes connus, ressemblant à un croisement entre une mante religieuse et un énorme bernard-l'ermite, avec un goût prononcé pour la viande de skaven. Leur carapace couleur pierre imite le plafond des cavernes où ils vivent, les rendant pratiquement indétectables, et ils ne dégagent aucune odeur. Dépourvus d'yeux, ils localisent leurs proies par les vibrations de la pierre, les attrapent de leurs pinces antérieures et les achèvent de leurs mâchoires phénoménales.\n\nPinces antérieures : si un trégara touche une cible avec ses pinces, celle-ci gagne automatiquement un État Empêtré, et le trégara peut entamer une Empoignade. Un trégara ne peut pas Empêtrer plus de deux adversaires à la fois.\n\nSens des vibrations : les trégaras détectent automatiquement toutes les créatures physiques dans un rayon de 4 x leur Bonus d'Initiative en mètres, et ne peuvent pas être Surpris.\n\nMandibules acérées : la morsure d'un trégara a les Atouts Empaleuse et Perforante.",
     "source": {
       "book": "ZI",
       "page": 76
@@ -53318,7 +53318,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les macareux à bec tranchant sont d'énormes rapaces côtiers omnivores armés de becs crochus incroyablement tranchants, nichant par milliers dans les falaises de la Baie des Larmes. Un macareux isolé fuit dès qu'on lui tient tête, mais ils n'attaquent jamais seuls : en volées de dix à vingt, ils ne craignent plus rien et peuvent déchiqueter une bande de mercenaires ogres en moins d'une minute.<br><br>Volée de rasoirs : une volée de macareux a le Trait Nuée (Immunité Psychologique, Capacité de Combat 48, 55 Blessures). Tout adversaire Engagé perd automatiquement 1 Blessure (ignorant Endurance et PA) à la fin de chaque Round. Si un macareux inflige au moins 1 Dégât, la cible doit réussir un Test de Résistance Accessible (+20) ou gagner un État Hémorragique.",
+    "desc": "Les macareux à bec tranchant sont d'énormes rapaces côtiers omnivores armés de becs crochus incroyablement tranchants, nichant par milliers dans les falaises de la Baie des Larmes. Un macareux isolé fuit dès qu'on lui tient tête, mais ils n'attaquent jamais seuls : en volées de dix à vingt, ils ne craignent plus rien et peuvent déchiqueter une bande de mercenaires ogres en moins d'une minute.\n\nVolée de rasoirs : une volée de macareux a le Trait Nuée (Immunité Psychologique, Capacité de Combat 48, 55 Blessures). Tout adversaire Engagé perd automatiquement 1 Blessure (ignorant Endurance et PA) à la fin de chaque Round. Si un macareux inflige au moins 1 Dégât, la cible doit réussir un Test de Résistance Accessible (+20) ou gagner un État Hémorragique.",
     "source": {
       "book": "ZI",
       "page": 77
@@ -53409,7 +53409,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Le ver des marais est le plus puissant des serpents du Vieux Monde, une créature immense dont les plus petits spécimens atteignent trois bons mètres à l'âge adulte ; de vieilles histoires en évoquent atteignant trente mètres ou plus. Présents uniquement dans les sols marécageux, leurs écailles aux pointillés bruns ou verts leur permettent de se fondre dans la végétation. Certaines légendes obscures les associent à la Foi antique.<br><br>Enroulements infinis : le ver des marais est extrêmement long et capable d'empoigner simultanément jusqu'à cinq cibles de Tailles inférieures.",
+    "desc": "Le ver des marais est le plus puissant des serpents du Vieux Monde, une créature immense dont les plus petits spécimens atteignent trois bons mètres à l'âge adulte ; de vieilles histoires en évoquent atteignant trente mètres ou plus. Présents uniquement dans les sols marécageux, leurs écailles aux pointillés bruns ou verts leur permettent de se fondre dans la végétation. Certaines légendes obscures les associent à la Foi antique.\n\nEnroulements infinis : le ver des marais est extrêmement long et capable d'empoigner simultanément jusqu'à cinq cibles de Tailles inférieures.",
     "source": {
       "book": "ZI",
       "page": 52
@@ -53511,7 +53511,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les stégadons sont des reptiles gargantuesques des Terres du Sud et de la Lustrie, qui font trembler la terre sous leurs pas et peuvent réduire les arbres les plus gigantesques en copeaux d'une seule charge. Ils adorent manger des feuilles, mais mangent de tout, et en quantité monumentale.<br><br>Charge irrésistible : un stégadon gagne +3 Avantages lorsqu'il Charge.",
+    "desc": "Les stégadons sont des reptiles gargantuesques des Terres du Sud et de la Lustrie, qui font trembler la terre sous leurs pas et peuvent réduire les arbres les plus gigantesques en copeaux d'une seule charge. Ils adorent manger des feuilles, mais mangent de tout, et en quantité monumentale.\n\nCharge irrésistible : un stégadon gagne +3 Avantages lorsqu'il Charge.",
     "source": {
       "book": "ZI",
       "page": 80
@@ -53692,7 +53692,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Le carnosaure, le « lézard du tonnerre », est la plus fabuleuse des créatures de la Lustrie et des Terres du Sud : un énorme reptile bipède d'au moins cinq mètres de haut, au corps tout entier bâti pour la vitesse, dont la mâchoire aux dents monstrueuses pourrait couper un ogre en deux.<br><br>Frénésie sanguinaire : une fois qu'un carnosaure a infligé une Blessure en combat, il entre immédiatement en Frénésie jusqu'à ce que tous les ennemis qu'il peut percevoir soient morts.",
+    "desc": "Le carnosaure, le « lézard du tonnerre », est la plus fabuleuse des créatures de la Lustrie et des Terres du Sud : un énorme reptile bipède d'au moins cinq mètres de haut, au corps tout entier bâti pour la vitesse, dont la mâchoire aux dents monstrueuses pourrait couper un ogre en deux.\n\nFrénésie sanguinaire : une fois qu'un carnosaure a infligé une Blessure en combat, il entre immédiatement en Frénésie jusqu'à ce que tous les ennemis qu'il peut percevoir soient morts.",
     "source": {
       "book": "ZI",
       "page": 78
@@ -53786,7 +53786,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les grands chats sauvages tiléens sont des chasseurs rapides et mortels à la fourrure épaisse et multicolore, ornée de rosaces ou de rayures. Ils se servent de leur longue queue annelée pour effacer leurs empreintes, ne laissant presque aucune trace, et ne miaulent que lorsque leur proie est morte. Très prisés des « gladiatore » de la Casa di Ruggisce.<br><br>Déstabilisant : en présence d'une créature Déstabilisante, une créature Instable compte ses Avantages à la fin de chaque Round comme si elle en avait deux de moins.",
+    "desc": "Les grands chats sauvages tiléens sont des chasseurs rapides et mortels à la fourrure épaisse et multicolore, ornée de rosaces ou de rayures. Ils se servent de leur longue queue annelée pour effacer leurs empreintes, ne laissant presque aucune trace, et ne miaulent que lorsque leur proie est morte. Très prisés des « gladiatore » de la Casa di Ruggisce.\n\nDéstabilisant : en présence d'une créature Déstabilisante, une créature Instable compte ses Avantages à la fin de chaque Round comme si elle en avait deux de moins.",
     "source": {
       "book": "ZI",
       "page": 82
@@ -53883,7 +53883,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les lions de guerre de la distante Chrace sont des créatures splendides, assez grandes pour atteindre l'épaule d'un homme et parcourir trois mètres d'un seul bond. Leur crinière brille tel un feu d'argent flottant, même sans vent, et leurs griffes, telles des dagues, déchirent une armure de plaques comme du papier. Les sorcières elfes en font parfois leurs familiers.<br><br>Don de Rahagra : les armes naturelles des lions de guerre de Chrace ont les Atouts Perforante et Rapide.",
+    "desc": "Les lions de guerre de la distante Chrace sont des créatures splendides, assez grandes pour atteindre l'épaule d'un homme et parcourir trois mètres d'un seul bond. Leur crinière brille tel un feu d'argent flottant, même sans vent, et leurs griffes, telles des dagues, déchirent une armure de plaques comme du papier. Les sorcières elfes en font parfois leurs familiers.\n\nDon de Rahagra : les armes naturelles des lions de guerre de Chrace ont les Atouts Perforante et Rapide.",
     "source": {
       "book": "ZI",
       "page": 97
@@ -53966,7 +53966,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Version ZI du griffon, plus complète que celle du Livre de Base. La tête, les pattes avant et les ailes de ces gros prédateurs rappellent celles de rapaces, tandis que leurs pattes arrière sont celles de chats sauvages. Créatures sacrées de l'Empire, impossibles à « dompter » mais réputées pour leur loyauté ; adversaires rusés qui préfèrent souvent mourir plutôt que subir une défaite.<br><br>Cri perçant : un griffon qui charge peut dépenser deux Avantages pour hurler sur ses ennemis (attaque gratuite). Tous les adversaires dans un rayon de (Bonus d'Endurance) mètres doivent réussir un Test de Force Mentale Difficile (-20) ou gagner un État Assommé.<br><br>Comme l'éclair : les serres ont l'Atout d'arme Rapide.",
+    "desc": "Version ZI du griffon, plus complète que celle du Livre de Base. La tête, les pattes avant et les ailes de ces gros prédateurs rappellent celles de rapaces, tandis que leurs pattes arrière sont celles de chats sauvages. Créatures sacrées de l'Empire, impossibles à « dompter » mais réputées pour leur loyauté ; adversaires rusés qui préfèrent souvent mourir plutôt que subir une défaite.\n\nCri perçant : un griffon qui charge peut dépenser deux Avantages pour hurler sur ses ennemis (attaque gratuite). Tous les adversaires dans un rayon de (Bonus d'Endurance) mètres doivent réussir un Test de Force Mentale Difficile (-20) ou gagner un État Assommé.\n\nComme l'éclair : les serres ont l'Atout d'arme Rapide.",
     "source": {
       "book": "ZI",
       "page": 20
@@ -54047,7 +54047,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Version ZI de la vouivre (wyvern), plus complète que celle du Livre de Base. Reptiles charognards ailés des Montagnes du Bord du Monde, qui ne ressemblent à des dragons que de loin : plus petits, sans pattes avant, solidement bâtis comme des taureaux à écailles. Les plus dangereux seigneurs de guerre orques en chevauchent parfois.<br><br>Malveillance de la vouivre : un ennemi qui gagne un État Surpris à cause d'une vouivre doit réussir un Test de Force Mentale ou succomber à la malédiction (-10 à tous ses Tests, incapable d'utiliser ses Points de Chance) jusqu'à ce que la vouivre meure ou que la cible ait subi 5 Blessures ou plus.",
+    "desc": "Version ZI de la vouivre (wyvern), plus complète que celle du Livre de Base. Reptiles charognards ailés des Montagnes du Bord du Monde, qui ne ressemblent à des dragons que de loin : plus petits, sans pattes avant, solidement bâtis comme des taureaux à écailles. Les plus dangereux seigneurs de guerre orques en chevauchent parfois.\n\nMalveillance de la vouivre : un ennemi qui gagne un État Surpris à cause d'une vouivre doit réussir un Test de Force Mentale ou succomber à la malédiction (-10 à tous ses Tests, incapable d'utiliser ses Points de Chance) jusqu'à ce que la vouivre meure ou que la cible ait subi 5 Blessures ou plus.",
     "source": {
       "book": "ZI",
       "page": 34
@@ -54123,7 +54123,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les léviathans sont des créatures gigantesques, qui ressemblent à un croisement entre un énorme bernard-l'ermite et un homard, mesurant près de six mètres de large. Leur carapace est plus dure que l'acier trempé ; flèches et armes à feu de petite taille ne leur font même pas une égratignure. Leurs pinces sont aisément capables de couper un chevalier bretonnien et son destrier caparaçonné en deux. Comme ce sont des créatures des profondeurs, elles font rarement surface, mais elles sont extrêmement dangereuses pour tous les vaisseaux qu'elles croisent. Pour certains, elles sont les messagères du courroux de Manann.<br><br>Pinces perforatrices : les pinces d'un léviathan ont l'Atout Perforante.<br><br>Crustacé : un léviathan peut respirer sous l'eau, et s'y déplacer avec un Mouvement de 8.",
+    "desc": "Les léviathans sont des créatures gigantesques, qui ressemblent à un croisement entre un énorme bernard-l'ermite et un homard, mesurant près de six mètres de large. Leur carapace est plus dure que l'acier trempé ; flèches et armes à feu de petite taille ne leur font même pas une égratignure. Leurs pinces sont aisément capables de couper un chevalier bretonnien et son destrier caparaçonné en deux. Comme ce sont des créatures des profondeurs, elles font rarement surface, mais elles sont extrêmement dangereuses pour tous les vaisseaux qu'elles croisent. Pour certains, elles sont les messagères du courroux de Manann.\n\nPinces perforatrices : les pinces d'un léviathan ont l'Atout Perforante.\n\nCrustacé : un léviathan peut respirer sous l'eau, et s'y déplacer avec un Mouvement de 8.",
     "source": {
       "book": "ZI",
       "page": 92
@@ -54202,7 +54202,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Il Potente Granchio est un léviathan d'une taille et d'une malice exceptionnelles, célèbre pour avoir démantelé un vaisseau avant de repêcher ses marins un à un pour les dévorer.<br><br>Pinces encore plus perforatrices : les pinces d'Il Potente Granchio ont les Atouts Perforante et Taille.<br><br>Crustacé : Il Potente Granchio peut respirer sous l'eau, et s'y déplacer avec un Mouvement de 8.",
+    "desc": "Il Potente Granchio est un léviathan d'une taille et d'une malice exceptionnelles, célèbre pour avoir démantelé un vaisseau avant de repêcher ses marins un à un pour les dévorer.\n\nPinces encore plus perforatrices : les pinces d'Il Potente Granchio ont les Atouts Perforante et Taille.\n\nCrustacé : Il Potente Granchio peut respirer sous l'eau, et s'y déplacer avec un Mouvement de 8.",
     "source": {
       "book": "ZI",
       "page": 92
@@ -54273,7 +54273,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les sirènes ont, en dessous du torse, un corps de poisson, et au-dessus ressemblent à de magnifiques damoiselles humaines ou elfes, capables de séduire les marins grâce à leurs chants ensorceleurs. En réalité, elles sont d'apparence extrêmement variée : le bas de leur corps ressemble souvent à celui d'un poisson écailleux, mais certaines ont un corps de serpent, d'autres des tentacules de pieuvre. Si certaines ont une beauté presque sauvage, d'autres sont hideuses et bestiales, et ont des dents aussi pointues que celles des requins. Toutes sont armées de griffes acérées.<br><br>Chant de la sirène : quiconque entend une sirène chanter doit effectuer un Test de Force Mentale Complexe (-10). En cas d'échec, il est séduit et devient incapable d'entreprendre la moindre action, sauf pour se rapprocher de la source de la chanson, et compte comme s'il avait l'État Inconscient. S'il s'était préparé (oreilles bouchées à la cire), le Test devient Facile (+40). Si une victime séduite est attaquée, elle peut immédiatement effectuer un nouveau Test.<br><br>Née de l'eau : les sirènes peuvent respirer sous l'eau et s'y déplacer avec un Mouvement de 8.",
+    "desc": "Les sirènes ont, en dessous du torse, un corps de poisson, et au-dessus ressemblent à de magnifiques damoiselles humaines ou elfes, capables de séduire les marins grâce à leurs chants ensorceleurs. En réalité, elles sont d'apparence extrêmement variée : le bas de leur corps ressemble souvent à celui d'un poisson écailleux, mais certaines ont un corps de serpent, d'autres des tentacules de pieuvre. Si certaines ont une beauté presque sauvage, d'autres sont hideuses et bestiales, et ont des dents aussi pointues que celles des requins. Toutes sont armées de griffes acérées.\n\nChant de la sirène : quiconque entend une sirène chanter doit effectuer un Test de Force Mentale Complexe (-10). En cas d'échec, il est séduit et devient incapable d'entreprendre la moindre action, sauf pour se rapprocher de la source de la chanson, et compte comme s'il avait l'État Inconscient. S'il s'était préparé (oreilles bouchées à la cire), le Test devient Facile (+40). Si une victime séduite est attaquée, elle peut immédiatement effectuer un nouveau Test.\n\nNée de l'eau : les sirènes peuvent respirer sous l'eau et s'y déplacer avec un Mouvement de 8.",
     "source": {
       "book": "ZI",
       "page": 94
@@ -54362,7 +54362,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les wyrms des mers sont des êtres terriblement dangereux et incroyablement anciens. On dit qu'ils sont à moitié dragons et à moitié serpents de mer. Leur corps est couvert d'écailles verdâtres argentées et ressemble à celui d'anguilles particulièrement musclées, si ce n'est qu'ils ont quatre petits membres armés de griffes acérées. Ils se propulsent grâce à un mouvement ondulatoire qui leur procure une vitesse surprenante sous l'eau et une démarche preste sur terre. Leur appétit rend insignifiant celui des ogres, et leurs blessures guérissent à une vitesse alarmante.<br><br>Fléau des baleines : toutes les attaques que le wyrm des mers porte à l'aide de sa gueule bardée de crocs ont le Trait Venin (Complexe).",
+    "desc": "Les wyrms des mers sont des êtres terriblement dangereux et incroyablement anciens. On dit qu'ils sont à moitié dragons et à moitié serpents de mer. Leur corps est couvert d'écailles verdâtres argentées et ressemble à celui d'anguilles particulièrement musclées, si ce n'est qu'ils ont quatre petits membres armés de griffes acérées. Ils se propulsent grâce à un mouvement ondulatoire qui leur procure une vitesse surprenante sous l'eau et une démarche preste sur terre. Leur appétit rend insignifiant celui des ogres, et leurs blessures guérissent à une vitesse alarmante.\n\nFléau des baleines : toutes les attaques que le wyrm des mers porte à l'aide de sa gueule bardée de crocs ont le Trait Venin (Complexe).",
     "source": {
       "book": "ZI",
       "page": 95
@@ -54447,7 +54447,7 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": "Les dragons barbelés sont d'énormes créatures ophidiennes qui règnent sur des cavernes sans lumière situées très loin de la surface. Ils passent leur vie à chasser inlassablement tout ce qu'ils peuvent se mettre sous la dent, causant des dégâts considérables lorsqu'ils pénètrent dans un karak. Leurs membres peuvent se plier dans des positions peu naturelles, sans doute pour mieux se contorsionner dans les passages étroits, et leur venin est tellement acide qu'il peut faire fondre la pierre.<br><br>Rage frénétique : lorsqu'un dragon barbelé est blessé au combat, il devient immédiatement sujet à une Frénésie impossible à calmer qui lui confère deux attaques de Corps à corps gratuites par Round.<br><br>Écailles rasoir : chaque fois qu'un dragon barbelé est attaqué par un adversaire Engagé avec lui, celui-ci subit 1d10 Blessures (réductibles par le Bonus d'Endurance et les Points d'Armure jusqu'à un minimum de 1).<br><br>Fonte des roches : la morsure d'un dragon barbelé a le Trait Venin et l'Atout Perforante.",
+    "desc": "Les dragons barbelés sont d'énormes créatures ophidiennes qui règnent sur des cavernes sans lumière situées très loin de la surface. Ils passent leur vie à chasser inlassablement tout ce qu'ils peuvent se mettre sous la dent, causant des dégâts considérables lorsqu'ils pénètrent dans un karak. Leurs membres peuvent se plier dans des positions peu naturelles, sans doute pour mieux se contorsionner dans les passages étroits, et leur venin est tellement acide qu'il peut faire fondre la pierre.\n\nRage frénétique : lorsqu'un dragon barbelé est blessé au combat, il devient immédiatement sujet à une Frénésie impossible à calmer qui lui confère deux attaques de Corps à corps gratuites par Round.\n\nÉcailles rasoir : chaque fois qu'un dragon barbelé est attaqué par un adversaire Engagé avec lui, celui-ci subit 1d10 Blessures (réductibles par le Bonus d'Endurance et les Points d'Armure jusqu'à un minimum de 1).\n\nFonte des roches : la morsure d'un dragon barbelé a le Trait Venin et l'Atout Perforante.",
     "source": {
       "book": "ZI",
       "page": 96
@@ -54548,7 +54548,7 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": "Le Fantasma est un dragon barbelé particulièrement rusé et malveillant, capable de projeter un gaz toxique provoquant des crises de terreur si intenses qu'il est possible d'en mourir.<br><br>Souffle cauchemardesque : toute Blessure infligée par le Souffle du fantasma ignore les Points d'Armure. Les cibles blessées doivent immédiatement faire un Test contre l'effet du Trait Terreur 2 basé sur la Résistance plutôt que sur le Calme. Même les cibles immunisées contre la Peur ou la Terreur doivent effectuer ce Test, car il ne s'agit pas d'un effet psychologique, mais de l'effet distordu d'un poison.<br><br>Écailles rasoir : chaque fois que le fantasma est attaqué par un adversaire Engagé avec lui, celui-ci subit 1d10 Blessures (réductibles jusqu'à un minimum de 1).<br><br>Fonte des roches : la morsure du fantasma a l'Atout Perforante et le Trait Venin.",
+    "desc": "Le Fantasma est un dragon barbelé particulièrement rusé et malveillant, capable de projeter un gaz toxique provoquant des crises de terreur si intenses qu'il est possible d'en mourir.\n\nSouffle cauchemardesque : toute Blessure infligée par le Souffle du fantasma ignore les Points d'Armure. Les cibles blessées doivent immédiatement faire un Test contre l'effet du Trait Terreur 2 basé sur la Résistance plutôt que sur le Calme. Même les cibles immunisées contre la Peur ou la Terreur doivent effectuer ce Test, car il ne s'agit pas d'un effet psychologique, mais de l'effet distordu d'un poison.\n\nÉcailles rasoir : chaque fois que le fantasma est attaqué par un adversaire Engagé avec lui, celui-ci subit 1d10 Blessures (réductibles jusqu'à un minimum de 1).\n\nFonte des roches : la morsure du fantasma a l'Atout Perforante et le Trait Venin.",
     "source": {
       "book": "ZI",
       "page": 96
@@ -54649,7 +54649,7 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": "Parfois, lorsqu'un héros particulièrement tenace meurt, il refuse de rester dans sa tombe et devient un revenant : un mort-vivant créé par sa détermination sans faille et maintenu en non-vie par une puissante magie. Les revenants sont toujours engoncés dans l'armure qu'ils portaient lorsqu'ils ont été enterrés ; il leur reste rarement beaucoup de chair, mais leurs yeux brillent d'une lueur sadique et leurs mouvements sont déterminés. Ils portent des lames imbibées de Dhar dont une simple égratignure s'avère bien souvent fatale.<br><br>Lame spectrale : les armes des revenants ont l'Atout Empaleuse. Lorsqu'un revenant inflige un Critique à l'aide de son arme spectrale, il effectue deux jets sur la Table des Blessures Critiques et inflige le plus haut des deux résultats. Si quelqu'un récupère l'arme d'un revenant, elle devient une arme simple Magique qui inflige +BF+5 Dégâts.",
+    "desc": "Parfois, lorsqu'un héros particulièrement tenace meurt, il refuse de rester dans sa tombe et devient un revenant : un mort-vivant créé par sa détermination sans faille et maintenu en non-vie par une puissante magie. Les revenants sont toujours engoncés dans l'armure qu'ils portaient lorsqu'ils ont été enterrés ; il leur reste rarement beaucoup de chair, mais leurs yeux brillent d'une lueur sadique et leurs mouvements sont déterminés. Ils portent des lames imbibées de Dhar dont une simple égratignure s'avère bien souvent fatale.\n\nLame spectrale : les armes des revenants ont l'Atout Empaleuse. Lorsqu'un revenant inflige un Critique à l'aide de son arme spectrale, il effectue deux jets sur la Table des Blessures Critiques et inflige le plus haut des deux résultats. Si quelqu'un récupère l'arme d'un revenant, elle devient une arme simple Magique qui inflige +BF+5 Dégâts.",
     "source": {
       "book": "ZI",
       "page": 97
@@ -54712,7 +54712,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Les technomages qui mènent le clan Skryre au combat mêlent la sorcellerie à la technologie skaven. Ils sont capables de créer des dispositifs pratiques et mortels, quoique hautement instables.<br><br>C'est moi que je l'ai fait-fait : le pistolet à malepierre du technomage n'a pas le Défaut Dangereuse.",
+    "desc": "Les technomages qui mènent le clan Skryre au combat mêlent la sorcellerie à la technologie skaven. Ils sont capables de créer des dispositifs pratiques et mortels, quoique hautement instables.\n\nC'est moi que je l'ai fait-fait : le pistolet à malepierre du technomage n'a pas le Défaut Dangereuse.",
     "source": {
       "book": "ZI",
       "page": 98
@@ -54781,7 +54781,7 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": "Le « Prototype » est un rat ogre modifié par le clan Skryre, pas encore au point pour une production à grande échelle.<br><br>Tirer-tuer : l'un des bras du prototype a été remplacé par un canon ratling amélioré pour être plus précis. Celui-ci n'a pas le Défaut Imprécise.<br><br>Massa-craser : l'autre bras du prototype est surmonté d'un dispositif dévastateur conçu pour écrabouiller roches et chairs à l'aide de pistons pneumatiques. Il a les Atouts Assommante et Percutante.",
+    "desc": "Le « Prototype » est un rat ogre modifié par le clan Skryre, pas encore au point pour une production à grande échelle.\n\nTirer-tuer : l'un des bras du prototype a été remplacé par un canon ratling amélioré pour être plus précis. Celui-ci n'a pas le Défaut Imprécise.\n\nMassa-craser : l'autre bras du prototype est surmonté d'un dispositif dévastateur conçu pour écrabouiller roches et chairs à l'aide de pistons pneumatiques. Il a les Atouts Assommante et Percutante.",
     "source": {
       "book": "ZI",
       "page": 98

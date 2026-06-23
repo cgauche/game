@@ -14,6 +14,7 @@ import type { Combatant } from '../engine/types';
 import { ActiveModal } from './ActiveModal';
 import { Modal } from './Modal';
 import { CharFrame } from './CharFrame';
+import { mdToText } from './Prose';
 import { t } from '../i18n';
 
 /** Atouts/Défauts d'artisanat (LDB 60 l.55-90) — dérivés de la DONNÉE éditable (`qualities.json`,
@@ -359,12 +360,12 @@ function CraftPane({ hero, disabled, money }: { hero: Combatant; disabled: boole
       <TrappingSelect options={catalog} value={id} onChange={setId} />
       <div className="interlude-craft-q">
         {ATOUTS.map((q) => (
-          <label key={q} title={craftQual(q).desc}>
+          <label key={q} title={mdToText(craftQual(q).desc ?? '')}>
             <input type="checkbox" checked={atouts.includes(q)} onChange={() => toggle(atouts, setAtouts, q)} /> {craftQual(q).label}
           </label>
         ))}
         {DEFAUTS.map((q) => (
-          <label key={q} title={craftQual(q).desc}>
+          <label key={q} title={mdToText(craftQual(q).desc ?? '')}>
             <input type="checkbox" checked={defauts.includes(q)} onChange={() => toggle(defauts, setDefauts, q)} /> {craftQual(q).label} (défaut)
           </label>
         ))}
@@ -403,13 +404,13 @@ function LearnPane({ hero, disabled, fails, money }: { hero: Combatant; disabled
   const failCount = sel ? fails?.[sel.id] ?? 0 : 0;
   const xpOk = !sel || xp >= sel.xpCost;
   const purseOk = !sel || toBrass(money) >= sel.tutorMinBrass;
-  const desc = sel ? findTalent(sel.label)?.desc ?? '' : '';
+  const desc = sel ? mdToText(findTalent(sel.label)?.desc ?? '') : '';
   return (
     <div className="interlude-pane">
       <input className="interlude-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="🔎 Filtrer les talents…" aria-label="Filtrer les talents" />
       <select className="interlude-select" value={label} onChange={(e) => setLabel(e.target.value)} size={Math.min(8, Math.max(3, filtered.length))}>
         {filtered.map((o) => (
-          <option key={o.label} value={o.label} title={findTalent(o.label)?.desc ?? ''}>
+          <option key={o.label} value={o.label} title={mdToText(findTalent(o.label)?.desc ?? '')}>
             {o.label} — {o.xpCost} PX · tuteur {fmt(o.tutorMinBrass)} à {fmt(o.tutorMaxBrass)}
           </option>
         ))}

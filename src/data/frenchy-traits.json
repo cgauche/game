@@ -48,7 +48,7 @@
     "label": "Fouissement",
     "prefix": null,
     "suffix": null,
-    "desc": "Cette créature peut se déplacer en creusant un tunnel dans la terre ou la pierre à une vitesse inimaginable. Pour se déplacer, elle peut creuser dans le sol sur une distance en mètres égale à son Indice. Lorsqu'elle fouit, elle ignore tout obstacle, personnage ou terrain difficile sur son passage. À la fin de son déplacement, elle peut choisir de sortir de terre ou de rester enfouie. Elle peut se servir de ce mode de déplacement pour Charger. Si elle commence son tour sous terre, elle doit se déplacer par fouissement.<br><br>Pour attaquer une cible enfouie, calculez la distance au sol comme d'habitude, mais augmentez la Portée de 2 niveaux. Ainsi, un tir à Portée Moyenne passerait à Portée Extrême, tandis qu'un tir à Portée Longue ou Extrême serait impossible.",
+    "desc": "Cette créature peut se déplacer en creusant un tunnel dans la terre ou la pierre à une vitesse inimaginable. Pour se déplacer, elle peut creuser dans le sol sur une distance en mètres égale à son Indice. Lorsqu'elle fouit, elle ignore tout obstacle, personnage ou terrain difficile sur son passage. À la fin de son déplacement, elle peut choisir de sortir de terre ou de rester enfouie. Elle peut se servir de ce mode de déplacement pour Charger. Si elle commence son tour sous terre, elle doit se déplacer par fouissement.\n\nPour attaquer une cible enfouie, calculez la distance au sol comme d'habitude, mais augmentez la Portée de 2 niveaux. Ainsi, un tir à Portée Moyenne passerait à Portée Extrême, tandis qu'un tir à Portée Longue ou Extrême serait impossible.",
     "source": {
       "book": "ZI",
       "page": 13

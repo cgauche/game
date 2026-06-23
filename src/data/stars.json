@@ -26,7 +26,7 @@
         "mod": -3
       }
     ],
-    "desc": "Les individus nés sous la lumière de Wymund l'Anachorète sont patients et méthodiques. Ils préfèrent étudier la situation dans ses moindres détails avant de prendre une décision.<br><br>Leur lenteur à porter des jugements et leur tolérance à l'égard des faiblesses des autres en font des amis gentils et loyaux, ce qui les dessert parfois. Souvent, ils pardonnent aux autres l'impardonnable, à leur propre détriment. Mais lorsqu'ils décident que quelqu'un n'est plus digne de leurs grâces, ils deviennent des ennemis durs et implacables.",
+    "desc": "Les individus nés sous la lumière de Wymund l'Anachorète sont patients et méthodiques. Ils préfèrent étudier la situation dans ses moindres détails avant de prendre une décision.\n\nLeur lenteur à porter des jugements et leur tolérance à l'égard des faiblesses des autres en font des amis gentils et loyaux, ce qui les dessert parfois. Souvent, ils pardonnent aux autres l'impardonnable, à leur propre détriment. Mais lorsqu'ils décident que quelqu'un n'est plus digne de leurs grâces, ils deviennent des ennemis durs et implacables.",
     "source": {
       "book": "ADE2",
       "page": 40
@@ -59,7 +59,7 @@
         "mod": -3
       }
     ],
-    "desc": "Il n'y a pas de place pour l'incertitude dans le cœur de ceux nés sous le signe de la Grande Croix. Le chemin qu'ils doivent suivre en ce monde leur semble évident, et ils font des choix judicieux pour faire en sorte de ne jamais en dévier. Mais cette rationalité peut conduire à une passivité prévisible et à un certain détachement vis-à-vis du monde qui les entoure.<br><br>En effet, si leur route est toute tracée, pourquoi s'en écarter ? Il est vital qu'ils trouvent une cause pour laquelle se battre, au risque de se laisser éternellement porter au fil des eaux du destin.",
+    "desc": "Il n'y a pas de place pour l'incertitude dans le cœur de ceux nés sous le signe de la Grande Croix. Le chemin qu'ils doivent suivre en ce monde leur semble évident, et ils font des choix judicieux pour faire en sorte de ne jamais en dévier. Mais cette rationalité peut conduire à une passivité prévisible et à un certain détachement vis-à-vis du monde qui les entoure.\n\nEn effet, si leur route est toute tracée, pourquoi s'en écarter ? Il est vital qu'ils trouvent une cause pour laquelle se battre, au risque de se laisser éternellement porter au fil des eaux du destin.",
     "source": {
       "book": "ADE2",
       "page": 40
@@ -454,7 +454,7 @@
         "spec": "Maladie"
       }
     ],
-    "desc": "Les personnes nées sous le signe de la Charrette Brisée ont tendance à être orgueilleuses et à trop se soucier des apparences. Elles sont capables de dépenser jusqu'à leur dernier sou en quête des plaisirs terrestres, ou de se brûler les ailes en voulant obtenir l'approbation de leurs supérieurs. Toutefois, lorsqu'elles parviennent à réfréner ces tendances, leur fierté se transforme en confiance et leur vanité en sympathie.<br><br> Le lien existant entre la Charrette Brisée et Nurgle est rarement évoqué, car toute forme d'adoration des Puissances de la Ruine est un motif suffisant pour finir au bûcher dans la plupart des régions du Vieux Monde. Tout le monde sent cependant que ce signe a quelque chose de sombre et de primitif ancré en lui, et il est couramment associé à la maladie dans de nombreuses cultures. Beaucoup de gens savent que l'influence du Père de la Peste est grande en ce monde, et quand la maladie ravage la terre, les plus désespérés se souviennent alors de vieux contes et de rites interdits, et lui font des offrandes également inavouables.",
+    "desc": "Les personnes nées sous le signe de la Charrette Brisée ont tendance à être orgueilleuses et à trop se soucier des apparences. Elles sont capables de dépenser jusqu'à leur dernier sou en quête des plaisirs terrestres, ou de se brûler les ailes en voulant obtenir l'approbation de leurs supérieurs. Toutefois, lorsqu'elles parviennent à réfréner ces tendances, leur fierté se transforme en confiance et leur vanité en sympathie.\n\nLe lien existant entre la Charrette Brisée et Nurgle est rarement évoqué, car toute forme d'adoration des Puissances de la Ruine est un motif suffisant pour finir au bûcher dans la plupart des régions du Vieux Monde. Tout le monde sent cependant que ce signe a quelque chose de sombre et de primitif ancré en lui, et il est couramment associé à la maladie dans de nombreuses cultures. Beaucoup de gens savent que l'influence du Père de la Peste est grande en ce monde, et quand la maladie ravage la terre, les plus désespérés se souviennent alors de vieux contes et de rites interdits, et lui font des offrandes également inavouables.",
     "source": {
       "book": "ADE2",
       "page": 45
@@ -481,7 +481,7 @@
         "talentId": "affinite-avec-les-animaux"
       }
     ],
-    "desc": "Les personnes nées sous le signe de la Chèvre Sauvage ne laissent personne les approcher de trop près. Elles peuvent sembler distantes et apathiques, mais si elles se comportent ainsi, c'est pour ne pas risquer d'être blessées par les éventuelles déceptions auxquelles elles devront inévitablement faire face. Lorsqu'elles sont abattues, elles se complaisent dans leur douleur. Cependant, les rares fois où elles s'autorisent à éprouver de la joie, leur gaieté est contagieuse.<br><br>Les natifs de la Chèvre Sauvage ayant une affinité avec la magie sont souvent attirés par le Vent d'Ambre de Ghur. Les individus nés sous ce signe seraient bien avisés de se rappeler que le monde n'est pas là pour les persécuter. Cela peut arriver à n'importe qui d'être frappé par la malchance, mais on ne peut pas passer sa vie à se morfondre pour autant.",
+    "desc": "Les personnes nées sous le signe de la Chèvre Sauvage ne laissent personne les approcher de trop près. Elles peuvent sembler distantes et apathiques, mais si elles se comportent ainsi, c'est pour ne pas risquer d'être blessées par les éventuelles déceptions auxquelles elles devront inévitablement faire face. Lorsqu'elles sont abattues, elles se complaisent dans leur douleur. Cependant, les rares fois où elles s'autorisent à éprouver de la joie, leur gaieté est contagieuse.\n\nLes natifs de la Chèvre Sauvage ayant une affinité avec la magie sont souvent attirés par le Vent d'Ambre de Ghur. Les individus nés sous ce signe seraient bien avisés de se rappeler que le monde n'est pas là pour les persécuter. Cela peut arriver à n'importe qui d'être frappé par la malchance, mais on ne peut pas passer sa vie à se morfondre pour autant.",
     "source": {
       "book": "ADE2",
       "page": 45

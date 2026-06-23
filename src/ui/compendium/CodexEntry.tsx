@@ -1,30 +1,10 @@
 /** Rendu d'une fiche du Codex (détail) : en-tête + faits + prose + SECTIONS riches (statbloc,
  *  niveaux de carrière, bénédictions…) dont les entités citées sont des liens `CodexRef`. */
-import { Fragment } from 'react';
 import type { CodexItem, CodexRow, CodexSection } from './registry';
 import { EntityRef, ChoiceChips } from '../EntityChip';
 import { CreaturePreview } from './CreaturePreview';
 import { TabbedEntry, type EntryTab } from '../TabbedEntry';
-import { CodexRef } from './CodexRef';
-import { tokenizeLinks } from './relations';
-
-/** Prose à AUTO-LIAGE : les mentions du vocabulaire de règles (carac/compétences/talents/états/
- *  manœuvres/traits/qualités/domaines) deviennent des `CodexRef` cliquables (façon dev.html), hors
- *  liens vers soi. Réservé au texte BRUT (les desc HTML gardent leur rendu). */
-function LinkedText({ text, selfLabel }: { text: string; selfLabel?: string }) {
-  const tokens = tokenizeLinks(text, selfLabel);
-  return (
-    <>
-      {tokens.map((t, i) =>
-        typeof t === 'string' ? (
-          <Fragment key={i}>{t}</Fragment>
-        ) : (
-          <CodexRef key={i} category={t.category} label={t.label} inline>{t.text}</CodexRef>
-        ),
-      )}
-    </>
-  );
-}
+import { Prose } from '../Prose';
 
 export function CodexSourceBadge({ source }: { source: CodexItem['source'] }) {
   if (!source) return null;
@@ -47,11 +27,7 @@ function CodexRowView({ row }: { row: CodexRow }) {
         </div>
       );
     case 'text':
-      return row.html ? (
-        <div className="codex-rowtext" dangerouslySetInnerHTML={{ __html: row.text }} />
-      ) : (
-        <p className="codex-rowtext">{row.text}</p>
-      );
+      return <div className="codex-rowtext"><Prose md={row.text} /></div>;
     case 'ref':
       return <EntityRef category={row.category} label={row.label} show={row.show} instance={row.show} badge={row.badge} />;
     case 'choice':
@@ -118,10 +94,8 @@ export function CodexEntry({ item, instance, category }: { item: CodexItem; inst
     tabs.push({
       id: 'desc',
       label: 'Description',
-      content: item.html ? (
-        <div className="codex-tabpane codex-body" dangerouslySetInnerHTML={{ __html: item.desc }} />
-      ) : (
-        <p className="codex-tabpane codex-body"><LinkedText text={item.desc} selfLabel={item.label} /></p>
+      content: (
+        <div className="codex-tabpane codex-body"><Prose md={item.desc} selfLabel={item.label} /></div>
       ),
     });
   }

@@ -13,13 +13,13 @@ import { createContext, useCallback, useContext, useRef, useState, type ReactNod
 import { createPortal } from 'react-dom';
 import { useGame } from '../../state/store';
 import { codexLookup } from './registry';
+import { mdToText } from '../Prose';
 
 /** Contexte « popover-seul » : sous ce fournisseur, tout `CodexRef` informe au survol mais son clic
  *  n'ouvre PAS la fiche plein écran (équivaut à `tooltipOnly`). Posé autour de l'assistant de création
  *  pour qu'une référence de règle ne fasse pas quitter le flux — ce qui réinitialisait le brouillon. */
 export const CodexTooltipOnly = createContext(false);
 
-const stripHtml = (s: string): string => s.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 const truncate = (s: string, n = 260): string => (s.length > n ? `${s.slice(0, n).trimEnd()}…` : s);
 
 const POP_W = 320;
@@ -78,7 +78,7 @@ export function CodexRef({
   if (!item && !fallback) return hideIfUnknown ? null : <span className={className}>{children ?? label}</span>;
 
   const title = item?.label ?? label;
-  const body = item ? (item.desc ? truncate(item.html ? stripHtml(item.desc) : item.desc) : null) : (fallback?.body || null);
+  const body = item ? (item.desc ? truncate(mdToText(item.desc)) : null) : (fallback?.body || null);
   const popSub = item?.sub ?? fallback?.sub;
   // Faits-clés (Dégâts/PA/Prix/NI/Portée…) DANS le tooltip — pas seulement la prose : le survol
   // d'une arme/d'un sort devient informatif sans ouvrir la fiche. Compact, 4 max.

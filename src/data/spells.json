@@ -986,7 +986,7 @@
         "bonusOf": "FM"
       }
     },
-    "desc": "Vous créez de petits bruits, discrets et indistincts qui résonnent comme s'ils émanaient d'un endroit particulier situé à portée, sans tenir compte de la Ligne de Vue. Les bruits peuvent évoquer quelque chose de spécifique, tel que des bruits de pas, des murmures ou le hurlement d'un animal, mais rien assez distinct pour pouvoir transmettre un message.<br><br> Tant que le Sort est actif, vous pouvez contrôler les sons en réussissant un Test de Focalisation Accessible (+20). Un succès vous permet de déplacer les sons jusqu'à un autre point à portée, ou d'augmenter ou diminuer le volume sonore.",
+    "desc": "Vous créez de petits bruits, discrets et indistincts qui résonnent comme s'ils émanaient d'un endroit particulier situé à portée, sans tenir compte de la Ligne de Vue. Les bruits peuvent évoquer quelque chose de spécifique, tel que des bruits de pas, des murmures ou le hurlement d'un animal, mais rien assez distinct pour pouvoir transmettre un message.\n\nTant que le Sort est actif, vous pouvez contrôler les sons en réussissant un Test de Focalisation Accessible (+20). Un succès vous permet de déplacer les sons jusqu'à un autre point à portée, ou d'augmenter ou diminuer le volume sonore.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -1889,7 +1889,7 @@
         "bonusOf": "FM"
       }
     },
-    "desc": "Vous touchez votre adversaire, le plongeant dans un profond sommeil. Si la cible possède un État À Terre, elle gagne l'État Inconscient lorsqu'elle s'endort. Elle reste inconsciente pour la durée du Sort, bien que les bruits forts, le fait de la déplacer ou de la bousculer la réveille instantanément. Si votre cible se tient debout ou assise quand elle est affectée, elle commence à se réveiller en touchant le sol, gagnant l'État À Terre, mais en demeurant consciente.<br> Si votre cible ne résiste pas et qu'elle est suffisamment fatiguée, elle plongera dans un profond sommeil réparateur lorsque le Sort prendra fin.",
+    "desc": "Vous touchez votre adversaire, le plongeant dans un profond sommeil. Si la cible possède un État À Terre, elle gagne l'État Inconscient lorsqu'elle s'endort. Elle reste inconsciente pour la durée du Sort, bien que les bruits forts, le fait de la déplacer ou de la bousculer la réveille instantanément. Si votre cible se tient debout ou assise quand elle est affectée, elle commence à se réveiller en touchant le sol, gagnant l'État À Terre, mais en demeurant consciente.\n\nSi votre cible ne résiste pas et qu'elle est suffisamment fatiguée, elle plongera dans un profond sommeil réparateur lorsque le Sort prendra fin.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -3093,7 +3093,7 @@
       },
       "unit": "minutes"
     },
-    "desc": "Vous imprégnez vos os et votre chair de Ghur, transformant votre corps en celui d'une créature. Quand vous incantez, choisissez une nouvelle forme parmi les Bêtes du Reikland présentées dans le Bestiaire (voir page 314). Gagnez tous les Traits standards de la créature sauf Bestial. De plus, remplacez vos F, E, Ag et Dex par celles de la créature, puis recalculez vos Points de Blessure. Pour chaque +2 DR, vous pouvez intégrer 1 des Traits facultatifs de la créature.<br> Sous Forme bestiale, vous ressemblez à la version normale de la créature, avec des reflets bruns et ambre. Vous ne pouvez pas parler, ce qui signifie que vous ne pouvez pas lancer de Sorts ou tenter de les dissiper.<br> Lorsque le Sort s'achève et que vous reprenez votre vraie forme, les Points de Blessure éventuellement perdus le demeurent, avec un minimum de 0.",
+    "desc": "Vous imprégnez vos os et votre chair de Ghur, transformant votre corps en celui d'une créature. Quand vous incantez, choisissez une nouvelle forme parmi les Bêtes du Reikland présentées dans le Bestiaire (voir page 314). Gagnez tous les Traits standards de la créature sauf Bestial. De plus, remplacez vos F, E, Ag et Dex par celles de la créature, puis recalculez vos Points de Blessure. Pour chaque +2 DR, vous pouvez intégrer 1 des Traits facultatifs de la créature.\n\nSous Forme bestiale, vous ressemblez à la version normale de la créature, avec des reflets bruns et ambre. Vous ne pouvez pas parler, ce qui signifie que vous ne pouvez pas lancer de Sorts ou tenter de les dissiper.\n\nLorsque le Sort s'achève et que vous reprenez votre vraie forme, les Points de Blessure éventuellement perdus le demeurent, avec un minimum de 0.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -3281,7 +3281,7 @@
       },
       "unit": "minutes"
     },
-    "desc": "Vous pouvez communiquer avec toutes les créatures possédant le Trait Bestial. Ghur obstrue votre gorge et votre langage devient des grondements, des sifflements ou des rugissements en fonction des bêtes auxquelles vous voulez parler. Bien que les créatures ne soient pas forcées de vous répondre, ou de faire ce que vous demandez, la plupart seront suffisamment curieuses pour vous écouter.<br> Vous gagnez +20 aux Tests d'Emprise sur les animaux et Dressage. Tant que ce Sort est actif, vous pouvez uniquement parler avec des bêtes – vous ne pouvez parler aucune langue civilisée, et pouvez seulement communiquer avec votre groupe en utilisant des gestes ou Langue (Bataille). Notez que cela signifie également que vous ne pouvez lancer aucun Sort tant que Langue bestiale est actif.",
+    "desc": "Vous pouvez communiquer avec toutes les créatures possédant le Trait Bestial. Ghur obstrue votre gorge et votre langage devient des grondements, des sifflements ou des rugissements en fonction des bêtes auxquelles vous voulez parler. Bien que les créatures ne soient pas forcées de vous répondre, ou de faire ce que vous demandez, la plupart seront suffisamment curieuses pour vous écouter.\n\nVous gagnez +20 aux Tests d'Emprise sur les animaux et Dressage. Tant que ce Sort est actif, vous pouvez uniquement parler avec des bêtes – vous ne pouvez parler aucune langue civilisée, et pouvez seulement communiquer avec votre groupe en utilisant des gestes ou Langue (Bataille). Notez que cela signifie également que vous ne pouvez lancer aucun Sort tant que Langue bestiale est actif.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -3685,7 +3685,7 @@
       "kind": "special",
       "text": "Spécial"
     },
-    "desc": "Vous focalisez tout l'Azyr que vous pouvez rassembler et levez les mains vers le ciel, en appelant une comète pour anéantir vos ennemis. Choisissez un point cible à portée. À la fin du prochain Round, effectuez un Test de Perception Accessible (+20). Pour chaque +DR que vous obtenez, vous pouvez déplacer le point cible d'un nombre de mètres égal à votre Bonus d'Initiative.<br> Pour chaque -DR, le MJ déplacera le point cible dans une direction aléatoire d'un nombre de mètres égal au Bonus d'Initiative. La Comète de Cassandora agit ensuite comme un Projectile magique avec Dégâts +12 qui frappe toutes les cibles dans la Zone d'Effet, qui gagnent également +1 État En flammes et +1 État À Terre.",
+    "desc": "Vous focalisez tout l'Azyr que vous pouvez rassembler et levez les mains vers le ciel, en appelant une comète pour anéantir vos ennemis. Choisissez un point cible à portée. À la fin du prochain Round, effectuez un Test de Perception Accessible (+20). Pour chaque +DR que vous obtenez, vous pouvez déplacer le point cible d'un nombre de mètres égal à votre Bonus d'Initiative.\n\nPour chaque -DR, le MJ déplacera le point cible dans une direction aléatoire d'un nombre de mètres égal au Bonus d'Initiative. La Comète de Cassandora agit ensuite comme un Projectile magique avec Dégâts +12 qui frappe toutes les cibles dans la Zone d'Effet, qui gagnent également +1 État En flammes et +1 État À Terre.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -3990,7 +3990,7 @@
     "duration": {
       "kind": "instant"
     },
-    "desc": "Vous focalisez Aqshy à travers vos mains, pour les poser sur les blessures d'un allié. Guérissez immédiatement 1d10 Blessures et retirez tout État Hémorragique. De plus, les Blessures ne s'infecteront pas.<br> Les cibles ne possédant pas le Talent Magie des Arcanes (Feu) doivent réussir un Test de Calme Intermédiaire (+0) ou hurler de douleur. Si elle échoue de -6 DR ou plus, la cible gagne l'État Inconscient et est marquée à vie, se réveillant 1d10 heures plus tard.",
+    "desc": "Vous focalisez Aqshy à travers vos mains, pour les poser sur les blessures d'un allié. Guérissez immédiatement 1d10 Blessures et retirez tout État Hémorragique. De plus, les Blessures ne s'infecteront pas.\n\nLes cibles ne possédant pas le Talent Magie des Arcanes (Feu) doivent réussir un Test de Calme Intermédiaire (+0) ou hurler de douleur. Si elle échoue de -6 DR ou plus, la cible gagne l'État Inconscient et est marquée à vie, se réveillant 1d10 heures plus tard.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -4169,7 +4169,7 @@
         "bonusOf": "FM"
       }
     },
-    "desc": "Vous focalisez Aqshy en une majestueuse couronne de feu inspirant autour de votre front. Gagnez le Trait Peur 1 et +1 Talent Seigneur de guerre tant que le Sort est actif.<br> Pour chaque +2 DR, vous pouvez augmenter la valeur de Peur de +1, ou prendre de nouveau le Talent Seigneur de guerre. De plus, gagnez un bonus de +10 à toutes les tentatives pour Focaliser et Incanter avec Aqshy tant que le Sort est actif.",
+    "desc": "Vous focalisez Aqshy en une majestueuse couronne de feu inspirant autour de votre front. Gagnez le Trait Peur 1 et +1 Talent Seigneur de guerre tant que le Sort est actif.\n\nPour chaque +2 DR, vous pouvez augmenter la valeur de Peur de +1, ou prendre de nouveau le Talent Seigneur de guerre. De plus, gagnez un bonus de +10 à toutes les tentatives pour Focaliser et Incanter avec Aqshy tant que le Sort est actif.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -4702,7 +4702,7 @@
         "bonusOf": "FM"
       }
     },
-    "desc": "Vous trempez votre lame favorite dans le sang d'un ennemi fraîchement tombé, ce qui vous donne plus de puissance et éveille la soif de sang chez vos alliés. Toutes les créatures de votre choix dans la Zone d'Effet gagnent le Trait de Créature Vampirique (WFJDR p. 343) pour la durée de ce sort. La cible n'a pas besoin de mordre ses adversaires pour bénéficier des avantages de ce Trait, il lui suffit de les blesser au corps à corps. Elle peut également bénéficier de soins provenant d'autres sources. Si une créature souhaite résister à ce sort, elle peut tenter un Test de Résistance Difficile (-20) pour en ignorer les effets.<br>Pendant la durée de ce sort, le sang des ennemis jaillit vers les personnes affectées, coulant le long de leurs lames, sur leurs bras et dans leurs bouches. Les ogres ne sont pas gênés par cet effet (la plupart s'en délectent), mais les autres créatures trouvent généralement cette situation fort déstabilisante. Lorsque le sort prend fin, les non-ogres qui ont blessé au moins un adversaire au corps à corps tandis qu'ils étaient sous l'effet du sort doivent réussir un Test de Calme Intermédiaire (+0) ou gagner l'État Sonné. De plus, s'ils blessent un adversaire qui possède les Traits de créature Infecté ou Maladie, tout Test effectué pour en éviter les effets négatifs subit une pénalité de -30. ",
+    "desc": "Vous trempez votre lame favorite dans le sang d'un ennemi fraîchement tombé, ce qui vous donne plus de puissance et éveille la soif de sang chez vos alliés. Toutes les créatures de votre choix dans la Zone d'Effet gagnent le Trait de Créature Vampirique (WFJDR p. 343) pour la durée de ce sort. La cible n'a pas besoin de mordre ses adversaires pour bénéficier des avantages de ce Trait, il lui suffit de les blesser au corps à corps. Elle peut également bénéficier de soins provenant d'autres sources. Si une créature souhaite résister à ce sort, elle peut tenter un Test de Résistance Difficile (-20) pour en ignorer les effets.\n\nPendant la durée de ce sort, le sang des ennemis jaillit vers les personnes affectées, coulant le long de leurs lames, sur leurs bras et dans leurs bouches. Les ogres ne sont pas gênés par cet effet (la plupart s'en délectent), mais les autres créatures trouvent généralement cette situation fort déstabilisante. Lorsque le sort prend fin, les non-ogres qui ont blessé au moins un adversaire au corps à corps tandis qu'ils étaient sous l'effet du sort doivent réussir un Test de Calme Intermédiaire (+0) ou gagner l'État Sonné. De plus, s'ils blessent un adversaire qui possède les Traits de créature Infecté ou Maladie, tout Test effectué pour en éviter les effets négatifs subit une pénalité de -30.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -4756,7 +4756,7 @@
         "bonusOf": "FM"
       }
     },
-    "desc": "Vous dévorez le cœur d'une bête puissante, puis projetez sa force et sa puissance sur une créature proche. Pendant la durée du sort, votre cible ajoute +2 à son Bonus de Force pour les Dégâts qu'elle inflige ou pour d'autres Tests de Force appropriés.Cependant, lorsque le sort prend fin, elle se retrouve envahie par une faim intense et doit immédiatement se gaver d'un repas conséquent ou gagner un État Exténué.<br><br>Si la cible souhaite rejeter votre don, elle peut tenter un Test de Calme Complexe (-10) pour en ignorer les effets. ",
+    "desc": "Vous dévorez le cœur d'une bête puissante, puis projetez sa force et sa puissance sur une créature proche. Pendant la durée du sort, votre cible ajoute +2 à son Bonus de Force pour les Dégâts qu'elle inflige ou pour d'autres Tests de Force appropriés.Cependant, lorsque le sort prend fin, elle se retrouve envahie par une faim intense et doit immédiatement se gaver d'un repas conséquent ou gagner un État Exténué.\n\nSi la cible souhaite rejeter votre don, elle peut tenter un Test de Calme Complexe (-10) pour en ignorer les effets.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -4856,7 +4856,7 @@
         "bonusOf": "FM"
       }
     },
-    "desc": "Vous dévorez la meilleure partie d'une grande bête, ce qui provoque l'apparition d'un fragment de la Gueule elle-même. Le sol se fend en deux, dévoilant un millier de dents grinçantes et affamées. Le gouffre est sans fond, sa faim est infinie, ses dents sont des lames de rasoir et le bruit de ses mâchoires rugissantes ressemble à s'y méprendre au grincement du verre sur la pierre.  <br> <br>Quiconque se trouve dans la zone affectée doit immédiatement effectuer un Test d'Esquive Intermédiaire (+0) pour se dégager. En cas de réussite, les cibles subissent +8 Dégâts à une Localisation choisie au hasard, lorsqu'elles s'extraient de la Gueule. Ces Dégâts sont réduits de 1 pour chaque DR obtenu au Test d'Esquive. <br> <br>Quiconque échoue au Test chute immédiatement dans la Gueule, qui entame le processus méthodique consistant à avaler sa victime vivante. Cette dernière subit immédiatement +10 Dégâts à un emplacement choisi au hasard et gagne 3 États Empêtré. Les tentatives de suppression de ces États sont opposées à la Force de 60 de la Gueule. La victime ne peut pas s'échapper tant qu'elle ne s'est pas débarrassée de ses 3 États Empêtré. À la fin de chacun de leurs tours, les créatures à l'intérieur de la Gueule subissent à nouveau +10 Dégâts à un emplacement choisi au hasard. <br> <br>Les dents de la Gueule sont acérées et elles n'abandonnent pas leurs proies facilement. Une fois que le sort prend fin, la Gueule disparaît, mais elle tente d'emporter les parties du corps qui se trouvent encore entre ses crocs. Si une créature se trouve à l'intérieur de la Gueule à ce moment précis, elle subit immédiatement une Blessure Critique à un emplacement choisi au hasard. ",
+    "desc": "Vous dévorez la meilleure partie d'une grande bête, ce qui provoque l'apparition d'un fragment de la Gueule elle-même. Le sol se fend en deux, dévoilant un millier de dents grinçantes et affamées. Le gouffre est sans fond, sa faim est infinie, ses dents sont des lames de rasoir et le bruit de ses mâchoires rugissantes ressemble à s'y méprendre au grincement du verre sur la pierre.\n\nQuiconque se trouve dans la zone affectée doit immédiatement effectuer un Test d'Esquive Intermédiaire (+0) pour se dégager. En cas de réussite, les cibles subissent +8 Dégâts à une Localisation choisie au hasard, lorsqu'elles s'extraient de la Gueule. Ces Dégâts sont réduits de 1 pour chaque DR obtenu au Test d'Esquive.\n\nQuiconque échoue au Test chute immédiatement dans la Gueule, qui entame le processus méthodique consistant à avaler sa victime vivante. Cette dernière subit immédiatement +10 Dégâts à un emplacement choisi au hasard et gagne 3 États Empêtré. Les tentatives de suppression de ces États sont opposées à la Force de 60 de la Gueule. La victime ne peut pas s'échapper tant qu'elle ne s'est pas débarrassée de ses 3 États Empêtré. À la fin de chacun de leurs tours, les créatures à l'intérieur de la Gueule subissent à nouveau +10 Dégâts à un emplacement choisi au hasard.\n\nLes dents de la Gueule sont acérées et elles n'abandonnent pas leurs proies facilement. Une fois que le sort prend fin, la Gueule disparaît, mais elle tente d'emporter les parties du corps qui se trouvent encore entre ses crocs. Si une créature se trouve à l'intérieur de la Gueule à ce moment précis, elle subit immédiatement une Blessure Critique à un emplacement choisi au hasard.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -5734,7 +5734,7 @@
         "bonusOf": "FM"
       }
     },
-    "desc": "En faisant appel au vent Doré, vous modifiez la densité des biens de votre cible, augmentant ou diminuant leur poids. Pour la durée du Sort, choisissez l'un des effets suivants pour quiconque se trouve dans la Zone d'Effet :<br> • Considéré comme Surchargé de deux paliers supplémentaires<br> • N'est pas considéré comme Surchargé<br> Voir page 293 pour plus de détails sur l'Encombrement. <br>",
+    "desc": "En faisant appel au vent Doré, vous modifiez la densité des biens de votre cible, augmentant ou diminuant leur poids. Pour la durée du Sort, choisissez l'un des effets suivants pour quiconque se trouve dans la Zone d'Effet :\n\n• Considéré comme Surchargé de deux paliers supplémentaires\n\n• N'est pas considéré comme Surchargé\n\nVoir page 293 pour plus de détails sur l'Encombrement.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -6315,7 +6315,7 @@
     "duration": {
       "kind": "untilDawn"
     },
-    "desc": "Vous invoquez un destrier fantomatique. La chair surnaturelle de la créature est noire comme la nuit, et semble parfois aussi solide qu'immatérielle. Utilisez les règles pour un cheval de monte. Quand le Destrier d'Ombre est hors de la lumière du soleil, il gagne également les Traits de créature suivants : Éthéré, Infravision, Magique, Insensible à la douleur, Furtif, Foulée, Peur 1 et Protection (9+).<br> Même quand ils sont immatériels, les Destriers d'Ombre peuvent être chevauchés. Les cavaliers possédant le Talent Magie des Arcanes (Ombre) le font avec un bonus de +20 aux Tests de Chevaucher. Ceux qui ne possèdent pas le Talent subissent une pénalité de -20 aux Tests de Chevaucher. Les Destriers d'Ombre sont infatigables, ils n'ont donc pas besoin de repos (bien que leurs cavaliers, eux, puissent en avoir besoin!). Aux premiers rayons de l'aube pointant à l'horizon, les Destriers se fondent dans la brume. S'ils sont toujours chevauchés quand le Sort prend fin, ou quand il est dissipé, les cavaliers subissent des Dégâts de Chute (voir page 166).",
+    "desc": "Vous invoquez un destrier fantomatique. La chair surnaturelle de la créature est noire comme la nuit, et semble parfois aussi solide qu'immatérielle. Utilisez les règles pour un cheval de monte. Quand le Destrier d'Ombre est hors de la lumière du soleil, il gagne également les Traits de créature suivants : Éthéré, Infravision, Magique, Insensible à la douleur, Furtif, Foulée, Peur 1 et Protection (9+).\n\nMême quand ils sont immatériels, les Destriers d'Ombre peuvent être chevauchés. Les cavaliers possédant le Talent Magie des Arcanes (Ombre) le font avec un bonus de +20 aux Tests de Chevaucher. Ceux qui ne possèdent pas le Talent subissent une pénalité de -20 aux Tests de Chevaucher. Les Destriers d'Ombre sont infatigables, ils n'ont donc pas besoin de repos (bien que leurs cavaliers, eux, puissent en avoir besoin!). Aux premiers rayons de l'aube pointant à l'horizon, les Destriers se fondent dans la brume. S'ils sont toujours chevauchés quand le Sort prend fin, ou quand il est dissipé, les cavaliers subissent des Dégâts de Chute (voir page 166).",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -6393,7 +6393,7 @@
       },
       "unit": "minutes"
     },
-    "desc": "Vous tissez une toile de brins sinueux d'Ulgu, masquant la Zone d'Effet d'une image illusoire de votre choix. Vous trompez automatiquement quiconque ne possède pas le Talent Seconde vue. Ceux qui possèdent ce Talent doivent réussir un Test de Perception Complexe (-10) pour remarquer l'illusion. Cela ne leur permet pas de voir à travers le Sort. Ils doivent le dissiper pour ce faire.<br> Par défaut, l'illusion demeure statique. Pour votre Action, vous pouvez effectuer un Test de Focalisation Difficile (-20) pour déplacer l'illusion pour ce round.",
+    "desc": "Vous tissez une toile de brins sinueux d'Ulgu, masquant la Zone d'Effet d'une image illusoire de votre choix. Vous trompez automatiquement quiconque ne possède pas le Talent Seconde vue. Ceux qui possèdent ce Talent doivent réussir un Test de Perception Complexe (-10) pour remarquer l'illusion. Cela ne leur permet pas de voir à travers le Sort. Ils doivent le dissiper pour ce faire.\n\nPar défaut, l'illusion demeure statique. Pour votre Action, vous pouvez effectuer un Test de Focalisation Difficile (-20) pour déplacer l'illusion pour ce round.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -6817,7 +6817,7 @@
       "kind": "special",
       "text": "Spécial"
     },
-    "desc": "Ghyran inonde une zone brûlée ou désertique. Vous pouvez cibler un lit de rivière asséché, un puit, un champ ou un animal domestique. Si vous lancez le Sort avec succès, la cible reprend vie :<br> • Une rivière asséchée recommence à couler<br> • Un puit asséché ou pollué devient potable et frais<br> • Un champ, un vignoble ou un verger fourmille de vie et toutes les cultures atteignent immédiatement leur pleine maturité<br> • Un animal malade ou improductif guérit. La bête affectée est à présent en bonne santé et productive (les vaches produisent du lait, les poules pondent des œufs, les cuirs et toisons des vaches et des moutons sont sains et lustrés) et toutes les maladies sont guéries.",
+    "desc": "Ghyran inonde une zone brûlée ou désertique. Vous pouvez cibler un lit de rivière asséché, un puit, un champ ou un animal domestique. Si vous lancez le Sort avec succès, la cible reprend vie :\n\n• Une rivière asséchée recommence à couler\n\n• Un puit asséché ou pollué devient potable et frais\n\n• Un champ, un vignoble ou un verger fourmille de vie et toutes les cultures atteignent immédiatement leur pleine maturité\n\n• Un animal malade ou improductif guérit. La bête affectée est à présent en bonne santé et productive (les vaches produisent du lait, les poules pondent des œufs, les cuirs et toisons des vaches et des moutons sont sains et lustrés) et toutes les maladies sont guéries.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -6978,7 +6978,7 @@
         "bonusOf": "FM"
       }
     },
-    "desc": "Ce Sort peut uniquement cibler un carré de terre (même très petit). Vous faites jaillir un amas dense de ronces et de vignes grimpantes qui recouvre la Zone d'Effet.<br> Tant que le Sort est actif, quiconque tente de traverser la zone à pied sans posséder le Talent Magie des Arcanes (Vie) doit réussir un Test d'Agilité Difficile (-20). Un échec signifie qu'il gagne 1 État Hémorragique et un État Empêtré, qui utilise votre Force Mentale pour sa Force. Une fois le Sort terminé, la végétation persiste mais perd ses propriétés surnaturelles.",
+    "desc": "Ce Sort peut uniquement cibler un carré de terre (même très petit). Vous faites jaillir un amas dense de ronces et de vignes grimpantes qui recouvre la Zone d'Effet.\n\nTant que le Sort est actif, quiconque tente de traverser la zone à pied sans posséder le Talent Magie des Arcanes (Vie) doit réussir un Test d'Agilité Difficile (-20). Un échec signifie qu'il gagne 1 État Hémorragique et un État Empêtré, qui utilise votre Force Mentale pour sa Force. Une fois le Sort terminé, la végétation persiste mais perd ses propriétés surnaturelles.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -7312,7 +7312,7 @@
       },
       "unit": "minutes"
     },
-    "desc": "En prononçant des mots d'une magie ancienne, votre esprit quitte votre corps et entre dans la Haie, cet espace obscur, frontière entre le monde matériel et celui des esprits. Pendant la durée du Sort, vous vous trouvez hors du monde, témoin invisible sans pouvoir l'affecter d'aucune manière que ce soit. Les barrières physiques ne sont pas un problème et vous pouvez passer à travers n'importe quel obstacle non magique si vous le souhaitez. Votre corps reste sur place, immobile et insensible.<br> À la fin du Sort, vous réintégrez soudain votre corps. Si ce dernier est tué pendant que vous Chevauchez l'Obscurité, votre esprit errera sans but toute l'éternité.",
+    "desc": "En prononçant des mots d'une magie ancienne, votre esprit quitte votre corps et entre dans la Haie, cet espace obscur, frontière entre le monde matériel et celui des esprits. Pendant la durée du Sort, vous vous trouvez hors du monde, témoin invisible sans pouvoir l'affecter d'aucune manière que ce soit. Les barrières physiques ne sont pas un problème et vous pouvez passer à travers n'importe quel obstacle non magique si vous le souhaitez. Votre corps reste sur place, immobile et insensible.\n\nÀ la fin du Sort, vous réintégrez soudain votre corps. Si ce dernier est tué pendant que vous Chevauchez l'Obscurité, votre esprit errera sans but toute l'éternité.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -7494,7 +7494,7 @@
       "kind": "special",
       "text": "Spécial"
     },
-    "desc": "Vous pouvez cibler aussi bien un puits, qu'un champ ou encore un animal domestique. Si vous parvenez à lancer le Sort, la cible subit une dégradation de son état :<br> • L'eau d'un puits devient immédiatement stagnante et saumâtre<br> • Les cultures d'un champ visé pourrissent en une nuit<br> • Un animal devient malade. La pauvre bête ne produit plus rien (les vaches ne donnent plus de lait, les poules ne pondent plus, les pelages et les peaux sont galeux et inutilisables) et mourra en 10 – DR jours",
+    "desc": "Vous pouvez cibler aussi bien un puits, qu'un champ ou encore un animal domestique. Si vous parvenez à lancer le Sort, la cible subit une dégradation de son état :\n\n• L'eau d'un puits devient immédiatement stagnante et saumâtre\n\n• Les cultures d'un champ visé pourrissent en une nuit\n\n• Un animal devient malade. La pauvre bête ne produit plus rien (les vaches ne donnent plus de lait, les poules ne pondent plus, les pelages et les peaux sont galeux et inutilisables) et mourra en 10 – DR jours",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -7589,7 +7589,7 @@
         "bonusOf": "FM"
       }
     },
-    "desc": "En poignardant une représentation grossière de votre cible – une poupée ou un mannequin, vous lui infligez une douleur paralysante. Lorsque le Sort est lancé avec succès, choisissez quel endroit vous poignardez :<br> • Jambe : la jambe devient inutilisable, comme si elle avait été amputée (voir page 180). Si la cible était en train de courir, elle subit un État À Terre et des Dégâts de chute<br> • Bras : le bras devient inutilisable, comme s'il avait été amputé (voir page 180). Si la cible tenait quelque chose à la main, elle le lâche automatiquement<br> • Corps : la cible souffre d'agonie, subit +1 État Exténué, et doit réussir un Test Difficile (-20) de Résistance ou subir l'État À Terre<br> • Tête : la cible gagne 1 État Sonné, et doit réussir un Test Accessible (+20) de Résistance ou subir un État Inconscient qui dure le temps de la durée du Sort<br> Tant que le Sort est effectif, vous pouvez, pour votre Action, effectuer un Test de Focalisation en poignardant de nouveau la poupée pour choisir une nouvelle Localisation.",
+    "desc": "En poignardant une représentation grossière de votre cible – une poupée ou un mannequin, vous lui infligez une douleur paralysante. Lorsque le Sort est lancé avec succès, choisissez quel endroit vous poignardez :\n\n• Jambe : la jambe devient inutilisable, comme si elle avait été amputée (voir page 180). Si la cible était en train de courir, elle subit un État À Terre et des Dégâts de chute\n\n• Bras : le bras devient inutilisable, comme s'il avait été amputé (voir page 180). Si la cible tenait quelque chose à la main, elle le lâche automatiquement\n\n• Corps : la cible souffre d'agonie, subit +1 État Exténué, et doit réussir un Test Difficile (-20) de Résistance ou subir l'État À Terre\n\n• Tête : la cible gagne 1 État Sonné, et doit réussir un Test Accessible (+20) de Résistance ou subir un État Inconscient qui dure le temps de la durée du Sort\n\nTant que le Sort est effectif, vous pouvez, pour votre Action, effectuer un Test de Focalisation en poignardant de nouveau la poupée pour choisir une nouvelle Localisation.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -7742,7 +7742,7 @@
         "bonusOf": "FM"
       }
     },
-    "desc": "Vous invoquez une nuée de créatures rampantes et envahissantes qui vont venir harceler vos adversaires. Chaque cible affectée se retrouve Engagée par une nuée de rats géants, d'araignées géantes ou de serpents. Utilisez les caractéristiques classiques du type de créature correspondant, en lui ajoutant le Trait Nuée. Pour votre Action, vous pouvez effectuer un Test d'Emprise sur les animaux Intermédiaire (+0) afin d'envoyer une nuée, ou plus, attaquer une autre cible.<br> Lorsque le Sort s'arrête, les nuées restantes disparaissent dans les ombres.",
+    "desc": "Vous invoquez une nuée de créatures rampantes et envahissantes qui vont venir harceler vos adversaires. Chaque cible affectée se retrouve Engagée par une nuée de rats géants, d'araignées géantes ou de serpents. Utilisez les caractéristiques classiques du type de créature correspondant, en lui ajoutant le Trait Nuée. Pour votre Action, vous pouvez effectuer un Test d'Emprise sur les animaux Intermédiaire (+0) afin d'envoyer une nuée, ou plus, attaquer une autre cible.\n\nLorsque le Sort s'arrête, les nuées restantes disparaissent dans les ombres.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -8281,7 +8281,7 @@
         "bonusOf": "Soc"
       }
     },
-    "desc": "Vous canalisez le pouvoir de transformation du Chaos dans votre propre chair, sacrifiant temporairement votre forme mortelle sur l'autel de la volonté de votre dieu. Votre corps est déformé, prenant les aspects d'un démon loyal à votre dieu protecteur. Lancez 1d10 sur le Tableau de la page 78, et appliquez le Trait pertinent pour toute la durée du Sort. Pour chaque +2 DR, vous pouvez à la fois prolonger la durée et refaire un jet sur le Tableau. Si vous obtenez le Trait Démoniaque et que vous êtes réduit à 0 Blessure, votre âme est aspirée dans les Royaumes du Chaos, comme décrit dans les règles des Traits de créature.<br><br><table> <tr> <th> 1d10 </th> <th> Nurgle </th> <th> Slaanesh </th> <th> Tzeentch </th> <th> Indivisible </th> <tr> <td> 1 </td> <td> Grand </td> <td> Démoniaque (6) </td> <td> Souffle +9 (Feu) </td> <td> Démoniaque (8) </td> <tr> <td> 2 </td> <td> Souffle +7 (Corrosion et Poison) </td> <td> Perturbant (Allure étrange) </td> <td> Démoniaque (9) </td> <td> Démoniaque (8) </td> <tr> <td> 3 </td> <td> Démoniaque (7) </td> <td> Peur (3) </td> <td> Éthéré </td> <td> Élite </td> <tr> <td> 4 </td> <td> Maladie (Pourriture de Nurgle) </td> <td> Frénésie </td> <td> Peur (3) </td> <td> Rapide </td> <tr> <td> 5 </td> <td> Perturbant (Puanteur) </td> <td> Immunité Psychologique </td> <td> Vol (9) </td> <td> Peur (3) </td> <tr> <td> 6 </td> <td> Peur (3) </td> <td> Mutation (jet sous le Tableau) </td> <td> Magique </td> <td> Vol (8) </td> <tr> <td> 7 </td> <td> Parasité </td> <td> Insensible à la douleur </td> <td> Résistance à la Magie (2) </td> <td> Rage </td> <tr> <td> 8 </td> <td> Mutation (jet sous le Tableau) </td> <td> Regard pétrifiant </td> <td> Mutation (jet sous le Tableau) </td> <td> Cornes +10 </td> <tr> <td> 9 </td> <td> Régénération </td> <td> Langue préhensile +6 (6 mètres) </td> <td> Mutation (jet sous le Tableau) </td> <td> Magique </td> <tr> <td> 10 </td> <td> Vomissement </td> <td> Venin </td> <td> Lanceur de Sorts (au choix) </td> <td> Attaque caudale (+10) </td> </table>",
+    "desc": "Vous canalisez le pouvoir de transformation du Chaos dans votre propre chair, sacrifiant temporairement votre forme mortelle sur l'autel de la volonté de votre dieu. Votre corps est déformé, prenant les aspects d'un démon loyal à votre dieu protecteur. Lancez 1d10 sur le Tableau de la page 78, et appliquez le Trait pertinent pour toute la durée du Sort. Pour chaque +2 DR, vous pouvez à la fois prolonger la durée et refaire un jet sur le Tableau. Si vous obtenez le Trait Démoniaque et que vous êtes réduit à 0 Blessure, votre âme est aspirée dans les Royaumes du Chaos, comme décrit dans les règles des Traits de créature.\n\n| 1d10 | Nurgle | Slaanesh | Tzeentch | Indivisible |\n| --- | --- | --- | --- | --- |\n| 1 | Grand | Démoniaque (6) | Souffle +9 (Feu) | Démoniaque (8) |\n| 2 | Souffle +7 (Corrosion et Poison) | Perturbant (Allure étrange) | Démoniaque (9) | Démoniaque (8) |\n| 3 | Démoniaque (7) | Peur (3) | Éthéré | Élite |\n| 4 | Maladie (Pourriture de Nurgle) | Frénésie | Peur (3) | Rapide |\n| 5 | Perturbant (Puanteur) | Immunité Psychologique | Vol (9) | Peur (3) |\n| 6 | Peur (3) | Mutation (jet sous le Tableau) | Magique | Vol (8) |\n| 7 | Parasité | Insensible à la douleur | Résistance à la Magie (2) | Rage |\n| 8 | Mutation (jet sous le Tableau) | Regard pétrifiant | Mutation (jet sous le Tableau) | Cornes +10 |\n| 9 | Régénération | Langue préhensile +6 (6 mètres) | Mutation (jet sous le Tableau) | Magique |\n| 10 | Vomissement | Venin | Lanceur de Sorts (au choix) | Attaque caudale (+10) |",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -8434,7 +8434,7 @@
         "bonusOf": "FM"
       }
     },
-    "desc": "Vos mots ignobles et profanes déchirent le tissu de la réalité, creusant une brèche dans le monde, au travers de laquelle les serviteurs des Dieux Sombres sont libres de passer. Un portail déchiqueté vers l'Aethyr apparaît. <br><br>À la fin de chaque round, un démon mineur traverse le portail depuis les Royaumes du Chaos. Ces démons ne sont pas sous votre contrôle, mais sont susceptibles de vous défendre et d’attaquer vos ennemis, si telle est la volonté de votre maître impie. Les démons invoqués dépendent de votre Domaine du Chaos : démonettes de Slaanesh, porte-peste de Nurgle, horreurs de Tzeentch, sanguinaires de Khorne, et, pour les sorciers du Chaos Indivisible, des furies du Chaos. Pendant toute la durée du sort, tous les démons qu’il invoque sont immunisés aux effets du Trait de créature Instable. <br><br>Pour chaque +5 DR de Surincantation, vous pouvez augmenter le rythme d’arrivée des démons de +1. <br><br>Les créatures vivantes doivent réussir un Test de Résistance Accessible (+20) à la fin de chaque Round où elles voient la déchirure, ou gagner +1 Corruption. Toute créature vivante assez stupide ou malchanceuse pour entrer dans la faille choit dans les Royaumes du Chaos et est immédiatement tuée, à moins qu’un Point de Destin ne soit dépensé. Dans ce cas, elle est renvoyée dans la réalité, peut-être sauvée par une Puissance quelconque dans un but encore inachevé. <br><br>Si vous ratez l’Incantation de ce Sort, les démons qui traversent les Royaumes du Chaos appartiennent à une divinité rivale et peuvent être immédiatement hostiles à leur invocateur !",
+    "desc": "Vos mots ignobles et profanes déchirent le tissu de la réalité, creusant une brèche dans le monde, au travers de laquelle les serviteurs des Dieux Sombres sont libres de passer. Un portail déchiqueté vers l'Aethyr apparaît.\n\nÀ la fin de chaque round, un démon mineur traverse le portail depuis les Royaumes du Chaos. Ces démons ne sont pas sous votre contrôle, mais sont susceptibles de vous défendre et d’attaquer vos ennemis, si telle est la volonté de votre maître impie. Les démons invoqués dépendent de votre Domaine du Chaos : démonettes de Slaanesh, porte-peste de Nurgle, horreurs de Tzeentch, sanguinaires de Khorne, et, pour les sorciers du Chaos Indivisible, des furies du Chaos. Pendant toute la durée du sort, tous les démons qu’il invoque sont immunisés aux effets du Trait de créature Instable.\n\nPour chaque +5 DR de Surincantation, vous pouvez augmenter le rythme d’arrivée des démons de +1.\n\nLes créatures vivantes doivent réussir un Test de Résistance Accessible (+20) à la fin de chaque Round où elles voient la déchirure, ou gagner +1 Corruption. Toute créature vivante assez stupide ou malchanceuse pour entrer dans la faille choit dans les Royaumes du Chaos et est immédiatement tuée, à moins qu’un Point de Destin ne soit dépensé. Dans ce cas, elle est renvoyée dans la réalité, peut-être sauvée par une Puissance quelconque dans un but encore inachevé.\n\nSi vous ratez l’Incantation de ce Sort, les démons qui traversent les Royaumes du Chaos appartiennent à une divinité rivale et peuvent être immédiatement hostiles à leur invocateur !",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -8492,7 +8492,7 @@
       "kind": "special",
       "text": "Spéciale"
     },
-    "desc": "Vous implorez votre divinité pour qu'elle s’empare de l’âme de votre Cible et la remplace par quelque chose de terrible. Faites un Test opposé de Force Mentale, que vous devez gagner d’au moins +2 DR. Si vous y parvenez, l’âme de la victime est envoyée dans les Royaumes du Chaos et le corps est possédé par un démon. À moins que la Cible ne dépense un Point de Destin, le contrôle du Personnage passe au MJ. Si vous ne gagnez pas le Test opposé par au moins +2 DR, vous subissez une Incantation imparfaite majeure, et le Sort échoue. Si vous ne réussissez pas le Test, votre arrogance est punie par votre dieu. Votre âme est arrachée à son corps, pour ne jamais revenir, à moins que vous ne dépensiez un Point de Destin pour y résister. Mais votre dieu ne sera guère ravi si vous rejetez son autorité de manière aussi flagrante. <br><br>Étant donné les risques et les limites inhérents à ce Sort, il est généralement lancé sur des victimes qui ont été « préparées » pour leur sacrifice ; elles ont été attachées, droguées et/ou autrement neutralisées.",
+    "desc": "Vous implorez votre divinité pour qu'elle s’empare de l’âme de votre Cible et la remplace par quelque chose de terrible. Faites un Test opposé de Force Mentale, que vous devez gagner d’au moins +2 DR. Si vous y parvenez, l’âme de la victime est envoyée dans les Royaumes du Chaos et le corps est possédé par un démon. À moins que la Cible ne dépense un Point de Destin, le contrôle du Personnage passe au MJ. Si vous ne gagnez pas le Test opposé par au moins +2 DR, vous subissez une Incantation imparfaite majeure, et le Sort échoue. Si vous ne réussissez pas le Test, votre arrogance est punie par votre dieu. Votre âme est arrachée à son corps, pour ne jamais revenir, à moins que vous ne dépensiez un Point de Destin pour y résister. Mais votre dieu ne sera guère ravi si vous rejetez son autorité de manière aussi flagrante.\n\nÉtant donné les risques et les limites inhérents à ce Sort, il est généralement lancé sur des victimes qui ont été « préparées » pour leur sacrifice ; elles ont été attachées, droguées et/ou autrement neutralisées.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -8601,7 +8601,7 @@
       "kind": "special",
       "text": "(DR) jours"
     },
-    "desc": "Vous devez posséder un objet chéri ou précieux appartenant à la Cible. Vous instillez magiquement de la matière brute du Chaos dans l'objet qui, à son tour, affecte la Cible. Elle devient obsédée par quelque chose : la nature précise de l’obsession dépend de l’individu en question, et de votre Domaine. Par exemple, lorsqu’il s’agit de Nurgle, Obsession peut pousser la Cible récemment blessée à gratter frénétiquement ses croûtes. Le Domaine de Slaanesh peut pousser un épicurien ou un gourmand à se goinfrer. <br><br>La Cible doit réussir un Test de Résistance Accessible (+20) toutes les heures, ou succomber à son obsession. En cas d’échec, les Tests suivants deviennent Intermédiaire (+0), puis si les échecs s’enchaînent, les Tests sont de plus en plus difficiles, jusqu’à ce qu’ils deviennent Très difficiles (-30). Si la Cible obtient une Maladresse à l’un d’entre eux (en lançant un double), elle devient complètement obsédée. Elle ne peut rien faire d’autre que céder à cette obsession, quels qu’en soient le coût et les conséquences, pendant un nombre d’heures égal à 1d10 - Bonus de Force Mentale (minimum 1 heure). À la fin de la durée du Sort, en plus de toutes les autres implications physiques, sociales ou financières, la Cible doit réussir un Test de Résistance Intermédiaire (+0) ou gagner +1 Point de Corruption. <br><br>Une Cible ne peut être affectée par ce Sort qu’une seule fois pour chaque Domaine avec lequel il est lancé. Toute tentative ultérieure sur la même Cible avec ce Sort est sans effet.",
+    "desc": "Vous devez posséder un objet chéri ou précieux appartenant à la Cible. Vous instillez magiquement de la matière brute du Chaos dans l'objet qui, à son tour, affecte la Cible. Elle devient obsédée par quelque chose : la nature précise de l’obsession dépend de l’individu en question, et de votre Domaine. Par exemple, lorsqu’il s’agit de Nurgle, Obsession peut pousser la Cible récemment blessée à gratter frénétiquement ses croûtes. Le Domaine de Slaanesh peut pousser un épicurien ou un gourmand à se goinfrer.\n\nLa Cible doit réussir un Test de Résistance Accessible (+20) toutes les heures, ou succomber à son obsession. En cas d’échec, les Tests suivants deviennent Intermédiaire (+0), puis si les échecs s’enchaînent, les Tests sont de plus en plus difficiles, jusqu’à ce qu’ils deviennent Très difficiles (-30). Si la Cible obtient une Maladresse à l’un d’entre eux (en lançant un double), elle devient complètement obsédée. Elle ne peut rien faire d’autre que céder à cette obsession, quels qu’en soient le coût et les conséquences, pendant un nombre d’heures égal à 1d10 - Bonus de Force Mentale (minimum 1 heure). À la fin de la durée du Sort, en plus de toutes les autres implications physiques, sociales ou financières, la Cible doit réussir un Test de Résistance Intermédiaire (+0) ou gagner +1 Point de Corruption.\n\nUne Cible ne peut être affectée par ce Sort qu’une seule fois pour chaque Domaine avec lequel il est lancé. Toute tentative ultérieure sur la même Cible avec ce Sort est sans effet.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -8932,7 +8932,7 @@
       },
       "unit": "days"
     },
-    "desc": "Vos paroles, imprégnées de la prescience labyrinthique du Changeur de Voies, remodèlent votre esprit, vous donnant accès à de nouvelles connaissances arcaniques. Choisissez un Sort dans n'importe quel Domaine (pour assurer un jeu rapide, le MJ peut imposer une limite de temps de neuf secondes). Pendant que l’Avantage de Tzeentch est en vigueur, vous pouvez lancer votre nouveau Sort comme si vous l’aviez mémorisé, sans pouvoir le transcrire dans un grimoire, un parchemin ou autre. Si vous focalisez pour lancer le nouveau Sort, vous pouvez utiliser soit Focalisation (Dhar), soit la Compétence de Focalisation appropriée au Domaine que le Sort requiert normalement, si vous la possédez. <br><br>Si vous faites une erreur en canalisant ou en lançant ce nouveau Sort, le Sort Avantage de Tzeentch quitte votre esprit avec dégoût, et s’efface également de votre grimoire avait permis lui- même d’y être transcrit.",
+    "desc": "Vos paroles, imprégnées de la prescience labyrinthique du Changeur de Voies, remodèlent votre esprit, vous donnant accès à de nouvelles connaissances arcaniques. Choisissez un Sort dans n'importe quel Domaine (pour assurer un jeu rapide, le MJ peut imposer une limite de temps de neuf secondes). Pendant que l’Avantage de Tzeentch est en vigueur, vous pouvez lancer votre nouveau Sort comme si vous l’aviez mémorisé, sans pouvoir le transcrire dans un grimoire, un parchemin ou autre. Si vous focalisez pour lancer le nouveau Sort, vous pouvez utiliser soit Focalisation (Dhar), soit la Compétence de Focalisation appropriée au Domaine que le Sort requiert normalement, si vous la possédez.\n\nSi vous faites une erreur en canalisant ou en lançant ce nouveau Sort, le Sort Avantage de Tzeentch quitte votre esprit avec dégoût, et s’efface également de votre grimoire avait permis lui- même d’y être transcrit.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -9053,7 +9053,7 @@
     "duration": {
       "kind": "instant"
     },
-    "desc": "Vos mots invoquent une boule de feu d'un bleu scintillant qui engloutit vos ennemis. Le Feu bleu de Tzeentch est un Projectile magique. Toute personne se trouvant dans les limites de votre Bonus d’Initiative en mètres autour de la cible subit +3 Points de Dégâts, et gagne 1 État En flammes. <br><br>Si un Personnage de Taille Petite ou supérieure est réduit à 0 Blessure par ce Sort, alors qu’il est sous l’effet de l’État En flammes dû au Feu bleu de Tzeentch, lancez 1d10. Sur un résultat de 9, deux Horreur bleue (voir page 85) se frayent un chemin à travers la chair hurlante du Personnage, le tuant au passage.",
+    "desc": "Vos mots invoquent une boule de feu d'un bleu scintillant qui engloutit vos ennemis. Le Feu bleu de Tzeentch est un Projectile magique. Toute personne se trouvant dans les limites de votre Bonus d’Initiative en mètres autour de la cible subit +3 Points de Dégâts, et gagne 1 État En flammes.\n\nSi un Personnage de Taille Petite ou supérieure est réduit à 0 Blessure par ce Sort, alors qu’il est sous l’effet de l’État En flammes dû au Feu bleu de Tzeentch, lancez 1d10. Sur un résultat de 9, deux Horreur bleue (voir page 85) se frayent un chemin à travers la chair hurlante du Personnage, le tuant au passage.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -9104,7 +9104,7 @@
     "duration": {
       "kind": "instant"
     },
-    "desc": "Des éclairs de feu rose tourbillonnent du bout de vos doigts tendus, faisant hurler d'angoisse la réalité. Le Feu rose de Tzeentch est un Projectile magique. La Cible touchée subit Dégâts +6, et gagne +1 État En flammes. <br><br>Si un Personnage de Taille petite ou plus grande est réduit à 0 Blessure par ce Sort, alors qu’il est sous l’effet de l’État En flammes causé par le Feu rose de Tzeentch, lancez un d10. Sur un résultat de 9, une Horreur rose (voir page 85) se fraie un chemin hors du corps convulsé de la Cible, la tuant aussitôt.",
+    "desc": "Des éclairs de feu rose tourbillonnent du bout de vos doigts tendus, faisant hurler d'angoisse la réalité. Le Feu rose de Tzeentch est un Projectile magique. La Cible touchée subit Dégâts +6, et gagne +1 État En flammes.\n\nSi un Personnage de Taille petite ou plus grande est réduit à 0 Blessure par ce Sort, alors qu’il est sous l’effet de l’État En flammes causé par le Feu rose de Tzeentch, lancez un d10. Sur un résultat de 9, une Horreur rose (voir page 85) se fraie un chemin hors du corps convulsé de la Cible, la tuant aussitôt.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -9276,7 +9276,7 @@
       "kind": "special",
       "text": "Variable"
     },
-    "desc": "Ce Sort est une malédiction mesquine utilisée par les sorciers de la Main Pourpre pour intimider et calmer les co-conspirateurs agressifs. De tous les codes non verbaux utilisés par la Main Pourpre, le sens de cette malédiction est clair : corrigez vos actes immédiatement ou soyez punis. <br><br>Pour lancer le Sort, le sorcier doit d'abord obtenir un petit morceau de sa Cible : un cheveu perdu ou une rognure d’ongle d’orteil suffisent. Si cet objet est obtenu et que le Sort est lancé avec succès, la paumes des mains de la Cible deviennent d’un profond violet. Les effets du Sort durent une heure pour chaque niveau de réussite obtenu par le Lanceur lors de l’Incantation.",
+    "desc": "Ce Sort est une malédiction mesquine utilisée par les sorciers de la Main Pourpre pour intimider et calmer les co-conspirateurs agressifs. De tous les codes non verbaux utilisés par la Main Pourpre, le sens de cette malédiction est clair : corrigez vos actes immédiatement ou soyez punis.\n\nPour lancer le Sort, le sorcier doit d'abord obtenir un petit morceau de sa Cible : un cheveu perdu ou une rognure d’ongle d’orteil suffisent. Si cet objet est obtenu et que le Sort est lancé avec succès, la paumes des mains de la Cible deviennent d’un profond violet. Les effets du Sort durent une heure pour chaque niveau de réussite obtenu par le Lanceur lors de l’Incantation.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -9323,7 +9323,7 @@
       "kind": "special",
       "text": "Variable"
     },
-    "desc": "Selon la tradition tzeentchienne, tous les Sorts découlent de la volonté du Dieu et lui appartiennent donc. En utilisant ce Sort, un sorcier de Tzeentch peut faire perdre à un autre sorcier la connaissance et la capacité de lancer un Sort dont il avait auparavant la maîtrise. <br><br>Si la Malédiction de Tzeentch est un succès, le Lanceur doit alors faire un Test opposé de Force Mentale contre la Cible. Si le Lanceur gagne, la Cible perd l'accès à un Sort pris au hasard. Les effets de la Malédiction durent un jour pour chaque DR obtenu par le Lanceur lors du Test opposé.",
+    "desc": "Selon la tradition tzeentchienne, tous les Sorts découlent de la volonté du Dieu et lui appartiennent donc. En utilisant ce Sort, un sorcier de Tzeentch peut faire perdre à un autre sorcier la connaissance et la capacité de lancer un Sort dont il avait auparavant la maîtrise.\n\nSi la Malédiction de Tzeentch est un succès, le Lanceur doit alors faire un Test opposé de Force Mentale contre la Cible. Si le Lanceur gagne, la Cible perd l'accès à un Sort pris au hasard. Les effets de la Malédiction durent un jour pour chaque DR obtenu par le Lanceur lors du Test opposé.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -9368,7 +9368,7 @@
       },
       "unit": "days"
     },
-    "desc": "Les sorciers de Tzeentch négocient souvent avec leur maître pour obtenir des indications sur leur destin. Cette recherche est dangereuse, car Tzeentch est un dieu capricieux, même envers ses serviteurs favoris. Une fois que le Sort est lancé, il ne peut plus l'être à nouveau, jusqu’à ce que sa durée soit écoulée. <br><br>Calculez la réussite du Test de Langue (Magick) nécessaire pour lancer le Sort. Pour chaque DR positif, le Lanceur bénéficie d’un Point de Chance qu’il peut utiliser normalement pendant la durée du Sort. Cependant, si le Sort échoue, pour chaque DR négatif, le Lanceur reçoit un Point de Corruption pour avoir examiné un éventail vertigineux d’inquiétants échos futurs.",
+    "desc": "Les sorciers de Tzeentch négocient souvent avec leur maître pour obtenir des indications sur leur destin. Cette recherche est dangereuse, car Tzeentch est un dieu capricieux, même envers ses serviteurs favoris. Une fois que le Sort est lancé, il ne peut plus l'être à nouveau, jusqu’à ce que sa durée soit écoulée.\n\nCalculez la réussite du Test de Langue (Magick) nécessaire pour lancer le Sort. Pour chaque DR positif, le Lanceur bénéficie d’un Point de Chance qu’il peut utiliser normalement pendant la durée du Sort. Cependant, si le Sort échoue, pour chaque DR négatif, le Lanceur reçoit un Point de Corruption pour avoir examiné un éventail vertigineux d’inquiétants échos futurs.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -9427,7 +9427,7 @@
         "bonusOf": "Int"
       }
     },
-    "desc": "Alors que votre langue émet les motifs sonores déformés de ce Sort blasphématoire, deux voix semblent sortir de votre gorge, en une harmonie impie et contre nature. Vos mots renferment une signification supplémentaire pour ceux qui sont affectés par le Sort, même si les Cibles ne peuvent pas se souvenir de ce qui a été dit. Elles en conservent un sentiment obsédant de pressentiment, comme si elles avaient oublié quelque chose de très important concernant leur propre avenir. <br><br>Les Cibles vivantes affectées par le Sort doivent faire un Test opposé d'Intelligence. Si la Cible perd, elle gagne 1 État Sonné, +1 État Sonné supplémentaire pour chaque DR d’écart. En cas de Maladresse, elle gagne l’État Inconscient, et +1 Point de Corruption. <br><br>Une fois que tous les États ont été retirés, les Cibles affectées doivent réussir un Test de Résistance Accessible (+20), ou gagner +1 Corruption. Si elles obtiennent une Maladresse, elles gagnent immédiatement 1 Mutation mentale, et ne peuvent pas prendre d’Ambition à court terme pendant les 1d10 semaines suivantes.",
+    "desc": "Alors que votre langue émet les motifs sonores déformés de ce Sort blasphématoire, deux voix semblent sortir de votre gorge, en une harmonie impie et contre nature. Vos mots renferment une signification supplémentaire pour ceux qui sont affectés par le Sort, même si les Cibles ne peuvent pas se souvenir de ce qui a été dit. Elles en conservent un sentiment obsédant de pressentiment, comme si elles avaient oublié quelque chose de très important concernant leur propre avenir.\n\nLes Cibles vivantes affectées par le Sort doivent faire un Test opposé d'Intelligence. Si la Cible perd, elle gagne 1 État Sonné, +1 État Sonné supplémentaire pour chaque DR d’écart. En cas de Maladresse, elle gagne l’État Inconscient, et +1 Point de Corruption.\n\nUne fois que tous les États ont été retirés, les Cibles affectées doivent réussir un Test de Résistance Accessible (+20), ou gagner +1 Corruption. Si elles obtiennent une Maladresse, elles gagnent immédiatement 1 Mutation mentale, et ne peuvent pas prendre d’Ambition à court terme pendant les 1d10 semaines suivantes.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -11071,7 +11071,7 @@
       },
       "unit": "minutes"
     },
-    "desc": "Vous souriez à Ranald tout en demandant effrontément aux autres ce qu'est exactement la richesse? Pour chaque cible affectée, choisissez une option :<br> • La bourse de la cible semble vide<br> • La bourse de la cible semble pleine<br> • La tenue de la cible semble bon marché et insignifiante<br> • La tenue de la cible semble riche et bien taillée<br> • Le seul objet de valeur disponible est impossible à percevoir<br> Pour chaque +2 DR, vous pouvez choisir un effet supplémentaire pour l'une de vos cibles.",
+    "desc": "Vous souriez à Ranald tout en demandant effrontément aux autres ce qu'est exactement la richesse? Pour chaque cible affectée, choisissez une option :\n\n• La bourse de la cible semble vide\n\n• La bourse de la cible semble pleine\n\n• La tenue de la cible semble bon marché et insignifiante\n\n• La tenue de la cible semble riche et bien taillée\n\n• Le seul objet de valeur disponible est impossible à percevoir\n\nPour chaque +2 DR, vous pouvez choisir un effet supplémentaire pour l'une de vos cibles.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -11257,7 +11257,7 @@
       "kind": "special",
       "text": "Spécial"
     },
-    "desc": "Vous posez les mains sur une cible blessée ou malade tout en psalmodiant vos Prières. Choisissez l'un des effets suivants :<br> • Guérir (Bonus de Sociabilité) Blessures<br> • Traiter 1 maladie contractée naturellement<br> Pour chaque +2 DR, vous pouvez choisir un autre effet, ou le même de façon répétée. Ce Miracle est lent, et les résultats mettent au moins 10 minutes à se manifester. S'il est interrompu, le Miracle devra être invoqué de nouveau.",
+    "desc": "Vous posez les mains sur une cible blessée ou malade tout en psalmodiant vos Prières. Choisissez l'un des effets suivants :\n\n• Guérir (Bonus de Sociabilité) Blessures\n\n• Traiter 1 maladie contractée naturellement\n\nPour chaque +2 DR, vous pouvez choisir un autre effet, ou le même de façon répétée. Ce Miracle est lent, et les résultats mettent au moins 10 minutes à se manifester. S'il est interrompu, le Miracle devra être invoqué de nouveau.",
     "effects": {
       "kind": "seq",
       "steps": [

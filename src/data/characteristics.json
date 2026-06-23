@@ -212,7 +212,7 @@
     "abr": "",
     "label": "Destin",
     "type": "extra",
-    "desc": "Chaque Personnage possède une destinée. Alors même si ce futur reste mystérieux et qu'il n'y a aucune garantie quant au fait qu'il soit glorieux, héroïque ou même agréable, il est voué a accomplir quelque chose d'important.<br><br>Pour réprésenter cela, vous commencez la partie avec un certain nombre de Points de Destin. Ce sont ces Points qui vous différencient du reste des habitants du Vieux Monde. Ils vont vous permettre de survivre même lorsque toutes les chances sont contre voous et de l'emporter là où les gens normaux échouerraient<br><br>Le Destin détermine le nombre de Points de Chance dont vous pouvez disposer et qui peuvent être sacrifiés lors des circonstances les plus difficiles afin d'éviter une mort certaine.",
+    "desc": "Chaque Personnage possède une destinée. Alors même si ce futur reste mystérieux et qu'il n'y a aucune garantie quant au fait qu'il soit glorieux, héroïque ou même agréable, il est voué a accomplir quelque chose d'important.\n\nPour réprésenter cela, vous commencez la partie avec un certain nombre de Points de Destin. Ce sont ces Points qui vous différencient du reste des habitants du Vieux Monde. Ils vont vous permettre de survivre même lorsque toutes les chances sont contre voous et de l'emporter là où les gens normaux échouerraient\n\nLe Destin détermine le nombre de Points de Chance dont vous pouvez disposer et qui peuvent être sacrifiés lors des circonstances les plus difficiles afin d'éviter une mort certaine.",
     "base": {
       "Humain": 2,
       "Halfling": 0,
@@ -250,7 +250,7 @@
     "abr": "",
     "label": "Résilience",
     "type": "extra",
-    "desc": "Alors que les Points de Destin représentent votre destinée, peut-être tracée par une divinité mystérieuse, la Résilience représente votre volonté et votre détermination à endurer les événements et à vous dépasser quels que soient les obstacles auxquels vous faite face.<br><br>La Résilience détermine votre limite maximale de Détermination et elle peut être sacrifiée pour vous permettre de surmonter des situations à priori impossibles.",
+    "desc": "Alors que les Points de Destin représentent votre destinée, peut-être tracée par une divinité mystérieuse, la Résilience représente votre volonté et votre détermination à endurer les événements et à vous dépasser quels que soient les obstacles auxquels vous faite face.\n\nLa Résilience détermine votre limite maximale de Détermination et elle peut être sacrifiée pour vous permettre de surmonter des situations à priori impossibles.",
     "base": {
       "Humain": 1,
       "Halfling": 2,
@@ -307,7 +307,7 @@
     "abr": "M",
     "label": "Mouvement",
     "type": "mv",
-    "desc": "Le Mouvement est utilisé pour déterminer vos vitesses de marche et de course. Le Mouvement humain standard est de 4. Si vous utilisez une grille pour le déplacement, cela indique le nombre de cases que vous pouvez parcourir en un Round, ou de centimètres sur une table. À plus long terme, il indique combien de kilomètres par heure vous pouvez aisément parcourir à pied. Pour plus de détails sur le Mouvement, voir page 164.<br><br><table> <tr> <th> Mouvement </th> <th> Marche </th> <th> Charge </th> </tr> <tr> <td> 3 </td> <td> 6 </td> <td> 12 </td> </tr> <tr> <td> 4 </td> <td> 8 </td> <td> 16 </td> </tr> <tr> <td> 5 </td> <td> 10 </td> <td> 20 </td> </tr> </table> ",
+    "desc": "Le Mouvement est utilisé pour déterminer vos vitesses de marche et de course. Le Mouvement humain standard est de 4. Si vous utilisez une grille pour le déplacement, cela indique le nombre de cases que vous pouvez parcourir en un Round, ou de centimètres sur une table. À plus long terme, il indique combien de kilomètres par heure vous pouvez aisément parcourir à pied. Pour plus de détails sur le Mouvement, voir page 164.\n\n| Mouvement | Marche | Charge |\n| --- | --- | --- |\n| 3 | 6 | 12 |\n| 4 | 8 | 16 |\n| 5 | 10 | 20 |",
     "base": {
       "Humain": 4,
       "Halfling": 3,
