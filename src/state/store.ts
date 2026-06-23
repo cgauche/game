@@ -6,6 +6,7 @@
 import { create } from 'zustand';
 import { Combatant, CharKey, HitLocation } from '../engine/types';
 import { extendedTestStep } from '../engine/tests';
+import type { ShipMoraleState } from '../engine/crewMorale';
 import { dissipateSpell } from '../engine/dispel';
 import { type AttackKind } from '../engine/creatureAttacks';
 import { battleRng, seedBattleRng } from './battleRng';
@@ -818,6 +819,16 @@ export interface GameState extends RollFlowActionsMap {
   setTravelRole: (heroId: string, role: string | null) => void;
   /** Dernier jour (index d'horloge) traité par l'entretien quotidien (rations/faim) — anti-double-comptage. */
   lastUpkeepDay: number;
+  /** Navire de campagne PERSISTANT (MDG ch.13-14) — porte son `vehicleId` et son MORAL (recalculé chaque
+   *  semaine par l'entretien quotidien via `tickShipMorale`). `null` hors campagne navale. */
+  vessel: CampaignVessel | null;
+}
+
+/** Navire que le groupe possède/commande en campagne — survit aux jours et aux combats (≠ la coque
+ *  transitoire d'un combat). Son Moral est recalculé hebdomadairement (`tickShipMorale`). */
+export interface CampaignVessel {
+  vehicleId: string;
+  morale: ShipMoraleState;
 }
 
 export const useGame = create<GameState>((set, get) => ({
@@ -830,6 +841,7 @@ export const useGame = create<GameState>((set, get) => ({
   pendingCampaign: null,
   gameTime: CAMPAIGN_START,
   lastUpkeepDay: dayIndex(CAMPAIGN_START),
+  vessel: null,
   worldMap: campaignWorldMap,
   worldMapOpen: false,
   travelPlan: null,

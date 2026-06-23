@@ -23,6 +23,7 @@
  */
 import type { GameState } from './store';
 import { battleRng } from './battleRng';
+import { tickShipMorale, moraleBand } from '../engine/crewMorale';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { dailyFoodUpkeep, feedFromMeal } from '../engine/provisions';
 import { testValue } from '../engine/skills';
@@ -123,6 +124,16 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
     }
   }
   if (rations > 0) lines.unshift(`Le groupe entame ses provisions (${rations} ration${rations > 1 ? 's' : ''}).`);
+  // Navire de campagne (MDG ch.14) : Moral recalculé une fois par semaine calendaire (garde interne à
+  // `tickShipMorale` ; un saut de plusieurs jours ne recalcule qu'au franchissement de semaine).
+  const vessel = get().vessel;
+  if (vessel) {
+    const mt = tickShipMorale(vessel.morale, today, battleRng());
+    if (mt.recalced) {
+      lines.push(`⚓ Moral de l'équipage recalculé : ${mt.state.score} (${moraleBand(mt.state.score).desc.split('.')[0]}).`, ...mt.lines);
+      set({ vessel: { ...vessel, morale: mt.state } });
+    }
+  }
   set({ lastUpkeepDay: today, party: [...party], journal: [...get().journal.slice(-40), ...lines] });
   if (lines.length) bus.emit(EVT.SCENE_DIRTY);
   return [...purged, ...lines]; // les dissipations du jour font partie du bilan affiché
