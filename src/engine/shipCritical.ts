@@ -14,8 +14,10 @@
  */
 import { d10, d100, rollDice, parseDice, type RNG, defaultRNG } from './dice';
 import { findTableEntry } from './tables';
-import type { GameOp } from './ops';
-import { shipHitLocation, type ShipRig, type ShipLocation } from './combat';
+import { applyOps, type GameOp } from './ops';
+import { shipHitLocation, hitLocation, type ShipRig, type ShipLocation } from './combat';
+import { rollCritical, type CriticalResolved } from './critical';
+import type { Combatant } from './types';
 import { SHIP_CRITICAL_TABLES, type ShipCritKey } from '../data/shipCriticals';
 
 export interface ShipCriticalResolved {
@@ -80,4 +82,80 @@ export function resolveShipCriticalHit(
   const location = shipHitLocation(rig, forcedLocRoll ?? d100(rng));
   if (location === 'equipage') return { location, crewHit: true };
   return { location, crewHit: false, crit: rollShipCritical(location, rng, forcedCritRoll) };
+}
+
+/** Membres d'équipage EXPOSÉS (vivants, conscients) pouvant encaisser une touche (Équipage / Éclats). PUR. */
+export function exposedCrew(crew: Combatant[]): Combatant[] {
+  return crew.filter((c) => !c.dead && (c.wounds?.current ?? 0) > 0);
+}
+
+const SHRAPNEL_DAMAGE = 9; // MDG ch.13 : « ces membres d'équipage subissent 9 Dégâts ».
+
+/** Issue d'un Critique encaissé par une COQUE et RÉPERCUTÉ sur son équipage (MDG ch.13-14). */
+export interface HullCriticalOutcome {
+  location: ShipLocation;
+  /** États NAVALS posés sur la coque (Voie d'eau / En flammes) — déjà appliqués. */
+  hullOps: GameOp[];
+  /** Localisation « Équipage » : un marin exposé encaisse un Critique de PERSONNAGE (déjà appliqué). */
+  crewCrit?: { crewId: string; crit: CriticalResolved };
+  /** Éclats : marins touchés (9 Dégâts chacun, déjà appliqués). */
+  shrapnel: { crewId: string; damage: number }[];
+  /** Critiques de Coque SUPPLÉMENTAIRES résolus (1d10…) — ops déjà appliqués à la coque. */
+  extraHullCrits: ShipCriticalResolved[];
+  lines: string[];
+}
+
+/**
+ * APPLIQUE un coup critique encaissé par une COQUE à elle-même ET à son ÉQUIPAGE (MDG ch.13-14) — la
+ * brique qui fait que `crewIds` touche de VRAIS marins. PUR (mute la coque + les marins via `applyOps` /
+ * `rollCritical`, RNG injecté) :
+ *  - Localisation « Équipage » → un marin EXPOSÉ encaisse un Critique de PERSONNAGE (table LDB/AA via
+ *    `rollCritical`, aucune table dupliquée) ;
+ *  - sinon → les États navals de la table sont posés sur la coque ; les Éclats infligent 9 Dégâts à
+ *    autant de marins exposés ; les Critiques de Coque supplémentaires (1d10…) sont résolus sur la coque.
+ */
+export function applyHullCritical(
+  hull: Combatant, crew: Combatant[], rig: ShipRig, rng: RNG = defaultRNG, forcedLocRoll?: number, forcedCritRoll?: number,
+): HullCriticalOutcome {
+  const hit = resolveShipCriticalHit(rig, rng, forcedLocRoll, forcedCritRoll);
+  const lines: string[] = [];
+  const exposed = exposedCrew(crew);
+
+  if (hit.crewHit) {
+    const sailor = exposed[0];
+    if (!sailor) {
+      lines.push("Coup à l'Équipage, mais aucun marin exposé pour l'encaisser.");
+      return { location: 'equipage', hullOps: [], shrapnel: [], extraHullCrits: [], lines };
+    }
+    const crit = rollCritical(sailor, hitLocation(d100(rng)), rng);
+    applyOps(sailor, crit.ops, { rng });
+    if (crit.traumas.length) sailor.traumas = [...(sailor.traumas ?? []), ...crit.traumas];
+    if (crit.lethal) { sailor.wounds.current = 0; sailor.dead = true; }
+    lines.push(`Équipage touché : ${sailor.name} encaisse un Critique — ${crit.name}.`);
+    return { location: 'equipage', hullOps: [], shrapnel: [], extraHullCrits: [], crewCrit: { crewId: sailor.id, crit }, lines };
+  }
+
+  const crit = hit.crit!;
+  lines.push(crit.log);
+  applyOps(hull, crit.ops, { rng });
+
+  // Éclats → 9 Dégâts à autant de marins exposés que l'Indice (plafonné au nombre de marins).
+  const shrapnel: { crewId: string; damage: number }[] = [];
+  for (let i = 0; i < crit.shrapnel && i < exposed.length; i++) {
+    const sailor = exposed[i];
+    applyOps(sailor, [{ op: 'wounds', amount: SHRAPNEL_DAMAGE, ignoreTB: false, ignoreAP: false }], { rng });
+    shrapnel.push({ crewId: sailor.id, damage: SHRAPNEL_DAMAGE });
+  }
+  if (shrapnel.length) lines.push(`Éclats ${crit.shrapnel} : ${shrapnel.length} marin(s) subissent ${SHRAPNEL_DAMAGE} Dégâts.`);
+
+  // Critiques de Coque supplémentaires (1d10…) — résolus sur la Coque (ops seulement, pas de récursion d'Éclats).
+  const extraHullCrits: ShipCriticalResolved[] = [];
+  for (let i = 0; i < crit.extraHullCrits; i++) {
+    const extra = rollShipCritical('coque', rng);
+    applyOps(hull, extra.ops, { rng });
+    extraHullCrits.push(extra);
+  }
+  if (extraHullCrits.length) lines.push(`${extraHullCrits.length} Critique(s) de Coque supplémentaire(s).`);
+
+  return { location: crit.location, hullOps: crit.ops, shrapnel, extraHullCrits, lines };
 }

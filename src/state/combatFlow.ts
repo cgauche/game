@@ -95,7 +95,8 @@ import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, exte
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, skillBaseValue } from '../engine/skills';
 import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById } from '../data';
-import { resolveShipCriticalHit } from '../engine/shipCritical';
+import { applyHullCritical } from '../engine/shipCritical';
+import { actorIn } from './combatOrParty';
 import type { ShipRig } from '../engine/combat';
 import { norm } from '../lib/normalize';
 import { recomputeLoadout, weaponWithAmmo, compatibleAmmo, ammoFamily, damageArmour, buildWeapon } from '../engine/items';
@@ -946,6 +947,7 @@ export function applyCriticalToTarget(
   ctx?: { attackerId?: string; attackerKind?: Combatant['kind']; weapon?: string; critTwice?: boolean }, // qui inflige le coup + l'arme (→ modale enrichie) ; critTwice = B. de Sauvagerie de l'attaquant
   prerolled?: CriticalResolved, // Critique déjà tiré (déviation : on a montré CE Critique → on l'applique tel quel, sans re-tirer)
   suppressReveal?: boolean, // la modale de déviation a DÉJÀ affiché le Critique → ne pas re-pousser une révélation
+  get?: Get, // navire : résout l'ÉQUIPAGE (`crewIds`) depuis la bataille pour répercuter Équipage/Éclats sur de vrais marins
 ): boolean {
   if (overkill > 0 && !isCoupCritique && usesSuddenDeath(target)) {
     // Figurant : Mort Subite (LDB 18 l.51-54) — sortie directe.
@@ -959,7 +961,7 @@ export function applyCriticalToTarget(
   // vs Équipage), effets en `GameOp` (Voie d'eau / En flammes) posés par `applyOps`. (Le `rollCritical` de
   // personnage indexerait des Traumatismes humains, hors-sujet pour une coque.)
   if (target.bodyShape === 'vehicule') {
-    return applyHullCriticalToTarget(target, log, set, ctx, suppressReveal);
+    return applyHullCriticalToTarget(target, log, set, ctx, suppressReveal, get);
   }
   // Coup Critique : localisation fraîche (1d100) SAUF si le joueur l'a choisie via « Je ne faillirai pas ! »
   // (RAW-2, LDB 17 l.73). Hors Coup Critique (overkill), on garde la localisation de la touche.
@@ -1017,14 +1019,11 @@ export function applyCriticalToTarget(
 }
 
 /**
- * Critique encaissé par une COQUE (véhicule/navire, `bodyShape:'vehicule'`) — MDG ch.13. On lit le gréement
- * de la coque (`vehicles.json` → `hull.rig`) pour la colonne de Localisation, on résout via `resolveShipCriticalHit`
- * (module engine PUR), puis :
- *  - Localisation ≠ Équipage : on POSE les États NAVALS de la table (`crit.ops`, langue `GameOp`) sur la coque
- *    via `applyOps` ; les Éclats (→ équipage exposé) et les Critiques de Coque supplémentaires sont JOURNALISÉS
- *    (l'équipage lié et la récursion de coque relèvent du combat naval tactique — Dalle 3) ;
- *  - Équipage : la touche revient à un marin (Critique de PERSONNAGE) — journalisée tant que l'équipage n'est
- *    pas lié à la coque (Dalle 3).
+ * Critique encaissé par une COQUE (véhicule/navire, `bodyShape:'vehicule'`) — MDG ch.13-14. On lit le gréement
+ * de la coque (`vehicles.json` → `hull.rig`) pour la colonne de Localisation, puis on DÉLÈGUE au résolveur engine
+ * PUR `applyHullCritical`, qui pose les États NAVALS sur la coque (`GameOp`) ET répercute sur l'ÉQUIPAGE : un coup
+ * « Équipage » devient un Critique de PERSONNAGE sur un marin exposé, les Éclats infligent 9 Dégâts à autant de
+ * marins. L'équipage est résolu depuis `target.crewIds` via la bataille (`get`) ; absent → effets de coque seuls.
  * La destruction de la coque NE passe PAS par un « Mort » de Critique mais par ses Blessures / l'État Naufrage —
  * on renvoie donc toujours `false`.
  */
@@ -1034,28 +1033,20 @@ function applyHullCriticalToTarget(
   set: SetFn,
   ctx?: { attackerId?: string; attackerKind?: Combatant['kind']; weapon?: string; critTwice?: boolean },
   suppressReveal?: boolean,
+  get?: Get,
 ): boolean {
   const rig: ShipRig = findVehicleById(target.creatureId ?? '')?.hull?.rig ?? 'mixte';
-  const hit = resolveShipCriticalHit(rig, battleRng());
+  const crew = get && target.crewIds
+    ? (target.crewIds.map((id) => actorIn(get(), id)).filter(Boolean) as Combatant[])
+    : [];
+  const outcome = applyHullCritical(target, crew, rig, battleRng());
   target.criticalWounds = (target.criticalWounds ?? 0) + 1;
-  const revealLines: string[] = [];
-  if (hit.crewHit) {
-    const line = `Critique sur ${target.name} → la touche revient à l'Équipage (un marin exposé encaisse le coup).`;
-    log.push(line);
-    revealLines.push(line);
-  } else {
-    const crit = hit.crit!;
-    log.push(crit.log);
-    revealLines.push(crit.log);
-    applyOps(target, crit.ops, { rng: battleRng() }); // États NAVALS (Voie d'eau / En flammes) — langue GameOp
-    if (crit.note) { const l = `  ↳ ${crit.note}`; log.push(l); revealLines.push(l); }
-    if (crit.shrapnel) { const l = `  ↳ Éclats ${crit.shrapnel} : autant de membres d'équipage exposés subissent 9 Dégâts.`; log.push(l); revealLines.push(l); }
-    if (crit.extraHullCrits) { const l = `  ↳ ${crit.extraHullCrits} Critique(s) de Coque supplémentaire(s).`; log.push(l); revealLines.push(l); }
-  }
-  const heroConcerned = target.kind === 'hero' || ctx?.attackerKind === 'hero';
+  for (const l of outcome.lines) log.push(l);
+  const heroConcerned = target.kind === 'hero' || ctx?.attackerKind === 'hero'
+    || crew.some((c) => c.kind === 'hero');
   if (!suppressReveal && heroConcerned) {
     pushReveal(set, {
-      kind: 'critical', title: 'Critique de navire', dice: hit.crit?.roll ?? 0, lines: revealLines,
+      kind: 'critical', title: 'Critique de navire', dice: outcome.crewCrit?.crit.roll ?? 0, lines: outcome.lines,
       subjectId: target.id, severity: 'grave', actorId: ctx?.attackerId, weapon: ctx?.weapon, details: [],
     });
   }

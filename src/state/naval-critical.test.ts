@@ -14,6 +14,11 @@ import type { Combatant } from '../engine/types';
  */
 const ship = () => vehicleCombatant(findVehicleById('cogue')!)!; // hull E45/B50, rig 'voile'
 const setStub = (() => {}) as never;
+const sailor = (id: string): Combatant => ({
+  id, name: id, kind: 'npc', characteristics: { CC: 31, CT: 31, F: 31, E: 31, I: 31, Ag: 36, Dex: 36, Int: 31, FM: 31, Soc: 36 },
+  skills: [], talents: [], traits: [], conditions: [], activeEffects: [], liveTraits: [], weapons: [],
+  armour: { corps: 0 }, wounds: { current: 13, max: 13, base: 13 }, advantage: 0,
+}) as unknown as Combatant;
 
 describe('applyCriticalToTarget — coque/navire (MDG ch.13) au lieu de Trauma humain', () => {
   beforeEach(() => seedBattleRng(1));
@@ -44,6 +49,29 @@ describe('applyCriticalToTarget — coque/navire (MDG ch.13) au lieu de Trauma h
 
   it('renvoie false (la coque ne « meurt » pas d’un Critique — destruction par Blessures/Naufrage)', () => {
     const s: Combatant = ship();
+    expect(applyCriticalToTarget(s, 'corps', true, 0, [], setStub)).toBe(false);
+  });
+});
+
+describe('applyCriticalToTarget — l’équipage lié (crewIds) encaisse via la bataille (MDG ch.14)', () => {
+  it('crewIds résolus depuis battle.combatants → un marin est réellement touché (balayage de seeds)', () => {
+    let crewTouched = false;
+    for (let seed = 1; seed <= 60 && !crewTouched; seed++) {
+      seedBattleRng(seed);
+      const s = ship();
+      const crew = Array.from({ length: 8 }, (_, i) => sailor(`m${i}`));
+      s.crewIds = crew.map((c) => c.id);
+      const get = (() => ({ battle: { combatants: crew } })) as never;
+      applyCriticalToTarget(s, 'corps', true, 0, [], setStub, undefined, undefined, undefined, undefined, get);
+      crewTouched = crew.some((c) => c.wounds.current < 13 || (c.traumas?.length ?? 0) > 0 || c.conditions.length > 0);
+    }
+    expect(crewTouched).toBe(true);
+  });
+
+  it('sans get (hors bataille) → effets de coque seuls, aucun crash', () => {
+    seedBattleRng(1);
+    const s = ship();
+    s.crewIds = ['m0'];
     expect(applyCriticalToTarget(s, 'corps', true, 0, [], setStub)).toBe(false);
   });
 });

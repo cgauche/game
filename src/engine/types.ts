@@ -566,6 +566,9 @@ export interface Combatant {
   /** `id` STABLE de la créature du bestiaire dont ce combattant est une instance (posé au spawn) —
    *  clé de résolution du rig/apparence (« plus de label » : on ne re-résout plus par `name`). */
   creatureId?: string;
+  /** Coque/navire (`bodyShape:'vehicule'`) : `id`s des Combattants d'ÉQUIPAGE exposés à bord (MDG ch.14).
+   *  Un Critique « Équipage » et les Éclats reviennent à ces marins (Critiques de personnage / Dégâts). */
+  crewIds?: string[];
   species?: string;
   career?: string;
   /** Catégorie de Taille (LDB 85). Optionnel ; défaut Moyenne au point de lecture (`effectiveSize`). */
