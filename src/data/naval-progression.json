@@ -1,0 +1,32 @@
+[
+  {
+    "min": 4,
+    "max": 9999,
+    "mode": "plus2",
+    "desc": "Le bateau progresse à sa vitesse maximale. Il se déplace de son score de M+2."
+  },
+  {
+    "min": 1,
+    "max": 3,
+    "mode": "plus1",
+    "desc": "Le navire progresse bien. Il se déplace de son score de M+1."
+  },
+  {
+    "min": -2,
+    "max": 0,
+    "mode": "normal",
+    "desc": "Le vaisseau progresse normalement. Il se déplace de son score de M."
+  },
+  {
+    "min": -4,
+    "max": -3,
+    "mode": "minus1",
+    "desc": "Le bateau progresse lentement. Il se déplace de son score de M–1."
+  },
+  {
+    "min": -9999,
+    "max": -5,
+    "mode": "half",
+    "desc": "Le navire lutte pour avancer. Il se déplace de la moitié de son score de M (arrondie à l'inférieur)."
+  }
+]
