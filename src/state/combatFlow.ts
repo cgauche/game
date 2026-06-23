@@ -93,8 +93,8 @@ import { eligibleTalent, canCastFromGrimoire } from '../engine/grimoire';
 import { rollMiscast, componentDowngrade, type MiscastSeverity } from '../engine/miscast';
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
-import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } from '../engine/skills';
-import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel } from '../data';
+import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, skillBaseValue } from '../engine/skills';
+import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById } from '../data';
 import { norm } from '../lib/normalize';
 import { recomputeLoadout, weaponWithAmmo, compatibleAmmo, ammoFamily, damageArmour, buildWeapon } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
@@ -127,7 +127,7 @@ import { toBrass, fromBrass } from '../engine/money';
 import { Scene, Effect, isWalkable } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
 import { lineOfSightCover, losClear, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
-import { fearSourceFor, sansPeurVs, terreurBrise, calmeValue, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, suppressSupersededPsych, psychResolution, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
+import { fearSourceFor, sansPeurVs, terreurBrise, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, suppressSupersededPsych, psychResolution, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import { reachable, moveReachFor, flyReachable, pushAway, pathTo, chebyshev, Pt } from './path';
@@ -3773,22 +3773,28 @@ function psychStepFor(get: Get, set: SetFn, c: Combatant, collect: (get: Get, c:
   if (!t) return null;
   const isCible = CIBLE_TYPES.has(t.kind);
   const cl = isCible ? CIBLE_LABEL[t.kind] : null;
-  const calme = calmeValue(c);
+  // Paramètres du Test EN DONNÉES (psychology.json `test`) : compétence (défaut Calme, valeur NUE par
+  // `skillBaseValue`) + difficulté (défaut Intermédiaire). Plus de Calme/Intermédiaire codé en dur.
+  const td = findPsychologyById(t.kind)?.test;
+  const skill = td?.skill ?? 'calme';
+  const base = skillBaseValue(c, skill);
   // Sans Peur (Ennemi) (LDB 10 l.864) : face à une NOUVELLE Peur/Terreur de l'ennemi spécifié, « un
   // seul Test de Calme Accessible (+20) » pour l'ignorer. Pas sur les re-tests d'une Peur déjà subie
   // (entrée psychState existante → Test étendu normal +0) ni sur les Traits ciblés.
   const sourceFoe = !isCible ? get().battle?.combatants.find((x) => x.id === t.sourceId) : undefined;
   const isNewSource = !(c.psychState ?? []).some((p) => p.type === 'peur' && p.sourceId === t.sourceId);
   const sansPeur = !!sourceFoe && isNewSource && sansPeurVs(c, sourceFoe);
-  const target = sansPeur ? calme + 20 : calme; // Accessible (+20) pour le porteur de Sans Peur
+  // Sans Peur force Accessible (+20) ; sinon la difficulté déclarée (défaut Intermédiaire +0).
+  const difficulty: Difficulty = sansPeur ? 'accessible' : (td?.difficulty ?? 'intermediaire');
+  const target = base + DIFFICULTY_MODIFIERS[difficulty];
   return {
     id: `psych-${c.id}`,
     kind: 'combatPsych',
     actorId: c.id,
     icon: cl?.emoji ?? (t.kind === 'terreur' ? '😱' : '😨'),
-    rollLabel: 'Calme',
-    base: calme,
-    target, // Test de Calme Intermédiaire (+0), ou Accessible (+20) avec Sans Peur
+    rollLabel: refLabel('skills', { id: skill }),
+    base,
+    target, // Test (Calme par défaut) à la difficulté déclarée, ou Accessible (+20) avec Sans Peur
     label: `${cl ? `${cl.emoji} ${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? '😱 Terreur' : '😨 Peur'} ${t.indice}`}${sansPeur ? ' · Sans Peur (+20)' : ''}`,
     combatPsych: { kind: t.kind, sourceId: t.sourceId, sourceName: t.sourceName, indice: t.indice, cible: t.cible, prevDR: t.prevDR, sansPeur },
   };

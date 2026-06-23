@@ -89,7 +89,11 @@
       "amount": -1,
       "vs": "source"
     },
-    "resolution": "extended"
+    "resolution": "extended",
+    "test": {
+      "skill": "calme",
+      "difficulty": "intermediaire"
+    }
   },
   {
     "id": "terreur",
@@ -102,7 +106,11 @@
     },
     "resolution": "terreur",
     "failCondition": "brise",
-    "becomes": "peur"
+    "becomes": "peur",
+    "test": {
+      "skill": "calme",
+      "difficulty": "intermediaire"
+    }
   },
   {
     "id": "animosite",
@@ -119,7 +127,11 @@
       "amount": 1,
       "vs": "group"
     },
-    "resolution": "binary"
+    "resolution": "binary",
+    "test": {
+      "skill": "calme",
+      "difficulty": "intermediaire"
+    }
   },
   {
     "id": "haine",
@@ -138,7 +150,11 @@
       "amount": 1,
       "vs": "group"
     },
-    "resolution": "binary"
+    "resolution": "binary",
+    "test": {
+      "skill": "calme",
+      "difficulty": "intermediaire"
+    }
   },
   {
     "id": "prejuge",
@@ -151,7 +167,11 @@
       "page": 192
     },
     "endedByOtherPsych": true,
-    "resolution": "binary"
+    "resolution": "binary",
+    "test": {
+      "skill": "calme",
+      "difficulty": "intermediaire"
+    }
   },
   {
     "id": "amour",
@@ -168,7 +188,11 @@
       "vs": "any"
     },
     "cancelsFear": true,
-    "resolution": "binary"
+    "resolution": "binary",
+    "test": {
+      "skill": "calme",
+      "difficulty": "intermediaire"
+    }
   },
   {
     "id": "camaraderie",
@@ -184,7 +208,11 @@
       "amount": 1,
       "vs": "any"
     },
-    "resolution": "binary"
+    "resolution": "binary",
+    "test": {
+      "skill": "calme",
+      "difficulty": "intermediaire"
+    }
   },
   {
     "id": "phobie",
@@ -196,6 +224,10 @@
       "book": "LDB",
       "page": 192
     },
-    "resolution": "binary"
+    "resolution": "binary",
+    "test": {
+      "skill": "calme",
+      "difficulty": "intermediaire"
+    }
   }
 ]

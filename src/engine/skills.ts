@@ -78,6 +78,16 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
   return base + (sk?.advances ?? 0) + states + enc + traumaSkill + passive;
 }
 
+/** Valeur de Test « NUE » d'une compétence : Caractéristique EFFECTIVE (buffs magiques + Traumatisme via
+ *  `effectiveChar`) + avances de la compétence, SANS les pénalités d'État/Encombrement/passifs qu'applique
+ *  `testValue`. Base des Tests de Psychologie (Calme), généralisant `calmeValue` à TOUTE compétence déclarée
+ *  en donnée (`PsychologyData.test.skill`) — fini la valeur de Calme codée en dur dans la couche flux. */
+export function skillBaseValue(c: Combatant, skill: string, spec?: string): number {
+  const ck = effectiveSkillCharKey(c, skill, { spec });
+  const adv = c.skills.find((s) => s.skillId === skill && (spec == null || s.spec === spec))?.advances ?? 0;
+  return effectiveChar(c, ck) + adv;
+}
+
 /** Valeur de Test « brute » pour un Test de COMBAT : `testValue` PRIVÉE de la pénalité d'États HORS combat
  *  (`testStatePenalty`, qu'elle inclut déjà) — pour que l'appelant ajoute la pénalité de COMBAT
  *  (`combatTestPenalty`) UNE SEULE fois, sans double-compte. = Caractéristique effective + avances + passifs

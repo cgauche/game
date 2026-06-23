@@ -15,8 +15,10 @@ import { Scene } from './scene';
 import type { CascadeStep } from './pendings';
 import { spawnEnemy } from './spawn';
 import { encounterPsych } from '../engine/encounterPsych';
-import { calmeValue, CIBLE_TYPES, CIBLE_LABEL, PsychType, terreurBrise, psychResolution, suppressSupersededPsych } from '../engine/psychology';
-import { psychologyLabel } from '../data';
+import { CIBLE_TYPES, CIBLE_LABEL, PsychType, terreurBrise, psychResolution, suppressSupersededPsych } from '../engine/psychology';
+import { skillBaseValue } from '../engine/skills';
+import { DIFFICULTY_MODIFIERS } from '../engine/types';
+import { psychologyLabel, refLabel, findPsychologyById } from '../data';
 import { t } from '../i18n';
 import { addCondition } from '../engine/conditions';
 import { registerCascadeApplier, startCascade } from './cascade';
@@ -58,15 +60,20 @@ export function openEncounterPsych(get: Get, set: Set): void {
     if (!t) continue;
     const src = npcs.find((n) => n.id === t.sourceId);
     const cl = CIBLE_TYPES.has(t.kind) ? CIBLE_LABEL[t.kind] : null;
-    const calme = calmeValue(hero);
+    // Paramètres du Test EN DONNÉES (psychology.json `test`) : compétence (défaut Calme) + difficulté
+    // (défaut Intermédiaire). Mêmes données que le combat (`psychStepFor`), plus de Calme/+0 codé.
+    const td = findPsychologyById(t.kind)?.test;
+    const skill = td?.skill ?? 'calme';
+    const base = skillBaseValue(hero, skill);
+    const target = base + DIFFICULTY_MODIFIERS[td?.difficulty ?? 'intermediaire'];
     steps.push({
       id: `psych-${hero.id}`,
       kind: 'encounterPsych',
       actorId: hero.id,
       icon: cl?.emoji ?? (t.kind === 'terreur' ? '😱' : '😨'),
-      rollLabel: 'Calme',
-      base: calme,
-      target: calme, // Test de Calme Intermédiaire (+0)
+      rollLabel: refLabel('skills', { id: skill }),
+      base,
+      target, // Test (Calme par défaut) à la difficulté déclarée (défaut Intermédiaire +0)
       label: cl ? `${cl.emoji} ${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? '😱 Terreur' : '😨 Peur'} ${t.indice} — ${src?.name ?? '?'}`,
       encounterPsych: { kind: t.kind, sourceId: t.sourceId, sourceName: src?.name ?? '?', indice: t.indice, cible: t.cible },
     });
