@@ -210,5 +210,770 @@
         "mutation": "affreusement-nerveux"
       }
     ]
+  },
+  {
+    "id": "edoc-mental-toute",
+    "label": "Mentale — Toute Puissance (EDOC)",
+    "ranges": [
+      {
+        "min": 1,
+        "max": 1,
+        "mutation": "fuite-aethyrique"
+      },
+      {
+        "min": 2,
+        "max": 4,
+        "mutation": "esprit-animal"
+      },
+      {
+        "min": 5,
+        "max": 8,
+        "mutation": "atroces-desirs"
+      },
+      {
+        "min": 9,
+        "max": 9,
+        "mutation": "modele-de-corruption"
+      },
+      {
+        "min": 10,
+        "max": 13,
+        "mutation": "bete-interieure"
+      },
+      {
+        "min": 14,
+        "max": 15,
+        "mutation": "douleur-transcendee"
+      },
+      {
+        "min": 16,
+        "max": 19,
+        "mutation": "ame-blasphematoire"
+      },
+      {
+        "min": 20,
+        "max": 22,
+        "mutation": "esprit-aneanti"
+      },
+      {
+        "min": 23,
+        "max": 24,
+        "mutation": "reves-chaotiques"
+      },
+      {
+        "min": 25,
+        "max": 27,
+        "mutation": "formication"
+      },
+      {
+        "min": 28,
+        "max": 30,
+        "mutation": "imprevisible-fantaisiste"
+      },
+      {
+        "min": 31,
+        "max": 33,
+        "mutation": "haine-sporadique"
+      },
+      {
+        "min": 34,
+        "max": 35,
+        "mutation": "corruption-sublime"
+      },
+      {
+        "min": 36,
+        "max": 38,
+        "mutation": "pulsions-de-haine"
+      },
+      {
+        "min": 39,
+        "max": 42,
+        "mutation": "coeur-desseche"
+      },
+      {
+        "min": 43,
+        "max": 47,
+        "mutation": "desespoir-obsedant"
+      },
+      {
+        "min": 48,
+        "max": 49,
+        "mutation": "masochisme-pressant"
+      },
+      {
+        "min": 50,
+        "max": 52,
+        "mutation": "pensees-envieuses"
+      },
+      {
+        "min": 53,
+        "max": 55,
+        "mutation": "repugnance-persistante"
+      },
+      {
+        "min": 56,
+        "max": 58,
+        "mutation": "esprit-solitaire"
+      },
+      {
+        "min": 59,
+        "max": 61,
+        "mutation": "blocage-mental"
+      },
+      {
+        "min": 62,
+        "max": 63,
+        "mutation": "errance-mentale"
+      },
+      {
+        "min": 64,
+        "max": 66,
+        "mutation": "paranoia-galopante"
+      },
+      {
+        "min": 67,
+        "max": 69,
+        "mutation": "panique-extreme"
+      },
+      {
+        "min": 70,
+        "max": 72,
+        "mutation": "faim-intense"
+      },
+      {
+        "min": 73,
+        "max": 76,
+        "mutation": "morale-douteuse"
+      },
+      {
+        "min": 77,
+        "max": 79,
+        "mutation": "maladie-de-l-ame"
+      },
+      {
+        "min": 80,
+        "max": 82,
+        "mutation": "esprit-suspicieux"
+      },
+      {
+        "min": 83,
+        "max": 86,
+        "mutation": "terribles-phobies"
+      },
+      {
+        "min": 87,
+        "max": 89,
+        "mutation": "accro-a-l-adrenaline"
+      },
+      {
+        "min": 90,
+        "max": 92,
+        "mutation": "visions-torturees"
+      },
+      {
+        "min": 93,
+        "max": 94,
+        "mutation": "totalement-desequilibre"
+      },
+      {
+        "min": 95,
+        "max": 97,
+        "mutation": "infinie-malveillance"
+      },
+      {
+        "min": 98,
+        "max": 100,
+        "mutation": "affreusement-nerveux"
+      }
+    ]
+  },
+  {
+    "id": "edoc-mental-khorne",
+    "label": "Mentale — Khorne (EDOC)",
+    "ranges": [
+      {
+        "min": 1,
+        "max": 5,
+        "mutation": "esprit-animal"
+      },
+      {
+        "min": 6,
+        "max": 9,
+        "mutation": "atroces-desirs"
+      },
+      {
+        "min": 10,
+        "max": 11,
+        "mutation": "modele-de-corruption"
+      },
+      {
+        "min": 12,
+        "max": 17,
+        "mutation": "bete-interieure"
+      },
+      {
+        "min": 18,
+        "max": 21,
+        "mutation": "douleur-transcendee"
+      },
+      {
+        "min": 22,
+        "max": 24,
+        "mutation": "ame-blasphematoire"
+      },
+      {
+        "min": 25,
+        "max": 29,
+        "mutation": "esprit-aneanti"
+      },
+      {
+        "min": 30,
+        "max": 33,
+        "mutation": "reves-chaotiques"
+      },
+      {
+        "min": 34,
+        "max": 35,
+        "mutation": "formication"
+      },
+      {
+        "min": 36,
+        "max": 38,
+        "mutation": "imprevisible-fantaisiste"
+      },
+      {
+        "min": 39,
+        "max": 43,
+        "mutation": "haine-sporadique"
+      },
+      {
+        "min": 44,
+        "max": 48,
+        "mutation": "pulsions-de-haine"
+      },
+      {
+        "min": 49,
+        "max": 50,
+        "mutation": "coeur-desseche"
+      },
+      {
+        "min": 51,
+        "max": 54,
+        "mutation": "masochisme-pressant"
+      },
+      {
+        "min": 55,
+        "max": 57,
+        "mutation": "blocage-mental"
+      },
+      {
+        "min": 58,
+        "max": 60,
+        "mutation": "errance-mentale"
+      },
+      {
+        "min": 61,
+        "max": 63,
+        "mutation": "panique-extreme"
+      },
+      {
+        "min": 64,
+        "max": 66,
+        "mutation": "faim-intense"
+      },
+      {
+        "min": 67,
+        "max": 68,
+        "mutation": "morale-douteuse"
+      },
+      {
+        "min": 69,
+        "max": 71,
+        "mutation": "maladie-de-l-ame"
+      },
+      {
+        "min": 72,
+        "max": 75,
+        "mutation": "esprit-suspicieux"
+      },
+      {
+        "min": 76,
+        "max": 77,
+        "mutation": "terribles-phobies"
+      },
+      {
+        "min": 78,
+        "max": 82,
+        "mutation": "accro-a-l-adrenaline"
+      },
+      {
+        "min": 83,
+        "max": 87,
+        "mutation": "visions-torturees"
+      },
+      {
+        "min": 88,
+        "max": 92,
+        "mutation": "totalement-desequilibre"
+      },
+      {
+        "min": 93,
+        "max": 97,
+        "mutation": "infinie-malveillance"
+      },
+      {
+        "min": 98,
+        "max": 100,
+        "mutation": "affreusement-nerveux"
+      }
+    ]
+  },
+  {
+    "id": "edoc-mental-nurgle",
+    "label": "Mentale — Nurgle (EDOC)",
+    "ranges": [
+      {
+        "min": 1,
+        "max": 2,
+        "mutation": "fuite-aethyrique"
+      },
+      {
+        "min": 3,
+        "max": 4,
+        "mutation": "esprit-animal"
+      },
+      {
+        "min": 5,
+        "max": 7,
+        "mutation": "atroces-desirs"
+      },
+      {
+        "min": 8,
+        "max": 10,
+        "mutation": "modele-de-corruption"
+      },
+      {
+        "min": 11,
+        "max": 14,
+        "mutation": "bete-interieure"
+      },
+      {
+        "min": 15,
+        "max": 17,
+        "mutation": "douleur-transcendee"
+      },
+      {
+        "min": 18,
+        "max": 21,
+        "mutation": "ame-blasphematoire"
+      },
+      {
+        "min": 22,
+        "max": 25,
+        "mutation": "esprit-aneanti"
+      },
+      {
+        "min": 26,
+        "max": 27,
+        "mutation": "reves-chaotiques"
+      },
+      {
+        "min": 28,
+        "max": 32,
+        "mutation": "formication"
+      },
+      {
+        "min": 33,
+        "max": 35,
+        "mutation": "pulsions-de-haine"
+      },
+      {
+        "min": 36,
+        "max": 38,
+        "mutation": "coeur-desseche"
+      },
+      {
+        "min": 39,
+        "max": 43,
+        "mutation": "desespoir-obsedant"
+      },
+      {
+        "min": 44,
+        "max": 46,
+        "mutation": "masochisme-pressant"
+      },
+      {
+        "min": 47,
+        "max": 51,
+        "mutation": "repugnance-persistante"
+      },
+      {
+        "min": 52,
+        "max": 56,
+        "mutation": "esprit-solitaire"
+      },
+      {
+        "min": 57,
+        "max": 59,
+        "mutation": "blocage-mental"
+      },
+      {
+        "min": 60,
+        "max": 62,
+        "mutation": "errance-mentale"
+      },
+      {
+        "min": 63,
+        "max": 66,
+        "mutation": "paranoia-galopante"
+      },
+      {
+        "min": 67,
+        "max": 70,
+        "mutation": "panique-extreme"
+      },
+      {
+        "min": 71,
+        "max": 74,
+        "mutation": "faim-intense"
+      },
+      {
+        "min": 75,
+        "max": 78,
+        "mutation": "morale-douteuse"
+      },
+      {
+        "min": 79,
+        "max": 83,
+        "mutation": "maladie-de-l-ame"
+      },
+      {
+        "min": 84,
+        "max": 85,
+        "mutation": "esprit-suspicieux"
+      },
+      {
+        "min": 86,
+        "max": 87,
+        "mutation": "terribles-phobies"
+      },
+      {
+        "min": 88,
+        "max": 92,
+        "mutation": "visions-torturees"
+      },
+      {
+        "min": 93,
+        "max": 97,
+        "mutation": "totalement-desequilibre"
+      },
+      {
+        "min": 98,
+        "max": 100,
+        "mutation": "affreusement-nerveux"
+      }
+    ]
+  },
+  {
+    "id": "edoc-mental-slaanesh",
+    "label": "Mentale — Slaanesh (EDOC)",
+    "ranges": [
+      {
+        "min": 1,
+        "max": 3,
+        "mutation": "fuite-aethyrique"
+      },
+      {
+        "min": 4,
+        "max": 6,
+        "mutation": "esprit-animal"
+      },
+      {
+        "min": 7,
+        "max": 10,
+        "mutation": "atroces-desirs"
+      },
+      {
+        "min": 11,
+        "max": 13,
+        "mutation": "modele-de-corruption"
+      },
+      {
+        "min": 14,
+        "max": 15,
+        "mutation": "bete-interieure"
+      },
+      {
+        "min": 16,
+        "max": 19,
+        "mutation": "douleur-transcendee"
+      },
+      {
+        "min": 20,
+        "max": 23,
+        "mutation": "ame-blasphematoire"
+      },
+      {
+        "min": 24,
+        "max": 25,
+        "mutation": "esprit-aneanti"
+      },
+      {
+        "min": 26,
+        "max": 28,
+        "mutation": "reves-chaotiques"
+      },
+      {
+        "min": 29,
+        "max": 31,
+        "mutation": "formication"
+      },
+      {
+        "min": 32,
+        "max": 34,
+        "mutation": "imprevisible-fantaisiste"
+      },
+      {
+        "min": 35,
+        "max": 37,
+        "mutation": "haine-sporadique"
+      },
+      {
+        "min": 38,
+        "max": 41,
+        "mutation": "corruption-sublime"
+      },
+      {
+        "min": 42,
+        "max": 45,
+        "mutation": "coeur-desseche"
+      },
+      {
+        "min": 46,
+        "max": 48,
+        "mutation": "desespoir-obsedant"
+      },
+      {
+        "min": 49,
+        "max": 53,
+        "mutation": "masochisme-pressant"
+      },
+      {
+        "min": 54,
+        "max": 58,
+        "mutation": "pensees-envieuses"
+      },
+      {
+        "min": 59,
+        "max": 62,
+        "mutation": "esprit-solitaire"
+      },
+      {
+        "min": 63,
+        "max": 64,
+        "mutation": "blocage-mental"
+      },
+      {
+        "min": 65,
+        "max": 67,
+        "mutation": "paranoia-galopante"
+      },
+      {
+        "min": 68,
+        "max": 72,
+        "mutation": "panique-extreme"
+      },
+      {
+        "min": 73,
+        "max": 76,
+        "mutation": "faim-intense"
+      },
+      {
+        "min": 77,
+        "max": 78,
+        "mutation": "morale-douteuse"
+      },
+      {
+        "min": 79,
+        "max": 81,
+        "mutation": "maladie-de-l-ame"
+      },
+      {
+        "min": 82,
+        "max": 83,
+        "mutation": "esprit-suspicieux"
+      },
+      {
+        "min": 84,
+        "max": 87,
+        "mutation": "accro-a-l-adrenaline"
+      },
+      {
+        "min": 88,
+        "max": 90,
+        "mutation": "visions-torturees"
+      },
+      {
+        "min": 91,
+        "max": 94,
+        "mutation": "totalement-desequilibre"
+      },
+      {
+        "min": 95,
+        "max": 98,
+        "mutation": "infinie-malveillance"
+      },
+      {
+        "min": 99,
+        "max": 100,
+        "mutation": "affreusement-nerveux"
+      }
+    ]
+  },
+  {
+    "id": "edoc-mental-tzeentch",
+    "label": "Mentale — Tzeentch (EDOC)",
+    "ranges": [
+      {
+        "min": 1,
+        "max": 5,
+        "mutation": "fuite-aethyrique"
+      },
+      {
+        "min": 6,
+        "max": 9,
+        "mutation": "esprit-animal"
+      },
+      {
+        "min": 10,
+        "max": 11,
+        "mutation": "atroces-desirs"
+      },
+      {
+        "min": 12,
+        "max": 16,
+        "mutation": "modele-de-corruption"
+      },
+      {
+        "min": 17,
+        "max": 19,
+        "mutation": "bete-interieure"
+      },
+      {
+        "min": 20,
+        "max": 21,
+        "mutation": "douleur-transcendee"
+      },
+      {
+        "min": 22,
+        "max": 24,
+        "mutation": "ame-blasphematoire"
+      },
+      {
+        "min": 25,
+        "max": 29,
+        "mutation": "reves-chaotiques"
+      },
+      {
+        "min": 30,
+        "max": 34,
+        "mutation": "imprevisible-fantaisiste"
+      },
+      {
+        "min": 35,
+        "max": 39,
+        "mutation": "corruption-sublime"
+      },
+      {
+        "min": 40,
+        "max": 41,
+        "mutation": "pulsions-de-haine"
+      },
+      {
+        "min": 42,
+        "max": 44,
+        "mutation": "coeur-desseche"
+      },
+      {
+        "min": 45,
+        "max": 47,
+        "mutation": "desespoir-obsedant"
+      },
+      {
+        "min": 48,
+        "max": 52,
+        "mutation": "pensees-envieuses"
+      },
+      {
+        "min": 53,
+        "max": 54,
+        "mutation": "repugnance-persistante"
+      },
+      {
+        "min": 55,
+        "max": 58,
+        "mutation": "errance-mentale"
+      },
+      {
+        "min": 59,
+        "max": 61,
+        "mutation": "paranoia-galopante"
+      },
+      {
+        "min": 62,
+        "max": 64,
+        "mutation": "panique-extreme"
+      },
+      {
+        "min": 65,
+        "max": 66,
+        "mutation": "faim-intense"
+      },
+      {
+        "min": 67,
+        "max": 71,
+        "mutation": "morale-douteuse"
+      },
+      {
+        "min": 72,
+        "max": 75,
+        "mutation": "maladie-de-l-ame"
+      },
+      {
+        "min": 76,
+        "max": 80,
+        "mutation": "esprit-suspicieux"
+      },
+      {
+        "min": 81,
+        "max": 83,
+        "mutation": "terribles-phobies"
+      },
+      {
+        "min": 84,
+        "max": 86,
+        "mutation": "accro-a-l-adrenaline"
+      },
+      {
+        "min": 87,
+        "max": 88,
+        "mutation": "visions-torturees"
+      },
+      {
+        "min": 89,
+        "max": 93,
+        "mutation": "totalement-desequilibre"
+      },
+      {
+        "min": 94,
+        "max": 97,
+        "mutation": "infinie-malveillance"
+      },
+      {
+        "min": 98,
+        "max": 100,
+        "mutation": "affreusement-nerveux"
+      }
+    ]
   }
 ]
