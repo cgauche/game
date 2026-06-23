@@ -564,6 +564,22 @@ export interface ItemInstance {
   isGrimoire?: boolean;
 }
 
+/** Une pièce d'artillerie MONTÉE sur un navire (poste) — DONNÉE pure (item + côté + équipage). Authorée sur
+ *  le Combattant-coque (`hull.postes`, source de vérité) ; au spawn, le chef de pièce (`crewIds[0]`) la SERT
+ *  via `Combatant.mannedPoste`. L'arme est une `ItemInstance` complète (base + qualités/enchants) → gère
+ *  catalogue, custom Codex et armes à atouts ajoutés. La LOGIQUE (arc, placement, support) vit en
+ *  `state/shipPostes.ts` ; ce TYPE pur vit ici pour que `Combatant` le porte sans dépendance engine→state. */
+export interface ShipPoste {
+  /** L'arme montée (instance complète — base via `trappingId` + `qualities`/`enchants` propres). */
+  item: ItemInstance;
+  /** Côté de montage relatif au cap → arc de tir (`inFireArc`). */
+  side: FireArc;
+  /** Tire à travers un Sabord (Gun Port) → couvert TOTAL aux servants ; sinon depuis le pont (aucun couvert). */
+  sabord?: boolean;
+  /** Équipage servant la pièce ; `crewIds[0]` = chef de pièce (nominé pour le Test, Arme d'équipe). */
+  crewIds?: string[];
+}
+
 /** Set d'armes nommé (les 2 mains). `off` ignoré si l'arme `main` est à 2 mains. uids → ItemInstance. */
 export interface WeaponLoadout {
   id: string;
@@ -582,6 +598,13 @@ export interface Combatant {
   /** Coque/navire (`bodyShape:'vehicule'`) : `id`s des Combattants d'ÉQUIPAGE exposés à bord (MDG ch.14).
    *  Un Critique « Équipage » et les Éclats reviennent à ces marins (Critiques de personnage / Dégâts). */
   crewIds?: string[];
+  /** Pièces d'artillerie MONTÉES sur ce Combattant-coque (source de vérité, MDG ch.12-13). Au spawn, chaque
+   *  poste pose son arme sur le chef de pièce via `mannedPoste`. */
+  postes?: ShipPoste[];
+  /** Poste que CE combattant SERT (chef de pièce) → `recomputeLoadout` en dérive l'arme active taguée
+   *  `mountSide` (comme une morsure/un tentacule : dans `weapons`, HORS inventaire). Le canon reste la pièce
+   *  du navire (vérité = la coque) ; ceci n'est que le lien « je suis à cette pièce ». KIND-AGNOSTIQUE. */
+  mannedPoste?: ShipPoste;
   species?: string;
   career?: string;
   /** Catégorie de Taille (LDB 85). Optionnel ; défaut Moyenne au point de lecture (`effectiveSize`). */

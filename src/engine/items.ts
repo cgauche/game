@@ -392,6 +392,14 @@ export function recomputeLoadout(c: Combatant): void {
     if (e.naturalWeapon) weapons.push({ ...e.naturalWeapon, hand: 'main' });
   }
 
+  // Pièce d'artillerie SERVIE (`mannedPoste`, MDG ch.12-13) : le chef de pièce DÉRIVE l'arme du poste comme
+  // arme active taguée `mountSide` — comme un Tentacule/une Morsure (dans `weapons`, HORS inventaire). Le canon
+  // reste la pièce du navire (vérité = la coque) ; ceci n'est que le lien « je suis à cette pièce ». KIND-AGNOSTIQUE.
+  if (c.mannedPoste) {
+    const w = toWeapon({ ...c.mannedPoste.item, mountSide: c.mannedPoste.side }, 'main');
+    if (w) weapons.push(w);
+  }
+
   // Mains nues toujours disponibles en dernier recours (stats canoniques du trapping, LDB 62 l.75).
   weapons.push(unarmedWeapon());
 

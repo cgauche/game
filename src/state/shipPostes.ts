@@ -7,27 +7,14 @@
  */
 import { inFireArc } from './fireArc';
 import type { FireArc } from './fireArc';
-import type { Combatant, ItemInstance } from '../engine/types';
+import type { Combatant, ShipPoste } from '../engine/types';
 import type { Dir8 } from './dir8';
 
-type Pt = { x: number; y: number };
+// Le TYPE `ShipPoste` vit en engine/types (pour que `Combatant` le porte sans dépendance engine→state) ;
+// la LOGIQUE (placement, arc, support) reste ici. Ré-export pour les importeurs historiques.
+export type { ShipPoste };
 
-/** Une pièce d'artillerie MONTÉE sur un navire (poste), authorée sur le Combattant-coque (source de vérité).
- *  L'arme est portée comme `ItemInstance` (base + qualités/enchants PAR INSTANCE) — gère catalogue, custom
- *  Codex ET arme bricolée par le joueur (un id seul perdrait les atouts). Au spawn, l'arme est posée comme
- *  arme DÉRIVÉE (taguée `mountSide = side`) sur le chef de pièce (`crewIds[0]`) — comme une morsure/un
- *  tentacule : présente dans ses `weapons`, ABSENTE de son inventaire (la pièce reste au navire, re-servable).
- *  KIND-AGNOSTIQUE : le servant peut être héros, allié ou ennemi — même chemin de tir. */
-export interface ShipPoste {
-  /** L'arme montée (instance complète — base via `trappingId` + `qualities`/`enchants` propres). */
-  item: ItemInstance;
-  /** Côté de montage relatif au cap → arc de tir (`inFireArc`). */
-  side: FireArc;
-  /** Tire à travers un Sabord (Gun Port) → couvert TOTAL au servant ; sinon depuis le pont (aucun couvert). */
-  sabord?: boolean;
-  /** Combattant(s) d'équipage servant la pièce ; le 1ᵉʳ = chef de pièce (celui qui jette, Arme d'équipe). */
-  crewIds?: string[];
-}
+type Pt = { x: number; y: number };
 
 /** Le poids (Enc) d'une pièce montée sur un bord donné — entrée du calcul de pénalité de répartition. */
 export interface MountWeight {

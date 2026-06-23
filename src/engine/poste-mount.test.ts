@@ -38,3 +38,16 @@ describe('recomputeLoadout — propage mountSide de l’ItemInstance à l’arme
     expect(c.weapons.find((w) => w.uid === 'gun2')?.mountSide).toBeUndefined();
   });
 });
+
+describe('recomputeLoadout — SERVIR un poste (mannedPoste) : canon dérivé, taguée mountSide, HORS inventaire', () => {
+  it('le chef de pièce qui sert un poste reçoit le canon en arme active (côté du POSTE), pas dans ses items', () => {
+    const c = gunner();
+    c.items = []; // aucune arme en inventaire — le canon vient du poste, pas du sac
+    c.mannedPoste = { item: { ...gunItem, uid: 'cannon', mountSide: undefined }, side: 'babord' };
+    recomputeLoadout(c);
+    const w = c.weapons.find((w) => w.uid === 'cannon');
+    expect(w).toBeDefined();
+    expect(w?.mountSide).toBe('babord'); // le côté vient du POSTE (mannedPoste.side), pas de l'item
+    expect((c.items ?? []).some((i) => i.uid === 'cannon')).toBe(false); // le canon n'est PAS un objet d'inventaire
+  });
+});
