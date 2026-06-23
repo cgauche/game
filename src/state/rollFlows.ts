@@ -36,7 +36,7 @@ import { sceneCombatModifiers } from './sceneRules';
 import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, type AttackResult } from '../engine/combat';
 import { reverseRoll } from '../engine/combat';
 import { talentReverseFailed, talentTestDR, runMovementBonus } from '../engine/combatFeatures/dispatch';
-import { rollTest, resolveOpposed, isDoubleRoll, type TestResult, evaluateTest, maxForcedRoll } from '../engine/tests';
+import { rollTest, resolveOpposed, bumpSL, isDoubleRoll, type TestResult, evaluateTest, maxForcedRoll } from '../engine/tests';
 import { resolveRun } from '../engine/movement';
 import { testValue } from '../engine/skills';
 import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR, resolveCounterspell, counterspellOutcomeFrom, castTestOf, castingValue } from '../engine/magic';
@@ -369,7 +369,7 @@ export const FLOWS = {
         const pcCast = s.pendingCast?.result;
         const cur = part.result;
         if (!cur || !pcCast) return null;
-        const counterT: TestResult = { ...cur.counter, sl: cur.counter.sl + 1 };
+        const counterT = bumpSL(cur.counter);
         return { result: counterspellOutcomeFrom(actor, counterT, castTestOf(pcCast)) };
       },
     },
@@ -413,7 +413,7 @@ export const FLOWS = {
         const cur = part.result;
         if (!cur || !pcCast || !actor) return null;
         const castT = castTestOf(pcCast);
-        const oppose: TestResult = { ...cur.oppose, sl: cur.oppose.sl + 1 };
+        const oppose = bumpSL(cur.oppose);
         const o = resolveOpposed(castT, oppose);
         return { result: { oppose, resisted: o.winner !== 'attacker', margin: Math.max(0, castT.sl - oppose.sl) } };
       },
@@ -503,7 +503,7 @@ export const FLOWS = {
         // `sl` reporté, qui reste le DR propre +1).
         if (opp) {
           const def2: TestResult = { roll: st.result.roll, target: st.target!, success: st.result.success, sl: st.result.sl + 1, isDouble: isDoubleRoll(st.result.roll) };
-          const o = resolveOpposed(opp.aT, { ...def2, sl: def2.sl + (opp.bonusSL ?? 0) });
+          const o = resolveOpposed(opp.aT, bumpSL(def2, opp.bonusSL ?? 0));
           return { result: { roll: def2.roll, target: st.target!, sl: def2.sl, success: o.winner !== 'attacker' } };
         }
         return { result: { ...st.result, sl: st.result.sl + 1 } };
@@ -572,7 +572,7 @@ export const FLOWS = {
     bonus: {
       guard: (p) => !!p.def,
       derive: (_s, p) => {
-        const def2: TestResult = { ...p.def!, sl: p.def!.sl + 1 };
+        const def2 = bumpSL(p.def!);
         const opp = resolveOpposed(def2, p.atk!);
         return { def: def2, result: disengageOutcome(opp.winner) };
       },
@@ -893,7 +893,7 @@ export const FLOWS = {
     bonus: {
       derive: (_s, p) => {
         if (p.roll == null || p.merchantRoll == null) return null;
-        const boosted: TestResult = { ...p.roll, sl: p.roll.sl + 1 };
+        const boosted = bumpSL(p.roll);
         return { roll: boosted, result: resolveOpposed(boosted, p.merchantRoll) };
       },
     },
