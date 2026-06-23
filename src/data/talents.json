@@ -3225,7 +3225,7 @@
       "bonusOf": "FM"
     },
     "test": "Force Mentale (Résister à la cible)",
-    "desc": "Vous êtes consumé par le besoin de vous adonner à un vice particulier et souffrez du Trait Psychologique Vice. Chaque fois que vous choisissez ce Talent, vous développez un nouveau vice.",
+    "desc": "Vous êtes consumé par le besoin de vous adonner à un vice particulier et souffrez du Trait Psychologique Vice. Chaque fois que vous choisissez ce Talent, vous développez un nouveau vice. Voici quelques exemples : alcool, nourriture, stupéfiants, plaisir.",
     "specs": [
       "Alcool",
       "Nourriture",

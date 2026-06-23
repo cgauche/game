@@ -3229,7 +3229,7 @@
     "duration": {
       "kind": "instant"
     },
-    "desc": "Vous projetez en ligne droite une grande lance de pur Ghur. Il s'agit d'un Projectile magique avec Dégâts +12. Elle frappe la première créature sur la trajectoire, ignorant les PA des armures faites de cuir et de fourrure. Si la cible subit des Blessures, elle inflige aussi +1 État Hémorragique, après quoi la lance continue sa route, frappant chaque cible de la même façon, mais avec -1 Dégât à chaque fois. Si la lance n'inflige aucune Blessure, sa progression est stoppée et le Sort prend fin. La lance d'Ambre inflige un Point de Blessure minimum (voir page 236) à la première cible qu'elle frappe.",
+    "desc": "Vous projetez en ligne droite une grande lance de pur Ghur. Il s'agit d'un Projectile magique avec Dégâts +12. Elle frappe la première créature sur la trajectoire, ignorant les PA des armures faites de cuir et de fourrure. Si la cible subit des Blessures, elle inflige aussi +1 État Hémorragique, après quoi la lance continue sa route, frappant chaque cible de la même façon, mais avec -1 Dégât à chaque fois. Si la lance n'inflige aucune Blessure, sa progression est stoppée et le Sort prend fin. La lance d'Ambre inflige un Point de Blessure minimum (voir page 236) uniquement à la première cible qu'elle frappe.",
     "effects": {
       "kind": "seq",
       "steps": [
