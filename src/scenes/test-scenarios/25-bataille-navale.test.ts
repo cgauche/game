@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { testScenarios } from './index';
 import { spawnEnemy } from '../../state/spawn';
-import { applyCriticalToTarget } from '../../state/combatFlow';
+import { applyCriticalToTarget, firedAttackBlock, firedWeapon } from '../../state/combatFlow';
 import { seedBattleRng } from '../../state/battleRng';
+import { compatibleAmmo } from '../../engine/items';
 import type { Combatant } from '../../engine/types';
 
 const scen = testScenarios.find((s) => s.id === 'bataille-navale')!;
@@ -47,5 +48,25 @@ describe('Scénario Bataille navale — chaîne navale jouable', () => {
       navalEffect = hullState || crewHurt;
     }
     expect(navalEffect).toBe(true);
+  });
+});
+
+describe('Artillerie jouable — un canonnier peut charger et tirer son pierrier sur la coque', () => {
+  it('le pierrier trouve ses munitions (famille « artillerie ») → tir AUTORISÉ (pas de blocage noammo)', () => {
+    const gunner = scen.makeParty()[0]; // armé d'un pierrier + balles, chargé
+    gunner.pos = { x: 2, y: 6 }; // à distance de la coque (sinon firedWeapon choisit la mêlée)
+    const roster = spawnRoster();
+    const ship = roster[0]; // pos { x: 13, y: 6 }
+    const gun = firedWeapon(gunner, ship);
+    expect(gun.type).toBe('ranged'); // le pierrier est bien l'arme active à distance
+    expect(gun.subType).toBe('armes-de-siege');
+    expect(compatibleAmmo(gunner, gun).length).toBeGreaterThan(0); // munition de siège compatible trouvée
+    expect(firedAttackBlock(gunner, ship)).toBeNull(); // chargé + munition → le tir peut partir
+  });
+
+  it('2 héros sont des canonniers (pierrier équipé), 2 restent abordeurs', () => {
+    const party = scen.makeParty();
+    const gunners = party.filter((h) => (h.items ?? []).some((i) => i.trappingId === 'pierrier' && i.equipped));
+    expect(gunners.length).toBe(2);
   });
 });

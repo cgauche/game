@@ -12,7 +12,7 @@ describe('Artillerie navale — munitions MDG ch.12 (verbatim) + qualité Brise-
     for (const id of ids) {
       const m = byId(id);
       expect(m, id).toBeTruthy();
-      expect(m.subType).toBe('munitions');
+      expect(m.subType).toBe('munition-de-siege'); // famille d'ammo « artillerie » → chargeable par une arme de siège
       expect(m.source.book).toBe('MDG');
       for (const q of m.qualities) expect(qIds.has(q.id), `${id}/${q.id}`).toBe(true);
     }

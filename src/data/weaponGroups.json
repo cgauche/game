@@ -172,5 +172,10 @@
     "id": "munitions",
     "label": "Munitions",
     "kind": "weapon"
+  },
+  {
+    "id": "munition-de-siege",
+    "label": "Munitions de siège",
+    "kind": "weapon"
   }
 ]

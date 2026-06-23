@@ -607,6 +607,10 @@ export function buildInventory(refs: TrappingRef[]): ItemInstance[] {
 export function ammoFamily(subType?: string): string {
   const s = subType ?? ''; // `subType` = id de Groupe (poudre-noire / ingenierie / arc / arbalete / fronde…)
   if (s === 'poudre-noire' || s === 'ingenierie' || s === 'poudre-noire-et-ingenierie') return 'poudre-ingenierie';
+  // Artillerie (AA/MDG) : les armes de siège (canon/baliste/mortier/pierrier) tirent les munitions de
+  // siège (boulets, carreaux, bombes, mitraille). Sans cette normalisation, une arme de siège
+  // (`armes-de-siege`) ne trouverait jamais sa munition (`munition-de-siege`).
+  if (s === 'armes-de-siege' || s === 'munition-de-siege') return 'artillerie';
   return s;
 }
 
