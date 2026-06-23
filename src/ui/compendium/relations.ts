@@ -132,7 +132,7 @@ for (const t of traits) {
 // 10) Mutations → traits conférés.
 for (const m of mutations) {
   const by: Referrer = { category: 'mutations', label: m.label };
-  for (const tr of m.traits ?? []) addReverse('traits', tr.id, by);
+  for (const op of m.passive ?? []) if (op.op === 'grantTrait') addReverse('traits', op.traitId, by);
 }
 
 // 11) Sorts → domaine.

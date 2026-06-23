@@ -12,6 +12,7 @@ import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { mutationArmourBonus } from './corruption';
 import { findTrappingById, findVehicleById, qualityInstance, type TrappingRef, trappingRefLabel } from '../data';
 import { QUALITY_IDS } from './qualities/ids';
+import { slugId } from '../data/slug';
 import { craftEncDelta } from './qualities/craftEconomy';
 import { hasQuality, qualityIndice } from './qualities/dispatch';
 import { hasTraitKey } from './traits/dispatch';
@@ -373,9 +374,16 @@ export function recomputeLoadout(c: Combatant): void {
     weapons.push({ ...buildWeapon({ name: 'Tentacule', attackKind: 'tentacules', subType: 'base', uid: 'nat-tentacule', damage: { plusBF: true, flat: 0, bare: true } }), hand: 'main' });
   }
   // Armes NATURELLES de MUTATION (LDB 19 : « Compte comme une Arme de Créature », Dégâts = BF) —
-  // DÉCLARATIF sur la def de mutation (`fx.derivedWeapon`). Ajouter une mutation-arme = la donnée.
-  for (const m of c.mutations ?? []) {
-    if (m.derivedWeapon) weapons.push({ hand: 'main', ...m.derivedWeapon });
+  // op `grantNaturalWeapon` du `passive` de la mutation (même vocabulaire que les sorts/traits).
+  // Ajouter une mutation-arme = ajouter cet op à la donnée. Dégâts LITTÉRAUX (mutations RAW = fixes).
+  for (const m of c.mutations ?? []) for (const op of m.passive ?? []) {
+    if (op.op === 'grantNaturalWeapon') {
+      const flat = (typeof op.damage === 'number' ? op.damage : 0) + (op.damagePlus ?? 0);
+      weapons.push({ hand: 'main', ...buildWeapon({
+        name: op.name, damage: { plusBF: op.plusBF !== false, flat, bare: op.bare ? true : undefined },
+        qualities: (op.qualities ?? []).map((id) => ({ id })), uid: { prefix: `nat-${slugId(op.name)}` },
+      }) });
+    }
   }
   // Armes NATURELLES accordées par un Sort (op `grantNaturalWeapon` — Dent et griffe : Morsure/Arme ;
   // Incarnation de Wyssan) : attaques ADDITIONNELLES tant que l'effet dure (retirées au recompute

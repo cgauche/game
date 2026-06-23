@@ -131,17 +131,18 @@
     "label": "Tentacule épais",
     "desc": "Vous gagnez le Trait de Créature Tentacule. Voir page 343",
     "kind": "physique",
-    "traits": [
-      {
-        "id": "tentacules"
-      }
-    ],
     "note": "Trait de créature Tentacule.",
     "appearance": {
       "features": [
         "tentacule-epais"
       ]
-    }
+    },
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "tentacules"
+      }
+    ]
   },
   {
     "id": "peau-brillante",
@@ -200,12 +201,15 @@
     "label": "Peau d’acier",
     "desc": "+2 PA à toutes les Localisations, -10 Agilité",
     "kind": "physique",
-    "apAll": 2,
     "passive": [
       {
         "op": "charMod",
         "char": "Ag",
         "mod": -10
+      },
+      {
+        "op": "ap",
+        "amount": 2
       }
     ],
     "appearance": {
@@ -266,7 +270,6 @@
     "label": "Écailles épineuses",
     "desc": "+1 PA à toutes les Localisations",
     "kind": "physique",
-    "apAll": 1,
     "appearance": {
       "colors": {
         "peau": "#8a8a58"
@@ -274,34 +277,40 @@
       "features": [
         "ecailles-epineuses"
       ]
-    }
+    },
+    "passive": [
+      {
+        "op": "ap",
+        "amount": 1
+      }
+    ]
   },
   {
     "id": "cornes-asymetriques",
     "label": "Cornes asymétriques",
     "desc": "+1 PA à la Tête. Compte comme une Arme de Créature dont le nombre de Dégâts est égal à votre Bonus de Force (voir page 338)",
     "kind": "physique",
-    "apLocations": {
-      "tete": 1
-    },
-    "derivedWeapon": {
-      "name": "Cornes",
-      "type": "melee",
-      "damage": {
-        "plusBF": true,
-        "flat": 0,
-        "bare": true
-      },
-      "qualities": [],
-      "subType": "Base",
-      "hands": 1
-    },
     "note": "Compte comme une Arme de Créature (Dégâts = Bonus de Force).",
     "appearance": {
       "features": [
         "cornes-asymetriques"
       ]
-    }
+    },
+    "passive": [
+      {
+        "op": "ap",
+        "loc": "tete",
+        "amount": 1
+      },
+      {
+        "op": "grantNaturalWeapon",
+        "name": "Cornes",
+        "damage": 0,
+        "plusBF": true,
+        "bare": true,
+        "qualities": []
+      }
+    ]
   },
   {
     "id": "suintement-de-pus",
@@ -599,17 +608,16 @@
     "label": "Colère impie",
     "desc": "Sujet à Frénésie (voir Psychologie), +10 à la Capacité de Combat",
     "kind": "mentale",
-    "psychTraits": [
-      {
-        "type": "frenesie"
-      }
-    ],
     "note": "Sujet à Frénésie.",
     "passive": [
       {
         "op": "charMod",
         "char": "CC",
         "mod": 10
+      },
+      {
+        "op": "grantPsychTrait",
+        "psychType": "frenesie"
       }
     ]
   },

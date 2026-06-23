@@ -7,8 +7,9 @@
  * Plusieurs tables peuvent pointer la même mutation SANS collision (LDB : physique/mentale ; Compagnon
  * T1 : une table par dieu du Chaos rejoue les mêmes mutations à d'autres plages). Ce module = TYPES +
  * chargement + tirage ; ajouter/régler = éditer le JSON (mutation OU table),
- * jamais ce fichier. Effets modélisés sur la mutation : `passive` (GameOp[]), `apAll`/`apLocations`
- * (armure naturelle), `derivedWeapon`, `traits`, `psychTraits` ; descriptif non modélisable en `note`.
+ * jamais ce fichier. Effets modélisés sur la mutation : TOUT en `passive` (GameOp[]) — charMod/moveMod
+ * (carac), `ap` (armure naturelle), `grantNaturalWeapon` (arme), `grantTrait`/`grantPsychTrait` (traits) ;
+ * descriptif non modélisable en `note`.
  */
 import { RNG, d100 } from '../engine/dice';
 import { findTableEntry } from '../engine/tables';

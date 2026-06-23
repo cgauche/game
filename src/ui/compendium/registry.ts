@@ -435,14 +435,10 @@ export const CODEX: CodexCategory[] = [
       group: m.kind === 'physique' ? 'Physiques' : 'Mentales',
       desc: m.note ?? undefined,
       appearance: m.appearance,
-      meta: facts(
-        fact('PA (toutes localisations)', m.apAll),
-        fact('PA localisé', m.apLocations ? Object.entries(m.apLocations).map(([loc, n]) => `${HIT_LOCATION_LABELS[loc as HitLocation] ?? loc} +${n}`).join(', ') : null),
-        fact('Arme naturelle', m.derivedWeapon ? `${m.derivedWeapon.name} (${m.derivedWeapon.damage})` : null),
-      ),
+      // PA / arme naturelle / traits conférés sont désormais des GameOps du `passive` (ap /
+      // grantNaturalWeapon / grantTrait) → rendus par passiveSection ; plus de facts/chips dédiés.
       sections: sections(
         passiveSection(m.passive),
-        chips('Traits conférés', 'traits', traitLabels(m.traits)),
         ...reverseSections('mutations', m.id), // Tables de Corruption la tirant
       ),
     })),

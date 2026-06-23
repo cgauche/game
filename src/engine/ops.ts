@@ -232,6 +232,9 @@ export type GameOp =
    *  déplacement), retiré à l'expiration de l'ActiveEffect porteur. `indice` : Indice du trait
    *  (« Peur 1 », « Vol (Agilité) » → valeur du lanceur), `indicePerSL` : « +1 par +3 DR ». */
   | { op: 'grantTrait'; traitId: string; arg?: string; indice?: Formula; indicePerSL?: PerSL; onlyGroups?: string[] }
+  /** Trait PSYCHOLOGIQUE conféré (Colère impie → Frénésie). PASSIF (mutation/trait) : posé dans
+   *  `c.psychTraits` à l'attache. `psychType` = `PsychType` (frenesie, peur…). */
+  | { op: 'grantPsychTrait'; psychType: string; cible?: string }
   /** Talent TEMPORISÉ (Jalon 2.6 — « +1 Talent Sans peur tant que le Sort est actif ») : porté
    *  par l'ActiveEffect, lu par le registre `combatFeatures` (featuresOf) — PAS posé dans
    *  `c.talents` (fiche/avancement intacts). Seuls les talents AVEC def mécanique ont un effet.
@@ -354,7 +357,7 @@ export type GameOp =
   /** Accorde une ARME NATURELLE (Dent et griffe : Morsure BF+3 / Arme BF+4 ; Incarnation de Wyssan) :
    *  attaque ADDITIONNELLE de mêlée injectée dans `c.weapons` (recomputeLoadout), retirée à
    *  l'expiration. Dégâts SB-relatifs par défaut (`+BF+`+damage), `qualities` (Magique…) portés. */
-  | { op: 'grantNaturalWeapon'; name: string; damage: Formula; damagePlus?: number; plusBF?: boolean; qualities?: string[] }
+  | { op: 'grantNaturalWeapon'; name: string; damage: Formula; damagePlus?: number; plusBF?: boolean; bare?: boolean; qualities?: string[] }
   /** ATTAQUE GRATUITE accordée par un talent/état (Frénésie : 1 attaque d'Arme/Round ; Assaut féroce :
    *  attaque supplémentaire à la touche ; Frappe réactive : riposte quand on est Chargé). Effet IMPUR (ouvre
    *  une frappe) RÉSOLU par la couche state (le hook `freeAttack` de `combatFlow`, appelé par `runCombatFlow`
@@ -1049,7 +1052,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const n = Math.max(0, resolveFormula(o.damage, ref, rng) + (o.damagePlus ?? 0));
         const plusBF = o.plusBF !== false; // attaques naturelles = SB-relatives par défaut
         const weapon = buildWeapon({
-          name: o.name, damage: { plusBF, flat: n },
+          name: o.name, damage: { plusBF, flat: n, bare: o.bare ? true : undefined },
           qualities: (o.qualities ?? []).map((id) => ({ id })), uid: { prefix: `nat-${norm(o.name)}` },
         });
         target.activeEffects = target.activeEffects ?? [];

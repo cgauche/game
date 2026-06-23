@@ -66,6 +66,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   breakBlade: '🗡️ Désarmer / briser la lame', // marqueur combat-interne (victoire du Test de Piège-lame) — non author-pickable
 
   grantTrait: '🐾 Accorder un Trait',
+  grantPsychTrait: '🧠 Accorder un Trait psychologique',
   grantTalent: '🐾 Accorder un Talent',
   grantCareerSkill: '🎓 Compétence ajoutée aux carrières',
   grantCareerTalent: '🎓 Talent ajouté aux carrières',
@@ -111,7 +112,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['📊 Buffs & caractéristiques', ['charMod', 'ap', 'testMod', 'ignoreStatePenalties', 'freeReroll', 'critTwice']],
   ['✨ Ressources', ['gainResource', 'corruption']],
   ['🔮 Incantation & contrecoup', ['castPenalty', 'castWard', 'arrowWard', 'domeWard', 'attackWardFM']],
-  ['🐾 Invocation & armes', ['summon', 'polymorph', 'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'grantTrait', 'grantTalent', 'augmentWeapon']],
+  ['🐾 Invocation & armes', ['summon', 'polymorph', 'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'grantTrait', 'grantPsychTrait', 'grantTalent', 'augmentWeapon']],
   ['🌐 Zones', ['zone']],
   ['🩹 Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound']],
   ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'loseTurn']],
@@ -237,6 +238,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'grantNaturalWeapon': return { op: 'grantNaturalWeapon', name: 'Griffes', damage: 3 };
     case 'grantFreeAttack': return { op: 'grantFreeAttack', weapon: 'held', when: 'immediate', cost: { advantageOrMovement: true } };
     case 'grantTrait': return { op: 'grantTrait', traitId: 'armure' };
+    case 'grantPsychTrait': return { op: 'grantPsychTrait', psychType: 'frenesie' };
     case 'grantTalent': return { op: 'grantTalent', talentId: 'sang-froid' };
     case 'grantCareerSkill': return { op: 'grantCareerSkill', skillId: 'metier', spec: 'Au choix' };
     case 'grantCareerTalent': return { op: 'grantCareerTalent', talentId: 'frenesie' };
@@ -311,6 +313,7 @@ export function opSummary(o: GameOp): string {
     case 'grantWeapon': return `${L} ${o.name} (Dégâts ${o.plusBF ? 'BF+' : ''}${formulaSummary(o.damage)})`;
     case 'grantNaturalWeapon': return `${L} ${o.name} (${o.plusBF !== false ? 'BF+' : ''}${formulaSummary(o.damage)})`;
     case 'grantTrait': return `${L} ${formatTrait({ id: o.traitId, arg: o.arg })}${o.indice != null ? ` ${formulaSummary(o.indice)}` : ''}`;
+    case 'grantPsychTrait': return `${L} ${o.psychType}${o.cible ? ` (${o.cible})` : ''}`;
     case 'grantTalent': return `${L} ${talentConcrete(o)}`;
     case 'grantCareerSkill': return `${L} ${refLabel('skills', { id: o.skillId, spec: o.spec })}`;
     case 'grantCareerTalent': return `${L} ${refLabel('talents', { id: o.talentId, spec: o.spec })}`;

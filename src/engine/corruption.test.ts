@@ -104,8 +104,8 @@ describe('effets de mutation lus à la volée', () => {
   });
   it('PA naturels apAll + apLocations', () => {
     const c = hero();
-    attachMutation(c, { id: 'ecailles-epineuses', label: 'Écailles épineuses', desc: '', kind: 'physique', roll: 78, apAll: 1 });
-    attachMutation(c, { id: 'cornes-asymetriques', label: 'Cornes asymétriques', desc: '', kind: 'physique', roll: 83, apLocations: { tete: 1 } });
+    attachMutation(c, { id: 'ecailles-epineuses', label: 'Écailles épineuses', desc: '', kind: 'physique', roll: 78, passive: [{ op: 'ap', amount: 1 }] });
+    attachMutation(c, { id: 'cornes-asymetriques', label: 'Cornes asymétriques', desc: '', kind: 'physique', roll: 83, passive: [{ op: 'ap', loc: 'tete', amount: 1 }] });
     expect(mutationArmourBonus(c, 'tete')).toBe(2);
     expect(mutationArmourBonus(c, 'corps')).toBe(1);
   });
@@ -119,8 +119,8 @@ describe('effets de mutation lus à la volée', () => {
   });
   it('attachMutation pousse les Traits dérivés (créature + psychologie)', () => {
     const c = hero();
-    attachMutation(c, { id: 'tentacule-epais', label: 'Tentacule épais', desc: '', kind: 'physique', roll: 38, traits: [{ id: 'tentacules' }] });
-    attachMutation(c, { id: 'colere-impie', label: 'Colère impie', desc: '', kind: 'mentale', roll: 93, psychTraits: [{ type: 'frenesie' }] });
+    attachMutation(c, { id: 'tentacule-epais', label: 'Tentacule épais', desc: '', kind: 'physique', roll: 38, passive: [{ op: 'grantTrait', traitId: 'tentacules' }] });
+    attachMutation(c, { id: 'colere-impie', label: 'Colère impie', desc: '', kind: 'mentale', roll: 93, passive: [{ op: 'grantPsychTrait', psychType: 'frenesie' }] });
     expect(c.traits).toContainEqual({ id: 'tentacules' });
     expect(c.psychTraits?.some((t) => t.type === 'frenesie')).toBe(true);
   });

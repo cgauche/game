@@ -16,11 +16,11 @@
  *  - Limites (l.95) : mutations physiques > BE ou mentales > BFM → DAMNÉ (le
  *    personnage bascule dans le Chaos — hors-jeu définitif).
  */
-import { Combatant, CharKey, HitLocation, Weapon } from './types';
+import { Combatant, CharKey, HitLocation } from './types';
 import { bonus, effectiveChar } from './characteristics';
 import { talentCorruptionThreshold } from './combatFeatures/dispatch';
 import { mutationBodyMaxForSpecies } from '../data';
-import type { PsychTrait } from './psychology';
+import type { PsychType } from './psychology';
 import type { GameOp } from './ops';
 import type { TraitInstance } from './statEntry';
 
@@ -44,22 +44,12 @@ export interface Mutation {
   kind: 'physique' | 'mentale';
   /** Jet d100 sur le tableau (traçabilité). */
   roll: number;
-  /** Modificateurs PASSIFS continus (charMod « +5 F » / skillMod « +10 Pistage » / testMod « −20 Soc » /
-   *  moveMod « ±1 ») en `GameOp[]` — MÊME vocabulaire/éditeur (GameOpEditor) que traits et sorts ; lus par
-   *  le collecteur passif unifié (engine/trauma). (Distinct de apAll/apLocations = armure naturelle.) */
+  /** TOUTE la mécanique de la mutation en `GameOp[]` — MÊME vocabulaire/éditeur (GameOpEditor) que
+   *  traits et sorts : charMod/moveMod/skillMod/testMod (collecteur passif unifié engine/trauma) ;
+   *  `ap` (armure naturelle, loc absent = toutes — lue par mutationArmourBonus) ; `grantNaturalWeapon`
+   *  (arme de créature, lue par recomputeLoadout) ; `grantTrait` / `grantPsychTrait` (traits de créature
+   *  et psychologiques conférés, posés par attachMutation). Plus aucun champ ad hoc. */
   passive?: GameOp[];
-  /** PA naturels à TOUTES les localisations (Peau d'acier +2, Écailles épineuses +1). */
-  apAll?: number;
-  /** PA naturels par localisation (Cornes asymétriques : +1 Tête). */
-  apLocations?: Partial<Record<HitLocation, number>>;
-  /** Arme naturelle conférée (LDB 19 : « Compte comme une Arme de Créature ») — ex. Cornes
-   *  asymétriques → Cornes (Dégâts = BF). Lue par recomputeLoadout : une mutation-arme = DONNÉE,
-   *  plus de name-match dans items.ts (ajouter une mutation-arme = remplir ce champ). */
-  derivedWeapon?: Weapon;
-  /** Traits de créature gagnés (Tentacule épais → Tentacules), STRUCTURÉS (`{ id, value?, arg? }`). */
-  traits?: TraitInstance[];
-  /** Traits psychologiques gagnés (Colère impie → Frénésie). */
-  psychTraits?: PsychTrait[];
   /** Partie non modélisée de l'effet — verbatim, arbitrage MJ (rien d'inventé). */
   note?: string;
   /** Apparence COSMÉTIQUE déclarée en DONNÉE (calques du catalogue via `features` + `colors` + `eyes`) —
@@ -125,8 +115,20 @@ export function mutationLimitExceeded(c: Combatant): boolean {
 /** Attache une mutation au personnage : donnée + traits dérivés (créature/psychologie). */
 export function attachMutation(c: Combatant, m: Mutation): void {
   c.mutations = [...(c.mutations ?? []), m];
-  if (m.traits?.length) c.traits = [...(c.traits ?? []), ...m.traits];
-  if (m.psychTraits?.length) c.psychTraits = [...(c.psychTraits ?? []), ...m.psychTraits];
+  // Traits (de créature / psychologiques) conférés = GameOps du `passive` (grantTrait/grantPsychTrait),
+  // posés à l'attache comme le ferait un Sort (mais permanents). L'armure (`ap`) et l'arme
+  // (`grantNaturalWeapon`) sont lues à la volée (mutationArmourBonus / recomputeLoadout).
+  for (const op of m.passive ?? []) {
+    if (op.op === 'grantTrait') {
+      // Valeur LITTÉRALE (les mutations RAW ont des indices fixes : Peur 3, Morsure +5) — pas de Formula
+      // dynamique à résoudre (et évite un import circulaire ops↔corruption).
+      const value = typeof op.indice === 'number' ? op.indice : undefined;
+      const inst: TraitInstance = { id: op.traitId, ...(op.arg ? { arg: op.arg } : {}), ...(value != null ? { value } : {}) };
+      c.traits = [...(c.traits ?? []), inst];
+    } else if (op.op === 'grantPsychTrait') {
+      c.psychTraits = [...(c.psychTraits ?? []), { type: op.psychType as PsychType, ...(op.cible ? { cible: op.cible } : {}) }];
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -136,10 +138,13 @@ export function attachMutation(c: Combatant, m: Mutation): void {
 // charMods/Mouvement des mutations : lus DIRECT par le collecteur passif unifié (engine/trauma `passiveMods`
 // → passiveCharSum/passiveMoveMod). Plus de helpers `mutationCharDelta`/`mutationMovementDelta` dédiés.
 
-/** PA naturels de mutation à `loc` (Peau d'acier, Écailles épineuses, Cornes…) — additifs. */
+/** PA naturels de mutation à `loc` (Peau d'acier, Écailles épineuses, Cornes…) — op `ap` du `passive`
+ *  (loc absent = toutes les Localisations) ; additifs. */
 export function mutationArmourBonus(c: Combatant, loc: HitLocation): number {
   let d = 0;
-  for (const m of c.mutations ?? []) d += (m.apAll ?? 0) + (m.apLocations?.[loc] ?? 0);
+  for (const m of c.mutations ?? []) for (const op of m.passive ?? []) {
+    if (op.op === 'ap' && (op.loc == null || op.loc === loc)) d += typeof op.amount === 'number' ? op.amount : 0;
+  }
   return d;
 }
 
