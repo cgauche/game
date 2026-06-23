@@ -96,8 +96,8 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
   });
 
   it('Condition `compare` générique : who (cible/lanceur) × donnée/État · opérateur · valeur (const ou acteur)', () => {
-    const target = { id: 't', woundsCurrent: 5, woundsMax: 15, size: 2, advantage: 0, camp: 'hostile' as const, groups: ['Morts-vivants'], talents: [], traits: ['mort-vivant'], conditions: { brise: 3 } }; // Petite (2), ennemi mort-vivant (conditions keyées par id)
-    const caster = { id: 'c', woundsCurrent: 12, woundsMax: 12, size: 4, advantage: 1, camp: 'party' as const, groups: [], talents: [{ id: 'magie-des-arcanes', spec: 'Feu' }], traits: [], conditions: {} as Record<string, number> }; // Grande (4), mage de Feu
+    const target = { id: 't', woundsCurrent: 5, woundsMax: 15, size: 2, advantage: 0, camp: 'hostile' as const, groups: ['Morts-vivants'], talents: [], traits: ['mort-vivant'], conditions: { brise: 3 }, chars: {} as Record<string, number> }; // Petite (2), ennemi mort-vivant (conditions keyées par id)
+    const caster = { id: 'c', woundsCurrent: 12, woundsMax: 12, size: 4, advantage: 1, camp: 'party' as const, groups: [], talents: [{ id: 'magie-des-arcanes', spec: 'Feu' }], traits: [], conditions: {} as Record<string, number>, chars: {} as Record<string, number> }; // Grande (4), mage de Feu
     const ctx = { flags: {}, gameTime: 0, target, caster };
     expect(evalCondition({ kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '>=', value: 1 }, ctx)).toBe(true);
     expect(evalCondition({ kind: 'compare', subject: { who: 'target', condition: 'brise' }, op: '>=', value: 3 }, ctx)).toBe(true); // valeur d'État (stacks)

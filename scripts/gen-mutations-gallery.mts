@@ -77,7 +77,7 @@ section('Mutants ennemis — mutation DATA-DRIVEN (cornes garanties + tirage par
 }));
 
 // 5) Amputations & prothèses (LDB 18/73, injuries.ts) : séquelle nue puis prothèse portée.
-const trauma = (over: Partial<Trauma>): Trauma => ({ label: 'x', location: 'tete', note: '', ...over });
+const trauma = (over: Partial<Trauma>): Trauma => ({ label: 'x', location: 'tete', ...over });
 const wounded = (traumas: Trauma[], prosthesis?: string): Combatant =>
   ({ id: 'g', name: 'G', kind: 'hero', traumas, items: prosthesis ? [{ uid: 'p', name: prosthesis, kind: 'misc', qualities: [], enc: 0, equipped: true }] : [] }) as unknown as Combatant;
 const MAIN_D = trauma({ label: 'Main/bras amputé (brasD)', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }] });

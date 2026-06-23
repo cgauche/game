@@ -4,7 +4,7 @@
  * dialogue (où « Toujours » = pas de condition → `undefined`) ET le nœud `si` d'un Flow. Remplace les
  * adaptateurs plats `whenFlag/whenWindow/buildWhen` (qui n'exprimaient que « flag ET créneau »).
  */
-import type { Condition, ActorRef, ActorField, CompareOp } from '../../state/flow';
+import type { Condition, ActorRef, ActorField, CompareOp, CompareSubject } from '../../state/flow';
 import type { TemporalCondition } from '../../state/scene';
 import { HIT_LOCATION_LABELS, type HitLocation } from '../../engine/types';
 import type { Camp, Relation } from '../../engine/relations';
@@ -37,6 +37,11 @@ const STARTLE_CAUSE_LABELS: Record<'noise' | 'magic', string> = { noise: 'Bruits
 const FIELD_LABEL: Record<ActorField, string> = { woundsCurrent: 'PB courants', woundsMax: 'PB max', size: 'Taille', advantage: 'Avantage' };
 const WHO_LABEL: Record<ActorRef, string> = { target: 'la cible', caster: 'le lanceur' };
 const COMPARE_OPS: CompareOp[] = ['>=', '<=', '==', '<', '>'];
+/** Libellé du SUJET/valeur d'une comparaison : donnée fixe, valeur d'un État nommé, ou Caractéristique. */
+const subjectLabel = (s: CompareSubject): string =>
+  'condition' in s ? `État « ${s.condition || '?'} »`
+    : 'char' in s ? `Carac. ${s.char}${s.bonus ? ' (Bonus)' : ''}`
+      : FIELD_LABEL[s.field];
 
 const KIND_OPTIONS: [Condition['kind'], string][] = [
   ['always', 'Toujours'],
@@ -84,9 +89,8 @@ export function condSummary(c: Condition | undefined): string {
     case 'money': return `bourse ≥ ${moneyStr(c.atLeast)}`;
     case 'partyDead': return c.who === 'all' ? 'tout le groupe mort' : 'un héros mort';
     case 'compare': {
-      const subj = 'condition' in c.subject ? `État « ${c.subject.condition || '?'} »` : FIELD_LABEL[c.subject.field];
-      const val = typeof c.value === 'number' ? `${c.value}` : `${WHO_LABEL[c.value.who]} ${FIELD_LABEL[c.value.field]}`;
-      return `${WHO_LABEL[c.subject.who]} : ${subj} ${c.op} ${val}`;
+      const val = typeof c.value === 'number' ? `${c.value}` : `${WHO_LABEL[c.value.who]} ${subjectLabel(c.value)}`;
+      return `${WHO_LABEL[c.subject.who]} : ${subjectLabel(c.subject)} ${c.op} ${val}`;
     }
     case 'slThreshold': return `marge ${c.op} ${c.value} DR`;
     case 'location': return `touche ${HIT_LOCATION_LABELS[c.is]}`;
@@ -202,7 +206,7 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
           <select className="cond-kind" value={cond.subject.who} onChange={(e) => onChange({ ...cond, subject: { ...cond.subject, who: e.target.value as ActorRef } })}>
             {(Object.keys(WHO_LABEL) as ActorRef[]).map((w) => <option key={w} value={w}>{WHO_LABEL[w]}</option>)}
           </select>
-          <select className="cond-kind" value={'condition' in cond.subject ? 'condition' : cond.subject.field}
+          <select className="cond-kind" value={'field' in cond.subject ? cond.subject.field : 'condition'}
             onChange={(e) => onChange({ ...cond, subject: e.target.value === 'condition' ? { who: cond.subject.who, condition: '' } : { who: cond.subject.who, field: e.target.value as ActorField } })}>
             {(Object.keys(FIELD_LABEL) as ActorField[]).map((s) => <option key={s} value={s}>{FIELD_LABEL[s]}</option>)}
             <option value="condition">valeur d’un État</option>
@@ -226,7 +230,7 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
               <select className="cond-kind" value={cond.value.who} onChange={(e) => onChange({ ...cond, value: { who: e.target.value as ActorRef, field: (cond.value as { field: ActorField }).field } })}>
                 {(Object.keys(WHO_LABEL) as ActorRef[]).map((w) => <option key={w} value={w}>{WHO_LABEL[w]}</option>)}
               </select>
-              <select className="cond-kind" value={cond.value.field} onChange={(e) => onChange({ ...cond, value: { who: (cond.value as { who: ActorRef }).who, field: e.target.value as ActorField } })}>
+              <select className="cond-kind" value={'field' in cond.value ? cond.value.field : 'woundsCurrent'} onChange={(e) => onChange({ ...cond, value: { who: (cond.value as { who: ActorRef }).who, field: e.target.value as ActorField } })}>
                 {(Object.keys(FIELD_LABEL) as ActorField[]).map((s) => <option key={s} value={s}>{FIELD_LABEL[s]}</option>)}
               </select>
             </>

@@ -15,7 +15,8 @@ function armGunner(h: Combatant): Combatant {
   recomputeLoadout(h);
   // Le loadout auto-généré tient l'arme de mêlée d'origine ; on impose le pierrier comme arme active (le
   // héros garde ses armes de mêlée en inventaire pour basculer de loadout et aborder).
-  const lo = h.loadouts?.find((l) => l.id === h.activeLoadoutId) ?? h.loadouts?.[0];
+  const loadouts = (h as Combatant).loadouts; // recomputeLoadout a repeuplé h.loadouts (TS l'avait narrowé à undefined)
+  const lo = loadouts?.find((l) => l.id === h.activeLoadoutId) ?? loadouts?.[0];
   if (lo) { lo.main = gun.uid; lo.off = undefined; }
   recomputeLoadout(h);
   h.loaded = true; // chargé d'emblée → tir possible dès le 1er Round
