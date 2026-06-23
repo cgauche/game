@@ -1,0 +1,49 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import { applyCriticalToTarget } from './combatFlow';
+import { seedBattleRng } from './battleRng';
+import { vehicleCombatant } from '../engine/vehicle';
+import { findVehicleById } from '../data';
+import { stacks } from '../engine/conditions';
+import type { Combatant } from '../engine/types';
+
+/**
+ * Branchement combat ↔ naval : `applyCriticalToTarget` route une COQUE (`bodyShape:'vehicule'`) vers les
+ * tables de NAVIRE (MDG ch.13) au lieu des Traumatismes de PERSONNAGE (LDB 18). Preuve du seam unique :
+ * un véhicule encaisse un Coup Critique « comme un Combattant », mais sans Trauma humain — l'effet est un
+ * État NAVAL data-driven (Voie d'eau / En flammes) posé par `applyOps`, ou un coup à l'Équipage.
+ */
+const ship = () => vehicleCombatant(findVehicleById('cogue')!)!; // hull E45/B50, rig 'voile'
+const setStub = (() => {}) as never;
+
+describe('applyCriticalToTarget — coque/navire (MDG ch.13) au lieu de Trauma humain', () => {
+  beforeEach(() => seedBattleRng(1));
+
+  it('un véhicule ne subit JAMAIS de Trauma humain ; le Critique compte et est journalisé', () => {
+    const s = ship();
+    const log: string[] = [];
+    applyCriticalToTarget(s, 'corps', true, 0, log, setStub);
+    expect(s.traumas ?? []).toHaveLength(0); // aucune amputation/fracture humaine sur une coque
+    expect(s.criticalWounds).toBe(1);
+    expect(log.length).toBeGreaterThan(0);
+    // Issue TOUJOURS navale : un Critique de navire (Coque/Gréement/Avirons…) ou un coup à l'Équipage —
+    // jamais un Trauma de personnage. (Un coup au Gréement peut être purement narratif, sans État posé.)
+    expect(log.join('\n')).toMatch(/Critique navire|Équipage/);
+  });
+
+  it('seed atteignant la Coque → pose un État NAVAL via la langue GameOp (pas de mécanique parallèle)', () => {
+    // On balaie des seeds jusqu'à un coup de Coque qui pose Voie d'eau (déterministe, sans toucher au flux RNG d'autrui).
+    let posed = false;
+    for (let seed = 1; seed <= 40 && !posed; seed++) {
+      seedBattleRng(seed);
+      const s = ship();
+      applyCriticalToTarget(s, 'corps', true, 0, [], setStub);
+      if (stacks(s, 'voie-d-eau') > 0 || stacks(s, 'en-flammes-navire') > 0) posed = true;
+    }
+    expect(posed).toBe(true);
+  });
+
+  it('renvoie false (la coque ne « meurt » pas d’un Critique — destruction par Blessures/Naufrage)', () => {
+    const s: Combatant = ship();
+    expect(applyCriticalToTarget(s, 'corps', true, 0, [], setStub)).toBe(false);
+  });
+});

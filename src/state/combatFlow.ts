@@ -94,7 +94,9 @@ import { rollMiscast, componentDowngrade, type MiscastSeverity } from '../engine
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, skillBaseValue } from '../engine/skills';
-import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById } from '../data';
+import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById } from '../data';
+import { resolveShipCriticalHit } from '../engine/shipCritical';
+import type { ShipRig } from '../engine/combat';
 import { norm } from '../lib/normalize';
 import { recomputeLoadout, weaponWithAmmo, compatibleAmmo, ammoFamily, damageArmour, buildWeapon } from '../engine/items';
 import { effectiveMovement } from '../engine/encumbrance';
@@ -952,6 +954,13 @@ export function applyCriticalToTarget(
     log.push(tr('cf.collapse', { name: target.name }));
     return false;
   }
+  // Coque inerte (véhicule / navire) : aucun Trauma humain. Le coup se résout sur les tables de NAVIRE
+  // (MDG ch.13) via le module FRÈRE `shipCritical` — localisation par gréement (Coque/Gréement/Avirons/…
+  // vs Équipage), effets en `GameOp` (Voie d'eau / En flammes) posés par `applyOps`. (Le `rollCritical` de
+  // personnage indexerait des Traumatismes humains, hors-sujet pour une coque.)
+  if (target.bodyShape === 'vehicule') {
+    return applyHullCriticalToTarget(target, log, set, ctx, suppressReveal);
+  }
   // Coup Critique : localisation fraîche (1d100) SAUF si le joueur l'a choisie via « Je ne faillirai pas ! »
   // (RAW-2, LDB 17 l.73). Hors Coup Critique (overkill), on garde la localisation de la touche.
   const loc = prerolled ? prerolled.location : isCoupCritique ? (chosenCritLocation ?? critLocationRoll(battleRng(), target.bodyShape)) : location;
@@ -1005,6 +1014,52 @@ export function applyCriticalToTarget(
     });
   }
   return crit.lethal; // « Mort » instantané → finalisé par le caller (sauvetage par Destin possible)
+}
+
+/**
+ * Critique encaissé par une COQUE (véhicule/navire, `bodyShape:'vehicule'`) — MDG ch.13. On lit le gréement
+ * de la coque (`vehicles.json` → `hull.rig`) pour la colonne de Localisation, on résout via `resolveShipCriticalHit`
+ * (module engine PUR), puis :
+ *  - Localisation ≠ Équipage : on POSE les États NAVALS de la table (`crit.ops`, langue `GameOp`) sur la coque
+ *    via `applyOps` ; les Éclats (→ équipage exposé) et les Critiques de Coque supplémentaires sont JOURNALISÉS
+ *    (l'équipage lié et la récursion de coque relèvent du combat naval tactique — Dalle 3) ;
+ *  - Équipage : la touche revient à un marin (Critique de PERSONNAGE) — journalisée tant que l'équipage n'est
+ *    pas lié à la coque (Dalle 3).
+ * La destruction de la coque NE passe PAS par un « Mort » de Critique mais par ses Blessures / l'État Naufrage —
+ * on renvoie donc toujours `false`.
+ */
+function applyHullCriticalToTarget(
+  target: Combatant,
+  log: string[],
+  set: SetFn,
+  ctx?: { attackerId?: string; attackerKind?: Combatant['kind']; weapon?: string; critTwice?: boolean },
+  suppressReveal?: boolean,
+): boolean {
+  const rig: ShipRig = findVehicleById(target.creatureId ?? '')?.hull?.rig ?? 'mixte';
+  const hit = resolveShipCriticalHit(rig, battleRng());
+  target.criticalWounds = (target.criticalWounds ?? 0) + 1;
+  const revealLines: string[] = [];
+  if (hit.crewHit) {
+    const line = `Critique sur ${target.name} → la touche revient à l'Équipage (un marin exposé encaisse le coup).`;
+    log.push(line);
+    revealLines.push(line);
+  } else {
+    const crit = hit.crit!;
+    log.push(crit.log);
+    revealLines.push(crit.log);
+    applyOps(target, crit.ops, { rng: battleRng() }); // États NAVALS (Voie d'eau / En flammes) — langue GameOp
+    if (crit.note) { const l = `  ↳ ${crit.note}`; log.push(l); revealLines.push(l); }
+    if (crit.shrapnel) { const l = `  ↳ Éclats ${crit.shrapnel} : autant de membres d'équipage exposés subissent 9 Dégâts.`; log.push(l); revealLines.push(l); }
+    if (crit.extraHullCrits) { const l = `  ↳ ${crit.extraHullCrits} Critique(s) de Coque supplémentaire(s).`; log.push(l); revealLines.push(l); }
+  }
+  const heroConcerned = target.kind === 'hero' || ctx?.attackerKind === 'hero';
+  if (!suppressReveal && heroConcerned) {
+    pushReveal(set, {
+      kind: 'critical', title: 'Critique de navire', dice: hit.crit?.roll ?? 0, lines: revealLines,
+      subjectId: target.id, severity: 'grave', actorId: ctx?.attackerId, weapon: ctx?.weapon, details: [],
+    });
+  }
+  return false;
 }
 
 /** Construit la révélation d'affichage d'un Coup Critique PRÉ-TIRÉ, SANS muter la cible (pour la modale
