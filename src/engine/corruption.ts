@@ -38,6 +38,9 @@ export interface Mutation {
    *  « On ne se base plus sur le label » : le `label` ne sert qu'à l'affichage. */
   id: string;
   label: string;
+  /** Description VERBATIM (LDB 19, colonne « Description Effet ») — affichage seul, jamais lue par le moteur.
+   *  Les mutations n'ont pas de flavor en source : c'est donc le texte d'effet littéral du livre. */
+  desc: string;
   kind: 'physique' | 'mentale';
   /** Jet d100 sur le tableau (traçabilité). */
   roll: number;

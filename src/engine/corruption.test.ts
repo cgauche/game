@@ -52,10 +52,10 @@ describe('seuil & limites (l.80/95)', () => {
     expect(corruptionThresholdExceeded(hero({ corruption: 8 }))).toBe(true);
   });
   it('limites : physiques > BE ou mentales > BFM → damné', () => {
-    const phys = (n: number) => Array.from({ length: n }, (_, i) => ({ id: `m${i}`, label: `m${i}`, kind: 'physique' as const, roll: 1 }));
+    const phys = (n: number) => Array.from({ length: n }, (_, i) => ({ id: `m${i}`, label: `m${i}`, desc: '', kind: 'physique' as const, roll: 1 }));
     expect(mutationLimitExceeded(hero({ mutations: phys(4) }))).toBe(false); // BE 4
     expect(mutationLimitExceeded(hero({ mutations: phys(5) }))).toBe(true);
-    const ment = (n: number) => Array.from({ length: n }, (_, i) => ({ id: `m${i}`, label: `m${i}`, kind: 'mentale' as const, roll: 1 }));
+    const ment = (n: number) => Array.from({ length: n }, (_, i) => ({ id: `m${i}`, label: `m${i}`, desc: '', kind: 'mentale' as const, roll: 1 }));
     expect(mutationLimitExceeded(hero({ mutations: ment(3) }))).toBe(false); // BFM 3
     expect(mutationLimitExceeded(hero({ mutations: ment(4) }))).toBe(true);
   });
@@ -91,7 +91,7 @@ describe('mutationKindFor — d100 corps/esprit par espèce (data-driven, ids ST
 describe('effets de mutation lus à la volée', () => {
   it('charMods permanents → effectiveChar (base, cumulable avec un buff magique)', () => {
     const c = hero();
-    attachMutation(c, { id: 'corpulent', label: 'Corpulent', kind: 'physique', roll: 8, passive: [{ op: 'charMod', char: 'F', mod: 5 }, { op: 'charMod', char: 'E', mod: 5 }, { op: 'moveMod', mod: -1 }] });
+    attachMutation(c, { id: 'corpulent', label: 'Corpulent', desc: '', kind: 'physique', roll: 8, passive: [{ op: 'charMod', char: 'F', mod: 5 }, { op: 'charMod', char: 'E', mod: 5 }, { op: 'moveMod', mod: -1 }] });
     expect(effectiveChar(c, 'F')).toBe(35);
     c.activeEffects = [{ label: 'Puissance', char: 'F', bonus: 10, duration: { scale: 'rounds', left: 3 } }];
     expect(effectiveChar(c, 'F')).toBe(45); // base mutée 35 + buff 10 (pas d'écrasement)
@@ -99,28 +99,28 @@ describe('effets de mutation lus à la volée', () => {
   });
   it('movement → effectiveMovement', () => {
     const c = hero();
-    attachMutation(c, { id: 'court-sur-pattes', label: 'Court sur pattes', kind: 'physique', roll: 73, passive: [{ op: 'moveMod', mod: -1 }] });
+    attachMutation(c, { id: 'court-sur-pattes', label: 'Court sur pattes', desc: '', kind: 'physique', roll: 73, passive: [{ op: 'moveMod', mod: -1 }] });
     expect(effectiveMovement(c)).toBe(3);
   });
   it('PA naturels apAll + apLocations', () => {
     const c = hero();
-    attachMutation(c, { id: 'ecailles-epineuses', label: 'Écailles épineuses', kind: 'physique', roll: 78, apAll: 1 });
-    attachMutation(c, { id: 'cornes-asymetriques', label: 'Cornes asymétriques', kind: 'physique', roll: 83, apLocations: { tete: 1 } });
+    attachMutation(c, { id: 'ecailles-epineuses', label: 'Écailles épineuses', desc: '', kind: 'physique', roll: 78, apAll: 1 });
+    attachMutation(c, { id: 'cornes-asymetriques', label: 'Cornes asymétriques', desc: '', kind: 'physique', roll: 83, apLocations: { tete: 1 } });
     expect(mutationArmourBonus(c, 'tete')).toBe(2);
     expect(mutationArmourBonus(c, 'corps')).toBe(1);
   });
   it('mods de Tests : compétence nommée + Tests d\'une caractéristique (testValue)', () => {
     const c = hero({ skills: [{ skillId: 'pistage', advances: 5 } as never, { skillId: 'charme', advances: 0 } as never] });
-    attachMutation(c, { id: 'groin-poilu', label: 'Groin poilu', kind: 'physique', roll: 93, passive: [{ op: 'skillMod', skill: 'pistage', mod: 10 }] });
-    attachMutation(c, { id: 'visage-inverse', label: 'Visage inversé', kind: 'physique', roll: 53, passive: [{ op: 'testMod', amount: -20, char: 'Soc' }] });
+    attachMutation(c, { id: 'groin-poilu', label: 'Groin poilu', desc: '', kind: 'physique', roll: 93, passive: [{ op: 'skillMod', skill: 'pistage', mod: 10 }] });
+    attachMutation(c, { id: 'visage-inverse', label: 'Visage inversé', desc: '', kind: 'physique', roll: 53, passive: [{ op: 'testMod', amount: -20, char: 'Soc' }] });
     expect(passiveSkillSum(c, 'pistage')).toBe(10); // compétence nommée → collecteur passif (Σ, intrinsèque)
     expect(passiveTestMod(c, 'Soc')).toBe(-20); // Tests char-qualifiés (Visage inversé) → collecteur passif
     expect(testValue(c, 'charme')).toBe(30 - 20); // Soc 30, Tests de Sociabilité −20 (bout en bout)
   });
   it('attachMutation pousse les Traits dérivés (créature + psychologie)', () => {
     const c = hero();
-    attachMutation(c, { id: 'tentacule-epais', label: 'Tentacule épais', kind: 'physique', roll: 38, traits: [{ id: 'tentacules' }] });
-    attachMutation(c, { id: 'colere-impie', label: 'Colère impie', kind: 'mentale', roll: 93, psychTraits: [{ type: 'frenesie' }] });
+    attachMutation(c, { id: 'tentacule-epais', label: 'Tentacule épais', desc: '', kind: 'physique', roll: 38, traits: [{ id: 'tentacules' }] });
+    attachMutation(c, { id: 'colere-impie', label: 'Colère impie', desc: '', kind: 'mentale', roll: 93, psychTraits: [{ type: 'frenesie' }] });
     expect(c.traits).toContainEqual({ id: 'tentacules' });
     expect(c.psychTraits?.some((t) => t.type === 'frenesie')).toBe(true);
   });

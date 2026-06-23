@@ -2,6 +2,7 @@
   {
     "id": "infection-mineure",
     "label": "Infection Mineure",
+    "desc": "Les Infections mineures – des blessures guérissant lentement, qui n’enflent quasiment pas et ne provoquent pas de fièvre – sont très répandues. La plupart guérissent d’elles-mêmes, donc peu de personnes s’en soucient réellement avant qu’il ne soit trop tard et que les Portes de Morr ne s’ouvrent.",
     "contractDifficulty": "tresFacile",
     "incubation": {
       "n": 1,
@@ -27,6 +28,7 @@
   {
     "id": "blessure-purulente",
     "label": "Blessure Purulente",
+    "desc": "Les coupures infectées et les égratignures sont monnaie courante, ce qui explique qu’il existe de nombreuses superstitions quant à la meilleure façon de les traiter. Les cataplasmes confectionnés à partir de fumier enveloppé dans des feuilles, la peau de crapaud, ou encore les plumes de colombe sont très répandus, tout comme le fait de frotter la blessure avec de la bonne terre de Sigmar. La plupart des physiciens considèrent ces pratiques comme de pures âneries et vont préférer des remèdes plus scientifiques, comme le mélange de la bile d’un bœuf noir avec trois cuillères de l’urine du patient et une demi-cuillère de sel de mer, mixture ensuite appliquée sur la blessure purulente. Les hurlements qui suivent généralement cette application sont bien la preuve de son efficacité.",
     "contractDifficulty": "facile",
     "incubation": {
       "n": 1,
@@ -55,6 +57,7 @@
   {
     "id": "infection-du-sang",
     "label": "Infection du Sang",
+    "desc": "Votre sang est infecté et votre cœur répand la maladie dans votre corps. Il est possible de vous soigner par l’intermédiaire de saignées, mais certains doktors préfèrent effectuer des incisions à un endroit très précis au niveau du cou pour expulser le sang contaminé et demandent au patient d’ingérer d’énormes quantités de sang sain pour remplacer celui qui a été perdu. Que le patient accepte ou non ce remède, si aucun traitement n’est appliqué, l’ Infection du sang est mortelle et se conclura par une visite à la Guilde des Thanatopracteurs et du Culte de Morr.",
     "contractDifficulty": "tresFacile",
     "incubation": {
       "n": 0,
@@ -81,6 +84,7 @@
   {
     "id": "courante-galopante",
     "label": "Courante Galopante",
+    "desc": "On raconte que la nourriture des halflings ne peut pas donner de Courante galopante, une maladie peu ragoûtante et malheureusement trop répandue au sein de l’Empire à cause du manque de soins apportés à la préparation de la nourriture. Même si ceux souffrant de « Vengeance des Rumsters » après avoir ingurgité des tourtes bon marché des halflings vendues à Altdorf vous diront le contraire, s’ils peuvent quitter les toilettes assez longtemps…",
     "contractDifficulty": "facile",
     "incubation": {
       "n": 0,
@@ -106,6 +110,7 @@
   {
     "id": "fievre-du-rongeur",
     "label": "Fièvre du Rongeur",
+    "desc": "La très redoutée Fièvre du rongeur est transmise, comme son nom l’indique, par des rongeurs infectés et cause des irritations douloureuses et des ulcérations avant que la fièvre ne monte et que le corps ne soit secoué de spasmes. Même si cette maladie est rarement fatale, elle est débilitante et il faut patienter longtemps avant de s’en remettre totalement. C’est pourquoi chacun cherchera à en atténuer les symptômes. Parmi les remèdes les plus connus, il y a, à Altdorf, l’auto-flagellation, réputée soulager toutes les infections cutanées. À Talabheim, on préconise de se recouvrir d’une mixture composée d’un mélange de fromage de chèvre relevé de poivre glacé importé de Kislev. Dans les villes et les cités les plus importantes, la Fièvre du rongeur est également connue sous le nom de Fièvre de la tourte, car il est notoire que, bien souvent, on remplace la viande la plus chère par du rat infecté dans ce genre de mets.",
     "contractDifficulty": "accessible",
     "incubation": {
       "n": 3,
@@ -142,6 +147,7 @@
   {
     "id": "flux-sanglant",
     "label": "Flux Sanglant",
+    "desc": "Le Flux sanglant est un problème récurrent au sein de l’Empire et d’une manière générale, est considéré comme une malédiction infligée par les dieux aux impies. Cette maladie infâme oblige la pauvre victime à se vider sans cesse. Le Flux sanglant est endémique au sein des Armées de l’État, où il tue bien plus de soldats que les forces ennemies. Parmi les remèdes les plus fréquents, il y a l’ingurgitation de boudin pour remplacer les humeurs perdues, le « bouchonnage », et le massage des parties avec des substances grasses afin d’atténuer la douleur aigüe.",
     "contractDifficulty": "facile",
     "incubation": {
       "n": 2,
@@ -174,6 +180,7 @@
   {
     "id": "peste-noire",
     "label": "Peste Noire",
+    "desc": "Les historiens affirment qu’il y a des siècles de cela, les rats ont déferlé sur l’Empire et que la Peste Noire s’ensuivit, décimant neuf âmes sur dix. Des recrudescences inexpliquées de cette horrible maladie apparaissent encore de nos jours et sont systématiquement accompagnées de la présence des pragmatiques nonnes blanches. Le Culte de Shallya a juré de faire tout ce qui était en son pouvoir pour éradiquer cette terrible maladie, et, en application de droits ancestraux qui lui sont conférés, des cordons sanitaires, délimités par des cordes blanches, sont déployés partout ou l’épidémie surgit, afin d’être certain que personne ne puisse entrer ou sortir de la zone de quarantaine. Et ce, jusqu’à ce que la recrudescence soit maîtrisée et que les corps aient été correctement traités.",
     "contractDifficulty": "accessible",
     "incubation": {
       "n": 0,
@@ -205,6 +212,7 @@
   {
     "id": "verole-du-tanneur",
     "label": "Vérole du Tanneur",
+    "desc": "C’est une maladie très répandue parmi les chasseurs, les fourreurs et les marchands, transmise par les moutons et le bétail, respectivement par la laine et la peau, et par les cadavres de ceux qui sont morts de cette maladie. Elle se manifeste au départ par de légères démangeaisons, très vite remplacées par des boursoufflures roses qui vont se propager sur tout le corps, et particulièrement sur le torse et les bras. Ce n’est pas la forme de vérole la plus grave de l’Empire, mais elle persiste assez longtemps et peut quelquefois s’avérer mortelle.",
     "contractDifficulty": "facile",
     "incubation": {
       "n": 1,
@@ -227,6 +235,7 @@
   {
     "id": "verole-urticante",
     "label": "Vérole Urticante",
+    "desc": "Tous les ans, la plupart des villes et des cités de l’Empire subissent une épidémie de Vérole urticante. La maladie, qui fait apparaître des boursouflures qui démangent sur la quasi-totalité du corps, reste relativement bénigne et ne provoque que très rarement des complications, et n’est donc un réel souci que pour certains patients qui vont s’inquiéter et les nobliaux oisifs. La maladie est tellement répandue qu’on trouve dans la plupart des temples de Shallya des ampoules remplies de pâte blanche qui permettent de soulager les démangeaisons des malades. Antoine Droste - antoine.droste@gmail.com WARHAMMER FANTASY",
     "contractDifficulty": "accessible",
     "incubation": {
       "n": 1,

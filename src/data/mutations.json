@@ -2,6 +2,7 @@
   {
     "id": "pattes-d-animaux",
     "label": "Pattes d’animaux",
+    "desc": "+1 Mouvement",
     "kind": "physique",
     "passive": [
       {
@@ -18,6 +19,7 @@
   {
     "id": "corpulent",
     "label": "Corpulent",
+    "desc": "-1 Mouvement, +5 Force, +5 Endurance",
     "kind": "physique",
     "passive": [
       {
@@ -44,6 +46,7 @@
   {
     "id": "doigts-distendus",
     "label": "Doigts distendus",
+    "desc": "+10 Dextérité",
     "kind": "physique",
     "passive": [
       {
@@ -61,6 +64,7 @@
   {
     "id": "emacie",
     "label": "Émacié",
+    "desc": "-10 Force, +5 Agilité",
     "kind": "physique",
     "passive": [
       {
@@ -83,6 +87,7 @@
   {
     "id": "oeil-enorme",
     "label": "Œil énorme",
+    "desc": "+10 aux Tests de Perception impliquant la vue",
     "kind": "physique",
     "note": "+10 aux Tests de Perception impliquant la vue.",
     "appearance": {
@@ -94,6 +99,7 @@
   {
     "id": "articulation-supplementaire-aux-jambes",
     "label": "Articulation supplémentaire aux jambes",
+    "desc": "+5 Agilité",
     "kind": "physique",
     "passive": [
       {
@@ -111,6 +117,7 @@
   {
     "id": "bouche-supplementaire",
     "label": "Bouche supplémentaire",
+    "desc": "Effectuer un lancer sur le Tableau des Localisations afin de déterminer où cette bouche apparaît.",
     "kind": "physique",
     "note": "Lancer sur le Tableau des Localisations pour déterminer où cette bouche apparaît.",
     "appearance": {
@@ -122,6 +129,7 @@
   {
     "id": "tentacule-epais",
     "label": "Tentacule épais",
+    "desc": "Vous gagnez le Trait de Créature Tentacule. Voir page 343",
     "kind": "physique",
     "traits": [
       {
@@ -138,6 +146,7 @@
   {
     "id": "peau-brillante",
     "label": "Peau brillante",
+    "desc": "Produit une lumière équivalente à celle d’une bougie.",
     "kind": "physique",
     "note": "Produit une lumière équivalente à celle d’une bougie.",
     "appearance": {
@@ -152,6 +161,7 @@
   {
     "id": "beaute-surnaturelle",
     "label": "Beauté surnaturelle",
+    "desc": "+10 Sociabilité. Vous ne gardez jamais de cicatrice.",
     "kind": "physique",
     "note": "Ne garde jamais de cicatrice.",
     "passive": [
@@ -170,6 +180,7 @@
   {
     "id": "visage-inverse",
     "label": "Visage inversé",
+    "desc": "-20 aux Tests de Sociabilité",
     "kind": "physique",
     "passive": [
       {
@@ -187,6 +198,7 @@
   {
     "id": "peau-d-acier",
     "label": "Peau d’acier",
+    "desc": "+2 PA à toutes les Localisations, -10 Agilité",
     "kind": "physique",
     "apAll": 2,
     "passive": [
@@ -205,6 +217,7 @@
   {
     "id": "langue-pendante",
     "label": "Langue pendante",
+    "desc": "-10 à tous les Tests de Langue lorsque vous parlez. Effectuez deux lancers sur le Tableau des Localisations pour déterminer où ces plumes",
     "kind": "physique",
     "passive": [
       {
@@ -222,6 +235,7 @@
   {
     "id": "plumes-eparses",
     "label": "Plumes éparses",
+    "desc": "apparaissent.",
     "kind": "physique",
     "note": "Deux lancers de Localisation pour déterminer où ces plumes apparaissent.",
     "appearance": {
@@ -233,6 +247,7 @@
   {
     "id": "court-sur-pattes",
     "label": "Court sur pattes",
+    "desc": "-1 Mouvement",
     "kind": "physique",
     "passive": [
       {
@@ -249,6 +264,7 @@
   {
     "id": "ecailles-epineuses",
     "label": "Écailles épineuses",
+    "desc": "+1 PA à toutes les Localisations",
     "kind": "physique",
     "apAll": 1,
     "appearance": {
@@ -263,6 +279,7 @@
   {
     "id": "cornes-asymetriques",
     "label": "Cornes asymétriques",
+    "desc": "+1 PA à la Tête. Compte comme une Arme de Créature dont le nombre de Dégâts est égal à votre Bonus de Force (voir page 338)",
     "kind": "physique",
     "apLocations": {
       "tete": 1
@@ -289,6 +306,7 @@
   {
     "id": "suintement-de-pus",
     "label": "Suintement de pus",
+    "desc": "Effectuez un lancer sur le Tableau des Localisations pour déterminer l’origine du suintement",
     "kind": "physique",
     "note": "Lancer de Localisation pour déterminer l’origine du suintement.",
     "appearance": {
@@ -300,6 +318,7 @@
   {
     "id": "groin-poilu",
     "label": "Groin poilu",
+    "desc": "+10 Pistage",
     "kind": "physique",
     "passive": [
       {
@@ -317,12 +336,14 @@
   {
     "id": "choix-du-mj",
     "label": "Choix du MJ",
+    "desc": "Le MJ choisit une mutation ou un Trait de Créature. Voir page 340.",
     "kind": "physique",
     "note": "Le MJ choisit une mutation ou un Trait de Créature."
   },
   {
     "id": "atroces-desirs",
     "label": "Atroces désirs",
+    "desc": "-5 Sociabilité, -5 Force Mentale",
     "kind": "mentale",
     "passive": [
       {
@@ -340,6 +361,7 @@
   {
     "id": "bete-interieure",
     "label": "Bête intérieure",
+    "desc": "+10 Force Mentale, -5 Sociabilité, –5 Intelligence",
     "kind": "mentale",
     "passive": [
       {
@@ -362,12 +384,14 @@
   {
     "id": "reves-chaotiques",
     "label": "Rêves chaotiques",
+    "desc": "Gagnez l’État Exténué pendant les deux premières heures de chaque journée.",
     "kind": "mentale",
     "note": "État Exténué pendant les deux premières heures de chaque journée."
   },
   {
     "id": "formication",
     "label": "Formication",
+    "desc": "-5 Initiative, -5 Dextérité",
     "kind": "mentale",
     "passive": [
       {
@@ -385,6 +409,7 @@
   {
     "id": "imprevisible-fantaisiste",
     "label": "Imprévisible fantaisiste",
+    "desc": "-5 Intelligence, -5 Force Mentale",
     "kind": "mentale",
     "passive": [
       {
@@ -402,6 +427,7 @@
   {
     "id": "terrible-inquietude",
     "label": "Terrible inquiétude",
+    "desc": "-10 Force Mentale",
     "kind": "mentale",
     "passive": [
       {
@@ -414,12 +440,14 @@
   {
     "id": "pulsions-de-haine",
     "label": "Pulsions de haine",
+    "desc": "Sujet à l’Hostilité (voir Psychologie ) envers tous ceux qui ne sont pas de votre race.",
     "kind": "mentale",
     "note": "Sujet à l’Hostilité envers tous ceux qui ne sont pas de votre race."
   },
   {
     "id": "coeur-desseche",
     "label": "Cœur desséché",
+    "desc": "+10 Force Mentale, -10 Sociabilité",
     "kind": "mentale",
     "passive": [
       {
@@ -437,6 +465,7 @@
   {
     "id": "pensees-envieuses",
     "label": "Pensées envieuses",
+    "desc": "-10 Sociabilité",
     "kind": "mentale",
     "passive": [
       {
@@ -449,12 +478,14 @@
   {
     "id": "esprit-solitaire",
     "label": "Esprit solitaire",
+    "desc": "-10 aux Tests lorsque vous êtes seul",
     "kind": "mentale",
     "note": "-10 aux Tests lorsque vous êtes seul."
   },
   {
     "id": "blocage-mental",
     "label": "Blocage mental",
+    "desc": "-10 Intelligence",
     "kind": "mentale",
     "passive": [
       {
@@ -467,6 +498,7 @@
   {
     "id": "urgence-profanatoire",
     "label": "Urgence profanatoire",
+    "desc": "-10 Force Mentale, +10 Agilité",
     "kind": "mentale",
     "passive": [
       {
@@ -484,12 +516,14 @@
   {
     "id": "morale-douteuse",
     "label": "Morale douteuse",
+    "desc": "Gagnez 1 État Brisé si vous échouez à un Test dérivé de la Force Mentale.",
     "kind": "mentale",
     "note": "1 État Brisé sur tout échec à un Test dérivé de la Force Mentale."
   },
   {
     "id": "esprit-suspicieux",
     "label": "Esprit suspicieux",
+    "desc": "-5 Initiative, -5 Intelligence",
     "kind": "mentale",
     "passive": [
       {
@@ -507,6 +541,7 @@
   {
     "id": "accro-a-l-adrenaline",
     "label": "Accro à l’adrénaline",
+    "desc": "+10 Force Mentale, -10 Initiative",
     "kind": "mentale",
     "passive": [
       {
@@ -524,6 +559,7 @@
   {
     "id": "visions-torturees",
     "label": "Visions torturées",
+    "desc": "-10 Initiative",
     "kind": "mentale",
     "passive": [
       {
@@ -536,6 +572,7 @@
   {
     "id": "totalement-desequilibre",
     "label": "Totalement déséquilibré",
+    "desc": "-20 Sociabilité, +10 Force Mentale -10 à tous les Tests qui ne sont pas destinés à blesser autrui. +10 à tous les Tests destinés à",
     "kind": "mentale",
     "passive": [
       {
@@ -553,12 +590,14 @@
   {
     "id": "infinie-malveillance",
     "label": "Infinie malveillance",
+    "desc": "blesser autrui.",
     "kind": "mentale",
     "note": "-10 aux Tests non destinés à blesser autrui ; +10 aux Tests destinés à blesser autrui."
   },
   {
     "id": "colere-impie",
     "label": "Colère impie",
+    "desc": "Sujet à Frénésie (voir Psychologie), +10 à la Capacité de Combat",
     "kind": "mentale",
     "psychTraits": [
       {
@@ -577,6 +616,7 @@
   {
     "id": "affreusement-nerveux",
     "label": "Affreusement nerveux",
+    "desc": "+5 Agilité, -5 Sociabilité",
     "kind": "mentale",
     "passive": [
       {
