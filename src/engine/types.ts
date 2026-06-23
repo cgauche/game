@@ -318,6 +318,10 @@ export interface ActiveEffect {
    *  `COMBAT_PERSIST`) : un buff en Rounds = `{scale:'rounds'}`, en heures = `{scale:'clock'}` (purgé
    *  par l'horloge), sans durée = `{scale:'permanent'}`. */
   duration: Duration;
+  /** SORT SOURCE de cet effet actif (posé à l'incantation via `OpsCtx.sourceSpell`) : identité + NI, pour
+   *  la DISSIPATION (LDB 46 l.204-207 : Test étendu de Langue (Magick) jusqu'au NI → retrait de TOUS les
+   *  effets de ce sort). Absent = effet non-magique ou sort instantané (rien à dissiper). */
+  spell?: { spellId: string; ni: number; casterId: string; label: string };
   /** Ops RÉCURRENTES re-jouées à CHAQUE fin de Round tant que l'effet dure (op `perRound` — sorts
    *  multi-Rounds : 1 État X par Round, 1 Ration par Round de « Récolte de Rhya », etc.). Les valeurs
    *  sont déjà résolues à l'incantation (littérales) — `endOfRound` les ré-applique via `applyOps`

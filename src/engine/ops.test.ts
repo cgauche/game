@@ -112,6 +112,16 @@ describe('applyOps — opérations unitaires', () => {
     expect(lines[0]).toBe('Cobaye : Écorce (-10 Agilité, -10 Dextérité, 6 rounds).');
   });
 
+  it('sourceSpell : marque les ActiveEffect POSÉS du sort (NI/identité), pas les pré-existants (Dissipation LDB 46)', () => {
+    const c = hero({ activeEffects: [{ label: 'Vieux buff', char: 'FM', bonus: 10, duration: { scale: 'rounds', left: 3 } }] });
+    const spell = { spellId: 'ecorce', ni: 4, casterId: 'mage-1', label: 'Écorce' };
+    applyOps(c, [{ op: 'charMod', char: 'Ag', mod: -10 }], { label: 'Écorce', defaultDurationRounds: 6, sourceSpell: spell });
+    const old = c.activeEffects!.find((e) => e.label === 'Vieux buff')!;
+    const posed = c.activeEffects!.find((e) => e.char === 'Ag')!;
+    expect(old.spell).toBeUndefined(); // pré-existant : non marqué
+    expect(posed.spell).toEqual(spell); // posé par CE sort : marqué (identité + NI)
+  });
+
   it('charMod : durée permanente par défaut → « durée hors combat » au journal', () => {
     const c = hero();
     const lines = applyOps(c, [{ op: 'charMod', char: 'E', mod: 20 }], { label: 'Armure' });

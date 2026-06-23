@@ -2680,6 +2680,10 @@ export function applyCast(
   // les Vents octroient une puissance supplémentaire (choix du lanceur), mais cela a un
   // prix — Imparfaite Mineure, sauf Talent Diction instinctive.
   const isSort = !castInfoIsPrayer(spell);
+  // DISSIPATION (LDB 46 l.204-207) : identité du Sort source, marquée sur ses ActiveEffect DURABLES (via
+  // `OpsCtx.sourceSpell` → `applyOps`) pour autoriser un Test étendu de Langue (Magick) jusqu'au NI. Sorts
+  // seulement (les Prières ne se dissipent pas par Contre-sort). Sort instantané → aucun effet → rien à marquer.
+  const sourceSpell = isSort ? { spellId: spell.id, ni: spell.cn ?? 0, casterId: caster.id, label: spell.label } : undefined;
   // Un Sort DISSIPÉ (Contre-sort gagnant, LDB 46 l.201-202) n'est pas lancé : pas d'effet Critique
   // — « Puissance totale » (l.57) repêche un DR insuffisant, pas une Dissipation.
   const crit = !!res.isCritical && isSort && !res.dispelled;
@@ -2779,6 +2783,7 @@ export function applyCast(
           rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
           ...(rounds != null ? { defaultDurationRounds: rounds } : {}),
           ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
+          ...(sourceSpell ? { sourceSpell } : {}),
           onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
         }));
       }
@@ -2878,6 +2883,7 @@ export function applyCast(
             sl: opp ? opp.margin : res.sl,
             ...(rounds != null ? { defaultDurationRounds: rounds } : {}),
             ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
+            ...(sourceSpell ? { sourceSpell } : {}),
             ...(extras?.conjureForm ? { conjureForm: extras.conjureForm } : {}),
             onCorruption: t.kind === 'hero' ? (n) => gainCorruption(get, set, t, n) : undefined,
           }),
@@ -2995,6 +3001,7 @@ export function applyCast(
         rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
         ...(baseRounds != null ? { defaultDurationRounds: baseRounds } : {}),
         ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
+        ...(sourceSpell ? { sourceSpell } : {}),
         onCorruption: caster.kind === 'hero' ? (n) => gainCorruption(get, set, caster, n) : undefined,
       }));
     }
