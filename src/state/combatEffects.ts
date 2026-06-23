@@ -10,7 +10,7 @@ import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { eligibleTalent } from '../engine/grimoire';
 import { effectiveChar } from '../engine/characteristics';
 import { buildActorView } from './combat/flowEval';
-import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, actorHasSkill } from '../engine/skills';
+import { partyBest, partyAssisted, soutienBonus, isSocialTest, socialPsychMod, socialPsychLabel, testValue, actorHasSkill } from '../engine/skills';
 import { statusCharmMod, statusCharmLabel, actorStatus } from '../engine/social';
 import { parseStatus } from '../engine/creation';
 import { easeDifficulty } from '../engine/tests';
@@ -278,8 +278,12 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
     (!!spec.easierIf!.hasTalent && hasTalent(c, spec.easierIf!.hasTalent))
   ));
   const difficulty = eased ? easeDifficulty(baseDifficulty, spec.easierIf!.steps ?? 1) : baseDifficulty;
-  const candidates = get().party.filter((c) => !c.dead).map((actor) => {
-    const value = testValue(actor, spec.skill, spec.characteristic, spec.spec) + (socialMod ? socialMod(actor) : 0);
+  const living = get().party.filter((c) => !c.dead);
+  const candidates = living.map((actor) => {
+    // Soutien (LDB 12 l.214-225) : si CET acteur mène, les AUTRES membres capables l'assistent (+10, plafond
+    // Bonus de Carac). Calculé par candidat car le sélecteur laisse le joueur choisir qui lance.
+    const sout = soutienBonus(living, actor, spec.skill, spec.characteristic, spec.spec);
+    const value = testValue(actor, spec.skill, spec.characteristic, spec.spec) + (socialMod ? socialMod(actor) : 0) + sout;
     const tool = spec.tool ? actor.items?.find((i) => i.name === spec.tool && !i.destroyed) : undefined;
     return {
       id: actor.id, name: actor.name, value,
@@ -918,12 +922,13 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     group: '🎲 Tests', label: 'Test Étendu (DR cumulé : crocheter/forcer un mécanisme)', icon: '🗝️',
     make: () => ({ type: 'extendedTest', skill: 'crochetage', difficulty: 'intermediaire', label: 'Crocheter la serrure', targetDR: 5, flag: '' }),
     apply: (e, env) => {
-      // Test ÉTENDU (LDB 12) : le meilleur du groupe pour la Compétence enchaîne les Rounds.
-      const best = partyBest(env.get().party, e.skill, e.characteristic, undefined, e.spec);
+      // Test ÉTENDU (LDB 12) : le meilleur du groupe enchaîne les Rounds, SOUTENU par les autres membres
+      // capables (+10 chacun, plafond Bonus de Carac — `partyAssisted`).
+      const best = partyAssisted(env.get().party, e.skill, e.characteristic, undefined, e.spec);
       if (!best) return;
       const difficulty = e.difficulty ?? 'intermediaire';
       const target = Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS[difficulty]));
-      env.get().startExtendedTest({ actorId: best.actor.id, label: e.label, skillLabel: e.skill ? refLabel('skills', { id: e.skill, spec: e.spec }) : (e.characteristic ?? 'Test'), target, targetDR: e.targetDR, flag: e.flag });
+      env.get().startExtendedTest({ actorId: best.actor.id, label: e.label, skillLabel: e.skill ? refLabel('skills', { id: e.skill, spec: e.spec }) : (e.characteristic ?? 'Test'), target, targetDR: e.targetDR, flag: e.flag, ...(best.support.count > 0 ? { support: best.support } : {}) });
       return 'suspend';
     },
   },

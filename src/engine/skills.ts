@@ -208,11 +208,16 @@ export function partyAssisted(
 ): { actor: Combatant; value: number; support: { count: number; bonus: number } } | null {
   const leader = partyBest(party, skill, characteristic, extraMod, spec);
   if (!leader) return null;
-  // Soutiens ÉLIGIBLES : les AUTRES membres aptes à la tâche (possèdent la compétence ; carac pure → tous).
-  const eligible = party.filter((c) => c.id !== leader.actor.id && (skill ? actorHasSkill(c, skill, spec) : true)).length;
-  const ck = effectiveSkillCharKey(leader.actor, skill, { explicit: characteristic, spec });
-  const cap = bonus(effectiveChar(leader.actor, ck)); // plafond = Bonus de la Caractéristique testée du meneur
-  const count = Math.min(eligible, Math.max(0, cap));
-  const b = assistBonus(eligible, cap);
-  return { actor: leader.actor, value: leader.value + b, support: { count, bonus: b } };
+  const b = soutienBonus(party, leader.actor, skill, characteristic, spec);
+  return { actor: leader.actor, value: leader.value + b, support: { count: b / 10, bonus: b } };
+}
+
+/** Bonus de SOUTIEN (LDB 12 l.214-225) pour un meneur DONNÉ — brique partagée par `partyAssisted` ET les
+ *  Tests à sélecteur de candidat (Tests de scène) où le meneur n'est pas le « meilleur » mais le candidat
+ *  considéré : +10 par AUTRE membre VIVANT et CAPABLE (possède la compétence ; Test de pure Caractéristique
+ *  → tous), plafonné au Bonus de la Caractéristique testée du meneur (l.225). */
+export function soutienBonus(party: Combatant[], leader: Combatant, skill?: string, characteristic?: CharKey, spec?: string): number {
+  const eligible = party.filter((c) => c.id !== leader.id && !c.dead && (skill ? actorHasSkill(c, skill, spec) : true)).length;
+  const ck = effectiveSkillCharKey(leader, skill, { explicit: characteristic, spec });
+  return assistBonus(eligible, bonus(effectiveChar(leader, ck)));
 }

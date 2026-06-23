@@ -22,13 +22,14 @@ describe('Test de scène — choix du lanceur dans le groupe', () => {
     const pt = useGame.getState().pendingTest!;
     expect(pt.candidates?.map((c) => c.id)).toEqual(['h1', 'h2']); // tout le groupe vivant
     expect(pt.actorId).toBe('h1'); // défaut = le meilleur (Dex 55)
-    expect(pt.skillValue).toBe(55);
-    // Le joueur DÉSIGNE Bri (Dex 35) → valeur + cible re-ciblées sans recalcul.
+    // SOUTIEN (LDB 12) : l'AUTRE membre assiste (+10, plafond Bonus de Carac 5) → 55 + 10.
+    expect(pt.skillValue).toBe(65);
+    // Le joueur DÉSIGNE Bri (Dex 35) → valeur + cible re-ciblées (Soutien d'Alric : +10) sans recalcul.
     useGame.getState().testSetActor('h2');
     const pt2 = useGame.getState().pendingTest!;
     expect(pt2.actorId).toBe('h2');
-    expect(pt2.skillValue).toBe(35);
-    expect(pt2.target).toBe(35); // Intermédiaire (+0)
+    expect(pt2.skillValue).toBe(45); // 35 + 10 (Soutien)
+    expect(pt2.target).toBe(45); // Intermédiaire (+0)
   });
 
   it('un seul héros vivant → pas de choix (candidates absent)', () => {
