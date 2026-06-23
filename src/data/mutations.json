@@ -638,5 +638,123 @@
         "mod": -5
       }
     ]
+  },
+  {
+    "id": "chair-necrosee",
+    "label": "Chair nécrosée",
+    "desc": "Gagnez le Trait Peur 3, et -20 Sociabilité.",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -20
+      },
+      {
+        "op": "grantTrait",
+        "traitId": "peur",
+        "indice": 3
+      }
+    ],
+    "source": {
+      "book": "EDO",
+      "page": 83
+    }
+  },
+  {
+    "id": "cretin",
+    "label": "Crétin",
+    "desc": "Perdez 40 Intelligence, jusqu’à un minimum de 10. Gagnez le Trait de créature Stupide.",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Int",
+        "mod": -40
+      },
+      {
+        "op": "grantTrait",
+        "traitId": "stupide"
+      }
+    ],
+    "source": {
+      "book": "EDO",
+      "page": 83
+    }
+  },
+  {
+    "id": "pattes-chevre",
+    "label": "Pattes (Chèvre)",
+    "desc": "Vos jambes ressemblent maintenant aux pattes postérieures d’une chèvre, avec le genou articulé vers l’arrière. Bien que vous puissiez le cacher avec des vêtements suffisamment amples, votre démarche n’est visiblement pas naturelle. Gagnez +1 Mouvement.",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "moveMod",
+        "mod": 1
+      }
+    ],
+    "source": {
+      "book": "EDO",
+      "page": 83
+    }
+  },
+  {
+    "id": "tete-bestiale-chien",
+    "label": "Tête bestiale (Chien)",
+    "desc": "Perdez 20 Sociabilité et 10 Intelligence. Obtenez le Talent Sens aiguisé (Odorat) et le Trait Morsure +5.",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -20
+      },
+      {
+        "op": "charMod",
+        "char": "Int",
+        "mod": -10
+      },
+      {
+        "op": "grantTalent",
+        "talentId": "sens-aiguise",
+        "spec": "Odorat"
+      },
+      {
+        "op": "grantTrait",
+        "traitId": "morsure",
+        "indice": 5
+      }
+    ],
+    "source": {
+      "book": "EDO",
+      "page": 83
+    }
+  },
+  {
+    "id": "tete-pointue",
+    "label": "Tête pointue",
+    "desc": "Perdez 5 Intelligence et 10 Sociabilité. Gagnez +1 Point d’Armure à la localisation : Tête. Les couvre-chefs ne conviennent que s’ils sont spécialement conçus pour vous, bien que vous portiez avec aisance les chapeaux en forme de cône.",
+    "kind": "physique",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Int",
+        "mod": -5
+      },
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -10
+      },
+      {
+        "op": "ap",
+        "loc": "tete",
+        "amount": 1
+      }
+    ],
+    "source": {
+      "book": "EDO",
+      "page": 83
+    }
   }
 ]

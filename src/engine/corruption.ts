@@ -52,6 +52,8 @@ export interface Mutation {
   passive?: GameOp[];
   /** Partie non modélisée de l'effet — verbatim, arbitrage MJ (rien d'inventé). */
   note?: string;
+  /** Provenance livre/page — LDB 19 IMPLICITE si absent ; EXPLICITE pour les suppléments (EDO Appendice 2…). */
+  source?: { book: string; page: number };
   /** Apparence COSMÉTIQUE déclarée en DONNÉE (calques du catalogue via `features` + `colors` + `eyes`) —
    *  fusionnée sur le rig quand la mutation est présente (cf. `combatantVisuals`). Type erased : le
    *  moteur ne la lit jamais (comme `Combatant.appearance` côté types). */
@@ -127,6 +129,8 @@ export function attachMutation(c: Combatant, m: Mutation): void {
       c.traits = [...(c.traits ?? []), inst];
     } else if (op.op === 'grantPsychTrait') {
       c.psychTraits = [...(c.psychTraits ?? []), { type: op.psychType as PsychType, ...(op.cible ? { cible: op.cible } : {}) }];
+    } else if (op.op === 'grantTalent') {
+      c.talents = [...(c.talents ?? []), { talentId: op.talentId, ...(op.spec ? { spec: op.spec } : {}), times: 1 }];
     }
   }
 }

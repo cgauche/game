@@ -435,6 +435,7 @@ export const CODEX: CodexCategory[] = [
       group: m.kind === 'physique' ? 'Physiques' : 'Mentales',
       desc: m.note ?? undefined,
       appearance: m.appearance,
+      source: src(m.source),
       // PA / arme naturelle / traits conférés sont désormais des GameOps du `passive` (ap /
       // grantNaturalWeapon / grantTrait) → rendus par passiveSection ; plus de facts/chips dédiés.
       sections: sections(
