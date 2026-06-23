@@ -6,6 +6,7 @@
  * donne un couvert TOTAL au servant qui tire à travers (sinon tir depuis le pont, aucun couvert).
  */
 import { inFireArc } from './fireArc';
+import { mannedPosteWeapon } from '../engine/items';
 import type { FireArc } from './fireArc';
 import type { Combatant, ShipPoste } from '../engine/types';
 import type { Dir8 } from './dir8';
@@ -72,6 +73,12 @@ export function applyShipPostes(combatants: Combatant[]): void {
     for (const poste of hull.postes ?? []) {
       const chefId = poste.crewIds?.[0];
       const chef = chefId ? byId.get(chefId) : undefined;
-      if (chef) chef.mannedPoste = poste;
+      if (!chef) continue;
+      chef.mannedPoste = poste;
+      // OCTROI direct de l'arme dérivée (taguée mountSide) — pour que le canon apparaisse aussi sur un chef à
+      // STATBLOC (ennemi, qui ne passe pas par recomputeLoadout). Idempotent ; un chef héros la re-dérivera
+      // identiquement au prochain recompute (rebuild from scratch → pas de doublon).
+      const w = mannedPosteWeapon(chef, poste);
+      if (w && !(chef.weapons ?? []).some((x) => x.uid === w.uid)) (chef.weapons ??= []).push(w);
     }
 }

@@ -47,6 +47,7 @@ import { persistentConditions } from '../engine/persistence';
 import { testValue, actorHasSkill } from '../engine/skills';
 import { rollOups } from '../engine/oups';
 import { spawnEnemy } from './spawn';
+import { applyShipPostes } from './shipPostes';
 import { sceneZonesToBattle } from './zones';
 import { resetFields } from './stateFields';
 import { actorIn } from './combatOrParty';
@@ -1548,6 +1549,7 @@ export function createCombatSlice(get: Get, set: Set) {
           appearance: ent.appearance, weapon: ent.weapon,
           optionals: ent.combat?.optionals, spells: ent.combat?.spells, randomChars: ent.combat?.randomChars, // LDB 76/78
           crewIds: ent.crewIds, // navire → équipage exposé (MDG ch.14)
+          postes: ent.postes, // navire → pièces d'artillerie montées (MDG ch.12-13)
         }));
       // Combat monté (LDB 14) : marquer les montures rideables, basculer les « alliés », puis appairer
       // les couples pré-montés (ridesEntityId → la monture). Le cavalier monte SUR sa monture.
@@ -1565,6 +1567,9 @@ export function createCombatSlice(get: Get, set: Set) {
         mountUp(enemies[i], mount); // partage la position/empreinte de la monture (LDB 14 l.215)
       });
       const all = [...heroes, ...enemies];
+      // Postes d'artillerie (MDG ch.12-13) : sert chaque poste de coque à son chef de pièce (mannedPoste +
+      // octroi du canon dérivé). Après le spawn, sur TOUS les combattants (héros/allié/ennemi indifférent).
+      applyShipPostes(all);
       // Surprise (LDB 13) : si l'encounter le déclare, le camp embusqué teste Perception vs Discrétion.
       // `noSurprise` : le voyage annule l'embuscade quand le groupe « les voit venir » (Perception réussie).
       // Le Test (héros-atteignable) est ROUTÉ cadence-aware par `applySurprise` APRÈS la pose du `battle`

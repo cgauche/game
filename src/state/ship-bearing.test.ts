@@ -44,7 +44,7 @@ describe('mountedWeaponBears — une pièce montée porte-t-elle sur la cible ?'
 });
 
 describe('applyShipPostes — pose mannedPoste sur le chef de pièce de chaque poste de la coque (kind-agnostique)', () => {
-  const poste = (crew: string[]): ShipPoste => ({ item: { uid: 'c', name: 'Canon', kind: 'ranged', qualities: [], enc: 0 } as never, side: 'tribord', crewIds: crew });
+  const poste = (crew: string[]): ShipPoste => ({ item: { uid: 'c', name: 'Canon', kind: 'ranged', damage: { plusBF: false, flat: 14 }, qualities: [], enc: 0 } as never, side: 'tribord', crewIds: crew });
 
   it('chaque poste pose son arme sur crewIds[0] (chef de pièce), pas sur les aides', () => {
     const h = { id: 'cogue', crewIds: ['chef', 'aide'], postes: [poste(['chef', 'aide'])] } as unknown as Combatant;
@@ -52,7 +52,9 @@ describe('applyShipPostes — pose mannedPoste sur le chef de pièce de chaque p
     const aide = { id: 'aide' } as unknown as Combatant;
     applyShipPostes([h, chef, aide]);
     expect(chef.mannedPoste?.side).toBe('tribord'); // le chef SERT le poste
+    expect(chef.weapons?.some((w) => w.uid === 'c' && w.mountSide === 'tribord')).toBe(true); // canon octroyé, tagué tribord
     expect(aide.mannedPoste).toBeUndefined(); // l'aide recharge, ne sert pas le jet
+    expect(aide.weapons).toBeUndefined(); // pas de canon pour l'aide
   });
 
   it('coque sans postes, ou chef de pièce absent → rien (défensif)', () => {

@@ -2,7 +2,7 @@
  * Construction de Combattants depuis le bestiaire (réf.) ou un statblock
  * personnalisé d'une scène. Sert au combat tactique.
  */
-import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints, BodyShape, SkillInstance, TalentInstance } from '../engine/types';
+import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints, BodyShape, SkillInstance, TalentInstance, type ShipPoste } from '../engine/types';
 import { skillCharacteristicById } from '../engine/character';
 import { type TraitInstance, type TraitList } from '../engine/statEntry';
 import { findCreatureById, findSkillById, findTalentById, findSpellById, findVehicleById, CreatureData, type SkillRef, type TalentRef } from '../data';
@@ -147,6 +147,8 @@ export interface SpawnExtras {
   randomChars?: boolean;
   /** Coque/navire : `id`s des Combattants d'ÉQUIPAGE exposés (MDG ch.14) — posés sur le `Combatant`. */
   crewIds?: string[];
+  /** Coque/navire : pièces d'artillerie MONTÉES (postes, MDG ch.12-13) — posées sur le Combattant-coque. */
+  postes?: ShipPoste[];
 }
 
 /** Profil + modificateurs de PROFIL des traits `live` (Élite/Coriace/Brutal…) — pour les valeurs DÉRIVÉES
@@ -295,6 +297,7 @@ export function spawnEnemy(
     c.pos = { ...pos };
   } else c = statblockToCombatant({ name: ref ?? 'Ennemi', char: { B: 10 } }, id, pos); // repli
   if (opts?.crewIds) c.crewIds = opts.crewIds;
+  if (opts?.postes) c.postes = opts.postes;
 
   // COSMÉTIQUE — identité visuelle traversant explo↔combat à l'identique : tout override d'auteur
   // (parts monstrueux, couleurs, coiffure, yeux, sexe/carrure, seed re-tiré) est porté par

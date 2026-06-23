@@ -4,7 +4,7 @@
  * (`Combatant.weapons` / `armour`) sont DÉRIVÉES de l'équipement via
  * recomputeLoadout : équiper une hache ou une armure change donc le combat.
  */
-import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout, WeaponDamageSpec, QualityInstance } from './types';
+import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout, WeaponDamageSpec, QualityInstance, type ShipPoste } from './types';
 import { bonus, baseWithTraits } from './characteristics';
 import { talentEncumbranceBonus } from './combatFeatures/dispatch';
 import { applyEnchants } from './weaponDamage';
@@ -396,7 +396,7 @@ export function recomputeLoadout(c: Combatant): void {
   // arme active taguée `mountSide` — comme un Tentacule/une Morsure (dans `weapons`, HORS inventaire). Le canon
   // reste la pièce du navire (vérité = la coque) ; ceci n'est que le lien « je suis à cette pièce ». KIND-AGNOSTIQUE.
   if (c.mannedPoste) {
-    const w = toWeapon({ ...c.mannedPoste.item, mountSide: c.mannedPoste.side }, 'main');
+    const w = mannedPosteWeapon(c, c.mannedPoste);
     if (w) weapons.push(w);
   }
 
@@ -411,6 +411,23 @@ export function recomputeLoadout(c: Combatant): void {
   c.weapons = weapons;
   c.armour = armour;
   c.encumbrance = totalEncumbrance(c);
+}
+
+/**
+ * Arme dérivée d'un poste d'artillerie SERVI (`mannedPoste`, MDG ch.12-13) — taguée `mountSide = poste.side`,
+ * enchants/qualités de l'instance repliés (comme `toWeapon`, mais à partir du poste). Builder PARTAGÉ par
+ * `recomputeLoadout` (chefs héros) ET `applyShipPostes` (octroi DIRECT aux chefs à statbloc qui ne recomputent
+ * pas) → le canon apparaît de la MÊME façon quel que soit le `kind`. PUR.
+ */
+export function mannedPosteWeapon(c: Combatant, poste: ShipPoste): Weapon | undefined {
+  const it: ItemInstance = { ...poste.item, mountSide: poste.side };
+  if (it.destroyed) return undefined;
+  const hands = weaponHands(it);
+  if (hands === 2 && cannotWieldTwoHanded(c)) return undefined;
+  const reload = qualityIndice(it, QUALITY_IDS.Recharge) ?? 0;
+  return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
+    range: it.range, qualities: it.qualities, subType: it.subType, reload, damageTaken: it.damageTaken,
+    skin: it.skin, form: it.form, hands, hand: 'main', uid: it.uid, mountSide: it.mountSide }, it.enchants ?? []);
 }
 
 let loadoutCounter = 0;

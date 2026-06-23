@@ -11,6 +11,7 @@
  */
 import type { CustomStatblock, EncounterDef, EncounterMember, EntityAppearance, Effect, SceneEntity } from './scene';
 import type { TraitInstance } from '../engine/statEntry';
+import type { ShipPoste } from '../engine/types';
 import type { Dir8 } from './dir8';
 
 export interface AuthoredEnemy {
@@ -36,6 +37,9 @@ export interface AuthoredEnemy {
   /** Coque/navire (`ref` = id de `vehicles.json`) : `id`s d'entités d'ÉQUIPAGE exposées (MDG ch.14).
    *  Les ids des ennemis de la rencontre sont déterministes : `enemy-<idRencontre>-<index>`. */
   crewIds?: string[];
+  /** Coque/navire : pièces d'artillerie MONTÉES (postes, MDG ch.12-13). Chaque poste réfère son équipage par
+   *  `crewIds` (ids déterministes `enemy-<idRencontre>-<index>`) ; `applyShipPostes` sert le poste au chef. */
+  postes?: ShipPoste[];
   /** Surcharge la visibilité de la rencontre pour CET ennemi. */
   hidden?: boolean;
 }
@@ -65,6 +69,7 @@ export function buildEncounter(a: AuthoredEncounter): BuiltEncounter {
     if (e.ref) ent.ref = e.ref;
     if (e.statblock) ent.statblock = e.statblock;
     if (e.crewIds) ent.crewIds = e.crewIds;
+    if (e.postes) ent.postes = e.postes;
     if (e.appearance) ent.appearance = e.appearance;
     if (e.weapon) ent.weapon = e.weapon;
     if (e.facing) ent.facing = e.facing;
