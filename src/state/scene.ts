@@ -114,6 +114,8 @@ export interface SceneEntity {
   ref?: string;
   /** Profil personnalisé (sinon on utilise `ref`). */
   statblock?: CustomStatblock;
+  /** Coque/navire : `id`s des entités d'ÉQUIPAGE exposées à bord (MDG ch.14) — posés sur le Combattant au spawn. */
+  crewIds?: string[];
   dialogueId?: string;
   /** Clé d'asset (token). */
   sprite?: string;

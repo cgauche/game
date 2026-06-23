@@ -1547,6 +1547,7 @@ export function createCombatSlice(get: Get, set: Set) {
         spawnEnemy(ent.ref, ent.statblock, ent.id, { ...ent.pos }, {
           appearance: ent.appearance, weapon: ent.weapon,
           optionals: ent.combat?.optionals, spells: ent.combat?.spells, randomChars: ent.combat?.randomChars, // LDB 76/78
+          crewIds: ent.crewIds, // navire → équipage exposé (MDG ch.14)
         }));
       // Combat monté (LDB 14) : marquer les montures rideables, basculer les « alliés », puis appairer
       // les couples pré-montés (ridesEntityId → la monture). Le cavalier monte SUR sa monture.

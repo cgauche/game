@@ -1133,7 +1133,7 @@ function applyOpposedCritical(
   }
   const currentBefore = victim.wounds.current;
   const lethal = applyCriticalToTarget(victim, loc, true, 0, log, set, undefined,
-    { ...ctx, attackerKind: attacker?.kind, critTwice: attacker ? hasActiveFlag(attacker, 'critRollTwice') : undefined });
+    { ...ctx, attackerKind: attacker?.kind, critTwice: attacker ? hasActiveFlag(attacker, 'critRollTwice') : undefined }, undefined, undefined, get);
   if (lethal) finalizeHeroDeath(get, set, victim, 'hit', currentBefore);
 }
 
@@ -1234,7 +1234,7 @@ export function applyAttackResult(
     } else if (res.critical || overkill > 0) {
       // « Subir » après déviation proposée : applique LE Critique déjà montré (prerolledCrit), sans re-tirer
       // ni re-révéler (la modale de déviation l'a affiché). Sinon : tirage + révélation normaux.
-      const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog, set, res.critLocation, { attackerId: attacker.id, attackerKind: attacker.kind, weapon: weapon?.name, critTwice: hasActiveFlag(attacker, 'critRollTwice') }, prerolledCrit, !!prerolledCrit);
+      const lethal = applyCriticalToTarget(target, loc, !!res.critical, Math.max(0, overkill), critLog, set, res.critLocation, { attackerId: attacker.id, attackerKind: attacker.kind, weapon: weapon?.name, critTwice: hasActiveFlag(attacker, 'critRollTwice') }, prerolledCrit, !!prerolledCrit, get);
       // Frappe blessante (LDB 10) : +niveau Blessures quand on inflige une Blessure Critique.
       const fb = talentCritExtraWounds(attacker);
       if (fb > 0 && !lethal) {
@@ -2816,7 +2816,7 @@ export function applyCast(
       // Blessure Critique : choix « Incantation Critique » du lanceur (LDB 46 l.55), ou overkill.
       const critWound = crit && choice === 'critique';
       if (critWound || overkill > 0) {
-        const lethal = applyCriticalToTarget(t, mres.location ?? 'corps', critWound, Math.max(0, overkill), logLines, set, undefined, { attackerId: caster.id, attackerKind: caster.kind, weapon: spell.label, critTwice: hasActiveFlag(caster, 'critRollTwice') });
+        const lethal = applyCriticalToTarget(t, mres.location ?? 'corps', critWound, Math.max(0, overkill), logLines, set, undefined, { attackerId: caster.id, attackerKind: caster.kind, weapon: spell.label, critTwice: hasActiveFlag(caster, 'critRollTwice') }, undefined, undefined, get);
         if (lethal) finalizeHeroDeath(get, set, t, 'hit', currentBefore);
       } else if (t.wounds.current <= 0) {
         applyZeroWounds(t);

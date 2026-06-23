@@ -33,6 +33,9 @@ export interface AuthoredEnemy {
   optionals?: TraitInstance[];
   spells?: string[];
   randomChars?: boolean;
+  /** Coque/navire (`ref` = id de `vehicles.json`) : `id`s d'entités d'ÉQUIPAGE exposées (MDG ch.14).
+   *  Les ids des ennemis de la rencontre sont déterministes : `enemy-<idRencontre>-<index>`. */
+  crewIds?: string[];
   /** Surcharge la visibilité de la rencontre pour CET ennemi. */
   hidden?: boolean;
 }
@@ -61,6 +64,7 @@ export function buildEncounter(a: AuthoredEncounter): BuiltEncounter {
     const ent: SceneEntity = { id: ids[i], kind: 'personnage', pos: { ...e.pos } };
     if (e.ref) ent.ref = e.ref;
     if (e.statblock) ent.statblock = e.statblock;
+    if (e.crewIds) ent.crewIds = e.crewIds;
     if (e.appearance) ent.appearance = e.appearance;
     if (e.weapon) ent.weapon = e.weapon;
     if (e.facing) ent.facing = e.facing;

@@ -5,7 +5,8 @@
 import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints, BodyShape, SkillInstance, TalentInstance } from '../engine/types';
 import { skillCharacteristicById } from '../engine/character';
 import { type TraitInstance, type TraitList } from '../engine/statEntry';
-import { findCreatureById, findSkillById, findTalentById, findSpellById, CreatureData, type SkillRef, type TalentRef } from '../data';
+import { findCreatureById, findSkillById, findTalentById, findSpellById, findVehicleById, CreatureData, type SkillRef, type TalentRef } from '../data';
+import { vehicleCombatant } from '../engine/vehicle';
 import { CustomStatblock, EntityAppearance } from './scene';
 import { emptyArmour, buildWeapon } from '../engine/items';
 import { maxWounds, bonus } from '../engine/characteristics';
@@ -144,6 +145,8 @@ export interface SpawnExtras {
   spells?: string[];
   /** Caractéristiques aléatoires (LDB 78). */
   randomChars?: boolean;
+  /** Coque/navire : `id`s des Combattants d'ÉQUIPAGE exposés (MDG ch.14) — posés sur le `Combatant`. */
+  crewIds?: string[];
 }
 
 /** Profil + modificateurs de PROFIL des traits `live` (Élite/Coriace/Brutal…) — pour les valeurs DÉRIVÉES
@@ -284,7 +287,14 @@ export function spawnEnemy(
   let c: Combatant;
   if (statblock) c = statblockToCombatant(statblock, id, pos);
   else if (ref && findCreatureById(ref)) c = creatureToCombatant(findCreatureById(ref)!, id, pos, opts);
-  else c = statblockToCombatant({ name: ref ?? 'Ennemi', char: { B: 10 } }, id, pos); // repli
+  else if (ref && findVehicleById(ref)?.hull) {
+    // Coque/navire (`vehicles.json` → facette `hull`) comme Combattant à PV (MDG ch.13). 'enemy' pour être
+    // une cible ; inerte (pas d'arme/Mouvement, Psychologie ignorée) — sa destruction passe par ses Blessures.
+    c = vehicleCombatant(findVehicleById(ref)!, id)!;
+    c.kind = 'enemy';
+    c.pos = { ...pos };
+  } else c = statblockToCombatant({ name: ref ?? 'Ennemi', char: { B: 10 } }, id, pos); // repli
+  if (opts?.crewIds) c.crewIds = opts.crewIds;
 
   // COSMÉTIQUE — identité visuelle traversant explo↔combat à l'identique : tout override d'auteur
   // (parts monstrueux, couleurs, coiffure, yeux, sexe/carrure, seed re-tiré) est porté par
