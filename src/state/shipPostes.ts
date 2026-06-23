@@ -6,6 +6,22 @@
  * donne un couvert TOTAL au servant qui tire à travers (sinon tir depuis le pont, aucun couvert).
  */
 import type { FireArc } from './fireArc';
+import type { ItemInstance } from '../engine/types';
+
+/** Une pièce d'artillerie MONTÉE sur un navire (poste), authorée dans la donnée de scène. L'arme est portée
+ *  comme `ItemInstance` (base + qualités/enchants PAR INSTANCE) — gère catalogue, custom Codex ET arme
+ *  bricolée par le joueur (un id seul perdrait les atouts ajoutés). Au spawn : clonée dans les `items` du
+ *  chef de pièce, `recomputeLoadout` en fait son arme à distance active (taguée `mountSide = side`). */
+export interface ShipPoste {
+  /** L'arme montée (instance complète — base via `trappingId` + `qualities`/`enchants` propres). */
+  item: ItemInstance;
+  /** Côté de montage relatif au cap → arc de tir (`inFireArc`). */
+  side: FireArc;
+  /** Tire à travers un Sabord (Gun Port) → couvert TOTAL au servant ; sinon depuis le pont (aucun couvert). */
+  sabord?: boolean;
+  /** Combattant(s) d'équipage servant la pièce ; le 1ᵉʳ = chef de pièce (celui qui jette, Arme d'équipe). */
+  crewIds?: string[];
+}
 
 /** Le poids (Enc) d'une pièce montée sur un bord donné — entrée du calcul de pénalité de répartition. */
 export interface MountWeight {

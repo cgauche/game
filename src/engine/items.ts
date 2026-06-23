@@ -331,7 +331,7 @@ export function recomputeLoadout(c: Combatant): void {
     // est déjà Magique/+Dégâts/onHit, donc visible partout ET appliquée à la résolution (pas de merge ailleurs).
     return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
       range: it.range, qualities: it.qualities, subType: it.subType, reload, damageTaken: it.damageTaken,
-      skin: it.skin, form: it.form, hands, hand, uid: it.uid }, it.enchants ?? []);
+      skin: it.skin, form: it.form, hands, hand, uid: it.uid, mountSide: it.mountSide }, it.enchants ?? []);
   };
 
   // UN SEUL modèle : tout combattant porteur d'armes passe par un loadout (auto-généré si absent — plus de

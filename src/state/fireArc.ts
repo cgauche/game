@@ -12,8 +12,9 @@
  */
 import { facingToward } from '../gameIso/rig/facing';
 import type { Dir8 } from './dir8';
+import type { FireArc } from '../engine/types';
 
-export type FireArc = 'proue' | 'tribord' | 'poupe' | 'babord';
+export type { FireArc };
 
 type Pt = { x: number; y: number };
 

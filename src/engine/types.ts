@@ -193,6 +193,11 @@ export interface QualityInstance {
   value?: number;
 }
 
+/** Côté de montage d'une pièce d'artillerie sur un navire (MDG ch.12-13), relatif au cap du bateau —
+ *  pilote l'arc de tir. La LOGIQUE d'arc vit en `state/fireArc.ts` (elle dépend du cap Dir8) ; ce TYPE pur
+ *  vit ici pour que `Weapon`/`ItemInstance` le portent sans dépendance engine→state. */
+export type FireArc = 'proue' | 'tribord' | 'poupe' | 'babord';
+
 export interface Weapon {
   name: string;
   type: 'melee' | 'ranged';
@@ -238,6 +243,9 @@ export interface Weapon {
    *  POSE (même domaine que le retour de `creatureAttackKind`) lue pour l'anim et la Condition Flow
    *  `attackKind` — ≠ name-parse (multilangue-safe). Absent = arme manufacturée (pose générique). */
   attackKind?: string;
+  /** Pièce d'artillerie MONTÉE sur un navire : côté de montage (proue/poupe/bâbord/tribord) relatif au
+   *  cap → restreint l'arc de tir (lu par la validation de visée via `inFireArc`). Absent = arme non montée. */
+  mountSide?: FireArc;
 }
 
 /** Enchantement d'ARME (op `augmentWeapon` — B. de Droiture, Marteau ardent, Épée de justice ;
@@ -490,6 +498,9 @@ export interface ItemInstance {
   /** Enchantements actifs portés par l'ARME (op `augmentWeapon` / arme invoquée) — SOURCE DE VÉRITÉ,
    *  repliés dans l'arme dérivée par `recomputeLoadout` (`applyEnchants`). Temporisés via `ActiveEffect.enchantRef`. */
   enchants?: WeaponEnchant[];
+  /** Pièce d'artillerie MONTÉE sur un navire : côté de montage (FireArc) — propagé à `Weapon.mountSide`
+   *  par `recomputeLoadout` (restreint l'arc de tir). Posé au spawn depuis le poste (`ShipPoste.side`). */
+  mountSide?: FireArc;
   pa?: number; // armures : Points d'Armure
   locs?: HitLocation[]; // armures : localisations couvertes
   enc: number; // encombrement
