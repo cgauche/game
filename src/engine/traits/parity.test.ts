@@ -85,6 +85,12 @@ const JOURNAL_MJ = new Map<string, string>([
   ['Marque de Tzeentch', 'Mutations du statbloc — fixées par l’auteur/MJ (l’éditeur pose les Mutations de la créature) ; pas de génération runtime'],
   ['Dédoublement', 'scission en 2 horreurs bleues à la mort/Critique — pas de spawn-on-death dans le moteur (MJ/auteur)'],
   ['Feu de Tzeentch', 'aura de feu entre Horreurs du même type — pas de système d’aura inter-créatures (MJ)'],
+  // Traits de créature EDO (Appendice 2) — desc verbatim, mécaniques complexes sans système support.
+  ['Absorption', 'absorbe un adversaire en fin de Round (Empêtré/Empoigné + drain) — pas de système d’absorption (MJ/auteur)'],
+  ['Amorphe', 'demi-Blessures hors feu/froid/magie + immunité aux Critiques — pas de réduction de dégâts typée (MJ)'],
+  ['Contagieux', 'transmet la maladie hébergée au toucher — pas câblé (MJ ; cf. Infecté/Maladie)'],
+  ['Décérébré', 'sans I/Int/FM/Soc, joue toujours en dernier — pas de système « sans Initiative » (MJ)'],
+  ['Voleur de chair', 'revêt la peau d’un humain tué (trait de Gideon) — pas de système de déguisement (MJ)'],
 ]);
 
 // Traits dont la mécanique est portée par les helpers de `dispatch` (capabilities/passive/effects/
