@@ -326,8 +326,14 @@ export interface PsychologyData extends StatusData {
    *  puis pose l'état `becomes` (Terreur → Peur, l.55-57) ; `'binary'` = Test BINAIRE activant l'affliction
    *  CIBLÉE (traits ciblés). Absent (Frénésie/trauma) = pas de Test de résolution surmontable. */
   resolution?: 'extended' | 'terreur' | 'binary';
-  /** (résolution `'terreur'`) État infligé à l'ÉCHEC, en quantité `Indice + |DR négatifs|` (LDB 21 l.57). */
+  /** (résolution `'terreur'`) État infligé à l'ÉCHEC (l'id de l'état, p.ex. `'brise'`) ; la QUANTITÉ est
+   *  déclarée par `failAmount` (défaut = Indice + |DR négatifs|, LDB 21 l.57). */
   failCondition?: string;
+  /** (résolution `'terreur'`) QUANTITÉ d'état infligée à l'échec, EN DONNÉES (`failConditionAmount`) :
+   *  `base` (l'Indice de l'affliction via `'indice'`, ou un nombre FIXE) + `perDegreeOfFailure` par DR
+   *  négatif. Défauts `{ base:'indice', perDegreeOfFailure:1 }` = la règle Brisé Terreur — plus de calcul
+   *  codé : un nouvel État/Psy déclare ICI sa quantité (fixe, ou par degrés seuls). */
+  failAmount?: { base?: 'indice' | number; perDegreeOfFailure?: number };
   /** (résolution `'terreur'`) État psychologique SUBSÉQUENT au Test (la Terreur devient une Peur, l.55). */
   becomes?: string;
   /** Paramètres du Test de Psychologie (LDB 21) : `skill` (compétence stable, défaut `calme` — la valeur

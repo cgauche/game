@@ -88,9 +88,9 @@ export function fearSourceFor(self: Combatant, foe: Combatant): { kind: 'peur' |
 
 /** Mode de RÉSOLUTION d'un état psy + ses conséquences d'échec, lus en DONNÉES (`psychology.json`) — SOURCE
  *  UNIQUE de l'applier `combatPsych` et du picker de Round : plus de `kind === 'terreur'` codé par-nom. */
-export function psychResolution(kind: PsychType): { mode?: 'extended' | 'terreur' | 'binary'; failCondition?: string; becomes?: PsychType } {
+export function psychResolution(kind: PsychType): { mode?: 'extended' | 'terreur' | 'binary'; failCondition?: string; failAmount?: { base?: 'indice' | number; perDegreeOfFailure?: number }; becomes?: PsychType } {
   const d = findPsychologyById(kind);
-  return { mode: d?.resolution, failCondition: d?.failCondition, becomes: d?.becomes as PsychType | undefined };
+  return { mode: d?.resolution, failCondition: d?.failCondition, failAmount: d?.failAmount, becomes: d?.becomes as PsychType | undefined };
 }
 
 /** Une affliction psy est-elle ACTIVE ? Ciblé (Animosité/Haine/…) : drapeau `active` ; Peur/Terreur : DR
@@ -298,10 +298,19 @@ export function resolveCalmeSimple(calme: number, rng: RNG = defaultRNG): { succ
   return { success: t.success, roll: t.roll, sl: t.sl, target: t.target };
 }
 
-/** Brisé infligé par une Terreur ratée (LDB 21 l.57) : Indice + |DR négatifs| ; 0 sur un succès.
- *  SOURCE UNIQUE du calcul, partagée par la Terreur de rencontre, de combat et `resolveTerreurTest`. */
-export function terreurBrise(indice: number, success: boolean, sl: number): number {
-  return success ? 0 : indice + Math.max(0, -sl);
+/** Quantité d'état infligée par un Test BINAIRE raté (résolution `'terreur'`), EN DONNÉES (`failAmount`) :
+ *  `base` (l'Indice de l'affliction via `'indice'`, ou un nombre FIXE) + `perDegreeOfFailure` × DR négatifs.
+ *  Défauts `{ base:'indice', perDegreeOfFailure:1 }` = la règle Terreur (Indice + |DR|, LDB 21 l.57) — un
+ *  nouvel État/Psy peut infliger une quantité propre (fixe, ou par DR seul) sans code. L'appelant n'invoque
+ *  ce calcul que sur un ÉCHEC (le succès n'inflige rien) : SOURCE UNIQUE, ex-`terreurBrise` généralisée. */
+export function failConditionAmount(
+  spec: { base?: 'indice' | number; perDegreeOfFailure?: number } | undefined,
+  indice: number,
+  sl: number,
+): number {
+  const base = spec?.base === undefined || spec.base === 'indice' ? indice : spec.base;
+  const perDeg = spec?.perDegreeOfFailure ?? 1;
+  return base + perDeg * Math.max(0, -sl);
 }
 
 /** Test de Terreur à la 1ʳᵉ rencontre (LDB 21 l.55-57) : échec → Brisé = Indice + |DR négatifs| ;
@@ -316,5 +325,6 @@ export function resolveTerreurTest(
   sansPeur = false,
 ): { success: boolean; brise: number; devientPeur: number; roll: number; target: number; sl: number } {
   const t = coldBloodedAdjust(rollTest(calme, sansPeur ? 'accessible' : 'intermediaire', rng), coldBlooded);
-  return { success: t.success, brise: terreurBrise(indice, t.success, t.sl), devientPeur: sansPeur && t.success ? 0 : indice, roll: t.roll, target: t.target, sl: t.sl };
+  const brise = t.success ? 0 : failConditionAmount(psychResolution('terreur').failAmount, indice, t.sl);
+  return { success: t.success, brise, devientPeur: sansPeur && t.success ? 0 : indice, roll: t.roll, target: t.target, sl: t.sl };
 }

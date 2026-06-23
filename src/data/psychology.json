@@ -106,6 +106,10 @@
     },
     "resolution": "terreur",
     "failCondition": "brise",
+    "failAmount": {
+      "base": "indice",
+      "perDegreeOfFailure": 1
+    },
     "becomes": "peur",
     "test": {
       "skill": "calme",

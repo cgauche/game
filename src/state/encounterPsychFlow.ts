@@ -15,7 +15,7 @@ import { Scene } from './scene';
 import type { CascadeStep } from './pendings';
 import { spawnEnemy } from './spawn';
 import { encounterPsych } from '../engine/encounterPsych';
-import { CIBLE_TYPES, CIBLE_LABEL, PsychType, terreurBrise, psychResolution, suppressSupersededPsych } from '../engine/psychology';
+import { CIBLE_TYPES, CIBLE_LABEL, PsychType, failConditionAmount, psychResolution, suppressSupersededPsych } from '../engine/psychology';
 import { skillBaseValue } from '../engine/skills';
 import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { psychologyLabel, refLabel, findPsychologyById } from '../data';
@@ -104,7 +104,7 @@ registerCascadeApplier(
       set({ party: [...get().party] });
       return { journal: [`${hero.name} est temporairement insensible à la Psychologie (Détermination).`] };
     }
-    const brise = terreurBrise(ep.indice, r.success, r.sl);
+    const brise = r.success ? 0 : failConditionAmount(res.failAmount, ep.indice, r.sl);
     if (res.mode === 'terreur') {
       if (brise > 0 && res.failCondition) addCondition(hero, res.failCondition, brise);
       if (res.becomes) hero.psychState.push({ type: res.becomes, sourceId: ep.sourceId, indice: r.success ? 0 : ep.indice, calmeDR: 0 }); // la Terreur devient une Peur (LDB 21 l.57)
