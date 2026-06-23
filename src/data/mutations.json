@@ -781,5 +781,302 @@
         "crane-pointu"
       ]
     }
+  },
+  {
+    "id": "fuite-aethyrique",
+    "label": "Fuite aethyrique",
+    "desc": "Gagne le Talent Sorcier ! ; -5 en Sociabilité, -5 en Intelligence",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "grantTalent",
+        "talentId": "sorcier"
+      },
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -5
+      },
+      {
+        "op": "charMod",
+        "char": "Int",
+        "mod": -5
+      }
+    ],
+    "note": "Gagne le Talent Sorcier ! ; -5 en Sociabilité, -5 en Intelligence",
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "esprit-animal",
+    "label": "Esprit animal",
+    "desc": "Gagne le Trait de créature Bestial pendant 1d10 heures après un échec à un Test lié à la Force Mentale",
+    "kind": "mentale",
+    "note": "Gagne le Trait de créature Bestial pendant 1d10 heures après un échec à un Test lié à la Force Mentale",
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "modele-de-corruption",
+    "label": "Modèle de corruption",
+    "desc": "Si soumis à Psychologie (voir Livre de Règles, page 190), gagne le Trait de créature Corruption (Mineure) ; -10 Sociabilité",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Soc",
+        "mod": -10
+      }
+    ],
+    "note": "Si soumis à Psychologie (voir Livre de Règles, page 190), gagne le Trait de créature Corruption (Mineure) ; -10 Sociabilité",
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "douleur-transcendee",
+    "label": "Douleur transcendée",
+    "desc": "Gagne le Trait de créature Insensible à la douleur ; -20 Initiative, -20 Intelligence",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "insensible-a-la-douleur"
+      },
+      {
+        "op": "charMod",
+        "char": "I",
+        "mod": -20
+      },
+      {
+        "op": "charMod",
+        "char": "Int",
+        "mod": -20
+      }
+    ],
+    "note": "Gagne le Trait de créature Insensible à la douleur ; -20 Initiative, -20 Intelligence",
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "ame-blasphematoire",
+    "label": "Âme blasphématoire",
+    "desc": "Gagne le Trait de créature Haine (Religion) ; +10 Force Mentale",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "haine",
+        "arg": "Religion"
+      },
+      {
+        "op": "charMod",
+        "char": "FM",
+        "mod": 10
+      }
+    ],
+    "note": "Gagne le Trait de créature Haine (Religion) ; +10 Force Mentale",
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "esprit-aneanti",
+    "label": "Esprit anéanti",
+    "desc": "Gagne le Trait de créature Immunité Psychologique durant 1d10 Rounds lorsque vous prenez un État Brisé, ensuite subissez 1d10 États Brisé",
+    "kind": "mentale",
+    "note": "Gagne le Trait de créature Immunité Psychologique durant 1d10 Rounds lorsque vous prenez un État Brisé, ensuite subissez 1d10 États Brisé",
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "haine-sporadique",
+    "label": "Haine sporadique",
+    "desc": "Gagne le Trait de créature Haine (Cible). Lancez les dés sur le Tableau des Obsessions au début de chaque jour pour déterminer la Cible",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "haine"
+      }
+    ],
+    "note": "Gagne le Trait de créature Haine (Cible). Lancez les dés sur le Tableau des Obsessions au début de chaque jour pour déterminer la Cible",
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "corruption-sublime",
+    "label": "Corruption sublime",
+    "desc": "Gagne l’État Exténué chaque semaine durant laquelle aucun Point de Corruption n’est gagné, ou que vous n’avez pas provoqué le gain d’un Point de Corruption chez un autre Personnage ; perte de tous les États Exténué si l’une ou l’autre situation se produit",
+    "kind": "mentale",
+    "note": "Gagne l’État Exténué chaque semaine durant laquelle aucun Point de Corruption n’est gagné, ou que vous n’avez pas provoqué le gain d’un Point de Corruption chez un autre Personnage ; perte de tous les États Exténué si l’une ou l’autre situation se produit",
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "desespoir-obsedant",
+    "label": "Désespoir obsédant",
+    "desc": "Gagne le symptôme Malaise durant 1d10 heures en cas d’échec à un Test lié à la Force Mentale",
+    "kind": "mentale",
+    "note": "Gagne le symptôme Malaise durant 1d10 heures en cas d’échec à un Test lié à la Force Mentale",
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "masochisme-pressant",
+    "label": "Masochisme pressant",
+    "desc": "Gagne le Trait de créature Belliqueux : impossibilité de Fuir volontairement (voir page 165 du Livre de Règles)",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "belliqueux"
+      }
+    ],
+    "note": "Gagne le Trait de créature Belliqueux : impossibilité de Fuir volontairement (voir page 165 du Livre de Règles)",
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "repugnance-persistante",
+    "label": "Répugnance persistante",
+    "desc": "Gagne le Symptôme Nausée durant 1d10 heures après avoir été confronté à de la saleté",
+    "kind": "mentale",
+    "note": "Gagne le Symptôme Nausée durant 1d10 heures après avoir été confronté à de la saleté",
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "errance-mentale",
+    "label": "Errance mentale",
+    "desc": "-10 Intelligence, +10 Force Mentale. Gagne le Trait de créature Stupide si seul",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "Int",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "FM",
+        "mod": 10
+      }
+    ],
+    "note": "-10 Intelligence, +10 Force Mentale. Gagne le Trait de créature Stupide si seul",
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "paranoia-galopante",
+    "label": "Paranoïa galopante",
+    "desc": "Gagne le Trait de créature Nerveux, +10 Initiative",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "nerveux"
+      },
+      {
+        "op": "charMod",
+        "char": "I",
+        "mod": 10
+      }
+    ],
+    "note": "Gagne le Trait de créature Nerveux, +10 Initiative",
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "panique-extreme",
+    "label": "Panique extrême",
+    "desc": "-10 Force Mentale, +10 Agilité",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "FM",
+        "mod": -10
+      },
+      {
+        "op": "charMod",
+        "char": "Ag",
+        "mod": 10
+      }
+    ],
+    "note": "-10 Force Mentale, +10 Agilité",
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "faim-intense",
+    "label": "Faim intense",
+    "desc": "Gagne le Trait de créature Affamé",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "affame"
+      }
+    ],
+    "note": "Gagne le Trait de créature Affamé",
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "maladie-de-l-ame",
+    "label": "Maladie de l’âme",
+    "desc": "Gagne le Symptôme Convulsions durant 1d10 heures en cas d’échec à un Test lié à la Force Mentale",
+    "kind": "mentale",
+    "note": "Gagne le Symptôme Convulsions durant 1d10 heures en cas d’échec à un Test lié à la Force Mentale",
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
+  },
+  {
+    "id": "terribles-phobies",
+    "label": "Terribles phobies",
+    "desc": "Gagne le Trait de créature Effrayé (Cible), déterminer la Cible avec un jet sur le Tableau des Obsessions",
+    "kind": "mentale",
+    "passive": [
+      {
+        "op": "grantTrait",
+        "traitId": "effraye"
+      }
+    ],
+    "note": "Gagne le Trait de créature Effrayé (Cible), déterminer la Cible avec un jet sur le Tableau des Obsessions",
+    "source": {
+      "book": "EDOC",
+      "page": 67
+    }
   }
 ]
