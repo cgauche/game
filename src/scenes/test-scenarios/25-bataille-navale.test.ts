@@ -61,7 +61,8 @@ describe('Artillerie jouable — un canonnier peut charger et tirer son pierrier
     expect(gun.type).toBe('ranged'); // le pierrier est bien l'arme active à distance
     expect(gun.subType).toBe('armes-de-siege');
     expect(compatibleAmmo(gunner, gun).length).toBeGreaterThan(0); // munition de siège compatible trouvée
-    expect(firedAttackBlock(gunner, ship)).toBeNull(); // chargé + munition → le tir peut partir
+    // get-stub : le pierrier n'est pas un poste monté (pas de mountSide) → l'arc n'est pas évalué, get inutilisé.
+    expect(firedAttackBlock((() => ({ battle: undefined })) as never, gunner, ship)).toBeNull(); // chargé + munition → le tir peut partir
   });
 
   it('2 héros sont des canonniers (pierrier équipé), 2 restent abordeurs', () => {

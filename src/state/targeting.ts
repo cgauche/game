@@ -19,7 +19,7 @@ export type HoverTargeting =
   | { kind: 'none' }
   /** Cible refusée au clic — `engaged` = mêlée verrouillée par l'Engagement (Désengagement requis) ;
    *  `unloaded` = arme à Recharge non chargée (recharger d'abord) ; `noammo` = plus de munition. */
-  | { kind: 'invalid'; reason: 'los' | 'range' | 'engaged' | 'unloaded' | 'noammo' }
+  | { kind: 'invalid'; reason: 'los' | 'range' | 'engaged' | 'unloaded' | 'noammo' | 'arc' }
   | {
       kind: 'ok';
       /** Style de la ligne de visée : pointillée (tir/sort) ou pleine (mêlée, déplacement compris). */
@@ -147,7 +147,7 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
   // prédicat que le clic (firedAttackBlock) → le réticule annonce « recharger »/« plus de munitions »
   // au lieu d'une attaque qui se solderait par un log silencieux.
   if (plan.kind === 'attack' && !option.freeKind) {
-    const block = firedAttackBlock(active, target);
+    const block = firedAttackBlock(get, active, target);
     if (block) return { kind: 'invalid', reason: block.reason };
   }
   const from = plan.kind === 'attack' ? active : { ...active, pos: plan.dest };

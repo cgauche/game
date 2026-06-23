@@ -491,7 +491,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // (firedAttackBlock). Concerne UNIQUEMENT l'attaque directe (plan 'attack') avec l'arme tenue : une
       // Charge/rejoindre (mêlée) ou une attaque gratuite (freeKind) n'emploie jamais l'arme à distance.
       if (plan.kind === 'attack' && !option.freeKind) {
-        const block = firedAttackBlock(active, target);
+        const block = firedAttackBlock(get, active, target);
         if (block) {
           get().log(block.detail);
           if (battle.preview) set({ battle: { ...battle, preview: null } });

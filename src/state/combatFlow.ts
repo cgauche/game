@@ -131,6 +131,7 @@ import { toBrass, fromBrass } from '../engine/money';
 import { Scene, Effect, isWalkable } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
 import { lineOfSightCover, losClear, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
+import { shipOfCrew, mountedWeaponBears } from './shipPostes';
 import { fearSourceFor, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, suppressSupersededPsych, psychResolution, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
@@ -228,7 +229,7 @@ export function firedWeapon(attacker: Combatant, target: Combatant, weaponUid?: 
  *  l'affordance ne mente jamais : un réticule de tir sur une arbalète vide DOIT dire « recharger », pas
  *  proposer une attaque qui se solderait par un log silencieux. Mêlée / pas d'arme à distance → `null`
  *  (la Recharge ne concerne que l'arme effectivement tirée, `firedWeapon`). */
-export function firedAttackBlock(active: Combatant, target: Combatant): { reason: 'unloaded' | 'noammo'; detail: string } | null {
+export function firedAttackBlock(get: Get, active: Combatant, target: Combatant): { reason: 'unloaded' | 'noammo' | 'arc'; detail: string } | null {
   if (active.kind !== 'hero') return null;
   const adj = combatDistance(active, target) <= meleeReachTiles(active.weapons); // même arbitrage d'arme que firedWeapon
   const w = attackWeapon(active.weapons, adj);
@@ -237,6 +238,15 @@ export function firedAttackBlock(active: Combatant, target: Combatant): { reason
   // Munition requise UNIQUEMENT si l'arme en consomme (famille de munition) ; un tir sans munition suivie
   // (ex. arme sans Groupe) reste possible. `ammoFamily` falsy ⇒ pas de suivi de munition (cf. compatibleAmmo).
   if (ammoFamily(w.subType) && !selectedAmmo(active, w)) return { reason: 'noammo', detail: `${active.name} n'a plus de munitions pour ${w.name}.` };
+  // Pièce d'artillerie MONTÉE (poste) : ne porte que dans son ARC, relatif au cap du navire support (MDG
+  // ch.12-13). KIND-AGNOSTIQUE (`shipOfCrew`/`mountedWeaponBears` ne regardent pas le `kind`). `mountSide`
+  // absent (arme non montée) ou support non résolu → aucune contrainte. NB : l'IA aura le MÊME prédicat.
+  if (w.mountSide && target.pos) {
+    const battle = get().battle;
+    const ship = battle ? shipOfCrew(battle.combatants, active.id) : undefined;
+    if (!mountedWeaponBears(w, ship ? get().facing[ship.id] : undefined, ship?.pos, target.pos))
+      return { reason: 'arc', detail: `${w.name} ne porte pas dans cet arc (${w.mountSide}).` };
+  }
   return null;
 }
 
