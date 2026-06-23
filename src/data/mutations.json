@@ -659,6 +659,11 @@
     "source": {
       "book": "EDO",
       "page": 83
+    },
+    "appearance": {
+      "colors": {
+        "peau": "#8a9b78"
+      }
     }
   },
   {
@@ -680,6 +685,11 @@
     "source": {
       "book": "EDO",
       "page": 83
+    },
+    "appearance": {
+      "features": [
+        "langue-pendante"
+      ]
     }
   },
   {
@@ -696,6 +706,11 @@
     "source": {
       "book": "EDO",
       "page": 83
+    },
+    "appearance": {
+      "features": [
+        "pattes-danimaux"
+      ]
     }
   },
   {
@@ -728,6 +743,11 @@
     "source": {
       "book": "EDO",
       "page": 83
+    },
+    "appearance": {
+      "features": [
+        "museau-chien"
+      ]
     }
   },
   {
@@ -755,6 +775,11 @@
     "source": {
       "book": "EDO",
       "page": 83
+    },
+    "appearance": {
+      "features": [
+        "crane-pointu"
+      ]
     }
   }
 ]

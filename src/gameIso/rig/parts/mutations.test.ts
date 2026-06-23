@@ -14,15 +14,12 @@ const cm = (...ids: string[]): Combatant =>
   ({ mutations: ids.map((id) => mutationById(id)).filter(Boolean) } as unknown as Combatant);
 
 describe('apparence data-driven des mutations (LDB 19)', () => {
-  it('chaque mutation physique LDB déclare son apparence (sauf Choix du MJ) ; clés de catalogue valides', () => {
+  it('chaque mutation physique déclare son apparence (sauf Choix du MJ) ; clés de catalogue valides', () => {
     for (const id of IDS_PHYSIQUES) {
       const m = mutationById(id)!;
       if (id === 'choix-du-mj') { expect(m.appearance).toBeUndefined(); continue; }
-      // Mutations de SUPPLÉMENT (EDO Appendice 2…, source ≠ LDB) : visuel rig DIFFÉRÉ (tâche art) →
-      // apparence optionnelle ; mais si présente, ses clés doivent rester valides.
-      const ldb = !m.source || m.source.book === 'LDB';
-      if (ldb) expect(m.appearance, id).toBeTruthy();
-      for (const k of m.appearance?.features ?? []) expect(APPEARANCE_ELEMENTS[k], `${id} → ${k}`).toBeTruthy();
+      expect(m.appearance, id).toBeTruthy();
+      for (const k of m.appearance!.features ?? []) expect(APPEARANCE_ELEMENTS[k], `${id} → ${k}`).toBeTruthy();
     }
   });
 
