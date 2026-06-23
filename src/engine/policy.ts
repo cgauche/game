@@ -394,17 +394,10 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     group: 'Voyage',
     kind: 'flag',
     default: false,
-    hint: 'Option « Attraper Froid » : Test d’Exposition en fin d’Étape sous intempéries (pluie/neige sans manteau ni tente ; toujours sous averse/blizzard). En saison froide, l’exposition donne un rhume. Sans effet si « Voyage par Étapes » est éteint.',
+    hint: 'Option « Attraper Froid » : Test d’Exposition en fin d’Étape sous intempéries (pluie/neige sans manteau ni tente ; toujours sous averse/blizzard). En saison froide, l’exposition donne un rhume. Sauté si un héros réussit le poste « Plein air ». Sans effet si « Voyage par Étapes » est éteint.',
   },
-  {
-    id: 'travel-forage',
-    label: 'Approvisionnement (Survie)',
-    ref: 'LDB 09 l.565',
-    group: 'Voyage',
-    kind: 'flag',
-    default: false,
-    hint: 'L’activité d’Approvisionnement devient un Test de Survie en extérieur (option « Trouver de la nourriture et des herbes ») qui produit des rations selon les DR, au lieu de rations directes. Sans effet si « Voyage par Étapes » est éteint.',
-  },
+  // NB : l'ancien flag POC `travel-forage` est RETIRÉ — l'Approvisionnement est désormais un POSTE
+  // d'Activité (un héros assigné via `travelRole`), résolu par `travelPostes` sous « Voyage par Étapes ».
 ];
 
 const RULES_BY_ID = new Map<string, OptionalRule>(OPTIONAL_RULES.map((r) => [r.id, r]));

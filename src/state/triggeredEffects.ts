@@ -19,14 +19,17 @@ import { featureLevel } from '../engine/combatFeatures/dispatch';
 import type { CombatFeature } from '../engine/combatFeatures/types';
 import { isOutOfAction, combatTestPenalty } from '../engine/conditions';
 import { roundTestInteractive } from './combat/cadenceGate';
-import { isEngagedWith } from '../engine/engagement';
+import { isEngagedWith, isEngaged } from '../engine/engagement';
 import { combatDistance } from './footprint';
-import { losClear } from './lineOfSight';
+import { chebyshev } from './path';
+import { losClear, tileSeenByFoe } from './lineOfSight';
 import { smokeOf } from './combatGeometry';
 import { traitById, qualityById, findManeuverById, findTalentById, findConditionById, findPsychologyById, refLabel } from '../data';
 import { difficultyFromLabel, rollTest } from '../engine/tests';
 import { rawCombatTestBase } from '../engine/skills';
 import { runSpellFlowLines } from './combatEffects';
+import { combatConditionCtx, flowTestGated } from './combat/flowEval';
+import { resolveTestDifficulty } from './flow';
 import { RNG, defaultRNG } from '../engine/dice';
 
 /** PARAMÈTRE un effet de trait par l'ARGUMENT d'instance du porteur : substitue la difficulté d'un Test
@@ -167,10 +170,16 @@ export function setTriggeredTestRouter(fn: TestRouter): void { testRouter = fn; 
 function resolveInlineFlowTest(c: Combatant, flow: Flow, ctx: OpsCtx): string[] {
   if (flow.kind !== 'test') throw new Error('resolveInlineFlowTest: nœud non-`test` (un test enfoui exige un routeur cadence-aware).');
   const ft = flow.test;
-  // `base` BRUT (sans pénalité d'État) + `combatTestPenalty` une SEULE fois (RAW : −10 d'Empoisonné/Sonné
-  // compté une fois, LDB 16) — MÊME convention que `simpleTriggeredTestStep` (héros) → récupération identique.
+  // GATE (op-level immunité/groupes + Condition générique `gate`) + difficulté DYNAMIQUE (`difficultyBy`) :
+  // SOURCE UNIQUE partagée avec la voie cascade (`resolveFlowTest`). Le `ConditionCtx` est construit de la
+  // géométrie d'arène déjà injectée dans `ctx` par le dispatcher (Brisé : caché/Engagé/proximité). Gate
+  // fermée ⇒ no-op (ni jet ni branche, comme `unlessImmune`/`onlyGroups` — un Test top-level n'a pas d'`after`).
+  const cc = combatConditionCtx(c, ctx);
+  if (flowTestGated(ft, c, cc)) return [];
+  // `base` BRUT (sans pénalité d'État) + `combatTestPenalty` une SEULE fois (RAW : −10 d'Empoisonné/Sonné/
+  // Brisé compté une fois, LDB 16) — MÊME convention que `simpleTriggeredTestStep` (héros) → récupération identique.
   const base = rawCombatTestBase(c, ft.skill, ft.characteristic, ft.spec);
-  const difficulty: Difficulty = ft.difficulty ?? 'intermediaire';
+  const difficulty: Difficulty = resolveTestDifficulty(ft, cc);
   const skillLabel = ft.skill ? refLabel('skills', { id: ft.skill, spec: ft.spec }) : (ft.characteristic ? CHAR_LABELS[ft.characteristic] : 'Test');
   const rng = ctx.rng ?? defaultRNG;
   const res = rollTest(base, difficulty, rng, combatTestPenalty(c));
@@ -200,6 +209,22 @@ export function hasFoeInLoS(get: Get, actor: Combatant): boolean {
   );
 }
 
+/** Géométrie d'arène de RÉCUPÉRATION du Brisé (LDB 16 l.55-59) pour `actor`, alimentant les Conditions
+ *  `hiddenFromFoes`/`engaged`/`nearestFoe` (auto-retrait caché, gate du Test, difficulté par proximité) :
+ *  - `hiddenFromFoes` : AUCUN adversaire vivant ne voit l'acteur (sens foe→acteur, `tileSeenByFoe`) — « caché
+ *    hors de vue de tout ennemi » (l.59). Faux s'il n'y a aucun adversaire (rien à fuir → pas de « caché »).
+ *  - `engaged` : l'acteur est-il Engagé (l.57 : aucun Test si Engagé) ;
+ *  - `nearestFoeDist` : distance (cases) à l'adversaire vivant le plus proche (l.58 : Très difficile si ≤3).
+ *  RNG-free → identique côté inline (ennemi/auto) et côté cascade (héros). Hors combat / sans position = neutre. */
+export function recoveryGeometry(get: Get, actor: Combatant): { hiddenFromFoes: boolean; engaged: boolean; nearestFoeDist: number } {
+  const { battle, scene } = get();
+  if (!battle || !actor.pos) return { hiddenFromFoes: false, engaged: false, nearestFoeDist: Infinity };
+  const foes = battle.combatants.filter((e) => e.kind !== actor.kind && !isOutOfAction(e) && e.pos);
+  const hiddenFromFoes = !!scene && foes.length > 0 && !tileSeenByFoe(scene, foes, actor.pos, smokeOf(battle));
+  const nearestFoeDist = foes.length ? Math.min(...foes.map((e) => chebyshev(actor.pos!, e.pos!))) : Infinity;
+  return { hiddenFromFoes, engaged: isEngaged(actor), nearestFoeDist };
+}
+
 /** CŒUR d'application : applique une LISTE d'effets `TriggeredEffect` de `actor` correspondant à
  *  `trigger`, chacun via `runSpellFlowLines` aux cibles résolues (`on`). Source UNIQUE : utilisé par
  *  `fireTriggers` (effets de traits/atouts) ET par les manœuvres (effets du profil de manœuvre).
@@ -214,6 +239,10 @@ export function applyTriggeredEffects(
   // avec ses adversaires Engagés (Instable, LDB 85 l.177). Voyage dans l'opsCtx → Formula/Condition.
   const gap = ctx.engagedAdvantageGap ?? engagedAdvantageGap(get, actor);
   const foeInLoS = ctx.foeInLoS ?? hasFoeInLoS(get, actor);
+  // Géométrie de récupération du Brisé (caché/Engagé/proximité) — battle-aware, calculée UNE fois pour le
+  // porteur, et SEULEMENT à la frontière de Round (seul moment où un État la consomme : LDB 16 l.55-59),
+  // pour ne pas peser sur les déclencheurs d'attaque. Neutre hors `onRoundEnd` (Conditions → false/+∞).
+  const geom = trigger === 'onRoundEnd' ? recoveryGeometry(get, actor) : undefined;
   for (const eff of effects) {
     if (eff.trigger !== trigger) continue;
     // Filtre `onGainCondition` : ne réagit qu'à l'État effectivement gagné (Mâchoires → 'sonne').
@@ -232,7 +261,7 @@ export function applyTriggeredEffects(
       // fournit `set` + un routeur installé. Un Flow `test` non routé (pas de `set`) atteindrait
       // `runSpellFlowLines`, qui LÈVE (jamais de branche succès muette). Le contexte de la touche
       // (`woundsDealt`/`margin→sl`/`location`/`attackKind`) voyage dans l'opsCtx pour les Conditions `if`.
-      const flowCtx: OpsCtx = { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, engagedAdvantageGap: gap, foeInLoS, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause };
+      const flowCtx: OpsCtx = { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, engagedAdvantageGap: gap, foeInLoS, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause, hiddenFromFoes: geom?.hiddenFromFoes, engaged: geom?.engaged, nearestFoeDist: geom?.nearestFoeDist };
       if (flowHasTest(eff.flow)) {
         // Test de FIN DE ROUND (`deferInteractiveTest`, posé par le hook `end-of-round` : la cascade n'est
         // pas encore ouverte) : un héros MANUEL est COLLECTÉ par `collectHeroRoundEndUpkeep` (on saute ici) ;

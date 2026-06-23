@@ -5238,98 +5238,6 @@
     }
   },
   {
-    "id": "barque",
-    "label": "Barque",
-    "type": "trapping",
-    "subType": "animaux-et-vehicules",
-    "enc": null,
-    "availability": "Limitée",
-    "reach": null,
-    "loc": null,
-    "pa": null,
-    "damage": null,
-    "qualities": [],
-    "desc": "Un rameur est la norme.",
-    "price": {
-      "gold": 6,
-      "silver": 0,
-      "bronze": 0
-    },
-    "source": {
-      "book": "LDB",
-      "page": 306
-    }
-  },
-  {
-    "id": "chaland",
-    "label": "Chaland",
-    "type": "trapping",
-    "subType": "animaux-et-vehicules",
-    "enc": null,
-    "availability": "Rare",
-    "reach": null,
-    "loc": null,
-    "pa": null,
-    "damage": null,
-    "qualities": [],
-    "desc": "Nécessite trois membres d'équipage.",
-    "price": {
-      "gold": 225,
-      "silver": 0,
-      "bronze": 0
-    },
-    "source": {
-      "book": "LDB",
-      "page": 306
-    }
-  },
-  {
-    "id": "chariot",
-    "label": "Chariot",
-    "type": "trapping",
-    "subType": "animaux-et-vehicules",
-    "enc": null,
-    "availability": "Commune",
-    "reach": null,
-    "loc": null,
-    "pa": null,
-    "damage": null,
-    "qualities": [],
-    "desc": "Nécessite un conducteur et deux chevaux.",
-    "price": {
-      "gold": 75,
-      "silver": 0,
-      "bronze": 0
-    },
-    "source": {
-      "book": "LDB",
-      "page": 306
-    }
-  },
-  {
-    "id": "charrette",
-    "label": "Charrette",
-    "type": "trapping",
-    "subType": "animaux-et-vehicules",
-    "enc": null,
-    "availability": "Commune",
-    "reach": null,
-    "loc": null,
-    "pa": null,
-    "damage": null,
-    "qualities": [],
-    "desc": "Nécessite un conducteur et un animal de trait.",
-    "price": {
-      "gold": 20,
-      "silver": 0,
-      "bronze": 0
-    },
-    "source": {
-      "book": "LDB",
-      "page": 306
-    }
-  },
-  {
     "id": "cheval-de-guerre-leger",
     "label": "Cheval de guerre léger",
     "type": "trapping",
@@ -5445,29 +5353,6 @@
     }
   },
   {
-    "id": "coracle",
-    "label": "Coracle",
-    "type": "trapping",
-    "subType": "animaux-et-vehicules",
-    "enc": 6,
-    "availability": "Limitée",
-    "reach": null,
-    "loc": null,
-    "pa": null,
-    "damage": null,
-    "qualities": [],
-    "desc": "Les coracles sont de petits bateaux légers qui conviennent pour une personne et peuvent être facilement transportés. Ils sont faits de cuir, ou d'écorce, tendu sur un cadre de bois, et dirigés à l'aide d'une seule rame.",
-    "price": {
-      "gold": 2,
-      "silver": 0,
-      "bronze": 0
-    },
-    "source": {
-      "book": "LDB",
-      "page": 306
-    }
-  },
-  {
     "id": "destrier",
     "label": "Destrier",
     "type": "trapping",
@@ -5482,29 +5367,6 @@
     "desc": "Cheval entraîné pour la guerre.",
     "price": {
       "gold": 230,
-      "silver": 0,
-      "bronze": 0
-    },
-    "source": {
-      "book": "LDB",
-      "page": 306
-    }
-  },
-  {
-    "id": "diligence",
-    "label": "Diligence",
-    "type": "trapping",
-    "subType": "animaux-et-vehicules",
-    "enc": null,
-    "availability": "Rare",
-    "reach": null,
-    "loc": null,
-    "pa": null,
-    "damage": null,
-    "qualities": [],
-    "desc": "Nécessite deux conducteurs et quatre chevaux.",
-    "price": {
-      "gold": 150,
       "silver": 0,
       "bronze": 0
     },
@@ -9978,5 +9840,263 @@
     },
     "desc": "Rubis magique (souvent enchâssé dans une bague ou amulette) prélevé sur un grand dragon barbelé, qui absorbe le sang versé dessus. En échange, il confère le Trait Protection 9+ pendant 1d10 Tours. Mais s'il est insatiable : si le porteur subit un État Hémorragique, un Test de Résistance (+0) raté fait s'agripper le rubis à sa peau comme une sangsue (l'État Hémorragique ne se lève qu'en arrachant la pierre par un Test de Force (+20)).",
     "qualities": []
+  },
+  {
+    "id": "carreau-de-baliste",
+    "label": "Carreau",
+    "type": "ranged",
+    "subType": "munitions",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": "Comme l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "perforante"
+      }
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 4,
+      "bronze": 0
+    },
+    "source": {
+      "book": "MDG",
+      "page": 106
+    }
+  },
+  {
+    "id": "carreau-nain-norse",
+    "label": "Carreau nain norse",
+    "type": "ranged",
+    "subType": "munitions",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": "Comme l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [
+      {
+        "id": "brise-coque"
+      },
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "perforante"
+      }
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 8,
+      "bronze": 0
+    },
+    "source": {
+      "book": "MDG",
+      "page": 106
+    }
+  },
+  {
+    "id": "boulet-et-poudre",
+    "label": "Boulet et poudre",
+    "type": "ranged",
+    "subType": "munitions",
+    "enc": 1,
+    "availability": "Limitée",
+    "reach": "Comme l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [
+      {
+        "id": "a-explosion",
+        "value": 2
+      },
+      {
+        "id": "percutante"
+      }
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 8,
+      "bronze": 0
+    },
+    "source": {
+      "book": "MDG",
+      "page": 106
+    }
+  },
+  {
+    "id": "mitraille-et-poudre",
+    "label": "Mitraille et poudre",
+    "type": "ranged",
+    "subType": "munitions",
+    "enc": 0,
+    "availability": "Exotique",
+    "reach": "Quart de l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": false,
+      "flat": -5
+    },
+    "qualities": [
+      {
+        "id": "tir-de-zone",
+        "value": 5
+      }
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 6,
+      "bronze": 6
+    },
+    "source": {
+      "book": "MDG",
+      "page": 106
+    }
+  },
+  {
+    "id": "bombe-de-mortier",
+    "label": "Bombe",
+    "type": "ranged",
+    "subType": "munitions",
+    "enc": 0,
+    "availability": "Rare",
+    "reach": "Comme l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": false,
+      "flat": 12
+    },
+    "qualities": [
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "a-explosion",
+        "value": 5
+      },
+      {
+        "id": "percutante"
+      }
+    ],
+    "desc": null,
+    "price": {
+      "gold": 3,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "MDG",
+      "page": 106
+    }
+  },
+  {
+    "id": "bombe-incendiaire-mortier",
+    "label": "Bombe incendiaire",
+    "type": "ranged",
+    "subType": "munitions",
+    "enc": 0,
+    "availability": "Limitée",
+    "reach": "Moitié de l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "a-explosion",
+        "value": 4
+      }
+    ],
+    "desc": "Une bombe incendiaire fait subir à toutes les cibles affectées 1 +DR États En flammes.",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "MDG",
+      "page": 106
+    }
+  },
+  {
+    "id": "balles-et-poudre-pierrier",
+    "label": "Balles et poudre pour 1 tir",
+    "type": "ranged",
+    "subType": "munitions",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "Comme l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": false,
+      "flat": 1
+    },
+    "qualities": [
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "perforante"
+      },
+      {
+        "id": "tir-de-zone",
+        "value": 3
+      }
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 2,
+      "bronze": 2
+    },
+    "source": {
+      "book": "MDG",
+      "page": 106
+    }
+  },
+  {
+    "id": "petites-munitions-et-poudre-pierrier",
+    "label": "Petites munitions et poudre pour 1 tir",
+    "type": "ranged",
+    "subType": "munitions",
+    "enc": 0,
+    "availability": "Commune",
+    "reach": "Comme l'arme",
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [
+      {
+        "id": "tir-de-zone",
+        "value": 6
+      }
+    ],
+    "desc": null,
+    "price": {
+      "gold": 0,
+      "silver": 2,
+      "bronze": 2
+    },
+    "source": {
+      "book": "MDG",
+      "page": 106
+    }
   }
 ]

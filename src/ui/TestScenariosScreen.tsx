@@ -1,4 +1,5 @@
 import { useGame } from '../state/store';
+import { setRule } from '../engine/policy';
 import { testScenarios, type TestScenario } from '../scenes/test-scenarios';
 
 /** Sous-écran « Scénarios de test » : chaque scénario fixe un groupe et une scène adaptée. */
@@ -10,6 +11,7 @@ export function TestScenariosScreen() {
   const startCombat = useGame((s) => s.startCombat);
 
   const launch = (sc: TestScenario) => {
+    if (sc.rules) for (const [id, v] of Object.entries(sc.rules)) setRule(id, v); // règles pré-activées (modifiables en jeu)
     setParty(sc.makeParty());
     // Scénario multi-scènes / avec carte du monde (#T2) → chargé comme un projet ; sinon scène simple.
     if (sc.extraScenes?.length || sc.worldMap) loadProject([sc.scene, ...(sc.extraScenes ?? [])], sc.scene.id, sc.worldMap ?? null);

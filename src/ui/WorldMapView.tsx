@@ -3,10 +3,12 @@ import { useGame } from '../state/store';
 import { placeOfScene, placeById, routesFrom, otherEnd, MapRoute, MapPlace } from '../state/worldMap';
 import { baseHoursPerDay, maxHoursPerDay } from '../state/travelFlow';
 import {
-  TravelMode, TRAVEL_MODE_LABEL, TRANSPORTS, travelSpeed, travelPlanCalc, transportCost,
+  TravelMode, TRAVEL_MODE_LABEL, vehicleTravel, travelModeIcon, travelSpeed, travelPlanCalc, transportCost,
 } from '../engine/travel';
 import { rationCount } from '../engine/provisions';
 import { formatMoney, canAfford } from '../engine/money';
+import { rule } from '../engine/policy';
+import { TravelRolesPanel } from './TravelRolesPanel';
 
 /** Hash déterministe d'un id → sens de courbure stable d'une route (pas de Math.random). */
 function hashStr(s: string): number {
@@ -91,12 +93,12 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
     setFarId(null);
     const m = r.modes[0] ?? 'pied';
     setMode(m);
-    setClassKey(m !== 'pied' ? TRANSPORTS[m].classes[0].key : '');
+    setClassKey(vehicleTravel(m)?.classes[0].key ?? '');
     setForced(false);
   };
   const pickMode = (m: TravelMode) => {
     setMode(m);
-    setClassKey(m !== 'pied' ? TRANSPORTS[m].classes[0].key : '');
+    setClassKey(vehicleTravel(m)?.classes[0].key ?? '');
   };
 
   // Estimations du trajet sélectionné (mêmes formules que le flux — RAW l.207-224).
@@ -270,7 +272,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
             <div className="wm-modes">
               {selRoute.modes.map((m) => (
                 <button key={m} type="button" className={`btn small ${mode === m ? 'btn-primary' : ''}`} onClick={() => pickMode(m)}>
-                  {m === 'pied' ? '🦶' : m === 'diligence' ? '🚌' : '🛶'} {TRAVEL_MODE_LABEL[m]}
+                  {travelModeIcon(m)} {TRAVEL_MODE_LABEL[m]}
                 </button>
               ))}
             </div>
@@ -285,7 +287,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
             <label className="wm-opt">
               Classe{' '}
               <select value={classKey} onChange={(e) => setClassKey(e.target.value)}>
-                {TRANSPORTS[mode].classes.map((c) => (
+                {(vehicleTravel(mode)?.classes ?? []).map((c) => (
                   <option key={c.key} value={c.key}>
                     {c.label} ({selRoute.prices?.[mode] ?? c.brassPerKm} sou(s)/km/passager)
                   </option>
@@ -306,6 +308,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
               <>Le groupe ne peut pas avancer (surcharge) — allégez les sacs.</>
             )}
           </p>
+          {rule('travel-etapes') && <TravelRolesPanel />}
           <div className="modal-actions">
             <button type="button" className="btn" onClick={() => setSelId(null)}>Annuler</button>
             <button

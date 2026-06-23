@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Scene } from '../../state/scene';
 import { WorldMap, MapPlace, MapRoute, emptyWorldMap, placeById } from '../../state/worldMap';
-import { TravelMode, TRAVEL_DEFAULTS, TRANSPORTS } from '../../engine/travel';
+import { TravelMode, TRAVEL_DEFAULTS, TRAVEL_VEHICLES, TRAVEL_MODE_LABEL, travelModeIcon } from '../../engine/travel';
 import { EffectList } from './EffectList';
 
 /**
@@ -233,26 +233,26 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                 <input type="number" min={1} value={selRoute.km} onChange={(e) => updRoute(selRoute.id, { km: Math.max(1, Number(e.target.value) || 1) })} />
               </label>
               <div className="mini-title">Modes de voyage</div>
-              {(['pied', 'diligence', 'barge'] as TravelMode[]).map((mode) => (
+              {(['pied', ...TRAVEL_VEHICLES.map((v) => v.id)] as TravelMode[]).map((mode) => (
                 <label key={mode} className="ed-check">
                   <input type="checkbox" checked={selRoute.modes.includes(mode)} onChange={() => toggleMode(selRoute, mode)} />
-                  {mode === 'pied' ? '🦶 À pied' : mode === 'diligence' ? '🚌 Diligence' : '🛶 Barge'}
+                  {travelModeIcon(mode)} {TRAVEL_MODE_LABEL[mode] ?? mode}
                 </label>
               ))}
-              {(['diligence', 'barge'] as const).filter((mode) => selRoute.modes.includes(mode)).map((mode) => (
-                <div key={mode}>
-                  <label className="ed-field">{mode === 'diligence' ? 'Diligence' : 'Barge'} — prix (sous/km/passager, RAW : {TRANSPORTS[mode].classes.map((c) => `${c.label} ${c.brassPerKm}`).join(' / ')})
+              {TRAVEL_VEHICLES.filter((v) => selRoute.modes.includes(v.id)).map((v) => (
+                <div key={v.id}>
+                  <label className="ed-field">{v.label} — prix (sous/km/passager, RAW : {v.travel!.classes.map((c) => `${c.label} ${c.brassPerKm}`).join(' / ')})
                     <input
                       type="number" min={0} placeholder="défaut RAW par classe"
-                      value={selRoute.prices?.[mode] ?? ''}
-                      onChange={(e) => updRoute(selRoute.id, { prices: { ...selRoute.prices, [mode]: e.target.value === '' ? undefined : Math.max(0, Number(e.target.value)) } })}
+                      value={selRoute.prices?.[v.id] ?? ''}
+                      onChange={(e) => updRoute(selRoute.id, { prices: { ...selRoute.prices, [v.id]: e.target.value === '' ? undefined : Math.max(0, Number(e.target.value)) } })}
                     />
                   </label>
-                  <label className="ed-field">{mode === 'diligence' ? 'Diligence' : 'Barge'} — Déplacement (km/h, RAW : {TRANSPORTS[mode].movement} ; ±1 modèle rapide/lent)
+                  <label className="ed-field">{v.label} — Déplacement (km/h, RAW : {v.travel!.movement} ; ±1 modèle rapide/lent)
                     <input
-                      type="number" min={1} placeholder={String(TRANSPORTS[mode].movement)}
-                      value={selRoute.speed?.[mode] ?? ''}
-                      onChange={(e) => updRoute(selRoute.id, { speed: { ...selRoute.speed, [mode]: e.target.value === '' ? undefined : Math.max(1, Number(e.target.value)) } })}
+                      type="number" min={1} placeholder={String(v.travel!.movement)}
+                      value={selRoute.speed?.[v.id] ?? ''}
+                      onChange={(e) => updRoute(selRoute.id, { speed: { ...selRoute.speed, [v.id]: e.target.value === '' ? undefined : Math.max(1, Number(e.target.value)) } })}
                     />
                   </label>
                 </div>

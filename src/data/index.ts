@@ -19,6 +19,7 @@ import qualitiesJson from './qualities.json';
 import mutationsJson from './mutations.json';
 import mutationTablesJson from './mutationTables.json';
 import trappingsJson from './trappings.json';
+import vehiclesJson from './vehicles.json';
 import weaponGroupsJson from './weaponGroups.json';
 import creaturesJson from './creatures.json';
 import frenchyTraitsJson from './frenchy-traits.json';
@@ -41,7 +42,7 @@ import pregensJson from './pregens.json';
 import oupsJson from './oups.json';
 import interludeEventsJson from './interludeEvents.json';
 import peripetiesJson from './peripeties.json';
-import { CharKey, Weapon } from '../engine/types';
+import { CharKey, Weapon, VehicleData, Availability } from '../engine/types';
 import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
 import type { DiseaseDef } from '../engine/disease'; // type-only (le runtime de disease.ts importe `maladies` d'ici)
 import { type DiceSpec, formatDice } from '../engine/dice';
@@ -212,7 +213,8 @@ export interface WeaponGroupData {
    *  (Chamon/Azyr ignorent le métal, Ghur le cuir, LDB 46 l.188). Remplace la devinette par regex sur le nom. */
   material?: 'metal' | 'leather';
 }
-export type HarvestRarity = 'Commune' | 'Limitée' | 'Rare' | 'Exotique' | 'Unique';
+/** Rareté de récolte/trophée = `Availability` (LDB 59) ÉTENDUE de `'Unique'` (pièce de bestiaire singulière). */
+export type HarvestRarity = Availability | 'Unique';
 export type HarvestDanger = 'Inoffensive' | 'Inquiétante' | 'Menaçante' | 'Mortelle';
 
 export interface CreatureData {
@@ -270,13 +272,14 @@ export interface StatusData {
   /** Effets DÉCLENCHÉS (dégâts par round → `onRoundEnd` ; sortie de Frénésie → `onTurnStart`…) en
    *  `TriggeredEffect[]`, diffusés par `fireStatusEffects` — le même cœur `applyTriggeredEffects`. */
   effects?: import('../state/flow').TriggeredEffect[];
+  /** Restriction d'Action / de Mouvement / de défense imposée par le STATUT (États : À Terre/Sonné/
+   *  Inconscient/Surpris/Empêtré ; et Psychologie — « Etat comme Psy »), lue en DONNÉES par les prédicats
+   *  moteur `canTakeAction`/`effectiveMovement`/`cannotDefend` via le collecteur `conditionGating` (plus de
+   *  branche par-nom). Sur `StatusData` → partagée par `EtatData` ET `PsychologyData`. */
+  gating?: { action?: 'none'; movement?: 'none' | 'half' | 'crawl'; cannotDefend?: true };
 }
 
 export interface EtatData extends StatusData {
-  /** Restriction d'Action / de Mouvement / de défense imposée par l'État (À Terre/Sonné/Inconscient/
-   *  Surpris/Empêtré…), lue par les prédicats moteur EXISTANTS (`canTakeAction`/`effectiveMovement`/
-   *  `cannotDefend`) au lieu des branches par-nom. VIDE aujourd'hui (Lot 4). */
-  gating?: { action?: 'none'; movement?: 'none' | 'half' | 'crawl'; cannotDefend?: true };
   /** Les magnitudes du `passive` sont-elles multipliées par le nombre de pions (Exténué −10/pion, LDB 16
    *  l.89) ? Appliqué à l'émission par le collecteur `passiveMods`. Défaut (absent) : magnitude fixe. */
   perStack?: boolean;
@@ -284,6 +287,12 @@ export interface EtatData extends StatusData {
    *  niveau de cette capacité de combat chez la cible — ex. Hémorragique réduit par Endurci (`bleedIgnore`,
    *  LDB 10). Clé de `CombatFeature` ; lu génériquement par `fireConditionEffects` (jamais codé par-nom). */
   stacksReducedBy?: string;
+  /** Récupération de l'État par une ACTION (LDB 16 : Empêtré « se libérer » l.61 = Test OPPOSÉ de Force
+   *  contre la source de l'empêtrement ; En flammes « se rouler » l.77 = Test d'Athlétisme simple). Lue par
+   *  l'action `recover` (IA inline ET flux joueur — SOURCE UNIQUE `resolveRecoverTest`) au lieu des branches
+   *  par-nom. `opposedBy:'source'` → opposé contre la Force d'entrave : `escapeStrength` FIGÉE en priorité
+   *  (vaut même source absente), sinon Force de la source VIVANTE. Retire 1 + DR pions sur succès. */
+  recover?: { skill?: string; characteristic?: import('../engine/types').CharKey; opposedBy?: 'source'; difficulty?: import('../engine/types').Difficulty };
 }
 
 /** État PSYCHOLOGIQUE en DONNÉES (LDB 21) — `id` = `PsychType` (`frenesie`, à terme `peur`/`terreur`/…).
@@ -303,6 +312,24 @@ export interface PsychologyData extends StatusData {
   /** RAW LDB 21 : tant que cette affliction CIBLÉE est active, son porteur est IMMUNISÉ aux KINDS psy listés
    *  causés par un membre de sa Cible (Haine → ['peur'], « mais pas Terreur »). Lu par `fearSourceFor`. */
   immuneToFromTarget?: string[];
+  /** Contribution de cet état psy au DEGRÉ DE RÉUSSITE de l'ATTAQUE de son porteur (LDB 21, ±1 DR) — lu
+   *  par `psychDRAdjust` (plus de ±1 codé par-nom). `vs:'source'` = Peur vs sa source (active non vaincue,
+   *  l.29) ; `vs:'group'` = Haine/Animosité vs le groupe ciblé actif (l.22/41) ; `vs:'any'` = Amour/
+   *  Camaraderie en défense, dès lors qu'actif (l.77/82). */
+  attackDR?: { amount: number; vs: 'source' | 'group' | 'any' };
+  /** Actif, cet état ANNULE le malus de Peur de l'attaquant (Amour : « immunisé à la Peur tant que vous
+   *  défendez les êtres aimés », LDB 21 l.77) — généralise, hors-groupe, l'immunité `immuneToFromTarget`. */
+  cancelsFear?: boolean;
+  /** Mode de RÉSOLUTION du Test de Psychologie (LDB 21), lu par l'applier GÉNÉRIQUE `combatPsych` (plus de
+   *  dispatch `kind === 'terreur'` codé) : `'extended'` = Test ÉTENDU de Calme cumulant le DR vers l'Indice
+   *  (Peur, l.27) ; `'terreur'` = Test BINAIRE dont l'échec inflige `failCondition` (Indice + |DR négatifs|)
+   *  puis pose l'état `becomes` (Terreur → Peur, l.55-57) ; `'binary'` = Test BINAIRE activant l'affliction
+   *  CIBLÉE (traits ciblés). Absent (Frénésie/trauma) = pas de Test de résolution surmontable. */
+  resolution?: 'extended' | 'terreur' | 'binary';
+  /** (résolution `'terreur'`) État infligé à l'ÉCHEC, en quantité `Indice + |DR négatifs|` (LDB 21 l.57). */
+  failCondition?: string;
+  /** (résolution `'terreur'`) État psychologique SUBSÉQUENT au Test (la Terreur devient une Peur, l.55). */
+  becomes?: string;
 }
 /** Tables Couleur des Yeux / Cheveux (LDB 05 l.698-744) : 2d10, libellé par refChar. */
 export interface DetailColorData {
@@ -747,6 +774,12 @@ export const qualityById: Map<string, QualityData> = new Map(qualities.map((q) =
 export const mutations = mutationsJson as MutationData[];
 export const mutationTables = mutationTablesJson as MutationTable[];
 export const trappings = trappingsJson as TrappingData[];
+/** Véhicules / embarcations à coque — FOYER UNIQUE app-owned (data-driven). Trois facettes par
+ *  enregistrement (achat / voyage / coque) ; cf. `VehicleData`. La facette `travel` est lue par
+ *  `engine/travel` ; les facettes `purchase`/`hull` par le marché et les incidents/combat. */
+export const vehicles = vehiclesJson as VehicleData[];
+export const vehicleById: Map<string, VehicleData> = new Map(vehicles.map((v) => [v.id, v]));
+export const findVehicleById = (id: string): VehicleData | undefined => vehicleById.get(id);
 /** Groupes d'objet app-owned (taxonomie `subType` id-ifiée) — éditable au Codex. */
 export const weaponGroups = weaponGroupsJson as WeaponGroupData[];
 // Bestiaire APP-OWNED : officiel + complément « frenchy.bzh » INTÉGRÉ directement dans creatures.json

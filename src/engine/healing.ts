@@ -8,6 +8,7 @@ import { hasSurgery } from './combatFeatures/dispatch';
 import { loseWounds, addCondition, removeCondition, hasCondition, recoveredStacks } from './conditions';
 import { hasTreatableTrauma, hasSurgeryTrauma } from './trauma';
 import { contractDisease } from './disease';
+import { isAstoundingFailure } from './tests';
 import type { RNG } from './dice';
 
 /** Pions d'un État (local — `stacks` n'est pas exporté par conditions.ts). */
@@ -115,7 +116,7 @@ export function resolveWoundsHeal(target: Combatant, intBonus: number, sl: numbe
   target.soinRencontreUtilise = true;
   const healed = healWoundsDelta(intBonus, sl, success);
   const log = applyHealWounds(target, healed);
-  if (!success && sl <= -6) {
+  if (isAstoundingFailure(success, sl)) {
     const dz = contractDisease('infection-mineure', rng);
     if (dz && !(target.diseases ?? []).some((d) => d.name === dz.name)) {
       target.diseases = [...(target.diseases ?? []), dz];

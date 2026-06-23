@@ -41,4 +41,14 @@ describe('palette — buildTokenMap', () => {
   it('resolveTokens : no-op si pas de token', () => {
     expect(resolveTokens('<path fill="#123456"/>', { peau: '#fff' })).toBe('<path fill="#123456"/>');
   });
+
+  it('jetons CUSTOM hors slots créature (ex. navire) : base + ombre/reflet dérivés, slots intacts', () => {
+    const m = buildTokenMap({ coque: '#6b4a2b', voile: '#e8e0cc' }, {});
+    expect(m.coque).toBe('#6b4a2b'); // base custom passe
+    expect(m.coqueO).toBeDefined(); // ombre dérivée (×0.78)
+    expect(m.coqueH).toBeDefined(); // reflet dérivé (×1.18)
+    expect(m.voile).toBe('#e8e0cc');
+    expect(m.peau).toBeDefined(); // les slots créature restent fournis (DEFAULT_PALETTE)
+    expect(applyTokenMap('<path fill="@coque" stroke="@coqueO"/><rect fill="@voile"/>', m)).not.toContain('@');
+  });
 });

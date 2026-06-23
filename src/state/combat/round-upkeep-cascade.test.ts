@@ -49,15 +49,16 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
   // (Mâchoires d'acier n'est plus un Test de FIN de Round : c'est un effet `onGainCondition` data-driven,
   //  déclenché À L'ACQUISITION du Sonné — couvert par `triggered-test.test.ts` (brique cadence-aware).)
 
-  it('Récupération du Brisé : héros Brisé (non Engagé) → étape brokenRecovery ; succès retire ≥ 1 Brisé', () => {
-    seedBattleRng(1);
+  it('Récupération du Brisé : héros Brisé (non Engagé) → étape de Test (Calme) ; succès retire ≥ 1 Brisé', () => {
+    seedBattleRng(2); // seed donnant une réussite du Calme (le −10 du Brisé lui-même s'applique, LDB 16 l.55)
     const { H } = setup();
-    H.characteristics.FM = 80; // Calme élevé → Test réussi
+    H.characteristics.FM = 95; // Calme élevé → Test réussi malgré le −10 de l'État Brisé
     addCondition(H, COND.brise, 2);
 
     openRoundEndCascade(useGame.getState, useGame.setState);
     const c = useGame.getState().pendingCascade!;
-    const step = c.participants.find((s) => s.kind === 'brokenRecovery')!;
+    // Récupération du Brisé en DONNÉES (etats.json) → étape GÉNÉRIQUE `triggeredTest` (plus de kind dédié).
+    const step = c.participants.find((s) => s.kind === 'triggeredTest' && s.rollLabel === 'Calme')!;
     expect(step).toBeTruthy();
     expect(step.actorId).toBe(H.id);
 

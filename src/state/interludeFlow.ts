@@ -14,18 +14,19 @@
 import type { GameState } from './store';
 import { battleRng } from './battleRng';
 import { d100 } from '../engine/dice';
+import { extendedTestStep, isImpressiveSuccess, isImpressiveFailure, isAstoundingSuccess, isAstoundingFailure } from '../engine/tests';
 import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvents';
 import { fromBrass, toBrass, formatMoney } from '../engine/money';
 import { itemFromTrappingById, recomputeLoadout } from '../engine/items';
 import { sleepParty } from './restFlow';
-import { craftTarget, craftSpecOf, metierOf, statusIncome, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost, type PriceTier, type Availability } from '../engine/activities';
+import { craftTarget, craftSpecOf, metierOf, statusIncome, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost, type PriceTier } from '../engine/activities';
 import { testValue } from '../engine/skills';
 import { rule } from '../engine/policy';
 import { effectiveChar } from '../engine/characteristics';
 import { buyTalent as engineBuyTalent, talentCost } from '../engine/advancement';
 import { applyTalentAcquisition, fortuneMax, resolveMax, heroMaxWounds } from '../engine/talentEffects';
 import { findCareerById, levelsForCareer, findTrappingById, findTalentById, refLabel, skillInstanceLabel, advancementBaseId, qualityRefLabel, qualities } from '../data';
-import { CHAR_LABELS, type CharKey, type Combatant, type Difficulty, type QualityInstance } from '../engine/types';
+import { CHAR_LABELS, type CharKey, type Combatant, type Difficulty, type QualityInstance, type Availability } from '../engine/types';
 import type { PendingBase } from './rollFlow';
 
 import type { Get, Set } from './flowTypes';
@@ -377,7 +378,7 @@ export function confirmActivity(get: Get, set: Set): void {
   const lines: string[] = [];
   if (pa.kind === 'revenus') {
     // LDB 08 l.135 : succès = somme pleine ; échec = moitié ; Échec Stupéfiant (−6) = rien.
-    const outcome = pa.success ? 'success' : pa.sl <= -6 ? 'astoundingFail' : 'fail';
+    const outcome = pa.success ? 'success' : isAstoundingFailure(pa.success, pa.sl) ? 'astoundingFail' : 'fail';
     const { tier, standing } = heroStatus(h);
     let brass = toBrass(statusIncome(tier, standing, battleRng(), outcome));
     // Événements : ±% sur les Revenus (Fausse monnaie −20, Profits +50 pour une Classe…).
@@ -420,18 +421,18 @@ export function confirmActivity(get: Get, set: Set): void {
     // +2/+3, est lue comme un artefact de conversion). Échec ≤ −4 : fausses certitudes.
     const item = (h.items ?? []).find((i) => i.uid === pa.itemUid);
     if (item) {
-      if (pa.success && pa.sl >= 4) {
+      if (isImpressiveSuccess(pa.success, pa.sl)) {
         item.identified = true;
         item.magicKnown = true;
         delete item.suspectedQualities;
-        lines.push(pa.sl >= 6
+        lines.push(isAstoundingSuccess(pa.success, pa.sl)
           ? `${h.name} identifie parfaitement ${item.name} : TOUTES ses Particularités sont révélées (Succès Stupéfiant).`
           : `${h.name} identifie ${item.name} : ses Particularités sont révélées.`);
       } else if (pa.success) {
         item.magicKnown = true;
         lines.push(`${h.name} cerne la nature magique de ${item.name} sans en percer les règles (DR ${pa.sl}) — l'étude peut reprendre une autre semaine.`);
-      } else if (pa.sl <= -4) {
-        const fakes = falseQualities(item, pa.sl <= -6 ? 2 : 1);
+      } else if (isImpressiveFailure(pa.success, pa.sl)) {
+        const fakes = falseQualities(item, isAstoundingFailure(pa.success, pa.sl) ? 2 : 1);
         if (fakes.length) {
           item.suspectedQualities = [...new Set([...(item.suspectedQualities ?? []), ...fakes])];
           lines.push(`${h.name} se MÉPREND sur ${item.name} : il jurerait que l'objet possède « ${fakes.join(' » et « ')} » — certitude(s) erronée(s).`);
@@ -444,8 +445,9 @@ export function confirmActivity(get: Get, set: Set): void {
       itl.perHero[pa.heroId] = { ...st, left: st.left - 1 };
     }
   } else if (pa.kind === 'craft' && st.craft) {
-    const drDone = Math.max(0, (pa.drBefore ?? 0) + pa.sl); // Test étendu : cumul du DR (LDB 12 l.199-211)
-    if (drDone >= st.craft.drTarget) {
+    // Test étendu d'Artisanat mutualisé (`extendedTestStep`, LDB 12 l.199-211) — cumul du DR par session.
+    const { total: drDone, done } = extendedTestStep(pa.drBefore ?? 0, { success: !!pa.success, sl: pa.sl }, st.craft.drTarget);
+    if (done) {
       const it = itemFromTrappingById(st.craft.trappingId);
       if (it) {
         it.qualities = [...(it.qualities ?? []), ...st.craft.atouts.map((id) => ({ id })), ...st.craft.defauts.map((id) => ({ id }))]; // ids → QualityInstance

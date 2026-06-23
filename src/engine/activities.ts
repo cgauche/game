@@ -19,13 +19,246 @@
  */
 import { RNG, defaultRNG, roll as rollDice } from './dice';
 import { Money, fromBrass, toBrass, PA_PER_SC, PA_PER_CO } from './money';
-import type { Combatant, Difficulty, SkillInstance } from './types';
+import type { Combatant, Difficulty, SkillInstance, Availability } from './types';
+import type { GameOp } from './ops';
+import { testValue, resolveSkillBest, type SkillRef } from './skills';
 import { trappings, talents, levelsForCareer, type TrappingData } from '../data';
 import { talentSlotsUpTo, designationsFor, inCareerStatus, talentMaxReached, splitLabel } from './careerSlots';
 import { talentCost } from './advancement';
+import activitiesJson from '../data/activities.json';
+
+// ─────────────────────────────────────────────────────────────────────────────────────────────
+// CATALOGUE d'ACTIVITÉS data-driven (`src/data/activities.json`) — FOYER UNIQUE des Activités, tous
+// contextes confondus : « Entre deux aventures » (LDB 23), « Activités de voyage » (EDOC ch.5),
+// « Activités en mer » (MDG ch.15). Remplace l'énumération en dur (union `kind` + `switch`).
+// ─────────────────────────────────────────────────────────────────────────────────────────────
+
+/** Contexte où une Activité est proposable. */
+export type ActivityContext = 'interlude' | 'voyage' | 'mer';
+
+/** Issue de PORTÉE ÉTAPE (Activité de voyage EDOC ch.5 OU Rencontre EDOC) — effet qui ne porte PAS sur
+ *  un seul Combatant (donc pas un `GameOp`) mais sur l'Étape/le groupe : interprété par la boucle de
+ *  voyage. Vocabulaire ÉTENDU (≠ codé en dur par id). Activités (l.139-180) :
+ *   - `suppressExposure` (Plein air, l.141) : pas de Test d'Exposition pour le groupe cette Étape ;
+ *   - `gatherInfo` (Recueillir des informations, l.153) : DR questions au MJ (récit) ;
+ *   - `noSurprise` (Rester aux aguets, l.157) : le groupe ne peut être surpris cette Étape ;
+ *   - `mapMade` (Établir des cartes, l.161) : carte d'itinéraire → Orientation/Savoir Accessible ;
+ *   - `rerollToken` (Pratiquer une Compétence, l.172) : un jeton de relance d'un Test futur ;
+ *   - `countsAsRest` (Récupérer, l.176) : l'Étape compte comme un repos (guérison) ;
+ *   - `campCare` (Monter un camp, l.180) : chaque DR retire un Exténué OU guérit un Personnage.
+ *  Rencontres (l.186-233) :
+ *   - `extraActivity` (Temps libre) : une Activité de voyage supplémentaire ;
+ *   - `skipStage` (Raccourci) : sauter l'Étape suivante ;
+ *   - `fullRecovery` (Voyage tranquille) : guérir toutes les Blessures + retirer tous les Exténué ;
+ *   - `worsenWeather` (Très mauvais temps) : +40 au prochain jet de Météo. */
+export type StageOutcome =
+  | 'suppressExposure' | 'gatherInfo' | 'noSurprise' | 'mapMade' | 'rerollToken' | 'countsAsRest' | 'campCare'
+  | 'extraActivity' | 'skipStage' | 'fullRecovery' | 'worsenWeather';
+
+/**
+ * Définition d'une Activité (donnée éditable). Un Test (compétence(s) + Difficulté, éventuellement
+ * ÉTENDU) dont l'issue s'exprime, par ordre de préférence, en vocabulaire EXISTANT :
+ *  - `onSuccess: GameOp[]` pour tout effet mécanique sur les Personnages (heal/removeCondition/giveTrapping…) ;
+ *  - `stageOutcome` pour les effets de portée Étape (voyage) que `GameOp` n'exprime pas ;
+ *  - `resolver` (nom) pour réutiliser une logique existante (`'forage'`, et plus tard `'craft'`/`'learn'`/…).
+ */
+export interface ActivityDef {
+  /** id STABLE (slug). */
+  id: string;
+  label: string;
+  contexts: ActivityContext[];
+  source: { book: string; page: number };
+  /** Compétence(s) du Test — « au choix » si plusieurs. Absent = Activité SANS Test (ex. Récupérer). */
+  skills?: SkillRef[];
+  /** Compétence LIBRE choisie par le joueur (Pratiquer une Compétence, EDOC l.172). */
+  freeSkill?: boolean;
+  difficulty?: Difficulty;
+  /** Test ÉTENDU (LDB 12) : DR requis = `drPerStage` × nombre d'Étapes (Établir des cartes, EDOC l.161). */
+  extended?: { drPerStage: number };
+  /** RAW EDOC l.133 : échouer le Test d'une Activité octroie un État Exténué. */
+  failExtenue?: boolean;
+  /** Résolveur BESPOKE nommé (réutilise une logique existante plutôt que de la dupliquer). */
+  resolver?: string;
+  /** Effet mécanique de réussite, en `GameOp` (langue UNIQUE des effets, appliquée par `applyOps`). */
+  onSuccess?: GameOp[];
+  /** Issue de portée Étape (voyage). */
+  stageOutcome?: StageOutcome;
+  /** Indisponible si le héros porte un État Exténué cette Étape (Récupérer, EDOC l.176). */
+  unavailableIfExtenue?: boolean;
+}
+
+/** Catalogue app-owned des Activités (data-driven, éditable). */
+export const ACTIVITIES = activitiesJson as ActivityDef[];
+/** Activité par `id` STABLE. */
+export const activityById = (id: string): ActivityDef | undefined => ACTIVITIES.find((a) => a.id === id);
+/** Activités proposables dans un contexte donné (interlude / voyage / mer). */
+export function activitiesFor(context: ActivityContext): ActivityDef[] {
+  return ACTIVITIES.filter((a) => a.contexts.includes(context));
+}
+
+/** Issue STRUCTURÉE d'une Activité de voyage résolue — PURE (l'appelant applique `ops`/`stageOutcome`/
+ *  `extenue` au state). Le résolveur ne mute rien : pour l'acteur DÉSIGNÉ au poste, il lance le Test et
+ *  déclare l'effet. RAW EDOC ch.5 l.131 : « chaque Personnage bénéficie d'une Activité par Étape » →
+ *  un héros par poste ; la boucle appelle ce résolveur PAR héros. */
+export interface TravelActivityResult {
+  activityId: string;
+  /** Héros qui tient le poste (toujours l'acteur désigné). */
+  actorId: string;
+  /** Valeur de compétence (base, avant Difficulté/mod) — pour la ligne de jet du bilan. */
+  value?: number;
+  roll?: number;
+  target?: number;
+  sl: number;
+  success: boolean;
+  /** Effets mécaniques de réussite (GameOp) à passer à `applyOps`. */
+  ops: GameOp[];
+  /** Issue de portée Étape, interprétée par la boucle de voyage. */
+  stageOutcome?: StageOutcome;
+  /** Échec du Test d'Activité → État Exténué pour CET acteur (EDOC ch.5 l.133). */
+  extenue: boolean;
+  /** Résolveur BESPOKE à invoquer côté appelant (ex. `'forage'` → `forageYield`). */
+  resolver?: string;
+  /** Cible de DR d'un Test ÉTENDU (Établir des cartes : `drPerStage` × Étapes). */
+  drTarget?: number;
+}
+
+/**
+ * Résout l'Activité tenue par l'acteur DÉSIGNÉ au poste (EDOC ch.5 : un héros par Activité/Étape).
+ * Parmi les compétences « au choix » (Cartographe/Dessin ; plus tard Voile/Ramer), prend la MEILLEURE
+ * de CET acteur (spec-aware), lance le Test (modifié par `skillMod` — ex. météo) et déclare l'effet :
+ * `ops` (GameOp de `onSuccess`) sur réussite, `stageOutcome`, et `extenue` sur échec (l.133). PUR / seedé.
+ * `freeSkill` fournit la compétence pour les Activités à compétence libre (Pratiquer une Compétence) ;
+ * la DÉSIGNATION de l'acteur (assignation joueur, ou `partyBest` par défaut pour un poste de groupe)
+ * est faite par l'appelant, jamais ici.
+ */
+export function resolveTravelActivity(
+  actor: Combatant,
+  def: ActivityDef,
+  rng: RNG = defaultRNG,
+  opts: { skillMod?: number; stages?: number; freeSkill?: SkillRef } = {},
+): TravelActivityResult {
+  const out: TravelActivityResult = {
+    activityId: def.id, actorId: actor.id, sl: 0, success: true, ops: [], extenue: false,
+    stageOutcome: def.stageOutcome, resolver: def.resolver,
+  };
+  if (def.extended && opts.stages != null) out.drTarget = def.extended.drPerStage * opts.stages;
+
+  const skillRefs = def.freeSkill ? (opts.freeSkill ? [opts.freeSkill] : []) : (def.skills ?? []);
+  // Activité SANS Test (Récupérer) : l'issue s'applique directement à l'acteur.
+  if (!skillRefs.length) { out.ops = def.onSuccess ?? []; return out; }
+
+  // « Au choix » : la MEILLEURE compétence de l'acteur (spec-aware) l'emporte — primitive NEUTRE partagée.
+  const res = resolveSkillBest(actor, skillRefs, def.difficulty ?? 'intermediaire', rng, opts.skillMod ?? 0);
+  out.value = res.value;
+  out.roll = res.roll;
+  out.target = res.target;
+  out.sl = res.sl;
+  out.success = res.success;
+  out.ops = res.success ? (def.onSuccess ?? []) : [];
+  out.extenue = !res.success && !!def.failExtenue;
+  return out;
+}
+
+// ── Postes d'une Étape : héros → 1 Activité (jamais deux) ; un poste a 0..N titulaires ──────────
+
+/** Agrégation d'une issue d'Activité quand 0..N héros tiennent le poste (EDOC ch.5 l.131) :
+ *  - `gate` : un SEUL succès suffit à dispenser/protéger tout le groupe (Plein air, Aux aguets) ;
+ *  - `stack` : les DR des succès s'ADDITIONNENT (Monter le camp ; carte en Test étendu) ;
+ *  - `self` : l'effet revient à CHAQUE titulaire qui réussit (Récupérer, Pratiquer, Recueillir infos). */
+export type StageOutcomeAgg = 'gate' | 'stack' | 'self';
+
+/** Classification (DONNÉE) des issues d'ACTIVITÉ par mode d'agrégation. Les issues de RENCONTRE
+ *  (`extraActivity`/`skipStage`/`fullRecovery`/`worsenWeather`) sont de portée Étape (appliquées une
+ *  fois), hors de cette agrégation par héros. */
+export const STAGE_OUTCOME_AGG: Partial<Record<StageOutcome, StageOutcomeAgg>> = {
+  suppressExposure: 'gate',
+  noSurprise: 'gate',
+  campCare: 'stack',
+  mapMade: 'stack',
+  countsAsRest: 'self',
+  rerollToken: 'self',
+  gatherInfo: 'self',
+};
+
+/** Poste tenu par un héros pour une Étape : l'Activité + (pour Pratiquer une Compétence) la compétence libre. */
+export interface StagePosting { activityId: string; freeSkill?: SkillRef }
+
+/** Résout TOUS les postes d'une Étape : itère les héros ASSIGNÉS (un poste max chacun) et résout
+ *  l'Activité de chacun via `resolveTravelActivity`. PUR / seedé ; ordre = ordre du groupe. Un héros
+ *  sans poste (ou un poste d'`activityId` inconnu) est ignoré. */
+export function resolveStageActivities(
+  party: Combatant[],
+  assignment: Record<string, StagePosting>,
+  rng: RNG = defaultRNG,
+  opts: { skillMod?: (def: ActivityDef) => number; stages?: number } = {},
+): TravelActivityResult[] {
+  const results: TravelActivityResult[] = [];
+  for (const hero of party) {
+    const posting = assignment[hero.id];
+    if (!posting) continue;
+    const def = activityById(posting.activityId);
+    if (!def) continue;
+    // Le modificateur (météo) est PAR activité (Plein air / Approvisionnement modifiés, les autres non).
+    results.push(resolveTravelActivity(hero, def, rng, { skillMod: opts.skillMod?.(def), stages: opts.stages, freeSkill: posting.freeSkill }));
+  }
+  return results;
+}
+
+/** Issues d'Étape agrégées (l'appelant APPLIQUE : portes au groupe, cumuls répartis, individuels par héros). */
+export interface StageAggregation {
+  /** Portes OUVERTES (≥ 1 succès) — ex. `suppressExposure`, `noSurprise`. */
+  gates: StageOutcome[];
+  /** Cumul des DR des succès par issue — ex. `campCare`, `mapMade`. */
+  stacks: Partial<Record<StageOutcome, number>>;
+  /** Issues INDIVIDUELLES par héros (succès) — ex. `countsAsRest`, `rerollToken`. */
+  selfByHero: Record<string, StageOutcome[]>;
+}
+
+/** Agrège les issues des Activités d'une Étape selon `STAGE_OUTCOME_AGG`. Un échec n'apporte pas
+ *  l'issue (mais a déjà donné l'Exténué via `result.extenue`). PUR. */
+export function aggregateActivityOutcomes(results: TravelActivityResult[]): StageAggregation {
+  const gates = new Set<StageOutcome>();
+  const stacks: Partial<Record<StageOutcome, number>> = {};
+  const selfByHero: Record<string, StageOutcome[]> = {};
+  for (const r of results) {
+    if (!r.success || !r.stageOutcome) continue;
+    switch (STAGE_OUTCOME_AGG[r.stageOutcome]) {
+      case 'gate': gates.add(r.stageOutcome); break;
+      case 'stack': stacks[r.stageOutcome] = (stacks[r.stageOutcome] ?? 0) + Math.max(0, r.sl); break;
+      case 'self': (selfByHero[r.actorId] ??= []).push(r.stageOutcome); break;
+    }
+  }
+  return { gates: [...gates], stacks, selfByHero };
+}
+
+// ── Rôle de marche PERSISTANT : « les mêmes tiennent toujours le même poste » ────────────────────
+
+/** Rôle de marche INFÉRÉ d'un héros : parmi les Activités de voyage à Test fixe (hors compétence libre
+ *  / sans Test), celle où SA meilleure compétence pertinente est la plus haute. Défaut quand le joueur
+ *  n'a pas épinglé de `travelRole`. `null` si aucune Activité testable (catalogue vide). PUR. */
+export function defaultTravelRole(hero: Combatant): string | null {
+  let best: { id: string; value: number } | null = null;
+  for (const def of activitiesFor('voyage')) {
+    if (def.freeSkill || !(def.skills?.length)) continue; // Pratiquer (libre) / Récupérer (sans Test) : pas un défaut
+    const v = Math.max(...def.skills.map((s) => testValue(hero, s.skillId, undefined, s.spec)));
+    if (!best || v > best.value) best = { id: def.id, value: v };
+  }
+  return best?.id ?? null;
+}
+
+/** Assignation d'Étape initialisée depuis les RÔLES persistants : chaque héros tient son `travelRole`
+ *  (ou son rôle inféré). C'est la copie de départ d'un trajet (surchargeable par poste/par Étape) —
+ *  un voyage normal = 0 clic d'assignation. PUR. */
+export function stageAssignmentFromRoles(party: Combatant[]): Record<string, StagePosting> {
+  const out: Record<string, StagePosting> = {};
+  for (const hero of party) {
+    const role = hero.travelRole ?? defaultTravelRole(hero);
+    if (role) out[hero.id] = { activityId: role };
+  }
+  return out;
+}
 
 export type PriceTier = 'bronze' | 'argent' | 'or';
-export type Availability = 'Commune' | 'Limitée' | 'Rare' | 'Exotique';
 
 const CRAFT_BASE_DR: Record<PriceTier, number> = { bronze: 5, argent: 10, or: 15 };
 const CRAFT_DIFFICULTY: Record<Availability, Difficulty> = {

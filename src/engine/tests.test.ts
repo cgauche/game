@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { evaluateTest, maxForcedRoll, rollTest, evaluateCombinedTest } from './tests';
+import { evaluateTest, maxForcedRoll, rollTest, evaluateCombinedTest, slTier, isImpressiveSuccess, isImpressiveFailure, isAstoundingSuccess, isAstoundingFailure, SL_IMPRESSIVE, SL_ASTOUNDING } from './tests';
 import { getTestPolicy, type TestPolicy } from './testPolicy';
 import type { RNG } from './dice';
 import { setRule, resetRule } from './policy';
@@ -123,5 +123,27 @@ describe('Bascule in-game : éditer UNE règle change le comportement (preuve «
     expect(rollTest(115, 'intermediaire', rng50).sl).toBe(4); // défaut : plafonné 99
     setRule('test-over-100', true);
     expect(rollTest(115, 'intermediaire', rng50).sl).toBe(6); // règle on : valeur 115 pleine
+  });
+});
+
+describe('Tableau des Résultats — paliers de DR (LDB 12 l.103-114, primitive partagée)', () => {
+  it('slTier par magnitude (succès comme échec)', () => {
+    expect([0, 1].map(slTier)).toEqual(['minime', 'minime']);
+    expect([2, -3].map(slTier)).toEqual(['normal', 'normal']);
+    expect([4, -5].map(slTier)).toEqual(['impressionnant', 'impressionnant']);
+    expect([6, -9].map(slTier)).toEqual(['stupefiant', 'stupefiant']);
+  });
+  it('seuils RAW exposés en constantes', () => {
+    expect([SL_IMPRESSIVE, SL_ASTOUNDING]).toEqual([4, 6]);
+  });
+  it('prédicats Impressionnant/Stupéfiant tiennent compte du succès', () => {
+    expect(isImpressiveSuccess(true, 4)).toBe(true);
+    expect(isImpressiveSuccess(true, 6)).toBe(true); // « ou mieux »
+    expect(isImpressiveSuccess(false, 4)).toBe(false); // un échec n'est jamais un Succès Impressionnant
+    expect(isAstoundingSuccess(true, 5)).toBe(false);
+    expect(isImpressiveFailure(false, -4)).toBe(true);
+    expect(isImpressiveFailure(true, -4)).toBe(false);
+    expect(isAstoundingFailure(false, -6)).toBe(true);
+    expect(isAstoundingFailure(false, -5)).toBe(false);
   });
 });

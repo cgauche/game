@@ -54,7 +54,7 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     const all = [...classes.flatMap((c) => c.trappings), ...careerLevels.flatMap((l) => l.trappings)];
     for (const tr of all) {
       expect(isObj(tr)).toBe(true);
-      if ('id' in tr) expect(findTrappingById(tr.id as string)).toBeTruthy();
+      if ('id' in tr) expect(itemFromTrappingById(tr.id as string)).toBeTruthy(); // résolution unifiée (trappings → vehicles)
       else expect(typeof (tr as { text: string }).text).toBe('string');
     }
   });
@@ -65,7 +65,7 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
       for (const sk of c.skills) expect(isObj(sk) && typeof sk.id === 'string').toBe(true);
       for (const t of c.talents) expect(isObj(t) && typeof t.id === 'string').toBe(true);
       for (const o of c.optionals) expect(isObj(o)).toBe(true); // TraitInstance (clé de registre)
-      for (const tr of c.trappings) { expect(isObj(tr)).toBe(true); if ('id' in tr) expect(findTrappingById(tr.id as string)).toBeTruthy(); }
+      for (const tr of c.trappings) { expect(isObj(tr)).toBe(true); if ('id' in tr) expect(itemFromTrappingById(tr.id as string)).toBeTruthy(); }
     }
   });
 

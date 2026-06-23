@@ -10,7 +10,7 @@ import { talentEncumbranceBonus } from './combatFeatures/dispatch';
 import { applyEnchants } from './weaponDamage';
 import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { mutationArmourBonus } from './corruption';
-import { findTrappingById, qualityInstance, type TrappingRef, trappingRefLabel } from '../data';
+import { findTrappingById, findVehicleById, qualityInstance, type TrappingRef, trappingRefLabel } from '../data';
 import { QUALITY_IDS } from './qualities/ids';
 import { craftEncDelta } from './qualities/craftEconomy';
 import { hasQuality, qualityIndice } from './qualities/dispatch';
@@ -130,11 +130,31 @@ function kindOf(type: string): ItemKind {
   return 'misc';
 }
 
-/** Construit une instance d'objet depuis un trapping de catalogue (par son `id` STABLE). Pose
- *  `trappingId` (réf de re-dérivation). Id inconnu → null (objet hors-base → `customTrapping`). */
+/** Construit une instance d'objet depuis un VÉHICULE de catalogue (`vehicles.json`, facette possession).
+ *  Les véhicules vivent dans leur foyer unique ; un id de carrière (`barque`, `diligence`…) y est résolu. */
+export function itemFromVehicleById(id: string): ItemInstance | null {
+  const v = findVehicleById(id);
+  if (!v) return null;
+  return {
+    uid: newUid(),
+    trappingId: v.id, // re-dérivation : `itemFromTrappingById` retombera sur `vehicles.json`
+    name: v.label,
+    kind: 'misc',
+    qualities: [],
+    enc: v.enc ?? 0,
+    equipped: false,
+    desc: v.desc ?? null,
+    subType: 'animaux-et-vehicules',
+  };
+}
+
+/** Construit une instance d'objet depuis le catalogue par son `id` STABLE. Cherche d'abord les
+ *  `trappings`, puis retombe sur le foyer des VÉHICULES (`vehicles.json`) — les véhicules ayant migré
+ *  hors de `trappings.json`, un `TrappingRef` de carrière (`diligence`, `barque`…) y résout toujours.
+ *  Pose `trappingId` (réf de re-dérivation). Id inconnu partout → null (objet hors-base → `customTrapping`). */
 export function itemFromTrappingById(id: string): ItemInstance | null {
   const t = findTrappingById(id);
-  if (!t) return null;
+  if (!t) return itemFromVehicleById(id);
   const kind = kindOf(t.type);
   const locs =
     t.loc != null

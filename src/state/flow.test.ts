@@ -65,6 +65,28 @@ describe('evalCondition — état VIVANT du groupe (hasItem / money / partyDead)
   });
 });
 
+describe('evalCondition — géométrie d’arène + capacités (récupération du Brisé, LDB 16)', () => {
+  const base = { flags: {}, gameTime: 0 };
+  it('hiddenFromFoes / engaged : lus du contexte précalculé', () => {
+    expect(evalCondition({ kind: 'hiddenFromFoes' }, { ...base, hiddenFromFoes: true })).toBe(true);
+    expect(evalCondition({ kind: 'hiddenFromFoes' }, base)).toBe(false); // absent → false (hors combat)
+    expect(evalCondition({ kind: 'engaged' }, { ...base, engaged: true })).toBe(true);
+    expect(evalCondition({ kind: 'engaged' }, base)).toBe(false);
+  });
+  it('nearestFoe : +∞ si aucun adversaire', () => {
+    expect(evalCondition({ kind: 'nearestFoe', op: '<=', value: 3 }, { ...base, nearestFoeDist: 2 })).toBe(true);
+    expect(evalCondition({ kind: 'nearestFoe', op: '<=', value: 3 }, { ...base, nearestFoeDist: 5 })).toBe(false);
+    expect(evalCondition({ kind: 'nearestFoe', op: '<=', value: 3 }, base)).toBe(false); // +∞ → jamais ≤
+  });
+  it('capability : niveau d’une CombatFeature de l’acteur (Cœur vaillant)', () => {
+    const av = { id: 'c', woundsCurrent: 10, woundsMax: 10, size: 3, advantage: 0, camp: 'party' as const, groups: [], talents: [], traits: [], conditions: {}, capabilities: { braveheart: 1 } };
+    expect(evalCondition({ kind: 'capability', who: 'target', id: 'braveheart' }, { ...base, target: av })).toBe(true); // défaut >= 1
+    expect(evalCondition({ kind: 'capability', who: 'target', id: 'braveheart', op: '>=', value: 2 }, { ...base, target: av })).toBe(false);
+    expect(evalCondition({ kind: 'capability', who: 'target', id: 'slayer' }, { ...base, target: av })).toBe(false); // capacité absente → 0
+    expect(evalCondition({ kind: 'capability', who: 'target', id: 'braveheart' }, base)).toBe(false); // acteur absent → false
+  });
+});
+
 describe('flowFromEffects / flattenFlow — séquence + branches if résolues', () => {
   const fx = (flag: string): Effect => ({ type: 'setFlag', flag });
   it('flowFromEffects enveloppe une liste en seq de do', () => {

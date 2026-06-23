@@ -43,7 +43,7 @@ export interface MapRoute {
   km: number;
   /** Modes de voyage offerts sur cette route. */
   modes: TravelMode[];
-  /** Prix d'auteur (sous/PA par km par passager) pour un transport payant (`id` de `transports.json`)
+  /** Prix d'auteur (sous/PA par km par passager) pour un transport payant (`id` de `vehicles.json`)
    *  — défaut : classe RAW. */
   prices?: Partial<Record<Exclude<TravelMode, 'pied'>, number>>;
   /** Déplacement d'auteur par mode (modèle rapide/lent : M ±1, l.208). À pied : force la vitesse. */

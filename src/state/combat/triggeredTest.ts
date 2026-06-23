@@ -28,18 +28,15 @@ import { testValue, rawCombatTestBase } from '../../engine/skills';
 import { applyOps, describeTestRoll, type OpsCtx } from '../../engine/ops';
 import { DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../../engine/types';
 import type { Combatant, Difficulty } from '../../engine/types';
-import { SIZE_ORDER, effectiveSize } from '../../engine/size';
-import { campOf } from '../../engine/relations';
-import { immunityTypes } from '../../engine/traits/dispatch';
-import { groupMatch } from '../../engine/groups';
 import { refLabel, findConditionById } from '../../data';
-import { type Flow, type FlowTest, type ActorView, type ConditionCtx, evalCondition, conditionCtx, flowHasImpureOp, EMPTY_FLOW } from '../flow';
+import { type Flow, type FlowTest, type ConditionCtx, evalCondition, conditionCtx, flowHasImpureOp, resolveTestDifficulty, EMPTY_FLOW } from '../flow';
+import { buildActorView, combatConditionCtx, flowTestGated } from './flowEval';
 import type { Get, Set as SetFn } from '../flowTypes';
 import type { FreeAttackFreeze, BladeTrapFreeze, CascadeStep } from '../pendings';
 import { battleRng } from '../battleRng';
 import { runSpellFlowLines, runFlow, pushCombatStep, openSkillTest } from '../combatEffects';
 import { registerCascadeApplier } from '../cascade';
-import { fireTriggers } from '../triggeredEffects';
+import { fireTriggers, recoveryGeometry } from '../triggeredEffects';
 import { roundTestInteractive } from './cadenceGate';
 
 /** Reflète la mutation EN PLACE d'un combattant (États retirés) dans les références party/battle pour
@@ -119,17 +116,6 @@ type BladeTrapHook = (get: Get, set: SetFn, defender: Combatant, bt: BladeTrapFr
 let bladeTrapHook: BladeTrapHook | undefined;
 export function setBladeTrapHook(fn: BladeTrapHook): void { bladeTrapHook = fn; }
 
-/** Vue d'un combattant pour la Condition `compare`/`relation`/`has` (PB + Taille/Avantage + camp +
- *  Groupes/Talents/Traits + valeur d'États par nom). Source unique (combat). */
-function actorView(c: Combatant | undefined): ActorView | undefined {
-  return c ? {
-    id: c.id, woundsCurrent: c.wounds.current, woundsMax: c.wounds.max, size: SIZE_ORDER[effectiveSize(c.size)],
-    advantage: c.advantage ?? 0, camp: campOf(c),
-    groups: c.groups ?? [], talents: (c.talents ?? []).map((t) => ({ id: t.talentId, spec: t.spec })), traits: (c.traits ?? []).map((t) => t.id),
-    conditions: Object.fromEntries(c.conditions.map((x) => [x.name, x.value ?? 1])),
-  } : undefined;
-}
-
 /**
  * SOURCE UNIQUE du `ConditionCtx` d'un nœud `if` : scène → `conditionCtx(get())` (drapeaux/horloge/
  * groupe/bourse) ; combat → vues des acteurs (`target`/`caster`) + sl/location/woundsDealt/attackKind
@@ -141,7 +127,8 @@ export function condCtxFor(ctx: ExecCtx): ConditionCtx {
   return {
     flags: {}, gameTime: o.now ?? 0, party: ctx.target ? [ctx.target] : [], sl: o.sl,
     location: o.location, woundsDealt: o.woundsDealt, engagedAdvantageGap: o.engagedAdvantageGap, attackKind: o.attackKind, startleCause: o.startleCause,
-    target: actorView(ctx.target), caster: actorView(ctx.caster),
+    foeInLoS: o.foeInLoS, hiddenFromFoes: o.hiddenFromFoes, engaged: o.engaged, nearestFoeDist: o.nearestFoeDist,
+    target: buildActorView(ctx.target), caster: buildActorView(ctx.caster),
   };
 }
 
@@ -175,10 +162,9 @@ export function applyTriggeredTestBranch(
  *  `extraMeta` porte le contexte sérialisable d'une réaction (Frappe réactive `freeAttack`, Piège-lame
  *  `bladeTrap`) ; absent pour une récupération. */
 export function simpleTriggeredTestStep(
-  c: Combatant, ft: FlowTest, branches: { onSuccess: Flow; onFail: Flow }, after: Flow, extraMeta: Record<string, unknown> = {},
+  c: Combatant, ft: FlowTest, branches: { onSuccess: Flow; onFail: Flow }, after: Flow, difficulty: Difficulty, extraMeta: Record<string, unknown> = {},
 ): CascadeStep {
   const base = rawCombatTestBase(c, ft.skill, ft.characteristic, ft.spec);
-  const difficulty: Difficulty = ft.difficulty ?? 'intermediaire';
   const skillLabel = ft.skill ? refLabel('skills', { id: ft.skill, spec: ft.spec }) : (ft.characteristic ? CHAR_LABELS[ft.characteristic] : 'Test');
   return {
     id: `triggeredTest-${c.id}-${skillLabel}`,
@@ -193,12 +179,17 @@ export function simpleTriggeredTestStep(
  *  tard En Flammes Athlétisme / Sonné Résistance), une étape `triggeredTest` INFLUENÇABLE bâtie depuis la
  *  MÊME donnée (`simpleTriggeredTestStep`) que la voie inline (ennemi/auto) et la voie hors-combat. GÉNÉRIQUE
  *  (aucun État nommé en dur). `after` vide : un Test de récupération est top-level. */
-export function collectConditionRecoverySteps(c: Combatant): CascadeStep[] {
+export function collectConditionRecoverySteps(get: Get, c: Combatant): CascadeStep[] {
   const steps: CascadeStep[] = [];
+  // `ConditionCtx` de combat (géométrie d'arène : caché/Engagé/proximité du Brisé) — MÊME géométrie que
+  // celle injectée par le dispatcher dans la voie inline, pour évaluer GATE et difficulté DYNAMIQUE.
+  const cc = combatConditionCtx(c, { caster: c, ...recoveryGeometry(get, c) });
   for (const cond of c.conditions ?? []) {
     for (const eff of findConditionById(cond.name)?.effects ?? []) {
       if (eff.trigger !== 'onRoundEnd' || eff.flow.kind !== 'test') continue;
-      steps.push(simpleTriggeredTestStep(c, eff.flow.test, { onSuccess: eff.flow.success, onFail: eff.flow.fail }, EMPTY_FLOW));
+      const ft = eff.flow.test;
+      if (flowTestGated(ft, c, cc)) continue; // gate fermée (Brisé caché/Engagé) → pas d'étape (no-op, comme inline)
+      steps.push(simpleTriggeredTestStep(c, ft, { onSuccess: eff.flow.success, onFail: eff.flow.fail }, EMPTY_FLOW, resolveTestDifficulty(ft, cc)));
     }
   }
   return steps;
@@ -290,17 +281,16 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
   // Gates de l'op `test` reportées sur le nœud (sémantique IDENTIQUE) — évaluées AVANT de poser l'étape /
   // jeter : la cible est connue (combat). Gate non passée ⇒ no-op (ni étape ni branche, comme l'op
   // `break`) MAIS la continuation `after` est jouée (= ops suivantes du `do` d'origine).
-  const gated =
-    (ft.unlessImmune != null && immunityTypes(c.traits ?? []).some((ty) => ty.includes(ft.unlessImmune!.toLowerCase())))
-    || (ft.onlyGroups != null && !ft.onlyGroups.some((g) => groupMatch(g, c.groups ?? [])))
-    || (ft.exceptGroups != null && ft.exceptGroups.some((g) => groupMatch(g, c.groups ?? [])));
-  if (gated) { playAfter(ctx.get, ctx.set, c, after, ctx.label); return; }
+  const cc = condCtxFor(ctx); // contexte d'évaluation (géométrie d'arène + ActorView) pour gate/difficultyBy
+  // Gates op-level (immunité/groupes) + GATE générique de Condition (`gate`, Brisé : « pas Engagé OU Cœur
+  // vaillant, ET pions restants ») — SOURCE UNIQUE partagée avec la voie inline (`resolveInlineFlowTest`).
+  if (flowTestGated(ft, c, cc)) { playAfter(ctx.get, ctx.set, c, after, ctx.label); return; }
   const opp = ft.opposed;
   // Pénalité d'État comptée UNE seule fois (RAW : −10 d'Empoisonné/Sonné/… au Test, LDB 16, pas deux) :
   //  · Test SIMPLE → `base` BRUT (`rawCombatTestBase`, sans pénalité d'État) + `combatTestPenalty` (ci-dessous).
   //  · Test OPPOSÉ → `base` = `testValue` (porte déjà la pénalité d'État) + aucune pénalité ajoutée (penalty 0).
   const base = opp ? testValue(c, ft.skill, ft.characteristic, ft.spec) : rawCombatTestBase(c, ft.skill, ft.characteristic, ft.spec);
-  const difficulty: Difficulty = ft.difficulty ?? 'intermediaire';
+  const difficulty: Difficulty = resolveTestDifficulty(ft, cc); // dynamique (Brisé : caché/proche/loin), sinon ft.difficulty
   const skillLabel = ft.skill ? refLabel('skills', { id: ft.skill, spec: ft.spec }) : (ft.characteristic ? CHAR_LABELS[ft.characteristic] : 'Test');
   const label = ft.label ?? skillLabel;
   // Test SIMPLE : `combatTestPenalty` (sur le `base` BRUT → −10 d'État compté une fois). Test OPPOSÉ : 0
@@ -329,7 +319,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
           base, target: base + DIFFICULTY_MODIFIERS[difficulty] + penalty, label,
           meta: { onSuccess: node.success, onFail: node.fail, after, opposed: { aT, attackerName: attacker.name, attackerLabel: opp!.attackerLabel ?? CHAR_LABELS[opp!.attacker], ...(opp!.bonusSL ? { bonusSL: opp!.bonusSL } : {}) }, ...extraMeta },
         }
-      : simpleTriggeredTestStep(c, ft, { onSuccess: node.success, onFail: node.fail }, after, extraMeta));
+      : simpleTriggeredTestStep(c, ft, { onSuccess: node.success, onFail: node.fail }, after, difficulty, extraMeta));
     return;
   }
   // `exec` (get/set [+ freeAttack/bladeTrap]) TOUJOURS fourni : une branche IMPURE (à hook : interruptFocus /

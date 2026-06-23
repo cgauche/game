@@ -2,7 +2,7 @@
  * Valeur d'une Compétence/Caractéristique pour les Tests « dans le monde »
  * (hors combat) : Caractéristique + Augmentations de la compétence.
  */
-import { Combatant, CharKey } from './types';
+import { Combatant, CharKey, Difficulty } from './types';
 import { findSkillById } from '../data';
 import { groupMatch } from './groups';
 import { effectiveChar } from './characteristics';
@@ -10,6 +10,8 @@ import { testStatePenalty } from './conditions';
 import { agilityTestPenalty } from './encumbrance';
 import { traumaSkillPenalty, passiveSkillSum, passiveTestMod } from './trauma';
 import { rule } from './policy';
+import { rollTest } from './tests';
+import { RNG, defaultRNG } from './dice';
 
 /** Règles optionnelles « caractéristique alternative » via policy (POINT UNIQUE de la famille) : Métier
  *  comme Savoir → Int (LDB 09 l.352) ; Intimidation → carac réglable F/FM/Int (LDB 09 l.266). Renvoie la
@@ -123,6 +125,44 @@ export function isSocialTest(skill?: string, characteristic?: CharKey): boolean 
   if (characteristic) return characteristic === 'Soc';
   if (skill) return skillCharKeyById(skill) === 'Soc';
   return false;
+}
+
+/** Référence de compétence (id stable + spécialisation éventuelle). Type NEUTRE partagé par tout
+ *  « poste » où une tâche accepte plusieurs compétences : catalogue d'Activités de voyage, Tests
+ *  d'équipage naval (Voile/Ramer, Navigation/Orientation…). */
+export interface SkillRef { skillId: string; spec?: string }
+
+/** Résultat d'un « Test du meilleur parmi N compétences » pour UN acteur (la compétence retenue + le jet). */
+export interface SkillBestResult {
+  value: number;
+  roll: number;
+  target: number;
+  sl: number;
+  success: boolean;
+  /** Compétence effectivement utilisée (la meilleure de l'acteur parmi les options). */
+  used?: SkillRef;
+}
+
+/** Pour l'acteur donné, prend SA meilleure compétence (spec-aware) parmi `options`, puis lance le Test
+ *  (Difficulté + `mod`). Primitive NEUTRE et seedée — « cette personne tente une tâche qui accepte
+ *  plusieurs compétences → on utilise celle où elle est la meilleure ». Partagée voyage (Cartographe/
+ *  Dessin, Survie/Guérison…) et, à venir, équipage naval (Voile/Ramer…). `options` vide ⇒ Test sur 0. */
+export function resolveSkillBest(
+  actor: Combatant,
+  options: readonly SkillRef[],
+  difficulty: Difficulty = 'intermediaire',
+  rng: RNG = defaultRNG,
+  mod = 0,
+): SkillBestResult {
+  let bestVal = -Infinity;
+  let used: SkillRef | undefined;
+  for (const ref of options) {
+    const v = testValue(actor, ref.skillId, undefined, ref.spec);
+    if (v > bestVal) { bestVal = v; used = ref; }
+  }
+  const value = Number.isFinite(bestVal) ? bestVal : 0;
+  const res = rollTest(value, difficulty, rng, mod);
+  return { value, roll: res.roll, target: res.target, sl: res.sl, success: res.success, used };
 }
 
 /** Meilleur membre du groupe pour un test donné. `extraMod` ajoute un modificateur PAR acteur (ex. malus

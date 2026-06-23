@@ -1,4 +1,4 @@
-import type { Availability } from './disponibilite';
+import type { Availability } from './types';
 
 /** Évaluation (LDB 60 l.10) : « estimer les prix des objets Rares ou Exotiques à ±10 % » ; sinon prix exact. */
 export function appraiseEstimate(av: Availability | null, basePrice: number): { min: number; max: number } {

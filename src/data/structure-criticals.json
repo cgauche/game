@@ -1,0 +1,77 @@
+{
+  "id": "structure-criticals",
+  "label": "Blessures critiques sur une Structure",
+  "die": "d100",
+  "source": {
+    "book": "AA",
+    "page": 120
+  },
+  "entries": [
+    {
+      "min": 1,
+      "max": 35,
+      "id": "ebrechee",
+      "name": "Ébréchée",
+      "wounds": 0,
+      "trivial": true,
+      "note": "Choisissez au hasard un seul Personnage qui se trouve sur la Structure ou l'utilise comme couvert. Il est frappé par des débris volant dans les airs et subit une quantité de Dégâts égale au Bonus d'Endurance de la Structure elle-même."
+    },
+    {
+      "min": 36,
+      "max": 50,
+      "id": "secouee",
+      "name": "Secouée",
+      "wounds": 1,
+      "note": "Tous ceux qui se trouvent sur la Structure sont remués par l'impact. Tous les Personnages qui se trouvent sur ou dans la Structure doivent réussir un Test d'Athlétisme Facile (+40) sous peine de recevoir un État Surpris."
+    },
+    {
+      "min": 51,
+      "max": 60,
+      "id": "percee",
+      "name": "Percée",
+      "wounds": 1,
+      "note": "Une petite brèche s'est ouverte dans la Structure. Cela amoindrit sa capacité à fournir un couvert, donc une Structure qui fournissait une pénalité de Couvert Complexe (–10) ne fournirait à présent plus qu'une pénalité de Couvert Intermédiaire (+0)."
+    },
+    {
+      "min": 61,
+      "max": 70,
+      "id": "ebranlee",
+      "name": "Ébranlée",
+      "wounds": 2,
+      "note": "Tous ceux qui se trouvent sur la Structure sont remués par l'impact. Tous les Personnages qui se trouvent sur ou dans la Structure doivent réussir un Test d'Athlétisme Accessible (+20) sous peine de recevoir un État À Terre."
+    },
+    {
+      "min": 71,
+      "max": 80,
+      "id": "pluie-d-echardes",
+      "name": "Pluie d'échardes",
+      "wounds": 2,
+      "note": "Tous les Personnages qui se trouvent sur la Structure ou l'utilisent comme couvert sont frappés par des débris volant dans les airs et subissent une quantité de Dégâts égale au Bonus d'Endurance de la Structure elle-même."
+    },
+    {
+      "min": 81,
+      "max": 90,
+      "id": "effondrement-partiel",
+      "name": "Effondrement partiel",
+      "wounds": 3,
+      "note": "Une partie importante de la Structure s'écroule. Les Personnages qui se trouvent sur ou dans la Structure doivent réussir un Test d'Athlétisme Intermédiaire (+0) sous peine de chuter comme décrit dans le Livre de Règles WFJDR. La Limite d'Encombrement de la Structure est réduite de moitié et si toute pièce d'artillerie (ou autre équipement lourd) a à présent un ENC qui dépasse la Limite d'Encombrement de la Structure, elle en tombe et n'est plus utilisable avant d'être réparée."
+    },
+    {
+      "min": 91,
+      "max": 95,
+      "id": "enfoncee",
+      "name": "Enfoncée",
+      "wounds": 3,
+      "note": "Un énorme trou s'ouvre dans la Structure. Les Personnages qui se trouvent sur ou dans la Structure sont frappés par des débris volant dans les airs et subissent une quantité de Dégâts égale au Bonus d'Endurance de la Structure elle-même. La Structure ne fournit plus de couvert à ceux qui sont dessus ou dedans."
+    },
+    {
+      "min": 96,
+      "max": 100,
+      "id": "effondrement",
+      "name": "Effondrement",
+      "wounds": null,
+      "destroyed": true,
+      "note": "La Structure entière s'écroule. Les Personnages qui l'utilisaient comme couvert sont frappés par des débris volant dans les airs et subissent une quantité de Dégâts égale au Bonus d'Endurance de la Structure elle-même. Les Personnages qui se trouvent sur ou dans la Structure doivent effectuer un Test d'Athlétisme Intermédiaire (+0) pour savoir s'ils chutent puis subir des Dégâts comme s'ils avaient été touchés par une arme avec une Force égale aux Blessures restantes de la Structure. Toute pièce d'artillerie (ou autre équipement lourd) tombe de la Structure et n'est plus utilisable avant d'être réparée."
+    }
+  ]
+}

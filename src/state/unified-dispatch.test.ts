@@ -39,8 +39,8 @@ describe('Dispatcher unique — Traits ET États réagissent au même Trigger, s
     const c = mk({ traits: [{ id: 'bestial' }] as never });
     addCondition(c, COND.enFlammes);
     addCondition(c, COND.brise); // déjà Brisé d'une autre source
-    fire(c);
-    expect(stacks(c, COND.brise)).toBe(1); // la Condition `brise == 0` empêche le re-stack
+    fire(c, { int: () => 50 }); // d100=50 déterministe (hors bande 01-05) → le Test de récupération du Brisé échoue, brise inchangé
+    expect(stacks(c, COND.brise)).toBe(1); // la Condition `brise == 0` empêche le re-stack du Trait Bestial
   });
 
   it('UN SEUL appel `fireTriggers(onRoundEnd)` joue à la fois l’effet de TRAIT et l’effet d’ÉTAT', () => {

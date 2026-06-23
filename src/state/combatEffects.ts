@@ -9,8 +9,7 @@ import { rule } from '../engine/policy';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { eligibleTalent } from '../engine/grimoire';
 import { effectiveChar } from '../engine/characteristics';
-import { SIZE_ORDER, effectiveSize } from '../engine/size';
-import { campOf } from '../engine/relations';
+import { buildActorView } from './combat/flowEval';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, actorHasSkill } from '../engine/skills';
 import { statusCharmMod, statusCharmLabel, actorStatus } from '../engine/social';
 import { parseStatus } from '../engine/creation';
@@ -348,13 +347,6 @@ export function runFlow(get: Get, set: SetFn, flow: Flow, label = 'Effet'): void
   flush();
 }
 
-/** Vue d'un combattant pour la Condition `compare` (PB + Taille/Avantage + valeur d'États par nom). */
-const actorView = (c: Combatant | undefined) =>
-  c ? { id: c.id, woundsCurrent: c.wounds.current, woundsMax: c.wounds.max, size: SIZE_ORDER[effectiveSize(c.size)],
-        advantage: c.advantage ?? 0, camp: campOf(c),
-        groups: c.groups ?? [], talents: (c.talents ?? []).map((t) => ({ id: t.talentId, spec: t.spec })), traits: (c.traits ?? []).map((t) => t.id),
-        conditions: Object.fromEntries(c.conditions.map((x) => [x.name, x.value ?? 1])) } : undefined;
-
 /**
  * Exécute un Flow EN COMBAT contre une CIBLE (et le lanceur/porteur pour les feuilles `on:'caster'`) en
  * accumulant son journal dans un `string[]` RENDU — variante PURE de `runCombatFlow` pour les sites qui
@@ -383,7 +375,9 @@ export function runSpellFlowLines(target: Combatant, caster: Combatant | undefin
         // Condition `compare` : `target` = la cible du sous-Flow, `caster` = le lanceur/porteur.
         // `location`/`woundsDealt` : contexte de la touche courante (Assommante Tête, Venin sur PB).
         if (evalCondition(f.cond, { flags: {}, gameTime: ctx.now ?? 0, party: [target], sl: ctx.sl,
-          location: ctx.location, woundsDealt: ctx.woundsDealt, engagedAdvantageGap: ctx.engagedAdvantageGap, foeInLoS: ctx.foeInLoS, attackKind: ctx.attackKind, startleCause: ctx.startleCause, target: actorView(target), caster: actorView(caster) })) walk(f.then);
+          location: ctx.location, woundsDealt: ctx.woundsDealt, engagedAdvantageGap: ctx.engagedAdvantageGap, foeInLoS: ctx.foeInLoS,
+          hiddenFromFoes: ctx.hiddenFromFoes, engaged: ctx.engaged, nearestFoeDist: ctx.nearestFoeDist,
+          attackKind: ctx.attackKind, startleCause: ctx.startleCause, target: buildActorView(target), caster: buildActorView(caster) })) walk(f.then);
         else if (f.else) walk(f.else);
         break;
       case 'test':

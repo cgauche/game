@@ -6,8 +6,8 @@
  *  - Quantité de base si en stock : Village 1 / Ville 1d10 / Cité illimité ; ×2 Commune, ÷2 Rare (ceil).
  */
 import { d100, d10, type RNG } from './dice';
+import type { Availability } from './types';
 
-export type Availability = 'Commune' | 'Limitée' | 'Rare' | 'Exotique';
 export type Settlement = 'village' | 'ville' | 'cite';
 export interface CatalogItem { id: string; label: string; availability: Availability | null; }
 export interface StockLine { id: string; label: string; qty: number; test?: { roll: number; target: number } }

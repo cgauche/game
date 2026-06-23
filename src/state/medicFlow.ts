@@ -16,7 +16,7 @@
  */
 import type { Combatant } from '../engine/types';
 import { battleRng } from './battleRng';
-import { rollTest } from '../engine/tests';
+import { rollTest, extendedTestStep } from '../engine/tests';
 import { partyBest } from '../engine/skills';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { addCondition, loseWounds } from '../engine/conditions';
@@ -154,8 +154,7 @@ export function medicSurgeryPass(get: Get, set: Set): void {
   const patient = get().party.find((h) => h.id === m.patientId);
   if (!patient) { set({ medic: { ...m, surgery: undefined } }); return; }
   const res = rollTest(sg.skill, 'intermediaire', battleRng());
-  let cum = sg.cumDR + res.sl;
-  if (cum < 0) cum = 0;
+  const { total: cum } = extendedTestStep(sg.cumDR, res, sg.targetDR); // Test étendu mutualisé (LDB 12) — chirurgie LDB 10
   const harm = battleRng().int(1, 10);
   loseWounds(patient, harm);
   addCondition(patient, 'hemorragique');

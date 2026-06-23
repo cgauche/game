@@ -25,6 +25,7 @@ import type {
 import type { PendingEncounterPsych } from './encounterPsychFlow';
 import type { PendingActivity } from './interludeFlow';
 import { CIBLE_TYPES, CIBLE_LABEL } from '../engine/psychology';
+import { extendedTestStep, isImpressiveSuccess, isImpressiveFailure, isAstoundingFailure, SL_ASTOUNDING } from '../engine/tests';
 import { healWoundsDelta } from '../engine/healing';
 import { corruptionGain } from '../engine/corruption';
 import { t } from '../i18n';
@@ -105,16 +106,16 @@ export function describeCorruption(pc: PendingCorruption, name: string): string 
  *  Identification). La VALIDATION applique la conséquence chiffrée (somme, objet, PX) à part. */
 export function describeActivity(pa: PendingActivity): string {
   if (pa.roll == null) return '';
-  const after = Math.max(0, (pa.drBefore ?? 0) + pa.sl);
+  const { total: after, done } = extendedTestStep(pa.drBefore ?? 0, { success: !!pa.success, sl: pa.sl }, pa.drTarget ?? 1);
   if (pa.kind === 'craft') {
-    return after >= (pa.drTarget ?? 1) ? t('out.craftDone') : t('out.craftProgress', { after, target: String(pa.drTarget) });
+    return done ? t('out.craftDone') : t('out.craftProgress', { after, target: String(pa.drTarget) });
   }
   if (pa.kind === 'identify') {
     return pa.success
-      ? pa.sl >= 4
+      ? isImpressiveSuccess(pa.success, pa.sl)
         ? t('out.identifyFull')
         : t('out.identifyPartial')
-      : pa.sl <= -4
+      : isImpressiveFailure(pa.success, pa.sl)
         ? t('out.identifyMisread')
         : t('out.identifyNone');
   }
@@ -126,7 +127,7 @@ export function describeActivity(pa: PendingActivity): string {
   // revenus
   return pa.success
     ? t('out.incomeGood')
-    : pa.sl <= -6
+    : isAstoundingFailure(pa.success, pa.sl)
       ? t('out.incomeNone')
       : t('out.incomeHalf');
 }
@@ -135,9 +136,9 @@ export function describeActivity(pa: PendingActivity): string {
 export function describeBargain(pb: PendingBargain): string {
   const won = pb.result?.attackerWins ?? false;
   const drNet = pb.result?.netSL ?? 0;
-  const discount = won ? (drNet >= 6 || pb.negotiator ? t('out.fragDiscount20') : t('out.fragDiscount10')) : '—';
+  const discount = won ? (drNet >= SL_ASTOUNDING || pb.negotiator ? t('out.fragDiscount20') : t('out.fragDiscount10')) : '—';
   // « Rater de beaucoup » (LDB 60 l.12) = perdre l'opposé par un net DR ≥ 6 → le marchand se méfie.
-  if (!won && drNet >= 6) return t('out.bargainSuspicious');
+  if (!won && drNet >= SL_ASTOUNDING) return t('out.bargainSuspicious');
   if (won) return pb.mode === 'buy' ? t('out.bargainWonBuy', { discount }) : t('out.bargainWonSell');
   return pb.mode === 'buy' ? t('out.bargainLostBuy') : t('out.bargainLostSell');
 }

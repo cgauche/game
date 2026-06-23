@@ -56,16 +56,85 @@ export const HIT_LOCATION_LABELS: Record<HitLocation, string> = {
  * changent (quadrupède : membres antérieurs/postérieurs ; oiseau : ailes) et les Tableaux de Critiques
  * sont les mêmes. Serpent & araignée utilisent les « Localisations Alternatives » (p.312).
  */
-export type BodyShape = 'humanoide' | 'quadrupede' | 'oiseau' | 'serpent' | 'araignee';
+export type BodyShape = 'humanoide' | 'quadrupede' | 'oiseau' | 'serpent' | 'araignee' | 'vehicule';
 
-/** Étiquettes de localisation propres à une forme (surchargent HIT_LOCATION_LABELS ; LDB p.312). */
+/** Étiquettes de localisation propres à une forme (surchargent HIT_LOCATION_LABELS ; LDB p.312).
+ *  `vehicule` (véhicule/embarcation à coque — EDOC ch.4, MoR ch.5, MDG ch.13) : ses localisations
+ *  (coque/gréement/roues/avirons…) sont PILOTÉES PAR DONNÉES (table par véhicule, branchée plus tard),
+ *  donc aucune étiquette en dur ici. */
 export const BODY_SHAPE_LOC_LABELS: Record<BodyShape, Partial<Record<HitLocation, string>>> = {
   humanoide: {},
   quadrupede: { brasG: t('hitloc.quadrupede.brasG'), brasD: t('hitloc.quadrupede.brasD'), jambeG: t('hitloc.quadrupede.jambeG'), jambeD: t('hitloc.quadrupede.jambeD') },
   oiseau: { brasG: t('hitloc.oiseau.brasG'), brasD: t('hitloc.oiseau.brasD'), jambeG: t('hitloc.oiseau.jambeG'), jambeD: t('hitloc.oiseau.jambeD') },
   serpent: {}, // n'expose que Tête / Corps
   araignee: { jambeD: t('hitloc.araignee.jambeD'), corps: t('hitloc.araignee.corps') }, // n'expose que Tête / Pattes / Abdomen
+  vehicule: {}, // localisations data-driven (coque/gréement/…)
 };
+
+/** Disponibilité d'un objet/équipement (LDB 59 « Disponibilité ») — FOYER UNIQUE du concept :
+ *  Test de Disponibilité au marché (`disponibilite`), Difficulté d'Artisanat (`activities`),
+ *  décalage par qualité (`craftEconomy`). `HarvestRarity` l'étend de `'Unique'` (récolte/trophées). */
+export type Availability = 'Commune' | 'Limitée' | 'Rare' | 'Exotique';
+
+/** Propulsion d'un véhicule/embarcation — pilote la table de localisation des dégâts (terre : roues/
+ *  attelage ; fleuve/mer : voiles/avirons/coque). EDOC ch.4 (terrestre), MoR ch.5 (fluvial), MDG ch.13 (maritime). */
+export type Propulsion = 'terrestre' | 'fluvial' | 'maritime';
+
+/** Classe de voyage payant d'un véhicule : prix RAW en sous (PA) par km ET par passager (LDB l.207-219). */
+export interface VehicleTravelClass { key: string; label: string; brassPerKm: number; }
+
+/**
+ * Véhicule / embarcation à coque — FOYER UNIQUE de la donnée (`src/data/vehicles.json`), data-driven.
+ * Le même enregistrement porte TROIS facettes indépendantes (fin des doublons transports/trappings) :
+ *  - `purchase` : achat (prix + disponibilité), lu par le marché ;
+ *  - `travel` : passage payant (Déplacement km/h + classes), lu par `engine/travel` ;
+ *  - `hull` : profil type-créature (Endurance + Blessures + forme + propulsion), permettant au véhicule
+ *    de devenir un `Combatant` qui encaisse des dégâts (incidents EDOC, Critiques MoR/MDG).
+ * Une monture, elle, reste une CRÉATURE (`creatures.json` → `Combatant`) ; ce type ne couvre que les
+ * coques inertes (chariots, barges, navires).
+ */
+export interface VehicleData {
+  /** id STABLE (slug) — cible de `TravelMode`/réfs de scène. */
+  id: string;
+  label: string;
+  /** Pictogramme d'affichage (sélecteur de mode de voyage, carte) — donnée, pas de ternaire par id en dur. */
+  icon?: string;
+  source?: { book: string; page: number };
+  /** Encombrement de l'objet véhicule (LDB 61) — généralement `null` (on ne porte pas une diligence) ;
+   *  un coracle se porte (`enc` chiffré). Lu par `itemFromVehicleById` pour l'`ItemInstance` d'inventaire. */
+  enc?: number | null;
+  /** Description (LDB) — reprise sur l'`ItemInstance` à l'achat/possession. */
+  desc?: string;
+  /** Facette ACHAT (marché / possession de carrière). `availability` absent pour les navires (MDG ne
+   *  donne pas de Disponibilité). */
+  purchase?: { price: { gold: number; silver: number; bronze: number }; availability?: string };
+  /** Facette VOYAGE (passage payant). `movement` = Déplacement du véhicule (km/h). */
+  travel?: { movement: number; classes: VehicleTravelClass[] };
+  /** Facette COQUE (entité à PV). `char.E` = Endurance, `char.B` = Blessures. `bodyShape` = 'vehicule'.
+   *  `rig` = gréement (avirons/voile/mixte) → colonne de Localisation des Dégâts (MDG ch.13).
+   *  `locationTable`/`criticalTable` = réfs de tables data-driven (branchées aux dalles fluvial/maritime). */
+  hull?: {
+    char: { E: number; B: number };
+    bodyShape: 'vehicule';
+    propulsion: Propulsion;
+    rig?: 'avirons' | 'voile' | 'mixte';
+    traits?: { id: string; value?: number; arg?: string }[];
+    locationTable?: string | null;
+    criticalTable?: string | null;
+  };
+  /** Facette NAVIRE (profil naval MDG ch.12) : caractéristiques de navigation/équipage du vaisseau.
+   *  `manoeuvre` = modificateur de DR (Man) ; `sail`/`oars` = Mouvement (M) + équipage minimum (É) ;
+   *  `lengthM` = Taille (longueur, m) ; `capacity` = Contenance ; `traits` = Traits & Améliorations (verbatim). */
+  ship?: {
+    crew: number;
+    manoeuvre: number;
+    lengthM: number;
+    capacity: number;
+    sail?: { m: number; crew: number };
+    oars?: { m: number; crew: number };
+    traits: string[];
+  };
+}
 
 export interface SkillInstance {
   /** id STABLE de la Compétence (langue-indépendant) ; l'affichage résout en libellé via `skillInstanceLabel`. */
@@ -531,6 +600,10 @@ export interface Combatant {
   riderId?: string;
   /** Ce combattant est une MONTURE rideable (peut être enfourché par un allié à pied — LDB 14). */
   mountable?: boolean;
+  /** Rôle de marche PERSISTANT (`id` d'Activité de voyage EDOC ch.5) — « les mêmes tiennent toujours le
+   *  même poste ». Attaché au personnage (toutes parties de voyage) ; l'assignation d'un trajet en est
+   *  initialisée. Absent ⇒ inféré des compétences (`defaultTravelRole`). Le joueur l'épingle/le change. */
+  travelRole?: string;
   /** File transitoire d'attaques gratuites de créature restant à résoudre ce tour (kinds :
    *  morsure/caudale/pietinement) — pilotée par aiCreatureFreeAttacks à travers la modale de défense. */
   pendingFreeAttacks?: string[];

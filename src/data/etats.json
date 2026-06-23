@@ -46,7 +46,10 @@
         "amount": -20,
         "movementOnly": true
       }
-    ]
+    ],
+    "gating": {
+      "movement": "half"
+    }
   },
   {
     "id": "aveugle",
@@ -105,6 +108,171 @@
           "discretion"
         ]
       }
+    ],
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "hiddenFromFoes"
+          },
+          "then": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "target",
+                  "ops": [
+                    {
+                      "op": "removeCondition",
+                      "name": "brise",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "compare",
+                  "subject": {
+                    "who": "target",
+                    "condition": "brise"
+                  },
+                  "op": "<=",
+                  "value": 0
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "on": "target",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "name": "extenue"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "test",
+          "test": {
+            "skill": "calme",
+            "label": "😱 Récupération du Brisé",
+            "gate": {
+              "kind": "all",
+              "of": [
+                {
+                  "kind": "any",
+                  "of": [
+                    {
+                      "kind": "not",
+                      "of": {
+                        "kind": "engaged"
+                      }
+                    },
+                    {
+                      "kind": "capability",
+                      "who": "target",
+                      "id": "braveheart"
+                    }
+                  ]
+                },
+                {
+                  "kind": "compare",
+                  "subject": {
+                    "who": "target",
+                    "condition": "brise"
+                  },
+                  "op": ">",
+                  "value": 0
+                }
+              ]
+            },
+            "difficultyBy": [
+              {
+                "cond": {
+                  "kind": "hiddenFromFoes"
+                },
+                "difficulty": "accessible"
+              },
+              {
+                "cond": {
+                  "kind": "nearestFoe",
+                  "op": "<=",
+                  "value": 3
+                },
+                "difficulty": "tresDifficile"
+              }
+            ]
+          },
+          "success": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "target",
+                  "ops": [
+                    {
+                      "op": "removeCondition",
+                      "name": "brise",
+                      "value": 1,
+                      "valuePerSL": {
+                        "every": 1,
+                        "amount": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "compare",
+                  "subject": {
+                    "who": "target",
+                    "condition": "brise"
+                  },
+                  "op": "<=",
+                  "value": 0
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "on": "target",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "name": "extenue"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": []
+          }
+        }
+      }
     ]
   },
   {
@@ -121,7 +289,14 @@
         "amount": -10,
         "movementOnly": true
       }
-    ]
+    ],
+    "recover": {
+      "characteristic": "F",
+      "opposedBy": "source"
+    },
+    "gating": {
+      "movement": "none"
+    }
   },
   {
     "id": "empoisonne",
@@ -266,7 +441,10 @@
           }
         }
       }
-    ]
+    ],
+    "recover": {
+      "skill": "athletisme"
+    }
   },
   {
     "id": "extenue",
@@ -322,6 +500,11 @@
     "source": {
       "book": "LDB",
       "page": 169
+    },
+    "gating": {
+      "action": "none",
+      "movement": "none",
+      "cannotDefend": true
     }
   },
   {
@@ -422,7 +605,11 @@
           }
         }
       }
-    ]
+    ],
+    "gating": {
+      "action": "none",
+      "movement": "half"
+    }
   },
   {
     "id": "surpris",
@@ -457,6 +644,196 @@
           }
         }
       }
+    ],
+    "gating": {
+      "action": "none",
+      "movement": "none",
+      "cannotDefend": true
+    }
+  },
+  {
+    "id": "en-flammes-navire",
+    "label": "En flammes (navire)",
+    "source": {
+      "book": "MDG",
+      "page": 124
+    },
+    "desc": "Un navire en flammes subit 1 Blessure par Tour et par État En flammes (MDG ch.13). Un seul État En flammes ne peut affecter qu'une seule Localisation du vaisseau à la fois ; le feu peut se répandre ou s'intensifier (tableau Intensité du feu).",
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "wounds",
+                "amount": {
+                  "stacks": "self"
+                },
+                "min": 1
+              }
+            ]
+          }
+        }
+      }
     ]
+  },
+  {
+    "id": "voie-d-eau",
+    "label": "Voie d'eau",
+    "source": {
+      "book": "MDG",
+      "page": 124
+    },
+    "desc": "Un vaisseau percé d'une Voie d'eau prend l'eau : à chaque Round, l'Indice (le nombre de pions de cet État) s'ajoute au cumul d'Inondation du navire (MDG ch.13). L'équipage peut écoper — un Test de Force Intermédiaire (+0) retire 1 au cumul par DR positif.",
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "condition",
+                "name": "inondation",
+                "value": {
+                  "stacks": "self"
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "inondation",
+    "label": "Inondation",
+    "source": {
+      "book": "MDG",
+      "page": 124
+    },
+    "desc": "Cumul d'eau embarquée d'un navire (MDG ch.13). Quand il atteint la MOITIÉ de l'Endurance du vaisseau, celui-ci est alourdi par l'eau (−1 M, −1 DR aux Tests de Navigation) ; quand il atteint l'Endurance du vaisseau, il COULE.",
+    "effects": [
+      {
+        "trigger": "onRoundEnd",
+        "on": "self",
+        "flow": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "if",
+              "cond": {
+                "kind": "all",
+                "of": [
+                  {
+                    "kind": "compare",
+                    "subject": {
+                      "who": "target",
+                      "condition": "inondation"
+                    },
+                    "op": ">=",
+                    "value": {
+                      "who": "target",
+                      "char": "E",
+                      "factor": 0.5
+                    }
+                  },
+                  {
+                    "kind": "compare",
+                    "subject": {
+                      "who": "target",
+                      "condition": "alourdi"
+                    },
+                    "op": "==",
+                    "value": 0
+                  }
+                ]
+              },
+              "then": {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "target",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "name": "alourdi"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "if",
+              "cond": {
+                "kind": "all",
+                "of": [
+                  {
+                    "kind": "compare",
+                    "subject": {
+                      "who": "target",
+                      "condition": "inondation"
+                    },
+                    "op": ">=",
+                    "value": {
+                      "who": "target",
+                      "char": "E"
+                    }
+                  },
+                  {
+                    "kind": "compare",
+                    "subject": {
+                      "who": "target",
+                      "condition": "naufrage"
+                    },
+                    "op": "==",
+                    "value": 0
+                  }
+                ]
+              },
+              "then": {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "target",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "name": "naufrage"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "alourdi",
+    "label": "Alourdi par l’eau",
+    "source": {
+      "book": "MDG",
+      "page": 124
+    },
+    "desc": "Le navire est alourdi par l'eau embarquée (Inondation ≥ moitié de l'Endurance, MDG ch.13) : −1 M et −1 DR à tous les Tests de Navigation, jusqu'à ce que la voie d'eau soit réparée et la cale écopée."
+  },
+  {
+    "id": "naufrage",
+    "label": "Naufrage",
+    "source": {
+      "book": "MDG",
+      "page": 124
+    },
+    "desc": "L'Inondation a atteint l'Endurance du navire : le vaisseau COULE (MDG ch.13)."
   }
 ]

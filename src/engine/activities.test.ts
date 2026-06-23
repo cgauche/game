@@ -14,7 +14,11 @@
 import { describe, it, expect } from 'vitest';
 import type { RNG } from './dice';
 import { toBrass } from './money';
-import { craftTarget, apprenticeshipTutorCost, bankWithdrawOutcome, statusIncome } from './activities';
+import { craftTarget, apprenticeshipTutorCost, bankWithdrawOutcome, statusIncome, ACTIVITIES, activitiesFor, activityById, resolveTravelActivity,
+  resolveStageActivities, aggregateActivityOutcomes, STAGE_OUTCOME_AGG, type TravelActivityResult,
+  defaultTravelRole, stageAssignmentFromRoles } from './activities';
+import { findSkillById } from '../data';
+import { testValue } from './skills';
 
 function seq(values: number[]): RNG {
   let i = 0;
@@ -138,5 +142,163 @@ describe('learnableTalents — « un Talent en dehors de votre Carrière » (ch.
     expect(metierOf(hero)).toBeUndefined();
     hero.skills.push({ skillId: 'metier', spec: 'Forgeron', characteristic: 'Dex', advances: 5 });
     expect(skillInstanceLabel(metierOf(hero)!)).toBe('Métier (Forgeron)');
+  });
+});
+
+describe('catalogue d’Activités data-driven (activities.json)', () => {
+  it('ids uniques et contextes non vides', () => {
+    const ids = ACTIVITIES.map((a) => a.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const a of ACTIVITIES) expect(a.contexts.length).toBeGreaterThan(0);
+  });
+
+  it('les 8 Activités de voyage EDOC sont présentes (contexte "voyage")', () => {
+    const voyage = activitiesFor('voyage').map((a) => a.id).sort();
+    expect(voyage).toEqual(
+      [
+        'approvisionnement', 'etablir-cartes', 'monter-camp', 'plein-air',
+        'pratiquer-competence', 'recueillir-informations', 'recuperer', 'rester-aux-aguets',
+      ].sort(),
+    );
+  });
+
+  it('toute compétence référencée (skillId) résout dans le catalogue de Compétences', () => {
+    for (const a of ACTIVITIES) {
+      for (const s of a.skills ?? []) expect(findSkillById(s.skillId), `${a.id} → ${s.skillId}`).toBeTruthy();
+    }
+  });
+
+  it('chaque Activité a un mode de Test cohérent (skills, freeSkill, ou sans Test)', () => {
+    for (const a of activitiesFor('voyage')) {
+      const hasTest = (a.skills?.length ?? 0) > 0 || a.freeSkill === true;
+      // Une Activité sans Test (Récupérer) ne déclare pas failExtenue (pas de jet à rater).
+      if (!hasTest) expect(a.failExtenue, a.id).toBeUndefined();
+      else expect(a.failExtenue, a.id).toBe(true);
+    }
+  });
+
+  it('Établir des cartes = Test ÉTENDU spec-aware (Cartographe / Dessin)', () => {
+    const carto = activityById('etablir-cartes')!;
+    expect(carto.extended?.drPerStage).toBe(2);
+    expect(carto.skills).toEqual([
+      { skillId: 'metier', spec: 'Cartographe' },
+      { skillId: 'art', spec: 'Dessin' },
+    ]);
+  });
+});
+
+describe('resolveTravelActivity — résolveur PUR par POSTE (un héros désigné, EDOC ch.5 l.131)', () => {
+  const mk = () => createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
+
+  it('Activité SANS Test (Récupérer) : succès direct + stageOutcome pour l’acteur désigné', () => {
+    const hero = mk();
+    const r = resolveTravelActivity(hero, activityById('recuperer')!, makeRNG(1));
+    expect(r.success).toBe(true);
+    expect(r.stageOutcome).toBe('countsAsRest');
+    expect(r.actorId).toBe(hero.id); // le poste a TOUJOURS un titulaire désigné
+    expect(r.ops).toEqual([]);
+  });
+
+  it('cohérence du Test : success ⇔ roll ≤ target ; échec ⇒ Exténué POUR CET acteur (l.133)', () => {
+    const hero = mk();
+    const r = resolveTravelActivity(hero, activityById('rester-aux-aguets')!, makeRNG(42));
+    expect(r.actorId).toBe(hero.id);
+    expect(r.success).toBe((r.roll ?? 999) <= (r.target ?? 0));
+    expect(r.extenue).toBe(!r.success); // rester-aux-aguets a failExtenue
+    if (r.success) expect(r.stageOutcome).toBe('noSurprise');
+  });
+
+  it('compétence « au choix » spec-aware : la MEILLEURE de L’ACTEUR l’emporte (Cartographe vs Dessin)', () => {
+    const hero = mk();
+    hero.skills.push({ skillId: 'metier', spec: 'Cartographe', characteristic: 'Dex', advances: 60 });
+    hero.skills.push({ skillId: 'art', spec: 'Dessin', characteristic: 'Dex', advances: 10 });
+    const r = resolveTravelActivity(hero, activityById('etablir-cartes')!, makeRNG(5), { stages: 3 });
+    // cible = meilleure des DEUX spec de l'acteur (Cartographe +60 > Dessin +10), Difficulté Intermédiaire (+0).
+    const expected = Math.max(
+      testValue(hero, 'metier', undefined, 'Cartographe'),
+      testValue(hero, 'art', undefined, 'Dessin'),
+    );
+    expect(r.target).toBe(expected);
+    expect(r.drTarget).toBe(6); // Test étendu : drPerStage(2) × Étapes(3)
+  });
+
+  it('Approvisionnement : passe par le résolveur bespoke « forage » (réutilise forageYield)', () => {
+    const r = resolveTravelActivity(mk(), activityById('approvisionnement')!, makeRNG(9));
+    expect(r.resolver).toBe('forage');
+  });
+
+  it('le modificateur de compétence (météo) décale la cible du Test', () => {
+    const hero = mk();
+    const a = resolveTravelActivity(hero, activityById('plein-air')!, makeRNG(7), { skillMod: 0 });
+    const b = resolveTravelActivity(hero, activityById('plein-air')!, makeRNG(7), { skillMod: -30 });
+    expect((a.target ?? 0) - (b.target ?? 0)).toBe(30); // même jet, cible −30
+  });
+});
+
+describe('postes d’Étape : assignation héros → Activité + agrégation (EDOC ch.5 l.131)', () => {
+  const mk = (n: string) => createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: n, rng: makeRNG(3) });
+
+  it('toute issue d’ACTIVITÉ de voyage a une classification d’agrégation', () => {
+    for (const a of activitiesFor('voyage')) {
+      if (a.stageOutcome) expect(STAGE_OUTCOME_AGG[a.stageOutcome], `${a.id} → ${a.stageOutcome}`).toBeDefined();
+    }
+  });
+
+  it('un héros tient au plus un poste ; un héros sans poste ou un poste inconnu sont ignorés', () => {
+    const a = mk('A'), b = mk('B'), c = mk('C');
+    const res = resolveStageActivities([a, b, c], {
+      [a.id]: { activityId: 'rester-aux-aguets' },
+      [b.id]: { activityId: 'rester-aux-aguets' }, // 2 héros au MÊME poste : OK
+      [c.id]: { activityId: 'activite-fantome' },   // poste inconnu : ignoré
+      // (un 4e héros non listé n'aurait simplement pas de poste)
+    }, makeRNG(11));
+    expect(res.map((r) => r.actorId).sort()).toEqual([a.id, b.id].sort());
+  });
+
+  it('agrégation : porte (1 succès suffit) / cumul (Σ DR) / individuel (par héros)', () => {
+    const mkRes = (o: Partial<TravelActivityResult>): TravelActivityResult =>
+      ({ activityId: 'x', actorId: 'h', sl: 0, success: true, ops: [], extenue: false, ...o });
+    const agg = aggregateActivityOutcomes([
+      mkRes({ actorId: 'a', success: true, stageOutcome: 'suppressExposure' }),
+      mkRes({ actorId: 'b', success: false, stageOutcome: 'suppressExposure' }), // échec : pas de porte
+      mkRes({ actorId: 'c', success: true, stageOutcome: 'countsAsRest' }),
+      mkRes({ actorId: 'd', success: true, stageOutcome: 'countsAsRest' }),
+      mkRes({ actorId: 'e', success: true, sl: 3, stageOutcome: 'campCare' }),
+      mkRes({ actorId: 'f', success: true, sl: 2, stageOutcome: 'campCare' }),
+    ]);
+    expect(agg.gates).toEqual(['suppressExposure']); // une seule porte, malgré l'échec de b
+    expect(agg.stacks).toEqual({ campCare: 5 });       // 3 + 2 cumulés
+    expect(agg.selfByHero).toEqual({ c: ['countsAsRest'], d: ['countsAsRest'] }); // individuel par héros
+  });
+});
+
+describe('rôle de marche persistant (travelRole) — « les mêmes au même poste »', () => {
+  const mk = (n: string) => createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: n, rng: makeRNG(3) });
+
+  it('defaultTravelRole : poste où la meilleure compétence du héros est la plus haute', () => {
+    const guetteur = mk('G');
+    guetteur.skills.push({ skillId: 'perception', characteristic: 'I', advances: 80 });
+    expect(defaultTravelRole(guetteur)).toBe('rester-aux-aguets');
+    const survivant = mk('S');
+    survivant.skills.push({ skillId: 'survie-en-exterieur', characteristic: 'Int', advances: 80 });
+    // Survie alimente Plein air, Approvisionnement et Monter le camp : l'un de ces postes ressort.
+    expect(['plein-air', 'approvisionnement', 'monter-camp']).toContain(defaultTravelRole(survivant));
+  });
+
+  it("l'assignation d'Étape est initialisée depuis les rôles (0 clic) ; travelRole épinglé prime", () => {
+    const a = mk('A'), b = mk('B');
+    a.skills.push({ skillId: 'perception', characteristic: 'I', advances: 80 });
+    b.travelRole = 'recuperer'; // épinglé par le joueur → prime sur l'inférence
+    const asg = stageAssignmentFromRoles([a, b]);
+    expect(asg[a.id].activityId).toBe('rester-aux-aguets'); // inféré
+    expect(asg[b.id].activityId).toBe('recuperer');         // épinglé
+  });
+
+  it('le rôle persistant se répète : même assignation à chaque Étape sans ré-saisie', () => {
+    const a = mk('A'); a.travelRole = 'approvisionnement';
+    const s1 = stageAssignmentFromRoles([a]);
+    const s2 = stageAssignmentFromRoles([a]); // « étape suivante » : aucun nouveau choix
+    expect(s2).toEqual(s1);
+    expect(s1[a.id].activityId).toBe('approvisionnement');
   });
 });

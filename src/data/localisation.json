@@ -1,0 +1,126 @@
+{
+  "personnage": {
+    "source": {
+      "book": "LDB",
+      "page": 159
+    },
+    "shapes": {
+      "humanoide": [
+        {
+          "min": 1,
+          "max": 9,
+          "loc": "tete"
+        },
+        {
+          "min": 10,
+          "max": 24,
+          "loc": "brasG"
+        },
+        {
+          "min": 25,
+          "max": 44,
+          "loc": "brasD"
+        },
+        {
+          "min": 45,
+          "max": 79,
+          "loc": "corps"
+        },
+        {
+          "min": 80,
+          "max": 89,
+          "loc": "jambeG"
+        },
+        {
+          "min": 90,
+          "max": 100,
+          "loc": "jambeD"
+        }
+      ],
+      "serpent": [
+        {
+          "min": 1,
+          "max": 19,
+          "loc": "tete"
+        },
+        {
+          "min": 20,
+          "max": 100,
+          "loc": "corps"
+        }
+      ],
+      "araignee": [
+        {
+          "min": 1,
+          "max": 9,
+          "loc": "tete"
+        },
+        {
+          "min": 10,
+          "max": 79,
+          "loc": "jambeD"
+        },
+        {
+          "min": 80,
+          "max": 100,
+          "loc": "corps"
+        }
+      ]
+    }
+  },
+  "navire": {
+    "source": {
+      "book": "MDG",
+      "page": 123
+    },
+    "rigs": [
+      "avirons",
+      "voile",
+      "mixte"
+    ],
+    "entries": [
+      {
+        "min": 1,
+        "max": 9,
+        "avirons": "equipage",
+        "voile": "equipage",
+        "mixte": "equipage"
+      },
+      {
+        "min": 10,
+        "max": 20,
+        "avirons": "avirons",
+        "voile": "greement",
+        "mixte": "greement"
+      },
+      {
+        "min": 21,
+        "max": 40,
+        "avirons": "coque",
+        "voile": "coque",
+        "mixte": "avirons"
+      },
+      {
+        "min": 41,
+        "max": 65,
+        "avirons": "coque",
+        "voile": "coque",
+        "mixte": "coque"
+      },
+      {
+        "min": 66,
+        "max": 84,
+        "avirons": "equipements",
+        "voile": "equipements",
+        "mixte": "equipements"
+      },
+      {
+        "min": 85,
+        "max": 100,
+        "avirons": "cargaison",
+        "voile": "cargaison",
+        "mixte": "cargaison"
+      }
+    ]
+  }
+}

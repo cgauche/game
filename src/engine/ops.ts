@@ -553,6 +553,12 @@ export interface OpsCtx {
   /** Un adversaire vivant est-il dans la Ligne de Vue du porteur — résout la Condition `foeInLoS`
    *  (sortie de Frénésie, Brisé). Précalculé sur la `battle` par le dispatcher de combat. */
   foeInLoS?: boolean;
+  /** Géométrie d'arène de la récupération du Brisé (LDB 16) — précalculée par le dispatcher : aucun ennemi
+   *  ne voit l'acteur (`hiddenFromFoes`), acteur Engagé (`engaged`), distance au plus proche (`nearestFoeDist`).
+   *  Résolvent les Conditions `hiddenFromFoes`/`engaged`/`nearestFoe`. */
+  hiddenFromFoes?: boolean;
+  engaged?: boolean;
+  nearestFoeDist?: number;
   /** Gain de Corruption AVEC seuil → mutation (corruptionFlow) ; sans contexte
    *  store, l'op `corruption` incrémente simplement le compteur. */
   onCorruption?: (n: number) => string[];
@@ -675,7 +681,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // Gates d'État (Sommeil, LDB 47) : l'op ne s'applique que si la cible porte / ne porte pas l'État.
         if (o.onlyIfCondition && !hasCondition(target, o.onlyIfCondition)) break;
         if (o.unlessCondition && hasCondition(target, o.unlessCondition)) break;
-        const v = Math.max(1, resolveFormula(o.value ?? 1, ref, rng) + slBonus(ctx.sl, o.valuePerSL));
+        const v = Math.max(1, resolveFormula(o.value ?? 1, ref, rng, ctx.rolled, ctx.indice, ctx.stacks) + slBonus(ctx.sl, o.valuePerSL));
         // Force d'évasion (Empêtré « se libérer » — LDB 16 l.61) : résolue MAINTENANT contre le
         // référent (le lanceur pour un sort) et FIGÉE sur l'entrée d'État → le flux de récupération
         // l'opposera, même si le lanceur n'est plus en jeu.

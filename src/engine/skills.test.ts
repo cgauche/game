@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { testValue, partyBest, skillCharKeyById } from './skills';
+import { testValue, partyBest, skillCharKeyById, resolveSkillBest } from './skills';
+import { makeRNG } from './dice';
 import { Combatant, SkillInstance } from './types';
 
 const mk = (chars: Partial<Record<string, number>>, skills: { skillId: string; advances: number; spec?: string }[] = []): Combatant =>
@@ -39,5 +40,30 @@ describe('skills — testValue / partyBest / skillCharKeyById', () => {
   });
   it('skillCharKeyById : compétence inconnue → undefined', () => {
     expect(skillCharKeyById('competence-totalement-imaginaire')).toBeUndefined();
+  });
+});
+
+describe('resolveSkillBest — Test du meilleur parmi N compétences (primitive NEUTRE poste/voyage/naval)', () => {
+  it('prend la compétence où l’acteur est le meilleur (spec-aware) + cible = sa valeur', () => {
+    const hero = mk({ Dex: 30 }, [
+      { skillId: 'metier', spec: 'Cartographe', advances: 60 },
+      { skillId: 'art', spec: 'Dessin', advances: 10 },
+    ]);
+    const r = resolveSkillBest(hero, [
+      { skillId: 'metier', spec: 'Cartographe' },
+      { skillId: 'art', spec: 'Dessin' },
+    ], 'intermediaire', makeRNG(5));
+    expect(r.used).toEqual({ skillId: 'metier', spec: 'Cartographe' }); // 30+60 > 30+10
+    expect(r.value).toBe(testValue(hero, 'metier', undefined, 'Cartographe'));
+    expect(r.target).toBe(r.value); // Difficulté Intermédiaire (+0), pas de mod
+    expect(r.success).toBe(r.roll <= r.target);
+  });
+
+  it('le modificateur décale la cible ; option unique = cette compétence', () => {
+    const hero = mk({ I: 40 }, [{ skillId: 'perception', advances: 20 }]);
+    const a = resolveSkillBest(hero, [{ skillId: 'perception' }], 'intermediaire', makeRNG(7), 0);
+    const b = resolveSkillBest(hero, [{ skillId: 'perception' }], 'intermediaire', makeRNG(7), -30);
+    expect(a.target - b.target).toBe(30);
+    expect(a.used).toEqual({ skillId: 'perception' });
   });
 });

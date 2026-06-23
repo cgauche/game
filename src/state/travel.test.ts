@@ -341,7 +341,6 @@ describe('Voyage par Étapes (EDOC ch.5, règle optionnelle)', () => {
     resetRule('travel-etapes');
     resetRule('travel-etapes-count-bonus');
     resetRule('travel-attraper-froid');
-    resetRule('travel-forage');
   });
 
   it('OFF (défaut) : voyage INCHANGÉ — aucune ligne de Météo/Étape, arrivée identique au chemin de base', () => {
@@ -368,20 +367,22 @@ describe('Voyage par Étapes (EDOC ch.5, règle optionnelle)', () => {
     expect(st.journal.some((l) => l.includes("Météo de l'Étape"))).toBe(true);
   });
 
-  it('ON sans les sous-options : pas d’Approvisionnement ni d’Exposition (toggles enfants éteints)', () => {
+  it('ON, sans « Attraper froid » : les POSTES se résolvent, mais aucun Test d’Exposition de fin d’Étape', () => {
     setRule('travel-etapes', true);
-    setup(map({ km: 12, perilDie: 0 }));
+    // Héros au poste Récupérer (sans Test, n'ouvre PAS la porte « Plein air ») → l'Exposition resterait
+    // possible si le flag était mis, mais il ne l'est pas ici.
+    const h = hero({ travelRole: 'recuperer', items: [ration('r1')] });
+    setup(map({ km: 12, perilDie: 0 }), [h]);
     useGame.getState().startTravel('r1', 'pied');
     const st = useGame.getState();
-    expect(st.journal.some((l) => l.includes('Approvisionnement'))).toBe(false);
     expect(st.journal.some((l) => l.includes("Exposition de fin d'Étape"))).toBe(false);
+    // Le poste assigné (Récupérer) a bien été résolu pour l'Étape (EDOC l.131 : un héros = une Activité).
+    expect(st.journal.some((l) => l.includes('Récupérer'))).toBe(true);
   });
 
-  it('ON + travel-forage : l’Approvisionnement (Survie en extérieur) est tenté et journalisé', () => {
+  it('ON : un héros au poste Approvisionnement fourrage (Test de Survie en extérieur, EDOC l.108)', () => {
     setRule('travel-etapes', true);
-    setRule('travel-forage', true);
-    // Héros avec Survie en extérieur pour que partyBest trouve un testeur.
-    const h = hero({ items: [], skills: [{ skillId: 'survie-en-exterieur', advances: 20 } as any] });
+    const h = hero({ travelRole: 'approvisionnement', items: [], skills: [{ skillId: 'survie-en-exterieur', advances: 20 } as any] });
     setup(map({ km: 12, perilDie: 0 }), [h]);
     useGame.getState().startTravel('r1', 'pied');
     const st = useGame.getState();
@@ -396,13 +397,82 @@ describe('Voyage par Étapes (EDOC ch.5, règle optionnelle)', () => {
     let exposed = false;
     for (let seed = 1; seed <= 20 && !exposed; seed++) {
       seedBattleRng(seed);
-      // Mois d'hiver : Ulriczeit → saison froide, pas de temps sec.
       const winter = CAMPAIGN_START + 0; // la date par défaut (fin Jahrdrung) suffit : printemps a aussi pluie/neige
-      setup(map({ km: 12, perilDie: 0 }));
+      // Poste Récupérer : pas de « Plein air » → la porte `suppressExposure` reste fermée, l'Exposition se joue.
+      setup(map({ km: 12, perilDie: 0 }), [hero({ travelRole: 'recuperer' })]);
       useGame.setState({ gameTime: winter });
       useGame.getState().startTravel('r1', 'pied');
       if (useGame.getState().journal.some((l) => l.includes("Exposition de fin d'Étape"))) exposed = true;
     }
     expect(exposed).toBe(true);
+  });
+
+  it('porte « Plein air » : un héros réussit Plein air → le groupe SAUTE le Test d’Exposition (EDOC l.141)', () => {
+    setRule('travel-etapes', true);
+    setRule('travel-attraper-froid', true);
+    // Héros expert en Survie au poste Plein air : sa réussite dispense tout le groupe de l'Exposition.
+    let suppressed = false;
+    for (let seed = 1; seed <= 20 && !suppressed; seed++) {
+      seedBattleRng(seed);
+      const h = hero({ travelRole: 'plein-air', skills: [{ skillId: 'survie-en-exterieur', advances: 60 } as any] });
+      setup(map({ km: 12, perilDie: 0 }), [h]);
+      useGame.setState({ gameTime: CAMPAIGN_START });
+      useGame.getState().startTravel('r1', 'pied');
+      const j = useGame.getState().journal;
+      // Plein air joué et réussi, et aucune Exposition cette Étape.
+      if (j.some((l) => l.includes('Plein air') && l.includes('réussi')) && !j.some((l) => l.includes("Exposition de fin d'Étape"))) suppressed = true;
+    }
+    expect(suppressed).toBe(true);
+  });
+
+  it('poste Établir des cartes : Test ÉTENDU de cartographie cumulé via extendedTestStep (EDOC l.161)', () => {
+    setRule('travel-etapes', true);
+    const h = hero({ travelRole: 'etablir-cartes', skills: [{ skillId: 'metier', spec: 'Cartographe', advances: 80 } as any] });
+    setup(map({ km: 12, perilDie: 0 }), [h]);
+    useGame.getState().startTravel('r1', 'pied');
+    const j = useGame.getState().journal;
+    expect(j.some((l) => l.includes('Cartographie') || l.includes("carte de l'itinéraire est ACHEVÉE"))).toBe(true);
+  });
+
+  it('véhicule à coque : `plan.vehicle` est bâti depuis la facette hull (Diligence E45/B50)', () => {
+    setRule('travel-etapes', true);
+    // Trajet > 36 km/jour (M6 × 6 h) → halte de nuit, `travelPlan` persiste (vehicle inspectable).
+    // Extérieur 1 sou/km × 50 km = 50 PA ≤ 60 PA de bourse de départ.
+    setup(map({ km: 50, modes: ['diligence'], perilDie: 0 }));
+    useGame.getState().startTravel('r1', 'diligence', { classKey: 'exterieur' });
+    const plan = useGame.getState().travelPlan;
+    expect(plan?.vehicle?.bodyShape).toBe('vehicule');
+    expect(plan?.vehicle?.wounds.max).toBe(50);
+    expect(plan?.vehicle?.characteristics.E).toBe(45);
+  });
+
+  it('à pied : aucun `plan.vehicle` (pas de coque pour un trajet à pied)', () => {
+    setRule('travel-etapes', true);
+    setup(map({ km: 12, perilDie: 0 }));
+    useGame.getState().startTravel('r1', 'pied');
+    // Trajet bouclé le jour même → plan purgé ; le départ n'aura de toute façon créé aucune coque.
+    expect(useGame.getState().travelPlan).toBeNull();
+  });
+
+  it('Rencontre : un échec d’Activité déclenche une Rencontre EDOC (texte verbatim au journal)', () => {
+    setRule('travel-etapes', true);
+    // Héros nul en Survie au poste Approvisionnement → échec quasi certain → Rencontre (dangereuse/fortuite).
+    let met = false;
+    for (let seed = 1; seed <= 20 && !met; seed++) {
+      seedBattleRng(seed);
+      const h = hero({ travelRole: 'approvisionnement', items: [], skills: [{ skillId: 'survie-en-exterieur', advances: 0 } as any] });
+      setup(map({ km: 12, perilDie: 0 }), [h]);
+      useGame.getState().startTravel('r1', 'pied');
+      if (useGame.getState().journal.some((l) => l.includes('Rencontre'))) met = true;
+    }
+    expect(met).toBe(true);
+  });
+
+  it('setTravelRole épingle puis détache le rôle de marche PERSISTANT', () => {
+    setup(map(), [hero({ id: 'h1' })]);
+    useGame.getState().setTravelRole('h1', 'plein-air');
+    expect(useGame.getState().party[0].travelRole).toBe('plein-air');
+    useGame.getState().setTravelRole('h1', null);
+    expect(useGame.getState().party[0].travelRole).toBeUndefined();
   });
 });

@@ -4,7 +4,7 @@
  */
 import { Combatant, ActiveEffect } from './types';
 import { tickRound } from './duration';
-import { conditionLabel } from '../data';
+import { conditionLabel, findConditionById, findPsychologyById } from '../data';
 import { t } from '../i18n';
 import { rule } from './policy';
 import { bonus, effectiveChar } from './characteristics';
@@ -193,16 +193,35 @@ export function incomingMeleeAdvantage(target: Combatant): number {
   return best;
 }
 
-/** Une cible Surprise (LDB ch.16 l.132) ou Inconscient (l.112 « rien faire de votre tour »)
- *  ne peut pas se défendre lors d'un Test opposé. */
-export function cannotDefend(c: Combatant): boolean {
-  return hasCondition(c, COND.surpris) || hasCondition(c, COND.inconscient);
+/** Restrictions d'Action/Mouvement/défense imposées par les STATUTS portés (États ET Psychologie) —
+ *  lues en DONNÉES (`StatusData.gating`, etats.json/psychology.json), JAMAIS par-nom : un nouvel État/
+ *  trait psy déclare son blocage dans le JSON et le moteur l'applique. Agrégation : `action:'none'` et
+ *  `cannotDefend` sont des OU (un seul statut bloquant suffit) ; le Mouvement prend le PIRE
+ *  (`none` > `half`/`crawl` > normal). « Etat comme Psy » : `PsychologyData extends StatusData`. */
+export function conditionGating(c: Combatant): { noAction: boolean; cannotDefend: boolean; movement: 'normal' | 'half' | 'none' } {
+  let noAction = false; let cannotDefend = false; let movement: 'normal' | 'half' | 'none' = 'normal';
+  const apply = (g?: { action?: 'none'; movement?: 'none' | 'half' | 'crawl'; cannotDefend?: true }): void => {
+    if (!g) return;
+    if (g.action === 'none') noAction = true;
+    if (g.cannotDefend) cannotDefend = true;
+    if (g.movement === 'none') movement = 'none';
+    else if ((g.movement === 'half' || g.movement === 'crawl') && movement !== 'none') movement = 'half';
+  };
+  for (const cond of c.conditions ?? []) apply(findConditionById(cond.name)?.gating);
+  for (const p of c.psychState ?? []) apply(findPsychologyById(p.type)?.gating);
+  return { noAction, cannotDefend, movement };
 }
 
-/** Sonné : « vous êtes incapable d'effectuer votre Action » (LDB États l.123). Le combattant
- *  peut encore se déplacer (à demi-Mouvement, cf. effectiveMovement) mais ne peut pas agir. */
+/** Ne peut pas se défendre lors d'un Test opposé (Surpris LDB 16 l.132 / Inconscient l.112 « rien faire
+ *  de votre tour ») — lu du `gating.cannotDefend` des statuts portés (données, plus de liste par-nom). */
+export function cannotDefend(c: Combatant): boolean {
+  return conditionGating(c).cannotDefend;
+}
+
+/** Le combattant peut-il effectuer son Action ce tour ? Faux si un statut porté déclare `gating.action:
+ *  'none'` (Sonné « incapable d'effectuer votre Action », LDB 16 l.123 ; Surpris/Inconscient). Données. */
 export function canTakeAction(c: Combatant): boolean {
-  return !hasCondition(c, COND.sonne);
+  return !conditionGating(c).noAction;
 }
 
 /**

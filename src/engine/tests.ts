@@ -168,3 +168,48 @@ export function resolveOpposed(attacker: TestResult, defender: TestResult): Oppo
 function clamp(v: number, policy: TestPolicy): number {
   return Math.max(policy.targetMin, Math.min(policy.targetMax, v));
 }
+
+/** Un Round/passe d'un Test ÉTENDU (LDB 12 l.197-211) : le DR du Round s'AJOUTE au cumul `prev` (planché à
+ *  0 — « si le DR total passe sous 0, recommencez depuis le début ») ; `done` quand il atteint `targetDR`.
+ *  `minStep` (règle optionnelle l.208) : une réussite compte ≥ +1, un échec ≤ −1 (DR 0 non neutre). SOURCE
+ *  UNIQUE du cumul, partagée par crochetage/porte (`extendedTest`), Artisanat (LDB 23), chirurgie (LDB 10)
+ *  et le Test étendu de Calme contre la Peur (LDB 21 l.27) — fini les 4 copies de la même arithmétique. */
+export function extendedTestStep(
+  prev: number,
+  r: { success: boolean; sl: number },
+  targetDR: number,
+  minStep = false,
+): { total: number; done: boolean } {
+  const sl = minStep ? (r.success ? Math.max(1, r.sl) : Math.min(-1, r.sl)) : r.sl;
+  const total = Math.max(0, prev + sl);
+  return { total, done: total >= targetDR };
+}
+
+// ── Tableau des Résultats : bandes de DR (LDB 12 l.103-114) — PRIMITIVE PARTAGÉE ─────────────────
+// Source UNIQUE des seuils qualitatifs « Impressionnant / Stupéfiant » jusqu'ici recopiés en nombres
+// magiques (critiques, maladies, soin, marchandage, interlude/évaluation, corruption, rencontres de
+// voyage). Le « palier » dépend de la MAGNITUDE du DR ; la réussite/l'échec, du drapeau `success`.
+
+/** Seuil de DR du palier « Impressionnant » (LDB 12 : « 4 ou 5 »). « ou mieux » = ≥ ce seuil. */
+export const SL_IMPRESSIVE = 4;
+/** Seuil de DR du palier « Stupéfiant » (LDB 12 : « 6+ » / « -6 ou moins »). */
+export const SL_ASTOUNDING = 6;
+
+/** Palier qualitatif d'un DR (par sa MAGNITUDE), indépendant du succès/échec (LDB 12). */
+export type SLTier = 'minime' | 'normal' | 'impressionnant' | 'stupefiant';
+export function slTier(sl: number): SLTier {
+  const m = Math.abs(sl);
+  if (m >= SL_ASTOUNDING) return 'stupefiant';
+  if (m >= SL_IMPRESSIVE) return 'impressionnant';
+  if (m >= 2) return 'normal';
+  return 'minime';
+}
+
+/** « Succès Impressionnant ou mieux » (DR ≥ +4 sur une réussite, LDB 12 l.108/107). */
+export const isImpressiveSuccess = (success: boolean, sl: number): boolean => success && sl >= SL_IMPRESSIVE;
+/** « Échec Impressionnant ou pire » (DR ≤ -4 sur un échec, LDB 12 l.113/114). */
+export const isImpressiveFailure = (success: boolean, sl: number): boolean => !success && sl <= -SL_IMPRESSIVE;
+/** « Succès Stupéfiant » (DR ≥ +6, LDB 12 l.107). */
+export const isAstoundingSuccess = (success: boolean, sl: number): boolean => success && sl >= SL_ASTOUNDING;
+/** « Échec Stupéfiant » (DR ≤ -6, LDB 12 l.114). */
+export const isAstoundingFailure = (success: boolean, sl: number): boolean => !success && sl <= -SL_ASTOUNDING;

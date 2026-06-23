@@ -7,7 +7,8 @@
 import { Combatant } from './types';
 import { t } from '../i18n';
 import { RNG, defaultRNG } from './dice';
-import { rollTest, evaluateTest } from './tests';
+import { rollTest, evaluateTest, extendedTestStep } from './tests';
+import { rule } from './policy';
 import { effectiveChar } from './characteristics';
 import { findPsychologyById, psychologies } from '../data';
 import { SizeCategory, sizeGap } from './size';
@@ -83,6 +84,13 @@ export function fearSourceFor(self: Combatant, foe: Combatant): { kind: 'peur' |
   // Haine (LDB 21) : « immunisé à Peur (mais PAS Terreur) causée par ceux de ce groupe » — data-driven.
   if (best.kind === 'peur' && psychImmuneToFearFrom(self, foe)) return null;
   return best;
+}
+
+/** Mode de RÉSOLUTION d'un état psy + ses conséquences d'échec, lus en DONNÉES (`psychology.json`) — SOURCE
+ *  UNIQUE de l'applier `combatPsych` et du picker de Round : plus de `kind === 'terreur'` codé par-nom. */
+export function psychResolution(kind: PsychType): { mode?: 'extended' | 'terreur' | 'binary'; failCondition?: string; becomes?: PsychType } {
+  const d = findPsychologyById(kind);
+  return { mode: d?.resolution, failCondition: d?.failCondition, becomes: d?.becomes as PsychType | undefined };
 }
 
 /** Une affliction psy est-elle ACTIVE ? Ciblé (Animosité/Haine/…) : drapeau `active` ; Peur/Terreur : DR
@@ -254,10 +262,13 @@ export function resolvePeurTest(
   sansPeur = false,
 ): { dr: number; calmeDR: number; vaincue: boolean; roll: number; target: number; sl: number; success: boolean } {
   const t = coldBloodedAdjust(rollTest(calme, sansPeur ? 'accessible' : 'intermediaire', rng), coldBlooded);
-  const dr = t.success ? Math.max(0, t.sl) : 0;
-  // Sans Peur : une réussite IGNORE la Peur (vaincue d'emblée → DR ≥ Indice) ; sinon cumul étendu RAW.
-  const calmeDR = sansPeur && t.success ? Math.max(prevDR, indice) : prevDR + dr;
-  return { dr, calmeDR, vaincue: calmeDR >= indice, roll: t.roll, target: t.target, sl: t.sl, success: t.success };
+  // Sans Peur : une réussite IGNORE la Peur (vaincue d'emblée → DR ≥ Indice). Sinon Test étendu LDB 12
+  // MUTUALISÉ (`extendedTestStep`) : un Round raté retire les DR négatifs (planché à 0) — cf. la même
+  // arithmétique que crochetage/Artisanat/chirurgie (fini le cumul add-only divergent).
+  const step = sansPeur && t.success
+    ? { total: Math.max(prevDR, indice), done: true }
+    : extendedTestStep(prevDR, t, indice, !!rule('test-extended-min-sl'));
+  return { dr: step.total - prevDR, calmeDR: step.total, vaincue: step.done, roll: t.roll, target: t.target, sl: t.sl, success: t.success };
 }
 
 /** Traits ciblés visant un ALLIÉ (on les défend) plutôt qu'un ennemi (LDB 21 : Amour l.74, Camaraderie l.79). */

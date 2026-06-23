@@ -1,0 +1,823 @@
+[
+  {
+    "id": "diligence",
+    "label": "Diligence",
+    "icon": "🚌",
+    "source": {
+      "book": "LDB",
+      "page": 306
+    },
+    "enc": null,
+    "desc": "Nécessite deux conducteurs et quatre chevaux.",
+    "purchase": {
+      "price": {
+        "gold": 150,
+        "silver": 0,
+        "bronze": 0
+      },
+      "availability": "Rare"
+    },
+    "travel": {
+      "movement": 6,
+      "classes": [
+        {
+          "key": "interieur",
+          "label": "Intérieur",
+          "brassPerKm": 2
+        },
+        {
+          "key": "exterieur",
+          "label": "Extérieur",
+          "brassPerKm": 1
+        }
+      ]
+    },
+    "hull": {
+      "char": {
+        "E": 45,
+        "B": 50
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "terrestre"
+    }
+  },
+  {
+    "id": "barge",
+    "label": "Barge",
+    "icon": "🛶",
+    "source": {
+      "book": "LDB",
+      "page": 306
+    },
+    "travel": {
+      "movement": 8,
+      "classes": [
+        {
+          "key": "cabine",
+          "label": "Cabine",
+          "brassPerKm": 5
+        },
+        {
+          "key": "pont",
+          "label": "Pont",
+          "brassPerKm": 2
+        }
+      ]
+    },
+    "hull": {
+      "char": {
+        "E": 45,
+        "B": 60
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "maritime",
+      "rig": "mixte"
+    },
+    "ship": {
+      "crew": 4,
+      "manoeuvre": 0,
+      "lengthM": 20,
+      "capacity": 300,
+      "sail": {
+        "m": 3,
+        "crew": 3
+      },
+      "oars": {
+        "m": 3,
+        "crew": 4
+      },
+      "traits": []
+    },
+    "purchase": {
+      "price": {
+        "gold": 225,
+        "silver": 0,
+        "bronze": 0
+      }
+    }
+  },
+  {
+    "id": "charrette",
+    "label": "Charrette",
+    "icon": "🛒",
+    "source": {
+      "book": "LDB",
+      "page": 306
+    },
+    "enc": null,
+    "desc": "Nécessite un conducteur et un animal de trait.",
+    "purchase": {
+      "price": {
+        "gold": 20,
+        "silver": 0,
+        "bronze": 0
+      },
+      "availability": "Commune"
+    },
+    "hull": {
+      "char": {
+        "E": 25,
+        "B": 10
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "terrestre"
+    }
+  },
+  {
+    "id": "chariot",
+    "label": "Chariot",
+    "icon": "🛒",
+    "source": {
+      "book": "LDB",
+      "page": 306
+    },
+    "enc": null,
+    "desc": "Nécessite un conducteur et deux chevaux.",
+    "purchase": {
+      "price": {
+        "gold": 75,
+        "silver": 0,
+        "bronze": 0
+      },
+      "availability": "Commune"
+    }
+  },
+  {
+    "id": "barque",
+    "label": "Barque",
+    "icon": "🛶",
+    "source": {
+      "book": "LDB",
+      "page": 306
+    },
+    "enc": null,
+    "desc": "Un rameur est la norme.",
+    "purchase": {
+      "price": {
+        "gold": 6,
+        "silver": 0,
+        "bronze": 0
+      },
+      "availability": "Limitée"
+    }
+  },
+  {
+    "id": "chaland",
+    "label": "Chaland",
+    "icon": "🛶",
+    "source": {
+      "book": "LDB",
+      "page": 306
+    },
+    "enc": null,
+    "desc": "Nécessite trois membres d'équipage.",
+    "purchase": {
+      "price": {
+        "gold": 225,
+        "silver": 0,
+        "bronze": 0
+      },
+      "availability": "Rare"
+    }
+  },
+  {
+    "id": "coracle",
+    "label": "Coracle",
+    "icon": "🛶",
+    "source": {
+      "book": "LDB",
+      "page": 306
+    },
+    "enc": 6,
+    "desc": "Les coracles sont de petits bateaux légers qui conviennent pour une personne et peuvent être facilement transportés. Ils sont faits de cuir, ou d'écorce, tendu sur un cadre de bois, et dirigés à l'aide d'une seule rame.",
+    "purchase": {
+      "price": {
+        "gold": 2,
+        "silver": 0,
+        "bronze": 0
+      },
+      "availability": "Limitée"
+    },
+    "hull": {
+      "char": {
+        "E": 25,
+        "B": 10
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "maritime",
+      "rig": "avirons"
+    },
+    "ship": {
+      "crew": 1,
+      "manoeuvre": 0,
+      "lengthM": 3,
+      "capacity": 10,
+      "oars": {
+        "m": 3,
+        "crew": 1
+      },
+      "traits": []
+    }
+  },
+  {
+    "id": "chaloupe",
+    "label": "Chaloupe",
+    "icon": "⛵",
+    "source": {
+      "book": "MDG",
+      "page": 113
+    },
+    "purchase": {
+      "price": {
+        "gold": 6,
+        "silver": 0,
+        "bronze": 0
+      }
+    },
+    "hull": {
+      "char": {
+        "E": 35,
+        "B": 10
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "maritime",
+      "rig": "avirons"
+    },
+    "ship": {
+      "crew": 2,
+      "manoeuvre": 2,
+      "lengthM": 10,
+      "capacity": 60,
+      "oars": {
+        "m": 3,
+        "crew": 1
+      },
+      "traits": []
+    }
+  },
+  {
+    "id": "esquif",
+    "label": "Esquif",
+    "icon": "⛵",
+    "source": {
+      "book": "MDG",
+      "page": 113
+    },
+    "purchase": {
+      "price": {
+        "gold": 45,
+        "silver": 0,
+        "bronze": 0
+      }
+    },
+    "hull": {
+      "char": {
+        "E": 40,
+        "B": 20
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "maritime",
+      "rig": "mixte"
+    },
+    "ship": {
+      "crew": 3,
+      "manoeuvre": 1,
+      "lengthM": 15,
+      "capacity": 120,
+      "sail": {
+        "m": 3,
+        "crew": 2
+      },
+      "oars": {
+        "m": 3,
+        "crew": 2
+      },
+      "traits": []
+    }
+  },
+  {
+    "id": "grande-barge",
+    "label": "Grande barge",
+    "icon": "⛵",
+    "source": {
+      "book": "MDG",
+      "page": 113
+    },
+    "purchase": {
+      "price": {
+        "gold": 445,
+        "silver": 0,
+        "bronze": 0
+      }
+    },
+    "hull": {
+      "char": {
+        "E": 45,
+        "B": 90
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "maritime",
+      "rig": "mixte"
+    },
+    "ship": {
+      "crew": 4,
+      "manoeuvre": 0,
+      "lengthM": 30,
+      "capacity": 500,
+      "sail": {
+        "m": 3,
+        "crew": 3
+      },
+      "oars": {
+        "m": 3,
+        "crew": 4
+      },
+      "traits": []
+    }
+  },
+  {
+    "id": "bateau-de-patrouille",
+    "label": "Bateau de patrouille",
+    "icon": "⛵",
+    "source": {
+      "book": "MDG",
+      "page": 113
+    },
+    "purchase": {
+      "price": {
+        "gold": 655,
+        "silver": 0,
+        "bronze": 0
+      }
+    },
+    "hull": {
+      "char": {
+        "E": 60,
+        "B": 120
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "maritime",
+      "rig": "mixte"
+    },
+    "ship": {
+      "crew": 15,
+      "manoeuvre": 0,
+      "lengthM": 25,
+      "capacity": 80,
+      "sail": {
+        "m": 4,
+        "crew": 4
+      },
+      "oars": {
+        "m": 4,
+        "crew": 12
+      },
+      "traits": [
+        "Bélier",
+        "Renforcé 2",
+        "Solide 2"
+      ]
+    }
+  },
+  {
+    "id": "knarr",
+    "label": "Knarr",
+    "icon": "⛵",
+    "source": {
+      "book": "MDG",
+      "page": 113
+    },
+    "purchase": {
+      "price": {
+        "gold": 60,
+        "silver": 0,
+        "bronze": 0
+      }
+    },
+    "hull": {
+      "char": {
+        "E": 40,
+        "B": 30
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "maritime",
+      "rig": "mixte"
+    },
+    "ship": {
+      "crew": 4,
+      "manoeuvre": -1,
+      "lengthM": 15,
+      "capacity": 150,
+      "sail": {
+        "m": 4,
+        "crew": 2
+      },
+      "oars": {
+        "m": 3,
+        "crew": 4
+      },
+      "traits": [
+        "Peu maniable"
+      ]
+    }
+  },
+  {
+    "id": "langskip",
+    "label": "Langskip",
+    "icon": "⛵",
+    "source": {
+      "book": "MDG",
+      "page": 113
+    },
+    "purchase": {
+      "price": {
+        "gold": 250,
+        "silver": 0,
+        "bronze": 0
+      }
+    },
+    "hull": {
+      "char": {
+        "E": 50,
+        "B": 60
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "maritime",
+      "rig": "mixte"
+    },
+    "ship": {
+      "crew": 32,
+      "manoeuvre": 0,
+      "lengthM": 25,
+      "capacity": 100,
+      "sail": {
+        "m": 4,
+        "crew": 4
+      },
+      "oars": {
+        "m": 6,
+        "crew": 30
+      },
+      "traits": []
+    }
+  },
+  {
+    "id": "cogue",
+    "label": "Cogue",
+    "icon": "⛵",
+    "source": {
+      "book": "MDG",
+      "page": 113
+    },
+    "purchase": {
+      "price": {
+        "gold": 300,
+        "silver": 0,
+        "bronze": 0
+      }
+    },
+    "hull": {
+      "char": {
+        "E": 45,
+        "B": 50
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "maritime",
+      "rig": "voile"
+    },
+    "ship": {
+      "crew": 15,
+      "manoeuvre": -1,
+      "lengthM": 25,
+      "capacity": 300,
+      "sail": {
+        "m": 5,
+        "crew": 8
+      },
+      "traits": [
+        "Peu maniable",
+        "Robuste"
+      ]
+    }
+  },
+  {
+    "id": "caraque",
+    "label": "Caraque",
+    "icon": "⛵",
+    "source": {
+      "book": "MDG",
+      "page": 113
+    },
+    "purchase": {
+      "price": {
+        "gold": 550,
+        "silver": 0,
+        "bronze": 0
+      }
+    },
+    "hull": {
+      "char": {
+        "E": 55,
+        "B": 90
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "maritime",
+      "rig": "voile"
+    },
+    "ship": {
+      "crew": 20,
+      "manoeuvre": 0,
+      "lengthM": 35,
+      "capacity": 600,
+      "sail": {
+        "m": 5,
+        "crew": 10
+      },
+      "traits": [
+        "Robuste"
+      ]
+    }
+  },
+  {
+    "id": "galere-de-guerre",
+    "label": "Galère de guerre",
+    "icon": "⛵",
+    "source": {
+      "book": "MDG",
+      "page": 113
+    },
+    "purchase": {
+      "price": {
+        "gold": 600,
+        "silver": 0,
+        "bronze": 0
+      }
+    },
+    "hull": {
+      "char": {
+        "E": 65,
+        "B": 100
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "maritime",
+      "rig": "mixte"
+    },
+    "ship": {
+      "crew": 35,
+      "manoeuvre": 0,
+      "lengthM": 35,
+      "capacity": 150,
+      "sail": {
+        "m": 6,
+        "crew": 16
+      },
+      "oars": {
+        "m": 4,
+        "crew": 30
+      },
+      "traits": [
+        "Bélier",
+        "Renforcé",
+        "Solide"
+      ]
+    }
+  },
+  {
+    "id": "loup-imperial",
+    "label": "Loup impérial",
+    "icon": "⛵",
+    "source": {
+      "book": "MDG",
+      "page": 113
+    },
+    "purchase": {
+      "price": {
+        "gold": 1200,
+        "silver": 0,
+        "bronze": 0
+      }
+    },
+    "hull": {
+      "char": {
+        "E": 75,
+        "B": 180
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "maritime",
+      "rig": "mixte"
+    },
+    "ship": {
+      "crew": 50,
+      "manoeuvre": 0,
+      "lengthM": 55,
+      "capacity": 500,
+      "sail": {
+        "m": 7,
+        "crew": 30
+      },
+      "oars": {
+        "m": 4,
+        "crew": 40
+      },
+      "traits": [
+        "Bélier",
+        "Renforcé",
+        "Solide"
+      ]
+    }
+  },
+  {
+    "id": "croiseur",
+    "label": "Croiseur",
+    "icon": "⛵",
+    "source": {
+      "book": "MDG",
+      "page": 113
+    },
+    "purchase": {
+      "price": {
+        "gold": 3500,
+        "silver": 0,
+        "bronze": 0
+      }
+    },
+    "hull": {
+      "char": {
+        "E": 75,
+        "B": 275
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "maritime",
+      "rig": "voile"
+    },
+    "ship": {
+      "crew": 90,
+      "manoeuvre": 0,
+      "lengthM": 60,
+      "capacity": 1400,
+      "sail": {
+        "m": 8,
+        "crew": 80
+      },
+      "traits": [
+        "Renforcé",
+        "Solide"
+      ]
+    }
+  },
+  {
+    "id": "galion-bretonnien",
+    "label": "Galion bretonnien",
+    "icon": "⛵",
+    "source": {
+      "book": "MDG",
+      "page": 113
+    },
+    "purchase": {
+      "price": {
+        "gold": 2500,
+        "silver": 0,
+        "bronze": 0
+      }
+    },
+    "hull": {
+      "char": {
+        "E": 75,
+        "B": 220
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "maritime",
+      "rig": "voile"
+    },
+    "ship": {
+      "crew": 90,
+      "manoeuvre": 0,
+      "lengthM": 60,
+      "capacity": 600,
+      "sail": {
+        "m": 8,
+        "crew": 60
+      },
+      "traits": [
+        "Renforcé",
+        "Solide"
+      ]
+    }
+  },
+  {
+    "id": "caravelle-tileenne",
+    "label": "Caravelle tiléenne",
+    "icon": "⛵",
+    "source": {
+      "book": "MDG",
+      "page": 113
+    },
+    "purchase": {
+      "price": {
+        "gold": 550,
+        "silver": 0,
+        "bronze": 0
+      }
+    },
+    "hull": {
+      "char": {
+        "E": 55,
+        "B": 100
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "maritime",
+      "rig": "voile"
+    },
+    "ship": {
+      "crew": 20,
+      "manoeuvre": 0,
+      "lengthM": 40,
+      "capacity": 650,
+      "sail": {
+        "m": 7,
+        "crew": 12
+      },
+      "traits": [
+        "Robuste"
+      ]
+    }
+  },
+  {
+    "id": "chebec-arabien",
+    "label": "Chébec arabien",
+    "icon": "⛵",
+    "source": {
+      "book": "MDG",
+      "page": 113
+    },
+    "purchase": {
+      "price": {
+        "gold": 500,
+        "silver": 0,
+        "bronze": 0
+      }
+    },
+    "hull": {
+      "char": {
+        "E": 60,
+        "B": 80
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "maritime",
+      "rig": "mixte"
+    },
+    "ship": {
+      "crew": 35,
+      "manoeuvre": 0,
+      "lengthM": 40,
+      "capacity": 400,
+      "sail": {
+        "m": 7,
+        "crew": 15
+      },
+      "oars": {
+        "m": 4,
+        "crew": 30
+      },
+      "traits": [
+        "Solide"
+      ]
+    }
+  },
+  {
+    "id": "boutre-d-inja",
+    "label": "Boutre d'Inja",
+    "icon": "⛵",
+    "source": {
+      "book": "MDG",
+      "page": 113
+    },
+    "purchase": {
+      "price": {
+        "gold": 400,
+        "silver": 0,
+        "bronze": 0
+      }
+    },
+    "hull": {
+      "char": {
+        "E": 45,
+        "B": 60
+      },
+      "bodyShape": "vehicule",
+      "propulsion": "maritime",
+      "rig": "voile"
+    },
+    "ship": {
+      "crew": 15,
+      "manoeuvre": 0,
+      "lengthM": 25,
+      "capacity": 300,
+      "sail": {
+        "m": 5,
+        "crew": 8
+      },
+      "traits": []
+    }
+  }
+]

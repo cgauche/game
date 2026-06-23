@@ -49,6 +49,7 @@ import { spawnEnemy } from './spawn';
 import { sceneZonesToBattle } from './zones';
 import { resetFields } from './stateFields';
 import { actorIn } from './combatOrParty';
+import { resolveRecoverTest } from './combat/recover';
 import { FLOWS, rollFlowActions, rollFlowActionsMulti } from './rollFlows';
 import { resolveRenounce } from './corruptionFlow';
 import { add as moneyAdd, toMoney } from '../engine/money';
@@ -1051,27 +1052,16 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!active || active.kind !== 'hero' || !canTakeAction(active)) return;
       const n = stacks(active, state);
       if (n <= 0) return; // pas porteur de l'État
-      // Empêtré : Test OPPOSÉ de Force contre la « Force d'entrave » (LDB 16 l.61). Priorité à la Force
-      // FIGÉE par l'effet (escapeStrength — ex. Force Mentale du lanceur d'un Enchevêtrement, vaut même
-      // lanceur absent) ; sinon, Force de la source VIVANTE ; sinon, Test simple.
-      let opposed = false, opponentValue: number | undefined, opponentName: string | undefined;
-      if (state === COND.empetre) {
-        const cond = active.conditions.find((c) => c.name === COND.empetre);
-        const srcId = cond?.sourceId;
-        const src = srcId ? battle.combatants.find((c) => c.id === srcId && !isOutOfAction(c)) : undefined;
-        if (cond?.escapeStrength != null) {
-          opposed = true; opponentValue = cond.escapeStrength; opponentName = src?.name ?? 'l’entrave';
-        } else if (src) {
-          opposed = true; opponentValue = testValue(src, undefined, 'F'); opponentName = src.name;
-        }
-      }
-      const skillValue = state === COND.empetre ? testValue(active, undefined, 'F') : testValue(active, 'athletisme');
+      // Test de récupération (Empêtré « se libérer »/En flammes « se rouler », LDB 16 l.61/77) lu de la
+      // DONNÉE (`EtatData.recover`) par la SOURCE UNIQUE `resolveRecoverTest` — Empêtré = opposé de Force
+      // (escapeStrength figée prioritaire, sinon source vivante) ; En flammes = Athlétisme simple.
+      const rt = resolveRecoverTest(active, state, battle);
+      if (!rt) return; // État non récupérable par Action (pas de `recover` en donnée)
       set({
         pendingStateRecovery: {
           actorId: active.id, actorName: active.name, state,
-          skillLabel: state === COND.empetre ? 'Force' : 'Athlétisme',
-          skillValue, difficulty: 'intermediaire',
-          opposed, opponentValue, opponentName, stacks: n,
+          skillLabel: rt.skillLabel, skillValue: rt.skillValue, difficulty: rt.difficulty,
+          opposed: rt.opposed, opponentValue: rt.opponentValue, opponentName: rt.opponentName, stacks: n,
           roll: null, opponentRoll: null, netSL: 0, success: false,
         },
       });
@@ -1637,12 +1627,6 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!battle || !scene) return;
       const active = activeCombatant(battle);
       if (!active || active.kind !== 'hero') return;
-      // Surpris (LDB 16 l.132) : ni Mouvement ni Action ce tour — seule la Détermination (resolve) peut
-      // le retirer (LDB 13 l.81). Tout le reste est bloqué.
-      if (hasCondition(active, COND.surpris) && a !== 'resolve' && a !== null) {
-        get().log(t('cs.surprised', { name: active.name }));
-        return;
-      }
       // Brisé (LDB 16 l.55) : Mouvement + Action doivent servir à FUIR / se cacher — aucune action
       // offensive. Le déplacement (fuite) passe par le clic-sol implicite (filtre dans computeMoveReach) ;
       // ici seuls « resolve » (Détermination, qui peut retirer le Brisé) et la fermeture (null) passent.
@@ -1652,10 +1636,14 @@ export function createCombatSlice(get: Get, set: Set) {
         get().log(t('cs.brokenFlee', { name: active.name }));
         return;
       }
-      // Sonné : pas d'Action (attaque/incantation/soin). La Détermination ('resolve') ne coûte pas l'Action
-      // et peut retirer le Sonné (LDB ch.17 l.62-66) ; les manœuvres situationnelles gratuites (Se relever,
-      // Se désengager…) sont des slots DIRECTS qui n'appellent pas battleSelectAction → elles passent ce garde.
-      if (a !== 'resolve' && a !== null && !canTakeAction(active)) return;
+      // Pas d'Action ce tour (Sonné LDB 16 l.123 / Surpris l.132 — lu en DONNÉES via `canTakeAction`/gating,
+      // plus de branche par-nom). La Détermination ('resolve') ne coûte pas l'Action et peut retirer l'État
+      // (LDB 13 l.81 / 17 l.62-66) ; les manœuvres gratuites (Se relever, Se désengager…) sont des slots
+      // DIRECTS qui n'appellent pas battleSelectAction. Surpris : message dédié (UX), le reste silencieux.
+      if (a !== 'resolve' && a !== null && !canTakeAction(active)) {
+        if (hasCondition(active, COND.surpris)) get().log(t('cs.surprised', { name: active.name }));
+        return;
+      }
       // Quitter le mode incantation oublie le sort sélectionné. Le déplacement et l'attaque n'ont PLUS de
       // mode : ils sont implicites au clic (battleClickTile/battleClickEntity) — le reachable stocké ne
       // porte que les budgets spéciaux (Course, post-Désengagement), on ne le touche pas ici.

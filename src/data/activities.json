@@ -1,0 +1,155 @@
+[
+  {
+    "id": "plein-air",
+    "label": "Plein air",
+    "contexts": [
+      "voyage"
+    ],
+    "source": {
+      "book": "EDOC",
+      "page": 35
+    },
+    "skills": [
+      {
+        "skillId": "survie-en-exterieur"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "failExtenue": true,
+    "stageOutcome": "suppressExposure"
+  },
+  {
+    "id": "approvisionnement",
+    "label": "Approvisionnement",
+    "contexts": [
+      "voyage"
+    ],
+    "source": {
+      "book": "EDOC",
+      "page": 35
+    },
+    "skills": [
+      {
+        "skillId": "survie-en-exterieur"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "failExtenue": true,
+    "resolver": "forage"
+  },
+  {
+    "id": "recueillir-informations",
+    "label": "Recueillir des informations",
+    "contexts": [
+      "voyage"
+    ],
+    "source": {
+      "book": "EDOC",
+      "page": 35
+    },
+    "skills": [
+      {
+        "skillId": "ragot"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "failExtenue": true,
+    "stageOutcome": "gatherInfo"
+  },
+  {
+    "id": "rester-aux-aguets",
+    "label": "Rester aux aguets",
+    "contexts": [
+      "voyage"
+    ],
+    "source": {
+      "book": "EDOC",
+      "page": 35
+    },
+    "skills": [
+      {
+        "skillId": "perception"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "failExtenue": true,
+    "stageOutcome": "noSurprise"
+  },
+  {
+    "id": "etablir-cartes",
+    "label": "Établir des cartes",
+    "contexts": [
+      "voyage"
+    ],
+    "source": {
+      "book": "EDOC",
+      "page": 35
+    },
+    "skills": [
+      {
+        "skillId": "metier",
+        "spec": "Cartographe"
+      },
+      {
+        "skillId": "art",
+        "spec": "Dessin"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "extended": {
+      "drPerStage": 2
+    },
+    "failExtenue": true,
+    "stageOutcome": "mapMade"
+  },
+  {
+    "id": "pratiquer-competence",
+    "label": "Pratiquer une Compétence",
+    "contexts": [
+      "voyage"
+    ],
+    "source": {
+      "book": "EDOC",
+      "page": 35
+    },
+    "freeSkill": true,
+    "difficulty": "intermediaire",
+    "failExtenue": true,
+    "stageOutcome": "rerollToken"
+  },
+  {
+    "id": "recuperer",
+    "label": "Récupérer",
+    "contexts": [
+      "voyage"
+    ],
+    "source": {
+      "book": "EDOC",
+      "page": 35
+    },
+    "unavailableIfExtenue": true,
+    "stageOutcome": "countsAsRest"
+  },
+  {
+    "id": "monter-camp",
+    "label": "Monter un camp",
+    "contexts": [
+      "voyage"
+    ],
+    "source": {
+      "book": "EDOC",
+      "page": 35
+    },
+    "skills": [
+      {
+        "skillId": "survie-en-exterieur"
+      },
+      {
+        "skillId": "guerison"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "failExtenue": true,
+    "stageOutcome": "campCare"
+  }
+]

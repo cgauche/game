@@ -16,7 +16,8 @@ import { reachable, flyReachable, manhattan, chebyshev, Pt } from './path';
 import { footprintChebyshev, sizeFootprint } from './footprint';
 import { losClear, tileSeenByFoe } from './lineOfSight';
 import { rangeBandModifier } from '../engine/combat';
-import { hasCondition } from '../engine/conditions';
+import { hasCondition, canTakeAction } from '../engine/conditions';
+import { effectiveMovement } from '../engine/encumbrance';
 import { isEngaged, meleeReachTiles } from '../engine/engagement';
 import { groupMatch } from '../engine/groups';
 import { isBestial, isTerritorial } from '../engine/traits/dispatch';
@@ -86,7 +87,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     ? input.heroes.filter((h) => h.pos && input.perceived!.has(`${h.pos.x},${h.pos.y},0`))
     : input.heroes;
   if (heroes.length === 0) return { kind: 'end' };
-  if (hasCondition(enemy, 'surpris')) return { kind: 'end' }; // Surpris (LDB 16 l.132) : ni Mouvement ni Action ce tour
+  if (!canTakeAction(enemy) && effectiveMovement(enemy) === 0) return { kind: 'end' }; // ni Action ni Mouvement (Surpris LDB 16 l.132…) → passe la main (gating data-driven, plus de nom en dur)
   // En flammes (LDB 16 l.77) : un ennemi NON frénétique se roule au sol pour éteindre le feu (1d10/Round
   // est mortel). Un frénétique ignore le danger et continue d'attaquer (Frénésie, LDB 21 l.34).
   if (hasCondition(enemy, 'en-flammes') && !isFrenzied(enemy)) return { kind: 'recover', state: 'en-flammes' };

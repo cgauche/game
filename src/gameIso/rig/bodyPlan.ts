@@ -14,7 +14,7 @@ import type { EquipCtx } from './parts/equipment';
 import { bonesToSvg } from './renderBones';
 import { PLAN_LIST } from './plans/_registry.generated';
 import { defByName, speciesScale } from './creatures';
-import { findCreatureById } from '../../data';
+import { findCreatureById, vehicles } from '../../data';
 import { isSwarm } from '../../engine/traits/dispatch';
 
 /** Identifiant de gabarit — chaîne libre dérivée des `plans/defs/` (data-driven : chaque plan
@@ -91,6 +91,11 @@ export interface RenderResolution {
   scale: number;
 }
 export function resolveRender(species: string | undefined, traits: import('../../engine/statEntry').TraitList | undefined, idOrName: string): RenderResolution {
+  // Véhicule À COQUE (navire) → gabarit `navire`, DATA-DRIVEN : le gréement (`hull.rig`) devient l'« espèce »
+  // qui pilote la silhouette, l'échelle vient de la longueur (`ship.lengthM`). Prioritaire (un nom de
+  // vaisseau ne tombe pas sur la résolution créature).
+  const veh = vehicles.find((v) => v.hull && (v.id === idOrName || v.label === idOrName));
+  if (veh) return { kind: 'plan', plan: 'navire', species: veh.hull!.rig ?? 'mixte', scale: Math.max(0.7, Math.min(2.4, (veh.ship?.lengthM ?? 20) / 20)) };
   const rec = findCreatureById(idOrName);
   // Pour le repli « nom EST une espèce » : le LIBELLÉ du record (ou l'entrée brute si pas de record —
   // statbloc custom nommé « Nain »). Jamais un id (lowercase) ⇒ defByName(id) ne matche pas par accident.

@@ -176,9 +176,10 @@ describe('Sombre Pacte (l.16/41)', () => {
         roll: 95, sl: -6, success: false, isDouble: false, rerolled: true, onSuccess: [], onFailure: [],
       } as never,
     });
+    useGame.getState().seedRng(1); // reseed JUSTE avant la relance → d100 déterministe (indépendant du setup)
     useGame.getState().testDarkPact();
     const pt = useGame.getState().pendingTest as { roll?: number } | null;
-    expect(pt?.roll).not.toBe(95); // relancé (proba 1/100 de retomber dessus — seed fixe : déterministe)
+    expect(pt?.roll).not.toBe(95); // relancé (seed fixe → valeur stable ≠ 95)
     expect(useGame.getState().party.find((h) => h.id === a.id)!.corruption).toBe(1);
   });
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseQualityInstance } from './qualities/normalize';
-import { resolveMelee, resolveRanged, rangeBandModifier, rangeBandName, attackModifiers, resolveStrayRangedHit, defenseModifiers, rollMeleeDefender, finishMelee, resolveMeleePassive, resolveTrample } from './combat';
+import { resolveMelee, resolveRanged, rangeBandModifier, rangeBandName, attackModifiers, psychDRAdjust, resolveStrayRangedHit, defenseModifiers, rollMeleeDefender, finishMelee, resolveMeleePassive, resolveTrample } from './combat';
 import { evaluateTest } from './tests';
 import { makeRNG } from './dice';
 import { Combatant, Weapon } from './types';
@@ -93,15 +93,16 @@ describe('Taille en combat (T1) + env injecté — attackModifiers (LDB 14 l.151
     const mods = attackModifiers(mk(), mk(), bow, { kind: 'ranged', distanceTiles: 28, env: [] });
     expect(mods.find((m) => m.label.startsWith('Taille'))).toBeUndefined();
   });
-  it('Peur : −1 DR (−10) quand l’attaquant vise sa source de Peur (LDB 21 l.29)', () => {
+  it('Peur : −1 DR au jet (PAS un −10 sur la cible) quand l’attaquant vise sa source (LDB 21 l.29)', () => {
     const a = mk({ psychState: [{ type: 'peur', sourceId: 'B', calmeDR: 0 }] });
+    // Le modificateur n'est PLUS une ligne de mods sur la cible : c'est un ajustement de DR (psychDRAdjust).
     const mods = attackModifiers(a, mk({ id: 'B' }), sword, { kind: 'melee', env: [] });
-    expect(mods.find((m) => m.label === 'Peur')?.value).toBe(-10);
-  });
-  it('Peur : aucun mod si la cible n’est PAS la source de Peur', () => {
-    const a = mk({ psychState: [{ type: 'peur', sourceId: 'B', calmeDR: 0 }] });
-    const mods = attackModifiers(a, mk({ id: 'C' }), sword, { kind: 'melee', env: [] });
     expect(mods.find((m) => m.label === 'Peur')).toBeUndefined();
+    expect(psychDRAdjust(a, mk({ id: 'B' }))).toBe(-1);
+  });
+  it('Peur : aucun ajustement de DR si la cible n’est PAS la source de Peur', () => {
+    const a = mk({ psychState: [{ type: 'peur', sourceId: 'B', calmeDR: 0 }] });
+    expect(psychDRAdjust(a, mk({ id: 'C' }))).toBe(0);
   });
   it('Frénésie : +1 Bonus de Force au calcul des Dégâts (LDB 21 l.34)', () => {
     const tgt = mk({ id: 'T' });

@@ -91,7 +91,7 @@ import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
 import { eligibleTalent, canCastFromGrimoire } from '../engine/grimoire';
 import { rollMiscast, componentDowngrade, type MiscastSeverity } from '../engine/miscast';
-import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll } from '../engine/tests';
+import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep } from '../engine/tests';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue } from '../engine/skills';
 import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel } from '../data';
@@ -127,7 +127,7 @@ import { toBrass, fromBrass } from '../engine/money';
 import { Scene, Effect, isWalkable } from './scene';
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove } from './mount';
 import { lineOfSightCover, losClear, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
-import { fearSourceFor, sansPeurVs, terreurBrise, calmeValue, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, suppressSupersededPsych, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
+import { fearSourceFor, sansPeurVs, terreurBrise, calmeValue, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, suppressSupersededPsych, psychResolution, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import { reachable, moveReachFor, flyReachable, pushAway, pathTo, chebyshev, Pt } from './path';
@@ -169,8 +169,9 @@ export * from './combatSetup';
 import { runCombatHooks } from './combatHooks';
 import { collectHeroRoundEndUpkeep } from './combat/roundHooks';
 import { roundTestInteractive } from './combat/cadenceGate';
+import { resolveRecoverTest } from './combat/recover';
 import { fireTurnStartTriggers, fireTurnEndTriggers } from './combat/turnHooks'; // effets de bord de tour (onTurnStart/onTurnEnd, dont la sortie de Frénésie en données)
-export { brokenRecovery, collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour broken-recovery.test / cascade d'upkeep
+export { collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour la cascade d'upkeep
 export * from './combat/triggeredTest'; // baril : enregistre l'applier de cascade `triggeredTest` + installe le routeur de Test des triggers (effet de bord)
 import { runCombatFlow } from './combat/triggeredTest'; // usage interne (applyCast : exécuteur de Flow de sort EN COMBAT, after-aware → canal de journal unifié + voie nested cast↔test)
 export { aiMaybeFrenzy, resolvePsychAI, fireTurnStartTriggers, fireTurnEndTriggers } from './combat/turnHooks'; // baril : enregistre les hooks de début de tour ennemi (effet de bord) + ré-export pour frenzy*.test / psych*.test + effets de bord de tour
@@ -3581,6 +3582,16 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
   }
   // (2) Finaliser les morts lentes restantes (héros sans Destin) — + effet « à la mort » (onSlain) éventuel.
   for (const c of battle.combatants) if (inDeathCondition(c)) { c.dead = true; for (const line of notifySlain(get, set, c)) battle.log.push(ev('death', line, c.id)); }
+  // (2bis) Mort par Hémorragique (LDB 16 l.105) — combattants `bleedDoomed` (jet RNG du hook `bleed-death`).
+  //        Un héros à Destin → SUSPEND (pendingFateSave 'slow', re-entre ici après résolution ; le sauvé est
+  //        éjecté → filtré) ; sinon mort finalisée (annonce différée + onSlain). Une fois tous résolus, on purge.
+  const doomedBleed = (battle.bleedDoomed ?? [])
+    .map((d) => ({ c: battle.combatants.find((x) => x.id === d.id), line: d.deathLine }))
+    .filter((d): d is { c: Combatant; line: string } => !!d.c && !isOutOfAction(d.c));
+  const bleedFateHero = doomedBleed.find((d) => d.c.kind === 'hero' && (d.c.fate ?? 0) > 0);
+  if (bleedFateHero) { set({ pendingFateSave: { heroId: bleedFateHero.c.id, source: 'slow' } }); return; }
+  for (const d of doomedBleed) { d.c.dead = true; battle.log.push(ev('death', d.line, d.c.id)); for (const line of notifySlain(get, set, d.c)) battle.log.push(ev('death', line, d.c.id)); }
+  battle.bleedDoomed = undefined;
   // (3) Avantage : -1 si aucun gagné ce Round (LDB Dépl. l.40) ; Engagé périmé (LDB 13-Combat l.175).
   for (const c of battle.combatants) {
     if (!isOutOfAction(c) && c.advantage > 0 && !c.gainedAdvThisRound) c.advantage -= 1;
@@ -3873,11 +3884,13 @@ registerCascadeApplier(
       return { journal: [tr('cf.psychImmune', { name: hero.name })] };
     }
     let line: string;
-    if (cp.kind === 'terreur') {
-      // 1ʳᵉ rencontre (LDB 21 l.55-57) : échec → Brisé = Indice + |DR négatifs| ; devient une Peur.
+    const res = psychResolution(cp.kind);
+    if (res.mode === 'terreur') {
+      // 1ʳᵉ rencontre (LDB 21 l.55-57) : échec → État `failCondition` = Indice + |DR négatifs| ; devient
+      // l'état `becomes`. Conséquences lues en DONNÉES (psychology.json), plus de `'terreur'`/Brisé codé.
       const brise = terreurBrise(cp.indice, r.success, r.sl);
-      if (brise > 0) addCondition(hero, COND.brise, brise);
-      hero.psychState.push({ type: 'peur', sourceId: cp.sourceId, indice: r.success ? 0 : cp.indice, calmeDR: 0, lastTestRound: battle?.round });
+      if (brise > 0 && res.failCondition) addCondition(hero, res.failCondition, brise);
+      if (res.becomes) hero.psychState.push({ type: res.becomes, sourceId: cp.sourceId, indice: r.success ? 0 : cp.indice, calmeDR: 0, lastTestRound: battle?.round });
       line = r.success ? tr('out.terreurHold', { name: hero.name }) : tr('cf.terreurThenFear', { name: hero.name, foe: cp.sourceName, brise, indice: cp.indice });
     } else if (CIBLE_TYPES.has(cp.kind)) {
       // Trait ciblé : échec → affliction active ; succès → marqueur inerte (pas de re-déclenchement).
@@ -3891,8 +3904,12 @@ registerCascadeApplier(
       // Peur = Test ÉTENDU de Calme (LDB 21 l.27) : cumuler le DR vers l'Indice (calque resolvePeurTest).
       // Sans Peur (LDB 10 l.864) : « un seul Test (+20) » → une réussite IGNORE la Peur d'emblée
       // (DR porté à l'Indice) ; un échec laisse le porteur sujet (re-tests suivants = Peur normale +0).
-      const dr = r.success ? Math.max(0, r.sl) : 0;
-      const calmeDR = cp.sansPeur && r.success ? Math.max(cp.prevDR, cp.indice) : cp.prevDR + dr;
+      // Sans Peur : une réussite IGNORE la Peur d'emblée (DR porté à l'Indice). Sinon Test étendu LDB 12
+      // MUTUALISÉ (`extendedTestStep`) — un Round raté RETIRE désormais les DR négatifs (planché à 0),
+      // au lieu de l'ancien cumul add-only (bug : la Peur ne pouvait jamais régresser).
+      const calmeDR = cp.sansPeur && r.success
+        ? Math.max(cp.prevDR, cp.indice)
+        : extendedTestStep(cp.prevDR, r, cp.indice, !!rule('test-extended-min-sl')).total;
       let e = hero.psychState.find((p) => p.sourceId === cp.sourceId && p.type === 'peur');
       if (!e) { e = { type: 'peur', sourceId: cp.sourceId, indice: cp.indice, calmeDR: 0 }; hero.psychState.push(e); }
       e.calmeDR = calmeDR;
@@ -4084,16 +4101,16 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       return;
     case 'recover': {
       // Se libérer (Empêtré, Test opposé de Force, l.61) / se rouler (En flammes, Athlétisme, l.77).
-      // IA = résolution INSTANTANÉE (pas de modale ni de Chance). Coûte l'Action.
+      // Paramètres du Test lus de la DONNÉE (`EtatData.recover`) par la SOURCE UNIQUE `resolveRecoverTest`
+      // (même résolution que le flux joueur). IA = résolution INSTANTANÉE (pas de modale ni de Chance). Coûte l'Action.
       if (!canAct) return advanceTurn(get, set);
+      const rt = resolveRecoverTest(enemy, action.state, battle);
+      if (!rt) return advanceTurn(get, set); // État non récupérable par Action (pas de `recover` en donnée)
       let success: boolean, netSL: number;
-      if (action.state === COND.empetre) {
-        const srcId = enemy.conditions.find((c) => c.name === COND.empetre)?.sourceId;
-        const src = srcId ? battle.combatants.find((c) => c.id === srcId && !isOutOfAction(c)) : undefined;
-        if (src) { const opp = opposedTest(testValue(enemy, undefined, 'F'), testValue(src, undefined, 'F'), battleRng()); success = opp.attackerWins; netSL = opp.netSL; }
-        else { const t = rollTest(testValue(enemy, undefined, 'F'), 'intermediaire', battleRng()); success = t.success; netSL = Math.max(0, t.sl); }
+      if (rt.opposed && rt.opponentValue != null) {
+        const opp = opposedTest(rt.skillValue, rt.opponentValue, battleRng()); success = opp.attackerWins; netSL = opp.netSL;
       } else {
-        const t = rollTest(testValue(enemy, 'athletisme'), 'intermediaire', battleRng()); success = t.success; netSL = Math.max(0, t.sl);
+        const t = rollTest(rt.skillValue, rt.difficulty, battleRng()); success = t.success; netSL = Math.max(0, t.sl);
       }
       const removed = recoveredStacks(netSL, stacks(enemy, action.state), success);
       if (removed > 0) removeCondition(enemy, action.state, removed);

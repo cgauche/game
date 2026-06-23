@@ -37,9 +37,13 @@ const applyCompareOp = (a: number, op: CompareOp, b: number): boolean =>
 export type ActorRef = 'target' | 'caster';
 /** Donnée numérique fixe d'un acteur (`size` = ordinal de Taille SIZE_ORDER ; `advantage` = Avantage). */
 export type ActorField = 'woundsCurrent' | 'woundsMax' | 'size' | 'advantage';
-/** SUJET d'une comparaison `compare` : `who` (cible/lanceur) × (une donnée fixe OU la valeur/stacks d'un
- *  État nommé — 0 si absent → « la cible a l'État X » ⇔ `{who:'target', condition:X} >= 1`). */
-export type CompareSubject = { who: ActorRef; field: ActorField } | { who: ActorRef; condition: string };
+/** Référence à UNE Caractéristique EFFECTIVE d'un acteur (`bonus:true` → son Bonus). Toutes les
+ *  Caractéristiques sont exposées (pas de champ ad hoc) — lues par les seuils relatifs, ex. Voie d'eau
+ *  « coule à Endurance » ⇔ `{who:'target', char:'E'}` (MDG ch.13). */
+export type CharRef = { who: ActorRef; char: CharKey; bonus?: boolean };
+/** SUJET d'une comparaison `compare` : `who` (cible/lanceur) × (une donnée fixe, la valeur/stacks d'un
+ *  État nommé, ou une Caractéristique — 0 si absent → « la cible a l'État X » ⇔ `{who:'target', condition:X} >= 1`). */
+export type CompareSubject = { who: ActorRef; field: ActorField } | { who: ActorRef; condition: string } | CharRef;
 /** Opérateur de comparaison (Condition `compare`). */
 export type CompareOp = '>=' | '<=' | '==' | '<' | '>';
 /** Vue d'un acteur lue par les Conditions d'acteur (`compare`/`relation`/`has`) : id + PB + Taille/
@@ -48,6 +52,11 @@ export interface ActorView {
   id: string; woundsCurrent: number; woundsMax: number; size: number; advantage: number; camp: Camp;
   groups: string[]; talents: { id: string; spec?: string }[]; traits: string[];
   conditions: Record<string, number>;
+  /** Caractéristiques EFFECTIVES (toutes), lues par la Condition `compare` via `{who, char}` (+ `bonus`). */
+  chars: Record<CharKey, number>;
+  /** Niveau des CAPACITÉS de combat (`CombatFeature` agrégées) — lu par la Condition `capability`
+   *  (Cœur vaillant `braveheart`…). Absent → toute capacité vaut 0. */
+  capabilities?: Record<string, number>;
 }
 
 export type Condition =
@@ -67,8 +76,9 @@ export type Condition =
    *  `subject` (`who` × donnée fixe OU valeur d'un État) · `op` (≥ ≤ = < >) · `value`. `value` est une
    *  CONSTANTE ou le champ d'un AUTRE acteur (« cible plus petite que l'attaquant » ⇔
    *  `{who:'target',field:'size'} '<' {who:'caster',field:'size'}`). Régénération « PB > 0 » ⇔
-   *  `{who:'target',field:'woundsCurrent'} >= 1`. Acteur absent → false. */
-  | { kind: 'compare'; subject: CompareSubject; op: CompareOp; value: number | { who: ActorRef; field: ActorField } }
+   *  `{who:'target',field:'woundsCurrent'} >= 1`. Acteur absent → false. `factor` met à l'échelle la valeur
+   *  référencée (« la MOITIÉ de l'Endurance » ⇔ `{who:'target',char:'E',factor:0.5}`, Voie d'eau). */
+  | { kind: 'compare'; subject: CompareSubject; op: CompareOp; value: number | (CompareSubject & { factor?: number }) }
   /** Seuil de MARGE / DR du contexte (`ctx.sl`) : vrai si `sl ≥ atLeast`. Permet d'authorer les issues
    *  échelonnées d'une manœuvre (Regard pétrifiant : « si la marge atteint 6 DR → Pétrifié », LDB 85
    *  l.238) en GameOp Flow — `if slThreshold(6) → … else if slThreshold(2) → …`. Hors contexte = 0. */
@@ -93,6 +103,19 @@ export type Condition =
    *  emballée en donnée (au-dessus de `lineOfSightCover`) : sortie de Frénésie « plus d'ennemi en vue → fin »
    *  (LDB 21 l.36), fuite/récupération du Brisé « hors de vue de l'ennemi » (LDB 16 l.55). Hors combat = false. */
   | { kind: 'foeInLoS' }
+  /** Aucun adversaire VIVANT ne voit l'acteur (sens foe→acteur, ≠ `foeInLoS` acteur→foe) — « caché hors de
+   *  vue de l'ennemi » (Brisé, LDB 16 l.55/71 : retrait sans Test + difficulté Accessible). Précalculé sur
+   *  la battle (`ctx.hiddenFromFoes`). Hors combat = false. */
+  | { kind: 'hiddenFromFoes' }
+  /** L'acteur est-il ENGAGÉ avec un adversaire (LDB 13 l.159) ? Gate de récupération du Brisé (LDB 16 l.57 :
+   *  aucun Test si Engagé). Précalculé (`ctx.engaged`). Hors combat = false. */
+  | { kind: 'engaged' }
+  /** Distance (cases) à l'adversaire VIVANT le plus proche, comparée par `op` à `value` (Brisé : Très
+   *  difficile si ≤ 3, LDB 16 l.58). Précalculée (`ctx.nearestFoeDist`). Aucun adversaire / hors combat = +∞. */
+  | { kind: 'nearestFoe'; op: CompareOp; value: number }
+  /** Niveau d'une CAPACITÉ de combat (`CombatFeature`) de l'acteur `who`, comparé par `op` (défaut `>=`) à
+   *  `value` (défaut 1) — Cœur vaillant (`braveheart`) octroyable par talent OU effet. Acteur absent = 0. */
+  | { kind: 'capability'; who: ActorRef; id: string; op?: CompareOp; value?: number }
   /** Camp / RELATION d'un acteur (`who`) — gate « seulement les ennemis / les alliés / les neutres »
    *  (riders de domaine offensifs : `who:'target', is:'opponent'`). `ally`/`opponent` sont RELATIFS à
    *  l'autre acteur (même camp / camp différent) ; `party`/`neutral`/`hostile` sont ABSOLUS (le `kind`).
@@ -132,6 +155,12 @@ export interface ConditionCtx {
   /** Un adversaire vivant est-il dans la Ligne de Vue du porteur — lu par la Condition `foeInLoS`
    *  (sortie de Frénésie, fuite/récupération du Brisé). Précalculé sur la `battle` par l'appelant. */
   foeInLoS?: boolean;
+  /** Aucun adversaire vivant ne voit l'acteur (sens foe→acteur) — lu par `hiddenFromFoes` (Brisé caché). */
+  hiddenFromFoes?: boolean;
+  /** L'acteur est-il Engagé avec un adversaire — lu par `engaged` (gate de récupération du Brisé). */
+  engaged?: boolean;
+  /** Distance (cases) à l'adversaire vivant le plus proche — lue par `nearestFoe`. +∞ si aucun. */
+  nearestFoeDist?: number;
 }
 
 /** Évalue une Condition — SOURCE UNIQUE de l'évaluation des conditions (triggers, choix de dialogue,
@@ -163,15 +192,17 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
       return party.length > 0 && (cond.who === 'all' ? party.every((h) => h.dead) : party.some((h) => h.dead));
     }
     case 'compare': {
-      // Lecture d'un côté de la comparaison : valeur d'un État (par nom) ou champ fixe d'un acteur.
-      const read = (who: ActorRef, sel: { field: ActorField } | { condition: string }): number | undefined => {
-        const a = who === 'caster' ? ctx.caster : ctx.target;
+      // Lecture d'un côté de la comparaison : valeur d'un État (par nom), Caractéristique (+Bonus), ou champ fixe.
+      const read = (sel: CompareSubject): number | undefined => {
+        const a = sel.who === 'caster' ? ctx.caster : ctx.target;
         if (!a) return undefined;
-        return 'condition' in sel ? (a.conditions[sel.condition] ?? 0) : a[sel.field];
+        if ('condition' in sel) return a.conditions[sel.condition] ?? 0;
+        if ('char' in sel) { const v = a.chars[sel.char]; return sel.bonus ? Math.floor(v / 10) : v; }
+        return a[sel.field];
       };
-      const s = cond.subject;
-      const lhs = read(s.who, s);
-      const rhs = typeof cond.value === 'number' ? cond.value : read(cond.value.who, { field: cond.value.field });
+      const lhs = read(cond.subject);
+      const rhsRaw = typeof cond.value === 'number' ? cond.value : read(cond.value);
+      const rhs = typeof cond.value === 'number' || rhsRaw == null ? rhsRaw : rhsRaw * (cond.value.factor ?? 1);
       if (lhs == null || rhs == null) return false; // acteur absent → false
       return applyCompareOp(lhs, cond.op, rhs);
     }
@@ -182,6 +213,13 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
     case 'woundsDealt': return applyCompareOp(ctx.woundsDealt ?? 0, cond.op, cond.value);
     case 'engagedAdvantageGap': return applyCompareOp(ctx.engagedAdvantageGap ?? 0, cond.op, cond.value);
     case 'foeInLoS': return !!ctx.foeInLoS;
+    case 'hiddenFromFoes': return !!ctx.hiddenFromFoes;
+    case 'engaged': return !!ctx.engaged;
+    case 'nearestFoe': return applyCompareOp(ctx.nearestFoeDist ?? Infinity, cond.op, cond.value);
+    case 'capability': {
+      const a = cond.who === 'caster' ? ctx.caster : ctx.target;
+      return a ? applyCompareOp(a.capabilities?.[cond.id] ?? 0, cond.op ?? '>=', cond.value ?? 1) : false;
+    }
     case 'relation': {
       const a = cond.who === 'caster' ? ctx.caster : ctx.target;
       if (!a) return false;
@@ -209,6 +247,19 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
  *  UNIQUE pour que tous les sites (triggers, `if`, choix de dialogue) lisent le MÊME état. */
 export function conditionCtx(s: { flags: Record<string, boolean>; gameTime: number; party?: ConditionCtx['party']; money?: Purse }): ConditionCtx {
   return { flags: s.flags, gameTime: s.gameTime, party: s.party, money: s.money };
+}
+
+/** Difficulté EFFECTIVE d'un `FlowTest` : la PREMIÈRE entrée `difficultyBy` dont la Condition est vraie
+ *  impose sa difficulté ; sinon `difficulty` (défaut Intermédiaire). SOURCE UNIQUE — voie inline (ennemi/
+ *  auto), étape de cascade (héros) et hors-combat la partagent (Brisé : caché/proche/loin, LDB 16 l.58). */
+export function resolveTestDifficulty(ft: FlowTest, cc: ConditionCtx): Difficulty {
+  for (const d of ft.difficultyBy ?? []) if (evalCondition(d.cond, cc)) return d.difficulty;
+  return ft.difficulty ?? 'intermediaire';
+}
+
+/** Le `gate` d'un `FlowTest` est-il ouvert (Test à jouer) ? Vrai si absent ; sinon évalue la Condition. */
+export function flowTestGateOpen(ft: FlowTest, cc: ConditionCtx): boolean {
+  return ft.gate == null || evalCondition(ft.gate, cc);
 }
 
 /** Spécification d'un jet de compétence/caractéristique différé (→ modale) — TOUT le métier du Test,
@@ -247,6 +298,13 @@ export interface FlowTest {
   /** Le Test est sauté si la cible appartient à l'un de ces Groupes (Morsure de l'hiver : hors
    *  Mort-vivant/Démon). Même `groupMatch` que l'op `test`. */
   exceptGroups?: string[];
+  /** GATE générique : le Test n'a lieu QUE si cette Condition est vraie (sinon no-op — ni étape ni branche,
+   *  comme `unlessImmune`/`onlyGroups`). Généralise ces gates à l'algèbre de Conditions (Brisé : « pas
+   *  Engagé OU Cœur vaillant, ET pions restants »). Évaluée AVANT le jet par `resolveFlowTest`/`resolveInlineFlowTest`. */
+  gate?: Condition;
+  /** Difficulté DYNAMIQUE : la PREMIÈRE Condition vraie impose sa difficulté ; sinon `difficulty` (défaut
+   *  Intermédiaire). Brisé (LDB 16 l.58) : caché → Accessible, ennemi à ≤3 → Très difficile, sinon Intermédiaire. */
+  difficultyBy?: { cond: Condition; difficulty: Difficulty }[];
   /** Test OPPOSÉ (Assommante, LDB 62 l.268 : « Test opposé Force/Résistance ») : le côté qui jette CE
    *  Test (`skill`/`characteristic` ci-dessus) est le DÉFENSEUR (la cible/victime) ; l'ATTAQUANT (le
    *  porteur de l'effet) oppose `attacker`[+`attackerSkill`], pré-jeté et FIGÉ. L'issue success/sl du

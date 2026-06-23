@@ -872,5 +872,16 @@
         }
       }
     ]
+  },
+  {
+    "id": "brise-coque",
+    "label": "Brise-coque",
+    "type": "Atout",
+    "subType": "Arme",
+    "desc": "Cette munition est conçue pour traverser les structures en bois en y laissant de gros trous. Quand elle touche une structure en bois, par exemple un bateau, elle inflige +2 Dégâts et gagne l'atout Dévastatrice.",
+    "source": {
+      "book": "MDG",
+      "page": 48
+    }
   }
 ]

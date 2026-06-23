@@ -29,6 +29,9 @@ export interface TestScenario {
   worldMap?: WorldMap;
   /** Bourse de départ (le lancement écrase la richesse par défaut) — ex. payer la diligence. */
   money?: { gold: number; silver: number; brass: number };
+  /** Règles optionnelles pré-activées au lancement (mêmes ids que le panneau Règles maison, donc
+   *  modifiables en jeu) — ex. `{ 'travel-etapes': true }` pour le Voyage par Étapes EDOC. */
+  rules?: Record<string, import('../../engine/policy').RuleValue>;
 }
 
 /** Arène dégagée + point de départ des héros (base des scénarios de combat direct). */

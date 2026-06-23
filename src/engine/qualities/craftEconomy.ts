@@ -4,8 +4,8 @@
  * N'agit que sur les qualités `subType: 'Objet'` (les qualités d'arme/armure n'altèrent pas le prix).
  */
 import { resolveQualities, type QualityCarrier } from './dispatch';
+import type { Availability } from '../types';
 
-export type Availability = 'Commune' | 'Limitée' | 'Rare' | 'Exotique';
 /** Échelle du plus COURANT au plus RARE (LDB 59). */
 export const AVAILABILITY_LADDER: Availability[] = ['Commune', 'Limitée', 'Rare', 'Exotique'];
 

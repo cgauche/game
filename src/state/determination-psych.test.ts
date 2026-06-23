@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { isPsychImmune, clearPsychOf } from '../engine/psychology';
-import { attackModifiers } from '../engine/combat';
+import { psychDRAdjust } from '../engine/combat';
 import { traumaCharPenalties, traumaMovementHalved, traumaDodgePenalty } from '../engine/trauma';
 import type { Combatant } from '../engine/types';
 
@@ -31,16 +31,13 @@ describe('clearPsychOf — les effets psy d\'une créature finissent à sa mort'
   });
 });
 
-describe('Immunité psy → AUCUN modificateur de combat psy (attackModifiers, LDB 17 l.62)', () => {
-  it('une Peur active donne −1 DR, mais sous immunité Détermination ce malus disparaît', () => {
-    const weapon = { name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] } as never;
+describe('Immunité psy → AUCUN modificateur de combat psy (psychDRAdjust, LDB 17 l.62)', () => {
+  it('une Peur active donne −1 DR (psychDRAdjust), mais sous immunité Détermination ce malus disparaît', () => {
     const target = C({ id: 't', groups: [], conditions: [], size: 'moyenne' });
     const afraid = C({ advantage: 0, conditions: [], psychState: [{ type: 'peur', sourceId: 't', indice: 2, calmeDR: 0 } as never] });
-    const mods = attackModifiers(afraid, target, weapon, { kind: 'melee' });
-    expect(mods.some((m) => m.label === 'Peur' && m.value === -10)).toBe(true);
+    expect(psychDRAdjust(afraid, target)).toBe(-1); // RAW : −1 DR au jet, pas un −10 sur la cible
     afraid.activeEffects = [{ label: 'D', bonus: 0, duration: { scale: 'rounds', left: 2 }, psychImmune: true } as never]; // Détermination active
-    const mods2 = attackModifiers(afraid, target, weapon, { kind: 'melee' });
-    expect(mods2.some((m) => m.label === 'Peur')).toBe(false); // immunisé → plus de malus
+    expect(psychDRAdjust(afraid, target)).toBe(0); // immunisé (LDB 17 l.62) → plus de malus
   });
 });
 

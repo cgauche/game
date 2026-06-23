@@ -215,6 +215,16 @@ export function featureLevel(c: Combatant, key: keyof CombatFeature): number {
   return levelSum(c, (d) => !!d[key]);
 }
 
+/** Agrège les capacités de combat BOOLÉENNES de `c` en `Record<clé, niveau>` (somme des niveaux des
+ *  features qui portent le drapeau) — vue éditable lue par la Condition `capability` (Cœur vaillant
+ *  `braveheart`…). Champs non-booléens (offHandPenalty/reloadDR/attackModes) ignorés. */
+export function aggregateCapabilities(c: Combatant): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const { def, ctx } of featuresOf(c))
+    for (const [k, v] of Object.entries(def)) if (v === true) out[k] = (out[k] ?? 0) + ctx.level;
+  return out;
+}
+
 /** Résistance à la Magie — TALENT (LDB 10) : −2 × niveau au DR des Sorts affectant le porteur. */
 export function talentMagicResistance(c: Combatant): number {
   return 2 * levelSum(c, (d) => !!d.magicResistance2);

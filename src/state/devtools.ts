@@ -253,6 +253,7 @@ export function buildApi() {
       if (!sc) return `❌ « ${id} » introuvable — ids : ${testScenarios.map((t) => t.id).join(', ')}`;
       const s = g();
       if (seed != null) s.seedRng(seed);
+      if (sc.rules) for (const [rid, v] of Object.entries(sc.rules)) setRule(rid, v);
       s.setParty(sc.makeParty());
       if (sc.extraScenes?.length || sc.worldMap) s.loadProject([sc.scene, ...(sc.extraScenes ?? [])], sc.scene.id, sc.worldMap ?? null);
       else s.startScene(sc.scene);

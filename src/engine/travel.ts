@@ -26,29 +26,35 @@ import { testValue } from './skills';
 import { addCondition } from './conditions';
 import { effectiveMovement, encumbrancePenalties } from './encumbrance';
 import { Money, fromBrass } from './money';
-import transportsJson from '../data/transports.json';
+import { VehicleData } from './types';
+import vehiclesJson from '../data/vehicles.json';
 
-/** Classe d'un transport payant : prix RAW en sous (PA) par kilomètre ET par passager (l.207-219). */
-export interface TransportClass { key: string; label: string; brassPerKm: number; }
-/** Transport payant ÉDITABLE (`src/data/transports.json`). `movement` = Déplacement du véhicule (km/h). */
-export interface TransportData { id: string; label: string; movement: number; classes: TransportClass[]; }
+/** FOYER UNIQUE des véhicules/embarcations (`src/data/vehicles.json`), data-driven (cf. `VehicleData`). */
+export const VEHICLES_LIST = vehiclesJson as VehicleData[];
+const VEHICLE_BY_ID: Map<string, VehicleData> = new Map(VEHICLES_LIST.map((v) => [v.id, v]));
 
-/** Transports payants RAW (l.210-219), en DONNÉE éditable. */
-export const TRANSPORTS_LIST = transportsJson as TransportData[];
-export type TransportId = (typeof TRANSPORTS_LIST)[number]['id'];
+/** Transports payants RAW (l.210-219) = véhicules dotés d'une facette `travel` (passage payant). */
+export const TRAVEL_VEHICLES: VehicleData[] = VEHICLES_LIST.filter((v) => v.travel);
 
-/** Index par `id` des transports — `TRANSPORTS[mode]` (accès historique des consommateurs). */
-export const TRANSPORTS: Record<TransportId, TransportData> = Object.fromEntries(
-  TRANSPORTS_LIST.map((t) => [t.id, t]),
-) as Record<TransportId, TransportData>;
+/** Mode de voyage : `'pied'` (Mouvement du groupe) OU l'`id` d'un véhicule à passage payant (`vehicles.json`). */
+export type TravelMode = 'pied' | string;
 
-/** Mode de voyage : `'pied'` (Mouvement du groupe) OU l'`id` d'un transport payant (`transports.json`). */
-export type TravelMode = 'pied' | TransportId;
+/** Facette `travel` (passage payant) d'un mode ≠ `'pied'` — source UNIQUE des classes/Déplacement.
+ *  Renvoie `undefined` si le mode n'est pas un véhicule à passage payant. */
+export function vehicleTravel(mode: TravelMode): NonNullable<VehicleData['travel']> | undefined {
+  return mode === 'pied' ? undefined : VEHICLE_BY_ID.get(mode)?.travel;
+}
 
-export const TRAVEL_MODE_LABEL: Record<TravelMode, string> = {
+export const TRAVEL_MODE_LABEL: Record<string, string> = {
   pied: 'À pied',
-  ...Object.fromEntries(TRANSPORTS_LIST.map((t) => [t.id, t.label])),
-} as Record<TravelMode, string>;
+  ...Object.fromEntries(TRAVEL_VEHICLES.map((v) => [v.id, v.label])),
+};
+
+/** Pictogramme d'un mode de voyage (donnée `vehicle.icon` ; `'pied'` → 🦶, défaut véhicule → 🚐). */
+export function travelModeIcon(mode: TravelMode): string {
+  if (mode === 'pied') return '🦶';
+  return VEHICLE_BY_ID.get(mode)?.icon ?? '🚐';
+}
 
 /** Défauts paramétrables (surchargés par la carte du monde / la route dans l'éditeur). */
 export const TRAVEL_DEFAULTS = {
@@ -70,7 +76,7 @@ export function partyWalkSpeed(party: Combatant[]): number {
 /** Vitesse de voyage (km/h) selon le mode. `movementOverride` = modèle rapide/lent (M ±1, l.208). */
 export function travelSpeed(party: Combatant[], mode: TravelMode, movementOverride?: number): number {
   if (mode === 'pied') return movementOverride ?? partyWalkSpeed(party);
-  return movementOverride ?? TRANSPORTS[mode].movement;
+  return movementOverride ?? vehicleTravel(mode)!.movement;
 }
 
 export interface TravelPlanCalc {
@@ -102,7 +108,8 @@ export function transportCost(
   passengers: number,
   brassPerKmOverride?: number,
 ): Money {
-  const cls = TRANSPORTS[mode].classes.find((c) => c.key === classKey) ?? TRANSPORTS[mode].classes[0];
+  const classes = vehicleTravel(mode)!.classes;
+  const cls = classes.find((c) => c.key === classKey) ?? classes[0];
   const perKm = brassPerKmOverride ?? cls.brassPerKm;
   return fromBrass(Math.ceil(perKm * km) * Math.max(1, passengers));
 }

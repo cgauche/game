@@ -41,7 +41,7 @@ import { resolveRun } from '../engine/movement';
 import { testValue } from '../engine/skills';
 import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR, resolveCounterspell, counterspellOutcomeFrom, castTestOf, castingValue } from '../engine/magic';
 import { effectiveChar, bonus } from '../engine/characteristics';
-import { resolveFrenzyEntry, calmeValue, CIBLE_TYPES } from '../engine/psychology';
+import { resolveFrenzyEntry, calmeValue, psychResolution } from '../engine/psychology';
 import { findSpellById } from '../data/index';
 
 /** Re-dérive une attaque FIGÉE avec un jet d'attaquant modifié (Chance +1 DR / Résilience / dé
@@ -487,7 +487,7 @@ export const FLOWS = {
       forced: true,
       picker: (st) => {
         const cp = st.combatPsych;
-        const isExtendedPeur = !!cp && cp.kind !== 'terreur' && !CIBLE_TYPES.has(cp.kind);
+        const isExtendedPeur = !!cp && psychResolution(cp.kind).mode === 'extended';
         return st.forced && isExtendedPeur && st.target != null && st.result
           ? { roll: st.result.roll, target: st.target, critable: false }
           : null;

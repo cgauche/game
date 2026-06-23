@@ -73,11 +73,18 @@ function stripUndef(p: Palette): Palette {
  *    couleur choisie → recoloriage cohérent (les ombres suivent).
  */
 export function buildTokenMap(stored: StoredPalette, overrides: Palette = {}): Record<string, string> {
-  const ov = stripUndef(overrides);
+  const ov = stripUndef(overrides) as Record<string, string>;
   const out: Record<string, string> = {};
-  for (const slot of SLOTS) {
+  // Bases CUSTOM qu'un plan déclare AU-DELÀ des slots créature (ex. navire : `coque`/`voile`/`mat`) —
+  // adapté, pas tordu : on ne détourne plus `vet1`/`cuir`, chaque plan nomme ses propres jetons.
+  const slotSet = new Set<string>(SLOTS);
+  const customBases = [...new Set(
+    Object.keys(stored).map((k) => k.replace(/(O|H)$/, '')).filter((b) => !slotSet.has(b)),
+  )];
+  for (const slot of [...SLOTS, ...customBases]) {
     const userBase = ov[slot];
-    const base = userBase ?? stored[slot] ?? DEFAULT_PALETTE[slot];
+    const base = userBase ?? stored[slot] ?? (DEFAULT_PALETTE as Record<string, string>)[slot];
+    if (base == null) continue; // base custom non fournie → rien à dériver
     for (const [suf, f] of SHADES) {
       const token = slot + suf;
       if (userBase != null) {

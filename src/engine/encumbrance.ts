@@ -18,7 +18,7 @@
  */
 import { Combatant } from './types';
 import { maxEncumbrance, totalEncumbrance } from './items';
-import { hasCondition } from './conditions';
+import { conditionGating } from './conditions';
 import { traumaMovementHalved, passiveMoveMod } from './trauma';
 import encumbranceTiersJson from '../data/encumbranceTiers.json';
 
@@ -62,16 +62,18 @@ export function encumbrancePenalties(c: Combatant): EncumbrancePenalties {
  */
 export function effectiveMovement(c: Combatant): number {
   const p = encumbrancePenalties(c);
-  // Empêtré (LDB 16-États l.85) / Surpris (l.132 « ni Mouvement ni Action ») : Mouvement = 0.
-  if (p.immobile || hasCondition(c, 'empetre') || hasCondition(c, 'surpris')) return 0;
+  // Blocage de Mouvement lu en DONNÉES (`gating.movement` des États : Empêtré l.85 / Surpris l.132 « ni
+  // Mouvement ni Action » → `none` ; Sonné l.123 / À Terre l.37 « ramper à ½ Mouvement » → `half`).
+  const gate = conditionGating(c).movement;
+  if (p.immobile || gate === 'none') return 0;
   // `moveMod` ADDITIF du collecteur passif unifié : mutation PERMANENTE (Pattes d'animaux +1 / Corpulent /
   // Court sur pattes −1, kind `intrinsèque`) + sort actif (kind `magique`) — sommés avant tout demi-Mouvement.
   const mv = Math.max(0, c.movement + passiveMoveMod(c));
   // `movePenalty` n'est null que sur le palier immobilisé (déjà court-circuité ci-dessus) → `?? 0` sûr.
   const base = p.tier === 0 ? mv : Math.min(mv, Math.max(mv - (p.movePenalty ?? 0), p.moveFloor));
-  // Demi-Mouvement : Sonné (LDB 16 l.123), À Terre (= ramper à ½ Mouvement, l.37), OU traumatisme de
-  // jambe/torse (LDB 18 : Déchirure/Fracture). Un seul halving (pas de cumul inventé).
-  return (hasCondition(c, 'sonne') || hasCondition(c, 'a-terre') || traumaMovementHalved(c)) ? Math.floor(base / 2) : base;
+  // Demi-Mouvement : `gating.movement:'half'` (Sonné/À Terre) OU traumatisme de jambe/torse (LDB 18 :
+  // Déchirure/Fracture). Un seul halving (pas de cumul inventé).
+  return (gate === 'half' || traumaMovementHalved(c)) ? Math.floor(base / 2) : base;
 }
 
 /** Modificateur signé aux tests d'Agilité dû à l'Encombrement (0 / −10 / −20). */

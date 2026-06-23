@@ -9,6 +9,7 @@ import {
   reverseRoll,
   hitLocation,
   hitLocationByShape,
+  shipHitLocation,
   locationLabel,
   resolveMelee,
   rangeBandModifier,
@@ -347,6 +348,17 @@ describe('Localisation par forme du corps (LDB « Point d’Impact des Créature
     expect(locationLabel('corps', 'araignee')).toBe('Abdomen');
     expect(locationLabel('tete', 'serpent')).toBe('Tête'); // inchangé
     expect(locationLabel('corps')).toBe('Corps'); // défaut humanoïde
+  });
+  it('navire : MÊME système (data + findTableEntry), colonne par gréement (MDG ch.13)', () => {
+    // Un véhicule/navire = un Combattant touché par la même résolution ; seule la table de sortie diffère.
+    expect(shipHitLocation('avirons', 15)).toBe('avirons');
+    expect(shipHitLocation('voile', 15)).toBe('greement');
+    expect(shipHitLocation('mixte', 30)).toBe('avirons');
+    for (const rig of ['avirons', 'voile', 'mixte'] as const) {
+      expect(shipHitLocation(rig, 1)).toBe('equipage');
+      expect(shipHitLocation(rig, 50)).toBe('coque');
+      expect(shipHitLocation(rig, 100)).toBe('cargaison');
+    }
   });
 });
 

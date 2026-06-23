@@ -3,11 +3,12 @@
  * jusqu'à 20 % avec un Succès Stupéfiant (DR net ≥ 6) ou le talent Négociateur. Vente (l.22) :
  * base = ½ du prix listé, on obtient ¼ à ½ après Marchandage.
  */
+import { SL_ASTOUNDING } from './tests';
 
 /** Facteur appliqué au prix d'ACHAT : perdu = 1 (plein), gagné = 0.9, gagné fort (DR≥6 ou Négociateur) = 0.8. */
 export function bargainBuyFactor(won: boolean, drNet: number, negotiator: boolean): number {
   if (!won) return 1;
-  return drNet >= 6 || negotiator ? 0.8 : 0.9;
+  return drNet >= SL_ASTOUNDING || negotiator ? 0.8 : 0.9; // DR net Stupéfiant (LDB 12 l.107)
 }
 
 /** Facteur appliqué à la base de VENTE (½ du listé) : gagné = 1 (½ plein), perdu = 0.5 (→ ¼). */

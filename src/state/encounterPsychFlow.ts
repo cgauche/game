@@ -15,7 +15,7 @@ import { Scene } from './scene';
 import type { CascadeStep } from './pendings';
 import { spawnEnemy } from './spawn';
 import { encounterPsych } from '../engine/encounterPsych';
-import { calmeValue, CIBLE_TYPES, CIBLE_LABEL, PsychType, terreurBrise, suppressSupersededPsych } from '../engine/psychology';
+import { calmeValue, CIBLE_TYPES, CIBLE_LABEL, PsychType, terreurBrise, psychResolution, suppressSupersededPsych } from '../engine/psychology';
 import { psychologyLabel } from '../data';
 import { t } from '../i18n';
 import { addCondition } from '../engine/conditions';
@@ -89,17 +89,18 @@ registerCascadeApplier(
     // étendu), « immune » ≈ « inerte » = même état final qu'un succès (la source ne se re-déclenche pas) :
     // on pose le marqueur INERTE (comme un succès) — pas de Brisé de Terreur, trait ciblé non actif — mais
     // avec une issue distincte au journal (« temporairement insensible »). Cohérent avec l'applier combat.
+    const res = psychResolution(ep.kind); // mode + conséquences en DONNÉES (psychology.json)
     if (step.immune) {
-      if (ep.kind === 'terreur') hero.psychState.push({ type: 'peur', sourceId: ep.sourceId, indice: 0, calmeDR: 0 });
+      if (res.mode === 'terreur') hero.psychState.push({ type: res.becomes ?? 'peur', sourceId: ep.sourceId, indice: 0, calmeDR: 0 });
       else if (CIBLE_TYPES.has(ep.kind)) hero.psychState.push({ type: ep.kind, cible: ep.cible, sourceId: ep.sourceId, active: false });
       else hero.psychState.push({ type: 'peur', sourceId: ep.sourceId, indice: ep.indice, calmeDR: ep.indice });
       set({ party: [...get().party] });
       return { journal: [`${hero.name} est temporairement insensible à la Psychologie (Détermination).`] };
     }
     const brise = terreurBrise(ep.indice, r.success, r.sl);
-    if (ep.kind === 'terreur') {
-      if (brise > 0) addCondition(hero, 'brise', brise);
-      hero.psychState.push({ type: 'peur', sourceId: ep.sourceId, indice: r.success ? 0 : ep.indice, calmeDR: 0 }); // la Terreur devient une Peur (LDB 21 l.57)
+    if (res.mode === 'terreur') {
+      if (brise > 0 && res.failCondition) addCondition(hero, res.failCondition, brise);
+      if (res.becomes) hero.psychState.push({ type: res.becomes, sourceId: ep.sourceId, indice: r.success ? 0 : ep.indice, calmeDR: 0 }); // la Terreur devient une Peur (LDB 21 l.57)
     } else if (CIBLE_TYPES.has(ep.kind)) {
       hero.psychState.push({ type: ep.kind, cible: ep.cible, sourceId: ep.sourceId, active: !r.success });
     } else {

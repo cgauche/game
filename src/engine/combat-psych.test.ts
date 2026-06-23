@@ -1,41 +1,39 @@
 import { describe, it, expect } from 'vitest';
-import { attackModifiers } from './combat';
-import type { Combatant, Weapon } from './types';
-
-const SWORD: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+import { psychDRAdjust } from './combat';
+import type { Combatant } from './types';
 
 function mk(opts: Partial<Combatant>): Combatant {
   return {
     id: 'c', name: 'c', kind: 'enemy', advantage: 0, conditions: [],
     characteristics: {} as never, size: 'moyenne', psychState: [], groups: [],
-    weapons: [SWORD], armour: {} as never, skills: [], talents: [], movement: 4,
+    weapons: [], armour: {} as never, skills: [], talents: [], movement: 4,
     wounds: { current: 10, max: 10 }, ...opts,
   } as Combatant;
 }
 
-describe('attackModifiers — effets des Traits psy ciblés (LDB 21, P3)', () => {
-  it('Animosité active vs un membre du groupe Cible → +10 (+1 DR)', () => {
+/**
+ * Modificateur de DR psychologique (LDB 21) — RAW en DEGRÉ DE RÉUSSITE (±1 DR), PAS en valeur cible
+ * (l'ancien ±10 sur la cible faussait probabilité ET DR). `psychDRAdjust` est ajouté à `atkSL` à la
+ * résolution d'attaque (cf. combineOpposed/resolveMeleePassive/tir non opposé).
+ */
+describe('psychDRAdjust — Traits psy modulent le DR de l’attaque (LDB 21)', () => {
+  it('Animosité active vs un membre du groupe Cible → +1 DR', () => {
     const att = mk({ psychState: [{ type: 'animosite', cible: 'Elfes', active: true }] });
     const tgt = mk({ id: 't', groups: ['Elfe', 'Soldat'] });
-    const mods = attackModifiers(att, tgt, SWORD, { kind: 'melee' });
-    expect(mods.some((m) => m.value === 10 && /Anim|Haine/i.test(m.label))).toBe(true);
+    expect(psychDRAdjust(att, tgt)).toBe(1);
   });
 
   it('Animosité active vs un NON-membre → aucun bonus', () => {
     const att = mk({ psychState: [{ type: 'animosite', cible: 'Elfes', active: true }] });
-    const tgt = mk({ id: 't', groups: ['Humain'] });
-    const mods = attackModifiers(att, tgt, SWORD, { kind: 'melee' });
-    expect(mods.some((m) => /Anim|Haine/i.test(m.label))).toBe(false);
+    expect(psychDRAdjust(att, mk({ id: 't', groups: ['Humain'] }))).toBe(0);
   });
 
   it('Animosité INACTIVE (résistée) → aucun bonus', () => {
     const att = mk({ psychState: [{ type: 'animosite', cible: 'Elfes', active: false }] });
-    const tgt = mk({ id: 't', groups: ['Elfe'] });
-    const mods = attackModifiers(att, tgt, SWORD, { kind: 'melee' });
-    expect(mods.some((m) => /Anim|Haine/i.test(m.label))).toBe(false);
+    expect(psychDRAdjust(att, mk({ id: 't', groups: ['Elfe'] }))).toBe(0);
   });
 
-  it('Haine active vs le groupe haï → immunité à la Peur de cette source (pas de −10) + bonus', () => {
+  it('Haine active vs le groupe haï → immunité à la Peur de cette source (pas de −1) + bonus → +1 DR net', () => {
     const tgt = mk({ id: 't', groups: ['Skaven'] });
     const att = mk({
       psychState: [
@@ -43,19 +41,20 @@ describe('attackModifiers — effets des Traits psy ciblés (LDB 21, P3)', () =>
         { type: 'haine', cible: 'Skavens', active: true },
       ],
     });
-    const mods = attackModifiers(att, tgt, SWORD, { kind: 'melee' });
-    expect(mods.some((m) => m.label === 'Peur')).toBe(false); // immunité Haine (l.41)
-    expect(mods.some((m) => m.value === 10)).toBe(true);
+    expect(psychDRAdjust(att, tgt)).toBe(1); // Peur annulée par Haine (l.41), +1 DR du groupe haï
   });
 
-  it('Peur sans immunité → −10', () => {
-    const tgt = mk({ id: 't', groups: [] });
+  it('Peur sans immunité → −1 DR', () => {
     const att = mk({ psychState: [{ type: 'peur', sourceId: 't', indice: 2, calmeDR: 0 }] });
-    const mods = attackModifiers(att, tgt, SWORD, { kind: 'melee' });
-    expect(mods.some((m) => m.label === 'Peur' && m.value === -10)).toBe(true);
+    expect(psychDRAdjust(att, mk({ id: 't', groups: [] }))).toBe(-1);
   });
 
-  it('Amour actif → immunité Peur + +10 (défend les aimés)', () => {
+  it('Peur VAINCUE (calmeDR ≥ indice) → aucun malus', () => {
+    const att = mk({ psychState: [{ type: 'peur', sourceId: 't', indice: 2, calmeDR: 2 }] });
+    expect(psychDRAdjust(att, mk({ id: 't', groups: [] }))).toBe(0);
+  });
+
+  it('Amour actif → immunité Peur + +1 DR (défend les aimés) → +1 DR net', () => {
     const tgt = mk({ id: 't', groups: [] });
     const att = mk({
       psychState: [
@@ -63,8 +62,6 @@ describe('attackModifiers — effets des Traits psy ciblés (LDB 21, P3)', () =>
         { type: 'amour', cible: 'Famille', active: true },
       ],
     });
-    const mods = attackModifiers(att, tgt, SWORD, { kind: 'melee' });
-    expect(mods.some((m) => m.label === 'Peur')).toBe(false);
-    expect(mods.some((m) => m.value === 10 && /Amour|Camaraderie/i.test(m.label))).toBe(true);
+    expect(psychDRAdjust(att, tgt)).toBe(1); // Peur annulée par Amour, +1 DR défense
   });
 });

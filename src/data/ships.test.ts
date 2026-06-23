@@ -1,0 +1,42 @@
+import { describe, it, expect } from 'vitest';
+import { VEHICLES_LIST } from '../engine/travel';
+import { vehicleCombatant } from '../engine/vehicle';
+import { shipHitLocation } from '../engine/combat';
+
+const ships = VEHICLES_LIST.filter((v) => v.ship);
+
+describe('Navires MDG (ch.12) — profils en donnée', () => {
+  it('17 navires, chacun avec coque (E/B/rig) + facette ship complète', () => {
+    expect(ships.length).toBe(17);
+    for (const s of ships) {
+      expect(s.hull?.char.E).toBeGreaterThan(0);
+      expect(s.hull?.char.B).toBeGreaterThan(0);
+      expect(['avirons', 'voile', 'mixte']).toContain(s.hull?.rig);
+      expect(s.hull?.propulsion).toBe('maritime');
+      expect(s.ship!.crew).toBeGreaterThan(0);
+      expect(s.ship!.sail || s.ship!.oars).toBeTruthy(); // au moins un mode de propulsion
+    }
+  });
+
+  it('gréement cohérent avec la propulsion (avirons/voile/mixte)', () => {
+    const by = (id: string) => ships.find((s) => s.id === id)!;
+    expect(by('coracle').hull!.rig).toBe('avirons'); // avirons seuls
+    expect(by('caraque').hull!.rig).toBe('voile'); // voiles seules
+    expect(by('langskip').hull!.rig).toBe('mixte'); // voiles + avirons
+  });
+
+  it('valeurs verbatim (Caraque E55/B90, Croiseur B275)', () => {
+    expect(ships.find((s) => s.id === 'caraque')!.hull!.char).toEqual({ E: 55, B: 90 });
+    expect(ships.find((s) => s.id === 'croiseur')!.hull!.char.B).toBe(275);
+  });
+
+  it("un navire devient un Combattant à coque, frappé via la localisation de son gréement", () => {
+    const cogue = VEHICLES_LIST.find((v) => v.id === 'cogue')!; // voile, E45/B50
+    const c = vehicleCombatant(cogue)!;
+    expect(c.bodyShape).toBe('vehicule');
+    expect(c.wounds.max).toBe(50);
+    expect(c.characteristics.E).toBe(45);
+    // un coup à d100=15 sur un voilier touche le Gréement (MDG ch.13)
+    expect(shipHitLocation(cogue.hull!.rig!, 15)).toBe('greement');
+  });
+});

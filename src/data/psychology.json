@@ -84,7 +84,12 @@
     "source": {
       "book": "LDB",
       "page": 192
-    }
+    },
+    "attackDR": {
+      "amount": -1,
+      "vs": "source"
+    },
+    "resolution": "extended"
   },
   {
     "id": "terreur",
@@ -94,7 +99,10 @@
     "source": {
       "book": "LDB",
       "page": 192
-    }
+    },
+    "resolution": "terreur",
+    "failCondition": "brise",
+    "becomes": "peur"
   },
   {
     "id": "animosite",
@@ -106,7 +114,12 @@
       "book": "LDB",
       "page": 192
     },
-    "endedByOtherPsych": true
+    "endedByOtherPsych": true,
+    "attackDR": {
+      "amount": 1,
+      "vs": "group"
+    },
+    "resolution": "binary"
   },
   {
     "id": "haine",
@@ -120,7 +133,12 @@
     },
     "immuneToFromTarget": [
       "peur"
-    ]
+    ],
+    "attackDR": {
+      "amount": 1,
+      "vs": "group"
+    },
+    "resolution": "binary"
   },
   {
     "id": "prejuge",
@@ -132,7 +150,8 @@
       "book": "LDB",
       "page": 192
     },
-    "endedByOtherPsych": true
+    "endedByOtherPsych": true,
+    "resolution": "binary"
   },
   {
     "id": "amour",
@@ -143,7 +162,13 @@
     "source": {
       "book": "LDB",
       "page": 192
-    }
+    },
+    "attackDR": {
+      "amount": 1,
+      "vs": "any"
+    },
+    "cancelsFear": true,
+    "resolution": "binary"
   },
   {
     "id": "camaraderie",
@@ -154,7 +179,12 @@
     "source": {
       "book": "LDB",
       "page": 192
-    }
+    },
+    "attackDR": {
+      "amount": 1,
+      "vs": "any"
+    },
+    "resolution": "binary"
   },
   {
     "id": "phobie",
@@ -165,6 +195,7 @@
     "source": {
       "book": "LDB",
       "page": 192
-    }
+    },
+    "resolution": "binary"
   }
 ]

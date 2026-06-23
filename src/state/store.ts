@@ -5,6 +5,7 @@
  */
 import { create } from 'zustand';
 import { Combatant, CharKey, HitLocation } from '../engine/types';
+import { extendedTestStep } from '../engine/tests';
 import { type AttackKind } from '../engine/creatureAttacks';
 import { battleRng, seedBattleRng } from './battleRng';
 import { facingToward } from '../gameIso/rig/facing';
@@ -143,6 +144,11 @@ export interface BattleState {
   /** « Avantages et Magie » (LDB 46 l.176) : cibles déjà visées par un Sort d'un Domaine CE Round —
    *  re-viser la même cible avec le même Vent donne +1 Avantage au lanceur. Purgé chaque Round. */
   domainCasts?: { targetId: string; domain: string }[];
+  /** Mort par Hémorragique (LDB 16 l.105) — combattants pour qui le jet de fin de Round (10 %/pion) a
+   *  donné la MORT ce Round : marqués par le hook `bleed-death` (jet RNG, une fois), FINALISÉS par
+   *  `resolveRoundBoundary` (qui peut SUSPENDRE pour un héros à Destin). `deathLine` = la ligne de
+   *  journal pré-formée, annoncée APRÈS la décision de Destin. Purgé une fois tous finalisés. */
+  bleedDoomed?: { id: string; deathLine: string }[];
   /** Instantané positionnel pris au PREMIER segment de Mouvement du Tour (R6/LOT 6) : permet
    *  d'ANNULER tout le déplacement tant qu'aucune Action n'a été prise (`cancelMove`). Restaure
    *  positions de TOUS les combattants (un grand a pu en déplacer d'autres), orientation et
@@ -802,6 +808,9 @@ export interface GameState extends RollFlowActionsMap {
   startTravel: (routeId: string, mode: import('../engine/travel').TravelMode, opts?: { classKey?: string; hoursPerDay?: number }) => void;
   /** Reprend un voyage interrompu par une péripétie. */
   resumeTravel: () => void;
+  /** Épingle le RÔLE de marche PERSISTANT d'un héros (`travelRole`, id d'Activité de voyage EDOC ch.5),
+   *  ou le détache (`null` ⇒ rôle inféré). Réutilisé au départ de chaque trajet (0 ré-assignation/jour). */
+  setTravelRole: (heroId: string, role: string | null) => void;
   /** Dernier jour (index d'horloge) traité par l'entretien quotidien (rations/faim) — anti-double-comptage. */
   lastUpkeepDay: number;
 }
@@ -1278,15 +1287,10 @@ export const useGame = create<GameState>((set, get) => ({
     if (!p) return;
     const cur = p.rounds[p.rounds.length - 1];
     if (!cur?.result) return; // le Round courant doit avoir été lancé
-    // Cumul (LDB 12 l.200) : « les DR obtenus à chaque Round sont additionnés jusqu'à atteindre une
-    // valeur cible. Si le DR total passe en dessous de 0, vous pouvez recommencer depuis le début. »
-    // Règle optionnelle (LDB 12 l.208) : un Round réussi compte ≥ +1, un Round raté ≤ −1 (DR 0 non neutre).
-    const sl = rule('test-extended-min-sl')
-      ? (cur.result.success ? Math.max(1, cur.result.sl) : Math.min(-1, cur.result.sl))
-      : cur.result.sl;
-    let total = p.total + sl;
-    if (total < 0) total = 0;
-    if (total >= p.targetDR) {
+    // Cumul LDB 12 mutualisé (`extendedTestStep`) : un Round réussi ajoute son DR, un raté le retire
+    // (planché à 0) ; règle opt. l.208 « DR 0 = ±1 min » via `test-extended-min-sl`.
+    const { total, done } = extendedTestStep(p.total, cur.result, p.targetDR, !!rule('test-extended-min-sl'));
+    if (done) {
       set({ pendingExtendedTest: null, pendingCascade: null }); // ferme la cascade-hôte aussi
       get().log(`${p.label} : réussi (DR cumulé ${total} / ${p.targetDR}).`);
       if (p.flag) set({ flags: { ...get().flags, [p.flag]: true } }); // gate la suite (porte/serrure d'éditeur)
@@ -1458,6 +1462,9 @@ export const useGame = create<GameState>((set, get) => ({
   closeWorldMap: () => set({ worldMapOpen: false }),
   startTravel: (routeId, mode, opts) => travelFlow.startTravel(get, set, routeId, mode, opts),
   resumeTravel: () => travelFlow.resumeTravel(get, set),
+  setTravelRole: (heroId, role) => set({
+    party: get().party.map((h) => h.id === heroId ? { ...h, ...(role ? { travelRole: role } : { travelRole: undefined }) } : h),
+  }),
   /** Acquitte le récit de voyage. Une EMBUSCADE différée (`recap.then`) se déclenche ICI :
    *  le joueur a lu ce qui lui arrive, le combat démarre — fermer la modale (bouton/Échap)
    *  ne l'évite pas, et `resumeTravel` refuse tant qu'elle n'est pas acquittée. */

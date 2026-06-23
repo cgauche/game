@@ -1,41 +1,49 @@
 import { describe, it, expect } from 'vitest';
-import { brokenRecovery } from './combatFlow';
-import { seedBattleRng } from './battleRng';
+import { fireConditionEffects } from './triggeredEffects';
+import { seedBattleRng, battleRng } from './battleRng';
 import { stacks } from '../engine/conditions';
 import type { Combatant } from '../engine/types';
 
+/**
+ * Récupération du Brisé (LDB 16 l.55-59) — désormais 100 % DATA-DRIVEN (etats.json `brise.effects`,
+ * 2 effets `onRoundEnd`). On dirige la voie INLINE (ennemi/auto) via le DISPATCHER UNIQUE
+ * `fireConditionEffects(onRoundEnd)` (sans `set` → résolution inline) et on vérifie les invariants RAW :
+ *  - non Engagé + ennemi loin + Calme réussi → retire ≥ 1 État Brisé (le Test subit le −10 de l'État Brisé
+ *    lui-même, LDB 16 l.55 : −10 à tous les Tests sauf course/dissimulation ; Calme n'est PAS excepté) ;
+ *  - Engagé avec un ennemi → AUCUN Test (gate fermée, l.57) → inchangé ;
+ *  - aucun Brisé → no-op.
+ */
 const scene = () =>
   ({ id: 's', nom: '', description: '', dimensions: { w: 12, h: 12 }, levels: [{ z: 0, tiles: Array(144).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [], flags: {} } as never);
 
 const getFn = (battle: unknown, scn: unknown) => () => ({ battle, scene: scn } as never);
 
 function broken(over: Partial<Combatant>): Combatant {
-  return { id: 'h', kind: 'hero', name: 'H', pos: { x: 1, y: 1 }, conditions: [{ name: 'brise', value: 2 }], characteristics: { FM: 80 }, skills: [], engagedWith: [], wounds: { current: 10, max: 10 }, ...over } as unknown as Combatant;
+  return { id: 'h', kind: 'hero', name: 'H', pos: { x: 1, y: 1 }, conditions: [{ name: 'brise', value: 2 }], characteristics: { FM: 80 }, skills: [], engagedWith: [], wounds: { current: 10, max: 10 } } as unknown as Combatant;
 }
 const foe = (over: Partial<Combatant>): Combatant => ({ id: 'e', kind: 'enemy', name: 'E', pos: { x: 9, y: 9 }, conditions: [], wounds: { current: 10, max: 10 }, ...over } as unknown as Combatant);
 
-describe('brokenRecovery — récupération du Brisé en fin de Round (LDB 16 l.57-59)', () => {
+describe('Récupération du Brisé en fin de Round (LDB 16 l.55-59) — data-driven', () => {
   it('non Engagé, ennemi loin, Calme réussi → retire ≥ 1 État Brisé', () => {
     seedBattleRng(1);
-    const h = broken({});
+    const h = { ...broken({}) };
     const battle = { combatants: [h, foe({})] };
-    const lines: string[] = [];
-    brokenRecovery(getFn(battle, scene()), (l) => lines.push(l));
-    expect(stacks(h, 'brise')).toBeLessThan(2); // FM 80 → Test de Calme réussi
+    const lines = fireConditionEffects(getFn(battle, scene()), h, 'onRoundEnd', { rng: battleRng() });
+    expect(stacks(h, 'brise')).toBeLessThan(2); // FM 80 (−10 Brisé → 70) → Test de Calme réussi au seed 1
     expect(lines.join(' ')).toMatch(/Brisé/);
   });
 
-  it('Engagé avec un ennemi → AUCUN Test de récupération (LDB 16 l.57)', () => {
+  it('Engagé avec un ennemi → AUCUN Test de récupération (gate fermée, LDB 16 l.57)', () => {
     seedBattleRng(1);
-    const h = broken({ pos: { x: 5, y: 5 }, engagedWith: ['e'] });
-    const battle = { combatants: [h, foe({ pos: { x: 5, y: 6 } })] }; // adjacent, en vue
-    brokenRecovery(getFn(battle, scene()), () => {});
-    expect(stacks(h, 'brise')).toBe(2); // inchangé (Engagé + visible donc pas caché)
+    const h = { ...broken({}), pos: { x: 5, y: 5 }, engagedWith: ['e'] } as unknown as Combatant;
+    const battle = { combatants: [h, foe({ pos: { x: 5, y: 6 } })] }; // adjacent, en vue (donc pas caché)
+    fireConditionEffects(getFn(battle, scene()), h, 'onRoundEnd', { rng: battleRng() });
+    expect(stacks(h, 'brise')).toBe(2); // inchangé (Engagé + visible → ni Test ni retrait caché)
   });
 
   it('aucun Brisé → no-op', () => {
-    const h = broken({ conditions: [] });
-    brokenRecovery(getFn({ combatants: [h, foe({})] }, scene()), () => {});
+    const h = { ...broken({}), conditions: [] } as unknown as Combatant;
+    fireConditionEffects(getFn({ combatants: [h, foe({})] }, scene()), h, 'onRoundEnd', { rng: battleRng() });
     expect(stacks(h, 'brise')).toBe(0);
   });
 });

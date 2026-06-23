@@ -8,6 +8,7 @@ import { Combatant, ItemInstance } from '../engine/types';
 import { recomputeLoadout, itemFromTrappingById, addItemToHero } from '../engine/items';
 import { repairCostBrass } from '../engine/repair';
 import { bargainBuyFactor, bargainSellFactor } from '../engine/bargain';
+import { SL_ASTOUNDING } from '../engine/tests';
 import { craftPriceFactor, shiftAvailability } from '../engine/qualities/craftEconomy';
 import { rule } from '../engine/policy';
 import { partyBest } from '../engine/skills';
@@ -361,7 +362,7 @@ export function bargainConfirm(get: Get, set: Set): void {
   const drNet = pb.result.netSL;
   // « Rater de beaucoup » (LDB 60 l.12) = perdre l'opposé par un net DR ≥ 6 (symétrique du Succès Stupéfiant
   // +6 qui donne −20 %) → le marchand se méfie de votre monnaie : plus aucun marchandage cette visite.
-  const botch = !won && drNet >= 6;
+  const botch = !won && drNet >= SL_ASTOUNDING;
   const outcome = { won, drNet, negotiator: pb.negotiator };
   const patch = pb.mode === 'buy' ? { bargainBuy: outcome } : { bargainSell: outcome };
   set((s) => ({

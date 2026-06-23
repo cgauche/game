@@ -13,6 +13,8 @@ import { bonus, effectiveChar, effectiveArmourAt, baseWithTraits } from './chara
 import { bypassedAP } from './armourBypass';
 import { agilityTestPenalty } from './encumbrance';
 import { Combatant, HitLocation, Weapon, BodyShape, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS } from './types';
+import { findTableEntry } from './tables';
+import locJson from '../data/localisation.json';
 import { combatTestPenalty, meleeAttackerBonus, cannotDefend, hasCondition } from './conditions';
 import { effectiveWeaponDamage, effectiveWeapon } from './weaponDamage';
 import { traumaDodgePenalty, damageSBBonus } from './trauma';
@@ -23,7 +25,7 @@ import { incomingAttackMod, incomingDamageNullified } from './ops';
 import { isPsychImmune } from './psychology';
 import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, rangedOpposeWeapon, isMagicWeapon } from './qualities/dispatch';
 import { QUALITY_IDS } from './qualities/ids';
-import { weaponGroupLabel } from '../data';
+import { weaponGroupLabel, findPsychologyById } from '../data';
 import { offHandPenalty, talentDamageBonus, isSlayer, talentDamageReduction, talentRangedAPIgnore, ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust, talentInitiativeBonus } from './combatFeatures/dispatch';
 import { isEngagedWith, reachRank } from './engagement';
 import { rule } from './policy';
@@ -38,29 +40,38 @@ export function reverseRoll(r: number): number {
   return rev;
 }
 
-/** Tableau de Localisation humanoïde (Livre de base p. 159). */
+// ── Localisation des coups — FOYER UNIQUE data-driven (`src/data/localisation.json`) ──────────────
+// Un véhicule/navire encaisse un coup comme tout Combattant : MÊME résolution d'attaque, MÊME primitive
+// de lookup (`findTableEntry`), MÊME fichier de tables. Seul l'ENUM de sortie diffère (RAW) — un navire
+// n'a ni armure de Localisation ni Trauma humain → `ShipLocation` (MDG ch.13) ≠ `HitLocation` (LDB).
+
+/** Gréement d'un bateau — choisit la colonne de Localisation (MDG ch.13). */
+export type ShipRig = 'avirons' | 'voile' | 'mixte';
+/** Localisation d'un coup sur un bateau (MDG ch.13) — DISTINCTE de la `HitLocation` humaine. */
+export type ShipLocation = 'equipage' | 'avirons' | 'greement' | 'coque' | 'equipements' | 'cargaison';
+
+interface BodyLocEntry { min: number; max: number; loc: HitLocation }
+interface ShipLocEntry { min: number; max: number; avirons: ShipLocation; voile: ShipLocation; mixte: ShipLocation }
+const BODY_SHAPES = (locJson as { personnage: { shapes: Record<string, BodyLocEntry[]> } }).personnage.shapes;
+const SHIP_LOC = (locJson as { navire: { entries: ShipLocEntry[] } }).navire.entries;
+
+/** Tableau de Localisation humanoïde (LDB p.159) — un dé déjà INVERSÉ (1..100). */
 export function hitLocation(reversed: number): HitLocation {
-  if (reversed <= 9) return 'tete';
-  if (reversed <= 24) return 'brasG';
-  if (reversed <= 44) return 'brasD';
-  if (reversed <= 79) return 'corps';
-  if (reversed <= 89) return 'jambeG';
-  return 'jambeD';
+  return findTableEntry(BODY_SHAPES.humanoide, reversed).loc;
 }
 
 /**
- * Localisation selon la FORME du corps (LDB « Point d'Impact des Créatures » p.312).
- * - humanoïde / quadrupède / oiseau : Tableau humanoïde p.159 (mêmes cases, mêmes Tableaux de
- *   Critiques ; le quadrupède relit bras=membres antérieurs / jambes=membres postérieurs, l'oiseau
- *   bras=ailes — l'aile sans table propre se résout sur les Bras, p.312 ; seule l'étiquette change).
- * - serpent (Localisations Alternatives p.312) : 01-19 Tête, 20-00 Corps.
- * - araignée (Localisations Alternatives p.312) : 01-09 Tête, 10-79 Pattes (Tableau des Jambes),
- *   80-00 Abdomen (Tableau du Corps).
+ * Localisation selon la FORME du corps (LDB « Point d'Impact des Créatures » p.312), data-driven.
+ * Humanoïde / quadrupède / oiseau partagent la table humanoïde (seule l'étiquette change, p.312) ;
+ * serpent (01-19 Tête / 20-00 Corps) et araignée (01-09 / 10-79 Pattes / 80-00 Abdomen) ont la leur.
  */
 export function hitLocationByShape(reversed: number, shape: BodyShape = 'humanoide'): HitLocation {
-  if (shape === 'serpent') return reversed <= 19 ? 'tete' : 'corps';
-  if (shape === 'araignee') return reversed <= 9 ? 'tete' : reversed <= 79 ? 'jambeD' : 'corps';
-  return hitLocation(reversed); // humanoïde / quadrupède / oiseau : même tableau
+  return findTableEntry(BODY_SHAPES[shape] ?? BODY_SHAPES.humanoide, reversed).loc;
+}
+
+/** Localisation d'un coup (d100) sur un BATEAU du gréement donné (MDG ch.13) — `ShipLocation`. */
+export function shipHitLocation(rig: ShipRig, roll: number): ShipLocation {
+  return findTableEntry(SHIP_LOC, roll)[rig];
 }
 
 /** Étiquette FR d'une localisation pour une forme de corps (LDB p.312). */
@@ -233,6 +244,42 @@ export function weaponReachPenalty(attackerWeapon: Weapon, targetMelee: Weapon |
 }
 
 /**
+ * Modificateur de DEGRÉ DE RÉUSSITE psychologique de l'attaquant CONTRE `target` (LDB 21) — RAW en DR,
+ * jamais en valeur cible : Peur −1 DR (l.29, vs la source, sauf immunité Haine/Amour) ; Haine/Animosité
+ * +1 DR contre le groupe haï (l.22/41) ; Amour/Camaraderie +1 DR (défense des aimés/du groupe, l.77/82).
+ * Immunité psychologique (trait/Frénésie/Détermination, LDB 17 l.62) → 0. Sans Peur (LDB 10) ne donne pas
+ * d'immunité d'office : le malus suit l'ÉTAT réel (une Peur active non vaincue, `calmeDR < indice`).
+ * Appliqué à `atkSL` à chaque résolution d'attaque (cœur opposé + passes non opposées), une seule fois.
+ */
+export function psychDRAdjust(attacker: Combatant, target: Combatant | null): number {
+  if (!target || isPsychImmune(attacker)) return 0;
+  const psy = attacker.psychState ?? [];
+  const groups = target.groups ?? [];
+  // Peur ANNULÉE si un état actif l'immunise : Haine vs le groupe ciblé (`immuneToFromTarget:['peur']`,
+  // LDB 21 l.41) OU Amour (`cancelsFear`, défense des aimés l.77). Lu en DONNÉES (psychology.json).
+  const fearCancelled = psy.some((p) => {
+    if (!p.active) return false;
+    const d = findPsychologyById(p.type);
+    return !!d?.cancelsFear || (!!d?.immuneToFromTarget?.includes('peur') && !!p.cible && groupMatch(p.cible, groups));
+  });
+  // Chaque état psy porte sa contribution `attackDR` (±1) + son ciblage `vs` en DONNÉES — plus de ±1 ni de
+  // type (`peur`/`haine`/…) codé par-nom : un nouvel état psy (Phobie…) déclare son DR dans le JSON.
+  let dr = 0;
+  for (const p of psy) {
+    const adr = findPsychologyById(p.type)?.attackDR;
+    if (!adr) continue;
+    const applies = adr.vs === 'source'
+      ? p.sourceId === target.id && (p.calmeDR ?? 0) < (p.indice ?? 1) // Peur active non vaincue vs sa source
+      : adr.vs === 'group'
+        ? !!p.active && !!p.cible && groupMatch(p.cible, groups) // Haine/Animosité vs le groupe ciblé
+        : !!p.active; // 'any' : Amour/Camaraderie (défense), dès lors qu'actif
+    if (!applies || (adr.amount < 0 && fearCancelled)) continue; // malus de Peur effacé par Haine/Amour
+    dr += adr.amount;
+  }
+  return dr;
+}
+
+/**
  * Modificateurs étiquetés d'un Test d'attaque (source UNIQUE : le moteur les somme pour le jet,
  * l'UI les affiche). Toutes les valeurs sont sourcées dans la table des Difficultés de Combat
  * (`14 - _GoBack.md`) : Avantage ×10 (LDB Dépl.), portée (l.82-118), Viser +20 (l.90), Précise +10
@@ -250,21 +297,9 @@ export function attackModifiers(
   const pen = combatTestPenalty(attacker);
   if (pen) out.push({ label: 'État', value: pen });
   if (attacker.nextActionPenalty) out.push({ label: 'Maladresse (Round précédent)', value: -attacker.nextActionPenalty });
-  // Psychologie (LDB 21) : Peur −1 DR vs la source (l.29, sauf immunité Haine/Amour) ; Haine/Animosité
-  // +1 DR contre le groupe haï (l.22/41) ; Amour/Camaraderie +1 DR (défense des aimés/du groupe, l.77/82).
-  // Immunité à la Psychologie (trait/Frénésie/Détermination, LDB 17 l.62) → AUCUN modificateur psy.
-  if (target && !isPsychImmune(attacker)) {
-    const psy = attacker.psychState ?? [];
-    const groups = target.groups ?? [];
-    const hatesTarget = psy.some((p) => p.type === 'haine' && p.active && p.cible && groupMatch(p.cible, groups));
-    // Haine (du groupe, LDB 21 l.41) / Amour → immunité Peur. Sans Peur (LDB 10 l.864) ne donne PAS
-    // d'immunité d'office : le −10 suit l'ÉTAT réel (une Peur active non vaincue dans psychState) — le
-    // porteur qui a réussi son Test de Calme (+20) n'a pas d'entrée Peur active, donc aucun malus ici.
-    const peurImmune = hatesTarget || psy.some((p) => p.type === 'amour' && p.active);
-    if (!peurImmune && psy.some((p) => p.type === 'peur' && p.sourceId === target.id && (p.calmeDR ?? 0) < (p.indice ?? 1))) out.push({ label: 'Peur', value: -10 });
-    if (hatesTarget || psy.some((p) => p.type === 'animosite' && p.active && p.cible && groupMatch(p.cible, groups))) out.push({ label: 'Haine/Animosité', value: 10 });
-    if (psy.some((p) => (p.type === 'amour' || p.type === 'camaraderie') && p.active)) out.push({ label: 'Amour/Camaraderie', value: 10 });
-  }
+  // Psychologie (LDB 21) : Peur/Haine/Amour modulent le DR du jet (±1 DR, l.29/22/41/77/82), PAS la valeur
+  // cible — appliqué à `atkSL` via `psychDRAdjust` au moment de la résolution (cœur opposé + passes non
+  // opposées), jamais ici (un ±10 sur la cible fausserait la probabilité ET le DR, contra RAW).
   if (opts.kind === 'ranged') {
     if (opts.distanceTiles != null && weapon.range) {
       const m0 = rangeBandModifier(opts.distanceTiles, weapon.range);
@@ -519,7 +554,7 @@ function combineOpposed(
   const dodgeMod = opts.dodgeMod ?? 0;
   const noSize = !!attacker.swarm || !!defender.swarm; // Nuée : ignore toutes les règles de Taille (LDB 85 l.200)
   const parrySizePenalty = defenseMode === 'parade' && !noSize ? 2 * Math.max(0, sizeGap(attacker.size, defender.size)) : 0;
-  const atkSL = atk.sl + craftTestDRAdjust(weapon, atk.success) + attackDRAdjust(weapon);
+  const atkSL = atk.sl + craftTestDRAdjust(weapon, atk.success) + attackDRAdjust(weapon) + psychDRAdjust(attacker, defender);
   const defSL = def.sl - parrySizePenalty + vsDefenseDRAdjust(weapon)
     + (defenseMode === 'parade' ? parryDRAdjust(parryWeapon, weapon) + craftTestDRAdjust(parryWeapon, def.success) : 0);
   const opp = resolveOpposed({ ...atk, sl: atkSL }, { ...def, sl: defSL });
@@ -592,7 +627,7 @@ export function resolveMeleePassive(
 ): AttackResult {
   const atkBd = bd('Corps à corps', combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
   if (!atk.success) return miss(attacker, defender, atkBd, 'defender');
-  const res = applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon), atk.isDouble && atk.success, location, dmgProxy); // Imprécise : −1 DR à l'attaque (LDB 63 l.19)
+  const res = applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon) + psychDRAdjust(attacker, defender), atk.isDouble && atk.success, location, dmgProxy); // Imprécise : −1 DR à l'attaque (LDB 63 l.19) ; Peur/Haine ±1 DR (LDB 21)
   if (res.hit && (attacker.swarm || sizeGap(dmgProxy?.size ?? attacker.size, defender.size) >= 1)) res.cleave = true; // Frappe Mortelle — plus grand OU Nuée (LDB 85 l.299/200) ; charge montée → Taille de la monture
   return res;
 }
@@ -734,7 +769,7 @@ export function resolveRanged(
       log: `${attacker.name} manque sa cible.`,
     };
   }
-  return applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon), atk.isDouble && atk.success, location); // Imprécise : −1 DR (LDB 63 l.19)
+  return applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon) + psychDRAdjust(attacker, defender), atk.isDouble && atk.success, location); // Imprécise : −1 DR (LDB 63 l.19) ; Peur/Haine ±1 DR (LDB 21)
 }
 
 /** Jet d'attaque FIGÉ d'un TIR (Test de Projectiles, mods de portée/Taille/État inclus) — mirror de

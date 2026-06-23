@@ -4,7 +4,7 @@ import { makeRNG } from './dice';
 import { stacks } from './conditions';
 import {
   partyWalkSpeed, travelSpeed, travelPlanCalc, transportCost, forcedMarchTest, applyTravelFatigue,
-  TRANSPORTS, TRAVEL_DEFAULTS,
+  vehicleTravel, TRAVEL_DEFAULTS,
 } from './travel';
 import { toBrass } from './money';
 
@@ -122,7 +122,7 @@ describe('défauts RAW', () => {
   it('6 h/jour, seuil de péripétie 8, diligence M6 2/1 sous, barge M8 5/2 sous', () => {
     expect(TRAVEL_DEFAULTS.hoursPerDay).toBe(6);
     expect(TRAVEL_DEFAULTS.perilDie).toBe(8);
-    expect(TRANSPORTS.diligence.movement).toBe(6);
-    expect(TRANSPORTS.barge.movement).toBe(8);
+    expect(vehicleTravel('diligence')!.movement).toBe(6);
+    expect(vehicleTravel('barge')!.movement).toBe(8);
   });
 });

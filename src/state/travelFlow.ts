@@ -30,6 +30,8 @@ import { placeById, placeOfScene, otherEnd, type MapRoute, type WorldMap } from 
 import {
   TravelMode, TRAVEL_DEFAULTS, TRAVEL_MODE_LABEL, travelSpeed, transportCost, forcedMarchTest, applyTravelFatigue,
 } from '../engine/travel';
+import { vehicleCombatant } from '../engine/vehicle';
+import { findVehicleById } from '../data';
 import { PERIPETIES } from '../data/peripeties';
 import { rollTest, testDetail } from '../engine/tests';
 import { partyBest } from '../engine/skills';
@@ -46,6 +48,9 @@ import {
 import { hasCoat, partyHasTent, applyExposureFailure, isWeatherWarded } from '../engine/exposure';
 import { rationCount } from '../engine/provisions';
 import { itemFromGive } from '../engine/items';
+import { stageAssignmentFromRoles, type StagePosting } from '../engine/activities';
+import { resolveStagePostes } from './travelPostes';
+import type { Combatant } from '../engine/types';
 
 import type { Get, Set } from './flowTypes';
 
@@ -97,6 +102,14 @@ export interface TravelPlan {
   kmDone: number;
   /** Interrompu par une péripétie (combat/transition) — reprise via `resumeTravel`. */
   interrupted: boolean;
+  /** Postes d'Activité de l'Étape : un héros → ≤1 Activité (EDOC ch.5). Initialisé depuis les rôles
+   *  PERSISTANTS (`travelRole`) au départ, réutilisé chaque Étape (0 ré-assignation par jour). */
+  postes?: Record<string, StagePosting>;
+  /** Cumul du Test ÉTENDU de cartographie (Établir des cartes, EDOC l.161) — cf. `extendedTestStep`. */
+  extendedProgress?: number;
+  /** Coque transitoire du véhicule du trajet (`Combatant`, depuis `vehicles.json` hull) — encaisse les
+   *  incidents (`vehicleWounds`). Présente seulement si le trajet utilise un véhicule à coque. */
+  vehicle?: Combatant;
 }
 
 const log = (get: Get, set: Set, lines: string[]) => {
@@ -146,9 +159,21 @@ export function startTravel(
   const hours = mode === 'pied'
     ? Math.min(Math.max(opts.hoursPerDay ?? base, 1), maxHoursPerDay(worldMap))
     : base; // transport : cadence du véhicule (RAW muet) = heures de route standard
+  // Coque transitoire du véhicule du trajet (`Combatant` à PV depuis `vehicles.json` hull) — encaisse les
+  // incidents (`vehicleWounds`) via `applyVehicleProblem` (engine/vehicle). Présente seulement sous les
+  // Étapes EDOC et si le véhicule a un profil de coque. NB : le DÉCLENCHEUR RAW (Échec Stupéfiant à un Test
+  // de Conduite d'attelage en allure forcée) n'est pas encore modélisé — la cadence d'un transport est fixée
+  // (l.159). L'entité + l'application des Dégâts (le keystone) sont prêtes et testées ; le câblage du
+  // déclencheur attend le mécanisme d'allure forcée en véhicule (dalle fluviale/maritime).
+  const vehicle = mode !== 'pied' && rule('travel-etapes')
+    ? (() => { const v = findVehicleById(mode); return v ? vehicleCombatant(v) : undefined; })()
+    : undefined;
   const plan: TravelPlan = {
     routeId, fromPlaceId: from.id, toPlaceId: to.id, mode,
     classKey: opts.classKey, hoursPerDay: hours, km: route.km, kmDone: 0, interrupted: false,
+    // Postes initialisés depuis les rôles PERSISTANTS (`travelRole`) — réutilisés chaque Étape (EDOC ch.5).
+    postes: rule('travel-etapes') ? stageAssignmentFromRoles(party) : undefined,
+    ...(vehicle ? { vehicle } : {}),
   };
   set({ travelPlan: plan, worldMapOpen: false, travelRecap: null });
   log(get, set, [`— En route vers ${to.label} (${route.km} km, ${TRAVEL_MODE_LABEL[mode].toLowerCase()}) —`]);
@@ -258,9 +283,9 @@ function runTravelDays(get: Get, set: Set): void {
 
     // Sous-système OPTIONNEL « Voyage par Étapes » (EDOC ch.5, parent `travel-etapes`). Quand il est
     // ÉTEINT (défaut), ce bloc est entièrement court-circuité → le chemin jour-par-jour du LdB reste
-    // BYTE-IDENTIQUE. Quand il est allumé, chaque journée de route EST une Étape : jet de Météo
-    // (l.42), puis Approvisionnement (l.108, si `travel-forage`) et Exposition de fin d'Étape
-    // (l.73, si `travel-attraper-froid`). L'ordre RAW (l.10) est Météo → activités → péripéties.
+    // BYTE-IDENTIQUE. Quand il est allumé, chaque journée de route EST une Étape : jet de Météo (l.42),
+    // puis les POSTES d'Activité (l.131, dont l'Approvisionnement) et l'Exposition de fin d'Étape
+    // (l.73, si `travel-attraper-froid` et hors « Plein air »). Ordre RAW (l.10) : Météo → activités → péripéties.
     if (rule('travel-etapes')) resolveStage(get, set, recapDay);
 
     // Péripéties du jour (d'auteur puis table d10 RAW). Peut interrompre le voyage — une
@@ -404,40 +429,21 @@ function resolveStage(get: Get, set: Set, day: TravelRecapDay): void {
   const party = get().party;
   const livingHeroes = party.filter((h) => !h.dead && !h.outOfRencontre);
 
-  // 2. Activité d'Approvisionnement (l.108) — UNIQUEMENT si `travel-forage`. Un Test de Survie en
-  // extérieur du meilleur du groupe (LDB 09 l.565, « Trouver de la nourriture et des herbes ») :
-  // chaque DR procure une ration de plus (l.568). Modifié par temps sec (-10, l.56).
-  if (rule('travel-forage') && livingHeroes.length) {
-    const best = partyBest(party, 'survie-en-exterieur');
-    if (best) {
-      const mod = forageWeatherModifier(weather);
-      const t = rollTest(best.value, 'intermediaire', battleRng(), mod);
-      const fed = t.success ? forageYield(t.sl, 'recherche') : 0;
-      tell([`${best.actor.name} — Approvisionnement (Survie en extérieur${mod ? ` ${mod}` : ''}) : 🎲 ${t.roll}/${t.target} → ${t.success ? `nourriture pour ${fed} personne(s).` : 'ÉCHEC, rien à se mettre sous la dent.'}`]);
-      day.entries?.push({ actorId: best.actor.id, icon: '🍖', label: 'Approvisionnement', d: testDetail('Survie en extérieur', best.value + mod, t), text: t.success ? `${fed} ration(s)` : 'bredouille', tone: t.success ? 'ok' : 'bad' });
-      // Les rations trouvées sont distribuées aux héros qui en manquent (au plus 1 ration/jour/personne).
-      if (fed > 0) {
-        let remaining = fed;
-        const lines: string[] = [];
-        for (const h of livingHeroes) {
-          if (remaining <= 0) break;
-          if (rationCount(h) >= 1) continue; // déjà de quoi manger ce jour-là
-          h.items = [...(h.items ?? []), itemFromGive({ trappingId: 'ration' })]; // ration de catalogue (porte `isRations`)
-          remaining -= 1;
-          lines.push(`${h.name} reçoit une ration trouvée en chemin.`);
-        }
-        if (lines.length) { set({ party: [...get().party] }); tell(lines); }
-      }
-    }
-  }
+  // 2. POSTES d'Activité de l'Étape (EDOC ch.5 l.131) — résolus et appliqués par le module feuille
+  //    `travelPostes`. L'Approvisionnement est désormais un POSTE (plus un flag) : un héros par poste,
+  //    son Test, son Exténué ; agrégation porte/cumul/individuel. La porte « Plein air »
+  //    (`suppressExposure`, l.141) dispense le groupe du Test d'Exposition ci-dessous.
+  const postes = resolveStagePostes(get, set, weather);
+  if (postes.entries.length) day.entries?.push(...postes.entries);
+  if (postes.lines.length) tell(postes.lines);
 
-  // 3. Exposition de fin d'Étape — option « Attraper Froid » (l.73), UNIQUEMENT si
-  // `travel-attraper-froid`. Réutilise le mécanisme de FROID EXISTANT (`applyExposureFailure`,
-  // engine/exposure.ts — escalade cumulative l.415 : 1ᵉʳ échec −10 CT/Ag/Dex, 2ᵉ −10 le reste, 3ᵉ+
-  // Blessures). Un SEUL Test de Résistance par Étape (l.73), dont la difficulté (Complexe −10 /
-  // Difficile −20 selon manteau/tente) vient de `stageExposureDifficulty`. On roule le Test ICI (pas
-  // via `exposureNight`) pour ne PAS cumuler le malus de manteau de la version LdB avec celui d'EDOC.
-  if (rule('travel-attraper-froid') && livingHeroes.length) {
+  // 3. Exposition de fin d'Étape — option « Attraper Froid » (l.73, règle optionnelle RAW), SAUTÉE si
+  // un héros a réussi « Plein air » (porte `suppressExposure`, l.141). Réutilise le mécanisme de FROID
+  // EXISTANT (`applyExposureFailure`, engine/exposure.ts — escalade cumulative l.415 : 1ᵉʳ échec −10
+  // CT/Ag/Dex, 2ᵉ −10 le reste, 3ᵉ+ Blessures). Un SEUL Test de Résistance par Étape (l.73), difficulté
+  // (Complexe −10 / Difficile −20 selon manteau/tente) via `stageExposureDifficulty`. Test roulé ICI
+  // (pas via `exposureNight`) pour ne PAS cumuler le malus de manteau LdB avec celui d'EDOC.
+  if (rule('travel-attraper-froid') && !postes.suppressExposure && livingHeroes.length) {
     const tent = partyHasTent(party);
     const lines: string[] = [];
     let anyExposed = false;

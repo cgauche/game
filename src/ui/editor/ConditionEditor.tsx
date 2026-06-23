@@ -53,6 +53,10 @@ const KIND_OPTIONS: [Condition['kind'], string][] = [
   ['woundsDealt', 'Blessures infligées'],
   ['engagedAdvantageGap', 'Écart d’Avantage (engagés)'],
   ['foeInLoS', 'Ennemi en Ligne de Vue'],
+  ['hiddenFromFoes', 'Caché de l’ennemi (hors de vue)'],
+  ['engaged', 'Engagé avec un ennemi'],
+  ['nearestFoe', 'Distance à l’ennemi le plus proche'],
+  ['capability', 'Capacité de combat'],
   ['relation', 'Camp / relation'],
   ['has', 'Possède (Groupe/Talent/Trait)'],
   ['all', 'TOUS (ET)'],
@@ -91,6 +95,10 @@ export function condSummary(c: Condition | undefined): string {
     case 'woundsDealt': return `PB infligés ${c.op} ${c.value}`;
     case 'engagedAdvantageGap': return `écart d’Avantage ${c.op} ${c.value}`;
     case 'foeInLoS': return 'ennemi en Ligne de Vue';
+    case 'hiddenFromFoes': return 'caché (hors de vue de l’ennemi)';
+    case 'engaged': return 'engagé avec un ennemi';
+    case 'nearestFoe': return `ennemi le + proche ${c.op} ${c.value} cases`;
+    case 'capability': return `${WHO_LABEL[c.who]} : capacité « ${c.id || '?'} » ${c.op ?? '>='} ${c.value ?? 1}`;
     case 'relation': return `${WHO_LABEL[c.who]} : ${REL_LABEL[c.is]}`;
     case 'has': return `${WHO_LABEL[c.who]} a ${WHAT_LABEL[c.what]} « ${c.value || '?'}${c.spec ? ` (${c.spec})` : ''} »`;
     case 'all': return c.of.length ? c.of.map(condSummary).join(' ET ') : 'toujours';
@@ -116,6 +124,10 @@ function recast(cond: Condition, kind: Condition['kind']): Condition {
     case 'woundsDealt': return cond.kind === 'woundsDealt' ? cond : { kind: 'woundsDealt', op: '>', value: 0 };
     case 'engagedAdvantageGap': return cond.kind === 'engagedAdvantageGap' ? cond : { kind: 'engagedAdvantageGap', op: '>', value: 0 };
     case 'foeInLoS': return { kind: 'foeInLoS' };
+    case 'hiddenFromFoes': return { kind: 'hiddenFromFoes' };
+    case 'engaged': return { kind: 'engaged' };
+    case 'nearestFoe': return cond.kind === 'nearestFoe' ? cond : { kind: 'nearestFoe', op: '<=', value: 3 };
+    case 'capability': return cond.kind === 'capability' ? cond : { kind: 'capability', who: 'target', id: 'braveheart', op: '>=', value: 1 };
     case 'relation': return cond.kind === 'relation' ? cond : { kind: 'relation', who: 'target', is: 'opponent' };
     case 'has': return cond.kind === 'has' ? cond : { kind: 'has', who: 'target', what: 'group', value: '' };
     case 'all': return { kind: 'all', of: cond.kind === 'all' || cond.kind === 'any' ? cond.of : cond.kind === 'always' ? [] : [cond] };
@@ -227,6 +239,26 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
             {COMPARE_OPS.map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
           <input type="number" min={0} style={{ width: '3.4em' }} value={cond.value} onChange={(e) => onChange({ ...cond, value: Math.max(0, Number(e.target.value) || 0) })} /> DR
+        </span>
+      )}
+      {cond.kind === 'nearestFoe' && (
+        <span className="cond-time">ennemi proche
+          <select className="cond-kind" value={cond.op} onChange={(e) => onChange({ ...cond, op: e.target.value as CompareOp })}>
+            {COMPARE_OPS.map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
+          <input type="number" min={0} style={{ width: '3.4em' }} value={cond.value} onChange={(e) => onChange({ ...cond, value: Math.max(0, Number(e.target.value) || 0) })} /> cases
+        </span>
+      )}
+      {cond.kind === 'capability' && (
+        <span className="cond-time">
+          <select className="cond-kind" value={cond.who} onChange={(e) => onChange({ ...cond, who: e.target.value as ActorRef })}>
+            {(['target', 'caster'] as ActorRef[]).map((w) => <option key={w} value={w}>{WHO_LABEL[w]}</option>)}
+          </select>
+          <input className="cond-flag" value={cond.id} placeholder="capacité (ex. braveheart)" onChange={(e) => onChange({ ...cond, id: e.target.value.trim() })} />
+          <select className="cond-kind" value={cond.op ?? '>='} onChange={(e) => onChange({ ...cond, op: e.target.value as CompareOp })}>
+            {COMPARE_OPS.map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
+          <input type="number" min={0} style={{ width: '3.4em' }} value={cond.value ?? 1} onChange={(e) => onChange({ ...cond, value: Math.max(0, Number(e.target.value) || 0) })} />
         </span>
       )}
       {cond.kind === 'location' && (
