@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { shipOfCrew, mountedWeaponBears } from './shipPostes';
-import type { Combatant } from '../engine/types';
+import { shipOfCrew, mountedWeaponBears, applyShipPostes } from './shipPostes';
+import type { Combatant, ShipPoste } from '../engine/types';
 
 /**
  * PORTÉE D'ARC d'une pièce MONTÉE en combat — helpers PURS et KIND-AGNOSTIQUES (prennent « un combattant »
@@ -40,5 +40,26 @@ describe('mountedWeaponBears — une pièce montée porte-t-elle sur la cible ?'
   it('support/cap non résolu (cap ou position absents) → aucune contrainte (défensif)', () => {
     expect(mountedWeaponBears(tribord, undefined, hull.pos, { x: 0, y: 5 })).toBe(true);
     expect(mountedWeaponBears(tribord, 'N', undefined, { x: 0, y: 5 })).toBe(true);
+  });
+});
+
+describe('applyShipPostes — pose mannedPoste sur le chef de pièce de chaque poste de la coque (kind-agnostique)', () => {
+  const poste = (crew: string[]): ShipPoste => ({ item: { uid: 'c', name: 'Canon', kind: 'ranged', qualities: [], enc: 0 } as never, side: 'tribord', crewIds: crew });
+
+  it('chaque poste pose son arme sur crewIds[0] (chef de pièce), pas sur les aides', () => {
+    const h = { id: 'cogue', crewIds: ['chef', 'aide'], postes: [poste(['chef', 'aide'])] } as unknown as Combatant;
+    const chef = { id: 'chef' } as unknown as Combatant;
+    const aide = { id: 'aide' } as unknown as Combatant;
+    applyShipPostes([h, chef, aide]);
+    expect(chef.mannedPoste?.side).toBe('tribord'); // le chef SERT le poste
+    expect(aide.mannedPoste).toBeUndefined(); // l'aide recharge, ne sert pas le jet
+  });
+
+  it('coque sans postes, ou chef de pièce absent → rien (défensif)', () => {
+    const h = { id: 'cogue', postes: [poste(['fantome'])] } as unknown as Combatant;
+    expect(() => applyShipPostes([h])).not.toThrow(); // chef introuvable → ignoré
+    const plain = { id: 'x' } as unknown as Combatant;
+    applyShipPostes([plain]);
+    expect(plain.mannedPoste).toBeUndefined();
   });
 });

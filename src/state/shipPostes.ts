@@ -59,3 +59,19 @@ export function mountedWeaponBears(weapon: { mountSide?: FireArc }, heading: Dir
   if (!heading || !supportPos) return true;
   return inFireArc(weapon.mountSide, heading, supportPos, targetPos);
 }
+
+/**
+ * Au DÉBUT du combat (après spawn) : pour chaque Combattant-coque portant des `postes`, pose `mannedPoste`
+ * sur le **chef de pièce** (`crewIds[0]`) de chaque poste, parmi `combatants`. Le canon apparaît ensuite
+ * comme arme dérivée via `recomputeLoadout` (chefs héros). KIND-AGNOSTIQUE (ne regarde pas le `kind`). Mute
+ * en place (comme les autres étapes de spawn). Chef de pièce introuvable / coque sans postes → ignoré.
+ */
+export function applyShipPostes(combatants: Combatant[]): void {
+  const byId = new Map(combatants.map((c) => [c.id, c]));
+  for (const hull of combatants)
+    for (const poste of hull.postes ?? []) {
+      const chefId = poste.crewIds?.[0];
+      const chef = chefId ? byId.get(chefId) : undefined;
+      if (chef) chef.mannedPoste = poste;
+    }
+}
