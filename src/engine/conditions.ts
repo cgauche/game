@@ -363,15 +363,17 @@ export function bleedDeathRoll(c: Combatant, rng: RNG = defaultRNG): { died: boo
  *  (consommée par `isOutOfAction` et la résolution de Blessure critique). */
 export function usesSuddenDeath(c: Combatant): boolean {
   if (c.kind === 'hero') return false; // jamais pour les PJ (LDB 18 l.54)
+  if (c.bodyShape === 'vehicule') return false; // une COQUE n'est pas un figurant : sa destruction passe par ses Blessures (Naufrage) et les Critiques NAVALS — pas de « Mort Subite » de mook (MDG ch.13)
   const mode = rule('combat-sudden-death');
   if (mode === 'off') return false;
   if (mode === 'tous') return true;
   return !c.important; // 'figurants' : figurants seulement
 }
 
-/** Hors de combat : mort, ou Inconscient, ou figurant tombé à 0 PB (Mort Subite). Un héros à 0 PB
- *  reste actif (À Terre) — il n'est PAS hors de combat (LDB 18-Traumatisme l.28). */
+/** Hors de combat : mort, ou Inconscient, ou figurant tombé à 0 PB (Mort Subite), ou COQUE à 0 PB
+ *  (détruite / coulée). Un héros à 0 PB reste actif (À Terre) — pas hors de combat (LDB 18 l.28). */
 export function isOutOfAction(c: Combatant): boolean {
+  if (c.bodyShape === 'vehicule') return c.dead === true || c.outOfRencontre === true || c.wounds.current <= 0; // coque détruite à 0 PB (MDG ch.13)
   return c.dead === true || c.outOfRencontre === true || hasCondition(c, COND.inconscient) || (usesSuddenDeath(c) && c.wounds.current <= 0);
 }
 
@@ -386,8 +388,10 @@ export function inDeathCondition(c: Combatant): boolean {
   return hasCondition(c, COND.inconscient) && c.wounds.current <= 0 && (c.criticalWounds ?? 0) > be;
 }
 
-/** À 0 PB : gagne l'État À Terre (LDB 18 l.28). À appeler quand un coup non-critique amène à 0. */
+/** À 0 PB : gagne l'État À Terre (LDB 18 l.28). À appeler quand un coup non-critique amène à 0.
+ *  (Une COQUE ne tombe pas « À Terre » : sa mise hors-jeu à 0 PB est gérée par `isOutOfAction`.) */
 export function applyZeroWounds(c: Combatant): void {
+  if (c.bodyShape === 'vehicule') return;
   if (c.wounds.current <= 0 && !hasCondition(c, COND.aTerre)) addCondition(c, COND.aTerre);
 }
 
@@ -415,7 +419,7 @@ export function loseWounds(c: Combatant, amount: number): number {
  */
 export function tickDeath(c: Combatant, _rng: RNG = defaultRNG): string[] {
   const log: string[] = [];
-  if (c.dead || c.outOfRencontre || usesSuddenDeath(c)) return log;
+  if (c.dead || c.outOfRencontre || usesSuddenDeath(c) || c.bodyShape === 'vehicule') return log; // une coque ne « meurt » pas par la cascade Inconscient→mort : elle est détruite à 0 PB (isOutOfAction)
   const be = bonus(effectiveChar(c, 'E'));
   if (c.wounds.current > 0) {
     c.roundsAtZero = 0;

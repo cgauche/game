@@ -3,6 +3,7 @@ import { applyHullCritical, exposedCrew } from './shipCritical';
 import { vehicleCombatant } from './vehicle';
 import { findVehicleById } from '../data';
 import { makeRNG } from './dice';
+import { usesSuddenDeath, isOutOfAction, applyZeroWounds, tickDeath, hasCondition, COND } from './conditions';
 import type { Combatant } from './types';
 
 /** Marin minimal (Combattant de personnage) — assez pour `rollCritical`/`applyOps`. */
@@ -58,5 +59,28 @@ describe('applyHullCritical — l’équipage encaisse réellement (pas qu’un 
     const r = applyHullCritical(ship, dead, 'voile', makeRNG(2), 5);
     expect(r.crewCrit).toBeUndefined();
     expect(r.lines.join(' ')).toMatch(/aucun marin exposé/);
+  });
+});
+
+/**
+ * Modèle de MORT d'une coque (MDG ch.13) : une coque N'EST PAS un figurant — pas de « Mort Subite » de
+ * mook, pas d'« À Terre »/« Inconscient » ; elle est détruite (hors-jeu) quand ses Blessures tombent à 0.
+ */
+describe('Coque — mise hors de combat à 0 PB (ni figurant, ni Inconscient)', () => {
+  it("une coque n'utilise jamais la Mort Subite (figurant)", () => {
+    expect(usesSuddenDeath(hull())).toBe(false);
+  });
+  it('détruite à 0 PB → hors de combat (sans État À Terre ni Inconscient)', () => {
+    const s = hull();
+    s.wounds.current = 0;
+    applyZeroWounds(s);
+    expect(hasCondition(s, COND.aTerre)).toBe(false);
+    expect(isOutOfAction(s)).toBe(true);
+    tickDeath(s);
+    expect(hasCondition(s, COND.inconscient)).toBe(false);
+    expect(s.roundsAtZero ?? 0).toBe(0); // pas de cascade de mort lente sur une coque
+  });
+  it('coque intacte (PB > 0) → toujours en combat', () => {
+    expect(isOutOfAction(hull())).toBe(false);
   });
 });
