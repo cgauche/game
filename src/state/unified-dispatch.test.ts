@@ -10,22 +10,30 @@ import type { Combatant } from '../engine/types';
  * TOUTES les sources : ici un TRAIT (Bestial) et un ÉTAT (Empoisonné) réagissent au MÊME `onRoundEnd`,
  * via le MÊME appel — preuve qu'on n'a plus deux chemins (traits vs États).
  */
+// Caractéristiques COMPLÈTES (un vrai Combatant en a 10) : sans FM, le Test de Calme de récupération du
+// Brisé — joué au même `onRoundEnd` — calculait sur une carac absente (NaN) et corrompait l'État.
 const mk = (over: Partial<Combatant> = {}): Combatant => ({
-  id: 'x', name: 'X', kind: 'enemy', characteristics: { E: 40 }, skills: [], talents: [], traits: [],
+  id: 'x', name: 'X', kind: 'enemy',
+  characteristics: { CC: 30, CT: 30, F: 30, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+  skills: [], talents: [], traits: [],
   conditions: [], activeEffects: [], liveTraits: [], weapons: [], armour: { corps: 0 },
   wounds: { current: 10, max: 10, base: 10 }, advantage: 0,
   ...over,
 }) as unknown as Combatant;
 
 const get = ((c: Combatant) => () => ({ battle: { combatants: [c] } })) as never;
-const fire = (c: Combatant, rng?: { int: () => number }) =>
+const fire = (c: Combatant, rng?: { int: (min: number, max: number) => number }) =>
   fireTriggers((get as (c: Combatant) => unknown)(c) as never, c, 'onRoundEnd', rng ? { rng: rng as never } : {});
+// rng DÉTERMINISTE : d10 bas (dégâts d'En Flammes contrôlés) MAIS d100 = 100 → le Test de Calme de
+// récupération du Brisé (joué au MÊME onRoundEnd dès qu'un Brisé est présent) ÉCHOUE — on n'observe ainsi
+// QUE l'effet testé (Bestial), sans le bruit de la récupération du Brisé.
+const noRecover = (d10 = 1) => ({ int: (_min: number, max: number) => (max <= 10 ? d10 : max) });
 
 describe('Dispatcher unique — Traits ET États réagissent au même Trigger, sans chemin par-kind', () => {
   it('TRAIT Bestial (LDB 85) : En Flammes en fin de Round → gagne Brisé (effet de DONNÉE, plus de hook)', () => {
     const c = mk({ traits: [{ id: 'bestial' }] as never });
     addCondition(c, COND.enFlammes);
-    fire(c);
+    fire(c, noRecover());
     expect(hasCondition(c, COND.brise)).toBe(true);
   });
 
@@ -39,15 +47,15 @@ describe('Dispatcher unique — Traits ET États réagissent au même Trigger, s
     const c = mk({ traits: [{ id: 'bestial' }] as never });
     addCondition(c, COND.enFlammes);
     addCondition(c, COND.brise); // déjà Brisé d'une autre source
-    fire(c, { int: () => 50 }); // d100=50 déterministe (hors bande 01-05) → le Test de récupération du Brisé échoue, brise inchangé
-    expect(stacks(c, COND.brise)).toBe(1); // la Condition `brise == 0` empêche le re-stack du Trait Bestial
+    fire(c, noRecover()); // récupération du Brisé neutralisée → on n'observe QUE le non-restack de Bestial
+    expect(stacks(c, COND.brise)).toBe(1); // la Condition `brise == 0` empêche le re-stack
   });
 
   it('UN SEUL appel `fireTriggers(onRoundEnd)` joue à la fois l’effet de TRAIT et l’effet d’ÉTAT', () => {
     const c = mk({ traits: [{ id: 'bestial' }] as never }); // BE=4, PAmin=0
     addCondition(c, COND.enFlammes); // déclenche le TRAIT Bestial (→ Brisé) ET l'ÉTAT En Flammes (→ dégâts)
     const before = c.wounds.current;
-    fire(c, { int: () => 8 }); // d10=8 → En Flammes : max(1, 8 − 4 − 0) = 4 PB
+    fire(c, noRecover(8)); // d10=8 → En Flammes : max(1, 8 − 4 − 0) = 4 PB ; d100=100 → pas de récupération du Brisé
     expect(hasCondition(c, COND.brise)).toBe(true); // effet de TRAIT (donnée)
     expect(before - c.wounds.current).toBe(4);      // effet d'ÉTAT (donnée) — MÊME appel
   });

@@ -101,7 +101,7 @@ export interface PerSL {
   amount: number;
 }
 export function slBonus(sl: number | undefined, p?: PerSL): number {
-  if (!p || sl == null) return 0;
+  if (!p || sl == null || !Number.isFinite(sl)) return 0; // DR absent OU non fini → 0 (jamais de NaN propagé)
   return Math.floor(Math.max(0, sl) / Math.max(1, p.every)) * p.amount;
 }
 
