@@ -5,7 +5,8 @@
 import { Combatant, CharKey, Difficulty } from './types';
 import { findSkillById } from '../data';
 import { groupMatch } from './groups';
-import { effectiveChar } from './characteristics';
+import { effectiveChar, bonus } from './characteristics';
+import { assistBonus } from './tests';
 import { testStatePenalty } from './conditions';
 import { agilityTestPenalty } from './encumbrance';
 import { traumaSkillPenalty, passiveSkillSum, passiveTestMod } from './trauma';
@@ -190,4 +191,28 @@ export function partyBest(
     if (!best || v > best.value) best = { actor: c, value: v };
   }
   return best;
+}
+
+/** Test de GROUPE avec SOUTIEN (LDB 12 l.214-225) — SOURCE UNIQUE de la coopération hors combat : le plus
+ *  compétent (`partyBest`) lance, et chaque AUTRE membre CAPABLE (qui POSSÈDE la compétence ; Test de pure
+ *  Caractéristique → tout le monde) le soutient à +10, plafonné au Bonus de la Caractéristique testée du
+ *  meneur (`assistBonus`). À utiliser PARTOUT où le groupe œuvre de concert (Test étendu, Tests de scène,
+ *  survie/perception en voyage, fouille, dissipation à plusieurs…). Renvoie le meneur, sa valeur SOUTENUE
+ *  (Soutien déjà fondu) et le détail (`support`) pour l'affichage. */
+export function partyAssisted(
+  party: Combatant[],
+  skill?: string,
+  characteristic?: CharKey,
+  extraMod?: (c: Combatant) => number,
+  spec?: string,
+): { actor: Combatant; value: number; support: { count: number; bonus: number } } | null {
+  const leader = partyBest(party, skill, characteristic, extraMod, spec);
+  if (!leader) return null;
+  // Soutiens ÉLIGIBLES : les AUTRES membres aptes à la tâche (possèdent la compétence ; carac pure → tous).
+  const eligible = party.filter((c) => c.id !== leader.actor.id && (skill ? actorHasSkill(c, skill, spec) : true)).length;
+  const ck = effectiveSkillCharKey(leader.actor, skill, { explicit: characteristic, spec });
+  const cap = bonus(effectiveChar(leader.actor, ck)); // plafond = Bonus de la Caractéristique testée du meneur
+  const count = Math.min(eligible, Math.max(0, cap));
+  const b = assistBonus(eligible, cap);
+  return { actor: leader.actor, value: leader.value + b, support: { count, bonus: b } };
 }

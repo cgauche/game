@@ -173,21 +173,13 @@ export function bumpSL(t: TestResult, by = 1): TestResult {
   return { ...t, sl: t.sl + by };
 }
 
-/** Test Soutenu (LDB 12 l.214-225) : plusieurs Personnages œuvrent de concert à une même tâche. Le plus
- *  compétent lance les dés ; chaque soutien octroie +10 au Test — MAIS le meneur ne peut être soutenu par
- *  plus de Personnages que son propre Bonus de Caractéristique de la carac testée (`leaderCharBonus`, LDB 12
- *  l.225). `values` = valeur de Test de CHAQUE participant (meneur inclus, AVANT difficulté). Renvoie la
- *  valeur EFFECTIVE du meneur (à passer à `rollTest`, qui applique la difficulté) + le détail. Primitive
- *  PURE et GÉNÉRALE de coopération (Dissipation à plusieurs LDB 46 l.207, crochetage, fouille de pièce…). */
-export function assistedTest(
-  values: number[],
-  leaderCharBonus: number,
-): { leaderValue: number; supporters: number; bonus: number; total: number } {
-  if (values.length === 0) return { leaderValue: 0, supporters: 0, bonus: 0, total: 0 };
-  const leaderValue = Math.max(...values); // le plus compétent lance ; les AUTRES sont des soutiens
-  const supporters = Math.min(values.length - 1, Math.max(0, leaderCharBonus));
-  const bonus = supporters * 10;
-  return { leaderValue, supporters, bonus, total: leaderValue + bonus };
+/** Test Soutenu (LDB 12 l.214-225) — BONUS de coopération : chaque soutien octroie +10 au Test, MAIS le
+ *  meneur ne peut être soutenu par plus de Personnages que son propre Bonus de Caractéristique de la carac
+ *  testée (`cap`, l.225). Primitive PURE et GÉNÉRALE de la coopération : le « plus compétent lance » est
+ *  porté par `partyBest`/`partyAssisted` (engine/skills) qui appelle ceci. Réutilisée PARTOUT où le groupe
+ *  œuvre de concert (Test étendu, Tests de groupe hors combat, Dissipation à plusieurs LDB 46 l.207…). */
+export function assistBonus(supporters: number, cap: number): number {
+  return Math.min(Math.max(0, supporters), Math.max(0, cap)) * 10;
 }
 
 function clamp(v: number, policy: TestPolicy): number {

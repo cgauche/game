@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { testValue, partyBest, skillCharKeyById, resolveSkillBest } from './skills';
+import { testValue, partyBest, partyAssisted, skillCharKeyById, resolveSkillBest } from './skills';
 import { makeRNG } from './dice';
 import { Combatant, SkillInstance } from './types';
 
@@ -37,6 +37,29 @@ describe('skills — testValue / partyBest / skillCharKeyById', () => {
     const forgeron = partyBest([h], 'metier', undefined, undefined, 'Forgeron')!;
     const serrurier = partyBest([h], 'metier', undefined, undefined, 'Serrurier')!;
     expect(serrurier.value - forgeron.value).toBe(30); // 40 − 10 d'avances, même caractéristique de base
+  });
+  it('partyAssisted — carac pure : tous soutiennent ; meneur + n×10 plafonné au Bonus de Carac', () => {
+    const a = { ...mk({ Soc: 40 }), id: 'a' }, b = { ...mk({ Soc: 60 }), id: 'b' }, c = { ...mk({ Soc: 50 }), id: 'c' };
+    const r = partyAssisted([a, b, c], undefined, 'Soc')!;
+    expect(r.actor.id).toBe('b'); // le plus compétent lance
+    expect(r.support).toEqual({ count: 2, bonus: 20 }); // 2 soutiens × 10 (plafond BSoc 6)
+    expect(r.value).toBe(80); // 60 + 20
+  });
+  it('partyAssisted — compétence : seuls les membres QUI LA POSSÈDENT soutiennent', () => {
+    const a = { ...mk({ Dex: 50 }, [{ skillId: 'crochetage', advances: 20 }]), id: 'a' }; // 70, possède
+    const b = { ...mk({ Dex: 30 }), id: 'b' }; // ne possède pas → ne soutient pas
+    const c = { ...mk({ Dex: 40 }, [{ skillId: 'crochetage', advances: 5 }]), id: 'c' }; // 45, possède
+    const r = partyAssisted([a, b, c], 'crochetage')!;
+    expect(r.actor.id).toBe('a');
+    expect(r.support.count).toBe(1); // seul c soutient
+    expect(r.value).toBe(80); // 70 + 10
+  });
+  it('partyAssisted — plafonne au Bonus de Caractéristique du meneur', () => {
+    const lead = { ...mk({ Dex: 20 }, [{ skillId: 'crochetage', advances: 30 }]), id: 'L' }; // 50, BDex 2
+    const helpers = [1, 2, 3, 4].map((n) => ({ ...mk({ Dex: 10 }, [{ skillId: 'crochetage', advances: 0 }]), id: 'h' + n }));
+    const r = partyAssisted([lead, ...helpers], 'crochetage')!;
+    expect(r.support.count).toBe(2); // 4 aptes, plafond BDex 2
+    expect(r.value).toBe(70); // 50 + 20
   });
   it('skillCharKeyById : compétence inconnue → undefined', () => {
     expect(skillCharKeyById('competence-totalement-imaginaire')).toBeUndefined();
