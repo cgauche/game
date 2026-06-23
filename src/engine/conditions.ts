@@ -280,6 +280,22 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
  * `refresh-wounds`). RNG-FREE (décrément + filtre + retraits) → n'altère pas le flux déterministe.
  * Rejoué hors combat par `outOfCombatUpkeep` (les durées en Rounds tickent aussi à l'horloge).
  */
+/** Retire d'un combattant les ActiveEffect satisfaisant `pred`, en RÉVERSANT proprement leurs octrois
+ *  (traits/ressources/armes accordés, Traits psy suspendus) — EXACTEMENT comme l'expiration naturelle.
+ *  SOURCE UNIQUE du retrait d'effets actifs : expiration en Rounds (`tickDurations`), horloge, et
+ *  DISSIPATION (LDB 46 l.204-207, `engine/dispel`). Renvoie les effets retirés (pour le journal). */
+export function removeActiveEffects(c: Combatant, pred: (e: ActiveEffect) => boolean): ActiveEffect[] {
+  if (!c.activeEffects?.length) return [];
+  const removed = c.activeEffects.filter(pred);
+  if (!removed.length) return [];
+  c.activeEffects = c.activeEffects.filter((e) => !pred(e));
+  dropExpiredGrantedTraits(c, removed); // traits accordés (op grantTrait) retirés avec leur effet
+  dropExpiredGrantedResources(c, removed); // Chance/Destin accordés (gainResource) non dépensés
+  dropExpiredGrantedWeapons(c, removed); // armes invoquées/naturelles accordées : loadout recomposé
+  restoreSuppressedPsych(c, removed); // Traits psy suspendus (Baume, LDB 42) restitués
+  return removed;
+}
+
 export function tickDurations(c: Combatant): string[] {
   const log: string[] = [];
   // Effets magiques temporisés (Bénédictions, Sorts de bonus) : décrément des durées en Rounds.
@@ -287,14 +303,8 @@ export function tickDurations(c: Combatant): string[] {
   // (les premières sont purgées par l'horloge `purgeClockEffects`).
   if (c.activeEffects?.length) {
     for (const e of c.activeEffects) e.duration = tickRound(e.duration);
-    const isDone = (e: ActiveEffect) => e.duration.scale === 'rounds' && e.duration.left <= 0;
-    const expired = c.activeEffects.filter(isDone);
+    const expired = removeActiveEffects(c, (e) => e.duration.scale === 'rounds' && e.duration.left <= 0);
     for (const e of expired) log.push(t('cond.effectExpire', { name: c.name, label: e.label }));
-    c.activeEffects = c.activeEffects.filter((e) => !isDone(e));
-    dropExpiredGrantedTraits(c, expired); // traits accordés (op grantTrait) retirés avec leur effet
-    dropExpiredGrantedResources(c, expired); // Chance/Destin accordés (gainResource) non dépensés
-    dropExpiredGrantedWeapons(c, expired); // armes invoquées/naturelles accordées : loadout recomposé
-    restoreSuppressedPsych(c, expired); // Traits psy suspendus (Baume, LDB 42) restitués
   }
   // États à DURÉE posés par un sort (« qui dure N Rounds ») : décrément, dissipation à 0.
   if (c.conditions.some((x) => x.roundsLeft != null)) {
