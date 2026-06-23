@@ -2068,6 +2068,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!target) return;
       // SOUTIEN « même Domaine » (LDB 46 l.207) : les AUTRES héros encore en action, possédant Langue (Magick)
       // ET partageant un Domaine (Vent) avec le meneur, l'assistent (+10 chacun, plafond Bonus d'Int).
+      // `Combatant.spells` = ids STABLES au runtime → résolution par id SEULE (pas de repli libellé : interdit).
       const domainsOf = (h: Combatant) => new Set((h.spells ?? []).map((id) => findSpellById(id)?.subType).filter(Boolean) as string[]);
       const mine = domainsOf(active);
       const supporters = battle.combatants.filter((c) => c.id !== active.id && c.kind === 'hero' && !isOutOfAction(c)
