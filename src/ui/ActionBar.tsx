@@ -4,6 +4,8 @@ import { useGame, activeCombatant, entityPickables, movementRemaining, canMove }
 import { hasMeaningfulOption } from '../state/turnEconomy';
 import { findSpellById } from '../data/index';
 import { isArcaneSpell } from '../engine/magic';
+import { actorHasSkill } from '../engine/skills';
+import { dispellableSpellsOn } from '../engine/dispel';
 import { formatSpellRange, formatSpellTarget, formatSpellDuration } from '../engine/spellRangeFormat';
 import { canTakeAction, hasCondition, isOutOfAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
@@ -63,6 +65,7 @@ export function ActionBar() {
   const aim = useGame((s) => s.battleAim);
   const togglePushback = useGame((s) => s.battleTogglePushback);
   const heal = useGame((s) => s.battleHeal);
+  const dispelSpell = useGame((s) => s.battleDispelSpell);
   const selectAttack = useGame((s) => s.battleSelectAttack);
   const maneuverArea = useGame((s) => s.battleManeuverArea);
   const cancelMove = useGame((s) => s.cancelMove);
@@ -301,6 +304,9 @@ export function ActionBar() {
   // Guérison (LDB 09-Compétences) : soi + alliés (héros) adjacents soignables, si le héros a la Compétence.
   const canHeal = isHero && hasHealSkill(active) && !battle.acted && !stunned && !frenzied;
   const healTargets = canHeal ? healableTargets(active, battle.combatants.filter((c) => c.kind === 'hero'), { adjacency: true }) : [];
+  // Dissipation (LDB 46 l.204-207) : le héros actif possède Langue (Magick) ET ≥ 1 sort permanent est actif.
+  const canDispel = isHero && actorHasSkill(active, 'langue', 'Magick');
+  const dispellable = canDispel ? dispellableSpellsOn(battle.combatants) : [];
 
   // ── Capacités de la barre, DATA-DRIVEN : UNE liste de descripteurs, source du rendu ET des
   // raccourcis clavier 1-9 (positionnels, rien en dur). Construite au tour d'un héros, publiée au pont. ──
@@ -309,6 +315,7 @@ export function ActionBar() {
     if (moveStarted && !battle.acted) slots.push({ id: 'undo-move', cls: 'ab-undo', icon: '↩️', label: 'Annuler dépl.', title: "Annuler tout le déplacement de ce tour et revenir au point de départ (possible tant qu'aucune Action n'est prise)", run: cancelMove });
     if (hasSpells && !frenzied) slots.push({ id: 'cast', cls: battle.action === 'cast' ? 'on' : '', disabled: battle.acted || stunned || broken, icon: '✨', label: `Incanter${battle.acted ? ' ✓' : ''}`, title: "Incanter un sort (Test de Langage mystique) — coûte l'Action", run: () => selectAction(battle.action === 'cast' ? null : 'cast') });
     if (canHeal && healTargets.length > 0) slots.push({ id: 'heal', cls: battle.action === 'heal' ? 'on' : '', disabled: battle.acted || stunned || broken, icon: '🩹', label: 'Soigner', title: "Soigner (Compétence Guérison) : rend des PB ou stoppe une hémorragie — coûte l'Action", run: () => selectAction(battle.action === 'heal' ? null : 'heal') });
+    if (canDispel && dispellable.length > 0 && !frenzied) slots.push({ id: 'dispel', cls: battle.action === 'dispel' ? 'on' : '', disabled: battle.acted || stunned || broken, icon: '🌀', label: `Dissiper${battle.acted ? ' ✓' : ''}`, title: "Dissiper un sort permanent (Test étendu de Langue (Magick) → NI) — coûte l'Action chaque Round", run: () => selectAction(battle.action === 'dispel' ? null : 'dispel') });
     if (!frenzied) slots.push({ id: 'defend', disabled: battle.acted || stunned || broken, icon: '🛡️', label: `Défensive${battle.acted ? ' ✓' : ''}`, title: '+20 à tous vos Tests de défense jusqu’à votre prochain tour', run: defendTotal });
     if (onFire) slots.push({ id: 'roll-fire', disabled: battle.acted || stunned, icon: '🔥', label: `Se rouler${battle.acted ? ' ✓' : ''}`, title: "Se rouler au sol pour éteindre les flammes (Test d'Athlétisme — coûte l'Action)", run: () => recoverState('en-flammes') });
     if (entangled) slots.push({ id: 'free-entangle', disabled: battle.acted || stunned, icon: '🪢', label: `Se libérer${battle.acted ? ' ✓' : ''}`, title: "Se libérer de l'entrave (Test opposé de Force contre la source — coûte l'Action)", run: () => recoverState('empetre') });
@@ -363,6 +370,21 @@ export function ActionBar() {
                     Focaliser{focusDr != null ? ` (${focusDr}/${spell.cn})` : ''}
                   </button>
                 )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {battle.action === 'dispel' && (
+        <div className="ab-spells">
+          {dispellable.length === 0 && <div className="ab-hint">Aucun sort permanent à dissiper.</div>}
+          {dispellable.map((d) => {
+            const prog = active.dispel?.spellId === d.spellId && active.dispel.spellCasterId === d.casterId ? active.dispel.total : 0;
+            return (
+              <div key={`${d.spellId}@${d.casterId}`} className="ab-spell-row">
+                <button className="btn btn-sm" onClick={() => dispelSpell(d.spellId, d.casterId)} title="Test étendu de Langue (Magick) — coûte l'Action chaque Round">
+                  🌀 {d.label} <span className="bp-spell-ni">(NI {d.ni})</span>{prog > 0 ? ` — ${prog}/${d.ni} DR` : ''}
+                </button>
               </div>
             );
           })}

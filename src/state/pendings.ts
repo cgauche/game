@@ -320,6 +320,21 @@ export interface PendingFocus {
   result: FocusResult | null;
   rerolled?: boolean;
 }
+/** Dissipation permanente en attente (LDB 46 l.204-207 : Test étendu de Langue (Magick) → NI). Un Round =
+ *  un jet (Lancer → Chance → Appliquer) ; le DR cumule sur `caster.dispel` jusqu'au NI. Le Soutien « même
+ *  Domaine » (l.207) est déjà fondu dans `value`. Calque `PendingFocus`. */
+export interface PendingDispel {
+  casterId: string;
+  /** Sort DURABLE visé (id + son lanceur), pour retirer ses effets à la réussite (`dissipateSpell`). */
+  spellId: string;
+  spellCasterId: string;
+  label: string;
+  ni: number; // NI du sort = DR cumulé cible
+  value: number; // valeur de Langue (Magick) du lanceur, Soutien « même Domaine » inclus
+  support?: { count: number; bonus: number }; // détail du Soutien (affichage)
+  result: { roll: number; target: number; sl: number; success: boolean } | null;
+  rerolled?: boolean;
+}
 // Psychologie de COMBAT (Peur/Terreur/Traits ciblés, LDB 21) : CASCADE de Round — étapes
 //  `kind:'combatPsych'` (cf. CascadeStep.combatPsych) ; Traits/Terreur au DÉBUT de Round, Peur
 //  (Test étendu) à la FIN.

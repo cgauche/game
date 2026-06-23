@@ -30,7 +30,8 @@ import { disengageFrom, isEngaged, meleeReachTiles } from '../engine/engagement'
 import { gainAdvantage } from '../engine/advantage';
 import { rule } from '../engine/policy';
 import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, hasTalent } from '../engine/magic';
-import { rollTest, resolveOpposed, evaluateTest } from '../engine/tests';
+import { rollTest, resolveOpposed, evaluateTest, extendedTestStep, assistBonus } from '../engine/tests';
+import { dispellableSpellsOn, dissipateSpell } from '../engine/dispel';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { isFrenzyCapable, isFrenzied, spendResolveForPsychImmunity } from '../engine/psychology';
@@ -43,7 +44,7 @@ import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeActi
 import { hasHealSkill, availableHealModes, resolveWoundsHeal, resolveBleedHeal, type HealMode } from '../engine/healing';
 import { treatTrauma } from '../engine/trauma';
 import { persistentConditions } from '../engine/persistence';
-import { testValue } from '../engine/skills';
+import { testValue, actorHasSkill } from '../engine/skills';
 import { rollOups } from '../engine/oups';
 import { spawnEnemy } from './spawn';
 import { sceneZonesToBattle } from './zones';
@@ -1621,7 +1622,7 @@ export function createCombatSlice(get: Get, set: Set) {
 
     // ── Écran de victoire : assignation du butin (même flux que le marchand) + fermeture ──
 
-    battleSelectAction: (a: 'cast' | 'resolve' | 'ammo' | 'heal' | null) => {
+    battleSelectAction: (a: 'cast' | 'resolve' | 'ammo' | 'heal' | 'dispel' | null) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const { battle, scene } = get();
       if (!battle || !scene) return;
@@ -2053,6 +2054,58 @@ export function createCombatSlice(get: Get, set: Set) {
       finishPlayerAction(get, set, logLines, 'focus'); // sortie commune combat / hors combat
     },
     focusCancel: () => set({ pendingFocus: null }),
+
+    /** Dissipe un Sort permanent (LDB 46 l.204-207 : Test étendu de Langue (Magick) → NI). Action de combat
+     *  RÉPÉTÉE chaque Round (comme la Focalisation) ; le DR cumule sur `caster.dispel` jusqu'au NI. */
+    battleDispelSpell: (spellId: string, spellCasterId: string) => {
+      if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
+      const { battle } = get();
+      if (!battle || battle.over) return;
+      const active = activeCombatant(battle);
+      if (!active || active.kind !== 'hero' || battle.acted) return;
+      if (!actorHasSkill(active, 'langue', 'Magick')) { get().log(t('cs.cannotDispel')); return; }
+      const target = dispellableSpellsOn(battle.combatants).find((d) => d.spellId === spellId && d.casterId === spellCasterId);
+      if (!target) return;
+      // SOUTIEN « même Domaine » (LDB 46 l.207) : les AUTRES héros encore en action, possédant Langue (Magick)
+      // ET partageant un Domaine (Vent) avec le meneur, l'assistent (+10 chacun, plafond Bonus d'Int).
+      const domainsOf = (h: Combatant) => new Set((h.spells ?? []).map((id) => findSpellById(id)?.subType).filter(Boolean) as string[]);
+      const mine = domainsOf(active);
+      const supporters = battle.combatants.filter((c) => c.id !== active.id && c.kind === 'hero' && !isOutOfAction(c)
+        && actorHasSkill(c, 'langue', 'Magick') && [...domainsOf(c)].some((d) => mine.has(d))).length;
+      const cap = bonus(effectiveChar(active, 'Int')); // Langue (Magick) = Intelligence ; plafond du Soutien
+      const supBonus = assistBonus(supporters, cap);
+      const value = testValue(active, 'langue', undefined, 'Magick') + supBonus;
+      set({ pendingDispel: {
+        casterId: active.id, spellId, spellCasterId, label: target.label, ni: target.ni, value,
+        support: supBonus > 0 ? { count: Math.min(supporters, Math.max(0, cap)), bonus: supBonus } : undefined,
+        result: null,
+      } });
+    },
+    ...rollFlowActions('dispel', FLOWS.dispel, get, set, ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess']),
+    dispelConfirm: () => {
+      const { pendingDispel: pd } = get();
+      if (!pd || !pd.result) return;
+      const caster = actorIn(get(), pd.casterId);
+      set({ pendingDispel: null });
+      if (!caster) return;
+      const res = pd.result;
+      // Cumul LDB 12 mutualisé (`extendedTestStep`) : un Round réussi ajoute son DR, un raté le retire (planché à 0).
+      const prev = caster.dispel?.spellId === pd.spellId && caster.dispel.spellCasterId === pd.spellCasterId ? caster.dispel.total : 0;
+      const { total, done } = extendedTestStep(prev, { success: res.success, sl: res.sl }, pd.ni, !!rule('test-extended-min-sl'));
+      const logLines = [t('cs.dispelRoll', { name: caster.name, spell: pd.label, roll: res.roll, target: res.target, sl: `${res.sl >= 0 ? '+' : ''}${res.sl}`, total, ni: pd.ni })];
+      if (done) {
+        // Réussite (DR cumulé ≥ NI, LDB 46 l.205) : retire les effets du sort de tous ses porteurs.
+        caster.dispel = undefined;
+        const b = get().battle;
+        const n = b ? dissipateSpell(b.combatants, pd.spellId, pd.spellCasterId) : 0;
+        if (b) set({ battle: { ...b, combatants: [...b.combatants] } });
+        logLines.push(t('cs.dispelDone', { spell: pd.label, extra: n > 1 ? ` (${n} cibles libérées)` : '' }));
+      } else {
+        caster.dispel = { spellId: pd.spellId, spellCasterId: pd.spellCasterId, total };
+      }
+      finishPlayerAction(get, set, logLines, 'cast'); // Action consommée (catégorie magie au journal)
+    },
+    dispelCancel: () => set({ pendingDispel: null }),
     /** Ouvre une Focalisation HORS COMBAT (couture D) : accumule `caster.focus` pour un Sort d'Arcane/Domaine. */
     oocFocusSpell: (casterId: string, spellId: string) => {
       const { battle, party } = get();

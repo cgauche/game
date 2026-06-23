@@ -11,7 +11,7 @@
  */
 import type {
   GameState,
-  PendingTrample, PendingManeuver, PendingRun, PendingFocus, PendingFrenzy, PendingApproach, PendingWard,
+  PendingTrample, PendingManeuver, PendingRun, PendingFocus, PendingDispel, PendingFrenzy, PendingApproach, PendingWard,
   PendingReload, PendingStateRecovery, PendingTest, PendingAppraise, PendingBargain, PendingHeal,
   PendingCorruption, PendingAttack, PendingDefense, PendingCast, PendingDisengage,
   PendingCounterspell, CounterParticipant, PendingExtendedTest, ExtendedTestRound,
@@ -150,6 +150,7 @@ export type RollFlowActionsMap =
   & MonoRollActions<'defense', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
   & MonoRollActions<'disengage', 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'focus', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
+  & MonoRollActions<'dispel', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'frenzy', 'roll' | 'reroll' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'heal', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess'>
   & MonoRollActions<'maneuver', 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll'>
@@ -692,6 +693,29 @@ export const FLOWS = {
     failed: (p) => p.result?.dr === 0, // aucun DR gagné → rejouable
     bonus: {
       derive: (_s, p) => ({ result: { ...p.result!, dr: p.result!.dr + 1, log: `${p.result!.log} (+1 DR)` } }),
+    },
+  }),
+
+  /** Dissipation permanente (LDB 46 l.204-207) : un Round du Test étendu de Langue (Magick). `value` porte
+   *  déjà le Soutien « même Domaine ». Le DR cumule sur `caster.dispel` au confirm. Calque `focus`. */
+  dispel: makeRollFlow<PendingDispel>({
+    key: 'pendingDispel',
+    rolled: (p) => !!p.result,
+    actor: (s, p) => actorIn(s, p.casterId),
+    caps: { forced: true },
+    resolve: (s, p, actor, _get, forced) => {
+      if (!actor) return null;
+      if (forced) {
+        // Résilience (LDB 17 l.73) : DR maximal du Round (dé 01 sur la cible connue), sinon plancher 1.
+        const sl = p.result?.target != null ? Math.max(evaluateTest(1, p.result.target).sl, 1) : 1;
+        return { result: { roll: 1, target: p.result?.target ?? p.value, sl, success: true } };
+      }
+      const r = rollTest(p.value, 'intermediaire', battleRng());
+      return { result: { roll: r.roll, target: r.target, sl: r.sl, success: r.success } };
+    },
+    failed: (p) => !p.result?.success, // Round raté → rejouable (Chance) ; le cumul gère le DR négatif
+    bonus: {
+      derive: (_s, p) => ({ result: { ...p.result!, sl: p.result!.sl + 1 } }), // +1 DR
     },
   }),
 

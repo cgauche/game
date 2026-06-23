@@ -498,4 +498,7 @@ export const fr = {
   'cs.focusHarmonized': "Harmonisation aethyrique : le contrecoup est maîtrisé (pas d'Imparfaite).",
   'cs.focusEnough': '{name} a focalisé assez de magie pour lancer {spell} (NI 0).',
   'cs.focusProgress': 'Focalisation : {dr}/{ni} DR.',
+  'cs.cannotDispel': 'Il faut la compétence Langue (Magick) pour dissiper un sort.',
+  'cs.dispelRoll': '{name} — Dissipation de {spell} : 🎲 {roll}/{target} → DR {sl} (cumul {total}/{ni}).',
+  'cs.dispelDone': '✨ {spell} est dissipé{extra}.',
 } as const;

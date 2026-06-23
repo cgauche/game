@@ -661,6 +661,10 @@ export interface Combatant {
   castPenalties?: CastPenalty[];
   /** Accumulateur de Focalisation : DR cumulé pour un sort d'Arcane/Domaine. */
   focus?: { spell: string; dr: number };
+  /** Accumulateur de DISSIPATION permanente (LDB 46 l.204-207) : Test étendu de Langue (Magick) en cours,
+   *  DR cumulé vers la NI d'UN sort durable (identifié par sort + lanceur). Persiste entre Rounds de combat
+   *  (une Action/Round) ; effacé à la dissipation (DR ≥ NI) ou à la fin du combat. Cf. `caster.focus`. */
+  dispel?: { spellId: string; spellCasterId: string; total: number };
   /** Mouvement (cases par tour, dérivé de la table de Mouvement). */
   movement: number;
   // Destin / Résilience (héros uniquement)
