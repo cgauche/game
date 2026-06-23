@@ -173,6 +173,23 @@ export function bumpSL(t: TestResult, by = 1): TestResult {
   return { ...t, sl: t.sl + by };
 }
 
+/** Test Soutenu (LDB 12 l.214-225) : plusieurs Personnages œuvrent de concert à une même tâche. Le plus
+ *  compétent lance les dés ; chaque soutien octroie +10 au Test — MAIS le meneur ne peut être soutenu par
+ *  plus de Personnages que son propre Bonus de Caractéristique de la carac testée (`leaderCharBonus`, LDB 12
+ *  l.225). `values` = valeur de Test de CHAQUE participant (meneur inclus, AVANT difficulté). Renvoie la
+ *  valeur EFFECTIVE du meneur (à passer à `rollTest`, qui applique la difficulté) + le détail. Primitive
+ *  PURE et GÉNÉRALE de coopération (Dissipation à plusieurs LDB 46 l.207, crochetage, fouille de pièce…). */
+export function assistedTest(
+  values: number[],
+  leaderCharBonus: number,
+): { leaderValue: number; supporters: number; bonus: number; total: number } {
+  if (values.length === 0) return { leaderValue: 0, supporters: 0, bonus: 0, total: 0 };
+  const leaderValue = Math.max(...values); // le plus compétent lance ; les AUTRES sont des soutiens
+  const supporters = Math.min(values.length - 1, Math.max(0, leaderCharBonus));
+  const bonus = supporters * 10;
+  return { leaderValue, supporters, bonus, total: leaderValue + bonus };
+}
+
 function clamp(v: number, policy: TestPolicy): number {
   return Math.max(policy.targetMin, Math.min(policy.targetMax, v));
 }

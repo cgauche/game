@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { evaluateTest, maxForcedRoll, rollTest, evaluateCombinedTest, slTier, isImpressiveSuccess, isImpressiveFailure, isAstoundingSuccess, isAstoundingFailure, SL_IMPRESSIVE, SL_ASTOUNDING } from './tests';
+import { evaluateTest, maxForcedRoll, rollTest, evaluateCombinedTest, slTier, isImpressiveSuccess, isImpressiveFailure, isAstoundingSuccess, isAstoundingFailure, SL_IMPRESSIVE, SL_ASTOUNDING, assistedTest } from './tests';
 import { getTestPolicy, type TestPolicy } from './testPolicy';
 import type { RNG } from './dice';
 import { setRule, resetRule } from './policy';
@@ -145,5 +145,25 @@ describe('Tableau des Résultats — paliers de DR (LDB 12 l.103-114, primitive 
     expect(isImpressiveFailure(true, -4)).toBe(false);
     expect(isAstoundingFailure(false, -6)).toBe(true);
     expect(isAstoundingFailure(false, -5)).toBe(false);
+  });
+});
+
+describe('assistedTest — Test Soutenu (LDB 12 l.214-225)', () => {
+  it("le plus compétent lance ; chaque soutien octroie +10 (exemple du LDB : 59 + 2×10)", () => {
+    // Adhémar 59 (meneur), Perdita & Valentyn en soutien → +20 ; la difficulté (-10) est à part (rollTest).
+    const r = assistedTest([59, 45, 50], 5);
+    expect(r.leaderValue).toBe(59);
+    expect(r.supporters).toBe(2);
+    expect(r.bonus).toBe(20);
+    expect(r.total).toBe(79);
+  });
+  it('plafonne les soutiens au Bonus de Caractéristique du meneur (LDB 12 l.225)', () => {
+    const r = assistedTest([50, 50, 50, 50, 50], 2); // 4 soutiens possibles, plafond 2
+    expect(r.supporters).toBe(2);
+    expect(r.total).toBe(70);
+  });
+  it('un seul participant = aucun soutien ; liste vide = neutre', () => {
+    expect(assistedTest([55], 5)).toMatchObject({ supporters: 0, bonus: 0, total: 55 });
+    expect(assistedTest([], 5)).toMatchObject({ leaderValue: 0, total: 0 });
   });
 });
