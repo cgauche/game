@@ -941,8 +941,8 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
-      "page": 137
+      "book": "NADJ",
+      "page": 90
     }
   },
   {
@@ -954,8 +954,8 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
-      "page": 137
+      "book": "EDOC",
+      "page": 79
     }
   },
   {
@@ -3236,19 +3236,6 @@
     "source": {
       "book": "ADE2",
       "page": 20
-    }
-  },
-  {
-    "id": "officier-de-siege",
-    "label": "Officier de Siège",
-    "max": null,
-    "test": null,
-    "desc": "",
-    "specs": [],
-    "rand": null,
-    "source": {
-      "book": "AA",
-      "page": 0
     }
   }
 ]
