@@ -20,6 +20,8 @@ import mutationsJson from './mutations.json';
 import mutationTablesJson from './mutationTables.json';
 import trappingsJson from './trappings.json';
 import vehiclesJson from './vehicles.json';
+import crewRolesJson from './crew-roles.json';
+import crewTestTypesJson from './crew-test-types.json';
 import weaponGroupsJson from './weaponGroups.json';
 import creaturesJson from './creatures.json';
 import frenchyTraitsJson from './frenchy-traits.json';
@@ -791,6 +793,28 @@ export const trappings = trappingsJson as TrappingData[];
 export const vehicles = vehiclesJson as VehicleData[];
 export const vehicleById: Map<string, VehicleData> = new Map(vehicles.map((v) => [v.id, v]));
 export const findVehicleById = (id: string): VehicleData | undefined => vehicleById.get(id);
+/** Rôles d'équipage naval (MDG ch.14 « Tests d'équipage ») — catalogue app-owned éditable au Codex.
+ *  Chaque rôle mappe une (ou plusieurs, ex. Mousse = Voile/Ramer → meilleure) Compétence par `id` STABLE
+ *  (+ `spec` pour Artilleur/Cuisinier/Chansonnier). Le `desc` est le verbatim de la colonne « Tâches ». */
+export interface CrewRoleData {
+  id: string;
+  label: string;
+  skills: { skillId: string; spec?: string }[];
+  desc: string;
+}
+/** Type de Test d'équipage (MDG ch.14) : rôles contributeurs + rôle ESSENTIEL (son DR compte double). */
+export interface CrewTestTypeData {
+  id: string;
+  label: string;
+  roles: string[];
+  essential: string;
+}
+export const crewRoles = crewRolesJson as CrewRoleData[];
+const crewRoleById = new Map(crewRoles.map((r) => [r.id, r]));
+export const findCrewRoleById = (id: string): CrewRoleData | undefined => crewRoleById.get(id);
+export const crewTestTypes = crewTestTypesJson as CrewTestTypeData[];
+const crewTestTypeById = new Map(crewTestTypes.map((t) => [t.id, t]));
+export const findCrewTestTypeById = (id: string): CrewTestTypeData | undefined => crewTestTypeById.get(id);
 /** Groupes d'objet app-owned (taxonomie `subType` id-ifiée) — éditable au Codex. */
 export const weaponGroups = weaponGroupsJson as WeaponGroupData[];
 // Bestiaire APP-OWNED : officiel + complément « frenchy.bzh » INTÉGRÉ directement dans creatures.json

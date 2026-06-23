@@ -17,8 +17,10 @@
 import crewMoraleJson from '../data/crew-morale.json';
 import { findTableEntry } from './tables';
 import { rollExpr, type RNG, defaultRNG } from './dice';
-import { rollTest } from './tests';
-import type { Difficulty } from './types';
+import { rollTest, easeDifficulty } from './tests';
+import { testValue } from './skills';
+import { findCrewRoleById, findCrewTestTypeById, type CrewRoleData } from '../data';
+import type { Combatant, Difficulty } from './types';
 
 /** Facteur de Moral (MODIFICATEURS DE MORAL, MDG ch.14) — `effect` = dés signés (« +2d10 », « -3d10 »). */
 export interface MoraleFactor {
@@ -89,6 +91,8 @@ export interface CrewContributor {
   essential?: boolean;
   /** Étiquette d'affichage (journal). */
   label?: string;
+  /** Difficulté PROPRE à ce contributeur (sinon celle du Test) — sert au double-rôle « Manque de bras » (+2 crans). */
+  difficulty?: Difficulty;
 }
 
 export interface CrewTestResult {
@@ -117,7 +121,7 @@ export function resolveCrewTest(
   extraDR = 0,
 ): CrewTestResult {
   const contributions = contributors.map((c) => {
-    const t = rollTest(c.value, difficulty, rng);
+    const t = rollTest(c.value, c.difficulty ?? difficulty, rng);
     const counted = c.essential ? t.sl * 2 : t.sl;
     return { label: c.label, sl: t.sl, essential: !!c.essential, counted };
   });
@@ -150,4 +154,61 @@ export function tickShipMorale(state: ShipMoraleState, currentDay: number, rng: 
   if (week <= state.lastMoraleWeek) return { state, recalced: false, lines: [] };
   const r = recalcMorale(state.score, state.factors, rng);
   return { state: { ...state, score: r.score, lastMoraleWeek: week }, recalced: true, lines: r.lines };
+}
+
+/** Assignation d'un membre d'équipage à un rôle, pour un Test d'équipage piloté par les rôles (MDG ch.14). */
+export interface CrewAssignment {
+  /** Le Combattant d'équipage qui tient le rôle. */
+  crew: Combatant;
+  /** id du rôle tenu (crew-roles.json). */
+  roleId: string;
+  /** Le membre cumule DEUX rôles (Manque de bras, MDG ch.14 l.53) : CE jet subit +2 crans de difficulté. */
+  doubleRole?: boolean;
+}
+
+/** Valeur de Compétence d'un membre pour un rôle : la MEILLEURE de ses compétences (Mousse = Voile/Ramer). PUR. */
+export function crewRoleValue(crew: Combatant, role: CrewRoleData): { value: number; used?: { skillId: string; spec?: string } } {
+  let best = -Infinity;
+  let used: { skillId: string; spec?: string } | undefined;
+  for (const s of role.skills) {
+    const v = testValue(crew, s.skillId, undefined, s.spec);
+    if (v > best) { best = v; used = s; }
+  }
+  return { value: Number.isFinite(best) ? best : 0, used };
+}
+
+/**
+ * Test d'équipage PILOTÉ PAR LES RÔLES (MDG ch.14) — système PROPRE à la Mer des Griffes (vérifié ABSENT du
+ * Compagnon de Mort sur le Reik, qui s'en tient au Personnage à la barre + Soutien LDB, déjà au moteur via
+ * `partyAssisted`, et d'Aux Armes qui n'apporte que l'Atout « Arme d'équipe »). Pour chaque membre assigné à
+ * un rôle, on lit sa VRAIE valeur de Compétence (la meilleure du rôle) ; le rôle désigné ESSENTIEL par le type
+ * de Test voit son DR doublé ; on additionne via `resolveCrewTest`. Manque de bras : double rôle → +2 crans
+ * sur SON jet (l.53) ; sous-effectif (`understaffed`) → −2 DR et jamais mieux qu'un Succès Minime (DR total
+ * plafonné à 0, l.55). PUR (RNG injecté). NB : le bonus de chant du Chansonnier (l.32) n'est PAS chiffré par
+ * le RAW (« des bonus ») → NON modélisé (règle 1 : aucune invention de valeur).
+ */
+export function resolveCrewTestByRoles(
+  assignments: CrewAssignment[],
+  testTypeId: string,
+  difficulty: Difficulty,
+  moraleScore: number,
+  rng: RNG = defaultRNG,
+  opts: { understaffed?: boolean } = {},
+): CrewTestResult {
+  const essentialRole = findCrewTestTypeById(testTypeId)?.essential;
+  const contributors: CrewContributor[] = assignments.map((a) => {
+    const role = findCrewRoleById(a.roleId);
+    return {
+      value: role ? crewRoleValue(a.crew, role).value : 0,
+      essential: a.roleId === essentialRole,
+      label: role?.label ?? a.roleId,
+      difficulty: a.doubleRole ? easeDifficulty(difficulty, -2) : undefined,
+    };
+  });
+  const res = resolveCrewTest(contributors, difficulty, moraleScore, rng, opts.understaffed ? -2 : 0);
+  if (opts.understaffed && res.total > 0) {
+    // MDG ch.14 l.55 : « ne peuvent jamais être meilleurs qu'un Succès Minime » → DR total plafonné à 0.
+    return { ...res, total: 0, lines: [...res.lines, 'Manque de bras : jamais mieux qu’un Succès Minime (DR total plafonné à 0).'] };
+  }
+  return res;
 }
