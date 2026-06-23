@@ -17,7 +17,7 @@
 import type { Combatant } from '../engine/types';
 import { battleRng } from './battleRng';
 import { rollTest, extendedTestStep } from '../engine/tests';
-import { partyBest } from '../engine/skills';
+import { partyAssisted } from '../engine/skills';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { addCondition, loseWounds } from '../engine/conditions';
 import { hasHealSkill, hasSurgerySkill, availableHealModes, isHealable, type HealMode } from '../engine/healing';
@@ -64,7 +64,7 @@ import type { Get, Set } from './flowTypes';
 /** Meilleur soigneur du groupe pour un acte (Opérer exige AUSSI le Talent Chirurgie, LDB 10). */
 export function bestHealerFor(party: Combatant[], act: HealMode): { actor: Combatant; value: number } | null {
   const pool = act === 'surgery' ? party.filter((c) => hasHealSkill(c) && hasSurgerySkill(c)) : party.filter(hasHealSkill);
-  return partyBest(pool, 'guerison');
+  return partyAssisted(pool, 'guerison'); // Soutien (LDB 12) : assistants de chirurgie/soin
 }
 
 /** Ouvre l'infirmerie (hors combat). Patient par défaut : celui demandé, sinon le premier soignable. */

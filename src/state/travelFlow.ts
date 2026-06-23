@@ -34,7 +34,7 @@ import { vehicleCombatant } from '../engine/vehicle';
 import { findVehicleById } from '../data';
 import { PERIPETIES } from '../data/peripeties';
 import { rollTest, testDetail } from '../engine/tests';
-import { partyBest } from '../engine/skills';
+import { partyAssisted } from '../engine/skills';
 import { addCondition, removeCondition, stacks } from '../engine/conditions';
 import { subtract as moneySub, canAfford, formatMoney } from '../engine/money';
 import { d10, d100 } from '../engine/dice';
@@ -367,7 +367,7 @@ function resolvePerils(get: Get, set: Set, route: MapRoute, destLabel: string, d
       }
       case 'ereintant': {
         // Test de Survie en extérieur Accessible (+20), sinon +1 jour de retard et +1 Exténué chacun.
-        const best = partyBest(party, 'survie-en-exterieur');
+        const best = partyAssisted(party, 'survie-en-exterieur'); // Soutien (LDB 12) : le groupe œuvre de concert
         const t = best ? rollTest(best.value, 'accessible', battleRng()) : null;
         if (t && best) {
           log(get, set, [`${best.actor.name} — Survie en extérieur (+20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'un itinéraire de substitution est trouvé.' : 'ÉCHEC.'}`]);
@@ -381,7 +381,7 @@ function resolvePerils(get: Get, set: Set, route: MapRoute, destLabel: string, d
         // Test de Perception Accessible (+20) raté → EMBUSCADE (rencontre d'auteur sur la route) ;
         // réussi → le combat a quand même lieu, mais SANS surprise (« le groupe les voit venir »).
         const configured = !!(route.ambush?.scene && route.ambush.encounter);
-        const best = partyBest(party, 'perception');
+        const best = partyAssisted(party, 'perception'); // Soutien (LDB 12) : le groupe guette de concert
         const t = best ? rollTest(best.value, 'accessible', battleRng()) : null;
         if (t && best) {
           log(get, set, [`${best.actor.name} — Perception (+20) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'le groupe les voit venir !' : configured ? 'ÉCHEC — embuscade !' : 'ÉCHEC.'}`]);

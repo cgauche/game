@@ -25,7 +25,7 @@ import type { RNG } from '../engine/dice';
 import type { RollBreakdown } from '../engine/combat';
 import { battleRng } from './battleRng';
 import { rollTest } from '../engine/tests';
-import { partyBest } from '../engine/skills';
+import { partyAssisted } from '../engine/skills';
 import { hasHealSkill } from '../engine/healing';
 import { isOutOfAction, addCondition, removeCondition, loseWounds } from '../engine/conditions';
 import { restRecovery, restResistVal, applyRecoveryDay, needsRecoveryRoll, recoveryTarget, type RestRoll } from '../engine/rest';
@@ -383,7 +383,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
       const count = exposureTestCount(severity, true); // tente : extrême = 2 Tests, difficile = 0
       if (count > 0) steps.push(...buildExposureSteps(party, camperIds, count));
     } else {
-      const best = partyBest(party.filter((h) => !h.dead), 'survie-en-exterieur');
+      const best = partyAssisted(party.filter((h) => !h.dead), 'survie-en-exterieur'); // Soutien (LDB 12)
       if (best) {
         steps.push({ id: 'abri', kind: 'shelter', actorId: best.actor.id, label: 'Abri de fortune', icon: '⛺',
           rollLabel: 'Survie en extérieur', base: best.value, target: best.value, result: null, interactive: true,
@@ -584,7 +584,7 @@ export function restSleep(get: Get, set: Set): void {
         out.push({ icon: '⛺', label: 'Campement', text: 'La tente est montée — le groupe dort à l’abri.', tone: 'info' });
       } else if (severity !== 'clement') {
         // Abri de fortune : Survie en extérieur (« construire un abri », ch.09 l.559).
-        const best = partyBest(party.filter((h) => !h.dead), 'survie-en-exterieur');
+        const best = partyAssisted(party.filter((h) => !h.dead), 'survie-en-exterieur'); // Soutien (LDB 12)
         if (best) {
           const res = rollTest(best.value, 'intermediaire', rng);
           sheltered = res.success;

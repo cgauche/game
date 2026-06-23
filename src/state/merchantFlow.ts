@@ -11,7 +11,7 @@ import { bargainBuyFactor, bargainSellFactor } from '../engine/bargain';
 import { SL_ASTOUNDING } from '../engine/tests';
 import { craftPriceFactor, shiftAvailability } from '../engine/qualities/craftEconomy';
 import { rule } from '../engine/policy';
-import { partyBest } from '../engine/skills';
+import { partyAssisted } from '../engine/skills';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { appraiseEstimate } from '../engine/appraisal';
 import { makeRNG } from '../engine/dice';
@@ -345,7 +345,7 @@ export function startBargain(get: Get, set: Set, mode: 'buy' | 'sell'): void {
   if (m.bargainLocked) return; // VERROU PARTAGÉ : a refusé/renié un marché (achat OU vente) → plus de négociation jusqu'au réassort
   if (mode === 'buy' ? m.bargainBuy : m.bargainSell) return; // 1 marchandage par MODE et par visite (achat ≠ vente)
   const arch = MERCHANTS[m.archetype];
-  const best = partyBest(get().party, 'marchandage', 'Soc'); if (!best) return;
+  const best = partyAssisted(get().party, 'marchandage', 'Soc'); if (!best) return; // Soutien (LDB 12) : conseillers du groupe
   const negotiator = hasBargainBonus(best.actor); // Négociateur → registre de talents (plus de name-match)
   set({ pendingBargain: {
     playerId: best.actor.id, playerName: best.actor.name,
@@ -382,7 +382,7 @@ export const DETECT_TALENT = "Détection d'artefact";
 export function bestDetector(party: Combatant[]): { actor: Combatant; value: number } | null {
   const holders = party.filter((h) => !h.dead && h.talents.some((t) => t.talentId === slugId(DETECT_TALENT) && (t.times ?? 1) >= 1));
   if (!holders.length) return null;
-  const best = partyBest(holders, 'intuition', 'I');
+  const best = partyAssisted(holders, 'intuition', 'I'); // Soutien (LDB 12)
   return best ? { actor: best.actor, value: best.value } : null;
 }
 
@@ -393,7 +393,7 @@ function openAppraise(
   target: { itemUid?: string; gear?: { scope: 'loot' | 'victory'; index: number } },
   itemName: string, mode: 'evaluate' | 'detect', trappingId?: string,
 ): void {
-  const best = mode === 'detect' ? bestDetector(get().party) : partyBest(get().party, 'evaluation', 'Int');
+  const best = mode === 'detect' ? bestDetector(get().party) : partyAssisted(get().party, 'evaluation', 'Int'); // Soutien (LDB 12)
   if (!best) return;
   const t = trappingId ? findTrappingById(trappingId) : undefined;
   set({ pendingAppraise: {
